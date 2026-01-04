@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/content/content_loader.dart';
 import '../../../../core/content/content_parser.dart';
 import '../../../../core/content/content_model.dart';
+import '../../../../core/content/toc_extractor.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/markdown_theme.dart';
 import '../../../../core/layout/layout_shell.dart';
+import '../../../../core/widgets/table_of_contents.dart';
 
 /// 通用阅读页面
 /// 根据传入的文件名加载并显示对应的 Markdown 内容
@@ -31,6 +33,7 @@ class _ReaderPageState extends State<ReaderPage> {
   ContentModel? _content;
   bool _isLoading = true;
   String? _error;
+  List<TocItem> _tocItems = [];
 
   @override
   void initState() {
@@ -72,8 +75,12 @@ class _ReaderPageState extends State<ReaderPage> {
         }
       }
 
+      // 提取目录
+      final tocItems = TocExtractor.extractToc(content.content);
+
       setState(() {
         _content = content.copyWith(title: finalTitle);
+        _tocItems = tocItems;
         _isLoading = false;
       });
     } catch (e) {
@@ -155,6 +162,29 @@ class _ReaderPageState extends State<ReaderPage> {
   }
 
   Widget _buildContent() {
+    // 判断是否显示 TOC（桌面端且有目录项）
+    final showToc = MediaQuery.of(context).size.width >= 1200 &&
+        _tocItems.isNotEmpty &&
+        _tocItems.length >= 3; // 至少3个标题才显示TOC
+
+    if (showToc) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 主内容区
+          Expanded(
+            child: _buildMainContent(),
+          ),
+          // 目录侧边栏
+          TableOfContents(items: _tocItems),
+        ],
+      );
+    }
+
+    return _buildMainContent();
+  }
+
+  Widget _buildMainContent() {
     return SingleChildScrollView(
       primary: true, // 使用浏览器原生滚动条
       child: Align(
