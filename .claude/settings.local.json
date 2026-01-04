@@ -6,7 +6,8 @@
       "Bash(flutter clean:*)",
       "Bash(flutter analyze:*)",
       "Bash(git add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(dart bin/check_assets.dart:*)"
     ]
   }
 }
