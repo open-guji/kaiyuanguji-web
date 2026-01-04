@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 /// 资源验证脚本
@@ -16,7 +18,7 @@ void main() async {
   // 3. 检查 Frontmatter 格式
   hasErrors |= await checkFrontmatter();
 
-  print('\n' + ('=' * 50));
+  print('\n${'=' * 50}');
   if (hasErrors) {
     print('❌ 检查完成，发现错误');
     exit(1);

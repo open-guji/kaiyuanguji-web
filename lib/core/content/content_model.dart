@@ -10,9 +10,6 @@ class ContentModel {
   /// 元数据（可选，从 Frontmatter 解析）
   final Map<String, dynamic>? metadata;
 
-  /// 作者（可选）
-  final String? author;
-
   /// 创建日期（可选）
   final DateTime? createdAt;
 
@@ -23,7 +20,6 @@ class ContentModel {
     required this.title,
     required this.content,
     this.metadata,
-    this.author,
     this.createdAt,
     this.tags,
   });
@@ -34,13 +30,10 @@ class ContentModel {
       title: map['title'] as String? ?? '无标题',
       content: map['content'] as String? ?? '',
       metadata: map['metadata'] as Map<String, dynamic>?,
-      author: map['author'] as String?,
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'] as String)
           : null,
-      tags: map['tags'] != null
-          ? List<String>.from(map['tags'] as List)
-          : null,
+      tags: map['tags'] != null ? List<String>.from(map['tags'] as List) : null,
     );
   }
 
@@ -50,7 +43,6 @@ class ContentModel {
       'title': title,
       'content': content,
       'metadata': metadata,
-      'author': author,
       'createdAt': createdAt?.toIso8601String(),
       'tags': tags,
     };
@@ -61,7 +53,6 @@ class ContentModel {
     String? title,
     String? content,
     Map<String, dynamic>? metadata,
-    String? author,
     DateTime? createdAt,
     List<String>? tags,
   }) {
@@ -69,7 +60,6 @@ class ContentModel {
       title: title ?? this.title,
       content: content ?? this.content,
       metadata: metadata ?? this.metadata,
-      author: author ?? this.author,
       createdAt: createdAt ?? this.createdAt,
       tags: tags ?? this.tags,
     );

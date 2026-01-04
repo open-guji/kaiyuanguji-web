@@ -25,7 +25,7 @@ class AppRouter {
         ),
 
         // 阅读页面（带参数）
-        // 使用方式: /read?file=chapter_1
+        // 使用方式: /read?file=phase1
         GoRoute(
           path: reader,
           name: 'reader',
@@ -36,7 +36,7 @@ class AppRouter {
 
             if (filename == null || filename.isEmpty) {
               return const _ErrorPage(
-                message: '请指定要阅读的文件\n\n示例: /read?file=chapter_1',
+                message: '请指定要阅读的文件\n\n示例: /read?file=phase1',
               );
             }
 
@@ -48,7 +48,7 @@ class AppRouter {
         ),
 
         // 阅读页面（路径参数版本）
-        // 使用方式: /read/chapter_1
+        // 使用方式: /read/phase1
         GoRoute(
           path: '/read/:filename',
           name: 'reader_path',
@@ -58,9 +58,7 @@ class AppRouter {
                 state.uri.queryParameters['classic'] == 'true';
 
             if (filename == null || filename.isEmpty) {
-              return const _ErrorPage(
-                message: '文件名无效',
-              );
+              return const _ErrorPage(message: '文件名无效');
             }
 
             return ReaderPage(
@@ -73,9 +71,7 @@ class AppRouter {
 
       // 错误页面
       errorBuilder: (context, state) {
-        return _ErrorPage(
-          message: '页面不存在\n\n路径: ${state.uri}',
-        );
+        return _ErrorPage(message: '页面不存在\n\n路径: ${state.uri}');
       },
     );
   }
@@ -97,9 +93,7 @@ class AppRouter {
     String filename, {
     bool useClassicStyle = false,
   }) {
-    context.go(
-      '/read/$filename${useClassicStyle ? '?classic=true' : ''}',
-    );
+    context.go('/read/$filename${useClassicStyle ? '?classic=true' : ''}');
   }
 
   /// 导航到首页
@@ -117,9 +111,7 @@ class _ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('错误'),
-      ),
+      appBar: AppBar(title: const Text('错误')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

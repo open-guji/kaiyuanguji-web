@@ -66,7 +66,9 @@ class _ReaderPageState extends State<ReaderPage> {
       // 如果 Frontmatter 中没有标题，尝试从内容中提取第一个标题
       String finalTitle = content.title;
       if (finalTitle == '无标题') {
-        final extractedTitle = ContentParser.extractFirstHeading(content.content);
+        final extractedTitle = ContentParser.extractFirstHeading(
+          content.content,
+        );
         if (extractedTitle != null) {
           finalTitle = extractedTitle;
         } else {
@@ -118,9 +120,7 @@ class _ReaderPageState extends State<ReaderPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -130,11 +130,7 @@ class _ReaderPageState extends State<ReaderPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: AppTheme.vermilionRed,
-              ),
+              Icon(Icons.error_outline, size: 48, color: AppTheme.vermilionRed),
               const SizedBox(height: 16),
               Text(
                 _error!,
@@ -142,10 +138,7 @@ class _ReaderPageState extends State<ReaderPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loadContent,
-                child: const Text('重试'),
-              ),
+              ElevatedButton(onPressed: _loadContent, child: const Text('重试')),
             ],
           ),
         ),
@@ -153,9 +146,7 @@ class _ReaderPageState extends State<ReaderPage> {
     }
 
     if (_content == null) {
-      return const Center(
-        child: Text('内容为空'),
-      );
+      return const Center(child: Text('内容为空'));
     }
 
     return _buildContent();
@@ -163,7 +154,8 @@ class _ReaderPageState extends State<ReaderPage> {
 
   Widget _buildContent() {
     // 判断是否显示 TOC（桌面端且有目录项）
-    final showToc = MediaQuery.of(context).size.width >= 1200 &&
+    final showToc =
+        MediaQuery.of(context).size.width >= 1200 &&
         _tocItems.isNotEmpty &&
         _tocItems.length >= 3; // 至少3个标题才显示TOC
 
@@ -172,9 +164,7 @@ class _ReaderPageState extends State<ReaderPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 主内容区
-          Expanded(
-            child: _buildMainContent(),
-          ),
+          Expanded(child: _buildMainContent()),
           // 目录侧边栏
           TableOfContents(items: _tocItems),
         ],
@@ -187,70 +177,77 @@ class _ReaderPageState extends State<ReaderPage> {
   Widget _buildMainContent() {
     return SingleChildScrollView(
       primary: true, // 使用浏览器原生滚动条
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: AppTheme.getContentMaxWidth(context),
-          ),
-          padding: AppTheme.getContentPadding(context),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-            // 标题（如果需要显示的话）
-            if (_shouldShowTitle())
-              Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Text(
-                  _content!.title,
-                  style: Theme.of(context).textTheme.displayLarge,
-                  textAlign: TextAlign.center,
-                ),
+      child: Column(
+        children: [
+          // 主内容区
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: AppTheme.getContentMaxWidth(context),
               ),
+              padding: AppTheme.getContentPadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 标题（如果需要显示的话）
+                  if (_shouldShowTitle())
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: Text(
+                        _content!.title,
+                        style: Theme.of(context).textTheme.displayLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
 
-            // 元数据（作者、日期等）
-            if (_content!.author != null || _content!.createdAt != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _buildMetadata(),
+                  // 元数据（日期等）
+                  if (_content!.createdAt != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: _buildMetadata(),
+                    ),
+
+                  // Markdown 内容
+                  MarkdownBody(
+                    data: _content!.content,
+                    styleSheet: widget.useClassicStyle
+                        ? MarkdownTheme.getClassicTextStyleSheet(context)
+                        : MarkdownTheme.getStyleSheet(context),
+                    selectable: true,
+                    onTapLink: (text, href, title) {
+                      if (href != null) {
+                        // 处理内部链接
+                        if (href.startsWith('/')) {
+                          context.go(href);
+                        } else if (href.startsWith('http://') ||
+                            href.startsWith('https://')) {
+                          // 外部链接显示提示
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('外部链接: $href')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+
+                  // 标签
+                  if (_content!.tags != null && _content!.tags!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: _buildTags(),
+                    ),
+
+                  // 底部间距
+                  const SizedBox(height: 48),
+                ],
               ),
-
-            // Markdown 内容
-            MarkdownBody(
-              data: _content!.content,
-              styleSheet: widget.useClassicStyle
-                  ? MarkdownTheme.getClassicTextStyleSheet(context)
-                  : MarkdownTheme.getStyleSheet(context),
-              selectable: true,
-              onTapLink: (text, href, title) {
-                if (href != null) {
-                  // 处理内部链接
-                  if (href.startsWith('/')) {
-                    context.go(href);
-                  } else if (href.startsWith('http://') ||
-                      href.startsWith('https://')) {
-                    // 外部链接显示提示
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('外部链接: $href')),
-                    );
-                  }
-                }
-              },
             ),
-
-            // 标签
-            if (_content!.tags != null && _content!.tags!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: _buildTags(),
-              ),
-
-            // 底部间距
-            const SizedBox(height: 48),
-          ],
-        ),
+          ),
+          // 页脚 - 在滚动内容区域内
+          LayoutShell.buildFooter(context),
+        ],
       ),
-    ),
     );
   }
 
@@ -267,26 +264,6 @@ class _ReaderPageState extends State<ReaderPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (_content!.author != null) ...[
-          Icon(
-            Icons.person_outline,
-            size: 16,
-            color: AppTheme.secondaryGray,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            _content!.author!,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-        if (_content!.author != null && _content!.createdAt != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              '•',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
         if (_content!.createdAt != null) ...[
           Icon(
             Icons.calendar_today_outlined,
@@ -313,9 +290,9 @@ class _ReaderPageState extends State<ReaderPage> {
           label: Text(tag),
           backgroundColor: AppTheme.paperBackground,
           side: BorderSide(color: AppTheme.borderColor),
-          labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.inkBlack,
-              ),
+          labelStyle: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.inkBlack),
         );
       }).toList(),
     );

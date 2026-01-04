@@ -40,10 +40,7 @@ class _HomePageState extends State<HomePage> {
         rawContent = _getDefaultContent();
       }
 
-      final content = ContentParser.parse(
-        rawContent,
-        defaultTitle: '开元古籍',
-      );
+      final content = ContentParser.parse(rawContent, defaultTitle: '开元古籍');
 
       setState(() {
         _content = content;
@@ -80,17 +77,12 @@ title: 开源古籍
 
   @override
   Widget build(BuildContext context) {
-    return LayoutShell(
-      title: '开源古籍',
-      child: _buildBody(),
-    );
+    return LayoutShell(title: '开源古籍', child: _buildBody());
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -98,11 +90,7 @@ title: 开源古籍
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppTheme.vermilionRed,
-            ),
+            Icon(Icons.error_outline, size: 48, color: AppTheme.vermilionRed),
             const SizedBox(height: 16),
             Text(
               _error!,
@@ -126,9 +114,7 @@ title: 开源古籍
     }
 
     if (_content == null) {
-      return const Center(
-        child: Text('内容为空'),
-      );
+      return const Center(child: Text('内容为空'));
     }
 
     return _buildContent();
@@ -147,58 +133,58 @@ title: 开源古籍
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            // 标题
-            if (_content!.title.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Text(
-                  _content!.title,
-                  style: Theme.of(context).textTheme.displayLarge,
-                  textAlign: TextAlign.center,
+              // 标题
+              if (_content!.title.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: Text(
+                    _content!.title,
+                    style: Theme.of(context).textTheme.displayLarge,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
 
-            // 元数据（作者、日期等）
-            if (_content!.author != null || _content!.createdAt != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _buildMetadata(),
-              ),
+              // 元数据（日期等）
+              if (_content!.createdAt != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: _buildMetadata(),
+                ),
 
-            // Markdown 内容
-            MarkdownBody(
-              data: _content!.content,
-              styleSheet: MarkdownTheme.getCenteredStyleSheet(context),
-              selectable: true,
-              onTapLink: (text, href, title) {
-                if (href != null) {
-                  // 处理内部链接
-                  if (href.startsWith('/')) {
-                    context.go(href);
-                  } else if (href.startsWith('http://') ||
-                      href.startsWith('https://')) {
-                    // 外部链接显示提示
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('外部链接: $href')),
-                    );
+              // Markdown 内容
+              MarkdownBody(
+                data: _content!.content,
+                styleSheet: MarkdownTheme.getCenteredStyleSheet(context),
+                selectable: true,
+                onTapLink: (text, href, title) {
+                  if (href != null) {
+                    // 处理内部链接
+                    if (href.startsWith('/')) {
+                      context.go(href);
+                    } else if (href.startsWith('http://') ||
+                        href.startsWith('https://')) {
+                      // 外部链接显示提示
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('外部链接: $href')));
+                    }
                   }
-                }
-              },
-            ),
-
-            // 标签
-            if (_content!.tags != null && _content!.tags!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: _buildTags(),
+                },
               ),
 
-            // 底部间距
-            const SizedBox(height: 48),
-          ],
+              // 标签
+              if (_content!.tags != null && _content!.tags!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 32),
+                  child: _buildTags(),
+                ),
+
+              // 底部间距
+              const SizedBox(height: 48),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -206,26 +192,6 @@ title: 开源古籍
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (_content!.author != null) ...[
-          Icon(
-            Icons.person_outline,
-            size: 16,
-            color: AppTheme.secondaryGray,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            _content!.author!,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-        if (_content!.author != null && _content!.createdAt != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              '•',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
         if (_content!.createdAt != null) ...[
           Icon(
             Icons.calendar_today_outlined,
@@ -252,9 +218,9 @@ title: 开源古籍
           label: Text(tag),
           backgroundColor: AppTheme.paperBackground,
           side: BorderSide(color: AppTheme.borderColor),
-          labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.inkBlack,
-              ),
+          labelStyle: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.inkBlack),
         );
       }).toList(),
     );

@@ -30,14 +30,7 @@ class LayoutShell extends StatelessWidget {
       backgroundColor: AppTheme.paperBackground,
       appBar: _buildAppBar(context, isMobile),
       drawer: isMobile ? _buildDrawer(context) : null,
-      body: Column(
-        children: [
-          // 主内容区
-          Expanded(child: child),
-          // 页脚
-          _buildFooter(context, isMobile),
-        ],
-      ),
+      body: child,
     );
   }
 
@@ -55,25 +48,17 @@ class LayoutShell extends StatelessWidget {
               onPressed: () => context.pop(),
             )
           : (isMobile
-              ? null // 移动端使用默认的 Drawer 按钮
-              : IconButton(
-                  icon: Icon(
-                    Icons.book,
-                    color: AppTheme.vermilionRed,
-                  ),
-                  onPressed: () => context.go('/'),
-                  tooltip: '返回首页',
-                )),
-      title: isMobile
-          ? _buildLogoText(context)
-          : _buildLogoText(context),
+                ? null // 移动端使用默认的 Drawer 按钮
+                : IconButton(
+                    icon: Icon(Icons.book, color: AppTheme.vermilionRed),
+                    onPressed: () => context.go('/'),
+                    tooltip: '返回首页',
+                  )),
+      title: isMobile ? _buildLogoText(context) : _buildLogoText(context),
       actions: isMobile ? null : _buildDesktopActions(context),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: AppTheme.borderColor,
-        ),
+        child: Container(height: 1, color: AppTheme.borderColor),
       ),
     );
   }
@@ -85,10 +70,10 @@ class LayoutShell extends StatelessWidget {
       child: Text(
         '开源古籍',
         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppTheme.inkBlack,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2.0,
-            ),
+          color: AppTheme.inkBlack,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 2.0,
+        ),
       ),
     );
   }
@@ -108,7 +93,8 @@ class LayoutShell extends StatelessWidget {
   /// 单个导航按钮
   Widget _buildNavButton(BuildContext context, String label, String route) {
     final currentRoute = GoRouterState.of(context).uri.toString();
-    final isActive = currentRoute == route ||
+    final isActive =
+        currentRoute == route ||
         (route != '/' && currentRoute.startsWith(route));
 
     return Padding(
@@ -116,8 +102,7 @@ class LayoutShell extends StatelessWidget {
       child: TextButton(
         onPressed: () => context.go(route),
         style: TextButton.styleFrom(
-          foregroundColor:
-              isActive ? AppTheme.vermilionRed : AppTheme.inkBlack,
+          foregroundColor: isActive ? AppTheme.vermilionRed : AppTheme.inkBlack,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
         child: Text(
@@ -144,28 +129,21 @@ class LayoutShell extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.borderColor,
-                    width: 1,
-                  ),
+                  bottom: BorderSide(color: AppTheme.borderColor, width: 1),
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.book,
-                    color: AppTheme.vermilionRed,
-                    size: 32,
-                  ),
+                  Icon(Icons.book, color: AppTheme.vermilionRed, size: 32),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       '开源古籍',
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2.0,
-                              ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2.0,
+                          ),
                     ),
                   ),
                 ],
@@ -181,19 +159,25 @@ class LayoutShell extends StatelessWidget {
                   const Divider(height: 1),
                   _buildDrawerSectionHeader(context, '项目路线图'),
                   _buildDrawerItem(
-                      context, Icons.text_format, '排版', '/read/phase1'),
+                    context,
+                    Icons.text_format,
+                    '排版',
+                    '/read/phase1',
+                  ),
+                  _buildDrawerItem(context, Icons.edit, '校对', '/read/phase2'),
                   _buildDrawerItem(
-                      context, Icons.edit, '校对', '/read/phase2'),
+                    context,
+                    Icons.document_scanner,
+                    'OCR',
+                    '/read/phase3',
+                  ),
+                  _buildDrawerItem(context, Icons.share, '共享', '/read/phase4'),
                   _buildDrawerItem(
-                      context, Icons.document_scanner, 'OCR', '/read/phase3'),
-                  _buildDrawerItem(
-                      context, Icons.share, '共享', '/read/phase4'),
-                  _buildDrawerItem(
-                      context, Icons.account_tree, '图谱', '/read/phase5'),
-                  const Divider(height: 1),
-                  _buildDrawerSectionHeader(context, '其他'),
-                  _buildDrawerItem(
-                      context, Icons.description, '示例章节', '/read/chapter_1'),
+                    context,
+                    Icons.account_tree,
+                    '图谱',
+                    '/read/phase5',
+                  ),
                 ],
               ),
             ),
@@ -203,18 +187,15 @@ class LayoutShell extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: AppTheme.borderColor,
-                    width: 1,
-                  ),
+                  top: BorderSide(color: AppTheme.borderColor, width: 1),
                 ),
               ),
               child: Text(
                 '开源古籍项目\n让古籍数字化更简单',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      height: 1.6,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(height: 1.6),
               ),
             ),
           ],
@@ -230,10 +211,10 @@ class LayoutShell extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.secondaryGray,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-            ),
+          color: AppTheme.secondaryGray,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }
@@ -246,7 +227,8 @@ class LayoutShell extends StatelessWidget {
     String route,
   ) {
     final currentRoute = GoRouterState.of(context).uri.toString();
-    final isActive = currentRoute == route ||
+    final isActive =
+        currentRoute == route ||
         (route != '/' && currentRoute.startsWith(route));
 
     return ListTile(
@@ -273,28 +255,26 @@ class LayoutShell extends StatelessWidget {
     );
   }
 
-  /// 构建页脚
-  Widget _buildFooter(BuildContext context, bool isMobile) {
+  /// 构建页脚 - 静态方法供其他页面复用
+  static Widget buildFooter(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        border: Border(
-          top: BorderSide(
-            color: AppTheme.borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: AppTheme.borderColor, width: 1)),
       ),
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 16 : 32,
         vertical: isMobile ? 16 : 24,
       ),
-      child: isMobile ? _buildMobileFooter(context) : _buildDesktopFooter(context),
+      child: isMobile
+          ? _buildMobileFooter(context)
+          : _buildDesktopFooter(context),
     );
   }
 
   /// 桌面端页脚布局
-  Widget _buildDesktopFooter(BuildContext context) {
+  static Widget _buildDesktopFooter(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,18 +288,14 @@ class LayoutShell extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.book,
-                    color: AppTheme.vermilionRed,
-                    size: 20,
-                  ),
+                  Icon(Icons.book, color: AppTheme.vermilionRed, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     '开源古籍',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ],
               ),
@@ -327,9 +303,9 @@ class LayoutShell extends StatelessWidget {
               Text(
                 '让古籍数字化更简单，让传统文化触手可及',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.secondaryGray,
-                      height: 1.6,
-                    ),
+                  color: AppTheme.secondaryGray,
+                  height: 1.6,
+                ),
               ),
             ],
           ),
@@ -342,13 +318,21 @@ class LayoutShell extends StatelessWidget {
             children: [
               Text(
                 '快速链接',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              _buildFooterLink(context, '项目源码', 'https://github.com/sheldonlidev/kaiyuanguji'),
-              _buildFooterLink(context, '问题反馈', 'https://github.com/sheldonlidev/kaiyuanguji/issues'),
+              _buildFooterLink(
+                context,
+                '项目源码',
+                'https://github.com/sheldonlidev/kaiyuanguji',
+              ),
+              _buildFooterLink(
+                context,
+                '问题反馈',
+                'https://github.com/sheldonlidev/kaiyuanguji/issues',
+              ),
             ],
           ),
         ),
@@ -360,16 +344,16 @@ class LayoutShell extends StatelessWidget {
             children: [
               Text(
                 '© ${DateTime.now().year} 开源古籍项目',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.secondaryGray,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppTheme.secondaryGray),
               ),
               const SizedBox(height: 4),
               Text(
                 '基于 Flutter Web 构建',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.secondaryGray,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppTheme.secondaryGray),
               ),
             ],
           ),
@@ -379,25 +363,21 @@ class LayoutShell extends StatelessWidget {
   }
 
   /// 移动端页脚布局
-  Widget _buildMobileFooter(BuildContext context) {
+  static Widget _buildMobileFooter(BuildContext context) {
     return Column(
       children: [
         // 项目信息
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.book,
-              color: AppTheme.vermilionRed,
-              size: 18,
-            ),
+            Icon(Icons.book, color: AppTheme.vermilionRed, size: 18),
             const SizedBox(width: 6),
             Text(
               '开源古籍',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
             ),
           ],
         ),
@@ -405,9 +385,9 @@ class LayoutShell extends StatelessWidget {
         Text(
           '让古籍数字化更简单，让传统文化触手可及',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.secondaryGray,
-                height: 1.6,
-              ),
+            color: AppTheme.secondaryGray,
+            height: 1.6,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
@@ -416,9 +396,17 @@ class LayoutShell extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildFooterLink(context, '项目源码', 'https://github.com/sheldonlidev/kaiyuanguji'),
+            _buildFooterLink(
+              context,
+              '项目源码',
+              'https://github.com/sheldonlidev/kaiyuanguji',
+            ),
             const SizedBox(width: 16),
-            _buildFooterLink(context, '问题反馈', 'https://github.com/sheldonlidev/kaiyuanguji/issues'),
+            _buildFooterLink(
+              context,
+              '问题反馈',
+              'https://github.com/sheldonlidev/kaiyuanguji/issues',
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -426,17 +414,17 @@ class LayoutShell extends StatelessWidget {
         // 版权信息
         Text(
           '© ${DateTime.now().year} 开源古籍项目',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.secondaryGray,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.secondaryGray),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 2),
         Text(
           '基于 Flutter Web 构建',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.secondaryGray,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.secondaryGray),
           textAlign: TextAlign.center,
         ),
       ],
@@ -444,7 +432,11 @@ class LayoutShell extends StatelessWidget {
   }
 
   /// 页脚链接
-  Widget _buildFooterLink(BuildContext context, String label, String url) {
+  static Widget _buildFooterLink(
+    BuildContext context,
+    String label,
+    String url,
+  ) {
     return InkWell(
       onTap: () {
         // 显示外部链接提示
@@ -458,9 +450,9 @@ class LayoutShell extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.vermilionRed,
-              decoration: TextDecoration.underline,
-            ),
+          color: AppTheme.vermilionRed,
+          decoration: TextDecoration.underline,
+        ),
       ),
     );
   }

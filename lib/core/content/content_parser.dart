@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'content_model.dart';
 
 /// 内容解析器
@@ -29,13 +31,10 @@ class ContentParser {
       title: metadata?['title'] as String? ?? defaultTitle ?? '无标题',
       content: content,
       metadata: metadata,
-      author: metadata?['author'] as String?,
       createdAt: metadata?['date'] != null
           ? _parseDate(metadata!['date'] as String)
           : null,
-      tags: metadata?['tags'] != null
-          ? _parseTags(metadata!['tags'])
-          : null,
+      tags: metadata?['tags'] != null ? _parseTags(metadata!['tags']) : null,
     );
   }
 
@@ -47,10 +46,7 @@ class ContentParser {
 
     // 检查是否以 --- 开头
     if (lines.isEmpty || lines.first.trim() != _frontmatterDelimiter) {
-      return {
-        'metadata': null,
-        'content': rawContent,
-      };
+      return {'metadata': null, 'content': rawContent};
     }
 
     // 查找第二个 ---
@@ -64,10 +60,7 @@ class ContentParser {
 
     // 如果没有找到结束标记，视为没有 Frontmatter
     if (endIndex == -1) {
-      return {
-        'metadata': null,
-        'content': rawContent,
-      };
+      return {'metadata': null, 'content': rawContent};
     }
 
     // 提取 Frontmatter 部分
@@ -78,10 +71,7 @@ class ContentParser {
     final contentLines = lines.sublist(endIndex + 1);
     final content = contentLines.join('\n').trim();
 
-    return {
-      'metadata': metadata,
-      'content': content,
-    };
+    return {'metadata': metadata, 'content': content};
   }
 
   /// 解析 Frontmatter 行为 Map
