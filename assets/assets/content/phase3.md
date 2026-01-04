@@ -1,6 +1,5 @@
 ---
 title: 第三阶段：AI 辅助 OCR 提速
-author: 开源古籍团队
 tags: [AI, OCR, 机器学习]
 ---
 
