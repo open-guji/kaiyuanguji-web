@@ -57,4 +57,4 @@ tags: [排版, LaTeX, Flutter]
 
 ---
 
-[← 返回首页](/) | [下一阶段：校对工具集 →](/read/phase2)
+[← 返回首页](/) | [下一板块：信息提取 →](/read/extraction)

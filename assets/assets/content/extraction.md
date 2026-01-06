@@ -57,4 +57,4 @@ tags: [AI, OCR, 机器学习]
 
 ---
 
-[← 上一阶段：排版支持](/read/phase1) | [下一阶段：AI OCR →](/read/phase3)
+[← 上一板块：专业排版](/read/typesetting) | [下一板块：校对工具 →](/read/toolkit)
