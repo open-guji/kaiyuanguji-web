@@ -81,11 +81,9 @@ class LayoutShell extends StatelessWidget {
   /// 桌面端导航按钮
   List<Widget> _buildDesktopActions(BuildContext context) {
     return [
-      _buildNavButton(context, '排版', '/read/phase1'),
-      _buildNavButton(context, '校对', '/read/phase2'),
-      _buildNavButton(context, 'OCR', '/read/phase3'),
-      _buildNavButton(context, '共享', '/read/phase4'),
-      _buildNavButton(context, '图谱', '/read/phase5'),
+      _buildNavButton(context, '首页', '/'),
+      _buildNavButton(context, '古籍助手', '/assistant'),
+      _buildNavButton(context, '路线图', '/roadmap'),
       const SizedBox(width: 16),
     ];
   }
@@ -156,28 +154,13 @@ class LayoutShell extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   _buildDrawerItem(context, Icons.home, '首页', '/'),
-                  const Divider(height: 1),
-                  _buildDrawerSectionHeader(context, '项目路线图'),
                   _buildDrawerItem(
                     context,
-                    Icons.text_format,
-                    '排版',
-                    '/read/phase1',
+                    Icons.auto_awesome,
+                    '古籍助手',
+                    '/assistant',
                   ),
-                  _buildDrawerItem(context, Icons.edit, '校对', '/read/phase2'),
-                  _buildDrawerItem(
-                    context,
-                    Icons.document_scanner,
-                    'OCR',
-                    '/read/phase3',
-                  ),
-                  _buildDrawerItem(context, Icons.share, '共享', '/read/phase4'),
-                  _buildDrawerItem(
-                    context,
-                    Icons.account_tree,
-                    '图谱',
-                    '/read/phase5',
-                  ),
+                  _buildDrawerItem(context, Icons.map, '路线图', '/roadmap'),
                 ],
               ),
             ),
@@ -199,21 +182,6 @@ class LayoutShell extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  /// 抽屉菜单分组标题
-  Widget _buildDrawerSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppTheme.secondaryGray,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.0,
         ),
       ),
     );

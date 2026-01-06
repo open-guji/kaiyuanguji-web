@@ -217,7 +217,7 @@ class _ReaderPageState extends State<ReaderPage> {
                     selectable: true,
                     onTapLink: (text, href, title) {
                       if (href != null) {
-                        // 处理内部链接
+                        // 处理内部页面链接
                         if (href.startsWith('/')) {
                           context.go(href);
                         } else if (href.startsWith('http://') ||
@@ -226,6 +226,10 @@ class _ReaderPageState extends State<ReaderPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('外部链接: $href')),
                           );
+                        } else {
+                          // 处理相对链接（通常是跳转到另一个 Markdown 文件）
+                          // 例如 [第一阶段](phase1) -> /read/phase1
+                          context.go('/read/$href');
                         }
                       }
                     },

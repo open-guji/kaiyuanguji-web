@@ -141,7 +141,7 @@ class _HeroSection extends StatelessWidget {
                     alignment: WrapAlignment.center,
                     children: [
                       ElevatedButton(
-                        onPressed: () => context.go('/read/phase1'),
+                        onPressed: () => context.go('/roadmap'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 40,
@@ -151,7 +151,7 @@ class _HeroSection extends StatelessWidget {
                         child: const Text('开始探索'),
                       ),
                       OutlinedButton(
-                        onPressed: () => context.go('/read/phase4'),
+                        onPressed: () => context.go('/assistant'),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 40,
@@ -160,7 +160,7 @@ class _HeroSection extends StatelessWidget {
                           side: const BorderSide(color: AppTheme.vermilionRed),
                           foregroundColor: AppTheme.vermilionRed,
                         ),
-                        child: const Text('了解愿景'),
+                        child: const Text('开发工具'),
                       ),
                     ],
                   ),
@@ -500,21 +500,16 @@ class _ExploreSection extends StatelessWidget {
             children: [
               _buildExploreButton(
                 context,
-                '阅读示例',
-                Icons.menu_book,
-                '/read/phase1',
+                '古籍助手',
+                Icons.auto_awesome,
+                '/assistant',
               ),
-              _buildExploreButton(
-                context,
-                '对勘工具',
-                Icons.compare,
-                '/read/phase3',
-              ),
+              _buildExploreButton(context, '路线图', Icons.map, '/roadmap'),
               _buildExploreButton(
                 context,
                 '项目源码',
                 Icons.code,
-                'https://github.com',
+                'https://github.com/sheldonlidev/kaiyuanguji',
               ),
             ],
           ),

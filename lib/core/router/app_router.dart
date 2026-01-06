@@ -10,6 +10,8 @@ class AppRouter {
 
   /// 路由路径常量
   static const String home = '/';
+  static const String assistant = '/assistant';
+  static const String roadmap = '/roadmap';
   static const String reader = '/read';
 
   /// 创建路由配置
@@ -22,6 +24,21 @@ class AppRouter {
           path: home,
           name: 'home',
           builder: (context, state) => const HomePage(),
+        ),
+
+        // 古籍助手
+        GoRoute(
+          path: assistant,
+          name: 'assistant',
+          builder: (context, state) => const ReaderPage(filename: 'assistant'),
+        ),
+
+        // 路线图
+        GoRoute(
+          path: roadmap,
+          name: 'roadmap',
+          builder: (context, state) =>
+              const ReaderPage(filename: 'roadmap_overview'),
         ),
 
         // 阅读页面（带参数）
