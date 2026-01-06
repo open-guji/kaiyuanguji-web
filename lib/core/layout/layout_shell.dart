@@ -113,10 +113,7 @@ class LayoutShell extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: TextButton(
         onPressed: () {
-          // 如果当前在首页且有滚动回调，执行滚动
-          if (currentRoute == '/' && onTap != null) {
-            onTap();
-          } else if (route.startsWith('#')) {
+          if (route.startsWith('#')) {
             // 如果是锚点，跳回首页并尝试滚动
             context.go('/');
             if (onTap != null) {
@@ -124,7 +121,7 @@ class LayoutShell extends StatelessWidget {
               Future.delayed(const Duration(milliseconds: 300), onTap);
             }
           } else {
-            // 否则跳转到对应页面
+            // 直接跳转到对应页面
             context.go(route);
           }
         },
@@ -263,10 +260,7 @@ class LayoutShell extends StatelessWidget {
       onTap: () {
         Navigator.of(context).pop(); // 先关闭抽屉
 
-        // 如果当前在首页且有滚动回调，执行滚动
-        if (currentRoute == '/' && onTap != null) {
-          onTap();
-        } else if (route.startsWith('#')) {
+        if (route.startsWith('#')) {
           // 如果是锚点，跳回首页并尝试滚动
           context.go('/');
           if (onTap != null) {
@@ -274,7 +268,7 @@ class LayoutShell extends StatelessWidget {
             Future.delayed(const Duration(milliseconds: 300), onTap);
           }
         } else {
-          // 否则跳转到对应页面
+          // 直接跳转到对应页面
           context.go(route);
         }
       },
