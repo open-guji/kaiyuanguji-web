@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/theme/app_theme.dart';
 import 'section_header.dart';
 
@@ -66,7 +67,12 @@ class AssistantSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 40),
                 ElevatedButton(
-                  onPressed: () => context.go('/assistant'),
+                  onPressed: () async {
+                    final uri = Uri.parse('https://toolkit.kaiyuanguji.com/');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.inkBlack,
                     foregroundColor: Colors.white,
@@ -79,7 +85,7 @@ class AssistantSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('立即试用'),
+                  child: const Text('立即使用'),
                 ),
               ],
             ),

@@ -36,38 +36,4 @@ class ContentLoader {
     return loadAsset('content/$file');
   }
 
-  /// 批量加载多个内容文件
-  ///
-  /// [filenames] 文件名列表
-  /// 返回 Map，key 为文件名，value 为内容
-  static Future<Map<String, String>> loadMultipleContents(
-    List<String> filenames,
-  ) async {
-    final results = <String, String>{};
-
-    for (final filename in filenames) {
-      try {
-        final content = await loadContent(filename);
-        results[filename] = content;
-      } catch (e) {
-        // 记录错误但继续加载其他文件
-        print('加载文件 $filename 失败: $e');
-      }
-    }
-
-    return results;
-  }
-
-  /// 检查文件是否存在
-  ///
-  /// 注意：由于 Flutter 的限制，这个方法通过尝试加载文件来判断
-  /// 如果文件不存在会返回 false
-  static Future<bool> exists(String path) async {
-    try {
-      await loadAsset(path);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 }

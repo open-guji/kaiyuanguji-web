@@ -24,30 +24,6 @@ class ContentModel {
     this.tags,
   });
 
-  /// 从 Map 创建 ContentModel
-  factory ContentModel.fromMap(Map<String, dynamic> map) {
-    return ContentModel(
-      title: map['title'] as String? ?? '无标题',
-      content: map['content'] as String? ?? '',
-      metadata: map['metadata'] as Map<String, dynamic>?,
-      createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'] as String)
-          : null,
-      tags: map['tags'] != null ? List<String>.from(map['tags'] as List) : null,
-    );
-  }
-
-  /// 转换为 Map
-  Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'content': content,
-      'metadata': metadata,
-      'createdAt': createdAt?.toIso8601String(),
-      'tags': tags,
-    };
-  }
-
   /// 创建副本
   ContentModel copyWith({
     String? title,

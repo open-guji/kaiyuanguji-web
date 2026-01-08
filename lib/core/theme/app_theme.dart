@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 应用主题配置
 /// 实现古籍风格的视觉设计系统
 class AppTheme {
   // 禁止实例化
   AppTheme._();
+
+  // 字体栈：优先使用系统自带的宋体，实现快速加载且零网络依赖
+  static const List<String> fontFallbacks = [
+    'SimSun',
+    'Songti SC',
+    'STSong',
+    'Noto Serif SC',
+    'serif',
+  ];
 
   /// 宣纸色背景（米黄色，缓解长时间阅读疲劳）
   static const Color paperBackground = Color(0xFFF5F2E9);
@@ -44,76 +52,98 @@ class AppTheme {
         foregroundColor: inkBlack,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.notoSerifSc(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: inkBlack,
           letterSpacing: 2.0,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
       ),
 
-      // 文本主题 - 使用思源宋体（Google Fonts 的 Noto Serif SC）
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.notoSerifSc(
+      // 文本主题 - 使用系统宋体
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: inkBlack,
           height: 1.5,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        displayMedium: GoogleFonts.notoSerifSc(
+        displayMedium: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: inkBlack,
           height: 1.5,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        displaySmall: GoogleFonts.notoSerifSc(
+        displaySmall: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: inkBlack,
           height: 1.5,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        headlineLarge: GoogleFonts.notoSerifSc(
+        headlineLarge: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: inkBlack,
           height: 1.6,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        headlineMedium: GoogleFonts.notoSerifSc(
+        headlineMedium: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: inkBlack,
           height: 1.6,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        headlineSmall: GoogleFonts.notoSerifSc(
+        headlineSmall: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: inkBlack,
           height: 1.6,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        bodyLarge: GoogleFonts.notoSerifSc(
+        bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: inkBlack,
           height: 1.8,
           letterSpacing: 0.5,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        bodyMedium: GoogleFonts.notoSerifSc(
+        bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.normal,
           color: inkBlack,
           height: 1.8,
           letterSpacing: 0.5,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        bodySmall: GoogleFonts.notoSerifSc(
+        bodySmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: secondaryGray,
           height: 1.6,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
-        labelLarge: GoogleFonts.notoSerifSc(
+        labelLarge: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: inkBlack,
+          fontFamily: 'SimSun',
+          fontFamilyFallback: fontFallbacks,
         ),
       ),
 
@@ -150,9 +180,11 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
-          textStyle: GoogleFonts.notoSerifSc(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            fontFamily: 'SimSun',
+            fontFamilyFallback: fontFallbacks,
           ),
         ),
       ),
@@ -160,9 +192,11 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: vermilionRed,
-          textStyle: GoogleFonts.notoSerifSc(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            fontFamily: 'SimSun',
+            fontFamilyFallback: fontFallbacks,
           ),
         ),
       ),
