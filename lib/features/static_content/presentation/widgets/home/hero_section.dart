@@ -117,30 +117,14 @@ class HeroSection extends StatelessWidget {
 class _HeroButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
-  final bool isPrimary;
 
   const _HeroButton({
     required this.onPressed,
     required this.label,
-    this.isPrimary = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isPrimary) {
-      return ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-          backgroundColor: AppTheme.vermilionRed,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Text(label),
-      );
-    }
-
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(

@@ -64,26 +64,6 @@ class AppRouter {
           },
         ),
 
-        // 阅读页面（路径参数版本）
-        // 使用方式: /read/phase1
-        GoRoute(
-          path: '/read/:filename',
-          name: 'reader_path',
-          builder: (context, state) {
-            final filename = state.pathParameters['filename'];
-            final useClassicStyle =
-                state.uri.queryParameters['classic'] == 'true';
-
-            if (filename == null || filename.isEmpty) {
-              return const _ErrorPage(message: '文件名无效');
-            }
-
-            return ReaderPage(
-              filename: filename,
-              useClassicStyle: useClassicStyle,
-            );
-          },
-        ),
       ],
 
       // 错误页面
@@ -102,15 +82,6 @@ class AppRouter {
     context.go(
       '$reader?file=$filename${useClassicStyle ? '&classic=true' : ''}',
     );
-  }
-
-  /// 使用路径参数导航到阅读页面
-  static void goToReaderWithPath(
-    BuildContext context,
-    String filename, {
-    bool useClassicStyle = false,
-  }) {
-    context.go('/read/$filename${useClassicStyle ? '?classic=true' : ''}');
   }
 
   /// 导航到首页

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/theme/app_theme.dart';
 import 'section_header.dart';
 
@@ -58,8 +59,11 @@ class JoinSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Open GitHub
+                  onPressed: () async {
+                    final uri = Uri.parse('https://github.com/sheldonlidev/kaiyuanguji');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
                   },
                   icon: const Icon(Icons.code),
                   label: const Text('关注 GitHub 进展'),
