@@ -55,13 +55,7 @@ class LayoutShell extends StatelessWidget {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.pop(),
             )
-          : (isMobile
-                ? null // 移动端使用默认的 Drawer 按钮
-                : IconButton(
-                    icon: Icon(Icons.book, color: AppTheme.vermilionRed),
-                    onPressed: () => context.go('/'),
-                    tooltip: '返回首页',
-                  )),
+          : null,
       title: isMobile ? _buildLogoText(context) : _buildLogoText(context),
       actions: isMobile ? null : _buildDesktopActions(context),
       bottom: PreferredSize(
@@ -71,17 +65,28 @@ class LayoutShell extends StatelessWidget {
     );
   }
 
-  /// Logo文字组件（仅文字，用于AppBar title）
+  /// Logo组件（图片+文字，用于AppBar title）
   Widget _buildLogoText(BuildContext context) {
     return GestureDetector(
       onTap: () => context.go('/'),
-      child: Text(
-        '开源古籍',
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: AppTheme.inkBlack,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 2.0,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/images/open-guji-logo.png',
+            height: 32,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '开源古籍',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: AppTheme.inkBlack,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2.0,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -158,7 +163,11 @@ class LayoutShell extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.book, color: AppTheme.vermilionRed, size: 32),
+                  Image.asset(
+                    'assets/images/open-guji-logo.png',
+                    height: 32,
+                    fit: BoxFit.contain,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -308,7 +317,11 @@ class LayoutShell extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.book, color: AppTheme.vermilionRed, size: 20),
+                  Image.asset(
+                    'assets/images/open-guji-logo.png',
+                    height: 24,
+                    fit: BoxFit.contain,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     '开源古籍',
@@ -390,7 +403,11 @@ class LayoutShell extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.book, color: AppTheme.vermilionRed, size: 18),
+            Image.asset(
+              'assets/images/open-guji-logo.png',
+              height: 20,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 6),
             Text(
               '开源古籍',
