@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/content/content_loader.dart';
 import '../../../../core/content/content_parser.dart';
 import '../../../../core/content/content_model.dart';
@@ -19,10 +20,14 @@ class ReaderPage extends StatefulWidget {
   /// 是否使用古籍正文样式（更大的字号和行距）
   final bool useClassicStyle;
 
+  /// 是否显示目录
+  final bool showToc;
+
   const ReaderPage({
     super.key,
     required this.filename,
     this.useClassicStyle = false,
+    this.showToc = false,
   });
 
   @override
@@ -153,8 +158,9 @@ class _ReaderPageState extends State<ReaderPage> {
   }
 
   Widget _buildContent() {
-    // 判断是否显示 TOC（桌面端且有目录项）
+    // 判断是否显示 TOC（桌面端且有目录项，且参数指定显示）
     final showToc =
+        widget.showToc &&
         MediaQuery.of(context).size.width >= 1200 &&
         _tocItems.isNotEmpty &&
         _tocItems.length >= 3; // 至少3个标题才显示TOC
@@ -222,14 +228,26 @@ class _ReaderPageState extends State<ReaderPage> {
                           context.go(href);
                         } else if (href.startsWith('http://') ||
                             href.startsWith('https://')) {
-                          // 外部链接显示提示
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('外部链接: $href')),
-                          );
+                          // 外部链接，使用浏览器打开
+                          final uri = Uri.parse(href);
+                          canLaunchUrl(uri).then((canLaunch) {
+                            if (canLaunch) {
+                              launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('无法打开链接: $href')),
+                                );
+                              }
+                            }
+                          });
                         } else {
                           // 处理相对链接（通常是跳转到另一个 Markdown 文件）
-                          // 例如 [第一阶段](phase1) -> /read/phase1
-                          context.go('/read/$href');
+                          // 例如 [第一阶段](phase1) -> /read?file=phase1
+                          context.go('/read?file=$href');
                         }
                       }
                     },

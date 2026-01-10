@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
+  // 移除 URL 中的 # (Hash Strategy)
+  usePathUrlStrategy();
   runApp(const KaiyuanGujiApp());
 }
 

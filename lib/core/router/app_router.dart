@@ -63,7 +63,6 @@ class AppRouter {
             );
           },
         ),
-
       ],
 
       // 错误页面
@@ -79,9 +78,8 @@ class AppRouter {
     String filename, {
     bool useClassicStyle = false,
   }) {
-    context.go(
-      '$reader?file=$filename${useClassicStyle ? '&classic=true' : ''}',
-    );
+    final params = ['file=$filename', if (useClassicStyle) 'classic=true'];
+    context.go('$reader?${params.join('&')}');
   }
 
   /// 导航到首页

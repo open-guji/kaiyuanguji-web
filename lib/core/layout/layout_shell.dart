@@ -356,15 +356,11 @@ class LayoutShell extends StatelessWidget {
                 ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              _buildFooterLink(
-                context,
-                '项目源码',
-                'https://github.com/sheldonlidev/kaiyuanguji',
-              ),
+              _buildFooterLink(context, '项目源码', 'https://github.com/open-guji'),
               _buildFooterLink(
                 context,
                 '问题反馈',
-                'https://github.com/sheldonlidev/kaiyuanguji/issues',
+                'https://github.com/open-guji/kaiyuanguji/issues',
               ),
             ],
           ),
@@ -433,16 +429,12 @@ class LayoutShell extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildFooterLink(
-              context,
-              '项目源码',
-              'https://github.com/sheldonlidev/kaiyuanguji',
-            ),
+            _buildFooterLink(context, '项目源码', 'https://github.com/open-guji'),
             const SizedBox(width: 16),
             _buildFooterLink(
               context,
               '问题反馈',
-              'https://github.com/sheldonlidev/kaiyuanguji/issues',
+              'https://github.com/open-guji/kaiyuanguji/issues',
             ),
           ],
         ),

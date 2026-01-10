@@ -100,4 +100,4 @@ OCR 识别错误: ███████░░░ 38%
 
 ---
 
-[← 上一板块：信息提取](/read/extraction) | [下一板块：储存检索 →](/read/storage)
+[← 上一板块：信息提取](extraction) | [下一板块：储存检索 →](storage)

@@ -109,4 +109,4 @@ tags: [开源, 数据库, 社区]
 
 ---
 
-[← 上一板块：校对工具](/read/toolkit) | [下一板块：智能训练 →](/read/intelligence)
+[← 上一板块：校对工具](toolkit) | [下一板块：智能训练 →](intelligence)

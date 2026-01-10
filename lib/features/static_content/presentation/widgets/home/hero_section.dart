@@ -63,7 +63,7 @@ class HeroSection extends StatelessWidget {
                   Text(
                     '让科技赋予古籍数字生命',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppTheme.secondaryGray,
+                      color: AppTheme.inkBlack.withValues(alpha: 0.9),
                       letterSpacing: 2,
                     ),
                     textAlign: TextAlign.center,
@@ -72,7 +72,7 @@ class HeroSection extends StatelessWidget {
                   Text(
                     '全线软件基于 Apache-2.0 协议开源 · 自由使用 · 共享共建',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.secondaryGray.withValues(alpha: 0.8),
+                      color: AppTheme.secondaryGray,
                       letterSpacing: 1.2,
                       fontStyle: FontStyle.italic,
                     ),
@@ -86,8 +86,9 @@ class HeroSection extends StatelessWidget {
                     child: Text(
                       '通过技术手段推动古籍的数字化、校对及开源存储，构建古籍知识图谱与 AI 模型',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppTheme.inkBlack.withValues(alpha: 0.7),
+                        color: AppTheme.inkBlack,
                         height: 2.0,
+                        fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -118,10 +119,7 @@ class _HeroButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
 
-  const _HeroButton({
-    required this.onPressed,
-    required this.label,
-  });
+  const _HeroButton({required this.onPressed, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +131,14 @@ class _HeroButton extends StatelessWidget {
         foregroundColor: AppTheme.vermilionRed,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      child: Text(label),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 2,
+        ),
+      ),
     );
   }
 }

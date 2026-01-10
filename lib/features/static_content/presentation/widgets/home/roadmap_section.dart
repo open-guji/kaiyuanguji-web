@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/router/app_router.dart';
 import '../../../../../core/theme/app_theme.dart';
 import 'section_header.dart';
 
@@ -163,7 +164,7 @@ class _RoadmapCardState extends State<RoadmapCard> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
-        onTap: () => context.go('/read/${widget.slug}'),
+        onTap: () => AppRouter.goToReader(context, widget.slug),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(

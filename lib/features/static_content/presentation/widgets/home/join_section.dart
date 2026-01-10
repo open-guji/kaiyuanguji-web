@@ -60,9 +60,12 @@ class JoinSection extends StatelessWidget {
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    final uri = Uri.parse('https://github.com/sheldonlidev/kaiyuanguji');
+                    final uri = Uri.parse('https://github.com/open-guji');
                     if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     }
                   },
                   icon: const Icon(Icons.code),
