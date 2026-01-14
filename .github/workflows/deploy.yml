@@ -21,7 +21,7 @@ jobs:
 
       # --- 步骤 1：为 GitHub Pages 构建 ---
       - name: Build for GitHub Pages
-        run: flutter build web --release --base-href "/kaiyuanguji/" --output build/gh-pages
+        run: flutter build web --release --base-href "/kaiyuanguji-web/" --output build/gh-pages
 
       # --- 步骤 2：为 EdgeOne 构建 ---
       - name: Build for EdgeOne
