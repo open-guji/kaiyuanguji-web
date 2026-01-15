@@ -98,7 +98,7 @@ title: 开源古籍
 
 - [查看板块一：古籍排版](typesetting)
 - [查看板块三：工具箱](toolkit)
-- [查看项目源码](https://github.com/open-guji)
+- [查看项目源码](https://github.com/open-guji/kaiyuanguji-web)
 
 ---
 

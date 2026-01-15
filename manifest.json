@@ -1,6 +1,6 @@
 {
-    "name": "kaiyuanguji",
-    "short_name": "kaiyuanguji",
+    "name": "kaiyuanguji-web",
+    "short_name": "kaiyuanguji-web",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
