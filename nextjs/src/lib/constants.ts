@@ -1,0 +1,72 @@
+/**
+ * 应用常量
+ */
+
+// 网站信息
+export const SITE_NAME = "开源古籍";
+export const SITE_DESCRIPTION =
+  "开源古籍项目通过技术手段推动古籍的数字化、校对及开源存储，致力于让传统文化触手可及。";
+
+// GitHub 仓库地址
+export const GITHUB_ORG = "open-guji";
+export const GITHUB_BOOK_INDEX_DRAFT = `https://raw.githubusercontent.com/${GITHUB_ORG}/book-index-draft/main/index.json`;
+export const GITHUB_BOOK_INDEX = `https://raw.githubusercontent.com/${GITHUB_ORG}/book-index/main/index.json`;
+
+// 导航菜单
+export const NAV_ITEMS = [
+  { label: "首页", href: "/" },
+  { label: "路线图", href: "/roadmap" },
+  { label: "古籍助手", href: "/assistant" },
+  { label: "古籍索引", href: "/book-index" },
+  {
+    label: "参与开发",
+    href: "https://github.com/open-guji",
+    isExternal: true,
+  },
+];
+
+// 路线图模块
+export const ROADMAP_MODULES = [
+  {
+    id: "typesetting",
+    title: "古籍排版",
+    description: "基于 LaTeX/typst 的古籍排版工具",
+    image: "/images/typesetting.png",
+    href: "/read/typesetting",
+  },
+  {
+    id: "extraction",
+    title: "信息提取",
+    description: "OCR 与版面分析技术",
+    image: "/images/ocr.png",
+    href: "/read/extraction",
+  },
+  {
+    id: "toolkit",
+    title: "数字化工具箱",
+    description: "古籍数字化辅助工具",
+    image: "/images/toolkit.png",
+    href: "/read/toolkit",
+  },
+  {
+    id: "storage",
+    title: "开源存储",
+    description: "古籍资源的开源存储与检索",
+    image: "/images/toolkit.png",
+    href: "/read/storage",
+  },
+  {
+    id: "intelligence",
+    title: "知识图谱与 AI",
+    description: "古籍知识图谱与大语言模型",
+    image: "/images/intelligence.png",
+    href: "/read/intelligence",
+  },
+];
+
+// 资源类型标签
+export const RESOURCE_TYPE_LABELS: Record<string, string> = {
+  work: "作品",
+  collection: "丛编",
+  book: "书",
+};
