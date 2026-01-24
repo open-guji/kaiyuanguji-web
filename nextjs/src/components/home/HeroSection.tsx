@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HeroSection() {
   const buttons = [
@@ -27,19 +28,23 @@ export default function HeroSection() {
                  h-[500px] md:h-[600px]
                  bg-paper"
     >
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 opacity-60 bg-center bg-cover"
-        style={{ backgroundImage: 'url(/images/hero.png)' }}
+      {/* Background Image Optimized */}
+      <Image
+        src="/images/hero.png"
+        alt="Hero Background"
+        fill
+        priority
+        className="object-cover opacity-60 pointer-events-none"
+        quality={90}
       />
 
       {/* Subtle Overlay to ensure text readability */}
-      <div className="absolute inset-0 bg-paper/30" />
+      <div className="absolute inset-0 bg-paper/30 pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 max-w-[1000px] w-full flex flex-col items-center gap-6 text-center">
         {/* Main Title */}
-        <h1 className="text-5xl md:text-7xl font-bold text-ink tracking-[10px]">
+        <h1 className="text-5xl md:text-7xl font-bold text-ink tracking-[4px] md:tracking-[10px]">
           开源古籍
         </h1>
 

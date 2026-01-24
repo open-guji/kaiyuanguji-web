@@ -27,8 +27,9 @@ export default function CopyButton({ text, label }: CopyButtonProps) {
                 onClick={handleCopy}
                 className="flex items-center gap-1.5 px-2 py-1 rounded bg-paper/50 hover:bg-border/30 
                    text-secondary hover:text-vermilion transition-all duration-200 
-                   border border-border/40 group"
+                   border border-border/40 group focus:ring-2 focus:ring-vermilion/20 focus:outline-none"
                 title={`复制 ${label || '内容'}`}
+                aria-label={copied ? '已复制' : `复制 ${label ? `${label}: ` : ''}${text}`}
             >
                 <span className="font-mono text-secondary/80 group-hover:text-vermilion transition-colors">
                     {text}

@@ -10,7 +10,7 @@
   --color-border: #D4CFC0;
 
   /* 字体 */
-  --font-serif: "SimSun", "Songti SC", "STSong", "Noto Serif SC", serif;
+  --font-serif: var(--font-noto-serif), "SimSun", "Songti SC", "STSong", "Noto Serif SC", serif;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
 
