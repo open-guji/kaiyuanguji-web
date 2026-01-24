@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/static_content/presentation/pages/home_page.dart';
 import '../../features/static_content/presentation/pages/reader_page.dart';
+import '../../features/book_index/presentation/pages/book_index_page.dart';
+import '../../features/book_index/presentation/pages/book_detail_page.dart';
 
 /// 应用路由配置
 class AppRouter {
@@ -13,6 +15,7 @@ class AppRouter {
   static const String assistant = '/assistant';
   static const String roadmap = '/roadmap';
   static const String reader = '/read';
+  static const String bookIndex = '/book-index';
 
   /// 创建路由配置
   static GoRouter createRouter() {
@@ -61,6 +64,29 @@ class AppRouter {
               filename: filename,
               useClassicStyle: useClassicStyle,
             );
+          },
+        ),
+
+        // 古籍索引首页
+        GoRoute(
+          path: bookIndex,
+          name: 'bookIndex',
+          builder: (context, state) => const BookIndexPage(),
+        ),
+
+        // 古籍详情页
+        // 使用方式: /book-index/CX8nMA93gxX
+        GoRoute(
+          path: '$bookIndex/:id',
+          name: 'bookDetail',
+          builder: (context, state) {
+            final id = state.pathParameters['id'];
+            if (id == null || id.isEmpty) {
+              return const _ErrorPage(
+                message: '请指定古籍ID',
+              );
+            }
+            return BookDetailPage(bookId: id);
           },
         ),
       ],

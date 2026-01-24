@@ -98,6 +98,7 @@ class LayoutShell extends StatelessWidget {
       _buildNavButton(context, '首页', '/'),
       _buildNavButton(context, '路线图', '/roadmap', onTap: onRoadmapTap),
       _buildNavButton(context, '古籍助手', '/assistant', onTap: onAssistantTap),
+      _buildNavButton(context, '古籍索引', '/book-index'),
       _buildNavButton(context, '参与开发', '#join', onTap: onJoinTap),
       const SizedBox(width: 16),
     ];
@@ -203,6 +204,12 @@ class LayoutShell extends StatelessWidget {
                     '古籍助手',
                     '/assistant',
                     onTap: onAssistantTap,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.library_books,
+                    '古籍索引',
+                    '/book-index',
                   ),
                   _buildDrawerItem(
                     context,

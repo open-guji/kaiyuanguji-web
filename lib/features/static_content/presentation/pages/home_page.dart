@@ -3,6 +3,7 @@ import '../../../../core/layout/layout_shell.dart';
 import '../widgets/home/hero_section.dart';
 import '../widgets/home/roadmap_section.dart';
 import '../widgets/home/assistant_section.dart';
+import '../widgets/home/book_index_section.dart';
 import '../widgets/home/join_section.dart';
 
 /// 首页
@@ -74,6 +75,7 @@ class _HomePageState extends State<HomePage>
               ),
               RoadmapSection(key: _roadmapKey),
               AssistantSection(key: _assistantKey),
+              const BookIndexSection(),
               JoinSection(key: _joinKey),
               LayoutShell.buildFooter(context),
             ],
