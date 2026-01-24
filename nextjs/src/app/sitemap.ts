@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES } from '@/lib/constants';
 import { fetchAllBooks } from '@/services/bookIndex';
 
-export const revalidate = 3600; // 1 hour
+export const dynamic = 'force-static';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const lastModified = new Date();

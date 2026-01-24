@@ -3,6 +3,8 @@ import MarkdownPage from '@/components/markdown/MarkdownPage';
 import { getMarkdownContent, extractTOC } from '@/lib/markdown';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import fs from 'fs';
+import path from 'path';
 
 interface ReadPageProps {
   params: Promise<{ filename: string }>;
@@ -40,6 +42,21 @@ export async function generateMetadata({
         canonical: `/read/${filename}`,
       },
     };
+  }
+}
+
+export async function generateStaticParams() {
+  const contentDir = path.join(process.cwd(), 'public/content');
+  try {
+    const files = fs.readdirSync(contentDir);
+    return files
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => ({
+        filename: file,
+      }));
+  } catch (error) {
+    console.error('Failed to read content directory for static params:', error);
+    return [];
   }
 }
 

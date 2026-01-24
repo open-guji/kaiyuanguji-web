@@ -1,6 +1,6 @@
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer';
-import { findBookById, fetchBookContent, getTypeLabel, getStatusLabel } from '@/services/bookIndex';
+import { findBookById, fetchBookContent, getTypeLabel, getStatusLabel, fetchAllBooks } from '@/services/bookIndex';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -41,6 +41,18 @@ export async function generateMetadata({
         canonical: `/book-index/${id}`,
       },
     };
+  }
+}
+
+export async function generateStaticParams() {
+  try {
+    const books = await fetchAllBooks();
+    return books.map((book) => ({
+      id: book.id,
+    }));
+  } catch (error) {
+    console.error('Failed to generate static params for books:', error);
+    return [];
   }
 }
 
