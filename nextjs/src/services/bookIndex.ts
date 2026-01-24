@@ -1,7 +1,7 @@
 import { BookIndexItem, BookResourceType, BookIndexResponse } from '@/types';
 import {
   DataSource,
-  GITHUB_BOOK_INDEX, GITHUB_BOOK_INDEX_DRAFT, GITHUB_BASE, GITHUB_ORG,
+  GITHUB_BOOK_INDEX, GITHUB_BOOK_INDEX_DRAFT, JSDELIVR_FASTLY, JSDELIVR_CDN, GITHUB_ORG,
   GITEE_BOOK_INDEX, GITEE_BOOK_INDEX_DRAFT, GITEE_BASE, GITEE_ORG
 } from '@/lib/constants';
 
@@ -64,13 +64,27 @@ export async function fetchAllBooks(source: DataSource = 'github'): Promise<Book
   }
 
   const allItems: BookIndexItem[] = [];
-  const urls = source === 'github'
-    ? { draft: GITHUB_BOOK_INDEX_DRAFT, official: GITHUB_BOOK_INDEX }
-    : { draft: GITEE_BOOK_INDEX_DRAFT, official: GITEE_BOOK_INDEX };
+
+  // 定义获取函数：支持重试
+  const fetchWithFallback = async (isDraft: boolean) => {
+    // 无论 source 是 github 还是 gitee，统一使用 jsDelivr 加速 GitHub 源
+    // 因为 Gitee OpenAPI 和 Raw 访问均不稳定
+    const repo = isDraft ? 'book-index-draft' : 'book-index';
+    const branch = 'main';
+    const fastlyUrl = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/${repo}@${branch}/index.json`;
+    const cdnUrl = `${JSDELIVR_CDN}/${GITHUB_ORG}/${repo}@${branch}/index.json`;
+
+    try {
+      return await fetchIndexFromSource(fastlyUrl, isDraft);
+    } catch (err) {
+      console.warn('Fastly index fetch failed, trying fallback:', err);
+      return await fetchIndexFromSource(cdnUrl, isDraft);
+    }
+  };
 
   // 获取草稿版
   try {
-    const draftItems = await fetchIndexFromSource(urls.draft, true);
+    const draftItems = await fetchWithFallback(true);
     allItems.push(...draftItems);
   } catch (error) {
     console.warn(`Failed to fetch draft index from ${source}:`, error);
@@ -78,7 +92,7 @@ export async function fetchAllBooks(source: DataSource = 'github'): Promise<Book
 
   // 获取正式版
   try {
-    const officialItems = await fetchIndexFromSource(urls.official, false);
+    const officialItems = await fetchWithFallback(false);
     allItems.push(...officialItems);
   } catch (error) {
     console.warn(`Failed to fetch official index from ${source}:`, error);
@@ -107,30 +121,40 @@ export async function findBookById(id: string, source: DataSource = 'github'): P
  * 获取古籍内容（Markdown）
  */
 export async function fetchBookContent(book: BookIndexItem, source: DataSource = 'github'): Promise<string> {
-  let baseUrl = '';
+  // 无论 source 是 github 还是 gitee，统一使用 jsDelivr 加速 GitHub 源
+  const repo = book.isDraft ? 'book-index-draft' : 'book-index';
+  const branch = 'main'; // 假设默认都是 main
 
-  if (source === 'github') {
-    baseUrl = book.isDraft
-      ? `${GITHUB_BASE}/${GITHUB_ORG}/book-index-draft/main`
-      : `${GITHUB_BASE}/${GITHUB_ORG}/book-index/main`;
-  } else {
-    baseUrl = book.isDraft
-      ? `${GITEE_BASE}/${GITEE_ORG}/book-index-draft/raw/main`
-      : `${GITEE_BASE}/${GITEE_ORG}/book-index/raw/main`;
+  // 构造两个 URL: fastly 和 cdn
+  const fastlyUrl = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/${repo}@${branch}/${book.rawPath}`;
+  const cdnUrl = `${JSDELIVR_CDN}/${GITHUB_ORG}/${repo}@${branch}/${book.rawPath}`;
+
+  try {
+    // 尝试 Fastly
+    const response = await fetch(fastlyUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000), // 8秒超时
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fastly status: ${response.status}`);
+    }
+    return await response.text();
+
+  } catch (error) {
+    console.warn('Fastly fetch failed, trying fallback CDN:', error);
+
+    // 失败切换到普通 CDN
+    const response = await fetch(cdnUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch book content from CDN: ${response.statusText}`);
+    }
+    return await response.text();
   }
-
-  const url = `${baseUrl}/${book.rawPath}`;
-
-  const response = await fetch(url, {
-    cache: 'no-store',
-    signal: AbortSignal.timeout(10000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch book content from ${source}: ${response.statusText}`);
-  }
-
-  return response.text();
 }
 
 /**
