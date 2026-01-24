@@ -10,7 +10,6 @@ const navItems = [
   { label: '路线图', href: '/roadmap', icon: '🗺️' },
   { label: '古籍助手', href: '/assistant', icon: '✨' },
   { label: '古籍索引', href: '/book-index', icon: '📚' },
-  { label: '参与开发', href: '#join', icon: '🔧' },
 ];
 
 interface MobileDrawerProps {
@@ -117,10 +116,9 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 className={`
                   flex items-center gap-3 px-6 py-3 text-sm tracking-wide
                   transition-colors border-l-4
-                  ${
-                    active
-                      ? 'border-vermilion text-vermilion font-bold bg-vermilion/5'
-                      : 'border-transparent text-ink hover:text-vermilion hover:bg-border/20'
+                  ${active
+                    ? 'border-vermilion text-vermilion font-bold bg-vermilion/5'
+                    : 'border-transparent text-ink hover:text-vermilion hover:bg-border/20'
                   }
                 `}
               >

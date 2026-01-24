@@ -20,11 +20,6 @@ export const NAV_ITEMS = [
   { label: "路线图", href: "/roadmap" },
   { label: "古籍助手", href: "/assistant" },
   { label: "古籍索引", href: "/book-index" },
-  {
-    label: "参与开发",
-    href: "https://github.com/open-guji",
-    isExternal: true,
-  },
 ];
 
 // 路线图模块
@@ -34,35 +29,35 @@ export const ROADMAP_MODULES = [
     title: "古籍排版",
     description: "基于 LaTeX/typst 的古籍排版工具",
     image: "/images/typesetting.png",
-    href: "/read/typesetting",
+    href: "/typesetting",
   },
   {
     id: "extraction",
     title: "信息提取",
     description: "OCR 与版面分析技术",
     image: "/images/ocr.png",
-    href: "/read/extraction",
+    href: "/extraction",
   },
   {
     id: "toolkit",
     title: "数字化工具箱",
     description: "古籍数字化辅助工具",
     image: "/images/toolkit.png",
-    href: "/read/toolkit",
+    href: "/toolkit",
   },
   {
     id: "storage",
     title: "开源存储",
     description: "古籍资源的开源存储与检索",
     image: "/images/toolkit.png",
-    href: "/read/storage",
+    href: "/storage",
   },
   {
     id: "intelligence",
     title: "知识图谱与 AI",
     description: "古籍知识图谱与大语言模型",
     image: "/images/intelligence.png",
-    href: "/read/intelligence",
+    href: "/intelligence",
   },
 ];
 

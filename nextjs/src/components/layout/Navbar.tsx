@@ -10,7 +10,6 @@ const navItems = [
   { label: '路线图', href: '/roadmap' },
   { label: '古籍助手', href: '/assistant' },
   { label: '古籍索引', href: '/book-index' },
-  { label: '参与开发', href: '#join' },
 ];
 
 interface NavbarProps {
@@ -65,10 +64,9 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
                 onClick={(e) => handleAnchorClick(e, item.href)}
                 className={`
                   px-4 py-2 text-sm tracking-wide transition-colors rounded-md
-                  ${
-                    isActive(item.href)
-                      ? 'text-vermilion font-bold'
-                      : 'text-ink hover:text-vermilion'
+                  ${isActive(item.href)
+                    ? 'text-vermilion font-bold'
+                    : 'text-ink hover:text-vermilion'
                   }
                 `}
               >

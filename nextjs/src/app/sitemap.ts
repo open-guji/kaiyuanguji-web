@@ -15,12 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: item.href === '/' ? 1 : 0.8,
     }));
 
-    // 2. 路线图详情页
+    // 2. 路线图模块页 (已简化为一级目录)
     const roadmapRoutes = ROADMAP_MODULES.map((module) => ({
         url: `${SITE_URL}${module.href}`,
         lastModified,
         changeFrequency: 'monthly' as const,
-        priority: 0.7,
+        priority: 0.8,
     }));
 
     // 3. 古籍详情页 (从 GitHub 获取)
