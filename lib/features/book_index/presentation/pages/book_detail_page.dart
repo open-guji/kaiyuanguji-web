@@ -55,7 +55,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       if (!mounted) return;
 
       // 更新浏览器标签标题
-      setPageTitle('${item.name} - 开源古籍');
+      setPageTitle(item.name);
 
       setState(() {
         _bookItem = item;

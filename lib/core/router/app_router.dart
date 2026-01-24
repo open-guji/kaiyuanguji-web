@@ -17,14 +17,11 @@ class AppRouter {
   static const String reader = '/read';
   static const String bookIndex = '/book-index';
 
-  /// 基础标题
-  static const String _baseTitle = '开源古籍';
-
   /// 创建带标题的页面
   static Page<void> _buildPage(Widget child, String title) {
     return MaterialPage(
       child: Title(
-        title: '$title - $_baseTitle',
+        title: title,
         color: const Color(0xFF8B0000),
         child: child,
       ),
@@ -118,10 +115,10 @@ class AppRouter {
                 '错误',
               );
             }
-            // 详情页标题会在页面加载后动态更新
+            // 详情页标题会在页面加载后动态更新为书名
             return _buildPage(
               BookDetailPage(bookId: id),
-              '加载中...',
+              '古籍详情',
             );
           },
         ),

@@ -87,7 +87,7 @@ class _ReaderPageState extends State<ReaderPage> {
       final tocItems = TocExtractor.extractToc(content.content);
 
       // 更新浏览器标签标题
-      setPageTitle('$finalTitle - 开源古籍');
+      setPageTitle(finalTitle);
 
       setState(() {
         _content = content.copyWith(title: finalTitle);
