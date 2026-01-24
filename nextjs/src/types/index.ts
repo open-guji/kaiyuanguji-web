@@ -1,48 +1,46 @@
-/**
- * 古籍资源类型
- */
-export type BookResourceType = "work" | "collection" | "book";
+// 古籍索引类型定义
 
-/**
- * 古籍索引项
- */
+export enum BookResourceType {
+  WORK = 'work',           // 作品
+  COLLECTION = 'collection', // 丛编
+  BOOK = 'book',           // 书
+}
+
 export interface BookIndexItem {
-  id: string;
-  name: string;
-  type: BookResourceType;
-  isDraft: boolean;
-  rawPath: string;
-  author?: string;
-  collection?: string;
-  year?: string;
-  holder?: string;
+  id: string;              // 唯一ID
+  name: string;            // 古籍名称
+  type: BookResourceType;  // 资源类型
+  isDraft: boolean;        // 是否为草稿
+  rawPath: string;         // GitHub 原始文件路径
+  author?: string;         // 作者
+  collection?: string;     // 收录于
+  year?: string;           // 年份
+  holder?: string;         // 现藏于
 }
 
-/**
- * 内容模型（Markdown 文档）
- */
-export interface ContentModel {
-  title: string;
-  content: string;
-  createdAt?: Date;
-  tags?: string[];
-  author?: string;
-}
-
-/**
- * 目录项
- */
-export interface TocItem {
-  title: string;
-  level: number;
-  index: number;
-}
-
-/**
- * 导航项
- */
-export interface NavItem {
-  label: string;
-  href: string;
-  isExternal?: boolean;
+// GitHub API 返回的 JSON 结构
+export interface BookIndexResponse {
+  books?: Array<{
+    id: string;
+    title: string;
+    path: string;
+    author?: string;
+    collection?: string;
+    year?: string;
+    holder?: string;
+  }>;
+  collections?: Array<{
+    id: string;
+    title: string;
+    path: string;
+    author?: string;
+    year?: string;
+  }>;
+  works?: Array<{
+    id: string;
+    title: string;
+    path: string;
+    author?: string;
+    year?: string;
+  }>;
 }

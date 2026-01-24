@@ -1,4 +1,6 @@
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import MarkdownPage from '@/components/markdown/MarkdownPage';
+import { getMarkdownContent, extractTOC } from '@/lib/markdown';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,13 +8,13 @@ export const metadata: Metadata = {
   description: '智能古籍助手，帮助你更好地理解和学习古籍。',
 };
 
-export default function AssistantPage() {
+export default async function AssistantPage() {
+  const { content } = await getMarkdownContent('assistant');
+  const toc = extractTOC(content);
+
   return (
     <LayoutWrapper>
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <h1 className="text-4xl font-bold text-ink mb-4">古籍助手</h1>
-        <p className="text-secondary text-lg">智能古籍助手功能即将上线</p>
-      </div>
+      <MarkdownPage content={content} toc={toc} />
     </LayoutWrapper>
   );
 }
