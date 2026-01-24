@@ -1,0 +1,74 @@
+1:"$Sreact.fragment"
+2:I[39756,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"default"]
+3:I[37457,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"default"]
+5:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"OutletBoundary"]
+6:"$Sreact.suspense"
+8:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"ViewportBoundary"]
+a:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"MetadataBoundary"]
+c:I[68027,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"default"]
+:HL["/_next/static/chunks/955cd867b74488f8.css","style"]
+:HL["/_next/static/chunks/53827e04f1393e12.css","style"]
+:HL["/_next/static/media/f112ed7f0b91582f-s.p.12569d31.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+0:{"P":null,"b":"GOiO0DlVjZlwSzf170SZT","c":["","read","extraction.md"],"q":"","i":false,"f":[[["",{"children":["read",{"children":[["filename","extraction.md","d"],{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",true],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/955cd867b74488f8.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","link","1",{"rel":"stylesheet","href":"/_next/static/chunks/53827e04f1393e12.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"zh-CN","children":["$","body",null,{"className":"antialiased noto_serif_sc_fe1bfa19-module__4wAqNq__variable","children":["$","$L2",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L3",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]]}],{"children":[["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L3",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":[["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L3",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":[["$","$1","c",{"children":["$L4",[["$","script","script-0",{"src":"/_next/static/chunks/5f87c527416cc4c0.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/_next/static/chunks/b0d710c2f57c64b3.js","async":true,"nonce":"$undefined"}],["$","script","script-2",{"src":"/_next/static/chunks/55438890b22bb626.js","async":true,"nonce":"$undefined"}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],{},null,false,false]},null,false,false]},null,false,false]},null,false,false],["$","$1","h",{"children":[null,["$","$L8",null,{"children":"$L9"}],["$","div",null,{"hidden":true,"children":["$","$La",null,{"children":["$","$6",null,{"name":"Next.Metadata","children":"$Lb"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],false]],"m":"$undefined","G":["$c",[]],"S":true}
+d:I[42303,["/_next/static/chunks/5f87c527416cc4c0.js","/_next/static/chunks/b0d710c2f57c64b3.js","/_next/static/chunks/55438890b22bb626.js"],"default"]
+e:I[47896,["/_next/static/chunks/5f87c527416cc4c0.js","/_next/static/chunks/b0d710c2f57c64b3.js","/_next/static/chunks/55438890b22bb626.js"],"default"]
+f:Te30,
+# 自动化信息提取
+
+古籍浩如烟海，全部人工录入是不现实的，需要自动化信息提取来提高效率。这包括图像预处理，版面分割、字符分割、字符OCR识别、自动标点等等。随着技术的进步，OCR和标点的准确率越来越高，但现有技术对繁体字、异体字、手写体的识别能力有限。随着大语言模型（LLM）的迅速发展，我们希望利用LLM来提高古籍数字化的效率。
+
+---
+
+## 核心目标
+
+通过集成先进的 AI 和 OCR 技术，提升古籍数字化的效率。
+
+### 1. 影像处理
+目标： 将扫描或拍摄的原始图片（往往有透视变形、污渍、书页弯曲）转换为平整、黑白分明、版心居中的高质量图片，以便于 OCR 和 LaTeX 底图调用。
+
+| 工具名称 | 类型 | 优势与用途 | 评价 |
+| :--- | :--- | :--- | :--- |
+| **ScanTailor Advanced** | **开源 (C++)** | **神级工具**。专用于书页处理。功能含：自动切页、纠偏 (De-skewing)、去噪、设定统一版心。 | **必选**。目前开源界最强的书籍图像预处理软件。 |
+| **OpenCV (Python)** | 开源库 | 用于编写自动化脚本。如：批量去除红印章（通道过滤）、边缘检测自动裁剪。 | 适合集成到自动化流水线脚本中。 |
+| **Comic Enhancer Pro** | 免费/闭源 | 国内“老马”开发。在调节曲线、去除阴影方面针对中文书籍效果极佳。 | 仅限 Windows，难以集成，适合单兵作业。 |
+
+### 2. OCR 字符识别
+
+**目标：** 识别文字坐标与结构（区分正文、双行小注、眉批），而非单纯的文字转录。
+
+| 工具名称 | 类型 | 核心技术 | 适用性分析 |
+| :--- | :--- | :--- | :--- |
+| **PaddleOCR** | **开源 (百度)** | 深度学习 | **首选推荐**。中文 OCR 霸主。支持**竖排模型**，可微调（Fine-tuning）刻本字库。其 PP-Structure 模块可做版面分析。 |
+| **Tesseract 5** | 开源 (Google) | LSTM | 老牌工具。现代中文尚可，但在复杂的古籍版面（尤其是双行夹注）处理上不如 PaddleOCR 灵活。 |
+| **Transkribus** | 商业/学术免费 | HTR (手写识别) | **数字人文标准**。专注于“版面分割”，适合处理复杂手稿。虽核心闭源，但是处理复杂版式的最佳参照。 |
+| **eScriptorium** | **开源** | Kraken/YOLO | 法国团队开发的 Web 平台。结合了版面分割与识别，非常适合作为搭建自家校对平台的蓝本。 |
+---
+
+#### 3. 句读、标点
+
+自动标点与语义分析。
+
+**目标：** 对古籍原文进行自动断句和标点。
+
+| 工具名称 | 类型 | 技术 | 评价 |
+| :--- | :--- | :--- | :--- |
+| **GuwenBERT** | **开源模型** | NLP / Transformer | 基于 RoBERTa 的古文预训练模型。可用于命名实体识别 (NER) 和自动断句，准确率极高。 |
+| **SikuBERT** | 开源模型 | NLP | 基于《四库全书》训练，对经史子集的语感把握更佳。 |
+| **Jiayan (甲言)** | 开源库 | 统计/规则 | 轻量级古文 NLP 工具，适合资源受限环境，但效果不如 BERT 系列。 |
+
+另外还有一些闭源但免费（有限额，需注册）的工具如“吾与点”，“籍合网”。鉴于无法开源大规模免费试用，就不再详细展开。
+
+## 参考资源
+
+- [PaddleOCR 开源项目](https://github.com/PaddlePaddle/PaddleOCR)
+- [古籍 OCR 数据集](https://github.com/datasets/ancient-books)
+- [深度学习在古籍数字化中的应用研究](https://example.com/paper)
+
+
+---
+
+[← 上一板块：专业排版](typesetting) | [下一板块：校对工具 →](toolkit)
+4:["$","$Ld",null,{"children":["$","$Le",null,{"content":"$f","toc":[{"id":"自动化信息提取","text":"自动化信息提取","level":1},{"id":"核心目标","text":"核心目标","level":2},{"id":"1-影像处理","text":"1. 影像处理","level":3},{"id":"2-ocr-字符识别","text":"2. OCR 字符识别","level":3},{"id":"3-句读标点","text":"3. 句读、标点","level":4},{"id":"参考资源","text":"参考资源","level":2}],"title":"自动化信息提取"}]}]
+9:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+7:null
+b:[["$","title","0",{"children":"自动化信息提取 - 开源古籍"}],["$","meta","1",{"name":"description","content":"阅读《extraction》"}],["$","meta","2",{"name":"author","content":"开源古籍"}],["$","meta","3",{"name":"keywords","content":"古籍,数字化,开源,传统文化,古籍数字化"}],["$","link","4",{"rel":"canonical","href":"https://www.kaiyuanguji.com/read/extraction.md"}],["$","meta","5",{"property":"og:title","content":"自动化信息提取"}],["$","meta","6",{"property":"og:description","content":"阅读《extraction》"}],["$","meta","7",{"property":"og:url","content":"https://www.kaiyuanguji.com/read/extraction.md"}],["$","meta","8",{"property":"og:type","content":"article"}],["$","meta","9",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","10",{"name":"twitter:title","content":"开源古籍"}],["$","meta","11",{"name":"twitter:description","content":"开源古籍项目通过技术手段推动古籍的数字化、校对及开源存储，致力于让传统文化触手可及。"}],["$","meta","12",{"name":"twitter:image","content":"https://www.kaiyuanguji.com/images/og-image.png"}]]
