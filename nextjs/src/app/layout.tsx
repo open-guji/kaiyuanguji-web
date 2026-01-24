@@ -25,7 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body className="antialiased">
+        {children}
+      </body>
     </html>
   );
 }
