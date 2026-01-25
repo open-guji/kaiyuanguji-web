@@ -69,7 +69,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const stripRedundantHeader = (text: string) => {
         let cleanText = text.replace(/^#\s+.+\r?\n*/m, '');
         cleanText = cleanText.replace(/^(ID|id)[:：].*\r?\n*/mi, '');
-        cleanText = cleanText.replace(/^##\s*基本信息\s*\r?\n([\s\S]*?)(?=\r?\n##\s|$)/m, '');
+        // 不再移除“基本信息”节点，直接渲染 Markdown 内容
+        // cleanText = cleanText.replace(/^##\s*基本信息\s*\r?\n([\s\S]*?)(?=\r?\n##\s|$)/m, '');
         return cleanText.trim();
     };
 
@@ -109,15 +110,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     {book.name}
                 </h1>
 
-                {/* Metadata */}
-                {(book.author || book.year || book.holder || book.collection) && (
-                    <div className="mb-10 p-5 bg-paper/50 rounded-xl border border-border/40 space-y-3 text-[15px]">
-                        {book.author && <div className="flex gap-2"><span className="text-secondary">作者：</span><span className="text-ink font-semibold">{book.author}</span></div>}
-                        {book.year && <div className="flex gap-2"><span className="text-secondary">年份：</span><span className="text-ink font-semibold">{book.year}</span></div>}
-                        {book.collection && <div className="flex gap-2"><span className="text-secondary">收录于：</span><span className="text-ink font-semibold">{book.collection}</span></div>}
-                        {book.holder && <div className="flex gap-2"><span className="text-secondary">现藏于：</span><span className="text-ink font-semibold">{book.holder}</span></div>}
-                    </div>
-                )}
+                {/* Metadata Card removed */}
 
                 <div className="prose max-w-none">
                     <MarkdownRenderer content={cleanedContent} />

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Components } from 'react-markdown';
@@ -37,17 +38,45 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
         {children}
       </p>
     ),
-    a: ({ href, children, ...props }) => (
-      <a
-        href={href}
-        className="text-vermilion hover:underline"
-        target={href?.startsWith('http') ? '_blank' : undefined}
-        rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
-        {...props}
-      >
-        {children}
-      </a>
-    ),
+    a: ({ href, children, ...props }) => {
+      // 处理古籍引用链接: 支持 bid:ID, bid:\ID, bid:\\ID, bid://ID 等格式
+      if (href) {
+        try {
+          // 解码 href，防止 markdown 将特殊字符编码
+          const decodedHref = decodeURIComponent(href);
+
+          // 匹配 bid: 后跟任意数量的斜杠或反斜杠，忽略大小写和空白
+          const match = decodedHref.match(/^bid:\s*[\\/]*\s*(.+)$/i);
+
+          if (match) {
+            const id = match[1];
+            return (
+              <Link
+                href={`/book-index/${id}`}
+                className="text-vermilion hover:underline font-medium decoration-dotted underline-offset-4"
+                {...props}
+              >
+                {children}
+              </Link>
+            );
+          }
+        } catch (e) {
+          console.warn('Failed to parse bid link:', href, e);
+        }
+      }
+
+      return (
+        <a
+          href={href}
+          className="text-vermilion hover:underline"
+          target={href?.startsWith('http') ? '_blank' : undefined}
+          rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
     ul: ({ children, ...props }) => (
       <ul className="list-disc list-inside my-4 space-y-2 text-ink" {...props}>
         {children}
@@ -120,7 +149,11 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
 
   return (
     <div className={`markdown-content ${className}`}>
-      <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
+      <ReactMarkdown
+        components={components}
+        remarkPlugins={[remarkGfm]}
+        urlTransform={(url) => url}
+      >
         {content}
       </ReactMarkdown>
     </div>

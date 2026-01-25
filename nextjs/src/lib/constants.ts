@@ -15,9 +15,9 @@ export const GITHUB_BASE = "https://raw.githubusercontent.com";
 export const JSDELIVR_FASTLY = "https://fastly.jsdelivr.net/gh";
 export const JSDELIVR_CDN = "https://cdn.jsdelivr.net/gh";
 
-// 默认使用 jsDelivr 作为 GitHub 的源，因为 raw.githubusercontent.com 在国内不稳定
-export const GITHUB_BOOK_INDEX_DRAFT = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/book-index-draft@main/index.json`;
-export const GITHUB_BOOK_INDEX = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/book-index@main/index.json`;
+// 海外默认直接访问 GitHub
+export const GITHUB_BOOK_INDEX_DRAFT = `${GITHUB_BASE}/${GITHUB_ORG}/book-index-draft/main/index.json`;
+export const GITHUB_BOOK_INDEX = `${GITHUB_BASE}/${GITHUB_ORG}/book-index/main/index.json`;
 
 // Gitee 仓库地址
 export const GITEE_ORG = "open-guji";
