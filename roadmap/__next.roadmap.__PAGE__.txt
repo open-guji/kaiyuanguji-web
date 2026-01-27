@@ -1,6 +1,6 @@
 1:"$Sreact.fragment"
-2:I[42303,["/_next/static/chunks/5f87c527416cc4c0.js","/_next/static/chunks/b0d710c2f57c64b3.js","/_next/static/chunks/55438890b22bb626.js"],"default"]
-3:I[47896,["/_next/static/chunks/5f87c527416cc4c0.js","/_next/static/chunks/b0d710c2f57c64b3.js","/_next/static/chunks/55438890b22bb626.js"],"default"]
+2:I[42303,["/_next/static/chunks/f25bdf687f780092.js","/_next/static/chunks/54c91bfa41c12be9.js","/_next/static/chunks/4653c037f24c1a19.js","/_next/static/chunks/c5ca92dc30400eed.js"],"default"]
+3:I[47896,["/_next/static/chunks/f25bdf687f780092.js","/_next/static/chunks/54c91bfa41c12be9.js","/_next/static/chunks/4653c037f24c1a19.js","/_next/static/chunks/c5ca92dc30400eed.js"],"default"]
 5:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0bd6498bda341889.js"],"OutletBoundary"]
 6:"$Sreact.suspense"
 4:Taab,# 项目路线图
@@ -74,5 +74,5 @@
 - **智能研究**：提供语义搜索、典故溯源、智能注疏等前沿功能。
 
 **状态**: **规划中**
-0:{"buildId":"GOiO0DlVjZlwSzf170SZT","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"项目路线图","text":"项目路线图","level":1},{"id":"项目愿景","text":"项目愿景","level":2},{"id":"五大板块","text":"五大板块","level":2},{"id":"板块一古籍排版typesetting","text":"[板块一：古籍排版](typesetting)","level":3},{"id":"板块二自动化信息提取extraction","text":"[板块二：自动化信息提取](extraction)","level":3},{"id":"板块三数字化工具箱toolkit","text":"[板块三：数字化工具箱](toolkit)","level":3},{"id":"板块四开源共享与检索storage","text":"[板块四：开源共享与检索](storage)","level":3},{"id":"板块五知识图谱与-ai-模型intelligence","text":"[板块五：知识图谱与 AI 模型](intelligence)","level":3}]}]}],[["$","script","script-0",{"src":"/_next/static/chunks/5f87c527416cc4c0.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/b0d710c2f57c64b3.js","async":true}],["$","script","script-2",{"src":"/_next/static/chunks/55438890b22bb626.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"FA4043KDuo833AoyZxziz","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"项目路线图","text":"项目路线图","level":1},{"id":"项目愿景","text":"项目愿景","level":2},{"id":"五大板块","text":"五大板块","level":2},{"id":"板块一古籍排版typesetting","text":"[板块一：古籍排版](typesetting)","level":3},{"id":"板块二自动化信息提取extraction","text":"[板块二：自动化信息提取](extraction)","level":3},{"id":"板块三数字化工具箱toolkit","text":"[板块三：数字化工具箱](toolkit)","level":3},{"id":"板块四开源共享与检索storage","text":"[板块四：开源共享与检索](storage)","level":3},{"id":"板块五知识图谱与-ai-模型intelligence","text":"[板块五：知识图谱与 AI 模型](intelligence)","level":3}]}]}],[["$","script","script-0",{"src":"/_next/static/chunks/54c91bfa41c12be9.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/4653c037f24c1a19.js","async":true}],["$","script","script-2",{"src":"/_next/static/chunks/c5ca92dc30400eed.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
 7:null
