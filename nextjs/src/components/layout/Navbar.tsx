@@ -7,10 +7,9 @@ import { useState } from 'react';
 import SourceToggle from '../common/SourceToggle';
 
 const navItems = [
-  { label: '首页', href: '/' },
   { label: '路线图', href: '/roadmap' },
-  { label: '古籍助手', href: '/assistant' },
   { label: '古籍索引', href: '/book-index' },
+  { label: '参与开发', href: '/#join' },
 ];
 
 interface NavbarProps {
