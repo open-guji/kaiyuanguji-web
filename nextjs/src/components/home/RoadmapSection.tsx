@@ -36,7 +36,7 @@ const roadmapCards = [
 
 export default function RoadmapSection() {
   return (
-    <section className="py-12 px-6 bg-paper">
+    <section id="roadmap" className="py-12 px-6 bg-paper">
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           title="路线图"

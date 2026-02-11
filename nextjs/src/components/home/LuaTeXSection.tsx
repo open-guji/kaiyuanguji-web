@@ -2,7 +2,7 @@ import SectionHeader from './SectionHeader';
 
 export default function LuaTeXSection() {
   return (
-    <section className="py-12 px-6 bg-white">
+    <section id="luatex" className="py-12 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           title="LuaTeX-cn - 古籍排版"

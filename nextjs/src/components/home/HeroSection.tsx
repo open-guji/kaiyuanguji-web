@@ -5,9 +5,9 @@ import Image from 'next/image';
 
 export default function HeroSection() {
   const buttons = [
-    { label: '路线图', href: '/roadmap' },
-    { label: '古籍助手', href: '/assistant' },
-    { label: '古籍索引', href: '/book-index' },
+    { label: '路线图', href: '#roadmap' },
+    { label: '古籍排版', href: '#luatex' },
+    { label: '古籍索引', href: '#book-index' },
     { label: '参与开发', href: '#join' },
   ];
 
