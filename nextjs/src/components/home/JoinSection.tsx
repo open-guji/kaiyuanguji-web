@@ -2,7 +2,7 @@ import SectionHeader from './SectionHeader';
 
 export default function JoinSection() {
   return (
-    <section id="join" className="py-12 px-6 bg-white border-t border-border/50">
+    <section id="join" className="py-12 px-6 bg-paper border-t border-border/50">
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           title="参与开发"
