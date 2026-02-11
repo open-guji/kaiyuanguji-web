@@ -66,57 +66,52 @@ export interface PageCount {
 }
 
 export interface ResourceLink {
-  name: string;
+  name?: string;
+  title?: string;
   url: string;
   details?: string;
 }
 
-// Book 详情
-export interface BookDetailData {
+/**
+ * 基础详情数据接口
+ */
+export interface BaseDetailData {
   id: string;
-  type: 'book';
   title: string;
   description?: DescriptionInfo;
   authors?: AuthorInfo[];
-  work_id?: string;
-  contained_in?: string[];
   publication_info?: PublicationInfo;
   current_location?: LocationInfo;
   volume_count?: VolumeCount;
   page_count?: PageCount;
   text_resources?: ResourceLink[];
   image_resources?: ResourceLink[];
+  sources?: SourceRef[];
+}
+
+// Book 详情
+export interface BookDetailData extends BaseDetailData {
+  type: 'book';
+  work_id?: string;
+  contained_in?: string[];
   location_history?: LocationInfo[];
   related_books?: string[];
-  sources?: SourceRef[];
 }
 
 // Collection 详情
-export interface CollectionDetailData {
-  id: string;
+export interface CollectionDetailData extends BaseDetailData {
   type: 'collection';
-  title: string;
-  description?: DescriptionInfo;
-  authors?: AuthorInfo[];
   contained_in?: string[];
-  publication_info?: PublicationInfo;
-  current_location?: LocationInfo;
-  volume_count?: VolumeCount;
   history?: string[];
   books?: string[];
-  sources?: SourceRef[];
 }
 
 // Work 详情
-export interface WorkDetailData {
-  id: string;
+export interface WorkDetailData extends BaseDetailData {
   type: 'work';
-  title: string;
-  description?: DescriptionInfo;
-  authors?: AuthorInfo[];
   parent_works?: string[];
+  parent_work?: { id: string; title: string }; // 支持单一上级作品对象
   books?: string[];
-  sources?: SourceRef[];
 }
 
 export type BookIndexDetailData = BookDetailData | CollectionDetailData | WorkDetailData;

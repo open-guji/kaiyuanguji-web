@@ -7,6 +7,7 @@ import { findBookById, fetchBookDetail, getTypeLabel, getStatusLabel } from '@/s
 import {
     BookIndexItem,
     BookIndexDetailData,
+    BaseDetailData,
     BookDetailData,
     CollectionDetailData,
     WorkDetailData,
@@ -74,7 +75,7 @@ function ResourceList({ resources, label }: { resources: ResourceLink[]; label: 
                                 rel="noopener noreferrer"
                                 className="text-vermilion hover:underline font-medium text-sm"
                             >
-                                {r.name}
+                                {r.name || r.title}
                             </a>
                             {r.details && (
                                 <span className="text-secondary text-xs ml-2">— {r.details}</span>
@@ -129,42 +130,49 @@ function BidLinkList({ ids, label }: { ids: string[]; label: string }) {
     );
 }
 
-function renderBookDetail(detail: BookDetailData) {
+function renderBaseInfo(detail: BookIndexDetailData) {
+    return (
+        <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
+            {detail.authors && detail.authors.length > 0 && (
+                <InfoRow label={detail.type === 'collection' ? '编者' : '作者'}><AuthorList authors={detail.authors} /></InfoRow>
+            )}
+            {detail.publication_info?.year && (
+                <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
+            )}
+            {detail.current_location?.name && (
+                <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
+            )}
+            {detail.volume_count?.description && (
+                <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
+            )}
+            {detail.page_count?.description && (
+                <InfoRow label="页数">{detail.page_count.description}</InfoRow>
+            )}
+            {(detail as BookDetailData).contained_in && (detail as BookDetailData).contained_in!.length > 0 && (
+                <InfoRow label="收录于">{(detail as BookDetailData).contained_in!.join('、')}</InfoRow>
+            )}
+            {(detail as BookDetailData).work_id && (
+                <InfoRow label="所属作品"><BidLink id={(detail as BookDetailData).work_id!} /></InfoRow>
+            )}
+            {(detail as WorkDetailData).parent_work && (
+                <InfoRow label="上级作品"><BidLink id={(detail as WorkDetailData).parent_work!.id} /></InfoRow>
+            )}
+            {(detail as WorkDetailData).parent_works && (detail as WorkDetailData).parent_works!.length > 0 && (
+                <InfoRow label="上级作品">
+                    <span className="flex flex-wrap gap-2">
+                        {(detail as WorkDetailData).parent_works!.map((id) => (
+                            <BidLink key={id} id={id} />
+                        ))}
+                    </span>
+                </InfoRow>
+            )}
+        </div>
+    );
+}
+
+function renderResources(detail: BaseDetailData) {
     return (
         <>
-            {/* Basic Info */}
-            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
-                {detail.authors && detail.authors.length > 0 && (
-                    <InfoRow label="作者"><AuthorList authors={detail.authors} /></InfoRow>
-                )}
-                {detail.publication_info?.year && (
-                    <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
-                )}
-                {detail.current_location?.name && (
-                    <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
-                )}
-                {detail.volume_count?.description && (
-                    <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
-                )}
-                {detail.page_count?.description && (
-                    <InfoRow label="页数">{detail.page_count.description}</InfoRow>
-                )}
-                {detail.contained_in && detail.contained_in.length > 0 && (
-                    <InfoRow label="收录于">{detail.contained_in.join('、')}</InfoRow>
-                )}
-                {detail.work_id && (
-                    <InfoRow label="所属作品"><BidLink id={detail.work_id} /></InfoRow>
-                )}
-            </div>
-
-            {/* Description */}
-            {detail.description?.text && (
-                <>
-                    <SectionHeading>简介</SectionHeading>
-                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
-                </>
-            )}
-
             {/* Text Resources */}
             {detail.text_resources && detail.text_resources.length > 0 && (
                 <ResourceList resources={detail.text_resources} label="文字资源" />
@@ -174,6 +182,26 @@ function renderBookDetail(detail: BookDetailData) {
             {detail.image_resources && detail.image_resources.length > 0 && (
                 <ResourceList resources={detail.image_resources} label="影像资源" />
             )}
+        </>
+    );
+}
+
+function renderBookDetail(detail: BookDetailData) {
+    return (
+        <>
+            {/* Basic Info */}
+            {renderBaseInfo(detail)}
+
+            {/* Description */}
+            {detail.description?.text && (
+                <>
+                    <SectionHeading>简介</SectionHeading>
+                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
+                </>
+            )}
+
+            {/* Resources */}
+            {renderResources(detail)}
 
             {/* Location History */}
             {detail.location_history && detail.location_history.length > 0 && (
@@ -191,23 +219,7 @@ function renderBookDetail(detail: BookDetailData) {
 function renderCollectionDetail(detail: CollectionDetailData) {
     return (
         <>
-            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
-                {detail.authors && detail.authors.length > 0 && (
-                    <InfoRow label="编者"><AuthorList authors={detail.authors} /></InfoRow>
-                )}
-                {detail.publication_info?.year && (
-                    <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
-                )}
-                {detail.current_location?.name && (
-                    <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
-                )}
-                {detail.volume_count?.description && (
-                    <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
-                )}
-                {detail.contained_in && detail.contained_in.length > 0 && (
-                    <InfoRow label="收录于">{detail.contained_in.join('、')}</InfoRow>
-                )}
-            </div>
+            {renderBaseInfo(detail)}
 
             {detail.description?.text && (
                 <>
@@ -215,6 +227,8 @@ function renderCollectionDetail(detail: CollectionDetailData) {
                     <p className="text-base text-ink leading-loose">{detail.description.text}</p>
                 </>
             )}
+
+            {renderResources(detail)}
 
             {detail.history && detail.history.length > 0 && (
                 <>
@@ -240,20 +254,7 @@ function renderCollectionDetail(detail: CollectionDetailData) {
 function renderWorkDetail(detail: WorkDetailData) {
     return (
         <>
-            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
-                {detail.authors && detail.authors.length > 0 && (
-                    <InfoRow label="作者"><AuthorList authors={detail.authors} /></InfoRow>
-                )}
-                {detail.parent_works && detail.parent_works.length > 0 && (
-                    <InfoRow label="上级作品">
-                        <span className="flex flex-wrap gap-2">
-                            {detail.parent_works.map((id) => (
-                                <BidLink key={id} id={id} />
-                            ))}
-                        </span>
-                    </InfoRow>
-                )}
-            </div>
+            {renderBaseInfo(detail)}
 
             {detail.description?.text && (
                 <>
@@ -261,6 +262,8 @@ function renderWorkDetail(detail: WorkDetailData) {
                     <p className="text-base text-ink leading-loose">{detail.description.text}</p>
                 </>
             )}
+
+            {renderResources(detail)}
 
             {detail.books && detail.books.length > 0 && (
                 <BidLinkList ids={detail.books} label="相关版本" />
