@@ -13,21 +13,23 @@ interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
 export default function BidLink({ id, children, className, ...props }: BidLinkProps) {
     const { source } = useSource();
     const [type, setType] = useState<BookResourceType | null>(null);
+    const [name, setName] = useState<string | null>(null);
 
     useEffect(() => {
         let isMounted = true;
-        const fetchType = async () => {
+        const fetchBookInfo = async () => {
             try {
                 const book = await findBookById(id, source);
                 if (isMounted && book) {
                     setType(book.type);
+                    setName(book.name);
                 }
             } catch (err) {
-                console.error(`Failed to fetch book type for ID: ${id}`, err);
+                console.error(`Failed to fetch book info for ID: ${id}`, err);
             }
         };
 
-        fetchType();
+        fetchBookInfo();
         return () => { isMounted = false; };
     }, [id, source]);
 
@@ -65,7 +67,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
             {...props}
         >
             {renderIcon()}
-            <span>{children}</span>
+            <span>{name || children || id}</span>
         </Link>
     );
 }
