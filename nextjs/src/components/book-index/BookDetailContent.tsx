@@ -3,22 +3,276 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import MarkdownRenderer from '@/components/markdown/MarkdownRenderer';
-import { findBookById, fetchBookContent, getTypeLabel, getStatusLabel } from '@/services/bookIndex';
-import { BookIndexItem } from '@/types';
+import { findBookById, fetchBookDetail, getTypeLabel, getStatusLabel } from '@/services/bookIndex';
+import {
+    BookIndexItem,
+    BookIndexDetailData,
+    BookDetailData,
+    CollectionDetailData,
+    WorkDetailData,
+    AuthorInfo,
+    ResourceLink,
+    LocationInfo,
+} from '@/types';
 import CopyButton from '@/components/common/CopyButton';
 import SourceToggle from '@/components/common/SourceToggle';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound } from 'next/navigation';
+import BidLink from './BidLink';
 
 interface BookDetailContentProps {
     id: string;
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+    return (
+        <h2 className="text-xl font-bold text-ink mt-8 mb-4 tracking-wide border-b border-border/40 pb-2">
+            {children}
+        </h2>
+    );
+}
+
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <div className="flex py-2.5 border-b border-border/20 last:border-b-0">
+            <span className="w-28 flex-shrink-0 text-sm text-secondary font-medium">{label}</span>
+            <span className="text-sm text-ink flex-1">{children}</span>
+        </div>
+    );
+}
+
+function AuthorList({ authors }: { authors: AuthorInfo[] }) {
+    return (
+        <span>
+            {authors.map((a, i) => (
+                <span key={i}>
+                    {i > 0 && '、'}
+                    {a.dynasty && <span className="text-secondary">[{a.dynasty}] </span>}
+                    {a.name}
+                    {a.role && <span className="text-secondary"> ({a.role})</span>}
+                </span>
+            ))}
+        </span>
+    );
+}
+
+function ResourceList({ resources, label }: { resources: ResourceLink[]; label: string }) {
+    if (resources.length === 0) return null;
+    return (
+        <>
+            <SectionHeading>{label}</SectionHeading>
+            <ul className="space-y-2">
+                {resources.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 text-vermilion flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        <div>
+                            <a
+                                href={r.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-vermilion hover:underline font-medium text-sm"
+                            >
+                                {r.name}
+                            </a>
+                            {r.details && (
+                                <span className="text-secondary text-xs ml-2">— {r.details}</span>
+                            )}
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
+}
+
+function LocationHistory({ history }: { history: LocationInfo[] }) {
+    if (history.length === 0) return null;
+    return (
+        <>
+            <SectionHeading>流转历史</SectionHeading>
+            <div className="relative pl-6 space-y-4">
+                <div className="absolute left-2 top-2 bottom-2 w-px bg-border/60" />
+                {history.map((loc, i) => (
+                    <div key={i} className="relative">
+                        <div className="absolute -left-4 top-1.5 w-2.5 h-2.5 rounded-full bg-vermilion border-2 border-white" />
+                        <div>
+                            <span className="text-sm font-medium text-ink">{loc.name}</span>
+                            {loc.description && (
+                                <p className="text-sm text-secondary mt-1">{loc.description}</p>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
+
+function BidLinkList({ ids, label }: { ids: string[]; label: string }) {
+    if (ids.length === 0) return null;
+    return (
+        <>
+            <SectionHeading>{label}</SectionHeading>
+            <ul className="space-y-2">
+                {ids.map((id) => (
+                    <li key={id} className="flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 text-vermilion flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <BidLink id={id} />
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
+}
+
+function renderBookDetail(detail: BookDetailData) {
+    return (
+        <>
+            {/* Basic Info */}
+            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
+                {detail.authors && detail.authors.length > 0 && (
+                    <InfoRow label="作者"><AuthorList authors={detail.authors} /></InfoRow>
+                )}
+                {detail.publication_info?.year && (
+                    <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
+                )}
+                {detail.current_location?.name && (
+                    <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
+                )}
+                {detail.volume_count?.description && (
+                    <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
+                )}
+                {detail.page_count?.description && (
+                    <InfoRow label="页数">{detail.page_count.description}</InfoRow>
+                )}
+                {detail.contained_in && detail.contained_in.length > 0 && (
+                    <InfoRow label="收录于">{detail.contained_in.join('、')}</InfoRow>
+                )}
+                {detail.work_id && (
+                    <InfoRow label="所属作品"><BidLink id={detail.work_id} /></InfoRow>
+                )}
+            </div>
+
+            {/* Description */}
+            {detail.description?.text && (
+                <>
+                    <SectionHeading>简介</SectionHeading>
+                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
+                </>
+            )}
+
+            {/* Text Resources */}
+            {detail.text_resources && detail.text_resources.length > 0 && (
+                <ResourceList resources={detail.text_resources} label="文字资源" />
+            )}
+
+            {/* Image Resources */}
+            {detail.image_resources && detail.image_resources.length > 0 && (
+                <ResourceList resources={detail.image_resources} label="影像资源" />
+            )}
+
+            {/* Location History */}
+            {detail.location_history && detail.location_history.length > 0 && (
+                <LocationHistory history={detail.location_history} />
+            )}
+
+            {/* Related Books */}
+            {detail.related_books && detail.related_books.length > 0 && (
+                <BidLinkList ids={detail.related_books} label="相关版本" />
+            )}
+        </>
+    );
+}
+
+function renderCollectionDetail(detail: CollectionDetailData) {
+    return (
+        <>
+            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
+                {detail.authors && detail.authors.length > 0 && (
+                    <InfoRow label="编者"><AuthorList authors={detail.authors} /></InfoRow>
+                )}
+                {detail.publication_info?.year && (
+                    <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
+                )}
+                {detail.current_location?.name && (
+                    <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
+                )}
+                {detail.volume_count?.description && (
+                    <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
+                )}
+                {detail.contained_in && detail.contained_in.length > 0 && (
+                    <InfoRow label="收录于">{detail.contained_in.join('、')}</InfoRow>
+                )}
+            </div>
+
+            {detail.description?.text && (
+                <>
+                    <SectionHeading>简介</SectionHeading>
+                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
+                </>
+            )}
+
+            {detail.history && detail.history.length > 0 && (
+                <>
+                    <SectionHeading>历史沿革</SectionHeading>
+                    <ul className="space-y-2">
+                        {detail.history.map((item, i) => (
+                            <li key={i} className="text-sm text-ink leading-relaxed flex gap-2">
+                                <span className="text-vermilion mt-1">•</span>
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+
+            {detail.books && detail.books.length > 0 && (
+                <BidLinkList ids={detail.books} label="收录书籍" />
+            )}
+        </>
+    );
+}
+
+function renderWorkDetail(detail: WorkDetailData) {
+    return (
+        <>
+            <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
+                {detail.authors && detail.authors.length > 0 && (
+                    <InfoRow label="作者"><AuthorList authors={detail.authors} /></InfoRow>
+                )}
+                {detail.parent_works && detail.parent_works.length > 0 && (
+                    <InfoRow label="上级作品">
+                        <span className="flex flex-wrap gap-2">
+                            {detail.parent_works.map((id) => (
+                                <BidLink key={id} id={id} />
+                            ))}
+                        </span>
+                    </InfoRow>
+                )}
+            </div>
+
+            {detail.description?.text && (
+                <>
+                    <SectionHeading>简介</SectionHeading>
+                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
+                </>
+            )}
+
+            {detail.books && detail.books.length > 0 && (
+                <BidLinkList ids={detail.books} label="相关版本" />
+            )}
+        </>
+    );
+}
+
 export default function BookDetailContent({ id }: BookDetailContentProps) {
     const { source } = useSource();
     const [book, setBook] = useState<BookIndexItem | null>(null);
-    const [content, setContent] = useState<string>('');
+    const [detail, setDetail] = useState<BookIndexDetailData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -35,8 +289,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 }
                 setBook(bookData);
 
-                const markdown = await fetchBookContent(bookData, source);
-                setContent(markdown);
+                const detailData = await fetchBookDetail(bookData, source);
+                setDetail(detailData);
             } catch (err) {
                 setError(err instanceof Error ? err.message : '加载失败');
             } finally {
@@ -63,18 +317,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         );
     }
 
-    if (!book) return null;
-
-    // 去重逻辑
-    const stripRedundantHeader = (text: string) => {
-        let cleanText = text.replace(/^#\s+.+\r?\n*/m, '');
-        cleanText = cleanText.replace(/^(ID|id)[:：].*\r?\n*/mi, '');
-        // 不再移除“基本信息”节点，直接渲染 Markdown 内容
-        // cleanText = cleanText.replace(/^##\s*基本信息\s*\r?\n([\s\S]*?)(?=\r?\n##\s|$)/m, '');
-        return cleanText.trim();
-    };
-
-    const cleanedContent = stripRedundantHeader(content);
+    if (!book || !detail) return null;
 
     return (
         <LayoutWrapper>
@@ -106,15 +349,14 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     </div>
                 </div>
 
-                <h1 className="text-4xl font-bold text-ink mb-8 tracking-wide">
-                    {book.name}
+                <h1 className="text-4xl font-bold text-ink mb-2 tracking-wide">
+                    {detail.title}
                 </h1>
 
-                {/* Metadata Card removed */}
-
-                <div className="prose max-w-none">
-                    <MarkdownRenderer content={cleanedContent} />
-                </div>
+                {/* Type-specific rendering */}
+                {detail.type === 'book' && renderBookDetail(detail as BookDetailData)}
+                {detail.type === 'collection' && renderCollectionDetail(detail as CollectionDetailData)}
+                {detail.type === 'work' && renderWorkDetail(detail as WorkDetailData)}
             </div>
         </LayoutWrapper>
     );
