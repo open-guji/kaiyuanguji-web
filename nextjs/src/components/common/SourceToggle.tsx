@@ -6,6 +6,9 @@ import { DataSource } from '@/lib/constants';
 export default function SourceToggle() {
     const { source, setSource, isAutoDetected } = useSource();
 
+    // 暂时隐藏：总是默认海外
+    return null;
+
     const toggleSource = () => {
         setSource(source === 'github' ? 'gitee' : 'github');
     };

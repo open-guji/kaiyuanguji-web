@@ -134,7 +134,7 @@ export async function fetchBookDetail(book: BookIndexItem, source: DataSource = 
       ? `${GITHUB_BASE}/${GITHUB_ORG}/book-index-draft/main`
       : `${GITHUB_BASE}/${GITHUB_ORG}/book-index/main`;
 
-    const url = `${baseUrl}/${book.rawPath}`;
+    const url = `${baseUrl}/${encodeURI(book.rawPath)}`;
 
     const response = await fetch(url, {
       cache: 'no-store',
@@ -151,8 +151,8 @@ export async function fetchBookDetail(book: BookIndexItem, source: DataSource = 
   const repo = book.isDraft ? 'book-index-draft' : 'book-index';
   const branch = 'main';
 
-  const fastlyUrl = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/${repo}@${branch}/${book.rawPath}`;
-  const cdnUrl = `${JSDELIVR_CDN}/${GITHUB_ORG}/${repo}@${branch}/${book.rawPath}`;
+  const fastlyUrl = `${JSDELIVR_FASTLY}/${GITHUB_ORG}/${repo}@${branch}/${encodeURI(book.rawPath)}`;
+  const cdnUrl = `${JSDELIVR_CDN}/${GITHUB_ORG}/${repo}@${branch}/${encodeURI(book.rawPath)}`;
 
   try {
     const response = await fetch(fastlyUrl, {

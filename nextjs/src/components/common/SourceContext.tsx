@@ -26,41 +26,20 @@ export function SourceProvider({
     };
 
     const setSource = useCallback((src: DataSource) => {
-        setInternalSource(src);
-        setSourceCookie(src);
+        // 暂时锁定为 github
+        setInternalSource('github');
+        setSourceCookie('github');
     }, []);
 
     const checkConnectivity = useCallback(async () => {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-            await fetch(GITHUB_BOOK_INDEX, {
-                method: 'HEAD',
-                mode: 'no-cors',
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-        } catch (err) {
-            console.warn('GitHub is inaccessible, switching to Gitee source');
-            setSource('gitee');
-            setIsAutoDetected(true);
-        }
-    }, [setSource]);
+        // 暂时禁用自动检测，总是锁定为 github
+        setInternalSource('github');
+    }, []);
 
     useEffect(() => {
-        // 客户端初始化：先读 Cookie
-        const cookies = document.cookie.split('; ');
-        const sourceCookie = cookies.find(c => c.startsWith(`${SOURCE_COOKIE_NAME}=`));
-
-        if (sourceCookie) {
-            setInternalSource(sourceCookie.split('=')[1] as DataSource);
-        } else {
-            // 如果没有 Cookie，执行自动检测
-            checkConnectivity();
-        }
-    }, [checkConnectivity]);
+        // 暂时锁定为 github，忽略 Cookie 和自动检测
+        setInternalSource('github');
+    }, []);
 
     return (
         <SourceContext.Provider value={{ source, setSource, isAutoDetected, checkConnectivity }}>
