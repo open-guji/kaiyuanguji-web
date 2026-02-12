@@ -1,6 +1,6 @@
 1:"$Sreact.fragment"
-2:I[42303,["/kaiyuanguji-web/_next/static/chunks/f25bdf687f780092.js","/kaiyuanguji-web/_next/static/chunks/4dea10ac296774a9.js","/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","/kaiyuanguji-web/_next/static/chunks/de9445e964507214.js"],"default"]
-3:I[47896,["/kaiyuanguji-web/_next/static/chunks/f25bdf687f780092.js","/kaiyuanguji-web/_next/static/chunks/4dea10ac296774a9.js","/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","/kaiyuanguji-web/_next/static/chunks/de9445e964507214.js"],"default"]
+2:I[42303,["/kaiyuanguji-web/_next/static/chunks/49abd15eedfcee28.js","/kaiyuanguji-web/_next/static/chunks/62c8bd40b8b2e273.js","/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","/kaiyuanguji-web/_next/static/chunks/e990ea2f64416954.js"],"default"]
+3:I[47896,["/kaiyuanguji-web/_next/static/chunks/49abd15eedfcee28.js","/kaiyuanguji-web/_next/static/chunks/62c8bd40b8b2e273.js","/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","/kaiyuanguji-web/_next/static/chunks/e990ea2f64416954.js"],"default"]
 5:I[97367,["/kaiyuanguji-web/_next/static/chunks/ff1a16fafef87110.js","/kaiyuanguji-web/_next/static/chunks/0bd6498bda341889.js"],"OutletBoundary"]
 6:"$Sreact.suspense"
 4:T103a,
@@ -59,5 +59,5 @@
 ---
 
 [← 返回首页](home) | [下一板块：信息提取 →](extraction)
-0:{"buildId":"H8WyH-QcGFTO4351QBFDv","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],[["$","script","script-0",{"src":"/kaiyuanguji-web/_next/static/chunks/4dea10ac296774a9.js","async":true}],["$","script","script-1",{"src":"/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","async":true}],["$","script","script-2",{"src":"/kaiyuanguji-web/_next/static/chunks/de9445e964507214.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"csamjUEvAC-II_rWJjIJE","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],[["$","script","script-0",{"src":"/kaiyuanguji-web/_next/static/chunks/62c8bd40b8b2e273.js","async":true}],["$","script","script-1",{"src":"/kaiyuanguji-web/_next/static/chunks/74bbbc2694a3d6aa.js","async":true}],["$","script","script-2",{"src":"/kaiyuanguji-web/_next/static/chunks/e990ea2f64416954.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
 7:null
