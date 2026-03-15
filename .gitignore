@@ -1,0 +1,33 @@
+.claude/
+
+# MacOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+
+# Node.js
+**/node_modules/
+**/dist/
+**/.next/
+**/out/
+*.log
+
+# Environment variables
+.env*
+!.env.example
+
+# Temporary files
+tmp/
+coverage/
+
+# AI related
+progress/
+.claudeignore
+.clauderules
+.claude/
+.agent/
+brain/
