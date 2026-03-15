@@ -41,7 +41,6 @@ export const NAV_ITEMS = [
   { label: "路线图", href: "/roadmap" },
   { label: "古籍助手", href: "/assistant" },
   { label: "古籍索引", href: "/book-index" },
-  { label: "索引浏览", href: "/browse" },
 ];
 
 // 路线图模块

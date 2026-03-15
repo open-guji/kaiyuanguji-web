@@ -12,9 +12,10 @@ import {
     CollectionDetailData,
     WorkDetailData,
     AuthorInfo,
-    ResourceLink,
     LocationInfo,
 } from '@/types';
+import { ResourceList } from 'book-index-ui';
+import type { ResourceEntry } from 'book-index-ui';
 import CopyButton from '@/components/common/CopyButton';
 import SourceToggle from '@/components/common/SourceToggle';
 import { useSource } from '@/components/common/SourceContext';
@@ -60,36 +61,6 @@ function AuthorList({ authors }: { authors: AuthorInfo[] }) {
     );
 }
 
-function ResourceList({ resources, label }: { resources: ResourceLink[]; label: string }) {
-    if (resources.length === 0) return null;
-    return (
-        <>
-            <SectionHeading>{label}</SectionHeading>
-            <ul className="space-y-2">
-                {resources.map((r, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 text-vermilion flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                        </svg>
-                        <div>
-                            <a
-                                href={r.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-vermilion hover:underline font-medium text-sm"
-                            >
-                                {r.name || r.title}
-                            </a>
-                            {r.details && (
-                                <span className="text-secondary text-xs ml-2">— {r.details}</span>
-                            )}
-                        </div>
-                    </li>
-                ))}
-            </ul>
-        </>
-    );
-}
 
 function LocationHistory({ history }: { history: LocationInfo[] }) {
     if (history.length === 0) return null;
@@ -173,36 +144,40 @@ function renderBaseInfo(detail: BookIndexDetailData) {
     );
 }
 
-function renderResources(detail: BaseDetailData) {
+function toResourceEntries(detail: BaseDetailData): ResourceEntry[] {
     // 新统一 resources 字段
     if (detail.resources && detail.resources.length > 0) {
-        const textRes = detail.resources.filter(r => r.type === 'text' || r.type === 'text+image');
-        const imageRes = detail.resources.filter(r => r.type === 'image' || r.type === 'text+image');
-        const otherRes = detail.resources.filter(r => r.type === 'physical');
-        return (
-            <>
-                {textRes.length > 0 && (
-                    <ResourceList resources={textRes.map(r => ({ url: r.url, name: r.name, details: r.details }))} label="文字资源" />
-                )}
-                {imageRes.length > 0 && (
-                    <ResourceList resources={imageRes.map(r => ({ url: r.url, name: r.name, details: r.details }))} label="影像资源" />
-                )}
-                {otherRes.length > 0 && (
-                    <ResourceList resources={otherRes.map(r => ({ url: r.url, name: r.name, details: r.details }))} label="实体资源" />
-                )}
-            </>
-        );
+        return detail.resources.map((r, i) => ({
+            id: `res-${i}`,
+            name: r.name || '',
+            url: r.url,
+            type: r.type,
+            details: r.details,
+        }));
     }
 
     // 旧字段兼容
+    const entries: ResourceEntry[] = [];
+    if (detail.text_resources) {
+        detail.text_resources.forEach((r, i) => {
+            entries.push({ id: `text-${i}`, name: r.name || r.title || '', url: r.url, type: 'text', details: r.details });
+        });
+    }
+    if (detail.image_resources) {
+        detail.image_resources.forEach((r, i) => {
+            entries.push({ id: `img-${i}`, name: r.name || r.title || '', url: r.url, type: 'image', details: r.details });
+        });
+    }
+    return entries;
+}
+
+function renderResources(detail: BaseDetailData) {
+    const items = toResourceEntries(detail);
+    if (items.length === 0) return null;
     return (
         <>
-            {detail.text_resources && detail.text_resources.length > 0 && (
-                <ResourceList resources={detail.text_resources} label="文字资源" />
-            )}
-            {detail.image_resources && detail.image_resources.length > 0 && (
-                <ResourceList resources={detail.image_resources} label="影像资源" />
-            )}
+            <SectionHeading>资源</SectionHeading>
+            <ResourceList items={items} groupByType />
         </>
     );
 }

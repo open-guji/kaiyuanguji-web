@@ -11,7 +11,6 @@ const NAV_ICONS: Record<string, string> = {
   '/roadmap': '🗺️',
   '/assistant': '✨',
   '/book-index': '📚',
-  '/browse': '🔍',
 };
 
 interface MobileDrawerProps {
