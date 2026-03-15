@@ -6,7 +6,7 @@ import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport, getTypeLabel, getStatusLabel } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
 import { IndexDetail } from 'book-index-ui';
-import type { IndexEntry, IndexDetailData, ResourceEntry } from 'book-index-ui';
+import type { IndexEntry, IndexDetailData } from 'book-index-ui';
 import CopyButton from '@/components/common/CopyButton';
 import SourceToggle from '@/components/common/SourceToggle';
 import { useSource } from '@/components/common/SourceContext';
@@ -24,34 +24,7 @@ interface BookDetailContentProps {
 /** 详情数据 + 网站特有字段 */
 type DetailWithAssets = IndexDetailData & {
     digital_assets?: DigitalAssets;
-    text_resources?: { name?: string; title?: string; url: string; details?: string }[];
-    image_resources?: { name?: string; title?: string; url: string; details?: string }[];
 };
-
-/** 将旧格式资源字段转为统一 ResourceEntry[] */
-function normalizeResources(detail: DetailWithAssets): ResourceEntry[] {
-    if (detail.resources && detail.resources.length > 0) {
-        return detail.resources.map((r, i) => ({
-            id: r.id || `res-${i}`,
-            name: r.name || '',
-            url: r.url,
-            type: r.type,
-            details: r.details,
-        }));
-    }
-    const entries: ResourceEntry[] = [];
-    if (detail.text_resources) {
-        detail.text_resources.forEach((r, i) => {
-            entries.push({ id: `text-${i}`, name: r.name || r.title || '', url: r.url, type: 'text', details: r.details });
-        });
-    }
-    if (detail.image_resources) {
-        detail.image_resources.forEach((r, i) => {
-            entries.push({ id: `img-${i}`, name: r.name || r.title || '', url: r.url, type: 'image', details: r.details });
-        });
-    }
-    return entries;
-}
 
 /** 本地模式下注入数字化资源信息 */
 async function enrichDigitalAssets(id: string, entry: IndexEntry, detail: DetailWithAssets): Promise<void> {
@@ -151,11 +124,6 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     if (!entry || !detail) return null;
 
-    const indexDetailData: IndexDetailData = {
-        ...detail,
-        resources: normalizeResources(detail),
-    } as IndexDetailData;
-
     return (
         <LayoutWrapper hideFooter={true}>
             {/* Header section — centered */}
@@ -221,7 +189,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             {activeTab === 'basic' ? (
                 <div className="max-w-4xl mx-auto px-6 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <IndexDetail
-                        data={indexDetailData}
+                        data={detail}
                         renderLink={(linkId) => <BidLink id={linkId} />}
                     />
                 </div>
