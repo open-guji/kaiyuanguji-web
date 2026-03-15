@@ -4,34 +4,15 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { IndexBrowser } from 'book-index-ui';
-import { GithubTransport } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
-import {
-  GITHUB_ORG,
-  JSDELIVR_FASTLY,
-  JSDELIVR_CDN,
-} from '@/lib/constants';
+import { getTransport } from '@/lib/transport';
 
 export default function BookIndexPage() {
   const router = useRouter();
   const { source } = useSource();
 
-  const transport = useMemo(() => {
-    const baseUrl = source === 'github'
-      ? 'https://raw.githubusercontent.com'
-      : undefined;
-
-    return new GithubTransport({
-      org: GITHUB_ORG,
-      repos: {
-        draft: 'book-index-draft',
-        official: 'book-index',
-      },
-      baseUrl,
-      cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
-    });
-  }, [source]);
+  const transport = useMemo(() => getTransport(source), [source]);
 
   const handleEntryClick = (entry: IndexEntry) => {
     router.push(`/book-index/${entry.id}`);

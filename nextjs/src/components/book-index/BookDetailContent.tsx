@@ -3,25 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { findBookById, fetchBookDetail, getTypeLabel, getStatusLabel } from '@/services/bookIndex';
-import {
-    BookIndexItem,
-    BookIndexDetailData,
-    BaseDetailData,
-    BookDetailData,
-    CollectionDetailData,
-    WorkDetailData,
-    AuthorInfo,
-    LocationInfo,
-} from '@/types';
-import { ResourceList } from 'book-index-ui';
-import type { ResourceEntry } from 'book-index-ui';
+import { getTransport, getTypeLabel, getStatusLabel } from '@/lib/transport';
+import { isLocalMode } from '@/lib/constants';
+import { IndexDetail } from 'book-index-ui';
+import type { IndexEntry, IndexDetailData, ResourceEntry } from 'book-index-ui';
 import CopyButton from '@/components/common/CopyButton';
 import SourceToggle from '@/components/common/SourceToggle';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams, usePathname } from 'next/navigation';
 import BidLink from './BidLink';
 import DigitalizationView from './DigitalizationView';
+import type { DigitalAssets } from '@/types';
 
 type TabType = 'basic' | 'digital';
 
@@ -29,134 +21,24 @@ interface BookDetailContentProps {
     id: string;
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="text-xl font-bold text-ink mt-8 mb-4 tracking-wide border-b border-border/40 pb-2">
-            {children}
-        </h2>
-    );
-}
+/** 详情数据 + 网站特有字段 */
+type DetailWithAssets = IndexDetailData & {
+    digital_assets?: DigitalAssets;
+    text_resources?: { name?: string; title?: string; url: string; details?: string }[];
+    image_resources?: { name?: string; title?: string; url: string; details?: string }[];
+};
 
-function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div className="flex py-2.5 border-b border-border/20 last:border-b-0">
-            <span className="w-28 flex-shrink-0 text-sm text-secondary font-medium">{label}</span>
-            <span className="text-sm text-ink flex-1">{children}</span>
-        </div>
-    );
-}
-
-function AuthorList({ authors }: { authors: AuthorInfo[] }) {
-    return (
-        <span>
-            {authors.map((a, i) => (
-                <span key={i}>
-                    {i > 0 && '、'}
-                    {a.dynasty && <span className="text-secondary">[{a.dynasty}] </span>}
-                    {a.name}
-                    {a.role && <span className="text-secondary"> ({a.role})</span>}
-                </span>
-            ))}
-        </span>
-    );
-}
-
-
-function LocationHistory({ history }: { history: LocationInfo[] }) {
-    if (history.length === 0) return null;
-    return (
-        <>
-            <SectionHeading>流转历史</SectionHeading>
-            <div className="relative pl-6 space-y-4">
-                <div className="absolute left-2 top-2 bottom-2 w-px bg-border/60" />
-                {history.map((loc, i) => (
-                    <div key={i} className="relative">
-                        <div className="absolute -left-4 top-1.5 w-2.5 h-2.5 rounded-full bg-vermilion border-2 border-white" />
-                        <div>
-                            <span className="text-sm font-medium text-ink">{loc.name}</span>
-                            {loc.description && (
-                                <p className="text-sm text-secondary mt-1">{loc.description}</p>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </>
-    );
-}
-
-function BidLinkList({ ids, label }: { ids: string[]; label: string }) {
-    if (ids.length === 0) return null;
-    return (
-        <>
-            <SectionHeading>{label}</SectionHeading>
-            <ul className="space-y-2">
-                {ids.map((id) => (
-                    <li key={id} className="flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 text-vermilion flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                        <BidLink id={id} />
-                    </li>
-                ))}
-            </ul>
-        </>
-    );
-}
-
-function renderBaseInfo(detail: BookIndexDetailData) {
-    return (
-        <div className="bg-paper/30 rounded-xl border border-border/40 p-5 mt-6">
-            {detail.authors && detail.authors.length > 0 && (
-                <InfoRow label={detail.type === 'collection' ? '编者' : '作者'}><AuthorList authors={detail.authors} /></InfoRow>
-            )}
-            {detail.publication_info?.year && (
-                <InfoRow label="年代">{detail.publication_info.year}</InfoRow>
-            )}
-            {detail.current_location?.name && (
-                <InfoRow label="现藏于">{detail.current_location.name}</InfoRow>
-            )}
-            {detail.volume_count?.description && (
-                <InfoRow label="卷册">{detail.volume_count.description}</InfoRow>
-            )}
-            {detail.page_count?.description && (
-                <InfoRow label="页数">{detail.page_count.description}</InfoRow>
-            )}
-            {(detail as BookDetailData).contained_in && (detail as BookDetailData).contained_in!.length > 0 && (
-                <InfoRow label="收录于">{(detail as BookDetailData).contained_in!.join('、')}</InfoRow>
-            )}
-            {(detail as BookDetailData).work_id && (
-                <InfoRow label="所属作品"><BidLink id={(detail as BookDetailData).work_id!} /></InfoRow>
-            )}
-            {(detail as WorkDetailData).parent_work && (
-                <InfoRow label="上级作品"><BidLink id={(detail as WorkDetailData).parent_work!.id} /></InfoRow>
-            )}
-            {(detail as WorkDetailData).parent_works && (detail as WorkDetailData).parent_works!.length > 0 && (
-                <InfoRow label="上级作品">
-                    <span className="flex flex-wrap gap-2">
-                        {(detail as WorkDetailData).parent_works!.map((id) => (
-                            <BidLink key={id} id={id} />
-                        ))}
-                    </span>
-                </InfoRow>
-            )}
-        </div>
-    );
-}
-
-function toResourceEntries(detail: BaseDetailData): ResourceEntry[] {
-    // 新统一 resources 字段
+/** 将旧格式资源字段转为统一 ResourceEntry[] */
+function normalizeResources(detail: DetailWithAssets): ResourceEntry[] {
     if (detail.resources && detail.resources.length > 0) {
         return detail.resources.map((r, i) => ({
-            id: `res-${i}`,
+            id: r.id || `res-${i}`,
             name: r.name || '',
             url: r.url,
             type: r.type,
             details: r.details,
         }));
     }
-
-    // 旧字段兼容
     const entries: ResourceEntry[] = [];
     if (detail.text_resources) {
         detail.text_resources.forEach((r, i) => {
@@ -171,101 +53,28 @@ function toResourceEntries(detail: BaseDetailData): ResourceEntry[] {
     return entries;
 }
 
-function renderResources(detail: BaseDetailData) {
-    const items = toResourceEntries(detail);
-    if (items.length === 0) return null;
-    return (
-        <>
-            <SectionHeading>资源</SectionHeading>
-            <ResourceList items={items} groupByType />
-        </>
-    );
-}
+/** 本地模式下注入数字化资源信息 */
+async function enrichDigitalAssets(id: string, entry: IndexEntry, detail: DetailWithAssets): Promise<void> {
+    if (typeof window === 'undefined' || !isLocalMode) return;
 
-function renderBookDetail(detail: BookDetailData) {
-    return (
-        <>
-            {/* Basic Info */}
-            {renderBaseInfo(detail)}
+    try {
+        const pathParts = (entry.path || '').split('/');
+        pathParts.pop();
+        const baseDir = pathParts.join('/');
+        const assetPath = baseDir ? `${baseDir}/${id}` : id;
+        const basePath = `/local-data/${assetPath}`;
 
-            {/* Description */}
-            {detail.description?.text && (
-                <>
-                    <SectionHeading>简介</SectionHeading>
-                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
-                </>
-            )}
-
-            {/* Resources */}
-            {renderResources(detail)}
-
-            {/* Location History */}
-            {detail.location_history && detail.location_history.length > 0 && (
-                <LocationHistory history={detail.location_history} />
-            )}
-
-            {/* Related Books */}
-            {detail.related_books && detail.related_books.length > 0 && (
-                <BidLinkList ids={detail.related_books} label="相关版本" />
-            )}
-        </>
-    );
-}
-
-function renderCollectionDetail(detail: CollectionDetailData) {
-    return (
-        <>
-            {renderBaseInfo(detail)}
-
-            {detail.description?.text && (
-                <>
-                    <SectionHeading>简介</SectionHeading>
-                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
-                </>
-            )}
-
-            {renderResources(detail)}
-
-            {detail.history && detail.history.length > 0 && (
-                <>
-                    <SectionHeading>历史沿革</SectionHeading>
-                    <ul className="space-y-2">
-                        {detail.history.map((item, i) => (
-                            <li key={i} className="text-sm text-ink leading-relaxed flex gap-2">
-                                <span className="text-vermilion mt-1">•</span>
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            )}
-
-            {detail.books && detail.books.length > 0 && (
-                <BidLinkList ids={detail.books} label="收录书籍" />
-            )}
-        </>
-    );
-}
-
-function renderWorkDetail(detail: WorkDetailData) {
-    return (
-        <>
-            {renderBaseInfo(detail)}
-
-            {detail.description?.text && (
-                <>
-                    <SectionHeading>简介</SectionHeading>
-                    <p className="text-base text-ink leading-loose">{detail.description.text}</p>
-                </>
-            )}
-
-            {renderResources(detail)}
-
-            {detail.books && detail.books.length > 0 && (
-                <BidLinkList ids={detail.books} label="相关版本" />
-            )}
-        </>
-    );
+        const manifestUrl = `${basePath}/images/image_manifest.json`;
+        const testRes = await fetch(manifestUrl, { method: 'HEAD' });
+        if (testRes.ok) {
+            detail.digital_assets = {
+                image_manifest_url: manifestUrl,
+                tex_files: ['ce01.tex'],
+            };
+        }
+    } catch {
+        // 忽略
+    }
 }
 
 export default function BookDetailContent({ id }: BookDetailContentProps) {
@@ -274,8 +83,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
-    const [book, setBook] = useState<BookIndexItem | null>(null);
-    const [detail, setDetail] = useState<BookIndexDetailData | null>(null);
+    const [entry, setEntry] = useState<IndexEntry | null>(null);
+    const [detail, setDetail] = useState<DetailWithAssets | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -285,8 +94,6 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const setActiveTab = (tab: TabType) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('tab', tab);
-        // Reset page when switching tabs? Or keep it?
-        // Usually switching to 'basic' doesn't need 'page'.
         if (tab === 'basic') {
             params.delete('page');
         }
@@ -299,14 +106,22 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 setIsLoading(true);
                 setError(null);
 
-                const bookData = await findBookById(id, source);
-                if (!bookData) {
+                const transport = getTransport(source);
+
+                const entryData = await transport.getEntry(id);
+                if (!entryData) {
                     setError('not-found');
                     return;
                 }
-                setBook(bookData);
+                setEntry(entryData);
 
-                const detailData = await fetchBookDetail(bookData, source);
+                const raw = await transport.getItem(id);
+                if (!raw) {
+                    setError('not-found');
+                    return;
+                }
+                const detailData = raw as unknown as DetailWithAssets;
+                await enrichDigitalAssets(id, entryData, detailData);
                 setDetail(detailData);
             } catch (err) {
                 setError(err instanceof Error ? err.message : '加载失败');
@@ -334,7 +149,12 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         );
     }
 
-    if (!book || !detail) return null;
+    if (!entry || !detail) return null;
+
+    const indexDetailData: IndexDetailData = {
+        ...detail,
+        resources: normalizeResources(detail),
+    } as IndexDetailData;
 
     return (
         <LayoutWrapper hideFooter={true}>
@@ -354,22 +174,18 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         </Link>
                         <span className="text-secondary/30">|</span>
                         <span className="px-2 py-0.5 text-xs font-medium rounded bg-paper text-secondary border border-border/60">
-                            {getTypeLabel(book.type)}
+                            {getTypeLabel(entry.type)}
                         </span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${book.isDraft ? 'text-orange-600 bg-orange-50' : 'text-green-600 bg-green-50'}`}>
-                            {getStatusLabel(book.isDraft)}
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${entry.isDraft ? 'text-orange-600 bg-orange-50' : 'text-green-600 bg-green-50'}`}>
+                            {getStatusLabel(entry.isDraft)}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <SourceToggle />
-                        <CopyButton text={book.id} label="ID" />
+                        <CopyButton text={entry.id} label="ID" />
                     </div>
                 </div>
-
-                <h1 className="text-4xl font-bold text-ink mb-2 tracking-wide">
-                    {detail.title}
-                </h1>
 
                 {/* Tabs */}
                 <div className="flex border-b border-border/40 mt-6 overflow-x-auto no-scrollbar">
@@ -404,9 +220,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             {/* Content section */}
             {activeTab === 'basic' ? (
                 <div className="max-w-4xl mx-auto px-6 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    {detail.type === 'book' && renderBookDetail(detail as BookDetailData)}
-                    {detail.type === 'collection' && renderCollectionDetail(detail as CollectionDetailData)}
-                    {detail.type === 'work' && renderWorkDetail(detail as WorkDetailData)}
+                    <IndexDetail
+                        data={indexDetailData}
+                        renderLink={(linkId) => <BidLink id={linkId} />}
+                    />
                 </div>
             ) : (
                 <div className="px-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
