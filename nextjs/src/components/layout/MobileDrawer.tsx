@@ -4,13 +4,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { NAV_ITEMS } from '../../lib/constants';
 
-const navItems = [
-  { label: '首页', href: '/', icon: '🏠' },
-  { label: '路线图', href: '/roadmap', icon: '🗺️' },
-  { label: '古籍助手', href: '/assistant', icon: '✨' },
-  { label: '古籍索引', href: '/book-index', icon: '📚' },
-];
+const NAV_ICONS: Record<string, string> = {
+  '/': '🏠',
+  '/roadmap': '🗺️',
+  '/assistant': '✨',
+  '/book-index': '📚',
+  '/browse': '🔍',
+};
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -106,7 +108,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
 
         {/* Navigation Items */}
         <nav className="flex-1 overflow-y-auto py-4">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -123,7 +125,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 `}
               >
                 <span className="text-xl" aria-hidden="true">
-                  {item.icon}
+                  {NAV_ICONS[item.href] || '📄'}
                 </span>
                 <span>{item.label}</span>
               </Link>

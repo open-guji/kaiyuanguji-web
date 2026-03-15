@@ -9,13 +9,15 @@
     "dev": "next dev --webpack",
     "dev:local": "NEXT_PUBLIC_MODE=local next dev --webpack",
     "dev:remote": "NEXT_PUBLIC_MODE=remote next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "book-index-core": "file:../../book-index-manager/ts",
+    "book-index-ui": "file:../../book-index-manager/ui",
     "gray-matter": "^4.0.3",
     "next": "^16.1.4",
     "react": "^19.2.3",
@@ -25,9 +27,7 @@
     "rehype-sanitize": "^6.0.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
-    "webtex-cn": "file:../../webtex-cn",
-    "book-index-ui": "file:../../book-index-manager/ui",
-    "book-index-core": "file:../../book-index-manager/ts"
+    "webtex-cn": "file:../../webtex-cn"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",
