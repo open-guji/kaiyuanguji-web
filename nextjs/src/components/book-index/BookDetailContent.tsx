@@ -3,12 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { getTransport, getTypeLabel, getStatusLabel } from '@/lib/transport';
+import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
 import { IndexDetail } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData } from 'book-index-ui';
-import CopyButton from '@/components/common/CopyButton';
-import SourceToggle from '@/components/common/SourceToggle';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams, usePathname } from 'next/navigation';
 import BidLink from './BidLink';
@@ -48,6 +46,55 @@ async function enrichDigitalAssets(id: string, entry: IndexEntry, detail: Detail
     } catch {
         // 忽略
     }
+}
+
+interface NavItem {
+    key: TabType;
+    label: string;
+}
+
+function SideNav({ items, activeKey, onSelect }: {
+    items: NavItem[];
+    activeKey: string;
+    onSelect: (key: TabType) => void;
+}) {
+    return (
+        <nav className="flex flex-col pt-4">
+            {/* 返回索引 */}
+            <Link
+                href="/book-index"
+                className="flex items-center gap-1.5 px-5 py-2 text-sm text-secondary hover:text-vermilion transition-colors"
+            >
+                <svg className="w-3.5 h-3.5" fill="none" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M15 19l-7-7 7-7" />
+                </svg>
+                返回索引
+            </Link>
+
+            <div className="my-2 mx-4 border-t border-border/30" />
+
+            {/* 导航项 */}
+            {items.map(item => {
+                const isActive = item.key === activeKey;
+                return (
+                    <button
+                        key={item.key}
+                        onClick={() => onSelect(item.key)}
+                        className={`text-left px-5 py-2 text-sm transition-colors relative ${
+                            isActive
+                                ? 'text-vermilion font-medium'
+                                : 'text-secondary hover:text-ink'
+                        }`}
+                    >
+                        {isActive && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-vermilion rounded-r" />
+                        )}
+                        {item.label}
+                    </button>
+                );
+            })}
+        </nav>
+    );
 }
 
 export default function BookDetailContent({ id }: BookDetailContentProps) {
@@ -124,82 +171,44 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     if (!entry || !detail) return null;
 
+    // 构建导航项
+    const navItems: NavItem[] = [
+        { key: 'basic', label: '基本信息' },
+    ];
+    if (detail.digital_assets) {
+        navItems.push({ key: 'digital', label: '整理本' });
+    }
+
     return (
         <LayoutWrapper hideFooter={true}>
-            {/* Header section — centered */}
-            <div className="max-w-4xl mx-auto px-6 pt-8">
-                {/* Top Control Bar */}
-                <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <Link
-                            href="/book-index"
-                            className="flex items-center gap-1 text-sm text-secondary hover:text-vermilion transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                                <path d="M15 19l-7-7 7-7" />
-                            </svg>
-                            <span>返回索引</span>
-                        </Link>
-                        <span className="text-secondary/30">|</span>
-                        <span className="px-2 py-0.5 text-xs font-medium rounded bg-paper text-secondary border border-border/60">
-                            {getTypeLabel(entry.type)}
-                        </span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${entry.isDraft ? 'text-orange-600 bg-orange-50' : 'text-green-600 bg-green-50'}`}>
-                            {getStatusLabel(entry.isDraft)}
-                        </span>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <SourceToggle />
-                        <CopyButton text={entry.id} label="ID" />
-                    </div>
+            <div className="flex" style={{ height: 'calc(100vh - 4rem)' }}>
+                {/* 左侧导航 */}
+                <div className="w-36 flex-shrink-0 border-r border-border/30">
+                    <SideNav
+                        items={navItems}
+                        activeKey={activeTab}
+                        onSelect={setActiveTab}
+                    />
                 </div>
 
-                {/* Tabs */}
-                <div className="flex border-b border-border/40 mt-6 overflow-x-auto no-scrollbar">
-                    <button
-                        onClick={() => setActiveTab('basic')}
-                        className={`px-6 py-3 text-sm font-medium transition-colors relative ${activeTab === 'basic' ? 'text-vermilion' : 'text-secondary hover:text-ink'
-                            }`}
-                    >
-                        基本信息
-                        {activeTab === 'basic' && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-vermilion" />
-                        )}
-                    </button>
-                    {detail.digital_assets && (
-                        <button
-                            onClick={() => setActiveTab('digital')}
-                            className={`px-6 py-3 text-sm font-medium transition-colors relative flex items-center gap-2 ${activeTab === 'digital' ? 'text-vermilion' : 'text-secondary hover:text-ink'
-                                }`}
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            数字化
-                            {activeTab === 'digital' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-vermilion" />
+                {/* 右侧内容 */}
+                <div className="flex-1 overflow-auto">
+                    {activeTab === 'basic' ? (
+                        <div className="max-w-4xl px-8 pt-6 pb-8">
+                            <IndexDetail
+                                data={detail}
+                                renderLink={(linkId) => <BidLink id={linkId} />}
+                            />
+                        </div>
+                    ) : (
+                        <div className="px-4 pb-8">
+                            {detail.digital_assets && (
+                                <DigitalizationView id={id} assets={detail.digital_assets} initialPage={initialPage} />
                             )}
-                        </button>
+                        </div>
                     )}
                 </div>
             </div>
-
-            {/* Content section */}
-            {activeTab === 'basic' ? (
-                <div className="max-w-4xl mx-auto px-6 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <IndexDetail
-                        data={detail}
-                        renderLink={(linkId) => <BidLink id={linkId} />}
-                    />
-                </div>
-            ) : (
-                <div className="px-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    {detail.digital_assets && (
-                        <DigitalizationView id={id} assets={detail.digital_assets} initialPage={initialPage} />
-                    )}
-                </div>
-            )}
         </LayoutWrapper>
     );
 }

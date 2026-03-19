@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
 
   images: {
     unoptimized: true, // 静态导出需要禁用默认图片优化
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",
