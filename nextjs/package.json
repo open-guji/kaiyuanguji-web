@@ -16,7 +16,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "book-index-ui": "file:../../book-index-manager/ui",
+    "book-index-ui": "^0.1.0",
     "gray-matter": "^4.0.3",
     "next": "^16.1.4",
     "react": "^19.2.3",
@@ -26,7 +26,7 @@
     "rehype-sanitize": "^6.0.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
-    "webtex-cn": "file:../../webtex-cn"
+    "webtex-cn": "^0.1.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",
