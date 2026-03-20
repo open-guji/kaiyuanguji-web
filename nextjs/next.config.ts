@@ -6,10 +6,11 @@ const nextConfig: NextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   // 转译 webtex-cn 源码（ES modules）
-  transpilePackages: ['webtex-cn'],
+  transpilePackages: ['webtex-cn', 'book-index-ui'],
 
   images: {
     unoptimized: true, // 静态导出需要禁用默认图片优化
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",

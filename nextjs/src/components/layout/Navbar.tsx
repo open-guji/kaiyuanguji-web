@@ -5,13 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import SourceToggle from '../common/SourceToggle';
-
-const navItems = [
-  { label: '首页', href: '/' },
-  { label: '路线图', href: '/roadmap' },
-  { label: '古籍助手', href: '/assistant' },
-  { label: '古籍索引', href: '/book-index' },
-];
+import { NAV_ITEMS } from '../../lib/constants';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
@@ -59,7 +53,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-2">
-              {navItems.map((item) => (
+              {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

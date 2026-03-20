@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { findBookById, fetchAllBooks } from '@/services/bookIndex';
 import { Metadata } from 'next';
+import { getTransport } from '@/lib/transport';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 interface BookDetailPageProps {
@@ -13,10 +13,10 @@ export async function generateMetadata({
   const { id } = await params;
 
   try {
-    // 静态导出默认用 github 数据生成元数据
-    const book = await findBookById(id, 'github');
-    const title = book ? `${book.name} - 古籍详情` : `古籍详情 - ${id}`;
-    const description = book ? `查看古籍《${book.name}》的详细信息。` : `查看古籍 ${id} 的详细信息。`;
+    const transport = getTransport('github');
+    const entry = await transport.getEntry(id);
+    const title = entry ? `${entry.title} - 古籍详情` : `古籍详情 - ${id}`;
+    const description = entry ? `查看古籍《${entry.title}》的详细信息。` : `查看古籍 ${id} 的详细信息。`;
 
     return {
       title,
@@ -32,9 +32,10 @@ export async function generateMetadata({
 
 export async function generateStaticParams() {
   try {
-    const books = await fetchAllBooks('github');
-    const params = books.map((book) => ({
-      id: book.id,
+    const transport = getTransport('github');
+    const allEntries = await transport.getAllEntries();
+    const params = allEntries.map((entry) => ({
+      id: entry.id,
     }));
 
     // 开发环境下强行加入正在测试的 ID，确保静态导出模式下能打开

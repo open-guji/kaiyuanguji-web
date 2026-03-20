@@ -1,16 +1,32 @@
-import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import BookList from '@/components/book-index/BookList';
-import { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: '古籍索引',
-  description: '浏览和搜索开源古籍数据库，发现传统文化的宝藏。',
-};
+import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { IndexBrowser } from 'book-index-ui';
+import type { IndexEntry } from 'book-index-ui';
+import { useSource } from '@/components/common/SourceContext';
+import { getTransport } from '@/lib/transport';
 
 export default function BookIndexPage() {
+  const router = useRouter();
+  const { source } = useSource();
+
+  const transport = useMemo(() => getTransport(source), [source]);
+
+  const handleEntryClick = (entry: IndexEntry) => {
+    router.push(`/book-index/${entry.id}`);
+  };
+
   return (
-    <LayoutWrapper hideFooter={true}>
-      <BookList />
+    <LayoutWrapper hideFooter>
+      <div className="max-w-5xl mx-auto py-8 px-4">
+        <IndexBrowser
+          transport={transport}
+          hideModeIndicator
+          onEntryClick={handleEntryClick}
+        />
+      </div>
     </LayoutWrapper>
   );
 }

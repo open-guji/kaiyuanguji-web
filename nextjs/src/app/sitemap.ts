@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES } from '@/lib/constants';
-import { fetchAllBooks } from '@/services/bookIndex';
+import { getTransport } from '@/lib/transport';
 
 export const dynamic = 'force-static';
 
@@ -26,9 +26,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 3. 古籍详情页 (从 GitHub 获取)
     let bookRoutes: MetadataRoute.Sitemap = [];
     try {
-        const books = await fetchAllBooks();
-        bookRoutes = books.map((book) => ({
-            url: `${SITE_URL}/book-index/${book.id}`,
+        const transport = getTransport('github');
+        const allEntries = await transport.getAllEntries();
+        bookRoutes = allEntries.map((entry) => ({
+            url: `${SITE_URL}/book-index/${entry.id}`,
             lastModified,
             changeFrequency: 'monthly' as const,
             priority: 0.6,
