@@ -1,11 +1,11 @@
 /**
- * 共享 GithubTransport 实例
+ * 共享 GithubStorage 实例
  *
- * 替代原 @/services/bookIndex，统一通过 book-index-ui 的 transport 获取数据。
+ * 替代原 @/services/bookIndex，统一通过 book-index-ui 的 storage 获取数据。
  */
 
-import { GithubTransport } from 'book-index-ui/transport';
-import type { IndexType } from 'book-index-ui/transport';
+import { GithubStorage } from 'book-index-ui/storage';
+import type { IndexType } from 'book-index-ui/storage';
 import {
     DataSource,
     GITHUB_ORG,
@@ -13,19 +13,19 @@ import {
     JSDELIVR_CDN,
 } from './constants';
 
-/** 按数据源缓存 transport 实例 */
-const transportCache = new Map<DataSource, GithubTransport>();
+/** 按数据源缓存 storage 实例 */
+const storageCache = new Map<DataSource, GithubStorage>();
 
-/** 获取指定数据源的 transport（单例） */
-export function getTransport(source: DataSource = 'github'): GithubTransport {
-    let t = transportCache.get(source);
-    if (t) return t;
+/** 获取指定数据源的 storage（单例） */
+export function getTransport(source: DataSource = 'github'): GithubStorage {
+    let s = storageCache.get(source);
+    if (s) return s;
 
     const baseUrl = source === 'github'
         ? 'https://raw.githubusercontent.com'
         : undefined;
 
-    t = new GithubTransport({
+    s = new GithubStorage({
         org: GITHUB_ORG,
         repos: {
             draft: 'book-index-draft',
@@ -35,8 +35,8 @@ export function getTransport(source: DataSource = 'github'): GithubTransport {
         cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
     });
 
-    transportCache.set(source, t);
-    return t;
+    storageCache.set(source, s);
+    return s;
 }
 
 /** 类型标签 */
