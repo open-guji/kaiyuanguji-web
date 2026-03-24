@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     template: `%s - ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  icons: {
+    icon: "/images/open-guji-logo.png",
+    apple: "/images/open-guji-logo.png",
+  },
   keywords: ["古籍", "数字化", "开源", "传统文化", "古籍数字化"],
   authors: [{ name: SITE_NAME }],
   alternates: {
