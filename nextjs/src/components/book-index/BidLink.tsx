@@ -63,7 +63,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
 
     return (
         <Link
-            href={`/book-index/${id}`}
+            href={`/book-index?id=${id}`}
             className={`inline-flex items-center text-vermilion hover:underline font-medium decoration-dotted underline-offset-4 ${className || ''}`}
             {...props}
         >

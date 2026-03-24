@@ -6,7 +6,7 @@ describe('BidLink', () => {
         render(<BidLink id="test-id">Test Book</BidLink>);
 
         const link = screen.getByRole('link', { name: /test book/i });
-        expect(link).toHaveAttribute('href', '/book-index/test-id');
+        expect(link).toHaveAttribute('href', '/book-index?id=test-id');
     });
 
     it('applies custom className', () => {

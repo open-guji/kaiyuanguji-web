@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexDetail } from 'book-index-ui';
-import type { IndexEntry, IndexDetailData } from 'book-index-ui';
+import { IndexDetail, CollectionCatalog, CollatedEdition } from 'book-index-ui';
+import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
-import { notFound, useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import BidLink from './BidLink';
 import DigitalizationView from './DigitalizationView';
 import type { DigitalAssets } from '@/types';
 
-type TabType = 'basic' | 'digital';
+type TabType = 'basic' | 'digital' | 'collated' | `catalog:${string}`;
 
 interface BookDetailContentProps {
     id: string;
@@ -97,16 +97,27 @@ function SideNav({ items, activeKey, onSelect }: {
     );
 }
 
+/** 点击关联条目：跳转到对应详情页 */
+function handleNavigate(targetId: string) {
+    window.location.href = `/book-index?id=${targetId}`;
+}
+
 export default function BookDetailContent({ id }: BookDetailContentProps) {
     const { source } = useSource();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const pathname = usePathname();
 
     const [entry, setEntry] = useState<IndexEntry | null>(null);
     const [detail, setDetail] = useState<DetailWithAssets | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // 丛编目录
+    const [catalogList, setCatalogList] = useState<ResourceCatalog[]>([]);
+    const [catalogLoading, setCatalogLoading] = useState(false);
+    // 整理本（卷结构）
+    const [collatedIndex, setCollatedIndex] = useState<CollatedEditionIndex | null>(null);
+    const [collatedLoading, setCollatedLoading] = useState(false);
 
     const activeTab = (searchParams.get('tab') || 'basic') as TabType;
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
@@ -117,14 +128,56 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (tab === 'basic') {
             params.delete('page');
         }
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        params.set('id', id);
+        router.push(`/book-index?${params.toString()}`, { scroll: false });
     };
+
+    const loadCatalogs = useCallback(async (collectionId: string) => {
+        const transport = getTransport(source);
+        if (!transport.getCollectionCatalogs && !transport.getCollectionCatalog) return;
+
+        setCatalogLoading(true);
+        try {
+            if (transport.getCollectionCatalogs) {
+                const catalogs = await transport.getCollectionCatalogs(collectionId);
+                setCatalogList(catalogs || []);
+            } else if (transport.getCollectionCatalog) {
+                const catalog = await transport.getCollectionCatalog(collectionId);
+                if (catalog) {
+                    setCatalogList([{ resource_id: '', data: catalog }]);
+                } else {
+                    setCatalogList([]);
+                }
+            }
+        } catch {
+            setCatalogList([]);
+        } finally {
+            setCatalogLoading(false);
+        }
+    }, [source]);
+
+    const loadCollated = useCallback(async (workId: string) => {
+        const transport = getTransport(source);
+        if (!transport.getCollatedEditionIndex) return;
+
+        setCollatedLoading(true);
+        try {
+            const idx = await transport.getCollatedEditionIndex(workId);
+            setCollatedIndex(idx);
+        } catch {
+            setCollatedIndex(null);
+        } finally {
+            setCollatedLoading(false);
+        }
+    }, [source]);
 
     useEffect(() => {
         const loadData = async () => {
             try {
                 setIsLoading(true);
                 setError(null);
+                setCatalogList([]);
+                setCollatedIndex(null);
 
                 const transport = getTransport(source);
 
@@ -143,6 +196,13 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 const detailData = raw as unknown as DetailWithAssets;
                 await enrichDigitalAssets(id, entryData, detailData);
                 setDetail(detailData);
+
+                // 根据类型加载额外资源
+                if (detailData.type === 'collection') {
+                    loadCatalogs(id);
+                } else if (detailData.type === 'work') {
+                    loadCollated(id);
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : '加载失败');
             } finally {
@@ -151,7 +211,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         };
 
         loadData();
-    }, [id, source]);
+    }, [id, source, loadCatalogs, loadCollated]);
 
     if (error === 'not-found') {
         notFound();
@@ -175,13 +235,91 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const navItems: NavItem[] = [
         { key: 'basic', label: '基本信息' },
     ];
-    if (detail.digital_assets) {
-        navItems.push({ key: 'digital', label: '整理本' });
+    // 丛编目录 tab（每个资源一个）
+    if (detail.type === 'collection') {
+        if (catalogLoading && catalogList.length === 0) {
+            navItems.push({ key: 'catalog:loading' as TabType, label: '目录...' });
+        }
+        for (const cat of catalogList) {
+            navItems.push({
+                key: `catalog:${cat.resource_id}`,
+                label: cat.short_name ? `${cat.short_name}·目录` : '丛编目录',
+            });
+        }
     }
+    // 整理本 tab（卷结构浏览）
+    if (detail.type === 'work' && (collatedIndex || collatedLoading)) {
+        navItems.push({
+            key: 'collated',
+            label: collatedLoading ? '整理本...' : '整理本',
+        });
+    }
+    // 数字化资源 tab（tex/影像）
+    if (detail.digital_assets) {
+        navItems.push({ key: 'digital', label: '数字化' });
+    }
+
+    // 渲染当前 tab 内容
+    const renderContent = () => {
+        if (activeTab === 'basic') {
+            return (
+                <div className="max-w-4xl px-8 pt-6 pb-8">
+                    <IndexDetail
+                        data={detail}
+                        renderLink={(linkId) => <BidLink id={linkId} />}
+                    />
+                </div>
+            );
+        }
+
+        if (activeTab.startsWith('catalog:')) {
+            const catData = catalogList.find(c => `catalog:${c.resource_id}` === activeTab)?.data;
+            return (
+                <div className="max-w-4xl px-8 pt-6 pb-8">
+                    <CollectionCatalog
+                        data={catData}
+                        onNavigate={handleNavigate}
+                        renderLink={(linkId, label) => (
+                            <a
+                                href={`/book-index?id=${linkId}`}
+                                className="text-vermilion hover:underline"
+                            >
+                                {label || linkId}
+                            </a>
+                        )}
+                    />
+                </div>
+            );
+        }
+
+        if (activeTab === 'collated') {
+            const transport = getTransport(source);
+            return (
+                <div className="max-w-4xl px-8 pt-6 pb-8">
+                    <CollatedEdition
+                        index={collatedIndex || undefined}
+                        workId={id}
+                        transport={transport}
+                        onNavigate={handleNavigate}
+                    />
+                </div>
+            );
+        }
+
+        if (activeTab === 'digital' && detail.digital_assets) {
+            return (
+                <div className="px-4 pb-8">
+                    <DigitalizationView id={id} assets={detail.digital_assets} initialPage={initialPage} />
+                </div>
+            );
+        }
+
+        return null;
+    };
 
     return (
         <LayoutWrapper hideFooter={true}>
-            <div className="flex" style={{ height: 'calc(100vh - 4rem)' }}>
+            <div className="flex" style={{ height: 'calc(100vh - 2.5rem)' }}>
                 {/* 左侧导航 */}
                 <div className="w-36 flex-shrink-0 border-r border-border/30">
                     <SideNav
@@ -193,20 +331,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
                 {/* 右侧内容 */}
                 <div className="flex-1 overflow-auto">
-                    {activeTab === 'basic' ? (
-                        <div className="max-w-4xl px-8 pt-6 pb-8">
-                            <IndexDetail
-                                data={detail}
-                                renderLink={(linkId) => <BidLink id={linkId} />}
-                            />
-                        </div>
-                    ) : (
-                        <div className="px-4 pb-8">
-                            {detail.digital_assets && (
-                                <DigitalizationView id={id} assets={detail.digital_assets} initialPage={initialPage} />
-                            )}
-                        </div>
-                    )}
+                    {renderContent()}
                 </div>
             </div>
         </LayoutWrapper>

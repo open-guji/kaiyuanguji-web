@@ -20,7 +20,7 @@ export default function LayoutWrapper({ children, hideFooter = false }: LayoutWr
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-      <main className="min-h-[calc(100vh-theme(spacing.16))] bg-paper">
+      <main className="min-h-[calc(100vh-2.5rem)]">
         {children}
       </main>
       {!hideFooter && <Footer />}

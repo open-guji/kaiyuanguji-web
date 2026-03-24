@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const transport = getTransport('github');
         const allEntries = await transport.getAllEntries();
         bookRoutes = allEntries.map((entry) => ({
-            url: `${SITE_URL}/book-index/${entry.id}`,
+            url: `${SITE_URL}/book-index?id=${entry.id}`,
             lastModified,
             changeFrequency: 'monthly' as const,
             priority: 0.6,

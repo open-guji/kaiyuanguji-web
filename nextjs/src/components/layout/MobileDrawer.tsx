@@ -65,13 +65,13 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
 
       {/* Drawer */}
       <aside
-        className="fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-paper z-50 md:hidden
+        className="fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-[var(--color-nav-bg)] z-50 md:hidden
                    shadow-2xl transform transition-transform duration-300 ease-in-out
                    flex flex-col"
         aria-label="移动端菜单"
       >
         {/* Header */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-[var(--color-nav-border)]">
           <div className="flex items-center justify-between">
             <Link href="/" onClick={onClose} className="flex items-center gap-3">
               <Image
@@ -81,13 +81,13 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 height={32}
                 className="h-8 w-8"
               />
-              <span className="text-lg font-semibold text-ink tracking-wide">
+              <span className="text-lg font-semibold text-[var(--color-nav-ink)] tracking-wide">
                 开源古籍
               </span>
             </Link>
             <button
               onClick={onClose}
-              className="p-2 text-ink hover:text-vermilion transition-colors"
+              className="p-2 text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] transition-colors"
               aria-label="关闭菜单"
             >
               <svg
@@ -118,8 +118,8 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   flex items-center gap-3 px-6 py-3 text-sm tracking-wide
                   transition-colors border-l-4
                   ${active
-                    ? 'border-vermilion text-vermilion font-bold bg-vermilion/5'
-                    : 'border-transparent text-ink hover:text-vermilion hover:bg-border/20'
+                    ? 'border-[var(--color-nav-vermilion)] text-[var(--color-nav-vermilion)] font-bold bg-[var(--color-nav-vermilion)]/5'
+                    : 'border-transparent text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] hover:bg-[var(--color-nav-border)]/20'
                   }
                 `}
               >
@@ -133,11 +133,11 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         </nav>
 
         {/* Footer Info */}
-        <div className="p-6 border-t border-border text-center">
-          <p className="text-sm text-secondary leading-relaxed">
+        <div className="p-6 border-t border-[var(--color-nav-border)] text-center">
+          <p className="text-sm text-[var(--color-nav-ink)]/60 leading-relaxed">
             开源古籍项目
           </p>
-          <p className="text-xs text-secondary/70 mt-1">
+          <p className="text-xs text-[var(--color-nav-ink)]/40 mt-1">
             让古籍数字化更简单
           </p>
         </div>

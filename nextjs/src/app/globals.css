@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
-/* 开源古籍主题配置 */
+/* 默认配色（中性色调） */
 @theme {
   /* 颜色 */
-  --color-paper: #F5F2E9;
-  --color-ink: #2C2C2C;
-  --color-vermilion: #8B0000;
-  --color-secondary: #666666;
-  --color-border: #D4CFC0;
+  --color-paper: #f9fafb;
+  --color-ink: #111827;
+  --color-vermilion: #2563eb;
+  --color-secondary: #6b7280;
+  --color-border: #e5e7eb;
+
+  /* 导航栏古籍配色 */
+  --color-nav-bg: #F5F2E9;
+  --color-nav-ink: #2C2C2C;
+  --color-nav-vermilion: #8B0000;
+  --color-nav-border: #D4CFC0;
 
   /* 字体 */
   --font-serif: var(--font-noto-serif), "SimSun", "Songti SC", "STSong", "Noto Serif SC", serif;
@@ -31,9 +37,9 @@
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: #ffffff;
     color: var(--color-ink);
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -54,7 +60,6 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-serif);
     color: var(--color-ink);
   }
 }
@@ -63,7 +68,7 @@
 :root {
   --bim-fg: var(--color-ink);
   --bim-desc-fg: var(--color-secondary);
-  --bim-primary: var(--color-vermilion);
+  --bim-primary: #2563eb;
   --bim-primary-fg: #fff;
   --bim-input-bg: #fff;
   --bim-input-fg: var(--color-ink);
@@ -91,7 +96,7 @@
   }
 
   .btn-primary:hover {
-    background-color: rgb(139 0 0 / 0.9);
+    background-color: rgb(37 99 235 / 0.9);
   }
 
   .btn-outline {
@@ -103,7 +108,7 @@
   }
 
   .btn-outline:hover {
-    background-color: rgb(139 0 0 / 0.1);
+    background-color: rgb(37 99 235 / 0.1);
   }
 
   /* 标签样式 */

@@ -33,19 +33,19 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-paper border-b border-border">
+    <header className="sticky top-0 z-50 bg-[var(--color-nav-bg)] border-b border-[var(--color-nav-border)]">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-10 items-center justify-between">
           {/* Logo and Title */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image
               src="/images/open-guji-logo.png"
               alt="开源古籍 Logo"
-              width={32}
-              height={32}
-              className="h-8 w-8"
+              width={24}
+              height={24}
+              className="h-6 w-6"
             />
-            <span className="text-lg font-semibold text-ink tracking-wide">
+            <span className="text-sm font-semibold text-[var(--color-nav-ink)] tracking-wide">
               开源古籍
             </span>
           </Link>
@@ -59,10 +59,10 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
                   href={item.href}
                   onClick={(e) => handleAnchorClick(e, item.href)}
                   className={`
-                    px-4 py-2 text-sm tracking-wide transition-colors rounded-md
+                    px-3 py-1 text-xs tracking-wide transition-colors rounded-md
                     ${isActive(item.href)
-                      ? 'text-vermilion font-bold'
-                      : 'text-ink hover:text-vermilion'
+                      ? 'text-[var(--color-nav-vermilion)] font-bold'
+                      : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
                     }
                   `}
                 >
@@ -71,7 +71,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
               ))}
             </div>
 
-            <div className="h-4 w-[1px] bg-border mx-2" />
+            <div className="h-3 w-[1px] bg-[var(--color-nav-border)] mx-1" />
             <SourceToggle />
           </div>
 
@@ -80,11 +80,11 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
             <SourceToggle />
             <button
               onClick={onMobileMenuToggle}
-              className="p-2 text-ink hover:text-vermilion transition-colors"
+              className="p-2 text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] transition-colors"
               aria-label="打开菜单"
             >
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
