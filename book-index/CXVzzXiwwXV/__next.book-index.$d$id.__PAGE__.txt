@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:"$Sreact.suspense"
+3:I[2384,["442","static/chunks/f4cfcbb5-8bdec6fa6cdab414.js","859","static/chunks/859-0ebb81bcb1b681fd.js","807","static/chunks/807-d4ea712b9ca31263.js","708","static/chunks/708-712ca9a0837c01f6.js","883","static/chunks/app/book-index/%5Bid%5D/page-a379c880ef2e537c.js"],"default"]
+4:I[484,[],"OutletBoundary"]
+0:{"buildId":"y4d1M6Gf0nOzGMOr8V25G","rsc":["$","$1","c",{"children":[["$","$2",null,{"fallback":["$","div",null,{"className":"min-h-screen bg-paper"}],"children":["$","$L3",null,{"id":"CXVzzXiwwXV"}]}],null,["$","$L4",null,{"children":["$","$2",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
+5:null
