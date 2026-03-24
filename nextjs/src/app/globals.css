@@ -5,7 +5,7 @@
   /* 颜色 */
   --color-paper: #f9fafb;
   --color-ink: #111827;
-  --color-vermilion: #2563eb;
+  --color-vermilion: #8B0000;
   --color-secondary: #6b7280;
   --color-border: #e5e7eb;
 
@@ -67,8 +67,8 @@
 /* book-index-ui CSS 变量映射 */
 :root {
   --bim-fg: var(--color-ink);
-  --bim-desc-fg: var(--color-secondary);
-  --bim-primary: #2563eb;
+  --bim-desc-fg: var(--color-ink);
+  --bim-primary: #8B0000;
   --bim-primary-fg: #fff;
   --bim-input-bg: #fff;
   --bim-input-fg: var(--color-ink);
@@ -96,7 +96,7 @@
   }
 
   .btn-primary:hover {
-    background-color: rgb(37 99 235 / 0.9);
+    background-color: rgb(139 0 0 / 0.9);
   }
 
   .btn-outline {
@@ -108,7 +108,7 @@
   }
 
   .btn-outline:hover {
-    background-color: rgb(37 99 235 / 0.1);
+    background-color: rgb(139 0 0 / 0.1);
   }
 
   /* 标签样式 */

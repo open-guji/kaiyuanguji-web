@@ -63,7 +63,7 @@ function SideNav({ items, activeKey, onSelect }: {
             {/* 返回索引 */}
             <Link
                 href="/book-index"
-                className="flex items-center gap-1.5 px-5 py-2 text-sm text-secondary hover:text-vermilion transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2 text-sm text-ink hover:text-vermilion transition-colors"
             >
                 <svg className="w-3.5 h-3.5" fill="none" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                     <path d="M15 19l-7-7 7-7" />
@@ -83,7 +83,7 @@ function SideNav({ items, activeKey, onSelect }: {
                         className={`text-left px-5 py-2 text-sm transition-colors relative ${
                             isActive
                                 ? 'text-vermilion font-medium'
-                                : 'text-secondary hover:text-ink'
+                                : 'text-ink hover:text-vermilion'
                         }`}
                     >
                         {isActive && (
@@ -266,7 +266,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 <div className="max-w-4xl px-8 pt-6 pb-8">
                     <IndexDetail
                         data={detail}
-                        renderLink={(linkId) => <BidLink id={linkId} />}
+                        transport={getTransport(source)}
+                        renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
                     />
                 </div>
             );

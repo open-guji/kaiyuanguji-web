@@ -68,7 +68,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
             {...props}
         >
             {renderIcon()}
-            <span>{name || children || id}</span>
+            <span>{children || name || id}</span>
         </Link>
     );
 }
