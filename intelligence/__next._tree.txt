@@ -1,4 +1,4 @@
 :HL["/kaiyuanguji-web/_next/static/media/b20daecae68a588f-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/kaiyuanguji-web/_next/static/css/6bbaeb7e3b82b096.css","style"]
-:HL["/kaiyuanguji-web/_next/static/css/beb87a811e1d06fe.css","style"]
-0:{"buildId":"Dmq31r9vvz8Ppfowof1gz","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"intelligence","paramType":null,"paramKey":"intelligence","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+:HL["/kaiyuanguji-web/_next/static/css/a13d75b5f267f47d.css","style"]
+0:{"buildId":"DgT9MpTiVzBqMNxWdwEeX","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"intelligence","paramType":null,"paramKey":"intelligence","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}

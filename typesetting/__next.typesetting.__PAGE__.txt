@@ -1,6 +1,6 @@
 1:"$Sreact.fragment"
-2:I[1708,["859","static/chunks/859-b532ebe9fef6798a.js","807","static/chunks/807-d4ea712b9ca31263.js","454","static/chunks/454-c97a5b5389467ca6.js","708","static/chunks/708-712ca9a0837c01f6.js","529","static/chunks/app/typesetting/page-fc39bb6dff3065dc.js"],"default"]
-3:I[902,["859","static/chunks/859-b532ebe9fef6798a.js","807","static/chunks/807-d4ea712b9ca31263.js","454","static/chunks/454-c97a5b5389467ca6.js","708","static/chunks/708-712ca9a0837c01f6.js","529","static/chunks/app/typesetting/page-fc39bb6dff3065dc.js"],"default"]
+2:I[1708,["859","static/chunks/859-b532ebe9fef6798a.js","807","static/chunks/807-905bbc5dfdd65e37.js","454","static/chunks/454-c97a5b5389467ca6.js","708","static/chunks/708-9efb53e4f4f876c5.js","529","static/chunks/app/typesetting/page-ce37d2822a3ef01b.js"],"default"]
+3:I[902,["859","static/chunks/859-b532ebe9fef6798a.js","807","static/chunks/807-905bbc5dfdd65e37.js","454","static/chunks/454-c97a5b5389467ca6.js","708","static/chunks/708-9efb53e4f4f876c5.js","529","static/chunks/app/typesetting/page-ce37d2822a3ef01b.js"],"default"]
 5:I[484,[],"OutletBoundary"]
 6:"$Sreact.suspense"
 4:T103a,
@@ -59,5 +59,5 @@
 ---
 
 [← 返回首页](home) | [下一板块：信息提取 →](extraction)
-0:{"buildId":"Dmq31r9vvz8Ppfowof1gz","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"DgT9MpTiVzBqMNxWdwEeX","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
 7:null
