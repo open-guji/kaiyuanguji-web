@@ -27,16 +27,17 @@ jobs:
           cd nextjs
           npm install
 
-      # --- 步骤 1：为 GitHub Pages 构建（无 bundle 数据） ---
+      # --- 步骤 1：为 GitHub Pages 构建（github 模式） ---
       - name: Build for GitHub Pages
         run: |
           cd nextjs
           export NEXT_PUBLIC_BASE_PATH="/kaiyuanguji-web"
+          export NEXT_PUBLIC_DATA_SOURCE="github"
           npm run build
           mkdir -p ../build/gh-pages
           cp -r out/* ../build/gh-pages/
 
-      # --- 步骤 2：为 EdgeOne 构建（含 bundle 数据） ---
+      # --- 步骤 2：为 EdgeOne 构建（bundle 模式） ---
       - name: Clone book-index-draft
         run: |
           git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
@@ -50,6 +51,7 @@ jobs:
         run: |
           cd nextjs
           export NEXT_PUBLIC_BASE_PATH=""
+          export NEXT_PUBLIC_DATA_SOURCE="bundle"
           npm run build
           mkdir -p ../build/edgeone
           cp -r out/* ../build/edgeone/
