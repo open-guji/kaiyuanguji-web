@@ -32,7 +32,7 @@ export const GITEE_BOOK_INDEX_DRAFT = `${GITEE_BASE}/${GITEE_ORG}/book-index-dra
 export const GITEE_BOOK_INDEX = `${GITEE_BASE}/${GITEE_ORG}/book-index/raw/main/index.json`;
 
 // 数据源类型
-export type DataSource = 'github' | 'gitee';
+export type DataSource = 'github' | 'gitee' | 'bundle';
 export const SOURCE_COOKIE_NAME = 'og_data_source';
 
 // 导航菜单

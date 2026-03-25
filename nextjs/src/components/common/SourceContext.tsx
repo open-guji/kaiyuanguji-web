@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { DataSource, GITHUB_BOOK_INDEX, SOURCE_COOKIE_NAME } from '@/lib/constants';
+import { DataSource, SOURCE_COOKIE_NAME } from '@/lib/constants';
 
 interface SourceContextType {
     source: DataSource;
@@ -11,6 +11,19 @@ interface SourceContextType {
 }
 
 const SourceContext = createContext<SourceContextType | undefined>(undefined);
+
+/** 检测 bundle 数据是否可用（同域 /data/index.json） */
+async function detectBundle(): Promise<boolean> {
+    try {
+        const resp = await fetch('/data/index.json', {
+            method: 'HEAD',
+            signal: AbortSignal.timeout(3000),
+        });
+        return resp.ok;
+    } catch {
+        return false;
+    }
+}
 
 export function SourceProvider({
     children
@@ -26,20 +39,26 @@ export function SourceProvider({
     };
 
     const setSource = useCallback((src: DataSource) => {
-        // 暂时锁定为 github
-        setInternalSource('github');
-        setSourceCookie('github');
+        setInternalSource(src);
+        setSourceCookie(src);
+        setIsAutoDetected(false);
     }, []);
 
     const checkConnectivity = useCallback(async () => {
-        // 暂时禁用自动检测，总是锁定为 github
+        // 优先检测 bundle 模式
+        if (await detectBundle()) {
+            setInternalSource('bundle');
+            setIsAutoDetected(true);
+            return;
+        }
+        // fallback 到 github
         setInternalSource('github');
+        setIsAutoDetected(true);
     }, []);
 
     useEffect(() => {
-        // 暂时锁定为 github，忽略 Cookie 和自动检测
-        setInternalSource('github');
-    }, []);
+        checkConnectivity();
+    }, [checkConnectivity]);
 
     return (
         <SourceContext.Provider value={{ source, setSource, isAutoDetected, checkConnectivity }}>

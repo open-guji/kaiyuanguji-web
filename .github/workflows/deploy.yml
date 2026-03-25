@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+  repository_dispatch:
+    types: [ book-index-updated ]
 
 permissions:
   contents: write
@@ -25,7 +27,7 @@ jobs:
           cd nextjs
           npm install
 
-      # --- 步骤 1：为 GitHub Pages 构建 ---
+      # --- 步骤 1：为 GitHub Pages 构建（无 bundle 数据） ---
       - name: Build for GitHub Pages
         run: |
           cd nextjs
@@ -34,7 +36,16 @@ jobs:
           mkdir -p ../build/gh-pages
           cp -r out/* ../build/gh-pages/
 
-      # --- 步骤 2：为 EdgeOne 构建 ---
+      # --- 步骤 2：为 EdgeOne 构建（含 bundle 数据） ---
+      - name: Clone book-index-draft
+        run: |
+          git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
+
+      - name: Bundle data for EdgeOne
+        run: |
+          cd nextjs
+          node scripts/bundle-data.mjs ../book-index-draft
+
       - name: Build for EdgeOne
         run: |
           cd nextjs
@@ -56,5 +67,3 @@ jobs:
         with:
           folder: build/edgeone
           branch: edgeone-release # 部署到专门给 EdgeOne 用的分支
-
-     

@@ -1,11 +1,13 @@
 /**
- * 共享 GithubStorage 实例
+ * 共享 Storage 实例工厂
  *
- * 替代原 @/services/bookIndex，统一通过 book-index-ui 的 storage 获取数据。
+ * 根据 DataSource 返回对应的 IndexStorage 实现：
+ * - 'github' / 'gitee' → GithubStorage
+ * - 'bundle' → BundleStorage（只读，从同域 /data/ 加载预打包 chunk）
  */
 
-import { GithubStorage } from 'book-index-ui/storage';
-import type { IndexType } from 'book-index-ui/storage';
+import { GithubStorage, BundleStorage } from 'book-index-ui/storage';
+import type { IndexStorage, IndexType } from 'book-index-ui/storage';
 import {
     DataSource,
     GITHUB_ORG,
@@ -13,27 +15,43 @@ import {
     JSDELIVR_CDN,
 } from './constants';
 
+/**
+ * 只读 Storage 类型：GithubStorage 和 BundleStorage 共有的方法集合。
+ * 将站点实际使用的可选方法标记为必选，避免调用方做 undefined 检查。
+ */
+type ReadonlyStorage = IndexStorage & Required<Pick<IndexStorage,
+    'searchAll' | 'getEntry' | 'getAllEntries' |
+    'getCollectionCatalogs' | 'getCollectionCatalog' |
+    'getCollatedEditionIndex' | 'getCollatedJuan'
+>>;
+
 /** 按数据源缓存 storage 实例 */
-const storageCache = new Map<DataSource, GithubStorage>();
+const storageCache = new Map<DataSource, ReadonlyStorage>();
 
 /** 获取指定数据源的 storage（单例） */
-export function getTransport(source: DataSource = 'github'): GithubStorage {
-    let s = storageCache.get(source);
-    if (s) return s;
+export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
+    const cached = storageCache.get(source);
+    if (cached) return cached;
 
-    const baseUrl = source === 'github'
-        ? 'https://raw.githubusercontent.com'
-        : undefined;
+    let s: ReadonlyStorage;
 
-    s = new GithubStorage({
-        org: GITHUB_ORG,
-        repos: {
-            draft: 'book-index-draft',
-            official: 'book-index',
-        },
-        baseUrl,
-        cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
-    });
+    if (source === 'bundle') {
+        s = new BundleStorage({ basePath: '/data' }) as ReadonlyStorage;
+    } else {
+        const baseUrl = source === 'github'
+            ? 'https://raw.githubusercontent.com'
+            : undefined;
+
+        s = new GithubStorage({
+            org: GITHUB_ORG,
+            repos: {
+                draft: 'book-index-draft',
+                official: 'book-index',
+            },
+            baseUrl,
+            cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
+        }) as ReadonlyStorage;
+    }
 
     storageCache.set(source, s);
     return s;
