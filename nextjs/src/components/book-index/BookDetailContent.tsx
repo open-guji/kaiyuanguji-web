@@ -24,28 +24,21 @@ type DetailWithAssets = IndexDetailData & {
     digital_assets?: DigitalAssets;
 };
 
-/** 本地模式下注入数字化资源信息 */
-async function enrichDigitalAssets(id: string, entry: IndexEntry, detail: DetailWithAssets): Promise<void> {
+/** 本地模式下注入数字化资源信息（仅 has_digitalization: true 的条目） */
+function enrichDigitalAssets(id: string, entry: IndexEntry, detail: DetailWithAssets): void {
     if (typeof window === 'undefined' || !isLocalMode) return;
+    if (!(detail as unknown as Record<string, unknown>).has_digitalization) return;
 
-    try {
-        const pathParts = (entry.path || '').split('/');
-        pathParts.pop();
-        const baseDir = pathParts.join('/');
-        const assetPath = baseDir ? `${baseDir}/${id}` : id;
-        const basePath = `/local-data/${assetPath}`;
+    const pathParts = (entry.path || '').split('/');
+    pathParts.pop();
+    const baseDir = pathParts.join('/');
+    const assetPath = baseDir ? `${baseDir}/${id}` : id;
+    const basePath = `/local-data/${assetPath}`;
 
-        const manifestUrl = `${basePath}/images/image_manifest.json`;
-        const testRes = await fetch(manifestUrl, { method: 'HEAD' });
-        if (testRes.ok) {
-            detail.digital_assets = {
-                image_manifest_url: manifestUrl,
-                tex_files: ['ce01.tex'],
-            };
-        }
-    } catch {
-        // 忽略
-    }
+    detail.digital_assets = {
+        image_manifest_url: `${basePath}/images/image_manifest.json`,
+        tex_files: ['ce01.tex'],
+    };
 }
 
 interface NavItem {
@@ -194,7 +187,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     return;
                 }
                 const detailData = raw as unknown as DetailWithAssets;
-                await enrichDigitalAssets(id, entryData, detailData);
+                enrichDigitalAssets(id, entryData, detailData);
                 setDetail(detailData);
 
                 // 根据类型加载额外资源

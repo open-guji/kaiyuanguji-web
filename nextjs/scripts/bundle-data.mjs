@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import * as OpenCC from 'opencc-js';
 
 // ─── 配置 ───
 
@@ -185,6 +186,57 @@ function bundleL2() {
     console.log(`L2  ${files.length} juan files → ${groupCount} tiyao chunks`);
 }
 
+// ─── 简体搜索索引 ───
+
+function bundleSearchS() {
+    const indexPath = join(DRAFT_DIR, 'index.json');
+    const index = readJson(indexPath);
+    const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
+
+    const searchS = {};
+    let count = 0;
+
+    for (const [typeName] of [['works'], ['collections'], ['books']]) {
+        const items = index[typeName];
+        if (!items) continue;
+
+        for (const item of Object.values(items)) {
+            const simplified = {};
+            const title = item.title || item.name || '';
+
+            // 标题转简体
+            if (title) {
+                const ts = t2s(title);
+                if (ts !== title) simplified.t = ts;
+            }
+
+            // 作者转简体
+            if (item.author) {
+                const as = t2s(item.author);
+                if (as !== item.author) simplified.a = as;
+            }
+
+            // 别名转简体
+            if (item.additional_titles && item.additional_titles.length > 0) {
+                const ats = item.additional_titles.map(t => t2s(t));
+                if (ats.some((s, i) => s !== item.additional_titles[i])) {
+                    simplified.at = ats;
+                }
+            }
+
+            // 只存有差异的条目
+            if (Object.keys(simplified).length > 0) {
+                searchS[item.id] = simplified;
+                count++;
+            }
+        }
+    }
+
+    writeJson(join(OUT_DIR, 'search_s.json'), searchS);
+    const size = (Buffer.byteLength(JSON.stringify(searchS)) / 1024).toFixed(0);
+    console.log(`S   search_s.json generated (${count} entries with simplified text, ${size} KB)`);
+}
+
 // ─── Main ───
 
 console.log(`\nbundle-data: ${DRAFT_DIR}`);
@@ -197,6 +249,7 @@ if (!existsSync(DRAFT_DIR)) {
 }
 
 bundleL0();
+bundleSearchS();
 bundleL1();
 bundleL2();
 
