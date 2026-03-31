@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Navbar from './Navbar';
 import MobileDrawer from './MobileDrawer';
 import Footer from './Footer';
+import FeedbackWidget from '../common/FeedbackWidget';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export default function LayoutWrapper({ children, hideFooter = false }: LayoutWr
         {children}
       </main>
       {!hideFooter && <Footer />}
+      <FeedbackWidget />
     </>
   );
 }

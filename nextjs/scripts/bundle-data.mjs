@@ -47,26 +47,52 @@ function ensureDir(dir) {
     mkdirSync(dir, { recursive: true });
 }
 
-// ─── L0: 复制 index.json ───
+const NUM_SHARDS = 16;
+
+// ─── L0: 合并分片索引 → index.json ───
+
+function loadShardedIndex() {
+    const indexDir = join(DRAFT_DIR, 'index');
+    const merged = { books: {}, collections: {}, works: {} };
+
+    // collections (single file)
+    const colPath = join(indexDir, 'collections.json');
+    if (existsSync(colPath)) {
+        merged.collections = readJson(colPath);
+    }
+
+    // books and works (16 shards each)
+    for (const typeKey of ['books', 'works']) {
+        for (let i = 0; i < NUM_SHARDS; i++) {
+            const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
+            if (existsSync(shardPath)) {
+                Object.assign(merged[typeKey], readJson(shardPath));
+            }
+        }
+    }
+
+    return merged;
+}
 
 function bundleL0() {
-    const src = join(DRAFT_DIR, 'index.json');
-    if (!existsSync(src)) {
-        console.error(`❌ index.json not found: ${src}`);
+    const indexDir = join(DRAFT_DIR, 'index');
+    if (!existsSync(indexDir)) {
+        console.error(`❌ index directory not found: ${indexDir}`);
         process.exit(1);
     }
     ensureDir(OUT_DIR);
-    const data = readFileSync(src, 'utf-8');
+    const merged = loadShardedIndex();
+    const data = JSON.stringify(merged);
     writeFileSync(join(OUT_DIR, 'index.json'), data, 'utf-8');
     const size = (Buffer.byteLength(data) / 1024 / 1024).toFixed(1);
-    console.log(`L0  index.json copied (${size} MB)`);
+    const total = Object.keys(merged.books).length + Object.keys(merged.collections).length + Object.keys(merged.works).length;
+    console.log(`L0  index.json merged from shards (${total} entries, ${size} MB)`);
 }
 
 // ─── L1: 按 ID 前两字符分桶 ───
 
 function bundleL1() {
-    const indexPath = join(DRAFT_DIR, 'index.json');
-    const index = readJson(indexPath);
+    const index = loadShardedIndex();
     const chunks = new Map(); // prefix → { id: detailData, ... }
     let totalEntries = 0;
 
@@ -189,8 +215,7 @@ function bundleL2() {
 // ─── 简体搜索索引 ───
 
 function bundleSearchS() {
-    const indexPath = join(DRAFT_DIR, 'index.json');
-    const index = readJson(indexPath);
+    const index = loadShardedIndex();
     const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
     const searchS = {};
