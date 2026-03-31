@@ -1,0 +1,73 @@
+{
+  "resources": [
+    {
+      "id": "siku-zongmu",
+      "name": "欽定四庫全書總目",
+      "type": "catalog",
+      "work_id": "GY4HvsY3w3u",
+      "description": "清·紀昀等編，200卷，收錄古今圖書3460餘種",
+      "url": "",
+      "total": 10687,
+      "imported": 10687,
+      "status": "done",
+      "priority": 0,
+      "start_date": "2026-01-15",
+      "end_date": "2026-03-10",
+      "notes": "4054條全部匹配到Work"
+    },
+    {
+      "id": "siku-wenyuange",
+      "name": "欽定四庫全書",
+      "edition": "文淵閣本",
+      "type": "catalog",
+      "collection_id": "FCNcSJbF77V",
+      "description": "清乾隆年間編纂，共79338卷，藏於臺灣國立故宮博物院",
+      "url": "",
+      "total": 4172,
+      "imported": 4172,
+      "status": "done",
+      "priority": 1,
+      "start_date": "2026-01-15",
+      "end_date": "2026-03-10",
+      "notes": "4054條全部匹配到Work"
+    },
+    {
+      "id": "bainaben-24shi",
+      "name": "二十四史",
+      "edition": "百衲本",
+      "type": "catalog",
+      "collection_id": "FCmH8kWxMhR",
+      "description": "商務印書館影印，選用最佳版本合成，共820冊",
+      "url": "",
+      "total": 24,
+      "imported": 24,
+      "status": "done",
+      "priority": 10
+    },
+    {
+      "id": "wuyingdian",
+      "name": "武英殿刻書",
+      "type": "catalog",
+      "collection_id": "FCmYiRvMzSb",
+      "description": "清代武英殿修書處刊行典籍，約七百餘種。含殿本二十四史、聚珍版叢書、十三經注疏等",
+      "url": "",
+      "total": 200,
+      "imported": 200,
+      "status": "in_progress",
+      "priority": 11,
+      "start_date": "2026-03-29",
+      "notes": "已導入：殿本二十四史24種 + 聚珍版叢書138種 + 十三經注疏13種 + 九通9種 + 其他殿本16種。全部Book已匹配Work。"
+    },
+    {
+      "id": "shanghai-guji-catalog",
+      "name": "上海圖書館古籍目錄",
+      "type": "catalog",
+      "description": "上海圖書館古籍善本目錄",
+      "url": "https://gj.library.sh.cn/ancientBookCatalogue/list",
+      "total": 0,
+      "imported": 0,
+      "status": "todo",
+      "priority": 12
+    }
+  ]
+}

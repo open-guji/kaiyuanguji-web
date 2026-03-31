@@ -1,0 +1,45 @@
+{
+  "groups": [
+    {
+      "name": "重要叢編",
+      "items": [
+        { "id": "FCNcSJbF77V", "title": "欽定四庫全書·文淵閣本", "description": "清·紀昀等編，藏於臺灣國立故宮博物院" },
+        { "id": "FCPFLm7Uie3", "title": "欽定四庫全書·文源閣本", "description": "清·紀昀等編，已毀於英法聯軍" },
+        { "id": "FCPFLywwwNP", "title": "欽定四庫全書·文溯閣本", "description": "清·紀昀等編，藏於甘肅省圖書館" },
+        { "id": "FCPFMeX1suq", "title": "欽定四庫全書·文津閣本", "description": "清·紀昀等編，藏於中國國家圖書館" }
+      ]
+    },
+    {
+      "name": "經典作品",
+      "items": [
+        { "id": "GY4HvsY3w3u", "title": "欽定四庫全書總目", "description": "清·紀昀等編，200卷" },
+        { "id": "GY4JLP3nDUB", "title": "欽定四庫全書", "description": "清乾隆38-52年，紀昀等編纂" },
+        { "id": "GY3ty2LN9ro", "title": "易經", "description": "西周·周文王" },
+        { "id": "GY4JM7j7yi7", "title": "史記", "description": "西漢·司馬遷" }
+      ]
+    },
+    {
+      "name": "經部要籍",
+      "items": [
+        { "id": "GY3u2M3Pmga", "title": "尚書", "description": "上古·相傳孔子編" },
+        { "id": "GY3u4zqy2AZ", "title": "詩經", "description": "西周至春秋" },
+        { "id": "GY3u65R2i1n", "title": "周禮", "description": "西周·周公" },
+        { "id": "GY3u7iFyTU5", "title": "禮記", "description": "西漢·戴聖編" },
+        { "id": "GY3uBWBaaTx", "title": "春秋左傳", "description": "春秋·左丘明" },
+        { "id": "GY3u9kGK1AC", "title": "論語", "description": "春秋·孔子弟子及再傳弟子編" },
+        { "id": "GY3uAP6uxW5", "title": "孟子", "description": "戰國·孟軻" },
+        { "id": "GY3uDLM3rji", "title": "爾雅", "description": "秦漢間" }
+      ]
+    },
+    {
+      "name": "史部要籍",
+      "items": [
+        { "id": "GY4JM7j7yi7", "title": "史記", "description": "西漢·司馬遷，130卷" },
+        { "id": "GY4JNFBwWZp", "title": "漢書", "description": "東漢·班固，120卷" },
+        { "id": "GY4JQ67jhdq", "title": "後漢書", "description": "南朝宋·范曄，120卷" },
+        { "id": "GY4JRAkLqUX", "title": "三國志", "description": "西晉·陳壽，65卷" },
+        { "id": "GY4MnPn7oSt", "title": "資治通鑑", "description": "北宋·司馬光，294卷" }
+      ]
+    }
+  ]
+}
