@@ -1,0 +1,81 @@
+{
+  "resources": [
+    {
+      "id": "ctext",
+      "name": "CText 中國哲學書電子化計劃",
+      "type": "collection",
+      "description": "線上開放古籍文獻資料庫，含全文檢索",
+      "url": "https://ctext.org/",
+      "total": 9947,
+      "imported": 5674,
+      "status": "done",
+      "priority": 1,
+      "start_date": "2026-03-24",
+      "end_date": "2026-03-25",
+      "notes": "通過官方API搜索，支持繁簡轉換和異體字歸一化"
+    },
+    {
+      "id": "wikisource",
+      "name": "維基文庫",
+      "type": "collection",
+      "description": "自由的線上圖書館，含古籍全文",
+      "url": "https://zh.wikisource.org/",
+      "total": 9947,
+      "imported": 3007,
+      "status": "done",
+      "priority": 2,
+      "start_date": "2026-03-24",
+      "end_date": "2026-03-25",
+      "notes": "4個並行任務完成，覆蓋全200卷四庫總目"
+    },
+    {
+      "id": "shidianguji",
+      "name": "識典古籍",
+      "type": "collection",
+      "description": "北大與字節跳動合作的古籍數字化平台，含OCR全文和影印圖",
+      "url": "https://www.shidianguji.com",
+      "total": 9947,
+      "imported": 235,
+      "status": "in_progress",
+      "priority": 3,
+      "start_date": "2026-03-20",
+      "notes": "適配器已開發，批量搜索腳本待完成"
+    },
+    {
+      "id": "nlc",
+      "name": "國家圖書館·中華古籍資源庫",
+      "type": "collection",
+      "description": "中國國家圖書館古籍數字化平台，含高清影像",
+      "url": "https://read.nlc.cn/",
+      "total": 0,
+      "imported": 0,
+      "status": "todo",
+      "priority": 4,
+      "notes": "已有NLC適配器，支持圖片下載"
+    },
+    {
+      "id": "archive",
+      "name": "Internet Archive",
+      "type": "collection",
+      "description": "互聯網檔案館，含大量古籍掃描件",
+      "url": "https://archive.org/",
+      "total": 0,
+      "imported": 6,
+      "status": "todo",
+      "priority": 5,
+      "notes": "已有Archive.org適配器"
+    },
+    {
+      "id": "harvard",
+      "name": "哈佛大學圖書館",
+      "type": "collection",
+      "description": "哈佛燕京圖書館中文善本特藏，IIIF影像",
+      "url": "https://curiosity.lib.harvard.edu/",
+      "total": 0,
+      "imported": 0,
+      "status": "todo",
+      "priority": 6,
+      "notes": "已有Harvard IIIF適配器"
+    }
+  ]
+}
