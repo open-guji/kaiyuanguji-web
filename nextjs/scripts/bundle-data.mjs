@@ -265,7 +265,7 @@ function bundleSearchS() {
 // ─── 复制独立数据文件（resource.json, recommended.json） ───
 
 function bundleExtraFiles() {
-    const files = ['resource.json', 'recommended.json'];
+    const files = ['resource.json', 'resource-site.json', 'recommended.json'];
     for (const fname of files) {
         const src = join(DRAFT_DIR, fname);
         if (existsSync(src)) {

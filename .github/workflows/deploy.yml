@@ -50,7 +50,7 @@ jobs:
       - name: Verify bundled data
         run: |
           cd nextjs/public/data
-          for f in index.json search_s.json resource.json recommended.json; do
+          for f in index.json search_s.json resource.json resource-site.json recommended.json; do
             if [ ! -f "$f" ]; then
               echo "❌ Missing $f" && exit 1
             fi
