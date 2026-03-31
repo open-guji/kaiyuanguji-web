@@ -50,6 +50,7 @@ jobs:
       - name: Build for EdgeOne
         run: |
           cd nextjs
+          rm -rf .next out
           export NEXT_PUBLIC_BASE_PATH=""
           export NEXT_PUBLIC_DATA_SOURCE="bundle"
           npm run build
