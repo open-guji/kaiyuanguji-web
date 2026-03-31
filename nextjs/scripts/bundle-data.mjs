@@ -262,6 +262,23 @@ function bundleSearchS() {
     console.log(`S   search_s.json generated (${count} entries with simplified text, ${size} KB)`);
 }
 
+// ─── 复制独立数据文件（resource.json, recommended.json） ───
+
+function bundleExtraFiles() {
+    const files = ['resource.json', 'recommended.json'];
+    for (const fname of files) {
+        const src = join(DRAFT_DIR, fname);
+        if (existsSync(src)) {
+            const data = readFileSync(src, 'utf-8');
+            writeFileSync(join(OUT_DIR, fname), data, 'utf-8');
+            const size = (Buffer.byteLength(data) / 1024).toFixed(0);
+            console.log(`EX  ${fname} copied (${size} KB)`);
+        } else {
+            console.log(`EX  ${fname} not found, skipped`);
+        }
+    }
+}
+
 // ─── Main ───
 
 console.log(`\nbundle-data: ${DRAFT_DIR}`);
@@ -277,5 +294,6 @@ bundleL0();
 bundleSearchS();
 bundleL1();
 bundleL2();
+bundleExtraFiles();
 
 console.log('\n✅ bundle-data complete\n');
