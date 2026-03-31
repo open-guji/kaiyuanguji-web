@@ -47,6 +47,17 @@ jobs:
           cd nextjs
           node scripts/bundle-data.mjs ../book-index-draft
 
+      - name: Verify bundled data
+        run: |
+          cd nextjs/public/data
+          for f in index.json search_s.json resource.json recommended.json; do
+            if [ ! -f "$f" ]; then
+              echo "❌ Missing $f" && exit 1
+            fi
+            echo "✓ $f ($(wc -c < "$f") bytes)"
+          done
+          ls chunks/*.json | wc -l | xargs -I{} echo "✓ {} chunk files"
+
       - name: Build for EdgeOne
         run: |
           cd nextjs
@@ -56,6 +67,14 @@ jobs:
           npm run build
           mkdir -p ../build/edgeone
           cp -r out/* ../build/edgeone/
+
+      - name: Verify EdgeOne build uses bundle mode
+        run: |
+          if grep -r '"bundle"' nextjs/out/_next/static/chunks/ > /dev/null 2>&1; then
+            echo "✓ EdgeOne build confirmed using bundle mode"
+          else
+            echo "❌ EdgeOne build not using bundle mode!" && exit 1
+          fi
 
       # --- 步骤 3：部署到 GitHub Pages 分支 ---
       - name: Deploy to GitHub Pages Branch
