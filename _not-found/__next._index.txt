@@ -3,5 +3,5 @@
 3:I[7121,[],""]
 4:I[4581,[],""]
 :HL["/kaiyuanguji-web/_next/static/css/6bbaeb7e3b82b096.css","style"]
-:HL["/kaiyuanguji-web/_next/static/css/9c172b2783b2c68b.css","style"]
-0:{"buildId":"XCY2gJnEIxSlugg1kqtcN","rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/kaiyuanguji-web/_next/static/css/6bbaeb7e3b82b096.css","precedence":"next"}],["$","link","1",{"rel":"stylesheet","href":"/kaiyuanguji-web/_next/static/css/9c172b2783b2c68b.css","precedence":"next"}]],["$","html",null,{"lang":"zh-CN","children":["$","body",null,{"className":"antialiased __variable_0dee60","children":["$","$L2",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]}]}]}]]}],"loading":null,"isPartial":false}
+:HL["/kaiyuanguji-web/_next/static/css/d669a7b9d5e6f59a.css","style"]
+0:{"buildId":"G2X0FXw6t2WdTBkmSV14P","rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/kaiyuanguji-web/_next/static/css/6bbaeb7e3b82b096.css","precedence":"next"}],["$","link","1",{"rel":"stylesheet","href":"/kaiyuanguji-web/_next/static/css/d669a7b9d5e6f59a.css","precedence":"next"}]],["$","html",null,{"lang":"zh-CN","children":["$","body",null,{"className":"antialiased __variable_0dee60","children":["$","$L2",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]}]}]}]]}],"loading":null,"isPartial":false}
