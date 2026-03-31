@@ -17,7 +17,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "book-index-ui": "^0.1.5",
+    "book-index-ui": "^0.1.6",
     "gray-matter": "^4.0.3",
     "next": "^16.1.4",
     "opencc-js": "^1.0.5",
