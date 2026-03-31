@@ -1,6 +1,6 @@
 1:"$Sreact.fragment"
-2:I[4934,["442","static/chunks/f4cfcbb5-f081fb090bd06b6f.js","63","static/chunks/63-a9388d2e4627ec51.js","632","static/chunks/632-10f01051d3ab2f91.js","934","static/chunks/934-8f976854698cdf2d.js","571","static/chunks/app/read/%5Bfilename%5D/page-ecd96265902efab2.js"],"default"]
-3:I[902,["442","static/chunks/f4cfcbb5-f081fb090bd06b6f.js","63","static/chunks/63-a9388d2e4627ec51.js","632","static/chunks/632-10f01051d3ab2f91.js","934","static/chunks/934-8f976854698cdf2d.js","571","static/chunks/app/read/%5Bfilename%5D/page-ecd96265902efab2.js"],"default"]
+2:I[4934,["442","static/chunks/f4cfcbb5-d42b397a4f20049a.js","825","static/chunks/825-7898a1c193b30d9a.js","632","static/chunks/632-55b6a487deaadf22.js","934","static/chunks/934-8f976854698cdf2d.js","571","static/chunks/app/read/%5Bfilename%5D/page-8fabaa6b6d8399b9.js"],"default"]
+3:I[902,["442","static/chunks/f4cfcbb5-d42b397a4f20049a.js","825","static/chunks/825-7898a1c193b30d9a.js","632","static/chunks/632-55b6a487deaadf22.js","934","static/chunks/934-8f976854698cdf2d.js","571","static/chunks/app/read/%5Bfilename%5D/page-8fabaa6b6d8399b9.js"],"default"]
 5:I[484,[],"OutletBoundary"]
 6:"$Sreact.suspense"
 4:Te30,
@@ -59,5 +59,5 @@
 ---
 
 [← 上一板块：专业排版](typesetting) | [下一板块：校对工具 →](toolkit)
-0:{"buildId":"BRo_z9q9yASTEQYL4xLrW","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"自动化信息提取","text":"自动化信息提取","level":1},{"id":"核心目标","text":"核心目标","level":2},{"id":"1-影像处理","text":"1. 影像处理","level":3},{"id":"2-ocr-字符识别","text":"2. OCR 字符识别","level":3},{"id":"3-句读标点","text":"3. 句读、标点","level":4},{"id":"参考资源","text":"参考资源","level":2}],"title":"自动化信息提取"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"Rarf02fizTP-yBdx5D0sW","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"自动化信息提取","text":"自动化信息提取","level":1},{"id":"核心目标","text":"核心目标","level":2},{"id":"1-影像处理","text":"1. 影像处理","level":3},{"id":"2-ocr-字符识别","text":"2. OCR 字符识别","level":3},{"id":"3-句读标点","text":"3. 句读、标点","level":4},{"id":"参考资源","text":"参考资源","level":2}],"title":"自动化信息提取"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
 7:null
