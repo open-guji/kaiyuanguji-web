@@ -59,15 +59,35 @@
       "notes": "已導入：殿本二十四史24種 + 聚珍版叢書138種 + 十三經注疏13種 + 九通9種 + 其他殿本16種。全部Book已匹配Work。"
     },
     {
-      "id": "shanghai-guji-catalog",
-      "name": "上海圖書館古籍目錄",
+      "id": "siku-huiyao",
+      "name": "欽定四庫全書薈要",
+      "edition": "摛藻堂本",
       "type": "catalog",
-      "description": "上海圖書館古籍善本目錄",
-      "url": "https://gj.library.sh.cn/ancientBookCatalogue/list",
-      "total": 0,
-      "imported": 0,
-      "status": "todo",
-      "priority": 12
+      "collection_id": "FCmzokMAKks",
+      "description": "清于敏中等編，463種20828卷，現藏台北故宮博物院。「四庫中的四庫，精華中的精華」",
+      "url": "https://commons.wikimedia.org/wiki/Category:Siku_Quanshu_Huiyao",
+      "total": 471,
+      "imported": 471,
+      "status": "done",
+      "priority": 2,
+      "start_date": "2026-03-29",
+      "end_date": "2026-03-31",
+      "notes": "471本Book全部匹配Work（100%）。資源：Wikimedia Commons 499個DjVu + Internet Archive 9794條目600ppi"
+    },
+    {
+      "id": "hanshu-yiwenzhi",
+      "name": "漢書藝文志",
+      "type": "catalog",
+      "work_id": "GY2rqZp8Hvw",
+      "description": "中國現存最早的史志目錄。東漢班固據劉向《七略》改編，分六藝、諸子、詩賦、兵書、數術、方技六略",
+      "url": "https://gj.library.sh.cn/ancientBookCatalogue/search?dataType=8&isSearch=1",
+      "total": 621,
+      "imported": 549,
+      "status": "done",
+      "priority": 3,
+      "start_date": "2026-03-31",
+      "end_date": "2026-03-31",
+      "notes": "六略全部整理完畢。549/621條目匹配到Work（88%），含約470個新建Work（傳世+亡佚）。六藝略55、諸子略188、詩賦略105、兵書略56、數術略110、方技略35。"
     }
   ]
 }
