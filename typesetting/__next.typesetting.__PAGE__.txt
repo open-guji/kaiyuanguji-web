@@ -59,5 +59,5 @@
 ---
 
 [← 返回首页](home) | [下一板块：信息提取 →](extraction)
-0:{"buildId":"Rarf02fizTP-yBdx5D0sW","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"ffwFTvpR_WqsihiW4EL65","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$L3",null,{"content":"$4","toc":[{"id":"古籍排版","text":"古籍排版","level":1},{"id":"核心功能需求","text":"核心功能需求","level":3},{"id":"二-现状现有排版工具比较","text":"二、 现状：现有排版工具比较","level":2},{"id":"三-现状latex-解决方案比较","text":"三、 现状：LaTeX 解决方案比较","level":2},{"id":"四当前进展","text":"四、当前进展","level":2}],"title":"古籍排版"}]}],null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
 7:null
