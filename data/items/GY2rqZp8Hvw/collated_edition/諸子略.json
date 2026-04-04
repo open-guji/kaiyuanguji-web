@@ -1,0 +1,1464 @@
+{
+  "title": "諸子略",
+  "source_url": "https://zh.wikisource.org/wiki/漢書/卷030",
+  "sections": [
+    {
+      "title": "諸子略",
+      "level": 1,
+      "type": "略",
+      "content": ""
+    },
+    {
+      "title": "諸子儒家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "晏子八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《晏子》八篇。名婴，谥平仲，相齐景公，孔子称善与人交，有《列传》。",
+      "work_id": "GYL53E55Tg3"
+    },
+    {
+      "title": "子思二十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《子思》二十三篇。名+亻及，孔子孙，为鲁缪公师。",
+      "work_id": "GYL54g7popB"
+    },
+    {
+      "title": "曾子十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《曾子》十八篇。名参，孔子弟子。",
+      "work_id": "GYL54g4xCxP"
+    },
+    {
+      "title": "漆雕子十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《漆雕子》十三篇。孔子弟子漆雕启后。",
+      "work_id": "GYPjVLXuBpK"
+    },
+    {
+      "title": "宓子十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宓子》十六篇。名不齐，字子贱，孔子弟子。",
+      "work_id": "GYPjVLGoBtB"
+    },
+    {
+      "title": "景子三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《景子》三篇。说宓子语，似其弟子。",
+      "work_id": "GYPjVKhdDTD"
+    },
+    {
+      "title": "世子二十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《世子》二十一篇。名硕，陈人也，七十子之弟子。",
+      "work_id": "GYPjVLoyces"
+    },
+    {
+      "title": "魏文侯六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《魏文侯》六篇。",
+      "work_id": "GYPjVMRk4pw"
+    },
+    {
+      "title": "李克七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李克》七篇。子夏弟子，为魏文侯相。",
+      "work_id": "GYPjVKzmSu5"
+    },
+    {
+      "title": "孟子十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孟子》十一篇。名轲，邹人，子思弟子，有《列传》。",
+      "work_id": "GYPjYeuSczb"
+    },
+    {
+      "title": "孫卿子三十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孙卿子》三十三篇。名况，赵人，为齐稷下祭酒，有《列传》。",
+      "work_id": "GYL54dj7bG3"
+    },
+    {
+      "title": "羋子十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《羋子》十八篇。名婴，齐人，七十子之后。",
+      "work_id": "GYPjVLFB93V"
+    },
+    {
+      "title": "內業十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《内业》十五篇。不知作书者。",
+      "work_id": "GYPjVLLWA63"
+    },
+    {
+      "title": "周政六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周政》六篇。周时法度政教。",
+      "work_id": "GYPjVNiRh9Z"
+    },
+    {
+      "title": "周法九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周法》九篇。法天地，立百官。",
+      "work_id": "GYPjVNaq1L3"
+    },
+    {
+      "title": "河間周制十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《河间周制》十八篇。似河间献王所述也。",
+      "work_id": "GYPjVKDy1Ub"
+    },
+    {
+      "title": "讕言十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《谰言》十篇。不知作者，陈人君法度。",
+      "work_id": "GYPjVKoH3Tu"
+    },
+    {
+      "title": "功議四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《功议》四篇。不知作者，论功德事。",
+      "work_id": "GYPjVK6vZtT"
+    },
+    {
+      "title": "甯越一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《甯越》一篇。中牟人，为周威王师。",
+      "work_id": "GYPjVLNQL3R"
+    },
+    {
+      "title": "王孫子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《王孙子》一篇。一曰《巧心》。",
+      "work_id": "GYPjVML6EpF"
+    },
+    {
+      "title": "公孫固一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙固》一篇。十八章，齐闵王失国，问之，固因为陈古今成败也。",
+      "work_id": "GYPjVJuwiqD"
+    },
+    {
+      "title": "李氏春秋二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李氏春秋》二篇。",
+      "work_id": "GYPjVL52fLK"
+    },
+    {
+      "title": "羊子四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《羊子》四篇。百章。故秦博士。",
+      "work_id": "GYPjVMqngJb"
+    },
+    {
+      "title": "董子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《董子》一篇。名无心，难墨子。",
+      "work_id": "GYPjVJcUgRD"
+    },
+    {
+      "title": "徐子四十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《徐子》四十二篇。宋外黄人。",
+      "work_id": "GYPjVMmweYP"
+    },
+    {
+      "title": "魯仲連子十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鲁仲连子》十四篇。有《列传》。",
+      "work_id": "GYPjVLADcpX"
+    },
+    {
+      "title": "平原君七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《平原君》七篇。硃建也。",
+      "work_id": "GYPjVLULHAo"
+    },
+    {
+      "title": "虞氏春秋十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《虞氏春秋》十五篇。虞卿也。",
+      "work_id": "GYPjVNDNsbV"
+    },
+    {
+      "title": "高祖傳十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《高祖传》文十三篇。高祖与大臣述古语及诏策也。",
+      "work_id": "GYPjVJpRxNs"
+    },
+    {
+      "title": "陸賈二十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《陆贾》二十三篇。",
+      "work_id": "GYL54dpp78B"
+    },
+    {
+      "title": "劉敬三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《刘敬》三篇。",
+      "work_id": "GYPjVL6k5su"
+    },
+    {
+      "title": "孝文傳十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孝文传》十一篇。文帝所称及诏策。",
+      "work_id": "GYPjVMgHpXh"
+    },
+    {
+      "title": "賈山八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《贾山》八篇。",
+      "work_id": "GYPjVKaVQAB"
+    },
+    {
+      "title": "賈誼五十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《贾谊》五十八篇。",
+      "work_id": "GYL54dsghyy"
+    },
+    {
+      "title": "董仲舒一百二十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《董仲舒》百二十三篇。",
+      "work_id": "GYL52Mz86gF"
+    },
+    {
+      "title": "兒寬九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《儿宽》九篇。",
+      "work_id": "GYPjVJhUtVd"
+    },
+    {
+      "title": "公孫弘十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙弘》十篇。",
+      "work_id": "GYPjVJwoCw9"
+    },
+    {
+      "title": "終軍八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《终军》八篇。",
+      "work_id": "GYPjVNX838B"
+    },
+    {
+      "title": "吾丘壽王六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吾丘寿王》六篇。",
+      "work_id": "GYPjVMadzX1"
+    },
+    {
+      "title": "虞丘說一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《虞丘说》一篇。难孙卿也。",
+      "work_id": "GYPjVNBoWcF"
+    },
+    {
+      "title": "莊助四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《庄助》四篇。",
+      "work_id": "GYPjVNn5yVy"
+    },
+    {
+      "title": "臣彭四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《臣彭》四篇。",
+      "work_id": "GYPjVJH4nCP"
+    },
+    {
+      "title": "鉤盾冗從李步昌八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《钩盾冗从李步昌》八篇。宣帝时数言事。",
+      "work_id": "GYPjVKAQ6q5"
+    },
+    {
+      "title": "儒家言十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《儒家言》十八篇。不知作者。",
+      "work_id": "GYPjVLghjoV"
+    },
+    {
+      "title": "鹽鐵論六十篇",
+      "level": 3,
+      "type": "书",
+      "content": "桓宽《盐铁论》六十篇。",
+      "work_id": "GYL54dvZJqm",
+      "author_info": "桓寬"
+    },
+    {
+      "title": "劉向所序六十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "刘向所序六十七篇。《新序》、《说苑》、《世说》、《列女传颂图》也。",
+      "author_info": "劉向"
+    },
+    {
+      "title": "對上下三雍宮三篇",
+      "level": 3,
+      "type": "书",
+      "content": "河间献王《对上下三雍宫》三篇。",
+      "author_info": "劉德",
+      "work_id": "GYPjVJe6jFu"
+    },
+    {
+      "title": "公孔尼子二十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孔尼子》二十八篇。七十子之弟子。",
+      "work_id": "GYPjVJrHSUo"
+    },
+    {
+      "title": "俟子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《俟子》一篇。",
+      "work_id": "GYPjVLtypjH"
+    },
+    {
+      "title": "太常蓼侯孔藏十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《太常蓼侯孔藏》十篇。父聚，高祖时以功臣封，臧嗣爵。",
+      "work_id": "GYPjVM5YV7V"
+    },
+    {
+      "title": "楊雄所序三十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "杨雄所序三十八篇。《太玄》十九，《法言》十三，《乐》四，《箴》二。",
+      "author_info": "楊雄",
+      "work_id": "GYPjVMotWMD"
+    },
+    {
+      "title": "周史六韜六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周史六韬》六篇。惠、襄之间，或曰显王时，或曰孔子问焉。",
+      "work_id": "GYPjVNeafPM"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右儒五十三家，八百三十六篇。\n儒家者流，蓋出於司徒之官，助人君順陰陽明教化者也。游文於六經之中，留意於仁義之際，祖述堯舜，憲章文武，宗師仲尼，以重其言，於道最為高。孔子曰：「如有所譽，其有所試。」唐虞之隆，殷周之盛，仲尼之業，已試之效者也。然惑者既失精微，而辟者又隨時抑揚，違離道本，苟以譁眾取寵。後進循之，是以五經乖析，儒學浸衰，此辟儒之患。"
+    },
+    {
+      "title": "諸子道家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "伊尹五十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《伊尹》五十一篇。汤相。",
+      "work_id": "GYPjVN2xGmd"
+    },
+    {
+      "title": "太公二百三七十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《太公》二百三七十篇。吕望为周师尚父，本有道者。或有近世又以为太公术者所增加也。《谋》八十一篇，《言》七十一篇，《兵》八十五篇。",
+      "work_id": "GYL555JVaQw"
+    },
+    {
+      "title": "辛甲二十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《辛甲》二十九篇。纣臣，七十五谏而去，周封之。",
+      "work_id": "GYPjVMi9Jdd"
+    },
+    {
+      "title": "鬻子二十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鬻子》二十二篇。名熊，为周师，自文王以下问焉，周封为楚祖。",
+      "work_id": "GYL55zzJSjZ"
+    },
+    {
+      "title": "老子鄰氏經傳四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《老子邻氏经传》四篇。姓李，名耳，邻氏传其学。",
+      "work_id": "GYPjVKw9rQ7"
+    },
+    {
+      "title": "老子傅氏經說三十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《老子傅氏经说》三十七篇。述老子学。",
+      "work_id": "GYPjVKtyZL3"
+    },
+    {
+      "title": "老子徐氏經說六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《老子徐氏经说》六篇。字少季，临淮人，传《老子》。",
+      "work_id": "GYPjVKxxeeb"
+    },
+    {
+      "title": "說老子四篇",
+      "level": 3,
+      "type": "书",
+      "content": "刘向《说老子》四篇。",
+      "author_info": "劉向",
+      "work_id": "GYPjVLqjj3u"
+    },
+    {
+      "title": "蜎子十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蜎子》十三篇。名渊，楚人，老子弟子。",
+      "work_id": "GYPjVN8RMNX"
+    },
+    {
+      "title": "關尹子九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《关尹子》九篇。名喜，为关吏，老子过关，喜去吏而从之。",
+      "work_id": "GYL57oR6o11"
+    },
+    {
+      "title": "莊子五十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《庄子》五十二篇。名周，宋人。",
+      "work_id": "GYPjVGcRTmH"
+    },
+    {
+      "title": "列子八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《列子》八篇。名圄寇，先庄子，庄子称之。",
+      "work_id": "GYL57oUiPVy"
+    },
+    {
+      "title": "老成子十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《老成子》十八篇。",
+      "work_id": "GYPjVKq5qiP"
+    },
+    {
+      "title": "長盧子九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《长卢子》九篇。楚人。",
+      "work_id": "GYPjVJ8sAJ3"
+    },
+    {
+      "title": "王狄子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《王狄子》一篇。",
+      "work_id": "GYPjVMGFD43"
+    },
+    {
+      "title": "公子牟四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公子牟》四篇。魏之公子也。先庄子，庄子称之。",
+      "work_id": "GYPjVK8dzS3"
+    },
+    {
+      "title": "田子二十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《田子》二十五篇。名骈，齐人，游稷下，号天口骈。",
+      "work_id": "GYPjVMCavhd"
+    },
+    {
+      "title": "老萊子十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《老莱子》十六篇。楚人，与也子同时。",
+      "work_id": "GYPjVKs5PNf"
+    },
+    {
+      "title": "黔婁子四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黔娄子》四篇。齐隐士，守道不诎，威王下之。",
+      "work_id": "GYPjVLW95RH"
+    },
+    {
+      "title": "宮孫子二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宫孙子》二篇。",
+      "work_id": "GYPjVK3GHY3"
+    },
+    {
+      "title": "周訓十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周训》十四篇。",
+      "work_id": "GYPjVNgaD3d"
+    },
+    {
+      "title": "黃帝四經四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝四经》四篇。",
+      "work_id": "GYPjVKQ27Us"
+    },
+    {
+      "title": "黃帝銘六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝铭》六篇。",
+      "work_id": "GYPjVKLjKx3"
+    },
+    {
+      "title": "黃帝君臣十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝君臣》十篇。起六国也，与《老子》相似也。",
+      "work_id": "GYPjVKK7H7M"
+    },
+    {
+      "title": "雜黃帝五十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂黄帝》五十八篇。六国时贤者所作。",
+      "work_id": "GYPjVNGiLym"
+    },
+    {
+      "title": "力牧二十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《力牧》二十二篇。六国时所作，托之力牧。力牧，黄帝相。",
+      "work_id": "GYPjVL337g3"
+    },
+    {
+      "title": "孫子十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孙子》十六篇。六国时。",
+      "work_id": "GYL555MNBGj"
+    },
+    {
+      "title": "捷子二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《捷子》二篇。齐人，武帝时说。",
+      "work_id": "GYPjVKdjVqZ"
+    },
+    {
+      "title": "曹羽二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《曹羽》二篇。楚人，武帝时说于齐王。",
+      "work_id": "GYPjVJ773u1"
+    },
+    {
+      "title": "郎中嬰齊十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《郎中婴齐》十二篇。武帝时。",
+      "work_id": "GYPjVKmRZMy"
+    },
+    {
+      "title": "臣君子二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《臣君子》二篇。蜀人。",
+      "work_id": "GYPjVJFSjMh"
+    },
+    {
+      "title": "鄭長者一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《郑长者》一篇。六国时。先韩子，韩子称之。",
+      "work_id": "GYPjVNVVzHV"
+    },
+    {
+      "title": "楚子三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《楚子》三篇。",
+      "work_id": "GYPjVJPyAEB"
+    },
+    {
+      "title": "道家言二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《道家言》二篇。近世，不知作者。",
+      "work_id": "GYPjVJXHiw1"
+    },
+    {
+      "title": "管子八十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《管子》八十六篇。名夷吾，相齐恒公，九合诸侯，不以兵车也。有《列传》。",
+      "work_id": "GYL556EnscK"
+    },
+    {
+      "title": "鹖冠子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鹖冠子》一篇。楚人，居深山，以鹖为冠。",
+      "work_id": "GYL561HPzKy"
+    },
+    {
+      "title": "文字九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《文字》九篇。老子弟子，与孔子并时，而称周平王问，似依托者也。",
+      "work_id": "GYPjVMTWBDy"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右道三十七家，九百九十三篇。\n道家者流，蓋出於史官，歷記成敗存亡禍福古今之道，然後知秉要執本，清虛以自守，卑弱以自持，此君人南面之術也。合於堯之克攘，易之嗛嗛，一謙而四益，此其所長也。及放者為之，則欲絕去禮學，兼棄仁義，曰獨任清虛可以為治。"
+    },
+    {
+      "title": "諸子陰陽家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "宋司星子韋三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宋司星子韦》三篇。景公之史。",
+      "work_id": "GYPjVLvhFGs"
+    },
+    {
+      "title": "公檮生終始十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公檮生终始》十四篇。传邹奭《始终》书。",
+      "work_id": "GYPjVK555nX"
+    },
+    {
+      "title": "公孫發二十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙发》二十二篇。六国时。",
+      "work_id": "GYPjVJt3Ysq"
+    },
+    {
+      "title": "鄒子四十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邹子》四十九篇。名衍，齐人，为燕昭王师，居稷下，号谈天衍。",
+      "work_id": "GYPjVNwmagf"
+    },
+    {
+      "title": "鄒子終始五十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邹子终始》五十六篇。",
+      "work_id": "GYPjVNyPdXM"
+    },
+    {
+      "title": "乘丘子五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《乘丘子》五篇。六国时。",
+      "work_id": "GYPjVJDpgX1"
+    },
+    {
+      "title": "杜文公五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杜文公》五篇。六国时。",
+      "work_id": "GYPjVJfin6b"
+    },
+    {
+      "title": "黃帝泰素二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝泰素》二十篇。六国时韩诸公子所作。",
+      "author_info": "韓非 作",
+      "work_id": "GYPjVKReAKZ"
+    },
+    {
+      "title": "南公三十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《南公》三十一篇。六国时。",
+      "work_id": "GYPjVLJhMqZ"
+    },
+    {
+      "title": "容成子十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《容成子》十四篇。",
+      "work_id": "GYPjVLerFhZ"
+    },
+    {
+      "title": "張蒼十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《张苍》十六篇。丞相北平侯。",
+      "work_id": "GYPjVNPwXyh"
+    },
+    {
+      "title": "鄒奭子十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邹奭子》十二篇。齐人，号曰雕龙奭。",
+      "work_id": "GYPjVNsvYvT"
+    },
+    {
+      "title": "閭丘子十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《闾丘子》十三篇。名快，魏人，在南公前。",
+      "work_id": "GYPjVLBw3N7"
+    },
+    {
+      "title": "馮促十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《冯促》十三篇。郑人。",
+      "work_id": "GYPjVJniXqH"
+    },
+    {
+      "title": "五曹官制五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《五曹官制》五篇。汉制，似贾谊所条。",
+      "work_id": "GYPjVMX2Q23"
+    },
+    {
+      "title": "周伯十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周伯》十一篇。齐人，六国时。",
+      "work_id": "GYPjVNZ2D5Z"
+    },
+    {
+      "title": "衛侯官十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《卫侯官》十二篇。近世，不知作者。",
+      "work_id": "GYPjVMMwivB"
+    },
+    {
+      "title": "天下忠臣九篇",
+      "level": 3,
+      "type": "书",
+      "content": "于长《天下忠臣》九篇。平阴人，近世。",
+      "author_info": "于長",
+      "work_id": "GYPjVM9FTKM"
+    },
+    {
+      "title": "公孫渾邪十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙浑邪》十五篇。平曲侯。",
+      "work_id": "GYPjVJyeh35"
+    },
+    {
+      "title": "雜陰陽三十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂阴阳》三十八篇。不知作者。",
+      "work_id": "GYPjVNNGoHZ"
+    },
+    {
+      "title": "將巨子五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《将巨子》五篇。六国时。先南公，南公称之。",
+      "work_id": "GYPjVKYdv4F"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右陰陽二十一家，三百六十九篇。\n陰陽家者流，蓋出於羲和之官，敬順昊天，歷象日月星辰，敬授民時，此其所長也。及拘者為之，則牽於禁忌，泥於小數，舍人事而任鬼神。"
+    },
+    {
+      "title": "諸子法家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "李子三十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李子》三十二篇。名悝，相魏文侯，富国强兵。",
+      "work_id": "GYPjVL8TWRV"
+    },
+    {
+      "title": "商君二十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《商君》二十九篇。名鞅，姬姓，卫后也，相秦孝公，有《列传》。",
+      "work_id": "GYL556P5sDZ"
+    },
+    {
+      "title": "申子六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《申子》六篇。名不害，京人，相韩昭侯，终其身诸侯不敢侵韩。",
+      "work_id": "GYL54eAxzzB"
+    },
+    {
+      "title": "處子九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《处子》九篇。",
+      "work_id": "GYPjVJMvviT"
+    },
+    {
+      "title": "慎子四十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《慎子》四十二篇。名到，先申、韩，申、韩称之。",
+      "work_id": "GYL561Dq5gT"
+    },
+    {
+      "title": "韓子五十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《韩子》五十五篇。名非，韩诸公子，使秦，李斯害而杀之。",
+      "work_id": "GYL556S19vo"
+    },
+    {
+      "title": "游棣子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《游棣子》一篇。",
+      "work_id": "GYPjVN4rSj1"
+    },
+    {
+      "title": "晁錯三十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《晁错》三十一篇。",
+      "work_id": "GYPjVJAXtzB"
+    },
+    {
+      "title": "燕十事十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《燕十事》十篇。不知作者。",
+      "work_id": "GYPjVMsjY7R"
+    },
+    {
+      "title": "法家言二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《法家言》二篇。不知作者。",
+      "work_id": "GYPjVJjEztf"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右法十家，二百一十七篇。\n法家者流，蓋出於理官，信賞必罰，以輔禮制。《易》曰「先王以明罰飭法」，此其所長也。及刻者為之，則無教化，去仁愛，專任刑法而欲以致治，至於殘害至親，傷恩薄厚。"
+    },
+    {
+      "title": "諸子名家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "鄧析二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邓析》二篇。郑人，与子产并时。",
+      "work_id": "GYL556LJe4f"
+    },
+    {
+      "title": "尹文子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尹文子》一篇。说齐宣王。先公孙龙。",
+      "work_id": "GYL561AxUpf"
+    },
+    {
+      "title": "公孫龍子十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙龙子》十四篇。赵人。",
+      "work_id": "GYL561M1apw"
+    },
+    {
+      "title": "成公生五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《成公生》五篇。与黄公等同时。",
+      "work_id": "GYPjVJCCdgK"
+    },
+    {
+      "title": "惠子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《惠子》一篇。名施，与庄子并时。",
+      "work_id": "GYPjVKWq7om"
+    },
+    {
+      "title": "黃公四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄公》四篇。名疵，为秦博士，作歌诗，在秦时歌诗中。",
+      "work_id": "GYPjVKTMas9"
+    },
+    {
+      "title": "毛公九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《毛公》九篇。赵人，与公孙龙等并游平原君赵胜家。",
+      "work_id": "GYPjVLDZ6Co"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右名七家，三十六篇。\n名家者流，蓋出於禮官。古者名位不同，禮亦異數。孔子曰：「必也正名乎！名不正則言不順，言不順則事不成。」此其所長也。及譥者為之，則苟鉤鈲析亂而已。"
+    },
+    {
+      "title": "諸子墨家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "尹佚二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尹佚》二篇。周臣，在成、康时也。",
+      "work_id": "GYPjVMyS3yZ"
+    },
+    {
+      "title": "田俅子三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《田俅子》三篇。先韩子。",
+      "work_id": "GYPjVM7PyDR"
+    },
+    {
+      "title": "我子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《我子》一篇。",
+      "work_id": "GYPjVMVMfKu"
+    },
+    {
+      "title": "隨巢子六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《随巢子》六篇。墨翟弟子。",
+      "work_id": "GYPjVLz2if9"
+    },
+    {
+      "title": "胡非子三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《胡非子》三篇。墨翟弟子。",
+      "work_id": "GYPjVKVAP7d"
+    },
+    {
+      "title": "墨子七十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《墨子》七十一篇。名翟，为宋大夫，在孔子后。",
+      "work_id": "GYL5613mygB"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右墨六家，八十六篇。\n墨家者流，蓋出於清廟之守。茅屋采椽，是以貴儉；養三老五更，是以兼愛；選士大射，是以上賢；宗祀嚴父，是以右鬼；順四時而行，是以非命；以孝視天下，是以上同：此其所長也。及蔽者為之，見儉之利，因以非禮，推兼愛之意，而不知別親疏。"
+    },
+    {
+      "title": "諸子縱橫家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "蘇子三十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《苏子》三十一篇。名秦，有《列传》。",
+      "work_id": "GYPCFRgrhnP"
+    },
+    {
+      "title": "張子十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《张子》十篇。名仪，有《列传》。",
+      "work_id": "GYPjVNRkLEB"
+    },
+    {
+      "title": "龐煖二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《庞煖》二篇。为燕将。",
+      "work_id": "GYPjVLQXwG3"
+    },
+    {
+      "title": "闕子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《阙子》一篇。",
+      "work_id": "GYPjVLd3TT5"
+    },
+    {
+      "title": "國筮子十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《国筮子》十七篇。",
+      "work_id": "GYPjVKCFaw1"
+    },
+    {
+      "title": "秦零陵令信一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《秦零陵令信》一篇。难秦相李斯。",
+      "work_id": "GYPjVLbByM9"
+    },
+    {
+      "title": "蒯子五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蒯子》五篇。名通。",
+      "work_id": "GYPjVKja5G3"
+    },
+    {
+      "title": "鄒陽七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邹阳》七篇。",
+      "work_id": "GYPjVNupisq"
+    },
+    {
+      "title": "主父偃二十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《主父偃》二十八篇。",
+      "work_id": "GYPjVNp5XAF"
+    },
+    {
+      "title": "莊安一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《庄安》一篇。",
+      "work_id": "GYPjVNkEVQ3"
+    },
+    {
+      "title": "待詔金馬聊蒼三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《待诏金马聊苍》三篇。赵人，武帝时。",
+      "work_id": "GYPjVJVPYyd"
+    },
+    {
+      "title": "徐氏一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《徐氏》一篇。",
+      "work_id": "GYPjVMk6AST"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右從橫十二家，百七篇。\n從橫家者流，蓋出於行人之官。孔子曰：「誦詩三百，使於四方，不能專對，雖多亦奚以為？」又曰：「使乎，使乎！」言其當權事制宜，受命而不受辭，此其所長也。及邪人為之，則上詐諼而棄其信。"
+    },
+    {
+      "title": "諸子雜家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "盤盂二十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "孔甲《盘盂》二十六篇。黄帝之史，或曰夏帝孔甲，似皆非。",
+      "author_info": "孔甲",
+      "work_id": "GYPjVLSaAmm"
+    },
+    {
+      "title": "大禹三十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《大禹》三十七篇。传言禹所作，其文似后世语。",
+      "work_id": "GYPjVJZ19Ub"
+    },
+    {
+      "title": "子晚子三十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《子晚子》三十五篇。齐人，好议兵，与《司马法》相似。",
+      "work_id": "GYPjVNqyh7d"
+    },
+    {
+      "title": "由余三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《由余》三篇。戎人，秦穆公聘以为大夫。",
+      "work_id": "GYPjVN6kcgP"
+    },
+    {
+      "title": "尉繚二十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尉缭》二十九篇。六国时。",
+      "work_id": "GYL555Vyyr7"
+    },
+    {
+      "title": "尸子二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尸子》二十篇。名佼，鲁人，秦相商君师之。鞅死，佼逃入蜀。",
+      "work_id": "GYPjVLnJsxj"
+    },
+    {
+      "title": "呂氏春秋二十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吕氏春秋》二十六篇。秦相吕不韦辑智略士作。",
+      "work_id": "GYL561UC5yR",
+      "author_info": "呂不韋 辑"
+    },
+    {
+      "title": "淮南內二十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《淮南内》二十一篇。王安。",
+      "work_id": "GYPjVKFmoj5"
+    },
+    {
+      "title": "淮南外三十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《淮南外》三十三篇。",
+      "work_id": "GYPjVKHVEGf"
+    },
+    {
+      "title": "東方朔二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《东方朔》二十篇。",
+      "work_id": "GYL55X2AZB5"
+    },
+    {
+      "title": "伯象先生一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《伯象先生》一篇。",
+      "work_id": "GYPjVJ3aq6w"
+    },
+    {
+      "title": "荊軻論五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《荆轲论》五篇。轲为燕刺秦王，不成而死，司马相如等论之。",
+      "author_info": "司馬相如 论",
+      "work_id": "GYPjVKfmjMH"
+    },
+    {
+      "title": "吳子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吴子》一篇。",
+      "work_id": "GYL555QEn8X"
+    },
+    {
+      "title": "公孫尼一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙尼》一篇。",
+      "work_id": "GYPjVK1TVHZ"
+    },
+    {
+      "title": "博士臣賢對一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《博士臣贤对》一篇。汉世，难韩子、商君。",
+      "work_id": "GYPjVJ249y9"
+    },
+    {
+      "title": "臣說三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《臣说》三篇。武帝时作赋。",
+      "work_id": "GYPjVJLDWAs"
+    },
+    {
+      "title": "解子簿書三十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《解子簿书》三十五篇。",
+      "work_id": "GYPjVKcA8rK"
+    },
+    {
+      "title": "推雜書八十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《推杂书》八十七篇。",
+      "work_id": "GYPjVMEM36f"
+    },
+    {
+      "title": "雜家言一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂家言》一篇。王伯，不知作者。",
+      "work_id": "GYPjVNLNdLB"
+    },
+    {
+      "title": "五子胥八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《五子胥》八篇。名员，春秋时为吴将，忠直遇谗死。",
+      "work_id": "GYPjVMcSnmV"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右雜二十家，四百三篇。\n雜家者流，蓋出於議官。兼儒、墨，合名、法，知國體之有此，見王治之無不貫，此其所長也。及盪者為之，則漫羨而無所歸心。"
+    },
+    {
+      "title": "諸子農家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "神農二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《神农》二十篇。六国时，诸子疾时怠于农业，道耕农事，托之神农。",
+      "work_id": "GYPjVLiebcK"
+    },
+    {
+      "title": "野老十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《野老》十七篇。六国时，在齐、楚间。",
+      "work_id": "GYPjVMuYLMu"
+    },
+    {
+      "title": "宰氏十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宰氏》十七篇。不知何世。",
+      "work_id": "GYPjVNJUTNo"
+    },
+    {
+      "title": "董安國十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《董安国》十六篇。汉代内史，不知何帝时。",
+      "work_id": "GYPjVJamFsd"
+    },
+    {
+      "title": "尹都尉十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尹都尉》十四篇。不知何世。",
+      "work_id": "GYPjVMwSWKH"
+    },
+    {
+      "title": "趙氏五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《赵氏》五篇。不知何世。",
+      "work_id": "GYPjVNTjstT"
+    },
+    {
+      "title": "王氏六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《王氏》六篇。不知何世。",
+      "work_id": "GYPjVMJ9P1R"
+    },
+    {
+      "title": "蔡癸一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蔡癸》一篇。宣帝时，以言便宜，至弘农太守。",
+      "work_id": "GYPjVJ5JFeX"
+    },
+    {
+      "title": "汜勝之十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《汜胜之》十八篇。成帝时为议郎。",
+      "work_id": "GYPjVLsK639"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右農九家，百一十四篇。\n農家者流，蓋出於農稷之官。播百穀，勸耕桑，以足衣食，故八政一曰食，二曰貨。孔子曰「所重民食」，此其所長也。及鄙者為之，以為無所事聖王，欲使君臣並耕，誖上下之序。"
+    },
+    {
+      "title": "諸子小說家類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "伊尹說二十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《伊尹说》二十七篇。其语浅薄，似依托也。",
+      "work_id": "GYPjVN1ErE3"
+    },
+    {
+      "title": "鬻子說十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鬻子说》十九篇。后世所加。",
+      "work_id": "GYPjVNF6J95"
+    },
+    {
+      "title": "周考七十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周考》七十六篇。考周事也。",
+      "work_id": "GYPjVNcjBHR"
+    },
+    {
+      "title": "青史子五十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《青史子》五十七篇。古史官记事也。",
+      "work_id": "GYPjVLZccMu"
+    },
+    {
+      "title": "師曠六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《师旷》六篇。见《春秋》，其言浅薄，本与此同，似因托之。",
+      "work_id": "GYPjVLkW5iF"
+    },
+    {
+      "title": "務成子十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《务成子》十一篇。称尧问，非古语。",
+      "work_id": "GYPjVMYh8iB"
+    },
+    {
+      "title": "宋子十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宋子》十八篇。孙卿道宋子，其言黄、老意。",
+      "work_id": "GYPjVLxMyy1"
+    },
+    {
+      "title": "天乙三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《天乙》三篇。天乙谓汤，其言非殷时，皆依托也。",
+      "work_id": "GYPjVMAxsrw"
+    },
+    {
+      "title": "黃帝說四十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝说》四十篇。迂诞依托。",
+      "work_id": "GYPjVKNQ4eB"
+    },
+    {
+      "title": "封禪方說十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《封禅方说》十八篇。武帝时。",
+      "work_id": "GYPjVJkxRSF"
+    },
+    {
+      "title": "待詔臣饒心術二十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《待诏臣饶心术》二十五篇。武帝时。",
+      "work_id": "GYPjVJTakj9"
+    },
+    {
+      "title": "待詔臣安成未央術一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《待诏臣安成未央术》一篇。",
+      "work_id": "GYPjVJRmxUf"
+    },
+    {
+      "title": "臣壽周紀七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《臣寿周纪》七篇。项国圉人，宣帝时。",
+      "work_id": "GYPjVJJgq35"
+    },
+    {
+      "title": "虞初周說九百四十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《虞初周说》九百四十三篇。河南人，武帝时以方士侍郎号黄车使者。",
+      "work_id": "GYPjVNA8mv7"
+    },
+    {
+      "title": "百家一百三十九卷",
+      "level": 3,
+      "type": "书",
+      "content": "《百家》百三十九卷。",
+      "work_id": "GYPjVHzS78T"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右小說十五家，千三百八十篇。\n小說家者流，蓋出於稗官。街談巷語，道聽塗說者之所造也。孔子曰：「雖小道，必有可觀者焉，致遠恐泥，是以君子弗為也。」然亦弗滅也。閭里小知者之所及，亦使綴而不忘。如或一言可采，此亦芻蕘狂夫之議也。"
+    }
+  ]
+}

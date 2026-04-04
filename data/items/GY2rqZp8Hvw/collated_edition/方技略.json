@@ -1,0 +1,294 @@
+{
+  "title": "方技略",
+  "source_url": "https://zh.wikisource.org/wiki/漢書/卷030",
+  "sections": [
+    {
+      "title": "方技略",
+      "level": 1,
+      "type": "略",
+      "content": ""
+    },
+    {
+      "title": "方技醫經類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "白氏內經三十八卷",
+      "level": 3,
+      "type": "书",
+      "content": "《白氏内经》三十八卷。",
+      "work_id": "GYPjYamYkTR"
+    },
+    {
+      "title": "外經三十六卷",
+      "level": 3,
+      "type": "书",
+      "content": "《外经》三十六卷。",
+      "work_id": "GYPjYhAKiTy"
+    },
+    {
+      "title": "外經三十七卷",
+      "level": 3,
+      "type": "书",
+      "content": "《外经》三十七卷。",
+      "work_id": "GYPjYhAKiTy"
+    },
+    {
+      "title": "外經十二卷",
+      "level": 3,
+      "type": "书",
+      "content": "《外经》十二卷。",
+      "work_id": "GYPjYhAKiTy"
+    },
+    {
+      "title": "旁篇二十五卷",
+      "level": 3,
+      "type": "书",
+      "content": "《旁篇》二十五卷。",
+      "work_id": "GYPjYf6RU3q"
+    },
+    {
+      "title": "扁鵲內徑九卷",
+      "level": 3,
+      "type": "书",
+      "content": "《扁鹊内径》九卷。",
+      "work_id": "GYPjYarvTMR"
+    },
+    {
+      "title": "黃帝內經十八卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝内经》十八卷。",
+      "work_id": "GYPh4eeebdR"
+    },
+    {
+      "title": "方技經方類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "五藏六府疝十六病方四十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《五藏六府疝十六病方》四十卷。",
+      "work_id": "GYPjYhajpmD"
+    },
+    {
+      "title": "五藏六府癉十二病方四十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《五藏六府瘅十二病方》四十卷。",
+      "work_id": "GYPjYhYkH6w"
+    },
+    {
+      "title": "風寒熱十六病方二十六卷",
+      "level": 3,
+      "type": "书",
+      "content": "《风寒热十六病方》二十六卷。",
+      "work_id": "GYPjYbzoXgs"
+    },
+    {
+      "title": "泰始黃帝扁鵲俞拊方二十三卷",
+      "level": 3,
+      "type": "书",
+      "content": "《泰始黄帝扁鹊俞拊方》二十三卷。",
+      "work_id": "GYPjYgSzoz7"
+    },
+    {
+      "title": "五藏傷中十一病方三十一卷",
+      "level": 3,
+      "type": "书",
+      "content": "《五藏伤中十一病方》三十一卷。",
+      "work_id": "GYPjYhcbJs9"
+    },
+    {
+      "title": "客疾五藏狂顛病方十七卷",
+      "level": 3,
+      "type": "书",
+      "content": "《客疾五藏狂颠病方》十七卷。",
+      "work_id": "GYPjYeHdUy5"
+    },
+    {
+      "title": "婦人嬰兒方十九卷",
+      "level": 3,
+      "type": "书",
+      "content": "《妇人婴兒方》十九卷。",
+      "work_id": "GYPjYc9c5g3"
+    },
+    {
+      "title": "湯液經法三十二卷",
+      "level": 3,
+      "type": "书",
+      "content": "《汤液经法》三十二卷。",
+      "work_id": "GYPjYguGQPH"
+    },
+    {
+      "title": "神農黃帝食禁七卷",
+      "level": 3,
+      "type": "书",
+      "content": "《神农黄帝食禁》七卷。",
+      "work_id": "GYPjYfqeYV5"
+    },
+    {
+      "title": "金創疭瘛方三十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《金创疭瘛方》三十卷。",
+      "work_id": "GYPjYe6WaMV"
+    },
+    {
+      "title": "五藏六府痹十二病方三十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《五藏六府痹十二病方》三十卷。",
+      "work_id": "GYPjYhWwUrT"
+    },
+    {
+      "title": "方技房中類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "容成陰道二十六卷",
+      "level": 3,
+      "type": "书",
+      "content": "《容成阴道》二十六卷。",
+      "work_id": "GYPjYfbwA8P"
+    },
+    {
+      "title": "務成子陰道三十六卷",
+      "level": 3,
+      "type": "书",
+      "content": "《务成子阴道》三十六卷。",
+      "work_id": "GYPjYhgJH51"
+    },
+    {
+      "title": "堯舜陰道二十三卷",
+      "level": 3,
+      "type": "书",
+      "content": "《尧舜阴道》二十三卷。",
+      "work_id": "GYPjYiYHfyh"
+    },
+    {
+      "title": "湯盤庚陰道二十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《汤盘庚阴道》二十卷。",
+      "work_id": "GYPjYgsh3Q3"
+    },
+    {
+      "title": "天老雜子陰道二十五卷",
+      "level": 3,
+      "type": "书",
+      "content": "《天老杂子阴道》二十五卷。",
+      "work_id": "GYPjYgw7tVD"
+    },
+    {
+      "title": "天一陰道二十四卷",
+      "level": 3,
+      "type": "书",
+      "content": "《天一阴道》二十四卷。",
+      "work_id": "GYPjYh4ox1d"
+    },
+    {
+      "title": "黃帝三王養陽方二十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝三王养阳方》二十卷。",
+      "work_id": "GYPjYdVzgCX"
+    },
+    {
+      "title": "三家內房有子方十七卷",
+      "level": 3,
+      "type": "书",
+      "content": "《三家内房有子方》十七卷。",
+      "work_id": "GYPjYffjW39"
+    },
+    {
+      "title": "方技神仙類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "宓戲雜子道二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宓戏杂子道》二十篇。",
+      "work_id": "GYPjYexsU5m"
+    },
+    {
+      "title": "道要雜子十八卷",
+      "level": 3,
+      "type": "书",
+      "content": "《道要杂子》十八卷。",
+      "work_id": "GYPjYbbYbhq"
+    },
+    {
+      "title": "黃帝雜子步引十二卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝杂子步引》十二卷。",
+      "work_id": "GYPjYddBBM1"
+    },
+    {
+      "title": "黃帝岐伯按摩十卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝岐伯按摩》十卷。",
+      "work_id": "GYPjYdU3pPh"
+    },
+    {
+      "title": "黃帝雜子芝菌十八卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝杂子芝菌》十八卷。",
+      "work_id": "GYPjYdiy4v3"
+    },
+    {
+      "title": "黃帝雜子十九家方二十一卷",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝杂子十九家方》二十一卷。",
+      "work_id": "GYPjYdh4txf"
+    },
+    {
+      "title": "泰壹雜子十五家方二十二卷",
+      "level": 3,
+      "type": "书",
+      "content": "《泰壹杂子十五家方》二十二卷。",
+      "work_id": "GYPjYgiNw2w"
+    },
+    {
+      "title": "神農雜子技道二十三卷",
+      "level": 3,
+      "type": "书",
+      "content": "《神农杂子技道》二十三卷。",
+      "work_id": "GYPjYfuDT8b"
+    },
+    {
+      "title": "上圣雜子道二十六卷",
+      "level": 3,
+      "type": "书",
+      "content": "《上圣杂子道》二十六卷。",
+      "work_id": "GYPjYfhxUxf"
+    },
+    {
+      "title": "泰壹雜子黃治三十一卷",
+      "level": 3,
+      "type": "书",
+      "content": "《泰壹杂子黄治》三十一卷。",
+      "work_id": "GYPjYggUm5Z"
+    },
+    {
+      "title": "小序",
+      "level": 2,
+      "type": "序",
+      "content": "右神僊十家，二百五卷。\n神僊者，所以保性命之真，而游求於其外者也。聊以盪意平心，同死生之域，而無怵惕於胸中。然而或者專以為務，則誕欺怪迂之文彌以益多，非聖王之所以教也。孔子曰：「索隱行怪，後世有述焉，吾不為之矣。」"
+    }
+  ]
+}

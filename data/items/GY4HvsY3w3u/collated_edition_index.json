@@ -1,0 +1,574 @@
+{
+  "work_id": "GY4HvsY3w3u",
+  "total_juan": 205,
+  "juan_files": [
+    "juanshou1.json",
+    "juanshou2.json",
+    "juanshou3.json",
+    "juanshou4.json",
+    "juan001.json",
+    "juan002.json",
+    "juan003.json",
+    "juan004.json",
+    "juan005.json",
+    "juan006.json",
+    "juan007.json",
+    "juan008.json",
+    "juan009.json",
+    "juan010.json",
+    "juan011.json",
+    "juan012.json",
+    "juan013.json",
+    "juan014.json",
+    "juan015.json",
+    "juan016.json",
+    "juan017.json",
+    "juan018.json",
+    "juan019.json",
+    "juan020.json",
+    "juan021.json",
+    "juan022.json",
+    "juan023.json",
+    "juan024.json",
+    "juan025.json",
+    "juan026.json",
+    "juan027.json",
+    "juan028.json",
+    "juan029.json",
+    "juan030.json",
+    "juan031.json",
+    "juan032.json",
+    "juan033.json",
+    "juan034.json",
+    "juan035.json",
+    "juan036.json",
+    "juan037.json",
+    "juan038.json",
+    "juan039.json",
+    "juan040.json",
+    "juan041.json",
+    "juan042.json",
+    "juan043.json",
+    "juan044.json",
+    "juan045.json",
+    "juan046.json",
+    "juan047.json",
+    "juan048.json",
+    "juan049.json",
+    "juan050.json",
+    "juan051.json",
+    "juan052.json",
+    "juan053.json",
+    "juan054.json",
+    "juan055.json",
+    "juan056.json",
+    "juan057.json",
+    "juan058.json",
+    "juan059.json",
+    "juan060.json",
+    "juan061.json",
+    "juan062.json",
+    "juan063.json",
+    "juan064.json",
+    "juan065.json",
+    "juan066.json",
+    "juan067.json",
+    "juan068.json",
+    "juan069.json",
+    "juan070.json",
+    "juan071.json",
+    "juan072.json",
+    "juan073.json",
+    "juan074.json",
+    "juan075.json",
+    "juan076.json",
+    "juan077.json",
+    "juan078.json",
+    "juan079.json",
+    "juan080.json",
+    "juan081.json",
+    "juan082.json",
+    "juan083.json",
+    "juan084.json",
+    "juan085.json",
+    "juan086.json",
+    "juan087.json",
+    "juan088.json",
+    "juan089.json",
+    "juan090.json",
+    "juan091.json",
+    "juan092.json",
+    "juan093.json",
+    "juan094.json",
+    "juan095.json",
+    "juan096.json",
+    "juan097.json",
+    "juan098.json",
+    "juan099.json",
+    "juan100.json",
+    "juan101.json",
+    "juan102.json",
+    "juan103.json",
+    "juan104.json",
+    "juan105.json",
+    "juan106.json",
+    "juan107.json",
+    "juan108.json",
+    "juan109.json",
+    "juan110.json",
+    "juan111.json",
+    "juan112.json",
+    "juan113.json",
+    "juan114.json",
+    "juan115.json",
+    "juan116.json",
+    "juan117.json",
+    "juan118.json",
+    "juan119.json",
+    "juan120.json",
+    "juan121.json",
+    "juan122.json",
+    "juan123.json",
+    "juan124.json",
+    "juan125.json",
+    "juan126.json",
+    "juan127.json",
+    "juan128.json",
+    "juan129.json",
+    "juan130.json",
+    "juan131.json",
+    "juan132.json",
+    "juan133.json",
+    "juan134.json",
+    "juan135.json",
+    "juan136.json",
+    "juan137.json",
+    "juan138.json",
+    "juan139.json",
+    "juan140.json",
+    "juan141.json",
+    "juan142.json",
+    "juan143.json",
+    "juan144.json",
+    "juan145.json",
+    "juan146.json",
+    "juan147.json",
+    "juan148.json",
+    "juan149.json",
+    "juan150.json",
+    "juan151.json",
+    "juan152.json",
+    "juan153.json",
+    "juan154.json",
+    "juan155.json",
+    "juan156.json",
+    "juan157.json",
+    "juan158.json",
+    "juan159.json",
+    "juan160.json",
+    "juan161.json",
+    "juan162.json",
+    "juan163.json",
+    "juan164.json",
+    "juan165.json",
+    "juan166.json",
+    "juan167.json",
+    "juan168.json",
+    "juan169.json",
+    "juan170.json",
+    "juan171.json",
+    "juan172.json",
+    "juan173.json",
+    "juan174.json",
+    "juan175.json",
+    "juan176.json",
+    "juan177.json",
+    "juan178.json",
+    "juan179.json",
+    "juan180.json",
+    "juan181.json",
+    "juan182.json",
+    "juan183.json",
+    "juan184.json",
+    "juan185.json",
+    "juan186.json",
+    "juan187.json",
+    "juan188.json",
+    "juan189.json",
+    "juan190.json",
+    "juan191.json",
+    "juan192.json",
+    "juan193.json",
+    "juan194.json",
+    "juan195.json",
+    "juan196.json",
+    "juan197.json",
+    "juan198.json",
+    "juan199.json",
+    "juan200.json",
+    "fulu.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "卷首",
+      "files": [
+        "juanshou1.json",
+        "juanshou2.json",
+        "juanshou3.json",
+        "juanshou4.json"
+      ],
+      "children": []
+    },
+    {
+      "label": "經部",
+      "files": [],
+      "children": [
+        {
+          "label": "易類",
+          "files": [
+            "juan001.json",
+            "juan002.json",
+            "juan003.json",
+            "juan004.json",
+            "juan005.json",
+            "juan006.json",
+            "juan007.json",
+            "juan008.json",
+            "juan009.json",
+            "juan010.json"
+          ]
+        },
+        {
+          "label": "書類",
+          "files": [
+            "juan011.json",
+            "juan012.json",
+            "juan013.json",
+            "juan014.json"
+          ]
+        },
+        {
+          "label": "詩類",
+          "files": [
+            "juan015.json",
+            "juan016.json",
+            "juan017.json",
+            "juan018.json"
+          ]
+        },
+        {
+          "label": "禮類",
+          "files": [
+            "juan019.json",
+            "juan020.json",
+            "juan021.json",
+            "juan022.json",
+            "juan023.json",
+            "juan024.json",
+            "juan025.json"
+          ]
+        },
+        {
+          "label": "春秋類",
+          "files": [
+            "juan026.json",
+            "juan027.json",
+            "juan028.json",
+            "juan029.json",
+            "juan030.json",
+            "juan031.json",
+            "juan032.json",
+            "juan033.json",
+            "juan034.json"
+          ]
+        },
+        {
+          "label": "四書類",
+          "files": [
+            "juan035.json",
+            "juan036.json",
+            "juan037.json",
+            "juan038.json",
+            "juan039.json"
+          ]
+        },
+        {
+          "label": "小學類",
+          "files": [
+            "juan040.json",
+            "juan041.json",
+            "juan042.json",
+            "juan043.json",
+            "juan044.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "史部",
+      "files": [],
+      "children": [
+        {
+          "label": "正史類",
+          "files": [
+            "juan045.json",
+            "juan046.json",
+            "juan047.json",
+            "juan048.json"
+          ]
+        },
+        {
+          "label": "紀事本末類",
+          "files": [
+            "juan049.json",
+            "juan050.json",
+            "juan051.json",
+            "juan052.json",
+            "juan053.json",
+            "juan054.json",
+            "juan055.json",
+            "juan056.json"
+          ]
+        },
+        {
+          "label": "傳記類",
+          "files": [
+            "juan057.json",
+            "juan058.json",
+            "juan059.json",
+            "juan060.json",
+            "juan061.json",
+            "juan062.json",
+            "juan063.json",
+            "juan064.json",
+            "juan065.json",
+            "juan066.json",
+            "juan067.json"
+          ]
+        },
+        {
+          "label": "地理類",
+          "files": [
+            "juan068.json",
+            "juan069.json",
+            "juan070.json",
+            "juan071.json",
+            "juan072.json",
+            "juan073.json",
+            "juan074.json",
+            "juan075.json",
+            "juan076.json",
+            "juan077.json",
+            "juan078.json",
+            "juan079.json",
+            "juan080.json"
+          ]
+        },
+        {
+          "label": "政書類",
+          "files": [
+            "juan081.json",
+            "juan082.json",
+            "juan083.json",
+            "juan084.json"
+          ]
+        },
+        {
+          "label": "目錄類",
+          "files": [
+            "juan085.json",
+            "juan086.json",
+            "juan087.json",
+            "juan088.json",
+            "juan089.json",
+            "juan090.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "子部",
+      "files": [],
+      "children": [
+        {
+          "label": "儒家類",
+          "files": [
+            "juan091.json",
+            "juan092.json",
+            "juan093.json",
+            "juan094.json",
+            "juan095.json",
+            "juan096.json",
+            "juan097.json",
+            "juan098.json",
+            "juan099.json",
+            "juan100.json",
+            "juan101.json",
+            "juan102.json"
+          ]
+        },
+        {
+          "label": "醫家類",
+          "files": [
+            "juan103.json",
+            "juan104.json",
+            "juan105.json",
+            "juan106.json",
+            "juan107.json"
+          ]
+        },
+        {
+          "label": "術數類",
+          "files": [
+            "juan108.json",
+            "juan109.json",
+            "juan110.json",
+            "juan111.json"
+          ]
+        },
+        {
+          "label": "藝術類",
+          "files": [
+            "juan112.json",
+            "juan113.json",
+            "juan114.json",
+            "juan115.json",
+            "juan116.json"
+          ]
+        },
+        {
+          "label": "雜家類",
+          "files": [
+            "juan117.json",
+            "juan118.json",
+            "juan119.json",
+            "juan120.json",
+            "juan121.json",
+            "juan122.json",
+            "juan123.json",
+            "juan124.json",
+            "juan125.json",
+            "juan126.json",
+            "juan127.json",
+            "juan128.json",
+            "juan129.json",
+            "juan130.json",
+            "juan131.json",
+            "juan132.json",
+            "juan133.json",
+            "juan134.json"
+          ]
+        },
+        {
+          "label": "類書類",
+          "files": [
+            "juan135.json",
+            "juan136.json",
+            "juan137.json",
+            "juan138.json",
+            "juan139.json"
+          ]
+        },
+        {
+          "label": "小說家類",
+          "files": [
+            "juan140.json",
+            "juan141.json",
+            "juan142.json",
+            "juan143.json",
+            "juan144.json",
+            "juan145.json",
+            "juan146.json",
+            "juan147.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "集部",
+      "files": [],
+      "children": [
+        {
+          "label": "別集類",
+          "files": [
+            "juan148.json",
+            "juan149.json",
+            "juan150.json",
+            "juan151.json",
+            "juan152.json",
+            "juan153.json",
+            "juan154.json",
+            "juan155.json",
+            "juan156.json",
+            "juan157.json",
+            "juan158.json",
+            "juan159.json",
+            "juan160.json",
+            "juan161.json",
+            "juan162.json",
+            "juan163.json",
+            "juan164.json",
+            "juan165.json",
+            "juan166.json",
+            "juan167.json",
+            "juan168.json",
+            "juan169.json",
+            "juan170.json",
+            "juan171.json",
+            "juan172.json",
+            "juan173.json",
+            "juan174.json",
+            "juan175.json",
+            "juan176.json",
+            "juan177.json",
+            "juan178.json",
+            "juan179.json",
+            "juan180.json",
+            "juan181.json",
+            "juan182.json",
+            "juan183.json",
+            "juan184.json",
+            "juan185.json"
+          ]
+        },
+        {
+          "label": "總集類",
+          "files": [
+            "juan186.json",
+            "juan187.json",
+            "juan188.json",
+            "juan189.json",
+            "juan190.json",
+            "juan191.json",
+            "juan192.json",
+            "juan193.json",
+            "juan194.json"
+          ]
+        },
+        {
+          "label": "詩文評類",
+          "files": [
+            "juan195.json",
+            "juan196.json",
+            "juan197.json"
+          ]
+        },
+        {
+          "label": "詞曲類",
+          "files": [
+            "juan198.json",
+            "juan199.json",
+            "juan200.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "附錄",
+      "files": [
+        "fulu.json"
+      ],
+      "children": []
+    }
+  ]
+}

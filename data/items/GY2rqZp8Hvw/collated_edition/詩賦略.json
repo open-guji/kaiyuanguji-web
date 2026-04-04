@@ -1,0 +1,773 @@
+{
+  "title": "詩賦略",
+  "source_url": "https://zh.wikisource.org/wiki/漢書/卷030",
+  "sections": [
+    {
+      "title": "詩賦略",
+      "level": 1,
+      "type": "略",
+      "content": ""
+    },
+    {
+      "title": "詩賦賦類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "唐勒賦四篇",
+      "level": 3,
+      "type": "书",
+      "content": "唐勒赋四篇。楚人。",
+      "work_id": "GYPjYgr2Jhu"
+    },
+    {
+      "title": "宋玉賦十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "宋玉赋十六篇。楚人，与唐勒并时，在屈原后也。",
+      "work_id": "GYPjYaU8Pts"
+    },
+    {
+      "title": "趙幽王賦一篇",
+      "level": 3,
+      "type": "书",
+      "content": "赵幽王赋一篇。",
+      "work_id": "GYPjYjG88qV"
+    },
+    {
+      "title": "莊夫子賦二十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "庄夫子赋二十四篇。名忌，吴人。",
+      "work_id": "GYPjYjffBwD"
+    },
+    {
+      "title": "賈誼賦七篇",
+      "level": 3,
+      "type": "书",
+      "content": "贾谊赋七篇。",
+      "work_id": "GYPjYe4ZiYf"
+    },
+    {
+      "title": "枚乘賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "枚乘赋九篇。",
+      "work_id": "GYPjYeoyYPh"
+    },
+    {
+      "title": "司馬相如賦二十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "司马相如赋二十九篇。",
+      "work_id": "GYPjYgCMgaT"
+    },
+    {
+      "title": "淮南王賦八十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "淮南王赋八十二篇。",
+      "work_id": "GYPjYdKFGQX"
+    },
+    {
+      "title": "淮南王群臣賦四十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "淮南王群臣赋四十四篇。",
+      "work_id": "GYPjYdLv16f"
+    },
+    {
+      "title": "太常蓼侯孔臧賦二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "太常蓼侯孔臧赋二十篇。",
+      "work_id": "GYPjYgPF9vo"
+    },
+    {
+      "title": "吾丘壽王賦十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "吾丘寿王赋十五篇。",
+      "work_id": "GYPjYhrrwTD"
+    },
+    {
+      "title": "蔡甲賦一篇",
+      "level": 3,
+      "type": "书",
+      "content": "蔡甲赋一篇。",
+      "work_id": "GYPjYb4sjK5"
+    },
+    {
+      "title": "上所自造賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "上所自造赋二篇。",
+      "work_id": "GYPjYfkGqb5"
+    },
+    {
+      "title": "兒寬賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "儿宽赋二篇。",
+      "work_id": "GYPjYbsrTod"
+    },
+    {
+      "title": "光祿大夫張子僑賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "光禄大夫张子侨赋三篇。与王褒同时也。",
+      "work_id": "GYPjYcSykP9"
+    },
+    {
+      "title": "陽成侯劉德賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "阳成侯刘德赋九篇。",
+      "work_id": "GYPjYiSYUG7"
+    },
+    {
+      "title": "劉向賦三十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "刘向赋三十三篇。",
+      "work_id": "GYPjYedBSkF"
+    },
+    {
+      "title": "王褒賦十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "王褒赋十六篇。",
+      "work_id": "GYPjYhC391Z"
+    },
+    {
+      "title": "陸賈賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "陆贾赋三篇。",
+      "work_id": "GYPjYegZbyy"
+    },
+    {
+      "title": "枚皋賦一百二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "枚皋赋百二十篇。",
+      "work_id": "GYPjYeqjenj"
+    },
+    {
+      "title": "嚴助賦三十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "严助赋三十五篇。",
+      "work_id": "GYPjYiWPW2K"
+    },
+    {
+      "title": "司馬遷賦八篇",
+      "level": 3,
+      "type": "书",
+      "content": "司马迁赋八篇。",
+      "work_id": "GYPjYgATWd5"
+    },
+    {
+      "title": "郎中臣嬰齊賦十篇",
+      "level": 3,
+      "type": "书",
+      "content": "郎中臣婴齐赋十篇。",
+      "work_id": "GYPjYeLsaeT"
+    },
+    {
+      "title": "臣說賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "臣说赋九篇。",
+      "work_id": "GYPjYbGYtA3"
+    },
+    {
+      "title": "臣吾賦十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "臣吾赋十八篇。",
+      "work_id": "GYPjYbJT47R"
+    },
+    {
+      "title": "遼東太守蘇季賦一篇",
+      "level": 3,
+      "type": "书",
+      "content": "辽东太守苏季赋一篇。",
+      "work_id": "GYPjYeNmkbq"
+    },
+    {
+      "title": "蕭望之賦四篇",
+      "level": 3,
+      "type": "书",
+      "content": "萧望之赋四篇。",
+      "work_id": "GYPjYiGuYvs"
+    },
+    {
+      "title": "河內太守徐明賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "河内太守徐明赋三篇。字长君，东海人，元、成世历五郡太守，有能名。",
+      "work_id": "GYPjYdFdfuZ"
+    },
+    {
+      "title": "給事黃門侍郎李息賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "给事黄门侍郎李息赋九篇。",
+      "work_id": "GYPjYcFAXyq"
+    },
+    {
+      "title": "淮陽憲王賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "淮阳宪王赋二篇。",
+      "work_id": "GYPjYdQFUUw"
+    },
+    {
+      "title": "待詔馮商賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "待诏冯商赋九篇。",
+      "work_id": "GYPjYbZnVJo"
+    },
+    {
+      "title": "博士弟子杜參賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "博士弟子杜参赋二篇。",
+      "work_id": "GYPjYb3Czcw"
+    },
+    {
+      "title": "車郎張豐賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "车郎张丰赋三篇。张子侨子。",
+      "work_id": "GYPjYbCquxB"
+    },
+    {
+      "title": "孫卿賦十篇",
+      "level": 3,
+      "type": "书",
+      "content": "孙卿赋十篇。",
+      "work_id": "GYL54dj7bG3"
+    },
+    {
+      "title": "秦時雜賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "秦时杂赋九篇。",
+      "work_id": "GYPjYfLvXu9"
+    },
+    {
+      "title": "孝景皇帝頌十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "李思《孝景皇帝颂》十五篇。",
+      "author_info": "李思",
+      "work_id": "GYPjYiF6kgP"
+    },
+    {
+      "title": "廣川惠王越賦五篇",
+      "level": 3,
+      "type": "书",
+      "content": "广川惠王越赋五篇。",
+      "work_id": "GYPjYcRGKqZ"
+    },
+    {
+      "title": "長沙王群臣賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "长沙王群臣赋三篇。",
+      "work_id": "GYPjYb9Z8RM"
+    },
+    {
+      "title": "魏內史賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "魏内史赋二篇。",
+      "work_id": "GYPjYhMVJw1"
+    },
+    {
+      "title": "東暆令延年賦七篇",
+      "level": 3,
+      "type": "书",
+      "content": "东暆令延年赋七篇。",
+      "work_id": "GYPjYbpWzRM"
+    },
+    {
+      "title": "衛士令李忠賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "卫士令李忠赋二篇。",
+      "work_id": "GYPjYhPPUtP"
+    },
+    {
+      "title": "張偃賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "张偃赋二篇。",
+      "work_id": "GYPjYjALFGT"
+    },
+    {
+      "title": "賈充賦四篇",
+      "level": 3,
+      "type": "书",
+      "content": "贾充赋四篇。",
+      "work_id": "GYPjYdyU8mM"
+    },
+    {
+      "title": "張仁賦六篇",
+      "level": 3,
+      "type": "书",
+      "content": "张仁赋六篇。",
+      "work_id": "GYPjYj8a8sR"
+    },
+    {
+      "title": "秦充賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "秦充赋二篇。",
+      "work_id": "GYPjYfE29sM"
+    },
+    {
+      "title": "李步昌賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "李步昌赋二篇。",
+      "work_id": "GYPjYeQdEhm"
+    },
+    {
+      "title": "侍郎謝多賦十篇",
+      "level": 3,
+      "type": "书",
+      "content": "侍郎谢多赋十篇。",
+      "work_id": "GYPjYfzsH9H"
+    },
+    {
+      "title": "平陽公主舍人周長孺賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "平阳公主舍人周长孺赋二篇。",
+      "work_id": "GYPjYf8bm7u"
+    },
+    {
+      "title": "眭弘賦一篇",
+      "level": 3,
+      "type": "书",
+      "content": "眭弘赋一篇。",
+      "work_id": "GYPjYgKVVsV"
+    },
+    {
+      "title": "別栩陽賦六篇",
+      "level": 3,
+      "type": "书",
+      "content": "臣昌市赋六篇。",
+      "work_id": "GYPjYaygmps"
+    },
+    {
+      "title": "別栩陽賦五篇",
+      "level": 3,
+      "type": "书",
+      "content": "别栩阳赋五篇。",
+      "work_id": "GYPjYaygmps"
+    },
+    {
+      "title": "臣義賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "臣义赋二篇。",
+      "work_id": "GYPjYbLAUf1"
+    },
+    {
+      "title": "黃門書者假史王商賦十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "黄门书者假史王商赋十三篇。",
+      "work_id": "GYPjYdrP1Km"
+    },
+    {
+      "title": "侍中徐博賦四篇",
+      "level": 3,
+      "type": "书",
+      "content": "侍中徐博赋四篇。",
+      "work_id": "GYPjYg4zS2B"
+    },
+    {
+      "title": "黃門書者王廣、呂嘉賦五篇",
+      "level": 3,
+      "type": "书",
+      "content": "黄门书者王广、吕嘉赋五篇。",
+      "work_id": "GYPjYdtBoaF"
+    },
+    {
+      "title": "漢中都尉丞華龍賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "汉中都尉丞华龙赋二篇。",
+      "work_id": "GYPjYd8jHsm"
+    },
+    {
+      "title": "左馮翊史路恭賦八篇",
+      "level": 3,
+      "type": "书",
+      "content": "左冯翊史路恭赋八篇。",
+      "work_id": "GYPjYk5yvXZ"
+    },
+    {
+      "title": "陽丘侯劉郾賦十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "阳丘侯刘郾赋十九篇。",
+      "work_id": "GYPjYakCpjR"
+    },
+    {
+      "title": "驃騎將軍硃宇賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "骠骑将军硃宇赋三篇。",
+      "work_id": "GYPjYatQSdm"
+    },
+    {
+      "title": "常侍郎莊匆奇賦十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "常侍郎庄匆奇赋十一篇。枚皋同时。",
+      "work_id": "GYPjYbB5oZ9"
+    },
+    {
+      "title": "雒陽锜華賦九篇",
+      "level": 3,
+      "type": "书",
+      "content": "雒阳锜华赋九篇。",
+      "work_id": "GYPjYekGaBq"
+    },
+    {
+      "title": "屈原賦二十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "屈原赋二十五篇。楚怀王大夫，有《列传》。",
+      "work_id": "GYPh4eszVAX"
+    },
+    {
+      "title": "宋正劉辟強賦八篇",
+      "level": 3,
+      "type": "书",
+      "content": "宋正刘辟强赋八篇。",
+      "work_id": "GYPjYgHghd1"
+    },
+    {
+      "title": "楊雄賦十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "杨雄赋十二篇。",
+      "work_id": "GYPjYiUSeDV"
+    },
+    {
+      "title": "硃建賦二篇",
+      "level": 3,
+      "type": "书",
+      "content": "硃建赋二篇。",
+      "work_id": "GYPjYjpsvbR"
+    },
+    {
+      "title": "硃買臣賦三篇",
+      "level": 3,
+      "type": "书",
+      "content": "硃买臣赋三篇。",
+      "work_id": "GYPjYjrn6Yo"
+    },
+    {
+      "title": "詩賦歌詩類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "高祖歌詩二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《高祖歌诗》二篇。",
+      "work_id": "GYPjYcDGN2T"
+    },
+    {
+      "title": "泰一雜甘泉壽宮歌詩十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《泰一杂甘泉寿宫歌诗》十四篇。",
+      "work_id": "GYPjYgcb3Tu"
+    },
+    {
+      "title": "宗廟歌詩五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《宗庙歌诗》五篇。",
+      "work_id": "GYPjYk2R1t3"
+    },
+    {
+      "title": "漢興以來兵所誅滅歌詩十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《汉兴以来兵所诛灭歌诗》十四篇。",
+      "work_id": "GYPjYd3j5oM"
+    },
+    {
+      "title": "出行巡狩及游歌詩十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《出行巡狩及游歌诗》十篇。",
+      "work_id": "GYPjYbSvo8T"
+    },
+    {
+      "title": "臨江王及愁思節士歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《临江王及愁思节士歌诗》四篇。",
+      "work_id": "GYPjYeZkbf5"
+    },
+    {
+      "title": "李夫人及幸貴人歌詩三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李夫人及幸贵人歌诗》三篇。",
+      "work_id": "GYPjYeSXQf9"
+    },
+    {
+      "title": "詔賜中山靖王子噲及孺子妾冰未央材人歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《诏赐中山靖王子哙及孺子妾冰未央材人歌诗》四篇。",
+      "work_id": "GYPjYjCERDq"
+    },
+    {
+      "title": "吳楚汝南歌詩十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吴楚汝南歌诗》十五篇。",
+      "work_id": "GYPjYhk1FGs"
+    },
+    {
+      "title": "邯鄲河間歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《邯郸河间歌诗》四篇。",
+      "work_id": "GYPjYcsFo83"
+    },
+    {
+      "title": "齊鄭歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《齐郑歌诗》四篇。",
+      "work_id": "GYPjYfQisou"
+    },
+    {
+      "title": "淮南歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《淮南歌诗》四篇。",
+      "work_id": "GYPjYdHPnJb"
+    },
+    {
+      "title": "左馮翊秦歌詩三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《左冯翊秦歌诗》三篇。",
+      "work_id": "GYPjYk4Dp8X"
+    },
+    {
+      "title": "京兆尹秦歌詩五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《京兆尹秦歌诗》五篇。",
+      "work_id": "GYPjYeAQHy9"
+    },
+    {
+      "title": "河東蒲反歌詩一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《河东蒲反歌诗》一篇。",
+      "work_id": "GYPjYdAMLiT"
+    },
+    {
+      "title": "黃門倡車忠等歌詩十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄门倡车忠等歌诗》十五篇。",
+      "work_id": "GYPjYdpfanB"
+    },
+    {
+      "title": "雜各有主名歌詩十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂各有主名歌诗》十篇。",
+      "work_id": "GYPjYinyVEo"
+    },
+    {
+      "title": "雜歌詩九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂歌诗》九篇。",
+      "work_id": "GYPjYimMSQ7"
+    },
+    {
+      "title": "河南周歌詩七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《河南周歌诗》七篇。",
+      "work_id": "GYPjYdDpsf5"
+    },
+    {
+      "title": "河南周歌聲曲折七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《河南周歌声曲折》七篇。",
+      "work_id": "GYPjYdC7T7V"
+    },
+    {
+      "title": "周謠歌詩七十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周谣歌诗》七十五篇。",
+      "work_id": "GYPjYjW7eJs"
+    },
+    {
+      "title": "周謠歌詩聲曲折七十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周谣歌诗声曲折》七十五篇。",
+      "work_id": "GYPjYjXy8Qo"
+    },
+    {
+      "title": "諸神歌詩三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《诸神歌诗》三篇。",
+      "work_id": "GYPjYjtatoH"
+    },
+    {
+      "title": "送迎靈頌歌詩三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《送迎灵颂歌诗》三篇。",
+      "work_id": "GYPjYgFnXfd"
+    },
+    {
+      "title": "周歌詩二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《周歌诗》二篇。",
+      "work_id": "GYPjYjUJr4P"
+    },
+    {
+      "title": "南郡歌詩五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《南郡歌诗》五篇。",
+      "work_id": "GYPjYf2d895"
+    },
+    {
+      "title": "洛陽歌詩四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《洛阳歌诗》四篇。",
+      "work_id": "GYPjYeiNQET"
+    },
+    {
+      "title": "燕代謳雁門云中隴西歌詩九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《燕代讴雁门云中陇西歌诗》九篇。",
+      "work_id": "GYPjYiQgzAB"
+    },
+    {
+      "title": "詩賦雜賦類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "成相雜辭十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《成相杂辞》十一篇。",
+      "work_id": "GYL54dj7bG3"
+    },
+    {
+      "title": "大雜賦三十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《大杂赋》三十四篇。",
+      "work_id": "GYPjYbfLwcb"
+    },
+    {
+      "title": "客主賦十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《客主赋》十八篇。",
+      "work_id": "GYPjYeKFXom"
+    },
+    {
+      "title": "隱書十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《隐书》十八篇。",
+      "work_id": "GYPjYidzBqq"
+    },
+    {
+      "title": "雜鼓琴劍戲賦十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂鼓琴剑戏赋》十三篇。",
+      "work_id": "GYPjYirb5jm"
+    },
+    {
+      "title": "雜禽獸六畜昆蟲賦十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂禽兽六畜昆虫赋》十八篇。",
+      "work_id": "GYPjYivFN6B"
+    },
+    {
+      "title": "雜器械草木賦三十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂器械草木赋》三十三篇。",
+      "work_id": "GYPjYix9Y3Z"
+    },
+    {
+      "title": "雜山陵水泡云氣雨旱賦十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂山陵水泡云气雨旱赋》十六篇。",
+      "work_id": "GYPjYiyueSb"
+    },
+    {
+      "title": "雜思慕悲哀死賦十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂思慕悲哀死赋》十六篇。",
+      "work_id": "GYPjYj1d4zB"
+    },
+    {
+      "title": "雜四夷及兵賦二十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂四夷及兵赋》二十篇。",
+      "work_id": "GYPjYj3RsEf"
+    },
+    {
+      "title": "雜行山及頌德賦二十四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂行山及颂德赋》二十四篇。",
+      "work_id": "GYPjYj5HMLb"
+    },
+    {
+      "title": "雜中賢失意賦十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂中贤失意赋》十二篇。",
+      "work_id": "GYPjYj6zmtB"
+    }
+  ]
+}

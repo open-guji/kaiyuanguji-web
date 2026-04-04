@@ -1,0 +1,428 @@
+{
+  "title": "兵書略",
+  "source_url": "https://zh.wikisource.org/wiki/漢書/卷030",
+  "sections": [
+    {
+      "title": "兵書略",
+      "level": 1,
+      "type": "略",
+      "content": ""
+    },
+    {
+      "title": "兵書兵權謀類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "齊孫子八十九篇",
+      "level": 3,
+      "type": "书",
+      "content": "《齐孙子》八十九篇。图四卷。",
+      "work_id": "GYPjYfNsPhy"
+    },
+    {
+      "title": "公孫鞅二十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公孙鞅》二十七篇。",
+      "work_id": "GYPjYcMyYJj"
+    },
+    {
+      "title": "吳起四十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吴起》四十八篇。有《列传》。",
+      "work_id": "GYPjYhqHaTy"
+    },
+    {
+      "title": "范蠡二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《范蠡》二篇。越王句践臣也。",
+      "work_id": "GYPjYbwU4Jb"
+    },
+    {
+      "title": "大夫種二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《大夫种》二篇。与范蠡俱事句践。",
+      "work_id": "GYPjYbXtKMR"
+    },
+    {
+      "title": "娷一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《娷》一篇。",
+      "work_id": "GYPjYjnw4nb"
+    },
+    {
+      "title": "兵春秋一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《兵春秋》一篇。",
+      "work_id": "GYPjYb1Va5M"
+    },
+    {
+      "title": "龐煖三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《庞煖》三篇。",
+      "work_id": "GYPjVLQXwG3"
+    },
+    {
+      "title": "兒良一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《儿良》一篇。",
+      "work_id": "GYPjYbuoKcT"
+    },
+    {
+      "title": "廣武君一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《广武君》一篇。李左车。",
+      "work_id": "GYPjYcUqEV5"
+    },
+    {
+      "title": "韓信三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《韩信》三篇。",
+      "work_id": "GYPjYd5M8e3"
+    },
+    {
+      "title": "李子十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李子》十篇。",
+      "work_id": "GYPjVL8TWRV"
+    },
+    {
+      "title": "吳孫子兵法八十二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《吴孙子兵法》八十二篇。图九卷。",
+      "work_id": "GYL555MNBGj"
+    },
+    {
+      "title": "兵書兵形勢類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "楚兵法七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《楚兵法》七篇。图四卷。",
+      "work_id": "GYPjYbRAgjR"
+    },
+    {
+      "title": "蚩尤二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蚩尤》二篇。见《吕刑》。",
+      "work_id": "GYPjYbMqDM9"
+    },
+    {
+      "title": "孫軫五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孙轸》五篇。图二卷。",
+      "work_id": "GYPjYgMLyyR"
+    },
+    {
+      "title": "繇敘二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《繇叙》二篇。",
+      "work_id": "GYPjYia9A5d"
+    },
+    {
+      "title": "王孫十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《王孙》十六篇。图五卷。",
+      "work_id": "GYPjVML6EpF"
+    },
+    {
+      "title": "尉繚三十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《尉缭》三十一篇。",
+      "work_id": "GYL555Vyyr7"
+    },
+    {
+      "title": "魏公子二十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《魏公子》二十一篇。图十卷。名无忌，有《列传》。",
+      "work_id": "GYPjYhHeHAo"
+    },
+    {
+      "title": "景子十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《景子》十三篇。",
+      "work_id": "GYPjVKhdDTD"
+    },
+    {
+      "title": "李良三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李良》三篇。",
+      "work_id": "GYPjYeWNSRM"
+    },
+    {
+      "title": "丁子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《丁子》一篇。",
+      "work_id": "GYPjYbj1Dy1"
+    },
+    {
+      "title": "項王一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《项王》一篇。名籍。",
+      "work_id": "GYPjYi9QEpF"
+    },
+    {
+      "title": "兵書陰陽類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "太壹兵法一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《太壹兵法》一篇。",
+      "work_id": "GYPjYgWqqkK"
+    },
+    {
+      "title": "天一兵法三十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《天一兵法》三十五篇。",
+      "work_id": "GYPjYh11c6s"
+    },
+    {
+      "title": "神農兵法一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《神农兵法》一篇。",
+      "work_id": "GYPjYfn5dqZ"
+    },
+    {
+      "title": "黃帝十六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《黄帝》十六篇。图三卷。",
+      "work_id": "GYPjYdXcj3D"
+    },
+    {
+      "title": "封胡五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《封胡》五篇。黄帝臣，依托也。",
+      "work_id": "GYPjYc5woKd"
+    },
+    {
+      "title": "風后十三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《风后》十三篇。图二卷。黄帝臣，依托也。",
+      "work_id": "GYPjYc49159"
+    },
+    {
+      "title": "力牧十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《力牧》十五篇。黄帝臣，依托也。",
+      "work_id": "GYPjVL337g3"
+    },
+    {
+      "title": "鵊冶子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鵊冶子》一篇。图一卷。",
+      "work_id": "GYPjYe2wfhy"
+    },
+    {
+      "title": "鬼容區三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鬼容区》三篇。图一卷。黄帝臣，依托。",
+      "work_id": "GYPjYcWjQST"
+    },
+    {
+      "title": "地典六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《地典》六篇。",
+      "work_id": "GYPjYbhCRiX"
+    },
+    {
+      "title": "孟子一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《孟子》一篇。",
+      "work_id": "GYPjYeuSczb"
+    },
+    {
+      "title": "東父三十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《东父》三十一篇。",
+      "work_id": "GYPjYbnfWKR"
+    },
+    {
+      "title": "師曠八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《师旷》八篇。晋平公臣。",
+      "work_id": "GYPjVLkW5iF"
+    },
+    {
+      "title": "萇弘十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《苌弘》十五篇。周史。",
+      "work_id": "GYPjYb82THZ"
+    },
+    {
+      "title": "別成子望軍氣六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《别成子望军气》六篇。图三卷。",
+      "work_id": "GYPjYaxCnYX"
+    },
+    {
+      "title": "辟兵威勝方七十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《辟兵威胜方》七十篇。",
+      "work_id": "GYPjYavJcb9"
+    },
+    {
+      "title": "兵書兵技巧類",
+      "level": 2,
+      "type": "类",
+      "content": ""
+    },
+    {
+      "title": "鮑子兵法十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《鲍子兵法》十篇。图一卷。",
+      "work_id": "GYPjYaoQEZM"
+    },
+    {
+      "title": "五子胥十篇",
+      "level": 3,
+      "type": "书",
+      "content": "《五子胥》十篇。图一卷。",
+      "work_id": "GYPjVMcSnmV"
+    },
+    {
+      "title": "公勝子五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《公胜子》五篇。",
+      "work_id": "GYPjYcLJocb"
+    },
+    {
+      "title": "苗子五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《苗子》五篇。图一卷。",
+      "work_id": "GYPjYew7Mgj"
+    },
+    {
+      "title": "逢門射法二篇",
+      "level": 3,
+      "type": "书",
+      "content": "《逢门射法》二篇。",
+      "work_id": "GYPjYc7kba7"
+    },
+    {
+      "title": "陰通成射法十一篇",
+      "level": 3,
+      "type": "书",
+      "content": "《阴通成射法》十一篇。",
+      "work_id": "GYPjYiftMoD"
+    },
+    {
+      "title": "李將軍射法三篇",
+      "level": 3,
+      "type": "书",
+      "content": "《李将军射法》三篇。",
+      "work_id": "GYPjYeUUGTy"
+    },
+    {
+      "title": "魏氏射法六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《魏氏射法》六篇。",
+      "work_id": "GYPjYhRCH8s"
+    },
+    {
+      "title": "望遠連弩射法具十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《望远连弩射法具》十五篇。",
+      "work_id": "GYPjYhFk7DR"
+    },
+    {
+      "title": "護軍射師王賀射書五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《护军射师王贺射书》五篇。",
+      "work_id": "GYPjYdwr5vf"
+    },
+    {
+      "title": "蒲苴子弋法四篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蒲苴子弋法》四篇。",
+      "work_id": "GYPjYfAKBfV"
+    },
+    {
+      "title": "劍道三十八篇",
+      "level": 3,
+      "type": "书",
+      "content": "《剑道》三十八篇。",
+      "work_id": "GYPjYe1Gw1q"
+    },
+    {
+      "title": "雜家兵法五十七篇",
+      "level": 3,
+      "type": "书",
+      "content": "《杂家兵法》五十七篇。",
+      "work_id": "GYPjYitSZqh"
+    },
+    {
+      "title": "蹴二十五篇",
+      "level": 3,
+      "type": "书",
+      "content": "《蹴》二十五篇。",
+      "work_id": "GYPjYbUYqy9"
+    },
+    {
+      "title": "強弩將軍王圍射法五卷",
+      "level": 3,
+      "type": "书",
+      "content": "《强弩将军王围射法》五卷。",
+      "work_id": "GYPjYfC7yuy"
+    },
+    {
+      "title": "手博六篇",
+      "level": 3,
+      "type": "书",
+      "content": "《手博》六篇。",
+      "work_id": "GYPjYg6kYRD"
+    }
+  ]
+}

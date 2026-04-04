@@ -1,0 +1,107 @@
+{
+  "collection_id": "FCmbeajrbJx",
+  "title": "殿本十三經注疏",
+  "resource_id": "ctext",
+  "resource_name": "中國哲學書電子化計劃",
+  "source": "https://ctext.org/shisan-jing-zhushu/zh",
+  "total_volumes": 416,
+  "stats": {
+    "total_books": 13,
+    "matched_works": 13,
+    "unmatched_works": 0,
+    "total_juan": 417
+  },
+  "books": [
+    {
+      "title": "周易正義",
+      "book_id": "CXYqT5AJw6F",
+      "work_id": "GYJ3SSH4xz3",
+      "juan_count": 10,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "尚書正義",
+      "book_id": "CXYqT5Dbid5",
+      "work_id": "GYL5215Antw",
+      "juan_count": 20,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "毛詩正義",
+      "book_id": "CXYqT5Ghkk7",
+      "work_id": "GYL524Wcp9m",
+      "juan_count": 70,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "周禮注疏",
+      "book_id": "CXYqT5KuAa3",
+      "work_id": "GYL528DAqLj",
+      "juan_count": 42,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "儀禮注疏",
+      "book_id": "CXYqT5NdhsV",
+      "work_id": "GYL528mbp8X",
+      "juan_count": 50,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "禮記正義",
+      "book_id": "CXYqT5RNFAw",
+      "work_id": "GYL529NmLDm",
+      "juan_count": 63,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "春秋左傳正義",
+      "book_id": "CXYqT5U9UKq",
+      "work_id": "GYL52KAieiB",
+      "juan_count": 60,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "春秋公羊傳注疏",
+      "book_id": "CXYqT5WyPLB",
+      "work_id": "GYL52KC1taj",
+      "juan_count": 28,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "春秋穀梁傳注疏",
+      "book_id": "CXYqT5ZkcV5",
+      "work_id": "GYL52KDTC1d",
+      "juan_count": 20,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "論語注疏",
+      "book_id": "CXYqT5cXqdy",
+      "work_id": "GYPCF4FHDTm",
+      "juan_count": 20,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "孝經注疏",
+      "book_id": "CXYqT5fDh5y",
+      "work_id": "GYPCF4HYtEj",
+      "juan_count": 9,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "爾雅注疏",
+      "book_id": "CXYqT5hdRRH",
+      "work_id": "GYL52fVFS3R",
+      "juan_count": 11,
+      "edition": "武英殿本"
+    },
+    {
+      "title": "孟子注疏",
+      "book_id": "CXYqT5kbPyy",
+      "work_id": "GYPCF4Kdobu",
+      "juan_count": 14,
+      "edition": "武英殿本"
+    }
+  ]
+}

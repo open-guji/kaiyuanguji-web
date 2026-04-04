@@ -1,0 +1,254 @@
+{
+  "collection_id": "FCmYiXcTfuZ",
+  "title": "殿本二十四史",
+  "resource_id": "ctext",
+  "resource_name": "中國哲學書電子化計劃",
+  "source": "https://ctext.org/library.pl?if=en&collection=7",
+  "total_volumes": 3213,
+  "stats": {
+    "total_books": 24,
+    "total_juan": 3213
+  },
+  "books": [
+    {
+      "title": "史記",
+      "book_id": "CXYnWnRsnoH",
+      "work_id": "GY4JM7j7yi7",
+      "author": "司馬遷",
+      "dynasty": "西漢",
+      "juan_count": 130,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77688"
+    },
+    {
+      "title": "漢書",
+      "book_id": "CXYnWnSa6b1",
+      "work_id": "GY3U3t59J6T",
+      "author": "班固",
+      "dynasty": "東漢",
+      "juan_count": 100,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77689"
+    },
+    {
+      "title": "後漢書",
+      "book_id": "CXYnWnTDiXH",
+      "work_id": "GYL5zdvXwao",
+      "author": "范曄",
+      "dynasty": "南朝宋",
+      "juan_count": 120,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77690"
+    },
+    {
+      "title": "三國志",
+      "book_id": "CXYnWnU1Q1u",
+      "work_id": "GYL5zeDmYjZ",
+      "author": "陳壽",
+      "dynasty": "晉",
+      "juan_count": 65,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77691"
+    },
+    {
+      "title": "晉書",
+      "book_id": "CXYnWnUqmMy",
+      "work_id": "GYL5zeX6XbD",
+      "author": "房玄齡等",
+      "dynasty": "唐",
+      "juan_count": 130,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77692"
+    },
+    {
+      "title": "宋書",
+      "book_id": "CXYnWnVVPJF",
+      "work_id": "GYL5zec9RX5",
+      "author": "沈約",
+      "dynasty": "梁",
+      "juan_count": 100,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77693"
+    },
+    {
+      "title": "南齊書",
+      "book_id": "CXYnWnW91EX",
+      "work_id": "GYL5zehtdEf",
+      "author": "蕭子顯",
+      "dynasty": "梁",
+      "juan_count": 59,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77694"
+    },
+    {
+      "title": "梁書",
+      "book_id": "CXYnWnWndAo",
+      "work_id": "GYL5zeob96o",
+      "author": "姚思廉",
+      "dynasty": "唐",
+      "juan_count": 56,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77695"
+    },
+    {
+      "title": "陳書",
+      "book_id": "CXYnWnXUvxX",
+      "work_id": "GYL5zetgit7",
+      "author": "姚思廉",
+      "dynasty": "唐",
+      "juan_count": 36,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77696"
+    },
+    {
+      "title": "魏書",
+      "book_id": "CXYnWnYTMrw",
+      "work_id": "GYL5zeygvxX",
+      "author": "魏收",
+      "dynasty": "北齊",
+      "juan_count": 114,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77697"
+    },
+    {
+      "title": "北齊書",
+      "book_id": "CXYnWnZLR4T",
+      "work_id": "GYL5zf5PSpf",
+      "author": "李百藥",
+      "dynasty": "唐",
+      "juan_count": 50,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77698"
+    },
+    {
+      "title": "周書",
+      "book_id": "CXYnWna5Qhd",
+      "work_id": "GYL5zfBBLPh",
+      "author": "令狐德棻等",
+      "dynasty": "唐",
+      "juan_count": 50,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77699"
+    },
+    {
+      "title": "隋書",
+      "book_id": "CXYnWnaxTu9",
+      "work_id": "GYL5zfGvY7H",
+      "author": "魏徵等",
+      "dynasty": "唐",
+      "juan_count": 85,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77700"
+    },
+    {
+      "title": "南史",
+      "book_id": "CXYnWnbhTYK",
+      "work_id": "GYL52oawPG3",
+      "author": "李延壽",
+      "dynasty": "唐",
+      "juan_count": 80,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77701"
+    },
+    {
+      "title": "北史",
+      "book_id": "CXYnWncdCbH",
+      "work_id": "GYL52odM7bM",
+      "author": "李延壽",
+      "dynasty": "唐",
+      "juan_count": 100,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77702"
+    },
+    {
+      "title": "舊唐書",
+      "book_id": "CXYnWndNCET",
+      "work_id": "GYL52ofXQfR",
+      "author": "劉昫等",
+      "dynasty": "後晉",
+      "juan_count": 200,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77703"
+    },
+    {
+      "title": "新唐書",
+      "book_id": "CXYnWneHwHR",
+      "work_id": "GYL52ohhhjV",
+      "author": "歐陽修等",
+      "dynasty": "宋",
+      "juan_count": 225,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77704"
+    },
+    {
+      "title": "舊五代史",
+      "book_id": "CXYnWnewZDh",
+      "work_id": "GYL52ooVbJX",
+      "author": "薛居正等",
+      "dynasty": "宋",
+      "juan_count": 150,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77705"
+    },
+    {
+      "title": "新五代史",
+      "book_id": "CXYnWnfsJGf",
+      "work_id": "GYL52opvtjR",
+      "author": "歐陽修",
+      "dynasty": "宋",
+      "juan_count": 74,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77706"
+    },
+    {
+      "title": "宋史",
+      "book_id": "CXYnWngtR2X",
+      "work_id": "GYL52ostsJ7",
+      "author": "脫脫等",
+      "dynasty": "元",
+      "juan_count": 496,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77707"
+    },
+    {
+      "title": "遼史",
+      "book_id": "CXYnWnhpA5V",
+      "work_id": "GYL52ov2UWj",
+      "author": "脫脫等",
+      "dynasty": "元",
+      "juan_count": 116,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77708"
+    },
+    {
+      "title": "金史",
+      "book_id": "CXYnWniWTsD",
+      "work_id": "GYL52p15NSb",
+      "author": "脫脫等",
+      "dynasty": "元",
+      "juan_count": 135,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77709"
+    },
+    {
+      "title": "元史",
+      "book_id": "CXYnWnjUtmd",
+      "work_id": "GYL52p4nLeT",
+      "author": "宋濂等",
+      "dynasty": "明",
+      "juan_count": 210,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77710"
+    },
+    {
+      "title": "明史",
+      "book_id": "CXYnWnkTKg3",
+      "work_id": "GYL52p96Ew9",
+      "author": "張廷玉等",
+      "dynasty": "清",
+      "juan_count": 332,
+      "edition": "武英殿本",
+      "ctext_url": "https://ctext.org/library.pl?if=en&res=77711"
+    }
+  ]
+}
