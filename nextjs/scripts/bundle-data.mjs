@@ -133,13 +133,25 @@ function bundleL1() {
                     }
                 }
 
-                // collated_edition_index
+                // collated_edition_index + collated_edition juan files
                 const ceiPath = join(itemDir, 'collated_edition_index.json');
                 if (existsSync(ceiPath)) {
                     try {
                         chunk[`${id}/collated_edition_index`] = readJson(ceiPath);
                     } catch (e) {
                         console.warn(`  ⚠ Failed to read collated_edition_index: ${e.message}`);
+                    }
+
+                    // Pack individual collated edition juan files
+                    const ceDir = join(itemDir, 'collated_edition');
+                    if (existsSync(ceDir) && statSync(ceDir).isDirectory()) {
+                        for (const ceFile of readdirSync(ceDir).filter(f => f.endsWith('.json'))) {
+                            try {
+                                chunk[`${id}/collated_edition/${ceFile}`] = readJson(join(ceDir, ceFile));
+                            } catch (e) {
+                                console.warn(`  ⚠ Failed to read collated_edition/${ceFile}: ${e.message}`);
+                            }
+                        }
                     }
                 }
             }
