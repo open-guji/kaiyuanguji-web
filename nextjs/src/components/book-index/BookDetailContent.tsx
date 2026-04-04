@@ -5,7 +5,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexDetail, CollectionCatalog, CollatedEdition } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
@@ -257,9 +257,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab === 'basic') {
             return (
                 <div className="max-w-4xl px-8 pt-6 pb-8">
-                    <IndexDetail
+                    <IndexView
                         data={detail}
                         transport={getTransport(source)}
+                        mode="view"
                         renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
                     />
                 </div>
