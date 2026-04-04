@@ -89,3 +89,30 @@ jobs:
         with:
           folder: build/edgeone
           branch: edgeone-release # 部署到专门给 EdgeOne 用的分支
+
+      # --- 步骤 5：清除 EdgeOne CDN 缓存 ---
+      - name: Purge EdgeOne CDN cache
+        if: ${{ env.HAS_EDGEONE_SECRETS == 'true' }}
+        env:
+          HAS_EDGEONE_SECRETS: ${{ secrets.TENCENT_SECRET_ID != '' }}
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+        run: |
+          pip install tencentcloud-sdk-python-teo -q
+          python3 -c "
+          import json, os
+          from tencentcloud.common import credential
+          from tencentcloud.teo.v20220901 import teo_client, models
+
+          cred = credential.Credential(os.environ['TENCENT_SECRET_ID'], os.environ['TENCENT_SECRET_KEY'])
+          client = teo_client.TeoClient(cred, '')
+
+          req = models.CreatePurgeTaskRequest()
+          req.ZoneId = os.environ['EDGEONE_ZONE_ID']
+          req.Type = 'purge_prefix'
+          req.Targets = ['https://www.kaiyuanguji.com/']
+
+          resp = client.CreatePurgeTask(req)
+          print('✅ EdgeOne cache purged:', resp.TaskId)
+          "
