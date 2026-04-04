@@ -13,7 +13,7 @@
  *   BOOK_INDEX_DRAFT_DIR=/path node scripts/bundle-data.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, cpSync, rmSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import * as OpenCC from 'opencc-js';
@@ -45,6 +45,10 @@ function writeJson(path, data) {
 
 function ensureDir(dir) {
     mkdirSync(dir, { recursive: true });
+}
+
+function copyDirRecursive(src, dest) {
+    cpSync(src, dest, { recursive: true });
 }
 
 const NUM_SHARDS = 16;
@@ -93,8 +97,16 @@ function bundleL0() {
 
 function bundleL1() {
     const index = loadShardedIndex();
-    const chunks = new Map(); // prefix → { id: detailData, ... }
+    const chunks = new Map(); // prefix → { id: detailData }
     let totalEntries = 0;
+    let itemFileCount = 0;
+    const itemsDir = join(OUT_DIR, 'items');
+    const chunksDir = join(OUT_DIR, 'chunks');
+
+    // 清理旧数据
+    if (existsSync(chunksDir)) rmSync(chunksDir, { recursive: true });
+    if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
+    ensureDir(chunksDir);
 
     for (const [typeName, typeKey] of [['works', 'Work'], ['collections', 'Collection'], ['books', 'Book']]) {
         const items = index[typeName];
@@ -108,7 +120,7 @@ function bundleL1() {
             if (!chunks.has(prefix)) chunks.set(prefix, {});
             const chunk = chunks.get(prefix);
 
-            // 读取详情 JSON
+            // 读取详情 JSON → 放入 chunk
             const detailPath = join(DRAFT_DIR, path);
             if (existsSync(detailPath)) {
                 try {
@@ -119,51 +131,16 @@ function bundleL1() {
                 }
             }
 
-            // 查找关联数据：volume_book_mapping（Collection 的资源目录）
+            // 关联文件 → 直接复制到 items/{id}/ 下
             const itemDir = join(DRAFT_DIR, dirname(path), id);
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
-                for (const resDir of readdirSync(itemDir)) {
-                    const mappingPath = join(itemDir, resDir, 'volume_book_mapping.json');
-                    if (existsSync(mappingPath)) {
-                        try {
-                            chunk[`${id}/${resDir}/volume_book_mapping`] = readJson(mappingPath);
-                        } catch (e) {
-                            console.warn(`  ⚠ Failed to read mapping ${mappingPath}: ${e.message}`);
-                        }
-                    }
-                }
-
-                // collated_edition_index + collated_edition juan files
-                const ceiPath = join(itemDir, 'collated_edition_index.json');
-                if (existsSync(ceiPath)) {
-                    try {
-                        chunk[`${id}/collated_edition_index`] = readJson(ceiPath);
-                    } catch (e) {
-                        console.warn(`  ⚠ Failed to read collated_edition_index: ${e.message}`);
-                    }
-
-                    // Pack individual collated edition juan files
-                    const ceDir = join(itemDir, 'collated_edition');
-                    if (existsSync(ceDir) && statSync(ceDir).isDirectory()) {
-                        for (const ceFile of readdirSync(ceDir).filter(f => f.endsWith('.json'))) {
-                            try {
-                                chunk[`${id}/collated_edition/${ceFile}`] = readJson(join(ceDir, ceFile));
-                            } catch (e) {
-                                console.warn(`  ⚠ Failed to read collated_edition/${ceFile}: ${e.message}`);
-                            }
-                        }
-                    }
-                }
+                copyDirRecursive(itemDir, join(itemsDir, id));
+                itemFileCount++;
             }
         }
     }
 
-    // ─── 自适应前缀拆分：递归拆分直到每个 chunk ≤ TARGET_MB ───
-    const chunksDir = join(OUT_DIR, 'chunks');
-    if (existsSync(chunksDir)) {
-        for (const f of readdirSync(chunksDir)) unlinkSync(join(chunksDir, f));
-    }
-    ensureDir(chunksDir);
+    // ─── 自适应前缀拆分 ───
 
     const TARGET_MB = 1;
     const MAX_PREFIX_LEN = 9;
@@ -221,7 +198,10 @@ function bundleL1() {
             console.log(`    ${prefix}.json  (${size.toFixed(1)} MB, ${Object.keys(data).length} keys)`);
         }
     }
-    console.log(`    total: ${totalSize.toFixed(1)} MB`);
+    console.log(`    chunks total: ${totalSize.toFixed(1)} MB`);
+    if (itemFileCount > 0) {
+        console.log(`    items: ${itemFileCount} directories copied to items/`);
+    }
 }
 
 // ─── L2: 提要按卷组打包 ───
