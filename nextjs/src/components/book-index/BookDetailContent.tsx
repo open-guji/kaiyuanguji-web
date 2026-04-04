@@ -5,7 +5,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, LocaleToggle } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
@@ -262,6 +262,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         transport={getTransport(source)}
                         mode="view"
                         renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
+                        headerExtra={<LocaleToggle />}
                     />
                 </div>
             );
