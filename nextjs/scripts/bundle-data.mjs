@@ -13,7 +13,7 @@
  *   BOOK_INDEX_DRAFT_DIR=/path node scripts/bundle-data.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import * as OpenCC from 'opencc-js';
@@ -158,17 +158,46 @@ function bundleL1() {
         }
     }
 
-    // 写入 chunk 文件
+    // 写入 chunk 文件（超过 20MB 的按 ID 第3字符拆分）
     const chunksDir = join(OUT_DIR, 'chunks');
+    // 清空旧的 chunk 文件
+    if (existsSync(chunksDir)) {
+        for (const f of readdirSync(chunksDir)) unlinkSync(join(chunksDir, f));
+    }
     ensureDir(chunksDir);
+    const MAX_CHUNK_MB = 20;
+    let fileCount = 0;
+
     for (const [prefix, data] of chunks) {
-        writeJson(join(chunksDir, `${prefix}.json`), data);
+        const json = JSON.stringify(data);
+        const sizeMB = Buffer.byteLength(json) / 1024 / 1024;
+
+        if (sizeMB <= MAX_CHUNK_MB) {
+            writeJson(join(chunksDir, `${prefix}.json`), data);
+            fileCount++;
+        } else {
+            // Split by 3rd character of key's ID
+            const subChunks = new Map();
+            for (const [key, val] of Object.entries(data)) {
+                const sub = key.length >= 3 ? key[2] : '_';
+                if (!subChunks.has(sub)) subChunks.set(sub, {});
+                subChunks.get(sub)[key] = val;
+            }
+            for (const [sub, subData] of subChunks) {
+                writeJson(join(chunksDir, `${prefix}${sub}.json`), subData);
+                fileCount++;
+            }
+            console.log(`    ${prefix}.json split into ${subChunks.size} sub-chunks (was ${sizeMB.toFixed(1)} MB)`);
+        }
     }
 
-    console.log(`L1  ${totalEntries} entries → ${chunks.size} chunks`);
-    for (const [prefix, data] of [...chunks].sort((a, b) => a[0].localeCompare(b[0]))) {
-        const size = (Buffer.byteLength(JSON.stringify(data)) / 1024 / 1024).toFixed(1);
-        console.log(`    ${prefix}.json  (${size} MB, ${Object.keys(data).length} keys)`);
+    console.log(`L1  ${totalEntries} entries → ${fileCount} chunk files`);
+    // Print sizes of all chunk files
+    for (const f of readdirSync(chunksDir).sort()) {
+        const content = readFileSync(join(chunksDir, f), 'utf-8');
+        const size = (Buffer.byteLength(content) / 1024 / 1024).toFixed(1);
+        const keys = Object.keys(JSON.parse(content)).length;
+        console.log(`    ${f}  (${size} MB, ${keys} keys)`);
     }
 }
 
