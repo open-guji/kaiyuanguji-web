@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   repository_dispatch:
-    types: [ book-index-updated ]
+    types: [ data-updated ]
 
 permissions:
   contents: write
