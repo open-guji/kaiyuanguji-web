@@ -158,47 +158,70 @@ function bundleL1() {
         }
     }
 
-    // 写入 chunk 文件（超过 20MB 的按 ID 第3字符拆分）
+    // ─── 自适应前缀拆分：递归拆分直到每个 chunk ≤ TARGET_MB ───
     const chunksDir = join(OUT_DIR, 'chunks');
-    // 清空旧的 chunk 文件
     if (existsSync(chunksDir)) {
         for (const f of readdirSync(chunksDir)) unlinkSync(join(chunksDir, f));
     }
     ensureDir(chunksDir);
-    const MAX_CHUNK_MB = 20;
-    let fileCount = 0;
 
-    for (const [prefix, data] of chunks) {
+    const TARGET_MB = 1;
+    const MAX_PREFIX_LEN = 9;
+
+    /**
+     * 递归拆分：如果 data 序列化后超过 TARGET_MB，
+     * 按 key 的第 prefixLen 个字符分桶，继续递归。
+     * 返回 [prefix, data][] 列表。
+     */
+    function splitChunk(prefix, data, prefixLen) {
         const json = JSON.stringify(data);
         const sizeMB = Buffer.byteLength(json) / 1024 / 1024;
 
-        if (sizeMB <= MAX_CHUNK_MB) {
-            writeJson(join(chunksDir, `${prefix}.json`), data);
-            fileCount++;
-        } else {
-            // Split by 3rd character of key's ID
-            const subChunks = new Map();
-            for (const [key, val] of Object.entries(data)) {
-                const sub = key.length >= 3 ? key[2] : '_';
-                if (!subChunks.has(sub)) subChunks.set(sub, {});
-                subChunks.get(sub)[key] = val;
-            }
-            for (const [sub, subData] of subChunks) {
-                writeJson(join(chunksDir, `${prefix}${sub}.json`), subData);
-                fileCount++;
-            }
-            console.log(`    ${prefix}.json split into ${subChunks.size} sub-chunks (was ${sizeMB.toFixed(1)} MB)`);
+        if (sizeMB <= TARGET_MB || prefixLen >= MAX_PREFIX_LEN) {
+            return [[prefix, data]];
         }
+
+        // 按第 prefixLen 个字符分桶（取 key 中 ID 部分）
+        const subGroups = new Map();
+        for (const [key, val] of Object.entries(data)) {
+            const ch = key.length > prefixLen ? key[prefixLen] : '_';
+            if (!subGroups.has(ch)) subGroups.set(ch, {});
+            subGroups.get(ch)[key] = val;
+        }
+
+        // 递归拆分每个子桶
+        const result = [];
+        for (const [ch, subData] of subGroups) {
+            result.push(...splitChunk(prefix + ch, subData, prefixLen + 1));
+        }
+        return result;
     }
 
-    console.log(`L1  ${totalEntries} entries → ${fileCount} chunk files`);
-    // Print sizes of all chunk files
-    for (const f of readdirSync(chunksDir).sort()) {
-        const content = readFileSync(join(chunksDir, f), 'utf-8');
-        const size = (Buffer.byteLength(content) / 1024 / 1024).toFixed(1);
-        const keys = Object.keys(JSON.parse(content)).length;
-        console.log(`    ${f}  (${size} MB, ${keys} keys)`);
+    // 对每个初始 2-char chunk 递归拆分
+    const finalChunks = [];
+    for (const [prefix, data] of chunks) {
+        finalChunks.push(...splitChunk(prefix, data, 2));
     }
+
+    // 写入文件 + 收集 manifest
+    const manifest = [];
+    for (const [prefix, data] of finalChunks) {
+        writeJson(join(chunksDir, `${prefix}.json`), data);
+        manifest.push(prefix);
+    }
+    manifest.sort();
+    writeJson(join(chunksDir, '_manifest.json'), manifest);
+
+    console.log(`L1  ${totalEntries} entries → ${finalChunks.length} chunk files + manifest`);
+    let totalSize = 0;
+    for (const [prefix, data] of finalChunks.sort((a, b) => a[0].localeCompare(b[0]))) {
+        const size = Buffer.byteLength(JSON.stringify(data)) / 1024 / 1024;
+        totalSize += size;
+        if (size > 0.1) {
+            console.log(`    ${prefix}.json  (${size.toFixed(1)} MB, ${Object.keys(data).length} keys)`);
+        }
+    }
+    console.log(`    total: ${totalSize.toFixed(1)} MB`);
 }
 
 // ─── L2: 提要按卷组打包 ───
