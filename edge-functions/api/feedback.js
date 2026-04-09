@@ -51,7 +51,9 @@ async function kvPost(kv, type, content, pageUrl) {
 }
 
 async function kvGet(kv, limit, cursor) {
-  const listResult = await kv.list({ prefix: 'fb_', limit, cursor: cursor || undefined });
+  const listOpts = { prefix: 'fb_', limit };
+  if (cursor) listOpts.cursor = cursor;
+  const listResult = await kv.list(listOpts);
   const keys = listResult.keys || [];
 
   const items = [];
