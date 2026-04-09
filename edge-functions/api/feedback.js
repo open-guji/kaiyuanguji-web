@@ -20,8 +20,17 @@ function generateId() {
 }
 
 // 存储模式：环境变量 FEEDBACK_MODE = "kv" | "github"，默认 "kv"
-function getMode(env) {
-  return env.FEEDBACK_MODE === 'github' ? 'github' : 'kv';
+// EdgeOne Pages 将环境变量和 KV 绑定注入为全局变量
+function getMode() {
+  return (typeof FEEDBACK_MODE !== 'undefined' && FEEDBACK_MODE === 'github') ? 'github' : 'kv';
+}
+
+function getKV() {
+  return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
+}
+
+function getGithubToken() {
+  return (typeof GITHUB_TOKEN !== 'undefined') ? GITHUB_TOKEN : null;
 }
 
 // --- KV 模式 ---
@@ -47,7 +56,7 @@ async function kvGet(kv, limit, cursor) {
 
   const items = [];
   for (const key of keys) {
-    const val = await kv.get(key.name, { type: 'json' });
+    const val = await kv.get(key.key, 'json');
     if (val) items.push(val);
   }
   items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -140,11 +149,11 @@ export async function onRequestPost(context) {
       });
     }
 
-    const mode = getMode(context.env);
+    const mode = getMode();
     let result;
 
     if (mode === 'github') {
-      const ghToken = context.env.GITHUB_TOKEN;
+      const ghToken = getGithubToken();
       if (!ghToken) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：GITHUB_TOKEN 未设置' }), {
           status: 500, headers,
@@ -152,7 +161,7 @@ export async function onRequestPost(context) {
       }
       result = await githubPost(ghToken, type, content, pageUrl);
     } else {
-      const kv = context.env.FEEDBACK_KV;
+      const kv = getKV();
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), {
           status: 500, headers,
@@ -180,11 +189,11 @@ export async function onRequestGet(context) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';
 
-    const mode = getMode(context.env);
+    const mode = getMode();
     let result;
 
     if (mode === 'github') {
-      const ghToken = context.env.GITHUB_TOKEN;
+      const ghToken = getGithubToken();
       if (!ghToken) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：GITHUB_TOKEN 未设置' }), {
           status: 500, headers,
@@ -192,7 +201,7 @@ export async function onRequestGet(context) {
       }
       result = await githubGet(ghToken, limit);
     } else {
-      const kv = context.env.FEEDBACK_KV;
+      const kv = getKV();
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), {
           status: 500, headers,
