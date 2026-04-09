@@ -59,6 +59,20 @@ export default function RootLayout({
   // 静态导出环境下不能在 Server Component 中使用 cookies()
   return (
     <html lang="zh-CN">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: SITE_NAME,
+              alternateName: ["开源古籍", "kaiyuanguji"],
+              url: SITE_URL,
+            }),
+          }}
+        />
+      </head>
       <body className={`antialiased ${notoSerif.variable}`}>
         <SourceProvider>
           {children}

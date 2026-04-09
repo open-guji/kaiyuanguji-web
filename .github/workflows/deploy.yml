@@ -76,6 +76,9 @@ jobs:
             echo "❌ EdgeOne build not using bundle mode!" && exit 1
           fi
 
+      - name: Copy Edge Functions to EdgeOne build
+        run: cp -r edge-functions build/edgeone/edge-functions
+
       # --- 步骤 3：部署到 GitHub Pages 分支 ---
       - name: Deploy to GitHub Pages Branch
         uses: JamesIves/github-pages-deploy-action@v4
