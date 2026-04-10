@@ -18,5 +18,5 @@ export default function FeedbackWidget() {
     }
   };
 
-  return <FeedbackButton onSubmit={handleSubmit} />;
+  return <FeedbackButton onSubmit={handleSubmit} feedbackListUrl="/book-index?tab=feedback" />;
 }
