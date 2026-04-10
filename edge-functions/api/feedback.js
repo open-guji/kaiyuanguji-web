@@ -128,6 +128,18 @@ async function githubGet(ghToken, limit) {
   return { items, cursor: '', hasMore: false };
 }
 
+// --- KV PATCH ---
+
+async function kvPatch(kv, id, status, reply) {
+  const record = await kv.get(id, 'json');
+  if (!record) return null;
+  if (status) record.status = status;
+  if (reply !== undefined) record.reply = reply;
+  record.updatedAt = new Date().toISOString();
+  await kv.put(id, JSON.stringify(record));
+  return record;
+}
+
 // --- 请求处理 ---
 
 export async function onRequestPost(context) {
@@ -224,6 +236,51 @@ export async function onRequestGet(context) {
   }
 }
 
+export async function onRequestPatch(context) {
+  const headers = getCorsHeaders(context.request);
+
+  try {
+    const url = new URL(context.request.url);
+    // 路径：/api/feedback/:id
+    const id = url.pathname.split('/').pop();
+    if (!id || !id.startsWith('fb_')) {
+      return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
+        status: 400, headers,
+      });
+    }
+
+    const { status, reply } = await context.request.json();
+    if (status && !['pending', 'resolved'].includes(status)) {
+      return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
+        status: 400, headers,
+      });
+    }
+
+    const kv = getKV();
+    if (!kv) {
+      return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
+        status: 500, headers,
+      });
+    }
+
+    const updated = await kvPatch(kv, id, status, reply);
+    if (!updated) {
+      return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
+        status: 404, headers,
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, item: updated }), {
+      status: 200, headers,
+    });
+  } catch (e) {
+    console.error('Feedback PATCH error:', e);
+    return new Response(JSON.stringify({ success: false, error: e.message || '更新失败' }), {
+      status: 500, headers,
+    });
+  }
+}
+
 export function onRequestOptions(context) {
   const origin = context.request.headers.get('origin') || '';
   const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -232,7 +289,7 @@ export function onRequestOptions(context) {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': corsOrigin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Access-Control-Max-Age': '86400',
     },
