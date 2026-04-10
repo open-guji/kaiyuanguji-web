@@ -35,13 +35,14 @@ function getGithubToken() {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl) {
+async function kvPost(kv, type, content, pageUrl, resourceId) {
   const id = generateId();
   const record = {
     id,
     type,
     content: content.trim(),
     pageUrl: pageUrl || '',
+    resourceId: resourceId || '',
     createdAt: new Date().toISOString(),
     status: 'pending',
     reply: '',
@@ -133,7 +134,7 @@ export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
 
   try {
-    const { type, content, pageUrl } = await context.request.json();
+    const { type, content, pageUrl, resourceId } = await context.request.json();
 
     if (!['bug', 'resource'].includes(type)) {
       return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
@@ -169,7 +170,7 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl);
+      result = await kvPost(kv, type, content, pageUrl, resourceId);
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
