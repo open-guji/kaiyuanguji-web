@@ -49,9 +49,10 @@ export async function generateStaticParams() {
     const files = fs.readdirSync(contentDir);
     return files
       .filter((file) => file.endsWith('.md'))
-      .map((file) => ({
-        filename: file,
-      }));
+      .flatMap((file) => [
+        { filename: file },
+        { filename: file.replace(/\.md$/, '') },
+      ]);
   } catch (error) {
     console.error('Failed to read content directory for static params:', error);
     return [];
