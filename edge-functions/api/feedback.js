@@ -52,7 +52,7 @@ async function kvPost(kv, type, content, pageUrl, resourceId) {
 }
 
 async function kvGet(kv, limit, cursor, resourceId) {
-  const listOpts = { prefix: 'fb_', limit: resourceId ? 1000 : limit };
+  const listOpts = { prefix: 'fb_', limit: resourceId ? 256 : limit };
   if (cursor && !resourceId) listOpts.cursor = cursor;
   const listResult = await kv.list(listOpts);
   const keys = listResult.keys || [];
