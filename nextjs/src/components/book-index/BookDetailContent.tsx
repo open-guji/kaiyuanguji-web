@@ -11,9 +11,10 @@ import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import BidLink from './BidLink';
 import DigitalizationView from './DigitalizationView';
+import FeedbackTab from './FeedbackTab';
 import type { DigitalAssets } from '@/types';
 
-type TabType = 'basic' | 'digital' | 'collated' | `catalog:${string}`;
+type TabType = 'basic' | 'digital' | 'collated' | 'feedback' | `catalog:${string}`;
 
 interface BookDetailContentProps {
     id: string;
@@ -251,6 +252,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     if (detail.digital_assets) {
         navItems.push({ key: 'digital', label: '数字化' });
     }
+    // 反馈讨论 tab（所有类型都有）
+    navItems.push({ key: 'feedback', label: '反馈' });
 
     // 渲染当前 tab 内容
     const renderContent = () => {
@@ -306,6 +309,14 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             return (
                 <div className="px-4 pb-8">
                     <DigitalizationView id={id} assets={detail.digital_assets} initialPage={initialPage} />
+                </div>
+            );
+        }
+
+        if (activeTab === 'feedback') {
+            return (
+                <div className="max-w-4xl px-8 pt-6 pb-8">
+                    <FeedbackTab resourceId={id} />
                 </div>
             );
         }

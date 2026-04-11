@@ -51,23 +51,26 @@ async function kvPost(kv, type, content, pageUrl, resourceId) {
   return { id };
 }
 
-async function kvGet(kv, limit, cursor) {
-  const listOpts = { prefix: 'fb_', limit };
-  if (cursor) listOpts.cursor = cursor;
+async function kvGet(kv, limit, cursor, resourceId) {
+  const listOpts = { prefix: 'fb_', limit: resourceId ? 1000 : limit };
+  if (cursor && !resourceId) listOpts.cursor = cursor;
   const listResult = await kv.list(listOpts);
   const keys = listResult.keys || [];
 
   const items = [];
   for (const key of keys) {
     const val = await kv.get(key.key, 'json');
-    if (val) items.push(val);
+    if (val) {
+      if (resourceId && val.resourceId !== resourceId) continue;
+      items.push(val);
+    }
   }
   items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return {
-    items,
-    cursor: listResult.cursor || '',
-    hasMore: !listResult.complete,
+    items: resourceId ? items : items.slice(0, limit),
+    cursor: resourceId ? '' : (listResult.cursor || ''),
+    hasMore: resourceId ? false : !listResult.complete,
   };
 }
 
@@ -236,6 +239,7 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';
+    const resourceId = url.searchParams.get('resourceId') || '';
 
     const mode = getMode();
     let result;
@@ -255,7 +259,7 @@ export async function onRequestGet(context) {
           status: 500, headers,
         });
       }
-      result = await kvGet(kv, limit, cursor);
+      result = await kvGet(kv, limit, cursor, resourceId);
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
