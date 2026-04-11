@@ -213,7 +213,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     if (isLoading) {
         return (
-            <LayoutWrapper hideFooter={true}>
+            <LayoutWrapper hideFooter={true} hideFeedbackButton={true}>
                 <div className="max-w-4xl mx-auto px-6 py-8 animate-pulse">
                     <div className="h-8 w-48 bg-paper/50 rounded mb-8" />
                     <div className="h-12 w-3/4 bg-paper/50 rounded mb-8" />
@@ -325,7 +325,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     };
 
     return (
-        <LayoutWrapper hideFooter={true}>
+        <LayoutWrapper hideFooter={true} hideFeedbackButton={true}>
             <div className="flex" style={{ height: 'calc(100vh - 2.5rem)' }}>
                 {/* 左侧导航 */}
                 <div className="w-36 flex-shrink-0 border-r border-border/30">

@@ -9,9 +9,10 @@ import FeedbackWidget from '../common/FeedbackWidget';
 interface LayoutWrapperProps {
   children: React.ReactNode;
   hideFooter?: boolean;
+  hideFeedbackButton?: boolean;
 }
 
-export default function LayoutWrapper({ children, hideFooter = false }: LayoutWrapperProps) {
+export default function LayoutWrapper({ children, hideFooter = false, hideFeedbackButton = false }: LayoutWrapperProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -25,7 +26,7 @@ export default function LayoutWrapper({ children, hideFooter = false }: LayoutWr
         {children}
       </main>
       {!hideFooter && <Footer />}
-      <FeedbackWidget />
+      {!hideFeedbackButton && <FeedbackWidget />}
     </>
   );
 }

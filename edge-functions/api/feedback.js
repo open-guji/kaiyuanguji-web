@@ -2,6 +2,8 @@ const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
   'https://kaiyuanguji.com',
   'https://open-guji.github.io',
+  'http://localhost:3000',
+  'http://localhost:5173',
 ];
 
 function getCorsHeaders(request) {
