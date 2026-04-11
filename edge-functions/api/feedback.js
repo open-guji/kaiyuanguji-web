@@ -146,7 +146,40 @@ export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
 
   try {
-    const { type, content, pageUrl, resourceId } = await context.request.json();
+    const body = await context.request.json();
+
+    // action: "update" → 更新反馈状态/回复（替代 PATCH）
+    if (body.action === 'update') {
+      const { id, status, reply } = body;
+      if (!id || !id.startsWith('fb_')) {
+        return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
+          status: 400, headers,
+        });
+      }
+      if (status && !['pending', 'resolved'].includes(status)) {
+        return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
+          status: 400, headers,
+        });
+      }
+      const kv = getKV();
+      if (!kv) {
+        return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
+          status: 500, headers,
+        });
+      }
+      const updated = await kvPatch(kv, id, status, reply);
+      if (!updated) {
+        return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
+          status: 404, headers,
+        });
+      }
+      return new Response(JSON.stringify({ success: true, item: updated }), {
+        status: 200, headers,
+      });
+    }
+
+    // 默认：提交新反馈
+    const { type, content, pageUrl, resourceId } = body;
 
     if (!['bug', 'resource'].includes(type)) {
       return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
