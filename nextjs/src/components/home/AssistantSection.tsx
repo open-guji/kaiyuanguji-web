@@ -5,8 +5,8 @@ export default function AssistantSection() {
     <section className="py-12 px-6 bg-[#F7F9F9]">
       <div className="max-w-7xl mx-auto">
         <SectionHeader
-          title="古籍助手"
-          subtitle="基于大模型的智能科研辅助工具"
+          title="古籍整理平台"
+          subtitle="基于 VS Code 的一站式古籍数字化整理工具"
         />
 
         <div className="max-w-[900px] mx-auto bg-white rounded-2xl p-8 border border-border/50 shadow-lg">
@@ -15,29 +15,29 @@ export default function AssistantSection() {
             <div className="flex-1 space-y-4">
               {/* Tags */}
               <div className="flex flex-wrap gap-2 text-sm text-vermilion font-medium">
-                <span>核心集成</span>
+                <span>七阶段流程</span>
                 <span>·</span>
-                <span>全端协同</span>
+                <span>智能 OCR</span>
+                <span>·</span>
+                <span>AI 辅助</span>
                 <span>·</span>
                 <span>开放源码</span>
               </div>
 
               {/* Description */}
               <p className="text-lg text-ink leading-relaxed">
-                古籍助手是本项目所有技术成果的统一集成门户。它深度整合了 OCR 识别、校对工具及
-                AI 分析等一系列核心能力，提供 Web 与桌面端多端支持，致力于构建人人可用的开源数字人文环境。
+                古籍整理平台是一个 VS Code 插件，覆盖从资源采集、OCR 识别、文本校对到排版发布的完整七阶段流程。
+                集成 14+ 资源站适配器、PaddleOCR 引擎和多种 AI 服务，让古籍数字化工作变得高效而规范。
               </p>
             </div>
 
             {/* Right Button */}
             <a
-              href="https://toolkit.kaiyuanguji.com/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/assistant"
               className="px-8 py-5 bg-ink text-white rounded-lg font-medium
                        hover:bg-ink/90 transition-colors whitespace-nowrap"
             >
-              立即使用
+              了解更多
             </a>
           </div>
         </div>

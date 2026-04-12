@@ -9,7 +9,7 @@ import { NAV_ITEMS } from '../../lib/constants';
 const NAV_ICONS: Record<string, string> = {
   '/': '🏠',
   '/roadmap': '🗺️',
-  '/assistant': '✨',
+  '/assistant': '🛠️',
   '/book-index': '📚',
 };
 

@@ -41,7 +41,7 @@ export const SOURCE_COOKIE_NAME = 'og_data_source';
 export const NAV_ITEMS = [
   { label: "首页", href: "/" },
   { label: "路线图", href: "/roadmap" },
-  { label: "古籍助手", href: "/assistant" },
+  { label: "整理平台", href: "/assistant" },
   { label: "古籍索引", href: "/book-index" },
 ];
 

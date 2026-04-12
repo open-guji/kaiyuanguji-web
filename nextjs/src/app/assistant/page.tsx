@@ -4,8 +4,8 @@ import { getMarkdownContent, extractTOC } from '@/lib/markdown';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '古籍助手',
-  description: '智能古籍助手，帮助你更好地理解和学习古籍。',
+  title: '古籍整理平台',
+  description: '基于 VS Code 的一站式古籍数字化整理平台，覆盖从资源采集到排版发布的完整流程。',
 };
 
 export default async function AssistantPage() {
