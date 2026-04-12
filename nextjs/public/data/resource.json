@@ -133,6 +133,21 @@
       "start_date": "2026-04-10",
       "end_date": "2026-04-10",
       "notes": "甲乙丙丁四部44類全部整理。新建Work 3681個，匹配已有Work 1576條（30.0%）。100% work_id覆蓋。"
+    },
+    {
+      "id": "songshi-yiwenzhi",
+      "name": "宋史藝文志",
+      "type": "catalog",
+      "work_id": "GYTbVni8ptF",
+      "description": "元脫脫等撰，八卷（卷202-209），著錄宋代典籍。規模為歷代藝文志之最，收書九千八百餘部，近十二萬卷",
+      "url": "",
+      "total": 9984,
+      "imported": 9984,
+      "status": "done",
+      "priority": 7,
+      "start_date": "2026-04-10",
+      "end_date": "2026-04-10",
+      "notes": "經史子集四部44類全部整理。新建Work 8510個。100% work_id覆蓋。"
     }
   ]
 }
