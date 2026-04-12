@@ -118,6 +118,21 @@
       "start_date": "2026-04-10",
       "end_date": "2026-04-10",
       "notes": "甲乙丙丁四部39類全部整理。新建Work 1787個，匹配已有Work 1163條（39.4%），同名異書修復142條。100% work_id覆蓋。"
+    },
+    {
+      "id": "xintangshu-yiwenzhi",
+      "name": "新唐書藝文志",
+      "type": "catalog",
+      "work_id": "GYTaMxR7uV9",
+      "description": "北宋歐陽修、宋祁等撰，四卷（卷57-60），著錄唐代圖書。相比舊唐書更完備，增唐人著述二萬八千餘卷",
+      "url": "",
+      "total": 5257,
+      "imported": 5257,
+      "status": "done",
+      "priority": 6,
+      "start_date": "2026-04-10",
+      "end_date": "2026-04-10",
+      "notes": "甲乙丙丁四部44類全部整理。新建Work 3681個，匹配已有Work 1576條（30.0%）。100% work_id覆蓋。"
     }
   ]
 }
