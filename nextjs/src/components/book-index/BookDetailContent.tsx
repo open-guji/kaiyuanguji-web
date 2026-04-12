@@ -294,7 +294,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab === 'collated') {
             const transport = getTransport(source);
             return (
-                <div className="max-w-4xl px-8 pt-6 pb-8">
+                <div className="max-w-4xl px-8 pt-6 pb-8 relative">
+                    <div className="absolute top-6 right-8 z-10">
+                        <LocaleToggle />
+                    </div>
                     <CollatedEdition
                         index={collatedIndex || undefined}
                         workId={id}
