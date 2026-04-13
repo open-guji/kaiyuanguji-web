@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState, useCallback } from 'react';
+import { Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle } from 'book-index-ui';
@@ -9,6 +9,32 @@ type TabKey = 'recommend' | 'catalog' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
+
+function DataVersion() {
+  const [info, setInfo] = useState('');
+
+  useEffect(() => {
+    fetch('/data/version.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(v => {
+        if (!v?.commitId || v.commitId === 'unknown') return;
+        const short = v.commitId.slice(0, 7);
+        const date = v.commitDate
+          ? new Date(v.commitDate).toLocaleString('zh-CN', { hour12: false })
+          : '';
+        setInfo(`数据版本: ${short}${date ? ` (${date})` : ''}`);
+      })
+      .catch(() => {});
+  }, []);
+
+  if (!info) return null;
+
+  return (
+    <div style={{ textAlign: 'center', padding: '16px 0 8px', fontSize: '12px', color: '#999' }}>
+      {info}
+    </div>
+  );
+}
 
 function BookIndexContent() {
   const router = useRouter();
@@ -65,6 +91,7 @@ function BookIndexContent() {
           onTabChange={handleTabChange}
           feedbackApiUrl="/api/feedback"
         />
+        <DataVersion />
       </div>
     </LayoutWrapper>
   );

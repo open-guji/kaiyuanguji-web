@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, cpSync, rmSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import * as OpenCC from 'opencc-js';
 
 // ─── 配置 ───
@@ -323,6 +324,30 @@ function bundleExtraFiles() {
     }
 }
 
+// ─── 版本信息（记录 book-index-draft 的 commit） ───
+
+function bundleVersion() {
+    let commitId = 'unknown';
+    let commitDate = '';
+
+    try {
+        commitId = execSync('git rev-parse HEAD', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
+        commitDate = execSync('git log -1 --format=%cI', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
+    } catch {
+        // CI 中 --depth 1 clone 也能拿到 HEAD，如果失败则留默认值
+        console.warn('  ⚠ Could not read git info from book-index-draft');
+    }
+
+    const version = {
+        commitId,
+        commitDate,
+        bundleDate: new Date().toISOString(),
+    };
+
+    writeJson(join(OUT_DIR, 'version.json'), version);
+    console.log(`VER version.json (commit: ${commitId.slice(0, 8)}, date: ${commitDate})`);
+}
+
 // ─── Main ───
 
 console.log(`\nbundle-data: ${DRAFT_DIR}`);
@@ -339,5 +364,6 @@ bundleSearchS();
 bundleL1();
 bundleL2();
 bundleExtraFiles();
+bundleVersion();
 
 console.log('\n✅ bundle-data complete\n');
