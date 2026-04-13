@@ -100,7 +100,7 @@ function BookIndexContent() {
 export default function BookIndexPage() {
   return (
     <LocaleProvider>
-      <Suspense fallback={<div className="min-h-screen bg-paper" />}>
+      <Suspense fallback={<div className="min-h-screen bg-paper flex items-center justify-center text-sm text-stone-400">加载中...</div>}>
         <BookIndexContent />
       </Suspense>
     </LocaleProvider>
