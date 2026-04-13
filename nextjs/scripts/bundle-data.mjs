@@ -348,6 +348,67 @@ function bundleVersion() {
     console.log(`VER version.json (commit: ${commitId.slice(0, 8)}, date: ${commitDate})`);
 }
 
+// ─── Index 完整性检查 ───
+//
+// 扫描 Work/Book/Collection 目录下所有条目文件（文件名格式 {11位ID}-*.json），
+// 验证每个 ID 都已存在于 index 分片中。
+// 发现缺失时输出错误并 exit(1)，阻止生成错误的打包产物。
+
+function checkIndex() {
+    console.log('IDX checking index consistency...');
+
+    // 加载所有已 index 的 ID
+    const indexed = new Set();
+    const indexDir = join(DRAFT_DIR, 'index');
+
+    const colPath = join(indexDir, 'collections.json');
+    if (existsSync(colPath)) {
+        for (const id of Object.keys(readJson(colPath))) indexed.add(id);
+    }
+    for (const typeKey of ['books', 'works']) {
+        for (let i = 0; i < NUM_SHARDS; i++) {
+            const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
+            if (existsSync(shardPath)) {
+                for (const id of Object.keys(readJson(shardPath))) indexed.add(id);
+            }
+        }
+    }
+
+    // 扫描条目文件：文件名必须匹配 {11位字母数字}-*.json
+    const ITEM_FILE_RE = /^[A-Za-z0-9]{11}-.+\.json$/;
+    const missing = [];
+
+    const walkDir = (dir) => {
+        for (const entry of readdirSync(dir)) {
+            const full = join(dir, entry);
+            if (statSync(full).isDirectory()) {
+                walkDir(full);
+            } else if (ITEM_FILE_RE.test(entry)) {
+                const id = entry.slice(0, 11);
+                if (!indexed.has(id)) {
+                    missing.push({ id, path: full.replace(DRAFT_DIR, '').replace(/\\/g, '/') });
+                }
+            }
+        }
+    };
+
+    for (const typeDir of ['Work', 'Book', 'Collection']) {
+        const dir = join(DRAFT_DIR, typeDir);
+        if (existsSync(dir)) walkDir(dir);
+    }
+
+    if (missing.length > 0) {
+        console.error(`\n❌ Index check failed: ${missing.length} item(s) exist as files but are missing from the index:`);
+        for (const { id, path } of missing) {
+            console.error(`   ${id}  ${path}`);
+        }
+        console.error('\n   Run: book-index reindex --root <draft-dir>  to fix.\n');
+        process.exit(1);
+    }
+
+    console.log(`IDX index consistent (${indexed.size} entries indexed)\n`);
+}
+
 // ─── Main ───
 
 console.log(`\nbundle-data: ${DRAFT_DIR}`);
@@ -359,6 +420,7 @@ if (!existsSync(DRAFT_DIR)) {
     process.exit(1);
 }
 
+checkIndex();
 bundleL0();
 bundleSearchS();
 bundleL1();
