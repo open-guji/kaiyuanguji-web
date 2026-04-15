@@ -91,6 +91,45 @@ function SideNav({ items, activeKey, onSelect }: {
     );
 }
 
+function TopNav({ items, activeKey, onSelect }: {
+    items: NavItem[];
+    activeKey: string;
+    onSelect: (key: TabType) => void;
+}) {
+    return (
+        <div className="flex-shrink-0 border-b border-border/30 bg-paper">
+            {/* 返回 + tab 同行 */}
+            <div className="flex items-center overflow-x-auto">
+                <Link
+                    href="/book-index"
+                    className="flex items-center gap-1 px-3 py-2.5 text-sm text-ink hover:text-vermilion transition-colors flex-shrink-0 border-r border-border/30"
+                >
+                    <svg className="w-3.5 h-3.5" fill="none" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                    返回
+                </Link>
+                {items.map(item => {
+                    const isActive = item.key === activeKey;
+                    return (
+                        <button
+                            key={item.key}
+                            onClick={() => onSelect(item.key)}
+                            className={`px-4 py-2.5 text-sm transition-colors flex-shrink-0 border-b-2 ${
+                                isActive
+                                    ? 'text-vermilion font-medium border-vermilion'
+                                    : 'text-ink hover:text-vermilion border-transparent'
+                            }`}
+                        >
+                            {item.label}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 /** 点击关联条目：跳转到对应详情页 */
 function handleNavigate(targetId: string) {
     window.location.href = `/book-index?id=${targetId}`;
@@ -259,7 +298,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const renderContent = () => {
         if (activeTab === 'basic') {
             return (
-                <div className="max-w-4xl px-8 pt-6 pb-8">
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8">
                     <IndexView
                         data={detail}
                         transport={getTransport(source)}
@@ -274,7 +313,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab.startsWith('catalog:')) {
             const catData = catalogList.find(c => `catalog:${c.resource_id}` === activeTab)?.data;
             return (
-                <div className="max-w-4xl px-8 pt-6 pb-8">
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8">
                     <CollectionCatalog
                         data={catData}
                         onNavigate={handleNavigate}
@@ -294,7 +333,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab === 'collated') {
             const transport = getTransport(source);
             return (
-                <div className="max-w-4xl px-8 pt-6 pb-8 relative">
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
                     <div className="absolute top-6 right-8 z-10">
                         <LocaleToggle />
                     </div>
@@ -318,7 +357,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
         if (activeTab === 'feedback') {
             return (
-                <div className="max-w-4xl px-8 pt-6 pb-8">
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8">
                     <FeedbackTab resourceId={id} />
                 </div>
             );
@@ -329,17 +368,19 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     return (
         <LayoutWrapper hideFooter={true} hideFeedbackButton={true}>
-            <div className="flex" style={{ height: 'calc(100vh - 2.5rem)' }}>
-                {/* 左侧导航 */}
-                <div className="w-36 flex-shrink-0 border-r border-border/30">
-                    <SideNav
-                        items={navItems}
-                        activeKey={activeTab}
-                        onSelect={setActiveTab}
-                    />
+            {/* 手机：顶部 tab */}
+            <div className="flex flex-col md:hidden" style={{ height: 'calc(100vh - 2.5rem)' }}>
+                <TopNav items={navItems} activeKey={activeTab} onSelect={setActiveTab} />
+                <div className="flex-1 overflow-auto">
+                    {renderContent()}
                 </div>
+            </div>
 
-                {/* 右侧内容 */}
+            {/* 桌面：左侧侧边栏 */}
+            <div className="hidden md:flex" style={{ height: 'calc(100vh - 2.5rem)' }}>
+                <div className="w-36 flex-shrink-0 border-r border-border/30">
+                    <SideNav items={navItems} activeKey={activeTab} onSelect={setActiveTab} />
+                </div>
                 <div className="flex-1 overflow-auto">
                     {renderContent()}
                 </div>
