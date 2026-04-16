@@ -5,7 +5,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition, LocaleToggle } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
@@ -14,7 +14,7 @@ import DigitalizationView from './DigitalizationView';
 import FeedbackTab from './FeedbackTab';
 import type { DigitalAssets } from '@/types';
 
-type TabType = 'basic' | 'digital' | 'collated' | 'feedback' | `catalog:${string}`;
+type TabType = 'basic' | 'digital' | 'collated' | 'emendated' | 'feedback' | `catalog:${string}`;
 
 interface BookDetailContentProps {
     id: string;
@@ -287,6 +287,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             label: collatedLoading ? '整理本...' : '整理本',
         });
     }
+    // 考证 tab（emendated_by 条目展示）
+    if (detail.emendated_by && detail.emendated_by.length > 0) {
+        navItems.push({ key: 'emendated', label: '考證' });
+    }
     // 数字化资源 tab（tex/影像）
     if (detail.digital_assets) {
         navItems.push({ key: 'digital', label: '数字化' });
@@ -342,6 +346,21 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         workId={id}
                         transport={transport}
                         onNavigate={handleNavigate}
+                    />
+                </div>
+            );
+        }
+
+        if (activeTab === 'emendated' && detail.emendated_by && detail.emendated_by.length > 0) {
+            return (
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
+                    <div className="absolute top-6 right-8 z-10">
+                        <LocaleToggle />
+                    </div>
+                    <EmendatedBySection
+                        items={detail.emendated_by}
+                        onNavigate={handleNavigate}
+                        renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
                     />
                 </div>
             );

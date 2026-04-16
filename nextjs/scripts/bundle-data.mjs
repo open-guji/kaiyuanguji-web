@@ -374,8 +374,8 @@ function checkIndex() {
         }
     }
 
-    // 扫描条目文件：文件名必须匹配 {11位字母数字}-*.json
-    const ITEM_FILE_RE = /^[A-Za-z0-9]{11}-.+\.json$/;
+    // 扫描条目文件：文件名必须匹配 {ID}-*.json (ID为11-13位字母数字)
+    const ITEM_FILE_RE = /^[A-Za-z0-9]{11,13}-.+\.json$/;
     const missing = [];
 
     const walkDir = (dir) => {
@@ -384,7 +384,7 @@ function checkIndex() {
             if (statSync(full).isDirectory()) {
                 walkDir(full);
             } else if (ITEM_FILE_RE.test(entry)) {
-                const id = entry.slice(0, 11);
+                const id = entry.split('-')[0];
                 if (!indexed.has(id)) {
                     missing.push({ id, path: full.replace(DRAFT_DIR, '').replace(/\\/g, '/') });
                 }
