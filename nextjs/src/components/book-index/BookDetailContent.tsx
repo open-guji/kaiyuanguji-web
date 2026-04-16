@@ -5,7 +5,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, useConvert } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
@@ -139,6 +139,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const { source } = useSource();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { convert } = useConvert();
 
     const [entry, setEntry] = useState<IndexEntry | null>(null);
     const [detail, setDetail] = useState<DetailWithAssets | null>(null);
@@ -220,7 +221,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     return;
                 }
                 setEntry(entryData);
-                document.title = `${entryData.title} - 開源古籍`;
+                // 标题在下方独立 effect 中设置（跟随 locale 变化）
 
                 const raw = await transport.getItem(id);
                 if (!raw) {
@@ -247,6 +248,12 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         loadData();
         return () => { document.title = '開源古籍'; };
     }, [id, source, loadCatalogs, loadCollated]);
+
+    // 标题随书名和繁简 locale 同步更新
+    useEffect(() => {
+        if (!entry) return;
+        document.title = `${convert(entry.title)} - 開源古籍`;
+    }, [entry, convert]);
 
     if (error === 'not-found') {
         notFound();
