@@ -252,7 +252,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     // 标题随书名和繁简 locale 同步更新
     useEffect(() => {
         if (!entry) return;
-        document.title = `${convert(entry.title)} - 開源古籍`;
+        document.title = `${convert(entry.title)} - ${convert('開源古籍')}`;
     }, [entry, convert]);
 
     if (error === 'not-found') {
