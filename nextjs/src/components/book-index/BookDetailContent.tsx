@@ -220,6 +220,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     return;
                 }
                 setEntry(entryData);
+                document.title = `${entryData.title} - 開源古籍`;
 
                 const raw = await transport.getItem(id);
                 if (!raw) {
@@ -244,6 +245,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         };
 
         loadData();
+        return () => { document.title = '開源古籍'; };
     }, [id, source, loadCatalogs, loadCollated]);
 
     if (error === 'not-found') {
