@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
+const isLocal = process.env.NEXT_PUBLIC_MODE === 'local';
+
 const nextConfig: NextConfig = {
-  output: 'export',
+  // local mode 需要 API routes，不能用 static export
+  ...(isLocal ? {} : { output: 'export' as const }),
   // GitHub Pages 部署路径处理
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 

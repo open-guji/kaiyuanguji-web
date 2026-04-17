@@ -8,6 +8,7 @@
 
 import { GithubStorage, BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage, IndexType } from 'book-index-ui/storage';
+import { LocalApiStorage } from './local-api-storage';
 import {
     DataSource,
     GITHUB_ORG,
@@ -35,7 +36,9 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
 
     let s: ReadonlyStorage;
 
-    if (source === 'bundle') {
+    if (source === 'local') {
+        s = new LocalApiStorage('/api/book-index') as ReadonlyStorage;
+    } else if (source === 'bundle') {
         s = new BundleStorage({ basePath: '/data' }) as ReadonlyStorage;
     } else {
         const baseUrl = source === 'github'
