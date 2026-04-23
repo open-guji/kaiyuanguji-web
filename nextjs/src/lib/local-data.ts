@@ -315,13 +315,13 @@ export function getCollatedEditionIndex(id: string) {
     if (!fs.existsSync(assetDir)) return null;
 
     try {
-        const indexFile = path.join(assetDir, '..', 'collated_edition_index.json');
+        const indexFile = path.join(assetDir, 'collated_edition_index.json');
         if (fs.existsSync(indexFile)) {
             return JSON.parse(fs.readFileSync(indexFile, 'utf-8'));
         }
 
         const files = fs.readdirSync(assetDir)
-            .filter((f: string) => f.endsWith('.json') && f !== 'juan_groups.json')
+            .filter((f: string) => f.endsWith('.json') && f !== 'juan_groups.json' && f !== 'collated_edition_index.json')
             .sort((a: string, b: string) => {
                 const order = (name: string) => {
                     if (name.startsWith('juanshou')) return 0;

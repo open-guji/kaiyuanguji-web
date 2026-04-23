@@ -19,6 +19,14 @@ export default function Footer() {
             <p className="text-xs text-white/30">
               Powered by Next.js
             </p>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-white/30 hover:text-white/60 transition-colors mt-1"
+            >
+              冀ICP备2026013455号
+            </a>
           </div>
 
           {/* Column 2: License */}
@@ -78,6 +86,16 @@ export default function Footer() {
           <p className="text-xs text-white/40 text-center">
             © {currentYear} 开源古籍项目组 | Powered by Next.js
           </p>
+
+          {/* ICP 备案 */}
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/30 hover:text-white/60 transition-colors"
+          >
+            冀ICP备2026013455号
+          </a>
         </div>
       </div>
     </footer>

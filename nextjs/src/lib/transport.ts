@@ -9,6 +9,7 @@
 import { GithubStorage, BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage, IndexType } from 'book-index-ui/storage';
 import { LocalApiStorage } from './local-api-storage';
+import { isV2SearchEnabled, wrapWithV2Search } from './search/v2-storage';
 import {
     DataSource,
     GITHUB_ORG,
@@ -54,6 +55,10 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
             baseUrl,
             cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
         }) as ReadonlyStorage;
+    }
+
+    if (isV2SearchEnabled()) {
+        s = wrapWithV2Search(s) as ReadonlyStorage;
     }
 
     storageCache.set(source, s);

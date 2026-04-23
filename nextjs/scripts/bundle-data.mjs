@@ -428,4 +428,16 @@ bundleL2();
 bundleExtraFiles();
 bundleVersion();
 
+// ─── 搜索索引（MiniSearch） ───
+// 依赖 index.json + search_s.json，所以放在最后。
+try {
+    execSync('node scripts/build-search-index.mjs', {
+        cwd: resolve(__dirname, '..'),
+        stdio: 'inherit',
+    });
+} catch (err) {
+    console.error('❌ build-search-index.mjs failed');
+    process.exit(1);
+}
+
 console.log('\n✅ bundle-data complete\n');
