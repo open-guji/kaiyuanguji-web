@@ -46,7 +46,8 @@ function buildDocs(index, searchS, groupKey, typeLabel) {
     for (const entry of Object.values(group)) {
         const s = searchS[entry.id] || {};
 
-        const title = entry.title || '';
+        // entity 的标题字段是 primary_name
+        const title = entry.title || (typeLabel === 'entity' ? (entry.primary_name || '') : '');
         const titleS = s.t || '';
         const titleSearch = joinFields([title, titleS && titleS !== title ? titleS : null]);
 
@@ -130,6 +131,7 @@ function build() {
         ['works', 'work'],
         ['books', 'book'],
         ['collections', 'collection'],
+        ['entities', 'entity'],
     ];
     const indices = shards.map(([gk, tl]) => buildIndexForType(index, searchS, gk, tl));
 

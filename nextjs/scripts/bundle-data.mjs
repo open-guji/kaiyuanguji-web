@@ -58,7 +58,7 @@ const NUM_SHARDS = 16;
 
 function loadShardedIndex() {
     const indexDir = join(DRAFT_DIR, 'index');
-    const merged = { books: {}, collections: {}, works: {} };
+    const merged = { books: {}, collections: {}, works: {}, entities: {} };
 
     // collections (single file)
     const colPath = join(indexDir, 'collections.json');
@@ -66,8 +66,8 @@ function loadShardedIndex() {
         merged.collections = readJson(colPath);
     }
 
-    // books and works (16 shards each)
-    for (const typeKey of ['books', 'works']) {
+    // books / works / entities (16 shards each)
+    for (const typeKey of ['books', 'works', 'entities']) {
         for (let i = 0; i < NUM_SHARDS; i++) {
             const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
             if (existsSync(shardPath)) {
@@ -90,7 +90,10 @@ function bundleL0() {
     const data = JSON.stringify(merged);
     writeFileSync(join(OUT_DIR, 'index.json'), data, 'utf-8');
     const size = (Buffer.byteLength(data) / 1024 / 1024).toFixed(1);
-    const total = Object.keys(merged.books).length + Object.keys(merged.collections).length + Object.keys(merged.works).length;
+    const total = Object.keys(merged.books).length
+        + Object.keys(merged.collections).length
+        + Object.keys(merged.works).length
+        + Object.keys(merged.entities).length;
     console.log(`L0  index.json merged from shards (${total} entries, ${size} MB)`);
 }
 
@@ -109,7 +112,7 @@ function bundleL1() {
     if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
     ensureDir(chunksDir);
 
-    for (const [typeName, typeKey] of [['works', 'Work'], ['collections', 'Collection'], ['books', 'Book']]) {
+    for (const [typeName, typeKey] of [['works', 'Work'], ['collections', 'Collection'], ['books', 'Book'], ['entities', 'Entity']]) {
         const items = index[typeName];
         if (!items) continue;
 
@@ -266,13 +269,14 @@ function bundleSearchS() {
     const searchS = {};
     let count = 0;
 
-    for (const [typeName] of [['works'], ['collections'], ['books']]) {
+    for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
         const items = index[typeName];
         if (!items) continue;
 
         for (const item of Object.values(items)) {
             const simplified = {};
-            const title = item.title || item.name || '';
+            // entity 的标题字段是 primary_name
+            const title = item.title || item.name || item.primary_name || '';
 
             // 标题转简体
             if (title) {
@@ -365,7 +369,7 @@ function checkIndex() {
     if (existsSync(colPath)) {
         for (const id of Object.keys(readJson(colPath))) indexed.add(id);
     }
-    for (const typeKey of ['books', 'works']) {
+    for (const typeKey of ['books', 'works', 'entities']) {
         for (let i = 0; i < NUM_SHARDS; i++) {
             const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
             if (existsSync(shardPath)) {
@@ -392,7 +396,7 @@ function checkIndex() {
         }
     };
 
-    for (const typeDir of ['Work', 'Book', 'Collection']) {
+    for (const typeDir of ['Work', 'Book', 'Collection', 'Entity']) {
         const dir = join(DRAFT_DIR, typeDir);
         if (existsSync(dir)) walkDir(dir);
     }
