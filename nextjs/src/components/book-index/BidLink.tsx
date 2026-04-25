@@ -4,10 +4,29 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
-import type { IndexType } from 'book-index-ui';
+import type { IndexEntry, IndexType } from 'book-index-ui';
+import type { DataSource } from '@/lib/constants';
 
 interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     id: string;
+}
+
+// 跨 BidLink 实例共享：用一次 getAllEntries 填一张 id→entry 大表，
+// 避免人物详情页几百个链接各自打一次 getEntry 把 dev server 打爆。
+const allEntriesCache = new Map<DataSource, Promise<Map<string, IndexEntry>>>();
+
+function getAllEntriesMap(source: DataSource): Promise<Map<string, IndexEntry>> {
+    const cached = allEntriesCache.get(source);
+    if (cached) return cached;
+    const transport = getTransport(source);
+    const p = (async () => {
+        const all = transport.getAllEntries ? await transport.getAllEntries() : [];
+        const map = new Map<string, IndexEntry>();
+        for (const e of all) map.set(e.id, e);
+        return map;
+    })();
+    allEntriesCache.set(source, p);
+    return p;
 }
 
 export default function BidLink({ id, children, className, ...props }: BidLinkProps) {
@@ -17,10 +36,10 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
 
     useEffect(() => {
         let isMounted = true;
-        const fetchBookInfo = async () => {
+        (async () => {
             try {
-                const transport = getTransport(source);
-                const entry = await transport.getEntry(id);
+                const map = await getAllEntriesMap(source);
+                const entry = map.get(id);
                 if (isMounted && entry) {
                     setType(entry.type);
                     setName(entry.title);
@@ -28,9 +47,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
             } catch (err) {
                 console.error(`Failed to fetch book info for ID: ${id}`, err);
             }
-        };
-
-        fetchBookInfo();
+        })();
         return () => { isMounted = false; };
     }, [id, source]);
 
@@ -61,6 +78,10 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
         }
     };
 
+    // 调用方传 id 作 children 当占位（标题尚未加载）时，回退到自取的 name
+    const isIdPlaceholder = typeof children === 'string' && children === id;
+    const display = (!isIdPlaceholder && children) || name || id;
+
     return (
         <Link
             href={`/book-index?id=${id}`}
@@ -68,7 +89,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
             {...props}
         >
             {renderIcon()}
-            <span>{children || name || id}</span>
+            <span>{display}</span>
         </Link>
     );
 }
