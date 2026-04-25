@@ -24,7 +24,7 @@ export class LocalApiStorage implements IndexStorage {
     }
 
     async getAllEntries(): Promise<IndexEntry[]> {
-        const types = ['book', 'work', 'collection'];
+        const types = ['book', 'work', 'collection', 'entity'];
         const results = await Promise.all(
             types.map(t => fetch(`${this.base}/all-entries?type=${t}`).then(r => r.json())),
         );

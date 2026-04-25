@@ -34,12 +34,14 @@ interface IndexFile {
     books: Record<string, IndexFileEntry>;
     collections: Record<string, IndexFileEntry>;
     works: Record<string, IndexFileEntry>;
+    entities: Record<string, IndexFileEntry>;
 }
 
 const TYPE_MAP: Record<string, keyof IndexFile> = {
     book: 'books',
     collection: 'collections',
     work: 'works',
+    entity: 'entities',
 };
 
 const NUM_SHARDS = 16;
@@ -70,7 +72,7 @@ function getWorkspaceRoot(): string {
 // ── Index loading ──
 
 function loadIndex(repoRoot: string): IndexFile {
-    const result: IndexFile = { books: {}, collections: {}, works: {} };
+    const result: IndexFile = { books: {}, collections: {}, works: {}, entities: {} };
 
     const colPath = path.join(repoRoot, 'index', 'collections.json');
     try {
@@ -79,7 +81,7 @@ function loadIndex(repoRoot: string): IndexFile {
         }
     } catch { /* ignore */ }
 
-    for (const typeKey of ['books', 'works'] as const) {
+    for (const typeKey of ['books', 'works', 'entities'] as const) {
         for (let i = 0; i < NUM_SHARDS; i++) {
             const shardPath = path.join(repoRoot, 'index', typeKey, `${i.toString(16)}.json`);
             try {
@@ -113,13 +115,18 @@ export function getAllEntries(type: string): IndexFileEntry[] {
                 hasCollated = fs.existsSync(entryDir) || undefined;
             }
 
-            entries.push({
+            const out: IndexFileEntry = {
                 ...entry,
                 id,
                 type,
                 isDraft,
                 has_collated: hasCollated || undefined,
-            } as IndexFileEntry);
+            };
+            // Entity：把 primary_name 同步到 title，便于通用搜索/排序
+            if (type === 'entity' && !out.title && (entry as any).primary_name) {
+                out.title = (entry as any).primary_name as string;
+            }
+            entries.push(out);
         }
     }
     return entries;
@@ -131,7 +138,7 @@ export function findItemFile(id: string): string | null {
     const [c1, c2, c3] = [prefix[0], prefix[1], prefix[2]];
 
     for (const folder of ['book-index', 'book-index-draft']) {
-        for (const typeDir of ['Book', 'Collection', 'Work']) {
+        for (const typeDir of ['Book', 'Collection', 'Work', 'Entity']) {
             const searchDir = path.join(workspaceRoot, folder, typeDir, c1, c2, c3);
             try {
                 if (!fs.existsSync(searchDir)) continue;
@@ -157,8 +164,16 @@ export function getEntry(id: string): IndexFileEntry | null {
         for (const [typeKey, section] of Object.entries(index)) {
             const entry = (section as Record<string, IndexFileEntry>)[id];
             if (entry) {
-                const type = typeKey === 'books' ? 'book' : typeKey === 'works' ? 'work' : 'collection';
-                return { ...entry, id, type, isDraft } as IndexFileEntry;
+                const type = typeKey === 'books' ? 'book'
+                    : typeKey === 'works' ? 'work'
+                    : typeKey === 'entities' ? 'entity'
+                    : 'collection';
+                // Entity 索引条目把 primary_name 同步到 title 方便上层显示
+                const out = { ...entry, id, type, isDraft } as IndexFileEntry;
+                if (type === 'entity' && !out.title && (out as any).primary_name) {
+                    out.title = (out as any).primary_name as string;
+                }
+                return out;
             }
         }
     }
@@ -185,6 +200,11 @@ export function getItem(id: string): Record<string, unknown> | null {
 
         if (data.type === 'Book') {
             enrichResourcesFromCatalog(workspaceRoot, id, data);
+        }
+
+        // Entity：同步 primary_name 到 title 方便上层 IndexView/title 渲染
+        if ((data.type === 'entity' || data.type === 'Entity') && !data.title && data.primary_name) {
+            data.title = data.primary_name;
         }
 
         return data;
@@ -260,7 +280,7 @@ export async function searchAll(query: string, limit: number = 5) {
     const queryS = t2s ? t2s(q).toLowerCase() : undefined;
 
     const result: Record<string, unknown> = {};
-    for (const [type, key] of [['work', 'works'], ['book', 'books'], ['collection', 'collections']] as const) {
+    for (const [type, key] of [['work', 'works'], ['book', 'books'], ['collection', 'collections'], ['entity', 'entities']] as const) {
         let entries = getAllEntries(type);
         if (q) {
             entries = entries.filter((e) =>

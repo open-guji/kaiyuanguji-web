@@ -70,6 +70,7 @@ const TYPE_LABELS: Record<IndexType, string> = {
     work: '作品',
     collection: '丛编',
     book: '书',
+    entity: '人物',
 };
 
 export function getTypeLabel(type: IndexType): string {
