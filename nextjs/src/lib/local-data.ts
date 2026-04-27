@@ -385,6 +385,23 @@ export function getCollatedJuan(id: string, juanFile: string) {
     }
 }
 
+export function getCollatedJuanText(id: string, juanFile: string): string | null {
+    if (juanFile.includes('..') || !juanFile.endsWith('.json')) return null;
+    const mdFile = juanFile.replace(/\.json$/, '.md');
+
+    const itemFile = findItemFile(id);
+    if (!itemFile) return null;
+
+    const filePath = path.join(path.dirname(itemFile), id, 'collated_edition', 'text', mdFile);
+    if (!fs.existsSync(filePath)) return null;
+
+    try {
+        return fs.readFileSync(filePath, 'utf-8');
+    } catch {
+        return null;
+    }
+}
+
 // ── Collection catalog ──
 
 interface CatalogVolumeInfo {

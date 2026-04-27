@@ -12,6 +12,7 @@
  *   GET /api/book-index/catalog/:id
  *   GET /api/book-index/collated/:id
  *   GET /api/book-index/collated/:id/:juanFile
+ *   GET /api/book-index/collated/:id/:juanFile/text
  *   GET /api/book-index/work-catalog/:id
  *   GET /api/book-index/resource-progress
  *   GET /api/book-index/resource-site-progress
@@ -105,6 +106,16 @@ export async function GET(
             const id = slug[1];
             if (!id) return json({ error: 'Missing id' }, 400);
             const juanFile = slug[2];
+            const sub = slug[3];
+
+            if (juanFile && sub === 'text') {
+                const text = localData.getCollatedJuanText(
+                    decodeURIComponent(id),
+                    decodeURIComponent(juanFile),
+                );
+                if (text === null) return json({ error: 'Not found' }, 404);
+                return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+            }
 
             if (juanFile) {
                 const juan = localData.getCollatedJuan(
