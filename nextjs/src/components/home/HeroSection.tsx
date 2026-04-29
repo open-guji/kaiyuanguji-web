@@ -48,6 +48,11 @@ export default function HeroSection() {
           开源古籍
         </h1>
 
+        {/* Personal Subtitle */}
+        <p className="text-base md:text-lg text-ink/80 tracking-[2px] font-semibold">
+          谢耳朵的古籍学习记录
+        </p>
+
         {/* Subtitle */}
         <h2 className="text-xl md:text-2xl text-ink tracking-[2px] font-bold">
           让科技赋予古籍数字生命

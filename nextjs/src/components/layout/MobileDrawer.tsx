@@ -82,7 +82,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 className="h-8 w-8"
               />
               <span className="text-lg font-semibold text-[var(--color-nav-ink)] tracking-wide">
-                开源古籍
+                谢耳朵的古籍学习记录
               </span>
             </Link>
             <button

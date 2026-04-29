@@ -46,7 +46,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
               className="h-6 w-6"
             />
             <span className="text-sm font-semibold text-[var(--color-nav-ink)] tracking-wide">
-              开源古籍
+              谢耳朵的古籍学习记录
             </span>
           </Link>
 
