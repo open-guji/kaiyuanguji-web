@@ -113,8 +113,11 @@ jobs:
 
           req = models.CreatePurgeTaskRequest()
           req.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          req.Type = 'purge_prefix'
-          req.Targets = ['https://www.kaiyuanguji.com/']
+          # EdgeOne API 校验 host 必须是 zone 上绑定的加速域名（裸域），
+          # 不能写 www.kaiyuanguji.com — 那是回源 host，不是加速域名。
+          # 用 purge_host 一次清整个站点 cache，覆盖所有路径。
+          req.Type = 'purge_host'
+          req.Targets = ['kaiyuanguji.com']
 
           resp = client.CreatePurgeTask(req)
           print('✅ EdgeOne cache purged:', resp.TaskId)
