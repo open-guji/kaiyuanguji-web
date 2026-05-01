@@ -1,0 +1,15 @@
+{
+  "name": "kaiyuanguji-web-perf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Performance / network audit harness for kaiyuanguji-web. Replays scripted user journeys through Playwright + CDP under throttled network profiles, captures bytes/timings/blockers per scenario, emits markdown + json reports.",
+  "scripts": {
+    "perf": "tsx runner.ts",
+    "install-browser": "playwright install --with-deps chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0",
+    "tsx": "^4.19.0"
+  }
+}
