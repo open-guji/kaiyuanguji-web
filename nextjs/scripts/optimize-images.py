@@ -74,16 +74,20 @@ def main() -> int:
             f"WebP {fmt_kb(webp_size)} ({100 * webp_size // before_png}%)"
         )
 
-    print("\n【logo】仅 PNG 重压")
+    print("\n【logo】PNG 重压（favicon/apple-touch-icon 用） + WebP（页面用）")
     for name in LOGO:
         p = IMAGES / name
         if not p.exists():
             print(f"  ⚠ {name} 不存在，跳过")
             continue
-        before, after = optimize_png_inplace(p)
-        total_before += before
-        total_after += after
-        print(f"  {name}: PNG {fmt_kb(before)} → {fmt_kb(after)} ({100 * after // before}%)")
+        before_png, after_png = optimize_png_inplace(p)
+        _, webp_size = make_webp(p, quality=90)
+        total_before += before_png
+        total_after += webp_size  # Navbar/MobileDrawer 现在用 webp
+        print(
+            f"  {name}: PNG {fmt_kb(before_png)} → {fmt_kb(after_png)} ({100 * after_png // before_png}%) | "
+            f"WebP {fmt_kb(webp_size)} ({100 * webp_size // before_png}%)"
+        )
 
     print(
         f"\n  total served-bytes: {fmt_kb(total_before)} → {fmt_kb(total_after)} "

@@ -20,6 +20,17 @@ export interface PerceivedTiming {
     lcp: number | null;
     dcl: number | null;
     load: number | null;
+    /** Attribution for the LCP entry — which element/url triggered it. Helps diagnose stalls. */
+    lcpDetail?: LcpDetail | null;
+}
+
+export interface LcpDetail {
+    tag?: string;
+    id?: string;
+    classes?: string;
+    url?: string;
+    textPreview?: string;
+    sizePx?: number;
 }
 
 export class NetworkCollector {
@@ -127,8 +138,21 @@ export async function installPerfHooks(page: Page) {
         try {
             const lcpObs = new PerformanceObserver((list) => {
                 const entries = list.getEntries();
-                const last = entries[entries.length - 1];
-                if (last) (window as any).__perf.lcp = last.startTime;
+                const last = entries[entries.length - 1] as any;
+                if (last) {
+                    (window as any).__perf.lcp = last.startTime;
+                    const el = last.element as Element | undefined;
+                    (window as any).__perf.lcpDetail = {
+                        tag: el?.tagName?.toLowerCase(),
+                        id: el?.id || undefined,
+                        classes: el?.className && typeof el.className === 'string'
+                            ? el.className.split(/\s+/).filter(Boolean).slice(0, 3).join(' ')
+                            : undefined,
+                        url: last.url || undefined,
+                        textPreview: el?.textContent?.trim().slice(0, 60) || undefined,
+                        sizePx: typeof last.size === 'number' ? last.size : undefined,
+                    };
+                }
             });
             lcpObs.observe({ type: 'largest-contentful-paint', buffered: true });
         } catch {}
@@ -174,8 +198,9 @@ export async function readPerceivedTiming(page: Page): Promise<PerceivedTiming> 
             lcp: typeof p.lcp === 'number' ? p.lcp : null,
             dcl: typeof p.dcl === 'number' ? p.dcl : null,
             load: typeof p.load === 'number' ? p.load : null,
+            lcpDetail: p.lcpDetail || null,
         };
-    }).catch(() => ({ fcp: null, lcp: null, dcl: null, load: null }));
+    }).catch(() => ({ fcp: null, lcp: null, dcl: null, load: null, lcpDetail: null }));
     return result;
 }
 

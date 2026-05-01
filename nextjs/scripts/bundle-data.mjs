@@ -359,8 +359,8 @@ function bundleSearchS() {
 // ─── 复制独立数据文件（resource.json, recommended.json） ───
 
 function bundleExtraFiles() {
-    const files = ['resource.json', 'resource-site.json', 'recommended.json'];
-    for (const fname of files) {
+    // resource* 直接复制
+    for (const fname of ['resource.json', 'resource-site.json']) {
         const src = join(DRAFT_DIR, fname);
         if (existsSync(src)) {
             const data = readFileSync(src, 'utf-8');
@@ -370,6 +370,48 @@ function bundleExtraFiles() {
         } else {
             console.log(`EX  ${fname} not found, skipped`);
         }
+    }
+
+    // recommended.json: hydrate items 加上 IndexEntry 元数据，让 HomePage
+    // 直接渲染，不再为每个 ID 触发一次 transport.getEntry / chunk fetch。
+    const recSrc = join(DRAFT_DIR, 'recommended.json');
+    if (existsSync(recSrc)) {
+        const rec = readJson(recSrc);
+        const index = loadShardedIndex();
+        const lookup = new Map();
+        for (const typeName of ['works', 'books', 'collections', 'entities']) {
+            for (const item of Object.values(index[typeName] ?? {})) {
+                lookup.set(item.id, { ...item, type: typeName.slice(0, -1) });
+            }
+        }
+        let hydrated = 0, missed = 0;
+        for (const group of rec.groups ?? []) {
+            for (const item of group.items ?? []) {
+                const idx = lookup.get(item.id);
+                if (idx) {
+                    if (!item.title) item.title = idx.title || idx.name || idx.primary_name;
+                    item.type = idx.type;
+                    if (idx.author) item.author = idx.author;
+                    if (idx.dynasty) item.dynasty = idx.dynasty;
+                    if (idx.role) item.role = idx.role;
+                    if (idx.edition) item.edition = idx.edition;
+                    if (idx.has_text) item.has_text = true;
+                    if (idx.has_image) item.has_image = true;
+                    if (idx.has_collated) item.has_collated = true;
+                    if (idx.subtype) item.subtype = idx.subtype;
+                    if (idx.primary_name) item.primary_name = idx.primary_name;
+                    hydrated++;
+                } else {
+                    missed++;
+                }
+            }
+        }
+        const data = JSON.stringify(rec);
+        writeFileSync(join(OUT_DIR, 'recommended.json'), data, 'utf-8');
+        const size = (Buffer.byteLength(data) / 1024).toFixed(1);
+        console.log(`EX  recommended.json hydrated (${hydrated} items + ${missed} missed, ${size} KB)`);
+    } else {
+        console.log(`EX  recommended.json not found, skipped`);
     }
 }
 

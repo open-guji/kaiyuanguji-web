@@ -75,7 +75,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           <div className="flex items-center justify-between">
             <Link href="/" onClick={onClose} className="flex items-center gap-3">
               <Image
-                src="/images/open-guji-logo.png"
+                src="/images/open-guji-logo.webp"
                 alt="开源古籍 Logo"
                 width={32}
                 height={32}

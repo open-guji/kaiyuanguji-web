@@ -39,7 +39,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
           {/* Logo and Title */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image
-              src="/images/open-guji-logo.png"
+              src="/images/open-guji-logo.webp"
               alt="开源古籍 Logo"
               width={24}
               height={24}

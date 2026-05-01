@@ -111,6 +111,16 @@ export function renderMarkdown(report: RunReport): string {
         lines.push(`- 下行（压缩后）: **${fmtBytes(sum.totalEncoded)}**`);
         lines.push(`- 解压后总量: ${fmtBytes(sum.totalDecoded)}`);
         lines.push(`- FCP: ${fmtMs(run.timing.fcp)}  ·  LCP: ${fmtMs(run.timing.lcp)}  ·  DCL: ${fmtMs(run.timing.dcl)}  ·  load: ${fmtMs(run.timing.load)}`);
+        if (run.timing.lcpDetail) {
+            const d = run.timing.lcpDetail;
+            const tag = d.tag ?? '?';
+            const id = d.id ? `#${d.id}` : '';
+            const classes = d.classes ? `.${d.classes.split(' ').join('.')}` : '';
+            const url = d.url ? ` url=${d.url}` : '';
+            const text = d.textPreview ? ` text=${JSON.stringify(d.textPreview)}` : '';
+            const size = typeof d.sizePx === 'number' ? ` size=${d.sizePx}px²` : '';
+            lines.push(`- LCP element: \`<${tag}${id}${classes}>\`${url}${text}${size}`);
+        }
         lines.push(`- 场景总耗时: ${fmtMs(run.durationMs)}`);
         if (run.errors.length > 0) {
             lines.push(`- ⚠ 错误: ${run.errors.join('; ')}`);
