@@ -124,11 +124,23 @@ function bundleL1() {
             if (!chunks.has(prefix)) chunks.set(prefix, {});
             const chunk = chunks.get(prefix);
 
-            // 读取详情 JSON → 放入 chunk
+            // 读取详情 JSON → 注入 index-only 标记 → 放入 chunk
+            //
+            // detail 文件本身没有 has_collated 字段（这是 index 阶段扫
+            // collated_edition_index.json 算出来的）。把 index 里的
+            // has_collated / has_text / has_image / subtype 注入 chunk，
+            // 让 BundleStorage.getEntry / getItem 不再需要触发
+            // ensureLoaded() 拉 4 MB 的 index.json。
             const detailPath = join(DRAFT_DIR, path);
             if (existsSync(detailPath)) {
                 try {
-                    chunk[id] = readJson(detailPath);
+                    const detail = readJson(detailPath);
+                    if (item.has_collated) detail.has_collated = true;
+                    if (item.has_text) detail.has_text = true;
+                    if (item.has_image) detail.has_image = true;
+                    if (item.subtype) detail.subtype = item.subtype;
+                    if (item.primary_name) detail.primary_name = item.primary_name;
+                    chunk[id] = detail;
                     totalEntries++;
                 } catch (e) {
                     console.warn(`  ⚠ Failed to read ${path}: ${e.message}`);
