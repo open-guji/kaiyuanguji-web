@@ -120,5 +120,5 @@ jobs:
           req.Targets = ['kaiyuanguji.com']
 
           resp = client.CreatePurgeTask(req)
-          print('✅ EdgeOne cache purged:', resp.TaskId)
+          print('✅ EdgeOne cache purged:', resp.to_json_string())
           "
