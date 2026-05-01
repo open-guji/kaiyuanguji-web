@@ -195,12 +195,21 @@ async function main() {
 
     await mkdir(opts.out, { recursive: true });
 
+    // Disable any disk-/memory-cache reuse across contexts — keeps measurements
+    // honest after redeploys. Without these flags chromium can serve stale
+    // images from its in-process cache even though every context is "isolated".
+    const cacheKillArgs = [
+        '--disable-application-cache',
+        '--disable-back-forward-cache',
+        '--disk-cache-size=1',
+        '--media-cache-size=1',
+    ];
     const browser = await chromium.launch({
         headless: !opts.headed,
         executablePath: opts.execPath,
         args: opts.execPath
-            ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-            : undefined,
+            ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', ...cacheKillArgs]
+            : cacheKillArgs,
     });
 
     const startedAt = new Date().toISOString();
