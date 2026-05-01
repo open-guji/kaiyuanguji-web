@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
-type TabKey = 'recommend' | 'catalog' | 'site' | 'feedback';
+type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
