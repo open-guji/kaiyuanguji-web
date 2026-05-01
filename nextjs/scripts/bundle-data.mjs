@@ -260,6 +260,39 @@ function bundleL2() {
     console.log(`L2  ${files.length} juan files → ${groupCount} tiyao chunks`);
 }
 
+// ─── 轻量元数据（meta.json）：让 /book-index 首屏不再下 4 MB index ───
+//
+// HomePage / IndexBrowser 之前为了显示「N 部作品 / N 部书 / 资源覆盖 / subtype 直方图」
+// 等几个数字会调用 getAllEntries / loadEntries 等触发 index.json 全量下载。
+// 把这些数字预算到 meta.json (< 1 KB)，BundleStorage.getCounts() 优先读它。
+
+function bundleMeta() {
+    const index = loadShardedIndex();
+    const counts = {
+        works: Object.keys(index.works ?? {}).length,
+        books: Object.keys(index.books ?? {}).length,
+        collections: Object.keys(index.collections ?? {}).length,
+        entities: Object.keys(index.entities ?? {}).length,
+    };
+    let hasText = 0, hasImage = 0;
+    const subtypeStats = {};
+    for (const item of Object.values(index.works ?? {})) {
+        if (item.has_text) hasText++;
+        if (item.has_image) hasImage++;
+        if (item.subtype) subtypeStats[item.subtype] = (subtypeStats[item.subtype] ?? 0) + 1;
+    }
+    const meta = {
+        ...counts,
+        resourceCounts: { hasText, hasImage },
+        subtypeStats,
+    };
+    writeJson(join(OUT_DIR, 'meta.json'), meta);
+    const size = Buffer.byteLength(JSON.stringify(meta));
+    console.log(
+        `META meta.json (${counts.works}w/${counts.books}b/${counts.collections}c/${counts.entities}e, ${size} B)`
+    );
+}
+
 // ─── 简体搜索索引 ───
 
 function bundleSearchS() {
@@ -426,6 +459,7 @@ if (!existsSync(DRAFT_DIR)) {
 
 checkIndex();
 bundleL0();
+bundleMeta();
 bundleSearchS();
 bundleL1();
 bundleL2();
