@@ -30,7 +30,7 @@ export default function HeroSection() {
     >
       {/* Background Image Optimized */}
       <Image
-        src="/images/hero.png"
+        src="/images/hero.webp"
         alt="Hero Background"
         fill
         priority

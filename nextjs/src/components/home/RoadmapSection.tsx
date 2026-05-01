@@ -5,31 +5,31 @@ const roadmapCards = [
   {
     title: '专业排版',
     description: '利用 LaTeX 引擎深度还原古籍之美，支持纵排、双行小注等复杂版式',
-    image: '/images/typesetting.png',
+    image: '/images/typesetting.webp',
     slug: 'typesetting',
   },
   {
     title: '信息提取',
     description: '集成最先进的古籍 OCR 与版面分析模型，实现文字与结构的自动化提取',
-    image: '/images/ocr.png',
+    image: '/images/ocr.webp',
     slug: 'extraction',
   },
   {
     title: '校对工具',
     description: '提供图文对照、异体字映射的高效率协作环境，确保古籍数字化的准确性',
-    image: '/images/toolkit.png',
+    image: '/images/toolkit.webp',
     slug: 'toolkit',
   },
   {
     title: '储存检索',
     description: '采用标准 XML/TEI 格式存储，建立可深度搜索的古籍全文数据库',
-    image: '/images/hero.png',
+    image: '/images/hero.webp',
     slug: 'storage',
   },
   {
     title: '智能训练',
     description: '构建深度知识系统，训练专用 AI 大模型，推动古籍数字化走向智能化研究',
-    image: '/images/intelligence.png',
+    image: '/images/intelligence.webp',
     slug: 'intelligence',
   },
 ];
