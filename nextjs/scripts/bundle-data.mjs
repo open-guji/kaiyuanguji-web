@@ -360,7 +360,7 @@ function bundleSearchS() {
 
 function bundleExtraFiles() {
     // resource* 直接复制
-    for (const fname of ['resource.json', 'resource-site.json']) {
+    for (const fname of ['resource.json', 'resource-catalog.json', 'resource-collection.json', 'resource-site.json']) {
         const src = join(DRAFT_DIR, fname);
         if (existsSync(src)) {
             const data = readFileSync(src, 'utf-8');
