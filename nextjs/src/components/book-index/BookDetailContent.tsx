@@ -160,6 +160,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     const activeTab = (searchParams.get('tab') || 'basic') as TabType;
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
+    const lineageMode = (searchParams.get('mode') === 'graph' ? 'graph' : 'list') as 'list' | 'graph';
 
     const setActiveTab = (tab: TabType) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -169,6 +170,17 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         }
         params.set('id', id);
         router.push(`/book-index?${params.toString()}`, { scroll: false });
+    };
+
+    const handleLineageModeChange = (newMode: 'list' | 'graph') => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (newMode === 'graph') {
+            params.set('mode', 'graph');
+        } else {
+            params.delete('mode');
+        }
+        params.set('id', id);
+        router.replace(`/book-index?${params.toString()}`, { scroll: false });
     };
 
     const loadCatalogs = useCallback(async (collectionId: string) => {
@@ -433,6 +445,8 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         graph={lineageGraph}
                         renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
                         graphHeight={600}
+                        defaultMode={lineageMode}
+                        onModeChange={handleLineageModeChange}
                     />
                 </div>
             );
