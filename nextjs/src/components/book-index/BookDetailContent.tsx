@@ -5,8 +5,8 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, VersionLineageView, useConvert } from 'book-index-ui';
-import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex, LineageGraph } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, VersionLineageView, useConvert, buildLineageGraph } from 'book-index-ui';
+import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex, LineageGraph, WorkDetailData, BookDetailData } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import BidLink from './BidLink';
@@ -23,6 +23,8 @@ interface BookDetailContentProps {
 /** 详情数据 + 网站特有字段 */
 type DetailWithAssets = IndexDetailData & {
     digital_assets?: DigitalAssets;
+    version_graph?: any;
+    books?: string[];
 };
 
 /** 本地模式下注入数字化资源信息（仅 has_digitalization: true 的条目） */
@@ -208,13 +210,47 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         }
     }, [source]);
 
-    const loadLineage = useCallback(async (workId: string) => {
-        const transport = getTransport(source);
-        if (!transport.getLineageGraph) return;
-
+    const loadLineage = useCallback(async (workId: string, workData: DetailWithAssets) => {
         setLineageLoading(true);
         try {
-            const graph = await transport.getLineageGraph(workId);
+            // 先尝试从 transport 获取预构建的 lineage graph
+            const transport = getTransport(source);
+            if (transport.getLineageGraph) {
+                const graph = await transport.getLineageGraph(workId);
+                if (graph) {
+                    setLineageGraph(graph);
+                    return;
+                }
+            }
+
+            // 如果没有预构建的数据，从 work 的 version_graph 和 books 构建
+            if (!workData.version_graph || !workData.version_graph.enabled) {
+                setLineageGraph(null);
+                return;
+            }
+
+            // 获取关联的所有 book 数据
+            const bookIds = workData.books || [];
+            if (bookIds.length === 0) {
+                setLineageGraph(null);
+                return;
+            }
+
+            // 批量获取 book 详情
+            const books: BookDetailData[] = [];
+            for (const bookId of bookIds) {
+                try {
+                    const bookData = await transport.getItem(bookId);
+                    if (bookData && typeof bookData === 'object') {
+                        books.push(bookData as unknown as BookDetailData);
+                    }
+                } catch {
+                    // 忽略无法加载的 book
+                }
+            }
+
+            // 构建 lineage graph
+            const graph = buildLineageGraph(workData as unknown as WorkDetailData, books);
             setLineageGraph(graph);
         } catch {
             setLineageGraph(null);
@@ -256,7 +292,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     loadCatalogs(id);
                 } else if (detailData.type === 'work') {
                     loadCollated(id);
-                    loadLineage(id);
+                    loadLineage(id, detailData);
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : '加载失败');
