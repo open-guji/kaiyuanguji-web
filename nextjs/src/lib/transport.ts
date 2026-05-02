@@ -25,7 +25,7 @@ type ReadonlyStorage = IndexStorage & Required<Pick<IndexStorage,
     'searchAll' | 'getEntry' | 'getAllEntries' |
     'getCollectionCatalogs' | 'getCollectionCatalog' |
     'getCollatedEditionIndex' | 'getCollatedJuan'
->>;
+>> & Partial<Pick<IndexStorage, 'getLineageGraph'>>;
 
 /** 按数据源缓存 storage 实例 */
 const storageCache = new Map<DataSource, ReadonlyStorage>();

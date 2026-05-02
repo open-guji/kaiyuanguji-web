@@ -5,8 +5,8 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, useConvert } from 'book-index-ui';
-import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, VersionLineageView, useConvert } from 'book-index-ui';
+import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex, LineageGraph } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import BidLink from './BidLink';
@@ -14,7 +14,7 @@ import DigitalizationView from './DigitalizationView';
 import FeedbackTab from './FeedbackTab';
 import type { DigitalAssets } from '@/types';
 
-type TabType = 'basic' | 'digital' | 'collated' | 'emendated' | 'feedback' | `catalog:${string}`;
+type TabType = 'basic' | 'digital' | 'collated' | 'emendated' | 'lineage' | 'feedback' | `catalog:${string}`;
 
 interface BookDetailContentProps {
     id: string;
@@ -152,6 +152,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     // 整理本（卷结构）
     const [collatedIndex, setCollatedIndex] = useState<CollatedEditionIndex | null>(null);
     const [collatedLoading, setCollatedLoading] = useState(false);
+    // 版本传承图
+    const [lineageGraph, setLineageGraph] = useState<LineageGraph | null>(null);
+    const [lineageLoading, setLineageLoading] = useState(false);
 
     const activeTab = (searchParams.get('tab') || 'basic') as TabType;
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
@@ -205,6 +208,21 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         }
     }, [source]);
 
+    const loadLineage = useCallback(async (workId: string) => {
+        const transport = getTransport(source);
+        if (!transport.getLineageGraph) return;
+
+        setLineageLoading(true);
+        try {
+            const graph = await transport.getLineageGraph(workId);
+            setLineageGraph(graph);
+        } catch {
+            setLineageGraph(null);
+        } finally {
+            setLineageLoading(false);
+        }
+    }, [source]);
+
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -212,6 +230,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 setError(null);
                 setCatalogList([]);
                 setCollatedIndex(null);
+                setLineageGraph(null);
 
                 const transport = getTransport(source);
 
@@ -237,6 +256,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     loadCatalogs(id);
                 } else if (detailData.type === 'work') {
                     loadCollated(id);
+                    loadLineage(id);
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : '加载失败');
@@ -247,7 +267,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
         loadData();
         return () => { document.title = '開源古籍'; };
-    }, [id, source, loadCatalogs, loadCollated]);
+    }, [id, source, loadCatalogs, loadCollated, loadLineage]);
 
     // 标题随书名和繁简 locale 同步更新
     useEffect(() => {
@@ -294,6 +314,13 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         navItems.push({
             key: 'collated',
             label: collatedLoading ? '整理本...' : '整理本',
+        });
+    }
+    // 版本传承 tab（version_graph 展示）
+    if (detail.type === 'work' && (lineageGraph || lineageLoading)) {
+        navItems.push({
+            key: 'lineage',
+            label: lineageLoading ? '版本传承...' : '版本传承',
         });
     }
     // 考证 tab（emendated_by 条目展示）
@@ -355,6 +382,21 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         workId={id}
                         transport={transport}
                         onNavigate={handleNavigate}
+                    />
+                </div>
+            );
+        }
+
+        if (activeTab === 'lineage' && lineageGraph) {
+            return (
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
+                    <div className="absolute top-6 right-8 z-10">
+                        <LocaleToggle />
+                    </div>
+                    <VersionLineageView
+                        graph={lineageGraph}
+                        renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
+                        graphHeight={600}
                     />
                 </div>
             );

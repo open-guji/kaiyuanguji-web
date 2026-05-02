@@ -17,6 +17,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
+    "@xyflow/react": "^12.10.2",
     "book-index-ui": "^0.2.15",
     "gray-matter": "^4.0.3",
     "minisearch": "^7.2.0",
