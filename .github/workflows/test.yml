@@ -1,0 +1,108 @@
+name: Tests
+
+# 触发：
+#  - PR 提交：跑全套（fork PR 也能触发，绕过 sheldonlidev shadow ban）
+#  - 手动 workflow_dispatch
+#  - 每日 02:00 UTC（10:00 北京时间）跑 perf 回归
+#
+# 跳过 push trigger，因为 sheldonlidev push 不触发 Actions
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  unit:
+    name: Jest unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: nextjs/package-lock.json
+      - name: Install
+        working-directory: nextjs
+        run: npm ci
+      - name: Test
+        working-directory: nextjs
+        run: npm test
+
+  smoke:
+    name: Browser smoke (build + serve + Playwright)
+    runs-on: ubuntu-latest
+    # nightly schedule + 手动触发跑；PR 也跑，确保 build 流程不挂
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: nextjs/package-lock.json
+      - name: Clone book-index-draft
+        run: git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
+      - name: Install (nextjs)
+        working-directory: nextjs
+        run: npm ci
+      - name: Install (perf)
+        working-directory: perf
+        run: npm ci
+      - name: Install Chromium for Playwright
+        working-directory: perf
+        run: npx playwright install --with-deps chromium
+      - name: Build static export
+        working-directory: nextjs
+        env:
+          NEXT_PUBLIC_MODE: remote
+          NEXT_PUBLIC_DATA_SOURCE: bundle
+          NEXT_PUBLIC_BASE_PATH: ''
+          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
+        run: npm run build
+      - name: Serve build
+        working-directory: nextjs
+        run: |
+          npx --yes serve -p 8765 out &
+          # wait for server
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8765/data/version.json > /dev/null && break
+            sleep 1
+          done
+      - name: Smoke test
+        working-directory: perf
+        run: npm run smoke -- --target=http://localhost:8765
+      - name: Upload smoke report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output
+          path: perf/out/
+          retention-days: 7
+
+  perf-prod:
+    # nightly only — 跑生产环境真实 perf，回归基线
+    name: Production perf benchmark
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (perf)
+        working-directory: perf
+        run: npm ci
+      - name: Install Chromium
+        working-directory: perf
+        run: npx playwright install --with-deps chromium
+      - name: Run perf vs prod
+        working-directory: perf
+        run: npm run perf -- --profiles=fast
+      - name: Upload perf report
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-report-${{ github.run_id }}
+          path: perf/out/
+          retention-days: 30

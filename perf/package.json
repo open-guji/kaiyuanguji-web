@@ -6,6 +6,7 @@
   "description": "Performance / network audit harness for kaiyuanguji-web. Replays scripted user journeys through Playwright + CDP under throttled network profiles, captures bytes/timings/blockers per scenario, emits markdown + json reports.",
   "scripts": {
     "perf": "tsx runner.ts",
+    "smoke": "tsx smoke.ts",
     "install-browser": "playwright install --with-deps chromium"
   },
   "dependencies": {

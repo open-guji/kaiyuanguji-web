@@ -9,6 +9,7 @@ type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
+import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 function DataVersion() {
@@ -48,43 +49,12 @@ function BookIndexContent() {
   const searchQuery = searchParams.get('q');
   const tabParam = searchParams.get('tab') as TabKey | null;
 
-  // 预热搜索 worker：在用户表现出"打算搜索"的迹象时才下 ~2 MB gzip 索引。
-  //
-  // 触发条件（任一即可）：
-  //   - 用户在 /book-index 停留 ≥ 5 秒（说明在浏览，不是匆匆掠过）
-  //   - 用户聚焦了任何 input（搜索框唯一的可聚焦输入）
-  //   - 用户已经在搜索（URL 带 ?q=）
-  //
-  // 详情页（detailId）不预热——大部分详情访客不返回搜索。
-  useEffect(() => {
-    if (detailId) return;
-    if (typeof window === 'undefined') return;
-
-    let triggered = false;
-    let timer = 0;
-
-    function trigger() {
-      if (triggered) return;
-      triggered = true;
-      cleanup();
-      getSearchClient().init().catch(() => { /* 静默失败 */ });
-    }
-    function onFocus(e: FocusEvent) {
-      if ((e.target as HTMLElement)?.tagName === 'INPUT') trigger();
-    }
-    function cleanup() {
-      if (timer) window.clearTimeout(timer);
-      document.removeEventListener('focusin', onFocus, true);
-    }
-
-    // URL 带 q= 说明用户主动搜索（deep link 或刚提交），立即预热
-    if (searchQuery) { trigger(); return; }
-
-    document.addEventListener('focusin', onFocus, true);
-    timer = window.setTimeout(trigger, 5000);
-
-    return cleanup;
-  }, [detailId, searchQuery]);
+  // 预热搜索 worker — 详细策略见 use-prefetch-search.ts
+  usePrefetchSearch({
+    detailId,
+    searchQuery,
+    init: () => getSearchClient().init(),
+  });
 
   const handleEntryClick = useCallback((entry: IndexEntry) => {
     router.push(`/book-index?id=${entry.id}`);
