@@ -11,21 +11,17 @@ interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     id: string;
 }
 
-// 跨 BidLink 实例共享：用一次 getAllEntries 填一张 id→entry 大表，
-// 避免人物详情页几百个链接各自打一次 getEntry 把 dev server 打爆。
-const allEntriesCache = new Map<DataSource, Promise<Map<string, IndexEntry>>>();
+// 跨 BidLink 实例共享：每个 id 走 transport.getEntry（命中 chunk 缓存，
+// 同详情页多链接通常落在少数几个 chunk，无需再下 23 MB 的 index.json）。
+const entryCache = new Map<string, Promise<IndexEntry | null>>();
 
-function getAllEntriesMap(source: DataSource): Promise<Map<string, IndexEntry>> {
-    const cached = allEntriesCache.get(source);
+function fetchEntry(source: DataSource, id: string): Promise<IndexEntry | null> {
+    const key = `${source}:${id}`;
+    const cached = entryCache.get(key);
     if (cached) return cached;
     const transport = getTransport(source);
-    const p = (async () => {
-        const all = transport.getAllEntries ? await transport.getAllEntries() : [];
-        const map = new Map<string, IndexEntry>();
-        for (const e of all) map.set(e.id, e);
-        return map;
-    })();
-    allEntriesCache.set(source, p);
+    const p = transport.getEntry ? transport.getEntry(id) : Promise.resolve(null);
+    entryCache.set(key, p);
     return p;
 }
 
@@ -36,18 +32,14 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
 
     useEffect(() => {
         let isMounted = true;
-        (async () => {
-            try {
-                const map = await getAllEntriesMap(source);
-                const entry = map.get(id);
-                if (isMounted && entry) {
-                    setType(entry.type);
-                    setName(entry.title);
-                }
-            } catch (err) {
-                console.error(`Failed to fetch book info for ID: ${id}`, err);
+        fetchEntry(source, id).then(entry => {
+            if (isMounted && entry) {
+                setType(entry.type);
+                setName(entry.title);
             }
-        })();
+        }).catch(err => {
+            console.error(`Failed to fetch book info for ID: ${id}`, err);
+        });
         return () => { isMounted = false; };
     }, [id, source]);
 

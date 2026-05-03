@@ -2,10 +2,11 @@
 /**
  * bundle-data.mjs — 将 book-index-draft 的散落 JSON 文件打包为少量 chunk
  *
- * 数据分层：
- * - L0: public/data/index.json        — 全局索引（直接复制）
- * - L1: public/data/chunks/{XX}.json   — 按 ID 前两字符分桶的详情数据
+ * 数据分层（L0 已剥离 — 23 MB index.json 不再生成）：
+ * - L1: public/data/chunks/{prefix}.json — 按 ID 前缀分桶的详情数据
  * - L2: public/data/tiyao/juan-{start}-{end}.json — 整理本提要（按 10 卷分组）
+ * - meta.json — 轻量计数（< 1 KB），HomePage 统计用
+ * - search/* — MiniSearch 倒排索引，搜索 worker 用
  *
  * 用法：
  *   node scripts/bundle-data.mjs                          # 默认 ../book-index-draft
@@ -17,7 +18,6 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import * as OpenCC from 'opencc-js';
 
 // ─── 配置 ───
 
@@ -54,7 +54,7 @@ function copyDirRecursive(src, dest) {
 
 const NUM_SHARDS = 16;
 
-// ─── L0: 合并分片索引 → index.json ───
+// ─── 内部：合并分片索引（不再写入 index.json，仅供 L1/meta/recommended hydrate 使用）───
 
 function loadShardedIndex() {
     const indexDir = join(DRAFT_DIR, 'index');
@@ -77,24 +77,6 @@ function loadShardedIndex() {
     }
 
     return merged;
-}
-
-function bundleL0() {
-    const indexDir = join(DRAFT_DIR, 'index');
-    if (!existsSync(indexDir)) {
-        console.error(`❌ index directory not found: ${indexDir}`);
-        process.exit(1);
-    }
-    ensureDir(OUT_DIR);
-    const merged = loadShardedIndex();
-    const data = JSON.stringify(merged);
-    writeFileSync(join(OUT_DIR, 'index.json'), data, 'utf-8');
-    const size = (Buffer.byteLength(data) / 1024 / 1024).toFixed(1);
-    const total = Object.keys(merged.books).length
-        + Object.keys(merged.collections).length
-        + Object.keys(merged.works).length
-        + Object.keys(merged.entities).length;
-    console.log(`L0  index.json merged from shards (${total} entries, ${size} MB)`);
 }
 
 // ─── L1: 按 ID 前两字符分桶 ───
@@ -305,57 +287,6 @@ function bundleMeta() {
     );
 }
 
-// ─── 简体搜索索引 ───
-
-function bundleSearchS() {
-    const index = loadShardedIndex();
-    const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
-
-    const searchS = {};
-    let count = 0;
-
-    for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
-        const items = index[typeName];
-        if (!items) continue;
-
-        for (const item of Object.values(items)) {
-            const simplified = {};
-            // entity 的标题字段是 primary_name
-            const title = item.title || item.name || item.primary_name || '';
-
-            // 标题转简体
-            if (title) {
-                const ts = t2s(title);
-                if (ts !== title) simplified.t = ts;
-            }
-
-            // 作者转简体
-            if (item.author) {
-                const as = t2s(item.author);
-                if (as !== item.author) simplified.a = as;
-            }
-
-            // 别名转简体
-            if (item.additional_titles && item.additional_titles.length > 0) {
-                const ats = item.additional_titles.map(t => t2s(t));
-                if (ats.some((s, i) => s !== item.additional_titles[i])) {
-                    simplified.at = ats;
-                }
-            }
-
-            // 只存有差异的条目
-            if (Object.keys(simplified).length > 0) {
-                searchS[item.id] = simplified;
-                count++;
-            }
-        }
-    }
-
-    writeJson(join(OUT_DIR, 'search_s.json'), searchS);
-    const size = (Buffer.byteLength(JSON.stringify(searchS)) / 1024).toFixed(0);
-    console.log(`S   search_s.json generated (${count} entries with simplified text, ${size} KB)`);
-}
-
 // ─── 复制独立数据文件（resource.json, recommended.json） ───
 
 function bundleExtraFiles() {
@@ -512,16 +443,22 @@ if (!existsSync(DRAFT_DIR)) {
 }
 
 checkIndex();
-bundleL0();
 bundleMeta();
-bundleSearchS();
 bundleL1();
 bundleL2();
 bundleExtraFiles();
 bundleVersion();
 
-// ─── 搜索索引（MiniSearch） ───
-// 依赖 index.json + search_s.json，所以放在最后。
+// 清理旧的 L0 / search_s 产物（避免上线后部署目录残留导致客户端误下载）
+for (const stale of ['index.json', 'search_s.json']) {
+    const p = join(OUT_DIR, stale);
+    if (existsSync(p)) {
+        unlinkSync(p);
+        console.log(`CLR removed legacy ${stale}`);
+    }
+}
+
+// ─── 搜索索引（MiniSearch，自给自足从 shard 重建） ───
 try {
     execSync('node scripts/build-search-index.mjs', {
         cwd: resolve(__dirname, '..'),

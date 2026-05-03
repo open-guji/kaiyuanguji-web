@@ -14,14 +14,27 @@
 import MiniSearch, { type SearchResult } from 'minisearch';
 import { tokenize, hasCjkBigram } from './normalize.js';
 
-type EntryType = 'work' | 'book' | 'collection';
+type EntryType = 'work' | 'book' | 'collection' | 'entity';
 
 interface StoredFields {
     id: string;
     type: EntryType;
     title: string;
-    author: string;
-    dynasty: string;
+    author?: string;
+    dynasty?: string;
+    role?: string;
+    edition?: string;
+    additional_titles?: string[];
+    attached_texts?: string[];
+    juan_count?: number;
+    has_text?: boolean;
+    has_image?: boolean;
+    has_collated?: boolean;
+    subtype?: string;
+    primary_name?: string;
+    birth_year?: number;
+    death_year?: number;
+    cbdb_id?: number;
 }
 
 interface MetaIndex {
@@ -54,8 +67,13 @@ let initPromise: Promise<void> | null = null;
 function msOptions() {
     return {
         idField: 'id',
-        fields: ['title_search', 'author_search'],
-        storeFields: ['id', 'type', 'title', 'author', 'dynasty'],
+        fields: ['title_search', 'author_search', 'aliases_search'],
+        storeFields: [
+            'id', 'type', 'title', 'author', 'dynasty', 'role', 'edition',
+            'additional_titles', 'attached_texts', 'juan_count',
+            'has_text', 'has_image', 'has_collated',
+            'subtype', 'primary_name', 'birth_year', 'death_year', 'cbdb_id',
+        ],
         tokenize: (text: string) => tokenize(text),
         processTerm: (term: string) => term,
     };
@@ -90,15 +108,28 @@ function ensureReady(): void {
     if (engines.size === 0) throw new Error('search worker not initialized');
 }
 
-type Hit = { id: string; type: EntryType; title: string; author: string; dynasty: string; score: number };
+type Hit = StoredFields & { score: number };
 
 function mapHits(results: SearchResult[]): Hit[] {
     return results.map(r => ({
         id: r.id as string,
         type: r.type as EntryType,
         title: r.title as string,
-        author: r.author as string,
-        dynasty: r.dynasty as string,
+        author: r.author as string | undefined,
+        dynasty: r.dynasty as string | undefined,
+        role: r.role as string | undefined,
+        edition: r.edition as string | undefined,
+        additional_titles: r.additional_titles as string[] | undefined,
+        attached_texts: r.attached_texts as string[] | undefined,
+        juan_count: r.juan_count as number | undefined,
+        has_text: r.has_text as boolean | undefined,
+        has_image: r.has_image as boolean | undefined,
+        has_collated: r.has_collated as boolean | undefined,
+        subtype: r.subtype as string | undefined,
+        primary_name: r.primary_name as string | undefined,
+        birth_year: r.birth_year as number | undefined,
+        death_year: r.death_year as number | undefined,
+        cbdb_id: r.cbdb_id as number | undefined,
         score: r.score,
     }));
 }
@@ -184,13 +215,16 @@ function groupByType(byType: Map<EntryType, Hit[]>, limit: number) {
     const works = byType.get('work') || [];
     const books = byType.get('book') || [];
     const collections = byType.get('collection') || [];
+    const entities = byType.get('entity') || [];
     return {
         works: works.slice(0, limit),
         books: books.slice(0, limit),
         collections: collections.slice(0, limit),
+        entities: entities.slice(0, limit),
         totalWorks: works.length,
         totalBooks: books.length,
         totalCollections: collections.length,
+        totalEntities: entities.length,
     };
 }
 

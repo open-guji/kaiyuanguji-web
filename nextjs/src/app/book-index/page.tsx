@@ -8,6 +8,7 @@ import type { IndexEntry } from 'book-index-ui';
 type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
+import { getSearchClient } from '@/lib/search/client';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 function DataVersion() {
@@ -46,6 +47,19 @@ function BookIndexContent() {
   const detailId = searchParams.get('id');
   const searchQuery = searchParams.get('q');
   const tabParam = searchParams.get('tab') as TabKey | null;
+
+  // 预热搜索 worker：进 /book-index 路由就开始下载 ~8 MB gzip 索引，
+  // 让用户首次输入查询词时不必等冷启动。
+  // 详情页面（detailId）不预热，因为大部分详情访客不搜索。
+  useEffect(() => {
+    if (detailId) return;
+    if (typeof window === 'undefined') return;
+    const idle = (cb: () => void) =>
+      'requestIdleCallback' in window
+        ? (window as any).requestIdleCallback(cb, { timeout: 2000 })
+        : setTimeout(cb, 100);
+    idle(() => { getSearchClient().init().catch(() => { /* 静默失败 */ }); });
+  }, [detailId]);
 
   const handleEntryClick = useCallback((entry: IndexEntry) => {
     router.push(`/book-index?id=${entry.id}`);

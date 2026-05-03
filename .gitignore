@@ -31,3 +31,6 @@ progress/
 .claude/
 .agent/
 brain/
+
+# 本地手工 build 产出
+/build/

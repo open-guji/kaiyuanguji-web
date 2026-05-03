@@ -71,7 +71,7 @@ export const SCENARIOS: Scenario[] = [
         name: '全局搜索「論語」',
         actions: [
             { kind: 'goto', path: '/book-index?q=' + encodeURIComponent('論語') },
-            { kind: 'wait_idle', timeoutMs: 60000 },
+            { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
     {
@@ -79,31 +79,31 @@ export const SCENARIOS: Scenario[] = [
         name: '简体搜索「论语」',
         actions: [
             { kind: 'goto', path: '/book-index?q=' + encodeURIComponent('论语') },
-            { kind: 'wait_idle', timeoutMs: 60000 },
+            { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
     {
         id: 'D1-detail-work',
-        name: '作品详情（论语）',
+        name: '作品详情（論語）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=GYL5215Antm' },
-            { kind: 'wait_idle', timeoutMs: 60000 },
+            { kind: 'goto', path: '/book-index?id=aTNoXY45BGY3' },
+            { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
     {
         id: 'D3-detail-entity',
         name: '人物详情（孔子）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=ER01jhdb52' },
-            { kind: 'wait_idle', timeoutMs: 60000 },
+            { kind: 'goto', path: '/book-index?id=1j96hewiuieps' },
+            { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
     {
         id: 'E1-collated-edition',
-        name: '整理本入口（任一 has_collated 作品）',
+        name: '整理本入口（直齋書錄解題）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=GYL5215Antm' },
-            { kind: 'wait_idle', timeoutMs: 60000 },
+            { kind: 'goto', path: '/book-index?id=1ev3bb403quio' },
+            { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
 ];

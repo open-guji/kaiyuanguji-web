@@ -4,14 +4,27 @@
  * 使用 new Worker(new URL('./worker.ts', import.meta.url))，Next.js 会自动打包为独立 chunk。
  */
 
-export type EntryType = 'work' | 'book' | 'collection';
+export type EntryType = 'work' | 'book' | 'collection' | 'entity';
 
 export interface WorkerHit {
     id: string;
     type: EntryType;
     title: string;
-    author: string;
-    dynasty: string;
+    author?: string;
+    dynasty?: string;
+    role?: string;
+    edition?: string;
+    additional_titles?: string[];
+    attached_texts?: string[];
+    juan_count?: number;
+    has_text?: boolean;
+    has_image?: boolean;
+    has_collated?: boolean;
+    subtype?: string;
+    primary_name?: string;
+    birth_year?: number;
+    death_year?: number;
+    cbdb_id?: number;
     score: number;
 }
 
@@ -19,9 +32,11 @@ export interface GroupedHits {
     works: WorkerHit[];
     books: WorkerHit[];
     collections: WorkerHit[];
+    entities: WorkerHit[];
     totalWorks: number;
     totalBooks: number;
     totalCollections: number;
+    totalEntities: number;
 }
 
 export interface PagedHits {

@@ -50,13 +50,20 @@ jobs:
       - name: Verify bundled data
         run: |
           cd nextjs/public/data
-          for f in index.json meta.json search_s.json resource.json resource-catalog.json resource-collection.json resource-site.json recommended.json version.json; do
+          # index.json / search_s.json 已剥离 — 不应再生成，避免客户端误下载 23 MB
+          for f in index.json search_s.json; do
+            if [ -f "$f" ]; then
+              echo "❌ Stale $f should not be present (index.json 已剥离)" && exit 1
+            fi
+          done
+          for f in meta.json resource.json resource-catalog.json resource-collection.json resource-site.json recommended.json version.json; do
             if [ ! -f "$f" ]; then
               echo "❌ Missing $f" && exit 1
             fi
             echo "✓ $f ($(wc -c < "$f") bytes)"
           done
           ls chunks/*.json | wc -l | xargs -I{} echo "✓ {} chunk files"
+          ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
 
       - name: Build for EdgeOne
         run: |

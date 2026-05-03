@@ -15,10 +15,11 @@
  * 分词: 纯 bigram + CJK 单字段兜底（见 normalize.js），相比 bigram+unigram 约减半 token 数。
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import MiniSearch from 'minisearch';
+import * as OpenCC from 'opencc-js';
 import { tokenize, joinFields } from '../src/lib/search/normalize.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -55,14 +56,43 @@ function buildDocs(index, searchS, groupKey, typeLabel) {
         const authorS = s.a || '';
         const authorSearch = joinFields([author, authorS && authorS !== author ? authorS : null]);
 
+        // additional_titles 可能是字符串或 {book_title} 对象
+        const aliases = (entry.additional_titles || [])
+            .map(t => typeof t === 'string' ? t : t?.book_title)
+            .filter(Boolean);
+        const attached = (entry.attached_texts || [])
+            .map(t => typeof t === 'string' ? t : t?.book_title)
+            .filter(Boolean);
+        const aliasesS = (s.at || []);
+        const aliasesSearch = joinFields([
+            ...aliases,
+            ...aliasesS.filter((x, i) => x && x !== aliases[i]),
+            ...attached,
+        ]);
+
         docs.push({
             id: entry.id,
             type: typeLabel,
             title_search: titleSearch,
             author_search: authorSearch,
-            dynasty: entry.dynasty || '',
+            aliases_search: aliasesSearch,
+            // storeFields 透传给 worker hits, 直接渲染卡片不需 hydration
             title,
             author,
+            dynasty: entry.dynasty || '',
+            role: entry.role,
+            edition: entry.edition,
+            additional_titles: aliases,
+            attached_texts: attached,
+            juan_count: entry.juan_count,
+            has_text: entry.has_text,
+            has_image: entry.has_image,
+            has_collated: entry.has_collated,
+            subtype: entry.subtype,
+            primary_name: entry.primary_name,
+            birth_year: entry.birth_year,
+            death_year: entry.death_year,
+            cbdb_id: entry.cbdb_id,
         });
     }
     return docs;
@@ -71,8 +101,13 @@ function buildDocs(index, searchS, groupKey, typeLabel) {
 function msOptions() {
     return {
         idField: 'id',
-        fields: ['title_search', 'author_search'],
-        storeFields: ['id', 'type', 'title', 'author', 'dynasty'],
+        fields: ['title_search', 'author_search', 'aliases_search'],
+        storeFields: [
+            'id', 'type', 'title', 'author', 'dynasty', 'role', 'edition',
+            'additional_titles', 'attached_texts', 'juan_count',
+            'has_text', 'has_image', 'has_collated',
+            'subtype', 'primary_name', 'birth_year', 'death_year', 'cbdb_id',
+        ],
         tokenize: (text) => tokenize(text),
         processTerm: (term) => term,
     };
@@ -115,17 +150,67 @@ function buildIndexForType(index, searchS, groupKey, typeLabel) {
 
 // ─── 主流程 ───
 
-function build() {
-    const indexPath = join(OUT_DIR, 'index.json');
-    const searchSPath = join(OUT_DIR, 'search_s.json');
-
-    if (!existsSync(indexPath)) {
-        console.error(`❌ ${indexPath} not found. Run bundle-data.mjs first.`);
+/**
+ * 直接从 book-index-draft 的 16 个 shard + collections.json 重建索引；
+ * 不再依赖 public/data/index.json（已废弃）。
+ */
+function loadShardedIndex() {
+    const draftDir = process.env.BOOK_INDEX_DRAFT_DIR
+        || resolve(__dirname, '..', '..', '..', 'book-index-draft');
+    const indexDir = join(draftDir, 'index');
+    if (!existsSync(indexDir)) {
+        console.error(`❌ index directory not found: ${indexDir}`);
         process.exit(1);
     }
+    const merged = { books: {}, collections: {}, works: {}, entities: {} };
+    for (const sub of ['books', 'works', 'entities']) {
+        const subDir = join(indexDir, sub);
+        if (!existsSync(subDir)) continue;
+        for (const f of readdirSync(subDir)) {
+            if (!f.endsWith('.json')) continue;
+            const data = readJson(join(subDir, f));
+            Object.assign(merged[sub], data);
+        }
+    }
+    const cf = join(indexDir, 'collections.json');
+    if (existsSync(cf)) merged.collections = readJson(cf);
+    return merged;
+}
 
-    const index = readJson(indexPath);
-    const searchS = existsSync(searchSPath) ? readJson(searchSPath) : {};
+/** 构建搜索专用的繁→简差异表（仅 title/author/additional_titles 与原文不同的条目） */
+function buildSearchSimplified(index) {
+    const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
+    const out = {};
+    for (const groupKey of ['works', 'collections', 'books', 'entities']) {
+        const group = index[groupKey];
+        if (!group) continue;
+        for (const item of Object.values(group)) {
+            const simplified = {};
+            const title = item.title || item.name || item.primary_name || '';
+            if (title) {
+                const ts = t2s(title);
+                if (ts !== title) simplified.t = ts;
+            }
+            if (item.author) {
+                const as = t2s(item.author);
+                if (as !== item.author) simplified.a = as;
+            }
+            if (item.additional_titles && item.additional_titles.length > 0) {
+                const titles = item.additional_titles
+                    .map(t => typeof t === 'string' ? t : t?.book_title)
+                    .filter(Boolean);
+                const ats = titles.map(t => t2s(t));
+                if (ats.some((s, i) => s !== titles[i])) simplified.at = ats;
+            }
+            if (Object.keys(simplified).length > 0) out[item.id] = simplified;
+        }
+    }
+    return out;
+}
+
+function build() {
+    const index = loadShardedIndex();
+    const searchS = buildSearchSimplified(index);
 
     const shards = [
         ['works', 'work'],
@@ -136,8 +221,8 @@ function build() {
     const indices = shards.map(([gk, tl]) => buildIndexForType(index, searchS, gk, tl));
 
     const meta = {
-        version: 3,
-        fields: ['title_search', 'author_search'],
+        version: 4,
+        fields: ['title_search', 'author_search', 'aliases_search'],
         tokenizer: 'bigram+unigram-fallback',
         indices,
         builtAt: new Date().toISOString(),
