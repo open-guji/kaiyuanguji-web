@@ -48,18 +48,42 @@ function BookIndexContent() {
   const searchQuery = searchParams.get('q');
   const tabParam = searchParams.get('tab') as TabKey | null;
 
-  // 预热搜索 worker：进 /book-index 路由就开始下载 ~8 MB gzip 索引，
-  // 让用户首次输入查询词时不必等冷启动。
-  // 详情页面（detailId）不预热，因为大部分详情访客不搜索。
+  // 预热搜索 worker：在用户表现出"打算搜索"的迹象时才下 ~2 MB gzip 索引。
+  //
+  // 触发条件（任一即可）：
+  //   - 用户在 /book-index 停留 ≥ 5 秒（说明在浏览，不是匆匆掠过）
+  //   - 用户聚焦了任何 input（搜索框唯一的可聚焦输入）
+  //   - 用户已经在搜索（URL 带 ?q=）
+  //
+  // 详情页（detailId）不预热——大部分详情访客不返回搜索。
   useEffect(() => {
     if (detailId) return;
     if (typeof window === 'undefined') return;
-    const idle = (cb: () => void) =>
-      'requestIdleCallback' in window
-        ? (window as any).requestIdleCallback(cb, { timeout: 2000 })
-        : setTimeout(cb, 100);
-    idle(() => { getSearchClient().init().catch(() => { /* 静默失败 */ }); });
-  }, [detailId]);
+
+    let triggered = false;
+    const trigger = () => {
+      if (triggered) return;
+      triggered = true;
+      cleanup();
+      getSearchClient().init().catch(() => { /* 静默失败 */ });
+    };
+
+    const onFocus = (e: FocusEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'INPUT') trigger();
+    };
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('focusin', onFocus, true);
+    };
+
+    // URL 带 q= 说明用户主动搜索（deep link 或刚提交），立即预热
+    if (searchQuery) { trigger(); return; }
+
+    document.addEventListener('focusin', onFocus, true);
+    const timer = window.setTimeout(trigger, 5000);
+
+    return cleanup;
+  }, [detailId, searchQuery]);
 
   const handleEntryClick = useCallback((entry: IndexEntry) => {
     router.push(`/book-index?id=${entry.id}`);
