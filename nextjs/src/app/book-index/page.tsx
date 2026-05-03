@@ -61,26 +61,27 @@ function BookIndexContent() {
     if (typeof window === 'undefined') return;
 
     let triggered = false;
-    const trigger = () => {
+    let timer = 0;
+
+    function trigger() {
       if (triggered) return;
       triggered = true;
       cleanup();
       getSearchClient().init().catch(() => { /* 静默失败 */ });
-    };
-
-    const onFocus = (e: FocusEvent) => {
+    }
+    function onFocus(e: FocusEvent) {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') trigger();
-    };
-    const cleanup = () => {
-      window.clearTimeout(timer);
+    }
+    function cleanup() {
+      if (timer) window.clearTimeout(timer);
       document.removeEventListener('focusin', onFocus, true);
-    };
+    }
 
     // URL 带 q= 说明用户主动搜索（deep link 或刚提交），立即预热
     if (searchQuery) { trigger(); return; }
 
     document.addEventListener('focusin', onFocus, true);
-    const timer = window.setTimeout(trigger, 5000);
+    timer = window.setTimeout(trigger, 5000);
 
     return cleanup;
   }, [detailId, searchQuery]);
