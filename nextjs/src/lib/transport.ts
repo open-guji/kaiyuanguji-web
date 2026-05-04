@@ -10,12 +10,25 @@ import { GithubStorage, BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage, IndexType } from 'book-index-ui/storage';
 import { LocalApiStorage } from './local-api-storage';
 import { isV2SearchEnabled, wrapWithV2Search } from './search/v2-storage';
+import { wrapWithMeiliSearch } from './search/meili-storage';
 import {
     DataSource,
     GITHUB_ORG,
     JSDELIVR_FASTLY,
     JSDELIVR_CDN,
 } from './constants';
+
+/**
+ * Meilisearch L1 配置（编译时注入）。
+ *
+ * - NEXT_PUBLIC_MEILI_URL：API base，例如 https://api.kaiyuanguji.com
+ *   或开发期 IP 直连 http://81.69.15.227:7700
+ * - NEXT_PUBLIC_MEILI_KEY：tenant token / 公开搜索 key（绝不放 master key）
+ *
+ * 不设这两个变量时，搜索完全走 L2（worker），与未上线 Meili 等价。
+ */
+const MEILI_URL = process.env.NEXT_PUBLIC_MEILI_URL || '';
+const MEILI_KEY = process.env.NEXT_PUBLIC_MEILI_KEY || '';
 
 /**
  * 只读 Storage 类型：GithubStorage 和 BundleStorage 共有的方法集合。
@@ -59,6 +72,18 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
 
     if (isV2SearchEnabled()) {
         s = wrapWithV2Search(s) as ReadonlyStorage;
+    }
+
+    // L1: Meilisearch（如果配了 URL）。失败时透传到 L2（v2-storage worker）。
+    if (MEILI_URL) {
+        s = wrapWithMeiliSearch(s, {
+            baseUrl: MEILI_URL,
+            apiKey: MEILI_KEY || undefined,
+            timeoutMs: 2000,
+            failuresBeforeBreak: 3,
+            breakerCooldownMs: 5 * 60_000,
+            debug: process.env.NODE_ENV !== 'production',
+        }) as ReadonlyStorage;
     }
 
     storageCache.set(source, s);
