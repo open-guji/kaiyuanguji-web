@@ -1,0 +1,15 @@
+{
+  "name": "kyg-indexer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Server-side scripts for Meilisearch indexer + EdgeOne cache purge (runs on Shanghai cloud)",
+  "scripts": {
+    "purge": "node purge-edgeone.mjs",
+    "reindex": "node full-reindex.mjs",
+    "reindex-and-purge": "./reindex-and-purge.sh"
+  },
+  "dependencies": {
+    "tencentcloud-sdk-nodejs-teo": "^4.0.0"
+  }
+}
