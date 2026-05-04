@@ -122,17 +122,22 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
     }
 
     async function meiliSearch(indexUid: string, query: string, opts: { limit?: number; offset?: number } = {}) {
+        // 用 GET 而不是 POST：CDN（EdgeOne 等）默认不缓存 POST，无法享受
+        // 边缘 cache。Meili 同时支持两种方式，参数走 query string。
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), timeoutMs);
         try {
-            const r = await fetch(`${baseUrl}/indexes/${indexUid}/search`, {
-                method: 'POST',
+            const params = new URLSearchParams({
+                q: query,
+                limit: String(opts.limit ?? 5),
+                offset: String(opts.offset ?? 0),
+            });
+            const r = await fetch(`${baseUrl}/indexes/${indexUid}/search?${params}`, {
+                method: 'GET',
                 signal: ctrl.signal,
                 headers: {
-                    'Content-Type': 'application/json',
                     ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
                 },
-                body: JSON.stringify({ q: query, limit: opts.limit ?? 5, offset: opts.offset ?? 0 }),
             });
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             return await r.json() as { hits: MeiliHit[]; estimatedTotalHits: number; processingTimeMs: number };
