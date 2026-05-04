@@ -120,15 +120,47 @@ describe('meili-storage HybridTransport', () => {
         expect(r.totalWorks).toBe(0);
     });
 
-    it('search(type) 单次 L1 失败返回空，不透传到 base.search', async () => {
+    it('search(type) 单次 L1 失败 fallback 到 base.search（翻页路径，触发 worker 可接受）', async () => {
         global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503, text: async () => '' }) as any;
-        const base = makeBase();
+        const base = makeBase({
+            search: jest.fn().mockResolvedValue({
+                entries: [{ id: 'fb', type: 'work', title: 'l2', isDraft: true }],
+                total: 1, page: 1, pageSize: 50,
+            }),
+        });
         const { wrapWithMeiliSearch } = freshModule();
         const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
         const r = await wrapped.search('q', 'work', { page: 1, pageSize: 50 });
-        expect(base.search).not.toHaveBeenCalled();
-        expect(r.entries).toEqual([]);
-        expect(r.total).toBe(0);
+        expect(base.search).toHaveBeenCalled();
+        expect(r.entries[0].title).toBe('l2');
+    });
+
+    it('searchAll 部分分类失败时保留成功的部分', async () => {
+        // works 成功（含 1 条结果），books 失败（HTTP 503），collections/entities 成功但空
+        let callCount = 0;
+        global.fetch = jest.fn().mockImplementation((url: string) => {
+            callCount++;
+            if (url.includes('/books/')) {
+                return Promise.resolve({ ok: false, status: 503, text: async () => '' });
+            }
+            const hits = url.includes('/works/')
+                ? [{ id: 'w1', type: 'work', title: '汉书', author: '班固' }]
+                : [];
+            return Promise.resolve({ ok: true, json: async () => ({ hits, estimatedTotalHits: hits.length, processingTimeMs: 1 }) });
+        }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        const r = await wrapped.searchAll!('汉书', 5);
+
+        // 没有进 fallback
+        expect(base.searchAll).not.toHaveBeenCalled();
+        // works 成功的结果保留
+        expect(r.works).toHaveLength(1);
+        expect(r.works[0].id).toBe('w1');
+        // books 失败 → 该分类显示空（不是搜索整体失败）
+        expect(r.books).toEqual([]);
+        expect(r.totalBooks).toBe(0);
     });
 
     it('Proxy 透传非搜索方法到 base — getEntry/getCounts 等不被劫持', async () => {

@@ -96,7 +96,9 @@ const breaker = new CircuitBreaker(3, 5 * 60_000);
  */
 export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: MeiliConfig): T {
     const baseUrl = config.baseUrl.replace(/\/$/, '');
-    const timeoutMs = config.timeoutMs ?? 2000;
+    // 5 秒留够海外冷启动余地：cache MISS 回源上海 ~600ms，上海机器繁忙时偶发到
+    // 1-2s。2 秒太紧 → 4 个并发里只要一个超时整个 searchAll 就被认为失败。
+    const timeoutMs = config.timeoutMs ?? 5000;
     const debug = config.debug ?? false;
 
     function hitToEntry(h: MeiliHit): IndexEntry {
@@ -161,37 +163,39 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 return base.searchAll!(query, limit);
             }
 
-            try {
-                // 4 个 index 并行搜
-                const [worksR, booksR, collectionsR, entitiesR] = await Promise.all([
-                    meiliSearch('works', q, { limit }),
-                    meiliSearch('books', q, { limit }),
-                    meiliSearch('collections', q, { limit }),
-                    meiliSearch('entities', q, { limit }),
-                ]);
-                breaker.recordSuccess();
-                return {
-                    works: worksR.hits.map(hitToEntry),
-                    books: booksR.hits.map(hitToEntry),
-                    collections: collectionsR.hits.map(hitToEntry),
-                    entities: entitiesR.hits.map(hitToEntry),
-                    totalWorks: worksR.estimatedTotalHits,
-                    totalBooks: booksR.estimatedTotalHits,
-                    totalCollections: collectionsR.estimatedTotalHits,
-                    totalEntities: entitiesR.estimatedTotalHits,
-                };
-            } catch (e: any) {
+            // 4 个 index 用 allSettled 而不是 all：单个分类失败不应让整个搜索看似无结果。
+            // 部分成功的分类仍正常显示；全失败才认定为 L1 不可用。
+            const settled = await Promise.allSettled([
+                meiliSearch('works', q, { limit }),
+                meiliSearch('books', q, { limit }),
+                meiliSearch('collections', q, { limit }),
+                meiliSearch('entities', q, { limit }),
+            ]);
+            const allFailed = settled.every(r => r.status === 'rejected');
+            if (allFailed) {
                 breaker.recordFailure();
-                if (debug) console.warn('[meili] searchAll failed:', e.message);
-                // 单次失败不立即 fallback worker（避免触发 8 MB shard 下载）。
-                // 只在 breaker open（连续失败积累过阈值）后才启用 L2。
-                // 偶发毛刺：返回空结果让用户重试，下次 cooldown 后能恢复 L1。
+                if (debug) console.warn('[meili] searchAll all 4 failed:', (settled[0] as any).reason?.message);
                 if (breaker.state().open) return base.searchAll!(query, limit);
                 return {
                     works: [], books: [], collections: [], entities: [],
                     totalWorks: 0, totalBooks: 0, totalCollections: 0, totalEntities: 0,
                 };
             }
+            breaker.recordSuccess();
+            const empty = { hits: [] as MeiliHit[], estimatedTotalHits: 0, processingTimeMs: 0 };
+            const [worksR, booksR, collectionsR, entitiesR] = settled.map(r =>
+                r.status === 'fulfilled' ? r.value : empty,
+            );
+            return {
+                works: worksR.hits.map(hitToEntry),
+                books: booksR.hits.map(hitToEntry),
+                collections: collectionsR.hits.map(hitToEntry),
+                entities: entitiesR.hits.map(hitToEntry),
+                totalWorks: worksR.estimatedTotalHits,
+                totalBooks: booksR.estimatedTotalHits,
+                totalCollections: collectionsR.estimatedTotalHits,
+                totalEntities: entitiesR.estimatedTotalHits,
+            };
         },
 
         async search(query: string, type: IndexType, options: LoadOptions): Promise<PageResult<IndexEntry>> {
@@ -226,10 +230,10 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 };
             } catch (e: any) {
                 breaker.recordFailure();
-                if (debug) console.warn('[meili] search failed:', e.message);
-                // 同 searchAll：单次失败不立即触发 worker，breaker open 后才 fallback
-                if (breaker.state().open) return base.search(query, type, options);
-                return { entries: [], total: 0, page, pageSize };
+                if (debug) console.warn('[meili] search failed, → L2:', e.message);
+                // search() 单 type 没 partial 余地，失败直接 fallback worker。
+                // 这条路径只在用户点"查看全部"后翻页才走，单次触发 worker 加载可接受。
+                return base.search(query, type, options);
             }
         },
     };
