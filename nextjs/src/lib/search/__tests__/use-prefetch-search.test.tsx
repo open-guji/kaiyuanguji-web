@@ -14,7 +14,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { usePrefetchSearch } from '../use-prefetch-search';
 
-function Probe(props: { detailId: string | null; searchQuery: string | null; init: () => Promise<unknown>; idleTimeoutMs?: number }) {
+function Probe(props: { detailId: string | null; searchQuery: string | null; init: () => Promise<unknown>; idleTimeoutMs?: number; enabled?: boolean }) {
     usePrefetchSearch(props);
     return null;
 }
@@ -99,5 +99,30 @@ describe('usePrefetchSearch', () => {
         expect(() => {
             render(<Probe detailId={null} searchQuery="abc" init={init} />);
         }).not.toThrow();
+    });
+
+    describe('enabled=false（hybrid 搜索 L1 健康时关掉预热）', () => {
+        it('searchQuery 即时路径不触发', () => {
+            const init = jest.fn().mockResolvedValue(undefined);
+            render(<Probe detailId={null} searchQuery="史記" init={init} enabled={false} />);
+            expect(init).not.toHaveBeenCalled();
+        });
+
+        it('5s 兜底不触发', () => {
+            const init = jest.fn().mockResolvedValue(undefined);
+            render(<Probe detailId={null} searchQuery={null} init={init} idleTimeoutMs={5000} enabled={false} />);
+            jest.advanceTimersByTime(10_000);
+            expect(init).not.toHaveBeenCalled();
+        });
+
+        it('input focus 不触发', () => {
+            const init = jest.fn().mockResolvedValue(undefined);
+            render(<Probe detailId={null} searchQuery={null} init={init} enabled={false} />);
+            const input = document.createElement('input');
+            document.body.appendChild(input);
+            input.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+            expect(init).not.toHaveBeenCalled();
+            document.body.removeChild(input);
+        });
     });
 });

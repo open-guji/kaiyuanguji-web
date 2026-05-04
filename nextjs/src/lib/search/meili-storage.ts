@@ -182,8 +182,15 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 };
             } catch (e: any) {
                 breaker.recordFailure();
-                if (debug) console.warn('[meili] searchAll failed, → L2:', e.message);
-                return base.searchAll!(query, limit);
+                if (debug) console.warn('[meili] searchAll failed:', e.message);
+                // 单次失败不立即 fallback worker（避免触发 8 MB shard 下载）。
+                // 只在 breaker open（连续失败积累过阈值）后才启用 L2。
+                // 偶发毛刺：返回空结果让用户重试，下次 cooldown 后能恢复 L1。
+                if (breaker.state().open) return base.searchAll!(query, limit);
+                return {
+                    works: [], books: [], collections: [], entities: [],
+                    totalWorks: 0, totalBooks: 0, totalCollections: 0, totalEntities: 0,
+                };
             }
         },
 
@@ -219,8 +226,10 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 };
             } catch (e: any) {
                 breaker.recordFailure();
-                if (debug) console.warn('[meili] search failed, → L2:', e.message);
-                return base.search(query, type, options);
+                if (debug) console.warn('[meili] search failed:', e.message);
+                // 同 searchAll：单次失败不立即触发 worker，breaker open 后才 fallback
+                if (breaker.state().open) return base.search(query, type, options);
+                return { entries: [], total: 0, page, pageSize };
             }
         },
     };

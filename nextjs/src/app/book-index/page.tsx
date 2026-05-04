@@ -49,11 +49,15 @@ function BookIndexContent() {
   const searchQuery = searchParams.get('q');
   const tabParam = searchParams.get('tab') as TabKey | null;
 
-  // 预热搜索 worker — 详细策略见 use-prefetch-search.ts
+  // 预热搜索 worker — 详细策略见 use-prefetch-search.ts。
+  // 配了 L1 (Meili) 时，搜索默认走 L1，不预热 worker shard（省 2 MB gzip 流量）。
+  // L1 失败的 fallback 路径会按需 init worker。
+  const hasMeiliL1 = !!process.env.NEXT_PUBLIC_MEILI_URL;
   usePrefetchSearch({
     detailId,
     searchQuery,
     init: () => getSearchClient().init(),
+    enabled: !hasMeiliL1,
   });
 
   const handleEntryClick = useCallback((entry: IndexEntry) => {

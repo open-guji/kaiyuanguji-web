@@ -64,30 +64,48 @@ describe('meili-storage HybridTransport', () => {
         expect(r.works[0]).toMatchObject({ id: 'w1', title: '史记' });
     });
 
-    it('L1 失败（HTTP 500）时透传到 base.searchAll', async () => {
+    it('单次 L1 失败返回空结果，不立即透传 L2（避免触发 8 MB worker shard 下载）', async () => {
         global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'oops' }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        const r = await wrapped.searchAll!('史记', 5);
+
+        expect(base.searchAll).not.toHaveBeenCalled();
+        expect(r.works).toEqual([]);
+        expect(r.totalWorks).toBe(0);
+    });
+
+    it('单次 L1 网络错误也只返回空，不立即触发 worker', async () => {
+        global.fetch = jest.fn().mockRejectedValue(new Error('network')) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        const r = await wrapped.searchAll!('q', 5);
+        expect(base.searchAll).not.toHaveBeenCalled();
+        expect(r.works).toEqual([]);
+    });
+
+    it('连续失败累积到阈值后 breaker open → fallback 启用（持续故障模式）', async () => {
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 502, text: async () => '' }) as any;
         const base = makeBase({
             searchAll: jest.fn().mockResolvedValue({
-                works: [{ id: 'fb-w1', type: 'work', title: 'fallback', isDraft: true }],
+                works: [{ id: 'l2', type: 'work', title: 'l2-fallback', isDraft: true }],
                 books: [], collections: [], entities: [],
                 totalWorks: 1, totalBooks: 0, totalCollections: 0, totalEntities: 0,
             }),
         });
         const { wrapWithMeiliSearch } = freshModule();
         const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
-        const r = await wrapped.searchAll!('史记', 5);
 
-        expect(base.searchAll).toHaveBeenCalledWith('史记', 5);
-        expect(r.works[0].title).toBe('fallback');
-    });
-
-    it('L1 网络错误时透传到 base.searchAll', async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error('network')) as any;
-        const base = makeBase();
-        const { wrapWithMeiliSearch } = freshModule();
-        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        // breaker 阈值 3：前 2 次失败不 fallback，从第 3 次失败起进入 fallback
         await wrapped.searchAll!('q', 5);
+        await wrapped.searchAll!('q', 5);
+        expect(base.searchAll).not.toHaveBeenCalled();
+
+        const r = await wrapped.searchAll!('q', 5);
         expect(base.searchAll).toHaveBeenCalled();
+        expect(r.works[0].title).toBe('l2-fallback');
     });
 
     it('空 query 立即返回空，不调 L1 也不调 L2', async () => {
@@ -102,19 +120,15 @@ describe('meili-storage HybridTransport', () => {
         expect(r.totalWorks).toBe(0);
     });
 
-    it('search(type) L1 失败也透传 L2', async () => {
+    it('search(type) 单次 L1 失败返回空，不透传到 base.search', async () => {
         global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503, text: async () => '' }) as any;
-        const base = makeBase({
-            search: jest.fn().mockResolvedValue({
-                entries: [{ id: 'fb', type: 'work', title: 'fb', isDraft: true }],
-                total: 1, page: 1, pageSize: 50,
-            }),
-        });
+        const base = makeBase();
         const { wrapWithMeiliSearch } = freshModule();
         const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
         const r = await wrapped.search('q', 'work', { page: 1, pageSize: 50 });
-        expect(base.search).toHaveBeenCalled();
-        expect(r.entries[0].title).toBe('fb');
+        expect(base.search).not.toHaveBeenCalled();
+        expect(r.entries).toEqual([]);
+        expect(r.total).toBe(0);
     });
 
     it('Proxy 透传非搜索方法到 base — getEntry/getCounts 等不被劫持', async () => {
