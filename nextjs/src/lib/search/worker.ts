@@ -64,7 +64,7 @@ type Req = InitReq | SearchAllReq | SearchEntriesReq;
 const engines = new Map<EntryType, MiniSearch<StoredFields>[]>();
 let initPromise: Promise<void> | null = null;
 
-function msOptions() {
+export function msOptions() {
     return {
         idField: 'id',
         fields: ['title_search', 'author_search', 'aliases_search'],
@@ -79,7 +79,7 @@ function msOptions() {
     };
 }
 
-async function init(baseUrl: string) {
+export async function init(baseUrl: string) {
     if (initPromise) return initPromise;
     initPromise = (async () => {
         const metaRes = await fetch(`${baseUrl}/meta.json`);
@@ -108,9 +108,21 @@ function ensureReady(): void {
     if (engines.size === 0) throw new Error('search worker not initialized');
 }
 
+/** 测试用：注入预构建的 MiniSearch 引擎，跳过 fetch */
+export function _setEnginesForTesting(map: Map<EntryType, MiniSearch<StoredFields>[]>): void {
+    engines.clear();
+    for (const [k, v] of map) engines.set(k, v);
+}
+
+/** 测试用：重置 module 状态（init promise + engines） */
+export function _resetForTesting(): void {
+    engines.clear();
+    initPromise = null;
+}
+
 type Hit = StoredFields & { score: number };
 
-function mapHits(results: SearchResult[]): Hit[] {
+export function mapHits(results: SearchResult[]): Hit[] {
     return results.map(r => ({
         id: r.id as string,
         type: r.type as EntryType,
@@ -137,7 +149,7 @@ function mapHits(results: SearchResult[]): Hit[] {
 /**
  * 跨所有分片搜索：AND 严格 → MSM bigram 回退。
  */
-function searchAllShards(shards: MiniSearch<StoredFields>[], q: string): Hit[] {
+export function searchAllShards(shards: MiniSearch<StoredFields>[], q: string): Hit[] {
     const len = Array.from(q).filter(c => /\S/.test(c)).length;
     const enableFuzzy = len >= 3;
     const qTokens = tokenize(q);
@@ -191,7 +203,7 @@ function searchAllShards(shards: MiniSearch<StoredFields>[], q: string): Hit[] {
     return [];
 }
 
-function runSearchAll(query: string): Map<EntryType, Hit[]> {
+export function runSearchAll(query: string): Map<EntryType, Hit[]> {
     ensureReady();
     const q = query.trim();
     const out = new Map<EntryType, Hit[]>();
@@ -202,7 +214,7 @@ function runSearchAll(query: string): Map<EntryType, Hit[]> {
     return out;
 }
 
-function runSearchType(query: string, type: EntryType): Hit[] {
+export function runSearchType(query: string, type: EntryType): Hit[] {
     ensureReady();
     const q = query.trim();
     if (!q) return [];
@@ -211,7 +223,7 @@ function runSearchType(query: string, type: EntryType): Hit[] {
     return searchAllShards(shards, q);
 }
 
-function groupByType(byType: Map<EntryType, Hit[]>, limit: number) {
+export function groupByType(byType: Map<EntryType, Hit[]>, limit: number) {
     const works = byType.get('work') || [];
     const books = byType.get('book') || [];
     const collections = byType.get('collection') || [];
@@ -228,39 +240,46 @@ function groupByType(byType: Map<EntryType, Hit[]>, limit: number) {
     };
 }
 
-self.addEventListener('message', async (ev: MessageEvent<Req>) => {
-    const msg = ev.data;
-    try {
-        if (msg.type === 'init') {
-            await init(msg.baseUrl);
-            (self as unknown as Worker).postMessage({ id: msg.id, ok: true });
-            return;
-        }
-        if (msg.type === 'searchAll') {
-            const byType = runSearchAll(msg.query);
-            (self as unknown as Worker).postMessage({ id: msg.id, result: groupByType(byType, msg.limit) });
-            return;
-        }
-        if (msg.type === 'searchEntries') {
-            const hits = runSearchType(msg.query, msg.entryType);
-            const total = hits.length;
-            const start = (msg.page - 1) * msg.pageSize;
-            (self as unknown as Worker).postMessage({
-                id: msg.id,
-                result: {
-                    hits: hits.slice(start, start + msg.pageSize),
-                    total,
-                    page: msg.page,
-                    pageSize: msg.pageSize,
-                },
-            });
-            return;
-        }
-        throw new Error(`unknown message type: ${(msg as { type: string }).type}`);
-    } catch (err) {
-        (self as unknown as Worker).postMessage({
-            id: (msg as { id: number }).id,
-            error: err instanceof Error ? err.message : String(err),
-        });
+/** 处理一条 worker 消息。导出便于直接单测，也供 self.onmessage 转发。 */
+export async function handleMessage(msg: Req): Promise<unknown> {
+    if (msg.type === 'init') {
+        await init(msg.baseUrl);
+        return { id: msg.id, ok: true };
     }
-});
+    if (msg.type === 'searchAll') {
+        const byType = runSearchAll(msg.query);
+        return { id: msg.id, result: groupByType(byType, msg.limit) };
+    }
+    if (msg.type === 'searchEntries') {
+        const hits = runSearchType(msg.query, msg.entryType);
+        const total = hits.length;
+        const start = (msg.page - 1) * msg.pageSize;
+        return {
+            id: msg.id,
+            result: {
+                hits: hits.slice(start, start + msg.pageSize),
+                total,
+                page: msg.page,
+                pageSize: msg.pageSize,
+            },
+        };
+    }
+    throw new Error(`unknown message type: ${(msg as { type: string }).type}`);
+}
+
+// 仅在真实 Worker 环境注册 message handler；jsdom / Node 测试环境跳过避免污染
+/* istanbul ignore next: worker bundle only — handleMessage 已被独立测试覆盖 */
+if (typeof self !== 'undefined' && typeof (self as { importScripts?: unknown }).importScripts === 'function') {
+    self.addEventListener('message', async (ev: MessageEvent<Req>) => {
+        const msg = ev.data;
+        try {
+            const resp = await handleMessage(msg);
+            (self as unknown as Worker).postMessage(resp);
+        } catch (err) {
+            (self as unknown as Worker).postMessage({
+                id: (msg as { id: number }).id,
+                error: err instanceof Error ? err.message : String(err),
+            });
+        }
+    });
+}
