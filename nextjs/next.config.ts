@@ -12,8 +12,13 @@ const nextConfig: NextConfig = {
   // GitHub Pages 部署路径处理
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
-  // 转译 webtex-cn 源码（ES modules）
-  transpilePackages: ['webtex-cn', 'book-index-ui'],
+  // 转译 ESM 源码包（含 webtex-cn 源码 + book-index-ui 0.2.25 起 external 出去的 markdown 链路）
+  transpilePackages: [
+    'webtex-cn',
+    'book-index-ui',
+    'react-markdown',
+    'remark-gfm',
+  ],
 
   images: {
     unoptimized: true, // 静态导出需要禁用默认图片优化
