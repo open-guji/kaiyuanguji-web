@@ -474,13 +474,18 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         onCollectionChange={handleLineageCollectionChange}
                         collectionsAvailable={lineageWork?.version_graph?.collections}
                         collectionCounts={(() => {
-                            // 为每个集合算节点数（含桥接），用于按钮上显示徽标
+                            // 数法：本集合实际包含的 Book 数（不含假想节点和桥接 book）
                             if (!lineageWork) return undefined;
                             const cs = lineageWork.version_graph?.collections;
-                            if (!cs) return undefined;
                             const out: Record<string, number> = {};
-                            for (const k of Object.keys(cs)) {
-                                out[k] = buildLineageGraph(lineageWork, lineageBooks, k).nodes.length;
+                            // all（自动追加按钮）：work 下所有有效 books
+                            out.all = (lineageWork.books?.length ?? 0)
+                                - (lineageWork.version_graph?.excluded_books?.length ?? 0);
+                            if (cs) {
+                                for (const k of Object.keys(cs)) {
+                                    out[k] = buildLineageGraph(lineageWork, lineageBooks, k).nodes
+                                        .filter(n => n.kind === 'book' && !n.bridge).length;
+                                }
                             }
                             return out;
                         })()}
