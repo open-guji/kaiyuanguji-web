@@ -157,10 +157,14 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     // 版本传承图
     const [lineageGraph, setLineageGraph] = useState<LineageGraph | null>(null);
     const [lineageLoading, setLineageLoading] = useState(false);
+    // 用于客户端切换 collection 时按需重建 graph（getLineageGraph 命中时仍保留以做切换）
+    const [lineageWork, setLineageWork] = useState<WorkDetailData | null>(null);
+    const [lineageBooks, setLineageBooks] = useState<BookDetailData[]>([]);
 
     const activeTab = (searchParams.get('tab') || 'basic') as TabType;
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
     const lineageMode = (searchParams.get('mode') === 'graph' ? 'graph' : 'list') as 'list' | 'graph';
+    const lineageCollection = searchParams.get('collection') || undefined;
 
     const setActiveTab = (tab: TabType) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -181,6 +185,22 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         }
         params.set('id', id);
         router.replace(`/book-index?${params.toString()}`, { scroll: false });
+    };
+
+    const handleLineageCollectionChange = (key: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        const defaultKey = lineageWork?.version_graph?.default_collection;
+        if (key && key !== defaultKey) {
+            params.set('collection', key);
+        } else {
+            params.delete('collection');
+        }
+        params.set('id', id);
+        router.replace(`/book-index?${params.toString()}`, { scroll: false });
+        // 同步重建 graph（lineageWork/lineageBooks 已在 loadLineage 时缓存）
+        if (lineageWork) {
+            setLineageGraph(buildLineageGraph(lineageWork, lineageBooks, key));
+        }
     };
 
     const loadCatalogs = useCallback(async (collectionId: string) => {
@@ -261,8 +281,11 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 }
             }
 
-            // 构建 lineage graph
-            const graph = buildLineageGraph(workData as unknown as WorkDetailData, books);
+            // 构建 lineage graph（按 URL 中的 collection 参数过滤；默认 undefined → buildLineageGraph 自取 default_collection）
+            const wd = workData as unknown as WorkDetailData;
+            setLineageWork(wd);
+            setLineageBooks(books);
+            const graph = buildLineageGraph(wd, books, lineageCollection);
             setLineageGraph(graph);
         } catch {
             setLineageGraph(null);
@@ -447,6 +470,20 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         graphHeight={600}
                         defaultMode={lineageMode}
                         onModeChange={handleLineageModeChange}
+                        collection={lineageCollection ?? lineageWork?.version_graph?.default_collection}
+                        onCollectionChange={handleLineageCollectionChange}
+                        collectionsAvailable={lineageWork?.version_graph?.collections}
+                        collectionCounts={(() => {
+                            // 为每个集合算节点数（含桥接），用于按钮上显示徽标
+                            if (!lineageWork) return undefined;
+                            const cs = lineageWork.version_graph?.collections;
+                            if (!cs) return undefined;
+                            const out: Record<string, number> = {};
+                            for (const k of Object.keys(cs)) {
+                                out[k] = buildLineageGraph(lineageWork, lineageBooks, k).nodes.length;
+                            }
+                            return out;
+                        })()}
                     />
                 </div>
             );
