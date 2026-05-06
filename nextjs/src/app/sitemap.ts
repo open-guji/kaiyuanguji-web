@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
-import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES } from '@/lib/constants';
-import { getTransport } from '@/lib/transport';
+import { GithubStorage } from 'book-index-ui/storage';
+import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES, GITHUB_ORG, JSDELIVR_FASTLY, JSDELIVR_CDN } from '@/lib/constants';
 
 export const dynamic = 'force-static';
 
@@ -24,9 +24,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     // 3. 古籍详情页 (从 GitHub 获取)
+    // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
     let bookRoutes: MetadataRoute.Sitemap = [];
     try {
-        const transport = getTransport('github');
+        const transport = new GithubStorage({
+            org: GITHUB_ORG,
+            repos: { draft: 'book-index-draft', official: 'book-index' },
+            baseUrl: 'https://raw.githubusercontent.com',
+            cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
+        });
         const allEntries = await transport.getAllEntries();
         bookRoutes = allEntries.map((entry) => ({
             url: `${SITE_URL}/book-index?id=${entry.id}`,
