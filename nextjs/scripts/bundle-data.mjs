@@ -14,7 +14,7 @@
  *   BOOK_INDEX_DRAFT_DIR=/path node scripts/bundle-data.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, cpSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
@@ -48,8 +48,22 @@ function ensureDir(dir) {
     mkdirSync(dir, { recursive: true });
 }
 
+// 复制 items/{id}/ 到 public/data/items/{id}/，并把 collated_edition/text/*.md
+// 重命名为 *.txt（EdgeOne 默认只对 text/plain 等做 wire-gzip，不对 text/markdown
+// 压缩，1MB+ 的整理本文本不压缩会拖慢国内移动网络的加载）。
+// 源仓库 book-index-draft 仍保留 .md 后缀，仅打包产物改名。
 function copyDirRecursive(src, dest) {
-    cpSync(src, dest, { recursive: true });
+    mkdirSync(dest, { recursive: true });
+    for (const name of readdirSync(src)) {
+        const srcPath = join(src, name);
+        const stat = statSync(srcPath);
+        if (stat.isDirectory()) {
+            copyDirRecursive(srcPath, join(dest, name));
+        } else {
+            const destName = name.endsWith('.md') ? name.slice(0, -3) + '.txt' : name;
+            copyFileSync(srcPath, join(dest, destName));
+        }
+    }
 }
 
 const NUM_SHARDS = 16;

@@ -5,13 +5,14 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
-import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, VersionLineageView, useConvert, buildLineageGraph } from 'book-index-ui';
+import { IndexView, CollectionCatalog, CollatedEdition, EmendatedBySection, LocaleToggle, RepoSourceLink, VersionLineageView, useConvert, buildLineageGraph } from 'book-index-ui';
 import type { IndexEntry, IndexDetailData, ResourceCatalog, CollatedEditionIndex, LineageGraph, WorkDetailData, BookDetailData } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import BidLink from './BidLink';
 import DigitalizationView from './DigitalizationView';
 import FeedbackTab from './FeedbackTab';
+import { buildSourceLinks } from '@/lib/repo-source';
 import type { DigitalAssets } from '@/types';
 
 type TabType = 'basic' | 'digital' | 'collated' | 'emendated' | 'lineage' | 'feedback' | `catalog:${string}`;
@@ -160,6 +161,11 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     // 用于客户端切换 collection 时按需重建 graph（getLineageGraph 命中时仍保留以做切换）
     const [lineageWork, setLineageWork] = useState<WorkDetailData | null>(null);
     const [lineageBooks, setLineageBooks] = useState<BookDetailData[]>([]);
+    // 当前激活的整理本卷文件名（用于推导该卷的 GitHub 源文件链接）
+    const [activeJuan, setActiveJuan] = useState<string | null>(null);
+
+    // 派生：到 book-index-draft / book-index 各 tab 的源文件链接
+    const sourceLinks = entry ? buildSourceLinks(entry) : null;
 
     const activeTab = (searchParams.get('tab') || 'basic') as TabType;
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
@@ -302,6 +308,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 setCatalogList([]);
                 setCollatedIndex(null);
                 setLineageGraph(null);
+                setActiveJuan(null);
 
                 const transport = getTransport(source);
 
@@ -415,16 +422,27 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                         transport={getTransport(source)}
                         mode="view"
                         renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
-                        headerExtra={<LocaleToggle />}
+                        headerExtra={
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <LocaleToggle />
+                                {sourceLinks && <RepoSourceLink {...sourceLinks.basic} />}
+                            </span>
+                        }
                     />
                 </div>
             );
         }
 
         if (activeTab.startsWith('catalog:')) {
+            const activeResourceId = activeTab.slice('catalog:'.length);
             const catData = catalogList.find(c => `catalog:${c.resource_id}` === activeTab)?.data;
             return (
-                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8">
+                <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
+                    {sourceLinks && activeResourceId && activeResourceId !== 'loading' && (
+                        <div className="absolute top-6 right-8 z-10">
+                            <RepoSourceLink {...sourceLinks.catalog(activeResourceId)} />
+                        </div>
+                    )}
                     <CollectionCatalog
                         data={catData}
                         onNavigate={handleNavigate}
@@ -443,16 +461,22 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
         if (activeTab === 'collated') {
             const transport = getTransport(source);
+            const collatedLink = sourceLinks
+                ? (activeJuan ? sourceLinks.collatedJuan(activeJuan) : sourceLinks.collatedDir)
+                : null;
             return (
                 <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
-                    <div className="absolute top-6 right-8 z-10">
+                    <div className="absolute top-6 right-8 z-10 flex items-center gap-1">
                         <LocaleToggle />
+                        {collatedLink && <RepoSourceLink {...collatedLink} />}
                     </div>
                     <CollatedEdition
                         index={collatedIndex || undefined}
                         workId={id}
                         transport={transport}
                         onNavigate={handleNavigate}
+                        activeJuan={activeJuan}
+                        onJuanChange={setActiveJuan}
                     />
                 </div>
             );
@@ -461,8 +485,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab === 'lineage' && lineageGraph) {
             return (
                 <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
-                    <div className="absolute top-6 right-8 z-10">
+                    <div className="absolute top-6 right-8 z-10 flex items-center gap-1">
                         <LocaleToggle />
+                        {sourceLinks && <RepoSourceLink {...sourceLinks.lineage} />}
                     </div>
                     <VersionLineageView
                         graph={lineageGraph}
@@ -497,8 +522,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (activeTab === 'emendated' && detail.emendated_by && detail.emendated_by.length > 0) {
             return (
                 <div className="max-w-4xl px-4 md:px-8 pt-4 md:pt-6 pb-8 relative">
-                    <div className="absolute top-6 right-8 z-10">
+                    <div className="absolute top-6 right-8 z-10 flex items-center gap-1">
                         <LocaleToggle />
+                        {sourceLinks && <RepoSourceLink {...sourceLinks.basic} />}
                     </div>
                     <EmendatedBySection
                         items={detail.emendated_by}

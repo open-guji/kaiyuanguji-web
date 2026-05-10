@@ -3,13 +3,14 @@
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle } from 'book-index-ui';
+import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle, RepoSourceLink } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
 type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
 import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
+import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 function DataVersion() {
@@ -95,7 +96,12 @@ function BookIndexContent() {
           hideModeIndicator
           initialQuery={searchQuery || undefined}
           onQueryChange={handleQueryChange}
-          headerRight={<LocaleToggle />}
+          headerRight={
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <LocaleToggle />
+              <RepoSourceLink {...REPO_ROOT_DRAFT} />
+            </span>
+          }
         />
         <HomePage
           transport={transport}
