@@ -66,8 +66,9 @@
 
 /* book-index-ui CSS 变量映射 */
 :root {
+  --bim-bg: #ffffff;
   --bim-fg: var(--color-ink);
-  --bim-desc-fg: var(--color-ink);
+  --bim-desc-fg: var(--color-secondary);
   --bim-primary: #8B0000;
   --bim-primary-fg: #fff;
   --bim-input-bg: #fff;
