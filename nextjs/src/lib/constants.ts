@@ -32,7 +32,12 @@ export const GITEE_BOOK_INDEX_DRAFT = `${GITEE_BASE}/${GITEE_ORG}/book-index-dra
 export const GITEE_BOOK_INDEX = `${GITEE_BASE}/${GITEE_ORG}/book-index/raw/main/index.json`;
 
 // 数据源类型
-export type DataSource = 'github' | 'gitee' | 'bundle' | 'local';
+// - github: jsdelivr CDN 拉 GitHub 散文件（海外/灾备）
+// - gitee:  gitee.com raw 拉散文件（备用）
+// - bundle: 同站 /data/ 目录加载预打包 chunk（EdgeOne Pages 部署模式）
+// - cos:    单独的 data CDN（data.kaiyuanguji.com → 新加坡 COS），靠 latest.json 版本指针
+// - local:  本地 Next API
+export type DataSource = 'github' | 'gitee' | 'bundle' | 'cos' | 'local';
 export const DATA_SOURCE: DataSource =
   (process.env.NEXT_PUBLIC_DATA_SOURCE as DataSource) ||
   (isLocalMode ? 'local' : 'github');

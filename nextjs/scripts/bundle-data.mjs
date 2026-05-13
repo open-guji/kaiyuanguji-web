@@ -381,7 +381,20 @@ function bundleVersion() {
     };
 
     writeJson(join(OUT_DIR, 'version.json'), version);
-    console.log(`VER version.json (commit: ${commitId.slice(0, 8)}, date: ${commitDate})`);
+
+    // latest.json — COS 上传时单独覆盖到桶根，作为版本软指针。
+    // sync-to-cos.mjs 会在所有 v/{commit}/ 文件传完后才覆盖此文件。
+    // shortCommit 是路径前缀，前端启动时拉 latest.json 拿到它再拼 basePath。
+    const shortCommit = commitId === 'unknown' ? 'unknown' : commitId.slice(0, 12);
+    const latest = {
+        commitId: shortCommit,
+        fullCommitId: commitId,
+        commitDate,
+        bundleDate: version.bundleDate,
+    };
+    writeJson(join(OUT_DIR, '..', 'latest.json'), latest);
+
+    console.log(`VER version.json + latest.json (commit: ${commitId.slice(0, 8)}, date: ${commitDate})`);
 }
 
 // ─── Index 完整性检查 ───

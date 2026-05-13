@@ -7,17 +7,25 @@ import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle, RepoSourceLink } 
 import type { IndexEntry } from 'book-index-ui';
 type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
-import { getTransport } from '@/lib/transport';
+import { getTransport, getSearchBaseUrl } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
 import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
+import { COS_BASE, getCosDataBaseUrl } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 function DataVersion() {
+  const { source } = useSource();
   const [info, setInfo] = useState('');
 
   useEffect(() => {
-    fetch('/data/version.json')
+    // 取版本号 JSON 的 URL：cos 模式下走 COS data 根，其他走同站 /data/version.json
+    const urlP = source === 'cos'
+      ? getCosDataBaseUrl().then(b => `${b}/version.json`)
+      : Promise.resolve('/data/version.json');
+
+    urlP
+      .then(u => fetch(u))
       .then(r => r.ok ? r.json() : null)
       .then(v => {
         if (!v?.commitId || v.commitId === 'unknown') return;
@@ -28,7 +36,7 @@ function DataVersion() {
         setInfo(`数据版本: ${short}${date ? ` (${date})` : ''}`);
       })
       .catch(() => {});
-  }, []);
+  }, [source]);
 
   if (!info) return null;
 
@@ -57,7 +65,9 @@ function BookIndexContent() {
   usePrefetchSearch({
     detailId,
     searchQuery,
-    init: () => getSearchClient().init(),
+    // cos 模式下，搜索分片在 https://data.kaiyuanguji.com/v/{commit}/search/
+    // getSearchBaseUrl 返回 Promise<string>，client.init 会自动 await
+    init: () => getSearchClient().init(getSearchBaseUrl(source)),
     enabled: !hasMeiliL1,
   });
 

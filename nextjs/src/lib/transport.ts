@@ -11,6 +11,7 @@ import type { IndexStorage, IndexType } from 'book-index-ui/storage';
 import { LocalApiStorage } from './local-api-storage';
 import { isV2SearchEnabled, wrapWithV2Search } from './search/v2-storage';
 import { wrapWithMeiliSearch } from './search/meili-storage';
+import { createCosStorage, getCosSearchBaseUrl } from './cos-storage';
 import {
     DataSource,
     GITHUB_ORG,
@@ -54,6 +55,10 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
         s = new LocalApiStorage('/api/book-index') as ReadonlyStorage;
     } else if (source === 'bundle') {
         s = new BundleStorage({ basePath: '/data' }) as ReadonlyStorage;
+    } else if (source === 'cos') {
+        // COS 模式：所有数据请求走 https://data.kaiyuanguji.com/v/{commit}/...
+        // 版本号在浏览器首次请求时从 /latest.json 拉一次，模块级 promise 缓存。
+        s = createCosStorage() as ReadonlyStorage;
     } else {
         const baseUrl = source === 'github'
             ? 'https://raw.githubusercontent.com'
@@ -88,6 +93,15 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
 
     storageCache.set(source, s);
     return s;
+}
+
+/**
+ * 取当前数据源对应的搜索分片根 URL —— 供 SearchClient.init(baseUrl) 使用。
+ * - cos:    Promise<`${COS_BASE}/v/${commit}/search`>，会等 latest.json
+ * - 其他:   '/data/search'（同站静态）
+ */
+export function getSearchBaseUrl(source: DataSource): string | Promise<string> {
+    return source === 'cos' ? getCosSearchBaseUrl() : '/data/search';
 }
 
 /** 类型标签 */

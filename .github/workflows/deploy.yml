@@ -64,28 +64,53 @@ jobs:
           done
           ls chunks/*.json | wc -l | xargs -I{} echo "✓ {} chunk files"
           ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
+          # latest.json 由 bundle-data.mjs 输出到 public/ (data/ 同级)，sync-to-cos.mjs 单独上传
+          [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing public/latest.json" && exit 1)
+
+      - name: Sync data to Tencent COS (Singapore)
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+        run: |
+          cd nextjs
+          node scripts/sync-to-cos.mjs
 
       - name: Build for EdgeOne
         env:
+          # 数据源 = cos：浏览器从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
+          # 当 COS secrets 缺失时降级回 bundle 模式（数据走 EdgeOne Pages /data/）
+          NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
+          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
-          # L1 失败时自动 fallback 到 worker 索引（L2，已打包进 chunks）
+          # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
           NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY }}
         run: |
           cd nextjs
           rm -rf .next out
           export NEXT_PUBLIC_BASE_PATH=""
-          export NEXT_PUBLIC_DATA_SOURCE="bundle"
           npm run build
           mkdir -p ../build/edgeone
           cp -r out/* ../build/edgeone/
+          # cos 模式下，out/data/ 已在 COS，EdgeOne Pages 不需要重复，剥离以瘦身
+          if [ "$NEXT_PUBLIC_DATA_SOURCE" = "cos" ]; then
+            echo "Stripping out/data from EdgeOne Pages bundle (data served from COS)"
+            rm -rf ../build/edgeone/data
+            du -sh ../build/edgeone | xargs echo "EdgeOne bundle size after strip:"
+            find ../build/edgeone -type f | wc -l | xargs echo "EdgeOne file count after strip:"
+          fi
 
-      - name: Verify EdgeOne build uses bundle mode
+      - name: Verify EdgeOne build mode
         run: |
-          if grep -r '"bundle"' nextjs/out/_next/static/chunks/ > /dev/null 2>&1; then
-            echo "✓ EdgeOne build confirmed using bundle mode"
+          MODE="${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+          if grep -r "\"$MODE\"" nextjs/out/_next/static/chunks/ > /dev/null 2>&1; then
+            echo "✓ EdgeOne build confirmed using $MODE mode"
           else
-            echo "❌ EdgeOne build not using bundle mode!" && exit 1
+            echo "❌ EdgeOne build not using $MODE mode!" && exit 1
           fi
 
       - name: Copy Edge Functions to EdgeOne build
@@ -113,6 +138,7 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          DATA_SOURCE_MODE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
         run: |
           pip install tencentcloud-sdk-python-teo -q
           python3 -c "
@@ -125,11 +151,20 @@ jobs:
 
           req = models.CreatePurgeTaskRequest()
           req.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          # EdgeOne API 校验 host 必须是 zone 上绑定的加速域名（裸域），
-          # 不能写 www.kaiyuanguji.com — 那是回源 host，不是加速域名。
-          # 用 purge_host 一次清整个站点 cache，覆盖所有路径。
-          req.Type = 'purge_host'
-          req.Targets = ['kaiyuanguji.com']
+          # COS 模式：所有 v/{commit}/* 资源不可变、长期缓存；只需精准 purge
+          # 1) www.kaiyuanguji.com 整站（Pages 部署变了）
+          # 2) data.kaiyuanguji.com/latest.json（新版本指针，让浏览器拉到新 commit）
+          # 不再 purge_host data.kaiyuanguji.com 整站 — 那 318MB 缓存白丢，回源费贵
+          if os.environ.get('DATA_SOURCE_MODE', 'bundle') == 'cos':
+              req.Type = 'purge_url'
+              req.Targets = [
+                  'https://data.kaiyuanguji.com/latest.json',
+                  'https://www.kaiyuanguji.com/',
+              ]
+          else:
+              # 旧 bundle 模式：data/ 在主站下，整站 purge
+              req.Type = 'purge_host'
+              req.Targets = ['kaiyuanguji.com']
 
           resp = client.CreatePurgeTask(req)
           print('✅ EdgeOne cache purged:', resp.to_json_string())

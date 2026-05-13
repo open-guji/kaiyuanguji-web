@@ -42,6 +42,7 @@
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
     "autoprefixer": "^10.4.23",
+    "cos-nodejs-sdk-v5": "^2.15.4",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.4",

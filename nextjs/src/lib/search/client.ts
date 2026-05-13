@@ -4,7 +4,25 @@
  * 使用 new Worker(new URL('./worker.ts', import.meta.url))，Next.js 会自动打包为独立 chunk。
  */
 
+import { getCosSearchBaseUrl } from '../cos-storage';
+
 export type EntryType = 'work' | 'book' | 'collection' | 'entity';
+
+/**
+ * 默认的搜索分片根 URL：根据构建时 env 决定。
+ * - cos 模式下返回 Promise<...>（含 latest.json 版本号）
+ * - 其他模式同站 /data/search
+ *
+ * 注意：searchAll / searchEntries 内部 `await this.init()` 若不传 baseUrl，
+ * 会落回这个默认值。所以即使调用方忘记显式 init(getSearchBaseUrl(source))，
+ * 也能在 cos 模式下走到 COS。
+ */
+function defaultSearchBaseUrl(): string | Promise<string> {
+    if (process.env.NEXT_PUBLIC_DATA_SOURCE === 'cos') {
+        return getCosSearchBaseUrl();
+    }
+    return '/data/search';
+}
 
 export interface WorkerHit {
     id: string;
@@ -86,9 +104,15 @@ class SearchClient {
         });
     }
 
-    async init(baseUrl: string = '/data/search'): Promise<void> {
+    async init(baseUrl?: string | Promise<string>): Promise<void> {
+        // 允许 Promise<string>：COS 模式下 baseUrl 取决于 latest.json，是异步的。
+        // 并发调用安全：立即占位 initPromise，避免两个调用者各 send 一次 init。
         if (this.initPromise) return this.initPromise;
-        this.initPromise = this.send<boolean>({ type: 'init', baseUrl }).then(() => undefined);
+        const url = baseUrl ?? defaultSearchBaseUrl();
+        this.initPromise = (async () => {
+            const resolved = typeof url === 'string' ? url : await url;
+            await this.send<boolean>({ type: 'init', baseUrl: resolved });
+        })();
         return this.initPromise;
     }
 
