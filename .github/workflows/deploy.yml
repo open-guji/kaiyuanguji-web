@@ -27,17 +27,7 @@ jobs:
           cd nextjs
           npm install
 
-      # --- 步骤 1：为 GitHub Pages 构建（github 模式） ---
-      - name: Build for GitHub Pages
-        run: |
-          cd nextjs
-          export NEXT_PUBLIC_BASE_PATH="/kaiyuanguji-web"
-          export NEXT_PUBLIC_DATA_SOURCE="github"
-          npm run build
-          mkdir -p ../build/gh-pages
-          cp -r out/* ../build/gh-pages/
-
-      # --- 步骤 2：为 EdgeOne 构建（bundle 模式） ---
+      # --- 步骤 1：为 EdgeOne 构建（cos 模式） ---
       - name: Clone book-index-draft
         run: |
           git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
@@ -120,21 +110,14 @@ jobs:
       - name: Copy Edge Functions to EdgeOne build
         run: cp -r edge-functions build/edgeone/edge-functions
 
-      # --- 步骤 3：部署到 GitHub Pages 分支 ---
-      - name: Deploy to GitHub Pages Branch
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: build/gh-pages
-          branch: gh-pages # 部署到 gh-pages 分支
-
-      # --- 步骤 4：部署到 EdgeOne 分支 ---
+      # --- 步骤 2：部署到 EdgeOne 分支 ---
       - name: Deploy to EdgeOne Branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build/edgeone
           branch: edgeone-release # 部署到专门给 EdgeOne 用的分支
 
-      # --- 步骤 5：清除 EdgeOne CDN 缓存 ---
+      # --- 步骤 3：清除 EdgeOne CDN 缓存 ---
       - name: Purge EdgeOne CDN cache
         if: ${{ env.HAS_EDGEONE_SECRETS == 'true' }}
         env:
