@@ -28,6 +28,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { createHash } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -229,26 +230,33 @@ async function uploadLatest() {
 }
 
 /**
- * List 当前 versionPrefix 下已存在的对象 key —— 用于跳过已上传文件，
- * 实现增量 sync（断点续传 / 同 commit 重试零浪费）。
+ * List 一个 prefix 下所有对象的 key + etag —— 用于增量 sync。
  *
- * 仅按 key 存在性判断，不比对 ETag/MD5：v/{commit}/* 路径设计上不可变，
- * 同一 commit 下同一 key 内容也相同（除非 bundle 逻辑变了，那种情况需要换 commit）。
+ * 用法：
+ *   1. 当前 versionPrefix：判断哪些 key 已经传过（断点续传）
+ *   2. 上一个 commit 的 versionPrefix：判断哪些 key 内容跟本地一样（→ copy-object）
+ *
+ * ETag 对单 PUT 对象 = `"hex_md5"`（带双引号）。multipart 上传会变格式，
+ * 但 sync-to-cos.mjs 对小文件走 putObject（单 PUT），ETag 即文件 MD5。
  */
-async function listExistingKeys() {
-    const existing = new Set();
+async function listPrefixEtags(prefix) {
+    const map = new Map();  // relativeKey → md5 hex (no quotes)
     let marker = '';
     let pages = 0;
+    const stripQuotes = (s) => (s || '').replace(/^"|"$/g, '');
     while (true) {
         const res = await new Promise((resolveP, rejectP) => {
             cos.getBucket({
                 Bucket: BUCKET, Region: REGION,
-                Prefix: versionPrefix + '/',
+                Prefix: prefix,
                 Marker: marker,
                 MaxKeys: 1000,
             }, (err, data) => err ? rejectP(err) : resolveP(data));
         });
-        for (const obj of res.Contents || []) existing.add(obj.Key);
+        for (const obj of res.Contents || []) {
+            const rel = obj.Key.slice(prefix.length);
+            map.set(rel, stripQuotes(obj.ETag));
+        }
         pages++;
         if (res.IsTruncated === 'true' || res.IsTruncated === true) {
             marker = res.NextMarker || res.Contents[res.Contents.length - 1].Key;
@@ -256,34 +264,132 @@ async function listExistingKeys() {
             break;
         }
     }
-    return { existing, pages };
+    return { map, pages };
+}
+
+/** 读取 cos://bucket/latest.json 的 commitId，无 → null（首次发布） */
+async function getPreviousCommitId() {
+    try {
+        const res = await new Promise((resolveP, rejectP) => {
+            cos.getObject({ Bucket: BUCKET, Region: REGION, Key: latestKey },
+                (err, data) => err ? rejectP(err) : resolveP(data));
+        });
+        const body = JSON.parse(res.Body.toString('utf-8'));
+        return body.commitId || null;
+    } catch {
+        return null;
+    }
+}
+
+/** 本地 MD5（hex）。文件 < 10 MB 一次读完，>= 10 MB 流式（极少触发）。 */
+function md5OfFile(path, size) {
+    const hash = createHash('md5');
+    hash.update(readFileSync(path));
+    return hash.digest('hex');
+}
+
+/** COS 服务端 copy-object —— 不走带宽，按 PUT 计费。 */
+async function copyOne(srcKey, destKey, attempt = 1) {
+    try {
+        return await new Promise((resolveP, rejectP) => {
+            cos.putObjectCopy({
+                Bucket: BUCKET, Region: REGION,
+                Key: destKey,
+                CopySource: `${BUCKET}.cos.${REGION}.myqcloud.com/${srcKey}`,
+            }, (err) => err ? rejectP(err) : resolveP());
+        });
+    } catch (e) {
+        const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(e.message || '');
+        if (transient && attempt < 4) {
+            await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
+            return copyOne(srcKey, destKey, attempt + 1);
+        }
+        throw e;
+    }
 }
 
 async function main() {
     // 80 并发 + putObject 小文件路径：实测 14 files/s → 目标 100+ files/s
     const CONCURRENCY = 80;
 
-    // 增量 sync：扫已存在 key，跳过已传文件
+    // 1) 当前 commit 已上传哪些 → 跳过（断点续传 / 重试零浪费）
     console.log(`  listing existing keys at v/${shortCommit}/...`);
-    const tList = Date.now();
-    const { existing, pages } = await listExistingKeys();
-    console.log(`  found ${existing.size} existing keys (${pages} list pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
+    let tList = Date.now();
+    const cur = await listPrefixEtags(versionPrefix + '/');
+    console.log(`  found ${cur.map.size} existing keys (${cur.pages} pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
 
-    const toUpload = files.filter(f => !existing.has(`${versionPrefix}/${f.relative}`));
-    const skipped = files.length - toUpload.length;
+    // 2) 上一个 commit 的 key+etag → 用作 copy-object 复用源
+    const prevCommit = await getPreviousCommitId();
+    let prevPrefix = null;
+    let prevEtags = new Map();
+    if (prevCommit && prevCommit !== shortCommit) {
+        prevPrefix = joinKey(PATH_PREFIX, 'v', prevCommit);
+        console.log(`  prev commit = v/${prevCommit}/ → listing for copy-object reuse...`);
+        tList = Date.now();
+        const prev = await listPrefixEtags(prevPrefix + '/');
+        prevEtags = prev.map;
+        console.log(`  prev has ${prevEtags.size} keys (${prev.pages} pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
+    }
+
+    // 3) 计算本地 MD5 + 分流：already-uploaded / copy-from-prev / fresh-upload
+    console.log(`  computing local MD5s for ${files.length} files...`);
+    const tHash = Date.now();
+    const toCopy = [];   // { srcKey, destKey, size }
+    const toUpload = []; // file
+    let alreadyDone = 0;
+    for (const f of files) {
+        const destKey = `${versionPrefix}/${f.relative}`;
+        const localEtag = cur.map.get(f.relative);
+        if (localEtag) { alreadyDone++; continue; }  // 已传过 → 跳
+        const localMd5 = md5OfFile(f.full, f.size);
+        const prevEtag = prevEtags.get(f.relative);
+        if (prevEtag && prevEtag === localMd5) {
+            toCopy.push({ srcKey: `${prevPrefix}/${f.relative}`, destKey, size: f.size });
+        } else {
+            toUpload.push(f);
+        }
+    }
+    const toCopyBytes = toCopy.reduce((s, f) => s + f.size, 0);
     const toUploadBytes = toUpload.reduce((s, f) => s + f.size, 0);
-    console.log(`  skip ${skipped} already-uploaded · upload ${toUpload.length} new (${(toUploadBytes / 1024 / 1024).toFixed(1)} MB)`);
+    console.log(`  hashed ${files.length} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s`);
+    console.log(`  plan: ${alreadyDone} already · ${toCopy.length} copy-from-prev (${(toCopyBytes / 1024 / 1024).toFixed(1)} MB) · ${toUpload.length} upload (${(toUploadBytes / 1024 / 1024).toFixed(1)} MB)`);
 
-    if (toUpload.length === 0) {
-        console.log(`  ✓ all files already on COS for this commit`);
-    } else {
+    const failures = [];
+
+    // 4) 并发 copy-object（server-side，不走带宽）
+    if (toCopy.length > 0) {
+        const queue = [...toCopy];
+        let done = 0;
+        const t0 = Date.now();
+        async function copyWorker() {
+            while (queue.length > 0) {
+                const c = queue.shift();
+                if (!c) return;
+                try {
+                    await copyOne(c.srcKey, c.destKey);
+                    done++;
+                    if (done % 500 === 0 || done === toCopy.length) {
+                        const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
+                        process.stdout.write(`\r  copying: ${done}/${toCopy.length} (${elapsed}s)   `);
+                    }
+                } catch (e) {
+                    failures.push({ file: c.destKey, err: 'copy: ' + e.message });
+                    console.error(`\n  ⚠ copy failed: ${c.destKey} — ${e.message}`);
+                }
+            }
+        }
+        await Promise.all(Array.from({ length: CONCURRENCY }, () => copyWorker()));
+        process.stdout.write('\n');
+        console.log(`  ✓ copied ${done} files in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    }
+
+    // 5) 并发 upload（带宽路径）
+    if (toUpload.length > 0) {
         const queue = [...toUpload];
         let done = 0;
         let uploadedBytes = 0;
-        const failures = [];
         const t0 = Date.now();
-
-        async function worker() {
+        async function uploadWorker() {
             while (queue.length > 0) {
                 const f = queue.shift();
                 if (!f) return;
@@ -303,16 +409,18 @@ async function main() {
                 }
             }
         }
-
-        await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+        await Promise.all(Array.from({ length: CONCURRENCY }, () => uploadWorker()));
         process.stdout.write('\n');
-
-        if (failures.length > 0) {
-            console.error(`\n❌ ${failures.length} file(s) failed. NOT updating latest.json. Re-run to retry (already-uploaded will be skipped).`);
-            process.exit(2);
-        }
-
         console.log(`  ✓ uploaded ${done} files (${(uploadedBytes / 1024 / 1024).toFixed(1)} MB) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    }
+
+    if (failures.length > 0) {
+        console.error(`\n❌ ${failures.length} op(s) failed. NOT updating latest.json. Re-run to retry (already-done will be skipped).`);
+        process.exit(2);
+    }
+
+    if (toCopy.length === 0 && toUpload.length === 0) {
+        console.log(`  ✓ all files already on COS for this commit`);
     }
 
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);

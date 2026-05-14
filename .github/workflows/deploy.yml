@@ -50,19 +50,23 @@ jobs:
       - name: Verify bundled data
         run: |
           cd nextjs/public/data
-          # index.json / search_s.json 已剥离 — 不应再生成，避免客户端误下载 23 MB
+          # 历史遗留产物（Phase 1 之前的 index.json / search_s.json，Phase 2 的 chunks/）
+          # 若仍存在说明 bundle-data.mjs 没走干净，提前阻止上线
           for f in index.json search_s.json; do
             if [ -f "$f" ]; then
-              echo "❌ Stale $f should not be present (index.json 已剥离)" && exit 1
+              echo "❌ Stale $f should not be present" && exit 1
             fi
           done
+          if [ -d chunks ]; then
+            echo "❌ Stale chunks/ should not be present (Phase 3 改 entry/)" && exit 1
+          fi
           for f in meta.json resource.json resource-catalog.json resource-collection.json resource-site.json recommended.json version.json; do
             if [ ! -f "$f" ]; then
               echo "❌ Missing $f" && exit 1
             fi
             echo "✓ $f ($(wc -c < "$f") bytes)"
           done
-          ls chunks/*.json | wc -l | xargs -I{} echo "✓ {} chunk files"
+          ls entry/*.json | wc -l | xargs -I{} echo "✓ {} entry files"
           ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
           # latest.json 由 bundle-data.mjs 输出到 public/ (data/ 同级)，sync-to-cos.mjs 单独上传
           [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing public/latest.json" && exit 1)
