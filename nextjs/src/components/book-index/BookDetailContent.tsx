@@ -59,23 +59,39 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     const transport = useMemo(() => getTransport(source), [source]);
 
-    // Draft → Production 重定向：若 id 已升格为 production，把 URL replace 到新 ID。
-    // BookDetailLayout 自己会拉 getEntry，transport 层会 cache，所以这里多一次调用
-    // 几乎零成本。replace 后组件重渲染、id prop 变成 production-id。
+    // Draft → Production 重定向逻辑
+    //   - 默认行为：若当前 id 是已升格的 draft，自动 replace 到 production id，
+    //     同时把原 draft id 写到 ?redirected_from=...，给 banner 用。
+    //   - 用户在 banner 上点「返回草稿」会跳到 ?id=<draft>&no_redirect=true，
+    //     此时跳过自动 redirect，让用户看 tombstone 内容。
+    const noRedirect = searchParams.get('no_redirect') === 'true';
+    const redirectedFrom = searchParams.get('redirected_from');
+
     useEffect(() => {
+        if (noRedirect) return;
         let cancelled = false;
         if (!transport.getEntry) return;
         transport.getEntry(id).then((entry) => {
             if (cancelled || !entry) return;
-            const redirectedFrom = (entry as { redirected_from?: string }).redirected_from;
-            if (redirectedFrom && entry.id && entry.id !== id) {
+            const entryRedirectedFrom = (entry as { redirected_from?: string }).redirected_from;
+            if (entryRedirectedFrom && entry.id && entry.id !== id) {
                 const params = new URLSearchParams(searchParams.toString());
                 params.set('id', entry.id);
+                params.set('redirected_from', id);  // 当前 id 就是被升级的 draft id
                 router.replace(`/book-index?${params.toString()}`, { scroll: false });
             }
         }).catch(() => { /* 静默：详情正常加载会自己报错 */ });
         return () => { cancelled = true; };
-    }, [id, transport, router, searchParams]);
+    }, [id, transport, router, searchParams, noRedirect]);
+
+    const handleReturnToDraft = useCallback(() => {
+        if (!redirectedFrom) return;
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('id', redirectedFrom);
+        params.delete('redirected_from');
+        params.set('no_redirect', 'true');
+        router.push(`/book-index?${params.toString()}`, { scroll: false });
+    }, [redirectedFrom, router, searchParams]);
 
     const activeTab = searchParams.get('tab') || 'basic';
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;
@@ -176,8 +192,30 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         },
     ], [id, initialPage]);
 
+    // banner 高度（2rem）从 BookDetailLayout 高度里扣，避免滚动条溢出
+    const bannerHeight = redirectedFrom ? '2rem' : '0px';
+    const layoutHeight = `calc(100vh - 2.5rem - ${bannerHeight})`;
+
     return (
         <LayoutWrapper hideFooter hideFeedbackButton>
+            {redirectedFrom && (
+                <div
+                    role="status"
+                    style={{ height: '2rem' }}
+                    className="bg-amber-50 border-b border-amber-200 px-4 flex items-center justify-center gap-3 text-xs"
+                >
+                    <span className="text-amber-800">
+                        已自动跳转到正式版本（原草稿 <code className="font-mono text-amber-700">{redirectedFrom}</code>）
+                    </span>
+                    <button
+                        type="button"
+                        onClick={handleReturnToDraft}
+                        className="text-amber-700 hover:text-amber-900 underline underline-offset-2"
+                    >
+                        返回草稿
+                    </button>
+                </div>
+            )}
             <BookDetailLayout
                 id={id}
                 transport={transport}
@@ -198,7 +236,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 getSourceLink={getSourceLink}
                 extraTabs={extraTabs}
                 feedbackApiUrl={resolveFeedbackUrl}
-                height="calc(100vh - 2.5rem)"
+                height={layoutHeight}
             />
         </LayoutWrapper>
     );
