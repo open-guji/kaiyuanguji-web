@@ -14,6 +14,7 @@
 
 import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage } from 'book-index-ui/storage';
+import { buildPromotionMap } from './promotions';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
 
@@ -62,27 +63,80 @@ export async function getCosSearchBaseUrl(): Promise<string> {
  *
  * 实现：先用 dummy basePath 占位创建 BundleStorage，第一次方法被调用时
  * 重新 fetch latest.json 拿真实版本，构造正式 BundleStorage 替换之。
+ *
+ * Phase 3：getEntry 改为单文件直拉 entry/{id}.json，跳过 BundleStorage 的
+ * chunks 逻辑。其他方法（getCollatedJuan / getCounts 等）仍委托给 BundleStorage。
  */
 export function createCosStorage(): IndexStorage {
-    let resolved: BundleStorage | null = null;
-    let resolving: Promise<BundleStorage> | null = null;
+    let resolved: { inner: BundleStorage; baseUrl: string } | null = null;
+    let resolving: Promise<{ inner: BundleStorage; baseUrl: string }> | null = null;
 
-    function ensureInner(): Promise<BundleStorage> {
+    function ensureInner(): Promise<{ inner: BundleStorage; baseUrl: string }> {
         if (resolved) return Promise.resolve(resolved);
         if (!resolving) {
             resolving = getCosDataBaseUrl().then(baseUrl => {
-                resolved = new BundleStorage({ basePath: baseUrl });
+                resolved = { inner: new BundleStorage({ basePath: baseUrl }), baseUrl };
                 return resolved;
             });
         }
         return resolving;
     }
 
+    // entry/{id}.json 内存缓存：同 ID 反复 getEntry 不重复 fetch
+    const entryCache = new Map<string, Promise<unknown>>();
+
+    // promotions.json 一次性加载、模块生命周期共享。Map 为空 → 没有任何已升级。
+    let promotionsPromise: Promise<Map<string, string>> | null = null;
+    function ensurePromotions(): Promise<Map<string, string>> {
+        if (promotionsPromise) return promotionsPromise;
+        promotionsPromise = (async () => {
+            try {
+                const { baseUrl } = await ensureInner();
+                const res = await fetch(`${baseUrl}/promotions.json`, { cache: 'force-cache' });
+                if (!res.ok) return new Map();
+                return buildPromotionMap(await res.json());
+            } catch {
+                return new Map();
+            }
+        })();
+        return promotionsPromise;
+    }
+
+    async function getEntryFromCos(id: string): Promise<unknown> {
+        // 重定向：若 id 已升级到 production，直接拉 production entry
+        const promotions = await ensurePromotions();
+        const canonicalId = promotions.get(id) ?? id;
+        const redirectedFrom = canonicalId !== id ? id : undefined;
+
+        const cacheKey = canonicalId;
+        let cached = entryCache.get(cacheKey);
+        if (!cached) {
+            cached = (async () => {
+                const { baseUrl } = await ensureInner();
+                const res = await fetch(`${baseUrl}/entry/${encodeURIComponent(canonicalId)}.json`, {
+                    cache: 'force-cache',
+                });
+                if (res.status === 404) return null;
+                if (!res.ok) throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
+                return res.json();
+            })();
+            entryCache.set(cacheKey, cached);
+        }
+        const entry = await cached;
+        if (entry && redirectedFrom) {
+            return { ...(entry as Record<string, unknown>), redirected_from: redirectedFrom };
+        }
+        return entry;
+    }
+
     // Proxy: 任何属性访问 → 返回异步包装函数，调用时先 await ensureInner
     return new Proxy({} as IndexStorage, {
         get(_, prop) {
+            if (prop === 'getEntry') {
+                return (id: string) => getEntryFromCos(id);
+            }
             return (...args: unknown[]) =>
-                ensureInner().then(inner => {
+                ensureInner().then(({ inner }) => {
                     const fn = (inner as unknown as Record<string | symbol, unknown>)[prop];
                     if (typeof fn !== 'function') {
                         throw new Error(`CosStorage: method '${String(prop)}' not on BundleStorage`);

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * bundle-data.mjs — 将 book-index-draft 的散落 JSON 文件打包为少量 chunk
+ * bundle-data.mjs — 将 book-index-draft 的散落 JSON 文件打包成 web 可消费形态
  *
- * 数据分层（L0 已剥离 — 23 MB index.json 不再生成）：
- * - L1: public/data/chunks/{prefix}.json — 按 ID 前缀分桶的详情数据
+ * Phase 3 起改用扁平单文件结构（替换原 chunks/ 分桶）：
+ * - L1: public/data/entry/{id}.json — 每个 Work/Book/Collection/Entity 单独一个文件
+ *       ID 全局唯一（snowflake type 位区分），不需要 type 子目录
  * - L2: public/data/tiyao/juan-{start}-{end}.json — 整理本提要（按 10 卷分组）
  * - meta.json — 轻量计数（< 1 KB），HomePage 统计用
  * - search/* — MiniSearch 倒排索引，搜索 worker 用
@@ -93,40 +94,39 @@ function loadShardedIndex() {
     return merged;
 }
 
-// ─── L1: 按 ID 前两字符分桶 ───
+// ─── L1: 扁平单文件 entry/{id}.json ───
+//
+// 每个 Work/Book/Collection/Entity 写一个独立 JSON 文件，URL 直接拼 entry/{id}.json
+// 拉，不需要 chunks 分桶 manifest 查询。ID 全局唯一（snowflake type 位区分），
+// 不需要 type 子目录。
+//
+// 注入字段：detail 文件本身没有 has_collated/has_text/has_image/subtype/primary_name
+// 这几个 index-only 标记，bundleL1 从 index 里读取后并入 entry 文件，保证 getEntry
+// 一次请求拿到完整渲染所需数据，不再触发额外 ensureLoaded 拉 index.json。
 
 function bundleL1() {
     const index = loadShardedIndex();
-    const chunks = new Map(); // prefix → { id: detailData }
     let totalEntries = 0;
+    let totalBytes = 0;
     let itemFileCount = 0;
+    const entryDir = join(OUT_DIR, 'entry');
     const itemsDir = join(OUT_DIR, 'items');
-    const chunksDir = join(OUT_DIR, 'chunks');
+    const legacyChunksDir = join(OUT_DIR, 'chunks');
 
-    // 清理旧数据
-    if (existsSync(chunksDir)) rmSync(chunksDir, { recursive: true });
+    // 清理旧数据（包括 Phase 3 之前的 chunks/ 目录）
+    if (existsSync(entryDir)) rmSync(entryDir, { recursive: true });
     if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
-    ensureDir(chunksDir);
+    if (existsSync(legacyChunksDir)) rmSync(legacyChunksDir, { recursive: true });
+    ensureDir(entryDir);
 
-    for (const [typeName, typeKey] of [['works', 'Work'], ['collections', 'Collection'], ['books', 'Book'], ['entities', 'Entity']]) {
+    for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
         const items = index[typeName];
         if (!items) continue;
 
         for (const item of Object.values(items)) {
             const id = item.id;
             const path = item.path; // e.g. "Work/G/Y/L/GYL5215Antw-尚書正義.json"
-            const prefix = id.slice(0, 2);
 
-            if (!chunks.has(prefix)) chunks.set(prefix, {});
-            const chunk = chunks.get(prefix);
-
-            // 读取详情 JSON → 注入 index-only 标记 → 放入 chunk
-            //
-            // detail 文件本身没有 has_collated 字段（这是 index 阶段扫
-            // collated_edition_index.json 算出来的）。把 index 里的
-            // has_collated / has_text / has_image / subtype 注入 chunk，
-            // 让 BundleStorage.getEntry / getItem 不再需要触发
-            // ensureLoaded() 拉 4 MB 的 index.json。
             const detailPath = join(DRAFT_DIR, path);
             if (existsSync(detailPath)) {
                 try {
@@ -136,14 +136,16 @@ function bundleL1() {
                     if (item.has_image) detail.has_image = true;
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
-                    chunk[id] = detail;
+                    const json = JSON.stringify(detail);
+                    writeFileSync(join(entryDir, `${id}.json`), json, 'utf-8');
                     totalEntries++;
+                    totalBytes += Buffer.byteLength(json);
                 } catch (e) {
                     console.warn(`  ⚠ Failed to read ${path}: ${e.message}`);
                 }
             }
 
-            // 关联文件 → 直接复制到 items/{id}/ 下
+            // 关联文件（collated_edition / lineage_graph 等）→ 直接复制到 items/{id}/ 下
             const itemDir = join(DRAFT_DIR, dirname(path), id);
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 copyDirRecursive(itemDir, join(itemsDir, id));
@@ -152,65 +154,7 @@ function bundleL1() {
         }
     }
 
-    // ─── 自适应前缀拆分 ───
-
-    const TARGET_MB = 1;
-    const MAX_PREFIX_LEN = 9;
-
-    /**
-     * 递归拆分：如果 data 序列化后超过 TARGET_MB，
-     * 按 key 的第 prefixLen 个字符分桶，继续递归。
-     * 返回 [prefix, data][] 列表。
-     */
-    function splitChunk(prefix, data, prefixLen) {
-        const json = JSON.stringify(data);
-        const sizeMB = Buffer.byteLength(json) / 1024 / 1024;
-
-        if (sizeMB <= TARGET_MB || prefixLen >= MAX_PREFIX_LEN) {
-            return [[prefix, data]];
-        }
-
-        // 按第 prefixLen 个字符分桶（取 key 中 ID 部分）
-        const subGroups = new Map();
-        for (const [key, val] of Object.entries(data)) {
-            const ch = key.length > prefixLen ? key[prefixLen] : '_';
-            if (!subGroups.has(ch)) subGroups.set(ch, {});
-            subGroups.get(ch)[key] = val;
-        }
-
-        // 递归拆分每个子桶
-        const result = [];
-        for (const [ch, subData] of subGroups) {
-            result.push(...splitChunk(prefix + ch, subData, prefixLen + 1));
-        }
-        return result;
-    }
-
-    // 对每个初始 2-char chunk 递归拆分
-    const finalChunks = [];
-    for (const [prefix, data] of chunks) {
-        finalChunks.push(...splitChunk(prefix, data, 2));
-    }
-
-    // 写入文件 + 收集 manifest
-    const manifest = [];
-    for (const [prefix, data] of finalChunks) {
-        writeJson(join(chunksDir, `${prefix}.json`), data);
-        manifest.push(prefix);
-    }
-    manifest.sort();
-    writeJson(join(chunksDir, '_manifest.json'), manifest);
-
-    console.log(`L1  ${totalEntries} entries → ${finalChunks.length} chunk files + manifest`);
-    let totalSize = 0;
-    for (const [prefix, data] of finalChunks.sort((a, b) => a[0].localeCompare(b[0]))) {
-        const size = Buffer.byteLength(JSON.stringify(data)) / 1024 / 1024;
-        totalSize += size;
-        if (size > 0.1) {
-            console.log(`    ${prefix}.json  (${size.toFixed(1)} MB, ${Object.keys(data).length} keys)`);
-        }
-    }
-    console.log(`    chunks total: ${totalSize.toFixed(1)} MB`);
+    console.log(`L1  ${totalEntries} entry/*.json files (${(totalBytes / 1024 / 1024).toFixed(1)} MB)`);
     if (itemFileCount > 0) {
         console.log(`    items: ${itemFileCount} directories copied to items/`);
     }
@@ -301,11 +245,12 @@ function bundleMeta() {
     );
 }
 
-// ─── 复制独立数据文件（resource.json, recommended.json） ───
+// ─── 复制独立数据文件（resource.json, recommended.json, promotions.json） ───
 
 function bundleExtraFiles() {
-    // resource* 直接复制
-    for (const fname of ['resource.json', 'resource-catalog.json', 'resource-collection.json', 'resource-site.json']) {
+    // resource* 直接复制；promotions.json 一并复制（由 book-index promote 维护，
+    // 客户端 BundleStorage 用它做 draft→production redirect）
+    for (const fname of ['resource.json', 'resource-catalog.json', 'resource-collection.json', 'resource-site.json', 'promotions.json']) {
         const src = join(DRAFT_DIR, fname);
         if (existsSync(src)) {
             const data = readFileSync(src, 'utf-8');
@@ -476,13 +421,19 @@ bundleL2();
 bundleExtraFiles();
 bundleVersion();
 
-// 清理旧的 L0 / search_s 产物（避免上线后部署目录残留导致客户端误下载）
+// 清理旧的 L0 / search_s / chunks 产物（避免上线后部署目录残留导致客户端误下载）
 for (const stale of ['index.json', 'search_s.json']) {
     const p = join(OUT_DIR, stale);
     if (existsSync(p)) {
         unlinkSync(p);
         console.log(`CLR removed legacy ${stale}`);
     }
+}
+// Phase 3：chunks/ 已被 entry/ 替换
+const legacyChunksDir = join(OUT_DIR, 'chunks');
+if (existsSync(legacyChunksDir)) {
+    rmSync(legacyChunksDir, { recursive: true });
+    console.log(`CLR removed legacy chunks/ directory`);
 }
 
 // ─── 搜索索引（MiniSearch，自给自足从 shard 重建） ───

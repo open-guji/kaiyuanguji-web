@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
@@ -58,6 +58,24 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const searchParams = useSearchParams();
 
     const transport = useMemo(() => getTransport(source), [source]);
+
+    // Draft → Production 重定向：若 id 已升格为 production，把 URL replace 到新 ID。
+    // BookDetailLayout 自己会拉 getEntry，transport 层会 cache，所以这里多一次调用
+    // 几乎零成本。replace 后组件重渲染、id prop 变成 production-id。
+    useEffect(() => {
+        let cancelled = false;
+        if (!transport.getEntry) return;
+        transport.getEntry(id).then((entry) => {
+            if (cancelled || !entry) return;
+            const redirectedFrom = (entry as { redirected_from?: string }).redirected_from;
+            if (redirectedFrom && entry.id && entry.id !== id) {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('id', entry.id);
+                router.replace(`/book-index?${params.toString()}`, { scroll: false });
+            }
+        }).catch(() => { /* 静默：详情正常加载会自己报错 */ });
+        return () => { cancelled = true; };
+    }, [id, transport, router, searchParams]);
 
     const activeTab = searchParams.get('tab') || 'basic';
     const initialPage = parseInt(searchParams.get('page') || '1') || 1;

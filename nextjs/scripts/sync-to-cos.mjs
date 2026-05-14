@@ -141,7 +141,14 @@ try {
     process.exit(1);
 }
 
-const cos = new COS({ SecretId: SECRET_ID, SecretKey: SECRET_KEY });
+// FileParallelLimit + ChunkParallelLimit 提升整体并发；UserAgent 便于在 COS 访问日志里识别
+const cos = new COS({
+    SecretId: SECRET_ID,
+    SecretKey: SECRET_KEY,
+    FileParallelLimit: 80,
+    ChunkParallelLimit: 8,
+    Timeout: 60 * 1000,
+});
 
 function ext(name) {
     const i = name.lastIndexOf('.');
@@ -167,9 +174,25 @@ const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 // latest.json 是软指针，30 秒
 const LATEST_CACHE = 'public, max-age=30, must-revalidate';
 
+// 小文件阈值：低于此走 putObject（轻量单 PUT，零事件循环开销）；
+// 高于此走 uploadFile（自动 multipart）。
+const SMALL_FILE_THRESHOLD = 5 * 1024 * 1024;  // 5 MB
+
 async function uploadOne({ full, relative, size }, attempt = 1) {
     const key = `${versionPrefix}/${relative}`;
     try {
+        if (size <= SMALL_FILE_THRESHOLD) {
+            return await new Promise((resolveP, rejectP) => {
+                cos.putObject({
+                    Bucket: BUCKET,
+                    Region: REGION,
+                    Key: key,
+                    Body: readFileSync(full),
+                    ContentType: contentTypeFor(relative),
+                    CacheControl: IMMUTABLE_CACHE,
+                }, (err) => err ? rejectP(err) : resolveP({ key, size }));
+            });
+        }
         return await new Promise((resolveP, rejectP) => {
             cos.uploadFile({
                 Bucket: BUCKET,
@@ -205,43 +228,92 @@ async function uploadLatest() {
     });
 }
 
-async function main() {
-    const CONCURRENCY = 8;
-    const queue = [...files];
-    let done = 0;
-    let uploadedBytes = 0;
-    const failures = [];
-    const t0 = Date.now();
-
-    async function worker() {
-        while (queue.length > 0) {
-            const f = queue.shift();
-            if (!f) return;
-            try {
-                await uploadOne(f);
-                done++;
-                uploadedBytes += f.size;
-                if (done % 50 === 0 || done === files.length) {
-                    const pct = ((done / files.length) * 100).toFixed(1);
-                    const mb = (uploadedBytes / 1024 / 1024).toFixed(1);
-                    process.stdout.write(`\r  uploading: ${done}/${files.length} (${pct}%, ${mb} MB)   `);
-                }
-            } catch (e) {
-                failures.push({ file: f.relative, err: e.message });
-                console.error(`\n  ⚠ failed: ${f.relative} — ${e.message}`);
-            }
+/**
+ * List 当前 versionPrefix 下已存在的对象 key —— 用于跳过已上传文件，
+ * 实现增量 sync（断点续传 / 同 commit 重试零浪费）。
+ *
+ * 仅按 key 存在性判断，不比对 ETag/MD5：v/{commit}/* 路径设计上不可变，
+ * 同一 commit 下同一 key 内容也相同（除非 bundle 逻辑变了，那种情况需要换 commit）。
+ */
+async function listExistingKeys() {
+    const existing = new Set();
+    let marker = '';
+    let pages = 0;
+    while (true) {
+        const res = await new Promise((resolveP, rejectP) => {
+            cos.getBucket({
+                Bucket: BUCKET, Region: REGION,
+                Prefix: versionPrefix + '/',
+                Marker: marker,
+                MaxKeys: 1000,
+            }, (err, data) => err ? rejectP(err) : resolveP(data));
+        });
+        for (const obj of res.Contents || []) existing.add(obj.Key);
+        pages++;
+        if (res.IsTruncated === 'true' || res.IsTruncated === true) {
+            marker = res.NextMarker || res.Contents[res.Contents.length - 1].Key;
+        } else {
+            break;
         }
     }
+    return { existing, pages };
+}
 
-    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-    process.stdout.write('\n');
+async function main() {
+    // 80 并发 + putObject 小文件路径：实测 14 files/s → 目标 100+ files/s
+    const CONCURRENCY = 80;
 
-    if (failures.length > 0) {
-        console.error(`\n❌ ${failures.length} file(s) failed. NOT updating latest.json. Re-run to retry.`);
-        process.exit(2);
+    // 增量 sync：扫已存在 key，跳过已传文件
+    console.log(`  listing existing keys at v/${shortCommit}/...`);
+    const tList = Date.now();
+    const { existing, pages } = await listExistingKeys();
+    console.log(`  found ${existing.size} existing keys (${pages} list pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
+
+    const toUpload = files.filter(f => !existing.has(`${versionPrefix}/${f.relative}`));
+    const skipped = files.length - toUpload.length;
+    const toUploadBytes = toUpload.reduce((s, f) => s + f.size, 0);
+    console.log(`  skip ${skipped} already-uploaded · upload ${toUpload.length} new (${(toUploadBytes / 1024 / 1024).toFixed(1)} MB)`);
+
+    if (toUpload.length === 0) {
+        console.log(`  ✓ all files already on COS for this commit`);
+    } else {
+        const queue = [...toUpload];
+        let done = 0;
+        let uploadedBytes = 0;
+        const failures = [];
+        const t0 = Date.now();
+
+        async function worker() {
+            while (queue.length > 0) {
+                const f = queue.shift();
+                if (!f) return;
+                try {
+                    await uploadOne(f);
+                    done++;
+                    uploadedBytes += f.size;
+                    if (done % 100 === 0 || done === toUpload.length) {
+                        const pct = ((done / toUpload.length) * 100).toFixed(1);
+                        const mb = (uploadedBytes / 1024 / 1024).toFixed(1);
+                        const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
+                        process.stdout.write(`\r  uploading: ${done}/${toUpload.length} (${pct}%, ${mb} MB, ${elapsed}s)   `);
+                    }
+                } catch (e) {
+                    failures.push({ file: f.relative, err: e.message });
+                    console.error(`\n  ⚠ failed: ${f.relative} — ${e.message}`);
+                }
+            }
+        }
+
+        await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+        process.stdout.write('\n');
+
+        if (failures.length > 0) {
+            console.error(`\n❌ ${failures.length} file(s) failed. NOT updating latest.json. Re-run to retry (already-uploaded will be skipped).`);
+            process.exit(2);
+        }
+
+        console.log(`  ✓ uploaded ${done} files (${(uploadedBytes / 1024 / 1024).toFixed(1)} MB) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
     }
-
-    console.log(`  ✓ uploaded ${done} files (${(uploadedBytes / 1024 / 1024).toFixed(1)} MB) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
