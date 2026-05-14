@@ -295,7 +295,10 @@ async function copyOne(srcKey, destKey, attempt = 1) {
             cos.putObjectCopy({
                 Bucket: BUCKET, Region: REGION,
                 Key: destKey,
-                CopySource: `${BUCKET}.cos.${REGION}.myqcloud.com/${srcKey}`,
+                // CopySource 走 HTTP header，含 CJK / 空格等会被 Node http 拒绝
+                // （"Invalid character in header content"）。按 RFC 3986 编码路径，
+                // 保留 '/' 分隔符。
+                CopySource: `${BUCKET}.cos.${REGION}.myqcloud.com/${encodeURI(srcKey)}`,
             }, (err) => err ? rejectP(err) : resolveP());
         });
     } catch (e) {
