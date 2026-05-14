@@ -14,6 +14,8 @@
 
 import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage } from 'book-index-ui/storage';
+import { extractType } from 'book-index-ui';
+import type { IndexEntry } from 'book-index-ui';
 import { buildPromotionMap } from './promotions';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
@@ -102,14 +104,9 @@ export function createCosStorage(): IndexStorage {
         return promotionsPromise;
     }
 
-    async function getEntryFromCos(id: string): Promise<unknown> {
-        // 重定向：若 id 已升级到 production，直接拉 production entry
-        const promotions = await ensurePromotions();
-        const canonicalId = promotions.get(id) ?? id;
-        const redirectedFrom = canonicalId !== id ? id : undefined;
-
-        const cacheKey = canonicalId;
-        let cached = entryCache.get(cacheKey);
+    // 取原始 detail JSON（getItem 返回原貌，getEntry 在此基础上转 IndexEntry shape）
+    async function fetchRawDetail(canonicalId: string): Promise<Record<string, unknown> | null> {
+        let cached = entryCache.get(canonicalId);
         if (!cached) {
             cached = (async () => {
                 const { baseUrl } = await ensureInner();
@@ -120,21 +117,83 @@ export function createCosStorage(): IndexStorage {
                 if (!res.ok) throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
                 return res.json();
             })();
-            entryCache.set(cacheKey, cached);
+            entryCache.set(canonicalId, cached);
         }
-        const entry = await cached;
-        if (entry && redirectedFrom) {
-            return { ...(entry as Record<string, unknown>), redirected_from: redirectedFrom };
+        return cached as Promise<Record<string, unknown> | null>;
+    }
+
+    /** 走 promotions 重定向 + 拉原始 detail；getItem 直接返回，getEntry 转 IndexEntry */
+    async function resolveDetail(id: string): Promise<{
+        canonicalId: string;
+        redirectedFrom: string | undefined;
+        detail: Record<string, unknown> | null;
+    }> {
+        const promotions = await ensurePromotions();
+        const canonicalId = promotions.get(id) ?? id;
+        const redirectedFrom = canonicalId !== id ? id : undefined;
+        const detail = await fetchRawDetail(canonicalId);
+        return { canonicalId, redirectedFrom, detail };
+    }
+
+    // getItem：返回原始 detail（含全部字段，BookDetailLayout 用）
+    async function getItemFromCos(id: string): Promise<Record<string, unknown> | null> {
+        const { canonicalId, redirectedFrom, detail } = await resolveDetail(id);
+        if (!detail) return null;
+        // Entity 同步 primary_name → title
+        if (detail.type === 'entity' && !detail.title && detail.primary_name) {
+            detail.title = detail.primary_name;
         }
-        return entry;
+        if (redirectedFrom) detail.redirected_from = redirectedFrom;
+        return detail;
+    }
+
+    // getEntry：原始 detail → IndexEntry shape（用于卡片 / 列表 / 搜索结果）
+    // 跟 BundleStorage.getEntry 的字段映射保持一致
+    async function getEntryFromCos(id: string): Promise<IndexEntry | null> {
+        const { canonicalId, redirectedFrom, detail } = await resolveDetail(id);
+        if (!detail) return null;
+        const type = extractType(canonicalId);
+        const d = detail as Record<string, unknown>;
+        const displayTitle = type === 'entity'
+            ? ((d.primary_name as string) || (d.title as string) || (d.name as string) || canonicalId)
+            : ((d.title as string) || (d.name as string) || canonicalId);
+        // additional_titles / attached_texts：原始 detail 里可能是 string[] 或
+        // { book_title }[]，统一打平成 string[]
+        const flatten = (arr: unknown): string[] | undefined => {
+            if (!Array.isArray(arr)) return undefined;
+            return arr.map(t => typeof t === 'string' ? t : ((t as { book_title?: string })?.book_title))
+                      .filter(Boolean) as string[];
+        };
+        return {
+            id: canonicalId,
+            title: displayTitle,
+            type,
+            isDraft: true,
+            author: d.author as string,
+            dynasty: d.dynasty as string,
+            role: d.role as string,
+            additional_titles: flatten(d.additional_titles),
+            attached_texts: flatten(d.attached_texts),
+            edition: d.edition as string,
+            juan_count: d.juan_count as number,
+            has_text: d.has_text as boolean,
+            has_image: d.has_image as boolean,
+            has_collated: d.has_collated as boolean,
+            subtype: d.subtype as string,
+            primary_name: d.primary_name as string,
+            birth_year: d.birth_year as number,
+            death_year: d.death_year as number,
+            cbdb_id: d.cbdb_id as number,
+            ...(redirectedFrom ? { redirected_from: redirectedFrom } : {}),
+        };
     }
 
     // Proxy: 任何属性访问 → 返回异步包装函数，调用时先 await ensureInner
     return new Proxy({} as IndexStorage, {
         get(_, prop) {
-            if (prop === 'getEntry') {
-                return (id: string) => getEntryFromCos(id);
-            }
+            // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
+            if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
+            if (prop === 'getItem') return (id: string) => getItemFromCos(id);
             return (...args: unknown[]) =>
                 ensureInner().then(({ inner }) => {
                     const fn = (inner as unknown as Record<string | symbol, unknown>)[prop];
