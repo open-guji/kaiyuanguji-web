@@ -29,6 +29,11 @@ const DRAFT_DIR = resolve(
     || process.env.BOOK_INDEX_DRAFT_DIR
     || join(__dirname, '..', '..', 'book-index-draft')
 );
+// production 仓（已升格条目所在）。可选；不存在时只打包 draft 数据。
+const PRODUCTION_DIR = resolve(
+    process.env.BOOK_INDEX_PRODUCTION_DIR
+    || join(__dirname, '..', '..', 'book-index')
+);
 const OUT_DIR = resolve(__dirname, '..', 'public', 'data');
 
 const TIYAO_DIR = join(DRAFT_DIR, 'data', 'siku-catalog', 'volumes');
@@ -71,14 +76,30 @@ const NUM_SHARDS = 16;
 
 // ─── 内部：合并分片索引（不再写入 index.json，仅供 L1/meta/recommended hydrate 使用）───
 
+/**
+ * 加载 draft + production 两个仓的 shard 索引并合并。
+ * 每个 entry 上加 `_root` 字段（"draft"/"official"），bundleL1 据此找 detail 文件。
+ * ID 不冲突（snowflake status 位区分），但仍 dedupe，production 优先。
+ */
 function loadShardedIndex() {
-    const indexDir = join(DRAFT_DIR, 'index');
     const merged = { books: {}, collections: {}, works: {}, entities: {} };
+    // 先 draft，后 production：production 同 ID 会覆盖 draft（理论上不会有冲突）
+    _mergeRoot(merged, DRAFT_DIR, 'draft');
+    if (existsSync(PRODUCTION_DIR)) {
+        _mergeRoot(merged, PRODUCTION_DIR, 'official');
+    }
+    return merged;
+}
+
+function _mergeRoot(merged, rootDir, rootLabel) {
+    const indexDir = join(rootDir, 'index');
 
     // collections (single file)
     const colPath = join(indexDir, 'collections.json');
     if (existsSync(colPath)) {
-        merged.collections = readJson(colPath);
+        for (const [id, entry] of Object.entries(readJson(colPath))) {
+            merged.collections[id] = { ...entry, _root: rootLabel };
+        }
     }
 
     // books / works / entities (16 shards each)
@@ -86,12 +107,19 @@ function loadShardedIndex() {
         for (let i = 0; i < NUM_SHARDS; i++) {
             const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
             if (existsSync(shardPath)) {
-                Object.assign(merged[typeKey], readJson(shardPath));
+                for (const [id, entry] of Object.entries(readJson(shardPath))) {
+                    merged[typeKey][id] = { ...entry, _root: rootLabel };
+                }
             }
         }
     }
 
     return merged;
+}
+
+/** 按 _root 标签解析回真实根目录 */
+function rootDirFor(entry) {
+    return entry._root === 'official' ? PRODUCTION_DIR : DRAFT_DIR;
 }
 
 // ─── L1: 扁平单文件 entry/{id}.json ───
@@ -126,8 +154,9 @@ function bundleL1() {
         for (const item of Object.values(items)) {
             const id = item.id;
             const path = item.path; // e.g. "Work/G/Y/L/GYL5215Antw-尚書正義.json"
+            const baseDir = rootDirFor(item);
 
-            const detailPath = join(DRAFT_DIR, path);
+            const detailPath = join(baseDir, path);
             if (existsSync(detailPath)) {
                 try {
                     const detail = readJson(detailPath);
@@ -146,7 +175,7 @@ function bundleL1() {
             }
 
             // 关联文件（collated_edition / lineage_graph 等）→ 直接复制到 items/{id}/ 下
-            const itemDir = join(DRAFT_DIR, dirname(path), id);
+            const itemDir = join(baseDir, dirname(path), id);
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 copyDirRecursive(itemDir, join(itemsDir, id));
                 itemFileCount++;
