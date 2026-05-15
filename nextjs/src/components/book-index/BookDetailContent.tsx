@@ -14,6 +14,7 @@ import {
 } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import BidLink from './BidLink';
+import CitationBar from './CitationBar';
 import DigitalizationView from './DigitalizationView';
 import { buildSourceLinks } from '@/lib/repo-source';
 import type { DigitalAssets } from '@/types';
@@ -192,9 +193,13 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         },
     ], [id, initialPage]);
 
-    // banner 高度（2rem）从 BookDetailLayout 高度里扣，避免滚动条溢出
+    // banner 高度从 BookDetailLayout 高度里扣，避免滚动条溢出
+    //   - redirect banner: 2rem（仅 redirected_from 时）
+    //   - CitationBar:     1.75rem（仅 production 条目）
+    //   CitationBar 内部根据 meta.revision 决定是否渲染，外层始终扣高度（draft 条目 0）
     const bannerHeight = redirectedFrom ? '2rem' : '0px';
-    const layoutHeight = `calc(100vh - 2.5rem - ${bannerHeight})`;
+    const citationHeight = '1.75rem';
+    const layoutHeight = `calc(100vh - 2.5rem - ${bannerHeight} - ${citationHeight})`;
 
     return (
         <LayoutWrapper hideFooter hideFeedbackButton>
@@ -216,6 +221,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     </button>
                 </div>
             )}
+            <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
             <BookDetailLayout
                 id={id}
                 transport={transport}
