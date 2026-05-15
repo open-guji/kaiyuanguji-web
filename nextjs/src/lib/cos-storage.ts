@@ -31,12 +31,9 @@ export function resolveCosVersion(): Promise<string> {
         return Promise.reject(new Error('NEXT_PUBLIC_COS_BASE not set'));
     }
     if (!_versionPromise) {
-        // EdgeOne CDN 观察到会把 latest.json 缓存数小时（Age 9h+），
-        // 完全无视源站 Cache-Control: max-age=30。`cache: 'no-store'` 转 CDN
-        // 时也被忽略。用 5 分钟桶的 query string 作 cache key，既能保证
-        // 5 分钟内变化能传到客户端，又不会让每次首屏都打到 COS 源。
-        const cacheKey = Math.floor(Date.now() / 300000); // 5 分钟桶
-        _versionPromise = fetch(`${COS_BASE}/latest.json?t=${cacheKey}`, { cache: 'no-store' })
+        // EdgeOne 控制台已为 /latest.json 配「节点缓存 TTL: 不缓存 + 浏览器缓存
+        // 30 秒」规则（2026-05-14），客户端只需告诉浏览器别走自身缓存。
+        _versionPromise = fetch(`${COS_BASE}/latest.json`, { cache: 'no-store' })
             .then(r => {
                 if (!r.ok) throw new Error(`latest.json HTTP ${r.status}`);
                 return r.json();
