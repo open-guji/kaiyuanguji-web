@@ -51,15 +51,34 @@ export function resolveCosVersion(): Promise<string> {
     return _versionPromise;
 }
 
-/** 当前版本对应的 data 根 URL（已包含 /v/{commit}） */
+/**
+ * 当前版本对应的 data 根 URL。
+ *
+ * 数据布局自 2026-05-17：
+ *   - 数据文件（entry/, items/, promotions, recommended, meta, pagefind-fulltext 等）
+ *     在 COS 上单副本 `current/*`，每次 sync 仅 PUT 变化的文件。
+ *   - 客户端用 BundleStorage 的 ?v=<commit> 自动 cache-bust。
+ *   - 已废弃的 v/<commit>/ 数据前缀仍由 listPrefixEtags 列文件，但新 sync 不再写。
+ *
+ * 搜索分片（倒排索引）独立维护：[[getCosSearchBaseUrl]]。
+ */
 export async function getCosDataBaseUrl(): Promise<string> {
-    const commit = await resolveCosVersion();
-    return `${COS_BASE}/v/${commit}`;
+    // resolveCosVersion 仍要解析，让 BundleStorage 拿 commit 作 cache-bust。
+    // 但 basePath 现在指向 commit-independent 的 current/。
+    await resolveCosVersion();
+    return `${COS_BASE}/current`;
 }
 
-/** 当前版本对应的搜索分片根 URL */
+/**
+ * 搜索分片根 URL —— 走 v/<commit>/search/，commit-isolated。
+ *
+ * search 倒排索引文件互相引用，必须跟当前 entry snapshot 一致。如果跟 entry/
+ * 一起进 current/，部分 client 会在版本切换时拉到混合 snapshot（旧 ID 找不到新
+ * entry / 新 ID 取到旧 entry），出现搜索结果失效。所以 search 维持 commit 隔离。
+ */
 export async function getCosSearchBaseUrl(): Promise<string> {
-    return `${await getCosDataBaseUrl()}/search`;
+    const commit = await resolveCosVersion();
+    return `${COS_BASE}/v/${commit}/search`;
 }
 
 /**
@@ -89,14 +108,22 @@ export function createCosStorage(): IndexStorage {
     // entry/{id}.json 内存缓存：同 ID 反复 getEntry 不重复 fetch
     const entryCache = new Map<string, Promise<unknown>>();
 
+    // current/ 是 commit-independent 单副本，必须靠 ?v=<commit> 让 CDN 把不同版本
+    // 分离缓存；否则浏览器/CDN 会把上次的内容当成"还新"。
+    async function withCacheBust(path: string): Promise<string> {
+        const { baseUrl } = await ensureInner();
+        const commit = await resolveCosVersion();
+        return `${baseUrl}/${path}?v=${commit}`;
+    }
+
     // promotions.json 一次性加载、模块生命周期共享。Map 为空 → 没有任何已升级。
     let promotionsPromise: Promise<Map<string, string>> | null = null;
     function ensurePromotions(): Promise<Map<string, string>> {
         if (promotionsPromise) return promotionsPromise;
         promotionsPromise = (async () => {
             try {
-                const { baseUrl } = await ensureInner();
-                const res = await fetch(`${baseUrl}/promotions.json`, { cache: 'force-cache' });
+                const url = await withCacheBust('promotions.json');
+                const res = await fetch(url, { cache: 'force-cache' });
                 if (!res.ok) return new Map();
                 return buildPromotionMap(await res.json());
             } catch {
@@ -111,10 +138,8 @@ export function createCosStorage(): IndexStorage {
         let cached = entryCache.get(canonicalId);
         if (!cached) {
             cached = (async () => {
-                const { baseUrl } = await ensureInner();
-                const res = await fetch(`${baseUrl}/entry/${encodeURIComponent(canonicalId)}.json`, {
-                    cache: 'force-cache',
-                });
+                const url = await withCacheBust(`entry/${encodeURIComponent(canonicalId)}.json`);
+                const res = await fetch(url, { cache: 'force-cache' });
                 if (res.status === 404) return null;
                 if (!res.ok) throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
                 return res.json();

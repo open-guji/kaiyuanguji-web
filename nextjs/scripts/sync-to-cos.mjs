@@ -2,14 +2,27 @@
 /**
  * sync-to-cos.mjs — 把 bundle-data.mjs 产出的 public/data/ 同步到腾讯云 COS
  *
- * 流程（顺序敏感，不能并行）：
- *   1. 读取 public/data/version.json 拿到 commitId
- *   2. 把 public/data/ 整体上传到 cos://{bucket}/v/{shortCommit}/
- *      - 不可变前缀，每次发布写新目录
- *      - CDN 端可配 1 年长缓存
- *   3. 所有文件传完之后，最后覆盖 cos://{bucket}/latest.json
- *      - 短 TTL（30s），是唯一需要 PURGE 的 URL
- *      - 顺序保证用户永远不会读到「latest 指向但文件还没传完」的状态
+ * 布局：
+ *   cos://{bucket}/current/*                数据文件（entry/, items/, pagefind-fulltext/,
+ *                                           promotions.json, recommended.json, meta.json,
+ *                                           resource*.json, version.json）
+ *                                           单副本，原地覆盖，按 ?v=<commit> CDN cache-bust
+ *   cos://{bucket}/v/{shortCommit}/search/* search shards（每次重建，必须与当前 entry
+ *                                           snapshot 一致 → commit 隔离避免 stale index）
+ *   cos://{bucket}/latest.json              软指针 { commitId }，30s TTL，唯一需 PURGE
+ *
+ * 增量算法（state-driven）：
+ *   1. 读 .next/.sync-state.json（上次 sync 成功时的 relative → {md5, size, mtimeMs}）
+ *   2. 遍历本地 public/data/ 计算 MD5（mtime+size 命中 cache 直接复用，约 27s → 0s）
+ *   3. 对每个本地文件：
+ *        state 无 / md5 不同 → PUT current/X
+ *        state 有且 md5 一致 → skip
+ *   4. state 有但本地不存在 → DELETE current/X（孤儿清理）
+ *   5. search shards 始终全量 PUT 到 v/{commit}/search/
+ *   6. 最后写 latest.json
+ *
+ * state 丢失/损坏的 fallback：从 COS 拉 current/ 的 ETag 重建 state，
+ * 跟旧 ListBucket 模式等价（~86s）。一次拉对后续 sync 永久受益。
  *
  * 环境变量：
  *   COS_SECRET_ID       (必填) 腾讯云 SecretId
@@ -18,10 +31,12 @@
  *   COS_REGION          (可选) 默认 ap-shanghai
  *   COS_PATH_PREFIX     (可选) 桶内根前缀，默认空字符串
  *   DRY_RUN             (可选) 设为 1 只打印不上传
+ *   SYNC_REBUILD_STATE  (可选) 设为 1 强制从 COS 列文件重建 state（state 文件可疑时用）
  *
  * 用法：
- *   node scripts/sync-to-cos.mjs              # 上传 public/data → cos
+ *   node scripts/sync-to-cos.mjs              # 增量同步
  *   DRY_RUN=1 node scripts/sync-to-cos.mjs    # 干跑
+ *   SYNC_REBUILD_STATE=1 node scripts/sync-to-cos.mjs  # 重建本地 state
  */
 
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs';
@@ -59,6 +74,12 @@ const BUCKET = process.env.COS_BUCKET;
 const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PATH_PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const DRY_RUN = process.env.DRY_RUN === '1';
+const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';
+
+// 哪些子目录走 commit 隔离 v/<commit>/ — 主要是 search shards：
+// 倒排索引文件互相关联，必须跟当前 entry snapshot 一致；进入 current/ 会导致
+// 部分 client 拉到混合版本 → ID 不存在 / 旧 ID 取新 entry 等 bug。
+const ISOLATED_DIRS = new Set(['search']);
 
 // ─── 校验 ───
 
@@ -113,22 +134,38 @@ function joinKey(...parts) {
     return parts.filter(Boolean).map(p => p.replace(/^\/+|\/+$/g, '')).join('/');
 }
 
-const versionPrefix = joinKey(PATH_PREFIX, 'v', shortCommit);
+const currentPrefix = joinKey(PATH_PREFIX, 'current');
+const versionPrefix = joinKey(PATH_PREFIX, 'v', shortCommit);  // 仅 search shards 用
 const latestKey = joinKey(PATH_PREFIX, 'latest.json');
+
+/** 给本地相对路径决定它的 COS key（数据走 current/，search 走 v/<commit>/）。 */
+function keyFor(relative) {
+    const topDir = relative.split('/')[0];
+    if (ISOLATED_DIRS.has(topDir)) {
+        return `${versionPrefix}/${relative}`;
+    }
+    return `${currentPrefix}/${relative}`;
+}
+
+const isolatedFiles = files.filter(f => ISOLATED_DIRS.has(f.relative.split('/')[0]));
+const sharedFiles = files.filter(f => !ISOLATED_DIRS.has(f.relative.split('/')[0]));
 
 console.log(`\nsync-to-cos`);
 console.log(`  bucket:   ${BUCKET}`);
 console.log(`  region:   ${REGION}`);
 console.log(`  source:   ${DATA_DIR}`);
-console.log(`  target:   cos://${BUCKET}/${versionPrefix}/`);
+console.log(`  shared:   cos://${BUCKET}/${currentPrefix}/  (${sharedFiles.length} files, ${(sharedFiles.reduce((s,f)=>s+f.size,0)/1024/1024).toFixed(1)} MB — 增量)`);
+console.log(`  isolated: cos://${BUCKET}/${versionPrefix}/  (${isolatedFiles.length} files, ${(isolatedFiles.reduce((s,f)=>s+f.size,0)/1024/1024).toFixed(1)} MB — 全量)`);
 console.log(`  latest:   cos://${BUCKET}/${latestKey}  → { commitId: "${shortCommit}" }`);
-console.log(`  files:    ${files.length}, total ${(totalBytes / 1024 / 1024).toFixed(1)} MB`);
 console.log(`  mode:     ${DRY_RUN ? 'DRY RUN' : 'UPLOAD'}\n`);
 
 if (DRY_RUN) {
-    console.log('— sample (first 10 files) —');
-    for (const f of files.slice(0, 10)) {
-        console.log(`  ${versionPrefix}/${f.relative}  (${f.size} B)`);
+    console.log('— sample (first 5 of each) —');
+    for (const f of sharedFiles.slice(0, 5)) {
+        console.log(`  shared:   ${keyFor(f.relative)}  (${f.size} B)`);
+    }
+    for (const f of isolatedFiles.slice(0, 5)) {
+        console.log(`  isolated: ${keyFor(f.relative)}  (${f.size} B)`);
     }
     console.log('\n(dry run, nothing uploaded)\n');
     process.exit(0);
@@ -172,8 +209,10 @@ function contentTypeFor(relative) {
     }
 }
 
-// v/{commit}/ 下都是不可变文件，1 年长缓存
+// v/{commit}/search/ 下文件不可变（永远新 commit），1 年长缓存
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
+// current/ 下文件按 ?v=<commit> cache-bust，所以也按 immutable 缓存（不同 ?v 视为不同对象）
+const SHARED_CACHE = 'public, max-age=31536000, immutable';
 // latest.json 是软指针，30 秒
 const LATEST_CACHE = 'public, max-age=30, must-revalidate';
 
@@ -182,7 +221,8 @@ const LATEST_CACHE = 'public, max-age=30, must-revalidate';
 const SMALL_FILE_THRESHOLD = 5 * 1024 * 1024;  // 5 MB
 
 async function uploadOne({ full, relative, size }, attempt = 1) {
-    const key = `${versionPrefix}/${relative}`;
+    const key = keyFor(relative);
+    const cacheControl = ISOLATED_DIRS.has(relative.split('/')[0]) ? IMMUTABLE_CACHE : SHARED_CACHE;
     try {
         if (size <= SMALL_FILE_THRESHOLD) {
             return await new Promise((resolveP, rejectP) => {
@@ -192,7 +232,7 @@ async function uploadOne({ full, relative, size }, attempt = 1) {
                     Key: key,
                     Body: readFileSync(full),
                     ContentType: contentTypeFor(relative),
-                    CacheControl: IMMUTABLE_CACHE,
+                    CacheControl: cacheControl,
                 }, (err) => err ? rejectP(err) : resolveP({ key, size }));
             });
         }
@@ -203,7 +243,7 @@ async function uploadOne({ full, relative, size }, attempt = 1) {
                 Key: key,
                 FilePath: full,
                 ContentType: contentTypeFor(relative),
-                CacheControl: IMMUTABLE_CACHE,
+                CacheControl: cacheControl,
                 SliceSize: 1024 * 1024 * 10,
                 onProgress: () => {},
             }, (err) => err ? rejectP(err) : resolveP({ key, size }));
@@ -213,6 +253,23 @@ async function uploadOne({ full, relative, size }, attempt = 1) {
         if (transient && attempt < 4) {
             await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
             return uploadOne({ full, relative, size }, attempt + 1);
+        }
+        throw e;
+    }
+}
+
+async function deleteOne(key, attempt = 1) {
+    try {
+        return await new Promise((resolveP, rejectP) => {
+            cos.deleteObject({
+                Bucket: BUCKET, Region: REGION, Key: key,
+            }, (err) => err ? rejectP(err) : resolveP());
+        });
+    } catch (e) {
+        const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(e.message || '');
+        if (transient && attempt < 4) {
+            await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
+            return deleteOne(key, attempt + 1);
         }
         throw e;
     }
@@ -296,6 +353,46 @@ function md5OfFile(path, size) {
 // Cache miss 时正常算 md5 并写回缓存。
 const HASH_CACHE_FILE = resolve(__dirname, '..', '.next', '.sync-hash-cache.json');
 
+// ─── sync-state file（上次成功 sync 的 remote 状态） ───
+// 格式：{ version: 2, files: { "entry/X.json": "md5hex", ... } }
+// 注意 key 是本地相对路径，不是 COS key（COS key 由 keyFor 派生）。
+// 增量同步靠这个判断：local md5 vs state md5 → put/skip/delete。
+const SYNC_STATE_FILE = resolve(__dirname, '..', '.next', '.sync-state.json');
+
+function loadSyncState() {
+    try {
+        if (!existsSync(SYNC_STATE_FILE)) return null;
+        const raw = JSON.parse(readFileSync(SYNC_STATE_FILE, 'utf-8'));
+        if (raw?.version !== 2 || !raw?.files) return null;
+        return new Map(Object.entries(raw.files));
+    } catch (e) {
+        console.warn(`  sync-state load failed (${e.message}), will rebuild`);
+        return null;
+    }
+}
+
+function saveSyncState(stateMap) {
+    try {
+        mkdirSync(dirname(SYNC_STATE_FILE), { recursive: true });
+        const doc = { version: 2, savedAt: new Date().toISOString(), files: Object.fromEntries(stateMap) };
+        writeFileSync(SYNC_STATE_FILE, JSON.stringify(doc), 'utf-8');
+    } catch (e) {
+        console.warn(`  sync-state save failed (${e.message}), ignored (next sync will rebuild)`);
+    }
+}
+
+/** 从 COS 列 current/ 所有 key+etag，构造 state map（fallback：state 丢失或 --rebuild）。 */
+async function rebuildStateFromCos() {
+    const stateMap = new Map();
+    // 只重建 shared current/，isolated v/<commit>/search/ 每次必传不需要 state
+    const { map, pages } = await listPrefixEtags(currentPrefix + '/');
+    for (const [rel, md5] of map) {
+        stateMap.set(rel, md5);
+    }
+    console.log(`  rebuilt state from cos: ${stateMap.size} keys in ${pages} pages`);
+    return stateMap;
+}
+
 function loadHashCache() {
     try {
         if (!existsSync(HASH_CACHE_FILE)) return new Map();
@@ -352,130 +449,139 @@ async function copyOne(srcKey, destKey, attempt = 1) {
     }
 }
 
+async function runQueue(items, concurrency, worker, label) {
+    const queue = [...items];
+    let done = 0;
+    const t0 = Date.now();
+    const failures = [];
+    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+        while (queue.length > 0) {
+            const item = queue.shift();
+            if (!item) return;
+            try {
+                await worker(item);
+                done++;
+                if (done % 100 === 0 || done === items.length) {
+                    const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
+                    process.stdout.write(`\r  ${label}: ${done}/${items.length} (${elapsed}s)   `);
+                }
+            } catch (e) {
+                failures.push({ item, err: e.message });
+                console.error(`\n  ⚠ ${label} failed: ${JSON.stringify(item).slice(0,80)} — ${e.message}`);
+            }
+        }
+    });
+    await Promise.all(workers);
+    if (items.length > 0) process.stdout.write('\n');
+    return { done, failures, elapsed: (Date.now() - t0) / 1000 };
+}
+
 async function main() {
-    // 80 并发 + putObject 小文件路径：实测 14 files/s → 目标 100+ files/s
     const CONCURRENCY = 80;
 
-    // 1) 当前 commit 已上传哪些 → 跳过（断点续传 / 重试零浪费）
-    console.log(`  listing existing keys at v/${shortCommit}/...`);
-    let tList = Date.now();
-    const cur = await listPrefixEtags(versionPrefix + '/');
-    console.log(`  found ${cur.map.size} existing keys (${cur.pages} pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
-
-    // 2) 上一个 commit 的 key+etag → 用作 copy-object 复用源
-    const prevCommit = await getPreviousCommitId();
-    let prevPrefix = null;
-    let prevEtags = new Map();
-    if (prevCommit && prevCommit !== shortCommit) {
-        prevPrefix = joinKey(PATH_PREFIX, 'v', prevCommit);
-        console.log(`  prev commit = v/${prevCommit}/ → listing for copy-object reuse...`);
-        tList = Date.now();
-        const prev = await listPrefixEtags(prevPrefix + '/');
-        prevEtags = prev.map;
-        console.log(`  prev has ${prevEtags.size} keys (${prev.pages} pages, ${((Date.now() - tList) / 1000).toFixed(1)}s)`);
+    // ── Step 1: 加载或重建 state ──
+    let stateMap = REBUILD_STATE ? null : loadSyncState();
+    if (!stateMap) {
+        if (REBUILD_STATE) {
+            console.log(`  SYNC_REBUILD_STATE=1: ignoring local state, listing COS...`);
+        } else {
+            console.log(`  no local sync-state, listing COS to rebuild...`);
+        }
+        const tList = Date.now();
+        stateMap = await rebuildStateFromCos();
+        console.log(`  (${((Date.now() - tList) / 1000).toFixed(1)}s)`);
+    } else {
+        console.log(`  loaded sync-state: ${stateMap.size} known keys (skip listing)`);
     }
 
-    // 3) 计算本地 MD5 + 分流：already-uploaded / copy-from-prev / fresh-upload
+    // ── Step 2: 计算本地 MD5 ──
     console.log(`  computing local MD5s for ${files.length} files (mtime cache enabled)...`);
     const tHash = Date.now();
     const hashCache = loadHashCache();
     const cacheSizeBefore = hashCache.size;
     let cacheHits = 0;
-    const toCopy = [];   // { srcKey, destKey, size }
-    const toUpload = []; // file
-    let alreadyDone = 0;
+    const localMd5 = new Map();  // relative → md5
     for (const f of files) {
-        const destKey = `${versionPrefix}/${f.relative}`;
-        const localEtag = cur.map.get(f.relative);
-        if (localEtag) { alreadyDone++; continue; }  // 已传过 → 跳
-        const { md5: localMd5, hit } = md5WithCache(f, hashCache);
+        const { md5, hit } = md5WithCache(f, hashCache);
+        localMd5.set(f.relative, md5);
         if (hit) cacheHits++;
-        const prevEtag = prevEtags.get(f.relative);
-        if (prevEtag && prevEtag === localMd5) {
-            toCopy.push({ srcKey: `${prevPrefix}/${f.relative}`, destKey, size: f.size });
-        } else {
-            toUpload.push(f);
-        }
     }
     saveHashCache(hashCache);
-    const toCopyBytes = toCopy.reduce((s, f) => s + f.size, 0);
-    const toUploadBytes = toUpload.reduce((s, f) => s + f.size, 0);
-    const hashed = files.length - alreadyDone;
-    console.log(`  hashed ${hashed} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s (cache hit ${cacheHits}/${hashed}, cache size ${cacheSizeBefore}→${hashCache.size})`);
-    console.log(`  plan: ${alreadyDone} already · ${toCopy.length} copy-from-prev (${(toCopyBytes / 1024 / 1024).toFixed(1)} MB) · ${toUpload.length} upload (${(toUploadBytes / 1024 / 1024).toFixed(1)} MB)`);
+    console.log(`  hashed ${files.length} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s (cache hit ${cacheHits}/${files.length}, cache size ${cacheSizeBefore}→${hashCache.size})`);
 
-    const failures = [];
-
-    // 4) 并发 copy-object（server-side，不走带宽）
-    if (toCopy.length > 0) {
-        const queue = [...toCopy];
-        let done = 0;
-        const t0 = Date.now();
-        async function copyWorker() {
-            while (queue.length > 0) {
-                const c = queue.shift();
-                if (!c) return;
-                try {
-                    await copyOne(c.srcKey, c.destKey);
-                    done++;
-                    if (done % 500 === 0 || done === toCopy.length) {
-                        const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
-                        process.stdout.write(`\r  copying: ${done}/${toCopy.length} (${elapsed}s)   `);
-                    }
-                } catch (e) {
-                    failures.push({ file: c.destKey, err: 'copy: ' + e.message });
-                    console.error(`\n  ⚠ copy failed: ${c.destKey} — ${e.message}`);
-                }
-            }
+    // ── Step 3: 分流 ──
+    // shared: 用 state 增量
+    const sharedToUpload = [];
+    let sharedSkipped = 0;
+    for (const f of sharedFiles) {
+        const stateMd5 = stateMap.get(f.relative);
+        if (stateMd5 === localMd5.get(f.relative)) {
+            sharedSkipped++;
+        } else {
+            sharedToUpload.push(f);
         }
-        await Promise.all(Array.from({ length: CONCURRENCY }, () => copyWorker()));
-        process.stdout.write('\n');
-        console.log(`  ✓ copied ${done} files in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    }
+    // isolated: 每次必传到新 v/<commit>/search/
+    const isolatedToUpload = isolatedFiles;
+    // orphan: state 里有但本地没了
+    const localRelSet = new Set(files.map(f => f.relative));
+    const orphanKeys = [];
+    for (const rel of stateMap.keys()) {
+        // 只处理 shared 的孤儿（isolated 走 commit 隔离，旧 v/<oldcommit>/ 通过别的方式清理）
+        if (ISOLATED_DIRS.has(rel.split('/')[0])) continue;
+        if (!localRelSet.has(rel)) orphanKeys.push(rel);
     }
 
-    // 5) 并发 upload（带宽路径）
-    if (toUpload.length > 0) {
-        const queue = [...toUpload];
-        let done = 0;
-        let uploadedBytes = 0;
-        const t0 = Date.now();
-        async function uploadWorker() {
-            while (queue.length > 0) {
-                const f = queue.shift();
-                if (!f) return;
-                try {
-                    await uploadOne(f);
-                    done++;
-                    uploadedBytes += f.size;
-                    if (done % 100 === 0 || done === toUpload.length) {
-                        const pct = ((done / toUpload.length) * 100).toFixed(1);
-                        const mb = (uploadedBytes / 1024 / 1024).toFixed(1);
-                        const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
-                        process.stdout.write(`\r  uploading: ${done}/${toUpload.length} (${pct}%, ${mb} MB, ${elapsed}s)   `);
-                    }
-                } catch (e) {
-                    failures.push({ file: f.relative, err: e.message });
-                    console.error(`\n  ⚠ failed: ${f.relative} — ${e.message}`);
-                }
-            }
-        }
-        await Promise.all(Array.from({ length: CONCURRENCY }, () => uploadWorker()));
-        process.stdout.write('\n');
-        console.log(`  ✓ uploaded ${done} files (${(uploadedBytes / 1024 / 1024).toFixed(1)} MB) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    const sharedUploadBytes = sharedToUpload.reduce((s, f) => s + f.size, 0);
+    const isolatedUploadBytes = isolatedToUpload.reduce((s, f) => s + f.size, 0);
+    console.log(`  plan:`);
+    console.log(`    shared:   ${sharedSkipped} skip · ${sharedToUpload.length} upload (${(sharedUploadBytes / 1024 / 1024).toFixed(1)} MB) · ${orphanKeys.length} delete`);
+    console.log(`    isolated: ${isolatedToUpload.length} upload (${(isolatedUploadBytes / 1024 / 1024).toFixed(1)} MB) — 全量到 v/${shortCommit}/`);
+
+    const allFailures = [];
+
+    // ── Step 4a: 上传 shared 增量 ──
+    if (sharedToUpload.length > 0) {
+        console.log(`  uploading shared...`);
+        const r = await runQueue(sharedToUpload, CONCURRENCY, uploadOne, 'shared-up');
+        console.log(`  ✓ shared uploaded ${r.done}/${sharedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
+        allFailures.push(...r.failures);
     }
 
-    if (failures.length > 0) {
-        console.error(`\n❌ ${failures.length} op(s) failed. NOT updating latest.json. Re-run to retry (already-done will be skipped).`);
+    // ── Step 4b: 上传 isolated 全量 ──
+    if (isolatedToUpload.length > 0) {
+        console.log(`  uploading isolated (search shards)...`);
+        const r = await runQueue(isolatedToUpload, CONCURRENCY, uploadOne, 'isolated-up');
+        console.log(`  ✓ isolated uploaded ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
+        allFailures.push(...r.failures);
+    }
+
+    // ── Step 4c: 删 orphan ──
+    if (orphanKeys.length > 0) {
+        console.log(`  deleting orphans...`);
+        const r = await runQueue(orphanKeys, CONCURRENCY,
+            (rel) => deleteOne(`${currentPrefix}/${rel}`), 'delete');
+        console.log(`  ✓ deleted ${r.done}/${orphanKeys.length} in ${r.elapsed.toFixed(1)}s`);
+        allFailures.push(...r.failures);
+    }
+
+    if (allFailures.length > 0) {
+        console.error(`\n❌ ${allFailures.length} op(s) failed. NOT updating latest.json or state. Re-run to retry.`);
         process.exit(2);
     }
 
-    if (toCopy.length === 0 && toUpload.length === 0) {
-        console.log(`  ✓ all files already on COS for this commit`);
+    // ── Step 5: 写 state（成功后才更新，失败保留旧 state 让下次重试） ──
+    const newState = new Map();
+    for (const f of sharedFiles) {
+        newState.set(f.relative, localMd5.get(f.relative));
     }
+    saveSyncState(newState);
+    console.log(`  ✓ sync-state saved (${newState.size} keys)`);
 
+    // ── Step 6: latest.json ──
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
-    console.log(`  ✓ latest.json now points to v/${shortCommit}/`);
+    console.log(`  ✓ latest.json now points to commit ${shortCommit}`);
 
     console.log(`\n✅ sync-to-cos complete\n`);
 }
