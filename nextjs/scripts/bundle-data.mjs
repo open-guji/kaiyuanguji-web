@@ -187,6 +187,11 @@ function bundleL1() {
                     if (item.has_image) detail.has_image = true;
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
+                    // 注入仓库归属，供前端拼右上角 GitHub 源文件链接：
+                    //   _path     —— item.path（如 "Book/9/6/k/96kzkdm8e8-紅樓夢.json"）
+                    //   _isDraft  —— item._root === 'draft'（production 条目应链到 book-index）
+                    detail._path = item.path;
+                    detail._isDraft = item._root !== 'official';
                     // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json
                     if (item.type === 'book' || typeName === 'books') {
                         const ftIdx = join(baseDir, dirname(path), id, 'full_text', 'index.json');

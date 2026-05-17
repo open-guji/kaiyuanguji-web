@@ -195,7 +195,11 @@ export function createCosStorage(): IndexStorage {
             id: canonicalId,
             title: displayTitle,
             type,
-            isDraft: true,
+            // _path / _isDraft 由 bundle-data.mjs 在 entry/{id}.json 里注入。
+            // 老 bundle 没这两字段时回退：path 留空（右上角链接会少一段目录），
+            // isDraft 默认 true（保持改造前行为）。
+            path: (d._path as string) || '',
+            isDraft: typeof d._isDraft === 'boolean' ? (d._isDraft as boolean) : true,
             author: d.author as string,
             dynasty: d.dynasty as string,
             role: d.role as string,
