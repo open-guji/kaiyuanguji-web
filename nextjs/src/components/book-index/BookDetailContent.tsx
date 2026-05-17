@@ -113,9 +113,11 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const handleTabChange = useCallback((tab: string) => {
         updateParams((p) => {
             p.set('tab', tab);
+            if (tab !== 'collated' && tab !== 'fulltext') {
+                p.delete('juan');
+            }
             if (tab === 'basic') {
                 p.delete('page');
-                p.delete('juan');
             }
             if (tab !== 'lineage') {
                 p.delete('mode');
@@ -128,7 +130,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         updateParams((p) => {
             if (juan) p.set('juan', juan);
             else p.delete('juan');
-            p.set('tab', 'collated');
+            const cur = p.get('tab');
+            if (cur !== 'collated' && cur !== 'fulltext') {
+                p.set('tab', 'collated');
+            }
         }, true);
     }, [updateParams]);
 
@@ -165,6 +170,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         if (ctx.activeTab === 'collated') {
             return ctx.activeJuan ? links.collatedJuan(ctx.activeJuan) : links.collatedDir;
         }
+        if (ctx.activeTab === 'fulltext') {
+            return ctx.activeJuan ? links.fullTextChapter(ctx.activeJuan) : links.fullTextDir;
+        }
         if (ctx.activeTab === 'lineage') return links.lineage;
         if (ctx.activeTab.startsWith('catalog:')) {
             const rid = ctx.activeTab.slice('catalog:'.length);
@@ -194,11 +202,10 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     ], [id, initialPage]);
 
     // banner 高度从 BookDetailLayout 高度里扣，避免滚动条溢出
-    //   - redirect banner: 2rem（仅 redirected_from 时）
-    //   - CitationBar:     1.75rem（仅 production 条目）
-    //   CitationBar 内部根据 meta.revision 决定是否渲染，外层始终扣高度（draft 条目 0）
+    //   - redirect banner（顶部）: 2rem（仅 redirected_from 时）
+    //   - CitationBar（底部）:     1.5rem（始终占位，draft/production 都渲染）
     const bannerHeight = redirectedFrom ? '2rem' : '0px';
-    const citationHeight = '1.75rem';
+    const citationHeight = '1.5rem';
     const layoutHeight = `calc(100vh - 2.5rem - ${bannerHeight} - ${citationHeight})`;
 
     return (
@@ -221,7 +228,6 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     </button>
                 </div>
             )}
-            <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
             <BookDetailLayout
                 id={id}
                 transport={transport}
@@ -244,6 +250,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 feedbackApiUrl={resolveFeedbackUrl}
                 height={layoutHeight}
             />
+            <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
         </LayoutWrapper>
     );
 }

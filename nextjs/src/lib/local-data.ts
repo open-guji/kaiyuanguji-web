@@ -402,6 +402,41 @@ export function getCollatedJuanText(id: string, juanFile: string): string | null
     }
 }
 
+// ── Book 全文 (Book/<id>/full_text/) ──
+
+export function getBookFullTextIndex(id: string) {
+    const itemFile = findItemFile(id);
+    if (!itemFile) return null;
+    const filePath = path.join(path.dirname(itemFile), id, 'full_text', 'index.json');
+    if (!fs.existsSync(filePath)) return null;
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch {
+        return null;
+    }
+}
+
+export function getBookFullTextChapter(id: string, file: string): string | null {
+    if (file.includes('..')) return null;
+    const itemFile = findItemFile(id);
+    if (!itemFile) return null;
+    // 接受 .md / .txt（与 collated_edition/text 对应：bundle 时 .md → .txt）
+    const candidates = [file];
+    if (file.endsWith('.txt')) candidates.unshift(file.replace(/\.txt$/, '.md'));
+    if (file.endsWith('.md')) candidates.push(file.replace(/\.md$/, '.txt'));
+    for (const f of candidates) {
+        const filePath = path.join(path.dirname(itemFile), id, 'full_text', f);
+        if (fs.existsSync(filePath)) {
+            try {
+                return fs.readFileSync(filePath, 'utf-8');
+            } catch {
+                return null;
+            }
+        }
+    }
+    return null;
+}
+
 // ── Collection catalog ──
 
 interface CatalogVolumeInfo {

@@ -1,6 +1,6 @@
 {
   "name": "kaiyuanguji-web",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "private": true,
   "scripts": {
     "sync-css": "bash scripts/sync-webtex-css.sh",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",
     "@xyflow/react": "^12.10.2",
-    "book-index-ui": "^0.3.1",
+    "book-index-ui": "^0.4.0",
     "gray-matter": "^4.0.3",
     "minisearch": "^7.2.0",
     "next": "^16.1.4",

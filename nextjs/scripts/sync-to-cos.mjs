@@ -24,7 +24,7 @@
  *   DRY_RUN=1 node scripts/sync-to-cos.mjs    # 干跑
  */
 
-import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
@@ -98,7 +98,9 @@ function walk(dir, base = dir) {
             out.push(...walk(full, base));
         } else {
             const relative = full.slice(base.length + 1).split(/[\\/]/).join('/');
-            out.push({ full, relative, size: stat.size });
+            // mtimeMs: 取整到毫秒避免 fs 精度抖动；配合 bundle 端的 writeIfChanged
+            // 未变文件 mtime 不刷新，cache hit 跳过 md5 重算（节省 5-7 min / sync）
+            out.push({ full, relative, size: stat.size, mtimeMs: Math.floor(stat.mtimeMs) });
         }
     }
     return out;
@@ -288,6 +290,45 @@ function md5OfFile(path, size) {
     return hash.digest('hex');
 }
 
+// ─── MD5 缓存（mtime + size keyed） ───
+// 配合 bundle-data.mjs 的 writeIfChanged 使用：未变文件 mtime/size 不变 →
+// 直接复用上次的 md5，跳过 readFile + hash（232K 文件能从 7-8 min 压到 < 30s）。
+// Cache miss 时正常算 md5 并写回缓存。
+const HASH_CACHE_FILE = resolve(__dirname, '..', '.next', '.sync-hash-cache.json');
+
+function loadHashCache() {
+    try {
+        if (!existsSync(HASH_CACHE_FILE)) return new Map();
+        const raw = JSON.parse(readFileSync(HASH_CACHE_FILE, 'utf-8'));
+        return new Map(Object.entries(raw));
+    } catch (e) {
+        console.warn(`  hash cache load failed (${e.message}), starting fresh`);
+        return new Map();
+    }
+}
+
+function saveHashCache(cache) {
+    try {
+        mkdirSync(dirname(HASH_CACHE_FILE), { recursive: true });
+        const obj = Object.fromEntries(cache);
+        writeFileSync(HASH_CACHE_FILE, JSON.stringify(obj), 'utf-8');
+    } catch (e) {
+        console.warn(`  hash cache save failed (${e.message}), ignored`);
+    }
+}
+
+/** 查 cache，hit 返回缓存的 md5；miss 时计算并写回。 */
+function md5WithCache(file, cache) {
+    const key = file.relative;
+    const entry = cache.get(key);
+    if (entry && entry.size === file.size && entry.mtimeMs === file.mtimeMs) {
+        return { md5: entry.md5, hit: true };
+    }
+    const md5 = md5OfFile(file.full, file.size);
+    cache.set(key, { size: file.size, mtimeMs: file.mtimeMs, md5 });
+    return { md5, hit: false };
+}
+
 /** COS 服务端 copy-object —— 不走带宽，按 PUT 计费。 */
 async function copyOne(srcKey, destKey, attempt = 1) {
     try {
@@ -335,8 +376,11 @@ async function main() {
     }
 
     // 3) 计算本地 MD5 + 分流：already-uploaded / copy-from-prev / fresh-upload
-    console.log(`  computing local MD5s for ${files.length} files...`);
+    console.log(`  computing local MD5s for ${files.length} files (mtime cache enabled)...`);
     const tHash = Date.now();
+    const hashCache = loadHashCache();
+    const cacheSizeBefore = hashCache.size;
+    let cacheHits = 0;
     const toCopy = [];   // { srcKey, destKey, size }
     const toUpload = []; // file
     let alreadyDone = 0;
@@ -344,7 +388,8 @@ async function main() {
         const destKey = `${versionPrefix}/${f.relative}`;
         const localEtag = cur.map.get(f.relative);
         if (localEtag) { alreadyDone++; continue; }  // 已传过 → 跳
-        const localMd5 = md5OfFile(f.full, f.size);
+        const { md5: localMd5, hit } = md5WithCache(f, hashCache);
+        if (hit) cacheHits++;
         const prevEtag = prevEtags.get(f.relative);
         if (prevEtag && prevEtag === localMd5) {
             toCopy.push({ srcKey: `${prevPrefix}/${f.relative}`, destKey, size: f.size });
@@ -352,9 +397,11 @@ async function main() {
             toUpload.push(f);
         }
     }
+    saveHashCache(hashCache);
     const toCopyBytes = toCopy.reduce((s, f) => s + f.size, 0);
     const toUploadBytes = toUpload.reduce((s, f) => s + f.size, 0);
-    console.log(`  hashed ${files.length} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s`);
+    const hashed = files.length - alreadyDone;
+    console.log(`  hashed ${hashed} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s (cache hit ${cacheHits}/${hashed}, cache size ${cacheSizeBefore}→${hashCache.size})`);
     console.log(`  plan: ${alreadyDone} already · ${toCopy.length} copy-from-prev (${(toCopyBytes / 1024 / 1024).toFixed(1)} MB) · ${toUpload.length} upload (${(toUploadBytes / 1024 / 1024).toFixed(1)} MB)`);
 
     const failures = [];

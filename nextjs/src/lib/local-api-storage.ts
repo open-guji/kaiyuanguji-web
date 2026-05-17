@@ -97,6 +97,27 @@ export class LocalApiStorage implements IndexStorage {
         return res.json();
     }
 
+    async getCollatedJuanText(workId: string, juanFile: string): Promise<string | null> {
+        const res = await fetch(`${this.base}/collated/${encodeURIComponent(workId)}/${encodeURIComponent(juanFile)}/text`);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+    }
+
+    async getBookFullTextIndex(bookId: string) {
+        const res = await fetch(`${this.base}/book-fulltext/${encodeURIComponent(bookId)}`);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    }
+
+    async getBookFullTextChapter(bookId: string, file: string): Promise<string | null> {
+        const res = await fetch(`${this.base}/book-fulltext/${encodeURIComponent(bookId)}/${encodeURIComponent(file)}`);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+    }
+
     async getResourceProgress(): Promise<ResourceProgress | null> {
         const res = await fetch(`${this.base}/resource-progress`);
         if (res.status === 404) return null;

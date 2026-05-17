@@ -131,6 +131,25 @@ export async function GET(
             return json(index);
         }
 
+        case 'book-fulltext': {
+            const id = slug[1];
+            if (!id) return json({ error: 'Missing id' }, 400);
+            const file = slug[2];
+
+            if (file) {
+                const text = localData.getBookFullTextChapter(
+                    decodeURIComponent(id),
+                    decodeURIComponent(file),
+                );
+                if (text === null) return json({ error: 'Not found' }, 404);
+                return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+            }
+
+            const index = localData.getBookFullTextIndex(decodeURIComponent(id));
+            if (!index) return json({ error: 'Not found' }, 404);
+            return json(index);
+        }
+
         case 'work-catalog': {
             const id = slug[1];
             if (!id) return json({ error: 'Missing id' }, 400);

@@ -45,9 +45,24 @@ function readJson(path) {
     return JSON.parse(readFileSync(path, 'utf-8'));
 }
 
+/**
+ * 写文件：若已存在且字节完全相同则跳过（mtime 不刷新）。
+ * 配合 sync-to-cos.mjs 的 mtime-based hash cache 使用：
+ * 未变文件 mtime 不变 → cache hit → 跳过 MD5 计算 → sync 提速 90%。
+ */
+function writeIfChanged(path, data, encoding = 'utf-8') {
+    const buf = Buffer.isBuffer(data) ? data : Buffer.from(data, encoding);
+    if (existsSync(path)) {
+        const old = readFileSync(path);
+        if (old.length === buf.length && old.equals(buf)) return false;
+    }
+    writeFileSync(path, buf);
+    return true;
+}
+
 function writeJson(path, data) {
     mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, JSON.stringify(data), 'utf-8');
+    writeIfChanged(path, JSON.stringify(data));
 }
 
 function ensureDir(dir) {
@@ -67,7 +82,14 @@ function copyDirRecursive(src, dest) {
             copyDirRecursive(srcPath, join(dest, name));
         } else {
             const destName = name.endsWith('.md') ? name.slice(0, -3) + '.txt' : name;
-            copyFileSync(srcPath, join(dest, destName));
+            const destPath = join(dest, destName);
+            // 与 writeIfChanged 同效：内容相同则不动 mtime（sync 端 cache 用）
+            const buf = readFileSync(srcPath);
+            if (existsSync(destPath)) {
+                const old = readFileSync(destPath);
+                if (old.length === buf.length && old.equals(buf)) continue;
+            }
+            writeFileSync(destPath, buf);
         }
     }
 }
@@ -165,8 +187,13 @@ function bundleL1() {
                     if (item.has_image) detail.has_image = true;
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
+                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json
+                    if (item.type === 'book' || typeName === 'books') {
+                        const ftIdx = join(baseDir, dirname(path), id, 'full_text', 'index.json');
+                        if (existsSync(ftIdx)) detail.has_full_text = true;
+                    }
                     const json = JSON.stringify(detail);
-                    writeFileSync(join(entryDir, `${id}.json`), json, 'utf-8');
+                    writeIfChanged(join(entryDir, `${id}.json`), json);
                     totalEntries++;
                     totalBytes += Buffer.byteLength(json);
                 } catch (e) {
@@ -283,7 +310,7 @@ function bundleExtraFiles() {
         const src = join(DRAFT_DIR, fname);
         if (existsSync(src)) {
             const data = readFileSync(src, 'utf-8');
-            writeFileSync(join(OUT_DIR, fname), data, 'utf-8');
+            writeIfChanged(join(OUT_DIR, fname), data);
             const size = (Buffer.byteLength(data) / 1024).toFixed(0);
             console.log(`EX  ${fname} copied (${size} KB)`);
         } else {
@@ -326,7 +353,7 @@ function bundleExtraFiles() {
             }
         }
         const data = JSON.stringify(rec);
-        writeFileSync(join(OUT_DIR, 'recommended.json'), data, 'utf-8');
+        writeIfChanged(join(OUT_DIR, 'recommended.json'), data);
         const size = (Buffer.byteLength(data) / 1024).toFixed(1);
         console.log(`EX  recommended.json hydrated (${hydrated} items + ${missed} missed, ${size} KB)`);
     } else {
