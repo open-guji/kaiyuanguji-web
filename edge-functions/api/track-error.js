@@ -45,20 +45,23 @@ function clip(s, n) {
   return s.length > n ? s.slice(0, n) : s;
 }
 
-// 真实客户端 IP / 地理：前端拿不到，从 EdgeOne 注入的请求头取，做多重 fallback。
-// 注意：EdgeOne 实际 header 名以线上抓包为准，部署后用 task 3.A 校验后再定稿。
+// 真实客户端 IP / 地理：前端拿不到。EdgeOne Pages Functions 把客户端信息挂在
+// request.eo 上（request.eo.clientIp + request.eo.geo），header 作兜底。
 function getClientMeta(request) {
+  const eo = request.eo || {};
+  const geo = eo.geo || {};
   const h = request.headers;
   const xff = h.get('x-forwarded-for') || '';
   const ip =
+    eo.clientIp ||
     h.get('eo-client-ip') ||
-    h.get('eo-connecting-ip') ||
     (xff ? xff.split(',')[0].trim() : '') ||
-    h.get('remote-host') ||
     '';
-  const country = h.get('eo-ip-country') || h.get('eo-geo-country') || '';
-  const region = h.get('eo-ip-region') || h.get('eo-geo-region') || '';
-  return { ip, geo: [country, region].filter(Boolean).join('/') };
+  const geoStr = [
+    geo.countryName || geo.countryCodeAlpha2 || geo.country,
+    geo.regionName || geo.region || geo.cityName,
+  ].filter(Boolean).join('/');
+  return { ip, geo: geoStr };
 }
 
 // --- 上报：写入一条错误记录 ---
@@ -125,6 +128,14 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({ success: false, error: '未授权' }), {
         status: 401, headers,
       });
+    }
+
+    // 调试：?debug=eo 返回 request.eo 原始结构 + headers，用于确认 IP/地理字段名（token 保护）
+    if (url.searchParams.get('debug') === 'eo') {
+      return new Response(JSON.stringify({
+        eo: context.request.eo || null,
+        headers: Object.fromEntries(context.request.headers),
+      }, null, 2), { status: 200, headers });
     }
 
     const kv = getKV();
