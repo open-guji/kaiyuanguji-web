@@ -3,6 +3,7 @@ import { Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
+import ErrorMonitor from "@/components/common/ErrorMonitor";
 
 const notoSerif = Noto_Serif_SC({
   subsets: ["latin"],
@@ -74,6 +75,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`antialiased ${notoSerif.variable}`}>
+        <ErrorMonitor />
         <SourceProvider>
           {children}
         </SourceProvider>

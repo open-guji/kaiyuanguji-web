@@ -17,6 +17,7 @@ import type { IndexStorage } from 'book-index-ui/storage';
 import { extractType } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
 import { buildPromotionMap } from './promotions';
+import { reportError, setRelease } from './error-report';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
 
@@ -40,6 +41,7 @@ export function resolveCosVersion(): Promise<string> {
             })
             .then((j: { commitId?: string }) => {
                 if (!j.commitId) throw new Error('latest.json missing commitId');
+                setRelease(j.commitId); // 把数据版本附到后续错误上报里
                 return j.commitId;
             })
             .catch(err => {
@@ -140,8 +142,15 @@ export function createCosStorage(): IndexStorage {
             cached = (async () => {
                 const url = await withCacheBust(`entry/${encodeURIComponent(canonicalId)}.json`);
                 const res = await fetch(url, { cache: 'force-cache' });
-                if (res.status === 404) return null;
-                if (!res.ok) throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
+                if (res.status === 404) {
+                    // 多为坏链 / 引用了不存在的 ID；查看页可按 status=404 过滤掉看真错误
+                    reportError({ kind: 'fetch', message: `entry 不存在 (404)`, resource: canonicalId, status: 404 });
+                    return null;
+                }
+                if (!res.ok) {
+                    reportError({ kind: 'fetch', message: `entry 拉取失败: HTTP ${res.status}`, resource: canonicalId, status: res.status });
+                    throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
+                }
                 return res.json();
             })();
             entryCache.set(canonicalId, cached);
