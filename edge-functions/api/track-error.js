@@ -77,6 +77,29 @@ export async function onRequestPost(context) {
     }
 
     const body = await context.request.json();
+
+    // action: 'update' → 标记处理状态（管理操作，需 token；与公开上报区分）
+    if (body.action === 'update') {
+      const viewToken = getViewToken();
+      if (viewToken && body.token !== viewToken) {
+        return new Response(JSON.stringify({ success: false, error: '未授权' }), { status: 401, headers });
+      }
+      if (!body.id || !/^err_/.test(body.id)) {
+        return new Response(JSON.stringify({ success: false, error: '无效的 id' }), { status: 400, headers });
+      }
+      if (!['open', 'resolved'].includes(body.state)) {
+        return new Response(JSON.stringify({ success: false, error: '无效的 state' }), { status: 400, headers });
+      }
+      const rec = await kv.get(body.id, 'json');
+      if (!rec) {
+        return new Response(JSON.stringify({ success: false, error: '记录不存在' }), { status: 404, headers });
+      }
+      rec.state = body.state;
+      rec.updatedAt = new Date().toISOString();
+      await kv.put(body.id, JSON.stringify(rec), { expirationTtl: RECORD_TTL_SECONDS });
+      return new Response(JSON.stringify({ success: true, item: rec }), { status: 200, headers });
+    }
+
     const message = clip(body.message, MAX_MESSAGE);
     if (!message) {
       return new Response(JSON.stringify({ success: false, error: 'message 不能为空' }), {
@@ -96,6 +119,7 @@ export async function onRequestPost(context) {
       source: clip(body.source, 300),         // file:line:col（JS 错误）
       resource: clip(body.resource, 300),     // fetch 失败的资源 id/url
       status: typeof body.status === 'number' ? body.status : null,
+      state: 'open',                          // 处理状态：open | resolved（与上面 HTTP status 区分）
       release: clip(body.release, 60),        // 构建版本（version.json commit），便于归因
       ua: clip(context.request.headers.get('user-agent'), 300),
       clientIp: ip,                           // 服务端取，可信

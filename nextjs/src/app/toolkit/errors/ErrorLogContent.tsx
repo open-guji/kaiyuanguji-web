@@ -10,7 +10,8 @@ interface ErrorRecord {
   pageUrl?: string;
   source?: string;
   resource?: string;
-  status?: number | null;
+  status?: number | null; // HTTP 状态码（fetch 失败时）
+  state?: string; // 处理状态：open | resolved
   release?: string;
   ua?: string;
   clientIp?: string;
@@ -32,20 +33,24 @@ function fmtTime(iso: string): string {
 }
 
 export default function ErrorLogContent() {
+  const [token, setToken] = useState('');
   const [items, setItems] = useState<ErrorRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [kindFilter, setKindFilter] = useState('');
   const [hideNotFound, setHideNotFound] = useState(true); // 默认隐藏 404 噪音（多为坏链）
+  const [hideResolved, setHideResolved] = useState(true); // 默认隐藏已处理
+  const [updatingId, setUpdatingId] = useState('');
 
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get('token') || '';
-    if (!token) {
+    const t = new URLSearchParams(window.location.search).get('token') || '';
+    setToken(t);
+    if (!t) {
       setError('缺少 token。请用 /toolkit/errors?token=<ERROR_VIEW_TOKEN> 访问。');
       setLoading(false);
       return;
     }
-    fetch(`/api/track-error?token=${encodeURIComponent(token)}&limit=200`)
+    fetch(`/api/track-error?token=${encodeURIComponent(t)}&limit=200`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setItems(data.items || []);
@@ -55,31 +60,48 @@ export default function ErrorLogContent() {
       .finally(() => setLoading(false));
   }, []);
 
-  const kinds = useMemo(
-    () => Array.from(new Set(items.map((i) => i.kind))).sort(),
-    [items],
-  );
+  async function markState(id: string, state: 'open' | 'resolved') {
+    setUpdatingId(id);
+    try {
+      const res = await fetch('/api/track-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', id, state, token }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, state } : it)));
+      } else {
+        alert(data.error || '操作失败');
+      }
+    } catch {
+      alert('网络错误');
+    } finally {
+      setUpdatingId('');
+    }
+  }
+
+  const kinds = useMemo(() => Array.from(new Set(items.map((i) => i.kind))).sort(), [items]);
 
   const filtered = useMemo(
     () =>
       items.filter((it) => {
         if (kindFilter && it.kind !== kindFilter) return false;
         if (hideNotFound && it.status === 404) return false;
+        if (hideResolved && it.state === 'resolved') return false;
         return true;
       }),
-    [items, kindFilter, hideNotFound],
+    [items, kindFilter, hideNotFound, hideResolved],
   );
 
-  const notFoundCount = useMemo(
-    () => items.filter((i) => i.status === 404).length,
-    [items],
-  );
+  const resolvedCount = useMemo(() => items.filter((i) => i.state === 'resolved').length, [items]);
+  const notFoundCount = useMemo(() => items.filter((i) => i.status === 404).length, [items]);
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 20px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>错误日志</h1>
       <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
-        前端上报的 JS 异常 / 资源失败 / fetch 失败（保留约 30 天）。
+        前端上报的 JS 异常 / 资源失败 / fetch 失败（保留约 30 天）。处理完可标记「已处理」归档。
       </p>
 
       {error ? (
@@ -116,6 +138,14 @@ export default function ErrorLogContent() {
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <input
                 type="checkbox"
+                checked={hideResolved}
+                onChange={(e) => setHideResolved(e.target.checked)}
+              />
+              隐藏已处理（{resolvedCount} 条）
+            </label>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="checkbox"
                 checked={hideNotFound}
                 onChange={(e) => setHideNotFound(e.target.checked)}
               />
@@ -130,72 +160,104 @@ export default function ErrorLogContent() {
             <div style={{ textAlign: 'center', padding: '40px 0', color: '#6b7280' }}>无记录</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {filtered.map((it) => (
-                <div
-                  key={it.id}
-                  style={{
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    padding: '14px 16px',
-                    fontSize: '13px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span
-                      style={{
-                        background: KIND_COLORS[it.kind] || '#6b7280',
-                        color: '#fff',
-                        borderRadius: '4px',
-                        padding: '1px 8px',
-                        fontSize: '12px',
-                      }}
-                    >
-                      {it.kind}
-                    </span>
-                    {typeof it.status === 'number' && (
-                      <span style={{ color: it.status >= 500 ? '#ef4444' : '#6b7280' }}>
-                        HTTP {it.status}
-                      </span>
-                    )}
-                    <span style={{ color: '#9ca3af', marginLeft: 'auto' }}>{fmtTime(it.createdAt)}</span>
-                  </div>
-
-                  <div style={{ fontWeight: 500, marginBottom: '6px', wordBreak: 'break-word' }}>
-                    {it.message}
-                  </div>
-
-                  <div style={{ color: '#6b7280', lineHeight: 1.7, wordBreak: 'break-all' }}>
-                    {it.resource && <div>资源：{it.resource}</div>}
-                    {it.source && <div>位置：{it.source}</div>}
-                    {it.pageUrl && <div>页面：{it.pageUrl}</div>}
-                    <div>
-                      {it.clientIp && <span>IP：{it.clientIp}　</span>}
-                      {it.geo && <span>地区：{it.geo}　</span>}
-                      {it.release && <span>版本：{it.release}</span>}
-                    </div>
-                    {it.ua && <div style={{ color: '#9ca3af' }}>UA：{it.ua}</div>}
-                  </div>
-
-                  {it.stack && (
-                    <details style={{ marginTop: '8px' }}>
-                      <summary style={{ cursor: 'pointer', color: '#3b82f6' }}>堆栈</summary>
-                      <pre
+              {filtered.map((it) => {
+                const resolved = it.state === 'resolved';
+                return (
+                  <div
+                    key={it.id}
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '14px 16px',
+                      fontSize: '13px',
+                      opacity: resolved ? 0.6 : 1,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span
                         style={{
-                          marginTop: '6px',
-                          padding: '10px',
-                          background: '#f9fafb',
-                          borderRadius: '6px',
-                          overflow: 'auto',
+                          background: KIND_COLORS[it.kind] || '#6b7280',
+                          color: '#fff',
+                          borderRadius: '4px',
+                          padding: '1px 8px',
                           fontSize: '12px',
-                          whiteSpace: 'pre-wrap',
                         }}
                       >
-                        {it.stack}
-                      </pre>
-                    </details>
-                  )}
-                </div>
-              ))}
+                        {it.kind}
+                      </span>
+                      {typeof it.status === 'number' && (
+                        <span style={{ color: it.status >= 500 ? '#ef4444' : '#6b7280' }}>
+                          HTTP {it.status}
+                        </span>
+                      )}
+                      {resolved && (
+                        <span
+                          style={{
+                            background: '#d1fae5',
+                            color: '#065f46',
+                            borderRadius: '4px',
+                            padding: '1px 8px',
+                            fontSize: '12px',
+                          }}
+                        >
+                          已处理
+                        </span>
+                      )}
+                      <span style={{ color: '#9ca3af', marginLeft: 'auto' }}>{fmtTime(it.createdAt)}</span>
+                      <button
+                        onClick={() => markState(it.id, resolved ? 'open' : 'resolved')}
+                        disabled={updatingId === it.id}
+                        style={{
+                          border: '1px solid #d1d5db',
+                          background: '#fff',
+                          borderRadius: '6px',
+                          padding: '3px 10px',
+                          fontSize: '12px',
+                          cursor: updatingId === it.id ? 'default' : 'pointer',
+                          color: resolved ? '#6b7280' : '#065f46',
+                        }}
+                      >
+                        {updatingId === it.id ? '…' : resolved ? '重新打开' : '标记已处理'}
+                      </button>
+                    </div>
+
+                    <div style={{ fontWeight: 500, marginBottom: '6px', wordBreak: 'break-word' }}>
+                      {it.message}
+                    </div>
+
+                    <div style={{ color: '#6b7280', lineHeight: 1.7, wordBreak: 'break-all' }}>
+                      {it.resource && <div>资源：{it.resource}</div>}
+                      {it.source && <div>位置：{it.source}</div>}
+                      {it.pageUrl && <div>页面：{it.pageUrl}</div>}
+                      <div>
+                        {it.clientIp && <span>IP：{it.clientIp}　</span>}
+                        {it.geo && <span>地区：{it.geo}　</span>}
+                        {it.release && <span>版本：{it.release}</span>}
+                      </div>
+                      {it.ua && <div style={{ color: '#9ca3af' }}>UA：{it.ua}</div>}
+                    </div>
+
+                    {it.stack && (
+                      <details style={{ marginTop: '8px' }}>
+                        <summary style={{ cursor: 'pointer', color: '#3b82f6' }}>堆栈</summary>
+                        <pre
+                          style={{
+                            marginTop: '6px',
+                            padding: '10px',
+                            background: '#f9fafb',
+                            borderRadius: '6px',
+                            overflow: 'auto',
+                            fontSize: '12px',
+                            whiteSpace: 'pre-wrap',
+                          }}
+                        >
+                          {it.stack}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
