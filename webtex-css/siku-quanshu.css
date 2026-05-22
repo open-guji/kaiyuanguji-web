@@ -1,0 +1,33 @@
+/* ========================================
+   四库全书 (Siku Quanshu) - 黑白版
+   Classic ancient Chinese book style
+   ======================================== */
+
+:root {
+  --wtc-n-rows: 21;
+  --wtc-n-cols: 8;
+  --wtc-margin-top: 50px;
+  --wtc-margin-bottom: 30px;
+  --wtc-margin-left: 40px;
+  --wtc-margin-right: 40px;
+
+  --wtc-font-size: 22px;
+  --wtc-line-height: 1.8;
+  --wtc-letter-spacing-ratio: 0.02;
+  --wtc-letter-spacing: calc(var(--wtc-letter-spacing-ratio) * 1em);
+  --wtc-font-color: #1a1a1a;
+
+  --wtc-border-thickness: 0.4px;
+  --wtc-border-color: #333;
+  --wtc-outer-border-thickness: 3px;
+  --wtc-outer-border-sep: 3px;
+  --wtc-border-padding-top: 5px;
+  --wtc-border-padding-bottom: 5px;
+
+  --wtc-page-background: #fff;
+
+  --wtc-sidenote-color: #c00;
+  --wtc-meipi-color: #c00;
+  --wtc-pizhu-color: #c00;
+  --wtc-emphasis-color: #c00;
+}

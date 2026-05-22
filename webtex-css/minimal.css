@@ -1,0 +1,26 @@
+/* ========================================
+   极简模板 (Minimal)
+   No borders, no decorations, clean layout
+   ======================================== */
+
+:root {
+  --wtc-page-width: 800px;
+  --wtc-page-height: auto;
+
+  --wtc-font-size: 18px;
+  --wtc-line-height: 1.8;
+  --wtc-font-color: #333;
+
+  --wtc-border-thickness: 0;
+  --wtc-outer-border-thickness: 0;
+  --wtc-outer-border-sep: 0;
+
+  --wtc-page-background: #fff;
+
+  --wtc-banxin-width: 0px;
+
+  --wtc-sidenote-color: #666;
+  --wtc-meipi-color: #666;
+  --wtc-pizhu-color: #666;
+  --wtc-emphasis-color: #333;
+}

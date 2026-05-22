@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagefind 全文搜索测试（t2s 归一化）</title>
+    <style>
+        body { font-family: 'Noto Serif CJK SC', serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; }
+        h2 { margin-top: 1.5em; border-bottom: 1px solid #ccc; padding-bottom: 0.3em; }
+        .hit { padding: 0.5em 0.8em; margin: 0.3em 0; background: #f7f9fb; border-radius: 4px; border-left: 3px solid #2980b9; }
+        .meta { color: #666; font-size: 0.85em; }
+        .excerpt { color: #333; font-size: 0.9em; line-height: 1.6; margin-top: 0.3em; }
+        .stats { color: #888; font-size: 0.85em; }
+        .timing { color: #c0392b; font-weight: bold; }
+        mark { background: #ffeb3b; padding: 0 2px; }
+        .pair { display: flex; gap: 1em; }
+        .pair > div { flex: 1; }
+        .symm-bad { background: #ffebee; }
+        .symm-ok { background: #e8f5e9; }
+    </style>
+</head>
+<body>
+    <h1>Pagefind 全文搜索测试 (t2s 索引侧归一化)</h1>
+    <p>测试集：111,023 段整理本正文（来自 1,239 部古籍）。索引侧已经 t2s → 简体。查询侧也 t2s 归一化。<br>
+    <strong>目标</strong>：简繁对称（同 phrase 两种写法应当返回完全一致的命中数）。</p>
+    <div id="output">加载中...</div>
+
+    <script type="module">
+        const opencc = await import('https://esm.sh/opencc-js@1.0.5');
+        const t2s = opencc.Converter({ from: 't', to: 'cn' });
+
+        const out = document.getElementById('output');
+        out.innerHTML = '';
+        function append(html) { out.insertAdjacentHTML('beforeend', html); }
+
+        const pagefind = await import('/data/pagefind-fulltext/pagefind.js');
+        await pagefind.options({ baseUrl: '/data/' });
+
+        // 对称性测试：每对 (繁, 简) 期望返回相同总数
+        const pairs = [
+            ['太史公曰', '太史公曰'],      // 已经是简繁同形
+            ['六藝', '六艺'],
+            ['詩經', '诗经'],
+            ['尚書', '尚书'],
+            ['漢書', '汉书'],
+            ['周易', '周易'],
+            ['春秋', '春秋'],
+            ['楚辭', '楚辞'],
+            ['朱熹', '朱熹'],
+            ['司馬遷', '司马迁'],
+            ['韓非', '韩非'],
+            ['孟子', '孟子'],
+            ['四庫全書', '四库全书'],
+            ['經部總敍', '经部总叙'],
+        ];
+
+        // 单独查询测试（看 top 结果质量）
+        const showcase = [
+            '太史公曰',
+            '不知其所以然',
+            '王應麟',
+            '經部',
+        ];
+
+        async function searchAndCount(q) {
+            const t = performance.now();
+            const r = await pagefind.search(q);
+            return { total: r.results.length, ms: performance.now() - t, results: r.results };
+        }
+
+        append('<h2>对称性测试（简/繁返回相同 count = ✓ 对称）</h2>');
+        let symmOk = 0, symmTotal = 0;
+        for (const [t, s] of pairs) {
+            const qt = t2s(t);
+            const qs = t2s(s);
+            const rt = await searchAndCount(qt);
+            const rs = await searchAndCount(qs);
+            const ok = rt.total === rs.total;
+            symmTotal++;
+            if (ok) symmOk++;
+            append(`<div class="hit ${ok ? 'symm-ok' : 'symm-bad'}">
+              查询 繁=<code>${t}</code>→<code>${qt}</code> · 简=<code>${s}</code>→<code>${qs}</code><br>
+              <span class="stats">繁: ${rt.total} 条 (${rt.ms.toFixed(0)}ms) · 简: ${rs.total} 条 (${rs.ms.toFixed(0)}ms) · ${ok ? '✓ 对称' : '✗ 不对称'}</span>
+            </div>`);
+        }
+        append(`<p><strong>对称率：${symmOk} / ${symmTotal}</strong></p>`);
+
+        append('<h2>查询质量样本（top 5 命中，含原文摘要）</h2>');
+        for (const q of showcase) {
+            const qn = t2s(q);
+            const r = await searchAndCount(qn);
+            append(`<h3>查询: <code>${q}</code>${qn !== q ? ` (→${qn})` : ''} — ${r.total} 条 (${r.ms.toFixed(0)}ms)</h3>`);
+            for (const hit of r.results.slice(0, 5)) {
+                const d = await hit.data();
+                const m = d.meta || {};
+                append(`<div class="hit">
+                  <strong>${m.work_title || ''} · ${m.juan || ''} · ${m.title || ''}</strong>
+                  <span class="meta">${m.work_author ? '· ' + m.work_author : ''}${m.work_dynasty ? ' · ' + m.work_dynasty : ''}</span>
+                  <div class="excerpt">${d.excerpt || '(无 excerpt)'}</div>
+                </div>`);
+            }
+        }
+
+        append('<h2>测试完成 ✓</h2>');
+        window.PAGEFIND_TEST_DONE = true;
+    </script>
+</body>
+</html>
