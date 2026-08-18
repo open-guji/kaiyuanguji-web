@@ -1,33 +1,84 @@
 @import "tailwindcss";
 
-/* 默认配色（中性色调） */
+/* =========================================================
+   开源古籍 · 设计 token（新版视觉：宣纸 / 墨夜）
+   ---------------------------------------------------------
+   迁移说明：
+   - token 名称沿用旧版（paper / ink / vermilion / secondary /
+     border / nav-*），只替换取值，使现有组件零改动继承新配色。
+   - 新增 surface / surface-border / vermilion-deep / accent-gold /
+     muted 等分层色，供新版外壳与卡片使用。
+   - 深色（墨夜）调色板已在下方定义完毕，但**尚未挂切换入口**：
+     book-index-ui 内部仍有硬编码颜色，待其换肤完成后再开放切换，
+     避免出现半深半浅的割裂状态。
+   ========================================================= */
+
 @theme {
-  /* 颜色 */
-  --color-paper: #f9fafb;
-  --color-ink: #111827;
-  --color-vermilion: #8B0000;
-  --color-secondary: #6b7280;
-  --color-border: #e5e7eb;
+  /* ---- 基础色（宣纸 / 浅色，默认） ---- */
+  --color-paper: #faf7f2;          /* 页面底色 */
+  --color-surface: #ffffff;        /* 卡片/浮层 */
+  --color-surface-border: #e6dfd3; /* 卡片描边 */
+  --color-ink: #26211c;            /* 正文墨色 */
+  --color-secondary: #6b6156;      /* 次要文字（旧名保留） */
+  --color-border: #e2dacd;         /* 通用分隔线 */
 
-  /* 导航栏古籍配色 */
-  --color-nav-bg: #F5F2E9;
-  --color-nav-ink: #2C2C2C;
-  --color-nav-vermilion: #8B0000;
-  --color-nav-border: #D4CFC0;
+  /* ---- 强调色 ---- */
+  --color-vermilion: #9e2a2b;      /* 朱砂（主强调） */
+  --color-vermilion-deep: #7a1c1f; /* 朱砂（hover/按压） */
+  --color-accent-gold: #a37b43;    /* 泥金（点缀） */
 
-  /* 字体 */
-  --font-serif: var(--font-noto-serif), "SimSun", "Songti SC", "STSong", "Noto Serif SC", serif;
+  /* ---- 导航栏（旧名保留，取值对齐新版） ---- */
+  --color-nav-bg: #faf7f2;
+  --color-nav-ink: #26211c;
+  --color-nav-vermilion: #9e2a2b;
+  --color-nav-border: #e2dacd;
+
+  /* ---- 字体：全站宋体 ---- */
+  --font-serif: var(--font-noto-serif), "Songti SC", "Songti TC", "STSong",
+    "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "PMingLiU", serif;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
 
-  /* 响应式断点 */
+  /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
   --breakpoint-tablet: 900px;
   --breakpoint-desktop: 1200px;
 
-  /* 最大内容宽度 */
+  /* ---- 最大内容宽度 ---- */
   --max-width-content: 800px;
   --max-width-content-tablet: 600px;
+}
+
+/* ---------- 非 Tailwind token（阴影 / 圆角 / 动效曲线） ---------- */
+:root {
+  --shadow-soft: 0 8px 24px rgba(60, 50, 40, 0.08);
+  --shadow-lift: 0 14px 30px rgba(158, 42, 43, 0.12);
+  --radius-card: 12px;
+  --radius-pill: 6px;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- 深色（墨夜）调色板 ----------
+   已就绪，等 book-index-ui 换肤完成后开放 data-theme 切换。 */
+[data-theme="dark"] {
+  --color-paper: #181512;
+  --color-surface: #221e19;
+  --color-surface-border: #3a332b;
+  --color-ink: #f3ece1;
+  --color-secondary: #a2968a;
+  --color-border: #38312a;
+
+  --color-vermilion: #d9534f;
+  --color-vermilion-deep: #b23a37;
+  --color-accent-gold: #c9a15c;
+
+  --color-nav-bg: #181512;
+  --color-nav-ink: #f3ece1;
+  --color-nav-vermilion: #d9534f;
+  --color-nav-border: #38312a;
+
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 14px 30px rgba(0, 0, 0, 0.45);
 }
 
 /* 全局基础样式 */
@@ -37,11 +88,14 @@
   }
 
   body {
-    background-color: #ffffff;
+    background-color: var(--color-paper);
     color: var(--color-ink);
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.8;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   /* 链接默认样式 */
@@ -62,67 +116,121 @@
   h6 {
     color: var(--color-ink);
   }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-vermilion) 30%, transparent);
+  }
 }
 
-/* book-index-ui CSS 变量映射 */
+/* book-index-ui CSS 变量映射（组件库换肤接口） */
 :root {
-  --bim-bg: #ffffff;
+  --bim-bg: var(--color-surface);
   --bim-fg: var(--color-ink);
   --bim-desc-fg: var(--color-secondary);
-  --bim-primary: #8B0000;
+  --bim-primary: var(--color-vermilion);
   --bim-primary-fg: #fff;
-  --bim-input-bg: #fff;
+  --bim-input-bg: var(--color-surface);
   --bim-input-fg: var(--color-ink);
   --bim-input-border: var(--color-border);
   --bim-widget-border: var(--color-border);
 }
 
-/* 自定义组件样式 */
-@layer components {
-  /* 古籍风格卡片 */
-  .card {
-    background-color: white;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+/* ---------- 动效：入场与滚动进场 ---------- */
+@keyframes og-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
   }
-
-  /* 古籍风格按钮 */
-  .btn-primary {
-    background-color: var(--color-vermilion);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.2s;
-  }
-
-  .btn-primary:hover {
-    background-color: rgb(139 0 0 / 0.9);
-  }
-
-  .btn-outline {
-    border: 1px solid var(--color-vermilion);
-    color: var(--color-vermilion);
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.2s;
-  }
-
-  .btn-outline:hover {
-    background-color: rgb(139 0 0 / 0.1);
-  }
-
-  /* 标签样式 */
-  .tag {
-    display: inline-block;
-    padding: 0.125rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 0.25rem;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-/* 工具类 */
+@keyframes og-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 印章落款式入场（用于首页主标题） */
+@keyframes og-seal {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-6deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.94) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* 长卷缓慢横移 */
+@keyframes og-slow-pan {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-12%);
+  }
+}
+
 @layer utilities {
+  .anim-fade-up {
+    animation: og-fade-up 0.8s var(--ease-out-expo) both;
+  }
+
+  .anim-fade-in {
+    animation: og-fade-in 0.9s ease both;
+  }
+
+  .anim-seal {
+    animation: og-seal 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .anim-delay-1 {
+    animation-delay: 0.12s;
+  }
+  .anim-delay-2 {
+    animation-delay: 0.24s;
+  }
+  .anim-delay-3 {
+    animation-delay: 0.36s;
+  }
+  .anim-delay-4 {
+    animation-delay: 0.48s;
+  }
+
+  /* 滚动进场：由 useReveal 观察，进入视口时加 .in-view */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.75s var(--ease-out-expo),
+      transform 0.75s var(--ease-out-expo);
+  }
+
+  .reveal.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal-stagger.in-view > *:nth-child(2) {
+    transition-delay: 0.1s;
+  }
+  .reveal-stagger.in-view > *:nth-child(3) {
+    transition-delay: 0.2s;
+  }
+  .reveal-stagger.in-view > *:nth-child(4) {
+    transition-delay: 0.3s;
+  }
+
   /* 内容区域最大宽度 */
   .content-width {
     max-width: var(--max-width-content);
@@ -151,5 +259,64 @@
     font-size: 1.125rem;
     line-height: 2;
     letter-spacing: 0.025em;
+  }
+}
+
+/* 尊重「减少动态效果」系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up,
+  .anim-fade-in,
+  .anim-seal {
+    animation: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* 自定义组件样式 */
+@layer components {
+  /* 古籍风格卡片 */
+  .card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* 古籍风格按钮 */
+  .btn-primary {
+    background-color: var(--color-vermilion);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-vermilion-deep);
+  }
+
+  .btn-outline {
+    border: 1px solid var(--color-vermilion);
+    color: var(--color-vermilion);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    transition: background-color 0.2s;
+  }
+
+  .btn-outline:hover {
+    background-color: color-mix(in srgb, var(--color-vermilion) 10%, transparent);
+  }
+
+  /* 标签样式 */
+  .tag {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
   }
 }

@@ -3,84 +3,127 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import SourceToggle from '../common/SourceToggle';
-import { NAV_ITEMS } from '../../lib/constants';
+import { NAV_ITEMS, type NavItem } from '../../lib/constants';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
 }
 
+const linkBase = 'px-3 py-1.5 text-sm tracking-wide rounded-md transition-colors no-underline';
+
+const activeCls =
+  'text-[var(--color-nav-vermilion)] font-bold bg-[color-mix(in_srgb,var(--color-nav-vermilion)_10%,transparent)]';
+
+const idleCls =
+  'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] hover:bg-[color-mix(in_srgb,var(--color-nav-vermilion)_8%,transparent)]';
+
+/**
+ * 带下拉的导航项。
+ * 展开走 CSS group-hover / group-focus-within，键盘 Tab 也能展开，无需 JS 状态。
+ */
+function DropdownNavItem({ item, active }: { item: NavItem; active: boolean }) {
+  return (
+    <li className="group relative">
+      <Link
+        href={item.href}
+        className={`${linkBase} inline-flex items-center gap-1 ${active ? activeCls : idleCls}`}
+      >
+        {item.label}
+        <span
+          aria-hidden="true"
+          className="text-[0.6rem] transition-transform duration-200 group-hover:rotate-180"
+        >
+          ▼
+        </span>
+      </Link>
+
+      <ul
+        className="invisible absolute left-0 top-full z-50 min-w-[13rem] translate-y-2.5 list-none
+                   rounded-md border border-[var(--color-nav-border)] bg-[var(--color-surface)]
+                   py-1.5 opacity-0 shadow-[var(--shadow-soft)] transition-all duration-200
+                   group-hover:visible group-hover:translate-y-1 group-hover:opacity-100
+                   group-focus-within:visible group-focus-within:translate-y-1 group-focus-within:opacity-100"
+      >
+        {item.children?.map((child) => (
+          <li key={child.href}>
+            <Link
+              href={child.href}
+              className="block whitespace-nowrap px-5 py-2 text-sm leading-snug no-underline
+                         text-[var(--color-nav-ink)]
+                         hover:bg-[color-mix(in_srgb,var(--color-nav-vermilion)_10%,transparent)]
+                         hover:text-[var(--color-nav-vermilion)]"
+            >
+              {child.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+}
+
 export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/';
-    }
-    return pathname.startsWith(href);
-  };
+  const matches = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
-  const handleAnchorClick = (e: React.MouseEvent, href: string) => {
-    if (href.startsWith('#')) {
-      e.preventDefault();
-      const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
+  /** 父级在自身或任一子项命中时高亮 */
+  const isActive = (item: NavItem) =>
+    matches(item.href) || (item.children?.some((c) => matches(c.href)) ?? false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--color-nav-bg)] border-b border-[var(--color-nav-border)]">
+    <header
+      className="sticky top-0 z-50 border-b-2 border-[var(--color-nav-border)]
+                 bg-[color-mix(in_srgb,var(--color-nav-bg)_92%,transparent)]
+                 backdrop-blur-[10px]"
+    >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-10 items-center justify-between">
-          {/* Logo and Title */}
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <div className="flex h-14 items-center gap-4">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-2 no-underline transition-opacity hover:opacity-80"
+          >
             <Image
               src="/images/open-guji-logo.webp"
               alt="开源古籍 Logo"
-              width={24}
-              height={24}
-              className="h-6 w-6"
+              width={28}
+              height={28}
+              className="h-7 w-7"
             />
-            <span className="text-sm font-semibold text-[var(--color-nav-ink)] tracking-wide">
+            <span className="text-lg font-bold tracking-[0.2em] text-[var(--color-nav-ink)]">
               开源古籍
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => handleAnchorClick(e, item.href)}
-                  className={`
-                    px-3 py-1 text-xs tracking-wide transition-colors rounded-md
-                    ${isActive(item.href)
-                      ? 'text-[var(--color-nav-vermilion)] font-bold'
-                      : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
-                    }
-                  `}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+          {/* 桌面端导航：标签页居左，紧随 Logo */}
+          <ul className="hidden list-none items-center gap-1 md:flex">
+            {NAV_ITEMS.map((item) =>
+              item.children?.length ? (
+                <DropdownNavItem key={item.href} item={item} active={isActive(item)} />
+              ) : (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`${linkBase} ${isActive(item) ? activeCls : idleCls}`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            )}
+          </ul>
 
-            <div className="h-3 w-[1px] bg-[var(--color-nav-border)] mx-1" />
+          {/* 右侧操作区 */}
+          <div className="ml-auto flex items-center gap-2">
             <SourceToggle />
-          </div>
 
-          {/* Mobile Menu Button + Toggle */}
-          <div className="flex items-center gap-2 md:hidden">
-            <SourceToggle />
             <button
               onClick={onMobileMenuToggle}
-              className="p-2 text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] transition-colors"
+              className="p-2 text-[var(--color-nav-ink)] transition-colors
+                         hover:text-[var(--color-nav-vermilion)] md:hidden"
               aria-label="打开菜单"
             >
               <svg

@@ -43,14 +43,6 @@ export const DATA_SOURCE: DataSource =
   (isLocalMode ? 'local' : 'github');
 export const SOURCE_COOKIE_NAME = 'og_data_source';
 
-// 导航菜单
-export const NAV_ITEMS = [
-  { label: "首页", href: "/" },
-  { label: "路线图", href: "/roadmap" },
-  { label: "整理平台", href: "/assistant" },
-  { label: "古籍索引", href: "/book-index" },
-];
-
 // 路线图模块
 export const ROADMAP_MODULES = [
   {
@@ -88,6 +80,31 @@ export const ROADMAP_MODULES = [
     image: "/images/intelligence.webp",
     href: "/intelligence",
   },
+];
+
+// 导航菜单
+// 说明：只收录站内**已存在**的路由。带 children 的条目在桌面端展开为下拉，
+// 移动端展开为折叠分组；父级 href 本身仍可点击进入总览页。
+export interface NavItem {
+  label: string;
+  href: string;
+  children?: { label: string; href: string; description?: string }[];
+}
+
+export const NAV_ITEMS: NavItem[] = [
+  { label: "首页", href: "/" },
+  { label: "古籍索引", href: "/book-index" },
+  { label: "整理平台", href: "/assistant" },
+  {
+    label: "路线图",
+    href: "/roadmap",
+    children: ROADMAP_MODULES.map((m) => ({
+      label: m.title,
+      href: m.href,
+      description: m.description,
+    })),
+  },
+  { label: "反馈", href: "/feedback" },
 ];
 
 // 资源类型标签
