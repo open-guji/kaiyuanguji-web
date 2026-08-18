@@ -45,19 +45,29 @@ function DropdownNavItem({ item, active }: { item: NavItem; active: boolean }) {
                    group-hover:visible group-hover:translate-y-1 group-hover:opacity-100
                    group-focus-within:visible group-focus-within:translate-y-1 group-focus-within:opacity-100"
       >
-        {item.children?.map((child) => (
-          <li key={child.href}>
-            <Link
-              href={child.href}
-              className="block whitespace-nowrap px-5 py-2 text-sm leading-snug no-underline
-                         text-[var(--color-nav-ink)]
-                         hover:bg-[color-mix(in_srgb,var(--color-nav-vermilion)_10%,transparent)]
-                         hover:text-[var(--color-nav-vermilion)]"
-            >
-              {child.label}
-            </Link>
-          </li>
-        ))}
+        {item.children?.map((child, i) => {
+          // 同一 group 的第一项前面插入分组标题（如「词典」「韵书」）
+          const showGroup = child.group && child.group !== item.children?.[i - 1]?.group;
+          return (
+            <li key={child.href}>
+              {showGroup && (
+                <div className="px-5 pb-1 pt-2 text-[11px] font-bold tracking-wider text-[var(--color-secondary)]">
+                  {child.group}
+                </div>
+              )}
+              <Link
+                href={child.href}
+                className={`block whitespace-nowrap py-2 text-sm leading-snug no-underline
+                           text-[var(--color-nav-ink)]
+                           hover:bg-[color-mix(in_srgb,var(--color-nav-vermilion)_10%,transparent)]
+                           hover:text-[var(--color-nav-vermilion)]
+                           ${child.group ? 'pl-7 pr-5' : 'px-5'}`}
+              >
+                {child.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </li>
   );

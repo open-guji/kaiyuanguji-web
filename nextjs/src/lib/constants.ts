@@ -88,8 +88,57 @@ export const ROADMAP_MODULES = [
 export interface NavItem {
   label: string;
   href: string;
-  children?: { label: string; href: string; description?: string }[];
+  children?: { label: string; href: string; description?: string; group?: string }[];
 }
+
+// 小工具：词典 / 韵书
+// 当前均为占位页（功能尚未接入），页面会明确标注「建设中」，不呈现任何假数据。
+export interface ToolPageInfo {
+  slug: string;
+  title: string;
+  group: "词典" | "韵书";
+  icon: string;
+  /** 该工具建成后要做什么 */
+  intent: string;
+}
+
+export const TOOL_PAGES: ToolPageInfo[] = [
+  {
+    slug: "cidian-xiandai-hanyu",
+    title: "现代汉语词典",
+    group: "词典",
+    icon: "📘",
+    intent: "提供现代汉语释义，便于校对时核对今义与用字。",
+  },
+  {
+    slug: "cidian-gudai-hanyu",
+    title: "古代汉语词典",
+    group: "词典",
+    icon: "📜",
+    intent: "收录古籍常见字词的古义、通假与书证，服务古籍阅读与校对。",
+  },
+  {
+    slug: "cidian-kangxi",
+    title: "康熙字典",
+    group: "词典",
+    icon: "📖",
+    intent: "按部首检字，查异体字与古音古义，辅助识读生僻字。",
+  },
+  {
+    slug: "yunshu-hongwu-zhengyun",
+    title: "洪武正韵",
+    group: "韵书",
+    icon: "🎼",
+    intent: "查明代官修韵书的韵部归属，辅助韵文校勘。",
+  },
+  {
+    slug: "yunshu-guangyun",
+    title: "广韵",
+    group: "韵书",
+    icon: "🔔",
+    intent: "查中古音韵地位（声母、韵部、声调），辅助音韵研究。",
+  },
+];
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "首页", href: "/" },
@@ -102,6 +151,15 @@ export const NAV_ITEMS: NavItem[] = [
       label: m.title,
       href: m.href,
       description: m.description,
+    })),
+  },
+  {
+    label: "小工具",
+    href: "/tools",
+    children: TOOL_PAGES.map((t) => ({
+      label: t.title,
+      href: `/tools/${t.slug}`,
+      group: t.group,
     })),
   },
   { label: "反馈", href: "/feedback" },

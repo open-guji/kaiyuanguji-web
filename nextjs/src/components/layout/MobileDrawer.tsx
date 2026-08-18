@@ -11,6 +11,7 @@ const NAV_ICONS: Record<string, string> = {
   '/book-index': '📚',
   '/assistant': '🛠️',
   '/roadmap': '🗺️',
+  '/tools': '🧰',
   '/feedback': '💬',
 };
 
@@ -169,20 +170,32 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                     >
                       {item.label}总览
                     </Link>
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={onClose}
-                        className={`block py-2.5 pl-[4.25rem] pr-6 text-sm no-underline transition-colors ${
-                          matches(child.href)
-                            ? 'font-bold text-[var(--color-nav-vermilion)]'
-                            : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
-                        }`}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
+                    {item.children.map((child, i) => {
+                      const showGroup =
+                        child.group && child.group !== item.children?.[i - 1]?.group;
+                      return (
+                        <div key={child.href}>
+                          {showGroup && (
+                            <div className="pl-[4.25rem] pr-6 pb-0.5 pt-2 text-[11px] font-bold tracking-wider text-[var(--color-secondary)]">
+                              {child.group}
+                            </div>
+                          )}
+                          <Link
+                            href={child.href}
+                            onClick={onClose}
+                            className={`block py-2.5 pr-6 text-sm no-underline transition-colors ${
+                              child.group ? 'pl-[5.25rem]' : 'pl-[4.25rem]'
+                            } ${
+                              matches(child.href)
+                                ? 'font-bold text-[var(--color-nav-vermilion)]'
+                                : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
