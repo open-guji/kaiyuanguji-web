@@ -250,8 +250,8 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
 
     return (
         <div className="flex flex-col h-[calc(100vh-140px)] mt-4">
-            {/* Panel toggle toolbar */}
-            <div className="flex items-center justify-center gap-2 mb-3 px-1">
+            {/* 面板开关：设计稿的「签条」样式 */}
+            <div className="mb-3 flex items-center justify-center gap-2 px-1">
                 {[
                     { key: 'tex' as const, label: 'TeX 源码', icon: '{ }' },
                     { key: 'render' as const, label: '排版预览', icon: '◫' },
@@ -260,10 +260,11 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     <button
                         key={key}
                         onClick={() => togglePanel(key)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                        aria-pressed={panels[key]}
+                        className={`flex items-center gap-1.5 rounded-[var(--radius-pill)] border px-3.5 py-1.5 text-xs font-medium transition-all
                             ${panels[key]
-                                ? 'bg-ink/5 text-ink border border-border/60 shadow-sm'
-                                : 'bg-transparent text-secondary/50 border border-transparent hover:text-secondary hover:border-border/30'
+                                ? 'border-vermilion/40 bg-[color-mix(in_srgb,var(--color-vermilion)_10%,transparent)] text-vermilion'
+                                : 'border-border/50 bg-surface text-secondary hover:border-vermilion/30 hover:text-vermilion'
                             }`}
                     >
                         <span className="text-[11px]">{icon}</span>
@@ -275,7 +276,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
             {/* Panel grid — use CSS display to hide panels so DOM content is preserved */}
             <div className="grid gap-4 h-full pb-4 transition-all duration-300" style={{ gridTemplateColumns: `repeat(${visibleCount}, 1fr)` }}>
                 {/* Column 1: TeX Source */}
-                <div className="border border-border/60 rounded-xl overflow-hidden flex flex-col bg-white/50 shadow-sm" style={{ display: panels.tex ? undefined : 'none' }}>
+                <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.tex ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest flex items-center justify-between">
                         <span>TeX 源码</span>
                         <span className="text-[10px] opacity-50 font-mono">{assets.tex_files?.[0]}</span>
@@ -286,7 +287,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                 </div>
 
                 {/* Column 2: Rendered View */}
-                <div className="border border-border/60 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm" style={{ display: panels.render ? undefined : 'none' }}>
+                <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.render ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span>WebTeX 排版</span>
@@ -305,7 +306,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     </div>
                     <div
                         ref={renderContainerRef}
-                        className="flex-1 overflow-hidden bg-[#fafafa] relative"
+                        className="relative flex-1 overflow-hidden bg-paper"
                     >
                         <div
                             ref={scaleWrapperRef}
@@ -326,18 +327,18 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                 </div>
 
                 {/* Column 3: Images */}
-                <div className="border border-border/60 rounded-xl overflow-hidden flex flex-col bg-white/50 shadow-sm" style={{ display: panels.images ? undefined : 'none' }}>
+                <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.images ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest">
                         影印本影像
                     </div>
                     <div
                         ref={imagesRef}
-                        className="flex-1 overflow-hidden bg-[#fafafa]"
+                        className="flex-1 overflow-hidden bg-paper"
                     >
                         <div className="flex flex-col items-center justify-center h-full overflow-auto">
                             {imageManifest?.volumes?.[0]?.files?.[pageImages - 1] && (
                                 <div
-                                    className="flex flex-col items-center justify-center bg-white"
+                                    className="flex flex-col items-center justify-center bg-surface"
                                     style={{
                                         height: '100%',
                                         width: '100%',
@@ -361,18 +362,18 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
             </div>
 
             {/* Pagination Control Bar */}
-            <div className="flex items-center justify-center gap-6 px-4 py-3 bg-paper border border-border/60 rounded-xl shadow-inner-sm mt-2">
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 rounded-[var(--radius-card)] border border-border/60 bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
                 {/* Tex Controls */}
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mr-2">排版</span>
                     <button
                         onClick={() => goToPage('tex', pageTex - 1)}
                         disabled={pageTex <= 1}
-                        className="p-1 px-2 rounded bg-white border border-border/60 hover:bg-ink/5 disabled:opacity-30 transition-colors"
+                        className="rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 transition-colors hover:border-vermilion/40 hover:text-vermilion disabled:opacity-30 disabled:hover:border-border/60 disabled:hover:text-inherit"
                     >
                         ←
                     </button>
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-white border border-border/60 rounded text-sm font-mono">
+                    <div className="flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 font-mono text-sm">
                         <input
                             type="number"
                             value={pageTex}
@@ -385,7 +386,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     <button
                         onClick={() => goToPage('tex', pageTex + 1)}
                         disabled={pageTex >= texTotal}
-                        className="p-1 px-2 rounded bg-white border border-border/60 hover:bg-ink/5 disabled:opacity-30 transition-colors"
+                        className="rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 transition-colors hover:border-vermilion/40 hover:text-vermilion disabled:opacity-30 disabled:hover:border-border/60 disabled:hover:text-inherit"
                     >
                         →
                     </button>
@@ -401,7 +402,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all border
                         ${isSynced
                             ? 'bg-vermilion/10 text-vermilion border-vermilion/30 shadow-sm'
-                            : 'bg-ink/5 text-secondary border-border/60'}`}
+                            : 'bg-paper text-secondary border-border/60'}`}
                 >
                     <span className="text-sm">{isSynced ? '🔒' : '🔓'}</span>
                     同步锁定
@@ -413,11 +414,11 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     <button
                         onClick={() => goToPage('images', pageImages - 1)}
                         disabled={pageImages <= 1}
-                        className="p-1 px-2 rounded bg-white border border-border/60 hover:bg-ink/5 disabled:opacity-30 transition-colors"
+                        className="rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 transition-colors hover:border-vermilion/40 hover:text-vermilion disabled:opacity-30 disabled:hover:border-border/60 disabled:hover:text-inherit"
                     >
                         ←
                     </button>
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-white border border-border/60 rounded text-sm font-mono">
+                    <div className="flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 font-mono text-sm">
                         <input
                             type="number"
                             value={pageImages}
@@ -430,7 +431,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                     <button
                         onClick={() => goToPage('images', pageImages + 1)}
                         disabled={pageImages >= imagesTotal}
-                        className="p-1 px-2 rounded bg-white border border-border/60 hover:bg-ink/5 disabled:opacity-30 transition-colors"
+                        className="rounded-[var(--radius-pill)] border border-border/60 bg-paper px-2 py-1 transition-colors hover:border-vermilion/40 hover:text-vermilion disabled:opacity-30 disabled:hover:border-border/60 disabled:hover:text-inherit"
                     >
                         →
                     </button>
