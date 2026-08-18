@@ -20,7 +20,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       </h1>
     ),
     h2: ({ children, ...props }) => (
-      <h2 className="text-2xl font-bold text-ink mt-6 mb-3 tracking-wide" {...props}>
+      <h2 className="mt-8 mb-3 border-l-[3px] border-vermilion pl-3 text-2xl font-bold tracking-wide text-vermilion" {...props}>
         {children}
       </h2>
     ),
@@ -91,7 +91,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     ),
     blockquote: ({ children, ...props }) => (
       <blockquote
-        className="border-l-4 border-vermilion pl-4 py-2 my-4 italic text-secondary bg-paper"
+        className="my-4 rounded-r-[var(--radius-pill)] border-l-4 border-vermilion bg-[color-mix(in_srgb,var(--color-vermilion)_5%,var(--color-surface))] py-2 pl-4 pr-3 italic text-secondary"
         {...props}
       >
         {children}
@@ -115,19 +115,19 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       ),
     pre: ({ children }) => <div className="my-4">{children}</div>,
     table: ({ children, ...props }) => (
-      <div className="overflow-x-auto my-4">
-        <table className="min-w-full border-collapse border border-border" {...props}>
+      <div className="my-5 overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-soft)]">
+        <table className="min-w-full border-collapse" {...props}>
           {children}
         </table>
       </div>
     ),
     th: ({ children, ...props }) => (
-      <th className="border border-border bg-paper px-4 py-2 text-left font-semibold" {...props}>
+      <th className="border-b-2 border-border bg-[color-mix(in_srgb,var(--color-accent-gold)_8%,var(--color-surface))] px-4 py-2.5 text-left font-semibold" {...props}>
         {children}
       </th>
     ),
     td: ({ children, ...props }) => (
-      <td className="border border-border px-4 py-2" {...props}>
+      <td className="border-b border-border px-4 py-2" {...props}>
         {children}
       </td>
     ),

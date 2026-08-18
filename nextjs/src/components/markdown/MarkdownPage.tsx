@@ -43,9 +43,12 @@ export default function MarkdownPage({ content, toc, title }: MarkdownPageProps)
           className="flex-1 min-w-0 max-w-3xl mx-auto lg:mx-0"
         >
           {title && (
-            <h1 className="text-4xl font-bold text-ink mb-8 tracking-wide">
-              {title}
-            </h1>
+            <header className="mb-8">
+              <h1 className="text-4xl font-bold tracking-[3px] text-ink">
+                {title}
+              </h1>
+              <div className="mt-4 h-0.5 w-16 bg-vermilion" />
+            </header>
           )}
           <MarkdownRenderer content={content} />
         </article>
