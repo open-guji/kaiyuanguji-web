@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 export default function SectionHeader({ title, subtitle, href }: SectionHeaderProps) {
   const TitleContent = (
     <div className="flex items-center gap-2 group">
-      <h2 className="text-2xl font-bold tracking-wide">
+      <h2 className="text-2xl md:text-3xl font-bold tracking-[2px]">
         {title}
       </h2>
       {href && (

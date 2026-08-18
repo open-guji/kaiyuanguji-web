@@ -2,14 +2,14 @@ import SectionHeader from './SectionHeader';
 
 export default function LuaTeXSection() {
   return (
-    <section id="luatex" className="py-12 px-6 bg-white">
+    <section id="luatex" className="py-12 px-6 bg-surface">
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           title="LuaTeX-cn - 古籍排版"
           subtitle="基于 LuaTeX 引擎实现高质量中文古籍排版"
         />
 
-        <div className="max-w-[900px] mx-auto bg-white rounded-2xl p-8 border border-border/50 shadow-lg">
+        <div className="max-w-[900px] mx-auto feature-card reveal p-8">
           <div className="flex flex-col md:flex-row gap-10 items-center">
             {/* Left Content */}
             <div className="flex-1 space-y-4">

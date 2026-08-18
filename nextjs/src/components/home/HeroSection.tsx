@@ -43,36 +43,36 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 max-w-[1000px] w-full flex flex-col items-center gap-6 text-center">
-        {/* Main Title */}
-        <h1 className="text-5xl md:text-7xl font-bold text-ink tracking-[4px] md:tracking-[10px]">
+        {/* Main Title：印章落款式入场 */}
+        <h1 className="anim-seal text-5xl md:text-7xl font-bold text-ink tracking-[4px] md:tracking-[10px]">
           开源古籍
         </h1>
 
         {/* Personal Subtitle */}
-        <p className="text-base md:text-lg text-ink/80 tracking-[2px] font-semibold">
+        <p className="anim-fade-up anim-delay-1 text-base md:text-lg text-ink/80 tracking-[2px] font-semibold">
           谢耳朵的古籍学习记录
         </p>
 
         {/* Subtitle */}
-        <h2 className="text-xl md:text-2xl text-ink tracking-[2px] font-bold">
+        <h2 className="anim-fade-up anim-delay-2 text-xl md:text-2xl text-vermilion tracking-[2px] font-bold">
           让科技赋予古籍数字生命
         </h2>
 
         {/* License Info */}
-        <p className="text-sm text-ink/80 italic tracking-wider font-semibold">
+        <p className="anim-fade-up anim-delay-2 text-sm text-ink/80 italic tracking-wider font-semibold">
           全线软件基于 Apache-2.0 协议开源 · 自由使用 · 共享共建
         </p>
 
         {/* Divider */}
-        <div className="w-16 h-0.5 bg-vermilion my-2" />
+        <div className="anim-fade-in anim-delay-3 w-16 h-0.5 bg-vermilion my-2" />
 
         {/* Description */}
-        <p className="text-base md:text-lg text-ink font-bold leading-loose max-w-2xl px-4">
+        <p className="anim-fade-up anim-delay-3 text-base md:text-lg text-ink font-bold leading-loose max-w-2xl px-4">
           通过技术手段推动古籍的数字化、校对及开源存储，构建古籍知识图谱与 AI 模型
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap justify-center gap-3 mt-4">
+        <div className="anim-fade-up anim-delay-4 flex flex-wrap justify-center gap-3 mt-4">
           {buttons.map((button) => (
             <Link
               key={button.label}
@@ -80,7 +80,7 @@ export default function HeroSection() {
               onClick={(e) => handleAnchorClick(e, button.href)}
               className="px-6 py-3 text-lg font-semibold text-vermilion tracking-[1px]
                        border-2 border-vermilion/80 rounded
-                       bg-white/50 backdrop-blur-sm
+                       bg-surface/50 backdrop-blur-sm
                        hover:bg-vermilion hover:text-white
                        transition-all duration-300"
             >

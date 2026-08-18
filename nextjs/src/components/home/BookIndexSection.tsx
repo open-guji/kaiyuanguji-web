@@ -16,7 +16,7 @@ export default function BookIndexSection() {
           subtitle="标准化的古籍数字资源索引与版本管理系统"
         />
 
-        <div className="max-w-[900px] mx-auto bg-white rounded-2xl p-8 border border-border/50 shadow-md">
+        <div className="max-w-[900px] mx-auto feature-card reveal p-8">
           {/* Mobile Layout */}
           <div className="md:hidden space-y-6">
             {/* Tags */}

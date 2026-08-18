@@ -9,7 +9,7 @@ export default function JoinSection() {
           subtitle="汇聚技术力量，共同守护文化根脉"
         />
 
-        <div className="max-w-[700px] mx-auto bg-white rounded-2xl p-8 shadow-lg">
+        <div className="max-w-[700px] mx-auto feature-card reveal p-8">
           <div className="flex flex-col items-center gap-6 text-center">
             {/* Icon */}
             <div className="w-16 h-16 flex items-center justify-center">

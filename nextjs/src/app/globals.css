@@ -208,17 +208,19 @@
     animation-delay: 0.48s;
   }
 
-  /* 滚动进场：由 useReveal 观察，进入视口时加 .in-view */
+  /* 滚动进场：由 useReveal 观察，进入视口时加 .in-view
+     用独立的 translate 属性（而非 transform），这样卡片 hover 的
+     transform: translateY(...) 不会被进场动画覆盖，两者可叠加。 */
   .reveal {
     opacity: 0;
-    transform: translateY(30px);
+    translate: 0 30px;
     transition: opacity 0.75s var(--ease-out-expo),
-      transform 0.75s var(--ease-out-expo);
+      translate 0.75s var(--ease-out-expo);
   }
 
   .reveal.in-view {
     opacity: 1;
-    transform: none;
+    translate: none;
   }
 
   .reveal-stagger.in-view > *:nth-child(2) {
@@ -272,7 +274,7 @@
 
   .reveal {
     opacity: 1;
-    transform: none;
+    translate: none;
     transition: none;
   }
 }
@@ -318,5 +320,37 @@
     padding: 0.125rem 0.5rem;
     font-size: 0.75rem;
     border-radius: 0.25rem;
+  }
+
+  /* 首页专题卡片（对齐设计稿 feature-banner-card） */
+  .feature-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--color-accent-gold) 55%, var(--color-border));
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* 路线图等网格卡片：悬停上浮 + 朱砂描边 */
+  .lift-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .lift-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--color-vermilion) 45%, var(--color-border));
+    box-shadow: var(--shadow-lift);
   }
 }

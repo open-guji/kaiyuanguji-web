@@ -47,14 +47,14 @@ export default function RoadmapSection() {
         {/* Desktop: 3 + 2 layout */}
         <div className="hidden tablet:block">
           {/* First Row: 3 cards */}
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="reveal reveal-stagger grid grid-cols-3 gap-6 mb-6">
             {roadmapCards.slice(0, 3).map((card) => (
               <RoadmapCard key={card.slug} {...card} />
             ))}
           </div>
 
           {/* Second Row: 2 cards centered */}
-          <div className="flex justify-center gap-6">
+          <div className="reveal reveal-stagger flex justify-center gap-6">
             {roadmapCards.slice(3, 5).map((card) => (
               <div key={card.slug} className="w-[calc(33.333%-16px)]">
                 <RoadmapCard {...card} />
@@ -64,7 +64,7 @@ export default function RoadmapSection() {
         </div>
 
         {/* Mobile: Single column */}
-        <div className="tablet:hidden space-y-6">
+        <div className="reveal reveal-stagger tablet:hidden space-y-6">
           {roadmapCards.map((card) => (
             <RoadmapCard key={card.slug} {...card} />
           ))}

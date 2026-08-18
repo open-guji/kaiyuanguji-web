@@ -9,7 +9,7 @@ export default function AssistantSection() {
           subtitle="基于 VS Code 的一站式古籍数字化整理工具"
         />
 
-        <div className="max-w-[900px] mx-auto bg-white rounded-2xl p-8 border border-border/50 shadow-lg">
+        <div className="max-w-[900px] mx-auto feature-card reveal p-8">
           <div className="flex flex-col md:flex-row gap-10 items-center">
             {/* Left Content */}
             <div className="flex-1 space-y-4">

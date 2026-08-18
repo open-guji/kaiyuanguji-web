@@ -1,8 +1,5 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
 
 interface RoadmapCardProps {
   title: string;
@@ -12,37 +9,22 @@ interface RoadmapCardProps {
 }
 
 export default function RoadmapCard({ title, description, image, slug }: RoadmapCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <Link
       href={`/read/${slug}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="block bg-white rounded-2xl overflow-hidden cursor-pointer
-                 transition-all duration-300 ease-in-out"
-      style={{
-        boxShadow: isHovered
-          ? '0 12px 30px rgba(44, 44, 44, 0.1)'
-          : '0 8px 15px rgba(44, 44, 44, 0.05)',
-      }}
+      className="lift-card block h-full cursor-pointer overflow-hidden no-underline"
     >
-      {/* Image Container */}
+      {/* 图片区 */}
       <div className="relative aspect-video overflow-hidden">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          className="object-cover"
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white" />
+        <Image src={image} alt={title} fill className="object-cover" />
+        {/* 渐隐到卡片底色，衔接下方文字 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--color-surface)]/20 to-[var(--color-surface)]" />
       </div>
 
-      {/* Content */}
+      {/* 内容区 */}
       <div className="p-5 text-center">
-        <h3 className="text-lg font-semibold text-ink mb-2">{title}</h3>
-        <p className="text-sm text-secondary leading-relaxed">{description}</p>
+        <h3 className="mb-2 text-lg font-semibold text-ink">{title}</h3>
+        <p className="text-sm leading-relaxed text-secondary">{description}</p>
       </div>
     </Link>
   );
