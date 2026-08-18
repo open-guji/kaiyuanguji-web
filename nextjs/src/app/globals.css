@@ -171,6 +171,44 @@
   /* 标签与点缀（泥金） */
   --bim-tag-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
   --bim-accent-bg: var(--color-accent-gold);
+
+  /* -------------------------------------------------------
+     以下变量需要 book-index-ui > 0.4.2（把原先写死的颜色变量化）。
+     在旧版本上它们不会被读到，属于安全的空操作；发包升级后自动生效。
+     ------------------------------------------------------- */
+
+  /* 条目类型徽章：保持四类可区分，同时向暖色系靠拢 */
+  --bim-type-book: var(--color-vermilion);
+  --bim-type-work: var(--color-accent-gold);
+  --bim-type-collection: #2f6a8d;
+  --bim-type-entity: #6a4a86;
+
+  /* 条目状态徽章 */
+  --bim-status-draft: #b5762e;
+  --bim-status-official: #3f7d54;
+
+  /* 资源类型标记：原为高饱和的蓝/橙/紫，压暗以融入宣纸底 */
+  --bim-restype-text: #3a6b8a;
+  --bim-restype-image: #b5762e;
+  --bim-restype-text-image: #7a5192;
+  --bim-restype-physical: #795548;
+  --bim-missing-fg: #b5762e;
+
+  /* 影印件色彩模式标记 */
+  --bim-colormode-bw-bg: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  --bim-colormode-bw-fg: var(--color-secondary);
+  --bim-colormode-color-bg: color-mix(in srgb, var(--color-accent-gold) 14%, transparent);
+  --bim-colormode-color-fg: #8a6320;
+
+  /* 资源导入进度 */
+  --bim-progress-active: var(--color-accent-gold);
+  --bim-progress-done: #3f7d54;
+  --bim-progress-todo: var(--color-secondary);
+
+  /* 警告条（草稿提示等） */
+  --bim-warn-bg: color-mix(in srgb, var(--color-accent-gold) 14%, transparent);
+  --bim-warn-border: color-mix(in srgb, var(--color-accent-gold) 55%, transparent);
+  --bim-warn-fg: #8a6320;
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */
