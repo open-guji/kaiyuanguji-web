@@ -208,8 +208,8 @@ export default function ErrorLogContent() {
                         onClick={() => markState(it.id, resolved ? 'open' : 'resolved')}
                         disabled={updatingId === it.id}
                         style={{
-                          border: '1px solid #d1d5db',
-                          background: '#fff',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-surface)',
                           borderRadius: '6px',
                           padding: '3px 10px',
                           fontSize: '12px',
@@ -244,7 +244,7 @@ export default function ErrorLogContent() {
                           style={{
                             marginTop: '6px',
                             padding: '10px',
-                            background: '#f9fafb',
+                            background: 'var(--color-paper)',
                             borderRadius: '6px',
                             overflow: 'auto',
                             fontSize: '12px',
