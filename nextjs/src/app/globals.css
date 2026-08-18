@@ -122,17 +122,55 @@
   }
 }
 
-/* book-index-ui CSS 变量映射（组件库换肤接口） */
+/* =========================================================
+   book-index-ui 换肤接口（--bim-*）
+   ---------------------------------------------------------
+   组件内部以 var(--bim-x, 回退值) 的形式取色，这里把它们全部
+   接到本站 token 上，使 /book-index 的列表与详情跟随新皮肤，
+   且深浅色切换时自动跟随（因为下面引用的 --color-* 会随主题变）。
+
+   覆盖范围对齐组件实际引用的全部变量；语义状态色
+   （danger / warning / success / info）**有意保持默认**：
+   它们承担「危险/警告/成功/提示」的语义区分，换成暖色系会削弱
+   可辨识度，待与设计者确认后再统一。
+   ========================================================= */
 :root {
+  /* 底色与文字 */
   --bim-bg: var(--color-surface);
+  --bim-bg-subtle: var(--color-paper);
+  --bim-widget-bg: var(--color-paper);
+  --bim-sidebar-bg: var(--color-paper);
   --bim-fg: var(--color-ink);
   --bim-desc-fg: var(--color-secondary);
-  --bim-primary: var(--color-vermilion);
-  --bim-primary-fg: #fff;
+  --bim-muted: color-mix(in srgb, var(--color-secondary) 75%, var(--color-paper));
+
+  /* 描边 */
+  --bim-widget-border: var(--color-border);
+  --bim-border: var(--color-border);
+  --bim-input-border: var(--color-border);
+  --bim-focus-border: var(--color-vermilion);
+
+  /* 输入控件 */
   --bim-input-bg: var(--color-surface);
   --bim-input-fg: var(--color-ink);
-  --bim-input-border: var(--color-border);
-  --bim-widget-border: var(--color-border);
+
+  /* 主色（朱砂） */
+  --bim-primary: var(--color-vermilion);
+  --bim-primary-fg: #fff;
+  --bim-primary-soft: color-mix(in srgb, var(--color-vermilion) 15%, transparent);
+  --bim-primary-bg: color-mix(in srgb, var(--color-vermilion) 6%, var(--color-surface));
+
+  /* 链接 */
+  --bim-link: var(--color-vermilion);
+  --bim-link-fg: var(--color-vermilion);
+
+  /* 列表交互态 */
+  --bim-list-hover-bg: color-mix(in srgb, var(--color-ink) 4%, transparent);
+  --bim-list-active-bg: color-mix(in srgb, var(--color-vermilion) 8%, transparent);
+
+  /* 标签与点缀（泥金） */
+  --bim-tag-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
+  --bim-accent-bg: var(--color-accent-gold);
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */
