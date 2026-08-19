@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fread\u002F[filename]","\u002Ftools\u002F[slug]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
