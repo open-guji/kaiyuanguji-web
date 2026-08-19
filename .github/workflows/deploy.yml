@@ -9,6 +9,12 @@ on:
 permissions:
   contents: write
 
+# 同一时间只允许一个部署在跑；连续 push 时取消旧的排队任务，
+# 避免两个 job 争抢 edgeone-release 分支导致部署乱序。
+concurrency:
+  group: deploy-edgeone
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,20 +28,35 @@ jobs:
           cache: 'npm'
           cache-dependency-path: nextjs/package-lock.json
 
+      # npm ci 严格按 lockfile 安装（与 test.yml 保持一致）；
+      # 原先的 npm install 会在 CI 里悄悄升级依赖，导致「本地能过、线上挂」
       - name: Install dependencies
-        run: |
-          cd nextjs
-          npm install
+        working-directory: nextjs
+        run: npm ci
+
+      # 部署前先跑单测：push 到 main 会直接上线，不能把未验证的代码发出去
+      - name: Unit tests
+        working-directory: nextjs
+        run: npm test
 
       # --- 步骤 1：为 EdgeOne 构建（cos 模式） ---
-      - name: Clone book-index-draft
+      #
+      # 必须同时克隆 draft 与 production 两个数据仓：
+      # bundle-data.mjs 会合并二者（production 为已升格的正式条目），
+      # 缺 production 时脚本**静默**只打包 draft，导致所有正式条目
+      # （四库全书、红楼梦等）在站上 404 —— 升格后的 draft 条目是
+      # tombstone，会重定向到 production ID，而该 ID 不在产物里。
+      - name: Clone index data repos
         run: |
           git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
+          git clone --depth 1 https://github.com/open-guji/book-index.git book-index
 
       - name: Bundle data for EdgeOne
-        run: |
-          cd nextjs
-          node scripts/bundle-data.mjs ../book-index-draft
+        working-directory: nextjs
+        env:
+          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
+          BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
+        run: node scripts/bundle-data.mjs
 
       - name: Verify bundled data
         run: |
@@ -61,6 +82,31 @@ jobs:
           # latest.json 由 bundle-data.mjs 输出到 public/ (data/ 同级)，sync-to-cos.mjs 单独上传
           [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing public/latest.json" && exit 1)
 
+      # 守卫：production（已升格）条目必须进入产物。
+      # bundle-data.mjs 在 production 仓缺失时是**静默**跳过的，只靠上面的
+      # 文件存在性检查发现不了 —— 这里逐个比对正式库索引里的 ID。
+      - name: Verify production entries bundled
+        run: |
+          node -e "
+          const fs = require('fs');
+          const prodIndex = JSON.parse(
+            fs.readFileSync('book-index/index/collections.json', 'utf-8'));
+          const ids = Object.keys(prodIndex);
+          if (ids.length === 0) {
+            console.log('· production 索引为空，跳过校验');
+            process.exit(0);
+          }
+          const missing = ids.filter(
+            id => !fs.existsSync('nextjs/public/data/entry/' + id + '.json'));
+          if (missing.length) {
+            console.error('❌ ' + missing.length + '/' + ids.length +
+              ' 个正式条目未进入产物（BOOK_INDEX_PRODUCTION_DIR 没生效？）');
+            console.error('   缺失示例: ' + missing.slice(0, 5).join(', '));
+            process.exit(1);
+          }
+          console.log('✓ ' + ids.length + ' 个正式丛编条目均已打包');
+          "
+
       - name: Sync data to Tencent COS (Singapore)
         if: ${{ env.HAS_COS_SECRETS == 'true' }}
         env:
@@ -75,6 +121,9 @@ jobs:
 
       - name: Build for EdgeOne
         env:
+          # 必须为空：NEXT_PUBLIC_MODE=local 会让 next.config.ts 关掉 output:'export'，
+          # 产不出静态站。CI 里本来就没有 .env.local，这里显式置空作为防线。
+          NEXT_PUBLIC_MODE: ''
           # 数据源 = cos：浏览器从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           # 当 COS secrets 缺失时降级回 bundle 模式（数据走 EdgeOne Pages /data/）
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
