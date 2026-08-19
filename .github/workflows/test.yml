@@ -1,11 +1,12 @@
 name: Tests
 
 # 触发：
-#  - PR 提交：跑全套（fork PR 也能触发，绕过 sheldonlidev shadow ban）
+#  - PR 提交：跑全套
 #  - 手动 workflow_dispatch
 #  - 每日 02:00 UTC（10:00 北京时间）跑 perf 回归
 #
-# 跳过 push trigger，因为 sheldonlidev push 不触发 Actions
+# 不挂 push trigger：push 到 main 由 deploy.yml 负责（它自带 npm test），
+# 这里再挂一次只会重复跑单测 + 拖一遍重的 smoke。
 on:
   pull_request:
     branches: [main]
