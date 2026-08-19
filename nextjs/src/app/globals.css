@@ -209,6 +209,34 @@
   --bim-warn-bg: color-mix(in srgb, var(--color-accent-gold) 14%, transparent);
   --bim-warn-border: color-mix(in srgb, var(--color-accent-gold) 55%, transparent);
   --bim-warn-fg: #8a6320;
+
+  /* -------------------------------------------------------
+     以下需要 book-index-ui > 0.5.0（整理本 / 版本传承 / 书目卡片）。
+     旧版本读不到，属安全的空操作。
+     ------------------------------------------------------- */
+
+  /* 整理本 */
+  --bim-highlight-bg: color-mix(in srgb, var(--color-accent-gold) 28%, transparent);
+  --bim-section-lei: var(--color-accent-gold);
+  --bim-section-shu: var(--color-vermilion);
+  --bim-section-xu: #2f6a8d;
+  --bim-section-jieyu: #7d6608;
+  --bim-section-kaozhen: var(--color-secondary);
+  --bim-section-tag-fg: var(--color-vermilion);
+  --bim-matchstate-fg: var(--color-accent-gold);
+
+  /* 版本传承：佚失标记压暗以融入暖色系；
+     置信度四色**有意保持默认** —— 它们承担「确定/共识/推测/有争议」的
+     语义分级，换成暖色会削弱可辨识度，同 danger/warning/success 的处理。 */
+  --bim-lost-fg: #a8322c;
+
+  /* 关系方向：原为高饱和蓝/绿/橙，压暗后与宣纸底协调 */
+  --bim-relation-up: #3a6b8a;
+  --bim-relation-down: #3f7d54;
+  --bim-relation-flat: #b5762e;
+
+  /* 书目卡片「封面」点缀（IndexBrowser resultVariant="card"） */
+  --bim-cover-accent: var(--color-accent-gold);
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */

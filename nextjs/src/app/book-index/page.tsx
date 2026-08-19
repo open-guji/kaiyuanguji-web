@@ -99,10 +99,16 @@ function BookIndexContent() {
   // 首页视图（含搜索结果）
   return (
     <LayoutWrapper hideFooter>
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '32px 16px' }}>
+      {/*
+        * 有搜索词时放宽容器，让 resultVariant="card" 的自适应网格能排到 3 列
+        * （对齐设计稿的「右侧卡片网格」）；无搜索词的首页态维持原来的 800px，
+        * 否则搜索框和空状态会被拉得过宽。
+        */}
+      <div style={{ maxWidth: searchQuery ? '1120px' : '800px', margin: '0 auto', padding: '32px 16px' }}>
         <IndexBrowser
           transport={transport}
           onEntryClick={handleEntryClick}
+          resultVariant="card"
           hideModeIndicator
           initialQuery={searchQuery || undefined}
           onQueryChange={handleQueryChange}
