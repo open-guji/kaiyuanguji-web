@@ -76,6 +76,12 @@ class CircuitBreaker {
         }
     }
 
+    /** 配置类永久故障（401/403）：不等阈值，立即进入降级期 */
+    forceOpen(): void {
+        this.failures = this.threshold;
+        this.openUntil = Date.now() + this.cooldownMs;
+    }
+
     state(): { open: boolean; failures: number; cooldownRemaining: number } {
         return {
             open: Date.now() < this.openUntil,
@@ -141,7 +147,11 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                     ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
                 },
             });
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            if (!r.ok) {
+                const err = new Error(`HTTP ${r.status}`) as Error & { status?: number };
+                err.status = r.status;
+                throw err;
+            }
             return await r.json() as { hits: MeiliHit[]; estimatedTotalHits: number; processingTimeMs: number };
         } finally {
             clearTimeout(timer);
@@ -173,7 +183,13 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
             ]);
             const allFailed = settled.every(r => r.status === 'rejected');
             if (allFailed) {
-                breaker.recordFailure();
+                // 401/403 = key 缺失/失效等配置类故障，不会自愈：立即熔断并透传 L2，
+                // 否则前几次搜索会白白返回空结果（2026-08 线上事故：secret 未配，
+                // 构建时 key 为空，用户看到的就是「搜索坏了」）。
+                const authFailed = settled.some(r =>
+                    r.status === 'rejected' && ((r.reason as any)?.status === 401 || (r.reason as any)?.status === 403));
+                if (authFailed) breaker.forceOpen();
+                else breaker.recordFailure();
                 if (debug) console.warn('[meili] searchAll all 4 failed:', (settled[0] as any).reason?.message);
                 if (breaker.state().open) return base.searchAll!(query, limit);
                 return {
@@ -229,7 +245,8 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                     pageSize,
                 };
             } catch (e: any) {
-                breaker.recordFailure();
+                if (e?.status === 401 || e?.status === 403) breaker.forceOpen();
+                else breaker.recordFailure();
                 if (debug) console.warn('[meili] search failed, → L2:', e.message);
                 // search() 单 type 没 partial 余地，失败直接 fallback worker。
                 // 这条路径只在用户点"查看全部"后翻页才走，单次触发 worker 加载可接受。

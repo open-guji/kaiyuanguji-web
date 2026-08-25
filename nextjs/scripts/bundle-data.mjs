@@ -371,6 +371,7 @@ function bundleExtraFiles() {
 function bundleVersion() {
     let commitId = 'unknown';
     let commitDate = '';
+    let productionCommitId = 'unknown';
 
     try {
         commitId = execSync('git rev-parse HEAD', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
@@ -379,10 +380,18 @@ function bundleVersion() {
         // CI 中 --depth 1 clone 也能拿到 HEAD，如果失败则留默认值
         console.warn('  ⚠ Could not read git info from book-index-draft');
     }
+    if (existsSync(PRODUCTION_DIR)) {
+        try {
+            productionCommitId = execSync('git rev-parse HEAD', { cwd: PRODUCTION_DIR, encoding: 'utf-8' }).trim();
+        } catch {
+            console.warn('  ⚠ Could not read git info from book-index (production)');
+        }
+    }
 
     const version = {
         commitId,
         commitDate,
+        productionCommitId,
         bundleDate: new Date().toISOString(),
     };
 
@@ -396,6 +405,9 @@ function bundleVersion() {
         commitId: shortCommit,
         fullCommitId: commitId,
         commitDate,
+        // 定时部署的新旧比对用（deploy.yml check job）：production 仓单独变更时
+        // draft commit 不变，靠这个字段判断是否需要重新部署。
+        productionCommitId,
         bundleDate: version.bundleDate,
     };
     writeJson(join(OUT_DIR, '..', 'latest.json'), latest);

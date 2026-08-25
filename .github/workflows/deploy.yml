@@ -5,6 +5,14 @@ on:
     branches: [ main ]
   repository_dispatch:
     types: [ data-updated ]
+  # 手动触发（Actions 页面 Run workflow 按钮 / API）
+  workflow_dispatch:
+  # 每日定时兜底：book-index-draft 的 notify-web webhook 依赖跨仓 PAT
+  # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
+  # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
+  # 变化时由 check job 提前跳过，不浪费构建。UTC 20:30 = 北京 04:30。
+  schedule:
+    - cron: '30 20 * * *'
 
 permissions:
   contents: write
@@ -16,8 +24,41 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 定时触发时先比对数据仓 HEAD 与线上 latest.json，没变化就跳过整个构建。
+  # push / dispatch / 手动触发一律直接部署。
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.compare.outputs.should_deploy }}
+    steps:
+      - name: Compare data repo HEADs with deployed latest.json
+        id: compare
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "· 非定时触发，直接部署"
+            exit 0
+          fi
+          LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
+          LIVE_DRAFT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('fullCommitId',''))" || echo '')
+          LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
+          HEAD_DRAFT=$(git ls-remote https://github.com/open-guji/book-index-draft.git refs/heads/main | cut -f1)
+          HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
+          echo "draft:      live=$LIVE_DRAFT head=$HEAD_DRAFT"
+          echo "production: live=$LIVE_PROD head=$HEAD_PROD"
+          # 线上 latest.json 缺字段（旧版产物）或比对不上 → 部署
+          if [ -n "$HEAD_DRAFT" ] && [ "$LIVE_DRAFT" = "$HEAD_DRAFT" ] && [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "· 数据无变化，跳过部署"
+          else
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "· 数据有更新（或无法确认），执行部署"
+          fi
+
   build:
     runs-on: ubuntu-latest
+    needs: check
+    if: ${{ needs.check.outputs.should_deploy == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -131,7 +172,10 @@ jobs:
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
-          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY }}
+          # 兜底值是「公开只读搜索 key」（本来就随 JS 发给每个浏览器，非机密；
+          # 绝不能在这里放 master key）。secret 缺失曾导致构建时 key 为空、
+          # 线上搜索全 401（2026-08 事故）。轮换 key 后请同步更新这里和 secret。
+          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
         run: |
           cd nextjs
           rm -rf .next out

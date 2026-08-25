@@ -116,7 +116,10 @@ function walk(dir, base = dir) {
         const full = join(dir, name);
         const stat = statSync(full);
         if (stat.isDirectory()) {
-            out.push(...walk(full, base));
+            // 不能用 out.push(...walk(...))：spread 把每个元素当调用参数压栈，
+            // entry/ 超过 ~10 万个文件后直接 RangeError: Maximum call stack
+            // size exceeded（2026-08-25 大批量升格后首次触发）。
+            for (const f of walk(full, base)) out.push(f);
         } else {
             const relative = full.slice(base.length + 1).split(/[\\/]/).join('/');
             // mtimeMs: 取整到毫秒避免 fs 精度抖动；配合 bundle 端的 writeIfChanged

@@ -86,6 +86,29 @@ describe('meili-storage HybridTransport', () => {
         expect(r.works).toEqual([]);
     });
 
+    it('401 鉴权失败（key 缺失/失效）→ 第一次就熔断并透传 L2', async () => {
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 401, text: async () => '' }) as any;
+        const base = makeBase({
+            searchAll: jest.fn().mockResolvedValue({
+                works: [{ id: 'l2', type: 'work', title: 'l2-fallback', isDraft: true }],
+                books: [], collections: [], entities: [],
+                totalWorks: 1, totalBooks: 0, totalCollections: 0, totalEntities: 0,
+            }),
+        });
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+
+        // 配置类故障不会自愈：首次失败就应 fallback，而不是让用户看到空结果
+        const r = await wrapped.searchAll!('q', 5);
+        expect(base.searchAll).toHaveBeenCalled();
+        expect(r.works[0].title).toBe('l2-fallback');
+
+        // breaker 已 open：后续搜索直接走 L2，不再打 L1
+        (global.fetch as jest.Mock).mockClear();
+        await wrapped.searchAll!('q', 5);
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
     it('连续失败累积到阈值后 breaker open → fallback 启用（持续故障模式）', async () => {
         global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 502, text: async () => '' }) as any;
         const base = makeBase({
