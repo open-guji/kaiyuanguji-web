@@ -29,6 +29,9 @@ fi
 
 # full-reindex.mjs 需要这些（保持和 README 里手动命令一致）
 export DRAFT_DIR="${DRAFT_DIR:-/root/book-index-draft}"
+# production 仓不可缺：已升格条目（2026-08 已 2.3 万条）全在这里，
+# 只给 draft 的话它们在搜索里只剩墓碑裸标题
+export PRODUCTION_DIR="${PRODUCTION_DIR:-/root/book-index}"
 export MEILI_URL="${MEILI_URL:-http://127.0.0.1:7700}"
 export MEILI_KEY="${MEILI_KEY:-$MASTER_KEY}"
 
@@ -41,6 +44,15 @@ ts() { date -Iseconds; }
 echo "[$(ts)] === git pull $DRAFT_DIR ==="
 git -C "$DRAFT_DIR" pull --ff-only
 git -C "$DRAFT_DIR" log -1 --format='  HEAD: %h %ci %s'
+
+echo "[$(ts)] === git pull $PRODUCTION_DIR ==="
+if [ -d "$PRODUCTION_DIR/.git" ]; then
+    git -C "$PRODUCTION_DIR" pull --ff-only
+else
+    echo "  首次运行：克隆 production 仓"
+    git clone --depth 1 https://github.com/open-guji/book-index.git "$PRODUCTION_DIR"
+fi
+git -C "$PRODUCTION_DIR" log -1 --format='  HEAD: %h %ci %s'
 
 echo "[$(ts)] === full-reindex.mjs 开始 ==="
 node full-reindex.mjs "$@"

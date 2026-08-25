@@ -33,6 +33,8 @@ export interface MeiliConfig {
 interface MeiliHit {
     id: string;
     type: 'work' | 'book' | 'collection' | 'entity';
+    /** 条目是否仍在 draft 仓。索引重建前的旧文档没有这个字段 */
+    is_draft?: boolean;
     title?: string;
     primary_name?: string;
     author?: string;
@@ -112,7 +114,9 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
             id: h.id,
             type: h.type,
             title: h.title || h.primary_name || h.id,
-            isDraft: true,
+            // 缺字段时回落 true，保持旧索引的既有行为；full-reindex 补上
+            // is_draft 后，已升格条目才不会被误标成「草稿」
+            isDraft: h.is_draft ?? true,
             author: h.author,
             dynasty: h.dynasty,
             role: h.role,

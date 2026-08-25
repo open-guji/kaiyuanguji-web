@@ -1,17 +1,27 @@
 /**
- * 完整 indexer (Node.js) — 把 book-index-draft 全量推到 Meili
+ * 完整 indexer (Node.js) — 把 book-index-draft + book-index 全量推到 Meili
  *
  * 用法（在上海云上跑）：
  *   DRAFT_DIR=/root/book-index-draft \
+ *   PRODUCTION_DIR=/root/book-index \
  *   MEILI_URL=http://127.0.0.1:7700 \
  *   MEILI_KEY=xxx \
  *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books]
  *
  * 设计：
- *   - 流式遍历 book-index-draft/index/{books,works,entities}/{0-f}.json
+ *   - 流式遍历 {draft,production}/index/{books,works,entities}/{0-f}.json
  *   - 每 1000 doc 推一批；最多 3 个 in-flight task
  *   - has_collated 的 work 同时把所有 collated_edition/text/*.md 推 juans index
  *   - 推完所有数据后再 PATCH settings（避免索引时反复 reindex）
+ *
+ * 两个数据仓缺一不可（2026-08-25 修）：升格（promote）会把条目搬到
+ * production 仓，draft 侧只留 `promoted_to` 墓碑（detail 文件被 stub 化，
+ * 只剩标题）。此前本脚本只读 draft，后果是——
+ *   · 2.3 万条已升格条目（恰恰是质量最高的那批）在搜索里只剩裸标题，
+ *     作者/朝代/描述全空，completeness=0，排序垫底；
+ *   · 按作者、按描述内容搜这些书完全搜不到；
+ *   · production 侧的真身从未进过索引。
+ * 与 nextjs/scripts/bundle-data.mjs 的 loadShardedIndex() 保持同一套语义。
  *
  * 依赖：opencc-js（繁简）、pinyin-pro（拼音）
  */
@@ -25,11 +35,23 @@ import { pinyin as toPinyin } from 'pinyin-pro';
 const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
 const DRAFT_DIR = process.env.DRAFT_DIR;
+const PRODUCTION_DIR = process.env.PRODUCTION_DIR;
 const MEILI_URL = process.env.MEILI_URL || 'http://127.0.0.1:7700';
 const MEILI_KEY = process.env.MEILI_KEY;
 if (!DRAFT_DIR || !MEILI_KEY) {
     console.error('需要设置 DRAFT_DIR 和 MEILI_KEY 环境变量');
     process.exit(1);
+}
+
+// 数据根：draft 在前、production 在后。ID 不冲突（snowflake status 位区分），
+// 且已升格的 draft 条目是墓碑、会被 iterAllRoots 跳过，所以顺序遍历即等价于合并。
+const ROOTS = [{ dir: DRAFT_DIR, isDraft: true }];
+if (PRODUCTION_DIR && existsSync(PRODUCTION_DIR)) {
+    ROOTS.push({ dir: PRODUCTION_DIR, isDraft: false });
+} else {
+    // 不静默降级：缺 production 会让 2 万多条正式条目搜不到，必须显眼
+    console.warn('⚠️  PRODUCTION_DIR 未设置或不存在 —— 所有已升格条目将不会进入索引！');
+    console.warn('    正确用法：PRODUCTION_DIR=/root/book-index node full-reindex.mjs');
 }
 
 const args = process.argv.slice(2);
@@ -68,7 +90,7 @@ function titlesToStrings(raw) {
 
 // ─── doc builders ───
 
-function buildWorkDoc(entry, detail) {
+function buildWorkDoc(entry, detail, isDraft = true) {
     const desc = detail.description ?? {};
     const descText = typeof desc === 'string' ? desc : (desc.text || '');
     const indexedBy = Array.isArray(detail.indexed_by) ? detail.indexed_by : [];
@@ -93,6 +115,7 @@ function buildWorkDoc(entry, detail) {
     return {
         id: entry.id,
         type: 'work',
+        is_draft: isDraft,
         title,
         author,
         dynasty: entry.dynasty || '',
@@ -113,7 +136,7 @@ function buildWorkDoc(entry, detail) {
     };
 }
 
-function buildBookDoc(entry) {
+function buildBookDoc(entry, isDraft = true) {
     const title = entry.title || '';
     const author = entry.author || '';
     const edition = entry.edition || '';
@@ -121,6 +144,7 @@ function buildBookDoc(entry) {
     return {
         id: entry.id,
         type: 'book',
+        is_draft: isDraft,
         title, author, edition, holder,
         dynasty: entry.dynasty || '',
         has_text: !!entry.has_text,
@@ -135,11 +159,12 @@ function buildBookDoc(entry) {
     };
 }
 
-function buildCollectionDoc(entry) {
+function buildCollectionDoc(entry, isDraft = true) {
     const title = entry.title || entry.name || '';
     return {
         id: entry.id,
         type: 'collection',
+        is_draft: isDraft,
         title,
         completeness: 5,
         title_chars: Array.from(title).length,
@@ -148,11 +173,12 @@ function buildCollectionDoc(entry) {
     };
 }
 
-function buildEntityDoc(entry) {
+function buildEntityDoc(entry, isDraft = true) {
     const name = entry.primary_name || entry.title || '';
     return {
         id: entry.id,
         type: 'entity',
+        is_draft: isDraft,
         subtype: entry.subtype || 'people',
         primary_name: name,
         dynasty: entry.dynasty || '',
@@ -166,11 +192,11 @@ function buildEntityDoc(entry) {
     };
 }
 
-function buildJuanDocs(workEntry, draftDir) {
+function buildJuanDocs(workEntry, rootDir) {
     const workId = workEntry.id;
     const relPath = workEntry.path || '';
     if (!relPath) return [];
-    const workDir = join(draftDir, dirname(relPath), workId, 'collated_edition', 'text');
+    const workDir = join(rootDir, dirname(relPath), workId, 'collated_edition', 'text');
     if (!existsSync(workDir)) return [];
     const docs = [];
     let mdFiles;
@@ -254,8 +280,8 @@ async function configureSettings(indexUid, settings) {
 
 // ─── 流式遍历 index shards ───
 
-function* iterIndexShards(draftDir, typeDir) {
-    const shardDir = join(draftDir, 'index', typeDir);
+function* iterIndexShards(rootDir, typeDir) {
+    const shardDir = join(rootDir, 'index', typeDir);
     if (existsSync(shardDir) && statSync(shardDir).isDirectory()) {
         const files = readdirSync(shardDir).filter(f => f.endsWith('.json')).sort();
         for (const f of files) {
@@ -267,7 +293,7 @@ function* iterIndexShards(draftDir, typeDir) {
             }
         }
     } else {
-        const f = join(draftDir, 'index', `${typeDir}.json`);
+        const f = join(rootDir, 'index', `${typeDir}.json`);
         if (existsSync(f)) {
             const data = JSON.parse(readFileSync(f, 'utf-8'));
             for (const entry of Object.values(data)) yield entry;
@@ -275,28 +301,45 @@ function* iterIndexShards(draftDir, typeDir) {
     }
 }
 
+/**
+ * 跨 draft + production 遍历，产出 { entry, rootDir, isDraft }。
+ * 跳过升格墓碑（draft 侧 `promoted_to`），否则会把「裸标题、无作者」的
+ * stub 推进索引，把 production 里的真身挤掉。
+ */
+function* iterAllRoots(typeDir) {
+    let tombstones = 0;
+    for (const { dir, isDraft } of ROOTS) {
+        for (const entry of iterIndexShards(dir, typeDir)) {
+            if (!entry || !entry.id) continue;
+            if (entry.promoted_to) { tombstones++; continue; }
+            yield { entry, rootDir: dir, isDraft };
+        }
+    }
+    if (tombstones) console.log(`  [${typeDir}] 跳过 ${tombstones} 个升格墓碑`);
+}
+
 // ─── settings ───
 
 const SETTINGS = {
     works: {
         searchableAttributes: ['title_search', 'aliases_search', 'author_search', 'pinyin', 'description_search', 'indexed_by_search'],
-        filterableAttributes: ['type', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
+        filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
         sortableAttributes: ['completeness', 'juan_count', 'title_chars'],
         rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
     },
     books: {
         searchableAttributes: ['title_search', 'edition_search', 'author_search', 'holder_search', 'pinyin'],
-        filterableAttributes: ['type', 'dynasty', 'has_text', 'has_image', 'holder'],
+        filterableAttributes: ['type', 'is_draft', 'dynasty', 'has_text', 'has_image', 'holder'],
         sortableAttributes: ['completeness', 'title_chars'],
         rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
     },
     collections: {
         searchableAttributes: ['title_search', 'pinyin'],
-        filterableAttributes: ['type'],
+        filterableAttributes: ['type', 'is_draft'],
     },
     entities: {
         searchableAttributes: ['name_search', 'pinyin'],
-        filterableAttributes: ['type', 'subtype', 'dynasty'],
+        filterableAttributes: ['type', 'is_draft', 'subtype', 'dynasty'],
         sortableAttributes: ['completeness', 'title_chars'],
     },
     juans: {
@@ -365,16 +408,18 @@ async function main() {
 
         async function* combined() {
             let n = 0;
-            for (const entry of iterIndexShards(DRAFT_DIR, 'works')) {
+            for (const { entry, rootDir, isDraft } of iterAllRoots('works')) {
                 if (limit && n >= limit) break;
                 n++;
-                const detailPath = join(DRAFT_DIR, entry.path || '');
+                const detailPath = join(rootDir, entry.path || '');
                 if (!existsSync(detailPath)) continue;
                 let detail;
                 try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { continue; }
-                if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail) };
+                // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
+                if (detail._promoted_to) continue;
+                if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
                 if (doJuans && entry.has_collated) {
-                    for (const j of buildJuanDocs(entry, DRAFT_DIR)) {
+                    for (const j of buildJuanDocs(entry, rootDir)) {
                         yield { kind: 'juan', doc: j };
                     }
                 }
@@ -437,10 +482,10 @@ async function main() {
         console.log(`\n=== ${name} ===`);
         function* iter() {
             let n = 0;
-            for (const entry of iterIndexShards(DRAFT_DIR, name)) {
+            for (const { entry, isDraft } of iterAllRoots(name)) {
                 if (limit && n >= limit) break;
                 n++;
-                yield builder(entry);
+                yield builder(entry, isDraft);
             }
         }
         await pushInBatches(name, iter(), { batchSize: 2000 });
