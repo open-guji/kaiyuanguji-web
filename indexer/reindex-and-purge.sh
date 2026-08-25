@@ -34,6 +34,14 @@ export MEILI_KEY="${MEILI_KEY:-$MASTER_KEY}"
 
 ts() { date -Iseconds; }
 
+# 关键：先拉新数据再建索引。此前缺这一步，cron 每晚都在对同一份陈旧
+# checkout 重建索引，搜索结果永远停在最后一次人工 pull 的状态
+# （2026-08-25 查实）。--ff-only 失败就整体中止：宁可显式报错，也好过
+# 无声地把过期数据推上线——与本脚本 set -e 的 fail-fast 设计一致。
+echo "[$(ts)] === git pull $DRAFT_DIR ==="
+git -C "$DRAFT_DIR" pull --ff-only
+git -C "$DRAFT_DIR" log -1 --format='  HEAD: %h %ci %s'
+
 echo "[$(ts)] === full-reindex.mjs 开始 ==="
 node full-reindex.mjs "$@"
 echo "[$(ts)] === full-reindex.mjs 完成 ==="
