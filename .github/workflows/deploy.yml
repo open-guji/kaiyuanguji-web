@@ -42,12 +42,19 @@ jobs:
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
           LIVE_DRAFT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('fullCommitId',''))" || echo '')
           LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
+          LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
           HEAD_DRAFT=$(git ls-remote https://github.com/open-guji/book-index-draft.git refs/heads/main | cut -f1)
           HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
+          HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1)
           echo "draft:      live=$LIVE_DRAFT head=$HEAD_DRAFT"
           echo "production: live=$LIVE_PROD head=$HEAD_PROD"
+          echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
           # 线上 latest.json 缺字段（旧版产物）或比对不上 → 部署
-          if [ -n "$HEAD_DRAFT" ] && [ "$LIVE_DRAFT" = "$HEAD_DRAFT" ] && [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ]; then
+          # 三仓皆须比对得上方可跳过。少比一项即：该仓单独有改动时被判「无变化」，
+          # 其更新永远上不了线（2026-08-26 加 book-text 一项）。
+          if [ -n "$HEAD_DRAFT" ] && [ "$LIVE_DRAFT" = "$HEAD_DRAFT" ] \
+             && [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
+             && [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
             echo "· 数据无变化，跳过部署"
           else
@@ -91,12 +98,17 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
           git clone --depth 1 https://github.com/open-guji/book-index.git book-index
+          # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
+          # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
+          # 构建照样成功——整理本页在站上空白，无人得知。
+          git clone --depth 1 https://github.com/open-guji/book-text.git book-text
 
       - name: Bundle data for EdgeOne
         working-directory: nextjs
         env:
           BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
+          BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
         run: node scripts/bundle-data.mjs
 
       - name: Verify bundled data

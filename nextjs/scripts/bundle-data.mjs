@@ -34,6 +34,13 @@ const PRODUCTION_DIR = resolve(
     process.env.BOOK_INDEX_PRODUCTION_DIR
     || join(__dirname, '..', '..', 'book-index')
 );
+// 文本仓（整理本 / 辑佚 / 全文 / 抓取素材）。2026-08-26 自 book-index 拆出，
+// 两个元数据仓之下**再无资产目录**。条目与资产自此分属不同的仓：
+// 条目走 rootDirFor()，资产一律走 TEXT_DIR，勿再由条目路径的 parent 推。
+const TEXT_DIR = resolve(
+    process.env.BOOK_TEXT_DIR
+    || join(__dirname, '..', '..', 'book-text')
+);
 const OUT_DIR = resolve(__dirname, '..', 'public', 'data');
 
 const TIYAO_DIR = join(DRAFT_DIR, 'data', 'siku-catalog', 'volumes');
@@ -194,7 +201,7 @@ function bundleL1() {
                     detail._isDraft = item._root !== 'official';
                     // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json
                     if (item.type === 'book' || typeName === 'books') {
-                        const ftIdx = join(baseDir, dirname(path), id, 'full_text', 'index.json');
+                        const ftIdx = join(TEXT_DIR, dirname(path), id, 'full_text', 'index.json');
                         if (existsSync(ftIdx)) detail.has_full_text = true;
                     }
                     const json = JSON.stringify(detail);
@@ -206,8 +213,11 @@ function bundleL1() {
                 }
             }
 
-            // 关联文件（collated_edition / lineage_graph 等）→ 直接复制到 items/{id}/ 下
-            const itemDir = join(baseDir, dirname(path), id);
+            // 关联文件（collated_edition / fragments / full_text / sources）
+            // → 直接复制到 items/{id}/ 下。**根是 TEXT_DIR，不是 baseDir**：
+            // 拆分之后资产不在元数据仓里，用 baseDir 则一个也找不着，且
+            // existsSync 为假就静默跳过——不报错，只是 items/ 空了。
+            const itemDir = join(TEXT_DIR, dirname(path), id);
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 copyDirRecursive(itemDir, join(itemsDir, id));
                 itemFileCount++;
@@ -372,6 +382,10 @@ function bundleVersion() {
     let commitId = 'unknown';
     let commitDate = '';
     let productionCommitId = 'unknown';
+    // 文本仓之 commit（2026-08-26 拆分后立）。deploy.yml 的跳过判断要用它——
+    // 不记则 book-text 单独有改动时，三仓比对里没有它这一项，部署被判为
+    // 「无变化」而跳过，整理本的更新永远上不了线。
+    let textCommitId = 'unknown';
 
     try {
         commitId = execSync('git rev-parse HEAD', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
@@ -387,11 +401,19 @@ function bundleVersion() {
             console.warn('  ⚠ Could not read git info from book-index (production)');
         }
     }
+    if (existsSync(TEXT_DIR)) {
+        try {
+            textCommitId = execSync('git rev-parse HEAD', { cwd: TEXT_DIR, encoding: 'utf-8' }).trim();
+        } catch {
+            console.warn('  ⚠ Could not read git info from book-text');
+        }
+    }
 
     const version = {
         commitId,
         commitDate,
         productionCommitId,
+        textCommitId,
         bundleDate: new Date().toISOString(),
     };
 
@@ -479,6 +501,7 @@ function checkIndex() {
 // ─── Main ───
 
 console.log(`\nbundle-data: ${DRAFT_DIR}`);
+console.log(`  text: ${TEXT_DIR}${existsSync(TEXT_DIR) ? '' : '  ⚠ 不存在——items/ 将为空'}`);
 console.log(`output:      ${OUT_DIR}\n`);
 
 if (!existsSync(DRAFT_DIR)) {
