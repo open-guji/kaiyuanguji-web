@@ -3,7 +3,7 @@
 3:I[1653,["442","static/chunks/f4cfcbb5-2ddcd5ae5862f9c0.js","636","static/chunks/636-0996149593f7137a.js","945","static/chunks/945-ebe9f7f2cdef7c11.js","474","static/chunks/474-748709322ced82dc.js","827","static/chunks/app/book-index/page-70eb3201842d87a4.js"],"default"]
 6:I[484,[],"OutletBoundary"]
 7:"$Sreact.suspense"
-0:{"buildId":"8mIXptounD7a40ScREm04","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],null,["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"zscIWjk8EzV5auZn5XnWJ","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],null,["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
 4:{}
 5:"$0:rsc:props:children:0:props:serverProvidedParams:params"
 8:null
