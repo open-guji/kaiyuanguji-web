@@ -11,7 +11,7 @@ import { getTransport, getSearchBaseUrl } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
 import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
-import { COS_BASE, getCosDataBaseUrl } from '@/lib/cos-storage';
+import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 function DataVersion() {
@@ -19,9 +19,12 @@ function DataVersion() {
   const [info, setInfo] = useState('');
 
   useEffect(() => {
-    // 取版本号 JSON 的 URL：cos 模式下走 COS data 根，其他走同站 /data/version.json
+    // 取版本号 JSON 的 URL：cos 模式下直接读 latest.json（本身就是发布指针，
+    // 天然带 no-store 且不缓存；current/version.json 不带 ?v= cache-bust，
+    // 会被 CDN 的 current/* immutable 长缓存策略缓存住，显示的版本号永远滞后）。
+    // 其他模式走同站 /data/version.json。
     const urlP = source === 'cos'
-      ? getCosDataBaseUrl().then(b => `${b}/version.json`)
+      ? Promise.resolve(`${COS_BASE}/latest.json`)
       : Promise.resolve('/data/version.json');
 
     urlP
