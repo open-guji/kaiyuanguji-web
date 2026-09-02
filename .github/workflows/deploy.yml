@@ -243,11 +243,14 @@ jobs:
           # ⚠️ EdgeOne 这个 zone 注册的加速域名是裸域名 kaiyuanguji.com，
           # www.kaiyuanguji.com 没有单独注册（它的流量靠 DNS 指到同一套边缘节点，
           # 但 purge_url 按注册域名精确匹配）。2026-08-30~2026-09-02 期间一直用
-          # www.kaiyuanguji.com 做 purge_url 目标，EdgeOne 返回
-          # {"FailedList":[{"Reason":"domain not found"}]}，purge 从未真正生效
-          # 过，网站页面只能靠 CDN 节点 TTL 自然过期——查 DescribeAccelerationDomains
-          # 确认注册域名列表后改为 purge_host kaiyuanguji.com（整站，含 www 在内的
-          # 所有子路径/子域名都会被清）。
+          # www.kaiyuanguji.com 做 purge_url 目标，EdgeOne 返回 FailedList
+          # domain not found，purge 从未真正生效过，网站页面只能靠 CDN 节点 TTL
+          # 自然过期——查 DescribeAccelerationDomains 确认注册域名列表后改为
+          # purge_host kaiyuanguji.com（整站，含 www 在内的所有子路径/子域名都会被清）。
+          # 注意：本段是 bash 双引号包裹的 python3 -c 内联脚本，注释里绝不能出现
+          # 半角双引号——曾因写入 FailedList 这个词的 JSON 字面量形式（半角双引号
+          # 包住）导致 shell 提前截断整段字符串，后半段 Python 代码整体消失不执行，
+          # 且 step 仍然 exit 0（截断后剩下的部分恰好是合法的空程序，不报错）。
           # data.kaiyuanguji.com/latest.json 单独 purge_url（新版本指针，让浏览器
           # 拉到新 commit）；不 purge_host data.kaiyuanguji.com 整站——那 318MB
           # 缓存白丢，回源费贵。
