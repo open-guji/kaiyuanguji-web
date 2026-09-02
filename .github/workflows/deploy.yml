@@ -230,7 +230,6 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
-          DATA_SOURCE_MODE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
         run: |
           pip install tencentcloud-sdk-python-teo -q
           python3 -c "
@@ -241,23 +240,28 @@ jobs:
           cred = credential.Credential(os.environ['TENCENT_SECRET_ID'], os.environ['TENCENT_SECRET_KEY'])
           client = teo_client.TeoClient(cred, '')
 
-          req = models.CreatePurgeTaskRequest()
-          req.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          # COS 模式：所有 v/{commit}/* 资源不可变、长期缓存；只需精准 purge
-          # 1) www.kaiyuanguji.com 整站（Pages 部署变了）
-          # 2) data.kaiyuanguji.com/latest.json（新版本指针，让浏览器拉到新 commit）
-          # 不再 purge_host data.kaiyuanguji.com 整站 — 那 318MB 缓存白丢，回源费贵
-          if os.environ.get('DATA_SOURCE_MODE', 'bundle') == 'cos':
-              req.Type = 'purge_url'
-              req.Targets = [
-                  'https://data.kaiyuanguji.com/latest.json',
-                  'https://www.kaiyuanguji.com/',
-              ]
-          else:
-              # 旧 bundle 模式：data/ 在主站下，整站 purge
-              req.Type = 'purge_host'
-              req.Targets = ['kaiyuanguji.com']
+          # ⚠️ EdgeOne 这个 zone 注册的加速域名是裸域名 kaiyuanguji.com，
+          # www.kaiyuanguji.com 没有单独注册（它的流量靠 DNS 指到同一套边缘节点，
+          # 但 purge_url 按注册域名精确匹配）。2026-08-30~2026-09-02 期间一直用
+          # www.kaiyuanguji.com 做 purge_url 目标，EdgeOne 返回
+          # {"FailedList":[{"Reason":"domain not found"}]}，purge 从未真正生效
+          # 过，网站页面只能靠 CDN 节点 TTL 自然过期——查 DescribeAccelerationDomains
+          # 确认注册域名列表后改为 purge_host kaiyuanguji.com（整站，含 www 在内的
+          # 所有子路径/子域名都会被清）。
+          # data.kaiyuanguji.com/latest.json 单独 purge_url（新版本指针，让浏览器
+          # 拉到新 commit）；不 purge_host data.kaiyuanguji.com 整站——那 318MB
+          # 缓存白丢，回源费贵。
+          req_pointer = models.CreatePurgeTaskRequest()
+          req_pointer.ZoneId = os.environ['EDGEONE_ZONE_ID']
+          req_pointer.Type = 'purge_url'
+          req_pointer.Targets = ['https://data.kaiyuanguji.com/latest.json']
+          resp_pointer = client.CreatePurgeTask(req_pointer)
+          print('✅ latest.json purged:', resp_pointer.to_json_string())
 
-          resp = client.CreatePurgeTask(req)
-          print('✅ EdgeOne cache purged:', resp.to_json_string())
+          req_site = models.CreatePurgeTaskRequest()
+          req_site.ZoneId = os.environ['EDGEONE_ZONE_ID']
+          req_site.Type = 'purge_host'
+          req_site.Targets = ['kaiyuanguji.com']
+          resp_site = client.CreatePurgeTask(req_site)
+          print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
