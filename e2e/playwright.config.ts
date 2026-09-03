@@ -44,5 +44,20 @@ export default defineConfig({
             testDir: './ui',
             use: { ...devices['Desktop Chrome'] },
         },
+        /**
+         * 可降级依赖：挂了也不该拦住发版。
+         *
+         * 目前只有搜索 L1 (Meilisearch)——它跑在一台 2GB 无 swap 的小机器上，
+         * OOM/卡死是常态化风险（2026-09-03 一天内两次：先公网 IP 变更、
+         * 后进程卡死）。前端有 L2 兜底，用户无感，所以不值得让每次发版都亮红灯：
+         * 红灯天天亮，真正的回归就没人看见了。
+         *
+         * CI 里单独一步跑，`continue-on-error: true`。
+         */
+        {
+            name: 'degradable',
+            testDir: './degradable',
+            use: {},
+        },
     ],
 });

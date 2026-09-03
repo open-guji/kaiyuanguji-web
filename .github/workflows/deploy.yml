@@ -307,6 +307,14 @@ jobs:
         working-directory: e2e
         run: npm run test:ui
 
+      # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，
+      # 但不把发版判定为失败——前端有 L2 兜底，用户无感。
+      # 让它阻断的话每次发版都亮红灯，真正的回归反而会被淹没。
+      - name: Degradable deps (non-blocking)
+        working-directory: e2e
+        continue-on-error: true
+        run: npm run test:degradable
+
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4

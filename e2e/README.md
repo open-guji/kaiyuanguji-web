@@ -13,14 +13,27 @@
 
 所以这套的核心是**断言内容，而不只是断言请求成功**。
 
-## 两层
+## 三层
 
-| 层 | 位置 | 开浏览器 | 耗时 | 查什么 |
-|---|---|---|---|---|
-| contract | `contract/` | 否 | ~35s | 数据管线、搜索后端契约 |
-| ui | `ui/` | 是 | ~50s | 用户实际看到的渲染结果 |
+| 层 | 位置 | 开浏览器 | 耗时 | 阻断发版 | 查什么 |
+|---|---|---|---|---|---|
+| contract | `contract/` | 否 | ~10s | ✅ | 数据管线、L2 兜底索引 |
+| ui | `ui/` | 是 | ~20s | ✅ | 用户实际看到的渲染结果 |
+| degradable | `degradable/` | 否 | ~2m | ❌ | 可降级依赖（搜索 L1） |
 
-contract 层不开浏览器，是部署后的第一道门禁——它红了就没必要再跑 UI 了。
+contract 不开浏览器，是部署后的第一道门禁——它红了就没必要再跑 UI。
+
+**degradable 为什么不阻断**：搜索 L1 (Meilisearch) 跑在一台 2GB 无 swap 的小
+机器上，OOM/卡死是常态化风险（2026-09-03 一天内两次：先公网 IP 变更、后进程
+卡死）。前端有 L2 兜底，L1 挂了用户照样能搜。若让它阻断发版，每次都亮红灯，
+很快就没人认真看红灯了，真正的回归反而被淹没。
+
+**怎么判读**：
+
+| L1 | L2 | ui/search | 含义 |
+|---|---|---|---|
+| 🔴 | ✅ | ✅ | 走降级路径，用户无感，择机修 |
+| 🔴 | 🔴 | — | 搜索真要挂了，紧急 |
 
 ## 跑
 
@@ -28,9 +41,11 @@ contract 层不开浏览器，是部署后的第一道门禁——它红了就�
 npm install
 npm run install-browser          # 首次
 
-npm test                         # 全量
-npm run test:contract            # 只跑契约层（最快反馈）
+npm test                         # 门禁层（contract + ui），发版看这个
+npm run test:contract            # 只跑契约层（最快反馈，~10s）
 npm run test:ui
+npm run test:degradable          # 可降级依赖（搜索 L1）
+npm run test:all                 # 含 degradable 的全量
 npm run report                   # 看 HTML 报告
 
 TARGET=http://localhost:3000 npm test    # 打本地

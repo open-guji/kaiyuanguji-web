@@ -5,9 +5,11 @@
   "type": "module",
   "description": "Production acceptance tests for kaiyuanguji-web. Contract layer (pure HTTP) checks the data pipeline and search backends; UI layer asserts what users actually see in a real browser.",
   "scripts": {
-    "test": "playwright test",
+    "test": "playwright test --project=contract --project=ui",
     "test:contract": "playwright test --project=contract",
     "test:ui": "playwright test --project=ui",
+    "test:degradable": "playwright test --project=degradable",
+    "test:all": "playwright test",
     "report": "playwright show-report out/report",
     "install-browser": "playwright install --with-deps chromium"
   },
