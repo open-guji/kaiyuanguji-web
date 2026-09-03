@@ -39,18 +39,27 @@ test.describe('搜索 L1 — Meilisearch', () => {
         });
     }
 
-    test('四个索引都存在', async ({ request }) => {
-        const res = await request.get(`${MEILI_BASE}/indexes`, {
-            headers: { Authorization: `Bearer ${MEILI_KEY}` },
-            timeout: 15_000,
+    // 逐个索引探而不是 GET /indexes 列表：MEILI_KEY 是只读 search key，
+    // 按最小权限原则**不该**有列索引的管理权限——2026-09-03 这条用例曾因此
+    // 挂在 403，误报成"索引没了"，实际四个索引都好好的。
+    // 403 是 key 权限正确的证据，不是故障。用 search 探活既够用又不需要提权。
+    for (const uid of ['works', 'books', 'collections', 'entities']) {
+        test(`索引 ${uid} 存在且可检索`, async ({ request }) => {
+            const res = await request.post(`${MEILI_BASE}/indexes/${uid}/search`, {
+                headers: {
+                    Authorization: `Bearer ${MEILI_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                data: { q: '', limit: 1 },
+                timeout: 15_000,
+            });
+
+            expect(
+                res.status(),
+                `索引 ${uid} 返回 ${res.status()}；404=索引不存在，403=key 无该索引权限，5xx=源站故障`,
+            ).toBe(200);
         });
-        expect(res.status()).toBe(200);
-        const body = await res.json();
-        const uids = (body.results ?? []).map((r: any) => r.uid);
-        for (const expected of ['works', 'books', 'collections', 'entities']) {
-            expect(uids, `缺索引 ${expected}`).toContain(expected);
-        }
-    });
+    }
 });
 
 test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () => {
