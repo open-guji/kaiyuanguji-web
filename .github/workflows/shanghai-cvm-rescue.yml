@@ -22,6 +22,7 @@ on:
         options:
           - describe   # 只读：查实例运行状态 / 是否欠费隔离
           - list       # 只读：列出该子账号在所有 region 可见的全部实例
+          - whoami     # 只读：确认这组凭证属于国内版还是国际版账号
           - reboot     # 软重启（先 describe 再重启）
           - start      # 已关机时开机
 
@@ -45,7 +46,10 @@ jobs:
           ACTION: ${{ inputs.action }}
           INSTANCE_IP: ${{ env.INSTANCE_IP }}
         run: |
-          if [ "$ACTION" = list ]; then
+          if [ "$ACTION" = whoami ]; then
+            pip install tencentcloud-sdk-python-cam -q
+            python3 ops/cvm-whoami.py
+          elif [ "$ACTION" = list ]; then
             python3 ops/cvm-list.py
           else
             python3 ops/cvm-rescue.py
