@@ -440,9 +440,13 @@ function bundleVersion() {
         commitId: shortCommit,
         fullCommitId: commitId,
         commitDate,
-        // 定时部署的新旧比对用（deploy.yml check job）：production 仓单独变更时
-        // draft commit 不变，靠这个字段判断是否需要重新部署。
+        // 定时部署的新旧比对用（deploy.yml check job）：某个仓单独变更时
+        // draft commit 不变，靠这些字段判断是否需要重新部署。
+        // 三个仓都要给全——deploy.yml 的跳过判断会读 textCommitId，
+        // 此前只写了 draft/production 两个，导致该比对恒为空字符串、
+        // 永远走「有变化」分支：不会漏部署，但定时任务每次都白跑一遍构建。
         productionCommitId,
+        textCommitId,
         bundleDate: version.bundleDate,
     };
     writeJson(join(OUT_DIR, '..', 'latest.json'), latest);

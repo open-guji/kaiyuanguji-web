@@ -12,13 +12,14 @@ test.describe('数据管线契约', () => {
     test('latest.json 可达、格式正确、不陈旧', async ({ request }) => {
         const v = await fetchLatest(request);
 
-        // 注意：latest.json 是「发布指针」，只带 draft/production 两个 commit，
-        // 用 12 位短哈希（前端直接拿它当 ?v= 用）。
-        // textCommitId 只在 current/version.json 里，见下面的用例。
+        // latest.json 是「发布指针」，commitId 用 12 位短哈希（前端直接拿它当 ?v=）。
         expect(v.commitId, 'commitId 必须是 12 位短哈希').toMatch(/^[0-9a-f]{12}$/);
         expect(v.fullCommitId, 'fullCommitId 缺失说明 bundle 时没拿到 draft 仓 HEAD').toMatch(/^[0-9a-f]{40}$/);
         // production 仓（book-index）——缺了会导致正式条目全 404
         expect(v.productionCommitId, 'productionCommitId 缺失 = production 仓没克隆成功').toMatch(/^[0-9a-f]{40}$/);
+        // book-text 仓——deploy.yml 的定时跳过判断要读它。缺了不会漏部署
+        // （比对不上必然走「有变化」分支），但定时任务每次都白跑一遍构建。
+        expect(v.textCommitId, 'latest.json 缺 textCommitId：deploy.yml 的跳过判断会永远失效').toMatch(/^[0-9a-f]{40}$/);
 
         // 发布时间不该太陈旧：超过 7 天说明连每日定时兜底部署都挂了
         expect(v.bundleDate, 'bundleDate 缺失').toBeTruthy();
