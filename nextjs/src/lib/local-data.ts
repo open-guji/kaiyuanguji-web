@@ -581,7 +581,6 @@ function enrichResourcesFromCatalog(
 // ── Collection catalog API ──
 
 export function getCollectionCatalogs(id: string) {
-    const workspaceRoot = getWorkspaceRoot();
     const itemFile = findItemFile(id);
     if (!itemFile) return null;
 
@@ -600,21 +599,39 @@ export function getCollectionCatalogs(id: string) {
 
     const catalogs: Array<{ resource_id: string; short_name?: string; data: any }> = [];
 
-    if (fs.existsSync(idDir)) {
+    // 严格按 resources[].id 找 catalog，和线上 BundleStorage.getCollectionCatalogs
+    // 一致（COS 是对象存储，无法 readdir，只能按登记的 resource id 拼路径）。
+    // 不再 readdir 整个目录——否则未登记进 resources 的 catalog 子目录会在本地
+    // 露出、线上消失，掩盖数据错误（见 collection 8rlb6yi1ecqo 的 cptw 问题）。
+    for (const res of resources) {
+        const mappingFile = path.join(idDir, res.id, 'volume_book_mapping.json');
+        if (fs.existsSync(mappingFile)) {
+            try {
+                const content = fs.readFileSync(mappingFile, 'utf-8');
+                catalogs.push({
+                    resource_id: res.id,
+                    short_name: res.short_name,
+                    data: JSON.parse(content),
+                });
+            } catch { /* skip 解析失败的 mapping */ }
+        }
+    }
+
+    // dev 暴露错误：扫到 volume_book_mapping.json 但其 resource_id 没登记进
+    // resources 的子目录——本地和线上都不会显示，需补登记到 collection.resources。
+    if (process.env.NODE_ENV !== 'production' && fs.existsSync(idDir)) {
         try {
-            const subdirs = fs.readdirSync(idDir).filter((f: string) => {
-                return fs.statSync(path.join(idDir, f)).isDirectory();
-            });
-            for (const subdir of subdirs) {
-                const mappingFile = path.join(idDir, subdir, 'volume_book_mapping.json');
-                if (fs.existsSync(mappingFile)) {
-                    const content = fs.readFileSync(mappingFile, 'utf-8');
-                    const resource = resources.find(r => r.id === subdir);
-                    catalogs.push({
-                        resource_id: subdir,
-                        short_name: resource?.short_name,
-                        data: JSON.parse(content),
-                    });
+            const registered = new Set(resources.map(r => r.id));
+            for (const subdir of fs.readdirSync(idDir)) {
+                if (registered.has(subdir)) continue;
+                const sub = path.join(idDir, subdir);
+                if (fs.statSync(sub).isDirectory()
+                    && fs.existsSync(path.join(sub, 'volume_book_mapping.json'))) {
+                    console.warn(
+                        `[getCollectionCatalogs] collection ${id} 有未登记的 catalog 子目录 "${subdir}"：` +
+                        `存在 volume_book_mapping.json 但 resource_id "${subdir}" 不在 resources 列表中，` +
+                        `本地和线上都不会显示该目录 tab。请把该 resource 补登记到 collection.resources。`
+                    );
                 }
             }
         } catch { /* ignore */ }
