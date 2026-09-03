@@ -41,7 +41,7 @@ if [ "$failed" -gt 0 ]; then
   note ""
   note "若失败项只有 Meili /health：搜索 L1 中断，前端自动降级 L2，"
   note "用户仍能搜索但更慢、结果不再随每日 cron 更新。参见 overview 仓"
-  note "\`项目进展/古籍索引网站/故障-2026-09-03-上海服务器不可达.md\`。"
+  note "\`项目进展/古籍索引网站/故障-2026-09-03-上海服务器IP变更.md\`。"
 else
   note "全部通过。"
 fi

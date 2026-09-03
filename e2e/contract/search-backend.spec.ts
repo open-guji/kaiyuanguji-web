@@ -15,8 +15,9 @@ test.describe('搜索 L1 — Meilisearch', () => {
         const res = await request.get(`${MEILI_BASE}/health`, { timeout: 15_000 });
         expect(
             res.status(),
-            `Meili 源站不健康（522=上海服务器不可达，可能 OOM 或进程挂了）。` +
-            `前端会降级到 L2，用户仍能搜索但更慢、结果陈旧。`,
+            `Meili 源站不健康。522=EdgeOne 回源失败——先查源站 IP 是否变了` +
+            `（2026-09-03 就是公网 IP 变更、EdgeOne 源站组仍指旧 IP，被误判成整机宕机），` +
+            `再考虑进程挂/OOM。前端会降级到 L2，用户仍能搜索但更慢、结果陈旧。`,
         ).toBe(200);
     });
 

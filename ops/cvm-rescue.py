@@ -1,4 +1,4 @@
-"""上海云主机 (81.69.15.227) 救援脚本，跑在 GitHub 托管 runner 上。
+"""上海云主机 (122.51.91.177) 救援脚本，跑在 GitHub 托管 runner 上。
 
 单独成文件而不是内联进 workflow：deploy.yml 里记着一个坑——bash 双引号包裹的
 python3 -c 内联脚本，只要注释里出现半角双引号就会让 shell 提前截断，后半段
@@ -12,7 +12,7 @@ from tencentcloud.common import credential
 from tencentcloud.common.exception import TencentCloudSDKException
 from tencentcloud.cvm.v20170312 import cvm_client, models
 
-TARGET_IP = os.environ.get("INSTANCE_IP", "81.69.15.227")
+TARGET_IP = os.environ.get("INSTANCE_IP", "122.51.91.177")
 ACTION = os.environ.get("ACTION", "describe")
 
 # 上海机器，但不写死 region：子账号可能只在某些 region 有权限，

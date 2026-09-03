@@ -23,7 +23,7 @@ import {
  * Meilisearch L1 配置（编译时注入）。
  *
  * - NEXT_PUBLIC_MEILI_URL：API base，例如 https://api.kaiyuanguji.com
- *   或开发期 IP 直连 http://81.69.15.227:7700
+ *   或开发期 IP 直连 http://122.51.91.177:7700
  * - NEXT_PUBLIC_MEILI_KEY：tenant token / 公开搜索 key（绝不放 master key）
  *
  * 不设这两个变量时，搜索完全走 L2（worker），与未上线 Meili 等价。

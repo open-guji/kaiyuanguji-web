@@ -26,7 +26,7 @@ on:
           - start      # 已关机时开机
 
 env:
-  INSTANCE_IP: 81.69.15.227
+  INSTANCE_IP: 122.51.91.177
 
 jobs:
   rescue:

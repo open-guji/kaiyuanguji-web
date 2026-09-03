@@ -16,7 +16,7 @@ import type { IndexStorage } from 'book-index-ui/storage';
 import type { IndexEntry, IndexType, PageResult, LoadOptions, GroupedSearchResult } from 'book-index-ui';
 
 export interface MeiliConfig {
-    /** API base, e.g. 'https://api.kaiyuanguji.com' or 'http://81.69.15.227:7700' */
+    /** API base, e.g. 'https://api.kaiyuanguji.com' or 'http://122.51.91.177:7700' */
     baseUrl: string;
     /** Read-only key（不要用 master key）。可空 — 此时不发 Authorization 头 */
     apiKey?: string;
@@ -143,6 +143,10 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 q: query,
                 limit: String(opts.limit ?? 5),
                 offset: String(opts.offset ?? 0),
+                // 网站搜索只暴露 production 条目；draft 混入是 2026-09 发现的回归。
+                // 依赖 full-reindex.mjs 写入的 is_draft 字段，重建前的旧文档没有
+                // 该字段时会被这条 filter 一并排除掉（Meili 对缺字段视为不匹配）。
+                filter: 'is_draft = false',
             });
             const r = await fetch(`${baseUrl}/indexes/${indexUid}/search?${params}`, {
                 method: 'GET',
