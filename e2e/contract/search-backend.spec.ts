@@ -86,6 +86,43 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
         expect(byType.get('work').docCount).toBeGreaterThan(50_000);
     });
 
+    test('索引覆盖率与全站条目数相当（不能只索引到一个仓）', async ({ request }) => {
+        // 2026-09-03 实测：线上 L2 的 works docCount=89974，恰好等于 draft 仓
+        // works 总数，而其中 89972 条是升格墓碑（stub 化到只剩标题）——
+        // 也就是说兜底搜索索引里几乎全是废数据，production 的 9 万条完整条目
+        // 一条都没进去。根因：build-search-index.mjs 只读 BOOK_INDEX_DRAFT_DIR。
+        // entities 更直白：29336 对 58669，正好差一个仓。
+        //
+        // L1 已于 2026-08-25 修成「两仓都收 + 跳过墓碑」，L2 一直没跟上。
+        // 这里用 meta.json 的全站统计做基准，覆盖率过低即报警。
+        const v = await fetchLatest(request);
+        const [metaRes, searchRes] = await Promise.all([
+            request.get(`${DATA_BASE}/current/meta.json?v=${v.commitId}`),
+            request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json`),
+        ]);
+        expect(metaRes.ok() && searchRes.ok()).toBeTruthy();
+
+        const meta = await metaRes.json();
+        const search = await searchRes.json();
+        const byType = new Map<string, any>(search.indices.map((i: any) => [i.type, i]));
+
+        // meta.json 的计数含墓碑，L2 跳过墓碑，所以不会 1:1 相等。
+        // 但 entities 侧没有墓碑，应当高度吻合；差一半就是漏了一个仓。
+        const entityDocs = byType.get('entity').docCount;
+        expect(
+            entityDocs / meta.entities,
+            `L2 entity 覆盖率仅 ${((entityDocs / meta.entities) * 100).toFixed(0)}%` +
+            `（${entityDocs}/${meta.entities}）——多半只索引了 draft 一个仓`,
+        ).toBeGreaterThan(0.9);
+
+        // works 会因跳过墓碑而低于 meta 计数，但不该低到只剩一半
+        const workDocs = byType.get('work').docCount;
+        expect(
+            workDocs,
+            `L2 work docCount=${workDocs} 偏低（全站 ${meta.works}）——检查是否漏了 production 仓`,
+        ).toBeGreaterThan(70_000);
+    });
+
     test('首个 work 分片可下载', async ({ request }) => {
         const v = await fetchLatest(request);
         const metaRes = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json`);

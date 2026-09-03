@@ -145,36 +145,86 @@ function buildIndexForType(index, searchS, groupKey, typeLabel) {
     if (shardCount > 1) {
         return { type: typeLabel, shards: shardInfos.map(s => s.file), docCount: totalDocs, sizeKb: totalSizeKb, buildMs: totalBuildMs };
     }
+    // 某类型 0 条时 shardInfos 为空（如数据仓缺失、或该类型确实没有条目）——
+    // 不写 core-{type}.json，meta.json 里对应条目也不带 file，
+    // worker init 时会正确跳过该类型（没有文件可 fetch）。
+    if (shardInfos.length === 0) {
+        return { type: typeLabel, docCount: 0, sizeKb: 0, buildMs: totalBuildMs };
+    }
     return { type: typeLabel, file: shardInfos[0].file, docCount: totalDocs, sizeKb: totalSizeKb, buildMs: totalBuildMs };
 }
 
 // ─── 主流程 ───
 
 /**
- * 直接从 book-index-draft 的 16 个 shard + collections.json 重建索引；
- * 不再依赖 public/data/index.json（已废弃）。
+ * 读单个仓（draft 或 production）的 index/ 目录，entry 上打 _root 标签。
  */
-function loadShardedIndex() {
-    const draftDir = process.env.BOOK_INDEX_DRAFT_DIR
-        || resolve(__dirname, '..', '..', '..', 'book-index-draft');
-    const indexDir = join(draftDir, 'index');
-    if (!existsSync(indexDir)) {
-        console.error(`❌ index directory not found: ${indexDir}`);
-        process.exit(1);
-    }
-    const merged = { books: {}, collections: {}, works: {}, entities: {} };
+function loadRoot(rootDir, rootLabel, merged) {
+    if (!existsSync(rootDir)) return;
+    const indexDir = join(rootDir, 'index');
+    if (!existsSync(indexDir)) return;
     for (const sub of ['books', 'works', 'entities']) {
         const subDir = join(indexDir, sub);
         if (!existsSync(subDir)) continue;
         for (const f of readdirSync(subDir)) {
             if (!f.endsWith('.json')) continue;
             const data = readJson(join(subDir, f));
-            Object.assign(merged[sub], data);
+            for (const [id, entry] of Object.entries(data)) {
+                merged[sub][id] = { ...entry, _root: rootLabel };
+            }
         }
     }
     const cf = join(indexDir, 'collections.json');
-    if (existsSync(cf)) merged.collections = readJson(cf);
-    return merged;
+    if (existsSync(cf)) {
+        for (const [id, entry] of Object.entries(readJson(cf))) {
+            merged.collections[id] = { ...entry, _root: rootLabel };
+        }
+    }
+}
+
+/**
+ * 合并 draft + production 两仓的 shard 索引，跳过升格墓碑。
+ *
+ * 语义与 L1（indexer/full-reindex.mjs 的 iterAllRoots）保持一致：**两仓都收，
+ * 只丢墓碑**。不能只留 production —— 那会永久丢掉尚未升格的新条目。
+ *
+ * 升格后 draft 侧只留 `promoted_to` 墓碑（detail 已 stub 化到只剩标题），
+ * 必须跳过，否则索引里全是「裸标题、无作者」的废文档，且会盖掉 production
+ * 的完整条目。L1 曾踩过同一个坑（2026-08-25 修），L2 一直没跟上：
+ * 修复前线上 L2 的 works docCount=89974，恰好等于 draft 仓 works 总数，
+ * 而其中 89972 条是墓碑 —— 也就是说兜底搜索索引里几乎全是废数据，
+ * production 的 91219 条完整条目一条都没进去。
+ *
+ * draft 先写、production 后写覆盖同 ID（与 bundle-data.mjs 的合并顺序一致）。
+ */
+function loadShardedIndex() {
+    const draftDir = process.env.BOOK_INDEX_DRAFT_DIR
+        || resolve(__dirname, '..', '..', '..', 'book-index-draft');
+    const productionDir = process.env.BOOK_INDEX_PRODUCTION_DIR
+        || resolve(__dirname, '..', '..', '..', 'book-index');
+    if (!existsSync(join(draftDir, 'index'))) {
+        console.error(`❌ index directory not found: ${join(draftDir, 'index')}`);
+        process.exit(1);
+    }
+    if (!existsSync(productionDir)) {
+        console.warn(`⚠️  production 仓未找到（${productionDir}）—— L2 只会索引 draft 侧活体条目，已升格的正式条目将全部缺席`);
+    }
+
+    const merged = { books: {}, collections: {}, works: {}, entities: {} };
+    loadRoot(draftDir, 'draft', merged);
+    loadRoot(productionDir, 'official', merged);
+
+    const kept = { books: {}, collections: {}, works: {}, entities: {} };
+    let tombstones = 0;
+    for (const groupKey of Object.keys(merged)) {
+        for (const [id, entry] of Object.entries(merged[groupKey])) {
+            if (entry.promoted_to) { tombstones++; continue; }
+            kept[groupKey][id] = entry;
+        }
+    }
+    const total = Object.values(kept).reduce((n, g) => n + Object.keys(g).length, 0);
+    console.log(`  索引来源：draft + production，跳过 ${tombstones} 个升格墓碑，实收 ${total} 条`);
+    return kept;
 }
 
 /** 构建搜索专用的繁→简差异表（仅 title/author/additional_titles 与原文不同的条目） */
