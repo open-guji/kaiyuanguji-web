@@ -19,7 +19,7 @@
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",
     "@xyflow/react": "^12.10.2",
-    "book-index-ui": "^0.6.1",
+    "book-index-ui": "^0.6.2",
     "gray-matter": "^4.0.3",
     "minisearch": "^7.2.0",
     "next": "^16.1.4",
