@@ -115,13 +115,35 @@ describe('local-data getEntry', () => {
 });
 
 describe('local-data findItemFile', () => {
-    it('按 ID 前 3 字符落桶 + 找 {id}-*.json', () => {
+    it('按 ID 后 3 字符落桶 + 找 {id}-*.json', () => {
         const id = 'abcd1234';
-        const filePath = path.join(workspace, 'book-index-draft', 'Work', 'a', 'b', 'c', `${id}-标题.json`);
+        const filePath = path.join(workspace, 'book-index-draft', 'Work', '2', '3', '4', `${id}-标题.json`);
         writeJson(filePath, { id, title: '标题', type: 'Work' });
 
         const found = loadModule().findItemFile(id);
         expect(found).toBe(filePath);
+    });
+
+    // 分桶必须用 ID 的**后**三位——这是两个数据仓的既有事实（抽样 200 条
+    // Work，200/200 匹配后三位、0/200 匹配前三位）。此前实现与这批测试都
+    // 误用了前三位，导致本地开发模式下 findItemFile 永远返回 null；因为
+    // 测试自己也按错误规则造 fixture，红不出来，错误就一直固化着。
+    // 这条用例显式钉住规则：放对桶能找到、放错桶找不到。
+    it('用前 3 字符落桶则找不到（防止规则被改回去）', () => {
+        const id = 'xyz98765';
+        const wrongBucket = path.join(
+            workspace, 'book-index-draft', 'Work',
+            id[0], id[1], id[2], `${id}-x.json`,
+        );
+        writeJson(wrongBucket, { id, type: 'Work' });
+        expect(loadModule().findItemFile(id)).toBeNull();
+
+        const rightBucket = path.join(
+            workspace, 'book-index-draft', 'Work',
+            id.slice(-3)[0], id.slice(-3)[1], id.slice(-3)[2], `${id}-x.json`,
+        );
+        writeJson(rightBucket, { id, type: 'Work' });
+        expect(loadModule().findItemFile(id)).toBe(rightBucket);
     });
 
     it('找不到返回 null', () => {
@@ -130,7 +152,7 @@ describe('local-data findItemFile', () => {
 
     it('扫 official 和 draft 两个仓库', () => {
         const id = 'aaa12345';
-        const officialFile = path.join(workspace, 'book-index', 'Book', 'a', 'a', 'a', `${id}-x.json`);
+        const officialFile = path.join(workspace, 'book-index', 'Book', '3', '4', '5', `${id}-x.json`);
         writeJson(officialFile, { id, title: 'x', type: 'Book' });
         expect(loadModule().findItemFile(id)).toBe(officialFile);
     });
@@ -139,7 +161,7 @@ describe('local-data findItemFile', () => {
 describe('local-data getItem', () => {
     it('读取并 parse JSON', () => {
         const id = 'item1234';
-        const filePath = path.join(workspace, 'book-index-draft', 'Work', 'i', 't', 'e', `${id}-x.json`);
+        const filePath = path.join(workspace, 'book-index-draft', 'Work', '2', '3', '4', `${id}-x.json`);
         writeJson(filePath, { id, title: '红楼梦', type: 'Work' });
         const data = loadModule().getItem(id);
         expect(data?.title).toBe('红楼梦');
@@ -147,7 +169,7 @@ describe('local-data getItem', () => {
 
     it('Work 含 collated_edition 目录 → has_collated=true', () => {
         const id = 'work1234';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', 'w', 'o', 'r');
+        const dir = path.join(workspace, 'book-index-draft', 'Work', '2', '3', '4');
         writeJson(path.join(dir, `${id}-t.json`), { id, title: 't', type: 'Work' });
         fs.mkdirSync(path.join(dir, id, 'collated_edition'), { recursive: true });
         const data = loadModule().getItem(id);
@@ -156,7 +178,7 @@ describe('local-data getItem', () => {
 
     it('Entity title 缺失时用 primary_name', () => {
         const id = 'ent12345';
-        const filePath = path.join(workspace, 'book-index-draft', 'Entity', 'e', 'n', 't', `${id}-x.json`);
+        const filePath = path.join(workspace, 'book-index-draft', 'Entity', '3', '4', '5', `${id}-x.json`);
         writeJson(filePath, { id, type: 'Entity', primary_name: '司馬遷' });
         expect(loadModule().getItem(id)?.title).toBe('司馬遷');
     });
@@ -167,7 +189,7 @@ describe('local-data getItem', () => {
 
     it('损坏的 JSON 返回 null（不抛）', () => {
         const id = 'bad12345';
-        const filePath = path.join(workspace, 'book-index-draft', 'Work', 'b', 'a', 'd', `${id}-x.json`);
+        const filePath = path.join(workspace, 'book-index-draft', 'Work', '3', '4', '5', `${id}-x.json`);
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, '{invalid json', 'utf-8');
         expect(loadModule().getItem(id)).toBeNull();
@@ -219,7 +241,7 @@ describe('local-data searchAll / searchEntries', () => {
 describe('local-data collated edition', () => {
     it('getCollatedEditionIndex 优先读 collated_edition_index.json', () => {
         const id = 'wcoll123';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', 'w', 'c', 'o');
+        const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
         const idxData = { work_id: id, juans: [{ name: 'juan1' }] };
         writeJson(path.join(dir, id, 'collated_edition', 'collated_edition_index.json'), idxData);
@@ -229,7 +251,7 @@ describe('local-data collated edition', () => {
 
     it('getCollatedEditionIndex 无索引文件时按 juan*.json 排序生成', () => {
         const id = 'wcoll456';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', 'w', 'c', 'o');
+        const dir = path.join(workspace, 'book-index-draft', 'Work', '4', '5', '6');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
         const collDir = path.join(dir, id, 'collated_edition');
         // 几个 juan 文件
@@ -249,7 +271,7 @@ describe('local-data collated edition', () => {
 
     it('getCollatedJuanText 读取 markdown 文件', () => {
         const id = 'wjuan123';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', 'w', 'j', 'u');
+        const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
         const collTextDir = path.join(dir, id, 'collated_edition', 'text');
         fs.mkdirSync(collTextDir, { recursive: true });

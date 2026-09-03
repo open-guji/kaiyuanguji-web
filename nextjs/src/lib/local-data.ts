@@ -134,8 +134,8 @@ export function getAllEntries(type: string): IndexFileEntry[] {
 
 export function findItemFile(id: string): string | null {
     const workspaceRoot = getWorkspaceRoot();
-    const prefix = id.padEnd(3, '_').substring(0, 3);
-    const [c1, c2, c3] = [prefix[0], prefix[1], prefix[2]];
+    const suffix = id.padStart(3, '_').slice(-3);
+    const [c1, c2, c3] = [suffix[0], suffix[1], suffix[2]];
 
     for (const folder of ['book-index', 'book-index-draft']) {
         for (const typeDir of ['Book', 'Collection', 'Work', 'Entity']) {
