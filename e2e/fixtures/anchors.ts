@@ -25,14 +25,20 @@ export const MEILI_KEY =
 
 /**
  * 全局统计的合理区间（档位 2）。
- * 取值时刻：2026-09-03，works=181097 books=41668 collections=143 entities=58669。
  * 区间给得宽（约 ±40%），只为拦住"数据没打包进去"「索引塌了」这类灾难，
  * 不为追踪日常增长——日常增长撞到上界时，把上界调大即可。
+ *
+ * ⚠️ 2026-09-04 下调：旧区间基于 meta.json 的 works=181097 等数字，而那些
+ * 数字把升格墓碑算了两遍（bundle-data.mjs 漏了 promoted_to 过滤，见该文件
+ * 注释）。修复后 works 回到真实的 ~91k，books ~21k，collections ~72。
+ * 旧下界 works>=120_000 会因此误报，故按真实量级重设。
+ * 取值时刻：2026-09-04（修复后），works≈91125 books≈20841
+ * collections≈72 entities≈58669。
  */
 export const COUNT_RANGES = {
-    works: { min: 120_000, max: 400_000 },
-    books: { min: 25_000, max: 120_000 },
-    collections: { min: 100, max: 1_000 },
+    works: { min: 60_000, max: 200_000 },
+    books: { min: 12_000, max: 60_000 },
+    collections: { min: 40, max: 500 },
     entities: { min: 35_000, max: 200_000 },
 } as const;
 

@@ -108,7 +108,18 @@ const NUM_SHARDS = 16;
 /**
  * 加载 draft + production 两个仓的 shard 索引并合并。
  * 每个 entry 上加 `_root` 字段（"draft"/"official"），bundleL1 据此找 detail 文件。
- * ID 不冲突（snowflake status 位区分），但仍 dedupe，production 优先。
+ *
+ * ⚠️ 必须跳过升格墓碑（draft 侧 `promoted_to`），否则计数翻倍：
+ * 升格会给条目**分配新 ID**，旧 ID 只留一个 stub 墓碑。按 ID dedupe 挡不住
+ * 这种情况——墓碑(旧 ID) 与真身(新 ID) 是两个不同的 key，两条都会留下。
+ * 2026-09-04 查实：meta.json 的 works/books/collections 恰好是真实值的
+ * 1.99~2.00 倍（works 181097 vs 真实 91125，差 89972 正是墓碑数），
+ * 而不参与升格的 entities 比值精确为 1.000（对照组）。
+ *
+ * 同一个坑 L1 在 2026-08-25 修（indexer/full-reindex.mjs 的 iterAllRoots），
+ * L2 随后跟上（build-search-index.mjs 的 loadShardedIndex），**唯独本文件
+ * 一直没改** —— 于是首页「N 部作品」的统计数字虚高一倍。三处语义须一致：
+ * 两仓都收，只丢墓碑。
  */
 function loadShardedIndex() {
     const merged = { books: {}, collections: {}, works: {}, entities: {} };
@@ -127,6 +138,7 @@ function _mergeRoot(merged, rootDir, rootLabel) {
     const colPath = join(indexDir, 'collections.json');
     if (existsSync(colPath)) {
         for (const [id, entry] of Object.entries(readJson(colPath))) {
+            if (entry?.promoted_to) continue; // 升格墓碑：真身在 production 侧
             merged.collections[id] = { ...entry, _root: rootLabel };
         }
     }
@@ -137,6 +149,7 @@ function _mergeRoot(merged, rootDir, rootLabel) {
             const shardPath = join(indexDir, typeKey, `${i.toString(16)}.json`);
             if (existsSync(shardPath)) {
                 for (const [id, entry] of Object.entries(readJson(shardPath))) {
+                    if (entry?.promoted_to) continue; // 升格墓碑：真身在 production 侧
                     merged[typeKey][id] = { ...entry, _root: rootLabel };
                 }
             }
