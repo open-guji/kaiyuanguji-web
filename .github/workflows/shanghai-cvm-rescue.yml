@@ -21,6 +21,7 @@ on:
         type: choice
         options:
           - describe   # 只读：查实例运行状态 / 是否欠费隔离
+          - list       # 只读：列出该子账号在所有 region 可见的全部实例
           - reboot     # 软重启（先 describe 再重启）
           - start      # 已关机时开机
 
@@ -43,4 +44,9 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           ACTION: ${{ inputs.action }}
           INSTANCE_IP: ${{ env.INSTANCE_IP }}
-        run: python3 ops/cvm-rescue.py
+        run: |
+          if [ "$ACTION" = list ]; then
+            python3 ops/cvm-list.py
+          else
+            python3 ops/cvm-rescue.py
+          fi
