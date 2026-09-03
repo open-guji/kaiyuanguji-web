@@ -36,6 +36,8 @@ for label, endpoint in [
         print("❌ {}: {}".format(label, str(exc)[:160]))
 
 # 再查这个子账号身上到底挂了哪些策略，直接看 CVM 权限在不在
+print("")
+print("--- 已挂载策略 ---")
 try:
     http = HttpProfile()
     http.endpoint = "cam.tencentcloudapi.com"
@@ -44,13 +46,13 @@ try:
     client = cam_client.CamClient(cred, "ap-shanghai", prof)
 
     req = cam_models.ListAttachedUserAllPoliciesRequest()
-    req.TargetUin = int(os.environ.get("TARGET_UIN", "0")) or None
-    print("
---- 已挂载策略 ---")
+    req.TargetUin = int(os.environ["TARGET_UIN"])
+    req.AttachType = 0
     resp = client.ListAttachedUserAllPolicies(req)
+    if not resp.PolicyList:
+        print("  (无)")
     for pol in resp.PolicyList:
-        print("  {}  ({})".format(pol.PolicyName, pol.Remark or "")[:120])
+        print("  {} | {}".format(pol.PolicyName, (pol.Remark or "")[:70]))
 except TencentCloudSDKException as exc:
-    print("
-查策略失败（多半是子账号自己无 CAM 读权限，正常）：{}".format(str(exc)[:200]))
-
+    print("  查不到：{}".format(str(exc)[:220]))
+    print("  （子账号通常没有 CAM 读权限，这属正常；以控制台所见为准）")

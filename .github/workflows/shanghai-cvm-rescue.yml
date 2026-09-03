@@ -45,6 +45,7 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           ACTION: ${{ inputs.action }}
           INSTANCE_IP: ${{ env.INSTANCE_IP }}
+          TARGET_UIN: '450200301165'   # whoami 查出的子账号 Uin
         run: |
           if [ "$ACTION" = whoami ]; then
             pip install tencentcloud-sdk-python-cam -q
