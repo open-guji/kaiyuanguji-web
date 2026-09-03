@@ -1,0 +1,39 @@
+name: Health check
+
+# 定时探活。2026-09-03 上海服务器整机不可达，是写测试时手工 curl 撞见的——
+# 没有告警，没人报障，因为搜索 L2 兜底让用户侧完全无感。
+# L2 降级越安静，越需要机器来盯 L1。
+#
+# 跑在 GitHub 托管 runner 上，与被监控对象解耦（那台机器上的 self-hosted
+# runner 在故障期间一并离线，不能用来监控它自己）。
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 每 6 小时
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      failed: ${{ steps.probe.outputs.failed }}
+      report: ${{ steps.probe.outputs.report }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe endpoints
+        id: probe
+        run: bash ops/health-probe.sh
+
+      # 探活失败时开 issue（同一时间只留一个 open 的，避免每 6 小时刷屏）
+      - name: Open or update alert issue
+        if: ${{ steps.probe.outputs.failed != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT: ${{ steps.probe.outputs.report }}
+        run: bash ops/health-alert.sh
