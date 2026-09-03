@@ -1,0 +1,17 @@
+{
+  "name": "kaiyuanguji-web-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Production acceptance tests for kaiyuanguji-web. Contract layer (pure HTTP) checks the data pipeline and search backends; UI layer asserts what users actually see in a real browser.",
+  "scripts": {
+    "test": "playwright test",
+    "test:contract": "playwright test --project=contract",
+    "test:ui": "playwright test --project=ui",
+    "report": "playwright show-report out/report",
+    "install-browser": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
+  }
+}

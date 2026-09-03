@@ -1,7 +1,11 @@
 {
   "scripts": {
     "prepare": "husky",
-    "test": "cd nextjs && npm test"
+    "test": "cd nextjs && npm test",
+    "test:e2e": "npm --prefix e2e test",
+    "test:e2e:contract": "npm --prefix e2e run test:contract",
+    "test:e2e:ui": "npm --prefix e2e run test:ui",
+    "test:e2e:report": "npm --prefix e2e run report"
   },
   "devDependencies": {
     "husky": "^9.1.7"

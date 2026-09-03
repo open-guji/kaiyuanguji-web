@@ -268,3 +268,49 @@ jobs:
           resp_site = client.CreatePurgeTask(req_site)
           print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
+
+  # --- 部署后验收：确认功能没坏、数据真的上线了 ---
+  #
+  # 老 smoke 只看网络层（字节数/404/pageerror），2026-09-02~03 那批故障
+  # （整理本 tab 消失、"0 部书"、书名不渲染）它一个都发现不了——那些请求全是
+  # 200。这个 job 断言的是「内容」。
+  verify:
+    runs-on: ubuntu-latest
+    needs: build
+    # 部署失败就没必要验收了；但 build 被 check 跳过时（数据无变化）也不必跑
+    if: needs.build.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+
+      - name: Install chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
+      - name: Wait for CDN propagation
+        run: sleep 60
+
+      # 契约层先跑：不开浏览器、几秒出结果，红了就不用往下走
+      - name: Contract tests
+        working-directory: e2e
+        run: npm run test:contract
+
+      - name: UI tests
+        working-directory: e2e
+        run: npm run test:ui
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e/out/report
+          retention-days: 14
