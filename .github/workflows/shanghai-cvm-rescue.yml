@@ -1,0 +1,46 @@
+name: Shanghai CVM rescue
+
+# 上海云主机整机不可达（2026-09-03）时的救援入口。
+#
+# 与 shanghai-server-ops.yml 的关键区别：本 workflow 跑在 GitHub 托管 runner 上，
+# 不依赖那台机器上的 self-hosted runner。机器宕机时 self-hosted runner 一并离线，
+# 那条通道正是这次故障中失效的（0 runners），所以救援通道必须放在机器外面。
+#
+# 走腾讯云 CVM OpenAPI：先查实例状态（只读），必要时重启。
+# 注意：本仓复用 kaiyuanguji-web 的 TENCENT_SECRET_* 子账号，
+# 该子账号原本只为 EdgeOne purge 授权，很可能没有 CVM 权限——
+# describe 一步会明确把鉴权错误打出来，而不是静默失败。
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 要执行的操作
+        required: true
+        default: describe
+        type: choice
+        options:
+          - describe   # 只读：查实例运行状态 / 是否欠费隔离
+          - reboot     # 软重启（先 describe 再重启）
+          - start      # 已关机时开机
+
+env:
+  INSTANCE_IP: 81.69.15.227
+
+jobs:
+  rescue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDK
+        run: pip install tencentcloud-sdk-python-cvm -q
+
+      - name: Run CVM action
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          ACTION: ${{ inputs.action }}
+          INSTANCE_IP: ${{ env.INSTANCE_IP }}
+        run: python3 ops/cvm-rescue.py
