@@ -7,6 +7,10 @@
 # 用法：
 #   ./reindex-and-purge.sh           # 手动跑
 #   或 cron: 0 4 * * * /opt/indexer/reindex-and-purge.sh >> /var/log/indexer.log 2>&1
+#
+# ⚠️ 低配机（上海云 2 核 / 2GB / 无 swap）**不要直接跑本脚本**：
+# 2026-09-04 实测会把整机压到失去响应（SSH 握不上手、/health 返 000）。
+# 改用同目录的 ./reindex-limited.sh，它用 systemd-run 上 cgroup 硬限制。
 
 set -e
 cd "$(dirname "$0")"

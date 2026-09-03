@@ -351,7 +351,15 @@ const SETTINGS = {
 
 // ─── push helper ───
 
-async function pushInBatches(indexUid, iterable, { batchSize = 1000, maxConcurrent = 3 } = {}) {
+// 批量参数可用环境变量压小，给内存紧张的机器留活路。
+// 上海云是 2 核 / 2GB / 无 swap，Meili 常驻就占 ~860MB：2026-09-04 用默认值
+// 跑全量重建，速率从 600/s 一路掉到 194/s，最后整机失去响应（SSH 连不上、
+// /health 返 000），只能等它自己缓过来。批越大 Meili 单次 indexing 的峰值
+// 内存越高，是压垮机器的主因。低配机建议 BATCH_SIZE=200 MAX_CONCURRENT=1。
+const BATCH_SIZE = Number(process.env.BATCH_SIZE) || 1000;
+const MAX_CONCURRENT = Number(process.env.MAX_CONCURRENT) || 3;
+
+async function pushInBatches(indexUid, iterable, { batchSize = BATCH_SIZE, maxConcurrent = MAX_CONCURRENT } = {}) {
     let batch = [];
     let total = 0;
     const pending = [];
@@ -433,7 +441,7 @@ async function main() {
         for await (const { kind, doc } of combined()) {
             if (kind === 'work') {
                 worksBuf.push(doc);
-                if (worksBuf.length >= 1000) {
+                if (worksBuf.length >= BATCH_SIZE) {
                     if (!dryRun) {
                         worksPending.push(pushBatch('works', worksBuf).then(waitForTask));
                         while (worksPending.length >= 3) await worksPending.shift();
