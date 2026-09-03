@@ -99,10 +99,15 @@ export function createCosStorage(): IndexStorage {
     function ensureInner(): Promise<{ inner: BundleStorage; baseUrl: string }> {
         if (resolved) return Promise.resolve(resolved);
         if (!resolving) {
-            resolving = getCosDataBaseUrl().then(baseUrl => {
-                resolved = { inner: new BundleStorage({ basePath: baseUrl }), baseUrl };
-                return resolved;
-            });
+            // 版本号必须从 resolveCosVersion()（读不缓存的 latest.json）拿，注入给
+            // BundleStorage —— 不能让它自己 fetch basePath/version.json：那是
+            // current/version.json，被 CDN 打了 immutable 长缓存，实测滞后 9+ 天。
+            resolving = Promise.all([getCosDataBaseUrl(), resolveCosVersion()]).then(
+                ([baseUrl, commit]) => {
+                    resolved = { inner: new BundleStorage({ basePath: baseUrl, version: commit }), baseUrl };
+                    return resolved;
+                }
+            );
         }
         return resolving;
     }
