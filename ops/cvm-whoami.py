@@ -34,3 +34,23 @@ for label, endpoint in [
             label, resp.AppId, resp.Uin, resp.OwnerUin))
     except TencentCloudSDKException as exc:
         print("❌ {}: {}".format(label, str(exc)[:160]))
+
+# 再查这个子账号身上到底挂了哪些策略，直接看 CVM 权限在不在
+try:
+    http = HttpProfile()
+    http.endpoint = "cam.tencentcloudapi.com"
+    prof = ClientProfile()
+    prof.httpProfile = http
+    client = cam_client.CamClient(cred, "ap-shanghai", prof)
+
+    req = cam_models.ListAttachedUserAllPoliciesRequest()
+    req.TargetUin = int(os.environ.get("TARGET_UIN", "0")) or None
+    print("
+--- 已挂载策略 ---")
+    resp = client.ListAttachedUserAllPolicies(req)
+    for pol in resp.PolicyList:
+        print("  {}  ({})".format(pol.PolicyName, pol.Remark or "")[:120])
+except TencentCloudSDKException as exc:
+    print("
+查策略失败（多半是子账号自己无 CAM 读权限，正常）：{}".format(str(exc)[:200]))
+
