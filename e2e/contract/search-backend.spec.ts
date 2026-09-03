@@ -68,7 +68,7 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
         const v = await fetchLatest(request);
         // 分片走 v/<commit>/search/，与 entry 的 current/ 不同：
         // 倒排索引文件互相引用，必须 commit 隔离，否则版本切换时会拿到混合快照
-        const res = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json`);
+        const res = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`);
         expect(
             res.ok(),
             'L2 分片清单取不到——L1 一旦故障搜索就彻底不可用',
@@ -98,7 +98,7 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
         const v = await fetchLatest(request);
         const [metaRes, searchRes] = await Promise.all([
             request.get(`${DATA_BASE}/current/meta.json?v=${v.commitId}`),
-            request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json`),
+            request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`),
         ]);
         expect(metaRes.ok() && searchRes.ok()).toBeTruthy();
 
@@ -125,7 +125,7 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
 
     test('首个 work 分片可下载', async ({ request }) => {
         const v = await fetchLatest(request);
-        const metaRes = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json`);
+        const metaRes = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`);
         const meta = await metaRes.json();
         const workIdx = meta.indices.find((i: any) => i.type === 'work');
         const first = workIdx.shards?.[0] ?? workIdx.file;
