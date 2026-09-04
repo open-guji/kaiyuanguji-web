@@ -40,5 +40,15 @@ export async function fetchLatest(request: APIRequestContext): Promise<DataVersi
 /** 拼一个带正确版本号的 data URL */
 export function dataUrl(path: string, version: string): string {
     const clean = path.replace(/^\//, '');
-    return `${DATA_BASE}/${clean}?v=${version}`;
+    // 额外挂一个时间戳绕开 CDN 边缘缓存。
+    //
+    // 只带 ?v=<commitId> 不够：commitId 取自数据仓 HEAD，而一次「代码改了、
+    // 数据没改」的部署会重新打包 current/* 但 commitId 不变——URL 一模一样，
+    // CDN 于是继续吐旧内容。部署后立刻跑的 verify job 因此读到上一版数据，
+    // 报出根本不存在的失败（2026-09-04：meta.json 明明已是 88489，
+    // 测试却拿到旧的 2980）。
+    //
+    // 生产前端不需要这个时间戳——它靠 commitId 分离缓存是正确的策略，
+    // 只有「部署后立即验证」这个场景必须看到源站真实状态。
+    return `${DATA_BASE}/${clean}?v=${version}&_=${Date.now()}`;
 }
