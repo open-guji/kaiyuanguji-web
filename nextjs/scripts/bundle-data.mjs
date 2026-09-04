@@ -317,6 +317,17 @@ function bundleMeta() {
         if (item.has_image) hasImage++;
         if (item.subtype) subtypeStats[item.subtype] = (subtypeStats[item.subtype] ?? 0) + 1;
     }
+    // subtype 是可选字段，96.7% 的 Work 根本没写——它们就是普通的「书」，
+    // 只有文章/诗词/篇章这类才需要显式标注。
+    //
+    // 此前 subtypeStats.book 只数「显式标了 subtype=book」的条目，
+    // 于是首页长期显示「書 27 部」，把另外 88,000+ 部书全漏了。
+    // 这里把「未标注」并入 book，让这个数字回到它该有的语义：
+    // 总作品数减去明确属于其他类型的部分。
+    const typed = Object.entries(subtypeStats)
+        .filter(([k]) => k !== 'book')
+        .reduce((n, [, v]) => n + v, 0);
+    subtypeStats.book = counts.works - typed;
     const meta = {
         ...counts,
         resourceCounts: { hasText, hasImage },

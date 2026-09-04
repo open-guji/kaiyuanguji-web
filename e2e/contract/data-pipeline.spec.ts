@@ -43,6 +43,21 @@ test.describe('数据管线契约', () => {
             ).toBeGreaterThanOrEqual(range.min);
             expect(actual).toBeLessThanOrEqual(range.max);
         }
+
+        // subtypeStats 是首页「書 N 部 · 文章 N 篇 · 詩詞 N 首」的数据源。
+        // subtype 是可选字段，96.7% 的 Work 根本没写——它们就是普通的书。
+        // 此前 subtypeStats.book 只数「显式标了 subtype=book」的 27 条，
+        // 于是首页长期显示「書 27 部」，把另外 88,000+ 部全漏了。
+        // 修复后各项之和必须等于 works 总数，这条断言就是钉住这个不变量。
+        const st = meta.subtypeStats ?? {};
+        const sum = Object.values(st).reduce((n: number, v) => n + (v as number), 0);
+        expect(
+            sum,
+            `subtypeStats 各项之和 ${sum} != works ${meta.works}——` +
+            `未标注 subtype 的 Work 没有被计入 book`,
+        ).toBe(meta.works);
+        // 「書」必然是大头；掉到几十说明又退回只数显式标注的老毛病
+        expect(st.book, `subtypeStats.book=${st.book} 明显偏小`).toBeGreaterThan(50_000);
     });
 
     test('production 条目可取（史記）', async ({ request }) => {
