@@ -32,16 +32,21 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('卷列表完整且卷数正确', async ({ page }) => {
+    test('卷数显示与实际卷按钮数一致', async ({ page }) => {
+        // 头部「共 N 卷」曾读 index.total_juan——一个没人维护的独立声明，
+        // 与实际卷文件数对不上（d59f2mp38qv4 显示「共 1 卷」却列出 43 个按钮）。
+        // 改用 juan_files.length 后，两者必须相等：这条断言就是钉住这一点。
         await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated`);
 
-        await expect(page.getByText(new RegExp(`共\\s*${C.totalJuan}\\s*卷`))).toBeVisible({
+        await expect(page.getByText(new RegExp(`共\\s*${C.juanFileCount}\\s*卷`))).toBeVisible({
             timeout: 30_000,
         });
 
-        // 卷按钮应有 juan_files 条（含卷首/附录，数量 ≥ total_juan）
         const juanButtons = page.getByRole('button', { name: /^卷\// });
-        expect(await juanButtons.count()).toBeGreaterThanOrEqual(C.totalJuan);
+        expect(
+            await juanButtons.count(),
+            '「共 N 卷」与实际卷按钮数不符——卷数来源又被改回不可信字段了？',
+        ).toBe(C.juanFileCount);
     });
 
     test('目录视图渲染书名标题与正确统计', async ({ page }) => {

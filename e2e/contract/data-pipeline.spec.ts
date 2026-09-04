@@ -69,10 +69,18 @@ test.describe('数据管线契约', () => {
 
         const idx = await res.json();
         expect(idx.work_id).toBe(ANCHORS.collated.id);
-        expect(idx.total_juan).toBe(ANCHORS.collated.totalJuan);
-        expect(idx.total_categories).toBe(ANCHORS.collated.totalCategories);
-        expect(idx.total_sections).toBe(ANCHORS.collated.totalSections);
-        expect(Array.isArray(idx.juan_files) && idx.juan_files.length > 0, 'juan_files 为空').toBeTruthy();
+
+        // juan_files 是卷数的唯一可信来源，前端「共 N 卷」取它的长度。
+        // 曾有 total_juan/total_categories/total_sections 三个统计字段与之
+        // 并存，是整理时写入、之后没人维护的独立声明，实测 4 部整理本对不上
+        // （d59f2mp38qv4 声明 1 卷、实际 43 个卷文件，页面就显示「共 1 卷」）。
+        // 2026-09-03 已从数据、类型、前端一并删除——这里断言它们不再出现，
+        // 防止哪天又被写回去。
+        expect(Array.isArray(idx.juan_files), 'juan_files 不是数组').toBeTruthy();
+        expect(idx.juan_files.length, 'juan_files 为空').toBe(ANCHORS.collated.juanFileCount);
+        for (const k of ['total_juan', 'total_categories', 'total_sections']) {
+            expect(idx[k], `${k} 是已废弃的不可信统计字段，不应再写入`).toBeUndefined();
+        }
     });
 
     test('整理本卷数据结构完好且 type 用英文枚举', async ({ request }) => {

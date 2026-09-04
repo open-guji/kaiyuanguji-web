@@ -71,9 +71,12 @@ export const ANCHORS = {
         id: 'd59f2htm01du',
         title: '直齋書錄解題',
         titleSimplified: '直斋书录解题',
-        totalJuan: 22,
-        totalCategories: 56,
-        totalSections: 3062,
+        /**
+         * juan_files 的条数——卷数的唯一可信来源（前端「共 N 卷」取它的长度）。
+         * 曾有 total_juan 等三个统计字段与之并存但长期没人维护、对不上，
+         * 2026-09-03 已从数据与前端删除，故这里只锚 juan_files。
+         */
+        juanFileCount: 56,
         /** 卷四「禮類」——修复前这一卷显示"0 部书"且无书名标题 */
         sampleJuanFile: 'juan/004.json',
         sampleJuanCategory: '禮類',
