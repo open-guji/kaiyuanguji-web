@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="description" content="开源古籍项目计划书（内部审阅版）">
+<title>开源古籍 Open-Guji</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#E8E8E2;
+  --paper-2:#DEDED6;
+  --paper-3:#F2F2EE;
+  --ink:#1B1A17;
+  --ink-2:#4A4941;
+  --ink-3:#77766C;
+  --rule:#C3C3B8;
+  --rule-soft:#D5D5CB;
+  --zhu:#A8352A;
+  --lan:#2C4A6E;
+  --ok:#4C6B3C;
+  --ok-soft:#4C6B3C1A;
+  --shadow:0 1px 0 #00000010;
+  --measure:37rem;
+  --serif:"Noto Serif SC",Songti SC,SimSun,Georgia,serif;
+  --sans:"Noto Sans SC",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#16161A;--paper-2:#1F1F24;--paper-3:#101013;
+    --ink:#E4E3DC;--ink-2:#B5B4AB;--ink-3:#8A8981;
+    --rule:#33333A;--rule-soft:#26262C;
+    --zhu:#D9705F;--lan:#7FA6CC;--ok:#8FB37A;--ok-soft:#8FB37A22;
+    --shadow:0 1px 0 #00000040;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16161A;--paper-2:#1F1F24;--paper-3:#101013;
+  --ink:#E4E3DC;--ink-2:#B5B4AB;--ink-3:#8A8981;
+  --rule:#33333A;--rule-soft:#26262C;
+  --zhu:#D9705F;--lan:#7FA6CC;--ok:#8FB37A;--ok-soft:#8FB37A22;
+  --shadow:0 1px 0 #00000040;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-size:16.5px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:60rem;margin:0 auto;padding:0 1.5rem 6rem}
+p{margin:0 0 1.1em;max-width:var(--measure)}
+a{color:var(--zhu);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--lan);outline-offset:3px}
+strong{font-weight:700}
+code,.mono{font-family:var(--mono);font-size:.88em;letter-spacing:-.01em}
+
+/* ── 鱼尾分隔 ─────────────────────────── */
+.fish{display:flex;align-items:center;gap:0;margin:4.5rem 0 3.5rem}
+.fish .ln{flex:1;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);height:3px}
+.fish svg{margin:0 .9rem;display:block}
+.fish svg path{fill:var(--ink-3)}
+
+/* ── 页首 ─────────────────────────── */
+header{padding:4.5rem 0 0}
+.eyebrow{font-family:var(--sans);font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3);margin:0 0 1.6rem}
+h1{
+  font-family:var(--serif);font-weight:700;
+  font-size:clamp(2.6rem,7vw,4.4rem);line-height:1.12;letter-spacing:.04em;
+  margin:0 0 .1em;text-wrap:balance;
+}
+h1 .en{display:block;font-family:var(--mono);font-weight:400;font-size:.24em;letter-spacing:.42em;color:var(--ink-3);margin-top:1.2em;text-transform:uppercase}
+.lede{font-size:clamp(1.15rem,2.4vw,1.4rem);line-height:1.7;color:var(--ink-2);max-width:32rem;margin:1.8rem 0 0;text-wrap:balance}
+.lede b{color:var(--ink);font-weight:600}
+
+.links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;font-family:var(--sans);font-size:.85rem}
+.links a{display:inline-block;padding:.42rem .95rem;border:1px solid var(--rule);color:var(--ink-2);text-decoration:none;background:var(--paper-3)}
+.links a:hover{border-color:var(--zhu);color:var(--zhu)}
+.links a.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.links a.pri:hover{background:var(--zhu);border-color:var(--zhu);color:#fff}
+
+/* ── 章 ─────────────────────────── */
+section{margin-top:3.2rem;scroll-margin-top:1rem}
+.chap{display:grid;grid-template-columns:3.4rem 1fr;gap:1.2rem;align-items:start;margin-bottom:1.8rem}
+.chap-n{font-family:var(--serif);font-size:.95rem;line-height:1.9;color:var(--zhu);border-top:2px solid var(--zhu);padding-top:.5rem;letter-spacing:.1em}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700;letter-spacing:.03em;line-height:1.35;margin:0;padding-top:.15rem;text-wrap:balance}
+.sub{font-family:var(--sans);color:var(--ink-3);font-size:.95rem;margin:.5rem 0 0;max-width:var(--measure)}
+.body{padding-left:4.6rem}
+@media(max-width:720px){.chap{grid-template-columns:1fr;gap:.4rem}.chap-n{border-top:0;border-left:2px solid var(--zhu);padding:0 0 0 .7rem}.body{padding-left:0}}
+
+h3{font-size:1.06rem;font-weight:700;letter-spacing:.03em;margin:2.4rem 0 .7rem}
+h3:first-child{margin-top:0}
+.lbl{font-family:var(--sans);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+
+.pull{font-size:1.12rem;line-height:1.7;font-weight:600;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:1.2rem 0;margin:2.4rem 0;max-width:var(--measure);text-wrap:balance}
+
+/* 板块 */
+.blocks{display:grid;gap:0;border-top:1px solid var(--rule);margin:1.4rem 0 0}
+.blocks>div{border-bottom:1px solid var(--rule-soft);padding:1.15rem 0;display:grid;grid-template-columns:9.5rem 1fr;gap:1.4rem}
+.blocks .bn{font-weight:700;letter-spacing:.04em}
+.blocks .bn span{display:block;font-family:var(--sans);font-weight:400;font-size:.72rem;color:var(--ink-3);letter-spacing:.1em;margin-top:.15rem}
+.blocks p{margin:0 0 .5em}
+.blocks p:last-child{margin-bottom:0}
+@media(max-width:720px){.blocks>div{grid-template-columns:1fr;gap:.45rem}}
+
+/* 表 */
+.tw{overflow-x:auto;margin:1.4rem 0 2rem}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.87rem;line-height:1.6;min-width:32rem}
+th,td{text-align:left;padding:.68rem .9rem;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+th{font-weight:500;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--ink);white-space:nowrap}
+td:first-child,th:first-child{padding-left:0}
+tr:last-child td{border-bottom:1px solid var(--rule)}
+td b{font-family:var(--serif);font-weight:700;font-size:1.02em}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dots{color:var(--lan);letter-spacing:.12em;font-size:1.05em}
+.dots.hi{color:var(--ok)}
+.mine td{background:var(--ok-soft)}
+.mine td:first-child b{color:var(--ok)}
+
+/* 存量对比表 */
+.cmp{margin:1.4rem 0 1rem}
+.cmp table{min-width:38rem}
+.cmp td,.cmp th{text-align:right;white-space:nowrap}
+.cmp td:first-child,.cmp th:first-child{text-align:left}
+.cmp .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.05em}
+.cmp tr.stock td{color:var(--ink-2)}
+.cmp tr.ours td{background:var(--ok-soft)}
+.cmp tr.ours .n{color:var(--ok);font-weight:500}
+.cmp tr.ours td:first-child b{color:var(--ok)}
+.cmp tr.pct td{border-bottom:1px solid var(--rule);color:var(--ink-3);font-size:.92em}
+.cmp .rl{font-weight:700;font-family:var(--serif)}
+
+/* 案例 */
+.cases{display:grid;gap:1.6rem;margin:1.4rem 0 0}
+.case{display:grid;grid-template-columns:1.6rem 1fr;gap:1rem;align-items:start}
+.case .k{font-family:var(--mono);font-size:.8rem;color:var(--ink-3);padding-top:.3rem}
+.case .h{font-weight:700;letter-spacing:.03em;margin-bottom:.35rem}
+.case p{margin:0;font-size:.97rem;color:var(--ink-2)}
+
+/* 未竟 */
+.gaps{border:1px solid var(--rule);background:var(--paper-3);padding:1.5rem 1.6rem;margin:2.2rem 0 0}
+.gaps h3{margin-top:0}
+.gaps ul{margin:0;padding-left:1.1rem;max-width:var(--measure)}
+.gaps li{margin-bottom:.55em;font-size:.97rem;color:var(--ink-2)}
+.gaps li b{color:var(--ink)}
+
+/* 里程碑 */
+.ms{margin:1.4rem 0 0;border-top:1px solid var(--ink)}
+.ms>div{border-bottom:1px solid var(--rule-soft);padding:1.5rem 0;display:grid;grid-template-columns:8.5rem 1fr;gap:1.6rem}
+.ms .v{font-family:var(--mono);font-size:1.3rem;font-weight:500;letter-spacing:-.01em}
+.ms .vs{font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;margin-top:.5rem;display:inline-block;padding:.12rem .5rem;border:1px solid var(--zhu);color:var(--zhu)}
+.ms .g{font-weight:700;letter-spacing:.03em;margin-bottom:.6rem}
+.ms ul{list-style:none;margin:0;padding:0;max-width:var(--measure)}
+.ms li{position:relative;padding-left:1.7rem;margin-bottom:.42em;font-size:.96rem;color:var(--ink-2)}
+.ms li::before{content:"○";position:absolute;left:0;color:var(--ink-3);font-size:.8em;top:.15em}
+.ms li.done::before{content:"●";color:var(--ok)}
+.ms li b{color:var(--ink)}
+@media(max-width:720px){.ms>div{grid-template-columns:1fr;gap:.7rem}}
+
+/* 承诺 */
+.vow{border-left:2px solid var(--lan);padding-left:1.3rem;margin:2rem 0 0}
+.vow ul{margin:.4rem 0 0;padding-left:1.1rem;max-width:var(--measure)}
+.vow li{margin-bottom:.35em;color:var(--ink-2)}
+
+/* 参与 */
+.join{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:0;border-top:1px solid var(--ink);margin:1.6rem 0 0}
+.join>div{padding:1.3rem 1.4rem 1.5rem;border-left:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft)}
+.join .jn{font-family:var(--mono);font-size:.75rem;color:var(--zhu);margin-bottom:.55rem}
+.join .jt{font-weight:700;letter-spacing:.04em;margin-bottom:.4rem}
+.join p{font-size:.92rem;color:var(--ink-2);margin:0;font-family:var(--sans);line-height:1.7}
+.join ul{margin:.4rem 0 0;padding-left:1rem;font-family:var(--sans);font-size:.88rem;color:var(--ink-2)}
+.join li{margin-bottom:.2em}
+
+footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--ink);font-family:var(--sans);font-size:.83rem;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:1.4rem;justify-content:space-between}
+footer a{color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">项目计划书 · 版本 v0.2</p>
+  <h1>开源古籍<span class="en">Open&nbsp;Guji</span></h1>
+  <p class="lede">让每一部古籍，从一张照片，变成一份<b>可阅读、可检索、结构化</b>的数字资产。</p>
+  <div class="links">
+    <a class="pri" href="https://github.com/open-guji">GitHub 组织</a>
+    <a href="https://www.kaiyuanguji.com">开源古籍网站</a>
+    <a href="#join">我要参与</a>
+  </div>
+</header>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="s0">
+  <div class="chap"><div class="chap-n">序</div><div><h2>中国现存古籍约二十万种</h2></div></div>
+  <div class="body">
+    <p>过去二十年，大量善本已被扫描成影像，放上各馆的检索系统。这是了不起的成就——但事情停在了这里。</p>
+    <p><strong>影像不是文字，文字不是知识。</strong></p>
+    <p>今天，一个历史研究者想查阅明朝内阁档案，只能自己逐行阅读手写的原件，无法进行文字搜索；一个红楼梦爱好者想了解一段情节在不同版本的异同，却找不到准确的文本；一个开发者想训练一个真正读得懂文言的模型，找不到干净、可溯源、带版本信息的语料。</p>
+    <p class="pull">问题不在于资料太少，而在于资料没有数字化，也没有结构化。</p>
+    <p>开源古籍项目要做的，是用学术研究的标准，搭建一套完整的古籍数字化方案：</p>
+    <ul>
+      <li>汇集历代研究成果，做一个准确完整的在线古籍目录，收录所有古籍的元数据；</li>
+      <li>索引网上所有图书馆与民间整理的影印图像和文字资源；</li>
+      <li>在前人工作的基础上自研 OCR 引擎，持续进行古籍文本化，并人工校对；</li>
+      <li>开发一系列工具，包括排版、字体编码与生成、词典等等。</li>
+    </ul>
+    <p>这些是古人的智慧，不是我们的资产。任何人都可以拿去用、改、接到自己的系统里。接下来需要的，是更多人一起，把这条流水线铺满那二十万种古籍。</p>
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="s1">
+  <div class="chap"><div class="chap-n">一</div><div><h2>项目计划</h2><p class="sub">整个项目分为三个板块：索引（这书是什么、有哪些版本、在哪里）、文本化（把影像变成可靠文字）、排版与工具（把文字变回一部像样的书）。</p></div></div>
+  <div class="body">
+
+    <h3>板块一 · 古籍索引</h3>
+    <p class="lbl">一部书是什么，有哪些版本，在哪里能看到</p>
+    <p>这是整条流水线的<strong>骨架</strong>——让所有资源有共同的坐标。</p>
+    <p>历代目录学积累了两千年的成果：《汉书·艺文志》以下的正史志书、四库总目、各家私修书目与考证著作，再加上今天各馆的馆藏目录。它们各自成书、各自成库，彼此不通。我们要做的是把这些成果汇到一处，做成<strong>一个准确、完整、可被程序直接使用的在线古籍目录</strong>：</p>
+    <ul>
+      <li>一部书是一个可引用的条目，有稳定的标识符；</li>
+      <li>同一部书的不同版本挂在它下面，注明藏处、丛编、流传；</li>
+      <li>网上所有可得的影像与文本资源，都挂到对应的条目上，标明来源与可用性；</li>
+      <li>作者独立成体系，与 CBDB 等外部权威库对接。</li>
+    </ul>
+
+    <p><strong>数据模型。</strong>用四层结构解决「古籍的一本书到底指什么」这个真问题：</p>
+    <div class="blocks">
+      <div><div class="bn">作品<span>WORK</span></div><div><p>抽象的知识内容，不随装订与版次改变。《史记》是一个作品。</p></div></div>
+      <div><div class="bn">版本<span>BOOK</span></div><div><p>具体装订印刷的物理实体，直接对应扫描件与馆藏。「百衲本《史记》」是一个版本。</p></div></div>
+      <div><div class="bn">丛编<span>COLLECTION</span></div><div><p>组织容器，可递归嵌套。《四库全书》文渊阁本是一个丛编，其中所收的《史记》是它下辖的一个版本。</p></div></div>
+      <div><div class="bn">实体<span>ENTITY</span></div><div><p>包括人物、地名、山川等。</p></div></div>
+    </div>
+    <p style="margin-top:1.2rem">四层之间通过 64 位 ID 关联，跨仓库、跨语言一致；文本与元数据分仓存放，靠同一套 ID 互指。</p>
+
+    <p><strong>目录整理。</strong>从《汉书·艺文志》到《清史稿·艺文志》，加上历代补志与考证著作（姚振宗、王应麟、黄虞稷、钱大昕、焦竑等），以及私修目录。这项工作的难度不在体量，而在判断：同名异书要拆，异名同书要并，撰人有别称要归，断代有分歧要考。我们为此建立了一整套判准与覆核制度——<strong>每一条合并都有依据，可以被追问、被推翻。</strong></p>
+
+    <h3>我们收录了多少，全国还有多少</h3>
+    <div class="tw cmp">
+      <table>
+        <thead><tr><th></th><th>作品（种）</th><th>版本（部）</th><th>可见影像</th></tr></thead>
+        <tbody>
+          <tr class="stock"><td><span class="rl">全国存量</span></td><td class="n">约 20 万</td><td class="n">270 余万</td><td>—</td></tr>
+          <tr class="ours"><td><b>本项目已收录</b></td><td class="n">91,501</td><td class="n">20,853</td><td class="n">13,148</td></tr>
+          <tr class="pct"><td>占存量比</td><td>约 46%</td><td>约 0.8%</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gaps">
+      <h3>还差什么</h3>
+      <ul>
+        <li><b>明清还有众多私修目录未被收录。</b></li>
+        <li><b>释道二藏、方志、小说戏曲等被正史忽略的门类还未收录。</b></li>
+        <li><b>约 3.3 万条作品的作者与断代仍未确定。</b>需要地方志人物传、家谱等传记资料，或人工考订；CBDB 覆盖率仅 35.7%。</li>
+        <li><b>只有约七分之一的作品能看到影像。</b>索引的骨架已经建立，但「这部书在哪儿能看到」这一层还很不充分。下一步会链接各大图书馆、维基共享等在线资源。</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:3.4rem">板块二 · 文本化</h3>
+    <p class="lbl">把影像变成可靠的文字</p>
+    <p>各馆已公开的古籍影像以数十万册计。但从影像到可靠文本的这一步，需要技术与人工的高效结合。</p>
+    <p>古籍 OCR 面对的是繁体、异体字、手写刻本、双行夹注、无标点、版框栏线干扰——通用 OCR 模型在这类材料上的准确率不足以直接使用；专业整理则依赖出版社的人海战术：一部中等篇幅的书，数月工期，成本以十万计。</p>
+    <p>我们计划结合现有开源技术，在自研工具与资深校对人员的深入配合之下，持续推动古籍的文本化。不同于现在网络上流传的良莠不齐的古籍文本，我们将坚持以<strong>学术出版级的准确度</strong>为目标进行整理，尽量保留生僻字、异体字，甚至 Unicode 未收字。整理平台也将在后期开源，鼓励更多人持续贡献。</p>
+
+    <div class="cases">
+      <div class="case"><div class="k">01</div><div><div class="h">自研识别管线</div><p><code>open-guji-cv</code> 从图像预处理、版面切分一路做到单字识别与上下文裁决，每一步都有独立的数据集与评测脚本。</p></div></div>
+      <div class="case"><div class="k">02</div><div><div class="h">多源交叉校对</div><p>把识别结果与网上公开的文本逐一比对，<strong>差异处即为潜在错误</strong>。人工校对由此从「全量通读」降到「只看差异」。</p></div></div>
+      <div class="case"><div class="k">03</div><div><div class="h">文本全网首发</div><p>一批重要古籍至今在网上找不到任何可用文本，我们正在为它们做文字化，包括《永乐大典》《崇祯历书》《崇祯长编》《明代武职选簿》等。</p></div></div>
+    </div>
+
+    <div class="gaps">
+      <h3>还差什么</h3>
+      <ul>
+        <li><b>识别精度离脱离人工还差得远。</b>我们希望最终超越现有方案（如 PaddleOCR、识典古籍），在第一轮机器识别中达到 99% 甚至更高的准确率，并全面支持 Unicode 字符集。</li>
+        <li><b>协作校对平台尚未上线。</b>一校／二校／终审的流程、字典工具的配套还在开发中。</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:3.4rem">板块三 · 排版与工具</h3>
+    <p class="lbl">把文字变回一部像样的书</p>
+    <p>现有的数字文本普遍丢掉了版式信息：夹注（双行小字注）被压平成正文，注与经混为一谈；眉批、侧批直接消失；异体字被粗暴归并到通用字，字形差异这一版本鉴定的关键线索随之消失。</p>
+    <p class="pull">这类损失是不可逆的。一部书被草率地「数字化过一遍」，往往等于被「永久损失一遍」——因为下一个人会认为这本已经做过了，不必再做。</p>
+    <p>所以我们把版式当成一等公民，而不是「文字整理完再考虑怎么排」。围绕这一点，再补上字体编码与生成、校勘比对、词典等一系列工具。</p>
+
+    <div class="cases">
+      <div class="case"><div class="k">01</div><div><div class="h">排版引擎</div><p><code>luatex-cn</code> 基于 LuaTeX，实现古籍版式的像素级复刻——版心、夹注、侧批、眉批、脚注、印章、句读、乌丝栏、改字、抬头——已在四库全书文渊阁本、红楼梦甲戌本等底本上做到版面级还原，可快速生成 PDF。项目已开源发布至 GitHub 并被 CTAN 收录，任何人都能直接安装使用。</p></div></div>
+      <div class="case"><div class="k">02</div><div><div class="h">字体与补字</div><p><code>open-guji-fonts</code> 收录古籍整理中遇到的 Unicode 未收字形，并在此基础上开发一套收字尽可能全的开源字体。</p></div></div>
+    </div>
+
+    <div class="gaps">
+      <h3>还差什么</h3>
+      <ul>
+        <li><b>luatex-cn 对特殊版式的支持尚不完善</b>，如表格、族谱等。</li>
+        <li><b>异体字体系仍在建设。</b>目标是在网页与 PDF 中都能便捷地支持 Unicode 未收字，并加快字体设计的速度。</li>
+        <li><b>网页端的竖排阅读。</b>已有浏览器渲染的基础实现，但离目标还远——希望做到图文对读、横竖排与繁简体一键切换。</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="s2">
+  <div class="chap"><div class="chap-n">二</div><div><h2>可持续性与开放承诺</h2><p class="sub">开源古籍是纯公益的开源基础设施。我们不做数据私有化，不设注册墙，不把公有领域的内容再度圈起来。</p></div></div>
+  <div class="body">
+
+    <h3>我们的开放承诺</h3>
+    <div class="vow">
+      <ul>
+        <li>核心数据与工具<strong>永久开源</strong>，采用 CC0 / Apache 2.0 开放许可；</li>
+        <li>提供批量下载与 API，不设注册墙，在带宽允许的情况下免费提供所有资源；</li>
+        <li>不将公有领域内容再度私有化；</li>
+        <li>所有整理成果标注来源与依据，可被追问、可被推翻；</li>
+        <li>项目进展、设计文档、已知问题<strong>全部公开</strong>。</li>
+      </ul>
+    </div>
+
+    <h3>我们的版权承诺</h3>
+    <p>古籍的文字与图片在任何国家都属于公有版权。我们承诺所有的数字化工作都从古籍本身出发，合理使用开源工具与公开资源进行整理，并充分尊重现代出版社和作者的点校、注释、翻译等创作产生的著作权。</p>
+
+    <h3>三条支撑路径</h3>
+    <div class="blocks">
+      <div><div class="bn">社区协作<span>ONE</span></div><div><p>参照维基文库的模式，把整理任务拆分到志愿者可以承担的粒度：校一页、补一条、录一部。配合 Git 的版本控制与一校／二校／终审流程，让贡献可追溯、可回滚、可致谢。</p></div></div>
+      <div><div class="bn">公益资助<span>TWO</span></div><div><p>我们欢迎面向文化遗产数字化、开源基础设施、数字人文的资助计划与专项基金。我们承诺成果完全公开，进展与资金使用完全可查。</p></div></div>
+      <div><div class="bn">机构共建<span>THREE</span></div><div><p>图书馆、高校、研究机构提供资料、专业判断与人力；我们提供标识体系、工具链与技术支持。成果双方共有，并且<strong>必须开放</strong>。这是我们对合作的唯一硬条件。</p></div></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="s3">
+  <div class="chap"><div class="chap-n">三</div><div><h2>我们和现有平台的关系</h2><p class="sub">这个领域已有一批值得敬重的先行者：维基文库、识典古籍、书格、国家图书馆中华古籍资源库、中华古籍智慧化服务平台、Kanripo、CBDB，以及数十家提供 IIIF 影像的海外馆藏机构。</p></div></div>
+  <div class="body">
+    <p><strong>我们不与它们竞争，也不重复它们的工作。</strong></p>
+    <div class="tw">
+      <table>
+        <thead><tr><th></th><th>影像资源</th><th>文本资源</th><th>保留版式</th><th>批量获取</th><th>开源工具链</th></tr></thead>
+        <tbody>
+          <tr><td><b>各馆数字资源库</b></td><td class="dots">●●●</td><td class="dots">○</td><td>—</td><td class="dots">○</td><td class="dots">○</td></tr>
+          <tr><td><b>识典古籍</b></td><td class="dots">●●</td><td class="dots">●●●</td><td class="dots">○</td><td class="dots">○</td><td class="dots">○</td></tr>
+          <tr><td><b>维基文库</b></td><td class="dots">○</td><td class="dots">●●</td><td class="dots">○</td><td class="dots">●●●</td><td class="dots">●●</td></tr>
+          <tr class="mine"><td><b>开源古籍</b></td><td class="dots hi">●</td><td class="dots hi">●●●</td><td class="dots hi">●●●</td><td class="dots hi">●●●</td><td class="dots hi">●●●</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>我们做四件别人没在做的事：</p>
+    <div class="blocks">
+      <div><div class="bn">标识层<span>IDENTIFIER</span></div><div><p>给作品、版本、丛编、人物一套开放的、可跨库引用的 ID。</p></div></div>
+      <div><div class="bn">结构层<span>STRUCTURE</span></div><div><p>把著录、提要、版本关系、存佚状况变成结构化数据，而不是一段说明文字。</p></div></div>
+      <div><div class="bn">工具层<span>TOOLING</span></div><div><p>把从影像到成品的每一环都做成可独立使用的开源工具。</p></div></div>
+      <div><div class="bn">文本层<span>TEXT</span></div><div><p>开源分享所有文本并保留排版，最终愿景是对所有传世古籍做精确文本化。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="s4">
+  <div class="chap"><div class="chap-n">四</div><div><h2>里程碑</h2><p class="sub">我们不给里程碑绑定日期。开源项目的进度取决于有多少人一起做。我们只定义「做到什么算达成」。</p></div></div>
+  <div class="body">
+    <div class="ms">
+      <div>
+        <div><div class="v">v0.1</div><div class="vs">当前阶段</div></div>
+        <div>
+          <div class="g">走通全程</div>
+          <p style="font-size:.95rem;color:var(--ink-3);margin-bottom:.8rem">证明这条流水线真的能跑通，并且每一环都有可展示的成果。</p>
+          <ul>
+            <li class="done">排版引擎支持基本竖排、小注、版心等功能</li>
+            <li class="done">索引体系建成，历代志书著录之书大规模入库</li>
+            <li class="done">开源古籍网站上线，索引浏览与统一搜索可用</li>
+            <li>文本与图像资源大规模整合：把各主要平台可得的资源匹配、链接到索引条目上</li>
+            <li>自研 OCR 引擎，充分支持异体字的识别与校对</li>
+            <li>一部标杆古籍完成从影像到校对的全流程闭环</li>
+            <li><b>重点古籍完成校对示范</b>——十三经、二十四史中的代表性几部，做出可作为标准的整理本</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div><div class="v">v0.5</div></div>
+        <div>
+          <div class="g">从样本到规模</div>
+          <p style="font-size:.95rem;color:var(--ink-3);margin-bottom:.8rem">从「能做一部」变成「能做很多部」，并且不再依赖核心团队。</p>
+          <ul>
+            <li>索引广度补齐：明清私修目录，以及释道二藏、方志、小说戏曲等历来被正史忽略的门类</li>
+            <li>OCR 与版面识别达到生产可用，不再是流程瓶颈</li>
+            <li>十三经、二十四史、四库全书完成整理</li>
+            <li><b>社区协作校对机制上线</b>：任务拆分、认领、一校／二校／终审、贡献记录</li>
+            <li>异体字映射库成型并集成到工具链</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div><div class="v">v1.0</div></div>
+        <div>
+          <div class="g">索引完成，基本古籍校对完成</div>
+          <p style="font-size:.95rem;color:var(--ink-3);margin-bottom:.8rem">这个项目对研究者与开发者来说，成为一个「默认会去查」的地方。</p>
+          <ul>
+            <li><b>古籍索引完成</b>：历代主要目录著录之书基本齐备，版本、丛编、人物关联成网</li>
+            <li><b>整合所有可得的文本资源</b>：凡是公开可得的古籍文本，都已链接或收入，并标注来源与质量</li>
+            <li><b>基本古籍完成校对</b>：十三经、四书、二十四史、诸子、四大名著、常用总集别集等构成中国典籍主干的部分，完成高质量校对与版式还原</li>
+            <li>工具链稳定，文档完备，新贡献者可以自助上手</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div><div class="v">远景</div></div>
+        <div>
+          <div class="g">从数字化走向智能化</div>
+          <p style="font-size:.95rem;color:var(--ink-3);margin-bottom:.8rem">让古籍不只是被读到，而是变成数字时代的知识。</p>
+          <ul>
+            <li>所有传世古籍做到精确数字化</li>
+            <li>古籍知识图谱：人物、地点、时间、事件、典籍之间的关联网络；师承交游、引用注疏、时空轨迹</li>
+            <li>古汉语专用模型的高质量语料与公开评测基线</li>
+            <li>语义检索、典故溯源、智能注疏</li>
+          </ul>
+          <p style="font-size:.93rem;margin-top:.9rem">我们清楚这是长期的科学与工程挑战，把它诚实地放在最后，而不是拿来做宣传词。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="join">
+  <div class="chap"><div class="chap-n">五</div><div><h2>加入我们</h2><p class="sub">古籍浩如烟海，我们只是发起者。期待所有人的参与——你的贡献会随中华文明一同流传下去。</p></div></div>
+  <div class="body">
+    <div class="join">
+      <div>
+        <div class="jn">01</div><div class="jt">写代码</div>
+        <p>我们缺人的地方很具体：</p>
+        <ul>
+          <li>图像与 OCR——版面识别准确率、字符切分、刻本与手写本的模型微调</li>
+          <li>前端与网站——索引浏览体验、搜索、竖排阅读器、协作校对界面</li>
+          <li>排版引擎——表格支持、更多版式特性、issue 处理</li>
+          <li>数据工程——下载适配器、数据校验、API 与数据分发</li>
+        </ul>
+      </div>
+      <div>
+        <div class="jn">02</div><div class="jt">整理古籍（不需要编程）</div>
+        <p>需求量最大、也最需要专业判断的部分：</p>
+        <ul>
+          <li>校对已数字化的文本</li>
+          <li>补充作品提要与描述</li>
+          <li>录入尚未收录的目录与志书</li>
+          <li>考订版本、断代、撰人</li>
+        </ul>
+      </div>
+      <div>
+        <div class="jn">03</div><div class="jt">贡献资源与线索</div>
+        <p>告诉我们哪里还有未被收录的数字资源；指出索引里的错误——网站上有反馈通道，每一条都会被处理；报告新的可用站点。</p>
+      </div>
+      <div>
+        <div class="jn">04</div><div class="jt">机构合作</div>
+        <p>图书馆、高校、研究机构、出版社：我们提供标识体系、工具链与技术支持，你提供资料、专业判断与场景。成果双方共有并开放。欢迎直接联系。</p>
+      </div>
+      <div>
+        <div class="jn">05</div><div class="jt">传播与资助</div>
+        <p>转发这份文档、在你的论文或项目里引用我们的数据、提供资助。所有资源都会被用在整理工时上，投入与产出全部公开可查。</p>
+      </div>
+    </div>
+    <div class="links" style="margin-top:2.2rem">
+      <a class="pri" href="https://github.com/open-guji">GitHub 组织</a>
+      <a href="https://www.kaiyuanguji.com">开源古籍网站</a>
+    </div>
+  </div>
+</section>
+
+<div class="fish" aria-hidden="true"><div class="ln"></div><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 0h11v1L12 13 0 1Z"/><path d="M26 0H15v1L14 13 26 1Z"/></svg><div class="ln"></div></div>
+
+<section id="appendix">
+  <div class="chap"><div class="chap-n">附</div><div><h2>仓库地图</h2></div></div>
+  <div class="body">
+    <div class="tw">
+      <table>
+        <thead><tr><th>板块</th><th>仓库</th><th>说明</th><th>语言</th></tr></thead>
+        <tbody>
+          <tr><td>索引</td><td><code>book-index</code></td><td>正式索引数据（元数据）</td><td>JSON</td></tr>
+          <tr><td>索引</td><td><code>book-index-draft</code></td><td>草稿索引数据</td><td>JSON / Python</td></tr>
+          <tr><td>索引</td><td><code>book-text</code></td><td>整理本、辑佚、全文文本仓</td><td>文本</td></tr>
+          <tr><td>索引</td><td><code>book-index-manager</code></td><td>索引读写、校验、迁移工具</td><td>Python / TypeScript</td></tr>
+          <tr><td>索引 · 资源</td><td><code>bookget-py</code></td><td>古籍资源下载工具，37 站适配</td><td>Python</td></tr>
+          <tr><td>索引 · 资源</td><td><code>guji-resource-index</code></td><td>古籍数字资源站点目录</td><td>Markdown</td></tr>
+          <tr><td>文本化</td><td><code>open-guji-cv</code></td><td>图像预处理、版面检测、字符网格、OCR</td><td>Python</td></tr>
+          <tr><td>文本化</td><td><code>open-guji-dataset</code></td><td>古籍 CV benchmark 数据集与标注工具</td><td>Python</td></tr>
+          <tr><td>排版与工具</td><td><code>luatex-cn</code></td><td>LuaTeX 中文／古籍排版包，已上 CTAN</td><td>Lua / TeX</td></tr>
+          <tr><td>排版与工具</td><td><code>webtex-cn</code></td><td>浏览器端 TeX 竖排渲染，零依赖</td><td>JavaScript</td></tr>
+          <tr><td>排版与工具</td><td><code>guji-diff</code></td><td>校勘引擎，繁简与异体字</td><td>Dart</td></tr>
+          <tr><td>排版与工具</td><td><code>guji-toolkit-web</code></td><td>跨平台古籍工具集</td><td>Dart / Flutter</td></tr>
+          <tr><td>发布</td><td><code>kaiyuanguji-web</code></td><td>开源古籍官网</td><td>TypeScript / Next.js</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>开源古籍 Open-Guji · 项目计划书 v0.2</div>
+  <div><a href="https://github.com/open-guji">GitHub</a> · <a href="https://www.kaiyuanguji.com">kaiyuanguji.com</a></div>
+</footer>
+
+</div>
+
+</body>
+</html>
