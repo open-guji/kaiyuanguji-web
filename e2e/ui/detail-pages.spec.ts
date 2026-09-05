@@ -106,6 +106,18 @@ test.describe('详情页版式', () => {
         }).toPass({ timeout: 15_000 });
     });
 
+    test('版本页面包屑带真实链接，可 Ctrl+点击开新标签', async ({ page }) => {
+        // 只挂 onClick 而 href="#" 的话，Ctrl+点击、中键、右键复制链接全废。
+        await openDetail(page, BOOK);
+        const crumb = page.locator('.bim-d-main a').filter({ hasText: /^作品$/ });
+        await expect(crumb).toHaveCount(1);
+        const href = await crumb.getAttribute('href');
+        expect(href, `面包屑「作品」的 href 是 ${href}，应指向所属作品`).toMatch(/id=\w+/);
+        await crumb.click();
+        await expect(page).toHaveURL(/id=\w+/, { timeout: 30_000 });
+        expect(page.url(), '点击后应离开版本页').not.toContain(BOOK);
+    });
+
     test('版本页：显示所属作品、收入丛编与册次', async ({ page }) => {
         await openDetail(page, BOOK);
 
@@ -137,6 +149,26 @@ test.describe('详情页版式', () => {
             itemRequests.length,
             `丛编页发了 ${itemRequests.length} 次条目请求；子目应直接取自 contained_works`,
         ).toBeLessThan(20);
+    });
+
+    test('反馈入口不重复，但反馈页始终有返回入口', async ({ page }) => {
+        // 顶条右侧已有「勘誤反饋」、页脚有「提交新版本」，
+        // 次级导航再放一个就是同一动作一屏出现三次。
+        await openDetail(page, WORK);
+        const navChips = page.locator('.bim-d-main header + div button');
+        const labels = await navChips.allInnerTexts();
+        expect(
+            labels.filter(t => /勘誤反饋|勘误反馈/.test(t)).length,
+            `次级导航出现了反馈入口：${labels.join('|')}`,
+        ).toBe(0);
+
+        // 但进了反馈页必须能回来——史記只有「概览」一项，
+        // nav 若因少于 2 项被整行隐藏，读者就只能按浏览器后退
+        await page.goto(`${TARGET}/book-index?id=${WORK}&tab=feedback`);
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+        await expect(
+            page.locator('.bim-d-main button').filter({ hasText: /^概覽$|^概览$/ }),
+        ).toHaveCount(1);
     });
 
     test('页脚显示版本信息与条目 ID', async ({ page }) => {
