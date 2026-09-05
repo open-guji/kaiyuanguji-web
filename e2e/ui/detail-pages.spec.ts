@@ -62,7 +62,8 @@ test.describe('详情页版式', () => {
         expect(initial, `首屏版本行数 ${initial}，应为 cap 12 条左右`).toBeLessThanOrEqual(14);
         expect(initial).toBeGreaterThan(5);
 
-        const more = page.getByRole('button', { name: /展開其餘\s*\d+\s*種版本/ });
+        // 文案随繁简切换（站点默认简体），两种都要认
+        const more = page.getByRole('button', { name: /展[開开]其[餘余]\s*\d+\s*[種种]版本/ });
         await expect(more).toBeVisible();
         await more.click();
 
@@ -285,7 +286,7 @@ test.describe('人物页', () => {
         await openDetail(page, OUYANG);
         const rows = page.locator('.bim-d-row');
         const before = await rows.count();
-        const more = page.getByRole('button', { name: /展開其餘\s*\d+\s*條著作/ });
+        const more = page.getByRole('button', { name: /展[開开]其[餘余]\s*\d+\s*[條条]著作/ });
         await expect(more).toBeVisible();
         await more.click();
         await expect(async () => {
