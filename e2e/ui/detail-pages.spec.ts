@@ -261,3 +261,34 @@ test.describe('人物页', () => {
         }).toPass({ timeout: 30_000 });
     });
 });
+
+/**
+ * 空状态。
+ *
+ * 数据稀疏的条目在页面上只剩标题和页脚，读者分不清是「没数据」还是
+ * 「页面坏了」。生产仓实测：
+ *   人物无关联作品        450 / 30,122（1.5%），其中 389 条连别名简介都没有
+ *   作品什么都没有        377 / 91,730（0.4%）
+ */
+test.describe('空状态', () => {
+    test('无关联作品的人物页给出说明而非空白', async ({ page }) => {
+        await openDetail(page, 'hixhd2h9bcme');  // 蔣良驥：作品 0 别名 0
+        await expect(page.getByText(/尚未著錄該人物的關聯作品|尚未著录该人物的关联作品/))
+            .toBeVisible();
+    });
+
+    test('什么都没有的作品页给出说明而非空白', async ({ page }) => {
+        await openDetail(page, 'd59f2q8ge0ap');  // 田穰苴司馬法：无版本/资源/著录/关联/简介
+        await expect(page.getByText(/尚未著錄該作品的版本|尚未著录该作品的版本/))
+            .toBeVisible();
+    });
+
+    test('作者角色的英文占位值不渲染出来', async ({ page }) => {
+        // 16 条 authors[].role 写成 "author"（录入工具占位值没换掉），
+        // 直接渲染就是「紀昀等編 author」这种中英夹杂
+        await openDetail(page, '8rlb6yirb1ts');  // 欽定四庫全書·文溯閣本
+        // 站点外壳自己也有一个 header，取详情页版心里的那个
+        const byline = await page.locator('.bim-d-main header').innerText();
+        expect(byline, `页头出现了英文占位值：${byline}`).not.toMatch(/\bauthor\b/i);
+    });
+});
