@@ -9,7 +9,10 @@
  *   · 丛编子目表直接来自 contained_works，不对 books[] 逐条发请求
  */
 import { test, expect, type Page } from '@playwright/test';
-import { ANCHORS, TARGET } from '../fixtures/anchors';
+import { ANCHORS, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchors';
+import {
+    isEmptyEntity, isEmptyWork, pickEmptySample, requireUiVersion,
+} from '../fixtures/preconditions';
 
 /** 史記：35 个版本、9 条著录、90 条关联 */
 const WORK = ANCHORS.work.id;
@@ -26,6 +29,9 @@ async function openDetail(page: Page, id: string) {
 }
 
 test.describe('详情页版式', () => {
+    // 这套版式是 0.7.0 的重构产物；线上还是旧版时用例自动休眠而非报红
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.7.0', '详情页版式重构'));
+
     test('整页随文档流滚动，没有内部滚动容器', async ({ page }) => {
         // 旧版把 calc(100vh - …) 传给 BookDetailLayout、内容区 overflow:auto，
         // 于是史記 4900px 的内容被塞进 836px 的窗口，滚动条出现在页面中央，
@@ -213,6 +219,10 @@ test.describe('人物页', () => {
     /** 傅山：67 个别名（號 38 / 別名 24 / 字 5） */
     const FUSHAN = 'hixhd2h9bd3y';
 
+    // EntityPage 重构随 0.7.2 上线。#177（5c74bd7）正是这批用例先于 0.7.2
+    // 落到 main 造成的假红——有了这道门禁，那次就会是跳过而不是失败。
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.7.2', '人物页重构'));
+
     test('作品表按 cap 渲染，不再一次性挂 300 多个链接', async ({ page }) => {
         // 旧版把 308 部作品全渲染，页面高 9364px、一次 309 个链接、308 次请求
         const itemRequests: string[] = [];
@@ -299,26 +309,46 @@ test.describe('人物页', () => {
  * 空状态。
  *
  * 数据稀疏的条目在页面上只剩标题和页脚，读者分不清是「没数据」还是
- * 「页面坏了」。生产仓实测：
- *   人物无关联作品        450 / 30,122（1.5%），其中 389 条连别名简介都没有
- *   作品什么都没有        377 / 91,730（0.4%）
+ * 「页面坏了」。
+ *
+ * 样本不写死：「什么都没有」这个属性正是本项目每天在消灭的东西，锚死某个
+ * ID 等于赌它永远没人整理。改为运行时从候选池里挑一个当下仍然为空的，
+ * 池子与判据见 fixtures/anchors.ts 的 EMPTY_STATE_POOL。
  */
 test.describe('空状态', () => {
-    test('无关联作品的人物页给出说明而非空白', async ({ page }) => {
-        await openDetail(page, 'hixhd2h9bcme');  // 蔣良驥：作品 0 别名 0
+    // 空状态说明随 0.7.3 上线。#179（dc995da）同理，是这批用例先于 0.7.3 落地。
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.7.3', '空状态说明'));
+
+    test('无关联作品的人物页给出说明而非空白', async ({ page, request }) => {
+        const sample = await pickEmptySample(request, EMPTY_STATE_POOL.entity, isEmptyEntity);
+        test.skip(
+            sample === null,
+            `候选池 ${EMPTY_STATE_POOL.entity.length} 个人物均已有关联作品，` +
+            `空状态无从验证——请按 anchors.ts 的口径重扫 book-index 补充候选`,
+        );
+
+        await openDetail(page, sample!.id);
         await expect(page.getByText(/尚未著錄該人物的關聯作品|尚未著录该人物的关联作品/))
             .toBeVisible();
     });
 
-    test('什么都没有的作品页给出说明而非空白', async ({ page }) => {
-        await openDetail(page, 'd59f2q8ge0ap');  // 田穰苴司馬法：无版本/资源/著录/关联/简介
+    test('什么都没有的作品页给出说明而非空白', async ({ page, request }) => {
+        const sample = await pickEmptySample(request, EMPTY_STATE_POOL.work, isEmptyWork);
+        test.skip(
+            sample === null,
+            `候选池 ${EMPTY_STATE_POOL.work.length} 部作品均已著录内容，` +
+            `空状态无从验证——请按 anchors.ts 的口径重扫 book-index 补充候选`,
+        );
+
+        await openDetail(page, sample!.id);
         await expect(page.getByText(/尚未著錄該作品的版本|尚未著录该作品的版本/))
             .toBeVisible();
     });
 
     test('作者角色的英文占位值不渲染出来', async ({ page }) => {
         // 16 条 authors[].role 写成 "author"（录入工具占位值没换掉），
-        // 直接渲染就是「紀昀等編 author」这种中英夹杂
+        // 直接渲染就是「紀昀等編 author」这种中英夹杂。
+        // 这条不挑样本：它断言的是「不该出现」，数据被修好之后依然成立。
         await openDetail(page, '8rlb6yirb1ts');  // 欽定四庫全書·文溯閣本
         // 站点外壳自己也有一个 header，取详情页版心里的那个
         const byline = await page.locator('.bim-d-main header').innerText();

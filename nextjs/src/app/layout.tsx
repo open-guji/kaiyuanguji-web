@@ -61,6 +61,10 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
+        {/* 线上前端版本的唯一可查证来源。运维排查（「线上到底是不是新版？」）
+            和 e2e 前置条件都读它；由 next.config.ts 从 node_modules 实际解析
+            到的 book-index-ui 版本注入，不是 package.json 里的 ^ 区间。 */}
+        <meta name="bim-ui-version" content={process.env.NEXT_PUBLIC_BIM_UI_VERSION ?? ''} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
