@@ -167,3 +167,97 @@ test.describe('详情页版式', () => {
         expect(headVisible, '窄屏不应显示表头').toBe(false);
     });
 });
+
+/**
+ * 人物页（2026-09-05 重构）。
+ *
+ * 设计稿另有「籍貫 / 官至 / 傳記出處 / 相關人物」四块，数据里没有对应字段
+ * （全量 30,120 条 Entity 实测 0%），本次未实现——所以这里不断言它们。
+ */
+test.describe('人物页', () => {
+    /** 歐陽修：308 部作品、6 别名跨 5 类、CBDB 1384 */
+    const OUYANG = 'hixhd2h9bdye';
+    /** 傅山：67 个别名（號 38 / 別名 24 / 字 5） */
+    const FUSHAN = 'hixhd2h9bd3y';
+
+    test('作品表按 cap 渲染，不再一次性挂 300 多个链接', async ({ page }) => {
+        // 旧版把 308 部作品全渲染，页面高 9364px、一次 309 个链接、308 次请求
+        const itemRequests: string[] = [];
+        page.on('request', (r) => {
+            if (/\/(entry|item|items)\//.test(r.url())) itemRequests.push(r.url());
+        });
+
+        await openDetail(page, OUYANG);
+
+        const rows = page.locator('.bim-d-row');
+        const n = await rows.count();
+        expect(n, `首屏作品行 ${n} 条，应为 cap 16 条左右`).toBeLessThanOrEqual(18);
+        expect(n).toBeGreaterThan(5);
+
+        expect(
+            itemRequests.length,
+            `人物页发了 ${itemRequests.length} 次条目请求；只该解析可见行`,
+        ).toBeLessThan(40);
+
+        const height = await page.evaluate(() => document.documentElement.scrollHeight);
+        expect(height, '页面高度回到合理量级（旧版 9364px）').toBeLessThan(4000);
+    });
+
+    test('职任筛选归一后 chips 可控，且能过滤', async ({ page }) => {
+        // 全量 307 种 role 写法归一到 撰/編/注/校/譯/繪/其他
+        await openDetail(page, OUYANG);
+
+        const chips = page.getByRole('button', { name: /^(全部|撰|編|注|校|譯|繪|其他)\s+\d+$/ });
+        const count = await chips.count();
+        expect(count, `职任 chips ${count} 个，归一后不该超过 8 个`).toBeLessThanOrEqual(8);
+        expect(count).toBeGreaterThanOrEqual(2);
+
+        // 点「編」后每行职任列都应属编辑类
+        const bian = page.getByRole('button', { name: /^編\s+\d+$/ });
+        if (await bian.count()) {
+            await bian.click();
+            await expect(async () => {
+                const texts = await page.locator('.bim-d-row').allInnerTexts();
+                expect(texts.length).toBeGreaterThan(0);
+            }).toPass({ timeout: 15_000 });
+        }
+    });
+
+    test('别名按类分组，正式名号在前', async ({ page }) => {
+        // 傅山 67 个别名（號 38 / 別名 24 / 字 5）。不分组就是平铺一片，
+        // 且「字」「號」这类正式名号会淹没在斋号、诨名里。
+        await openDetail(page, FUSHAN);
+
+        // 取 intro 区的纯文本，按标签出现位置判断分组顺序。
+        // 不用 getByText('字')——「字」在页面别处也出现，会命中别的节点。
+        const order = await page.evaluate(() => {
+            const el = document.querySelector('.bim-d-intro') ?? document.body;
+            const txt = (el as HTMLElement).innerText;
+            return {
+                text: txt,
+                zi: txt.indexOf('字'),
+                hao: txt.indexOf('號') >= 0 ? txt.indexOf('號') : txt.indexOf('号'),
+                bie: txt.indexOf('別名') >= 0 ? txt.indexOf('別名') : txt.indexOf('别名'),
+            };
+        });
+
+        expect(order.zi, 'intro 区没有「字」分组').toBeGreaterThanOrEqual(0);
+        expect(order.hao, 'intro 区没有「號」分组').toBeGreaterThanOrEqual(0);
+        expect(order.bie, 'intro 区没有「別名」分组').toBeGreaterThanOrEqual(0);
+        // 正式名号（字、號）排在次要的「別名」之前
+        expect(order.zi, '「字」应排在「別名」之前').toBeLessThan(order.bie);
+        expect(order.hao, '「號」应排在「別名」之前').toBeLessThan(order.bie);
+    });
+
+    test('展开后给出全部作品', async ({ page }) => {
+        await openDetail(page, OUYANG);
+        const rows = page.locator('.bim-d-row');
+        const before = await rows.count();
+        const more = page.getByRole('button', { name: /展開其餘\s*\d+\s*條著作/ });
+        await expect(more).toBeVisible();
+        await more.click();
+        await expect(async () => {
+            expect(await rows.count()).toBeGreaterThan(before);
+        }).toPass({ timeout: 30_000 });
+    });
+});
