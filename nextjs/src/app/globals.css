@@ -237,6 +237,41 @@
 
   /* 书目卡片「封面」点缀（IndexBrowser resultVariant="card"） */
   --bim-cover-accent: var(--color-accent-gold);
+
+  /* -------------------------------------------------------
+     详情页（作品 / 版本 / 丛编），需要 book-index-ui >= 0.7.0。
+
+     组件库自带的默认值本身就是宣纸+朱砂（与设计稿一致），这里把它们
+     接到本站 token 上，好处是深色模式开放时详情页自动跟随——否则
+     墨夜主题下会保留一张亮底的纸。
+     ------------------------------------------------------- */
+
+  /* 底色 */
+  --bim-page-bg: var(--color-paper);
+  --bim-row-hover-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
+  --bim-selection-bg: color-mix(in srgb, var(--color-accent-gold) 30%, transparent);
+
+  /* 文字层次 */
+  --bim-ink: var(--color-ink);
+  --bim-body-fg: color-mix(in srgb, var(--color-ink) 92%, var(--color-paper));
+  --bim-quiet-fg: color-mix(in srgb, var(--color-ink) 78%, var(--color-paper));
+  --bim-meta-fg: var(--color-secondary);
+  --bim-label-fg: color-mix(in srgb, var(--color-secondary) 82%, var(--color-paper));
+  --bim-hint-fg: color-mix(in srgb, var(--color-secondary) 58%, var(--color-paper));
+
+  /* 强调 */
+  --bim-accent: var(--color-vermilion);
+  --bim-accent-deep: var(--color-vermilion-deep);
+
+  /* 分隔线 */
+  --bim-rule-strong: var(--color-ink);
+  --bim-rule: var(--color-border);
+  --bim-rule-dashed: color-mix(in srgb, var(--color-secondary) 42%, var(--color-paper));
+  --bim-rule-accent-soft: color-mix(in srgb, var(--color-vermilion) 32%, var(--color-paper));
+
+  /* 字体：详情页全站无衬线（2026-09-05 定），与站点正文的宋体区分开 */
+  --bim-font-ui: var(--font-sans);
+  --bim-font-body: var(--font-sans);
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */

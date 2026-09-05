@@ -9,6 +9,13 @@ import type { DataSource } from '@/lib/constants';
 
 interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     id: string;
+    /**
+     * 是否显示条目类型图标，默认 true。
+     *
+     * 在成列的表格里关掉：整列都是同一类型时，每行前面挂一个一模一样的
+     * 小图标只是噪音（详情页的「相關版本」「收錄書籍」表就是这种情况）。
+     */
+    showIcon?: boolean;
 }
 
 // 跨 BidLink 实例共享：每个 id 走 transport.getEntry（命中 chunk 缓存，
@@ -25,7 +32,7 @@ function fetchEntry(source: DataSource, id: string): Promise<IndexEntry | null> 
     return p;
 }
 
-export default function BidLink({ id, children, className, ...props }: BidLinkProps) {
+export default function BidLink({ id, children, className, showIcon = true, ...props }: BidLinkProps) {
     const { source } = useSource();
     const [type, setType] = useState<IndexType | null>(null);
     const [name, setName] = useState<string | null>(null);
@@ -44,6 +51,7 @@ export default function BidLink({ id, children, className, ...props }: BidLinkPr
     }, [id, source]);
 
     const renderIcon = () => {
+        if (!showIcon) return null;
         const iconBaseClass = "w-3.5 h-3.5 inline-block mr-1 opacity-70 align-middle";
 
         switch (type) {

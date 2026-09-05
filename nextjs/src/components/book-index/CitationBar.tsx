@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import type { IndexStorage } from 'book-index-ui';
 
 /**
- * 详情页底部版本信息条。展示 production 条目的 semver revision + 修订日期。
+ * 详情页的版本信息。展示 production 条目的 semver revision + 修订日期。
+ *
+ * 2026-09 版式重构前它是页面底部一条独立的固定高度横条；现在作为
+ * `footerExtra` 并入 BookDetailLayout 的页脚，渲染成一段行内文字，
+ * 与页脚其余内容（ID、提交新版本、数据源）排在同一行。
  *
  * 设计：项目进展/古籍索引网站/整体设计/2026-05-版本控制与不可变性.md
  */
@@ -33,31 +37,16 @@ export default function CitationBar({ id, transport, redirectedFrom }: CitationB
     }, [id, transport]);
 
     if (!meta?.revision) {
-        return (
-            <div
-                style={{ height: '1.5rem' }}
-                className="border-t border-stone-200 px-4 flex items-center text-[11px] text-stone-500 font-mono"
-            >
-                draft · {id}
-            </div>
-        );
+        return <span>draft</span>;
     }
 
     return (
-        <div
-            style={{ height: '1.5rem' }}
-            className="border-t border-stone-200 px-4 flex items-center gap-2 text-[11px] text-stone-600 font-mono"
-        >
-            <span>
-                rev. {meta.revision}
-                {meta.revised_at && <> · {meta.revised_at}</>}
-                {' · '}{id}
-            </span>
+        <span>
+            rev. {meta.revision}
+            {meta.revised_at && <> · 最近校訂 {meta.revised_at}</>}
             {redirectedFrom && (
-                <span className="ml-auto text-stone-400" title={`原草稿 ID: ${redirectedFrom}`}>
-                    ← 已升级
-                </span>
+                <span title={`原草稿 ID: ${redirectedFrom}`}> · 已升級</span>
             )}
-        </div>
+        </span>
     );
 }

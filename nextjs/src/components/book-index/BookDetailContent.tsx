@@ -203,12 +203,13 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         },
     ], [id, initialPage]);
 
-    // banner 高度从 BookDetailLayout 高度里扣，避免滚动条溢出
-    //   - redirect banner（顶部）: 2rem（仅 redirected_from 时）
-    //   - CitationBar（底部）:     1.5rem（始终占位，draft/production 都渲染）
-    const bannerHeight = redirectedFrom ? '2rem' : '0px';
-    const citationHeight = '1.5rem';
-    const layoutHeight = `calc(100vh - 2.5rem - ${bannerHeight} - ${citationHeight})`;
+    /*
+     * 2026-09 版式重构：详情页改为文档流滚动，不再是「固定高度 + 内部滚动」。
+     * 旧代码在这里算 calc(100vh - …) 传给 BookDetailLayout，于是史記
+     * 4914px 的内容被塞进 836px 的窗口，滚动条出现在页面中央，浏览器原生的
+     * 滚动位置记忆、Ctrl+F、锚点跳转全部失效。现在整页随文档流滚动，
+     * 版本信息（原 CitationBar）作为 footerExtra 并入页脚一行。
+     */
 
     return (
         <LayoutWrapper hideFooter hideFeedbackButton>
@@ -245,14 +246,19 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 onNavigate={handleNavigate}
                 onBack={handleBack}
                 backLabel="返回索引"
-                renderLink={(linkId, label) => <BidLink id={linkId}>{label}</BidLink>}
+                renderLink={(linkId, label, ctx) => (
+                    // 表格/chip 里（ctx.dense）不显示类型图标：整列同类型时，
+                    // 每行前面挂一个一模一样的小图标只是噪音
+                    <BidLink id={linkId} showIcon={!ctx?.dense}>{label}</BidLink>
+                )}
                 enrichDetail={(entry, detail) => enrichDigitalAssets(id, entry, detail as DetailWithAssets)}
                 getSourceLink={getSourceLink}
                 extraTabs={extraTabs}
                 feedbackApiUrl={resolveFeedbackUrl}
-                height={layoutHeight}
+                footerExtra={
+                    <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
+                }
             />
-            <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
         </LayoutWrapper>
     );
 }
