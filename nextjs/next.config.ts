@@ -43,7 +43,8 @@ const nextConfig: NextConfig = {
   pageExtensions: isLocal
     ? ['tsx', 'ts', 'jsx', 'js', 'local.tsx', 'local.ts']
     : ['tsx', 'ts', 'jsx', 'js'],
-  // GitHub Pages 部署路径处理
+  // 部署子路径（basePath）。历史上为 GitHub Pages 的 /repo/ 子路径而设；
+  // 现托管在 EdgeOne Pages 根路径，CI 里显式 NEXT_PUBLIC_BASE_PATH=""。
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   env: {

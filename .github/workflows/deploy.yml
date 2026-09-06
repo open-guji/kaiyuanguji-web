@@ -1,4 +1,6 @@
-name: Deploy to GitHub Pages
+name: Deploy to EdgeOne
+# 显示名原为「Deploy to GitHub Pages」——2026-05 起早已不部署 GitHub Pages，
+# 产物推到 edgeone-release 分支由 EdgeOne Pages 托管。2026-09-06 改名以免误导新人。
 
 on:
   push:
