@@ -79,7 +79,9 @@ function buildDocs(index, searchS, groupKey, typeLabel) {
             // storeFields 透传给 worker hits, 直接渲染卡片不需 hydration
             title,
             author,
-            dynasty: entry.dynasty || '',
+            dynasty: entry.dynasty || '',   // 撰人朝代
+            era: entry.era,                  // 刊刻朝代（Book/Collection，投影自 dating）
+            sort_year: entry.sort_year,
             role: entry.role,
             edition: entry.edition,
             additional_titles: aliases,
@@ -103,7 +105,7 @@ function msOptions() {
         idField: 'id',
         fields: ['title_search', 'author_search', 'aliases_search'],
         storeFields: [
-            'id', 'type', 'title', 'author', 'dynasty', 'role', 'edition',
+            'id', 'type', 'title', 'author', 'dynasty', 'era', 'sort_year', 'role', 'edition',
             'additional_titles', 'attached_texts', 'juan_count',
             'has_text', 'has_image', 'has_collated',
             'subtype', 'primary_name', 'birth_year', 'death_year', 'cbdb_id',

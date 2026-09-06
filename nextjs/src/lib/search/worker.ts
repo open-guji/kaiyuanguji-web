@@ -22,6 +22,9 @@ interface StoredFields {
     title: string;
     author?: string;
     dynasty?: string;
+    /** 刊刻朝代（Book/Collection）；dynasty 是撰人朝代 */
+    era?: string;
+    sort_year?: number;
     role?: string;
     edition?: string;
     additional_titles?: string[];
@@ -69,7 +72,7 @@ export function msOptions() {
         idField: 'id',
         fields: ['title_search', 'author_search', 'aliases_search'],
         storeFields: [
-            'id', 'type', 'title', 'author', 'dynasty', 'role', 'edition',
+            'id', 'type', 'title', 'author', 'dynasty', 'era', 'sort_year', 'role', 'edition',
             'additional_titles', 'attached_texts', 'juan_count',
             'has_text', 'has_image', 'has_collated',
             'subtype', 'primary_name', 'birth_year', 'death_year', 'cbdb_id',
@@ -129,6 +132,8 @@ export function mapHits(results: SearchResult[]): Hit[] {
         title: r.title as string,
         author: r.author as string | undefined,
         dynasty: r.dynasty as string | undefined,
+        era: r.era as string | undefined,
+        sort_year: r.sort_year as number | undefined,
         role: r.role as string | undefined,
         edition: r.edition as string | undefined,
         additional_titles: r.additional_titles as string[] | undefined,

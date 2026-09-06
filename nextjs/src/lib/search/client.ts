@@ -30,6 +30,8 @@ export interface WorkerHit {
     title: string;
     author?: string;
     dynasty?: string;
+    era?: string;
+    sort_year?: number;
     role?: string;
     edition?: string;
     additional_titles?: string[];

@@ -23,6 +23,8 @@ function hitToEntry(h: WorkerHit): IndexEntry {
         isDraft: true,
         author: h.author,
         dynasty: h.dynasty,
+        era: h.era,
+        sort_year: h.sort_year,
         role: h.role,
         edition: h.edition,
         additional_titles: h.additional_titles,

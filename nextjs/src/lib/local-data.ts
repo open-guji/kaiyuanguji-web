@@ -18,9 +18,12 @@ interface IndexFileEntry {
     type: string;
     path: string;
     author: string;
-    year: string;
     holder: string;
+    /** 撰人朝代 */
     dynasty?: string;
+    /** 刊刻朝代 / 排序年（Book·Collection，投影自 dating）。旧 year 已删 */
+    era?: string;
+    sort_year?: number;
     role?: string;
     has_collated?: boolean;
     has_text?: boolean;

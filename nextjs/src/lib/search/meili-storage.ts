@@ -39,6 +39,8 @@ interface MeiliHit {
     primary_name?: string;
     author?: string;
     dynasty?: string;
+    era?: string;
+    sort_year?: number;
     role?: string;
     edition?: string;
     subtype?: string;
@@ -119,6 +121,8 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
             isDraft: h.is_draft ?? true,
             author: h.author,
             dynasty: h.dynasty,
+            era: h.era,
+            sort_year: h.sort_year,
             role: h.role,
             edition: h.edition,
             subtype: h.subtype,
