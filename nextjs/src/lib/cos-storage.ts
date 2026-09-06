@@ -3,8 +3,17 @@
  *
  * 流程：
  *   1. 浏览器启动 fetch `${COS_BASE}/latest.json` 拿当前发布的 commitId（12位短哈希）
- *   2. 所有 data 请求 basePath 拼为 `${COS_BASE}/v/${commit}/`，永久不可变
+ *   2. entry/ 与 index/ 走 commit-independent 的 `${COS_BASE}/current/`，
+ *      靠 `?v=${commit}` 让 CDN 区分版本（见 withCacheBust）；
+ *      search 分片仍走 `${COS_BASE}/v/${commit}/search`，commit 隔离（见 getCosSearchBaseUrl）
  *   3. 回滚 = 改 latest.json 一个文件，30 秒生效
+ *
+ * ⚠️ 排查线上数据别只用 `?v=<commit>` 做 cache-buster
+ *   current/* 带 `Cache-Control: immutable, max-age=31536000`。bundle 重建后同名
+ *   URL 内容会变，但边缘节点可能仍握着旧副本——`?v=` 是同一个 commit 值，穿不透。
+ *   2026-09-05 实测：新写入的 Book.dating 在 `?v=<commit>` 下返回 null，换随机串
+ *   立刻拿到正确数据。手工核验线上一律用随机 cache-buster，否则会把「CDN 没刷新」
+ *   误判成「数据没发布」。同类坑另见 latest.json 被缓存数小时那次。
  *
  * 设计要点：
  *   - getTransport() 必须保持同步 → 用 Proxy 包装 BundleStorage，方法被调用时再 await 版本
