@@ -42,7 +42,11 @@ test.describe('整理本', () => {
             timeout: 30_000,
         });
 
-        const juanButtons = page.getByRole('button', { name: /^卷\// });
+        // 按钮文案是 juanDisplayName() 的产物：juan/001.json → 「卷1」。
+        // 此前这里写 /^卷\//，锚的是 0.8.1 修掉的那个 bug——带目录的文件名
+        // 只剥了 juan 前缀、剩下 /001，于是显示成「卷/001」。修好后此选择器
+        // 匹配 0 个，用例反而变成守着旧 bug。改锚正确形态。
+        const juanButtons = page.getByRole('button', { name: /^卷\s*\d+$/ });
         expect(
             await juanButtons.count(),
             '「共 N 卷」与实际卷按钮数不符——卷数来源又被改回不可信字段了？',
