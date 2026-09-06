@@ -171,7 +171,8 @@ describe('local-data getItem', () => {
         const id = 'work1234';
         const dir = path.join(workspace, 'book-index-draft', 'Work', '2', '3', '4');
         writeJson(path.join(dir, `${id}-t.json`), { id, title: 't', type: 'Work' });
-        fs.mkdirSync(path.join(dir, id, 'collated_edition'), { recursive: true });
+        // 资产在 book-text（2026-08-26 文本拆分），不在元数据仓
+        fs.mkdirSync(path.join(workspace, 'book-text', 'Work', '2', '3', '4', id, 'collated_edition'), { recursive: true });
         const data = loadModule().getItem(id);
         expect(data?.has_collated).toBe(true);
     });
@@ -244,7 +245,7 @@ describe('local-data collated edition', () => {
         const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
         const idxData = { work_id: id, juans: [{ name: 'juan1' }] };
-        writeJson(path.join(dir, id, 'collated_edition', 'collated_edition_index.json'), idxData);
+        writeJson(path.join(workspace, 'book-text', 'Work', '1', '2', '3', id, 'collated_edition', 'collated_edition_index.json'), idxData);
 
         expect(loadModule().getCollatedEditionIndex(id)).toEqual(idxData);
     });
@@ -253,7 +254,7 @@ describe('local-data collated edition', () => {
         const id = 'wcoll456';
         const dir = path.join(workspace, 'book-index-draft', 'Work', '4', '5', '6');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
-        const collDir = path.join(dir, id, 'collated_edition');
+        const collDir = path.join(workspace, 'book-text', 'Work', '4', '5', '6', id, 'collated_edition');
         // 几个 juan 文件
         writeJson(path.join(collDir, 'juan2.json'), { name: '卷二' });
         writeJson(path.join(collDir, 'juan1.json'), { name: '卷一' });
@@ -273,7 +274,7 @@ describe('local-data collated edition', () => {
         const id = 'wjuan123';
         const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
         writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
-        const collTextDir = path.join(dir, id, 'collated_edition', 'text');
+        const collTextDir = path.join(workspace, 'book-text', 'Work', '1', '2', '3', id, 'collated_edition', 'text');
         fs.mkdirSync(collTextDir, { recursive: true });
         fs.writeFileSync(path.join(collTextDir, 'juan1.md'), '# 卷一\n内容', 'utf-8');
 
