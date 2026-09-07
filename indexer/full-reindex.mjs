@@ -490,7 +490,9 @@ async function main() {
                 if (worksBuf.length >= BATCH_SIZE) {
                     if (!dryRun) {
                         worksPending.push(pushBatch('works', worksBuf).then(waitForTask));
-                        while (worksPending.length >= 3) await worksPending.shift();
+                        // 此前写死 3：MAX_CONCURRENT=1 在这条主循环里根本没生效，2GB 机上
+                        // Meili 同时嚼三批，RSS 冲到 1.1GB、available 掉到 196MB（2026-09-07 实测）
+                        while (worksPending.length >= MAX_CONCURRENT) await worksPending.shift();
                     }
                     worksTotal += worksBuf.length;
                     worksBuf = [];
@@ -502,7 +504,7 @@ async function main() {
                 if (juansBuf.length >= 500) {
                     if (!dryRun) {
                         juansPending.push(pushBatch('juans', juansBuf).then(waitForTask));
-                        while (juansPending.length >= 3) await juansPending.shift();
+                        while (juansPending.length >= MAX_CONCURRENT) await juansPending.shift();
                     }
                     juansTotal += juansBuf.length;
                     juansBuf = [];
