@@ -66,7 +66,9 @@ if [ -d "$TEXT_DIR/.git" ]; then
     git -C "$TEXT_DIR" pull --ff-only
 else
     echo "  首次运行：克隆 book-text 仓（约 130 MB）"
-    git clone --depth 1 https://github.com/open-guji/book-text.git "$TEXT_DIR"
+    # 上海机直连 GitHub 不通（2026-09-06 实测 60s 超时），走与另两仓 origin 相同的
+    # gh-proxy.com 前缀；换代理时用 TEXT_REPO_URL 覆盖
+    git clone --depth 1 "${TEXT_REPO_URL:-https://gh-proxy.com/https://github.com/open-guji/book-text.git}" "$TEXT_DIR"
 fi
 git -C "$TEXT_DIR" log -1 --format='  HEAD: %h %ci %s'
 

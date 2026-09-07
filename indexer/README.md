@@ -19,18 +19,16 @@
 
 ## 把仓库里的脚本同步到服务器
 
-五个文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合：
+六个文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合。
+
+**上海机直连 GitHub 不通**（2026-09-06 实测：`git ls-remote` 60 秒超时，raw.githubusercontent.com 同样不通），
+所以脚本用 `scp` 从本机推，数据仓经 `gh-proxy.com` 前缀拉（三仓的 origin 都已指向它）：
 
 ```bash
-ssh root@122.51.91.177
-cd /opt/indexer
-B=https://raw.githubusercontent.com/open-guji/kaiyuanguji-web/main/indexer
-for f in full-reindex.mjs reindex-and-purge.sh reindex-limited.sh purge-edgeone.mjs package.json README.md; do
-  curl -fsSL -o "$f" "$B/$f"
-done
-chmod +x reindex-and-purge.sh reindex-limited.sh
-npm install --omit=dev
-md5sum *.mjs *.sh package.json     # 与仓库里 md5sum 对一遍
+cd D:/workspace/kaiyuanguji-web/indexer
+scp full-reindex.mjs reindex-and-purge.sh reindex-limited.sh purge-edgeone.mjs package.json README.md root@122.51.91.177:/opt/indexer/
+ssh root@122.51.91.177 'cd /opt/indexer && chmod +x *.sh && npm install --omit=dev && md5sum *.mjs *.sh package.json README.md'
+md5sum *.mjs *.sh package.json README.md    # 本机对一遍
 ```
 
 ## 跑一次重建
