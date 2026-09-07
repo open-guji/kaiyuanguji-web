@@ -31,6 +31,20 @@ ssh root@122.51.91.177 'cd /opt/indexer && chmod +x *.sh && npm install --omit=d
 md5sum *.mjs *.sh package.json README.md    # 本机对一遍
 ```
 
+## 数据仓怎么更新
+
+wrapper 每次先 `git pull --ff-only` 三仓（origin 都是 `gh-proxy.com` 前缀）。**代理不可靠**：2026-09-07 拉 book-index 被 403，
+拉 book-index-draft 却成功。pull 失败时 wrapper 会警告并用本地 checkout 继续，所以看到警告要另行更新数据。
+最稳的办法是从本机经 SSH 直推（服务器三仓已设 `receive.denyCurrentBranch=updateInstead`，工作区干净时推上去即更新）：
+
+```bash
+cd D:/workspace/book-index && git push ssh://root@122.51.91.177/root/book-index main:main
+cd D:/workspace/book-index-draft && git push ssh://root@122.51.91.177/root/book-index-draft main:main
+cd D:/workspace/book-text && git push ssh://root@122.51.91.177/root/book-text main:main
+```
+
+推完在服务器上 `git -C /root/book-index log -1 --format='%h %cd' --date=short` 确认。
+
 ## 跑一次重建
 
 ```bash

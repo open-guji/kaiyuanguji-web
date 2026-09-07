@@ -44,17 +44,31 @@ export MEILI_KEY="${MEILI_KEY:-$MASTER_KEY}"
 
 ts() { date -Iseconds; }
 
+# pull 失败不中止：上海机对 GitHub 只能走代理，代理时不时 403/超时（2026-09-07 book-index
+# 就被 gh-proxy 403 过一次）。一次网络失败让整轮 reindex 都不跑，比用稍旧的本地
+# checkout 重建更糟——后者至少把 book-text 的整理本正文和新条目推上去了。
+# 失败时大声警告并打印本地 HEAD 日期，让人看得见数据有多旧；数据也可以从本机
+# 经 SSH 直推到服务器仓（见 README「数据仓怎么更新」）。
+pull_or_warn() {
+    local dir="$1"
+    if git -C "$dir" pull --ff-only; then
+        return 0
+    fi
+    echo "⚠️  [$(ts)] git pull $dir 失败——继续用本地 checkout 重建（数据可能陈旧！）" >&2
+    return 0
+}
+
 # 关键：先拉新数据再建索引。此前缺这一步，cron 每晚都在对同一份陈旧
 # checkout 重建索引，搜索结果永远停在最后一次人工 pull 的状态
 # （2026-08-25 查实）。--ff-only 失败就整体中止：宁可显式报错，也好过
 # 无声地把过期数据推上线——与本脚本 set -e 的 fail-fast 设计一致。
 echo "[$(ts)] === git pull $DRAFT_DIR ==="
-git -C "$DRAFT_DIR" pull --ff-only
+pull_or_warn "$DRAFT_DIR"
 git -C "$DRAFT_DIR" log -1 --format='  HEAD: %h %ci %s'
 
 echo "[$(ts)] === git pull $PRODUCTION_DIR ==="
 if [ -d "$PRODUCTION_DIR/.git" ]; then
-    git -C "$PRODUCTION_DIR" pull --ff-only
+    pull_or_warn "$PRODUCTION_DIR"
 else
     echo "  首次运行：克隆 production 仓"
     git clone --depth 1 https://github.com/open-guji/book-index.git "$PRODUCTION_DIR"
@@ -63,7 +77,7 @@ git -C "$PRODUCTION_DIR" log -1 --format='  HEAD: %h %ci %s'
 
 echo "[$(ts)] === git pull $TEXT_DIR ==="
 if [ -d "$TEXT_DIR/.git" ]; then
-    git -C "$TEXT_DIR" pull --ff-only
+    pull_or_warn "$TEXT_DIR"
 else
     echo "  首次运行：克隆 book-text 仓（约 130 MB）"
     # 上海机直连 GitHub 不通（2026-09-06 实测 60s 超时），走与另两仓 origin 相同的
