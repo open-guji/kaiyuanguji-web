@@ -1,0 +1,6 @@
+
+# 上海服务器脚本：scp 直传 Linux，必须 LF（CRLF 的 shebang 会 No such file or directory）
+indexer/*.sh text eol=lf
+indexer/*.mjs text eol=lf
+indexer/package.json text eol=lf
+indexer/README.md text eol=lf
