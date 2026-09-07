@@ -45,6 +45,14 @@ cd D:/workspace/book-text && git push ssh://root@122.51.91.177/root/book-text ma
 
 推完在服务器上 `git -C /root/book-index log -1 --format='%h %cd' --date=short` 确认。
 
+两个坑（2026-09-07 都踩过）：
+
+- **别在服务器仓上 `git fetch --depth 1`**。三仓是 shallow clone，普通 `pull` 会按需加深历史所以能 fast-forward；
+  一旦手动 `--depth 1` fetch，新的 origin/main 成了不相连的 shallow root，之后 `pull --ff-only` 永远报
+  「Not possible to fast-forward」。已经弄成这样就 `git reset --hard origin/main`（工作区本来就该是干净的镜像）。
+- gh-proxy 的 403 是瞬时的，同一分钟内重试常常就好。wrapper 现在遇到 pull 失败只警告不中止，
+  所以**看到 ⚠ 就核对日志里打印的 HEAD 日期**，太旧就用上面的 SSH 直推。
+
 ## 跑一次重建
 
 ```bash
