@@ -25,7 +25,6 @@ tmp/
 coverage/
 
 # AI related
-progress/
 .claudeignore
 .clauderules
 .claude/

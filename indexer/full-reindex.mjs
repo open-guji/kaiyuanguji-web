@@ -1,9 +1,10 @@
 /**
  * 完整 indexer (Node.js) — 把 book-index-draft + book-index 全量推到 Meili
  *
- * 用法（在上海云上跑）：
+ * 用法（在上海云上跑；平时经 ./reindex-limited.sh 调用，别直接跑）：
  *   DRAFT_DIR=/root/book-index-draft \
  *   PRODUCTION_DIR=/root/book-index \
+ *   TEXT_DIR=/root/book-text \
  *   MEILI_URL=http://127.0.0.1:7700 \
  *   MEILI_KEY=xxx \
  *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books]
@@ -11,7 +12,9 @@
  * 设计：
  *   - 流式遍历 {draft,production}/index/{books,works,entities}/{0-f}.json
  *   - 每 1000 doc 推一批；最多 3 个 in-flight task
- *   - has_collated 的 work 同时把所有 collated_edition/text/*.md 推 juans index
+ *   - has_collated 的 work 同时把整理本正文推 juans index —— 正文在 **book-text**
+ *     仓（2026-08-26 拆出），不在元数据仓。此前本脚本仍到元数据仓找
+ *     collated_edition/，拆分后那里永远是空的，juans 索引因此为 0（2026-09-06 修）
  *   - 推完所有数据后再 PATCH settings（避免索引时反复 reindex）
  *
  * 两个数据仓缺一不可（2026-08-25 修）：升格（promote）会把条目搬到
@@ -36,6 +39,9 @@ const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
 const DRAFT_DIR = process.env.DRAFT_DIR;
 const PRODUCTION_DIR = process.env.PRODUCTION_DIR;
+// 文本仓：整理本 / 辑佚 / 全文。与元数据仓同一套 ID 与 Work/c1/c2/c3/ 分片目录，
+// 所以由 entry.path 的目录部分 + id 就能定位到 book-text 里的整理本目录。
+const TEXT_DIR = process.env.TEXT_DIR;
 const MEILI_URL = process.env.MEILI_URL || 'http://127.0.0.1:7700';
 const MEILI_KEY = process.env.MEILI_KEY;
 if (!DRAFT_DIR || !MEILI_KEY) {
@@ -52,6 +58,11 @@ if (PRODUCTION_DIR && existsSync(PRODUCTION_DIR)) {
     // 不静默降级：缺 production 会让 2 万多条正式条目搜不到，必须显眼
     console.warn('⚠️  PRODUCTION_DIR 未设置或不存在 —— 所有已升格条目将不会进入索引！');
     console.warn('    正确用法：PRODUCTION_DIR=/root/book-index node full-reindex.mjs');
+}
+if (!TEXT_DIR || !existsSync(TEXT_DIR)) {
+    // 同样不静默：没有 book-text，juans 索引就是空的，整理本正文一个字都搜不到
+    console.warn('⚠️  TEXT_DIR 未设置或不存在 —— juans 索引将为空（整理本正文搜不到）！');
+    console.warn('    正确用法：TEXT_DIR=/root/book-text node full-reindex.mjs');
 }
 
 const args = process.argv.slice(2);
@@ -146,7 +157,9 @@ function buildBookDoc(entry, isDraft = true) {
         type: 'book',
         is_draft: isDraft,
         title, author, edition, holder,
-        dynasty: entry.dynasty || '',
+        dynasty: entry.dynasty || '',          // 撰人朝代
+        era: entry.era || '',                  // 刊刻朝代（2026-09 投影自 Book.dating，与 dynasty 不是一回事）
+        sort_year: entry.sort_year ?? null,
         has_text: !!entry.has_text,
         has_image: !!entry.has_image,
         completeness: (entry.has_text ? 3 : 0) + (entry.has_image ? 2 : 0),
@@ -192,30 +205,61 @@ function buildEntityDoc(entry, isDraft = true) {
     };
 }
 
-function buildJuanDocs(workEntry, rootDir) {
+function juanDoc(workId, juanName, clean) {
+    const juanHash = crypto.createHash('md5').update(juanName, 'utf-8').digest('hex').slice(0, 12);
+    return {
+        id: `${workId}_${juanHash}`,
+        type: 'juan',
+        work_id: workId,
+        juan_name: juanName,
+        snippet: clean.slice(0, 200),
+        content_search: mergeSimp(clean.slice(0, 5000)),
+    };
+}
+
+/**
+ * 一部整理本的各卷正文 → juans 文档。
+ *
+ * 正文在 book-text：`{TEXT_DIR}/Work/c1/c2/c3/{id}/collated_edition/`。
+ * 优先读派生的 `text/*.md`；没有 md 时退到卷档 `juan/NNN.json`，拼各节
+ * title + content。两种来源都没有就返回空。
+ */
+function buildJuanDocs(workEntry) {
+    if (!TEXT_DIR) return [];
     const workId = workEntry.id;
     const relPath = workEntry.path || '';
     if (!relPath) return [];
-    const workDir = join(rootDir, dirname(relPath), workId, 'collated_edition', 'text');
-    if (!existsSync(workDir)) return [];
+    const ceDir = join(TEXT_DIR, dirname(relPath), workId, 'collated_edition');
+    if (!existsSync(ceDir)) return [];
     const docs = [];
-    let mdFiles;
-    try { mdFiles = readdirSync(workDir).filter(f => f.endsWith('.md')).sort(); } catch { return []; }
-    for (const fname of mdFiles) {
-        let text;
-        try { text = readFileSync(join(workDir, fname), 'utf-8'); } catch { continue; }
-        const clean = text.replace(MD_RE, ' ').replace(/\s+/g, ' ').trim();
+
+    const textDir = join(ceDir, 'text');
+    let mdFiles = [];
+    try { if (existsSync(textDir)) mdFiles = readdirSync(textDir).filter(f => f.endsWith('.md')).sort(); } catch { mdFiles = []; }
+    if (mdFiles.length) {
+        for (const fname of mdFiles) {
+            let text;
+            try { text = readFileSync(join(textDir, fname), 'utf-8'); } catch { continue; }
+            const clean = text.replace(MD_RE, ' ').replace(/\s+/g, ' ').trim();
+            if (!clean) continue;
+            docs.push(juanDoc(workId, basename(fname, '.md'), clean));
+        }
+        return docs;
+    }
+
+    const juanDir = join(ceDir, 'juan');
+    if (!existsSync(juanDir)) return [];
+    let jsonFiles;
+    try { jsonFiles = readdirSync(juanDir).filter(f => f.endsWith('.json')).sort(); } catch { return []; }
+    for (const fname of jsonFiles) {
+        let juan;
+        try { juan = JSON.parse(readFileSync(join(juanDir, fname), 'utf-8')); } catch { continue; }
+        const secs = Array.isArray(juan?.sections) ? juan.sections : [];
+        const clean = secs
+            .map(s => [s?.title, s?.content].filter(Boolean).join(' '))
+            .join(' ').replace(/\s+/g, ' ').trim();
         if (!clean) continue;
-        const juanName = basename(fname, '.md');
-        const juanHash = crypto.createHash('md5').update(juanName, 'utf-8').digest('hex').slice(0, 12);
-        docs.push({
-            id: `${workId}_${juanHash}`,
-            type: 'juan',
-            work_id: workId,
-            juan_name: juanName,
-            snippet: clean.slice(0, 200),
-            content_search: mergeSimp(clean.slice(0, 5000)),
-        });
+        docs.push(juanDoc(workId, juan?.title || basename(fname, '.json'), clean));
     }
     return docs;
 }
@@ -392,6 +436,8 @@ async function pushInBatches(indexUid, iterable, { batchSize = BATCH_SIZE, maxCo
 
 async function main() {
     console.log(`DRAFT: ${DRAFT_DIR}`);
+    console.log(`PROD:  ${PRODUCTION_DIR || '(未设置！)'}`);
+    console.log(`TEXT:  ${TEXT_DIR || '(未设置！juans 将为空)'}`);
     console.log(`MEILI: ${MEILI_URL}`);
     console.log(`MODE:  ${dryRun ? 'DRY-RUN' : 'LIVE'}`);
     if (limit) console.log(`LIMIT: ${limit} per index`);
@@ -427,7 +473,7 @@ async function main() {
                 if (detail._promoted_to) continue;
                 if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
                 if (doJuans && entry.has_collated) {
-                    for (const j of buildJuanDocs(entry, rootDir)) {
+                    for (const j of buildJuanDocs(entry)) {
                         yield { kind: 'juan', doc: j };
                     }
                 }

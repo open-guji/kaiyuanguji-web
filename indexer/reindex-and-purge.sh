@@ -5,8 +5,8 @@
 #
 # 部署：放在 /opt/indexer/ 下，跟 full-reindex.mjs / purge-edgeone.mjs 同级。
 # 用法：
-#   ./reindex-and-purge.sh           # 手动跑
-#   或 cron: 0 4 * * * /opt/indexer/reindex-and-purge.sh >> /var/log/indexer.log 2>&1
+#   ./reindex-limited.sh             # 平时一律走这个（cgroup 限制版，会调用本脚本）
+#   或 cron: 0 4 * * * /opt/indexer/reindex-limited.sh >> /var/log/indexer.log 2>&1
 #
 # ⚠️ 低配机（上海云 2 核 / 2GB / 无 swap）**不要直接跑本脚本**：
 # 2026-09-04 实测会把整机压到失去响应（SSH 握不上手、/health 返 000）。
@@ -36,6 +36,9 @@ export DRAFT_DIR="${DRAFT_DIR:-/root/book-index-draft}"
 # production 仓不可缺：已升格条目（2026-08 已 2.3 万条）全在这里，
 # 只给 draft 的话它们在搜索里只剩墓碑裸标题
 export PRODUCTION_DIR="${PRODUCTION_DIR:-/root/book-index}"
+# 文本仓（2026-08-26 从 book-index 拆出）：整理本正文只在这里。
+# 缺了 juans 索引为 0，整理本正文一个字都搜不到（2026-09-06 查实）。
+export TEXT_DIR="${TEXT_DIR:-/root/book-text}"
 export MEILI_URL="${MEILI_URL:-http://127.0.0.1:7700}"
 export MEILI_KEY="${MEILI_KEY:-$MASTER_KEY}"
 
@@ -57,6 +60,15 @@ else
     git clone --depth 1 https://github.com/open-guji/book-index.git "$PRODUCTION_DIR"
 fi
 git -C "$PRODUCTION_DIR" log -1 --format='  HEAD: %h %ci %s'
+
+echo "[$(ts)] === git pull $TEXT_DIR ==="
+if [ -d "$TEXT_DIR/.git" ]; then
+    git -C "$TEXT_DIR" pull --ff-only
+else
+    echo "  首次运行：克隆 book-text 仓（约 130 MB）"
+    git clone --depth 1 https://github.com/open-guji/book-text.git "$TEXT_DIR"
+fi
+git -C "$TEXT_DIR" log -1 --format='  HEAD: %h %ci %s'
 
 echo "[$(ts)] === full-reindex.mjs 开始 ==="
 node full-reindex.mjs "$@"

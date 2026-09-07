@@ -26,6 +26,10 @@ export BATCH_SIZE="${BATCH_SIZE:-200}"
 export MAX_CONCURRENT="${MAX_CONCURRENT:-1}"
 # 给 Node 自己的堆也设上限，别等 cgroup 来杀
 NODE_HEAP="${NODE_HEAP:-320}"
+# 三个数据仓路径：显式传进 scope，别依赖继承
+export DRAFT_DIR="${DRAFT_DIR:-/root/book-index-draft}"
+export PRODUCTION_DIR="${PRODUCTION_DIR:-/root/book-index}"
+export TEXT_DIR="${TEXT_DIR:-/root/book-text}"
 
 if ! command -v systemd-run >/dev/null 2>&1; then
     echo "⚠️  没有 systemd-run，退回 nice/ionice（只能降优先级，没有硬上限）" >&2
@@ -53,5 +57,8 @@ exec systemd-run --scope --quiet \
     -p "IOWeight=10" \
     --setenv=BATCH_SIZE="${BATCH_SIZE}" \
     --setenv=MAX_CONCURRENT="${MAX_CONCURRENT}" \
+    --setenv=DRAFT_DIR="${DRAFT_DIR}" \
+    --setenv=PRODUCTION_DIR="${PRODUCTION_DIR}" \
+    --setenv=TEXT_DIR="${TEXT_DIR}" \
     --setenv=NODE_OPTIONS="--max-old-space-size=${NODE_HEAP}" \
     ./reindex-and-purge.sh "$@"
