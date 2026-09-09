@@ -22,34 +22,44 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 }
 
 test.describe('整理本', () => {
-    test('详情页显示「整理本」tab', async ({ page }) => {
+    test('概览页有整理本入口', async ({ page }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}`);
 
-        // 这个 tab 曾经整个消失——清单档 404 被静默 catch 成 null，无任何报错
+        /*
+         * 整理本入口曾经整个消失——清单档 404 被静默 catch 成 null，无任何报错。
+         * 守的是「入口存在」这件事，不是它长什么样：0.9.0 把入口从顶部 tab
+         * 改成了正文里的横幅（tab 与横幅、「作品信息 →」三者指同两个地方，
+         * 属重复），故这里锚横幅文案。
+         */
         await expect(
-            page.getByRole('button', { name: eitherScript('整理本', '整理本') }),
-            '「整理本」tab 不存在：清单档可能 404（文件名或版本号错）',
+            page.getByRole('button', { name: /全文閲讀|全文阅读/ }),
+            '整理本入口不存在：清单档可能 404（文件名或版本号错）',
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('卷数显示与实际卷按钮数一致', async ({ page }) => {
-        // 头部「共 N 卷」曾读 index.total_juan——一个没人维护的独立声明，
-        // 与实际卷文件数对不上（d59f2mp38qv4 显示「共 1 卷」却列出 43 个按钮）。
-        // 改用 juan_files.length 后，两者必须相等：这条断言就是钉住这一点。
+    test('侧栏卷按钮数与 juan_files 条数一致', async ({ page }) => {
+        /*
+         * 卷数来源曾是 index.total_juan——一个没人维护的独立声明，与实际卷
+         * 文件数对不上（d59f2mp38qv4 声明「共 1 卷」却列出 43 个按钮）。
+         * 改用 juan_files.length 后两者必须相等，这条断言钉住这一点。
+         *
+         * 0.9.0 撤掉了头部那行「共 N 卷」——左侧栏已逐卷列出、数量一目了然，
+         * 再写一遍是同一事实的第二处表述。故不再断言那行文案，改为直接数
+         * 侧栏按钮：它才是「卷数」在页面上的唯一体现，也更贴近读者视角。
+         */
         await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated`);
-
-        await expect(page.getByText(new RegExp(`共\\s*${C.juanFileCount}\\s*卷`))).toBeVisible({
-            timeout: 30_000,
-        });
 
         // 按钮文案是 juanDisplayName() 的产物：juan/001.json → 「卷1」。
         // 此前这里写 /^卷\//，锚的是 0.8.1 修掉的那个 bug——带目录的文件名
         // 只剥了 juan 前缀、剩下 /001，于是显示成「卷/001」。修好后此选择器
         // 匹配 0 个，用例反而变成守着旧 bug。改锚正确形态。
         const juanButtons = page.getByRole('button', { name: /^卷\s*\d+$/ });
+        // 先等第一个卷按钮出现再数：原先靠「共 N 卷」那条断言兜住加载等待，
+        // 它撤掉后若直接 count()，会在侧栏渲染完成前拿到 0。
+        await expect(juanButtons.first()).toBeVisible({ timeout: 30_000 });
         expect(
             await juanButtons.count(),
-            '「共 N 卷」与实际卷按钮数不符——卷数来源又被改回不可信字段了？',
+            '侧栏卷按钮数与 juan_files 条数不符——卷数来源又被改回不可信字段了？',
         ).toBe(C.juanFileCount);
     });
 
