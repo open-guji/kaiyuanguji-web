@@ -56,6 +56,10 @@
   --radius-card: 12px;
   --radius-pill: 6px;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 首页主视觉压在古地图上的宣纸色渐变（上淡下浓，让底部文字/搜索框可读） */
+  --hero-grad-a: rgba(250, 247, 242, 0.38);
+  --hero-grad-b: rgba(250, 247, 242, 0.82);
 }
 
 /* ---------- 深色（墨夜）调色板 ----------
@@ -79,6 +83,10 @@
 
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-lift: 0 14px 30px rgba(0, 0, 0, 0.45);
+
+  /* 墨夜下这张古地图本身很亮，需要更重的压暗才压得住白字 */
+  --hero-grad-a: rgba(24, 21, 18, 0.62);
+  --hero-grad-b: rgba(24, 21, 18, 0.88);
 }
 
 /* 全局基础样式 */
@@ -250,6 +258,10 @@
   --bim-page-bg: var(--color-paper);
   --bim-row-hover-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
   --bim-selection-bg: color-mix(in srgb, var(--color-accent-gold) 30%, transparent);
+  /* 整理本横幅：泥金掺纸调出暖沙。**必须不透明**——组件里这个值不再套
+     color-mix，但横幅是大色块，半透明会透出下面的分隔线。 */
+  --bim-band-bg: color-mix(in srgb, var(--color-accent-gold) 18%, var(--color-paper));
+  --bim-band-bg-hover: color-mix(in srgb, var(--color-accent-gold) 30%, var(--color-paper));
 
   /* 文字层次 */
   --bim-ink: var(--color-ink);
@@ -459,6 +471,36 @@
     padding: 0.125rem 0.5rem;
     font-size: 0.75rem;
     border-radius: 0.25rem;
+  }
+
+  /* 首页主视觉：坤舆万国全图作底，上覆宣纸色渐变保证文字可读 */
+  .hero-banner {
+    background-image: linear-gradient(
+        var(--hero-grad-a),
+        var(--hero-grad-b)
+      ),
+      url("/images/kunyu-wanguo-quantu.webp");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+
+  /* 窄屏放弃 16:9（否则高度被压得读不了字），改为最小高度 */
+  @media (max-width: 900px) {
+    .hero-banner {
+      aspect-ratio: auto;
+      min-height: 460px;
+    }
+  }
+
+  /* 长卷横幅：赵孟頫书《常清静经》，纯装饰。
+     图片本身用 next/image fill 定位，这里只管裁切与上下边框。 */
+  .scroll-strip {
+    overflow: hidden;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
   }
 
   /* 首页专题卡片（对齐设计稿 feature-banner-card） */
