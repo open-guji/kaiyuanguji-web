@@ -37,6 +37,32 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
+    test('URL 不带 juan 时自动选中首卷并渲染正文', async ({ page }) => {
+        /*
+         * 读者从概览页横幅点进整理本，URL 里是没有 juan 参数的。此时必须
+         * 自动选中第一卷——否则侧栏列着卷号、正文区空白，看起来像没加载出来。
+         *
+         * 0.9.0 曾把这个 effect 连同「indexProp 到达时清 loading」一起误删，
+         * 线上整理本页面卡在「加载整理本...」，0.9.1 补回。这条用例守的就是
+         * 那次回归：它只在不带 juan 参数时才暴露，带参数的用例一概照过。
+         */
+        await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated`);
+
+        // 不能停在加载态
+        await expect(
+            page.getByText(/加载整理本|加載整理本/),
+            '卡在「加载整理本...」：indexProp 到达后没有清 loading',
+        ).toBeHidden({ timeout: 30_000 });
+
+        // 正文区必须有实际内容（自动选中的首卷渲染出来了）
+        const main = page.locator('.bim-d-reader-main');
+        await expect(main).toBeVisible({ timeout: 30_000 });
+        await expect(
+            main.getByText(/目錄|目录/),
+            '正文区空白：URL 无 juan 参数时没有自动选中首卷',
+        ).toBeVisible({ timeout: 30_000 });
+    });
+
     test('侧栏卷按钮数与 juan_files 条数一致', async ({ page }) => {
         /*
          * 卷数来源曾是 index.total_juan——一个没人维护的独立声明，与实际卷
