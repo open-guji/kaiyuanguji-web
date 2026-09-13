@@ -9,6 +9,12 @@
  *   tsx smoke.ts [--target=http://localhost:8765] [--strict-404]
  */
 import { chromium } from 'playwright';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// ESM 下没有 __dirname，同 runner.ts 的做法
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const target = (() => {
     const a = process.argv.find(x => x.startsWith('--target='));
@@ -72,6 +78,13 @@ async function main() {
 
     console.log(`target: ${target}\n`);
     const failures: string[] = [];
+    /*
+     * 每个场景的实测数据留档：CI 里 smoke 失败时 upload-artifact 收的就是
+     * perf/out/。此前 smoke 只往 console 打、从不落盘，那一步长期报
+     * 「No files were found with the provided path: perf/out/」——
+     * 超预算时现场证据全靠翻日志里那一行数字，查不出是哪个资源涨的。
+     */
+    const sceneReports: unknown[] = [];
 
     for (const s of scenarios) {
         events.length = 0;
@@ -112,13 +125,50 @@ async function main() {
             }
         }
 
+        // 按 wire bytes 倒序：超预算时第一眼要看的就是谁最大
+        const bySize = [...events].sort((a, b) => b.size - a.size);
+
         const tag = `${s.id} ${s.name}`.padEnd(28);
         console.log(`${mark} ${tag} ${reqCount.toString().padStart(3)} reqs, ${totalKB.toFixed(0).padStart(5)} KB / ${(budget ?? '∞').toString().padStart(5)} budget, ${(dt/1000).toFixed(1)}s`);
         for (const f of sceneFails) console.log(`    !!! ${f}`);
+        // 失败场景直接把大头打进日志，省得为了看一眼就去下 artifact
+        if (sceneFails.length) {
+            console.log('    最大的 10 个请求：');
+            for (const e of bySize.slice(0, 10)) {
+                console.log(`      ${(e.size / 1024).toFixed(0).padStart(6)} KB  ${e.status}  ${e.url}`);
+            }
+        }
+
+        sceneReports.push({
+            id: s.id, name: s.name, path: s.path,
+            ok: sceneFails.length === 0,
+            reqCount, totalKB: +totalKB.toFixed(1), budgetKB: budget ?? null,
+            durationMs: dt,
+            failures: sceneFails,
+            requests: bySize.map(e => ({ url: e.url, status: e.status, sizeKB: +(e.size / 1024).toFixed(1) })),
+        });
+
         if (sceneFails.length) failures.push(`${s.id}: ${sceneFails.join('; ')}`);
     }
 
     await browser.close();
+
+    // 落盘必须在 process.exit 之前，且成功失败都写——CI 只在 failure() 时收，
+    // 但本地跑成功时留一份才能拿来跟失败那次对比，看出是哪一项涨的。
+    const outDir = resolve(__dirname, 'out');
+    mkdirSync(outDir, { recursive: true });
+    const report = {
+        kind: 'smoke',
+        target,
+        finishedAt: new Date().toISOString(),
+        ok: failures.length === 0,
+        failures,
+        scenarios: sceneReports,
+    };
+    const stamp = report.finishedAt.replace(/[:.]/g, '-');
+    writeFileSync(resolve(outDir, `smoke-${stamp}.json`), JSON.stringify(report, null, 2));
+    writeFileSync(resolve(outDir, 'smoke-latest.json'), JSON.stringify(report, null, 2));
+    console.log(`\n报告已写入 perf/out/smoke-${stamp}.json`);
 
     if (failures.length === 0) {
         console.log('\n✅ 所有场景通过');
@@ -130,4 +180,17 @@ async function main() {
     }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch(e => {
+    console.error(e);
+    // 跑到一半崩了也要留个东西给 artifact，否则 CI 那步照旧空手而归
+    try {
+        const outDir = resolve(__dirname, 'out');
+        mkdirSync(outDir, { recursive: true });
+        writeFileSync(resolve(outDir, 'smoke-crash.json'), JSON.stringify({
+            kind: 'smoke', target, ok: false,
+            finishedAt: new Date().toISOString(),
+            crash: String(e?.stack ?? e),
+        }, null, 2));
+    } catch {}
+    process.exit(1);
+});
