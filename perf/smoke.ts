@@ -24,7 +24,7 @@ interface NetEvent { url: string; status: number; size: number }
  * 这里我们容许虚高，所以阈值放宽。超出说明剥离回归或 worker 索引膨胀。
  */
 const BUDGETS_KB: Record<string, number> = {
-    'A1': 2_500,    // 首页 + 5 个图片
+    'A1': 4_500,    // 首页 + 5 个图片；0.9.0 首页重构上古地图主视觉后由 1.4 MB 涨到 ~3.1 MB
     'B1': 12_000,   // 索引页（如停留 ≥ 5s 触发预热则含 worker shard，~8.5 MB）
     'B2': 12_000,
     'B3': 12_000,
