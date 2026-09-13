@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 const ethos = [
   {
     title: '专业排版',
@@ -21,36 +19,20 @@ const ethos = [
 
 export default function EthosSection() {
   return (
-    <>
-      {/* 长卷横幅：赵孟頫书《太上老君说常清静经》（元，弗利尔美术馆藏） */}
-      <div className="scroll-strip anim-fade-in anim-delay-2 relative h-[170px]">
-        <Image
-          src="/images/changqing-jingjing.webp"
-          alt=""
-          aria-hidden="true"
-          fill
-          sizes="100vw"
-          className="object-cover"
-          style={{ filter: 'sepia(0.12)' }}
-        />
+    <section className="bg-paper px-6 py-12">
+      <div
+        className="reveal reveal-stagger mx-auto grid max-w-7xl gap-8
+                   [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))]"
+      >
+        {ethos.map((item) => (
+          <div key={item.title} className="lift-card px-7 py-9 text-center">
+            <h3 className="mb-3 text-xl font-semibold text-ink">{item.title}</h3>
+            <p className="text-base leading-relaxed text-secondary">
+              {item.description}
+            </p>
+          </div>
+        ))}
       </div>
-
-      {/* 四条主张 */}
-      <section className="bg-paper px-6 py-12">
-        <div
-          className="reveal reveal-stagger mx-auto grid max-w-7xl gap-8
-                     [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))]"
-        >
-          {ethos.map((item) => (
-            <div key={item.title} className="lift-card px-7 py-9 text-center">
-              <h3 className="mb-3 text-xl font-semibold text-ink">{item.title}</h3>
-              <p className="text-base leading-relaxed text-secondary">
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </>
+    </section>
   );
 }

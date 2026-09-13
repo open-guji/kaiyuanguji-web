@@ -495,14 +495,6 @@
     }
   }
 
-  /* 长卷横幅：赵孟頫书《常清静经》，纯装饰。
-     图片本身用 next/image fill 定位，这里只管裁切与上下边框。 */
-  .scroll-strip {
-    overflow: hidden;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-  }
-
   /* 首页专题卡片（对齐设计稿 feature-banner-card） */
   .feature-card {
     background-color: var(--color-surface);
