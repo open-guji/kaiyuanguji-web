@@ -40,12 +40,33 @@ export const MEILI_KEY =
  * 旧下界 works>=120_000 会因此误报，故按真实量级重设。
  * 取值时刻：2026-09-04（修复后），works≈91125 books≈20841
  * collections≈72 entities≈58669。
+ *
+ * ⚠️ 2026-09-14 再下调 entities 下界 35_000 → 20_000。**实测 31116，不是打包出问题。**
+ *
+ * 09-04 那次之所以没动 entities，是因为当时它**不参与升格**，墓碑比值精确为 1.000
+ * （见 `nextjs/scripts/bundle-data.mjs` 那段注释，entities 正是那次的对照组）。
+ * 此后两件事同时发生：Entity 开始升格（draft 侧多出墓碑，打包时按规矩跳过），
+ * 且 `C-entity` 那几道办竣 **4,456 条併條**——重复人物被合并掉了。
+ *
+ * 逐项对得上，且方向相反的两类在涨，故判为真数而非漏打包：
+ *
+ * | | book-index 逐仓实测（09-08）＋已办併條 | meta.json（09-14） |
+ * |---|---|---|
+ * | entities | production 30,875 ＋ draft 活条 206 = **31,081** | **31,116** |
+ * | works    | production 95,357 − 併條 446 = **94,911**        | **94,912** |
+ * | books    | 20,853 → 涨                                      | 20,894 |
+ * | collections | 76 → 涨                                       | 84 |
+ *
+ * 漏打包会让四类一起塌，且 deploy 的「Verify production entries bundled」那步会红——它绿的。
+ *
+ * 新下界按本表 ~±40% 的约定取：31,116 × 0.6 ≈ 18.7k，取整 20_000。
+ * Entity 清账仍有余量待办（A3 33／B 3／C 36 待人裁），还会再掉一些，20k 容得下。
  */
 export const COUNT_RANGES = {
     works: { min: 60_000, max: 200_000 },
     books: { min: 12_000, max: 60_000 },
     collections: { min: 40, max: 500 },
-    entities: { min: 35_000, max: 200_000 },
+    entities: { min: 20_000, max: 200_000 },
 } as const;
 
 /**
