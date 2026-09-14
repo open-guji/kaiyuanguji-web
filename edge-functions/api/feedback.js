@@ -1,3 +1,18 @@
+// 用户反馈端点（EdgeOne Pages Function）
+//
+// 三条路，鉴权口径**故意不同**：
+//   POST（提交反馈）      公开 —— 读者必须能匿名提
+//   GET （列出反馈）      公开 —— 站内反馈 tab 靠它渲染；记录里只有
+//                        type/content/pageUrl/resourceId，没有 IP、没有 UA
+//   POST action:'update' 与 PATCH（改状态／写回复）
+//                        **必须带 FEEDBACK_ADMIN_TOKEN**，见 checkAdminAuth
+//
+// 绑定/配置（EdgeOne Pages 控制台）：
+//   - KV namespace 绑定为全局变量  FEEDBACK_KV
+//   - 环境变量  FEEDBACK_MODE       "kv"（默认）| "github"
+//   - 环境变量  GITHUB_TOKEN        FEEDBACK_MODE=github 时转发用
+//   - 环境变量  FEEDBACK_ADMIN_TOKEN  管理侧鉴权。**没配就一律拒绝（503）**
+
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
   'https://kaiyuanguji.com',
@@ -25,6 +40,40 @@ function generateId() {
 // EdgeOne Pages 将环境变量和 KV 绑定注入为全局变量
 function getMode() {
   return (typeof FEEDBACK_MODE !== 'undefined' && FEEDBACK_MODE === 'github') ? 'github' : 'kv';
+}
+
+function getAdminToken() {
+  return (typeof FEEDBACK_ADMIN_TOKEN !== 'undefined') ? FEEDBACK_ADMIN_TOKEN : null;
+}
+
+/**
+ * 管理侧鉴权（改状态 / 写回复）。**必须 fail-closed。**
+ *
+ * 2026-09-14 实测出的洞：`POST {action:'update'}` 这条路**一点鉴权都没有**——
+ * 不是「配置缺失时被跳过」，是压根没写检查。而：
+ *   · `fb_` id 从公开的 GET 里就能枚举；
+ *   · `reply` 会被 book-index-ui 当作站方回复渲染到反馈列表上。
+ * 合起来就是：任何人一条 curl 就能以站方口吻说话，并把任何反馈标成「已解决」。
+ *
+ * 读与提交仍然公开——那两条是这个功能存在的理由。只有「代表站方说话」要凭证。
+ */
+function checkAdminAuth(given) {
+  const expected = getAdminToken();
+  if (!expected) {
+    return { ok: false, status: 503, error: '服务未配置 FEEDBACK_ADMIN_TOKEN，管理接口一律拒绝' };
+  }
+  if (typeof given !== 'string' || !constantTimeEqual(given, String(expected))) {
+    return { ok: false, status: 401, error: '未授权' };
+  }
+  return { ok: true };
+}
+
+/** 定长比较：不因首字符对不上就提前返回。（长度本身仍可被测出，不是密码学级别，够用。） */
+function constantTimeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 function getKV() {
@@ -155,6 +204,12 @@ export async function onRequestPost(context) {
 
     // action: "update" → 更新反馈状态/回复（替代 PATCH）
     if (body.action === 'update') {
+      const auth = checkAdminAuth(body.token);
+      if (!auth.ok) {
+        return new Response(JSON.stringify({ success: false, error: auth.error }), {
+          status: auth.status, headers,
+        });
+      }
       const { id, status, reply } = body;
       if (!id || !id.startsWith('fb_')) {
         return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
@@ -275,11 +330,27 @@ export async function onRequestGet(context) {
   }
 }
 
+/**
+ * EdgeOne 实测不路由 PATCH（所以上面的 POST action:'update' 才是活着的那条路）。
+ * 但「现在到不了」不等于「以后也到不了」——平台哪天支持了，这里就是第二个入口。
+ * 故同样上闸，且与 action:'update' 用同一个 checkAdminAuth。
+ */
 export async function onRequestPatch(context) {
   const headers = getCorsHeaders(context.request);
 
   try {
     const url = new URL(context.request.url);
+
+    const body0 = await context.request.clone().json().catch(() => ({}));
+    const auth = checkAdminAuth(
+      body0.token ?? (context.request.headers.get('authorization') || '').replace(/^Bearer /, ''),
+    );
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ success: false, error: auth.error }), {
+        status: auth.status, headers,
+      });
+    }
+
     // 路径：/api/feedback/:id
     const id = url.pathname.split('/').pop();
     if (!id || !id.startsWith('fb_')) {
