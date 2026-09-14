@@ -35,8 +35,32 @@ function fingerprint(p: ErrorPayload): string {
   return [p.kind, p.message, p.source || p.resource || '', p.status ?? ''].join('|');
 }
 
+/**
+ * 自动化浏览器不上报。
+ *
+ * 2026-09-14 从生产错误日志倒查出来：138 条 `entry 不存在 (404)` 里有 90 条
+ * （65%）是我们自己的测试打的——
+ *   · 60 条来自 e2e 用例「不存在的 ID 给出友好提示而非白屏」，它**有意**访问
+ *     `?id=nonexistent000`，每次部署跑一遍；那条 404 是用例的预期结果，不是缺陷；
+ *   · 30 条来自 perf-prod 夜跑，场景 ID 早已失效（另见 perf/smoke.ts 的说明）。
+ * 结果是错误日志里堆着一大片「已知且无害」的记录，真实读者撞上的问题被埋在里面，
+ * 而 /toolkit/errors 默认又勾着「隐藏 404」——两头一夹，谁也没看见。
+ *
+ * 测试自己制造的错误混进真实读者的错误里，等于给监控注水。CI 那边有 pageerror
+ * 断言兜底，不靠这条上报链路，所以这里直接不发。
+ * （Playwright / Selenium 下 navigator.webdriver === true，已实测。）
+ */
+function isAutomated(): boolean {
+  try {
+    return navigator.webdriver === true;
+  } catch {
+    return false;
+  }
+}
+
 export function reportError(payload: ErrorPayload): void {
   if (typeof window === 'undefined') return; // SSR / build：no-op
+  if (isAutomated()) return;                 // e2e / perf 的自造错误不进生产监控
   if (!payload || !payload.message) return;
   if (sentCount >= MAX_PER_PAGE) return;
 

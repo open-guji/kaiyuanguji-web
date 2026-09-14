@@ -62,6 +62,16 @@ async function main() {
         } catch {}
     });
 
+    /*
+     * ⚠️ 详情页那几条的 ID 会随升格改动而失效，且**失效了也不会让本脚本变红**
+     * （404 只在 --strict-404 时才算失败，CI 没开）。2026-09-14 实测三条全烂：
+     *   D1 aTNoXY45BGY3 → 404，夜跑 perf-prod 每晚量的其实是「找不到」页，
+     *      却记作「作品详情 論語」的基线，已烂 26 晚（生产错误日志里 30 条）；
+     *   E1 1ev3bb403quio → 404；
+     *   D3 1j96hewiuieps → 200，但那是草稿墓碑（_promoted_to），量的是跳转 stub。
+     * anchors.ts 开头早把 aTNoXY45BGY3 记成「前车之鉴」，但没人把它换掉。
+     * 现已换成实测 200 的正式条目，并由 e2e/contract/perf-ids.spec.ts 逐个盯住。
+     */
     const scenarios: { id: string; name: string; path: string }[] = [
         { id: 'A1', name: '首页',                     path: '/' },
         { id: 'B1', name: '索引-recommend',          path: '/book-index?tab=recommend' },
@@ -71,9 +81,9 @@ async function main() {
         { id: 'B5', name: '索引-feedback',           path: '/book-index?tab=feedback' },
         { id: 'F1', name: '搜索論語',                path: '/book-index?q=' + encodeURIComponent('論語') },
         { id: 'F2', name: '搜索论语',                path: '/book-index?q=' + encodeURIComponent('论语') },
-        { id: 'D1', name: '作品详情 論語',           path: '/book-index?id=aTNoXY45BGY3' },
-        { id: 'D3', name: '人物详情 孔子',           path: '/book-index?id=1j96hewiuieps' },
-        { id: 'E1', name: '整理本 直齋書錄解題',     path: '/book-index?id=1ev3bb403quio' },
+        { id: 'D1', name: '作品详情 論語',           path: '/book-index?id=d59f1iopaku8' },
+        { id: 'D3', name: '人物详情 孔子',           path: '/book-index?id=hixhd2h9bk4b' },
+        { id: 'E1', name: '整理本 直齋書錄解題',     path: '/book-index?id=d59f2htm01du' },
     ];
 
     console.log(`target: ${target}\n`);

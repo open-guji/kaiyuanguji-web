@@ -5,6 +5,12 @@
  * 必然很快失效——perf/scenarios.ts 里的 `aTNoXY45BGY3` 就是前车之鉴：该 ID 早已
  * 404，但因为老 smoke 只看字节数不看内容，测试一直"通过"。
  *
+ * ⚠️ 2026-09-14：上面这段话写下之后，那个 ID **又原地烂了几个月没人换**，
+ * 直到从生产错误日志里倒查出「夜跑 perf 每晚往线上打一条 404」才发现；
+ * 同时查出 E1 的 ID 也 404、本文件的 entity 锚点是草稿墓碑。
+ * ⇒ **写进注释挡不住事，得有闸。** 现由 contract/perf-ids.spec.ts 逐个核：
+ * 凡被测试/压测当锚点的 ID，必须能取到且不是墓碑。
+ *
  * 所以断言分三档，优先用前两档：
  *   1. 结构性 —— 只断言"存在且形态对"，不写死数值（最抗漂移）
  *   2. 量级   —— 断言落在合理区间，防的是归零/暴跌这类灾难性回归
@@ -88,9 +94,17 @@ export const ANCHORS = {
         sampleJuanFirstBookSimplified: '《古礼经》十七卷',
     },
 
-    /** 人物实体：用于验证 Entity 详情页 */
+    /**
+     * 人物实体：用于验证 Entity 详情页。孔子，已升格到 production。
+     *
+     * 2026-09-14 换过一次：原值 `1j96hewiuieps` 是**草稿墓碑**
+     * （`_promoted_to: hixhd2h9bk4b`，2026-08-25 升的格）。它返回 200、页面也能打开，
+     * 所以「人物页可打开」一直是绿的——量的却是跳转 stub 而不是真的人物页。
+     * 墓碑与真条目在「HTTP 200 且 main 可见」这个判据上长得一模一样，
+     * 故 contract/perf-ids.spec.ts 另立一闸，专门查 `_promoted_to`。
+     */
     entity: {
-        id: '1j96hewiuieps',
+        id: 'hixhd2h9bk4b',
     },
 } as const;
 

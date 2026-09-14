@@ -86,7 +86,7 @@ export const SCENARIOS: Scenario[] = [
         id: 'D1-detail-work',
         name: '作品详情（論語）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=aTNoXY45BGY3' },
+            { kind: 'goto', path: '/book-index?id=d59f1iopaku8' },
             { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
@@ -94,7 +94,7 @@ export const SCENARIOS: Scenario[] = [
         id: 'D3-detail-entity',
         name: '人物详情（孔子）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=1j96hewiuieps' },
+            { kind: 'goto', path: '/book-index?id=hixhd2h9bk4b' },
             { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
@@ -102,7 +102,7 @@ export const SCENARIOS: Scenario[] = [
         id: 'E1-collated-edition',
         name: '整理本入口（直齋書錄解題）',
         actions: [
-            { kind: 'goto', path: '/book-index?id=1ev3bb403quio' },
+            { kind: 'goto', path: '/book-index?id=d59f2htm01du' },
             { kind: 'wait_idle', timeoutMs: 120000 },
         ],
     },
