@@ -137,12 +137,30 @@ export function createCosStorage(): IndexStorage {
     function ensurePromotions(): Promise<Map<string, string>> {
         if (promotionsPromise) return promotionsPromise;
         promotionsPromise = (async () => {
+            // 取不到就退回空 Map —— 但**必须上报**。空 Map 与「一条升格都没有」
+            // 长得一模一样，而它的后果是所有 draft→production 重定向静默失效，
+            // 每个旧链接都变成「找不到」。2026-09-14 从错误日志里查到过一条实证：
+            // 1evr5e3mct1mt 明明在 promotions.json 里，却报了 entry 404，
+            // 只可能是那一次这张表没加载上。（这个文件有 18.9 MB，不是小概率事件。）
             try {
                 const url = await withCacheBust('promotions.json');
                 const res = await fetch(url, { cache: 'force-cache' });
-                if (!res.ok) return new Map();
+                if (!res.ok) {
+                    reportError({
+                        kind: 'fetch',
+                        message: `promotions 拉取失败: HTTP ${res.status}（草稿 ID 重定向已失效）`,
+                        resource: 'promotions.json',
+                        status: res.status,
+                    });
+                    return new Map();
+                }
                 return buildPromotionMap(await res.json());
-            } catch {
+            } catch (err) {
+                reportError({
+                    kind: 'fetch',
+                    message: `promotions 加载异常: ${String((err as Error)?.message ?? err)}（草稿 ID 重定向已失效）`,
+                    resource: 'promotions.json',
+                });
                 return new Map();
             }
         })();

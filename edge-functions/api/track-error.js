@@ -4,7 +4,9 @@
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
 //   - KV namespace 绑定为全局变量  ERROR_KV
-//   - 环境变量  ERROR_VIEW_TOKEN  —— GET 查询鉴权（错误日志含 stack/IP，不公开）
+//   - 环境变量  ERROR_VIEW_TOKEN  —— 读侧与管理侧鉴权（错误日志含 stack/IP，不公开）
+//     **没配这个变量，读接口与 update 一律拒绝（503）**，见下面 checkViewAuth 的注释。
+//     只有 POST 上报是公开的——那是前端必须能匿名调的。
 
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
@@ -34,6 +36,41 @@ function getKV() {
 
 function getViewToken() {
   return (typeof ERROR_VIEW_TOKEN !== 'undefined') ? ERROR_VIEW_TOKEN : null;
+}
+
+/**
+ * 读侧 / 管理侧鉴权。**必须 fail-closed。**
+ *
+ * 2026-09-14 实测出的事故：这里原先两处都写作
+ *
+ *     const token = getViewToken();
+ *     if (token && given !== token) { 401 }
+ *
+ * 线上 ERROR_VIEW_TOKEN 从未配置 ⇒ token 为 null ⇒ 整个条件不成立 ⇒ 鉴权整段跳过。
+ * 结果：312 条记录（其中 310 条含服务端从 request.eo 取的真实访客 IP 与地理，
+ * 另有 stack、pageUrl、UA）不带任何凭证即可读，且已如此四个月。
+ * 本文件开头的注释写的正是「含 stack/IP，不公开」——**本意就要拦，是配置没跟上**。
+ *
+ * 教训不在于少配了一个变量，而在于这个写法把「没配置」当成了「不用配置」。
+ * 现在缺配置就回 503：坏得看得见，比默默敞着强。
+ */
+function checkViewAuth(given) {
+  const expected = getViewToken();
+  if (!expected) {
+    return { ok: false, status: 503, error: '服务未配置 ERROR_VIEW_TOKEN，查询与管理接口一律拒绝' };
+  }
+  if (typeof given !== 'string' || !constantTimeEqual(given, String(expected))) {
+    return { ok: false, status: 401, error: '未授权' };
+  }
+  return { ok: true };
+}
+
+/** 定长比较：不因首字符对不上就提前返回。（长度本身仍可被测出，不是密码学级别，够用。） */
+function constantTimeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 function generateId() {
@@ -80,9 +117,9 @@ export async function onRequestPost(context) {
 
     // action: 'update' → 标记处理状态（管理操作，需 token；与公开上报区分）
     if (body.action === 'update') {
-      const viewToken = getViewToken();
-      if (viewToken && body.token !== viewToken) {
-        return new Response(JSON.stringify({ success: false, error: '未授权' }), { status: 401, headers });
+      const auth = checkViewAuth(body.token);
+      if (!auth.ok) {
+        return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
       }
       if (!body.id || !/^err_/.test(body.id)) {
         return new Response(JSON.stringify({ success: false, error: '无效的 id' }), { status: 400, headers });
@@ -146,11 +183,12 @@ export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
 
-    // 鉴权：配置了 ERROR_VIEW_TOKEN 时强制校验
-    const token = getViewToken();
-    if (token && url.searchParams.get('token') !== token) {
-      return new Response(JSON.stringify({ success: false, error: '未授权' }), {
-        status: 401, headers,
+    // 鉴权：一律校验。没配 ERROR_VIEW_TOKEN 就 503，不放行。
+    // 下面的 ?debug=eo 会回 request.eo 原始结构与全部请求头，也靠这道闸挡着。
+    const auth = checkViewAuth(url.searchParams.get('token'));
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ success: false, error: auth.error }), {
+        status: auth.status, headers,
       });
     }
 
