@@ -555,7 +555,82 @@ async function main() {
             console.log(`  ${idx}: ${info.numberOfDocuments} docs`);
         }
         console.log(`  database: ${(s.databaseSize / 1024 / 1024).toFixed(1)} MB`);
+
+        await selfTest(indices);
     }
+}
+
+/**
+ * 收尾自检 —— 2026-09-21 事故后新增。
+ *
+ * 事故：2026-09-07 works 被 resetIndex 删并重建，但收尾的 configureSettings
+ * 没跑到（works 走 :526 的独立分支，与 books/collections/entities 的 :548
+ * 不同路；中途失败或分支没进，settings 就永久缺失）。结果 works 退回 Meili
+ * 默认设置，filterableAttributes 为空 —— 而前端每条搜索都带
+ * `filter=is_draft = false`，于是 works 一律 400，用户搜「史记」看不到任何
+ * **作品**，只有书籍/丛编/人物。持续 13 天无人发现。
+ *
+ * 为什么之前所有监控都没报：脚本本身报「成功」（文档确实推进去了），
+ * /health 绿，文档数 91400 满格，裸查询（不带 filter）照样 200 有结果。
+ * 只有**照抄前端形态的查询**才暴露得出来。
+ *
+ * 所以这里不重复检查「推了没推」，而是直接验副作用本身：
+ * 按前端的真实请求形态查一次，能不能查通。查不通就非零退出。
+ */
+async function selfTest(indices) {
+    console.log('\n=== 自检（按前端真实查询形态）===');
+    const failures = [];
+
+    // juans 不参与：前端查整理本正文走 work_id 过滤，形态与这四类不同
+    const userFacing = indices.filter(i => i !== 'juans');
+
+    for (const idx of userFacing) {
+        const want = SETTINGS[idx];
+        if (!want) continue;
+
+        // 1) settings 真的落盘了吗
+        let settings;
+        try {
+            settings = await meiliRequest('GET', `/indexes/${idx}/settings`);
+        } catch (e) {
+            failures.push(`${idx}: 读 settings 失败 — ${e.message}`);
+            continue;
+        }
+        const gotFilterable = settings.filterableAttributes ?? [];
+        const missing = (want.filterableAttributes ?? []).filter(a => !gotFilterable.includes(a));
+        if (missing.length) {
+            failures.push(`${idx}: filterableAttributes 缺 [${missing.join(', ')}]（实得 [${gotFilterable.join(', ')}]）`);
+        }
+        const gotSearchable = settings.searchableAttributes ?? [];
+        if (gotSearchable.length === 1 && gotSearchable[0] === '*') {
+            failures.push(`${idx}: searchableAttributes 仍是默认 ['*']，settings 未生效`);
+        }
+
+        // 2) 前端那条查询能不能真跑通 —— 比对着 settings 逐条核对更可信：
+        //    settings 对不对是间接证据，查询通不通才是用户实际遇到的。
+        try {
+            const r = await meiliRequest(
+                'GET',
+                `/indexes/${idx}/search?q=&limit=1&filter=${encodeURIComponent('is_draft = false')}`,
+            );
+            if (typeof r.estimatedTotalHits === 'number' && r.estimatedTotalHits === 0) {
+                failures.push(`${idx}: 带 is_draft 过滤查到 0 条 —— 该类内容对用户恒为空`);
+            }
+        } catch (e) {
+            failures.push(`${idx}: 前端形态查询失败 — ${e.message}（前端每条搜索都带此 filter，该索引对用户恒为空）`);
+        }
+    }
+
+    if (failures.length) {
+        console.error('\n❌ 自检未通过：');
+        for (const f of failures) console.error(`   · ${f}`);
+        console.error('\n索引里有数据不等于用户搜得到。补救：对上述索引重推 settings');
+        console.error('（PATCH /indexes/<idx>/settings，取值见本文件的 SETTINGS），');
+        console.error('或重跑本脚本 --only <idx>。');
+        process.exitCode = 1;
+        return;
+    }
+    console.log(`  ✅ ${userFacing.join(', ')} 均通过（settings 完整 + 前端形态查询可用）`);
 }
 
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });

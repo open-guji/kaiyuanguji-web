@@ -84,6 +84,39 @@ probe_index books       1
 probe_index entities    1
 probe_index collections 1
 
+# 前端真实查询形态探活。2026-09-21 撞见 works 索引 filterableAttributes 为空
+# ——2026-09-07 该索引被删并重建，收尾的 settings 没重推（见 full-reindex.mjs
+# 的 selfTest 注释）。后果：前端每条搜索都带 `filter=is_draft = false`，
+# works 一律 400，用户搜任何书都看不到「作品」，只剩书籍/丛编/人物。整整 13 天。
+#
+# 上面所有探活都没报，是因为它们查的都是**裸查询**（不带 filter）：
+# /health 绿、文档数 91400 满格、空查询 200 有结果——全都正常。
+# 只有照抄前端形态、带上 filter 的查询才暴露得出来。
+#
+# 教训一般化：探活要探**用户实际走的那条路径**，不是探「服务还活着吗」。
+probe_filter() {
+  local idx="$1" code
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
+    -X POST "https://api.kaiyuanguji.com/indexes/${idx}/search" \
+    -H "Authorization: Bearer ${MEILI_PUBLIC_KEY}" \
+    -H 'Content-Type: application/json' \
+    -d '{"q":"","limit":1,"filter":"is_draft = false"}' 2>/dev/null || echo 000)
+
+  if [ "$code" = "200" ]; then
+    note "✅ 索引 ${idx} — 支持 is_draft 过滤（前端查询形态）"
+  else
+    note "❌ 索引 ${idx} — **带 is_draft 过滤返回 ${code}**，前端搜索对该类恒为空结果"
+    failed=$((failed + 1))
+  fi
+}
+
+note ""
+note "## 前端查询形态（带 is_draft 过滤）"
+probe_filter works
+probe_filter books
+probe_filter entities
+probe_filter collections
+
 note ""
 note "## 站点与数据（不依赖上海机器）"
 probe "网站首页"        "https://www.kaiyuanguji.com/book-index" 200 yes
@@ -102,6 +135,12 @@ if [ "$failed" -gt 0 ]; then
   note "上机 \`/opt/indexer/reindex-limited.sh --only <索引名>\` 补建；"
   note "重建前先停 \`/opt/meili-watchdog.sh\`（资源紧张时它是负反馈）。"
   note "参见 overview 仓 \`进度/G-工具分发与网站/11-L1三索引为空.md\`。"
+  note ""
+  note "若失败项是**带 is_draft 过滤返回 400**：索引有数据但 settings 丢了"
+  note "（多半是被删并重建后没重推 settings）。用户侧表现为该类内容恒为空——"
+  note "文档数、/health、裸查询全是绿的，只有这一项报。补救："
+  note "\`PATCH /indexes/<索引名>/settings\`，取值见 indexer/full-reindex.mjs"
+  note "的 \`SETTINGS\`；或重跑 \`reindex-limited.sh --only <索引名>\`（已带收尾自检）。"
 else
   note "全部通过。"
 fi
