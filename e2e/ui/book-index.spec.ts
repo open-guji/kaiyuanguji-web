@@ -63,12 +63,35 @@ test.describe('作品详情', () => {
         ).toBeVisible();
     });
 
-    test('草稿 ID 自动跳转到正式条目', async ({ page }) => {
-        // promotions.json 驱动的 draft→production 重定向。
-        // 这条链路断了，所有外部旧链接都会 404。
+    /**
+     * 旧 draft ID 不再跳转 —— 2026-09-14 起的方针，本用例随之改向。
+     *
+     * 原用例断言 draft→production 自动跳转（promotions.json 驱动）。
+     * book-index-draft 的 `1391e7a917f`「清空 promotions.json：不再永久支持
+     * 舊 draft id 跳轉」把 140,177 条对照尽数删去，只留空表 `{"version":1,
+     * "promotions":{}}`。该提交明写：**「代價已知並接受：外部收藏或搜索引擎
+     * 收錄之舊 draft id 連結自此 404」**——所以这是既定方针，不是回归。
+     *
+     * 留空档而不删档是有意的（见该提交）：bundle-data.mjs 以 existsSync 决定
+     * 是否复制，删档会让客户端走 404 分支；留空档则 fetch 得 200 空表，
+     * ensurePromotions() 回空 Map，行为确定。
+     *
+     * 所以这里改为守「降级得体面」：旧 draft ID 必须给出友好提示，
+     * 不能白屏、不能 JS 报错。真正该守的底线是这个，而不是跳转本身。
+     *
+     * 若日后要恢复跳转（对照表可从 git 史或 D:\data\book-index-draft-backup-20260914
+     * 取回并固化进产物），把本用例改回断言 toHaveURL(/id=d59f20aowb9c/) 即可。
+     */
+    test('旧草稿 ID 给出友好提示而非白屏（跳转已按方针取消）', async ({ page }) => {
+        const errors: string[] = [];
+        page.on('pageerror', (e) => errors.push(e.message));
+
         await page.goto(`${TARGET}/book-index?id=1eujfe7s94veo`);
-        await expect(page).toHaveURL(/id=d59f20aowb9c/, { timeout: 30_000 });
-        await expect(page.getByText(/已自动跳转到正式版本|已自動跳轉到正式版本/)).toBeVisible();
+        await expect(
+            page.getByText(/找不到|不存在|已被删除|已被刪除/).first(),
+            '旧 draft ID 既不跳转也不给提示——这才是真回归',
+        ).toBeVisible({ timeout: 30_000 });
+        expect(errors, `页面 JS 报错：${errors.join('; ')}`).toEqual([]);
     });
 
     test('不存在的 ID 给出友好提示而非白屏', async ({ page }) => {
