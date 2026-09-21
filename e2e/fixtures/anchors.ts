@@ -178,6 +178,47 @@ export const SEARCH_QUERIES = [
     { q: '论语', label: '简体' },
 ] as const;
 
+/**
+ * L1 各索引**必须具备**的 settings（2026-09-21 事故后新增）。
+ *
+ * 事故形态：2026-09-07 works 索引被 delete+create 重建，但收尾的
+ * settingsUpdate 没跑（full-reindex.mjs 里 works 走的是 :526 那条单独分支，
+ * 与其余三类的 :548 不同路）。后果——works 退回 Meili 默认设置：
+ * filterableAttributes 为空。
+ *
+ * 而前端每次搜索都带 `filter=is_draft = false`（见 meili-storage.ts），
+ * 于是 works 查询一律 400 报错；searchAll 用的是 allSettled，「一挂三好」
+ * 不触发熔断，works 静默返回空数组。用户看到的就是：搜「史记」有书籍、
+ * 有丛编、有人物，**唯独作品是空的**。持续 13 天无人发现。
+ *
+ * 为什么原有探活全都没抓到：
+ *   · health-probe.sh 与本文件既有用例，查询都**不带 filter** —— 不带
+ *     filter 的查询在设置丢失时照样 200，看着一切正常；
+ *   · /health 是绿的，索引文档数 91400 也是满的。
+ * 也就是说：**光探「能不能搜」探不出「前端那条真实查询能不能搜」**。
+ *
+ * 所以这里锚两层：settings 本身（直接因），以及带 filter 的真实查询（症状）。
+ * 断言用「必须包含」而非全等，给日后新增字段留余地。
+ */
+export const MEILI_INDEX_SETTINGS = {
+    works: {
+        filterable: ['is_draft', 'type', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
+        searchable: ['title_search', 'aliases_search', 'author_search', 'pinyin'],
+    },
+    books: {
+        filterable: ['is_draft', 'type', 'dynasty', 'has_text', 'has_image', 'holder'],
+        searchable: ['title_search', 'edition_search', 'author_search', 'pinyin'],
+    },
+    collections: {
+        filterable: ['is_draft', 'type'],
+        searchable: ['title_search', 'pinyin'],
+    },
+    entities: {
+        filterable: ['is_draft', 'type', 'subtype', 'dynasty'],
+        searchable: ['name_search', 'pinyin'],
+    },
+} as const;
+
 /** book-index 页的 5 个 tab */
 export const BOOK_INDEX_TABS = [
     'recommend',
