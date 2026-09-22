@@ -37,3 +37,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPORT: ${{ steps.probe.outputs.report }}
         run: bash ops/health-alert.sh
+
+      # 主动推送到 IM（issue 只留痕，推送才到人眼前）。与上一步独立：
+      # issue 步骤失败也照推。未配 HEALTH_NOTIFY_WEBHOOK secret 时脚本静默跳过。
+      # 格式由仓库变量 HEALTH_NOTIFY_FORMAT 指定：generic（默认）| feishu | dingtalk | slack
+      - name: Push alert to IM webhook
+        if: ${{ !cancelled() && steps.probe.outputs.failed != '0' }}
+        env:
+          HEALTH_NOTIFY_WEBHOOK: ${{ secrets.HEALTH_NOTIFY_WEBHOOK }}
+          HEALTH_NOTIFY_FORMAT: ${{ vars.HEALTH_NOTIFY_FORMAT }}
+          REPORT: ${{ steps.probe.outputs.report }}
+        run: bash ops/health-notify.sh

@@ -57,7 +57,7 @@ body=$(echo "$resp" | sed '$d')
 set -e
 
 if [ $curl_code -ne 0 ]; then
-  echo "::warning::健康告警推送失败（curl $curl_code），webhook 可能不可达：$WEBHOOK"
+  echo "::warning::健康告警推送失败（curl $curl_code），webhook 可能不可达"
   echo "::warning::响应：$body"
   exit 0
 fi
@@ -69,14 +69,16 @@ if ! echo "$http_code" | grep -qE '^2[0-9][0-9]$'; then
 fi
 
 # 飞书/钉钉业务码检查（返回 body 里含 code/errcode 非 0 即失败）
+# 容忍 JSON 冒号后的空格，只认整数 0（不把 19002 之类误判为成功）
+biz_ok() { echo "$body" | grep -qE "\"$1\"[[:space:]]*:[[:space:]]*0[[:space:]]*[,}]"; }
 if [ "$FORMAT" = "feishu" ]; then
-  if echo "$body" | grep -q '"code":0'; then
+  if biz_ok code; then
     echo "已推送到飞书 webhook（HTTP $http_code）"
   else
     echo "::warning::飞书推送 HTTP $http_code 但业务码非 0（body: $body），请检查 webhook 是否为飞书类型"
   fi
 elif [ "$FORMAT" = "dingtalk" ]; then
-  if echo "$body" | grep -q '"errcode":0'; then
+  if biz_ok errcode; then
     echo "已推送到钉钉 webhook（HTTP $http_code）"
   else
     echo "::warning::钉钉推送 HTTP $http_code 但 errcode 非 0（body: $body），请检查 webhook 类型"
