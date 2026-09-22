@@ -58,10 +58,26 @@ function isAutomated(): boolean {
   }
 }
 
+/**
+ * 浏览器扩展注入的资源不进监控。
+ *
+ * 2026-09-14 生产错误日志里 10 条 chrome-extension://.../search.png，
+ * 本站无关。后两条 hathitrust/archive.org 属于站外资源失效，也非前端缺陷，
+ * 但站外链接无法在上报侧区分，暂不一并过滤；扩展 scheme 可确定地过滤。
+ * 与 isAutomated 同一位置拦截，避免真缺陷被噪音淹没。
+ * 扩展注入的 JS 错误会把 chrome-extension:// 落在 source（event.filename）里，
+ * 故同时检查 resource 与 source。
+ */
+function isExtensionUrl(value?: string): boolean {
+  if (!value) return false;
+  return /^(chrome-extension|moz-extension|safari-extension|ms-browser-extension):\/\//.test(value);
+}
+
 export function reportError(payload: ErrorPayload): void {
   if (typeof window === 'undefined') return; // SSR / build：no-op
   if (isAutomated()) return;                 // e2e / perf 的自造错误不进生产监控
   if (!payload || !payload.message) return;
+  if (isExtensionUrl(payload.resource) || isExtensionUrl(payload.source)) return; // 扩展注入的资源/脚本（15 丙类，source 覆盖 js 分支）
   if (sentCount >= MAX_PER_PAGE) return;
 
   const fp = fingerprint(payload);
