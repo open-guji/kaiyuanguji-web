@@ -216,12 +216,21 @@ export async function onRequestGet(context) {
     const listResult = await kv.list(listOpts);
     const keys = listResult.keys || [];
 
+    // 2026-09-14 实测：逐条 await kv.get 导致全量 312 条取数 110s。
+    // EdgeOne 单次请求内 KV 并发可能限流，故分块并发（每批 20），兼顾速度与限流风险。
+    // 单条 kv.get 抛错（如限流）不让整页 500：用 allSettled 丢弃失败条，控制台可从日志观测。
+    const BATCH_SIZE = 20;
     const items = [];
-    for (const key of keys) {
-      const val = await kv.get(key.key, 'json'); // 沿用 feedback.js：EdgeOne 返回 key.key
-      if (val) {
-        if (kindFilter && val.kind !== kindFilter) continue;
-        items.push(val);
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const batch = keys.slice(i, i + BATCH_SIZE);
+      const settled = await Promise.allSettled(batch.map((k) => kv.get(k.key, 'json')));
+      for (const r of settled) {
+        if (r.status !== 'fulfilled') continue;
+        const val = r.value;
+        if (val) {
+          if (kindFilter && val.kind !== kindFilter) continue;
+          items.push(val);
+        }
       }
     }
     items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
