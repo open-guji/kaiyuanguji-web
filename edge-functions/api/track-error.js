@@ -30,11 +30,16 @@ function getCorsHeaders(request) {
   };
 }
 
-function getKV() {
+// EdgeOne Pages Functions 的环境变量/绑定既可能挂在 context.env 上，也可能被注入为
+// 全局标识符——两条路都试，谁读到用谁。2026-09-22 实测：KV 绑定走全局变量能读到，
+// 但环境变量（ERROR_VIEW_TOKEN／FEEDBACK_ADMIN_TOKEN）走全局变量读不到，需要 context.env。
+function getKV(context) {
+  if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
   return (typeof ERROR_KV !== 'undefined') ? ERROR_KV : null;
 }
 
-function getViewToken() {
+function getViewToken(context) {
+  if (context && context.env && context.env.ERROR_VIEW_TOKEN) return context.env.ERROR_VIEW_TOKEN;
   return (typeof ERROR_VIEW_TOKEN !== 'undefined') ? ERROR_VIEW_TOKEN : null;
 }
 
@@ -54,8 +59,8 @@ function getViewToken() {
  * 教训不在于少配了一个变量，而在于这个写法把「没配置」当成了「不用配置」。
  * 现在缺配置就回 503：坏得看得见，比默默敞着强。
  */
-function checkViewAuth(given) {
-  const expected = getViewToken();
+function checkViewAuth(given, context) {
+  const expected = getViewToken(context);
   if (!expected) {
     return { ok: false, status: 503, error: '服务未配置 ERROR_VIEW_TOKEN，查询与管理接口一律拒绝' };
   }
@@ -106,7 +111,7 @@ export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
 
   try {
-    const kv = getKV();
+    const kv = getKV(context);
     if (!kv) {
       return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), {
         status: 500, headers,
@@ -117,7 +122,7 @@ export async function onRequestPost(context) {
 
     // action: 'update' → 标记处理状态（管理操作，需 token；与公开上报区分）
     if (body.action === 'update') {
-      const auth = checkViewAuth(body.token);
+      const auth = checkViewAuth(body.token, context);
       if (!auth.ok) {
         return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
       }
@@ -185,7 +190,7 @@ export async function onRequestGet(context) {
 
     // 鉴权：一律校验。没配 ERROR_VIEW_TOKEN 就 503，不放行。
     // 下面的 ?debug=eo 会回 request.eo 原始结构与全部请求头，也靠这道闸挡着。
-    const auth = checkViewAuth(url.searchParams.get('token'));
+    const auth = checkViewAuth(url.searchParams.get('token'), context);
     if (!auth.ok) {
       return new Response(JSON.stringify({ success: false, error: auth.error }), {
         status: auth.status, headers,
@@ -200,7 +205,7 @@ export async function onRequestGet(context) {
       }, null, 2), { status: 200, headers });
     }
 
-    const kv = getKV();
+    const kv = getKV(context);
     if (!kv) {
       return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), {
         status: 500, headers,
