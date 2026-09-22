@@ -79,4 +79,45 @@ describe('reportError', () => {
         expect(beacons.length).toBeLessThanOrEqual(20);
         expect(beacons.length).toBeGreaterThan(0);
     });
+
+    it('浏览器扩展的资源不进监控（15 丙类噪音）', async () => {
+        const { reportError } = await freshModule();
+        reportError({ kind: 'resource', message: '资源加载失败: img', resource: 'chrome-extension://emnkfkdgmefakhhcinlafcopidbjgmcf/assets/search.png' });
+        reportError({ kind: 'resource', message: '资源加载失败: img', resource: 'moz-extension://abc123/assets/icon.png' });
+        reportError({ kind: 'resource', message: '资源加载失败: img', resource: 'safari-extension://xyz/assets/icon.png' });
+        expect(beacons).toHaveLength(0);
+        // 真实站内资源仍上报
+        reportError({ kind: 'resource', message: '资源加载失败: img', resource: '/images/open-guji-logo.webp' });
+        reportError({ kind: 'resource', message: '资源加载失败: script', resource: 'https://www.kaiyuanguji.com/_next/static/chunks/636-1d1a429932ba7508.js' });
+        expect(beacons).toHaveLength(2);
+    });
+
+    it('扩展 scheme 判断不误伤普通 URL', async () => {
+        const { reportError } = await freshModule();
+        // 包含 extension 字样但不是 scheme 前缀的不应被过滤
+        reportError({ kind: 'resource', message: '资源加载失败: img', resource: 'https://example.com/chrome-extension-test.png' });
+        expect(beacons).toHaveLength(1);
+    });
+
+    it('扩展注入的 JS 错误（source 为 extension URL）也不上报', async () => {
+        const { reportError } = await freshModule();
+        reportError({ kind: 'js', message: 'Script error', source: 'chrome-extension://abc123/content.js:1:100' });
+        reportError({ kind: 'js', message: 'Uncaught', source: 'moz-extension://xyz/background.js:10:5' });
+        expect(beacons).toHaveLength(0);
+        // 真实 JS 错误仍上报
+        reportError({ kind: 'js', message: 't.slice is not a function', source: 'https://www.kaiyuanguji.com/_next/static/chunks/app/page.js:1:200' });
+        expect(beacons).toHaveLength(1);
+    });
+
+    it('payload 为空或 undefined 时不抛异常', async () => {
+        const { reportError } = await freshModule();
+        // @ts-expect-error 故意传空值验证守卫顺序
+        reportError(undefined);
+        // @ts-expect-error
+        reportError(null);
+        expect(beacons).toHaveLength(0);
+        // 之后正常上报仍可用
+        reportError({ kind: 'js', message: '后续正常' });
+        expect(beacons).toHaveLength(1);
+    });
 });
