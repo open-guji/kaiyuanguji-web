@@ -37,12 +37,17 @@ function generateId() {
 }
 
 // 存储模式：环境变量 FEEDBACK_MODE = "kv" | "github"，默认 "kv"
-// EdgeOne Pages 将环境变量和 KV 绑定注入为全局变量
-function getMode() {
-  return (typeof FEEDBACK_MODE !== 'undefined' && FEEDBACK_MODE === 'github') ? 'github' : 'kv';
+// EdgeOne Pages 的环境变量/绑定既可能挂在 context.env 上，也可能被注入为全局标识符——
+// 两条路都试，谁读到用谁。2026-09-22 实测（见 track-error.js 同款修复）：KV 绑定走全局
+// 变量能读到，但环境变量走全局变量读不到，需要 context.env。
+function getMode(context) {
+  const v = (context && context.env && context.env.FEEDBACK_MODE)
+    || (typeof FEEDBACK_MODE !== 'undefined' ? FEEDBACK_MODE : undefined);
+  return v === 'github' ? 'github' : 'kv';
 }
 
-function getAdminToken() {
+function getAdminToken(context) {
+  if (context && context.env && context.env.FEEDBACK_ADMIN_TOKEN) return context.env.FEEDBACK_ADMIN_TOKEN;
   return (typeof FEEDBACK_ADMIN_TOKEN !== 'undefined') ? FEEDBACK_ADMIN_TOKEN : null;
 }
 
@@ -57,8 +62,8 @@ function getAdminToken() {
  *
  * 读与提交仍然公开——那两条是这个功能存在的理由。只有「代表站方说话」要凭证。
  */
-function checkAdminAuth(given) {
-  const expected = getAdminToken();
+function checkAdminAuth(given, context) {
+  const expected = getAdminToken(context);
   if (!expected) {
     return { ok: false, status: 503, error: '服务未配置 FEEDBACK_ADMIN_TOKEN，管理接口一律拒绝' };
   }
@@ -76,11 +81,13 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
-function getKV() {
+function getKV(context) {
+  if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
 }
 
-function getGithubToken() {
+function getGithubToken(context) {
+  if (context && context.env && context.env.GITHUB_TOKEN) return context.env.GITHUB_TOKEN;
   return (typeof GITHUB_TOKEN !== 'undefined') ? GITHUB_TOKEN : null;
 }
 
@@ -204,7 +211,7 @@ export async function onRequestPost(context) {
 
     // action: "update" → 更新反馈状态/回复（替代 PATCH）
     if (body.action === 'update') {
-      const auth = checkAdminAuth(body.token);
+      const auth = checkAdminAuth(body.token, context);
       if (!auth.ok) {
         return new Response(JSON.stringify({ success: false, error: auth.error }), {
           status: auth.status, headers,
@@ -221,7 +228,7 @@ export async function onRequestPost(context) {
           status: 400, headers,
         });
       }
-      const kv = getKV();
+      const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
           status: 500, headers,
@@ -257,11 +264,11 @@ export async function onRequestPost(context) {
       });
     }
 
-    const mode = getMode();
+    const mode = getMode(context);
     let result;
 
     if (mode === 'github') {
-      const ghToken = getGithubToken();
+      const ghToken = getGithubToken(context);
       if (!ghToken) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：GITHUB_TOKEN 未设置' }), {
           status: 500, headers,
@@ -269,7 +276,7 @@ export async function onRequestPost(context) {
       }
       result = await githubPost(ghToken, type, content, pageUrl);
     } else {
-      const kv = getKV();
+      const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), {
           status: 500, headers,
@@ -298,11 +305,11 @@ export async function onRequestGet(context) {
     const cursor = url.searchParams.get('cursor') || '';
     const resourceId = url.searchParams.get('resourceId') || '';
 
-    const mode = getMode();
+    const mode = getMode(context);
     let result;
 
     if (mode === 'github') {
-      const ghToken = getGithubToken();
+      const ghToken = getGithubToken(context);
       if (!ghToken) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：GITHUB_TOKEN 未设置' }), {
           status: 500, headers,
@@ -310,7 +317,7 @@ export async function onRequestGet(context) {
       }
       result = await githubGet(ghToken, limit);
     } else {
-      const kv = getKV();
+      const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), {
           status: 500, headers,
@@ -344,6 +351,7 @@ export async function onRequestPatch(context) {
     const body0 = await context.request.clone().json().catch(() => ({}));
     const auth = checkAdminAuth(
       body0.token ?? (context.request.headers.get('authorization') || '').replace(/^Bearer /, ''),
+      context,
     );
     if (!auth.ok) {
       return new Response(JSON.stringify({ success: false, error: auth.error }), {
@@ -366,7 +374,7 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const kv = getKV();
+    const kv = getKV(context);
     if (!kv) {
       return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
         status: 500, headers,
