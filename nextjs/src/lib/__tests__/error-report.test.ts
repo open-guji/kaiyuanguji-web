@@ -109,6 +109,20 @@ describe('reportError', () => {
         expect(beacons).toHaveLength(1);
     });
 
+    it('16 噪音类 JS 异常不进监控（Script error./空/Uncaught/广告）', async () => {
+        const { reportError } = await freshModule();
+        reportError({ kind: 'js', message: 'Script error.' });
+        reportError({ kind: 'js', message: '' });
+        reportError({ kind: 'js', message: 'Uncaught' });
+        reportError({ kind: 'js', message: 'The ad loading process exceeded the timeout. Resetting ad loader.' });
+        // 扩展栈首帧
+        reportError({ kind: 'js', message: 't.slice is not a function', stack: 'Error: t.slice\n at chrome-extension://abc/content.js:1:10' });
+        expect(beacons).toHaveLength(0);
+        // 真实 JS 缺陷仍上报（signal is aborted 不在此过滤，属 meili 超时真缺陷）
+        reportError({ kind: 'js', message: 't.slice is not a function', source: 'https://www.kaiyuanguji.com/_next/static/chunks/app/page.js:1:200' });
+        expect(beacons).toHaveLength(1);
+    });
+
     it('payload 为空或 undefined 时不抛异常', async () => {
         const { reportError } = await freshModule();
         // @ts-expect-error 故意传空值验证守卫顺序

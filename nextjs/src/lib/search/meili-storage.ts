@@ -141,7 +141,7 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
         // 用 GET 而不是 POST：CDN（EdgeOne 等）默认不缓存 POST，无法享受
         // 边缘 cache。Meili 同时支持两种方式，参数走 query string。
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+        const timer = setTimeout(() => ctrl.abort(new DOMException('meili timeout', 'TimeoutError')), timeoutMs);
         try {
             const params = new URLSearchParams({
                 q: query,
