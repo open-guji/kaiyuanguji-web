@@ -83,6 +83,9 @@ elif [ "$FORMAT" = "dingtalk" ]; then
   else
     echo "::warning::钉钉推送 HTTP $http_code 但 errcode 非 0（body: $body），请检查 webhook 类型"
   fi
+elif echo "$body" | grep -qE '"(code|errcode|StatusCode)"[[:space:]]*:[[:space:]]*-?[1-9]'; then
+  # generic 发到飞书/钉钉等会返回 HTTP 200 + 非 0 业务码：说明格式配错了，不能算成功
+  echo "::warning::推送 HTTP $http_code 但响应含非 0 业务码（body: $body），HEALTH_NOTIFY_FORMAT=$FORMAT 可能与接收端不匹配"
 else
   echo "已推送到 webhook（HTTP $http_code，格式 $FORMAT）"
 fi
