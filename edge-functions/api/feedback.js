@@ -85,6 +85,65 @@ function getKV(context) {
   if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
 }
+function getJwtSecret(context) {
+  if (context && context.env && context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET;
+  return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
+}
+function getAuthKV(context) {
+  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
+  if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
+  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
+}
+function getCookie(request, name) {
+  const c = request.headers.get('cookie') || '';
+  const m = c.match(new RegExp('(?:^|;\\s*)' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function b64urlEncode(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 1) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+function b64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = str.length % 4;
+  if (pad) str += '===='.slice(pad);
+  const bin = atob(str);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+async function hmacSign(data, secret) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  return b64urlEncode(new Uint8Array(sig));
+}
+async function verifyJWT(token, secret) {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const data = `${parts[0]}.${parts[1]}`;
+  const expect = await hmacSign(data, secret);
+  if (!constantTimeEqual(expect, parts[2])) return null;
+  try {
+    const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[1])));
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch { return null; }
+}
+async function checkMemberCookie(request, context, allowedRoles) {
+  const secret = getJwtSecret(context);
+  const token = getCookie(request, 'session');
+  if (!secret || !token) return null;
+  const payload = await verifyJWT(token, secret);
+  if (!payload || !payload.sub) return null;
+  const kv = getAuthKV(context);
+  if (!kv) return null;
+  let member = null;
+  try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
+  if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
+  if (allowedRoles && !allowedRoles.includes(member.role)) return null;
+  return member;
+}
 
 function getGithubToken(context) {
   if (context && context.env && context.env.GITHUB_TOKEN) return context.env.GITHUB_TOKEN;
@@ -209,9 +268,13 @@ export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
 
-    // action: "update" → 更新反馈状态/回复（替代 PATCH）
+    // action: "update" → 更新反馈状态/回复（替代 PATCH，双轨：token 或 member cookie）
     if (body.action === 'update') {
-      const auth = checkAdminAuth(body.token, context);
+      let auth = checkAdminAuth(body.token, context);
+      if (!auth.ok) {
+        const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
+        if (member) auth = { ok: true };
+      }
       if (!auth.ok) {
         return new Response(JSON.stringify({ success: false, error: auth.error }), {
           status: auth.status, headers,
