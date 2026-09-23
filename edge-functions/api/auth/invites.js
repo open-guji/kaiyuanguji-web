@@ -3,10 +3,14 @@ const ALLOWED_ORIGINS = ['https://www.kaiyuanguji.com','https://kaiyuanguji.com'
 function getCorsHeaders(request){ const o=request.headers.get('origin')||''; const c=ALLOWED_ORIGINS.includes(o)?o:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':c,'Content-Type':'application/json'}; }
 function getAdminToken(c){ if(c&&c.env&&c.env.AUTH_ADMIN_TOKEN) return c.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }
 function getJwtSecret(c){ if(c&&c.env&&c.env.AUTH_JWT_SECRET) return c.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
-function getKV(c) {
-  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
-  if (c && c.env && c.env.AUTH_KV) return c.env.AUTH_KV;
-  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
+function getKV(c){
+  if(c&&c.env&&c.env.AUTH_KV) return c.env.AUTH_KV;
+  if(c&&c.env&&c.env.ERROR_KV) return c.env.ERROR_KV;
+  if(c&&c.env&&c.env.FEEDBACK_KV) return c.env.FEEDBACK_KV;
+  if(typeof AUTH_KV!=='undefined') return AUTH_KV;
+  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
+  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
+  return null;
 }
 function getCookie(req,n){ const c=req.headers.get('cookie')||''; const m=c.match(new RegExp('(?:^|;\\s*)'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }
 function b64urlEncode(b){ let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
