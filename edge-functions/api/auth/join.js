@@ -6,7 +6,11 @@ function getCorsHeaders(request){ const origin=request.headers.get('origin')||''
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(context){
   if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
+  if(context&&context.env&&context.env.ERROR_KV) return context.env.ERROR_KV;
+  if(context&&context.env&&context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
+  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
+  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
   return null;
 }
 function b64urlEncode(bytes){ let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
@@ -23,7 +27,7 @@ export async function onRequestPost(context){
   const headers=getCorsHeaders(context.request);
   try{
     const kv=getKV(context);
-    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
+    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:500,headers});
     const secret=getJwtSecret(context);
     if(!secret) return new Response(JSON.stringify({success:false,error:'服务未配置 AUTH_JWT_SECRET'}),{status:503,headers});
     let body={}; try{ body=await context.request.json(); }catch{ body={}; }
@@ -40,16 +44,6 @@ export async function onRequestPost(context){
       const supplied=String(body.email||'').trim().toLowerCase();
       if(!supplied || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supplied)) return new Response(JSON.stringify({success:false,error:'请填写正确邮箱'}),{status:400,headers});
       email=supplied;
-    }
-    // 防止覆盖已有成员（冒充 / 降级）
-    let existing=null;
-    try{ existing=await kv.get(`member:${email}`,'json'); }catch{ existing=null; }
-    if(existing){
-      if(typeof existing==='string'){
-        if(existing.trim()!=='') return new Response(JSON.stringify({success:false,error:'成员已存在'}),{status:409,headers});
-      } else if(!existing._deleted) {
-        return new Response(JSON.stringify({success:false,error:'成员已存在'}),{status:409,headers});
-      }
     }
     // 标记已使用
     rec.usedAt=now;

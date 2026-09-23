@@ -6,20 +6,12 @@ function getCorsHeaders(request){ const origin=request.headers.get('origin')||''
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(context){
   if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
+  if(context&&context.env&&context.env.ERROR_KV) return context.env.ERROR_KV;
+  if(context&&context.env&&context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
+  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
+  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
   return null;
-}
-async function getMember(kv, email){
-  try{
-    const m=await kv.get(`member:${email}`,'json');
-    if(!m) return null;
-    if(typeof m==='string'){
-      if(m.trim()==='') return null;
-      try{ const parsed=JSON.parse(m); if(!parsed || parsed._deleted) return null; return parsed; }catch{ return null; }
-    }
-    if(m._deleted) return null;
-    return m;
-  }catch{ return null; }
 }
 function getCookie(request,name){
   const c=request.headers.get('cookie')||'';
@@ -58,8 +50,8 @@ export async function onRequestGet(context){
     const payload=await verifyJWT(token, secret);
     if(!payload || !payload.sub) return new Response(JSON.stringify({success:false,error:'未登录'}),{status:401,headers});
     const kv=getKV(context);
-    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
-    const member=await getMember(kv, payload.sub);
+    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:500,headers});
+    const member=await kv.get(`member:${payload.sub}`,'json');
     if(!member) return new Response(JSON.stringify({success:false,error:'成员不存在或已移除'}),{status:401,headers});
     // 滑动续期
     const now=Math.floor(Date.now()/1000);
