@@ -73,11 +73,35 @@ function isExtensionUrl(value?: string): boolean {
   return /^(chrome-extension|moz-extension|safari-extension|ms-browser-extension):\/\//.test(value);
 }
 
+/**
+ * 16 噪音类：无信息量或扩展/广告注入的 JS 异常，不进监控。
+ * - Script error. / 空 message：跨域屏蔽，拿不到详情
+ * - 广告注入：本站无广告，扩展注入的超时
+ * 注意：signal is aborted without reason 不在此过滤——本站 meili-storage 用 AbortController 超时，
+ * 若漏到全局是真缺陷（见 meili-storage.ts），不应静默丢弃
+ */
+function isNoiseJsMessage(message: string, stack?: string): boolean {
+  const m = message.trim();
+  if (m === '' || m === 'Script error.' || m === 'Script error') return true;
+  if (m === 'Uncaught' || m === 'Uncaught ') return true;
+  if (m.includes('The ad loading process exceeded the timeout')) return true;
+  // 扩展栈：仅当首帧来自扩展才过滤，避免本站真错误被扩展帧夹带而误丢
+  if (stack) {
+    const lines = stack.split('\n');
+    const firstFrame = lines.find((l) => l.trim().startsWith('at ')) || lines[0] || '';
+    if (/(chrome|moz|safari|ms-browser)-extension:\/\//.test(firstFrame)) return true;
+  }
+  return false;
+}
+
 export function reportError(payload: ErrorPayload): void {
   if (typeof window === 'undefined') return; // SSR / build：no-op
   if (isAutomated()) return;                 // e2e / perf 的自造错误不进生产监控
   if (!payload || !payload.message) return;
-  if (isExtensionUrl(payload.resource) || isExtensionUrl(payload.source)) return; // 扩展注入的资源/脚本（15 丙类，source 覆盖 js 分支）
+  if (isExtensionUrl(payload.resource) || isExtensionUrl(payload.source)) return; // 15 丙类 + 扩展 JS
+  if (payload.kind === 'js' || payload.kind === 'unhandledrejection') {
+    if (isNoiseJsMessage(payload.message, payload.stack)) return; // 16 噪音
+  }
   if (sentCount >= MAX_PER_PAGE) return;
 
   const fp = fingerprint(payload);
