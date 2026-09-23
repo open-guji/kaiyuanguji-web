@@ -4,11 +4,7 @@ function getCorsHeaders(request){ const origin=request.headers.get('origin')||''
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(context){
   if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
-  if(context&&context.env&&context.env.ERROR_KV) return context.env.ERROR_KV;
-  if(context&&context.env&&context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
-  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
-  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
   return null;
 }
 async function hashCode(code, secret){
@@ -20,7 +16,7 @@ export async function onRequestGet(context){
   const headers=getCorsHeaders(context.request);
   try{
     const kv=getKV(context);
-    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:500,headers});
+    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
     const secret=getJwtSecret(context);
     if(!secret) return new Response(JSON.stringify({success:false,error:'服务未配置 AUTH_JWT_SECRET'}),{status:503,headers});
     const url=new URL(context.request.url);

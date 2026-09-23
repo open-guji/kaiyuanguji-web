@@ -7,12 +7,20 @@ function getAdminToken(context){ if(context&&context.env&&context.env.AUTH_ADMIN
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(context){
   if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
-  if(context&&context.env&&context.env.ERROR_KV) return context.env.ERROR_KV;
-  if(context&&context.env&&context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
-  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
-  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
   return null;
+}
+async function getMember(kv, email){
+  try{
+    const m=await kv.get(`member:${email}`,'json');
+    if(!m) return null;
+    if(typeof m==='string'){
+      if(m.trim()==='') return null;
+      try{ const parsed=JSON.parse(m); if(!parsed || parsed._deleted) return null; return parsed; }catch{ return null; }
+    }
+    if(m._deleted) return null;
+    return m;
+  }catch{ return null; }
 }
 function getCookie(request,name){ const c=request.headers.get('cookie')||''; const m=c.match(new RegExp('(?:^|;\\s*)'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }
 function b64urlEncode(bytes){ let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
@@ -29,7 +37,7 @@ async function checkAdmin(request, context){
       const kv=getKV(context);
       if(kv){
         const member=await kv.get(`member:${payload.sub}`,'json');
-        if(member && member.role==='admin') return {ok:true,by:payload.sub};
+        if(member && !member._deleted && typeof member==='object' && member.role==='admin') return {ok:true,by:payload.sub};
       }
     }
   }
@@ -45,36 +53,35 @@ async function checkAdmin(request, context){
 export async function onRequestPost(context){
   const headers=getCorsHeaders(context.request);
   try{
-    const auth=await checkAdmin(context.request, context);
-    if(!auth.ok) return new Response(JSON.stringify({success:false,error:auth.error}),{status:auth.status,headers});
-    let body={}; try{ body=await context.request.json(); }catch{ body={}; }
-    // 也允许 body.token 作为 admin token
+    let body={}; try{ body=await context.request.clone().json(); }catch{ try{ body=await context.request.json(); }catch{ body={}; } }
+    // 兼容 body.token 作为 admin token：先解析 body 再判权
+    let auth=await checkAdmin(context.request, context);
     if(!auth.ok){
       const expected=getAdminToken(context);
-      if(expected && body.token && constantTimeEqual(body.token, String(expected))){
-        // 二次检查通过
-      } else {
-        return new Response(JSON.stringify({success:false,error:'未授权'}),{status:401,headers});
+      const bodyToken=body && body.token ? String(body.token) : '';
+      if(expected && bodyToken && constantTimeEqual(bodyToken, String(expected))){
+        auth={ok:true,by:'admin_token_body'};
       }
     }
+    if(!auth.ok) return new Response(JSON.stringify({success:false,error:auth.error}),{status:auth.status,headers});
     const email=String(body.email||'').trim().toLowerCase();
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return new Response(JSON.stringify({success:false,error:'请提供正确 email'}),{status:400,headers});
     const kv=getKV(context);
-    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:500,headers});
+    if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
     if(body.role === undefined || body.role === null || body.role === ''){
-      // 删除
-      await kv.put(`member:${email}`, JSON.stringify({ _deleted: true }));
-      // EdgeOne KV 无 delete，用过期短 TTL 覆盖或写空标记；这里先写标记并尝试 delete 若支持
-      try{ if(kv.delete) await kv.delete(`member:${email}`); else await kv.put(`member:${email}`, JSON.stringify(null), {expirationTtl:1}); }catch{}
-      // 更稳妥：直接覆盖为 null 并依赖读取时判空
-      try{ await kv.put(`member:${email}`, '', {expirationTtl:1}); }catch{}
-      // 实际删除：用 put 空并让上层把 null 视作不存在；若不支持，写标记后由读取方判断 _deleted
+      // 删除：优先物理删除，兜底写墓碑
+      try{
+        if(kv.delete) await kv.delete(`member:${email}`);
+        else await kv.put(`member:${email}`, JSON.stringify({ _deleted: true }));
+      }catch{
+        try{ await kv.put(`member:${email}`, JSON.stringify({ _deleted: true })); }catch{}
+      }
       return new Response(JSON.stringify({success:true,action:'deleted'}),{status:200,headers});
     }
     const role=String(body.role).trim();
     if(!ALLOWED_ROLES.includes(role)) return new Response(JSON.stringify({success:false,error:`role 必须为 ${ALLOWED_ROLES.join('/')}`}),{status:400,headers});
     const now=Math.floor(Date.now()/1000);
-    const existing=await kv.get(`member:${email}`,'json');
+    const existing=await getMember(kv, email);
     const rec={ role, joinedAt: existing && existing.joinedAt ? existing.joinedAt : now, invitedBy: auth.by||'admin', updatedAt: now };
     await kv.put(`member:${email}`, JSON.stringify(rec));
     return new Response(JSON.stringify({success:true,action:'updated',member:rec}),{status:200,headers});

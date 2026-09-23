@@ -27,11 +27,7 @@ function getJwtSecret(context) {
 }
 function getKV(context) {
   if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
-  if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   if (typeof AUTH_KV !== 'undefined') return AUTH_KV;
-  if (typeof ERROR_KV !== 'undefined') return ERROR_KV;
-  if (typeof FEEDBACK_KV !== 'undefined') return FEEDBACK_KV;
   return null;
 }
 function constantTimeEqual(a, b) {
@@ -87,7 +83,7 @@ async function checkAdmin(request, context) {
       const kv = getKV(context);
       if (kv) {
         const member = await kv.get(`member:${payload.sub}`, 'json');
-        if (member && member.role === 'admin') return { ok: true, by: payload.sub };
+        if (member && !member._deleted && member.role === 'admin') return { ok: true, by: payload.sub };
       }
     }
   }
@@ -120,7 +116,7 @@ export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
   try {
     const kv = getKV(context);
-    if (!kv) return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), { status: 500, headers });
+    if (!kv) return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), { status: 503, headers });
     const jwtSecret = getJwtSecret(context);
     if (!jwtSecret) return new Response(JSON.stringify({ success: false, error: '服务未配置 AUTH_JWT_SECRET' }), { status: 503, headers });
 
@@ -147,6 +143,9 @@ export async function onRequestPost(context) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return new Response(JSON.stringify({ success: false, error: '邮箱格式不正确' }), { status: 400, headers });
       }
+    }
+    if (role === 'admin' && !email) {
+      return new Response(JSON.stringify({ success: false, error: 'admin 邀请必须绑定邮箱' }), { status: 400, headers });
     }
 
     const code = genInviteCode();
