@@ -88,17 +88,36 @@ function testGetRandomValues() {
 
 async function testKvTtl(kvInfo) {
   if (!kvInfo) return { pass: false, detail: '无可用 KV 绑定（AUTH_KV/ERROR_KV/FEEDBACK_KV 均未绑定）' };
+  const probeKey = `__probe_${Date.now()}_a`;
+  // 注意：这里只验「带 expirationTtl 的 put 不报错、能读回」，**不验 TTL 真的会过期**——
+  // 那要等 ≥60s 再读，一次请求里做不到。结果里用 ttlExpiryVerified:false 显式标出。
+  let result;
   try {
-    const probeKey = `__probe_${Date.now()}_a`;
-    // 尝试带 expirationTtl 的 put
     await kvInfo.kv.put(probeKey, JSON.stringify({ v: 1 }), { expirationTtl: 60 });
     const got = await kvInfo.kv.get(probeKey, 'json');
-    if (!got) return { pass: false, detail: `${kvInfo.name} put/get 失败，读回 null（可能不支持 options）` };
-    // 清理
-    try { await kvInfo.kv.put(probeKey, JSON.stringify({ v: 1 }), { expirationTtl: 1 }); } catch (_) {}
-    return { pass: true, detail: `${kvInfo.name} put/get OK（expirationTtl 未报错）` };
+    result = got
+      ? { pass: true, detail: `${kvInfo.name} put(expirationTtl)/get OK` }
+      : { pass: false, detail: `${kvInfo.name} put/get 失败，读回 null（可能不支持 options）` };
   } catch (e) {
-    return { pass: false, detail: `${kvInfo.name} error: ${e.message || String(e)}` };
+    result = { pass: false, detail: `${kvInfo.name} error: ${e.message || String(e)}` };
+  }
+  // 清理：AUTH_KV 未绑定时探测会落进生产的 ERROR_KV/FEEDBACK_KV，
+  // 不能靠 TTL 兜底（TTL 是否生效恰恰是待验项），必须显式删，并把删没删掉报出来。
+  result.cleanup = await cleanupProbeKey(kvInfo.kv, probeKey);
+  result.ttlExpiryVerified = false;
+  return result;
+}
+
+async function cleanupProbeKey(kv, key) {
+  if (typeof kv.delete !== 'function') return { deleted: false, detail: 'KV 无 delete 方法，探测 key 残留：' + key };
+  try {
+    await kv.delete(key);
+    const left = await kv.get(key);
+    return left == null
+      ? { deleted: true, detail: '探测 key 已删除' }
+      : { deleted: false, detail: 'delete 后仍能读到，探测 key 残留：' + key };
+  } catch (e) {
+    return { deleted: false, detail: `delete 失败（${e.message || String(e)}），探测 key 残留：${key}` };
   }
 }
 
@@ -124,6 +143,7 @@ export async function onRequestGet(context) {
     KV: kvInfo ? kvInfo.name : null,
   };
 
+  // allPass 只汇总本端点能自证的项；Set-Cookie 与 TTL 过期要调用方另行核对，不计入
   const allPass = subtle.pass && random.pass && kvTtl.pass && envSeen.AUTH_JWT_SECRET && envSeen.AUTH_ADMIN_TOKEN;
 
   return new Response(JSON.stringify({
@@ -133,10 +153,14 @@ export async function onRequestGet(context) {
       subtle,
       getRandomValues: random,
       kvTtl,
-      setCookie: { pass: true, detail: '已尝试 Set-Cookie: probe=1，请检查响应头是否被保留' },
+      // pass:null = 本端点无法自证，需调用方检查本响应的 Set-Cookie 头是否被保留
+      setCookie: { pass: null, detail: '已下发 Set-Cookie: probe=1，请检查响应头是否被保留（未计入 allPass）' },
       env: envSeen,
     },
-    note: allPass ? '四项均绿，可进入 Step2' : '有红项，请按 v3 退化方案调整',
+    note: allPass
+      ? '可自证项均绿；另需人工核对 Set-Cookie 头是否保留、KV TTL 是否真会过期，再进入 Step2'
+      : '有红项，请按 v3 退化方案调整',
+    manualChecks: ['Set-Cookie 响应头是否被保留', 'KV expirationTtl 是否真会过期（≥60s 后重读 key）'],
   }), { status: 200, headers });
 }
 
