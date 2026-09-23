@@ -10,6 +10,8 @@ export default function MembersPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('reviewer');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [pendingRoles, setPendingRoles] = useState<Record<string, string>>({});
+  const [updating, setUpdating] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -19,6 +21,7 @@ export default function MembersPage() {
       const j = await res.json();
       if (!j.success) throw new Error(j.error || '加载失败');
       setMembers(j.members);
+      setPendingRoles({});
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }
@@ -38,13 +41,22 @@ export default function MembersPage() {
     setInviteEmail('');
     load();
   }
-  async function handleChangeRole(email: string, role: string) {
-    const res = await fetch('/api/auth/revoke', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ email, role }),
-    });
-    const j = await res.json();
-    if (!j.success) setError(j.error); else load();
+  async function handleConfirmRole(email: string) {
+    const role = pendingRoles[email];
+    if (!role) return;
+    if (!confirm(`确定将 ${email} 的角色改为 ${role}？`)) return;
+    setUpdating(email);
+    setError(null);
+    try {
+      const res = await fetch('/api/auth/revoke', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ email, role }),
+      });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error);
+      await load();
+    } catch (e: any) { setError(e.message); }
+    finally { setUpdating(null); }
   }
   async function handleDelete(email: string) {
     if (!confirm(`确定删除 ${email}？其登录将立即失效`)) return;
@@ -84,18 +96,27 @@ export default function MembersPage() {
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1">邮箱</th><th>角色</th><th>加入时间</th><th></th></tr></thead>
             <tbody>
-              {members.map(m => (
-                <tr key={m.email} className="border-t">
-                  <td className="py-1 font-mono text-xs">{m.email}</td>
-                  <td>
-                    <select value={m.role} onChange={e => handleChangeRole(m.email, e.target.value)} className="border rounded px-1 py-0.5 text-xs">
-                      <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option>
-                    </select>
-                  </td>
-                  <td className="text-xs text-gray-500">{m.joinedAt ? new Date(m.joinedAt * 1000).toLocaleDateString() : '-'}</td>
-                  <td className="text-right"><button onClick={() => handleDelete(m.email)} className="text-xs text-red-600 hover:underline">删除</button></td>
-                </tr>
-              ))}
+              {members.map(m => {
+                const pending = pendingRoles[m.email] ?? m.role;
+                const changed = pending !== m.role;
+                return (
+                  <tr key={m.email} className="border-t">
+                    <td className="py-1 font-mono text-xs">{m.email}</td>
+                    <td>
+                      <div className="flex items-center gap-1">
+                        <select value={pending} onChange={e => setPendingRoles(prev => ({ ...prev, [m.email]: e.target.value }))} className="border rounded px-1 py-0.5 text-xs">
+                          <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option>
+                        </select>
+                        {changed && (
+                          <button onClick={() => handleConfirmRole(m.email)} disabled={updating === m.email} className="text-xs bg-black text-white rounded px-2 py-0.5 disabled:opacity-50">确定</button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="text-xs text-gray-500">{m.joinedAt ? new Date(m.joinedAt * 1000).toLocaleDateString() : '-'}</td>
+                    <td className="text-right"><button onClick={() => handleDelete(m.email)} className="text-xs text-red-600 hover:underline">删除</button></td>
+                  </tr>
+                );
+              })}
               {members.length === 0 && <tr><td colSpan={4} className="py-4 text-center text-sm text-gray-400">暂无成员</td></tr>}
             </tbody>
           </table>
