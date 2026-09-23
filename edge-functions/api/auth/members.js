@@ -3,14 +3,10 @@ const ALLOWED_ORIGINS = ['https://www.kaiyuanguji.com','https://kaiyuanguji.com'
 function getCorsHeaders(request){ const o=request.headers.get('origin')||''; const c=ALLOWED_ORIGINS.includes(o)?o:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':c,'Content-Type':'application/json'}; }
 function getAdminToken(c){ if(c&&c.env&&c.env.AUTH_ADMIN_TOKEN) return c.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }
 function getJwtSecret(c){ if(c&&c.env&&c.env.AUTH_JWT_SECRET) return c.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
-function getKV(c){
-  if(c&&c.env&&c.env.AUTH_KV) return c.env.AUTH_KV;
-  if(c&&c.env&&c.env.ERROR_KV) return c.env.ERROR_KV;
-  if(c&&c.env&&c.env.FEEDBACK_KV) return c.env.FEEDBACK_KV;
-  if(typeof AUTH_KV!=='undefined') return AUTH_KV;
-  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
-  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
-  return null;
+function getKV(c) {
+  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
+  if (c && c.env && c.env.AUTH_KV) return c.env.AUTH_KV;
+  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
 }
 function getCookie(req,n){ const c=req.headers.get('cookie')||''; const m=c.match(new RegExp('(?:^|;\\s*)'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }
 function b64urlEncode(b){ let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
@@ -25,7 +21,7 @@ async function checkAdmin(req, ctx){
     if(pl && pl.sub){
       const kv=getKV(ctx); if(kv){
         const m=await kv.get(`member:${pl.sub}`,'json').catch(()=>null);
-        if(m && m.role==='admin') return {ok:true};
+        if(m && typeof m==='object' && !m._deleted && m.role==='admin') return {ok:true};
       }
     }
   }
@@ -39,7 +35,7 @@ export async function onRequestGet(context){
   const auth=await checkAdmin(context.request, context);
   if(!auth.ok) return new Response(JSON.stringify({success:false,error:auth.error}),{status:auth.status,headers});
   const kv=getKV(context);
-  if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:500,headers});
+  if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
   const list=await kv.list({prefix:'member:'});
   const members=[];
   for(const k of (list.keys||[])){

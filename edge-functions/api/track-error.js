@@ -84,13 +84,9 @@ function getJwtSecret(context) {
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
+  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
   if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
-  if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
-  if (typeof AUTH_KV !== 'undefined') return AUTH_KV;
-  if (typeof ERROR_KV !== 'undefined') return ERROR_KV;
-  if (typeof FEEDBACK_KV !== 'undefined') return FEEDBACK_KV;
-  return null;
+  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
 }
 function getCookie(request, name) {
   const c = request.headers.get('cookie') || '';
@@ -136,8 +132,9 @@ async function checkMemberCookie(request, context, allowedRoles) {
   if (!payload || !payload.sub) return null;
   const kv = getAuthKV(context);
   if (!kv) return null;
-  const member = await kv.get(`member:${payload.sub}`, 'json');
-  if (!member || !member.role) return null;
+  let member = null;
+  try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
+  if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
   return member;
 }
@@ -258,9 +255,10 @@ export async function onRequestGet(context) {
 
     // 鉴权：共享 token 或 member cookie 双轨
     let auth = checkViewAuth(url.searchParams.get('token'), context);
+    let viaRole = auth.ok ? 'token' : null; // 走哪一路通过的：token / 成员角色
     if (!auth.ok) {
       const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
-      if (member) auth = { ok: true };
+      if (member) { auth = { ok: true }; viaRole = member.role; }
     }
     if (!auth.ok) {
       return new Response(JSON.stringify({ success: false, error: auth.error }), {
@@ -269,7 +267,13 @@ export async function onRequestGet(context) {
     }
 
     // 调试：?debug=eo 返回 request.eo 原始结构 + headers，用于确认 IP/地理字段名（token 保护）
+    // 只给共享 token 或 admin：它回显全部请求头与 request.eo 原始结构，reviewer/editor 看错误列表就够了
     if (url.searchParams.get('debug') === 'eo') {
+      if (viaRole !== 'token' && viaRole !== 'admin') {
+        return new Response(JSON.stringify({ success: false, error: 'debug=eo 仅限共享 token 或 admin' }), {
+          status: 403, headers,
+        });
+      }
       return new Response(JSON.stringify({
         eo: context.request.eo || null,
         headers: Object.fromEntries(context.request.headers),
