@@ -1,5 +1,5 @@
 1:"$Sreact.fragment"
 2:I[484,[],"OutletBoundary"]
 3:"$Sreact.suspense"
-0:{"buildId":"KYQmnL2gIYJhk_1ulJMGw","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"space-y-4","children":[["$","h1",null,{"className":"text-xl font-bold","children":"反馈"}],["$","div",null,{"className":"bg-white rounded border p-8 text-center text-sm text-gray-500","children":["占位页面，后续接入 ",["$","code",null,{"children":"GET /api/feedback"}]," 处置流（双轨已支持）。"]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"dH2pG90Lk-TQG0CXBCvn0","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"space-y-4","children":[["$","h1",null,{"className":"text-xl font-bold","children":"反馈"}],["$","div",null,{"className":"bg-white rounded border p-8 text-center text-sm text-gray-500","children":["占位页面，后续接入 ",["$","code",null,{"children":"GET /api/feedback"}]," 处置流（双轨已支持）。"]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
 4:null
