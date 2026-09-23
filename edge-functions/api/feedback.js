@@ -90,13 +90,9 @@ function getJwtSecret(context) {
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
+  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
   if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
-  if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
-  if (typeof AUTH_KV !== 'undefined') return AUTH_KV;
-  if (typeof ERROR_KV !== 'undefined') return ERROR_KV;
-  if (typeof FEEDBACK_KV !== 'undefined') return FEEDBACK_KV;
-  return null;
+  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
 }
 function getCookie(request, name) {
   const c = request.headers.get('cookie') || '';
@@ -142,8 +138,9 @@ async function checkMemberCookie(request, context, allowedRoles) {
   if (!payload || !payload.sub) return null;
   const kv = getAuthKV(context);
   if (!kv) return null;
-  const member = await kv.get(`member:${payload.sub}`, 'json');
-  if (!member || !member.role) return null;
+  let member = null;
+  try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
+  if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
   return member;
 }
