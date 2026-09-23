@@ -111,9 +111,11 @@ describe('invite/invite-info/join 闭环', () => {
     await kv.put('member:alice@example.com', JSON.stringify({ role: 'admin', joinedAt: 1, invitedBy: 'x' }));
     res = await revoke.onRequestPost(ctx('https://x/api/auth/revoke', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `session=${sess}` },
-      body: JSON.stringify({ email: 'bob@example.com', role: 'editor' })
+      body: JSON.stringify({ email: 'charlie@example.com', role: 'editor' })
     }));
-    // bob 尚不存在但应能创建
+    expect(res.status).toBe(200);
+    // charlie 尚不存在但应能创建；清理以免影响 bob 的 invite/join
+    await kv.delete('member:charlie@example.com');
     res = await invite.onRequestPost(ctx('https://x/api/auth/invite', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${g.AUTH_ADMIN_TOKEN}` },
       body: JSON.stringify({ email: 'bob@example.com', role: 'reviewer' })
