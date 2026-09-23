@@ -41,14 +41,16 @@ export async function onRequestPost(context){
       if(!supplied || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supplied)) return new Response(JSON.stringify({success:false,error:'请填写正确邮箱'}),{status:400,headers});
       email=supplied;
     }
-    // 防止覆盖已有成员（冒充 / 降级）
-    let existing=null;
-    try{ existing=await kv.get(`member:${email}`,'json'); }catch{ existing=null; }
-    if(existing){
-      if(typeof existing==='string'){
-        if(existing.trim()!=='') return new Response(JSON.stringify({success:false,error:'成员已存在'}),{status:409,headers});
-      } else if(!existing._deleted) {
-        return new Response(JSON.stringify({success:false,error:'成员已存在'}),{status:409,headers});
+    // 已存在成员：绑定邀请（email 明确）允许覆盖以重登录；开放邀请（email 为空）冒用已有邮箱则 409
+    {
+      let existing = null;
+      try { existing = await kv.get(`member:${email}`, 'json'); } catch { existing = null; }
+      const isDeleted = !existing || existing._deleted || (typeof existing === 'string' && existing.trim() === '');
+      if (!isDeleted) {
+        if (!rec.email) {
+          return new Response(JSON.stringify({ success: false, error: '成员已存在' }), { status: 409, headers });
+        }
+        // 绑定邀请的重复登录：允许（以邀请的 role 为准刷新）
       }
     }
     // 标记已使用
