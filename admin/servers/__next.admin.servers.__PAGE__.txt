@@ -1,5 +1,5 @@
 1:"$Sreact.fragment"
 2:I[484,[],"OutletBoundary"]
 3:"$Sreact.suspense"
-0:{"buildId":"26gvs_FPEut2say9FnHT3","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"space-y-4","children":[["$","h1",null,{"className":"text-xl font-bold","children":"服务器"}],["$","div",null,{"className":"bg-white rounded border p-8 text-center text-sm text-gray-500","children":["占位页面，待接入 Meili / COS / EdgeOne 探活历史（与 ",["$","code",null,{"children":"health-check"}]," 复用）。"]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"O00sMRz4QTX4ZXkBII6BR","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"space-y-4","children":[["$","h1",null,{"className":"text-xl font-bold","children":"服务器"}],["$","div",null,{"className":"bg-white rounded border p-8 text-center text-sm text-gray-500","children":["占位页面，待接入 Meili / COS / EdgeOne 探活历史（与 ",["$","code",null,{"children":"health-check"}]," 复用）。"]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
 4:null
