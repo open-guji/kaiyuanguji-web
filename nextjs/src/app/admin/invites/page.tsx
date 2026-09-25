@@ -7,9 +7,15 @@ export default function InvitesPage() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('reviewer');
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   async function load() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/auth/invites', { credentials: 'include', cache: 'no-store' });
       const j = await res.json();
@@ -20,10 +26,36 @@ export default function InvitesPage() {
   }
   useEffect(() => { load(); }, []);
 
+  async function handleInvite() {
+    setInviteError(null); setInviteLink(null);
+    const email = inviteEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setInviteError('请填写正确邮箱'); return; }
+    setSending(true);
+    try {
+      const res = await fetch('/api/auth/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email, role: inviteRole }) });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || `HTTP ${res.status}`);
+      setInviteLink(j.link); setInviteEmail(''); load();
+    } catch (e: any) { setInviteError(e.message); }
+    finally { setSending(false); }
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">邀请</h1>
       <p className="text-xs text-gray-500">仅显示未使用且未过期的邀请（7 天有效，一次性）</p>
+      <div className="bg-white rounded border p-4 space-y-3">
+        <h2 className="text-sm font-semibold">发新邀请</h2>
+        <div className="flex gap-2">
+          <input className="flex-1 border rounded px-2 py-1 text-sm" placeholder="someone@example.com" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
+          <select className="border rounded px-2 py-1 text-sm" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
+            <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option>
+          </select>
+          <button onClick={handleInvite} disabled={sending} className="bg-black text-white rounded px-3 py-1 text-sm disabled:opacity-50">{sending ? '生成中…' : '生成链接'}</button>
+        </div>
+        {inviteLink && <p className="text-sm break-all bg-gray-50 p-2 rounded">链接：<a href={inviteLink} className="underline">{inviteLink}</a></p>}
+        {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
+      </div>
       <div className="bg-white rounded border p-4">
         <div className="flex justify-between mb-2"><span className="text-sm font-semibold">待使用</span><button onClick={load} className="text-xs text-gray-500 hover:text-black">刷新</button></div>
         {loading ? <p className="text-sm text-gray-500">加载中…</p> : error ? <p className="text-sm text-red-600">{error}</p> : invites.length === 0 ? <p className="text-sm text-gray-400">暂无</p> : (
