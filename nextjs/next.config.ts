@@ -4,6 +4,11 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const isLocal = process.env.NEXT_PUBLIC_MODE === 'local';
+// G-25 试验：全栈模式（不静态导出），条目页 /work/[id] 由服务端渲染 + ISR。
+// 只在 KYG_SSR=1 时生效；生产构建不受影响（*.ssr.tsx 不参与静态导出）。
+// 试验分支 spike/ssr-fullstack 上写死为 true：EdgeOne 运行时读配置时拿不到构建期的环境变量。
+// **本分支不合入 main。**
+const isSSR = true || process.env.KYG_SSR === '1';
 
 // 实际被打进产物的 book-index-ui 版本（取 node_modules 里解析到的那个，
 // 而非 package.json 的 ^ 区间——区间说明不了线上跑的到底是哪一版）。
@@ -38,11 +43,13 @@ const uiVersion = resolveUiVersion();
 
 const nextConfig: NextConfig = {
   // local mode 需要 API routes，不能用 static export
-  ...(isLocal ? {} : { output: 'export' as const }),
+  ...(isLocal || isSSR ? {} : { output: 'export' as const }),
   // 仅 local 模式打包 *.local.ts 文件（如 API routes，与 output: 'export' 不兼容）
   pageExtensions: isLocal
     ? ['tsx', 'ts', 'jsx', 'js', 'local.tsx', 'local.ts']
-    : ['tsx', 'ts', 'jsx', 'js'],
+    : isSSR
+      ? ['tsx', 'ts', 'jsx', 'js', 'ssr.tsx']
+      : ['tsx', 'ts', 'jsx', 'js'],
   // 部署子路径（basePath）。历史上为 GitHub Pages 的 /repo/ 子路径而设；
   // 现托管在 EdgeOne Pages 根路径，CI 里显式 NEXT_PUBLIC_BASE_PATH=""。
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',

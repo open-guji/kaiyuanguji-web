@@ -26,7 +26,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 3. 古籍详情页 (从 GitHub 获取)
     // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
     let bookRoutes: MetadataRoute.Sitemap = [];
-    try {
+    // G-25 试验：全栈构建跳过（拉全量条目超 60 秒构建超时）；正式方案会重写 sitemap
+    if (false) try { // 试验分支：一律跳过（见上）
         const transport = new GithubStorage({
             org: GITHUB_ORG,
             repos: { draft: 'book-index-draft', official: 'book-index' },
