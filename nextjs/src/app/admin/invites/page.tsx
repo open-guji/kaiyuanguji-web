@@ -10,9 +10,12 @@ export default function InvitesPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('reviewer');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   async function load() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/auth/invites', { credentials: 'include', cache: 'no-store' });
       const j = await res.json();
@@ -24,11 +27,17 @@ export default function InvitesPage() {
   useEffect(() => { load(); }, []);
 
   async function handleInvite() {
-    setError(null); setInviteLink(null);
-    if (!inviteEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)) { setError('请填写正确邮箱'); return; }
-    const res = await fetch('/api/auth/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email: inviteEmail.trim().toLowerCase(), role: inviteRole }) });
-    const j = await res.json(); if (!j.success) { setError(j.error); return; }
-    setInviteLink(j.link); setInviteEmail(''); load();
+    setInviteError(null); setInviteLink(null);
+    const email = inviteEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setInviteError('请填写正确邮箱'); return; }
+    setSending(true);
+    try {
+      const res = await fetch('/api/auth/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email, role: inviteRole }) });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || `HTTP ${res.status}`);
+      setInviteLink(j.link); setInviteEmail(''); load();
+    } catch (e: any) { setInviteError(e.message); }
+    finally { setSending(false); }
   }
 
   return (
@@ -42,10 +51,10 @@ export default function InvitesPage() {
           <select className="border rounded px-2 py-1 text-sm" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
             <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option>
           </select>
-          <button onClick={handleInvite} className="bg-black text-white rounded px-3 py-1 text-sm">生成链接</button>
+          <button onClick={handleInvite} disabled={sending} className="bg-black text-white rounded px-3 py-1 text-sm disabled:opacity-50">{sending ? '生成中…' : '生成链接'}</button>
         </div>
         {inviteLink && <p className="text-sm break-all bg-gray-50 p-2 rounded">链接：<a href={inviteLink} className="underline">{inviteLink}</a></p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
       </div>
       <div className="bg-white rounded border p-4">
         <div className="flex justify-between mb-2"><span className="text-sm font-semibold">待使用</span><button onClick={load} className="text-xs text-gray-500 hover:text-black">刷新</button></div>
