@@ -67,6 +67,15 @@ describe('reportError', () => {
         expect(beacons).toHaveLength(1);
     });
 
+    it('统计脚本被广告拦截器挡掉：不发（G-24）', async () => {
+        const { reportError } = await freshModule();
+        reportError({ kind: 'resource', message: '资源加载失败: script', resource: 'https://hm.baidu.com/hm.js?abc' });
+        reportError({ kind: 'resource', message: '资源加载失败: script', resource: 'https://www.googletagmanager.com/gtag/js?id=G-X' });
+        expect(beacons).toHaveLength(0);
+        reportError({ kind: 'resource', message: '资源加载失败: script', resource: 'https://www.kaiyuanguji.com/_next/static/chunks/x.js' });
+        expect(beacons).toHaveLength(1);
+    });
+
     it('空 message 不发', async () => {
         const { reportError } = await freshModule();
         reportError({ kind: 'js', message: '' });
