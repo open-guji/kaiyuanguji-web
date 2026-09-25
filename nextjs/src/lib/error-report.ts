@@ -7,6 +7,8 @@
 //   - sendBeacon 优先（页面卸载也能送达），降级 fetch(keepalive)；失败一律静默——
 //     监控本身绝不能产生噪音或影响主流程。
 
+import { isAnalyticsUrl } from './analytics';
+
 const ENDPOINT = '/api/track-error';
 const MAX_PER_PAGE = 20;
 
@@ -99,6 +101,8 @@ export function reportError(payload: ErrorPayload): void {
   if (isAutomated()) return;                 // e2e / perf 的自造错误不进生产监控
   if (!payload || !payload.message) return;
   if (isExtensionUrl(payload.resource) || isExtensionUrl(payload.source)) return; // 15 丙类 + 扩展 JS
+  // 统计脚本被广告拦截器挡掉是常态，不是本站缺陷（G-24）
+  if (isAnalyticsUrl(payload.resource) || isAnalyticsUrl(payload.source)) return;
   if (payload.kind === 'js' || payload.kind === 'unhandledrejection') {
     if (isNoiseJsMessage(payload.message, payload.stack)) return; // 16 噪音
   }

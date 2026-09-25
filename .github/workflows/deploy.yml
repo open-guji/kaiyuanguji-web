@@ -190,6 +190,10 @@ jobs:
           # 绝不能在这里放 master key）。secret 缺失曾导致构建时 key 为空、
           # 线上搜索全 401（2026-08 事故）。轮换 key 后请同步更新这里和 secret。
           NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
+          # 访问统计站点 ID（G-24）：仓库 Settings → Variables 里配 BAIDU_TONGJI_ID / GA_ID。
+          # 非机密（本来就写在页面里）；没配则不加载统计脚本。
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ vars.BAIDU_TONGJI_ID }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
         run: |
           cd nextjs
           rm -rf .next out

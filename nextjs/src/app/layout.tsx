@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
+import Analytics from "@/components/common/Analytics";
 
 const notoSerif = Noto_Serif_SC({
   subsets: ["latin"],
@@ -80,6 +82,9 @@ export default function RootLayout({
       </head>
       <body className={`antialiased ${notoSerif.variable}`}>
         <ErrorMonitor />
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
         <SourceProvider>
           {children}
         </SourceProvider>
