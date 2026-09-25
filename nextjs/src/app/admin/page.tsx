@@ -21,8 +21,8 @@ export default function AdminOverviewPage() {
     fetchAllPages<{ state?: string }>('/api/track-error', 200)
       .then((r) => setErrors(r.items.filter((i) => i.state !== 'resolved').length))
       .catch(() => setErrors('err'));
-    fetchAllPages<{ status?: string }>('/api/feedback', 100)
-      .then((r) => setFeedback(r.items.filter((i) => i.status !== 'resolved').length))
+    fetchAllPages<{ status?: string; test?: boolean }>('/api/feedback', 100)
+      .then((r) => setFeedback(r.items.filter((i) => !i.test && i.status !== 'resolved').length))
       .catch(() => setFeedback('err'));
     countInvites().then(setInvites).catch(() => setInvites('err'));
   }, []);

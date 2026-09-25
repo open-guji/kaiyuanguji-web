@@ -1,6 +1,8 @@
 'use client';
 
-// 反馈处置（21 第 3 步）。读 GET /api/feedback（公开），改状态 / 写回复走 POST action:'update'（成员 cookie）。
+// 反馈处置（21 第 3 步；G-23 加隐藏 / 测试标记 / 联系方式）。
+// 读 GET /api/feedback：带成员 cookie 时后端返回全量原样（含已隐藏、测试、contact），
+// 改状态 / 写回复 / 隐藏走 POST action:'update'（成员 cookie）。
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../fetchAll';
 
@@ -14,7 +16,12 @@ interface FeedbackRecord {
   updatedAt?: string;
   status: 'pending' | 'resolved' | string;
   reply?: string;
+  visibility?: 'public' | 'hidden';
+  test?: boolean;
+  contact?: string;
 }
+
+type Patch = { status?: string; reply?: string; visibility?: 'public' | 'hidden'; test?: boolean };
 
 const TYPE_LABEL: Record<string, string> = { bug: '错误', resource: '资源' };
 
@@ -29,6 +36,7 @@ export default function FeedbackView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hideResolved, setHideResolved] = useState(true);
+  const [showTest, setShowTest] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState('');
 
@@ -49,7 +57,7 @@ export default function FeedbackView() {
   }
   useEffect(() => { load(); }, []);
 
-  async function update(id: string, patch: { status?: string; reply?: string }) {
+  async function update(id: string, patch: Patch) {
     setSavingId(id);
     try {
       const res = await fetch('/api/feedback', {
@@ -71,8 +79,11 @@ export default function FeedbackView() {
     }
   }
 
-  const pendingCount = useMemo(() => items.filter((i) => i.status !== 'resolved').length, [items]);
-  const shown = hideResolved ? items.filter((i) => i.status !== 'resolved') : items;
+  const real = useMemo(() => items.filter((i) => !i.test), [items]);
+  const pendingCount = useMemo(() => real.filter((i) => i.status !== 'resolved').length, [real]);
+  const testCount = items.length - real.length;
+  const hiddenCount = useMemo(() => items.filter((i) => i.visibility === 'hidden').length, [items]);
+  const shown = (showTest ? items : real).filter((i) => !hideResolved || i.status !== 'resolved');
 
   return (
     <div className="space-y-4">
@@ -80,7 +91,10 @@ export default function FeedbackView() {
         <h1 className="text-xl font-bold">反馈</h1>
         <button onClick={load} disabled={loading} className="text-xs text-gray-500 hover:text-black">刷新</button>
       </div>
-      <p className="text-xs text-gray-500">读者在各页提交的反馈。<b>回复会在该页的反馈区公开显示。</b></p>
+      <p className="text-xs text-gray-500">
+        读者在各页提交的反馈，默认公开显示。<b>回复会随反馈一起公开。</b>
+        正文里有联系方式等个人信息的，点「隐藏」即从公开列表撤下（这里仍可见）。联系方式栏只有站方看得到。
+      </p>
 
       {error ? (
         <div className="bg-white rounded border p-8 text-center text-sm text-red-600">{error}</div>
@@ -96,9 +110,13 @@ export default function FeedbackView() {
           <div className="bg-white rounded border p-3 flex items-center gap-4 text-sm">
             <label className="inline-flex items-center gap-1.5">
               <input type="checkbox" checked={hideResolved} onChange={(e) => setHideResolved(e.target.checked)} />
-              隐藏已解决（{items.length - pendingCount}）
+              隐藏已解决（{real.length - pendingCount}）
             </label>
-            <span className="ml-auto text-gray-500">待处理 {pendingCount} · 共 {items.length}</span>
+            <label className="inline-flex items-center gap-1.5">
+              <input type="checkbox" checked={showTest} onChange={(e) => setShowTest(e.target.checked)} />
+              显示测试数据（{testCount}）
+            </label>
+            <span className="ml-auto text-gray-500">待处理 {pendingCount} · 已隐藏 {hiddenCount} · 共 {real.length}</span>
           </div>
 
           {shown.length === 0 ? (
@@ -107,6 +125,7 @@ export default function FeedbackView() {
             <div className="space-y-3">
               {shown.map((it) => {
                 const resolved = it.status === 'resolved';
+                const hidden = it.visibility === 'hidden';
                 const busy = savingId === it.id;
                 const draft = drafts[it.id];
                 const editing = draft !== undefined;
@@ -117,7 +136,16 @@ export default function FeedbackView() {
                         {TYPE_LABEL[it.type] || it.type}
                       </span>
                       {resolved && <span className="bg-emerald-100 text-emerald-800 rounded px-2 text-xs">已解决</span>}
+                      {hidden && <span className="bg-gray-200 text-gray-700 rounded px-2 text-xs">已隐藏 · 不公开</span>}
+                      {it.test && <span className="bg-amber-100 text-amber-800 rounded px-2 text-xs">测试</span>}
                       <span className="ml-auto text-gray-400">{fmtTime(it.createdAt)}</span>
+                      <button
+                        onClick={() => update(it.id, { visibility: hidden ? 'public' : 'hidden' })}
+                        disabled={busy}
+                        className="border rounded px-2.5 py-0.5 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {hidden ? '恢复公开' : '隐藏'}
+                      </button>
                       <button
                         onClick={() => update(it.id, { status: resolved ? 'pending' : 'resolved' })}
                         disabled={busy}
@@ -131,6 +159,7 @@ export default function FeedbackView() {
                     <div className="text-gray-500 break-all">
                       {it.pageUrl && <div>页面：<a href={it.pageUrl} target="_blank" rel="noreferrer" className="underline">{it.pageUrl}</a></div>}
                       {it.resourceId && <div>条目：<span className="font-mono">{it.resourceId}</span></div>}
+                      {it.contact && <div>联系方式（仅站方可见）：<span className="font-mono text-gray-800">{it.contact}</span></div>}
                     </div>
 
                     <div className="mt-2 border-t pt-2">
