@@ -3,7 +3,10 @@
 // 三条路，鉴权口径**故意不同**：
 //   POST（提交反馈）      公开 —— 读者必须能匿名提
 //   GET （列出反馈）      公开 —— 站内反馈 tab 靠它渲染；记录里只有
-//                        type/content/pageUrl/resourceId，没有 IP、没有 UA
+//                        type/content/pageUrl/resourceId，没有 IP、没有 UA。
+//                        **公开读剔除**：已隐藏的（visibility=hidden）、测试数据（test=true）、
+//                        以及 contact 字段（读者留的联系方式，只给站方看）。
+//                        带管理凭证（token 或成员 cookie）读时返回全量、原样（/admin/feedback 用）。
 //   POST action:'update' 与 PATCH（改状态／写回复）
 //                        **必须带 FEEDBACK_ADMIN_TOKEN**，见 checkAdminAuth
 //
@@ -152,7 +155,7 @@ function getGithubToken(context) {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId) {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
   const id = generateId();
   const record = {
     id,
@@ -164,31 +167,80 @@ async function kvPost(kv, type, content, pageUrl, resourceId) {
     status: 'pending',
     reply: '',
   };
+  if (contact) record.contact = contact;
+  if (test) record.test = true;
   await kv.put(id, JSON.stringify(record));
   return { id };
 }
 
-async function kvGet(kv, limit, cursor, resourceId) {
-  const listOpts = { prefix: 'fb_', limit: resourceId ? 256 : limit };
-  if (cursor && !resourceId) listOpts.cursor = cursor;
-  const listResult = await kv.list(listOpts);
-  const keys = listResult.keys || [];
+/**
+ * 公开读要剔除的记录与字段（见文件头）。旧记录没有 visibility 字段，按公开处理。
+ */
+function isPubliclyVisible(rec) {
+  return rec && rec.visibility !== 'hidden' && rec.test !== true;
+}
+function toPublic(rec) {
+  const { contact, ...rest } = rec; // eslint-disable-line no-unused-vars
+  return rest;
+}
+
+async function listAllKeys(kv) {
+  const names = [];
+  let cursor = '';
+  for (let i = 0; i < 100; i += 1) {
+    const opts = { prefix: 'fb_', limit: 256 };
+    if (cursor) opts.cursor = cursor;
+    const r = await kv.list(opts);
+    for (const k of r.keys || []) names.push(k.key);
+    if (r.complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+  return names;
+}
+
+/**
+ * 按时间倒序取反馈。
+ *
+ * 2026-09-24 查出的坑（G-23 A2）：KV 按 key 升序返回，key 是 `fb_<毫秒>_…`，
+ * 旧写法 `kv.list({limit})` 取到的是**最旧**的一页，再在页内倒序——
+ * 反馈一多，首页只剩最早那批；按 resourceId 过滤只扫前 256 个 key，更新的书页反馈直接看不见。
+ * 现在先列全部 key（只是 key，便宜），按 key 倒序（毫秒位数固定，字典序即时间序），
+ * 再从新往旧取值、过滤，够数即停。
+ *
+ * cursor 语义改为「上一页扫到的最后一个 key」，下一页从比它更旧的开始。
+ *
+ * 代价：每次读都列一遍全部 key；按 resourceId 过滤时最坏要读遍所有值。
+ * 现在只有十几条，无所谓；到上千条再给 resourceId 建索引 key。
+ */
+async function kvGet(kv, limit, cursor, resourceId, full) {
+  const names = (await listAllKeys(kv)).sort().reverse();
+  let start = 0;
+  if (cursor) {
+    const idx = names.indexOf(cursor);
+    start = idx >= 0 ? idx + 1 : names.findIndex((n) => n < cursor);
+    if (start < 0) start = names.length;
+  }
 
   const items = [];
-  for (const key of keys) {
-    const val = await kv.get(key.key, 'json');
-    if (val) {
+  let i = start;
+  const BATCH = 20;
+  while (i < names.length && items.length < limit) {
+    const batch = names.slice(i, i + BATCH);
+    const vals = await Promise.all(batch.map((k) => kv.get(k, 'json').catch(() => null)));
+    for (let j = 0; j < batch.length; j += 1) {
+      i += 1;
+      const val = vals[j];
+      if (!val) continue;
       if (resourceId && val.resourceId !== resourceId) continue;
-      items.push(val);
+      if (!full && !isPubliclyVisible(val)) continue;
+      items.push(full ? val : toPublic(val));
+      if (items.length >= limit) break;
     }
   }
-  items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  return {
-    items: resourceId ? items : items.slice(0, limit),
-    cursor: resourceId ? '' : (listResult.cursor || ''),
-    hasMore: resourceId ? false : !listResult.complete,
-  };
+  // 游标取「最后扫过的一条」而非「最后返回的一条」：被过滤掉的也不必下一页再扫一遍
+  const hasMore = i < names.length;
+  return { items, cursor: hasMore ? names[i - 1] : '', hasMore };
 }
 
 // --- GitHub 模式 ---
@@ -250,11 +302,13 @@ async function githubGet(ghToken, limit) {
 
 // --- KV PATCH ---
 
-async function kvPatch(kv, id, status, reply) {
+async function kvPatch(kv, id, status, reply, visibility, test) {
   const record = await kv.get(id, 'json');
   if (!record) return null;
   if (status) record.status = status;
   if (reply !== undefined) record.reply = reply;
+  if (visibility) record.visibility = visibility;
+  if (test !== undefined) record.test = test === true;
   record.updatedAt = new Date().toISOString();
   await kv.put(id, JSON.stringify(record));
   return record;
@@ -280,7 +334,7 @@ export async function onRequestPost(context) {
           status: auth.status, headers,
         });
       }
-      const { id, status, reply } = body;
+      const { id, status, reply, visibility, test } = body;
       if (!id || !id.startsWith('fb_')) {
         return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
           status: 400, headers,
@@ -291,13 +345,23 @@ export async function onRequestPost(context) {
           status: 400, headers,
         });
       }
+      if (visibility !== undefined && !['public', 'hidden'].includes(visibility)) {
+        return new Response(JSON.stringify({ success: false, error: '无效的可见性' }), {
+          status: 400, headers,
+        });
+      }
+      if (test !== undefined && typeof test !== 'boolean') {
+        return new Response(JSON.stringify({ success: false, error: 'test 须为布尔值' }), {
+          status: 400, headers,
+        });
+      }
       const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
           status: 500, headers,
         });
       }
-      const updated = await kvPatch(kv, id, status, reply);
+      const updated = await kvPatch(kv, id, status, reply, visibility, test);
       if (!updated) {
         return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
           status: 404, headers,
@@ -310,6 +374,12 @@ export async function onRequestPost(context) {
 
     // 默认：提交新反馈
     const { type, content, pageUrl, resourceId } = body;
+    // 联系方式：选填，只给站方看（公开读剔除）。只做长度与去空白，不校验格式——读者可能留微信号
+    const contact = typeof body.contact === 'string' ? body.contact.trim().slice(0, 200) : '';
+    // 测试数据：本地开发（Origin 是 localhost，FeedbackTab 等在 localhost 下直连生产）或探针显式带 test:true。
+    // 照常落库（便于排查），但公开读看不到（G-23 A3）
+    const origin = context.request.headers.get('origin') || '';
+    const test = body.test === true || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
     if (!['bug', 'resource'].includes(type)) {
       return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
@@ -345,7 +415,7 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl, resourceId);
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test);
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
@@ -367,6 +437,10 @@ export async function onRequestGet(context) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';
     const resourceId = url.searchParams.get('resourceId') || '';
+    // 管理读：带 token（?token=）或成员 cookie 时返回全量原样；否则按公开规则过滤。
+    // 没凭证不是错误，照常返回公开结果（不回 401，站内反馈 tab 靠它）
+    let full = checkAdminAuth(url.searchParams.get('token') || undefined, context).ok;
+    if (!full) full = !!(await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']));
 
     const mode = getMode(context);
     let result;
@@ -386,7 +460,7 @@ export async function onRequestGet(context) {
           status: 500, headers,
         });
       }
-      result = await kvGet(kv, limit, cursor, resourceId);
+      result = await kvGet(kv, limit, cursor, resourceId, full);
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
