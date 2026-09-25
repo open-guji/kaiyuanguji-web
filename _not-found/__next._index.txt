@@ -1,10 +1,10 @@
 1:"$Sreact.fragment"
-2:I[6612,["7177","static/chunks/app/layout-be4110a65c1842ae.js"],"default"]
+2:I[6612,["7177","static/chunks/app/layout-048898b5385ffbad.js"],"default"]
 3:"$Sreact.suspense"
-4:I[5847,["7177","static/chunks/app/layout-be4110a65c1842ae.js"],"default"]
-5:I[2088,["7177","static/chunks/app/layout-be4110a65c1842ae.js"],"SourceProvider"]
+4:I[5847,["7177","static/chunks/app/layout-048898b5385ffbad.js"],"default"]
+5:I[2088,["7177","static/chunks/app/layout-048898b5385ffbad.js"],"SourceProvider"]
 6:I[7121,[],""]
 7:I[4581,[],""]
 :HL["/_next/static/css/273fccad7f51470c.css","style"]
 :HL["/_next/static/css/7fc4f96c36eb4e30.css","style"]
-0:{"buildId":"NzPJJQ3djH8wMw6IihvJ5","rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/273fccad7f51470c.css","precedence":"next"}],["$","link","1",{"rel":"stylesheet","href":"/_next/static/css/7fc4f96c36eb4e30.css","precedence":"next"}]],["$","html",null,{"lang":"zh-CN","children":[["$","head",null,{"children":[["$","meta",null,{"name":"bim-ui-version","content":"0.9.1"}],["$","script",null,{"type":"application/ld+json","dangerouslySetInnerHTML":{"__html":"{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"开源古籍\",\"alternateName\":[\"开源古籍\",\"kaiyuanguji\"],\"url\":\"https://www.kaiyuanguji.com\"}"}}]]}],["$","body",null,{"className":"antialiased __variable_5264b9","children":[["$","$L2",null,{}],["$","$3",null,{"fallback":null,"children":["$","$L4",null,{}]}],["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L7",null,{}]}]}]]}]]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"WY8LrMV93aJe6LOOGfSHF","rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/273fccad7f51470c.css","precedence":"next"}],["$","link","1",{"rel":"stylesheet","href":"/_next/static/css/7fc4f96c36eb4e30.css","precedence":"next"}]],["$","html",null,{"lang":"zh-CN","children":[["$","head",null,{"children":[["$","meta",null,{"name":"bim-ui-version","content":"0.9.1"}],["$","script",null,{"type":"application/ld+json","dangerouslySetInnerHTML":{"__html":"{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"开源古籍\",\"alternateName\":[\"开源古籍\",\"kaiyuanguji\"],\"url\":\"https://www.kaiyuanguji.com\"}"}}]]}],["$","body",null,{"className":"antialiased __variable_5264b9","children":[["$","$L2",null,{}],["$","$3",null,{"fallback":null,"children":["$","$L4",null,{}]}],["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L7",null,{}]}]}]]}]]}]]}],"loading":null,"isPartial":false}
