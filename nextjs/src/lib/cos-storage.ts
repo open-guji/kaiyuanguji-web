@@ -161,6 +161,18 @@ async function resolveH1EntryHash(id: string): Promise<string | null> {
     return shard[id] ?? null;
 }
 
+/**
+ * 丢掉一个 id 所在分片的内存缓存，下次 resolveH1EntryHash 会重新 fetch。
+ *
+ * 用于 entry 404 时的加固（见 fetchRawDetailH1）：分片有短缓存（60–300s）＋
+ * 页面内存缓存两层，都可能比 COS 上的最新状态慢半拍——尤其 sync 端「旧 entry
+ * 保留 7 天」意味着旧哈希文件仍在，但分片一旦更新到新哈希，旧 URL 就会 404。
+ */
+async function invalidateH1Shard(id: string): Promise<void> {
+    const root = await resolveH1ManifestRoot();
+    _h1ShardCache.delete(h1ShardKeyFor(id, root.shardKeyLength));
+}
+
 // entry/<id>.<hash8>.json 本身按内容哈希寻址，可以放心用 force-cache（浏览器永久缓存，
 // 内容变了 URL 也会变，不存在「缓存了旧内容」这回事）。
 const _h1EntryCache = new Map<string, Promise<Record<string, unknown> | null>>();
@@ -170,6 +182,19 @@ const _h1EntryCache = new Map<string, Promise<Record<string, unknown> | null>>()
 // ensurePromotions，两条路径共用同一份）。这不是遗漏：那份表很小、改动频率低，
 // 不是 R4「改一条目冲全站缓存」这个痛点要解的对象，留给条目全部按哈希寻址后
 // 视情况再一并处理。
+/** 单次尝试：拿 hash 直接拼 URL 去取，不重试、不上报，调用方决定怎么处理结果。 */
+function fetchH1EntryOnce(canonicalId: string, hash: string): Promise<Response> {
+    const url = `${getH1BaseUrl()}/entry/${encodeURIComponent(canonicalId)}.${hash}.json`;
+    return fetch(url, { cache: 'force-cache' });
+}
+
+/**
+ * entry 404 时的加固：分片缓存（内存 + HTTP 短缓存）可能比 COS 落后一步，
+ * 指向一个已经不存在的旧哈希——sync 端「新 entry 上线」与「分片更新」隔着
+ * 两个上传批次，加上前端自己的缓存分层，短暂的不一致是设计内允许的，不能让它
+ * 直接变成读者看到的 404。策略：清掉分片缓存重取一次，hash 变了就再试一次
+ * entry；两次都不行（或分片仍指向同一个 hash）才真的判 404。
+ */
 async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unknown> | null> {
     let cached = _h1EntryCache.get(canonicalId);
     if (!cached) {
@@ -179,8 +204,18 @@ async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unk
                 reportError({ kind: 'fetch', message: `entry 不存在 (404，h1 manifest 未命中)`, resource: canonicalId, status: 404 });
                 return null;
             }
-            const url = `${getH1BaseUrl()}/entry/${encodeURIComponent(canonicalId)}.${hash}.json`;
-            const res = await fetch(url, { cache: 'force-cache' });
+
+            let res = await fetchH1EntryOnce(canonicalId, hash);
+            if (res.status === 404) {
+                await invalidateH1Shard(canonicalId);
+                const freshHash = await resolveH1EntryHash(canonicalId);
+                if (freshHash && freshHash !== hash) {
+                    res = await fetchH1EntryOnce(canonicalId, freshHash);
+                }
+                // freshHash 为空或跟 hash 相同：分片本来就是最新的，entry 就是真 404，
+                // 不必再试第三次——上面这一次 res 仍是 404，走到下面统一报错分支。
+            }
+
             if (res.status === 404) {
                 reportError({ kind: 'fetch', message: `entry 不存在 (404)`, resource: canonicalId, status: 404 });
                 return null;

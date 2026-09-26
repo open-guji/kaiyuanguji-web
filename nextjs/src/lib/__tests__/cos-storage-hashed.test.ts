@@ -190,6 +190,68 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         expect(reportError).toHaveBeenCalledWith(expect.objectContaining({ status: 404, resource: BOOK_ID_A }));
     });
 
+    it('hashed：分片过期指向已不存在的旧哈希，entry 404 → 清缓存重取分片后成功', async () => {
+        // 模拟场景（协调者验收第二轮 item 3）：页面内存里的分片缓存是旧的，
+        // 指向的 hash 对应的 entry 文件已经不在（无论是因为 sync 端保留期外
+        // 被清掉，还是分片本身滞后于 entry 的实际最新状态），第一次按旧 hash
+        // 取 entry 会 404；加固逻辑应当清掉分片缓存、重新解析出新 hash，再取一次。
+        const staleHash = 'aaaaaaaa';
+        const freshHash = 'bbbbbbbb';
+        let shardFetchCount = 0;
+        let currentShardHash = staleHash; // 第一次 fetch 分片时返回旧值，之后返回新值
+
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
+            if (url.endsWith('/h1/manifest-root.json')) {
+                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
+            }
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) {
+                shardFetchCount++;
+                const hashToReturn = currentShardHash;
+                currentShardHash = freshHash; // 下一次（重取）返回新值，模拟分片已经更新
+                return jsonResponse({ [BOOK_ID_A]: hashToReturn });
+            }
+            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${staleHash}.json`)) {
+                return jsonResponse({}, false, 404);
+            }
+            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${freshHash}.json`)) {
+                return jsonResponse({ id: BOOK_ID_A, title: '甲书（新版）' });
+            }
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        const item = await storage.getItem(BOOK_ID_A);
+
+        expect(item).toMatchObject({ title: '甲书（新版）' });
+        expect(shardFetchCount).toBe(2); // 第一次拿旧值，404 后清缓存重取一次拿到新值
+    });
+
+    it('hashed：分片过期但重取后 hash 未变（entry 就是真 404）→ 不再重试，返回 null', async () => {
+        const hash = 'aaaaaaaa';
+        let shardFetchCount = 0;
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
+            if (url.endsWith('/h1/manifest-root.json')) {
+                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
+            }
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) {
+                shardFetchCount++;
+                return jsonResponse({ [BOOK_ID_A]: hash }); // 重取也还是同一个 hash
+            }
+            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${hash}.json`)) return jsonResponse({}, false, 404);
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        const item = await storage.getItem(BOOK_ID_A);
+
+        expect(item).toBeNull();
+        expect(shardFetchCount).toBe(2); // 确实重取了一次，但 hash 没变就不再多打一次 entry 请求
+    });
+
     it('两条路径对同一份原始 detail 字节，拼出完全相同的 getEntry 结果（内容逐字一致）', async () => {
         const rawDetail = {
             id: WORK_ID, title: '尚書正義', author: '孔穎達', dynasty: '唐',
