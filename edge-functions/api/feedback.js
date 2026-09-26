@@ -7,14 +7,20 @@
 //                        **公开读剔除**：已隐藏的（visibility=hidden）、测试数据（test=true）、
 //                        以及 contact 字段（读者留的联系方式，只给站方看）。
 //                        带管理凭证（token 或成员 cookie）读时返回全量、原样（/admin/feedback 用）。
-//   POST action:'update' 与 PATCH（改状态／写回复）
-//                        **必须带 FEEDBACK_ADMIN_TOKEN**，见 checkAdminAuth
+//   POST action:'update' 与 PATCH（改状态／类型／可见性／写回复／标重复）
+//                        **必须带 FEEDBACK_ADMIN_TOKEN 或成员 cookie**，见 checkAdminAuth／checkMemberCookie。
+//                        写入记 updatedBy（token 鉴权记 'token'，成员 cookie 记成员邮箱）
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
 //   - KV namespace 绑定为全局变量  FEEDBACK_KV
 //   - 环境变量  FEEDBACK_MODE       "kv"（默认）| "github"
 //   - 环境变量  GITHUB_TOKEN        FEEDBACK_MODE=github 时转发用
 //   - 环境变量  FEEDBACK_ADMIN_TOKEN  管理侧鉴权。**没配就一律拒绝（503）**
+//   - 环境变量  HEALTH_NOTIFY_WEBHOOK／HEALTH_NOTIFY_FORMAT（19 卡已有）
+//                        新反馈推送用；未配置时静默跳过，不影响提交（G-23 第二批 §一·8）
+//
+// type 白名单：bug｜resource｜suggestion｜contact｜other（contact＝想参与/联系我们，永远不公开）
+// status 白名单：pending｜in_progress｜resolved｜wontfix｜duplicate（duplicate 时应带 duplicateOf）
 
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
@@ -37,6 +43,61 @@ function generateId() {
   const ts = Date.now();
   const rand = Math.random().toString(36).slice(2, 6);
   return `fb_${ts}_${rand}`;
+}
+
+// G-23 第二批 §一·6：类型与状态白名单。旧记录/旧前端只认 type=bug|resource、
+// status=pending|resolved——这里只是放开新值，不改旧值的含义，向后兼容。
+const ALLOWED_TYPES = ['bug', 'resource', 'suggestion', 'contact', 'other'];
+const ALLOWED_STATUSES = ['pending', 'in_progress', 'resolved', 'wontfix', 'duplicate'];
+const TYPE_LABEL_ZH = {
+  bug: '错误反馈', resource: '资源建议', suggestion: '功能建议', contact: '想参与/联系我们', other: '其他',
+};
+
+// --- G-23 第二批 §一·8：新反馈推送 ---
+
+function getNotifyWebhook(context) {
+  if (context && context.env && context.env.HEALTH_NOTIFY_WEBHOOK) return context.env.HEALTH_NOTIFY_WEBHOOK;
+  return (typeof HEALTH_NOTIFY_WEBHOOK !== 'undefined') ? HEALTH_NOTIFY_WEBHOOK : null;
+}
+function getNotifyFormat(context) {
+  const v = (context && context.env && context.env.HEALTH_NOTIFY_FORMAT)
+    || (typeof HEALTH_NOTIFY_FORMAT !== 'undefined' ? HEALTH_NOTIFY_FORMAT : undefined);
+  return ['feishu', 'dingtalk', 'slack'].includes(v) ? v : 'generic';
+}
+function buildNotifyPayload(format, text) {
+  if (format === 'feishu') return { msg_type: 'text', content: { text } };
+  if (format === 'dingtalk') return { msgtype: 'text', text: { content: text } };
+  return { text }; // slack 与 generic 同构（{"text":...}）
+}
+
+/**
+ * 新反馈推送到 19 卡已有的 HEALTH_NOTIFY_WEBHOOK。**失败不影响提交结果**——
+ * 调用方（onRequestPost）用 waitUntil／fire-and-forget 触发，本函数内部吞掉所有异常。
+ * 蜜罐（第三批，本卡不做）：一旦按 3.3 实现，蜜罐命中的请求根本不会走到 kvPost 成功，
+ * 本函数也就不会被调用——不需要额外代码。
+ */
+async function notifyNewFeedback(context, record) {
+  if (record.test === true) return; // 测试数据不推
+  const webhook = getNotifyWebhook(context);
+  if (!webhook) return; // 未配置：静默跳过，不算失败
+  const label = TYPE_LABEL_ZH[record.type] || record.type;
+  const preview = (record.content || '').slice(0, 40);
+  const text = `新反馈：${label} ${preview} → /admin/feedback`;
+  const payload = buildNotifyPayload(getNotifyFormat(context), text);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    console.error('反馈 webhook 推送失败（不影响提交结果）:', e);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // 存储模式：环境变量 FEEDBACK_MODE = "kv" | "github"，默认 "kv"
@@ -145,7 +206,7 @@ async function checkMemberCookie(request, context, allowedRoles) {
   try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
   if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
-  return member;
+  return { ...member, email: payload.sub };
 }
 
 function getGithubToken(context) {
@@ -169,18 +230,27 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
   };
   if (contact) record.contact = contact;
   if (test) record.test = true;
+  // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
+  // 双保险，这里顺手把 visibility 也标成 hidden，admin 列表上看得出「已隐藏」
+  if (type === 'contact') record.visibility = 'hidden';
   await kv.put(id, JSON.stringify(record));
   return { id };
 }
 
 /**
  * 公开读要剔除的记录与字段（见文件头）。旧记录没有 visibility 字段，按公开处理。
+ * type==='contact'（想参与/联系我们）永远不公开——这是唯一判据，不依赖 visibility
+ * 是否被正确设置（哪怕将来某处代码手滑把它设成了 public，这里仍然拦得住）。
  */
 function isPubliclyVisible(rec) {
-  return rec && rec.visibility !== 'hidden' && rec.test !== true;
+  return rec && rec.visibility !== 'hidden' && rec.test !== true && rec.type !== 'contact';
 }
+/**
+ * 公开读剔除 contact（读者联系方式）与 updatedBy（G-23 第二批新加——是成员邮箱或
+ * 'token'，公开返回会把处置反馈的站方成员邮箱泄露出去，不能带出去）。
+ */
 function toPublic(rec) {
-  const { contact, ...rest } = rec; // eslint-disable-line no-unused-vars
+  const { contact, updatedBy, ...rest } = rec; // eslint-disable-line no-unused-vars
   return rest;
 }
 
@@ -302,14 +372,24 @@ async function githubGet(ghToken, limit) {
 
 // --- KV PATCH ---
 
-async function kvPatch(kv, id, status, reply, visibility, test) {
+/**
+ * @param {{status?, reply?, visibility?, test?, type?, duplicateOf?, updatedBy?}} patch
+ *   调用方已按 ALLOWED_STATUSES／ALLOWED_TYPES／['public','hidden'] 校验过合法值。
+ */
+async function kvPatch(kv, id, patch) {
   const record = await kv.get(id, 'json');
   if (!record) return null;
-  if (status) record.status = status;
-  if (reply !== undefined) record.reply = reply;
-  if (visibility) record.visibility = visibility;
-  if (test !== undefined) record.test = test === true;
+  if (patch.status) record.status = patch.status;
+  if (patch.reply !== undefined) record.reply = patch.reply;
+  if (patch.visibility) record.visibility = patch.visibility;
+  if (patch.test !== undefined) record.test = patch.test === true;
+  if (patch.type) record.type = patch.type;
+  if (patch.duplicateOf) record.duplicateOf = patch.duplicateOf;
+  // contact 类型永远不公开：改成 contact 类型时顺手把 visibility 拨回 hidden
+  // （公开读的真正拦截点是 isPubliclyVisible 的 type 判断，这里只是让 admin 显示一致）
+  if (record.type === 'contact') record.visibility = 'hidden';
   record.updatedAt = new Date().toISOString();
+  if (patch.updatedBy) record.updatedBy = patch.updatedBy;
   await kv.put(id, JSON.stringify(record));
   return record;
 }
@@ -322,25 +402,26 @@ export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
 
-    // action: "update" → 更新反馈状态/回复（替代 PATCH，双轨：token 或 member cookie）
+    // action: "update" → 更新反馈状态/回复/类型/可见性（替代 PATCH，双轨：token 或 member cookie）
     if (body.action === 'update') {
       let auth = checkAdminAuth(body.token, context);
+      let updatedBy = 'token';
       if (!auth.ok) {
         const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
-        if (member) auth = { ok: true };
+        if (member) { auth = { ok: true }; updatedBy = member.email; }
       }
       if (!auth.ok) {
         return new Response(JSON.stringify({ success: false, error: auth.error }), {
           status: auth.status, headers,
         });
       }
-      const { id, status, reply, visibility, test } = body;
+      const { id, status, reply, visibility, test, type, duplicateOf } = body;
       if (!id || !id.startsWith('fb_')) {
         return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
           status: 400, headers,
         });
       }
-      if (status && !['pending', 'resolved'].includes(status)) {
+      if (status && !ALLOWED_STATUSES.includes(status)) {
         return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
           status: 400, headers,
         });
@@ -355,13 +436,31 @@ export async function onRequestPost(context) {
           status: 400, headers,
         });
       }
+      if (type !== undefined && !ALLOWED_TYPES.includes(type)) {
+        return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
+          status: 400, headers,
+        });
+      }
+      if (duplicateOf !== undefined && (typeof duplicateOf !== 'string' || !duplicateOf.startsWith('fb_'))) {
+        return new Response(JSON.stringify({ success: false, error: '无效的重复目标 ID' }), {
+          status: 400, headers,
+        });
+      }
       const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
           status: 500, headers,
         });
       }
-      const updated = await kvPatch(kv, id, status, reply, visibility, test);
+      if (duplicateOf !== undefined) {
+        const target = await kv.get(duplicateOf, 'json');
+        if (!target) {
+          return new Response(JSON.stringify({ success: false, error: '目标反馈不存在' }), {
+            status: 400, headers,
+          });
+        }
+      }
+      const updated = await kvPatch(kv, id, { status, reply, visibility, test, type, duplicateOf, updatedBy });
       if (!updated) {
         return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
           status: 404, headers,
@@ -381,7 +480,7 @@ export async function onRequestPost(context) {
     const origin = context.request.headers.get('origin') || '';
     const test = body.test === true || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-    if (!['bug', 'resource'].includes(type)) {
+    if (!ALLOWED_TYPES.includes(type)) {
       return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
         status: 400, headers,
       });
@@ -416,6 +515,14 @@ export async function onRequestPost(context) {
         });
       }
       result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test);
+      // G-23 第二批 §一·8：新反馈推送，不阻塞提交响应，失败不影响提交结果
+      const notifyPromise = notifyNewFeedback(context, { type, content, test });
+      if (context && typeof context.waitUntil === 'function') {
+        context.waitUntil(notifyPromise);
+      } else {
+        // EdgeOne 不支持 waitUntil 时退化为 fire-and-forget（notifyNewFeedback 内部已吞异常）
+        notifyPromise.catch(() => {});
+      }
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
@@ -505,7 +612,7 @@ export async function onRequestPatch(context) {
     }
 
     const { status, reply } = await context.request.json();
-    if (status && !['pending', 'resolved'].includes(status)) {
+    if (status && !ALLOWED_STATUSES.includes(status)) {
       return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
         status: 400, headers,
       });
@@ -518,7 +625,7 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const updated = await kvPatch(kv, id, status, reply);
+    const updated = await kvPatch(kv, id, { status, reply, updatedBy: 'token' });
     if (!updated) {
       return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
         status: 404, headers,
