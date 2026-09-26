@@ -10,6 +10,7 @@ const items = [
   { href: '/admin/feedback', label: '反馈' },
   { href: '/admin/servers', label: '服务器' },
   { href: '/admin/traffic', label: '流量' },
+  { href: '/admin/private-text', label: '私有文本' },
 ];
 
 export default function AdminNav() {
