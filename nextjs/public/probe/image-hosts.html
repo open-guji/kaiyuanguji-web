@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>图床测速</title>
+<style>
+  :root { --bg:#fff; --fg:#222; --muted:#777; --ok:#1a7f37; --bad:#c62828; --line:#e5e5e5; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --fg:#e8e8e8; --muted:#999; --ok:#57c27a; --bad:#ff7b72; --line:#333; } }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:15px/1.6 system-ui, -apple-system, "PingFang SC", sans-serif; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p { margin:4px 0 12px; color:var(--muted); font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:6px 4px; border-bottom:1px solid var(--line); vertical-align:top; }
+  td.num { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); }
+  button { font-size:15px; padding:8px 16px; margin:12px 8px 0 0; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--fg); }
+  #env { font-size:12px; color:var(--muted); margin-top:12px; word-break:break-all; }
+</style>
+</head>
+<body>
+<h1>图床测速</h1>
+<p>开源古籍内部用：测各图床在你当前网络（家里宽带／手机流量）下能不能打开、要多久。每个地址测 3 次，单次最多等 15 秒。测完点「复制结果」发给网站总管。</p>
+<table>
+  <thead><tr><th>地址</th><th class="num">成功</th><th class="num">中位耗时</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<button id="start">开始测速</button><button id="copy" disabled>复制结果</button>
+<div id="env"></div>
+<script>
+// 每项取一个真实的图片／小文件；用 no-cors fetch：能拿到响应即算「通」，网络层失败或超时算「不通」。
+var TARGETS = [
+  ['本站页面（EdgeOne）', 'https://www.kaiyuanguji.com/probe/image-hosts.html'],
+  ['本站数据（COS 新加坡）', 'https://data.kaiyuanguji.com/latest.json'],
+  ['Hugging Face 原站 430KB', 'https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/Llama%20Guard%204.png'],
+  ['HF 镜像 hf-mirror', 'https://hf-mirror.com/datasets/huggingface/documentation-images/resolve/main/Llama%20Guard%204.png'],
+  ['维基共享资源缩略图 274KB', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Siku_Quanshu-%E8%B7%AF%E5%8F%B2-12-18.pdf/page5-960px-Siku_Quanshu-%E8%B7%AF%E5%8F%B2-12-18.pdf.jpg'],
+  ['Internet Archive 扫描页 840KB', 'https://archive.org/download/06053903.cn/page/n5.jpg'],
+  ['jsDelivr（GitHub 文件）', 'https://cdn.jsdelivr.net/gh/open-guji/book-index@main/README.md'],
+  ['GitHub raw', 'https://raw.githubusercontent.com/open-guji/book-index/main/README.md']
+];
+var ROUNDS = 3, TIMEOUT = 15000, results = [];
+var rows = document.getElementById('rows');
+TARGETS.forEach(function (t, i) {
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + t[0] + '</td><td class="num" id="s' + i + '">—</td><td class="num" id="m' + i + '">—</td>';
+  rows.appendChild(tr);
+});
+function once(url) {
+  var ctl = new AbortController(), t0 = performance.now();
+  var timer = setTimeout(function () { ctl.abort(); }, TIMEOUT);
+  var sep = url.indexOf('?') < 0 ? '?' : '&';
+  return fetch(url + sep + 'cb=' + Date.now() + Math.random(), { mode: 'no-cors', cache: 'no-store', signal: ctl.signal })
+    .then(function (r) { return r.blob().catch(function () {}).then(function () { return performance.now() - t0; }); })
+    .catch(function () { return null; })
+    .finally(function () { clearTimeout(timer); });
+}
+function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s.length ? s[Math.floor((s.length - 1) / 2)] : null; }
+async function run() {
+  document.getElementById('start').disabled = true; results = [];
+  for (var i = 0; i < TARGETS.length; i++) {
+    var ok = [];
+    for (var k = 0; k < ROUNDS; k++) {
+      document.getElementById('s' + i).textContent = '测第 ' + (k + 1) + ' 次…';
+      var ms = await once(TARGETS[i][1]);
+      if (ms !== null) ok.push(ms);
+    }
+    var med = median(ok);
+    var s = document.getElementById('s' + i), m = document.getElementById('m' + i);
+    s.textContent = ok.length + '/' + ROUNDS; s.className = 'num ' + (ok.length ? 'ok' : 'bad');
+    m.textContent = med === null ? '不通' : (med / 1000).toFixed(2) + ' 秒'; m.className = 'num ' + (med === null ? 'bad' : '');
+    results.push(TARGETS[i][0] + '\t' + ok.length + '/' + ROUNDS + '\t' + (med === null ? '不通' : (med / 1000).toFixed(2) + 's'));
+  }
+  document.getElementById('start').disabled = false; document.getElementById('copy').disabled = false;
+}
+var c = navigator.connection || {};
+var env = new Date().toISOString() + ' | 网络类型：' + (c.effectiveType || '未知') + (c.type ? '/' + c.type : '') + ' | ' + navigator.userAgent;
+document.getElementById('env').textContent = env;
+document.getElementById('start').onclick = run;
+document.getElementById('copy').onclick = function () {
+  var text = '图床测速\n' + env + '\n' + results.join('\n');
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+    function () { alert('已复制'); },
+    function () { prompt('复制下面这段：', text); });
+};
+</script>
+</body>
+</html>
