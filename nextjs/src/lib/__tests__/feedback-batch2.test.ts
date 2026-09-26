@@ -50,6 +50,7 @@ beforeEach(() => store.clear());
 afterEach(() => {
     delete g.FEEDBACK_ADMIN_TOKEN;
     delete g.HEALTH_NOTIFY_WEBHOOK;
+    delete g.HEALTH_NOTIFY_FORMAT;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (global as any).fetch;
 });
@@ -170,6 +171,29 @@ describe('新反馈推送（G-23 第二批 §一·8）', () => {
         expect((global as unknown as { fetch: jest.Mock }).fetch).toHaveBeenCalledTimes(1);
         expect(sentBody).toContain('错误反馈');
         expect(sentBody).toContain('/admin/feedback');
+    });
+
+    it.each([
+        ['裸 token', 'tok_abc123'],
+        ['含 token= 的 URL', 'https://www.pushplus.plus/send?token=tok_abc123'],
+    ])('pushplus（%s）：发往固定端点，token 放 body，带标题', async (_label, value) => {
+        g.HEALTH_NOTIFY_WEBHOOK = value;
+        g.HEALTH_NOTIFY_FORMAT = 'pushplus';
+        let sentUrl = '';
+        let sent: Record<string, unknown> = {};
+        mockFetch((url, init) => {
+            sentUrl = String(url);
+            sent = JSON.parse(String(init.body));
+            return new Response('{"code":200}', { status: 200 });
+        });
+        const res = await fn.onRequestPost(post({ type: 'suggestion', content: '希望加上按朝代筛选' }));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(res.status).toBe(200);
+        expect(sentUrl).toBe('https://www.pushplus.plus/send');
+        expect(sent.token).toBe('tok_abc123');
+        expect(sent.title).toBe('新反馈：功能建议');
+        expect(String(sent.content)).toContain('希望加上按朝代筛选');
+        expect(sent.template).toBe('txt');
     });
 
     it('webhook 超时/网络错误：不影响提交返回 200', async () => {
