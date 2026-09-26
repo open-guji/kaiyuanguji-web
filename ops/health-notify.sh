@@ -14,8 +14,16 @@ if [ -z "$WEBHOOK" ]; then
   exit 0
 fi
 
-# 显式格式：generic（通用 {"text":...}）| feishu | dingtalk | slack
+# 显式格式：generic（通用 {"text":...}）| feishu | dingtalk | slack | pushplus
 FORMAT="${HEALTH_NOTIFY_FORMAT:-generic}"
+
+# pushplus（推到个人微信）：HEALTH_NOTIFY_WEBHOOK 填 token 本身或含 token= 的 URL，
+# 发往固定端点、token 放 body（与 edge-functions/api/feedback.js 同口径）
+PUSHPLUS_TOKEN=""
+if [ "$FORMAT" = "pushplus" ]; then
+  if [[ "$WEBHOOK" =~ [?\&]token=([^\&]+) ]]; then PUSHPLUS_TOKEN="${BASH_REMATCH[1]}"; else PUSHPLUS_TOKEN="$(echo "$WEBHOOK" | tr -d '[:space:]')"; fi
+  WEBHOOK="https://www.pushplus.plus/send"
+fi
 
 REPORT="${REPORT:-（无报告）}"
 RUN_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-open-guji/kaiyuanguji-web}/actions/runs/${GITHUB_RUN_ID:-unknown}"
@@ -35,12 +43,14 @@ build_payload() {
       feishu)   jq -n --arg t "$text" '{msg_type:"text",content:{text:$t}}' ;;
       dingtalk) jq -n --arg t "$text" '{msgtype:"text",text:{content:$t}}' ;;
       slack)    jq -n --arg t "$text" '{text:$t}' ;;
+      pushplus) jq -n --arg t "$text" --arg k "$PUSHPLUS_TOKEN" --arg h "$title" '{token:$k,title:$h,content:$t,template:"txt"}' ;;
       *)        jq -n --arg t "$text" '{text:$t}' ;;
     esac
   else
     case "$fmt" in
       feishu)   python3 -c 'import json,sys; print(json.dumps({"msg_type":"text","content":{"text": sys.argv[1]}}))' "$text" ;;
       dingtalk) python3 -c 'import json,sys; print(json.dumps({"msgtype":"text","text":{"content": sys.argv[1]}}))' "$text" ;;
+      pushplus) python3 -c 'import json,sys; print(json.dumps({"token":sys.argv[2],"title":sys.argv[3],"content":sys.argv[1],"template":"txt"}))' "$text" "$PUSHPLUS_TOKEN" "$title" ;;
       *)        python3 -c 'import json,sys; print(json.dumps({"text": sys.argv[1]}))' "$text" ;;
     esac
   fi
@@ -82,6 +92,13 @@ elif [ "$FORMAT" = "dingtalk" ]; then
     echo "已推送到钉钉 webhook（HTTP $http_code）"
   else
     echo "::warning::钉钉推送 HTTP $http_code 但 errcode 非 0（body: $body），请检查 webhook 类型"
+  fi
+elif [ "$FORMAT" = "pushplus" ]; then
+  # PushPlus 成功为 "code":200（905 等为失败，如未实名）
+  if echo "$body" | grep -qE '"code"[[:space:]]*:[[:space:]]*200[[:space:]]*[,}]'; then
+    echo "已推送到 PushPlus（HTTP $http_code）"
+  else
+    echo "::warning::PushPlus 推送 HTTP $http_code 但业务码非 200（body: $body）"
   fi
 elif echo "$body" | grep -qE '"(code|errcode|StatusCode)"[[:space:]]*:[[:space:]]*-?[1-9]'; then
   # generic 发到飞书/钉钉等会返回 HTTP 200 + 非 0 业务码：说明格式配错了，不能算成功

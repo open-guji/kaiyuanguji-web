@@ -62,7 +62,25 @@ function getNotifyWebhook(context) {
 function getNotifyFormat(context) {
   const v = (context && context.env && context.env.HEALTH_NOTIFY_FORMAT)
     || (typeof HEALTH_NOTIFY_FORMAT !== 'undefined' ? HEALTH_NOTIFY_FORMAT : undefined);
-  return ['feishu', 'dingtalk', 'slack'].includes(v) ? v : 'generic';
+  return ['feishu', 'dingtalk', 'slack', 'pushplus'].includes(v) ? v : 'generic';
+}
+
+// PushPlus（推到个人微信）：HEALTH_NOTIFY_WEBHOOK 填 token 本身，或含 `token=` 的 URL；
+// 发往固定端点，token 放 body。其余格式 HEALTH_NOTIFY_WEBHOOK 是 webhook 地址本身。
+const PUSHPLUS_ENDPOINT = 'https://www.pushplus.plus/send';
+function pushplusToken(webhook) {
+  const m = /[?&]token=([^&]+)/.exec(webhook);
+  return m ? decodeURIComponent(m[1]) : webhook.trim();
+}
+/** 返回 { url, payload }：推送的目标地址与请求体。 */
+function buildNotifyRequest(format, webhook, title, text) {
+  if (format === 'pushplus') {
+    return {
+      url: PUSHPLUS_ENDPOINT,
+      payload: { token: pushplusToken(webhook), title, content: text, template: 'txt' },
+    };
+  }
+  return { url: webhook, payload: buildNotifyPayload(format, text) };
 }
 function buildNotifyPayload(format, text) {
   if (format === 'feishu') return { msg_type: 'text', content: { text } };
@@ -83,11 +101,11 @@ async function notifyNewFeedback(context, record) {
   const label = TYPE_LABEL_ZH[record.type] || record.type;
   const preview = (record.content || '').slice(0, 40);
   const text = `新反馈：${label} ${preview} → /admin/feedback`;
-  const payload = buildNotifyPayload(getNotifyFormat(context), text);
+  const { url, payload } = buildNotifyRequest(getNotifyFormat(context), webhook, `新反馈：${label}`, text);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    await fetch(webhook, {
+    await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
