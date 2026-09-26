@@ -174,6 +174,36 @@ jobs:
           cd nextjs
           node scripts/sync-to-cos.mjs
 
+      # --- A3 第一期：条目按内容哈希寻址，双写到同一个桶的新前缀 h1/ ---
+      #
+      # 与上面 current/ 那条链路完全并行、互不影响：读的是同一份 public/data/entry/
+      # （上面 bundle-data.mjs 已产出），写到 h1/ 前缀，不覆盖、不清理 current/ 或
+      # v/ 下的任何对象。前端默认（NEXT_PUBLIC_DATA_LAYOUT 不设或非 'hashed'）
+      # 完全不读 h1/，这两步等于是「先把新布局在生产桶里跑通，但没人在用」。
+      #
+      # continue-on-error：新脚本还在验证阶段，一旦有 bug 也绝不能拖累 current/
+      # 已经成功的发布——真实读者当下依赖的是 current/，不是 h1/。
+      - name: Bundle hashed (h1) data — dual-write, parallel to current/ (A3 第一期)
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+        working-directory: nextjs
+        run: node scripts/bundle-hashed.mjs
+
+      - name: Sync hashed (h1) data to Tencent COS — dual-write, parallel to current/ (A3 第一期)
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+        run: |
+          cd nextjs
+          node scripts/sync-h1-to-cos.mjs
+
       - name: Build for EdgeOne
         env:
           # 必须为空：NEXT_PUBLIC_MODE=local 会让 next.config.ts 关掉 output:'export'，

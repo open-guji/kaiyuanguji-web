@@ -50,6 +50,9 @@ next-env.d.ts
 /public/data/
 /public/latest.json
 
+# 哈希寻址 h1 布局（生成自 scripts/bundle-hashed.mjs，A3 第一期）
+/public/data-h1/
+
 # Phase 5 Pagefind 评估期的测试 HTML（不打包进生产）
 /public/pagefind-test.html
 /public/pagefind-fulltext-test.html
