@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1ea","type":"entity","subtype":"people","primary_name":"劉奇","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《玄微秘要》(d59f6eppp4ow) 之舊邊——現查該書 authors[] 已無「劉奇」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/e/a/hixho5puw1ea-劉奇.json","_isDraft":false}

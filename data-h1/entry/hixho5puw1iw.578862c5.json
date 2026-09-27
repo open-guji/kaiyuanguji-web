@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1iw","type":"entity","subtype":"people","primary_name":"蘇志臯","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《益智錄兵類》(d59f6emrkg05)、《寒村集》(d59f6enneneu)、《抱罕集》(d59f6eo999fk) 之舊邊——現查該書 authors[] 已無「蘇志臯」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/i/w/hixho5puw1iw-蘇志臯.json","_isDraft":false}

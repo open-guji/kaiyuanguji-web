@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1iu","type":"entity","subtype":"people","primary_name":"薛誠","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《蒼梧志》(d59f6esg0vsw) 之舊邊——現查該書 authors[] 已無「薛誠」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/i/u/hixho5puw1iu-薛誠.json","_isDraft":false}

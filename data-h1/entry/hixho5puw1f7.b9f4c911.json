@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1f7","type":"entity","subtype":"people","primary_name":"孫良","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《九野稿》(d59f6elgflz9) 之舊邊——現查該書 authors[] 已無「孫良」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/f/7/hixho5puw1f7-孫良.json","_isDraft":false}

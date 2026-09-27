@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1hl","type":"entity","subtype":"people","primary_name":"潘景","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《黄海紀遊》(d59f6eqg8av8)、《三呉襍志》(d59f6efc22h2) 之舊邊——現查該書 authors[] 已無「潘景」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/h/l/hixho5puw1hl-潘景.json","_isDraft":false}

@@ -1,1 +1,0 @@
-{"type":"entity","subtype":"people","primary_name":"周祚","works":[{"work_id":"d59f2q7cqvi8","role":"撰"}],"ai_note":"2026-09-04 \"坑32\"批次修復：據《周祚集》書名體例新建（別集類「人名+集」）。本條 period=ming，庫中同名 entity `hixhgyrw4vcq` 出《千頃堂書目》（period_upper=qing，明末山陰人周祚），代次雖近而無旁證可判同一人；依同名異代校驗另立獨立 entity。","id":"hixhinc8r668","_path":"Entity/6/6/8/hixhinc8r668-周祚.json","_isDraft":false}

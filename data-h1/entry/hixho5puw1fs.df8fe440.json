@@ -1,1 +1,0 @@
-{"schema_version":1,"id":"hixho5puw1fs","type":"entity","subtype":"people","primary_name":"徐守","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《聖矩叅正》(d59f6ejnthj6)、《音韻啟鑰》(d59f6efo8bnn)、《易象吉占》(d59f6enq7saw) 之舊邊——現查該書 authors[] 已無「徐守」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/f/s/hixho5puw1fs-徐守.json","_isDraft":false}
