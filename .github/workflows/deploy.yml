@@ -8,7 +8,20 @@ on:
   repository_dispatch:
     types: [ data-updated ]
   # 手动触发（Actions 页面 Run workflow 按钮 / API）
+  # T1（2026-09-27）：target=staging 重建测试站（默认）；target=production 是
+  # 人手动 promote——把测试站验过的版本（或仅数据）打到正式站。
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'staging = 重建测试站；production = 把测试站验过的版本手动 promote 到正式站'
+        type: choice
+        options: [staging, production]
+        default: staging
+      promote:
+        description: '仅 target=production 有效。code+data = 测试站的代码与数据一起上正式站；data = 正式站代码不动，只换数据'
+        type: choice
+        options: [code+data, data]
+        default: code+data
   # 每日定时兜底：book-index-draft 的 notify-web webhook 依赖跨仓 PAT
   # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
   # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
@@ -18,16 +31,20 @@ on:
 
 permissions:
   contents: write
+  actions: write   # T1：数据自动 promote 时由 verify job 触发本 workflow（workflow_dispatch）
 
 # 同一时间只允许一个部署在跑；连续 push 时取消旧的排队任务，
 # 避免两个 job 争抢 edgeone-release 分支导致部署乱序。
+# T1：测试站与正式站各排各的队，互不阻塞。
 concurrency:
-  group: deploy-edgeone
+  group: deploy-edgeone-${{ inputs.target || 'staging' }}
   cancel-in-progress: false
 
 jobs:
-  # 定时触发时先比对数据仓 HEAD 与线上 latest.json，没变化就跳过整个构建。
+  # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过整个构建。
   # push / dispatch / 手动触发一律直接部署。
+  # 注：这里的比对口径不随 T1 改变——仍然只问「正式站」是否已是最新数据，
+  # 测试站配置齐不齐、这次要不要先落测试站，交给 resolve job 决定。
   check:
     runs-on: ubuntu-latest
     outputs:
@@ -64,12 +81,77 @@ jobs:
             echo "· 数据有更新（或无法确认），执行部署"
           fi
 
-  build:
+  # T1：定这次发往哪个站、用哪一版代码、哪一版数据。三种 mode——
+  #   staging ：测试站配置齐、且不是手动 promote。代码=触发的 commit，数据=三仓 HEAD
+  #   fallback：EDGEONE_API_TOKEN 缺（测试站没配好）。整段跳过测试站，
+  #             代码/数据取法与 T1 改造前完全一致，直接部署正式站——不许被测试站配置卡住
+  #   promote ：workflow_dispatch target=production，人手动按的。
+  #             数据=测试站 staging/latest.json 里记下的三仓 commit（钉死，不取 HEAD）；
+  #             代码 = code+data 时取测试站记下的 webCommitId，data 时取正式站现有 webCommitId
+  resolve:
     runs-on: ubuntu-latest
     needs: check
     if: ${{ needs.check.outputs.should_deploy == 'true' }}
+    outputs:
+      target: ${{ steps.r.outputs.target }}
+      mode: ${{ steps.r.outputs.mode }}
+      web_ref: ${{ steps.r.outputs.web_ref }}
+      draft_ref: ${{ steps.r.outputs.draft_ref }}
+      prod_ref: ${{ steps.r.outputs.prod_ref }}
+      text_ref: ${{ steps.r.outputs.text_ref }}
+    steps:
+      - id: r
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          REQ="${{ inputs.target || 'staging' }}"
+
+          if [ "$REQ" = "production" ]; then
+            echo "mode=promote" >> "$GITHUB_OUTPUT"
+            echo "target=production" >> "$GITHUB_OUTPUT"
+            S=$(curl -sf https://data.kaiyuanguji.com/staging/latest.json)
+            P=$(curl -sf https://data.kaiyuanguji.com/latest.json || echo '{}')
+            get() { echo "$1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$2',''))"; }
+            if [ "${{ inputs.promote }}" = data ]; then WEB=$(get "$P" webCommitId); else WEB=$(get "$S" webCommitId); fi
+            if [ -z "$WEB" ]; then
+              echo "❌ 指针里没有 webCommitId（首次 promote 请用 code+data，且需先有一次成功的测试站部署）"
+              exit 1
+            fi
+            echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
+            echo "draft_ref=$(get "$S" fullCommitId)" >> "$GITHUB_OUTPUT"
+            echo "prod_ref=$(get "$S" productionCommitId)" >> "$GITHUB_OUTPUT"
+            echo "text_ref=$(get "$S" textCommitId)" >> "$GITHUB_OUTPUT"
+            echo "· promote(${{ inputs.promote }})：web=$WEB 数据=测试站所记三仓 commit"
+            exit 0
+          fi
+
+          if [ -z "$EDGEONE_API_TOKEN" ]; then
+            echo "mode=fallback" >> "$GITHUB_OUTPUT"
+            echo "target=production" >> "$GITHUB_OUTPUT"
+            echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            for k in draft_ref prod_ref text_ref; do echo "$k=main" >> "$GITHUB_OUTPUT"; done
+            echo "· EDGEONE_API_TOKEN 未配置：测试站整段跳过，正式站照旧直接发布（与 T1 改造前行为一致）"
+            exit 0
+          fi
+
+          echo "mode=staging" >> "$GITHUB_OUTPUT"
+          echo "target=staging" >> "$GITHUB_OUTPUT"
+          echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          for k in draft_ref prod_ref text_ref; do echo "$k=main" >> "$GITHUB_OUTPUT"; done
+          echo "· 部署到测试站 kyg-staging"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: resolve
+    env:
+      DEPLOY_TARGET: ${{ needs.resolve.outputs.target }}
+      DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
+      # 测试站：数据写同桶 staging/ 前缀（current/、v/、h1/、latest.json 全在其下），与正式站互不覆盖
+      COS_PATH_PREFIX: ${{ needs.resolve.outputs.target == 'staging' && 'staging' || '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.web_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -98,12 +180,18 @@ jobs:
       # tombstone，会重定向到 production ID，而该 ID 不在产物里。
       - name: Clone index data repos
         run: |
-          git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
-          git clone --depth 1 https://github.com/open-guji/book-index.git book-index
+          # T1：按 resolve 给的 ref 取（staging/fallback=main；promote=测试站钉下的 commit）
+          fetch_at() {
+            git init -q "$2"
+            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
+            git -C "$2" checkout -q FETCH_HEAD
+          }
+          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_ref }}"
+          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_ref }}"
           # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
           # 构建照样成功——整理本页在站上空白，无人得知。
-          git clone --depth 1 https://github.com/open-guji/book-text.git book-text
+          fetch_at book-text book-text "${{ needs.resolve.outputs.text_ref }}"
 
       # 私有文本仓（P1-私有文本后端，2026-09-26）：内容不进 bundle-data.mjs 的产物、
       # 不进公开 COS 路径，只单独同步到私有前缀（见下面 Sync private text 步骤）。
@@ -123,7 +211,18 @@ jobs:
           BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
-        run: node scripts/bundle-data.mjs
+        run: |
+          node scripts/bundle-data.mjs
+          # T1：指针里记下这次用的网站代码 commit，promote 时据此取同一版代码
+          python3 - <<'PY'
+          import json
+          p = 'public/latest.json'
+          with open(p) as f:
+              d = json.load(f)
+          d['webCommitId'] = '${{ needs.resolve.outputs.web_ref }}'
+          with open(p, 'w') as f:
+              json.dump(d, f)
+          PY
 
       - name: Verify bundled data
         run: |
@@ -201,8 +300,10 @@ jobs:
       # 私有文本单独同步到同桶的私有前缀（ACL: private，逐对象覆盖）——见
       # nextjs/scripts/sync-private-text-to-cos.mjs 文件头。与上一步公开同步
       # 完全独立：任一步缺配置只跳过自己，不互相阻塞。
+      # T1：私有文本只由正式发布同步；测试站的 private-text 函数只读同一私有前缀，
+      # 不需要（也不应该）测试站自己再写一份。
       - name: Sync private text to Tencent COS
-        if: ${{ env.HAS_BOOK_TEXT_PRIVATE == 'true' && env.HAS_COS_SECRETS == 'true' }}
+        if: ${{ env.DEPLOY_TARGET == 'production' && env.HAS_BOOK_TEXT_PRIVATE == 'true' && env.HAS_COS_SECRETS == 'true' }}
         env:
           HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
@@ -281,7 +382,10 @@ jobs:
           # 数据源 = cos：浏览器从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           # 当 COS secrets 缺失时降级回 bundle 模式（数据走 EdgeOne Pages /data/）
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_COS_BASE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+          # T1：驱动 robots 全禁＋页面「测试站」角标＋noindex meta（nextjs/src/lib/constants.ts）
+          NEXT_PUBLIC_SITE_ENV: ${{ env.DEPLOY_TARGET == 'staging' && 'staging' || '' }}
+          NEXT_PUBLIC_SITE_URL: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
@@ -291,13 +395,25 @@ jobs:
           NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
           # 访问统计站点 ID（G-24）：仓库 Settings → Variables 里配 BAIDU_TONGJI_ID / GA_ID。
           # 非机密（本来就写在页面里）；没配则不加载统计脚本。
-          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ vars.BAIDU_TONGJI_ID }}
-          NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
+          # T1：测试站不上报统计，免得把自测流量混进正式站数字
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ env.DEPLOY_TARGET == 'production' && vars.BAIDU_TONGJI_ID || '' }}
+          NEXT_PUBLIC_GA_ID: ${{ env.DEPLOY_TARGET == 'production' && vars.GA_ID || '' }}
         run: |
           cd nextjs
           rm -rf .next out
           export NEXT_PUBLIC_BASE_PATH=""
-          npm run build
+          # T1：Google Fonts 在构建期抓取偶发抖动会导致整个 build 失败——只重试
+          # 这一条命令本身，最多 3 次、每次间隔 20 秒，不重跑前面的克隆/装依赖。
+          n=1
+          until npm run build; do
+            if [ "$n" -ge 3 ]; then
+              echo "❌ npm run build 重试 3 次仍失败"
+              exit 1
+            fi
+            echo "⚠️ npm run build 第 ${n} 次失败，20 秒后重试（下一次 $((n + 1))/3）"
+            sleep 20
+            n=$((n + 1))
+          done
           mkdir -p ../build/edgeone
           cp -r out/* ../build/edgeone/
           # h1 哈希数据（public/data-h1、data-h1-text，约 15 万文件）只走 COS，绝不进 Pages 产物：
@@ -321,22 +437,55 @@ jobs:
             echo "❌ EdgeOne build not using $MODE mode!" && exit 1
           fi
 
+      # T1 判据：测试站产物必须 robots 全禁＋noindex＋角标；正式站产物三者皆无。
+      - name: Verify staging artifacts (robots / noindex / badge)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        run: |
+          grep -qx 'Disallow: /' build/edgeone/robots.txt && echo "✓ robots.txt 全禁" \
+            || { echo "❌ robots.txt 未全禁:"; cat build/edgeone/robots.txt; exit 1; }
+          grep -q 'noindex' build/edgeone/index.html && echo "✓ index.html 含 noindex meta" \
+            || { echo "❌ index.html 缺 noindex meta"; exit 1; }
+          grep -q 'staging-badge' build/edgeone/index.html && echo "✓ 测试站角标已渲染" \
+            || { echo "❌ 角标未出现"; exit 1; }
+
+      - name: Verify production build has no staging artifacts
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
+        run: |
+          if grep -q 'noindex' build/edgeone/index.html; then
+            echo "❌ 正式站产物含 noindex meta，混入了测试站构建" && exit 1
+          fi
+          if grep -q 'staging-badge' build/edgeone/index.html; then
+            echo "❌ 正式站产物含测试站角标" && exit 1
+          fi
+          echo "✓ 正式站产物无测试站痕迹（无 noindex、无角标）"
+
       - name: Copy Edge Functions to EdgeOne build
         run: cp -r edge-functions build/edgeone/edge-functions
 
-      # 闸：Pages 产物文件数异常时直接失败，别让 Pages 静默不发布
+      # 闸：产物文件数异常时直接失败，别让部署静默不生效——测试站（CLI 直接
+      # 上传）与正式站（Pages）共用同一份 build/edgeone，闸不分 target，两边
+      # 都覆盖。
       - name: Guard EdgeOne bundle file count
         run: |
           N=$(find build/edgeone -type f | wc -l)
           echo "EdgeOne bundle file count: $N"
           if [ "$N" -gt 5000 ]; then
-            echo "❌ Pages 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
+            echo "❌ 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
             find build/edgeone -type f | awk -F/ '{print $3}' | sort | uniq -c | sort -rn | head -10
             exit 1
           fi
 
-      # --- 步骤 2：部署到 EdgeOne 分支 ---
+      # --- 步骤 2：部署 ---
+      # 测试站：直接上传型项目 kyg-staging（CLI）。SSR 转正后正式站也改走这条（26 卡步骤 6）
+      - name: Deploy to EdgeOne (staging, direct upload)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          npx -y edgeone@latest makers deploy build/edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
+
       - name: Deploy to EdgeOne Branch
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build/edgeone
@@ -374,17 +523,22 @@ jobs:
           # data.kaiyuanguji.com/latest.json 单独 purge_url（新版本指针，让浏览器
           # 拉到新 commit）；不 purge_host data.kaiyuanguji.com 整站——那 318MB
           # 缓存白丢，回源费贵。
+          # T1：按目标清——测试站清 staging.kaiyuanguji.com 与 staging/latest.json；
+          # 正式站照旧。purge_host 对「未开站点加速」方式绑定的自定义域名是否生效
+          # 待网站总管核实（31 卡 §B.8.6），本步骤先按同一逻辑发出，不影响正式站。
+          staging = os.environ.get('DEPLOY_TARGET') == 'staging'
+
           req_pointer = models.CreatePurgeTaskRequest()
           req_pointer.ZoneId = os.environ['EDGEONE_ZONE_ID']
           req_pointer.Type = 'purge_url'
-          req_pointer.Targets = ['https://data.kaiyuanguji.com/latest.json']
+          req_pointer.Targets = ['https://data.kaiyuanguji.com/staging/latest.json' if staging else 'https://data.kaiyuanguji.com/latest.json']
           resp_pointer = client.CreatePurgeTask(req_pointer)
           print('✅ latest.json purged:', resp_pointer.to_json_string())
 
           req_site = models.CreatePurgeTaskRequest()
           req_site.ZoneId = os.environ['EDGEONE_ZONE_ID']
           req_site.Type = 'purge_host'
-          req_site.Targets = ['kaiyuanguji.com']
+          req_site.Targets = ['staging.kaiyuanguji.com' if staging else 'kaiyuanguji.com']
           resp_site = client.CreatePurgeTask(req_site)
           print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
@@ -396,11 +550,19 @@ jobs:
   # 200。这个 job 断言的是「内容」。
   verify:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [resolve, build]
     # 部署失败就没必要验收了；但 build 被 check 跳过时（数据无变化）也不必跑
     if: needs.build.result == 'success'
+    env:
+      # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
+      TARGET: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+      DATA_BASE: ${{ needs.resolve.outputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
     steps:
+      # e2e 必须和被测站点是同一版代码：promote=data 时正式站代码可能比 main 旧，
+      # 用 main 的 e2e 去测会命中「线上前端不比本 commit 要求的旧」而误报红。
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.web_ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -442,3 +604,27 @@ jobs:
           name: e2e-report
           path: e2e/out/report
           retention-days: 14
+
+      # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
+      # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
+      # 就是默认开，符合用户预期，也符合网站总管已告诉用户「不用配」的口径）。
+      # 只在 mode=staging（真的经过了测试站且 e2e 已验）且触发是数据（dispatch／
+      # 定时）时生效——mode=fallback 本身已经是正式站了，mode=promote 不该再
+      # 自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
+      # 没 promote 的代码不会被数据发布夹带上线。
+      - name: Auto-promote data to production
+        if: ${{ success() && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # promote=data 读的是正式站现有 latest.json 的 webCommitId（T1 之前
+          # 生成的正式站 latest.json 没有这个字段，得先手动 promote=code+data
+          # 一次才会有）。缺失时是「正式站还没做过第一次 promote」，不是故障，
+          # 打一行警告跳过即可，不能让 workflow 报红；手动 promote 仍按 resolve
+          # job 现在的逻辑报错（那边是人在等结果，缺字段就该让人知道）。
+          WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || echo '')
+          if [ -z "$WEB" ]; then
+            echo "⚠️ 正式站 latest.json 还没有 webCommitId（尚未做过一次 promote=code+data），自动 promote 跳过。请先手动 workflow_dispatch target=production promote=code+data 一次。"
+            exit 0
+          fi
+          gh workflow run deploy.yml --ref main -f target=production -f promote=data

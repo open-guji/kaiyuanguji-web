@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
 import Analytics from "@/components/common/Analytics";
+import StagingBadge from "@/components/layout/StagingBadge";
 
 const notoSerif = Noto_Serif_SC({
   subsets: ["latin"],
@@ -67,6 +68,8 @@ export default function RootLayout({
             和 e2e 前置条件都读它；由 next.config.ts 从 node_modules 实际解析
             到的 book-index-ui 版本注入，不是 package.json 里的 ^ 区间。 */}
         <meta name="bim-ui-version" content={process.env.NEXT_PUBLIC_BIM_UI_VERSION ?? ''} />
+        {/* T1 测试站：不被搜索引擎收录（robots.txt 全禁是另一道闸，见 app/robots.ts） */}
+        {IS_STAGING && <meta name="robots" content="noindex" />}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -81,6 +84,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`antialiased ${notoSerif.variable}`}>
+        <StagingBadge />
         <ErrorMonitor />
         <Suspense fallback={null}>
           <Analytics />

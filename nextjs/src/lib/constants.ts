@@ -10,6 +10,11 @@ export const isLocalMode = DATA_MODE === 'local';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.kaiyuanguji.com";
 
+// 测试站（T1）：deploy.yml 构建测试站时注入 'staging'，正式站不设（为空）。
+// 驱动 robots 全禁、页面角标、metadata noindex；不驱动数据源／统计（各自独立环境变量）。
+export const SITE_ENV = process.env.NEXT_PUBLIC_SITE_ENV || '';
+export const IS_STAGING = SITE_ENV === 'staging';
+
 // 网站信息
 export const SITE_NAME = "开源古籍";
 export const SITE_DESCRIPTION =
