@@ -23,6 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }));
 
+    // 2b. 只在页脚出现、不在主导航里的独立页面
+    const footerOnlyRoutes: MetadataRoute.Sitemap = [
+        { url: `${SITE_URL}/about`, lastModified, changeFrequency: 'monthly' as const, priority: 0.5 },
+        { url: `${SITE_URL}/beta`, lastModified, changeFrequency: 'monthly' as const, priority: 0.5 },
+    ];
+
     // 3. 古籍详情页 (从 GitHub 获取)
     // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
     let bookRoutes: MetadataRoute.Sitemap = [];
@@ -44,5 +50,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         console.error('Failed to fetch books for sitemap:', error);
     }
 
-    return [...staticRoutes, ...roadmapRoutes, ...bookRoutes];
+    return [...staticRoutes, ...roadmapRoutes, ...footerOnlyRoutes, ...bookRoutes];
 }

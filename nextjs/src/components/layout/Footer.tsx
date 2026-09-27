@@ -85,12 +85,26 @@ export default function Footer() {
           <p className="text-sm text-white/50">
             © {currentYear} 开源古籍项目组 · Powered by Next.js
           </p>
-          <Link
-            href="/privacy"
-            className="text-xs text-white/40 no-underline transition-colors hover:text-white/70"
-          >
-            隐私说明
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-x-4">
+            <Link
+              href="/about"
+              className="text-xs text-white/40 no-underline transition-colors hover:text-white/70"
+            >
+              关于
+            </Link>
+            <Link
+              href="/beta"
+              className="text-xs text-white/40 no-underline transition-colors hover:text-white/70"
+            >
+              内测说明
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-xs text-white/40 no-underline transition-colors hover:text-white/70"
+            >
+              隐私说明
+            </Link>
+          </div>
           <a
             href="https://beian.miit.gov.cn/"
             target="_blank"

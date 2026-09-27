@@ -7,6 +7,12 @@
  * 完全相同的 IndexEntry（getEntry）与原始 detail（getItem），保证前端渲染的
  * 内容逐字一致——这正是任务书判据 2「20 条内容比对」在单测层面的对应验证。
  *
+ * S3（h1 版本根清单，2026-09-27）：取数链路从「指针→分片→entry」三级变成
+ * 「指针→root→分片→entry」四级——manifest-root.json 降级成短缓存指针，
+ * 内容是 `{ root: "<key>.json" }`；真正的分片哈希表在 roots/<key>.json 里
+ * （不可变）；manifest 分片本身也按内容哈希命名。本文件的 mock 链路照这个
+ * 顺序改写。
+ *
  * DATA_LAYOUT / COS_BASE 都是模块级常量，在 import 时按 process.env 解析一次，
  * 所以每个用例都要 jest.isolateModulesAsync 拿一份全新模块实例。
  */
@@ -27,6 +33,7 @@ const BOOK_ID_A = '988fz1pb10';
 const BOOK_ID_B = '988fzcmm10';
 const WORK_ID = 'd59df01avcw0';
 const SHARD_KEY = '10'; // BOOK_ID_A / BOOK_ID_B 的分片键
+const ROOT_KEY = 'root1'; // 指针里的 root 文件名（不含 .json）
 
 function jsonResponse(body: unknown, ok = true, status = 200) {
     return {
@@ -34,6 +41,19 @@ function jsonResponse(body: unknown, ok = true, status = 200) {
         status,
         json: async () => body,
     } as Response;
+}
+
+/** 指针 mock：默认指向 ROOT_KEY，其余字段随便填，测试只用得到 .root。 */
+function pointerResponse(root = ROOT_KEY) {
+    return jsonResponse({ version: 2, root: `${root}.json`, generatedAt: 'x', dataCommit: {} });
+}
+
+/** root 文档 mock：shards 是「分片后缀 → 分片文件哈希」，不是「id → entry 哈希」。 */
+function rootDocResponse(shardKeyLength: number, shards: Record<string, string>) {
+    return jsonResponse({
+        version: 1, shardKeyLength, shardSpace: 1296, shardCount: Object.keys(shards).length,
+        generatedAt: 'x', dataCommit: {}, shards,
+    });
 }
 
 async function freshCosStorage(env: { layout?: string; cosBase?: string }) {
@@ -101,9 +121,10 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         expect(item).toMatchObject({ title: '尚書正義' });
     });
 
-    it("NEXT_PUBLIC_DATA_LAYOUT=hashed：读 manifest-root → 读分片 → 取 entry", async () => {
+    it("NEXT_PUBLIC_DATA_LAYOUT=hashed：读指针 → 读 root → 读分片 → 取 entry", async () => {
         const detailA = { id: BOOK_ID_A, title: '甲书', author: '甲' };
         const hashA = 'aaaaaaaa';
+        const shardHash = 'shardhash1';
         const manifestShard: Record<string, string> = { [BOOK_ID_A]: hashA };
 
         const calls: string[] = [];
@@ -114,14 +135,9 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
             // 不代表「hashed 模式漏走了 legacy 路径」。
             if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'legacycommit1' });
             if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
-            if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({
-                    shardKeyLength: 2, shardSpace: 1296, shardCount: 1,
-                    generatedAt: '2026-09-26T00:00:00.000Z',
-                    dataCommit: { commitId: 'c1', productionCommitId: 'c2', textCommitId: 'c3' },
-                });
-            }
-            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) return jsonResponse(manifestShard);
+            if (url.endsWith('/h1/manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [SHARD_KEY]: shardHash });
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.${shardHash}.json`)) return jsonResponse(manifestShard);
             if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${hashA}.json`)) return jsonResponse(detailA);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
@@ -138,20 +154,29 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         // 条目本身（entry）一律不走现行 current/entry 路径——这才是本条要钉住的事
         expect(calls.some(u => u.includes('/current/entry/'))).toBe(false);
         expect(calls.some(u => u.includes('/h1/entry/'))).toBe(true);
+        expect(calls.some(u => u.endsWith(`/h1/roots/${ROOT_KEY}.json`))).toBe(true);
     });
 
-    it('hashed：同一分片内第二个 id 复用内存缓存，manifest 分片只拉一次', async () => {
+    it('hashed：同一分片内第二个 id 复用内存缓存，指针/root/manifest 分片各只拉一次', async () => {
         const hashA = 'aaaaaaaa';
         const hashB = 'bbbbbbbb';
+        const shardHash = 'shardhash1';
         const manifestShard: Record<string, string> = { [BOOK_ID_A]: hashA, [BOOK_ID_B]: hashB };
 
+        let pointerFetchCount = 0;
+        let rootFetchCount = 0;
         let manifestFetchCount = 0;
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
             if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
+                pointerFetchCount++;
+                return pointerResponse();
             }
-            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) {
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) {
+                rootFetchCount++;
+                return rootDocResponse(2, { [SHARD_KEY]: shardHash });
+            }
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.${shardHash}.json`)) {
                 manifestFetchCount++;
                 return jsonResponse(manifestShard);
             }
@@ -168,6 +193,8 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
 
         expect(a).toMatchObject({ title: '甲书' });
         expect(b).toMatchObject({ title: '乙书' });
+        expect(pointerFetchCount).toBe(1); // 指针模块级 promise 全程只解析一次
+        expect(rootFetchCount).toBe(1); // root 文档同样只拉一次
         expect(manifestFetchCount).toBe(1); // 同分片，第二次命中内存缓存
     });
 
@@ -175,10 +202,8 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         const { reportError } = await import('../error-report');
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
-            if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 0, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) return jsonResponse({}); // 空分片
+            if (url.endsWith('/h1/manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) return rootDocResponse(2, {}); // 空 root：任何分片都不存在
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
 
@@ -190,33 +215,48 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         expect(reportError).toHaveBeenCalledWith(expect.objectContaining({ status: 404, resource: BOOK_ID_A }));
     });
 
-    it('hashed：分片过期指向已不存在的旧哈希，entry 404 → 清缓存重取分片后成功', async () => {
-        // 模拟场景（协调者验收第二轮 item 3）：页面内存里的分片缓存是旧的，
-        // 指向的 hash 对应的 entry 文件已经不在（无论是因为 sync 端保留期外
-        // 被清掉，还是分片本身滞后于 entry 的实际最新状态），第一次按旧 hash
-        // 取 entry 会 404；加固逻辑应当清掉分片缓存、重新解析出新 hash，再取一次。
+    it('hashed：分片里没有这个 id（分片存在但未命中）→ 视同 404，返回 null', async () => {
+        const shardHash = 'shardhash1';
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
+            if (url.endsWith('/h1/manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [SHARD_KEY]: shardHash });
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.${shardHash}.json`)) return jsonResponse({}); // 空分片
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        const item = await storage.getItem(BOOK_ID_A);
+        expect(item).toBeNull();
+    });
+
+    it('hashed：指针翻转到新版（旧 root/分片/hash 全部过期），entry 404 → 清指针+root 缓存重取后成功', async () => {
+        // 模拟场景：页面持有的指针/root/分片缓存是旧的，COS 上已经发布了新版本
+        // （新 root、shard 里 id 对应的哈希也变了），第一次按旧 hash 取 entry 会
+        // 404；加固逻辑应当清掉指针与 root 缓存、重新走一遍"指针→root→分片"
+        // 解析出新 hash，再取一次。
         const staleHash = 'aaaaaaaa';
         const freshHash = 'bbbbbbbb';
-        let shardFetchCount = 0;
-        let currentShardHash = staleHash; // 第一次 fetch 分片时返回旧值，之后返回新值
+        const staleRoot = 'root-old';
+        const freshRoot = 'root-new';
+        let pointerFetchCount = 0;
+        let currentPointerRoot = staleRoot; // 第一次 fetch 指针返回旧值，之后返回新值
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
             if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
+                pointerFetchCount++;
+                const root = currentPointerRoot;
+                currentPointerRoot = freshRoot; // 下一次（重取）返回新指针，模拟指针已经翻转
+                return pointerResponse(root);
             }
-            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) {
-                shardFetchCount++;
-                const hashToReturn = currentShardHash;
-                currentShardHash = freshHash; // 下一次（重取）返回新值，模拟分片已经更新
-                return jsonResponse({ [BOOK_ID_A]: hashToReturn });
-            }
-            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${staleHash}.json`)) {
-                return jsonResponse({}, false, 404);
-            }
-            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${freshHash}.json`)) {
-                return jsonResponse({ id: BOOK_ID_A, title: '甲书（新版）' });
-            }
+            if (url.endsWith(`/h1/roots/${staleRoot}.json`)) return rootDocResponse(2, { [SHARD_KEY]: 'shard-old' });
+            if (url.endsWith(`/h1/roots/${freshRoot}.json`)) return rootDocResponse(2, { [SHARD_KEY]: 'shard-new' });
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.shard-old.json`)) return jsonResponse({ [BOOK_ID_A]: staleHash });
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.shard-new.json`)) return jsonResponse({ [BOOK_ID_A]: freshHash });
+            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${staleHash}.json`)) return jsonResponse({}, false, 404);
+            if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${freshHash}.json`)) return jsonResponse({ id: BOOK_ID_A, title: '甲书（新版）' });
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
 
@@ -225,21 +265,21 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         const item = await storage.getItem(BOOK_ID_A);
 
         expect(item).toMatchObject({ title: '甲书（新版）' });
-        expect(shardFetchCount).toBe(2); // 第一次拿旧值，404 后清缓存重取一次拿到新值
+        expect(pointerFetchCount).toBe(2); // 第一次拿旧指针，404 后清缓存重取一次拿到新指针
     });
 
-    it('hashed：分片过期但重取后 hash 未变（entry 就是真 404）→ 不再重试，返回 null', async () => {
+    it('hashed：重新解析后 hash 未变（entry 就是真 404）→ 不再重试，返回 null', async () => {
         const hash = 'aaaaaaaa';
-        let shardFetchCount = 0;
+        const shardHash = 'shardhash1';
+        let pointerFetchCount = 0;
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
             if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
+                pointerFetchCount++;
+                return pointerResponse();
             }
-            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.json`)) {
-                shardFetchCount++;
-                return jsonResponse({ [BOOK_ID_A]: hash }); // 重取也还是同一个 hash
-            }
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [SHARD_KEY]: shardHash });
+            if (url.endsWith(`/h1/manifest/${SHARD_KEY}.${shardHash}.json`)) return jsonResponse({ [BOOK_ID_A]: hash }); // 重取也还是同一个 hash
             if (url.endsWith(`/h1/entry/${BOOK_ID_A}.${hash}.json`)) return jsonResponse({}, false, 404);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
@@ -249,7 +289,7 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         const item = await storage.getItem(BOOK_ID_A);
 
         expect(item).toBeNull();
-        expect(shardFetchCount).toBe(2); // 确实重取了一次，但 hash 没变就不再多打一次 entry 请求
+        expect(pointerFetchCount).toBe(2); // 确实重取了一次指针，但 hash 没变就不再多打一次 entry 请求
     });
 
     it('两条路径对同一份原始 detail 字节，拼出完全相同的 getEntry 结果（内容逐字一致）', async () => {
@@ -259,15 +299,16 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         };
         const legacyCommit = 'legacycommit1';
         const h1Hash = 'deadbeef';
+        const shardHash = 'shardhash1';
+        const workShardKey = WORK_ID.slice(-2);
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/latest.json')) return jsonResponse({ commitId: legacyCommit });
             if (url.includes('/promotions.json')) return jsonResponse({ version: 1, promotions: {} });
             if (url.includes(`/current/entry/${WORK_ID}.json`)) return jsonResponse(rawDetail);
-            if (url.endsWith('/h1/manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/manifest/${WORK_ID.slice(-2)}.json`)) return jsonResponse({ [WORK_ID]: h1Hash });
+            if (url.endsWith('/h1/manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [workShardKey]: shardHash });
+            if (url.endsWith(`/h1/manifest/${workShardKey}.${shardHash}.json`)) return jsonResponse({ [WORK_ID]: h1Hash });
             if (url.endsWith(`/h1/entry/${WORK_ID}.${h1Hash}.json`)) return jsonResponse(rawDetail);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;

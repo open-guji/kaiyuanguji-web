@@ -416,6 +416,10 @@ jobs:
           done
           mkdir -p ../build/edgeone
           cp -r out/* ../build/edgeone/
+          # h1 哈希数据（public/data-h1、data-h1-text，约 15 万文件）只走 COS，绝不进 Pages 产物：
+          # 2026-09-27 A3 起它们随 out/ 一起推到 edgeone-release，产物从 ~550 涨到 16 万文件，
+          # Pages 静默不再发布，线上停在 09-26 23:09Z 那版，只有 verify 的 ui 版本下限测试报红。
+          rm -rf ../build/edgeone/data-h1 ../build/edgeone/data-h1-text
           # cos 模式下，out/data/ 已在 COS，EdgeOne Pages 不需要重复，剥离以瘦身
           if [ "$NEXT_PUBLIC_DATA_SOURCE" = "cos" ]; then
             echo "Stripping out/data from EdgeOne Pages bundle (data served from COS)"
@@ -457,6 +461,19 @@ jobs:
 
       - name: Copy Edge Functions to EdgeOne build
         run: cp -r edge-functions build/edgeone/edge-functions
+
+      # 闸：产物文件数异常时直接失败，别让部署静默不生效——测试站（CLI 直接
+      # 上传）与正式站（Pages）共用同一份 build/edgeone，闸不分 target，两边
+      # 都覆盖。
+      - name: Guard EdgeOne bundle file count
+        run: |
+          N=$(find build/edgeone -type f | wc -l)
+          echo "EdgeOne bundle file count: $N"
+          if [ "$N" -gt 5000 ]; then
+            echo "❌ 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
+            find build/edgeone -type f | awk -F/ '{print $3}' | sort | uniq -c | sort -rn | head -10
+            exit 1
+          fi
 
       # --- 步骤 2：部署 ---
       # 测试站：直接上传型项目 kyg-staging（CLI）。SSR 转正后正式站也改走这条（26 卡步骤 6）

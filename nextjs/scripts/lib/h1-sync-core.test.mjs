@@ -92,6 +92,30 @@ test('不属于任何已知批次的历史遗留 rel（如布局迁移期的旧�
     assert.deepEqual(plan.immediateOrphansToDelete, []);
 });
 
+// S3（h1 版本根清单）：manifest/roots 这类批次标 skipOrphans，孤儿判定挪到
+// runRootsRetention（按在用 root 集合算），本地没有不再等于「可以删」——
+// 见 bundle-hashed.mjs 里旧 commit 的分片本来就不会出现在本轮本地产物里。
+const CONFIG_WITH_SKIP_ORPHANS = {
+    batches: [
+        { key: 'primary', label: '① primary', match: (rel) => rel.startsWith('primary/'), retain: true },
+        { key: 'shard', label: '② shard（按在用 root 集合另算孤儿）', match: (rel) => rel.startsWith('shard/'), retain: false, skipOrphans: true },
+    ],
+};
+
+test('skipOrphans 批次：本地消失的 rel 既不进保留候选，也不进当场删除列表', () => {
+    const files = []; // 本地什么都没有了（这一轮只反映当前这一个 commit 的内容）
+    const stateMap = new Map([
+        ['primary/gone.json', 'oldhash'],
+        ['shard/still-live-elsewhere.json', 'oldhash'], // 可能还被别的在用 root 引用，不该被这里的逻辑动
+    ]);
+    const localMd5 = new Map();
+
+    const plan = planBatches(CONFIG_WITH_SKIP_ORPHANS, files, stateMap, localMd5);
+
+    assert.deepEqual(plan.retainOrphanCandidates, ['primary/gone.json']); // retain 批不受影响
+    assert.deepEqual(plan.immediateOrphansToDelete, []); // skipOrphans 批一个都不进
+});
+
 console.log(`\n${passed} passed`);
 if (process.exitCode) {
     console.error('\n❌ h1-sync-core 单测有失败');
