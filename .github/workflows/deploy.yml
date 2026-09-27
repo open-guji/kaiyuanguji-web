@@ -718,7 +718,7 @@ jobs:
         working-directory: nextjs
         env:
           ITEM_SITE: https://staging.kaiyuanguji.com
-          ITEM_PREWARM_CONCURRENCY: '16'
+          ITEM_PREWARM_CONCURRENCY: '4'
         run: node scripts/item-prewarm.mjs
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
