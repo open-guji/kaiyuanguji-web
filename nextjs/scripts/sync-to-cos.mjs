@@ -42,6 +42,7 @@
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -65,8 +66,8 @@ if (existsSync(envLocal)) {
 
 // ─── 配置 ───
 
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data');
-const LATEST_FILE = resolve(__dirname, '..', 'public', 'latest.json');
+// 与 bundle-data.mjs 读同一组环境变量（KYG_DATA_ROOT／DATA_OUT_DIR／DATA_LATEST_FILE），默认 public/
+const { dataDir: DATA_DIR, latestFile: LATEST_FILE } = resolveDataDirs();
 
 const SECRET_ID = process.env.COS_SECRET_ID;
 const SECRET_KEY = process.env.COS_SECRET_KEY;

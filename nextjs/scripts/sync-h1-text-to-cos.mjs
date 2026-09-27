@@ -47,6 +47,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { planOrphans, serializeOrphansTable, parseOrphansTable } from './lib/h1-orphans.mjs';
 import {
     walk, md5WithCache, loadHashCache, saveHashCache,
@@ -74,7 +75,8 @@ if (existsSync(envLocal)) {
 
 // ─── 配置 ───
 
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data-h1-text');
+// 与 bundle-hashed-text.mjs 读同一组环境变量（KYG_DATA_ROOT／H1_TEXT_OUT_DIR），默认 public/data-h1-text
+const { h1TextDir: DATA_DIR } = resolveDataDirs();
 
 const SECRET_ID = process.env.COS_SECRET_ID;
 const SECRET_KEY = process.env.COS_SECRET_KEY;

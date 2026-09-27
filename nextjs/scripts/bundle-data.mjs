@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 
 // ─── 配置 ───
@@ -41,7 +42,8 @@ const TEXT_DIR = resolve(
     process.env.BOOK_TEXT_DIR
     || join(__dirname, '..', '..', 'book-text')
 );
-const OUT_DIR = resolve(__dirname, '..', 'public', 'data');
+// 产物目录：默认 public/data，可用 KYG_DATA_ROOT／DATA_OUT_DIR 挪出 public/（见 lib/data-dirs.mjs）
+const { dataDir: OUT_DIR, latestFile: LATEST_FILE } = resolveDataDirs();
 
 const TIYAO_DIR = join(DRAFT_DIR, 'data', 'siku-catalog', 'volumes');
 const TIYAO_GROUP_SIZE = 10;
@@ -460,7 +462,7 @@ function bundleVersion() {
         textCommitId,
         bundleDate: version.bundleDate,
     };
-    writeJson(join(OUT_DIR, '..', 'latest.json'), latest);
+    writeJson(LATEST_FILE, latest);
 
     console.log(`VER version.json + latest.json (commit: ${commitId.slice(0, 8)}, date: ${commitDate})`);
 }

@@ -60,16 +60,14 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
-import { join, resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { ensureDir, readJson, hash8, writeHashedShards, dataCommitKey } from './lib/h1-hash-common.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data');
+const { dataDir: DATA_DIR, h1Dir: OUT_DIR } = resolveDataDirs();
 const ENTRY_SRC_DIR = join(DATA_DIR, 'entry');
 const VERSION_FILE = join(DATA_DIR, 'version.json');
-const OUT_DIR = resolve(process.env.H1_OUT_DIR || join(__dirname, '..', 'public', 'data-h1'));
 const CLEAN = process.env.H1_CLEAN === '1';
 
 // 分片键长度：取 id 末 2 位。id 字母表是 0-9a-z（base36），2 位 = 1296 个可能值。
