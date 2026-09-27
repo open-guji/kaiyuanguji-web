@@ -42,8 +42,10 @@ export default function AboutPage() {
         <p className="mb-4">
           索引数据来自历代目录学著录、公开馆藏书目，以及各类可获取的古籍扫描与文本资源；
           具体来源在每条索引自己的资源字段里逐条标注，可以顺着链接查到出处。
-          本站软件全线基于 Apache-2.0 协议开源；索引与文本数据同样以开源仓库的形式公开，
-          具体使用条款以对应仓库为准。
+          各开源仓库的许可以仓库内的 LICENSE 文件为准：整理本与全文所在的
+          book-text 仓用 CC0 1.0 Universal；图片数字化引擎 open-guji-cv 仓用
+          Apache License 2.0；古籍目录索引 book-index、book-index-draft 两仓
+          目前未在仓库根目录声明许可文件。
         </p>
 
         <h2 className="mb-2 mt-8 text-lg font-semibold">内容真源在 GitHub</h2>
@@ -66,10 +68,6 @@ export default function AboutPage() {
           <li>
             图片数字化引擎：
             <a href={`${GITHUB_BASE}/open-guji-cv`} target="_blank" rel="noopener noreferrer" className="text-[var(--color-vermilion)] underline">open-guji-cv</a>
-          </li>
-          <li>
-            本站代码：
-            <a href={`${GITHUB_BASE}/kaiyuanguji-web`} target="_blank" rel="noopener noreferrer" className="text-[var(--color-vermilion)] underline">kaiyuanguji-web</a>
           </li>
           <li>
             更多仓库见组织主页：
