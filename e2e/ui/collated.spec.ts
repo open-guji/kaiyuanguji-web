@@ -33,11 +33,12 @@ test.describe('整理本', () => {
          *
          * Work 全文接入全文 tab（W6c）后，有 Work 全文的书另出一条「全文阅读」横幅（名字带来源，如
          * 「维基文库 · 全文检索 · 原书对照」），本书两条都有。整理本横幅的名字以
-         * 卷数结尾（「…全文阅读 56」），据此只锚整理本那条。
+         * 带卷数（「…全文阅读 56 卷 · 全文检索 · 原书对照」），
+         * Work 全文那条带来源名、没有卷数，据此只锚整理本那条。
          */
         await expect(
             page.getByRole('button', {
-                name: new RegExp(`(全文閲讀|全文阅读)\\s*${C.juanFileCount}$`),
+                name: new RegExp(`(全文閲讀|全文阅读)\\s*${C.juanFileCount}\\s*卷`),
             }),
             '整理本入口不存在：清单档可能 404（文件名或版本号错）',
         ).toBeVisible({ timeout: 30_000 });
