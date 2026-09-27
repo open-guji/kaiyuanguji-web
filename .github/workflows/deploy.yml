@@ -390,7 +390,9 @@ jobs:
           cd nextjs
           node scripts/sync-h1-text-to-cos.mjs
 
+      # W2：正式站仍是静态导出（本步骤 run 脚本不动）；测试站改走下一步的全栈构建
       - name: Build for EdgeOne
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
         env:
           # 必须为空：NEXT_PUBLIC_MODE=local 会让 next.config.ts 关掉 output:'export'，
           # 产不出静态站。CI 里本来就没有 .env.local，这里显式置空作为防线。
@@ -449,10 +451,58 @@ jobs:
           du -sh ../build/edgeone | xargs echo "EdgeOne bundle size:"
           find ../build/edgeone -type f | wc -l | xargs echo "EdgeOne file count:"
 
+      # W2（31 卡 §A）：测试站全栈构建——静态页照旧构建期预渲染，/item/[id] 由云函数按请求渲染。
+      # 为什么先 `makers build` 再 `makers deploy .edgeone`、不让 deploy 自动构建：
+      # deploy 自动构建时**不继承本步骤的环境变量**（只用控制台项目变量＋./.env），
+      # NEXT_PUBLIC_*、KYG_RENDER_MODE 全丢——spike 分支当年只好把开关写死。
+      # `makers build` 则继承 process.env（edgeone 1.6.41 源码与本地实跑均已核对）。
+      # CLI 版本钉死：构建产物格式须与部署时的 CLI 一致。
+      - name: Build for EdgeOne (staging, fullstack)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        env:
+          KYG_RENDER_MODE: fullstack
+          NEXT_PUBLIC_MODE: ''
+          NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
+          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com/staging
+          NEXT_PUBLIC_SITE_ENV: staging
+          NEXT_PUBLIC_SITE_URL: https://staging.kaiyuanguji.com
+          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          # 兜底值同正式站那一步：公开只读搜索 key，非机密
+          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
+          # 测试站不上报统计
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ''
+          NEXT_PUBLIC_GA_ID: ''
+          NEXT_PUBLIC_BASE_PATH: ''
+        run: |
+          if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
+            echo "❌ 测试站全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
+            exit 1
+          fi
+          cd nextjs
+          rm -rf .next out .edgeone edge-functions
+          # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
+          cp -r ../edge-functions ./edge-functions
+          # 与正式站那一步同样的重试：只重试构建本身（Google Fonts 偶发抖动）
+          n=1
+          until npx -y edgeone@1.6.41 makers build; do
+            if [ "$n" -ge 3 ]; then
+              echo "❌ edgeone makers build 重试 3 次仍失败"
+              exit 1
+            fi
+            echo "⚠️ edgeone makers build 第 ${n} 次失败，20 秒后重试（下一次 $((n + 1))/3）"
+            sleep 20
+            n=$((n + 1))
+          done
+          du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
+          find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
+
       - name: Verify EdgeOne build mode
         run: |
           MODE="${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
-          if grep -r "\"$MODE\"" nextjs/out/_next/static/chunks/ > /dev/null 2>&1; then
+          # W2：测试站是全栈产物，客户端 chunk 在 .edgeone/assets 下；正式站路径不变
+          CHUNKS=nextjs/out/_next/static/chunks/
+          if [ "$DEPLOY_TARGET" = "staging" ]; then CHUNKS=nextjs/.edgeone/assets/_next/static/chunks/; fi
+          if grep -r "\"$MODE\"" "$CHUNKS" > /dev/null 2>&1; then
             echo "✓ EdgeOne build confirmed using $MODE mode"
           else
             echo "❌ EdgeOne build not using $MODE mode!" && exit 1
@@ -462,12 +512,19 @@ jobs:
       - name: Verify staging artifacts (robots / noindex / badge)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         run: |
-          grep -qx 'Disallow: /' build/edgeone/robots.txt && echo "✓ robots.txt 全禁" \
-            || { echo "❌ robots.txt 未全禁:"; cat build/edgeone/robots.txt; exit 1; }
-          grep -q 'noindex' build/edgeone/index.html && echo "✓ index.html 含 noindex meta" \
+          # W2：测试站是全栈产物，静态页在 nextjs/.edgeone/assets/
+          A=nextjs/.edgeone/assets
+          grep -qx 'Disallow: /' $A/robots.txt && echo "✓ robots.txt 全禁" \
+            || { echo "❌ robots.txt 未全禁:"; cat $A/robots.txt; exit 1; }
+          grep -q 'noindex' $A/index.html && echo "✓ index.html 含 noindex meta" \
             || { echo "❌ index.html 缺 noindex meta"; exit 1; }
-          grep -q 'staging-badge' build/edgeone/index.html && echo "✓ 测试站角标已渲染" \
+          grep -q 'staging-badge' $A/index.html && echo "✓ 测试站角标已渲染" \
             || { echo "❌ 角标未出现"; exit 1; }
+          # W2-1：/item/<id> 必须落在云函数路由里，否则部署上去是 404
+          grep -q '"\^/item/' nextjs/.edgeone/cloud-functions/ssr-node/config.json && echo "✓ /item/[id] 已由云函数渲染" \
+            || { echo "❌ 云函数路由里没有 /item/[id]"; cat nextjs/.edgeone/cloud-functions/ssr-node/config.json; exit 1; }
+          test -f nextjs/.edgeone/edge-functions/config.json && echo "✓ 边缘函数（/api/*）已随全栈产物编译" \
+            || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
 
       - name: Verify production build has no staging artifacts
         if: ${{ env.DEPLOY_TARGET == 'production' }}
@@ -481,12 +538,13 @@ jobs:
           echo "✓ 正式站产物无测试站痕迹（无 noindex、无角标）"
 
       - name: Copy Edge Functions to EdgeOne build
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
         run: cp -r edge-functions build/edgeone/edge-functions
 
-      # 闸：产物文件数异常时直接失败，别让部署静默不生效——测试站（CLI 直接
-      # 上传）与正式站（Pages）共用同一份 build/edgeone，闸不分 target，两边
-      # 都覆盖。
+      # 闸：产物文件数异常时直接失败，别让部署静默不生效。
+      # W2 起本步只管正式站的 build/edgeone；测试站是全栈产物，闸见下一步。
       - name: Guard EdgeOne bundle file count
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
         run: |
           N=$(find build/edgeone -type f | wc -l)
           echo "EdgeOne bundle file count: $N"
@@ -499,14 +557,29 @@ jobs:
             exit 1
           fi
 
+      # W2：测试站全栈产物的同一道闸。产物里多了云函数（opennext 打包的 node_modules，
+      # 2026-09-27 本地实测约 2,500 个文件），总数约 2,850；静态部分仍须远低于平台 2 万上限。
+      - name: Guard EdgeOne bundle file count (staging, fullstack)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        run: |
+          N=$(find nextjs/.edgeone -type f | wc -l)
+          echo "EdgeOne (fullstack) bundle file count: $N"
+          if [ "$N" -gt 5000 ]; then
+            echo "❌ 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
+            find nextjs/.edgeone -type f | awk -F/ '{print $3"/"$4}' | sort | uniq -c | sort -rn | head -10
+            exit 1
+          fi
+
       # --- 步骤 2：部署 ---
       # 测试站：直接上传型项目 kyg-staging（CLI）。SSR 转正后正式站也改走这条（26 卡步骤 6）
       - name: Deploy to EdgeOne (staging, direct upload)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        # W2：部署上一步 makers build 出的全栈产物（给了目录就不再自动构建）
+        working-directory: nextjs
         run: |
-          npx -y edgeone@latest makers deploy build/edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
+          npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
 
       - name: Deploy to EdgeOne Branch
         if: ${{ env.DEPLOY_TARGET == 'production' }}

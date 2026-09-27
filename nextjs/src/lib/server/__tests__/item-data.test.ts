@@ -1,0 +1,208 @@
+/**
+ * @jest-environment node
+ *
+ * 条目页 SSR 服务端取数（W2-1）单测：h1 四级取数、各种读不到时回退 current/、
+ * 临时故障不被当成 404、指针缓存与刷新。
+ */
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { createItemFetcher, isValidItemId } from '../item-data';
+
+// 回退时的 console.warn 是给线上排查看的，单测里静音
+beforeEach(() => { jest.spyOn(console, 'warn').mockImplementation(() => {}); });
+afterEach(() => { jest.restoreAllMocks(); });
+import { summarizeItem } from '../item-summary';
+
+const BASE = 'https://data.example.com/staging';
+const ID = 'd59f20aowb9c'; // 史記，分片键 '9c'
+const ENTRY = { id: ID, type: 'work', title: '史記', authors: [{ name: '司馬遷', role: '撰', dynasty: '西漢' }] };
+
+type Routes = Record<string, unknown | number>;
+
+/** 按「去掉查询串的 URL」路由；值为数字表示返回该 HTTP 状态，'THROW' 表示网络错 */
+function mockFetch(routes: Routes) {
+    const calls: string[] = [];
+    const fn = jest.fn(async (url: string) => {
+        calls.push(url);
+        const key = url.split('?')[0];
+        if (!(key in routes)) return { ok: false, status: 404, json: async () => ({}) } as Response;
+        const v = routes[key];
+        if (v === 'THROW') throw new Error('network down');
+        if (typeof v === 'number') return { ok: v < 400, status: v, json: async () => ({}) } as Response;
+        return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(v)) } as Response;
+    });
+    return { fn, calls };
+}
+
+function h1Routes(entryHash = 'e1111111'): Routes {
+    return {
+        [`${BASE}/h1/manifest-root.json`]: { version: 2, root: 'r1.json' },
+        [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: { '9c': 's9c00000' } },
+        [`${BASE}/h1/manifest/9c.s9c00000.json`]: { [ID]: entryHash },
+        [`${BASE}/h1/entry/${ID}.${entryHash}.json`]: ENTRY,
+    };
+}
+
+const currentRoutes: Routes = {
+    [`${BASE}/latest.json`]: { commitId: 'abc123' },
+    [`${BASE}/current/entry/${ID}.json`]: { ...ENTRY, title: '史記（current）' },
+};
+
+function make(routes: Routes, now = () => 1_000_000) {
+    const { fn, calls } = mockFetch(routes);
+    const f = createItemFetcher({ base: `${BASE}/`, fetch: fn as never, now });
+    return { f, fn, calls };
+}
+
+describe('isValidItemId', () => {
+    it.each(['d59f20aowb9c', '988g3gl3if', 'hixhd2f8wamg'])('合法 id：%s', (id) => {
+        expect(isValidItemId(id)).toBe(true);
+    });
+    it.each(['', 'bad..id', '../etc', 'ABC123def', 'a/b', 'x'.repeat(30)])('非法 id：%s', (id) => {
+        expect(isValidItemId(id)).toBe(false);
+    });
+});
+
+describe('createItemFetcher.getItem', () => {
+    it('h1 四级取数：指针 → root → 分片 → entry', async () => {
+        const { f, calls } = make({ ...h1Routes(), ...currentRoutes });
+        const r = await f.getItem(ID);
+        expect(r).toEqual({ entry: ENTRY, source: 'h1' });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([
+            `${BASE}/h1/manifest-root.json`,
+            `${BASE}/h1/roots/r1.json`,
+            `${BASE}/h1/manifest/9c.s9c00000.json`,
+            `${BASE}/h1/entry/${ID}.e1111111.json`,
+        ]);
+        // 指针带按分钟取整的查询串（绕开 CDN 上的陈旧副本）
+        expect(calls[0]).toMatch(/manifest-root\.json\?t=\d+$/);
+    });
+
+    it('非法 id 直接返回 null，一次请求都不发', async () => {
+        const { f, fn } = make({ ...h1Routes(), ...currentRoutes });
+        expect(await f.getItem('../x')).toBeNull();
+        expect(fn).not.toHaveBeenCalled();
+    });
+
+    it('旧格式指针（无 root 字段）→ 回退 current/', async () => {
+        const routes = { ...h1Routes(), ...currentRoutes, [`${BASE}/h1/manifest-root.json`]: { shardKeyLength: 2 } };
+        const { f, calls } = make(routes);
+        const r = await f.getItem(ID);
+        expect(r?.source).toBe('current');
+        expect(r?.entry.title).toBe('史記（current）');
+        expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=abc123`);
+    });
+
+    it('h1 指针不存在（404）→ 回退 current/', async () => {
+        const routes = { ...currentRoutes };
+        const { f } = make(routes);
+        expect((await f.getItem(ID))?.source).toBe('current');
+    });
+
+    it('h1 网络错 → 回退 current/', async () => {
+        const routes = { ...h1Routes(), ...currentRoutes, [`${BASE}/h1/roots/r1.json`]: 'THROW' };
+        const { f } = make(routes);
+        expect((await f.getItem(ID))?.source).toBe('current');
+    });
+
+    it('分片里没有这个 id → 回退 current/；current/ 也没有 → null（页面出 404）', async () => {
+        const routes = { ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' } };
+        const { f, calls } = make(routes);
+        expect(await f.getItem('d59f2zzzzz9c')).toBeNull();
+        expect(calls.some((u) => u.includes('/current/entry/d59f2zzzzz9c.json'))).toBe(true);
+    });
+
+    it('current/ 回退路径 5xx → 抛错（临时故障不能当成 404 缓存到 CDN）', async () => {
+        const routes = { [`${BASE}/latest.json`]: { commitId: 'abc123' }, [`${BASE}/current/entry/${ID}.json`]: 503 };
+        const { f } = make(routes);
+        await expect(f.getItem(ID)).rejects.toThrow(/503/);
+    });
+
+    it('entry 哈希已失效（404）→ 强制刷新指针、按新哈希再取一次', async () => {
+        const routes: Routes = { ...h1Routes('eold0000'), ...currentRoutes };
+        delete routes[`${BASE}/h1/entry/${ID}.eold0000.json`];
+        const { f, fn } = make(routes);
+        // 第一次解析拿到旧哈希；刷新后指针指向新 root，新分片给出新哈希
+        let pointerCalls = 0;
+        fn.mockImplementation((async (url: string) => {
+            const key = url.split('?')[0];
+            if (key === `${BASE}/h1/manifest-root.json`) {
+                pointerCalls += 1;
+                const root = pointerCalls === 1 ? 'r1.json' : 'r2.json';
+                return { ok: true, status: 200, json: async () => ({ root }) } as Response;
+            }
+            const table: Routes = {
+                [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: { '9c': 'sold' } },
+                [`${BASE}/h1/roots/r2.json`]: { shardKeyLength: 2, shards: { '9c': 'snew' } },
+                [`${BASE}/h1/manifest/9c.sold.json`]: { [ID]: 'eold0000' },
+                [`${BASE}/h1/manifest/9c.snew.json`]: { [ID]: 'enew0000' },
+                [`${BASE}/h1/entry/${ID}.enew0000.json`]: ENTRY,
+            };
+            if (key in table) return { ok: true, status: 200, json: async () => table[key] } as Response;
+            return { ok: false, status: 404, json: async () => ({}) } as Response;
+        }) as never);
+        const r = await f.getItem(ID);
+        expect(r).toEqual({ entry: ENTRY, source: 'h1' });
+        expect(pointerCalls).toBe(2);
+    });
+
+    it('不可变对象进程内缓存：同分片第二条只多取 entry', async () => {
+        const ID2 = 'd59f2abcde9c';
+        const routes = {
+            ...h1Routes(),
+            [`${BASE}/h1/manifest/9c.s9c00000.json`]: { [ID]: 'e1111111', [ID2]: 'e2222222' },
+            [`${BASE}/h1/entry/${ID2}.e2222222.json`]: { id: ID2, type: 'work', title: '另一條' },
+        };
+        const { f, calls } = make(routes);
+        await f.getItem(ID);
+        const before = calls.length;
+        expect((await f.getItem(ID2))?.entry.title).toBe('另一條');
+        expect(calls.slice(before).map((u) => u.split('?')[0])).toEqual([`${BASE}/h1/entry/${ID2}.e2222222.json`]);
+    });
+
+    it('指针缓存 60 秒，过期后重取', async () => {
+        let t = 1_000_000;
+        const { f, calls } = make({ ...h1Routes(), ...currentRoutes }, () => t);
+        await f.getItem(ID);
+        t += 30_000;
+        await f.getItem(ID);
+        expect(calls.filter((u) => u.includes('manifest-root.json'))).toHaveLength(1);
+        t += 31_000;
+        await f.getItem(ID);
+        expect(calls.filter((u) => u.includes('manifest-root.json'))).toHaveLength(2);
+    });
+
+    it('失败的请求不留在缓存里，下次重试', async () => {
+        const routes: Routes = { ...h1Routes(), ...currentRoutes, [`${BASE}/h1/roots/r1.json`]: 'THROW' };
+        const { f, fn } = make(routes);
+        expect((await f.getItem(ID))?.source).toBe('current');
+        routes[`${BASE}/h1/roots/r1.json`] = { shardKeyLength: 2, shards: { '9c': 's9c00000' } };
+        fn.mockImplementation(mockFetch(routes).fn as never);
+        expect((await f.getItem(ID))?.source).toBe('h1');
+    });
+});
+
+describe('summarizeItem', () => {
+    it('作品：作者一行、卷数、简介（description 为 {text}）', () => {
+        const s = summarizeItem({
+            ...ENTRY,
+            authors: [{ name: '司馬遷', role: '撰', dynasty: '西漢' }, { name: '裴駰', role: '集解', dynasty: '南朝宋' }],
+            description: { text: '今存。' },
+            juan_count: { number: 130 },
+        }, ID);
+        expect(s).toMatchObject({ title: '史記', authorLine: '（西漢）司馬遷撰、（南朝宋）裴駰集解', measure: '130卷', description: '今存。' });
+    });
+
+    it('measure_info 优先于 juan_count；description 可为字符串', () => {
+        const s = summarizeItem({ id: 'x', type: 'work', title: 't', measure_info: '一百三十篇', juan_count: 130, description: ' 簡介 ' }, 'x');
+        expect(s.measure).toBe('一百三十篇');
+        expect(s.description).toBe('簡介');
+    });
+
+    it('人物用 primary_name；版本带 edition；缺字段不报错', () => {
+        expect(summarizeItem({ id: 'p', type: 'entity', primary_name: '黃謨' }, 'p').title).toBe('黃謨');
+        expect(summarizeItem({ id: 'b', type: 'book', title: '九經字樣', edition: '薈要本' }, 'b').edition).toBe('薈要本');
+        expect(summarizeItem({ authors: [null, { role: '撰' }], juan_count: { number: 0 } } as never, 'q')).toMatchObject({
+            title: 'q', authorLine: '', measure: '', description: '',
+        });
+    });
+});
