@@ -1,0 +1,59 @@
+{
+  "work_id": "d59f28klz3ep",
+  "version_label": "駱丞集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%A7%B1%E4%B8%9E%E9%9B%86%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "駱丞集 (四庫全書本)",
+    "revid": 717094,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 4,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷1",
+      "file": "001.md",
+      "page_title": "駱丞集 (四庫全書本)/卷1",
+      "revid": 794166,
+      "md_len": 44615
+    },
+    {
+      "n": 2,
+      "title": "卷2",
+      "file": "002.md",
+      "page_title": "駱丞集 (四庫全書本)/卷2",
+      "revid": 794168,
+      "md_len": 49589
+    },
+    {
+      "n": 3,
+      "title": "卷3",
+      "file": "003.md",
+      "page_title": "駱丞集 (四庫全書本)/卷3",
+      "revid": 794170,
+      "md_len": 41654
+    },
+    {
+      "n": 4,
+      "title": "卷4",
+      "file": "004.md",
+      "page_title": "駱丞集 (四庫全書本)/卷4",
+      "revid": 794172,
+      "md_len": 31678
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 659
+  }
+}

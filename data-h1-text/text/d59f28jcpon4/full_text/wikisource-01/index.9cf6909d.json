@@ -1,0 +1,544 @@
+{
+  "work_id": "d59f28jcpon4",
+  "version_label": "白氏文集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%99%BD%E6%B0%8F%E6%96%87%E9%9B%86",
+    "page_title": "白氏文集",
+    "revid": 2016269,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 65,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷001",
+      "file": "001.md",
+      "page_title": "白氏文集/卷001",
+      "revid": 446174,
+      "md_len": 9227
+    },
+    {
+      "n": 2,
+      "title": "卷002",
+      "file": "002.md",
+      "page_title": "白氏文集/卷002",
+      "revid": 343295,
+      "md_len": 8978
+    },
+    {
+      "n": 3,
+      "title": "卷003",
+      "file": "003.md",
+      "page_title": "白氏文集/卷003",
+      "revid": 1162432,
+      "md_len": 5168
+    },
+    {
+      "n": 4,
+      "title": "卷004",
+      "file": "004.md",
+      "page_title": "白氏文集/卷004",
+      "revid": 7904694,
+      "md_len": 6241
+    },
+    {
+      "n": 5,
+      "title": "卷005",
+      "file": "005.md",
+      "page_title": "白氏文集/卷005",
+      "revid": 1546173,
+      "md_len": 6423
+    },
+    {
+      "n": 6,
+      "title": "卷006",
+      "file": "006.md",
+      "page_title": "白氏文集/卷006",
+      "revid": 1546017,
+      "md_len": 6902
+    },
+    {
+      "n": 7,
+      "title": "卷007",
+      "file": "007.md",
+      "page_title": "白氏文集/卷007",
+      "revid": 343302,
+      "md_len": 6025
+    },
+    {
+      "n": 8,
+      "title": "卷008",
+      "file": "008.md",
+      "page_title": "白氏文集/卷008",
+      "revid": 343303,
+      "md_len": 6001
+    },
+    {
+      "n": 9,
+      "title": "卷009",
+      "file": "009.md",
+      "page_title": "白氏文集/卷009",
+      "revid": 343304,
+      "md_len": 5069
+    },
+    {
+      "n": 10,
+      "title": "卷010",
+      "file": "010.md",
+      "page_title": "白氏文集/卷010",
+      "revid": 516486,
+      "md_len": 7576
+    },
+    {
+      "n": 11,
+      "title": "卷011",
+      "file": "011.md",
+      "page_title": "白氏文集/卷011",
+      "revid": 860031,
+      "md_len": 5839
+    },
+    {
+      "n": 12,
+      "title": "卷012",
+      "file": "012.md",
+      "page_title": "白氏文集/卷012",
+      "revid": 381303,
+      "md_len": 6254
+    },
+    {
+      "n": 13,
+      "title": "卷013",
+      "file": "013.md",
+      "page_title": "白氏文集/卷013",
+      "revid": 857615,
+      "md_len": 6809
+    },
+    {
+      "n": 14,
+      "title": "卷014",
+      "file": "014.md",
+      "page_title": "白氏文集/卷014",
+      "revid": 1540937,
+      "md_len": 6634
+    },
+    {
+      "n": 15,
+      "title": "卷015",
+      "file": "015.md",
+      "page_title": "白氏文集/卷015",
+      "revid": 381300,
+      "md_len": 7563
+    },
+    {
+      "n": 16,
+      "title": "卷016",
+      "file": "016.md",
+      "page_title": "白氏文集/卷016",
+      "revid": 381301,
+      "md_len": 7845
+    },
+    {
+      "n": 17,
+      "title": "卷017",
+      "file": "017.md",
+      "page_title": "白氏文集/卷017",
+      "revid": 517137,
+      "md_len": 7946
+    },
+    {
+      "n": 18,
+      "title": "卷018",
+      "file": "018.md",
+      "page_title": "白氏文集/卷018",
+      "revid": 381314,
+      "md_len": 5706
+    },
+    {
+      "n": 19,
+      "title": "卷019",
+      "file": "019.md",
+      "page_title": "白氏文集/卷019",
+      "revid": 381315,
+      "md_len": 7088
+    },
+    {
+      "n": 20,
+      "title": "卷020",
+      "file": "020.md",
+      "page_title": "白氏文集/卷020",
+      "revid": 381316,
+      "md_len": 6630
+    },
+    {
+      "n": 21,
+      "title": "卷021",
+      "file": "021.md",
+      "page_title": "白氏文集/卷021",
+      "revid": 2619843,
+      "md_len": 7148
+    },
+    {
+      "n": 22,
+      "title": "卷022",
+      "file": "022.md",
+      "page_title": "白氏文集/卷022",
+      "revid": 2261960,
+      "md_len": 2973
+    },
+    {
+      "n": 23,
+      "title": "卷023",
+      "file": "023.md",
+      "page_title": "白氏文集/卷023",
+      "revid": 2057807,
+      "md_len": 5173
+    },
+    {
+      "n": 24,
+      "title": "卷024",
+      "file": "024.md",
+      "page_title": "白氏文集/卷024",
+      "revid": 2609268,
+      "md_len": 5722
+    },
+    {
+      "n": 25,
+      "title": "卷025",
+      "file": "025.md",
+      "page_title": "白氏文集/卷025",
+      "revid": 1995444,
+      "md_len": 5110
+    },
+    {
+      "n": 26,
+      "title": "卷026",
+      "file": "026.md",
+      "page_title": "白氏文集/卷026",
+      "revid": 2078354,
+      "md_len": 5619
+    },
+    {
+      "n": 27,
+      "title": "卷027",
+      "file": "027.md",
+      "page_title": "白氏文集/卷027",
+      "revid": 1540807,
+      "md_len": 6237
+    },
+    {
+      "n": 28,
+      "title": "卷028",
+      "file": "028.md",
+      "page_title": "白氏文集/卷028",
+      "revid": 1546187,
+      "md_len": 7128
+    },
+    {
+      "n": 29,
+      "title": "卷029",
+      "file": "029.md",
+      "page_title": "白氏文集/卷029",
+      "revid": 2485016,
+      "md_len": 4924
+    },
+    {
+      "n": 30,
+      "title": "卷030",
+      "file": "030.md",
+      "page_title": "白氏文集/卷030",
+      "revid": 2485092,
+      "md_len": 8516
+    },
+    {
+      "n": 31,
+      "title": "卷031",
+      "file": "031.md",
+      "page_title": "白氏文集/卷031",
+      "revid": 2016246,
+      "md_len": 5073
+    },
+    {
+      "n": 32,
+      "title": "卷032",
+      "file": "032.md",
+      "page_title": "白氏文集/卷032",
+      "revid": 2016247,
+      "md_len": 5490
+    },
+    {
+      "n": 33,
+      "title": "卷033",
+      "file": "033.md",
+      "page_title": "白氏文集/卷033",
+      "revid": 2016248,
+      "md_len": 4977
+    },
+    {
+      "n": 34,
+      "title": "卷034",
+      "file": "034.md",
+      "page_title": "白氏文集/卷034",
+      "revid": 2016249,
+      "md_len": 6412
+    },
+    {
+      "n": 35,
+      "title": "卷035",
+      "file": "035.md",
+      "page_title": "白氏文集/卷035",
+      "revid": 2016250,
+      "md_len": 4972
+    },
+    {
+      "n": 36,
+      "title": "卷036",
+      "file": "036.md",
+      "page_title": "白氏文集/卷036",
+      "revid": 2016251,
+      "md_len": 4691
+    },
+    {
+      "n": 37,
+      "title": "卷037",
+      "file": "037.md",
+      "page_title": "白氏文集/卷037",
+      "revid": 2016252,
+      "md_len": 6254
+    },
+    {
+      "n": 38,
+      "title": "卷038",
+      "file": "038.md",
+      "page_title": "白氏文集/卷038",
+      "revid": 2016253,
+      "md_len": 5349
+    },
+    {
+      "n": 39,
+      "title": "卷039",
+      "file": "039.md",
+      "page_title": "白氏文集/卷039",
+      "revid": 2016254,
+      "md_len": 9638
+    },
+    {
+      "n": 40,
+      "title": "卷040",
+      "file": "040.md",
+      "page_title": "白氏文集/卷040",
+      "revid": 2016255,
+      "md_len": 9025
+    },
+    {
+      "n": 41,
+      "title": "卷041",
+      "file": "041.md",
+      "page_title": "白氏文集/卷041",
+      "revid": 2016256,
+      "md_len": 5470
+    },
+    {
+      "n": 42,
+      "title": "卷042",
+      "file": "042.md",
+      "page_title": "白氏文集/卷042",
+      "revid": 2016257,
+      "md_len": 6962
+    },
+    {
+      "n": 43,
+      "title": "卷043",
+      "file": "043.md",
+      "page_title": "白氏文集/卷043",
+      "revid": 2016258,
+      "md_len": 4076
+    },
+    {
+      "n": 44,
+      "title": "卷044",
+      "file": "044.md",
+      "page_title": "白氏文集/卷044",
+      "revid": 2613172,
+      "md_len": 4120
+    },
+    {
+      "n": 45,
+      "title": "卷045",
+      "file": "045.md",
+      "page_title": "白氏文集/卷045",
+      "revid": 2016260,
+      "md_len": 8727
+    },
+    {
+      "n": 46,
+      "title": "卷046",
+      "file": "046.md",
+      "page_title": "白氏文集/卷046",
+      "revid": 2016261,
+      "md_len": 8644
+    },
+    {
+      "n": 47,
+      "title": "卷047",
+      "file": "047.md",
+      "page_title": "白氏文集/卷047",
+      "revid": 2016262,
+      "md_len": 7784
+    },
+    {
+      "n": 48,
+      "title": "卷048",
+      "file": "048.md",
+      "page_title": "白氏文集/卷048",
+      "revid": 2016263,
+      "md_len": 9027
+    },
+    {
+      "n": 49,
+      "title": "卷049",
+      "file": "049.md",
+      "page_title": "白氏文集/卷049",
+      "revid": 2016264,
+      "md_len": 7262
+    },
+    {
+      "n": 50,
+      "title": "卷050",
+      "file": "050.md",
+      "page_title": "白氏文集/卷050",
+      "revid": 2016265,
+      "md_len": 6866
+    },
+    {
+      "n": 51,
+      "title": "卷051",
+      "file": "051.md",
+      "page_title": "白氏文集/卷051",
+      "revid": 1324764,
+      "md_len": 7470
+    },
+    {
+      "n": 52,
+      "title": "卷052",
+      "file": "052.md",
+      "page_title": "白氏文集/卷052",
+      "revid": 381318,
+      "md_len": 8594
+    },
+    {
+      "n": 53,
+      "title": "卷053",
+      "file": "053.md",
+      "page_title": "白氏文集/卷053",
+      "revid": 381319,
+      "md_len": 7177
+    },
+    {
+      "n": 54,
+      "title": "卷054",
+      "file": "054.md",
+      "page_title": "白氏文集/卷054",
+      "revid": 1161966,
+      "md_len": 7906
+    },
+    {
+      "n": 55,
+      "title": "卷055",
+      "file": "055.md",
+      "page_title": "白氏文集/卷055",
+      "revid": 857733,
+      "md_len": 6395
+    },
+    {
+      "n": 56,
+      "title": "卷056",
+      "file": "056.md",
+      "page_title": "白氏文集/卷056",
+      "revid": 381324,
+      "md_len": 7181
+    },
+    {
+      "n": 57,
+      "title": "卷057",
+      "file": "057.md",
+      "page_title": "白氏文集/卷057",
+      "revid": 381325,
+      "md_len": 5869
+    },
+    {
+      "n": 58,
+      "title": "卷058",
+      "file": "058.md",
+      "page_title": "白氏文集/卷058",
+      "revid": 1324765,
+      "md_len": 6551
+    },
+    {
+      "n": 59,
+      "title": "卷065",
+      "file": "059.md",
+      "page_title": "白氏文集/卷065",
+      "revid": 1540794,
+      "md_len": 5475
+    },
+    {
+      "n": 60,
+      "title": "卷066",
+      "file": "060.md",
+      "page_title": "白氏文集/卷066",
+      "revid": 1540795,
+      "md_len": 7192
+    },
+    {
+      "n": 61,
+      "title": "卷067",
+      "file": "061.md",
+      "page_title": "白氏文集/卷067",
+      "revid": 1540796,
+      "md_len": 6253
+    },
+    {
+      "n": 62,
+      "title": "卷068",
+      "file": "062.md",
+      "page_title": "白氏文集/卷068",
+      "revid": 1540797,
+      "md_len": 6257
+    },
+    {
+      "n": 63,
+      "title": "卷069",
+      "file": "063.md",
+      "page_title": "白氏文集/卷069",
+      "revid": 1546244,
+      "md_len": 9362
+    },
+    {
+      "n": 64,
+      "title": "卷070",
+      "file": "064.md",
+      "page_title": "白氏文集/卷070",
+      "revid": 2016267,
+      "md_len": 4818
+    },
+    {
+      "n": 65,
+      "title": "卷071",
+      "file": "065.md",
+      "page_title": "白氏文集/卷071",
+      "revid": 1540799,
+      "md_len": 4062
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

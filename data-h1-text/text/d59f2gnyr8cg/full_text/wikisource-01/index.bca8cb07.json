@@ -1,0 +1,227 @@
+{
+  "work_id": "d59f2gnyr8cg",
+  "version_label": "皇元風雅",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%85%83%E9%A2%A8%E9%9B%85%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "元風雅 (四庫全書本)",
+    "revid": 727128,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 25,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "前集卷01",
+      "file": "001.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷01",
+      "revid": 727075,
+      "md_len": 4704
+    },
+    {
+      "n": 2,
+      "title": "前集卷02",
+      "file": "002.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷02",
+      "revid": 763911,
+      "md_len": 2708
+    },
+    {
+      "n": 3,
+      "title": "前集卷03",
+      "file": "003.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷03",
+      "revid": 727079,
+      "md_len": 2907
+    },
+    {
+      "n": 4,
+      "title": "前集卷04",
+      "file": "004.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷04",
+      "revid": 727081,
+      "md_len": 2987
+    },
+    {
+      "n": 5,
+      "title": "前集卷05",
+      "file": "005.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷05",
+      "revid": 727083,
+      "md_len": 3514
+    },
+    {
+      "n": 6,
+      "title": "前集卷06",
+      "file": "006.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷06",
+      "revid": 727085,
+      "md_len": 2819
+    },
+    {
+      "n": 7,
+      "title": "前集卷07",
+      "file": "007.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷07",
+      "revid": 727087,
+      "md_len": 3055
+    },
+    {
+      "n": 8,
+      "title": "前集卷08",
+      "file": "008.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷08",
+      "revid": 763915,
+      "md_len": 2413
+    },
+    {
+      "n": 9,
+      "title": "前集卷09",
+      "file": "009.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷09",
+      "revid": 727091,
+      "md_len": 2904
+    },
+    {
+      "n": 10,
+      "title": "前集卷10",
+      "file": "010.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷10",
+      "revid": 763919,
+      "md_len": 2419
+    },
+    {
+      "n": 11,
+      "title": "前集卷11",
+      "file": "011.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷11",
+      "revid": 727095,
+      "md_len": 3471
+    },
+    {
+      "n": 12,
+      "title": "前集卷12",
+      "file": "012.md",
+      "page_title": "元風雅 (四庫全書本)/前集卷12",
+      "revid": 727097,
+      "md_len": 2212
+    },
+    {
+      "n": 13,
+      "title": "後集目録",
+      "file": "013.md",
+      "page_title": "元風雅 (四庫全書本)/後集目録",
+      "revid": 727099,
+      "md_len": 474
+    },
+    {
+      "n": 14,
+      "title": "後集卷01",
+      "file": "014.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷01",
+      "revid": 763923,
+      "md_len": 2868
+    },
+    {
+      "n": 15,
+      "title": "後集卷02",
+      "file": "015.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷02",
+      "revid": 727103,
+      "md_len": 2792
+    },
+    {
+      "n": 16,
+      "title": "後集卷03",
+      "file": "016.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷03",
+      "revid": 727105,
+      "md_len": 3230
+    },
+    {
+      "n": 17,
+      "title": "後集卷04",
+      "file": "017.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷04",
+      "revid": 763927,
+      "md_len": 2474
+    },
+    {
+      "n": 18,
+      "title": "後集卷05",
+      "file": "018.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷05",
+      "revid": 727109,
+      "md_len": 2921
+    },
+    {
+      "n": 19,
+      "title": "後集卷06",
+      "file": "019.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷06",
+      "revid": 763931,
+      "md_len": 2473
+    },
+    {
+      "n": 20,
+      "title": "後集卷07",
+      "file": "020.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷07",
+      "revid": 727113,
+      "md_len": 3744
+    },
+    {
+      "n": 21,
+      "title": "後集卷08",
+      "file": "021.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷08",
+      "revid": 763935,
+      "md_len": 2554
+    },
+    {
+      "n": 22,
+      "title": "後集卷09",
+      "file": "022.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷09",
+      "revid": 763939,
+      "md_len": 2681
+    },
+    {
+      "n": 23,
+      "title": "後集卷10",
+      "file": "023.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷10",
+      "revid": 727119,
+      "md_len": 2542
+    },
+    {
+      "n": 24,
+      "title": "後集卷11",
+      "file": "024.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷11",
+      "revid": 763943,
+      "md_len": 2445
+    },
+    {
+      "n": 25,
+      "title": "後集卷12",
+      "file": "025.md",
+      "page_title": "元風雅 (四庫全書本)/後集卷12",
+      "revid": 727123,
+      "md_len": 2160
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 155
+  }
+}

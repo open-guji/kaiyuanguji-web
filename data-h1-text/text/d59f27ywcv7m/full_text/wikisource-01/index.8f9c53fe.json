@@ -1,0 +1,104 @@
+{
+  "work_id": "d59f27ywcv7m",
+  "version_label": "九章算術",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E4%B9%9D%E7%AB%A0%E7%AE%97%E8%A1%93",
+    "page_title": "九章算術",
+    "revid": 2245505,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 10,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "九章筭術注序",
+      "file": "001.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 868
+    },
+    {
+      "n": 2,
+      "title": "卷第一　方田以御田疇界域",
+      "file": "002.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 6844
+    },
+    {
+      "n": 3,
+      "title": "卷第二　粟米",
+      "file": "003.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 3304
+    },
+    {
+      "n": 4,
+      "title": "卷第三　衰分",
+      "file": "004.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 2563
+    },
+    {
+      "n": 5,
+      "title": "卷第四　少廣",
+      "file": "005.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 3295
+    },
+    {
+      "n": 6,
+      "title": "卷第五　商功",
+      "file": "006.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 2945
+    },
+    {
+      "n": 7,
+      "title": "卷第六　均輸",
+      "file": "007.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 4802
+    },
+    {
+      "n": 8,
+      "title": "卷第七　盈不足",
+      "file": "008.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 2528
+    },
+    {
+      "n": 9,
+      "title": "卷第八　方程",
+      "file": "009.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 2799
+    },
+    {
+      "n": 10,
+      "title": "卷第九　句股",
+      "file": "010.md",
+      "page_title": "九章算術",
+      "revid": 2245505,
+      "md_len": 2351
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

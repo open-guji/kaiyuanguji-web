@@ -1,0 +1,704 @@
+{
+  "work_id": "d59f28lrsw78",
+  "version_label": "王子安集注",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%8E%8B%E5%AD%90%E5%AE%89%E9%9B%86",
+    "page_title": "王子安集",
+    "revid": 1532280,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 16,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷一",
+      "file": "001.md",
+      "page_title": "王子安集/卷一",
+      "revid": 1532160,
+      "md_len": 4393
+    },
+    {
+      "n": 2,
+      "title": "卷二",
+      "file": "002.md",
+      "page_title": "王子安集/卷二",
+      "revid": 1532158,
+      "md_len": 5128
+    },
+    {
+      "n": 3,
+      "title": "卷三",
+      "file": "003.md",
+      "page_title": "王子安集/卷三",
+      "revid": 1532157,
+      "md_len": 3839
+    },
+    {
+      "n": 4,
+      "title": "卷四",
+      "file": "004.md",
+      "page_title": "王子安集/卷四",
+      "revid": 1532164,
+      "md_len": 4521
+    },
+    {
+      "n": 5,
+      "title": "卷五",
+      "file": "005.md",
+      "page_title": "王子安集/卷五",
+      "revid": 2642988,
+      "md_len": 2271
+    },
+    {
+      "n": 6,
+      "title": "卷六",
+      "file": "006.md",
+      "page_title": "王子安集/卷六",
+      "revid": 1532182,
+      "md_len": 3069
+    },
+    {
+      "n": 7,
+      "title": "卷七",
+      "file": "007.md",
+      "page_title": "王子安集/卷七",
+      "revid": 1532194,
+      "md_len": 4515
+    },
+    {
+      "n": 8,
+      "title": "卷八",
+      "file": "008.md",
+      "page_title": "王子安集/卷八",
+      "revid": 1532201,
+      "md_len": 4796
+    },
+    {
+      "n": 9,
+      "title": "卷九",
+      "file": "009.md",
+      "page_title": "王子安集/卷九",
+      "revid": 8731304,
+      "md_len": 6809
+    },
+    {
+      "n": 10,
+      "title": "卷十",
+      "file": "010.md",
+      "page_title": "王子安集/卷十",
+      "revid": 1532241,
+      "md_len": 2822
+    },
+    {
+      "n": 11,
+      "title": "卷十一",
+      "file": "011.md",
+      "page_title": "王子安集/卷十一",
+      "revid": 1532243,
+      "md_len": 6478
+    },
+    {
+      "n": 12,
+      "title": "卷十二",
+      "file": "012.md",
+      "page_title": "王子安集/卷十二",
+      "revid": 1532265,
+      "md_len": 5300
+    },
+    {
+      "n": 13,
+      "title": "卷十三",
+      "file": "013.md",
+      "page_title": "王子安集/卷十三",
+      "revid": 1532267,
+      "md_len": 6480
+    },
+    {
+      "n": 14,
+      "title": "卷十四",
+      "file": "014.md",
+      "page_title": "王子安集/卷十四",
+      "revid": 1532269,
+      "md_len": 5471
+    },
+    {
+      "n": 15,
+      "title": "卷十五",
+      "file": "015.md",
+      "page_title": "王子安集/卷十五",
+      "revid": 1532270,
+      "md_len": 6458
+    },
+    {
+      "n": 16,
+      "title": "卷十六",
+      "file": "016.md",
+      "page_title": "王子安集/卷十六",
+      "revid": 1532278,
+      "md_len": 5790
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "disambig": 1,
+    "#lst:滕王閣序": 1
+  },
+  "variants": [
+    {
+      "primary": "色",
+      "alt": [
+        "風"
+      ]
+    },
+    {
+      "primary": "回",
+      "alt": [
+        "端"
+      ]
+    },
+    {
+      "primary": "妖婉",
+      "alt": [
+        "婉娩"
+      ]
+    },
+    {
+      "primary": "臺",
+      "alt": [
+        "園"
+      ]
+    },
+    {
+      "primary": "在",
+      "alt": [
+        "住"
+      ]
+    },
+    {
+      "primary": "葉抱露",
+      "alt": [
+        "草犯春"
+      ]
+    },
+    {
+      "primary": "垝",
+      "alt": [
+        "境"
+      ]
+    },
+    {
+      "primary": "池",
+      "alt": [
+        "墀"
+      ]
+    },
+    {
+      "primary": "影",
+      "alt": [
+        "景"
+      ]
+    },
+    {
+      "primary": "及夫",
+      "alt": [
+        "每至"
+      ]
+    },
+    {
+      "primary": "臣",
+      "alt": [
+        "匡"
+      ]
+    },
+    {
+      "primary": "施",
+      "alt": [
+        "旋"
+      ]
+    },
+    {
+      "primary": "臣",
+      "alt": [
+        "匡"
+      ]
+    },
+    {
+      "primary": "山亭",
+      "alt": [
+        "松臺"
+      ]
+    },
+    {
+      "primary": "汀",
+      "alt": [
+        "阿"
+      ]
+    },
+    {
+      "primary": "景",
+      "alt": [
+        "風"
+      ]
+    },
+    {
+      "primary": "尋",
+      "alt": [
+        "入"
+      ]
+    },
+    {
+      "primary": "霧",
+      "alt": [
+        "露"
+      ]
+    },
+    {
+      "primary": "跡",
+      "alt": [
+        "際"
+      ]
+    },
+    {
+      "primary": "邈難",
+      "alt": [
+        "魂莫"
+      ]
+    },
+    {
+      "primary": "履",
+      "alt": [
+        "佩"
+      ]
+    },
+    {
+      "primary": "君",
+      "alt": [
+        "所"
+      ]
+    },
+    {
+      "primary": "渠今",
+      "alt": [
+        "今渠"
+      ]
+    },
+    {
+      "primary": "稠",
+      "alt": [
+        "重"
+      ]
+    },
+    {
+      "primary": "在茲",
+      "alt": [
+        "茲期"
+      ]
+    },
+    {
+      "primary": "無",
+      "alt": [
+        "何"
+      ]
+    },
+    {
+      "primary": "從",
+      "alt": [
+        "徒"
+      ]
+    },
+    {
+      "primary": "西",
+      "alt": [
+        "南"
+      ]
+    },
+    {
+      "primary": "江",
+      "alt": [
+        "光"
+      ]
+    },
+    {
+      "primary": "路",
+      "alt": [
+        "更"
+      ]
+    },
+    {
+      "primary": "帝鄉佳氣鬱蔥蔥",
+      "alt": [
+        "佳氣鬱蔥蔥"
+      ]
+    },
+    {
+      "primary": "夜",
+      "alt": [
+        "晝"
+      ]
+    },
+    {
+      "primary": "晝",
+      "alt": [
+        "夕"
+      ]
+    },
+    {
+      "primary": "君",
+      "alt": [
+        "吾"
+      ]
+    },
+    {
+      "primary": "塵間狹路",
+      "alt": [
+        "狹路塵間"
+      ]
+    },
+    {
+      "primary": "間",
+      "alt": [
+        "開"
+      ]
+    },
+    {
+      "primary": "生",
+      "alt": [
+        "尚"
+      ]
+    },
+    {
+      "primary": "露",
+      "alt": [
+        "霧"
+      ]
+    },
+    {
+      "primary": "鬟",
+      "alt": [
+        "環"
+      ]
+    },
+    {
+      "primary": "席",
+      "alt": [
+        "筵"
+      ]
+    },
+    {
+      "primary": "何",
+      "alt": [
+        "可"
+      ]
+    },
+    {
+      "primary": "籍",
+      "alt": [
+        "席"
+      ]
+    },
+    {
+      "primary": "芝",
+      "alt": [
+        "枝"
+      ]
+    },
+    {
+      "primary": "閾",
+      "alt": [
+        "影"
+      ]
+    },
+    {
+      "primary": "得",
+      "alt": [
+        "見"
+      ]
+    },
+    {
+      "primary": "旅",
+      "alt": [
+        "飄"
+      ]
+    },
+    {
+      "primary": "遑",
+      "alt": [
+        "遲"
+      ]
+    },
+    {
+      "primary": "杏",
+      "alt": [
+        "香"
+      ]
+    },
+    {
+      "primary": "路狹",
+      "alt": [
+        "逕密"
+      ]
+    },
+    {
+      "primary": "聽",
+      "alt": [
+        "引"
+      ]
+    },
+    {
+      "primary": "賞",
+      "alt": [
+        "想"
+      ]
+    },
+    {
+      "primary": "泣",
+      "alt": [
+        "泫"
+      ]
+    },
+    {
+      "primary": "輔三",
+      "alt": [
+        "俯西"
+      ]
+    },
+    {
+      "primary": "同",
+      "alt": [
+        "俱"
+      ]
+    },
+    {
+      "primary": "絕",
+      "alt": [
+        "繞"
+      ]
+    },
+    {
+      "primary": "旦",
+      "alt": [
+        "早"
+      ]
+    },
+    {
+      "primary": "開",
+      "alt": [
+        "濃"
+      ]
+    },
+    {
+      "primary": "儼",
+      "alt": [
+        "促"
+      ]
+    },
+    {
+      "primary": "趾",
+      "alt": [
+        "跡"
+      ]
+    },
+    {
+      "primary": "文",
+      "alt": [
+        "芝"
+      ]
+    },
+    {
+      "primary": "嗟",
+      "alt": [
+        "悲"
+      ]
+    },
+    {
+      "primary": "城",
+      "alt": [
+        "成"
+      ]
+    },
+    {
+      "primary": "露",
+      "alt": [
+        "霧"
+      ]
+    },
+    {
+      "primary": "斜",
+      "alt": [
+        "落"
+      ]
+    },
+    {
+      "primary": "籀",
+      "alt": [
+        "溜"
+      ]
+    },
+    {
+      "primary": "林",
+      "alt": [
+        "桂"
+      ]
+    },
+    {
+      "primary": "烟",
+      "alt": [
+        "阡"
+      ]
+    },
+    {
+      "primary": "代",
+      "alt": [
+        "岱"
+      ]
+    },
+    {
+      "primary": "語",
+      "alt": [
+        "嘿"
+      ]
+    },
+    {
+      "primary": "跡",
+      "alt": [
+        "路"
+      ]
+    },
+    {
+      "primary": "澗",
+      "alt": [
+        "洞"
+      ]
+    },
+    {
+      "primary": "仰",
+      "alt": [
+        "俟"
+      ]
+    },
+    {
+      "primary": "餘",
+      "alt": [
+        "長"
+      ]
+    },
+    {
+      "primary": "梁",
+      "alt": [
+        "京"
+      ]
+    },
+    {
+      "primary": "倦",
+      "alt": [
+        "惓"
+      ]
+    },
+    {
+      "primary": "豐",
+      "alt": [
+        "濃"
+      ]
+    },
+    {
+      "primary": "穸",
+      "alt": [
+        "夜"
+      ]
+    },
+    {
+      "primary": "泫",
+      "alt": [
+        "泣"
+      ]
+    },
+    {
+      "primary": "今",
+      "alt": [
+        "情"
+      ]
+    },
+    {
+      "primary": "玄圃",
+      "alt": [
+        "「玄」字原書避清康熙帝名諱刻作「元」，今回改。"
+      ]
+    },
+    {
+      "primary": "嶽",
+      "alt": [
+        "《王子安集》作岳。"
+      ]
+    },
+    {
+      "primary": "玄枵",
+      "alt": [
+        "「玄」字原書避清康熙帝名諱刻作「元」，今回改。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "玄雲",
+      "alt": [
+        "「玄」字原書避清康熙帝名諱刻作「元」，今回改，本篇後同。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "《王子安集》作「玄」。"
+      ]
+    }
+  ]
+}

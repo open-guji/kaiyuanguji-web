@@ -1,0 +1,317 @@
+{
+  "work_id": "d59f28npetc4",
+  "version_label": "靈樞經",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%B8%9D%E5%85%A7%E7%B6%93",
+    "page_title": "黃帝內經",
+    "revid": 2596804,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 36,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "素問第一卷",
+      "file": "001.md",
+      "page_title": "黃帝內經/素問第一卷",
+      "revid": 2083230,
+      "md_len": 4248
+    },
+    {
+      "n": 2,
+      "title": "素問第二卷",
+      "file": "002.md",
+      "page_title": "黃帝內經/素問第二卷",
+      "revid": 2627947,
+      "md_len": 3938
+    },
+    {
+      "n": 3,
+      "title": "素問第三卷",
+      "file": "003.md",
+      "page_title": "黃帝內經/素問第三卷",
+      "revid": 2083377,
+      "md_len": 3441
+    },
+    {
+      "n": 4,
+      "title": "素問第四卷",
+      "file": "004.md",
+      "page_title": "黃帝內經/素問第四卷",
+      "revid": 2083507,
+      "md_len": 3046
+    },
+    {
+      "n": 5,
+      "title": "素問第五卷",
+      "file": "005.md",
+      "page_title": "黃帝內經/素問第五卷",
+      "revid": 2083675,
+      "md_len": 3642
+    },
+    {
+      "n": 6,
+      "title": "素問第六卷",
+      "file": "006.md",
+      "page_title": "黃帝內經/素問第六卷",
+      "revid": 2083813,
+      "md_len": 4199
+    },
+    {
+      "n": 7,
+      "title": "素問第七卷",
+      "file": "007.md",
+      "page_title": "黃帝內經/素問第七卷",
+      "revid": 2083821,
+      "md_len": 3156
+    },
+    {
+      "n": 8,
+      "title": "素問第八卷",
+      "file": "008.md",
+      "page_title": "黃帝內經/素問第八卷",
+      "revid": 2084129,
+      "md_len": 5490
+    },
+    {
+      "n": 9,
+      "title": "素問第九卷",
+      "file": "009.md",
+      "page_title": "黃帝內經/素問第九卷",
+      "revid": 2084474,
+      "md_len": 3433
+    },
+    {
+      "n": 10,
+      "title": "素問第十卷",
+      "file": "010.md",
+      "page_title": "黃帝內經/素問第十卷",
+      "revid": 2084483,
+      "md_len": 3943
+    },
+    {
+      "n": 11,
+      "title": "素問第十一卷",
+      "file": "011.md",
+      "page_title": "黃帝內經/素問第十一卷",
+      "revid": 2551001,
+      "md_len": 3148
+    },
+    {
+      "n": 12,
+      "title": "素問第十二卷",
+      "file": "012.md",
+      "page_title": "黃帝內經/素問第十二卷",
+      "revid": 2550991,
+      "md_len": 3829
+    },
+    {
+      "n": 13,
+      "title": "素問第十三卷",
+      "file": "013.md",
+      "page_title": "黃帝內經/素問第十三卷",
+      "revid": 2093305,
+      "md_len": 3840
+    },
+    {
+      "n": 14,
+      "title": "素問第十四卷",
+      "file": "014.md",
+      "page_title": "黃帝內經/素問第十四卷",
+      "revid": 2085844,
+      "md_len": 2877
+    },
+    {
+      "n": 15,
+      "title": "素問第十五卷",
+      "file": "015.md",
+      "page_title": "黃帝內經/素問第十五卷",
+      "revid": 2085850,
+      "md_len": 2692
+    },
+    {
+      "n": 16,
+      "title": "素問第十六卷",
+      "file": "016.md",
+      "page_title": "黃帝內經/素問第十六卷",
+      "revid": 2085908,
+      "md_len": 2179
+    },
+    {
+      "n": 17,
+      "title": "素問第十七卷",
+      "file": "017.md",
+      "page_title": "黃帝內經/素問第十七卷",
+      "revid": 2085909,
+      "md_len": 2583
+    },
+    {
+      "n": 18,
+      "title": "素問第十八卷",
+      "file": "018.md",
+      "page_title": "黃帝內經/素問第十八卷",
+      "revid": 2085912,
+      "md_len": 3567
+    },
+    {
+      "n": 19,
+      "title": "素問第十九卷",
+      "file": "019.md",
+      "page_title": "黃帝內經/素問第十九卷",
+      "revid": 2086230,
+      "md_len": 6309
+    },
+    {
+      "n": 20,
+      "title": "素問第二十卷",
+      "file": "020.md",
+      "page_title": "黃帝內經/素問第二十卷",
+      "revid": 2093934,
+      "md_len": 8747
+    },
+    {
+      "n": 21,
+      "title": "素問第二十一卷",
+      "file": "021.md",
+      "page_title": "黃帝內經/素問第二十一卷",
+      "revid": 2093943,
+      "md_len": 20321
+    },
+    {
+      "n": 22,
+      "title": "素問第二十二卷",
+      "file": "022.md",
+      "page_title": "黃帝內經/素問第二十二卷",
+      "revid": 2093944,
+      "md_len": 9143
+    },
+    {
+      "n": 23,
+      "title": "素問第二十三卷",
+      "file": "023.md",
+      "page_title": "黃帝內經/素問第二十三卷",
+      "revid": 2093947,
+      "md_len": 2834
+    },
+    {
+      "n": 24,
+      "title": "素問第二十四卷",
+      "file": "024.md",
+      "page_title": "黃帝內經/素問第二十四卷",
+      "revid": 2093948,
+      "md_len": 2602
+    },
+    {
+      "n": 25,
+      "title": "靈樞第一卷",
+      "file": "025.md",
+      "page_title": "黃帝內經/靈樞第一卷",
+      "revid": 2099201,
+      "md_len": 8585
+    },
+    {
+      "n": 26,
+      "title": "靈樞第二卷",
+      "file": "026.md",
+      "page_title": "黃帝內經/靈樞第二卷",
+      "revid": 2110925,
+      "md_len": 7450
+    },
+    {
+      "n": 27,
+      "title": "靈樞第三卷",
+      "file": "027.md",
+      "page_title": "黃帝內經/靈樞第三卷",
+      "revid": 2520099,
+      "md_len": 7266
+    },
+    {
+      "n": 28,
+      "title": "靈樞第四卷",
+      "file": "028.md",
+      "page_title": "黃帝內經/靈樞第四卷",
+      "revid": 1529472,
+      "md_len": 6186
+    },
+    {
+      "n": 29,
+      "title": "靈樞第五卷",
+      "file": "029.md",
+      "page_title": "黃帝內經/靈樞第五卷",
+      "revid": 1748600,
+      "md_len": 7223
+    },
+    {
+      "n": 30,
+      "title": "靈樞第六卷",
+      "file": "030.md",
+      "page_title": "黃帝內經/靈樞第六卷",
+      "revid": 1529474,
+      "md_len": 7051
+    },
+    {
+      "n": 31,
+      "title": "靈樞第七卷",
+      "file": "031.md",
+      "page_title": "黃帝內經/靈樞第七卷",
+      "revid": 1529475,
+      "md_len": 6297
+    },
+    {
+      "n": 32,
+      "title": "靈樞第八卷",
+      "file": "032.md",
+      "page_title": "黃帝內經/靈樞第八卷",
+      "revid": 1529476,
+      "md_len": 6141
+    },
+    {
+      "n": 33,
+      "title": "靈樞第九卷",
+      "file": "033.md",
+      "page_title": "黃帝內經/靈樞第九卷",
+      "revid": 1529477,
+      "md_len": 6847
+    },
+    {
+      "n": 34,
+      "title": "靈樞第十卷",
+      "file": "034.md",
+      "page_title": "黃帝內經/靈樞第十卷",
+      "revid": 1529478,
+      "md_len": 6549
+    },
+    {
+      "n": 35,
+      "title": "靈樞第十一卷",
+      "file": "035.md",
+      "page_title": "黃帝內經/靈樞第十一卷",
+      "revid": 1529479,
+      "md_len": 7058
+    },
+    {
+      "n": 36,
+      "title": "靈樞第十二卷",
+      "file": "036.md",
+      "page_title": "黃帝內經/靈樞第十二卷",
+      "revid": 356511,
+      "md_len": 5949
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "中醫": 1,
+    "**": 4
+  },
+  "dropped_refs": 1
+}

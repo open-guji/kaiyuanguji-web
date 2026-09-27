@@ -1,0 +1,153 @@
+{
+  "work_id": "d59f286t1amb",
+  "version_label": "十六國春秋",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%8D%81%E5%85%AD%E5%9C%8B%E6%98%A5%E7%A7%8B",
+    "page_title": "十六國春秋",
+    "revid": 2552432,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 16,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "十六國春秋/卷01",
+      "revid": 2399017,
+      "md_len": 4375
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "十六國春秋/卷02",
+      "revid": 2603576,
+      "md_len": 5867
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "十六國春秋/卷03",
+      "revid": 2399033,
+      "md_len": 3117
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "十六國春秋/卷04",
+      "revid": 2399035,
+      "md_len": 9581
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "十六國春秋/卷05",
+      "revid": 2399038,
+      "md_len": 3691
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "十六國春秋/卷06",
+      "revid": 3014434,
+      "md_len": 2819
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "十六國春秋/卷07",
+      "revid": 2399044,
+      "md_len": 3497
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "十六國春秋/卷08",
+      "revid": 2399046,
+      "md_len": 1042
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "十六國春秋/卷09",
+      "revid": 2399047,
+      "md_len": 1376
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "十六國春秋/卷10",
+      "revid": 2399051,
+      "md_len": 1838
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "十六國春秋/卷11",
+      "revid": 2399057,
+      "md_len": 3409
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "十六國春秋/卷12",
+      "revid": 2399059,
+      "md_len": 1308
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "十六國春秋/卷13",
+      "revid": 2399061,
+      "md_len": 2761
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "十六國春秋/卷14",
+      "revid": 2399062,
+      "md_len": 1650
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "十六國春秋/卷15",
+      "revid": 2399063,
+      "md_len": 1426
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "十六國春秋/卷16",
+      "revid": 2399065,
+      "md_len": 1532
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "dropped_refs": 17
+}

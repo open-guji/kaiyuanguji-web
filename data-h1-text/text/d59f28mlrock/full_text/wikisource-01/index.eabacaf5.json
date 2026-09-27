@@ -1,0 +1,986 @@
+{
+  "work_id": "d59f28mlrock",
+  "version_label": "白氏長慶集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%99%BD%E6%B0%8F%E9%95%B7%E6%85%B6%E9%9B%86",
+    "page_title": "白氏長慶集",
+    "revid": 1966511,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 69,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷001",
+      "file": "001.md",
+      "page_title": "白氏長慶集/卷001",
+      "revid": 2391015,
+      "md_len": 10297
+    },
+    {
+      "n": 2,
+      "title": "卷002",
+      "file": "002.md",
+      "page_title": "白氏長慶集/卷002",
+      "revid": 405422,
+      "md_len": 7115
+    },
+    {
+      "n": 3,
+      "title": "卷003",
+      "file": "003.md",
+      "page_title": "白氏長慶集/卷003",
+      "revid": 1430136,
+      "md_len": 5962
+    },
+    {
+      "n": 4,
+      "title": "卷004",
+      "file": "004.md",
+      "page_title": "白氏長慶集/卷004",
+      "revid": 2019303,
+      "md_len": 6523
+    },
+    {
+      "n": 5,
+      "title": "卷005",
+      "file": "005.md",
+      "page_title": "白氏長慶集/卷005",
+      "revid": 1793591,
+      "md_len": 4199
+    },
+    {
+      "n": 6,
+      "title": "卷006",
+      "file": "006.md",
+      "page_title": "白氏長慶集/卷006",
+      "revid": 1577026,
+      "md_len": 8235
+    },
+    {
+      "n": 7,
+      "title": "卷007",
+      "file": "007.md",
+      "page_title": "白氏長慶集/卷007",
+      "revid": 1578692,
+      "md_len": 7310
+    },
+    {
+      "n": 8,
+      "title": "卷008",
+      "file": "008.md",
+      "page_title": "白氏長慶集/卷008",
+      "revid": 1579468,
+      "md_len": 6788
+    },
+    {
+      "n": 9,
+      "title": "卷009",
+      "file": "009.md",
+      "page_title": "白氏長慶集/卷009",
+      "revid": 1577034,
+      "md_len": 5838
+    },
+    {
+      "n": 10,
+      "title": "卷010",
+      "file": "010.md",
+      "page_title": "白氏長慶集/卷010",
+      "revid": 1577041,
+      "md_len": 9191
+    },
+    {
+      "n": 11,
+      "title": "卷011",
+      "file": "011.md",
+      "page_title": "白氏長慶集/卷011",
+      "revid": 1579152,
+      "md_len": 5912
+    },
+    {
+      "n": 12,
+      "title": "卷012",
+      "file": "012.md",
+      "page_title": "白氏長慶集/卷012",
+      "revid": 2436767,
+      "md_len": 6643
+    },
+    {
+      "n": 13,
+      "title": "卷013",
+      "file": "013.md",
+      "page_title": "白氏長慶集/卷013",
+      "revid": 383162,
+      "md_len": 8733
+    },
+    {
+      "n": 14,
+      "title": "卷014",
+      "file": "014.md",
+      "page_title": "白氏長慶集/卷014",
+      "revid": 1163121,
+      "md_len": 7648
+    },
+    {
+      "n": 15,
+      "title": "卷015",
+      "file": "015.md",
+      "page_title": "白氏長慶集/卷015",
+      "revid": 1577056,
+      "md_len": 8544
+    },
+    {
+      "n": 16,
+      "title": "卷016",
+      "file": "016.md",
+      "page_title": "白氏長慶集/卷016",
+      "revid": 1578794,
+      "md_len": 8868
+    },
+    {
+      "n": 17,
+      "title": "卷017",
+      "file": "017.md",
+      "page_title": "白氏長慶集/卷017",
+      "revid": 1580107,
+      "md_len": 8973
+    },
+    {
+      "n": 18,
+      "title": "卷018",
+      "file": "018.md",
+      "page_title": "白氏長慶集/卷018",
+      "revid": 1579297,
+      "md_len": 6603
+    },
+    {
+      "n": 19,
+      "title": "卷019",
+      "file": "019.md",
+      "page_title": "白氏長慶集/卷019",
+      "revid": 1579392,
+      "md_len": 8109
+    },
+    {
+      "n": 20,
+      "title": "卷020",
+      "file": "020.md",
+      "page_title": "白氏長慶集/卷020",
+      "revid": 1579617,
+      "md_len": 7620
+    },
+    {
+      "n": 21,
+      "title": "卷021",
+      "file": "021.md",
+      "page_title": "白氏長慶集/卷021",
+      "revid": 1580086,
+      "md_len": 8003
+    },
+    {
+      "n": 22,
+      "title": "卷022",
+      "file": "022.md",
+      "page_title": "白氏長慶集/卷022",
+      "revid": 1580264,
+      "md_len": 9160
+    },
+    {
+      "n": 23,
+      "title": "卷023",
+      "file": "023.md",
+      "page_title": "白氏長慶集/卷023",
+      "revid": 1579704,
+      "md_len": 8192
+    },
+    {
+      "n": 24,
+      "title": "卷024",
+      "file": "024.md",
+      "page_title": "白氏長慶集/卷024",
+      "revid": 1579892,
+      "md_len": 8721
+    },
+    {
+      "n": 25,
+      "title": "卷025",
+      "file": "025.md",
+      "page_title": "白氏長慶集/卷025",
+      "revid": 1580134,
+      "md_len": 7417
+    },
+    {
+      "n": 26,
+      "title": "卷026",
+      "file": "026.md",
+      "page_title": "白氏長慶集/卷026",
+      "revid": 1163000,
+      "md_len": 7967
+    },
+    {
+      "n": 27,
+      "title": "卷027",
+      "file": "027.md",
+      "page_title": "白氏長慶集/卷027",
+      "revid": 1162995,
+      "md_len": 6658
+    },
+    {
+      "n": 28,
+      "title": "卷028",
+      "file": "028.md",
+      "page_title": "白氏長慶集/卷028",
+      "revid": 1163003,
+      "md_len": 7494
+    },
+    {
+      "n": 29,
+      "title": "卷029",
+      "file": "029.md",
+      "page_title": "白氏長慶集/卷029",
+      "revid": 1162744,
+      "md_len": 7409
+    },
+    {
+      "n": 30,
+      "title": "卷030",
+      "file": "030.md",
+      "page_title": "白氏長慶集/卷030",
+      "revid": 1583875,
+      "md_len": 5558
+    },
+    {
+      "n": 31,
+      "title": "卷031",
+      "file": "031.md",
+      "page_title": "白氏長慶集/卷031",
+      "revid": 383180,
+      "md_len": 7677
+    },
+    {
+      "n": 32,
+      "title": "卷032",
+      "file": "032.md",
+      "page_title": "白氏長慶集/卷032",
+      "revid": 1583562,
+      "md_len": 6284
+    },
+    {
+      "n": 33,
+      "title": "卷033",
+      "file": "033.md",
+      "page_title": "白氏長慶集/卷033",
+      "revid": 1162839,
+      "md_len": 8147
+    },
+    {
+      "n": 34,
+      "title": "卷034",
+      "file": "034.md",
+      "page_title": "白氏長慶集/卷034",
+      "revid": 1163122,
+      "md_len": 6998
+    },
+    {
+      "n": 35,
+      "title": "卷035",
+      "file": "035.md",
+      "page_title": "白氏長慶集/卷035",
+      "revid": 1586870,
+      "md_len": 7243
+    },
+    {
+      "n": 36,
+      "title": "卷036",
+      "file": "036.md",
+      "page_title": "白氏長慶集/卷036",
+      "revid": 1586918,
+      "md_len": 10422
+    },
+    {
+      "n": 37,
+      "title": "卷037",
+      "file": "037.md",
+      "page_title": "白氏長慶集/卷037",
+      "revid": 1587542,
+      "md_len": 4452
+    },
+    {
+      "n": 38,
+      "title": "卷038",
+      "file": "038.md",
+      "page_title": "白氏長慶集/卷038",
+      "revid": 1586984,
+      "md_len": 2513
+    },
+    {
+      "n": 39,
+      "title": "卷039",
+      "file": "039.md",
+      "page_title": "白氏長慶集/卷039",
+      "revid": 1587428,
+      "md_len": 7846
+    },
+    {
+      "n": 40,
+      "title": "卷040",
+      "file": "040.md",
+      "page_title": "白氏長慶集/卷040",
+      "revid": 1162948,
+      "md_len": 5385
+    },
+    {
+      "n": 41,
+      "title": "卷041",
+      "file": "041.md",
+      "page_title": "白氏長慶集/卷041",
+      "revid": 1153151,
+      "md_len": 6175
+    },
+    {
+      "n": 42,
+      "title": "卷042",
+      "file": "042.md",
+      "page_title": "白氏長慶集/卷042",
+      "revid": 383194,
+      "md_len": 5316
+    },
+    {
+      "n": 43,
+      "title": "卷043",
+      "file": "043.md",
+      "page_title": "白氏長慶集/卷043",
+      "revid": 1964046,
+      "md_len": 4632
+    },
+    {
+      "n": 44,
+      "title": "卷044",
+      "file": "044.md",
+      "page_title": "白氏長慶集/卷044",
+      "revid": 338736,
+      "md_len": 6285
+    },
+    {
+      "n": 45,
+      "title": "卷045",
+      "file": "045.md",
+      "page_title": "白氏長慶集/卷045",
+      "revid": 338272,
+      "md_len": 7279
+    },
+    {
+      "n": 46,
+      "title": "卷046",
+      "file": "046.md",
+      "page_title": "白氏長慶集/卷046",
+      "revid": 447992,
+      "md_len": 5266
+    },
+    {
+      "n": 47,
+      "title": "卷047",
+      "file": "047.md",
+      "page_title": "白氏長慶集/卷047",
+      "revid": 383197,
+      "md_len": 8584
+    },
+    {
+      "n": 48,
+      "title": "卷050",
+      "file": "048.md",
+      "page_title": "白氏長慶集/卷050",
+      "revid": 1162600,
+      "md_len": 6059
+    },
+    {
+      "n": 49,
+      "title": "卷051",
+      "file": "049.md",
+      "page_title": "白氏長慶集/卷051",
+      "revid": 1158574,
+      "md_len": 7696
+    },
+    {
+      "n": 50,
+      "title": "卷052",
+      "file": "050.md",
+      "page_title": "白氏長慶集/卷052",
+      "revid": 383208,
+      "md_len": 5909
+    },
+    {
+      "n": 51,
+      "title": "卷053",
+      "file": "051.md",
+      "page_title": "白氏長慶集/卷053",
+      "revid": 383209,
+      "md_len": 5544
+    },
+    {
+      "n": 52,
+      "title": "卷054",
+      "file": "052.md",
+      "page_title": "白氏長慶集/卷054",
+      "revid": 383210,
+      "md_len": 7643
+    },
+    {
+      "n": 53,
+      "title": "卷055",
+      "file": "053.md",
+      "page_title": "白氏長慶集/卷055",
+      "revid": 383211,
+      "md_len": 6725
+    },
+    {
+      "n": 54,
+      "title": "卷056",
+      "file": "054.md",
+      "page_title": "白氏長慶集/卷056",
+      "revid": 383212,
+      "md_len": 11614
+    },
+    {
+      "n": 55,
+      "title": "卷057",
+      "file": "055.md",
+      "page_title": "白氏長慶集/卷057",
+      "revid": 383213,
+      "md_len": 10839
+    },
+    {
+      "n": 56,
+      "title": "卷058",
+      "file": "056.md",
+      "page_title": "白氏長慶集/卷058",
+      "revid": 383214,
+      "md_len": 6603
+    },
+    {
+      "n": 57,
+      "title": "卷059",
+      "file": "057.md",
+      "page_title": "白氏長慶集/卷059",
+      "revid": 383215,
+      "md_len": 8354
+    },
+    {
+      "n": 58,
+      "title": "卷060",
+      "file": "058.md",
+      "page_title": "白氏長慶集/卷060",
+      "revid": 383333,
+      "md_len": 4937
+    },
+    {
+      "n": 59,
+      "title": "卷061",
+      "file": "059.md",
+      "page_title": "白氏長慶集/卷061",
+      "revid": 383217,
+      "md_len": 4947
+    },
+    {
+      "n": 60,
+      "title": "卷062",
+      "file": "060.md",
+      "page_title": "白氏長慶集/卷062",
+      "revid": 316587,
+      "md_len": 10291
+    },
+    {
+      "n": 61,
+      "title": "卷063",
+      "file": "061.md",
+      "page_title": "白氏長慶集/卷063",
+      "revid": 316588,
+      "md_len": 10137
+    },
+    {
+      "n": 62,
+      "title": "卷064",
+      "file": "062.md",
+      "page_title": "白氏長慶集/卷064",
+      "revid": 316593,
+      "md_len": 9223
+    },
+    {
+      "n": 63,
+      "title": "卷065",
+      "file": "063.md",
+      "page_title": "白氏長慶集/卷065",
+      "revid": 316594,
+      "md_len": 10651
+    },
+    {
+      "n": 64,
+      "title": "卷066",
+      "file": "064.md",
+      "page_title": "白氏長慶集/卷066",
+      "revid": 383218,
+      "md_len": 8767
+    },
+    {
+      "n": 65,
+      "title": "卷067",
+      "file": "065.md",
+      "page_title": "白氏長慶集/卷067",
+      "revid": 383219,
+      "md_len": 8251
+    },
+    {
+      "n": 66,
+      "title": "卷068",
+      "file": "066.md",
+      "page_title": "白氏長慶集/卷068",
+      "revid": 383220,
+      "md_len": 9075
+    },
+    {
+      "n": 67,
+      "title": "卷069",
+      "file": "067.md",
+      "page_title": "白氏長慶集/卷069",
+      "revid": 383221,
+      "md_len": 8272
+    },
+    {
+      "n": 68,
+      "title": "卷070",
+      "file": "068.md",
+      "page_title": "白氏長慶集/卷070",
+      "revid": 1111600,
+      "md_len": 11678
+    },
+    {
+      "n": 69,
+      "title": "卷071",
+      "file": "069.md",
+      "page_title": "白氏長慶集/卷071",
+      "revid": 1111549,
+      "md_len": 6475
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "tocright": 5,
+    "#section:續古詩十首": 10,
+    "#section:秦中吟": 11,
+    "頭": 24,
+    "尾": 24,
+    "disambig": 1,
+    "#section:效陶潛體詩十六首": 1,
+    "#lsth:效陶潛體詩十六首": 16,
+    ":草堂記 (白居易)": 1
+  },
+  "variants": [
+    {
+      "primary": "告",
+      "alt": [
+        "制"
+      ]
+    },
+    {
+      "primary": "責己",
+      "alt": [
+        "己責，責通債"
+      ]
+    },
+    {
+      "primary": "靡",
+      "alt": [
+        "無"
+      ]
+    },
+    {
+      "primary": "出",
+      "alt": [
+        "由"
+      ]
+    },
+    {
+      "primary": "油油",
+      "alt": [
+        "悠悠"
+      ]
+    },
+    {
+      "primary": "意",
+      "alt": [
+        "神"
+      ]
+    },
+    {
+      "primary": "神",
+      "alt": [
+        "意"
+      ]
+    },
+    {
+      "primary": "處",
+      "alt": [
+        "要"
+      ]
+    },
+    {
+      "primary": "常",
+      "alt": [
+        "長"
+      ]
+    },
+    {
+      "primary": "繞",
+      "alt": [
+        "遶"
+      ]
+    },
+    {
+      "primary": "瑟",
+      "alt": [
+        "琴"
+      ]
+    },
+    {
+      "primary": "淡",
+      "alt": [
+        "澹"
+      ]
+    },
+    {
+      "primary": "動",
+      "alt": [
+        "盜"
+      ]
+    },
+    {
+      "primary": "得",
+      "alt": [
+        "拾"
+      ]
+    },
+    {
+      "primary": "節物",
+      "alt": [
+        "物節"
+      ]
+    },
+    {
+      "primary": "蹋",
+      "alt": [
+        "踏"
+      ]
+    },
+    {
+      "primary": "低",
+      "alt": [
+        "哀"
+      ]
+    },
+    {
+      "primary": "蹋",
+      "alt": [
+        "踏"
+      ]
+    },
+    {
+      "primary": "華",
+      "alt": [
+        "花"
+      ]
+    },
+    {
+      "primary": "恨",
+      "alt": [
+        "報"
+      ]
+    },
+    {
+      "primary": "爾",
+      "alt": [
+        "今"
+      ]
+    },
+    {
+      "primary": "作",
+      "alt": [
+        "祚"
+      ]
+    },
+    {
+      "primary": "儿",
+      "alt": [
+        "人"
+      ]
+    },
+    {
+      "primary": "聲",
+      "alt": [
+        "音"
+      ]
+    },
+    {
+      "primary": "慣听梨園歌管",
+      "alt": [
+        "唯听驪宮歌吹"
+      ]
+    },
+    {
+      "primary": "瀘",
+      "alt": [
+        "滬"
+      ]
+    },
+    {
+      "primary": "未過十人二三死",
+      "alt": [
+        "未戰十人五人死"
+      ]
+    },
+    {
+      "primary": "偷將大石錘",
+      "alt": [
+        "自把大石捶"
+      ]
+    },
+    {
+      "primary": "且喜老身今獨在",
+      "alt": [
+        "所喜老身今猶在"
+      ]
+    },
+    {
+      "primary": "瀘",
+      "alt": [
+        "滬"
+      ]
+    },
+    {
+      "primary": "孤",
+      "alt": [
+        "飛"
+      ]
+    },
+    {
+      "primary": "請問",
+      "alt": [
+        "君不見"
+      ]
+    },
+    {
+      "primary": "不在山，不在水",
+      "alt": [
+        "不在水，不在山"
+      ]
+    },
+    {
+      "primary": "情",
+      "alt": [
+        "心"
+      ]
+    },
+    {
+      "primary": "空",
+      "alt": [
+        "唯"
+      ]
+    },
+    {
+      "primary": "陵",
+      "alt": [
+        "凌"
+      ]
+    },
+    {
+      "primary": "動",
+      "alt": [
+        "振"
+      ]
+    },
+    {
+      "primary": "上臺",
+      "alt": [
+        "半見"
+      ]
+    },
+    {
+      "primary": "池枯竭",
+      "alt": [
+        "靈池竭"
+      ]
+    },
+    {
+      "primary": "封",
+      "alt": [
+        "稅"
+      ]
+    },
+    {
+      "primary": "管",
+      "alt": [
+        "貫"
+      ]
+    },
+    {
+      "primary": "祗",
+      "alt": [
+        "寄"
+      ]
+    },
+    {
+      "primary": "揚州長史手自封",
+      "alt": [
+        "鈿函金匣鎻幾重"
+      ]
+    },
+    {
+      "primary": "照",
+      "alt": [
+        "用"
+      ]
+    },
+    {
+      "primary": "飛",
+      "alt": [
+        "迎"
+      ]
+    },
+    {
+      "primary": "象",
+      "alt": [
+        "鳥"
+      ]
+    },
+    {
+      "primary": "脂",
+      "alt": [
+        "肌"
+      ]
+    },
+    {
+      "primary": "壯",
+      "alt": [
+        "少"
+      ]
+    },
+    {
+      "primary": "疾",
+      "alt": [
+        "速"
+      ]
+    },
+    {
+      "primary": "四",
+      "alt": [
+        "五"
+      ]
+    },
+    {
+      "primary": "八駿駒",
+      "alt": [
+        "千里馬"
+      ]
+    },
+    {
+      "primary": "尚",
+      "alt": [
+        "世"
+      ]
+    },
+    {
+      "primary": "原憲貧",
+      "alt": [
+        "黃憲賢"
+      ]
+    },
+    {
+      "primary": "無",
+      "alt": [
+        "垂"
+      ]
+    },
+    {
+      "primary": "宗社之危如綴旒。",
+      "alt": [
+        "一本此句下多三句「煬天子，自言歡樂殊未极，豈知明年正朔歸武德」"
+      ]
+    },
+    {
+      "primary": "戀",
+      "alt": [
+        "思"
+      ]
+    },
+    {
+      "primary": "殿角",
+      "alt": [
+        "樓殿"
+      ]
+    },
+    {
+      "primary": "界",
+      "alt": [
+        "間"
+      ]
+    },
+    {
+      "primary": "梧",
+      "alt": [
+        "桐"
+      ]
+    },
+    {
+      "primary": "特",
+      "alt": [
+        "時"
+      ]
+    },
+    {
+      "primary": "榮",
+      "alt": [
+        "檐"
+      ]
+    },
+    {
+      "primary": "暝",
+      "alt": [
+        "冥"
+      ]
+    },
+    {
+      "primary": "南望",
+      "alt": [
+        "望好"
+      ]
+    },
+    {
+      "primary": "葺",
+      "alt": [
+        "叢"
+      ]
+    },
+    {
+      "primary": "𢥠",
+      "alt": [
+        "悚"
+      ]
+    },
+    {
+      "primary": "所",
+      "alt": [
+        "有"
+      ]
+    }
+  ],
+  "dropped_refs": 1
+}

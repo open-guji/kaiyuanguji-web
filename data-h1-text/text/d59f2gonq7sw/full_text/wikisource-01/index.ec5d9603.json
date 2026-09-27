@@ -1,0 +1,51 @@
+{
+  "work_id": "d59f2gonq7sw",
+  "version_label": "大易象數鉤深圖",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%A4%A7%E6%98%93%E8%B1%A1%E6%95%B8%E9%89%A4%E6%B7%B1%E5%9C%96%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "大易象數鉤深圖 (四庫全書本)",
+    "revid": 528321,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 3,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷上",
+      "file": "001.md",
+      "page_title": "大易象數鉤深圖 (四庫全書本)/卷上",
+      "revid": 756971,
+      "md_len": 3126
+    },
+    {
+      "n": 2,
+      "title": "卷中",
+      "file": "002.md",
+      "page_title": "大易象數鉤深圖 (四庫全書本)/卷中",
+      "revid": 756973,
+      "md_len": 5294
+    },
+    {
+      "n": 3,
+      "title": "卷下",
+      "file": "003.md",
+      "page_title": "大易象數鉤深圖 (四庫全書本)/卷下",
+      "revid": 756972,
+      "md_len": 5343
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 68
+  }
+}
