@@ -4,14 +4,19 @@
 // （next.config.ts 的 pageExtensions）；正式站静态导出看不到它——动态路由在
 // output: 'export' 下没有 generateStaticParams 会直接构建失败，且正式站产物须与改前一致。
 //
-// 本段只做骨架：服务端取数＋首屏摘要（书名／作者／卷数／简介）直接进 HTML，
-// 客户端详情组件照旧挂载。<title> 以外的头部（description、canonical、JSON-LD）、
-// 草稿 id 跳转、旧地址 308 归 W2-2；按改动清缓存与 sitemap 归 W2-3。
+// W2-1：服务端取数＋首屏摘要（书名／作者／卷数／简介）直接进 HTML，客户端详情组件照旧挂载。
+// W2-2：头部按 31 卡 §A.5 字段表出（title／description／canonical／OpenGraph／JSON-LD）；
+//   被并条目 308 到目标页；查不到的草稿 id 临时跳回 /book-index 由客户端查升格表；
+//   其余查不到的 id 真 404（noindex）。/book-index?id= → /item/ 的 308 在 middleware.ssr.ts。
+// 按改动清缓存与 sitemap 归 W2-3。
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { SITE_URL } from '@/lib/constants';
+import { parseItemId } from '@/lib/item-id';
 import { getItemServer } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
+import { buildItemSeo, jsonLdScript, mergedTarget, type ItemSeo } from '@/lib/server/item-seo';
 import ItemDetailClient from './ItemDetailClient';
 
 // 页面缓存：CDN 按 s-maxage 缓存（EdgeOne 上 Next 自己的 ISR 缓存不持久，25 卡）。
@@ -27,18 +32,41 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 
 type Props = { params: Promise<{ id: string }> };
 
-type Loaded = ItemSummary & { source: 'h1' | 'current' };
+type Loaded = ItemSummary & { source: 'h1' | 'current'; seo: ItemSeo };
 
+/**
+ * 取条目并处理跳转。generateMetadata 与页面各调一次，取数有进程内缓存，不会重复回源。
+ * 返回 null ＝ 真 404。
+ */
 async function load(id: string): Promise<Loaded | null> {
     const hit = await getItemServer(id);
-    return hit ? { ...summarizeItem(hit.entry, id), source: hit.source } : null;
+    if (!hit) {
+        // 草稿 id 多半已升格：升格表 18.9 MB，函数里不能整表加载（31 卡 §A.6）。
+        // 临时（307）跳回 /book-index，由客户端查表跳到正式 id；middleware 不改写草稿 id，不会绕回来。
+        if (parseItemId(id)?.status === 'draft') redirect(`/book-index?id=${id}`);
+        return null;
+    }
+    const target = mergedTarget(hit.entry, id);
+    if (target) permanentRedirect(`/item/${target}`);
+    return { ...summarizeItem(hit.entry, id), source: hit.source, seo: buildItemSeo(hit.entry, id, SITE_URL) };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
     const s = await load(id);
-    if (!s) return { title: '未找到条目' };
-    return { title: s.edition ? `${s.title}（${s.edition}）` : s.title };
+    if (!s) return { title: '未找到条目', robots: { index: false, follow: false } };
+    const { seo } = s;
+    return {
+        title: seo.title,
+        description: seo.description,
+        alternates: { canonical: seo.canonicalPath },
+        openGraph: {
+            title: seo.title,
+            description: seo.description,
+            url: seo.canonicalPath,
+            type: seo.ogType,
+        },
+    };
 }
 
 // 样式一律行内写：Tailwind 会扫描全部源文件生成全站 CSS，这里若用到新类名，
@@ -75,5 +103,10 @@ export default async function ItemPage({ params }: Props) {
     const { id } = await params;
     const s = await load(id);
     if (!s) notFound();
-    return <ItemDetailClient id={id} fallback={<ItemSummaryView s={s} />} />;
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(s.seo.jsonLd) }} />
+            <ItemDetailClient id={id} fallback={<ItemSummaryView s={s} />} />
+        </>
+    );
 }
