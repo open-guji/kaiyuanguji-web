@@ -30,6 +30,14 @@ import { reportError, setRelease } from './error-report';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
 
+/**
+ * A3 第一期：条目按内容哈希寻址（h1 布局），开关默认关，走现行路径。
+ * 见 nextjs/scripts/bundle-hashed.mjs + sync-h1-to-cos.mjs。
+ * `NEXT_PUBLIC_DATA_LAYOUT=hashed` 才启用；任何其他值（含未设置）走现行 `current/` 路径。
+ */
+const DATA_LAYOUT: 'legacy' | 'hashed' =
+    process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed' ? 'hashed' : 'legacy';
+
 let _versionPromise: Promise<string> | null = null;
 
 /**
@@ -90,6 +98,137 @@ export async function getCosDataBaseUrl(): Promise<string> {
 export async function getCosSearchBaseUrl(): Promise<string> {
     const commit = await resolveCosVersion();
     return `${COS_BASE}/v/${commit}/search`;
+}
+
+// ─── h1（哈希寻址）取数路径：读 root → 读条目所在分片 → 取 entry ───
+//
+// 与现行路径的关键区别：entry URL 本身带内容哈希（immutable，可无限期强缓存）；
+// 取一条条目要先解析它落在哪个 manifest 分片（内存缓存，同一会话内同分片的
+// 其余条目免费复用），比现行路径多一次往返，换来的是「改一条不冲全站」。
+// 见任务书 A3-部分更新-哈希寻址、[29 卡](../../../../overview/项目进展/古籍索引网站/进度/G-工具分发与网站/29-架构原型实测.md)。
+
+interface H1ManifestRoot {
+    shardKeyLength: number;
+    shardSpace: number;
+    shardCount: number;
+    generatedAt: string;
+    dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+}
+
+function getH1BaseUrl(): string {
+    return `${COS_BASE}/h1`;
+}
+
+let _h1ManifestRootPromise: Promise<H1ManifestRoot> | null = null;
+
+/** manifest-root.json 是短缓存（60–300s），不做 sessionStorage 之类的额外缓存，靠 HTTP 缓存本身。 */
+function resolveH1ManifestRoot(): Promise<H1ManifestRoot> {
+    if (!_h1ManifestRootPromise) {
+        _h1ManifestRootPromise = fetch(`${getH1BaseUrl()}/manifest-root.json`, { cache: 'no-store' })
+            .then(r => {
+                if (!r.ok) throw new Error(`manifest-root.json HTTP ${r.status}`);
+                return r.json() as Promise<H1ManifestRoot>;
+            })
+            .catch(err => {
+                _h1ManifestRootPromise = null;
+                throw err;
+            });
+    }
+    return _h1ManifestRootPromise;
+}
+
+// 分片按 id → hash8 表，同一分片内的 id 只需拉一次，页面生命周期内内存缓存。
+const _h1ShardCache = new Map<string, Promise<Record<string, string>>>();
+
+function h1ShardKeyFor(id: string, shardKeyLength: number): string {
+    return id.slice(-shardKeyLength);
+}
+
+/** 解析一个 id 当前的内容哈希；manifest 里没有这个 id 视同 404（条目不存在或已被移除）。 */
+async function resolveH1EntryHash(id: string): Promise<string | null> {
+    const root = await resolveH1ManifestRoot();
+    const shardKey = h1ShardKeyFor(id, root.shardKeyLength);
+    let shardPromise = _h1ShardCache.get(shardKey);
+    if (!shardPromise) {
+        shardPromise = fetch(`${getH1BaseUrl()}/manifest/${shardKey}.json`, { cache: 'no-store' })
+            .then(r => {
+                if (!r.ok) throw new Error(`manifest/${shardKey}.json HTTP ${r.status}`);
+                return r.json() as Promise<Record<string, string>>;
+            });
+        _h1ShardCache.set(shardKey, shardPromise);
+    }
+    const shard = await shardPromise;
+    return shard[id] ?? null;
+}
+
+/**
+ * 丢掉一个 id 所在分片的内存缓存，下次 resolveH1EntryHash 会重新 fetch。
+ *
+ * 用于 entry 404 时的加固（见 fetchRawDetailH1）：分片有短缓存（60–300s）＋
+ * 页面内存缓存两层，都可能比 COS 上的最新状态慢半拍——尤其 sync 端「旧 entry
+ * 保留 7 天」意味着旧哈希文件仍在，但分片一旦更新到新哈希，旧 URL 就会 404。
+ */
+async function invalidateH1Shard(id: string): Promise<void> {
+    const root = await resolveH1ManifestRoot();
+    _h1ShardCache.delete(h1ShardKeyFor(id, root.shardKeyLength));
+}
+
+// entry/<id>.<hash8>.json 本身按内容哈希寻址，可以放心用 force-cache（浏览器永久缓存，
+// 内容变了 URL 也会变，不存在「缓存了旧内容」这回事）。
+const _h1EntryCache = new Map<string, Promise<Record<string, unknown> | null>>();
+
+// promotions.json（draft→production 重定向表）不在 h1 范围内——A3 第一期只做
+// entry 本身，promotions 仍从现行 current/ 读（见 createCosStorage 里的
+// ensurePromotions，两条路径共用同一份）。这不是遗漏：那份表很小、改动频率低，
+// 不是 R4「改一条目冲全站缓存」这个痛点要解的对象，留给条目全部按哈希寻址后
+// 视情况再一并处理。
+/** 单次尝试：拿 hash 直接拼 URL 去取，不重试、不上报，调用方决定怎么处理结果。 */
+function fetchH1EntryOnce(canonicalId: string, hash: string): Promise<Response> {
+    const url = `${getH1BaseUrl()}/entry/${encodeURIComponent(canonicalId)}.${hash}.json`;
+    return fetch(url, { cache: 'force-cache' });
+}
+
+/**
+ * entry 404 时的加固：分片缓存（内存 + HTTP 短缓存）可能比 COS 落后一步，
+ * 指向一个已经不存在的旧哈希——sync 端「新 entry 上线」与「分片更新」隔着
+ * 两个上传批次，加上前端自己的缓存分层，短暂的不一致是设计内允许的，不能让它
+ * 直接变成读者看到的 404。策略：清掉分片缓存重取一次，hash 变了就再试一次
+ * entry；两次都不行（或分片仍指向同一个 hash）才真的判 404。
+ */
+async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unknown> | null> {
+    let cached = _h1EntryCache.get(canonicalId);
+    if (!cached) {
+        cached = (async () => {
+            const hash = await resolveH1EntryHash(canonicalId);
+            if (!hash) {
+                reportError({ kind: 'fetch', message: `entry 不存在 (404，h1 manifest 未命中)`, resource: canonicalId, status: 404 });
+                return null;
+            }
+
+            let res = await fetchH1EntryOnce(canonicalId, hash);
+            if (res.status === 404) {
+                await invalidateH1Shard(canonicalId);
+                const freshHash = await resolveH1EntryHash(canonicalId);
+                if (freshHash && freshHash !== hash) {
+                    res = await fetchH1EntryOnce(canonicalId, freshHash);
+                }
+                // freshHash 为空或跟 hash 相同：分片本来就是最新的，entry 就是真 404，
+                // 不必再试第三次——上面这一次 res 仍是 404，走到下面统一报错分支。
+            }
+
+            if (res.status === 404) {
+                reportError({ kind: 'fetch', message: `entry 不存在 (404)`, resource: canonicalId, status: 404 });
+                return null;
+            }
+            if (!res.ok) {
+                reportError({ kind: 'fetch', message: `entry 拉取失败: HTTP ${res.status}`, resource: canonicalId, status: res.status });
+                throw new Error(`entry ${canonicalId}: HTTP ${res.status}`);
+            }
+            return res.json();
+        })();
+        _h1EntryCache.set(canonicalId, cached);
+    }
+    return cached as Promise<Record<string, unknown> | null>;
 }
 
 /**
@@ -169,6 +308,9 @@ export function createCosStorage(): IndexStorage {
 
     // 取原始 detail JSON（getItem 返回原貌，getEntry 在此基础上转 IndexEntry shape）
     async function fetchRawDetail(canonicalId: string): Promise<Record<string, unknown> | null> {
+        // 开关打开时整条走 h1 路径；默认（未设置或非 'hashed'）以下现行逻辑原样不动。
+        if (DATA_LAYOUT === 'hashed') return fetchRawDetailH1(canonicalId);
+
         let cached = entryCache.get(canonicalId);
         if (!cached) {
             cached = (async () => {
