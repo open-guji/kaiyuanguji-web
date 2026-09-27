@@ -33,6 +33,10 @@ on:
         description: set 模式：逗号分隔，随机生成的密钥变量名（已有则沿用，不轮换）
         required: false
         default: ''
+      secret_keys:
+        description: set 模式：用 GitHub secret 的值覆盖（目前只支持 ERROR_VIEW_TOKEN）
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -51,4 +55,6 @@ jobs:
           TARGETS: ${{ inputs.targets }}
           SET_JSON: ${{ inputs.set_json }}
           GEN_KEYS: ${{ inputs.gen_keys }}
+          SECRET_KEYS: ${{ inputs.secret_keys }}
+          SECRET_ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
         run: python3 ops/edgeone-env-sync.py

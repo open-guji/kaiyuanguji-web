@@ -88,6 +88,13 @@ def set_vars(ps):
     gen = [k.strip() for k in os.environ.get("GEN_KEYS", "").split(",") if k.strip()]
     existing = {pid: {e["Key"]: e for e in envs(pid)} for pid in pids}
     values = {k: str(v) for k, v in fixed.items()}
+    # SECRET_KEYS：值取自同名环境变量（由 workflow 从 GitHub secret 注入），用于让两边对齐
+    for k in [x.strip() for x in os.environ.get("SECRET_KEYS", "").split(",") if x.strip()]:
+        v = os.environ.get("SECRET_" + k, "")
+        if not v:
+            sys.exit(f"✗ {k}：workflow 里没有注入对应的 GitHub secret")
+        values[k] = v
+        print(f"  {k}：取自 GitHub secret")
     for k in gen:
         cur = next((existing[p][k].get("Value") for p in pids if k in existing[p] and existing[p][k].get("Value")), None)
         values[k] = cur if cur else secrets.token_hex(32)
