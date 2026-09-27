@@ -8,6 +8,10 @@
  * - L2: public/data/tiyao/juan-{start}-{end}.json — 整理本提要（按 10 卷分组）
  * - meta.json — 轻量计数（< 1 KB），HomePage 统计用
  * - search/* — MiniSearch 倒排索引，搜索 worker 用
+ * - index/full_text/{0-f}.json — book-text 的 Work 全文清单原样拷贝（16 分片，
+ *   供 BundleStorage.getWorkFullTextList 用）；每个 Work 的全文正文走 L1 同一套
+ *   items/<id>/ 复制（full_text/<key>/index.json 与各章，.md 改 .txt），
+ *   与 Book 全文（items/<id>/full_text/index.json，无 <key> 层）同规则
  *
  * 用法：
  *   node scripts/bundle-data.mjs                          # 默认 ../book-index-draft
@@ -342,6 +346,39 @@ function bundleMeta() {
     );
 }
 
+// ─── Work 全文清单：book-text/index/full_text/*.json 原样拷贝 ───
+//
+// 这是全局清单（按 workId 首字节 hex 分 16 片，记录每个 Work 有哪些全文来源：
+// key/version_label/source_name/total_chapters 等），不含正文，供
+// BundleStorage.getWorkFullTextList 一次性判断「哪些 Work 有全文」。
+// 正文本身（index.json 与各章）在 bundleL1() 的 items/{id}/ 复制里已经带过去
+// （full_text/<key>/ 整目录递归复制，.md 改 .txt，与 collated_edition 同一套
+// 代码路径，不需要专门为 Work 全文另写复制逻辑）——此前缺的只是这份全局清单，
+// 没有它 BundleStorage 就无从得知该向哪个 Work 的 items/ 下取 full_text。
+// 不需要合并 draft/production：这份清单只按 book-text 一个仓的内容为准。
+
+function bundleWorkFullTextIndex() {
+    const srcDir = join(TEXT_DIR, 'index', 'full_text');
+    if (!existsSync(srcDir)) {
+        console.log('WFT  skipped (book-text 无 index/full_text/)');
+        return;
+    }
+    const destDir = join(OUT_DIR, 'index', 'full_text');
+    ensureDir(destDir);
+    let shardCount = 0;
+    let totalBytes = 0;
+    for (let i = 0; i < NUM_SHARDS; i++) {
+        const fname = `${i.toString(16)}.json`;
+        const srcPath = join(srcDir, fname);
+        if (!existsSync(srcPath)) continue;
+        const buf = readFileSync(srcPath);
+        writeIfChanged(join(destDir, fname), buf);
+        shardCount++;
+        totalBytes += buf.length;
+    }
+    console.log(`WFT  ${shardCount} index/full_text 分片 (${(totalBytes / 1024).toFixed(1)} KB)`);
+}
+
 // ─── 复制独立数据文件（resource.json, recommended.json, promotions.json） ───
 
 function bundleExtraFiles() {
@@ -544,6 +581,7 @@ checkIndex();
 bundleMeta();
 bundleL1();
 bundleL2();
+bundleWorkFullTextIndex();
 bundleExtraFiles();
 bundleVersion();
 
