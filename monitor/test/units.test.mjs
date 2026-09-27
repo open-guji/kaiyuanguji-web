@@ -4,7 +4,7 @@ import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findPii, robotsDisallowsAll } from '../checks/probe.mjs';
+import { findPii, robotsDisallowsAll, sameCommit } from '../checks/probe.mjs';
 import { smokeFromReport } from '../checks/smoke.mjs';
 import { readAnchors, readRequiredUi } from '../lib/context.mjs';
 import { cmpVersion, rangeFloor, uiVersionFromHtml } from '../lib/version.mjs';
@@ -61,4 +61,10 @@ test('失败签名只看哪些子项挂，不看实测值', () => {
   const b = aggregate('X', 'x', [part('耗时', 'fail', '4200ms', '<3000'), part('首页', 'ok', 'HTTP 200')]);
   assert.equal(a.sig, b.sig);
   assert.equal(aggregate('X', 'x', [part('a', 'skip')]).status, 'skip');
+});
+
+test('commit 比较：短哈希与全哈希按前缀认同（线上 latest 12 位、version.json 40 位）', () => {
+  assert.ok(sameCommit('501935e5be70c1b5c99ac2e326052443a6f09c71', '501935e5be70'));
+  assert.ok(!sameCommit('501935e5be70c1b5c99ac2e326052443a6f09c71', '5cde8afa74a0'));
+  assert.ok(!sameCommit('50', '501935e5be70'), '过短不认');
 });

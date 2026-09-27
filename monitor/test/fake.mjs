@@ -58,7 +58,8 @@ export async function startFake() {
     if (p === '/data/latest.json') {
       return send(res, f.latestStatus, { commitId: COMMIT, fullCommitId: 'd'.repeat(40), productionCommitId: 'p'.repeat(40), textCommitId: 't'.repeat(40) });
     }
-    if (p === '/data/current/version.json') return send(res, 200, { commitId: f.versionCommit });
+    // 照线上形态：version.json 写 40 位全哈希，latest.json 写 12 位短哈希
+    if (p === '/data/current/version.json') return send(res, 200, { commitId: f.versionCommit === COMMIT ? `${COMMIT}${'0'.repeat(28)}` : f.versionCommit });
     if (p.startsWith('/data/current/entry/')) return send(res, 200, f.entryTombstone ? { _promoted_to: 'zzz' } : { id: 'x' });
     if (p === '/data/h1/manifest-root.json') return send(res, 200, f.manifestRootBody);
     if (p === `/data/v/${COMMIT}/search/meta.json`) {

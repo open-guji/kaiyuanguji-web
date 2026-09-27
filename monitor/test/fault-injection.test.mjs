@@ -56,6 +56,7 @@ const CASES = [
   ['A2-search-l1', 'works 丢 filterable（前端查询 400）', (f) => { f.worksFilterStatus = 400; }],
   ['A2-search-l2', 'L2 缺 entity 索引', (f) => { f.l2Missing = 'entity'; }],
   ['A3-data-bucket', 'h1 根清单不是 JSON', (f) => { f.manifestRootBody = '<html>oops'; }],
+  ['A3-data-bucket', 'CDN 未刷新：version.json 落后 latest.json', (f) => { f.versionCommit = 'fff000fff000fff000fff000fff000fff000fff0'; }],
   ['A3-data-bucket', '锚点变成墓碑', (f) => { f.entryTombstone = true; }],
   ['A4-item-pages', '测试站条目页缺书名', (f) => { f.itemTitle = 'Loading…'; }],
   ['A5-edge', '公开反馈泄露手机号', (f) => { f.feedbackItems = [{ id: 'fb_2_b', content: '电话 13912345678', createdAt: new Date().toISOString() }]; }],

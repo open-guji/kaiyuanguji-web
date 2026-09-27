@@ -151,7 +151,8 @@ export async function dataBucket(ctx) {
     return j;
   };
   const ver = await jsonProbe('current/version.json', 'current/version.json');
-  if (ver && latest.commitId && ver.commitId && ver.commitId !== latest.commitId) {
+  // latest.json 的 commitId 是 12 位短哈希，current/version.json 是 40 位全哈希（09-27 线上实测）——按前缀比
+  if (ver && latest.commitId && ver.commitId && !sameCommit(ver.commitId, latest.commitId)) {
     // 部署刚切换的几分钟内可能短暂不一致；连续 2 次才开单，足以滤掉
     parts.push(part('version.json 与 latest.json 同版本', 'fail', `${ver.commitId} ≠ ${latest.commitId}`, '相同', 'CDN 未刷新'));
   }
@@ -161,6 +162,12 @@ export async function dataBucket(ctx) {
   }
   await jsonProbe('h1/manifest-root.json', 'h1/manifest-root.json');
   return aggregate('A3-data-bucket', '数据桶', parts);
+}
+
+export function sameCommit(a, b) {
+  const x = String(a).toLowerCase();
+  const y = String(b).toLowerCase();
+  return Math.min(x.length, y.length) >= 7 && (x.startsWith(y) || y.startsWith(x));
 }
 
 /** A4 条目页：正式站 /book-index?id=、测试站 SSR /item/<id> 含书名 */
