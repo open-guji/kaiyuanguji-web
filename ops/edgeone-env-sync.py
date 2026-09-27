@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""EdgeOne Pages 项目环境变量：列出 / 从一个项目原样抄到另一个项目。
+"""EdgeOne Pages 项目环境变量：列出 / 从一个项目原样抄到另一个项目 / 设置（含随机生成密钥）。
 
 用途（33 卡 §六·1）：把旧正式站项目的环境变量抄到 kyg-ssr-spike，免得人工一项项复制。
 
@@ -12,6 +12,7 @@
 """
 import json
 import os
+import secrets
 import sys
 import urllib.request
 
@@ -74,11 +75,43 @@ def find(ps, name):
     return hit[0]["ProjectId"]
 
 
+def set_vars(ps):
+    """MODE=set：TARGETS（逗号分隔项目名）每个都写同样的值。
+    SET_JSON：{"变量名": "值"}，值不是机密（如 OAUTH_CLIENTS 里只有 secret 的 sha256）。
+    GEN_KEYS：逗号分隔，随机生成 32 字节 hex；某项目已有该变量则沿用第一个项目里的现值（不轮换），
+    保证多个项目拿到同一个值。任何值都不打印。"""
+    names = [n.strip() for n in os.environ.get("TARGETS", "").split(",") if n.strip()]
+    if not names:
+        sys.exit("✗ TARGETS 为空")
+    pids = [find(ps, n) for n in names]
+    fixed = json.loads(os.environ.get("SET_JSON") or "{}")
+    gen = [k.strip() for k in os.environ.get("GEN_KEYS", "").split(",") if k.strip()]
+    existing = {pid: {e["Key"]: e for e in envs(pid)} for pid in pids}
+    values = {k: str(v) for k, v in fixed.items()}
+    for k in gen:
+        cur = next((existing[p][k].get("Value") for p in pids if k in existing[p] and existing[p][k].get("Value")), None)
+        values[k] = cur if cur else secrets.token_hex(32)
+        print(f"  {k}：{'沿用现值' if cur else '新生成'}")
+    for name, pid in zip(names, pids):
+        for k, v in values.items():
+            item = {"Key": k, "Value": v, "Env": ["Production", "Preview"]}
+            old = existing[pid].get(k)
+            if old and old.get("Id"):
+                item["Id"] = old["Id"]
+            call("ModifyPagesProjectEnvs", ProjectId=pid, EnvVars=[item])
+            print(f"  {name}：{'覆盖' if old else '新增'} {k}")
+    print("\n—— 写后 ——")
+    describe([p for p in ps if p.get("ProjectId") in pids])
+
+
 def main():
     mode = os.environ.get("MODE", "list")
     ps = projects()
     if mode == "list":
         describe(ps)
+        return
+    if mode == "set":
+        set_vars(ps)
         return
     src, dst = find(ps, os.environ["SOURCE"]), find(ps, os.environ["TARGET"])
     if src == dst:
