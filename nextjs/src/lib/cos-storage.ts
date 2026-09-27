@@ -231,6 +231,157 @@ async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unk
     return cached as Promise<Record<string, unknown> | null>;
 }
 
+// ─── h1（哈希寻址）取整理本／全文：读 text-manifest-root → 读 owner 所在分片 → 取文件 ───
+//
+// A3b 第二期。与上面 entry 的哈希寻址是并列的两套 manifest 空间——entry 的 key
+// 是「条目 id」，这里的 key 是「owner_id + 相对路径」二元组——各自独立缓存、
+// 各自的 manifest-root，互不干扰，但取数思路一致：先查 manifest 拿到内容哈希，
+// 再拼 immutable URL 去取真正的文件。
+//
+// 五个方法与 book-index-ui 的 BundleStorage（bim/ui，本道不改）逐条对齐：
+// getCollatedEditionIndex / getCollatedJuan / getCollatedJuanText /
+// getBookFullTextIndex / getBookFullTextChapter——URL 拼法、参数校验
+// （拒绝 `..`、拒绝非 `.json`/`.md` 后缀）、404 语义（返回 null）全部照抄，
+// 保证两条路径对同一份字节的读取结果一致。见 bundle-hashed-text.mjs 的
+// 文件头注释：relPath 与 items/<owner_id>/ 下的现行路径逐段对应。
+
+interface H1TextManifestRoot {
+    shardKeyLength: number;
+    shardSpace: number;
+    shardCount: number;
+    ownerCount: number;
+    fileCount: number;
+    generatedAt: string;
+    dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+}
+
+let _h1TextManifestRootPromise: Promise<H1TextManifestRoot> | null = null;
+
+function resolveH1TextManifestRoot(): Promise<H1TextManifestRoot> {
+    if (!_h1TextManifestRootPromise) {
+        _h1TextManifestRootPromise = fetch(`${getH1BaseUrl()}/text-manifest-root.json`, { cache: 'no-store' })
+            .then(r => {
+                if (!r.ok) throw new Error(`text-manifest-root.json HTTP ${r.status}`);
+                return r.json() as Promise<H1TextManifestRoot>;
+            })
+            .catch(err => {
+                _h1TextManifestRootPromise = null;
+                throw err;
+            });
+    }
+    return _h1TextManifestRootPromise;
+}
+
+// 分片按 owner_id → { 相对路径 → hash8 } 表；同一分片内其余 owner 的其余文件免费复用。
+const _h1TextShardCache = new Map<string, Promise<Record<string, Record<string, string>>>>();
+
+function h1TextShardKeyFor(ownerId: string, shardKeyLength: number): string {
+    return ownerId.slice(-shardKeyLength);
+}
+
+async function resolveH1TextShard(ownerId: string, shardKeyLength: number): Promise<Record<string, Record<string, string>>> {
+    const shardKey = h1TextShardKeyFor(ownerId, shardKeyLength);
+    let shardPromise = _h1TextShardCache.get(shardKey);
+    if (!shardPromise) {
+        shardPromise = fetch(`${getH1BaseUrl()}/text-manifest/${shardKey}.json`, { cache: 'no-store' })
+            .then(r => {
+                if (!r.ok) throw new Error(`text-manifest/${shardKey}.json HTTP ${r.status}`);
+                return r.json() as Promise<Record<string, Record<string, string>>>;
+            });
+        _h1TextShardCache.set(shardKey, shardPromise);
+    }
+    return shardPromise;
+}
+
+async function invalidateH1TextShard(ownerId: string, shardKeyLength: number): Promise<void> {
+    _h1TextShardCache.delete(h1TextShardKeyFor(ownerId, shardKeyLength));
+}
+
+async function resolveH1TextHash(ownerId: string, relPath: string): Promise<string | null> {
+    const root = await resolveH1TextManifestRoot();
+    const shard = await resolveH1TextShard(ownerId, root.shardKeyLength);
+    return shard[ownerId]?.[relPath] ?? null;
+}
+
+/** relPath 最后一段插入哈希：与 bundle-hashed-text.mjs 的 insertHash() 是同一套算法。 */
+function insertH1TextHash(relPath: string, hash: string): string {
+    const slash = relPath.lastIndexOf('/');
+    const dir = slash === -1 ? '' : relPath.slice(0, slash + 1);
+    const base = slash === -1 ? relPath : relPath.slice(slash + 1);
+    const dot = base.lastIndexOf('.');
+    if (dot === -1) return `${dir}${base}.${hash}`;
+    return `${dir}${base.slice(0, dot)}.${hash}${base.slice(dot)}`;
+}
+
+/**
+ * 取一份哈希寻址的文本文件，原样返回字符串；查不到 manifest 条目或 HTTP
+ * 非 2xx（含分片滞后于最新哈希导致的 404，清缓存重取一次分片）一律返回 null，
+ * 不抛错——与 BundleStorage 的 getCollatedJuanText/getBookFullTextChapter
+ * 404→null 语义保持一致。
+ */
+async function fetchH1TextRaw(ownerId: string, relPath: string): Promise<string | null> {
+    try {
+        const root = await resolveH1TextManifestRoot();
+        let hash = await resolveH1TextHash(ownerId, relPath);
+        if (!hash) return null;
+
+        let res = await fetch(`${getH1BaseUrl()}/text/${encodeURIComponent(ownerId)}/${insertH1TextHash(relPath, hash)}`, { cache: 'force-cache' });
+        if (res.status === 404) {
+            await invalidateH1TextShard(ownerId, root.shardKeyLength);
+            const freshHash = await resolveH1TextHash(ownerId, relPath);
+            if (freshHash && freshHash !== hash) {
+                hash = freshHash;
+                res = await fetch(`${getH1BaseUrl()}/text/${encodeURIComponent(ownerId)}/${insertH1TextHash(relPath, hash)}`, { cache: 'force-cache' });
+            }
+        }
+        return res.ok ? await res.text() : null;
+    } catch {
+        return null;
+    }
+}
+
+async function fetchH1TextJson(ownerId: string, relPath: string): Promise<Record<string, unknown> | null> {
+    const raw = await fetchH1TextRaw(ownerId, relPath);
+    if (raw === null) return null;
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+// ─── 整理本 ───
+
+async function getCollatedEditionIndexH1(workId: string): Promise<Record<string, unknown> | null> {
+    const primary = await fetchH1TextJson(workId, 'collated_edition/index.json');
+    if (primary !== null) return primary;
+    // 旧命名兜底（同目录下的 collated_edition_index.json），与 BundleStorage 一致。
+    return fetchH1TextJson(workId, 'collated_edition/collated_edition_index.json');
+}
+
+async function getCollatedJuanH1(workId: string, juanFile: string): Promise<Record<string, unknown> | null> {
+    if (juanFile.includes('..') || !juanFile.endsWith('.json')) return null;
+    return fetchH1TextJson(workId, `collated_edition/${juanFile}`);
+}
+
+async function getCollatedJuanTextH1(workId: string, juanFile: string): Promise<string | null> {
+    if (juanFile.includes('..') || !juanFile.endsWith('.json')) return null;
+    const txtName = juanFile.replace(/\.json$/, '.txt');
+    return fetchH1TextRaw(workId, `collated_edition/text/${txtName}`);
+}
+
+// ─── Book 全文 ───
+
+async function getBookFullTextIndexH1(bookId: string): Promise<Record<string, unknown> | null> {
+    return fetchH1TextJson(bookId, 'full_text/index.json');
+}
+
+async function getBookFullTextChapterH1(bookId: string, file: string): Promise<string | null> {
+    if (file.includes('..')) return null;
+    const txtName = file.endsWith('.md') ? file.replace(/\.md$/, '.txt') : file;
+    return fetchH1TextRaw(bookId, `full_text/${txtName}`);
+}
+
 /**
  * 创建一个延迟解析版本号的 IndexStorage —— 同步返回，方法调用时才 await。
  *
@@ -408,6 +559,17 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
+            // 整理本／全文：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
+            // 默认（未设置或非 'hashed'）不特殊处理这五个方法名，走下面的
+            // 通用分支委托给 inner（book-index-ui 的 BundleStorage），
+            // 与开这个开关之前的行为完全一致——bim/ui 本道不改。
+            if (DATA_LAYOUT === 'hashed') {
+                if (prop === 'getCollatedEditionIndex') return (workId: string) => getCollatedEditionIndexH1(workId);
+                if (prop === 'getCollatedJuan') return (workId: string, juanFile: string) => getCollatedJuanH1(workId, juanFile);
+                if (prop === 'getCollatedJuanText') return (workId: string, juanFile: string) => getCollatedJuanTextH1(workId, juanFile);
+                if (prop === 'getBookFullTextIndex') return (bookId: string) => getBookFullTextIndexH1(bookId);
+                if (prop === 'getBookFullTextChapter') return (bookId: string, file: string) => getBookFullTextChapterH1(bookId, file);
+            }
             return (...args: unknown[]) =>
                 ensureInner().then(({ inner }) => {
                     const fn = (inner as unknown as Record<string | symbol, unknown>)[prop];
