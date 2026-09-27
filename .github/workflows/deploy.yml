@@ -105,6 +105,18 @@ jobs:
           # 构建照样成功——整理本页在站上空白，无人得知。
           git clone --depth 1 https://github.com/open-guji/book-text.git book-text
 
+      # 私有文本仓（P1-私有文本后端，2026-09-26）：内容不进 bundle-data.mjs 的产物、
+      # 不进公开 COS 路径，只单独同步到私有前缀（见下面 Sync private text 步骤）。
+      # BOOK_TEXT_PRIVATE_TOKEN 缺失时跳过——私有文本是增量功能，不能因为它没配
+      # 就把整个公开站的部署堵死。
+      - name: Clone private text repo
+        if: ${{ env.HAS_BOOK_TEXT_PRIVATE == 'true' }}
+        env:
+          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
+          BOOK_TEXT_PRIVATE_TOKEN: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${BOOK_TEXT_PRIVATE_TOKEN}@github.com/open-guji-core/book-text-private.git" book-text-private
+
       - name: Bundle data for EdgeOne
         working-directory: nextjs
         env:
@@ -162,6 +174,18 @@ jobs:
           console.log('✓ ' + ids.length + ' 个正式丛编条目均已打包');
           "
 
+      # 私有文本（P1-私有文本后端）设计上从不进 bundle-data.mjs：上面 Bundle 步骤
+      # 没传 BOOK_TEXT_PRIVATE_DIR 给它，它压根不知道这个目录存在。这一步是事后
+      # 防线——防的是「以后有人手滑把私有目录接进 bundle-data.mjs」，而不是防
+      # 这一次没接。命令与判据都在这（PR 里贴的实测即这一步的日志）。
+      - name: Verify no private text leaked into public data
+        run: |
+          cd nextjs/public/data
+          if grep -rl "book-text-private\|仅内部校对使用\|不得公开" . ; then
+            echo "❌ 公开产物里出现了私有文本相关内容，上一条命令列出的文件即命中位置" && exit 1
+          fi
+          echo "✓ public/data 全量 grep 私有文本标记（book-text-private／仅内部校对使用／不得公开）：0 命中"
+
       - name: Sync data to Tencent COS (Singapore)
         if: ${{ env.HAS_COS_SECRETS == 'true' }}
         env:
@@ -173,6 +197,23 @@ jobs:
         run: |
           cd nextjs
           node scripts/sync-to-cos.mjs
+
+      # 私有文本单独同步到同桶的私有前缀（ACL: private，逐对象覆盖）——见
+      # nextjs/scripts/sync-private-text-to-cos.mjs 文件头。与上一步公开同步
+      # 完全独立：任一步缺配置只跳过自己，不互相阻塞。
+      - name: Sync private text to Tencent COS
+        if: ${{ env.HAS_BOOK_TEXT_PRIVATE == 'true' && env.HAS_COS_SECRETS == 'true' }}
+        env:
+          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+          BOOK_TEXT_PRIVATE_DIR: ${{ github.workspace }}/book-text-private
+        run: |
+          cd nextjs
+          node scripts/sync-private-text-to-cos.mjs
 
       # --- A3 第一期：条目按内容哈希寻址，双写到同一个桶的新前缀 h1/ ---
       #
