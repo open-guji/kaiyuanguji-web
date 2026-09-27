@@ -1,0 +1,123 @@
+{
+  "work_id": "d59f2hpuua69",
+  "version_label": "春秋後傳",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%98%A5%E7%A7%8B%E5%BE%8C%E5%82%B3%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "春秋後傳 (四庫全書本)",
+    "revid": 535441,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 12,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷01",
+      "revid": 761358,
+      "md_len": 5120
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷02",
+      "revid": 761359,
+      "md_len": 5490
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷03",
+      "revid": 761360,
+      "md_len": 7819
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷04",
+      "revid": 535405,
+      "md_len": 1269
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷05",
+      "revid": 761361,
+      "md_len": 9376
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷06",
+      "revid": 761362,
+      "md_len": 6533
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷07",
+      "revid": 740328,
+      "md_len": 3347
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷08",
+      "revid": 761363,
+      "md_len": 4587
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷09",
+      "revid": 740338,
+      "md_len": 8094
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷10",
+      "revid": 740343,
+      "md_len": 7704
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷11",
+      "revid": 740348,
+      "md_len": 3059
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "春秋後傳 (四庫全書本)/卷12",
+      "revid": 740353,
+      "md_len": 2056
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 647
+  }
+}

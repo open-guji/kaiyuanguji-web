@@ -1,0 +1,200 @@
+{
+  "work_id": "d59f2ht4tzia",
+  "version_label": "翻譯名義集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%BF%BB%E8%AD%AF%E5%90%8D%E7%BE%A9%E9%9B%86",
+    "page_title": "翻譯名義集",
+    "revid": 2622366,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 22,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 658
+    },
+    {
+      "n": 2,
+      "title": "卷第一",
+      "file": "002.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 6843
+    },
+    {
+      "n": 3,
+      "title": "卷第二",
+      "file": "003.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 11707
+    },
+    {
+      "n": 4,
+      "title": "卷第三",
+      "file": "004.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 9451
+    },
+    {
+      "n": 5,
+      "title": "卷第四",
+      "file": "005.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 11903
+    },
+    {
+      "n": 6,
+      "title": "卷第五",
+      "file": "006.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 12927
+    },
+    {
+      "n": 7,
+      "title": "卷第六",
+      "file": "007.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 10059
+    },
+    {
+      "n": 8,
+      "title": "卷第七",
+      "file": "008.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 13184
+    },
+    {
+      "n": 9,
+      "title": "卷第八",
+      "file": "009.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 8114
+    },
+    {
+      "n": 10,
+      "title": "卷第九",
+      "file": "010.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 9004
+    },
+    {
+      "n": 11,
+      "title": "卷第十",
+      "file": "011.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 10298
+    },
+    {
+      "n": 12,
+      "title": "卷第十一",
+      "file": "012.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 14533
+    },
+    {
+      "n": 13,
+      "title": "卷第十二",
+      "file": "013.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 8096
+    },
+    {
+      "n": 14,
+      "title": "卷第十三",
+      "file": "014.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 13242
+    },
+    {
+      "n": 15,
+      "title": "卷第十四",
+      "file": "015.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 11800
+    },
+    {
+      "n": 16,
+      "title": "卷第十五",
+      "file": "016.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 8687
+    },
+    {
+      "n": 17,
+      "title": "卷第十六",
+      "file": "017.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 16121
+    },
+    {
+      "n": 18,
+      "title": "卷第十七",
+      "file": "018.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 11443
+    },
+    {
+      "n": 19,
+      "title": "卷第十八",
+      "file": "019.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 9618
+    },
+    {
+      "n": 20,
+      "title": "卷第十九",
+      "file": "020.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 5636
+    },
+    {
+      "n": 21,
+      "title": "卷第二十",
+      "file": "021.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 16442
+    },
+    {
+      "n": 22,
+      "title": "蘇州景德寺普潤大師行業記",
+      "file": "022.md",
+      "page_title": "翻譯名義集",
+      "revid": 2622366,
+      "md_len": 1092
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,257 @@
+{
+  "work_id": "d59f2hrx4rgg",
+  "version_label": "古史",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%8F%A4%E5%8F%B2",
+    "page_title": "古史",
+    "revid": 2346355,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 29,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷001",
+      "file": "001.md",
+      "page_title": "古史/卷001",
+      "revid": 803393,
+      "md_len": 1085
+    },
+    {
+      "n": 2,
+      "title": "卷002",
+      "file": "002.md",
+      "page_title": "古史/卷002",
+      "revid": 803396,
+      "md_len": 3838
+    },
+    {
+      "n": 3,
+      "title": "卷003",
+      "file": "003.md",
+      "page_title": "古史/卷003",
+      "revid": 2531468,
+      "md_len": 2824
+    },
+    {
+      "n": 4,
+      "title": "卷004",
+      "file": "004.md",
+      "page_title": "古史/卷004",
+      "revid": 2531475,
+      "md_len": 3687
+    },
+    {
+      "n": 5,
+      "title": "卷005",
+      "file": "005.md",
+      "page_title": "古史/卷005",
+      "revid": 2632367,
+      "md_len": 11634
+    },
+    {
+      "n": 6,
+      "title": "卷006",
+      "file": "006.md",
+      "page_title": "古史/卷006",
+      "revid": 2632205,
+      "md_len": 868
+    },
+    {
+      "n": 7,
+      "title": "卷007",
+      "file": "007.md",
+      "page_title": "古史/卷007",
+      "revid": 462237,
+      "md_len": 10516
+    },
+    {
+      "n": 8,
+      "title": "卷008",
+      "file": "008.md",
+      "page_title": "古史/卷008",
+      "revid": 461669,
+      "md_len": 3558
+    },
+    {
+      "n": 9,
+      "title": "卷009",
+      "file": "009.md",
+      "page_title": "古史/卷009",
+      "revid": 461528,
+      "md_len": 7953
+    },
+    {
+      "n": 10,
+      "title": "卷010",
+      "file": "010.md",
+      "page_title": "古史/卷010",
+      "revid": 461640,
+      "md_len": 10556
+    },
+    {
+      "n": 11,
+      "title": "卷011",
+      "file": "011.md",
+      "page_title": "古史/卷011",
+      "revid": 461641,
+      "md_len": 3156
+    },
+    {
+      "n": 12,
+      "title": "卷012",
+      "file": "012.md",
+      "page_title": "古史/卷012",
+      "revid": 1151281,
+      "md_len": 3362
+    },
+    {
+      "n": 13,
+      "title": "卷013",
+      "file": "013.md",
+      "page_title": "古史/卷013",
+      "revid": 461659,
+      "md_len": 3781
+    },
+    {
+      "n": 14,
+      "title": "卷014",
+      "file": "014.md",
+      "page_title": "古史/卷014",
+      "revid": 496188,
+      "md_len": 6742
+    },
+    {
+      "n": 15,
+      "title": "卷015",
+      "file": "015.md",
+      "page_title": "古史/卷015",
+      "revid": 461536,
+      "md_len": 6206
+    },
+    {
+      "n": 16,
+      "title": "卷016",
+      "file": "016.md",
+      "page_title": "古史/卷016",
+      "revid": 461890,
+      "md_len": 15125
+    },
+    {
+      "n": 17,
+      "title": "卷017",
+      "file": "017.md",
+      "page_title": "古史/卷017",
+      "revid": 462580,
+      "md_len": 17576
+    },
+    {
+      "n": 18,
+      "title": "卷018",
+      "file": "018.md",
+      "page_title": "古史/卷018",
+      "revid": 1619279,
+      "md_len": 289
+    },
+    {
+      "n": 19,
+      "title": "卷021",
+      "file": "019.md",
+      "page_title": "古史/卷021",
+      "revid": 461651,
+      "md_len": 9606
+    },
+    {
+      "n": 20,
+      "title": "卷024",
+      "file": "020.md",
+      "page_title": "古史/卷024",
+      "revid": 461646,
+      "md_len": 962
+    },
+    {
+      "n": 21,
+      "title": "卷026",
+      "file": "021.md",
+      "page_title": "古史/卷026",
+      "revid": 461667,
+      "md_len": 1613
+    },
+    {
+      "n": 22,
+      "title": "卷031",
+      "file": "022.md",
+      "page_title": "古史/卷031",
+      "revid": 1487224,
+      "md_len": 7751
+    },
+    {
+      "n": 23,
+      "title": "卷035",
+      "file": "023.md",
+      "page_title": "古史/卷035",
+      "revid": 461654,
+      "md_len": 1723
+    },
+    {
+      "n": 24,
+      "title": "卷040",
+      "file": "024.md",
+      "page_title": "古史/卷040",
+      "revid": 2531481,
+      "md_len": 9101
+    },
+    {
+      "n": 25,
+      "title": "卷045",
+      "file": "025.md",
+      "page_title": "古史/卷045",
+      "revid": 461650,
+      "md_len": 4295
+    },
+    {
+      "n": 26,
+      "title": "卷049",
+      "file": "026.md",
+      "page_title": "古史/卷049",
+      "revid": 462583,
+      "md_len": 7962
+    },
+    {
+      "n": 27,
+      "title": "卷054",
+      "file": "027.md",
+      "page_title": "古史/卷054",
+      "revid": 1487222,
+      "md_len": 5282
+    },
+    {
+      "n": 28,
+      "title": "卷059",
+      "file": "028.md",
+      "page_title": "古史/卷059",
+      "revid": 803389,
+      "md_len": 6474
+    },
+    {
+      "n": 29,
+      "title": "卷060",
+      "file": "029.md",
+      "page_title": "古史/卷060",
+      "revid": 1487219,
+      "md_len": 3362
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "dropped_refs": 14
+}

@@ -1,0 +1,131 @@
+{
+  "work_id": "d59f2hqrayo3",
+  "version_label": "蘇沈良方",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E8%98%87%E6%B2%88%E8%89%AF%E6%96%B9",
+    "page_title": "蘇沈良方",
+    "revid": 2645539,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 13,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "原序",
+      "file": "001.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 1452
+    },
+    {
+      "n": 2,
+      "title": "蘇沈内翰良方序一",
+      "file": "002.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 129
+    },
+    {
+      "n": 3,
+      "title": "蘇沈内翰良方序",
+      "file": "003.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 542
+    },
+    {
+      "n": 4,
+      "title": "卷第一",
+      "file": "004.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 7483
+    },
+    {
+      "n": 5,
+      "title": "卷第二",
+      "file": "005.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 4297
+    },
+    {
+      "n": 6,
+      "title": "卷三",
+      "file": "006.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 5241
+    },
+    {
+      "n": 7,
+      "title": "卷第四",
+      "file": "007.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 5909
+    },
+    {
+      "n": 8,
+      "title": "卷第五",
+      "file": "008.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 3939
+    },
+    {
+      "n": 9,
+      "title": "卷第六",
+      "file": "009.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 8767
+    },
+    {
+      "n": 10,
+      "title": "卷第七",
+      "file": "010.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 3242
+    },
+    {
+      "n": 11,
+      "title": "卷第八",
+      "file": "011.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 2502
+    },
+    {
+      "n": 12,
+      "title": "卷第九",
+      "file": "012.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 5159
+    },
+    {
+      "n": 13,
+      "title": "卷第十",
+      "file": "013.md",
+      "page_title": "蘇沈良方",
+      "revid": 2645539,
+      "md_len": 7694
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "未校訂": 1
+  }
+}

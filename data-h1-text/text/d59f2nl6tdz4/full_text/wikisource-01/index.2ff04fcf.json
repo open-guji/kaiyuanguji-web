@@ -1,0 +1,99 @@
+{
+  "work_id": "d59f2nl6tdz4",
+  "version_label": "老子翼、莊子翼",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%E7%BF%BC%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "莊子翼 (四庫全書本)",
+    "revid": 750555,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 9,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷1",
+      "file": "001.md",
+      "page_title": "莊子翼 (四庫全書本)/卷1",
+      "revid": 633674,
+      "md_len": 31157
+    },
+    {
+      "n": 2,
+      "title": "卷2",
+      "file": "002.md",
+      "page_title": "莊子翼 (四庫全書本)/卷2",
+      "revid": 791289,
+      "md_len": 41481
+    },
+    {
+      "n": 3,
+      "title": "卷3",
+      "file": "003.md",
+      "page_title": "莊子翼 (四庫全書本)/卷3",
+      "revid": 791290,
+      "md_len": 33272
+    },
+    {
+      "n": 4,
+      "title": "卷4",
+      "file": "004.md",
+      "page_title": "莊子翼 (四庫全書本)/卷4",
+      "revid": 633694,
+      "md_len": 34923
+    },
+    {
+      "n": 5,
+      "title": "卷5",
+      "file": "005.md",
+      "page_title": "莊子翼 (四庫全書本)/卷5",
+      "revid": 791293,
+      "md_len": 38078
+    },
+    {
+      "n": 6,
+      "title": "卷6",
+      "file": "006.md",
+      "page_title": "莊子翼 (四庫全書本)/卷6",
+      "revid": 791295,
+      "md_len": 42833
+    },
+    {
+      "n": 7,
+      "title": "卷7",
+      "file": "007.md",
+      "page_title": "莊子翼 (四庫全書本)/卷7",
+      "revid": 791297,
+      "md_len": 18772
+    },
+    {
+      "n": 8,
+      "title": "卷8",
+      "file": "008.md",
+      "page_title": "莊子翼 (四庫全書本)/卷8",
+      "revid": 791299,
+      "md_len": 18160
+    },
+    {
+      "n": 9,
+      "title": "闕誤",
+      "file": "009.md",
+      "page_title": "莊子翼 (四庫全書本)/闕誤",
+      "revid": 791301,
+      "md_len": 15868
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 1963
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "work_id": "d59f2hsxyrk1",
+  "version_label": "儀禮識誤",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%84%80%E7%A6%AE%E8%AD%98%E8%AA%A4%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "儀禮識誤 (四庫全書本)",
+    "revid": 543760,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 3,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷1",
+      "file": "001.md",
+      "page_title": "儀禮識誤 (四庫全書本)/卷1",
+      "revid": 753359,
+      "md_len": 6468
+    },
+    {
+      "n": 2,
+      "title": "卷2",
+      "file": "002.md",
+      "page_title": "儀禮識誤 (四庫全書本)/卷2",
+      "revid": 753360,
+      "md_len": 5605
+    },
+    {
+      "n": 3,
+      "title": "卷3",
+      "file": "003.md",
+      "page_title": "儀禮識誤 (四庫全書本)/卷3",
+      "revid": 753361,
+      "md_len": 1044
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 69
+  }
+}

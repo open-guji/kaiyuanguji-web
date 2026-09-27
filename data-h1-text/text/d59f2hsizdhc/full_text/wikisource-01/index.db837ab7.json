@@ -1,0 +1,75 @@
+{
+  "work_id": "d59f2hsizdhc",
+  "version_label": "雲穀雜記",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%9B%B2%E8%B0%B7%E9%9B%9C%E8%A8%98",
+    "page_title": "雲谷雜記",
+    "revid": 834672,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 6,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷首",
+      "file": "001.md",
+      "page_title": "雲谷雜記/卷首",
+      "revid": 834652,
+      "md_len": 793
+    },
+    {
+      "n": 2,
+      "title": "卷一",
+      "file": "002.md",
+      "page_title": "雲谷雜記/卷一",
+      "revid": 834676,
+      "md_len": 9723
+    },
+    {
+      "n": 3,
+      "title": "卷二",
+      "file": "003.md",
+      "page_title": "雲谷雜記/卷二",
+      "revid": 834665,
+      "md_len": 8164
+    },
+    {
+      "n": 4,
+      "title": "卷三",
+      "file": "004.md",
+      "page_title": "雲谷雜記/卷三",
+      "revid": 834679,
+      "md_len": 7629
+    },
+    {
+      "n": 5,
+      "title": "卷四",
+      "file": "005.md",
+      "page_title": "雲谷雜記/卷四",
+      "revid": 834658,
+      "md_len": 5
+    },
+    {
+      "n": 6,
+      "title": "卷末",
+      "file": "006.md",
+      "page_title": "雲谷雜記/卷末",
+      "revid": 834677,
+      "md_len": 2471
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "南宋作品": 2
+  }
+}

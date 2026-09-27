@@ -1,0 +1,363 @@
+{
+  "work_id": "d59f2hqyhf5s",
+  "version_label": "丹淵集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E4%B8%B9%E6%B7%B5%E9%9B%86%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "丹淵集 (四庫全書本)",
+    "revid": 661752,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 42,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "丹淵集 (四庫全書本)/卷01",
+      "revid": 661664,
+      "md_len": 3023
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "丹淵集 (四庫全書本)/卷02",
+      "revid": 661666,
+      "md_len": 1994
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "丹淵集 (四庫全書本)/卷03",
+      "revid": 661668,
+      "md_len": 3242
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "丹淵集 (四庫全書本)/卷04",
+      "revid": 661670,
+      "md_len": 3664
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "丹淵集 (四庫全書本)/卷05",
+      "revid": 661672,
+      "md_len": 3434
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "丹淵集 (四庫全書本)/卷06",
+      "revid": 661674,
+      "md_len": 1795
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "丹淵集 (四庫全書本)/卷07",
+      "revid": 661676,
+      "md_len": 1941
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "丹淵集 (四庫全書本)/卷08",
+      "revid": 661678,
+      "md_len": 2644
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "丹淵集 (四庫全書本)/卷09",
+      "revid": 661680,
+      "md_len": 2367
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "丹淵集 (四庫全書本)/卷10",
+      "revid": 661682,
+      "md_len": 2719
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "丹淵集 (四庫全書本)/卷11",
+      "revid": 661684,
+      "md_len": 3215
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "丹淵集 (四庫全書本)/卷12",
+      "revid": 661686,
+      "md_len": 3468
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "丹淵集 (四庫全書本)/卷13",
+      "revid": 661688,
+      "md_len": 2160
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "丹淵集 (四庫全書本)/卷14",
+      "revid": 762023,
+      "md_len": 2628
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "丹淵集 (四庫全書本)/卷15",
+      "revid": 661692,
+      "md_len": 2705
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "丹淵集 (四庫全書本)/卷16",
+      "revid": 661694,
+      "md_len": 2078
+    },
+    {
+      "n": 17,
+      "title": "卷17",
+      "file": "017.md",
+      "page_title": "丹淵集 (四庫全書本)/卷17",
+      "revid": 762027,
+      "md_len": 2688
+    },
+    {
+      "n": 18,
+      "title": "卷18",
+      "file": "018.md",
+      "page_title": "丹淵集 (四庫全書本)/卷18",
+      "revid": 762031,
+      "md_len": 4142
+    },
+    {
+      "n": 19,
+      "title": "卷19",
+      "file": "019.md",
+      "page_title": "丹淵集 (四庫全書本)/卷19",
+      "revid": 762035,
+      "md_len": 953
+    },
+    {
+      "n": 20,
+      "title": "卷20",
+      "file": "020.md",
+      "page_title": "丹淵集 (四庫全書本)/卷20",
+      "revid": 661702,
+      "md_len": 1605
+    },
+    {
+      "n": 21,
+      "title": "卷21",
+      "file": "021.md",
+      "page_title": "丹淵集 (四庫全書本)/卷21",
+      "revid": 661704,
+      "md_len": 3094
+    },
+    {
+      "n": 22,
+      "title": "卷22",
+      "file": "022.md",
+      "page_title": "丹淵集 (四庫全書本)/卷22",
+      "revid": 735565,
+      "md_len": 3802
+    },
+    {
+      "n": 23,
+      "title": "卷23",
+      "file": "023.md",
+      "page_title": "丹淵集 (四庫全書本)/卷23",
+      "revid": 661708,
+      "md_len": 4857
+    },
+    {
+      "n": 24,
+      "title": "卷24",
+      "file": "024.md",
+      "page_title": "丹淵集 (四庫全書本)/卷24",
+      "revid": 661710,
+      "md_len": 3456
+    },
+    {
+      "n": 25,
+      "title": "卷25",
+      "file": "025.md",
+      "page_title": "丹淵集 (四庫全書本)/卷25",
+      "revid": 661712,
+      "md_len": 2741
+    },
+    {
+      "n": 26,
+      "title": "卷26",
+      "file": "026.md",
+      "page_title": "丹淵集 (四庫全書本)/卷26",
+      "revid": 661714,
+      "md_len": 2788
+    },
+    {
+      "n": 27,
+      "title": "卷27",
+      "file": "027.md",
+      "page_title": "丹淵集 (四庫全書本)/卷27",
+      "revid": 661716,
+      "md_len": 2505
+    },
+    {
+      "n": 28,
+      "title": "卷28",
+      "file": "028.md",
+      "page_title": "丹淵集 (四庫全書本)/卷28",
+      "revid": 661718,
+      "md_len": 3373
+    },
+    {
+      "n": 29,
+      "title": "卷29",
+      "file": "029.md",
+      "page_title": "丹淵集 (四庫全書本)/卷29",
+      "revid": 661720,
+      "md_len": 4484
+    },
+    {
+      "n": 30,
+      "title": "卷30",
+      "file": "030.md",
+      "page_title": "丹淵集 (四庫全書本)/卷30",
+      "revid": 661722,
+      "md_len": 2866
+    },
+    {
+      "n": 31,
+      "title": "卷31",
+      "file": "031.md",
+      "page_title": "丹淵集 (四庫全書本)/卷31",
+      "revid": 661724,
+      "md_len": 2466
+    },
+    {
+      "n": 32,
+      "title": "卷32",
+      "file": "032.md",
+      "page_title": "丹淵集 (四庫全書本)/卷32",
+      "revid": 661726,
+      "md_len": 2703
+    },
+    {
+      "n": 33,
+      "title": "卷33",
+      "file": "033.md",
+      "page_title": "丹淵集 (四庫全書本)/卷33",
+      "revid": 661728,
+      "md_len": 1331
+    },
+    {
+      "n": 34,
+      "title": "卷34",
+      "file": "034.md",
+      "page_title": "丹淵集 (四庫全書本)/卷34",
+      "revid": 661730,
+      "md_len": 5216
+    },
+    {
+      "n": 35,
+      "title": "卷35",
+      "file": "035.md",
+      "page_title": "丹淵集 (四庫全書本)/卷35",
+      "revid": 661732,
+      "md_len": 2484
+    },
+    {
+      "n": 36,
+      "title": "卷36",
+      "file": "036.md",
+      "page_title": "丹淵集 (四庫全書本)/卷36",
+      "revid": 661734,
+      "md_len": 3749
+    },
+    {
+      "n": 37,
+      "title": "卷37",
+      "file": "037.md",
+      "page_title": "丹淵集 (四庫全書本)/卷37",
+      "revid": 661736,
+      "md_len": 3695
+    },
+    {
+      "n": 38,
+      "title": "卷38",
+      "file": "038.md",
+      "page_title": "丹淵集 (四庫全書本)/卷38",
+      "revid": 661738,
+      "md_len": 5634
+    },
+    {
+      "n": 39,
+      "title": "卷39",
+      "file": "039.md",
+      "page_title": "丹淵集 (四庫全書本)/卷39",
+      "revid": 661740,
+      "md_len": 4958
+    },
+    {
+      "n": 40,
+      "title": "卷40",
+      "file": "040.md",
+      "page_title": "丹淵集 (四庫全書本)/卷40",
+      "revid": 661742,
+      "md_len": 4232
+    },
+    {
+      "n": 41,
+      "title": "拾遺卷上",
+      "file": "041.md",
+      "page_title": "丹淵集 (四庫全書本)/拾遺卷上",
+      "revid": 661744,
+      "md_len": 1556
+    },
+    {
+      "n": 42,
+      "title": "拾遺卷下",
+      "file": "042.md",
+      "page_title": "丹淵集 (四庫全書本)/拾遺卷下",
+      "revid": 661746,
+      "md_len": 3047
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 128
+  }
+}

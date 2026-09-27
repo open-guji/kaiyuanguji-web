@@ -1,0 +1,184 @@
+{
+  "work_id": "d59f2hr2ji81",
+  "version_label": "宣和畫譜",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%AE%A3%E5%92%8C%E7%95%AB%E8%AD%9C",
+    "page_title": "宣和畫譜",
+    "revid": 1610997,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 20,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷一",
+      "file": "001.md",
+      "page_title": "宣和畫譜/卷一",
+      "revid": 1161251,
+      "md_len": 3782
+    },
+    {
+      "n": 2,
+      "title": "卷二",
+      "file": "002.md",
+      "page_title": "宣和畫譜/卷二",
+      "revid": 1448630,
+      "md_len": 3606
+    },
+    {
+      "n": 3,
+      "title": "卷三",
+      "file": "003.md",
+      "page_title": "宣和畫譜/卷三",
+      "revid": 1310723,
+      "md_len": 3090
+    },
+    {
+      "n": 4,
+      "title": "卷四",
+      "file": "004.md",
+      "page_title": "宣和畫譜/卷四",
+      "revid": 1448631,
+      "md_len": 3505
+    },
+    {
+      "n": 5,
+      "title": "卷五",
+      "file": "005.md",
+      "page_title": "宣和畫譜/卷五",
+      "revid": 1449501,
+      "md_len": 2556
+    },
+    {
+      "n": 6,
+      "title": "卷六",
+      "file": "006.md",
+      "page_title": "宣和畫譜/卷六",
+      "revid": 1448622,
+      "md_len": 2542
+    },
+    {
+      "n": 7,
+      "title": "卷七",
+      "file": "007.md",
+      "page_title": "宣和畫譜/卷七",
+      "revid": 1610998,
+      "md_len": 3626
+    },
+    {
+      "n": 8,
+      "title": "卷八",
+      "file": "008.md",
+      "page_title": "宣和畫譜/卷八",
+      "revid": 852746,
+      "md_len": 2831
+    },
+    {
+      "n": 9,
+      "title": "卷九",
+      "file": "009.md",
+      "page_title": "宣和畫譜/卷九",
+      "revid": 1448624,
+      "md_len": 2188
+    },
+    {
+      "n": 10,
+      "title": "卷十",
+      "file": "010.md",
+      "page_title": "宣和畫譜/卷十",
+      "revid": 1448632,
+      "md_len": 3730
+    },
+    {
+      "n": 11,
+      "title": "卷十一",
+      "file": "011.md",
+      "page_title": "宣和畫譜/卷十一",
+      "revid": 1448626,
+      "md_len": 5124
+    },
+    {
+      "n": 12,
+      "title": "卷十二",
+      "file": "012.md",
+      "page_title": "宣和畫譜/卷十二",
+      "revid": 1448627,
+      "md_len": 4504
+    },
+    {
+      "n": 13,
+      "title": "卷十三",
+      "file": "013.md",
+      "page_title": "宣和畫譜/卷十三",
+      "revid": 852752,
+      "md_len": 3500
+    },
+    {
+      "n": 14,
+      "title": "卷十四",
+      "file": "014.md",
+      "page_title": "宣和畫譜/卷十四",
+      "revid": 852753,
+      "md_len": 2108
+    },
+    {
+      "n": 15,
+      "title": "卷十五",
+      "file": "015.md",
+      "page_title": "宣和畫譜/卷十五",
+      "revid": 1442207,
+      "md_len": 3097
+    },
+    {
+      "n": 16,
+      "title": "卷十六",
+      "file": "016.md",
+      "page_title": "宣和畫譜/卷十六",
+      "revid": 1426635,
+      "md_len": 5262
+    },
+    {
+      "n": 17,
+      "title": "卷十七",
+      "file": "017.md",
+      "page_title": "宣和畫譜/卷十七",
+      "revid": 1426634,
+      "md_len": 4736
+    },
+    {
+      "n": 18,
+      "title": "卷十八",
+      "file": "018.md",
+      "page_title": "宣和畫譜/卷十八",
+      "revid": 1448628,
+      "md_len": 3967
+    },
+    {
+      "n": 19,
+      "title": "卷十九",
+      "file": "019.md",
+      "page_title": "宣和畫譜/卷十九",
+      "revid": 1426636,
+      "md_len": 3312
+    },
+    {
+      "n": 20,
+      "title": "卷二十",
+      "file": "020.md",
+      "page_title": "宣和畫譜/卷二十",
+      "revid": 1448629,
+      "md_len": 4329
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,112 @@
+{
+  "work_id": "d59f208tsagw",
+  "version_label": "風俗通義",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%A2%A8%E4%BF%97%E9%80%9A%E7%BE%A9",
+    "page_title": "風俗通義",
+    "revid": 2408710,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 11,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "風俗通義序",
+      "file": "001.md",
+      "page_title": "風俗通義/風俗通義序",
+      "revid": 366448,
+      "md_len": 747
+    },
+    {
+      "n": 2,
+      "title": "1",
+      "file": "002.md",
+      "page_title": "風俗通義/1",
+      "revid": 366530,
+      "md_len": 5009
+    },
+    {
+      "n": 3,
+      "title": "2",
+      "file": "003.md",
+      "page_title": "風俗通義/2",
+      "revid": 366884,
+      "md_len": 7131
+    },
+    {
+      "n": 4,
+      "title": "3",
+      "file": "004.md",
+      "page_title": "風俗通義/3",
+      "revid": 366937,
+      "md_len": 2764
+    },
+    {
+      "n": 5,
+      "title": "4",
+      "file": "005.md",
+      "page_title": "風俗通義/4",
+      "revid": 370915,
+      "md_len": 4215
+    },
+    {
+      "n": 6,
+      "title": "5",
+      "file": "006.md",
+      "page_title": "風俗通義/5",
+      "revid": 375995,
+      "md_len": 5163
+    },
+    {
+      "n": 7,
+      "title": "6",
+      "file": "007.md",
+      "page_title": "風俗通義/6",
+      "revid": 2650363,
+      "md_len": 3901
+    },
+    {
+      "n": 8,
+      "title": "7",
+      "file": "008.md",
+      "page_title": "風俗通義/7",
+      "revid": 1151461,
+      "md_len": 4412
+    },
+    {
+      "n": 9,
+      "title": "8",
+      "file": "009.md",
+      "page_title": "風俗通義/8",
+      "revid": 2606276,
+      "md_len": 3157
+    },
+    {
+      "n": 10,
+      "title": "9",
+      "file": "010.md",
+      "page_title": "風俗通義/9",
+      "revid": 1953916,
+      "md_len": 5526
+    },
+    {
+      "n": 11,
+      "title": "10",
+      "file": "011.md",
+      "page_title": "風俗通義/10",
+      "revid": 1953915,
+      "md_len": 2837
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

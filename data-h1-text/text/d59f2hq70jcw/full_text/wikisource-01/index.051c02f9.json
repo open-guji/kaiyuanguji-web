@@ -1,0 +1,107 @@
+{
+  "work_id": "d59f2hq70jcw",
+  "version_label": "鉅鹿東觀集",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%9D%B1%E8%A7%80%E9%9B%86%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "東觀集 (四庫全書本)",
+    "revid": 706577,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 10,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "東觀集 (四庫全書本)/卷01",
+      "revid": 706548,
+      "md_len": 2196
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "東觀集 (四庫全書本)/卷02",
+      "revid": 785578,
+      "md_len": 2369
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "東觀集 (四庫全書本)/卷03",
+      "revid": 706552,
+      "md_len": 2016
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "東觀集 (四庫全書本)/卷04",
+      "revid": 706554,
+      "md_len": 2054
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "東觀集 (四庫全書本)/卷05",
+      "revid": 785581,
+      "md_len": 1984
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "東觀集 (四庫全書本)/卷06",
+      "revid": 706561,
+      "md_len": 2080
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "東觀集 (四庫全書本)/卷07",
+      "revid": 706563,
+      "md_len": 2103
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "東觀集 (四庫全書本)/卷08",
+      "revid": 706567,
+      "md_len": 2501
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "東觀集 (四庫全書本)/卷09",
+      "revid": 706569,
+      "md_len": 1865
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "東觀集 (四庫全書本)/卷10",
+      "revid": 706573,
+      "md_len": 2231
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 106
+  }
+}

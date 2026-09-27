@@ -1,0 +1,279 @@
+{
+  "work_id": "d59f2gnrw0ea",
+  "version_label": "歸潛志",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%AD%B8%E6%BD%9B%E5%BF%97",
+    "page_title": "歸潛志",
+    "revid": 2295108,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 17,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "00",
+      "file": "001.md",
+      "page_title": "歸潛志/00",
+      "revid": 2175687,
+      "md_len": 354
+    },
+    {
+      "n": 2,
+      "title": "01",
+      "file": "002.md",
+      "page_title": "歸潛志/01",
+      "revid": 2175694,
+      "md_len": 5205
+    },
+    {
+      "n": 3,
+      "title": "02",
+      "file": "003.md",
+      "page_title": "歸潛志/02",
+      "revid": 2293506,
+      "md_len": 5207
+    },
+    {
+      "n": 4,
+      "title": "03",
+      "file": "004.md",
+      "page_title": "歸潛志/03",
+      "revid": 2293734,
+      "md_len": 5220
+    },
+    {
+      "n": 5,
+      "title": "04",
+      "file": "005.md",
+      "page_title": "歸潛志/04",
+      "revid": 2293873,
+      "md_len": 5954
+    },
+    {
+      "n": 6,
+      "title": "05",
+      "file": "006.md",
+      "page_title": "歸潛志/05",
+      "revid": 2294903,
+      "md_len": 6390
+    },
+    {
+      "n": 7,
+      "title": "06",
+      "file": "007.md",
+      "page_title": "歸潛志/06",
+      "revid": 2294935,
+      "md_len": 5585
+    },
+    {
+      "n": 8,
+      "title": "07",
+      "file": "008.md",
+      "page_title": "歸潛志/07",
+      "revid": 2295029,
+      "md_len": 5566
+    },
+    {
+      "n": 9,
+      "title": "08",
+      "file": "009.md",
+      "page_title": "歸潛志/08",
+      "revid": 2295030,
+      "md_len": 6759
+    },
+    {
+      "n": 10,
+      "title": "09",
+      "file": "010.md",
+      "page_title": "歸潛志/09",
+      "revid": 2295066,
+      "md_len": 8262
+    },
+    {
+      "n": 11,
+      "title": "10",
+      "file": "011.md",
+      "page_title": "歸潛志/10",
+      "revid": 2295087,
+      "md_len": 6997
+    },
+    {
+      "n": 12,
+      "title": "11",
+      "file": "012.md",
+      "page_title": "歸潛志/11",
+      "revid": 2175698,
+      "md_len": 4944
+    },
+    {
+      "n": 13,
+      "title": "12",
+      "file": "013.md",
+      "page_title": "歸潛志/12",
+      "revid": 2175783,
+      "md_len": 6197
+    },
+    {
+      "n": 14,
+      "title": "13",
+      "file": "014.md",
+      "page_title": "歸潛志/13",
+      "revid": 2279826,
+      "md_len": 14689
+    },
+    {
+      "n": 15,
+      "title": "14",
+      "file": "015.md",
+      "page_title": "歸潛志/14",
+      "revid": 2295105,
+      "md_len": 5280
+    },
+    {
+      "n": 16,
+      "title": "15",
+      "file": "016.md",
+      "page_title": "歸潛志/15",
+      "revid": 2329621,
+      "md_len": 1185
+    },
+    {
+      "n": 17,
+      "title": "16",
+      "file": "017.md",
+      "page_title": "歸潛志/16",
+      "revid": 2329620,
+      "md_len": 1496
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "{*": 1
+  },
+  "variants": [
+    {
+      "primary": "元",
+      "alt": [
+        "玄"
+      ]
+    },
+    {
+      "primary": "玄",
+      "alt": [
+        "元"
+      ]
+    },
+    {
+      "primary": "玄",
+      "alt": [
+        "元"
+      ]
+    },
+    {
+      "primary": "方",
+      "alt": [
+        "分"
+      ]
+    },
+    {
+      "primary": "玄",
+      "alt": [
+        "元"
+      ]
+    },
+    {
+      "primary": "□",
+      "alt": [
+        "家"
+      ]
+    },
+    {
+      "primary": "𣲆",
+      "alt": [
+        "杞"
+      ]
+    },
+    {
+      "primary": "玄",
+      "alt": [
+        "元"
+      ]
+    },
+    {
+      "primary": "人",
+      "alt": [
+        "慨"
+      ]
+    },
+    {
+      "primary": "諷",
+      "alt": [
+        "渢"
+      ]
+    },
+    {
+      "primary": "拓",
+      "alt": [
+        "妬"
+      ]
+    },
+    {
+      "primary": "蟾",
+      "alt": [
+        "桂"
+      ]
+    },
+    {
+      "primary": "宏",
+      "alt": [
+        "弘"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "玄"
+      ]
+    },
+    {
+      "primary": "宏",
+      "alt": [
+        "弘"
+      ]
+    },
+    {
+      "primary": "□",
+      "alt": [
+        "日"
+      ]
+    },
+    {
+      "primary": "□",
+      "alt": [
+        "陸"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "玄"
+      ]
+    },
+    {
+      "primary": "元",
+      "alt": [
+        "玄"
+      ]
+    }
+  ]
+}

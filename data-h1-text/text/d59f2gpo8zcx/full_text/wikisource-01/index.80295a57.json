@@ -1,0 +1,112 @@
+{
+  "work_id": "d59f2gpo8zcx",
+  "version_label": "武林舊事",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%AD%A6%E6%9E%97%E8%88%8A%E4%BA%8B",
+    "page_title": "武林舊事",
+    "revid": 1491516,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 11,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "武林舊事/序",
+      "revid": 867986,
+      "md_len": 340
+    },
+    {
+      "n": 2,
+      "title": "卷一",
+      "file": "002.md",
+      "page_title": "武林舊事/卷一",
+      "revid": 2325629,
+      "md_len": 8168
+    },
+    {
+      "n": 3,
+      "title": "卷二",
+      "file": "003.md",
+      "page_title": "武林舊事/卷二",
+      "revid": 2325630,
+      "md_len": 7623
+    },
+    {
+      "n": 4,
+      "title": "卷三",
+      "file": "004.md",
+      "page_title": "武林舊事/卷三",
+      "revid": 2325628,
+      "md_len": 6116
+    },
+    {
+      "n": 5,
+      "title": "卷四",
+      "file": "005.md",
+      "page_title": "武林舊事/卷四",
+      "revid": 2325631,
+      "md_len": 5530
+    },
+    {
+      "n": 6,
+      "title": "卷五",
+      "file": "006.md",
+      "page_title": "武林舊事/卷五",
+      "revid": 1336122,
+      "md_len": 13299
+    },
+    {
+      "n": 7,
+      "title": "卷六",
+      "file": "007.md",
+      "page_title": "武林舊事/卷六",
+      "revid": 2399668,
+      "md_len": 7614
+    },
+    {
+      "n": 8,
+      "title": "卷七",
+      "file": "008.md",
+      "page_title": "武林舊事/卷七",
+      "revid": 2325633,
+      "md_len": 7131
+    },
+    {
+      "n": 9,
+      "title": "卷八",
+      "file": "009.md",
+      "page_title": "武林舊事/卷八",
+      "revid": 2325634,
+      "md_len": 6716
+    },
+    {
+      "n": 10,
+      "title": "卷九",
+      "file": "010.md",
+      "page_title": "武林舊事/卷九",
+      "revid": 8127642,
+      "md_len": 4132
+    },
+    {
+      "n": 11,
+      "title": "卷十",
+      "file": "011.md",
+      "page_title": "武林舊事/卷十",
+      "revid": 2617374,
+      "md_len": 4978
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,115 @@
+{
+  "work_id": "d59f2hsxyrk0",
+  "version_label": "寓簡",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%AF%93%E7%B0%A1",
+    "page_title": "寓簡",
+    "revid": 2650516,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 11,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 182
+    },
+    {
+      "n": 2,
+      "title": "卷一",
+      "file": "002.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 5145
+    },
+    {
+      "n": 3,
+      "title": "卷二",
+      "file": "003.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4781
+    },
+    {
+      "n": 4,
+      "title": "卷三",
+      "file": "004.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4366
+    },
+    {
+      "n": 5,
+      "title": "卷四",
+      "file": "005.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4435
+    },
+    {
+      "n": 6,
+      "title": "卷五",
+      "file": "006.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4969
+    },
+    {
+      "n": 7,
+      "title": "卷六",
+      "file": "007.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 5304
+    },
+    {
+      "n": 8,
+      "title": "卷七",
+      "file": "008.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 5550
+    },
+    {
+      "n": 9,
+      "title": "卷八",
+      "file": "009.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4570
+    },
+    {
+      "n": 10,
+      "title": "卷九",
+      "file": "010.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 4287
+    },
+    {
+      "n": 11,
+      "title": "卷十",
+      "file": "011.md",
+      "page_title": "寓簡",
+      "revid": 2650516,
+      "md_len": 3368
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "南宋作品": 1
+  }
+}

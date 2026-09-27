@@ -1,0 +1,43 @@
+{
+  "work_id": "d59f2hr35zb6",
+  "version_label": "太平惠民和劑局方",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%A4%AA%E5%B9%B3%E6%83%A0%E6%B0%91%E5%92%8C%E5%8A%91%E5%B1%80%E6%96%B9",
+    "page_title": "太平惠民和劑局方",
+    "revid": 2187376,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 1,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷之一",
+      "file": "001.md",
+      "page_title": "太平惠民和劑局方/卷之一",
+      "revid": 1566130,
+      "md_len": 186
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "small": 1
+  },
+  "variants": [
+    {
+      "primary": "亂",
+      "alt": [
+        "難"
+      ]
+    }
+  ]
+}

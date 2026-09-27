@@ -1,0 +1,248 @@
+{
+  "work_id": "d59f2hpoaark",
+  "version_label": "契丹國志",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%A5%91%E4%B8%B9%E5%9C%8B%E5%BF%97",
+    "page_title": "契丹國志",
+    "revid": 2258550,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 28,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷一",
+      "file": "001.md",
+      "page_title": "契丹國志/卷一",
+      "revid": 2258555,
+      "md_len": 3879
+    },
+    {
+      "n": 2,
+      "title": "卷二",
+      "file": "002.md",
+      "page_title": "契丹國志/卷二",
+      "revid": 2258703,
+      "md_len": 7332
+    },
+    {
+      "n": 3,
+      "title": "卷三",
+      "file": "003.md",
+      "page_title": "契丹國志/卷三",
+      "revid": 2258704,
+      "md_len": 6062
+    },
+    {
+      "n": 4,
+      "title": "卷四",
+      "file": "004.md",
+      "page_title": "契丹國志/卷四",
+      "revid": 2258705,
+      "md_len": 2828
+    },
+    {
+      "n": 5,
+      "title": "卷五",
+      "file": "005.md",
+      "page_title": "契丹國志/卷五",
+      "revid": 2258706,
+      "md_len": 2192
+    },
+    {
+      "n": 6,
+      "title": "卷六",
+      "file": "006.md",
+      "page_title": "契丹國志/卷六",
+      "revid": 2258707,
+      "md_len": 1570
+    },
+    {
+      "n": 7,
+      "title": "卷七",
+      "file": "007.md",
+      "page_title": "契丹國志/卷七",
+      "revid": 2258708,
+      "md_len": 4531
+    },
+    {
+      "n": 8,
+      "title": "卷八",
+      "file": "008.md",
+      "page_title": "契丹國志/卷八",
+      "revid": 2258709,
+      "md_len": 3993
+    },
+    {
+      "n": 9,
+      "title": "卷九",
+      "file": "009.md",
+      "page_title": "契丹國志/卷九",
+      "revid": 2258710,
+      "md_len": 3976
+    },
+    {
+      "n": 10,
+      "title": "卷十",
+      "file": "010.md",
+      "page_title": "契丹國志/卷十",
+      "revid": 2258711,
+      "md_len": 7775
+    },
+    {
+      "n": 11,
+      "title": "卷十一",
+      "file": "011.md",
+      "page_title": "契丹國志/卷十一",
+      "revid": 2258712,
+      "md_len": 5307
+    },
+    {
+      "n": 12,
+      "title": "卷十二",
+      "file": "012.md",
+      "page_title": "契丹國志/卷十二",
+      "revid": 2258713,
+      "md_len": 3369
+    },
+    {
+      "n": 13,
+      "title": "卷十三",
+      "file": "013.md",
+      "page_title": "契丹國志/卷十三",
+      "revid": 2258658,
+      "md_len": 4470
+    },
+    {
+      "n": 14,
+      "title": "卷十四",
+      "file": "014.md",
+      "page_title": "契丹國志/卷十四",
+      "revid": 2258657,
+      "md_len": 1771
+    },
+    {
+      "n": 15,
+      "title": "卷十五",
+      "file": "015.md",
+      "page_title": "契丹國志/卷十五",
+      "revid": 333449,
+      "md_len": 1099
+    },
+    {
+      "n": 16,
+      "title": "卷十六",
+      "file": "016.md",
+      "page_title": "契丹國志/卷十六",
+      "revid": 2258656,
+      "md_len": 2827
+    },
+    {
+      "n": 17,
+      "title": "卷十七",
+      "file": "017.md",
+      "page_title": "契丹國志/卷十七",
+      "revid": 2258655,
+      "md_len": 1324
+    },
+    {
+      "n": 18,
+      "title": "卷十八",
+      "file": "018.md",
+      "page_title": "契丹國志/卷十八",
+      "revid": 2258654,
+      "md_len": 2445
+    },
+    {
+      "n": 19,
+      "title": "卷十九",
+      "file": "019.md",
+      "page_title": "契丹國志/卷十九",
+      "revid": 2258652,
+      "md_len": 2839
+    },
+    {
+      "n": 20,
+      "title": "卷二十",
+      "file": "020.md",
+      "page_title": "契丹國志/卷二十",
+      "revid": 2258648,
+      "md_len": 3640
+    },
+    {
+      "n": 21,
+      "title": "卷二十一",
+      "file": "021.md",
+      "page_title": "契丹國志/卷二十一",
+      "revid": 333555,
+      "md_len": 1949
+    },
+    {
+      "n": 22,
+      "title": "卷二十二",
+      "file": "022.md",
+      "page_title": "契丹國志/卷二十二",
+      "revid": 2079826,
+      "md_len": 3448
+    },
+    {
+      "n": 23,
+      "title": "卷二十三",
+      "file": "023.md",
+      "page_title": "契丹國志/卷二十三",
+      "revid": 333745,
+      "md_len": 2847
+    },
+    {
+      "n": 24,
+      "title": "卷二十四",
+      "file": "024.md",
+      "page_title": "契丹國志/卷二十四",
+      "revid": 333747,
+      "md_len": 1475
+    },
+    {
+      "n": 25,
+      "title": "卷二十五",
+      "file": "025.md",
+      "page_title": "契丹國志/卷二十五",
+      "revid": 2258650,
+      "md_len": 2361
+    },
+    {
+      "n": 26,
+      "title": "卷二十六",
+      "file": "026.md",
+      "page_title": "契丹國志/卷二十六",
+      "revid": 333752,
+      "md_len": 1632
+    },
+    {
+      "n": 27,
+      "title": "卷二十七",
+      "file": "027.md",
+      "page_title": "契丹國志/卷二十七",
+      "revid": 1545243,
+      "md_len": 1842
+    },
+    {
+      "n": 28,
+      "title": "跋",
+      "file": "028.md",
+      "page_title": "契丹國志/跋",
+      "revid": 2258546,
+      "md_len": 7100
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,176 @@
+{
+  "work_id": "d59f2hr0o2yq",
+  "version_label": "詩人玉屑",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E8%A9%A9%E4%BA%BA%E7%8E%89%E5%B1%91",
+    "page_title": "詩人玉屑",
+    "revid": 1560220,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 19,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷03",
+      "file": "001.md",
+      "page_title": "詩人玉屑/卷03",
+      "revid": 1526824,
+      "md_len": 13557
+    },
+    {
+      "n": 2,
+      "title": "卷04",
+      "file": "002.md",
+      "page_title": "詩人玉屑/卷04",
+      "revid": 1526454,
+      "md_len": 6012
+    },
+    {
+      "n": 3,
+      "title": "卷05",
+      "file": "003.md",
+      "page_title": "詩人玉屑/卷05",
+      "revid": 1526460,
+      "md_len": 4841
+    },
+    {
+      "n": 4,
+      "title": "卷06",
+      "file": "004.md",
+      "page_title": "詩人玉屑/卷06",
+      "revid": 1526691,
+      "md_len": 9498
+    },
+    {
+      "n": 5,
+      "title": "卷07",
+      "file": "005.md",
+      "page_title": "詩人玉屑/卷07",
+      "revid": 1526713,
+      "md_len": 11673
+    },
+    {
+      "n": 6,
+      "title": "卷08",
+      "file": "006.md",
+      "page_title": "詩人玉屑/卷08",
+      "revid": 2078339,
+      "md_len": 9630
+    },
+    {
+      "n": 7,
+      "title": "卷09",
+      "file": "007.md",
+      "page_title": "詩人玉屑/卷09",
+      "revid": 1526800,
+      "md_len": 6133
+    },
+    {
+      "n": 8,
+      "title": "卷10",
+      "file": "008.md",
+      "page_title": "詩人玉屑/卷10",
+      "revid": 2079579,
+      "md_len": 9818
+    },
+    {
+      "n": 9,
+      "title": "卷11",
+      "file": "009.md",
+      "page_title": "詩人玉屑/卷11",
+      "revid": 1526827,
+      "md_len": 6721
+    },
+    {
+      "n": 10,
+      "title": "卷12",
+      "file": "010.md",
+      "page_title": "詩人玉屑/卷12",
+      "revid": 1526821,
+      "md_len": 7847
+    },
+    {
+      "n": 11,
+      "title": "卷13",
+      "file": "011.md",
+      "page_title": "詩人玉屑/卷13",
+      "revid": 1527325,
+      "md_len": 8952
+    },
+    {
+      "n": 12,
+      "title": "卷14",
+      "file": "012.md",
+      "page_title": "詩人玉屑/卷14",
+      "revid": 1527326,
+      "md_len": 11198
+    },
+    {
+      "n": 13,
+      "title": "卷15",
+      "file": "013.md",
+      "page_title": "詩人玉屑/卷15",
+      "revid": 1527333,
+      "md_len": 11138
+    },
+    {
+      "n": 14,
+      "title": "卷16",
+      "file": "014.md",
+      "page_title": "詩人玉屑/卷16",
+      "revid": 1527800,
+      "md_len": 8548
+    },
+    {
+      "n": 15,
+      "title": "卷17",
+      "file": "015.md",
+      "page_title": "詩人玉屑/卷17",
+      "revid": 1530734,
+      "md_len": 13368
+    },
+    {
+      "n": 16,
+      "title": "卷18",
+      "file": "016.md",
+      "page_title": "詩人玉屑/卷18",
+      "revid": 1530735,
+      "md_len": 10361
+    },
+    {
+      "n": 17,
+      "title": "卷19",
+      "file": "017.md",
+      "page_title": "詩人玉屑/卷19",
+      "revid": 1530742,
+      "md_len": 11871
+    },
+    {
+      "n": 18,
+      "title": "卷20",
+      "file": "018.md",
+      "page_title": "詩人玉屑/卷20",
+      "revid": 1530783,
+      "md_len": 9318
+    },
+    {
+      "n": 19,
+      "title": "卷21",
+      "file": "019.md",
+      "page_title": "詩人玉屑/卷21",
+      "revid": 1530798,
+      "md_len": 9431
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

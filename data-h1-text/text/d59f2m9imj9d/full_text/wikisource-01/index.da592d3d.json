@@ -1,0 +1,147 @@
+{
+  "work_id": "d59f2m9imj9d",
+  "version_label": "日講書經解義",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%97%A5%E8%AC%9B%E6%9B%B8%E7%B6%93%E8%A7%A3%E7%BE%A9%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "日講書經解義 (四庫全書本)",
+    "revid": 836595,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 15,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "進",
+      "file": "001.md",
+      "page_title": "日講書經解義 (四庫全書本)/進",
+      "revid": 836598,
+      "md_len": 1701
+    },
+    {
+      "n": 2,
+      "title": "提要",
+      "file": "002.md",
+      "page_title": "日講書經解義 (四庫全書本)/提要",
+      "revid": 836596,
+      "md_len": 220
+    },
+    {
+      "n": 3,
+      "title": "卷01",
+      "file": "003.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷01",
+      "revid": 836599,
+      "md_len": 12837
+    },
+    {
+      "n": 4,
+      "title": "卷02",
+      "file": "004.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷02",
+      "revid": 760200,
+      "md_len": 14947
+    },
+    {
+      "n": 5,
+      "title": "卷03",
+      "file": "005.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷03",
+      "revid": 760201,
+      "md_len": 18014
+    },
+    {
+      "n": 6,
+      "title": "卷04",
+      "file": "006.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷04",
+      "revid": 760202,
+      "md_len": 18009
+    },
+    {
+      "n": 7,
+      "title": "卷05",
+      "file": "007.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷05",
+      "revid": 760203,
+      "md_len": 22473
+    },
+    {
+      "n": 8,
+      "title": "卷06",
+      "file": "008.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷06",
+      "revid": 760204,
+      "md_len": 21365
+    },
+    {
+      "n": 9,
+      "title": "卷07",
+      "file": "009.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷07",
+      "revid": 760205,
+      "md_len": 12703
+    },
+    {
+      "n": 10,
+      "title": "卷08",
+      "file": "010.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷08",
+      "revid": 760206,
+      "md_len": 20584
+    },
+    {
+      "n": 11,
+      "title": "卷09",
+      "file": "011.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷09",
+      "revid": 542155,
+      "md_len": 16888
+    },
+    {
+      "n": 12,
+      "title": "卷10",
+      "file": "012.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷10",
+      "revid": 542157,
+      "md_len": 12869
+    },
+    {
+      "n": 13,
+      "title": "卷11",
+      "file": "013.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷11",
+      "revid": 760207,
+      "md_len": 10893
+    },
+    {
+      "n": 14,
+      "title": "卷12",
+      "file": "014.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷12",
+      "revid": 760208,
+      "md_len": 17576
+    },
+    {
+      "n": 15,
+      "title": "卷13",
+      "file": "015.md",
+      "page_title": "日講書經解義 (四庫全書本)/卷13",
+      "revid": 542163,
+      "md_len": 15091
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 79
+  }
+}

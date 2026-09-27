@@ -1,0 +1,56 @@
+{
+  "work_id": "d59f28mn0mio",
+  "version_label": "孫子算經",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%AD%AB%E5%AD%90%E7%AE%97%E7%B6%93",
+    "page_title": "孫子算經",
+    "revid": 2436749,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 4,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "原序",
+      "file": "001.md",
+      "page_title": "孫子算經",
+      "revid": 2436749,
+      "md_len": 251
+    },
+    {
+      "n": 2,
+      "title": "卷上",
+      "file": "002.md",
+      "page_title": "孫子算經",
+      "revid": 2436749,
+      "md_len": 3798
+    },
+    {
+      "n": 3,
+      "title": "卷中",
+      "file": "003.md",
+      "page_title": "孫子算經",
+      "revid": 2436749,
+      "md_len": 4129
+    },
+    {
+      "n": 4,
+      "title": "卷下",
+      "file": "004.md",
+      "page_title": "孫子算經",
+      "revid": 2436749,
+      "md_len": 4105
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

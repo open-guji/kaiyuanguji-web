@@ -1,0 +1,123 @@
+{
+  "work_id": "d59f2gp8bvnm",
+  "version_label": "文子纘義",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%87%E5%AD%90%E7%BA%98%E7%BE%A9%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "文子纘義 (四庫全書本)",
+    "revid": 632687,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 12,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "文子纘義 (四庫全書本)/卷01",
+      "revid": 632647,
+      "md_len": 3486
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "文子纘義 (四庫全書本)/卷02",
+      "revid": 632651,
+      "md_len": 5724
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "文子纘義 (四庫全書本)/卷03",
+      "revid": 784024,
+      "md_len": 3442
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "文子纘義 (四庫全書本)/卷04",
+      "revid": 784027,
+      "md_len": 5303
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "文子纘義 (四庫全書本)/卷05",
+      "revid": 632659,
+      "md_len": 3376
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "文子纘義 (四庫全書本)/卷06",
+      "revid": 784030,
+      "md_len": 8394
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "文子纘義 (四庫全書本)/卷07",
+      "revid": 784033,
+      "md_len": 5262
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "文子纘義 (四庫全書本)/卷08",
+      "revid": 632673,
+      "md_len": 5930
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "文子纘義 (四庫全書本)/卷09",
+      "revid": 784036,
+      "md_len": 7191
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "文子纘義 (四庫全書本)/卷10",
+      "revid": 632677,
+      "md_len": 3427
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "文子纘義 (四庫全書本)/卷11",
+      "revid": 632681,
+      "md_len": 4770
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "文子纘義 (四庫全書本)/卷12",
+      "revid": 632683,
+      "md_len": 2698
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 107
+  }
+}

@@ -1,0 +1,859 @@
+{
+  "work_id": "d59f286w5o1u",
+  "version_label": "文心雕龍",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%87%E5%BF%83%E9%9B%95%E9%BE%8D",
+    "page_title": "文心雕龍",
+    "revid": 7912876,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 50,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "原道",
+      "file": "001.md",
+      "page_title": "文心雕龍/原道",
+      "revid": 7912895,
+      "md_len": 784
+    },
+    {
+      "n": 2,
+      "title": "徵聖",
+      "file": "002.md",
+      "page_title": "文心雕龍/徵聖",
+      "revid": 2507586,
+      "md_len": 647
+    },
+    {
+      "n": 3,
+      "title": "宗經",
+      "file": "003.md",
+      "page_title": "文心雕龍/宗經",
+      "revid": 2096297,
+      "md_len": 856
+    },
+    {
+      "n": 4,
+      "title": "正緯",
+      "file": "004.md",
+      "page_title": "文心雕龍/正緯",
+      "revid": 2096312,
+      "md_len": 679
+    },
+    {
+      "n": 5,
+      "title": "辨騷",
+      "file": "005.md",
+      "page_title": "文心雕龍/辨騷",
+      "revid": 2096337,
+      "md_len": 1026
+    },
+    {
+      "n": 6,
+      "title": "明詩",
+      "file": "006.md",
+      "page_title": "文心雕龍/明詩",
+      "revid": 2096346,
+      "md_len": 1126
+    },
+    {
+      "n": 7,
+      "title": "樂府",
+      "file": "007.md",
+      "page_title": "文心雕龍/樂府",
+      "revid": 2096350,
+      "md_len": 940
+    },
+    {
+      "n": 8,
+      "title": "詮賦",
+      "file": "008.md",
+      "page_title": "文心雕龍/詮賦",
+      "revid": 2179356,
+      "md_len": 891
+    },
+    {
+      "n": 9,
+      "title": "頌讚",
+      "file": "009.md",
+      "page_title": "文心雕龍/頌讚",
+      "revid": 2096359,
+      "md_len": 889
+    },
+    {
+      "n": 10,
+      "title": "祝盟",
+      "file": "010.md",
+      "page_title": "文心雕龍/祝盟",
+      "revid": 2096372,
+      "md_len": 960
+    },
+    {
+      "n": 11,
+      "title": "銘箴",
+      "file": "011.md",
+      "page_title": "文心雕龍/銘箴",
+      "revid": 2096383,
+      "md_len": 911
+    },
+    {
+      "n": 12,
+      "title": "誄碑",
+      "file": "012.md",
+      "page_title": "文心雕龍/誄碑",
+      "revid": 2385266,
+      "md_len": 914
+    },
+    {
+      "n": 13,
+      "title": "哀弔",
+      "file": "013.md",
+      "page_title": "文心雕龍/哀弔",
+      "revid": 2096417,
+      "md_len": 851
+    },
+    {
+      "n": 14,
+      "title": "雜文",
+      "file": "014.md",
+      "page_title": "文心雕龍/雜文",
+      "revid": 2096425,
+      "md_len": 923
+    },
+    {
+      "n": 15,
+      "title": "諧讔",
+      "file": "015.md",
+      "page_title": "文心雕龍/諧讔",
+      "revid": 2281573,
+      "md_len": 849
+    },
+    {
+      "n": 16,
+      "title": "史傳",
+      "file": "016.md",
+      "page_title": "文心雕龍/史傳",
+      "revid": 2097353,
+      "md_len": 1763
+    },
+    {
+      "n": 17,
+      "title": "諸子",
+      "file": "017.md",
+      "page_title": "文心雕龍/諸子",
+      "revid": 2098027,
+      "md_len": 1130
+    },
+    {
+      "n": 18,
+      "title": "論說",
+      "file": "018.md",
+      "page_title": "文心雕龍/論說",
+      "revid": 2098035,
+      "md_len": 1341
+    },
+    {
+      "n": 19,
+      "title": "詔策",
+      "file": "019.md",
+      "page_title": "文心雕龍/詔策",
+      "revid": 2098044,
+      "md_len": 1151
+    },
+    {
+      "n": 20,
+      "title": "檄移",
+      "file": "020.md",
+      "page_title": "文心雕龍/檄移",
+      "revid": 2098054,
+      "md_len": 901
+    },
+    {
+      "n": 21,
+      "title": "封禪",
+      "file": "021.md",
+      "page_title": "文心雕龍/封禪",
+      "revid": 2098069,
+      "md_len": 815
+    },
+    {
+      "n": 22,
+      "title": "章表",
+      "file": "022.md",
+      "page_title": "文心雕龍/章表",
+      "revid": 2098075,
+      "md_len": 963
+    },
+    {
+      "n": 23,
+      "title": "奏啟",
+      "file": "023.md",
+      "page_title": "文心雕龍/奏啟",
+      "revid": 2098081,
+      "md_len": 1058
+    },
+    {
+      "n": 24,
+      "title": "議對",
+      "file": "024.md",
+      "page_title": "文心雕龍/議對",
+      "revid": 2098090,
+      "md_len": 1201
+    },
+    {
+      "n": 25,
+      "title": "書記",
+      "file": "025.md",
+      "page_title": "文心雕龍/書記",
+      "revid": 2098104,
+      "md_len": 1875
+    },
+    {
+      "n": 26,
+      "title": "神思",
+      "file": "026.md",
+      "page_title": "文心雕龍/神思",
+      "revid": 2281591,
+      "md_len": 847
+    },
+    {
+      "n": 27,
+      "title": "體性",
+      "file": "027.md",
+      "page_title": "文心雕龍/體性",
+      "revid": 2098306,
+      "md_len": 717
+    },
+    {
+      "n": 28,
+      "title": "風骨",
+      "file": "028.md",
+      "page_title": "文心雕龍/風骨",
+      "revid": 2098310,
+      "md_len": 723
+    },
+    {
+      "n": 29,
+      "title": "通變",
+      "file": "029.md",
+      "page_title": "文心雕龍/通變",
+      "revid": 2098315,
+      "md_len": 832
+    },
+    {
+      "n": 30,
+      "title": "定勢",
+      "file": "030.md",
+      "page_title": "文心雕龍/定勢",
+      "revid": 2098320,
+      "md_len": 894
+    },
+    {
+      "n": 31,
+      "title": "情采",
+      "file": "031.md",
+      "page_title": "文心雕龍/情采",
+      "revid": 2098327,
+      "md_len": 826
+    },
+    {
+      "n": 32,
+      "title": "鎔裁",
+      "file": "032.md",
+      "page_title": "文心雕龍/鎔裁",
+      "revid": 2099143,
+      "md_len": 688
+    },
+    {
+      "n": 33,
+      "title": "聲律",
+      "file": "033.md",
+      "page_title": "文心雕龍/聲律",
+      "revid": 2099147,
+      "md_len": 769
+    },
+    {
+      "n": 34,
+      "title": "章句",
+      "file": "034.md",
+      "page_title": "文心雕龍/章句",
+      "revid": 2099152,
+      "md_len": 871
+    },
+    {
+      "n": 35,
+      "title": "麗辭",
+      "file": "035.md",
+      "page_title": "文心雕龍/麗辭",
+      "revid": 2099157,
+      "md_len": 771
+    },
+    {
+      "n": 36,
+      "title": "比興",
+      "file": "036.md",
+      "page_title": "文心雕龍/比興",
+      "revid": 2266321,
+      "md_len": 754
+    },
+    {
+      "n": 37,
+      "title": "夸飾",
+      "file": "037.md",
+      "page_title": "文心雕龍/夸飾",
+      "revid": 2099175,
+      "md_len": 684
+    },
+    {
+      "n": 38,
+      "title": "事類",
+      "file": "038.md",
+      "page_title": "文心雕龍/事類",
+      "revid": 2099315,
+      "md_len": 1070
+    },
+    {
+      "n": 39,
+      "title": "練字",
+      "file": "039.md",
+      "page_title": "文心雕龍/練字",
+      "revid": 2099320,
+      "md_len": 1084
+    },
+    {
+      "n": 40,
+      "title": "隱秀",
+      "file": "040.md",
+      "page_title": "文心雕龍/隱秀",
+      "revid": 2326075,
+      "md_len": 896
+    },
+    {
+      "n": 41,
+      "title": "指瑕",
+      "file": "041.md",
+      "page_title": "文心雕龍/指瑕",
+      "revid": 2326076,
+      "md_len": 859
+    },
+    {
+      "n": 42,
+      "title": "養氣",
+      "file": "042.md",
+      "page_title": "文心雕龍/養氣",
+      "revid": 2326077,
+      "md_len": 637
+    },
+    {
+      "n": 43,
+      "title": "附會",
+      "file": "043.md",
+      "page_title": "文心雕龍/附會",
+      "revid": 2326078,
+      "md_len": 731
+    },
+    {
+      "n": 44,
+      "title": "總術",
+      "file": "044.md",
+      "page_title": "文心雕龍/總術",
+      "revid": 2326079,
+      "md_len": 736
+    },
+    {
+      "n": 45,
+      "title": "時序",
+      "file": "045.md",
+      "page_title": "文心雕龍/時序",
+      "revid": 2325636,
+      "md_len": 1876
+    },
+    {
+      "n": 46,
+      "title": "物色",
+      "file": "046.md",
+      "page_title": "文心雕龍/物色",
+      "revid": 2099362,
+      "md_len": 778
+    },
+    {
+      "n": 47,
+      "title": "才略",
+      "file": "047.md",
+      "page_title": "文心雕龍/才略",
+      "revid": 2325637,
+      "md_len": 1794
+    },
+    {
+      "n": 48,
+      "title": "知音",
+      "file": "048.md",
+      "page_title": "文心雕龍/知音",
+      "revid": 2325691,
+      "md_len": 909
+    },
+    {
+      "n": 49,
+      "title": "程器",
+      "file": "049.md",
+      "page_title": "文心雕龍/程器",
+      "revid": 2326080,
+      "md_len": 783
+    },
+    {
+      "n": 50,
+      "title": "序志",
+      "file": "050.md",
+      "page_title": "文心雕龍/序志",
+      "revid": 2099395,
+      "md_len": 1045
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "variants": [
+    {
+      "primary": "情",
+      "alt": [
+        "疑作「性」"
+      ]
+    },
+    {
+      "primary": "嘗",
+      "alt": [
+        "常"
+      ]
+    },
+    {
+      "primary": "李",
+      "alt": [
+        "當作「孝」"
+      ]
+    },
+    {
+      "primary": "理",
+      "alt": [
+        "經"
+      ]
+    },
+    {
+      "primary": "模",
+      "alt": [
+        "謨"
+      ]
+    },
+    {
+      "primary": "二",
+      "alt": [
+        "校作「一」"
+      ]
+    },
+    {
+      "primary": "鳴",
+      "alt": [
+        "鴻"
+      ]
+    },
+    {
+      "primary": "替",
+      "alt": [
+        "疑作「質」"
+      ]
+    },
+    {
+      "primary": "適",
+      "alt": [
+        "隨"
+      ]
+    },
+    {
+      "primary": "義",
+      "alt": [
+        "意"
+      ]
+    },
+    {
+      "primary": "合",
+      "alt": [
+        "含"
+      ]
+    },
+    {
+      "primary": "學",
+      "alt": [
+        "當作效"
+      ]
+    },
+    {
+      "primary": "摛",
+      "alt": [
+        "摘"
+      ]
+    },
+    {
+      "primary": "聽",
+      "alt": [
+        "外"
+      ]
+    },
+    {
+      "primary": "故",
+      "alt": [
+        "則"
+      ]
+    },
+    {
+      "primary": "遺",
+      "alt": [
+        "遣"
+      ]
+    },
+    {
+      "primary": "意",
+      "alt": [
+        "毫"
+      ]
+    },
+    {
+      "primary": "圜",
+      "alt": [
+        "圓"
+      ]
+    },
+    {
+      "primary": "識疎",
+      "alt": [
+        "疎識"
+      ]
+    },
+    {
+      "primary": "南",
+      "alt": [
+        "東"
+      ]
+    },
+    {
+      "primary": "忘",
+      "alt": [
+        "忽"
+      ]
+    },
+    {
+      "primary": "主",
+      "alt": [
+        "生"
+      ]
+    },
+    {
+      "primary": "凉飈",
+      "alt": [
+        "一作「涼風」，一作「朔風」"
+      ]
+    },
+    {
+      "primary": "媸",
+      "alt": [
+        "蚩"
+      ]
+    },
+    {
+      "primary": "排",
+      "alt": [
+        "掠"
+      ]
+    },
+    {
+      "primary": "言",
+      "alt": [
+        "疋"
+      ]
+    },
+    {
+      "primary": "首",
+      "alt": [
+        "筌"
+      ]
+    },
+    {
+      "primary": "盛",
+      "alt": [
+        "成"
+      ]
+    },
+    {
+      "primary": "敬",
+      "alt": [
+        "叔"
+      ]
+    },
+    {
+      "primary": "無",
+      "alt": [
+        "多"
+      ]
+    },
+    {
+      "primary": "文節",
+      "alt": [
+        "節文"
+      ]
+    },
+    {
+      "primary": "今",
+      "alt": [
+        "令"
+      ]
+    },
+    {
+      "primary": "貫",
+      "alt": [
+        "實"
+      ]
+    },
+    {
+      "primary": "窮",
+      "alt": [
+        "躬"
+      ]
+    },
+    {
+      "primary": "蕪",
+      "alt": [
+        "無"
+      ]
+    },
+    {
+      "primary": "情",
+      "alt": [
+        "清"
+      ]
+    },
+    {
+      "primary": "棄",
+      "alt": [
+        "築"
+      ]
+    },
+    {
+      "primary": "並",
+      "alt": [
+        "非"
+      ]
+    },
+    {
+      "primary": "媸",
+      "alt": [
+        "蚩"
+      ]
+    },
+    {
+      "primary": "纆",
+      "alt": [
+        "纏"
+      ]
+    },
+    {
+      "primary": "美",
+      "alt": [
+        "笑"
+      ]
+    },
+    {
+      "primary": "諫",
+      "alt": [
+        "譚"
+      ]
+    },
+    {
+      "primary": "奏",
+      "alt": [
+        "表"
+      ]
+    },
+    {
+      "primary": "札",
+      "alt": [
+        "礼"
+      ]
+    },
+    {
+      "primary": "瑞",
+      "alt": [
+        "端"
+      ]
+    },
+    {
+      "primary": "于",
+      "alt": [
+        "子"
+      ]
+    },
+    {
+      "primary": "俶",
+      "alt": [
+        "叔"
+      ]
+    },
+    {
+      "primary": "俊",
+      "alt": [
+        "傲"
+      ]
+    },
+    {
+      "primary": "徒",
+      "alt": [
+        "從"
+      ]
+    },
+    {
+      "primary": "秉哲",
+      "alt": [
+        "束皙"
+      ]
+    },
+    {
+      "primary": "充",
+      "alt": [
+        "光"
+      ]
+    },
+    {
+      "primary": "曠",
+      "alt": [
+        "曖"
+      ]
+    },
+    {
+      "primary": "漉漉",
+      "alt": [
+        "一作「瀌瀌」，一作「麃麃」。"
+      ]
+    },
+    {
+      "primary": "敖",
+      "alt": [
+        "教"
+      ]
+    },
+    {
+      "primary": "衰",
+      "alt": [
+        "襄"
+      ]
+    },
+    {
+      "primary": "翬",
+      "alt": [
+        "揮"
+      ]
+    },
+    {
+      "primary": "龍",
+      "alt": [
+        "能"
+      ]
+    },
+    {
+      "primary": "尤",
+      "alt": [
+        "充"
+      ]
+    },
+    {
+      "primary": "登",
+      "alt": [
+        "識"
+      ]
+    },
+    {
+      "primary": "奕奕",
+      "alt": [
+        "弈弈"
+      ]
+    },
+    {
+      "primary": "練",
+      "alt": [
+        "陳"
+      ]
+    },
+    {
+      "primary": "干寶",
+      "alt": [
+        "子實"
+      ]
+    },
+    {
+      "primary": "籍",
+      "alt": [
+        "藉"
+      ]
+    },
+    {
+      "primary": "藉",
+      "alt": [
+        "籍"
+      ]
+    },
+    {
+      "primary": "澤",
+      "alt": [
+        "繹"
+      ]
+    },
+    {
+      "primary": "鐘",
+      "alt": [
+        "鍾"
+      ]
+    },
+    {
+      "primary": "艧",
+      "alt": [
+        "雘"
+      ]
+    },
+    {
+      "primary": "墁",
+      "alt": [
+        "一作「杇」，一作「朽」。"
+      ]
+    },
+    {
+      "primary": "悢",
+      "alt": [
+        "狠"
+      ]
+    },
+    {
+      "primary": "綳",
+      "alt": [
+        "弸"
+      ]
+    },
+    {
+      "primary": "采",
+      "alt": [
+        "悉"
+      ]
+    },
+    {
+      "primary": "負",
+      "alt": [
+        "賢"
+      ]
+    }
+  ],
+  "dropped_refs": 3
+}

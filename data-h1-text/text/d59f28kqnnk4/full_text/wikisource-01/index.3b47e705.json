@@ -1,0 +1,264 @@
+{
+  "work_id": "d59f28kqnnk4",
+  "version_label": "大唐六典",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%94%90%E5%85%AD%E5%85%B8",
+    "page_title": "唐六典",
+    "revid": 2081258,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 30,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "唐六典/卷01",
+      "revid": 1146813,
+      "md_len": 8961
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "唐六典/卷02",
+      "revid": 2607724,
+      "md_len": 15286
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "唐六典/卷03",
+      "revid": 2618673,
+      "md_len": 15308
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "唐六典/卷04",
+      "revid": 7904796,
+      "md_len": 15412
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "唐六典/卷05",
+      "revid": 2604210,
+      "md_len": 9598
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "唐六典/卷06",
+      "revid": 2604211,
+      "md_len": 13717
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "唐六典/卷07",
+      "revid": 2610554,
+      "md_len": 8344
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "唐六典/卷08",
+      "revid": 2619856,
+      "md_len": 12080
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "唐六典/卷09",
+      "revid": 2619865,
+      "md_len": 7828
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "唐六典/卷10",
+      "revid": 2629939,
+      "md_len": 8219
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "唐六典/卷11",
+      "revid": 2604207,
+      "md_len": 6868
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "唐六典/卷12",
+      "revid": 2610795,
+      "md_len": 10046
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "唐六典/卷13",
+      "revid": 2604240,
+      "md_len": 3959
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "唐六典/卷14",
+      "revid": 2610871,
+      "md_len": 16082
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "唐六典/卷15",
+      "revid": 852802,
+      "md_len": 4286
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "唐六典/卷16",
+      "revid": 852803,
+      "md_len": 6327
+    },
+    {
+      "n": 17,
+      "title": "卷17",
+      "file": "017.md",
+      "page_title": "唐六典/卷17",
+      "revid": 2399609,
+      "md_len": 7331
+    },
+    {
+      "n": 18,
+      "title": "卷18",
+      "file": "018.md",
+      "page_title": "唐六典/卷18",
+      "revid": 2604236,
+      "md_len": 5185
+    },
+    {
+      "n": 19,
+      "title": "卷19",
+      "file": "019.md",
+      "page_title": "唐六典/卷19",
+      "revid": 7904629,
+      "md_len": 5537
+    },
+    {
+      "n": 20,
+      "title": "卷20",
+      "file": "020.md",
+      "page_title": "唐六典/卷20",
+      "revid": 7904625,
+      "md_len": 5571
+    },
+    {
+      "n": 21,
+      "title": "卷21",
+      "file": "021.md",
+      "page_title": "唐六典/卷21",
+      "revid": 2604251,
+      "md_len": 4404
+    },
+    {
+      "n": 22,
+      "title": "卷22",
+      "file": "022.md",
+      "page_title": "唐六典/卷22",
+      "revid": 2604244,
+      "md_len": 7217
+    },
+    {
+      "n": 23,
+      "title": "卷23",
+      "file": "023.md",
+      "page_title": "唐六典/卷23",
+      "revid": 2604245,
+      "md_len": 5468
+    },
+    {
+      "n": 24,
+      "title": "卷24",
+      "file": "024.md",
+      "page_title": "唐六典/卷24",
+      "revid": 852811,
+      "md_len": 6162
+    },
+    {
+      "n": 25,
+      "title": "卷25",
+      "file": "025.md",
+      "page_title": "唐六典/卷25",
+      "revid": 852812,
+      "md_len": 5065
+    },
+    {
+      "n": 26,
+      "title": "卷26",
+      "file": "026.md",
+      "page_title": "唐六典/卷26",
+      "revid": 2604208,
+      "md_len": 8699
+    },
+    {
+      "n": 27,
+      "title": "卷27",
+      "file": "027.md",
+      "page_title": "唐六典/卷27",
+      "revid": 2604212,
+      "md_len": 4331
+    },
+    {
+      "n": 28,
+      "title": "卷28",
+      "file": "028.md",
+      "page_title": "唐六典/卷28",
+      "revid": 2604247,
+      "md_len": 3974
+    },
+    {
+      "n": 29,
+      "title": "卷29",
+      "file": "029.md",
+      "page_title": "唐六典/卷29",
+      "revid": 852816,
+      "md_len": 4027
+    },
+    {
+      "n": 30,
+      "title": "卷30",
+      "file": "030.md",
+      "page_title": "唐六典/卷30",
+      "revid": 2196705,
+      "md_len": 10303
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,179 @@
+{
+  "work_id": "d59f2hpbhkhu",
+  "version_label": "古今紀要逸編",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BB%8A%E7%B4%80%E8%A6%81%20%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29",
+    "page_title": "古今紀要 (四庫全書本)",
+    "revid": 559784,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 19,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "古今紀要 (四庫全書本)/卷01",
+      "revid": 754723,
+      "md_len": 29752
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "古今紀要 (四庫全書本)/卷02",
+      "revid": 754724,
+      "md_len": 14091
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "古今紀要 (四庫全書本)/卷03",
+      "revid": 754725,
+      "md_len": 14074
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "古今紀要 (四庫全書本)/卷04",
+      "revid": 754726,
+      "md_len": 11853
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "古今紀要 (四庫全書本)/卷05",
+      "revid": 754727,
+      "md_len": 13275
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "古今紀要 (四庫全書本)/卷06",
+      "revid": 754728,
+      "md_len": 12648
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "古今紀要 (四庫全書本)/卷07",
+      "revid": 754729,
+      "md_len": 18697
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "古今紀要 (四庫全書本)/卷08",
+      "revid": 754730,
+      "md_len": 8766
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "古今紀要 (四庫全書本)/卷09",
+      "revid": 754731,
+      "md_len": 17619
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "古今紀要 (四庫全書本)/卷10",
+      "revid": 754732,
+      "md_len": 12986
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "古今紀要 (四庫全書本)/卷11",
+      "revid": 754733,
+      "md_len": 23288
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "古今紀要 (四庫全書本)/卷12",
+      "revid": 754734,
+      "md_len": 25764
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "古今紀要 (四庫全書本)/卷13",
+      "revid": 754735,
+      "md_len": 20269
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "古今紀要 (四庫全書本)/卷14",
+      "revid": 754736,
+      "md_len": 14579
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "古今紀要 (四庫全書本)/卷15",
+      "revid": 754737,
+      "md_len": 14170
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "古今紀要 (四庫全書本)/卷16",
+      "revid": 754738,
+      "md_len": 20531
+    },
+    {
+      "n": 17,
+      "title": "卷17",
+      "file": "017.md",
+      "page_title": "古今紀要 (四庫全書本)/卷17",
+      "revid": 754739,
+      "md_len": 21402
+    },
+    {
+      "n": 18,
+      "title": "卷18",
+      "file": "018.md",
+      "page_title": "古今紀要 (四庫全書本)/卷18",
+      "revid": 754740,
+      "md_len": 16998
+    },
+    {
+      "n": 19,
+      "title": "卷19",
+      "file": "019.md",
+      "page_title": "古今紀要 (四庫全書本)/卷19",
+      "revid": 754741,
+      "md_len": 20598
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "sk notes": 6173
+  }
+}

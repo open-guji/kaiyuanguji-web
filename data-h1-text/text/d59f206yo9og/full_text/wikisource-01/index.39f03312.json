@@ -1,0 +1,80 @@
+{
+  "work_id": "d59f206yo9og",
+  "version_label": "太玄經",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%A4%AA%E7%8E%84%E7%B6%93",
+    "page_title": "太玄經",
+    "revid": 2651096,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 7,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "玄首序",
+      "file": "001.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 70
+    },
+    {
+      "n": 2,
+      "title": "玄測序",
+      "file": "002.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 96
+    },
+    {
+      "n": 3,
+      "title": "一方",
+      "file": "003.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 7508
+    },
+    {
+      "n": 4,
+      "title": "二方",
+      "file": "004.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 7722
+    },
+    {
+      "n": 5,
+      "title": "三方",
+      "file": "005.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 7602
+    },
+    {
+      "n": 6,
+      "title": "踦嬴",
+      "file": "006.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 56
+    },
+    {
+      "n": 7,
+      "title": "太玄傳",
+      "file": "007.md",
+      "page_title": "太玄經",
+      "revid": 2651096,
+      "md_len": 10436
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

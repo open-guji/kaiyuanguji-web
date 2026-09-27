@@ -1,0 +1,192 @@
+{
+  "work_id": "d59f2hs0kdfk",
+  "version_label": "翁注困學紀聞",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%9B%B0%E5%AD%B8%E7%B4%80%E8%81%9E",
+    "page_title": "困學紀聞",
+    "revid": 2328103,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 20,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "困學紀聞/卷01",
+      "revid": 2626584,
+      "md_len": 16064
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "困學紀聞/卷02",
+      "revid": 856532,
+      "md_len": 21470
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "困學紀聞/卷03",
+      "revid": 7904516,
+      "md_len": 17403
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "困學紀聞/卷04",
+      "revid": 7904779,
+      "md_len": 13389
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "困學紀聞/卷05",
+      "revid": 2614677,
+      "md_len": 18390
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "困學紀聞/卷06",
+      "revid": 1167892,
+      "md_len": 21087
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "困學紀聞/卷07",
+      "revid": 2618497,
+      "md_len": 11451
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "困學紀聞/卷08",
+      "revid": 2626656,
+      "md_len": 13477
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "困學紀聞/卷09",
+      "revid": 852968,
+      "md_len": 7980
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "困學紀聞/卷10",
+      "revid": 7904810,
+      "md_len": 19634
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "困學紀聞/卷11",
+      "revid": 7904596,
+      "md_len": 13086
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "困學紀聞/卷12",
+      "revid": 1145284,
+      "md_len": 7839
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "困學紀聞/卷13",
+      "revid": 1162116,
+      "md_len": 9736
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "困學紀聞/卷14",
+      "revid": 1502687,
+      "md_len": 8600
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "困學紀聞/卷15",
+      "revid": 1147194,
+      "md_len": 7840
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "困學紀聞/卷16",
+      "revid": 1162007,
+      "md_len": 10721
+    },
+    {
+      "n": 17,
+      "title": "卷17",
+      "file": "017.md",
+      "page_title": "困學紀聞/卷17",
+      "revid": 852977,
+      "md_len": 6221
+    },
+    {
+      "n": 18,
+      "title": "卷18",
+      "file": "018.md",
+      "page_title": "困學紀聞/卷18",
+      "revid": 1513229,
+      "md_len": 12288
+    },
+    {
+      "n": 19,
+      "title": "卷19",
+      "file": "019.md",
+      "page_title": "困學紀聞/卷19",
+      "revid": 1149291,
+      "md_len": 6546
+    },
+    {
+      "n": 20,
+      "title": "卷20",
+      "file": "020.md",
+      "page_title": "困學紀聞/卷20",
+      "revid": 1147437,
+      "md_len": 14373
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "variants": [
+    {
+      "primary": "制",
+      "alt": [
+        "俟"
+      ]
+    }
+  ]
+}
