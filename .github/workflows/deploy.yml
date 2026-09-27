@@ -143,6 +143,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: resolve
+    outputs:
+      # W2b 双跑：kyg-ssr-spike 这次有没有部署成功（verify job 据此决定测不测 ssr-test）
+      mirror: ${{ steps.mirror_deploy.outcome }}
     env:
       DEPLOY_TARGET: ${{ needs.resolve.outputs.target }}
       DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
@@ -351,13 +354,15 @@ jobs:
 
       # W2-3：测试站在 h1 指针翻转之前记下旧 root，部署后据此算「哪些条目变了」
       # （item-changes.mjs）。取不到（首次发布／指针格式旧）就留空，按全部新增处理。
+      # W2b 起正式站也记：双跑到 kyg-ssr-spike 后按改动失效 ssr-test 的条目页
       - name: Record previous h1 root (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        if: ${{ env.DEPLOY_MODE != 'fallback' }}
         run: |
-          R=$(curl -sf "https://data.kaiyuanguji.com/staging/h1/manifest-root.json?t=$(date +%s)" \
+          P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
+          R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
             | python3 -c "import json,sys; print(json.load(sys.stdin).get('root',''))" 2>/dev/null || true)
           echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
-          echo "· 发布前测试站 h1 root：${R:-（无）}"
+          echo "· 发布前 ${DEPLOY_TARGET} h1 root：${R:-（无）}"
 
       - name: Sync hashed (h1) data to Tencent COS — dual-write, parallel to current/ (A3 第一期)
         if: ${{ env.HAS_COS_SECRETS == 'true' }}
@@ -721,6 +726,110 @@ jobs:
           ITEM_PREWARM_CONCURRENCY: '4'
         run: node scripts/item-prewarm.mjs
 
+      # --- W2b 双跑（33 卡 §六，任务书 W2 §十一）：正式站每次发布，同一版代码、同一份数据
+      # 再全栈部署一份到 kyg-ssr-spike（ssr-test.kaiyuanguji.com），供内测与新旧对比（MON）。
+      # 线上仍由上面的静态发布（edgeone-release）服务，本段任何一步失败都不许拦正式站发布，
+      # 结果写进 job 摘要。mode=fallback（没有 EDGEONE_API_TOKEN）时整段跳过。
+      # 配置与正式站相同：正式数据、不加 noindex、不带角标；统计 ID 暂不带（免得与 www 重复计数）。
+      - name: Mirror — fullstack build for kyg-ssr-spike (W2b)
+        id: mirror_build
+        if: ${{ env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' }}
+        continue-on-error: true
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          KYG_RENDER_MODE: fullstack
+          NEXT_PUBLIC_MODE: ''
+          NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
+          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_ENV: ''
+          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
+          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ''
+          NEXT_PUBLIC_GA_ID: ''
+          NEXT_PUBLIC_BASE_PATH: ''
+          SITEMAP_SITE: https://www.kaiyuanguji.com
+        run: |
+          if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
+            echo "❌ 全栈构建只支持 cos 数据源"; exit 1
+          fi
+          # 条目页按需失效接口的密钥（与测试站同一派生法），下面的失效步骤也要用
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
+          export KYG_REVALIDATE_SECRET="$S"
+          cd nextjs
+          # 上面的静态产物已拷到 build/edgeone 并发布，这里可以放心重建
+          rm -rf .next out .edgeone edge-functions public/sitemaps public/sitemap-index.xml
+          node scripts/gen-sitemaps.mjs
+          cp -r ../edge-functions ./edge-functions
+          n=1
+          until npx -y edgeone@1.6.41 makers build; do
+            if [ "$n" -ge 3 ]; then echo "❌ edgeone makers build 重试 3 次仍失败"; exit 1; fi
+            echo "⚠️ edgeone makers build 第 ${n} 次失败，20 秒后重试"; sleep 20; n=$((n + 1))
+          done
+          # 产物校验：正式站配置（无 noindex、无角标、robots 允许收录、读正式数据）＋条目页由云函数渲染
+          A=.edgeone/assets
+          ! grep -q 'noindex' $A/index.html || { echo "❌ 双跑产物含 noindex"; exit 1; }
+          ! grep -q 'staging-badge' $A/index.html || { echo "❌ 双跑产物含测试站角标"; exit 1; }
+          grep -qx 'Allow: /' $A/robots.txt || { echo "❌ robots.txt 不是正式站口径："; cat $A/robots.txt; exit 1; }
+          ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ 双跑产物读的是测试站数据"; exit 1; }
+          grep -q '"\^/item/' .edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
+          test -f .edgeone/edge-functions/config.json || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
+          test -f $A/sitemap-index.xml || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
+          N=$(find .edgeone -type f | wc -l)
+          echo "✓ 双跑产物校验通过：$N 个文件，$(du -sh .edgeone | cut -f1)"
+          [ "$N" -le 5000 ] || { echo "❌ 产物 $N 个文件（上限 5000）"; exit 1; }
+
+      - name: Mirror — deploy to kyg-ssr-spike (W2b)
+        id: mirror_deploy
+        if: ${{ env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' && steps.mirror_build.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-ssr-spike -t "$EDGEONE_API_TOKEN"
+
+      # 数据 promote 后按改动失效 ssr-test 上的条目页，与 www 保持同一版数据（否则最多滞后 s-maxage 1 小时）
+      - name: Mirror — compute changed items (W2b)
+        id: mirror_changes
+        if: ${{ env.DEPLOY_TARGET == 'production' && steps.mirror_deploy.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_DATA_BASE: https://data.kaiyuanguji.com
+        run: node scripts/item-changes.mjs
+
+      - name: Mirror — revalidate changed item pages (W2b)
+        if: ${{ env.DEPLOY_TARGET == 'production' && steps.mirror_changes.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_SITE: https://ssr-test.kaiyuanguji.com
+        run: node scripts/item-revalidate.mjs
+
+      - name: Mirror — summary (W2b)
+        if: ${{ always() && env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' }}
+        env:
+          BUILD: ${{ steps.mirror_build.outcome }}
+          DEPLOY: ${{ steps.mirror_deploy.outcome }}
+          CHANGES: ${{ steps.mirror_changes.outcome }}
+        run: |
+          {
+            echo "### W2b 双跑：kyg-ssr-spike（ssr-test.kaiyuanguji.com）"
+            echo ""
+            for kv in "全栈构建:$BUILD" "部署:$DEPLOY" "改动集/失效:$CHANGES"; do
+              k=${kv%%:*}; v=${kv#*:}
+              case "$v" in success) m="✓";; skipped|"") m="—";; *) m="✗";; esac
+              echo "- $m $k（$v）"
+            done
+            echo ""
+            echo "线上 www 仍由静态发布服务，本段失败不影响正式站。"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$BUILD" != "success" ] || [ "$DEPLOY" != "success" ]; then
+            echo "::warning title=W2b 双跑失败::kyg-ssr-spike 本次没有部署成功（构建 $BUILD／部署 $DEPLOY），ssr-test 停在上一版；正式站发布不受影响"
+          fi
+
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
   # 老 smoke 只看网络层（字节数/404/pageerror），2026-09-02~03 那批故障
@@ -780,6 +889,42 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-report
+          path: e2e/out/report
+          retention-days: 14
+
+      # W2b 双跑：对 ssr-test（kyg-ssr-spike）跑一遍契约层，不拦发布，结果写摘要。
+      # 放在上面 www 的报告上传之后：Playwright 报告目录是同一个，会被覆盖。
+      - name: Mirror — contract tests on ssr-test (W2b)
+        id: mirror_contract
+        if: ${{ always() && needs.resolve.outputs.target == 'production' && needs.build.outputs.mirror == 'success' }}
+        continue-on-error: true
+        working-directory: e2e
+        env:
+          TARGET: https://ssr-test.kaiyuanguji.com
+        run: npm run test:contract
+
+      - name: Mirror — contract summary (W2b)
+        if: ${{ always() && needs.resolve.outputs.target == 'production' }}
+        env:
+          MIRROR: ${{ needs.build.outputs.mirror }}
+          CONTRACT: ${{ steps.mirror_contract.outcome }}
+        run: |
+          case "$CONTRACT" in success) m="✓";; skipped|"") m="—";; *) m="✗";; esac
+          {
+            echo "### W2b 双跑：ssr-test 契约测试"
+            echo ""
+            echo "- 部署：${MIRROR:-未跑}"
+            echo "- $m contract（${CONTRACT:-skipped}）——报告见 artifact e2e-report-ssr-test"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CONTRACT" = "failure" ]; then
+            echo "::warning title=W2b ssr-test 契约测试失败::见 artifact e2e-report-ssr-test；正式站发布不受影响"
+          fi
+
+      - name: Upload report (ssr-test, W2b)
+        if: ${{ always() && steps.mirror_contract.outcome != 'skipped' && steps.mirror_contract.outcome != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-ssr-test
           path: e2e/out/report
           retention-days: 14
 

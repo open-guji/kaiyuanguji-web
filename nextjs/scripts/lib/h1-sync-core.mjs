@@ -380,15 +380,21 @@ async function readPointerCommit(backend, key, label) {
     }
 }
 
-async function readRootDocShards(backend, rootsPrefix, commit) {
+async function readRootDoc(backend, rootsPrefix, commit) {
     const raw = await readTextOrAbort(backend, `${rootsPrefix}${commit}.json`, `${commit} 的 root 文档`);
     if (raw === null) return {}; // 拉不到就当它没有分片贡献，不影响其余在用 commit 的保护范围
     try {
         const doc = JSON.parse(raw);
-        return doc?.shards && typeof doc.shards === 'object' ? doc.shards : {};
+        return doc && typeof doc === 'object' ? doc : {};
     } catch {
         return {};
     }
+}
+
+/** root 文档里某个「后缀 → hash8」字段；缺字段（如 PH 之前的旧 root 没有 promotionShards）当空 */
+function shardsField(doc, field) {
+    const v = doc?.[field];
+    return v && typeof v === 'object' ? v : {};
 }
 
 /**
@@ -416,11 +422,14 @@ async function readRootDocShards(backend, rootsPrefix, commit) {
  * @param {string} config.newCommit        本轮新 commit key
  * @param {{shards: Record<string,string>}} config.newRootDoc  本轮已经在手的 root 文档（不必再读一次）
  * @param {string} config.shortCacheControl
+ * @param {Array<{subdir: string, field: string, label: string}>} [config.extraShardSets]
+ *        root 文档里除 shards 外另列的分片集（PH：`{subdir:'promotions',
+ *        field:'promotionShards'}`），与 manifest 分片同一套「在用 root 引用才活」判定
  */
 export async function runRootsRetention(backend, config) {
     const {
         h1Prefix, manifestSubdir, rootsSubdir, pointerKey, stagingPointerKey = null,
-        ledgerKey, keepN = 5, newCommit, newRootDoc, shortCacheControl,
+        ledgerKey, keepN = 5, newCommit, newRootDoc, shortCacheControl, extraShardSets = [],
     } = config;
 
     const manifestPrefix = `${h1Prefix}/${manifestSubdir}/`;
@@ -440,13 +449,25 @@ export async function runRootsRetention(backend, config) {
 
     // 其余在用 commit（本轮新 commit 的 root 文档已经在手，不必再读一次）
     const otherLiveCommits = [...liveCommitSet].filter((c) => c !== newCommit);
-    const otherShardsMaps = await Promise.all(
-        otherLiveCommits.map((c) => readRootDocShards(backend, rootsPrefix, c))
+    const otherRootDocs = await Promise.all(
+        otherLiveCommits.map((c) => readRootDoc(backend, rootsPrefix, c))
     );
-    const liveShardsMaps = [newRootDoc.shards, ...otherShardsMaps];
+    const liveRootDocs = [newRootDoc, ...otherRootDocs];
+    const liveShardsMaps = liveRootDocs.map((d) => shardsField(d, 'shards'));
 
     const cosShardFiles = await backend.listPrefix(manifestPrefix);
     const { toDelete: shardsToDelete, liveFileCount } = planShardRetention({ liveShardsMaps, cosShardFiles });
+
+    // 另列的分片集：先全部算好，与 manifest 分片一起在下面删，任何一步读失败都已在上面中止
+    const extraPlans = [];
+    for (const set of extraShardSets) {
+        const prefix = `${h1Prefix}/${set.subdir}/`;
+        const plan = planShardRetention({
+            liveShardsMaps: liveRootDocs.map((d) => shardsField(d, set.field)),
+            cosShardFiles: await backend.listPrefix(prefix),
+        });
+        extraPlans.push({ ...set, prefix, ...plan });
+    }
 
     const cosRootFiles = await backend.listPrefix(rootsPrefix);
     const { toDelete: rootsToDelete } = planRootsFileRetention({ liveCommitSet, cosRootFiles });
@@ -455,6 +476,14 @@ export async function runRootsRetention(backend, config) {
         const r = await runQueue(shardsToDelete, 80, (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 manifest 分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
+            process.exit(2);
+        }
+    }
+    for (const p of extraPlans) {
+        if (p.toDelete.length === 0) continue;
+        const r = await runQueue(p.toDelete, 80, (rel) => backend.deleteKey(`${p.prefix}${rel}`), `delete-${p.subdir}-shard-retired`);
+        if (r.failures.length > 0) {
+            console.error(`\n❌ ${r.failures.length} 个 ${p.label}分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
         }
     }
@@ -480,6 +509,7 @@ export async function runRootsRetention(backend, config) {
         shardsDeleted: shardsToDelete.length,
         rootsDeleted: rootsToDelete.length,
         ledgerSize: prunedLedger.length,
+        extra: extraPlans.map((p) => ({ label: p.label, live: p.liveFileCount, deleted: p.toDelete.length })),
     };
 }
 
@@ -490,5 +520,8 @@ export function logRootsRetentionPlan(label, stats) {
     console.log(`    在用 commit 数:       ${stats.liveCommitCount}（ledger 收敛后 ${stats.ledgerSize} 条）`);
     console.log(`    退出在用集合:         ${stats.retiredCommitCount} 个`);
     console.log(`    manifest 分片：在用 ${stats.shardsLive} 个，删除 ${stats.shardsDeleted} 个`);
+    for (const x of stats.extra ?? []) {
+        console.log(`    ${x.label}分片：在用 ${x.live} 个，删除 ${x.deleted} 个`);
+    }
     console.log(`    roots 文件：删除     ${stats.rootsDeleted} 个`);
 }

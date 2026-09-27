@@ -6,15 +6,16 @@
 //
 // W2-1：服务端取数＋首屏摘要（书名／作者／卷数／简介）直接进 HTML，客户端详情组件照旧挂载。
 // W2-2：头部按 31 卡 §A.5 字段表出（title／description／canonical／OpenGraph／JSON-LD）；
-//   被并条目 308 到目标页；查不到的草稿 id 临时跳回 /book-index 由客户端查升格表；
-//   其余查不到的 id 真 404（noindex）。/book-index?id= → /item/ 的 308 在 middleware.ssr.ts。
+//   被并条目 308 到目标页；其余查不到的 id 真 404（noindex）。
+// PH：查不到的草稿 id 查 h1 升格对照表分片，升格了就一跳 308 到正式 id；对照表确定
+//   没有它就 404；查不了（旧 root、h1 故障）才照旧 307 回 /book-index 由客户端查表。/book-index?id= → /item/ 的 308 在 middleware.ssr.ts。
 // 按改动清缓存与 sitemap 归 W2-3。
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { SITE_URL } from '@/lib/constants';
 import { parseItemId } from '@/lib/item-id';
-import { getItemServer } from '@/lib/server/item-data';
+import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
 import { buildItemSeo, jsonLdScript, mergedTarget, type ItemSeo } from '@/lib/server/item-seo';
 import ItemDetailClient from './ItemDetailClient';
@@ -41,9 +42,13 @@ type Loaded = ItemSummary & { source: 'h1' | 'current'; version: string; seo: It
 async function load(id: string): Promise<Loaded | null> {
     const hit = await getItemServer(id);
     if (!hit) {
-        // 草稿 id 多半已升格：升格表 18.9 MB，函数里不能整表加载（31 卡 §A.6）。
-        // 临时（307）跳回 /book-index，由客户端查表跳到正式 id；middleware 不改写草稿 id，不会绕回来。
-        if (parseItemId(id)?.status === 'draft') redirect(`/book-index?id=${id}`);
+        if (parseItemId(id)?.status === 'draft') {
+            // 草稿 id 多半已升格：查 h1 里对应的一片对照表（31 卡 §A.6 第 5 条）
+            const p = await getPromotionServer(id);
+            if (p.status === 'promoted') permanentRedirect(`/item/${p.to}`);
+            // 查不了：临时（307）跳回 /book-index，由客户端查表；middleware 不改写草稿 id，不会绕回来
+            if (p.status === 'unknown') redirect(`/book-index?id=${id}`);
+        }
         return null;
     }
     const target = mergedTarget(hit.entry, id);

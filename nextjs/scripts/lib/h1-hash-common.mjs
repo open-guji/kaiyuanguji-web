@@ -61,8 +61,20 @@ export function writeIfChanged(path, buf) {
  * 按 key 对齐同一次发布的两条 root。
  */
 export function dataCommitKey(dataCommit) {
-    return createHash('sha256').update(JSON.stringify(dataCommit)).digest('hex').slice(0, 16);
+    return createHash('sha256').update(JSON.stringify(dataCommit) + ROOT_LAYOUT_SALT).digest('hex').slice(0, 16);
 }
+
+/**
+ * root 文档结构的版本（PH 道 2026-09-27 起为 2：entry root 多了 promotionShards）。
+ *
+ * roots/<key>.json 按 1 年 immutable 缓存，「同一 key 内容恒定」是前提。若只改了
+ * 打包代码、三仓 commit 都没变，key 不变而 root 内容变了，CDN 与服务端会一直拿到
+ * 旧 root。所以 root 文档加字段／改结构时把这里加一，key 随之全变。
+ * entry 与 text 两条共用本函数，同一次发布的两条 root 仍然同 key。
+ * 版本 1 不加盐（与 S3 时的 key 完全一致）。
+ */
+export const ROOT_LAYOUT_VERSION = 2;
+const ROOT_LAYOUT_SALT = ROOT_LAYOUT_VERSION === 1 ? '' : `#layout${ROOT_LAYOUT_VERSION}`;
 
 /**
  * 把一组"key → 任意可 JSON 化对象"按内容哈希命名写盘（manifest/text-manifest
@@ -80,6 +92,7 @@ export function writeHashedShards(dir, shardsByKey) {
     const expectedFiles = new Set();
     let changedShards = 0;
     let totalBytes = 0;
+    let maxShardBytes = 0;
 
     for (const [key, obj] of Object.entries(shardsByKey)) {
         const json = Buffer.from(JSON.stringify(obj));
@@ -88,6 +101,7 @@ export function writeHashedShards(dir, shardsByKey) {
         const fname = `${key}.${h}.json`;
         expectedFiles.add(fname);
         totalBytes += json.length;
+        if (json.length > maxShardBytes) maxShardBytes = json.length;
         if (writeIfChanged(join(dir, fname), json)) changedShards++;
     }
 
@@ -107,5 +121,6 @@ export function writeHashedShards(dir, shardsByKey) {
         changedShards,
         removedShards,
         totalBytes,
+        maxShardBytes,
     };
 }
