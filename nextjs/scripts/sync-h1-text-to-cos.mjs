@@ -1,46 +1,34 @@
 #!/usr/bin/env node
 /**
- * sync-h1-to-cos.mjs — 把 bundle-hashed.mjs 产出的 public/data-h1/ 同步到腾讯云 COS
+ * sync-h1-text-to-cos.mjs — 把 bundle-hashed-text.mjs 产出的 public/data-h1-text/
+ * 同步到腾讯云 COS（A3b 第二期：整理本／全文按内容哈希寻址）
  *
- * 与 sync-to-cos.mjs（现行 current/ 布局）并行、互不影响：上传目标是**同一个新加坡桶**
- * 的新前缀 `h1/`，不改、不清、不读现行 `current/`／`v/` 前缀下的任何对象。
+ * 与 sync-h1-to-cos.mjs（entry 布局）共用同一套机制（`scripts/lib/h1-sync-core.mjs`：
+ * 三批按序上传 + 孤儿状态机），上传目标是**同一个新加坡桶、同一个 `h1/` 前缀**，
+ * 只是更深一层的子路径（`h1/text/…`、`h1/text-manifest/…`），与 `h1/entry/…`、
+ * `current/`／`v/` 互不影响、互不覆盖。
  *
  * 布局：
- *   cos://{bucket}/h1/entry/<id>.<hash8>.json    内容寻址，Cache-Control: immutable 1 年
- *   cos://{bucket}/h1/manifest/<后缀2位>.json     id→hash8 分片，短缓存
- *   cos://{bucket}/h1/manifest-root.json          分片数/生成时间/数据 commit，短缓存
- *   cos://{bucket}/h1/_meta/orphans.json          entry 孤儿的「成为孤儿时间」表，
- *                                                 不对前端暴露任何用途，纯 sync 自用
+ *   cos://{bucket}/h1/text/<owner_id>/<相对路径插入哈希>   内容寻址，immutable 1 年
+ *   cos://{bucket}/h1/text-manifest/<owner id 后缀2位>.json  owner→{相对路径→hash8}，短缓存
+ *   cos://{bucket}/h1/text-manifest-root.json               分片数/owner数/文件数/生成时间/数据commit，短缓存
+ *   cos://{bucket}/h1/_meta/text-orphans.json                text 孤儿的「成为孤儿时间」表
+ *     ——**单独一张表**，不与 entry 的 `h1/_meta/orphans.json` 共用：两者的 key
+ *     命名空间不会撞（一个是 `entry/<id>.<hash>.json`，一个是
+ *     `text/<owner>/<relPath 插入哈希>`），但分开维护能让两条 sync 各自独立
+ *     推进、互不因为共享同一份状态而串起风险。
  *
- * 三批按序上传（2026-09-26 协调者验收第二轮定）：
- *   ① 全部新增/变化的 entry ② 变化的 manifest 分片 ③ manifest-root.json
- * 前一批有任何失败就不进下一批：exit(2)，state 不落，整轮重试。
+ * 三批按序上传、孤儿保留 7 天按「成为孤儿的时间」算——两条规矩与 sync-h1-to-cos.mjs
+ * 完全一致，机制本身在共用库里，这里只提供「哪些文件归哪一批、缓存策略、
+ * 状态文件放哪」这些配置。
  *
- * entry 孤儿保留 7 天，按「成为孤儿的时间」算，不是「上传时间」
- * （2026-09-26 协调者验收第三轮改）：
- *   第二轮曾把 lastModified 记成上传时刻，结果「30 天前上传、今天才被替换」的
- *   entry 会被判成 30 天大，当场删掉——这正是保留期要防的情况：数据越老越容易
- *   踩中。改法：单独维护 `h1/_meta/orphans.json`（rel → orphanedSince(ms)），
- *   每轮同步只在这张表上做「新孤儿记现在／被重新引用的挪出去／满 7 天的删」
- *   三件事，状态机在 `scripts/lib/h1-orphans.mjs`（纯函数，见其单测
- *   `scripts/lib/h1-orphans.test.mjs`）。这张表必须放 COS，不能放本地
- *   state——CI 每次都是全新 checkout，本地状态活不过一次运行，「孤儿多老」
- *   这件事没有本地状态可谈。manifest 分片的孤儿没有这个顾虑（分片路径固定、
- *   不含哈希，一旦本地没有就是真的没有任何 id 落在这个分片了）照旧当场删。
- *
- * 增量算法：state-driven MD5 diff（只管「传不传」，不管孤儿年龄——年龄
- * 完全交给 orphans.json）。state 缺失/损坏时从 COS 拉 ETag 重建。
- *
- * A3b（第二期，整理本/全文哈希寻址）把「三批按序上传 + 孤儿状态机」这套机制
- * 抽成了共用库 `scripts/lib/h1-sync-core.mjs`，本脚本与 `sync-h1-text-to-cos.mjs`
- * 共用；本脚本对外行为（环境变量、CLI、日志、COS 布局）不变。
- *
- * 环境变量：COS_SECRET_ID / COS_SECRET_KEY / COS_BUCKET / COS_REGION（默认
- * ap-singapore）／COS_PATH_PREFIX／DRY_RUN／SYNC_REBUILD_STATE。
+ * 环境变量：与 sync-h1-to-cos.mjs 相同的 COS_SECRET_ID / COS_SECRET_KEY /
+ * COS_BUCKET / COS_REGION（默认 ap-singapore）／COS_PATH_PREFIX／DRY_RUN／
+ * SYNC_REBUILD_STATE。
  *
  * 用法：
- *   node scripts/sync-h1-to-cos.mjs
- *   DRY_RUN=1 node scripts/sync-h1-to-cos.mjs
+ *   node scripts/sync-h1-text-to-cos.mjs
+ *   DRY_RUN=1 node scripts/sync-h1-text-to-cos.mjs
  */
 
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
@@ -71,7 +59,7 @@ if (existsSync(envLocal)) {
 
 // ─── 配置 ───
 
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data-h1');
+const DATA_DIR = resolve(__dirname, '..', 'public', 'data-h1-text');
 
 const SECRET_ID = process.env.COS_SECRET_ID;
 const SECRET_KEY = process.env.COS_SECRET_KEY;
@@ -82,7 +70,7 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';
 
 if (!existsSync(DATA_DIR)) {
-    console.error(`❌ ${DATA_DIR} not found. Run bundle-hashed.mjs first.`);
+    console.error(`❌ ${DATA_DIR} not found. Run bundle-hashed-text.mjs first.`);
     process.exit(1);
 }
 
@@ -100,42 +88,41 @@ function joinKey(...parts) {
 }
 
 const H1_PREFIX = joinKey(PATH_PREFIX, 'h1');
-const ORPHANS_KEY = `${H1_PREFIX}/_meta/orphans.json`;
+const TEXT_ORPHANS_KEY = `${H1_PREFIX}/_meta/text-orphans.json`;
 
-/** entry/ 走 1 年 immutable（内容寻址）；manifest*／manifest-root 走短缓存（60–300s 区间取 120s）。 */
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 const SHORT_CACHE = 'public, max-age=120, must-revalidate';
 
 function cacheControlFor(relative) {
-    return relative.startsWith('entry/') ? IMMUTABLE_CACHE : SHORT_CACHE;
+    return relative.startsWith('text/') ? IMMUTABLE_CACHE : SHORT_CACHE;
 }
 
-// 三批：entry（保留 7 天再删孤儿）／manifest 分片（孤儿当场删）／manifest-root（固定单文件）
+// 三批：text（保留 7 天再删孤儿）／text-manifest 分片（孤儿当场删）／text-manifest-root（固定单文件）
 const BATCHES = [
-    { key: 'entry', label: '① entry', match: (rel) => rel.startsWith('entry/'), retain: true },
-    { key: 'manifest', label: '② manifest 分片', match: (rel) => rel.startsWith('manifest/'), retain: false },
-    { key: 'root', label: '③ manifest-root', match: (rel) => rel === 'manifest-root.json', retain: false },
+    { key: 'text', label: '① text', match: (rel) => rel.startsWith('text/'), retain: true },
+    { key: 'text-manifest', label: '② text-manifest 分片', match: (rel) => rel.startsWith('text-manifest/'), retain: false },
+    { key: 'text-manifest-root', label: '③ text-manifest-root', match: (rel) => rel === 'text-manifest-root.json', retain: false },
 ];
 
 const files = walk(DATA_DIR);
-const entryFiles = files.filter(f => f.relative.startsWith('entry/'));
-const manifestFiles = files.filter(f => f.relative.startsWith('manifest/'));
-const rootFiles = files.filter(f => f.relative === 'manifest-root.json');
+const textFiles = files.filter(f => f.relative.startsWith('text/'));
+const manifestFiles = files.filter(f => f.relative.startsWith('text-manifest/'));
+const rootFiles = files.filter(f => f.relative === 'text-manifest-root.json');
 
-console.log(`\nsync-h1-to-cos`);
+console.log(`\nsync-h1-text-to-cos`);
 console.log(`  bucket: ${BUCKET}`);
 console.log(`  region: ${REGION}`);
 console.log(`  source: ${DATA_DIR}`);
 console.log(`  target: cos://${BUCKET}/${H1_PREFIX}/`);
-console.log(`  local:  entry ${entryFiles.length} 个（${(entryFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB），manifest 分片 ${manifestFiles.length} 个，root ${rootFiles.length} 个`);
+console.log(`  local:  text ${textFiles.length} 个（${(textFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB），text-manifest 分片 ${manifestFiles.length} 个，root ${rootFiles.length} 个`);
 console.log(`  mode:   ${DRY_RUN ? 'DRY RUN（不联网、不需要 COS 凭据）' : 'UPLOAD'}\n`);
 
-// ─── state 文件路径 ───
+// ─── state 文件路径（与 entry 一套分开，避免同一 CI job 内两条 sync 互相覆盖） ───
 
-const HASH_CACHE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-hash-cache.json');
-const SYNC_STATE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-state.json');
-const DRYRUN_STATE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-dryrun-state.json');
-const DRYRUN_ORPHANS_FILE = resolve(__dirname, '..', '.next', '.sync-h1-dryrun-orphans.json');
+const HASH_CACHE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-hash-cache.json');
+const SYNC_STATE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-state.json');
+const DRYRUN_STATE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-dryrun-state.json');
+const DRYRUN_ORPHANS_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-dryrun-orphans.json');
 
 const loadSyncState = () => loadStateFile(SYNC_STATE_FILE);
 const saveSyncState = (m) => saveStateFile(SYNC_STATE_FILE, m);
@@ -193,7 +180,7 @@ async function planOnly() {
 async function main() {
     const { localMd5, stateMap: initialState, plan: initialPlan } = await planOnly();
 
-    const currentLocalEntryRelSet = new Set(entryFiles.map(f => f.relative));
+    const currentLocalTextRelSet = new Set(textFiles.map(f => f.relative));
 
     if (DRY_RUN) {
         const orphansTable = loadDryRunOrphansTable();
@@ -201,14 +188,14 @@ async function main() {
         const orphansResult = planOrphans({
             orphansTable,
             candidateOrphanRels: initialPlan.retainOrphanCandidates,
-            currentLocalEntryRelSet,
+            currentLocalEntryRelSet: currentLocalTextRelSet,
         });
         logOrphansPlan('孤儿表（dry-run 模拟）', orphansResult, orphansBefore);
         saveDryRunOrphansTableFile(orphansResult.newOrphansTable);
 
         const newDryState = new Map(files.map(f => [f.relative, localMd5.get(f.relative)]));
         saveDryRunState(newDryState);
-        console.log('\n(dry run，未联网、未触碰真实 COS 或真实 sync-state/orphans.json；已更新 dry-run 专用文件供下次对比)\n');
+        console.log('\n(dry run，未联网、未触碰真实 COS 或真实 sync-state/text-orphans.json；已更新 dry-run 专用文件供下次对比)\n');
         return;
     }
 
@@ -225,7 +212,7 @@ async function main() {
     let stateMap = initialState;
     let plan = initialPlan;
     if (stateMap.size === 0 || REBUILD_STATE) {
-        console.log(`  ${REBUILD_STATE ? 'SYNC_REBUILD_STATE=1' : 'no local sync-h1-state'}, listing COS to rebuild...`);
+        console.log(`  ${REBUILD_STATE ? 'SYNC_REBUILD_STATE=1' : 'no local sync-h1-text-state'}, listing COS to rebuild...`);
         stateMap = await cosOps.listPrefixEtags(`${H1_PREFIX}/`);
         console.log(`  rebuilt state from cos: ${stateMap.size} keys`);
         plan = planBatches({ batches: BATCHES }, files, stateMap, localMd5);
@@ -233,56 +220,55 @@ async function main() {
         logPlan(plan);
     }
 
-    // ─── 三批按序：entry → manifest 分片 → manifest-root.json ───
+    // ─── 三批按序：text → text-manifest 分片 → text-manifest-root.json ───
     for (const batch of plan.uploadsByBatch) {
         await runUploadBatch(batch.label, batch.upload, (file) =>
             cosOps.uploadOne(file, `${H1_PREFIX}/${file.relative}`, cacheControlFor(file.relative), defaultContentTypeFor(file.relative)));
     }
 
-    // ─── 删 manifest 孤儿分片：没有 7 天顾虑，三批全部上线后立即可删 ───
+    // ─── 删 text-manifest 孤儿分片：没有 7 天顾虑，三批全部上线后立即可删 ───
     const allDeleteFailures = [];
     if (plan.immediateOrphansToDelete.length > 0) {
-        console.log(`  删除 manifest 孤儿分片...`);
-        const r = await runQueue(plan.immediateOrphansToDelete, 80, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-manifest-orphan');
-        console.log(`  ✓ 删除 ${r.done}/${plan.immediateOrphansToDelete.length} 个 manifest 孤儿分片`);
+        console.log(`  删除 text-manifest 孤儿分片...`);
+        const r = await runQueue(plan.immediateOrphansToDelete, 80, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-text-manifest-orphan');
+        console.log(`  ✓ 删除 ${r.done}/${plan.immediateOrphansToDelete.length} 个 text-manifest 孤儿分片`);
         allDeleteFailures.push(...r.failures);
     }
     if (allDeleteFailures.length > 0) {
-        console.error(`\n❌ ${allDeleteFailures.length} 个 manifest 孤儿删除失败。state 不落，重跑整轮即可重试（删除幂等）。`);
+        console.error(`\n❌ ${allDeleteFailures.length} 个 text-manifest 孤儿删除失败。state 不落，重跑整轮即可重试（删除幂等）。`);
         process.exit(2);
     }
 
-    // ─── ④ entry 孤儿：读 orphans.json → 判老 → 删过期的 → 写回 ───
-    const orphansTable = await getOrphansTableFromCos(cosOps, ORPHANS_KEY);
+    // ─── ④ text 孤儿：读 text-orphans.json → 判老 → 删过期的 → 写回 ───
+    const orphansTable = await getOrphansTableFromCos(cosOps, TEXT_ORPHANS_KEY);
     const orphansBefore = orphansTable.size;
     const orphansResult = planOrphans({
         orphansTable,
         candidateOrphanRels: plan.retainOrphanCandidates,
-        currentLocalEntryRelSet,
+        currentLocalEntryRelSet: currentLocalTextRelSet,
     });
-    logOrphansPlan('孤儿表（h1/_meta/orphans.json）', orphansResult, orphansBefore);
+    logOrphansPlan('孤儿表（h1/_meta/text-orphans.json）', orphansResult, orphansBefore);
 
     if (orphansResult.toDelete.length > 0) {
-        console.log(`  删除已满 7 天的 entry 孤儿...`);
-        const r = await runQueue(orphansResult.toDelete, 80, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-entry-orphan');
-        console.log(`  ✓ 删除 ${r.done}/${orphansResult.toDelete.length} 个已过期 entry 孤儿`);
+        console.log(`  删除已满 7 天的 text 孤儿...`);
+        const r = await runQueue(orphansResult.toDelete, 80, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-text-orphan');
+        console.log(`  ✓ 删除 ${r.done}/${orphansResult.toDelete.length} 个已过期 text 孤儿`);
         if (r.failures.length > 0) {
-            console.error(`\n❌ ${r.failures.length} 个 entry 孤儿删除失败。orphans.json 与 state 均不落，重跑整轮即可重试。`);
+            console.error(`\n❌ ${r.failures.length} 个 text 孤儿删除失败。text-orphans.json 与 state 均不落，重跑整轮即可重试。`);
             process.exit(2);
         }
     }
     if (orphansResult.toKeep.length > 0) {
-        console.log(`  保留 ${orphansResult.toKeep.length} 个未满 7 天的 entry 孤儿（下次 sync 再判）`);
+        console.log(`  保留 ${orphansResult.toKeep.length} 个未满 7 天的 text 孤儿（下次 sync 再判）`);
     }
 
-    await putOrphansTableToCos(cosOps, ORPHANS_KEY, orphansResult.newOrphansTable, { shortCacheControl: SHORT_CACHE });
-    console.log(`  ✓ orphans.json 写回（${orphansResult.newOrphansTable.size} 条）`);
+    await putOrphansTableToCos(cosOps, TEXT_ORPHANS_KEY, orphansResult.newOrphansTable, { shortCacheControl: SHORT_CACHE });
+    console.log(`  ✓ text-orphans.json 写回（${orphansResult.newOrphansTable.size} 条）`);
 
-    // ─── 落 state：本轮实际内容的 md5（不含孤儿年龄——那件事全交给 orphans.json） ───
     const newState = new Map(files.map(f => [f.relative, localMd5.get(f.relative)]));
     saveSyncState(newState);
-    console.log(`  ✓ sync-h1-state saved (${newState.size} keys)`);
-    console.log(`\n✅ sync-h1-to-cos complete\n`);
+    console.log(`  ✓ sync-h1-text-state saved (${newState.size} keys)`);
+    console.log(`\n✅ sync-h1-text-to-cos complete\n`);
 }
 
 main().catch(err => {

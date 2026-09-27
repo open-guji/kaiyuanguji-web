@@ -34,10 +34,10 @@
  *   H1_CLEAN=1 node scripts/bundle-hashed.mjs           # 忽略旧状态，视全部为新增
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { createHash } from 'crypto';
+import { ensureDir, readJson, hash8, writeIfChanged } from './lib/h1-hash-common.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -56,19 +56,7 @@ const MANIFEST_DIR = join(OUT_DIR, 'manifest');
 const MANIFEST_ROOT_FILE = join(OUT_DIR, 'manifest-root.json');
 const STATE_FILE = join(OUT_DIR, '.manifest-state.json');
 
-function ensureDir(d) { mkdirSync(d, { recursive: true }); }
-function readJson(p) { return JSON.parse(readFileSync(p, 'utf-8')); }
-function hash8(buf) { return createHash('sha256').update(buf).digest('hex').slice(0, 8); }
 function shardKeyFor(id) { return id.slice(-SHARD_KEY_LEN); }
-
-function writeIfChanged(path, buf) {
-    if (existsSync(path)) {
-        const old = readFileSync(path);
-        if (old.length === buf.length && old.equals(buf)) return false;
-    }
-    writeFileSync(path, buf);
-    return true;
-}
 
 function loadState() {
     if (CLEAN || !existsSync(STATE_FILE)) return {};
