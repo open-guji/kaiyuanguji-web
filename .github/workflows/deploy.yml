@@ -254,7 +254,12 @@ jobs:
             fi
             echo "✓ $f ($(wc -c < "$f") bytes)"
           done
-          ls entry/*.json | wc -l | xargs -I{} echo "✓ {} entry files"
+          # 14.7 万文件时 ls entry/*.json 参数展开过长，一直打印 0（S2 发现），改用 find 并设下限
+          N_ENTRY=$(find entry -maxdepth 1 -name '*.json' | wc -l)
+          echo "✓ $N_ENTRY entry files"
+          if [ "$N_ENTRY" -lt 100000 ]; then
+            echo "❌ entry 文件只有 $N_ENTRY 个（应在 14 万以上），打包可能不完整" && exit 1
+          fi
           ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
           # latest.json 由 bundle-data.mjs 输出到 public/ (data/ 同级)，sync-to-cos.mjs 单独上传
           [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing \$KYG_DATA_ROOT/latest.json" && exit 1)
