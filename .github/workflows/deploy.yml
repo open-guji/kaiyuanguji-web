@@ -558,7 +558,11 @@ jobs:
       TARGET: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
       DATA_BASE: ${{ needs.resolve.outputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
     steps:
+      # e2e 必须和被测站点是同一版代码：promote=data 时正式站代码可能比 main 旧，
+      # 用 main 的 e2e 去测会命中「线上前端不比本 commit 要求的旧」而误报红。
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.web_ref }}
 
       - uses: actions/setup-node@v4
         with:
