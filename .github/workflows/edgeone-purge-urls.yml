@@ -1,0 +1,35 @@
+name: EdgeOne purge URLs
+
+# 手动按 URL 清 EdgeOne 缓存（purge_url，只清列出的文件，不清整站）。
+# 默认值：四个 h1 版本指针（09-27 实测节点缓存了约 18.7 小时旧版）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: 完整 URL，空格分隔
+        required: true
+        default: >-
+          https://data.kaiyuanguji.com/h1/manifest-root.json
+          https://data.kaiyuanguji.com/h1/text-manifest-root.json
+          https://data.kaiyuanguji.com/staging/h1/manifest-root.json
+          https://data.kaiyuanguji.com/staging/h1/text-manifest-root.json
+
+permissions:
+  contents: read
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: ops
+      - run: pip install tencentcloud-sdk-python-teo -q
+      - name: Purge
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          URLS: ${{ inputs.urls }}
+        run: python3 ops/edgeone-purge-urls.py
