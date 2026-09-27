@@ -199,6 +199,66 @@ describe('meili-storage HybridTransport', () => {
         expect(r.works).toBe(100);
     });
 
+    it('简介命中时 descriptionSnippet 取自 _formatted.description_search（A4）', async () => {
+        const { SNIPPET_MARK_START, SNIPPET_MARK_END } = require('book-index-ui');
+        global.fetch = jest.fn().mockImplementation((url: string) => {
+            const hit = url.includes('/works/')
+                ? {
+                    id: 'w1', type: 'work', title: '紅樓夢稿',
+                    _formatted: { description_search: `原為咸豐間${SNIPPET_MARK_START}楊繼振${SNIPPET_MARK_END}所藏` },
+                }
+                : null;
+            const hits = hit ? [hit] : [];
+            return Promise.resolve({ ok: true, json: async () => ({ hits, estimatedTotalHits: hits.length, processingTimeMs: 1 }) });
+        }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        const r = await wrapped.searchAll!('楊繼振', 5);
+
+        expect(r.works[0].descriptionSnippet).toBe(`原為咸豐間${SNIPPET_MARK_START}楊繼振${SNIPPET_MARK_END}所藏`);
+    });
+
+    it('简介未命中（_formatted 里没有高亮标记）时不展示无关片段', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                // 有 _formatted 但里面没有 sentinel——说明查询命中的是 title，不是简介，
+                // 这段是从头裁出来的无关文字，不该被当成"命中简介"展示
+                hits: [{ id: 'w1', type: 'work', title: '史记', _formatted: { description_search: '西汉史学家司马迁所著' } }],
+                estimatedTotalHits: 1,
+                processingTimeMs: 1,
+            }),
+        }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        const r = await wrapped.searchAll!('史记', 5);
+
+        expect(r.works[0].descriptionSnippet).toBeUndefined();
+    });
+
+    it('只对 works/books 请求简介高亮参数，collections/entities 不带（省流量、也没这个字段）', async () => {
+        const calledUrls: string[] = [];
+        global.fetch = jest.fn().mockImplementation((url: string) => {
+            calledUrls.push(url);
+            return Promise.resolve({ ok: true, json: async () => ({ hits: [], estimatedTotalHits: 0, processingTimeMs: 0 }) });
+        }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { baseUrl: 'http://test' });
+        await wrapped.searchAll!('q', 5);
+
+        const worksUrl = calledUrls.find(u => u.includes('/works/'));
+        const booksUrl = calledUrls.find(u => u.includes('/books/'));
+        const collectionsUrl = calledUrls.find(u => u.includes('/collections/'));
+        const entitiesUrl = calledUrls.find(u => u.includes('/entities/'));
+        expect(worksUrl).toContain('attributesToHighlight=description_search');
+        expect(booksUrl).toContain('attributesToHighlight=description_search');
+        expect(collectionsUrl).not.toContain('attributesToHighlight');
+        expect(entitiesUrl).not.toContain('attributesToHighlight');
+    });
+
     it('Authorization header 仅在配置 apiKey 时附加', async () => {
         const fetchMock = jest.fn().mockResolvedValue({
             ok: true,

@@ -76,6 +76,11 @@ const only = onlyArg >= 0 ? args[onlyArg + 1].split(',') : null;
 
 const MD_RE = /[#*`\[\]>]+|^---.*?$/gm;
 
+// 简介进 searchableAttributes 的字符上限（A4，2026-09-27）：O1 的
+// full-reindex-allfields.mjs 把详情所有字符串叶子拼成 detail_search 全量索引，
+// 内存/盘涨幅偏大；这里只取 description 前 N 字，是"精简版"的口径。
+const DESC_SEARCH_MAX_CHARS = 1000;
+
 function mergeSimp(text) {
     if (!text) return '';
     const s = t2s(text);
@@ -141,13 +146,22 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
-        description_search: mergeSimp(descText),
+        description_search: mergeSimp(descText.slice(0, DESC_SEARCH_MAX_CHARS)),
         indexed_by_search: mergeSimp(summaries),
         pinyin: `${allPinyin(title)} ${allPinyin(author)}`,
     };
 }
 
-function buildBookDoc(entry, isDraft = true) {
+// detail 可为 null（读不到 / 解析失败时的退路）：此时只用 shard 里已denormalize 的字段，
+// description/aliases 留空，不影响其余字段——与 works 一侧「detailPath 不存在就 continue」
+// 不同，books 这条不想因为一个 detail 缺失就整条丢弃（shard 里的 title/author 等仍可搜）。
+function buildBookDoc(entry, detail, isDraft = true) {
+    const desc = detail?.description ?? {};
+    const descText = typeof desc === 'string' ? desc : (desc.text || '');
+    const aliases = [
+        ...titlesToStrings(detail?.additional_titles),
+        ...titlesToStrings(detail?.attached_texts),
+    ];
     const title = entry.title || '';
     const author = entry.author || '';
     const edition = entry.edition || '';
@@ -166,8 +180,10 @@ function buildBookDoc(entry, isDraft = true) {
         title_chars: Array.from(title).length,
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
+        aliases_search: aliases.map(mergeSimp).join(' '),
         edition_search: mergeSimp(edition),
         holder_search: mergeSimp(holder),
+        description_search: mergeSimp(descText.slice(0, DESC_SEARCH_MAX_CHARS)),
         pinyin: `${allPinyin(title)} ${allPinyin(author)}`,
     };
 }
@@ -308,18 +324,73 @@ async function pushBatch(indexUid, docs) {
     return r.taskUid;
 }
 
-async function resetIndex(indexUid, primaryKey = 'id') {
+async function configureSettings(indexUid, settings) {
+    const t = await meiliRequest('PATCH', `/indexes/${indexUid}/settings`, settings);
+    await waitForTask(t.taskUid);
+}
+
+// ─── swap 式重建（A4，2026-09-27）───
+//
+// 此前是先 DELETE 整个索引再重建：DELETE 生效到重建完之间，线上这个索引是空的
+// ——O1 实测每晚约 8 分钟空窗，其间该类目搜索恒为 0 结果。
+// 改法：新数据全部先建到 `<idx>_tmp`（settings 也配在 tmp 上），自检通过后
+// 用 Meili 的 /swap-indexes 原子换名，线上流量在换名前后都读得到完整数据、
+// 中间没有「索引不存在/为空」的窗口；自检不通过就直接删掉 tmp，`<idx>` 原封不动。
+
+function tmpIndexUid(indexUid) {
+    return `${indexUid}_tmp`;
+}
+
+async function indexExists(indexUid) {
     try {
-        const t = await meiliRequest('DELETE', `/indexes/${indexUid}`);
-        await waitForTask(t.taskUid).catch(() => {});
-    } catch {}
+        await meiliRequest('GET', `/indexes/${indexUid}`);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/** 保证 indexUid 存在（可以是空的）——只有当它已存在时 /swap-indexes 才能把 tmp 换进去。 */
+async function ensureIndexExists(indexUid, primaryKey = 'id') {
+    if (await indexExists(indexUid)) return;
     const t = await meiliRequest('POST', '/indexes', { uid: indexUid, primaryKey });
     await waitForTask(t.taskUid);
 }
 
-async function configureSettings(indexUid, settings) {
-    const t = await meiliRequest('PATCH', `/indexes/${indexUid}/settings`, settings);
+/** 把 tmp 索引清空重建（每轮重建都从空的开始，不残留上一轮失败的半成品）。 */
+async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
+    const tmp = tmpIndexUid(indexUid);
+    if (await indexExists(tmp)) {
+        const t = await meiliRequest('DELETE', `/indexes/${tmp}`);
+        await waitForTask(t.taskUid).catch(() => {});
+    }
+    const t = await meiliRequest('POST', '/indexes', { uid: tmp, primaryKey });
     await waitForTask(t.taskUid);
+    return tmp;
+}
+
+/**
+ * 自检通过则原子 swap（tmp → 正式名），线上无空窗；不通过则删 tmp、退出非 0、
+ * 保留旧索引不动。selfTestFn 收 tmp 的 indexUid，返回 { ok, failures }。
+ */
+async function swapOrDiscard(indexUid, selfTestFn) {
+    const tmp = tmpIndexUid(indexUid);
+    const { ok, failures } = await selfTestFn(tmp);
+    if (!ok) {
+        console.error(`❌ [${indexUid}] 自检未通过，放弃本次更新：`);
+        for (const f of failures) console.error(`   · ${f}`);
+        console.error(`   已删除 ${tmp}，线上 ${indexUid} 保持不变（未 swap）`);
+        await meiliRequest('DELETE', `/indexes/${tmp}`).catch(() => {});
+        return false;
+    }
+    await ensureIndexExists(indexUid); // 首次跑：正式名还不存在，先占一个空的才有得 swap
+    const swapTask = await meiliRequest('POST', '/swap-indexes', [{ indexes: [indexUid, tmp] }]);
+    await waitForTask(swapTask.taskUid);
+    // swap 后 tmp 名下是旧数据（或首次跑时的空占位），删掉腾地方
+    const delTask = await meiliRequest('DELETE', `/indexes/${tmp}`);
+    await waitForTask(delTask.taskUid).catch(() => {});
+    console.log(`✅ [${indexUid}] 自检通过，已 swap 生效，旧索引已删`);
+    return true;
 }
 
 // ─── 流式遍历 index shards ───
@@ -364,15 +435,18 @@ function* iterAllRoots(typeDir) {
 
 // ─── settings ───
 
+// A4（2026-09-27）searchableAttributes 顺序统一改成 书名 > 作者 > 其他名/别名 > （其余）> 简介：
+// 简介放最后一位，与「精简版、不抢排面」的口径一致；任务书 §二 明定这个顺序，
+// pinyin／indexed_by_search 不在裁定范围内，保持原有相对位置（在别名之后、简介之前）。
 const SETTINGS = {
     works: {
-        searchableAttributes: ['title_search', 'aliases_search', 'author_search', 'pinyin', 'description_search', 'indexed_by_search'],
+        searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'pinyin', 'description_search', 'indexed_by_search'],
         filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
         sortableAttributes: ['completeness', 'juan_count', 'title_chars'],
         rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
     },
     books: {
-        searchableAttributes: ['title_search', 'edition_search', 'author_search', 'holder_search', 'pinyin'],
+        searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'edition_search', 'holder_search', 'pinyin', 'description_search'],
         filterableAttributes: ['type', 'is_draft', 'dynasty', 'has_text', 'has_image', 'holder'],
         sortableAttributes: ['completeness', 'title_chars'],
         rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
@@ -447,18 +521,23 @@ async function main() {
     if (only) indices = indices.filter(i => only.includes(i));
     console.log(`will process: ${indices.join(', ')}`);
 
+    // 建到 tmp、不删正式索引——swapOrDiscard 收尾时才原子换名，全程无空窗。
     if (!dryRun) {
         for (const idx of indices) {
-            console.log(`reset ${idx}...`);
-            await resetIndex(idx);
+            console.log(`prepare ${tmpIndexUid(idx)}...`);
+            await createFreshTmpIndex(idx);
         }
     }
+
+    const swapResults = {};
 
     // works + juans 同 loop
     if (indices.includes('works') || indices.includes('juans')) {
         const doWorks = indices.includes('works');
         const doJuans = indices.includes('juans');
-        console.log(`\n=== works + juans ===`);
+        const worksIdx = tmpIndexUid('works');
+        const juansIdx = tmpIndexUid('juans');
+        console.log(`\n=== works + juans（建到 tmp）===`);
 
         async function* combined() {
             let n = 0;
@@ -489,7 +568,7 @@ async function main() {
                 worksBuf.push(doc);
                 if (worksBuf.length >= BATCH_SIZE) {
                     if (!dryRun) {
-                        worksPending.push(pushBatch('works', worksBuf).then(waitForTask));
+                        worksPending.push(pushBatch(worksIdx, worksBuf).then(waitForTask));
                         // 此前写死 3：MAX_CONCURRENT=1 在这条主循环里根本没生效，2GB 机上
                         // Meili 同时嚼三批，RSS 冲到 1.1GB、available 掉到 196MB（2026-09-07 实测）
                         while (worksPending.length >= MAX_CONCURRENT) await worksPending.shift();
@@ -503,7 +582,7 @@ async function main() {
                 juansBuf.push(doc);
                 if (juansBuf.length >= 500) {
                     if (!dryRun) {
-                        juansPending.push(pushBatch('juans', juansBuf).then(waitForTask));
+                        juansPending.push(pushBatch(juansIdx, juansBuf).then(waitForTask));
                         while (juansPending.length >= MAX_CONCURRENT) await juansPending.shift();
                     }
                     juansTotal += juansBuf.length;
@@ -512,30 +591,67 @@ async function main() {
             }
         }
         if (worksBuf.length) {
-            if (!dryRun) worksPending.push(pushBatch('works', worksBuf).then(waitForTask));
+            if (!dryRun) worksPending.push(pushBatch(worksIdx, worksBuf).then(waitForTask));
             worksTotal += worksBuf.length;
         }
         if (juansBuf.length) {
-            if (!dryRun) juansPending.push(pushBatch('juans', juansBuf).then(waitForTask));
+            if (!dryRun) juansPending.push(pushBatch(juansIdx, juansBuf).then(waitForTask));
             juansTotal += juansBuf.length;
         }
         await Promise.all([...worksPending, ...juansPending]);
         console.log(`  WORKS: ${worksTotal} | JUANS: ${juansTotal} | ${((Date.now()-t0)/1000).toFixed(1)}s`);
 
         if (!dryRun) {
-            if (doWorks) { console.log('  configuring works...'); await configureSettings('works', SETTINGS.works); }
-            if (doJuans) { console.log('  configuring juans...'); await configureSettings('juans', SETTINGS.juans); }
+            if (doWorks) {
+                console.log('  configuring works (tmp)...');
+                await configureSettings(worksIdx, SETTINGS.works);
+                swapResults.works = await swapOrDiscard('works', (tmp) => checkIndexHealth(tmp, 'works'));
+            }
+            if (doJuans) {
+                console.log('  configuring juans (tmp)...');
+                await configureSettings(juansIdx, SETTINGS.juans);
+                // juans 不参与 is_draft 前端形态自检：前端查整理本正文走 work_id 过滤，形态与其余四类不同
+                swapResults.juans = await swapOrDiscard('juans', (tmp) => checkIndexHealth(tmp, 'juans', { checkHits: false }));
+            }
         }
     }
 
-    // books / collections / entities
+    // books（需要读 detail 拿 description/additional_titles，同 works 的路子）
+    if (indices.includes('books')) {
+        console.log(`\n=== books（建到 tmp）===`);
+        const booksIdx = tmpIndexUid('books');
+        function* iterBooks() {
+            let n = 0;
+            for (const { entry, rootDir, isDraft } of iterAllRoots('books')) {
+                if (limit && n >= limit) break;
+                n++;
+                let detail = null;
+                if (entry.path) {
+                    const detailPath = join(rootDir, entry.path);
+                    if (existsSync(detailPath)) {
+                        try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { detail = null; }
+                    }
+                }
+                // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）
+                if (detail?._promoted_to) continue;
+                yield buildBookDoc(entry, detail, isDraft);
+            }
+        }
+        await pushInBatches(booksIdx, iterBooks(), { batchSize: 2000 });
+        if (!dryRun) {
+            await configureSettings(booksIdx, SETTINGS.books);
+            swapResults.books = await swapOrDiscard('books', (tmp) => checkIndexHealth(tmp, 'books'));
+        }
+    }
+
+    // collections / entities：不需要读 detail，字段全在 shard 里
     for (const [name, builder] of [
-        ['books', buildBookDoc],
         ['collections', buildCollectionDoc],
         ['entities', buildEntityDoc],
     ]) {
         if (!indices.includes(name)) continue;
-        console.log(`\n=== ${name} ===`);
+        console.log(`\n=== ${name}（建到 tmp）===`);
+        const idxTmp = tmpIndexUid(name);
         function* iter() {
             let n = 0;
             for (const { entry, isDraft } of iterAllRoots(name)) {
@@ -544,8 +660,11 @@ async function main() {
                 yield builder(entry, isDraft);
             }
         }
-        await pushInBatches(name, iter(), { batchSize: 2000 });
-        if (!dryRun) await configureSettings(name, SETTINGS[name]);
+        await pushInBatches(idxTmp, iter(), { batchSize: 2000 });
+        if (!dryRun) {
+            await configureSettings(idxTmp, SETTINGS[name]);
+            swapResults[name] = await swapOrDiscard(name, (tmp) => checkIndexHealth(tmp, name));
+        }
     }
 
     if (!dryRun) {
@@ -556,81 +675,69 @@ async function main() {
         }
         console.log(`  database: ${(s.databaseSize / 1024 / 1024).toFixed(1)} MB`);
 
-        await selfTest(indices);
+        const failed = Object.entries(swapResults).filter(([, ok]) => !ok).map(([idx]) => idx);
+        if (failed.length) {
+            console.error(`\n❌ 以下索引自检未通过、未 swap，线上仍是旧数据：${failed.join(', ')}`);
+            console.error('   详情见上方各索引自己的自检日志。补救：修好问题后重跑本脚本 --only <idx>。');
+            process.exitCode = 1;
+        } else {
+            console.log(`\n✅ 全部 swap 成功：${Object.keys(swapResults).join(', ') || '(无索引改动)'}`);
+        }
     }
 }
 
 /**
- * 收尾自检 —— 2026-09-21 事故后新增。
+ * 按前端真实查询形态验证一个索引（swap 前测 tmp，测过才让它上位）—— 2026-09-21
+ * 事故后定的判法，2026-09-27（A4）从「重建完事后全局补测」改成「每个索引建完
+ * 就近测，作为 swap 前的准入闸」，判法本身不变。
  *
- * 事故：2026-09-07 works 被 resetIndex 删并重建，但收尾的 configureSettings
- * 没跑到（works 走 :526 的独立分支，与 books/collections/entities 的 :548
- * 不同路；中途失败或分支没进，settings 就永久缺失）。结果 works 退回 Meili
- * 默认设置，filterableAttributes 为空 —— 而前端每条搜索都带
- * `filter=is_draft = false`，于是 works 一律 400，用户搜「史记」看不到任何
- * **作品**，只有书籍/丛编/人物。持续 13 天无人发现。
+ * 事故：2026-09-07 works 被删并重建，但收尾的 configureSettings 没跑到，
+ * settings 永久缺失、退回 Meili 默认，而前端每条搜索都带 `filter=is_draft = false`，
+ * 于是 works 一律 400，用户搜「史记」看不到任何**作品**，只有书籍/丛编/人物。
+ * 持续 13 天无人发现——脚本本身报「成功」，/health 绿，文档数满格，裸查询
+ * （不带 filter）照样 200 有结果，只有**照抄前端形态的查询**才暴露得出来。
  *
- * 为什么之前所有监控都没报：脚本本身报「成功」（文档确实推进去了），
- * /health 绿，文档数 91400 满格，裸查询（不带 filter）照样 200 有结果。
- * 只有**照抄前端形态的查询**才暴露得出来。
- *
- * 所以这里不重复检查「推了没推」，而是直接验副作用本身：
- * 按前端的真实请求形态查一次，能不能查通。查不通就非零退出。
+ * checkHits=false 用于 juans：前端查整理本正文走 work_id 过滤，形态与其余
+ * 四类（is_draft 过滤）不同，硬套会全部判假失败。
  */
-async function selfTest(indices) {
-    console.log('\n=== 自检（按前端真实查询形态）===');
+async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {}) {
     const failures = [];
+    const want = SETTINGS[settingsKey];
+    if (!want) return { ok: true, failures };
 
-    // juans 不参与：前端查整理本正文走 work_id 过滤，形态与这四类不同
-    const userFacing = indices.filter(i => i !== 'juans');
+    let settings;
+    try {
+        settings = await meiliRequest('GET', `/indexes/${testUid}/settings`);
+    } catch (e) {
+        return { ok: false, failures: [`读 settings 失败 — ${e.message}`] };
+    }
+    const gotFilterable = settings.filterableAttributes ?? [];
+    const missingFilter = (want.filterableAttributes ?? []).filter(a => !gotFilterable.includes(a));
+    if (missingFilter.length) {
+        failures.push(`filterableAttributes 缺 [${missingFilter.join(', ')}]（实得 [${gotFilterable.join(', ')}]）`);
+    }
+    const gotSearchable = settings.searchableAttributes ?? [];
+    if (gotSearchable.length === 1 && gotSearchable[0] === '*') {
+        failures.push(`searchableAttributes 仍是默认 ['*']，settings 未生效`);
+    }
 
-    for (const idx of userFacing) {
-        const want = SETTINGS[idx];
-        if (!want) continue;
-
-        // 1) settings 真的落盘了吗
-        let settings;
-        try {
-            settings = await meiliRequest('GET', `/indexes/${idx}/settings`);
-        } catch (e) {
-            failures.push(`${idx}: 读 settings 失败 — ${e.message}`);
-            continue;
-        }
-        const gotFilterable = settings.filterableAttributes ?? [];
-        const missing = (want.filterableAttributes ?? []).filter(a => !gotFilterable.includes(a));
-        if (missing.length) {
-            failures.push(`${idx}: filterableAttributes 缺 [${missing.join(', ')}]（实得 [${gotFilterable.join(', ')}]）`);
-        }
-        const gotSearchable = settings.searchableAttributes ?? [];
-        if (gotSearchable.length === 1 && gotSearchable[0] === '*') {
-            failures.push(`${idx}: searchableAttributes 仍是默认 ['*']，settings 未生效`);
-        }
-
-        // 2) 前端那条查询能不能真跑通 —— 比对着 settings 逐条核对更可信：
-        //    settings 对不对是间接证据，查询通不通才是用户实际遇到的。
+    if (checkHits) {
+        // 前端那条查询能不能真跑通——比对着 settings 逐条核对更可信：
+        // settings 对不对是间接证据，查询通不通才是用户实际遇到的。
         try {
             const r = await meiliRequest(
                 'GET',
-                `/indexes/${idx}/search?q=&limit=1&filter=${encodeURIComponent('is_draft = false')}`,
+                `/indexes/${testUid}/search?q=&limit=1&filter=${encodeURIComponent('is_draft = false')}`,
             );
             if (typeof r.estimatedTotalHits === 'number' && r.estimatedTotalHits === 0) {
-                failures.push(`${idx}: 带 is_draft 过滤查到 0 条 —— 该类内容对用户恒为空`);
+                failures.push(`带 is_draft 过滤查到 0 条 —— 该类内容对用户恒为空`);
             }
         } catch (e) {
-            failures.push(`${idx}: 前端形态查询失败 — ${e.message}（前端每条搜索都带此 filter，该索引对用户恒为空）`);
+            failures.push(`前端形态查询失败 — ${e.message}（前端每条搜索都带此 filter，该索引对用户恒为空）`);
         }
     }
 
-    if (failures.length) {
-        console.error('\n❌ 自检未通过：');
-        for (const f of failures) console.error(`   · ${f}`);
-        console.error('\n索引里有数据不等于用户搜得到。补救：对上述索引重推 settings');
-        console.error('（PATCH /indexes/<idx>/settings，取值见本文件的 SETTINGS），');
-        console.error('或重跑本脚本 --only <idx>。');
-        process.exitCode = 1;
-        return;
-    }
-    console.log(`  ✅ ${userFacing.join(', ')} 均通过（settings 完整 + 前端形态查询可用）`);
+    return { ok: failures.length === 0, failures };
 }
 
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });
