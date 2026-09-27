@@ -88,6 +88,24 @@
 ### C1-contract e2e 契约冒烟（正式站）
 - `npx playwright test --project=contract`（纯 HTTP，不装浏览器），有用例挂即 fail；重试后才过记 warn。报告作 artifact 留 7 天。
 
+## 新旧架构对比（任务书 §六，切域名前用）
+
+正式站要从静态导出（www）切到全栈新架构（`kyg-ssr-spike`，预览 `ssr-test.kaiyuanguji.com`）。切之前拿监控数据比：
+
+- **HTTP 采样**（每 15 分钟，A 那一轮顺带）：两边各打 首页、条目页（同一组 10 个 id，热 4 冷 6，见 `perf-config.mjs`）、
+  全文页（整理本卷四），新站另多 `/item/<id>`（静态站没有这条路由）；搜索两边前端都直连 `api.kaiyuanguji.com`，记为「共用」。
+  每条记 首字节时间、总耗时、状态码、CDN 命中（`eo-cache-status` 等头）。单请求上限 10 秒，连续 2 次连不上就跳过该目标余下页面。
+- **影子检查**：新站跑同一组 A 类检查（首页、条目页、边缘函数、证书），**只记录，不开 issue**。
+- **浏览器指标**（每 6 小时，C 那一轮顺带）：Playwright Chromium 冷缓存各测首页＋3 个条目页（热作品、人物、冷作品）的
+  LCP、可交互时间（TTI 近似：DCL 与最后一个长任务结束的较大者）、TBT、FCP。
+- 样本存 Actions cache（`.monitor/perf/samples.jsonl`、`.monitor-smoke/perf/vitals.jsonl`，各留 72 小时）。
+- **报告**：`node monitor/compare-report.mjs --hours 48`，出 markdown：各（目标×页面类）的样本数、错误率、首字节／总耗时 p50／p95、
+  CDN 命中率，同类页面「新/旧」比值；影子检查失败率；浏览器指标 p50／p95。
+  C 每一轮自动出一份 24 小时的进 Step Summary 并传 artifact；要 48 小时的，手动 workflow_dispatch `suite=compare, hours=48`。
+- 读数要点：旧站 HTML 是静态壳、不含条目内容，所以 HTTP 一节只比「文档多快到」；用户多快看到内容看 LCP。
+- 换新站地址：仓库变量或 workflow env 里设 `MON_COMPARE_NEW`；整组目标可用 `MON_COMPARE_TARGETS`（JSON）覆盖。
+- 切完域名、旧站下线后：把 `perf-config.mjs` 里的新站改成 `alert: true` 或直接删掉对比（A 类本身已经在盯 www）。
+
 ## 本地跑
 
 ```bash
@@ -104,13 +122,13 @@ workflow 的 `demo` job 会用标签 `monitor-test`、标题前缀「[演示]」
 
 | | 次/天 | 单次计费 | 分钟/月（30 天） |
 |---|---|---|---|
-| A（+B） | 96 | 1 分钟（实测墙钟见 PR 的 selftest Summary） | ≈ 2,880 |
-| C | 4 | ≈ 2 分钟 | ≈ 240 |
-| 合计 | | | **≈ 3,100** |
+| A（+B＋对比采样） | 96 | 1 分钟（实测墙钟见 PR 的 selftest Summary） | ≈ 2,880 |
+| C（＋装 chromium＋浏览器指标＋对比报告） | 4 | ≈ 3 分钟 | ≈ 360 |
+| 合计 | | | **≈ 3,240** |
 
 原 health-check 约 120 分钟/月，删掉了。GitHub Free 组织私有仓每月 2,000 分钟、Team 3,000——**若额度不够，
-把 A 的 cron 改成 `*/30`（≈ 1,440＋240）**。额度用尽且没设付费上限时，整个仓的 Actions（含 deploy）都会停，
-所以合并前要确认计划额度。
+把 A 的 cron 改成 `*/30`（≈ 1,440＋360）**。额度用尽且没设付费上限时，整个仓的 Actions（含 deploy）都会停，
+所以合并前要确认计划额度。切完域名后停掉对比，C 回到约 1 分钟。
 
 另：本仓历史上 `health-check.yml` 的 `0 */6 * * *` 实际触发比预定晚 2～5 小时（09-26～27 五次实测），
 GitHub 定时在负载高时会延迟甚至丢弃。15 分钟一轮的真实间隔要合并后实测；若长期 > 30 分钟，再上 Cloudflare Worker cron 作第二观察点。

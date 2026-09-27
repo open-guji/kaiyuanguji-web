@@ -9,8 +9,9 @@ import { getLatest } from './probe.mjs';
 
 const H = 3600 * 1000;
 
-async function summary(ctx, path, token) {
-  const r = await request(`${ctx.cfg.www}${path}?summary=1&window=1h&_=${Date.now()}`, {
+async function summary(ctx, path, token, base = ctx.cfg.www) {
+  // limit=1：汇总接口没上线的老部署会把这个请求当成列表读，限 1 条，免得把整页带 IP 的记录拉过来
+  const r = await request(`${base}${path}?summary=1&window=1h&limit=1&_=${Date.now()}`, {
     headers: { authorization: `Bearer ${token}` },
     timeoutMs: ctx.cfg.timeoutMs,
   });
@@ -38,15 +39,29 @@ export async function errorSpike(ctx) {
   }
   const { r, j } = await summary(ctx, '/api/track-error', cfg.errorViewToken);
   if (r.status !== 200 || !j?.success || j.count === undefined) {
-    return aggregate(id, name, [summaryFailure('错误汇总接口', r, j, 'ERROR_VIEW_TOKEN')]);
+    return aggregate(id, name, [summaryFailure('正式站错误汇总接口', r, j, 'ERROR_VIEW_TOKEN'), await stagingSummaryPart(ctx)]);
   }
   const avg = Math.max(0, (j.count24h - j.count) / 23);
+  const stagingPart = await stagingSummaryPart(ctx);
   const limit = Math.max(cfg.errorFloor, avg * cfg.errorFactor);
   const top = (j.top || []).map((t) => `${t.count}×[${t.kind}] ${t.message}`).join('；') || '（无）';
   return aggregate(id, name, [
     part('最近 1 小时错误数', j.count > limit ? 'fail' : 'ok', j.count, `≤ ${limit.toFixed(1)}（max(${cfg.errorFloor}, 均值 ${avg.toFixed(2)}×${cfg.errorFactor})）`),
     part('前 5 种', 'ok', top, '', '仅供排查'),
+    stagingPart,
   ]);
+}
+
+/**
+ * 测试站的错误汇总只作参考（不参与判定，永远不 fail）：看 token 在测试站是否也生效。
+ */
+async function stagingSummaryPart(ctx) {
+  const { r, j } = await summary(ctx, '/api/track-error', ctx.cfg.errorViewToken, ctx.cfg.staging);
+  if (r.status === 200 && j?.success && j.count !== undefined) {
+    return part('测试站错误汇总（参考）', 'ok', `最近 1h ${j.count}，24h ${j.count24h}`, '', '不参与判定');
+  }
+  const why = r.status === 200 ? '汇总接口未上线（老部署）' : r.status === 503 ? '503：测试站未配 ERROR_VIEW_TOKEN' : r.status === 401 ? '401：token 与测试站不一致' : describe(r);
+  return part('测试站错误汇总（参考）', 'skip', why, '', '不参与判定');
 }
 
 /** B2 反馈量：最近 1 小时新反馈 > N 条就报（防刷） */

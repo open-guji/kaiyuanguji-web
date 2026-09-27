@@ -11,6 +11,7 @@
  * --suite data    只跑 B 类
  * --suite smoke   C 类：读 Playwright JSON 报告，折成一个检查项
  * --dry-run       不碰 GitHub，只打印会开／评论／关哪张单
+ * --perf FILE     顺带做新旧架构对比采样（任务书 §六），样本追加进 FILE（JSONL，保留 72 小时）
  *
  * 退出码：检查失败**不**让进程非零——否则 Actions 每 15 分钟再发一封「workflow failed」邮件，
  * 与 issue 通知重复。只有告警链路自身坏了（GitHub API 写失败）才非零，那是真要人看的。
@@ -26,11 +27,14 @@ import { crashed, renderCheck, icon } from './lib/result.mjs';
 import { emptyState, decide, reconcile, pushBaseline, medianOf } from './lib/state.mjs';
 import { makeGithub, issueTitle, openBody, commentBody, closeBody } from './lib/alert.mjs';
 import { readRequiredUi, readPkgChangedAt, readAnchors } from './lib/context.mjs';
+import { samplePerf, shadowChecks } from './checks/perf.mjs';
+import { loadTargets } from './perf-config.mjs';
+import { appendJsonl } from './lib/samples.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 export function parseArgs(argv) {
-  const a = { suite: 'probe', withData: false, dataEvery: null, dryRun: false, state: null, smokeReport: null, only: null, out: null };
+  const a = { suite: 'probe', perf: null, withData: false, dataEvery: null, dryRun: false, state: null, smokeReport: null, only: null, out: null };
   for (let i = 0; i < argv.length; i += 1) {
     const k = argv[i];
     if (k === '--suite') a.suite = argv[++i];
@@ -41,6 +45,7 @@ export function parseArgs(argv) {
     else if (k === '--smoke-report') a.smokeReport = argv[++i];
     else if (k === '--only') a.only = argv[++i].split(',');
     else if (k === '--out') a.out = argv[++i];
+    else if (k === '--perf') a.perf = argv[++i];
   }
   return a;
 }
@@ -119,6 +124,31 @@ export function renderReport(results, { suite, ms, log }) {
   ].join('\n');
 }
 
+/** 本轮对比采样的简表：每目标每页面类的成功数与耗时中位数；影子检查的失败项 */
+export function renderPerfRun(samples, targets) {
+  const label = Object.fromEntries([...targets.map((t) => [t.name, t.label]), ['shared', '共用']]);
+  const med = (a) => { const b = a.filter(Number.isFinite).sort((x, y) => x - y); return b.length ? b[Math.floor((b.length - 1) / 2)] : null; };
+  const groups = new Map();
+  for (const r of samples.filter((x) => x.kind !== 'check')) {
+    const k = `${r.target}\t${r.kind}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  }
+  const lines = ['### 新旧对比（本轮采样）', '', '| 目标 | 页面类 | 成功/总数 | 首字节中位 ms | 总耗时中位 ms | CDN 命中 |', '|---|---|---|---|---|---|'];
+  for (const [k, g] of groups) {
+    const [tg, kind] = k.split('\t');
+    const ok = g.filter((r) => r.ok);
+    const hits = g.filter((r) => r.hit === true).length;
+    const known = g.filter((r) => r.hit != null).length;
+    lines.push(`| ${label[tg] || tg} | ${kind} | ${ok.length}/${g.length} | ${med(ok.map((r) => r.ttfb)) ?? '—'} | ${med(ok.map((r) => r.total)) ?? '—'} | ${known ? `${hits}/${known}` : '看不出'} |`);
+  }
+  const checks = samples.filter((x) => x.kind === 'check');
+  if (checks.length) {
+    lines.push('', `影子检查（不告警）：${checks.map((c) => `${c.ok ? '✅' : '❌'} ${label[c.target] || c.target} ${c.id}${c.ok ? '' : `（${c.failed.join('；')}）`}`).join('；')}`);
+  }
+  return lines.join('\n');
+}
+
 function loadState(path) {
   if (path && existsSync(path)) {
     try {
@@ -153,6 +183,21 @@ async function main() {
     if (args.only) results = results.filter((r) => args.only.includes(r.id));
   }
 
+  // 新旧对比采样：出错不影响告警主链路
+  let perfNote = '';
+  if (args.perf && args.suite === 'probe') {
+    try {
+      const targets = loadTargets();
+      const samples = await samplePerf({ cfg, targets, now });
+      for (const tg of targets.filter((x) => !x.alert)) samples.push(...await shadowChecks({ cfg, target: tg, ctx }));
+      const kept = appendJsonl(args.perf, samples, { now });
+      perfNote = renderPerfRun(samples, targets) + `\n\n样本文件共 ${kept} 条（保留 72 小时）。`;
+    } catch (e) {
+      perfNote = `新旧对比采样出错：${e.message}`;
+      console.error(`::warning::${perfNote}`);
+    }
+  }
+
   const repo = process.env.GITHUB_REPOSITORY || 'open-guji/kaiyuanguji-web';
   const runUrl = process.env.GITHUB_RUN_ID
     ? `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`
@@ -170,7 +215,8 @@ async function main() {
     exit = 1;
   }
 
-  const report = renderReport(results, { suite: args.suite + (args.withData ? '+data' : ''), ms: Date.now() - t0, log: out.log });
+  let report = renderReport(results, { suite: args.suite + (args.withData ? '+data' : ''), ms: Date.now() - t0, log: out.log });
+  if (perfNote) report += `\n\n${perfNote}\n`;
   console.log(report);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, report + '\n');
   if (args.state) {

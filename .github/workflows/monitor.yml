@@ -10,29 +10,35 @@ name: Monitor
 #   A 主动探测   每 15 分钟   纯 HTTP，单次 < 2 分钟
 #   B 数据监测   每小时       顺带在 A 的 job 里跑（距上次满 55 分钟那一轮），省一次 runner 起停
 #   C 契约冒烟   每 6 小时    e2e 的 contract 项目打正式站
+# 另：新旧架构对比（任务书 §六）——A 的每一轮顺带给旧站 www 与新站 ssr-test 采 HTTP 样本，
+#   新站跑同一组检查但只记录不告警；C 的每一轮顺带测两边的浏览器指标，并出最近 24 小时对比报告。
 #
 # 告警 = GitHub Issue（标签 monitor），连续 2 次失败才开、恢复自动关、持续失败 6 小时提醒一次。
 # 邮件由 GitHub 的 issue 通知发出。检查失败**不**让 job 变红——否则每 15 分钟再多一封
 # 「workflow run failed」邮件；job 红只意味着告警链路自己坏了。
 #
-# 状态（每项的连续失败数、对应 issue 号、搜索命中基线）存 Actions cache，不往仓里提交；
-# cache 丢了会从 open 的 monitor issue 找回「正在告警」，最坏晚一轮开单。
+# 状态（每项的连续失败数、对应 issue 号、搜索命中基线、对比样本）存 Actions cache，不往仓里提交；
+# cache 丢了会从 open 的 monitor issue 找回「正在告警」，最坏晚一轮开单（对比样本丢了就从头攒）。
 
 on:
   schedule:
-    - cron: '*/15 * * * *'   # A（+B）
-    - cron: '41 */6 * * *'   # C
+    - cron: '*/15 * * * *'   # A（+B）＋对比 HTTP 采样
+    - cron: '41 */6 * * *'   # C ＋ 对比浏览器指标 ＋ 24 小时对比报告
   workflow_dispatch:
     inputs:
       suite:
-        description: 'probe = A（满 55 分钟顺带 B）；data = 只跑 B；smoke = C'
+        description: 'probe = A（满 55 分钟顺带 B）；data = 只跑 B；smoke = C；compare = 只出新旧对比报告'
         type: choice
-        options: [probe, data, smoke]
+        options: [probe, data, smoke, compare]
         default: probe
       dry_run:
         description: '只出报告，不开／评／关 issue'
         type: boolean
         default: false
+      hours:
+        description: 'compare 报告汇总最近多少小时'
+        type: string
+        default: '48'
   # 改监控本身的 PR：跑单测＋一次只读的线上 dry-run（实测耗时）。
   # 打上标签 monitor-demo 时另跑一次真实故障注入演示（标签 monitor-test 的 issue，开了就关）。
   pull_request:
@@ -49,10 +55,10 @@ permissions:
 
 jobs:
   probe:
-    name: A 主动探测（+B 数据监测）
+    name: A 主动探测（+B 数据监测，+新旧对比采样）
     if: >-
       (github.event_name == 'schedule' && github.event.schedule == '*/15 * * * *') ||
-      (github.event_name == 'workflow_dispatch' && inputs.suite != 'smoke')
+      (github.event_name == 'workflow_dispatch' && (inputs.suite == 'probe' || inputs.suite == 'data'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     concurrency:
@@ -89,7 +95,7 @@ jobs:
           ARGS="--state .monitor/state.json --out .monitor/last.json"
           case "${{ inputs.suite }}" in
             data) ARGS="$ARGS --suite data" ;;
-            *)    ARGS="$ARGS --suite probe --data-every 55" ;;
+            *)    ARGS="$ARGS --suite probe --data-every 55 --perf .monitor/perf/samples.jsonl" ;;
           esac
           [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
           node monitor/run.mjs $ARGS
@@ -112,12 +118,12 @@ jobs:
         run: bash ops/health-notify.sh
 
   smoke:
-    name: C 契约冒烟（正式站）
+    name: C 契约冒烟（+新旧浏览器指标、24 小时对比报告）
     if: >-
       (github.event_name == 'schedule' && github.event.schedule == '41 */6 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.suite == 'smoke')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     concurrency:
       group: monitor-smoke
       cancel-in-progress: false
@@ -138,7 +144,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: e2e/package-lock.json
-      - name: Install (e2e，contract 只用 HTTP，不装浏览器)
+      - name: Install (e2e)
         working-directory: e2e
         run: npm ci
       - name: Contract tests vs production
@@ -147,10 +153,10 @@ jobs:
         env:
           CI: '1'
         run: npx playwright test --project=contract
-      - name: Restore monitor state
+      - name: Restore smoke state
         uses: actions/cache/restore@v4
         with:
-          path: .monitor
+          path: .monitor-smoke
           key: monitor-state-smoke-${{ github.run_id }}
           restore-keys: monitor-state-smoke-
       - name: Fold report into alert
@@ -158,21 +164,47 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          ARGS="--suite smoke --smoke-report e2e/out/results.json --state .monitor/state.json"
+          ARGS="--suite smoke --smoke-report e2e/out/results.json --state .monitor-smoke/state.json"
           [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
           node monitor/run.mjs $ARGS
-      - name: Save monitor state
+
+      # 新旧对比：浏览器指标（LCP／可交互／TBT）。失败不影响告警
+      - name: Install Chromium
+        continue-on-error: true
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - name: Browser vitals（旧 www vs 新 ssr-test）
+        continue-on-error: true
+        run: node monitor/browser-vitals.mjs --out .monitor-smoke/perf/vitals.jsonl
+
+      - name: Save smoke state
         if: ${{ !cancelled() }}
         uses: actions/cache/save@v4
         with:
-          path: .monitor
+          path: .monitor-smoke
           key: monitor-state-smoke-${{ github.run_id }}
-      - name: Upload Playwright report
+
+      # 取 A 那边累积的 HTTP 样本（只读），出最近 24 小时的对比报告
+      - name: Restore probe samples (read-only)
+        uses: actions/cache/restore@v4
+        with:
+          path: .monitor
+          key: monitor-state-probe-none
+          restore-keys: monitor-state-probe-
+      - name: Compare report (24h)
+        if: ${{ !cancelled() }}
+        run: node monitor/compare-report.mjs --hours 24 --samples .monitor/perf/samples.jsonl --vitals .monitor-smoke/perf/vitals.jsonl --out compare-report.md
+      - name: Upload reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: monitor-smoke-${{ github.run_id }}
-          path: e2e/out/
+          path: |
+            e2e/out/
+            compare-report.md
+            .monitor/perf/samples.jsonl
+            .monitor-smoke/perf/vitals.jsonl
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore
       - name: Push to IM webhook
@@ -184,11 +216,43 @@ jobs:
           REPORT: ${{ steps.run.outputs.notify }}
         run: bash ops/health-notify.sh
 
+  compare:
+    name: 新旧架构对比报告（手动）
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'compare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: monitor
+      - uses: actions/cache/restore@v4
+        with:
+          path: .monitor
+          key: monitor-state-probe-none
+          restore-keys: monitor-state-probe-
+      - uses: actions/cache/restore@v4
+        with:
+          path: .monitor-smoke
+          key: monitor-state-smoke-none
+          restore-keys: monitor-state-smoke-
+      - name: Compare report
+        run: node monitor/compare-report.mjs --hours "${{ inputs.hours }}" --samples .monitor/perf/samples.jsonl --vitals .monitor-smoke/perf/vitals.jsonl --out compare-report.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compare-report-${{ github.run_id }}
+          path: |
+            compare-report.md
+            .monitor/perf/samples.jsonl
+            .monitor-smoke/perf/vitals.jsonl
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: ignore
+
   selftest:
     name: 监控自测（单测 + 线上只读 dry-run）
     if: github.event_name == 'pull_request' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -201,16 +265,19 @@ jobs:
             perf/scenarios.ts
             nextjs/package.json
           sparse-checkout-cone-mode: false
-      - name: Unit tests（状态机、故障注入：本地假服务器＋假 GitHub API）
+      - name: Unit tests（状态机、故障注入、对比：本地假服务器＋假 GitHub API）
         working-directory: monitor
         run: npm test
-      - name: Live dry-run（A+B 全跑一遍，不碰 issue；报告见 Summary）
+      - name: Live dry-run（A+B＋新旧对比采样，不碰 issue；报告见 Summary）
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          # 任务书 §五：用这个 secret 实测正式站与测试站的错误汇总（报告 B1 一节）
+          ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
+          FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: |
           start=$(date +%s)
-          node monitor/run.mjs --suite probe --with-data --dry-run --out monitor-dry-run.json
-          echo "A+B 单次运行墙钟：$(( $(date +%s) - start )) 秒" | tee -a "$GITHUB_STEP_SUMMARY"
+          node monitor/run.mjs --suite probe --with-data --dry-run --out monitor-dry-run.json --perf .monitor/perf/samples.jsonl
+          echo "A+B＋对比采样 单次运行墙钟：$(( $(date +%s) - start )) 秒" | tee -a "$GITHUB_STEP_SUMMARY"
       # C 类也 dry-run 一次：验证 contract 项目在 sparse checkout 下跑得起来、报告能折成一项
       - uses: actions/setup-node@v4
         with:
@@ -225,6 +292,12 @@ jobs:
           (cd e2e && npm ci && npx playwright test --project=contract) || true
           node monitor/run.mjs --suite smoke --smoke-report e2e/out/results.json --dry-run
           echo "C 单次运行墙钟（含 npm ci）：$(( $(date +%s) - start )) 秒" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: 浏览器指标 dry-run ＋ 对比报告
+        run: |
+          start=$(date +%s)
+          (cd e2e && npx playwright install --with-deps chromium) && node monitor/browser-vitals.mjs --out .monitor-smoke/perf/vitals.jsonl || true
+          echo "浏览器指标（含装 chromium）墙钟：$(( $(date +%s) - start )) 秒" | tee -a "$GITHUB_STEP_SUMMARY"
+          node monitor/compare-report.mjs --hours 24 --samples .monitor/perf/samples.jsonl --vitals .monitor-smoke/perf/vitals.jsonl --out compare-report.md
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -232,6 +305,10 @@ jobs:
           path: |
             monitor-dry-run.json
             e2e/out/results.json
+            compare-report.md
+            .monitor/perf/samples.jsonl
+            .monitor-smoke/perf/vitals.jsonl
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore
 

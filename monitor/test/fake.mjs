@@ -4,6 +4,12 @@
  */
 import http from 'node:http';
 import { EventEmitter } from 'node:events';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readRequiredUi } from '../lib/context.mjs';
+
+// 假站点的「当前 UI 版本」跟着 main 的要求走，免得每次 bump book-index-ui 都得改测试
+const UI = readRequiredUi(resolve(dirname(fileURLToPath(import.meta.url)), '../..')) || '0.9.7';
 
 export const WORK = 'd59f20aowb9c';
 export const ENTITY = 'hixhd2h9bk4b';
@@ -11,7 +17,7 @@ const COMMIT = 'abc123abc123';
 
 export function defaultFaults() {
   return {
-    homeStatus: 200, prodUi: '0.9.7', stagingUi: '0.9.7',
+    homeStatus: 200, prodUi: UI, stagingUi: UI,
     meiliHealth: 200, searchDelayMs: 0, searchHits: 500, worksFilterStatus: 200,
     latestStatus: 200, versionCommit: COMMIT, entryTombstone: false, manifestRootBody: '{"root":"x"}',
     l2Missing: null,
