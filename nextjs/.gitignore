@@ -63,3 +63,6 @@ next-env.d.ts
 # W2 全栈构建（edgeone makers build）的产物与 CI 临时拷进来的边缘函数
 /.edgeone/
 /edge-functions/
+# W2-3 测试站构建前生成的条目 sitemap（scripts/gen-sitemaps.mjs）
+/public/sitemap-index.xml
+/public/sitemaps/

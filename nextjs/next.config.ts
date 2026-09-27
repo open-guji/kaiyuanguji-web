@@ -61,6 +61,10 @@ const nextConfig: NextConfig = {
 
   env: {
     NEXT_PUBLIC_BIM_UI_VERSION: uiVersion,
+    // W2-3：条目页按需失效接口（app/internal/revalidate/route.ssr.ts）的密钥，只在全栈构建注入。
+    // 构建期写进服务端代码：EdgeOne 运行时只有控制台项目变量，拿不到 CI 的环境变量。
+    // 只有服务端路由引用它，不会进浏览器端 chunk。
+    ...(isFullstack ? { KYG_REVALIDATE_SECRET: process.env.KYG_REVALIDATE_SECRET || '' } : {}),
   },
 
   // 转译 ESM 源码包（含 webtex-cn 源码 + book-index-ui 0.2.25 起 external 出去的 markdown 链路）

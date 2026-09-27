@@ -34,7 +34,7 @@ describe('middleware.ssr', () => {
         expect(run('/book-index?id=d59f20aowb9c', { referer: 'https://www.google.com/' }).status).toBe(308);
         expect(run('/book-index?id=d59f20aowb9c', { 'sec-fetch-dest': 'document' }).status).toBe(308);
     });
-    it.each([
+    it.each<[Record<string, string>, string]>([
         [{ referer: 'https://staging.kaiyuanguji.com/item/988fbiuha8' }, '站内点击（面包屑等）'],
         [{ referer: 'https://staging.kaiyuanguji.com/book-index', 'sec-fetch-dest': 'empty' }, 'RSC 预取'],
         [{ 'sec-fetch-dest': 'empty' }, '非整页请求'],

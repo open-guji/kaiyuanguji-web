@@ -32,6 +32,11 @@ export interface ItemFetchResult {
     entry: ItemEntry;
     /** 这条是从哪条路径取到的：h1 哈希寻址，还是回退到 current/ */
     source: 'h1' | 'current';
+    /**
+     * 取到的是哪一版数据：`h1:<root 文件名>` 或 `current:<commitId>`。
+     * 页面写进 data-ssr-version，发版后的实测据此判断 CDN 上的页面是否已换新（W2-3）。
+     */
+    version: string;
 }
 
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
@@ -120,7 +125,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         return value;
     }
 
-    async function resolveH1Hash(id: string, fresh: boolean): Promise<string> {
+    async function resolveH1Hash(id: string, fresh: boolean): Promise<{ hash: string; root: string }> {
         const pointer = await getPointer<H1Pointer>('h1/manifest-root.json', fresh);
         // S3 之前的旧格式指针没有 root 字段——当作 h1 不可用，回退 current/
         if (!pointer.root) throw new Error('h1 指针没有 root 字段（旧格式）');
@@ -131,27 +136,30 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         const shard = await getImmutable<Record<string, string>>(`${base}/h1/manifest/${shardKey}.${shardHash}.json`);
         const hash = shard[id];
         if (!hash) throw new NotFound(`h1 分片 ${shardKey} 里没有 ${id}`);
-        return hash;
+        return { hash, root: pointer.root };
     }
 
-    async function fromH1(id: string): Promise<ItemEntry> {
-        const hash = await resolveH1Hash(id, false);
+    async function fromH1(id: string): Promise<{ entry: ItemEntry; version: string }> {
+        const first = await resolveH1Hash(id, false);
         try {
-            return await getImmutable<ItemEntry>(`${base}/h1/entry/${id}.${hash}.json`);
+            const entry = await getImmutable<ItemEntry>(`${base}/h1/entry/${id}.${first.hash}.json`);
+            return { entry, version: `h1:${first.root}` };
         } catch (err) {
             if (!(err instanceof NotFound)) throw err;
             // 指针比 COS 落后一步（发布中途）时哈希可能已失效：强制刷新指针再试一次
             const fresh = await resolveH1Hash(id, true);
-            if (fresh === hash) throw err;
-            return getImmutable<ItemEntry>(`${base}/h1/entry/${id}.${fresh}.json`);
+            if (fresh.hash === first.hash) throw err;
+            const entry = await getImmutable<ItemEntry>(`${base}/h1/entry/${id}.${fresh.hash}.json`);
+            return { entry, version: `h1:${fresh.root}` };
         }
     }
 
-    async function fromCurrent(id: string): Promise<ItemEntry | null> {
+    async function fromCurrent(id: string): Promise<{ entry: ItemEntry; version: string } | null> {
         const latest = await getPointer<LatestPointer>('latest.json');
         const v = latest.commitId ? `?v=${latest.commitId}` : '';
         try {
-            return await getImmutable<ItemEntry>(`${base}/current/entry/${id}.json${v}`);
+            const entry = await getImmutable<ItemEntry>(`${base}/current/entry/${id}.json${v}`);
+            return { entry, version: `current:${latest.commitId ?? ''}` };
         } catch (err) {
             if (err instanceof NotFound) return null;
             throw err;
@@ -164,14 +172,14 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     async function getItem(id: string): Promise<ItemFetchResult | null> {
         if (!isValidItemId(id)) return null;
         try {
-            return { entry: await fromH1(id), source: 'h1' };
+            return { ...(await fromH1(id)), source: 'h1' };
         } catch (err) {
             if (!(err instanceof NotFound)) {
                 console.warn(`[item-data] h1 取 ${id} 失败，回退 current/：${(err as Error).message}`);
             }
         }
-        const entry = await fromCurrent(id);
-        return entry ? { entry, source: 'current' } : null;
+        const hit = await fromCurrent(id);
+        return hit ? { ...hit, source: 'current' } : null;
     }
 
     return { getItem };

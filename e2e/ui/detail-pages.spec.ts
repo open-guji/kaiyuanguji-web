@@ -9,7 +9,7 @@
  *   · 丛编子目表直接来自 contained_works，不对 books[] 逐条发请求
  */
 import { test, expect, type Page } from '@playwright/test';
-import { ANCHORS, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchors';
+import { ANCHORS, DATA_BASE, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchors';
 import {
     isEmptyEntity, isEmptyWork, pickEmptySample, requireUiVersion,
 } from '../fixtures/preconditions';
@@ -20,6 +20,16 @@ const WORK = ANCHORS.work.id;
 const BOOK = '988fbiuha8';
 /** 武英殿聚珍版叢書：144 条子目 */
 const COLLECTION = '8rlcsybg2hhf';
+
+/**
+ * 是不是一次「条目数据」请求：只数数据域（DATA_BASE）下的 entry/、items/、h1/。
+ * 2026-09-27 起条目页地址是 /item/<id>（W2），原先的正则 /\/(entry|item|items)\//
+ * 会把页面自己的地址和 app/item/[id] 的 JS chunk 也算进来，离上限只剩 1（网站总管裁决收窄）。
+ */
+function isEntryDataRequest(url: string): boolean {
+    if (!url.startsWith(`${DATA_BASE}/`)) return false;
+    return /\/(entry|items|h1)\//.test(url.slice(DATA_BASE.length));
+}
 
 async function openDetail(page: Page, id: string) {
     await page.goto(`${TARGET}/book-index?id=${id}`);
@@ -143,7 +153,7 @@ test.describe('详情页版式', () => {
         // 一个页面 144 次请求；contained_works 自带标题与册次，应为 0 次。
         const itemRequests: string[] = [];
         page.on('request', (r) => {
-            if (/\/(entry|item|items)\//.test(r.url())) itemRequests.push(r.url());
+            if (isEntryDataRequest(r.url())) itemRequests.push(r.url());
         });
 
         await openDetail(page, COLLECTION);
@@ -227,7 +237,7 @@ test.describe('人物页', () => {
         // 旧版把 308 部作品全渲染，页面高 9364px、一次 309 个链接、308 次请求
         const itemRequests: string[] = [];
         page.on('request', (r) => {
-            if (/\/(entry|item|items)\//.test(r.url())) itemRequests.push(r.url());
+            if (isEntryDataRequest(r.url())) itemRequests.push(r.url());
         });
 
         await openDetail(page, OUYANG);

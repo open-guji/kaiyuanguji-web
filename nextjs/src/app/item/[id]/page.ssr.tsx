@@ -32,7 +32,7 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 
 type Props = { params: Promise<{ id: string }> };
 
-type Loaded = ItemSummary & { source: 'h1' | 'current'; seo: ItemSeo };
+type Loaded = ItemSummary & { source: 'h1' | 'current'; version: string; seo: ItemSeo };
 
 /**
  * 取条目并处理跳转。generateMetadata 与页面各调一次，取数有进程内缓存，不会重复回源。
@@ -48,7 +48,7 @@ async function load(id: string): Promise<Loaded | null> {
     }
     const target = mergedTarget(hit.entry, id);
     if (target) permanentRedirect(`/item/${target}`);
-    return { ...summarizeItem(hit.entry, id), source: hit.source, seo: buildItemSeo(hit.entry, id, SITE_URL) };
+    return { ...summarizeItem(hit.entry, id), source: hit.source, version: hit.version, seo: buildItemSeo(hit.entry, id, SITE_URL) };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -84,8 +84,8 @@ const S = {
 function ItemSummaryView({ s }: { s: Loaded }) {
     return (
         <LayoutWrapper hideFooter hideFeedbackButton>
-            {/* data-ssr-source：取数走的哪条路（h1／current），排查与实测用 */}
-            <article data-ssr-item={s.id} data-ssr-source={s.source} style={S.article}>
+            {/* data-ssr-source／data-ssr-version：取数走的哪条路、哪一版数据；排查与发版后实测（W2-3）用 */}
+            <article data-ssr-item={s.id} data-ssr-source={s.source} data-ssr-version={s.version} style={S.article}>
                 <h1 style={S.h1}>
                     {s.title}
                     {s.edition && <span style={S.edition}>{s.edition}</span>}
