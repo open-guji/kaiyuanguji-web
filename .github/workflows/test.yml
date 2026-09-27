@@ -61,7 +61,20 @@ jobs:
           NEXT_PUBLIC_DATA_SOURCE: bundle
           NEXT_PUBLIC_BASE_PATH: ''
           BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
-        run: npm run build
+        # T1：Google Fonts 在构建期抓取偶发抖动会导致整个 build 失败——只重试
+        # 这一条命令本身，最多 3 次、每次间隔 20 秒（与 deploy.yml 的 Build for
+        # EdgeOne 步骤同一套重试逻辑）。
+        run: |
+          n=1
+          until npm run build; do
+            if [ "$n" -ge 3 ]; then
+              echo "❌ npm run build 重试 3 次仍失败"
+              exit 1
+            fi
+            echo "⚠️ npm run build 第 ${n} 次失败，20 秒后重试（下一次 $((n + 1))/3）"
+            sleep 20
+            n=$((n + 1))
+          done
       - name: Serve build
         working-directory: nextjs
         run: |
