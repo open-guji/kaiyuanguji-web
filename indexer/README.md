@@ -85,6 +85,11 @@ import sys,json; d=json.load(sys.stdin); print('lastUpdate', d['lastUpdate'])
 
 ## 注意
 
+- **2026-09-27（A4）起是 swap 式重建**：新数据先建到 `<idx>_tmp`，自检（前端形态查询）通过才
+  `POST /swap-indexes` 原子换名，线上读到的索引全程有数据，不再有「DELETE 到重建完」之间的空窗。
+  自检不通过就删掉 tmp、退出非 0，线上 `<idx>` 原样不动——不会出现"半成品覆盖旧索引"。
+  代价：重建期间盘上短暂同时存在新旧两份数据（`<idx>` + `<idx>_tmp`），峰值盘占用比重建前
+  高出约一个索引的量，2 核 2GB 无 swap 的机器上跑前留意 `df -h` 余量。
 - 必须先同步脚本再重建：旧脚本 + 新数据会把 2 万多条已升格条目劣化成裸标题 stub（2026-08 事故）。
 - 前端用的是公开只读 key，401/403 会立即熔断转 L2；轮换 key 要同时改 GitHub secret `MEILI_SEARCH_KEY` 与 `deploy.yml` 里的兜底值。
 - 前端 `filter=is_draft = false` 依赖每个 doc 的 `is_draft` 字段，改 doc 结构时别丢它。

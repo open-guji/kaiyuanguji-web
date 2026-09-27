@@ -14,6 +14,7 @@
 
 import type { IndexStorage } from 'book-index-ui/storage';
 import type { IndexEntry, IndexType, PageResult, LoadOptions, GroupedSearchResult } from 'book-index-ui';
+import { SNIPPET_MARK_START, SNIPPET_MARK_END } from 'book-index-ui';
 
 export interface MeiliConfig {
     /** API base, e.g. 'https://api.kaiyuanguji.com' or 'http://122.51.91.177:7700' */
@@ -52,7 +53,14 @@ interface MeiliHit {
     death_year?: number;
     cbdb_id?: number;
     completeness?: number;
+    /** 简介命中片段（A4，2026-09-27）：仅 works/books 请求了 attributesToHighlight 时才有 */
+    _formatted?: { description_search?: string };
 }
+
+// 只有 works/books 有 description_search 字段（A4 精简版口径，见 indexer/full-reindex.mjs
+// 的 SETTINGS），collections/entities 没有这个字段，不用带这几个搜索参数。
+const DESCRIPTION_HIGHLIGHT_INDICES = new Set(['works', 'books']);
+const DESCRIPTION_CROP_LENGTH = 80;
 
 class CircuitBreaker {
     private failures = 0;
@@ -134,6 +142,11 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
             birth_year: h.birth_year,
             death_year: h.death_year,
             cbdb_id: h.cbdb_id,
+            // 只有真正命中简介（含高亮标记）才展示；没标记说明是从头裁出来的无关片段，
+            // 展示反而误导用户以为搜中的是简介
+            descriptionSnippet: h._formatted?.description_search?.includes(SNIPPET_MARK_START)
+                ? h._formatted.description_search
+                : undefined,
         };
     }
 
@@ -152,6 +165,16 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
                 // 该字段时会被这条 filter 一并排除掉（Meili 对缺字段视为不匹配）。
                 filter: 'is_draft = false',
             });
+            if (DESCRIPTION_HIGHLIGHT_INDICES.has(indexUid)) {
+                // 高亮标记用控制字符而非 <mark>：简介原文偶尔含 `<`/`>`，前端按
+                // sentinel 切段渲染（book-index-ui 的 splitHighlightSnippet），
+                // 不用 dangerouslySetInnerHTML，天然不怕原文里的尖括号。
+                params.set('attributesToHighlight', 'description_search');
+                params.set('attributesToCrop', 'description_search');
+                params.set('cropLength', String(DESCRIPTION_CROP_LENGTH));
+                params.set('highlightPreTag', SNIPPET_MARK_START);
+                params.set('highlightPostTag', SNIPPET_MARK_END);
+            }
             const r = await fetch(`${baseUrl}/indexes/${indexUid}/search?${params}`, {
                 method: 'GET',
                 signal: ctrl.signal,
