@@ -8,6 +8,10 @@
  * 时，getCollatedEditionIndex 等五个方法必须原样委托给 inner（book-index-ui 的
  * BundleStorage），走它自己的现行 URL 拼法（`items/<id>/collated_edition/…`
  * 等），本文件不碰、不改 bim/ui 一行代码——这里验证的正是「没有碰」。
+ *
+ * S3（h1 版本根清单，2026-09-27）：取数链路从「text-manifest-root→分片→文件」
+ * 三级变成「指针→root→分片→文件」四级，mock 链路照这个顺序改写，详见
+ * cos-storage-hashed.test.ts 头部注释（entry 侧同一次改造）。
  */
 import { jest } from '@jest/globals';
 
@@ -21,12 +25,22 @@ const WORK_ID = 'd59f2mp12329';
 const BOOK_ID = '96kzkdm8e8';
 const WORK_SHARD = WORK_ID.slice(-2);
 const BOOK_SHARD = BOOK_ID.slice(-2);
+const ROOT_KEY = 'troot1';
 
 function jsonResponse(body: unknown, ok = true, status = 200) {
     return { ok, status, json: async () => body, text: async () => JSON.stringify(body) } as Response;
 }
 function textResponse(body: string, ok = true, status = 200) {
     return { ok, status, text: async () => body } as Response;
+}
+function pointerResponse(root = ROOT_KEY) {
+    return jsonResponse({ version: 2, root: `${root}.json`, generatedAt: 'x', dataCommit: {} });
+}
+function rootDocResponse(shardKeyLength: number, shards: Record<string, string>) {
+    return jsonResponse({
+        version: 1, shardKeyLength, shardSpace: 1296, shardCount: Object.keys(shards).length,
+        ownerCount: 0, fileCount: 0, generatedAt: 'x', dataCommit: {}, shards,
+    });
 }
 
 async function freshCosStorage(env: { layout?: string; cosBase?: string }) {
@@ -86,18 +100,18 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         expect(calls.some(u => u.includes('/h1/'))).toBe(false);
     });
 
-    it("NEXT_PUBLIC_DATA_LAYOUT=hashed：getCollatedJuan 读 text-manifest-root → 读分片 → 取文件", async () => {
+    it("NEXT_PUBLIC_DATA_LAYOUT=hashed：getCollatedJuan 读指针 → 读 root → 读分片 → 取文件", async () => {
         const juan = { title: '卷一', sections: [{ title: 's', type: 'text' }] };
         const hash = 'aaaaaaaa';
+        const shardHash = 'shard-w';
         const shard = { [WORK_ID]: { 'collated_edition/juan/001.json': hash } };
 
         const calls: string[] = [];
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             calls.push(url);
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 1, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.json`)) return jsonResponse(shard);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [WORK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.${shardHash}.json`)) return jsonResponse(shard);
             if (url.endsWith(`/h1/text/${WORK_ID}/collated_edition/juan/001.${hash}.json`)) return jsonResponse(juan);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
@@ -109,18 +123,19 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         expect(result).toMatchObject({ title: '卷一' });
         expect(calls.some(u => u.includes('/current/'))).toBe(false);
         expect(calls.some(u => u.includes('/h1/text/'))).toBe(true);
+        expect(calls.some(u => u.endsWith(`/h1/text-roots/${ROOT_KEY}.json`))).toBe(true);
     });
 
     it('hashed：getCollatedJuanText 把 .json 换成 .txt，读 collated_edition/text/ 下的原文', async () => {
         const raw = '# 卷一\n\n正文……';
         const hash = 'bbbbbbbb';
+        const shardHash = 'shard-w2';
         const shard = { [WORK_ID]: { 'collated_edition/text/juan/001.txt': hash } };
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 1, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.json`)) return jsonResponse(shard);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [WORK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.${shardHash}.json`)) return jsonResponse(shard);
             if (url.endsWith(`/h1/text/${WORK_ID}/collated_edition/text/juan/001.${hash}.txt`)) return textResponse(raw);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
@@ -135,14 +150,14 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
     it('hashed：getCollatedEditionIndex 主文件名 index.json 命中，不再试旧命名兜底', async () => {
         const idx = { work_id: WORK_ID, juan_files: ['juan/001.json'] };
         const hash = 'cccccccc';
+        const shardHash = 'shard-w3';
         const shard = { [WORK_ID]: { 'collated_edition/index.json': hash } };
         let fallbackFetched = false;
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 1, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.json`)) return jsonResponse(shard);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [WORK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.${shardHash}.json`)) return jsonResponse(shard);
             if (url.endsWith(`/h1/text/${WORK_ID}/collated_edition/index.${hash}.json`)) return jsonResponse(idx);
             if (url.includes('collated_edition_index')) { fallbackFetched = true; return jsonResponse({}, false, 404); }
             throw new Error(`unexpected fetch: ${url}`);
@@ -159,14 +174,14 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
     it('hashed：getCollatedEditionIndex 主文件名未命中 manifest → 试旧命名 collated_edition_index.json', async () => {
         const idx = { work_id: WORK_ID, legacy: true };
         const hash = 'dddddddd';
+        const shardHash = 'shard-w4';
         // manifest 里只有旧命名这一个 key，没有 index.json
         const shard = { [WORK_ID]: { 'collated_edition/collated_edition_index.json': hash } };
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 1, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.json`)) return jsonResponse(shard);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [WORK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.${shardHash}.json`)) return jsonResponse(shard);
             if (url.endsWith(`/h1/text/${WORK_ID}/collated_edition/collated_edition_index.${hash}.json`)) return jsonResponse(idx);
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
@@ -183,6 +198,7 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         const chapterText = '第一回　正文……';
         const hashIdx = 'eeeeeeee';
         const hashCh = 'ffffffff';
+        const shardHash = 'shard-b1';
         const shard = {
             [BOOK_ID]: {
                 'full_text/index.json': hashIdx,
@@ -191,10 +207,9 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         };
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 2, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.json`)) return jsonResponse(shard);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.${shardHash}.json`)) return jsonResponse(shard);
             if (url.endsWith(`/h1/text/${BOOK_ID}/full_text/index.${hashIdx}.json`)) return jsonResponse(idx);
             if (url.endsWith(`/h1/text/${BOOK_ID}/full_text/001.${hashCh}.txt`)) return textResponse(chapterText);
             throw new Error(`unexpected fetch: ${url}`);
@@ -210,12 +225,25 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         expect(chResult).toBe(chapterText);
     });
 
-    it('hashed：manifest 里没有这个 owner/相对路径 → 返回 null，不抛错', async () => {
+    it('hashed：root 里没有这个 owner 所在的分片 → 返回 null，不抛错', async () => {
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
-            if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 0, ownerCount: 0, fileCount: 0, generatedAt: 'x', dataCommit: {} });
-            }
-            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.json`)) return jsonResponse({}); // 空分片
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, {}); // 空 root：任何分片都不存在
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        const result = await storage.getBookFullTextIndex?.(BOOK_ID);
+        expect(result).toBeNull();
+    });
+
+    it('hashed：分片里没有这个 owner/相对路径（分片存在但未命中）→ 返回 null，不抛错', async () => {
+        const shardHash = 'shard-b2';
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.${shardHash}.json`)) return jsonResponse({}); // 空分片
             throw new Error(`unexpected fetch: ${url}`);
         }) as unknown as typeof fetch;
 
@@ -242,22 +270,25 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         expect(calls.length).toBe(0);
     });
 
-    it('hashed：分片过期指向已不存在的旧哈希，文件 404 → 清缓存重取分片后成功', async () => {
+    it('hashed：指针翻转到新版，文件 404 → 清指针+root 缓存重取后成功', async () => {
         const staleHash = 'aaaaaaaa';
         const freshHash = 'bbbbbbbb';
-        let shardFetchCount = 0;
-        let currentHash = staleHash;
+        const staleRoot = 'troot-old';
+        const freshRoot = 'troot-new';
+        let pointerFetchCount = 0;
+        let currentPointerRoot = staleRoot;
 
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
             if (url.endsWith('/h1/text-manifest-root.json')) {
-                return jsonResponse({ shardKeyLength: 2, shardSpace: 1296, shardCount: 1, ownerCount: 1, fileCount: 1, generatedAt: 'x', dataCommit: {} });
+                pointerFetchCount++;
+                const root = currentPointerRoot;
+                currentPointerRoot = freshRoot;
+                return pointerResponse(root);
             }
-            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.json`)) {
-                shardFetchCount++;
-                const h = currentHash;
-                currentHash = freshHash;
-                return jsonResponse({ [BOOK_ID]: { 'full_text/index.json': h } });
-            }
+            if (url.endsWith(`/h1/text-roots/${staleRoot}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: 'shard-old' });
+            if (url.endsWith(`/h1/text-roots/${freshRoot}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: 'shard-new' });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.shard-old.json`)) return jsonResponse({ [BOOK_ID]: { 'full_text/index.json': staleHash } });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.shard-new.json`)) return jsonResponse({ [BOOK_ID]: { 'full_text/index.json': freshHash } });
             if (url.endsWith(`/h1/text/${BOOK_ID}/full_text/index.${staleHash}.json`)) return jsonResponse({}, false, 404);
             if (url.endsWith(`/h1/text/${BOOK_ID}/full_text/index.${freshHash}.json`)) return jsonResponse({ book_id: BOOK_ID, refreshed: true });
             throw new Error(`unexpected fetch: ${url}`);
@@ -268,6 +299,6 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         const result = await storage.getBookFullTextIndex?.(BOOK_ID);
 
         expect(result).toMatchObject({ refreshed: true });
-        expect(shardFetchCount).toBe(2);
+        expect(pointerFetchCount).toBe(2);
     });
 });

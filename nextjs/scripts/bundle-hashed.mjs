@@ -13,20 +13,45 @@
  * 因此本脚本必须在 bundle-data.mjs **之后**运行。
  *
  * 产出（写到 public/data-h1/，与 public/data/ 并列，互不覆盖）：
- *   - entry/<id>.<hash8>.json      内容 sha256 前 8 位；内容不变则文件不重写
- *   - manifest/<id 后缀 2 位>.json  id → hash8；按 id **后缀**分片（前缀分片在这批
- *                                  snowflake id 下不均匀，同批同类型 id 前几位
- *                                  几乎恒定，见 29 卡 §2.3），id 是 0-9a-z 的
- *                                  base36 字符，后缀 2 位 = 36×36 = 1296 个可能分片
- *   - manifest-root.json           { shardKeyLength, shardSpace, shardCount,
- *                                    generatedAt, dataCommit }
- *   - .manifest-state.json         上一轮 id→hash8（本脚本自用，供增量对比／
- *                                  垃圾回收，不上传 COS）
+ *   - entry/<id>.<hash8>.json         内容 sha256 前 8 位；内容不变则文件不重写
+ *   - manifest/<后缀 2 位>.<hash8>.json  id → hash8 的分片本身也按内容哈希命名
+ *                                     （S3，见下方"版本根清单"），按 id **后缀**
+ *                                     分片（前缀分片在这批 snowflake id 下不均匀，
+ *                                     同批同类型 id 前几位几乎恒定，见 29 卡
+ *                                     §2.3），id 是 0-9a-z 的 base36 字符，
+ *                                     后缀 2 位 = 36×36 = 1296 个可能分片
+ *   - roots/<dataCommitKey>.json      本次发布的版本根清单：{ shardKeyLength,
+ *                                     shardSpace, shardCount, generatedAt,
+ *                                     dataCommit, shards: {后缀→hash8} }，
+ *                                     不可变（同一 dataCommitKey 下内容恒定）
+ *   - manifest-root.json              降级成一个指针：{ version: 2, root:
+ *                                     "<dataCommitKey>.json", generatedAt,
+ *                                     dataCommit }，短缓存
+ *   - .manifest-state.json            上一轮 id→hash8（本脚本自用，供增量对比／
+ *                                     垃圾回收，不上传 COS）
+ *
+ * S3（h1 版本根清单，2026-09-27）：manifest 分片原本是固定路径、原地覆盖，
+ * 一次发布的 1,296 个分片不是原子切换、也没法让测试站与正式站各看各的数据
+ * 版本。改法见上：分片本身按内容哈希命名，每次发布另生成一份不可变的
+ * roots/<key>.json 列出本版全部分片的文件名，manifest-root.json 退化成
+ * 「当前指针指向哪个 root」的短缓存指针——前端取数变成
+ * 指针→root→分片→entry 四级（见 cos-storage.ts）。
+ * 分片／roots 文件的孤儿判定也相应从「本地没有就删」改成「不被任何在用
+ * root 引用」，在 sync 端由 `runRootsRetention`（`lib/h1-sync-core.mjs` +
+ * `lib/h1-roots.mjs`）实现，本脚本只管产出，不管清理。
+ *
+ * dataCommitKey 不能只用 draft 仓的 commitId：整理本／全文的内容由 book-text
+ * 的 textCommitId 决定，若两个 lane 都只用 commitId 当版本 key，book-text
+ * 单独更新（deploy.yml 本来就会因为它触发部署）时 entry 侧文件全部原地不动，
+ * 但这里用的是同一个 dataCommitKey 生成函数（对 dataCommit 全量三个字段哈希），
+ * 所以哪怕 entry 内容真的没变，key 也只在三仓任一个变化时才变——不会用一个
+ * 已经存在的 key 覆盖出不同内容（见 h1-hash-common.mjs 的 dataCommitKey 注释）。
  *
  * public/data-h1/ **跨次运行保留**（不像 bundle-data.mjs 那样每次清空 OUT_DIR）：
  * 这样未变的 entry/<id>.<hash>.json 不需要重写，sync 端也不需要重传；只有本轮
  * 新增/变化的 id 才会有新文件、旧哈希文件会被当场清理（垃圾回收，见 gcStaleEntryFiles）。
- * 首次运行或 H1_CLEAN=1 时按全量对待。
+ * 首次运行或 H1_CLEAN=1 时按全量对待。roots/ 目录例外：每轮只保留本轮这一个
+ * 文件（本地暂存区没有跨版本保留的必要，真正的跨版本保留是 COS 端的事）。
  *
  * 用法：
  *   node scripts/bundle-hashed.mjs
@@ -37,7 +62,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { ensureDir, readJson, hash8, writeIfChanged } from './lib/h1-hash-common.mjs';
+import { ensureDir, readJson, hash8, writeHashedShards, dataCommitKey } from './lib/h1-hash-common.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -53,6 +78,7 @@ const SHARD_SPACE = 36 ** SHARD_KEY_LEN;
 
 const ENTRY_DIR = join(OUT_DIR, 'entry');
 const MANIFEST_DIR = join(OUT_DIR, 'manifest');
+const ROOTS_DIR = join(OUT_DIR, 'roots');
 const MANIFEST_ROOT_FILE = join(OUT_DIR, 'manifest-root.json');
 const STATE_FILE = join(OUT_DIR, '.manifest-state.json');
 
@@ -127,65 +153,62 @@ function gcStaleEntryFiles(oldState, newState) {
     return removed;
 }
 
-// ─── 3. manifest 分片：id → hash8，按后缀分片 ───
+// ─── 3. manifest 分片：id → hash8，按后缀分片，分片本身也按内容哈希命名 ───
 
 function bundleManifest(newState) {
-    ensureDir(MANIFEST_DIR);
-
     const shards = {};
     for (const [id, h] of Object.entries(newState)) {
         const k = shardKeyFor(id);
         (shards[k] ??= {})[id] = h;
     }
+    // writeHashedShards 已经把「不再有任何 id 落入的分片键」与「同一分片键内容
+    // 变了、旧哈希文件不再对应现状」两种情况都当垃圾回收掉，见 h1-hash-common.mjs。
+    return writeHashedShards(MANIFEST_DIR, shards);
+}
 
-    let changedShards = 0;
-    let totalBytes = 0;
-    for (const [k, obj] of Object.entries(shards)) {
-        const json = Buffer.from(JSON.stringify(obj));
-        totalBytes += json.length;
-        if (writeIfChanged(join(MANIFEST_DIR, `${k}.json`), json)) changedShards++;
+// ─── 4. dataCommit（供 roots 文档与指针共用） ───
+
+function readDataCommit() {
+    if (!existsSync(VERSION_FILE)) {
+        console.warn(`  ⚠ ${VERSION_FILE} 不存在，dataCommit 留 unknown`);
+        return { commitId: 'unknown', productionCommitId: 'unknown', textCommitId: 'unknown' };
     }
+    const v = readJson(VERSION_FILE);
+    return { commitId: v.commitId, productionCommitId: v.productionCommitId, textCommitId: v.textCommitId };
+}
 
-    // 清理不再有任何 id 落入的分片文件（理论上随 id 总数增长几乎不会发生，
-    // 但 id 大量减少时会出现，如实处理不留孤儿）。
-    let removedShards = 0;
-    if (existsSync(MANIFEST_DIR)) {
-        for (const fname of readdirSync(MANIFEST_DIR)) {
-            const k = fname.slice(0, -'.json'.length);
-            if (!(k in shards)) {
-                unlinkSync(join(MANIFEST_DIR, fname));
-                removedShards++;
-            }
+// ─── 5. roots/<dataCommitKey>.json（版本根清单，S3）＋ manifest-root.json（指针） ───
+
+function bundleRootsAndPointer(shardStat, dataCommit) {
+    const commitKey = dataCommitKey(dataCommit);
+    const generatedAt = new Date().toISOString();
+
+    const rootDoc = {
+        version: 1,
+        shardKeyLength: SHARD_KEY_LEN,
+        shardSpace: SHARD_SPACE,          // 理论最大分片数（36^2）
+        shardCount: shardStat.shardCount, // 本轮实际写出的分片数（有条目落入的）
+        generatedAt,
+        dataCommit,
+        shards: shardStat.shardHashes,    // 后缀 → hash8，前端/sync 靠它拼分片文件名
+    };
+
+    ensureDir(ROOTS_DIR);
+    writeFileSync(join(ROOTS_DIR, `${commitKey}.json`), JSON.stringify(rootDoc));
+    // roots/ 本地暂存区不需要跨版本保留（真正的跨版本保留是 COS 端 runRootsRetention
+    // 的事），每轮只留本轮这一个文件，避免本地多次运行后越攒越多、被误当新增上传。
+    let removedOldRoots = 0;
+    for (const fname of readdirSync(ROOTS_DIR)) {
+        if (fname !== `${commitKey}.json`) {
+            unlinkSync(join(ROOTS_DIR, fname));
+            removedOldRoots++;
         }
     }
 
-    return { shardCount: Object.keys(shards).length, changedShards, removedShards, totalBytes };
-}
+    const pointer = { version: 2, root: `${commitKey}.json`, generatedAt, dataCommit };
+    writeFileSync(MANIFEST_ROOT_FILE, JSON.stringify(pointer));
 
-// ─── 4. manifest-root.json ───
-
-function bundleManifestRoot(shardStat) {
-    let dataCommit = { commitId: 'unknown', productionCommitId: 'unknown', textCommitId: 'unknown' };
-    if (existsSync(VERSION_FILE)) {
-        const v = readJson(VERSION_FILE);
-        dataCommit = {
-            commitId: v.commitId,
-            productionCommitId: v.productionCommitId,
-            textCommitId: v.textCommitId,
-        };
-    } else {
-        console.warn(`  ⚠ ${VERSION_FILE} 不存在，dataCommit 留 unknown`);
-    }
-
-    const root = {
-        shardKeyLength: SHARD_KEY_LEN,
-        shardSpace: SHARD_SPACE,      // 理论最大分片数（36^2）
-        shardCount: shardStat.shardCount, // 本轮实际写出的分片数（有条目落入的）
-        generatedAt: new Date().toISOString(),
-        dataCommit,
-    };
-    writeFileSync(MANIFEST_ROOT_FILE, JSON.stringify(root));
-    return root;
+    return { commitKey, rootDoc, removedOldRoots };
 }
 
 // ─── main ───
@@ -204,14 +227,16 @@ function main() {
 
     const removedEntryFiles = gcStaleEntryFiles(oldState, newState);
     const shardStat = bundleManifest(newState);
-    const root = bundleManifestRoot(shardStat);
+    const dataCommit = readDataCommit();
+    const { commitKey, removedOldRoots } = bundleRootsAndPointer(shardStat, dataCommit);
 
     // 状态落盘，供下一轮增量对比
     writeFileSync(STATE_FILE, JSON.stringify(newState));
 
     console.log(`ENTRY 扫描 ${scanned} 条，新写 ${newEntryFilesWritten} 个 entry 文件（${(bytesWritten / 1024 / 1024).toFixed(2)} MB），回收旧哈希文件 ${removedEntryFiles} 个`);
     console.log(`MANIFEST ${shardStat.shardCount} 片（理论空间 ${SHARD_SPACE}），本轮改动 ${shardStat.changedShards} 片，回收 ${shardStat.removedShards} 片，合计 ${(shardStat.totalBytes / 1024).toFixed(1)} KB`);
-    console.log(`ROOT  manifest-root.json → shardCount=${root.shardCount} dataCommit=${root.dataCommit.commitId?.slice(0, 8)}/${root.dataCommit.productionCommitId?.slice(0, 8)}/${root.dataCommit.textCommitId?.slice(0, 8)}`);
+    console.log(`ROOTS roots/${commitKey}.json（本地清理旧 roots 文件 ${removedOldRoots} 个）dataCommit=${dataCommit.commitId?.slice(0, 8)}/${dataCommit.productionCommitId?.slice(0, 8)}/${dataCommit.textCommitId?.slice(0, 8)}`);
+    console.log(`POINTER manifest-root.json → root=${commitKey}.json`);
     console.log(`\n✅ bundle-hashed complete → ${OUT_DIR}\n`);
 }
 
