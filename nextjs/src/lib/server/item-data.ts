@@ -17,9 +17,10 @@
  * 2026-09-27 实测 CDN 上的 h1/manifest-root.json 已被缓存约 7 小时
  * （age 24795，还是 S3 之前的旧格式），不带查询串会一直读到旧指针。
  *
- * 草稿→正式 id 的重定向（promotions，18.9 MB）不在这里做：函数里不能整表加载。
- * W2-2 的处理见 app/item/[id]/page.ssr.tsx：查不到的草稿 id 临时跳回 /book-index，
- * 由客户端查表跳转。
+ * 草稿→正式 id（PH）：整张 promotions.json 曾有 18.9 MB，函数里不能整表加载；
+ * 打包时按与 manifest 同一套后缀分片进 h1（root 的 promotionShards → 分片
+ * h1/promotions/<后缀>.<hash8>.json，内容 { 草稿id: 正式id }），这里一次只取一片。
+ * 见 resolvePromotion；页面据此 308（app/item/[id]/page.ssr.tsx）。
  */
 
 import { isValidItemId } from '../item-id';
@@ -55,7 +56,23 @@ export interface ItemFetcherOptions {
 }
 
 interface H1Pointer { root?: string }
-interface H1RootDoc { shardKeyLength: number; shards: Record<string, string> }
+interface H1RootDoc {
+    shardKeyLength: number;
+    shards: Record<string, string>;
+    /** PH 之后的 root 才有；没有这个字段＝这一版不知道升格情况 */
+    promotionShards?: Record<string, string>;
+}
+
+/**
+ * 草稿 id 查升格对照表的结果：
+ *   promoted — 升格成了 to
+ *   absent   — 这一版的对照表确定没有它
+ *   unknown  — 查不了（h1 不可用、旧 root 没有对照表、网络错……），调用方按老办法处理
+ */
+export type PromotionLookup =
+    | { status: 'promoted'; to: string }
+    | { status: 'absent' }
+    | { status: 'unknown' };
 interface LatestPointer { commitId?: string }
 
 
@@ -166,6 +183,28 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
     }
 
+    /** 查升格对照表：指针 → root.promotionShards → 分片。只读当前指针指向的那一版 */
+    async function resolvePromotion(id: string): Promise<PromotionLookup> {
+        if (!isValidItemId(id)) return { status: 'absent' };
+        try {
+            const pointer = await getPointer<H1Pointer>('h1/manifest-root.json');
+            if (!pointer.root) return { status: 'unknown' };
+            const root = await getImmutable<H1RootDoc>(`${base}/h1/roots/${pointer.root}`);
+            const shards = root.promotionShards;
+            if (!shards || typeof shards !== 'object') return { status: 'unknown' };
+            const shardKey = id.slice(-root.shardKeyLength);
+            const shardHash = shards[shardKey];
+            if (!shardHash) return { status: 'absent' };
+            const shard = await getImmutable<Record<string, string>>(`${base}/h1/promotions/${shardKey}.${shardHash}.json`);
+            const to = shard[id];
+            if (typeof to === 'string' && to !== id && isValidItemId(to)) return { status: 'promoted', to };
+            return { status: 'absent' };
+        } catch (err) {
+            console.warn(`[item-data] 查 ${id} 的升格对照表失败：${(err as Error).message}`);
+            return { status: 'unknown' };
+        }
+    }
+
     /**
      * 取一条条目。确定不存在返回 null；回退路径也失败（网络错、5xx）则抛错。
      */
@@ -182,7 +221,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         return hit ? { ...hit, source: 'current' } : null;
     }
 
-    return { getItem };
+    return { getItem, resolvePromotion };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -192,8 +231,17 @@ export function defaultItemDataBase(): string {
 
 let _default: ReturnType<typeof createItemFetcher> | null = null;
 
+function defaultFetcher(): ReturnType<typeof createItemFetcher> {
+    if (!_default) _default = createItemFetcher({ base: defaultItemDataBase() });
+    return _default;
+}
+
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
 export function getItemServer(id: string): Promise<ItemFetchResult | null> {
-    if (!_default) _default = createItemFetcher({ base: defaultItemDataBase() });
-    return _default.getItem(id);
+    return defaultFetcher().getItem(id);
+}
+
+/** 草稿 id 查升格对照表（同一个取数实例，指针与 root 缓存共用） */
+export function getPromotionServer(id: string): Promise<PromotionLookup> {
+    return defaultFetcher().resolvePromotion(id);
 }

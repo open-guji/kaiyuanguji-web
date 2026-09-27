@@ -9,6 +9,8 @@
  *   cos://{bucket}/h1/entry/<id>.<hash8>.json      内容寻址，Cache-Control: immutable 1 年
  *   cos://{bucket}/h1/manifest/<后缀2位>.<hash8>.json  id→hash8 分片，分片本身也按
  *                                                   内容哈希命名，immutable 长缓存
+ *   cos://{bucket}/h1/promotions/<后缀2位>.<hash8>.json 升格对照表分片（PH）：{草稿id: 正式id}，
+ *                                                   列在 root 的 promotionShards 里，immutable
  *   cos://{bucket}/h1/roots/<dataCommitKey>.json    本次发布的版本根清单（列出
  *                                                   本版全部 manifest 分片文件名），
  *                                                   immutable 长缓存
@@ -17,8 +19,8 @@
  *   cos://{bucket}/h1/_meta/roots-history.json      发布过的 root commit 历史
  *                                                   （ledger），供算「最近 N 个」
  *
- * 四批按序上传（S3 在 A3 三批基础上插入 roots）：
- *   ① 全部新增/变化的 entry ② 变化的 manifest 分片 ③ 本轮 roots/<key>.json
+ * 四批按序上传（S3 在 A3 三批基础上插入 roots；PH 在 ② 后插入 ②b 升格对照表分片）：
+ *   ① 全部新增/变化的 entry ② 变化的 manifest 分片 ②b 变化的升格对照表分片 ③ 本轮 roots/<key>.json
  *   ④ manifest-root.json（指针，最后翻转）
  * 前一批有任何失败就不进下一批：exit(2)，state 不落，整轮重试。
  *
@@ -140,13 +142,18 @@ function cacheControlFor(relative) {
 const BATCHES = [
     { key: 'entry', label: '① entry', match: (rel) => rel.startsWith('entry/'), retain: true },
     { key: 'manifest', label: '② manifest 分片', match: (rel) => rel.startsWith('manifest/'), retain: false, skipOrphans: true },
+    { key: 'promotions', label: '②b 升格对照表分片', match: (rel) => rel.startsWith('promotions/'), retain: false, skipOrphans: true },
     { key: 'roots', label: '③ roots', match: (rel) => rel.startsWith('roots/'), retain: false, skipOrphans: true },
     { key: 'pointer', label: '④ manifest-root（指针）', match: (rel) => rel === 'manifest-root.json', retain: false, skipOrphans: true },
 ];
 
+// PH：升格对照表分片列在 root 的 promotionShards 里，与 manifest 分片同一套在用判定
+const PROMOTION_SHARD_SETS = [{ subdir: 'promotions', field: 'promotionShards', label: '升格对照表' }];
+
 const files = walk(DATA_DIR);
 const entryFiles = files.filter(f => f.relative.startsWith('entry/'));
 const manifestFiles = files.filter(f => f.relative.startsWith('manifest/'));
+const promotionFiles = files.filter(f => f.relative.startsWith('promotions/'));
 const rootsBatchFiles = files.filter(f => f.relative.startsWith('roots/'));
 const pointerFiles = files.filter(f => f.relative === 'manifest-root.json');
 
@@ -162,7 +169,7 @@ console.log(`  bucket: ${BUCKET}`);
 console.log(`  region: ${REGION}`);
 console.log(`  source: ${DATA_DIR}`);
 console.log(`  target: cos://${BUCKET}/${H1_PREFIX}/`);
-console.log(`  local:  entry ${entryFiles.length} 个（${(entryFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB），manifest 分片 ${manifestFiles.length} 个，roots ${rootsBatchFiles.length} 个（本轮 commit=${newCommit}），pointer ${pointerFiles.length} 个`);
+console.log(`  local:  entry ${entryFiles.length} 个（${(entryFiles.reduce((s, f) => s + f.size, 0) / 1024 / 1024).toFixed(1)} MB），manifest 分片 ${manifestFiles.length} 个，升格对照表分片 ${promotionFiles.length} 个，roots ${rootsBatchFiles.length} 个（本轮 commit=${newCommit}），pointer ${pointerFiles.length} 个`);
 console.log(`  h1-roots-keep: ${ROOTS_KEEP}，staging-pointer-key: ${STAGING_POINTER_KEY ?? '（未配置）'}`);
 console.log(`  mode:   ${DRY_RUN ? 'DRY RUN（不联网、不需要 COS 凭据）' : 'UPLOAD'}\n`);
 
@@ -248,7 +255,7 @@ async function main() {
         // DRYRUN_ROOTS_STORE_FILE，两次相邻提交各跑一次就能看到"两个 root
         // 同时存在""孤儿判定按在用集合走"这些效果，而不是每次从空桶算起。
         const rootsBackend = createDryRunRootsBackend(DRYRUN_ROOTS_STORE_FILE);
-        const manifestOrRootsBatch = initialPlan.uploadsByBatch.filter(b => b.key === 'manifest' || b.key === 'roots');
+        const manifestOrRootsBatch = initialPlan.uploadsByBatch.filter(b => b.key === 'manifest' || b.key === 'promotions' || b.key === 'roots');
         for (const batch of manifestOrRootsBatch) {
             for (const file of batch.upload) {
                 await rootsBackend.writeText(`${H1_PREFIX}/${file.relative}`, readFileSync(file.full, 'utf-8'));
@@ -258,7 +265,7 @@ async function main() {
             h1Prefix: H1_PREFIX, manifestSubdir: 'manifest', rootsSubdir: 'roots',
             pointerKey: POINTER_KEY, stagingPointerKey: STAGING_POINTER_KEY,
             ledgerKey: ROOTS_LEDGER_KEY, keepN: ROOTS_KEEP, newCommit, newRootDoc,
-            shortCacheControl: SHORT_CACHE,
+            shortCacheControl: SHORT_CACHE, extraShardSets: PROMOTION_SHARD_SETS,
         });
         logRootsRetentionPlan('在用 root 集合（dry-run 模拟）', retentionStats);
         // 指针最后翻转（跟真实路径同一个顺序）
@@ -293,7 +300,7 @@ async function main() {
 
     // ─── ①②③ 按序：entry → manifest 分片 → roots/<commit>.json（指针留到最后翻转） ───
     const uploadBatchByKey = Object.fromEntries(plan.uploadsByBatch.map(b => [b.key, b]));
-    for (const key of ['entry', 'manifest', 'roots']) {
+    for (const key of ['entry', 'manifest', 'promotions', 'roots']) {
         const batch = uploadBatchByKey[key];
         await runUploadBatch(batch.label, batch.upload, (file) =>
             cosOps.uploadOne(file, `${H1_PREFIX}/${file.relative}`, cacheControlFor(file.relative), defaultContentTypeFor(file.relative)));
@@ -305,7 +312,7 @@ async function main() {
         h1Prefix: H1_PREFIX, manifestSubdir: 'manifest', rootsSubdir: 'roots',
         pointerKey: POINTER_KEY, stagingPointerKey: STAGING_POINTER_KEY,
         ledgerKey: ROOTS_LEDGER_KEY, keepN: ROOTS_KEEP, newCommit, newRootDoc,
-        shortCacheControl: SHORT_CACHE,
+        shortCacheControl: SHORT_CACHE, extraShardSets: PROMOTION_SHARD_SETS,
     });
     logRootsRetentionPlan('在用 root 集合（h1/_meta/roots-history.json）', retentionStats);
 

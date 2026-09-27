@@ -182,6 +182,84 @@ describe('createItemFetcher.getItem', () => {
     });
 });
 
+describe('createItemFetcher.resolvePromotion（PH）', () => {
+    const DRAFT = '11pcgxhot4bnk';   // 分片键 'nk'
+    const PROD = '96kzii6z28';
+    function promoRoutes(extra: Routes = {}): Routes {
+        return {
+            [`${BASE}/h1/manifest-root.json`]: { version: 2, root: 'r1.json' },
+            [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: {}, promotionShards: { nk: 'pnk00000' } },
+            [`${BASE}/h1/promotions/nk.pnk00000.json`]: { [DRAFT]: PROD, '22pcgxhot4bnk': '22pcgxhot4bnk' },
+            ...extra,
+        };
+    }
+
+    it('命中：指针 → root.promotionShards → 分片，返回正式 id', async () => {
+        const { f, calls } = make(promoRoutes());
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([
+            `${BASE}/h1/manifest-root.json`,
+            `${BASE}/h1/roots/r1.json`,
+            `${BASE}/h1/promotions/nk.pnk00000.json`,
+        ]);
+    });
+
+    it('分片里没有这个 id → absent', async () => {
+        const { f } = make(promoRoutes());
+        expect(await f.resolvePromotion('33pcgxhot4bnk')).toEqual({ status: 'absent' });
+    });
+
+    it('root 里没有这个后缀的分片 → absent，不再多发请求', async () => {
+        const { f, calls } = make(promoRoutes());
+        expect(await f.resolvePromotion('11pcgxhot4zz')).toEqual({ status: 'absent' });
+        expect(calls).toHaveLength(2);
+    });
+
+    it('空对照表（promotionShards 为 {}）→ absent', async () => {
+        const { f } = make(promoRoutes({ [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: {}, promotionShards: {} } }));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'absent' });
+    });
+
+    it('指向自己的记录不算升格 → absent', async () => {
+        const { f } = make(promoRoutes());
+        expect(await f.resolvePromotion('22pcgxhot4bnk')).toEqual({ status: 'absent' });
+    });
+
+    it('旧 root（没有 promotionShards 字段）→ unknown', async () => {
+        const { f } = make(h1Routes());
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'unknown' });
+    });
+
+    it('旧格式指针（无 root 字段）→ unknown', async () => {
+        const { f } = make({ [`${BASE}/h1/manifest-root.json`]: { version: 1 } });
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'unknown' });
+    });
+
+    it('分片网络错 / 5xx → unknown（不当成「没升格」）', async () => {
+        const a = make(promoRoutes({ [`${BASE}/h1/promotions/nk.pnk00000.json`]: 'THROW' }));
+        expect(await a.f.resolvePromotion(DRAFT)).toEqual({ status: 'unknown' });
+        const b = make(promoRoutes({ [`${BASE}/h1/promotions/nk.pnk00000.json`]: 503 }));
+        expect(await b.f.resolvePromotion(DRAFT)).toEqual({ status: 'unknown' });
+    });
+
+    it('非法 id → absent，一次请求都不发', async () => {
+        const { f, calls } = make(promoRoutes());
+        expect(await f.resolvePromotion('../etc')).toEqual({ status: 'absent' });
+        expect(calls).toHaveLength(0);
+    });
+
+    it('与 getItem 共用指针与 root 缓存：先取条目再查升格，只多取一片对照表', async () => {
+        const routes = { ...h1Routes(), ...promoRoutes({
+            [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: { '9c': 's9c00000' }, promotionShards: { nk: 'pnk00000' } },
+        }) };
+        const { f, calls } = make(routes);
+        await f.getItem(ID);
+        const before = calls.length;
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.slice(before).map((u) => u.split('?')[0])).toEqual([`${BASE}/h1/promotions/nk.pnk00000.json`]);
+    });
+});
+
 describe('summarizeItem', () => {
     it('作品：作者一行、卷数、简介（description 为 {text}）', () => {
         const s = summarizeItem({
