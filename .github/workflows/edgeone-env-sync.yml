@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: list=列项目与变量名；dry-run=只报要写哪些；sync=真写
+        description: list=列项目与变量名；dry-run=只报要写哪些；sync=真写；set=按 set_json／gen_keys 写到 targets
         required: true
         default: list
         type: choice
-        options: [list, dry-run, sync]
+        options: [list, dry-run, sync, set]
       source:
         description: 源项目名（旧正式站）
         required: false
@@ -21,6 +21,18 @@ on:
         description: 目标项目名
         required: false
         default: kyg-ssr-spike
+      targets:
+        description: set 模式：逗号分隔的项目名（每个写同样的值）
+        required: false
+        default: 'kaiyuanguji,kyg-ssr-spike'
+      set_json:
+        description: set 模式：{"变量名":"值"}，只放非机密值（密钥用 gen_keys）
+        required: false
+        default: ''
+      gen_keys:
+        description: set 模式：逗号分隔，随机生成的密钥变量名（已有则沿用，不轮换）
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -36,4 +48,7 @@ jobs:
           MODE: ${{ inputs.mode }}
           SOURCE: ${{ inputs.source }}
           TARGET: ${{ inputs.target }}
+          TARGETS: ${{ inputs.targets }}
+          SET_JSON: ${{ inputs.set_json }}
+          GEN_KEYS: ${{ inputs.gen_keys }}
         run: python3 ops/edgeone-env-sync.py
