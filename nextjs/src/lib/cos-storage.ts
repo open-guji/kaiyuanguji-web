@@ -100,19 +100,39 @@ export async function getCosSearchBaseUrl(): Promise<string> {
     return `${COS_BASE}/v/${commit}/search`;
 }
 
-// ─── h1（哈希寻址）取数路径：读 root → 读条目所在分片 → 取 entry ───
+// ─── h1（哈希寻址）取数路径：读指针 → 读 root → 读条目所在分片 → 取 entry ───
 //
 // 与现行路径的关键区别：entry URL 本身带内容哈希（immutable，可无限期强缓存）；
 // 取一条条目要先解析它落在哪个 manifest 分片（内存缓存，同一会话内同分片的
-// 其余条目免费复用），比现行路径多一次往返，换来的是「改一条不冲全站」。
-// 见任务书 A3-部分更新-哈希寻址、[29 卡](../../../../overview/项目进展/古籍索引网站/进度/G-工具分发与网站/29-架构原型实测.md)。
+// 其余条目免费复用），比现行路径多两次往返（root、分片各一次），换来的是
+// 「改一条不冲全站」。见任务书 A3-部分更新-哈希寻址、S3-h1版本根清单、
+// [29 卡](../../../../overview/项目进展/古籍索引网站/进度/G-工具分发与网站/29-架构原型实测.md)。
+//
+// S3（h1 版本根清单，2026-09-27）：manifest 分片原本固定路径、原地覆盖，
+// 一次发布不是原子切换。改法：分片也按内容哈希命名，manifest-root.json 降级
+// 成一个「指向哪个 root」的短缓存指针，root 文档（`roots/<key>.json`）本身
+// 不可变、列出本版全部分片的文件名。取数因此变成四级：
+//   指针（manifest-root.json，短缓存）
+//   → root（roots/<key>.json，内容寻址，可长缓存）
+//   → 分片（manifest/<后缀>.<hash8>.json，内容寻址，可长缓存）
+//   → entry（entry/<id>.<hash8>.json，内容寻址，可长缓存）
+// 只有第一跳（指针）需要短缓存／不缓存去感知新发布，后三跳全部不可变。
 
 interface H1ManifestRoot {
+    version: number;
+    root: string; // roots/ 下的文件名，如 "<dataCommitKey>.json"
+    generatedAt: string;
+    dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+}
+
+interface H1RootDoc {
+    version: number;
     shardKeyLength: number;
     shardSpace: number;
     shardCount: number;
     generatedAt: string;
     dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+    shards: Record<string, string>; // 分片后缀 → 该分片文件的内容哈希（hash8）
 }
 
 function getH1BaseUrl(): string {
@@ -120,8 +140,9 @@ function getH1BaseUrl(): string {
 }
 
 let _h1ManifestRootPromise: Promise<H1ManifestRoot> | null = null;
+let _h1RootDocPromise: Promise<H1RootDoc> | null = null;
 
-/** manifest-root.json 是短缓存（60–300s），不做 sessionStorage 之类的额外缓存，靠 HTTP 缓存本身。 */
+/** 指针本身短缓存（60–300s），不做 sessionStorage 之类的额外缓存，靠 HTTP 缓存本身。 */
 function resolveH1ManifestRoot(): Promise<H1ManifestRoot> {
     if (!_h1ManifestRootPromise) {
         _h1ManifestRootPromise = fetch(`${getH1BaseUrl()}/manifest-root.json`, { cache: 'no-store' })
@@ -137,40 +158,55 @@ function resolveH1ManifestRoot(): Promise<H1ManifestRoot> {
     return _h1ManifestRootPromise;
 }
 
-// 分片按 id → hash8 表，同一分片内的 id 只需拉一次，页面生命周期内内存缓存。
+/** root 文档不可变（同一 `root` 文件名内容恒定），可以放心 force-cache。 */
+function resolveH1RootDoc(): Promise<H1RootDoc> {
+    if (!_h1RootDocPromise) {
+        _h1RootDocPromise = resolveH1ManifestRoot()
+            .then(pointer => fetch(`${getH1BaseUrl()}/roots/${pointer.root}`, { cache: 'force-cache' }))
+            .then(r => {
+                if (!r.ok) throw new Error(`roots/<root> HTTP ${r.status}`);
+                return r.json() as Promise<H1RootDoc>;
+            })
+            .catch(err => {
+                _h1RootDocPromise = null;
+                throw err;
+            });
+    }
+    return _h1RootDocPromise;
+}
+
+/** 丢掉指针与 root 文档的内存缓存，下次会重新走一遍指针→root。见 fetchRawDetailH1 的 404 加固。 */
+function invalidateH1Root(): void {
+    _h1ManifestRootPromise = null;
+    _h1RootDocPromise = null;
+}
+
+// 分片按 "后缀.分片哈希" 做 key，同一分片内的 id 只需拉一次；分片本身内容
+// 寻址、可长缓存——不同哈希天然是不同 key，无需显式失效单个分片。
 const _h1ShardCache = new Map<string, Promise<Record<string, string>>>();
 
 function h1ShardKeyFor(id: string, shardKeyLength: number): string {
     return id.slice(-shardKeyLength);
 }
 
-/** 解析一个 id 当前的内容哈希；manifest 里没有这个 id 视同 404（条目不存在或已被移除）。 */
+/** 解析一个 id 当前的内容哈希；root 里没有它所在的分片、或分片里没有它，都视同 404。 */
 async function resolveH1EntryHash(id: string): Promise<string | null> {
-    const root = await resolveH1ManifestRoot();
+    const root = await resolveH1RootDoc();
     const shardKey = h1ShardKeyFor(id, root.shardKeyLength);
-    let shardPromise = _h1ShardCache.get(shardKey);
+    const shardHash = root.shards[shardKey];
+    if (!shardHash) return null;
+    const cacheKey = `${shardKey}.${shardHash}`;
+    let shardPromise = _h1ShardCache.get(cacheKey);
     if (!shardPromise) {
-        shardPromise = fetch(`${getH1BaseUrl()}/manifest/${shardKey}.json`, { cache: 'no-store' })
+        shardPromise = fetch(`${getH1BaseUrl()}/manifest/${shardKey}.${shardHash}.json`, { cache: 'force-cache' })
             .then(r => {
-                if (!r.ok) throw new Error(`manifest/${shardKey}.json HTTP ${r.status}`);
+                if (!r.ok) throw new Error(`manifest/${shardKey}.${shardHash}.json HTTP ${r.status}`);
                 return r.json() as Promise<Record<string, string>>;
             });
-        _h1ShardCache.set(shardKey, shardPromise);
+        _h1ShardCache.set(cacheKey, shardPromise);
     }
     const shard = await shardPromise;
     return shard[id] ?? null;
-}
-
-/**
- * 丢掉一个 id 所在分片的内存缓存，下次 resolveH1EntryHash 会重新 fetch。
- *
- * 用于 entry 404 时的加固（见 fetchRawDetailH1）：分片有短缓存（60–300s）＋
- * 页面内存缓存两层，都可能比 COS 上的最新状态慢半拍——尤其 sync 端「旧 entry
- * 保留 7 天」意味着旧哈希文件仍在，但分片一旦更新到新哈希，旧 URL 就会 404。
- */
-async function invalidateH1Shard(id: string): Promise<void> {
-    const root = await resolveH1ManifestRoot();
-    _h1ShardCache.delete(h1ShardKeyFor(id, root.shardKeyLength));
 }
 
 // entry/<id>.<hash8>.json 本身按内容哈希寻址，可以放心用 force-cache（浏览器永久缓存，
@@ -189,11 +225,11 @@ function fetchH1EntryOnce(canonicalId: string, hash: string): Promise<Response> 
 }
 
 /**
- * entry 404 时的加固：分片缓存（内存 + HTTP 短缓存）可能比 COS 落后一步，
- * 指向一个已经不存在的旧哈希——sync 端「新 entry 上线」与「分片更新」隔着
- * 两个上传批次，加上前端自己的缓存分层，短暂的不一致是设计内允许的，不能让它
- * 直接变成读者看到的 404。策略：清掉分片缓存重取一次，hash 变了就再试一次
- * entry；两次都不行（或分片仍指向同一个 hash）才真的判 404。
+ * entry 404 时的加固：指针/root/分片缓存都可能比 COS 落后一步，指向一个
+ * 已经不存在的旧哈希——sync 端「新 entry 上线」与「指针翻转」隔着几个上传批次，
+ * 加上前端自己的缓存分层，短暂的不一致是设计内允许的，不能让它直接变成读者
+ * 看到的 404。策略：清掉指针＋root 缓存重新走一遍解析，hash 变了就再试一次
+ * entry；两次都不行（或重新解析后 hash 仍相同）才真的判 404。
  */
 async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unknown> | null> {
     let cached = _h1EntryCache.get(canonicalId);
@@ -207,13 +243,13 @@ async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unk
 
             let res = await fetchH1EntryOnce(canonicalId, hash);
             if (res.status === 404) {
-                await invalidateH1Shard(canonicalId);
+                invalidateH1Root();
                 const freshHash = await resolveH1EntryHash(canonicalId);
                 if (freshHash && freshHash !== hash) {
                     res = await fetchH1EntryOnce(canonicalId, freshHash);
                 }
-                // freshHash 为空或跟 hash 相同：分片本来就是最新的，entry 就是真 404，
-                // 不必再试第三次——上面这一次 res 仍是 404，走到下面统一报错分支。
+                // freshHash 为空或跟 hash 相同：指针/root 本来就是最新的，entry 就是
+                // 真 404，不必再试第三次——上面这一次 res 仍是 404，走到下面统一报错分支。
             }
 
             if (res.status === 404) {
@@ -246,6 +282,14 @@ async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unk
 // 文件头注释：relPath 与 items/<owner_id>/ 下的现行路径逐段对应。
 
 interface H1TextManifestRoot {
+    version: number;
+    root: string; // text-roots/ 下的文件名
+    generatedAt: string;
+    dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+}
+
+interface H1TextRootDoc {
+    version: number;
     shardKeyLength: number;
     shardSpace: number;
     shardCount: number;
@@ -253,9 +297,11 @@ interface H1TextManifestRoot {
     fileCount: number;
     generatedAt: string;
     dataCommit: { commitId?: string; productionCommitId?: string; textCommitId?: string };
+    shards: Record<string, string>; // owner 后缀 → 该分片文件的内容哈希（hash8）
 }
 
 let _h1TextManifestRootPromise: Promise<H1TextManifestRoot> | null = null;
+let _h1TextRootDocPromise: Promise<H1TextRootDoc> | null = null;
 
 function resolveH1TextManifestRoot(): Promise<H1TextManifestRoot> {
     if (!_h1TextManifestRootPromise) {
@@ -272,34 +318,56 @@ function resolveH1TextManifestRoot(): Promise<H1TextManifestRoot> {
     return _h1TextManifestRootPromise;
 }
 
-// 分片按 owner_id → { 相对路径 → hash8 } 表；同一分片内其余 owner 的其余文件免费复用。
+/** root 文档不可变，可以放心 force-cache。 */
+function resolveH1TextRootDoc(): Promise<H1TextRootDoc> {
+    if (!_h1TextRootDocPromise) {
+        _h1TextRootDocPromise = resolveH1TextManifestRoot()
+            .then(pointer => fetch(`${getH1BaseUrl()}/text-roots/${pointer.root}`, { cache: 'force-cache' }))
+            .then(r => {
+                if (!r.ok) throw new Error(`text-roots/<root> HTTP ${r.status}`);
+                return r.json() as Promise<H1TextRootDoc>;
+            })
+            .catch(err => {
+                _h1TextRootDocPromise = null;
+                throw err;
+            });
+    }
+    return _h1TextRootDocPromise;
+}
+
+function invalidateH1TextRoot(): void {
+    _h1TextManifestRootPromise = null;
+    _h1TextRootDocPromise = null;
+}
+
+// 分片按 "后缀.分片哈希" 做 key：owner_id → { 相对路径 → hash8 } 表；同一分片内
+// 其余 owner 的其余文件免费复用，分片本身内容寻址、可长缓存。
 const _h1TextShardCache = new Map<string, Promise<Record<string, Record<string, string>>>>();
 
 function h1TextShardKeyFor(ownerId: string, shardKeyLength: number): string {
     return ownerId.slice(-shardKeyLength);
 }
 
-async function resolveH1TextShard(ownerId: string, shardKeyLength: number): Promise<Record<string, Record<string, string>>> {
-    const shardKey = h1TextShardKeyFor(ownerId, shardKeyLength);
-    let shardPromise = _h1TextShardCache.get(shardKey);
+async function resolveH1TextShard(ownerId: string, root: H1TextRootDoc): Promise<Record<string, Record<string, string>>> {
+    const shardKey = h1TextShardKeyFor(ownerId, root.shardKeyLength);
+    const shardHash = root.shards[shardKey];
+    if (!shardHash) return {};
+    const cacheKey = `${shardKey}.${shardHash}`;
+    let shardPromise = _h1TextShardCache.get(cacheKey);
     if (!shardPromise) {
-        shardPromise = fetch(`${getH1BaseUrl()}/text-manifest/${shardKey}.json`, { cache: 'no-store' })
+        shardPromise = fetch(`${getH1BaseUrl()}/text-manifest/${shardKey}.${shardHash}.json`, { cache: 'force-cache' })
             .then(r => {
-                if (!r.ok) throw new Error(`text-manifest/${shardKey}.json HTTP ${r.status}`);
+                if (!r.ok) throw new Error(`text-manifest/${shardKey}.${shardHash}.json HTTP ${r.status}`);
                 return r.json() as Promise<Record<string, Record<string, string>>>;
             });
-        _h1TextShardCache.set(shardKey, shardPromise);
+        _h1TextShardCache.set(cacheKey, shardPromise);
     }
     return shardPromise;
 }
 
-async function invalidateH1TextShard(ownerId: string, shardKeyLength: number): Promise<void> {
-    _h1TextShardCache.delete(h1TextShardKeyFor(ownerId, shardKeyLength));
-}
-
 async function resolveH1TextHash(ownerId: string, relPath: string): Promise<string | null> {
-    const root = await resolveH1TextManifestRoot();
-    const shard = await resolveH1TextShard(ownerId, root.shardKeyLength);
+    const root = await resolveH1TextRootDoc();
+    const shard = await resolveH1TextShard(ownerId, root);
     return shard[ownerId]?.[relPath] ?? null;
 }
 
@@ -321,13 +389,12 @@ function insertH1TextHash(relPath: string, hash: string): string {
  */
 async function fetchH1TextRaw(ownerId: string, relPath: string): Promise<string | null> {
     try {
-        const root = await resolveH1TextManifestRoot();
         let hash = await resolveH1TextHash(ownerId, relPath);
         if (!hash) return null;
 
         let res = await fetch(`${getH1BaseUrl()}/text/${encodeURIComponent(ownerId)}/${insertH1TextHash(relPath, hash)}`, { cache: 'force-cache' });
         if (res.status === 404) {
-            await invalidateH1TextShard(ownerId, root.shardKeyLength);
+            invalidateH1TextRoot();
             const freshHash = await resolveH1TextHash(ownerId, relPath);
             if (freshHash && freshHash !== hash) {
                 hash = freshHash;

@@ -23,22 +23,35 @@
  *     （相对路径 = collated_edition/… 或 full_text/…，相对 owner 目录，与现行
  *     items/<owner_id>/… 下的路径逐段对应，只在最后一段的文件名里插入哈希，
  *     不改目录层级——前端按 owner+relPath 反查 hash 后能照抄现行路径拼 URL）
- *   - text-manifest/<owner id 后缀 2 位>.json      owner_id → { 相对路径 → hash8 }
- *     （按 owner id **后缀**分片，与 entry 的 manifest 同一套理由：这批
- *     snowflake id 前几位同批几乎恒定，前缀分片会把条目堆进一片，见 29 卡 §2.3）
- *   - text-manifest-root.json                       { shardKeyLength, shardSpace,
- *     shardCount, ownerCount, fileCount, generatedAt, dataCommit }
- *     （单独一份，不复用 entry 的 manifest-root.json——两者是不同的哈希空间：
- *     entry 的 key 是「条目 id」，这里的 key 是「owner_id + 相对路径」二元组，
- *     shardCount／ownerCount／fileCount 对不上号，硬塞进同一份文件会让人误读
- *     两套统计，二选一里选了「另起」）
+ *   - text-manifest/<owner id 后缀 2 位>.<hash8>.json  owner_id → { 相对路径 →
+ *     hash8 }；分片本身也按内容哈希命名（S3，见下方"版本根清单"），按 owner id
+ *     **后缀**分片，与 entry 的 manifest 同一套理由：这批 snowflake id 前几位
+ *     同批几乎恒定，前缀分片会把条目堆进一片，见 29 卡 §2.3
+ *   - text-roots/<dataCommitKey>.json                本次发布的文本版本根
+ *     清单：{ shardKeyLength, shardSpace, shardCount, ownerCount, fileCount,
+ *     generatedAt, dataCommit, shards: {后缀→hash8} }，不可变
+ *   - text-manifest-root.json                        降级成一个指针：
+ *     { version: 2, root: "<dataCommitKey>.json", generatedAt, dataCommit }，
+ *     短缓存（单独一份指针，不复用 entry 的 manifest-root.json——两者是不同的
+ *     哈希空间：entry 的 key 是「条目 id」，这里的 key 是「owner_id + 相对
+ *     路径」二元组，分开维护更不容易读混）
  *   - .text-manifest-state.json                     上一轮 `${owner}/${relPath}`
  *     → hash8（本脚本自用，供增量对比／垃圾回收，不上传 COS）
+ *
+ * S3（h1 版本根清单，2026-09-27）：与 bundle-hashed.mjs（entry）同一次改造，
+ * dataCommitKey 用的是同一个函数（对 dataCommit 三个字段整体哈希，而不是只用
+ * 某一个仓的 commit）——这一点对 text lane 尤其关键：整理本／全文内容由
+ * book-text 的 textCommitId 决定，draft 不变、只有 book-text 更新是常态，若
+ * key 只取 draft 的 commitId，会出现"同一个 roots/<key>.json 文件名，内容却
+ * 因为 book-text 单独更新而变了"这种破坏内容寻址前提的情况；哈希三个字段
+ * 整体则保证任一仓变化 key 就跟着变。分片／roots 的孤儿判定也相应改为「不被
+ * 任何在用 root 引用」，由 sync 端的 `runRootsRetention` 负责，本脚本只管产出。
  *
  * public/data-h1-text/ **跨次运行保留**（不像 bundle-data.mjs 那样每次清空
  * OUT_DIR）：未变的文件不需要重写，sync 端也不需要重传；只有本轮新增/变化的
  * key 才会有新文件，旧哈希文件会被当场清理（垃圾回收）。首次运行或
- * H1_TEXT_CLEAN=1 时按全量对待。
+ * H1_TEXT_CLEAN=1 时按全量对待。text-roots/ 目录例外：每轮只保留本轮这一个
+ * 文件（本地暂存区没有跨版本保留的必要）。
  *
  * 用法：
  *   node scripts/bundle-hashed-text.mjs
@@ -49,7 +62,7 @@
 import { existsSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSync } from 'fs';
 import { join, resolve, dirname, extname, basename } from 'path';
 import { fileURLToPath } from 'url';
-import { ensureDir, readJson, hash8, writeIfChanged, walk } from './lib/h1-hash-common.mjs';
+import { ensureDir, readJson, hash8, writeHashedShards, dataCommitKey, walk } from './lib/h1-hash-common.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -68,6 +81,7 @@ const SHARD_SPACE = 36 ** SHARD_KEY_LEN;
 
 const TEXT_DIR = join(OUT_DIR, 'text');
 const MANIFEST_DIR = join(OUT_DIR, 'text-manifest');
+const ROOTS_DIR = join(OUT_DIR, 'text-roots');
 const MANIFEST_ROOT_FILE = join(OUT_DIR, 'text-manifest-root.json');
 const STATE_FILE = join(OUT_DIR, '.text-manifest-state.json');
 
@@ -167,11 +181,10 @@ function gcStaleTextFiles(oldState, newState) {
     return removed;
 }
 
-// ─── 4. manifest 分片：owner_id → { 相对路径 → hash8 }，按 owner_id 后缀分片 ───
+// ─── 4. manifest 分片：owner_id → { 相对路径 → hash8 }，按 owner_id 后缀分片，
+//        分片本身也按内容哈希命名 ───
 
 function bundleManifest(newState) {
-    ensureDir(MANIFEST_DIR);
-
     // key 是 `${ownerId}/${relPath}`；重新按 owner 归组，再按 owner 后缀分片。
     const byOwner = {};
     for (const [key, h] of Object.entries(newState)) {
@@ -187,54 +200,52 @@ function bundleManifest(newState) {
         (shards[k] ??= {})[ownerId] = relMap;
     }
 
-    let changedShards = 0;
-    let totalBytes = 0;
-    for (const [k, obj] of Object.entries(shards)) {
-        const json = Buffer.from(JSON.stringify(obj));
-        totalBytes += json.length;
-        if (writeIfChanged(join(MANIFEST_DIR, `${k}.json`), json)) changedShards++;
-    }
-
-    let removedShards = 0;
-    if (existsSync(MANIFEST_DIR)) {
-        for (const fname of readdirSync(MANIFEST_DIR)) {
-            const k = fname.slice(0, -'.json'.length);
-            if (!(k in shards)) {
-                unlinkSync(join(MANIFEST_DIR, fname));
-                removedShards++;
-            }
-        }
-    }
-
-    return { shardCount: Object.keys(shards).length, changedShards, removedShards, totalBytes };
+    return writeHashedShards(MANIFEST_DIR, shards);
 }
 
-// ─── 5. text-manifest-root.json ───
+// ─── 5. dataCommit（供 roots 文档与指针共用） ───
 
-function bundleManifestRoot(shardStat, scanStat) {
-    let dataCommit = { commitId: 'unknown', productionCommitId: 'unknown', textCommitId: 'unknown' };
-    if (existsSync(VERSION_FILE)) {
-        const v = readJson(VERSION_FILE);
-        dataCommit = {
-            commitId: v.commitId,
-            productionCommitId: v.productionCommitId,
-            textCommitId: v.textCommitId,
-        };
-    } else {
+function readDataCommit() {
+    if (!existsSync(VERSION_FILE)) {
         console.warn(`  ⚠ ${VERSION_FILE} 不存在，dataCommit 留 unknown`);
+        return { commitId: 'unknown', productionCommitId: 'unknown', textCommitId: 'unknown' };
     }
+    const v = readJson(VERSION_FILE);
+    return { commitId: v.commitId, productionCommitId: v.productionCommitId, textCommitId: v.textCommitId };
+}
 
-    const root = {
+// ─── 6. text-roots/<dataCommitKey>.json（版本根清单）＋ text-manifest-root.json（指针） ───
+
+function bundleRootsAndPointer(shardStat, scanStat, dataCommit) {
+    const commitKey = dataCommitKey(dataCommit);
+    const generatedAt = new Date().toISOString();
+
+    const rootDoc = {
+        version: 1,
         shardKeyLength: SHARD_KEY_LEN,
         shardSpace: SHARD_SPACE,
         shardCount: shardStat.shardCount,
         ownerCount: scanStat.ownerCount,
         fileCount: scanStat.scanned,
-        generatedAt: new Date().toISOString(),
+        generatedAt,
         dataCommit,
+        shards: shardStat.shardHashes,
     };
-    writeFileSync(MANIFEST_ROOT_FILE, JSON.stringify(root));
-    return root;
+
+    ensureDir(ROOTS_DIR);
+    writeFileSync(join(ROOTS_DIR, `${commitKey}.json`), JSON.stringify(rootDoc));
+    let removedOldRoots = 0;
+    for (const fname of readdirSync(ROOTS_DIR)) {
+        if (fname !== `${commitKey}.json`) {
+            unlinkSync(join(ROOTS_DIR, fname));
+            removedOldRoots++;
+        }
+    }
+
+    const pointer = { version: 2, root: `${commitKey}.json`, generatedAt, dataCommit };
+    writeFileSync(MANIFEST_ROOT_FILE, JSON.stringify(pointer));
+
+    return { commitKey, rootDoc, removedOldRoots };
 }
 
 // ─── main ───
@@ -254,13 +265,15 @@ function main() {
 
     const removedFiles = gcStaleTextFiles(oldState, newState);
     const shardStat = bundleManifest(newState);
-    const root = bundleManifestRoot(shardStat, { scanned, ownerCount });
+    const dataCommit = readDataCommit();
+    const { commitKey, removedOldRoots } = bundleRootsAndPointer(shardStat, { scanned, ownerCount }, dataCommit);
 
     writeFileSync(STATE_FILE, JSON.stringify(newState));
 
     console.log(`TEXT 扫描 ${scanned} 份（${ownerCount} 个 owner），新写 ${newFilesWritten} 个文件（${(bytesWritten / 1024 / 1024).toFixed(2)} MB），回收旧哈希文件 ${removedFiles} 个`);
     console.log(`MANIFEST ${shardStat.shardCount} 片（理论空间 ${SHARD_SPACE}），本轮改动 ${shardStat.changedShards} 片，回收 ${shardStat.removedShards} 片，合计 ${(shardStat.totalBytes / 1024).toFixed(1)} KB`);
-    console.log(`ROOT  text-manifest-root.json → shardCount=${root.shardCount} ownerCount=${root.ownerCount} fileCount=${root.fileCount} dataCommit=${root.dataCommit.commitId?.slice(0, 8)}/${root.dataCommit.productionCommitId?.slice(0, 8)}/${root.dataCommit.textCommitId?.slice(0, 8)}`);
+    console.log(`ROOTS text-roots/${commitKey}.json（本地清理旧 roots 文件 ${removedOldRoots} 个）ownerCount=${ownerCount} fileCount=${scanned} dataCommit=${dataCommit.commitId?.slice(0, 8)}/${dataCommit.productionCommitId?.slice(0, 8)}/${dataCommit.textCommitId?.slice(0, 8)}`);
+    console.log(`POINTER text-manifest-root.json → root=${commitKey}.json`);
     console.log(`\n✅ bundle-hashed-text complete → ${OUT_DIR}\n`);
 }
 

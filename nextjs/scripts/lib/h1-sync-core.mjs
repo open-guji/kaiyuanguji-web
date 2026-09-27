@@ -15,6 +15,9 @@
  *   - 恰好一个 batch 标记 retain: true（即「保留 7 天再删」，如 entry），
  *     它的孤儿走 h1-orphans.mjs 的状态机，孤儿表放 config.orphansKey；
  *     其余 batch 的孤儿（本地已消失）当场删，没有保留期顾虑。
+ *   - manifest／roots 批标 skipOrphans: true——S3（h1 版本根清单）把它们的孤儿
+ *     判定改成「不被任何在用 root 引用」，不再是「本地没有就删」，另见本文件
+ *     下方 runRootsRetention（算法在纯函数 h1-roots.mjs）。
  */
 
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
@@ -22,6 +25,10 @@ import { dirname } from 'path';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 import { planOrphans, serializeOrphansTable, parseOrphansTable } from './h1-orphans.mjs';
+import {
+    planLiveCommits, planShardRetention, planRootsFileRetention,
+    serializeRootsLedger, parseRootsLedger, commitFromRootFilename,
+} from './h1-roots.mjs';
 import { walk } from './h1-hash-common.mjs';
 
 const require = createRequire(import.meta.url);
@@ -156,6 +163,12 @@ export function planBatches(config, files, stateMap, localMd5) {
         const key = batchOf(rel);
         if (!key) continue; // 不认识的 rel（如布局迁移期的旧前缀），不动
         const batch = config.batches.find(b => b.key === key);
+        // S3（h1 版本根清单）：manifest／roots 批的孤儿不再是「本地没有就删」——
+        // 本轮本地只反映"这一个 commit"的内容，旧 commit 的分片/roots 文件
+        // 本来就不会出现在本地，用这里的逻辑判会把仍被"最近 N 个 root"引用的
+        // 文件当场误删。这两批的孤儿改由 runRootsRetention（h1-roots.mjs）按
+        // "在用 root 集合"另算，这里跳过，既不算保留候选也不算当场删除。
+        if (batch.skipOrphans) continue;
         if (batch.retain) retainOrphanCandidates.push(rel);
         else immediateOrphansToDelete.push(rel);
     }
@@ -327,3 +340,155 @@ export async function putOrphansTableToCos(cosOps, key, table, { shortCacheContr
 // `import ... from './h1-orphans.mjs'`，本文件已用它们实现上面两个函数，
 // 不重复转发（转发一份 `export {...} from` 与本文件顶部的 `import {...}`
 // 同名，多此一举）。
+
+// ─── S3（h1 版本根清单）：manifest／roots 的「在用 root」孤儿清理 ───
+//
+// 与上面的 COS 直连函数不同，这里的编排函数吃一个抽象的 backend（4 个方法：
+// readText/writeText/deleteKey/listPrefix），不是 cosOps 本身——这样同一套
+// 编排逻辑既能接真实 COS（createCosRootsBackend），也能接一个纯本地 JSON
+// 文件模拟的「假桶」（sync 脚本自己在 DRY_RUN 分支实现），dry-run 因此也能
+// 真正跑一遍在用集合计算与清理决策，而不是像别处 dry-run 那样只模拟一部分。
+
+/** 把 createCosOps() 的返回值包成 runRootsRetention 认识的 backend 形状。 */
+export function createCosRootsBackend(cosOps) {
+    return {
+        readText: (key) => cosOps.getObjectText(key),
+        writeText: (key, body, opts) => cosOps.putObjectText(key, body, opts),
+        deleteKey: (key) => cosOps.deleteOne(key),
+        listPrefix: async (prefix) => [...(await cosOps.listPrefixEtags(prefix)).keys()],
+    };
+}
+
+async function readTextOrAbort(backend, key, label) {
+    try {
+        return await backend.readText(key);
+    } catch (e) {
+        console.error(`\n❌ 读取 ${label}（${key}）失败（非「不存在」）：${e.message}。不敢猜测，整轮中止，ledger 不落。`);
+        process.exit(2);
+    }
+}
+
+async function readPointerCommit(backend, key, label) {
+    const raw = await readTextOrAbort(backend, key, label);
+    if (raw === null) return null; // 没有旧指针（首次发布，或未配置测试站指针）
+    try {
+        const doc = JSON.parse(raw);
+        if (typeof doc?.root !== 'string') return null; // 旧 schema（S3 之前）或异常内容，视同没有可用信息
+        return commitFromRootFilename(doc.root);
+    } catch {
+        return null;
+    }
+}
+
+async function readRootDocShards(backend, rootsPrefix, commit) {
+    const raw = await readTextOrAbort(backend, `${rootsPrefix}${commit}.json`, `${commit} 的 root 文档`);
+    if (raw === null) return {}; // 拉不到就当它没有分片贡献，不影响其余在用 commit 的保护范围
+    try {
+        const doc = JSON.parse(raw);
+        return doc?.shards && typeof doc.shards === 'object' ? doc.shards : {};
+    } catch {
+        return {};
+    }
+}
+
+/**
+ * 算「在用 root 集合」（当前指针 + 测试站指针 + 最近 N 个）、清理不再被任何
+ * 在用 root 引用的 manifest 分片与 roots 文件、把 ledger 收敛后写回。
+ *
+ * 必须在「entry/text、manifest 分片、roots 文件」三批全部上传成功之后、
+ * 「翻转 pointerKey 指向新 commit」之前调用——这样：
+ *   - 判定"在用"时读到的 currentPointerCommit 还是旧值，旧值与新值都会
+ *     被保护，不会有任何一刻的读者拿到已被清理的分片/root；
+ *   - 万一这一步失败中止，pointer 还没翻转，读者继续读旧版本，不受影响，
+ *     重跑整轮即可重试（清理是幂等的：对象已经不存在时删除本来就该视同成功，
+ *     COS deleteObject 对不存在的 key 本就不报错）。
+ *
+ * @param {object} backend  见上方 createCosRootsBackend；DRY_RUN 下调用方传
+ *        本地 JSON 模拟的假 backend。
+ * @param {object} config
+ * @param {string} config.h1Prefix
+ * @param {string} config.manifestSubdir   'manifest' | 'text-manifest'
+ * @param {string} config.rootsSubdir      'roots' | 'text-roots'
+ * @param {string} config.pointerKey       完整 COS key，如 `${h1Prefix}/manifest-root.json`
+ * @param {string|null} [config.stagingPointerKey]  完整 COS key；未配置传 null/undefined（今天的常态）
+ * @param {string} config.ledgerKey        完整 COS key，如 `${h1Prefix}/_meta/roots-history.json`
+ * @param {number} [config.keepN]          默认 5
+ * @param {string} config.newCommit        本轮新 commit key
+ * @param {{shards: Record<string,string>}} config.newRootDoc  本轮已经在手的 root 文档（不必再读一次）
+ * @param {string} config.shortCacheControl
+ */
+export async function runRootsRetention(backend, config) {
+    const {
+        h1Prefix, manifestSubdir, rootsSubdir, pointerKey, stagingPointerKey = null,
+        ledgerKey, keepN = 5, newCommit, newRootDoc, shortCacheControl,
+    } = config;
+
+    const manifestPrefix = `${h1Prefix}/${manifestSubdir}/`;
+    const rootsPrefix = `${h1Prefix}/${rootsSubdir}/`;
+
+    const currentPointerCommit = await readPointerCommit(backend, pointerKey, '当前指针');
+    const stagingPointerCommit = stagingPointerKey
+        ? await readPointerCommit(backend, stagingPointerKey, '测试站指针')
+        : null;
+
+    const ledgerRaw = await readTextOrAbort(backend, ledgerKey, 'roots-history ledger');
+    const ledger = ledgerRaw === null ? [] : parseRootsLedger(ledgerRaw);
+
+    const { liveCommitSet, prunedLedger, retiredCommits } = planLiveCommits({
+        ledger, newCommit, currentPointerCommit, stagingPointerCommit, keepN,
+    });
+
+    // 其余在用 commit（本轮新 commit 的 root 文档已经在手，不必再读一次）
+    const otherLiveCommits = [...liveCommitSet].filter((c) => c !== newCommit);
+    const otherShardsMaps = await Promise.all(
+        otherLiveCommits.map((c) => readRootDocShards(backend, rootsPrefix, c))
+    );
+    const liveShardsMaps = [newRootDoc.shards, ...otherShardsMaps];
+
+    const cosShardFiles = await backend.listPrefix(manifestPrefix);
+    const { toDelete: shardsToDelete, liveFileCount } = planShardRetention({ liveShardsMaps, cosShardFiles });
+
+    const cosRootFiles = await backend.listPrefix(rootsPrefix);
+    const { toDelete: rootsToDelete } = planRootsFileRetention({ liveCommitSet, cosRootFiles });
+
+    if (shardsToDelete.length > 0) {
+        const r = await runQueue(shardsToDelete, 80, (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
+        if (r.failures.length > 0) {
+            console.error(`\n❌ ${r.failures.length} 个 manifest 分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
+            process.exit(2);
+        }
+    }
+    if (rootsToDelete.length > 0) {
+        const r = await runQueue(rootsToDelete, 80, (rel) => backend.deleteKey(`${rootsPrefix}${rel}`), 'delete-root-retired');
+        if (r.failures.length > 0) {
+            console.error(`\n❌ ${r.failures.length} 个 roots 文件删除失败。ledger 不落，重跑整轮即可重试（删除幂等）。`);
+            process.exit(2);
+        }
+    }
+
+    await backend.writeText(ledgerKey, serializeRootsLedger(prunedLedger), {
+        contentType: 'application/json; charset=utf-8',
+        cacheControl: shortCacheControl,
+    });
+
+    return {
+        currentPointerCommit,
+        stagingPointerCommit,
+        liveCommitCount: liveCommitSet.size,
+        retiredCommitCount: retiredCommits.length,
+        shardsLive: liveFileCount,
+        shardsDeleted: shardsToDelete.length,
+        rootsDeleted: rootsToDelete.length,
+        ledgerSize: prunedLedger.length,
+    };
+}
+
+export function logRootsRetentionPlan(label, stats) {
+    console.log(`\n  ${label}：`);
+    console.log(`    当前指针 commit:     ${stats.currentPointerCommit ?? '（无，首次发布）'}`);
+    console.log(`    测试站指针 commit:   ${stats.stagingPointerCommit ?? '（未配置）'}`);
+    console.log(`    在用 commit 数:       ${stats.liveCommitCount}（ledger 收敛后 ${stats.ledgerSize} 条）`);
+    console.log(`    退出在用集合:         ${stats.retiredCommitCount} 个`);
+    console.log(`    manifest 分片：在用 ${stats.shardsLive} 个，删除 ${stats.shardsDeleted} 个`);
+    console.log(`    roots 文件：删除     ${stats.rootsDeleted} 个`);
+}
