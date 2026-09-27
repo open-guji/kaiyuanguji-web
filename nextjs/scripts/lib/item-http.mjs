@@ -29,10 +29,12 @@ export async function getItemPage(id, { timeoutMs = 30_000 } = {}) {
         const res = await fetch(`${SITE}/item/${id}`, { redirect: 'manual', signal: AbortSignal.timeout(timeoutMs) });
         const html = res.status === 200 ? await res.text() : '';
         const m = html.match(/data-ssr-version="([^"]*)"/);
+        const ra = Number(res.headers.get('retry-after'));
         return {
             id, status: res.status, ms: Date.now() - t0,
             cache: res.headers.get('eo-cache-status') || '',
             version: m ? m[1] : null,
+            retryAfter: Number.isFinite(ra) && ra > 0 ? ra : null,
         };
     } catch (err) {
         return { id, status: 0, ms: Date.now() - t0, cache: '', version: null, error: err.message };
