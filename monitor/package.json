@@ -1,0 +1,12 @@
+{
+  "name": "kaiyuanguji-monitor",
+  "private": true,
+  "type": "module",
+  "description": "线上监控套件（MON 道）：主动探测、数据监测、告警状态机。零依赖，Node ≥ 20。",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "probe": "node run.mjs --suite probe --dry-run",
+    "data": "node run.mjs --suite data --dry-run"
+  }
+}

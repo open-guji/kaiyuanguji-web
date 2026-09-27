@@ -594,6 +594,12 @@ export async function onRequestGet(context) {
 
   try {
     const url = new URL(context.request.url);
+    // MON：监控用的计数汇总（?summary=1&window=1h）。只返回条数，不返回任何反馈内容；
+    // 仍要管理 token（与管理读同一把），缺配置一样 fail-closed 回 503
+    if (url.searchParams.get('summary') === '1') {
+      return summaryResponse(context, url, headers);
+    }
+
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';
     const resourceId = url.searchParams.get('resourceId') || '';
@@ -632,6 +638,50 @@ export async function onRequestGet(context) {
       status: 500, headers,
     });
   }
+}
+
+/**
+ * 监控汇总：最近 window 小时（1～24，默认 1）与最近 24 小时的新反馈条数。
+ * key 是 `fb_<13 位毫秒>_…`，从 key 名就能读出时间——只列 key、不取值，
+ * 既便宜，也保证这个接口碰不到任何反馈正文与联系方式。
+ * token 取 Authorization: Bearer（监控用，免得进访问日志的 URL）或 ?token=。
+ */
+async function summaryResponse(context, url, headers) {
+  const given = (context.request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+    || url.searchParams.get('token') || undefined;
+  const auth = checkAdminAuth(given, context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
+  }
+  if (getMode(context) === 'github') {
+    return new Response(JSON.stringify({ success: false, error: 'github 模式不支持汇总' }), { status: 400, headers });
+  }
+  const kv = getKV(context);
+  if (!kv) {
+    return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), { status: 500, headers });
+  }
+  const windowHours = parseWindowHours(url.searchParams.get('window'));
+  const now = Date.now();
+  const names = await listAllKeys(kv);
+  let count = 0;
+  let count24h = 0;
+  for (const n of names) {
+    const m = /^fb_(\d{13})_/.exec(n);
+    if (!m) continue;
+    const age = now - Number(m[1]);
+    if (age < 0) continue;
+    if (age <= windowHours * 3600000) count += 1;
+    if (age <= 24 * 3600000) count24h += 1;
+  }
+  return new Response(JSON.stringify({
+    success: true, windowHours, count, count24h, total: names.length, now: new Date(now).toISOString(),
+  }), { status: 200, headers: { ...headers, 'Cache-Control': 'no-store' } });
+}
+
+/** "1h" / "6" → 1..24 的整数小时，非法值回落 1 */
+function parseWindowHours(v) {
+  const n = parseInt(String(v || '1').replace(/h$/i, ''), 10);
+  return Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
 }
 
 /**

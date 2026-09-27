@@ -253,6 +253,12 @@ export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
 
+    // MON：监控用的计数汇总（?summary=1&window=1h）。只要共享 token（监控跑在 CI 里没有 cookie），
+    // 只返回计数与前 5 种错误的消息摘要——不返回 IP、地理、stack、UA、pageUrl
+    if (url.searchParams.get('summary') === '1') {
+      return summaryResponse(context, url, headers);
+    }
+
     // 鉴权：共享 token 或 member cookie 双轨
     let auth = checkViewAuth(url.searchParams.get('token'), context);
     let viaRole = auth.ok ? 'token' : null; // 走哪一路通过的：token / 成员角色
@@ -327,6 +333,83 @@ export async function onRequestGet(context) {
       status: 500, headers,
     });
   }
+}
+
+/**
+ * 监控汇总。key 是 `err_<13 位毫秒>_…`：计数只看 key 名，不取值；
+ * 只有落在窗口内的至多 SUMMARY_MAX_GET 条才取值，用来归并「前 5 种错误」。
+ * 摘要只取 kind + message 前 120 字，message 里若混进邮箱／长数字串一并打码。
+ */
+const SUMMARY_MAX_GET = 200;
+async function summaryResponse(context, url, headers) {
+  const given = (context.request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+    || url.searchParams.get('token');
+  const auth = checkViewAuth(given, context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
+  }
+  const kv = getKV(context);
+  if (!kv) {
+    return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), { status: 500, headers });
+  }
+  const n = parseInt(String(url.searchParams.get('window') || '1').replace(/h$/i, ''), 10);
+  const windowHours = Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
+  const now = Date.now();
+
+  const names = [];
+  let cursor = '';
+  for (let i = 0; i < 100; i += 1) {
+    const opts = { prefix: 'err_', limit: 256 };
+    if (cursor) opts.cursor = cursor;
+    const r = await kv.list(opts);
+    for (const k of r.keys || []) names.push(k.key);
+    if (r.complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+
+  const inWindow = [];
+  let count24h = 0;
+  for (const name of names) {
+    const m = /^err_(\d{13})_/.exec(name);
+    if (!m) continue;
+    const age = now - Number(m[1]);
+    if (age < 0) continue;
+    if (age <= windowHours * 3600000) inWindow.push(name);
+    if (age <= 24 * 3600000) count24h += 1;
+  }
+
+  const sample = inWindow.sort().reverse().slice(0, SUMMARY_MAX_GET);
+  const groups = new Map();
+  for (let i = 0; i < sample.length; i += 20) {
+    const settled = await Promise.allSettled(sample.slice(i, i + 20).map((k) => kv.get(k, 'json')));
+    for (const r of settled) {
+      if (r.status !== 'fulfilled' || !r.value) continue;
+      const key = `${r.value.kind || 'js'}|${redact(clip(r.value.message, 120))}`;
+      groups.set(key, (groups.get(key) || 0) + 1);
+    }
+  }
+  const top = [...groups.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([k, count]) => { const i = k.indexOf('|'); return { kind: k.slice(0, i), message: k.slice(i + 1), count }; });
+
+  return new Response(JSON.stringify({
+    success: true,
+    windowHours,
+    count: inWindow.length,
+    count24h,
+    avgPerHour24h: Math.round((count24h / 24) * 100) / 100,
+    sampled: sample.length,
+    top,
+    now: new Date(now).toISOString(),
+  }), { status: 200, headers: { ...headers, 'Cache-Control': 'no-store' } });
+}
+
+function redact(s) {
+  return String(s)
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '***@***')
+    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, '*.*.*.*')
+    .replace(/\d{7,}/g, '***');
 }
 
 export function onRequestOptions(context) {
