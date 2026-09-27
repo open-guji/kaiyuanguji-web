@@ -24,7 +24,15 @@ export default function FeedbackPageContent() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 20px' }}>
+    <div
+      style={{
+        maxWidth: 800,
+        margin: '0 auto',
+        padding: '40px 20px',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+      }}
+    >
       <h1 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
         用户反馈
       </h1>
