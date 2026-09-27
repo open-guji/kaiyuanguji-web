@@ -535,12 +535,18 @@ jobs:
           resp_pointer = client.CreatePurgeTask(req_pointer)
           print('✅ latest.json purged:', resp_pointer.to_json_string())
 
-          req_site = models.CreatePurgeTaskRequest()
-          req_site.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          req_site.Type = 'purge_host'
-          req_site.Targets = ['staging.kaiyuanguji.com' if staging else 'kaiyuanguji.com']
-          resp_site = client.CreatePurgeTask(req_site)
-          print('✅ EdgeOne cache purged:', resp_site.to_json_string())
+          # 测试站不清整站：staging.kaiyuanguji.com 是 Pages 项目自定义域名，不是本 zone 的
+          # 加速域名，purge_host 返回 DomainNotFound（09-27 首跑实测）；CLI 直接上传后
+          # Pages 本身就发新版，只清数据指针即可。
+          if staging:
+              print('· 测试站跳过 purge_host（Pages 自定义域名不在 zone 加速域名内）')
+          else:
+              req_site = models.CreatePurgeTaskRequest()
+              req_site.ZoneId = os.environ['EDGEONE_ZONE_ID']
+              req_site.Type = 'purge_host'
+              req_site.Targets = ['kaiyuanguji.com']
+              resp_site = client.CreatePurgeTask(req_site)
+              print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
