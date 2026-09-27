@@ -4,21 +4,13 @@
  * OA-授权端点 /oauth/authorize 的完成判据（任务书 §二·1）：
  * 未登录页面提示、prompt=none→login_required、已登录→302 带 code/state、
  * redirect_uri 不在白名单→400、缺配置→503。
+ *
+ * 09-27 04:40Z 协调者验收第一轮后：code 改为自包含签名令牌，authorize 不再写 KV
+ * （见 edge-functions/oauth/authorize.js 文件头），所以这里不再需要 AUTH_KV。
  */
 
-class MockKV {
-  m = new Map<string, string>();
-  async put(k: string, v: string) { this.m.set(k, v); }
-  async get(k: string, type?: string) {
-    const v = this.m.get(k);
-    if (v === undefined) return null;
-    if (type === 'json') { try { return JSON.parse(v); } catch { return null; } }
-    return v;
-  }
-  async delete(k: string) { this.m.delete(k); }
-}
-
 const JWT_SECRET = 'test-jwt-secret-32bytes-long-1234567890';
+const CODE_SECRET = 'test-code-secret-32bytes-long-abcdefghij';
 const CLIENT_ID = 'collate';
 const CLIENT_SECRET = 'test-client-secret';
 const REDIRECT_URI = 'https://collate.example.com/callback';
@@ -27,6 +19,12 @@ function b64url(bytes: Uint8Array) {
   let bin = '';
   for (let i = 0; i < bytes.length; i += 1) bin += String.fromCharCode(bytes[i]);
   return Buffer.from(bin, 'binary').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+function b64urlDecode(str: string) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = str.length % 4;
+  if (pad) str += '===='.slice(pad);
+  return Buffer.from(str, 'base64');
 }
 async function sha256Hex(str: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -41,6 +39,14 @@ async function signJWT(payload: Record<string, unknown>, secret: string) {
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
   return `${data}.${b64url(new Uint8Array(sig))}`;
 }
+async function verifyCode(token: string, secret: string) {
+  const parts = token.split('.');
+  expect(parts.length).toBe(3);
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+  expect(b64url(new Uint8Array(sig))).toBe(parts[2]);
+  return JSON.parse(b64urlDecode(parts[1]).toString('utf8'));
+}
 async function sessionCookieFor(email: string) {
   const now = Math.floor(Date.now() / 1000);
   const token = await signJWT({ sub: email, iat: now, exp: now + 3600 }, JWT_SECRET);
@@ -49,12 +55,11 @@ async function sessionCookieFor(email: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
-let kv: MockKV;
 
 async function baseEnv() {
   return {
     AUTH_JWT_SECRET: JWT_SECRET,
-    AUTH_KV: kv,
+    OAUTH_CODE_SECRET: CODE_SECRET,
     OAUTH_CLIENTS: JSON.stringify({
       [CLIENT_ID]: { secret_hash: await sha256Hex(CLIENT_SECRET), redirect_uris: [REDIRECT_URI] },
     }),
@@ -81,7 +86,6 @@ function ctx(url: string, env: Record<string, unknown>, cookie?: string) {
 beforeAll(async () => {
   fn = await import('../../../../edge-functions/oauth/authorize.js');
 });
-beforeEach(() => { kv = new MockKV(); });
 
 describe('未登录', () => {
   it('无 session cookie，无 prompt=none → 302 到 /oauth/login-required 带 return_to', async () => {
@@ -123,7 +127,7 @@ describe('未登录', () => {
 });
 
 describe('已登录', () => {
-  it('302 带 code 和 state，code 落进 AUTH_KV', async () => {
+  it('302 带 code 和 state，code 是自包含签名令牌（cid/ruri/cc/sub 都对得上，不写 KV）', async () => {
     const env = await baseEnv();
     const cookie = await sessionCookieFor('alice@example.com');
     const res = await fn.onRequestGet(ctx(authorizeUrl(), env, cookie));
@@ -133,11 +137,14 @@ describe('已登录', () => {
     expect(loc.searchParams.get('state')).toBe('xyz');
     const code = loc.searchParams.get('code');
     expect(code).toBeTruthy();
-    const record = await kv.get(`oauth_code:${code}`, 'json');
-    expect(record.client_id).toBe(CLIENT_ID);
-    expect(record.redirect_uri).toBe(REDIRECT_URI);
-    expect(record.code_challenge).toBe('abc123');
-    expect(record.sub).toBe('alice@example.com');
+    const payload = await verifyCode(code as string, CODE_SECRET);
+    expect(payload.cid).toBe(CLIENT_ID);
+    expect(payload.ruri).toBe(REDIRECT_URI);
+    expect(payload.cc).toBe('abc123');
+    expect(payload.sub).toBe('alice@example.com');
+    expect(typeof payload.jti).toBe('string');
+    expect(payload.jti.length).toBeGreaterThan(0);
+    expect(payload.exp - Math.floor(Date.now() / 1000)).toBeLessThanOrEqual(60);
   });
 
   it('响应带 Cache-Control: no-store（code 不能被 CDN 缓存）', async () => {
@@ -183,7 +190,7 @@ describe('code_challenge_method 不是 S256', () => {
 
 describe('缺配置', () => {
   it('OAUTH_CLIENTS 未配置 → 503', async () => {
-    const res = await fn.onRequestGet(ctx(authorizeUrl(), { AUTH_JWT_SECRET: JWT_SECRET, AUTH_KV: kv }));
+    const res = await fn.onRequestGet(ctx(authorizeUrl(), { AUTH_JWT_SECRET: JWT_SECRET, OAUTH_CODE_SECRET: CODE_SECRET }));
     expect(res.status).toBe(503);
   });
   it('AUTH_JWT_SECRET 未配置 → 503', async () => {
@@ -192,9 +199,9 @@ describe('缺配置', () => {
     const res = await fn.onRequestGet(ctx(authorizeUrl(), env));
     expect(res.status).toBe(503);
   });
-  it('AUTH_KV 未绑定 → 503', async () => {
+  it('OAUTH_CODE_SECRET 未配置 → 503', async () => {
     const env = await baseEnv();
-    delete (env as Record<string, unknown>).AUTH_KV;
+    delete (env as Record<string, unknown>).OAUTH_CODE_SECRET;
     const res = await fn.onRequestGet(ctx(authorizeUrl(), env));
     expect(res.status).toBe(503);
   });
