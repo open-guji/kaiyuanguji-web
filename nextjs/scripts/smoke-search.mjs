@@ -4,13 +4,12 @@
  */
 
 import { readFileSync } from 'fs';
-import { join, dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import MiniSearch from 'minisearch';
 import { tokenize, hasCjkBigram } from '../src/lib/search/normalize.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SEARCH_DIR = resolve(__dirname, '..', 'public', 'data', 'search');
+const SEARCH_DIR = join(resolveDataDirs().dataDir, 'search');
 
 const msOptions = {
     idField: 'id',

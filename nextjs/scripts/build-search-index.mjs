@@ -18,12 +18,13 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import MiniSearch from 'minisearch';
 import * as OpenCC from 'opencc-js';
 import { tokenize, joinFields } from '../src/lib/search/normalize.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = resolve(__dirname, '..', 'public', 'data');
+const { dataDir: OUT_DIR } = resolveDataDirs();
 const SEARCH_DIR = join(OUT_DIR, 'search');
 
 function readJson(path) {

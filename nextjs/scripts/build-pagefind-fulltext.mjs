@@ -16,12 +16,13 @@
 import { readFileSync, existsSync, readdirSync, statSync, rmSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import * as pagefind from 'pagefind';
 import { Converter } from 'opencc-js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DRAFT_DIR = resolve(process.argv[2] || join(__dirname, '..', '..', '..', 'book-index-draft'));
-const OUT_DIR = resolve(__dirname, '..', 'public', 'data', 'pagefind-fulltext');
+const OUT_DIR = join(resolveDataDirs().dataDir, 'pagefind-fulltext');
 
 if (!existsSync(DRAFT_DIR)) {
     console.error(`❌ book-index-draft not found: ${DRAFT_DIR}`);

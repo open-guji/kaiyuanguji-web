@@ -60,16 +60,14 @@
  */
 
 import { existsSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSync } from 'fs';
-import { join, resolve, dirname, extname, basename } from 'path';
-import { fileURLToPath } from 'url';
+import { join, dirname, extname, basename } from 'path';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { ensureDir, readJson, hash8, writeHashedShards, dataCommitKey, walk } from './lib/h1-hash-common.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data');
+const { dataDir: DATA_DIR, h1TextDir: OUT_DIR } = resolveDataDirs();
 const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const VERSION_FILE = join(DATA_DIR, 'version.json');
-const OUT_DIR = resolve(process.env.H1_TEXT_OUT_DIR || join(__dirname, '..', 'public', 'data-h1-text'));
 const CLEAN = process.env.H1_TEXT_CLEAN === '1';
 
 // 只扫这两个子树——「整理本」与「全文」，任务书 A3b §一·1 点名的范围。

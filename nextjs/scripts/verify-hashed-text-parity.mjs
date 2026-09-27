@@ -18,12 +18,10 @@
  */
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
-import { join, resolve, dirname, extname, basename } from 'path';
-import { fileURLToPath } from 'url';
+import { join, dirname, extname, basename } from 'path';
+import { resolveDataDirs } from './lib/data-dirs.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = resolve(__dirname, '..', 'public', 'data');
-const H1_TEXT_DIR = resolve(__dirname, '..', 'public', 'data-h1-text');
+const { dataDir: DATA_DIR, h1TextDir: H1_TEXT_DIR } = resolveDataDirs();
 const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const SAMPLE_SIZE = parseInt(process.env.SAMPLE_SIZE || '20', 10);
 
