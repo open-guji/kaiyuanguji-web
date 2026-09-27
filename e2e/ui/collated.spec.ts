@@ -83,10 +83,12 @@ test.describe('整理本', () => {
         // 先等第一个卷按钮出现再数：原先靠「共 N 卷」那条断言兜住加载等待，
         // 它撤掉后若直接 count()，会在侧栏渲染完成前拿到 0。
         await expect(juanButtons.first()).toBeVisible({ timeout: 30_000 });
-        expect(
-            await juanButtons.count(),
+        // 用会重试的 toHaveCount 而非一次性 count()：首个按钮可见的瞬间可能正赶上
+        // 自动选中首卷触发的重渲染，侧栏按钮会短暂清空（W2 道本地复现 20 次红 6 次）。
+        await expect(
+            juanButtons,
             '侧栏卷按钮数与 juan_files 条数不符——卷数来源又被改回不可信字段了？',
-        ).toBe(C.juanFileCount);
+        ).toHaveCount(C.juanFileCount, { timeout: 30_000 });
     });
 
     test('目录视图渲染书名标题与正确统计', async ({ page }) => {
