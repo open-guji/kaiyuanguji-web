@@ -668,7 +668,10 @@ jobs:
           req_pointer = models.CreatePurgeTaskRequest()
           req_pointer.ZoneId = os.environ['EDGEONE_ZONE_ID']
           req_pointer.Type = 'purge_url'
-          req_pointer.Targets = ['https://data.kaiyuanguji.com/staging/latest.json' if staging else 'https://data.kaiyuanguji.com/latest.json']
+          # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
+          # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
+          pfx = 'https://data.kaiyuanguji.com/' + ('staging/' if staging else '')
+          req_pointer.Targets = [pfx + 'latest.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
           resp_pointer = client.CreatePurgeTask(req_pointer)
           print('✅ latest.json purged:', resp_pointer.to_json_string())
 
