@@ -161,6 +161,44 @@ describe('路径与上游边界', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  // 09-27 00:45Z 协调者验收第一轮：原实现在解码前查 `..`，这四条编码变体都能绕过去。
+  describe('编码过的上跳/越权字符，解码后才现形 → 400', () => {
+    async function internalCtx(pathSegments: string[]) {
+      await kv.put('member:staff-enc@example.com', { role: 'internal', joinedAt: 1 });
+      const session = await signJWT(
+        { sub: 'staff-enc@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 },
+        JWT_SECRET,
+      );
+      const c = ctx('https://x/api/private-text/x', baseEnv(), `session=${session}`);
+      c.params = { path: pathSegments };
+      return c;
+    }
+
+    it('%2e%2e（编码后的 ..）→ 400', async () => {
+      const res = await fn.onRequestGet(await internalCtx(['%2e%2e', 'etc', 'passwd']));
+      expect(res.status).toBe(400);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('a%2F..%2Fb（段内编码斜杠，解码后炸出 .. ）→ 400', async () => {
+      const res = await fn.onRequestGet(await internalCtx(['a%2F..%2Fb']));
+      expect(res.status).toBe(400);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('%5c（编码后的反斜杠）→ 400', async () => {
+      const res = await fn.onRequestGet(await internalCtx(['%5c..%5cetc']));
+      expect(res.status).toBe(400);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('%zz（非法转义序列，decodeURIComponent 会抛错）→ 400', async () => {
+      const res = await fn.onRequestGet(await internalCtx(['%zz']));
+      expect(res.status).toBe(400);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
+
   it('COS 对象不存在 → 404', async () => {
     global.fetch = jest.fn(async () => new Response('NoSuchKey', { status: 404 })) as unknown as typeof fetch;
     await kv.put('member:staff4@example.com', { role: 'internal', joinedAt: 1 });

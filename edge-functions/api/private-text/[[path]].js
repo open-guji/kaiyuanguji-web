@@ -18,7 +18,7 @@
 //   │ 成员不存在或已被移除（_deleted）               │ 401  │
 //   │ 成员角色不在 {internal, admin}                │ 403  │
 //   │ 私有 COS 凭据/桶未配置                        │ 503  │
-//   │ 相对路径为空或含 `..` 上跳                    │ 400  │
+//   │ 相对路径为空／解码失败／含 `..`／`/`／`\`／NUL │ 400  │
 //   │ COS 对象不存在                                │ 404  │
 //   │ 其余（签名/COS 侧非预期错误）                  │ 502  │
 //   └────────────────────────────────────────────┴──────┘
@@ -188,10 +188,36 @@ function contentTypeFor(relative) {
   }
 }
 
-/** 相对路径校验：非空、不含 `..` 上跳段、不以 / 开头（catch-all 已按段拆好）。 */
-function invalidRelativePath(segments) {
-  if (!Array.isArray(segments) || segments.length === 0) return true;
-  return segments.some((s) => !s || s === '.' || s === '..');
+/**
+ * 相对路径校验与解码（09-27 00:45Z 协调者验收第一轮修复）。
+ *
+ * 原实现先查原始（未解码）段是否含 `..`，再统一 decodeURIComponent——顺序反了：
+ * `%2e%2e` 这种段能通过「原始段不是 `..`」的检查，解码后才变成 `..`；
+ * `a%2F..%2Fb` 更狠，解码后从一个段炸出三段（含 `..`），检查时却只看到一个
+ * 干净的段。两条都能把 objectKey 拼出私有前缀之外，虽然眼下多半会因为签名
+ * 路径和实际请求路径对不上而被 COS 403 挡下，但那是运气，不是设计。
+ *
+ * 改法：先解码、再校验、最后断言前缀——每一步都不信任上一步。
+ * 返回 `{ ok:false }`（含 `..`／非法转义／非法字符）或 `{ ok:true, relative }`。
+ */
+function decodePathSegments(rawSegments) {
+  if (!Array.isArray(rawSegments) || rawSegments.length === 0) return { ok: false };
+  const decoded = [];
+  for (const raw of rawSegments) {
+    let seg;
+    try {
+      seg = decodeURIComponent(raw);
+    } catch {
+      return { ok: false }; // 非法转义序列（如 %zz）
+    }
+    // 解码后再校验：不能为空、不能是 `.`/`..`、不能再含 `/`、`\`、NUL
+    // （`a%2F..%2Fb` 解码后含 `/`，会在这里被拦，而不是被当成一个干净的段放过）。
+    if (!seg || seg === '.' || seg === '..' || seg.includes('/') || seg.includes('\\') || seg.includes('\0')) {
+      return { ok: false };
+    }
+    decoded.push(seg);
+  }
+  return { ok: true, relative: decoded.join('/') };
 }
 
 export async function onRequestGet(context) {
@@ -211,13 +237,19 @@ export async function onRequestGet(context) {
   }
 
   // EdgeOne Pages Function 的 [[path]] catch-all：context.params.path 是按段拆好的数组
-  // （不是原始未拆分字符串），与 Cloudflare Pages Functions 同一约定。
-  const segments = (context.params && context.params.path) || [];
-  if (invalidRelativePath(segments)) {
+  // （不是原始未拆分字符串），与 Cloudflare Pages Functions 同一约定。段本身是否已
+  // 解码不可信——decodePathSegments 自己解码、自己校验，不依赖框架的解码时机。
+  const rawSegments = (context.params && context.params.path) || [];
+  const decoded = decodePathSegments(rawSegments);
+  if (!decoded.ok) {
     return new Response(JSON.stringify({ success: false, error: '无效路径' }), { status: 400, headers });
   }
-  const relative = segments.map(decodeURIComponent).join('/');
-  const objectKey = `${getCosPrefix(context)}/${relative}`;
+  const prefix = getCosPrefix(context);
+  const objectKey = `${prefix}/${decoded.relative}`;
+  // 断言：即使上面的逐段校验以后被改松，这里仍兜底不让对象键跳出私有前缀。
+  if (!objectKey.startsWith(`${prefix}/`)) {
+    return new Response(JSON.stringify({ success: false, error: '无效路径' }), { status: 400, headers });
+  }
 
   const region = getCosRegion(context);
   const host = `${bucket}.cos.${region}.myqcloud.com`;
@@ -250,7 +282,7 @@ export async function onRequestGet(context) {
 
   const body = await cosRes.arrayBuffer();
   const outHeaders = getCorsHeaders(context.request);
-  outHeaders['Content-Type'] = contentTypeFor(relative);
+  outHeaders['Content-Type'] = contentTypeFor(decoded.relative);
   return new Response(body, { status: 200, headers: outHeaders });
 }
 
