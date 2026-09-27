@@ -584,14 +584,26 @@ jobs:
           path: e2e/out/report
           retention-days: 14
 
-      # T1：数据自动上正式站（保留今天「数据每天自动上线」的行为，仓库变量
-      # AUTO_PROMOTE_DATA=true 时生效）。只在 mode=staging（真的经过了测试站
-      # 且 e2e 已验）且触发是数据（dispatch／定时）时生效——mode=fallback 本身
-      # 已经是正式站了，mode=promote 不该再自己触发下一轮 promote。
-      # 走 data 模式：正式站代码不动，只换数据——所以没 promote 的代码不会被
-      # 数据发布夹带上线。
+      # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
+      # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
+      # 就是默认开，符合用户预期，也符合网站总管已告诉用户「不用配」的口径）。
+      # 只在 mode=staging（真的经过了测试站且 e2e 已验）且触发是数据（dispatch／
+      # 定时）时生效——mode=fallback 本身已经是正式站了，mode=promote 不该再
+      # 自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
+      # 没 promote 的代码不会被数据发布夹带上线。
       - name: Auto-promote data to production
-        if: ${{ success() && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA == 'true' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
+        if: ${{ success() && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yml --ref main -f target=production -f promote=data
+        run: |
+          # promote=data 读的是正式站现有 latest.json 的 webCommitId（T1 之前
+          # 生成的正式站 latest.json 没有这个字段，得先手动 promote=code+data
+          # 一次才会有）。缺失时是「正式站还没做过第一次 promote」，不是故障，
+          # 打一行警告跳过即可，不能让 workflow 报红；手动 promote 仍按 resolve
+          # job 现在的逻辑报错（那边是人在等结果，缺字段就该让人知道）。
+          WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || echo '')
+          if [ -z "$WEB" ]; then
+            echo "⚠️ 正式站 latest.json 还没有 webCommitId（尚未做过一次 promote=code+data），自动 promote 跳过。请先手动 workflow_dispatch target=production promote=code+data 一次。"
+            exit 0
+          fi
+          gh workflow run deploy.yml --ref main -f target=production -f promote=data
