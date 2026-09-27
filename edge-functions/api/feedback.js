@@ -6,7 +6,10 @@
 //                        type/content/pageUrl/resourceId，没有 IP、没有 UA。
 //                        **公开读剔除**：已隐藏的（visibility=hidden）、测试数据（test=true）、
 //                        以及 contact 字段（读者留的联系方式，只给站方看）。
-//                        带管理凭证（token 或成员 cookie）读时返回全量、原样（/admin/feedback 用）。
+//                        **公开读脱敏**（F1，Q1-01）：content/reply 正文里读者自己写的
+//                        邮箱／手机号／QQ或微信号／身份证号会被替换，见 desensitizeText。
+//                        存储原文不改，只改这一条 GET 的输出。
+//                        带管理凭证（token 或成员 cookie）读时返回全量、原样、不脱敏（/admin/feedback 用）。
 //   POST action:'update' 与 PATCH（改状态／类型／可见性／写回复／标重复）
 //                        **必须带 FEEDBACK_ADMIN_TOKEN 或成员 cookie**，见 checkAdminAuth／checkMemberCookie。
 //                        写入记 updatedBy（token 鉴权记 'token'，成员 cookie 记成员邮箱）
@@ -263,12 +266,43 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
 function isPubliclyVisible(rec) {
   return rec && rec.visibility !== 'hidden' && rec.test !== true && rec.type !== 'contact';
 }
+
+// --- F1（Q1-01）：公开读自由文本脱敏 ---
+// `contact` 字段整个剔除（见下）拦不住读者把联系方式**写在 content/reply 正文里**——
+// 32 卡 Q1 巡检查出真实一例（一条邮箱）。这里对公开读的 content/reply 做模式脱敏；
+// 存储原文不动（不回写 KV），管理读（token/成员 cookie）原样返回。
+// 顺序：先证件号（18 位，最长，避免被手机号正则截头咬掉一段）→ 手机号 → QQ/微信 → 邮箱。
+const RE_ID_CARD = /(?<!\d)[1-9]\d{5}(?:18|19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dXx](?!\d)/g;
+// 中国大陆手机号：11 位，1[3-9] 开头，可带 +86／0086／86 前缀与常见分隔；前后不挨其他数字
+// （避免咬中更长数字串里的一段，例如证件号、书号）。
+const RE_PHONE = /(?<![\w])(?:\+?86[-\s]?|0086[-\s]?)?1[3-9]\d{9}(?!\d)/g;
+const RE_EMAIL = /[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// QQ／微信：提示词后面紧跟着的号码/账号才算——「微信读书」「QQ音乐」这类提示词后面
+// 没有号码的，不动。vx／wx 是英文缩写，容易撞上英文单词（如 wxWidgets），要求提示词与
+// 账号之间至少有一个分隔符（冒号/空格/中文字样），不允许零间隔直接接字母。
+const RE_QQ_WX_ZH = /(QQ|微信)([\s:：号是为]{0,4})([0-9A-Za-z_-]{5,20})/gi;
+const RE_VX_WX_EN = /\b(vx|wx)([\s:：号是为-]{1,4})([0-9A-Za-z_-]{5,20})/gi;
+
+function desensitizeText(text) {
+  if (typeof text !== 'string' || !text) return text;
+  let out = text;
+  out = out.replace(RE_ID_CARD, '***');
+  out = out.replace(RE_PHONE, '1**********');
+  out = out.replace(RE_QQ_WX_ZH, '$1$2***');
+  out = out.replace(RE_VX_WX_EN, '$1$2***');
+  out = out.replace(RE_EMAIL, '***@***');
+  return out;
+}
+
 /**
  * 公开读剔除 contact（读者联系方式）与 updatedBy（G-23 第二批新加——是成员邮箱或
- * 'token'，公开返回会把处置反馈的站方成员邮箱泄露出去，不能带出去）。
+ * 'token'，公开返回会把处置反馈的站方成员邮箱泄露出去，不能带出去），并对
+ * content/reply 做脱敏（见 desensitizeText）。
  */
 function toPublic(rec) {
   const { contact, updatedBy, ...rest } = rec; // eslint-disable-line no-unused-vars
+  if (typeof rest.content === 'string') rest.content = desensitizeText(rest.content);
+  if (typeof rest.reply === 'string') rest.reply = desensitizeText(rest.reply);
   return rest;
 }
 
@@ -376,10 +410,11 @@ async function githubGet(ghToken, limit) {
   }
 
   const issues = await res.json();
+  // github 模式没有管理/公开两条路——issue 内容在 GitHub 上本就公开可见，同样脱敏一遍
   const items = issues.map(issue => ({
     id: `issue_${issue.number}`,
     type: issue.labels.some(l => l.name === '反馈-错误') ? 'bug' : 'resource',
-    content: issue.body?.split('\n---\n')[0] || issue.title,
+    content: desensitizeText(issue.body?.split('\n---\n')[0] || issue.title),
     createdAt: issue.created_at,
     status: issue.state === 'closed' ? 'resolved' : 'pending',
     reply: '',
@@ -675,3 +710,6 @@ export function onRequestOptions(context) {
     },
   });
 }
+
+// 导出给离线核对脚本用（例如拿线上公开数据跑一遍看会改动哪些条目），不供边缘运行时使用
+export { desensitizeText };
