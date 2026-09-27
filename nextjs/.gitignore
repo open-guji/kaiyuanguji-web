@@ -59,3 +59,7 @@ next-env.d.ts
 # Phase 5 Pagefind 评估期的测试 HTML（不打包进生产）
 /public/pagefind-test.html
 /public/pagefind-fulltext-test.html
+
+# W2 全栈构建（edgeone makers build）的产物与 CI 临时拷进来的边缘函数
+/.edgeone/
+/edge-functions/

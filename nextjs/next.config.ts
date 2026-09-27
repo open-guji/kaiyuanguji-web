@@ -5,6 +5,15 @@ import { dirname, join } from "node:path";
 
 const isLocal = process.env.NEXT_PUBLIC_MODE === 'local';
 
+// 渲染模式（W2，31 卡 §A）：
+//   - 不设（默认）＝静态导出 output: 'export'。正式站现行方式，产物与引入本开关前逐文件一致。
+//   - KYG_RENDER_MODE=fullstack ＝全栈（测试站）：不静态导出，另把 *.ssr.tsx 当页面，
+//     多出函数按请求渲染的 /item/[id]。其余页面仍在构建期预渲染成静态页。
+// 注意：EdgeOne CLI 的 `makers deploy`（不给目录、自动构建）**不继承 shell 环境变量**，
+// 只用控制台项目变量＋./.env——spike 分支当年只好把开关写死成 true，根因在此。
+// deploy.yml 改为先 `edgeone makers build`（继承环境变量）再 `makers deploy .edgeone`。
+const isFullstack = process.env.KYG_RENDER_MODE === 'fullstack';
+
 // 实际被打进产物的 book-index-ui 版本（取 node_modules 里解析到的那个，
 // 而非 package.json 的 ^ 区间——区间说明不了线上跑的到底是哪一版）。
 //
@@ -37,12 +46,15 @@ function resolveUiVersion(): string {
 const uiVersion = resolveUiVersion();
 
 const nextConfig: NextConfig = {
-  // local mode 需要 API routes，不能用 static export
-  ...(isLocal ? {} : { output: 'export' as const }),
-  // 仅 local 模式打包 *.local.ts 文件（如 API routes，与 output: 'export' 不兼容）
-  pageExtensions: isLocal
-    ? ['tsx', 'ts', 'jsx', 'js', 'local.tsx', 'local.ts']
-    : ['tsx', 'ts', 'jsx', 'js'],
+  // local mode 需要 API routes、fullstack 要函数渲染，都不能用 static export
+  ...(isLocal || isFullstack ? {} : { output: 'export' as const }),
+  // 仅 local 模式打包 *.local.ts 文件（如 API routes，与 output: 'export' 不兼容）；
+  // 仅 fullstack 模式打包 *.ssr.tsx 页面（动态路由，静态导出下会构建失败）
+  pageExtensions: [
+    'tsx', 'ts', 'jsx', 'js',
+    ...(isLocal ? ['local.tsx', 'local.ts'] : []),
+    ...(isFullstack ? ['ssr.tsx', 'ssr.ts'] : []),
+  ],
   // 部署子路径（basePath）。历史上为 GitHub Pages 的 /repo/ 子路径而设；
   // 现托管在 EdgeOne Pages 根路径，CI 里显式 NEXT_PUBLIC_BASE_PATH=""。
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
