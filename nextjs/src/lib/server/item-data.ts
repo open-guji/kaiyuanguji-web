@@ -17,9 +17,14 @@
  * 2026-09-27 实测 CDN 上的 h1/manifest-root.json 已被缓存约 7 小时
  * （age 24795，还是 S3 之前的旧格式），不带查询串会一直读到旧指针。
  *
- * 草稿→正式 id 的重定向（promotions，18.9 MB）不在这里做：函数里不能整表加载，
- * 归 W2-2（31 卡 §A.6 第 5 条）。
+ * 草稿→正式 id 的重定向（promotions，18.9 MB）不在这里做：函数里不能整表加载。
+ * W2-2 的处理见 app/item/[id]/page.ssr.tsx：查不到的草稿 id 临时跳回 /book-index，
+ * 由客户端查表跳转。
  */
+
+import { isValidItemId } from '../item-id';
+
+export { isValidItemId };
 
 export type ItemEntry = Record<string, unknown> & { id?: string; type?: string };
 
@@ -48,10 +53,6 @@ interface H1Pointer { root?: string }
 interface H1RootDoc { shardKeyLength: number; shards: Record<string, string> }
 interface LatestPointer { commitId?: string }
 
-/** 条目 id 形态：base36 小写字母数字。挡掉路径穿越与明显无效的请求，免得白打一次 COS。 */
-export function isValidItemId(id: string): boolean {
-    return /^[0-9a-z]{6,20}$/.test(id);
-}
 
 class Lru<V> {
     private map = new Map<string, V>();
