@@ -42,10 +42,16 @@ export default function AboutPage() {
         <p className="mb-4">
           索引数据来自历代目录学著录、公开馆藏书目，以及各类可获取的古籍扫描与文本资源；
           具体来源在每条索引自己的资源字段里逐条标注，可以顺着链接查到出处。
-          各开源仓库的许可以仓库内的 LICENSE 文件为准：整理本与全文所在的
-          book-text 仓用 CC0 1.0 Universal；图片数字化引擎 open-guji-cv 仓用
-          Apache License 2.0；古籍目录索引 book-index、book-index-draft 两仓
-          目前未在仓库根目录声明许可文件。
+          各开源仓库的许可以仓库内的 LICENSE 文件为准：book-text 仓本身（整理本及本站自行整理的部分）用
+          CC0 1.0 Universal；图片数字化引擎 open-guji-cv 仓用 Apache License 2.0；古籍目录索引
+          book-index、book-index-draft 两仓目前未在仓库根目录声明许可文件。
+        </p>
+        <p className="mb-4">
+          <strong>全文另有来源许可。</strong>
+          站上收录的全文多数转录自第三方，沿用来源的许可，不适用上面的 CC0：
+          例如来自维基文库的全文为 CC BY-SA 4.0，来自 Kanripo（漢籍リポジトリ）的全文为 CC BY-SA。
+          每部全文的阅读页顶部都标有来源名称、原始链接和许可；转载或再利用这些全文时，
+          请按对应许可署名来源并以相同许可发布。
         </p>
 
         <h2 className="mb-2 mt-8 text-lg font-semibold">内容真源在 GitHub</h2>
