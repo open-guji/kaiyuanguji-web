@@ -66,7 +66,7 @@ describe('createItemFetcher.getItem', () => {
     it('h1 四级取数：指针 → root → 分片 → entry', async () => {
         const { f, calls } = make({ ...h1Routes(), ...currentRoutes });
         const r = await f.getItem(ID);
-        expect(r).toEqual({ entry: ENTRY, source: 'h1' });
+        expect(r).toEqual({ entry: ENTRY, source: 'h1', version: 'h1:r1.json' });
         expect(calls.map((u) => u.split('?')[0])).toEqual([
             `${BASE}/h1/manifest-root.json`,
             `${BASE}/h1/roots/r1.json`,
@@ -89,6 +89,7 @@ describe('createItemFetcher.getItem', () => {
         const r = await f.getItem(ID);
         expect(r?.source).toBe('current');
         expect(r?.entry.title).toBe('史記（current）');
+        expect(r?.version).toBe('current:abc123');
         expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=abc123`);
     });
 
@@ -141,7 +142,7 @@ describe('createItemFetcher.getItem', () => {
             return { ok: false, status: 404, json: async () => ({}) } as Response;
         }) as never);
         const r = await f.getItem(ID);
-        expect(r).toEqual({ entry: ENTRY, source: 'h1' });
+        expect(r).toEqual({ entry: ENTRY, source: 'h1', version: 'h1:r2.json' });
         expect(pointerCalls).toBe(2);
     });
 

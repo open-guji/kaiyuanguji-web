@@ -349,6 +349,16 @@ jobs:
         working-directory: nextjs
         run: node scripts/bundle-hashed.mjs
 
+      # W2-3：测试站在 h1 指针翻转之前记下旧 root，部署后据此算「哪些条目变了」
+      # （item-changes.mjs）。取不到（首次发布／指针格式旧）就留空，按全部新增处理。
+      - name: Record previous h1 root (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        run: |
+          R=$(curl -sf "https://data.kaiyuanguji.com/staging/h1/manifest-root.json?t=$(date +%s)" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin).get('root',''))" 2>/dev/null || true)
+          echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
+          echo "· 发布前测试站 h1 root：${R:-（无）}"
+
       - name: Sync hashed (h1) data to Tencent COS — dual-write, parallel to current/ (A3 第一期)
         if: ${{ env.HAS_COS_SECRETS == 'true' }}
         continue-on-error: true
@@ -457,6 +467,26 @@ jobs:
       # NEXT_PUBLIC_*、KYG_RENDER_MODE 全丢——spike 分支当年只好把开关写死。
       # `makers build` 则继承 process.env（edgeone 1.6.41 源码与本地实跑均已核对）。
       # CLI 版本钉死：构建产物格式须与部署时的 CLI 一致。
+      # W2-3：条目页按需失效接口（/internal/revalidate）的密钥。由 EDGEONE_API_TOKEN
+      # 派生（HMAC），不需要另建 secret；构建期写进服务端代码，部署后的失效步骤用同一个值。
+      - name: Derive revalidate secret (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
+
+      # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布。
+      # 只在测试站这一支跑，正式站静态导出产物不变；测试站 robots.txt 全禁、不列 sitemap。
+      - name: Generate item sitemaps (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        working-directory: nextjs
+        env:
+          SITEMAP_SITE: https://staging.kaiyuanguji.com
+        run: node scripts/gen-sitemaps.mjs
+
       - name: Build for EdgeOne (staging, fullstack)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
@@ -525,6 +555,11 @@ jobs:
             || { echo "❌ 云函数路由里没有 /item/[id]"; cat nextjs/.edgeone/cloud-functions/ssr-node/config.json; exit 1; }
           test -f nextjs/.edgeone/edge-functions/config.json && echo "✓ 边缘函数（/api/*）已随全栈产物编译" \
             || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
+          # W2-3：sitemap 索引＋分片进了产物，失效接口在云函数路由里
+          test -f $A/sitemap-index.xml && ls $A/sitemaps/*.xml > /dev/null && echo "✓ sitemap 索引＋$(ls $A/sitemaps/*.xml | wc -l) 个分片已进产物" \
+            || { echo "❌ 产物里没有 sitemap-index.xml／sitemaps/"; exit 1; }
+          grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json && echo "✓ /internal/revalidate 已由云函数处理" \
+            || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 
       - name: Verify production build has no staging artifacts
         if: ${{ env.DEPLOY_TARGET == 'production' }}
@@ -645,6 +680,46 @@ jobs:
               resp_site = client.CreatePurgeTask(req_site)
               print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
+
+      # --- W2-3：测试站条目页按改动失效、实测、预热（31 卡 §A.6）---
+      # 测试站域名是 Pages 自定义域名，不在 zone 加速域名里，purge_url 清不到（T1 实测）；
+      # 改走 Next 的按需失效（EdgeOne 全栈项目把它接到了自家 CDN）。
+      # 这四步都不拦发布：失效没生效，最坏是条目页按 s-maxage（1 小时）自然过期。
+      # 但「实测」一步失败会在 job 摘要里标 ✗——首跑几次都绿之后，改成拦发布（去掉 continue-on-error）。
+      - name: Compute changed items (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        id: item_changes
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_DATA_BASE: https://data.kaiyuanguji.com/staging
+        run: node scripts/item-changes.mjs
+
+      - name: Revalidate changed item pages (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' && steps.item_changes.outcome == 'success' }}
+        id: item_revalidate
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_SITE: https://staging.kaiyuanguji.com
+        run: node scripts/item-revalidate.mjs
+
+      - name: Verify item cache refresh (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' && steps.item_revalidate.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_SITE: https://staging.kaiyuanguji.com
+        run: node scripts/item-cache-verify.mjs
+
+      - name: Prewarm item pages (staging, W2-3)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_SITE: https://staging.kaiyuanguji.com
+          ITEM_PREWARM_CONCURRENCY: '16'
+        run: node scripts/item-prewarm.mjs
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
