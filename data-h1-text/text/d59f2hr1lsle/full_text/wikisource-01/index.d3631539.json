@@ -1,0 +1,363 @@
+{
+  "work_id": "d59f2hr1lsle",
+  "version_label": "通鑑紀事本末",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%80%9A%E9%91%91%E7%B4%80%E4%BA%8B%E6%9C%AC%E6%9C%AB",
+    "page_title": "通鑑紀事本末",
+    "revid": 2375195,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 42,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "第一卷",
+      "file": "001.md",
+      "page_title": "通鑑紀事本末/第一卷",
+      "revid": 2149327,
+      "md_len": 48762
+    },
+    {
+      "n": 2,
+      "title": "第二卷",
+      "file": "002.md",
+      "page_title": "通鑑紀事本末/第二卷",
+      "revid": 7904886,
+      "md_len": 47286
+    },
+    {
+      "n": 3,
+      "title": "第三卷",
+      "file": "003.md",
+      "page_title": "通鑑紀事本末/第三卷",
+      "revid": 2149339,
+      "md_len": 42715
+    },
+    {
+      "n": 4,
+      "title": "第四卷",
+      "file": "004.md",
+      "page_title": "通鑑紀事本末/第四卷",
+      "revid": 7905924,
+      "md_len": 46519
+    },
+    {
+      "n": 5,
+      "title": "第五卷",
+      "file": "005.md",
+      "page_title": "通鑑紀事本末/第五卷",
+      "revid": 2149352,
+      "md_len": 51318
+    },
+    {
+      "n": 6,
+      "title": "第六卷",
+      "file": "006.md",
+      "page_title": "通鑑紀事本末/第六卷",
+      "revid": 2149354,
+      "md_len": 40597
+    },
+    {
+      "n": 7,
+      "title": "第七卷",
+      "file": "007.md",
+      "page_title": "通鑑紀事本末/第七卷",
+      "revid": 2149328,
+      "md_len": 45504
+    },
+    {
+      "n": 8,
+      "title": "第八卷",
+      "file": "008.md",
+      "page_title": "通鑑紀事本末/第八卷",
+      "revid": 2183942,
+      "md_len": 49695
+    },
+    {
+      "n": 9,
+      "title": "第九卷",
+      "file": "009.md",
+      "page_title": "通鑑紀事本末/第九卷",
+      "revid": 8730750,
+      "md_len": 55674
+    },
+    {
+      "n": 10,
+      "title": "第十卷",
+      "file": "010.md",
+      "page_title": "通鑑紀事本末/第十卷",
+      "revid": 2609595,
+      "md_len": 44311
+    },
+    {
+      "n": 11,
+      "title": "第十一卷",
+      "file": "011.md",
+      "page_title": "通鑑紀事本末/第十一卷",
+      "revid": 2149355,
+      "md_len": 37290
+    },
+    {
+      "n": 12,
+      "title": "第十二卷",
+      "file": "012.md",
+      "page_title": "通鑑紀事本末/第十二卷",
+      "revid": 7904899,
+      "md_len": 47962
+    },
+    {
+      "n": 13,
+      "title": "第十三卷",
+      "file": "013.md",
+      "page_title": "通鑑紀事本末/第十三卷",
+      "revid": 2612798,
+      "md_len": 42993
+    },
+    {
+      "n": 14,
+      "title": "第十四卷",
+      "file": "014.md",
+      "page_title": "通鑑紀事本末/第十四卷",
+      "revid": 2149364,
+      "md_len": 45194
+    },
+    {
+      "n": 15,
+      "title": "第十五卷",
+      "file": "015.md",
+      "page_title": "通鑑紀事本末/第十五卷",
+      "revid": 2149360,
+      "md_len": 44428
+    },
+    {
+      "n": 16,
+      "title": "第十六卷",
+      "file": "016.md",
+      "page_title": "通鑑紀事本末/第十六卷",
+      "revid": 2613077,
+      "md_len": 51402
+    },
+    {
+      "n": 17,
+      "title": "第十七卷",
+      "file": "017.md",
+      "page_title": "通鑑紀事本末/第十七卷",
+      "revid": 2149356,
+      "md_len": 47730
+    },
+    {
+      "n": 18,
+      "title": "第十八卷",
+      "file": "018.md",
+      "page_title": "通鑑紀事本末/第十八卷",
+      "revid": 2611584,
+      "md_len": 45717
+    },
+    {
+      "n": 19,
+      "title": "第十九卷",
+      "file": "019.md",
+      "page_title": "通鑑紀事本末/第十九卷",
+      "revid": 2149358,
+      "md_len": 55039
+    },
+    {
+      "n": 20,
+      "title": "第二十卷",
+      "file": "020.md",
+      "page_title": "通鑑紀事本末/第二十卷",
+      "revid": 2172410,
+      "md_len": 51726
+    },
+    {
+      "n": 21,
+      "title": "第二十一卷",
+      "file": "021.md",
+      "page_title": "通鑑紀事本末/第二十一卷",
+      "revid": 2149341,
+      "md_len": 51104
+    },
+    {
+      "n": 22,
+      "title": "第二十二卷",
+      "file": "022.md",
+      "page_title": "通鑑紀事本末/第二十二卷",
+      "revid": 2149345,
+      "md_len": 49671
+    },
+    {
+      "n": 23,
+      "title": "第二十三卷",
+      "file": "023.md",
+      "page_title": "通鑑紀事本末/第二十三卷",
+      "revid": 2171001,
+      "md_len": 59610
+    },
+    {
+      "n": 24,
+      "title": "第二十四卷",
+      "file": "024.md",
+      "page_title": "通鑑紀事本末/第二十四卷",
+      "revid": 2149350,
+      "md_len": 57240
+    },
+    {
+      "n": 25,
+      "title": "第二十五卷",
+      "file": "025.md",
+      "page_title": "通鑑紀事本末/第二十五卷",
+      "revid": 2149346,
+      "md_len": 55977
+    },
+    {
+      "n": 26,
+      "title": "第二十六卷",
+      "file": "026.md",
+      "page_title": "通鑑紀事本末/第二十六卷",
+      "revid": 2604680,
+      "md_len": 44293
+    },
+    {
+      "n": 27,
+      "title": "第二十七卷",
+      "file": "027.md",
+      "page_title": "通鑑紀事本末/第二十七卷",
+      "revid": 2322571,
+      "md_len": 54297
+    },
+    {
+      "n": 28,
+      "title": "第二十八卷",
+      "file": "028.md",
+      "page_title": "通鑑紀事本末/第二十八卷",
+      "revid": 2149347,
+      "md_len": 48592
+    },
+    {
+      "n": 29,
+      "title": "第二十九卷",
+      "file": "029.md",
+      "page_title": "通鑑紀事本末/第二十九卷",
+      "revid": 2170930,
+      "md_len": 66442
+    },
+    {
+      "n": 30,
+      "title": "第三十卷",
+      "file": "030.md",
+      "page_title": "通鑑紀事本末/第三十卷",
+      "revid": 2650553,
+      "md_len": 59808
+    },
+    {
+      "n": 31,
+      "title": "第三十一卷",
+      "file": "031.md",
+      "page_title": "通鑑紀事本末/第三十一卷",
+      "revid": 2666371,
+      "md_len": 61292
+    },
+    {
+      "n": 32,
+      "title": "第三十二卷",
+      "file": "032.md",
+      "page_title": "通鑑紀事本末/第三十二卷",
+      "revid": 2626991,
+      "md_len": 42192
+    },
+    {
+      "n": 33,
+      "title": "第三十三卷",
+      "file": "033.md",
+      "page_title": "通鑑紀事本末/第三十三卷",
+      "revid": 2610053,
+      "md_len": 60889
+    },
+    {
+      "n": 34,
+      "title": "第三十四卷",
+      "file": "034.md",
+      "page_title": "通鑑紀事本末/第三十四卷",
+      "revid": 2629706,
+      "md_len": 50794
+    },
+    {
+      "n": 35,
+      "title": "第三十五卷",
+      "file": "035.md",
+      "page_title": "通鑑紀事本末/第三十五卷",
+      "revid": 2322572,
+      "md_len": 46656
+    },
+    {
+      "n": 36,
+      "title": "第三十六卷",
+      "file": "036.md",
+      "page_title": "通鑑紀事本末/第三十六卷",
+      "revid": 2149336,
+      "md_len": 41394
+    },
+    {
+      "n": 37,
+      "title": "第三十七卷",
+      "file": "037.md",
+      "page_title": "通鑑紀事本末/第三十七卷",
+      "revid": 2173473,
+      "md_len": 57533
+    },
+    {
+      "n": 38,
+      "title": "第三十八卷",
+      "file": "038.md",
+      "page_title": "通鑑紀事本末/第三十八卷",
+      "revid": 2149335,
+      "md_len": 51399
+    },
+    {
+      "n": 39,
+      "title": "第三十九卷",
+      "file": "039.md",
+      "page_title": "通鑑紀事本末/第三十九卷",
+      "revid": 2149332,
+      "md_len": 50650
+    },
+    {
+      "n": 40,
+      "title": "第四十卷",
+      "file": "040.md",
+      "page_title": "通鑑紀事本末/第四十卷",
+      "revid": 2588907,
+      "md_len": 58553
+    },
+    {
+      "n": 41,
+      "title": "第四十一卷",
+      "file": "041.md",
+      "page_title": "通鑑紀事本末/第四十一卷",
+      "revid": 2149365,
+      "md_len": 59450
+    },
+    {
+      "n": 42,
+      "title": "第四十二卷",
+      "file": "042.md",
+      "page_title": "通鑑紀事本末/第四十二卷",
+      "revid": 2149366,
+      "md_len": 62314
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "南宋作品": 42
+  }
+}

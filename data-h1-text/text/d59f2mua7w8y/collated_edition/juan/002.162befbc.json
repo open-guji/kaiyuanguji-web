@@ -1,0 +1,60 @@
+{
+  "title": "史編·雜傳類",
+  "part": "main",
+  "bian": "history",
+  "lei": "雜傳類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "聖賢高士傳一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "聖賢高士傳",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜傳類",
+      "zhi_no": 7,
+      "juan_no": 64,
+      "dynasty": "魏",
+      "author": "嵇康",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f2pugkzr5",
+      "link_basis": "本庫已有此書（嵇康聖賢高士傳），前次以題名精確比對而未撞上，誤建 1ewsa49otw2de，今改繫舊條。",
+      "relink_note": "誤建之由：庫中題名不規範，撰人或在題前、或在題後、或在撰人欄，精確比對必落空。",
+      "content": ""
+    },
+    {
+      "title": "鑑戒象贊一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "鑑戒象贊",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜傳類",
+      "zhi_no": 7,
+      "juan_no": 64,
+      "dynasty": "北魏",
+      "author": "常景",
+      "author_role": "撰",
+      "work_id": "d59f286chptt",
+      "link_basis": "題同且撰人「常景」合，唯一",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    }
+  ]
+}

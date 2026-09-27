@@ -1,0 +1,31 @@
+{
+ "title": "法家類",
+ "sections": [
+  {
+   "title": "法家類",
+   "level": 3,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "《政論》六卷",
+   "level": 3,
+   "type": "book",
+   "content": "崔寔 政論六卷",
+   "work_id": "d59f24m7kq9s"
+  },
+  {
+   "title": "《政論》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《玉海·藝文》引司馬公曰：“寔論以矯一時之枉，非百世之通義。”"
+  },
+  {
+   "title": "《反韓非》",
+   "level": 3,
+   "type": "book",
+   "content": "劉陶 反韓非",
+   "work_id": "d59f24lxl4w8"
+  }
+ ]
+}

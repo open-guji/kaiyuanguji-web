@@ -1,0 +1,811 @@
+{
+  "title": "子部·雜家類",
+  "sections": [
+    {
+      "title": "雜家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "汲冢名三篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢名三篇　案似《禮記》，又似《爾雅》、《論語》。",
+      "work_id": "d59f9uwwbl6o"
+    },
+    {
+      "title": "汲冢梁邱藏一篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢梁邱藏一篇　案先叙魏之世數，次言邱藏金玉事。",
+      "work_id": "d59f9uwwbl6p"
+    },
+    {
+      "title": "汲冢生封一篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢生封一篇",
+      "work_id": "d59f9uwwbl6q"
+    },
+    {
+      "title": "汲冢大曆二篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢大曆二篇　案鄒子談天類也。",
+      "work_id": "d59f9uwwbl6r"
+    },
+    {
+      "title": "汲冢圖詩一篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢圖詩一篇　案畫贊之屬。",
+      "work_id": "d59f9uwwbl6s"
+    },
+    {
+      "title": "汲冢雜書十九篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢雜書十九篇　案《周食田法》、《周書》、《論楚事》、《周穆王美人盛姬死事》。上六種並据本書《束皙傳》。",
+      "work_id": "d59f9uwwbl6t"
+    },
+    {
+      "title": "傅嘏　才性同異論",
+      "level": 3,
+      "type": "book",
+      "content": "傅嘏　才性同異論　据《國志》傳。",
+      "work_id": "d59f9uwwbl6u",
+      "note": "撰人後置：原文「上二種並傅嘏撰」總標於數條之後"
+    },
+    {
+      "title": "鍾會　才性同異論",
+      "level": 3,
+      "type": "book",
+      "content": "鍾會　才性同異論",
+      "work_id": "d59f9uwwmtq9",
+      "note": "撰人後置：原文「上五種並鍾會撰」總標於數條之後"
+    },
+    {
+      "title": "傅嘏　才性同論",
+      "level": 3,
+      "type": "book",
+      "content": "傅嘏　才性同論　据《世説》注。　上二種並傅嘏撰。",
+      "work_id": "d59f9uwwbl6v",
+      "note": "撰人後置：原文「上二種並傅嘏撰」總標於數條之後"
+    },
+    {
+      "title": "鍾會　夏少康漢高祖論",
+      "level": 3,
+      "type": "book",
+      "content": "鍾會　夏少康漢高祖論　据《國志·高貴鄉公紀》注。",
+      "work_id": "d59f9uwwmtq8",
+      "note": "撰人後置：原文「上五種並鍾會撰」總標於數條之後"
+    },
+    {
+      "title": "鍾會　道論二十篇",
+      "level": 3,
+      "type": "book",
+      "content": "鍾會　道論二十篇　上二種並据《國志》傳。",
+      "work_id": "d59f27snm03n",
+      "note": "撰人後置：原文「上五種並鍾會撰」總標於數條之後"
+    },
+    {
+      "title": "鍾會　才性合論",
+      "level": 3,
+      "type": "book",
+      "content": "鍾會　才性合論　据《世説》注。",
+      "work_id": "d59f9uwwmtqa",
+      "note": "撰人後置：原文「上五種並鍾會撰」總標於數條之後"
+    },
+    {
+      "title": "鍾會　芻蕘論五卷",
+      "level": 3,
+      "type": "book",
+      "content": "鍾會　芻蕘論五卷　案《通志略》有“語”字。；据《唐志》。　上五種並鍾會撰。",
+      "work_id": "d59f2pujpcle",
+      "note": "撰人後置：原文「上五種並鍾會撰」總標於數條之後"
+    },
+    {
+      "title": "嵇康　宅無吉凶攝生論難上中下三篇",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　宅無吉凶攝生論難上中下三篇",
+      "work_id": "d59f9uwwmtqb",
+      "note": "撰人後置：原文「上四種並嵇康撰」總標於數條之後"
+    },
+    {
+      "title": "嵇康　難張遼自然好學論",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　難張遼自然好學論",
+      "work_id": "d59f9uwwmtqc",
+      "note": "撰人後置：原文「上四種並嵇康撰」總標於數條之後"
+    },
+    {
+      "title": "嵇康　管蔡釋私論",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　管蔡釋私論",
+      "work_id": "d59f9uwwy29s",
+      "note": "撰人後置：原文「上四種並嵇康撰」總標於數條之後"
+    },
+    {
+      "title": "嵇康　明膽論",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　明膽論　上四種並嵇康撰。並据王楙《野客叢書》。",
+      "work_id": "d59f9uwwy29t",
+      "note": "撰人後置：原文「上四種並嵇康撰」總標於數條之後"
+    },
+    {
+      "title": "皇甫謐　鬼谷子注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫謐　鬼谷子注三卷　皇甫謐撰。",
+      "work_id": "d59f27y4vzer",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "李秉　家誡",
+      "level": 3,
+      "type": "book",
+      "content": "李秉　家誡　李秉撰。据《國志·李通傳》注：“秉答司馬文王問，因以爲《家誡》。秉字玄冑。”本書《李重傳》作“李景”，唐人避諱改。《世説》注作“李康《家誡》”，誤。",
+      "work_id": "d59f9nmpx05e",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "范喬　劉揚優劣論",
+      "level": 3,
+      "type": "book",
+      "content": "范喬　劉揚優劣論　范喬撰。据本書傳。",
+      "work_id": "d59f9pqm572f",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "陳壽　釋諱",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　釋諱",
+      "work_id": "d59f9uwwy29u",
+      "note": "撰人後置：原文「上二種並陳壽撰」總標於數條之後"
+    },
+    {
+      "title": "陳壽　廣國論",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　廣國論　上二種並陳壽撰。据《華陽國志》。",
+      "work_id": "d59f9uwwy29v",
+      "note": "撰人後置：原文「上二種並陳壽撰」總標於數條之後"
+    },
+    {
+      "title": "曹景　六代論",
+      "level": 3,
+      "type": "book",
+      "content": "曹景　六代論　曹景撰。据本書《曹志傳》。",
+      "work_id": "d59f27xlj9q9",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "唐滂　唐子十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐滂　唐子十卷　唐滂撰。　案舊題吳人。馬總《意林》云有“大晉應期，一舉席捲”語，則書實成於晉時。滂字惠潤，生吳太元二年，是吳亡時滂年甫三十，其人晉宜矣。",
+      "work_id": "d59f27t6105g",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "孫毓　孫氏成敗志三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫毓　孫氏成敗志三卷　孫毓撰。",
+      "work_id": "d59f27wtfwu8",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "何攀　時務論五篇",
+      "level": 3,
+      "type": "book",
+      "content": "何攀　時務論五篇　何攀撰。据《華陽國志》云：“吳平後上。”",
+      "work_id": "d59f27wtr5dt",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "薛瑩　新議八篇",
+      "level": 3,
+      "type": "book",
+      "content": "薛瑩　新議八篇　薛瑩撰。据《吳志》。",
+      "work_id": "d59f27smd1xd",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "應吉甫　華林集",
+      "level": 3,
+      "type": "book",
+      "content": "應吉甫　華林集　應吉甫撰。据《御覽》。　案吉甫名貞，本書《文苑》有傳。",
+      "work_id": "d59f9pqmro5c",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "束皙　汲冢書鈔",
+      "level": 3,
+      "type": "book",
+      "content": "束皙　汲冢書鈔　束皙撰。据《初學記》居處部引。",
+      "work_id": "d59f2pquq9dv",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "獨斷注",
+      "level": 3,
+      "type": "book",
+      "content": "獨斷注　司馬彪撰。据《文選》註。",
+      "work_id": "d59f9uwx9atc"
+    },
+    {
+      "title": "李嵩　行事記",
+      "level": 3,
+      "type": "book",
+      "content": "李嵩　行事記　李嵩撰。据《通典》引。",
+      "work_id": "d59f27vz5w5d",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "郭頒　羣英論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭頒　羣英論一卷　郭頒撰。据《七録》。",
+      "work_id": "d59f9nmxep70",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "劉徽　魯史欹器圖注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉徽　魯史欹器圖注一卷　劉徽撰。",
+      "work_id": "d59f9s1mygaw",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "江統　徙戎論",
+      "level": 3,
+      "type": "book",
+      "content": "江統　徙戎論　江統撰。据本書《匈奴傳》。",
+      "work_id": "d59f9uwx9atd",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "杜預　安邊論",
+      "level": 3,
+      "type": "book",
+      "content": "杜預　安邊論　杜預撰。据本書傳。",
+      "work_id": "d59f9uwx9ate",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "釋時論",
+      "level": 3,
+      "type": "book",
+      "content": "釋時論　高平王沈撰。据本書《惠帝紀》。",
+      "work_id": "d59f9uwx9atf"
+    },
+    {
+      "title": "賈充　典戒",
+      "level": 3,
+      "type": "book",
+      "content": "賈充　典戒　賈充撰。据《類聚》歲時部引。",
+      "work_id": "d59f9uwx9atg",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "華廙　善文",
+      "level": 3,
+      "type": "book",
+      "content": "華廙　善文　華廙撰。据本書傳云：“集經史要事而成。”",
+      "work_id": "d59f6ssrrvj5",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "連珠一卷",
+      "level": 3,
+      "type": "book",
+      "content": "連珠一卷　据《七録》。",
+      "work_id": "d59f9ux9fk07"
+    },
+    {
+      "title": "陸機　要覽三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　要覽三卷　案《崇文目》作“二”，《中興目》作“三”。；据《唐志》。　案機《自序》云：“直省之暇，乃集《要術》三篇。上曰《連璧》，集其嘉名，取其連類；中曰《述聞》，實述予之所聞；下曰《析名》，乃搜同辨異也。”",
+      "work_id": "d59f27vixjwi",
+      "note": "撰人後置：原文「上四種並陸機撰」總標於數條之後"
+    },
+    {
+      "title": "陸機　纂要",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　纂要　据《御覽》引。與上別出。",
+      "work_id": "d59f9pqm572a",
+      "note": "撰人後置：原文「上四種並陸機撰」總標於數條之後"
+    },
+    {
+      "title": "陸機　五等論",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　五等論",
+      "work_id": "d59f27ysas5c",
+      "note": "撰人後置：原文「上四種並陸機撰」總標於數條之後"
+    },
+    {
+      "title": "陸機　辨亡論",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　辨亡論　上二種並据本書傳。　上四種並陸機撰。",
+      "work_id": "d59f9uwxkjcw",
+      "note": "撰人後置：原文「上四種並陸機撰」總標於數條之後"
+    },
+    {
+      "title": "陸喜　較論品格篇",
+      "level": 3,
+      "type": "book",
+      "content": "陸喜　較論品格篇",
+      "work_id": "d59f9uwxkjcx",
+      "note": "撰人後置：原文「上五種並陸喜撰」總標於數條之後"
+    },
+    {
+      "title": "陸喜　西州清論",
+      "level": 3,
+      "type": "book",
+      "content": "陸喜　西州清論　案借稱諸葛孔明以行其書。",
+      "work_id": "d59f27w2a9kw",
+      "note": "撰人後置：原文「上五種並陸喜撰」總標於數條之後"
+    },
+    {
+      "title": "陸喜　訪論",
+      "level": 3,
+      "type": "book",
+      "content": "陸喜　訪論",
+      "work_id": "d59f27u68j5u",
+      "note": "撰人後置：原文「上五種並陸喜撰」總標於數條之後"
+    },
+    {
+      "title": "陸喜　審機",
+      "level": 3,
+      "type": "book",
+      "content": "陸喜　審機　上四書並据本書傳。",
+      "work_id": "d59f27wl0i6a",
+      "note": "撰人後置：原文「上五種並陸喜撰」總標於數條之後"
+    },
+    {
+      "title": "陸喜　辨政論",
+      "level": 3,
+      "type": "book",
+      "content": "陸喜　辨政論　据《御覽》引。　上五種並陸喜撰。",
+      "work_id": "d59f9uwxkjcy",
+      "note": "撰人後置：原文「上五種並陸喜撰」總標於數條之後"
+    },
+    {
+      "title": "石崇　奴券",
+      "level": 3,
+      "type": "book",
+      "content": "石崇　奴券　石崇撰。据《御覽》引。",
+      "work_id": "d59f9uwxkjcz",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "張華　感應類從志一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張華　感應類從志一卷　張華撰。据《四庫存目》。",
+      "work_id": "d59f27uv7ima",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "索靖　索子二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "索靖　索子二十卷　索靖撰。据本書傳。",
+      "work_id": "d59f27wf2zuq",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "傅玄　傅子一百二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅玄　傅子一百二十卷　傅玄撰。　案本書傳云：“内、外、中篇，百四十首。”《通志》存五卷。",
+      "work_id": "d59f27x5m60x",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "宗岱　明真論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗岱　明真論一卷　宗岱撰。据《七録》。　案《隋志》列總集類。",
+      "work_id": "d59f27waefpd",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "宋岱　神鬼論",
+      "level": 3,
+      "type": "book",
+      "content": "宋岱　神鬼論　宋岱撰。据《説郛》引裴啓《語林》云：“岱爲青州刺史，禁淫祀著。”　案“宋岱”即“宗岱”之譌，説詳易類。",
+      "work_id": "d59f9uwxkjd0",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "古今通論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今通論三卷　案《隋志》云：“梁有二卷。”《通志》作“二十卷”，“十”字疑衍。；松滋令王嬰撰。据《唐志》。　案《隋志》列儒家《孫氏成敗論》後，當亦晉人。",
+      "work_id": "d59f9uwxvrwg",
+      "note": "【題為校語所隔，今合】"
+    },
+    {
+      "title": "鄒子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒子一卷　据《意林》。　案馬國翰云：“《意林》在《化清經》、《成敗志》之間。考《化清經》蔡洪撰，《成敗志》孫毓撰，皆晉人，鄒亦當晉人。《晉書·文苑傳》：‘鄒湛著詩及論議二十五首。’以時考之，與蔡、孫皆在西晉初。《御覽》引《鄒子·叙》‘邢高、吕安飲市仰天泣’，殆目覩其事而論之也。”",
+      "work_id": "d59f9uwxvrwh"
+    },
+    {
+      "title": "夏侯湛　論三十餘篇",
+      "level": 3,
+      "type": "book",
+      "content": "夏侯湛　論三十餘篇　夏侯湛撰。据本書傳。",
+      "work_id": "d59f9uwxvrwi",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王延秀　感應傳八卷",
+      "level": 3,
+      "type": "book",
+      "content": "王延秀　感應傳八卷　尚書郎王延秀撰。",
+      "work_id": "d59f27u9zdoh",
+      "note": "撰人自考證文首句提取（E）"
+    },
+    {
+      "title": "楊偉　桑邱先生書二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊偉　桑邱先生書二卷",
+      "work_id": "d59f27tbyih0",
+      "note": "撰人後置：原文「上三種並楊偉撰」總標於數條之後"
+    },
+    {
+      "title": "楊偉　乘邱先生書三卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊偉　乘邱先生書三卷　据《宋書·外國傳》沮渠茂虔獻河西人所著書。　案書與《時務論》並獻，疑亦偉撰，與上一種。",
+      "work_id": "d59f9uwxvrwj",
+      "note": "撰人後置：原文「上三種並楊偉撰」總標於數條之後"
+    },
+    {
+      "title": "楊偉　時務論十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊偉　時務論十二卷　上三種並楊偉撰。　案書獻於茂虔，是偉屬敦煌人。",
+      "work_id": "d59f27uonj7k",
+      "note": "撰人後置：原文「上三種並楊偉撰」總標於數條之後"
+    },
+    {
+      "title": "張顯　析言論二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張顯　析言論二十卷",
+      "work_id": "d59f27wqbjep",
+      "note": "撰人後置：原文「上二種並議郎張顯撰」總標於數條之後；原 author 作「議郎張顯」，官稱／地望誤入人名，今剝作「張顯」"
+    },
+    {
+      "title": "張顯　古今訓十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張顯　古今訓十一卷　上二種並議郎張顯撰。",
+      "work_id": "d59f27vhdd6o",
+      "note": "撰人後置：原文「上二種並議郎張顯撰」總標於數條之後；原 author 作「議郎張顯」，官稱／地望誤入人名，今剝作「張顯」"
+    },
+    {
+      "title": "古今注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今注三卷　案《舊唐志》作“五”，《新唐志》作“一”，別出亦作“三”。；崔豹撰。　案《崇文目》云：“雜取古今名物，各爲考釋，凡八門，原釋事物初始之意。”",
+      "work_id": "d59f9uwxvrwk",
+      "note": "【題為校語所隔，今合】"
+    },
+    {
+      "title": "魯褒　錢神論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "魯褒　錢神論一卷　魯褒撰。",
+      "work_id": "d59f27u91o1v",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "成公綏　錢神論",
+      "level": 3,
+      "type": "book",
+      "content": "成公綏　錢神論　成公綏撰。据《御覽》引。",
+      "work_id": "d59f9nn3ng1v",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "杜嵩　任子春秋一卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜嵩　任子春秋一卷　杜嵩撰。　案本書《惠帝紀》：“廬江杜嵩疾時之作。”《杜夷傳》“嵩”作“崧”。　又案《通志·本紀》、顧炎武《日知録》、周濟《晉略》並作“壬子春秋”。壬子，晉惠帝元康二年，賈后弑楊后之歲也，以壬子命名，正與疾時之意合。王鳴盛《十七史商榷》云：“‘任子’當作‘杜子’。”則又望文生義，絕無證據者也。",
+      "work_id": "d59f27u0m9ds",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "慕容廆　家令",
+      "level": 3,
+      "type": "book",
+      "content": "慕容廆　家令　慕容廆撰。据本書載記。",
+      "work_id": "d59f9s1pgcn7",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "韋謏　伏林",
+      "level": 3,
+      "type": "book",
+      "content": "韋謏　伏林　二千餘言。",
+      "work_id": "d59f9uwxvrwl",
+      "note": "撰人後置：原文「上三種並韋謏撰」總標於數條之後"
+    },
+    {
+      "title": "韋謏　集記世事",
+      "level": 3,
+      "type": "book",
+      "content": "韋謏　集記世事　數十萬言。",
+      "work_id": "d59f9uwy70g0",
+      "note": "撰人後置：原文「上三種並韋謏撰」總標於數條之後"
+    },
+    {
+      "title": "韋謏　典林二十三篇",
+      "level": 3,
+      "type": "book",
+      "content": "韋謏　典林二十三篇　上三種並韋謏撰。据本書傳云：“皆深博有才義。”",
+      "work_id": "d59f9s1cyux1",
+      "note": "撰人後置：原文「上三種並韋謏撰」總標於數條之後"
+    },
+    {
+      "title": "祈嘉　二九神經",
+      "level": 3,
+      "type": "book",
+      "content": "祈嘉　二九神經　祈嘉撰。依《孝經》。据本書《隱逸傳》。",
+      "work_id": "d59f27u9zdoi",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "黄容　家訓",
+      "level": 3,
+      "type": "book",
+      "content": "黄容　家訓　黄容撰。据《華陽國志》。",
+      "work_id": "d59f9nmpx05f",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王彬　廊廟五格二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王彬　廊廟五格二卷　王彬撰。据本書傳。",
+      "work_id": "d59f2gkfeepu",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "干寶　變化論",
+      "level": 3,
+      "type": "book",
+      "content": "干寶　變化論　据《荆楚歲時記》引。　案《埤雅·釋魚》引作“陰陽自然變化論”，《釋蟲》引作“變化論”，《釋魚》、《釋鳥》引作“自然論”，蓋一書也。",
+      "work_id": "d59f9uwy70g1",
+      "note": "撰人後置：原文「上二種並干寶撰」總標於數條之後"
+    },
+    {
+      "title": "干寶　三百記",
+      "level": 3,
+      "type": "book",
+      "content": "干寶　三百記　据《史記·孔子世家》正義引。上二種並干寶撰。",
+      "work_id": "d59f9uwy70g2",
+      "note": "撰人後置：原文「上二種並干寶撰」總標於數條之後"
+    },
+    {
+      "title": "孔衍　在窮記",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　在窮記　据《御覽》帛部引，云太安二年六月。",
+      "work_id": "d59f9nmxpxqd",
+      "note": "撰人後置：原文「上二種並孔衍撰」總標於數條之後"
+    },
+    {
+      "title": "孔衍　孔氏説林五卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　孔氏説林五卷　据《唐志》。",
+      "work_id": "d59f9nmqups8",
+      "note": "撰人後置：原文「上二種並孔衍撰」總標於數條之後"
+    },
+    {
+      "title": "秦子二卷",
+      "level": 3,
+      "type": "book",
+      "content": "秦子二卷　据《意林》引其書有顧彦先難云云，當亦晉人。",
+      "work_id": "d59f9uwy70g3"
+    },
+    {
+      "title": "梅子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "梅子一卷　据《意林》。",
+      "work_id": "d59f9nmqjh8q"
+    },
+    {
+      "title": "郭義恭　廣志二卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭義恭　廣志二卷　郭義恭撰。",
+      "work_id": "d59f27urgo3m",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "李軌　異同志",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　異同志　李軌撰。据《玉燭寶典》引。",
+      "work_id": "d59f27vzsd8g",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "謝萬　八賢傳",
+      "level": 3,
+      "type": "book",
+      "content": "謝萬　八賢傳　謝萬撰。据本書傳。",
+      "work_id": "d59f9uwy70g4",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "孔嚴　通葛論",
+      "level": 3,
+      "type": "book",
+      "content": "孔嚴　通葛論　孔嚴撰。据本書傳。",
+      "work_id": "d59f9uwyi8zk",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "龔壯　邁德論",
+      "level": 3,
+      "type": "book",
+      "content": "龔壯　邁德論　龔壯撰。据本書《隱逸傳》。",
+      "work_id": "d59f9pqltyiz",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王坦之　廢莊論",
+      "level": 3,
+      "type": "book",
+      "content": "王坦之　廢莊論　王坦之撰。据本書傳。",
+      "work_id": "d59f9nmqjh8p",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "范泰　古今善言三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范泰　古今善言三十卷　范泰撰。",
+      "work_id": "d59f286h69z6",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "董勛　答問",
+      "level": 3,
+      "type": "book",
+      "content": "董勛　答問　議郎董勛撰。据魏收《魏書·自序》。",
+      "work_id": "d59f9uwyi8zl",
+      "note": "撰人自考證文首句提取（E）"
+    },
+    {
+      "title": "伏滔　正淮論二篇",
+      "level": 3,
+      "type": "book",
+      "content": "伏滔　正淮論二篇　伏滔撰。据本書傳。",
+      "work_id": "d59f9uwyi8zm",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "蔡謨　蔡司徒書三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡謨　蔡司徒書三卷　蔡謨撰。据《七録》。",
+      "work_id": "d59f27uq7pxf",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "戴逵　纂要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴逵　纂要一卷　戴逵撰。　案《隋志》作“戴安道”，考本書《隱逸傳》，戴逵字安道。",
+      "work_id": "d59f2pzraznk",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "孟儀　子林二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孟儀　子林二十卷　孟儀撰。",
+      "work_id": "d59f27we5a82",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "祖台之　道論",
+      "level": 3,
+      "type": "book",
+      "content": "祖台之　道論　祖台之撰。据《初學記》引。",
+      "work_id": "d59f27wi7dab",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "徐廣　雜記",
+      "level": 3,
+      "type": "book",
+      "content": "徐廣　雜記　徐廣撰。据戴凱之《竹譜》引。",
+      "work_id": "d59f9s1mygau",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "庾法暢　人物論",
+      "level": 3,
+      "type": "book",
+      "content": "庾法暢　人物論　庾法暢撰。据《世説》註。",
+      "work_id": "d59f27tuor28",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "殷仲堪　天聖論",
+      "level": 3,
+      "type": "book",
+      "content": "殷仲堪　天聖論　殷仲堪撰。据《初學記》人事部引。",
+      "work_id": "d59f9uwyi8zn",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "刁雍　教誡二十餘篇",
+      "level": 3,
+      "type": "book",
+      "content": "刁雍　教誡二十餘篇　姚興太子中庶子刁雍撰。訓導子孫。据《魏書》傳。",
+      "work_id": "d59f9bl2hcsh",
+      "note": "原文「姚興太子中庶子刁雍撰」"
+    },
+    {
+      "title": "劉昞　劉劭人物志注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉昞　劉劭人物志注三卷　劉昞撰。",
+      "work_id": "d59f9uwythj5",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "俗問十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "俗問十一卷",
+      "work_id": "d59f9uwythj6"
+    },
+    {
+      "title": "亡典七卷",
+      "level": 3,
+      "type": "book",
+      "content": "亡典七卷　上二種並据《宋書·外國傳》沮渠茂虔獻河西人所著書。",
+      "work_id": "d59f9uwythj7"
+    },
+    {
+      "title": "郭義恭　廣志",
+      "level": 3,
+      "type": "book",
+      "content": "郭義恭　廣志　郭義恭撰。据馬國翰《玉函山房叢書》。",
+      "work_id": "d59f27urgo3m",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "雜家類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右雜家類一百種。"
+    }
+  ]
+}

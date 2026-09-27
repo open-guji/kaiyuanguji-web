@@ -1,0 +1,219 @@
+{
+  "work_id": "d59f2mel8d1d",
+  "type": "catalog",
+  "total_entries": 9120,
+  "matched_entries": 7596,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json",
+    "juan/009.json",
+    "juan/010.json",
+    "juan/011.json",
+    "juan/012.json",
+    "juan/013.json",
+    "juan/014.json",
+    "juan/015.json",
+    "juan/016.json",
+    "juan/017.json",
+    "juan/018.json",
+    "juan/019.json",
+    "juan/020.json",
+    "juan/021.json",
+    "juan/022.json",
+    "juan/023.json",
+    "juan/024.json",
+    "juan/025.json",
+    "juan/026.json",
+    "juan/027.json",
+    "juan/028.json",
+    "juan/029.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "御注",
+      "files": [
+        "juan/001.json"
+      ]
+    },
+    {
+      "label": "易",
+      "files": [
+        "juan/002.json"
+      ]
+    },
+    {
+      "label": "書",
+      "files": [
+        "juan/003.json"
+      ]
+    },
+    {
+      "label": "詩",
+      "files": [
+        "juan/004.json"
+      ]
+    },
+    {
+      "label": "周禮",
+      "files": [
+        "juan/005.json"
+      ]
+    },
+    {
+      "label": "儀禮",
+      "files": [
+        "juan/006.json"
+      ]
+    },
+    {
+      "label": "禮記",
+      "files": [
+        "juan/007.json"
+      ]
+    },
+    {
+      "label": "禮",
+      "files": [
+        "juan/008.json"
+      ]
+    },
+    {
+      "label": "通禮",
+      "files": [
+        "juan/009.json"
+      ]
+    },
+    {
+      "label": "樂",
+      "files": [
+        "juan/010.json"
+      ]
+    },
+    {
+      "label": "春秋",
+      "files": [
+        "juan/011.json"
+      ]
+    },
+    {
+      "label": "論語",
+      "files": [
+        "juan/012.json"
+      ]
+    },
+    {
+      "label": "孝經",
+      "files": [
+        "juan/013.json"
+      ]
+    },
+    {
+      "label": "孟子",
+      "files": [
+        "juan/014.json"
+      ]
+    },
+    {
+      "label": "爾雅",
+      "files": [
+        "juan/015.json"
+      ]
+    },
+    {
+      "label": "羣經",
+      "files": [
+        "juan/016.json"
+      ]
+    },
+    {
+      "label": "四書",
+      "files": [
+        "juan/017.json"
+      ]
+    },
+    {
+      "label": "逸經",
+      "files": [
+        "juan/018.json"
+      ]
+    },
+    {
+      "label": "毖緯",
+      "files": [
+        "juan/019.json"
+      ]
+    },
+    {
+      "label": "擬經",
+      "files": [
+        "juan/020.json"
+      ]
+    },
+    {
+      "label": "承師",
+      "files": [
+        "juan/021.json"
+      ]
+    },
+    {
+      "label": "宣講",
+      "files": [
+        "juan/022.json"
+      ]
+    },
+    {
+      "label": "刋石",
+      "files": [
+        "juan/023.json"
+      ]
+    },
+    {
+      "label": "書壁",
+      "files": [
+        "juan/024.json"
+      ]
+    },
+    {
+      "label": "鏤板",
+      "files": [
+        "juan/025.json"
+      ]
+    },
+    {
+      "label": "著錄",
+      "files": [
+        "juan/026.json"
+      ]
+    },
+    {
+      "label": "通說",
+      "files": [
+        "juan/027.json"
+      ]
+    },
+    {
+      "label": "家學",
+      "files": [
+        "juan/028.json"
+      ]
+    },
+    {
+      "label": "自述",
+      "files": [
+        "juan/029.json"
+      ]
+    }
+  ],
+  "text_quality": {
+    "grade": "source",
+    "source_note": "kanripo KR2n0011（文淵閣四庫全書本），原文照錄未加標點。縮排即層：0 條目首行／2 著錄／3 存佚／1 論斷／4 按語；卷首縮排三格者是本卷之類。重取見 scripts/jyk_fetch_source.py，落地見 scripts/jyk_build_collated.py。"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25"
+}

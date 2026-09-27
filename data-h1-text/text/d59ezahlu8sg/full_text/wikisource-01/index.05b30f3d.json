@@ -1,0 +1,201 @@
+{
+  "work_id": "d59ezahlu8sg",
+  "version_label": "國語",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%9C%8B%E8%AA%9E",
+    "page_title": "國語",
+    "revid": 2013738,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 22,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "國語解敘",
+      "file": "001.md",
+      "page_title": "國語/國語解敘",
+      "revid": 369315,
+      "md_len": 563
+    },
+    {
+      "n": 2,
+      "title": "卷01",
+      "file": "002.md",
+      "page_title": "國語/卷01",
+      "revid": 1999131,
+      "md_len": 15428
+    },
+    {
+      "n": 3,
+      "title": "卷02",
+      "file": "003.md",
+      "page_title": "國語/卷02",
+      "revid": 2627407,
+      "md_len": 15165
+    },
+    {
+      "n": 4,
+      "title": "卷03",
+      "file": "004.md",
+      "page_title": "國語/卷03",
+      "revid": 1965895,
+      "md_len": 23405
+    },
+    {
+      "n": 5,
+      "title": "卷04",
+      "file": "005.md",
+      "page_title": "國語/卷04",
+      "revid": 4539708,
+      "md_len": 12001
+    },
+    {
+      "n": 6,
+      "title": "卷05",
+      "file": "006.md",
+      "page_title": "國語/卷05",
+      "revid": 2004681,
+      "md_len": 12750
+    },
+    {
+      "n": 7,
+      "title": "卷06",
+      "file": "007.md",
+      "page_title": "國語/卷06",
+      "revid": 1999236,
+      "md_len": 10728
+    },
+    {
+      "n": 8,
+      "title": "卷07",
+      "file": "008.md",
+      "page_title": "國語/卷07",
+      "revid": 1998797,
+      "md_len": 11075
+    },
+    {
+      "n": 9,
+      "title": "卷08",
+      "file": "009.md",
+      "page_title": "國語/卷08",
+      "revid": 1969266,
+      "md_len": 9659
+    },
+    {
+      "n": 10,
+      "title": "卷09",
+      "file": "010.md",
+      "page_title": "國語/卷09",
+      "revid": 1998798,
+      "md_len": 6827
+    },
+    {
+      "n": 11,
+      "title": "卷10",
+      "file": "011.md",
+      "page_title": "國語/卷10",
+      "revid": 1998799,
+      "md_len": 19095
+    },
+    {
+      "n": 12,
+      "title": "卷11",
+      "file": "012.md",
+      "page_title": "國語/卷11",
+      "revid": 1998990,
+      "md_len": 4848
+    },
+    {
+      "n": 13,
+      "title": "卷12",
+      "file": "013.md",
+      "page_title": "國語/卷12",
+      "revid": 2150401,
+      "md_len": 6124
+    },
+    {
+      "n": 14,
+      "title": "卷13",
+      "file": "014.md",
+      "page_title": "國語/卷13",
+      "revid": 1968506,
+      "md_len": 5589
+    },
+    {
+      "n": 15,
+      "title": "卷14",
+      "file": "015.md",
+      "page_title": "國語/卷14",
+      "revid": 2005229,
+      "md_len": 10689
+    },
+    {
+      "n": 16,
+      "title": "卷15",
+      "file": "016.md",
+      "page_title": "國語/卷15",
+      "revid": 2301923,
+      "md_len": 7694
+    },
+    {
+      "n": 17,
+      "title": "卷16",
+      "file": "017.md",
+      "page_title": "國語/卷16",
+      "revid": 2097377,
+      "md_len": 7121
+    },
+    {
+      "n": 18,
+      "title": "卷17",
+      "file": "018.md",
+      "page_title": "國語/卷17",
+      "revid": 2004400,
+      "md_len": 10570
+    },
+    {
+      "n": 19,
+      "title": "卷18",
+      "file": "019.md",
+      "page_title": "國語/卷18",
+      "revid": 1968603,
+      "md_len": 10242
+    },
+    {
+      "n": 20,
+      "title": "卷19",
+      "file": "020.md",
+      "page_title": "國語/卷19",
+      "revid": 2418459,
+      "md_len": 12801
+    },
+    {
+      "n": 21,
+      "title": "卷20",
+      "file": "021.md",
+      "page_title": "國語/卷20",
+      "revid": 1968461,
+      "md_len": 2788
+    },
+    {
+      "n": 22,
+      "title": "卷21",
+      "file": "022.md",
+      "page_title": "國語/卷21",
+      "revid": 1968473,
+      "md_len": 6443
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "dropped_refs": 1
+}

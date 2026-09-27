@@ -1,0 +1,443 @@
+{
+  "title": "史評類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "史評類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "御批通鑒綱目",
+      "content": "御批通鑒綱目五十九卷，通鑒綱目前編一卷，外紀一卷，舉要三卷，通鑒綱目續編二十七卷。康熙四十六年御撰。",
+      "work_id": "d59f2merh3wh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通鑒綱目前編",
+      "content": "",
+      "content_from": "御批通鑒綱目",
+      "work_id": "d59f2q79b9c0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "外紀",
+      "content": "",
+      "content_from": "御批通鑒綱目",
+      "work_id": "d59f2ngtho1s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "舉要",
+      "content": "",
+      "content_from": "御批通鑒綱目",
+      "work_id": "d59f2ntz0o3k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通鑒綱目續編",
+      "content": "",
+      "content_from": "御批通鑒綱目",
+      "work_id": "d59f2ngtho1t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "評鑒闡要",
+      "content": "評鑒闡要十二卷。乾隆三十六年，劉統勛等奉敕編。",
+      "work_id": "d59f2moj9k3m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古今儲貳金鑒",
+      "content": "古今儲貳金鑒六卷。乾隆四十六年敕撰。",
+      "work_id": "d59f2ntz0o3l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "承華事略補圖",
+      "content": "承華事略補圖六卷。元王惲撰，光緒時徐郙等奉敕補圖。史記評註十二卷。牛運震撰。",
+      "work_id": "d59f2ngtswlc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記評註",
+      "content": "",
+      "content_from": "承華事略補圖",
+      "work_id": "d59f2ngtswld"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史漢發明",
+      "content": "史漢發明五卷。傅澤鴻撰。",
+      "work_id": "d59f2ngtswle"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀通鑒論",
+      "content": "讀通鑒論三十卷。王夫之撰。",
+      "work_id": "d59f2ngu454w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋論",
+      "content": "宋論十五卷。王夫之撰。",
+      "work_id": "d59f2ntzbwn4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史論五答",
+      "content": "史論五答一卷。施國祁撰。",
+      "work_id": "d59f2ngu454x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史評",
+      "content": "明史評二卷。納蘭常安撰。",
+      "work_id": "d59f2ngufdog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史十二論",
+      "content": "明史十二論一卷。段玉裁撰。",
+      "work_id": "d59f2ngufdoh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀通鑒札記",
+      "content": "讀通鑒札記二十卷。章邦元撰。",
+      "work_id": "d59f2ngufdoi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通鑒評語",
+      "content": "通鑒評語五卷。申涵煜撰。",
+      "work_id": "d59f2nguqm80"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "看鑒偶評",
+      "content": "看鑒偶評四卷。尤侗撰。",
+      "work_id": "d59f2nguqm81"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鑒語經世編",
+      "content": "鑒語經世編二十七卷。魏裔介撰。",
+      "work_id": "d59f2met1am8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "唐鑒偶評",
+      "content": "唐鑒偶評四卷。周池撰。",
+      "work_id": "d59f2mexem80"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "綱目通論",
+      "content": "綱目通論一卷，歷代通論一卷。任兆麟撰。",
+      "work_id": "d59f2ngv1urk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代通論",
+      "content": "",
+      "content_from": "綱目通論",
+      "work_id": "d59f2ngv1url"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史雜記",
+      "content": "讀史雜記一卷，讀宋鑒論三卷。方宗誠撰。",
+      "work_id": "d59f2ngv1urm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀宋鑒論",
+      "content": "",
+      "content_from": "讀史雜記",
+      "work_id": "d59f2ngvd3b4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鑒評別錄",
+      "content": "鑒評別錄六十卷。黃恩彤撰。",
+      "work_id": "d59f2ngvd3b5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "閱史郄視",
+      "content": "閱史郄視四卷，續一卷。李塨撰。",
+      "work_id": "d59f2ngvobuo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史管見",
+      "content": "讀史管見一卷。湯斌撰。",
+      "work_id": "d59f2ntzbwn5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "午亭史評",
+      "content": "午亭史評二卷。陳廷敬撰。",
+      "work_id": "d59f2ngvobup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "茗香堂史論",
+      "content": "茗香堂史論四卷。彭孫貽撰。",
+      "work_id": "d59f2ngvobuq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史見",
+      "content": "史見二卷。陳遇夫撰。",
+      "work_id": "d59f2ngvzke8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史評",
+      "content": "史評一卷。謝濟世撰。",
+      "work_id": "d59f2ntzn56o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四鑒",
+      "content": "四鑒十六卷。尹會一撰。",
+      "work_id": "d59f2ngvzke9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中山史論",
+      "content": "中山史論二卷。郝浴撰。",
+      "work_id": "d59f2ngwasxs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十七朝史論一得",
+      "content": "十七朝史論一得一卷。郭倫撰。",
+      "work_id": "d59f2mex3dog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "石溪史話",
+      "content": "石溪史話八卷。劉鳳起撰。",
+      "work_id": "d59f2mex3doh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史學提要箋釋",
+      "content": "史學提要箋釋五卷。楊錫祐撰。",
+      "work_id": "d59f2ngwasxt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀書任子自鏡錄",
+      "content": "讀書任子自鏡錄二十二卷。胡季堂撰。",
+      "work_id": "d59f2ngwasxu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史林測義",
+      "content": "史林測義三十八卷。計大受撰。",
+      "work_id": "d59f2ngwm1hc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史大略",
+      "content": "讀史大略六十卷，附錄一卷。沙張白撰。",
+      "work_id": "d59f2ngwm1hd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "味俊齋史義",
+      "content": "味俊齋史義二卷。周濟撰。",
+      "work_id": "d59f2ngwxa0w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史筆記",
+      "content": "讀史筆記十二卷。吳烜撰。",
+      "work_id": "d59f2ngwxa0x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史提要錄",
+      "content": "讀史提要錄十二卷。夏之蓉撰。",
+      "work_id": "d59f2ngx8ikg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史論五種",
+      "content": "史論五種十一卷。李祖陶撰。",
+      "work_id": "d59f2ngx8ikh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史說",
+      "content": "史說一卷。黃式三撰。",
+      "work_id": "d59f2ngx8iki"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史說略",
+      "content": "史說略四卷。黃以周撰。",
+      "work_id": "d59f2ngxjr40"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史臆說",
+      "content": "讀史臆說五卷。楊琪光撰。",
+      "work_id": "d59f2ngxjr41"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史通",
+      "content": "史通二十卷。周悅讓撰。",
+      "work_id": "d59f2ntzn56p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "救文格論",
+      "content": "救文格論一卷。顧炎武撰。",
+      "work_id": "d59f2mgyg5c0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "炳燭偶鈔",
+      "content": "炳燭偶鈔一卷。陸錫熊撰。",
+      "work_id": "d59f2ngxuznk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南江書錄",
+      "content": "南江書錄一卷。邵晉涵撰。",
+      "work_id": "d59f2ngxuznl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史劄記",
+      "content": "讀史劄記一卷。盧文弨撰。",
+      "work_id": "d59f2ngxuznm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文史通義",
+      "content": "文史通義八卷，校讎通義三卷，文史通義補編一卷。章學誠撰。",
+      "work_id": "d59f2ngy6874"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "校讎通義",
+      "content": "",
+      "content_from": "文史通義",
+      "work_id": "d59f2ngy6875"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文史通義補編",
+      "content": "",
+      "content_from": "文史通義",
+      "work_id": "d59f2ngyhgqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史通通釋",
+      "content": "史通通釋二十卷。浦起龍撰。",
+      "work_id": "d59f2merh3wg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史通訓故補",
+      "content": "史通訓故補二十卷。黃叔琳撰。",
+      "work_id": "d59f2mes3kzk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史通校正",
+      "content": "史通校正一卷。盧文弨撰。",
+      "work_id": "d59f2ngyhgqp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史通削繁",
+      "content": "史通削繁四卷。紀昀撰。",
+      "work_id": "d59f2ngyspa8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "約經幄管見",
+      "content": "宋曹彥約經幄管見四卷。",
+      "work_id": "d59f2nh4f37l",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "李心傳舊聞證誤",
+      "content": "李心傳舊聞證誤四卷。",
+      "work_id": "d59f2hr5z474",
+      "is_jiyi": true,
+      "link_basis": "原繫 1evr5e3mab5bq，該條已併入 1ev3bb5dbt2bk（撰人字首式重出，2026-08-07），今改繫。"
+    }
+  ]
+}

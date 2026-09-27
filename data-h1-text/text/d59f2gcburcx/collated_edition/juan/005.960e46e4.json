@@ -1,0 +1,211 @@
+{
+  "title": "樂類",
+  "updated_at": "2026-08-08",
+  "sections": [
+    {
+      "title": "《樂書》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂書》九卷信都芳注。",
+      "work_id": "d59f286qje9v",
+      "ai_note": "信都芳刪注樂書（後魏），舊唐題樂書九卷信都芳注。庫另有樂書（信都芳）記錄（1evcpjzytxs00），俟併。"
+    },
+    {
+      "title": "《管弦記》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《管弦記》十二卷留進錄，淩秀注。",
+      "work_id": "d59f2qajm70h"
+    },
+    {
+      "title": "《鐘磬志》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鐘磬志》二卷公孫崇撰。",
+      "work_id": "d59f27s8mm0y"
+    },
+    {
+      "title": "《樂社大義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂社大義》十卷梁武帝撰。",
+      "work_id": "d59f286bk075"
+    },
+    {
+      "title": "《樂論》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂論》三卷梁武帝撰。",
+      "work_id": "d59f27t1nojk"
+    },
+    {
+      "title": "《鐘律》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鐘律》五卷沈重撰。",
+      "work_id": "d59f285vy51g"
+    },
+    {
+      "title": "《古今樂錄》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今樂錄》十三卷釋智匠撰。",
+      "work_id": "d59f285vmwhv"
+    },
+    {
+      "title": "《樂府聲調》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府聲調》六卷鄭譯撰。",
+      "work_id": "d59f28jq4w00"
+    },
+    {
+      "title": "《樂譜集解》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂譜集解》二十卷蕭吉撰。",
+      "work_id": "d59f28llk5c6"
+    },
+    {
+      "title": "《樂志》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂志》十卷蘇夔撰。",
+      "work_id": "d59f28l8g6is"
+    },
+    {
+      "title": "《樂經》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂經》三十卷季玄楚撰。",
+      "work_id": "d59f2q90zocg"
+    },
+    {
+      "title": "《樂書要錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂書要錄》十卷大聖天后撰。",
+      "work_id": "d59f28kpepdy"
+    },
+    {
+      "title": "《樂略》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂略》四卷元殷撰。",
+      "work_id": "d59f28kb1sef"
+    },
+    {
+      "title": "《聲律指歸》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聲律指歸》一卷元殷撰。",
+      "work_id": "d59f28lrhnno"
+    },
+    {
+      "title": "《樂元起》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂元起》二卷桓譚撰。",
+      "work_id": "d59f23nsz2tc"
+    },
+    {
+      "title": "《琴操》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴操》二卷桓譚撰。",
+      "work_id": "d59f24lqeoeg"
+    },
+    {
+      "title": "《琴操》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴操》三卷孔衍撰。",
+      "work_id": "d59f209mi4g0"
+    },
+    {
+      "title": "《琴譜》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴譜》四卷劉氏、周氏等撰。",
+      "work_id": "d59f2prx4ge9",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evcpctvmzta8，今另立《琴譜》1ex0dp6hu9atj 繫之。舊唐志樂類「《琴譜》四卷劉氏、周氏等撰」與「《琴譜》二十一卷陳懷撰」撰人異、卷數異，是二書；本條所主者為陳懷二十一卷本（國史經籍志同），今別出劉氏周氏本。"
+    },
+    {
+      "title": "《琴譜》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴譜》二十一卷陳懷撰。",
+      "work_id": "d59f2pvjwvsy"
+    },
+    {
+      "title": "《琴敘譜》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴敘譜》九卷趙耶律撰。",
+      "work_id": "d59f28kqcf0h"
+    },
+    {
+      "title": "《琴集曆頭拍簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴集曆頭拍簿》一卷",
+      "work_id": "d59f2ptik4cg"
+    },
+    {
+      "title": "《外國伎曲》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《外國伎曲》三卷",
+      "work_id": "d59f2q0ba5tu"
+    },
+    {
+      "title": "《論樂事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論樂事》二卷",
+      "work_id": "d59f2pv8zl6q"
+    },
+    {
+      "title": "《外國伎曲名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《外國伎曲名》一卷",
+      "work_id": "d59f2q6kc9og"
+    },
+    {
+      "title": "《歷代曲名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代曲名》一卷",
+      "work_id": "d59f2q5pr0ua"
+    },
+    {
+      "title": "《推七音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《推七音》一卷",
+      "work_id": "d59f2q4w3gn6"
+    },
+    {
+      "title": "《十二律譜義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《十二律譜義》一卷",
+      "work_id": "d59f2pvzircw"
+    },
+    {
+      "title": "《鼓吹樂章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鼓吹樂章》一卷",
+      "work_id": "d59f2q3epvya"
+    },
+    {
+      "title": "《古今樂記》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今樂記》八卷李守真撰。",
+      "work_id": "d59f2ptk4b9e"
+    }
+  ]
+}

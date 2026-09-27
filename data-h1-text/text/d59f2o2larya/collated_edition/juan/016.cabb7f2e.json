@@ -1,0 +1,390 @@
+{
+  "title": "乙部史錄·起居注類",
+  "sections": [
+    {
+      "title": "起居注類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "郭璞注　穆天子傳六卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞注　穆天子傳六卷　見《隋志》。《舊唐志》「注」誤作「撰」。",
+      "work_id": "d59f27yyjj0h"
+    },
+    {
+      "title": "李軌　晉泰始起居注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　晉泰始起居注二十卷　見《隋志》。《北堂書鈔》、《太平御覽》引《武帝起居注》。",
+      "work_id": "d59f27tudiis"
+    },
+    {
+      "title": "晉咸寧起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸寧起居注十卷　《唐志》作「二十二卷」，今從《隋志》。",
+      "work_id": "d59f27uv7im8"
+    },
+    {
+      "title": "晉太康起居注二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉太康起居注二十一卷　兩《唐志》二十二卷，今從《隋志》。",
+      "work_id": "d59f27vhzu9s"
+    },
+    {
+      "title": "晉永平起居注八卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉永平起居注八卷　兩《唐志》並同。《隋志》：「梁有六卷，亡。」",
+      "work_id": "d59f27w2li4g"
+    },
+    {
+      "title": "晉愍帝起居注三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉愍帝起居注三十卷　見《舊唐志》。",
+      "work_id": "d59f9nml8g08"
+    },
+    {
+      "title": "晉咸和起居注十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸和起居注十六卷　兩《唐志》十八卷，今從《隋志》。",
+      "work_id": "d59f27werrb5"
+    },
+    {
+      "title": "晉咸康起居注二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸康起居注二十二卷　見《舊唐志》。",
+      "work_id": "d59f27vlqosg"
+    },
+    {
+      "title": "陸機　晉惠帝起居注",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　晉惠帝起居注　見《三國志》注。《隋志》：「梁有《惠帝起居注》二卷。」不著撰人。",
+      "work_id": "d59f2ofybkzk"
+    },
+    {
+      "title": "晉永平元康永寧起居注六卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉永平元康永寧起居注六卷　見《隋志》。",
+      "work_id": "d59f27u7hhc1"
+    },
+    {
+      "title": "晉元康起居注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉元康起居注一卷　見《隋志》。凡兩列之。",
+      "work_id": "d59f27vrcyki"
+    },
+    {
+      "title": "晉永安起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉永安起居注　《初學記》。",
+      "work_id": "d59f9pqkw8w8"
+    },
+    {
+      "title": "晉建武大興永昌起居注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉建武大興永昌起居注二十卷　《隋志》九卷，注云：「梁有二十卷。」兩《唐志》均二十二卷。",
+      "work_id": "d59f2q6iguf4"
+    },
+    {
+      "title": "晉永嘉建興起居注十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉永嘉建興起居注十三卷　見《隋志》。",
+      "work_id": "d59f27x18uf7"
+    },
+    {
+      "title": "晉建元起居注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉建元起居注四卷　見《隋志》。《北堂書鈔》、《太平御覽》引《康帝起居注》。",
+      "work_id": "d59f2q247jep"
+    },
+    {
+      "title": "晉永和起居注二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉永和起居注二十四卷　《隋志》十七卷，注云：「梁二十四卷。」兩《唐志》同。",
+      "work_id": "d59f2q6igute"
+    },
+    {
+      "title": "晉升平起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉升平起居注十卷　見《隋志》。《舊唐志》作「永平」，誤。",
+      "work_id": "d59f2q9gws1t"
+    },
+    {
+      "title": "晉隆和興寧起居注五卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉隆和興寧起居注五卷　見《隋志》。",
+      "work_id": "d59f27w4gxdw"
+    },
+    {
+      "title": "晉太和起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉太和起居注十卷　《隋志》六卷，注云：「梁十卷。」兩《唐志》並六卷。",
+      "work_id": "d59f2q847qpt"
+    },
+    {
+      "title": "晉咸安起居注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸安起居注三卷　見《隋志》。",
+      "work_id": "d59f2q2b2rcy"
+    },
+    {
+      "title": "晉寧康起居注六卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉寧康起居注六卷　見《隋志》。《藝文類聚》、《太平御覽》引《孝武起居注》。",
+      "work_id": "d59f2q17quip"
+    },
+    {
+      "title": "晉太元起居注五十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉太元起居注五十四卷　《隋志》二十五卷，注云：「梁五十四卷。」兩《唐志》並五十二卷。",
+      "work_id": "d59f2q7z7y82"
+    },
+    {
+      "title": "晉隆安起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉隆安起居注十卷　見《隋志》。",
+      "work_id": "d59f2qaizpxc"
+    },
+    {
+      "title": "晉元興起居注九卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉元興起居注九卷　見《隋志》。",
+      "work_id": "d59f2qand1j4"
+    },
+    {
+      "title": "晉義熙起居注三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉義熙起居注三十四卷　《隋志》十七卷，注云：「梁三十四卷。」兩《唐志》並同。",
+      "work_id": "d59f2qaavk00"
+    },
+    {
+      "title": "晉元熙起居注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉元熙起居注二卷　見《隋志》。",
+      "work_id": "d59f2qa6701s"
+    },
+    {
+      "title": "晉崇寧起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉崇寧起居注十卷　兩《唐志》並同。晉無崇寧年號，武帝咸寧，惠帝永寧，哀帝興寧，皆已有起居注，惟明帝太寧起居注未載，《通志略》正作「《太寧起居注》十卷」。意其所見《唐志》尚未誤作「崇寧」也。梁耆《庭立紀聞》述梁玉繩語，謂此晉哀帝起居注，合隆和、興寧二號稱之。唐人避諱，改「隆和」為「崇和」，故云崇寧。案《隆和興寧起居注》五卷，已見兩《唐志》，且歷代起居注未有合兩元而錯舉一字者，梁說恐未必然。錢大昕又謂「崇寧」乃「崇安」之誤。",
+      "work_id": "d59f2q87ylmp"
+    },
+    {
+      "title": "後趙徐光、宗歷、傅暢、鄭愔等　起居注",
+      "level": 3,
+      "type": "book",
+      "content": "後趙徐光、宗歷、傅暢、鄭愔等　起居注　《史通・外篇》。",
+      "work_id": "d59f9s1cnmde"
+    },
+    {
+      "title": "南燕王景暉　二主起居注",
+      "level": 3,
+      "type": "book",
+      "content": "南燕王景暉　二主起居注　見《史通・外篇》。二主，慕容德及超。《隋志》：「《南燕起居注》一卷。」《通志略》六卷。",
+      "work_id": "d59f9s1cnmdf"
+    },
+    {
+      "title": "大將軍起居注",
+      "level": 3,
+      "type": "book",
+      "content": "大將軍起居注　見本書《石勒載記》。勒中大夫傅彪等撰。《史通》作「傅暢」。",
+      "work_id": "d59f27tw8xs4"
+    },
+    {
+      "title": "前燕起居注",
+      "level": 3,
+      "type": "book",
+      "content": "前燕起居注　見《史通・外篇》。",
+      "work_id": "d59f27wc9uyr"
+    },
+    {
+      "title": "桓玄起居注",
+      "level": 3,
+      "type": "book",
+      "content": "桓玄起居注　見本傳。",
+      "work_id": "d59f27w37z7n"
+    },
+    {
+      "title": "晉雜詔書一百卷　一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜詔書一百卷　一卷",
+      "work_id": "d59f2ptkfjls",
+      "note": "【原有附錄「一卷」，併入 measure】"
+    },
+    {
+      "title": "晉雜詔書二十八卷　一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜詔書二十八卷　一卷",
+      "work_id": "d59f9s1p543s",
+      "note": "【原有附錄「一卷」，併入 measure】"
+    },
+    {
+      "title": "晉詔六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉詔六十卷　見《隋志》。",
+      "work_id": "d59f9nn49x4x"
+    },
+    {
+      "title": "晉朝雜詔九卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉朝雜詔九卷　見《隋志》。",
+      "work_id": "d59f2pv7fegx"
+    },
+    {
+      "title": "錄晉詔十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "錄晉詔十四卷　見《隋志》。",
+      "work_id": "d59f2q7c4ef4"
+    },
+    {
+      "title": "晉詔書黃素制五卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉詔書黃素制五卷　見《舊唐志》。",
+      "work_id": "d59f2q05z4sg"
+    },
+    {
+      "title": "晉定品雜制八卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉定品雜制八卷　見《唐志》。《舊唐志》無「雜」字，作「一卷」。",
+      "work_id": "d59f2pwxuuww"
+    },
+    {
+      "title": "晉文王武帝雜詔十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉文王武帝雜詔十二卷　見《隋志》。",
+      "work_id": "d59f27tkp5og"
+    },
+    {
+      "title": "晉元帝詔十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉元帝詔十二卷　見《隋志》。",
+      "work_id": "d59f9nn49x4z"
+    },
+    {
+      "title": "成帝詔草十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "成帝詔草十七卷　見《隋志》。",
+      "work_id": "d59f27wx6rcy"
+    },
+    {
+      "title": "晉咸康詔四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸康詔四卷　見《隋志》。",
+      "work_id": "d59f2pxxfwn6"
+    },
+    {
+      "title": "建元直詔三卷",
+      "level": 3,
+      "type": "book",
+      "content": "建元直詔三卷　見《隋志》。",
+      "work_id": "d59f2pqt6328"
+    },
+    {
+      "title": "康帝詔草十卷",
+      "level": 3,
+      "type": "book",
+      "content": "康帝詔草十卷　見《隋志》。",
+      "work_id": "d59f2pquf18h"
+    },
+    {
+      "title": "永和副詔九卷",
+      "level": 3,
+      "type": "book",
+      "content": "永和副詔九卷　見《隋志》。",
+      "work_id": "d59f27u6jrpe"
+    },
+    {
+      "title": "升平隆和興寧副詔十卷",
+      "level": 3,
+      "type": "book",
+      "content": "升平隆和興寧副詔十卷　見《隋志》。",
+      "work_id": "d59f27vpsrur"
+    },
+    {
+      "title": "泰元咸寧寧康副詔二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "泰元咸寧寧康副詔二十二卷　見《隋志》。疑當作「太和咸安」。",
+      "work_id": "d59f9pqn2wox"
+    },
+    {
+      "title": "晉太元副詔二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉太元副詔二十一卷　《唐志》。",
+      "work_id": "d59f2q1n1hj6"
+    },
+    {
+      "title": "隆安直詔五卷",
+      "level": 3,
+      "type": "book",
+      "content": "隆安直詔五卷　見《隋志》。",
+      "work_id": "d59f27ucsiki"
+    },
+    {
+      "title": "元興大亨副詔三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元興大亨副詔三卷　見《隋志》。兩《唐志》作「《崇安元興大亨副詔》八卷」。",
+      "work_id": "d59f9s1cnmdg"
+    },
+    {
+      "title": "晉義熙詔十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉義熙詔十卷　見《隋志》。兩《唐志》作「二十二卷」。",
+      "work_id": "d59f2q7emarl"
+    },
+    {
+      "title": "義熙副詔十卷",
+      "level": 3,
+      "type": "book",
+      "content": "義熙副詔十卷　見《隋志》。",
+      "work_id": "d59f27tgbu2p"
+    },
+    {
+      "title": "起居注類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右起居注類，四十七家。失姓名四十二家。○《唐志》詔令附入起居注類，今仍其例。"
+    }
+  ]
+}

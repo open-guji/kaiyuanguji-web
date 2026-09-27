@@ -1,0 +1,96 @@
+{
+  "title": "小說家類",
+  "sections": [
+    {
+      "title": "《燕丹子》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《燕丹子》三卷燕太子撰。",
+      "work_id": "d59f2mhtcn40"
+    },
+    {
+      "title": "《笑林》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《笑林》三卷邯鄲淳撰。",
+      "work_id": "d59f27sphfcz"
+    },
+    {
+      "title": "《博物志》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《博物志》十卷張華撰。",
+      "work_id": "d59f27x6jvnl"
+    },
+    {
+      "title": "《郭子》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《郭子》三卷郭澄之撰。賈泉注。",
+      "work_id": "d59f27ty4d1c"
+    },
+    {
+      "title": "《世說》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《世說》八卷劉義慶撰。",
+      "work_id": "d59f286plon7"
+    },
+    {
+      "title": "《續世說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《續世說》十卷劉孝標撰。",
+      "work_id": "d59f28ltd2wy"
+    },
+    {
+      "title": "《小說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《小說》十卷劉義慶撰。",
+      "work_id": "d59f28561fya"
+    },
+    {
+      "title": "《小說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《小說》十卷殷芸撰。",
+      "work_id": "d59f286i3zls"
+    },
+    {
+      "title": "《釋俗語》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《釋俗語》八卷劉霽撰。",
+      "work_id": "d59f286luu4k"
+    },
+    {
+      "title": "《辨林》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《辨林》二十卷蕭賁撰。",
+      "work_id": "d59f28lum137"
+    },
+    {
+      "title": "《酒孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《酒孝經》一卷劉炫定撰。",
+      "work_id": "d59f28ki88w2"
+    },
+    {
+      "title": "《座右方》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《座右方》三卷庾元威撰。",
+      "work_id": "d59f286mhb7m"
+    },
+    {
+      "title": "《啟顏錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《啟顏錄》十卷侯白撰。</poem>",
+      "work_id": "d59f2ptuf4le"
+    }
+  ]
+}

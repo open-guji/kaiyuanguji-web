@@ -1,0 +1,102 @@
+{
+  "title": "史部·食貨類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·食貨類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "雲林石譜三卷",
+      "content": "杜綰撰。",
+      "work_id": "d59f2hpvgr9e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "硯箋四卷",
+      "content": "高似孫撰。",
+      "work_id": "d59f2hscqmma"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文房職官圖贊一卷",
+      "content": "林洪撰。",
+      "work_id": "d59f2hij2r5w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續文房圖贊一卷",
+      "content": "羅先登撰。",
+      "work_id": "d59f2hgajj0i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文房四友除授制一卷",
+      "content": "鄭淸之撰。",
+      "work_id": "d59f2hju7l6r"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "百菊集譜六卷",
+      "content": "史鑄撰。",
+      "work_id": "d59f2hq8kq2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "菊史補遺六卷",
+      "content": "史鑄撰。",
+      "work_id": "d59f2hhp3z0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "本心齋蔬食譜一卷",
+      "content": "陳達叟撰。",
+      "work_id": "d59f2hi1wpa9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蘭譜一卷",
+      "content": "陳仁玉撰。",
+      "work_id": "d59f2hg5uyv5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "王氏蘭譜一卷",
+      "content": "王貴學撰。",
+      "work_id": "d59f2hj9x5vl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金漳蘭譜一卷",
+      "content": "趙時庚撰。",
+      "work_id": "d59f2hpjlqm8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "促織經一卷",
+      "content": "賈似道撰。",
+      "work_id": "d59f2hgw2whs"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右食貨類",
+      "content": "右食貨類十一家二十七卷。"
+    }
+  ]
+}

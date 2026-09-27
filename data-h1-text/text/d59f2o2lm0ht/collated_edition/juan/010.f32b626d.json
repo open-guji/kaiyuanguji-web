@@ -1,0 +1,85 @@
+{
+ "title": "羣書類",
+ "sections": [
+  {
+   "title": "羣書類",
+   "level": 3,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "《五經通論》",
+   "level": 3,
+   "type": "book",
+   "content": "沛王 五經通論",
+   "work_id": "d59f24lrce10"
+  },
+  {
+   "title": "《白虎通》六卷",
+   "level": 3,
+   "type": "book",
+   "content": "白虎通六卷<班固等撰。>",
+   "work_id": "d59fkwn0o935"
+  },
+  {
+   "title": "《五經通難》",
+   "level": 3,
+   "type": "book",
+   "content": "程會 五經通難",
+   "work_id": "d59f24lrce11"
+  },
+  {
+   "title": "《五經異義》",
+   "level": 3,
+   "type": "book",
+   "content": "許慎 五經異義",
+   "work_id": "d59f23nweosi"
+  },
+  {
+   "title": "《駁五經異義》",
+   "level": 3,
+   "type": "book",
+   "content": "鄭康成 駁五經異義",
+   "work_id": "d59f209jdr0g"
+  },
+  {
+   "title": "《六藝論》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "鄭康成 六藝論一卷",
+   "work_id": "d59f209sfmrk"
+  },
+  {
+   "title": "《六藝論》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《公羊序》疏云：“鄭君先作《六藝論》訖，然後注書。”"
+  },
+  {
+   "title": "《鄭記》六卷",
+   "level": 3,
+   "type": "book",
+   "content": "鄭記六卷 <鄭康成弟子撰。>",
+   "work_id": "d59fkwn0o936"
+  },
+  {
+   "title": "《鄭記》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "劉知幾曰：“鄭之弟子分授門徒，各述師言更相問答，編録其語，謂之《鄭記》。”"
+  },
+  {
+   "title": "《五經章句後定》",
+   "level": 3,
+   "type": "book",
+   "content": "劉表 五經章句後定<表命綦毋闓、宋忠等撰。>",
+   "work_id": "d59f24lrce13"
+  },
+  {
+   "title": "《五經章句後定》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《藝文類聚》卷三十八引魏王粲《荆州文學記·官志》曰：“有漢荆州牧曰劉君稱曰：‘於，先王爲世也，則象天地，軌儀憲極。設教導化，叙經志業，用建雍泮焉，立師保焉。作爲禮、樂，以作其性，表陳載籍，以持其志。上知所以臨下，下知所以事上。官不失守，民德無悖，然後太階平焉。夫文學也者，人倫之首，大教之本也。乃命五業從事宋衷所作文學，延朋徒焉。宣德音以贊之，降嘉禮以勸之，五載之閒，道化大行。耆德故老綦毋闔<康案當作“闓”。>等，負書荷器，自遠而至者三百有餘人。於是童幼猛進，武人革面，總角佩觿，委介免胄，比肩繼踵，川逝泉涌，亹亹如也，兢兢如也。’”"
+  }
+ ]
+}

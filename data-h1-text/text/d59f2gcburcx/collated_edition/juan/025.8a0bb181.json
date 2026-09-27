@@ -1,0 +1,33 @@
+{
+  "title": "縱橫家類",
+  "sections": [
+    {
+      "title": "《鬼穀子》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鬼穀子》二卷蘇秦撰。",
+      "work_id": "d59f1i9fwwsg"
+    },
+    {
+      "title": "又三卷樂台撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷樂台撰。",
+      "work_id": "d59f2pwdkfls"
+    },
+    {
+      "title": "又三卷尹知章注。",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷尹知章注。",
+      "work_id": "d59f28mptrer"
+    },
+    {
+      "title": "《補闕子》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《補闕子》十卷梁元帝撰。",
+      "work_id": "d59f286jo6bk"
+    }
+  ]
+}

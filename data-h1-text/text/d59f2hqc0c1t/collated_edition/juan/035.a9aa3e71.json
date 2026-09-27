@@ -1,0 +1,2055 @@
+{
+  "title": "醫書類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "醫書類",
+      "content": ""
+    },
+    {
+      "title": "神醫普救方一千卷",
+      "level": 3,
+      "type": "book",
+      "content": "神醫普救方一千卷",
+      "work_id": "d59f2hjb641u"
+    },
+    {
+      "title": "黄帝八十一難經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝八十一難經二卷",
+      "work_id": "d59f2evq1zpg"
+    },
+    {
+      "title": "難經䟽十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "難經䟽十三卷",
+      "work_id": "d59f2pu93a4h"
+    },
+    {
+      "title": "黄帝素問八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝素問八卷",
+      "work_id": "d59f2pr4purl",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1ev3bbfrximm8，今別立《黃帝素問》八卷 1ex0jdjbb99ty 繫之——與同處「黄帝素問二十四卷」（王冰注本）卷數異。"
+    },
+    {
+      "title": "黄帝素問二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝素問二十四卷",
+      "work_id": "d59f28npq1vm"
+    },
+    {
+      "title": "開寳重定神農夲草二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "開寳重定神農夲草二十一卷",
+      "work_id": "d59f2pvrpts1"
+    },
+    {
+      "title": "夲草二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草二十卷",
+      "work_id": "d59f2px2unsw"
+    },
+    {
+      "title": "新詳定夲草二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "新詳定夲草二十卷",
+      "work_id": "d59f2q8sk9a8"
+    },
+    {
+      "title": "夲草二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草二十卷",
+      "work_id": "d59f2px2unsw"
+    },
+    {
+      "title": "夲草韻畧五卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草韻畧五卷",
+      "work_id": "d59f2q6eer5s"
+    },
+    {
+      "title": "夲草音義五卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草音義五卷",
+      "work_id": "d59f2ptcmltu"
+    },
+    {
+      "title": "夲草拾遺十卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草拾遺十卷",
+      "work_id": "d59f2pxpbqbk"
+    },
+    {
+      "title": "四聲夲草四卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "四聲夲草四卷（闕）",
+      "work_id": "d59f2pu4eqdc"
+    },
+    {
+      "title": "刪繁夲草五卷",
+      "level": 3,
+      "type": "book",
+      "content": "刪繁夲草五卷",
+      "work_id": "d59f2q2b2r5t"
+    },
+    {
+      "title": "夲草性類一卷",
+      "level": 3,
+      "type": "book",
+      "content": "夲草性類一卷",
+      "work_id": "d59f2pxgl3i9"
+    },
+    {
+      "title": "脉經十卷",
+      "level": 3,
+      "type": "book",
+      "content": "脉經十卷",
+      "work_id": "d59f27x4zoxs"
+    },
+    {
+      "title": "脉經十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "脉經十卷（闕）",
+      "work_id": "d59f27x4zoxs",
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24：本節與同志第 17 節同指本 work，已逐條裁為正當共繫（其據見所繫 work 之 ai_note）。依 SCHEMA〈一書兩著〉，書目次第在先者為正著不標，其後重出者標之。"
+    },
+    {
+      "title": "脉經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "脉經一卷",
+      "work_id": "d59f2prfbx1c",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcmngffzev4，今別立《脈經》一卷 1ex0jdjafqays 繫之。"
+    },
+    {
+      "title": "李勣脉經一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "李勣脉經一卷（闕）",
+      "work_id": "d59f2puj2vwi"
+    },
+    {
+      "title": "黄帝脉訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝脉訣一卷",
+      "work_id": "d59f2pycfaio"
+    },
+    {
+      "title": "脉經訣録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "脉經訣録一卷",
+      "work_id": "d59f2q4mf401"
+    },
+    {
+      "title": "黄氏脉訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄氏脉訣一卷",
+      "work_id": "d59f2q9fz2f5"
+    },
+    {
+      "title": "金鑑集歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "金鑑集歌一卷",
+      "work_id": "d59f2q2sk16p"
+    },
+    {
+      "title": "金寳鑑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "金寳鑑一卷",
+      "work_id": "d59f2hgvgfeq"
+    },
+    {
+      "title": "脉經手訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "脉經手訣一卷",
+      "work_id": "d59f2hhohhxf"
+    },
+    {
+      "title": "百㑹要訣脉經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "百㑹要訣脉經一卷",
+      "work_id": "d59f2qafvchs"
+    },
+    {
+      "title": "鳯髓脉經機要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鳯髓脉經機要一卷",
+      "work_id": "d59f2ptosutd"
+    },
+    {
+      "title": "醫鑑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫鑑一卷",
+      "work_id": "d59f2pt0rkzl"
+    },
+    {
+      "title": "碎金脉訣一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "碎金脉訣一卷（闕）",
+      "work_id": "d59f2q0sg8ap"
+    },
+    {
+      "title": "延齡至寳診脉定生死三部要訣一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "延齡至寳診脉定生死三部要訣一卷（闕）",
+      "work_id": "d59f2q10ke0x"
+    },
+    {
+      "title": "延靈寳抄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "延靈寳抄一卷",
+      "work_id": "d59f2q84u800"
+    },
+    {
+      "title": "元門脉訣一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "元門脉訣一卷（闕）",
+      "work_id": "d59f2q2pqwhu"
+    },
+    {
+      "title": "太醫秘訣診脉候生死部一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太醫秘訣診脉候生死部一卷",
+      "work_id": "d59f2q4oajnm"
+    },
+    {
+      "title": "徐氏指下訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐氏指下訣一卷",
+      "work_id": "d59f2ptkqscg"
+    },
+    {
+      "title": "脉訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "脉訣二卷",
+      "work_id": "d59f286tnrpf"
+    },
+    {
+      "title": "倉公訣死生秘要一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "倉公訣死生秘要一卷（闕）",
+      "work_id": "d59f2q9gwrgg"
+    },
+    {
+      "title": "新集脉色要訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "新集脉色要訣一卷",
+      "work_id": "d59f2q4hqjup"
+    },
+    {
+      "title": "經要集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "經要集一卷",
+      "work_id": "d59f2q205gcg"
+    },
+    {
+      "title": "金匱指㣲訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "金匱指㣲訣一卷",
+      "work_id": "d59f2py8zoxu"
+    },
+    {
+      "title": "巢氏諸病源候論五十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "巢氏諸病源候論五十卷（闕）",
+      "work_id": "d59f29k7nhts"
+    },
+    {
+      "title": "論證病源五卷",
+      "level": 3,
+      "type": "book",
+      "content": "論證病源五卷",
+      "work_id": "d59f2q863669"
+    },
+    {
+      "title": "法家論語一卷",
+      "level": 3,
+      "type": "book",
+      "content": "法家論語一卷",
+      "work_id": "d59f2q8mbi81"
+    },
+    {
+      "title": "問醫療訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "問醫療訣一卷",
+      "work_id": "d59f2q7kjsox"
+    },
+    {
+      "title": "病源手鑑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "病源手鑑一卷",
+      "work_id": "d59f2hjfjfnm"
+    },
+    {
+      "title": "內䑓要術五卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "內䑓要術五卷（闕）",
+      "work_id": "d59f2qacqz28"
+    },
+    {
+      "title": "五鑑論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五鑑論一卷",
+      "work_id": "d59f2q0eprsw"
+    },
+    {
+      "title": "醫顯微論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "醫顯微論一卷（闕）",
+      "work_id": "d59f2pst9vya"
+    },
+    {
+      "title": "太元新論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太元新論一卷",
+      "work_id": "d59f2pukn2m9"
+    },
+    {
+      "title": "集諸要方一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "集諸要方一卷（闕）",
+      "work_id": "d59f2q5tt3wg"
+    },
+    {
+      "title": "金匱玉函要畧三卷",
+      "level": 3,
+      "type": "book",
+      "content": "金匱玉函要畧三卷",
+      "work_id": "d59f2ptn8oox"
+    },
+    {
+      "title": "藥性要録一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "藥性要録一卷（闕）",
+      "work_id": "d59f2qaqherk"
+    },
+    {
+      "title": "金匱録五卷",
+      "level": 3,
+      "type": "book",
+      "content": "金匱録五卷",
+      "work_id": "d59f2pywpq0x"
+    },
+    {
+      "title": "醫門秘録五卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫門秘録五卷",
+      "work_id": "d59f2pzjtaf5"
+    },
+    {
+      "title": "今體治世集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "今體治世集三卷",
+      "work_id": "d59f2gc7soao"
+    },
+    {
+      "title": "萬病拾遺三卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬病拾遺三卷",
+      "work_id": "d59f2q2l2cjk"
+    },
+    {
+      "title": "伏氏醫苑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "伏氏醫苑一卷",
+      "work_id": "d59f28m9a6mb"
+    },
+    {
+      "title": "醫門簡要十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "醫門簡要十卷（闕）",
+      "work_id": "d59f2puuxwjl"
+    },
+    {
+      "title": "新集病總要畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "新集病總要畧一卷。〔闕〕",
+      "work_id": "d59f2q5loxs0"
+    },
+    {
+      "title": "太帝分藥格一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太帝分藥格一卷",
+      "work_id": "d59f2q8qou0w"
+    },
+    {
+      "title": "藥性論四卷",
+      "level": 3,
+      "type": "book",
+      "content": "藥性論四卷",
+      "work_id": "d59f2q5tt3wh"
+    },
+    {
+      "title": "採藥論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "採藥論一卷",
+      "work_id": "d59f2pum78xu"
+    },
+    {
+      "title": "制藥法論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "制藥法論一卷",
+      "work_id": "d59f2q30zgg2"
+    },
+    {
+      "title": "金鑑方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "金鑑方三卷",
+      "work_id": "d59f2hhwwwle"
+    },
+    {
+      "title": "乾寧晏先生制伏草石論六卷",
+      "level": 3,
+      "type": "book",
+      "content": "乾寧晏先生制伏草石論六卷",
+      "work_id": "d59f28ldfz7q"
+    },
+    {
+      "title": "藥對二卷",
+      "level": 3,
+      "type": "book",
+      "content": "藥對二卷",
+      "work_id": "d59f286m62o2"
+    },
+    {
+      "title": "方書藥類三卷",
+      "level": 3,
+      "type": "book",
+      "content": "方書藥類三卷",
+      "work_id": "d59f2q1pum0w"
+    },
+    {
+      "title": "新廣藥對三卷",
+      "level": 3,
+      "type": "book",
+      "content": "新廣藥對三卷",
+      "work_id": "d59f2pzl28sh"
+    },
+    {
+      "title": "石藥異名要訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "石藥異名要訣一卷",
+      "work_id": "d59f2q1q5ukh"
+    },
+    {
+      "title": "藥總訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "藥總訣一卷",
+      "work_id": "d59f2pzlzxtt"
+    },
+    {
+      "title": "醫門指要用藥立成訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫門指要用藥立成訣一卷",
+      "work_id": "d59f2q724t1d"
+    },
+    {
+      "title": "丹房鍳源三卷",
+      "level": 3,
+      "type": "book",
+      "content": "丹房鍳源三卷",
+      "work_id": "d59f2q2i979e"
+    },
+    {
+      "title": "南源藥譜一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "南源藥譜一卷（闕）",
+      "work_id": "d59f2pxxr56q"
+    },
+    {
+      "title": "神農食忌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神農食忌一卷",
+      "work_id": "d59f2q9lwkqp"
+    },
+    {
+      "title": "藥林一卷",
+      "level": 3,
+      "type": "book",
+      "content": "藥林一卷",
+      "work_id": "d59f2q4snuv5"
+    },
+    {
+      "title": "新修榮衛養生用藥補瀉論十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "新修榮衛養生用藥補瀉論十卷（闕）",
+      "work_id": "d59f2q4uuigw"
+    },
+    {
+      "title": "炮炙論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "炮炙論三卷",
+      "work_id": "d59f2pzpfk02"
+    },
+    {
+      "title": "陳雷炮炙論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳雷炮炙論三卷",
+      "work_id": "d59f2pv7qmtd"
+    },
+    {
+      "title": "胡道洽方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡道洽方三卷",
+      "work_id": "d59f2qarf4le"
+    },
+    {
+      "title": "正元集要廣利方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "正元集要廣利方五卷",
+      "work_id": "d59f2ptpql1c"
+    },
+    {
+      "title": "廣正集靈寳方一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "廣正集靈寳方一百卷",
+      "work_id": "d59f2pywpq0w"
+    },
+    {
+      "title": "太和濟要方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "太和濟要方五卷",
+      "work_id": "d59f2puhipdu"
+    },
+    {
+      "title": "千金方三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "千金方三十卷",
+      "work_id": "d59f2psgsem9"
+    },
+    {
+      "title": "千金髓方二十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "千金髓方二十卷（闕）",
+      "work_id": "d59f28kyrtoj"
+    },
+    {
+      "title": "千金翼方三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "千金翼方三十卷。𫝊信方二卷〔闕〕",
+      "work_id": "d59f28m4adxd"
+    },
+    {
+      "title": "續𫝊信方十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "續𫝊信方十卷（闕）",
+      "work_id": "d59f2q8v260y"
+    },
+    {
+      "title": "昇元廣濟方二卷",
+      "level": 3,
+      "type": "book",
+      "content": "昇元廣濟方二卷",
+      "work_id": "d59f28m8cgzo"
+    },
+    {
+      "title": "韋氏集騐獨行方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋氏集騐獨行方三卷",
+      "work_id": "d59f2q5p4jk1"
+    },
+    {
+      "title": "崔行功纂要方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔行功纂要方十卷",
+      "work_id": "d59f2pzdvrpd"
+    },
+    {
+      "title": "博濟安衆方二卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "博濟安衆方二卷（闕）",
+      "work_id": "d59f2pznvdoh"
+    },
+    {
+      "title": "集諸要妙方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "集諸要妙方一卷",
+      "work_id": "d59f2psx0qo1"
+    },
+    {
+      "title": "纂集韓待詔肘後方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "纂集韓待詔肘後方一卷",
+      "work_id": "d59f2pyeaqde"
+    },
+    {
+      "title": "兵部手集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵部手集三卷",
+      "work_id": "d59f2q0mipkw"
+    },
+    {
+      "title": "嵩䑓集三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "嵩䑓集三卷（闕）",
+      "work_id": "d59f2pu1llaa"
+    },
+    {
+      "title": "鄭氏恵心方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭氏恵心方三卷",
+      "work_id": "d59f2qa9mlmq"
+    },
+    {
+      "title": "劉涓子鬼遺方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉涓子鬼遺方十卷。謹按直齋書録解題云劉涓子神仙遺論十卷東蜀刺史李頔録按中興書目引崇文總目云宋龔慶宣撰劉涓子者晉末人於丹陽縣得鬼遺方一卷皆治癰疽之法慶宣得而次第之",
+      "work_id": "d59f286ua8si"
+    },
+    {
+      "title": "南行方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "南行方十卷",
+      "work_id": "d59f28kt5jwj"
+    },
+    {
+      "title": "秘要藥方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "秘要藥方一卷",
+      "work_id": "d59f2pt6p3i9"
+    },
+    {
+      "title": "王氏醫門集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王氏醫門集二十卷",
+      "work_id": "d59f2pwbdrsx"
+    },
+    {
+      "title": "集騐方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "集騐方一卷",
+      "work_id": "d59f2q051f5u"
+    },
+    {
+      "title": "千金秘要備急方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "千金秘要備急方一卷",
+      "work_id": "d59f2q40vqwx"
+    },
+    {
+      "title": "唐興集騐方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐興集騐方五卷",
+      "work_id": "d59f2q9igydc"
+    },
+    {
+      "title": "應騐方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "應騐方一卷",
+      "work_id": "d59f2pyio1kx"
+    },
+    {
+      "title": "新集應病通神方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "新集應病通神方三卷",
+      "work_id": "d59f2pyghe68"
+    },
+    {
+      "title": "普濟方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "普濟方五卷",
+      "work_id": "d59f2nk7jkeb"
+    },
+    {
+      "title": "崔氏應騐方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔氏應騐方三卷",
+      "work_id": "d59f2pxbwjk1"
+    },
+    {
+      "title": "鄭氏惠民方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭氏惠民方一卷",
+      "work_id": "d59f2ptt66m9"
+    },
+    {
+      "title": "箧中方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "箧中方三卷",
+      "work_id": "d59f28jm2sxy"
+    },
+    {
+      "title": "塞上方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "塞上方三卷",
+      "work_id": "d59f2pvpue4h"
+    },
+    {
+      "title": "梅崇獻方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "梅崇獻方五卷",
+      "work_id": "d59f2py749hd"
+    },
+    {
+      "title": "延年秘録十卷",
+      "level": 3,
+      "type": "book",
+      "content": "延年秘録十卷",
+      "work_id": "d59f2pwbds02"
+    },
+    {
+      "title": "延齡至寳方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "延齡至寳方十卷",
+      "work_id": "d59f28lkxo92"
+    },
+    {
+      "title": "備急方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "備急方一卷",
+      "work_id": "d59f2qa6701t"
+    },
+    {
+      "title": "刪繁要略方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "刪繁要略方一卷",
+      "work_id": "d59f2q116v41"
+    },
+    {
+      "title": "備要簡急方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "備要簡急方一卷",
+      "work_id": "d59f2pzd9b7l"
+    },
+    {
+      "title": "鄭氏纂秘要藥方二卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "鄭氏纂秘要藥方二卷（闕）",
+      "work_id": "d59f2q4eay2q"
+    },
+    {
+      "title": "外䑓要略十卷",
+      "level": 3,
+      "type": "book",
+      "content": "外䑓要略十卷",
+      "work_id": "d59f2pzzf5s0"
+    },
+    {
+      "title": "病源丸經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "病源丸經一卷",
+      "work_id": "d59f2qa6th4x"
+    },
+    {
+      "title": "醫明要略一卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫明要略一卷",
+      "work_id": "d59f2pu5no5d"
+    },
+    {
+      "title": "醫家要抄五卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫家要抄五卷",
+      "work_id": "d59f2pswpibk"
+    },
+    {
+      "title": "通元經十卷",
+      "level": 3,
+      "type": "book",
+      "content": "通元經十卷",
+      "work_id": "d59f2q3ack5d"
+    },
+    {
+      "title": "醫門金寳鑑三卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫門金寳鑑三卷",
+      "work_id": "d59f2qa8dngg"
+    },
+    {
+      "title": "耆婆八十四問一卷",
+      "level": 3,
+      "type": "book",
+      "content": "耆婆八十四問一卷",
+      "work_id": "d59f2ps8zgua"
+    },
+    {
+      "title": "六十四問一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六十四問一卷",
+      "work_id": "d59f2q9fntaa"
+    },
+    {
+      "title": "問答病狀一卷",
+      "level": 3,
+      "type": "book",
+      "content": "問答病狀一卷",
+      "work_id": "d59f2pxnrjsx"
+    },
+    {
+      "title": "問病録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "問病録一卷",
+      "work_id": "d59f2q1k8cg1"
+    },
+    {
+      "title": "百一問答方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "百一問答方三卷",
+      "work_id": "d59f2q889udd"
+    },
+    {
+      "title": "黄帝五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝五臟論一卷",
+      "work_id": "d59f2pwqoema"
+    },
+    {
+      "title": "神農五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神農五臟論一卷",
+      "work_id": "d59f2q1uuepu"
+    },
+    {
+      "title": "五臟傍通明鑑圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟傍通明鑑圖一卷",
+      "work_id": "d59f2pugw8ap"
+    },
+    {
+      "title": "五臟榮衛論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟榮衛論一卷",
+      "work_id": "d59f2q0g9ypt"
+    },
+    {
+      "title": "五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟論一卷。張仲景撰論",
+      "work_id": "d59f24m1n7yf"
+    },
+    {
+      "title": "黄庭五臟論七卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄庭五臟論七卷",
+      "work_id": "d59f2ptohmv6"
+    },
+    {
+      "title": "五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟論一卷",
+      "work_id": "d59f24m1n7yf"
+    },
+    {
+      "title": "五臟金鑑論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "五臟金鑑論一卷（闕）",
+      "work_id": "d59f2pvpudxd"
+    },
+    {
+      "title": "大五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "大五臟論一卷",
+      "work_id": "d59f2q83l9tu"
+    },
+    {
+      "title": "小五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "小五臟論一卷",
+      "work_id": "d59f2q8x8ttt"
+    },
+    {
+      "title": "五臟論應象一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟論應象一卷",
+      "work_id": "d59f2q978ema"
+    },
+    {
+      "title": "黄庭內景五臟六府圖一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "黄庭內景五臟六府圖一卷（闕）",
+      "work_id": "d59f2q7k8kjk"
+    },
+    {
+      "title": "五臟類合賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五臟類合賦一卷",
+      "work_id": "d59f2pwa4tmp"
+    },
+    {
+      "title": "連方五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "連方五臟論一卷",
+      "work_id": "d59f2qb05s01"
+    },
+    {
+      "title": "五色傍通五臟圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五色傍通五臟圖一卷",
+      "work_id": "d59f2pwn8sg1"
+    },
+    {
+      "title": "臟府通元賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "臟府通元賦一卷",
+      "work_id": "d59f2q21ee4i"
+    },
+    {
+      "title": "耆婆五臟論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "耆婆五臟論一卷",
+      "work_id": "d59f2pydo8ow"
+    },
+    {
+      "title": "五臟鑑元四卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "五臟鑑元四卷（闕）",
+      "work_id": "d59f2puzb7r4"
+    },
+    {
+      "title": "萬全方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬全方三卷",
+      "work_id": "d59f2q91m5fk"
+    },
+    {
+      "title": "别集玉壺備急大方一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "别集玉壺備急大方一卷（闕）",
+      "work_id": "d59f2q6un3sx"
+    },
+    {
+      "title": "集諸纂騐方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "集諸纂騐方一卷",
+      "work_id": "d59f2pu282dc"
+    },
+    {
+      "title": "雜藥方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "雜藥方一卷",
+      "work_id": "d59f2pw20ni8"
+    },
+    {
+      "title": "楊太僕醫方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊太僕醫方一卷",
+      "work_id": "d59f2q1exatc"
+    },
+    {
+      "title": "行要備急方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "行要備急方一卷",
+      "work_id": "d59f2gn6cmww"
+    },
+    {
+      "title": "録騐備急諸方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "録騐備急諸方一卷",
+      "work_id": "d59f2pxwi70g"
+    },
+    {
+      "title": "諸家名方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "諸家名方一卷",
+      "work_id": "d59f2pxirrb6"
+    },
+    {
+      "title": "走馬備要方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "走馬備要方一卷",
+      "work_id": "d59f2q5z44jl"
+    },
+    {
+      "title": "北京要術二卷",
+      "level": 3,
+      "type": "book",
+      "content": "北京要術二卷",
+      "work_id": "d59f28lozrb5"
+    },
+    {
+      "title": "巾箱集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "巾箱集一卷",
+      "work_id": "d59f2pv3ojcx"
+    },
+    {
+      "title": "川玉集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "川玉集一卷",
+      "work_id": "d59f2pytlcsg"
+    },
+    {
+      "title": "崔氏方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔氏方三卷",
+      "work_id": "d59f2q8e7c3l"
+    },
+    {
+      "title": "海山集騐方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "海山集騐方十卷",
+      "work_id": "d59f2pta4phe"
+    },
+    {
+      "title": "秘要方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "秘要方一卷",
+      "work_id": "d59f2psfup6p"
+    },
+    {
+      "title": "千金纂録二卷",
+      "level": 3,
+      "type": "book",
+      "content": "千金纂録二卷",
+      "work_id": "d59f2pt2brwi"
+    },
+    {
+      "title": "還元丹方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "還元丹方一卷",
+      "work_id": "d59f2q47fpq9"
+    },
+    {
+      "title": "養性益夀備急方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "養性益夀備急方一卷",
+      "work_id": "d59f2pvpue4g"
+    },
+    {
+      "title": "仙人養性治身經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "仙人養性治身經三卷",
+      "work_id": "d59f2pvkjd35"
+    },
+    {
+      "title": "王氏秘方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "王氏秘方五卷",
+      "work_id": "d59f2q4rq58h"
+    },
+    {
+      "title": "集妙方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "集妙方三卷",
+      "work_id": "d59f2q6xrhfm"
+    },
+    {
+      "title": "元感𫝊屍論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "元感𫝊屍論一卷（闕）",
+      "work_id": "d59f2ps81rlt"
+    },
+    {
+      "title": "骨蒸論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "骨蒸論一卷",
+      "work_id": "d59f2q05nwg0"
+    },
+    {
+      "title": "癰疽論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "癰疽論一卷",
+      "work_id": "d59f2pwk4em9"
+    },
+    {
+      "title": "水氣論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "水氣論一卷",
+      "work_id": "d59f2hh6oyyo"
+    },
+    {
+      "title": "風疾論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "風疾論一卷",
+      "work_id": "d59f2q1ya0w1"
+    },
+    {
+      "title": "五勞論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五勞論一卷",
+      "work_id": "d59f2q4a8v7l"
+    },
+    {
+      "title": "夭夀性術論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "夭夀性術論一卷",
+      "work_id": "d59f2pt2y96q"
+    },
+    {
+      "title": "新修鐘乳論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "新修鐘乳論一卷（闕）",
+      "work_id": "d59f2pzcmtj5"
+    },
+    {
+      "title": "鐘乳論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鐘乳論一卷",
+      "work_id": "d59f2q3n5ama"
+    },
+    {
+      "title": "脚氣論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "脚氣論一卷",
+      "work_id": "d59f2pxfc5j5"
+    },
+    {
+      "title": "三家脚氣論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "三家脚氣論一卷",
+      "work_id": "d59f28ki88w5"
+    },
+    {
+      "title": "鐡粉論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鐡粉論一卷",
+      "work_id": "d59f2pssnfgg"
+    },
+    {
+      "title": "癰疽論三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "癰疽論三卷（闕）",
+      "work_id": "d59f2pu5nojl"
+    },
+    {
+      "title": "風論山眺經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "風論山眺經二卷",
+      "work_id": "d59f2py8oge8"
+    },
+    {
+      "title": "張果先生傷寒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張果先生傷寒論一卷",
+      "work_id": "d59f2pwsv2f4"
+    },
+    {
+      "title": "發背論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "發背論一卷",
+      "work_id": "d59f2qajm77k"
+    },
+    {
+      "title": "發背論十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "發背論十卷（闕）",
+      "work_id": "d59f2q4gsu0x"
+    },
+    {
+      "title": "龍樹眼論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "龍樹眼論一卷（闕）",
+      "work_id": "d59f2q90d728"
+    },
+    {
+      "title": "新撰脚氣論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "新撰脚氣論三卷",
+      "work_id": "d59f2q0n56v6"
+    },
+    {
+      "title": "論三十六種風一卷",
+      "level": 3,
+      "type": "book",
+      "content": "論三十六種風一卷",
+      "work_id": "d59f2pzsv66a"
+    },
+    {
+      "title": "青鳥子風論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "青鳥子風論一卷",
+      "work_id": "d59f2q1bsxs2"
+    },
+    {
+      "title": "楚人劉豹子眼一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楚人劉豹子眼一卷",
+      "work_id": "d59f2q0jeby9"
+    },
+    {
+      "title": "傷寒手鑑二卷",
+      "level": 3,
+      "type": "book",
+      "content": "傷寒手鑑二卷",
+      "work_id": "d59f2hiee70h"
+    },
+    {
+      "title": "嶺南脚氣論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "嶺南脚氣論一卷",
+      "work_id": "d59f28kdjoqt"
+    },
+    {
+      "title": "傷寒正辨集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "傷寒正辨集一卷",
+      "work_id": "d59f2q5cbta9"
+    },
+    {
+      "title": "廣陵正師口齒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "廣陵正師口齒論一卷",
+      "work_id": "d59f2q4cqr5t"
+    },
+    {
+      "title": "口齒玉池論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "口齒玉池論一卷",
+      "work_id": "d59f2q1qsbnm"
+    },
+    {
+      "title": "咽㗋口齒方論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "咽㗋口齒方論一卷",
+      "work_id": "d59f2pvxyk1t"
+    },
+    {
+      "title": "口齒論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "口齒論三卷。中和先生撰",
+      "work_id": "d59f2q3ackjk"
+    },
+    {
+      "title": "張仲景口齒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張仲景口齒論一卷",
+      "work_id": "d59f24louhoh"
+    },
+    {
+      "title": "西京巢家水氣論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "西京巢家水氣論一卷（闕）",
+      "work_id": "d59f2pymewap"
+    },
+    {
+      "title": "醫眼鍼方論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "醫眼鍼方論一卷",
+      "work_id": "d59f2px43lz6"
+    },
+    {
+      "title": "南仲四時攝養論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "南仲四時攝養論一卷",
+      "work_id": "d59f2q2yhji8"
+    },
+    {
+      "title": "口齒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "口齒論一卷",
+      "work_id": "d59f2q0j33lt"
+    },
+    {
+      "title": "療口齒雜方一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "療口齒雜方一卷（闕）",
+      "work_id": "d59f2q0hu5fm"
+    },
+    {
+      "title": "百中傷寒論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "百中傷寒論三卷。謹按鄭樵通志校讐略書有不應釋論云崇文總目問有見名知義者亦強為之釋如鄭景岫作南中四時攝生論其名自可見何用釋哉如陳昌允作百中傷寒論其名亦可見何必曰百中者取其必愈乎",
+      "work_id": "d59f2q0vklc2"
+    },
+    {
+      "title": "療腫論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "療腫論一卷",
+      "work_id": "d59f2q5sk5q9"
+    },
+    {
+      "title": "養身食法三卷",
+      "level": 3,
+      "type": "book",
+      "content": "養身食法三卷",
+      "work_id": "d59f2pv66gap"
+    },
+    {
+      "title": "食性夲草十卷",
+      "level": 3,
+      "type": "book",
+      "content": "食性夲草十卷",
+      "work_id": "d59f2pxdgq2q"
+    },
+    {
+      "title": "食療夲草三卷",
+      "level": 3,
+      "type": "book",
+      "content": "食療夲草三卷",
+      "work_id": "d59f2q651mv4"
+    },
+    {
+      "title": "食醫心鑑三卷",
+      "level": 3,
+      "type": "book",
+      "content": "食醫心鑑三卷",
+      "work_id": "d59f2pswpiiq"
+    },
+    {
+      "title": "蕭家法饌三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "蕭家法饌三卷（闕）",
+      "work_id": "d59f2q25ggzl"
+    },
+    {
+      "title": "侍膳圖三卷",
+      "level": 3,
+      "type": "book",
+      "content": "侍膳圖三卷",
+      "work_id": "d59f2q1yl9fk"
+    },
+    {
+      "title": "江飱饌要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "江飱饌要一卷",
+      "work_id": "d59f2hkdkav7"
+    },
+    {
+      "title": "饌林五卷",
+      "level": 3,
+      "type": "book",
+      "content": "饌林五卷",
+      "work_id": "d59f2psmeo76"
+    },
+    {
+      "title": "膳夫經手錄四卷",
+      "level": 3,
+      "type": "book",
+      "content": "膳夫經手錄四卷",
+      "work_id": "d59f28k1270n"
+    },
+    {
+      "title": "嚴龜食法十卷",
+      "level": 3,
+      "type": "book",
+      "content": "嚴龜食法十卷",
+      "work_id": "d59f28jxml1e"
+    },
+    {
+      "title": "産前後論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "産前後論一卷",
+      "work_id": "d59f2q4hfb40"
+    },
+    {
+      "title": "産後論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "産後論一卷",
+      "work_id": "d59f2q5vda0w"
+    },
+    {
+      "title": "集産後十九論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "集産後十九論一卷（闕）",
+      "work_id": "d59f2qajayv5"
+    },
+    {
+      "title": "家寳義囊一卷",
+      "level": 3,
+      "type": "book",
+      "content": "家寳義囊一卷",
+      "work_id": "d59f2q10vmdd"
+    },
+    {
+      "title": "崔氏産鑑圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔氏産鑑圖一卷",
+      "work_id": "d59f2q1olo1s"
+    },
+    {
+      "title": "産寳三卷",
+      "level": 3,
+      "type": "book",
+      "content": "産寳三卷",
+      "work_id": "d59f2pxt2kua"
+    },
+    {
+      "title": "子母秘録十卷",
+      "level": 3,
+      "type": "book",
+      "content": "子母秘録十卷",
+      "work_id": "d59f28kqnnk6"
+    },
+    {
+      "title": "楊氏産後乳集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊氏産後乳集三卷",
+      "work_id": "d59f2qa0kq9t"
+    },
+    {
+      "title": "何首烏傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何首烏傳一卷",
+      "work_id": "d59f28jg5amb"
+    },
+    {
+      "title": "草木諸藥单方一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "草木諸藥单方一卷（闕）",
+      "work_id": "d59f2hjelq0w"
+    },
+    {
+      "title": "脚氣方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "脚氣方一卷",
+      "work_id": "d59f2q9gaark"
+    },
+    {
+      "title": "賈相公備急单方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "賈相公備急单方一卷",
+      "work_id": "d59f2pt62mf5"
+    },
+    {
+      "title": "秦聞单方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "秦聞单方一卷",
+      "work_id": "d59f2q4dogzl"
+    },
+    {
+      "title": "单方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "单方一卷",
+      "work_id": "d59f2q4kuxhe"
+    },
+    {
+      "title": "穆昌叙眼方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "穆昌叙眼方一卷",
+      "work_id": "d59f2q3hu9kx"
+    },
+    {
+      "title": "銅人俞穴鍼灸圖經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "銅人俞穴鍼灸圖經三卷",
+      "work_id": "d59f2q9ye29s"
+    },
+    {
+      "title": "黄帝鍼經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝鍼經一卷",
+      "_dead_work_id": "d59f2q1eau4h",
+      "_dead_work_id_note": "2026-09-06 所指之 Work 於兩庫皆已不存（經他車道刪併），降欄存查；改指待人覈。",
+      "work_id": null
+    },
+    {
+      "title": "黄帝岐伯論鍼灸要訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄帝岐伯論鍼灸要訣一卷",
+      "work_id": "d59f2psoa3uo"
+    },
+    {
+      "title": "新集明堂灸法三卷",
+      "level": 3,
+      "type": "book",
+      "content": "新集明堂灸法三卷",
+      "work_id": "d59f2pvf8bnl"
+    },
+    {
+      "title": "山眺鍼灸經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "山眺鍼灸經一卷",
+      "work_id": "d59f2pvhq876"
+    },
+    {
+      "title": "鍼經抄三卷",
+      "level": 3,
+      "type": "book",
+      "content": "鍼經抄三卷",
+      "work_id": "d59f2q0eprsy"
+    },
+    {
+      "title": "公孫克鍼灸經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "公孫克鍼灸經一卷",
+      "work_id": "d59f2pwdkfsw"
+    },
+    {
+      "title": "灸經十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "灸經十卷（闕）",
+      "work_id": "d59f2pr0z0g0",
+      "ai_note": "崇文十卷闕本，卷數與宋志顏齊本合，姑繫俟考。"
+    },
+    {
+      "title": "明堂論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "明堂論一卷。謹按鄭樵通志云唐志别出明堂經脉一條而崇文總目合為醫書據明堂一類亦有数家以為一條已自踈矣况合於醫書而其類又不相附可乎",
+      "work_id": "d59f28le2gau"
+    },
+    {
+      "title": "金縢玉匱鍼經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "金縢玉匱鍼經三卷",
+      "work_id": "d59f2qau89vm"
+    },
+    {
+      "title": "元悟四神鍼法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元悟四神鍼法一卷",
+      "work_id": "d59f2q8o6xhd"
+    },
+    {
+      "title": "扁鵲鍼傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "扁鵲鍼傳一卷",
+      "work_id": "d59f2q9llbsx"
+    },
+    {
+      "title": "經食草木法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "經食草木法一卷",
+      "work_id": "d59f2q7xnrb4"
+    },
+    {
+      "title": "服食神秘方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "服食神秘方一卷",
+      "work_id": "d59f2pxoe1a8"
+    },
+    {
+      "title": "神仙金匱服食方二卷",
+      "level": 3,
+      "type": "book",
+      "content": "神仙金匱服食方二卷",
+      "work_id": "d59f2q15k6ip"
+    },
+    {
+      "title": "新集方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "新集方一卷",
+      "work_id": "d59f2pwpfg1s"
+    },
+    {
+      "title": "李八百方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李八百方一卷",
+      "work_id": "d59f2q0qw1kw"
+    },
+    {
+      "title": "孟氏補養方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孟氏補養方三卷",
+      "work_id": "d59f2pxba22p"
+    },
+    {
+      "title": "老子服食方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "老子服食方一卷",
+      "work_id": "d59f2pvuiy9u"
+    },
+    {
+      "title": "集錄古今服食導養方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "集錄古今服食導養方三卷",
+      "work_id": "d59f2q8213ia"
+    },
+    {
+      "title": "通元秘要術三卷",
+      "level": 3,
+      "type": "book",
+      "content": "通元秘要術三卷",
+      "work_id": "d59f28lhi29v"
+    },
+    {
+      "title": "圃田通元秘術方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "圃田通元秘術方三卷",
+      "work_id": "d59f28lt1ude"
+    },
+    {
+      "title": "纂集秘要合煉神妙方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "纂集秘要合煉神妙方五卷",
+      "work_id": "d59f2q5yhnnm"
+    },
+    {
+      "title": "返魂丹方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "返魂丹方一卷",
+      "work_id": "d59f2puirmyp"
+    },
+    {
+      "title": "通元秘録三卷",
+      "level": 3,
+      "type": "book",
+      "content": "通元秘録三卷",
+      "work_id": "d59f2pw39loh"
+    },
+    {
+      "title": "嬰孩病源論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "嬰孩病源論一卷",
+      "work_id": "d59f2q4puqdd"
+    },
+    {
+      "title": "崔氏小兒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔氏小兒論一卷",
+      "work_id": "d59f2q6zbny9"
+    },
+    {
+      "title": "嬰孺方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "嬰孺方十卷",
+      "work_id": "d59f2q3j37y8"
+    },
+    {
+      "title": "療小兒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "療小兒論一卷",
+      "work_id": "d59f2ptlzqiq"
+    },
+    {
+      "title": "小兒方疳二十四候論一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "小兒方疳二十四候論一卷（闕）",
+      "work_id": "d59f2psrpp8g"
+    },
+    {
+      "title": "小兒管氣集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "小兒管氣集三卷",
+      "work_id": "d59f2pvrel1d"
+    },
+    {
+      "title": "小兒方術論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "小兒方術論一卷",
+      "work_id": "d59f2puqvt35"
+    },
+    {
+      "title": "孩孺明珠變蒸七方論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孩孺明珠變蒸七方論一卷",
+      "work_id": "d59f2q5ivsow"
+    },
+    {
+      "title": "孩子脉訣論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孩子脉訣論一卷",
+      "work_id": "d59f2ptysgsh"
+    },
+    {
+      "title": "小兒藥證一卷",
+      "level": 3,
+      "type": "book",
+      "content": "小兒藥證一卷",
+      "work_id": "d59f2q0s4z5t"
+    },
+    {
+      "title": "小兒秘録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "小兒秘録一卷",
+      "work_id": "d59f2q6hj4ld"
+    },
+    {
+      "title": "仙人氷鑑圖訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "仙人氷鑑圖訣一卷",
+      "work_id": "d59f2pv4xhxe"
+    },
+    {
+      "title": "保童方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "保童方一卷",
+      "work_id": "d59f2q95zh1d"
+    },
+    {
+      "title": "嬰孩論二卷",
+      "level": 3,
+      "type": "book",
+      "content": "嬰孩論二卷",
+      "work_id": "d59f2q7wq29s"
+    },
+    {
+      "title": "童子秘訣三卷",
+      "level": 3,
+      "type": "book",
+      "content": "童子秘訣三卷",
+      "work_id": "d59f28jz6rr4"
+    },
+    {
+      "title": "嬰兒雜方五卷",
+      "level": 3,
+      "type": "book",
+      "content": "嬰兒雜方五卷",
+      "work_id": "d59f2pwbp05d"
+    },
+    {
+      "title": "粧䑓寳鑑集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "粧䑓寳鑑集三卷",
+      "work_id": "d59f2q8rxsle"
+    },
+    {
+      "title": "粧䑓方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "粧䑓方一卷",
+      "work_id": "d59f2q9un7cx"
+    },
+    {
+      "title": "發焰録一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "發焰録一卷（闕）",
+      "work_id": "d59f28khx0ci"
+    },
+    {
+      "title": "修玉粉丹口訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "修玉粉丹口訣一卷",
+      "work_id": "d59f2q9i5pts"
+    },
+    {
+      "title": "服雲母談一卷",
+      "level": 3,
+      "type": "book",
+      "content": "服雲母談一卷",
+      "work_id": "d59f2qa4y1vk"
+    },
+    {
+      "title": "葛仙公杏仁煎方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛仙公杏仁煎方一卷",
+      "work_id": "d59f2pt6durk"
+    },
+    {
+      "title": "元明粉方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元明粉方一卷",
+      "work_id": "d59f2psztvk1"
+    },
+    {
+      "title": "神枕方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神枕方一卷",
+      "work_id": "d59f2q92juo0"
+    },
+    {
+      "title": "神仙雲母粉方一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "神仙雲母粉方一卷（闕）",
+      "work_id": "d59f2qand1j6"
+    },
+    {
+      "title": "吞字貼腫方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吞字貼腫方一卷",
+      "work_id": "d59f2pxm7cw1"
+    },
+    {
+      "title": "備纂療癰疽要訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "備纂療癰疽要訣一卷",
+      "work_id": "d59f2q555clc"
+    },
+    {
+      "title": "瘰癧方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "瘰癧方一卷",
+      "work_id": "d59f2q8oi681"
+    },
+    {
+      "title": "徒都子膜子外氣方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徒都子膜子外氣方一卷",
+      "work_id": "d59f2q5h0dfm"
+    },
+    {
+      "title": "名醫傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "名醫傳十卷",
+      "work_id": "d59f2q8hbpxd"
+    },
+    {
+      "title": "靈方志一卷",
+      "level": 3,
+      "type": "book",
+      "content": "靈方志一卷",
+      "work_id": "d59f2pvbspvl"
+    },
+    {
+      "title": "意醫紀歴一卷",
+      "level": 3,
+      "type": "book",
+      "content": "意醫紀歴一卷",
+      "work_id": "d59f2ofmgkci"
+    },
+    {
+      "title": "療黄經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "療黄經三卷",
+      "work_id": "d59f2evy65tu"
+    },
+    {
+      "title": "療黄歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "療黄歌一卷",
+      "work_id": "d59f2hil9eyo"
+    },
+    {
+      "title": "相色經妙訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "相色經妙訣一卷",
+      "work_id": "d59f2pzhxvcy"
+    },
+    {
+      "title": "靈竒壁奥三卷",
+      "level": 3,
+      "type": "book",
+      "content": "靈竒壁奥三卷",
+      "work_id": "d59f2ptb2fi9"
+    },
+    {
+      "title": "審的選要歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "審的選要歌一卷",
+      "work_id": "d59f2psbslq9"
+    },
+    {
+      "title": "審的眼藥歌三卷",
+      "level": 3,
+      "type": "book",
+      "content": "審的眼藥歌三卷",
+      "work_id": "d59f2q6pyj9c"
+    },
+    {
+      "title": "排玉集三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "排玉集三卷（闕）",
+      "work_id": "d59f28jq4w05"
+    }
+  ]
+}

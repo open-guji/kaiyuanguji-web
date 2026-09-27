@@ -1,0 +1,208 @@
+{
+  "title": "史部·職官類",
+  "sections": [
+    {
+      "title": "職官類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "咸熙元年百官名",
+      "level": 3,
+      "type": "book",
+      "content": "咸熙元年百官名　据《國志・鍾會傳》注引。",
+      "work_id": "d59f9uwlpipx"
+    },
+    {
+      "title": "韋昭　官儀職訓一卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋昭　官儀職訓一卷　韋昭撰。　案《國志》曜傳作\"官職訓\"。",
+      "work_id": "d59f27s99344",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "陳壽　官司論七篇",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　官司論七篇　陳壽撰。依據典故，議所因革。据《華陽國志》。",
+      "work_id": "d59f9uwlpipy",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "武帝百官名",
+      "level": 3,
+      "type": "book",
+      "content": "武帝百官名　据《國志・臧霸傳》註，云不知誰撰。",
+      "work_id": "d59f9uwm0r9c"
+    },
+    {
+      "title": "武帝太始官名",
+      "level": 3,
+      "type": "book",
+      "content": "武帝太始官名　据《御覽》引。",
+      "work_id": "d59f9uwm0r9d"
+    },
+    {
+      "title": "陸機　晉惠帝百官名三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　晉惠帝百官名三卷　陸機撰。据《唐志》。",
+      "work_id": "d59f27uxpeys",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "元康百官名",
+      "level": 3,
+      "type": "book",
+      "content": "元康百官名　据《通典》引。",
+      "work_id": "d59f27vw1ipt"
+    },
+    {
+      "title": "荀綽　百官表注十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀綽　百官表注十六卷　荀綽撰。",
+      "work_id": "d59f27un3cht",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "衛禹　晉永嘉百官名三卷",
+      "level": 3,
+      "type": "book",
+      "content": "衛禹　晉永嘉百官名三卷　衛禹撰。据《新唐志》。",
+      "work_id": "d59f9uwm0r9e",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "懷帝永嘉官名",
+      "level": 3,
+      "type": "book",
+      "content": "懷帝永嘉官名　据《御覽》引。",
+      "work_id": "d59f27u7hhc4"
+    },
+    {
+      "title": "大興二年定官品事五卷",
+      "level": 3,
+      "type": "book",
+      "content": "大興二年定官品事五卷",
+      "work_id": "d59f27u3qmtd"
+    },
+    {
+      "title": "傅暢　晉公卿禮秩故事九卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅暢　晉公卿禮秩故事九卷　傅暢撰。　案本書傳無\"禮秩\"二字，《宋書・禮志》引稱《傅暢故事》，《漢書・輿服志》注、《文選注》及《書鈔》、《類聚》等書引稱《公卿禮秩》，實一書也。",
+      "work_id": "d59f27ukwooz",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "魏晉百官名五卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏晉百官名五卷",
+      "work_id": "d59f2pwb2j9d"
+    },
+    {
+      "title": "晉官屬名四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉官屬名四卷　案《舊唐志》無\"名\"字。",
+      "work_id": "d59f2py5k35s",
+      "note": "【卷數原為校語所隔，今上屬】"
+    },
+    {
+      "title": "晉百官名三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉百官名三十卷　案《舊唐志》作\"四十\"，《新唐志》作\"十四\"。",
+      "work_id": "d59f2pyoab5s",
+      "note": "【題為校語所隔，今合】"
+    },
+    {
+      "title": "晉百官表",
+      "level": 3,
+      "type": "book",
+      "content": "晉百官表　据《國志・諸葛亮傳》注引。",
+      "work_id": "d59f27v2p7nm"
+    },
+    {
+      "title": "晉百官名志",
+      "level": 3,
+      "type": "book",
+      "content": "晉百官名志　据《國志・司馬朗傳》注引。",
+      "work_id": "d59f9pql7hfl"
+    },
+    {
+      "title": "晉百官公卿表",
+      "level": 3,
+      "type": "book",
+      "content": "晉百官公卿表　据《六典》引。",
+      "work_id": "d59f27tj4yys"
+    },
+    {
+      "title": "晉王公百官志",
+      "level": 3,
+      "type": "book",
+      "content": "晉王公百官志　据《御覽》引。",
+      "work_id": "d59f6ssrrvnw"
+    },
+    {
+      "title": "晉東宮官名",
+      "level": 3,
+      "type": "book",
+      "content": "晉東宮官名　据《世説》注引。　案《世説》注別引《東宮百官名》，當衍\"百\"字。",
+      "work_id": "d59f27tk2ole"
+    },
+    {
+      "title": "晉尚書儀曹事九卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉尚書儀曹事九卷　据《唐志》。",
+      "work_id": "d59f27xvu3nn"
+    },
+    {
+      "title": "徐宣瑜　晉官品一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐宣瑜　晉官品一卷　徐宣瑜撰。　案《通典》，宣瑜官博士。",
+      "work_id": "d59f27v64tmp",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "朝堂制",
+      "level": 3,
+      "type": "book",
+      "content": "朝堂制　北涼蒙遜命其征南將軍姚艾、尚書左丞房晷撰。据本書載記。",
+      "work_id": "d59f9uwm0r9f"
+    },
+    {
+      "title": "晉官品令",
+      "level": 3,
+      "type": "book",
+      "content": "晉官品令　据《魏書・禮志》引。",
+      "work_id": "d59f27ugulmr"
+    },
+    {
+      "title": "百官品九卷",
+      "level": 3,
+      "type": "book",
+      "content": "百官品九卷",
+      "work_id": "d59f2pquq9s2"
+    },
+    {
+      "title": "百官階次一卷",
+      "level": 3,
+      "type": "book",
+      "content": "百官階次一卷",
+      "work_id": "d59f9uwm0r9g"
+    },
+    {
+      "title": "職官類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右職官類十八種。"
+    }
+  ]
+}

@@ -1,0 +1,939 @@
+{
+  "title": "正史類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "正史類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史",
+      "content": "明史三百三十六卷。康熙十八年敕撰，乾隆四年書成表進。",
+      "work_id": "d59f2mc8bta8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遼金元三史國語解",
+      "content": "遼金元三史國語解四十六卷。乾隆四十六年敕撰。",
+      "work_id": "d59f2ntoelmo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記補註",
+      "content": "史記補註一卷。方苞撰。",
+      "work_id": "d59f2nbm7a4i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記疑問",
+      "content": "史記疑問一卷。邵泰衢撰。",
+      "work_id": "d59f2mohe4u8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記考證",
+      "content": "史記考證七卷。杭世駿撰。",
+      "work_id": "d59f2nbmiio0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記志疑",
+      "content": "史記志疑三十六卷。梁玉繩撰。",
+      "work_id": "d59f2nbmiio1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史記十表",
+      "content": "讀史記十表十卷。汪越撰，徐克范補。史記天官書補目一卷，考證十卷。孫星衍撰。",
+      "work_id": "d59f2moh2waq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記天官書補目",
+      "content": "",
+      "content_from": "讀史記十表",
+      "work_id": "d59f2nbmtr7k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記律歷天官書正譌",
+      "content": "史記律歷天官書正譌三卷。王元啟撰。",
+      "work_id": "d59f2nbmtr7l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記三書釋疑",
+      "content": "史記三書釋疑三卷。錢塘撰。",
+      "work_id": "d59f2nbmtr7m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記功比說",
+      "content": "史記功比說一卷。張錫瑜撰。",
+      "work_id": "d59f2nbn4zr4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史記毛本正誤",
+      "content": "史記毛本正誤一卷。丁晏撰。",
+      "work_id": "d59f2nbn4zr5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "校刊史記札記",
+      "content": "校刊史記札記五卷。張文虎撰。",
+      "work_id": "d59f2nbn4zr6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史漢箋論",
+      "content": "史漢箋論十卷。楊於果撰。",
+      "work_id": "d59f2nbng8ao"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史漢駢枝",
+      "content": "史漢駢枝一卷。成蓉鏡撰。",
+      "work_id": "d59f2nbng8ap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書辨疑",
+      "content": "漢書辨疑二十二卷。錢大昭撰。",
+      "work_id": "d59f2nbng8aq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書拾遺",
+      "content": "漢書拾遺一卷。劉台拱撰。",
+      "work_id": "d59f2nbnrgu8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書疏證",
+      "content": "漢書疏證三十六卷。沈欽韓撰。",
+      "work_id": "d59f2nbnrgu9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書注校補",
+      "content": "漢書注校補五十六卷。周壽昌撰。",
+      "work_id": "d59f2nbo2pds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書管見",
+      "content": "漢書管見四卷。朱一新撰。",
+      "work_id": "d59f2nbo2pdt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書補註",
+      "content": "漢書補註一百卷。王先謙撰。",
+      "work_id": "d59f2nbo2pdu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢初年月日表",
+      "content": "漢初年月日表一卷。姚文田撰。",
+      "work_id": "d59f2nbodxxc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書律曆志正譌",
+      "content": "漢書律曆志正譌二卷。王元啟撰。",
+      "work_id": "d59f2nbodxxd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志稽疑",
+      "content": "漢書地理志稽疑六卷。全祖望撰。",
+      "work_id": "d59f2nbodxxe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志補註",
+      "content": "漢書地理志補註一百三卷。吳卓信撰。",
+      "work_id": "d59f2nbop6gw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "新注漢書地理志",
+      "content": "新注漢書地理志十六卷。錢坫撰。",
+      "work_id": "d59f2nbop6gx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志校注",
+      "content": "漢書地理志校注二卷。王紹蘭撰。",
+      "work_id": "d59f2nbop6gy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志校本",
+      "content": "漢書地理志校本二卷。汪遠孫撰。",
+      "work_id": "d59f2nbp0f0g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢志水道疏證",
+      "content": "漢志水道疏證四卷。洪頤煊撰。",
+      "work_id": "d59f2nbp0f0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志水道圖說",
+      "content": "漢書地理志水道圖說七卷。陳澧撰。",
+      "work_id": "d59f2nbp0f0i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢志釋地略漢志志疑",
+      "content": "漢志釋地略漢志志疑一卷。汪士鐸撰。",
+      "work_id": "d59f2nbpbnk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書地理志集釋",
+      "content": "漢書地理志集釋十四卷，西域傳補註二卷。徐松撰。",
+      "work_id": "d59f2nbpbnk1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西域傳補註",
+      "content": "",
+      "content_from": "漢書地理志集釋",
+      "work_id": "d59f2nbpbnk2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢西域圖考",
+      "content": "漢西域圖考七卷。李光廷撰。",
+      "work_id": "d59f2nbpmw3k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書古今人表考",
+      "content": "漢書古今人表考九卷。梁玉繩撰。",
+      "work_id": "d59f2nbpmw3l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "人表考校補",
+      "content": "人表考校補一卷，續補一卷。蔡雲撰。",
+      "work_id": "d59f2nbpmw3m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書正誤",
+      "content": "漢書正誤四卷。王峻撰。",
+      "work_id": "d59f2nbpy4n4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書刊誤",
+      "content": "漢書刊誤一卷。石韞玉撰。",
+      "work_id": "d59f2ntoelmp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書注考證",
+      "content": "漢書注考證一卷。何若瑤撰。",
+      "work_id": "d59f2nbpy4n5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "兩漢朔閏表",
+      "content": "兩漢朔閏表二卷，附漢太初以前朔閏表一卷。張其(曾羽)撰。",
+      "work_id": "d59f2nbq9d6o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "兩漢舉正",
+      "content": "兩漢舉正五卷。陳景雲撰。",
+      "work_id": "d59f2nbq9d6p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書補註",
+      "content": "後漢書補註二十四卷。惠棟撰。",
+      "work_id": "d59f2nbq9d6q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書辨疑",
+      "content": "後漢書辨疑十一卷，續後漢書辨疑九卷，後漢書補表八卷，補續漢書藝文志一卷，後漢郡國令長考一卷。錢大昭撰。",
+      "work_id": "d59f2nbqklq8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書補表",
+      "content": "",
+      "content_from": "後漢書辨疑",
+      "work_id": "d59f2nbqklq9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢郡國令長考",
+      "content": "",
+      "content_from": "後漢書辨疑",
+      "work_id": "d59f2nbqvu9s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書疏證",
+      "content": "後漢書疏證三十卷。沈欽韓撰。",
+      "work_id": "d59f2nbqvu9t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書補註續",
+      "content": "後漢書補註續一卷，補後漢書藝文志四卷。侯康撰。",
+      "work_id": "d59f2nbqvu9u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書注補正",
+      "content": "後漢書注補正八卷。周壽昌撰。",
+      "work_id": "d59f2nbr72tc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書注又補",
+      "content": "後漢書注又補一卷。沈銘彝撰。",
+      "work_id": "d59f2nbr72td"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書儒林傳補",
+      "content": "後漢書儒林傳補二卷。李聿修撰。",
+      "work_id": "d59f2nbribcw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書補逸",
+      "content": "後漢書補逸二十一卷。姚之駰撰。",
+      "work_id": "d59f2mcdblz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書注刊誤",
+      "content": "後漢書注刊誤一卷，後漢公卿表一卷。練恕撰。",
+      "work_id": "d59f2nbribcx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢公卿表",
+      "content": "",
+      "content_from": "後漢書注刊誤",
+      "work_id": "d59f2nbribcy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢三附公年表",
+      "content": "後漢三附公年表一卷。華湛恩撰。",
+      "work_id": "d59f2nbrtjwg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書注考證",
+      "content": "後漢書注考證一卷。何若瑤撰。",
+      "work_id": "d59f2nbrtjwh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志舉正",
+      "content": "三國志舉正四卷。陳景雲撰。",
+      "work_id": "d59f2nbs4sg0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志考證",
+      "content": "三國志考證八卷。潘眉撰。",
+      "work_id": "d59f2nbs4sg1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志補註",
+      "content": "三國志補註六卷。杭世駿撰。",
+      "work_id": "d59f2mohe4u9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志續考證",
+      "content": "三國志續考證一卷。盧文弨撰。",
+      "work_id": "d59f2nbsg0zk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志辨疑",
+      "content": "三國志辨疑三卷。錢大昭撰。",
+      "work_id": "d59f2nbsg0zl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志注補",
+      "content": "三國志注補六十五卷。趙一清撰。",
+      "work_id": "d59f2nbsg0zm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志補註",
+      "content": "三國志補註十六卷。沈欽韓撰。",
+      "work_id": "d59f2nbsr9j4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志旁證",
+      "content": "三國志旁證三十卷。梁章鉅撰。",
+      "work_id": "d59f2nbsr9j5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志證聞",
+      "content": "三國志證聞二卷。錢儀吉撰。",
+      "work_id": "d59f2nbt2i2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國紀年表",
+      "content": "三國紀年表一卷。周嘉猷撰。",
+      "work_id": "d59f2nbt2i2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補三國疆域志",
+      "content": "補三國疆域志三卷。洪亮吉撰。",
+      "work_id": "d59f2nbt2i2q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國職官表",
+      "content": "三國職官表三卷。洪飴孫撰。",
+      "work_id": "d59f2nbtdqm8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志注續",
+      "content": "三國志注續一卷，補三國藝文志四卷。侯康撰。",
+      "work_id": "d59f2nbtdqm9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三國志注證遺",
+      "content": "三國志注證遺四卷。周壽昌撰。",
+      "work_id": "d59f2nbtoz5s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉書地理志新補正",
+      "content": "晉書地理志新補正五卷。畢沅撰。",
+      "work_id": "d59f2nbtoz5t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "東晉疆域志",
+      "content": "東晉疆域志四卷。洪亮吉撰。",
+      "work_id": "d59f2nbu07pc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉書補傳贊",
+      "content": "晉書補傳贊一卷。杭世駿撰。",
+      "work_id": "d59f2nbu07pd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補晉書兵志",
+      "content": "補晉書兵志一卷。錢儀吉撰。",
+      "work_id": "d59f2nbu07pe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉書校勘記",
+      "content": "晉書校勘記四卷。周雲撰。",
+      "work_id": "d59f2nbubg8w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉書校勘記",
+      "content": "晉書校勘記三卷。勞格撰。",
+      "work_id": "d59f2nbubg8x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補晉書藝文志",
+      "content": "補晉書藝文志四卷，晉書校文五卷。丁國鈞撰。",
+      "work_id": "d59f2mp2xibm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉書校文",
+      "content": "",
+      "content_from": "補晉書藝文志",
+      "work_id": "d59f2nbumosg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉宋書故",
+      "content": "晉宋書故一卷，補宋書刑法志一卷，食貨志一卷。郝懿行撰。",
+      "work_id": "d59f2nbumosh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "食貨志",
+      "content": "",
+      "content_from": "晉宋書故",
+      "work_id": "d59f2nbuxxc0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋書州郡志校勘記",
+      "content": "宋書州郡志校勘記一卷。成蓉鏡撰。",
+      "work_id": "d59f2nbuxxc1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補梁疆域志",
+      "content": "補梁疆域志四卷。洪飴孫撰。",
+      "work_id": "d59f2nbuxxc2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "魏書校勘記",
+      "content": "魏書校勘記一卷。王先謙撰。",
+      "work_id": "d59f2nbv95vk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "北周公卿表",
+      "content": "北周公卿表一卷。練恕撰。",
+      "work_id": "d59f2nbv95vl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南北史識疑",
+      "content": "南北史識疑四卷。王懋竑撰。",
+      "work_id": "d59f2nbvkef4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補南北史表",
+      "content": "補南北史表七卷。周嘉猷撰。",
+      "work_id": "d59f2nbvkef5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補南北史志",
+      "content": "補南北史志十四卷。汪士鐸撰。",
+      "work_id": "d59f2nbvkef6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "隋書經籍志考證",
+      "content": "隋書經籍志考證十三卷。章宗源撰。",
+      "work_id": "d59f2ntopu68"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "隋書地理志考證",
+      "content": "隋書地理志考證九卷。楊守敬撰。",
+      "work_id": "d59f2nbvvmyo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "新舊唐書互證",
+      "content": "新舊唐書互證二十卷。趙紹祖撰。",
+      "work_id": "d59f2nbvvmyp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "舊唐書疑義",
+      "content": "舊唐書疑義四卷。張道撰。",
+      "work_id": "d59f2nbw6vi8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "舊唐書校勘記",
+      "content": "舊唐書校勘記六十六卷。羅士琳、陳立、劉文淇、劉毓崧同撰。",
+      "work_id": "d59f2nbw6vi9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "唐學士年表",
+      "content": "唐學士年表一卷。錢大昕撰。",
+      "work_id": "d59f2nbw6via"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史志疑",
+      "content": "五代史志疑四卷。楊陸榮撰。",
+      "work_id": "d59f2mc8n1ts"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史纂誤補",
+      "content": "五代史纂誤補四卷。吳蘭庭撰。",
+      "work_id": "d59f2nbwi41s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史纂誤續補",
+      "content": "五代史纂誤續補六卷。吳光耀撰。",
+      "work_id": "d59f2nbwi41t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史纂誤補續",
+      "content": "五代史纂誤補續一卷。周壽昌撰。",
+      "work_id": "d59f2nbwtclc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "舊五代史考異",
+      "content": "舊五代史考異二卷。邵晉涵撰。",
+      "work_id": "d59f2nbwtcld"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "新五代史注",
+      "content": "新五代史注七十四卷。彭元瑞、劉鳳誥同撰。",
+      "work_id": "d59f2nbwtcle"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代紀年表",
+      "content": "五代紀年表一卷。周嘉猷撰。",
+      "work_id": "d59f2nbx4l4w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史地理考",
+      "content": "五代史地理考一卷。練恕撰。",
+      "work_id": "d59f2nbx4l4x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代學士年表",
+      "content": "五代學士年表一卷。錢大昕撰。",
+      "work_id": "d59f2nbxftog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋史地理志校勘記",
+      "content": "宋史地理志校勘記一卷。成蓉鏡撰。",
+      "work_id": "d59f2nbxftoh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋中興學士年表",
+      "content": "宋中興學士年表一卷，宋修唐書史臣表一卷。錢大昕撰。",
+      "work_id": "d59f2nbxr280"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋修唐書史臣表",
+      "content": "",
+      "content_from": "宋中興學士年表",
+      "work_id": "d59f2nbxr281"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遼史拾遺",
+      "content": "遼史拾遺二十四卷，補五卷。厲鶚撰。",
+      "work_id": "d59f2mc80kqp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遼史拾遺續",
+      "content": "遼史拾遺續三卷。楊復吉撰。",
+      "work_id": "d59f2nbxr282"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金史詳校",
+      "content": "金史詳校十卷，金源劄記二卷。施國祁撰。",
+      "work_id": "d59f2nby2ark"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金源劄記",
+      "content": "",
+      "content_from": "金史詳校",
+      "work_id": "d59f2nby2arl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史本證",
+      "content": "元史本證五十卷，元史證誤二十三卷。汪輝祖撰。",
+      "work_id": "d59f2nbydjb4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史證誤",
+      "content": "",
+      "content_from": "元史本證",
+      "work_id": "d59f2nbydjb5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史氏族表",
+      "content": "元史氏族表三卷，補元史藝文志四卷。錢大昕撰。",
+      "work_id": "d59f2nbyoruo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史譯文證補",
+      "content": "元史譯文證補三十卷。洪鈞撰。",
+      "work_id": "d59f2nbyorup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋遼金元四史朔閏考",
+      "content": "宋遼金元四史朔閏考二卷，遼金元三史拾遺五卷。錢大昕撰。",
+      "work_id": "d59f2nbyoruq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遼金元三史拾遺",
+      "content": "",
+      "content_from": "宋遼金元四史朔閏考",
+      "work_id": "d59f2nbz00e8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補遼金元三史藝文志",
+      "content": "補遼金元三史藝文志一卷。倪燦撰。",
+      "work_id": "d59f2nbz00e9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補遼金元三史藝文志",
+      "content": "補遼金元三史藝文志一卷。金門詔撰。",
+      "work_id": "d59f2nbzb8xs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史考證攟逸",
+      "content": "明史考證攟逸四十二卷。王頌蔚撰。",
+      "work_id": "d59f2nbzb8xt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "二十二史考異",
+      "content": "二十二史考異一百卷，諸史拾遺五卷。錢大昕撰。",
+      "work_id": "d59f2nbzb8xu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "諸史拾遺",
+      "content": "",
+      "content_from": "二十二史考異",
+      "work_id": "d59f2nbzmhhc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十七史商榷",
+      "content": "十七史商榷一百卷。王鳴盛撰。",
+      "work_id": "d59f2nbzmhhd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "二十二史劄記",
+      "content": "二十二史劄記三十六卷，補遺一卷。趙翼撰。",
+      "work_id": "d59f2nbzmhhe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四史發伏",
+      "content": "四史發伏十二卷。洪亮吉撰。",
+      "work_id": "d59f2nbzxq0w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀史舉正",
+      "content": "讀史舉正八卷。張熷撰。",
+      "work_id": "d59f2nbzxq0x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "諸史然疑",
+      "content": "諸史然疑一卷。杭世駿撰。",
+      "work_id": "d59f2nc08ykg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "諸史考異",
+      "content": "諸史考異十八卷。洪頤煊撰。",
+      "work_id": "d59f2nc08ykh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代史目表",
+      "content": "歷代史目表一卷。洪飴孫撰。",
+      "work_id": "d59f2nc08yki"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "正等舊五代史",
+      "content": "宋薛居正等舊五代史一百五十卷。",
+      "work_id": "d59f2hul9url",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "目錄",
+      "content": "目錄二卷。",
+      "work_id": "d59f2hul9url",
+      "is_jiyi": true,
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《正等舊五代史》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "五代史記纂誤",
+      "content": "宋吳縝五代史記纂誤三卷。",
+      "work_id": "d59f2huxrchs",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢書音義",
+      "content": "漢書音義三卷、補遺一卷。",
+      "work_id": "d59f2ptcxurl",
+      "is_jiyi": true
+    }
+  ]
+}

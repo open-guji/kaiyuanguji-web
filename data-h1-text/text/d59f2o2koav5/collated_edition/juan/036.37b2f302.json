@@ -1,0 +1,262 @@
+{
+  "title": "經部·總集類",
+  "sections": [
+    {
+      "title": "總集類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "昭明太子　正序十卷",
+      "level": 3,
+      "type": "book",
+      "content": "昭明太子　正序十卷　本傳云：「撰古今典誥文言，爲《正序》。」",
+      "work_id": "d59f99gqc26b"
+    },
+    {
+      "title": "昭明　古今詩苑英華十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "昭明　古今詩苑英華十九卷　《隋志》。",
+      "work_id": "d59f99gqc26c"
+    },
+    {
+      "title": "昭明　文章英華二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "昭明　文章英華二十卷　《隋志》。",
+      "work_id": "d59f284sxh4y",
+      "note": "「又」承前省略撰人（昭明太子）"
+    },
+    {
+      "title": "周捨　注高祖歷代賦啟",
+      "level": 3,
+      "type": "book",
+      "content": "周捨　注高祖歷代賦啟　見《捨傳》。《隋志》「高祖歷代賦十卷」。",
+      "work_id": "d59f99gqc26d",
+      "note": "原書腳註⑤：《梁書》《南史·周捨傳》均不見此說，實出《周興嗣傳》"
+    },
+    {
+      "title": "武帝　内典碑銘集林三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　内典碑銘集林三十卷　《隋志》作「釋氏碑文三十卷」。",
+      "work_id": "d59f99gqc26e"
+    },
+    {
+      "title": "沈約　文苑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約　文苑一卷　宋《四庫闕書目》。",
+      "work_id": "d59f99gqc26f",
+      "note": "原書腳註①：《隋志》等皆言孔逭有《文苑》一百卷。OCR「孔這」「孔追」正作「孔逭」"
+    },
+    {
+      "title": "沈約　集鈔十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約　集鈔十卷　《隋志》。",
+      "work_id": "d59f285t505f",
+      "note": "承前省略撰人（沈約）"
+    },
+    {
+      "title": "丘遲　集鈔四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "丘遲　集鈔四十卷　《隋志》。",
+      "work_id": "d59f2q8jtlvk",
+      "note": "與别集類「丘遲　又集鈔四十卷」重出"
+    },
+    {
+      "title": "謝沈　文章志錄雜文八卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈　文章志錄雜文八卷　《七錄》。",
+      "work_id": "d59f27tbyigx"
+    },
+    {
+      "title": "謝沈　名士雜文八卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈　名士雜文八卷　《七錄》。",
+      "work_id": "d59f2pr2ufwh",
+      "note": "「又」承前省略撰人（謝沈）"
+    },
+    {
+      "title": "沈約　注武帝連珠一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約　注武帝連珠一卷　《隋志》。",
+      "work_id": "d59f99gp340c",
+      "note": "與别集類同條重出"
+    },
+    {
+      "title": "武帝　歷代賦十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　歷代賦十卷　《隋志》。",
+      "work_id": "d59f28676olc"
+    },
+    {
+      "title": "王孝祀　詩英十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王孝祀　詩英十卷　代元帝，《金樓子》。",
+      "work_id": "d59f99gqc26h",
+      "note": "「王孝祀」未詳，待覈"
+    },
+    {
+      "title": "名士雜文八卷",
+      "level": 3,
+      "type": "book",
+      "content": "名士雜文八卷　《隋志》。",
+      "work_id": "d59f2pr2ufwh",
+      "note": "原書無撰人。原書腳註②：此條與前謝沈條重出"
+    },
+    {
+      "title": "劉勰　文心雕龍十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉勰　文心雕龍十卷　《隋志》「東宫通事舍人」。",
+      "work_id": "d59f286w5o1u"
+    },
+    {
+      "title": "任昉　文章始一卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉　文章始一卷　《七錄》。",
+      "work_id": "d59f2868fmrl"
+    },
+    {
+      "title": "武帝　圍碁賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　圍碁賦一卷　《隋》。",
+      "work_id": "d59f99gqc26i"
+    },
+    {
+      "title": "蕭淑　西府新文十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭淑　西府新文十一卷　《隋志》「并錄」。",
+      "work_id": "d59f28jzt8ua",
+      "note": "「蕭淑」未詳，疑訛，待覈"
+    },
+    {
+      "title": "僧祐　諸寺碑文四十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　諸寺碑文四十六卷　《隋志》。",
+      "work_id": "d59f2865b9c3"
+    },
+    {
+      "title": "僧祐　雜祭文六卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　雜祭文六卷",
+      "work_id": "d59f2pr43dvk",
+      "note": "「又」承前省略撰人（僧祐）"
+    },
+    {
+      "title": "僧祐　衆僧行狀四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　衆僧行狀四十卷　均《隋志》。",
+      "work_id": "d59f99gqc26j",
+      "note": "「又」承前省略撰人（僧祐）"
+    },
+    {
+      "title": "邵陵王綸　注武帝制旨連珠十卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵陵王綸　注武帝制旨連珠十卷　《隋志》。",
+      "work_id": "d59f99gqc26l"
+    },
+    {
+      "title": "陸緬　注武帝制旨連珠十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸緬　注武帝制旨連珠十卷",
+      "work_id": "d59f99gqc26l",
+      "note": "與前邵陵王綸條同題"
+    },
+    {
+      "title": "梁代雜文三卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁代雜文三卷　《隋志》。",
+      "work_id": "d59f2q993tvl",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "邵陵王　梁中表十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵陵王　梁中表十一卷　《隋志》。",
+      "work_id": "d59f285trh8i"
+    },
+    {
+      "title": "元帝碑二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝碑二十二卷",
+      "work_id": "d59f99gqc26m",
+      "note": "集名即撰人"
+    },
+    {
+      "title": "元帝碑文十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝碑文十五卷　均見《隋志》。《金樓子》作「十秩百卷」。",
+      "work_id": "d59f99gqnaps",
+      "note": "原書作「又碑文十五卷」，承前元帝"
+    },
+    {
+      "title": "沙門釋寶唱　法集百七卷",
+      "level": 3,
+      "type": "book",
+      "content": "沙門釋寶唱　法集百七卷　《隋志》。",
+      "work_id": "d59f2864djpc"
+    },
+    {
+      "title": "謝朏　雜言詩鈔五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝朏　雜言詩鈔五卷　《隋志》。",
+      "work_id": "d59f284u6fb6"
+    },
+    {
+      "title": "天監元年至七年詔十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "天監元年至七年詔十二卷　《隋志》。",
+      "work_id": "d59f99gqnapt",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "天監九年十年詔二卷",
+      "level": 3,
+      "type": "book",
+      "content": "天監九年十年詔二卷　《隋志》。",
+      "work_id": "d59f99gqnapu",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "邵陵王　梁中表十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵陵王　梁中表十一卷　《隋志》。",
+      "work_id": "d59f285trh8i",
+      "note": "原書腳註①：此條及下一條本類重出"
+    },
+    {
+      "title": "沙門寶唱　法集百七卷",
+      "level": 3,
+      "type": "book",
+      "content": "沙門寶唱　法集百七卷　《隋志》。",
+      "work_id": "d59f2864djpc",
+      "note": "本類重出"
+    }
+  ]
+}

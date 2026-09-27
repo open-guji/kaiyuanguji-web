@@ -1,0 +1,31 @@
+{
+  "title": "經部·詩類",
+  "sections": [
+    {
+      "title": "詩類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "李鉉　毛詩義疏",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　毛詩義疏　李鉉撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98exombl"
+    },
+    {
+      "title": "張思伯　毛詩章句",
+      "level": 3,
+      "type": "book",
+      "content": "張思伯　毛詩章句　張思伯撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f2pt89af6"
+    },
+    {
+      "title": "詩類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右詩二部，無卷數，未收入《隋志》。"
+    }
+  ]
+}

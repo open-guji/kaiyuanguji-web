@@ -1,0 +1,165 @@
+{
+  "title": "史部·雜傳類",
+  "sections": [
+    {
+      "title": "雜傳類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "徐州先賢傳贊　　劉義慶撰",
+      "level": 3,
+      "type": "book",
+      "content": "徐州先賢傳贊　九卷。《新唐志》作八卷，《宋書》五一作十卷。　　劉義慶撰",
+      "work_id": "d59f285u2ps3"
+    },
+    {
+      "title": "武昌先賢志　　郭緣生撰",
+      "level": 3,
+      "type": "book",
+      "content": "武昌先賢志　二卷。兩《唐志》\"二卷\"作\"三卷\"，\"志\"作\"傳\"。　　郭緣生撰",
+      "work_id": "d59f285rktfl"
+    },
+    {
+      "title": "聖賢高士傳贊注　　周續之注",
+      "level": 3,
+      "type": "book",
+      "content": "聖賢高士傳贊注　一卷。兩《唐志》作《上古以來聖賢高士傳讚》。　　周續之注",
+      "work_id": "d59f7z43eww7"
+    },
+    {
+      "title": "聖賢羣輔錄　　陶潛撰",
+      "level": 3,
+      "type": "book",
+      "content": "聖賢羣輔錄　一卷。　　陶　潛撰",
+      "work_id": "d59f7z43eww8"
+    },
+    {
+      "title": "真隱傳　　袁淑撰",
+      "level": 3,
+      "type": "book",
+      "content": "真隱傳　二卷。見《新唐志》。《舊唐志》作《高隱傳》。　　袁　淑撰",
+      "work_id": "d59f285iixoj"
+    },
+    {
+      "title": "孝子傳　　鄭緝之撰",
+      "level": 3,
+      "type": "book",
+      "content": "孝子傳　十卷。　　鄭緝之撰",
+      "work_id": "d59f285qyccj"
+    },
+    {
+      "title": "孝子傳　　師覺授撰",
+      "level": 3,
+      "type": "book",
+      "content": "孝子傳　八卷。　　師覺授撰",
+      "work_id": "d59f286pag3k"
+    },
+    {
+      "title": "孝子傳　　徐廣撰",
+      "level": 3,
+      "type": "book",
+      "content": "孝子傳　三卷。見《新唐志》。　　徐　廣撰",
+      "work_id": "d59f27tiihvl"
+    },
+    {
+      "title": "孝子傳　　王韶之撰",
+      "level": 3,
+      "type": "book",
+      "content": "孝子傳　十五卷。見兩《唐志》。　　王韶之撰",
+      "work_id": "d59f7z43eww9"
+    },
+    {
+      "title": "孝子傳讚　　王韶之撰",
+      "level": 3,
+      "type": "book",
+      "content": "孝子傳讚　三卷。見《新唐志》。《隋志》有王昭之《孝子傳讚》。　　王韶之撰",
+      "work_id": "d59f7z43ewwa"
+    },
+    {
+      "title": "江左名士傳　　劉義慶撰",
+      "level": 3,
+      "type": "book",
+      "content": "江左名士傳　一卷。　　劉義慶撰",
+      "work_id": "d59f285x737k"
+    },
+    {
+      "title": "陰德傳　　范晏撰",
+      "level": 3,
+      "type": "book",
+      "content": "陰德傳　二卷。　　范　晏撰",
+      "work_id": "d59f286pag3n"
+    },
+    {
+      "title": "裴氏家傳　　裴松之撰",
+      "level": 3,
+      "type": "book",
+      "content": "裴氏家傳　四卷。兩《唐志》作三卷，\"傳\"作\"記\"。　　裴松之撰",
+      "work_id": "d59f285f3bpc"
+    },
+    {
+      "title": "后妃記　　虞通之撰",
+      "level": 3,
+      "type": "book",
+      "content": "后妃記　四卷。見兩《唐志》。　　虞通之撰",
+      "work_id": "d59f2852ltz5"
+    },
+    {
+      "title": "妬記　　虞通之撰",
+      "level": 3,
+      "type": "book",
+      "content": "妬記　二卷。　　虞通之撰",
+      "work_id": "d59f285z2ih0"
+    },
+    {
+      "title": "宣驗記　　劉義慶撰",
+      "level": 3,
+      "type": "book",
+      "content": "宣驗記　三十卷。　　劉義慶撰",
+      "work_id": "d59f285lyjnn"
+    },
+    {
+      "title": "應驗記　　傅亮撰",
+      "level": 3,
+      "type": "book",
+      "content": "應驗記　八卷。　　傅　亮撰",
+      "work_id": "d59f285z2igz"
+    },
+    {
+      "title": "古異傳　　袁王壽撰",
+      "level": 3,
+      "type": "book",
+      "content": "古異傳　三卷。　　袁王壽撰",
+      "work_id": "d59f2861969v"
+    },
+    {
+      "title": "異苑　　劉敬叔撰",
+      "level": 3,
+      "type": "book",
+      "content": "異苑　十卷。　　劉敬叔撰",
+      "work_id": "d59f286ws54y"
+    },
+    {
+      "title": "搜神後記　　陶潛撰",
+      "level": 3,
+      "type": "book",
+      "content": "搜神後記　十卷。　　陶　潛撰",
+      "work_id": "d59f27x842de"
+    },
+    {
+      "title": "齊諧記　　東陽无疑撰",
+      "level": 3,
+      "type": "book",
+      "content": "齊諧記　七卷。　　東陽无疑撰",
+      "work_id": "d59f286onz0h"
+    },
+    {
+      "title": "幽明錄　　劉義慶撰",
+      "level": 3,
+      "type": "book",
+      "content": "幽明錄　二十卷。　　劉義慶撰",
+      "work_id": "d59f2853us5d"
+    }
+  ]
+}

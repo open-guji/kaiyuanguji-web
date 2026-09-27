@@ -1,0 +1,23 @@
+{
+  "title": "經部·經解類",
+  "sections": [
+    {
+      "title": "經解類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "虞愿　五經論問",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "愿著《五經論問》，撰《會稽記》，交翰數十篇。",
+          "source": "《南齊書》五三《虞愿傳》、《南史》七○《循吏·虞愿傳》。"
+        }
+      ],
+      "author": "虞愿",
+      "work_id": "d59f8ii6q32b"
+    }
+  ]
+}

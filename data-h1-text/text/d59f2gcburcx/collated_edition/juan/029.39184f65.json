@@ -1,0 +1,163 @@
+{
+  "title": "天文類",
+  "updated_at": "2026-08-08",
+  "sections": [
+    {
+      "title": "《靈憲圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《靈憲圖》一卷張衡撰。",
+      "work_id": "d59f24m6n0na"
+    },
+    {
+      "title": "《渾天儀》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《渾天儀》一卷張衡撰。",
+      "work_id": "d59f23nsnu9w"
+    },
+    {
+      "title": "《渾天象注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《渾天象注》一卷王蕃撰。",
+      "work_id": "d59f27s8xukh"
+    },
+    {
+      "title": "《昕天論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《昕天論》一卷姚信撰。",
+      "work_id": "d59f27t79ybk"
+    },
+    {
+      "title": "《石氏星經簿贊》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《石氏星經簿贊》一卷石申甫撰。",
+      "work_id": "d59f2q2rxkap"
+    },
+    {
+      "title": "《安天論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《安天論》一卷虞喜撰。",
+      "work_id": "d59f27wntn28"
+    },
+    {
+      "title": "《甘氏四七法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《甘氏四七法》一卷甘德撰。",
+      "work_id": "d59f2px6li4h"
+    },
+    {
+      "title": "《論二十八宿度數》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論二十八宿度數》一卷",
+      "work_id": "d59f2pu93aio"
+    },
+    {
+      "title": "《荊州星占》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《荊州星占》二卷劉表撰。",
+      "work_id": "d59f25dgcd1d"
+    },
+    {
+      "title": "又二十卷劉睿撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又二十卷劉睿撰。",
+      "work_id": "d59f2pyp816o"
+    },
+    {
+      "title": "《天文集占》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文集占》七卷陳卓撰。",
+      "work_id": "d59f27wuov0j",
+      "section_kind": "一書兩著"
+    },
+    {
+      "title": "《四方星占》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四方星占》一卷陳卓撰。",
+      "work_id": "d59f27vtuuwz"
+    },
+    {
+      "title": "《五星占》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五星占》三卷陳卓撰。",
+      "work_id": "d59f27wqmry9"
+    },
+    {
+      "title": "《天文集占》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文集占》三卷",
+      "work_id": "d59f27wuov0j",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evcmndvhchkw，今另立《天文集占》1ex0docvr3e2r 繫之。舊唐志天文類「《天文集占》七卷陳卓撰」之外別著「《天文集占》三卷」，前者明著撰人、後者不著，同志兩著而卷數異，依 SCHEMA〈同題二條〉一別出。附記：庫中本條所繫新唐志「天文集占三卷」疑亦屬此新條，本輪未移。",
+      "section_kind": "一書兩著"
+    },
+    {
+      "title": "《天文錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文錄》三十卷祖恆之撰。",
+      "work_id": "d59f285iu680"
+    },
+    {
+      "title": "《天文橫圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文橫圖》一卷高文洪撰。",
+      "work_id": "d59f2psoa3nl"
+    },
+    {
+      "title": "《天文雜占》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文雜占》一卷吳雲撰。",
+      "work_id": "d59f2q4v5rep"
+    },
+    {
+      "title": "《星占》三十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《星占》三十三卷孫僧化撰。",
+      "work_id": "d59f28668yyo"
+    },
+    {
+      "title": "《十二次二十八宿星占》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《十二次二十八宿星占》十二卷史崇撰。",
+      "work_id": "d59f2pt8vrpd"
+    },
+    {
+      "title": "《乙巳占》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《乙巳占》十卷李淳風撰。",
+      "work_id": "d59f28m73itd"
+    },
+    {
+      "title": "《靈台秘苑》一百二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《靈台秘苑》一百二十卷庾季才撰。",
+      "work_id": "d59f286ws54w"
+    },
+    {
+      "title": "《玄機內事》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玄機內事》七卷逢行珪撰。</poem>",
+      "work_id": "d59f28kq16gz"
+    }
+  ]
+}

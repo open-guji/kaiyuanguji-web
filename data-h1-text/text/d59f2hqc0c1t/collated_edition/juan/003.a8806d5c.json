@@ -1,0 +1,67 @@
+{
+  "title": "詩類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "詩類",
+      "content": ""
+    },
+    {
+      "title": "毛詩古訓傳二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩古訓傳二十卷",
+      "work_id": "d59f2q9n5ibl"
+    },
+    {
+      "title": "韓詩外傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "韓詩外傳十卷。韓嬰撰",
+      "work_id": "d59f1iqgnr40"
+    },
+    {
+      "title": "毛詩草木鳥獸蟲魚䟽二卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩草木鳥獸蟲魚䟽二卷。吳太子中庻子烏程令陸璣撰世或以璣爲機非也機自爲晉人本不治詩今應以璣爲正然書但附詩釋誼窘于采獲似非通儒所爲者將後世失傳不得其真歟",
+      "work_id": "d59f27xoyvpd"
+    },
+    {
+      "title": "毛詩正義四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩正義四十卷。唐國子祭酒孔頴達撰太孫長孫無忌諸儒刋定國朝端拱初國子司業孔准等奉詔是正詩學之家此最爲詳",
+      "work_id": "d59f28ngzeo1"
+    },
+    {
+      "title": "毛詩小䟽二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩小䟽二十卷。不著撰人名氏因孔䟽爲本删取要義輔益經注云",
+      "work_id": "d59f2py4b4sg"
+    },
+    {
+      "title": "毛詩指說一卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩指說一卷。唐成伯璵撰畧序作詩大指及師承次序",
+      "work_id": "d59f28mv4sn8"
+    },
+    {
+      "title": "毛詩斷章二卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩斷章二卷。唐成伯璵撰大抵取春秋賦詩斷章之義鈔取詩語彚而出之",
+      "work_id": "d59f28mykem9"
+    },
+    {
+      "title": "毛詩觧題二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩觧題二十卷。不著撰人名氏篇端搃叙詩義次述章旨葢近儒之爲者歟",
+      "work_id": "d59f2q0jec5c"
+    }
+  ]
+}

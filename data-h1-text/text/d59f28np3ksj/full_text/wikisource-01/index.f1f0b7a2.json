@@ -1,0 +1,440 @@
+{
+  "work_id": "d59f28np3ksj",
+  "version_label": "儀禮注疏",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%84%80%E7%A6%AE%E8%A8%BB%E7%96%8F",
+    "page_title": "儀禮註疏",
+    "revid": 2675802,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 52,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "儀禮註疏/序",
+      "revid": 2675398,
+      "md_len": 537
+    },
+    {
+      "n": 2,
+      "title": "卷一",
+      "file": "002.md",
+      "page_title": "儀禮註疏/卷一",
+      "revid": 2675798,
+      "md_len": 15026
+    },
+    {
+      "n": 3,
+      "title": "卷二",
+      "file": "003.md",
+      "page_title": "儀禮註疏/卷二",
+      "revid": 2675782,
+      "md_len": 17886
+    },
+    {
+      "n": 4,
+      "title": "卷三",
+      "file": "004.md",
+      "page_title": "儀禮註疏/卷三",
+      "revid": 2675783,
+      "md_len": 15705
+    },
+    {
+      "n": 5,
+      "title": "卷四",
+      "file": "005.md",
+      "page_title": "儀禮註疏/卷四",
+      "revid": 2675784,
+      "md_len": 13525
+    },
+    {
+      "n": 6,
+      "title": "卷五",
+      "file": "006.md",
+      "page_title": "儀禮註疏/卷五",
+      "revid": 2675785,
+      "md_len": 14842
+    },
+    {
+      "n": 7,
+      "title": "卷六",
+      "file": "007.md",
+      "page_title": "儀禮註疏/卷六",
+      "revid": 2675786,
+      "md_len": 14689
+    },
+    {
+      "n": 8,
+      "title": "卷七",
+      "file": "008.md",
+      "page_title": "儀禮註疏/卷七",
+      "revid": 2675787,
+      "md_len": 14036
+    },
+    {
+      "n": 9,
+      "title": "卷八",
+      "file": "009.md",
+      "page_title": "儀禮註疏/卷八",
+      "revid": 2675788,
+      "md_len": 10612
+    },
+    {
+      "n": 10,
+      "title": "卷九",
+      "file": "010.md",
+      "page_title": "儀禮註疏/卷九",
+      "revid": 2675789,
+      "md_len": 16553
+    },
+    {
+      "n": 11,
+      "title": "卷十",
+      "file": "011.md",
+      "page_title": "儀禮註疏/卷十",
+      "revid": 2675529,
+      "md_len": 13933
+    },
+    {
+      "n": 12,
+      "title": "卷十一",
+      "file": "012.md",
+      "page_title": "儀禮註疏/卷十一",
+      "revid": 2675791,
+      "md_len": 19799
+    },
+    {
+      "n": 13,
+      "title": "卷十二",
+      "file": "013.md",
+      "page_title": "儀禮註疏/卷十二",
+      "revid": 2675568,
+      "md_len": 25587
+    },
+    {
+      "n": 14,
+      "title": "卷十三",
+      "file": "014.md",
+      "page_title": "儀禮註疏/卷十三",
+      "revid": 2675556,
+      "md_len": 20886
+    },
+    {
+      "n": 15,
+      "title": "卷十四",
+      "file": "015.md",
+      "page_title": "儀禮註疏/卷十四",
+      "revid": 2675792,
+      "md_len": 17859
+    },
+    {
+      "n": 16,
+      "title": "卷十五",
+      "file": "016.md",
+      "page_title": "儀禮註疏/卷十五",
+      "revid": 2675558,
+      "md_len": 25231
+    },
+    {
+      "n": 17,
+      "title": "卷十六",
+      "file": "017.md",
+      "page_title": "儀禮註疏/卷十六",
+      "revid": 2675794,
+      "md_len": 13434
+    },
+    {
+      "n": 18,
+      "title": "卷十七",
+      "file": "018.md",
+      "page_title": "儀禮註疏/卷十七",
+      "revid": 2675562,
+      "md_len": 20029
+    },
+    {
+      "n": 19,
+      "title": "卷十八",
+      "file": "019.md",
+      "page_title": "儀禮註疏/卷十八",
+      "revid": 2675563,
+      "md_len": 20228
+    },
+    {
+      "n": 20,
+      "title": "卷十九",
+      "file": "020.md",
+      "page_title": "儀禮註疏/卷十九",
+      "revid": 2675793,
+      "md_len": 17972
+    },
+    {
+      "n": 21,
+      "title": "卷二十",
+      "file": "021.md",
+      "page_title": "儀禮註疏/卷二十",
+      "revid": 7904813,
+      "md_len": 16208
+    },
+    {
+      "n": 22,
+      "title": "卷二十一",
+      "file": "022.md",
+      "page_title": "儀禮註疏/卷二十一",
+      "revid": 2675566,
+      "md_len": 17407
+    },
+    {
+      "n": 23,
+      "title": "卷二十二",
+      "file": "023.md",
+      "page_title": "儀禮註疏/卷二十二",
+      "revid": 2675567,
+      "md_len": 14757
+    },
+    {
+      "n": 24,
+      "title": "卷二十三",
+      "file": "024.md",
+      "page_title": "儀禮註疏/卷二十三",
+      "revid": 2675569,
+      "md_len": 16477
+    },
+    {
+      "n": 25,
+      "title": "卷二十四",
+      "file": "025.md",
+      "page_title": "儀禮註疏/卷二十四",
+      "revid": 2675570,
+      "md_len": 20698
+    },
+    {
+      "n": 26,
+      "title": "卷二十五",
+      "file": "026.md",
+      "page_title": "儀禮註疏/卷二十五",
+      "revid": 2675795,
+      "md_len": 18230
+    },
+    {
+      "n": 27,
+      "title": "卷二十六",
+      "file": "027.md",
+      "page_title": "儀禮註疏/卷二十六",
+      "revid": 2675572,
+      "md_len": 7630
+    },
+    {
+      "n": 28,
+      "title": "卷二十六下",
+      "file": "028.md",
+      "page_title": "儀禮註疏/卷二十六下",
+      "revid": 2675796,
+      "md_len": 10314
+    },
+    {
+      "n": 29,
+      "title": "卷二十七",
+      "file": "029.md",
+      "page_title": "儀禮註疏/卷二十七",
+      "revid": 2675574,
+      "md_len": 16411
+    },
+    {
+      "n": 30,
+      "title": "卷二十八",
+      "file": "030.md",
+      "page_title": "儀禮註疏/卷二十八",
+      "revid": 2675699,
+      "md_len": 13050
+    },
+    {
+      "n": 31,
+      "title": "卷二十九",
+      "file": "031.md",
+      "page_title": "儀禮註疏/卷二十九",
+      "revid": 2675702,
+      "md_len": 9009
+    },
+    {
+      "n": 32,
+      "title": "卷三十",
+      "file": "032.md",
+      "page_title": "儀禮註疏/卷三十",
+      "revid": 2675704,
+      "md_len": 16071
+    },
+    {
+      "n": 33,
+      "title": "卷三十一",
+      "file": "033.md",
+      "page_title": "儀禮註疏/卷三十一",
+      "revid": 2675705,
+      "md_len": 16710
+    },
+    {
+      "n": 34,
+      "title": "卷三十二",
+      "file": "034.md",
+      "page_title": "儀禮註疏/卷三十二",
+      "revid": 2675706,
+      "md_len": 11217
+    },
+    {
+      "n": 35,
+      "title": "卷三十三",
+      "file": "035.md",
+      "page_title": "儀禮註疏/卷三十三",
+      "revid": 2675707,
+      "md_len": 13644
+    },
+    {
+      "n": 36,
+      "title": "卷三十四",
+      "file": "036.md",
+      "page_title": "儀禮註疏/卷三十四",
+      "revid": 2675708,
+      "md_len": 14519
+    },
+    {
+      "n": 37,
+      "title": "卷三十五",
+      "file": "037.md",
+      "page_title": "儀禮註疏/卷三十五",
+      "revid": 2675709,
+      "md_len": 16897
+    },
+    {
+      "n": 38,
+      "title": "卷三十六",
+      "file": "038.md",
+      "page_title": "儀禮註疏/卷三十六",
+      "revid": 2675710,
+      "md_len": 18000
+    },
+    {
+      "n": 39,
+      "title": "卷三十七",
+      "file": "039.md",
+      "page_title": "儀禮註疏/卷三十七",
+      "revid": 2675711,
+      "md_len": 19826
+    },
+    {
+      "n": 40,
+      "title": "卷三十八",
+      "file": "040.md",
+      "page_title": "儀禮註疏/卷三十八",
+      "revid": 2675712,
+      "md_len": 17836
+    },
+    {
+      "n": 41,
+      "title": "卷三十九",
+      "file": "041.md",
+      "page_title": "儀禮註疏/卷三十九",
+      "revid": 2675768,
+      "md_len": 13585
+    },
+    {
+      "n": 42,
+      "title": "卷四十",
+      "file": "042.md",
+      "page_title": "儀禮註疏/卷四十",
+      "revid": 2675770,
+      "md_len": 11955
+    },
+    {
+      "n": 43,
+      "title": "卷四十一",
+      "file": "043.md",
+      "page_title": "儀禮註疏/卷四十一",
+      "revid": 2675771,
+      "md_len": 17164
+    },
+    {
+      "n": 44,
+      "title": "卷四十二",
+      "file": "044.md",
+      "page_title": "儀禮註疏/卷四十二",
+      "revid": 2675772,
+      "md_len": 18665
+    },
+    {
+      "n": 45,
+      "title": "卷四十三",
+      "file": "045.md",
+      "page_title": "儀禮註疏/卷四十三",
+      "revid": 2675773,
+      "md_len": 14696
+    },
+    {
+      "n": 46,
+      "title": "卷四十四",
+      "file": "046.md",
+      "page_title": "儀禮註疏/卷四十四",
+      "revid": 2675774,
+      "md_len": 12713
+    },
+    {
+      "n": 47,
+      "title": "卷四十五",
+      "file": "047.md",
+      "page_title": "儀禮註疏/卷四十五",
+      "revid": 2675775,
+      "md_len": 16253
+    },
+    {
+      "n": 48,
+      "title": "卷四十六",
+      "file": "048.md",
+      "page_title": "儀禮註疏/卷四十六",
+      "revid": 2675776,
+      "md_len": 17353
+    },
+    {
+      "n": 49,
+      "title": "卷四十七",
+      "file": "049.md",
+      "page_title": "儀禮註疏/卷四十七",
+      "revid": 2675777,
+      "md_len": 13662
+    },
+    {
+      "n": 50,
+      "title": "卷四十八",
+      "file": "050.md",
+      "page_title": "儀禮註疏/卷四十八",
+      "revid": 2675778,
+      "md_len": 14219
+    },
+    {
+      "n": 51,
+      "title": "卷四十九",
+      "file": "051.md",
+      "page_title": "儀禮註疏/卷四十九",
+      "revid": 2675779,
+      "md_len": 19140
+    },
+    {
+      "n": 52,
+      "title": "卷五十",
+      "file": "052.md",
+      "page_title": "儀禮註疏/卷五十",
+      "revid": 2675780,
+      "md_len": 19068
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,44 @@
+{
+  "title": "明赋三篇",
+  "sections": [
+    {
+      "title": "县楼赋",
+      "level": 3,
+      "type": "book",
+      "content": "冯*　　頁266",
+      "metadata": {
+        "doc_type": "档",
+        "no": "明赋三篇",
+        "date": "冯*",
+        "page": 266
+      },
+      "work_id": null
+    },
+    {
+      "title": "东湖赋",
+      "level": 3,
+      "type": "book",
+      "content": "刘昺bǐng　　頁261",
+      "metadata": {
+        "doc_type": "档",
+        "no": "明赋三篇",
+        "date": "刘昺bǐng",
+        "page": 261
+      },
+      "work_id": null
+    },
+    {
+      "title": "中都赋",
+      "level": 3,
+      "type": "book",
+      "content": "柯仲炯　　頁273",
+      "metadata": {
+        "doc_type": "档",
+        "no": "明赋三篇",
+        "date": "柯仲炯",
+        "page": 273
+      },
+      "work_id": null
+    }
+  ]
+}

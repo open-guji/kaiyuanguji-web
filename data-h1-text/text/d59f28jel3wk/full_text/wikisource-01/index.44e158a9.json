@@ -1,0 +1,104 @@
+{
+  "work_id": "d59f28jel3wk",
+  "version_label": "貞觀政要",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E8%B2%9E%E8%A7%80%E6%94%BF%E8%A6%81",
+    "page_title": "貞觀政要",
+    "revid": 2413007,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 10,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷01",
+      "file": "001.md",
+      "page_title": "貞觀政要/卷01",
+      "revid": 2692710,
+      "md_len": 6319
+    },
+    {
+      "n": 2,
+      "title": "卷02",
+      "file": "002.md",
+      "page_title": "貞觀政要/卷02",
+      "revid": 2144513,
+      "md_len": 14388
+    },
+    {
+      "n": 3,
+      "title": "卷03",
+      "file": "003.md",
+      "page_title": "貞觀政要/卷03",
+      "revid": 802073,
+      "md_len": 10182
+    },
+    {
+      "n": 4,
+      "title": "卷04",
+      "file": "004.md",
+      "page_title": "貞觀政要/卷04",
+      "revid": 2358175,
+      "md_len": 9914
+    },
+    {
+      "n": 5,
+      "title": "卷05",
+      "file": "005.md",
+      "page_title": "貞觀政要/卷05",
+      "revid": 1161907,
+      "md_len": 11778
+    },
+    {
+      "n": 6,
+      "title": "卷06",
+      "file": "006.md",
+      "page_title": "貞觀政要/卷06",
+      "revid": 2358176,
+      "md_len": 8649
+    },
+    {
+      "n": 7,
+      "title": "卷07",
+      "file": "007.md",
+      "page_title": "貞觀政要/卷07",
+      "revid": 802077,
+      "md_len": 5312
+    },
+    {
+      "n": 8,
+      "title": "卷08",
+      "file": "008.md",
+      "page_title": "貞觀政要/卷08",
+      "revid": 1161778,
+      "md_len": 6364
+    },
+    {
+      "n": 9,
+      "title": "卷09",
+      "file": "009.md",
+      "page_title": "貞觀政要/卷09",
+      "revid": 802090,
+      "md_len": 6827
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "貞觀政要/卷10",
+      "revid": 857543,
+      "md_len": 7783
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

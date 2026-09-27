@@ -1,0 +1,106 @@
+{
+  "title": "丙部子録·小說類",
+  "source_juan": "卷三",
+  "sections": [
+    {
+      "title": "丙部子録·小說類",
+      "level": 2,
+      "type": "tally",
+      "content": "右小說類,存十家,失名二家,十四部。"
+    },
+    {
+      "title": "語林十卷",
+      "level": 3,
+      "type": "book",
+      "content": "處士装放,謹按見《七録》。据《裴氏家傳》,則書為榮作,榮或啟之别名也。詳見《世說文學篇》注。",
+      "work_id": "d59f2q8zfh1e"
+    },
+    {
+      "title": "郭子三卷",
+      "level": 3,
+      "type": "book",
+      "content": "東晋從事中郎郭澄之,謹按見《隋志》。舊脱“中郎”字,家大人據本書澄之傳補。此書有賈泉注,見《通志藝文略》。",
+      "work_id": "d59f27ty4d1c"
+    },
+    {
+      "title": "陸氏異林",
+      "level": 3,
+      "type": "book",
+      "content": "謹按《魏志鍾 傳》注引此書有“叔父清河太守”語,裴氏謂清河陸雲也,知書為士龍之姪所作,惜名無可致。",
+      "work_id": "d59f27wbndvl"
+    },
+    {
+      "title": "列異傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張華。謹按見《新唐志》。",
+      "work_id": "d59f27uiescj"
+    },
+    {
+      "title": "英論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭頒。謹按見《七錄》。",
+      "work_id": "d59f27tj4yyq"
+    },
+    {
+      "title": "博物志十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張華。謹按見《隋志》。互見雜傳類。",
+      "work_id": "d59f27x6jvnl"
+    },
+    {
+      "title": "搜神記三十卷搜神後記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "千寶。謹按見本書寶傳。互見雜傳類。",
+      "work_id": "d59f27wqbjeo",
+      "link_basis": "原繫 1evfuuz223wg0，該條已併入 1evfuuo0zmgow（撰人字首式重出 Phase 2a，2026-08-07），今改繫。"
+    },
+    {
+      "title": "搜神後記",
+      "level": 3,
+      "type": "book",
+      "content": "陶潛,謹按見《隋志》。互見雜傳類。",
+      "work_id": "d59f27x842de",
+      "ai_note": "題訂正：原題「陶潛,謹按見《隋志》。互見雜傳類。」實為撰人與謹按語，其書名併在前一著錄之粗體題中，今還之。"
+    },
+    {
+      "title": "志怪二卷",
+      "level": 3,
+      "type": "book",
+      "content": "祖台之。謹按見《隋志》。兩《唐志》作“四卷”,互見雜傳類。《御覽》引書綱目作“志怪集”孔氏志怪四卷 謹按見《新唐志》。《世說・方正篇》盧志條注引此書有“毓為魏司空,冠蓋相承至今”語,知係晋人所作。《文苑英華》載顧況《廣異記·序》稱孔慎言《志怪》,疑即此書。互見雜傳類。",
+      "work_id": "d59f27u9o54x"
+    },
+    {
+      "title": "魯史款器圖注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "儀同劉徽,謹按見《隋志》。",
+      "work_id": "d59f27u0xhxe"
+    },
+    {
+      "title": "神異記",
+      "level": 3,
+      "type": "book",
+      "content": "王浮。謹按見《御覽》八百六十七飲食部。",
+      "work_id": "d59f27u768si"
+    },
+    {
+      "title": "甄異記",
+      "level": 3,
+      "type": "book",
+      "content": "戴 。謹按見《新唐志》。五見雜傳類。",
+      "work_id": "d59f27vtjmdd"
+    },
+    {
+      "title": "曹毗志怪",
+      "level": 3,
+      "type": "book",
+      "content": "曹毗志怪謹按《初學記》地部、《御覽》地部均引。",
+      "work_id": "d59f27twvev6",
+      "ai_note": "題中謹按語剝離：本 section 原以其文為題（title == content），蓋補晉志之體例為「**書名N卷**／撰人。謹按……」，一粗體題下數段者，第二段以下匯入時各自成條而以其文為題。今剝其謹按語，存原題於此：「曹毗志怪謹按《初學記》地部、《御覽》地部均引。」"
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "title": "乙部史録·起居注類",
+  "source_juan": "卷二",
+  "sections": [
+    {
+      "title": "乙部史録·起居注類",
+      "level": 2,
+      "type": "tally",
+      "content": "右起居注類,存四家,失名二十六家,三十部。"
+    },
+    {
+      "title": "穆天子傳注六卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞。謹按見《隋志》。《舊唐志》誤作“郭璞撰”。",
+      "work_id": "d59f27yw1mo3"
+    },
+    {
+      "title": "泰始起居注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌。謹按見《隋志》。原本《北堂書鈔》設官部及《御覽》皇親部均引《武帝起居注》,當在是書及下數種內。",
+      "work_id": "d59f27tudiis"
+    },
+    {
+      "title": "咸寧起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌,謹按見《隋志》。《舊唐志》不著錄,《新志》作“二十二卷”。",
+      "work_id": "d59f27uv7im8"
+    },
+    {
+      "title": "太康起居注二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌。謹按見《隋志》。兩《唐志》作“二十二卷”。",
+      "work_id": "d59f27vhzu9s"
+    },
+    {
+      "title": "元康起居注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。",
+      "work_id": "d59f27uuwa2r"
+    },
+    {
+      "title": "元康起居注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。家大人曰:“與前一卷似複出。”然莫能臆決,故並著於録。惠帝起居注陸機,謹按見《三國志注》。《七録》有《惠帝起居注》二卷,當即機所撰者。",
+      "work_id": "d59f27uuwa2r"
+    },
+    {
+      "title": "永平元康永寧起居注六卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《七錄》。",
+      "work_id": "d59f27u7hhc1"
+    },
+    {
+      "title": "永平起居注八卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌,謹按見兩《唐志》。",
+      "work_id": "d59f27w2li4g"
+    },
+    {
+      "title": "永嘉建興起居注十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《七録》。",
+      "work_id": "d59f27x18uf7"
+    },
+    {
+      "title": "憨帝起居注三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌,謹按見《舊唐志》。",
+      "work_id": "d59f27werrb7"
+    },
+    {
+      "title": "建武太興永昌起居注九卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。《七録》二十卷,兩《唐志》二十二卷。",
+      "work_id": "d59f27umgveo"
+    },
+    {
+      "title": "咸和起居注十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌,謹按見《隋志》。兩《唐志》作“十八卷”。",
+      "work_id": "d59f27werrb5"
+    },
+    {
+      "title": "咸康起居注二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌,謹按見《舊唐志》。《隋志》脱撰人名。",
+      "work_id": "d59f27vlqosg"
+    },
+    {
+      "title": "建元起居注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。原本《書鈔》設官部、《御覽》職官部均引《康帝起居注》,當即此書。",
+      "work_id": "d59f27wbc5c1"
+    },
+    {
+      "title": "永和起居注十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。《七録》二十四卷,兩《唐志》同。",
+      "work_id": "d59f27wegirm"
+    },
+    {
+      "title": "升平起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。《舊唐志》“升平” “永平”。",
+      "work_id": "d59f27ug84jn"
+    },
+    {
+      "title": "隆和興寧起居注五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。",
+      "work_id": "d59f27w4gxdw"
+    },
+    {
+      "title": "威安起居注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。",
+      "work_id": "d59f27v5tl36"
+    },
+    {
+      "title": "泰和起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《七錄》。《隋志》存六卷。兩《唐志》同。",
+      "work_id": "d59f27u5m22o"
+    },
+    {
+      "title": "寧康起居注六卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。《藝文類聚》儲宫部、《御覽》皇親部均引《孝武起居注》,當即此書及下一書。",
+      "work_id": "d59f27w1z11e"
+    },
+    {
+      "title": "太元起居注五十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《七録》。《隋志》二十五卷,兩《唐志》五十二卷。",
+      "work_id": "d59f27vwz8ci"
+    },
+    {
+      "title": "隆安起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。家大人曰:“兩《唐志》不載是書,而别有《崇寧起居注》十卷,晋無此紀年,蓋即“隆安”之語,故卷數與是書並同也。唐避玄宗諱,往往書“隆” “崇”,周祇《隆安記》作《崇安記》,可證。又說“安為“寧耳。”今不再著録。",
+      "work_id": "d59f27wgyf40"
+    },
+    {
+      "title": "元興起居注九卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。",
+      "work_id": "d59f27uvtzpc"
+    },
+    {
+      "title": "義熙起居注三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《七録》。《隋志》存十七卷,兩《唐志》仍三十四卷。",
+      "work_id": "d59f27wiiltt"
+    },
+    {
+      "title": "元熙起居注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。",
+      "work_id": "d59f27vyunlv"
+    },
+    {
+      "title": "南燕起居注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見《隋志》。《史通·外篇》:“南燕趙郡王景暉嘗事德超,撰《二燕起居注》。”此書當即王所撰。",
+      "work_id": "d59f27ud3r42"
+    },
+    {
+      "title": "大將軍起居注",
+      "level": 3,
+      "type": "book",
+      "content": "石勒中大夫傅彪等撰,謹按見本書載記。傅彪,《史通正史篇》作“傅暢”。",
+      "work_id": "d59f27tw8xs4"
+    },
+    {
+      "title": "前燕起居注",
+      "level": 3,
+      "type": "book",
+      "content": "前燕起居注謹按見《史通外篇》。",
+      "work_id": "d59f27wc9uyr",
+      "ai_note": "題中謹按語剝離：本 section 原以其文為題（title == content），蓋補晉志之體例為「**書名N卷**／撰人。謹按……」，一粗體題下數段者，第二段以下匯入時各自成條而以其文為題。今剝其謹按語，存原題於此：「前燕起居注謹按見《史通外篇》。」"
+    },
+    {
+      "title": "桓玄起居注",
+      "level": 3,
+      "type": "book",
+      "content": "謹按見本書玄傳。",
+      "work_id": "d59f27w37z7n"
+    }
+  ]
+}

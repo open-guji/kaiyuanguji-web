@@ -1,0 +1,275 @@
+{
+  "title": "職官類",
+  "sections": [
+    {
+      "title": "《漢官解詁》",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官解詁》三篇漢新汲令王隆撰，胡廣注。",
+      "work_id": "d59f23nrew3m",
+      "book_title": "漢官解詁",
+      "n_juan": 3,
+      "author_info": "漢新汲令王隆撰"
+    },
+    {
+      "title": "《漢官》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官》五卷應劭注。",
+      "book_title": "漢官",
+      "n_juan": 5,
+      "author_info": "應劭注",
+      "work_id": "d59f24lmntvm"
+    },
+    {
+      "title": "《漢官儀》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官儀》十卷應劭撰。",
+      "book_title": "漢官儀",
+      "n_juan": 10,
+      "author_info": "應劭撰",
+      "work_id": "d59f206n4hkw"
+    },
+    {
+      "title": "《漢官典職儀式選用》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官典職儀式選用》二卷漢衛尉蔡質撰。梁有《荀攸魏官儀》一卷，《韋昭官儀職訓》一卷，亡。",
+      "book_title": "漢官典職儀式選用",
+      "n_juan": 2,
+      "author_info": "漢衛尉蔡質撰",
+      "work_id": "d59f23nxyvif"
+    },
+    {
+      "title": "《晉公卿禮秩故事》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉公卿禮秩故事》九卷傅暢撰。",
+      "book_title": "晉公卿禮秩故事",
+      "n_juan": 9,
+      "author_info": "傅暢撰",
+      "work_id": "d59f27ukwooz"
+    },
+    {
+      "title": "《晉新定儀注》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉新定儀注》十四卷梁有徐宣瑜《晉官品》一卷，荀綽《百官表注》十六卷，干寶《司徒儀》一卷，宋《職官記》九卷，晉《百官儀服錄》五卷，大興二年《定官品事》五卷，《百官品》九卷，亡。",
+      "book_title": "晉新定儀注",
+      "n_juan": 14,
+      "work_id": "d59f2q1xcbgh"
+    },
+    {
+      "title": "《百官階次》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官階次》一卷",
+      "book_title": "百官階次",
+      "n_juan": 1,
+      "work_id": "d59f285kplhd"
+    },
+    {
+      "title": "《百官階次》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官階次》三卷",
+      "book_title": "百官階次",
+      "n_juan": 3,
+      "work_id": "d59f2q4z7ugw",
+      "link_basis": "隋志職官類「《百官階次》三卷」，姚振宗《考證》引《唐書·經籍志》「《宋百官階次》三卷，苟欽明撰」以實之；而本條 1evcml2b70934 之撰人范曄，唐志作「《百官階次》一卷，范曄撰」，是一卷本。故三卷本改繫庫中《荀欽明宋百官階次》1evcs0epg73eo。"
+    },
+    {
+      "title": "《齊職儀》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊職儀》五十卷齊長水校尉王珪之撰。梁有王珪之《齊儀》四十九卷，亡。",
+      "book_title": "齊職儀",
+      "n_juan": 50,
+      "author_info": "齊長水校尉王珪之撰",
+      "work_id": "d59f2858ukub"
+    },
+    {
+      "title": "《齊職儀》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊職儀》五卷",
+      "book_title": "齊職儀",
+      "n_juan": 5,
+      "work_id": "d59f2ps3ofeq",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcml2behy4g，今別立《齊職儀》五卷 1ex0j3cz4eubp 繫之——姚振宗《考證》云「似王珪之之節錄本」，且於類末按語數為別一部。"
+    },
+    {
+      "title": "《梁選簿》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁選簿》三卷徐勉撰。",
+      "book_title": "梁選簿",
+      "n_juan": 3,
+      "author_info": "徐勉撰",
+      "work_id": "d59f286jcxs3"
+    },
+    {
+      "title": "《梁勳選格》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁勳選格》一卷",
+      "book_title": "梁勳選格",
+      "n_juan": 1,
+      "work_id": "d59f2q57c0sh"
+    },
+    {
+      "title": "《職官要錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《職官要錄》三十卷陶撰。",
+      "book_title": "職官要錄",
+      "n_juan": 30,
+      "author_info": "陶撰",
+      "work_id": "d59f2pyq5r0i"
+    },
+    {
+      "title": "《梁官品格》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁官品格》一卷",
+      "book_title": "梁官品格",
+      "n_juan": 1,
+      "work_id": "d59f2q5u4cg0"
+    },
+    {
+      "title": "《新定將軍名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新定將軍名》一卷",
+      "book_title": "新定將軍名",
+      "n_juan": 1,
+      "work_id": "d59f2q5dkr28"
+    },
+    {
+      "title": "《吏部用人格》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吏部用人格》一卷",
+      "book_title": "吏部用人格",
+      "n_juan": 1,
+      "work_id": "d59f2pyfjo5e"
+    },
+    {
+      "title": "《官族傳》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《官族傳》十四卷何晏撰。",
+      "book_title": "官族傳",
+      "n_juan": 14,
+      "author_info": "何晏撰",
+      "work_id": "d59f27sf6lfm"
+    },
+    {
+      "title": "《百官春秋》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官春秋》五十卷王秀道撰。",
+      "book_title": "百官春秋",
+      "n_juan": 50,
+      "author_info": "王秀道撰",
+      "work_id": "d59f2869zthe"
+    },
+    {
+      "title": "《百官春秋》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官春秋》二十卷",
+      "book_title": "百官春秋",
+      "n_juan": 20,
+      "work_id": "d59f2prirjls",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evcml2d2qqyo，今另立《百官春秋》1ex0e1hku8g07 繫之。隋志職官類「《百官春秋》五十卷王秀道撰」之外別著「《百官春秋》二十卷」，姚振宗《考證》云「不著撰人」，且引章宗源《考證》「《隋志》又有《百官春秋》二十卷，《唐志》有《宋百官春秋》六卷，俱無撰名」，是別為一書，今依 SCHEMA〈同題二條〉一別出。"
+    },
+    {
+      "title": "《魏晉百官名》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏晉百官名》五卷",
+      "book_title": "魏晉百官名",
+      "n_juan": 5,
+      "work_id": "d59f2pwb2j9d"
+    },
+    {
+      "title": "《晉百官名》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉百官名》三十卷",
+      "book_title": "晉百官名",
+      "n_juan": 30,
+      "work_id": "d59f2pyoab5s"
+    },
+    {
+      "title": "《晉官屬名》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉官屬名》四卷",
+      "book_title": "晉官屬名",
+      "n_juan": 4,
+      "work_id": "d59f2py5k35s"
+    },
+    {
+      "title": "《陳百官簿狀》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳百官簿狀》二卷",
+      "book_title": "陳百官簿狀",
+      "n_juan": 2,
+      "work_id": "d59f2q6oecqp"
+    },
+    {
+      "title": "《陳將軍簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳將軍簿》一卷",
+      "book_title": "陳將軍簿",
+      "n_juan": 1,
+      "work_id": "d59f2q7twxds"
+    },
+    {
+      "title": "《新定官品》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新定官品》二十卷梁沈約撰。",
+      "book_title": "新定官品",
+      "n_juan": 20,
+      "author_info": "梁沈約撰",
+      "work_id": "d59f286c6haa"
+    },
+    {
+      "title": "《梁尚書職制儀注》四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁尚書職制儀注》四十一卷",
+      "book_title": "梁尚書職制儀注",
+      "n_juan": 41,
+      "work_id": "d59f285fek8y"
+    },
+    {
+      "title": "《職令古今百官注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《職令古今百官注》十卷郭演撰。",
+      "book_title": "職令古今百官注",
+      "n_juan": 10,
+      "author_info": "郭演撰",
+      "work_id": "d59f2q03sgsi"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右二十七部，三百三十六卷。通計亡書，合三十六部，四百三十三卷。"
+    },
+    {
+      "title": "職官類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "古之仕者，名書於所臣之策，各有分職，以相統治。《周官》：塚宰掌建邦之六典，而御史數凡從正者。然則塚宰總六卿之屬，以治其政，御史掌其在位名數，先後之次焉。今《漢書百官表》列眾職之事，記在位之次，蓋亦古之制也。漢末，王隆、應劭等，以《百官表》不具，乃作《漢官解詁》、《漢官儀》等書。是後相因，正史表志，無複百僚在官之名矣。搢紳之徒，或取官曹名品之書，撰而錄之，別行於世。宋、齊已後，其書益繁，而篇卷零疊，易為亡散；又多瑣細，不足可紀，故刪。其見存可觀者，編為職官篇。"
+    }
+  ]
+}

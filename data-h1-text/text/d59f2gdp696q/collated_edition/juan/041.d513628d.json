@@ -1,0 +1,91 @@
+{
+  "title": "楚辭類",
+  "sections": [
+    {
+      "title": "《楚辭》",
+      "level": 3,
+      "type": "book",
+      "content": "《楚辭》十六卷⟨楚屈原等撰⟩",
+      "work_id": "d59f209xqo00"
+    },
+    {
+      "title": "《楚辭》",
+      "level": 3,
+      "type": "book",
+      "content": "卷《楚辭》十七卷⟨後漢王逸章句⟩",
+      "work_id": "d59f209xqo00"
+    },
+    {
+      "title": "《竹坡楚辭贅說》",
+      "level": 3,
+      "type": "book",
+      "content": "周紫芝《竹坡楚辭贅說》一卷",
+      "work_id": "d59f2hg7f5kw"
+    },
+    {
+      "title": "《續楚辭》",
+      "level": 3,
+      "type": "book",
+      "content": "晁補之《續楚辭》二十卷",
+      "work_id": "d59f2hlop4w2"
+    },
+    {
+      "title": "《楚辭集注》",
+      "level": 3,
+      "type": "book",
+      "content": "朱熹《楚辭集注》八卷",
+      "work_id": "d59f2hpjai2q"
+    },
+    {
+      "title": "《辨證》",
+      "level": 3,
+      "type": "book",
+      "content": "《辨證》一卷",
+      "work_id": "d59f2pwqoem8"
+    },
+    {
+      "title": "《變離騷》",
+      "level": 3,
+      "type": "book",
+      "content": "又《變離騷》一卷",
+      "work_id": "d59f2pugw7wg"
+    },
+    {
+      "title": "《楚辭協韻》",
+      "level": 3,
+      "type": "book",
+      "content": "黃銖《楚辭協韻》一卷",
+      "work_id": "d59f2ptwlslc"
+    },
+    {
+      "title": "《翼騷》",
+      "level": 3,
+      "type": "book",
+      "content": "黃伯思《翼騷》一卷",
+      "work_id": "d59f2hlbwem9"
+    },
+    {
+      "title": "《離騷》",
+      "level": 3,
+      "type": "book",
+      "content": "《離騷》一卷⟨錢杲之集傳⟩",
+      "work_id": "d59f2q3m7l6o"
+    },
+    {
+      "title": "《補注楚辭》",
+      "level": 3,
+      "type": "book",
+      "content": "洪興祖《補注楚辭》十七卷",
+      "work_id": "d59f2ofxdvr4"
+    },
+    {
+      "title": "《考異》",
+      "level": 3,
+      "type": "book",
+      "content": "《考異》一",
+      "work_id": "d59f2ofxdvr4",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《補注楚辭》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    }
+  ]
+}

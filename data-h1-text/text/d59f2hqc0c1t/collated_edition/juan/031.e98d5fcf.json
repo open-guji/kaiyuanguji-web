@@ -1,0 +1,417 @@
+{
+  "title": "兵家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "兵家類",
+      "content": ""
+    },
+    {
+      "title": "司馬兵法三卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬兵法三卷",
+      "work_id": "d59f2evs8ni8"
+    },
+    {
+      "title": "尉繚子五卷",
+      "level": 3,
+      "type": "book",
+      "content": "尉繚子五卷。謹按鄭樵通志尉繚子兵書也班固以為諸子類寘於雜家隋唐因之至崇文目始入兵書類",
+      "work_id": "d59ezaihog74"
+    },
+    {
+      "title": "孫子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子一卷。魏武帝注",
+      "work_id": "d59f27xbjocj"
+    },
+    {
+      "title": "孫子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子一卷。蕭古注",
+      "work_id": "d59f2q7izls0"
+    },
+    {
+      "title": "孫子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子一卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "孫子一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "孫子一卷（闕）",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "孫子二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子二卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "吳子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳子一卷",
+      "work_id": "d59f2evqogsj"
+    },
+    {
+      "title": "六韜六卷",
+      "level": 3,
+      "type": "book",
+      "content": "六韜六卷",
+      "work_id": "d59ezai3mrr4"
+    },
+    {
+      "title": "黄石三略三卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄石三略三卷",
+      "work_id": "d59f2pzyso3m"
+    },
+    {
+      "title": "真人水鑑十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "真人水鑑十二卷",
+      "work_id": "d59f2q70kmbk"
+    },
+    {
+      "title": "軍謀前鑑十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "軍謀前鑑十卷（闕）",
+      "work_id": "d59f28m08av7"
+    },
+    {
+      "title": "兵家正史九卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵家正史九卷",
+      "work_id": "d59f28llvdvp"
+    },
+    {
+      "title": "統軍臨轄秘䇿一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "統軍臨轄秘䇿一卷（闕）",
+      "work_id": "d59f2pvlh2bm"
+    },
+    {
+      "title": "裴子新令二卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子新令二卷",
+      "work_id": "d59f2q2m0269"
+    },
+    {
+      "title": "新集兵書要訣三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "新集兵書要訣三卷（闕）",
+      "work_id": "d59f28la0d8l"
+    },
+    {
+      "title": "長慶人事軍律三卷",
+      "level": 3,
+      "type": "book",
+      "content": "長慶人事軍律三卷",
+      "work_id": "d59f2pwv1ptt"
+    },
+    {
+      "title": "行師類要七卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "行師類要七卷（闕）",
+      "work_id": "d59f28l778ck"
+    },
+    {
+      "title": "李筌青囊括一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李筌青囊括一卷",
+      "work_id": "d59f2pzthn2a"
+    },
+    {
+      "title": "神機武略兵要望江南詞一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神機武略兵要望江南詞一卷",
+      "work_id": "d59f2pvhq7sx"
+    },
+    {
+      "title": "太白隂經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "太白隂經二卷",
+      "work_id": "d59f28lzx2bm"
+    },
+    {
+      "title": "清邊前要五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "清邊前要五十卷",
+      "work_id": "d59f2hgs0tfl"
+    },
+    {
+      "title": "見管子十卷",
+      "level": 3,
+      "type": "book",
+      "content": "見管子十卷",
+      "work_id": "d59f2q86pngh"
+    },
+    {
+      "title": "韜珠秘訣十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "韜珠秘訣十卷（闕）",
+      "work_id": "d59f2gezddkw"
+    },
+    {
+      "title": "韜鈐秘録一部五卷",
+      "level": 3,
+      "type": "book",
+      "content": "韜鈐秘録一部五卷。謹按此條多出一部二字原本如此無本可證",
+      "work_id": "d59f2pselqtc"
+    },
+    {
+      "title": "衛國公手記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "衛國公手記一卷",
+      "work_id": "d59f2pspu9z6"
+    },
+    {
+      "title": "鑒川漁子吟風詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鑒川漁子吟風詩一卷",
+      "work_id": "d59f2puyzzls"
+    },
+    {
+      "title": "軍誡三卷",
+      "level": 3,
+      "type": "book",
+      "content": "軍誡三卷",
+      "work_id": "d59f2q3cugw2"
+    },
+    {
+      "title": "决勝孤虚集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "决勝孤虚集一卷",
+      "work_id": "d59f2pvta0ap"
+    },
+    {
+      "title": "周易占兵一卷",
+      "level": 3,
+      "type": "book",
+      "content": "周易占兵一卷",
+      "work_id": "d59f2pvealtt"
+    },
+    {
+      "title": "行軍月令一卷",
+      "level": 3,
+      "type": "book",
+      "content": "行軍月令一卷",
+      "work_id": "d59f2q0rtqm8"
+    },
+    {
+      "title": "五行陣圖一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "五行陣圖一卷（闕）",
+      "work_id": "d59f2hhzesxu"
+    },
+    {
+      "title": "戰勝歌一百首一卷",
+      "level": 3,
+      "type": "book",
+      "content": "戰勝歌一百首一卷",
+      "work_id": "d59f2px3scua"
+    },
+    {
+      "title": "諸葛亮兵機法五卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛亮兵機法五卷（闕）",
+      "work_id": "d59f27shzqbk"
+    },
+    {
+      "title": "諸葛亮武侯十六䇿一卷",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛亮武侯十六䇿一卷",
+      "work_id": "d59f27t8iwhu"
+    },
+    {
+      "title": "軍軌兵鈐秘訣三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "軍軌兵鈐秘訣三卷（闕）",
+      "work_id": "d59f2pyex728"
+    },
+    {
+      "title": "神兵苑三卷",
+      "level": 3,
+      "type": "book",
+      "content": "神兵苑三卷",
+      "work_id": "d59f2q3u0irm"
+    },
+    {
+      "title": "兵論十卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵論十卷",
+      "work_id": "d59f2ofu9ibk"
+    },
+    {
+      "title": "六十甲子行軍法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六十甲子行軍法一卷",
+      "work_id": "d59f2pu8s1z5"
+    },
+    {
+      "title": "兵機將略論十卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "兵機將略論十卷（闕）",
+      "work_id": "d59f2px3scu9"
+    },
+    {
+      "title": "彭門玉帳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "彭門玉帳一卷",
+      "work_id": "d59f2q2mxrep"
+    },
+    {
+      "title": "出軍秘略一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "出軍秘略一卷（闕）",
+      "work_id": "d59f2pxi5a0y"
+    },
+    {
+      "title": "兵書萬勝訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵書萬勝訣二卷",
+      "work_id": "d59f2q90zny8"
+    },
+    {
+      "title": "至徳元寳玉函經十卷",
+      "level": 3,
+      "type": "book",
+      "content": "至徳元寳玉函經十卷",
+      "work_id": "d59f2q79xqf5"
+    },
+    {
+      "title": "契神經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "契神經一卷",
+      "work_id": "d59f2q3ubqwx"
+    },
+    {
+      "title": "兵書論語三卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵書論語三卷",
+      "work_id": "d59f2pyjx05d"
+    },
+    {
+      "title": "統戎式鑑二卷",
+      "level": 3,
+      "type": "book",
+      "content": "統戎式鑑二卷",
+      "work_id": "d59f2q4uuj28"
+    },
+    {
+      "title": "握鑒方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "握鑒方三卷",
+      "work_id": "d59f285m9s75"
+    },
+    {
+      "title": "定逺安邊䇿三卷",
+      "level": 3,
+      "type": "book",
+      "content": "定逺安邊䇿三卷",
+      "work_id": "d59f2px77z0g"
+    },
+    {
+      "title": "白起神妙行兵法三卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "白起神妙行兵法三卷（闕）",
+      "work_id": "d59f2q1bsxz4"
+    },
+    {
+      "title": "六甲五行用軍法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六甲五行用軍法一卷",
+      "work_id": "d59f2q1h3ytc"
+    },
+    {
+      "title": "要訣兵法立成歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "要訣兵法立成歌一卷",
+      "work_id": "d59f2q724sn6"
+    },
+    {
+      "title": "六甲攻城破敵法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六甲攻城破敵法一卷",
+      "work_id": "d59f2pym3ncw"
+    },
+    {
+      "title": "馬前秘訣兵書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬前秘訣兵書一卷",
+      "work_id": "d59f2pyvgs8x"
+    },
+    {
+      "title": "靈闗訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "靈闗訣二卷",
+      "work_id": "d59f2hhj6gox"
+    },
+    {
+      "title": "預知歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "預知歌一卷",
+      "work_id": "d59f2pueebk2"
+    },
+    {
+      "title": "太乙厭𧟄法一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "太乙厭𧟄法一卷（闕）",
+      "work_id": "d59f2q3pby80"
+    },
+    {
+      "title": "太乙行軍六甲𧟄厭詩一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "太乙行軍六甲𧟄厭詩一卷（闕）",
+      "work_id": "d59f2q35z94x"
+    }
+  ]
+}

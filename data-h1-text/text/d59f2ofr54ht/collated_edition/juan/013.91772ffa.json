@@ -1,0 +1,69 @@
+{
+  "title": "史部·起居注類",
+  "sections": [
+    {
+      "title": "起居注類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "永明起居注廿五卷",
+      "level": 3,
+      "type": "book",
+      "content": "永明起居注廿五卷　梁有三十四卷。；見《隋志》、《新唐志》。今佚。；《南齊書·王逡之傳》：「逡之兼著作，撰《永明起居注》。」",
+      "work_id": "d59f8ii486pv",
+      "note": "本志未著撰人；據所引《南齊書·王逡之傳》，逡之兼著作撰《永明起居注》"
+    },
+    {
+      "title": "建元起居注十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "建元起居注十二卷　梁有，隋亡，見《隋志》。",
+      "work_id": "d59f8ii71blv"
+    },
+    {
+      "title": "隆昌起居注",
+      "level": 3,
+      "type": "book",
+      "content": "隆昌起居注　以上三種（隆昌、延興、建武起居注），梁時共有四卷，隋亡，見《隋志》。",
+      "work_id": "d59f9bcj0lqc",
+      "note": "本條與前後二條共用出處，原書合注"
+    },
+    {
+      "title": "延興起居注",
+      "level": 3,
+      "type": "book",
+      "content": "延興起居注　以上三種（隆昌、延興、建武起居注），梁時共有四卷，隋亡，見《隋志》。",
+      "work_id": "d59f9bcj0lqd",
+      "note": "本條與前後二條共用出處，原書合注"
+    },
+    {
+      "title": "建武起居注",
+      "level": 3,
+      "type": "book",
+      "content": "建武起居注　以上三種，梁時共有四卷，隋亡，見《隋志》。",
+      "work_id": "d59f9bcj0lqe"
+    },
+    {
+      "title": "中興起居注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "中興起居注四卷　梁有，隋亡，見《隋志》。今佚。",
+      "work_id": "d59f2rvbuygw"
+    },
+    {
+      "title": "王逡之　三代起居注鈔",
+      "level": 3,
+      "type": "book",
+      "content": "王逡之　三代起居注鈔　見《新唐志》。今佚。",
+      "work_id": "d59f2q4izif4"
+    },
+    {
+      "title": "起居注類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右凡七部，四十六卷，今并佚。"
+    }
+  ]
+}

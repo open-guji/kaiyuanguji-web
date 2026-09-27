@@ -1,0 +1,25 @@
+{
+  "title": "墨家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "墨家類",
+      "content": ""
+    },
+    {
+      "title": "墨子十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "墨子十五卷",
+      "work_id": "d59ezahzvx8g"
+    },
+    {
+      "title": "董子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "董子一卷",
+      "work_id": "d59f2evp4a2o"
+    }
+  ]
+}

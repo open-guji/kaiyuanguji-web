@@ -1,0 +1,598 @@
+{
+  "title": "詩類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "詩類",
+      "content": ""
+    },
+    {
+      "title": "周是修《詩小序集成》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "周是修《詩小序集成》三卷",
+      "work_id": "d59f2ne9q0ao"
+    },
+    {
+      "title": "樑寅《詩演義》八卷，《詩考》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "樑寅《詩演義》八卷，《詩考》四卷",
+      "work_id": "d59f2njtt4w0"
+    },
+    {
+      "title": "朱升《詩旁註》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱升《詩旁註》八卷",
+      "work_id": "d59f2ner7b40"
+    },
+    {
+      "title": "汪克寬《詩集傳音義會通》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "汪克寬《詩集傳音義會通》三十卷",
+      "work_id": "d59f2nj55ds3"
+    },
+    {
+      "title": "曾堅《詩疑大鳴錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "曾堅《詩疑大鳴錄》一卷",
+      "work_id": "d59f2gfplb7l"
+    },
+    {
+      "title": "朱善《詩解頤》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱善《詩解頤》四卷",
+      "work_id": "d59f2nk9eznk"
+    },
+    {
+      "title": "高頤《詩集傳解》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "高頤《詩集傳解》二十卷",
+      "work_id": "d59f2nim3wub"
+    },
+    {
+      "title": "張洪《詩正義》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "張洪《詩正義》十五卷",
+      "work_id": "d59f2ngldlvk"
+    },
+    {
+      "title": "楊禹錫《詩義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊禹錫《詩義》二卷",
+      "work_id": "d59f2ng70ow3"
+    },
+    {
+      "title": "鄭旭《詩經總旨》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭旭《詩經總旨》一卷",
+      "work_id": "d59f2nh51kap"
+    },
+    {
+      "title": "永樂中敕修《詩集傳大全》二十卷胡廣等纂。",
+      "level": 3,
+      "type": "book",
+      "content": "永樂中敕修《詩集傳大全》二十卷胡廣等纂。",
+      "work_id": "d59f2niuujnl"
+    },
+    {
+      "title": "范理《詩集解》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范理《詩集解》三十卷",
+      "work_id": "d59f2nh28f7l"
+    },
+    {
+      "title": "王逢《詩經講說》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王逢《詩經講說》二十卷",
+      "work_id": "d59f2ng70ow2"
+    },
+    {
+      "title": "孫鼎《詩義集說》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫鼎《詩義集說》四卷",
+      "work_id": "d59f2nl3p0qp"
+    },
+    {
+      "title": "李賢《讀詩紀》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李賢《讀詩紀》一卷",
+      "work_id": "d59f2ndrxhj4"
+    },
+    {
+      "title": "楊守陳《詩私鈔》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊守陳《詩私鈔》四卷",
+      "work_id": "d59f2nf74ef4"
+    },
+    {
+      "title": "易貴《詩經直指》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "易貴《詩經直指》十五卷",
+      "work_id": "d59f2nhfcef4"
+    },
+    {
+      "title": "程楷《詩經講說》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "程楷《詩經講說》二十卷",
+      "work_id": "d59f2nid2137"
+    },
+    {
+      "title": "陸深《儼山詩微》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸深《儼山詩微》二卷",
+      "work_id": "d59f2neirw1u"
+    },
+    {
+      "title": "張邦奇《詩說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張邦奇《詩說》一卷",
+      "work_id": "d59f2ndqojcx"
+    },
+    {
+      "title": "湛若水《詩釐正》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "湛若水《詩釐正》二十卷",
+      "work_id": "d59f2ngkfwg2"
+    },
+    {
+      "title": "呂柟《毛詩序說》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "呂柟《毛詩序說》六卷",
+      "work_id": "d59f2netp7gi"
+    },
+    {
+      "title": "胡纘宗《胡氏詩識》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡纘宗《胡氏詩識》三卷",
+      "work_id": "d59f2nerijnn"
+    },
+    {
+      "title": "王崇慶《詩經衍義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王崇慶《詩經衍義》一卷",
+      "work_id": "d59f2negl890"
+    },
+    {
+      "title": "季本《詩說解頤》八卷、《總論》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "季本《詩說解頤》八卷、《總論》二卷",
+      "work_id": "d59f2njr0000"
+    },
+    {
+      "title": "黃佐《詩傳通解》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃佐《詩傳通解》二十五卷",
+      "work_id": "d59f2nfak0e9"
+    },
+    {
+      "title": "潘恩《詩經輯說》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "潘恩《詩經輯說》七卷",
+      "work_id": "d59f2ne6ln2a"
+    },
+    {
+      "title": "陸垹《詩傳存疑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸垹《詩傳存疑》一卷",
+      "work_id": "d59f2nh6wzr6"
+    },
+    {
+      "title": "薛應旂《方山詩說》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛應旂《方山詩說》八卷",
+      "work_id": "d59f2nha1czm"
+    },
+    {
+      "title": "陳錫《詩辨疑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳錫《詩辨疑》一卷",
+      "work_id": "d59f2ofxp43m"
+    },
+    {
+      "title": "勞堪《詩林伐柯》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "勞堪《詩林伐柯》四卷",
+      "work_id": "d59f2nfs1b0j"
+    },
+    {
+      "title": "沈一貫《詩經纂注》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈一貫《詩經纂注》四卷",
+      "work_id": "d59f2niu82rn"
+    },
+    {
+      "title": "馮時可《詩億》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮時可《詩億》二卷",
+      "work_id": "d59f2nh0d0ch"
+    },
+    {
+      "title": "郭子章《詩傳書例》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭子章《詩傳書例》四卷",
+      "work_id": "d59f2neqktmr"
+    },
+    {
+      "title": "朱得之《印古詩說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱得之《印古詩說》一卷",
+      "work_id": "d59f2ng6pgci"
+    },
+    {
+      "title": "袁仁《毛詩或問》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁仁《毛詩或問》二卷",
+      "work_id": "d59f2neq9l36"
+    },
+    {
+      "title": "鄧元錫《詩繹》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧元錫《詩繹》三卷",
+      "work_id": "d59f2neeekn7"
+    },
+    {
+      "title": "陳第《毛詩古音考》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳第《毛詩古音考》四卷",
+      "work_id": "d59f2njjiayp"
+    },
+    {
+      "title": "朱謀鵒韋《詩故》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱謀鵒韋《詩故》十卷",
+      "work_id": "d59f2nkigvlt"
+    },
+    {
+      "title": "淩濛初《聖門傳詩嫡塚》十六卷，《詩逆》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "淩濛初《聖門傳詩嫡塚》十六卷，《詩逆》四卷",
+      "work_id": "d59f2ngmbbi8"
+    },
+    {
+      "title": "陶其情《詩經註疏大全纂》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶其情《詩經註疏大全纂》十二卷",
+      "work_id": "d59f2ndysphe"
+    },
+    {
+      "title": "趙一元《詩經理解》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙一元《詩經理解》十四卷",
+      "work_id": "d59f2niexgci"
+    },
+    {
+      "title": "黃一正《詩經埤傳》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃一正《詩經埤傳》八卷",
+      "work_id": "d59f2nh8h69v"
+    },
+    {
+      "title": "馮復京《六家詩名物疏》五十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮復京《六家詩名物疏》五十五卷",
+      "work_id": "d59f2njo6ups"
+    },
+    {
+      "title": "吳雨《毛詩鳥獸草木疏》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳雨《毛詩鳥獸草木疏》三十卷",
+      "work_id": "d59f2nh9evwk"
+    },
+    {
+      "title": "唐汝諤《毛詩微言》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐汝諤《毛詩微言》二十卷",
+      "work_id": "d59f2nfxnklf"
+    },
+    {
+      "title": "瞿九思《詩經以俟錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿九思《詩經以俟錄》六卷",
+      "work_id": "d59f2ne01nuo"
+    },
+    {
+      "title": "姚舜牧《詩經疑問》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚舜牧《詩經疑問》十二卷",
+      "work_id": "d59f2nkq9tdu"
+    },
+    {
+      "title": "林兆珂《毛詩多識篇》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "林兆珂《毛詩多識篇》七卷",
+      "work_id": "d59f2nixcg02"
+    },
+    {
+      "title": "汪應蛟《學詩略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "汪應蛟《學詩略》一卷",
+      "work_id": "d59f2ngl2dc2"
+    },
+    {
+      "title": "徐常吉《毛詩翼說》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐常吉《毛詩翼說》五卷",
+      "work_id": "d59f2nek0um8"
+    },
+    {
+      "title": "吳炯《詩經質疑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳炯《詩經質疑》一卷",
+      "work_id": "d59f2nh2jo5g"
+    },
+    {
+      "title": "郝敬《毛詩原解》三十六卷、《序說》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "郝敬《毛詩原解》三十六卷、《序說》八卷",
+      "work_id": "d59f2ne0o4xu"
+    },
+    {
+      "title": "張彩《詩原》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張彩《詩原》三十卷",
+      "work_id": "d59f2ngmbbwh"
+    },
+    {
+      "title": "徐必達《南州詩說》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐必達《南州詩說》六卷",
+      "work_id": "d59f2neblfyc"
+    },
+    {
+      "title": "劉憲寵《詩經會說》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉憲寵《詩經會說》八卷",
+      "work_id": "d59f2ni24q2q"
+    },
+    {
+      "title": "曹學牷《詩經質疑》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹學牷《詩經質疑》六卷",
+      "work_id": "d59f2nhfnmkg"
+    },
+    {
+      "title": "沈萬鈳《詩經類考》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈萬鈳《詩經類考》三十卷",
+      "work_id": "d59f2nhbws1v"
+    },
+    {
+      "title": "顧起元《爾雅堂詩說》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧起元《爾雅堂詩說》四卷",
+      "work_id": "d59f2nfgsr9d"
+    },
+    {
+      "title": "蔡毅中《詩經補傳》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡毅中《詩經補傳》四卷",
+      "work_id": "d59f2nhzbkzn"
+    },
+    {
+      "title": "沈守正《詩經說通》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈守正《詩經說通》十四卷",
+      "work_id": "d59f2nfnnzlv"
+    },
+    {
+      "title": "樊良樞《詩商》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "樊良樞《詩商》五卷",
+      "work_id": "d59f2nfeavb7"
+    },
+    {
+      "title": "徐光啟《毛詩六帖》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐光啟《毛詩六帖》六卷",
+      "work_id": "d59f2nh9ew3k"
+    },
+    {
+      "title": "趙琮《葩經約說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙琮《葩經約說》十卷",
+      "work_id": "d59f2nhr7f28"
+    },
+    {
+      "title": "莊廷臣《詩經逢源》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "莊廷臣《詩經逢源》八卷",
+      "work_id": "d59f2nf4016o"
+    },
+    {
+      "title": "鄒忠胤《詩傳闡》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒忠胤《詩傳闡》二十四卷",
+      "work_id": "d59f2nif8ow1"
+    },
+    {
+      "title": "陸化熙《詩通》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸化熙《詩通》四卷",
+      "work_id": "d59f2nf9marm"
+    },
+    {
+      "title": "胡胤嘉《讀詩錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡胤嘉《讀詩錄》二卷",
+      "work_id": "d59f2ne0cwe9"
+    },
+    {
+      "title": "朱道行《詩經集思通》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱道行《詩經集思通》十二卷",
+      "work_id": "d59f2nioakg1"
+    },
+    {
+      "title": "何楷《毛詩世本古義》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "何楷《毛詩世本古義》二十八卷",
+      "work_id": "d59f2nho31fn"
+    },
+    {
+      "title": "張次仲《待軒詩記》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張次仲《待軒詩記》六卷",
+      "work_id": "d59f2nkis45d"
+    },
+    {
+      "title": "張睿卿《詩疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張睿卿《詩疏》一卷",
+      "work_id": "d59f2new73eq"
+    },
+    {
+      "title": "唐達《毛詩古音考辨》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐達《毛詩古音考辨》一卷",
+      "work_id": "d59f2nhll4w3"
+    },
+    {
+      "title": "張溥《詩經註疏大全合纂》三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張溥《詩經註疏大全合纂》三十四卷",
+      "work_id": "d59f2njeii2o"
+    },
+    {
+      "title": "高承埏《五十家詩義裁中》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "高承埏《五十家詩義裁中》十二卷",
+      "work_id": "d59f2nijm0hv"
+    },
+    {
+      "title": "朱朝瑛《讀詩略記》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱朝瑛《讀詩略記》二卷",
+      "work_id": "d59f2nktpeyo"
+    },
+    {
+      "title": "張星懋《詩採》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "張星懋《詩採》八卷",
+      "work_id": "d59f2neyp05c"
+    },
+    {
+      "title": "高鼎熺《詩經存旨》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "高鼎熺《詩經存旨》八卷",
+      "work_id": "d59f2ngkfwn4"
+    },
+    {
+      "title": "韋調鼎《詩經考定》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋調鼎《詩經考定》二十四卷",
+      "work_id": "d59f2nhe3g1t"
+    },
+    {
+      "title": "趙起元《詩權》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙起元《詩權》八卷",
+      "work_id": "d59f2niak4jk"
+    },
+    {
+      "title": "喬中和《葩經旁意》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "喬中和《葩經旁意》一卷",
+      "work_id": "d59f2ngqzvnl"
+    },
+    {
+      "title": "胡紹曾《詩經胡傳》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡紹曾《詩經胡傳》十二卷",
+      "work_id": "d59f2nikjpq9"
+    },
+    {
+      "title": "范王孫《詩志》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "范王孫《詩志》二十六卷",
+      "work_id": "d59f2ndohvcw"
+    },
+    {
+      "title": "──右《詩》類，八十七部，九百八卷。",
+      "level": 3,
+      "type": "tally",
+      "content": "──右《詩》類，八十七部，九百八卷。"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "title": "經部·詩類",
+  "sections": [
+    {
+      "title": "詩類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "毛詩背隱義　　徐廣撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩背隱義　二卷。　　徐廣撰",
+      "work_id": "d59f27y8mtxe"
+    },
+    {
+      "title": "毛詩引辨　　孫暢之撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩引辨　一卷。　　孫暢之撰",
+      "work_id": "d59f284uswef"
+    },
+    {
+      "title": "毛詩釋　　何偃撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩釋　一卷。　　何偃撰",
+      "work_id": "d59f284w1ukj"
+    },
+    {
+      "title": "毛詩序義　　雷次宗撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩序義　二卷。　　雷次宗撰",
+      "work_id": "d59f7v5ydo1x"
+    },
+    {
+      "title": "毛詩義　　雷次宗撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩義　一卷。　　雷次宗撰",
+      "work_id": "d59f284tjy86"
+    },
+    {
+      "title": "毛詩序注　　阮暢之注",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩序注　一卷。　　阮暢之注",
+      "work_id": "d59f28511n9g"
+    },
+    {
+      "title": "毛詩序義　　孫暢之撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩序義　七卷。　　孫暢之撰",
+      "work_id": "d59f2850qepu"
+    },
+    {
+      "title": "業詩　　業遵撰",
+      "level": 3,
+      "type": "book",
+      "content": "業詩　二十卷。《新唐志》\"業\"作\"葉\"。　　業　遵撰",
+      "work_id": "d59f7z42sfsx"
+    },
+    {
+      "title": "毛詩序義　　周續之撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩序義　不知卷數。見《釋文序録》。　　周續之撰",
+      "work_id": "d59f284xm1aa"
+    },
+    {
+      "title": "毛詩注　　周續之注",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩注　不知卷數。見《顏氏家訓》。　　周續之注",
+      "work_id": "d59f7z42sfsy"
+    },
+    {
+      "title": "毛詩義　　關康之撰",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩義　不知卷數。見《宋書》九十三。　　關康之撰",
+      "work_id": "d59f284y8idg"
+    }
+  ]
+}

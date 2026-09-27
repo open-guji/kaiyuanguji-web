@@ -1,0 +1,453 @@
+{
+  "title": "法家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "法家類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "欽頒州縣事宜",
+      "content": "欽頒州縣事宜一卷。田文鏡撰。",
+      "work_id": "d59f2nhqktmq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "刪定管子",
+      "content": "刪定管子一卷。方苞撰。",
+      "work_id": "d59f2nhqw268"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "管子校正",
+      "content": "管子校正二十四卷。戴望撰。",
+      "work_id": "d59f2nhqw269"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "管子義證",
+      "content": "管子義證八卷。洪頤煊撰。",
+      "work_id": "d59f2nhr7aps"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職集解",
+      "content": "弟子職集解一卷。莊述祖撰。",
+      "work_id": "d59f2nhr7apt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職箋釋",
+      "content": "弟子職箋釋一卷。洪亮吉撰。",
+      "work_id": "d59f2nhrij9c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職集注",
+      "content": "弟子職集注一卷。任文田撰。",
+      "work_id": "d59f2nhrij9d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職注",
+      "content": "弟子職注一卷。孫同元撰。",
+      "work_id": "d59f2nhrij9e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職正音",
+      "content": "弟子職正音一卷。許瀚撰。",
+      "work_id": "d59f2nhrtrsw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職音誼",
+      "content": "弟子職音誼一卷。鍾廣撰。",
+      "work_id": "d59f2nhrtrsx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弟子職正音",
+      "content": "弟子職正音一卷。王筠撰。",
+      "work_id": "d59f2nhs50cg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "管子地員篇注",
+      "content": "管子地員篇注四卷。王紹蘭撰。",
+      "work_id": "d59f2nhs50ch"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "商君書新校正",
+      "content": "商君書新校正五卷。嚴萬里撰。",
+      "work_id": "d59f2nhs50ci"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "韓非子識誤",
+      "content": "韓非子識誤三卷。顧廣圻撰。",
+      "work_id": "d59f2nhsg8w0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "韓非子校正",
+      "content": "韓非子校正一卷。盧文弨撰。",
+      "work_id": "d59f2nhsg8w1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "韓非子集解",
+      "content": "韓非子集解二十卷。王先慎撰。",
+      "work_id": "d59f2nhsrhfk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "疑獄集箋",
+      "content": "疑獄集箋四卷。陳芳生撰。",
+      "work_id": "d59f2nhsrhfl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "洗冤錄詳義",
+      "content": "洗冤錄詳義四卷，摭遺二卷。許槤、葛元煦撰。",
+      "work_id": "d59f2nhsrhfm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "摭遺",
+      "content": "",
+      "content_from": "洗冤錄詳義",
+      "work_id": "d59f2nhsrhfm",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《洗冤錄詳義》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "洗冤錄集證",
+      "content": "洗冤錄集證四卷。王乂槐撰。",
+      "work_id": "d59f2nht2pz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "洗冤錄辨正",
+      "content": "洗冤錄辨正一卷。瞿中溶撰。",
+      "work_id": "d59f2nht2pz5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "洗冤錄集解",
+      "content": "洗冤錄集解一卷。姚德豫撰。",
+      "work_id": "d59f2nhtdyio"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "洗冤錄證",
+      "content": "洗冤錄證四卷。剛毅撰。",
+      "work_id": "d59f2nhtdyip"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "巡城條約",
+      "content": "巡城條約一卷，風憲禁約一卷。魏裔介撰。",
+      "work_id": "d59f2mfsb400"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "風憲禁約",
+      "content": "",
+      "content_from": "巡城條約",
+      "work_id": "d59f2mfsb401"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "提牢備考",
+      "content": "提牢備考四卷。趙舒翹撰。",
+      "work_id": "d59f2nhtdyiq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "審看擬式",
+      "content": "審看擬式六卷。剛毅撰。",
+      "work_id": "d59f2nhtp728"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "爽鳩要錄",
+      "content": "爽鳩要錄二卷。蔣超伯撰。",
+      "work_id": "d59f2nhtp729"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "牧令書輯要",
+      "content": "牧令書輯要十卷。徐致初撰。",
+      "work_id": "d59f2nhu0fls"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "筮仕金鑒",
+      "content": "筮仕金鑒二卷。邵嗣宗撰。",
+      "work_id": "d59f2nhu0flt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學治臆說",
+      "content": "學治臆說二卷，續說一卷，說贅一卷，佐治藥言一卷，續一卷。汪輝祖撰。",
+      "work_id": "d59f2nezxtz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "說贅",
+      "content": "",
+      "content_from": "學治臆說",
+      "work_id": "d59f2nezxtz5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "佐治藥言",
+      "content": "",
+      "content_from": "學治臆說",
+      "work_id": "d59f2nhu0flu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學治一得錄",
+      "content": "學治一得錄一卷。何耿繩撰。",
+      "work_id": "d59f2nhubo5c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學治偶存",
+      "content": "學治偶存八卷。陸維祺撰。",
+      "work_id": "d59f2nhumwow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "吏治懸鏡",
+      "content": "吏治懸鏡一卷。徐文撰。",
+      "work_id": "d59f2nhumwox"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續刑法敘略",
+      "content": "續刑法敘略一卷。譚瑄撰。",
+      "work_id": "d59f2mfsxl34"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀律佩觿",
+      "content": "讀律佩觿一卷。王明德撰。",
+      "work_id": "d59f2mfsmcjk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀律琯朗",
+      "content": "讀律琯朗一卷。梁他山撰。",
+      "work_id": "d59f2nhuy58g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀律提綱",
+      "content": "讀律提綱一卷。楊榮緒撰。",
+      "work_id": "d59f2nhuy58h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀律心得",
+      "content": "讀律心得三卷。劉衡撰。",
+      "work_id": "d59f2nhuy58i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明刑管見錄",
+      "content": "明刑管見錄一卷。穆翰撰。",
+      "work_id": "d59f2nhv9ds0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "折獄卮言",
+      "content": "折獄卮言一卷。陳士礦撰。",
+      "work_id": "d59f2mfrzvgg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "辦案要略",
+      "content": "辦案要略一卷。王乂槐撰。",
+      "work_id": "d59f2nhv9ds1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "檢驗合參",
+      "content": "檢驗合參一卷。郎錦麒撰。",
+      "work_id": "d59f2nhvkmbk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "幕學舉要",
+      "content": "幕學舉要一卷。萬維翰撰。",
+      "work_id": "d59f2nhvkmbl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "未信編",
+      "content": "未信編六卷。潘杓燦撰。",
+      "work_id": "d59f2nhvkmbm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蕭曹隨筆",
+      "content": "蕭曹隨筆四卷。不著撰人氏名。治山經律劄記一卷。朱廷勱撰。",
+      "work_id": "d59f2nhvvuv4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "守禾日記",
+      "content": "守禾日記六卷。盧崇興撰。",
+      "work_id": "d59f2nhvvuv5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "天台治略",
+      "content": "天台治略八卷。戴兆佳撰。",
+      "work_id": "d59f2nhw73eo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "問心一隅",
+      "content": "問心一隅二卷。何秋濤撰。",
+      "work_id": "d59f2nhw73ep"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "寄簃文存",
+      "content": "寄簃文存八卷，二編二卷。沈家本撰。",
+      "work_id": "d59f2nhwiby8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "二編",
+      "content": "",
+      "content_from": "寄簃文存",
+      "work_id": "d59f2nhwiby9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "折獄龜鑒",
+      "content": "宋鄭克折獄龜鑒八卷。",
+      "work_id": "d59f2ht05fcw",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "害申子",
+      "content": "周申不害申子一卷。",
+      "work_id": "d59f2evqogsg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "新書",
+      "content": "漢晁錯新書一卷。",
+      "work_id": "d59f24mb0c93",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "部論",
+      "content": "魏劉廙部論一卷。",
+      "work_id": "d59f27t7wfeq",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "政論",
+      "content": "魏阮武政論一卷。",
+      "work_id": "d59f27sqf4zn",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "世要論",
+      "content": "魏桓范世要論一卷。",
+      "work_id": "d59f27sczxmq",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "要言",
+      "content": "吳陳融要言一卷。",
+      "work_id": "d59f27t117gk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "李悝法經",
+      "content": "李悝法經一卷。",
+      "work_id": "d59f2evtsu80",
+      "is_jiyi": true
+    }
+  ]
+}

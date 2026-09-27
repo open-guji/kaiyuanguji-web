@@ -1,0 +1,47 @@
+{
+  "title": "楚辭類",
+  "sections": [
+    {
+      "title": "《楚詞》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《楚詞》十卷郭璞注。",
+      "work_id": "d59f27uy0nib"
+    },
+    {
+      "title": "《楚詞九悼》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《楚詞九悼》一卷楊穆撰。",
+      "work_id": "d59f2q3wtn9d"
+    },
+    {
+      "title": "《離騷草木蟲魚疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《離騷草木蟲魚疏》一卷劉遝撰。",
+      "work_id": "d59f2q7900le"
+    },
+    {
+      "title": "《楚詞音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《楚詞音》一卷孟奧撰。",
+      "work_id": "d59f2q3j37r6"
+    },
+    {
+      "title": "又一卷徐邈撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷徐邈撰。",
+      "work_id": "d59f27y9kjk1"
+    },
+    {
+      "title": "又一卷釋道騫撰。</poem>",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷釋道騫撰。</poem>",
+      "work_id": "d59f2q0ubnk0"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "title": "經部·小學類",
+  "sections": [
+    {
+      "title": "小學類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "字林音義　　吳恭撰",
+      "level": 3,
+      "type": "book",
+      "content": "字林音義　五卷。　　吳　恭撰",
+      "work_id": "d59f7v5yowlk"
+    },
+    {
+      "title": "要字苑　　謝康樂撰",
+      "level": 3,
+      "type": "book",
+      "content": "要字苑　一卷。　　謝康樂撰",
+      "work_id": "d59f286500sj"
+    },
+    {
+      "title": "釋字同音　　吉文甫撰",
+      "level": 3,
+      "type": "book",
+      "content": "釋字同音　三卷。　　吉文甫撰",
+      "work_id": "d59f286hsr29"
+    },
+    {
+      "title": "詁幼　　顏延之撰",
+      "level": 3,
+      "type": "book",
+      "content": "詁幼　二卷。《新唐志》作《詰幼文》三卷。　　顏延之撰",
+      "work_id": "d59f2q1ajz7l"
+    },
+    {
+      "title": "廣詁幼　　荀楷撰",
+      "level": 3,
+      "type": "book",
+      "content": "廣詁幼　一卷。　　荀　楷撰",
+      "work_id": "d59f2rx5q134"
+    },
+    {
+      "title": "纂文　　何承天撰",
+      "level": 3,
+      "type": "book",
+      "content": "纂文　三卷。見兩《唐志》。　　何承天撰",
+      "work_id": "d59f286ljlkw"
+    }
+  ]
+}

@@ -1,0 +1,314 @@
+{
+  "work_id": "d59ezaj2wl4w",
+  "version_label": "莊子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90",
+    "page_title": "莊子",
+    "revid": 2572414,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "郭象注本卅三篇本（今存本），非漢志五十二篇古本。",
+  "total_chapters": 33,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "逍遙遊",
+      "file": "001.md",
+      "page_title": "莊子/逍遙遊",
+      "revid": 7908417,
+      "md_len": 1784
+    },
+    {
+      "n": 2,
+      "title": "齊物論",
+      "file": "002.md",
+      "page_title": "莊子/齊物論",
+      "revid": 6037725,
+      "md_len": 3662
+    },
+    {
+      "n": 3,
+      "title": "養生主",
+      "file": "003.md",
+      "page_title": "莊子/養生主",
+      "revid": 6400427,
+      "md_len": 722
+    },
+    {
+      "n": 4,
+      "title": "人間世",
+      "file": "004.md",
+      "page_title": "莊子/人間世",
+      "revid": 2327589,
+      "md_len": 3438
+    },
+    {
+      "n": 5,
+      "title": "德充符",
+      "file": "005.md",
+      "page_title": "莊子/德充符",
+      "revid": 2437079,
+      "md_len": 2304
+    },
+    {
+      "n": 6,
+      "title": "大宗師",
+      "file": "006.md",
+      "page_title": "莊子/大宗師",
+      "revid": 2327595,
+      "md_len": 3723
+    },
+    {
+      "n": 7,
+      "title": "應帝王",
+      "file": "007.md",
+      "page_title": "莊子/應帝王",
+      "revid": 8729953,
+      "md_len": 1358
+    },
+    {
+      "n": 8,
+      "title": "駢拇",
+      "file": "008.md",
+      "page_title": "莊子/駢拇",
+      "revid": 2327618,
+      "md_len": 1232
+    },
+    {
+      "n": 9,
+      "title": "馬蹄",
+      "file": "009.md",
+      "page_title": "莊子/馬蹄",
+      "revid": 2327617,
+      "md_len": 684
+    },
+    {
+      "n": 10,
+      "title": "胠篋",
+      "file": "010.md",
+      "page_title": "莊子/胠篋",
+      "revid": 2327612,
+      "md_len": 1529
+    },
+    {
+      "n": 11,
+      "title": "在宥",
+      "file": "011.md",
+      "page_title": "莊子/在宥",
+      "revid": 2327593,
+      "md_len": 2819
+    },
+    {
+      "n": 12,
+      "title": "天地",
+      "file": "012.md",
+      "page_title": "莊子/天地",
+      "revid": 2327597,
+      "md_len": 3912
+    },
+    {
+      "n": 13,
+      "title": "天道",
+      "file": "013.md",
+      "page_title": "莊子/天道",
+      "revid": 2327599,
+      "md_len": 2904
+    },
+    {
+      "n": 14,
+      "title": "天運",
+      "file": "014.md",
+      "page_title": "莊子/天運",
+      "revid": 2327622,
+      "md_len": 3211
+    },
+    {
+      "n": 15,
+      "title": "刻意",
+      "file": "015.md",
+      "page_title": "莊子/刻意",
+      "revid": 2327623,
+      "md_len": 825
+    },
+    {
+      "n": 16,
+      "title": "繕性",
+      "file": "016.md",
+      "page_title": "莊子/繕性",
+      "revid": 2327624,
+      "md_len": 791
+    },
+    {
+      "n": 17,
+      "title": "秋水",
+      "file": "017.md",
+      "page_title": "莊子/秋水",
+      "revid": 2477942,
+      "md_len": 3552
+    },
+    {
+      "n": 18,
+      "title": "至樂",
+      "file": "018.md",
+      "page_title": "莊子/至樂",
+      "revid": 2327625,
+      "md_len": 1766
+    },
+    {
+      "n": 19,
+      "title": "達生",
+      "file": "019.md",
+      "page_title": "莊子/達生",
+      "revid": 2327626,
+      "md_len": 3001
+    },
+    {
+      "n": 20,
+      "title": "山木",
+      "file": "020.md",
+      "page_title": "莊子/山木",
+      "revid": 2327627,
+      "md_len": 2814
+    },
+    {
+      "n": 21,
+      "title": "田子方",
+      "file": "021.md",
+      "page_title": "莊子/田子方",
+      "revid": 2327628,
+      "md_len": 2825
+    },
+    {
+      "n": 22,
+      "title": "知北遊",
+      "file": "022.md",
+      "page_title": "莊子/知北遊",
+      "revid": 2327609,
+      "md_len": 3515
+    },
+    {
+      "n": 23,
+      "title": "庚桑楚",
+      "file": "023.md",
+      "page_title": "莊子/庚桑楚",
+      "revid": 2327629,
+      "md_len": 3071
+    },
+    {
+      "n": 24,
+      "title": "徐無鬼",
+      "file": "024.md",
+      "page_title": "莊子/徐無鬼",
+      "revid": 2327637,
+      "md_len": 4372
+    },
+    {
+      "n": 25,
+      "title": "則陽",
+      "file": "025.md",
+      "page_title": "莊子/則陽",
+      "revid": 2327630,
+      "md_len": 3255
+    },
+    {
+      "n": 26,
+      "title": "外物",
+      "file": "026.md",
+      "page_title": "莊子/外物",
+      "revid": 2327631,
+      "md_len": 1940
+    },
+    {
+      "n": 27,
+      "title": "寓言",
+      "file": "027.md",
+      "page_title": "莊子/寓言",
+      "revid": 2327600,
+      "md_len": 1207
+    },
+    {
+      "n": 28,
+      "title": "讓王",
+      "file": "028.md",
+      "page_title": "莊子/讓王",
+      "revid": 2327632,
+      "md_len": 3433
+    },
+    {
+      "n": 29,
+      "title": "盜跖",
+      "file": "029.md",
+      "page_title": "莊子/盜跖",
+      "revid": 2327633,
+      "md_len": 3827
+    },
+    {
+      "n": 30,
+      "title": "說劍",
+      "file": "030.md",
+      "page_title": "莊子/說劍",
+      "revid": 2327634,
+      "md_len": 1176
+    },
+    {
+      "n": 31,
+      "title": "漁父",
+      "file": "031.md",
+      "page_title": "莊子/漁父",
+      "revid": 2327635,
+      "md_len": 1978
+    },
+    {
+      "n": 32,
+      "title": "列禦寇",
+      "file": "032.md",
+      "page_title": "莊子/列禦寇",
+      "revid": 8730490,
+      "md_len": 2015
+    },
+    {
+      "n": 33,
+      "title": "天下",
+      "file": "033.md",
+      "page_title": "莊子/天下",
+      "revid": 2327636,
+      "md_len": 3289
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "variants": [
+    {
+      "primary": "槍",
+      "alt": [
+        "搶"
+      ]
+    },
+    {
+      "primary": "湌",
+      "alt": [
+        "飧"
+      ]
+    },
+    {
+      "primary": "犛",
+      "alt": [
+        "斄"
+      ]
+    },
+    {
+      "primary": "苶",
+      "alt": [
+        "薾"
+      ]
+    }
+  ]
+}

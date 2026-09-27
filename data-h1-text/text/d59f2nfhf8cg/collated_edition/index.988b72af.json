@@ -1,0 +1,206 @@
+{
+  "work_id": "d59f2nfhf8cg",
+  "type": "catalog",
+  "total_entries": 8912,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json",
+    "juan/009.json",
+    "juan/010.json",
+    "juan/011.json",
+    "juan/012.json",
+    "juan/013.json",
+    "juan/014.json",
+    "juan/015.json",
+    "juan/016.json",
+    "juan/017.json",
+    "juan/018.json",
+    "juan/019.json",
+    "juan/020.json",
+    "juan/021.json",
+    "juan/022.json",
+    "juan/023.json",
+    "juan/024.json",
+    "juan/025.json",
+    "juan/026.json"
+  ],
+  "references": [
+    {
+      "title": "明朝武职选簿[册数版]",
+      "author": "知乎@武泰斗天",
+      "url": "https://zhuanlan.zhihu.com/p/1987619270801236141",
+      "note": "整理本来源；持续更新中"
+    }
+  ],
+  "text_quality": {
+    "grade": "rough",
+    "source_note": "知乎@武泰斗天《明朝武职选簿[册数版]》(https://zhuanlan.zhihu.com/p/1987619270801236141)；整理本由 知乎@武泰斗天 持续更新；最近同步 2026-05-08"
+  },
+  "total_records": 5377,
+  "juan_metadata": {
+    "juan/001.json": {
+      "vols": [
+        49
+      ],
+      "vol_label": "49"
+    },
+    "juan/002.json": {
+      "vols": [
+        50
+      ],
+      "vol_label": "50"
+    },
+    "juan/003.json": {
+      "vols": [
+        51
+      ],
+      "vol_label": "51"
+    },
+    "juan/004.json": {
+      "vols": [
+        52
+      ],
+      "vol_label": "52"
+    },
+    "juan/005.json": {
+      "vols": [
+        53
+      ],
+      "vol_label": "53"
+    },
+    "juan/006.json": {
+      "vols": [
+        54
+      ],
+      "vol_label": "54"
+    },
+    "juan/007.json": {
+      "vols": [
+        55
+      ],
+      "vol_label": "55"
+    },
+    "juan/008.json": {
+      "vols": [
+        56
+      ],
+      "vol_label": "56"
+    },
+    "juan/009.json": {
+      "vols": [
+        57
+      ],
+      "vol_label": "57"
+    },
+    "juan/010.json": {
+      "vols": [
+        58
+      ],
+      "vol_label": "58"
+    },
+    "juan/011.json": {
+      "vols": [
+        59
+      ],
+      "vol_label": "59"
+    },
+    "juan/012.json": {
+      "vols": [
+        60
+      ],
+      "vol_label": "60"
+    },
+    "juan/013.json": {
+      "vols": [
+        61
+      ],
+      "vol_label": "61"
+    },
+    "juan/014.json": {
+      "vols": [
+        62
+      ],
+      "vol_label": "62"
+    },
+    "juan/015.json": {
+      "vols": [
+        63
+      ],
+      "vol_label": "63"
+    },
+    "juan/016.json": {
+      "vols": [
+        64
+      ],
+      "vol_label": "64"
+    },
+    "juan/017.json": {
+      "vols": [
+        65
+      ],
+      "vol_label": "65"
+    },
+    "juan/018.json": {
+      "vols": [
+        66
+      ],
+      "vol_label": "66"
+    },
+    "juan/019.json": {
+      "vols": [
+        67
+      ],
+      "vol_label": "67"
+    },
+    "juan/020.json": {
+      "vols": [
+        68
+      ],
+      "vol_label": "68"
+    },
+    "juan/021.json": {
+      "vols": [
+        69
+      ],
+      "vol_label": "69"
+    },
+    "juan/022.json": {
+      "vols": [
+        70
+      ],
+      "vol_label": "70"
+    },
+    "juan/023.json": {
+      "vols": [
+        71
+      ],
+      "vol_label": "71"
+    },
+    "juan/024.json": {
+      "vols": [
+        72
+      ],
+      "vol_label": "72"
+    },
+    "juan/025.json": {
+      "vols": [
+        73
+      ],
+      "vol_label": "73"
+    },
+    "juan/026.json": {
+      "vols": [
+        74
+      ],
+      "vol_label": "74"
+    }
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25"
+}

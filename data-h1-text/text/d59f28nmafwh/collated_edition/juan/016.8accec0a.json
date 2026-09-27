@@ -1,0 +1,251 @@
+{
+  "title": "舊事類",
+  "sections": [
+    {
+      "title": "《漢武帝故事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢武帝故事》二卷",
+      "book_title": "漢武帝故事",
+      "n_juan": 2,
+      "work_id": "d59f2q28kuf5"
+    },
+    {
+      "title": "《西京雜記》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《西京雜記》二卷",
+      "work_id": "d59f27x41zb4",
+      "book_title": "西京雜記",
+      "n_juan": 2
+    },
+    {
+      "title": "《漢魏吳蜀舊事》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢魏吳蜀舊事》八卷",
+      "book_title": "漢魏吳蜀舊事",
+      "n_juan": 8,
+      "work_id": "d59f2ptxjim8"
+    },
+    {
+      "title": "《晉朝雜事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉朝雜事》二卷",
+      "book_title": "晉朝雜事",
+      "n_juan": 2,
+      "work_id": "d59f285cwnwg"
+    },
+    {
+      "title": "《晉宋舊事》一百三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉宋舊事》一百三十五卷",
+      "book_title": "晉宋舊事",
+      "n_juan": 135,
+      "work_id": "d59f2q1z7qiq"
+    },
+    {
+      "title": "《晉要事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉要事》三卷",
+      "book_title": "晉要事",
+      "n_juan": 3,
+      "work_id": "d59f2q6k114w"
+    },
+    {
+      "title": "《晉故事》四十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉故事》四十三卷",
+      "book_title": "晉故事",
+      "n_juan": 43,
+      "work_id": "d59f27x2t14z"
+    },
+    {
+      "title": "《晉建武故事》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武故事》一卷",
+      "book_title": "晉建武故事",
+      "n_juan": 1,
+      "work_id": "d59f2q5ikk5c"
+    },
+    {
+      "title": "《晉咸和、咸康故事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸和、咸康故事》四卷晉孔愉撰。",
+      "book_title": "晉咸和、咸康故事",
+      "n_juan": 4,
+      "author_info": "晉孔愉撰",
+      "work_id": "d59f27tyqu4g"
+    },
+    {
+      "title": "《晉修復山陵故事》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉修復山陵故事》五卷車灌撰。",
+      "book_title": "晉修復山陵故事",
+      "n_juan": 5,
+      "author_info": "車灌撰",
+      "work_id": "d59f27wpdts1"
+    },
+    {
+      "title": "《交州雜事》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《交州雜事》九卷記士燮及陶璜事。",
+      "book_title": "交州雜事",
+      "n_juan": 9,
+      "author_info": "記士燮及陶璜事",
+      "work_id": "d59f27vxagw4"
+    },
+    {
+      "title": "《晉八王故事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉八王故事》十卷",
+      "book_title": "晉八王故事",
+      "n_juan": 10,
+      "work_id": "d59f27vy86ir"
+    },
+    {
+      "title": "《晉四王起事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉四王起事》四卷晉廷尉盧綝撰。",
+      "book_title": "晉四王起事",
+      "n_juan": 4,
+      "author_info": "晉廷尉盧綝撰",
+      "work_id": "d59f27wjrk00"
+    },
+    {
+      "title": "《大司馬陶公故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大司馬陶公故事》三卷",
+      "book_title": "大司馬陶公故事",
+      "n_juan": 3,
+      "work_id": "d59f27uyn4lf"
+    },
+    {
+      "title": "《郤太尉為尚書令故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《郤太尉為尚書令故事》三卷",
+      "book_title": "郤太尉為尚書令故事",
+      "n_juan": 3,
+      "work_id": "d59f2pxjpgqq"
+    },
+    {
+      "title": "《桓玄偽事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桓玄偽事》三卷",
+      "book_title": "桓玄偽事",
+      "n_juan": 3,
+      "work_id": "d59f2q1fjs3k"
+    },
+    {
+      "title": "《晉東宮舊事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉東宮舊事》十卷",
+      "book_title": "晉東宮舊事",
+      "n_juan": 10,
+      "work_id": "d59f27twk6bm"
+    },
+    {
+      "title": "《秦漢已來舊事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《秦漢已來舊事》十卷",
+      "book_title": "秦漢已來舊事",
+      "n_juan": 10,
+      "work_id": "d59f2pt054hu"
+    },
+    {
+      "title": "《尚書大事》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《尚書大事》二十卷范汪撰。",
+      "book_title": "尚書大事",
+      "n_juan": 20,
+      "author_info": "范汪撰",
+      "work_id": "d59f27w2a9l0"
+    },
+    {
+      "title": "《沔南故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《沔南故事》三卷應思遠撰。",
+      "book_title": "沔南故事",
+      "n_juan": 3,
+      "author_info": "應思遠撰",
+      "work_id": "d59f27w0eubl"
+    },
+    {
+      "title": "《天正舊事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天正舊事》三卷釋撰，亡名。",
+      "book_title": "天正舊事",
+      "n_juan": 3,
+      "author_info": "釋撰",
+      "work_id": "d59f2q9acs8x"
+    },
+    {
+      "title": "《皇儲故事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《皇儲故事》二卷",
+      "book_title": "皇儲故事",
+      "n_juan": 2,
+      "work_id": "d59f2psiclj4"
+    },
+    {
+      "title": "《梁舊事》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁舊事》三十卷內史侍郎蕭大圜撰。",
+      "book_title": "梁舊事",
+      "n_juan": 30,
+      "author_info": "內史侍郎蕭大圜撰",
+      "work_id": "d59f285g11c1"
+    },
+    {
+      "title": "《東宮典記》七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《東宮典記》七十卷左庶子宇文愷撰。",
+      "book_title": "東宮典記",
+      "n_juan": 70,
+      "author_info": "左庶子宇文愷撰",
+      "work_id": "d59f28labls0"
+    },
+    {
+      "title": "《開業平陳記》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《開業平陳記》二十卷",
+      "book_title": "開業平陳記",
+      "n_juan": 20,
+      "work_id": "d59f2q5yhnnl"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右二十五部，四百四卷。"
+    },
+    {
+      "title": "舊事類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "古者朝廷之政，發號施令，百司奉之，藏於官府，各修其職，守而弗忘。《春秋傳》曰「吾視諸故府」，則其事也。《周官》：御史掌治朝之法，太史掌萬民之約契與質劑，以逆邦國之治。然則百司庶府，各藏其事，太史之職，又總而掌之。漢時，蕭何定律令，張蒼制章程，叔孫通定儀法，條流派別，制度漸廣。晉初，甲令已下，至九百余卷，晉武帝命車騎將軍賈充，博引群儒，刪采其要，增律十篇。其餘不足經遠者為法令，施行制度者為令，品式章程者為故事，各還其官府。搢紳之士，撰而錄之，遂成篇卷，然亦隨代遺失。今據其見存，謂之舊事篇。"
+    }
+  ]
+}

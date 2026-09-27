@@ -1,0 +1,711 @@
+{
+  "title": "小說類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "小說類",
+      "content": ""
+    },
+    {
+      "title": "宋濂《蘿山雜言》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋濂《蘿山雜言》一卷",
+      "work_id": "d59f2nfxcc1t"
+    },
+    {
+      "title": "葉子奇《草木子餘錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉子奇《草木子餘錄》三卷",
+      "work_id": "d59f2nl24tmo"
+    },
+    {
+      "title": "陶宗儀《輟耕錄》三十卷，《說郛》一百二十卷又有《續說郛》四十六卷，明季人陶珽纂輯。",
+      "level": 3,
+      "type": "book",
+      "content": "陶宗儀《輟耕錄》三十卷，《說郛》一百二十卷又有《續說郛》四十六卷，明季人陶珽纂輯。",
+      "work_id": "d59f2j4r5atd"
+    },
+    {
+      "title": "劉績《霏雪錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉績《霏雪錄》二卷",
+      "work_id": "d59f2nkd5ukh"
+    },
+    {
+      "title": "陶輔《桑榆漫筆》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶輔《桑榆漫筆》一卷",
+      "work_id": "d59f2neo2xhd"
+    },
+    {
+      "title": "瞿佑《香臺集》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑《香臺集》三卷",
+      "work_id": "d59f2nkvku80"
+    },
+    {
+      "title": "張綸《林泉隨筆》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張綸《林泉隨筆》一卷",
+      "work_id": "d59f2nf0vnk0"
+    },
+    {
+      "title": "李賢《古穰雜錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李賢《古穰雜錄》二卷",
+      "work_id": "d59f2nfl639e"
+    },
+    {
+      "title": "嶽正《類博雜言》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "嶽正《類博雜言》二卷",
+      "work_id": "d59f2ng20wle"
+    },
+    {
+      "title": "葉盛《水東日記》三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉盛《水東日記》三十八卷",
+      "work_id": "d59f2njh0e80"
+    },
+    {
+      "title": "單宇《菊坡叢話》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "單宇《菊坡叢話》二十六卷",
+      "work_id": "d59f2nlb6pdt"
+    },
+    {
+      "title": "陸容《菽園雜記》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸容《菽園雜記》十五卷",
+      "work_id": "d59f2nk01vcw"
+    },
+    {
+      "title": "姚福《青溪暇筆》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚福《青溪暇筆》二十卷",
+      "work_id": "d59f2nftlhxd"
+    },
+    {
+      "title": "張志淳《南園漫錄》十卷，《續錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張志淳《南園漫錄》十卷，《續錄》十卷",
+      "work_id": "d59f2nji9ceb"
+    },
+    {
+      "title": "梅純《續百川學海》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "梅純《續百川學海》一百卷",
+      "work_id": "d59f2nghmrr5"
+    },
+    {
+      "title": "王錡《寓圃雜記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王錡《寓圃雜記》十卷",
+      "work_id": "d59f2ne5cow0"
+    },
+    {
+      "title": "羅鳳《漫錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "羅鳳《漫錄》三十卷",
+      "work_id": "d59f2og72876"
+    },
+    {
+      "title": "李詡《漫筆》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "李詡《漫筆》八卷",
+      "work_id": "d59f2ngn914y"
+    },
+    {
+      "title": "徐泰《玉池談屑》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐泰《玉池談屑》四卷",
+      "work_id": "d59f2nf3dk3m"
+    },
+    {
+      "title": "羅欽德《閑中瑣錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "羅欽德《閑中瑣錄》二卷",
+      "work_id": "d59f2ndsjytf"
+    },
+    {
+      "title": "王渙《墨池瑣錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王渙《墨池瑣錄》三卷",
+      "work_id": "d59f2nhy2n0i"
+    },
+    {
+      "title": "沈周《客坐新聞》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈周《客坐新聞》二十二卷",
+      "work_id": "d59f2nj39yio"
+    },
+    {
+      "title": "都邛《三餘贅筆》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "都邛《三餘贅筆》二卷",
+      "work_id": "d59f2ndkfshv"
+    },
+    {
+      "title": "都穆《奚囊續要》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "都穆《奚囊續要》二十卷",
+      "work_id": "d59f2ng4u1aa"
+    },
+    {
+      "title": "徐禎卿《異林》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐禎卿《異林》一卷",
+      "work_id": "d59f2niqsgsg"
+    },
+    {
+      "title": "唐錦《龍江夢餘錄》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐錦《龍江夢餘錄》四卷",
+      "work_id": "d59f2ngkr4sj"
+    },
+    {
+      "title": "戴冠《筆記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴冠《筆記》十卷",
+      "work_id": "d59f2nibhu6a"
+    },
+    {
+      "title": "侯甸《西樵野記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "侯甸《西樵野記》十卷",
+      "work_id": "d59f2nj0gtmp"
+    },
+    {
+      "title": "陸粲《庚巳編》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸粲《庚巳編》十卷",
+      "work_id": "d59f2nevvv9c"
+    },
+    {
+      "title": "陸深《儼山外集》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸深《儼山外集》四十卷",
+      "work_id": "d59f2nj6ec5e"
+    },
+    {
+      "title": "馬攀龍《株守談略》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬攀龍《株守談略》四卷",
+      "work_id": "d59f2nf58zk2"
+    },
+    {
+      "title": "陸採《天池聲雋》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸採《天池聲雋》四十卷",
+      "work_id": "d59f2nhblji9"
+    },
+    {
+      "title": "胡侍《野談》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡侍《野談》六卷",
+      "work_id": "d59f2nh43ugy"
+    },
+    {
+      "title": "楊慎《丹鉛總錄》二十七卷，《續錄》十二卷，《餘錄》十七卷，《新錄》七卷，《閏錄》九卷，《卮言》四卷《談菀醍醐》九卷，《藝",
+      "level": 3,
+      "type": "book",
+      "content": "楊慎《丹鉛總錄》二十七卷，《續錄》十二卷，《餘錄》十七卷，《新錄》七卷，《閏錄》九卷，《卮言》四卷《談菀醍醐》九卷，《藝林伐山》二十卷，《墐戶錄》一卷，《清暑錄》二卷",
+      "work_id": "d59f2nkyp81u"
+    },
+    {
+      "title": "陸楫《古今說海》一百四十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸楫《古今說海》一百四十二卷",
+      "work_id": "d59f2nj9ty4j"
+    },
+    {
+      "title": "陳霆《兩山墨談》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳霆《兩山墨談》十八卷",
+      "work_id": "d59f2nku0nib"
+    },
+    {
+      "title": "司馬泰《廣說郛》八十卷，《古今匯說》六十卷，《再續百川學海》八十卷，《三續三十卷，《史流十品》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬泰《廣說郛》八十卷，《古今匯說》六十卷，《再續百川學海》八十卷，《三續三十卷，《史流十品》一百卷",
+      "work_id": "d59f2nhsgcua"
+    },
+    {
+      "title": "王文祿《明世學山》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王文祿《明世學山》五十卷",
+      "work_id": "d59f2nejploh"
+    },
+    {
+      "title": "尤鏜《紅箱集》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "尤鏜《紅箱集》五十卷",
+      "work_id": "d59f2nfxyt4z"
+    },
+    {
+      "title": "朱應辰《漫鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱應辰《漫鈔》十卷",
+      "work_id": "d59f2nieaz28"
+    },
+    {
+      "title": "李文鳳《月山叢談》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李文鳳《月山叢談》十卷",
+      "work_id": "d59f2nfs1b7o"
+    },
+    {
+      "title": "何良俊《語林》三十卷，《叢說》三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "何良俊《語林》三十卷，《叢說》三十八卷",
+      "work_id": "d59f2q8zfh1e"
+    },
+    {
+      "title": "沈儀《麈談錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈儀《麈談錄》十卷",
+      "work_id": "d59f2ne9q0aq"
+    },
+    {
+      "title": "萬表《灼艾集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬表《灼艾集》十卷",
+      "work_id": "d59f2nfowxky"
+    },
+    {
+      "title": "高鶴《見聞搜玉》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "高鶴《見聞搜玉》八卷",
+      "work_id": "d59f2nf16w3l"
+    },
+    {
+      "title": "項喬《甌東私錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "項喬《甌東私錄》六卷",
+      "work_id": "d59f2ni0kj5s"
+    },
+    {
+      "title": "張時徹《說林》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張時徹《說林》二十四卷",
+      "work_id": "d59f27w87rwi"
+    },
+    {
+      "title": "袁褧《前後四十家小說》八十卷，《廣四十家小說》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁褧《前後四十家小說》八十卷，《廣四十家小說》四十卷",
+      "work_id": "d59f2nfdd5hd"
+    },
+    {
+      "title": "陸樹聲《清暑筆談》一卷，《長水日鈔》一卷，《耄餘雜識》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸樹聲《清暑筆談》一卷，《長水日鈔》一卷，《耄餘雜識》一卷",
+      "work_id": "d59f2nfghj40"
+    },
+    {
+      "title": "徐伯相《畫暇叢記》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐伯相《畫暇叢記》二十卷",
+      "work_id": "d59f2ndyhgxs"
+    },
+    {
+      "title": "姚弘謨《錦囊瑣綴》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚弘謨《錦囊瑣綴》八卷",
+      "work_id": "d59f2nfpjegw"
+    },
+    {
+      "title": "陳師《筆談》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳師《筆談》十五卷",
+      "work_id": "d59f2ndhbf9d"
+    },
+    {
+      "title": "石磐《菊徑漫談》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "石磐《菊徑漫談》十四卷",
+      "work_id": "d59f2nggdt6o"
+    },
+    {
+      "title": "郎瑛《七修類稿》五十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郎瑛《七修類稿》五十一卷",
+      "work_id": "d59f2njy6gaq"
+    },
+    {
+      "title": "朱國禎《湧幢小品》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱國禎《湧幢小品》二十四卷",
+      "work_id": "d59f2nds8q9u"
+    },
+    {
+      "title": "李豫亨《自樂編》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李豫亨《自樂編》十六卷",
+      "work_id": "d59f2ngji6ma"
+    },
+    {
+      "title": "徐渭《路史》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐渭《路史》二卷",
+      "work_id": "d59f2hsf8iyq"
+    },
+    {
+      "title": "汪雲程《逸史搜奇》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "汪雲程《逸史搜奇》十卷",
+      "work_id": "d59f2nkanxtu"
+    },
+    {
+      "title": "孫能傳《剡溪漫筆》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫能傳《剡溪漫筆》六卷",
+      "work_id": "d59f2njnvm6a"
+    },
+    {
+      "title": "王應山《風雅叢談》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應山《風雅叢談》六十卷",
+      "work_id": "d59f2ndmmghv"
+    },
+    {
+      "title": "陳禹謨《說麈》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳禹謨《說麈》八卷",
+      "work_id": "d59f2ndjtbeq"
+    },
+    {
+      "title": "田藝蘅《留青日劄》三十九卷，《西湖志餘》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "田藝蘅《留青日劄》三十九卷，《西湖志餘》二十六卷",
+      "work_id": "d59f2ni74idd"
+    },
+    {
+      "title": "胡應麟《少室山房筆叢》三十二卷，《續》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡應麟《少室山房筆叢》三十二卷，《續》十六卷",
+      "work_id": "d59f2nhq9p1e"
+    },
+    {
+      "title": "林茂槐《說類》六十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "林茂槐《說類》六十二卷",
+      "work_id": "d59f2nirexoj"
+    },
+    {
+      "title": "焦竑《筆乘》二十卷，《玉堂叢語》八卷，《明世說》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "焦竑《筆乘》二十卷，《玉堂叢語》八卷，《明世說》八卷",
+      "work_id": "d59f2nexrabm"
+    },
+    {
+      "title": "黃汝良《筆談》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃汝良《筆談》十二卷",
+      "work_id": "d59f2ncy9xq8"
+    },
+    {
+      "title": "朱謀鵒韋《異林》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱謀鵒韋《異林》十六卷",
+      "work_id": "d59f2ne3h9fk"
+    },
+    {
+      "title": "湯顯祖《續虞初志》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "湯顯祖《續虞初志》八卷",
+      "work_id": "d59f2nfs1b7k"
+    },
+    {
+      "title": "張鼎思《琅琊代醉編》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張鼎思《琅琊代醉編》四十卷",
+      "work_id": "d59f2nkcjdaa"
+    },
+    {
+      "title": "屠本畯《山林經濟籍》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "屠本畯《山林經濟籍》二十四卷",
+      "work_id": "d59f2nifjx1c"
+    },
+    {
+      "title": "顧起元《說略》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧起元《說略》六十卷",
+      "work_id": "d59f2njv22v6"
+    },
+    {
+      "title": "王肯堂《鬱岡齋筆麈》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王肯堂《鬱岡齋筆麈》四卷",
+      "work_id": "d59f2nkblnnl"
+    },
+    {
+      "title": "董其昌《畫禪室隨筆》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "董其昌《畫禪室隨筆》二卷",
+      "work_id": "d59f2nk6amm9"
+    },
+    {
+      "title": "商浚《稗海》三百六十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "商浚《稗海》三百六十八卷",
+      "work_id": "d59f2nka1gxv"
+    },
+    {
+      "title": "謝肇淛《五雜組》十六卷，《麈餘》四卷，《文海披沙》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝肇淛《五雜組》十六卷，《麈餘》四卷，《文海披沙》八卷",
+      "work_id": "d59f2nkblnur"
+    },
+    {
+      "title": "徐氌勃《徐氏筆精》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐氌勃《徐氏筆精》八卷",
+      "work_id": "d59f2negwh6o"
+    },
+    {
+      "title": "王兆雲《驚座新書》八卷，《王氏青箱餘》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王兆雲《驚座新書》八卷，《王氏青箱餘》十二卷",
+      "work_id": "d59f2ndnk5xc"
+    },
+    {
+      "title": "張所望《閱耕餘錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張所望《閱耕餘錄》六卷",
+      "work_id": "d59f2nh3slxe"
+    },
+    {
+      "title": "郭良翰《問奇類林》三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭良翰《問奇類林》三十六卷",
+      "work_id": "d59f2nf3osua"
+    },
+    {
+      "title": "陳繼儒《祕笈》一百三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳繼儒《祕笈》一百三十卷",
+      "work_id": "d59f2negl8g1"
+    },
+    {
+      "title": "潘之恆《亙史鈔》九十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "潘之恆《亙史鈔》九十一卷",
+      "work_id": "d59f2ndxv01v"
+    },
+    {
+      "title": "王學海《筠齋溫錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王學海《筠齋溫錄》十卷",
+      "work_id": "d59f2nhigrno"
+    },
+    {
+      "title": "李日華《六研齋筆記》十二卷，《日記》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李日華《六研齋筆記》十二卷，《日記》二十卷",
+      "work_id": "d59f2nl9miv4"
+    },
+    {
+      "title": "包衡《清賞錄》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "包衡《清賞錄》十二卷",
+      "work_id": "d59f2nkq9szl"
+    },
+    {
+      "title": "張重華《娛耳集》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張重華《娛耳集》十二卷",
+      "work_id": "d59f2nffv1mo"
+    },
+    {
+      "title": "馬應龍《藝林鉤微錄》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬應龍《藝林鉤微錄》二十四卷",
+      "work_id": "d59f2nht2u4g"
+    },
+    {
+      "title": "李紹文《明世說新語》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "李紹文《明世說新語》八卷",
+      "work_id": "d59f2nimf56p"
+    },
+    {
+      "title": "張大復《筆談》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張大復《筆談》十四卷",
+      "work_id": "d59f2nd7n2f7"
+    },
+    {
+      "title": "徐應秋《談薈》三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐應秋《談薈》三十六卷",
+      "work_id": "d59f2ngwax37"
+    },
+    {
+      "title": "楊崇吾《檢蠹隨筆》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊崇吾《檢蠹隨筆》三十卷",
+      "work_id": "d59f2ndpflds"
+    },
+    {
+      "title": "來斯行《槎庵小乘》四十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "來斯行《槎庵小乘》四十六卷",
+      "work_id": "d59f2njx8qo2"
+    },
+    {
+      "title": "沈弘正《蟲天志》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈弘正《蟲天志》十卷",
+      "work_id": "d59f2nkbaeww"
+    },
+    {
+      "title": "胡震亨《讀書雜錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡震亨《讀書雜錄》三卷",
+      "work_id": "d59f2ngkr4sk"
+    },
+    {
+      "title": "閔元京《湘煙錄》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "閔元京《湘煙錄》十六卷",
+      "work_id": "d59f2nh1x6o4"
+    },
+    {
+      "title": "茅元儀《雜記》三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "茅元儀《雜記》三十二卷",
+      "work_id": "d59f2ng05gxs"
+    },
+    {
+      "title": "華繼善《咫聞錄》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "華繼善《咫聞錄》五卷",
+      "work_id": "d59f2nii1ts3"
+    },
+    {
+      "title": "王所《日格類鈔》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王所《日格類鈔》三十卷",
+      "work_id": "d59f2nf9mb5s"
+    },
+    {
+      "title": "王勣《纂言鉤玄》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王勣《纂言鉤玄》十六卷",
+      "work_id": "d59f2ne3side"
+    },
+    {
+      "title": "楊德周《隨筆》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊德周《隨筆》十二卷",
+      "work_id": "d59f2ngot88x"
+    },
+    {
+      "title": "吳之俊《獅山掌錄》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳之俊《獅山掌錄》二十八卷",
+      "work_id": "d59f2nlf8sn5"
+    }
+  ]
+}

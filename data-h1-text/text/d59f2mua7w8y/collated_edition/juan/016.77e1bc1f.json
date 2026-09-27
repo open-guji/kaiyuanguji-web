@@ -1,0 +1,58 @@
+{
+  "title": "子編·雜佔類",
+  "part": "main",
+  "bian": "masters",
+  "lei": "雜佔類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "請雨止雨書一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "請雨止雨書",
+      "measure": 1,
+      "part": "main",
+      "bian": "masters",
+      "lei": "雜佔類",
+      "zhi_no": 8,
+      "juan_no": 78,
+      "author": "闕名",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f2q4dogzk",
+      "link_basis": "題名異形之繫：目錄作「請雨止雨書」，本庫題脫「書」字；本庫該書之輯佚檔已記馬國翰輯之",
+      "content": ""
+    },
+    {
+      "title": "易洞林三卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "易洞林",
+      "measure": 3,
+      "part": "main",
+      "bian": "masters",
+      "lei": "雜佔類",
+      "zhi_no": 8,
+      "juan_no": 78,
+      "dynasty": "晉",
+      "author": "郭璞",
+      "author_role": "撰",
+      "work_id": "d59f27xtnfuq",
+      "link_basis": "題同且撰人「郭璞」合，唯一",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    }
+  ]
+}

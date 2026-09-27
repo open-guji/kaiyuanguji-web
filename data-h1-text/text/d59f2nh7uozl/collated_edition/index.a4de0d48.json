@@ -1,0 +1,22 @@
+{
+  "work_id": "d59f2nh7uozl",
+  "type": "catalog",
+  "total_entries": 37,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json"
+  ],
+  "references": [
+    {
+      "title": "知乎专栏《中国明朝档案总汇》目录 4",
+      "url": "https://zhuanlan.zhihu.com/p/61494400",
+      "note": "知乎用户整理，第三编书册类 + 第四部分辽东档案"
+    }
+  ],
+  "text_quality": {
+    "grade": "rough",
+    "source_note": "知乎转录目录"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25"
+}

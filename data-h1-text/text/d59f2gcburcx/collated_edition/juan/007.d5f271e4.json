@@ -1,0 +1,463 @@
+{
+  "title": "孝經論語類",
+  "related_works": [
+    {
+      "id": "d59f1iosq6tc",
+      "title": "孝經",
+      "relation": "contains_text_of"
+    },
+    {
+      "id": "d59f1iopaku8",
+      "title": "論語",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "title": "《古文孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文孝經》一卷孔子說，曾參受，孔安國傳。",
+      "work_id": "d59f21ep59mo"
+    },
+    {
+      "title": "《孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經》一卷王肅注。",
+      "work_id": "d59f27x9o936"
+    },
+    {
+      "title": "又一卷鄭玄注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷鄭玄注。",
+      "work_id": "d59f24mhvk7a"
+    },
+    {
+      "title": "《古文孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文孝經》一卷劉邵注。",
+      "work_id": "d59f21ep59mo"
+    },
+    {
+      "title": "《孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經》一卷韋昭注。",
+      "work_id": "d59f27xh5y4h"
+    },
+    {
+      "title": "又一卷孫熙注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷孫熙注。",
+      "work_id": "d59f27xdf3ls"
+    },
+    {
+      "title": "又一卷蘇林注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷蘇林注。",
+      "work_id": "d59f27xbuww3"
+    },
+    {
+      "title": "《孝經默注》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經默注》二卷徐整撰。",
+      "work_id": "d59f27xdf3lv"
+    },
+    {
+      "title": "又一卷謝萬注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷謝萬注。",
+      "work_id": "d59f27xyyh36"
+    },
+    {
+      "title": "又一卷虞盤佐注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷虞盤佐注。",
+      "work_id": "d59f2pvn19mp"
+    },
+    {
+      "title": "又一卷孔光注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷孔光注。",
+      "work_id": "d59f2pt70c1u"
+    },
+    {
+      "title": "又一卷殷仲文注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷殷仲文注。",
+      "work_id": "d59f27y4kqv4"
+    },
+    {
+      "title": "又一卷殷叔道注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷殷叔道注。",
+      "work_id": "d59f2q3mitc0"
+    },
+    {
+      "title": "又一卷魏克己注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷魏克己注。",
+      "work_id": "d59f2q0lkzy9"
+    },
+    {
+      "title": "又一卷玄宗注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷玄宗注。",
+      "work_id": "d59f28minawx"
+    },
+    {
+      "title": "《講孝經義》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《講孝經義》四卷車胤等注。",
+      "work_id": "d59f27yh28le"
+    },
+    {
+      "title": "《講孝經集解》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《講孝經集解》一卷荀勖撰。",
+      "work_id": "d59f27xoyvpe"
+    },
+    {
+      "title": "《孝經義疏》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義疏》三卷皇侃撰。",
+      "work_id": "d59f2846rmki"
+    },
+    {
+      "title": "《大明中皇太子講孝經義疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大明中皇太子講孝經義疏》一卷何約之執經。",
+      "work_id": "d59f2psregw2"
+    },
+    {
+      "title": "《孝經疏》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經疏》十八卷梁武帝撰。",
+      "work_id": "d59f284zsp39",
+      "link_basis": "舊唐志孝經論語類「《孝經疏》十八卷梁武帝撰」，《經義考》著「《梁武帝孝經義疏》隋志十八卷」，正指此書，今改繫。"
+    },
+    {
+      "title": "《孝經發題》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經發題》四卷太史叔明撰。",
+      "work_id": "d59f2847e3nk"
+    },
+    {
+      "title": "《孝經述義》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經述義》五卷劉炫撰。",
+      "work_id": "d59f28noh3pd"
+    },
+    {
+      "title": "《孝經疏》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經疏》五卷賈公彥撰。",
+      "work_id": "d59f28mewge8",
+      "link_basis": "舊唐志孝經論語類「《孝經疏》五卷賈公彥撰」，庫中《孝經疏》賈公彥撰五卷 1evgoqtxk1d6o 題、卷、撰人全合，今改繫。"
+    },
+    {
+      "title": "《越王孝經新義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《越王孝經新義》十卷任希古撰。",
+      "work_id": "d59f2q2hmqkg"
+    },
+    {
+      "title": "《孝經應瑞圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經應瑞圖》一卷",
+      "work_id": "d59f2q5d9iwy"
+    },
+    {
+      "title": "《演孝經》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《演孝經》十二卷張士儒撰。",
+      "work_id": "d59f2pt62m80"
+    },
+    {
+      "title": "《孝經疏》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經疏》三卷元行沖撰。",
+      "work_id": "d59f28n0ftvk",
+      "link_basis": "舊唐志孝經論語類「《孝經疏》三卷元行沖撰」，庫中《孝經疏》元行冲撰三卷 1evgoqtsvh7uo 題、卷、撰人全合，今改繫。"
+    },
+    {
+      "title": "《論語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語》十卷何晏集解。",
+      "work_id": "d59f27xfwzya"
+    },
+    {
+      "title": "又十卷鄭玄注，虞喜贊。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷鄭玄注，虞喜贊。",
+      "work_id": "d59f27ydmmmb"
+    },
+    {
+      "title": "又十卷王肅注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷王肅注。",
+      "work_id": "d59f27xcsmio"
+    },
+    {
+      "title": "又十卷鄭玄注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷鄭玄注。",
+      "work_id": "d59f24mh9344"
+    },
+    {
+      "title": "又十卷宋明帝補衛瓘注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷宋明帝補衛瓘注。",
+      "work_id": "d59f28472v40"
+    },
+    {
+      "title": "又十卷李充注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷李充注。",
+      "work_id": "d59f27yhzy82"
+    },
+    {
+      "title": "又十卷孫綽集解。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷孫綽集解。",
+      "work_id": "d59f27y64xky"
+    },
+    {
+      "title": "又十卷梁翽注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷梁翽注。",
+      "work_id": "d59f2q8otekg"
+    },
+    {
+      "title": "《論語集義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語集義》十卷盈氏撰。",
+      "work_id": "d59f27xyn8jl"
+    },
+    {
+      "title": "《論語》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語》九卷孟厘注。",
+      "work_id": "d59f2pw5ri82"
+    },
+    {
+      "title": "《論語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語》十卷袁喬注。",
+      "work_id": "d59f27xplcsh"
+    },
+    {
+      "title": "又十卷尹毅注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷尹毅注。",
+      "work_id": "d59f27xz9pmp"
+    },
+    {
+      "title": "又十卷江熙集解。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷江熙集解。",
+      "work_id": "d59f27y0insy"
+    },
+    {
+      "title": "又十卷孫氏注。",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷孫氏注。",
+      "work_id": "d59f27y8mtxc"
+    },
+    {
+      "title": "《次論語》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《次論語》五卷王勃撰。",
+      "work_id": "d59f28naqnsw"
+    },
+    {
+      "title": "《論語音》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語音》二卷徐邈撰。",
+      "work_id": "d59f27ydbe2r"
+    },
+    {
+      "title": "《古論語義注譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古論語義注譜》一卷徐氏撰。",
+      "work_id": "d59f27xt0yrl"
+    },
+    {
+      "title": "《論語釋義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語釋義》十卷鄭玄注。",
+      "work_id": "d59f23nu80zt"
+    },
+    {
+      "title": "《論語義注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語義注》十卷暢惠明撰。",
+      "work_id": "d59f2q1syzuq"
+    },
+    {
+      "title": "《論語義注隱》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語義注隱》三卷",
+      "work_id": "d59f2pupbmde"
+    },
+    {
+      "title": "《論語篇目弟子》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語篇目弟子》一卷鄭玄注。",
+      "work_id": "d59f2em8kdfl"
+    },
+    {
+      "title": "《論語釋疑》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語釋疑》二卷王弼撰。",
+      "work_id": "d59f27ygfria"
+    },
+    {
+      "title": "《論語釋》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語釋》十卷欒肇撰。",
+      "work_id": "d59f27y2pblu"
+    },
+    {
+      "title": "《論語駁》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語駁》二卷欒肇撰。",
+      "work_id": "d59f27xv7mki"
+    },
+    {
+      "title": "《論語大義解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語大義解》十卷崔豹撰。",
+      "work_id": "d59f27xz9pmr"
+    },
+    {
+      "title": "《論語旨序》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語旨序》二卷繆播撰。",
+      "work_id": "d59f27y72n7m"
+    },
+    {
+      "title": "《語體略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《語體略》二卷郭象撰。",
+      "work_id": "d59f2og305j7"
+    },
+    {
+      "title": "《論語雜義》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語雜義》十三卷",
+      "work_id": "d59f2q124kxt"
+    },
+    {
+      "title": "《論語剔義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語剔義》十卷",
+      "work_id": "d59f2pvfjkld"
+    },
+    {
+      "title": "《論語疏》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語疏》十卷皇侃撰。",
+      "work_id": "d59f284r21vn",
+      "link_basis": "舊唐志孝經論語類「《論語疏》十卷皇侃撰」，庫中《論語義疏皇侃撰》十卷 1evc5pec97rpc（隋志「《論語義疏》十卷皇侃撰」）卷數撰人全合，今改繫。"
+    },
+    {
+      "title": "《論語述義》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語述義》二十卷戴詵撰。",
+      "work_id": "d59f2q2s8su9"
+    },
+    {
+      "title": "《論語章句》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語章句》二十卷劉炫撰。",
+      "work_id": "d59f28n5fmki"
+    },
+    {
+      "title": "《論語疏》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語疏》十五卷賈公彥撰。",
+      "work_id": "d59f28j4wr2j",
+      "link_basis": "舊唐志孝經論語類「《論語疏》十五卷賈公彥撰」，庫中《論語疏》賈公彥撰十五卷 1ewz5jp3hgyrs（新唐志、經義考「唐志十五卷」）題、卷、撰人全合，今改繫。"
+    },
+    {
+      "title": "《論語講疏》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論語講疏》十卷褚仲都撰。",
+      "work_id": "d59f28430s1t"
+    },
+    {
+      "title": "《孔子家語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孔子家語》十卷王肅注。",
+      "work_id": "d59f27t9gm4h"
+    },
+    {
+      "title": "《孔叢子》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孔叢子》七卷孔鮒撰。",
+      "work_id": "d59f2px1aghu"
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "title": "農家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "農家類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "授時通考",
+      "content": "授時通考七十八卷。乾隆二年，鄂爾泰等奉敕撰。",
+      "work_id": "d59f2nu40gsg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "授衣廣訓",
+      "content": "授衣廣訓二卷。嘉慶十三年，董誥等奉敕撰。",
+      "work_id": "d59f2nhwibya"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補農書",
+      "content": "補農書二卷。張履祥撰。",
+      "work_id": "d59f2nhwtkhs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梭山農譜",
+      "content": "梭山農譜三卷。劉應棠撰。",
+      "work_id": "d59f2mft8tmp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "恆產瑣言",
+      "content": "恆產瑣言一卷。張英撰。",
+      "work_id": "d59f2nhwtkht"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "寶訓",
+      "content": "寶訓八卷。郝懿行撰。",
+      "work_id": "d59f2nhx4t1c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農業易知錄",
+      "content": "農業易知錄三卷。鄭之任撰。",
+      "work_id": "d59f2nhx4t1d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "澤農要錄",
+      "content": "澤農要錄六卷。吳邦慶撰。",
+      "work_id": "d59f2nhxg1kw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "增訂教稼書",
+      "content": "增訂教稼書四卷。盛百二撰。",
+      "work_id": "d59f2nhxg1kx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農雅",
+      "content": "農雅六卷。倪倬撰。",
+      "work_id": "d59f2nhxg1ky"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農候雜佔",
+      "content": "農候雜佔四卷。梁章鉅撰。",
+      "work_id": "d59f2nhxra4g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農圃備覽",
+      "content": "農圃備覽一卷。丁宜曾撰。",
+      "work_id": "d59f2nhxra4h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "區田書",
+      "content": "區田書一卷。王心敬撰。",
+      "work_id": "d59f2nhy2io0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "區種五種",
+      "content": "區種五種五卷，附錄一卷。趙夢齡撰。",
+      "work_id": "d59f2nhy2io1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "江南催耕課稻篇",
+      "content": "江南催耕課稻篇不分卷。李彥章撰。",
+      "work_id": "d59f2nhy2io2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "豳風廣義",
+      "content": "豳風廣義三卷。楊屾撰。",
+      "work_id": "d59f2mftk268"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蠶桑萃編",
+      "content": "蠶桑萃編十五卷。衛傑撰。",
+      "work_id": "d59f2nhydr7k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "種桑說",
+      "content": "種桑說三卷，附飼蠶詩一卷。周凱撰。",
+      "work_id": "d59f2nhydr7l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蠶桑說",
+      "content": "蠶桑說一卷。沈練撰。",
+      "work_id": "d59f2nhyozr4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蠶桑簡編",
+      "content": "蠶桑簡編一卷。楊名颺撰。",
+      "work_id": "d59f2nhyozr5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "廣蠶桑說輯要",
+      "content": "廣蠶桑說輯要二卷。仲學輅撰。",
+      "work_id": "d59f2nhyozr6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "廣蠶桑說輯補",
+      "content": "廣蠶桑說輯補一卷。宗源瀚撰。",
+      "work_id": "d59f2nhz08ao"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "桑志",
+      "content": "桑志十卷。李聿修撰。",
+      "work_id": "d59f2nhz08ap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "湖蠶述",
+      "content": "湖蠶述四卷。汪曰楨撰。",
+      "work_id": "d59f2nhzbgu8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "橡繭圖說",
+      "content": "橡繭圖說二卷。劉祖震撰。",
+      "work_id": "d59f2mt5n1mo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樗繭譜",
+      "content": "樗繭譜一卷。鄭珍撰。",
+      "work_id": "d59f2nhzbgu9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "木棉譜",
+      "content": "木棉譜一卷。褚華撰。",
+      "work_id": "d59f2nhzmpds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "種苧麻法",
+      "content": "種苧麻法一卷。李厚裕撰。",
+      "work_id": "d59f2nhzmpdt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "廣種柏樹興利除害條陳",
+      "content": "廣種柏樹興利除害條陳一卷。徐紹基撰。",
+      "work_id": "d59f2nhzxxxc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "野菜贊",
+      "content": "野菜贊一卷。顧景崇撰。",
+      "work_id": "d59f2mt7igw3"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "撫郡農產考略",
+      "content": "撫郡農產考略二卷。何剛德撰。",
+      "work_id": "d59f2mt6vzsw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農桑輯要",
+      "content": "元官撰農桑輯要七卷。",
+      "work_id": "d59f2goqul8h",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "善農桑衣食撮要",
+      "content": "元魯明善農桑衣食撮要二卷。",
+      "work_id": "d59f2gng0zr4",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "農書",
+      "content": "元王禎農書二十二卷。",
+      "work_id": "d59f2goua77m",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "神農書",
+      "content": "神農書一卷。",
+      "work_id": "d59f2px7j7k0",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "野老書",
+      "content": "野老書一卷。",
+      "is_jiyi": true,
+      "_dead_work_id": "d59f2q424oox",
+      "_dead_work_id_note": "2026-09-06 所指之 Work 於兩庫皆已不存（經他車道刪併），降欄存查；改指待人覈。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "范子計然",
+      "content": "周范蠡范子計然三卷。",
+      "work_id": "d59f2evxjoqp",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "養魚經",
+      "content": "養魚經一卷。",
+      "work_id": "d59f2og0i8zk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "尉書",
+      "content": "漢尹都尉書一卷。",
+      "work_id": "d59f24map3pg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "之書",
+      "content": "漢氾勝之書一卷。",
+      "work_id": "d59f24map3ph",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蔡癸書",
+      "content": "漢蔡癸書一卷。",
+      "work_id": "d59f24mbbksg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "養羊法",
+      "content": "漢卜式養羊法一卷。",
+      "work_id": "d59f24map3pi",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "駝種樹書",
+      "content": "唐郭橐駝種樹書一卷。",
+      "work_id": "d59f28kafbb5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "范子計然",
+      "content": "范子計然一卷。",
+      "work_id": "d59f2nuom4n5",
+      "is_jiyi": true
+    }
+  ]
+}

@@ -1,0 +1,446 @@
+{
+  "title": "職官類",
+  "sections": [
+    {
+      "title": "《東漢百官表》",
+      "level": 3,
+      "type": "book",
+      "content": "《東漢百官表》一卷⟨不知作者⟩",
+      "work_id": "d59f2pwhmi9t"
+    },
+    {
+      "title": "《職官要錄》",
+      "level": 3,
+      "type": "book",
+      "content": "陶彥藻《職官要錄》七卷",
+      "work_id": "d59f2pyq5r0i"
+    },
+    {
+      "title": "《職官要錄補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "又《職官要錄補遺》十八卷",
+      "work_id": "d59f2psjljpd"
+    },
+    {
+      "title": "《百司舉要》",
+      "level": 3,
+      "type": "book",
+      "content": "李吉甫《百司舉要》一卷",
+      "work_id": "d59f28m5jc3p"
+    },
+    {
+      "title": "《六典》",
+      "level": 3,
+      "type": "book",
+      "content": "唐玄宗《六典》三十卷",
+      "work_id": "d59f28ld4qo5"
+    },
+    {
+      "title": "《唐職該》",
+      "level": 3,
+      "type": "book",
+      "content": "杜英師《唐職該》一卷",
+      "work_id": "d59f28kzpjb5"
+    },
+    {
+      "title": "《具員故事》",
+      "level": 3,
+      "type": "book",
+      "content": "梁載言《具員故事》十七卷",
+      "work_id": "d59f28kcx7nl"
+    },
+    {
+      "title": "《大唐宰相曆任記》",
+      "level": 3,
+      "type": "book",
+      "content": "《大唐宰相曆任記》二卷",
+      "work_id": "d59f2q1mezuq"
+    },
+    {
+      "title": "《官品纂要》",
+      "level": 3,
+      "type": "book",
+      "content": "任戩《官品纂要》十卷",
+      "work_id": "d59f2q2wm4g1"
+    },
+    {
+      "title": "《宰輔年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《宰輔年表》一卷",
+      "work_id": "d59f2q34f20x"
+    },
+    {
+      "title": "《官品式律》",
+      "level": 3,
+      "type": "book",
+      "content": "《官品式律》一卷",
+      "work_id": "d59f2pwnk0sg"
+    },
+    {
+      "title": "《歷代官號》",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代官號》十卷⟨並不知作者⟩",
+      "work_id": "d59f2pu2uj9c"
+    },
+    {
+      "title": "《職林》",
+      "level": 3,
+      "type": "book",
+      "content": "楊侃《職林》三十卷",
+      "work_id": "d59f2hlige0y"
+    },
+    {
+      "title": "《百官要望》",
+      "level": 3,
+      "type": "book",
+      "content": "孔至道《百官要望》一卷",
+      "work_id": "d59f2pxtdts1"
+    },
+    {
+      "title": "《君臣政要》",
+      "level": 3,
+      "type": "book",
+      "content": "閻承琬《君臣政要》三十卷",
+      "work_id": "d59f2hlmtpmo"
+    },
+    {
+      "title": "《省曹寺監事目格子》",
+      "level": 3,
+      "type": "book",
+      "content": "蒲宗孟《省曹寺監事目格子》四十七卷",
+      "work_id": "d59f2q3hj18i"
+    },
+    {
+      "title": "《梁循資格》",
+      "level": 3,
+      "type": "book",
+      "content": "郤殷象《梁循資格》一卷",
+      "work_id": "d59f2pssc6ip"
+    },
+    {
+      "title": "《唐循資格》",
+      "level": 3,
+      "type": "book",
+      "content": "王涯《唐循資格》一卷",
+      "work_id": "d59f28lyzcp1"
+    },
+    {
+      "title": "《中書則例》",
+      "level": 3,
+      "type": "book",
+      "content": "杜儒童《中書則例》一卷",
+      "work_id": "d59f2pwsv2f6"
+    },
+    {
+      "title": "《本朝宰執表》",
+      "level": 3,
+      "type": "book",
+      "content": "譚世勣《本朝宰執表》八卷",
+      "work_id": "d59f2hgr33sw"
+    },
+    {
+      "title": "《唐文昌損益》",
+      "level": 3,
+      "type": "book",
+      "content": "張之緒《唐文昌損益》三卷",
+      "work_id": "d59f28jhphc0"
+    },
+    {
+      "title": "《文武百官圖》",
+      "level": 3,
+      "type": "book",
+      "content": "萬當世《文武百官圖》二卷",
+      "work_id": "d59f2q9tphxc"
+    },
+    {
+      "title": "《宰相拜罷錄》",
+      "level": 3,
+      "type": "book",
+      "content": "陳繹《宰相拜罷錄》一卷",
+      "work_id": "d59f2hm7fdhc"
+    },
+    {
+      "title": "《樞府拜罷錄》",
+      "level": 3,
+      "type": "book",
+      "content": "又《樞府拜罷錄》一卷",
+      "work_id": "d59f2q9uyfwg"
+    },
+    {
+      "title": "《三省樞密院除目》",
+      "level": 3,
+      "type": "book",
+      "content": "《三省樞密院除目》四卷",
+      "work_id": "d59f2q1exb0h"
+    },
+    {
+      "title": "《百官公卿表》",
+      "level": 3,
+      "type": "book",
+      "content": "司馬光《百官公卿表》十五卷",
+      "work_id": "d59f2hhysbuo"
+    },
+    {
+      "title": "《職官分紀》",
+      "level": 3,
+      "type": "book",
+      "content": "孫逢吉《職官分紀》五十卷",
+      "work_id": "d59f2hr35zb4"
+    },
+    {
+      "title": "《職官品服》",
+      "level": 3,
+      "type": "book",
+      "content": "梁勖《職官品服》三十三卷",
+      "work_id": "d59f2pz3ky68"
+    },
+    {
+      "title": "《唐典備對》",
+      "level": 3,
+      "type": "book",
+      "content": "趙氏《唐典備對》六卷⟨不知名⟩",
+      "work_id": "d59f2ge5elfm"
+    },
+    {
+      "title": "《三省儀式》",
+      "level": 3,
+      "type": "book",
+      "content": "《三省儀式》一卷",
+      "work_id": "d59f2q7izm68"
+    },
+    {
+      "title": "《職事官遷除體格》",
+      "level": 3,
+      "type": "book",
+      "content": "《職事官遷除體格》一卷",
+      "work_id": "d59f2q3qkwzm"
+    },
+    {
+      "title": "《循資格》",
+      "level": 3,
+      "type": "book",
+      "content": "《循資格》一卷",
+      "work_id": "d59f2pzxjqio"
+    },
+    {
+      "title": "《循資曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《循資曆》一卷",
+      "work_id": "d59f2q9441dt"
+    },
+    {
+      "title": "《唐宰相後記》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐宰相後記》一卷",
+      "work_id": "d59f2q2fg2yp"
+    },
+    {
+      "title": "《國朝撮要》",
+      "level": 3,
+      "type": "book",
+      "content": "《國朝撮要》一卷",
+      "work_id": "d59f2pv6hou8"
+    },
+    {
+      "title": "《宋朝宰輔拜罷圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋朝宰輔拜罷圖》四卷",
+      "work_id": "d59f2hhxjdoh"
+    },
+    {
+      "title": "《宋朝官制》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋朝官制》十一卷",
+      "work_id": "d59f2hfi4xkz"
+    },
+    {
+      "title": "《三省總括》",
+      "level": 3,
+      "type": "book",
+      "content": "《三省總括》五卷⟨並不知作者⟩",
+      "work_id": "d59f2q5f4xz5"
+    },
+    {
+      "title": "《漢官總錄》",
+      "level": 3,
+      "type": "book",
+      "content": "王益之《漢官總錄》十卷",
+      "work_id": "d59f2hkyh79d"
+    },
+    {
+      "title": "《職源》",
+      "level": 3,
+      "type": "book",
+      "content": "又《職源》五十卷",
+      "work_id": "d59f2hpy9w5c"
+    },
+    {
+      "title": "《宋朝相輔年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋朝相輔年表》一卷⟨中興館閣書目云：「臣繹上，《續表》曰臣易記。」⟩",
+      "work_id": "d59f2hj248aq"
+    },
+    {
+      "title": "《祖宗官制舊典》",
+      "level": 3,
+      "type": "book",
+      "content": "蔡元道《祖宗官制舊典》三卷",
+      "work_id": "d59f2hh1dxq8"
+    },
+    {
+      "title": "《史氏懋官志》",
+      "level": 3,
+      "type": "book",
+      "content": "趙鄰幾《史氏懋官志》五卷",
+      "work_id": "d59f2pwc08hu"
+    },
+    {
+      "title": "《宋官制正誤沿革職官記》",
+      "level": 3,
+      "type": "book",
+      "content": "趙曄《宋官制正誤沿革職官記》三卷",
+      "work_id": "d59f2q2ufgg2"
+    },
+    {
+      "title": "《中興百官題名》",
+      "level": 3,
+      "type": "book",
+      "content": "何異《中興百官題名》五十卷",
+      "work_id": "d59f2hlzb7cx"
+    },
+    {
+      "title": "《宋特命錄》",
+      "level": 3,
+      "type": "book",
+      "content": "龔頤正《宋特命錄》一卷",
+      "work_id": "d59f2hf0162p"
+    },
+    {
+      "title": "《官制遺稿》",
+      "level": 3,
+      "type": "book",
+      "content": "司馬光《官制遺稿》一卷",
+      "work_id": "d59f2hk8vqps"
+    },
+    {
+      "title": "《宰輔編年錄》",
+      "level": 3,
+      "type": "book",
+      "content": "徐自明《宰輔編年錄》二十卷",
+      "work_id": "d59f2hifydq8"
+    },
+    {
+      "title": "《續百官公卿表》",
+      "level": 3,
+      "type": "book",
+      "content": "蔡幼學《續百官公卿表》二十卷",
+      "work_id": "d59f2hlpy32a"
+    },
+    {
+      "title": "《續百官表質疑》",
+      "level": 3,
+      "type": "book",
+      "content": "又《續百官表質疑》十卷",
+      "work_id": "d59f2ptu3wg0"
+    },
+    {
+      "title": "《宋新舊官制通考》",
+      "level": 3,
+      "type": "book",
+      "content": "曾三異《宋新舊官制通考》十卷",
+      "work_id": "d59f2pwqzmrm"
+    },
+    {
+      "title": "《宋新舊官制通釋》",
+      "level": 3,
+      "type": "book",
+      "content": "又《宋新舊官制通釋》二卷",
+      "work_id": "d59f2q67ury9"
+    },
+    {
+      "title": "《宰輔拜罷錄》",
+      "level": 3,
+      "type": "book",
+      "content": "范沖《宰輔拜罷錄》二十四卷",
+      "work_id": "d59f2hjw30g0"
+    },
+    {
+      "title": "《漢官考》",
+      "level": 3,
+      "type": "book",
+      "content": "徐筠《漢官考》四卷",
+      "work_id": "d59f2hiayl1e"
+    },
+    {
+      "title": "《職官源流》",
+      "level": 3,
+      "type": "book",
+      "content": "董正工《職官源流》五卷",
+      "work_id": "d59f2q0ydq80"
+    },
+    {
+      "title": "《金國明昌官制新格》",
+      "level": 3,
+      "type": "book",
+      "content": "《金國明昌官制新格》一卷⟨不知何人撰⟩",
+      "work_id": "d59f2hgjlerl"
+    },
+    {
+      "title": "《諸史闕疑》",
+      "level": 3,
+      "type": "book",
+      "content": "楊王休《諸史闕疑》三卷",
+      "work_id": "d59f2q16t4w0"
+    },
+    {
+      "title": "《史評》",
+      "level": 3,
+      "type": "book",
+      "content": "趙粹中《史評》五卷",
+      "work_id": "d59f2nino3cy"
+    },
+    {
+      "title": "《通鑒地理考》",
+      "level": 3,
+      "type": "book",
+      "content": "王應麟《通鑒地理考》一百卷",
+      "work_id": "d59f2hhlod1c"
+    },
+    {
+      "title": "《通鑒地理通釋》",
+      "level": 3,
+      "type": "book",
+      "content": "又《通鑒地理通釋》十四卷",
+      "work_id": "d59f2hqh04qp"
+    },
+    {
+      "title": "《漢藝文志考證》",
+      "level": 3,
+      "type": "book",
+      "content": "又《漢藝文志考證》十卷",
+      "work_id": "d59f2hr9pypt"
+    },
+    {
+      "title": "《漢制考》",
+      "level": 3,
+      "type": "book",
+      "content": "又《漢制考》四卷",
+      "work_id": "d59f2hui5hc1"
+    },
+    {
+      "title": "《諸史闕疑》",
+      "level": 3,
+      "type": "book",
+      "content": "::右職官類五十六部，五百七十八卷。⟨楊王休《諸史闕疑》以下不著錄六部，一百三十六卷⟩",
+      "work_id": null
+    }
+  ]
+}

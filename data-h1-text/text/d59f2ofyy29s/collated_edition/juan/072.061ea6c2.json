@@ -1,0 +1,889 @@
+{
+  "title": "北史·集部·別集類",
+  "sections": [
+    {
+      "title": "別集類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "孝文帝集",
+      "level": 3,
+      "type": "book",
+      "content": "孝文帝集　見《劉昶傳》。《魏書》同。；《隋·經籍志》：《魏孝文帝集》三十九卷。；按《北史》昶傳：“帝贈昶以其文集一部。”又《崔挺傳》：“文帝謂曰：別卿以來，倏焉二載，吾所綴文已成一集，當給卿副本。”又按《孝文紀》：“好為文章詩賦銘頌。自太和十年以後，詔册皆其文也。自餘文章，百有餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2kn",
+      "note": "撰人即魏孝文帝元宏，題名已含之，原書不別出撰人。"
+    },
+    {
+      "title": "元順集",
+      "level": 3,
+      "type": "book",
+      "content": "元順集　見《任城王雲傳》。《魏書》順傳同。；《隋·經籍志》未收。；按《北史》雲傳：“順撰有詩賦表頌，凡數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2ko"
+    },
+    {
+      "title": "元延明集",
+      "level": 3,
+      "type": "book",
+      "content": "元延明集　見《安豐王猛傳》。《魏書》延明傳同。；《隋·經籍志》未收。；按《北史》猛傳：“延明撰有詩賦讚頌銘誄，凡三百餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2kp"
+    },
+    {
+      "title": "封肅集",
+      "level": 3,
+      "type": "book",
+      "content": "封肅集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》肅傳：“撰有文章十餘卷。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2kq"
+    },
+    {
+      "title": "刁廱集",
+      "level": 3,
+      "type": "book",
+      "content": "刁廱集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》廱傳：“撰有詩賦論頌并諸雜文章百有餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2kr"
+    },
+    {
+      "title": "陸恭之集",
+      "level": 3,
+      "type": "book",
+      "content": "陸恭之集　見《陸俟傳》。《魏書》恭之傳同。；《隋·經籍志》未收。；按《北史》俟傳：“恭之撰有文章詩賦千餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2ks"
+    },
+    {
+      "title": "盧道將集",
+      "level": 3,
+      "type": "book",
+      "content": "盧道將集　見《盧玄傳》。《魏書》道將傳同。；《隋·經籍志》未收。；按《北史》玄傳：“道將撰有文筆數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1bg2kt"
+    },
+    {
+      "title": "盧仲宣集",
+      "level": 3,
+      "type": "book",
+      "content": "盧仲宣集　見本傳。《魏書》仲宣傳未載。；《隋·經籍志》未收。；按《北史》仲宣傳：“文集莫爲撰次，罕有存者。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb40"
+    },
+    {
+      "title": "盧柔集",
+      "level": 3,
+      "type": "book",
+      "content": "盧柔集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》柔傳：“撰有詩頌碑銘檄表啟數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f990dxqfa"
+    },
+    {
+      "title": "盧元明集",
+      "level": 3,
+      "type": "book",
+      "content": "盧元明集　見本傳。《魏書》同。；《隋·經籍志》：《盧元明集》十七卷。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f2q3ngjcy"
+    },
+    {
+      "title": "高允集",
+      "level": 3,
+      "type": "book",
+      "content": "高允集　見本傳。《魏書》同。；《隋·經籍志》：《高允集》二十一卷。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f285u2ps2"
+    },
+    {
+      "title": "崔孝芬集",
+      "level": 3,
+      "type": "book",
+      "content": "崔孝芬集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》孝芬傳：“撰有文筆數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb41"
+    },
+    {
+      "title": "李騫集",
+      "level": 3,
+      "type": "book",
+      "content": "李騫集　見《李順傳》。《魏書》騫傳同。；《隋·經籍志》未收。；按《北史》順傳：“騫文筆別有集錄。”又按《魏書》騫傳：“所著詩賦碑誄，別有集錄。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb42"
+    },
+    {
+      "title": "趙逸集",
+      "level": 3,
+      "type": "book",
+      "content": "趙逸集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》逸傳：“撰有詩賦銘頌，凡五十餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb43"
+    },
+    {
+      "title": "陸暐集",
+      "level": 3,
+      "type": "book",
+      "content": "陸暐集　見《陸俟傳》。《魏書》暐傳同。；《隋·經籍志》未收。；按《北史》俟傳：“暐撰有章表數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb44"
+    },
+    {
+      "title": "高閭集四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "高閭集四十卷　見本傳。《魏書》閭傳：“文集三十卷。”；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb45",
+      "note": "本志四十卷，《魏書》本傳三十卷，原書兩存不斷。"
+    },
+    {
+      "title": "劉懋集",
+      "level": 3,
+      "type": "book",
+      "content": "劉懋集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》懋傳：“懋詩誄賦頌及諸文筆見稱於時。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb46"
+    },
+    {
+      "title": "鄭道昭集",
+      "level": 3,
+      "type": "book",
+      "content": "鄭道昭集　見《鄭羲傳》。《魏書》道昭傳同。；《隋·經籍志》未收。；按《北史》羲傳：“道昭好爲詩賦，凡數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb47"
+    },
+    {
+      "title": "裴景融集",
+      "level": 3,
+      "type": "book",
+      "content": "裴景融集　見《裴延儁傳》。《魏書》景融傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb48"
+    },
+    {
+      "title": "程駿集",
+      "level": 3,
+      "type": "book",
+      "content": "程駿集　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb49"
+    },
+    {
+      "title": "高聰集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "高聰集二十卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb4a"
+    },
+    {
+      "title": "常景集",
+      "level": 3,
+      "type": "book",
+      "content": "常景集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》景傳：“所有著述數百篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb4b"
+    },
+    {
+      "title": "張始均集",
+      "level": 3,
+      "type": "book",
+      "content": "張始均集　見《張彝傳》。《魏書》始均傳同。；《隋·經籍志》未收。；按《北史》始均傳：“撰有詩賦數十篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1brb4c"
+    },
+    {
+      "title": "邢昕集",
+      "level": 3,
+      "type": "book",
+      "content": "邢昕集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》昕傳：“昕所著文，自有集錄。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnk"
+    },
+    {
+      "title": "邢虯集",
+      "level": 3,
+      "type": "book",
+      "content": "邢虯集　見《邢昕傳》。《魏書》虯傳同。；《隋·經籍志》未收。；按《北史》昕傳：“虯撰有碑頌雜筆三十餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnl"
+    },
+    {
+      "title": "邢臧集",
+      "level": 3,
+      "type": "book",
+      "content": "邢臧集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》臧傳：“撰有文筆百餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnm"
+    },
+    {
+      "title": "溫子昇集三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "溫子昇集三十五卷　見本傳。《魏書》同。；《隋·經籍志》：《溫子昇集》三十九卷。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f2q7pjls1",
+      "note": "本志三十五卷，《隋志》三十九卷，原書兩存不斷。"
+    },
+    {
+      "title": "游肇集",
+      "level": 3,
+      "type": "book",
+      "content": "游肇集　見《游明根傳》。《魏書》肇傳同。；《隋·經籍志》未收。；按《北史》明根傳：“肇撰有詩賦表啟等七十五篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnn",
+      "note": "OCR 原文作「見《游明根》傳」，書名號位置有誤，正作「見《游明根傳》」。"
+    },
+    {
+      "title": "李彪集",
+      "level": 3,
+      "type": "book",
+      "content": "李彪集　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jno"
+    },
+    {
+      "title": "崔光集",
+      "level": 3,
+      "type": "book",
+      "content": "崔光集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》光傳：“凡光所為詩賦銘讚誄頌表啟數百篇五十餘卷，別有集。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnp"
+    },
+    {
+      "title": "袁翻集",
+      "level": 3,
+      "type": "book",
+      "content": "袁翻集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》翻傳：“撰文筆百餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnq"
+    },
+    {
+      "title": "李諧集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李諧集十卷　見本傳。《魏書》同。；《隋·經籍志》有《李諧文集》十卷。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f28634lj4"
+    },
+    {
+      "title": "李平集",
+      "level": 3,
+      "type": "book",
+      "content": "李平集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》平傳：“所制文集，别有集錄。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnr"
+    },
+    {
+      "title": "袁躍集",
+      "level": 3,
+      "type": "book",
+      "content": "袁躍集　見本傳。《魏書》同。；《隋·經籍志》：《袁躍集》十三卷。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f286j1p8h"
+    },
+    {
+      "title": "祖瑩集",
+      "level": 3,
+      "type": "book",
+      "content": "祖瑩集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》瑩傳：“瑩以文學見重，常語人云：文章須自出，機杼成一家風骨，何能共人同生活也。蓋譏世人好竊他文以為己用。而瑩之筆札亦無乏天才，但不能均調，玉石兼有，其製裁之體減於袁、常焉。其文集行於世。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jns"
+    },
+    {
+      "title": "高謙之集",
+      "level": 3,
+      "type": "book",
+      "content": "高謙之集　見本傳。《齊書》同。；《隋·經籍志》未收。；按《北史》謙之傳：“撰有文章百餘篇。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnt",
+      "note": "本條在[魏]段而作「《齊書》同」，體例當作「《魏書》同」。高謙之北魏人。疑原書之誤，照錄未改。"
+    },
+    {
+      "title": "蔣少游集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔣少游集十卷　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》少游傳：“撰有文筆十卷。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnu"
+    },
+    {
+      "title": "薛孝通集八十卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛孝通集八十卷　見本傳。《魏書》通無傳。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f285fpssh"
+    },
+    {
+      "title": "酈惲集",
+      "level": 3,
+      "type": "book",
+      "content": "酈惲集　見《酈道元傳》。《魏書》惲傳同。；《隋·經籍志》未收。；按《北史》道元傳：“惲所有文章，多行於世。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnv"
+    },
+    {
+      "title": "柳崇集",
+      "level": 3,
+      "type": "book",
+      "content": "柳崇集　見本傳。《魏書》同。；《隋·經籍志》未收。；按《北史》崇傳：“所製文章，寇亂遺失。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1c2jnw"
+    },
+    {
+      "title": "崔贍集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔贍集二十卷　見本傳。《齊書》贍傳未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds74"
+    },
+    {
+      "title": "王昕集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王昕集二十卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds75"
+    },
+    {
+      "title": "陸卬集十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸卬集十四卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds76"
+    },
+    {
+      "title": "盧懷仁集",
+      "level": 3,
+      "type": "book",
+      "content": "盧懷仁集　見《盧玄傳》。《齊書》見《盧潛傳》。；《隋·經籍志》未收。；按《北史》懷仁傳：“所著詩賦銘頌二萬餘言。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds77"
+    },
+    {
+      "title": "李槩撰題富春公主側集",
+      "level": 3,
+      "type": "book",
+      "content": "李槩撰題富春公主側集　見《李公緒傳》。《齊書》公緒傳未載。；《隋·經籍志》未收。；按《北史》公緒傳：“槩為齊文襄大將軍府行參軍，進側集，題云富春公主撰。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds78",
+      "note": "題名已含撰人李槩，並記其託名富春公主之事。"
+    },
+    {
+      "title": "李槩達生丈人集",
+      "level": 3,
+      "type": "book",
+      "content": "李槩達生丈人集　見《李公緒傳》。《齊書》緒傳未載。；《隋·經籍志》未收。；按《北史》公緒傳：“槩自簡詩賦二十四首，謂之《達生丈人集》。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds79",
+      "note": "題名已含撰人李槩。"
+    },
+    {
+      "title": "楊愔集",
+      "level": 3,
+      "type": "book",
+      "content": "楊愔集　見本傳。《齊書》同。；《隋·經籍志》未收。；按《北史》愔傳：“所著詩賦表奏書論甚多，誅後散失，門生鳩集所得者萬餘言。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7a"
+    },
+    {
+      "title": "劉逖集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉逖集三十卷　見本傳。《齊書》同。；《隋·經籍志》：《劉逖集》二十六卷。；按《北史》逖傳：“撰有詩賦頌誄文筆三十卷。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f285vy51e"
+    },
+    {
+      "title": "邢邵集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "邢邵集三十卷　見本傳。《齊書》同。；《隋·經籍志》：《邢子才集》三十一卷。；按子才，邢邵字。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f2q8sk934"
+    },
+    {
+      "title": "陽休之集四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽休之集四十卷　見本傳。《齊書》休之傳：文集三十卷。；《隋·經籍志》未收。；按“陽”，一作“楊”。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f285i7p4y",
+      "note": "原書自記「陽一作楊」而不下斷語。本卷他志曾力辨作「楊」者誤（陽承慶條），此處照錄。"
+    },
+    {
+      "title": "陽俊之集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽俊之集十卷　見《陽休之傳》。《齊書》休之傳未載。；《隋·經籍志》未收。；按《北史》休之傳：“弟俊之，待詔文林館，自言有集十卷。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7b"
+    },
+    {
+      "title": "陽昭集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽昭集十卷　見《陽斐傳》。《齊書》斐傳未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7c"
+    },
+    {
+      "title": "魏收集七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏收集七十卷　見本傳。《齊書》同。；《隋·經籍志》：《魏收集》六十八卷。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f286msjr5"
+    },
+    {
+      "title": "魏季景集",
+      "level": 3,
+      "type": "book",
+      "content": "魏季景集　見本傳。《齊書》季景無傳。；《隋·經籍志》未收。；按《北史》季景傳：“撰有文筆，凡二百餘篇。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7d"
+    },
+    {
+      "title": "李廣集七卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廣集七卷　見本傳。《齊書》廣傳：文集十卷。；《隋·經籍志》未收。；按《北史》廣傳：“廣嘗薦畢義雲於崔暹。廣卒後，義雲集其文集七卷，託魏收為之序。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7e"
+    },
+    {
+      "title": "顏之推集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顏之推集三十卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7f"
+    },
+    {
+      "title": "盧詢祖集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "盧詢祖集十卷　見《盧文偉傳》。《齊書》同。；《隋·經籍志》未收。；按《北史》文偉傳：“詢祖有集十卷，後皆遺逸。”",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1cds7g"
+    },
+    {
+      "title": "明帝集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "明帝集十卷　見本紀。《周書》同。；《隋·經籍志》：《周明帝集》九卷。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f7z44nv2e",
+      "note": "周明帝宇文毓。"
+    },
+    {
+      "title": "蕭撝集",
+      "level": 3,
+      "type": "book",
+      "content": "蕭撝集　見本傳。《周書》同。；《隋·經籍志》：《蕭撝集》十卷。；按《北史》撝傳：“撰有詩賦雜文，共數萬言。”",
+      "dynasty_tag": "北周",
+      "work_id": "d59f2868fmrk",
+      "note": "OCR 原文作「蕭集」，脫「撝」字；據同條《隋志》引文《蕭撝集》及按語「按《北史》撝傳」補。"
+    },
+    {
+      "title": "蕭圓肅集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭圓肅集十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990db9cb"
+    },
+    {
+      "title": "蕭大圜集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭大圜集十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvk",
+      "note": "OCR 原文作「蕭大園集」，「園」當作「圜」；據本志子部雜家[北周]蕭大圜《寓記》正之。"
+    },
+    {
+      "title": "薛慎集",
+      "level": 3,
+      "type": "book",
+      "content": "薛慎集　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvl"
+    },
+    {
+      "title": "薛寘集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛寘集三十卷　見本傳。《周書》寘傳：文筆二十餘卷。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvm"
+    },
+    {
+      "title": "趙僭王招集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙僭王招集十卷　見本傳。《周書》同。；《隋·經籍志》：《後周趙王集》八卷。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cds7h",
+      "note": "趙僭王宇文招。"
+    },
+    {
+      "title": "滕簡王逌集",
+      "level": 3,
+      "type": "book",
+      "content": "滕簡王逌集　見本傳。《周書》同。；《隋·經籍志》：《後周滕簡王逌集》八卷。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cp0qo",
+      "note": "OCR 原文作「滕間王逌集」，「間」當作「簡」；據同條《隋志》引文正之。滕簡王宇文逌。"
+    },
+    {
+      "title": "蘇亮集",
+      "level": 3,
+      "type": "book",
+      "content": "蘇亮集　見本傳。《周書》同。；《隋·經籍志》未收。；按《北史》亮傳：“撰有文筆數十篇。”",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvn"
+    },
+    {
+      "title": "柳虯集",
+      "level": 3,
+      "type": "book",
+      "content": "柳虯集　見本傳。《周書》同。；《隋·經籍志》未收。；按《北史》虬傳：“撰有文章數十篇。”",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvo",
+      "note": "標題作「虯」而按語作「虬」，二形並存，照錄。"
+    },
+    {
+      "title": "柳弘集",
+      "level": 3,
+      "type": "book",
+      "content": "柳弘集　見本傳。《周書》弘見《柳慶傳》，同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvp"
+    },
+    {
+      "title": "唐瑾集",
+      "level": 3,
+      "type": "book",
+      "content": "唐瑾集　見本傳。《周書》同。；《隋·經籍志》未收。；按《北史》瑾傳：“撰有賦頌銘誄二十餘萬言。”",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvq"
+    },
+    {
+      "title": "吕思禮集",
+      "level": 3,
+      "type": "book",
+      "content": "吕思禮集　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvr"
+    },
+    {
+      "title": "宗懷集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗懷集二十卷　見本傳。《周書》同。；《隋·經籍志》：《宗懍集》十二卷，并録。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cp0qp",
+      "note": "標題作「宗懷」而《隋志》引文作「宗懍」，二名並存，照錄不改。"
+    },
+    {
+      "title": "劉璠集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉璠集二十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvs"
+    },
+    {
+      "title": "庾信集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾信集二十卷　見本傳。《周書》同。；《隋·經籍志》：《庾信集》二十卷，并録。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f286if85d"
+    },
+    {
+      "title": "顏之儀集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顏之儀集十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dmhvt"
+    },
+    {
+      "title": "蕭詧集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭詧集十五卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cp0qq",
+      "note": "蕭詧為後梁（西梁）宣帝，本志因附庸北周而繫[北周]，其人實屬梁。"
+    },
+    {
+      "title": "蕭巋集",
+      "level": 3,
+      "type": "book",
+      "content": "蕭巋集　見本傳。《周書》同。《隋書》巋傳未載。；《隋·經籍志》未收。；按《周書》、《隋書》巋均有傳。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cp0qr",
+      "note": "蕭巋為後梁明帝，其人實屬梁。"
+    },
+    {
+      "title": "蔡大寶集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡大寶集三十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c1cp0qs",
+      "note": "後梁人。"
+    },
+    {
+      "title": "甄玄成集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "甄玄成集二十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f2pu3s9hc"
+    },
+    {
+      "title": "岑善方集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "岑善方集十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990dxqf6",
+      "note": "後梁人。"
+    },
+    {
+      "title": "楊秀集",
+      "level": 3,
+      "type": "book",
+      "content": "楊秀集　見本傳。《周書》同。；《隋·經籍志》未收。；按《北史·庶人秀傳》：“楊素作檄文曰‘逆臣賊子，專弄威柄，陛下唯守虛器，一無所知’，陳甲兵之盛，云‘指期問罪’，置秀集中，因以聞奏。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1cp0qt",
+      "note": "楊秀隋人（蜀王），本條在[隋]段而作「《周書》同」，體例當作「《隋書》同」。疑原書之誤，照錄未改。"
+    },
+    {
+      "title": "盧思道集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "盧思道集二十卷　見本傳。《隋書》思道傳：集三十卷。；《隋·經籍志》：《盧思道集》三十卷。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28jptngk"
+    },
+    {
+      "title": "李孝貞集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李孝貞集三十卷　見本傳。《隋書·李元操傳》：文集二十卷。；《隋·經籍志》：《李元操集》十卷。；按《北史》，孝貞，字元操。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1cp0qu"
+    },
+    {
+      "title": "薛道衡集七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛道衡集七十卷　見《薛孝通傳》。《隋書》道衡傳同。；《隋·經籍志》：《薛道衡集》三十卷。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q21pmv4"
+    },
+    {
+      "title": "薛德音集",
+      "level": 3,
+      "type": "book",
+      "content": "薛德音集　見《薛孝通傳》。《隋書》見《薛道衡傳》，同。；《隋·經籍志》未收。；按《北史》孝通傳：“德音有雋才，其文筆多行於世。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1cp0qv"
+    },
+    {
+      "title": "楊素集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊素集十卷　見本傳。《隋書》同。；《隋·經籍志》同。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28kpepdw"
+    },
+    {
+      "title": "辛德源集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "辛德源集二十卷　見本傳。《隋書》德源傳：文集三十卷。；《隋·經籍志》：《辛德源集》三十卷。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q520zk2"
+    },
+    {
+      "title": "杜臺卿集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜臺卿集十五卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1cp0qw"
+    },
+    {
+      "title": "魏澹集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏澹集三十卷　見《魏季景傳》。《隋書》澹傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q2fg2dc"
+    },
+    {
+      "title": "魏澹注庾信集",
+      "level": 3,
+      "type": "book",
+      "content": "魏澹注庾信集　見《魏季景傳》。《隋書》澹傳未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09a8",
+      "note": "注本，其原典即上[北周]庾信《庾信集》二十卷。題名已含撰人魏澹。"
+    },
+    {
+      "title": "牛弘集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "牛弘集十二卷　見本傳。《隋書》弘傳：集十三卷。；《隋·經籍志》同。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28mbgufb"
+    },
+    {
+      "title": "李德林集五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李德林集五十卷　見本傳。《隋書》同。；《隋·經籍志》：《李德林集》十卷。；按《北史》德林傳：“所撰文集，勒成八十卷。遭亂亡失，見五十卷行於世。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2ofm5c03"
+    },
+    {
+      "title": "宇文弼集",
+      "level": 3,
+      "type": "book",
+      "content": "宇文弼集　見本傳。《隋書》同。；《隋·經籍志》未收。；按《北史》弼傳：“撰辭賦二十餘萬言。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09a9",
+      "note": "宇文為鮮卑複姓。"
+    },
+    {
+      "title": "鮑宏集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑宏集十卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09aa"
+    },
+    {
+      "title": "孫萬壽集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫萬壽集十卷　見《孫靈暉傳》。《隋書》萬壽傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ab"
+    },
+    {
+      "title": "何妥集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何妥集十卷　見本傳。《隋書》同。；《隋·經籍志》同。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28k38uti"
+    },
+    {
+      "title": "柳晉集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳晉集十卷　見本傳。《隋書》同。；《隋·經籍志》：《柳晉集》五卷。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q6x50cg",
+      "note": "撰人「柳晉」疑為「柳䛒」之形近訛，照錄未改。參地記[隋]《晋王北伐記》、佛經[隋]《法華玄宗》。"
+    },
+    {
+      "title": "明克讓集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "明克讓集二十卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ac"
+    },
+    {
+      "title": "劉臻集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉臻集十卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ad"
+    },
+    {
+      "title": "諸葛穎集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛穎集二十卷　見本傳。《隋書》同。；《隋·經籍志》：《諸葛穎集》十四卷。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2pybstmp"
+    },
+    {
+      "title": "王貞集三十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王貞集三十三卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ae"
+    },
+    {
+      "title": "王胄集",
+      "level": 3,
+      "type": "book",
+      "content": "王胄集　見本傳。《隋書》同。；《隋·經籍志》：《王冑集》十卷。；按《北史》胄傳：“所著詞賦，多行於世。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q6pc268",
+      "note": "標題作「胄」而《隋志》引文作「冑」，二形並存，照錄。"
+    },
+    {
+      "title": "庾自直集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾自直集十卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09af"
+    },
+    {
+      "title": "王頍集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王頍集二十卷　見本傳。《隋書》頍傳：集十卷。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ag"
+    },
+    {
+      "title": "劉炫集",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫集　見本傳。《隋書》炫傳未載。；《隋·經籍志》未收。；按《北史》炫傳：“所著文集，並行於世。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1d09ah"
+    },
+    {
+      "title": "崔賾集",
+      "level": 3,
+      "type": "book",
+      "content": "崔賾集　見本傳。《隋書》同。；《隋·經籍志》未收。；按《北史》賾傳：“撰有詞賦碑誌，共十餘萬言。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1dbhts"
+    },
+    {
+      "title": "虞綽集",
+      "level": 3,
+      "type": "book",
+      "content": "虞綽集　見本傳。《隋書》同。；《隋·經籍志》未收。；按《北史》綽傳：“所有詞賦，並行於世。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1dbhtt"
+    },
+    {
+      "title": "別集類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右別集一百六部，已收《隋·經籍志》者二十六部，未收《隋·經籍志》者八十部。"
+    }
+  ]
+}

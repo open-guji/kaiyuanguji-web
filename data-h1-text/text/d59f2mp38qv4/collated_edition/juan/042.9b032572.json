@@ -1,0 +1,109 @@
+{
+  "title": "集部·文史類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "集部·文史類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文則十卷",
+      "content": "陳騤撰。",
+      "work_id": "d59f2hplsef4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "懷古錄三卷",
+      "content": "陳謨撰。",
+      "work_id": "d59f2hlq9bls"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詞學指南四卷",
+      "content": "王應麟撰。",
+      "work_id": "d59f2hk1pa82"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古堂詩話一卷",
+      "content": "吳優撰。",
+      "work_id": "d59f2hin4u83"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "環溪詩話三卷",
+      "content": "吳沆撰。",
+      "work_id": "d59f2htmxr0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "風月堂詩話二卷",
+      "content": "朱弁撰。",
+      "work_id": "d59f2ht97b43"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "娛書堂詩話一卷",
+      "content": "趙與虤撰。",
+      "work_id": "d59f2huf13wg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅澗詩話二卷",
+      "content": "韋居安撰。",
+      "work_id": "d59f2hfireo1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "對牀夜話五卷",
+      "content": "范晞文撰。",
+      "work_id": "d59f2ht39ssi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詩人玉屑二十卷",
+      "content": "魏慶之撰。",
+      "work_id": "d59f2hr0o2yq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詩說一卷",
+      "content": "姜夔撰。",
+      "work_id": "d59f2hqgdnnl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂府指迷二卷",
+      "content": "張炎撰。",
+      "work_id": "d59f2hk1e1oi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詩律武庫二十卷",
+      "content": "",
+      "work_id": "d59f2q7rq8zk"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右文史類",
+      "content": "右文史類十三家七十四卷。"
+    }
+  ]
+}

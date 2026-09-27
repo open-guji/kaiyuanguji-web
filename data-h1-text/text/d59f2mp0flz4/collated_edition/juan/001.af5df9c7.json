@@ -1,0 +1,2487 @@
+{
+  "title": "易類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "易類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經通註",
+      "content": "《易經通註》九卷。順治十三年，傅以漸等奉敕撰。",
+      "work_id": "d59f2m8jcpvk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "日講易經解義",
+      "content": "《日講易經解義》十八卷。康熙二十二年，牛鈕等奉敕撰。",
+      "work_id": "d59f2m8jcpvl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易折中",
+      "content": "《周易折中》二十二卷。康熙五十四年，李光地等奉敕撰。",
+      "work_id": "d59f2ntfnyf4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述義",
+      "content": "《周易述義》十卷。乾隆二十年，傅恆等奉敕撰。",
+      "work_id": "d59f2m8jnyf4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易圖解",
+      "content": "《易圖解》一卷，《周易補註》十一卷。簡親王德沛撰。",
+      "work_id": "d59f2n85nlds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易補註",
+      "content": "",
+      "content_from": "易圖解",
+      "work_id": "d59f2n85nldt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易翼",
+      "content": "《易翼二卷。孫承澤撰。",
+      "work_id": "d59f2n85nldu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易大旨",
+      "content": "《讀易大旨》五卷。孫奇逢撰。",
+      "work_id": "d59f2m8jz6yo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易稗疏",
+      "content": "《周易稗疏四卷，《考異一卷，《周易內傳》六卷，《發例一卷，《周易大象解一卷，《周易外傳七卷。王夫之撰。",
+      "work_id": "d59f2m8jz6yp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "考異",
+      "content": "",
+      "content_from": "周易稗疏",
+      "work_id": "d59f2m8jz6yp",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《周易稗疏》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易內傳",
+      "content": "",
+      "content_from": "周易稗疏",
+      "work_id": "d59f2n85ytxe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "發例",
+      "content": "",
+      "content_from": "周易稗疏",
+      "work_id": "d59f2n85ytxc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易大象解",
+      "content": "",
+      "content_from": "周易稗疏",
+      "work_id": "d59f2n85ytxd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易外傳",
+      "content": "",
+      "content_from": "周易稗疏",
+      "work_id": "d59f2gnhl6gw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學象數論",
+      "content": "《易學象數論六卷。黃宗羲撰。",
+      "work_id": "d59f2m8klo1s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易象辭",
+      "content": "《周易象辭》二十一卷，《尋門餘論二卷，《圖書辨惑一卷。黃宗炎撰。",
+      "work_id": "d59f2m8kwwlc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "尋門餘論",
+      "content": "",
+      "content_from": "周易象辭",
+      "work_id": "d59f2n86a2gw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "圖書辨惑",
+      "content": "",
+      "content_from": "周易象辭",
+      "work_id": "d59f2mokii9s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易筆記",
+      "content": "《讀易筆記一卷。張履祥撰。",
+      "work_id": "d59f2n86a2gx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易說略",
+      "content": "《周易說略》四卷。張爾岐撰。",
+      "work_id": "d59f2m8t12pt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易酌",
+      "content": "《易酌》十四卷。刁包撰。",
+      "work_id": "d59f2m8kafi8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易聞",
+      "content": "《易聞》十二卷。歸起先撰。",
+      "work_id": "d59f2n86a2gy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "田間易學",
+      "content": "《田間易學》十二卷。錢澄之撰。",
+      "work_id": "d59f2m8kafi9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大易則通",
+      "content": "《大易則通》十五卷，閏一卷，《易史》一卷。胡世安撰。",
+      "work_id": "d59f2m8rs4jk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易史",
+      "content": "",
+      "content_from": "大易則通",
+      "work_id": "d59f2n86lb0g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易疏略",
+      "content": "《周易疏略》四卷。張沐撰。",
+      "work_id": "d59f2m8ua0w1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學闡",
+      "content": "《易學闡》十卷。黃與堅撰。",
+      "work_id": "d59f2n86lb0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易緒言",
+      "content": "《讀易緒言》二卷。謝文洊撰。",
+      "work_id": "d59f2ntfnyf5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經衷論",
+      "content": "《易經衷論》二卷。張英撰。",
+      "work_id": "d59f2m8nesxs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易日鈔",
+      "content": "《讀易日鈔》六卷。張烈撰。",
+      "work_id": "d59f2m8m5urk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易通論",
+      "content": "《周易通論》四卷，《周易觀彖大指》二卷，《周易觀彖》十二卷。李光地撰。",
+      "work_id": "d59f2m8m5url"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易觀彖大指",
+      "content": "",
+      "content_from": "周易通論",
+      "work_id": "d59f2nurqi2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易觀彖",
+      "content": "",
+      "content_from": "周易通論",
+      "work_id": "d59f2m8mh3b4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易淺述",
+      "content": "《周易淺述》八卷。陳夢雷撰。",
+      "work_id": "d59f2m8msbuo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易定本",
+      "content": "《周易定本》一卷。邵嗣堯撰。",
+      "work_id": "d59f2n86wjk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經識解",
+      "content": "《易經識解》五卷。徐秉義撰。",
+      "work_id": "d59f2n86wjk1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經筮貞",
+      "content": "《易經筮貞》四卷。趙世對撰。",
+      "work_id": "d59f2n86wjk2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易明善錄",
+      "content": "《周易明善錄》二卷。徐繼發撰。",
+      "work_id": "d59f2m8s3d35"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易原就正",
+      "content": "《易原就正》十二卷。包儀撰。",
+      "work_id": "d59f2m8msbup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易通",
+      "content": "《周易通》十卷，《周易辨正》二十四卷。浦龍淵撰。",
+      "work_id": "d59f2m8yc3y8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易辨正",
+      "content": "",
+      "content_from": "周易通",
+      "work_id": "d59f2m8yc3y9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "合訂刪補大易集義粹言",
+      "content": "《合訂刪補大易集義粹言》八十卷。納喇性德撰。",
+      "work_id": "d59f2mzzxa82"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易筮述",
+      "content": "《周易筮述八卷。王弘撰撰。",
+      "work_id": "d59f2m8kwwld"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易應氏集解",
+      "content": "《周易應氏集解十三卷。應撝謙撰。",
+      "work_id": "d59f2m8xeebk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "仲氏易",
+      "content": "《仲氏易》三十卷，《推易始末》四卷，《春秋占筮書》三卷，《易小帖五卷，《太極圖說遺議一卷。《河圖洛書原舛編一卷。毛奇齡撰。",
+      "work_id": "d59f2m8l854w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "推易始末",
+      "content": "",
+      "content_from": "仲氏易",
+      "work_id": "d59f2m8l854x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋占筮書",
+      "content": "",
+      "content_from": "仲氏易",
+      "work_id": "d59f2m8ljdog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易小帖",
+      "content": "",
+      "content_from": "仲氏易",
+      "work_id": "d59f2m8lum80"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "太極圖說遺議",
+      "content": "",
+      "content_from": "仲氏易",
+      "work_id": "d59f2mfe9fk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "喬氏易俟",
+      "content": "《喬氏易俟》十八卷。喬萊撰。",
+      "work_id": "d59f2m8lum81"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大易通解",
+      "content": "《大易通解》十卷。魏荔彤撰。",
+      "work_id": "d59f2m8n3ke8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易本義蘊",
+      "content": "《周易本義蘊》四卷，《周易蘊義圖考》二卷。姜兆錫撰。",
+      "work_id": "d59f2n877s3k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易蘊義圖考",
+      "content": "",
+      "content_from": "周易本義蘊",
+      "work_id": "d59f2m8zwao0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易傳註",
+      "content": "《周易傳註》七卷，《周易筮考》一卷。李塨撰。",
+      "work_id": "d59f2m8nq1hc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易筮考",
+      "content": "",
+      "content_from": "周易傳註",
+      "work_id": "d59f2mojw16q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學易初津",
+      "content": "《學易初津》二卷，《易翼宗》六卷，《易翼說》八卷。晏斯盛撰。",
+      "work_id": "d59f2mojw16r"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易翼宗",
+      "content": "",
+      "content_from": "學易初津",
+      "work_id": "d59f2mok79q8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易翼說",
+      "content": "",
+      "content_from": "學易初津",
+      "work_id": "d59f2mok79q9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易劄記",
+      "content": "《周易劄記》二卷。楊名時撰。",
+      "work_id": "d59f2n1lcy6b"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經詳說",
+      "content": "《易經詳說》不分卷。冉覲祖撰。",
+      "work_id": "d59f2m907j7l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經辨疑",
+      "content": "《易經辨疑》七卷。張問達撰。",
+      "work_id": "d59f2m8y0veo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易傳義合訂",
+      "content": "《周易傳義合訂》十二卷。朱軾撰。",
+      "work_id": "d59f2m8nq1hd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易宮",
+      "content": "《易宮三十六卷，《讀易管窺》五卷。吳隆元撰。",
+      "work_id": "d59f2m90u0ap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易管窺",
+      "content": "",
+      "content_from": "易宮",
+      "work_id": "d59f2m9158u8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易觀象惺惺錄",
+      "content": "《讀易觀象惺惺錄》十六卷，《讀易觀象圖說》二卷，《太極圖說》二卷，《周易原始》一卷，《天水答問》一卷，《羲皇易象》二卷，羲皇易象新補二卷。李南暉撰。",
+      "work_id": "d59f2n877s3l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易觀象圖說",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2n877s3m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "太極圖說",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2n87j0n4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易原始",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2ntfnyf6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "天水答問",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2n87j0n5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "羲皇易象",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2n87j0n6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "羲皇易象新補",
+      "content": "",
+      "content_from": "讀易觀象惺惺錄",
+      "work_id": "d59f2nutaosi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "孔門易緒",
+      "content": "《孔門易緒》十六卷。張德純撰。",
+      "work_id": "d59f2m91ghds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易圖明辨",
+      "content": "易圖明辨十卷。胡渭撰。",
+      "work_id": "d59f2m8nesxt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "身易實義",
+      "content": "身易實義五卷。沈廷勱撰。",
+      "work_id": "d59f2m8yncht"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "先天易貫",
+      "content": "《先天易貫》五卷。劉元龍撰。",
+      "work_id": "d59f2m93bwn4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易互",
+      "content": "《易互六卷。楊陸榮撰。",
+      "work_id": "d59f2m94kutc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易玩辭集解",
+      "content": "《周易玩辭集解十卷，易說》一卷。查慎行撰。",
+      "work_id": "d59f2m8o1a0w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說",
+      "content": "",
+      "content_from": "周易玩辭集解",
+      "work_id": "d59f2ntfz6yo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易函書約存",
+      "content": "《周易函書約存》十八卷，《約註》十八卷，別集》十六卷。胡煦撰。",
+      "work_id": "d59f2m8ocikh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "約註",
+      "content": "",
+      "content_from": "周易函書約存",
+      "work_id": "d59f2n87u96o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易箋",
+      "content": "《易箋》八卷。陳法撰。",
+      "work_id": "d59f2m8onr40"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易觀象補義略",
+      "content": "《周易觀象補義略》不分卷。諸錦撰。",
+      "work_id": "d59f2n87u96p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "索易臆說",
+      "content": "《索易臆說》二卷。吳啟昆撰。",
+      "work_id": "d59f2mwfxzia"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易孔義集說",
+      "content": "《周易孔義集說》二十卷。沈起元撰。",
+      "work_id": "d59f2m8oyznl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "陸堂易學",
+      "content": "《陸堂易學十卷。陸奎勛撰。",
+      "work_id": "d59f2m94w3cx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經揆",
+      "content": "《易經揆》一十一卷，《易學啟蒙補》二卷。梁錫興撰。",
+      "work_id": "d59f2n87u96q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學啟蒙補",
+      "content": "",
+      "content_from": "易經揆",
+      "work_id": "d59f2n885hq8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經詮義",
+      "content": "《易經詮義》十五卷，《易經如話十五卷。汪紱撰。",
+      "work_id": "d59f2n885hq9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經如話",
+      "content": "",
+      "content_from": "易經詮義",
+      "work_id": "d59f2n885hqa"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易本義爻徵",
+      "content": "《周易本義爻徵》二卷。吳日慎撰。",
+      "work_id": "d59f2mql8su8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易圖說正編",
+      "content": "《周易圖說正編六卷。萬年茂撰。",
+      "work_id": "d59f2n88gq9s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易翼述信",
+      "content": "《易翼述信十二卷。王又朴撰。",
+      "work_id": "d59f2m8pa874"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易原始",
+      "content": "《周易原始六卷。范咸撰。",
+      "work_id": "d59f2mwg981s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易淺釋",
+      "content": "《周易淺釋四卷。潘思榘撰。",
+      "work_id": "d59f2m8pa875"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學大象要參",
+      "content": "《易學大象要參四卷。贊龍撰。",
+      "work_id": "d59f2n88gq9t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易解翼",
+      "content": "《周易解翼》十卷。上官章撰。",
+      "work_id": "d59f2m980gsh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "東易問",
+      "content": "東易問》八卷。魏樞撰。",
+      "work_id": "d59f2m98bpc0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易洗心",
+      "content": "《周易洗心九卷。任啟運撰。",
+      "work_id": "d59f2m8plgqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "空山易解",
+      "content": "《空山易解四卷。牛運震撰。",
+      "work_id": "d59f2m98y6f4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易剩義",
+      "content": "周易剩義二卷。童能靈撰。",
+      "work_id": "d59f2m98y6f5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易匯解衷翼",
+      "content": "周易匯解衷翼》十五卷。許體元撰。",
+      "work_id": "d59f2m9a74lc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易象援古",
+      "content": "《易象援古》不分卷。申爾宣撰。",
+      "work_id": "d59f2m9aid4w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "豐川易說",
+      "content": "《豐川易說》十卷。王心敬撰。",
+      "work_id": "d59f2m8pwpa8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易粹義",
+      "content": "《周易粹義》五卷。薛雪撰。",
+      "work_id": "d59f2m9atlog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易圖說",
+      "content": "《周易圖說》六卷。蔡新撰。",
+      "work_id": "d59f2ntfz6yp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易別錄",
+      "content": "《讀易別錄》三卷。全祖望撰。",
+      "work_id": "d59f2n88gq9u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易經言拾遺",
+      "content": "《周易經言拾遺》十四卷。徐文靖撰。",
+      "work_id": "d59f2nae6tj4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易象大意存解",
+      "content": "《易象大意存解》一卷。任陳晉撰。",
+      "work_id": "d59f2m8qj6dd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易集解纂疏",
+      "content": "周易集解纂疏》三十六卷。李道平撰。",
+      "work_id": "d59f2n88rytc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易圖書質疑",
+      "content": "周易圖書質疑》二十四卷。趙繼序撰。",
+      "work_id": "d59f2m8r5ngg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易象通義",
+      "content": "《易象通義》六卷。秦篤輝撰。",
+      "work_id": "d59f2n88rytd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易深",
+      "content": "易深》八卷。許伯政撰。",
+      "work_id": "d59f2m9dmqkg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說存悔",
+      "content": "《易說存悔》二卷。汪憲撰。",
+      "work_id": "d59f2m9dxz40"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "卦氣解",
+      "content": "卦氣解》一卷，八卦觀象解》二卷，彖傳論》一卷，彖象論》一卷，繫辭傳論》二卷。莊存與撰。",
+      "work_id": "d59f2n88ryte"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "八卦觀象解",
+      "content": "",
+      "content_from": "卦氣解",
+      "work_id": "d59f2n8937cw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "彖傳論",
+      "content": "",
+      "content_from": "卦氣解",
+      "work_id": "d59f2n8937cx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "彖象論",
+      "content": "",
+      "content_from": "卦氣解",
+      "work_id": "d59f2n8937cy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "繫辭傳論",
+      "content": "",
+      "content_from": "卦氣解",
+      "work_id": "d59f2n89efwg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易例舉要",
+      "content": "易例舉要》五卷，十家易象集說九十卷。吳鼎撰。",
+      "work_id": "d59f2m9ekg75"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十家易象集說",
+      "content": "",
+      "content_from": "易例舉要",
+      "work_id": "d59f2m9evoqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易大衍辨",
+      "content": "周易大衍辨一卷。吳鼐撰。",
+      "work_id": "d59f2n89efwh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易井觀",
+      "content": "周易井觀十二卷，周大樞撰。",
+      "work_id": "d59f2m9f6xa8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註疏校正",
+      "content": "周易註疏校正一卷。盧文弨撰。",
+      "work_id": "d59f2n89efwi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易守",
+      "content": "《易守》三十二卷。葉佩蓀撰。",
+      "work_id": "d59f2n89pog0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易二閭記",
+      "content": "周易二閭記》三卷，周易小義》二卷。茹敦和撰。",
+      "work_id": "d59f2n89pog1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易小義",
+      "content": "",
+      "content_from": "周易二閭記",
+      "work_id": "d59f2mqmhr0i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易輯要",
+      "content": "周易輯要》五卷。朱瓚撰。",
+      "work_id": "d59f2m9d09hd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易卦私箋",
+      "content": "易卦私箋》二卷。蔣衡撰。",
+      "work_id": "d59f2n89pog2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經明洛義",
+      "content": "易經明洛義》六卷。孫慎行撰。",
+      "work_id": "d59f2ni09amb"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易卦圖說",
+      "content": "易卦圖說》一卷。崔述撰。",
+      "work_id": "d59f2n8a0wzk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易章句證異",
+      "content": "周易章句證異》十一卷。翟均廉撰。",
+      "work_id": "d59f2m8rgw00"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易考佔",
+      "content": "《周易考佔》一卷。金榜撰。",
+      "work_id": "d59f2n8a0wzl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經貫一",
+      "content": "易經貫一》二十二卷。金誠撰。",
+      "work_id": "d59f2m9brbb4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易辨畫",
+      "content": "《周易辨畫》四十卷。連斗山撰。",
+      "work_id": "d59f2m8quewx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大易擇言",
+      "content": "大易擇言》三十六卷，程氏易通》十四卷，易說辨正》四卷。程廷祚撰。",
+      "work_id": "d59f2m8queww"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "程氏易通",
+      "content": "",
+      "content_from": "大易擇言",
+      "work_id": "d59f2m95tszk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說辨正",
+      "content": "",
+      "content_from": "大易擇言",
+      "work_id": "d59f2m95tszl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易懸象",
+      "content": "周易懸象》八卷。黃元御撰。",
+      "work_id": "d59f2m9imj9c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易本義註",
+      "content": "《周易本義註》六卷。胡方撰。",
+      "work_id": "d59f2n8a0wzm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易略解",
+      "content": "《周易略解》八卷。馮經撰。",
+      "work_id": "d59f2n8ac5j4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述",
+      "content": "《周易述》二十三卷，易漢學》八卷，易例》二卷，易微言》二卷，《易大誼》一卷，《周易本義辨證》五卷，《增補周易鄭註》一卷，《周易鄭註爻辰圖》一卷，《易說》六卷。惠棟撰。",
+      "work_id": "d59f2m8pwpa9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易漢學",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2m8q7xts"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易例",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2ntglo1t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易微言",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2n8ac5j5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易大誼",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2n8ane2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易本義辨證",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2n8ane2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "增補周易鄭註",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2n8ane2q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易鄭註爻辰圖",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2n8aymm8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說",
+      "content": "",
+      "content_from": "周易述",
+      "work_id": "d59f2ntgafi8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "觀象居易傳箋",
+      "content": "《觀象居易傳箋》十二卷。汪師韓撰。",
+      "work_id": "d59f2n8aymm9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述翼",
+      "content": "周易述翼》五卷。黃應騏撰。",
+      "work_id": "d59f2mqsf9c1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述補",
+      "content": "周易述補》五卷。李林松撰。",
+      "work_id": "d59f2n8aymma"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "孫氏周易集解",
+      "content": "孫氏周易集解》十卷。孫星衍撰。",
+      "work_id": "d59f2n8b9v5s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "卦本圖考",
+      "content": "卦本圖考》一卷。胡秉虔撰。",
+      "work_id": "d59f2n8b9v5t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易虞氏義",
+      "content": "周易虞氏義》九卷，《虞氏消息》二卷，《虞氏易禮》二卷，《虞氏易事》二卷，《虞氏易言》二卷，《虞氏易候》一卷，《虞氏易變表》二卷，《周易鄭氏義》二卷，周易荀氏九家義》一卷，易義別錄》十四卷，《易圖條辨》一卷，《易緯略義》三卷。張惠言撰。",
+      "work_id": "d59f2n8b9v5u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏消息",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bl3pc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易禮",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bl3pd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易事",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bl3pe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易言",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bwc8w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易候",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bwc8x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易變表",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8bwc8y"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易鄭氏義",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8c7ksg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易荀氏九家義",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8c7ksh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易義別錄",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8citc0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易圖條辨",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8citc1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易緯略義",
+      "content": "",
+      "content_from": "周易虞氏義",
+      "work_id": "d59f2n8citc2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易大義補",
+      "content": "《易大義補》一卷。桂文燦撰。",
+      "work_id": "d59f2n8cu1vk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學易討原",
+      "content": "《學易討原》一卷。姚文田撰。",
+      "work_id": "d59f2n8cu1vl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說",
+      "content": "《易說》十二卷，易說便錄》二卷。郝懿行撰。",
+      "work_id": "d59f2ntgafi9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易說便錄",
+      "content": "",
+      "content_from": "易說",
+      "work_id": "d59f2n8cu1vm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經衷要",
+      "content": "易經衷要》十二卷。李式穀撰。",
+      "work_id": "d59f2n8d5af4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易章句",
+      "content": "易章句》十二卷，易通釋》二十卷，《易圖略》八卷，周易補疏》二卷，《易餘籥錄》二十卷，易話》二卷，易廣記》二卷。焦循撰。",
+      "work_id": "d59f2ntglo1s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易通釋",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8d5af5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易圖略",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8d5af6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易補疏",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8dgiyo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易餘籥錄",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8dgiyp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易話",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8drri8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易廣記",
+      "content": "",
+      "content_from": "易章句",
+      "work_id": "d59f2n8drri9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經異文釋",
+      "content": "易經異文釋》六卷，李氏集解賸義》三卷，《校異》二卷。李富孫撰。",
+      "work_id": "d59f2n8drria"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "李氏集解賸義",
+      "content": "",
+      "content_from": "易經異文釋",
+      "work_id": "d59f2n8e301s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "校異",
+      "content": "",
+      "content_from": "易經異文釋",
+      "work_id": "d59f2n8e301t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易問",
+      "content": "易問》四卷，觀易外編》六卷。紀大奎撰。",
+      "work_id": "d59f2n8e301u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "觀易外編",
+      "content": "",
+      "content_from": "易問",
+      "work_id": "d59f2n8ee8lc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易指",
+      "content": "周易指》三十八卷，《易例》一卷，易圖》五卷，易斷辭》一卷。端木國瑚撰。",
+      "work_id": "d59f2n8ee8ld"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易例",
+      "content": "",
+      "content_from": "周易指",
+      "work_id": "d59f2ntglo1t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易圖",
+      "content": "",
+      "content_from": "周易指",
+      "work_id": "d59f2n8ee8le"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易斷辭",
+      "content": "",
+      "content_from": "周易指",
+      "work_id": "d59f2n8eph4w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "卦氣解",
+      "content": "卦氣解》一卷，周易考異》二卷。宋翔鳳撰。",
+      "work_id": "d59f2n8eph4x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易考異",
+      "content": "",
+      "content_from": "卦氣解",
+      "work_id": "d59f2n8f0pog"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古易音訓",
+      "content": "《古易音訓》二卷。宋咸熙撰。",
+      "work_id": "d59f2n8f0poh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易倚數錄",
+      "content": "《周易倚數錄》二卷，圖》一卷。楊履泰撰。",
+      "work_id": "d59f2n8f0poi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易虞氏略例",
+      "content": "《周易虞氏略例》一卷。李銳撰。",
+      "work_id": "d59f2n8fby80"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易學",
+      "content": "《周易學》三卷。沈夢蘭撰。",
+      "work_id": "d59f2n8fby81"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述補",
+      "content": "《周易述補》四卷。江籓撰。",
+      "work_id": "d59f2n8fby82"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "六十四卦經解",
+      "content": "《六十四卦經解》八卷，《易鄭氏爻辰廣義》二卷，《易經傳互卦卮言》一卷，《易章句異同》一卷，《易消息升降圖》二卷，《學易札記》四卷。朱駿聲撰。",
+      "work_id": "d59f2n8fn6rk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易鄭氏爻辰廣義",
+      "content": "",
+      "content_from": "六十四卦經解",
+      "work_id": "d59f2n8fn6rl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經傳互卦卮言",
+      "content": "",
+      "content_from": "六十四卦經解",
+      "work_id": "d59f2n8fn6rm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易章句異同",
+      "content": "",
+      "content_from": "六十四卦經解",
+      "work_id": "d59f2n8fyfb4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易消息升降圖",
+      "content": "",
+      "content_from": "六十四卦經解",
+      "work_id": "d59f2n8fyfb5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學易札記",
+      "content": "",
+      "content_from": "六十四卦經解",
+      "work_id": "d59f2n8fyfb6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經述傳",
+      "content": "《易經述傳》二卷，《周易訟卦淺說》一卷，《周易解詁》一卷，《易經象類》一卷。丁晏撰。",
+      "work_id": "d59f2n8g9nuo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易訟卦淺說",
+      "content": "",
+      "content_from": "易經述傳",
+      "work_id": "d59f2n8g9nup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易解詁",
+      "content": "",
+      "content_from": "易經述傳",
+      "work_id": "d59f2n8g9nuq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經象類",
+      "content": "",
+      "content_from": "易經述傳",
+      "work_id": "d59f2n8gkwe8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易姚氏學",
+      "content": "《周易姚氏學》十六卷，《周易通論月令》二卷，易學闡元》一卷。姚配中撰。",
+      "work_id": "d59f2n8gkwe9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易通論月令",
+      "content": "",
+      "content_from": "周易姚氏學",
+      "work_id": "d59f2n8gkwea"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學闡元",
+      "content": "",
+      "content_from": "周易姚氏學",
+      "work_id": "d59f2n8gw4xs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易消息圖說",
+      "content": "虞氏易消息圖說》一卷。胡祥麟撰。",
+      "work_id": "d59f2n8gw4xt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易確",
+      "content": "易確》十二卷。許桂林撰。",
+      "work_id": "d59f2n8gw4xu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易漢學考",
+      "content": "易漢學考》二卷，《易漢學師承表一卷，《易彖傳大義述》一卷，《易爻例》一卷。吳翊寅撰。",
+      "work_id": "d59f2n8h7dhc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易漢學師承表",
+      "content": "",
+      "content_from": "易漢學考",
+      "work_id": "d59f2n8h7dhd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易彖傳大義述",
+      "content": "",
+      "content_from": "易漢學考",
+      "work_id": "d59f2n8h7dhe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易爻例",
+      "content": "",
+      "content_from": "易漢學考",
+      "work_id": "d59f2n8him0w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易附說",
+      "content": "周易附說一卷。羅澤南撰。",
+      "work_id": "d59f2n8him0x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易舊疏考證",
+      "content": "《周易舊疏考證》一卷。劉毓崧撰。",
+      "work_id": "d59f2n8him0y"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易叢記",
+      "content": "《讀易叢記》二卷。葉名灃撰。",
+      "work_id": "d59f2n8htukg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易舊註",
+      "content": "《周易舊註十二卷。徐鼐撰。",
+      "work_id": "d59f2n8htukh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鄭氏爻辰補",
+      "content": "《鄭氏爻辰補六卷。戴棠撰。",
+      "work_id": "d59f2n8htuki"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易爻辰申鄭義",
+      "content": "周易爻辰申鄭義》一卷。何秋濤撰。",
+      "work_id": "d59f2n8i5340"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "諸家易學別錄",
+      "content": "諸家易學別錄》一卷，《虞氏易學彙編》一卷，《周易卦象集證一卷，《周易互體詳述》一卷，《周易卦變舉要》一卷。方申撰。",
+      "work_id": "d59f2n8i5341"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞氏易學彙編",
+      "content": "",
+      "content_from": "諸家易學別錄",
+      "work_id": "d59f2n8igbnk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易卦象集證",
+      "content": "",
+      "content_from": "諸家易學別錄",
+      "work_id": "d59f2n8igbnl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易互體詳述",
+      "content": "",
+      "content_from": "諸家易學別錄",
+      "work_id": "d59f2n8igbnm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易卦變舉要",
+      "content": "",
+      "content_from": "諸家易學別錄",
+      "work_id": "d59f2n8irk74"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易故訓訂",
+      "content": "周易故訓訂》一卷。黃以周撰。",
+      "work_id": "d59f2n8irk75"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易例輯略",
+      "content": "易例輯略》五卷。龐大堃撰。",
+      "work_id": "d59f2n8irk76"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易貫",
+      "content": "易貫》五卷，玩易篇》一卷，《艮宧易說》一卷，《邵易補原》一卷，《卦氣直日解》一卷，《易窮通變化論》一卷，八卦方位說》一卷，卦象補考》一卷，周易互體徵》一卷。俞樾撰。",
+      "work_id": "d59f2ntgwwlc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "玩易篇",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8j2sqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "艮宧易說",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8j2sqp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "邵易補原",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8j2sqq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "卦氣直日解",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8je1a8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易窮通變化論",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8je1a9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "八卦方位說",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8je1aa"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "卦象補考",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8jp9ts"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易互體徵",
+      "content": "",
+      "content_from": "易貫",
+      "work_id": "d59f2n8jp9tt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "陳氏易說",
+      "content": "《陳氏易說》四卷，《讀易漢學私記》一卷。陳壽熊撰。",
+      "work_id": "d59f2n8jp9tu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易漢學私記",
+      "content": "",
+      "content_from": "陳氏易說",
+      "work_id": "d59f2n8k0idc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易釋",
+      "content": "《易釋》四卷。黃式三撰。",
+      "work_id": "d59f2n8k0idd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易筆記",
+      "content": "《讀易筆記》二卷。方宗誠撰。",
+      "work_id": "d59f2n8kbqww"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易釋爻例",
+      "content": "《周易釋爻例》一卷。成蓉鏡撰。",
+      "work_id": "d59f2n8kbqwx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易解說",
+      "content": "《易解說》二卷。吳汝綸撰。",
+      "work_id": "d59f2n8kbqwy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易經通論",
+      "content": "《易經通論》一卷。皮錫瑞撰。",
+      "work_id": "d59f2ntgwwld"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易口訣義",
+      "content": "唐史徵《周易口訣義》六卷。",
+      "work_id": "d59f28mxbgg2",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "溫公易說",
+      "content": "宋司馬光《溫公易說》六卷。",
+      "work_id": "d59f2htt6hvm",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學辨惑",
+      "content": "宋邵伯溫《易學辨惑》一卷。",
+      "work_id": "d59f2hthmps3",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀易詳說",
+      "content": "宋李光《讀易詳說》十卷。",
+      "work_id": "d59f2hpfuw3k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易窺餘",
+      "content": "宋鄭剛中《周易窺餘》十五卷。",
+      "work_id": "d59f2hq8kq2q",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易變體義",
+      "content": "宋都絜《易變體義》十二卷。",
+      "work_id": "d59f2hrwiadd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易原",
+      "content": "宋程大昌《易原》八卷。",
+      "work_id": "d59f2hu8h4hs",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋趙善譽易說",
+      "content": "宋趙善譽易說》四卷。",
+      "work_id": "d59f2hlbwemb",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易傳燈",
+      "content": "宋徐總幹《易傳燈》四卷。",
+      "work_id": "d59f2htrmb5u",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋馮椅厚齋易學",
+      "content": "宋馮椅厚齋易學》五十二卷。",
+      "work_id": "d59f2hqvd1q8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋蔡淵易象意言",
+      "content": "宋蔡淵易象意言》一卷。",
+      "work_id": "d59f2hqwlzwj",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋李杞周易詳解",
+      "content": "宋李杞周易詳解》十六卷。",
+      "work_id": "d59f2ht2yk8x",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋俞琰讀易舉要",
+      "content": "宋俞琰讀易舉要》四卷。",
+      "work_id": "d59f2hib9tky",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋丁易東周易象義",
+      "content": "宋丁易東周易象義》十六卷。",
+      "is_jiyi": true,
+      "work_id": "d59f2gpfic5e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元吳澄易纂言外翼",
+      "content": "元吳澄易纂言外翼》八卷。",
+      "work_id": "d59f2gm7e22o",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元解蒙易精蘊大義",
+      "content": "元解蒙易精蘊大義》十二卷。",
+      "work_id": "d59f2gpcp79c",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元曾貫易學變通",
+      "content": "元曾貫易學變通》六卷。",
+      "work_id": "d59f2gopln2a",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周卜氏易傳",
+      "content": "周卜氏易傳》一卷。",
+      "work_id": "d59f2evxjoqr",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢孟喜周易章句",
+      "content": "漢孟喜周易章句》一卷。",
+      "work_id": "d59f24mmvcw5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢京房周易章句",
+      "content": "漢京房周易章句》一卷。",
+      "work_id": "d59f24mmvcw6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢馬融周易傳",
+      "content": "漢馬融周易傳》一卷。",
+      "work_id": "d59f24mmvcw7",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "漢荀爽《周易註》一卷。",
+      "work_id": "d59f27xonn5t",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "漢鄭玄《周易註》三卷。",
+      "work_id": "d59f23nz7tog",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補遺",
+      "content": "補遺一卷。",
+      "work_id": "d59f23nz7tog",
+      "is_jiyi": true,
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《周易註》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易章句",
+      "content": "漢劉表《周易章句》一卷。",
+      "work_id": "d59f24mmvcw8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢宋衷周易註",
+      "content": "漢宋衷《周易註一卷。",
+      "work_id": "d59f24mn6lfk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易章句",
+      "content": "魏董遇《周易章句》一卷。",
+      "work_id": "d59f27x9zhmr",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "魏王肅《周易註》一卷。",
+      "work_id": "d59f27xdqc5e",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蜀范長生周易註",
+      "content": "蜀范長生周易註》一卷。",
+      "work_id": "d59f27xhsf7l",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易述",
+      "content": "吳陸績《周易述》一卷。",
+      "work_id": "d59f27xg88hu",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "吳姚信《周易註》一卷。",
+      "work_id": "d59f27xjclxd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "吳虞翻《周易註》十卷。",
+      "work_id": "d59f27xhh6o0",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "晉王廙《周易註》一卷。",
+      "work_id": "d59f27ye93pd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易集解",
+      "content": "晉張璠《周易集解》一卷。",
+      "work_id": "d59f27yb4q9u",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易義",
+      "content": "晉向秀《周易義》一卷。",
+      "work_id": "d59f27y5ighs",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易義",
+      "content": "晉翟玄《周易義》一卷。",
+      "work_id": "d59f27y1rlz5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "齊劉巘周易義疏",
+      "content": "齊劉巘周易義疏》一卷。",
+      "work_id": "d59f28480kqo",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "連山",
+      "content": "連山》一卷。",
+      "work_id": "d59f2ptnv56p",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歸藏",
+      "content": "歸藏》一卷。",
+      "work_id": "d59f2pxydm2p",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢蔡景君易說",
+      "content": "漢蔡景君易說》一卷。",
+      "work_id": "d59f24m94wzr",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢丁寬易傳",
+      "content": "漢丁寬易傳》二卷。",
+      "work_id": "d59f24m9g5j4",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢韓嬰易傳",
+      "content": "漢韓嬰易傳》二卷。",
+      "work_id": "d59f24m9g5j5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢劉安周易淮南九師道訓",
+      "content": "漢劉安周易淮南九師道訓》一卷。",
+      "work_id": "d59f23nya41z",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易章句",
+      "content": "漢施讎《周易章句》一卷。",
+      "work_id": "d59f23nowzra",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易章句",
+      "content": "漢梁丘賀《周易章句》一卷。",
+      "work_id": "d59f23nya41u",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易註",
+      "content": "漢費直《易註》一卷。",
+      "work_id": "d59f24m9g5j6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易林",
+      "content": "《易林》一卷。",
+      "work_id": "d59f208rae4g",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易分野",
+      "content": "《周易分野》一卷。",
+      "work_id": "d59f2pswe9s1",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古五子易傳",
+      "content": "《古五子易傳》一卷。",
+      "work_id": "d59f2pvrptky",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "不著時代薛虞周易記",
+      "content": "不著時代薛虞周易記》一卷。",
+      "work_id": "d59f2psdz9j4",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易音",
+      "content": "魏王肅《周易音》一卷。",
+      "work_id": "d59f27xd3v2a",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "魏何晏周易解",
+      "content": "魏何晏周易解》一卷。",
+      "work_id": "d59f27x9d0jn",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉鄒湛周易統略",
+      "content": "晉鄒湛周易統略》一卷。",
+      "work_id": "d59f27y7dvr6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易卦序論",
+      "content": "晉楊乂《周易卦序論》一卷。",
+      "work_id": "d59f27y3n18i",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易義",
+      "content": "晉張軌《周易義》一卷。",
+      "work_id": "d59f27xxpix0",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "晉黃穎《周易註》一卷。",
+      "work_id": "d59f27y2pblv",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉徐邈周易音",
+      "content": "晉徐邈周易音》一卷。",
+      "work_id": "d59f27yekc8z",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易象妙於見形論",
+      "content": "晉孫盛《易象妙於見形論》一卷。",
+      "work_id": "d59f27whkw77",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉桓玄周易繫辭註",
+      "content": "晉桓玄《周易繫辭註一卷。",
+      "work_id": "d59f27xq7tvm",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易繫辭註",
+      "content": "宋荀柔之《周易繫辭註》一卷。",
+      "work_id": "d59f2840ivpe",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易繫辭註",
+      "content": "齊明僧紹《周易繫辭註》一卷。",
+      "work_id": "d59f284bg6pv",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "齊沈驎士周易要略",
+      "content": "齊沈驎士周易要略》一卷。",
+      "work_id": "d59f28415csg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易大義",
+      "content": "梁武帝《周易大義》一卷。",
+      "work_id": "d59f28457fup",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易集解",
+      "content": "梁伏曼容《周易集解》一卷。",
+      "work_id": "d59f28457fuo",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易講疏",
+      "content": "梁褚仲都《周易講疏》一卷。",
+      "work_id": "d59f283y0zcy",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易義疏",
+      "content": "陳周弘正《周易義疏》一卷。",
+      "work_id": "d59f283zl62s",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易講疏",
+      "content": "陳張譏《周易講疏》一卷。",
+      "work_id": "d59f283y0zcy",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "後魏盧景裕《周易註》一卷。",
+      "work_id": "d59f2843n94y",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "後魏劉昞《周易註》一卷。",
+      "work_id": "d59f284a78jm",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易講疏",
+      "content": "隋何妥《周易講疏》一卷。",
+      "work_id": "d59f283y0zcy",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "隋侯果《周易註》三卷。",
+      "work_id": "d59f28mr2pl0",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "不著時代姚規《周易註》一卷。",
+      "work_id": "d59f2840ivpc",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "崔覲《周易註》一卷。",
+      "work_id": "d59f28mf7oxx",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易註",
+      "content": "王凱沖《周易註》一卷。",
+      "work_id": "d59f2q6zmwow",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易義",
+      "content": "王嗣宗《周易義》一卷。",
+      "work_id": "d59f2nuoaw3m",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "傅氏周易註",
+      "content": "《傅氏周易註》一卷。",
+      "work_id": "d59f2q48onwi",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "莊氏易義",
+      "content": "《莊氏易義》一卷。",
+      "work_id": "d59f2q1wel8g",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易探元",
+      "content": "唐崔憬《周易探元》三卷。",
+      "work_id": "d59f28n6ztad",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "唐李淳風周易元義",
+      "content": "唐李淳風周易元義》一卷。",
+      "work_id": "d59f28mdyqrp",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易新論傳疏",
+      "content": "唐陰弘道《周易新論傳疏》一卷。",
+      "work_id": "d59f28nesqv6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易新義",
+      "content": "唐徐勛《周易新義》一卷。",
+      "work_id": "d59f28n4hwxs",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易纂",
+      "content": "唐僧一行《易纂》一卷。",
+      "work_id": "d59f28la0d8j",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "乾坤義",
+      "content": "齊劉巘《乾坤義》一卷。",
+      "work_id": "d59f286nq9ds",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易飛候",
+      "content": "漢京房《易飛候》一卷。",
+      "work_id": "d59f23ntwsg5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易洞林",
+      "content": "晉郭璞《易洞林》一卷。",
+      "work_id": "d59f27xtnfuq",
+      "is_jiyi": true
+    }
+  ]
+}

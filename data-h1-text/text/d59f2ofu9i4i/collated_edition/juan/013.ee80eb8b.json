@@ -1,0 +1,36 @@
+{
+  "title": "史部·雜史類",
+  "sections": [
+    {
+      "title": "雜史類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "臧榮緒　續洞紀一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "author": "臧榮緒",
+      "work_id": "d59f285wkm4i"
+    },
+    {
+      "title": "熊襄　十代紀十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "二《唐志》。"
+        }
+      ],
+      "author": "熊襄",
+      "work_id": "d59f8ii4jf9e"
+    }
+  ]
+}

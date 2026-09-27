@@ -1,0 +1,147 @@
+{
+  "title": "經部·易類",
+  "sections": [
+    {
+      "title": "易類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "元帝　周易講疏十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　周易講疏十卷　《唐志》。《隋志》「武帝《周易講疏》三十五卷」。",
+      "work_id": "d59f2ps5v3eo",
+      "note": "原書腳註①"
+    },
+    {
+      "title": "范述曾　易文言注",
+      "level": 3,
+      "type": "book",
+      "content": "范述曾　易文言注　本傳「字子立，吴郡泉唐人，中散大夫」。",
+      "work_id": "d59f28511n9j",
+      "note": "「泉唐」疑當作「錢唐」，然本志兩見，疑係原書用字，未改"
+    },
+    {
+      "title": "伏曼容　注周易八卷",
+      "level": 3,
+      "type": "book",
+      "content": "伏曼容　注周易八卷　《隋志》「臨海令」。",
+      "work_id": "d59f8ii6euir",
+      "note": "OCR「临海」正作「臨海」"
+    },
+    {
+      "title": "朱異　集注周易一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱異　集注周易一百卷　《隋志》「侍中」。",
+      "work_id": "d59f2850qepy",
+      "note": "OCR「朱异」正作「朱異」"
+    },
+    {
+      "title": "朱異　周易集注三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱異　周易集注三十卷　《隋志》。",
+      "work_id": "d59f99glyqkg",
+      "note": "「又」承前省略撰人（朱異），係另一部書"
+    },
+    {
+      "title": "何胤　注周易十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　注周易十卷　《隋志》「處士」。",
+      "work_id": "d59f8ii6euir"
+    },
+    {
+      "title": "宋褰　注周易繫辭二卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋褰　注周易繫辭二卷　太中大夫。",
+      "work_id": "d59f99glyqkh",
+      "note": "原書腳註②。撰人 OCR 作「宋赛」，姑作「宋褰」，把握不高，待覈原刻；書名 OCR 作「擊辞」，正作「繫辭」"
+    },
+    {
+      "title": "釋法通等　乾坤義各一卷",
+      "level": 3,
+      "type": "book",
+      "content": "釋法通等　乾坤義各一卷",
+      "work_id": "d59f99glyqki",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "武帝　周易大義二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　周易大義二十一卷　《隋志》。",
+      "work_id": "d59f2843yhoh"
+    },
+    {
+      "title": "南平王　周易幾義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "南平王　周易幾義一卷　《隋志》。",
+      "work_id": "d59f99glyqkj"
+    },
+    {
+      "title": "國子講易議六卷",
+      "level": 3,
+      "type": "book",
+      "content": "國子講易議六卷　《隋志》。",
+      "work_id": "d59f2prsr4e9",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "褚仲都　周易講疏十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "褚仲都　周易講疏十六卷　《隋志》「五經博士」。",
+      "work_id": "d59f283y0zcw"
+    },
+    {
+      "title": "蕭子政　周易義疏十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子政　周易義疏十四卷　《隋志》「都官尚書」。",
+      "work_id": "d59f284atpmq"
+    },
+    {
+      "title": "蕭子政　周易繫辭義疏三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子政　周易繫辭義疏三卷　《隋志》。",
+      "work_id": "d59f2843n94x",
+      "note": "「又」承前省略撰人（蕭子政）。原 OCR 因頁斷，「疏三卷」在次頁頁首"
+    },
+    {
+      "title": "武帝　周易繫辭義疏一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　周易繫辭義疏一卷　《隋志》。",
+      "work_id": "d59f99glyqkk"
+    },
+    {
+      "title": "孔子袪　續朱異集注周易一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔子袪　續朱異集注周易一百卷　《隋志》。",
+      "work_id": "d59f99glyqkl",
+      "note": "原書腳註①。OCR「孔子祛」正作「孔子袪」；「朱异」正作「朱異」"
+    },
+    {
+      "title": "褚仲都　易義",
+      "level": 3,
+      "type": "book",
+      "content": "褚仲都　易義　《釋文》。",
+      "work_id": "d59f99glyqkm"
+    },
+    {
+      "title": "庾詵　易林二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾詵　易林二十卷　本傳。",
+      "work_id": "d59f284xx9tw"
+    }
+  ]
+}

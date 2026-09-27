@@ -1,0 +1,222 @@
+{
+  "title": "經部·禮類",
+  "sections": [
+    {
+      "title": "禮類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "武帝　禮記大義十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　禮記大義十卷　《隋志》、《唐志》同。",
+      "work_id": "d59f99gm9z41"
+    },
+    {
+      "title": "武帝　革牲大義三卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　革牲大義三卷　《隋志》。",
+      "work_id": "d59f99gm9z42",
+      "note": "「又」承前省略撰人（武帝）"
+    },
+    {
+      "title": "文帝　禮大義二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　禮大義二十卷　《唐志》。紀。",
+      "work_id": "d59f28511n9f",
+      "note": "原書腳註③：新、舊《唐書》本紀無此文，《舊唐志》《新唐志》皆題梁武帝"
+    },
+    {
+      "title": "周捨　禮疑義五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "周捨　禮疑義五十卷　《唐志》。《隋志》作「五十二卷，護軍」。",
+      "work_id": "d59f286sq22p"
+    },
+    {
+      "title": "何佟之　禮記義十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何佟之　禮記義十卷",
+      "work_id": "d59f284brf9d"
+    },
+    {
+      "title": "何佟之　禮答問十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何佟之　禮答問十卷　《隋志》「梁二十卷」。",
+      "work_id": "d59f285v0feq",
+      "note": "「又」承前省略撰人（何佟之）"
+    },
+    {
+      "title": "朱異　禮講疏",
+      "level": 3,
+      "type": "book",
+      "content": "朱異　禮講疏　本傳「字彦和，泉唐人，官尚書左僕射」。",
+      "work_id": "d59f99gm9z43",
+      "note": "OCR「朱异」正作「朱異」"
+    },
+    {
+      "title": "伏曼容　喪服集解",
+      "level": 3,
+      "type": "book",
+      "content": "伏曼容　喪服集解　本傳「字公儀，平昌壽丘人，官臨海太守」。",
+      "work_id": "d59f99gm9z44"
+    },
+    {
+      "title": "臧壽　雜禮義問答四卷",
+      "level": 3,
+      "type": "book",
+      "content": "臧壽　雜禮義問答四卷",
+      "work_id": "d59f99gm9z45",
+      "note": "原書腳註①。「臧壽」未詳，疑訛，待覈"
+    },
+    {
+      "title": "賀瑒　禮論要鈔一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "賀瑒　禮論要鈔一百卷　《隋志》「步兵校尉，五經博士」。",
+      "work_id": "d59f285lnb41"
+    },
+    {
+      "title": "賀瑒　喪服義疏二卷",
+      "level": 3,
+      "type": "book",
+      "content": "賀瑒　喪服義疏二卷　《隋志》。",
+      "work_id": "d59f285o57gh",
+      "note": "「又」承前省略撰人（賀瑒）"
+    },
+    {
+      "title": "賀瑒　禮記新義疏二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "賀瑒　禮記新義疏二十卷　《隋志》。",
+      "work_id": "d59f2848n1tv",
+      "note": "「又」承前省略撰人（賀瑒）"
+    },
+    {
+      "title": "皇侃　禮記講疏一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇侃　禮記講疏一百卷　《唐志》。《隋志》作「四十八卷」。",
+      "work_id": "d59f28415csj"
+    },
+    {
+      "title": "何胤　禮答問五十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　禮答問五十五卷　本傳。《隋志》作「五十卷」。",
+      "work_id": "d59f99gm9z46",
+      "note": "原書腳註②：此條不見於《隋志》"
+    },
+    {
+      "title": "何胤　答問十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　答問十卷　《隋志》。",
+      "work_id": "d59f99gm9z47",
+      "note": "「又」承前省略撰人（何胤）。原書腳註③：《隋志》曰「何佟之撰」"
+    },
+    {
+      "title": "何胤　禮記隱義二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　禮記隱義二十卷　本傳。",
+      "work_id": "d59f283zl62q",
+      "note": "「又」承前省略撰人（何胤）"
+    },
+    {
+      "title": "庾曼倩　喪服儀",
+      "level": 3,
+      "type": "book",
+      "content": "庾曼倩　喪服儀　本傳「字世華，官諮議參軍」。",
+      "work_id": "d59f99gm9z48"
+    },
+    {
+      "title": "孔子袪　續何承天集禮論一百五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔子袪　續何承天集禮論一百五十卷",
+      "work_id": "d59f99gm9z49",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "裴才子　喪服注",
+      "level": 3,
+      "type": "book",
+      "content": "裴才子　喪服注　本傳",
+      "work_id": "d59f99gm9z4a",
+      "note": "原書腳註⑤：據《梁書·裴子野傳》，「裴才子」當爲裴子野"
+    },
+    {
+      "title": "賀述　禮統十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "賀述　禮統十二卷",
+      "work_id": "d59f2863r2m8",
+      "note": "原書腳註⑥。「賀述」未詳，疑訛，待覈"
+    },
+    {
+      "title": "崔靈恩　三禮義宗三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔靈恩　三禮義宗三十卷　《隋志》。《書錄解題》「一百四十九條」。本傳「四十七卷」。《中興書目》「一百五十六篇」。",
+      "work_id": "d59f285d7wg3"
+    },
+    {
+      "title": "崔靈恩　周官集注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔靈恩　周官集注二十卷",
+      "work_id": "d59f286l8d1d",
+      "note": "「又」承前省略撰人（崔靈恩）"
+    },
+    {
+      "title": "皇侃　禮記義疏九十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇侃　禮記義疏九十九卷　《隋志》。《唐志》作「五十卷」。《武帝紀》云：「大同四年冬十二月，兼國子助教皇侃表上所撰《禮記義疏》五十卷。」",
+      "work_id": "d59f284232f5"
+    },
+    {
+      "title": "裴子野　喪服傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　喪服傳一卷　《隋志》「通直郎」。",
+      "work_id": "d59f286eodmq"
+    },
+    {
+      "title": "何佟之　禮雜問答鈔一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何佟之　禮雜問答鈔一卷　《隋志》。",
+      "work_id": "d59f2860bgn4"
+    },
+    {
+      "title": "陶弘景　三禮目錄注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　三禮目錄注一卷　《七錄》。",
+      "work_id": "d59f284xm1ae"
+    },
+    {
+      "title": "梁月令圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁月令圖一卷　《七錄》。",
+      "work_id": "d59f2prpxzwi",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "皇侃　喪服義疏",
+      "level": 3,
+      "type": "book",
+      "content": "皇侃　喪服義疏　陸氏《釋文》：「皇侃撰《禮記義疏》五十卷，又傳《喪服義疏》，並行於世。」",
+      "work_id": "d59f99gm9z4b"
+    }
+  ]
+}

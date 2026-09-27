@@ -1,0 +1,38 @@
+{
+  "title": "經部·易類",
+  "sections": [
+    {
+      "title": "易類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "權會　易注",
+      "level": 3,
+      "type": "book",
+      "content": "權會　易注　權會撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98exdds0"
+    },
+    {
+      "title": "李鉉　周易義例",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　周易義例　李鉉撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f284zhgjk"
+    },
+    {
+      "title": "杜弼　周易上下繫注",
+      "level": 3,
+      "type": "book",
+      "content": "杜弼　周易上下繫注　杜弼撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98exombk"
+    },
+    {
+      "title": "易類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右易三部，無卷數，未收入《隋志》。"
+    }
+  ]
+}

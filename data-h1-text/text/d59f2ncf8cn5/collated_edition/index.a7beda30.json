@@ -1,0 +1,32 @@
+{
+  "work_id": "d59f2ncf8cn5",
+  "title": "七家後漢書",
+  "type": "collated_edition",
+  "collated_edition_type": "fragment_collection",
+  "compiler": "汪文臺",
+  "compiler_role": "輯",
+  "annotator": "周天游",
+  "annotator_role": "校注",
+  "edition": "周天游《八家後漢書輯注》（上海古籍出版社，一九八六）",
+  "source_text": "殆知閣古代文獻藏書 daizhigev20：史藏/正史/后汉书八家辑注.txt",
+  "books_listed": 9,
+  "books_linked": 8,
+  "coverage": {
+    "level": "text",
+    "note": "佚文正文俱在，且逐條著其所自出之類書卷次與輯得之家，較姚之駰《後漢書補逸》為備。"
+  },
+  "edition_note": "汪文臺輯者七家，張瑩《後漢南記》一家為周天游所增，故曰八家；無名氏諸條周本入附錄，不知其書，本庫不繫 work。",
+  "annotation_note": "周天游之校注一千八百四十三條未取——一九八六年今人著作。所取者佚文、出處、輯家三事。",
+  "schema_version": 1,
+  "updated_at": "2026-08-06T14:29:56+00:00",
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25",
+  "juan_files": [
+    "juan/001.json"
+  ],
+  "total_entries": 9,
+  "text_quality": {
+    "grade": "source",
+    "source_note": "殆知閣 daizhigev20 電子文本原樣（周天游《八家後漢書輯注》）"
+  }
+}

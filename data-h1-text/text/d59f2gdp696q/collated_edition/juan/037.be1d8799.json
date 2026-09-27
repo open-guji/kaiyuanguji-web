@@ -1,0 +1,2449 @@
+{
+  "title": "兵書類",
+  "sections": [
+    {
+      "title": "《風後握機》",
+      "level": 3,
+      "type": "book",
+      "content": "《風後握機》一卷⟨晉馬隆略序⟩",
+      "work_id": "d59f2q643xtt"
+    },
+    {
+      "title": "《六韜》",
+      "level": 3,
+      "type": "book",
+      "content": "《六韜》六卷⟨不知作者⟩",
+      "work_id": "d59ezai3mrr4"
+    },
+    {
+      "title": "《司馬兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《司馬兵法》三卷⟨齊司馬穰苴撰⟩",
+      "work_id": "d59f2evs8ni8"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "孫武《孫子》三卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《吳子》",
+      "level": 3,
+      "type": "book",
+      "content": "吳起《吳子》三卷",
+      "work_id": "d59f2evqogsj"
+    },
+    {
+      "title": "《黃帝秘珠三略》",
+      "level": 3,
+      "type": "book",
+      "content": "《黃帝秘珠三略》三卷",
+      "work_id": "d59f2q4g6cxt"
+    },
+    {
+      "title": "《陰符二十四機》",
+      "level": 3,
+      "type": "book",
+      "content": "《陰符二十四機》一卷",
+      "work_id": "d59f2q8b2yv5"
+    },
+    {
+      "title": "《握機圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《握機圖》一卷",
+      "work_id": "d59f2q8wb3sw"
+    },
+    {
+      "title": "《決勝孤虛集》",
+      "level": 3,
+      "type": "book",
+      "content": "《決勝孤虛集》一卷",
+      "work_id": "d59f2pvta0ap"
+    },
+    {
+      "title": "《太公兵書要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《太公兵書要訣》四卷",
+      "work_id": "d59f2q9qwdfl"
+    },
+    {
+      "title": "《六韜》",
+      "level": 3,
+      "type": "book",
+      "content": "朱服校定《六韜》六卷",
+      "work_id": "d59ezai3mrr4"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "又校定《孫子》三卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《司馬法》",
+      "level": 3,
+      "type": "book",
+      "content": "校定《司馬法》三卷",
+      "work_id": "d59f2evs8ni8"
+    },
+    {
+      "title": "《吳子》",
+      "level": 3,
+      "type": "book",
+      "content": "校定《吳子》二卷",
+      "work_id": "d59f2evqogsj"
+    },
+    {
+      "title": "《三略》",
+      "level": 3,
+      "type": "book",
+      "content": "校定《三略》三卷",
+      "work_id": "d59f2pvbhhc0"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "魏武帝注《孫子》三卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "蕭吉注⟨或題曹、蕭注⟩《孫子》一卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "賈林注《孫子》一卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "陳皞注《孫子》一卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《孫子解》",
+      "level": 3,
+      "type": "book",
+      "content": "宋奇《孫子解》並",
+      "work_id": "d59f2pv8d3wg"
+    },
+    {
+      "title": "《武經簡要》",
+      "level": 3,
+      "type": "book",
+      "content": "並《武經簡要》二卷",
+      "work_id": "d59f2pwmxjpc"
+    },
+    {
+      "title": "《司馬穰苴兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "吳章注《司馬穰苴兵法》三卷",
+      "work_id": "d59f2evs8ni8"
+    },
+    {
+      "title": "《玉帳陰符》",
+      "level": 3,
+      "type": "book",
+      "content": "吳起《玉帳陰符》三卷",
+      "work_id": "d59f2ptei1a8"
+    },
+    {
+      "title": "《陣書⟨一作“圖”⟩》",
+      "level": 3,
+      "type": "book",
+      "content": "白起《陣書⟨一作“圖”⟩》一卷",
+      "work_id": "d59f2q2thr0h"
+    },
+    {
+      "title": "《神妙行軍法》",
+      "level": 3,
+      "type": "book",
+      "content": "又《神妙行軍法》三卷",
+      "work_id": "d59f2q9ritxd"
+    },
+    {
+      "title": "《戰國策》",
+      "level": 3,
+      "type": "book",
+      "content": "《戰國策》三十三卷",
+      "work_id": "d59f2hreeiv4"
+    },
+    {
+      "title": "《神光輔星秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "黃石公《神光輔星秘訣》一卷",
+      "work_id": "d59f2puumnsx"
+    },
+    {
+      "title": "《兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "又《兵法》一卷",
+      "work_id": "d59f27sfhtz4"
+    },
+    {
+      "title": "《三鑒圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《三鑒圖》一卷",
+      "work_id": "d59f2q54u3up"
+    },
+    {
+      "title": "《兵書統要》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書統要》三卷",
+      "work_id": "d59f2psq5iwy"
+    },
+    {
+      "title": "《三略秘要》",
+      "level": 3,
+      "type": "book",
+      "content": "《三略秘要》三卷",
+      "work_id": "d59f2pz47f2a"
+    },
+    {
+      "title": "《三略》",
+      "level": 3,
+      "type": "book",
+      "content": "成氏注《三略》三卷",
+      "work_id": "d59f2pwhxqtc"
+    },
+    {
+      "title": "《行兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛亮《行兵法》五卷",
+      "work_id": "d59f27shzqbo"
+    },
+    {
+      "title": "《用兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "又《用兵法》一卷",
+      "work_id": "d59f2q43ovep"
+    },
+    {
+      "title": "《行軍指掌》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍指掌》二卷",
+      "work_id": "d59f2q7qhbep"
+    },
+    {
+      "title": "《占風雲氣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《占風雲氣圖》一卷",
+      "work_id": "d59f2pu517gh"
+    },
+    {
+      "title": "《兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書》七卷",
+      "work_id": "d59f27susgld"
+    },
+    {
+      "title": "《六軍鑒要》",
+      "level": 3,
+      "type": "book",
+      "content": "陶侃《六軍鑒要》一卷",
+      "work_id": "d59f27waefpe"
+    },
+    {
+      "title": "《韜鈐秘術》",
+      "level": 3,
+      "type": "book",
+      "content": "李靖《韜鈐秘術》一卷",
+      "work_id": "d59f28lg943k"
+    },
+    {
+      "title": "《總要》",
+      "level": 3,
+      "type": "book",
+      "content": "又《總要》三卷",
+      "work_id": "d59f2pxe375t"
+    },
+    {
+      "title": "《六十甲子厭勝法》",
+      "level": 3,
+      "type": "book",
+      "content": "《六十甲子厭勝法》一卷",
+      "work_id": "d59f2pu0nvgi"
+    },
+    {
+      "title": "《兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書》三卷",
+      "work_id": "d59f27susgld"
+    },
+    {
+      "title": "《占風雪⟨一作“雲”⟩氣》",
+      "level": 3,
+      "type": "book",
+      "content": "《占風雪⟨一作“雲”⟩氣》三卷",
+      "work_id": "d59f2ptivcox"
+    },
+    {
+      "title": "《風雲論》",
+      "level": 3,
+      "type": "book",
+      "content": "《風雲論》三卷",
+      "work_id": "d59f2q69q7ls"
+    },
+    {
+      "title": "《三軍水鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《三軍水鑒》三卷",
+      "work_id": "d59f2pt3kq9u"
+    },
+    {
+      "title": "《用兵手訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《用兵手訣》七卷",
+      "work_id": "d59f2q25gh6p"
+    },
+    {
+      "title": "《出軍占風氣候》",
+      "level": 3,
+      "type": "book",
+      "content": "《出軍占風氣候》十卷",
+      "work_id": "d59f2pyb6ccg"
+    },
+    {
+      "title": "《衛國公手記》",
+      "level": 3,
+      "type": "book",
+      "content": "《衛國公手記》一卷",
+      "work_id": "d59f2pspu9z6"
+    },
+    {
+      "title": "《六十甲子內外行兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "李世勣《六十甲子內外行兵法》一卷",
+      "work_id": "d59f2qa904qo"
+    },
+    {
+      "title": "《諸家秘要》",
+      "level": 3,
+      "type": "book",
+      "content": "李淳風《諸家秘要》三卷",
+      "work_id": "d59f28jbrz0i"
+    },
+    {
+      "title": "《行軍明時秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "又《行軍明時秘訣》一卷",
+      "work_id": "d59f2q6kyqkh"
+    },
+    {
+      "title": "《太白華蓋法》",
+      "level": 3,
+      "type": "book",
+      "content": "《太白華蓋法》二卷",
+      "work_id": "d59f2ptkfj7k"
+    },
+    {
+      "title": "《雲氣營寨占》",
+      "level": 3,
+      "type": "book",
+      "content": "《雲氣營寨占》一卷",
+      "work_id": "d59f2q6kc9he"
+    },
+    {
+      "title": "《行軍曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍曆》一卷",
+      "work_id": "d59f2q7oaneq"
+    },
+    {
+      "title": "《通幽鬼訣》",
+      "level": 3,
+      "type": "book",
+      "content": "李筌《通幽鬼訣》二卷",
+      "work_id": "d59f28kmwt1g"
+    },
+    {
+      "title": "《軍旅⟨一作“放”⟩指歸》",
+      "level": 3,
+      "type": "book",
+      "content": "又《軍旅⟨一作“放”⟩指歸》三卷",
+      "work_id": "d59f2ptt66f5"
+    },
+    {
+      "title": "《北帝武威經》",
+      "level": 3,
+      "type": "book",
+      "content": "《北帝武威經》三卷",
+      "work_id": "d59f2pxwtfcw"
+    },
+    {
+      "title": "《青囊托守勝敗歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《青囊托守勝敗歌》並",
+      "work_id": "d59f2qak8o3k"
+    },
+    {
+      "title": "《營野戰》",
+      "level": 3,
+      "type": "book",
+      "content": "並《營野戰》一卷",
+      "work_id": "d59f2pyizaiq"
+    },
+    {
+      "title": "《將律》",
+      "level": 3,
+      "type": "book",
+      "content": "李光弼《將律》一卷",
+      "work_id": "d59f28knja4k"
+    },
+    {
+      "title": "《武記》",
+      "level": 3,
+      "type": "book",
+      "content": "又《武記》一卷",
+      "work_id": "d59f2q1q5url"
+    },
+    {
+      "title": "《九天察氣訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《九天察氣訣》三卷",
+      "work_id": "d59f2px85on4"
+    },
+    {
+      "title": "《玄女厭陳法》",
+      "level": 3,
+      "type": "book",
+      "content": "《玄女厭陳法》一卷",
+      "work_id": "d59f2qa4bksh"
+    },
+    {
+      "title": "《兵要式》",
+      "level": 3,
+      "type": "book",
+      "content": "又《兵要式》一卷",
+      "work_id": "d59f2puwtblt"
+    },
+    {
+      "title": "《行兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《行兵法》二卷",
+      "work_id": "d59f2q0f10qq"
+    },
+    {
+      "title": "《兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵法》一卷",
+      "work_id": "d59f27sfhtz4"
+    },
+    {
+      "title": "《雜占法》",
+      "level": 3,
+      "type": "book",
+      "content": "《雜占法》一卷",
+      "work_id": "d59f2pvw34zk"
+    },
+    {
+      "title": "《六甲陰符兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《六甲陰符兵法》一卷",
+      "work_id": "d59f2pub9ybm"
+    },
+    {
+      "title": "《軍謀前鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍謀前鑒》十卷",
+      "work_id": "d59f28m08av7"
+    },
+    {
+      "title": "《兵家正書》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵家正書》十卷",
+      "work_id": "d59f2q1tlgjl"
+    },
+    {
+      "title": "《閫外紀⟨一作“記”⟩事》",
+      "level": 3,
+      "type": "book",
+      "content": "《閫外紀⟨一作“記”⟩事》十卷",
+      "work_id": "d59f2pzikcg0"
+    },
+    {
+      "title": "《秘要兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "李氏《秘要兵書》二卷",
+      "work_id": "d59f2q9vkx6o"
+    },
+    {
+      "title": "《秘要兵術》",
+      "level": 3,
+      "type": "book",
+      "content": "又《秘要兵術》四卷",
+      "work_id": "d59f2pvd1o1u"
+    },
+    {
+      "title": "《對敵權變逆順法》",
+      "level": 3,
+      "type": "book",
+      "content": "《對敵權變逆順法》一卷",
+      "work_id": "d59f2py4b4lc"
+    },
+    {
+      "title": "《佐國玄機》",
+      "level": 3,
+      "type": "book",
+      "content": "《佐國玄機》一卷",
+      "work_id": "d59f2q36wydd"
+    },
+    {
+      "title": "《炮經》",
+      "level": 3,
+      "type": "book",
+      "content": "《炮經》一卷",
+      "work_id": "d59f2pvrel8g"
+    },
+    {
+      "title": "《總戎志》",
+      "level": 3,
+      "type": "book",
+      "content": "《總戎志》二卷",
+      "work_id": "d59f2pwmmbcw"
+    },
+    {
+      "title": "《兵鈐手曆》",
+      "level": 3,
+      "type": "book",
+      "content": "李鼎祚《兵鈐手曆》一卷",
+      "work_id": "d59f28k0fpxi"
+    },
+    {
+      "title": "《許子兵勝苑》",
+      "level": 3,
+      "type": "book",
+      "content": "《許子兵勝苑》十卷",
+      "work_id": "d59f2pskuhhc"
+    },
+    {
+      "title": "《統軍玉鑒錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《統軍玉鑒錄》一卷",
+      "work_id": "d59f2px0z85d"
+    },
+    {
+      "title": "《鑿門詩》",
+      "level": 3,
+      "type": "book",
+      "content": "張守一《鑿門詩》一卷",
+      "work_id": "d59f2q9gliww"
+    },
+    {
+      "title": "《秘寶興軍集》",
+      "level": 3,
+      "type": "book",
+      "content": "《秘寶興軍集》一卷",
+      "work_id": "d59f2q3kymtc"
+    },
+    {
+      "title": "《軍鑒式》",
+      "level": 3,
+      "type": "book",
+      "content": "胡萬頃《軍鑒式》二卷",
+      "work_id": "d59f2pzkqznk"
+    },
+    {
+      "title": "《行軍立成七十二局》",
+      "level": 3,
+      "type": "book",
+      "content": "王適《行軍立成七十二局》一卷",
+      "work_id": "d59f2q8mmrcx"
+    },
+    {
+      "title": "《安營臨陣觀災氣》",
+      "level": 3,
+      "type": "book",
+      "content": "《安營臨陣觀災氣》一卷",
+      "work_id": "d59f2pzlzy0w"
+    },
+    {
+      "title": "《決戰勝負圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《決戰勝負圖》一卷",
+      "work_id": "d59f2px1lpmp"
+    },
+    {
+      "title": "《風雲氣象備急占》",
+      "level": 3,
+      "type": "book",
+      "content": "《風雲氣象備急占》一卷",
+      "work_id": "d59f2q0vklc0"
+    },
+    {
+      "title": "《秘寶風雲歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《秘寶風雲歌》一卷",
+      "work_id": "d59f2pv0k64i"
+    },
+    {
+      "title": "《九宮軍要秘術》",
+      "level": 3,
+      "type": "book",
+      "content": "《九宮軍要秘術》一卷",
+      "work_id": "d59f2pzd9atd"
+    },
+    {
+      "title": "《倚馬立成鑒圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《倚馬立成鑒圖》一卷",
+      "work_id": "d59f2q1jan0g"
+    },
+    {
+      "title": "《出軍占怪曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《出軍占怪曆》三卷",
+      "work_id": "d59f2pzpfke9"
+    },
+    {
+      "title": "《神機武略歌》",
+      "level": 3,
+      "type": "book",
+      "content": "羅子{巳山}⟨一作“岊”⟩《神機武略歌》三卷",
+      "work_id": "d59f2hgutybn"
+    },
+    {
+      "title": "《神機武略歌》",
+      "level": 3,
+      "type": "book",
+      "content": "易靜《神機武略歌》一卷",
+      "work_id": "d59f2hfr6tc1"
+    },
+    {
+      "title": "《行軍占風氣》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍占風氣》一卷",
+      "work_id": "d59f2q813doh"
+    },
+    {
+      "title": "《軍占要略》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍占要略》二卷",
+      "work_id": "d59f2pz6pb7k"
+    },
+    {
+      "title": "《軍機討略策》",
+      "level": 3,
+      "type": "book",
+      "content": "鄭先忠《軍機討略策》三卷",
+      "work_id": "d59f2px6wq9t"
+    },
+    {
+      "title": "《古今兵略》",
+      "level": 3,
+      "type": "book",
+      "content": "《古今兵略》十卷",
+      "work_id": "d59f2q4lhedd"
+    },
+    {
+      "title": "《論天鏡⟨一作“鑒”⟩出戰要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《論天鏡⟨一作“鑒”⟩出戰要訣》一卷",
+      "work_id": "d59f2q6bae4h"
+    },
+    {
+      "title": "《將兵秘要法》",
+      "level": 3,
+      "type": "book",
+      "content": "《將兵秘要法》一卷",
+      "work_id": "d59f2q79xqm9"
+    },
+    {
+      "title": "《武師左領記》",
+      "level": 3,
+      "type": "book",
+      "content": "《武師左領記》三卷",
+      "work_id": "d59f2q8f524g"
+    },
+    {
+      "title": "《玄機立成法》",
+      "level": 3,
+      "type": "book",
+      "content": "牛洪道《玄機立成法》一卷",
+      "work_id": "d59f2q3u0ide"
+    },
+    {
+      "title": "《孤虛明堂圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《孤虛明堂圖》一卷",
+      "work_id": "d59f2ptmm7ep"
+    },
+    {
+      "title": "《軍用立成》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍用立成》一卷",
+      "work_id": "d59f2puydiiq"
+    },
+    {
+      "title": "《辨解序》",
+      "level": 3,
+      "type": "book",
+      "content": "何延錫《辨解序》一卷",
+      "work_id": "d59f2q2svabl"
+    },
+    {
+      "title": "《軍國要製》",
+      "level": 3,
+      "type": "book",
+      "content": "紀勳《軍國要製》五卷",
+      "work_id": "d59f2q3787b5"
+    },
+    {
+      "title": "《將軍總錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《將軍總錄》三卷",
+      "work_id": "d59f2q5wazuo"
+    },
+    {
+      "title": "《武孝經》",
+      "level": 3,
+      "type": "book",
+      "content": "李遠《武孝經》一卷",
+      "work_id": "d59f28jxxtkw"
+    },
+    {
+      "title": "《行軍廣要算經》",
+      "level": 3,
+      "type": "book",
+      "content": "王巒《行軍廣要算經》三卷",
+      "work_id": "d59f2pss0y69"
+    },
+    {
+      "title": "《金符經》",
+      "level": 3,
+      "type": "book",
+      "content": "《金符經》三卷",
+      "work_id": "d59f2q9pynsx"
+    },
+    {
+      "title": "《十二月立成陣圖法》",
+      "level": 3,
+      "type": "book",
+      "content": "《十二月立成陣圖法》一卷",
+      "work_id": "d59f2px4eu4g"
+    },
+    {
+      "title": "《行軍走馬立成法》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍走馬立成法》一卷",
+      "work_id": "d59f2q4hfbpc"
+    },
+    {
+      "title": "《立成掌中法》",
+      "level": 3,
+      "type": "book",
+      "content": "《立成掌中法》一卷",
+      "work_id": "d59f2pyeaps2"
+    },
+    {
+      "title": "《行軍要略分野星圖法》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍要略分野星圖法》一卷",
+      "work_id": "d59f2psfuold"
+    },
+    {
+      "title": "《黃道法》",
+      "level": 3,
+      "type": "book",
+      "content": "《黃道法》一卷",
+      "work_id": "d59f2pwc0935"
+    },
+    {
+      "title": "《製勝略》",
+      "level": 3,
+      "type": "book",
+      "content": "徐漢卿《製勝略》三卷",
+      "work_id": "d59f2q9xrkzk"
+    },
+    {
+      "title": "《專征小格略》",
+      "level": 3,
+      "type": "book",
+      "content": "牟知白《專征小格略》一卷",
+      "work_id": "d59f2q8ivw8w"
+    },
+    {
+      "title": "《圖南兵略》",
+      "level": 3,
+      "type": "book",
+      "content": "《圖南兵略》三卷",
+      "work_id": "d59f2q6l9z40"
+    },
+    {
+      "title": "《從征錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《從征錄》五卷",
+      "work_id": "d59f2qaq6680"
+    },
+    {
+      "title": "《出軍別錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《出軍別錄》一卷",
+      "work_id": "d59f2q0sg7pc"
+    },
+    {
+      "title": "《兵書總要》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書總要》四卷",
+      "work_id": "d59f2q35z8xs"
+    },
+    {
+      "title": "《兵策秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵策秘訣》三卷",
+      "work_id": "d59f2pxcu96q"
+    },
+    {
+      "title": "《萬勝訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《萬勝訣》二卷",
+      "work_id": "d59f2qad27ep"
+    },
+    {
+      "title": "《戰鬥秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《戰鬥秘訣》一卷",
+      "work_id": "d59f2q2jtdz5"
+    },
+    {
+      "title": "《英雄龜鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《英雄龜鑒》一卷",
+      "work_id": "d59f2q23wao1"
+    },
+    {
+      "title": "《兵訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵訣》一卷",
+      "work_id": "d59f2pyv5ji8"
+    },
+    {
+      "title": "《隨軍要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《隨軍要訣》一卷",
+      "work_id": "d59f2q34qadc"
+    },
+    {
+      "title": "《軍謀要術》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍謀要術》一卷",
+      "work_id": "d59f2pxfym80"
+    },
+    {
+      "title": "《韜鈐秘要》",
+      "level": 3,
+      "type": "book",
+      "content": "《韜鈐秘要》一卷",
+      "work_id": "d59f2q4wpxxc"
+    },
+    {
+      "title": "《軍旅要術》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍旅要術》一卷",
+      "work_id": "d59f2qaakbnl"
+    },
+    {
+      "title": "《軍秘禳厭術》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍秘禳厭術》一卷",
+      "work_id": "d59f2pzhxvcw"
+    },
+    {
+      "title": "《占軍機勝負龜訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《占軍機勝負龜訣》一卷",
+      "work_id": "d59f2pzgowzm"
+    },
+    {
+      "title": "《訓將勝術》",
+      "level": 3,
+      "type": "book",
+      "content": "《訓將勝術》二卷",
+      "work_id": "d59f2pwv1q81"
+    },
+    {
+      "title": "《兵書手鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書手鑒》二卷",
+      "work_id": "d59f2q9qwcu8"
+    },
+    {
+      "title": "《尉繚子》",
+      "level": 3,
+      "type": "book",
+      "content": "《尉繚子》五卷⟨戰國時人⟩",
+      "work_id": "d59ezaihog74"
+    },
+    {
+      "title": "《常禳經》",
+      "level": 3,
+      "type": "book",
+      "content": "《常禳經》三卷⟨燕昭王太子撰，蓋依托⟩",
+      "work_id": "d59f2q4099fl"
+    },
+    {
+      "title": "《三略》",
+      "level": 3,
+      "type": "book",
+      "content": "黃石公《三略》三卷",
+      "work_id": "d59f1mpa1ibk"
+    },
+    {
+      "title": "《素書》",
+      "level": 3,
+      "type": "book",
+      "content": "又《素書》一卷⟨張良所傳⟩",
+      "work_id": "d59f1mpdh4ao"
+    },
+    {
+      "title": "《將苑》",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛亮《將苑》一卷",
+      "work_id": "d59f2q5o6txd"
+    },
+    {
+      "title": "《兵書手訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書手訣》一卷",
+      "work_id": "d59f2q5otb0h"
+    },
+    {
+      "title": "《文武奇編》",
+      "level": 3,
+      "type": "book",
+      "content": "《文武奇編》一卷",
+      "work_id": "d59f2q98slqa"
+    },
+    {
+      "title": "《武侯八陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《武侯八陣圖》一卷",
+      "work_id": "d59f2q7ujegx"
+    },
+    {
+      "title": "《鬼穀天甲兵書常禳術》",
+      "level": 3,
+      "type": "book",
+      "content": "《鬼穀天甲兵書常禳術》三卷⟨梁昭明太子撰⟩",
+      "work_id": "d59f2q8agi68"
+    },
+    {
+      "title": "《真人水照》",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景《真人水照》十三卷",
+      "work_id": "d59f286d46wz"
+    },
+    {
+      "title": "《六軍鏡》",
+      "level": 3,
+      "type": "book",
+      "content": "李靖《六軍鏡》三卷",
+      "work_id": "d59f28jw2ebp"
+    },
+    {
+      "title": "《六十甲子禳敵克應決勝術》",
+      "level": 3,
+      "type": "book",
+      "content": "《六十甲子禳敵克應決勝術》一卷",
+      "work_id": "d59f2q4zubk2"
+    },
+    {
+      "title": "《玉帳經》",
+      "level": 3,
+      "type": "book",
+      "content": "《玉帳經》一卷",
+      "work_id": "d59f2pyizabk"
+    },
+    {
+      "title": "《李靖兵鈐新書》",
+      "level": 3,
+      "type": "book",
+      "content": "《李靖兵鈐新書》一卷⟨並不知作者⟩",
+      "work_id": "d59f2q2k4mwx"
+    },
+    {
+      "title": "《九天玄女孤虛法》",
+      "level": 3,
+      "type": "book",
+      "content": "《九天玄女孤虛法》一卷",
+      "work_id": "d59f2psvgk5e"
+    },
+    {
+      "title": "《懸鏡經》",
+      "level": 3,
+      "type": "book",
+      "content": "李淳風《懸鏡經》十卷",
+      "work_id": "d59f28jqrd35"
+    },
+    {
+      "title": "《郭代公安邊策》",
+      "level": 3,
+      "type": "book",
+      "content": "《郭代公安邊策》三卷⟨唐郭震撰⟩",
+      "work_id": "d59f2q9w7e2o"
+    },
+    {
+      "title": "《太白陰經》",
+      "level": 3,
+      "type": "book",
+      "content": "李筌《太白陰經》十卷",
+      "work_id": "d59f28lzx2bm"
+    },
+    {
+      "title": "《占五行星度吉凶訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《占五行星度吉凶訣》一卷注",
+      "work_id": "d59f2q4jaqrl"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "注《孫子》一卷",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《閫外春秋》",
+      "level": 3,
+      "type": "book",
+      "content": "《閫外春秋》十卷",
+      "work_id": "d59f28mbs2yo"
+    },
+    {
+      "title": "《統軍靈轄秘策》",
+      "level": 3,
+      "type": "book",
+      "content": "李光弼《統軍靈轄秘策》一卷",
+      "work_id": "d59f28lsfdad"
+    },
+    {
+      "title": "《五家注孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "《五家注孫子》三卷⟨魏武帝、杜牧、陳皞、賈隱林、孟氏⟩",
+      "work_id": "d59f2q393lz5"
+    },
+    {
+      "title": "《孫子注》",
+      "level": 3,
+      "type": "book",
+      "content": "杜牧《孫子注》三卷",
+      "work_id": "d59f28n200lf"
+    },
+    {
+      "title": "《新令》",
+      "level": 3,
+      "type": "book",
+      "content": "裴緒《新令》二卷",
+      "work_id": "d59f2q0wtji8"
+    },
+    {
+      "title": "《孫子》",
+      "level": 3,
+      "type": "book",
+      "content": "曹、杜注《孫子》三卷⟨曹操、杜牧⟩",
+      "work_id": "d59ezai72dq8"
+    },
+    {
+      "title": "《行軍月令》",
+      "level": 3,
+      "type": "book",
+      "content": "劉玄之《行軍月令》一卷",
+      "work_id": "d59f2q0rtqm8"
+    },
+    {
+      "title": "《江東經略》",
+      "level": 3,
+      "type": "book",
+      "content": "李大著《江東經略》十卷",
+      "work_id": "d59f2q98hcsg"
+    },
+    {
+      "title": "《綦先生兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "《綦先生兵書》一十六卷⟨並不知名⟩",
+      "work_id": "d59f2pw6p7nk"
+    },
+    {
+      "title": "《虎鈐兵經》",
+      "level": 3,
+      "type": "book",
+      "content": "許洞《虎鈐兵經》二十卷",
+      "work_id": "d59f2hfrtaf5"
+    },
+    {
+      "title": "《太一王佐秘珠》",
+      "level": 3,
+      "type": "book",
+      "content": "樂產《太一王佐秘珠》五卷",
+      "work_id": "d59f28lyo45h"
+    },
+    {
+      "title": "《韜珠秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "盧元《韜珠秘訣》一卷",
+      "work_id": "d59f2gezddkw"
+    },
+    {
+      "title": "《黃帝太公兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《黃帝太公兵法》三卷⟨虞彥行進⟩",
+      "work_id": "d59f2pvxc2yo"
+    },
+    {
+      "title": "《南北攻守類考》",
+      "level": 3,
+      "type": "book",
+      "content": "趙善譽《南北攻守類考》六十三卷",
+      "work_id": "d59f2hjewykj"
+    },
+    {
+      "title": "《浮光戰守錄》",
+      "level": 3,
+      "type": "book",
+      "content": "柴叔達《浮光戰守錄》一卷",
+      "work_id": "d59f2pswpiio"
+    },
+    {
+      "title": "《衝晦郭氏兵學》",
+      "level": 3,
+      "type": "book",
+      "content": "《衝晦郭氏兵學》七卷⟨郭雍述⟩",
+      "work_id": "d59f2pskj8qq"
+    },
+    {
+      "title": "《論五府形勝萬言書》",
+      "level": 3,
+      "type": "book",
+      "content": "《論五府形勝萬言書》一卷",
+      "work_id": "d59f2q09pzb5"
+    },
+    {
+      "title": "《閫外策鈐》",
+      "level": 3,
+      "type": "book",
+      "content": "《閫外策鈐》五卷",
+      "work_id": "d59f2pz7n0ua"
+    },
+    {
+      "title": "《經武略》",
+      "level": 3,
+      "type": "book",
+      "content": "《經武略》二百九十卷",
+      "work_id": "d59f2pspj1mq"
+    },
+    {
+      "title": "《治亂貫怪記》",
+      "level": 3,
+      "type": "book",
+      "content": "《治亂貫怪記》三卷",
+      "work_id": "d59f2q678av4"
+    },
+    {
+      "title": "《三賢安邊策》",
+      "level": 3,
+      "type": "book",
+      "content": "《三賢安邊策》十一卷",
+      "work_id": "d59f2q5zfda9"
+    },
+    {
+      "title": "《邊防備衛策》",
+      "level": 3,
+      "type": "book",
+      "content": "《邊防備衛策》一卷",
+      "work_id": "d59f2q5l2gow"
+    },
+    {
+      "title": "《出軍占候歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《出軍占候歌》一卷",
+      "work_id": "d59f2q72r9xc"
+    },
+    {
+      "title": "《通玄玉鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《通玄玉鑒》一卷",
+      "work_id": "d59f2q4jx7up"
+    },
+    {
+      "title": "《握鏡訣怪祥歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《握鏡訣怪祥歌》一卷",
+      "work_id": "d59f2qa4mt4x"
+    },
+    {
+      "title": "《玄女遁甲經》",
+      "level": 3,
+      "type": "book",
+      "content": "《玄女遁甲經》三卷",
+      "work_id": "d59f2q65zchs"
+    },
+    {
+      "title": "《李仆射馬前訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《李仆射馬前訣》一卷",
+      "work_id": "d59f2pulkrup"
+    },
+    {
+      "title": "《防城動用》",
+      "level": 3,
+      "type": "book",
+      "content": "《防城動用》一卷",
+      "work_id": "d59f2pxkyept"
+    },
+    {
+      "title": "《彭門玉帳訣錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《彭門玉帳訣錄》一卷",
+      "work_id": "d59f2q0xr94x"
+    },
+    {
+      "title": "《遁甲專征賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《遁甲專征賦》一卷",
+      "work_id": "d59f2pvvgoap"
+    },
+    {
+      "title": "《帝王中樞賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《帝王中樞賦》二卷",
+      "work_id": "d59f2q4n1kw0"
+    },
+    {
+      "title": "《長世論》",
+      "level": 3,
+      "type": "book",
+      "content": "《長世論》十卷",
+      "work_id": "d59f2q085se8"
+    },
+    {
+      "title": "《武備圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《武備圖》一卷",
+      "work_id": "d59f2qa7r668"
+    },
+    {
+      "title": "《兵鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵鑒》五卷",
+      "work_id": "d59f2prp09vk",
+      "link_basis": "2026-08-24 宋志頂真格覆讀：本節作「《兵鑒》五卷」，前節 #185「《武備圖》一卷」無下綴，故本節無撰人；下節 #187 自注「（並不知作者）」，正可為證。舊主 `1evr5e3mezpcl` 是清徐宗幹《兵鑑》五卷（清史稿著錄）——卷數雖同而代不相容。"
+    },
+    {
+      "title": "《陰符握機運宜要》",
+      "level": 3,
+      "type": "book",
+      "content": "《陰符握機運宜要》五卷⟨並不知作者⟩",
+      "work_id": "d59f2pwd96o0"
+    },
+    {
+      "title": "《攻守圖術》",
+      "level": 3,
+      "type": "book",
+      "content": "仁宗《攻守圖術》三卷",
+      "work_id": "d59f2hjregao"
+    },
+    {
+      "title": "《武經總要》",
+      "level": 3,
+      "type": "book",
+      "content": "曾公亮《武經總要》四十卷",
+      "work_id": "d59f2hryoy69"
+    },
+    {
+      "title": "《裕陵邊機處分》",
+      "level": 3,
+      "type": "book",
+      "content": "蔡挺《裕陵邊機處分》一卷",
+      "work_id": "d59f2psk80sg"
+    },
+    {
+      "title": "《人事軍律》",
+      "level": 3,
+      "type": "book",
+      "content": "符彥卿《人事軍律》三卷",
+      "work_id": "d59f2gckwn40"
+    },
+    {
+      "title": "《清邊前要》",
+      "level": 3,
+      "type": "book",
+      "content": "曾致堯《清邊前要》十卷",
+      "work_id": "d59f2hgs0tfl"
+    },
+    {
+      "title": "《三朝經武聖略》",
+      "level": 3,
+      "type": "book",
+      "content": "王洙《三朝經武聖略》十卷",
+      "work_id": "d59f2hj5ju9s"
+    },
+    {
+      "title": "《清邊武略》",
+      "level": 3,
+      "type": "book",
+      "content": "《清邊武略》十五卷",
+      "work_id": "d59f2pwu40ld"
+    },
+    {
+      "title": "《風角占》",
+      "level": 3,
+      "type": "book",
+      "content": "《風角占》一卷⟨康定間司天台集⟩",
+      "work_id": "d59f2qaylkw0"
+    },
+    {
+      "title": "《康定論兵》",
+      "level": 3,
+      "type": "book",
+      "content": "任鎮《康定論兵》一卷",
+      "work_id": "d59f2hg8cv7n"
+    },
+    {
+      "title": "《聚米圖經》",
+      "level": 3,
+      "type": "book",
+      "content": "趙珣《聚米圖經》五卷",
+      "work_id": "d59f2q4dzp4x"
+    },
+    {
+      "title": "《慶曆軍錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《慶曆軍錄》一卷⟨不知作者⟩",
+      "work_id": "d59f2hlhioea"
+    },
+    {
+      "title": "《軍政備覽》",
+      "level": 3,
+      "type": "book",
+      "content": "曾公奭《軍政備覽》一卷",
+      "work_id": "d59f2q5a55oh"
+    },
+    {
+      "title": "《平戎議》",
+      "level": 3,
+      "type": "book",
+      "content": "耿恭《平戎議》三卷",
+      "work_id": "d59f2ps7fa4g"
+    },
+    {
+      "title": "《邊臣要略》",
+      "level": 3,
+      "type": "book",
+      "content": "《邊臣要略》二十卷",
+      "work_id": "d59f2q4io9hc"
+    },
+    {
+      "title": "《安邊致勝策》",
+      "level": 3,
+      "type": "book",
+      "content": "趙瑜《安邊致勝策》三卷",
+      "work_id": "d59f2q83l9ts"
+    },
+    {
+      "title": "《兵志》",
+      "level": 3,
+      "type": "book",
+      "content": "呂夏卿《兵志》三卷",
+      "work_id": "d59f2hiuxrsw"
+    },
+    {
+      "title": "《征蠻議》",
+      "level": 3,
+      "type": "book",
+      "content": "丘濬《征蠻議》一卷",
+      "work_id": "d59f2pxuy0aq"
+    },
+    {
+      "title": "《野言》",
+      "level": 3,
+      "type": "book",
+      "content": "阮逸《野言》一卷",
+      "work_id": "d59f2hlje3nl"
+    },
+    {
+      "title": "《備邊機要》",
+      "level": 3,
+      "type": "book",
+      "content": "劉滬《備邊機要》一卷",
+      "work_id": "d59f2q4z7ugx"
+    },
+    {
+      "title": "《陝西建明》",
+      "level": 3,
+      "type": "book",
+      "content": "薛向《陝西建明》一卷",
+      "work_id": "d59f28kiupz8"
+    },
+    {
+      "title": "《十家孫子會注》",
+      "level": 3,
+      "type": "book",
+      "content": "吉天保《十家孫子會注》十五卷",
+      "work_id": "d59f2hm5v6rm"
+    },
+    {
+      "title": "《熙河陣法》",
+      "level": 3,
+      "type": "book",
+      "content": "王韶《熙河陣法》一卷",
+      "work_id": "d59f2hi9pmv5"
+    },
+    {
+      "title": "《元豐清野備敵》",
+      "level": 3,
+      "type": "book",
+      "content": "韓縝《元豐清野備敵》一卷",
+      "work_id": "d59f2hfq93pc"
+    },
+    {
+      "title": "《三備略講義》",
+      "level": 3,
+      "type": "book",
+      "content": "何去非《三備略講義》六卷",
+      "work_id": "d59f2hiayl1d"
+    },
+    {
+      "title": "《備論》",
+      "level": 3,
+      "type": "book",
+      "content": "《備論》十四卷",
+      "work_id": "d59f2q2qomiq"
+    },
+    {
+      "title": "《曆代將鑒博議》",
+      "level": 3,
+      "type": "book",
+      "content": "戴溪《曆代將鑒博議》十卷",
+      "work_id": "d59f2hjlgxz5"
+    },
+    {
+      "title": "《百將新書》",
+      "level": 3,
+      "type": "book",
+      "content": "張文伯《百將新書》十二卷",
+      "work_id": "d59f2ofwre9u"
+    },
+    {
+      "title": "《西夏須知》",
+      "level": 3,
+      "type": "book",
+      "content": "劉溫潤《西夏須知》一卷",
+      "work_id": "d59f2pt9701u"
+    },
+    {
+      "title": "《武昌要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "王維清《武昌要訣》一卷",
+      "work_id": "d59f2q43dn9d"
+    },
+    {
+      "title": "《司命兵機秘略》",
+      "level": 3,
+      "type": "book",
+      "content": "徐矸《司命兵機秘略》二十八卷",
+      "work_id": "d59f2q6qw9hc"
+    },
+    {
+      "title": "《總夫要錄》",
+      "level": 3,
+      "type": "book",
+      "content": "徐確《總夫要錄》一卷",
+      "work_id": "d59f2q7no64g"
+    },
+    {
+      "title": "《集注百將傳》",
+      "level": 3,
+      "type": "book",
+      "content": "張預《集注百將傳》一百卷",
+      "work_id": "d59f2pu85l36"
+    },
+    {
+      "title": "《兵籌類要》",
+      "level": 3,
+      "type": "book",
+      "content": "餘壹《兵籌類要》十五卷",
+      "work_id": "d59f2hhehwjn"
+    },
+    {
+      "title": "《神武秘略論》",
+      "level": 3,
+      "type": "book",
+      "content": "葉上達《神武秘略論》十卷",
+      "work_id": "d59f2q8fgav5"
+    },
+    {
+      "title": "《兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "夏休《兵法》三卷",
+      "work_id": "d59f27sfhtz4"
+    },
+    {
+      "title": "《進復府兵議》",
+      "level": 3,
+      "type": "book",
+      "content": "汪槔《進復府兵議》一卷",
+      "work_id": "d59f2q3rim81"
+    },
+    {
+      "title": "《古今屯田總議》",
+      "level": 3,
+      "type": "book",
+      "content": "《古今屯田總議》七卷",
+      "work_id": "d59f2q5t6mm8"
+    },
+    {
+      "title": "《元祐分疆錄》",
+      "level": 3,
+      "type": "book",
+      "content": "遊師雄《元祐分疆錄》二卷",
+      "work_id": "d59f2hfri1vn"
+    },
+    {
+      "title": "《崇寧邊略》",
+      "level": 3,
+      "type": "book",
+      "content": "《崇寧邊略》三卷⟨不知作者⟩",
+      "work_id": "d59f2hhnv0ub"
+    },
+    {
+      "title": "《建炎德安守禦錄》",
+      "level": 3,
+      "type": "book",
+      "content": "劉荀《建炎德安守禦錄》三卷",
+      "work_id": "d59f2hq8vym8"
+    },
+    {
+      "title": "《兵錄》",
+      "level": 3,
+      "type": "book",
+      "content": "度濟《兵錄》八十卷",
+      "work_id": "d59f2htrxjpe"
+    },
+    {
+      "title": "《西齋兵議》",
+      "level": 3,
+      "type": "book",
+      "content": "《西齋兵議》三卷⟨文覺兄弟問答兵機⟩",
+      "work_id": "d59f2q5qdhxc"
+    },
+    {
+      "title": "《四將傳》",
+      "level": 3,
+      "type": "book",
+      "content": "章穎《四將傳》三卷",
+      "work_id": "d59f2hiwt72b"
+    },
+    {
+      "title": "《神機靈秘圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《神機靈秘圖》三卷",
+      "work_id": "d59f2pvlh2bk"
+    },
+    {
+      "title": "《軍鑒圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍鑒圖》二卷",
+      "work_id": "d59f2q124kjl"
+    },
+    {
+      "title": "《紀重政軍機決勝立成圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《紀重政軍機決勝立成圖》三卷",
+      "work_id": "d59f2pv8ocn6"
+    },
+    {
+      "title": "《兵書氣候旗勢圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書氣候旗勢圖》一卷",
+      "work_id": "d59f2pukyb5t"
+    },
+    {
+      "title": "《諸家兵法秘訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《諸家兵法秘訣》四卷",
+      "work_id": "d59f2q4pupz4"
+    },
+    {
+      "title": "《行師類要》",
+      "level": 3,
+      "type": "book",
+      "content": "《行師類要》七卷",
+      "work_id": "d59f28l778ck"
+    },
+    {
+      "title": "《古今兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "《古今兵書》十卷",
+      "work_id": "d59f2q6anwn4"
+    },
+    {
+      "title": "《五行陣決》",
+      "level": 3,
+      "type": "book",
+      "content": "《五行陣決》一卷",
+      "work_id": "d59f2q95o7wh"
+    },
+    {
+      "title": "《會稽兵術》",
+      "level": 3,
+      "type": "book",
+      "content": "《會稽兵術》三卷",
+      "work_id": "d59f2q8i9fr4"
+    },
+    {
+      "title": "《六十甲子出軍秘訣⟨一作“略”⟩》",
+      "level": 3,
+      "type": "book",
+      "content": "《六十甲子出軍秘訣⟨一作“略”⟩》一卷",
+      "work_id": "d59f2psu7lz4"
+    },
+    {
+      "title": "《玄珠要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《玄珠要訣》一卷",
+      "work_id": "d59f2q4io9hd"
+    },
+    {
+      "title": "《軍墊兵鈐》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍墊兵鈐》三卷",
+      "work_id": "d59f2q9acsg1"
+    },
+    {
+      "title": "《韜鈐秘錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《韜鈐秘錄》五卷",
+      "work_id": "d59f2pselqtc"
+    },
+    {
+      "title": "《將略兵機論》",
+      "level": 3,
+      "type": "book",
+      "content": "《將略兵機論》十二卷",
+      "work_id": "d59f2pxmilmp"
+    },
+    {
+      "title": "《三軍指要》",
+      "level": 3,
+      "type": "book",
+      "content": "《三軍指要》五卷",
+      "work_id": "d59f2pytwlc1"
+    },
+    {
+      "title": "《纂下六甲營圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《纂下六甲營圖》一卷",
+      "work_id": "d59f2ptpfbwh"
+    },
+    {
+      "title": "《五十七陣出軍甲子》",
+      "level": 3,
+      "type": "book",
+      "content": "《五十七陣出軍甲子》一卷",
+      "work_id": "d59f2pw7mxhc"
+    },
+    {
+      "title": "《行軍玄機百術法》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍玄機百術法》一卷",
+      "work_id": "d59f2q60obgh"
+    },
+    {
+      "title": "《兵書出軍雜占》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書出軍雜占》五卷",
+      "work_id": "d59f2q90zo5d"
+    },
+    {
+      "title": "《兵法機要》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵法機要》三卷",
+      "work_id": "d59f2q9llblt"
+    },
+    {
+      "title": "《神兵要術》",
+      "level": 3,
+      "type": "book",
+      "content": "《神兵要術》三卷",
+      "work_id": "d59f2q1f8jcw"
+    },
+    {
+      "title": "《神兵機要》",
+      "level": 3,
+      "type": "book",
+      "content": "《神兵機要》三卷",
+      "work_id": "d59f2q5wm8lc"
+    },
+    {
+      "title": "《總戎策》",
+      "level": 3,
+      "type": "book",
+      "content": "《總戎策》二卷",
+      "work_id": "d59f2q3mitxd"
+    },
+    {
+      "title": "《兵書精訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書精訣》二卷",
+      "work_id": "d59f2q2k4mpt"
+    },
+    {
+      "title": "《權經對》",
+      "level": 3,
+      "type": "book",
+      "content": "《權經對》三卷",
+      "work_id": "d59f2q1z7qio"
+    },
+    {
+      "title": "《行軍用兵玄機》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍用兵玄機》三卷",
+      "work_id": "d59f2ptet9tt"
+    },
+    {
+      "title": "《兵機要論》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵機要論》五卷",
+      "work_id": "d59f2qa6i800"
+    },
+    {
+      "title": "《行軍備曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍備曆》六十卷",
+      "work_id": "d59f2q1bhou8"
+    },
+    {
+      "title": "《兵機簡要》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵機簡要》十卷",
+      "work_id": "d59f2q65cvep"
+    },
+    {
+      "title": "《兵談》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵談》三卷",
+      "work_id": "d59f2q0kc1kx"
+    },
+    {
+      "title": "《水陸陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "韓霸《水陸陣圖》三卷",
+      "work_id": "d59f2pvs11xc"
+    },
+    {
+      "title": "《強弩備術》",
+      "level": 3,
+      "type": "book",
+      "content": "《強弩備術》三卷",
+      "work_id": "d59f2psauw3k"
+    },
+    {
+      "title": "《九九陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《九九陣圖》一卷",
+      "work_id": "d59f2pykjh1e"
+    },
+    {
+      "title": "《軍林要覽》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍林要覽》三卷",
+      "work_id": "d59f2q8vzvgg"
+    },
+    {
+      "title": "《製勝權略》",
+      "level": 3,
+      "type": "book",
+      "content": "《製勝權略》三卷",
+      "work_id": "d59f2q9xgcg0"
+    },
+    {
+      "title": "《兵書精妙玄術》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書精妙玄術》十卷",
+      "work_id": "d59f2q2cbpc2"
+    },
+    {
+      "title": "《兵籍要樞》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵籍要樞》三卷",
+      "work_id": "d59f2pvcqfi8"
+    },
+    {
+      "title": "《太一行軍秘術詩》",
+      "level": 3,
+      "type": "book",
+      "content": "《太一行軍秘術詩》三卷",
+      "work_id": "d59f2pywehhe"
+    },
+    {
+      "title": "《戎機》",
+      "level": 3,
+      "type": "book",
+      "content": "《戎機》二卷",
+      "work_id": "d59f2ptj6l8h"
+    },
+    {
+      "title": "《通神機要》",
+      "level": 3,
+      "type": "book",
+      "content": "《通神機要》三卷",
+      "work_id": "d59f2pxsg3r6"
+    },
+    {
+      "title": "《兵家月令》",
+      "level": 3,
+      "type": "book",
+      "content": "劉玄⟨一作“定”⟩之《兵家月令》一卷",
+      "work_id": "d59f2q570s1s"
+    },
+    {
+      "title": "《軍令備急》",
+      "level": 3,
+      "type": "book",
+      "content": "又《軍令備急》一卷",
+      "work_id": "d59f2pzh054x"
+    },
+    {
+      "title": "《天一兵機舉要歌》",
+      "level": 3,
+      "type": "book",
+      "content": "湯渭《天一兵機舉要歌》一卷",
+      "work_id": "d59f2pwmb30g"
+    },
+    {
+      "title": "《行軍月令》",
+      "level": 3,
+      "type": "book",
+      "content": "王洪暉《行軍月令》四卷",
+      "work_id": "d59f2pufyigx"
+    },
+    {
+      "title": "《軍誡》",
+      "level": 3,
+      "type": "book",
+      "content": "裴守一《軍誡》三卷",
+      "work_id": "d59f2q3cugw2"
+    },
+    {
+      "title": "《兵家正史》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵家正史》九卷",
+      "work_id": "d59f28llvdvp"
+    },
+    {
+      "title": "《行軍周易占》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍周易占》一卷",
+      "work_id": "d59f2q9glji8"
+    },
+    {
+      "title": "《將律》",
+      "level": 3,
+      "type": "book",
+      "content": "張從實《將律》一卷",
+      "work_id": "d59f2hipxz40"
+    },
+    {
+      "title": "《兵易歌神兵苑》",
+      "level": 3,
+      "type": "book",
+      "content": "焦大憲《兵易歌神兵苑》三卷",
+      "work_id": "d59f2pzxjpxc"
+    },
+    {
+      "title": "《星度用》",
+      "level": 3,
+      "type": "book",
+      "content": "《星度用》一卷",
+      "work_id": "d59f2pun4yki"
+    },
+    {
+      "title": "《將術》",
+      "level": 3,
+      "type": "book",
+      "content": "《將術》一卷",
+      "work_id": "d59f2pspuakg"
+    },
+    {
+      "title": "《行兵攻具術》",
+      "level": 3,
+      "type": "book",
+      "content": "《行兵攻具術》一卷",
+      "work_id": "d59f2q9blqf6"
+    },
+    {
+      "title": "《行兵攻具圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《行兵攻具圖》一卷",
+      "work_id": "d59f2q74mpds"
+    },
+    {
+      "title": "《兵家秘寶》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵家秘寶》一卷",
+      "work_id": "d59f2pwvo7b5"
+    },
+    {
+      "title": "《秘寶書》",
+      "level": 3,
+      "type": "book",
+      "content": "《秘寶書》一卷",
+      "work_id": "d59f2pyowsu9"
+    },
+    {
+      "title": "《軍律》",
+      "level": 3,
+      "type": "book",
+      "content": "《軍律》三卷",
+      "work_id": "d59f2pywpqf6"
+    },
+    {
+      "title": "《製旨兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "張昭《製旨兵法》十卷",
+      "work_id": "d59f2ptgopa9"
+    },
+    {
+      "title": "《青囊括》",
+      "level": 3,
+      "type": "book",
+      "content": "王洙《青囊括》一卷",
+      "work_id": "d59f2pxxr56o"
+    },
+    {
+      "title": "《兵書要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "杜希全《兵書要訣》三卷",
+      "work_id": "d59f28lqv6kg"
+    },
+    {
+      "title": "《長慶人事軍律》",
+      "level": 3,
+      "type": "book",
+      "content": "釋利正《長慶人事軍律》三卷",
+      "work_id": "d59f2pwv1ptt"
+    },
+    {
+      "title": "《至德元寶玉函經》",
+      "level": 3,
+      "type": "book",
+      "content": "董承祖《至德元寶玉函經》十卷",
+      "work_id": "d59f28jbrz0j"
+    },
+    {
+      "title": "《行師類要》",
+      "level": 3,
+      "type": "book",
+      "content": "王公亮《行師類要》七卷",
+      "work_id": "d59f28l778ck"
+    },
+    {
+      "title": "《契神經》",
+      "level": 3,
+      "type": "book",
+      "content": "劉可久《契神經》一卷",
+      "work_id": "d59f2q3ubqwx"
+    },
+    {
+      "title": "《靈關訣》",
+      "level": 3,
+      "type": "book",
+      "content": "李洿《靈關訣》二卷⟨一名《靈關集益智》⟩",
+      "work_id": "d59f2hhj6gox"
+    },
+    {
+      "title": "《兵機法》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵機法》一卷",
+      "work_id": "d59f2q6az56p"
+    },
+    {
+      "title": "《太一厭禳法》",
+      "level": 3,
+      "type": "book",
+      "content": "《太一厭禳法》一卷",
+      "work_id": "d59f2q35z8qp"
+    },
+    {
+      "title": "《五行陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《五行陣圖》一卷",
+      "work_id": "d59f2hhzesxu"
+    },
+    {
+      "title": "《兵論》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵論》十卷",
+      "work_id": "d59f2ofu9ibk"
+    },
+    {
+      "title": "《六十甲子行軍法》",
+      "level": 3,
+      "type": "book",
+      "content": "《六十甲子行軍法》一卷",
+      "work_id": "d59f2pu8s1z5"
+    },
+    {
+      "title": "《會稽兵家術日月占》",
+      "level": 3,
+      "type": "book",
+      "content": "《會稽兵家術日月占》一卷",
+      "work_id": "d59f2q6oecjk"
+    },
+    {
+      "title": "《統戎式令》",
+      "level": 3,
+      "type": "book",
+      "content": "《統戎式令》一卷",
+      "work_id": "d59f2q693qip"
+    },
+    {
+      "title": "《六甲五神用軍法》",
+      "level": 3,
+      "type": "book",
+      "content": "《六甲五神用軍法》一卷",
+      "work_id": "d59f2qan1tdt"
+    },
+    {
+      "title": "《要訣兵法立成歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《要訣兵法立成歌》一卷",
+      "work_id": "d59f2q724sn6"
+    },
+    {
+      "title": "《六甲攻城破敵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《六甲攻城破敵法》一卷",
+      "work_id": "d59f2pym3ncw"
+    },
+    {
+      "title": "《馬前秘訣兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "《馬前秘訣兵書》一卷",
+      "work_id": "d59f2pyvgs8x"
+    },
+    {
+      "title": "《軍儀條目》",
+      "level": 3,
+      "type": "book",
+      "content": "石普《軍儀條目》三卷",
+      "work_id": "d59f2q1vgvls"
+    },
+    {
+      "title": "《神武秘略》",
+      "level": 3,
+      "type": "book",
+      "content": "仁宗《神武秘略》十卷",
+      "work_id": "d59f2hlsr7ya"
+    },
+    {
+      "title": "《行軍環珠》",
+      "level": 3,
+      "type": "book",
+      "content": "又《行軍環珠》一部⟨卷亡⟩",
+      "work_id": "d59f2pw0rpj4"
+    },
+    {
+      "title": "《四路獸守約束》",
+      "level": 3,
+      "type": "book",
+      "content": "又《四路獸守約束》",
+      "work_id": "d59f2q8j756p"
+    },
+    {
+      "title": "《軍誡》",
+      "level": 3,
+      "type": "book",
+      "content": "一部⟨卷亡⟩《軍誡》三卷",
+      "work_id": "d59f2q3cugw2"
+    },
+    {
+      "title": "《武記》",
+      "level": 3,
+      "type": "book",
+      "content": "《武記》一卷",
+      "work_id": "d59f2q1q5url"
+    },
+    {
+      "title": "《定遠安邊策》",
+      "level": 3,
+      "type": "book",
+      "content": "《定遠安邊策》三卷",
+      "work_id": "d59f2puzxp8i"
+    },
+    {
+      "title": "《新集兵書要訣》",
+      "level": 3,
+      "type": "book",
+      "content": "《新集兵書要訣》三卷",
+      "work_id": "d59f28la0d8l"
+    },
+    {
+      "title": "《兵書要略》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書要略》一卷",
+      "work_id": "d59f286hsr28"
+    },
+    {
+      "title": "《揀將要略》",
+      "level": 3,
+      "type": "book",
+      "content": "《揀將要略》十卷",
+      "work_id": "d59f2pwjhxj5"
+    },
+    {
+      "title": "《兵論》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵論》十卷",
+      "work_id": "d59f2ofu9ibk"
+    },
+    {
+      "title": "《五行陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "符彥卿《五行陣圖》一卷",
+      "work_id": "d59f2hhzesxu"
+    },
+    {
+      "title": "《新集行軍月令》",
+      "level": 3,
+      "type": "book",
+      "content": "《新集行軍月令》四卷",
+      "work_id": "d59f2q6wtr7k"
+    },
+    {
+      "title": "《雲氣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《雲氣圖》十二卷",
+      "work_id": "d59f2qa4y1hd"
+    },
+    {
+      "title": "《統戎式鏡》",
+      "level": 3,
+      "type": "book",
+      "content": "《統戎式鏡》二卷",
+      "work_id": "d59f2pupy41u"
+    },
+    {
+      "title": "《行軍氣候秘法》",
+      "level": 3,
+      "type": "book",
+      "content": "《行軍氣候秘法》三卷",
+      "work_id": "d59f2pxf0wsg"
+    },
+    {
+      "title": "《天子氣章雲氣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《天子氣章雲氣圖》十二卷",
+      "work_id": "d59f2ptcmlts"
+    },
+    {
+      "title": "《預知歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《預知歌》三卷",
+      "work_id": "d59f2pueebk2"
+    },
+    {
+      "title": "《從軍占》",
+      "level": 3,
+      "type": "book",
+      "content": "《從軍占》三卷",
+      "work_id": "d59f2q1dd4ow"
+    },
+    {
+      "title": "《兵書論語》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書論語》三卷",
+      "work_id": "d59f2pyjx05d"
+    },
+    {
+      "title": "《彭門玉帳歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《彭門玉帳歌》三卷",
+      "work_id": "d59f2q4exfcx"
+    },
+    {
+      "title": "《太一行軍六十甲子禳厭秘術詩》",
+      "level": 3,
+      "type": "book",
+      "content": "《太一行軍六十甲子禳厭秘術詩》三卷",
+      "work_id": "d59f2q936by8"
+    },
+    {
+      "title": "《兵機舉要陽謂歌》",
+      "level": 3,
+      "type": "book",
+      "content": "《兵機舉要陽謂歌》一卷",
+      "work_id": "d59f2py091qa"
+    },
+    {
+      "title": "《新修六壬大玉帳歌》",
+      "level": 3,
+      "type": "book",
+      "content": "郯子《新修六壬大玉帳歌》十卷",
+      "work_id": "d59f2q678b28"
+    },
+    {
+      "title": "《軍機決勝立成圖》",
+      "level": 3,
+      "type": "book",
+      "content": "郭固《軍機決勝立成圖》一卷",
+      "work_id": "d59f2q7i1wqp"
+    },
+    {
+      "title": "《兵法攻守圖術》",
+      "level": 3,
+      "type": "book",
+      "content": "又《兵法攻守圖術》三卷",
+      "work_id": "d59f2q45vj7k"
+    },
+    {
+      "title": "《樞密院諸房例冊》",
+      "level": 3,
+      "type": "book",
+      "content": "王存《樞密院諸房例冊》一百四十二卷",
+      "work_id": "d59f2hj3znk2"
+    },
+    {
+      "title": "《教閱陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "蔡挺《教閱陣圖》一卷",
+      "work_id": "d59f2py6hsld"
+    },
+    {
+      "title": "《陣法》",
+      "level": 3,
+      "type": "book",
+      "content": "林廣《陣法》一卷",
+      "work_id": "d59f2q174d8i"
+    },
+    {
+      "title": "《平蠻雜議》",
+      "level": 3,
+      "type": "book",
+      "content": "王拱辰《平蠻雜議》十卷",
+      "work_id": "d59f2q1ta874"
+    },
+    {
+      "title": "《敵樓馬面法式及申明條約並修城女牆法》",
+      "level": 3,
+      "type": "book",
+      "content": "《敵樓馬面法式及申明條約並修城女牆法》二卷",
+      "work_id": "d59f2q68h9fk"
+    },
+    {
+      "title": "《兵法圖議》",
+      "level": 3,
+      "type": "book",
+      "content": "楊伋《兵法圖議》一卷",
+      "work_id": "d59f2pubwf0i"
+    },
+    {
+      "title": "《樞密院五房宣式》",
+      "level": 3,
+      "type": "book",
+      "content": "韓縝《樞密院五房宣式》一卷",
+      "work_id": "d59f2hhosqgy"
+    },
+    {
+      "title": "《論五府形勝萬言書》",
+      "level": 3,
+      "type": "book",
+      "content": "又《論五府形勝萬言書》一卷",
+      "work_id": "d59f2q028ao0"
+    },
+    {
+      "title": "《重演握奇》",
+      "level": 3,
+      "type": "book",
+      "content": "方埛《重演握奇》三卷",
+      "work_id": "d59f2q5mxvy9"
+    },
+    {
+      "title": "《握奇陣圖》",
+      "level": 3,
+      "type": "book",
+      "content": "又《握奇陣圖》一卷",
+      "work_id": "d59f2ptrx8g0"
+    },
+    {
+      "title": "《安南獻議文字並目錄》",
+      "level": 3,
+      "type": "book",
+      "content": "梁燾《安南獻議文字並目錄》五卷",
+      "work_id": "d59f2hfwhuki"
+    },
+    {
+      "title": "《愈見禦戎》",
+      "level": 3,
+      "type": "book",
+      "content": "《愈見禦戎》十冊",
+      "work_id": "d59f2q2hxypt"
+    },
+    {
+      "title": "《宣撫經製錄》",
+      "level": 3,
+      "type": "book",
+      "content": "韓絳《宣撫經製錄》三卷",
+      "work_id": "d59f2hiirim9"
+    },
+    {
+      "title": "《政和營繕軍補錄序》",
+      "level": 3,
+      "type": "book",
+      "content": "王革《政和營繕軍補錄序》一卷",
+      "work_id": "d59f2hkhmdxe"
+    },
+    {
+      "title": "《兵籌類要》",
+      "level": 3,
+      "type": "book",
+      "content": "餘台《兵籌類要》十五卷",
+      "work_id": "d59f2hhehwjn"
+    },
+    {
+      "title": "《溱播州勝兵法》",
+      "level": 3,
+      "type": "book",
+      "content": "《溱播州勝兵法》",
+      "work_id": "d59f2ptvzbpd"
+    },
+    {
+      "title": "《兵書》",
+      "level": 3,
+      "type": "book",
+      "content": "二部任諒《兵書》十卷",
+      "work_id": "d59f27susgld"
+    }
+  ]
+}

@@ -1,0 +1,606 @@
+{
+  "title": "五行類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "五行類",
+      "content": ""
+    },
+    {
+      "title": "劉基《玉洞金書》一卷，《注靈棋經》二卷，《解皇極經世稽覽圖》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基《玉洞金書》一卷，《注靈棋經》二卷，《解皇極經世稽覽圖》十八卷",
+      "work_id": "d59f2ndzf6rk"
+    },
+    {
+      "title": "《選擇曆書》五卷洪武中，欽天監奉敕撰定。",
+      "level": 3,
+      "type": "book",
+      "content": "《選擇曆書》五卷洪武中，欽天監奉敕撰定。",
+      "work_id": "d59f2q8n988w"
+    },
+    {
+      "title": "馬貴《周易雜佔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬貴《周易雜佔》一卷",
+      "work_id": "d59f2gj80f7k"
+    },
+    {
+      "title": "胡宏《周易黃金尺》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡宏《周易黃金尺》一卷",
+      "work_id": "d59f2hlpblz4"
+    },
+    {
+      "title": "盧翰《中庵簽易》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "盧翰《中庵簽易》一卷",
+      "work_id": "d59f2nixcg75"
+    },
+    {
+      "title": "季本《蓍法別傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "季本《蓍法別傳》二卷",
+      "work_id": "d59f2newtkox"
+    },
+    {
+      "title": "周瑞《文公斷易奇書》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "周瑞《文公斷易奇書》三卷",
+      "work_id": "d59f2ndqdamb"
+    },
+    {
+      "title": "蔡元谷《神易數》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡元谷《神易數》一卷",
+      "work_id": "d59f2ndtswsh"
+    },
+    {
+      "title": "張其堤《易卦類選大成》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張其堤《易卦類選大成》四卷",
+      "work_id": "d59f2nee3cap"
+    },
+    {
+      "title": "王宇《周易佔林》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王宇《周易佔林》四卷",
+      "work_id": "d59f2nj0s2df"
+    },
+    {
+      "title": "錢春《五行類應》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢春《五行類應》八卷",
+      "work_id": "d59f2nge75dt"
+    },
+    {
+      "title": "劉均《卜筮全書》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉均《卜筮全書》八卷",
+      "work_id": "d59f2ng7bxfn"
+    },
+    {
+      "title": "趙際隆《卜筮全書》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙際隆《卜筮全書》十四卷",
+      "work_id": "d59f2nincum9"
+    },
+    {
+      "title": "張濡《先天易數》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張濡《先天易數》二卷",
+      "work_id": "d59f2neachdv"
+    },
+    {
+      "title": "周視考《陰陽定論》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "周視考《陰陽定論》三卷",
+      "work_id": "d59f2nieaz29"
+    },
+    {
+      "title": "楊向春《皇極心易發微》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊向春《皇極心易發微》六卷",
+      "work_id": "d59f2nefnitg"
+    },
+    {
+      "title": "蔡士順《皇極祕數佔驗》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡士順《皇極祕數佔驗》一卷",
+      "work_id": "d59f2ng9tu6a"
+    },
+    {
+      "title": "吳珫《皇極經世鈐解》二卷，《太乙統宗寶鑒》二十卷，《太乙淘金歌》一卷，《六壬金鑰匙》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫《皇極經世鈐解》二卷，《太乙統宗寶鑒》二十卷，《太乙淘金歌》一卷，《六壬金鑰匙》二卷",
+      "work_id": "d59f2nfbsykk"
+    },
+    {
+      "title": "馮柯《三極通》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮柯《三極通》二卷",
+      "work_id": "d59f2nfreu4i"
+    },
+    {
+      "title": "張幹山《古今應驗異夢全書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張幹山《古今應驗異夢全書》四卷",
+      "work_id": "d59f2nfa8s90"
+    },
+    {
+      "title": "陳士元《夢佔逸旨》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳士元《夢佔逸旨》八卷",
+      "work_id": "d59f2nhmiuiq"
+    },
+    {
+      "title": "張鳳翼《夢佔類考》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張鳳翼《夢佔類考》十二卷",
+      "work_id": "d59f2ndufdoi"
+    },
+    {
+      "title": "池本理《禽遁大全》四卷，《禽星易見》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "池本理《禽遁大全》四卷，《禽星易見》四卷",
+      "work_id": "d59f2nf6t62o"
+    },
+    {
+      "title": "鮑世彥《奇門微義》四卷，《奇門陽遁》一卷，《陰遁》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑世彥《奇門微義》四卷，《奇門陽遁》一卷，《陰遁》一卷",
+      "work_id": "d59f2nh6ai9s"
+    },
+    {
+      "title": "劉翔《奇門遁甲兵機書》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉翔《奇門遁甲兵機書》二十卷",
+      "work_id": "d59f2nffjthf"
+    },
+    {
+      "title": "徐之鏌《選擇禽奇盤例定局》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐之鏌《選擇禽奇盤例定局》五卷",
+      "work_id": "d59f2ngqoni9"
+    },
+    {
+      "title": "胡獻忠《八門神書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡獻忠《八門神書》一卷",
+      "work_id": "d59f2ng97d34"
+    },
+    {
+      "title": "葉容《太乙三辰顯異經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉容《太乙三辰顯異經》十卷",
+      "work_id": "d59f2ngvzojk"
+    },
+    {
+      "title": "李元灃《太乙九旗曆》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "李元灃《太乙九旗曆》三卷",
+      "work_id": "d59f2ndwxa84"
+    },
+    {
+      "title": "邢雲路《太乙書》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "邢雲路《太乙書》十卷",
+      "work_id": "d59f2nfgsrgi"
+    },
+    {
+      "title": "李克家《戎事類佔》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李克家《戎事類佔》二十一卷",
+      "work_id": "d59f2gpm2bk1"
+    },
+    {
+      "title": "楊瓚《六壬直指捷要》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊瓚《六壬直指捷要》二卷",
+      "work_id": "d59f2ni2r6yp"
+    },
+    {
+      "title": "蔣日新《開雲觀月歌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔣日新《開雲觀月歌》一卷",
+      "work_id": "d59f2ni09af7"
+    },
+    {
+      "title": "黃公達《鳳髓靈文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃公達《鳳髓靈文》一卷",
+      "work_id": "d59f2nf0kf0g"
+    },
+    {
+      "title": "袁祥《六壬大全》三十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁祥《六壬大全》三十三卷",
+      "work_id": "d59f2nlembk3"
+    },
+    {
+      "title": "徐常吉《六壬釋義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐常吉《六壬釋義》一卷",
+      "work_id": "d59f2ne93jes"
+    },
+    {
+      "title": "黃賓廷《六壬集應鈐》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃賓廷《六壬集應鈐》六十卷",
+      "work_id": "d59f2nfl639f"
+    },
+    {
+      "title": "甯獻王權《肘後神樞》二卷，《運化玄樞》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "甯獻王權《肘後神樞》二卷，《運化玄樞》一卷",
+      "work_id": "d59f2ndyspa9"
+    },
+    {
+      "title": "《曆法通書》三十卷金溪何士泰景祥《曆法》，臨江宋魯珍輝山《通書》合編。",
+      "level": 3,
+      "type": "book",
+      "content": "《曆法通書》三十卷金溪何士泰景祥《曆法》，臨江宋魯珍輝山《通書》合編。",
+      "work_id": "d59f2niuuk1u"
+    },
+    {
+      "title": "熊宗立《金精鰲極》六卷，《通書大全》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊宗立《金精鰲極》六卷，《通書大全》三十卷",
+      "work_id": "d59f2ng9ilfo"
+    },
+    {
+      "title": "王天利《三元節要》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王天利《三元節要》三卷",
+      "work_id": "d59f2nfqh4ao"
+    },
+    {
+      "title": "徐瓘《陰陽捷徑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐瓘《陰陽捷徑》一卷",
+      "work_id": "d59f2neoe683"
+    },
+    {
+      "title": "劉最《選擇類編》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉最《選擇類編》八卷",
+      "work_id": "d59f2ne7jcow"
+    },
+    {
+      "title": "萬邦孚《匯選筮吉指南》十一卷，《日家指掌》二卷，《通書纂要》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬邦孚《匯選筮吉指南》十一卷，《日家指掌》二卷，《通書纂要》六卷",
+      "work_id": "d59f2nfoagox"
+    },
+    {
+      "title": "何瑭《陰陽管窺》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何瑭《陰陽管窺》一卷",
+      "work_id": "d59f2nfmf18i"
+    },
+    {
+      "title": "劉黃裳《元圖符藏》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉黃裳《元圖符藏》二卷",
+      "work_id": "d59f2nh1apz6"
+    },
+    {
+      "title": "劉基《三命奇談》、《滴天髓》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基《三命奇談》、《滴天髓》一卷",
+      "work_id": "d59f2ngmmk1s"
+    },
+    {
+      "title": "吳天洪《造命宗鏡集》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳天洪《造命宗鏡集》十二卷",
+      "work_id": "d59f2nemtzb6"
+    },
+    {
+      "title": "洪理《曆府大成》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "洪理《曆府大成》二十二卷",
+      "work_id": "d59f2nfhqhab"
+    },
+    {
+      "title": "歐陽忠《星命祕訣望鬥真經》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "歐陽忠《星命祕訣望鬥真經》三卷",
+      "work_id": "d59f2ne5cp38"
+    },
+    {
+      "title": "楊源《星學源流》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊源《星學源流》二十卷",
+      "work_id": "d59f2nfw3e9t"
+    },
+    {
+      "title": "雷鳴夏《子平管見》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "雷鳴夏《子平管見》二卷",
+      "work_id": "d59f2nficydf"
+    },
+    {
+      "title": "李欽《淵海子平大全》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李欽《淵海子平大全》六卷",
+      "work_id": "d59f2nlcfny9"
+    },
+    {
+      "title": "萬民英《三命會通》十二卷，《星學大成》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬民英《三命會通》十二卷，《星學大成》十八卷",
+      "work_id": "d59f2ngx8mpt"
+    },
+    {
+      "title": "陸位《星學綱目正傳》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸位《星學綱目正傳》二十卷",
+      "work_id": "d59f2nfscjr4"
+    },
+    {
+      "title": "張果《星宗命格》十卷，《文武星案》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張果《星宗命格》十卷，《文武星案》六卷",
+      "work_id": "d59f2nigsv7o"
+    },
+    {
+      "title": "西窗老人《蘭臺妙選》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "西窗老人《蘭臺妙選》三卷",
+      "work_id": "d59f2nijm0hw"
+    },
+    {
+      "title": "袁忠徹《古今識鑒》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁忠徹《古今識鑒》八卷",
+      "work_id": "d59f2ngt6jgi"
+    },
+    {
+      "title": "鮑慄之《麻衣相法》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑慄之《麻衣相法》七卷",
+      "work_id": "d59f2nh85xxf"
+    },
+    {
+      "title": "李廷湘《人相編》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廷湘《人相編》十二卷",
+      "work_id": "d59f2nfu7ym8"
+    },
+    {
+      "title": "周繼《陽宅真訣》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "周繼《陽宅真訣》二卷",
+      "work_id": "d59f2ng2ndoi"
+    },
+    {
+      "title": "王君榮《陽宅十書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王君榮《陽宅十書》四卷",
+      "work_id": "d59f2ni3dnur"
+    },
+    {
+      "title": "陳夢和《陽宅集成》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳夢和《陽宅集成》九卷",
+      "work_id": "d59f2nifv5s2"
+    },
+    {
+      "title": "李邦祥《陽宅真傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李邦祥《陽宅真傳》二卷",
+      "work_id": "d59f2nhaz2f4"
+    },
+    {
+      "title": "周經《陽宅新編》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "周經《陽宅新編》二卷",
+      "work_id": "d59f2niox1qb"
+    },
+    {
+      "title": "《陽宅大全》十卷不知撰人。",
+      "level": 3,
+      "type": "book",
+      "content": "《陽宅大全》十卷不知撰人。",
+      "work_id": "d59f2newiccg"
+    },
+    {
+      "title": "劉基《金彈子》三卷，《披肝露膽》一卷，《一粒粟》一卷，《地理漫興》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基《金彈子》三卷，《披肝露膽》一卷，《一粒粟》一卷，《地理漫興》三卷",
+      "work_id": "d59f2nh7jgn7"
+    },
+    {
+      "title": "趙汸《葬說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙汸《葬說》一卷",
+      "work_id": "d59f2niolt6o"
+    },
+    {
+      "title": "瞿佑《葬說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑《葬說》一卷",
+      "work_id": "d59f2nh28flu"
+    },
+    {
+      "title": "謝昌《地理四書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝昌《地理四書》四卷",
+      "work_id": "d59f2ni4054z"
+    },
+    {
+      "title": "謝廷柱《堪輿管見》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝廷柱《堪輿管見》二卷",
+      "work_id": "d59f2ne4ezgg"
+    },
+    {
+      "title": "周孟中《地理真機》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "周孟中《地理真機》十五卷",
+      "work_id": "d59f2nin1m9v"
+    },
+    {
+      "title": "徐善繼《人子須知》三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐善繼《人子須知》三十五卷",
+      "work_id": "d59f2ne361a9"
+    },
+    {
+      "title": "董章《堪輿祕旨》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "董章《堪輿祕旨》六卷",
+      "work_id": "d59f2ni3owsh"
+    },
+    {
+      "title": "徐國柱《地理正宗》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐國柱《地理正宗》八卷",
+      "work_id": "d59f2nigsv7n"
+    },
+    {
+      "title": "趙祐《地理紫囊》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙祐《地理紫囊》八卷",
+      "work_id": "d59f2ni2r6rn"
+    },
+    {
+      "title": "郭子章《校定天玉經七注》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭子章《校定天玉經七注》七卷",
+      "work_id": "d59f2nea18u8"
+    },
+    {
+      "title": "陳時暘《堪輿真諦》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳時暘《堪輿真諦》三卷",
+      "work_id": "d59f2ngf4v7k"
+    },
+    {
+      "title": "王崇德《地理見知》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王崇德《地理見知》四卷",
+      "work_id": "d59f2ngcbqiq"
+    },
+    {
+      "title": "李迪人《天眼目》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "李迪人《天眼目》九卷",
+      "work_id": "d59f2nf2fugw"
+    },
+    {
+      "title": "徐之鏌《羅經簡易圖解》一卷，《地理琢玉斧》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐之鏌《羅經簡易圖解》一卷，《地理琢玉斧》十三卷",
+      "work_id": "d59f2niya5mr"
+    },
+    {
+      "title": "《地理全書》五十一卷不知撰人。",
+      "level": 3,
+      "type": "book",
+      "content": "《地理全書》五十一卷不知撰人。",
+      "work_id": "d59f2nhte2gy"
+    },
+    {
+      "title": "《地理天機會元》三十五卷不知撰人。",
+      "level": 3,
+      "type": "book",
+      "content": "《地理天機會元》三十五卷不知撰人。",
+      "work_id": "d59f2niexg5e"
+    },
+    {
+      "title": "李國本《理氣祕旨》七卷，《地理形勢真訣》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李國本《理氣祕旨》七卷，《地理形勢真訣》三十卷",
+      "work_id": "d59f2nffjt37"
+    },
+    {
+      "title": "徐氌勃《堪輿辨惑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐氌勃《堪輿辨惑》一卷",
+      "work_id": "d59f2niem7es"
+    }
+  ]
+}

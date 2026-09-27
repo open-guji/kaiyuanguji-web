@@ -1,0 +1,185 @@
+{
+  "title": "北史·經部·春秋類",
+  "sections": [
+    {
+      "title": "春秋類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "崔浩　春秋解",
+      "level": 3,
+      "type": "book",
+      "content": "崔浩　春秋解　見本傳。《魏書》浩傳有五經注，《春秋解》即五注之一。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c157bpi"
+    },
+    {
+      "title": "高尤　左氏釋",
+      "level": 3,
+      "type": "book",
+      "content": "高尤　左氏釋　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c157bpj"
+    },
+    {
+      "title": "高允　公羊釋",
+      "level": 3,
+      "type": "book",
+      "content": "高允　公羊釋　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c157bpk"
+    },
+    {
+      "title": "高允　何鄭膏育雜解",
+      "level": 3,
+      "type": "book",
+      "content": "高允　何鄭膏育雜解　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c157bpl"
+    },
+    {
+      "title": "李謐　春秋叢林十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李謐　春秋叢林十二卷　見本傳。《魏書》同。；《隋·經籍志》：《春秋叢林》十二卷，無撰人姓名。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f285xibr6"
+    },
+    {
+      "title": "李彪　春秋三傳述十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李彪　春秋三傳述十卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik8w"
+    },
+    {
+      "title": "劉芳　何休所注公羊音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　何休所注公羊音一卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik8x"
+    },
+    {
+      "title": "劉芳　范寧所注穀梁音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　范寧所注穀梁音一卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik8y"
+    },
+    {
+      "title": "劉芳　韋昭所注國語音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　韋昭所注國語音一卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik8z"
+    },
+    {
+      "title": "劉獻之　三傳略例三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉獻之　三傳略例三卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik90"
+    },
+    {
+      "title": "徐遵明　春秋義章三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐遵明　春秋義章三十卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f284yjqx0"
+    },
+    {
+      "title": "賈思同　春秋杜氏難駁十卷",
+      "level": 3,
+      "type": "book",
+      "content": "賈思同　春秋杜氏難駁十卷　見《賈思伯傳》。《魏書》同。；《隋·經籍志》未收。；按《北史》思伯傳：“思同之侍講也，國子博士遼西衛冀隆精服氏學，上書難杜氏《春秋》六十三事，思同復駁冀隆乖錯者一十餘事，互相是非，積成十卷。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik91"
+    },
+    {
+      "title": "辛子馥　三傳經說異同",
+      "level": 3,
+      "type": "book",
+      "content": "辛子馥　三傳經說異同　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15ik92"
+    },
+    {
+      "title": "姚文安　左傳服氏解駁妄",
+      "level": 3,
+      "type": "book",
+      "content": "姚文安　左傳服氏解駁妄　見《李崇祖傳》。《齊書》文安、崇祖俱無傳。；《隋·經籍志》未收。；按《北史》崇祖傳稱文安駁妄七十餘條，皆以難服氏者。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombr"
+    },
+    {
+      "title": "李崇祖　左傳服氏解釋謬",
+      "level": 3,
+      "type": "book",
+      "content": "李崇祖　左傳服氏解釋謬　見本傳。《齊書》崇祖無傳。；《隋·經籍志》未收。；按《北史》崇祖傳稱《釋謬》，即以釋姚文安《服氏駁妄》者。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c15ik93"
+    },
+    {
+      "title": "李鉉　三傳異同",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　三傳異同　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombs"
+    },
+    {
+      "title": "張思伯　左氏傳刊例十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張思伯　左氏傳刊例十卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombq"
+    },
+    {
+      "title": "劉炫　春秋攻昧十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫　春秋攻昧十卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c15ik94"
+    },
+    {
+      "title": "劉炫　春秋述議五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫　春秋述議五卷　見本傳。；《隋書》同。；《隋·經籍志》：《春秋左氏傳述義》四十卷，劉炫撰。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c15ik95"
+    },
+    {
+      "title": "張冲　春秋義略",
+      "level": 3,
+      "type": "book",
+      "content": "張冲　春秋義略　見本傳。《隋書》。；《隋·經籍志》：《春秋義略》三十卷，張冲撰。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f285xibr4"
+    },
+    {
+      "title": "辛德源　春秋三傳集注三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "辛德源　春秋三傳集注三十卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2prsr4zl"
+    },
+    {
+      "title": "春秋類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右春秋二十一部，已收《隋·經籍志》者三部，未收《隋·經籍志》者十八部。"
+    }
+  ]
+}

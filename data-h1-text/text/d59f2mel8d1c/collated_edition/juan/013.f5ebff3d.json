@@ -1,0 +1,5698 @@
+{
+  "title": "千頃堂書目·卷13",
+  "sections": [
+    {
+      "title": "兵家類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "劉寅孫子直解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉寅孫子直解三卷⟨太原人⟩",
+      "author_info": "太原人",
+      "_author": "劉寅",
+      "_title_only": "孫子直解",
+      "work_id": "d59f6er1rocm",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又吳子直解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又吳子直解三卷",
+      "_author": "劉寅",
+      "_title_only": "吳子直解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ego4m4i",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又尉繚子直解五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又尉繚子直解五卷",
+      "_author": "劉寅",
+      "_title_only": "尉繚子直解",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又司馬法直解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又司馬法直解三卷",
+      "_author": "劉寅",
+      "_title_only": "司馬法直解",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又六韜直解六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又六韜直解六卷",
+      "_author": "劉寅",
+      "_title_only": "六韜直解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egor37o",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又三畧直解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又三畧直解三卷",
+      "_author": "劉寅",
+      "_title_only": "三畧直解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egntdl4",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又李衞公問對直解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又李衞公問對直解三卷",
+      "_author": "劉寅",
+      "_title_only": "李衞公問對直解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egofuo0",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "閻禹錫孫子集解二卷",
+      "level": 3,
+      "type": "book",
+      "content": "閻禹錫孫子集解二卷",
+      "_author": "閻禹錫",
+      "_title_only": "孫子集解",
+      "work_id": "d59f6egor37p",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又吳子集解二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又吳子集解二卷",
+      "_author": "閻禹錫",
+      "_title_only": "吳子集解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egor37k",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又司馬法集解二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又司馬法集解二卷",
+      "_author": "閻禹錫",
+      "_title_only": "司馬法集解",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又尉繚子集解五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又尉繚子集解五卷",
+      "_author": "閻禹錫",
+      "_title_only": "尉繚子集解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eorzi12",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又李衞公問對集解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又李衞公問對集解三卷",
+      "_author": "閻禹錫",
+      "_title_only": "李衞公問對集解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ep03o5i",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "王圻武經經傳句解十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王圻武經經傳句解十卷",
+      "_author": "王圻",
+      "_title_only": "武經經傳句解",
+      "work_id": "d59f6ep0ewoz",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張楷武經小學",
+      "level": 3,
+      "type": "book",
+      "content": "張楷武經小學",
+      "_author": "張楷",
+      "_title_only": "武經小學",
+      "work_id": "d59f6ep03o5e",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "朱升孫子旁注",
+      "level": 3,
+      "type": "book",
+      "content": "朱升孫子旁注",
+      "_author": "朱升",
+      "_title_only": "孫子旁注",
+      "work_id": "d59f6eozsfly",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "黄潤玉注孫子",
+      "level": 3,
+      "type": "book",
+      "content": "黄潤玉注孫子",
+      "_title_only": "注孫子",
+      "_author": "黄潤玉",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "陳琦孫子斷注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳琦孫子斷注二卷⟨字希白錢塘人□治庚戌進士大理寺卿⟩",
+      "author_info": "字希白錢塘人□治庚戌進士大理寺卿",
+      "_author": "陳琦",
+      "_title_only": "孫子斷注",
+      "work_id": "d59f6en9cyyv",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "趙鶴孫武子十三篇定本",
+      "level": 3,
+      "type": "book",
+      "content": "趙鶴孫武子十三篇定本",
+      "_author": "趙鶴",
+      "_title_only": "孫武子十三篇定本",
+      "work_id": "d59f6en9o7i8",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "蘇佑孫子吳子集解",
+      "level": 3,
+      "type": "book",
+      "content": "蘇佑孫子吳子集解",
+      "_title_only": "蘇佑孫子吳子集解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "王崇獻孫子釋疑",
+      "level": 3,
+      "type": "book",
+      "content": "王崇獻孫子釋疑",
+      "_author": "王崇獻",
+      "_title_only": "孫子釋疑",
+      "work_id": "d59f6en9cyyr",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "譚愷孫子集注十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "譚愷孫子集注十三卷",
+      "_author": "譚愷",
+      "_title_only": "孫子集注",
+      "work_id": "d59f6etonthe",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "徐昌會注孫子兵法十三篇一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐昌會注孫子兵法十三篇一卷",
+      "_author": "徐昌會",
+      "_title_only": "注孫子兵法十三篇",
+      "work_id": "d59f6en9o7id",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "趙本學孫子本義十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙本學孫子本義十三卷⟨晉江人⟩",
+      "author_info": "晉江人",
+      "_author": "趙本學",
+      "_title_only": "孫子本義",
+      "work_id": "d59f6en9o7i9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "黄邦彦孫武子纂注十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄邦彦孫武子纂注十三卷",
+      "_title_only": "黄邦彦孫武子纂注",
+      "_no_author": "待考"
+    },
+    {
+      "title": "鄭靈孫武子十三篇本義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭靈孫武子十三篇本義二卷⟨字希山同安人工部主事⟩",
+      "author_info": "字希山同安人工部主事",
+      "_title_only": "鄭靈孫武子十三篇本義",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6ehaagp4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又吳子增釋",
+      "level": 3,
+      "type": "book",
+      "content": "又吳子增釋⟨缺⟩",
+      "author_info": "缺",
+      "_title_only": "吳子增釋"
+    },
+    {
+      "title": "李贄孫子㕘同三卷",
+      "level": 3,
+      "type": "book",
+      "content": "李贄孫子㕘同三卷",
+      "_author": "李贄",
+      "_title_only": "孫子㕘同",
+      "work_id": "d59f6etoz210",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "劉寅吳子握機緯二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉寅吳子握機緯二卷",
+      "_author": "劉寅",
+      "_title_only": "吳子握機緯",
+      "work_id": "d59f6en9cyyu",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "阮漢聞尉繚子解",
+      "level": 3,
+      "type": "book",
+      "content": "阮漢聞尉繚子解",
+      "_author": "阮漢",
+      "_title_only": "聞尉繚子解",
+      "work_id": "d59f6en9o7ic",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "鄭芸武經節要四卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭芸武經節要四卷",
+      "_author": "鄭芸",
+      "_title_only": "武經節要",
+      "work_id": "d59f6en9cyyw",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "寜獻王權注素書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "寜獻王權注素書一卷",
+      "_title_only": "寜獻王權注素書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "王氏素書直説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王氏素書直説一卷",
+      "_author": "王氏",
+      "_title_only": "素書直説",
+      "work_id": "d59f6en9cyys",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "魯啟明握機經傳解一卷",
+      "level": 3,
+      "type": "book",
+      "content": "魯啟明握機經傳解一卷",
+      "_title_only": "魯啟明握機經傳解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "虞舜卿握機經注",
+      "level": 3,
+      "type": "book",
+      "content": "虞舜卿握機經注⟨字用賔錢塘人⟩",
+      "author_info": "字用賔錢塘人",
+      "_author": "虞舜卿",
+      "_title_only": "握機經注",
+      "work_id": "d59f6en9cyyt",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "甯果武侯將苑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "甯果武侯將苑一卷",
+      "_title_only": "甯果武侯將苑",
+      "_no_author": "待考"
+    },
+    {
+      "title": "藍汝忠韜素附録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "藍汝忠韜素附録一卷",
+      "_title_only": "藍汝忠韜素附録",
+      "_no_author": "待考"
+    },
+    {
+      "title": "徐昌㑹握機槖鑰六卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐昌㑹握機槖鑰六卷",
+      "_author": "徐昌",
+      "_title_only": "㑹握機槖鑰",
+      "work_id": "d59f6en9o7ib",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳獻武經節要發揮一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳獻武經節要發揮一卷⟨一作陳珂⟩",
+      "author_info": "一作陳珂",
+      "_author": "陳獻",
+      "_title_only": "武經節要發揮",
+      "work_id": "d59f6en9o7ia",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "何喬新續百将傳四卷",
+      "level": 3,
+      "type": "book",
+      "content": "何喬新續百将傳四卷⟨輯五代迄宋元名将四十人⟩",
+      "author_info": "輯五代迄宋元名将四十人",
+      "_author": "何喬新",
+      "_title_only": "續百将傳"
+    },
+    {
+      "title": "穆文熈百将提衡四卷",
+      "level": 3,
+      "type": "book",
+      "content": "穆文熈百将提衡四卷",
+      "_author": "穆文",
+      "_title_only": "熈百将提衡",
+      "work_id": "d59f6en5m4g6",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馮孜古今将畧四卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮孜古今将畧四卷",
+      "_author": "馮孜",
+      "_title_only": "古今将畧"
+    },
+    {
+      "title": "劉畿諸史将畧十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉畿諸史将畧十六卷⟨浙江巡撫都御史劉畿檄知府毛鋼教諭黄譲編輯諸史名将共十六卷⟩",
+      "author_info": "浙江巡撫都御史劉畿檄知府毛鋼教諭黄譲編輯諸史名将共十六卷",
+      "_author": "劉畿",
+      "_title_only": "諸史将畧",
+      "work_id": "d59f6erkhwxw",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王由道續將鑑博議",
+      "level": 3,
+      "type": "book",
+      "content": "王由道續將鑑博議⟨字汝元樂平人正徳丁夘舉人⟩",
+      "author_info": "字汝元樂平人正徳丁夘舉人",
+      "_author": "王由道",
+      "_title_only": "續將鑑博議",
+      "work_id": "d59f6erkt5hd",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "尹商閫外春秋三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "尹商閫外春秋三十二卷",
+      "_author": "尹商",
+      "_title_only": "閫外春秋"
+    },
+    {
+      "title": "戚繼光紀效新書十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "戚繼光紀效新書十四卷",
+      "_author": "戚繼光",
+      "_title_only": "紀效新書"
+    },
+    {
+      "title": "又練兵實紀九卷",
+      "level": 3,
+      "type": "book",
+      "content": "又練兵實紀九卷",
+      "_author": "戚繼光",
+      "_title_only": "練兵實紀",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又襍集六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又襍集六卷",
+      "_author": "戚繼光",
+      "_title_only": "襍集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6erkhwxy",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又將臣寶鑒一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又將臣寶鑒一卷",
+      "_author": "戚繼光",
+      "_title_only": "將臣寶鑒",
+      "_author_src": "又條承上",
+      "work_id": "d59f6erkt5hc",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "霍文玉紀效新書續集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "霍文玉紀效新書續集二卷",
+      "_author": "霍文",
+      "_title_only": "玉紀效新書續集",
+      "work_id": "d59f6erkhwxu",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "類輯戚南塘練兵諸書十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "類輯戚南塘練兵諸書十八卷",
+      "_title_only": "類輯戚南塘練兵諸書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "趙本學韜鈐内篇一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙本學韜鈐内篇一卷",
+      "_author": "趙本學",
+      "_title_only": "韜鈐内篇"
+    },
+    {
+      "title": "俞大猷韜鈐續編一卷",
+      "level": 3,
+      "type": "book",
+      "content": "俞大猷韜鈐續編一卷",
+      "_author": "俞大猷",
+      "_title_only": "韜鈐續編",
+      "work_id": "d59f6erkt5hg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李晟纒世通畧",
+      "level": 3,
+      "type": "book",
+      "content": "李晟纒世通畧⟨缺⟩",
+      "author_info": "缺",
+      "_author": "李晟",
+      "_title_only": "纒世通畧",
+      "work_id": "d59f6erkt5he",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又平湖兵式",
+      "level": 3,
+      "type": "book",
+      "content": "又平湖兵式⟨缺⟩",
+      "author_info": "缺",
+      "_author": "李晟",
+      "_title_only": "平湖兵式",
+      "_author_src": "又條承上",
+      "work_id": "d59f6erkhwxx",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又安攘六論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又安攘六論一卷",
+      "_author": "李晟",
+      "_title_only": "安攘六論",
+      "_author_src": "又條承上",
+      "work_id": "d59f6erkt5hf",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "劉寅集古兵法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉寅集古兵法一卷",
+      "_author": "劉寅",
+      "_title_only": "集古兵法",
+      "work_id": "d59f6erkhwxz",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "彭程兵法纂",
+      "level": 3,
+      "type": "book",
+      "content": "彭程兵法纂⟨字萬里甌寜人成化辛丑進士宣府兵備僉事⟩",
+      "author_info": "字萬里甌寜人成化辛丑進士宣府兵備僉事",
+      "_author": "彭程",
+      "_title_only": "兵法纂",
+      "work_id": "d59f6erkhwxv",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "何塘柏齋兵論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何塘柏齋兵論一卷",
+      "_author": "何塘",
+      "_title_only": "柏齋兵論",
+      "work_id": "d59f6ek7soap",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王詔將評心見二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王詔將評心見二卷",
+      "_author": "王詔",
+      "_title_only": "將評心見",
+      "work_id": "d59f6ek7hfr8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "唐樞木鐘臺末學一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐樞木鐘臺末學一卷",
+      "_author": "唐樞",
+      "_title_only": "木鐘臺末學",
+      "work_id": "d59f6ek7hfr9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王巹兵法綱目一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王巹兵法綱目一卷",
+      "_author": "王巹",
+      "_title_only": "兵法綱目",
+      "_emended": "缺字據適園本補",
+      "_orig": "王□兵法綱目",
+      "work_id": "d59f6ek7soao",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李桂芳兵機要集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李桂芳兵機要集一卷",
+      "_author": "李桂芳",
+      "_title_only": "兵機要集",
+      "work_id": "d59f6ek83wu8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "吳子孝葆林一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳子孝葆林一卷",
+      "_author": "吳子孝",
+      "_title_only": "葆林",
+      "work_id": "d59f6ek7hfra",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又問馬集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又問馬集一卷",
+      "_author": "吳子孝",
+      "_title_only": "問馬集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ek7soar",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "王芑綱目兵法六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王芑綱目兵法六卷",
+      "_author": "王芑",
+      "_title_only": "綱目兵法"
+    },
+    {
+      "title": "穆伯寅兵鑑撮要七卷",
+      "level": 3,
+      "type": "book",
+      "content": "穆伯寅兵鑑撮要七卷",
+      "_author": "穆伯寅",
+      "_title_only": "兵鑑撮要"
+    },
+    {
+      "title": "唐天爵司兵便覽一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐天爵司兵便覽一卷",
+      "_title_only": "唐天爵司兵便覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "劉濓兵説十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉濓兵説十二卷",
+      "_author": "劉濓",
+      "_title_only": "兵説",
+      "work_id": "d59f6ek7hfrb",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "吳從周兵法彚編十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳從周兵法彚編十二卷⟨字宗文邵武府人嘉靖中貢士南康縣訓導有禦倭功擢國子監博士⟩",
+      "author_info": "字宗文邵武府人嘉靖中貢士南康縣訓導有禦倭功擢國子監博士",
+      "_author": "吳從周",
+      "_title_only": "兵法彚編",
+      "work_id": "d59f6ek7soaq",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又左傳兵法",
+      "level": 3,
+      "type": "book",
+      "content": "又左傳兵法⟨缺⟩",
+      "author_info": "缺",
+      "_author": "吳從周",
+      "_title_only": "左傳兵法",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ek7hfr7",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又綱目武覽",
+      "level": 3,
+      "type": "book",
+      "content": "又綱目武覽⟨缺⟩",
+      "author_info": "缺",
+      "_author": "吳從周",
+      "_title_only": "綱目武覽",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ek8f5ds",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "唐順之荆川武編十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐順之荆川武編十二卷",
+      "_author": "唐順之",
+      "_title_only": "荆川武編",
+      "work_id": "d59f6ek83wu9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又兵垣四編五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又兵垣四編五卷",
+      "_author": "唐順之",
+      "_title_only": "兵垣四編",
+      "_author_src": "又條承上",
+      "work_id": "d59f6emrvojl",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "髙舉行師選要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "髙舉行師選要一卷",
+      "_title_only": "髙舉行師選要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "華復元王文成用兵心法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "華復元王文成用兵心法一卷",
+      "_author": "華復",
+      "_title_only": "元王文成用兵心法",
+      "work_id": "d59f6emrkg06",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "劉宣化三國䇿十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉宣化三國䇿十二卷",
+      "_author": "劉宣",
+      "_title_only": "化三國䇿",
+      "work_id": "d59f6emrkg02",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "蘇志臯益智錄兵類二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇志臯益智錄兵類二十卷",
+      "_author": "蘇志臯",
+      "_title_only": "益智錄兵類",
+      "work_id": "d59f6emrkg05",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "何東序益智兵書一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "何東序益智兵書一百卷",
+      "_author": "何東序",
+      "_title_only": "益智兵書"
+    },
+    {
+      "title": "又武庫益智録六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又武庫益智録六卷",
+      "_author": "何東序",
+      "_title_only": "武庫益智録",
+      "_author_src": "又條承上",
+      "work_id": "d59f6emrkg01",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "邵復將傳畧合注纂要二卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵復將傳畧合注纂要二卷",
+      "_author": "邵復",
+      "_title_only": "將傳畧合注纂要",
+      "work_id": "d59f6emr97gk",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "葉夢熊運籌綱目十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉夢熊運籌綱目十卷⟨一作兵家運籌勝訣⟩",
+      "author_info": "一作兵家運籌勝訣",
+      "_author": "葉夢熊",
+      "_title_only": "運籌綱目"
+    },
+    {
+      "title": "李材將紀二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "李材將紀二十四卷",
+      "_author": "李材",
+      "_title_only": "將紀"
+    },
+    {
+      "title": "又兵政紀畧五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又兵政紀畧五十卷",
+      "_author": "李材",
+      "_title_only": "兵政紀畧",
+      "_author_src": "又條承上",
+      "work_id": "d59f6emr97gn",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又經武淵源十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又經武淵源十五卷",
+      "_author": "李材",
+      "_title_only": "經武淵源",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "王鶴鳴登壇必究四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王鶴鳴登壇必究四十卷",
+      "_author": "王鶴鳴",
+      "_title_only": "登壇必究",
+      "work_id": "d59f6ejdinls",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "何僎諸史紀畧十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何僎諸史紀畧十卷",
+      "_author": "何僎",
+      "_title_only": "諸史紀畧",
+      "work_id": "d59f6emrkg04",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "鄭璧古今兵鑒三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭璧古今兵鑒三十二卷",
+      "_author": "鄭璧",
+      "_title_only": "古今兵鑒",
+      "work_id": "d59f6emr97gl",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又經世宏籌三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又經世宏籌三十六卷",
+      "_author": "鄭璧",
+      "_title_only": "經世宏籌",
+      "_author_src": "又條承上",
+      "work_id": "d59f6emrkg03",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "魏濬武畧",
+      "level": 3,
+      "type": "book",
+      "content": "魏濬武畧",
+      "_author": "魏濬",
+      "_title_only": "武畧",
+      "work_id": "d59f6emr97gm",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "王有麟百將傳補遺",
+      "level": 3,
+      "type": "book",
+      "content": "王有麟百將傳補遺⟨晉江人萬厯甲戌武進士官㕘將⟩",
+      "author_info": "晉江人萬厯甲戌武進士官㕘將",
+      "_author": "王有麟",
+      "_title_only": "百將傳補遺",
+      "work_id": "d59f6enpwjr6",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又古今戰守攻圍兵法六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又古今戰守攻圍兵法六十卷",
+      "_author": "王有麟",
+      "_title_only": "古今戰守攻圍兵法",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "何仲升兵錄",
+      "level": 3,
+      "type": "book",
+      "content": "何仲升兵錄",
+      "_title_only": "何仲升兵錄",
+      "_no_author": "待考"
+    },
+    {
+      "title": "郭應響兵法要畧",
+      "level": 3,
+      "type": "book",
+      "content": "郭應響兵法要畧",
+      "_author": "郭應響",
+      "_title_only": "兵法要畧",
+      "work_id": "d59f6enq7sau",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "黄應甲兵法節畧",
+      "level": 3,
+      "type": "book",
+      "content": "黄應甲兵法節畧⟨字汝第懷寧人嘉靖壬戌武舉破廣西古田賊有功歴官都督僉事⟩",
+      "author_info": "字汝第懷寧人嘉靖壬戌武舉破廣西古田賊有功歴官都督僉事",
+      "_title_only": "黄應甲兵法節畧",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6egqxr0m",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "余懋衡古方畧",
+      "level": 3,
+      "type": "book",
+      "content": "余懋衡古方畧⟨缺⟩",
+      "author_info": "缺",
+      "_author": "余懋衡",
+      "_title_only": "古方畧",
+      "work_id": "d59f6enplb7q",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "趙大綱方畧摘要十卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙大綱方畧摘要十卷",
+      "_author": "趙大綱",
+      "_title_only": "方畧摘要",
+      "work_id": "d59f6enq7sao",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "髙折枝將畧類編二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "髙折枝將畧類編二十四卷",
+      "_title_only": "髙折枝將畧類編",
+      "_no_author": "待考"
+    },
+    {
+      "title": "施浚明古今紆籌十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "施浚明古今紆籌十二卷",
+      "_author": "施浚明",
+      "_title_only": "古今紆籌"
+    },
+    {
+      "title": "畢懋康兵畧三冊",
+      "level": 3,
+      "type": "book",
+      "content": "畢懋康兵畧三冊",
+      "_author": "畢懋康",
+      "_title_only": "兵畧"
+    },
+    {
+      "title": "張汝蘭文章兵法譜十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張汝蘭文章兵法譜十卷⟨□運㕘將⟩",
+      "author_info": "□運㕘將",
+      "_title_only": "張汝蘭文章兵法譜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "阮漢聞詰戎踐墨",
+      "level": 3,
+      "type": "book",
+      "content": "阮漢聞詰戎踐墨⟨缺⟩",
+      "author_info": "缺",
+      "_author": "阮漢",
+      "_title_only": "聞詰戎踐墨",
+      "work_id": "d59f6enq7sav",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "楊惟休武畧十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊惟休武畧十卷",
+      "_author": "楊惟休",
+      "_title_only": "武畧",
+      "work_id": "d59f6enq7sat",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李呈芬知己知彼制勝三編",
+      "level": 3,
+      "type": "book",
+      "content": "李呈芬知己知彼制勝三編⟨靈壁人⟩",
+      "author_info": "靈壁人",
+      "_author": "李呈芬",
+      "_title_only": "知己知彼制勝三編",
+      "work_id": "d59f6enpwjrb",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "茅元儀武備志二百四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "茅元儀武備志二百四十卷⟨崇禎元年三月進呈⟩",
+      "author_info": "崇禎元年三月進呈",
+      "_author": "茅元儀",
+      "_title_only": "武備志"
+    },
+    {
+      "title": "孫元化經武全編十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫元化經武全編十卷",
+      "_author": "孫元化",
+      "_title_only": "經武全編"
+    },
+    {
+      "title": "朱正色涉世雄譚八卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱正色涉世雄譚八卷",
+      "_author": "朱正色",
+      "_title_only": "涉世雄譚"
+    },
+    {
+      "title": "胡汝桂歴代當機録六卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡汝桂歴代當機録六卷",
+      "_author": "胡汝桂",
+      "_title_only": "歴代當機録",
+      "work_id": "d59f6enq7sar",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "黄正賔續錄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄正賔續錄一卷",
+      "_title_only": "黄正賔續錄",
+      "_no_author": "待考"
+    },
+    {
+      "title": "黄仁溥明經世要畧五卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄仁溥明經世要畧五卷",
+      "_title_only": "黄仁溥明經世要畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "徐標兵機纂要四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐標兵機纂要四卷⟨崇禎中進呈⟩",
+      "author_info": "崇禎中進呈",
+      "_author": "徐標",
+      "_title_only": "兵機纂要"
+    },
+    {
+      "title": "又兵書纂要十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又兵書纂要十卷",
+      "_author": "徐標",
+      "_title_only": "兵書纂要",
+      "_author_src": "又條承上",
+      "work_id": "d59f6enpwjra",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "韓雲武徳内外編",
+      "level": 3,
+      "type": "book",
+      "content": "韓雲武徳内外編",
+      "_author": "韓雲",
+      "_title_only": "武徳内外編",
+      "work_id": "d59f6enplb7r",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張家玉百將妙畧",
+      "level": 3,
+      "type": "book",
+      "content": "張家玉百將妙畧",
+      "_author": "張家玉",
+      "_title_only": "百將妙畧",
+      "work_id": "d59f6enpwjr4",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "王模纛記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王模纛記一卷",
+      "_author": "王模",
+      "_title_only": "纛記",
+      "work_id": "d59f6enpwjr8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "沈津忠武録四卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈津忠武録四卷",
+      "_author": "沈津",
+      "_title_only": "忠武録",
+      "work_id": "d59f6enq7sap",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "瞿汝稷兵畧纂聞十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿汝稷兵畧纂聞十二卷",
+      "_author": "瞿汝稷",
+      "_title_only": "兵畧纂聞",
+      "work_id": "d59f6enpwjr5",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "閻禹錫武學詞範",
+      "level": 3,
+      "type": "book",
+      "content": "閻禹錫武學詞範",
+      "_author": "閻禹錫",
+      "_title_only": "武學詞範",
+      "work_id": "d59f6eho0wlf",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "歸醇子師尚五卷",
+      "level": 3,
+      "type": "book",
+      "content": "歸醇子師尚五卷",
+      "_title_only": "歸醇子師尚",
+      "_no_author": "待考"
+    },
+    {
+      "title": "徐琳經世奇謀八卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐琳經世奇謀八卷",
+      "_author": "徐琳",
+      "_title_only": "經世奇謀",
+      "work_id": "d59f6ehnefid",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳璠師律提綱一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳璠師律提綱一卷⟨髙郵州人太原左衞千户凡六篇⟩",
+      "author_info": "髙郵州人太原左衞千户凡六篇",
+      "_author": "陳璠",
+      "_title_only": "師律提綱",
+      "work_id": "d59f6ehnpo1t",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張泰軍全集成一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張泰軍全集成一卷",
+      "_author": "張泰",
+      "_title_only": "軍全集成",
+      "work_id": "d59f6eho0wlh",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "何良臣軍權二卷陣紀二卷",
+      "level": 3,
+      "type": "book",
+      "content": "何良臣軍權二卷陣紀二卷⟨餘姚人又有利器圖攷制勝便宜未刻⟩",
+      "author_info": "餘姚人又有利器圖攷制勝便宜未刻",
+      "_author": "何良臣",
+      "_title_only": "軍權二卷陣紀",
+      "work_id": "d59f6ehnefic",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "谷中虚水兵陣令一卷",
+      "level": 3,
+      "type": "book",
+      "content": "谷中虚水兵陣令一卷",
+      "_title_only": "谷中虚水兵陣令",
+      "_no_author": "待考"
+    },
+    {
+      "title": "又撡法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又撡法一卷",
+      "_title_only": "撡法"
+    },
+    {
+      "title": "又陸兵律令一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又陸兵律令一卷",
+      "_title_only": "陸兵律令"
+    },
+    {
+      "title": "又撡法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又撡法一卷",
+      "_title_only": "撡法"
+    },
+    {
+      "title": "范景文師律十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "范景文師律十六卷",
+      "_author": "范景文",
+      "_title_only": "師律"
+    },
+    {
+      "title": "戴安忠愛八陣圖説",
+      "level": 3,
+      "type": "book",
+      "content": "戴安忠愛八陣圖説",
+      "_author": "戴安",
+      "_title_only": "忠愛八陣圖説",
+      "work_id": "d59f6ehnpo1z",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "戴琥編定八陣圖",
+      "level": 3,
+      "type": "book",
+      "content": "戴琥編定八陣圖",
+      "_author": "戴琥",
+      "_title_only": "編定八陣圖",
+      "work_id": "d59f6eho0wli",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "藍章八陣合變圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "藍章八陣合變圖説一卷",
+      "_author": "藍章",
+      "_title_only": "八陣合變圖説",
+      "work_id": "d59f6eho0wld",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "龍正八陣圖演注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "龍正八陣圖演注一卷",
+      "_author": "龍正",
+      "_title_only": "八陣圖演注"
+    },
+    {
+      "title": "許論破鹵新陣圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "許論破鹵新陣圖説一卷",
+      "_author": "許論",
+      "_title_only": "破鹵新陣圖説",
+      "work_id": "d59f6ehnpo1y",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "章昶八陣圖演義",
+      "level": 3,
+      "type": "book",
+      "content": "章昶八陣圖演義⟨施州衞指揮仕㕘將征四川鄢藍二賊有功⟩",
+      "author_info": "施州衞指揮仕㕘將征四川鄢藍二賊有功",
+      "_title_only": "章昶八陣圖演義",
+      "_no_author": "待考",
+      "work_id": "d59f6el22ozp",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "徐常陣法舉要一卷附八陣圖數一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐常陣法舉要一卷附八陣圖數一卷",
+      "_author": "徐常",
+      "_title_only": "陣法舉要一卷附八陣圖數",
+      "work_id": "d59f6eho0wlc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳棐八陣圖説",
+      "level": 3,
+      "type": "book",
+      "content": "陳棐八陣圖説",
+      "_author": "陳棐",
+      "_title_only": "八陣圖説",
+      "work_id": "d59f6ehnpo1x",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又大車陣圖攷",
+      "level": 3,
+      "type": "book",
+      "content": "又大車陣圖攷",
+      "_author": "陳棐",
+      "_title_only": "大車陣圖攷",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehnefif",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "霍文玉八陣圖要訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "霍文玉八陣圖要訣二卷",
+      "_author": "霍文",
+      "_title_only": "玉八陣圖要訣",
+      "work_id": "d59f6ehnpo1s",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "孫承宗車營百八扣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫承宗車營百八扣一卷",
+      "_author": "孫承宗",
+      "_title_only": "車營百八扣"
+    },
+    {
+      "title": "畢侍御戰陣圖説三卷",
+      "level": 3,
+      "type": "book",
+      "content": "畢侍御戰陣圖説三卷",
+      "_title_only": "畢侍御戰陣圖説",
+      "_no_author": "待考"
+    },
+    {
+      "title": "俞大猷劍經",
+      "level": 3,
+      "type": "book",
+      "content": "俞大猷劍經",
+      "_author": "俞大猷",
+      "_title_only": "劍經",
+      "work_id": "d59f6ehnpo1w",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "温綸利器解",
+      "level": 3,
+      "type": "book",
+      "content": "温綸利器解",
+      "_title_only": "温綸利器解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "趙士禎東嘉神器譜四卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙士禎東嘉神器譜四卷",
+      "_title_only": "趙士禎東嘉神器譜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "孫堪弩攷",
+      "level": 3,
+      "type": "book",
+      "content": "孫堪弩攷",
+      "_author": "孫堪",
+      "_title_only": "弩攷",
+      "work_id": "d59f6estg35s",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "程宗猷少陵棍法闡宗三卷",
+      "level": 3,
+      "type": "book",
+      "content": "程宗猷少陵棍法闡宗三卷",
+      "_author": "程宗",
+      "_title_only": "猷少陵棍法闡宗",
+      "work_id": "d59f6estrbpg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又蹶張心法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又蹶張心法一卷",
+      "_author": "程宗",
+      "_title_only": "蹶張心法",
+      "_author_src": "又條承上",
+      "work_id": "d59f6esu2k8y",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "前二書總名耕餘剰技",
+      "level": 3,
+      "type": "book",
+      "content": "前二書總名耕餘剰技",
+      "_title_only": "前二書總名耕餘剰技",
+      "_no_author": "待考"
+    },
+    {
+      "title": "張畫孫學詩西洋火攷圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張畫孫學詩西洋火攷圖説一卷",
+      "_author": "張畫",
+      "_title_only": "孫學詩西洋火攷圖説",
+      "work_id": "d59f6est4umc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "髙第乗城要法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "髙第乗城要法一卷",
+      "_title_only": "髙第乗城要法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "王應遴備書二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應遴備書二十卷",
+      "_author": "王應遴",
+      "_title_only": "備書"
+    },
+    {
+      "title": "錢㮵城守要畧五卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢㮵城守要畧五卷",
+      "_title_only": "錢㮵城守要畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "馮清保生管見一卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮清保生管見一卷⟨集懸石懸鎗之法⟩",
+      "author_info": "集懸石懸鎗之法",
+      "_author": "馮清",
+      "_title_only": "保生管見",
+      "work_id": "d59f6estrbpe",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又固本迂談一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又固本迂談一卷",
+      "_author": "馮清",
+      "_title_only": "固本迂談",
+      "_author_src": "又條承上",
+      "work_id": "d59f6esu2k92",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "池本理注竒門遁甲烟波釣叟歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "池本理注竒門遁甲烟波釣叟歌一卷",
+      "_author": "池本理",
+      "_title_only": "注竒門遁甲烟波釣叟歌",
+      "work_id": "d59f6est4umb",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又注兵法要畧八門遁法機一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又注兵法要畧八門遁法機一卷",
+      "_author": "池本理",
+      "_title_only": "注兵法要畧八門遁法機",
+      "_author_src": "又條承上",
+      "work_id": "d59f6esu2k8w",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又禽星易見四卷",
+      "level": 3,
+      "type": "book",
+      "content": "又禽星易見四卷",
+      "_author": "池本理",
+      "_title_only": "禽星易見",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "劉翔竒門遁甲兵機書二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉翔竒門遁甲兵機書二十卷",
+      "_author": "劉翔",
+      "_title_only": "竒門遁甲兵機書"
+    },
+    {
+      "title": "胡獻忠八門神書",
+      "level": 3,
+      "type": "book",
+      "content": "胡獻忠八門神書",
+      "_author": "胡獻忠",
+      "_title_only": "八門神書"
+    },
+    {
+      "title": "李克家戎事類占二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李克家戎事類占二十一卷",
+      "_author": "李克家",
+      "_title_only": "戎事類占"
+    },
+    {
+      "title": "陳傅良歴代兵制六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳傅良歴代兵制六卷",
+      "_author": "陳傅良",
+      "_title_only": "歴代兵制"
+    },
+    {
+      "title": "章頴南渡十將傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "章頴南渡十將傳十卷",
+      "_author": "章頴",
+      "_title_only": "南渡十將傳",
+      "work_id": "d59f6estrbpi",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "華岳翠微先生北征録三卷",
+      "level": 3,
+      "type": "book",
+      "content": "華岳翠微先生北征録三卷",
+      "_author": "華岳",
+      "_title_only": "翠微先生北征録"
+    },
+    {
+      "title": "張守愚平遼議三篇",
+      "level": 3,
+      "type": "book",
+      "content": "張守愚平遼議三篇",
+      "_author": "張守愚",
+      "_title_only": "平遼議"
+    },
+    {
+      "title": "趙孟頫禽賊一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙孟頫禽賊一卷",
+      "_author": "趙孟頫",
+      "_title_only": "禽賊",
+      "work_id": "d59f6esu2k8x",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程時登八陣圖解",
+      "level": 3,
+      "type": "book",
+      "content": "程時登八陣圖解",
+      "_author": "程時登",
+      "_title_only": "八陣圖解"
+    },
+    {
+      "title": "俞在明用武提要二十篇",
+      "level": 3,
+      "type": "book",
+      "content": "俞在明用武提要二十篇⟨錢塘人貝瓊為序⟩",
+      "author_info": "錢塘人貝瓊為序",
+      "_author": "俞在明",
+      "_title_only": "用武提要"
+    },
+    {
+      "title": "秦輔之武事要畧",
+      "level": 3,
+      "type": "book",
+      "content": "秦輔之武事要畧",
+      "_author": "秦輔之",
+      "_title_only": "武事要畧",
+      "work_id": "d59f6etl87i9",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "王欵三式風角用法立成十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王欵三式風角用法立成十二卷⟨不知時代⟩",
+      "author_info": "不知時代",
+      "_title_only": "三式風角用法立成",
+      "_author": "王欵",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ejd7f2f",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "武學經傳二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "武學經傳二十四卷⟨以下不知撰人并時代⟩",
+      "author_info": "以下不知撰人并時代",
+      "_title_only": "武學經傳",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "孫子衍義三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子衍義三卷",
+      "_author": "孫子",
+      "_title_only": "衍義",
+      "work_id": "d59f6etkwyyo",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "孫子注畧四卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子注畧四卷",
+      "_author": "孫子",
+      "_title_only": "注畧",
+      "work_id": "d59f6etklqf7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "孫子握機緯十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫子握機緯十三卷",
+      "_author": "孫子",
+      "_title_only": "握機緯",
+      "work_id": "d59f6etl87i8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "武經新書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武經新書一卷",
+      "_title_only": "武經新書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "續武經節要八卷",
+      "level": 3,
+      "type": "book",
+      "content": "續武經節要八卷",
+      "_title_only": "續武經節要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "圯渭叟十八法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "圯渭叟十八法一卷",
+      "_title_only": "圯渭叟十八法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "講武全書兵覽三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "講武全書兵覽三十二卷",
+      "_title_only": "講武全書兵覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "兵律三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵律三十八卷",
+      "_title_only": "兵律",
+      "_no_author": "待考"
+    },
+    {
+      "title": "兵占二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵占二十四卷",
+      "_title_only": "兵占",
+      "_no_author": "待考"
+    },
+    {
+      "title": "兵法心要十論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵法心要十論一卷",
+      "_title_only": "兵法心要十論",
+      "_no_author": "待考"
+    },
+    {
+      "title": "清華子戎軒小注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "清華子戎軒小注一卷",
+      "_author": "清華子",
+      "_title_only": "戎軒小注",
+      "_l2_flag": "尊稱字併回撰人",
+      "work_id": "d59f6etklqf9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "兵法八寶箴一卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵法八寶箴一卷",
+      "_title_only": "兵法八寶箴",
+      "_no_author": "待考"
+    },
+    {
+      "title": "必勝奇法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "必勝奇法一卷",
+      "_title_only": "必勝奇法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "兵機備纂十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "兵機備纂十三卷",
+      "_title_only": "兵機備纂",
+      "_no_author": "待考"
+    },
+    {
+      "title": "籌國勝著四卷",
+      "level": 3,
+      "type": "book",
+      "content": "籌國勝著四卷",
+      "_title_only": "籌國勝著",
+      "_no_author": "待考"
+    },
+    {
+      "title": "何朔治兵膚言二卷",
+      "level": 3,
+      "type": "book",
+      "content": "何朔治兵膚言二卷",
+      "_title_only": "何朔治兵膚言",
+      "_no_author": "待考"
+    },
+    {
+      "title": "大同鎮戰車營操法二卷",
+      "level": 3,
+      "type": "book",
+      "content": "大同鎮戰車營操法二卷",
+      "_title_only": "大同鎮戰車營操法",
+      "_no_author": "官修／題名即書名",
+      "_why": "同上",
+      "_flags": [
+        "撰人已改切"
+      ]
+    },
+    {
+      "title": "復套陣圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "復套陣圖一卷",
+      "_title_only": "復套陣圖",
+      "_no_author": "待考"
+    },
+    {
+      "title": "火攻陣法三卷",
+      "level": 3,
+      "type": "book",
+      "content": "火攻陣法三卷",
+      "_title_only": "火攻陣法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "火葯妙品一卷",
+      "level": 3,
+      "type": "book",
+      "content": "火葯妙品一卷",
+      "_title_only": "火葯妙品",
+      "_no_author": "待考"
+    },
+    {
+      "title": "城書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "城書四卷",
+      "_title_only": "城書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "城守要機七卷",
+      "level": 3,
+      "type": "book",
+      "content": "城守要機七卷",
+      "_title_only": "城守要機",
+      "_no_author": "待考"
+    },
+    {
+      "title": "武藝要畧二卷",
+      "level": 3,
+      "type": "book",
+      "content": "武藝要畧二卷",
+      "_title_only": "武藝要畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "百戰奇法十卷",
+      "level": 3,
+      "type": "book",
+      "content": "百戰奇法十卷",
+      "_title_only": "百戰奇法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "行軍須知二卷",
+      "level": 3,
+      "type": "book",
+      "content": "行軍須知二卷",
+      "_title_only": "行軍須知",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陣圖襍輯十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陣圖襍輯十卷",
+      "_title_only": "陣圖襍輯",
+      "_no_author": "待考"
+    },
+    {
+      "title": "火龍神器圖法六卷",
+      "level": 3,
+      "type": "book",
+      "content": "火龍神器圖法六卷",
+      "_title_only": "火龍神器圖法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "握機經傳六卷",
+      "level": 3,
+      "type": "book",
+      "content": "握機經傳六卷",
+      "_title_only": "握機經傳",
+      "_no_author": "待考"
+    },
+    {
+      "title": "戰寇神器二卷",
+      "level": 3,
+      "type": "book",
+      "content": "戰寇神器二卷",
+      "_title_only": "戰寇神器",
+      "_no_author": "待考"
+    },
+    {
+      "title": "又□冦陣圖二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又□冦陣圖二卷",
+      "_title_only": "□冦陣圖"
+    },
+    {
+      "title": "兵機便覽十冊",
+      "level": 3,
+      "type": "book",
+      "content": "兵機便覽十冊",
+      "_title_only": "兵機便覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天文類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "明清類天文分野書二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "明清類天文分野書二十四卷⟨洪武十七年閏十月命羣臣編輯書成賜燕周齊楚等六王其書以十二分野星次分配天下郡縣又于郡縣之下詳載古今沿革之由⟩",
+      "author_info": "洪武十七年閏十月命羣臣編輯書成賜燕周齊楚等六王其書以十二分野星次分配天下郡縣又于郡縣之下詳載古今沿革之由",
+      "_title_only": "明清類天文分野書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天元玉厯祥異賦七卷",
+      "level": 3,
+      "type": "book",
+      "content": "天元玉厯祥異賦七卷⟨洪熙元年正月仁宗初行是書以示侍臣曰天道人事未有判為二道有動于此即應于彼此書言簡理當左右輔臣亦宜知之因親製序頒賜諸公卿⟩",
+      "author_info": "洪熙元年正月仁宗初行是書以示侍臣曰天道人事未有判為二道有動于此即應于彼此書言簡理當左右輔臣亦宜知之因親製序頒賜諸公卿",
+      "_title_only": "天元玉厯祥異賦",
+      "_no_author": "待考",
+      "work_id": "d59f6el2p62r",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "觀象玩占十卷",
+      "level": 3,
+      "type": "book",
+      "content": "觀象玩占十卷⟨不知撰人一本四十九卷⟩",
+      "author_info": "不知撰人一本四十九卷",
+      "_title_only": "觀象玩占",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "李泰補岳熙載注天文精義賦五卷",
+      "level": 3,
+      "type": "book",
+      "content": "李泰補岳熙載注天文精義賦五卷",
+      "_author": "李泰",
+      "_title_only": "補岳熙載注天文精義賦",
+      "work_id": "d59f6el572f6",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "劉基天文秘畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基天文秘畧一卷",
+      "_author": "劉基",
+      "_title_only": "天文秘畧",
+      "work_id": "d59f6el572fa",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "葉子奇元理一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉子奇元理一卷",
+      "_author": "葉子奇",
+      "_title_only": "元理",
+      "_emended": "缺字據適園本補",
+      "_orig": "葉子奇□理"
+    },
+    {
+      "title": "楊廉星畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊廉星畧一卷",
+      "_author": "楊廉",
+      "_title_only": "星畧",
+      "work_id": "d59f6el4vtvp",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張淵革象新書",
+      "level": 3,
+      "type": "book",
+      "content": "張淵革象新書",
+      "_author": "張淵",
+      "_title_only": "革象新書",
+      "_emended": "缺字據適園本補",
+      "_orig": "張□革象新書",
+      "work_id": "d59f6ejdinlw",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又天文六壬圖説",
+      "level": 3,
+      "type": "book",
+      "content": "又天文六壬圖説",
+      "_author": "張淵",
+      "_title_only": "天文六壬圖説",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ei075s6",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "程廷䇿星官筆記",
+      "level": 3,
+      "type": "book",
+      "content": "程廷䇿星官筆記",
+      "_title_only": "程廷䇿星官筆記",
+      "_no_author": "待考",
+      "work_id": "d59f6esqmy9x",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "王應電天文㑹通一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應電天文㑹通一卷",
+      "_author": "王應電",
+      "_title_only": "天文㑹通",
+      "work_id": "d59f6ehzvx8j",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "周述學神道大編象宗圖",
+      "level": 3,
+      "type": "book",
+      "content": "周述學神道大編象宗圖⟨字繼志山陰人精心術數嘗入胡宗憲幕佐平倭有功神道大編凡十餘卷今存者僅十一二而已⟩",
+      "author_info": "字繼志山陰人精心術數嘗入胡宗憲幕佐平倭有功神道大編凡十餘卷今存者僅十一二而已",
+      "_author": "周述學",
+      "_title_only": "神道大編象宗圖",
+      "work_id": "d59f6ehzvx8n",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又周雲淵文選六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又周雲淵文選六卷",
+      "_author": "周述學",
+      "_title_only": "周雲淵文選",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ei0tmv5",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又乾坤體義",
+      "level": 3,
+      "type": "book",
+      "content": "又乾坤體義",
+      "_author": "周述學",
+      "_title_only": "乾坤體義",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ejd7f2g",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又天文圖學一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又天文圖學一卷",
+      "_author": "周述學",
+      "_title_only": "天文圖學",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "吳珫天文要義",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫天文要義",
+      "_author": "吳珫",
+      "_title_only": "天文要義"
+    },
+    {
+      "title": "袁祥彗星占驗",
+      "level": 3,
+      "type": "book",
+      "content": "袁祥彗星占驗",
+      "_author": "袁祥",
+      "_title_only": "彗星占驗",
+      "work_id": "d59f6ehzvx8i",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "鍾繼元渾象拆觀",
+      "level": 3,
+      "type": "book",
+      "content": "鍾繼元渾象拆觀⟨字仁卿桐郷人嘉靖壬戌進士湖廣僉事⟩",
+      "author_info": "字仁卿桐郷人嘉靖壬戌進士湖廣僉事",
+      "_author": "鍾繼元",
+      "_title_only": "渾象拆觀",
+      "work_id": "d59f6ei075s3",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "范守已天官舉正六卷",
+      "level": 3,
+      "type": "book",
+      "content": "范守已天官舉正六卷",
+      "_title_only": "天官舉正",
+      "_author": "范守已",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ejd7f2d",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陸促天文地理星度分野集要四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸促天文地理星度分野集要四卷",
+      "_title_only": "天文地理星度分野集要",
+      "_author": "陸促",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ejd7f2e",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王臣夔測候圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王臣夔測候圖説一卷",
+      "_author": "王臣夔",
+      "_title_only": "測候圖説"
+    },
+    {
+      "title": "黄履康管窺畧三卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄履康管窺畧三卷",
+      "_title_only": "黄履康管窺畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "黄鍾和天文星象攷一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄鍾和天文星象攷一卷⟨自稱清源山人⟩",
+      "author_info": "自稱清源山人",
+      "_title_only": "黄鍾和天文星象攷",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6esqmy9y",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "尹遂祈天文備攷",
+      "level": 3,
+      "type": "book",
+      "content": "尹遂祈天文備攷⟨字鏡陽東莞人萬厯辛丑進士同安令以抗直去官通陰陽術數之學⟩",
+      "author_info": "字鏡陽東莞人萬厯辛丑進士同安令以抗直去官通陰陽術數之學",
+      "_author": "尹遂祈",
+      "_title_only": "天文備攷",
+      "work_id": "d59f6ehbjev5",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又天元玉策解",
+      "level": 3,
+      "type": "book",
+      "content": "又天元玉策解",
+      "_author": "尹遂祈",
+      "_title_only": "天元玉策解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehbjev4",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "楊惟休天文書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊惟休天文書四卷",
+      "_author": "楊惟休",
+      "_title_only": "天文書"
+    },
+    {
+      "title": "陳鍾盛天文月鏡",
+      "level": 3,
+      "type": "book",
+      "content": "陳鍾盛天文月鏡⟨字懷我臨川人萬厯己未進士山東副使⟩",
+      "author_info": "字懷我臨川人萬厯己未進士山東副使",
+      "_author": "陳鍾盛",
+      "_title_only": "天文月鏡",
+      "work_id": "d59f6ehez0ue",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "趙宦光九圜史一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙宦光九圜史一卷",
+      "_author": "趙宦光",
+      "_title_only": "九圜史"
+    },
+    {
+      "title": "余文龍祥異圖説七卷",
+      "level": 3,
+      "type": "book",
+      "content": "余文龍祥異圖説七卷⟨字起潛福建古田人萬厯辛丑進士贛州知府左遷真定同知⟩",
+      "author_info": "字起潛福建古田人萬厯辛丑進士贛州知府左遷真定同知",
+      "_author": "余文龍",
+      "_title_only": "祥異圖説",
+      "work_id": "d59f6ehfa9ds",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李之藻渾蓋通憲圖説二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李之藻渾蓋通憲圖説二卷",
+      "_author": "李之藻",
+      "_title_only": "渾蓋通憲圖説"
+    },
+    {
+      "title": "利瑪竇勾股義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "利瑪竇勾股義一卷",
+      "_author": "利瑪竇",
+      "_title_only": "勾股義",
+      "work_id": "d59f6ejdinlv",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又表度説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又表度説一卷",
+      "_author": "利瑪竇",
+      "_title_only": "表度説",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ep8j2te",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又圜容較義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又圜容較義一卷",
+      "_author": "利瑪竇",
+      "_title_only": "圜容較義",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ejdinlu",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又測量法義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又測量法義一卷",
+      "_author": "利瑪竇",
+      "_title_only": "測量法義",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eje54ow",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又天問畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又天問畧一卷",
+      "_author": "利瑪竇",
+      "_title_only": "天問畧",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ep8j2tc",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又泰西水法六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又泰西水法六卷",
+      "_author": "利瑪竇",
+      "_title_only": "泰西水法",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egvmb5y",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又簡平儀説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又簡平儀説一卷⟨熊三拔⟩",
+      "author_info": "熊三拔",
+      "_author": "利瑪竇",
+      "_title_only": "簡平儀説",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ep8j2td",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又測量異同一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又測量異同一卷",
+      "_author": "利瑪竇",
+      "_title_only": "測量異同",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egvb2me",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "李天經渾天儀説五卷",
+      "level": 3,
+      "type": "book",
+      "content": "李天經渾天儀説五卷⟨崇禎中編湯若望授意李天經編修⟩",
+      "author_info": "崇禎中編湯若望授意李天經編修",
+      "_author": "李天經",
+      "_title_only": "渾天儀説"
+    },
+    {
+      "title": "王應遴乾象圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應遴乾象圖説一卷⟨山陰人崇禎中官大理寺評事詔勅房辦事中書舍人⟩",
+      "author_info": "山陰人崇禎中官大理寺評事詔勅房辦事中書舍人",
+      "_author": "王應遴",
+      "_title_only": "乾象圖説"
+    },
+    {
+      "title": "陳胤昌天文地理圖説",
+      "level": 3,
+      "type": "book",
+      "content": "陳胤昌天文地理圖説⟨字克彝丹徒人崇禎中與徐光啟論厯法又為張國維修吳中水利書⟩",
+      "author_info": "字克彝丹徒人崇禎中與徐光啟論厯法又為張國維修吳中水利書",
+      "_author": "陳胤昌",
+      "_title_only": "天文地理圖説",
+      "_emended": "缺字據適園本補",
+      "_orig": "陳□昌天文地理圖説"
+    },
+    {
+      "title": "又天文躔次",
+      "level": 3,
+      "type": "book",
+      "content": "又天文躔次",
+      "_author": "陳胤昌",
+      "_title_only": "天文躔次",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eitupdy",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又歳時占驗",
+      "level": 3,
+      "type": "book",
+      "content": "又歳時占驗",
+      "_author": "陳胤昌",
+      "_title_only": "歳時占驗",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eitupds",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "李元庚乾象圖説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李元庚乾象圖説一卷",
+      "_author": "李元庚",
+      "_title_only": "乾象圖説"
+    },
+    {
+      "title": "陳藎謨象林一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳藎謨象林一卷",
+      "_author": "陳藎謨",
+      "_title_only": "象林"
+    },
+    {
+      "title": "宋應昌春秋繁露禱雨法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋應昌春秋繁露禱雨法一卷",
+      "_author": "宋應昌",
+      "_title_only": "春秋繁露禱雨法",
+      "work_id": "d59f6eitjgug",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "圖注天文祥異賦十卷",
+      "level": 3,
+      "type": "book",
+      "content": "圖注天文祥異賦十卷⟨以下不知撰人⟩",
+      "author_info": "以下不知撰人",
+      "_title_only": "圖注天文祥異賦",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "天文玉厯璇璣經五卷",
+      "level": 3,
+      "type": "book",
+      "content": "天文玉厯璇璣經五卷",
+      "_title_only": "天文玉厯璇璣經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天文鬼科竅一卷",
+      "level": 3,
+      "type": "book",
+      "content": "天文鬼科竅一卷",
+      "_title_only": "天文鬼科竅",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天元玉厯森羅記十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "天元玉厯森羅記十二卷",
+      "_title_only": "天元玉厯森羅記",
+      "_no_author": "待考"
+    },
+    {
+      "title": "經史言天録二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "經史言天録二十六卷",
+      "_title_only": "經史言天録",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天文玉瑞圖説",
+      "level": 3,
+      "type": "book",
+      "content": "天文玉瑞圖説",
+      "_title_only": "天文玉瑞圖説",
+      "_no_author": "待考"
+    },
+    {
+      "title": "分野指掌",
+      "level": 3,
+      "type": "book",
+      "content": "分野指掌",
+      "_title_only": "分野指掌",
+      "_no_author": "待考"
+    },
+    {
+      "title": "十一曜躔度",
+      "level": 3,
+      "type": "book",
+      "content": "十一曜躔度",
+      "_author": "十一",
+      "_title_only": "曜躔度",
+      "work_id": "d59f6eitjgue",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "九賢秘典兵政通書",
+      "level": 3,
+      "type": "book",
+      "content": "九賢秘典兵政通書",
+      "_title_only": "九賢秘典兵政通書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "欽天監職掌",
+      "level": 3,
+      "type": "book",
+      "content": "欽天監職掌",
+      "_title_only": "欽天監職掌",
+      "_no_author": "待考"
+    },
+    {
+      "title": "嘉隆天象録四十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "嘉隆天象録四十五卷",
+      "_title_only": "嘉隆天象録",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天文必用",
+      "level": 3,
+      "type": "book",
+      "content": "天文必用",
+      "_title_only": "天文必用",
+      "_no_author": "待考"
+    },
+    {
+      "title": "璇璣類聚",
+      "level": 3,
+      "type": "book",
+      "content": "璇璣類聚",
+      "_title_only": "璇璣類聚",
+      "_no_author": "待考"
+    },
+    {
+      "title": "西洋地震解",
+      "level": 3,
+      "type": "book",
+      "content": "西洋地震解",
+      "_title_only": "西洋地震解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "雷占三卷",
+      "level": 3,
+      "type": "book",
+      "content": "雷占三卷",
+      "_title_only": "雷占",
+      "_no_author": "待考"
+    },
+    {
+      "title": "乾坤體義",
+      "level": 3,
+      "type": "book",
+      "content": "乾坤體義",
+      "_title_only": "乾坤體義",
+      "_no_author": "待考"
+    },
+    {
+      "title": "風雲寳鑑",
+      "level": 3,
+      "type": "book",
+      "content": "風雲寳鑑",
+      "_title_only": "風雲寳鑑",
+      "_no_author": "待考"
+    },
+    {
+      "title": "天文占驗二卷",
+      "level": 3,
+      "type": "book",
+      "content": "天文占驗二卷",
+      "_title_only": "天文占驗",
+      "_no_author": "待考"
+    },
+    {
+      "title": "顔茂猷天道管窺",
+      "level": 3,
+      "type": "book",
+      "content": "顔茂猷天道管窺",
+      "_title_only": "顔茂猷天道管窺",
+      "_no_author": "待考",
+      "work_id": "d59f6esqy6tc",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "馬承勲風纂十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬承勲風纂十二卷⟨萬厯初蠡縣人首卷為占例餘則以日辰支干為序以驗風角⟩",
+      "author_info": "萬厯初蠡縣人首卷為占例餘則以日辰支干為序以驗風角",
+      "_title_only": "馬承勲風纂",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "吳雲天文志襍占一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳雲天文志襍占一卷",
+      "_author": "吳雲",
+      "_title_only": "天文志襍占",
+      "work_id": "d59f6eit88av",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "物象通占十卷",
+      "level": 3,
+      "type": "book",
+      "content": "物象通占十卷",
+      "_title_only": "物象通占",
+      "_no_author": "待考"
+    },
+    {
+      "title": "白猿經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "白猿經一卷",
+      "_title_only": "白猿經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "注釋風雨賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "注釋風雨賦一卷",
+      "_title_only": "注釋風雨賦",
+      "_no_author": "待考"
+    },
+    {
+      "title": "錢春五行類應八卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢春五行類應八卷",
+      "_author": "錢春",
+      "_title_only": "五行類應"
+    },
+    {
+      "title": "五行類事占徵驗九卷",
+      "level": 3,
+      "type": "book",
+      "content": "五行類事占徵驗九卷",
+      "_title_only": "五行類事占徵驗",
+      "_no_author": "待考"
+    },
+    {
+      "title": "觀乾識變六卷",
+      "level": 3,
+      "type": "book",
+      "content": "觀乾識變六卷",
+      "_title_only": "觀乾識變",
+      "_no_author": "待考"
+    },
+    {
+      "title": "楊雲翼縣象賦一篇",
+      "level": 3,
+      "type": "book",
+      "content": "楊雲翼縣象賦一篇",
+      "_author": "楊雲翼",
+      "_title_only": "縣象賦"
+    },
+    {
+      "title": "又五星聚井辨一篇",
+      "level": 3,
+      "type": "book",
+      "content": "又五星聚井辨一篇",
+      "_author": "楊雲翼",
+      "_title_only": "五星聚井辨",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "趙友欽革象星新書二卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙友欽革象星新書二卷⟨字縁督德興人⟩",
+      "author_info": "字縁督德興人",
+      "_author": "趙友欽",
+      "_title_only": "革象星新書",
+      "work_id": "d59f6eitjgua",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "厯數類",
+      "level": 3,
+      "type": "book",
+      "content": "厯數類",
+      "_title_only": "厯數類",
+      "_no_author": "待考"
+    },
+    {
+      "title": "大統厯法四卷",
+      "level": 3,
+      "type": "book",
+      "content": "大統厯法四卷",
+      "_title_only": "大統厯法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "太陽通軌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太陽通軌一卷",
+      "_title_only": "太陽通軌",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "交食通軌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "交食通軌一卷",
+      "_title_only": "交食通軌",
+      "_no_author": "待考"
+    },
+    {
+      "title": "元統厯法通軌二卷",
+      "level": 3,
+      "type": "book",
+      "content": "元統厯法通軌二卷⟨洪武十七年官欽天監博士始定厯法以洪武甲子為厯元後官監正⟩",
+      "author_info": "洪武十七年官欽天監博士始定厯法以洪武甲子為厯元後官監正",
+      "_title_only": "元統厯法通軌",
+      "_no_author": "待考",
+      "work_id": "d59f6esogagx",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "劉信厯法通經四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉信厯法通經四卷",
+      "_author": "劉信",
+      "_title_only": "厯法通經",
+      "work_id": "d59f6eitjguc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馬沙亦理囘囘厯法三卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬沙亦理囘囘厯法三卷⟨釋例一卷經緯立成⟩",
+      "author_info": "釋例一卷經緯立成",
+      "_title_only": "馬沙亦理囘囘厯法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "左贊厯解易覽一卷",
+      "level": 3,
+      "type": "book",
+      "content": "左贊厯解易覽一卷⟨盱江人⟩",
+      "author_info": "盱江人",
+      "_author": "左贊",
+      "_title_only": "厯解易覽",
+      "work_id": "d59f6eitjguf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "吕柟寒暑經圖解",
+      "level": 3,
+      "type": "book",
+      "content": "吕柟寒暑經圖解",
+      "_title_only": "吕柟寒暑經圖解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "邢雲路古今律厯攷七十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "邢雲路古今律厯攷七十二卷",
+      "_author": "邢雲路",
+      "_title_only": "古今律厯攷",
+      "work_id": "d59f6em6cb2f",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又戊申立春考正一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又戊申立春考正一卷",
+      "_author": "邢雲路",
+      "_title_only": "戊申立春考正",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6ys5c",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又庚申冬至正訛一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又庚申冬至正訛一卷",
+      "_author": "邢雲路",
+      "_title_only": "庚申冬至正訛",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6cb2c",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又大乙厯元",
+      "level": 3,
+      "type": "book",
+      "content": "又大乙厯元",
+      "_author": "邢雲路",
+      "_title_only": "大乙厯元",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6cb2e",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又七政真義",
+      "level": 3,
+      "type": "book",
+      "content": "又七政真義⟨缺⟩",
+      "author_info": "缺",
+      "_author": "邢雲路",
+      "_title_only": "七政真義",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6ys5d",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "徐光啟崇禎厯書一百十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐光啟崇禎厯書一百十卷⟨厯書總目一卷日躔厯指四卷日躔表二卷恒星厯指三卷恒星一卷又恒星圗系一卷又恒星厯表四卷恒星經緯表二卷恒星出没表二卷月離厯指四卷月離表六巻交食厯指七卷五緯厯指九卷五緯表十卷測天約説二卷天測二卷割圖八線表六卷黄道升度表七卷黄道赤距圖表一卷通率表二卷元史揆日訂訛一卷通率立成表一卷散表一卷測圓八線立成長表四卷厯指一卷測量全義一卷比例規解一卷測量缺十卷南北髙弧表十二卷諸方半晝分表一卷諸方晨昏分表一卷崇禎二年五月初一日日入欽天監推算晷刻不合光啟時為禮部左侍郎因上疏請重修厯法帝是之命光啟與李之藻王應逺及西洋人羅雅谷龍華氏鄧玉函湯若望同修陸續成書迄六年九月而成⟩",
+      "author_info": "厯書總目一卷日躔厯指四卷日躔表二卷恒星厯指三卷恒星一卷又恒星圗系一卷又恒星厯表四卷恒星經緯表二卷恒星出没表二卷月離厯指四卷月離表六巻交食厯指七卷五緯厯指九卷五緯表十卷測天約説二卷天測二卷割圖八線表六卷黄道升度表七卷黄道赤距圖表一卷通率表二卷元史揆日訂訛一卷通率立成表一卷散表一卷測圓八線立成長表四卷厯指一卷測量全義一卷比例規解一卷測量缺十卷南北髙弧表十二卷諸方半晝分表一卷諸方晨昏分表一卷崇禎二年五月初一日日入欽天監推算晷刻不合光啟時為禮部左侍郎因上疏請重修厯法帝是之命光啟與李之藻王應逺及西洋人羅雅谷龍華氏鄧玉函湯若望同修陸續成書迄六年九月而成",
+      "_author": "徐光啟",
+      "_title_only": "崇禎厯書",
+      "work_id": "d59f6em6cb2a",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又厯學小辨一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又厯學小辨一卷",
+      "_author": "徐光啟",
+      "_title_only": "厯學小辨",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6njlx",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又厯學日辨五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又厯學日辨五卷",
+      "_author": "徐光啟",
+      "_title_only": "厯學日辨",
+      "_author_src": "又條承上",
+      "work_id": "d59f6em6ys5f",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "羅雅谷籌算一卷",
+      "level": 3,
+      "type": "book",
+      "content": "羅雅谷籌算一卷",
+      "_title_only": "羅雅谷籌算",
+      "_no_author": "待考"
+    },
+    {
+      "title": "王英明厯體畧三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王英明厯體畧三卷⟨大名人⟩",
+      "author_info": "大名人",
+      "_author": "王英明",
+      "_title_only": "厯體畧",
+      "work_id": "d59f6em6njm0",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "何三省厯法同異考",
+      "level": 3,
+      "type": "book",
+      "content": "何三省厯法同異考",
+      "_author": "何三省",
+      "_title_only": "厯法同異考",
+      "work_id": "d59f6em6njlu",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "厯法統宗十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "厯法統宗十二卷⟨不知撰人⟩",
+      "author_info": "不知撰人",
+      "_title_only": "厯法統宗",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "厯法集成四卷",
+      "level": 3,
+      "type": "book",
+      "content": "厯法集成四卷",
+      "_title_only": "厯法集成",
+      "_no_author": "待考"
+    },
+    {
+      "title": "西域日月交食通軌法大全",
+      "level": 3,
+      "type": "book",
+      "content": "西域日月交食通軌法大全",
+      "_title_only": "西域日月交食通軌法大全",
+      "_no_author": "待考"
+    },
+    {
+      "title": "賈信臺厯百中經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "賈信臺厯百中經一卷⟨順天府欽天監五官司厯人⟩",
+      "author_info": "順天府欽天監五官司厯人",
+      "_author": "賈信",
+      "_title_only": "臺厯百中經",
+      "work_id": "d59f6em6njlz",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "百中經十卷",
+      "level": 3,
+      "type": "book",
+      "content": "百中經十卷",
+      "_title_only": "百中經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "經緯厯書八卷",
+      "level": 3,
+      "type": "book",
+      "content": "經緯厯書八卷",
+      "_title_only": "經緯厯書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "七政全書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "七政全書四卷",
+      "_title_only": "七政全書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "西洋測食畧",
+      "level": 3,
+      "type": "book",
+      "content": "西洋測食畧",
+      "_title_only": "西洋測食畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "大明厯十卷",
+      "level": 3,
+      "type": "book",
+      "content": "大明厯十卷⟨天㑹五年修⟩",
+      "author_info": "天㑹五年修",
+      "_title_only": "大明厯",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "趙知微重修大明厯",
+      "level": 3,
+      "type": "book",
+      "content": "趙知微重修大明厯⟨司天監⟩",
+      "author_info": "司天監",
+      "_author": "趙知微",
+      "_title_only": "重修大明厯",
+      "work_id": "d59f6em6njlt",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張行簡改定太乙新厯",
+      "level": 3,
+      "type": "book",
+      "content": "張行簡改定太乙新厯",
+      "_author": "張行簡",
+      "_title_only": "改定太乙新厯",
+      "work_id": "d59f6efk68lg",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "耶律履乙未厯",
+      "level": 3,
+      "type": "book",
+      "content": "耶律履乙未厯",
+      "_author": "耶律履",
+      "_title_only": "乙未厯",
+      "work_id": "d59f6efjv020",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "耶律楚材庚午元厯二卷",
+      "level": 3,
+      "type": "book",
+      "content": "耶律楚材庚午元厯二卷",
+      "_author": "耶律楚材",
+      "_title_only": "庚午元厯"
+    },
+    {
+      "title": "又厯説",
+      "level": 3,
+      "type": "book",
+      "content": "又厯説",
+      "_author": "耶律楚材",
+      "_title_only": "厯説",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efkhh51",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又乙未元厯",
+      "level": 3,
+      "type": "book",
+      "content": "又乙未元厯",
+      "_author": "耶律楚材",
+      "_title_only": "乙未元厯",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efk68ld",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又囘鵑厯",
+      "level": 3,
+      "type": "book",
+      "content": "又囘鵑厯",
+      "_author": "耶律楚材",
+      "_title_only": "囘鵑厯",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efk68lh",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "郭守敬授時厯推步七卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭守敬授時厯推步七卷",
+      "_author": "郭守敬",
+      "_title_only": "授時厯推步",
+      "work_id": "d59f6efkhh50",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又立成二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又立成二卷",
+      "_author": "郭守敬",
+      "_title_only": "立成",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又厯議擬藳三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又厯議擬藳三卷",
+      "_author": "郭守敬",
+      "_title_only": "厯議擬藳",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoai7m0",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又轉神選擇二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又轉神選擇二卷",
+      "_author": "郭守敬",
+      "_title_only": "轉神選擇",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又上中下三厯注式十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又上中下三厯注式十二卷",
+      "_author": "郭守敬",
+      "_title_only": "上中下三厯注式",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoai7ly",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又時候箋注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又時候箋注二卷",
+      "_author": "郭守敬",
+      "_title_only": "時候箋注",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又修改源流一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又修改源流一卷",
+      "_author": "郭守敬",
+      "_title_only": "修改源流",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又儀象法式二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又儀象法式二卷",
+      "_author": "郭守敬",
+      "_title_only": "儀象法式",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又二至晷景考二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又二至晷景考二十卷",
+      "_author": "郭守敬",
+      "_title_only": "二至晷景考",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又五行細行攷五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又五行細行攷五十卷",
+      "_author": "郭守敬",
+      "_title_only": "五行細行攷",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoatg5d",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又古今交食考一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又古今交食考一卷",
+      "_author": "郭守敬",
+      "_title_only": "古今交食考",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又新測二十八舍襍座諸星入宿去極一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又新測二十八舍襍座諸星入宿去極一卷",
+      "_author": "郭守敬",
+      "_title_only": "新測二十八舍襍座諸星入宿去極",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoai7lz",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又新測無名諸星一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又新測無名諸星一卷",
+      "_author": "郭守敬",
+      "_title_only": "新測無名諸星",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又月離攷一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又月離攷一卷",
+      "_author": "郭守敬",
+      "_title_only": "月離攷",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoai7lu",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "齊履謙二至晷景考二卷",
+      "level": 3,
+      "type": "book",
+      "content": "齊履謙二至晷景考二卷",
+      "_author": "齊履謙",
+      "_title_only": "二至晷景考"
+    },
+    {
+      "title": "又授時厯經串演撰八法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又授時厯經串演撰八法一卷",
+      "_author": "齊履謙",
+      "_title_only": "授時厯經串演撰八法",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eoai7lv",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "授時厯二卷",
+      "level": 3,
+      "type": "book",
+      "content": "授時厯二卷",
+      "_title_only": "授時厯",
+      "_no_author": "待考"
+    },
+    {
+      "title": "授時厯議二卷",
+      "level": 3,
+      "type": "book",
+      "content": "授時厯議二卷",
+      "_title_only": "授時厯議",
+      "_no_author": "待考"
+    },
+    {
+      "title": "授時厯法撮要",
+      "level": 3,
+      "type": "book",
+      "content": "授時厯法撮要",
+      "_title_only": "授時厯法撮要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "程時登閏法贅語",
+      "level": 3,
+      "type": "book",
+      "content": "程時登閏法贅語",
+      "_author": "程時登",
+      "_title_only": "閏法贅語"
+    },
+    {
+      "title": "五行類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "劉基玉洞金書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基玉洞金書一卷",
+      "_author": "劉基",
+      "_title_only": "玉洞金書"
+    },
+    {
+      "title": "胡宏周易黄金尺一卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡宏周易黄金尺一卷⟨正統間鄞縣人⟩",
+      "author_info": "正統間鄞縣人",
+      "_author": "胡宏",
+      "_title_only": "周易黄金尺"
+    },
+    {
+      "title": "許本清周易占法節要二卷",
+      "level": 3,
+      "type": "book",
+      "content": "許本清周易占法節要二卷⟨景泰間人⟩",
+      "author_info": "景泰間人",
+      "_author": "許本清",
+      "_title_only": "周易占法節要",
+      "work_id": "d59f6ehd3lky",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又策數一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又策數一卷",
+      "_author": "許本清",
+      "_title_only": "策數",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehd3lkz",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "周恭卜史",
+      "level": 3,
+      "type": "book",
+      "content": "周恭卜史⟨字寅之崑山人號梅花主人⟩",
+      "author_info": "字寅之崑山人號梅花主人",
+      "_author": "周恭",
+      "_title_only": "卜史",
+      "work_id": "d59f6ehdq2o2",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "季本蓍法别傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "季本蓍法别傳一卷",
+      "_author": "季本",
+      "_title_only": "蓍法别傳"
+    },
+    {
+      "title": "張選卜筮範占",
+      "level": 3,
+      "type": "book",
+      "content": "張選卜筮範占⟨字舜舉無錫人嘉靖己丑進士通政司右㕘議⟩",
+      "author_info": "字舜舉無錫人嘉靖己丑進士通政司右㕘議",
+      "_author": "張選",
+      "_title_only": "卜筮範占",
+      "work_id": "d59f6ehdq2o1",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "楊元納甲圖",
+      "level": 3,
+      "type": "book",
+      "content": "楊元納甲圖⟨字務本永昌人⟩",
+      "author_info": "字務本永昌人",
+      "_author": "楊元",
+      "_title_only": "納甲圖",
+      "work_id": "d59f6ehfwqgy",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又九圭數",
+      "level": 3,
+      "type": "book",
+      "content": "又九圭數",
+      "_author": "楊元",
+      "_title_only": "九圭數",
+      "_author_src": "又條承上",
+      "work_id": "d59f6epfpjb6",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "周瑞文公斷易奇書三卷",
+      "level": 3,
+      "type": "book",
+      "content": "周瑞文公斷易奇書三卷⟨長沙人⟩",
+      "author_info": "長沙人",
+      "_author": "周瑞",
+      "_title_only": "文公斷易奇書"
+    },
+    {
+      "title": "蔡元谷神易數一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡元谷神易數一卷",
+      "_author": "蔡元谷",
+      "_title_only": "神易數",
+      "_emended": "缺字據適園本補",
+      "_orig": "蔡□谷神易數"
+    },
+    {
+      "title": "張其堤易卦類選大成四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張其堤易卦類選大成四卷",
+      "_author": "張其堤",
+      "_title_only": "易卦類選大成"
+    },
+    {
+      "title": "王宇周易占林四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王宇周易占林四卷",
+      "_author": "王宇",
+      "_title_only": "周易占林"
+    },
+    {
+      "title": "李新芳神易斷意",
+      "level": 3,
+      "type": "book",
+      "content": "李新芳神易斷意⟨字元徳潞州人進士官御史⟩",
+      "author_info": "字元徳潞州人進士官御史",
+      "_author": "李新芳",
+      "_title_only": "神易斷意",
+      "work_id": "d59f6epfpjb4",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又太虛甲子經",
+      "level": 3,
+      "type": "book",
+      "content": "又太虛甲子經",
+      "_author": "李新芳",
+      "_title_only": "太虛甲子經",
+      "_author_src": "又條承上",
+      "work_id": "d59f6epfearp",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "劉均卜筮全書八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉均卜筮全書八卷",
+      "_author": "劉均",
+      "_title_only": "卜筮全書"
+    },
+    {
+      "title": "趙際隆卜筮全書十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙際隆卜筮全書十四卷",
+      "_author": "趙際隆",
+      "_title_only": "卜筮全書",
+      "work_id": "d59f6egvmb5x",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳胤昌卦變論",
+      "level": 3,
+      "type": "book",
+      "content": "陳胤昌卦變論",
+      "_author": "陳胤昌",
+      "_title_only": "卦變論",
+      "_emended": "缺字據適園本補",
+      "_orig": "陳□昌卦變論",
+      "work_id": "d59f6epfearr",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又數學㕘同辨正",
+      "level": 3,
+      "type": "book",
+      "content": "又數學㕘同辨正",
+      "_author": "陳胤昌",
+      "_title_only": "數學㕘同辨正",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eiyui2o",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "周其久前知通微集",
+      "level": 3,
+      "type": "book",
+      "content": "周其久前知通微集⟨當塗人⟩",
+      "author_info": "當塗人",
+      "_title_only": "周其久前知通微集",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6esqmy9z",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "連城璧易占三墳繇詞",
+      "level": 3,
+      "type": "book",
+      "content": "連城璧易占三墳繇詞⟨字如白㑹稽人崇禎庚辰特用巡按廣東御史⟩",
+      "author_info": "字如白㑹稽人崇禎庚辰特用巡按廣東御史",
+      "_author": "連城璧",
+      "_title_only": "易占三墳繇詞",
+      "work_id": "d59f6eiy80zp",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張濡先天易數二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張濡先天易數二卷",
+      "_author": "張濡",
+      "_title_only": "先天易數"
+    },
+    {
+      "title": "卜家萃覽十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "卜家萃覽十五卷",
+      "_title_only": "卜家萃覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "六爻旁通天玄賦解七卷",
+      "level": 3,
+      "type": "book",
+      "content": "六爻旁通天玄賦解七卷⟨以下不知撰人⟩",
+      "author_info": "以下不知撰人",
+      "_title_only": "六爻旁通天玄賦解",
+      "_emended": "缺字據適園本補",
+      "_orig": "六爻旁通天□賦解",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "又提綱一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又提綱一卷",
+      "_title_only": "提綱"
+    },
+    {
+      "title": "易卦歌斷卜筮元龜二卷",
+      "level": 3,
+      "type": "book",
+      "content": "易卦歌斷卜筮元龜二卷",
+      "_title_only": "易卦歌斷卜筮元龜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "易象類占一卷",
+      "level": 3,
+      "type": "book",
+      "content": "易象類占一卷",
+      "_author": "易象",
+      "_title_only": "類占",
+      "work_id": "d59f6eiyj9j8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "祥龜易覽",
+      "level": 3,
+      "type": "book",
+      "content": "祥龜易覽",
+      "_title_only": "祥龜易覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "玉靈照膽經",
+      "level": 3,
+      "type": "book",
+      "content": "玉靈照膽經",
+      "_title_only": "玉靈照膽經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "玉井奥訣四卷",
+      "level": 3,
+      "type": "book",
+      "content": "玉井奥訣四卷",
+      "_title_only": "玉井奥訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "大衍編次周易本義",
+      "level": 3,
+      "type": "book",
+      "content": "大衍編次周易本義",
+      "_title_only": "大衍編次周易本義",
+      "_no_author": "待考"
+    },
+    {
+      "title": "斷易啟蒙三卷",
+      "level": 3,
+      "type": "book",
+      "content": "斷易啟蒙三卷",
+      "_title_only": "斷易啟蒙",
+      "_emended": "缺字據適園本補",
+      "_orig": "斷易啟□",
+      "_no_author": "待考"
+    },
+    {
+      "title": "易占心鏡四卷",
+      "level": 3,
+      "type": "book",
+      "content": "易占心鏡四卷",
+      "_title_only": "易占心鏡",
+      "_no_author": "待考"
+    },
+    {
+      "title": "觀物徵占一卷",
+      "level": 3,
+      "type": "book",
+      "content": "觀物徵占一卷",
+      "_title_only": "觀物徵占",
+      "_no_author": "待考"
+    },
+    {
+      "title": "神易鈎□一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神易鈎□一卷",
+      "_title_only": "神易鈎□",
+      "_no_author": "待考"
+    },
+    {
+      "title": "斷易通天賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "斷易通天賦一卷",
+      "_title_only": "斷易通天賦",
+      "_no_author": "待考"
+    },
+    {
+      "title": "龜經心法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "龜經心法一卷",
+      "_title_only": "龜經心法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "周視考陰陽定論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "周視考陰陽定論三卷",
+      "_author": "周視考",
+      "_title_only": "陰陽定論"
+    },
+    {
+      "title": "劉基注靈祺經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基注靈祺經二卷",
+      "_author": "劉基",
+      "_title_only": "注靈祺經",
+      "work_id": "d59f6eiyui2p",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又解皇極經世稽覽圖十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "又解皇極經世稽覽圖十八卷",
+      "_author": "劉基",
+      "_title_only": "解皇極經世稽覽圖",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eiyj9ja",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "楊向春皇極心易發微六卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊向春皇極心易發微六卷",
+      "_author": "楊向春",
+      "_title_only": "皇極心易發微"
+    },
+    {
+      "title": "蔡士順皇極秘數占驗一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡士順皇極秘數占驗一卷",
+      "_author": "蔡士順",
+      "_title_only": "皇極秘數占驗",
+      "work_id": "d59f6eiyj9j7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程玠大定數",
+      "level": 3,
+      "type": "book",
+      "content": "程玠大定數⟨字文玉歙人缺進士究心厯數卜易之學丘濬稱為一代異人⟩",
+      "author_info": "字文玉歙人缺進士究心厯數卜易之學丘濬稱為一代異人",
+      "_author": "程玠",
+      "_title_only": "大定數",
+      "work_id": "d59f6eiyj9j9",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "吳珫皇極經世鈐解",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫皇極經世鈐解",
+      "_author": "吳珫",
+      "_title_only": "皇極經世鈐解"
+    },
+    {
+      "title": "又□□集",
+      "level": 3,
+      "type": "book",
+      "content": "又□□集",
+      "_author": "吳珫",
+      "_title_only": "□□集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eiyj9j6",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "陳情五行奕數二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳情五行奕數二卷",
+      "_author": "陳情",
+      "_title_only": "五行奕數",
+      "work_id": "d59f6eiy80zq",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張淵萬里數注",
+      "level": 3,
+      "type": "book",
+      "content": "張淵萬里數注",
+      "_author": "張淵",
+      "_title_only": "萬里數注",
+      "work_id": "d59f6eiyj9j5",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "馮柯三極通二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮柯三極通二卷",
+      "_author": "馮柯",
+      "_title_only": "三極通"
+    },
+    {
+      "title": "觀梅數二卷",
+      "level": 3,
+      "type": "book",
+      "content": "觀梅數二卷",
+      "_title_only": "觀梅數",
+      "_no_author": "待考"
+    },
+    {
+      "title": "梅花數二卷",
+      "level": 3,
+      "type": "book",
+      "content": "梅花數二卷",
+      "_title_only": "梅花數",
+      "_no_author": "待考"
+    },
+    {
+      "title": "紫微斗數一卷",
+      "level": 3,
+      "type": "book",
+      "content": "紫微斗數一卷",
+      "_title_only": "紫微斗數",
+      "_no_author": "待考"
+    },
+    {
+      "title": "童軒夢徵録",
+      "level": 3,
+      "type": "book",
+      "content": "童軒夢徵録",
+      "_author": "童軒",
+      "_title_only": "夢徵録",
+      "work_id": "d59f6elxafbb",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張幹山古今應驗異夢全書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張幹山古今應驗異夢全書四卷⟨揚州衞指揮⟩",
+      "author_info": "揚州衞指揮",
+      "_author": "張幹山",
+      "_title_only": "古今應驗異夢全書",
+      "work_id": "d59f6egvmb5s",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳士元夢占逸旨八卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳士元夢占逸旨八卷",
+      "_author": "陳士元",
+      "_title_only": "夢占逸旨",
+      "work_id": "d59f6egvmb5v",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張鳳翼夢占類攷十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張鳳翼夢占類攷十二卷",
+      "_author": "張鳳翼",
+      "_title_only": "夢占類攷",
+      "work_id": "d59f6elwcpoi",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "解夢心鏡五卷",
+      "level": 3,
+      "type": "book",
+      "content": "解夢心鏡五卷",
+      "_title_only": "解夢心鏡",
+      "_no_author": "待考"
+    },
+    {
+      "title": "古今纂要夢珍故事三卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今纂要夢珍故事三卷",
+      "_title_only": "古今纂要夢珍故事",
+      "_no_author": "待考"
+    },
+    {
+      "title": "古今紀夢要覽二卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今紀夢要覽二卷",
+      "_title_only": "古今紀夢要覽",
+      "_author_src": "詞庫補切·庫內題名",
+      "_no_author": "官修／題名即書名",
+      "_flags": [
+        "撰人係補切·待覆",
+        "撤銷誤切撰人"
+      ]
+    },
+    {
+      "title": "古今夢徵",
+      "level": 3,
+      "type": "book",
+      "content": "古今夢徵",
+      "_title_only": "古今夢徵",
+      "_no_author": "待考"
+    },
+    {
+      "title": "池本理禽遁大全四卷",
+      "level": 3,
+      "type": "book",
+      "content": "池本理禽遁大全四卷⟨贛州人⟩",
+      "author_info": "贛州人",
+      "_author": "池本理",
+      "_title_only": "禽遁大全"
+    },
+    {
+      "title": "又注解烟波釣叟歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又注解烟波釣叟歌一卷",
+      "_author": "池本理",
+      "_title_only": "注解烟波釣叟歌",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elwz6rl",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "鮑世彦奇門微義四卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑世彦奇門微義四卷⟨字穉卿新安人⟩",
+      "author_info": "字穉卿新安人",
+      "_title_only": "奇門微義",
+      "_author": "鮑世彦",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6egvb2md",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又奇門陽遁一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又奇門陽遁一卷",
+      "_author": "鮑世彦",
+      "_title_only": "奇門陽遁",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elxafb6",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又奇門陰遁一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又奇門陰遁一卷",
+      "_author": "鮑世彦",
+      "_title_only": "奇門陰遁",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elwcpoh",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "徐之鏌選擇禽竒盤例定局五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐之鏌選擇禽竒盤例定局五卷",
+      "_author": "徐之鏌",
+      "_title_only": "選擇禽竒盤例定局"
+    },
+    {
+      "title": "袁善奇門秘奥",
+      "level": 3,
+      "type": "book",
+      "content": "袁善奇門秘奥⟨天啟中昆明人⟩",
+      "author_info": "天啟中昆明人",
+      "_author": "袁善",
+      "_title_only": "奇門秘奥",
+      "work_id": "d59f6elxafb9",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "奇門原古三卷",
+      "level": 3,
+      "type": "book",
+      "content": "奇門原古三卷⟨以下不知撰人⟩",
+      "author_info": "以下不知撰人",
+      "_title_only": "奇門原古",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "八門禽演碎金經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "八門禽演碎金經三卷",
+      "_title_only": "八門禽演碎金經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "都天一卷",
+      "level": 3,
+      "type": "book",
+      "content": "都天一卷",
+      "_title_only": "都天",
+      "_no_author": "待考"
+    },
+    {
+      "title": "禽星直指一卷",
+      "level": 3,
+      "type": "book",
+      "content": "禽星直指一卷",
+      "_title_only": "禽星直指",
+      "_no_author": "待考"
+    },
+    {
+      "title": "流光玉厯八卷",
+      "level": 3,
+      "type": "book",
+      "content": "流光玉厯八卷",
+      "_title_only": "流光玉厯",
+      "_no_author": "待考"
+    },
+    {
+      "title": "遁甲鈎□集",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲鈎□集",
+      "_title_only": "遁甲鈎□集",
+      "_no_author": "待考"
+    },
+    {
+      "title": "奇門大成",
+      "level": 3,
+      "type": "book",
+      "content": "奇門大成",
+      "_title_only": "奇門大成",
+      "_no_author": "待考"
+    },
+    {
+      "title": "紫庭秘訣",
+      "level": 3,
+      "type": "book",
+      "content": "紫庭秘訣",
+      "_title_only": "紫庭秘訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "玄女統甲子六十將軍伐鹵一寶符秘訣四卷",
+      "level": 3,
+      "type": "book",
+      "content": "玄女統甲子六十將軍伐鹵一寶符秘訣四卷",
+      "_title_only": "玄女統甲子六十將軍伐鹵一寶符秘訣",
+      "_emended": "缺字據適園本補",
+      "_orig": "□女統甲子六十將軍伐鹵一寶符秘訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "吳珫太乙統宗寶鑒二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫太乙統宗寶鑒二十卷",
+      "_author": "吳珫",
+      "_title_only": "太乙統宗寶鑒",
+      "work_id": "d59f6elw1h53",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又太乙淘金歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又太乙淘金歌一卷",
+      "_author": "吳珫",
+      "_title_only": "太乙淘金歌",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elwz6rq",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "李元澧太乙九旗厯三卷",
+      "level": 3,
+      "type": "book",
+      "content": "李元澧太乙九旗厯三卷",
+      "_author": "李元",
+      "_title_only": "澧太乙九旗厯",
+      "work_id": "d59f6elxlnuo",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "太乙遁局八卷",
+      "level": 3,
+      "type": "book",
+      "content": "太乙遁局八卷",
+      "_author": "太乙",
+      "_title_only": "遁局",
+      "work_id": "d59f6elxafb4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "太乙燭幽經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "太乙燭幽經二卷",
+      "_author": "太乙",
+      "_title_only": "燭幽經",
+      "work_id": "d59f6efkhh53",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "太乙原古三卷",
+      "level": 3,
+      "type": "book",
+      "content": "太乙原古三卷",
+      "_author": "太乙",
+      "_title_only": "原古",
+      "work_id": "d59f6efhzksl",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "邢雲路太乙書",
+      "level": 3,
+      "type": "book",
+      "content": "邢雲路太乙書",
+      "_author": "邢雲路",
+      "_title_only": "太乙書"
+    },
+    {
+      "title": "楊瓚六壬直指捷要二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊瓚六壬直指捷要二卷",
+      "_author": "楊瓚",
+      "_title_only": "六壬直指捷要"
+    },
+    {
+      "title": "蔣日新開雲觀月歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔣日新開雲觀月歌一卷",
+      "_author": "蔣日新",
+      "_title_only": "開雲觀月歌"
+    },
+    {
+      "title": "黄公達鳳髓靈文一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄公達鳳髓靈文一卷",
+      "_title_only": "鳳髓靈文",
+      "_author": "黄公達",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "吳珫六壬金鑰匙",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫六壬金鑰匙",
+      "_author": "吳珫",
+      "_title_only": "六壬金鑰匙",
+      "work_id": "d59f6efiatc1",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "袁祥六壬大全三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁祥六壬大全三十六卷",
+      "_author": "袁祥",
+      "_title_only": "六壬大全"
+    },
+    {
+      "title": "周正六壬秘集",
+      "level": 3,
+      "type": "book",
+      "content": "周正六壬秘集",
+      "_author": "周正",
+      "_title_only": "六壬秘集",
+      "work_id": "d59f6efhoc8z",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "徐常吉六壬釋義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐常吉六壬釋義一卷",
+      "_author": "徐常吉",
+      "_title_only": "六壬釋義"
+    },
+    {
+      "title": "王許黄金策三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王許黄金策三卷",
+      "_author": "王許",
+      "_title_only": "黄金策",
+      "work_id": "d59f6efh1v5t",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "朱復大六壬起例一卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱復大六壬起例一卷⟨字陽伯三原人⟩",
+      "author_info": "字陽伯三原人",
+      "_author": "朱復",
+      "_title_only": "大六壬起例",
+      "work_id": "d59f6efiatc0",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "黄賔廷六壬六十甲子集應鈐六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄賔廷六壬六十甲子集應鈐六十卷⟨江西人⟩",
+      "author_info": "江西人",
+      "_title_only": "黄賔廷六壬六十甲子集應鈐",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "六壬神課金口訣三卷",
+      "level": 3,
+      "type": "book",
+      "content": "六壬神課金口訣三卷",
+      "_title_only": "六壬神課金口訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "鄒彬三奇六壬太乙疏畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒彬三奇六壬太乙疏畧一卷⟨字文質臨洮人客于吳博物多識凡象緯醫卜皆能旁通⟩",
+      "author_info": "字文質臨洮人客于吳博物多識凡象緯醫卜皆能旁通",
+      "_author": "鄒彬",
+      "_title_only": "三奇六壬太乙疏畧",
+      "work_id": "d59f6efhd3pf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "六壬五要權衡一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六壬五要權衡一卷",
+      "_title_only": "六壬五要權衡",
+      "_no_author": "待考"
+    },
+    {
+      "title": "大六壬五變中黄經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "大六壬五變中黄經二卷",
+      "_title_only": "大六壬五變中黄經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "六壬磨鏡藥一卷",
+      "level": 3,
+      "type": "book",
+      "content": "六壬磨鏡藥一卷",
+      "_title_only": "六壬磨鏡藥",
+      "_no_author": "待考"
+    },
+    {
+      "title": "官撫辰三式全書",
+      "level": 3,
+      "type": "book",
+      "content": "官撫辰三式全書⟨缺⟩",
+      "author_info": "缺",
+      "_author": "官撫辰",
+      "_title_only": "三式全書",
+      "work_id": "d59f6efhoc90",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "六壬總要四十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "六壬總要四十七卷",
+      "_title_only": "六壬總要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "六壬原古三卷",
+      "level": 3,
+      "type": "book",
+      "content": "六壬原古三卷",
+      "_title_only": "六壬原古",
+      "_no_author": "待考"
+    },
+    {
+      "title": "選擇厯書五卷",
+      "level": 3,
+      "type": "book",
+      "content": "選擇厯書五卷⟨洪武元年欽天監奉勅撰定⟩",
+      "author_info": "洪武元年欽天監奉勅撰定",
+      "_title_only": "選擇厯書",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "寧獻王權肘後神樞二卷",
+      "level": 3,
+      "type": "book",
+      "content": "寧獻王權肘後神樞二卷",
+      "_author": "寧獻王權",
+      "_title_only": "肘後神樞"
+    },
+    {
+      "title": "又運化□樞一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又運化□樞一卷",
+      "_author": "寧獻王權",
+      "_title_only": "運化□樞",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efhzksk",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "厯法通書三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "厯法通書三十卷⟨臨江宋魯珍輝山通書金溪何士泰景祥厯法⟩",
+      "author_info": "臨江宋魯珍輝山通書金溪何士泰景祥厯法",
+      "_title_only": "厯法通書",
+      "_no_author": "待考",
+      "work_id": "d59f6emjrifb",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "熊宗立金精鰲極六卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊宗立金精鰲極六卷",
+      "_author": "熊宗立",
+      "_title_only": "金精鰲極"
+    },
+    {
+      "title": "王天利三元節要三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王天利三元節要三卷⟨字履道壺關人精星厯占候能先知休咎言無不驗⟩",
+      "author_info": "字履道壺關人精星厯占候能先知休咎言無不驗",
+      "_author": "王天利",
+      "_title_only": "三元節要"
+    },
+    {
+      "title": "劉實選擇類編八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉實選擇類編八卷",
+      "_author": "劉實",
+      "_title_only": "選擇類編",
+      "work_id": "d59f6egvxjpd",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "萬邦孚彚選筮吉指南十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬邦孚彚選筮吉指南十一卷⟨一作十五卷字汝永鄞縣人⟩",
+      "author_info": "一作十五卷字汝永鄞縣人",
+      "_author": "萬邦孚",
+      "_title_only": "彚選筮吉指南",
+      "work_id": "d59f6efhd3pe",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又日家指掌二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又日家指掌二卷",
+      "_author": "萬邦孚",
+      "_title_only": "日家指掌",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efhoc8y",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又通書纂要六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又通書纂要六卷",
+      "_author": "萬邦孚",
+      "_title_only": "通書纂要",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efhzksn",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "何塘陰陽管窺一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何塘陰陽管窺一卷",
+      "_author": "何塘",
+      "_title_only": "陰陽管窺"
+    },
+    {
+      "title": "劉黄裳元圖符藏二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉黄裳元圖符藏二卷",
+      "_title_only": "元圖符藏",
+      "_author": "劉黄裳",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "周渭彈冠必用集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "周渭彈冠必用集一卷",
+      "_author": "周渭",
+      "_title_only": "彈冠必用集",
+      "work_id": "d59f6efhd3pc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "黄鍾和上官涓吉便覽二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄鍾和上官涓吉便覽二卷",
+      "_title_only": "黄鍾和上官涓吉便覽",
+      "_no_author": "待考",
+      "work_id": "d59f6essidj9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "吳天洪造命宗鏡集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳天洪造命宗鏡集十二卷",
+      "_author": "吳天洪",
+      "_title_only": "造命宗鏡集"
+    },
+    {
+      "title": "黄汝和諏擇秘典二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄汝和諏擇秘典二卷",
+      "_title_only": "諏擇秘典",
+      "_author": "黄汝和",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "又諏擇厯限十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又諏擇厯限十二卷",
+      "_author": "黄汝和",
+      "_title_only": "諏擇厯限",
+      "_author_src": "又條承上",
+      "work_id": "d59f6enx3092",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "筮筴理數日抄二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "筮筴理數日抄二十卷",
+      "_title_only": "筮筴理數日抄",
+      "_no_author": "待考"
+    },
+    {
+      "title": "統厯寶鏡二卷",
+      "level": 3,
+      "type": "book",
+      "content": "統厯寶鏡二卷",
+      "_title_only": "統厯寶鏡",
+      "_no_author": "待考"
+    },
+    {
+      "title": "筮仕涓吉便覽二卷",
+      "level": 3,
+      "type": "book",
+      "content": "筮仕涓吉便覽二卷",
+      "_title_only": "筮仕涓吉便覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "年月集要五卷",
+      "level": 3,
+      "type": "book",
+      "content": "年月集要五卷",
+      "_title_only": "年月集要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "發微通書十卷",
+      "level": 3,
+      "type": "book",
+      "content": "發微通書十卷",
+      "_title_only": "發微通書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "三才運用通書十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "三才運用通書十八卷",
+      "_title_only": "三才運用通書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "三辰通載四卷",
+      "level": 3,
+      "type": "book",
+      "content": "三辰通載四卷⟨錢如辰舉人⟩",
+      "author_info": "錢如辰舉人",
+      "_title_only": "三辰通載",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "祝氏選擇神龍經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "祝氏選擇神龍經一卷",
+      "_title_only": "祝氏選擇神龍經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陽明正範秘書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽明正範秘書一卷",
+      "_title_only": "陽明正範秘書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陽明按索圖五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽明按索圖五卷",
+      "_title_only": "陽明按索圖",
+      "_no_author": "待考"
+    },
+    {
+      "title": "佐玄直指圖解九卷",
+      "level": 3,
+      "type": "book",
+      "content": "佐玄直指圖解九卷",
+      "_title_only": "佐玄直指圖解",
+      "_emended": "缺字據適園本補",
+      "_orig": "佐□直指圖解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陰陽寶海三元玉鏡奇書二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陰陽寶海三元玉鏡奇書二卷",
+      "_title_only": "陰陽寶海三元玉鏡奇書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "塋元正經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "塋元正經一卷",
+      "_title_only": "塋元正經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "趨吉要覽一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趨吉要覽一卷",
+      "_title_only": "趨吉要覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "造塟擇日神殺一卷",
+      "level": 3,
+      "type": "book",
+      "content": "造塟擇日神殺一卷",
+      "_title_only": "造塟擇日神殺",
+      "_no_author": "待考"
+    },
+    {
+      "title": "厯府鈎□一卷",
+      "level": 3,
+      "type": "book",
+      "content": "厯府鈎□一卷",
+      "_title_only": "厯府鈎□",
+      "_no_author": "待考"
+    },
+    {
+      "title": "通書纂要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "通書纂要一卷",
+      "_title_only": "通書纂要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "尅擇全書二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "尅擇全書二十二卷",
+      "_title_only": "尅擇全書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "差穀奇書十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "差穀奇書十五卷",
+      "_title_only": "差穀奇書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "年月備要二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "年月備要二十一卷",
+      "_title_only": "年月備要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "選擇賽成書十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "選擇賽成書十四卷",
+      "_title_only": "選擇賽成書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "洪理厯府大成二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "洪理厯府大成二十二卷",
+      "_author": "洪理",
+      "_title_only": "厯府大成",
+      "work_id": "d59f6enx3093",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "厯法便覽時用通書四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "厯法便覽時用通書四十卷",
+      "_title_only": "厯法便覽時用通書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "劉基三命奇訣滴天髓一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基三命奇訣滴天髓一卷",
+      "_author": "劉基",
+      "_title_only": "三命奇訣滴天髓",
+      "work_id": "d59f6enxe8sg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "歐陽忠星命秘訣望斗真經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "歐陽忠星命秘訣望斗真經三卷",
+      "_author": "歐陽忠",
+      "_title_only": "星命秘訣望斗真經"
+    },
+    {
+      "title": "楊源星學源流二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊源星學源流二十卷",
+      "_author": "楊源",
+      "_title_only": "星學源流"
+    },
+    {
+      "title": "雷鳴夏子平管見二卷",
+      "level": 3,
+      "type": "book",
+      "content": "雷鳴夏子平管見二卷",
+      "_author": "雷鳴夏",
+      "_title_only": "子平管見",
+      "_l2_flag": "尊稱字併回撰人",
+      "_flags": [
+        "撰人已改切"
+      ]
+    },
+    {
+      "title": "李欽淵海子平大全六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李欽淵海子平大全六卷",
+      "_author": "李欽",
+      "_title_only": "淵海子平大全"
+    },
+    {
+      "title": "萬民育三命會通十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬民育三命會通十二卷",
+      "_title_only": "三命會通",
+      "_author": "萬民育",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6egvmb5z",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陸位星學綱目正傳二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸位星學綱目正傳二十卷",
+      "_author": "陸位",
+      "_title_only": "星學綱目正傳"
+    },
+    {
+      "title": "又星學大成十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "又星學大成十八卷",
+      "_author": "陸位",
+      "_title_only": "星學大成",
+      "_author_src": "又條承上",
+      "work_id": "d59f6egcw2kk",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又張果星宗命格十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又張果星宗命格十卷",
+      "_author": "陸位",
+      "_title_only": "張果星宗命格",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eo3mznl",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又文武星案六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又文武星案六卷",
+      "_author": "陸位",
+      "_title_only": "文武星案",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eo3mznp",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "西窻老人蘭臺妙選十卷",
+      "level": 3,
+      "type": "book",
+      "content": "西窻老人蘭臺妙選十卷",
+      "_title_only": "西窻老人蘭臺妙選",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陸昻蘭臺金匱□機素要書",
+      "level": 3,
+      "type": "book",
+      "content": "陸昻蘭臺金匱□機素要書",
+      "_title_only": "陸昻蘭臺金匱□機素要書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "鄧史喬抝星論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧史喬抝星論一卷",
+      "_title_only": "鄧史喬抝星論",
+      "_no_author": "待考"
+    },
+    {
+      "title": "星平會海十卷",
+      "level": 3,
+      "type": "book",
+      "content": "星平會海十卷⟨以下不知撰人⟩",
+      "author_info": "以下不知撰人",
+      "_title_only": "星平會海",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "星平總會十卷",
+      "level": 3,
+      "type": "book",
+      "content": "星平總會十卷",
+      "_title_only": "星平總會",
+      "_no_author": "待考"
+    },
+    {
+      "title": "果老子平大成三卷",
+      "level": 3,
+      "type": "book",
+      "content": "果老子平大成三卷",
+      "_title_only": "果老子平大成",
+      "_no_author": "待考"
+    },
+    {
+      "title": "星學全書三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "星學全書三十卷",
+      "_title_only": "星學全書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "五星玉鏡四卷",
+      "level": 3,
+      "type": "book",
+      "content": "五星玉鏡四卷",
+      "_title_only": "五星玉鏡",
+      "_no_author": "待考"
+    },
+    {
+      "title": "中天八卦數命一卷",
+      "level": 3,
+      "type": "book",
+      "content": "中天八卦數命一卷",
+      "_title_only": "中天八卦數命",
+      "_no_author": "待考"
+    },
+    {
+      "title": "河洛神數六卷",
+      "level": 3,
+      "type": "book",
+      "content": "河洛神數六卷⟨三命⟩",
+      "author_info": "三命",
+      "_author": "河洛",
+      "_title_only": "神數",
+      "work_id": "d59f6eo2pa10",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "青蘿厯一卷",
+      "level": 3,
+      "type": "book",
+      "content": "青蘿厯一卷⟨三命⟩",
+      "author_info": "三命",
+      "_title_only": "青蘿厯",
+      "_no_author": "待考"
+    },
+    {
+      "title": "占命録二卷",
+      "level": 3,
+      "type": "book",
+      "content": "占命録二卷",
+      "_title_only": "占命録",
+      "_no_author": "待考"
+    },
+    {
+      "title": "子平淵海大全五卷",
+      "level": 3,
+      "type": "book",
+      "content": "子平淵海大全五卷",
+      "_author": "子平",
+      "_title_only": "淵海大全",
+      "work_id": "d59f6eo2e1hf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "琴堂虚實五星指要四卷",
+      "level": 3,
+      "type": "book",
+      "content": "琴堂虚實五星指要四卷",
+      "_title_only": "琴堂虚實五星指要",
+      "_no_author": "待考"
+    },
+    {
+      "title": "竹羅三限幽妙集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "竹羅三限幽妙集一卷⟨三命⟩",
+      "author_info": "三命",
+      "_title_only": "竹羅三限幽妙集",
+      "_no_author": "待考"
+    },
+    {
+      "title": "經世祝氏鈐",
+      "level": 3,
+      "type": "book",
+      "content": "經世祝氏鈐",
+      "_title_only": "經世祝氏鈐",
+      "_no_author": "待考"
+    },
+    {
+      "title": "袁忠徹古今識鑒八卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁忠徹古今識鑒八卷⟨景泰二年辛未序⟩",
+      "author_info": "景泰二年辛未序",
+      "_author": "袁忠徹",
+      "_title_only": "古今識鑒",
+      "work_id": "d59f6eo3mzno",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又人象賦",
+      "level": 3,
+      "type": "book",
+      "content": "又人象賦",
+      "_author": "袁忠徹",
+      "_title_only": "人象賦",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eo2e1hi",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "李廷湘人相編十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廷湘人相編十二卷",
+      "_author": "李廷湘",
+      "_title_only": "人相編"
+    },
+    {
+      "title": "神相類編十卷",
+      "level": 3,
+      "type": "book",
+      "content": "神相類編十卷",
+      "_title_only": "神相類編",
+      "_no_author": "待考"
+    },
+    {
+      "title": "相法總龜二卷",
+      "level": 3,
+      "type": "book",
+      "content": "相法總龜二卷",
+      "_title_only": "相法總龜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "焉廋集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "焉廋集四卷⟨天啟四年臧懋循序不知何人編末附李巒相法⟩",
+      "author_info": "天啟四年臧懋循序不知何人編末附李巒相法",
+      "_title_only": "焉廋集",
+      "_no_author": "待考",
+      "work_id": "d59f6eg2wh6o",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "人倫大統賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "人倫大統賦一卷",
+      "_title_only": "人倫大統賦",
+      "_no_author": "待考"
+    },
+    {
+      "title": "唐子卿截相編",
+      "level": 3,
+      "type": "book",
+      "content": "唐子卿截相編",
+      "_title_only": "唐子卿截相編",
+      "_no_author": "待考"
+    },
+    {
+      "title": "吳緝神相編",
+      "level": 3,
+      "type": "book",
+      "content": "吳緝神相編",
+      "_author": "吳緝",
+      "_title_only": "神相編",
+      "work_id": "d59f6eo2pa11",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "相字心易",
+      "level": 3,
+      "type": "book",
+      "content": "相字心易",
+      "_title_only": "相字心易",
+      "_no_author": "待考"
+    },
+    {
+      "title": "拆字林一卷",
+      "level": 3,
+      "type": "book",
+      "content": "拆字林一卷",
+      "_title_only": "拆字林",
+      "_no_author": "待考"
+    },
+    {
+      "title": "觀梅相字易數兆訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "觀梅相字易數兆訣一卷",
+      "_title_only": "觀梅相字易數兆訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "劉基金彈子三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基金彈子三卷",
+      "_author": "劉基",
+      "_title_only": "金彈子"
+    },
+    {
+      "title": "又披府露膽一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又披府露膽一卷",
+      "_author": "劉基",
+      "_title_only": "披府露膽",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elphhqd",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又一粒粟一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又一粒粟一卷",
+      "_author": "劉基",
+      "_title_only": "一粒粟",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又地理漫興三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又地理漫興三卷",
+      "_author": "劉基",
+      "_title_only": "地理漫興",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elphhq9",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "趙汸趙氏葬説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙汸趙氏葬説一卷",
+      "_author": "趙汸",
+      "_title_only": "趙氏葬説",
+      "work_id": "d59f6elp696v",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "鄭謐注郭璞葬書",
+      "level": 3,
+      "type": "book",
+      "content": "鄭謐注郭璞葬書",
+      "_author": "鄭謐",
+      "_title_only": "注郭璞葬書",
+      "work_id": "d59f6elphhqc",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "熊宗立注雪心賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊宗立注雪心賦一卷",
+      "_author": "熊宗立",
+      "_title_only": "注雪心賦",
+      "work_id": "d59f6elphhq8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又注太□賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又注太□賦一卷",
+      "_author": "熊宗立",
+      "_title_only": "注太□賦",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elp696t",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "瞿佑陳氏葬説一卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑陳氏葬説一卷",
+      "_author": "瞿佑",
+      "_title_only": "陳氏葬説",
+      "work_id": "d59f6elp696u",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "符觀地理集奇",
+      "level": 3,
+      "type": "book",
+      "content": "符觀地理集奇",
+      "_author": "符觀",
+      "_title_only": "地理集奇",
+      "work_id": "d59f6elphhqb",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "謝昌注劉氏地理囊金一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝昌注劉氏地理囊金一卷⟨字子期新安人⟩",
+      "author_info": "字子期新安人",
+      "_author": "謝昌",
+      "_title_only": "注劉氏地理囊金",
+      "work_id": "d59f6elphhqa",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又注蔡氏地理發微一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又注蔡氏地理發微一卷",
+      "_author": "謝昌",
+      "_title_only": "注蔡氏地理發微",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elj8qv6",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又雪心賦句解一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又雪心賦句解一卷⟨三書皆程篁墩為序⟩",
+      "author_info": "三書皆程篁墩為序",
+      "_author": "謝昌",
+      "_title_only": "雪心賦句解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eljjzep",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "曾直地理書",
+      "level": 3,
+      "type": "book",
+      "content": "曾直地理書⟨字叔温吉水人□治壬戌進士太僕寺卿⟩",
+      "author_info": "字叔温吉水人□治壬戌進士太僕寺卿",
+      "_author": "曾直",
+      "_title_only": "地理書",
+      "work_id": "d59f6egcku12",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "董潛四神秘訣",
+      "level": 3,
+      "type": "book",
+      "content": "董潛四神秘訣⟨字德彰德興人精于相地事母有孝行⟩",
+      "author_info": "字德彰德興人精于相地事母有孝行",
+      "_title_only": "董潛四神秘訣",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6ejuophe",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "又水法",
+      "level": 3,
+      "type": "book",
+      "content": "又水法",
+      "_title_only": "水法"
+    },
+    {
+      "title": "謝廷柱堪輿管見二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝廷柱堪輿管見二卷⟨字邦用長樂人别號雙湖□治乙未進士湖廣按察司僉事⟩",
+      "author_info": "字邦用長樂人别號雙湖□治乙未進士湖廣按察司僉事",
+      "_author": "謝廷柱",
+      "_title_only": "堪輿管見"
+    },
+    {
+      "title": "馬森地理正宗",
+      "level": 3,
+      "type": "book",
+      "content": "馬森地理正宗",
+      "_author": "馬森",
+      "_title_only": "地理正宗",
+      "work_id": "d59f6egcku0x",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "項喬風水辨一卷",
+      "level": 3,
+      "type": "book",
+      "content": "項喬風水辨一卷",
+      "_author": "項喬",
+      "_title_only": "風水辨",
+      "work_id": "d59f6ekvty4g",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李經綸地理括要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李經綸地理括要一卷",
+      "_author": "李經綸",
+      "_title_only": "地理括要",
+      "work_id": "d59f6ekw56o1",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "秦雲地理正脈",
+      "level": 3,
+      "type": "book",
+      "content": "秦雲地理正脈",
+      "_author": "秦雲",
+      "_title_only": "地理正脈",
+      "work_id": "d59f6ekvty4i",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "徐善繼徐善述人子須知三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐善繼徐善述人子須知三十五卷⟨徳興諸生⟩",
+      "author_info": "徳興諸生",
+      "_author": "徐善繼",
+      "_title_only": "徐善述人子須知",
+      "work_id": "d59f6ekw56o0",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程天照道决雙修",
+      "level": 3,
+      "type": "book",
+      "content": "程天照道决雙修⟨徳興人⟩",
+      "author_info": "徳興人",
+      "_title_only": "程天照道决雙修",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "又撼龍疑龍注解",
+      "level": 3,
+      "type": "book",
+      "content": "又撼龍疑龍注解",
+      "_title_only": "撼龍疑龍注解"
+    },
+    {
+      "title": "吳鵬五寶經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳鵬五寶經一卷⟨萬厯中合肥人⟩",
+      "author_info": "萬厯中合肥人",
+      "_author": "吳鵬",
+      "_title_only": "五寶經",
+      "work_id": "d59f6ekv7h1g",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張鳳地理仙婆集",
+      "level": 3,
+      "type": "book",
+      "content": "張鳳地理仙婆集⟨浮梁人⟩",
+      "author_info": "浮梁人",
+      "_author": "張鳳",
+      "_title_only": "地理仙婆集",
+      "work_id": "d59f6ekwgf7l",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "陳國幹葬書古文衍義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳國幹葬書古文衍義二卷",
+      "_author": "陳國",
+      "_title_only": "幹葬書古文衍義",
+      "work_id": "d59f6ekw56o4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "鄭之惠葬書演一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭之惠葬書演一卷⟨錢塘人舉人⟩",
+      "author_info": "錢塘人舉人",
+      "_author": "鄭之惠",
+      "_title_only": "葬書演",
+      "work_id": "d59f6ekvty4h",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "韓性之郭子翌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "韓性之郭子翌一卷",
+      "_author": "韓性",
+      "_title_only": "之郭子翌",
+      "work_id": "d59f6ekwgf7k",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "董章堪輿秘旨六卷",
+      "level": 3,
+      "type": "book",
+      "content": "董章堪輿秘旨六卷",
+      "_author": "董章",
+      "_title_only": "堪輿秘旨"
+    },
+    {
+      "title": "徐國柱地理正宗八卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐國柱地理正宗八卷",
+      "_author": "徐國柱",
+      "_title_only": "地理正宗"
+    },
+    {
+      "title": "趙祐地理紫囊八卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙祐地理紫囊八卷",
+      "_author": "趙祐",
+      "_title_only": "地理紫囊"
+    },
+    {
+      "title": "郭子章校定天玉經七注七卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭子章校定天玉經七注七卷",
+      "_author": "郭子章",
+      "_title_only": "校定天玉經七注"
+    },
+    {
+      "title": "陳時陽堪輿真諦三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳時陽堪輿真諦三卷",
+      "_author": "陳時",
+      "_title_only": "陽堪輿真諦",
+      "_split_alt": [
+        "陳時陽",
+        "堪輿真諦"
+      ],
+      "_flags": [
+        "撰人切點存疑"
+      ],
+      "work_id": "d59f6egcku10",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "劉潛堪輿秘傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉潛堪輿秘傳一卷",
+      "_author": "劉潛",
+      "_title_only": "堪輿秘傳",
+      "work_id": "d59f6ekvty4l",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "楊益青囊奥旨一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊益青囊奥旨一卷",
+      "_author": "楊益",
+      "_title_only": "青囊奥旨",
+      "work_id": "d59f6ekv7h1h",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王崇徳地理見知四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王崇徳地理見知四卷",
+      "_author": "王崇",
+      "_title_only": "徳地理見知",
+      "_split_alt": [
+        "王崇徳",
+        "地理見知"
+      ],
+      "_flags": [
+        "撰人切點存疑"
+      ]
+    },
+    {
+      "title": "范有學地理粹裘編二卷",
+      "level": 3,
+      "type": "book",
+      "content": "范有學地理粹裘編二卷",
+      "_title_only": "范有學地理粹裘編",
+      "_no_author": "待考"
+    },
+    {
+      "title": "李迪人天眼目九卷",
+      "level": 3,
+      "type": "book",
+      "content": "李迪人天眼目九卷",
+      "_author": "李迪人",
+      "_title_only": "天眼目"
+    },
+    {
+      "title": "繆希雍葬經翌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "繆希雍葬經翌一卷",
+      "_author": "繆希雍",
+      "_title_only": "葬經翌",
+      "work_id": "d59f6ekv7h1i",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又畫筴圖解一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又畫筴圖解一卷",
+      "_author": "繆希雍",
+      "_title_only": "畫筴圖解",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ekw56o7",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "徐之鏌羅經簡易圖解一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐之鏌羅經簡易圖解一卷",
+      "_author": "徐之鏌",
+      "_title_only": "羅經簡易圖解"
+    },
+    {
+      "title": "地理全書五十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "地理全書五十一卷",
+      "_title_only": "地理全書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "邢雲路金雞靈應",
+      "level": 3,
+      "type": "book",
+      "content": "邢雲路金雞靈應",
+      "_author": "邢雲路",
+      "_title_only": "金雞靈應",
+      "work_id": "d59f6etwrzlx",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張萱陰宅四書",
+      "level": 3,
+      "type": "book",
+      "content": "張萱陰宅四書",
+      "_author": "張萱",
+      "_title_only": "陰宅四書",
+      "work_id": "d59f6etx385d",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "相山骨髓",
+      "level": 3,
+      "type": "book",
+      "content": "相山骨髓",
+      "_title_only": "相山骨髓",
+      "_no_author": "待考"
+    },
+    {
+      "title": "青囊正源",
+      "level": 3,
+      "type": "book",
+      "content": "青囊正源",
+      "_title_only": "青囊正源",
+      "_no_author": "待考"
+    },
+    {
+      "title": "葬法心印",
+      "level": 3,
+      "type": "book",
+      "content": "葬法心印",
+      "_title_only": "葬法心印",
+      "_no_author": "待考"
+    },
+    {
+      "title": "地理正源",
+      "level": 3,
+      "type": "book",
+      "content": "地理正源",
+      "_title_only": "地理正源",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陰陽定論六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陰陽定論六卷",
+      "_title_only": "陰陽定論",
+      "_no_author": "待考"
+    },
+    {
+      "title": "地理泄天機十二冊",
+      "level": 3,
+      "type": "book",
+      "content": "地理泄天機十二冊",
+      "_title_only": "地理泄天機",
+      "_no_author": "待考"
+    },
+    {
+      "title": "俯察要覽一卷",
+      "level": 3,
+      "type": "book",
+      "content": "俯察要覽一卷",
+      "_title_only": "俯察要覽",
+      "_no_author": "待考"
+    },
+    {
+      "title": "通天照砂斗輪經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "通天照砂斗輪經一卷",
+      "_title_only": "通天照砂斗輪經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "一寸金穴法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "一寸金穴法一卷",
+      "_title_only": "一寸金穴法",
+      "_no_author": "待考"
+    },
+    {
+      "title": "玉尺經二卷",
+      "level": 3,
+      "type": "book",
+      "content": "玉尺經二卷",
+      "_title_only": "玉尺經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "地理天機會元三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "地理天機會元三十五卷",
+      "_title_only": "地理天機會元",
+      "_no_author": "待考"
+    },
+    {
+      "title": "地理琢玉斧十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "地理琢玉斧十三卷",
+      "_title_only": "地理琢玉斧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "草木幽微經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "草木幽微經一卷",
+      "_title_only": "草木幽微經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "周繼陽宅真訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "周繼陽宅真訣一卷⟨字志齋新城人⟩",
+      "author_info": "字志齋新城人",
+      "_author": "周繼",
+      "_title_only": "陽宅真訣"
+    },
+    {
+      "title": "周其久八宅周書",
+      "level": 3,
+      "type": "book",
+      "content": "周其久八宅周書⟨當塗人⟩",
+      "author_info": "當塗人",
+      "_title_only": "八宅周書",
+      "_author": "周其久",
+      "_author_src": "詞庫補切·又條題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehqisy0",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "王君榮陽宅十書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王君榮陽宅十書四卷⟨益都人萬厯間舉人後官河間府通判⟩",
+      "author_info": "益都人萬厯間舉人後官河間府通判",
+      "_author": "王君榮",
+      "_title_only": "陽宅十書"
+    },
+    {
+      "title": "陳夢和陽宅集成九卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳夢和陽宅集成九卷",
+      "_author": "陳夢和",
+      "_title_only": "陽宅集成"
+    },
+    {
+      "title": "李邦祥陽宅真傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李邦祥陽宅真傳一卷",
+      "_author": "李邦祥",
+      "_title_only": "陽宅真傳"
+    },
+    {
+      "title": "張萱八宅周書",
+      "level": 3,
+      "type": "book",
+      "content": "張萱八宅周書",
+      "_author": "張萱",
+      "_title_only": "八宅周書",
+      "work_id": "d59f6etx385i",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "彭好古陽宅陰宅一訣十金二卷",
+      "level": 3,
+      "type": "book",
+      "content": "彭好古陽宅陰宅一訣十金二卷",
+      "_author": "彭好古",
+      "_title_only": "陽宅陰宅一訣十金",
+      "work_id": "d59f6etwrzly",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "周經陽宅新編一卷",
+      "level": 3,
+      "type": "book",
+      "content": "周經陽宅新編一卷",
+      "_author": "周經",
+      "_title_only": "陽宅新編"
+    },
+    {
+      "title": "胡經松盛舊編二卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡經松盛舊編二卷",
+      "_author": "胡經",
+      "_title_only": "松盛舊編",
+      "work_id": "d59f6etx385g",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "八宅四書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "八宅四書四卷",
+      "_title_only": "八宅四書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "相宅通天竅十卷",
+      "level": 3,
+      "type": "book",
+      "content": "相宅通天竅十卷",
+      "_title_only": "相宅通天竅",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陽明正範秘書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陽明正範秘書一卷",
+      "_title_only": "陽明正範秘書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "營宅圓機",
+      "level": 3,
+      "type": "book",
+      "content": "營宅圓機",
+      "_title_only": "營宅圓機",
+      "_no_author": "待考"
+    },
+    {
+      "title": "卜居圖解",
+      "level": 3,
+      "type": "book",
+      "content": "卜居圖解",
+      "_title_only": "卜居圖解",
+      "_no_author": "待考"
+    },
+    {
+      "title": "卜居金書四卷",
+      "level": 3,
+      "type": "book",
+      "content": "卜居金書四卷",
+      "_title_only": "卜居金書",
+      "_no_author": "待考"
+    },
+    {
+      "title": "八宅抽爻分房秘訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "八宅抽爻分房秘訣一卷",
+      "_title_only": "八宅抽爻分房秘訣",
+      "_no_author": "待考"
+    },
+    {
+      "title": "徐大昇子平三命通變三卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐大昇子平三命通變三卷",
+      "_author": "徐大昇",
+      "_title_only": "子平三命通變",
+      "_l2_flag": "尊稱字併回撰人",
+      "_flags": [
+        "撰人已改切"
+      ]
+    },
+    {
+      "title": "張子微玉髓真經五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張子微玉髓真經五十卷",
+      "_author": "張子微",
+      "_title_only": "玉髓真經",
+      "work_id": "d59f6etx385c",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "蔡牧堂發微論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡牧堂發微論一卷",
+      "_author": "蔡牧堂",
+      "_title_only": "發微論"
+    },
+    {
+      "title": "王白百中歌",
+      "level": 3,
+      "type": "book",
+      "content": "王白百中歌⟨興國軍節度使占卜書⟩",
+      "author_info": "興國軍節度使占卜書",
+      "_author": "王白",
+      "_title_only": "百中歌"
+    },
+    {
+      "title": "耶律純耶律學士星命秘訣五卷",
+      "level": 3,
+      "type": "book",
+      "content": "耶律純耶律學士星命秘訣五卷",
+      "_author": "耶律純",
+      "_title_only": "耶律學士星命秘訣",
+      "work_id": "d59f6etx385f",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "楊雲翼氣數襍説",
+      "level": 3,
+      "type": "book",
+      "content": "楊雲翼氣數襍説",
+      "_author": "楊雲翼",
+      "_title_only": "氣數襍説",
+      "work_id": "d59f6etwrzlu",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張居中六壬無惑鈐六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張居中六壬無惑鈐六卷⟨司天判官⟩",
+      "author_info": "司天判官",
+      "_author": "張居中",
+      "_title_only": "六壬無惑鈐"
+    },
+    {
+      "title": "丞相兀欽注青烏子葬經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "丞相兀欽注青烏子葬經一卷",
+      "_title_only": "丞相兀欽注青烏子葬經",
+      "_no_author": "待考"
+    },
+    {
+      "title": "保八周易尚古三卷",
+      "level": 3,
+      "type": "book",
+      "content": "保八周易尚古三卷",
+      "_author": "保八",
+      "_title_only": "周易尚古",
+      "work_id": "d59f6etxegp1",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陸森玉靈聚義五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸森玉靈聚義五卷⟨吳人陰陽學教諭⟩",
+      "author_info": "吳人陰陽學教諭",
+      "_author": "陸森",
+      "_title_only": "玉靈聚義",
+      "work_id": "d59f6etxegow",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又總録二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又總録二卷",
+      "_author": "陸森",
+      "_title_only": "總録",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "王洪道三元正經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王洪道三元正經三卷⟨龍興路陰陽學正三元者婚宅葬也⟩",
+      "author_info": "龍興路陰陽學正三元者婚宅葬也",
+      "_author": "王洪道",
+      "_title_only": "三元正經",
+      "work_id": "d59f6egbycxu",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "焦榮選葬編録三卷",
+      "level": 3,
+      "type": "book",
+      "content": "焦榮選葬編録三卷⟨陜西陰陽學提舉⟩",
+      "author_info": "陜西陰陽學提舉",
+      "_author": "焦榮",
+      "_title_only": "選葬編録"
+    },
+    {
+      "title": "徐用徐施二先生元理消息賦注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐用徐施二先生元理消息賦注一卷",
+      "_author": "徐用",
+      "_title_only": "徐施二先生元理消息賦注"
+    },
+    {
+      "title": "祝泌祝氏秘鈐五卷",
+      "level": 3,
+      "type": "book",
+      "content": "祝泌祝氏秘鈐五卷⟨字子涇德興人宋咸興十年進士官饒州路三司提幹元世祖徵之不起遣甥傅立上其書于朝⟩",
+      "author_info": "字子涇德興人宋咸興十年進士官饒州路三司提幹元世祖徵之不起遣甥傅立上其書于朝",
+      "_author": "祝泌",
+      "_title_only": "祝氏秘鈐"
+    },
+    {
+      "title": "又六壬大占",
+      "level": 3,
+      "type": "book",
+      "content": "又六壬大占",
+      "_author": "祝泌",
+      "_title_only": "六壬大占",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又壬易會元",
+      "level": 3,
+      "type": "book",
+      "content": "又壬易會元",
+      "_author": "祝泌",
+      "_title_only": "壬易會元",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "耶律楚材五星秘語一卷",
+      "level": 3,
+      "type": "book",
+      "content": "耶律楚材五星秘語一卷",
+      "_author": "耶律楚材",
+      "_title_only": "五星秘語"
+    },
+    {
+      "title": "又先知大數一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又先知大數一卷",
+      "_author": "耶律楚材",
+      "_title_only": "先知大數",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "劉秉忠平沙玉尺四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉秉忠平沙玉尺四卷",
+      "_author": "劉秉忠",
+      "_title_only": "平沙玉尺"
+    },
+    {
+      "title": "又玉尺新鏡二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又玉尺新鏡二卷",
+      "_author": "劉秉忠",
+      "_title_only": "玉尺新鏡",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "朱震亨風水問答",
+      "level": 3,
+      "type": "book",
+      "content": "朱震亨風水問答",
+      "_author": "朱震亨",
+      "_title_only": "風水問答"
+    }
+  ]
+}

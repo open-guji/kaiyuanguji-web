@@ -1,0 +1,109 @@
+{
+  "title": "乙部史錄·簿錄類",
+  "sections": [
+    {
+      "title": "簿錄類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "簿錄類序",
+      "level": 3,
+      "type": "preface",
+      "content": "乙部史錄，其類十三。一曰正史，二曰編年，三曰雜史，四曰霸史，五曰起居注，六曰舊事，七曰職官，八曰儀注，九曰刑法，十曰雜傳，十一曰地理，十二曰譜系，十三曰簿錄。"
+    },
+    {
+      "title": "鄭默　魏中經",
+      "level": 3,
+      "type": "book",
+      "content": "鄭默　魏中經　《太平御覽》引。王隱《晉書》。",
+      "work_id": "d59f27wog45c"
+    },
+    {
+      "title": "荀勖　晉中經十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　晉中經十四卷　《舊唐志》作「中書簿」，《唐志》作「中經簿」，今從《隋志》。《廣韻》九魚引作「中經簿」。《魏志・王肅傳》注稱《晉武帝中書簿》。",
+      "work_id": "d59f27wdit4y"
+    },
+    {
+      "title": "荀勖　新撰文章家集敘十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　新撰文章家集敘十卷　見《隋志》。兩《唐志》「新」作「雜」，「十卷」作「五卷」。《三國志》注引作「文章敘錄」。",
+      "work_id": "d59f27wu2dxd",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "摯虞　文章志四卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　文章志四卷　見《隋志》。",
+      "work_id": "d59f27wh9nnm"
+    },
+    {
+      "title": "傅亮　續文章志二卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅亮　續文章志二卷　見《隋志》。",
+      "work_id": "d59f2856nx1e"
+    },
+    {
+      "title": "顧愷之　晉文章紀",
+      "level": 3,
+      "type": "book",
+      "content": "顧愷之　晉文章紀　《世說・文學篇》注。",
+      "work_id": "d59f9nn3ng1y"
+    },
+    {
+      "title": "顧愷之　畫讚",
+      "level": 3,
+      "type": "book",
+      "content": "顧愷之　畫讚　見《世說・巧藝篇》注。《歷代名畫記》又作「論畫篇」。",
+      "work_id": "d59f27v7drsy",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "傅玄　古今畫讚",
+      "level": 3,
+      "type": "book",
+      "content": "傅玄　古今畫讚　《北堂書鈔》將帥部。",
+      "work_id": "d59f27wm9gck"
+    },
+    {
+      "title": "晉義熙已來新集目錄三卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉義熙已來新集目錄三卷　見《隋志》。",
+      "work_id": "d59f27wgyf43"
+    },
+    {
+      "title": "王朝目錄",
+      "level": 3,
+      "type": "book",
+      "content": "王朝目錄　《世說・品藻篇》注。",
+      "work_id": "d59f27x0b4sg"
+    },
+    {
+      "title": "晉元帝書目",
+      "level": 3,
+      "type": "book",
+      "content": "晉元帝書目　《弘明集》引《七錄》。",
+      "work_id": "d59f6ssrrv9a"
+    },
+    {
+      "title": "義熙四年祕閣四部目錄",
+      "level": 3,
+      "type": "book",
+      "content": "義熙四年祕閣四部目錄　《弘明集》引《七錄》。",
+      "work_id": "d59f27wj52ww"
+    },
+    {
+      "title": "簿錄類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右簿錄類，十家。失姓名四家。"
+    }
+  ]
+}

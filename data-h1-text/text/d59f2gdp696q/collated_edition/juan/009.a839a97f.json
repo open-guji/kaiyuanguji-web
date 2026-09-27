@@ -1,0 +1,355 @@
+{
+  "title": "經解類",
+  "sections": [
+    {
+      "title": "《周公諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《周公諡法》一卷⟨即《汲塚周書•諡法篇》⟩班固",
+      "work_id": "d59f2pwq1wxs"
+    },
+    {
+      "title": "《白虎通》",
+      "level": 3,
+      "type": "book",
+      "content": "《白虎通》十卷沈約",
+      "work_id": "d59f2084tb0g"
+    },
+    {
+      "title": "《諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《諡法》十卷賀琛",
+      "work_id": "d59f285e5m2o"
+    },
+    {
+      "title": "《諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《諡法》三卷晉陽方",
+      "work_id": "d59f285e5m2o"
+    },
+    {
+      "title": "《五經鉤沈》",
+      "level": 3,
+      "type": "book",
+      "content": "《五經鉤沈》五卷王彥威",
+      "work_id": "d59f2q5s8wzk"
+    },
+    {
+      "title": "《續古今諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《續古今諡法》十四卷劉迅",
+      "work_id": "d59f2q4hqjuo"
+    },
+    {
+      "title": "《六經》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經》五卷《春秋諡法》一卷⟨即杜預《春秋釋例•諡法篇》⟩陸德明",
+      "work_id": "d59f2q9qwcu9"
+    },
+    {
+      "title": "《經典釋文》",
+      "level": 3,
+      "type": "book",
+      "content": "《經典釋文》三十卷馬光極",
+      "work_id": "d59f28j8nll0"
+    },
+    {
+      "title": "《九經釋難》",
+      "level": 3,
+      "type": "book",
+      "content": "《九經釋難》五卷章崇業",
+      "work_id": "d59f2q2voetd"
+    },
+    {
+      "title": "《五經釋題雜問》",
+      "level": 3,
+      "type": "book",
+      "content": "《五經釋題雜問》一卷僧十朋",
+      "work_id": "d59f2q5bpce8"
+    },
+    {
+      "title": "《五經指歸》",
+      "level": 3,
+      "type": "book",
+      "content": "《五經指歸》五卷蘇鶚",
+      "work_id": "d59f2q0n5728"
+    },
+    {
+      "title": "《演義》",
+      "level": 3,
+      "type": "book",
+      "content": "《演義》十卷劉餗",
+      "work_id": "d59f28jvfx8k"
+    },
+    {
+      "title": "《六說》",
+      "level": 3,
+      "type": "book",
+      "content": "《六說》五卷《兼講書》五卷《授經圖》三卷胡旦",
+      "work_id": "d59f28k6d88w"
+    },
+    {
+      "title": "《演聖通論》",
+      "level": 3,
+      "type": "book",
+      "content": "《演聖通論》六十卷劉敞",
+      "work_id": "d59f2hm16mm9"
+    },
+    {
+      "title": "《七經小傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《七經小傳》五卷黃敏求",
+      "work_id": "d59f2hskjk75"
+    },
+    {
+      "title": "《九經餘義》",
+      "level": 3,
+      "type": "book",
+      "content": "《九經餘義》一百卷丘光庭",
+      "work_id": "d59f2hgxybr6"
+    },
+    {
+      "title": "《兼明書》",
+      "level": 3,
+      "type": "book",
+      "content": "《兼明書》三卷李肇",
+      "work_id": "d59f2gcp9yps"
+    },
+    {
+      "title": "《經史釋題》",
+      "level": 3,
+      "type": "book",
+      "content": "《經史釋題》二卷顏師古",
+      "work_id": "d59f28lkxo8x"
+    },
+    {
+      "title": "《刊謬正俗》",
+      "level": 3,
+      "type": "book",
+      "content": "《刊謬正俗》八卷李涪",
+      "work_id": "d59f28k7m6f4"
+    },
+    {
+      "title": "《刊誤》",
+      "level": 3,
+      "type": "book",
+      "content": "《刊誤》二卷《九經要略》一卷《敘元要略》一卷《諡法》三卷《六家諡法》二十卷⟨范鎮、周沆編⟩程頤",
+      "work_id": "d59f28mhplad"
+    },
+    {
+      "title": "《河南經說》",
+      "level": 3,
+      "type": "book",
+      "content": "《河南經說》七卷又《五言集解》三卷蘇洵",
+      "work_id": "d59f2hmdo4ci"
+    },
+    {
+      "title": "《嘉祐諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《嘉祐諡法》三卷《皇祐諡録》二十卷楊會",
+      "work_id": "d59f2hj5v2tc"
+    },
+    {
+      "title": "《經解》",
+      "level": 3,
+      "type": "book",
+      "content": "《經解》三十三卷劉彝",
+      "work_id": "d59f2mbbv4sh"
+    },
+    {
+      "title": "《七經中義》",
+      "level": 3,
+      "type": "book",
+      "content": "《七經中義》一百七十卷蔡攸",
+      "work_id": "d59f2hggh1c0"
+    },
+    {
+      "title": "《政和修定諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《政和修定諡法》八十卷楊時",
+      "work_id": "d59f2hjsc5xe"
+    },
+    {
+      "title": "《三經義辨》",
+      "level": 3,
+      "type": "book",
+      "content": "《三經義辨》十卷王居正",
+      "work_id": "d59f2puwi2v5"
+    },
+    {
+      "title": "《辨學》",
+      "level": 3,
+      "type": "book",
+      "content": "《辨學》七卷鄭樵",
+      "work_id": "d59f2q678b29"
+    },
+    {
+      "title": "《諡法》",
+      "level": 3,
+      "type": "book",
+      "content": "《諡法》三卷李舜臣",
+      "work_id": "d59f285e5m2o"
+    },
+    {
+      "title": "《諸經講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《諸經講義》七卷張九成",
+      "work_id": "d59f2og7dh4w"
+    },
+    {
+      "title": "《鄉黨少儀鹹有一德論孟子拾遺》",
+      "level": 3,
+      "type": "book",
+      "content": "《鄉黨少儀鹹有一德論孟子拾遺》共一卷張載",
+      "work_id": "d59f2q2dvvnk"
+    },
+    {
+      "title": "《經學理窟》",
+      "level": 3,
+      "type": "book",
+      "content": "《經學理窟》三卷項安世",
+      "work_id": "d59f2q9cjg1u"
+    },
+    {
+      "title": "《家說》",
+      "level": 3,
+      "type": "book",
+      "content": "《家說》十卷《附録》四卷黃幹",
+      "work_id": "d59f2pzdvsaq"
+    },
+    {
+      "title": "《六經講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經講義》一卷《六經疑難》十四卷⟨不知作者⟩許奕",
+      "work_id": "d59f2q5e78jk"
+    },
+    {
+      "title": "《九經直音》",
+      "level": 3,
+      "type": "book",
+      "content": "《九經直音》九卷又《正訛》一卷《諸經正典》十卷《論語尚書周禮講義》十卷楊甲",
+      "work_id": "d59f2hdkj0g3"
+    },
+    {
+      "title": "《六經圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經圖》六卷林觀過",
+      "work_id": "d59f2mp04dfm"
+    },
+    {
+      "title": "《經說》",
+      "level": 3,
+      "type": "book",
+      "content": "《經說》一卷戴勳",
+      "work_id": "d59f2mb91zwh"
+    },
+    {
+      "title": "《西齋清選》",
+      "level": 3,
+      "type": "book",
+      "content": "《西齋清選》二卷葉仲堪",
+      "work_id": "d59f2q2waw3l"
+    },
+    {
+      "title": "《六經圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經圖》七卷俞言",
+      "work_id": "d59f2mp04dfm"
+    },
+    {
+      "title": "《六經圖說》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經圖說》十二卷張貴謨",
+      "work_id": "d59f2q22c3ya"
+    },
+    {
+      "title": "《泮林講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《泮林講義》三卷周士貴",
+      "work_id": "d59f2qa4mtc0"
+    },
+    {
+      "title": "《經括》",
+      "level": 3,
+      "type": "book",
+      "content": "《經括》一卷遊桂",
+      "work_id": "d59f2qaqherl"
+    },
+    {
+      "title": "《經學》",
+      "level": 3,
+      "type": "book",
+      "content": "《經學》十二卷《九經經旨策義》九卷⟨不知作者⟩薑得平",
+      "work_id": "d59f2psdo0sg"
+    },
+    {
+      "title": "《詩書遺意》",
+      "level": 3,
+      "type": "book",
+      "content": "《詩書遺意》一卷沈貴瑤",
+      "work_id": "d59f2q3mu2gx"
+    },
+    {
+      "title": "《四書要義》",
+      "level": 3,
+      "type": "book",
+      "content": "《四書要義》七篇張九成",
+      "work_id": "d59f2pvnnqip"
+    },
+    {
+      "title": "《中庸大學孝經說》",
+      "level": 3,
+      "type": "book",
+      "content": "《中庸大學孝經說》各一卷又《四書解》六十五卷張綱",
+      "work_id": "d59f2pxngbnl"
+    },
+    {
+      "title": "《六經辨疑》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經辨疑》五卷又《確論》十卷李燾",
+      "work_id": "d59f2puv95a8"
+    },
+    {
+      "title": "《五經傳授》",
+      "level": 3,
+      "type": "book",
+      "content": "《五經傳授》一卷王應麟",
+      "work_id": "d59f2q9blqf4"
+    },
+    {
+      "title": "《六經天文編》",
+      "level": 3,
+      "type": "book",
+      "content": "《六經天文編》六卷陳應隆",
+      "work_id": "d59f2hs9m96p"
+    },
+    {
+      "title": "《四書輯語》",
+      "level": 3,
+      "type": "book",
+      "content": "《四書輯語》四十卷劉元剛",
+      "work_id": "d59f2hihtszk"
+    },
+    {
+      "title": "《三經演義》",
+      "level": 3,
+      "type": "book",
+      "content": "《三經演義》一十一卷⟨《孝經》、《論》、《孟》⟩",
+      "work_id": "d59f2pvelukg"
+    }
+  ]
+}

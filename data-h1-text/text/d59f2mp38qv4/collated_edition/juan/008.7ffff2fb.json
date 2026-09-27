@@ -1,0 +1,39 @@
+{
+  "title": "經部·論語類",
+  "source_juan": "正文",
+  "related_works": [
+    {
+      "id": "d59f1iopaku8",
+      "title": "論語",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·論語類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "論語集說十卷",
+      "content": "蔡節撰。",
+      "work_id": "d59f2hs8db0g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "石洞紀聞十卷",
+      "content": "蔡節撰。",
+      "work_id": "d59f2hf6we0x"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右論語類",
+      "content": "右論語類一家二十卷。"
+    }
+  ]
+}

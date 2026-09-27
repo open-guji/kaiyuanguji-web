@@ -1,0 +1,55 @@
+{
+  "title": "補編·經編儀禮類",
+  "part": "main",
+  "bian": "supplement",
+  "lei": "經編儀禮類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "周氏喪服注一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "周氏喪服注",
+      "measure": 1,
+      "part": "main",
+      "bian": "supplement",
+      "lei": "經編儀禮類",
+      "zhi_no": 8,
+      "juan_no": 79,
+      "dynasty": "劉宋",
+      "author": "周續之",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f284w1ukk",
+      "link_basis": "本庫無同題 work，據本目錄新建",
+      "content": ""
+    },
+    {
+      "title": "喪服世行要記一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "喪服世行要記",
+      "measure": 1,
+      "part": "main",
+      "bian": "supplement",
+      "lei": "經編儀禮類",
+      "zhi_no": 8,
+      "juan_no": 79,
+      "unlinked_reason": "本庫同題2，逐條考之仍不可決，故闕。輯本亦不著撰人。",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    }
+  ]
+}

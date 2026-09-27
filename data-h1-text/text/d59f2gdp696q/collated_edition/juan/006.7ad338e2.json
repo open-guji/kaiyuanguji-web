@@ -1,0 +1,1258 @@
+{
+  "title": "春秋類",
+  "sections": [
+    {
+      "title": "《春秋》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋》七卷⟨正經⟩杜預",
+      "work_id": "d59ezajq05c0"
+    },
+    {
+      "title": "《春秋左氏傳經傳集解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋左氏傳經傳集解》三十卷又《春秋釋例》十五卷何休",
+      "work_id": "d59f2pt9i874"
+    },
+    {
+      "title": "《公羊傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《公羊傳》十二卷又《左氏膏肓》十卷范寧",
+      "work_id": "d59f1ioj1tz4"
+    },
+    {
+      "title": "《穀梁傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《穀梁傳》十二卷董仲舒",
+      "work_id": "d59ezajtfrb4"
+    },
+    {
+      "title": "《春秋繁露》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋繁露》十七卷《汲塚師春》一卷⟨師春純集疏《左傳》卜筮事⟩荀卿",
+      "work_id": "d59f1iqqc3y8"
+    },
+    {
+      "title": "《公子姓譜》",
+      "level": 3,
+      "type": "book",
+      "content": "《公子姓譜》二卷⟨一名《帝王曆紀譜》⟩劉炫",
+      "work_id": "d59f2q9jeo75"
+    },
+    {
+      "title": "《春秋述議略》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋述議略》一卷又《春秋義囊》二卷孔穎達",
+      "work_id": "d59f2py2qy2p"
+    },
+    {
+      "title": "《春秋左氏傳正義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋左氏傳正義》三十六卷《公羊疏》三十卷楊士勳",
+      "work_id": "d59f2pt1pb7l"
+    },
+    {
+      "title": "《春秋穀梁疏》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋穀梁疏》十二卷黃恭密",
+      "work_id": "d59f2qajm7ep"
+    },
+    {
+      "title": "《春秋指要圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指要圖》一卷李瑾",
+      "work_id": "d59f2q64qeip"
+    },
+    {
+      "title": "《春秋指掌圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指掌圖》十五卷陳嶽",
+      "work_id": "d59f2gjusqv5"
+    },
+    {
+      "title": "《春秋折衷論》",
+      "level": 3,
+      "type": "book",
+      "content": "陳岳《春秋折衷論》三十卷，《春秋災異録》六卷，《春秋諡族圖》五卷",
+      "work_id": "d59f28jj9o1x"
+    },
+    {
+      "title": "《三傳釋文》",
+      "level": 3,
+      "type": "book",
+      "content": "陸德明《三傳釋文》八卷",
+      "work_id": "d59f28ky5cli"
+    },
+    {
+      "title": "《春秋通例》",
+      "level": 3,
+      "type": "book",
+      "content": "陸希聲《春秋通例》三卷",
+      "work_id": "d59f28m2eyo1"
+    },
+    {
+      "title": "《春秋闡微纂類義統》",
+      "level": 3,
+      "type": "book",
+      "content": "趙匡《春秋闡微纂類義統》十卷",
+      "work_id": "d59f28m7pzwk"
+    },
+    {
+      "title": "《集傳春秋纂例》",
+      "level": 3,
+      "type": "book",
+      "content": "陸淳《集傳春秋纂例》十卷，又《春秋辨疑》七卷，《集注春秋微旨》三卷",
+      "work_id": "d59f28mgrvnn"
+    },
+    {
+      "title": "《春秋摘微》",
+      "level": 3,
+      "type": "book",
+      "content": "盧仝《春秋摘微》四卷",
+      "work_id": "d59f28jwoveq"
+    },
+    {
+      "title": "《春秋公子譜》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋公子譜》一卷左丘明",
+      "work_id": "d59f2gclj476"
+    },
+    {
+      "title": "《春秋外傳國語》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋外傳國語》二十一卷⟨韋昭注⟩柳宗元",
+      "work_id": "d59f2evx8g76"
+    },
+    {
+      "title": "《非國語》",
+      "level": 3,
+      "type": "book",
+      "content": "《非國語》二卷葉真",
+      "work_id": "d59f2pxfym82"
+    },
+    {
+      "title": "《是國語》",
+      "level": 3,
+      "type": "book",
+      "content": "《是國語》七卷馮繼先",
+      "work_id": "d59f2q5armdd"
+    },
+    {
+      "title": "《春秋名號歸一圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋名號歸一圖》又《春秋名字同異録》五卷杜預",
+      "work_id": "d59f2ogat2wx"
+    },
+    {
+      "title": "《春秋世譜》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋世譜》七卷張暄",
+      "work_id": "d59f2ofxdvcy"
+    },
+    {
+      "title": "《春秋龜鑒圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋龜鑒圖》一卷馬擇言",
+      "work_id": "d59f2q17quww"
+    },
+    {
+      "title": "《春秋要類》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋要類》五卷徐彥",
+      "work_id": "d59f2q2vd6gw"
+    },
+    {
+      "title": "《公羊疏》",
+      "level": 3,
+      "type": "book",
+      "content": "《公羊疏》三十卷葉清臣",
+      "work_id": "d59f2q17fls1"
+    },
+    {
+      "title": "《春秋纂類》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋纂類》十卷孫復",
+      "work_id": "d59f2q8c0ow1"
+    },
+    {
+      "title": "《春秋尊王發微》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋尊王發微》十二卷《春秋總論》一卷李堯俞",
+      "work_id": "d59f2htji51e"
+    },
+    {
+      "title": "《春秋集議略論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集議略論》二卷王沿",
+      "work_id": "d59f2q41i7sx"
+    },
+    {
+      "title": "《春秋集傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集傳》十五卷章拱之",
+      "work_id": "d59f2gphozy9"
+    },
+    {
+      "title": "《春秋統微》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋統微》二十五卷王哲",
+      "work_id": "d59f2q2d9eyo"
+    },
+    {
+      "title": "《春秋通義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通義》十二卷又《皇綱論》五卷丁副",
+      "work_id": "d59f2q34f2f6"
+    },
+    {
+      "title": "《春秋演聖統例》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋演聖統例》二十卷《春秋三傳異同字》一卷朱定序",
+      "work_id": "d59f2q8gp8u8"
+    },
+    {
+      "title": "《春秋索隱》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋索隱》五卷杜諤",
+      "work_id": "d59f2pvpudxe"
+    },
+    {
+      "title": "《春秋會義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋會義》二十六卷胡瑗",
+      "work_id": "d59f2hi6l9fk"
+    },
+    {
+      "title": "《春秋口義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋口義》五卷劉敞",
+      "work_id": "d59f2hm2fksi"
+    },
+    {
+      "title": "《春秋傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳》十五卷又《春秋權衡》十七卷《春秋說例》十一卷《春秋意林》二卷蘇轍",
+      "work_id": "d59f27xchdz6"
+    },
+    {
+      "title": "《春秋集傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集傳》十二卷王安石",
+      "work_id": "d59f2gphozy9"
+    },
+    {
+      "title": "《左氏解》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏解》一卷楊彥齡",
+      "work_id": "d59f2q2mmjgi"
+    },
+    {
+      "title": "《左氏春秋年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏春秋年表》二卷又《左氏蒙求》二卷沈括",
+      "work_id": "d59f2qb2179d"
+    },
+    {
+      "title": "《春秋機括》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋機括》二卷趙瞻",
+      "work_id": "d59f2pu35se8"
+    },
+    {
+      "title": "《春秋論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋論》三十卷又《春秋經解義例》二十卷唐既濟",
+      "work_id": "d59f2marvy0x"
+    },
+    {
+      "title": "《春秋邦典》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋邦典》二卷孫覺",
+      "work_id": "d59f2q0a17nl"
+    },
+    {
+      "title": "《春秋經社要義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋經社要義》六卷《春秋經解》十五卷《春秋學纂》十二卷晁補之",
+      "work_id": "d59f2hkc045e"
+    },
+    {
+      "title": "《左氏春秋傳雜論》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏春秋傳雜論》一卷劉攽",
+      "work_id": "d59f2pv2qtq9"
+    },
+    {
+      "title": "《內傳國語》",
+      "level": 3,
+      "type": "book",
+      "content": "《內傳國語》十卷《春秋人譜》一卷⟨孫子平、練明道同撰。⟩朱長文",
+      "work_id": "d59f2q20gohs"
+    },
+    {
+      "title": "《春秋通誌》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通誌》二十卷家安國",
+      "work_id": "d59f2q0hixa9"
+    },
+    {
+      "title": "《春秋通義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通義》二十四卷張大亨",
+      "work_id": "d59f2q34f2f6"
+    },
+    {
+      "title": "《春秋通訓》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通訓》十六卷又《五禮例宗》十卷陸佃",
+      "work_id": "d59f2hpdo8ao"
+    },
+    {
+      "title": "《春秋後傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋後傳》二十卷又《補遺》一卷程頤",
+      "work_id": "d59f2hpuua69"
+    },
+    {
+      "title": "《春秋傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳》一卷黎錞",
+      "work_id": "d59f27xchdz6"
+    },
+    {
+      "title": "《春秋經解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋經解》十二卷王裴",
+      "work_id": "d59f286fxbsx"
+    },
+    {
+      "title": "《春秋義解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋義解》十二卷張冒德",
+      "work_id": "d59f2mb1kav4"
+    },
+    {
+      "title": "《春秋傳類音》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳類音》十卷韓台",
+      "work_id": "d59f2q9cjfup"
+    },
+    {
+      "title": "《春秋左氏傳口音》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋左氏傳口音》三卷陳德寧",
+      "work_id": "d59f2pzzqdxd"
+    },
+    {
+      "title": "《公羊新例》",
+      "level": 3,
+      "type": "book",
+      "content": "《公羊新例》十四卷又《穀梁新例》六卷陰洪道",
+      "work_id": "d59f2q29tszm"
+    },
+    {
+      "title": "《注春秋敘》",
+      "level": 3,
+      "type": "book",
+      "content": "《注春秋敘》一卷張翰⟨一作“幹”⟩",
+      "work_id": "d59f2q5b2vb4"
+    },
+    {
+      "title": "《春秋排門顯義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋排門顯義》十卷李撰",
+      "work_id": "d59f2ps9x6gy"
+    },
+    {
+      "title": "《春秋總要》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋總要》十卷袁希⟨一作“孝”⟩政",
+      "work_id": "d59f2q9u0q9s"
+    },
+    {
+      "title": "《春秋要類》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋要類》五卷張德昌",
+      "work_id": "d59f2q8yt0jl"
+    },
+    {
+      "title": "《春秋傳類》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳類》十卷沈緯",
+      "work_id": "d59f2pvta0hu"
+    },
+    {
+      "title": "《春秋諫類》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋諫類》二卷郭翔",
+      "work_id": "d59f2pzsjxts"
+    },
+    {
+      "title": "《春秋義鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋義鑒》三十卷王仲孚",
+      "work_id": "d59f28ml579d"
+    },
+    {
+      "title": "《春秋類聚》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋類聚》五卷黃彬",
+      "work_id": "d59f2q90znr5"
+    },
+    {
+      "title": "《春秋敘鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋敘鑒》三卷《春秋精義》三十卷洪勳",
+      "work_id": "d59f2pw2n4ld"
+    },
+    {
+      "title": "《春秋圖鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋圖鑒》五卷《春秋加減》一卷王叡",
+      "work_id": "d59f2pze70u8"
+    },
+    {
+      "title": "《春秋守鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋守鑒》一卷《春秋龜鑒》一卷張傑",
+      "work_id": "d59f2q6sroqp"
+    },
+    {
+      "title": "《春秋指玄》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指玄》十卷塗昭良",
+      "work_id": "d59f28k2xm9x"
+    },
+    {
+      "title": "《春秋科義雄覽》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋科義雄覽》十卷《春秋應判》三十卷丁裔昌",
+      "work_id": "d59f2qawex35"
+    },
+    {
+      "title": "《春秋解問》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋解問》一卷邵川",
+      "work_id": "d59f2q174dmp"
+    },
+    {
+      "title": "《春秋括義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋括義》三卷劉英",
+      "work_id": "d59f2pxkn6kg"
+    },
+    {
+      "title": "《春秋列國圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋列國圖》一卷《春秋十二國年曆》一卷謝璧",
+      "work_id": "d59f2pssc6pu"
+    },
+    {
+      "title": "《春秋綴英》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋綴英》二卷李塗",
+      "work_id": "d59f2pzuql1d"
+    },
+    {
+      "title": "《春秋事對》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋事對》五卷⟨蔡延龜注⟩",
+      "work_id": "d59f2q5yswea"
+    },
+    {
+      "title": "《春秋扶懸》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋扶懸》三卷《春秋比事》三卷《春秋要義》十卷《春秋策問》三十卷《春秋夾氏》三十卷李融",
+      "work_id": "d59f2pu2ujuq"
+    },
+    {
+      "title": "《春秋樞宗》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋樞宗》十卷薑虔嗣",
+      "work_id": "d59f2ptqoao1"
+    },
+    {
+      "title": "《春秋三傳纂要》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋三傳纂要》二十卷惠簡",
+      "work_id": "d59f2pyn1ddu"
+    },
+    {
+      "title": "《春秋通略全義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通略全義》十五卷元保宗",
+      "work_id": "d59f2qa0kq9s"
+    },
+    {
+      "title": "《春秋事要》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋事要》十卷鞏浚⟨一作“潛”⟩",
+      "work_id": "d59f2pt54wzn"
+    },
+    {
+      "title": "《春秋琢瑕》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋琢瑕》一卷張傳靖",
+      "work_id": "d59f2q7cfmyq"
+    },
+    {
+      "title": "《左傳編紀》",
+      "level": 3,
+      "type": "book",
+      "content": "《左傳編紀》十卷崔升",
+      "work_id": "d59f2pwkqwao"
+    },
+    {
+      "title": "《春秋分門屬類賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋分門屬類賦》三卷⟨楊均注⟩裴光輔",
+      "work_id": "d59f2pv6sxdu"
+    },
+    {
+      "title": "《春秋機要賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋機要賦》一卷尹玉羽",
+      "work_id": "d59f2q5be3nk"
+    },
+    {
+      "title": "《春秋音義賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋音義賦》十卷⟨冉遂良注⟩又《春秋字源賦》二卷⟨楊文舉注⟩李象",
+      "work_id": "d59f2pz8kqgw"
+    },
+    {
+      "title": "《續春秋機要賦》",
+      "level": 3,
+      "type": "book",
+      "content": "《續春秋機要賦》一卷玉霄",
+      "work_id": "d59f2q16t4w1"
+    },
+    {
+      "title": "《春秋括囊賦集注》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋括囊賦集注》一卷王鄒彥",
+      "work_id": "d59f2q3oe8zk"
+    },
+    {
+      "title": "《春秋蒙求》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋蒙求》五卷張傑",
+      "work_id": "d59f2pv9atq9"
+    },
+    {
+      "title": "《春秋圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋圖》五卷《春秋指掌圖》二卷蹇遵品",
+      "work_id": "d59f28jxml1h"
+    },
+    {
+      "title": "《左傳引帖斷義》",
+      "level": 3,
+      "type": "book",
+      "content": "《左傳引帖斷義》十卷《春秋纂類義統》十卷⟨本十二卷，第二、第四闕⟩",
+      "work_id": "d59f2q6cuku9"
+    },
+    {
+      "title": "《春秋通義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通義》十二卷《春秋新義》十卷《春秋十二國年曆》一卷⟨一名《春秋齊年》⟩",
+      "work_id": "d59f2q34f2f6"
+    },
+    {
+      "title": "《春秋文權》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋文權》五卷魯有開",
+      "work_id": "d59f2pv0k64h"
+    },
+    {
+      "title": "《春秋指微》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指微》十卷《國語音義》一卷宋庠",
+      "work_id": "d59f2q0sg7wh"
+    },
+    {
+      "title": "《國語補音》",
+      "level": 3,
+      "type": "book",
+      "content": "《國語補音》三卷林概",
+      "work_id": "d59f2hswekua"
+    },
+    {
+      "title": "《辨國語》",
+      "level": 3,
+      "type": "book",
+      "content": "《辨國語》三卷崔表",
+      "work_id": "d59f2q0i5ds1"
+    },
+    {
+      "title": "《世本圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《世本圖》一卷楊蘊",
+      "work_id": "d59f2pthxn9e"
+    },
+    {
+      "title": "《春秋年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋年表》一卷謝湜",
+      "work_id": "d59f2gcpl79e"
+    },
+    {
+      "title": "《春秋義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋義》二十四卷又《總義》三卷崔子方",
+      "work_id": "d59f2q50s16q"
+    },
+    {
+      "title": "《春秋經解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋經解》十二卷《春秋本例例要》二十卷呂奎",
+      "work_id": "d59f286fxbsx"
+    },
+    {
+      "title": "《春秋要旨》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋要旨》十二卷吳元緒",
+      "work_id": "d59f2pzot2pt"
+    },
+    {
+      "title": "《左氏鼓吹》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏鼓吹》一卷劉易",
+      "work_id": "d59f2gcka60x"
+    },
+    {
+      "title": "《春秋經解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋經解》二卷吳孜",
+      "work_id": "d59f286fxbsx"
+    },
+    {
+      "title": "《春秋折衷》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋折衷》十二卷範柔中",
+      "work_id": "d59f2q9d5xj6"
+    },
+    {
+      "title": "《春秋見微》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋見微》五卷鄒氏",
+      "work_id": "d59f2pwyskcg"
+    },
+    {
+      "title": "《春秋總例》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋總例》一卷謝子房",
+      "work_id": "d59f2hifydq9"
+    },
+    {
+      "title": "《春秋備對》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋備對》十三卷朱振",
+      "work_id": "d59f2q5jthxc"
+    },
+    {
+      "title": "《春秋指要》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指要》一卷又《春秋正名頤隱要旨》十二卷《春秋正名頤隱旨要敘論》一卷《春秋講義》三卷沈滋仁",
+      "work_id": "d59f2q00cute"
+    },
+    {
+      "title": "《春秋興亡圖鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋興亡圖鑒》一卷陳禾",
+      "work_id": "d59f2q87ncox"
+    },
+    {
+      "title": "《春秋傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳》十二卷又《春秋統論》一卷任伯雨",
+      "work_id": "d59f27xchdz6"
+    },
+    {
+      "title": "《春秋繹聖新傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋繹聖新傳》十二卷鄭昂",
+      "work_id": "d59f2q5cbtaa"
+    },
+    {
+      "title": "《春秋臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋臣傳》三十卷鄧驥",
+      "work_id": "d59f2htfraip"
+    },
+    {
+      "title": "《春秋指蹤》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指蹤》二十一卷石公孺",
+      "work_id": "d59f2q95o83k"
+    },
+    {
+      "title": "《春秋類例》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋類例》十二卷王當",
+      "work_id": "d59f2gnbcflt"
+    },
+    {
+      "title": "《春秋列國諸臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋列國諸臣傳》五十一卷張根",
+      "work_id": "d59f2hrubmkg"
+    },
+    {
+      "title": "《春秋指南》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋指南》十卷李棠",
+      "work_id": "d59f2hk5g4qr"
+    },
+    {
+      "title": "《春秋時論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋時論》一卷葉夢得",
+      "work_id": "d59f2q220vep"
+    },
+    {
+      "title": "《春秋讞》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋讞》三十卷又《春秋考》三十卷《春秋傳》二十卷《石林春秋》八卷《春秋指要總例》二卷胡安國",
+      "work_id": "d59f2hslside"
+    },
+    {
+      "title": "《春秋傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳》三十卷又《通例》一卷《通旨》一卷餘安行",
+      "work_id": "d59f27xchdz6"
+    },
+    {
+      "title": "《春秋新傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋新傳》十二卷韓璜",
+      "work_id": "d59f2hlng6pt"
+    },
+    {
+      "title": "《春秋人表》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋人表》一卷范沖",
+      "work_id": "d59f2q2yssg1"
+    },
+    {
+      "title": "《春秋左氏講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋左氏講義》四卷黃叔敖",
+      "work_id": "d59f2pu2ujgh"
+    },
+    {
+      "title": "《春秋講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋講義》五卷洪皓",
+      "work_id": "d59f2hs66n7k"
+    },
+    {
+      "title": "《春秋紀詠》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋紀詠》三十卷胡銓",
+      "work_id": "d59f2hd73t35"
+    },
+    {
+      "title": "《春秋集善》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集善》十三卷鄧名世",
+      "work_id": "d59f2q0xr8xs"
+    },
+    {
+      "title": "《春秋四譜》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋四譜》六卷《辨論譜說》一卷劉本",
+      "work_id": "d59f2pvd1nuo"
+    },
+    {
+      "title": "《春秋中論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋中論》三十卷畢良史",
+      "work_id": "d59f2pz9tp1d"
+    },
+    {
+      "title": "《春秋正辭》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋正辭》二十卷環中",
+      "work_id": "d59f2moz6nsy"
+    },
+    {
+      "title": "《左氏春秋二十國年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏春秋二十國年表》一卷《春秋列國臣子表》十卷鄭樵",
+      "work_id": "d59f2q59tx4w"
+    },
+    {
+      "title": "《春秋地名譜》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋地名譜》十卷又《春秋傳》十二卷《春秋考》十二卷周彥熠",
+      "work_id": "d59f2pt4ifwh"
+    },
+    {
+      "title": "《春秋名義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋名義》二卷毛邦彥",
+      "work_id": "d59f2q5gdvy8"
+    },
+    {
+      "title": "《春秋正義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋正義》十二卷王日休",
+      "work_id": "d59f28kt5jwi"
+    },
+    {
+      "title": "《春秋孫復解辨失》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋孫復解辨失》一卷又《春秋公羊辨失》一卷《春秋左氏辨失》一卷《春秋穀梁辨失》一卷《春秋名義》一卷董自任",
+      "work_id": "d59f2q15vf2a"
+    },
+    {
+      "title": "《春秋總鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋總鑒》十二卷夏沐",
+      "work_id": "d59f2qajxfk1"
+    },
+    {
+      "title": "《春秋素誌》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋素誌》三百一十五卷又《春秋麟台獨講》十一卷《延陵先生講義》二卷呂本中",
+      "work_id": "d59f2ptkqry8"
+    },
+    {
+      "title": "《春秋解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋解》二卷晁公武",
+      "work_id": "d59f2hfcinsx"
+    },
+    {
+      "title": "《春秋故訓傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋故訓傳》三十卷王炫",
+      "work_id": "d59f2pwf4lxe"
+    },
+    {
+      "title": "《春秋門例通解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋門例通解》十卷林栗",
+      "work_id": "d59f2pwf4m4g"
+    },
+    {
+      "title": "《經傳集解》",
+      "level": 3,
+      "type": "book",
+      "content": "《經傳集解》三十三卷時瀾",
+      "work_id": "d59f2q5b2vb5"
+    },
+    {
+      "title": "《左氏春秋講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏春秋講義》十卷徐得之",
+      "work_id": "d59f2q3ackqq"
+    },
+    {
+      "title": "《左氏國紀》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏國紀》二十卷蕭楚",
+      "work_id": "d59f2hhl1vy8"
+    },
+    {
+      "title": "《春秋經辨》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋經辨》十卷胡定",
+      "work_id": "d59f2pstwd8i"
+    },
+    {
+      "title": "《春秋解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋解》十二卷林拱辰",
+      "work_id": "d59f2prx4g02"
+    },
+    {
+      "title": "《春秋傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋傳》三十卷陳傅良",
+      "work_id": "d59f27xchdz6"
+    },
+    {
+      "title": "《春秋後傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋後傳》十二卷又《左氏章指》三十卷王汝猷",
+      "work_id": "d59f2hpuua69"
+    },
+    {
+      "title": "《春秋外傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋外傳》十五卷程迥",
+      "work_id": "d59f2q9te96o"
+    },
+    {
+      "title": "《春秋顯微例目》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋顯微例目》一卷又《春秋傳》二十卷朱臨",
+      "work_id": "d59f2q5yho1s"
+    },
+    {
+      "title": "《春秋私記》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋私記》一卷《春秋外傳》十卷王葆",
+      "work_id": "d59f2pvxykg0"
+    },
+    {
+      "title": "《東宮春秋講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《東宮春秋講義》三卷《春秋集傳》十五卷呂祖謙",
+      "work_id": "d59f2q520zk1"
+    },
+    {
+      "title": "《春秋集解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集解》三十卷又《左傳類編》六卷《左氏博議》二十卷《左氏說》一卷《左氏博議綱目》一卷⟨祖謙門人張成招標注⟩",
+      "work_id": "d59f2htk4m4i"
+    },
+    {
+      "title": "《左氏國語類編》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏國語類編》二卷⟨祖謙門人所編⟩沈棐",
+      "work_id": "d59f2q2ldkox"
+    },
+    {
+      "title": "《春秋比事》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋比事》二十卷李明復",
+      "work_id": "d59f2hq0gjy9"
+    },
+    {
+      "title": "《春秋集義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集義》五十卷又《集義綱領》二卷任公輔",
+      "work_id": "d59f2hr01lvl"
+    },
+    {
+      "title": "《春秋明辨》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋明辨》十一卷楊簡",
+      "work_id": "d59f2q8vomps"
+    },
+    {
+      "title": "《春秋解》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋解》十卷戴溪",
+      "work_id": "d59f2hifn56r"
+    },
+    {
+      "title": "《春秋講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋講義》四卷程公說",
+      "work_id": "d59f2hs66n7k"
+    },
+    {
+      "title": "《春秋分記》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋分記》九十卷《春秋釋疑》二十卷《春秋考異》四卷《春秋加減》四卷《春秋直指》三卷《左氏紀傳》五十卷《春秋四傳》二十卷《春秋類》六卷《春秋例》六卷《春秋表記》一卷《王侯世係》一卷《春秋釋例地名譜》一卷《春秋本旨》五卷《左氏摘奇》十二卷⟨並不知作者⟩李浹",
+      "work_id": "d59f2pucu4u8"
+    },
+    {
+      "title": "《左氏廣誨蒙》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏廣誨蒙》一卷章衝",
+      "work_id": "d59f2pt9708y"
+    },
+    {
+      "title": "《左氏類事始末》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏類事始末》五卷王柏",
+      "work_id": "d59f2pw70fsy"
+    },
+    {
+      "title": "《左氏正傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏正傳》一十卷高端叔",
+      "work_id": "d59f2q7tlo8w"
+    },
+    {
+      "title": "《春秋義宗》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋義宗》一百五十卷黎良能",
+      "work_id": "d59f2pydd0qo"
+    },
+    {
+      "title": "《左氏釋疑》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏釋疑》、",
+      "work_id": "d59f28minawz"
+    },
+    {
+      "title": "《譜學》",
+      "level": 3,
+      "type": "book",
+      "content": "《譜學》各一卷沈棐",
+      "work_id": "d59f2pxpmyv4"
+    },
+    {
+      "title": "《春秋比事》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋比事》二十卷吳曾",
+      "work_id": "d59f2hq0gjy9"
+    },
+    {
+      "title": "《春秋考異》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋考異》四卷又《左氏發揮》六卷方淑",
+      "work_id": "d59f2q1wpudc"
+    },
+    {
+      "title": "《春秋直音》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋直音》三卷石朝英",
+      "work_id": "d59f2pstwd8h"
+    },
+    {
+      "title": "《左傳約說》",
+      "level": 3,
+      "type": "book",
+      "content": "《左傳約說》一卷又《百論》一卷黃仲炎",
+      "work_id": "d59f2ptnjwn5"
+    },
+    {
+      "title": "《春秋通說》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋通說》一十三卷辛次膺",
+      "work_id": "d59f2hrt2oe9"
+    },
+    {
+      "title": "《屬辭比事》",
+      "level": 3,
+      "type": "book",
+      "content": "《屬辭比事》五卷李孟傳",
+      "work_id": "d59f2py3onpd"
+    },
+    {
+      "title": "《左氏說》",
+      "level": 3,
+      "type": "book",
+      "content": "《左氏說》十卷程大昌",
+      "work_id": "d59f2q8kg3cw"
+    },
+    {
+      "title": "《演繁露》",
+      "level": 3,
+      "type": "book",
+      "content": "《演繁露》六卷李燾",
+      "work_id": "d59f2hqji134"
+    },
+    {
+      "title": "《春秋學》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋學》十卷王應麟",
+      "work_id": "d59f2q35o0e8"
+    },
+    {
+      "title": "《春秋三傳會考》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋三傳會考》三十六卷楊士勳",
+      "work_id": "d59f2pv7fe9t"
+    },
+    {
+      "title": "《春秋公穀考異》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋公穀考異》五卷陸宰",
+      "work_id": "d59f2pwffv2a"
+    },
+    {
+      "title": "《春秋後傳補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋後傳補遺》一卷趙震揆",
+      "work_id": "d59f2hf27tvl"
+    },
+    {
+      "title": "《春秋類論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋類論》四十卷宇文虛中",
+      "work_id": "d59f2q7hff9c"
+    },
+    {
+      "title": "《春秋紀詠》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋紀詠》三十卷王夢應",
+      "work_id": "d59f2og728e8"
+    },
+    {
+      "title": "《春秋集義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋集義》五十卷李心傳",
+      "work_id": "d59f2hr01lvl"
+    },
+    {
+      "title": "《春秋考義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋考義》十三卷魏了翁",
+      "work_id": "d59f2og3xuyq"
+    },
+    {
+      "title": "《春秋要義》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋要義》六十卷陳藻、林希逸",
+      "work_id": "d59f2hijp88x"
+    },
+    {
+      "title": "《春秋三傳正附論》",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋三傳正附論》十三卷",
+      "work_id": "d59f2pyxnfuo"
+    }
+  ]
+}

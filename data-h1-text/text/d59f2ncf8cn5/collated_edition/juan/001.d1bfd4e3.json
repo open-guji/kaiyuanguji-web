@@ -1,0 +1,223 @@
+{
+  "title": "七家後漢書",
+  "source": "原內嵌於 collated_edition_index.json",
+  "sections": [
+    {
+      "title": "謝承後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 0,
+      "book_title": "謝承後漢書",
+      "juans": [
+        "一",
+        "七",
+        "三",
+        "二",
+        "五",
+        "八",
+        "六",
+        "四"
+      ],
+      "headings": 176,
+      "fragments": 740,
+      "collectors_tally": {
+        "孫志祖": 227,
+        "王謨": 609,
+        "汪文臺": 668,
+        "黃奭": 651,
+        "姚之駰": 419,
+        "鈴木由次郎": 104
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27x8qjgi",
+      "link_basis": "謝承《後漢書》一百三十卷，原書；一卷者是姚氏輯本",
+      "content": ""
+    },
+    {
+      "title": "薛瑩後漢記",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 1,
+      "book_title": "薛瑩後漢記",
+      "juans": [],
+      "headings": 11,
+      "fragments": 19,
+      "collectors_tally": {
+        "姚之駰": 10,
+        "汪文臺": 14,
+        "黃奭": 14
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27souy9t",
+      "link_basis": "薛瑩之書隋志作《後漢記》六十五卷，即此",
+      "content": ""
+    },
+    {
+      "title": "司馬彪續漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 2,
+      "book_title": "司馬彪續漢書",
+      "juans": [
+        "一",
+        "三",
+        "二",
+        "五",
+        "四"
+      ],
+      "headings": 113,
+      "fragments": 644,
+      "collectors_tally": {
+        "汪文臺": 571,
+        "姚之駰": 324,
+        "鈴木由次郎": 212,
+        "王謨": 1
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27w8j0g0",
+      "link_basis": "司馬彪《續漢書》八十三卷（庫中撰人殘作「馬彪」）",
+      "content": ""
+    },
+    {
+      "title": "華嶠漢後書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 3,
+      "book_title": "華嶠漢後書",
+      "juans": [
+        "一",
+        "三",
+        "二"
+      ],
+      "headings": 57,
+      "fragments": 223,
+      "collectors_tally": {
+        "汪文臺": 172,
+        "黃奭": 174,
+        "姚之駰": 119,
+        "鈴木由次郎": 84
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27xxpiwy",
+      "link_basis": "華嶠《後漢書》三十一卷；周本題作「漢後書」，從其本傳",
+      "content": ""
+    },
+    {
+      "title": "謝沈後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 4,
+      "book_title": "謝沈後漢書",
+      "juans": [],
+      "headings": 13,
+      "fragments": 24,
+      "collectors_tally": {
+        "汪文臺": 20,
+        "黃奭": 21,
+        "姚之駰": 11,
+        "鈴木由次郎": 1
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27y7dvr7",
+      "link_basis": "謝沈《後漢書》一百零二卷",
+      "content": ""
+    },
+    {
+      "title": "張瑩後漢南記",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 5,
+      "book_title": "張瑩後漢南記",
+      "juans": [],
+      "headings": 5,
+      "fragments": 17,
+      "collectors_tally": {},
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27x0b4sh",
+      "link_basis": "張瑩《後漢南記》四十五卷。**此家非汪輯所有，周天游所增**",
+      "content": ""
+    },
+    {
+      "title": "袁山松後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 6,
+      "book_title": "袁山松後漢書",
+      "juans": [
+        "一",
+        "三",
+        "二",
+        "四"
+      ],
+      "headings": 51,
+      "fragments": 172,
+      "collectors_tally": {
+        "姚之駰": 57,
+        "汪文臺": 111,
+        "黃奭": 105,
+        "王謨": 50,
+        "鈴木由次郎": 16
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27y9vs3l",
+      "link_basis": "袁山松《後漢書》一百零一卷",
+      "content": ""
+    },
+    {
+      "title": "張璠後漢紀",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 7,
+      "book_title": "張璠後漢紀",
+      "juans": [],
+      "headings": 32,
+      "fragments": 83,
+      "collectors_tally": {
+        "姚之駰": 49,
+        "汪文臺": 76,
+        "黃奭": 75,
+        "鈴木由次郎": 15
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": "d59f27u8f6yq",
+      "link_basis": "張璠《後漢紀》",
+      "content": ""
+    },
+    {
+      "title": "無名氏後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 8,
+      "book_title": "無名氏後漢書",
+      "juans": [],
+      "headings": 1,
+      "fragments": 14,
+      "collectors_tally": {
+        "汪文臺": 5
+      },
+      "coverage": {
+        "level": "text"
+      },
+      "work_id": null,
+      "link_basis": "無名氏之條，周本附錄，不知其書，故不繫 work",
+      "unlinked_reason": "周本附錄之無名氏條，不知其書",
+      "content": ""
+    }
+  ]
+}

@@ -1,0 +1,291 @@
+{
+  "title": "天文類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "天文類",
+      "content": ""
+    },
+    {
+      "title": "《清類天文分野書》二十四卷洪武中編，以十二分野星次分配天下郡縣，又於郡縣之下詳載古今沿革之由",
+      "level": 3,
+      "type": "book",
+      "content": "《清類天文分野書》二十四卷洪武中編，以十二分野星次分配天下郡縣，又於郡縣之下詳載古今沿革之由",
+      "work_id": "d59f2nil677k"
+    },
+    {
+      "title": "《天元玉曆祥異賦》七卷仁宗制序。",
+      "level": 3,
+      "type": "book",
+      "content": "《天元玉曆祥異賦》七卷仁宗制序。",
+      "work_id": "d59f2ngcbqbn"
+    },
+    {
+      "title": "葉子奇《元理》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉子奇《元理》一卷",
+      "work_id": "d59f2ngloutc"
+    },
+    {
+      "title": "劉基《天文祕略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基《天文祕略》一卷",
+      "work_id": "d59f2nez08hs"
+    },
+    {
+      "title": "《觀象玩佔》十卷不知撰人，或云劉基輯。楊廉《星略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《觀象玩佔》十卷不知撰人，或云劉基輯。楊廉《星略》一卷",
+      "work_id": "d59f28ji0pvm"
+    },
+    {
+      "title": "王應電《天文會通》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應電《天文會通》一卷",
+      "work_id": "d59f2ndz3xtu"
+    },
+    {
+      "title": "周述學《天文圖學》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "周述學《天文圖學》一卷",
+      "work_id": "d59f2nfjanlu"
+    },
+    {
+      "title": "吳珫《天文要義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳珫《天文要義》二卷",
+      "work_id": "d59f2nif8ooy"
+    },
+    {
+      "title": "范守己《天官舉正》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "范守己《天官舉正》六卷",
+      "work_id": "d59f2nftlhq9"
+    },
+    {
+      "title": "陸侹《天文地理星度分野集要》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸侹《天文地理星度分野集要》四卷",
+      "work_id": "d59f2nggdtdu"
+    },
+    {
+      "title": "王臣夔《測候圖說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王臣夔《測候圖說》一卷",
+      "work_id": "d59f2ndp4cg0"
+    },
+    {
+      "title": "黃履康《管窺略》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃履康《管窺略》三卷",
+      "work_id": "d59f2nizucch"
+    },
+    {
+      "title": "黃鐘和《天文星象考》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃鐘和《天文星象考》一卷",
+      "work_id": "d59f2nesg938"
+    },
+    {
+      "title": "楊惟休《天文書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊惟休《天文書》四卷",
+      "work_id": "d59f2ni9mepv"
+    },
+    {
+      "title": "潘元和《古今災異類考》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "潘元和《古今災異類考》五卷",
+      "work_id": "d59f2niox1c3"
+    },
+    {
+      "title": "趙宦光《九圜史》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙宦光《九圜史》一卷",
+      "work_id": "d59f2ng89n2b"
+    },
+    {
+      "title": "余文龍《祥異圖說》七卷，《史異編》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "余文龍《祥異圖說》七卷，《史異編》十七卷",
+      "work_id": "d59f2nju4dfl"
+    },
+    {
+      "title": "李之藻《渾蓋通憲圖說》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李之藻《渾蓋通憲圖說》二卷",
+      "work_id": "d59f2nk8siyq"
+    },
+    {
+      "title": "利瑪竇《幾何原本》六卷，《勾股義》一卷，《表度說》一卷，《圜容較義》一卷，《測量法義》一卷，《天問略》一卷，《泰西水法》",
+      "level": 3,
+      "type": "book",
+      "content": "利瑪竇《幾何原本》六卷，《勾股義》一卷，《表度說》一卷，《圜容較義》一卷，《測量法義》一卷，《天問略》一卷，《泰西水法》六卷",
+      "work_id": "d59f2njsk6bl"
+    },
+    {
+      "title": "熊三拔《簡平儀說》一卷，《測量異同》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊三拔《簡平儀說》一卷，《測量異同》一卷",
+      "work_id": "d59f2nj5gm4g"
+    },
+    {
+      "title": "李天經《渾天儀說》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "李天經《渾天儀說》五卷",
+      "work_id": "d59f2nikuygw"
+    },
+    {
+      "title": "王應遴《乾象圖說》一卷，《中星圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應遴《乾象圖說》一卷，《中星圖》一卷",
+      "work_id": "d59f2nfdoe84"
+    },
+    {
+      "title": "陳胤昌《天文地理圖說》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳胤昌《天文地理圖說》二卷",
+      "work_id": "d59f2nhj38jm"
+    },
+    {
+      "title": "李元庚《乾象圖說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李元庚《乾象圖說》一卷",
+      "work_id": "d59f2nebwohs"
+    },
+    {
+      "title": "陳藎謨《象林》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳藎謨《象林》一卷",
+      "work_id": "d59f2nis1f5v"
+    },
+    {
+      "title": "馬承勳《風纂》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬承勳《風纂》十二卷",
+      "work_id": "d59f2neignpf"
+    },
+    {
+      "title": "魏浚《緯談》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏浚《緯談》一卷",
+      "work_id": "d59f2nf66ozk"
+    },
+    {
+      "title": "吳雲《天文志雜佔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳雲《天文志雜佔》一卷",
+      "work_id": "d59f2pqzetxd"
+    },
+    {
+      "title": "艾儒略《幾何要法》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "艾儒略《幾何要法》四卷",
+      "work_id": "d59f2ndufe2p"
+    },
+    {
+      "title": "《圖注天文祥異賦》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《圖注天文祥異賦》十卷",
+      "work_id": "d59f2neirw1w"
+    },
+    {
+      "title": "《天文玉曆璿璣經》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文玉曆璿璣經》五卷",
+      "work_id": "d59f2nihfcoz"
+    },
+    {
+      "title": "《天文鬼料竅》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文鬼料竅》一卷",
+      "work_id": "d59f2nfs1b7l"
+    },
+    {
+      "title": "《天文玉曆森羅記》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文玉曆森羅記》十二卷",
+      "work_id": "d59f2nfwemm9"
+    },
+    {
+      "title": "《經史言天錄》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《經史言天錄》二十六卷",
+      "work_id": "d59f2ng6pgqo"
+    },
+    {
+      "title": "《嘉隆天象錄》四十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《嘉隆天象錄》四十五卷",
+      "work_id": "d59f2niweqki"
+    },
+    {
+      "title": "《雷佔》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雷佔》三卷",
+      "work_id": "d59f2nj4iwox"
+    },
+    {
+      "title": "《風雲寶鑒》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《風雲寶鑒》一卷",
+      "work_id": "d59f2nhte2o0"
+    },
+    {
+      "title": "《天文佔驗》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《天文佔驗》二卷",
+      "work_id": "d59f2nf096o2"
+    },
+    {
+      "title": "《物象通佔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《物象通佔》十卷",
+      "work_id": "d59f2nfjlwci"
+    },
+    {
+      "title": "《白猿經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《白猿經》一卷",
+      "work_id": "d59f2ne93j7n"
+    }
+  ]
+}

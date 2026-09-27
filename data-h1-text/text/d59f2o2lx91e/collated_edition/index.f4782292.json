@@ -1,0 +1,28 @@
+{
+  "work_id": "d59f2o2lx91e",
+  "title": "漢書藝文志疏證",
+  "type": "collated_edition",
+  "collated_edition_type": "verification",
+  "compiler": "沈欽韓",
+  "compiler_role": "撰",
+  "edition": "《二十五史藝文經籍志考補萃編》第2卷（尹承整理）",
+  "source_text": "影印本 PaddleOCR 識別，版面自動重建",
+  "total_juan": 3,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json"
+  ],
+  "total_entries": 642,
+  "coverage": {
+    "level": "verification",
+    "note": "考證層：標目是漢志之文句，其下引書疏證之。**不繫 work**——標目非書名；其為書名者亦是漢志已著錄之書，當繫於漢志整理本，不當於此重出。"
+  },
+  "text_quality": {
+    "grade": "ocr",
+    "source_note": "據《二十五史藝文經籍志考補萃編》第2卷影印本PaddleOCR 識別，版面經自動重建（標目／正文／夾註／腳註分層）。未經通篇人工校讎。整理者之腳註已濾去，夾註以〔〕存。"
+  },
+  "schema_version": 1,
+  "revision": "1.0.0",
+  "revised_at": "2026-09-07"
+}

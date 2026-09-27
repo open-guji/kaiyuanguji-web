@@ -1,0 +1,346 @@
+{
+  "title": "刑法類",
+  "sections": [
+    {
+      "title": "《律本》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《律本》二十一卷杜預撰。",
+      "book_title": "律本",
+      "n_juan": 21,
+      "author_info": "杜預撰",
+      "work_id": "d59f27wn75z5"
+    },
+    {
+      "title": "《漢晉律序注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢晉律序注》一卷晉僮長張斐撰。",
+      "book_title": "漢晉律序注",
+      "n_juan": 1,
+      "author_info": "晉僮長張斐撰",
+      "work_id": "d59f27ulj5s0"
+    },
+    {
+      "title": "《雜律解》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜律解》二十一卷張斐撰。案：梁有《杜預雜律》七卷，亡。",
+      "book_title": "雜律解",
+      "n_juan": 21,
+      "author_info": "張斐撰",
+      "work_id": "d59f27vpsruo"
+    },
+    {
+      "title": "《晉、宋、齊、梁律》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉、宋、齊、梁律》二十卷蔡法度撰。",
+      "book_title": "晉、宋、齊、梁律",
+      "n_juan": 20,
+      "author_info": "蔡法度撰",
+      "work_id": "d59f285l0u0z"
+    },
+    {
+      "title": "《梁律》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁律》二十卷梁義興太守蔡法度撰。",
+      "book_title": "梁律",
+      "n_juan": 20,
+      "author_info": "梁義興太守蔡法度撰",
+      "work_id": "d59f286oz7k0"
+    },
+    {
+      "title": "《後魏律》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後魏律》二十卷",
+      "book_title": "後魏律",
+      "n_juan": 20,
+      "work_id": "d59f2q2ldla8"
+    },
+    {
+      "title": "《北齊律》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《北齊律》十二卷目一卷。",
+      "book_title": "北齊律",
+      "n_juan": 12,
+      "author_info": "目一卷",
+      "work_id": "d59f2q12fta9"
+    },
+    {
+      "title": "《陳律》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳律》九卷範泉撰。",
+      "book_title": "陳律",
+      "n_juan": 9,
+      "author_info": "范泉撰",
+      "work_id": "d59f2860083k"
+    },
+    {
+      "title": "《周律》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周律》二十五卷",
+      "book_title": "周律",
+      "n_juan": 25,
+      "work_id": "d59f285cwnwj"
+    },
+    {
+      "title": "《周大統式》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周大統式》三卷",
+      "book_title": "周大統式",
+      "n_juan": 3,
+      "work_id": "d59f286kanep"
+    },
+    {
+      "title": "《隋律》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋律》十二卷",
+      "book_title": "隋律",
+      "n_juan": 12,
+      "work_id": "d59f2nf32bk1"
+    },
+    {
+      "title": "《隋大業律》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋大業律》十一卷",
+      "book_title": "隋大業律",
+      "n_juan": 11,
+      "work_id": "d59f28le2gao"
+    },
+    {
+      "title": "《晉令》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉令》四十卷",
+      "book_title": "晉令",
+      "n_juan": 40,
+      "work_id": "d59f29mnof0g"
+    },
+    {
+      "title": "《梁令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁令》三十卷錄一卷。",
+      "book_title": "梁令",
+      "n_juan": 30,
+      "author_info": "錄一卷",
+      "work_id": "d59f285ppe6a"
+    },
+    {
+      "title": "《梁科》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁科》三十卷",
+      "book_title": "梁科",
+      "n_juan": 30,
+      "work_id": "d59f28642b5t"
+    },
+    {
+      "title": "《北齊令》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《北齊令》五十卷",
+      "book_title": "北齊令",
+      "n_juan": 50,
+      "work_id": "d59f2qa904cg"
+    },
+    {
+      "title": "《北齊權令》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《北齊權令》二卷",
+      "book_title": "北齊權令",
+      "n_juan": 2,
+      "work_id": "d59f2pxp0idd"
+    },
+    {
+      "title": "《陳令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳令》三十卷範泉撰。",
+      "book_title": "陳令",
+      "n_juan": 30,
+      "author_info": "范泉撰",
+      "work_id": "d59f286d46wy"
+    },
+    {
+      "title": "《陳科》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳科》三十卷範泉撰。",
+      "book_title": "陳科",
+      "n_juan": 30,
+      "author_info": "范泉撰",
+      "work_id": "d59f285ca6tg"
+    },
+    {
+      "title": "《隋開皇令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋開皇令》三十卷目一卷。",
+      "book_title": "隋開皇令",
+      "n_juan": 30,
+      "author_info": "目一卷",
+      "work_id": "d59f28jceg3o"
+    },
+    {
+      "title": "《隋大業令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋大業令》三十卷",
+      "book_title": "隋大業令",
+      "n_juan": 30,
+      "work_id": "d59f28jny877"
+    },
+    {
+      "title": "《漢朝議駁》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢朝議駁》三十卷應劭撰。案：梁有《建武律令故事》二卷，劉邵《律略論》五卷亡。",
+      "book_title": "漢朝議駁",
+      "n_juan": 30,
+      "author_info": "應劭撰",
+      "work_id": "d59f23nsz2tg"
+    },
+    {
+      "title": "《晉雜議》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉雜議》十卷",
+      "book_title": "晉雜議",
+      "n_juan": 10,
+      "work_id": "d59f27wn75z4"
+    },
+    {
+      "title": "《晉彈事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉彈事》十卷",
+      "book_title": "晉彈事",
+      "n_juan": 10,
+      "work_id": "d59f27tm9cec"
+    },
+    {
+      "title": "《南台奏事》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《南台奏事》二十二卷",
+      "book_title": "南台奏事",
+      "n_juan": 22,
+      "work_id": "d59f23nsclqa"
+    },
+    {
+      "title": "《漢名臣奏事》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢名臣奏事》三十卷",
+      "book_title": "漢名臣奏事",
+      "n_juan": 30,
+      "work_id": "d59f27u18qgz"
+    },
+    {
+      "title": "《魏王奏事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏王奏事》十卷",
+      "book_title": "魏王奏事",
+      "n_juan": 10,
+      "work_id": "d59f2pv2qtxc"
+    },
+    {
+      "title": "《魏名臣奏事》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏名臣奏事》四十卷目一卷，陳壽撰。",
+      "book_title": "魏名臣奏事",
+      "n_juan": 40,
+      "author_info": "目一卷",
+      "work_id": "d59f27wnieip"
+    },
+    {
+      "title": "《魏台雜訪議》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏台雜訪議》三卷高堂隆撰。",
+      "book_title": "魏台雜訪議",
+      "n_juan": 3,
+      "author_info": "高堂隆撰",
+      "work_id": "d59f27svexoj"
+    },
+    {
+      "title": "《魏廷尉決事》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏廷尉決事》十卷",
+      "book_title": "魏廷尉決事",
+      "n_juan": 10,
+      "work_id": "d59f27sro35t"
+    },
+    {
+      "title": "《晉駁事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉駁事》四卷",
+      "book_title": "晉駁事",
+      "n_juan": 4,
+      "work_id": "d59f27ujyz28"
+    },
+    {
+      "title": "《晉雜制》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉雜制》六十卷",
+      "book_title": "晉雜制",
+      "n_juan": 60,
+      "work_id": "d59f2q7v5vk1"
+    },
+    {
+      "title": "《晉刺史六條制》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉刺史六條制》一卷",
+      "book_title": "晉刺史六條制",
+      "n_juan": 1,
+      "work_id": "d59f2qaso35u"
+    },
+    {
+      "title": "《齊五服制》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊五服制》一卷",
+      "book_title": "齊五服制",
+      "n_juan": 1,
+      "work_id": "d59f2pte6sxt"
+    },
+    {
+      "title": "《陳新制》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳新制》六十卷",
+      "book_title": "陳新制",
+      "n_juan": 60,
+      "work_id": "d59f2q9mj1ts"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右三十五部，七百一十二卷。通計亡書，合三十八部，七百二十六卷。"
+    },
+    {
+      "title": "刑法類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "刑法者，先王所以懲罪惡，齊不軌者也。《書》述唐、虞之世，五刑有服，而夏後氏正刑有五，科條三千。《周官》：司寇掌三典以刑邦國；司刑掌五刑之法，麗萬民之罪；太史又以典法逆于邦國；內史執國法以考政事。《春秋傳》曰：「在九刑不忘。」然而刑書之作久矣。蓋藏於官府，懼人之知爭端，而輕於犯。及其末也，肆情越法，刑罰僭濫。至秦，重之以苛虐，先王之正刑滅矣。漢初，蕭何定律九章，其後漸更增益，令甲已下，盈溢架藏。晉初，賈充、杜預刪而定之，有律，有令，有故事。梁時，又取故事之宜於時者為《梁科》。後齊武成帝時，又於麟趾殿刪正刑典，謂之《麟趾格》。後周太祖，又命蘇綽撰《大統式》。隋則律令格式並行。自律已下，世有改作，事在《刑法志》。《漢律》久亡，故事駁議，又多零失。今錄其見存可觀者，編為刑法篇。"
+    }
+  ]
+}

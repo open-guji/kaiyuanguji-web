@@ -1,0 +1,41 @@
+{
+  "title": "甲部經錄·樂類",
+  "source_juan": "卷一",
+  "sections": [
+    {
+      "title": "甲部經錄·樂類",
+      "level": 2,
+      "type": "tally",
+      "content": "右樂類,存四家,四部。"
+    },
+    {
+      "title": "琴操三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍。謹按見《隋志》。《新唐志》作“一卷”。",
+      "work_id": "d59f27tt4kci",
+      "link_basis": "原繫 1evfugvl9z1ts，該條已併入 1evilzhl4ecxs（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "樂論",
+      "level": 3,
+      "type": "book",
+      "content": "阮籍。謹按見《御覽》引書綱目。《漢書·五行志》注亦引。",
+      "work_id": "d59f27t1nojk"
+    },
+    {
+      "title": "樂論",
+      "level": 3,
+      "type": "book",
+      "content": "裴秀,謹按見《文章敘錄》。《魏志·裴潛傳》注。",
+      "work_id": "d59f27vwz8cj"
+    },
+    {
+      "title": "聲無哀樂論",
+      "level": 3,
+      "type": "book",
+      "content": "康,謹按見本書康傳。",
+      "work_id": "d59f27sa6sqr"
+    }
+  ]
+}

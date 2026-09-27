@@ -1,0 +1,81 @@
+{
+  "title": "史部·雜史類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·雜史類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "路史四十七卷",
+      "content": "羅泌撰。",
+      "work_id": "d59f2hsf8iyq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷朝史稗四十卷",
+      "content": "裘萬頃撰。",
+      "work_id": "d59f2hj4aw3l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四朝聞見錄五卷",
+      "content": "葉紹翁撰。",
+      "work_id": "d59f2hpbst1e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "使韃日錄一卷",
+      "content": "鄒伸之撰。",
+      "work_id": "d59f2hfbky6b"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南史補帝紀贊一卷",
+      "content": "謝翱撰。",
+      "work_id": "d59f2hjsyn0i"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "唐書補傳一卷",
+      "content": "謝翱撰。",
+      "work_id": "d59f2hgdcnwi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續宋書",
+      "content": "鄧光薦撰。",
+      "work_id": "d59f2hhl1vy9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "德裕日記",
+      "content": "鄧光薦撰。",
+      "work_id": "d59f2hjvgjcw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "兩漢筆記十二卷",
+      "content": "錢時撰。",
+      "work_id": "d59f2hshqfb6"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右雜史類",
+      "content": "右雜史類七家一百七卷。"
+    }
+  ]
+}

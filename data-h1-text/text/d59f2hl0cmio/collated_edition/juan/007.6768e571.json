@@ -1,0 +1,254 @@
+{
+  "title": "孝經類",
+  "related_works": [
+    {
+      "id": "d59f1iosq6tc",
+      "title": "孝經",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "title": "古文孝經孔安國傳",
+      "level": 3,
+      "type": "book",
+      "content": "古文孝經孔安國傳一卷",
+      "work_id": "d59f1iosq6tc"
+    },
+    {
+      "title": "劉邵注",
+      "level": 3,
+      "type": "book",
+      "content": "劉邵注一卷",
+      "work_id": "d59f2q8o6xoh"
+    },
+    {
+      "title": "孝經王肅注",
+      "level": 3,
+      "type": "book",
+      "content": "孝經王肅注一卷",
+      "work_id": "d59f27x9o936"
+    },
+    {
+      "title": "鄭玄注",
+      "level": 3,
+      "type": "book",
+      "content": "鄭玄注一卷",
+      "work_id": "d59f2q5zqltu"
+    },
+    {
+      "title": "韋昭注",
+      "level": 3,
+      "type": "book",
+      "content": "韋昭注一卷",
+      "work_id": "d59f27t87nyc"
+    },
+    {
+      "title": "孫熙注",
+      "level": 3,
+      "type": "book",
+      "content": "孫熙注一卷",
+      "work_id": "d59f2q3nrrpe"
+    },
+    {
+      "title": "蘇林注",
+      "level": 3,
+      "type": "book",
+      "content": "蘇林注一卷",
+      "work_id": "d59f2q6c83r6"
+    },
+    {
+      "title": "謝萬注",
+      "level": 3,
+      "type": "book",
+      "content": "謝萬注一卷",
+      "work_id": "d59f2q4d1zpc"
+    },
+    {
+      "title": "虞盤佐注",
+      "level": 3,
+      "type": "book",
+      "content": "虞盤佐注一卷",
+      "work_id": "d59f2q3yp2pu"
+    },
+    {
+      "title": "孔光注",
+      "level": 3,
+      "type": "book",
+      "content": "孔光注一卷",
+      "work_id": "d59f2ptnjx1d"
+    },
+    {
+      "title": "殷仲文注",
+      "level": 3,
+      "type": "book",
+      "content": "殷仲文注一卷",
+      "work_id": "d59f27vd01kz"
+    },
+    {
+      "title": "殷叔道注",
+      "level": 3,
+      "type": "book",
+      "content": "殷叔道注一卷",
+      "work_id": "d59f2pxy2e4h"
+    },
+    {
+      "title": "徐整默注",
+      "level": 3,
+      "type": "book",
+      "content": "徐整默注二卷",
+      "work_id": "d59f2pv5v7r6"
+    },
+    {
+      "title": "車胤講孝經義",
+      "level": 3,
+      "type": "book",
+      "content": "車胤講孝經義四卷",
+      "work_id": "d59f27yai96q",
+      "ai_note": "庫另有無撰人之講孝經義四卷（`1evcpcuj585xc`），疑重出，俟裁。"
+    },
+    {
+      "title": "荀勗講孝經集解",
+      "level": 3,
+      "type": "book",
+      "content": "荀勗講孝經集解一卷",
+      "work_id": "d59f27xoyvpe"
+    },
+    {
+      "title": "皇侃義疏",
+      "level": 3,
+      "type": "book",
+      "content": "皇侃義疏三卷",
+      "work_id": "d59f2pxop9fk"
+    },
+    {
+      "title": "何約之大明中皇太子講義疏",
+      "level": 3,
+      "type": "book",
+      "content": "何約之大明中皇太子講義疏一卷",
+      "work_id": "d59f2q8dkvls"
+    },
+    {
+      "title": "梁武帝疏",
+      "level": 3,
+      "type": "book",
+      "content": "梁武帝疏十八卷",
+      "work_id": "d59f2q0xr94w"
+    },
+    {
+      "title": "太史叔明發題",
+      "level": 3,
+      "type": "book",
+      "content": "太史叔明發題四卷",
+      "work_id": "d59f2852x2io"
+    },
+    {
+      "title": "劉炫述義",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫述義五卷",
+      "work_id": "d59f28noh3pd"
+    },
+    {
+      "title": "張士儒演孝經",
+      "level": 3,
+      "type": "book",
+      "content": "張士儒演孝經十二卷",
+      "work_id": "d59f2pt62m80",
+      "ai_note": "張正儒乃張士儒之訛；庫另有無撰人演孝經十二卷（`1evcpcukxj1ts`），疑重出，俟裁。"
+    },
+    {
+      "title": "應瑞圖",
+      "level": 3,
+      "type": "book",
+      "content": "應瑞圖一卷",
+      "work_id": "d59f2pz6pbsx"
+    },
+    {
+      "title": "賈公彥孝經疏",
+      "level": 3,
+      "type": "book",
+      "content": "賈公彥孝經疏五卷",
+      "work_id": "d59f28mewge8",
+      "ai_note": "記錄撰人「賈公古」乃賈公彥之訛（卷數俱五卷）。"
+    },
+    {
+      "title": "魏克己注孝經",
+      "level": 3,
+      "type": "book",
+      "content": "魏克己注孝經一卷",
+      "work_id": "d59f2q0lkzy9",
+      "ai_note": "舊唐志承前省題之「又一卷魏克己注」即此，本記錄題作孝經默注。"
+    },
+    {
+      "title": "任希古越王孝經新義",
+      "level": 3,
+      "type": "book",
+      "content": "任希古越王孝經新義十卷",
+      "work_id": "d59f2q2hmqkg"
+    },
+    {
+      "title": "今上孝經制旨",
+      "level": 3,
+      "type": "book",
+      "content": "今上孝經制旨一卷",
+      "work_id": "d59f2pr1a96r"
+    },
+    {
+      "title": "元行沖御注孝經疏",
+      "level": 3,
+      "type": "book",
+      "content": "元行沖御注孝經疏二卷",
+      "work_id": "d59f28n0ftvk",
+      "ai_note": "國史三卷、新唐二卷，卷數並存。庫另有玉函輯本御注孝經疏（元行衝，一卷，`1ewsa49wlkp53`），與本條疑重出，俟裁。"
+    },
+    {
+      "title": "尹知章注孝經",
+      "level": 3,
+      "type": "book",
+      "content": "尹知章注孝經一卷",
+      "work_id": "d59f28mjw935"
+    },
+    {
+      "title": "孔穎達孝經義疏",
+      "level": 3,
+      "type": "book",
+      "content": "孔穎達孝經義疏",
+      "work_id": "d59f28j4wr2l"
+    },
+    {
+      "title": "王元感注孝經",
+      "level": 3,
+      "type": "book",
+      "content": "王元感注孝經一卷",
+      "work_id": "d59f28mtklxc"
+    },
+    {
+      "title": "李嗣真孝經指要",
+      "level": 3,
+      "type": "book",
+      "content": "李嗣真孝經指要一卷",
+      "work_id": "d59f28mhplaa"
+    },
+    {
+      "title": "平貞眘孝經議",
+      "level": 3,
+      "type": "book",
+      "content": "平貞眘孝經議",
+      "work_id": "d59f28j4a9za"
+    },
+    {
+      "title": "徐浩廣孝經",
+      "level": 3,
+      "type": "book",
+      "content": "徐浩廣孝經十卷",
+      "work_id": "d59f28mktypy"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右孝經類二十七家，三十六部，八十二卷。"
+    }
+  ]
+}

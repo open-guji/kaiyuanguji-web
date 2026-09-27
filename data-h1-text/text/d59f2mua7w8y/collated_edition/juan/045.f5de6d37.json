@@ -1,0 +1,34 @@
+{
+  "title": "續編·子編·農家類",
+  "part": "supplement",
+  "bian": "masters",
+  "lei": "農家類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "四民月令一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "四民月令",
+      "measure": 1,
+      "part": "supplement",
+      "bian": "masters",
+      "lei": "農家類",
+      "zhi_no": null,
+      "juan_no": null,
+      "dynasty": "漢",
+      "author": "崔寔",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f23jmiozk",
+      "link_basis": "題同且撰人「崔寔」合，唯一",
+      "content": ""
+    }
+  ]
+}

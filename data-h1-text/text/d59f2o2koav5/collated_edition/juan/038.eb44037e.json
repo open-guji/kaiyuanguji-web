@@ -1,0 +1,368 @@
+{
+  "title": "經部·佛法類",
+  "sections": [
+    {
+      "title": "佛法類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "王巾　法師傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王巾　法師傳十卷　《隋志》。",
+      "work_id": "d59f285bch6r"
+    },
+    {
+      "title": "僧祐　法苑集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　法苑集十五卷　《唐志》。號右律師。",
+      "work_id": "d59f286c6ha8",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "僧祐　薩婆多部傳五卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　薩婆多部傳五卷　《隋志》。",
+      "work_id": "d59f285gyqyq",
+      "note": "承前省略撰人（僧祐）"
+    },
+    {
+      "title": "僧祐　弘明集十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　弘明集十四卷　《唐志》。",
+      "work_id": "d59f286tnrpd",
+      "note": "「又」承前省略撰人（僧祐）"
+    },
+    {
+      "title": "僧祐　釋迦譜十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　釋迦譜十卷　《唐志》。",
+      "work_id": "d59f2qa5kiyp",
+      "note": "承前省略撰人（僧祐）。原書腳註⑤"
+    },
+    {
+      "title": "僧祐　薩婆多師資傳四卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　薩婆多師資傳四卷　《唐志》。",
+      "work_id": "d59f2q6pc2rl",
+      "note": "承前省略撰人（僧祐）。原書腳註⑥"
+    },
+    {
+      "title": "裴子野　名僧錄十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　名僧錄十五卷　《隋志》作「二十卷」。",
+      "work_id": "d59f2860bgn7",
+      "note": "原書腳註⑦：《隋志》作「眾僧傳二十卷」"
+    },
+    {
+      "title": "僧寶唱　名僧傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧寶唱　名僧傳三十卷　起晉咸和，迄梁普通，凡六十五人。",
+      "work_id": "d59f285dudj6",
+      "note": "原書腳註⑧"
+    },
+    {
+      "title": "僧寶唱　比丘尼傳四卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧寶唱　比丘尼傳四卷",
+      "work_id": "d59f285kecxt",
+      "note": "「又」承前省略撰人（僧寶唱）"
+    },
+    {
+      "title": "僧惠皎　高僧傳十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧惠皎　高僧傳十四卷",
+      "work_id": "d59f285j5erm",
+      "note": "原書腳註①"
+    },
+    {
+      "title": "惠敏　高僧傳六卷",
+      "level": 3,
+      "type": "book",
+      "content": "惠敏　高僧傳六卷　《通考》云：「分譯經、義解兩門」。",
+      "work_id": "d59f99gqnapx"
+    },
+    {
+      "title": "釋道　續高僧傳三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "釋道　續高僧傳三十二卷",
+      "work_id": "d59f28k9hlok",
+      "note": "原書腳註②：《舊唐志》曰「續高僧傳三十卷，釋道宣撰」。原書脫「宣」字，照錄不改"
+    },
+    {
+      "title": "陸杲　沙門傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸杲　沙門傳三十卷　本傳「字明霞，吴郡人，官臨川内史」。",
+      "work_id": "d59f99gqnapy"
+    },
+    {
+      "title": "文帝　中堂法師傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　中堂法師傳一卷　《文選·北山移文》注引。",
+      "work_id": "d59f99gqnapz",
+      "note": "原書腳註③：通行本《文選》「中」皆作「草」"
+    },
+    {
+      "title": "裴子野　衆僧傳二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　衆僧傳二十卷　本傳。《隋志》。",
+      "work_id": "d59f99gqnaq0",
+      "note": "與前「裴子野　名僧錄十五卷」相關"
+    },
+    {
+      "title": "陶弘景　草堂法師傳",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　草堂法師傳　《隋志》。《唐志》。",
+      "work_id": "d59f2840u48y"
+    },
+    {
+      "title": "何胤　百法論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　百法論一卷　本傳。",
+      "work_id": "d59f99gqnaq1"
+    },
+    {
+      "title": "何胤　十二門論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　十二門論一卷　本傳。",
+      "work_id": "d59f99gqnaq2",
+      "note": "「又」承前省略撰人（何胤）。原書腳註④"
+    },
+    {
+      "title": "元帝　内典博要一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　内典博要一百卷　紀。",
+      "work_id": "d59f99gqyj9c"
+    },
+    {
+      "title": "蕭偉　新通",
+      "level": 3,
+      "type": "book",
+      "content": "蕭偉　新通　本傳。",
+      "work_id": "d59f99gqyj9d"
+    },
+    {
+      "title": "文帝　義記一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　義記一百卷　《唐志》。",
+      "work_id": "d59f99gqyj9e",
+      "note": "原書腳註⑤：《舊唐志》作「長春秋義記一百卷」"
+    },
+    {
+      "title": "法寶聯璧三百卷",
+      "level": 3,
+      "type": "book",
+      "content": "法寶聯璧三百卷　《唐志》。",
+      "work_id": "d59f99gqyj9f",
+      "note": "原書無撰人。原書腳註⑥"
+    },
+    {
+      "title": "蕭回理　草堂法師傳",
+      "level": 3,
+      "type": "book",
+      "content": "蕭回理　草堂法師傳　《唐志》。",
+      "work_id": "d59f2q0rii9t",
+      "note": "原書腳註⑦：《舊唐志》作「蕭理」。與陶弘景條同題"
+    },
+    {
+      "title": "僧祐　佛像雜銘十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　佛像雜銘十三卷",
+      "work_id": "d59f99gqyj9g"
+    },
+    {
+      "title": "南八關制莊嚴旻法師　成實論義疏",
+      "level": 3,
+      "type": "book",
+      "content": "南八關制莊嚴旻法師　成實論義疏　《廣弘明集》二十，簡文帝序。",
+      "work_id": "d59f99gqyj9h",
+      "note": "「南八關制」不辭，疑有脫誤；「莊嚴旻法師」即莊嚴寺僧旻。照錄不改，待覈原刻"
+    },
+    {
+      "title": "僧祐　法集雜記銘目錄一軼",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　法集雜記銘目錄一軼",
+      "work_id": "d59f99gqyj9i",
+      "note": "「軼」疑當作「帙」"
+    },
+    {
+      "title": "僧祐　出三藏記集",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　出三藏記集　撰緣記／銓名錄／捻經錄／釋藏之一",
+      "work_id": "d59f285mw9aa",
+      "note": "「又」承前省略撰人（僧祐）。原稿此處多層夾行，OCR 排序混亂，「捻」疑當作「總」，待覈原刻"
+    },
+    {
+      "title": "僧祐　出三臧記集名錄",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　出三臧記集名錄　共八十五人，跡二，《高僧傳》作「三臧記二帙」。",
+      "work_id": "d59f99gqyj9j",
+      "note": "「又」承前省略撰人（僧祐）。「臧」疑當作「藏」"
+    },
+    {
+      "title": "僧祐　出三臧記集雜錄一百有三卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　出三臧記集雜錄一百有三卷　百二。",
+      "work_id": "d59f99gqyj9k",
+      "note": "「又」承前省略撰人（僧祐）"
+    },
+    {
+      "title": "僧祐　法集總目十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　法集總目十卷",
+      "work_id": "d59f99gqyj9l"
+    },
+    {
+      "title": "僧祐　釋迦譜五卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　釋迦譜五卷",
+      "work_id": "d59f2qa5kiyp",
+      "note": "承前省略撰人（僧祐）。原書腳註①：《法苑珠林》作「四卷」。與前「釋迦譜十卷」重出"
+    },
+    {
+      "title": "僧祐　世界記五卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　世界記五卷　《高僧傳》。",
+      "work_id": "d59f285zozk2",
+      "note": "承前省略撰人（僧祐）。原書腳註②。與土地類重出"
+    },
+    {
+      "title": "僧祐　出三臧記集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　出三臧記集十卷",
+      "work_id": "d59f99gqyj9m",
+      "note": "承前省略撰人（僧祐）。原書腳註③：此條重出"
+    },
+    {
+      "title": "僧祐　薩婆多部相承傳五卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　薩婆多部相承傳五卷",
+      "work_id": "d59f99gqyj9n",
+      "note": "承前省略撰人（僧祐）。原書腳註④：《隋志》作「薩婆多部傳五卷，釋僧祐撰」"
+    },
+    {
+      "title": "僧祐　法苑集",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　法苑集　《高僧傳》作「法苑記」。",
+      "work_id": "d59f286c6ha8",
+      "note": "承前省略撰人（僧祐）。原書腳註⑤。與前「法苑集十五卷」重出"
+    },
+    {
+      "title": "僧祐　弘明集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　弘明集十卷",
+      "work_id": "d59f286tnrpd",
+      "note": "承前省略撰人（僧祐）。原書腳註⑤"
+    },
+    {
+      "title": "僧祐　弘明集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　弘明集十卷",
+      "work_id": "d59f286tnrpd",
+      "note": "承前省略撰人（僧祐）。原書腳註⑥：此條重出"
+    },
+    {
+      "title": "僧祐　十誦義記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　十誦義記十卷",
+      "work_id": "d59f99gqyj9o",
+      "note": "承前省略撰人（僧祐）"
+    },
+    {
+      "title": "僧祐　法集雜記傳銘七卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧祐　法集雜記傳銘七卷　臧百二。",
+      "work_id": "d59f99gqyj9p",
+      "note": "承前省略撰人（僧祐）"
+    },
+    {
+      "title": "寶唱　經律異相五十卷目錄五卷",
+      "level": 3,
+      "type": "book",
+      "content": "寶唱　經律異相五十卷目錄五卷　序云：「僧豪法生同助檢讀，天監十七年敕撰。」跡一。",
+      "work_id": "d59f2qa2g5c1",
+      "note": "原書腳註⑦：此條又見於《開元釋教錄》卷六"
+    },
+    {
+      "title": "慧皎　涅槃疏十卷",
+      "level": 3,
+      "type": "book",
+      "content": "慧皎　涅槃疏十卷　見《高僧傳》後記。",
+      "work_id": "d59f99gr9rsw"
+    },
+    {
+      "title": "慧皎　梵網戒等義疏",
+      "level": 3,
+      "type": "book",
+      "content": "慧皎　梵網戒等義疏　同上。",
+      "work_id": "d59f99gr9rsx",
+      "note": "「又」承前省略撰人（慧皎）"
+    },
+    {
+      "title": "皎法師居傳二卷",
+      "level": 3,
+      "type": "book",
+      "content": "皎法師居傳二卷",
+      "work_id": "d59f99gr9rsy",
+      "note": "原書無撰人。原書腳註⑧：《隋志》作「尼傳二卷，釋寶唱撰」"
+    },
+    {
+      "title": "法顯傳二卷",
+      "level": 3,
+      "type": "book",
+      "content": "法顯傳二卷",
+      "work_id": "d59f2qaolzi9",
+      "note": "原書無撰人。原書腳註⑨"
+    },
+    {
+      "title": "嚴暠　梁武帝皇大捨三卷",
+      "level": 3,
+      "type": "book",
+      "content": "嚴暠　梁武帝皇大捨三卷　《隋志》。",
+      "work_id": "d59f99gr9rsz",
+      "note": "原書腳註⑩：《隋志》作「梁武皇帝大捨三卷」。「嚴暠」未詳，待覈"
+    },
+    {
+      "title": "謝吴　皇帝菩薩清淨大捨記三卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝吴　皇帝菩薩清淨大捨記三卷　《隋志》「亡」。",
+      "work_id": "d59f99gr9rt0"
+    }
+  ]
+}

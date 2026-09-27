@@ -1,0 +1,105 @@
+{
+  "title": "北史·經部·易類",
+  "sections": [
+    {
+      "title": "易類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "崔浩　周易解",
+      "level": 3,
+      "type": "book",
+      "content": "崔浩　周易解　見本傳。《魏書》浩傳有五經注，《易解》即五注之一。；《隋·經籍志》：《周易》十卷，崔浩撰。①",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c149m2p"
+    },
+    {
+      "title": "盧景裕　周易注",
+      "level": 3,
+      "type": "book",
+      "content": "盧景裕　周易注　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f2843n94y"
+    },
+    {
+      "title": "游肇　易集解",
+      "level": 3,
+      "type": "book",
+      "content": "游肇　易集解　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c149m2q"
+    },
+    {
+      "title": "闞駰　王朗易傳注",
+      "level": 3,
+      "type": "book",
+      "content": "闞駰　王朗易傳注　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c149m2r"
+    },
+    {
+      "title": "劉延明　周易注",
+      "level": 3,
+      "type": "book",
+      "content": "劉延明　周易注　見本傳。《魏書·劉昞傳》同。；《隋·經籍志》未收。；按延明，劉昞字。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c149m2s"
+    },
+    {
+      "title": "權會　易注",
+      "level": 3,
+      "type": "book",
+      "content": "權會　易注　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exdds0"
+    },
+    {
+      "title": "李鉉　周易義例",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　周易義例　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f284zhgjk"
+    },
+    {
+      "title": "杜弼　易上下繫辭注",
+      "level": 3,
+      "type": "book",
+      "content": "杜弼　易上下繫辭注　見本傳。《齊書》同。；《隋·經籍志》未收。；按《北史》弼傳：“注《莊子·惠施篇》，並《易》上下《繫辭篇》，名曰《新注義苑》。”此注即《義苑》之一。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c149m2t"
+    },
+    {
+      "title": "蕭巋　周易義記",
+      "level": 3,
+      "type": "book",
+      "content": "蕭巋　周易義記　見本傳。《周書》同。；《隋書》同。；《隋·經籍志》未收。；按《周書》、《隋書》巋均有傳。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c149m2u"
+    },
+    {
+      "title": "何妥　周易講疏三卷",
+      "level": 3,
+      "type": "book",
+      "content": "何妥　周易講疏三卷　見本傳。《隋書》妥傳：“《周易義疏》十三卷。；《隋·經籍志》：《周易義疏》十三卷，①何妥撰。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28n200ld"
+    },
+    {
+      "title": "劉炫　連山易",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫　連山易　見本傳。；《隋書》同。；《隋·經籍志》未收。；按《北史》炫傳：“牛弘奏購求天下遺逸之書，炫遂僞造書百餘卷，題曰《連山易》、《魯史記》等，録上送官，取賞而去。後有人訟之，坐除名，歸于家。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c149m2v"
+    },
+    {
+      "title": "易類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右易十一部，已收《隋·經籍志》者二部，未收《隋·經籍志》者九部。"
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "title": "史部·雜史類",
+  "sections": [
+    {
+      "title": "雜史類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "司馬彪　九州春秋十卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬彪　九州春秋十卷",
+      "work_id": "d59f27uonj7o"
+    },
+    {
+      "title": "楊方　吳越春秋削繁五卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊方　吳越春秋削繁五卷",
+      "work_id": "d59f27unel1f"
+    },
+    {
+      "title": "樂資　春秋後傳三十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "樂資　春秋後傳三十一卷",
+      "work_id": "d59f27wdu1oj"
+    },
+    {
+      "title": "樂資　山陽公載記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "樂資　山陽公載記十卷",
+      "work_id": "d59f27tx6ner"
+    },
+    {
+      "title": "杜龔　蜀後志",
+      "level": 3,
+      "type": "book",
+      "content": "杜龔　蜀後志",
+      "work_id": "d59f9nmklyx0"
+    },
+    {
+      "title": "孔衍　漢尚書十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　漢尚書十卷",
+      "work_id": "d59f27vxwxz6"
+    },
+    {
+      "title": "孔衍　後漢尚書六卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　後漢尚書六卷",
+      "work_id": "d59f27u9zdok",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "孔衍　魏尚書十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　魏尚書十卷",
+      "work_id": "d59f27u768sg",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "郭頒　魏晋世語十卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭頒　魏晋世語十卷",
+      "work_id": "d59f27u7spvm"
+    },
+    {
+      "title": "傅暢　晋諸公讚二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅暢　晋諸公讚二十一卷",
+      "work_id": "d59f2q7vh3wh"
+    },
+    {
+      "title": "王蔑　史漢要集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王蔑　史漢要集二卷",
+      "work_id": "d59f27wj52wz"
+    },
+    {
+      "title": "荀綽　晋後略記五卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀綽　晋後略記五卷",
+      "work_id": "d59f27tkp5ok"
+    },
+    {
+      "title": "皇甫謐　帝王世紀十卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫謐　帝王世紀十卷",
+      "work_id": "d59f27vmd5vm"
+    },
+    {
+      "title": "皇甫謐　年曆六卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫謐　年曆六卷",
+      "work_id": "d59f27wbymf6"
+    },
+    {
+      "title": "木概　戰國策春秋三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "木概　戰國策春秋三十卷",
+      "work_id": "d59f9nmklyx1"
+    },
+    {
+      "title": "陳壽　古國志五十篇",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　古國志五十篇",
+      "work_id": "d59f27u18qgx"
+    },
+    {
+      "title": "環濟　帝王要略十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "環濟　帝王要略十二卷",
+      "work_id": "d59f27wyfpj7"
+    },
+    {
+      "title": "孟儀　周載三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孟儀　周載三十卷",
+      "work_id": "d59f27tgbu2s"
+    },
+    {
+      "title": "葛洪　史記抄十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　史記抄十四卷",
+      "work_id": "d59f9nmklyx2"
+    },
+    {
+      "title": "葛洪　漢書抄三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　漢書抄三十卷",
+      "work_id": "d59f9nmklyx3",
+      "note": "承前撰人（葛洪），原文書名頂格無撰人"
+    },
+    {
+      "title": "葛洪　後漢書抄三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　後漢書抄三十卷",
+      "work_id": "d59f27ye93pc",
+      "note": "承前撰人（葛洪），原文書名頂格無撰人"
+    },
+    {
+      "title": "葛洪　吳志抄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　吳志抄一卷",
+      "work_id": "d59f9nmklyx4",
+      "note": "承前撰人（葛洪），原文書名頂格無撰人"
+    },
+    {
+      "title": "孔衍　春秋時國語十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　春秋時國語十卷",
+      "work_id": "d59f27upa0ao"
+    },
+    {
+      "title": "孔衍　春秋後國語十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　春秋後國語十卷",
+      "work_id": "d59f27yf6tc3",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "孔晁　周書注八卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔晁　周書注八卷",
+      "work_id": "d59f27xwrta8"
+    },
+    {
+      "title": "魏世籍",
+      "level": 3,
+      "type": "book",
+      "content": "魏世籍",
+      "work_id": "d59f9nmklyx5",
+      "note": "原無撰人"
+    },
+    {
+      "title": "晋世譜",
+      "level": 3,
+      "type": "book",
+      "content": "晋世譜",
+      "work_id": "d59f9nmklyx6",
+      "note": "原無撰人"
+    },
+    {
+      "title": "孫盛　蜀世譜",
+      "level": 3,
+      "type": "book",
+      "content": "孫盛　蜀世譜",
+      "work_id": "d59f27wb0wsj"
+    },
+    {
+      "title": "孫盛　魏世籍",
+      "level": 3,
+      "type": "book",
+      "content": "孫盛　魏世籍",
+      "work_id": "d59f27w2li4j"
+    },
+    {
+      "title": "孫盛　魏陽秋異同八卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫盛　魏陽秋異同八卷",
+      "work_id": "d59f9nn4l5ol"
+    },
+    {
+      "title": "孫盛　雜記",
+      "level": 3,
+      "type": "book",
+      "content": "孫盛　雜記",
+      "work_id": "d59f27wtr5ds"
+    },
+    {
+      "title": "王隱　删補蜀記七卷",
+      "level": 3,
+      "type": "book",
+      "content": "王隱　删補蜀記七卷",
+      "work_id": "d59f27uxpeyr"
+    },
+    {
+      "title": "王嘉　拾遺録三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王嘉　拾遺録三卷",
+      "work_id": "d59f27vimbcx"
+    },
+    {
+      "title": "王嘉　拾遺記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王嘉　拾遺記十卷",
+      "work_id": "d59f27x3fi83",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "譙周　蜀王本紀",
+      "level": 3,
+      "type": "book",
+      "content": "譙周　蜀王本紀",
+      "work_id": "d59f9nmklyx7"
+    },
+    {
+      "title": "薛瑩　條列吳事",
+      "level": 3,
+      "type": "book",
+      "content": "薛瑩　條列吳事",
+      "work_id": "d59f6ssrrviy"
+    },
+    {
+      "title": "王倫　周紀",
+      "level": 3,
+      "type": "book",
+      "content": "王倫　周紀",
+      "work_id": "d59f9nmklyx8"
+    },
+    {
+      "title": "汲冢書梁邱藏一篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢書梁邱藏一篇",
+      "work_id": "d59f9nmkx7gg",
+      "note": "原無撰人"
+    },
+    {
+      "title": "生封一篇",
+      "level": 3,
+      "type": "book",
+      "content": "生封一篇",
+      "work_id": "d59f9nmkx7gh",
+      "note": "承前同行著錄（與《汲冢書梁邱藏》同行），原無撰人"
+    }
+  ]
+}

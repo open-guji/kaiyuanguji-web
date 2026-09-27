@@ -1,0 +1,81 @@
+{
+  "title": "續編·經編·孝經類",
+  "part": "supplement",
+  "bian": "classics",
+  "lei": "孝經類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "孝經馬氏注一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "孝經馬氏注",
+      "measure": 1,
+      "part": "supplement",
+      "bian": "classics",
+      "lei": "孝經類",
+      "zhi_no": null,
+      "juan_no": null,
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f2pqs8cu8",
+      "link_basis": "本庫無同題 work，據本目錄新建",
+      "content": ""
+    },
+    {
+      "title": "孝經董氏義一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "孝經董氏義",
+      "measure": 1,
+      "part": "supplement",
+      "bian": "classics",
+      "lei": "孝經類",
+      "zhi_no": null,
+      "juan_no": null,
+      "dynasty": "漢",
+      "author": "董仲舒",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f24mer6s0",
+      "link_basis": "本庫無同題 work，據本目錄新建",
+      "content": ""
+    },
+    {
+      "title": "孝經鄭氏注一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "孝經鄭氏注",
+      "measure": 1,
+      "part": "supplement",
+      "bian": "classics",
+      "lei": "孝經類",
+      "zhi_no": null,
+      "juan_no": null,
+      "dynasty": "魏",
+      "author": "鄭偁",
+      "author_role": "撰",
+      "work_id": "d59f24mh9343",
+      "link_basis": "本庫同題唯一（目錄未著撰人）",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    }
+  ]
+}

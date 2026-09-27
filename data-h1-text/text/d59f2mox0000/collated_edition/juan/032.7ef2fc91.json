@@ -1,0 +1,312 @@
+{
+  "title": "文史類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "文史類",
+      "content": ""
+    },
+    {
+      "title": "《詩學梯航》一卷宣德中，周敘等奉敕編。",
+      "level": 3,
+      "type": "book",
+      "content": "《詩學梯航》一卷宣德中，周敘等奉敕編。",
+      "work_id": "d59f2ndxv01t"
+    },
+    {
+      "title": "甯獻王《臒仙文譜》八卷，《詩譜》一卷，《詩格》一卷，《西江詩法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "甯獻王《臒仙文譜》八卷，《詩譜》一卷，《詩格》一卷，《西江詩法》一卷",
+      "work_id": "d59f2ngz41s3"
+    },
+    {
+      "title": "甯靖王奠培《詩評》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "甯靖王奠培《詩評》一卷",
+      "work_id": "d59f2netdyps"
+    },
+    {
+      "title": "宋元禧《文章緒論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋元禧《文章緒論》一卷",
+      "work_id": "d59f2nixnoqp"
+    },
+    {
+      "title": "唐之淳《文斷》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐之淳《文斷》四卷",
+      "work_id": "d59f2nihqkua"
+    },
+    {
+      "title": "溫景明《藝學淵源》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "溫景明《藝學淵源》四卷",
+      "work_id": "d59f2nfghips"
+    },
+    {
+      "title": "閔文振《蘭莊文話》一卷，《詩話》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "閔文振《蘭莊文話》一卷，《詩話》一卷",
+      "work_id": "d59f2nipjimb"
+    },
+    {
+      "title": "張大猷《文章源委》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張大猷《文章源委》一卷",
+      "work_id": "d59f2nhwifwk"
+    },
+    {
+      "title": "王弘誨《文字談苑》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王弘誨《文字談苑》四卷",
+      "work_id": "d59f2ne51gcg"
+    },
+    {
+      "title": "朱荃宰《文通》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱荃宰《文通》二十卷",
+      "work_id": "d59f2nkpc3k2"
+    },
+    {
+      "title": "瞿佑《吟堂詩話》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑《吟堂詩話》三卷",
+      "work_id": "d59f2njf4yyq"
+    },
+    {
+      "title": "懷悅《詩家一指》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "懷悅《詩家一指》一卷",
+      "work_id": "d59f2neyozr7"
+    },
+    {
+      "title": "葉盛《秋臺詩話》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉盛《秋臺詩話》一卷",
+      "work_id": "d59f2nfg6add"
+    },
+    {
+      "title": "遊潛《夢蕉詩話》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "遊潛《夢蕉詩話》二卷",
+      "work_id": "d59f2njp4kjk"
+    },
+    {
+      "title": "李東陽《懷麓堂詩話》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李東陽《懷麓堂詩話》一卷",
+      "work_id": "d59f2nk28jk3"
+    },
+    {
+      "title": "徐禎卿《談藝錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐禎卿《談藝錄》一卷",
+      "work_id": "d59f2ni8op35"
+    },
+    {
+      "title": "《都穆詩話》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《都穆詩話》二卷",
+      "work_id": "d59f2ne6aepv"
+    },
+    {
+      "title": "強晟《汝南詩話》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "強晟《汝南詩話》四卷",
+      "work_id": "d59f2nhq9p1d"
+    },
+    {
+      "title": "沈麟《唐詩世紀》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈麟《唐詩世紀》五卷",
+      "work_id": "d59f2ngrxlaa"
+    },
+    {
+      "title": "楊慎《升庵詩話》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊慎《升庵詩話》四卷",
+      "work_id": "d59f2nep0n43"
+    },
+    {
+      "title": "程啟充《南溪詩話》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "程啟充《南溪詩話》三卷",
+      "work_id": "d59f2ne6aebo"
+    },
+    {
+      "title": "安磐《頤山詩話》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "安磐《頤山詩話》二卷",
+      "work_id": "d59f2nkkcav5"
+    },
+    {
+      "title": "黃卿《編苕詩話》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃卿《編苕詩話》八卷",
+      "work_id": "d59f2ngu49a9"
+    },
+    {
+      "title": "宋孟清《詩學體要類編》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋孟清《詩學體要類編》三卷",
+      "work_id": "d59f2nf3osn5"
+    },
+    {
+      "title": "朱承爵《詩話》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱承爵《詩話》一卷",
+      "work_id": "d59f2ndyhgqo"
+    },
+    {
+      "title": "顧元慶《夷白齋詩話》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧元慶《夷白齋詩話》一卷",
+      "work_id": "d59f2nh8h62q"
+    },
+    {
+      "title": "陳霆《渚山堂詩話》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳霆《渚山堂詩話》三卷",
+      "work_id": "d59f2negl8n5"
+    },
+    {
+      "title": "皇甫循《解頤新語》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫循《解頤新語》八卷",
+      "work_id": "d59f2ngkfwn6"
+    },
+    {
+      "title": "黃省曾《詩法》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃省曾《詩法》八卷",
+      "work_id": "d59f2nfem3up"
+    },
+    {
+      "title": "樑格《冰川詩式》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "樑格《冰川詩式》四卷",
+      "work_id": "d59f2njv232a"
+    },
+    {
+      "title": "邵經邦《律詩指南》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵經邦《律詩指南》四卷",
+      "work_id": "d59f2nggdtky"
+    },
+    {
+      "title": "《謝東山詩話》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《謝東山詩話》四卷",
+      "work_id": "d59f2nhq9pfm"
+    },
+    {
+      "title": "王世懋《藝圃擷餘》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王世懋《藝圃擷餘》一卷",
+      "work_id": "d59f2njarnk1"
+    },
+    {
+      "title": "謝榛《詩家直說》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝榛《詩家直說》四卷",
+      "work_id": "d59f2nla905d"
+    },
+    {
+      "title": "俞允文《名賢詩評》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "俞允文《名賢詩評》二十卷",
+      "work_id": "d59f2nem7if7"
+    },
+    {
+      "title": "胡應麟《詩藪》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡應麟《詩藪》二十卷",
+      "work_id": "d59f2ni0vri8"
+    },
+    {
+      "title": "淩雲《續全唐詩話》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "淩雲《續全唐詩話》十卷",
+      "work_id": "d59f2ni7fqwz"
+    },
+    {
+      "title": "郭子章《豫章詩話》六卷，《續》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭子章《豫章詩話》六卷，《續》十二卷",
+      "work_id": "d59f2nhds7b7"
+    },
+    {
+      "title": "謝肇淛《小草齋詩話》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝肇淛《小草齋詩話》四卷",
+      "work_id": "d59f2nivh0xt"
+    },
+    {
+      "title": "趙宧光《彈雅集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙宧光《彈雅集》十卷",
+      "work_id": "d59f2nhuy9kw"
+    },
+    {
+      "title": "曹學牷《蜀中詩話》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹學牷《蜀中詩話》四卷",
+      "work_id": "d59f2ne1am0x"
+    },
+    {
+      "title": "程元初《名賢詩指》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "程元初《名賢詩指》十五卷",
+      "work_id": "d59f2nfncr2a"
+    },
+    {
+      "title": "王昌會《詩話彙編》三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王昌會《詩話彙編》三十二卷",
+      "work_id": "d59f2nehiy2p"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "title": "史部·起居注類",
+  "sections": [
+    {
+      "title": "起居注類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "劉師知　陳永定起居注八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉師知　陳永定起居注八卷　劉師知撰，見本傳，作十卷，《南史》同。《隋志》「八卷」，不著撰人。",
+      "work_id": "d59f2q20rx8h"
+    },
+    {
+      "title": "陳天嘉起居注二十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳天嘉起居注二十三卷　見《隋志》。兩《唐志》「《陳起居注》四十一卷」，不著年號。",
+      "work_id": "d59f2q0qw1dt"
+    },
+    {
+      "title": "陳天康光大起居注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳天康光大起居注十卷　見《隋志》。",
+      "work_id": "d59f2pyf8g02"
+    },
+    {
+      "title": "陳太建起居注五十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳太建起居注五十六卷　見《隋志》。",
+      "work_id": "d59f2q2b2qyq"
+    },
+    {
+      "title": "陳至德起居注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳至德起居注四卷　見《隋志》。",
+      "work_id": "d59f2pyziv42"
+    },
+    {
+      "title": "起居注類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右起居注五部一百一卷，皆收入《隋志》。"
+    }
+  ]
+}

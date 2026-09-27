@@ -1,0 +1,185 @@
+{
+  "title": "經部·易類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·易類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三易僃遺十卷",
+      "content": "朱元昇撰。字日華，永嘉人。梓行。",
+      "work_id": "d59f2hrsrfup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易朱氏本義發揮七卷",
+      "content": "何基撰。",
+      "work_id": "d59f2hfzm801"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "繫辭發揮二卷",
+      "content": "何基撰。",
+      "work_id": "d59f2hlyoq9v"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易啟蒙通釋二卷",
+      "content": "胡方平撰。",
+      "work_id": "d59f2gh1nuv5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "外易四卷",
+      "content": "胡方平撰。",
+      "book_id": "988lpnjyma",
+      "ai_note": "本條原以 work_id 載 11qfrvm01pmv4，而該 id 實為 Book《外易》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易程朱傳義附錄十八卷",
+      "content": "董楷撰。",
+      "work_id": "d59f2hev1ddv"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "圖說一卷",
+      "content": "董楷撰。",
+      "work_id": "d59f2hhosqgw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易解二卷",
+      "content": "陳普撰。",
+      "work_id": "d59f2hiodse8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學圖傳一卷",
+      "content": "熊禾撰。",
+      "work_id": "d59f2hf8gkqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易管窺六十卷",
+      "content": "吳霞舉撰。",
+      "work_id": "d59f2hm6hnup"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "筮易七卷",
+      "content": "吳霞舉撰。",
+      "work_id": "d59f2hk2y8e8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中易",
+      "content": "任士林撰。",
+      "book_id": "988lpnv75t",
+      "ai_note": "本條原以 work_id 載 11qfrvmch0pa8，而該 id 實為 Book《中易》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "淸全齋讀易編三卷",
+      "content": "陳深撰。",
+      "work_id": "d59f2hiac3y9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大易緝說十卷",
+      "content": "王申子撰。",
+      "work_id": "d59f2gpk6wao"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易輯解十卷",
+      "content": "邱富國撰。",
+      "work_id": "d59f2hiiga2q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易學說約",
+      "content": "邱富國撰。五篇。",
+      "work_id": "d59f2hiubapu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易本義附錄纂疏十四卷",
+      "content": "胡一桂撰。",
+      "book_id": "988lpnv75s",
+      "ai_note": "本條原以 work_id 載 11qfrvmkv6f40，而該 id 實為 Book《周易本義附錄纂疏》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易啟蒙翼傳四卷",
+      "content": "胡一桂撰。",
+      "work_id": "d59f2gobv75t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易衍二卷",
+      "content": "何夢桂撰。",
+      "work_id": "d59f2hjgsdtt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文公易說二十三卷",
+      "content": "朱鑑撰。",
+      "work_id": "d59f2hrbwmip"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "學易蹊徑二十卷",
+      "content": "田疇撰。",
+      "work_id": "d59f2hlb9xj5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古易便覽一卷",
+      "content": "昝如愚撰。",
+      "work_id": "d59f2hk6dude"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易解十卷",
+      "content": "羅大經撰。",
+      "work_id": "d59f2hlg9q81"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右易類",
+      "content": "右易類十七家，二百十六卷。"
+    }
+  ]
+}

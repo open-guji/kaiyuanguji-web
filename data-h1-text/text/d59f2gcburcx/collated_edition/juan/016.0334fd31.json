@@ -1,0 +1,329 @@
+{
+  "title": "刑法類",
+  "updated_at": "2026-08-08",
+  "sections": [
+    {
+      "title": "《漢建武律令故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢建武律令故事》三卷",
+      "work_id": "d59f2q31aosh"
+    },
+    {
+      "title": "《律略論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《律略論》五卷劉邵撰。",
+      "work_id": "d59f27slfcap"
+    },
+    {
+      "title": "《漢朝駁義》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢朝駁義》三十卷應劭撰。",
+      "work_id": "d59f25dgcd1c"
+    },
+    {
+      "title": "《漢名臣奏》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢名臣奏》三十卷陳壽撰。",
+      "work_id": "d59f27u18qgz"
+    },
+    {
+      "title": "又二十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "又二十九卷",
+      "work_id": "d59f2pr6a1a9",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evfuvfbxlslc，今別立《漢名臣奏》二十九卷 1ex0jamhu7jlt 繫之。"
+    },
+    {
+      "title": "《廷尉決事》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《廷尉決事》二十卷",
+      "work_id": "d59f2pv66gao"
+    },
+    {
+      "title": "《廷尉駁事》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《廷尉駁事》十一卷",
+      "work_id": "d59f2puo2o74"
+    },
+    {
+      "title": "《廷尉雜詔書》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《廷尉雜詔書》二十六卷",
+      "work_id": "d59f23ns1d6q"
+    },
+    {
+      "title": "《晉令》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉令》四十卷賈充等撰。",
+      "work_id": "d59f29mnof0g"
+    },
+    {
+      "title": "《刑法律本》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《刑法律本》二十一卷賈充等撰。",
+      "work_id": "d59f29mnof0i"
+    },
+    {
+      "title": "《南台奏事》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《南台奏事》二十二卷",
+      "work_id": "d59f23nsclqa"
+    },
+    {
+      "title": "《晉駁事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉駁事》四卷",
+      "work_id": "d59f27ujyz28"
+    },
+    {
+      "title": "《晉彈事》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉彈事》九卷",
+      "work_id": "d59f27tm9cec"
+    },
+    {
+      "title": "《齊永明律》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊永明律》八卷宋躬撰。",
+      "work_id": "d59f286ezm68"
+    },
+    {
+      "title": "《梁律》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁律》二十卷蔡法度撰。",
+      "work_id": "d59f286oz7k0"
+    },
+    {
+      "title": "《梁令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁令》三十卷蔡法度撰。",
+      "work_id": "d59f285ppe6a"
+    },
+    {
+      "title": "《梁科》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁科》二卷蔡法度撰。",
+      "work_id": "d59f28642b5t"
+    },
+    {
+      "title": "《陳令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳令》三十卷範泉等撰。",
+      "work_id": "d59f286d46wy"
+    },
+    {
+      "title": "《陳科》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳科》三十卷範泉志。",
+      "work_id": "d59f285ca6tg"
+    },
+    {
+      "title": "《北齊律》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《北齊律》二十卷趙郡王睿撰。",
+      "work_id": "d59f2q12fta9"
+    },
+    {
+      "title": "《北齊令》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《北齊令》八卷",
+      "work_id": "d59f2qa904cg"
+    },
+    {
+      "title": "《周大律》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周大律》二十五卷趙肅等撰。",
+      "work_id": "d59f2ptkqs5e"
+    },
+    {
+      "title": "《隋律》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋律》十二卷高熲等撰。",
+      "work_id": "d59f2nf32bk1"
+    },
+    {
+      "title": "《隋大業律》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋大業律》十八卷",
+      "work_id": "d59f28le2gao"
+    },
+    {
+      "title": "《隋開皇令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋開皇令》三十卷裴正等撰。",
+      "work_id": "d59f28jceg3o"
+    },
+    {
+      "title": "《法例》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《法例》二卷崔知悌等撰。",
+      "work_id": "d59f28lrhnnm"
+    },
+    {
+      "title": "《令律》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《令律》十二卷裴寂撰。",
+      "work_id": "d59f2ptzq60w"
+    },
+    {
+      "title": "《律疏》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《律疏》三十卷長孫無忌撰。",
+      "work_id": "d59f28l5bt34"
+    },
+    {
+      "title": "《武德令》三十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《武德令》三十一卷裴寂等撰。",
+      "work_id": "d59f28kvc7pf"
+    },
+    {
+      "title": "《貞觀格》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《貞觀格》十八卷房玄齡撰。",
+      "work_id": "d59f28j7pvye"
+    },
+    {
+      "title": "《永徽散行天下格中本》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽散行天下格中本》七卷",
+      "work_id": "d59f28jb5hxe"
+    },
+    {
+      "title": "《永徽留本司行中本》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽留本司行中本》十八卷源直心等撰。",
+      "work_id": "d59f28jrp2ps"
+    },
+    {
+      "title": "《永徽令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽令》三十卷",
+      "work_id": "d59f28kafbb9"
+    },
+    {
+      "title": "《永徽留本司格後本》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽留本司格後本》十一卷劉仁軌撰。",
+      "work_id": "d59f28lx3xfl"
+    },
+    {
+      "title": "《永徽成式》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽成式》十四卷",
+      "work_id": "d59f28kzpjb8"
+    },
+    {
+      "title": "《永徽散頒天下格》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽散頒天下格》七卷",
+      "work_id": "d59f28kj5yis"
+    },
+    {
+      "title": "《永徽留本司行格》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽留本司行格》十八卷長孫無忌撰。",
+      "work_id": "d59f28jovxtv"
+    },
+    {
+      "title": "《永徽中式本》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《永徽中式本》四卷",
+      "work_id": "d59f28jggj5v"
+    },
+    {
+      "title": "《垂拱式》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《垂拱式》二十卷",
+      "work_id": "d59f28kqcf0k"
+    },
+    {
+      "title": "《垂拱格》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《垂拱格》二卷",
+      "work_id": "d59f28knuio0"
+    },
+    {
+      "title": "《垂拱留司格》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《垂拱留司格》六卷裴居道撰。",
+      "work_id": "d59f28lrhnnk"
+    },
+    {
+      "title": "《律解》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《律解》二十一卷張斐撰。",
+      "work_id": "d59f27wzzw8y"
+    },
+    {
+      "title": "《開元前格》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《開元前格》十卷劉崇等撰。",
+      "work_id": "d59f28lsqltw"
+    },
+    {
+      "title": "《開元後格》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《開元後格》九卷宋璟等撰。",
+      "work_id": "d59f28kduxa9"
+    },
+    {
+      "title": "《令》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《令》三十卷",
+      "work_id": "d59f28jkim86"
+    },
+    {
+      "title": "《式》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《式》二十卷姚崇等撰。",
+      "work_id": "d59f28ki88w3"
+    }
+  ]
+}

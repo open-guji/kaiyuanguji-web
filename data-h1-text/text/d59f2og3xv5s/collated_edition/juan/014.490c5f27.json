@@ -1,0 +1,31 @@
+{
+  "title": "史部·舊事類",
+  "sections": [
+    {
+      "title": "舊事類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "祖珽　魏獻文禪子故事",
+      "level": 3,
+      "type": "book",
+      "content": "祖珽　魏獻文禪子故事　祖珽撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98eyb3eq"
+    },
+    {
+      "title": "祖珽　魏帝皇太后故事",
+      "level": 3,
+      "type": "book",
+      "content": "祖珽　魏帝皇太后故事　祖珽撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98eyb3er"
+    },
+    {
+      "title": "舊事類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右舊事二部，無卷數，未收入《隋志》。"
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "title": "子部·藝術類",
+  "sections": [
+    {
+      "title": "藝術類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "韋昭　博奕論",
+      "level": 3,
+      "type": "book",
+      "content": "韋昭　博奕論　韋昭撰。据《文選》。",
+      "work_id": "d59f9uwuregy",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "汲冢繳書二篇",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢繳書二篇　案論弋射法。据本書《束皙傳》。",
+      "work_id": "d59f9uwuregz"
+    },
+    {
+      "title": "陸雲　棊品序一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸雲　棊品序一卷　陸雲撰。",
+      "work_id": "d59f9s1nkxdw",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "馬朗　圍棊勢二十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "馬朗　圍棊勢二十九卷　趙王倫舍人馬朗等撰。",
+      "work_id": "d59f9uwureh0",
+      "note": "原文「趙王倫舍人馬朗等撰」——「等」謂不止一人，取其主名"
+    },
+    {
+      "title": "成公綏　棊勢",
+      "level": 3,
+      "type": "book",
+      "content": "成公綏　棊勢　据《御覽》工藝部引。",
+      "work_id": "d59f9uwv2n0g",
+      "note": "撰人後置：原文「上二種並成公綏撰」總標於數條之後"
+    },
+    {
+      "title": "成公綏　隸書體",
+      "level": 3,
+      "type": "book",
+      "content": "成公綏　隸書體　上二種並成公綏撰。",
+      "work_id": "d59f9nmxep6u",
+      "note": "撰人後置：原文「上二種並成公綏撰」總標於數條之後"
+    },
+    {
+      "title": "衛恒　四體書勢",
+      "level": 3,
+      "type": "book",
+      "content": "衛恒　四體書勢　衛恒撰。据本書傳。",
+      "work_id": "d59f9uwv2n0h",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "索靖　草書狀",
+      "level": 3,
+      "type": "book",
+      "content": "索靖　草書狀　索靖撰。据本書傳。",
+      "work_id": "d59f27vvqa6a",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "楊泉　草書賦",
+      "level": 3,
+      "type": "book",
+      "content": "楊泉　草書賦　楊泉撰。",
+      "work_id": "d59f9uwv2n0i",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "劉劭　飛白勢銘",
+      "level": 3,
+      "type": "book",
+      "content": "劉劭　飛白勢銘　劉劭撰。　上二種並据《書苑英華》。　案張懷瓘《書斷》作“劉彦和”。",
+      "work_id": "d59f9uwv2n0j",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "葛洪　棊經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　棊經一卷　葛洪撰。　案《崇文目》“洪”譌作“法”。",
+      "work_id": "d59f9uwv2n0k",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "虞潭　投壺變一卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞潭　投壺變一卷　虞潭撰。",
+      "work_id": "d59f27v07bb5",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "投壺經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "投壺經一卷　郝沖、虞譚撰。　案“譚”疑“潭”之譌，與上疑一種。",
+      "work_id": "d59f9uwvdvk0"
+    },
+    {
+      "title": "郝沖　投壺道一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郝沖　投壺道一卷　郝沖撰。　上二種並据《通志略》。",
+      "work_id": "d59f2pqxun0h",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "衛夫人　筆陳圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "衛夫人　筆陳圖一卷　衛夫人撰。　案《書史會要》曰：“夫人名鑠，字茂漪，汝陰守李矩妻，中書充母。”《書斷》云：“廷尉展女弟。”《國志·李通傳》引《晉諸公讚》：“矩字茂約，永嘉中江州刺史。”本書《李充傳》：“父矩，江州刺史。”《御覽》工藝部引《晉中興書》：“李充母衛氏，廷尉展之妹。聰明有訓，又善楷書，妙參鍾索。”",
+      "work_id": "d59f9uwvdvk1",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "筆説",
+      "level": 3,
+      "type": "book",
+      "content": "筆説　《太平廣記》書部引羊欣《筆陳圖》曰：“王羲之七歲於其父枕中竊讀前代《筆説》。”",
+      "work_id": "d59f9uwvdvk2"
+    },
+    {
+      "title": "王羲之　用筆賦",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　用筆賦　据朱長文《墨池編》。",
+      "work_id": "d59f9uwvdvk3",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　記白雲先生書訣",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　記白雲先生書訣　据《書苑英華》。",
+      "work_id": "d59f9uwvdvk4",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　自論書",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　自論書　据羲之集。①",
+      "work_id": "d59f9uwvdvk5",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　自叙草書勢",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　自叙草書勢",
+      "work_id": "d59f9uwvp43k",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　自叙草書訣",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　自叙草書訣",
+      "work_id": "d59f9uwvp43l",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　筆經",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　筆經　案論製筆之法。　上三種並据《御覽》工藝部引。",
+      "work_id": "d59f2q3vvxmp",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　筆勢論",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　筆勢論　据周子發《書苑菁華》云：“羲之告獻之作。”　案此《論》孫過庭已言其僞，張彦亦棄不録，《墨池編》云恐後學所作。",
+      "work_id": "d59f9nmxep6r",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "王羲之　筆陳圖",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　筆陳圖　据馮武《書法正傳》云：“永和九年，羲之作，授獻之。”　上八種並王羲之撰。",
+      "work_id": "d59f9uwvp43m",
+      "note": "撰人後置：原文「上八種並王羲之撰」總標於數條之後"
+    },
+    {
+      "title": "羊欣　筆陳圖",
+      "level": 3,
+      "type": "book",
+      "content": "羊欣　筆陳圖　据《玉海》。",
+      "work_id": "d59f9uww0cn9",
+      "note": "撰人後置：原文「上三種並羊欣撰」總標於數條之後"
+    },
+    {
+      "title": "王獻之　書訣",
+      "level": 3,
+      "type": "book",
+      "content": "王獻之　書訣　王獻之撰。据《飛鳧帖》。",
+      "work_id": "d59f9uwvp43n",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王珉　行書狀",
+      "level": 3,
+      "type": "book",
+      "content": "王珉　行書狀　王珉撰。据《藝文類聚》。",
+      "work_id": "d59f9nmxep6w",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "圍棊九品序録五卷",
+      "level": 3,
+      "type": "book",
+      "content": "圍棊九品序録五卷　案《唐志》並作“《棊品》五卷”。",
+      "work_id": "d59f9uww0cn4"
+    },
+    {
+      "title": "范汪　棊九品序録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "范汪　棊九品序録一卷　范汪等撰。",
+      "work_id": "d59f9s1nkxdv",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "十二棊卜",
+      "level": 3,
+      "type": "book",
+      "content": "十二棊卜　甯康初，襄城寺法味道人見一老公竹筒盛此書，以授法味。据《御覽》方術部引《異苑》。",
+      "work_id": "d59f9uww0cn5"
+    },
+    {
+      "title": "徐安子五十八體書勢一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐安子五十八體書勢一卷　据《玉海》引《百葉書鈔》。",
+      "work_id": "d59f9uww0cn6"
+    },
+    {
+      "title": "徐廣　彈碁譜一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐廣　彈碁譜一卷　徐廣撰。",
+      "work_id": "d59f7z44cmiq",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "顧愷之　論書",
+      "level": 3,
+      "type": "book",
+      "content": "顧愷之　論書",
+      "work_id": "d59f9uww0cn7",
+      "note": "撰人後置：原文「上二種並顧愷之撰」總標於數條之後"
+    },
+    {
+      "title": "顧愷之　論畫篇",
+      "level": 3,
+      "type": "book",
+      "content": "顧愷之　論畫篇　上二種並顧愷之撰。据《歷代名畫記》。",
+      "work_id": "d59f27w4gxdu",
+      "note": "撰人後置：原文「上二種並顧愷之撰」總標於數條之後"
+    },
+    {
+      "title": "南都賦圖",
+      "level": 3,
+      "type": "book",
+      "content": "南都賦圖　戴逵畫。据《世説》。",
+      "work_id": "d59f9uww0cn8"
+    },
+    {
+      "title": "羊欣　能書人名一卷",
+      "level": 3,
+      "type": "book",
+      "content": "羊欣　能書人名一卷　据《南齊書·王僧虔傳》。",
+      "work_id": "d59f9c0yykue",
+      "note": "撰人後置：原文「上三種並羊欣撰」總標於數條之後"
+    },
+    {
+      "title": "羊欣　筆法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "羊欣　筆法一卷　据《通志略》。　上三種並羊欣撰。",
+      "work_id": "d59f2pwrav42",
+      "note": "撰人後置：原文「上三種並羊欣撰」總標於數條之後"
+    },
+    {
+      "title": "藝術類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右藝術類三十七種。"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "work_id": "d59f2og5taf4",
+  "type": "anthology",
+  "total_entries": 174,
+  "matched_entries": 174,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json"
+  ],
+  "references": [
+    {
+      "title": "續古文觀止",
+      "url": "https://zh.wikisource.org/zh-hant/%E7%BA%8C%E5%8F%A4%E6%96%87%E8%A7%80%E6%AD%A2",
+      "note": "維基文庫繁體版"
+    }
+  ],
+  "text_quality": {
+    "grade": "fine",
+    "source_note": "維基文庫（繁體，zh-hant）"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25"
+}

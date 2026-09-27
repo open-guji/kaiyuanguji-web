@@ -1,0 +1,129 @@
+{
+  "title": "經部·小說類",
+  "sections": [
+    {
+      "title": "小說類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "裴子野　類林三卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　類林三卷　《唐志》。",
+      "work_id": "d59f286bv8qo",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "劉義慶　幽明錄二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉義慶　幽明錄二十卷　《隋志》。",
+      "work_id": "d59f2853us5d"
+    },
+    {
+      "title": "劉孝標　續世說十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝標　續世說十卷　《唐志》。",
+      "work_id": "d59f2860bgn6"
+    },
+    {
+      "title": "劉孝標　注劉義慶世說新語二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝標　注劉義慶世說新語二十卷　《唐志》。《隋》「十卷」。",
+      "work_id": "d59f99gogmx0",
+      "note": "承前省略撰人（劉孝標）。原書腳註③"
+    },
+    {
+      "title": "庾元威　座右方八卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾元威　座右方八卷　《隋志》。《唐志》「三卷」。",
+      "work_id": "d59f286mhb7m",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "劉之遴　神錄五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉之遴　神錄五卷　《隋志》。",
+      "work_id": "d59f285clfcw"
+    },
+    {
+      "title": "元帝　研神記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　研神記十卷　《唐志》作「妍」。《隋志》。",
+      "work_id": "d59f2867t5oi"
+    },
+    {
+      "title": "吴均　續齊指記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吴均　續齊指記一卷　《隋志》。",
+      "work_id": "d59f99gogmx1",
+      "note": "原書腳註⑤：《隋志》作「續齊諧記一卷」"
+    },
+    {
+      "title": "金紫光禄大夫顧協　瑣語一卷",
+      "level": 3,
+      "type": "book",
+      "content": "金紫光禄大夫顧協　瑣語一卷　《隋志》。",
+      "work_id": "d59f285pe5mp"
+    },
+    {
+      "title": "南臺治書伏挺　邇說一卷",
+      "level": 3,
+      "type": "book",
+      "content": "南臺治書伏挺　邇說一卷　《隋志》。本傳作「挺，暅子。十卷」。",
+      "work_id": "d59f285aq03n"
+    },
+    {
+      "title": "建康令劉霽　釋俗語八卷",
+      "level": 3,
+      "type": "book",
+      "content": "建康令劉霽　釋俗語八卷　本傳。",
+      "work_id": "d59f286luu4k",
+      "note": "原書作「庾仲容　建康令劉霽　釋俗語八卷」。原書腳註⑥：「庾仲容」三字當為衍文"
+    },
+    {
+      "title": "蕭賁　辯林二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭賁　辯林二十卷　代元帝，《金樓子》。",
+      "work_id": "d59f28lum137"
+    },
+    {
+      "title": "王琰　冥祥記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王琰　冥祥記十卷　《隋志》。",
+      "work_id": "d59f2gljcs8x"
+    },
+    {
+      "title": "庾詵　總鈔八十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾詵　總鈔八十卷　傳。",
+      "work_id": "d59f99gogmx2"
+    },
+    {
+      "title": "任昉　述異記二卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉　述異記二卷　《通考》。",
+      "work_id": "d59f286tz08y"
+    },
+    {
+      "title": "武帝　坐右方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　坐右方十卷",
+      "work_id": "d59f99gogmx3",
+      "note": "原書腳註①：此條與前方術類重出"
+    }
+  ]
+}

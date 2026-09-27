@@ -1,0 +1,460 @@
+{
+  "title": "論語類",
+  "related_works": [
+    {
+      "id": "d59f1iopaku8",
+      "title": "論語",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "title": "《論語》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語》十卷⟨何晏等集解⟩皇侃",
+      "work_id": "d59f27xiq4ua"
+    },
+    {
+      "title": "《論語疏》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語疏》十卷韓愈",
+      "work_id": "d59f2q5c0kxt"
+    },
+    {
+      "title": "《筆解》",
+      "level": 3,
+      "type": "book",
+      "content": "《筆解》二卷陸德明",
+      "work_id": "d59f2pybhl35"
+    },
+    {
+      "title": "《釋文》",
+      "level": 3,
+      "type": "book",
+      "content": "《釋文》一卷馬總",
+      "work_id": "d59f28l27fnm"
+    },
+    {
+      "title": "《論語樞要》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語樞要》十卷陳銳",
+      "work_id": "d59f28j7pvyb"
+    },
+    {
+      "title": "《論語品類》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語品類》七卷《論語井田圖》一卷邢昺",
+      "work_id": "d59f2q1ghi4h"
+    },
+    {
+      "title": "《正義》",
+      "level": 3,
+      "type": "book",
+      "content": "《正義》十卷周武",
+      "work_id": "d59f2ofw4xds"
+    },
+    {
+      "title": "《集解辨誤》",
+      "level": 3,
+      "type": "book",
+      "content": "《集解辨誤》十卷宋鹹",
+      "work_id": "d59f2q2wxd6o"
+    },
+    {
+      "title": "《增注》",
+      "level": 3,
+      "type": "book",
+      "content": "《增注》十卷王令",
+      "work_id": "d59f2q5zqlmp"
+    },
+    {
+      "title": "《注》",
+      "level": 3,
+      "type": "book",
+      "content": "《注》十卷紀亶",
+      "work_id": "d59f2pzbp4ap"
+    },
+    {
+      "title": "《論語摘科辨解》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語摘科辨解》十卷王安石",
+      "work_id": "d59f2q1wpu68"
+    },
+    {
+      "title": "《通類》",
+      "level": 3,
+      "type": "book",
+      "content": "《通類》一卷王雱",
+      "work_id": "d59f2pxpy7sw"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷孔武仲",
+      "work_id": "d59f2hgnnhtv"
+    },
+    {
+      "title": "《論語說》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語說》十卷呂惠卿",
+      "work_id": "d59f2mbkx0jl"
+    },
+    {
+      "title": "《論語義》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語義》十卷蔡申",
+      "work_id": "d59f2848yadc"
+    },
+    {
+      "title": "《論語纂》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語纂》十卷蘇軾",
+      "work_id": "d59f2hfqvksg"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》四卷蘇轍",
+      "work_id": "d59f2pw4ts74"
+    },
+    {
+      "title": "《論語拾遺》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語拾遺》一卷程頤",
+      "work_id": "d59f2hscfe2q"
+    },
+    {
+      "title": "《論語說》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語說》一卷劉正容",
+      "work_id": "d59f2mbkx0jl"
+    },
+    {
+      "title": "《重注論語》",
+      "level": 3,
+      "type": "book",
+      "content": "《重注論語》十卷陳禾",
+      "work_id": "d59f2hg3ob2a"
+    },
+    {
+      "title": "《論語傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語傳》十卷晁說之",
+      "work_id": "d59f2puu06io"
+    },
+    {
+      "title": "《講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《講義》五卷楊時",
+      "work_id": "d59f2hhn8jr4"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》二卷謝良佐",
+      "work_id": "d59f2pvkjcw1"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷范祖禹",
+      "work_id": "d59f2he2mry8"
+    },
+    {
+      "title": "《論語說》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語說》二十卷遊酢",
+      "work_id": "d59f2mbkx0jl"
+    },
+    {
+      "title": "《雜解》",
+      "level": 3,
+      "type": "book",
+      "content": "《雜解》一卷龔原",
+      "work_id": "d59f2qabi0w1"
+    },
+    {
+      "title": "《論語解》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語解》一部⟨卷亡⟩呂大臨",
+      "work_id": "d59f2htqdczl"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷尹焞",
+      "work_id": "d59f2hgyw1du"
+    },
+    {
+      "title": "《論語解》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語解》十卷又《說》一卷侯仲良",
+      "work_id": "d59f2htqdczl"
+    },
+    {
+      "title": "《說》",
+      "level": 3,
+      "type": "book",
+      "content": "《說》一卷鄒浩",
+      "work_id": "d59f2pwsv2f5"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷汪革",
+      "work_id": "d59f2pvauzuo"
+    },
+    {
+      "title": "《直解》",
+      "level": 3,
+      "type": "book",
+      "content": "《直解》十卷葉夢得",
+      "work_id": "d59f2q18dbep"
+    },
+    {
+      "title": "《釋言》",
+      "level": 3,
+      "type": "book",
+      "content": "《釋言》十卷黃祖舜",
+      "work_id": "d59f28nhan7m"
+    },
+    {
+      "title": "《解義》",
+      "level": 3,
+      "type": "book",
+      "content": "《解義》十卷張九成",
+      "work_id": "d59f2hmc3xmp"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷吳棫",
+      "work_id": "d59f2q4v5rlt"
+    },
+    {
+      "title": "《續解》",
+      "level": 3,
+      "type": "book",
+      "content": "《續解》十卷又《考異》一卷《說例》一卷喻樗",
+      "work_id": "d59f2q0z07b4"
+    },
+    {
+      "title": "《玉泉論語學》",
+      "level": 3,
+      "type": "book",
+      "content": "《玉泉論語學》四卷張栻",
+      "work_id": "d59f2pubwf0h"
+    },
+    {
+      "title": "《解》",
+      "level": 3,
+      "type": "book",
+      "content": "《解》十卷湯烈",
+      "work_id": "d59f2q6zmwap"
+    },
+    {
+      "title": "《集程氏說》",
+      "level": 3,
+      "type": "book",
+      "content": "《集程氏說》二卷倪思",
+      "work_id": "d59f2pvfusjl"
+    },
+    {
+      "title": "《論語義證》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語義證》二十卷葉隆古",
+      "work_id": "d59f2hkhxmgy"
+    },
+    {
+      "title": "《解義》",
+      "level": 3,
+      "type": "book",
+      "content": "《解義》十卷洪興祖",
+      "work_id": "d59f2hkkfitc"
+    },
+    {
+      "title": "《論語說》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語說》十卷史浩",
+      "work_id": "d59f2mbkx0jl"
+    },
+    {
+      "title": "《口義》",
+      "level": 3,
+      "type": "book",
+      "content": "《口義》二十卷薛季宣",
+      "work_id": "d59f2hijdzpf"
+    },
+    {
+      "title": "《論語小學》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語小學》二卷林栗",
+      "work_id": "d59f2hl85k3n"
+    },
+    {
+      "title": "《論語知新》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語知新》十卷朱熹",
+      "work_id": "d59f2hhv1hc0"
+    },
+    {
+      "title": "《論語精義》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語精義》十卷又《集注》十卷《集義》十卷《或問》二十卷《論語注義問答通釋》十卷鄭汝",
+      "work_id": "d59f2psbslxe"
+    },
+    {
+      "title": "《解義》",
+      "level": 3,
+      "type": "book",
+      "content": "《解義》十卷張演",
+      "work_id": "d59f2pvd1o1s"
+    },
+    {
+      "title": "《魯論明微》",
+      "level": 3,
+      "type": "book",
+      "content": "《魯論明微》十卷《意原》十卷錢文子",
+      "work_id": "d59f2q7vscg0"
+    },
+    {
+      "title": "《論語傳讚》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語傳讚》二十卷王汝猷",
+      "work_id": "d59f2pzji1hc"
+    },
+    {
+      "title": "《論語歸趣》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語歸趣》二十卷徐煥",
+      "work_id": "d59f2q65cveo"
+    },
+    {
+      "title": "《論語贅言》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語贅言》二卷曾幾",
+      "work_id": "d59f2pxx4nwh"
+    },
+    {
+      "title": "《論語義》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語義》二卷陳儀之",
+      "work_id": "d59f2848yadc"
+    },
+    {
+      "title": "《講義》",
+      "level": 3,
+      "type": "book",
+      "content": "《講義》二卷薑得平",
+      "work_id": "d59f2ofty9s0"
+    },
+    {
+      "title": "《本旨》",
+      "level": 3,
+      "type": "book",
+      "content": "《本旨》一卷《論語指南》一卷⟨黃祖舜、沈大廉、胡宏辨論⟩戴溪",
+      "work_id": "d59f2q2hbi0w"
+    },
+    {
+      "title": "《石鼓答問》",
+      "level": 3,
+      "type": "book",
+      "content": "《石鼓答問》三卷《東穀論語》一卷⟨不知作者⟩陳耆卿",
+      "work_id": "d59f2pubwfeo"
+    },
+    {
+      "title": "《論語記蒙》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語記蒙》六卷《孔子家語》十卷⟨魏王肅注⟩",
+      "work_id": "d59f2q1uuept"
+    },
+    {
+      "title": "《論語玄義》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語玄義》十卷《論語要義》十卷《論語口義》十卷《論語展掌疏》十卷《論語閱義疏》十卷《論語世譜》三卷⟨並不知作者。⟩王居正",
+      "work_id": "d59f2q62uz9c"
+    },
+    {
+      "title": "《論語感發》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語感發》十卷畢良史",
+      "work_id": "d59f2hk9i7sx"
+    },
+    {
+      "title": "《論語探古》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語探古》二十卷黃幹",
+      "work_id": "d59f2hfepbls"
+    },
+    {
+      "title": "《論語通釋》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語通釋》十卷又《論語意原》一卷卞圜",
+      "work_id": "d59f2mozhwcg"
+    },
+    {
+      "title": "《論語大意》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語大意》二十卷高端叔",
+      "work_id": "d59f2ofvton7"
+    },
+    {
+      "title": "《論語傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語傳》一卷真德秀",
+      "work_id": "d59f2puu06io"
+    },
+    {
+      "title": "《論語集編》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語集編》一十卷魏了翁",
+      "work_id": "d59f2hfj2n7l"
+    },
+    {
+      "title": "《論語要義》",
+      "level": 3,
+      "type": "book",
+      "content": "《論語要義》一十卷",
+      "work_id": "d59f2q9ye2gx"
+    }
+  ]
+}

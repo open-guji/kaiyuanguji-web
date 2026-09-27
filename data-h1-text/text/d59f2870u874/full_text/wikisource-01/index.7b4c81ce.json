@@ -1,0 +1,522 @@
+{
+  "work_id": "d59f2870u874",
+  "version_label": "文選",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%98%AD%E6%98%8E%E6%96%87%E9%81%B8",
+    "page_title": "昭明文選",
+    "revid": 8736434,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 60,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷1",
+      "file": "001.md",
+      "page_title": "昭明文選/卷1",
+      "revid": 2010132,
+      "md_len": 27487
+    },
+    {
+      "n": 2,
+      "title": "卷2",
+      "file": "002.md",
+      "page_title": "昭明文選/卷2",
+      "revid": 2009465,
+      "md_len": 25941
+    },
+    {
+      "n": 3,
+      "title": "卷3",
+      "file": "003.md",
+      "page_title": "昭明文選/卷3",
+      "revid": 7910234,
+      "md_len": 31922
+    },
+    {
+      "n": 4,
+      "title": "卷4",
+      "file": "004.md",
+      "page_title": "昭明文選/卷4",
+      "revid": 2008947,
+      "md_len": 22892
+    },
+    {
+      "n": 5,
+      "title": "卷5",
+      "file": "005.md",
+      "page_title": "昭明文選/卷5",
+      "revid": 2550577,
+      "md_len": 25642
+    },
+    {
+      "n": 6,
+      "title": "卷6",
+      "file": "006.md",
+      "page_title": "昭明文選/卷6",
+      "revid": 2010143,
+      "md_len": 28306
+    },
+    {
+      "n": 7,
+      "title": "卷7",
+      "file": "007.md",
+      "page_title": "昭明文選/卷7",
+      "revid": 2010142,
+      "md_len": 20612
+    },
+    {
+      "n": 8,
+      "title": "卷8",
+      "file": "008.md",
+      "page_title": "昭明文選/卷8",
+      "revid": 2080244,
+      "md_len": 21552
+    },
+    {
+      "n": 9,
+      "title": "卷9",
+      "file": "009.md",
+      "page_title": "昭明文選/卷9",
+      "revid": 2010675,
+      "md_len": 17979
+    },
+    {
+      "n": 10,
+      "title": "卷10",
+      "file": "010.md",
+      "page_title": "昭明文選/卷10",
+      "revid": 2013069,
+      "md_len": 26959
+    },
+    {
+      "n": 11,
+      "title": "卷11",
+      "file": "011.md",
+      "page_title": "昭明文選/卷11",
+      "revid": 2560970,
+      "md_len": 35347
+    },
+    {
+      "n": 12,
+      "title": "卷12",
+      "file": "012.md",
+      "page_title": "昭明文選/卷12",
+      "revid": 2009083,
+      "md_len": 24834
+    },
+    {
+      "n": 13,
+      "title": "卷13",
+      "file": "013.md",
+      "page_title": "昭明文選/卷13",
+      "revid": 2082931,
+      "md_len": 25486
+    },
+    {
+      "n": 14,
+      "title": "卷14",
+      "file": "014.md",
+      "page_title": "昭明文選/卷14",
+      "revid": 2082938,
+      "md_len": 20135
+    },
+    {
+      "n": 15,
+      "title": "卷15",
+      "file": "015.md",
+      "page_title": "昭明文選/卷15",
+      "revid": 2004319,
+      "md_len": 28599
+    },
+    {
+      "n": 16,
+      "title": "卷16",
+      "file": "016.md",
+      "page_title": "昭明文選/卷16",
+      "revid": 2004194,
+      "md_len": 38522
+    },
+    {
+      "n": 17,
+      "title": "卷17",
+      "file": "017.md",
+      "page_title": "昭明文選/卷17",
+      "revid": 2082935,
+      "md_len": 27418
+    },
+    {
+      "n": 18,
+      "title": "卷18",
+      "file": "018.md",
+      "page_title": "昭明文選/卷18",
+      "revid": 2004204,
+      "md_len": 40864
+    },
+    {
+      "n": 19,
+      "title": "卷19",
+      "file": "019.md",
+      "page_title": "昭明文選/卷19",
+      "revid": 2421087,
+      "md_len": 30255
+    },
+    {
+      "n": 20,
+      "title": "卷20",
+      "file": "020.md",
+      "page_title": "昭明文選/卷20",
+      "revid": 5128862,
+      "md_len": 35034
+    },
+    {
+      "n": 21,
+      "title": "卷21",
+      "file": "021.md",
+      "page_title": "昭明文選/卷21",
+      "revid": 2056310,
+      "md_len": 25413
+    },
+    {
+      "n": 22,
+      "title": "卷22",
+      "file": "022.md",
+      "page_title": "昭明文選/卷22",
+      "revid": 2004187,
+      "md_len": 21903
+    },
+    {
+      "n": 23,
+      "title": "卷23",
+      "file": "023.md",
+      "page_title": "昭明文選/卷23",
+      "revid": 2032315,
+      "md_len": 30378
+    },
+    {
+      "n": 24,
+      "title": "卷24",
+      "file": "024.md",
+      "page_title": "昭明文選/卷24",
+      "revid": 2461661,
+      "md_len": 26523
+    },
+    {
+      "n": 25,
+      "title": "卷25",
+      "file": "025.md",
+      "page_title": "昭明文選/卷25",
+      "revid": 2461845,
+      "md_len": 24480
+    },
+    {
+      "n": 26,
+      "title": "卷26",
+      "file": "026.md",
+      "page_title": "昭明文選/卷26",
+      "revid": 7909496,
+      "md_len": 28584
+    },
+    {
+      "n": 27,
+      "title": "卷27",
+      "file": "027.md",
+      "page_title": "昭明文選/卷27",
+      "revid": 2082937,
+      "md_len": 21111
+    },
+    {
+      "n": 28,
+      "title": "卷28",
+      "file": "028.md",
+      "page_title": "昭明文選/卷28",
+      "revid": 2540240,
+      "md_len": 27871
+    },
+    {
+      "n": 29,
+      "title": "卷29",
+      "file": "029.md",
+      "page_title": "昭明文選/卷29",
+      "revid": 2013068,
+      "md_len": 25679
+    },
+    {
+      "n": 30,
+      "title": "卷30",
+      "file": "030.md",
+      "page_title": "昭明文選/卷30",
+      "revid": 2004331,
+      "md_len": 26797
+    },
+    {
+      "n": 31,
+      "title": "卷31",
+      "file": "031.md",
+      "page_title": "昭明文選/卷31",
+      "revid": 2004183,
+      "md_len": 27338
+    },
+    {
+      "n": 32,
+      "title": "卷32",
+      "file": "032.md",
+      "page_title": "昭明文選/卷32",
+      "revid": 2004258,
+      "md_len": 23610
+    },
+    {
+      "n": 33,
+      "title": "卷33",
+      "file": "033.md",
+      "page_title": "昭明文選/卷33",
+      "revid": 2004213,
+      "md_len": 22209
+    },
+    {
+      "n": 34,
+      "title": "卷34",
+      "file": "034.md",
+      "page_title": "昭明文選/卷34",
+      "revid": 2082932,
+      "md_len": 22890
+    },
+    {
+      "n": 35,
+      "title": "卷35",
+      "file": "035.md",
+      "page_title": "昭明文選/卷35",
+      "revid": 2004211,
+      "md_len": 26269
+    },
+    {
+      "n": 36,
+      "title": "卷36",
+      "file": "036.md",
+      "page_title": "昭明文選/卷36",
+      "revid": 2268384,
+      "md_len": 20199
+    },
+    {
+      "n": 37,
+      "title": "卷37",
+      "file": "037.md",
+      "page_title": "昭明文選/卷37",
+      "revid": 2020547,
+      "md_len": 27338
+    },
+    {
+      "n": 38,
+      "title": "卷38",
+      "file": "038.md",
+      "page_title": "昭明文選/卷38",
+      "revid": 1504742,
+      "md_len": 25016
+    },
+    {
+      "n": 39,
+      "title": "卷39",
+      "file": "039.md",
+      "page_title": "昭明文選/卷39",
+      "revid": 2004205,
+      "md_len": 25924
+    },
+    {
+      "n": 40,
+      "title": "卷40",
+      "file": "040.md",
+      "page_title": "昭明文選/卷40",
+      "revid": 2032313,
+      "md_len": 27467
+    },
+    {
+      "n": 41,
+      "title": "卷41",
+      "file": "041.md",
+      "page_title": "昭明文選/卷41",
+      "revid": 1514228,
+      "md_len": 24621
+    },
+    {
+      "n": 42,
+      "title": "卷42",
+      "file": "042.md",
+      "page_title": "昭明文選/卷42",
+      "revid": 2256929,
+      "md_len": 21302
+    },
+    {
+      "n": 43,
+      "title": "卷43",
+      "file": "043.md",
+      "page_title": "昭明文選/卷43",
+      "revid": 1514230,
+      "md_len": 24452
+    },
+    {
+      "n": 44,
+      "title": "卷44",
+      "file": "044.md",
+      "page_title": "昭明文選/卷44",
+      "revid": 2004206,
+      "md_len": 22129
+    },
+    {
+      "n": 45,
+      "title": "卷45",
+      "file": "045.md",
+      "page_title": "昭明文選/卷45",
+      "revid": 2004201,
+      "md_len": 25576
+    },
+    {
+      "n": 46,
+      "title": "卷46",
+      "file": "046.md",
+      "page_title": "昭明文選/卷46",
+      "revid": 2082934,
+      "md_len": 30442
+    },
+    {
+      "n": 47,
+      "title": "卷47",
+      "file": "047.md",
+      "page_title": "昭明文選/卷47",
+      "revid": 2004200,
+      "md_len": 31818
+    },
+    {
+      "n": 48,
+      "title": "卷48",
+      "file": "048.md",
+      "page_title": "昭明文選/卷48",
+      "revid": 2514508,
+      "md_len": 20255
+    },
+    {
+      "n": 49,
+      "title": "卷49",
+      "file": "049.md",
+      "page_title": "昭明文選/卷49",
+      "revid": 48580,
+      "md_len": 19277
+    },
+    {
+      "n": 50,
+      "title": "卷50",
+      "file": "050.md",
+      "page_title": "昭明文選/卷50",
+      "revid": 1504989,
+      "md_len": 18889
+    },
+    {
+      "n": 51,
+      "title": "卷51",
+      "file": "051.md",
+      "page_title": "昭明文選/卷51",
+      "revid": 2004288,
+      "md_len": 17741
+    },
+    {
+      "n": 52,
+      "title": "卷52",
+      "file": "052.md",
+      "page_title": "昭明文選/卷52",
+      "revid": 2300363,
+      "md_len": 14725
+    },
+    {
+      "n": 53,
+      "title": "卷53",
+      "file": "053.md",
+      "page_title": "昭明文選/卷53",
+      "revid": 2353124,
+      "md_len": 28137
+    },
+    {
+      "n": 54,
+      "title": "卷54",
+      "file": "054.md",
+      "page_title": "昭明文選/卷54",
+      "revid": 2004292,
+      "md_len": 23098
+    },
+    {
+      "n": 55,
+      "title": "卷55",
+      "file": "055.md",
+      "page_title": "昭明文選/卷55",
+      "revid": 2004283,
+      "md_len": 24810
+    },
+    {
+      "n": 56,
+      "title": "卷56",
+      "file": "056.md",
+      "page_title": "昭明文選/卷56",
+      "revid": 2082929,
+      "md_len": 29022
+    },
+    {
+      "n": 57,
+      "title": "卷57",
+      "file": "057.md",
+      "page_title": "昭明文選/卷57",
+      "revid": 48300,
+      "md_len": 23939
+    },
+    {
+      "n": 58,
+      "title": "卷58",
+      "file": "058.md",
+      "page_title": "昭明文選/卷58",
+      "revid": 2004220,
+      "md_len": 25811
+    },
+    {
+      "n": 59,
+      "title": "卷59",
+      "file": "059.md",
+      "page_title": "昭明文選/卷59",
+      "revid": 2004272,
+      "md_len": 30179
+    },
+    {
+      "n": 60,
+      "title": "卷60",
+      "file": "060.md",
+      "page_title": "昭明文選/卷60",
+      "revid": 1576491,
+      "md_len": 25389
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "main": 392
+  },
+  "variants": [
+    {
+      "primary": "䓼",
+      "alt": [
+        "一作「𧀔」，異體字"
+      ]
+    },
+    {
+      "primary": "䓼",
+      "alt": [
+        "一作「𧀔」，異體字"
+      ]
+    }
+  ],
+  "dropped_refs": 1544
+}

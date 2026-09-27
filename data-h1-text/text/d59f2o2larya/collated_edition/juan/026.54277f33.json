@@ -1,0 +1,694 @@
+{
+  "title": "丙部子錄·道家類",
+  "sections": [
+    {
+      "title": "道家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "羊祜　老子道德經注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "羊祜　老子道德經注二卷　又",
+      "work_id": "d59f9s1eua6d"
+    },
+    {
+      "title": "羊祜　解釋四卷",
+      "level": 3,
+      "type": "book",
+      "content": "羊祜　解釋四卷　均見兩《唐志》。《隋志》作「《解釋老子經》二卷」。《釋文・序録》亦作「四卷」。本書祜傳作「老子傳」。",
+      "work_id": "d59f9s1pgcn8",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "孫登　老子道德經注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫登　老子道德經注二卷",
+      "work_id": "d59f27tly3uq"
+    },
+    {
+      "title": "孫登　音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫登　音一卷　《隋》、《唐志》同。《釋文・序録》作「集注」。",
+      "work_id": "d59f9nmpx05j",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "張憑　老子道德經注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張憑　老子道德經注二卷　見《隋》、《唐志》。",
+      "work_id": "d59f27wfe8eb"
+    },
+    {
+      "title": "李軌　老子音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　老子音一卷　見《隋》、《唐志》。",
+      "work_id": "d59f9nmq88p7"
+    },
+    {
+      "title": "李軌　莊子音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　莊子音一卷　見《隋志》。",
+      "work_id": "d59f27uc61hf",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "傅奕　老子注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅奕　老子注二卷　見兩《唐志》。",
+      "work_id": "d59f9s1eua6e"
+    },
+    {
+      "title": "傅奕　音義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅奕　音義二卷　見《宋志》。《唐志》不載《音義》卷數。",
+      "work_id": "d59f9s1eua6f",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "鄧粲　老子注",
+      "level": 3,
+      "type": "book",
+      "content": "鄧粲　老子注　本傳。",
+      "work_id": "d59f27wog45d"
+    },
+    {
+      "title": "戴逵　老子音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴逵　老子音一卷　見《隋志》。",
+      "work_id": "d59f2pv08xky"
+    },
+    {
+      "title": "劉黃老　老子注",
+      "level": 3,
+      "type": "book",
+      "content": "劉黃老　老子注　本書《劉波傳》。",
+      "work_id": "d59f27u4zkzm"
+    },
+    {
+      "title": "蜀才　老子道德經注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蜀才　老子道德經注二卷　見《隋》、《唐志》。",
+      "work_id": "d59f9s1f5ipt"
+    },
+    {
+      "title": "王尚述　老子注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王尚述　老子注二卷　見《隋志》。《釋文・序録》云：「字君曾，琅邪人，東晉江州刺史，封杜忠侯。」《通志略》作「尚楚」，兩《唐志》作「王尚」。",
+      "work_id": "d59f27u2hon5"
+    },
+    {
+      "title": "袁真　老子注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁真　老子注二卷　見《隋》、《唐志》。《釋文・序録》云：「字彦仁，陳郡人，東晉西中郎將、豫州刺史。」",
+      "work_id": "d59f9s1f5ipv"
+    },
+    {
+      "title": "程韶　老子集解二卷",
+      "level": 3,
+      "type": "book",
+      "content": "程韶　老子集解二卷　見《隋志》。兩《唐志》作「集注」。《釋文・序録》云：「鉅鹿人，東晉郎中、關內侯。」",
+      "work_id": "d59f27wgn6ki"
+    },
+    {
+      "title": "劉遺民　老子玄譜一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉遺民　老子玄譜一卷　見《隋志》。《釋文・序録》云：「彭城人，東晉柴桑令。」《舊唐志》作「劉道人」。",
+      "work_id": "d59f27y5ighv"
+    },
+    {
+      "title": "孟氏　老子注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孟氏　老子注二卷　《隋志》云：「梁有，亡。」《釋文・序録》曰：「或云孟康。」",
+      "work_id": "d59f9s1f5ipw"
+    },
+    {
+      "title": "郭璞　老子經注",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞　老子經注　《文選》注引。",
+      "work_id": "d59f9nmq88ow"
+    },
+    {
+      "title": "郭璞　玉照定真經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞　玉照定真經一卷　《永樂大典》目録。",
+      "work_id": "d59f27x3qqrk",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "郭璞　老子道德簡要義五卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞　老子道德簡要義五卷　《舊唐志》作「玄景先生注」，「玄景」當爲「玄晏」之訛，皇甫謐所作也。",
+      "work_id": "d59f2ptwlse9",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "王浮　老子化胡經",
+      "level": 3,
+      "type": "book",
+      "content": "王浮　老子化胡經　《高僧傳》。",
+      "work_id": "d59f27vphjb6"
+    },
+    {
+      "title": "嵇康　莊子注",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　莊子注　《釋文》上引「嵇康云」一條。",
+      "work_id": "d59f9s1f5ipx"
+    },
+    {
+      "title": "嵇康　養生論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　養生論三卷　見《隋志》。",
+      "work_id": "d59f27sq3wg4",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "潘尼　莊子注",
+      "level": 3,
+      "type": "book",
+      "content": "潘尼　莊子注　《釋文》上引「潘尼云」一條。",
+      "work_id": "d59f9s1f5ipy"
+    },
+    {
+      "title": "支遁　莊子注",
+      "level": 3,
+      "type": "book",
+      "content": "支遁　莊子注　《釋文》上引「支遁云」七條。",
+      "work_id": "d59f9s1f5ipz"
+    },
+    {
+      "title": "王玄古　莊子集解二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王玄古　莊子集解二十卷　見兩《唐志》。",
+      "work_id": "d59f2pulw0lc"
+    },
+    {
+      "title": "向秀　莊子注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "向秀　莊子注二十卷　見《隋》、《唐志》。《釋文・序録》、本書秀傳言，爲《莊子隱解》。",
+      "work_id": "d59f27xw5c77"
+    },
+    {
+      "title": "向秀　音三卷",
+      "level": 3,
+      "type": "book",
+      "content": "向秀　音三卷　見《釋文・序録》。《隋志》：「梁有一卷，亡。」",
+      "work_id": "d59f9s1f5iq0",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "向秀　列子注",
+      "level": 3,
+      "type": "book",
+      "content": "向秀　列子注",
+      "work_id": "d59f9nmqjh8g",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "向秀　難嵇康養生論",
+      "level": 3,
+      "type": "book",
+      "content": "向秀　難嵇康養生論　《文選》注引。",
+      "work_id": "d59f9s1fgr9c",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "郭象　莊子注三十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭象　莊子注三十三卷　見《隋志》引《七録》。《隋志》存三十卷，《目》一卷。《釋文・序録》、兩《唐志》並十卷。",
+      "work_id": "d59f27ywcv7n"
+    },
+    {
+      "title": "郭象　音三卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭象　音三卷　見《隋志》。",
+      "work_id": "d59f27wwvitc",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "司馬彪　莊子注二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬彪　莊子注二十一卷　兩《唐志》及《釋文・序録》並同。《隋志》十六卷，注云：「二十一卷，今缺。」",
+      "work_id": "d59f27y6g64j"
+    },
+    {
+      "title": "司馬彪　音三卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬彪　音三卷　見《釋文・序録》。《隋》、《唐志》作「《注音》一卷」。",
+      "work_id": "d59f9s1fgr9d",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "李充　釋莊子論二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李充　釋莊子論二卷　見兩《唐志》。",
+      "work_id": "d59f2q39eups"
+    },
+    {
+      "title": "盧諶　莊子注",
+      "level": 3,
+      "type": "book",
+      "content": "盧諶　莊子注　本傳。",
+      "work_id": "d59f9nmqjh8l"
+    },
+    {
+      "title": "李頤　莊子注三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李頤　莊子注三十卷　《隋志》、《釋文・序録》並同。《釋文》作「集解」。兩《唐志》作「《集解》二十卷」。",
+      "work_id": "d59f27xx31tt"
+    },
+    {
+      "title": "李頤　音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李頤　音一卷　《釋文・序録》。",
+      "work_id": "d59f9nmqjh8m",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "崔譔　莊子注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔譔　莊子注十卷　見《隋》、《唐志》。",
+      "work_id": "d59f27yimfb5"
+    },
+    {
+      "title": "徐邈　莊子音三卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐邈　莊子音三卷",
+      "work_id": "d59f2pxpbqiq"
+    },
+    {
+      "title": "徐邈　莊子集音三卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐邈　莊子集音三卷　見《隋志》。",
+      "work_id": "d59f27wstfr4",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "張湛　列子注八卷",
+      "level": 3,
+      "type": "book",
+      "content": "張湛　列子注八卷　見《隋》、《唐志》。",
+      "work_id": "d59f9nmqjh8h"
+    },
+    {
+      "title": "張湛　列子音義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張湛　列子音義一卷　見《宋志》。",
+      "work_id": "d59f27whw4qo",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "宣聘　宣子二卷",
+      "level": 3,
+      "type": "book",
+      "content": "宣聘　宣子二卷　見《隋》、《唐志》。",
+      "work_id": "d59f27x2hslc"
+    },
+    {
+      "title": "陸雲　陸子十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸雲　陸子十卷　見《隋》、《唐志》。本傳云：「撰《新書》十篇。」",
+      "work_id": "d59f27u4ocg1"
+    },
+    {
+      "title": "孫綽　孫子十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫綽　孫子十二卷　《隋》、《唐志》並同。《宋志》、《通考》、《崇文總目》、《書録解題》並作「十卷」。《高僧傳》引綽《道賢論》、《正像論》、《喻道論》、《名德沙門論》，皆此書之一篇。《文選》謝靈運《晚出西射堂詩》注引作「孫綽子」。",
+      "work_id": "d59f27xzw6pv"
+    },
+    {
+      "title": "唐滂　唐子十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐滂　唐子十卷　《隋志》題吳人。《意林》載是書，有「大晉應期」一語，據此，當入晉以後作。",
+      "work_id": "d59f27t6105g"
+    },
+    {
+      "title": "蘇彦　蘇子七卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇彦　蘇子七卷　見《隋》、《唐志》。",
+      "work_id": "d59f27y5tp1c"
+    },
+    {
+      "title": "杜夷　幽求新書二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜夷　幽求新書二十卷　見《隋志》。《舊唐志》作「《幽求子》三十卷」，本傳同。《文選・廣絕交論》注亦引作「幽求子」。《魏志・杜畿傳》注引作「杜氏新書」。《太平御覽》六百八引作「杜子新語」。",
+      "work_id": "d59f27vgqw3l"
+    },
+    {
+      "title": "苻朗　苻子二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "苻朗　苻子二十卷　見《隋志》。兩《唐志》作「三十卷」。本傳稱其著《苻子》數十篇。",
+      "work_id": "d59f2q2ag9oh"
+    },
+    {
+      "title": "晉簡文帝談疏六卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉簡文帝談疏六卷　見《隋志》。",
+      "work_id": "d59f9s1fgr9f"
+    },
+    {
+      "title": "徐苗　玄微論",
+      "level": 3,
+      "type": "book",
+      "content": "徐苗　玄微論　本傳。",
+      "work_id": "d59f27vojtoh"
+    },
+    {
+      "title": "陶淵明　道戒",
+      "level": 3,
+      "type": "book",
+      "content": "陶淵明　道戒　《太平御覽》。",
+      "work_id": "d59f9s1fgr9g"
+    },
+    {
+      "title": "阮籍　通老論",
+      "level": 3,
+      "type": "book",
+      "content": "阮籍　通老論　《太平御覽》。",
+      "work_id": "d59f27t5ej2b"
+    },
+    {
+      "title": "阮侃　攝生論二卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮侃　攝生論二卷　《隋志》：「晉河内太守。」",
+      "work_id": "d59f27wrkhkw"
+    },
+    {
+      "title": "葛洪　老子道德經序訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　老子道德經序訣二卷　見兩《唐志》。《隋志》云：「梁有《老子序訣》一卷，葛仙公撰，亡。」",
+      "work_id": "d59f9nmq88p3"
+    },
+    {
+      "title": "葛洪　莊子十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　莊子十七卷　見法琳《辨正論》引此書云葛洪修撰。",
+      "work_id": "d59f282r9gxv",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　抱朴子内篇二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　抱朴子内篇二十一卷",
+      "work_id": "d59f9nms3nyb",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　音一卷　見《隋志》。洪《自序》與《舊唐志》作「二十卷」，《唐志》作「十卷」。",
+      "work_id": "d59f9nms3nyc",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　老子道德經節解一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　老子道德經節解一卷",
+      "work_id": "d59f9s1pgcn9",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　抱朴子養生論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　抱朴子養生論一卷",
+      "work_id": "d59f9nms3nye",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　譯太乙真君固命歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　譯太乙真君固命歌一卷",
+      "work_id": "d59f27wt4oap",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　元始上真衆仙記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　元始上真衆仙記一卷",
+      "work_id": "d59f9s1fgr9h",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　枕中記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　枕中記一卷",
+      "work_id": "d59f9s1fgr9i",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "太清玉碑子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太清玉碑子一卷　並《宋志》。《太清玉碑子》，葛洪與鄭思遠問答。",
+      "work_id": "d59f2pupbmrl"
+    },
+    {
+      "title": "葛仙翁胎息術一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛仙翁胎息術一卷　見《郡齋讀書志》。《通志略》作「胎息要訣」。",
+      "work_id": "d59f9s1fgr9j"
+    },
+    {
+      "title": "陰符十德經十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陰符十德經十卷",
+      "work_id": "d59f9s1pgcna"
+    },
+    {
+      "title": "神仙傳畧一卷",
+      "level": 3,
+      "type": "book",
+      "content": "神仙傳畧一卷",
+      "work_id": "d59f2pzg2fwi"
+    },
+    {
+      "title": "老子戒經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "老子戒經一卷",
+      "work_id": "d59f27unptky"
+    },
+    {
+      "title": "葛仙翁叙一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛仙翁叙一卷　《崇文總目》入五行。",
+      "work_id": "d59f9s1fgr9k"
+    },
+    {
+      "title": "運元真氣圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "運元真氣圖一卷",
+      "work_id": "d59f2pywpqf5"
+    },
+    {
+      "title": "五金龍虎歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "五金龍虎歌一卷　《崇文總目》入五行。",
+      "work_id": "d59f27tiihvn"
+    },
+    {
+      "title": "爐鼎要妙圖經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "爐鼎要妙圖經一卷",
+      "work_id": "d59f2q6az5du"
+    },
+    {
+      "title": "金木萬靈訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "金木萬靈訣一卷",
+      "work_id": "d59f2q6fyy2o"
+    },
+    {
+      "title": "抱朴子別旨一卷",
+      "level": 3,
+      "type": "book",
+      "content": "抱朴子別旨一卷",
+      "work_id": "d59f27x6v476"
+    },
+    {
+      "title": "枕中書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "枕中書一卷　並《通志略》。案道家、兵家、天文、五行、醫方諸類，其散見於《隋》、《唐志》者，皆可徵信。若《宋志》、《通志》、《崇文總目》、《郡齋讀書志》、《直齋書録解題》始著録者，大都後人僞託，概從刪削，若無左驗，今仍分著各類，不敢遑臆棄取也。",
+      "work_id": "d59f27wmkow1"
+    },
+    {
+      "title": "王長生　王真人陰丹訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王長生　王真人陰丹訣一卷　《通志略》。",
+      "work_id": "d59f9nms3nyk"
+    },
+    {
+      "title": "蘇元明　太清石壁記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　太清石壁記一卷",
+      "work_id": "d59f27urrwn7"
+    },
+    {
+      "title": "蘇元明　龍虎還丹通元要訣二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　龍虎還丹通元要訣二卷",
+      "work_id": "d59f2q0yoyyq",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "蘇元明　青霞子寶藏論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　青霞子寶藏論三卷",
+      "work_id": "d59f9s1pgcnb",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "蘇元明　青霞子授芳君歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　青霞子授芳君歌一卷",
+      "work_id": "d59f9s1fgr9l",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "蘇元明　龍虎金液還丹通元論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　龍虎金液還丹通元論一卷",
+      "work_id": "d59f27vdba4i",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "蘇元明　青霞子龍虎訣妙簡一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　青霞子龍虎訣妙簡一卷",
+      "work_id": "d59f9s1frzsw",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "蘇元明　太清石壁靈草記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇元明　太清石壁靈草記一卷　並《通志略》，云：「蘇元明，號青霞子，晉太康時人。」",
+      "work_id": "d59f27tvmgow",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "顧谷　顧道士新書論經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧谷　顧道士新書論經三卷　《隋志》云：「晉方士。」《舊唐志》作「《顧道士論》二卷」。",
+      "work_id": "d59f27ub8buo"
+    },
+    {
+      "title": "許遜　太上靈寶淨明飛仙度人經法五卷",
+      "level": 3,
+      "type": "book",
+      "content": "許遜　太上靈寶淨明飛仙度人經法五卷",
+      "work_id": "d59f9s1frzsx"
+    },
+    {
+      "title": "許遜　太上靈寶淨明飛仙度人經法釋例一卷",
+      "level": 3,
+      "type": "book",
+      "content": "許遜　太上靈寶淨明飛仙度人經法釋例一卷",
+      "work_id": "d59f9s1frzsy",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "許遜　太上淨明院補奏職局奏元都省須知一卷",
+      "level": 3,
+      "type": "book",
+      "content": "許遜　太上淨明院補奏職局奏元都省須知一卷",
+      "work_id": "d59f9s1frzsz",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "許遜　靈劍子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "許遜　靈劍子一卷",
+      "work_id": "d59f27w11beo",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "許遜　靈劍子引導子午記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "許遜　靈劍子引導子午記一卷　並《通志略》。",
+      "work_id": "d59f9s1frzt0",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "姚秦鳩摩羅什　老子注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚秦鳩摩羅什　老子注二卷　見兩《唐志》。",
+      "work_id": "d59f9s1frzt1"
+    },
+    {
+      "title": "道家類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右道家類，四十五家。失名一家。"
+    }
+  ]
+}

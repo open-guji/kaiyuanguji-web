@@ -1,0 +1,1710 @@
+{
+  "title": "春秋類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "春秋類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "左傳之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳讀本",
+      "content": "《左傳讀本三十卷。道光三年，英和等奉敕編。",
+      "work_id": "d59f2n9pj2m8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳杜解補正",
+      "content": "《左傳杜解補正》三卷。顧炎武撰。",
+      "work_id": "d59f2mam9o8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續春秋左氏傳博議",
+      "content": "《續春秋左氏傳博議》四卷。王夫之撰。",
+      "work_id": "d59f2n9pj2m9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "讀左日鈔",
+      "content": "《讀左日鈔》十二卷，《補錄二卷。朱鶴齡撰。",
+      "work_id": "d59f2mamw5c1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "補錄",
+      "content": "",
+      "content_from": "讀左日鈔",
+      "work_id": "d59f2n9pub5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳事緯",
+      "content": "《左傳事緯》十二卷，《附錄八卷。馬驌撰。",
+      "work_id": "d59f2man7dvk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "附錄",
+      "content": "",
+      "content_from": "左傳事緯",
+      "work_id": "d59f2man7dvk",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《左傳事緯》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋地名考略",
+      "content": "《春秋地名考略》十四卷。高士奇撰。",
+      "work_id": "d59f2mao53i8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋國都爵姓考",
+      "content": "《春秋國都爵姓考》一卷，《補一卷。陳鵬撰。",
+      "work_id": "d59f2n9pub5t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋國都爵姓考補",
+      "content": "",
+      "content_from": "春秋國都爵姓考",
+      "work_id": "d59f2n9pub5t",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《春秋國都爵姓考》一條所連著之附屬部帙（《補》一卷，與正編同出陳鵬一手），隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉甲類不別立 Work，繫於母條。2026-08-24 N3 磁鐵補標 `section_kind`——M3 一輪已裁其為甲類並正母條之題，然未標此欄，故仍計為磁鐵。"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋分年系傳表",
+      "content": "《春秋分年系傳表》一卷。翁方綱撰。",
+      "work_id": "d59f2n9pub5u"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳事類年表",
+      "content": "《春秋左傳事類年表》一卷。顧宗瑋撰。",
+      "work_id": "d59f2maz2eio"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋長曆",
+      "content": "《春秋長曆》十卷，《春秋世族譜》一卷。陳厚耀撰。",
+      "work_id": "d59f2maorkld"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋世族譜",
+      "content": "",
+      "content_from": "春秋長曆",
+      "work_id": "d59f2map2t4w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋識小錄",
+      "content": "《春秋識小錄九卷。程廷祚撰。",
+      "work_id": "d59f2mappa80"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳補註",
+      "content": "《春秋左傳補註六卷。惠棟撰。",
+      "work_id": "d59f2mappa81"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋地理考實",
+      "content": "《春秋地理考實四卷。江永撰。",
+      "work_id": "d59f2maqbrb4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "讀左補義",
+      "content": "《讀左補義五十卷。姜炳璋撰。",
+      "work_id": "d59f2mb1kav5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳小疏",
+      "content": "《春秋左傳小疏一卷。沈彤撰。",
+      "work_id": "d59f2n9q5jpc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳古經",
+      "content": "《春秋左傳古經》十二卷，《附五十凡一卷。段玉裁撰。",
+      "work_id": "d59f2n9q5jpd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "附五十凡",
+      "content": "",
+      "content_from": "春秋左傳古經",
+      "work_id": "d59f2n9q5jpe"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳會要",
+      "content": "《春秋左傳會要》四卷，《左傳官名考》二卷。李調元撰。",
+      "work_id": "d59f2n9qgs8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳官名考",
+      "content": "",
+      "content_from": "春秋左傳會要",
+      "work_id": "d59f2n9qgs8x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳詁",
+      "content": "《春秋左傳詁》五十卷，《春秋十論》一卷。洪亮吉撰。",
+      "work_id": "d59f2n9qgs8y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋十論",
+      "content": "",
+      "content_from": "春秋左傳詁",
+      "work_id": "d59f2n9qs0sg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋列國官名異同考",
+      "content": "《春秋列國官名異同考》一卷。汪中撰。",
+      "work_id": "d59f2n9qs0sh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左通補釋",
+      "content": "《左通補釋》三十二卷。梁履繩撰。",
+      "work_id": "d59f2n9qs0si"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳分國土地名",
+      "content": "《春秋左傳分國土地名》二卷，《春秋列國職官》一卷，《春秋器物宮室》一卷。沈淑撰。",
+      "work_id": "d59f2n9r39c0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋列國職官",
+      "content": "",
+      "content_from": "春秋左傳分國土地名",
+      "work_id": "d59f2n9r39c1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋器物宮室",
+      "content": "",
+      "content_from": "春秋左傳分國土地名",
+      "work_id": "d59f2n9r39c2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳劉杜持平",
+      "content": "左傳劉杜持平》六卷。邵英撰。",
+      "work_id": "d59f2n9rehvk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋名字解詁",
+      "content": "春秋名字解詁》二卷。王引之撰。",
+      "work_id": "d59f2n9rehvl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左氏補疏",
+      "content": "春秋左氏補疏》五卷。焦循撰。",
+      "work_id": "d59f2n9rpqf4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "讀左卮言",
+      "content": "讀左卮言》一卷。石韞玉撰。",
+      "work_id": "d59f2n9rpqf5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左氏春秋考證",
+      "content": "《左氏春秋考證》二卷。劉逢祿撰。",
+      "work_id": "d59f2n9rpqf6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳補註",
+      "content": "《春秋左傳補註》三卷。馬宗槤撰。",
+      "work_id": "d59f2mr73ev5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳識小錄",
+      "content": "《左傳識小錄》一卷。朱駿聲撰。",
+      "work_id": "d59f2n9s0yyo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左傳補註",
+      "content": "《春秋左傳補註》十二卷，考異十卷，《左傳地名補註十二卷。沈欽韓撰。",
+      "work_id": "d59f2n9s0yyp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳地名補註",
+      "content": "",
+      "content_from": "春秋左傳補註",
+      "work_id": "d59f2n9s0yyq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋左氏古義",
+      "content": "《春秋左氏古義》六卷，臧壽恭撰。",
+      "work_id": "d59f2mr6gxs3"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳賈服註輯述",
+      "content": "《左傳賈服註輯述》二十卷。李貽德撰。",
+      "work_id": "d59f2n9sc7i8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳杜註辨正",
+      "content": "《左傳杜註辨正》六卷。張總咸撰。",
+      "work_id": "d59f2n9sc7i9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋國都爵姓續考",
+      "content": "《春秋國都爵姓續考》一卷。曾釗撰。",
+      "work_id": "d59f2n9sc7ia"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左傳舊疏考正",
+      "content": "《左傳舊疏考正》八卷。劉文淇撰。",
+      "work_id": "d59f2n9sng1s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋名字解詁補義",
+      "content": "《春秋名字解詁補義一卷。俞樾撰。",
+      "work_id": "d59f2n9sng1t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋世族譜拾遺",
+      "content": "《春秋世族譜拾遺一卷。成蓉鏡撰。",
+      "work_id": "d59f2n9sng1u"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋名字解詁駁",
+      "content": "《春秋名字解詁駁》一卷。胡元玉撰。",
+      "work_id": "d59f2n9syolc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "補春秋僖公事闕書",
+      "content": "《補春秋僖公事闕書》一卷。桑宣撰。",
+      "work_id": "d59f2n9syold"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋釋例",
+      "content": "晉杜預《春秋釋例》十五卷。",
+      "work_id": "d59f27x5axhe",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳續說",
+      "content": "宋呂祖謙《春秋左氏傳續說》十二卷。",
+      "work_id": "d59f2hupn6de",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳章句",
+      "content": "漢劉歆《春秋左氏傳章句》一卷。",
+      "work_id": "d59f24mnhtz8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳解詁",
+      "content": "漢賈逵《春秋左氏傳解詁》二卷。",
+      "work_id": "d59f205lo0e8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳長經章句",
+      "content": "《春秋左氏傳長經章句》一卷。",
+      "work_id": "d59f2evs8nia",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳解誼",
+      "content": "漢服虔《春秋左傳解誼》四卷。",
+      "work_id": "d59f24mnhtz9",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左氏奇說",
+      "content": "漢彭汪《左氏奇說》一卷。",
+      "work_id": "d59f24mnhtza",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳註",
+      "content": "漢許淑《春秋左傳註》一卷。",
+      "work_id": "d59f24mnt2io",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏經傳章句",
+      "content": "魏董遇《春秋左氏經傳章句》一卷。",
+      "work_id": "d59f27xgjh1f",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳註",
+      "content": "魏王肅《春秋左傳註》一卷。",
+      "work_id": "d59f27xgupkx",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳音",
+      "content": "魏嵇康《春秋左傳音》一卷。",
+      "work_id": "d59f27xbjocg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳義註",
+      "content": "晉孫毓《春秋左氏傳義註》一卷。",
+      "work_id": "d59f27xrs0le",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左氏傳函義",
+      "content": "晉干寶《左氏傳函義》一卷。",
+      "work_id": "d59f27yathqa",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏經傳義略",
+      "content": "陳沈文阿《春秋左氏經傳義略》一卷。",
+      "work_id": "d59f284a78jk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續春秋左氏經傳義略",
+      "content": "陳王元規《續春秋左氏經傳義略》一卷。",
+      "work_id": "d59f28472v42",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左氏傳義疏",
+      "content": "不著時代蘇寬《春秋左氏傳義疏》一卷。",
+      "work_id": "d59f2pscqbcx",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左氏傳述義",
+      "content": "隋劉炫《左氏傳述義》一卷。",
+      "work_id": "d59f28ngo64k",
+      "is_jiyi": true,
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24 隋唐 T3：《清史稿藝文志》春秋類於劉炫此書兩出其目——「隋劉炫《左氏傳述義》一卷」與「隋劉炫《春秋述義》一卷」，題異而同指（《隋書·儒林傳》劉炫本傳作「述議」，隋志、新唐志作「述義」，「左氏傳述義」則省其「春秋」二字）。二節俱一卷，皆馬國翰輯本之著錄。依 SCHEMA〈一書兩著〉，書目自身之重出非本庫匯入之失，二節與母條共繫，別計不入磁鐵。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋傳服氏註",
+      "content": "漢鄭玄《春秋傳服氏註》十二卷。",
+      "work_id": "d59f24m7kq9t",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "公羊之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋正辭",
+      "content": "《春秋正辭》十一卷，《春秋舉例》一卷，《春秋要指》一卷。莊存與撰。",
+      "work_id": "d59f2moz6nsy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋舉例",
+      "content": "",
+      "content_from": "春秋正辭",
+      "work_id": "d59f2nuscz5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋要指",
+      "content": "",
+      "content_from": "春秋正辭",
+      "work_id": "d59f2nuscz5t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊墨史",
+      "content": "《公羊墨史》二卷。周拱辰撰。",
+      "work_id": "d59f2n9t9x4w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋公羊通義",
+      "content": "《春秋公羊通義》十一卷，敘一卷。孔廣森撰。",
+      "work_id": "d59f2n9t9x4x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "敘",
+      "content": "",
+      "content_from": "春秋公羊通義",
+      "work_id": "d59f2n9t9x4y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊何氏釋例",
+      "content": "《公羊何氏釋例》十卷，《公羊何氏解詁箋》一卷，《發墨守評》一卷，《箴膏肓評》一卷，《穀梁廢疾申何》二卷。劉逢祿撰。",
+      "work_id": "d59f2n9tl5og"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊何氏解詁箋",
+      "content": "",
+      "content_from": "公羊何氏釋例",
+      "work_id": "d59f2n9tl5oh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "發墨守評",
+      "content": "",
+      "content_from": "公羊何氏釋例",
+      "work_id": "d59f2n9tl5oi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "箴膏肓評",
+      "content": "",
+      "content_from": "公羊何氏釋例",
+      "work_id": "d59f2n9twe80"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "穀梁廢疾申何",
+      "content": "",
+      "content_from": "公羊何氏釋例",
+      "work_id": "d59f2n9twe81"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊補註",
+      "content": "《公羊補註》一卷。馬宗槤撰。",
+      "work_id": "d59f2n9twe82"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊禮疏",
+      "content": "《公羊禮疏》十一卷，《公羊禮說》一卷，《公羊答問二卷，《春秋繁露註》十七卷。凌曙撰。",
+      "work_id": "d59f2n9u7mrk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊禮說",
+      "content": "",
+      "content_from": "公羊禮疏",
+      "work_id": "d59f2n9u7mrl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊答問",
+      "content": "",
+      "content_from": "公羊禮疏",
+      "work_id": "d59f2n9u7mrm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋繁露註",
+      "content": "",
+      "content_from": "公羊禮疏",
+      "work_id": "d59f2n9uivb4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋決事比",
+      "content": "《春秋決事比》一卷。龔自珍撰。",
+      "work_id": "d59f2n9uivb5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊義疏",
+      "content": "《公羊義疏》七十六卷。陳立撰。",
+      "work_id": "d59f2n9uivb6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊註疏質疑",
+      "content": "《公羊註疏質疑》二卷。何若瑤撰。",
+      "work_id": "d59f2n9uu3uo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊歷譜",
+      "content": "《公羊歷譜》十一卷。包慎言撰。",
+      "work_id": "d59f2n9uu3up"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公羊逸禮考徵",
+      "content": "《公羊逸禮考徵》一卷。陳奐撰。",
+      "work_id": "d59f2n9uu3uq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋決事",
+      "content": "漢董仲舒《春秋決事》一卷。",
+      "work_id": "d59f23jv9c74",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "公羊春秋",
+      "content": "漢嚴彭祖《公羊春秋》一卷。",
+      "work_id": "d59f24mnt2ip",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋公羊記",
+      "content": "漢顏安樂《春秋公羊記》一卷。",
+      "work_id": "d59f24mnt2iq",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋公羊文諡例",
+      "content": "漢何休《春秋公羊文諡例》一卷。",
+      "work_id": "d59f24mjqzgj",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "穀梁之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "穀梁釋例",
+      "content": "《穀梁釋例》四卷。許桂林撰。",
+      "work_id": "d59f2n9v5ce8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "穀梁大義述",
+      "content": "《穀梁大義述》三十卷。柳興恩撰。",
+      "work_id": "d59f2n9v5ce9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "穀梁禮證",
+      "content": "《穀梁禮證》二卷。侯康撰。",
+      "work_id": "d59f2n9vgkxs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "穀梁經傳補註",
+      "content": "《穀梁經傳補註》二十四卷。鍾文烝撰。",
+      "work_id": "d59f2n9vgkxt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋穀梁傳章句",
+      "content": "漢尹更始《春秋穀梁傳章句》一卷。",
+      "work_id": "d59f24mnt2ir",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋穀梁傳說",
+      "content": "漢劉向《春秋穀梁傳說》一卷。",
+      "work_id": "d59f24mnt2is",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋穀梁註",
+      "content": "魏糜信《春秋穀梁註》一卷。",
+      "work_id": "d59f27xbuww4",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋穀梁傳註義",
+      "content": "晉徐邈《春秋穀梁傳註義》一卷。",
+      "work_id": "d59f27y8y2gz",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音",
+      "content": "《音一卷。",
+      "work_id": "d59f2py9xedd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "薄叔元問穀梁義",
+      "content": "晉范甯《薄叔元問穀梁義》一卷。",
+      "work_id": "d59f27y4kqv5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋穀梁傳說",
+      "content": "晉鄭嗣《春秋穀梁傳說》一卷。",
+      "work_id": "d59f27yftaf6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "穀梁傳例",
+      "content": "晉范甯《穀梁傳例》一卷。",
+      "work_id": "d59f27xxeadd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "通義之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋傳說彙纂",
+      "content": "《春秋傳說彙纂》三十八卷。康熙三十八年，王掞等奉敕撰。",
+      "work_id": "d59f2n9vgkxu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日講春秋解義",
+      "content": "《日講春秋解義》六十四卷。雍正七年敕撰。",
+      "work_id": "d59f2mohe4ua"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋直解",
+      "content": "《春秋直解》十六卷。乾隆二十三年，傅恆等奉敕撰。",
+      "work_id": "d59f2ntknr41"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋稗疏",
+      "content": "春秋稗疏》二卷，春秋家說》三卷，春秋世論》五卷。王夫之撰。",
+      "work_id": "d59f2mamkwsg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋家說",
+      "content": "",
+      "content_from": "春秋稗疏",
+      "work_id": "d59f2markphc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋世論",
+      "content": "",
+      "content_from": "春秋稗疏",
+      "work_id": "d59f2n9vrthc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋平義",
+      "content": "《春秋平義》十二卷，春秋四傳糾正一卷。俞汝言撰。",
+      "work_id": "d59f2mamkwsh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋四傳糾正",
+      "content": "",
+      "content_from": "春秋平義",
+      "work_id": "d59f2mamw5c0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋傳議",
+      "content": "《春秋傳議四卷。張爾岐撰。",
+      "work_id": "d59f2masif40"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "學春秋隨筆",
+      "content": "學春秋隨筆十卷。萬斯大撰。",
+      "work_id": "d59f2masif41"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋大義",
+      "content": "春秋大義、春秋隨筆共一卷，春秋毀餘四卷。李光地撰。",
+      "work_id": "d59f2ntknr40"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋隨筆共",
+      "content": "",
+      "content_from": "春秋大義",
+      "work_id": "d59f2n9vrthd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋毀餘",
+      "content": "",
+      "content_from": "春秋大義",
+      "work_id": "d59f2n9vrthe"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋集解",
+      "content": "《春秋集解》十二卷，校補春秋集解緒餘》一卷，春秋提要補遺》一卷。應撝謙撰。",
+      "work_id": "d59f2mau2ltt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "校補春秋集解緒餘",
+      "content": "",
+      "content_from": "春秋集解",
+      "work_id": "d59f2mau2ltt",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《春秋集解》一條所連著之附屬部帙（《校補春秋集解緒餘》一卷，應撝謙自校其《集解》之餘語，隨集而存），隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉甲類不別立 Work，繫於母條。2026-08-24 N3 磁鐵補標 `section_kind`——M3 一輪已裁其為甲類並正母條之題，然未標此欄，故仍計為磁鐵。"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋提要補遺",
+      "content": "",
+      "content_from": "春秋集解",
+      "work_id": "d59f2n9w320w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋參義",
+      "content": "春秋參義》十二卷，《春秋事義慎考十四卷，《公穀匯義》十二卷。姜兆錫撰。",
+      "work_id": "d59f2mav0bgg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋事義慎考",
+      "content": "",
+      "content_from": "春秋參義",
+      "work_id": "d59f2mavbk00"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公穀匯義",
+      "content": "",
+      "content_from": "春秋參義",
+      "work_id": "d59f2mavbk01"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋管窺",
+      "content": "《春秋管窺》十二卷。徐庭垣撰。",
+      "work_id": "d59f2n6dny0x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳異同考",
+      "content": "《春秋三傳異同考》一卷。吳陳琰撰。",
+      "work_id": "d59f2n9w320x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋遵經集說",
+      "content": "《春秋遵經集說》二十八卷。邵鍾仁撰。",
+      "work_id": "d59f2maududc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三傳折諸",
+      "content": "三傳折諸》四十四卷。張尚瑗撰。",
+      "work_id": "d59f2mao53i9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋闕如編",
+      "content": "春秋闕如編八卷，小國春秋》一卷。焦袁熹撰。",
+      "work_id": "d59f2maogc1s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "小國春秋",
+      "content": "",
+      "content_from": "春秋闕如編",
+      "work_id": "d59f2n9w320y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋宗朱辨義",
+      "content": "春秋宗朱辨義》十二卷。張自超撰。",
+      "work_id": "d59f2maorklc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋通論",
+      "content": "《春秋通論》四卷，春秋義法舉要》一卷，春秋比事目錄》四卷，春秋直解》十二卷。方苞撰。",
+      "work_id": "d59f2maqy8e8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋義法舉要",
+      "content": "",
+      "content_from": "春秋通論",
+      "work_id": "d59f2n9weakg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋比事目錄",
+      "content": "",
+      "content_from": "春秋通論",
+      "work_id": "d59f2mawvqps"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋直解",
+      "content": "",
+      "content_from": "春秋通論",
+      "work_id": "d59f2ntknr41"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "半農春秋說",
+      "content": "半農春秋說》十五卷。惠士奇撰。",
+      "work_id": "d59f2map2t4x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋義",
+      "content": "《春秋義》十五卷。孫嘉淦撰。",
+      "work_id": "d59f2maxtgcg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋大事表",
+      "content": "《春秋大事表》五十卷，輿圖一卷，附錄一卷。顧棟高撰。",
+      "work_id": "d59f2mape1og"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "輿圖",
+      "content": "",
+      "content_from": "春秋大事表",
+      "work_id": "d59f2n9weakh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋七國統表",
+      "content": "春秋七國統表》六卷。魏翼龍撰。",
+      "work_id": "d59f2n9weaki"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋義存錄",
+      "content": "《春秋義存錄》十二卷。陸奎勛撰。",
+      "work_id": "d59f2mazovls"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋日食質疑",
+      "content": "《春秋日食質疑一卷。吳守一撰。",
+      "work_id": "d59f2mb2i0hs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋集傳",
+      "content": "《春秋集傳》十六卷，首、末各一卷。汪紱撰。",
+      "work_id": "d59f2ntkyznk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "末各",
+      "content": "",
+      "content_from": "春秋集傳",
+      "work_id": "d59f2n9wpj40"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "空山堂春秋傳",
+      "content": "《空山堂春秋傳》十二卷。牛運震撰。",
+      "work_id": "d59f2mb0bcow"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋原經",
+      "content": "《春秋原經》二卷。王心敬撰。",
+      "work_id": "d59f2mb0xts0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋深",
+      "content": "《春秋深》十九卷。許伯政撰。",
+      "work_id": "d59f2mb0xts1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋一得",
+      "content": "春秋一得》一卷。閻循觀撰。",
+      "work_id": "d59f2mb26ry8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三正考",
+      "content": "三正考》二卷。吳鼐撰。",
+      "work_id": "d59f2maqbrb5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳定說",
+      "content": "春秋三傳定說》十二卷。張甄陶撰。",
+      "work_id": "d59f2n9wpj41"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋夏正",
+      "content": "春秋夏正》二卷。胡天游撰。",
+      "work_id": "d59f2n9wpj42"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋究遺",
+      "content": "春秋究遺》十六卷。葉酉撰。",
+      "work_id": "d59f2maqmzuo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋隨筆",
+      "content": "《春秋隨筆》二卷。顧奎光撰。",
+      "work_id": "d59f2maqmzup"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳雜案",
+      "content": "《春秋三傳雜案》十卷，讀春秋存稿四卷。趙佑撰。",
+      "work_id": "d59f2n9x0rnk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "讀春秋存稿",
+      "content": "",
+      "content_from": "春秋三傳雜案",
+      "work_id": "d59f2n9x0rnl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三傳補註",
+      "content": "三傳補註》三卷。姚鼐撰。",
+      "work_id": "d59f2n9x0rnm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳比",
+      "content": "春秋三傳比》二卷。李調元撰。",
+      "work_id": "d59f2n9xc074"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋疑義",
+      "content": "春秋疑義》二卷。華學泉撰。",
+      "work_id": "d59f2mon0emb"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "公穀異同合評",
+      "content": "公穀異同合評》四卷。沈赤然撰。",
+      "work_id": "d59f2n9xc075"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋經傳朔閏表",
+      "content": "《春秋經傳朔閏表》二卷。姚文田撰。",
+      "work_id": "d59f2n9xc076"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋說略",
+      "content": "《春秋說略》十二卷，《春秋比》二卷。郝懿行撰。",
+      "work_id": "d59f2n9xn8qo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋比",
+      "content": "",
+      "content_from": "春秋說略",
+      "work_id": "d59f2nuso7pc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋目論",
+      "content": "《春秋目論》二卷。鄧顯撰。",
+      "work_id": "d59f2n9xn8qp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三傳異同考",
+      "content": "《三傳異同考》一卷。陳萊孝撰。",
+      "work_id": "d59f2n9xyha8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋經傳比事",
+      "content": "春秋經傳比事》二十二卷。林春溥撰。",
+      "work_id": "d59f2n9xyha9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三家異文覈",
+      "content": "春秋三家異文覈》一卷，春秋亂賊考一卷。朱駿聲撰。",
+      "work_id": "d59f2n9xyhaa"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋亂賊考",
+      "content": "",
+      "content_from": "春秋三家異文覈",
+      "work_id": "d59f2n9y9pts"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳異文釋",
+      "content": "《春秋三傳異文釋十三卷。李富孫撰。",
+      "work_id": "d59f2n9y9ptt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋屬辭辨例編",
+      "content": "《春秋屬辭辨例編六十卷。張應昌撰。",
+      "work_id": "d59f2n9y9ptu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋上律表",
+      "content": "《春秋上律表四卷。范景福撰。",
+      "work_id": "d59f2n9ykydc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋至朔通考",
+      "content": "《春秋至朔通考》四卷。張冕撰。",
+      "work_id": "d59f2n9ykydd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "駮正朔考",
+      "content": "《駮正朔考一卷。陳鍾英撰。",
+      "work_id": "d59f2n9ykyde"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋三傳異文箋",
+      "content": "《春秋三傳異文箋》四卷。趙坦撰。",
+      "work_id": "d59f2n9yw6ww"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋新義",
+      "content": "《春秋新義十二卷，《春秋歲星表一卷，《日食星度表一卷，《日表一卷。朱兆熊撰。",
+      "work_id": "d59f2n9yw6wx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋歲星表",
+      "content": "",
+      "content_from": "春秋新義",
+      "work_id": "d59f2n9yw6wy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日食星度表",
+      "content": "",
+      "content_from": "春秋新義",
+      "work_id": "d59f2n9z7fgg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日表",
+      "content": "",
+      "content_from": "春秋新義",
+      "work_id": "d59f2n9z7fgh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋釋地韻編",
+      "content": "《春秋釋地韻編五卷。徐壽基撰。",
+      "work_id": "d59f2n9zio00"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋述義拾遺",
+      "content": "《春秋述義拾遺九卷，《春秋規過考信九卷。陳熙晉撰。",
+      "work_id": "d59f2n9zio01"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋規過考信",
+      "content": "",
+      "content_from": "春秋述義拾遺",
+      "work_id": "d59f2n9zio02"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋古經說",
+      "content": "《春秋古經說二卷。侯康撰。",
+      "work_id": "d59f2n9ztwjk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "達齋春秋論",
+      "content": "《達齋春秋論》一卷，《春秋歲星考》一卷，《春秋古本分年考》一卷。俞樾撰。",
+      "work_id": "d59f2n9ztwjl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋歲星考",
+      "content": "",
+      "content_from": "達齋春秋論",
+      "work_id": "d59f2n9ztwjm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋古本分年考",
+      "content": "",
+      "content_from": "達齋春秋論",
+      "work_id": "d59f2na05534"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋朔閏異同考",
+      "content": "《春秋朔閏異同考》三卷。羅士琳撰。",
+      "work_id": "d59f2na05535"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋鑽燧",
+      "content": "《春秋鑽燧》四卷。曹金籀撰。",
+      "work_id": "d59f2na05536"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋經傳朔閏表發覆",
+      "content": "《春秋經傳朔閏表發覆》四卷，《推春秋日食法》一卷。施彥士撰。",
+      "work_id": "d59f2na0gdmo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "推春秋日食法",
+      "content": "",
+      "content_from": "春秋經傳朔閏表發覆",
+      "work_id": "d59f2na0gdmp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋日月考",
+      "content": "《春秋日月考》四卷。譚澐撰。",
+      "work_id": "d59f2na0rm68"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋朔閏日食考",
+      "content": "《春秋朔閏日食考》二卷。宋慶雲撰。",
+      "work_id": "d59f2na0rm69"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋釋",
+      "content": "《春秋釋》一卷。黃式三撰。",
+      "work_id": "d59f2na0rm6a"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋測義",
+      "content": "《春秋測義》三十五卷。強汝詢撰。",
+      "work_id": "d59f2na12ups"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋說",
+      "content": "《春秋說》一卷。陶正靖撰。",
+      "work_id": "d59f2ntkyznl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋傳正誼",
+      "content": "《春秋傳正誼》四卷。方宗誠撰。",
+      "work_id": "d59f2na12upt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋日南至譜",
+      "content": "《春秋日南至譜》一卷。成蓉鏡撰。",
+      "work_id": "d59f2na12upu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "春秋說",
+      "content": "《春秋說》二卷。鄭杲撰。",
+      "work_id": "d59f2ntla874"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋傳說例",
+      "content": "宋劉敞《春秋傳說例》一卷。",
+      "work_id": "d59f2hua1b7k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋辨疑",
+      "content": "宋蕭楚《春秋辨疑》四卷。",
+      "work_id": "d59f2hqd9a80",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋經解",
+      "content": "宋崔子方《春秋經解》十二卷。",
+      "work_id": "d59f2huiryf6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋例要",
+      "content": "《春秋例要》一卷。",
+      "work_id": "d59f2hf1lcsj",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋通訓",
+      "content": "宋張大亨《春秋通訓》六卷。",
+      "work_id": "d59f2hpdo8ao",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋考",
+      "content": "宋葉夢得《春秋考》十六卷。",
+      "work_id": "d59f2hsbhog1",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋讞",
+      "content": "《春秋讞》二十二卷。",
+      "work_id": "d59f2hslside",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋集註",
+      "content": "宋高閌《春秋集註》四十卷。",
+      "work_id": "d59f2hta50qr",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋講義",
+      "content": "宋戴溪《春秋講義》四卷。",
+      "work_id": "d59f2hs66n7k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋說",
+      "content": "宋洪咨夔《春秋說》三十卷。",
+      "work_id": "d59f2hpgslqb",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋三傳辨疑",
+      "content": "元程端學《春秋三傳辨疑》二十卷。",
+      "work_id": "d59f2gpq4em8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋大傳",
+      "content": "《春秋大傳》一卷。",
+      "work_id": "d59f2evo6kg2",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋牒例章句",
+      "content": "漢鄭眾《春秋牒例章句》一卷。",
+      "work_id": "d59f24ma2mmd",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋三傳異同說",
+      "content": "漢馬融《春秋三傳異同說》一卷。",
+      "work_id": "d59f24lr15hg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "解疑論",
+      "content": "漢戴宏《解疑論》一卷。",
+      "work_id": "d59f24lr15hf",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋釋例",
+      "content": "漢穎容《春秋釋例》一卷。",
+      "work_id": "d59f24mb0c8y",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋公羊穀梁傳解詁",
+      "content": "晉劉兆《春秋公羊穀梁傳解詁》一卷。",
+      "work_id": "d59f27yz603k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋土地名",
+      "content": "晉京相璠《春秋土地名》一卷。",
+      "work_id": "d59f27vw1ipw",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋傳駁",
+      "content": "後魏賈思同《春秋傳駁》一卷。",
+      "work_id": "d59f286h69z7",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋述義",
+      "content": "隋劉炫《春秋述義》一卷。",
+      "work_id": "d59f28ngo64k",
+      "is_jiyi": true,
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24 隋唐 T3：《清史稿藝文志》春秋類於劉炫此書兩出其目——「隋劉炫《左氏傳述義》一卷」與「隋劉炫《春秋述義》一卷」，題異而同指（《隋書·儒林傳》劉炫本傳作「述議」，隋志、新唐志作「述義」，「左氏傳述義」則省其「春秋」二字）。二節俱一卷，皆馬國翰輯本之著錄。依 SCHEMA〈一書兩著〉，書目自身之重出非本庫匯入之失，二節與母條共繫，別計不入磁鐵。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋規過",
+      "content": "《春秋規過》一卷。",
+      "work_id": "d59f2evot1j7",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋攻昧",
+      "content": "《春秋攻昧》一卷，不著時代。",
+      "work_id": "d59f2evz3vgh",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋集傳",
+      "content": "唐啖助《春秋集傳》一卷。",
+      "work_id": "d59f28k1270g",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋闡微纂類義統",
+      "content": "唐趙匡《春秋闡微纂類義統》一卷。",
+      "work_id": "d59f28m7pzwk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋通例",
+      "content": "唐陸希聲《春秋通例》一卷。",
+      "work_id": "d59f28m2eyo1",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋折衷論",
+      "content": "唐陳岳《春秋折衷論》一卷。",
+      "work_id": "d59f28jj9o1x",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋盟會圖",
+      "content": "漢嚴彭祖《春秋盟會圖》一卷。",
+      "work_id": "d59f24ma2mme",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋後傳",
+      "content": "晉樂資《春秋後傳》一卷。",
+      "work_id": "d59f27wdu1oj",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "箴膏肓",
+      "content": "漢鄭玄《箴膏肓》一卷、《起廢疾》一卷、《發墨守》一卷。",
+      "work_id": "d59f2082064g",
+      "is_jiyi": true
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "title": "史部·霸史類",
+  "sections": [
+    {
+      "title": "霸史類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "霸史類序",
+      "level": 3,
+      "type": "preface",
+      "content": "《史通·因習篇》云：「阮氏《七録》以田、范、裴、段諸記，劉、石、苻、姚等書，別剏一名，題為『僞史』。《隋書·經籍志》流別羣書，還依阮《録》。」"
+    },
+    {
+      "title": "田融　趙書十卷",
+      "level": 3,
+      "type": "book",
+      "content": "田融　趙書十卷",
+      "work_id": "d59f27v3boqs"
+    },
+    {
+      "title": "王度　二石傳二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王度　二石傳二卷",
+      "work_id": "d59f27vj8sg3"
+    },
+    {
+      "title": "王度　二石僞治時事二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王度　二石僞治時事二卷",
+      "work_id": "d59f27wqy0hu"
+    },
+    {
+      "title": "上黨國記",
+      "level": 3,
+      "type": "book",
+      "content": "上黨國記",
+      "work_id": "d59f9nmkx7gi",
+      "note": "原無撰人"
+    },
+    {
+      "title": "大單于志",
+      "level": 3,
+      "type": "book",
+      "content": "大單于志",
+      "work_id": "d59f9nmkx7gj",
+      "note": "原無撰人"
+    },
+    {
+      "title": "常璩　漢之書十卷",
+      "level": 3,
+      "type": "book",
+      "content": "常璩　漢之書十卷",
+      "work_id": "d59f27tkdx50"
+    },
+    {
+      "title": "常璩　華陽國志十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "常璩　華陽國志十二卷",
+      "work_id": "d59f27x6jvnn"
+    },
+    {
+      "title": "杜輔　燕紀",
+      "level": 3,
+      "type": "book",
+      "content": "杜輔　燕紀",
+      "work_id": "d59f27wi7da9"
+    },
+    {
+      "title": "董統　燕書三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "董統　燕書三十卷",
+      "work_id": "d59f9nmkx7gk"
+    },
+    {
+      "title": "申秀　燕書",
+      "level": 3,
+      "type": "book",
+      "content": "申秀　燕書",
+      "work_id": "d59f27vuskjm"
+    },
+    {
+      "title": "范亨　燕書二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范亨　燕書二十卷",
+      "work_id": "d59f27w2a9ky"
+    },
+    {
+      "title": "張詮　南燕録五卷",
+      "level": 3,
+      "type": "book",
+      "content": "張詮　南燕録五卷",
+      "work_id": "d59f27vp6ark"
+    },
+    {
+      "title": "王景暉　南燕録六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王景暉　南燕録六卷",
+      "work_id": "d59f27vnxcle"
+    },
+    {
+      "title": "索綏　涼國春秋五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "索綏　涼國春秋五十卷",
+      "work_id": "d59f27tf2vwj"
+    },
+    {
+      "title": "索暉　涼書",
+      "level": 3,
+      "type": "book",
+      "content": "索暉　涼書",
+      "work_id": "d59f27w8u8zl"
+    },
+    {
+      "title": "劉慶　涼記十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉慶　涼記十二卷",
+      "work_id": "d59f9nmkx7gl"
+    },
+    {
+      "title": "張諮　涼記八卷",
+      "level": 3,
+      "type": "book",
+      "content": "張諮　涼記八卷",
+      "work_id": "d59f27uqiyh0"
+    },
+    {
+      "title": "喻歸　西河記三卷",
+      "level": 3,
+      "type": "book",
+      "content": "喻歸　西河記三卷",
+      "work_id": "d59f27uu9szl"
+    },
+    {
+      "title": "董誼　秦書",
+      "level": 3,
+      "type": "book",
+      "content": "董誼　秦書",
+      "work_id": "d59f9nmkx7gm"
+    },
+    {
+      "title": "馬僧虔　秦史",
+      "level": 3,
+      "type": "book",
+      "content": "馬僧虔　秦史",
+      "work_id": "d59f9nmkx7gn"
+    },
+    {
+      "title": "衞隆景　秦史",
+      "level": 3,
+      "type": "book",
+      "content": "衞隆景　秦史",
+      "work_id": "d59f9nmkx7go"
+    },
+    {
+      "title": "段龜龍　涼記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "段龜龍　涼記十卷",
+      "work_id": "d59f27vhdd6r"
+    },
+    {
+      "title": "公師彧　高祖本紀",
+      "level": 3,
+      "type": "book",
+      "content": "公師彧　高祖本紀",
+      "work_id": "d59f9nmkx7gp"
+    },
+    {
+      "title": "公師彧　功臣傳",
+      "level": 3,
+      "type": "book",
+      "content": "公師彧　功臣傳",
+      "work_id": "d59f9nmkx7gq",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "和苞　漢趙記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "和苞　漢趙記十卷",
+      "work_id": "d59f27u91o1t"
+    },
+    {
+      "title": "田融　苻朝雜記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "田融　苻朝雜記一卷",
+      "work_id": "d59f2px9emtc"
+    },
+    {
+      "title": "郭韶　南涼國紀",
+      "level": 3,
+      "type": "book",
+      "content": "郭韶　南涼國紀",
+      "work_id": "d59f6ssrrv34"
+    }
+  ]
+}

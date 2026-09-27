@@ -1,0 +1,469 @@
+{
+  "title": "小說類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "小說類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "山海經廣注",
+      "content": "山海經廣注十八卷。吳任臣撰。",
+      "work_id": "d59f2mht1ekh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "山海經存",
+      "content": "山海經存九卷。汪紱撰。",
+      "work_id": "d59f2nm8w83k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "山海經箋疏",
+      "content": "山海經箋疏十八卷，圖贊一卷，訂譌一卷。郝懿行撰。",
+      "work_id": "d59f2n1fqoe9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "訂譌",
+      "content": "",
+      "content_from": "山海經箋疏",
+      "work_id": "d59f2nm8w83l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀山海經",
+      "content": "讀山海經一卷。俞樾撰。",
+      "work_id": "d59f2nm8w83m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "穆天子傳補正",
+      "content": "穆天子傳補正六卷。陳逢衡撰。",
+      "work_id": "d59f2nm97gn4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "穆天子傳註疏",
+      "content": "穆天子傳註疏六卷。檀萃撰。",
+      "work_id": "d59f2nm97gn5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "譎觚",
+      "content": "譎觚一卷。顧炎武撰。",
+      "work_id": "d59f2me3fu2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢世說",
+      "content": "漢世說十四卷。章撫功撰。",
+      "work_id": "d59f2mhvujgg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "世說補",
+      "content": "世說補二十卷。黃汝琳撰。",
+      "work_id": "d59f2nm9ip6o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "今世說",
+      "content": "今世說八卷。王晫撰。",
+      "work_id": "d59f2mhv82dc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明語林",
+      "content": "明語林十四卷。吳肅公撰。",
+      "work_id": "d59f2mhuacqp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "隴蜀餘聞",
+      "content": "隴蜀餘聞一卷，皇華紀聞四卷。王士禛撰。",
+      "work_id": "d59f2mwx41du"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "皇華紀聞",
+      "content": "",
+      "content_from": "隴蜀餘聞",
+      "work_id": "d59f2mwxf9xc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "矩齋雜記",
+      "content": "矩齋雜記二卷。施閏章撰。",
+      "work_id": "d59f2mhwh0jl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "玉堂薈記",
+      "content": "玉堂薈記一卷。楊士聰撰。",
+      "work_id": "d59f2njpr1tu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "客途偶記",
+      "content": "客途偶記一卷。鄭與僑撰。",
+      "work_id": "d59f2mhtz474"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "玉劍尊聞",
+      "content": "玉劍尊聞十卷。梁維樞撰。",
+      "work_id": "d59f2mhuacqo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "潛園集錄",
+      "content": "潛園集錄十六卷。屠倬撰。",
+      "work_id": "d59f2nm9ip6p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "關隴輿中偶憶編",
+      "content": "關隴輿中偶憶編一卷。張祥河撰。",
+      "work_id": "d59f2nm9txq8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "客話",
+      "content": "客話三卷，劇話二卷，弄話二卷。李調元撰。",
+      "work_id": "d59f2nm9txq9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "劇話",
+      "content": "",
+      "content_from": "客話",
+      "work_id": "d59f2nma569s"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "弄話",
+      "content": "",
+      "content_from": "客話",
+      "work_id": "d59f2nma569t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "兩般秋雨盦隨筆",
+      "content": "兩般秋雨盦隨筆八卷。梁紹壬撰。",
+      "work_id": "d59f2nma569u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "藤陰雜記",
+      "content": "藤陰雜記十二卷。戴璐撰。",
+      "work_id": "d59f2nmagetc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歸田瑣記",
+      "content": "歸田瑣記八卷，浪跡叢談十一卷，續八卷。梁章鉅撰。",
+      "work_id": "d59f2nmagetd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "浪跡叢談",
+      "content": "",
+      "content_from": "歸田瑣記",
+      "work_id": "d59f2nmarncw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "說鈴",
+      "content": "說鈴一卷。汪琬撰。",
+      "work_id": "d59f2nmarncx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "觚賸",
+      "content": "觚賸八卷，續編四卷。鈕琇撰。",
+      "work_id": "d59f2mhxpyps"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "堅瓠集",
+      "content": "堅瓠集六十六卷。褚人穫撰。",
+      "work_id": "d59f2nmb2vwg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞初新志",
+      "content": "虞初新志二十卷。張潮撰。",
+      "work_id": "d59f2nmb2vwh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞初續志",
+      "content": "虞初續志十二卷。鄭澍若撰。",
+      "work_id": "d59f2nmbe4g0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "史異纂",
+      "content": "史異纂十六卷，有明異叢十卷。傅燮詷撰。",
+      "work_id": "d59f2mhxeq68"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "有明異叢",
+      "content": "",
+      "content_from": "史異纂",
+      "work_id": "d59f2mhxeq69"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續廣博物志",
+      "content": "續廣博物志十六卷。徐壽基撰。",
+      "work_id": "d59f2nmbe4g1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "閱微草堂筆記",
+      "content": "閱微草堂筆記二十四卷。紀昀撰。",
+      "work_id": "d59f2nmbpczk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "池上草堂筆記",
+      "content": "池上草堂筆記八卷。梁恭辰撰。",
+      "work_id": "d59f2nmbpczl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "筆談",
+      "content": "筆談二卷。史夢蘭撰。",
+      "work_id": "d59f2nu7g2rl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "右台仙館筆記",
+      "content": "右台仙館筆記十六卷。俞樾撰。",
+      "work_id": "d59f2nmc0lj4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奩史",
+      "content": "奩史一百卷。王初桐撰。",
+      "work_id": "d59f2nmc0lj5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "影梅庵憶語",
+      "content": "影梅庵憶語一卷。冒襄撰。",
+      "work_id": "d59f2nmc0lj6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西清散記",
+      "content": "西清散記四卷。史震林撰。",
+      "work_id": "d59f2nmcbu2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "板橋雜記",
+      "content": "板橋雜記三卷。余懷撰。",
+      "work_id": "d59f2mhyyww1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古笑史",
+      "content": "古笑史三十四卷。李漁撰。",
+      "work_id": "d59f2nmcbu2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "江淮異人錄",
+      "content": "宋吳淑江淮異人錄二卷。",
+      "work_id": "d59f2htzqha9",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "賈氏談錄",
+      "content": "宋張洎賈氏談錄一卷。",
+      "work_id": "d59f2huoe874",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "東齋記事",
+      "content": "宋范鎮東齋記事六卷。",
+      "work_id": "d59f2hqcy1oi",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "叟珍席放談",
+      "content": "宋高晦叟珍席放談二卷。",
+      "work_id": "d59f2hrj330h",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "唐語林",
+      "content": "宋王讜唐語林八卷。",
+      "work_id": "d59f2hszu6tf",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "萍洲可談",
+      "content": "宋朱彧萍洲可談三卷。",
+      "work_id": "d59f2hq47egw",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "高齋漫錄",
+      "content": "宋曾慥高齋漫錄一卷。",
+      "work_id": "d59f2hq8vymb",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "甫張氏可書",
+      "content": "宋張知甫張氏可書一卷。",
+      "work_id": "d59f2hf4394w",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "方步里客談",
+      "content": "宋陳長方步里客談二卷。",
+      "work_id": "d59f2hrirugy",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "紀聞",
+      "content": "不著撰人東南紀聞三卷。",
+      "work_id": "d59f2og64irk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "青史子",
+      "content": "青史子一卷。",
+      "work_id": "d59f2evv1sec",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋子",
+      "content": "周宋鈃宋子一卷。",
+      "work_id": "d59f2evmmdq9",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "淳笑林",
+      "content": "魏邯鄲淳笑林一卷。",
+      "work_id": "d59f27sphfcz",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "裴子語林",
+      "content": "晉裴啟裴子語林二卷。",
+      "work_id": "d59f27w5en0i",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "之郭子",
+      "content": "晉郭澄之郭子一卷。",
+      "work_id": "d59f27wcl3i8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "郭氏玄中記",
+      "content": "郭氏玄中記一卷。",
+      "work_id": "d59f2ofty9kw",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "無疑齊諧記",
+      "content": "宋東陽無疑齊諧記一卷。",
+      "work_id": "d59f286onz0h",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "水飾",
+      "content": "隋杜寶水飾一卷。",
+      "work_id": "d59f28l0yhhe",
+      "is_jiyi": true
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "title": "經部·詩類",
+  "sections": [
+    {
+      "title": "詩類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "中散大夫徐廣　毛詩背隱義",
+      "level": 3,
+      "type": "book",
+      "content": "中散大夫徐廣　毛詩背隱義二卷　《七録》。",
+      "work_id": "d59f27y8mtxe"
+    },
+    {
+      "title": "奉朝請孫暢之　毛詩引辨",
+      "level": 3,
+      "type": "book",
+      "content": "奉朝請孫暢之　毛詩引辨一卷　《七録》。",
+      "work_id": "d59f284uswef"
+    },
+    {
+      "title": "金紫光禄大夫何匽　毛詩釋",
+      "level": 3,
+      "type": "book",
+      "content": "金紫光禄大夫何匽①　毛詩釋一卷　《七録》。",
+      "work_id": "d59f284w1ukj"
+    },
+    {
+      "title": "通直郎雷次宗　毛詩序義",
+      "level": 3,
+      "type": "book",
+      "content": "通直郎雷次宗　毛詩序義二卷　《隋志》。",
+      "work_id": "d59f7v5ydo1x"
+    },
+    {
+      "title": "雷次宗　毛詩義",
+      "level": 3,
+      "type": "book",
+      "content": "又　毛詩義一卷　《七録》。",
+      "work_id": "d59f284tjy86"
+    },
+    {
+      "title": "交州刺史阮珍之　毛詩序注",
+      "level": 3,
+      "type": "book",
+      "content": "交州刺史阮珍之　毛詩序注一卷　《七録》。",
+      "work_id": "d59f28511n9g"
+    },
+    {
+      "title": "孫暢之　毛詩序義",
+      "level": 3,
+      "type": "book",
+      "content": "孫暢之　毛詩序義七卷　《七録》。",
+      "work_id": "d59f2850qepu"
+    },
+    {
+      "title": "奉朝請業遵　注業詩",
+      "level": 3,
+      "type": "book",
+      "content": "奉朝請業遵　注業詩十二卷②　《隋志》。",
+      "work_id": "d59f7v5ydo1y"
+    },
+    {
+      "title": "處士周續之　毛詩六義",
+      "level": 3,
+      "type": "book",
+      "content": "處士周續之　毛詩六義　本傳。",
+      "work_id": "d59f7v5ydo1z"
+    }
+  ]
+}

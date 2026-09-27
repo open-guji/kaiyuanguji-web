@@ -1,0 +1,222 @@
+{
+  "title": "孝經類",
+  "related_works": [
+    {
+      "id": "d59f1iosq6tc",
+      "title": "孝經",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "title": "《古文孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文孝經》一卷孔安國傳。梁末亡逸，今疑非古本。",
+      "work_id": "d59f21ep59mo",
+      "book_title": "古文孝經",
+      "n_juan": 1,
+      "author_info": "孔安國傳"
+    },
+    {
+      "title": "《孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經》一卷鄭氏注。梁有馬融、鄭眾注孝經》二卷，亡。",
+      "work_id": "d59f24mh9343",
+      "book_title": "孝經",
+      "n_juan": 1,
+      "author_info": "鄭氏注"
+    },
+    {
+      "title": "《孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經》一卷王肅解。梁有魏散騎常侍蘇林，吏部尚書何晏，光祿大夫劉邵、孫氏等注《孝經》各一卷，亡。",
+      "work_id": "d59f27x9o936",
+      "book_title": "孝經",
+      "n_juan": 1,
+      "author_info": "王肅解"
+    },
+    {
+      "title": "《孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經》一卷釋慧琳注。梁有晉穆帝時《晉孝經》一卷，武帝時《送總明館孝經講》、《議》各一卷，宋大明中《東宮講》，齊永明三年《東宮講》，齊永明中《諸王講》及賀緌講、議《孝經義疏》各一卷，齊臨沂令李玉之為始興王講《孝經義疏》二卷，亡。",
+      "work_id": "d59f28n7madg",
+      "book_title": "孝經",
+      "n_juan": 1,
+      "author_info": "釋慧琳注"
+    },
+    {
+      "title": "《孝經解贊》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經解贊》一卷韋昭解。",
+      "work_id": "d59f27xect8g",
+      "book_title": "孝經解贊",
+      "n_juan": 1,
+      "author_info": "韋昭解"
+    },
+    {
+      "title": "《孝經默注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經默注》一卷徐整注。",
+      "work_id": "d59f27xdf3lv",
+      "book_title": "孝經默注",
+      "n_juan": 1,
+      "author_info": "徐整注"
+    },
+    {
+      "title": "《集解孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集解孝經》一卷謝萬集。",
+      "work_id": "d59f27y99b0g",
+      "book_title": "集解孝經",
+      "n_juan": 1,
+      "author_info": "謝萬集"
+    },
+    {
+      "title": "《集議孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集議孝經》一卷晉中書郎荀昶撰，亡。",
+      "work_id": "d59f27y3bsow",
+      "book_title": "集議孝經",
+      "n_juan": 1,
+      "author_info": "晉中書郎荀昶撰"
+    },
+    {
+      "title": "《集議孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集議孝經》一卷晉東陽太守袁敬仲集。梁有《孝經皇義》一卷，宋均撰；又有晉給事中楊泓，處士虞槃佐、孫氏，東陽太守殷仲文，晉陵太守殷叔道，丹陽尹車胤，孔光各注《孝經》一卷；荀昶注《孝經》二卷；宋何承天、費沈，齊光祿大夫王玄載，國子博士明僧紹，梁五經博士嚴植之，尚書功論郎曹思文，羽林監江系之，江遜等注《孝經》各一卷；釋慧始注《孝經》一卷；陶弘景《集注孝經》一卷；諸葛循《孝經序》一卷。亡。",
+      "work_id": "d59f27ycowzl",
+      "book_title": "集議孝經",
+      "n_juan": 1,
+      "author_info": "晉東陽太守袁敬仲集"
+    },
+    {
+      "title": "《孝經義疏》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義疏》十八卷梁武帝撰。梁有皇太子講《孝經義》三卷，天監八年皇太子講《孝經義》一卷，梁簡文《孝經義疏》五卷，蕭子顯《孝經義疏》一卷，亡。",
+      "work_id": "d59f2846rmki",
+      "book_title": "孝經義疏",
+      "n_juan": 18,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《孝經義疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義疏》一卷趙景韶撰。",
+      "work_id": "d59f2q2voetc",
+      "book_title": "孝經義疏",
+      "n_juan": 1,
+      "author_info": "趙景韶撰"
+    },
+    {
+      "title": "《孝經義疏》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義疏》三卷皇侃撰。",
+      "work_id": "d59f284b4y69",
+      "book_title": "孝經義疏",
+      "n_juan": 3,
+      "author_info": "皇侃撰"
+    },
+    {
+      "title": "《孝經義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義》一卷",
+      "work_id": "d59f2pwtss1t",
+      "book_title": "孝經義",
+      "n_juan": 1
+    },
+    {
+      "title": "《孝經義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經義》一卷梁揚州文學從事太史叔明撰。梁有《孝經玄》、《孝經圖》各一卷，《孝經孔子圖》二卷，亡。",
+      "work_id": "d59f2pwtss1t",
+      "book_title": "孝經義",
+      "n_juan": 1,
+      "author_info": "梁揚州文學從事太史叔明撰"
+    },
+    {
+      "title": "《孝經敬愛義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經敬愛義》一卷梁吏部尚書蕭子顯撰。",
+      "work_id": "d59f284atpmo",
+      "book_title": "孝經敬愛義",
+      "n_juan": 1,
+      "author_info": "梁吏部尚書蕭子顯撰"
+    },
+    {
+      "title": "《孝經私記》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經私記》四卷無名先生撰。",
+      "work_id": "d59f2q3kc64g",
+      "book_title": "孝經私記",
+      "n_juan": 4,
+      "author_info": "無名先生撰"
+    },
+    {
+      "title": "《孝經私記》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經私記》二卷周弘正撰。",
+      "work_id": "d59f2844kyrk",
+      "book_title": "孝經私記",
+      "n_juan": 2,
+      "author_info": "周弘正撰"
+    },
+    {
+      "title": "《古文孝經述義》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文孝經述義》五卷劉炫撰。",
+      "work_id": "d59f28noh3pd",
+      "book_title": "古文孝經述義",
+      "n_juan": 5,
+      "author_info": "劉炫撰"
+    },
+    {
+      "title": "《孝經講疏》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孝經講疏》六卷徐孝克撰。",
+      "work_id": "d59f28mwozd1",
+      "book_title": "孝經講疏",
+      "n_juan": 6,
+      "author_info": "徐孝克撰"
+    },
+    {
+      "title": "《國語孝經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語孝經》一卷",
+      "work_id": "d59f2ggf6rr6",
+      "book_title": "國語孝經",
+      "n_juan": 1
+    },
+    {
+      "title": "孝經類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "夫孝者，天之經，地之義，人之行。自天子達于庶人，雖尊卑有差，及乎行孝，其義一也。先王因之以治國家，化天下，故能不嚴而順，不肅而成。斯實生靈之至德，王者之要道。孔子既敘六經，題目不同，指意差別，恐斯道離散，故作《孝經》，以總會之，明其枝流雖分，本萌於孝者也。遭秦焚書，為河間人顏芝所藏。漢初，芝子貞出之，凡十八章，而長孫氏、博士江翁、少府後蒼、諫議大夫翼奉、安昌侯張禹，皆名其學。又有《古文孝經》，與《古文尚書》同出，而長孫有《閨門》一章，其餘經文，大較相似，篇簡缺解，又有衍出三章，並前合為二十二章，孔安國為之傳。至劉向典校經籍，以顏本比古文，除其繁惑，以十八章為定。鄭眾、馬融，並為之注。又有鄭氏注，相傳或雲鄭玄，其立義與玄所注餘書不同，故疑之。梁代，安國及鄭氏二家，並立國學，而安國之本，亡于梁亂。陳及周、齊，唯傳鄭氏。至隋，秘書監王劭于京師訪得《孔傳》，送至河間劉炫。炫因序其得喪，述其議疏，講於人間，漸聞朝廷，後遂著令，與鄭氏並立。儒者喧喧，皆雲炫自作之，非孔舊本，而秘府又先無其書。又雲魏氏遷洛，未達華語，孝文帝命侯伏侯可悉陵，以夷言譯《孝經》之旨，教於國人，謂之《國語孝經》。今取以附此篇之末。"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右十八部，合六十三卷。通計亡書，合五十九部，一百一十四卷。"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "title": "經部·春秋類",
+  "sections": [
+    {
+      "title": "春秋類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "春秋左氏區別　　何賀真撰",
+      "level": 3,
+      "type": "book",
+      "content": "春秋左氏區別　三十卷。　　何賀真撰",
+      "work_id": "d59f7z42sft6"
+    },
+    {
+      "title": "春秋序　　賀道養撰",
+      "level": 3,
+      "type": "book",
+      "content": "春秋序　一卷。　　賀道養撰",
+      "work_id": "d59f2prumk1v"
+    },
+    {
+      "title": "春秋公羊傳注　　周續之注",
+      "level": 3,
+      "type": "book",
+      "content": "春秋公羊傳注　不知卷數。見《宋書》九十三。　　周續之注",
+      "work_id": "d59f7z433ocg"
+    },
+    {
+      "title": "春秋穀梁傳注　　孔默之注",
+      "level": 3,
+      "type": "book",
+      "content": "春秋穀梁傳注　不知卷數。見《宋書》九十三。　　孔默之注",
+      "work_id": "d59f7z433och"
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "title": "後漢書補逸",
+  "source": "原內嵌於 collated_edition_index.json",
+  "sections": [
+    {
+      "title": "東觀漢記",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 0,
+      "book_title": "東觀漢記",
+      "juans": [
+        "一",
+        "二",
+        "三",
+        "四",
+        "五",
+        "六",
+        "七",
+        "八"
+      ],
+      "juan_count": 8,
+      "headings": 332,
+      "fragments": 866,
+      "work_id": "d59f2074ajgg",
+      "link_basis": "劉珍等《東觀漢記》，庫中七志著錄、繫連八處，最備",
+      "other_records": [
+        "d59f2pwkfn5u"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "謝承後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 1,
+      "book_title": "謝承後漢書",
+      "juans": [
+        "九",
+        "十",
+        "十一",
+        "十二"
+      ],
+      "juan_count": 4,
+      "headings": 297,
+      "fragments": 420,
+      "work_id": "d59f27x8qjgi",
+      "link_basis": "謝承《後漢書》一百三十卷，原書；一卷者是姚氏輯本",
+      "other_records": [
+        "d59f2pzcmtj4"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "薛瑩後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 2,
+      "book_title": "薛瑩後漢書",
+      "juans": [
+        "十三"
+      ],
+      "juan_count": 1,
+      "headings": 10,
+      "fragments": 10,
+      "work_id": "d59f27souy9t",
+      "link_basis": "薛瑩之書隋志作《後漢記》六十五卷，即此；姚氏題作後漢書",
+      "other_records": [
+        "1evcs0b9qsdfk",
+        "d59f2og5ta0w"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "張璠漢記",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 3,
+      "book_title": "張璠漢記",
+      "juans": [
+        "十四"
+      ],
+      "juan_count": 1,
+      "headings": 42,
+      "fragments": 52,
+      "work_id": "d59f27u8f6yq",
+      "link_basis": "張璠《後漢紀》，原書；《清史稿》所著一卷者是姚氏輯本",
+      "other_records": [
+        "d59f2ofon85f"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "華嶠後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 4,
+      "book_title": "華嶠後漢書",
+      "juans": [
+        "十五"
+      ],
+      "juan_count": 1,
+      "headings": 98,
+      "fragments": 128,
+      "work_id": "d59f27xxpiwy",
+      "link_basis": "華嶠《後漢書》三十一卷，撰人具名，較《後漢書》（撰人殘作「華」）為明",
+      "other_records": [
+        "d59f27xspq82",
+        "d59f2og9k4xv"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "謝沈後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 5,
+      "book_title": "謝沈後漢書",
+      "juans": [
+        "十六"
+      ],
+      "juan_count": 1,
+      "headings": 10,
+      "fragments": 11,
+      "work_id": "d59f27y7dvr7",
+      "link_basis": "謝沈《後漢書》一百零二卷，原書",
+      "other_records": [
+        "1evr5e3m8qyjx",
+        "d59f27xspq81"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "袁崧後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 6,
+      "book_title": "袁崧後漢書",
+      "juans": [
+        "十七"
+      ],
+      "juan_count": 1,
+      "headings": 52,
+      "fragments": 59,
+      "work_id": "d59f27y9vs3l",
+      "link_basis": "袁山松《後漢書》一百零一卷，原書；姚書題作袁崧，一人也",
+      "other_records": [
+        "1evr5e3m8qyjy"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    },
+    {
+      "title": "司馬彪續後漢書",
+      "type": "reconstruction",
+      "level": 2,
+      "index": 7,
+      "book_title": "司馬彪續後漢書",
+      "juans": [
+        "十八",
+        "十九",
+        "二十",
+        "二十一"
+      ],
+      "juan_count": 4,
+      "headings": 291,
+      "fragments": 461,
+      "work_id": "d59f27w8j0g0",
+      "link_basis": "司馬彪《續漢書》八十三卷，庫中三志著錄、繫連三處，最備（按其撰人欄殘作「馬彪」，是複姓截去「司」字，別記）",
+      "other_records": [
+        "1evfuuf11h9ts",
+        "d59f27w8j0g0"
+      ],
+      "other_records_note": "庫中同指此書而未合者，或為原書之重出，或為姚氏輯本之著錄。未合——合併須逐條裁，見 known-issues／疑似重出。",
+      "content": ""
+    }
+  ]
+}

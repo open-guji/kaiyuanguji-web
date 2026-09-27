@@ -1,0 +1,53 @@
+{
+  "title": "子部·子類",
+  "sections": [
+    {
+      "title": "子類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "處士李叔之　莊子義疏",
+      "level": 3,
+      "type": "book",
+      "content": "處士李叔之　莊子義疏三卷　《七録》。②",
+      "work_id": "d59f285dj4zk"
+    },
+    {
+      "title": "太學博士賀道養　賀子述言",
+      "level": 3,
+      "type": "book",
+      "content": "太學博士賀道養　賀子述言十卷　《七録》。",
+      "work_id": "d59f7v5z0558"
+    },
+    {
+      "title": "車騎將軍范泰　古今善言",
+      "level": 3,
+      "type": "book",
+      "content": "車騎將軍范泰　古今善言三十卷　《隋志》。",
+      "work_id": "d59f286h69z6"
+    },
+    {
+      "title": "領軍長史虞通之　善諫",
+      "level": 3,
+      "type": "book",
+      "content": "領軍長史虞通之撰　善諫二卷　《隋志》。",
+      "work_id": "d59f286rscg1"
+    },
+    {
+      "title": "後軍參軍徐益壽　記聞",
+      "level": 3,
+      "type": "book",
+      "content": "後軍參軍徐益壽　記聞二卷　《隋志》。",
+      "work_id": "d59f2869dcec"
+    },
+    {
+      "title": "何承天　合皇覽",
+      "level": 3,
+      "type": "book",
+      "content": "何承天　合皇覽五十卷　《七録》。",
+      "work_id": "d59f7v5z0559"
+    }
+  ]
+}

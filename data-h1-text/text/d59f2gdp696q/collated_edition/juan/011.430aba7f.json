@@ -1,0 +1,428 @@
+{
+  "title": "正史類",
+  "sections": [
+    {
+      "title": "《史記》",
+      "level": 3,
+      "type": "book",
+      "content": "司馬遷《史記》一百三十卷⟨裴駰等集注⟩",
+      "work_id": "d59f284bg6pu"
+    },
+    {
+      "title": "《史記》",
+      "level": 3,
+      "type": "book",
+      "content": "又《史記》一百三十卷⟨陳伯宣注⟩",
+      "work_id": "d59f28mutk3q"
+    },
+    {
+      "title": "《漢書》",
+      "level": 3,
+      "type": "book",
+      "content": "班固《漢書》一百卷⟨顏師古注⟩",
+      "work_id": "d59f1iqd854w"
+    },
+    {
+      "title": "《後漢書》",
+      "level": 3,
+      "type": "book",
+      "content": "范曄《後漢書》九十卷⟨章懷太子李賢注⟩",
+      "work_id": "d59f28mvg16t"
+    },
+    {
+      "title": "《新校前漢書》",
+      "level": 3,
+      "type": "book",
+      "content": "趙抃《新校前漢書》一百卷",
+      "work_id": "d59f2hhhxiiq"
+    },
+    {
+      "title": "《漢書刊誤》",
+      "level": 3,
+      "type": "book",
+      "content": "余靖《漢書刊誤》三十卷",
+      "work_id": "d59f2hfp05j5"
+    },
+    {
+      "title": "《補注後漢志》",
+      "level": 3,
+      "type": "book",
+      "content": "劉昭《補注後漢志》三十卷",
+      "work_id": "d59f286jo6bn"
+    },
+    {
+      "title": "《三國志》",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽《三國志》六十五卷⟨裴松之注⟩",
+      "work_id": "d59f283yngg4"
+    },
+    {
+      "title": "《晉書》",
+      "level": 3,
+      "type": "book",
+      "content": "房玄齡《晉書》一百三十卷",
+      "work_id": "d59f28npq1vl"
+    },
+    {
+      "title": "《晉書音義》",
+      "level": 3,
+      "type": "book",
+      "content": "楊齊宣《晉書音義》三卷",
+      "work_id": "d59f28mw2i9w"
+    },
+    {
+      "title": "《宋書》",
+      "level": 3,
+      "type": "book",
+      "content": "沈約《宋書》一百卷",
+      "work_id": "d59f287ki6f4"
+    },
+    {
+      "title": "《南齊書》",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子顯《南齊書》五十九卷",
+      "work_id": "d59f2870u876"
+    },
+    {
+      "title": "《梁書》",
+      "level": 3,
+      "type": "book",
+      "content": "姚思廉《梁書》五十六卷",
+      "work_id": "d59f28npetc0"
+    },
+    {
+      "title": "《陳書》",
+      "level": 3,
+      "type": "book",
+      "content": "又《陳書》三十六卷",
+      "work_id": "d59f28npetc1"
+    },
+    {
+      "title": "《後魏書》",
+      "level": 3,
+      "type": "book",
+      "content": "魏收《後魏書》一百三十卷",
+      "work_id": "d59f28mt9ddv"
+    },
+    {
+      "title": "《後魏書紀》",
+      "level": 3,
+      "type": "book",
+      "content": "魏澹《後魏書紀》一卷⟨本七卷⟩",
+      "work_id": "d59f2q0kyj28"
+    },
+    {
+      "title": "《後魏書天文志》",
+      "level": 3,
+      "type": "book",
+      "content": "張太素《後魏書天文志》二卷⟨本百卷，惟存此⟩",
+      "work_id": "d59f28nesqv7"
+    },
+    {
+      "title": "《北齊書》",
+      "level": 3,
+      "type": "book",
+      "content": "李百藥《北齊書》五十卷",
+      "work_id": "d59f28no5v5u"
+    },
+    {
+      "title": "《後周書》",
+      "level": 3,
+      "type": "book",
+      "content": "令狐德棻《後周書》五十卷",
+      "work_id": "d59f28mvr9q9"
+    },
+    {
+      "title": "《隋書》",
+      "level": 3,
+      "type": "book",
+      "content": "顏師古《隋書》八十五卷",
+      "work_id": "d59f28npetc3"
+    },
+    {
+      "title": "《唐書》",
+      "level": 3,
+      "type": "book",
+      "content": "柳芳《唐書》一百三十卷",
+      "work_id": "d59f2hq4in0g"
+    },
+    {
+      "title": "《唐書敘例目》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐書敘例目》一卷",
+      "work_id": "d59f2pycfawy"
+    },
+    {
+      "title": "《唐書》",
+      "level": 3,
+      "type": "book",
+      "content": "劉煦《唐書》二百卷",
+      "work_id": "d59f2hq4in0g"
+    },
+    {
+      "title": "《新唐書》",
+      "level": 3,
+      "type": "book",
+      "content": "歐陽修、宋祁《新唐書》二百五十五卷",
+      "work_id": "d59f2htqolj5"
+    },
+    {
+      "title": "《目錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《目錄》一卷",
+      "work_id": "d59f2htqolj5",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《《新唐書》》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "title": "《補注唐書》",
+      "level": 3,
+      "type": "book",
+      "content": "李繪《補注唐書》二百二十五卷",
+      "work_id": "d59f285e5m2p"
+    },
+    {
+      "title": "《五代史》",
+      "level": 3,
+      "type": "book",
+      "content": "薛居正《五代史》一百五十卷",
+      "work_id": "d59f2hlcu48y",
+      "ai_note": "宋志前置格：「薛居正五代史一百五十卷」，句末「歐陽修」乃下條之人。"
+    },
+    {
+      "title": "《新五代史》",
+      "level": 3,
+      "type": "book",
+      "content": "歐陽修《新五代史》七十四卷⟨徐無黨注⟩",
+      "work_id": "d59f2hr2ji82"
+    },
+    {
+      "title": "《史記正義》",
+      "level": 3,
+      "type": "book",
+      "content": "張守節《史記正義》三十卷",
+      "work_id": "d59f28mnyc5d"
+    },
+    {
+      "title": "《史記索隱》",
+      "level": 3,
+      "type": "book",
+      "content": "司馬貞《史記索隱》三十卷",
+      "work_id": "d59f28mxmozq"
+    },
+    {
+      "title": "《漢書刊誤》",
+      "level": 3,
+      "type": "book",
+      "content": "張泌《漢書刊誤》一卷",
+      "work_id": "d59f28mv4sn9"
+    },
+    {
+      "title": "《三劉漢書標注》",
+      "level": 3,
+      "type": "book",
+      "content": "《三劉漢書標注》六卷⟨劉敞、劉攽、劉奉世⟩",
+      "work_id": "d59f2pz1eadc"
+    },
+    {
+      "title": "《漢書刊誤》",
+      "level": 3,
+      "type": "book",
+      "content": "劉攽《漢書刊誤》四卷",
+      "work_id": "d59f2hm66fb7"
+    },
+    {
+      "title": "《唐書直筆新例》",
+      "level": 3,
+      "type": "book",
+      "content": "呂夏卿《唐書直筆新例》一卷",
+      "work_id": "d59f2hkhmdxd"
+    },
+    {
+      "title": "《新唐書糾繆》",
+      "level": 3,
+      "type": "book",
+      "content": "吳縝《新唐書糾繆》二十卷",
+      "work_id": "d59f2hrkn9qb"
+    },
+    {
+      "title": "《五代史纂誤》",
+      "level": 3,
+      "type": "book",
+      "content": "又《五代史纂誤》三卷",
+      "work_id": "d59f2hs822gx"
+    },
+    {
+      "title": "《張昭遠朱梁列傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《張昭遠朱梁列傳》十五卷",
+      "work_id": "d59f2q9knmkg"
+    },
+    {
+      "title": "《後唐列傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《後唐列傳》三十卷",
+      "work_id": "d59f2evpfim8"
+    },
+    {
+      "title": "《史論》",
+      "level": 3,
+      "type": "book",
+      "content": "任諒《史論》三卷",
+      "work_id": "d59f2hhcxpts"
+    },
+    {
+      "title": "《新唐史辨惑》",
+      "level": 3,
+      "type": "book",
+      "content": "韓子中《新唐史辨惑》六十卷",
+      "work_id": "d59f2hi8gooz"
+    },
+    {
+      "title": "《兩漢刊誤補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "吳仁傑《兩漢刊誤補遺》十卷",
+      "work_id": "d59f2hpuj1mo"
+    },
+    {
+      "title": "《前漢書綱目》",
+      "level": 3,
+      "type": "book",
+      "content": "富弼《前漢書綱目》一卷",
+      "work_id": "d59f2hj4xd6o"
+    },
+    {
+      "title": "《漢書纂誤》",
+      "level": 3,
+      "type": "book",
+      "content": "劉巨容《漢書纂誤》二卷",
+      "work_id": "d59f2pwmxji9"
+    },
+    {
+      "title": "《唐書列傳辨證》",
+      "level": 3,
+      "type": "book",
+      "content": "汪應辰《唐書列傳辨證》二十卷",
+      "work_id": "d59f2hleeayo"
+    },
+    {
+      "title": "《西漢刊誤》",
+      "level": 3,
+      "type": "book",
+      "content": "《西漢刊誤》一卷⟨不知作者⟩",
+      "work_id": "d59f2pyp80zm"
+    },
+    {
+      "title": "《國史》",
+      "level": 3,
+      "type": "book",
+      "content": "王旦《國史》一百二十卷",
+      "work_id": "d59f2nibt2ps"
+    },
+    {
+      "title": "《宋三朝國史》",
+      "level": 3,
+      "type": "book",
+      "content": "呂夷簡《宋三朝國史》一百五十五卷",
+      "work_id": "d59f2hlydhq9"
+    },
+    {
+      "title": "《神宗正史》",
+      "level": 3,
+      "type": "book",
+      "content": "鄧洵武《神宗正史》一百二十卷",
+      "work_id": "d59f2q132a69"
+    },
+    {
+      "title": "《宋兩朝國史》",
+      "level": 3,
+      "type": "book",
+      "content": "王珪《宋兩朝國史》一百二十卷",
+      "work_id": "d59f2hj9lxc2"
+    },
+    {
+      "title": "《哲宗正史》",
+      "level": 3,
+      "type": "book",
+      "content": "王孝迪《哲宗正史》二百一十卷",
+      "work_id": "d59f2q68h9fl"
+    },
+    {
+      "title": "《宋四朝國史》",
+      "level": 3,
+      "type": "book",
+      "content": "李燾、洪邁《宋四朝國史》三百五十卷",
+      "work_id": "d59f2hlgkyrl"
+    },
+    {
+      "title": "《宋名臣錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋名臣錄》八卷",
+      "work_id": "d59f2q1vgw74"
+    },
+    {
+      "title": "《宋勳德傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋勳德傳》一卷",
+      "work_id": "d59f2px5z0n6"
+    },
+    {
+      "title": "《宋兩朝名臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋兩朝名臣傳》三十卷",
+      "work_id": "d59f2q2n90ch"
+    },
+    {
+      "title": "《咸平諸臣錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《咸平諸臣錄》一卷",
+      "work_id": "d59f2hgo9yww"
+    },
+    {
+      "title": "《熙寧諸臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《熙寧諸臣傳》四卷",
+      "work_id": "d59f2hk12t4w"
+    },
+    {
+      "title": "《兩朝諸臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《兩朝諸臣傳》三十卷⟨並不知作者⟩",
+      "work_id": "d59f2q1nny81"
+    },
+    {
+      "title": "《宋名臣傳》",
+      "level": 3,
+      "type": "book",
+      "content": "張唐英《宋名臣傳》五卷",
+      "work_id": "d59f2hmealfl"
+    },
+    {
+      "title": "《國朝名臣敘傳》",
+      "level": 3,
+      "type": "book",
+      "content": "葛炳奎《國朝名臣敘傳》二十卷",
+      "work_id": "d59f2q19b18i"
+    },
+    {
+      "title": "《國朝名臣敘傳》",
+      "level": 3,
+      "type": "book",
+      "content": "::右正史類五十七部，四千四百七十三卷。⟨葛炳奎《國朝名臣敘傳》不著錄一部，二十卷⟩",
+      "work_id": null
+    }
+  ]
+}

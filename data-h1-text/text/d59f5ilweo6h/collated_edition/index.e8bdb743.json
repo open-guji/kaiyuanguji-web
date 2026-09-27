@@ -1,0 +1,467 @@
+{
+  "work_id": "d59f5ilweo6h",
+  "type": "catalog",
+  "total_entries": 2865,
+  "matched_entries": 2740,
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json",
+    "juan/009.json",
+    "juan/010.json",
+    "juan/011.json",
+    "juan/012.json",
+    "juan/013.json",
+    "juan/014.json",
+    "juan/015.json",
+    "juan/016.json",
+    "juan/017.json",
+    "juan/018.json",
+    "juan/019.json",
+    "juan/020.json",
+    "juan/021.json",
+    "juan/022.json",
+    "juan/023.json",
+    "juan/024.json",
+    "juan/025.json",
+    "juan/026.json",
+    "juan/027.json",
+    "juan/028.json",
+    "juan/029.json",
+    "juan/030.json",
+    "juan/031.json",
+    "juan/032.json",
+    "juan/033.json",
+    "juan/034.json",
+    "juan/035.json",
+    "juan/036.json",
+    "juan/037.json",
+    "juan/038.json",
+    "juan/039.json",
+    "juan/040.json",
+    "juan/041.json",
+    "juan/042.json",
+    "juan/043.json",
+    "juan/044.json",
+    "juan/045.json",
+    "juan/046.json",
+    "juan/047.json",
+    "juan/048.json",
+    "juan/049.json",
+    "juan/050.json",
+    "juan/051.json",
+    "juan/052.json",
+    "juan/053.json",
+    "juan/054.json",
+    "juan/055.json",
+    "juan/056.json",
+    "juan/057.json",
+    "juan/058.json",
+    "juan/059.json",
+    "juan/060.json",
+    "juan/061.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "經部",
+      "files": [],
+      "children": [
+        {
+          "label": "易類",
+          "files": [
+            "juan/001.json"
+          ]
+        },
+        {
+          "label": "書類",
+          "files": [
+            "juan/002.json"
+          ]
+        },
+        {
+          "label": "詩類",
+          "files": [
+            "juan/003.json"
+          ]
+        },
+        {
+          "label": "禮類周官之屬",
+          "files": [
+            "juan/004.json"
+          ]
+        },
+        {
+          "label": "禮類儀禮之屬",
+          "files": [
+            "juan/005.json"
+          ]
+        },
+        {
+          "label": "禮類禮記之屬",
+          "files": [
+            "juan/006.json"
+          ]
+        },
+        {
+          "label": "禮類三禮總義之屬",
+          "files": [
+            "juan/007.json"
+          ]
+        },
+        {
+          "label": "禮類雜禮書之屬",
+          "files": [
+            "juan/008.json"
+          ]
+        },
+        {
+          "label": "春秋類",
+          "files": [
+            "juan/009.json"
+          ]
+        },
+        {
+          "label": "孝經類",
+          "files": [
+            "juan/010.json"
+          ]
+        },
+        {
+          "label": "五經總義類",
+          "files": [
+            "juan/011.json"
+          ]
+        },
+        {
+          "label": "論語類",
+          "files": [
+            "juan/012.json"
+          ]
+        },
+        {
+          "label": "樂類",
+          "files": [
+            "juan/013.json"
+          ]
+        },
+        {
+          "label": "小學類",
+          "files": [
+            "juan/014.json"
+          ]
+        },
+        {
+          "label": "正史類",
+          "files": [
+            "juan/015.json"
+          ]
+        },
+        {
+          "label": "編年類",
+          "files": [
+            "juan/016.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "史部",
+      "files": [],
+      "children": [
+        {
+          "label": "別史類",
+          "files": [
+            "juan/017.json"
+          ]
+        },
+        {
+          "label": "雜史類",
+          "files": [
+            "juan/018.json"
+          ]
+        },
+        {
+          "label": "詔令奏議類詔令之屬",
+          "files": [
+            "juan/019.json"
+          ]
+        },
+        {
+          "label": "詔令奏議類奏議之屬",
+          "files": [
+            "juan/020.json"
+          ]
+        },
+        {
+          "label": "傳記類聖賢之屬",
+          "files": [
+            "juan/021.json"
+          ]
+        },
+        {
+          "label": "傳記類名人之屬",
+          "files": [
+            "juan/022.json"
+          ]
+        },
+        {
+          "label": "傳記類總録之屬",
+          "files": [
+            "juan/023.json"
+          ]
+        },
+        {
+          "label": "傳記類雜録之屬",
+          "files": [
+            "juan/024.json"
+          ]
+        },
+        {
+          "label": "史鈔類",
+          "files": [
+            "juan/025.json"
+          ]
+        },
+        {
+          "label": "載記類",
+          "files": [
+            "juan/026.json"
+          ]
+        },
+        {
+          "label": "時令類",
+          "files": [
+            "juan/027.json"
+          ]
+        },
+        {
+          "label": "地理類宮殿簿之屬",
+          "files": [
+            "juan/028.json"
+          ]
+        },
+        {
+          "label": "地理類總志之屬",
+          "files": [
+            "juan/029.json"
+          ]
+        },
+        {
+          "label": "地理類都會郡縣之屬",
+          "files": [
+            "juan/030.json"
+          ]
+        },
+        {
+          "label": "地理類河渠之屬",
+          "files": [
+            "juan/031.json"
+          ]
+        },
+        {
+          "label": "地理類邊防之屬",
+          "files": [
+            "juan/032.json"
+          ]
+        },
+        {
+          "label": "地理類山水之屬",
+          "files": [
+            "juan/033.json"
+          ]
+        },
+        {
+          "label": "地理類古蹟之屬",
+          "files": [
+            "juan/034.json"
+          ]
+        },
+        {
+          "label": "地理類記之屬",
+          "files": [
+            "juan/035.json"
+          ]
+        },
+        {
+          "label": "地理類游記之屬",
+          "files": [
+            "juan/036.json"
+          ]
+        },
+        {
+          "label": "地理類外記之屬",
+          "files": [
+            "juan/037.json"
+          ]
+        },
+        {
+          "label": "職官類",
+          "files": [
+            "juan/038.json"
+          ]
+        },
+        {
+          "label": "政書類通制之屬",
+          "files": [
+            "juan/039.json"
+          ]
+        },
+        {
+          "label": "政書類儀制之屬",
+          "files": [
+            "juan/040.json"
+          ]
+        },
+        {
+          "label": "政書類法令之屬",
+          "files": [
+            "juan/041.json"
+          ]
+        },
+        {
+          "label": "目録類",
+          "files": [
+            "juan/042.json"
+          ]
+        },
+        {
+          "label": "史評類",
+          "files": [
+            "juan/043.json"
+          ]
+        },
+        {
+          "label": "儒家類",
+          "files": [
+            "juan/044.json"
+          ]
+        },
+        {
+          "label": "兵家類",
+          "files": [
+            "juan/045.json"
+          ]
+        },
+        {
+          "label": "法家類",
+          "files": [
+            "juan/046.json"
+          ]
+        },
+        {
+          "label": "醫家類",
+          "files": [
+            "juan/047.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "子部",
+      "files": [],
+      "children": [
+        {
+          "label": "天文算法類推步之屬",
+          "files": [
+            "juan/048.json"
+          ]
+        },
+        {
+          "label": "天文算法類算法之屬",
+          "files": [
+            "juan/049.json"
+          ]
+        },
+        {
+          "label": "術數類",
+          "files": [
+            "juan/050.json"
+          ]
+        },
+        {
+          "label": "藝術類",
+          "files": [
+            "juan/051.json"
+          ]
+        },
+        {
+          "label": "譜録類",
+          "files": [
+            "juan/052.json"
+          ]
+        },
+        {
+          "label": "雜家類",
+          "files": [
+            "juan/053.json"
+          ]
+        },
+        {
+          "label": "類書類",
+          "files": [
+            "juan/054.json"
+          ]
+        },
+        {
+          "label": "小説家類",
+          "files": [
+            "juan/055.json"
+          ]
+        },
+        {
+          "label": "釋家類",
+          "files": [
+            "juan/056.json"
+          ]
+        },
+        {
+          "label": "道家類",
+          "files": [
+            "juan/057.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "集部",
+      "files": [],
+      "children": [
+        {
+          "label": "楚辭類",
+          "files": [
+            "juan/058.json"
+          ]
+        },
+        {
+          "label": "別集類",
+          "files": [
+            "juan/059.json"
+          ]
+        },
+        {
+          "label": "總集類",
+          "files": [
+            "juan/060.json"
+          ]
+        },
+        {
+          "label": "石刻類",
+          "files": [
+            "juan/061.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "text_quality": {
+    "grade": "rough",
+    "source_note": "《二十五史藝文經籍志考補萃編》第十一卷逐頁人工校對。本志體例特異：撰人不在書名行，而在考證文之首（「《周易言不盡意論》嵇康撰。據《玉海》。」），故撰人由 extract_author.py 自考證文提取，三重否證（承前式之出處、案語、紀年敘事語皆不取），形制特殊者逐條手判。"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-09-06"
+}

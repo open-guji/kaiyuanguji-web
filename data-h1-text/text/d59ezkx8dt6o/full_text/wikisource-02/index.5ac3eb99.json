@@ -1,0 +1,674 @@
+{
+  "work_id": "d59ezkx8dt6o",
+  "version_label": "老子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93%20%28%E7%8E%8B%E5%BC%BC%E6%9C%AC%29",
+    "page_title": "道德經 (王弼本)",
+    "revid": 2354026,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "通行本（王弼注），81 章，經文與注文皆錄（注文轉 guji-markdown 夾注）；排除頁尾陸德明「道經音義」「德經音義」二節（音注附錄，非王弼注本正文）。文本总管 09-26 23:0x 定：本篇为 primary（刻本白文对读用），匯校版（wikisource-01）为帛書/郭店異文參照，非 primary。",
+  "total_chapters": 81,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "一章",
+      "file": "001.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 440
+    },
+    {
+      "n": 2,
+      "title": "二章",
+      "file": "002.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 252
+    },
+    {
+      "n": 3,
+      "title": "三章",
+      "file": "003.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 252
+    },
+    {
+      "n": 4,
+      "title": "四章",
+      "file": "004.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 315
+    },
+    {
+      "n": 5,
+      "title": "五章",
+      "file": "005.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 354
+    },
+    {
+      "n": 6,
+      "title": "六章",
+      "file": "006.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 182
+    },
+    {
+      "n": 7,
+      "title": "七章",
+      "file": "007.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 103
+    },
+    {
+      "n": 8,
+      "title": "八章",
+      "file": "008.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 99
+    },
+    {
+      "n": 9,
+      "title": "九章",
+      "file": "009.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 154
+    },
+    {
+      "n": 10,
+      "title": "十章",
+      "file": "010.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 498
+    },
+    {
+      "n": 11,
+      "title": "十一章",
+      "file": "011.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 134
+    },
+    {
+      "n": 12,
+      "title": "十二章",
+      "file": "012.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 159
+    },
+    {
+      "n": 13,
+      "title": "十三章",
+      "file": "013.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 282
+    },
+    {
+      "n": 14,
+      "title": "十四章",
+      "file": "014.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 302
+    },
+    {
+      "n": 15,
+      "title": "十五章",
+      "file": "015.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 282
+    },
+    {
+      "n": 16,
+      "title": "十六章",
+      "file": "016.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 433
+    },
+    {
+      "n": 17,
+      "title": "十七章",
+      "file": "017.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 341
+    },
+    {
+      "n": 18,
+      "title": "十八章",
+      "file": "018.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 160
+    },
+    {
+      "n": 19,
+      "title": "十九章",
+      "file": "019.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 133
+    },
+    {
+      "n": 20,
+      "title": "二十章",
+      "file": "020.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 591
+    },
+    {
+      "n": 21,
+      "title": "二十一章",
+      "file": "021.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 367
+    },
+    {
+      "n": 22,
+      "title": "二十二章",
+      "file": "022.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 213
+    },
+    {
+      "n": 23,
+      "title": "二十三章",
+      "file": "023.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 348
+    },
+    {
+      "n": 24,
+      "title": "二十四章",
+      "file": "024.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 126
+    },
+    {
+      "n": 25,
+      "title": "二十五章",
+      "file": "025.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 752
+    },
+    {
+      "n": 26,
+      "title": "二十六章",
+      "file": "026.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 151
+    },
+    {
+      "n": 27,
+      "title": "二十七章",
+      "file": "027.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 399
+    },
+    {
+      "n": 28,
+      "title": "二十八章",
+      "file": "028.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 318
+    },
+    {
+      "n": 29,
+      "title": "二十九章",
+      "file": "029.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 230
+    },
+    {
+      "n": 30,
+      "title": "三十章",
+      "file": "030.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 337
+    },
+    {
+      "n": 31,
+      "title": "三十一章",
+      "file": "031.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 141
+    },
+    {
+      "n": 32,
+      "title": "三十二章",
+      "file": "032.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 416
+    },
+    {
+      "n": 33,
+      "title": "三十三章",
+      "file": "033.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 246
+    },
+    {
+      "n": 34,
+      "title": "三十四章",
+      "file": "034.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 201
+    },
+    {
+      "n": 35,
+      "title": "三十五章",
+      "file": "035.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 214
+    },
+    {
+      "n": 36,
+      "title": "三十六章",
+      "file": "036.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 243
+    },
+    {
+      "n": 37,
+      "title": "三十七章",
+      "file": "037.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 136
+    },
+    {
+      "n": 38,
+      "title": "三十八章",
+      "file": "038.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 1423
+    },
+    {
+      "n": 39,
+      "title": "三十九章",
+      "file": "039.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 390
+    },
+    {
+      "n": 40,
+      "title": "四十章",
+      "file": "040.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 123
+    },
+    {
+      "n": 41,
+      "title": "四十一章",
+      "file": "041.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 525
+    },
+    {
+      "n": 42,
+      "title": "四十二章",
+      "file": "042.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 407
+    },
+    {
+      "n": 43,
+      "title": "四十三章",
+      "file": "043.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 104
+    },
+    {
+      "n": 44,
+      "title": "四十四章",
+      "file": "044.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 133
+    },
+    {
+      "n": 45,
+      "title": "四十五章",
+      "file": "045.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 231
+    },
+    {
+      "n": 46,
+      "title": "四十六章",
+      "file": "046.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 110
+    },
+    {
+      "n": 47,
+      "title": "四十七章",
+      "file": "047.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 237
+    },
+    {
+      "n": 48,
+      "title": "四十八章",
+      "file": "048.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 122
+    },
+    {
+      "n": 49,
+      "title": "四十九章",
+      "file": "049.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 554
+    },
+    {
+      "n": 50,
+      "title": "五十章",
+      "file": "050.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 365
+    },
+    {
+      "n": 51,
+      "title": "五十一章",
+      "file": "051.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 327
+    },
+    {
+      "n": 52,
+      "title": "五十二章",
+      "file": "052.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 283
+    },
+    {
+      "n": 53,
+      "title": "五十三章",
+      "file": "053.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 238
+    },
+    {
+      "n": 54,
+      "title": "五十四章",
+      "file": "054.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 286
+    },
+    {
+      "n": 55,
+      "title": "五十五章",
+      "file": "055.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 313
+    },
+    {
+      "n": 56,
+      "title": "五十六章",
+      "file": "056.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 211
+    },
+    {
+      "n": 57,
+      "title": "五十七章",
+      "file": "057.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 377
+    },
+    {
+      "n": 58,
+      "title": "五十八章",
+      "file": "058.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 444
+    },
+    {
+      "n": 59,
+      "title": "五十九章",
+      "file": "059.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 250
+    },
+    {
+      "n": 60,
+      "title": "六十章",
+      "file": "060.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 301
+    },
+    {
+      "n": 61,
+      "title": "六十一章",
+      "file": "061.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 316
+    },
+    {
+      "n": 62,
+      "title": "六十二章",
+      "file": "062.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 328
+    },
+    {
+      "n": 63,
+      "title": "六十三章",
+      "file": "063.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 190
+    },
+    {
+      "n": 64,
+      "title": "六十四章",
+      "file": "064.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 409
+    },
+    {
+      "n": 65,
+      "title": "六十五章",
+      "file": "065.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 283
+    },
+    {
+      "n": 66,
+      "title": "六十六章",
+      "file": "066.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 88
+    },
+    {
+      "n": 67,
+      "title": "六十七章",
+      "file": "067.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 264
+    },
+    {
+      "n": 68,
+      "title": "六十八章",
+      "file": "068.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 116
+    },
+    {
+      "n": 69,
+      "title": "六十九章",
+      "file": "069.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 218
+    },
+    {
+      "n": 70,
+      "title": "七十章",
+      "file": "070.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 252
+    },
+    {
+      "n": 71,
+      "title": "七十一章",
+      "file": "071.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 50
+    },
+    {
+      "n": 72,
+      "title": "七十二章",
+      "file": "072.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 216
+    },
+    {
+      "n": 73,
+      "title": "七十三章",
+      "file": "073.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 270
+    },
+    {
+      "n": 74,
+      "title": "七十四章",
+      "file": "074.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 115
+    },
+    {
+      "n": 75,
+      "title": "七十五章",
+      "file": "075.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 95
+    },
+    {
+      "n": 76,
+      "title": "七十六章",
+      "file": "076.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 121
+    },
+    {
+      "n": 77,
+      "title": "七十七章",
+      "file": "077.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 200
+    },
+    {
+      "n": 78,
+      "title": "七十八章",
+      "file": "078.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 109
+    },
+    {
+      "n": 79,
+      "title": "七十九章",
+      "file": "079.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 133
+    },
+    {
+      "n": 80,
+      "title": "八十章",
+      "file": "080.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 190
+    },
+    {
+      "n": 81,
+      "title": "八十一章",
+      "file": "081.md",
+      "page_title": "道德經 (王弼本)",
+      "revid": 2354026,
+      "md_len": 742
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "primary": true,
+  "dropped_refs": 4
+}

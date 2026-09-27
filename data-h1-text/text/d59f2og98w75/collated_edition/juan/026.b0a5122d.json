@@ -1,0 +1,38 @@
+{
+  "title": "子部·天文類",
+  "sections": [
+    {
+      "title": "天文類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "甄鸞　周髀一卷",
+      "level": 3,
+      "type": "book",
+      "content": "甄鸞　周髀一卷　甄鸞重述，見《隋志》。兩《唐志》作甄鸞注。",
+      "work_id": "d59f990cos96"
+    },
+    {
+      "title": "陸旭　五星要訣",
+      "level": 3,
+      "type": "book",
+      "content": "陸旭　五星要訣　陸旭撰，見《陸騰傳》。《北史·陸俟傳》同。《隋志》未收。",
+      "work_id": "d59f990cos97"
+    },
+    {
+      "title": "陸旭　兩儀真圖",
+      "level": 3,
+      "type": "book",
+      "content": "陸旭　兩儀真圖　陸旭撰，見《陸騰傳》。《北史·陸俟傳》同。《隋志》未收。",
+      "work_id": "d59f990d00sg"
+    },
+    {
+      "title": "天文類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右天文三部，一部一卷，二部無卷數。一部一卷已收入《隋志》，二部未收。"
+    }
+  ]
+}

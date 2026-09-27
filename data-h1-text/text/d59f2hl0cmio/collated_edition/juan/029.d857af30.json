@@ -1,0 +1,32 @@
+{
+  "title": "墨家類",
+  "sections": [
+    {
+      "title": "墨子",
+      "level": 3,
+      "type": "book",
+      "content": "墨子十五卷",
+      "work_id": "d59ezahzvx8g"
+    },
+    {
+      "title": "隨巢子",
+      "level": 3,
+      "type": "book",
+      "content": "隨巢子一卷",
+      "work_id": "d59f2evz3vgg"
+    },
+    {
+      "title": "胡非子",
+      "level": 3,
+      "type": "book",
+      "content": "胡非子一卷",
+      "work_id": "d59f2evwaqkk"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右墨家類三家，三部，一十七卷。"
+    }
+  ]
+}

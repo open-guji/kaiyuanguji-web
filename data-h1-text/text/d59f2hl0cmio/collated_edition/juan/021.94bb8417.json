@@ -1,0 +1,555 @@
+{
+  "title": "刑法類",
+  "updated_at": "2026-08-08",
+  "sections": [
+    {
+      "title": "漢建武律令故事",
+      "level": 3,
+      "type": "book",
+      "content": "漢建武律令故事三卷",
+      "work_id": "d59f2q31aosh"
+    },
+    {
+      "title": "漢名臣奏",
+      "level": 3,
+      "type": "book",
+      "content": "漢名臣奏二十九卷",
+      "work_id": "d59f2pr6a1a9",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evfuvfbxlslc，今歸 1ex0jamhu7jlt《漢名臣奏》二十九卷——新唐志此條列於陳壽《漢名臣奏事》三十卷之前，姚振宗《後漢藝文志》辨其非陳壽書。"
+    },
+    {
+      "title": "廷尉決事",
+      "level": 3,
+      "type": "book",
+      "content": "廷尉決事二十卷",
+      "work_id": "d59f2pv66gao"
+    },
+    {
+      "title": "廷尉駁事",
+      "level": 3,
+      "type": "book",
+      "content": "廷尉駁事十一卷",
+      "work_id": "d59f2puo2o74"
+    },
+    {
+      "title": "廷尉雜詔書",
+      "level": 3,
+      "type": "book",
+      "content": "廷尉雜詔書二十六卷",
+      "work_id": "d59f23ns1d6q"
+    },
+    {
+      "title": "南臺奏事",
+      "level": 3,
+      "type": "book",
+      "content": "南臺奏事二十二卷",
+      "work_id": "d59f23nsclqa"
+    },
+    {
+      "title": "應劭漢朝議駁",
+      "level": 3,
+      "type": "book",
+      "content": "應劭漢朝議駁三十卷",
+      "work_id": "d59f23nsz2tg",
+      "link_basis": "原繫 1evcs0i014kcg，該條已併入 1evcml14077cw（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "陳壽漢名臣奏事",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽漢名臣奏事三十卷",
+      "work_id": "d59f27u18qgz"
+    },
+    {
+      "title": "晉駁事",
+      "level": 3,
+      "type": "book",
+      "content": "晉駁事四卷",
+      "work_id": "d59f27ujyz28"
+    },
+    {
+      "title": "晉彈事",
+      "level": 3,
+      "type": "book",
+      "content": "晉彈事九卷",
+      "work_id": "d59f27tm9cec"
+    },
+    {
+      "title": "賈充、杜預刑法律本",
+      "level": 3,
+      "type": "book",
+      "content": "賈充、杜預刑法律本二十一卷",
+      "work_id": "d59f2py4xm2p"
+    },
+    {
+      "title": "又晉令",
+      "level": 3,
+      "type": "book",
+      "content": "又晉令四十卷",
+      "work_id": "d59f29mnof0g"
+    },
+    {
+      "title": "宗躬齊永明律",
+      "level": 3,
+      "type": "book",
+      "content": "宗躬齊永明律八卷",
+      "work_id": "d59f2pxz03cw"
+    },
+    {
+      "title": "蔡法度梁律",
+      "level": 3,
+      "type": "book",
+      "content": "蔡法度梁律二十卷",
+      "work_id": "d59f286oz7k0",
+      "link_basis": "原繫 1evcs0i2686io，該條已併入 1evcml11fhq0w（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "又梁令",
+      "level": 3,
+      "type": "book",
+      "content": "又梁令三十卷",
+      "work_id": "d59f285ppe6a"
+    },
+    {
+      "title": "梁科",
+      "level": 3,
+      "type": "book",
+      "content": "梁科二卷",
+      "work_id": "d59f28642b5t"
+    },
+    {
+      "title": "條鈔晉宋齊梁律",
+      "level": 3,
+      "type": "book",
+      "content": "條鈔晉宋齊梁律二十卷",
+      "work_id": "d59f2q2i97nk"
+    },
+    {
+      "title": "范泉等陳律",
+      "level": 3,
+      "type": "book",
+      "content": "范泉等陳律九卷",
+      "work_id": "d59f2pz7y9kw"
+    },
+    {
+      "title": "又陳令",
+      "level": 3,
+      "type": "book",
+      "content": "又陳令三十卷",
+      "work_id": "d59f286d46wy"
+    },
+    {
+      "title": "陳科",
+      "level": 3,
+      "type": "book",
+      "content": "陳科三十卷",
+      "work_id": "d59f285ca6tg"
+    },
+    {
+      "title": "趙郡王叡北齊律",
+      "level": 3,
+      "type": "book",
+      "content": "趙郡王叡北齊律二十卷",
+      "work_id": "d59f2q3n5b0i"
+    },
+    {
+      "title": "令",
+      "level": 3,
+      "type": "book",
+      "content": "令八卷",
+      "work_id": "d59f28jkim86"
+    },
+    {
+      "title": "麟趾格",
+      "level": 3,
+      "type": "book",
+      "content": "麟趾格四卷",
+      "work_id": "d59f2puop5og"
+    },
+    {
+      "title": "趙肅等周律",
+      "level": 3,
+      "type": "book",
+      "content": "趙肅等周律二十五卷",
+      "work_id": "d59f2pyjlr7k"
+    },
+    {
+      "title": "蘇綽大統式",
+      "level": 3,
+      "type": "book",
+      "content": "蘇綽大統式三卷",
+      "work_id": "d59f2q33648x"
+    },
+    {
+      "title": "張斐律解",
+      "level": 3,
+      "type": "book",
+      "content": "張斐律解二十卷",
+      "work_id": "d59f2pvscav5"
+    },
+    {
+      "title": "劉邵律略論",
+      "level": 3,
+      "type": "book",
+      "content": "劉邵律略論五卷",
+      "work_id": "d59f27slfcap"
+    },
+    {
+      "title": "高熲等隋律",
+      "level": 3,
+      "type": "book",
+      "content": "高熲等隋律十二卷",
+      "work_id": "d59f2q6badxd"
+    },
+    {
+      "title": "牛弘等隋開皇令",
+      "level": 3,
+      "type": "book",
+      "content": "牛弘等隋開皇令三十卷",
+      "work_id": "d59f2q3v9gjl"
+    },
+    {
+      "title": "隋大業律",
+      "level": 3,
+      "type": "book",
+      "content": "隋大業律十八卷",
+      "work_id": "d59f28le2gao"
+    },
+    {
+      "title": "武德律",
+      "level": 3,
+      "type": "book",
+      "content": "武德律十二卷",
+      "work_id": "d59f28kmwt1f"
+    },
+    {
+      "title": "又式",
+      "level": 3,
+      "type": "book",
+      "content": "又式十四卷",
+      "work_id": "d59f28l84xz8"
+    },
+    {
+      "title": "令",
+      "level": 3,
+      "type": "book",
+      "content": "令三十一卷",
+      "work_id": "d59f28jkim86"
+    },
+    {
+      "title": "貞觀律",
+      "level": 3,
+      "type": "book",
+      "content": "貞觀律十二卷",
+      "work_id": "d59f29k7yqdh"
+    },
+    {
+      "title": "又令",
+      "level": 3,
+      "type": "book",
+      "content": "又令二十七卷",
+      "work_id": "d59f28kcaqkn"
+    },
+    {
+      "title": "格",
+      "level": 3,
+      "type": "book",
+      "content": "格十八卷",
+      "work_id": "d59f28j7pvye"
+    },
+    {
+      "title": "留司格",
+      "level": 3,
+      "type": "book",
+      "content": "留司格一卷",
+      "work_id": "d59f2puje48y"
+    },
+    {
+      "title": "式",
+      "level": 3,
+      "type": "book",
+      "content": "式三十三卷",
+      "work_id": "d59f28jm2sxx",
+      "ai_note": "承前貞觀律、令、格之次，即貞觀式三十三卷。"
+    },
+    {
+      "title": "永徽律",
+      "level": 3,
+      "type": "book",
+      "content": "永徽律十二卷",
+      "work_id": "d59f28jk7dog"
+    },
+    {
+      "title": "又式",
+      "level": 3,
+      "type": "book",
+      "content": "又式十四卷",
+      "work_id": "d59f28kqyw3n"
+    },
+    {
+      "title": "式本",
+      "level": 3,
+      "type": "book",
+      "content": "式本四卷",
+      "work_id": "d59f2py16rcw"
+    },
+    {
+      "title": "令",
+      "level": 3,
+      "type": "book",
+      "content": "令三十卷",
+      "work_id": "d59f28jkim86"
+    },
+    {
+      "title": "散頒天下格",
+      "level": 3,
+      "type": "book",
+      "content": "散頒天下格七卷",
+      "work_id": "d59f2pxumrr4"
+    },
+    {
+      "title": "留本司行格",
+      "level": 3,
+      "type": "book",
+      "content": "留本司行格十八卷",
+      "work_id": "d59f2q1ya0w0"
+    },
+    {
+      "title": "律疏",
+      "level": 3,
+      "type": "book",
+      "content": "律疏三十卷",
+      "work_id": "d59f28l5bt34"
+    },
+    {
+      "title": "永徽留本司格後",
+      "level": 3,
+      "type": "book",
+      "content": "永徽留本司格後十一卷",
+      "work_id": "d59f28jsmscn"
+    },
+    {
+      "title": "趙仁本法例",
+      "level": 3,
+      "type": "book",
+      "content": "趙仁本法例二卷",
+      "work_id": "d59f2pyjaiv5"
+    },
+    {
+      "title": "崔知悌法例",
+      "level": 3,
+      "type": "book",
+      "content": "崔知悌法例二卷",
+      "work_id": "d59f2ptgdg5e"
+    },
+    {
+      "title": "垂拱式",
+      "level": 3,
+      "type": "book",
+      "content": "垂拱式二十卷",
+      "work_id": "d59f28kqcf0k"
+    },
+    {
+      "title": "又格",
+      "level": 3,
+      "type": "book",
+      "content": "又格十卷",
+      "work_id": "d59f28l6kr9c"
+    },
+    {
+      "title": "新格",
+      "level": 3,
+      "type": "book",
+      "content": "新格二卷",
+      "work_id": "d59f28kk3o5e"
+    },
+    {
+      "title": "散頒格",
+      "level": 3,
+      "type": "book",
+      "content": "散頒格三卷",
+      "work_id": "d59f2pzdkjr6"
+    },
+    {
+      "title": "留司格",
+      "level": 3,
+      "type": "book",
+      "content": "留司格六卷",
+      "work_id": "d59f2puje48y"
+    },
+    {
+      "title": "刪垂拱式",
+      "level": 3,
+      "type": "book",
+      "content": "刪垂拱式二十卷",
+      "work_id": "d59f28ju6z2e"
+    },
+    {
+      "title": "又散頒格",
+      "level": 3,
+      "type": "book",
+      "content": "又散頒格七卷",
+      "work_id": "d59f2q49xmgw"
+    },
+    {
+      "title": "太極格",
+      "level": 3,
+      "type": "book",
+      "content": "太極格十卷",
+      "work_id": "d59f2q08s9vk"
+    },
+    {
+      "title": "開元前格",
+      "level": 3,
+      "type": "book",
+      "content": "開元前格十卷",
+      "work_id": "d59f28lsqltw"
+    },
+    {
+      "title": "開元後格",
+      "level": 3,
+      "type": "book",
+      "content": "開元後格十卷",
+      "work_id": "d59f28kduxa9"
+    },
+    {
+      "title": "又令",
+      "level": 3,
+      "type": "book",
+      "content": "又令三十卷",
+      "work_id": "d59f28lmt3ia"
+    },
+    {
+      "title": "式",
+      "level": 3,
+      "type": "book",
+      "content": "式二十卷",
+      "work_id": "d59f28lci9l0"
+    },
+    {
+      "title": "格後長行敕",
+      "level": 3,
+      "type": "book",
+      "content": "格後長行敕六卷",
+      "work_id": "d59f2q3v9gxs"
+    },
+    {
+      "title": "開元新格",
+      "level": 3,
+      "type": "book",
+      "content": "開元新格十卷",
+      "work_id": "d59f28lgkcn5"
+    },
+    {
+      "title": "格式律令事類",
+      "level": 3,
+      "type": "book",
+      "content": "格式律令事類四十卷",
+      "work_id": "d59f2py749a8"
+    },
+    {
+      "title": "度支長行旨",
+      "level": 3,
+      "type": "book",
+      "content": "度支長行旨五卷",
+      "work_id": "d59f28lsfdae"
+    },
+    {
+      "title": "王行先律令手鑑",
+      "level": 3,
+      "type": "book",
+      "content": "王行先律令手鑑二卷",
+      "work_id": "d59f2q44ml1d"
+    },
+    {
+      "title": "元泳式苑",
+      "level": 3,
+      "type": "book",
+      "content": "元泳式苑四卷",
+      "work_id": "d59f28jnmznl"
+    },
+    {
+      "title": "裴光庭唐開元格令科要",
+      "level": 3,
+      "type": "book",
+      "content": "裴光庭唐開元格令科要一卷",
+      "work_id": "d59f28maudc0"
+    },
+    {
+      "title": "元和格敕",
+      "level": 3,
+      "type": "book",
+      "content": "元和格敕三十卷",
+      "work_id": "d59f2q3ds6bk"
+    },
+    {
+      "title": "元和刪定制敕",
+      "level": 3,
+      "type": "book",
+      "content": "元和刪定制敕三十卷",
+      "work_id": "d59f2q2eid4w"
+    },
+    {
+      "title": "大和格後敕",
+      "level": 3,
+      "type": "book",
+      "content": "大和格後敕四十卷",
+      "work_id": "d59f2pz47f9e"
+    },
+    {
+      "title": "格後敕",
+      "level": 3,
+      "type": "book",
+      "content": "格後敕五十卷",
+      "work_id": "d59f2q0zbg1u"
+    },
+    {
+      "title": "狄兼謩開成詳定格",
+      "level": 3,
+      "type": "book",
+      "content": "狄兼謩開成詳定格十卷",
+      "work_id": "d59f28jny879"
+    },
+    {
+      "title": "大中刑法總要格後敕",
+      "level": 3,
+      "type": "book",
+      "content": "大中刑法總要格後敕六十卷",
+      "work_id": "d59f28l42ux2"
+    },
+    {
+      "title": "張戣大中刑律統類",
+      "level": 3,
+      "type": "book",
+      "content": "張戣大中刑律統類十二卷",
+      "work_id": "d59f28labls4"
+    },
+    {
+      "title": "盧紓刑法要錄",
+      "level": 3,
+      "type": "book",
+      "content": "盧紓刑法要錄十卷",
+      "work_id": "d59f2q297bpd"
+    },
+    {
+      "title": "張伾判格",
+      "level": 3,
+      "type": "book",
+      "content": "張伾判格三卷",
+      "work_id": "d59f2pt7bke8"
+    },
+    {
+      "title": "李崇法鑑",
+      "level": 3,
+      "type": "book",
+      "content": "李崇法鑑八卷",
+      "work_id": "d59f28l3gdtt"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右刑法類二十八家，六十一部，一千四卷。"
+    }
+  ]
+}

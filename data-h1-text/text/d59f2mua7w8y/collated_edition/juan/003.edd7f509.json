@@ -1,0 +1,128 @@
+{
+  "title": "史編·雜史類",
+  "part": "main",
+  "bian": "history",
+  "lei": "雜史類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "古文瑣語一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "古文瑣語",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜史類",
+      "zhi_no": 6,
+      "juan_no": 63,
+      "work_id": "d59f2q5frf29",
+      "link_basis": "本書輯佚檔已記馬國翰輯之",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    },
+    {
+      "title": "帝王要略一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "帝王要略",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜史類",
+      "zhi_no": 6,
+      "juan_no": 63,
+      "dynasty": "吳",
+      "author": "環濟",
+      "author_role": "撰",
+      "work_id": "d59f27wyfpj7",
+      "link_basis": "題同且撰人「環濟」合，唯一",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    },
+    {
+      "title": "三五歷記一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "三五歷記",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜史類",
+      "zhi_no": 6,
+      "juan_no": 63,
+      "dynasty": "吳",
+      "author": "徐整",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f27s6fy88",
+      "link_basis": "本庫無同題 work，據本目錄新建",
+      "content": ""
+    },
+    {
+      "title": "年曆一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "年曆",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜史類",
+      "zhi_no": 7,
+      "juan_no": 64,
+      "dynasty": "晉",
+      "author": "皇甫謐",
+      "author_role": "撰",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f27wbymf6",
+      "link_basis": "本庫同題3，逐條考撰人而決：庫中撰人作「皇甫」，是截名（庫之舊疾，非別為一人）；其書晉人所撰，《補晉書藝文志》著錄，晉之皇甫而撰《年曆》者，皇甫謐也。",
+      "content": ""
+    },
+    {
+      "title": "汲冢書鈔一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "汲冢書鈔",
+      "measure": 1,
+      "part": "main",
+      "bian": "history",
+      "lei": "雜史類",
+      "zhi_no": 7,
+      "juan_no": 64,
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "work_id": "d59f2pquq9dv",
+      "link_basis": "本庫無同題 work，據本目錄新建",
+      "content": ""
+    }
+  ]
+}

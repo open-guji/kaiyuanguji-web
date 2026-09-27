@@ -1,0 +1,245 @@
+{
+ "title": "仙釋類",
+ "sections": [
+  {
+   "title": "仙釋類",
+   "level": 3,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "《太微黄書》",
+   "level": 3,
+   "type": "book",
+   "content": "戴孟 太微黄書<本姓燕，名濟，字仲微。>",
+   "work_id": "d59f24m52txd"
+  },
+  {
+   "title": "《太微黄書》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "葛洪《神仙傳》：“戴孟本姓燕，名濟，字仲微，漢明帝時人也。入華山及武當山，受裴君《玉珮金璫經》及受《石精金光符》，復有《太微黄書》，能周遊名山。”《御覽》六百六十二引《三洞珠囊》曰：“戴公柏有《太微黄書》十餘卷，壺公之師也。”康案據此則戴公柏即戴孟，蓋又有別名。《御覽》六百七十三引《太微黄書經》。"
+  },
+  {
+   "title": "《養性治身經》三卷",
+   "level": 3,
+   "type": "book",
+   "content": "王喬 養性治身經三卷",
+   "work_id": "d59f24lyu329"
+  },
+  {
+   "title": "《養性治身經》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《抱樸子·遐覽篇》。《御覽》卷九引《養性經》曰：“治身之道，春避青風，夏避赤風，秋避白風，冬避黑風。”蓋即出此書也。"
+  },
+  {
+   "title": "《書》九篇（陰長生）",
+   "level": 3,
+   "type": "book",
+   "content": "陰長生書九篇<新野人。>",
+   "work_id": "d59fkwn5o1s0"
+  },
+  {
+   "title": "《書》（陰長生）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《神仙傳》云：“陰長生者，新野人也，漢皇后之親屬。聞馬鳴生得度世之道，乃尋求之，鳴生不教其度世之法，但日夕別與之高談，論當世之事，治農田之業。如此十餘年，長生不懈。同時共事鳴生者十三人皆悉歸去，惟長生執礼彌肅。鳴生告之曰：‘子真能得道矣。’乃將入青城山中，煮黄土爲金以示之，立壇西面，乃以《太清神丹經》授之。鳴生別去，長生乃歸。所合之丹成，服半劑不盡即昇天。著書九篇，云：‘上古仙者多矣，不可盡論。但漢興以來得仙者四十五人，連余爲六矣。二十人尸解，餘並白日昇天。’”"
+  },
+  {
+   "title": "《注金丹訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "陰長生 注金丹訣一卷",
+   "work_id": "d59fkwn5o1s1"
+  },
+  {
+   "title": "《修三皇經》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "陰長生 修三皇經一卷",
+   "work_id": "d59fkwn5o1s2"
+  },
+  {
+   "title": "《修真君五精論》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "陰長生 修真君五精論一卷",
+   "work_id": "d59fkwn5o1s3"
+  },
+  {
+   "title": "翊寅案",
+   "level": 3,
+   "type": "comment",
+   "content": "翊寅案《修三皇經》一卷，道士鮑靚撰，託名陰長生者，見唐貞觀二十五年敕旨，不當列目。又長生撰《參同契注》，當著録。"
+  },
+  {
+   "title": "陰長生三種考證",
+   "level": 3,
+   "type": "verification",
+   "content": "並見《通志·藝文略》。"
+  },
+  {
+   "title": "《石壁文》三卷",
+   "level": 3,
+   "type": "book",
+   "content": "樊英 石壁文三卷",
+   "work_id": "d59f24m4rle1"
+  },
+  {
+   "title": "《石壁文》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《抱樸子·遐覽篇》。"
+  },
+  {
+   "title": "《周易參同契》二卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 周易參同契二卷<會稽上虞人。>",
+   "work_id": "d59f23jy2h34"
+  },
+  {
+   "title": "《周易五行相類》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 周易五行相類一卷",
+   "work_id": "d59fkwn5o1s4"
+  },
+  {
+   "title": "《内經》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 内經一卷",
+   "work_id": "d59fkwn5o1s5"
+  },
+  {
+   "title": "《内經》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《抱樸子·遐覽篇》。"
+  },
+  {
+   "title": "《大丹記》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 大丹記一卷",
+   "work_id": "d59fkwn5o1s6"
+  },
+  {
+   "title": "《大丹九轉歌訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 大丹九轉歌訣一卷",
+   "work_id": "d59fkwn5o1s7"
+  },
+  {
+   "title": "《七返靈砂歌》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 七返靈砂歌一卷",
+   "work_id": "d59fkwn5zabk"
+  },
+  {
+   "title": "《火鑑周天圖》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 火鑑周天圖一卷",
+   "work_id": "d59fkwn5zabl"
+  },
+  {
+   "title": "《龍虎丹訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 龍虎丹訣一卷",
+   "work_id": "d59f25dgcd1i"
+  },
+  {
+   "title": "《感應訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 感應訣一卷",
+   "work_id": "d59fkwn5zabm"
+  },
+  {
+   "title": "《蓬萊山東西竈還丹歌》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 蓬萊山東西竈還丹歌一卷",
+   "work_id": "d59fkwn5zabn"
+  },
+  {
+   "title": "魏伯陽七種考證",
+   "level": 3,
+   "type": "verification",
+   "content": "並見《通志·藝文略》。"
+  },
+  {
+   "title": "《百章集》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 百章集一卷",
+   "work_id": "d59fkwn5zabo"
+  },
+  {
+   "title": "《注太上金碧經》二卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏伯陽 注太上金碧經二卷",
+   "work_id": "d59fkwn5zabp"
+  },
+  {
+   "title": "魏伯陽二種考證",
+   "level": 3,
+   "type": "verification",
+   "content": "並見《書録解題》。"
+  },
+  {
+   "title": "《周易參同契注》",
+   "level": 3,
+   "type": "book",
+   "content": "徐氏 周易參同契注<青州人，官從事。>",
+   "work_id": "d59fkwn5zabr"
+  },
+  {
+   "title": "《周易參同契注》（徐氏）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見彭曉《參同契序》。"
+  },
+  {
+   "title": "《中山玉樞神氣訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "張道陵 中山玉樞神氣訣一卷",
+   "work_id": "d59fkwn5zabs"
+  },
+  {
+   "title": "《剛子丹訣》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "張道陵 剛子丹訣一卷",
+   "work_id": "d59fkwn5zabt"
+  },
+  {
+   "title": "《神仙得道靈藥經》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "張道陵 神仙得道靈藥經一卷",
+   "work_id": "d59fkwn5zabu"
+  },
+  {
+   "title": "《峨嵋山神異記》三卷",
+   "level": 3,
+   "type": "book",
+   "content": "張道陵 峨嵋山神異記三卷",
+   "work_id": "d59fkwn5zabv"
+  },
+  {
+   "title": "張道陵四種考證",
+   "level": 3,
+   "type": "verification",
+   "content": "並見《藝文略》。翊寅案《神仙傳》“道陵著《道書》二十篇”，《真誥》云二十餘篇，《法苑珠林》云二十四卷，皆荒誕不足信。"
+  }
+ ]
+}

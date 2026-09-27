@@ -1,0 +1,133 @@
+{
+  "title": "史部·雜傳記類",
+  "sections": [
+    {
+      "title": "雜傳記類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "陸澄　雜傳",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "家多墳籍，人所罕見。撰《地理書》及《雜傳》，死後乃出。",
+          "source": "《南齊書》三九《陸澄傳》、《南史》四八《齊陸澄傳》。《隋志》作十九。"
+        }
+      ],
+      "author": "陸澄",
+      "work_id": "d59f286hhiis"
+    },
+    {
+      "title": "崔慰祖　海岱志四十卷半",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "見崔慰祖《補注史漢存稿》。",
+          "source": "《隋志》作二十卷，二《唐志》作十卷。"
+        }
+      ],
+      "author": "崔慰祖",
+      "note": "《南齊書·崔慰祖傳》：「四十卷，半未成。」",
+      "work_id": "d59f286bk077"
+    },
+    {
+      "title": "宗測　續皇甫謐高士傳三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "測頗好音律，善《易》、《老》，續皇甫謐《高士傳》三卷。",
+          "source": "《南齊書》五四《宗測傳》、《南史》七五《隱逸上·宗少文傳·宗測》。"
+        }
+      ],
+      "author": "宗測",
+      "work_id": "d59f8ii486q1"
+    },
+    {
+      "title": "宋躬　孝子傳二十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》、《新唐志》。"
+        }
+      ],
+      "author": "宋躬",
+      "note": "「宋躬」，武英殿本、中華本《隋書·經籍志》作「宋躬」，《新唐書·藝文志》作「宗躬」。",
+      "work_id": "d59f2851zcw0"
+    },
+    {
+      "title": "宗躬　止足傳十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《新唐志》。"
+        }
+      ],
+      "author": "宗躬",
+      "work_id": "d59f8ii71blw"
+    },
+    {
+      "title": "孔稚珪　陸先生傳一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "author": "孔稚珪",
+      "work_id": "d59f286kx4hv"
+    },
+    {
+      "title": "竟陵王子良　止足傳十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "二《唐志》。"
+        }
+      ],
+      "author": "竟陵王子良",
+      "work_id": "d59f285trh8j"
+    },
+    {
+      "title": "釋法安　僧傳五卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "司徒文宣王及張融、何允、劉繪、劉璶等，並禀服文義，共爲法友。永泰元年，卒於中寺，春秋四十有五。著《浄名》、《十地義疏》，并《僧傳》五卷。",
+          "source": "《高僧傳》八。"
+        }
+      ],
+      "author": "釋法安",
+      "work_id": "d59f8ii4jf9d"
+    },
+    {
+      "title": "王巾　法師傳十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《全梁文》五三。"
+        },
+        {
+          "text": "《姓氏英賢録》曰：\"王巾，字簡樓，琅邪臨沂人也。有學業。爲《頭陀寺碑》，文詞巧麗，爲世所重。起家郢州從事，征南記室。天監四年卒，碑在鄂州，題云：'齊國録事參軍琅邪王巾製。'\"",
+          "source": "《文選》五九《頭陀寺碑文》李善注。"
+        }
+      ],
+      "author": "王巾",
+      "work_id": "d59f285bch6r"
+    }
+  ]
+}

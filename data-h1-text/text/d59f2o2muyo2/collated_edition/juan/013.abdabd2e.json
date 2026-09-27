@@ -1,0 +1,32 @@
+{
+  "title": "史部·職官類",
+  "sections": [
+    {
+      "title": "職官類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "范曄　百官階次",
+      "level": 3,
+      "type": "book",
+      "content": "范曄　百官階次一卷《唐志》。",
+      "work_id": "d59f285kplhd"
+    },
+    {
+      "title": "荀欽明　百官階次",
+      "level": 3,
+      "type": "book",
+      "content": "荀欽明　百官階次三卷《唐志》。",
+      "work_id": "d59f7v5zxuro"
+    },
+    {
+      "title": "百官春秋",
+      "level": 3,
+      "type": "book",
+      "content": "百官春秋六卷《唐志》。③",
+      "work_id": "d59f2prirjls"
+    }
+  ]
+}

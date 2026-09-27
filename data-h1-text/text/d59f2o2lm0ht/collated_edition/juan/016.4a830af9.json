@@ -1,0 +1,57 @@
+{
+ "title": "起居注類",
+ "sections": [
+  {
+   "title": "起居注類",
+   "level": 3,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "《建武注記》",
+   "level": 3,
+   "type": "book",
+   "content": "建武注記<馬嚴、杜撫等撰。>",
+   "work_id": "d59fkwn2uww1"
+  },
+  {
+   "title": "《漢明帝起居注》",
+   "level": 3,
+   "type": "book",
+   "content": "漢明帝起居注<明德馬皇后撰。>",
+   "work_id": "d59fkwn2uww3"
+  },
+  {
+   "title": "《漢明帝起居注》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《初學記》三十引《風俗通》曰：“案《明帝起居注》曰：‘東巡泰山。到滎陽，有鳥飛鳴乘輿上，虎賁王吉射中之。作辭曰“烏烏啞啞，引弓射左腋，陛下壽萬歲，臣爲二千石”。帝賜錢二百萬，令亭壁畫爲鳥也。’”<《御覽》七百三十六、九百二十同，《文選·赭白馬賦》注小異，今《風俗通》佚此文。>"
+  },
+  {
+   "title": "《長樂宫注》",
+   "level": 3,
+   "type": "book",
+   "content": "長樂宫注",
+   "work_id": "d59fkwn2uww4"
+  },
+  {
+   "title": "《長樂宫注》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《和熹鄧皇后紀》。"
+  },
+  {
+   "title": "《漢靈帝起居注》",
+   "level": 3,
+   "type": "book",
+   "content": "漢靈帝起居注",
+   "work_id": "d59fkwn2uww5"
+  },
+  {
+   "title": "《漢靈帝起居注》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見袁宏《後漢紀序》。《序》尚有《獻帝起居注》，其書似魏人作。説詳《補三國藝文志》。故今但録《靈帝志》。"
+  }
+ ]
+}

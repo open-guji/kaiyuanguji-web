@@ -1,0 +1,445 @@
+{
+  "title": "集部·詞曲類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "集部·詞曲類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "得全居士詞一卷",
+      "content": "趙鼎撰。",
+      "work_id": "d59f2q9dh5vm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蘆川詞一卷",
+      "content": "張元幹撰。",
+      "work_id": "d59f2hq7y8zm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "東澤綺語債二卷",
+      "content": "張輯撰。",
+      "work_id": "d59f2hlp0dfk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "靜寄居士樂章二卷",
+      "content": "謝懋撰。",
+      "work_id": "d59f2hjncd8g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "竹齋詩餘一卷",
+      "content": "黃機撰。",
+      "work_id": "d59f2ht47if5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "順受老人詞五卷",
+      "content": "吳禮之撰。",
+      "work_id": "d59f2hlcivpf"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "李氏花萼集五卷",
+      "content": "李洪撰。李洪等撰。",
+      "work_id": "d59f2q71ibr4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "淸江欸乃一卷",
+      "content": "嚴仁撰。",
+      "work_id": "d59f2hf931tv"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "笑笑詞一卷",
+      "content": "郭應祥撰。",
+      "work_id": "d59f2hh04zk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "竹屋癡語一卷",
+      "content": "高觀國撰。",
+      "work_id": "d59f2htm01ds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅溪詞二卷",
+      "content": "史達祖撰。",
+      "work_id": "d59f2hpsnmde"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虛齋樂府二卷",
+      "content": "趙以夫撰。",
+      "work_id": "d59f2huh7rpe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "龜峯詞一卷",
+      "content": "陳經國撰。",
+      "work_id": "d59f2hl7j30h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "芸窗詞一卷",
+      "content": "張榘撰。",
+      "work_id": "d59f2hhkqnep"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "空同詞一卷",
+      "content": "洪瑹撰。",
+      "work_id": "d59f2hkgooaq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "和淸眞詞一卷",
+      "content": "方千里撰。",
+      "work_id": "d59f2hpdo8ap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "哄堂詞一卷",
+      "content": "盧炳撰。",
+      "work_id": "d59f2hk8ki69"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "竹山詞一卷",
+      "content": "蔣捷撰。",
+      "work_id": "d59f2hpv5ipu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "克齋詞一卷",
+      "content": "沈端節撰。",
+      "work_id": "d59f2hqikbgg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "夢窗甲乙丙丁四稿四卷",
+      "content": "吳文英撰。補遺一卷。",
+      "work_id": "d59f2hknjw8z"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金谷遺音一卷",
+      "content": "石孝友撰。",
+      "work_id": "d59f2hi6a0w1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "草窗詞二卷",
+      "content": "周密撰。",
+      "work_id": "d59f2gizl0jk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "絕妙好詞八卷",
+      "content": "周密撰。",
+      "work_id": "d59f2hqs8oap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蓮社詞一卷",
+      "content": "張揄撰。",
+      "work_id": "d59f2hlrtibl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樵歌三卷",
+      "content": "朱敦儒撰。",
+      "work_id": "d59f2hqag5c0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "順庵樂府五卷",
+      "content": "康與之撰。",
+      "work_id": "d59f2hjwphj4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "海野詞一卷",
+      "content": "曾覿撰。",
+      "work_id": "d59f2htcy5mq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逃禪集二卷",
+      "content": "楊無咎撰。",
+      "work_id": "d59f2hfwt340"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "孏窟詞一卷",
+      "content": "矦宣撰。",
+      "work_id": "d59f2hhq1on5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅詞三卷",
+      "content": "朱雍撰。",
+      "work_id": "d59f2hguips2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "龍洲詞一卷",
+      "content": "劉過撰。",
+      "work_id": "d59f2humisxs"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西溪居士樂府一卷",
+      "content": "姚寬撰。",
+      "work_id": "d59f2hjdcruo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南澗詩餘一卷",
+      "content": "韓元吉撰。",
+      "work_id": "d59f2higkutd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "松坡居士樂府一卷",
+      "content": "京鏜撰。",
+      "work_id": "d59f2hg4as5c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晦港詞一卷",
+      "content": "李處全撰。",
+      "work_id": "d59f2hhqcx6o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "介庵詞四卷",
+      "content": "趙彥端撰。",
+      "work_id": "d59f2hrrtq80"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "養拙堂詞一卷",
+      "content": "管鑑撰。",
+      "work_id": "d59f2hft28le"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "照堂詞一卷",
+      "content": "張玉撰。",
+      "work_id": "d59f2hl6lddv"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "審齋詞一卷",
+      "content": "王千秋撰。",
+      "work_id": "d59f2hs4b7y8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "白石道人歌曲四卷",
+      "content": "姜夔撰。別集一卷。",
+      "work_id": "d59f2hsb6fwi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西樵語業一卷",
+      "content": "楊炎撰。",
+      "work_id": "d59f2hrlw7wh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "花翁詞一卷",
+      "content": "孫惟信撰。",
+      "work_id": "d59f2hjxn75v"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "白雪遺音一卷",
+      "content": "陳德武撰。",
+      "work_id": "d59f2hll9iwy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "風雅遺音四卷",
+      "content": "林正大撰。",
+      "work_id": "d59f2hte73sy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "惜香樂府十卷",
+      "content": "趙長卿撰。",
+      "work_id": "d59f2htnvgn4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅屋詞一卷",
+      "content": "程貴卿撰。",
+      "work_id": "d59f2hk12t4y"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "日湖漁唱二卷",
+      "content": "陳允平撰。",
+      "work_id": "d59f2hgu7h8j"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "橘山樂府一卷",
+      "content": "李廷忠撰。",
+      "work_id": "d59f2hhhb1fl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "履齋詩餘三卷",
+      "content": "吳潛撰。",
+      "work_id": "d59f2hgpix36"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "石屏詞一卷",
+      "content": "戴復古撰。",
+      "work_id": "d59f2htqolj6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅屋詞一卷",
+      "content": "許棐撰。",
+      "work_id": "d59f2hhi8r28"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "水雲詞二卷",
+      "content": "汪元量撰。",
+      "work_id": "d59f2q9mua6a"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "碧山樂府二卷",
+      "content": "王沂孫撰。",
+      "work_id": "d59f2hg6hfy8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "玉田詞三卷",
+      "content": "張炎撰。",
+      "work_id": "d59f2hkcbcow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "山中白雲八卷",
+      "content": "張炎撰。",
+      "work_id": "d59f2hhzq1he"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "斷腸詞一卷",
+      "content": "朱淑眞撰。",
+      "work_id": "d59f2htn8zk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "梅苑十卷",
+      "content": "黃大隅撰。",
+      "work_id": "d59f2hpeapdu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "散花詞一卷",
+      "content": "黃昇撰。",
+      "work_id": "d59f2hld5csg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "花絕妙詞選十卷",
+      "content": "黃昇撰。",
+      "work_id": "d59f2hlvkcua"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中興絕妙詞選十卷",
+      "content": "黃昇撰。",
+      "work_id": "d59f2hhg239e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "典雅詞三卷",
+      "content": "",
+      "work_id": "d59f2q0s4zcy"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右詞曲類",
+      "content": "右詞曲類五十七家，一百五十五卷。"
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "title": "北史·經部·禮類",
+  "sections": [
+    {
+      "title": "禮類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "元延明　詩禮別義",
+      "level": 3,
+      "type": "book",
+      "content": "元延明　詩禮別義　見《安豐王猛傳》。《魏書》延明傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14kumd"
+    },
+    {
+      "title": "崔浩　禮記解",
+      "level": 3,
+      "type": "book",
+      "content": "崔浩　禮記解　見本傳。《魏書》浩傳有五經注，《禮解》即五注之一。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w35w"
+    },
+    {
+      "title": "盧景裕　禮記注",
+      "level": 3,
+      "type": "book",
+      "content": "盧景裕　禮記注　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w35x"
+    },
+    {
+      "title": "索敞　喪服要記",
+      "level": 3,
+      "type": "book",
+      "content": "索敞　喪服要記　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w35y"
+    },
+    {
+      "title": "劉芳　鄭玄所注周官儀禮音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　鄭玄所注周官儀禮音一卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w35z"
+    },
+    {
+      "title": "劉芳　干寶所注周官音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　干寶所注周官音一卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w360"
+    },
+    {
+      "title": "劉芳　禮記義證十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　禮記義證十卷　見本傳。《魏書》同。；《隋·經籍志》同。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f284bg6pt"
+    },
+    {
+      "title": "劉芳　周官義證五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　周官義證五卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w361"
+    },
+    {
+      "title": "劉芳　儀禮義證五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉芳　儀禮義證五卷　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w362"
+    },
+    {
+      "title": "劉獻之　三禮大義四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉獻之　三禮大義四卷　見本傳。《魏書》同。；《隋·經籍志》：《三禮大義》四卷，無撰人姓名。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f283z9xj5"
+    },
+    {
+      "title": "封偉伯　明堂圖說六卷",
+      "level": 3,
+      "type": "book",
+      "content": "封偉伯　明堂圖說六卷　見《封軌傳》。《魏書》偉伯傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c14w363"
+    },
+    {
+      "title": "李公緒　喪服章句一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李公緒　喪服章句一卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombm"
+    },
+    {
+      "title": "李公緒　禮質疑五卷",
+      "level": 3,
+      "type": "book",
+      "content": "李公緒　禮質疑五卷　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f2850f669"
+    },
+    {
+      "title": "李鉉　三禮義疏",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　三禮義疏　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombn"
+    },
+    {
+      "title": "蕭大圜　士喪禮注五卷要決二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭大圜　士喪禮注五卷要決二卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2md"
+    },
+    {
+      "title": "盧辯　大戴禮注",
+      "level": 3,
+      "type": "book",
+      "content": "盧辯　大戴禮注　見本傳。《周書》辯傳作《大戴禮解詁》。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f284z6802"
+    },
+    {
+      "title": "沈重　周禮義三十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　周禮義三十一卷　見本傳。《周書》同。；《隋·經籍志》：《周官禮義疏》四十卷，沈重撰。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c14w364"
+    },
+    {
+      "title": "沈重　儀禮義三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　儀禮義三十五卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2mc"
+    },
+    {
+      "title": "沈重　禮記義三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　禮記義三十卷　見本傳。《周書》同。；《隋·經籍志》：《禮記義疏》四十卷，沈重撰。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c14w365"
+    },
+    {
+      "title": "沈重　喪服經義五卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　喪服經義五卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2me"
+    },
+    {
+      "title": "沈重　周禮音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　周禮音一卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2ma"
+    },
+    {
+      "title": "沈重　儀禮音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　儀禮音一卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f2q5l2gao"
+    },
+    {
+      "title": "沈重　禮記音二卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈重　禮記音二卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2mg"
+    },
+    {
+      "title": "樊深　喪服問疑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "樊深　喪服問疑一卷　見本傳。《周書》同。；《隋·經籍志》：《喪服疑問》一卷，樊氏撰，有姓無名。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c157bpc"
+    },
+    {
+      "title": "熊安生　周禮義疏二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊安生　周禮義疏二十卷　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f990br2mb"
+    },
+    {
+      "title": "熊安生　禮記義疏三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "熊安生　禮記義疏三十卷　見本傳。《周書》安生傳：《禮記義疏》四十卷。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f2849krgh"
+    },
+    {
+      "title": "張冲　喪服義三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張冲　喪服義三卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f284xm1ac"
+    },
+    {
+      "title": "褚暉　三禮疏一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "褚暉　三禮疏一百卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c157bpd"
+    },
+    {
+      "title": "宇文愷　明堂圖議二卷釋疑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宇文愷　明堂圖議二卷釋疑一卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c157bpe"
+    },
+    {
+      "title": "禮類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右禮二十九部，已收《隋·經籍志》者五部，未收《隋·經籍志》者二十四部。"
+    }
+  ]
+}

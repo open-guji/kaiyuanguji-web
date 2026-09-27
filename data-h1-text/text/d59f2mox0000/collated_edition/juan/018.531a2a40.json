@@ -1,0 +1,907 @@
+{
+  "title": "傳記類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "傳記類",
+      "content": ""
+    },
+    {
+      "title": "《開國功臣錄》三十一卷黃金編次，自徐達至指揮李觀，凡五百九十一人",
+      "level": 3,
+      "type": "book",
+      "content": "《開國功臣錄》三十一卷黃金編次，自徐達至指揮李觀，凡五百九十一人",
+      "work_id": "d59f2ndt6fib"
+    },
+    {
+      "title": "謝鐸《名臣事略》二十卷洪武至成化時人。",
+      "level": 3,
+      "type": "book",
+      "content": "謝鐸《名臣事略》二十卷洪武至成化時人。",
+      "work_id": "d59f2nerij9d"
+    },
+    {
+      "title": "彭韶《名臣錄贊》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "彭韶《名臣錄贊》二卷",
+      "work_id": "d59f2ng2ym82"
+    },
+    {
+      "title": "楊廉《名臣言行錄》四卷，《理學名臣言行錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊廉《名臣言行錄》四卷，《理學名臣言行錄》二卷",
+      "work_id": "d59f2njdw0zk"
+    },
+    {
+      "title": "徐紱《名臣琬琰錄》五十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐紱《名臣琬琰錄》五十四卷",
+      "work_id": "d59f2nfi1pmq"
+    },
+    {
+      "title": "徐鹹《名臣言行錄前集》十二卷，《後集》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐鹹《名臣言行錄前集》十二卷，《後集》十二卷",
+      "work_id": "d59f2nj7na4h"
+    },
+    {
+      "title": "王道《名臣琬琰錄》二卷，《續錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王道《名臣琬琰錄》二卷，《續錄》二卷",
+      "work_id": "d59f2nh6aigy"
+    },
+    {
+      "title": "張芹《備遺錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張芹《備遺錄》一卷",
+      "work_id": "d59f2njh0em9"
+    },
+    {
+      "title": "何孟春《續遺錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何孟春《續遺錄》一卷",
+      "work_id": "d59f2ngzqiv6"
+    },
+    {
+      "title": "何喬新《勳賢琬琰集》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "何喬新《勳賢琬琰集》二卷",
+      "work_id": "d59f2ngy6ccg"
+    },
+    {
+      "title": "唐龍《康山羣忠錄》一卷，《二忠錄》二卷紀王禕、吳雲事。",
+      "level": 3,
+      "type": "book",
+      "content": "唐龍《康山羣忠錄》一卷，《二忠錄》二卷紀王禕、吳雲事。",
+      "work_id": "d59f2nhtpbeq"
+    },
+    {
+      "title": "沈庭奎《名臣言行錄新編》三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈庭奎《名臣言行錄新編》三十四卷",
+      "work_id": "d59f2ne0zdhg"
+    },
+    {
+      "title": "楊豫孫《補輯名臣琬琰錄》一百十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊豫孫《補輯名臣琬琰錄》一百十卷",
+      "work_id": "d59f2nip8a2o"
+    },
+    {
+      "title": "雷禮《閣臣行實》八卷，《列卿記》一百六十五卷起洪武，訖嘉靖。禮子映補隆慶一朝。",
+      "level": 3,
+      "type": "book",
+      "content": "雷禮《閣臣行實》八卷，《列卿記》一百六十五卷起洪武，訖嘉靖。禮子映補隆慶一朝。",
+      "work_id": "d59f2neeptdv"
+    },
+    {
+      "title": "王世貞《嘉靖以來首輔傳》八卷，《名卿紀跡》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王世貞《嘉靖以來首輔傳》八卷，《名卿紀跡》六卷",
+      "work_id": "d59f2nl82byb"
+    },
+    {
+      "title": "吳伯與《內閣名臣事略》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳伯與《內閣名臣事略》十六卷",
+      "work_id": "d59f2njmmo02"
+    },
+    {
+      "title": "薛應旂《皇明人物考》七卷鄭以偉注。",
+      "level": 3,
+      "type": "book",
+      "content": "薛應旂《皇明人物考》七卷鄭以偉注。",
+      "work_id": "d59f2ngkfwg4"
+    },
+    {
+      "title": "唐樞《國琛集》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐樞《國琛集》二卷",
+      "work_id": "d59f2nfcqo78"
+    },
+    {
+      "title": "史繼偕《越章》六卷明代八閩人傳。",
+      "level": 3,
+      "type": "book",
+      "content": "史繼偕《越章》六卷明代八閩人傳。",
+      "work_id": "d59f2neydreo"
+    },
+    {
+      "title": "顧璘《國寶新編》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧璘《國寶新編》一卷",
+      "work_id": "d59f2nimqdxe"
+    },
+    {
+      "title": "項篤壽《今獻備遺》四十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "項篤壽《今獻備遺》四十二卷",
+      "work_id": "d59f2nkzbp4z"
+    },
+    {
+      "title": "淩迪知《名臣類苑》四十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "淩迪知《名臣類苑》四十六卷",
+      "work_id": "d59f2nghbitd"
+    },
+    {
+      "title": "錢薇《名臣事實》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢薇《名臣事實》三十卷",
+      "work_id": "d59f2ne1alts"
+    },
+    {
+      "title": "耿定向《先進遺風》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "耿定向《先進遺風》二卷",
+      "work_id": "d59f2nkhj5s0"
+    },
+    {
+      "title": "李廷機《閣臣錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廷機《閣臣錄》六卷",
+      "work_id": "d59f2ni6i1og"
+    },
+    {
+      "title": "焦竑《國史獻徵錄》一百二十卷《經籍志》作三百六十卷、《遜國忠節錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "焦竑《國史獻徵錄》一百二十卷《經籍志》作三百六十卷、《遜國忠節錄》八卷",
+      "work_id": "d59f2nl8otfm"
+    },
+    {
+      "title": "唐鶴徵《輔世編》六卷，《續編》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐鶴徵《輔世編》六卷，《續編》五卷",
+      "work_id": "d59f2nhx4wzm"
+    },
+    {
+      "title": "徐即登《建文諸臣錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐即登《建文諸臣錄》二卷",
+      "work_id": "d59f2nil670j"
+    },
+    {
+      "title": "童時明《昭代明良錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "童時明《昭代明良錄》二十卷",
+      "work_id": "d59f2nf7qvi9"
+    },
+    {
+      "title": "劉夢雷《名臣考》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉夢雷《名臣考》四卷",
+      "work_id": "d59f2ng47k76"
+    },
+    {
+      "title": "林墊《重輯名臣錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "林墊《重輯名臣錄》二卷",
+      "work_id": "d59f2ngpqxoh"
+    },
+    {
+      "title": "朱謀鵒韋《籓獻記》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱謀鵒韋《籓獻記》四卷",
+      "work_id": "d59f2ng05gxt"
+    },
+    {
+      "title": "朱勤美《公族傳略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱勤美《公族傳略》二卷",
+      "work_id": "d59f2nipjim8"
+    },
+    {
+      "title": "過庭訓《直省分郡人物考》一百十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "過庭訓《直省分郡人物考》一百十五卷",
+      "work_id": "d59f2nir3pj6"
+    },
+    {
+      "title": "王兆雲《詞林人物考》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王兆雲《詞林人物考》十六卷",
+      "work_id": "d59f2nk861oj"
+    },
+    {
+      "title": "張璽《明尚友集》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張璽《明尚友集》十六卷",
+      "work_id": "d59f2nioakn6"
+    },
+    {
+      "title": "江盈科《明臣小傳》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "江盈科《明臣小傳》十六卷",
+      "work_id": "d59f2ndpfl6s"
+    },
+    {
+      "title": "瞿汝說《臣略纂聞》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿汝說《臣略纂聞》十二卷",
+      "work_id": "d59f2nemiqro"
+    },
+    {
+      "title": "錢士升《皇明表忠錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢士升《皇明表忠錄》二卷",
+      "work_id": "d59f2nea191f"
+    },
+    {
+      "title": "餘翹《池陽三忠傳》一卷紀黃觀、金焦、陳敬宗事。",
+      "level": 3,
+      "type": "book",
+      "content": "餘翹《池陽三忠傳》一卷紀黃觀、金焦、陳敬宗事。",
+      "work_id": "d59f2nedgv7n"
+    },
+    {
+      "title": "馮復京《先賢事略》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮復京《先賢事略》十卷",
+      "work_id": "d59f2nj0gttu"
+    },
+    {
+      "title": "李裁《明臣論世》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "李裁《明臣論世》四卷",
+      "work_id": "d59f2ngn91c1"
+    },
+    {
+      "title": "林之盛《應諡名臣傳》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "林之盛《應諡名臣傳》十二卷",
+      "work_id": "d59f2ni3do8w"
+    },
+    {
+      "title": "杜瓊《紀善錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜瓊《紀善錄》一卷",
+      "work_id": "d59f2ng5gi68"
+    },
+    {
+      "title": "陳沂《畜德錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳沂《畜德錄》一卷",
+      "work_id": "d59f2nh7up6o"
+    },
+    {
+      "title": "蘇茂相《名臣類編》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇茂相《名臣類編》二卷",
+      "work_id": "d59f2niweqrm"
+    },
+    {
+      "title": "史旌賢《維風編》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "史旌賢《維風編》二卷",
+      "work_id": "d59f2nhwtou8"
+    },
+    {
+      "title": "鄒期禎《東林諸賢言行錄》五卷已上皆紀明代人物。",
+      "level": 3,
+      "type": "book",
+      "content": "鄒期禎《東林諸賢言行錄》五卷已上皆紀明代人物。",
+      "work_id": "d59f2nh85xxd"
+    },
+    {
+      "title": "《相鑒》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《相鑒》二十卷",
+      "work_id": "d59f2njo6upt"
+    },
+    {
+      "title": "《外戚傳》三卷永樂中，編輯漢以後可為法戒者。成祖制序。",
+      "level": 3,
+      "type": "book",
+      "content": "《外戚傳》三卷永樂中，編輯漢以後可為法戒者。成祖制序。",
+      "work_id": "d59f2ni3dnup"
+    },
+    {
+      "title": "《古今列女傳》三卷永樂中解縉等編。",
+      "level": 3,
+      "type": "book",
+      "content": "《古今列女傳》三卷永樂中解縉等編。",
+      "work_id": "d59f2nk6am82"
+    },
+    {
+      "title": "宋濂《唐仲友補傳》一卷，《浦江人物記》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋濂《唐仲友補傳》一卷，《浦江人物記》二卷",
+      "work_id": "d59f2nh5za4i"
+    },
+    {
+      "title": "胡廣《文丞相傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡廣《文丞相傳》一卷",
+      "work_id": "d59f2nfv5on4"
+    },
+    {
+      "title": "朱右《李鄴侯傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱右《李鄴侯傳》二卷",
+      "work_id": "d59f2ng559mo"
+    },
+    {
+      "title": "方槐生《莆陽人物志》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "方槐生《莆陽人物志》三卷",
+      "work_id": "d59f2og493b4"
+    },
+    {
+      "title": "謝應芳《懷古錄》三卷，《思賢錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝應芳《懷古錄》三卷，《思賢錄》六卷",
+      "work_id": "d59f2nia8w75"
+    },
+    {
+      "title": "劉徵《金華名賢傳》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉徵《金華名賢傳》三卷",
+      "work_id": "d59f2nfvs5c2"
+    },
+    {
+      "title": "丁元吉《陸丞相蹈海錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "丁元吉《陸丞相蹈海錄》一卷",
+      "work_id": "d59f2nhwton4"
+    },
+    {
+      "title": "賈斌《忠義集》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "賈斌《忠義集》四卷",
+      "work_id": "d59f2nh2uwhs"
+    },
+    {
+      "title": "尹真《南宋名臣言行錄》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "尹真《南宋名臣言行錄》十六卷",
+      "work_id": "d59f2nj6eby8"
+    },
+    {
+      "title": "楊循吉《吳中往哲記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊循吉《吳中往哲記》一卷",
+      "work_id": "d59f2nktpf5s"
+    },
+    {
+      "title": "謝鐸《尊鄉錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝鐸《尊鄉錄》十卷",
+      "work_id": "d59f2nh85xj6"
+    },
+    {
+      "title": "董遵《金華淵源錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "董遵《金華淵源錄》二卷",
+      "work_id": "d59f2niujbb4"
+    },
+    {
+      "title": "金江《義烏人物志》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "金江《義烏人物志》二卷",
+      "work_id": "d59f2nhpn8cg"
+    },
+    {
+      "title": "金賁亨《臺學源流》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "金賁亨《臺學源流》二卷",
+      "work_id": "d59f2nisz4eb"
+    },
+    {
+      "title": "王佐《東嘉先哲錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王佐《東嘉先哲錄》二十卷",
+      "work_id": "d59f2ngdvwub"
+    },
+    {
+      "title": "南逢吉《越中述傳》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "南逢吉《越中述傳》四卷",
+      "work_id": "d59f2ngsk2kh"
+    },
+    {
+      "title": "周璟《昭忠錄》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "周璟《昭忠錄》五卷",
+      "work_id": "d59f2htsk0sg"
+    },
+    {
+      "title": "程敏政《宋遺民錄》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "程敏政《宋遺民錄》十五卷",
+      "work_id": "d59f2nj6pkap"
+    },
+    {
+      "title": "方鵬《崑山人物志》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "方鵬《崑山人物志》八卷",
+      "work_id": "d59f2nfem3nk"
+    },
+    {
+      "title": "薑絅《漢名臣言行錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "薑絅《漢名臣言行錄》八卷",
+      "work_id": "d59f2nerijgh"
+    },
+    {
+      "title": "魏顯國《歷代相臣傳》一百六十八卷，《守令傳》二十四卷，《儒林傳》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏顯國《歷代相臣傳》一百六十八卷，《守令傳》二十四卷，《儒林傳》二十卷",
+      "work_id": "d59f2nhzmtj5"
+    },
+    {
+      "title": "陳鎬《金陵人物志》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳鎬《金陵人物志》六卷",
+      "work_id": "d59f2niolssg"
+    },
+    {
+      "title": "王賓《吳下名賢紀錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王賓《吳下名賢紀錄》一卷",
+      "work_id": "d59f2ndvd3b6"
+    },
+    {
+      "title": "龔守愚《臨江先哲言行錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "龔守愚《臨江先哲言行錄》二卷",
+      "work_id": "d59f2nfa8s8z"
+    },
+    {
+      "title": "劉元卿《江右歷代名賢錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉元卿《江右歷代名賢錄》二卷",
+      "work_id": "d59f2nf5k7pf"
+    },
+    {
+      "title": "黃佐《廣州人物志》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃佐《廣州人物志》二十四卷",
+      "work_id": "d59f2ngtt0jl"
+    },
+    {
+      "title": "劉有光《麻沙劉氏忠賢傳》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉有光《麻沙劉氏忠賢傳》四卷",
+      "work_id": "d59f2ndy68e8"
+    },
+    {
+      "title": "孫承恩《歷代聖賢像贊》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫承恩《歷代聖賢像贊》六卷",
+      "work_id": "d59f2neopedc"
+    },
+    {
+      "title": "楊時偉《諸葛武侯全書》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊時偉《諸葛武侯全書》十卷",
+      "work_id": "d59f2nertrsz"
+    },
+    {
+      "title": "王承裕《李衛公通纂》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王承裕《李衛公通纂》四卷",
+      "work_id": "d59f2nil670g"
+    },
+    {
+      "title": "戴銑《朱子實紀》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴銑《朱子實紀》十二卷",
+      "work_id": "d59f2ngpqxvk"
+    },
+    {
+      "title": "祝允明《蘇材小纂》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "祝允明《蘇材小纂》六卷",
+      "work_id": "d59f2njkr8xv"
+    },
+    {
+      "title": "張袴《吳中人物志》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張袴《吳中人物志》十三卷",
+      "work_id": "d59f2nlgszcx"
+    },
+    {
+      "title": "袁ＢＭ《吳中先賢傳》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁ＢＭ《吳中先賢傳》十卷",
+      "work_id": "d59f2nh1x6o2"
+    },
+    {
+      "title": "劉鳳《續吳先賢贊》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉鳳《續吳先賢贊》十五卷",
+      "work_id": "d59f2nl24tmp"
+    },
+    {
+      "title": "歐大任《百粵先賢志》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "歐大任《百粵先賢志》四卷",
+      "work_id": "d59f2ng9ttz7"
+    },
+    {
+      "title": "耿定向《二孝子傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "耿定向《二孝子傳》一卷",
+      "work_id": "d59f2nfxytj5"
+    },
+    {
+      "title": "楊俊民《河南忠臣集》八卷，《烈女集》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊俊民《河南忠臣集》八卷，《烈女集》五卷",
+      "work_id": "d59f2nhjehhc"
+    },
+    {
+      "title": "桑喬《節義林》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "桑喬《節義林》六卷",
+      "work_id": "d59f2nemtzia"
+    },
+    {
+      "title": "王冥《歷代忠義錄》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "王冥《歷代忠義錄》十八卷",
+      "work_id": "d59f2niweqrn"
+    },
+    {
+      "title": "鄒泉《人物尚論編》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒泉《人物尚論編》二十卷",
+      "work_id": "d59f2nhzmtqb"
+    },
+    {
+      "title": "鄭瑄《唐忠臣睢陽錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭瑄《唐忠臣睢陽錄》二卷",
+      "work_id": "d59f2nhd5qm8"
+    },
+    {
+      "title": "黃省曾《高士傳頌》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃省曾《高士傳頌》二卷",
+      "work_id": "d59f2nh9evpc"
+    },
+    {
+      "title": "皇甫濂《逸民傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫濂《逸民傳》二卷",
+      "work_id": "d59f2ngldm9t"
+    },
+    {
+      "title": "皇甫涍《續高士傳》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫涍《續高士傳》十卷",
+      "work_id": "d59f2nf0kf7m"
+    },
+    {
+      "title": "薛應旂《隱逸傳》二卷，《高士傳》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛應旂《隱逸傳》二卷，《高士傳》四卷",
+      "work_id": "d59f2ngdkoao"
+    },
+    {
+      "title": "黃姬水《貧士傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃姬水《貧士傳》二卷",
+      "work_id": "d59f2nhx4wzk"
+    },
+    {
+      "title": "錢一本《遁世編》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢一本《遁世編》十四卷",
+      "work_id": "d59f2nhmu39e"
+    },
+    {
+      "title": "李默《建寧人物志》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "李默《建寧人物志》三卷",
+      "work_id": "d59f2nftwqgx"
+    },
+    {
+      "title": "呂維祺《節孝義忠集》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "呂維祺《節孝義忠集》四卷",
+      "work_id": "d59f2nfvs5j6"
+    },
+    {
+      "title": "徐標《忠孝廉節集》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐標《忠孝廉節集》四十卷",
+      "work_id": "d59f2nfw3e2o"
+    },
+    {
+      "title": "顧憲成《桑梓錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧憲成《桑梓錄》十卷",
+      "work_id": "d59f2nhhuade"
+    },
+    {
+      "title": "李廷機《漢唐宋名臣錄》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廷機《漢唐宋名臣錄》五卷",
+      "work_id": "d59f2nevkmiq"
+    },
+    {
+      "title": "王鴻儒《掾曹名臣錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王鴻儒《掾曹名臣錄》一卷",
+      "work_id": "d59f2nighn29"
+    },
+    {
+      "title": "丁明登《古今長者錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "丁明登《古今長者錄》八卷",
+      "work_id": "d59f2ndvoc90"
+    },
+    {
+      "title": "朱睦鄶挈《中州人物志》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱睦鄶挈《中州人物志》十六卷",
+      "work_id": "d59f2nf8zu2o"
+    },
+    {
+      "title": "朱謀鵒韋《豫章耆舊傳》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱謀鵒韋《豫章耆舊傳》三卷",
+      "work_id": "d59f2nef11q8"
+    },
+    {
+      "title": "朱常淓《古今宗籓懿行考》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱常淓《古今宗籓懿行考》十卷",
+      "work_id": "d59f2nfscjk3"
+    },
+    {
+      "title": "郭良翰《歷代忠義彙編》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭良翰《歷代忠義彙編》二十六卷",
+      "work_id": "d59f2nidd9mq"
+    },
+    {
+      "title": "屠隆《義士傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "屠隆《義士傳》二卷",
+      "work_id": "d59f2og7opog"
+    },
+    {
+      "title": "沈堯中《高士匯林》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈堯中《高士匯林》二卷",
+      "work_id": "d59f2ne5z5z6"
+    },
+    {
+      "title": "顧樞《古今隱居錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧樞《古今隱居錄》三十卷",
+      "work_id": "d59f2ne51gjk"
+    },
+    {
+      "title": "陳懋仁《壽者傳》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳懋仁《壽者傳》三卷",
+      "work_id": "d59f2niw3i0w"
+    },
+    {
+      "title": "陳繼儒《邵康節外紀》四卷，《逸民史》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳繼儒《邵康節外紀》四卷，《逸民史》二十二卷",
+      "work_id": "d59f2ne0zdhf"
+    },
+    {
+      "title": "璩之璞《蘇長公外紀》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "璩之璞《蘇長公外紀》十二卷",
+      "work_id": "d59f2nel9ssi"
+    },
+    {
+      "title": "徐氌勃《蔡端明別紀》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐氌勃《蔡端明別紀》十卷",
+      "work_id": "d59f2nfem3gk"
+    },
+    {
+      "title": "范明泰《米襄陽志林》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "范明泰《米襄陽志林》十三卷",
+      "work_id": "d59f2ne2jk02"
+    },
+    {
+      "title": "徐學聚《兩浙名賢錄》五十四卷，《外錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐學聚《兩浙名賢錄》五十四卷，《外錄》八卷",
+      "work_id": "d59f2nfs1atd"
+    },
+    {
+      "title": "曹學牷《蜀中人物記》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹學牷《蜀中人物記》六卷",
+      "work_id": "d59f2nhqw6is"
+    },
+    {
+      "title": "郭凝之《孝友傳》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭凝之《孝友傳》二十四卷",
+      "work_id": "d59f2nfxcc1v"
+    },
+    {
+      "title": "王道隆《吳興名賢續錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "王道隆《吳興名賢續錄》六卷",
+      "work_id": "d59f2ne4ez9d"
+    },
+    {
+      "title": "陳克仕《古今彤史》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳克仕《古今彤史》八卷",
+      "work_id": "d59f2nell0xw"
+    },
+    {
+      "title": "曹思學《內則類編》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹思學《內則類編》四卷",
+      "work_id": "d59f2ndrxhc2"
+    },
+    {
+      "title": "顧昱《至孝通神集》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧昱《至孝通神集》三十卷",
+      "work_id": "d59f2ne1almq"
+    },
+    {
+      "title": "張採《宋名臣言行錄》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張採《宋名臣言行錄》十六卷",
+      "work_id": "d59f2nfuj7cy"
+    },
+    {
+      "title": "夏樹芳《女鏡》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "夏樹芳《女鏡》八卷",
+      "work_id": "d59f2ndnk5xg"
+    },
+    {
+      "title": "潘振《古今孝史》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "潘振《古今孝史》十二卷",
+      "work_id": "d59f2nhte2gz"
+    }
+  ]
+}

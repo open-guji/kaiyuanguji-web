@@ -1,0 +1,78 @@
+{
+  "title": "經部·天文類",
+  "sections": [
+    {
+      "title": "天文類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "陶弘景　天儀說要一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　天儀說要一卷　《隋志》。",
+      "work_id": "d59f285vy51c"
+    },
+    {
+      "title": "祖暅　天文錄三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "祖暅　天文錄三十卷　「奉朝請」，《隋志》。",
+      "work_id": "d59f285iu680"
+    },
+    {
+      "title": "庾詵　注算經",
+      "level": 3,
+      "type": "book",
+      "content": "庾詵　注算經　本傳。",
+      "work_id": "d59f99gorvgj"
+    },
+    {
+      "title": "庾詵　七曜曆術",
+      "level": 3,
+      "type": "book",
+      "content": "庾詵　七曜曆術　本傳。",
+      "work_id": "d59f99gorvgk",
+      "note": "「又」承前省略撰人（庾詵）。與陰陽類庾曼倩「七曜曆術」異人同名"
+    },
+    {
+      "title": "柳惲　天監碁品一卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳惲　天監碁品一卷　「尚書僕射柳惲撰」，《七錄》。",
+      "work_id": "d59f99gorvgl",
+      "note": "撰人原在小注"
+    },
+    {
+      "title": "東宫撰太一博法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "東宫撰太一博法一卷　《隋志》。",
+      "work_id": "d59f99gorvgm",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "武帝　碁法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　碁法一卷",
+      "work_id": "d59f99gorvgn"
+    },
+    {
+      "title": "武帝　圍棋品一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　圍棋品一卷",
+      "work_id": "d59f285r9kw3",
+      "note": "「又」承前省略撰人（武帝）。原書腳註①"
+    },
+    {
+      "title": "湘東太守徐泓　圍棋勢七卷",
+      "level": 3,
+      "type": "book",
+      "content": "湘東太守徐泓　圍棋勢七卷　《七錄》。",
+      "work_id": "d59f285es35u"
+    }
+  ]
+}

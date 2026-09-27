@@ -1,0 +1,285 @@
+{
+  "title": "乙部史錄·儀注類",
+  "sections": [
+    {
+      "title": "儀注類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "傅瑗　晉新定儀注四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅瑗　晉新定儀注四十卷　見《隋》、《唐志》。《冊府元龜》誤作「某璩撰」。",
+      "work_id": "d59f27w9rym9"
+    },
+    {
+      "title": "徐廣　晉尚書儀曹新定儀注四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐廣　晉尚書儀曹新定儀注四十一卷",
+      "work_id": "d59f27tlbmro"
+    },
+    {
+      "title": "徐廣　車服雜注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐廣　車服雜注一卷　《隋》、《唐志》並同。本傳作「車服儀注」。《左傳》桓公正義、《北堂書鈔》、《初學記》、《太平御覽》引作「車服儀制」。《後漢・明帝紀》注、《宋書・禮志》引作「車服注」。《後漢・儒林傳序》注引作「輿服雜注」。《文選・東京賦》注、《宋書・禮志》引作「車服志」。",
+      "work_id": "d59f27ujnqir",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "晉雜儀注十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜儀注十一卷　見《隋志》。兩《唐志》並作「二十一卷」。",
+      "work_id": "d59f2q2ikge9"
+    },
+    {
+      "title": "晉儀注三十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉儀注三十九卷　見兩《唐志》。",
+      "work_id": "d59f9pql7hfp"
+    },
+    {
+      "title": "晉尚書儀十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉尚書儀十卷　見《隋志》。",
+      "work_id": "d59f2pyelybm"
+    },
+    {
+      "title": "干寶　雜議五卷",
+      "level": 3,
+      "type": "book",
+      "content": "干寶　雜議五卷　見兩《唐志》。",
+      "work_id": "d59f27u83yf4"
+    },
+    {
+      "title": "晉尚書儀曹吉禮儀注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉尚書儀曹吉禮儀注三卷　見兩《唐志》。",
+      "work_id": "d59f2pwdkfeo"
+    },
+    {
+      "title": "晉尚書儀曹事九卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉尚書儀曹事九卷　見《唐志》。",
+      "work_id": "d59f27xvu3nn"
+    },
+    {
+      "title": "荀顗等　晉新禮百六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀顗等　晉新禮百六十卷　見本書《禮志》。",
+      "work_id": "d59f27vbfuv5"
+    },
+    {
+      "title": "晉雜議十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜議十卷　見《唐志》。《隋志》刑法類有《晉雜議》十卷，無撰人。又《唐志》故事類有《晉雜議》十卷，亦不著撰人，疑重出。",
+      "work_id": "d59f27wn75z4"
+    },
+    {
+      "title": "晉謚議八卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉謚議八卷　見兩《唐志》。",
+      "work_id": "d59f2q37jf9d"
+    },
+    {
+      "title": "晉簡文謚議四卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉簡文謚議四卷　見兩《唐志》。",
+      "work_id": "d59f2q32uv41"
+    },
+    {
+      "title": "諸王國雜儀注十卷",
+      "level": 3,
+      "type": "book",
+      "content": "諸王國雜儀注十卷　《舊唐志》此書次于晉代，當是晉人所作。",
+      "work_id": "d59f27vuskjn"
+    },
+    {
+      "title": "蔡謨　晉七廟議三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡謨　晉七廟議三卷　見兩《唐志》。《冊府元龜》訛作「《七廟錄》十卷」。",
+      "work_id": "d59f27wvbc3n"
+    },
+    {
+      "title": "甲辰儀五卷",
+      "level": 3,
+      "type": "book",
+      "content": "甲辰儀五卷　《隋志》云：「江左撰。」本書《禮志》謂：「江左時，刁協、荀崧、荀謨所踵修。」",
+      "work_id": "d59f27wn75z6"
+    },
+    {
+      "title": "辛未令書",
+      "level": 3,
+      "type": "book",
+      "content": "辛未令書　見本書《禮志》。辛未，元帝建武年也。①",
+      "work_id": "d59f27wdu1oh"
+    },
+    {
+      "title": "謝玄　內外書儀四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝玄　內外書儀四卷　見《隋志》。",
+      "work_id": "d59f27x2hsld"
+    },
+    {
+      "title": "徐乾　古履儀",
+      "level": 3,
+      "type": "book",
+      "content": "徐乾　古履儀　《太平御覽》。",
+      "work_id": "d59f27v2dz40"
+    },
+    {
+      "title": "裴頠　冠禮",
+      "level": 3,
+      "type": "book",
+      "content": "裴頠　冠禮　見《魏書・禮志》。",
+      "work_id": "d59f27y2pblt"
+    },
+    {
+      "title": "王愆期　降幕祠儀",
+      "level": 3,
+      "type": "book",
+      "content": "王愆期　降幕祠儀　《太平御覽》。",
+      "work_id": "d59f27uax3b6"
+    },
+    {
+      "title": "晉安昌公荀氏祠制",
+      "level": 3,
+      "type": "book",
+      "content": "晉安昌公荀氏祠制　《通志》引。",
+      "work_id": "d59f27wfpgxt"
+    },
+    {
+      "title": "孔晁等　晉明堂郊社議三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔晁等　晉明堂郊社議三卷　見兩《唐志》。",
+      "work_id": "d59f27w6143m"
+    },
+    {
+      "title": "晉元康儀",
+      "level": 3,
+      "type": "book",
+      "content": "晉元康儀　見《藝文類聚》、《初學記》。",
+      "work_id": "d59f27uqiygz"
+    },
+    {
+      "title": "咸寧注",
+      "level": 3,
+      "type": "book",
+      "content": "咸寧注　見本書《禮志》。",
+      "work_id": "d59f9s1cyuwx"
+    },
+    {
+      "title": "晉服制令",
+      "level": 3,
+      "type": "book",
+      "content": "晉服制令　見《南齊書・輿服志》、《太平御覽》。",
+      "work_id": "d59f6ssrrvm5"
+    },
+    {
+      "title": "晉先蠶儀注",
+      "level": 3,
+      "type": "book",
+      "content": "晉先蠶儀注　見《宋書》。《魏書・禮志》、《初學記》、《通典》、《太平御覽》引。",
+      "work_id": "d59f27yz603m"
+    },
+    {
+      "title": "賀循　藉田儀",
+      "level": 3,
+      "type": "book",
+      "content": "賀循　藉田儀　見《後漢書・禮儀志》注。",
+      "work_id": "d59f9pql7hfq"
+    },
+    {
+      "title": "傅玄　五祀議",
+      "level": 3,
+      "type": "book",
+      "content": "傅玄　五祀議　《太平御覽》。",
+      "work_id": "d59f9s1cyuwy"
+    },
+    {
+      "title": "范汪　雜府州郡儀十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范汪　雜府州郡儀十卷　見兩《唐志》。",
+      "work_id": "d59f27ue1gqr"
+    },
+    {
+      "title": "摯虞　新禮雜禮議",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　新禮雜禮議　《太平御覽》。",
+      "work_id": "d59f27tz22o0"
+    },
+    {
+      "title": "摯虞　決疑要注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　決疑要注一卷　見《隋志》。《通典》九十五引虞理，疑當即是書。",
+      "work_id": "d59f27wz26mb",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "晉鹵簿圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉鹵簿圖一卷　見《隋志》。",
+      "work_id": "d59f2q2558n5"
+    },
+    {
+      "title": "鹵簿儀二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鹵簿儀二卷　《隋志》列于《晉鹵簿圖》下，當是晉時所作。",
+      "work_id": "d59f2px85on6"
+    },
+    {
+      "title": "晉中朝大駕鹵簿",
+      "level": 3,
+      "type": "book",
+      "content": "晉中朝大駕鹵簿　《隋書・禮儀志》、《太平御覽》。",
+      "work_id": "d59f2q8y6iv5"
+    },
+    {
+      "title": "北涼姚艾、房晷　明堂制",
+      "level": 3,
+      "type": "book",
+      "content": "北涼姚艾、房晷　明堂制　《北涼載記》。皆沮渠蒙遜臣。",
+      "work_id": "d59f9s1cyuwz"
+    },
+    {
+      "title": "裴憲　三正東耕儀",
+      "level": 3,
+      "type": "book",
+      "content": "裴憲　三正東耕儀　見《北堂書鈔》引《趙書》。《太平御覽》亦載《趙書》《東耕儀》。",
+      "work_id": "d59f6ssrrvbv"
+    },
+    {
+      "title": "劉臻妻陳氏　元日冬至進見儀",
+      "level": 3,
+      "type": "book",
+      "content": "劉臻妻陳氏　元日冬至進見儀　見本書《列女傳》。",
+      "work_id": "d59f6ssrrv3i"
+    },
+    {
+      "title": "儀注類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右儀注類，三十五家。失姓名十八家。"
+    }
+  ]
+}

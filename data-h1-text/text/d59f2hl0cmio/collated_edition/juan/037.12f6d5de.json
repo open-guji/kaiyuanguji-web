@@ -1,0 +1,1385 @@
+{
+  "title": "五行類",
+  "sections": [
+    {
+      "title": "史蘇沈思經",
+      "level": 3,
+      "type": "book",
+      "content": "史蘇沈思經一卷",
+      "work_id": "d59f27vxagw1",
+      "link_basis": "原繫 1evcs0t5wupkw，該條已併入 1evgq2a2pi328（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "焦氏周易林",
+      "level": 3,
+      "type": "book",
+      "content": "焦氏周易林十六卷",
+      "work_id": "d59f207o9q80"
+    },
+    {
+      "title": "京氏周易四時候",
+      "level": 3,
+      "type": "book",
+      "content": "京氏周易四時候二卷",
+      "work_id": "d59f2pw6p7uo"
+    },
+    {
+      "title": "又周易飛候",
+      "level": 3,
+      "type": "book",
+      "content": "又周易飛候六卷",
+      "work_id": "d59f23ntwsg5"
+    },
+    {
+      "title": "周易混沌",
+      "level": 3,
+      "type": "book",
+      "content": "周易混沌四卷",
+      "work_id": "d59f24mhkbnm"
+    },
+    {
+      "title": "周易錯卦",
+      "level": 3,
+      "type": "book",
+      "content": "周易錯卦八卷",
+      "work_id": "d59f23nuui2v"
+    },
+    {
+      "title": "逆刺",
+      "level": 3,
+      "type": "book",
+      "content": "逆刺三卷",
+      "work_id": "d59f24lmz2fb"
+    },
+    {
+      "title": "費氏周易逆刺占災異",
+      "level": 3,
+      "type": "book",
+      "content": "費氏周易逆刺占災異十二卷",
+      "work_id": "d59f23nx15vm",
+      "ai_note": "隋志、國史題京房撰，新唐志題費氏——考證引唐志已著其異，同書異題（卷數俱十二）。"
+    },
+    {
+      "title": "又周易林",
+      "level": 3,
+      "type": "book",
+      "content": "又周易林二卷",
+      "work_id": "d59f2pufc1kx"
+    },
+    {
+      "title": "崔氏周易林",
+      "level": 3,
+      "type": "book",
+      "content": "崔氏周易林十六卷",
+      "work_id": "d59f2ptxur5t"
+    },
+    {
+      "title": "鄭玄注九宮行碁經",
+      "level": 3,
+      "type": "book",
+      "content": "鄭玄注九宮行碁經三卷",
+      "work_id": "d59f2ptx89hc"
+    },
+    {
+      "title": "管輅周易林",
+      "level": 3,
+      "type": "book",
+      "content": "管輅周易林四卷",
+      "work_id": "d59f27x8fawy"
+    },
+    {
+      "title": "又鳥情逆占",
+      "level": 3,
+      "type": "book",
+      "content": "又鳥情逆占一卷",
+      "work_id": "d59f27su5zi9"
+    },
+    {
+      "title": "張滿周易林",
+      "level": 3,
+      "type": "book",
+      "content": "張滿周易林七卷",
+      "work_id": "d59f23nzj288"
+    },
+    {
+      "title": "許氏周易雜占",
+      "level": 3,
+      "type": "book",
+      "content": "許氏周易雜占七卷",
+      "work_id": "d59f24m10qv7"
+    },
+    {
+      "title": "尚廣周易雜占",
+      "level": 3,
+      "type": "book",
+      "content": "尚廣周易雜占八卷",
+      "work_id": "d59f2pt8vr40"
+    },
+    {
+      "title": "武氏周易雜占",
+      "level": 3,
+      "type": "book",
+      "content": "武氏周易雜占八卷",
+      "work_id": "d59f2q3vkpa8"
+    },
+    {
+      "title": "魏伯陽周易參同契",
+      "level": 3,
+      "type": "book",
+      "content": "魏伯陽周易參同契二卷",
+      "work_id": "d59f23jy2h34",
+      "ai_note": "諸志卷數異（二／三／五卷）並存。"
+    },
+    {
+      "title": "又周易五相類",
+      "level": 3,
+      "type": "book",
+      "content": "又周易五相類一卷",
+      "work_id": "d59f25dgcd1e"
+    },
+    {
+      "title": "徐氏周易筮占",
+      "level": 3,
+      "type": "book",
+      "content": "徐氏周易筮占二十四卷",
+      "work_id": "d59f27xtnfuo"
+    },
+    {
+      "title": "伏曼容周易集林",
+      "level": 3,
+      "type": "book",
+      "content": "伏曼容周易集林十二卷",
+      "work_id": "d59f2845twxv"
+    },
+    {
+      "title": "伏氏周易集林",
+      "level": 3,
+      "type": "book",
+      "content": "伏氏周易集林一卷",
+      "work_id": "d59f2pum794x"
+    },
+    {
+      "title": "杜氏新易林占",
+      "level": 3,
+      "type": "book",
+      "content": "杜氏新易林占三卷",
+      "work_id": "d59f2qafvcht"
+    },
+    {
+      "title": "梁運周易雜占筮訣文",
+      "level": 3,
+      "type": "book",
+      "content": "梁運周易雜占筮訣文二卷",
+      "work_id": "d59f28j4lij0"
+    },
+    {
+      "title": "虞翻周易集林律曆",
+      "level": 3,
+      "type": "book",
+      "content": "虞翻周易集林律曆一卷",
+      "work_id": "d59f27xaaq6b"
+    },
+    {
+      "title": "郭璞周易洞林解",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞周易洞林解三卷",
+      "work_id": "d59f27xtnfuq"
+    },
+    {
+      "title": "梁元帝連山",
+      "level": 3,
+      "type": "book",
+      "content": "梁元帝連山三十卷",
+      "work_id": "d59f283wgsn5"
+    },
+    {
+      "title": "又洞林",
+      "level": 3,
+      "type": "book",
+      "content": "又洞林三卷",
+      "work_id": "d59f2851o4ch"
+    },
+    {
+      "title": "郭氏易腦",
+      "level": 3,
+      "type": "book",
+      "content": "郭氏易腦一卷",
+      "work_id": "d59f2q83a1he"
+    },
+    {
+      "title": "周易立成占",
+      "level": 3,
+      "type": "book",
+      "content": "周易立成占六卷",
+      "work_id": "d59f28415csh"
+    },
+    {
+      "title": "易林",
+      "level": 3,
+      "type": "book",
+      "content": "易林十四卷",
+      "work_id": "d59f208rae4g"
+    },
+    {
+      "title": "周易新林",
+      "level": 3,
+      "type": "book",
+      "content": "周易新林一卷",
+      "work_id": "d59f2q5bpce9"
+    },
+    {
+      "title": "易律曆",
+      "level": 3,
+      "type": "book",
+      "content": "易律曆一卷",
+      "work_id": "d59f2q05nw8w"
+    },
+    {
+      "title": "周易服藥法",
+      "level": 3,
+      "type": "book",
+      "content": "周易服藥法一卷",
+      "work_id": "d59f2q7cfmkh"
+    },
+    {
+      "title": "易三備",
+      "level": 3,
+      "type": "book",
+      "content": "易三備三卷",
+      "work_id": "d59f2pu9prsx"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷",
+      "work_id": null
+    },
+    {
+      "title": "易髓",
+      "level": 3,
+      "type": "book",
+      "content": "易髓一卷",
+      "work_id": "d59f28klz3et"
+    },
+    {
+      "title": "周易問",
+      "level": 3,
+      "type": "book",
+      "content": "周易問十卷",
+      "work_id": "d59f2qa9mlts"
+    },
+    {
+      "title": "周易雜圖序",
+      "level": 3,
+      "type": "book",
+      "content": "周易雜圖序一卷",
+      "work_id": "d59f2pr43dhe"
+    },
+    {
+      "title": "周易八卦斗內圖",
+      "level": 3,
+      "type": "book",
+      "content": "周易八卦斗內圖一卷",
+      "work_id": "d59f2q597fnk",
+      "ai_note": "新唐志一卷、隋志二卷，卷數並存。庫另有郭璞易八卦命録斗內圖一卷（`1evfuv0yermkg`），與本條疑重出俟裁。"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷",
+      "work_id": null
+    },
+    {
+      "title": "周易內卦神筮法",
+      "level": 3,
+      "type": "book",
+      "content": "周易內卦神筮法二卷",
+      "work_id": "d59f24mlxn9e"
+    },
+    {
+      "title": "周易雜筮占",
+      "level": 3,
+      "type": "book",
+      "content": "周易雜筮占四卷",
+      "work_id": "d59f2q6p0tmq",
+      "ai_note": "考證明引「唐志：周易雜筮占四卷」，即隋志雜筮占。"
+    },
+    {
+      "title": "老子神符易",
+      "level": 3,
+      "type": "book",
+      "content": "老子神符易一卷",
+      "work_id": "d59f2q8y6jgg"
+    },
+    {
+      "title": "孝經元辰",
+      "level": 3,
+      "type": "book",
+      "content": "孝經元辰二卷",
+      "work_id": "d59f2q9qwdfk"
+    },
+    {
+      "title": "推元辰厄命",
+      "level": 3,
+      "type": "book",
+      "content": "推元辰厄命一卷",
+      "work_id": "d59f2pz1ea69"
+    },
+    {
+      "title": "元辰章",
+      "level": 3,
+      "type": "book",
+      "content": "元辰章三卷",
+      "work_id": "d59f2q9igyrl"
+    },
+    {
+      "title": "元辰",
+      "level": 3,
+      "type": "book",
+      "content": "元辰一卷",
+      "work_id": "d59f2q48oo3m"
+    },
+    {
+      "title": "雜元辰祿命",
+      "level": 3,
+      "type": "book",
+      "content": "雜元辰祿命二卷",
+      "work_id": "d59f2q2u48ao"
+    },
+    {
+      "title": "湴河祿命",
+      "level": 3,
+      "type": "book",
+      "content": "湴河祿命二卷",
+      "work_id": "d59f2ptgdg5c"
+    },
+    {
+      "title": "孫僧化六甲開天曆",
+      "level": 3,
+      "type": "book",
+      "content": "孫僧化六甲開天曆一卷",
+      "work_id": "d59f2pzf4qgw"
+    },
+    {
+      "title": "翼奉風角要候",
+      "level": 3,
+      "type": "book",
+      "content": "翼奉風角要候一卷",
+      "work_id": "d59f23nv5qmd",
+      "link_basis": "原繫 1evcs0tgxwkjk，該條已併入 1evcmneqi7l6o（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "王琛風角六情訣",
+      "level": 3,
+      "type": "book",
+      "content": "王琛風角六情訣一卷",
+      "work_id": "d59f2q47qy9t"
+    },
+    {
+      "title": "又推產婦何時產法",
+      "level": 3,
+      "type": "book",
+      "content": "又推產婦何時產法一卷",
+      "work_id": "d59f2pza4x6o"
+    },
+    {
+      "title": "九宮行碁立成",
+      "level": 3,
+      "type": "book",
+      "content": "九宮行碁立成一卷",
+      "work_id": "d59f2ptdvk00"
+    },
+    {
+      "title": "祿命書",
+      "level": 3,
+      "type": "book",
+      "content": "祿命書二卷",
+      "work_id": "d59f2pukyarl",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcpd3bo67sw，今別立《祿命書》二卷 1ex0jcf780rup 繫之。"
+    },
+    {
+      "title": "遁甲開山圖",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲開山圖一卷",
+      "work_id": "d59f28n7b1tv"
+    },
+    {
+      "title": "劉孝恭風角鳥情",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝恭風角鳥情二卷",
+      "work_id": "d59f2pz1eakg"
+    },
+    {
+      "title": "又祿命書",
+      "level": 3,
+      "type": "book",
+      "content": "又祿命書二十卷",
+      "work_id": "d59f28lxf5z7"
+    },
+    {
+      "title": "鳥情占",
+      "level": 3,
+      "type": "book",
+      "content": "鳥情占一卷",
+      "work_id": "d59f23nuj9ja"
+    },
+    {
+      "title": "風角",
+      "level": 3,
+      "type": "book",
+      "content": "風角十卷",
+      "work_id": "d59f28jrdu68"
+    },
+    {
+      "title": "九宮經解",
+      "level": 3,
+      "type": "book",
+      "content": "九宮經解三卷",
+      "work_id": "d59f2q2etlhc"
+    },
+    {
+      "title": "婚嫁書",
+      "level": 3,
+      "type": "book",
+      "content": "婚嫁書二卷",
+      "work_id": "d59f2pto6dxe"
+    },
+    {
+      "title": "登壇經",
+      "level": 3,
+      "type": "book",
+      "content": "登壇經一卷",
+      "work_id": "d59f2pt96znl"
+    },
+    {
+      "title": "太一大游曆",
+      "level": 3,
+      "type": "book",
+      "content": "太一大游曆二卷",
+      "work_id": "d59f2q4ak3r5"
+    },
+    {
+      "title": "大游太一曆",
+      "level": 3,
+      "type": "book",
+      "content": "大游太一曆一卷",
+      "work_id": "d59f2q7r3s3k"
+    },
+    {
+      "title": "曜靈經",
+      "level": 3,
+      "type": "book",
+      "content": "曜靈經一卷",
+      "work_id": "d59f2psrpp8i"
+    },
+    {
+      "title": "七政曆",
+      "level": 3,
+      "type": "book",
+      "content": "七政曆一卷",
+      "work_id": "d59f2q38h4w1"
+    },
+    {
+      "title": "六壬曆",
+      "level": 3,
+      "type": "book",
+      "content": "六壬曆一卷",
+      "work_id": "d59f2psfjgg1"
+    },
+    {
+      "title": "六壬擇非經",
+      "level": 3,
+      "type": "book",
+      "content": "六壬擇非經六卷",
+      "work_id": "d59f2pvxykn5"
+    },
+    {
+      "title": "靈寶登圖",
+      "level": 3,
+      "type": "book",
+      "content": "靈寶登圖一卷",
+      "work_id": "d59f2q5zqm80"
+    },
+    {
+      "title": "梁主榮光明符",
+      "level": 3,
+      "type": "book",
+      "content": "梁主榮光明符十二卷",
+      "work_id": "d59f2pxfndoi"
+    },
+    {
+      "title": "推二十四氣曆",
+      "level": 3,
+      "type": "book",
+      "content": "推二十四氣曆一卷",
+      "work_id": "d59f2ptt66f4"
+    },
+    {
+      "title": "太一曆",
+      "level": 3,
+      "type": "book",
+      "content": "太一曆一卷",
+      "work_id": "d59f2q61m1hd"
+    },
+    {
+      "title": "曹氏黃帝式經三十六用",
+      "level": 3,
+      "type": "book",
+      "content": "曹氏黃帝式經三十六用一卷",
+      "work_id": "d59f28lgkcn8"
+    },
+    {
+      "title": "玄女式經要訣",
+      "level": 3,
+      "type": "book",
+      "content": "玄女式經要訣一卷",
+      "work_id": "d59f2q8212wx"
+    },
+    {
+      "title": "董氏大龍首式經",
+      "level": 3,
+      "type": "book",
+      "content": "董氏大龍首式經一卷",
+      "work_id": "d59f2pub9y4h"
+    },
+    {
+      "title": "桓公式經",
+      "level": 3,
+      "type": "book",
+      "content": "桓公式經一卷",
+      "work_id": "d59f2pxv98ua"
+    },
+    {
+      "title": "宋琨式經",
+      "level": 3,
+      "type": "book",
+      "content": "宋琨式經一卷",
+      "work_id": "d59f2pu2ujnk"
+    },
+    {
+      "title": "六壬式經雜占",
+      "level": 3,
+      "type": "book",
+      "content": "六壬式經雜占九卷",
+      "work_id": "d59f2q2bdzi8"
+    },
+    {
+      "title": "雷公式經",
+      "level": 3,
+      "type": "book",
+      "content": "雷公式經一卷",
+      "work_id": "d59f2ptgdgqo"
+    },
+    {
+      "title": "太一式經",
+      "level": 3,
+      "type": "book",
+      "content": "太一式經二卷",
+      "work_id": "d59f2pwwx5a9"
+    },
+    {
+      "title": "太一式經雜占",
+      "level": 3,
+      "type": "book",
+      "content": "太一式經雜占十卷",
+      "work_id": "d59f2pu9prlt"
+    },
+    {
+      "title": "黃帝式用常陽經",
+      "level": 3,
+      "type": "book",
+      "content": "黃帝式用常陽經一卷",
+      "work_id": "d59f2q3c7zsy"
+    },
+    {
+      "title": "黃帝龍首經",
+      "level": 3,
+      "type": "book",
+      "content": "黃帝龍首經二卷",
+      "work_id": "d59f2pxydmgy"
+    },
+    {
+      "title": "黃帝集靈",
+      "level": 3,
+      "type": "book",
+      "content": "黃帝集靈三卷",
+      "work_id": "d59f2pvx0utd"
+    },
+    {
+      "title": "黃帝降國",
+      "level": 3,
+      "type": "book",
+      "content": "黃帝降國一卷",
+      "work_id": "d59f2px93egw"
+    },
+    {
+      "title": "黃帝斗曆",
+      "level": 3,
+      "type": "book",
+      "content": "黃帝斗曆一卷",
+      "work_id": "d59f2q80gwe9"
+    },
+    {
+      "title": "太史公萬歲曆",
+      "level": 3,
+      "type": "book",
+      "content": "太史公萬歲曆一卷",
+      "work_id": "d59f2q3wif41"
+    },
+    {
+      "title": "萬歲曆祠",
+      "level": 3,
+      "type": "book",
+      "content": "萬歲曆祠二卷",
+      "work_id": "d59f2pzcbkzl"
+    },
+    {
+      "title": "任氏千歲曆祠",
+      "level": 3,
+      "type": "book",
+      "content": "任氏千歲曆祠二卷",
+      "work_id": "d59f2qa82f41"
+    },
+    {
+      "title": "舉百事要略",
+      "level": 3,
+      "type": "book",
+      "content": "舉百事要略一卷",
+      "work_id": "d59f2q85gpa9"
+    },
+    {
+      "title": "張衡黃帝飛鳥曆",
+      "level": 3,
+      "type": "book",
+      "content": "張衡黃帝飛鳥曆一卷",
+      "work_id": "d59f2q4p89a9"
+    },
+    {
+      "title": "太一飛鳥曆",
+      "level": 3,
+      "type": "book",
+      "content": "太一飛鳥曆一卷",
+      "work_id": "d59f2qaeb668"
+    },
+    {
+      "title": "太一九宮雜占",
+      "level": 3,
+      "type": "book",
+      "content": "太一九宮雜占十卷",
+      "work_id": "d59f2q0ydq81"
+    },
+    {
+      "title": "九宮經",
+      "level": 3,
+      "type": "book",
+      "content": "九宮經三卷",
+      "work_id": "d59f23ntljwm"
+    },
+    {
+      "title": "堪輿曆注",
+      "level": 3,
+      "type": "book",
+      "content": "堪輿曆注二卷",
+      "work_id": "d59f2psvgjr6"
+    },
+    {
+      "title": "殷紹黃帝四序堪輿",
+      "level": 3,
+      "type": "book",
+      "content": "殷紹黃帝四序堪輿一卷",
+      "work_id": "d59f2q782bcw"
+    },
+    {
+      "title": "地節堪輿",
+      "level": 3,
+      "type": "book",
+      "content": "地節堪輿二卷",
+      "work_id": "d59f2q651n29"
+    },
+    {
+      "title": "伍子胥遁甲文",
+      "level": 3,
+      "type": "book",
+      "content": "伍子胥遁甲文一卷",
+      "work_id": "d59f2evsv4ld",
+      "link_basis": "原繫 1evcs0tw53ksg，該條已併入 1evcmnez961a8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "信都芳遁甲經",
+      "level": 3,
+      "type": "book",
+      "content": "信都芳遁甲經二卷",
+      "work_id": "d59f286ab20z"
+    },
+    {
+      "title": "葛洪三元遁甲圖",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪三元遁甲圖三卷",
+      "work_id": "d59f2pu0nvgg"
+    },
+    {
+      "title": "許昉三元遁甲",
+      "level": 3,
+      "type": "book",
+      "content": "許昉三元遁甲六卷",
+      "work_id": "d59f2py749oh"
+    },
+    {
+      "title": "杜仲三元遁甲",
+      "level": 3,
+      "type": "book",
+      "content": "杜仲三元遁甲一卷",
+      "work_id": "d59f2pypui9t"
+    },
+    {
+      "title": "榮氏遁甲開山圖",
+      "level": 3,
+      "type": "book",
+      "content": "榮氏遁甲開山圖二卷",
+      "work_id": "d59f2q0l9r7l"
+    },
+    {
+      "title": "遁甲經",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲經十卷",
+      "work_id": "d59f2q6fnpc0"
+    },
+    {
+      "title": "遁甲囊中經",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲囊中經一卷",
+      "work_id": "d59f2q8p4n41"
+    },
+    {
+      "title": "遁甲推要",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲推要一卷",
+      "work_id": "d59f2puv94oy"
+    },
+    {
+      "title": "遁甲祕要",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲祕要一卷",
+      "work_id": "d59f27u8qfi8"
+    },
+    {
+      "title": "遁甲九星曆",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲九星曆一卷",
+      "work_id": "d59f2q8xvawx"
+    },
+    {
+      "title": "遁甲萬一訣",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲萬一訣三卷",
+      "work_id": "d59f2q6is2rl"
+    },
+    {
+      "title": "三元遁甲立成圖",
+      "level": 3,
+      "type": "book",
+      "content": "三元遁甲立成圖二卷",
+      "work_id": "d59f2ptosveq"
+    },
+    {
+      "title": "遁甲立成法",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲立成法三卷",
+      "work_id": "d59f28lbvshy"
+    },
+    {
+      "title": "遁甲九宮八門圖",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲九宮八門圖一卷",
+      "work_id": "d59f2q805nuq"
+    },
+    {
+      "title": "遁甲三奇",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲三奇三卷",
+      "work_id": "d59f2q2z416o"
+    },
+    {
+      "title": "陽遁甲",
+      "level": 3,
+      "type": "book",
+      "content": "陽遁甲九卷",
+      "work_id": "d59f2q5mmn0i"
+    },
+    {
+      "title": "陰遁甲",
+      "level": 3,
+      "type": "book",
+      "content": "陰遁甲九卷",
+      "work_id": "d59f2pvdo4xt"
+    },
+    {
+      "title": "遁甲三元九甲立成",
+      "level": 3,
+      "type": "book",
+      "content": "遁甲三元九甲立成一卷",
+      "work_id": "d59f2pwxuupt"
+    },
+    {
+      "title": "白澤圖",
+      "level": 3,
+      "type": "book",
+      "content": "白澤圖一卷",
+      "work_id": "d59f2q8a59mq"
+    },
+    {
+      "title": "武王須臾",
+      "level": 3,
+      "type": "book",
+      "content": "武王須臾二卷",
+      "work_id": "d59f2pvv5fcy"
+    },
+    {
+      "title": "師曠占書",
+      "level": 3,
+      "type": "book",
+      "content": "師曠占書一卷",
+      "work_id": "d59f2q3te1oh"
+    },
+    {
+      "title": "東方朔占書",
+      "level": 3,
+      "type": "book",
+      "content": "東方朔占書一卷",
+      "work_id": "d59f23nqh6h3"
+    },
+    {
+      "title": "淮南王萬畢術",
+      "level": 3,
+      "type": "book",
+      "content": "淮南王萬畢術一卷",
+      "work_id": "d59f25dgnlkw"
+    },
+    {
+      "title": "樂產神樞靈轄",
+      "level": 3,
+      "type": "book",
+      "content": "樂產神樞靈轄十卷",
+      "work_id": "d59f2q9f1ce9"
+    },
+    {
+      "title": "柳彥詢龜經",
+      "level": 3,
+      "type": "book",
+      "content": "柳彥詢龜經三卷",
+      "work_id": "d59f2pzrxgjk"
+    },
+    {
+      "title": "柳世隆龜經",
+      "level": 3,
+      "type": "book",
+      "content": "柳世隆龜經三卷",
+      "work_id": "d59f2ptjt2io"
+    },
+    {
+      "title": "劉寶真龜經",
+      "level": 3,
+      "type": "book",
+      "content": "劉寶真龜經一卷",
+      "work_id": "d59f2pw4tslc"
+    },
+    {
+      "title": "王弘禮龜經",
+      "level": 3,
+      "type": "book",
+      "content": "王弘禮龜經一卷",
+      "work_id": "d59f2q0kc269"
+    },
+    {
+      "title": "莊道名龜經",
+      "level": 3,
+      "type": "book",
+      "content": "莊道名龜經一卷",
+      "work_id": "d59f2q4p8934"
+    },
+    {
+      "title": "蕭吉五行記",
+      "level": 3,
+      "type": "book",
+      "content": "蕭吉五行記五卷",
+      "work_id": "d59f2pvwpm2p"
+    },
+    {
+      "title": "又五姓宅經",
+      "level": 3,
+      "type": "book",
+      "content": "又五姓宅經二十卷",
+      "work_id": "d59f28l8g6it"
+    },
+    {
+      "title": "葬經",
+      "level": 3,
+      "type": "book",
+      "content": "葬經二卷",
+      "work_id": "d59f2pt70cg2"
+    },
+    {
+      "title": "王璨新撰陰陽書",
+      "level": 3,
+      "type": "book",
+      "content": "王璨新撰陰陽書三十卷",
+      "work_id": "d59f2q601u69"
+    },
+    {
+      "title": "青烏子",
+      "level": 3,
+      "type": "book",
+      "content": "青烏子三卷",
+      "work_id": "d59f2q5e785d"
+    },
+    {
+      "title": "葬經",
+      "level": 3,
+      "type": "book",
+      "content": "葬經八卷",
+      "work_id": "d59f2pt70cg2"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又十卷",
+      "work_id": null
+    },
+    {
+      "title": "葬書地脉經",
+      "level": 3,
+      "type": "book",
+      "content": "葬書地脉經一卷",
+      "work_id": "d59f2pylsfep"
+    },
+    {
+      "title": "墓書五陰",
+      "level": 3,
+      "type": "book",
+      "content": "墓書五陰一卷",
+      "work_id": "d59f2pwbp0ch"
+    },
+    {
+      "title": "雜墓圖",
+      "level": 3,
+      "type": "book",
+      "content": "雜墓圖一卷",
+      "work_id": "d59f2q5rmg3l"
+    },
+    {
+      "title": "墓圖立成",
+      "level": 3,
+      "type": "book",
+      "content": "墓圖立成一卷",
+      "work_id": "d59f2pv58qo0"
+    },
+    {
+      "title": "六甲冢名雜忌要訣",
+      "level": 3,
+      "type": "book",
+      "content": "六甲冢名雜忌要訣二卷",
+      "work_id": "d59f2q03h8u9"
+    },
+    {
+      "title": "郭氏五姓墓圖要訣",
+      "level": 3,
+      "type": "book",
+      "content": "郭氏五姓墓圖要訣五卷",
+      "work_id": "d59f2pym3nr5"
+    },
+    {
+      "title": "壇中伏尸",
+      "level": 3,
+      "type": "book",
+      "content": "壇中伏尸一卷",
+      "work_id": "d59f2ps9ly4h"
+    },
+    {
+      "title": "胡君玄女彈五音法相冢經",
+      "level": 3,
+      "type": "book",
+      "content": "胡君玄女彈五音法相冢經一卷",
+      "work_id": "d59f2pz5gd1d"
+    },
+    {
+      "title": "百怪書",
+      "level": 3,
+      "type": "book",
+      "content": "百怪書一卷",
+      "work_id": "d59f2q7qhb0g"
+    },
+    {
+      "title": "祠竈經",
+      "level": 3,
+      "type": "book",
+      "content": "祠竈經一卷",
+      "work_id": "d59f2q2ufgu8"
+    },
+    {
+      "title": "解文",
+      "level": 3,
+      "type": "book",
+      "content": "解文一卷",
+      "work_id": "d59f2pumihvl"
+    },
+    {
+      "title": "周宣占夢書",
+      "level": 3,
+      "type": "book",
+      "content": "周宣占夢書三卷",
+      "work_id": "d59f27se8vsz"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又二卷",
+      "work_id": null
+    },
+    {
+      "title": "孫思邈龜經",
+      "level": 3,
+      "type": "book",
+      "content": "孫思邈龜經一卷",
+      "work_id": "d59f28k7axvq"
+    },
+    {
+      "title": "又五兆算經",
+      "level": 3,
+      "type": "book",
+      "content": "又五兆算經一卷",
+      "work_id": "d59f2q9knmdd"
+    },
+    {
+      "title": "龜上五兆動搖經訣",
+      "level": 3,
+      "type": "book",
+      "content": "龜上五兆動搖經訣一卷",
+      "work_id": "d59f2pyfux35"
+    },
+    {
+      "title": "福祿論",
+      "level": 3,
+      "type": "book",
+      "content": "福祿論三卷",
+      "work_id": "d59f2q2hbi82"
+    },
+    {
+      "title": "李淳風四民福祿論",
+      "level": 3,
+      "type": "book",
+      "content": "李淳風四民福祿論三卷",
+      "work_id": "d59f28k2mdqa"
+    },
+    {
+      "title": "又玄悟經",
+      "level": 3,
+      "type": "book",
+      "content": "又玄悟經三卷",
+      "work_id": "d59f28ka42rl"
+    },
+    {
+      "title": "太一元鑑",
+      "level": 3,
+      "type": "book",
+      "content": "太一元鑑五卷",
+      "work_id": "d59f28kupqm9"
+    },
+    {
+      "title": "占燈經",
+      "level": 3,
+      "type": "book",
+      "content": "占燈經一卷",
+      "work_id": "d59f28maj4sk"
+    },
+    {
+      "title": "注鄭玄九旗飛變",
+      "level": 3,
+      "type": "book",
+      "content": "注鄭玄九旗飛變一卷",
+      "work_id": "d59f2q1823gg"
+    },
+    {
+      "title": "三元經",
+      "level": 3,
+      "type": "book",
+      "content": "三元經一卷",
+      "work_id": "d59f2ptd93b6"
+    },
+    {
+      "title": "太一樞會賦",
+      "level": 3,
+      "type": "book",
+      "content": "太一樞會賦一卷",
+      "work_id": "d59f2q91xdkw"
+    },
+    {
+      "title": "崔知悌產圖",
+      "level": 3,
+      "type": "book",
+      "content": "崔知悌產圖一卷",
+      "work_id": "d59f2q2bdzb6"
+    },
+    {
+      "title": "呂才陰陽書",
+      "level": 3,
+      "type": "book",
+      "content": "呂才陰陽書五十三卷",
+      "work_id": "d59f2q9dh5hc"
+    },
+    {
+      "title": "廣濟陰陽百忌曆",
+      "level": 3,
+      "type": "book",
+      "content": "廣濟陰陽百忌曆一卷",
+      "work_id": "d59f2q1a8r9c"
+    },
+    {
+      "title": "大唐地理經",
+      "level": 3,
+      "type": "book",
+      "content": "大唐地理經十卷",
+      "work_id": "d59f28k7m6f7"
+    },
+    {
+      "title": "袁天綱相書",
+      "level": 3,
+      "type": "book",
+      "content": "袁天綱相書七卷",
+      "work_id": "d59f28m160ht"
+    },
+    {
+      "title": "要訣",
+      "level": 3,
+      "type": "book",
+      "content": "要訣三卷",
+      "work_id": "d59f2pwmb30h"
+    },
+    {
+      "title": "陳恭釗天寶曆",
+      "level": 3,
+      "type": "book",
+      "content": "陳恭釗天寶曆二卷",
+      "work_id": "d59f2pufyigy"
+    },
+    {
+      "title": "趙同珍壇經",
+      "level": 3,
+      "type": "book",
+      "content": "趙同珍壇經一卷",
+      "work_id": "d59f28looirp"
+    },
+    {
+      "title": "黎幹蓬瀛書",
+      "level": 3,
+      "type": "book",
+      "content": "黎幹蓬瀛書三卷",
+      "work_id": "d59f28jdne9t"
+    },
+    {
+      "title": "賈躭唐七聖曆",
+      "level": 3,
+      "type": "book",
+      "content": "賈躭唐七聖曆一卷",
+      "work_id": "d59f2q99qbk2"
+    },
+    {
+      "title": "李遠龍紀聖異曆",
+      "level": 3,
+      "type": "book",
+      "content": "李遠龍紀聖異曆一卷",
+      "work_id": "d59f28jxml1f"
+    },
+    {
+      "title": "竇維鋈廣古今五行記",
+      "level": 3,
+      "type": "book",
+      "content": "竇維鋈廣古今五行記三十卷",
+      "work_id": "d59f2pyjlreq"
+    },
+    {
+      "title": "濮陽夏樵子五行志",
+      "level": 3,
+      "type": "book",
+      "content": "濮陽夏樵子五行志五卷",
+      "work_id": "d59f2qap8gzk"
+    },
+    {
+      "title": "祿命人元經",
+      "level": 3,
+      "type": "book",
+      "content": "祿命人元經三卷",
+      "work_id": "d59f2q1exatd"
+    },
+    {
+      "title": "楊龍光推計祿命厄運詩",
+      "level": 3,
+      "type": "book",
+      "content": "楊龍光推計祿命厄運詩一卷",
+      "work_id": "d59f2q6az56o"
+    },
+    {
+      "title": "王希明太一金鏡式經",
+      "level": 3,
+      "type": "book",
+      "content": "王希明太一金鏡式經十卷",
+      "work_id": "d59f28k3k3cx"
+    },
+    {
+      "title": "僧一行天一太一經",
+      "level": 3,
+      "type": "book",
+      "content": "僧一行天一太一經一卷",
+      "work_id": "d59f2ps8o8ox"
+    },
+    {
+      "title": "又遁甲十八局",
+      "level": 3,
+      "type": "book",
+      "content": "又遁甲十八局一卷",
+      "work_id": "d59f28kyrtom"
+    },
+    {
+      "title": "太一局遁甲經",
+      "level": 3,
+      "type": "book",
+      "content": "太一局遁甲經一卷",
+      "work_id": "d59f2qaid8u8"
+    },
+    {
+      "title": "五音地理經",
+      "level": 3,
+      "type": "book",
+      "content": "五音地理經十五卷",
+      "work_id": "d59f2pv745q9"
+    },
+    {
+      "title": "六壬明鏡連珠歌",
+      "level": 3,
+      "type": "book",
+      "content": "六壬明鏡連珠歌一卷",
+      "work_id": "d59f2ptpfcap"
+    },
+    {
+      "title": "六壬髓經",
+      "level": 3,
+      "type": "book",
+      "content": "六壬髓經三卷",
+      "work_id": "d59f2q3xg4qo"
+    },
+    {
+      "title": "馬先天寶太一靈應式記",
+      "level": 3,
+      "type": "book",
+      "content": "馬先天寶太一靈應式記五卷",
+      "work_id": "d59f28lv8i6e"
+    },
+    {
+      "title": "李鼎祚連珠明鏡式經",
+      "level": 3,
+      "type": "book",
+      "content": "李鼎祚連珠明鏡式經十卷",
+      "work_id": "d59f28jzi0as",
+      "link_basis": "原繫 1evcs0un6zzls，該條已併入 1evgq2w8hkmps（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "蕭君靖遁甲圖",
+      "level": 3,
+      "type": "book",
+      "content": "蕭君靖遁甲圖",
+      "work_id": "d59f2q1dd43k"
+    },
+    {
+      "title": "司馬驤遁甲符寶萬歲經國曆",
+      "level": 3,
+      "type": "book",
+      "content": "司馬驤遁甲符寶萬歲經國曆一卷",
+      "work_id": "d59f28lsfda9"
+    },
+    {
+      "title": "曹士蒍金匱經",
+      "level": 3,
+      "type": "book",
+      "content": "曹士蒍金匱經三卷",
+      "work_id": "d59f2q3y2ltt"
+    },
+    {
+      "title": "馬雄絳囊經",
+      "level": 3,
+      "type": "book",
+      "content": "馬雄絳囊經一卷",
+      "work_id": "d59f2pv4b0g0"
+    },
+    {
+      "title": "李靖玉帳經",
+      "level": 3,
+      "type": "book",
+      "content": "李靖玉帳經一卷",
+      "work_id": "d59f2py3zw8w"
+    },
+    {
+      "title": "李筌六壬大玉帳歌",
+      "level": 3,
+      "type": "book",
+      "content": "李筌六壬大玉帳歌十卷",
+      "work_id": "d59f2q6yp72a"
+    },
+    {
+      "title": "王叔政推太歲行年吉凶厄",
+      "level": 3,
+      "type": "book",
+      "content": "王叔政推太歲行年吉凶厄一卷",
+      "work_id": "d59f28li4jcw"
+    },
+    {
+      "title": "由吾公裕葬經",
+      "level": 3,
+      "type": "book",
+      "content": "由吾公裕葬經三卷",
+      "work_id": "d59f2q66lts1"
+    },
+    {
+      "title": "孫季邕葬範",
+      "level": 3,
+      "type": "book",
+      "content": "孫季邕葬範三卷",
+      "work_id": "d59f2pwrxcea"
+    },
+    {
+      "title": "盧重元夢書",
+      "level": 3,
+      "type": "book",
+      "content": "盧重元夢書四卷",
+      "work_id": "d59f2pu5yx35"
+    },
+    {
+      "title": "柳璨夢雋",
+      "level": 3,
+      "type": "book",
+      "content": "柳璨夢雋一卷",
+      "work_id": "d59f28m8yy2q"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右五行類六十家，一百六十部，六百四十七卷。"
+    }
+  ]
+}

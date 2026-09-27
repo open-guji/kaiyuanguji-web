@@ -1,0 +1,279 @@
+{
+  "title": "編年類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "編年類",
+      "content": ""
+    },
+    {
+      "title": "前漢紀三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "前漢紀三十卷",
+      "work_id": "d59f207wdwcg"
+    },
+    {
+      "title": "後漢紀三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "後漢紀三十卷",
+      "work_id": "d59f27x4ogea"
+    },
+    {
+      "title": "漢春秋一百卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "漢春秋一百卷（闕）",
+      "work_id": "d59f27x18uf5"
+    },
+    {
+      "title": "漢春秋問答一卷",
+      "level": 3,
+      "type": "book",
+      "content": "漢春秋問答一卷",
+      "work_id": "d59f2hf2j2f7"
+    },
+    {
+      "title": "三十國春秋三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "三十國春秋三十卷",
+      "work_id": "d59f283ws16r"
+    },
+    {
+      "title": "晉春秋略三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉春秋略三十卷",
+      "work_id": "d59f28jtkhz4"
+    },
+    {
+      "title": "太清紀十卷",
+      "level": 3,
+      "type": "book",
+      "content": "太清紀十卷。梁王韶撰起太清元年盡六年初侯景破建鄴韶西奔江陵士人多問城內事韶不能人人爲說乃䟽爲一篇問者即示之元帝聞而取讀曰昔王韶之爲隆安記言晉末之亂離今亦可以爲太清記矣韶因爲之然其議論皆謝之矣又韶希帝旨撰述多非實錄",
+      "work_id": "d59f2og1r6yp"
+    },
+    {
+      "title": "魏典三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏典三十卷。唐太常少卿元行冲撰起道武帝終宇文革命凡三十篇孝武入關則書東魏爲東帝並載两國事爲凡例微用編年之法文約事詳學者宗之行冲以族出于魏尅意論著引魏明帝時西栁谷瑞石有牛繼馬後之象舊史謂元帝本出牛氏行冲以爲非因言道武名犍繼晉受命此其應也特爲論載于篇",
+      "work_id": "d59f28kgo26c"
+    },
+    {
+      "title": "三國典略三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "三國典略三十卷。唐汾州司户叅軍丘悅撰以關中鄴都江南爲三國起西魏終後周而東包魏北齊南總梁陳凡三十篇今卷第多遺自二十一以下卷闕",
+      "work_id": "d59f2pvvrwn4"
+    },
+    {
+      "title": "五運録二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "五運録二十卷。唐曹圭撰起三皇訖隋年世之略",
+      "work_id": "d59f28k1oo3q"
+    },
+    {
+      "title": "唐歴四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐歴四十卷",
+      "work_id": "d59f28j8nll3"
+    },
+    {
+      "title": "唐統紀一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐統紀一百卷",
+      "work_id": "d59f2pzthngi"
+    },
+    {
+      "title": "古今通要四卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今通要四卷",
+      "work_id": "d59f28jcpon7"
+    },
+    {
+      "title": "唐歴目録一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "唐歴目録一卷（闕）",
+      "work_id": "d59f2pvfjk00"
+    },
+    {
+      "title": "通歴十卷",
+      "level": 3,
+      "type": "book",
+      "content": "通歴十卷",
+      "work_id": "d59f27w8j0g4"
+    },
+    {
+      "title": "通録六十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "通録六十五卷",
+      "work_id": "d59f2pyk88ox"
+    },
+    {
+      "title": "開皇紀三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "開皇紀三十卷。鄭向撰",
+      "work_id": "d59f2hgwe51g"
+    },
+    {
+      "title": "唐朝年代記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐朝年代記十卷",
+      "work_id": "d59f28mc3bic"
+    },
+    {
+      "title": "正閏位歴三卷",
+      "level": 3,
+      "type": "book",
+      "content": "正閏位歴三卷",
+      "work_id": "d59f28lzx2bo"
+    },
+    {
+      "title": "建元歴二卷",
+      "level": 3,
+      "type": "book",
+      "content": "建元歴二卷",
+      "work_id": "d59f28k1dfk6"
+    },
+    {
+      "title": "古今年號録七卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今年號録七卷",
+      "work_id": "d59f28jl53b9"
+    },
+    {
+      "title": "嘉號録一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "嘉號録一卷（闕）",
+      "work_id": "d59f29k7nhtt"
+    },
+    {
+      "title": "元類一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元類一卷",
+      "work_id": "d59f28jbgqgy"
+    },
+    {
+      "title": "王氏五位圗三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王氏五位圗三卷",
+      "work_id": "d59f2qacqyv4"
+    },
+    {
+      "title": "帝王歴數歌一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "帝王歴數歌一卷（闕）",
+      "work_id": "d59f28lnfklh"
+    },
+    {
+      "title": "歴代年號一卷",
+      "level": 3,
+      "type": "book",
+      "content": "歴代年號一卷",
+      "work_id": "d59f2hj7f9j5"
+    },
+    {
+      "title": "两漢至唐年紀一卷",
+      "level": 3,
+      "type": "book",
+      "content": "两漢至唐年紀一卷",
+      "work_id": "d59f28knja4g"
+    },
+    {
+      "title": "古今年代歴一卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今年代歴一卷",
+      "work_id": "d59f28kbd0xw"
+    },
+    {
+      "title": "年歴圖八卷",
+      "level": 3,
+      "type": "book",
+      "content": "年歴圖八卷",
+      "work_id": "d59f2pv2flkw"
+    },
+    {
+      "title": "帝王興廢年代錄二卷",
+      "level": 3,
+      "type": "book",
+      "content": "帝王興廢年代錄二卷",
+      "work_id": "d59f2pz4tvy8"
+    },
+    {
+      "title": "帝王年代圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "帝王年代圖一卷",
+      "work_id": "d59f2pwc08w2"
+    },
+    {
+      "title": "古今類聚年號圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今類聚年號圖一卷",
+      "work_id": "d59f2gcipzb6"
+    },
+    {
+      "title": "年號歴一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "年號歴一卷（闕）",
+      "work_id": "d59f2ptmxfr4"
+    },
+    {
+      "title": "歴代王正運五運圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "歴代王正運五運圖一卷",
+      "work_id": "d59f2q4099mo"
+    },
+    {
+      "title": "年紀録一卷",
+      "level": 3,
+      "type": "book",
+      "content": "年紀録一卷",
+      "work_id": "d59f2puh7gg0"
+    },
+    {
+      "title": "年號歴一卷",
+      "level": 3,
+      "type": "book",
+      "content": "年號歴一卷",
+      "work_id": "d59f2ptmxfr4",
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24：本節與同志第 34 節同指本 work，已逐條裁為正當共繫（其據見所繫 work 之 ai_note）。依 SCHEMA〈一書兩著〉，書目次第在先者為正著不標，其後重出者標之。"
+    },
+    {
+      "title": "歴代君臣圖三卷",
+      "level": 3,
+      "type": "book",
+      "content": "歴代君臣圖三卷",
+      "work_id": "d59f2q8fgagw"
+    },
+    {
+      "title": "唐至五代紀年記二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐至五代紀年記二卷",
+      "work_id": "d59f2pxhu1vk"
+    }
+  ]
+}

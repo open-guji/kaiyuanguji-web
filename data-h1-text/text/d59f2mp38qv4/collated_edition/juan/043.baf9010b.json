@@ -1,0 +1,67 @@
+{
+  "title": "集部·制舉類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "集部·制舉類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詩義指南一卷",
+      "content": "段昌武撰。",
+      "work_id": "d59f2hrirugw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "綸學繩尺十卷",
+      "content": "魏昌應撰。",
+      "work_id": "d59f2hhkfev5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易義矜式",
+      "content": "徐溍生撰。",
+      "work_id": "d59f2hjickjl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周易擬題三卷",
+      "content": "徐溍生撰。",
+      "work_id": "d59f2hlayozk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "永嘉八面鋒十三卷",
+      "content": "",
+      "work_id": "d59f2pwkfnk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "經義模範一卷",
+      "content": "",
+      "work_id": "d59f2nk7usxu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元中軍論三卷",
+      "content": "",
+      "work_id": "d59f2pud5d6o"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右制舉類",
+      "content": "右制舉類六家三十一卷。"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "title": "經部·詩類",
+  "sections": [
+    {
+      "title": "詩類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "崔靈恩　集注毛詩二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔靈恩　集注毛詩二十四卷　本傳「二十二卷，桂州刺史」。",
+      "work_id": "d59f2846rmkh"
+    },
+    {
+      "title": "陶弘景　毛詩序一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　毛詩序一卷　《隋志》「隱居先生」。",
+      "work_id": "d59f99glyqkq"
+    },
+    {
+      "title": "謝雲濟　毛詩檢漏義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝雲濟　毛詩檢漏義二卷　《七錄》「給事郎」。",
+      "work_id": "d59f284sxh4w",
+      "note": "原書腳註①：《隋志》作「謝曇濟」"
+    },
+    {
+      "title": "何胤　毛詩總集六卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　毛詩總集六卷　《七錄》「處士」。",
+      "work_id": "d59f2pqyh3pe"
+    },
+    {
+      "title": "何胤　毛詩隱義十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何胤　毛詩隱義十卷　《七錄》。",
+      "work_id": "d59f284atpmp",
+      "note": "「又」承前省略撰人（何胤）"
+    },
+    {
+      "title": "武帝　毛詩發題序義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　毛詩發題序義一卷　《隋志》。",
+      "work_id": "d59f99gm9z40"
+    },
+    {
+      "title": "武帝　毛詩大義十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　毛詩大義十一卷　《隋志》。",
+      "work_id": "d59f2pruxseb",
+      "note": "「又」承前省略撰人（武帝）"
+    },
+    {
+      "title": "簡文帝　毛詩十五國風義二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝　毛詩十五國風義二十卷　《隋志》。",
+      "work_id": "d59f2845ioea"
+    },
+    {
+      "title": "許懋　風雅比興義十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "許懋　風雅比興義十五卷　字怡哲，高陽新城人，官中庶子。",
+      "work_id": "d59f2851cvsz",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "闕康之　毛詩義",
+      "level": 3,
+      "type": "book",
+      "content": "闕康之　毛詩義　《册府元龜》。",
+      "work_id": "d59f284y8idg"
+    },
+    {
+      "title": "劉瓛　毛詩篇次義一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉瓛　毛詩篇次義一卷　《七錄》。",
+      "work_id": "d59f284uhnuu"
+    },
+    {
+      "title": "毛詩圖三卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩圖三卷　《七錄》。",
+      "work_id": "d59f2pujpcsh",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "毛詩孔子經圖十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩孔子經圖十二卷　《七錄》。",
+      "work_id": "d59f2pr1lhq9",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "毛詩古聖賢圖二卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛詩古聖賢圖二卷　《七錄》。鄭樵《通志》曰：「三書皆蕭梁人作。」",
+      "work_id": "d59f2pqu3soy",
+      "note": "原書無撰人。「三書」指前三種毛詩圖"
+    }
+  ]
+}

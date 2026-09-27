@@ -1,0 +1,448 @@
+{
+  "work_id": "d59ezahzvx8g",
+  "version_label": "墨子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%A2%A8%E5%AD%90",
+    "page_title": "墨子",
+    "revid": 7910198,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "主页链出的「墨子/全覽」是全书合订transclude页，已由抓取脚本的容器过滤规则剔除，不算独立章。",
+  "total_chapters": 53,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "親士",
+      "file": "001.md",
+      "page_title": "墨子/親士",
+      "revid": 2637025,
+      "md_len": 766
+    },
+    {
+      "n": 2,
+      "title": "修身",
+      "file": "002.md",
+      "page_title": "墨子/修身",
+      "revid": 2637026,
+      "md_len": 560
+    },
+    {
+      "n": 3,
+      "title": "所染",
+      "file": "003.md",
+      "page_title": "墨子/所染",
+      "revid": 2637027,
+      "md_len": 654
+    },
+    {
+      "n": 4,
+      "title": "法儀",
+      "file": "004.md",
+      "page_title": "墨子/法儀",
+      "revid": 2200346,
+      "md_len": 820
+    },
+    {
+      "n": 5,
+      "title": "七患",
+      "file": "005.md",
+      "page_title": "墨子/七患",
+      "revid": 2200347,
+      "md_len": 1094
+    },
+    {
+      "n": 6,
+      "title": "辭過",
+      "file": "006.md",
+      "page_title": "墨子/辭過",
+      "revid": 2637028,
+      "md_len": 1437
+    },
+    {
+      "n": 7,
+      "title": "三辯",
+      "file": "007.md",
+      "page_title": "墨子/三辯",
+      "revid": 2200349,
+      "md_len": 404
+    },
+    {
+      "n": 8,
+      "title": "尚賢上",
+      "file": "008.md",
+      "page_title": "墨子/尚賢上",
+      "revid": 2200462,
+      "md_len": 991
+    },
+    {
+      "n": 9,
+      "title": "尚賢中",
+      "file": "009.md",
+      "page_title": "墨子/尚賢中",
+      "revid": 2200463,
+      "md_len": 2772
+    },
+    {
+      "n": 10,
+      "title": "尚賢下",
+      "file": "010.md",
+      "page_title": "墨子/尚賢下",
+      "revid": 2200464,
+      "md_len": 1795
+    },
+    {
+      "n": 11,
+      "title": "尚同上",
+      "file": "011.md",
+      "page_title": "墨子/尚同上",
+      "revid": 2200465,
+      "md_len": 937
+    },
+    {
+      "n": 12,
+      "title": "尚同中",
+      "file": "012.md",
+      "page_title": "墨子/尚同中",
+      "revid": 2200466,
+      "md_len": 2844
+    },
+    {
+      "n": 13,
+      "title": "尚同下",
+      "file": "013.md",
+      "page_title": "墨子/尚同下",
+      "revid": 2200467,
+      "md_len": 2212
+    },
+    {
+      "n": 14,
+      "title": "兼愛上",
+      "file": "014.md",
+      "page_title": "墨子/兼愛上",
+      "revid": 2200468,
+      "md_len": 687
+    },
+    {
+      "n": 15,
+      "title": "兼愛中",
+      "file": "015.md",
+      "page_title": "墨子/兼愛中",
+      "revid": 2200469,
+      "md_len": 1580
+    },
+    {
+      "n": 16,
+      "title": "兼愛下",
+      "file": "016.md",
+      "page_title": "墨子/兼愛下",
+      "revid": 2370666,
+      "md_len": 3230
+    },
+    {
+      "n": 17,
+      "title": "非攻上",
+      "file": "017.md",
+      "page_title": "墨子/非攻上",
+      "revid": 2200471,
+      "md_len": 538
+    },
+    {
+      "n": 18,
+      "title": "非攻中",
+      "file": "018.md",
+      "page_title": "墨子/非攻中",
+      "revid": 2200472,
+      "md_len": 1485
+    },
+    {
+      "n": 19,
+      "title": "非攻下",
+      "file": "019.md",
+      "page_title": "墨子/非攻下",
+      "revid": 2637029,
+      "md_len": 2377
+    },
+    {
+      "n": 20,
+      "title": "節用上",
+      "file": "020.md",
+      "page_title": "墨子/節用上",
+      "revid": 2637030,
+      "md_len": 720
+    },
+    {
+      "n": 21,
+      "title": "節用中",
+      "file": "021.md",
+      "page_title": "墨子/節用中",
+      "revid": 2637031,
+      "md_len": 701
+    },
+    {
+      "n": 22,
+      "title": "節葬下",
+      "file": "022.md",
+      "page_title": "墨子/節葬下",
+      "revid": 2637032,
+      "md_len": 3288
+    },
+    {
+      "n": 23,
+      "title": "天志上",
+      "file": "023.md",
+      "page_title": "墨子/天志上",
+      "revid": 2637033,
+      "md_len": 1665
+    },
+    {
+      "n": 24,
+      "title": "天志中",
+      "file": "024.md",
+      "page_title": "墨子/天志中",
+      "revid": 2637034,
+      "md_len": 2761
+    },
+    {
+      "n": 25,
+      "title": "天志下",
+      "file": "025.md",
+      "page_title": "墨子/天志下",
+      "revid": 2637035,
+      "md_len": 2735
+    },
+    {
+      "n": 26,
+      "title": "明鬼下",
+      "file": "026.md",
+      "page_title": "墨子/明鬼下",
+      "revid": 2637036,
+      "md_len": 4104
+    },
+    {
+      "n": 27,
+      "title": "非樂上",
+      "file": "027.md",
+      "page_title": "墨子/非樂上",
+      "revid": 2637037,
+      "md_len": 1851
+    },
+    {
+      "n": 28,
+      "title": "非命上",
+      "file": "028.md",
+      "page_title": "墨子/非命上",
+      "revid": 2637038,
+      "md_len": 1790
+    },
+    {
+      "n": 29,
+      "title": "非命中",
+      "file": "029.md",
+      "page_title": "墨子/非命中",
+      "revid": 7911569,
+      "md_len": 1190
+    },
+    {
+      "n": 30,
+      "title": "非命下",
+      "file": "030.md",
+      "page_title": "墨子/非命下",
+      "revid": 2637040,
+      "md_len": 1726
+    },
+    {
+      "n": 31,
+      "title": "非儒下",
+      "file": "031.md",
+      "page_title": "墨子/非儒下",
+      "revid": 2637041,
+      "md_len": 2408
+    },
+    {
+      "n": 32,
+      "title": "經上",
+      "file": "032.md",
+      "page_title": "墨子/經上",
+      "revid": 2637042,
+      "md_len": 751
+    },
+    {
+      "n": 33,
+      "title": "經下",
+      "file": "033.md",
+      "page_title": "墨子/經下",
+      "revid": 2637043,
+      "md_len": 1074
+    },
+    {
+      "n": 34,
+      "title": "經說上",
+      "file": "034.md",
+      "page_title": "墨子/經說上",
+      "revid": 2637044,
+      "md_len": 2098
+    },
+    {
+      "n": 35,
+      "title": "經說下",
+      "file": "035.md",
+      "page_title": "墨子/經說下",
+      "revid": 2637045,
+      "md_len": 3810
+    },
+    {
+      "n": 36,
+      "title": "大取",
+      "file": "036.md",
+      "page_title": "墨子/大取",
+      "revid": 2637046,
+      "md_len": 2269
+    },
+    {
+      "n": 37,
+      "title": "小取",
+      "file": "037.md",
+      "page_title": "墨子/小取",
+      "revid": 2637047,
+      "md_len": 1192
+    },
+    {
+      "n": 38,
+      "title": "耕柱",
+      "file": "038.md",
+      "page_title": "墨子/耕柱",
+      "revid": 2637048,
+      "md_len": 2702
+    },
+    {
+      "n": 39,
+      "title": "貴義",
+      "file": "039.md",
+      "page_title": "墨子/貴義",
+      "revid": 2637049,
+      "md_len": 2104
+    },
+    {
+      "n": 40,
+      "title": "公孟",
+      "file": "040.md",
+      "page_title": "墨子/公孟",
+      "revid": 2637050,
+      "md_len": 3388
+    },
+    {
+      "n": 41,
+      "title": "魯問",
+      "file": "041.md",
+      "page_title": "墨子/魯問",
+      "revid": 2637062,
+      "md_len": 3744
+    },
+    {
+      "n": 42,
+      "title": "公輸",
+      "file": "042.md",
+      "page_title": "墨子/公輸",
+      "revid": 2637063,
+      "md_len": 732
+    },
+    {
+      "n": 43,
+      "title": "備城門",
+      "file": "043.md",
+      "page_title": "墨子/備城門",
+      "revid": 2637051,
+      "md_len": 3670
+    },
+    {
+      "n": 44,
+      "title": "備高臨",
+      "file": "044.md",
+      "page_title": "墨子/備高臨",
+      "revid": 2637052,
+      "md_len": 420
+    },
+    {
+      "n": 45,
+      "title": "備梯",
+      "file": "045.md",
+      "page_title": "墨子/備梯",
+      "revid": 2637053,
+      "md_len": 753
+    },
+    {
+      "n": 46,
+      "title": "備水",
+      "file": "046.md",
+      "page_title": "墨子/備水",
+      "revid": 2637054,
+      "md_len": 178
+    },
+    {
+      "n": 47,
+      "title": "備突",
+      "file": "047.md",
+      "page_title": "墨子/備突",
+      "revid": 2637055,
+      "md_len": 109
+    },
+    {
+      "n": 48,
+      "title": "備穴",
+      "file": "048.md",
+      "page_title": "墨子/備穴",
+      "revid": 2637056,
+      "md_len": 1636
+    },
+    {
+      "n": 49,
+      "title": "備蛾傅",
+      "file": "049.md",
+      "page_title": "墨子/備蛾傅",
+      "revid": 2637057,
+      "md_len": 1009
+    },
+    {
+      "n": 50,
+      "title": "迎敵祠",
+      "file": "050.md",
+      "page_title": "墨子/迎敵祠",
+      "revid": 2637058,
+      "md_len": 882
+    },
+    {
+      "n": 51,
+      "title": "旗幟",
+      "file": "051.md",
+      "page_title": "墨子/旗幟",
+      "revid": 2637059,
+      "md_len": 713
+    },
+    {
+      "n": 52,
+      "title": "號令",
+      "file": "052.md",
+      "page_title": "墨子/號令",
+      "revid": 2637060,
+      "md_len": 5518
+    },
+    {
+      "n": 53,
+      "title": "雜守",
+      "file": "053.md",
+      "page_title": "墨子/雜守",
+      "revid": 2637061,
+      "md_len": 2120
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

@@ -1,0 +1,578 @@
+{
+  "title": "釋家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "釋家類",
+      "content": ""
+    },
+    {
+      "title": "《釋藏目錄》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《釋藏目錄》四卷",
+      "work_id": "d59f2ndsv7cw"
+    },
+    {
+      "title": "《佛經》六百七十八函",
+      "level": 3,
+      "type": "book",
+      "content": "《佛經》六百七十八函",
+      "work_id": "d59f2ni09atc"
+    },
+    {
+      "title": "太祖《集註金剛經》一卷成祖制序。",
+      "level": 3,
+      "type": "book",
+      "content": "太祖《集註金剛經》一卷成祖制序。",
+      "work_id": "d59f2nhxregw"
+    },
+    {
+      "title": "成祖《御製諸佛名稱歌》一卷，《普法界之曲》四卷，《神僧傳》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "成祖《御製諸佛名稱歌》一卷，《普法界之曲》四卷，《神僧傳》九卷",
+      "work_id": "d59f2ni9mf42"
+    },
+    {
+      "title": "仁孝皇后《夢感佛說大功德經》一卷，《佛說大因緣經》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "仁孝皇后《夢感佛說大功德經》一卷，《佛說大因緣經》三卷",
+      "work_id": "d59f2ng97d37"
+    },
+    {
+      "title": "宋濂《心經文句》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋濂《心經文句》一卷",
+      "work_id": "d59f2nej34sh"
+    },
+    {
+      "title": "姚廣孝《佛法不可滅論》一卷，《道餘錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚廣孝《佛法不可滅論》一卷，《道餘錄》一卷",
+      "work_id": "d59f2ndrb08w"
+    },
+    {
+      "title": "克庵禪師《語錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "克庵禪師《語錄》一卷",
+      "work_id": "d59f2nhqw6io"
+    },
+    {
+      "title": "一如《三藏法數》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "一如《三藏法數》十八卷",
+      "work_id": "d59f2nhbws1s"
+    },
+    {
+      "title": "陳實《大藏一覽》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳實《大藏一覽》十卷",
+      "work_id": "d59f2nkeesqr"
+    },
+    {
+      "title": "大祐《淨土指歸》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "大祐《淨土指歸》二卷",
+      "work_id": "d59f2nhp0r29"
+    },
+    {
+      "title": "元瀞《三會語錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "元瀞《三會語錄》二卷",
+      "work_id": "d59f2nep0mwy"
+    },
+    {
+      "title": "溥洽《雨軒語錄》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "溥洽《雨軒語錄》五卷",
+      "work_id": "d59f2nir3pj4"
+    },
+    {
+      "title": "法聚《玉芝語錄》六卷，《內語》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "法聚《玉芝語錄》六卷，《內語》二卷",
+      "work_id": "d59f2ndnvegy"
+    },
+    {
+      "title": "宗泐《心經注》一卷，《金剛經注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗泐《心經注》一卷，《金剛經注》一卷",
+      "work_id": "d59f2nhz0c8w"
+    },
+    {
+      "title": "洪恩《金剛經解義》一卷，《心經說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "洪恩《金剛經解義》一卷，《心經說》一卷",
+      "work_id": "d59f2nfc4742"
+    },
+    {
+      "title": "楊慎《禪藻集》六卷，《禪林鉤玄》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊慎《禪藻集》六卷，《禪林鉤玄》九卷",
+      "work_id": "d59f2nfd1wxt"
+    },
+    {
+      "title": "弘道《註解楞伽經》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "弘道《註解楞伽經》四卷",
+      "work_id": "d59f2nev9dz7"
+    },
+    {
+      "title": "梵琦《楚石禪師語錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "梵琦《楚石禪師語錄》二十卷",
+      "work_id": "d59f2ndwm1hd"
+    },
+    {
+      "title": "汪道昆《楞嚴纂注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "汪道昆《楞嚴纂注》十卷",
+      "work_id": "d59f2ngxjv9e"
+    },
+    {
+      "title": "交光法師《楞嚴正脈》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "交光法師《楞嚴正脈》十卷",
+      "work_id": "d59f2nfjao00"
+    },
+    {
+      "title": "陸樹聲《禪林餘藻》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸樹聲《禪林餘藻》一卷",
+      "work_id": "d59f2ndzf6ki"
+    },
+    {
+      "title": "管志道《龍華懺法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "管志道《龍華懺法》一卷",
+      "work_id": "d59f2ngs8u81"
+    },
+    {
+      "title": "王應乾《楞嚴圓通品》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應乾《楞嚴圓通品》四卷",
+      "work_id": "d59f2nduqmm9"
+    },
+    {
+      "title": "方允文《楞嚴經解》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "方允文《楞嚴經解》十二卷",
+      "work_id": "d59f2nh4f3es"
+    },
+    {
+      "title": "曾鳳儀《金剛般若宗通》二卷，《心經釋》一卷，《楞嚴宗通》十卷，《楞伽宗通》八卷，《圓覺宗通》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曾鳳儀《金剛般若宗通》二卷，《心經釋》一卷，《楞嚴宗通》十卷，《楞伽宗通》八卷，《圓覺宗通》四卷",
+      "work_id": "d59f2ndy6875"
+    },
+    {
+      "title": "沈士榮《續原教論》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈士榮《續原教論》二卷",
+      "work_id": "d59f2niw3i0x"
+    },
+    {
+      "title": "楊時芳《心經集解》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊時芳《心經集解》一卷",
+      "work_id": "d59f2ndo6n7m"
+    },
+    {
+      "title": "何湛之《金剛經偈論疏注》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "何湛之《金剛經偈論疏注》二卷",
+      "work_id": "d59f2ne0o4xt"
+    },
+    {
+      "title": "戚繼光《禪家六籍》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "戚繼光《禪家六籍》十六卷",
+      "work_id": "d59f2nfghipu"
+    },
+    {
+      "title": "如愚《金剛筏喻》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "如愚《金剛筏喻》二卷",
+      "work_id": "d59f2ng1ef41"
+    },
+    {
+      "title": "張有譽《金剛經義趣廣演》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張有譽《金剛經義趣廣演》三卷",
+      "work_id": "d59f2nhv9i4h"
+    },
+    {
+      "title": "李通《華嚴疏鈔》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "李通《華嚴疏鈔》四十卷",
+      "work_id": "d59f2nfu7z0g"
+    },
+    {
+      "title": "方澤《華嚴要略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "方澤《華嚴要略》二卷",
+      "work_id": "d59f2nhun11e"
+    },
+    {
+      "title": "劉璉《無隱集偈頌》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉璉《無隱集偈頌》三卷",
+      "work_id": "d59f2nfio6is"
+    },
+    {
+      "title": "古音《禪源諸詮》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "古音《禪源諸詮》一卷",
+      "work_id": "d59f2nf8ztoi"
+    },
+    {
+      "title": "景隆《大藏要略》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "景隆《大藏要略》五卷",
+      "work_id": "d59f2ni0vrpd"
+    },
+    {
+      "title": "劉鳳《釋教編》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉鳳《釋教編》六卷",
+      "work_id": "d59f2nfkjm6a"
+    },
+    {
+      "title": "陳士元《象教皮編》六卷，《釋氏源流》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳士元《象教皮編》六卷，《釋氏源流》二卷",
+      "work_id": "d59f2niid24i"
+    },
+    {
+      "title": "方晟《宗門崇行錄》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "方晟《宗門崇行錄》四卷",
+      "work_id": "d59f2nh8sf0i"
+    },
+    {
+      "title": "一元《歸元直指》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "一元《歸元直指》四卷",
+      "work_id": "d59f2ndyhh4z"
+    },
+    {
+      "title": "陶望齡《宗鏡廣刪》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶望齡《宗鏡廣刪》十卷",
+      "work_id": "d59f2ng1pnnl"
+    },
+    {
+      "title": "沈泰鴻《慈向集》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈泰鴻《慈向集》十三卷",
+      "work_id": "d59f2nfwpvcz"
+    },
+    {
+      "title": "陸長庚《楞嚴述旨》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸長庚《楞嚴述旨》十卷",
+      "work_id": "d59f2ngqzw1s"
+    },
+    {
+      "title": "王肯堂《參禪要訣》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王肯堂《參禪要訣》一卷",
+      "work_id": "d59f2ndo6n0j"
+    },
+    {
+      "title": "楊惟休《佛宗》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊惟休《佛宗》一卷",
+      "work_id": "d59f2nf4migx"
+    },
+    {
+      "title": "張明弼《兔角詮》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張明弼《兔角詮》十卷",
+      "work_id": "d59f2nhfnmki"
+    },
+    {
+      "title": "徐可求《禪燕》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐可求《禪燕》二十卷",
+      "work_id": "d59f2nds8q2r"
+    },
+    {
+      "title": "瞿汝稷《指月錄》三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿汝稷《指月錄》三十二卷",
+      "work_id": "d59f2nh1apky"
+    },
+    {
+      "title": "袁宏道《宗鏡攝錄》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁宏道《宗鏡攝錄》十二卷",
+      "work_id": "d59f2nhrtvr5"
+    },
+    {
+      "title": "姚希孟《佛法金湯文錄》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚希孟《佛法金湯文錄》十二卷",
+      "work_id": "d59f2ngbe0oy"
+    },
+    {
+      "title": "袁中道《禪宗正統》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁中道《禪宗正統》一卷",
+      "work_id": "d59f2nf5vgg3"
+    },
+    {
+      "title": "祩宏《彌陀經疏》四卷，《正訛集》一卷，《禪關策進》一卷，《竹窗三筆》三卷，《自知錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "祩宏《彌陀經疏》四卷，《正訛集》一卷，《禪關策進》一卷，《竹窗三筆》三卷，《自知錄》二卷",
+      "work_id": "d59f2nf74em8"
+    },
+    {
+      "title": "真可《紫柏語錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "真可《紫柏語錄》一卷",
+      "work_id": "d59f2nhvkqgw"
+    },
+    {
+      "title": "德清《華嚴法界境》一卷，《楞嚴通義》十卷，《法華通義》七卷，《觀楞伽記》四卷，《肇論略注》三卷，《長松茹退》二卷，《憨山",
+      "level": 3,
+      "type": "book",
+      "content": "德清《華嚴法界境》一卷，《楞嚴通義》十卷，《法華通義》七卷，《觀楞伽記》四卷，《肇論略注》三卷，《長松茹退》二卷，《憨山緒言》一卷",
+      "work_id": "d59f2nf0vnr5"
+    },
+    {
+      "title": "李樹乾《竺乾宗解》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "李樹乾《竺乾宗解》四卷",
+      "work_id": "d59f2ne0cw03"
+    },
+    {
+      "title": "蕭士瑋《起信論解》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭士瑋《起信論解》一卷",
+      "work_id": "d59f2ngp4gsh"
+    },
+    {
+      "title": "曹胤儒《華嚴指南》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹胤儒《華嚴指南》四卷",
+      "work_id": "d59f2nis1f5t"
+    },
+    {
+      "title": "俞王言《金剛標指》一卷，《心經標指》一卷，《楞嚴標指》十二卷，《圓覺標指》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "俞王言《金剛標指》一卷，《心經標指》一卷，《楞嚴標指》十二卷，《圓覺標指》一卷",
+      "work_id": "d59f2nefyrcx"
+    },
+    {
+      "title": "鎮澄《楞嚴正觀疏》十卷，《般若照真論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鎮澄《楞嚴正觀疏》十卷，《般若照真論》一卷",
+      "work_id": "d59f2nh9q48w"
+    },
+    {
+      "title": "傳燈《楞嚴玄義》四卷，《天臺山方外志》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "傳燈《楞嚴玄義》四卷，《天臺山方外志》三十卷",
+      "work_id": "d59f2nj3l728"
+    },
+    {
+      "title": "通潤《楞嚴合轍》十卷，《楞伽合轍》四卷，《法華大窾》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "通潤《楞嚴合轍》十卷，《楞伽合轍》四卷，《法華大窾》七卷",
+      "work_id": "d59f2ngc0hz7"
+    },
+    {
+      "title": "石顯《西方合論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "石顯《西方合論》十卷",
+      "work_id": "d59f2ne2uscj"
+    },
+    {
+      "title": "智順《善才五十三參論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "智順《善才五十三參論》一卷",
+      "work_id": "d59f2ng0gpvn"
+    },
+    {
+      "title": "仁潮《法界安立圖》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "仁潮《法界安立圖》六卷",
+      "work_id": "d59f2nfrq29u"
+    },
+    {
+      "title": "如巹《禪宗正脈》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "如巹《禪宗正脈》十卷",
+      "work_id": "d59f2ngvog03"
+    },
+    {
+      "title": "章有成《金華分燈錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "章有成《金華分燈錄》十卷",
+      "work_id": "d59f2nezmpdu"
+    },
+    {
+      "title": "鐘惺《楞嚴如說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "鐘惺《楞嚴如說》十卷",
+      "work_id": "d59f2ngvog02"
+    },
+    {
+      "title": "沈宗霈《楞嚴約指》十二卷，《徵心百問》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈宗霈《楞嚴約指》十二卷，《徵心百問》一卷",
+      "work_id": "d59f2ndz3y0x"
+    },
+    {
+      "title": "王正位《赤水玄珠》一卷，《栴檀林》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王正位《赤水玄珠》一卷，《栴檀林》一卷",
+      "work_id": "d59f2ndmb7r6"
+    },
+    {
+      "title": "曾大奇《通翼》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曾大奇《通翼》四卷",
+      "work_id": "d59f2nel9se8"
+    },
+    {
+      "title": "曹學牷《蜀中高僧記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹學牷《蜀中高僧記》十卷",
+      "work_id": "d59f2ngf4v0h"
+    },
+    {
+      "title": "王應遴《慈無量集》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應遴《慈無量集》四卷",
+      "work_id": "d59f2neirw1v"
+    },
+    {
+      "title": "林應起《全閩祖師語錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "林應起《全閩祖師語錄》三卷",
+      "work_id": "d59f2nhv9i4g"
+    },
+    {
+      "title": "夏樹芳《棲真志》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "夏樹芳《棲真志》四卷",
+      "work_id": "d59f2njoi3nm"
+    },
+    {
+      "title": "祖心《冥樞會要》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "祖心《冥樞會要》四卷",
+      "work_id": "d59f2ng7bxtt"
+    },
+    {
+      "title": "淨喜《禪林寶訓》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "淨喜《禪林寶訓》四卷",
+      "work_id": "d59f2nf8ol4w"
+    },
+    {
+      "title": "淨喜《禪林寶訓》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "淨喜《禪林寶訓》四卷",
+      "work_id": "d59f2nf8ol4w"
+    },
+    {
+      "title": "大艤《禪警語》一卷，《宗教答響》一卷，《歸正錄》一卷，《博山語錄》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "大艤《禪警語》一卷，《宗教答響》一卷，《歸正錄》一卷，《博山語錄》二十二卷",
+      "work_id": "d59f2nfnz85d"
+    },
+    {
+      "title": "元賢《弘釋錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元賢《弘釋錄》三卷",
+      "work_id": "d59f2nf5vgn6"
+    },
+    {
+      "title": "宗林《寒燈衍義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗林《寒燈衍義》二卷",
+      "work_id": "d59f2ndk4jya"
+    }
+  ]
+}

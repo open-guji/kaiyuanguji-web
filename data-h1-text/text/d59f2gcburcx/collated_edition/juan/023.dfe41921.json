@@ -1,0 +1,83 @@
+{
+  "title": "名家類",
+  "sections": [
+    {
+      "title": "《尹文子》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《尹文子》二卷尹文子撰。",
+      "work_id": "d59ezail4268"
+    },
+    {
+      "title": "《公孫龍子》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《公孫龍子》三卷公孫龍撰。",
+      "work_id": "d59ezaiouwow"
+    },
+    {
+      "title": "又一卷賈大隱注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷賈大隱注。",
+      "work_id": "d59f28nlz7d0"
+    },
+    {
+      "title": "又一卷陳嗣古注。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷陳嗣古注。",
+      "work_id": "d59f2hh39czm"
+    },
+    {
+      "title": "《人物志》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《人物志》三卷劉邵撰。",
+      "work_id": "d59f27t8u51e"
+    },
+    {
+      "title": "又三卷劉邵撰，劉炳注。",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷劉邵撰，劉炳注。",
+      "work_id": "d59f2q8jidc1",
+      "link_basis": "舊唐志名家類「又三卷劉邵撰，劉炳注」，是劉炳注本——依 SCHEMA〈同題二條〉六，注家有其創作，注本與原典本為二物；庫中正有《人物志劉炳注》1evcs0p3ehuyo（新唐志「劉炳注人物志三卷」），今改繫。"
+    },
+    {
+      "title": "《士緯》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《士緯》十卷姚信撰。",
+      "work_id": "d59f27suh81t"
+    },
+    {
+      "title": "《士操》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《士操》一卷魏文帝撰。",
+      "work_id": "d59f27sksv7l"
+    },
+    {
+      "title": "《九州人士論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《九州人士論》一卷盧毓撰。",
+      "work_id": "d59f27sksv7n"
+    },
+    {
+      "title": "《兼名苑》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兼名苑》十卷釋遠年撰。",
+      "work_id": "d59f2q1dod1d"
+    },
+    {
+      "title": "《辯名苑》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《辯名苑》十卷範謐撰。</poem>",
+      "work_id": "d59f2q77r2td"
+    }
+  ]
+}

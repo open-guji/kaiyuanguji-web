@@ -1,0 +1,109 @@
+{
+  "title": "集部·表奏類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "集部·表奏類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中興僃覽三卷",
+      "content": "張浚撰。",
+      "work_id": "d59f2hjcf283"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奏議二十三卷",
+      "content": "虞允文撰。",
+      "work_id": "d59f2hgxbuo3"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奏議六卷",
+      "content": "胡銓撰。",
+      "work_id": "d59f2hl3s8hu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鄭魯公歷官表奏十卷",
+      "content": "鄭僑撰。",
+      "work_id": "d59f2hezpxj6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "庸齋瑣闥集一卷",
+      "content": "趙汝騰撰。",
+      "work_id": "d59f2hg3ob29"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "庸齋表箋一卷",
+      "content": "趙汝騰撰。",
+      "work_id": "d59f2hihikg1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奏議二卷",
+      "content": "王覿撰。",
+      "work_id": "d59f2hlirmkj"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奏議十卷",
+      "content": "牟子才撰。",
+      "work_id": "d59f2hjjwr9d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "免糴奏議三卷",
+      "content": "李繁撰。",
+      "work_id": "d59f28lf05xi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "奏議四卷",
+      "content": "崔與之撰。",
+      "work_id": "d59f2hm7qm0x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蛟峯奏劄一卷",
+      "content": "方逢辰撰。",
+      "work_id": "d59f2hj0k1kw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遠齋遺文一卷",
+      "content": "方逢辰撰。",
+      "work_id": "d59f2hkgzwub"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樓山奏議六卷",
+      "content": "",
+      "work_id": "d59f2ptwlszm"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右表奏類",
+      "content": "右表奏類十二家七十一卷。"
+    }
+  ]
+}

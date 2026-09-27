@@ -1,0 +1,2614 @@
+{
+  "title": "千頃堂書目·卷32",
+  "sections": [
+    {
+      "title": "文史類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "寜獻王臞仙文譜八卷",
+      "level": 3,
+      "type": "book",
+      "content": "寜獻王臞仙文譜八卷",
+      "_title_only": "寜獻王臞仙文譜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "寜靖王奠培文章大模式",
+      "level": 3,
+      "type": "book",
+      "content": "寜靖王奠培文章大模式",
+      "_title_only": "寜靖王奠培文章大模式",
+      "_no_author": "待考"
+    },
+    {
+      "title": "宋元禧文章緒論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋元禧文章緒論一卷",
+      "_author": "宋元禧",
+      "_title_only": "文章緒論"
+    },
+    {
+      "title": "王行適意宜資十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王行適意宜資十卷",
+      "_author": "王行",
+      "_title_only": "適意宜資",
+      "work_id": "d59f6emx6ps7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又墓銘舉例四卷",
+      "level": 3,
+      "type": "book",
+      "content": "又墓銘舉例四卷",
+      "_author": "王行",
+      "_title_only": "墓銘舉例",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "唐愚士文㫁四卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐愚士文㫁四卷⟨一作十卷⟩",
+      "author_info": "一作十卷",
+      "_author": "唐愚士",
+      "_title_only": "文㫁",
+      "work_id": "d59f6emx6ps6",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "瞿佑游藝錄",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑游藝錄",
+      "_author": "瞿佑",
+      "_title_only": "游藝錄",
+      "work_id": "d59f6emxhybm",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "余祐游藝至論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "余祐游藝至論一卷⟨輯朱子語類論文之語⟩",
+      "author_info": "輯朱子語類論文之語",
+      "_author": "余祐",
+      "_title_only": "游藝至論",
+      "work_id": "d59f6efnlukn",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "任慶雲秇贊三卷",
+      "level": 3,
+      "type": "book",
+      "content": "任慶雲秇贊三卷",
+      "_author": "任慶雲",
+      "_title_only": "秇贊",
+      "work_id": "d59f6emx6ps4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "閔文振蘭莊文話",
+      "level": 3,
+      "type": "book",
+      "content": "閔文振蘭莊文話⟨缺⟩",
+      "author_info": "缺",
+      "_author": "閔文振",
+      "_title_only": "蘭莊文話"
+    },
+    {
+      "title": "張大猷文章原委三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張大猷文章原委三卷⟨順徳人嘉靖中官工部主事⟩",
+      "author_info": "順徳人嘉靖中官工部主事",
+      "_author": "張大猷",
+      "_title_only": "文章原委"
+    },
+    {
+      "title": "王弘誨文字談苑四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王弘誨文字談苑四卷",
+      "_author": "王弘誨",
+      "_title_only": "文字談苑",
+      "_emended": "缺字據適園本補",
+      "_orig": "王□誨文字談苑"
+    },
+    {
+      "title": "梅慶生注釋文心雕龍十卷",
+      "level": 3,
+      "type": "book",
+      "content": "梅慶生注釋文心雕龍十卷⟨南城人太學生⟩",
+      "author_info": "南城人太學生",
+      "_author": "梅慶生",
+      "_title_only": "注釋文心雕龍",
+      "_author_src": "庫證/小注",
+      "_why": "小注「南城人太學生」證其為人；梅慶生為明代《文心雕龍》知名批注者",
+      "_flags": [
+        "撰人已改切"
+      ],
+      "work_id": "d59f6emx6ps5",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳懋仁注文章縁始一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳懋仁注文章縁始一卷",
+      "_author": "陳懋仁",
+      "_title_only": "注文章縁始",
+      "work_id": "d59f6emxhybl",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又續文章縁始一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又續文章縁始一卷",
+      "_author": "陳懋仁",
+      "_title_only": "續文章縁始",
+      "_author_src": "又條承上",
+      "work_id": "d59f6emxhybk",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "朱荃宰文通二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱荃宰文通二十卷",
+      "_author": "朱荃宰",
+      "_title_only": "文通"
+    },
+    {
+      "title": "文章正論二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "文章正論二十卷",
+      "_author": "文章",
+      "_title_only": "正論",
+      "work_id": "d59f6enu9vcy",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "修辭備用一卷",
+      "level": 3,
+      "type": "book",
+      "content": "修辭備用一卷",
+      "_title_only": "修辭備用",
+      "_no_author": "待考"
+    },
+    {
+      "title": "古文法則四卷",
+      "level": 3,
+      "type": "book",
+      "content": "古文法則四卷",
+      "_author": "古文",
+      "_title_only": "法則",
+      "work_id": "d59f6el2p62o",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "古文心訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "古文心訣一卷",
+      "_author": "古文",
+      "_title_only": "心訣",
+      "work_id": "d59f6el2p62q",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "汪思敬學文廣見",
+      "level": 3,
+      "type": "book",
+      "content": "汪思敬學文廣見",
+      "_author": "汪思",
+      "_title_only": "敬學文廣見",
+      "work_id": "d59f6el2dxjb",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "詩學梯航一卷",
+      "level": 3,
+      "type": "book",
+      "content": "詩學梯航一卷⟨宣宗命學士周叙等編⟩",
+      "author_info": "宣宗命學士周叙等編",
+      "_title_only": "詩學梯航",
+      "_no_author": "待考"
+    },
+    {
+      "title": "寜獻王權詩譜一卷",
+      "level": 3,
+      "type": "book",
+      "content": "寜獻王權詩譜一卷",
+      "_title_only": "寜獻王權詩譜",
+      "_no_author": "待考"
+    },
+    {
+      "title": "又詩格一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又詩格一卷",
+      "_title_only": "詩格"
+    },
+    {
+      "title": "又江西詩法一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又江西詩法一卷",
+      "_title_only": "江西詩法"
+    },
+    {
+      "title": "寜靖王奠培竹林嬾仙松石軒詩評一卷",
+      "level": 3,
+      "type": "book",
+      "content": "寜靖王奠培竹林嬾仙松石軒詩評一卷",
+      "_title_only": "寜靖王奠培竹林嬾仙松石軒詩評",
+      "_no_author": "待考"
+    },
+    {
+      "title": "秦約詩話舊聞",
+      "level": 3,
+      "type": "book",
+      "content": "秦約詩話舊聞",
+      "_author": "秦約",
+      "_title_only": "詩話舊聞",
+      "work_id": "d59f6el2p62p",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "瞿佑吟堂詩話三卷",
+      "level": 3,
+      "type": "book",
+      "content": "瞿佑吟堂詩話三卷",
+      "_author": "瞿佑",
+      "_title_only": "吟堂詩話"
+    },
+    {
+      "title": "又歸田詩話三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又歸田詩話三卷",
+      "_author": "瞿佑",
+      "_title_only": "歸田詩話",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "葉盛秋臺詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉盛秋臺詩話一卷",
+      "_author": "葉盛",
+      "_title_only": "秋臺詩話"
+    },
+    {
+      "title": "劉績嵩陽詩律",
+      "level": 3,
+      "type": "book",
+      "content": "劉績嵩陽詩律⟨山陰人⟩",
+      "author_info": "山陰人",
+      "_author": "劉績",
+      "_title_only": "嵩陽詩律",
+      "work_id": "d59f6ehrgikj",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "懐悦詩家一指一卷",
+      "level": 3,
+      "type": "book",
+      "content": "懐悦詩家一指一卷",
+      "_title_only": "懐悦詩家一指",
+      "_no_author": "待考"
+    },
+    {
+      "title": "黄褧詩法三篇",
+      "level": 3,
+      "type": "book",
+      "content": "黄褧詩法三篇⟨字仲褧成化時人⟩",
+      "author_info": "字仲褧成化時人",
+      "_title_only": "黄褧詩法",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6en2szk6",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "髙□吟堂博笑集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "髙□吟堂博笑集五卷⟨呉人集諸書所載閨閣詩本其事而記之分死節勸戒竒遇題咏寄情五類⟩",
+      "author_info": "呉人集諸書所載閨閣詩本其事而記之分死節勸戒竒遇題咏寄情五類",
+      "_title_only": "髙□吟堂博笑集",
+      "_no_author": "待考"
+    },
+    {
+      "title": "沈爚纂集晦菴先生詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈爚纂集晦菴先生詩話一卷⟨□治中人⟩",
+      "author_info": "□治中人",
+      "_title_only": "沈爚纂集晦菴先生詩話",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6ejgbsht",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "游潛夢蕉詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "游潛夢蕉詩話二卷⟨字用之豐城人□治辛酉舉人賔州知州⟩",
+      "author_info": "字用之豐城人□治辛酉舉人賔州知州",
+      "_author": "游潛",
+      "_title_only": "夢蕉詩話",
+      "work_id": "d59f6enu9vcx",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "李東陽麓堂詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李東陽麓堂詩話一卷",
+      "_author": "李東陽",
+      "_title_only": "麓堂詩話"
+    },
+    {
+      "title": "姜南蓉塘詩話二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "姜南蓉塘詩話二十卷",
+      "_title_only": "蓉塘詩話",
+      "_author": "姜南",
+      "_author_src": "詞庫補切·雙證",
+      "_flags": [
+        "撰人係補切"
+      ]
+    },
+    {
+      "title": "張鈇南皋詩話",
+      "level": 3,
+      "type": "book",
+      "content": "張鈇南皋詩話",
+      "_author": "張鈇",
+      "_title_only": "南皋詩話",
+      "work_id": "d59f6ehrgikg",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "陳沂拘虚詩談一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳沂拘虚詩談一卷",
+      "_author": "陳沂",
+      "_title_only": "拘虚詩談",
+      "work_id": "d59f6ehrgikm",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "徐昌榖談藝錄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐昌榖談藝錄一卷",
+      "_author": "徐昌",
+      "_title_only": "榖談藝錄",
+      "_split_alt": [
+        "徐昌榖",
+        "談藝錄"
+      ],
+      "_flags": [
+        "撰人切點存疑"
+      ],
+      "work_id": "d59f6ehmgpvk",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "都穆都元敬詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "都穆都元敬詩話二卷",
+      "_author": "都穆",
+      "_title_only": "都元敬詩話"
+    },
+    {
+      "title": "强晟汝南詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "强晟汝南詩話一卷",
+      "_title_only": "强晟汝南詩話",
+      "_no_author": "待考"
+    },
+    {
+      "title": "又井天詩話三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又井天詩話三卷",
+      "_title_only": "井天詩話"
+    },
+    {
+      "title": "沈麟唐詩行世紀五卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈麟唐詩行世紀五卷⟨一作沈鱗⟩",
+      "author_info": "一作沈鱗",
+      "_author": "沈麟",
+      "_title_only": "唐詩行世紀",
+      "work_id": "d59f6ehrrr40",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "楊慎升庵詩話四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊慎升庵詩話四卷",
+      "_author": "楊慎",
+      "_title_only": "升庵詩話"
+    },
+    {
+      "title": "又詩話補遺三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又詩話補遺三卷",
+      "_author": "楊慎",
+      "_title_only": "詩話補遺",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又哲匠金桴五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又哲匠金桴五卷",
+      "_author": "楊慎",
+      "_title_only": "哲匠金桴",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又千里面談二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又千里面談二卷",
+      "_author": "楊慎",
+      "_title_only": "千里面談",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehrgiko",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "程啟充南溪筆錄詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "程啟充南溪筆錄詩話二卷",
+      "_author": "程啟充",
+      "_title_only": "南溪筆錄詩話",
+      "work_id": "d59f6ehrgikl",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又續集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又續集二卷",
+      "_author": "程啟充",
+      "_title_only": "續集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehrgikn",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "安盤頥山詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "安盤頥山詩話二卷",
+      "_author": "安盤",
+      "_title_only": "頥山詩話",
+      "work_id": "d59f6ehmgpvr",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "黄卿編苕詩話八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄卿編苕詩話八卷",
+      "_title_only": "編苕詩話",
+      "_author": "黄卿",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "康萬民織錦回文詩譜二卷",
+      "level": 3,
+      "type": "book",
+      "content": "康萬民織錦回文詩譜二卷⟨武功人⟩",
+      "author_info": "武功人",
+      "_author": "康萬民",
+      "_title_only": "織錦回文詩譜",
+      "work_id": "d59f6ehrgikk",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "宋孟清詩學體要類編三卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋孟清詩學體要類編三卷",
+      "_author": "宋孟清",
+      "_title_only": "詩學體要類編"
+    },
+    {
+      "title": "王埜説巖詩話",
+      "level": 3,
+      "type": "book",
+      "content": "王埜説巖詩話",
+      "_author": "王埜",
+      "_title_only": "説巖詩話",
+      "work_id": "d59f6ehrgikh",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "朱承爵存餘堂詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱承爵存餘堂詩話一卷⟨字子儋江陰人⟩",
+      "author_info": "字子儋江陰人",
+      "_author": "朱承爵",
+      "_title_only": "存餘堂詩話"
+    },
+    {
+      "title": "顧元度夷白齋詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧元度夷白齋詩話一卷",
+      "_author": "顧元",
+      "_title_only": "度夷白齋詩話",
+      "_split_alt": [
+        "顧元度",
+        "夷白齋詩話"
+      ],
+      "_flags": [
+        "撰人切點存疑"
+      ],
+      "work_id": "d59f6eqchgcg",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "陳霆渚山堂詩話三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳霆渚山堂詩話三卷",
+      "_author": "陳霆",
+      "_title_only": "渚山堂詩話"
+    },
+    {
+      "title": "徐泰詩談",
+      "level": 3,
+      "type": "book",
+      "content": "徐泰詩談",
+      "_author": "徐泰",
+      "_title_only": "詩談"
+    },
+    {
+      "title": "皇甫循解頥新語八卷",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫循解頥新語八卷",
+      "_title_only": "皇甫循解頥新語",
+      "_no_author": "待考"
+    },
+    {
+      "title": "黄省曽詩法八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄省曽詩法八卷",
+      "_title_only": "黄省曽詩法",
+      "_no_author": "待考",
+      "work_id": "d59f6ejgn11c",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "梁格冰川詩式四卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁格冰川詩式四卷",
+      "_author": "梁格",
+      "_title_only": "冰川詩式",
+      "work_id": "d59f6ehm5hc5",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "朱安𣵿續談藝錄",
+      "level": 3,
+      "type": "book",
+      "content": "朱安𣵿續談藝錄⟨字思甫鎮平王府奉國将軍⟩",
+      "author_info": "字思甫鎮平王府奉國将軍",
+      "_author": "朱安",
+      "_title_only": "𣵿續談藝錄",
+      "_emended": "缺字據適園本補",
+      "_orig": "朱安□續談藝錄",
+      "work_id": "d59f6ehrgiki",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "閔文振蘭荘詩話一卷",
+      "level": 3,
+      "type": "book",
+      "content": "閔文振蘭荘詩話一卷",
+      "_author": "閔文振",
+      "_title_only": "蘭荘詩話",
+      "work_id": "d59f6ehbuneu",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "邵經邦藝苑玄機一卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵經邦藝苑玄機一卷",
+      "_author": "邵經邦",
+      "_title_only": "藝苑玄機",
+      "_emended": "缺字據適園本補",
+      "_orig": "邵經邦藝苑□機",
+      "work_id": "d59f6ehbjev9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又律詩指南四卷",
+      "level": 3,
+      "type": "book",
+      "content": "又律詩指南四卷",
+      "_author": "邵經邦",
+      "_title_only": "律詩指南",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又儷語指迷一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又儷語指迷一卷",
+      "_author": "邵經邦",
+      "_title_only": "儷語指迷",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehbjevb",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "謝東山近譬軒詩話四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝東山近譬軒詩話四卷",
+      "_author": "謝東山",
+      "_title_only": "近譬軒詩話",
+      "work_id": "d59f6ehbunes",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "蔡汝楠白石詩説",
+      "level": 3,
+      "type": "book",
+      "content": "蔡汝楠白石詩説",
+      "_author": "蔡汝楠",
+      "_title_only": "白石詩説",
+      "work_id": "d59f6ehbjev8",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張廷用雲谷詩話",
+      "level": 3,
+      "type": "book",
+      "content": "張廷用雲谷詩話⟨澄城人⟩",
+      "author_info": "澄城人",
+      "_author": "張廷用",
+      "_title_only": "雲谷詩話",
+      "work_id": "d59f6ehbjeva",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "李蔭吏隠軒詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李蔭吏隠軒詩話二卷",
+      "_author": "李蔭",
+      "_title_only": "吏隠軒詩話",
+      "work_id": "d59f6ehbunet",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王世貞藝苑巵言八卷附錄四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王世貞藝苑巵言八卷附錄四卷",
+      "_author": "王世貞",
+      "_title_only": "藝苑巵言八卷附錄",
+      "work_id": "d59f6ehbjev7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王世懋藝圃擷餘一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王世懋藝圃擷餘一卷",
+      "_author": "王世懋",
+      "_title_only": "藝圃擷餘"
+    },
+    {
+      "title": "謝榛詩家直説四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝榛詩家直説四卷",
+      "_author": "謝榛",
+      "_title_only": "詩家直説"
+    },
+    {
+      "title": "俞允文名賢詩評二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "俞允文名賢詩評二十卷",
+      "_author": "俞允文",
+      "_title_only": "名賢詩評"
+    },
+    {
+      "title": "王應山風雅樷談六十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "王應山風雅樷談六十八卷",
+      "_author": "王應山",
+      "_title_only": "風雅樷談"
+    },
+    {
+      "title": "胡應麟詩藪二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡應麟詩藪二十卷",
+      "_author": "胡應麟",
+      "_title_only": "詩藪"
+    },
+    {
+      "title": "趙世顯趙仁甫詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙世顯趙仁甫詩話二卷",
+      "_author": "趙世顯",
+      "_title_only": "趙仁甫詩話",
+      "work_id": "d59f6ehbunev",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "屠本畯詩言五至五卷",
+      "level": 3,
+      "type": "book",
+      "content": "屠本畯詩言五至五卷",
+      "_author": "屠本畯",
+      "_title_only": "詩言五至",
+      "work_id": "d59f6ehbuner",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "凌雲續全唐詩話十卷",
+      "level": 3,
+      "type": "book",
+      "content": "凌雲續全唐詩話十卷⟨閩人⟩",
+      "author_info": "閩人",
+      "_author": "凌雲",
+      "_title_only": "續全唐詩話"
+    },
+    {
+      "title": "石一鼇五言括論十卷",
+      "level": 3,
+      "type": "book",
+      "content": "石一鼇五言括論十卷⟨字巨卿太倉人⟩",
+      "author_info": "字巨卿太倉人",
+      "_author": "石一鼇",
+      "_title_only": "五言括論",
+      "work_id": "d59f6ehbunep",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "郭子章豫章詩話六卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭子章豫章詩話六卷",
+      "_author": "郭子章",
+      "_title_only": "豫章詩話"
+    },
+    {
+      "title": "又續豫章詩話十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又續豫章詩話十二卷",
+      "_author": "郭子章",
+      "_title_only": "續豫章詩話",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ehbuneq",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "蔣一葵堯山堂外紀一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔣一葵堯山堂外紀一百卷",
+      "_author": "蔣一葵",
+      "_title_only": "堯山堂外紀"
+    },
+    {
+      "title": "郝敬藝圃傖談四卷",
+      "level": 3,
+      "type": "book",
+      "content": "郝敬藝圃傖談四卷",
+      "_author": "郝敬",
+      "_title_only": "藝圃傖談",
+      "work_id": "d59f6ehbuneo",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "謝肇淛小草齋詩話四卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝肇淛小草齋詩話四卷",
+      "_author": "謝肇淛",
+      "_title_only": "小草齋詩話"
+    },
+    {
+      "title": "周履靖騷壇秘語二卷",
+      "level": 3,
+      "type": "book",
+      "content": "周履靖騷壇秘語二卷",
+      "_author": "周履靖",
+      "_title_only": "騷壇秘語",
+      "work_id": "d59f6etdqigw",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張惟成西園詩塵二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張惟成西園詩塵二卷",
+      "_author": "張惟成",
+      "_title_only": "西園詩塵",
+      "work_id": "d59f6etdf9xf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程先民蘇氏璇璣詩讀法",
+      "level": 3,
+      "type": "book",
+      "content": "程先民蘇氏璇璣詩讀法⟨浮梁人⟩",
+      "author_info": "浮梁人",
+      "_author": "程先",
+      "_title_only": "民蘇氏璇璣詩讀法",
+      "work_id": "d59f6etdqih0",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "趙宧光彈雅集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙宧光彈雅集八卷⟨一作十卷⟩",
+      "author_info": "一作十卷",
+      "_author": "趙宧光",
+      "_title_only": "彈雅集"
+    },
+    {
+      "title": "曹學佺蜀中詩話四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曹學佺蜀中詩話四卷",
+      "_author": "曹學佺",
+      "_title_only": "蜀中詩話"
+    },
+    {
+      "title": "陳基虞客牕詩話六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳基虞客牕詩話六卷",
+      "_author": "陳基虞",
+      "_title_only": "客牕詩話",
+      "work_id": "d59f6etdf9xi",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程元初名賢詩指十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "程元初名賢詩指十五卷",
+      "_author": "程元初",
+      "_title_only": "名賢詩指"
+    },
+    {
+      "title": "王昌㑹詩話彚編三十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王昌㑹詩話彚編三十二卷",
+      "_author": "王昌",
+      "_title_only": "㑹詩話彚編",
+      "work_id": "d59f6etdqigx",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳懋仁藕居士詩話二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳懋仁藕居士詩話二卷",
+      "_author": "陳懋仁",
+      "_title_only": "藕居士詩話"
+    },
+    {
+      "title": "杜詩寄廬小箋三卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜詩寄廬小箋三卷",
+      "_author": "杜詩",
+      "_title_only": "寄廬小箋",
+      "work_id": "d59f6etdqigy",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "茅元儀藝圃甲編五卷",
+      "level": 3,
+      "type": "book",
+      "content": "茅元儀藝圃甲編五卷",
+      "_author": "茅元儀",
+      "_title_only": "藝圃甲編",
+      "work_id": "d59f6etdf9xh",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王應辰旨苕齋詩話",
+      "level": 3,
+      "type": "book",
+      "content": "王應辰旨苕齋詩話",
+      "_author": "王應辰",
+      "_title_only": "旨苕齋詩話",
+      "work_id": "d59f6etdf9xj",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "前代彚輯校注",
+      "level": 3,
+      "type": "book",
+      "content": "前代彚輯校注",
+      "_title_only": "前代彚輯校注",
+      "_no_author": "待考"
+    },
+    {
+      "title": "何孟春注陶靖節集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "何孟春注陶靖節集十卷",
+      "_author": "何孟春",
+      "_title_only": "注陶靖節集",
+      "work_id": "d59f6etdqigz",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "顔文選補注駱賔王集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顔文選補注駱賔王集十卷",
+      "_title_only": "顔文選補注駱賔王集",
+      "_no_author": "待考"
+    },
+    {
+      "title": "顧可乆注王右丞詩六卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧可乆注王右丞詩六卷",
+      "_author": "顧可",
+      "_title_only": "乆注王右丞詩",
+      "work_id": "d59f6etdf9xg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "顧起綸注王右丞詩集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧起綸注王右丞詩集十卷⟨字□言無錫人⟩",
+      "author_info": "字□言無錫人",
+      "_author": "顧起綸",
+      "_title_only": "注王右丞詩集",
+      "work_id": "d59f6ej1nmyq",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又文集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "又文集四卷",
+      "_author": "顧起綸",
+      "_title_only": "文集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ej1nmyr",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又編注王司馬宫詞二卷附錄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又編注王司馬宫詞二卷附錄一卷",
+      "_author": "顧起綸",
+      "_title_only": "編注王司馬宫詞二卷附錄",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ej1nmyt",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "黄用中注駱賔王集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "黄用中注駱賔王集十卷⟨字道行閩縣人⟩",
+      "author_info": "字道行閩縣人",
+      "_title_only": "黄用中注駱賔王集",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6egd7b48",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陸弘祚注釋駱集",
+      "level": 3,
+      "type": "book",
+      "content": "陸弘祚注釋駱集",
+      "_author": "陸弘祚",
+      "_title_only": "注釋駱集",
+      "_emended": "缺字據適園本補",
+      "_orig": "陸□祚注釋駱集",
+      "work_id": "d59f6ej1nmys",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "賴進徳李杜詩解三卷",
+      "level": 3,
+      "type": "book",
+      "content": "賴進徳李杜詩解三卷⟨宣徳時萬安人官鳳翔府推官⟩",
+      "author_info": "宣徳時萬安人官鳳翔府推官",
+      "_title_only": "賴進徳李杜詩解",
+      "_no_author": "待考",
+      "work_id": "d59f6ephkykh",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "胡震亨李杜詩通四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡震亨李杜詩通四十卷",
+      "_author": "胡震亨",
+      "_title_only": "李杜詩通",
+      "work_id": "d59f6ej37tol",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "趙汸杜五言律注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙汸杜五言律注四卷",
+      "_author": "趙汸",
+      "_title_only": "杜五言律注",
+      "work_id": "d59f6ej37too",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "熊釗杜甫詩注",
+      "level": 3,
+      "type": "book",
+      "content": "熊釗杜甫詩注",
+      "_author": "熊釗",
+      "_title_only": "杜甫詩注",
+      "work_id": "d59f6ej37toi",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "單復讀杜愚得十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "單復讀杜愚得十八卷⟨字陽元□縣人洪武中為漢陽河泊官一云名復亨舉懐才抱徳科授漢陽知縣⟩",
+      "author_info": "字陽元□縣人洪武中為漢陽河泊官一云名復亨舉懐才抱徳科授漢陽知縣",
+      "_author": "單復",
+      "_title_only": "讀杜愚得"
+    },
+    {
+      "title": "董養性杜詩選註四卷",
+      "level": 3,
+      "type": "book",
+      "content": "董養性杜詩選註四卷⟨自稱臨川髙閒雲叟⟩",
+      "author_info": "自稱臨川髙閒雲叟",
+      "_author": "董養性",
+      "_title_only": "杜詩選註",
+      "work_id": "d59f6ej2wl51",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "周旋杜詩質疑",
+      "level": 3,
+      "type": "book",
+      "content": "周旋杜詩質疑⟨慈溪人⟩",
+      "author_info": "慈溪人",
+      "_author": "周旋",
+      "_title_only": "杜詩質疑",
+      "work_id": "d59f6ej37ton",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "邵寶杜詩",
+      "level": 3,
+      "type": "book",
+      "content": "邵寶杜詩",
+      "_author": "邵寶",
+      "_title_only": "杜詩",
+      "work_id": "d59f6ehmgpvo",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "蕭鳴盛杜律選注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭鳴盛杜律選注二卷",
+      "_author": "蕭鳴盛",
+      "_title_only": "杜律選注",
+      "work_id": "d59f6ej37tog",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張璁杜律解訓二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張璁杜律解訓二卷",
+      "_author": "張璁",
+      "_title_only": "杜律解訓",
+      "work_id": "d59f6ej37toj",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王維貞杜律頗解二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王維貞杜律頗解二卷",
+      "_author": "王維",
+      "_title_only": "貞杜律頗解",
+      "work_id": "d59f6ej37tok",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "南大吉少陵純音十卷",
+      "level": 3,
+      "type": "book",
+      "content": "南大吉少陵純音十卷",
+      "_author": "南大吉",
+      "_title_only": "少陵純音",
+      "work_id": "d59f6ej2wl53",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "顔廷榘杜律意箋二卷",
+      "level": 3,
+      "type": "book",
+      "content": "顔廷榘杜律意箋二卷",
+      "_title_only": "杜律意箋",
+      "_author": "顔廷榘",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehm5hc7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "謝杰杜律箋言二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝杰杜律箋言二卷⟨長樂人户部尚書⟩",
+      "author_info": "長樂人户部尚書",
+      "_author": "謝杰",
+      "_title_only": "杜律箋言",
+      "work_id": "d59f6ej37toh",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張綖杜律本意二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張綖杜律本意二卷",
+      "_author": "張綖",
+      "_title_only": "杜律本意",
+      "work_id": "d59f6ej37tom",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馮惟訥杜律刪注",
+      "level": 3,
+      "type": "book",
+      "content": "馮惟訥杜律刪注",
+      "_author": "馮惟訥",
+      "_title_only": "杜律刪注",
+      "work_id": "d59f6ej2wl52",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "朱諫李太白詩註",
+      "level": 3,
+      "type": "book",
+      "content": "朱諫李太白詩註",
+      "_author": "朱諫",
+      "_title_only": "李太白詩註",
+      "work_id": "d59f6erm23no",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "徐常吉杜七言律注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐常吉杜七言律注二卷",
+      "_author": "徐常吉",
+      "_title_only": "杜七言律注",
+      "work_id": "d59f6ermdc74",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "徐渭注李長吉集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐渭注李長吉集四卷",
+      "_author": "徐渭",
+      "_title_only": "注李長吉集",
+      "work_id": "d59f6ermokqo",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又外集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又外集一卷",
+      "_author": "徐渭",
+      "_title_only": "外集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ermdc75",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "余光注李賀詩集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "余光注李賀詩集二卷⟨字希之莆田人⟩",
+      "author_info": "字希之莆田人",
+      "_author": "余光",
+      "_title_only": "注李賀詩集",
+      "work_id": "d59f6ermokqu",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "曽益注昌榖集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "曽益注昌榖集四卷⟨浙江山陰人⟩",
+      "author_info": "浙江山陰人",
+      "_title_only": "曽益注昌榖集",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "劉允鵬注龍筋鳳髓判四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉允鵬注龍筋鳳髓判四卷",
+      "_author": "劉允",
+      "_title_only": "鵬注龍筋鳳髓判",
+      "work_id": "d59f6ermzta9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "蔣之翹輯注韓昌黎集五十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔣之翹輯注韓昌黎集五十二卷⟨正集四十卷外集十卷遺文一卷附錄一卷⟩",
+      "author_info": "正集四十卷外集十卷遺文一卷附錄一卷",
+      "_author": "蔣之翹",
+      "_title_only": "輯注韓昌黎集",
+      "work_id": "d59f6ermokqr",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馮忠歐陽先生文衡六卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮忠歐陽先生文衡六卷⟨金華人洪武五年進士輯歐文一百七十二首⟩",
+      "author_info": "金華人洪武五年進士輯歐文一百七十二首",
+      "_author": "馮忠",
+      "_title_only": "歐陽先生文衡",
+      "work_id": "d59f6ermokqp",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又南豐類稿辨訛",
+      "level": 3,
+      "type": "book",
+      "content": "又南豐類稿辨訛",
+      "_author": "馮忠",
+      "_title_only": "南豐類稿辨訛",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ermzta8",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "劉弘蘇詩摘律六卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉弘蘇詩摘律六卷⟨字超逺無錫人缺舉人官東平知縣⟩",
+      "author_info": "字超逺無錫人缺舉人官東平知縣",
+      "_author": "劉弘",
+      "_title_only": "蘇詩摘律",
+      "_emended": "缺字據適園本補",
+      "_orig": "劉□蘇詩摘律",
+      "work_id": "d59f6ehmgpvn",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "趙克用東坡律詩",
+      "level": 3,
+      "type": "book",
+      "content": "趙克用東坡律詩⟨缺⟩",
+      "author_info": "缺",
+      "_title_only": "趙克用東坡律詩",
+      "_no_author": "待考"
+    },
+    {
+      "title": "李贄坡仙集十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "李贄坡仙集十六卷",
+      "_author": "李贄",
+      "_title_only": "坡仙集",
+      "work_id": "d59f6ehm5hc1",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "東坡寓意錄四卷",
+      "level": 3,
+      "type": "book",
+      "content": "東坡寓意錄四卷",
+      "_title_only": "寓意錄",
+      "_author": "東坡",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehmryf4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王同軌編東坡寓黄集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王同軌編東坡寓黄集三卷",
+      "_author": "王同軌",
+      "_title_only": "編東坡寓黄集",
+      "work_id": "d59f6ermokqq",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程敏政范淳夫集抄十七卷附錄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "程敏政范淳夫集抄十七卷附錄一卷⟨范祖禹⟩",
+      "author_info": "范祖禹",
+      "_author": "程敏政",
+      "_title_only": "范淳夫集抄十七卷附錄",
+      "work_id": "d59f6ermokqs",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又汪文定公集抄十二卷附錄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又汪文定公集抄十二卷附錄一卷⟨汪應辰⟩",
+      "author_info": "汪應辰",
+      "_author": "程敏政",
+      "_title_only": "汪文定公集抄十二卷附錄",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ermokqt",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又楊龜山集抄",
+      "level": 3,
+      "type": "book",
+      "content": "又楊龜山集抄⟨缺⟩",
+      "author_info": "缺",
+      "_author": "程敏政",
+      "_title_only": "楊龜山集抄",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efgqmme",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "呉訥晦庵文抄七卷",
+      "level": 3,
+      "type": "book",
+      "content": "呉訥晦庵文抄七卷",
+      "_title_only": "呉訥晦庵文抄",
+      "_no_author": "待考"
+    },
+    {
+      "title": "又晦庵詩抄十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又晦庵詩抄十卷",
+      "_title_only": "晦庵詩抄"
+    },
+    {
+      "title": "又呉草廬輯粹七卷",
+      "level": 3,
+      "type": "book",
+      "content": "又呉草廬輯粹七卷",
+      "_title_only": "呉草廬輯粹"
+    },
+    {
+      "title": "劉孟純注朱文公武夷棹歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孟純注朱文公武夷棹歌一卷⟨南海人休寜教諭⟩",
+      "author_info": "南海人休寜教諭",
+      "_author": "劉孟純",
+      "_title_only": "注朱文公武夷棹歌",
+      "work_id": "d59f6efgqmmc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "范明泰輯米㐮陽遺集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "范明泰輯米㐮陽遺集一卷",
+      "_author": "范明泰",
+      "_title_only": "輯米㐮陽遺集",
+      "work_id": "d59f6efh1v5s",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "徐階編輯岳忠武集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐階編輯岳忠武集五卷",
+      "_author": "徐階",
+      "_title_only": "編輯岳忠武集",
+      "work_id": "d59f6efgqmmd",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "孫雲翼注李廷忠橘山四六二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫雲翼注李廷忠橘山四六二十卷⟨丹陽人⟩",
+      "author_info": "丹陽人",
+      "_author": "孫雲翼",
+      "_title_only": "注李廷忠橘山",
+      "work_id": "d59f6efgqmma",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又注李劉梅亭四六標凖四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又注李劉梅亭四六標凖四十卷",
+      "_author": "孫雲翼",
+      "_title_only": "注李劉梅亭四六標凖",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efgqmmb",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "張丁注謝翺西臺痛哭記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張丁注謝翺西臺痛哭記一卷",
+      "_author": "張丁",
+      "_title_only": "注謝翺西臺痛哭記",
+      "work_id": "d59f6efgqmmg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "宋廷佐輯元楊奂紫陽還山遺稿二卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋廷佐輯元楊奂紫陽還山遺稿二卷⟨巡按陜西監察御史⟩",
+      "author_info": "巡按陜西監察御史",
+      "_author": "宋廷佐",
+      "_title_only": "輯元楊奂紫陽還山遺稿",
+      "work_id": "d59f6efgqmmf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "蘇門六君子文粹七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇門六君子文粹七十卷",
+      "_author": "蘇門",
+      "_title_only": "六君子文粹"
+    },
+    {
+      "title": "任淵黄太史精華錄八卷",
+      "level": 3,
+      "type": "book",
+      "content": "任淵黄太史精華錄八卷",
+      "_author": "任淵",
+      "_title_only": "黄太史精華錄"
+    },
+    {
+      "title": "羅椅陸放翁詩選十卷",
+      "level": 3,
+      "type": "book",
+      "content": "羅椅陸放翁詩選十卷⟨字子逺號澗谷⟩",
+      "author_info": "字子逺號澗谷",
+      "_author": "羅椅",
+      "_title_only": "陸放翁詩選"
+    },
+    {
+      "title": "劉㑹孟精選陸放翁詩八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉㑹孟精選陸放翁詩八卷",
+      "_title_only": "精選陸放翁詩",
+      "_author": "劉㑹孟",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehmgpvs",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王繪注太白詩",
+      "level": 3,
+      "type": "book",
+      "content": "王繪注太白詩⟨字質夫濟南人天㑹二年進士⟩",
+      "author_info": "字質夫濟南人天㑹二年進士",
+      "_author": "王繪",
+      "_title_only": "注太白詩"
+    },
+    {
+      "title": "楊齊賢蕭士贇分類補注李太白詩集二十五卷范梈批選李太白詩四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊齊賢蕭士贇分類補注李太白詩集二十五卷范梈批選李太白詩四卷",
+      "_author": "楊齊賢",
+      "_title_only": "蕭士贇分類補注李太白詩集二十五卷范梈批選李太白詩",
+      "work_id": "d59f6efdxhqg",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又杜子美詩六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又杜子美詩六卷",
+      "_author": "楊齊賢",
+      "_title_only": "杜子美詩",
+      "_author_src": "又條承上",
+      "work_id": "d59f6efdxhqc",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "虞集杜律七言注二卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞集杜律七言注二卷",
+      "_author": "虞集",
+      "_title_only": "杜律七言注",
+      "work_id": "d59f6efdxhqa",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張伯成杜律衍義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張伯成杜律衍義二卷",
+      "_author": "張伯成",
+      "_title_only": "杜律衍義",
+      "work_id": "d59f6ehch4hx",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "傅若川杜詩類編三卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅若川杜詩類編三卷⟨類輯楊仲□掲曼碩范徳機所解杜詩⟩",
+      "author_info": "類輯楊仲□掲曼碩范徳機所解杜詩",
+      "_author": "傅若川",
+      "_title_only": "杜詩類編"
+    },
+    {
+      "title": "曾巽申韻編杜詩十卷",
+      "level": 3,
+      "type": "book",
+      "content": "曾巽申韻編杜詩十卷",
+      "_author": "曾巽申",
+      "_title_only": "韻編杜詩"
+    },
+    {
+      "title": "又補注元遺山詩十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又補注元遺山詩十卷",
+      "_author": "曾巽申",
+      "_title_only": "補注元遺山詩",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "唐仲英陸宣公文集菁華二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐仲英陸宣公文集菁華二卷",
+      "_author": "唐仲英",
+      "_title_only": "陸宣公文集菁華"
+    },
+    {
+      "title": "劉霖杜詩類注",
+      "level": 3,
+      "type": "book",
+      "content": "劉霖杜詩類注",
+      "_author": "劉霖",
+      "_title_only": "杜詩類注"
+    },
+    {
+      "title": "吳師道注絳守居園池記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳師道注絳守居園池記一卷",
+      "_author": "吳師道",
+      "_title_only": "注絳守居園池記"
+    },
+    {
+      "title": "元好問唐詩鼔吹十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元好問唐詩鼔吹十卷⟨元中書右丞都天挺注⟩",
+      "author_info": "元中書右丞都天挺注",
+      "_author": "元好問",
+      "_title_only": "唐詩鼔吹"
+    },
+    {
+      "title": "又中州集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "又中州集十卷",
+      "_author": "元好問",
+      "_title_only": "中州集",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "房棋河汾諸老詩集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "房棋河汾諸老詩集八卷",
+      "_title_only": "房棋河汾諸老詩集",
+      "_no_author": "待考"
+    },
+    {
+      "title": "蘇天爵國朝文類七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇天爵國朝文類七十卷",
+      "_author": "蘇天爵",
+      "_title_only": "國朝文類"
+    },
+    {
+      "title": "虞集邵庵先生文選心訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞集邵庵先生文選心訣一卷",
+      "_author": "虞集",
+      "_title_only": "邵庵先生文選心訣",
+      "work_id": "d59f6efdxhqf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馮翼翁文章㫖要八卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮翼翁文章㫖要八卷",
+      "_author": "馮翼翁",
+      "_title_only": "文章㫖要",
+      "work_id": "d59f6efdxhqb",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "掲奚斯編輯吳氏天爵堂類編十卷",
+      "level": 3,
+      "type": "book",
+      "content": "掲奚斯編輯吳氏天爵堂類編十卷⟨集鄱陽呉氏歴代制誥及士大夫賦頌一作吳鑑⟩",
+      "author_info": "集鄱陽呉氏歴代制誥及士大夫賦頌一作吳鑑",
+      "_title_only": "掲奚斯編輯吳氏天爵堂類編",
+      "_no_author": "待考"
+    },
+    {
+      "title": "呉□道中州啟牘四卷",
+      "level": 3,
+      "type": "book",
+      "content": "呉□道中州啟牘四卷",
+      "_title_only": "呉□道中州啟牘",
+      "_no_author": "待考"
+    },
+    {
+      "title": "栁貫金石竹帛遺文十卷",
+      "level": 3,
+      "type": "book",
+      "content": "栁貫金石竹帛遺文十卷",
+      "_title_only": "栁貫金石竹帛遺文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "金履祥濓洛風雅七卷",
+      "level": 3,
+      "type": "book",
+      "content": "金履祥濓洛風雅七卷",
+      "_author": "金履祥",
+      "_title_only": "濓洛風雅",
+      "work_id": "d59f6efdxhqd",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "鄭滁孫義陽詩派",
+      "level": 3,
+      "type": "book",
+      "content": "鄭滁孫義陽詩派⟨缺⟩",
+      "author_info": "缺",
+      "_author": "鄭滁孫",
+      "_title_only": "義陽詩派"
+    },
+    {
+      "title": "仇逺批評唐百家詩選",
+      "level": 3,
+      "type": "book",
+      "content": "仇逺批評唐百家詩選",
+      "_title_only": "批評唐百家詩選",
+      "_author": "仇逺",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehch4hv",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "申屠致逺杜詩纂例十卷",
+      "level": 3,
+      "type": "book",
+      "content": "申屠致逺杜詩纂例十卷",
+      "_author": "申屠致逺",
+      "_title_only": "杜詩纂例",
+      "_split_alt": [
+        "申屠致逺",
+        "杜詩纂例"
+      ],
+      "_flags": [
+        "撰人切點存疑",
+        "撰人已改切"
+      ],
+      "_author_src": "人工裁定",
+      "_why": "庫證",
+      "work_id": "d59f6ehc5vyc",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "毛直方詩宗羣玉府三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛直方詩宗羣玉府三十卷⟨字静可建安人宋咸淳鄉舉入元不仕⟩",
+      "author_info": "字静可建安人宋咸淳鄉舉入元不仕",
+      "_author": "毛直方",
+      "_title_only": "詩宗羣玉府"
+    },
+    {
+      "title": "楊士□唐音九卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊士□唐音九卷⟨一作十五卷字伯謙本襄陽人家于清江⟩",
+      "author_info": "一作十五卷字伯謙本襄陽人家于清江",
+      "_author": "楊士",
+      "_title_only": "□唐音",
+      "work_id": "d59f6eo5tngj",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "僧圓至注周弜唐詩三體二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧圓至注周弜唐詩三體二十卷",
+      "_title_only": "僧圓至注周弜唐詩三體",
+      "_no_author": "待考"
+    },
+    {
+      "title": "杜本谷音二卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜本谷音二卷",
+      "_author": "杜本",
+      "_title_only": "谷音",
+      "work_id": "d59f6eo5iex3",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "□易皇元風雅三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "□易皇元風雅三十卷",
+      "_title_only": "□易皇元風雅",
+      "_no_author": "待考"
+    },
+    {
+      "title": "許有壬許有孚圭塘倡和集",
+      "level": 3,
+      "type": "book",
+      "content": "許有壬許有孚圭塘倡和集",
+      "_author": "許有壬",
+      "_title_only": "許有孚圭塘倡和集",
+      "work_id": "d59f6eo5iex1",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "金□乾坤清氣",
+      "level": 3,
+      "type": "book",
+      "content": "金□乾坤清氣⟨錢塘人選元作者三十人詩⟩",
+      "author_info": "錢塘人選元作者三十人詩",
+      "_title_only": "金□乾坤清氣",
+      "_no_author": "待考",
+      "work_id": "d59f6el9vmkn",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "孫存吾皇元朝野詩集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫存吾皇元朝野詩集五卷",
+      "_author": "孫存吾",
+      "_title_only": "皇元朝野詩集"
+    },
+    {
+      "title": "蔡正孫詩林廣記前集十卷後集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡正孫詩林廣記前集十卷後集十卷⟨至正中人⟩",
+      "author_info": "至正中人",
+      "_author": "蔡正孫",
+      "_title_only": "詩林廣記前集十卷後集",
+      "work_id": "d59f6eo5tngi",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "方道叡選唐詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "方道叡選唐詩一卷",
+      "_author": "方道叡",
+      "_title_only": "選唐詩",
+      "work_id": "d59f6ehch4hs",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳士元武陽耆舊詩宗一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳士元武陽耆舊詩宗一卷⟨邵武人⟩",
+      "author_info": "邵武人",
+      "_author": "陳士元",
+      "_title_only": "武陽耆舊詩宗"
+    },
+    {
+      "title": "顧阿英玉山草堂集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧阿英玉山草堂集八卷",
+      "_title_only": "玉山草堂集",
+      "_author": "顧阿英",
+      "_author_src": "詞庫補切·庫內題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ]
+    },
+    {
+      "title": "又草堂襍集",
+      "level": 3,
+      "type": "book",
+      "content": "又草堂襍集⟨缺⟩",
+      "author_info": "缺",
+      "_author": "顧阿英",
+      "_title_only": "草堂襍集",
+      "_author_src": "又條承上",
+      "work_id": "d59f6eo5iex2",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又玉山餞别寄贈詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "又玉山餞别寄贈詩一卷",
+      "_author": "顧阿英",
+      "_title_only": "玉山餞别寄贈詩",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "西湖竹枝詞一卷",
+      "level": 3,
+      "type": "book",
+      "content": "西湖竹枝詞一卷⟨楊維楨等倡和⟩",
+      "author_info": "楊維楨等倡和",
+      "_title_only": "西湖竹枝詞",
+      "_no_author": "待考"
+    },
+    {
+      "title": "萬寶詩山三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬寶詩山三十八卷",
+      "_author": "萬寶",
+      "_title_only": "詩山",
+      "work_id": "d59f6eo5iewz",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "古今大成詩選正宗二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "古今大成詩選正宗二十卷",
+      "_title_only": "古今大成詩選正宗",
+      "_no_author": "待考"
+    },
+    {
+      "title": "諸公大雅",
+      "level": 3,
+      "type": "book",
+      "content": "諸公大雅",
+      "_title_only": "諸公大雅",
+      "_no_author": "待考"
+    },
+    {
+      "title": "清源王嬾雲咏史續編一卷",
+      "level": 3,
+      "type": "book",
+      "content": "清源王嬾雲咏史續編一卷⟨凡百四十九首⟩",
+      "author_info": "凡百四十九首",
+      "_title_only": "清源王嬾雲咏史續編",
+      "_no_author": "待考",
+      "_why": "「清源」疑為地名或別號，「王嬾雲」與其關係未能確定，非本書慣見宗藩格式（無宗系小注佐證）",
+      "_flags": [
+        "撰人已改切"
+      ],
+      "work_id": "d59f6egd7b45",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "馮蘭雪湖咏史二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮蘭雪湖咏史二卷⟨餘姚人⟩",
+      "author_info": "餘姚人",
+      "_author": "馮蘭",
+      "_title_only": "雪湖咏史",
+      "work_id": "d59f6eo5iex0",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "俞深續咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "俞深續咏史詩⟨字魯淵桐廬人明初建寜府教諭⟩",
+      "author_info": "字魯淵桐廬人明初建寜府教諭",
+      "_author": "俞深",
+      "_title_only": "續咏史詩",
+      "_split_alt": [
+        "俞深續",
+        "咏史詩"
+      ],
+      "_flags": [
+        "撰人切點存疑"
+      ],
+      "work_id": "d59f6ehc5vya",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "姜璉咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "姜璉咏史詩⟨蘭溪人天順庚辰進士永平府知府⟩",
+      "author_info": "蘭溪人天順庚辰進士永平府知府",
+      "_author": "姜璉",
+      "_title_only": "咏史詩",
+      "work_id": "d59f6eo0turk",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "陳恪咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "陳恪咏史詩⟨歸安人成化丁未進士大理寺卿凡百三十篇⟩",
+      "author_info": "歸安人成化丁未進士大理寺卿凡百三十篇",
+      "_author": "陳恪",
+      "_title_only": "咏史詩",
+      "work_id": "d59f6ehc5vy8",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "楊子噐咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "楊子噐咏史詩⟨慈溪人成化丁未進士⟩",
+      "author_info": "慈溪人成化丁未進士",
+      "_title_only": "咏史詩",
+      "_author": "楊子噐",
+      "_author_src": "詞庫補切·又條題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ehc5vy9",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "張素和續咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "張素和續咏史詩⟨山陽人成化乙酉舉人知縣⟩",
+      "author_info": "山陽人成化乙酉舉人知縣",
+      "_author": "張素",
+      "_title_only": "和續咏史詩",
+      "work_id": "d59f6ehdq2o4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "程敏政咏史絶句",
+      "level": 3,
+      "type": "book",
+      "content": "程敏政咏史絶句",
+      "_author": "程敏政",
+      "_title_only": "咏史絶句",
+      "work_id": "d59f6eo5tngh",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "徐元太史鍳吟",
+      "level": 3,
+      "type": "book",
+      "content": "徐元太史鍳吟",
+      "_author": "徐元太",
+      "_title_only": "史鍳吟",
+      "work_id": "d59f6elov0nb",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "周禮讀史詩集",
+      "level": 3,
+      "type": "book",
+      "content": "周禮讀史詩集",
+      "_title_only": "周禮讀史詩集",
+      "_no_author": "官修／題名即書名",
+      "_flags": [
+        "撤銷誤切撰人"
+      ]
+    },
+    {
+      "title": "蘇茂相讀史韻言二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇茂相讀史韻言二卷",
+      "_author": "蘇茂相",
+      "_title_only": "讀史韻言",
+      "work_id": "d59f6elp696q",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "鄒璧邇史補遺二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒璧邇史補遺二卷⟨字辰甫號九峯山人無錫人⟩",
+      "author_info": "字辰甫號九峯山人無錫人",
+      "_title_only": "鄒璧邇史補遺",
+      "_no_author": "有其人而名不可切",
+      "work_id": "d59f6ejgbshv",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "施敏政止庵觀感詩四卷",
+      "level": 3,
+      "type": "book",
+      "content": "施敏政止庵觀感詩四卷⟨開化人⟩",
+      "author_info": "開化人",
+      "_title_only": "施敏政止庵觀感詩",
+      "_no_author": "有其人而名不可切"
+    },
+    {
+      "title": "管時敏秋香百咏一卷",
+      "level": 3,
+      "type": "book",
+      "content": "管時敏秋香百咏一卷",
+      "_author": "管時敏",
+      "_title_only": "秋香百咏",
+      "work_id": "d59f6elov0n8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "晏鐸青城梅花三百咏三卷",
+      "level": 3,
+      "type": "book",
+      "content": "晏鐸青城梅花三百咏三卷",
+      "_author": "晏鐸",
+      "_title_only": "青城梅花三百咏",
+      "work_id": "d59f6elp696p",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "楊光溥梅花百咏一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊光溥梅花百咏一卷⟨山西按察司副使⟩",
+      "author_info": "山西按察司副使",
+      "_author": "楊光溥",
+      "_title_only": "梅花百咏",
+      "work_id": "d59f6ehc5vyf",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "王綱復庵咏梅詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王綱復庵咏梅詩一卷⟨㐮城人⟩",
+      "author_info": "㐮城人",
+      "_author": "王綱",
+      "_title_only": "復庵咏梅詩",
+      "work_id": "d59f6elov0na",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "孫錦斯存和梅稿一卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫錦斯存和梅稿一卷",
+      "_author": "孫錦",
+      "_title_only": "斯存和梅稿",
+      "work_id": "d59f6elp696o",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "沈行咏物絶句一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈行咏物絶句一卷⟨字履徳錢塘人⟩",
+      "author_info": "字履徳錢塘人",
+      "_author": "沈行",
+      "_title_only": "咏物絶句",
+      "work_id": "d59f6elov0n7",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又咏雪集句二卷",
+      "level": 3,
+      "type": "book",
+      "content": "又咏雪集句二卷",
+      "_author": "沈行",
+      "_title_only": "咏雪集句",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elp696s",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "又咏梅集句",
+      "level": 3,
+      "type": "book",
+      "content": "又咏梅集句⟨缺⟩",
+      "author_info": "缺",
+      "_author": "沈行",
+      "_title_only": "咏梅集句",
+      "_author_src": "又條承上",
+      "work_id": "d59f6elp696r",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "陳言陳山人集句二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳言陳山人集句二卷⟨字缺莆田人⟩",
+      "author_info": "字缺莆田人",
+      "_author": "陳言",
+      "_title_only": "陳山人集句",
+      "work_id": "d59f6elov0n9",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "徐見心咏史詩",
+      "level": 3,
+      "type": "book",
+      "content": "徐見心咏史詩⟨蘭溪人張樞為序⟩",
+      "author_info": "蘭溪人張樞為序",
+      "_author": "徐見心",
+      "_title_only": "咏史詩"
+    },
+    {
+      "title": "陳普詠史詩",
+      "level": 3,
+      "type": "book",
+      "content": "陳普詠史詩",
+      "_author": "陳普",
+      "_title_only": "詠史詩"
+    },
+    {
+      "title": "制舉類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "四書程文二十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "四書程文二十九卷",
+      "_title_only": "四書程文",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "易經程文六卷",
+      "level": 3,
+      "type": "book",
+      "content": "易經程文六卷",
+      "_author": "易經",
+      "_title_only": "程文",
+      "work_id": "d59f6eohoo3r",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "書經程文六卷",
+      "level": 3,
+      "type": "book",
+      "content": "書經程文六卷",
+      "_title_only": "書經程文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "詩經程文六卷",
+      "level": 3,
+      "type": "book",
+      "content": "詩經程文六卷",
+      "_title_only": "詩經程文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "春秋程文二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "春秋程文二十二卷",
+      "_title_only": "春秋程文",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "禮記程文十卷",
+      "level": 3,
+      "type": "book",
+      "content": "禮記程文十卷",
+      "_title_only": "禮記程文",
+      "_no_author": "官修／題名即書名"
+    },
+    {
+      "title": "論程文十卷",
+      "level": 3,
+      "type": "book",
+      "content": "論程文十卷",
+      "_title_only": "論程文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "策程文",
+      "level": 3,
+      "type": "book",
+      "content": "策程文⟨缺⟩",
+      "author_info": "缺",
+      "_title_only": "策程文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "黎淳國朝試錄六百四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "黎淳國朝試錄六百四十卷⟨輯明成化以前試士之文丘濬序⟩",
+      "author_info": "輯明成化以前試士之文丘濬序",
+      "_author": "黎淳",
+      "_title_only": "國朝試錄"
+    },
+    {
+      "title": "劉基春秋明經四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉基春秋明經四卷",
+      "_author": "劉基",
+      "_title_only": "春秋明經"
+    },
+    {
+      "title": "王克寛春秋作義要訣一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王克寛春秋作義要訣一卷",
+      "_author": "王克寛",
+      "_title_only": "春秋作義要訣",
+      "work_id": "d59f6etcssu8",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "呉崑麓正脈",
+      "level": 3,
+      "type": "book",
+      "content": "呉崑麓正脈⟨缺⟩",
+      "author_info": "缺",
+      "_title_only": "呉崑麓正脈",
+      "_no_author": "待考"
+    },
+    {
+      "title": "沈虹逵□覧",
+      "level": 3,
+      "type": "book",
+      "content": "沈虹逵□覧",
+      "_author": "沈虹",
+      "_title_only": "逵□覧",
+      "work_id": "d59f6eohzwn5",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "劉景范原始",
+      "level": 3,
+      "type": "book",
+      "content": "劉景范原始",
+      "_author": "劉景范",
+      "_title_only": "原始",
+      "work_id": "d59f6eohoo3q",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "范應賔文記",
+      "level": 3,
+      "type": "book",
+      "content": "范應賔文記",
+      "_title_only": "范應賔文記",
+      "_no_author": "待考",
+      "work_id": "d59f6ejg0jyd",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "三塲文海一百二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "三塲文海一百二十卷",
+      "_title_only": "三塲文海",
+      "_no_author": "待考"
+    },
+    {
+      "title": "策海集畧十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "策海集畧十二卷",
+      "_title_only": "策海集畧",
+      "_no_author": "待考"
+    },
+    {
+      "title": "論學淵源十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "論學淵源十二卷",
+      "_title_only": "論學淵源",
+      "_no_author": "待考"
+    },
+    {
+      "title": "梁寅策要六卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁寅策要六卷",
+      "_author": "梁寅",
+      "_title_only": "策要"
+    },
+    {
+      "title": "劉定之十科策畧八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉定之十科策畧八卷",
+      "_author": "劉定之",
+      "_title_only": "十科策畧",
+      "work_id": "d59f6eohzwn4",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "張和篠庵論抄一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張和篠庵論抄一卷",
+      "_author": "張和",
+      "_title_only": "篠庵論抄",
+      "work_id": "d59f6ekybuh3",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "策學衍義",
+      "level": 3,
+      "type": "book",
+      "content": "策學衍義",
+      "_title_only": "策學衍義",
+      "_no_author": "待考"
+    },
+    {
+      "title": "戴暨策學㑹元四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴暨策學㑹元四十卷",
+      "_title_only": "策學㑹元",
+      "_author": "戴暨",
+      "_author_src": "詞庫補切·又條題名",
+      "_flags": [
+        "撰人係補切·待覆"
+      ],
+      "work_id": "d59f6ept4qo2",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "唐順之策海正傳十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐順之策海正傳十二卷",
+      "_author": "唐順之",
+      "_title_only": "策海正傳"
+    },
+    {
+      "title": "茅維策衡二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "茅維策衡二十二卷",
+      "_author": "茅維",
+      "_title_only": "策衡",
+      "work_id": "d59f6ekyn30h",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "又論衡六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又論衡六卷",
+      "_author": "茅維",
+      "_title_only": "論衡",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "又表衡六卷",
+      "level": 3,
+      "type": "book",
+      "content": "又表衡六卷⟨皆錄歴科程文⟩",
+      "author_info": "皆錄歴科程文",
+      "_author": "茅維",
+      "_title_only": "表衡",
+      "_author_src": "又條承上",
+      "work_id": "d59f6ekyn30l",
+      "_work_id_src": "索引側倒灌（at）"
+    },
+    {
+      "title": "明狀元策十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "明狀元策十二卷",
+      "_title_only": "明狀元策",
+      "_no_author": "待考"
+    },
+    {
+      "title": "策學衍義",
+      "level": 3,
+      "type": "book",
+      "content": "策學衍義⟨缺⟩",
+      "author_info": "缺",
+      "_title_only": "策學衍義",
+      "_no_author": "待考"
+    },
+    {
+      "title": "策原十卷",
+      "level": 3,
+      "type": "book",
+      "content": "策原十卷",
+      "_title_only": "策原",
+      "_no_author": "待考"
+    },
+    {
+      "title": "陳禹謨類字判草二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳禹謨類字判草二卷",
+      "_author": "陳禹謨",
+      "_title_only": "類字判草"
+    },
+    {
+      "title": "詔誥章表擬題事實九卷",
+      "level": 3,
+      "type": "book",
+      "content": "詔誥章表擬題事實九卷",
+      "_title_only": "詔誥章表擬題事實",
+      "_no_author": "待考"
+    },
+    {
+      "title": "詔誥表程文五卷",
+      "level": 3,
+      "type": "book",
+      "content": "詔誥表程文五卷",
+      "_title_only": "詔誥表程文",
+      "_no_author": "待考"
+    },
+    {
+      "title": "段昌武詩義指南一卷",
+      "level": 3,
+      "type": "book",
+      "content": "段昌武詩義指南一卷",
+      "_author": "段昌武",
+      "_title_only": "詩義指南",
+      "work_id": "d59f6elr1og2",
+      "_work_id_src": "索引側倒灌（content）"
+    },
+    {
+      "title": "永嘉先生八面鋒十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "永嘉先生八面鋒十三卷",
+      "_title_only": "永嘉先生八面鋒",
+      "_no_author": "待考"
+    },
+    {
+      "title": "元中軍論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元中軍論三卷",
+      "_author": "元中",
+      "_title_only": "軍論",
+      "work_id": "d59f6ekybuh2",
+      "_work_id_src": "索引側倒灌（core）"
+    },
+    {
+      "title": "涂溍生易義矜式",
+      "level": 3,
+      "type": "book",
+      "content": "涂溍生易義矜式⟨宜黄人⟩",
+      "author_info": "宜黄人",
+      "_author": "涂溍生",
+      "_title_only": "易義矜式"
+    },
+    {
+      "title": "又周易疑擬題三卷",
+      "level": 3,
+      "type": "book",
+      "content": "又周易疑擬題三卷",
+      "_author": "涂溍生",
+      "_title_only": "周易疑擬題",
+      "_author_src": "又條承上"
+    },
+    {
+      "title": "王充耘書義矜式",
+      "level": 3,
+      "type": "book",
+      "content": "王充耘書義矜式⟨缺⟩",
+      "author_info": "缺",
+      "_author": "王充耘",
+      "_title_only": "書義矜式"
+    },
+    {
+      "title": "倪士毅尚書作義要訣四卷",
+      "level": 3,
+      "type": "book",
+      "content": "倪士毅尚書作義要訣四卷",
+      "_author": "倪士毅",
+      "_title_only": "尚書作義要訣"
+    },
+    {
+      "title": "林泉生詩義矜式十卷",
+      "level": 3,
+      "type": "book",
+      "content": "林泉生詩義矜式十卷",
+      "_author": "林泉生",
+      "_title_only": "詩義矜式"
+    },
+    {
+      "title": "歐陽起鳴論範六卷",
+      "level": 3,
+      "type": "book",
+      "content": "歐陽起鳴論範六卷",
+      "_author": "歐陽起鳴",
+      "_title_only": "論範"
+    },
+    {
+      "title": "陸可淵策凖三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸可淵策凖三卷",
+      "_author": "陸可淵",
+      "_title_only": "策凖"
+    }
+  ]
+}

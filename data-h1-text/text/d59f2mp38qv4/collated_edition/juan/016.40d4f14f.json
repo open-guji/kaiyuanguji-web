@@ -1,0 +1,46 @@
+{
+  "title": "史部·霸史類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·霸史類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南唐書",
+      "content": "胡恢撰。",
+      "work_id": "d59f2hiuxrsx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南唐書三十卷",
+      "content": "馬令撰。",
+      "work_id": "d59f28kyrtoh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南唐書十八卷",
+      "content": "陸游撰。",
+      "work_id": "d59f2humisxv"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音釋一卷",
+      "content": "陸游撰。",
+      "work_id": "d59f2ndmxoua"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右霸史類",
+      "content": "右霸史三家四十九卷。"
+    }
+  ]
+}

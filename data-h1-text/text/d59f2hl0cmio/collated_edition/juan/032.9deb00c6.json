@@ -1,0 +1,277 @@
+{
+  "title": "農家類",
+  "sections": [
+    {
+      "title": "范子計然",
+      "level": 3,
+      "type": "book",
+      "content": "范子計然十五卷",
+      "work_id": "d59f2evxjoqp"
+    },
+    {
+      "title": "尹都尉書",
+      "level": 3,
+      "type": "book",
+      "content": "尹都尉書三卷",
+      "work_id": "d59f2pvs12bm"
+    },
+    {
+      "title": "氾勝之書",
+      "level": 3,
+      "type": "book",
+      "content": "氾勝之書二卷",
+      "work_id": "d59f23nq5xxh"
+    },
+    {
+      "title": "崔寔四民月令",
+      "level": 3,
+      "type": "book",
+      "content": "崔寔四民月令一卷",
+      "work_id": "d59f23jmiozk",
+      "link_basis": "原繫 1evcs0q3sw3cw，該條已併入 1evilzgjslqf4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "賈思協齊民要術",
+      "level": 3,
+      "type": "book",
+      "content": "賈思協齊民要術十卷",
+      "work_id": "d59f2q0x4ruo"
+    },
+    {
+      "title": "宗懍荊楚歲時記",
+      "level": 3,
+      "type": "book",
+      "content": "宗懍荊楚歲時記一卷",
+      "work_id": "d59f286xpurm",
+      "link_basis": "原繫 1evcs0q4dhr7k，該條已併入 1ev3bas0jumf4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "杜公贍荊楚歲時記",
+      "level": 3,
+      "type": "book",
+      "content": "杜公贍荊楚歲時記二卷",
+      "work_id": "d59f28jm2sxt"
+    },
+    {
+      "title": "杜臺卿玉燭寶典",
+      "level": 3,
+      "type": "book",
+      "content": "杜臺卿玉燭寶典十二卷",
+      "work_id": "d59f28khaj9e",
+      "link_basis": "原繫 1evcs0q517shs，該條已併入 1evcmncvc04xs（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "王氏四時錄",
+      "level": 3,
+      "type": "book",
+      "content": "王氏四時錄十二卷",
+      "work_id": "d59f2q4twt1d"
+    },
+    {
+      "title": "戴凱之竹譜",
+      "level": 3,
+      "type": "book",
+      "content": "戴凱之竹譜一卷",
+      "work_id": "d59f286v7yf7"
+    },
+    {
+      "title": "顧烜錢譜",
+      "level": 3,
+      "type": "book",
+      "content": "顧烜錢譜一卷",
+      "work_id": "d59f286xem80"
+    },
+    {
+      "title": "浮丘公相鶴經",
+      "level": 3,
+      "type": "book",
+      "content": "浮丘公相鶴經一卷",
+      "work_id": "d59f2q4s1e69"
+    },
+    {
+      "title": "堯須跋鷙擊錄",
+      "level": 3,
+      "type": "book",
+      "content": "堯須跋鷙擊錄二十卷",
+      "work_id": "d59f2ptc054x"
+    },
+    {
+      "title": "相馬經",
+      "level": 3,
+      "type": "book",
+      "content": "相馬經三卷",
+      "work_id": "d59f2q8wmcjm",
+      "link_basis": "原繫 1evcmng65d0jk，該三卷本已拆出併入 1evgpi8pcbuv4（國史經籍志三卷本），今改繫。"
+    },
+    {
+      "title": "伯樂相馬經",
+      "level": 3,
+      "type": "book",
+      "content": "伯樂相馬經一卷",
+      "work_id": "d59f2qalhm9t"
+    },
+    {
+      "title": "徐成等相馬經",
+      "level": 3,
+      "type": "book",
+      "content": "徐成等相馬經二卷",
+      "work_id": "d59f2psiz20y"
+    },
+    {
+      "title": "諸葛潁種植法",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛潁種植法七十七卷",
+      "work_id": "d59f2q3p0pog"
+    },
+    {
+      "title": "又相馬經",
+      "level": 3,
+      "type": "book",
+      "content": "又相馬經六十卷",
+      "work_id": "d59f28m23q4l",
+      "link_basis": "原繫 1evcs0q7gxh4w，該條已併入 1evgpi8u5kkcg（諸葛頴，同書六十卷異來源著錄，2026-08-11），今改繫。"
+    },
+    {
+      "title": "甯戚相牛經",
+      "level": 3,
+      "type": "book",
+      "content": "甯戚相牛經一卷",
+      "work_id": "d59f2q77ftvm"
+    },
+    {
+      "title": "范蠡養魚經",
+      "level": 3,
+      "type": "book",
+      "content": "范蠡養魚經一卷",
+      "work_id": "d59f2q2yhjpd"
+    },
+    {
+      "title": "禁苑實錄",
+      "level": 3,
+      "type": "book",
+      "content": "禁苑實錄一卷",
+      "work_id": "d59f2q3irytc"
+    },
+    {
+      "title": "鷹經",
+      "level": 3,
+      "type": "book",
+      "content": "鷹經一卷",
+      "work_id": "d59f2pxf0wle"
+    },
+    {
+      "title": "蠶經",
+      "level": 3,
+      "type": "book",
+      "content": "蠶經一卷",
+      "work_id": "d59f2pup0dtt"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又二卷",
+      "work_id": null
+    },
+    {
+      "title": "相貝經",
+      "level": 3,
+      "type": "book",
+      "content": "相貝經一卷",
+      "work_id": "d59f24m60jk1"
+    },
+    {
+      "title": "武后兆人本業",
+      "level": 3,
+      "type": "book",
+      "content": "武后兆人本業三卷",
+      "work_id": "d59f2axcwkqp"
+    },
+    {
+      "title": "王方慶園庭草木疏",
+      "level": 3,
+      "type": "book",
+      "content": "王方慶園庭草木疏二十一卷",
+      "work_id": "d59f28krld6s"
+    },
+    {
+      "title": "孫氏千金月令",
+      "level": 3,
+      "type": "book",
+      "content": "孫氏千金月令三卷",
+      "work_id": "d59f2q174dmq"
+    },
+    {
+      "title": "李淳風演齊民要術",
+      "level": 3,
+      "type": "book",
+      "content": "李淳風演齊民要術",
+      "work_id": "d59f28kuei2t"
+    },
+    {
+      "title": "李邕金谷園記",
+      "level": 3,
+      "type": "book",
+      "content": "李邕金谷園記一卷",
+      "work_id": "d59f2q9s5bep"
+    },
+    {
+      "title": "薛登四時記",
+      "level": 3,
+      "type": "book",
+      "content": "薛登四時記二十卷",
+      "work_id": "d59f28jj9o1v",
+      "link_basis": "原繫 1evcs0qbjy8zk，該條已併入 1evgphz7o5log（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "裴澄乘輿月令",
+      "level": 3,
+      "type": "book",
+      "content": "裴澄乘輿月令十二卷",
+      "work_id": "d59f2q7ghpfm"
+    },
+    {
+      "title": "王涯月令圖一軸",
+      "level": 3,
+      "type": "book",
+      "content": "王涯月令圖一軸",
+      "work_id": "d59f2q4yldds"
+    },
+    {
+      "title": "李綽秦中歲時記",
+      "level": 3,
+      "type": "book",
+      "content": "李綽秦中歲時記一卷",
+      "work_id": "d59f2qaq6681"
+    },
+    {
+      "title": "韋行規保生月錄",
+      "level": 3,
+      "type": "book",
+      "content": "韋行規保生月錄一卷",
+      "work_id": "d59f2q0qksn6"
+    },
+    {
+      "title": "韓鄂四時纂要",
+      "level": 3,
+      "type": "book",
+      "content": "韓鄂四時纂要五卷",
+      "work_id": "d59f28lzlts1",
+      "link_basis": "原繫 1evcs0qcurugw，該條已併入 1evcsxvslklxc（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "歲華紀麗",
+      "level": 3,
+      "type": "book",
+      "content": "歲華紀麗二卷",
+      "work_id": "d59f28jlrkec"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右農家類十九家，二十六部，二百三十五卷。"
+    }
+  ]
+}

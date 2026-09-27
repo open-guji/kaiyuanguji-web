@@ -1,0 +1,407 @@
+{
+  "title": "起居注類",
+  "sections": [
+    {
+      "title": "《漢獻帝起居注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢獻帝起居注》五卷",
+      "book_title": "漢獻帝起居注",
+      "n_juan": 5,
+      "work_id": "d59f23nsnu9y"
+    },
+    {
+      "title": "《晉泰始起居注》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉泰始起居注》二十卷李軌撰。",
+      "book_title": "晉泰始起居注",
+      "n_juan": 20,
+      "author_info": "李軌撰",
+      "work_id": "d59f27tudiis"
+    },
+    {
+      "title": "《晉咸寧起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸寧起居注》十卷李軌撰。",
+      "book_title": "晉咸寧起居注",
+      "n_juan": 10,
+      "author_info": "李軌撰",
+      "work_id": "d59f27uv7im8"
+    },
+    {
+      "title": "《晉泰康起居注》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉泰康起居注》二十一卷李軌撰。",
+      "book_title": "晉泰康起居注",
+      "n_juan": 21,
+      "author_info": "李軌撰",
+      "work_id": "d59f27ubjke9"
+    },
+    {
+      "title": "《晉元康起居注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元康起居注》一卷梁有《永平、元康、永寧、起居注》六卷，又有《惠帝起居注》二卷，《永嘉、建興起居注》十三卷，亡。",
+      "book_title": "晉元康起居注",
+      "n_juan": 1,
+      "work_id": "d59f27vrcyki"
+    },
+    {
+      "title": "《晉元康起居注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元康起居注》一卷",
+      "book_title": "晉元康起居注",
+      "n_juan": 1,
+      "work_id": "d59f27vrcyki"
+    },
+    {
+      "title": "《晉建武、大興、永昌起居注》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武、大興、永昌起居注》九卷梁有二十卷。",
+      "book_title": "晉建武、大興、永昌起居注",
+      "n_juan": 9,
+      "work_id": "d59f2pydo9a9"
+    },
+    {
+      "title": "《晉鹹和起居注》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉鹹和起居注》十六卷李軌撰。",
+      "book_title": "晉鹹和起居注",
+      "n_juan": 16,
+      "author_info": "李軌撰",
+      "work_id": "d59f27tstbsx"
+    },
+    {
+      "title": "《晉咸康起居注》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸康起居注》二十二卷",
+      "book_title": "晉咸康起居注",
+      "n_juan": 22,
+      "work_id": "d59f27vlqosg"
+    },
+    {
+      "title": "《晉建元起居注》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建元起居注》四卷",
+      "book_title": "晉建元起居注",
+      "n_juan": 4,
+      "work_id": "d59f2q247jep"
+    },
+    {
+      "title": "《晉永和起居注》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉永和起居注》十七卷梁有二十四卷。",
+      "book_title": "晉永和起居注",
+      "n_juan": 17,
+      "work_id": "d59f2q6igute"
+    },
+    {
+      "title": "《晉升平起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉升平起居注》十卷",
+      "book_title": "晉升平起居注",
+      "n_juan": 10,
+      "work_id": "d59f2q9gws1t"
+    },
+    {
+      "title": "《晉隆和、興寧起居注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉隆和、興寧起居注》五卷",
+      "book_title": "晉隆和、興寧起居注",
+      "n_juan": 5,
+      "work_id": "d59f2psyw5xc"
+    },
+    {
+      "title": "《晉咸安起居注》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸安起居注》三卷",
+      "book_title": "晉咸安起居注",
+      "n_juan": 3,
+      "work_id": "d59f2q2b2rcy"
+    },
+    {
+      "title": "《晉泰和起居注》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉泰和起居注》六卷梁十卷。",
+      "book_title": "晉泰和起居注",
+      "n_juan": 6,
+      "author_info": "梁十卷",
+      "work_id": "d59f2ps8d05e"
+    },
+    {
+      "title": "《晉甯康起居注》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉甯康起居注》六卷",
+      "book_title": "晉甯康起居注",
+      "n_juan": 6,
+      "work_id": "d59f2q17quip"
+    },
+    {
+      "title": "《晉泰元起居注》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉泰元起居注》二十五卷梁五十四卷。",
+      "book_title": "晉泰元起居注",
+      "n_juan": 25,
+      "author_info": "梁五十四卷",
+      "work_id": "d59f2q432e4g"
+    },
+    {
+      "title": "《晉隆安起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉隆安起居注》十卷",
+      "book_title": "晉隆安起居注",
+      "n_juan": 10,
+      "work_id": "d59f2qaizpxc"
+    },
+    {
+      "title": "《晉元興起居注》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元興起居注》九卷",
+      "book_title": "晉元興起居注",
+      "n_juan": 9,
+      "work_id": "d59f2qand1j4"
+    },
+    {
+      "title": "《晉義熙起居注》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉義熙起居注》十七卷梁三十四卷。",
+      "book_title": "晉義熙起居注",
+      "n_juan": 17,
+      "author_info": "梁三十四卷",
+      "work_id": "d59f2qaavk00"
+    },
+    {
+      "title": "《晉元熙起居注》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元熙起居注》二卷",
+      "book_title": "晉元熙起居注",
+      "n_juan": 2,
+      "work_id": "d59f2qa6701s"
+    },
+    {
+      "title": "《晉起居注》三百一十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉起居注》三百一十七卷宋北徐州主簿劉道會撰。梁有三百二十二卷。",
+      "book_title": "晉起居注",
+      "n_juan": 317,
+      "author_info": "宋北徐州主簿劉道會撰",
+      "work_id": "d59f27thks8y"
+    },
+    {
+      "title": "《流別起居注》三十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《流別起居注》三十七卷梁有《晉宋起居注鈔》五十一卷，《晉宋先朝起居注》二十卷，亡。",
+      "book_title": "流別起居注",
+      "n_juan": 37,
+      "work_id": "d59f2pxmiltu"
+    },
+    {
+      "title": "《宋永初起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋永初起居注》十卷",
+      "book_title": "宋永初起居注",
+      "n_juan": 10,
+      "work_id": "d59f2q4v5r7k"
+    },
+    {
+      "title": "《宋景平起居注》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋景平起居注》三卷",
+      "book_title": "宋景平起居注",
+      "n_juan": 3,
+      "work_id": "d59f2pu1acjl"
+    },
+    {
+      "title": "《宋元嘉起居注》五十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋元嘉起居注》五十五卷梁六十卷。",
+      "book_title": "宋元嘉起居注",
+      "n_juan": 55,
+      "author_info": "梁六十卷",
+      "work_id": "d59f2q5b2v41"
+    },
+    {
+      "title": "《宋孝建起居注》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋孝建起居注》十二卷",
+      "book_title": "宋孝建起居注",
+      "n_juan": 12,
+      "work_id": "d59f2q0ubn5u"
+    },
+    {
+      "title": "《宋大明起居注》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋大明起居注》十五卷梁三十四卷，又有《景和起居注》四卷，《明帝在蕃注》三卷，亡。",
+      "book_title": "宋大明起居注",
+      "n_juan": 15,
+      "author_info": "梁三十四卷",
+      "work_id": "d59f2pvicow1"
+    },
+    {
+      "title": "《宋泰始起居注》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋泰始起居注》十九卷梁二十三卷。",
+      "book_title": "宋泰始起居注",
+      "n_juan": 19,
+      "author_info": "梁二十三卷",
+      "work_id": "d59f2pwwao00"
+    },
+    {
+      "title": "《宋泰豫起居注》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋泰豫起居注》四卷梁有《宋元徽起居注》二十卷，《升明起居注》六卷，亡。",
+      "book_title": "宋泰豫起居注",
+      "n_juan": 4,
+      "work_id": "d59f2pwv1q80"
+    },
+    {
+      "title": "《齊永明起居注》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊永明起居注》二十五卷梁有三十四卷，又有《建元起居注》十二卷，《隆昌、延興、建武起居注》四卷，《中興起居注》四卷，亡。",
+      "book_title": "齊永明起居注",
+      "n_juan": 25,
+      "work_id": "d59f2ptx8a2q"
+    },
+    {
+      "title": "《梁大同起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁大同起居注》十卷",
+      "book_title": "梁大同起居注",
+      "n_juan": 10,
+      "work_id": "d59f2ptrarcw"
+    },
+    {
+      "title": "《後魏起居注》三百三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後魏起居注》三百三十六卷",
+      "book_title": "後魏起居注",
+      "n_juan": 336,
+      "work_id": "d59f2pwnk16p"
+    },
+    {
+      "title": "《陳永定起居注》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳永定起居注》八卷",
+      "book_title": "陳永定起居注",
+      "n_juan": 8,
+      "work_id": "d59f2q20rx8h"
+    },
+    {
+      "title": "《陳天嘉起居注》二十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳天嘉起居注》二十三卷",
+      "book_title": "陳天嘉起居注",
+      "n_juan": 23,
+      "work_id": "d59f2q0qw1dt"
+    },
+    {
+      "title": "《陳天康、光大起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳天康、光大起居注》十卷",
+      "book_title": "陳天康、光大起居注",
+      "n_juan": 10,
+      "work_id": "d59f2pv322gx"
+    },
+    {
+      "title": "《陳太建起居注》五十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳太建起居注》五十六卷",
+      "book_title": "陳太建起居注",
+      "n_juan": 56,
+      "work_id": "d59f2q2b2qyq"
+    },
+    {
+      "title": "《陳至德起居注》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳至德起居注》四卷",
+      "book_title": "陳至德起居注",
+      "n_juan": 4,
+      "work_id": "d59f2pyziv42"
+    },
+    {
+      "title": "《後周太祖號令》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後周太祖號令》三卷",
+      "book_title": "後周太祖號令",
+      "n_juan": 3,
+      "work_id": "d59f2qabt98i"
+    },
+    {
+      "title": "《隋開皇起居注》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋開皇起居注》六十卷",
+      "book_title": "隋開皇起居注",
+      "n_juan": 60,
+      "work_id": "d59f2q4xcetc"
+    },
+    {
+      "title": "《南燕起居注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《南燕起居注》一卷",
+      "book_title": "南燕起居注",
+      "n_juan": 1,
+      "work_id": "d59f27ud3r42"
+    },
+    {
+      "title": "《穆天子傳》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《穆天子傳》六卷《汲塚書》。郭璞注。",
+      "work_id": "d59f27yyjj0h",
+      "book_title": "穆天子傳",
+      "n_juan": 6,
+      "author_info": "《汲塚書》"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右四十四部，一千一百八十九卷。"
+    },
+    {
+      "title": "起居注類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "起居注者，錄紀人君言行動止之事。《春秋傳》曰：「君舉必書。書而不法，後嗣何觀？」《周官》：內史掌王之命，遂書其副而藏之，是其職也。漢武帝有《禁中起居注》，後漢明德馬後撰《明帝起居注》，然則漢時起居，似在宮中，為女史之職。然皆零落，不可複知。今之存者，有漢獻帝及晉代已來《起居注》，皆近侍之臣所錄。晉時，又得《汲塚書》，有《穆天子傳》，體制與今起居正同，蓋周時內史所記王命之副也。近代已來，別有其職，事在《百官志》。今依其先後，編而次之。其偽國起居，唯《南燕》一卷，不可別出，附之於此。"
+    }
+  ]
+}

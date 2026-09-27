@@ -1,0 +1,132 @@
+{
+  "title": "經部·春秋類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·春秋類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "木訥先生春秋經筌十六卷",
+      "content": "趙鹏飛撰。",
+      "work_id": "d59f2hq47egx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋集傳詳說三十卷",
+      "content": "家鉉翁撰。",
+      "work_id": "d59f2ht6perk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "綱領一卷",
+      "content": "家鉉翁撰。",
+      "work_id": "d59f2hjx0q2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鐵山先生春秋提綱十卷",
+      "content": "陳則通撰。",
+      "work_id": "d59f2hp9m58j"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "淸全齋讀春秋編十二卷",
+      "content": "陳深撰。",
+      "work_id": "d59f2hucug3m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋類傳",
+      "content": "王申子撰。",
+      "book_id": "988lpnjymb",
+      "ai_note": "本條原以 work_id 載 11qfrvo1nj668，而該 id 實為 Book《春秋類傳》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳句解七十卷",
+      "content": "林堯叟撰。",
+      "work_id": "d59f2hksuxhe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左氏始終三十卷",
+      "content": "程公說撰。",
+      "work_id": "d59f2hhvz6yr"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋比事十卷",
+      "content": "程公說撰。",
+      "work_id": "d59f2hj9lxc1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋透天關十二卷",
+      "content": "晏兼善撰。",
+      "work_id": "d59f2hggh1c1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左傳缺疑",
+      "content": "吳思齊撰。",
+      "work_id": "d59f2hkjht6r"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋論考",
+      "content": "熊禾撰。",
+      "work_id": "d59f2hlr718g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋左傳節解三十五卷",
+      "content": "朱申撰。",
+      "work_id": "d59f2hfwt342"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋五論一卷",
+      "content": "呂大圭撰。",
+      "work_id": "d59f2hru0e0w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋三傳分國紀事本末",
+      "content": "句龍傳撰。",
+      "work_id": "d59f2hguips0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋經傳類對賦一卷",
+      "content": "徐晉卿撰。",
+      "work_id": "d59f2hf43950"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右春秋類",
+      "content": "右春秋類十四家，二百二十八卷。"
+    }
+  ]
+}

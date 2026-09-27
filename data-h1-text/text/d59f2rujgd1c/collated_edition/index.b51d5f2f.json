@@ -1,0 +1,25 @@
+{
+  "work_id": "d59f2rujgd1c",
+  "type": "placeholder",
+  "total_entries": 1,
+  "juan_files": [
+    "juan/001.json"
+  ],
+  "references": [
+    {
+      "title": "档案总汇总目录.docx",
+      "note": "编辑总目录原稿（编辑说明 + 第二编结构）"
+    },
+    {
+      "title": "韓國《朝鮮王朝儀軌》系列",
+      "note": "可对照参考的整理本来源（奎章閣本/藏書閣本）"
+    }
+  ],
+  "text_quality": {
+    "grade": "placeholder",
+    "scope": "占位，待补",
+    "source_note": "尚无原文条目，仅总览说明与待办标注"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25"
+}

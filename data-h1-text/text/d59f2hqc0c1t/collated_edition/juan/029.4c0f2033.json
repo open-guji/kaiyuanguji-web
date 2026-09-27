@@ -1,0 +1,67 @@
+{
+  "title": "農家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "農家類",
+      "content": ""
+    },
+    {
+      "title": "齊民要術十卷",
+      "level": 3,
+      "type": "book",
+      "content": "齊民要術十卷",
+      "work_id": "d59f286x3doi"
+    },
+    {
+      "title": "兆人本業三卷",
+      "level": 3,
+      "type": "book",
+      "content": "兆人本業三卷",
+      "work_id": "d59f2axcwkqp"
+    },
+    {
+      "title": "山居要術三卷",
+      "level": 3,
+      "type": "book",
+      "content": "山居要術三卷",
+      "work_id": "d59f2q99f2td"
+    },
+    {
+      "title": "大農孝經一卷",
+      "level": 3,
+      "type": "book",
+      "content": "大農孝經一卷",
+      "work_id": "d59f2pvm3jsw"
+    },
+    {
+      "title": "農家切要一卷（闕）",
+      "level": 3,
+      "type": "book",
+      "content": "農家切要一卷（闕）",
+      "work_id": "d59f2pthmeip"
+    },
+    {
+      "title": "農子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "農子一卷",
+      "work_id": "d59f2q6860ht"
+    },
+    {
+      "title": "淮南王蠶經三卷",
+      "level": 3,
+      "type": "book",
+      "content": "淮南王蠶經三卷",
+      "work_id": "d59f2pxzmkn4"
+    },
+    {
+      "title": "孫氏蠶書二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫氏蠶書二卷",
+      "work_id": "d59f2q06lm9t"
+    }
+  ]
+}

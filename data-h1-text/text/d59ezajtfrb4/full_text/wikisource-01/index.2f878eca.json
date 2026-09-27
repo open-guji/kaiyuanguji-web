@@ -1,0 +1,120 @@
+{
+  "work_id": "d59ezajtfrb4",
+  "version_label": "春秋穀梁傳",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%98%A5%E7%A7%8B%E7%A9%80%E6%A2%81%E5%82%B3",
+    "page_title": "春秋穀梁傳",
+    "revid": 1681709,
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "",
+  "total_chapters": 12,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "隱公",
+      "file": "001.md",
+      "page_title": "春秋穀梁傳/隱公",
+      "revid": 1999666,
+      "md_len": 3704
+    },
+    {
+      "n": 2,
+      "title": "桓公",
+      "file": "002.md",
+      "page_title": "春秋穀梁傳/桓公",
+      "revid": 2609733,
+      "md_len": 4216
+    },
+    {
+      "n": 3,
+      "title": "莊公",
+      "file": "003.md",
+      "page_title": "春秋穀梁傳/莊公",
+      "revid": 396551,
+      "md_len": 7091
+    },
+    {
+      "n": 4,
+      "title": "閔公",
+      "file": "004.md",
+      "page_title": "春秋穀梁傳/閔公",
+      "revid": 39273,
+      "md_len": 416
+    },
+    {
+      "n": 5,
+      "title": "僖公",
+      "file": "005.md",
+      "page_title": "春秋穀梁傳/僖公",
+      "revid": 855478,
+      "md_len": 9529
+    },
+    {
+      "n": 6,
+      "title": "文公",
+      "file": "006.md",
+      "page_title": "春秋穀梁傳/文公",
+      "revid": 39271,
+      "md_len": 4412
+    },
+    {
+      "n": 7,
+      "title": "宣公",
+      "file": "007.md",
+      "page_title": "春秋穀梁傳/宣公",
+      "revid": 39265,
+      "md_len": 3643
+    },
+    {
+      "n": 8,
+      "title": "成公",
+      "file": "008.md",
+      "page_title": "春秋穀梁傳/成公",
+      "revid": 855477,
+      "md_len": 4978
+    },
+    {
+      "n": 9,
+      "title": "襄公",
+      "file": "009.md",
+      "page_title": "春秋穀梁傳/襄公",
+      "revid": 39269,
+      "md_len": 6757
+    },
+    {
+      "n": 10,
+      "title": "昭公",
+      "file": "010.md",
+      "page_title": "春秋穀梁傳/昭公",
+      "revid": 855479,
+      "md_len": 6027
+    },
+    {
+      "n": 11,
+      "title": "定公",
+      "file": "011.md",
+      "page_title": "春秋穀梁傳/定公",
+      "revid": 39267,
+      "md_len": 4054
+    },
+    {
+      "n": 12,
+      "title": "哀公",
+      "file": "012.md",
+      "page_title": "春秋穀梁傳/哀公",
+      "revid": 39266,
+      "md_len": 2637
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "requests": 12,
+    "retries_429": 4
+  },
+  "revision": "1.0.0"
+}

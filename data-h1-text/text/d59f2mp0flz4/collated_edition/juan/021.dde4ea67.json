@@ -1,0 +1,3931 @@
+{
+  "title": "地理類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "地理類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "總志之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇輿表",
+      "content": "皇輿表十六卷。康熙四十三年，喇沙里等奉敕撰。",
+      "work_id": "d59f2ndk4fsw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "方輿路程考略",
+      "content": "方輿路程考略不分卷。康熙時，汪士鋐等奉敕撰。",
+      "work_id": "d59f2ndk4fsx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清一統志",
+      "content": "大清一統志三百四十卷。乾隆八年敕撰。",
+      "work_id": "d59f2md95tdt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清一統志",
+      "content": "大清一統志五百卷。乾隆二十九年敕撰。",
+      "work_id": "d59f2md95tdt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝職貢圖",
+      "content": "皇朝職貢圖九卷。乾隆十六年，傅恆等奉敕撰。",
+      "work_id": "d59f2ndk4fsy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代疆域表",
+      "content": "歷代疆域表三卷，沿革表三卷。段長基撰。",
+      "work_id": "d59f2ndkfocg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "沿革表",
+      "content": "",
+      "content_from": "歷代疆域表",
+      "work_id": "d59f2ndkqww0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代地理沿革表",
+      "content": "歷代地理沿革表四十七卷。陳芳績撰。",
+      "work_id": "d59f2ndkqww1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東晉南北朝輿地表",
+      "content": "東晉南北朝輿地表二十一卷。徐文范撰。",
+      "work_id": "d59f2ndkqww2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "輿地沿革表",
+      "content": "輿地沿革表四十卷。楊丕復撰。",
+      "work_id": "d59f2ndl25fk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "周末列國所有郡縣考",
+      "content": "周末列國所有郡縣考一卷，古國都今郡縣合考一卷。閔麟嗣撰。",
+      "work_id": "d59f2ndl25fl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "古國都今郡縣合考",
+      "content": "",
+      "content_from": "周末列國所有郡縣考",
+      "work_id": "d59f2ndlddz4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "戰國地輿",
+      "content": "戰國地輿一卷。林春溥撰。",
+      "work_id": "d59f2ndlddz5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "楚漢諸侯疆域志",
+      "content": "楚漢諸侯疆域志三卷。劉文淇撰。",
+      "work_id": "d59f2ndlddz6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代郡國考略",
+      "content": "歷代郡國考略三卷。葉澐撰。",
+      "work_id": "d59f2ndlomio"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "今古地理述",
+      "content": "今古地理述二十卷。王子音撰。",
+      "work_id": "d59f2ndlomip"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代地理沿革圖",
+      "content": "歷代地理沿革圖一卷，輿地圖一卷，歷代地理志韻編今釋二十卷，皇朝輿地韻編二卷。李兆洛撰。",
+      "work_id": "d59f2ndlzv28"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "輿地圖",
+      "content": "",
+      "content_from": "歷代地理沿革圖",
+      "work_id": "d59f2ndlzv29"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代地理志韻編今釋",
+      "content": "",
+      "content_from": "歷代地理沿革圖",
+      "work_id": "d59f2ndlzv2a"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝輿地韻編",
+      "content": "",
+      "content_from": "歷代地理沿革圖",
+      "work_id": "d59f2n6bsirl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "王會新編",
+      "content": "王會新編一百四十五卷。茹鉉撰。",
+      "work_id": "d59f2ndmb3ls"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "乾隆府廳州縣志",
+      "content": "乾隆府廳州縣志五十卷。洪亮吉撰。",
+      "work_id": "d59f2ndmb3lt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝輿地全圖",
+      "content": "皇朝輿地全圖不分卷。董祐誠撰。",
+      "work_id": "d59f2ndmmc5c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清一統輿圖",
+      "content": "大清一統輿圖三十卷。胡林翼撰。",
+      "work_id": "d59f2ndmmc5d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝輿地韻編",
+      "content": "皇朝輿地韻編一卷，輿地略一卷。嚴德撰。",
+      "work_id": "d59f2ndmmc5e"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "輿地略",
+      "content": "",
+      "content_from": "皇朝輿地韻編",
+      "work_id": "d59f2ntsgoox"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "郡縣分韻考",
+      "content": "郡縣分韻考十卷。黃本驥撰。",
+      "work_id": "d59f2ndmxkow"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "肇域志",
+      "content": "肇域志一百卷，天下郡國利病書一百二十卷。顧炎武撰。",
+      "work_id": "d59f2mscaqki"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "天下郡國利病書",
+      "content": "",
+      "content_from": "肇域志",
+      "work_id": "d59f2mdhwglc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "讀史方輿紀要",
+      "content": "讀史方輿紀要一百三十卷，形勢紀要九卷。顧祖禹撰。",
+      "work_id": "d59f2ndmxkox"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "形勢紀要",
+      "content": "",
+      "content_from": "讀史方輿紀要",
+      "work_id": "d59f2ndn8t8g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "太平寰宇記補缺",
+      "content": "太平寰宇記補缺二卷。陳蘭森撰。",
+      "work_id": "d59f2ndn8t8h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "山河兩戒考",
+      "content": "山河兩戒考十四卷。徐文靖撰。",
+      "work_id": "d59f2mdiixoh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三年地記",
+      "content": "晉太康三年地記一卷。",
+      "work_id": "d59f27ujnqiq",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "王隱晉書地道記",
+      "content": "王隱晉書地道記一卷。",
+      "work_id": "d59f27ydxv5u",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "泰等括地誌",
+      "content": "唐濮王泰等括地誌一卷。",
+      "work_id": "d59f28j4wr2k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "都會郡縣之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滿洲源流考",
+      "content": "滿洲源流考二十卷。乾隆四十二年，阿桂等奉敕撰。",
+      "work_id": "d59f2ntsrx8g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "熱河志",
+      "content": "熱河志八十卷。乾隆四十六年，和珅等奉敕撰。",
+      "work_id": "d59f2ntsrx8h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日下舊聞考",
+      "content": "日下舊聞考一百二十卷。乾隆三十九年敕撰。",
+      "work_id": "d59f2ntt35s0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日下舊聞",
+      "content": "日下舊聞四十二卷。朱彝尊撰。",
+      "work_id": "d59f2ndn8t8i"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "盛京通志",
+      "content": "盛京通志一百二十卷。乾隆四十四年，阿桂等奉敕撰。",
+      "work_id": "d59f2ntt35s1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "新疆識略",
+      "content": "新疆識略十三卷。道光元年，汪廷珍等奉敕撰。",
+      "work_id": "d59f2ndnk1s0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "盛京通志",
+      "content": "盛京通志四十八卷。雷以誠等修。畿輔通志一百二十卷。李衛等修。畿輔通志三百卷。李鴻章等修。江南通志二百卷。趙宏恩等修。安徽通志二百六十卷。陶澍修。安徽通志三百五十卷。劉坤一等修。江西通志二百六卷。白璜等修。江西通志一百六十二卷。謝旻等修。江西通志一百八十卷。劉坤一等修。浙江通志二百八十卷。嵇曾筠等修。福建通志七十八卷。郝玉麟修。福建通志二百七十八卷。吳棠等修。湖廣通志八十卷。徐國相等修。湖廣通志一百二十卷。邁柱等修。湖北通志一百卷。吳熊光等修。湖南通志一百七十卷。陳宏謀等修。湖南通志二百二十八卷。巴哈布等修。湖南通志三百十五卷。裕祿等修。河南通志八十卷。王士俊等修。續河南通志八十卷。阿思喀等修。山東通志三十六卷。岳濬等修。山東通志六十四卷。錢江等修。山西通志二百三十卷。覺羅石麟等修。山西通志一百八十四卷。張煦等修。山西志輯要十卷。雅德撰。",
+      "work_id": "d59f2ntteebk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "陝西通志",
+      "content": "陝西通志一百卷。劉於義等修。甘肅通志五十卷。許容等修。甘肅通志一百卷。長庚等修。四川通志四十七卷。黃廷桂等修。四川通志二百二十六卷。楊芳燦等修。廣東通志六十四卷。郝玉麟等修。廣東通志三百三十四卷。阮元等修。廣西通志一百二十八卷。金鉷等修。廣西通志二百八十卷。吉慶等修。雲南通志三十卷。鄂爾泰等修。續雲南通志稿一百九十四卷。王文韶等修。貴州通志四十六卷。鄂爾泰等修。吉林通志一百二十二卷。長順等修。順天府志一百三十卷。李鴻章修。保定府志八十卷。李振祜修。承德府志六十卷。海忠修。永平府志七十二卷。游智開修。河間府志二十卷。周嘉露修。天津府志四十卷。李梅賓修。天津府志五十四卷。李鴻章修。正定府志五十卷。鄭大進修。順德府志十六卷。徐景曾修。廣平府志二十四卷。吳穀修。大名府志二十二卷。李煐修。大名府志六卷。武蔚文修。宣化府志四十二卷。王畹修。江寧府志五十六卷。呂燕昭修。江寧府志十五卷。蘇啟勛修。蘇州府志八十卷。習巂撰。",
+      "work_id": "d59f2n7golxd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蘇州府志",
+      "content": "蘇州府志一百六十卷。石韞玉撰。",
+      "work_id": "d59f2ndnk1s1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蘇州府志",
+      "content": "蘇州府志一百五十卷。馮桂芬撰。",
+      "work_id": "d59f2ndnvabk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "松江府志",
+      "content": "松江府志八十四卷。宋如林修。松江府志四十卷。博潤修。常州府志三十八卷。於琨修。淮安府志三十二卷。顧棟高撰。",
+      "work_id": "d59f2ntteebl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "揚州府志",
+      "content": "揚州府志四十卷。張萬壽修。揚州府志七十二卷。張世浣修。揚州府志三十卷。晏端書撰。",
+      "work_id": "d59f2nttpmv4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "徐州府志",
+      "content": "徐州府志三十卷。王峻修。安慶府志三十二卷。張楷修。徽州府志八卷。鄭交泰修。寧國府志三十八卷。魯銓修。池州府志五十八卷。張士范修。太平府志四十四卷。朱肇基修。廬州府志五十四卷。張祥雲修。鳳陽府志二十一卷。馮煦修。潁州府志十卷。王斂福修。南昌府志七十六卷。黃良棟修。饒州府志三十六卷。黃家遴修。廣信府志二十六卷。康基淵修。南康府志十二卷。廖文英修。九江府志二十二卷。胡宗虞修。建昌府志三十四卷。姚文光修。撫州府志四十五卷。張四教修。臨江府志十六卷。施潤章撰。",
+      "work_id": "d59f2ndnvabl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "瑞州府志",
+      "content": "瑞州府志二十四卷。黃廷金修。袁州府志十五卷。陳喬樅撰。",
+      "work_id": "d59f2nttpmv5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吉安府志",
+      "content": "吉安府志七十六卷。盧松修。贛州府志七十八卷。李本仁修。南安府志二十卷。陳奕禧撰。",
+      "work_id": "d59f2ntu0veo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南安府志",
+      "content": "南安府志三十二卷。黃鳴珂修。杭州府志四十卷。馬鐸修。杭州府志一百十卷。鄭枟修。嘉興府志十六卷。吳永芳修。嘉興府志八十卷。伊湯安修。嘉興府志九十卷。許瑤光修。湖錄一百五卷。鄭元慶撰。",
+      "work_id": "d59f2ndnvabm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "湖州府志",
+      "content": "湖州府志十二卷。程量修。湖州府志四十八卷。李堂修。湖州府志九十六卷。宗源瀚撰。",
+      "work_id": "d59f2ntu0vep"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "寧波府志",
+      "content": "寧波府志三十六卷。曹秉仁修。紹興府志六十卷。鄒尚周修。紹興府志八十卷。李亨特修。台州府志十八卷。馮甦修。金華府志三十卷。張藎修。衢州府志三十五卷。楊廷望修。嚴州府志三十五卷。吳士進修。溫州府志三十卷。汪爌修。處州府志二十卷。曹掄彬修。處州府志三十二卷。潘紹貽修。福州府志七十六卷。高景崧修。泉州府志七十六卷。章倬標修。建寧府志四十八卷。張琦修。延平府志四十六卷。徐震耀修。汀州府志四十五卷。曾曰煐修。邵武府志三十卷。王琛修。邵武府志二十四卷。張鳳孫修。漳州府志五十卷。沈定均修。福寧府志三十卷。李紱修。台灣府志二十六卷。六十七修。武昌府志十二卷。裴天錫修。漢陽府志五十卷。陶士偰修。安陸府志三十六卷。張尊德修。襄陽府志四十卷。陳諤修。鄖陽府志十卷。王正常修。鄖陽府志三十八卷。楊廷耀修。德安府志二十四卷。傅鶴祥修。黃州府志二十卷。王勍修。荊州府志五十八卷。施廷樞修。宜昌府志十六卷。聶光鑾修。施南府志三十卷。松林修。長沙府志五十卷。呂肅高修。岳州府志三十卷。黃凝道修。寶慶府志一百五十七卷。黃宅中修。衡州府志三十二卷。饒佺修。常德府志四十八卷。應光烈撰。",
+      "work_id": "d59f2ntu0veq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "辰州府志",
+      "content": "辰州府志十一卷。畢本烈修。沅州府志四十卷。張官五修。永州府志十八卷。宗績辰撰。",
+      "work_id": "d59f2ndo6iv4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "永順府志",
+      "content": "永順府志十二卷。張天如修。開封府志四十卷。管竭忠修。陳州府志三十卷。崔應楷修。歸德府志三十六卷。陳錫輅修。彰州府志三十二卷。湯康業修。衛輝府志五十五卷。德昌修。懷慶府志三十二卷。杜悰修。河南府志一百十六卷。施誠修。南陽府志六卷。孔傳金修。汝寧府志三十卷。德昌修。濟南府志七十二卷。王贈芳修。泰安府志三十二卷。成城修。武定府志三十八卷。李熙齡修。兗州府志三十二卷。陳顧修。沂州府志二十三卷。李希賢修。曹州府志二十二卷。周尚質修。東昌府志五十卷。白嵩修。青州府志六十四卷。毛永相修。登州府志六十九卷。賈瑚修。萊州府志十六卷。嚴有禧修。太原府志六十卷。沈樹聲修。平陽府志三十六卷。章廷珪修。蒲州府志二十四卷。周景柱修。潞安府志四十卷。張淑渠修。汾州府志三十六卷。孫和相修，戴震撰。",
+      "work_id": "d59f2ndo6iv5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "澤州府志",
+      "content": "澤州府志五十二卷。朱樟修。大同府志三十二卷。吳輔宏修。寧武府志十二卷。周景柱修。朔平府志十二卷。劉士銘修。西安府志八十卷。嚴長明撰。",
+      "work_id": "d59f2ndo6iv6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "同州府志",
+      "content": "同州府志三十四卷。李思繼修。鳳翔府志十二卷。達靈阿修。漢中府志三十二卷。嚴如煜撰。",
+      "work_id": "d59f2ndohreo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "興安府志",
+      "content": "興安府志三十卷。葉世倬修。延安府志八十卷。張蕙修。榆林府志五十卷。李熙齡修。蘭州府志四卷。陳如稷修。西寧志七卷。蘇銳修。甘州府志十六卷。鍾賡起修。保寧府志六十二卷。史觀修。重慶府志九卷。王夢庚修。夔州府志三十六卷。恩成修。雅州府志二十卷。陳鈞修。廣州府志六十卷。沈廷芳修。肇慶府志二十一卷。何夢瑤撰。",
+      "work_id": "d59f2ndohrep"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "韶州府志",
+      "content": "韶州府志十六卷。唐宗堯修。惠州府志二十卷。呂應奎修。惠州府志四十五卷。劉溎年修。潮州府志四十二卷，廉州府志二十卷。周碩勛修。高州府志十六卷。黃安濤撰。",
+      "work_id": "d59f2ntuc3y8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廉州府志",
+      "content": "",
+      "content_from": "韶州府志",
+      "work_id": "d59f2ndoszy8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雷州府志",
+      "content": "雷州府志二十卷。雷學海修。瓊州府志四十四卷。張岳崧撰。",
+      "work_id": "d59f2ndoszy9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "平樂府志",
+      "content": "平樂府志四十卷。清桂修。潯州府志三十九卷。魏篤修。鎮安府志八卷。傅聚修。雲南府志三十卷。張毓修。大理府志三十卷。黃元治修。臨安府志二十卷。江濬源修。楚雄府志十卷。張嘉穎修。澂江府志十六卷。柳正芳修。廣南府志四卷。何愚修。順寧府志十卷。劉靖修。曲靖府志八卷。程封修。麗江府志二卷。萬咸燕修。永昌府志二十六卷。宣世濤修。永北府志二十八卷。陳奇典修。東川府志二十卷。方桂修。思州府志八卷。蔣深修。鎮遠府志二十卷。蔡宗建修。銅仁府志十一卷。徐誾修。黎平府志四十一卷。劉宇昌修。遵義府志四十八卷。鄭珍、莫友芝同撰。",
+      "work_id": "d59f2ndoszya"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遵化直隸州志",
+      "content": "遵化直隸州志十二卷。劉靖修。易州直隸州志十八卷。張登高修。冀州直隸州志二十卷。范清曠修。趙州直隸州志十卷。祝萬祉修。深州直隸州風土記二十二卷。吳汝綸撰。",
+      "work_id": "d59f2ndp48hs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "定州直隸州志",
+      "content": "定州直隸州志四卷。王榕吉修。口北三廳志十八卷。黃可潤修。川沙廳志十四卷。俞樾撰。",
+      "work_id": "d59f2ndp48ht"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海州直隸州志",
+      "content": "海州直隸州志三十二卷。唐仲冕撰。",
+      "work_id": "d59f2ndp48hu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "通州直隸州志",
+      "content": "通州直隸州志十五卷。王宜亨修。廣德直隸州志五十卷。周廣業修。滁州直隸州志三十卷。敦泰修。和州直隸州志二十四卷。夏煒修。六安直隸州志五十卷。周廣業修。泗州直隸州志十八卷。莫之幹修。蓮花廳志十卷。李其昌修。寧州直隸州志三十二卷。劉丙修。定南廳志八卷。賴勛修。定海直隸廳志三十卷。陳重威、黃以周同撰。",
+      "work_id": "d59f2ndpfh1c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "玉環廳志",
+      "content": "玉環廳志四卷。張坦龍修。玉環廳志十五卷。呂鴻燾修。廈門廳志十六卷。周凱修。永春直隸州志十六卷，龍岩直隸州志十六卷。鄭一崧修。噶嗎蘭廳志八卷。董正官修。淡水廳志十五卷。陳培桂修。荊門直隸州志十二卷。黃昌輔修。鶴峰直隸廳志十四卷。吉鍾穎修。澧州直隸州志二十八卷。魏式曾修。桂陽直隸州志二十七卷。陳延棨修。鳳皇直隸廳志二十卷。黃應培修。永綏直隸廳志十八卷。周玉衡修。乾州直隸廳志十六卷。趙文在修。晃州直隸廳志四十四卷。俞光振修。靖州直隸州志十二卷。汪尚文修。郴州直隸州志四十三卷。朱偓修。鄭州直隸州志十二卷。張鉞修。許州直隸州志十六卷。段汝舟修。陝州直隸州志二十卷。龔崧林修。淅川直隸廳志九卷。徐光第修。汝州直隸州志十卷。錢福昌修。濟寧直隸州志三十四卷。周永年、盛百二同撰。",
+      "work_id": "d59f2ndpfh1d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "龍岩直隸州志",
+      "content": "",
+      "content_from": "玉環廳志",
+      "work_id": "d59f2ndpqpkw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "臨清直隸州志",
+      "content": "臨清直隸州志十一卷。朱度修。膠州直隸州志八卷。於智修。平定直隸州志十卷。金明源修。忻州直隸州志四十二卷。方戊昌修。代州直隸州志六卷。吳重光修。保德直隸州志十二卷。王秉韜修。霍州直隸州志二十五卷。崔允臨修。解州直隸州志十八卷。言如泗修。絳州直隸州志二十卷。張成德修。沁州直隸州志十卷。雷暢修。商州直隸州志十四卷。王如玖修。潼關廳志九卷。楊端本修。定遠廳志二十六卷。余修鳳修。留壩廳志十卷。賀仲瑊修。漢陰廳志十卷。錢鶴年修。鄜州直隸州志十卷。吳鳴捷修。涇州直隸州志二卷。張延福修。階州直隸州志二卷。林忠修。秦州直隸州志十二卷。任其昌修。肅州直隸州志不分卷。黃文煒修。循化廳志八卷。龔景瀚撰。",
+      "work_id": "d59f2ndpqpkx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "資州直隸州志",
+      "content": "資州直隸州志三十卷。劉蜅修。綿州直隸州志五十四卷。范紹泗修。茂州直隸州志四卷。楊迦懌修。馬邊廳志六卷。周斯才修。敘永直隸廳志四十六卷。周偉業修。江北廳志八卷。宋煊修。酉陽直隸州志二十四卷。馮世瀛修。忠州直隸州志八卷。呂鋧麟撰。",
+      "work_id": "d59f2ndpqpky"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "石砫直隸廳志",
+      "content": "石砫直隸廳志十二卷。王槐齡修。眉州直隸州志十九卷。徐長發修。眉州直隸州志四十六卷。吳鞏修。連州直隸州志十二卷。單興詩修。連山直隸廳志一卷。姚柬之修。南雄直隸州志三十四卷。黃其勤修。嘉應直隸州志十二卷。王之正修。欽州直隸州志十二卷。朱椿年修。陽江直隸州志八卷。胡璟修。崖州直隸州志十卷。宋錦修。景東直隸廳志二十八卷。羅含章修。廣西府志二十六卷。周埰修。元江直隸州志四卷。廣裕修。蒙化直隸廳志六卷。徐時行修。永北府志二十八卷。陳奇典修。鎮邊撫彝直隸廳志八卷。謝體仁修。永清縣志二十四卷。章學誠撰。",
+      "work_id": "d59f2ndq1y4g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遷安府志",
+      "content": "遷安府志二十卷，撫寧縣志十二卷。史夢蘭撰。",
+      "work_id": "d59f2ndq1y4h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "撫寧縣志",
+      "content": "",
+      "content_from": "遷安府志",
+      "work_id": "d59f2ndqd6o0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "靈壽縣志",
+      "content": "靈壽縣志十卷。陸隴其撰。",
+      "work_id": "d59f2ndqd6o1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "上元江寧縣志",
+      "content": "上元江寧縣志三十卷。莫友芝、甘紹盤同撰。",
+      "work_id": "d59f2ndqd6o2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "高淳縣志",
+      "content": "高淳縣志二十八卷。張裕釗撰。",
+      "work_id": "d59f2ndqof7k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吳江縣志",
+      "content": "吳江縣志四十六卷。郭琇撰。",
+      "work_id": "d59f2ndqof7l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黎里志",
+      "content": "黎里志十六卷。徐達源撰。",
+      "work_id": "d59f2ndqof7m"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "崇明縣志",
+      "content": "崇明縣志十八卷。李聯琇撰。",
+      "work_id": "d59f2ndqznr4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "華亭縣志",
+      "content": "華亭縣志二十四卷。姚光發、張文虎撰。",
+      "work_id": "d59f2ndqznr5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "婁縣志",
+      "content": "婁縣志三十卷。陸錫熊撰。",
+      "work_id": "d59f2ndrawao"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "上海縣志",
+      "content": "上海縣志二十卷。李林松撰。",
+      "work_id": "d59f2ndrawap"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南匯縣志",
+      "content": "南匯縣志二十二卷。張文虎撰。",
+      "work_id": "d59f2ndrawaq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "青浦縣志",
+      "content": "青浦縣志四十卷。王昶撰。",
+      "work_id": "d59f2ndrm4u8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武進陽湖縣志",
+      "content": "武進陽湖縣志三十卷。湯成烈撰。",
+      "work_id": "d59f2ndrm4u9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "無錫金匱縣志",
+      "content": "無錫金匱縣志四十卷。秦緗業撰。",
+      "work_id": "d59f2ndrxdds"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宜興荊溪縣志",
+      "content": "宜興荊溪縣志十卷。吳德旋撰。",
+      "work_id": "d59f2ndrxddt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "荊溪縣志",
+      "content": "荊溪縣志四卷。唐仲冕撰。",
+      "work_id": "d59f2ndrxddu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "丹徒縣志",
+      "content": "丹徒縣志六十卷。呂耀斗撰。",
+      "work_id": "d59f2nds8lxc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "寶應圖經",
+      "content": "寶應圖經六卷。劉寶楠撰。",
+      "work_id": "d59f2nds8lxd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "邳州志",
+      "content": "邳州志二十卷，清河縣志二十四卷。魯一同撰。",
+      "work_id": "d59f2ndsjugw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "清河縣志",
+      "content": "",
+      "content_from": "邳州志",
+      "work_id": "d59f2ndsjugx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "山陽縣志",
+      "content": "山陽縣志二十一卷。何紹基、丁晏同撰。",
+      "work_id": "d59f2ndsjugy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "合肥縣志",
+      "content": "合肥縣志三十六卷。左輔撰。",
+      "work_id": "d59f2ndsv30g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鳳台縣志",
+      "content": "鳳台縣志十二卷。李兆洛撰。",
+      "work_id": "d59f2ndsv30h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "弋陽縣志",
+      "content": "弋陽縣志十四卷，宜春縣志十五卷，分宜縣志十五卷，萬載縣志十八卷。陳喬樅撰。",
+      "work_id": "d59f2ndt6bk0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宜春縣志",
+      "content": "",
+      "content_from": "弋陽縣志",
+      "work_id": "d59f2ndt6bk1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "分宜縣志",
+      "content": "",
+      "content_from": "弋陽縣志",
+      "work_id": "d59f2ndt6bk2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬載縣志",
+      "content": "",
+      "content_from": "弋陽縣志",
+      "work_id": "d59f2ndthk3k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海昌備志",
+      "content": "海昌備志十六卷。錢泰吉撰。",
+      "work_id": "d59f2ndthk3l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海鹽縣續圖經",
+      "content": "海鹽縣續圖經七卷。王為珪撰。",
+      "work_id": "d59f2n6xbw8y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南潯鎮志",
+      "content": "南潯鎮志四十一卷。汪曰楨撰。",
+      "work_id": "d59f2ndtssn4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黃岩縣志",
+      "content": "黃岩縣志四十卷。王詠霓撰。",
+      "work_id": "d59f2ndtssn5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "羅源縣志",
+      "content": "羅源縣志三十卷。林春溥撰。",
+      "work_id": "d59f2ndtssn6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "台灣縣志",
+      "content": "台灣縣志十七卷。王禮撰。",
+      "work_id": "d59f2ndu416o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黃岡縣志",
+      "content": "黃岡縣志二十四卷。劉恭冕撰。",
+      "work_id": "d59f2ndu416p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "麻城縣志",
+      "content": "麻城縣志五十六卷。潘頤福撰。",
+      "work_id": "d59f2ndu416q"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東湖縣志",
+      "content": "東湖縣志三十卷。王柏心撰。",
+      "work_id": "d59f2nduf9q8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "湘陰縣志",
+      "content": "湘陰縣志三十六卷。郭嵩燾撰。",
+      "work_id": "d59f2nduf9q9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武陵縣志",
+      "content": "武陵縣志三十一卷。楊丕復、楊彝珍同撰。",
+      "work_id": "d59f2nduqi9s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "龍陽縣志",
+      "content": "龍陽縣志三十一卷。黃教鎔撰。",
+      "work_id": "d59f2nduqi9t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "杞紀",
+      "content": "杞紀二十二卷。張楨撰。",
+      "work_id": "d59f2mdk34e8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "孟縣志",
+      "content": "孟縣志十卷。馮敏昌撰。",
+      "work_id": "d59f2nduqi9u"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "偃師縣志",
+      "content": "偃師縣志三十卷。孫星衍撰。",
+      "work_id": "d59f2ndv1qtc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "登封縣志",
+      "content": "登封縣志二十八卷。洪亮吉撰。",
+      "work_id": "d59f2ntuc3y9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "新城縣志",
+      "content": "新城縣志十四卷。王士禛撰。",
+      "work_id": "d59f2ndv1qtd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "曲阜縣志",
+      "content": "曲阜縣志二十六卷。孔毓琚撰。",
+      "work_id": "d59f2ndv1qte"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "聊城縣志",
+      "content": "聊城縣志四卷。傅以漸撰。",
+      "work_id": "d59f2ndvczcw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "靈石縣志",
+      "content": "靈石縣志十二卷。王志瀜撰。",
+      "work_id": "d59f2ndvczcx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "澄城縣志",
+      "content": "澄城縣志二十一卷。洪亮吉、孫星衍同撰。",
+      "work_id": "d59f2ndvo7wg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武威縣志",
+      "content": "武威縣志一卷，鎮番縣志一卷，永昌縣志一卷，古浪縣志一卷，平番縣志一卷。張弨美撰。",
+      "work_id": "d59f2ndvo7wh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鎮番縣志",
+      "content": "",
+      "content_from": "武威縣志",
+      "work_id": "d59f2ndvo7wi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "永昌縣志",
+      "content": "",
+      "content_from": "武威縣志",
+      "work_id": "d59f2ndvzgg0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "古浪縣志",
+      "content": "",
+      "content_from": "武威縣志",
+      "work_id": "d59f2ndvzgg1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "平番縣志",
+      "content": "",
+      "content_from": "武威縣志",
+      "work_id": "d59f2ndwaozk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "什邡縣志",
+      "content": "什邡縣志五十四卷。紀大奎撰。",
+      "work_id": "d59f2ndwaozl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "羅江縣志",
+      "content": "羅江縣志十卷。李調元撰。",
+      "work_id": "d59f2ndwaozm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遂寧縣志",
+      "content": "遂寧縣志六卷。張鵬翮撰。",
+      "work_id": "d59f2ndwlxj4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "新會縣志",
+      "content": "新會縣志十四卷。黃培芳、曾釗同撰。",
+      "work_id": "d59f2ndwlxj5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "師宗州志",
+      "content": "師宗州志二卷。夏治元撰。",
+      "work_id": "d59f2ntunchs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "彌勒州志",
+      "content": "彌勒州志二十七卷。王緯撰。",
+      "work_id": "d59f2ndwlxj6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "祿勸州志",
+      "content": "祿勸州志二卷。李廷宰撰。",
+      "work_id": "d59f2ndwx62o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "永寧州志",
+      "content": "永寧州志十二卷。沈毓蘭撰。",
+      "work_id": "d59f2ndwx62p"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "山川河渠之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "盤山志",
+      "content": "盤山志二十一卷。乾隆十九年，蔣溥等奉敕撰。",
+      "work_id": "d59f2mdegum9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "清涼山新志",
+      "content": "清涼山新志十卷。康熙間敕撰。",
+      "work_id": "d59f2ndx8em8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬山綱目",
+      "content": "萬山綱目二十一卷。李誠撰。",
+      "work_id": "d59f2ndx8em9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "長白山錄",
+      "content": "長白山錄一卷，補遺一卷。王士禛撰。",
+      "work_id": "d59f2mdstrls"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬歲山考證",
+      "content": "萬歲山考證一卷，昌平山水記二卷，岱嶽記一卷。顧炎武撰。",
+      "work_id": "d59f2ndx8ema"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "昌平山水記",
+      "content": "",
+      "content_from": "萬歲山考證",
+      "work_id": "d59f2mdrktfk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "岱嶽記",
+      "content": "",
+      "content_from": "萬歲山考證",
+      "work_id": "d59f2ndxjn5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "泰山志",
+      "content": "泰山志二十卷。金棨撰。",
+      "work_id": "d59f2n5tor9d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "泰山道里記",
+      "content": "泰山道里記一卷。聶鈫撰。",
+      "work_id": "d59f2mdz2igw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "岱覽",
+      "content": "岱覽三十二卷。唐仲冕撰。",
+      "work_id": "d59f2ndxjn5t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "泰山述記",
+      "content": "泰山述記十卷。宋思仁撰。",
+      "work_id": "d59f2ndxjn5u"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "說嵩",
+      "content": "說嵩三十二卷，嵩岳廟史十卷。景日撰。",
+      "work_id": "d59f2mdvmwhs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "嵩岳廟史",
+      "content": "",
+      "content_from": "說嵩",
+      "work_id": "d59f2mdvmwht"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南嶽志",
+      "content": "南嶽志八卷。高自位撰。",
+      "work_id": "d59f2ndxuvpc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "嶽麓志",
+      "content": "嶽麓志八卷。趙寧撰。",
+      "work_id": "d59f2mdvbny8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "華岳志",
+      "content": "華岳志八卷。李榕撰。",
+      "work_id": "d59f2ndxuvpd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "恆岳志",
+      "content": "恆岳志三卷。張崇德撰。",
+      "work_id": "d59f2mdt505c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "恆山志",
+      "content": "恆山志五卷。桂敬順撰。",
+      "work_id": "d59f2n5tzzsy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "攝山志",
+      "content": "攝山志八卷。陳毅撰。",
+      "work_id": "d59f2ndy648w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "寶華山志",
+      "content": "寶華山志十五卷。劉名芳撰。",
+      "work_id": "d59f2ntuncht"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "茅山志",
+      "content": "茅山志十四卷。笪重光撰。",
+      "work_id": "d59f2ntuyl1c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北固山志",
+      "content": "北固山志二卷。釋了璞撰。",
+      "work_id": "d59f2ndy648x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "金山志略",
+      "content": "金山志略四卷。釋行海撰。",
+      "work_id": "d59f2ndy648y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "焦山志",
+      "content": "焦山志二十六卷。吳雲撰。",
+      "work_id": "d59f2ndyhcsg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "虎丘山志",
+      "content": "虎丘山志二十四卷。顧詒祿撰。",
+      "work_id": "d59f2ndyhcsh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "慧山記續編",
+      "content": "慧山記續編四卷。邵涵初撰。",
+      "work_id": "d59f2ndyslc0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黃山志",
+      "content": "黃山志七卷。閔麟嗣撰。",
+      "work_id": "d59f2mdrw1z4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "九華紀勝",
+      "content": "九華紀勝二十三卷，齊山岩洞志二十六卷。陳蔚撰。",
+      "work_id": "d59f2ndyslc1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "齊山岩洞志",
+      "content": "",
+      "content_from": "九華紀勝",
+      "work_id": "d59f2ndyslc2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廬山小志",
+      "content": "廬山小志二十四卷。蔡瀛撰。",
+      "work_id": "d59f2ndz3tvk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "青源山志略",
+      "content": "青源山志略十三卷。施潤章撰。",
+      "work_id": "d59f2ndz3tvl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "四明山志",
+      "content": "四明山志九卷。黃宗羲撰。",
+      "work_id": "d59f2mdudybk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "普陀山志",
+      "content": "普陀山志十五卷。朱謹、陳璿同撰。",
+      "work_id": "d59f2mdvy51c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西天目祖山志",
+      "content": "西天目祖山志八卷。釋廣賓撰。",
+      "work_id": "d59f2ndzf2f4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "天台山全志",
+      "content": "天台山全志十六卷。張聯元撰。",
+      "work_id": "d59f2nfd1wqp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廣雁盪山志",
+      "content": "廣雁盪山志三十卷。曾唯撰。",
+      "work_id": "d59f2ndwm1oi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "天竺山志",
+      "content": "天竺山志十二卷。管廷芳撰。",
+      "work_id": "d59f2ndzf2f5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武夷山新志",
+      "content": "武夷山新志二十四卷。董天工撰。",
+      "work_id": "d59f2ndzf2f6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "麻姑山丹霞洞天志",
+      "content": "麻姑山丹霞洞天志十七卷。羅森撰。",
+      "work_id": "d59f2mdrw1z5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鼓山志",
+      "content": "鼓山志十二卷。僧元賢撰。",
+      "work_id": "d59f2mwozv9d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大別山志",
+      "content": "大別山志十卷，黃鵠山志十二卷。胡鳳丹撰。",
+      "work_id": "d59f2ndzqayo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黃鵠山志",
+      "content": "",
+      "content_from": "大別山志",
+      "work_id": "d59f2ndzqayp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蓮峰志",
+      "content": "蓮峰志五卷。王夫之撰。",
+      "work_id": "d59f2ne01ji8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "洛陽龍門志",
+      "content": "洛陽龍門志一卷。路朝霖撰。",
+      "work_id": "d59f2ne01ji9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "太岳太和山紀略",
+      "content": "太岳太和山紀略八卷。王概撰。",
+      "work_id": "d59f2mdy4su9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "瓘眉山志",
+      "content": "瓘眉山志十八卷。蔣超撰。",
+      "work_id": "d59f2ne01jia"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "羅浮山志會編",
+      "content": "羅浮山志會編二十二卷。宋廣業撰。",
+      "work_id": "d59f2mdx737k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西樵志",
+      "content": "西樵志六卷。馬符籙撰。",
+      "work_id": "d59f2mdxibr5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "桂郁岩洞志",
+      "content": "桂郁岩洞志一卷。賈敦臨撰。",
+      "work_id": "d59f2ne0cs1s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雞足山志",
+      "content": "雞足山志十卷。范承勛撰。",
+      "work_id": "d59f2mwozv9e"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注集釋訂譌",
+      "content": "水經注集釋訂譌四十卷。沈炳巽撰。",
+      "work_id": "d59f2ne0cs1t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注釋",
+      "content": "水經注釋四十卷，刊誤十二卷，附錄一卷。趙一清撰。",
+      "work_id": "d59f2mdclfcx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "刊誤",
+      "content": "",
+      "content_from": "水經注釋",
+      "work_id": "d59f2ntuyl1d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注校",
+      "content": "水經注校三十卷，水地記一卷。戴震撰。",
+      "work_id": "d59f2ne0o0lc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水地記",
+      "content": "",
+      "content_from": "水經注校",
+      "work_id": "d59f2ne0o0ld"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注校正",
+      "content": "水經注校正四十卷，補遺一卷，附錄一卷。全祖望撰。",
+      "work_id": "d59f2ne0o0le"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注釋地",
+      "content": "水經注釋地四十卷，水道直指一卷，補遺一卷。張匡學撰。",
+      "work_id": "d59f2ne0z94w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水道直指",
+      "content": "",
+      "content_from": "水經注釋地",
+      "work_id": "d59f2ne0z94x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經釋地",
+      "content": "水經釋地八卷。孔繼涵撰。",
+      "work_id": "d59f2ne1ahog"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經註疏證",
+      "content": "水經註疏證四十卷。沈欽韓撰。",
+      "work_id": "d59f2ne1ahoh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注圖說殘稿",
+      "content": "水經注圖說殘稿四卷。董祐誠撰。",
+      "work_id": "d59f2ne1ahoi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注西南諸水考",
+      "content": "水經注西南諸水考三卷。陳澧撰。",
+      "work_id": "d59f2ne1lq80"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注洛涇二水補",
+      "content": "水經注洛涇二水補一卷。謝鍾英撰。",
+      "work_id": "d59f2ne1lq81"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水經注圖",
+      "content": "水經注圖二卷。汪士鐸撰。",
+      "work_id": "d59f2ne1lq82"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "合校水經注",
+      "content": "合校水經注四十卷，附錄二卷。王先謙撰。",
+      "work_id": "d59f2ne1wyrk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "河源紀略",
+      "content": "河源紀略三十六卷。乾隆四十七年，紀昀、陸錫熊等奉敕撰。",
+      "work_id": "d59f2ntv9tkw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "今水經",
+      "content": "今水經一卷。黃宗羲撰。",
+      "work_id": "d59f2n1pq9s0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水道提綱",
+      "content": "水道提綱二十八卷。齊召南撰。",
+      "work_id": "d59f2mde5m2o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江源記",
+      "content": "江源記一卷。查拉吳麟撰。",
+      "work_id": "d59f2ne1wyrl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "導江三議",
+      "content": "導江三議一卷。王柏心撰。",
+      "work_id": "d59f2ne287b4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "長江圖說",
+      "content": "長江圖說十二卷。黃翼升撰。",
+      "work_id": "d59f2ne287b5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮流一勺",
+      "content": "淮流一勺二卷。范以煦撰。",
+      "work_id": "d59f2ne287b6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "崑崙河源考",
+      "content": "崑崙河源考一卷。萬斯同撰。",
+      "work_id": "d59f2ne2jfuo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黃河全圖",
+      "content": "黃河全圖五卷。吳大澂、倪文蔚同撰。",
+      "work_id": "d59f2ne2jfup"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中國黃河經緯度圖",
+      "content": "中國黃河經緯度圖一卷。梅啟照撰。",
+      "work_id": "d59f2ne2uoe8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代黃河變遷圖考",
+      "content": "歷代黃河變遷圖考四卷。劉鶚撰。",
+      "work_id": "d59f2ne2uoe9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東西二漢水辨",
+      "content": "東西二漢水辨一卷。王士禛撰。",
+      "work_id": "d59f2ne2uoea"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "漢水發源考",
+      "content": "漢水發源考一卷。王筠撰。",
+      "work_id": "d59f2ne35wxs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "直隸河渠志",
+      "content": "直隸河渠志一卷。陳儀撰。",
+      "work_id": "d59f2mddudj4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "二渠九河圖考",
+      "content": "二渠九河圖考一卷。孫彤撰。",
+      "work_id": "d59f2ne35wxt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "永定河志",
+      "content": "永定河志三十二卷。李逢亨撰。",
+      "work_id": "d59f2ne3h5hc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西域水道記",
+      "content": "西域水道記五卷。徐松撰。",
+      "work_id": "d59f2ne3h5hd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "關中水道記",
+      "content": "關中水道記一卷。孫彤撰。",
+      "work_id": "d59f2ne3h5he"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蜀水考",
+      "content": "蜀水考四卷。陳登龍撰。",
+      "work_id": "d59f2ne3se0w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "汴水說",
+      "content": "汴水說一卷。朱際虞撰。",
+      "work_id": "d59f2ne3se0x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "漳水圖經",
+      "content": "漳水圖經一卷。姚柬之撰。",
+      "work_id": "d59f2ne3se0y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "山東全河備考",
+      "content": "山東全河備考四卷。葉方恆撰。",
+      "work_id": "d59f2mwoompt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "山東運河備覽",
+      "content": "山東運河備覽十二卷。陸燿撰。",
+      "work_id": "d59f2ne43mkg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "揚州水道記",
+      "content": "揚州水道記四卷。劉文淇撰。",
+      "work_id": "d59f2ne43mkh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "太湖備考",
+      "content": "太湖備考十六卷。金友理撰。",
+      "work_id": "d59f2mdpe5mo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "新劉河志",
+      "content": "新劉河志一卷，婁江志一卷。顧士槤撰。",
+      "work_id": "d59f2mdniqdc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "婁江志",
+      "content": "",
+      "content_from": "新劉河志",
+      "work_id": "d59f2moui3nm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "章水經流考",
+      "content": "章水經流考一卷。朱際虞撰。",
+      "work_id": "d59f2ne4ev40"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浙江圖考",
+      "content": "浙江圖考三卷。阮元撰。",
+      "work_id": "d59f2ne4ev41"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "洞庭湖志",
+      "content": "洞庭湖志十四卷。萬年淳撰。",
+      "work_id": "d59f2ne4ev42"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩河清匯",
+      "content": "兩河清匯八卷。薛鳳祚撰。",
+      "work_id": "d59f2mdd7wg0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "河紀",
+      "content": "河紀二卷。孫承澤撰。",
+      "work_id": "d59f2mdml0qp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "居濟一得",
+      "content": "居濟一得八卷。張伯行撰。",
+      "work_id": "d59f2mdd7wg1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "治河奏績書",
+      "content": "治河奏績書四卷。靳輔撰。",
+      "work_id": "d59f2mddj4zk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔水利輯覽",
+      "content": "畿輔水利輯覽一卷，水利營田圖說一卷，畿輔河道管見一卷，水利私議一卷。吳邦慶撰。",
+      "work_id": "d59f2ne4q3nk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水利營田圖說",
+      "content": "",
+      "content_from": "畿輔水利輯覽",
+      "work_id": "d59f2ne4q3nl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔河道管見",
+      "content": "",
+      "content_from": "畿輔水利輯覽",
+      "work_id": "d59f2ne51c74"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "水利私議",
+      "content": "",
+      "content_from": "畿輔水利輯覽",
+      "work_id": "d59f2ne51c75"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "河防芻議",
+      "content": "河防芻議六卷。崔維雅撰。",
+      "work_id": "d59f2mdn7htt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔水利四案",
+      "content": "畿輔水利四案四卷，附錄一卷。潘錫恩撰。",
+      "work_id": "d59f2ne51c76"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔安瀾志",
+      "content": "畿輔安瀾志十卷。王履泰撰。",
+      "work_id": "d59f2ne5ckqo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔水利議",
+      "content": "畿輔水利議一卷。林則徐撰。",
+      "work_id": "d59f2ne5ckqp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北河續記",
+      "content": "北河續記八卷。閻廷謨撰。",
+      "work_id": "d59f2mdn7hts"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "行水金鑒",
+      "content": "行水金鑒一百七十五卷。傅澤洪撰。",
+      "work_id": "d59f2mddudj5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續行水金鑒",
+      "content": "續行水金鑒一百五十六卷。黎世垿撰。",
+      "work_id": "d59f2ne5nta8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "五省溝洫圖說",
+      "content": "五省溝洫圖說一卷。沈夢蘭撰。",
+      "work_id": "d59f2ne5nta9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西北水利議",
+      "content": "西北水利議一卷。許承宣撰。",
+      "work_id": "d59f2ne5ntaa"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東南水利",
+      "content": "東南水利八卷。沈愷曾撰。",
+      "work_id": "d59f2mdorojl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "明江南治水記",
+      "content": "明江南治水記一卷。陳士礦撰。",
+      "work_id": "d59f2mdogg00"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三吳水利條議",
+      "content": "三吳水利條議一卷。錢中諧撰。",
+      "work_id": "d59f2ne5z1ts"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江蘇水利圖說",
+      "content": "江蘇水利圖說二十一卷。陶澍撰。",
+      "work_id": "d59f2ne5z1tt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江蘇水利全案正編",
+      "content": "江蘇水利全案正編四十卷，附編十二卷。李慶雲撰。",
+      "work_id": "d59f2ne6aadc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浙西水利備考",
+      "content": "浙西水利備考八卷。王鳳生撰。",
+      "work_id": "d59f2ne6aadd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西湖水利考",
+      "content": "西湖水利考一卷。吳農祥撰。",
+      "work_id": "d59f2ne6aade"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蕭山水利書",
+      "content": "蕭山水利書七卷。來鴻雯、張文瑞、張學懋同撰。",
+      "work_id": "d59f2ne6liww"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "湘湖水利志",
+      "content": "湘湖水利志三卷。毛奇齡撰。",
+      "work_id": "d59f2mdorojk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海塘新志",
+      "content": "海塘新志六卷，兩浙海塘通志二十卷。方觀承撰。",
+      "work_id": "d59f2ne6liwx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩浙海塘通志",
+      "content": "",
+      "content_from": "海塘新志",
+      "work_id": "d59f2ne6liwy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海塘攬要",
+      "content": "海塘攬要十二卷。楊鑅撰。",
+      "work_id": "d59f2ne6wrgg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "捍海塘志",
+      "content": "捍海塘志一卷。錢文瀚撰。",
+      "work_id": "d59f2ne6wrgh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海塘錄",
+      "content": "海塘錄二十六卷。翟均廉撰。",
+      "work_id": "d59f2mdegum8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海道圖說",
+      "content": "海道圖說十五卷。金約撰。",
+      "work_id": "d59f2ne78000"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "什河防通議",
+      "content": "元沙克什河防通議二卷。",
+      "work_id": "d59f2gjh2ayp",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "王喜治河圖略",
+      "content": "王喜治河圖略一卷。",
+      "work_id": "d59f2gpgg1s2",
+      "is_jiyi": true,
+      "link_basis": "原繫 1evr5e3m9dfoq，該條已併入 1ev3bari21fr4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "邊防之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西域圖志",
+      "content": "西域圖志五十二卷。乾隆二十一年，劉統勛等奉敕撰。",
+      "work_id": "d59f2ne78001"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "籓部要略",
+      "content": "籓部要略十八卷，西陲要略四卷，西域釋地一卷，西域行程記一卷，萬里行程記四卷。祁韻士撰。",
+      "work_id": "d59f2ne7j8jk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西陲要略",
+      "content": "",
+      "content_from": "籓部要略",
+      "work_id": "d59f2mpvyku9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西域釋地",
+      "content": "",
+      "content_from": "籓部要略",
+      "work_id": "d59f2ne7j8jl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西域行程記",
+      "content": "",
+      "content_from": "籓部要略",
+      "work_id": "d59f2ntv9tkx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬里行程記",
+      "content": "",
+      "content_from": "籓部要略",
+      "work_id": "d59f2ne7j8jm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蒙古游牧記",
+      "content": "蒙古游牧記十六卷。張穆撰。",
+      "work_id": "d59f2ne7uh34"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "漢西域圖考",
+      "content": "漢西域圖考七卷。李光廷撰。",
+      "work_id": "d59f2nbpmw3k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西陲總統事略",
+      "content": "西陲總統事略十二卷。松筠撰。",
+      "work_id": "d59f2ne7uh35"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西域聞見錄",
+      "content": "西域聞見錄八卷。七十一撰。",
+      "work_id": "d59f2ne85pmo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "衛藏圖志",
+      "content": "衛藏圖志五十卷。盛繩祖撰。",
+      "work_id": "d59f2ne85pmp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西藏通考",
+      "content": "西藏通考八卷。黃沛翹撰。",
+      "work_id": "d59f2ne85pmq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "康輶紀行",
+      "content": "康輶紀行十六卷。姚瑩撰。",
+      "work_id": "d59f2ne8gy68"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "金川瑣記",
+      "content": "金川瑣記六卷。李心衡撰。",
+      "work_id": "d59f2ne8gy69"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西遊記金山以東釋",
+      "content": "西遊記金山以東釋一卷。沈■J0撰。",
+      "work_id": "d59f2ne8gy6a"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "朔方備乘",
+      "content": "朔方備乘八十五卷。何秋濤撰。",
+      "work_id": "d59f2ne8s6ps"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三州輯略",
+      "content": "三州輯略九卷。和寧撰。",
+      "work_id": "d59f2mzyd3ib"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蠻司合志",
+      "content": "蠻司合志十五卷。毛奇齡撰。",
+      "work_id": "d59f2mdqn3sw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "楚南苗志",
+      "content": "楚南苗志六卷。段汝霖撰。",
+      "work_id": "d59f2meamakg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "苗防備覽",
+      "content": "苗防備覽二十二卷，三省邊防備覽十六卷。嚴如煜撰。",
+      "work_id": "d59f2ne8s6pt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三省邊防備覽",
+      "content": "",
+      "content_from": "苗防備覽",
+      "work_id": "d59f2ne93f9c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "苗蠻合志",
+      "content": "苗蠻合志二卷。曹樹翹撰。",
+      "work_id": "d59f2ne9ensw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "楚峒志略",
+      "content": "楚峒志略一卷。吳省蘭撰。",
+      "work_id": "d59f2ne9ensx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雲緬山川志",
+      "content": "雲緬山川志一卷。李榮升撰。",
+      "work_id": "d59f2ne9pwcg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "台灣紀略",
+      "content": "台灣紀略一卷。林謙光撰。",
+      "work_id": "d59f2nc58r9d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "澎湖紀略",
+      "content": "澎湖紀略十二卷。胡建偉撰。",
+      "work_id": "d59f2ne9pwch"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "澳門記略",
+      "content": "澳門記略二卷。印光任、張汝霖同撰。",
+      "work_id": "d59f2mdml0qo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海防述略",
+      "content": "海防述略一卷。杜臻撰。",
+      "work_id": "d59f2mdqbv9c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海防備覽",
+      "content": "海防備覽十卷。薛傳源撰。",
+      "work_id": "d59f2ne9pwci"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "防海輯要",
+      "content": "防海輯要十八卷，圖一卷。俞昌會撰。",
+      "work_id": "d59f2nea14w0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "洋防輯要",
+      "content": "洋防輯要二十四卷。嚴如煜撰。",
+      "work_id": "d59f2nea14w1"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "古迹之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西湖志纂",
+      "content": "西湖志纂十二卷。乾隆十六年，梁詩正奉敕撰。",
+      "work_id": "d59f2mdes35s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代帝王宅京記",
+      "content": "歷代帝王宅京記二十卷。顧炎武撰。",
+      "work_id": "d59f2mdca6td"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代陵寢備考",
+      "content": "歷代陵寢備考五十卷，宗廟附考八卷。朱孔陽撰。",
+      "work_id": "d59f2ngk4o3n"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宗廟附考",
+      "content": "",
+      "content_from": "歷代陵寢備考",
+      "work_id": "d59f2ngwax35"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "帝陵圖說",
+      "content": "帝陵圖說四卷。梁份撰。",
+      "work_id": "d59f2nea14w2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "唐兩京城坊考",
+      "content": "唐兩京城坊考五卷。徐松撰。",
+      "work_id": "d59f2neacdfk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宋東京考",
+      "content": "宋東京考二十卷。周城撰。",
+      "work_id": "d59f2me2tczk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "圓明園記",
+      "content": "圓明園記一卷。黃凱鈞撰。",
+      "work_id": "d59f2neacdfl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南宋古迹考",
+      "content": "南宋古迹考二卷。周春撰。",
+      "work_id": "d59f2neacdfm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北平古今記",
+      "content": "北平古今記十卷，建康古今記十卷，營平二州地名記一卷，山東考古錄一卷，譎觚一卷。顧炎武撰。",
+      "work_id": "d59f2neanlz4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "建康古今記",
+      "content": "",
+      "content_from": "北平古今記",
+      "work_id": "d59f2neanlz5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "營平二州地名記",
+      "content": "",
+      "content_from": "北平古今記",
+      "work_id": "d59f2mdf3bpd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "山東考古錄",
+      "content": "",
+      "content_from": "北平古今記",
+      "work_id": "d59f2me34lj4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "譎觚",
+      "content": "",
+      "content_from": "北平古今記",
+      "work_id": "d59f2me3fu2o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "關中勝跡圖志",
+      "content": "關中勝跡圖志三十二卷。畢沅撰。",
+      "work_id": "d59f2mdfpssh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江城名跡",
+      "content": "江城名跡二卷。陳宏緒撰。",
+      "work_id": "d59f2mdf3bpc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "潞城考古錄",
+      "content": "潞城考古錄二卷。劉錫信撰。",
+      "work_id": "d59f2neayuio"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩浙防護錄",
+      "content": "兩浙防護錄不分卷。阮元撰。",
+      "work_id": "d59f2neayuip"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西湖志",
+      "content": "西湖志四十六卷。傅玉露撰。",
+      "work_id": "d59f2mdy4su8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "先聖廟林記",
+      "content": "先聖廟林記一卷。屈大均撰。",
+      "work_id": "d59f2neayuiq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "闕里廣志",
+      "content": "闕里廣志二十卷。宋際、李慶長同撰。",
+      "work_id": "d59f2mcove2p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "闕里述聞",
+      "content": "闕里述聞十四卷。鄭曉如撰。",
+      "work_id": "d59f2neba328"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "倉聖廟志",
+      "content": "倉聖廟志一卷。祝炳森撰。",
+      "work_id": "d59f2neba329"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "梅里志",
+      "content": "梅里志四卷。吳存禮撰。",
+      "work_id": "d59f2mcroiyp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "伍公廟志",
+      "content": "伍公廟志六卷。金志章撰。",
+      "work_id": "d59f2neblbls"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "臥龍岡志",
+      "content": "臥龍岡志二卷。羅景星撰。",
+      "work_id": "d59f2neblblt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鸚鵡洲志",
+      "content": "鸚鵡洲志四卷。胡鳳丹撰。",
+      "work_id": "d59f2neblblu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蘭亭志",
+      "content": "蘭亭志一卷。王復禮撰。",
+      "work_id": "d59f2nebwk5c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南嶽二賢祠志",
+      "content": "南嶽二賢祠志八卷。尹繼隆撰。",
+      "work_id": "d59f2nebwk5d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "濂溪志",
+      "content": "濂溪志七卷。周誥撰。",
+      "work_id": "d59f2ntvl24g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "岳廟志略",
+      "content": "岳廟志略十卷。馮培撰。",
+      "work_id": "d59f2nec7sow"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "於忠肅公祠墓錄",
+      "content": "於忠肅公祠墓錄十二卷。丁丙撰。",
+      "work_id": "d59f2nec7sox"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "平山堂小志",
+      "content": "平山堂小志十二卷。程夢星撰。",
+      "work_id": "d59f2nec7soy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滄浪小志",
+      "content": "滄浪小志二卷。宋犖撰。",
+      "work_id": "d59f2mdzozk1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "竹垞小志",
+      "content": "竹垞小志五卷。阮元撰。",
+      "work_id": "d59f2necj18g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "白鹿書院志",
+      "content": "白鹿書院志十九卷。毛德琦撰。",
+      "work_id": "d59f2me1969t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鵝湖講舍彙編",
+      "content": "鵝湖講舍彙編十二卷。鄭之僑撰。",
+      "work_id": "d59f2necj18h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "明道書院紀績",
+      "content": "明道書院紀績四卷。章秉法撰。",
+      "work_id": "d59f2necj18i"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東林書院志",
+      "content": "東林書院志二十二卷。高(桂)、高、高廷珍、高陛、許獻同撰。",
+      "work_id": "d59f2me26vwh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "毓文書院志",
+      "content": "毓文書院志八卷。洪亮吉撰。",
+      "work_id": "d59f2necu9s0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "學海堂志",
+      "content": "學海堂志一卷。林伯桐撰。",
+      "work_id": "d59f2n6aut4w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "文瀾閣志",
+      "content": "文瀾閣志二卷。孫樹禮等撰。",
+      "work_id": "d59f2necu9s1"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "雜誌之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宸垣識略",
+      "content": "宸垣識略十六卷。吳長元撰。",
+      "work_id": "d59f2ned5ibk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "天府廣記",
+      "content": "天府廣記四十四卷。孫承澤撰。",
+      "work_id": "d59f2me3r2m8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "金鰲退食筆記",
+      "content": "金鰲退食筆記二卷，松亭行紀二卷，塞北小鈔一卷，東巡扈從日錄一卷，西巡扈從日錄二卷。高士奇撰。",
+      "work_id": "d59f2ned5ibl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "松亭行紀",
+      "content": "",
+      "content_from": "金鰲退食筆記",
+      "work_id": "d59f2nedgqv4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "塞北小鈔",
+      "content": "",
+      "content_from": "金鰲退食筆記",
+      "work_id": "d59f2md4h98h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東巡扈從日錄",
+      "content": "",
+      "content_from": "金鰲退食筆記",
+      "work_id": "d59f2nedgqv5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西巡扈從日錄",
+      "content": "",
+      "content_from": "金鰲退食筆記",
+      "work_id": "d59f2nedgqv6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "都門紀略",
+      "content": "都門紀略四卷。楊靜亭撰。",
+      "work_id": "d59f2nedrzeo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "盛京疆域考",
+      "content": "盛京疆域考六卷。楊同桂、孫宗瀚同撰。",
+      "work_id": "d59f2nedrzep"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遼載前集",
+      "content": "遼載前集二卷。林本裕撰。",
+      "work_id": "d59f2mdlc2kh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吉林外紀",
+      "content": "吉林外紀十卷。薩英額撰。",
+      "work_id": "d59f2nee37y8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黑龍江外紀",
+      "content": "黑龍江外紀四卷。西清撰。",
+      "work_id": "d59f2nee37y9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "龍江述略",
+      "content": "龍江述略六卷。徐宗亮撰。",
+      "work_id": "d59f2nee37ya"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "龍沙紀略",
+      "content": "龍沙紀略一卷。方式濟撰。",
+      "work_id": "d59f2mdgnif4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "寧古塔紀略",
+      "content": "寧古塔紀略一卷。吳桭臣撰。",
+      "work_id": "d59f2neeeghs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "柳邊紀略",
+      "content": "柳邊紀略五卷。楊賓撰。",
+      "work_id": "d59f2neeeght"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "封長白山記",
+      "content": "封長白山記一卷。方象瑛撰。",
+      "work_id": "d59f2mchdp1d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔地名考",
+      "content": "畿輔地名考三卷。王灝撰。",
+      "work_id": "d59f2neepp1c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "顏山雜記",
+      "content": "顏山雜記四卷。孫廷銓撰。",
+      "work_id": "d59f2mdg11c0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "津門雜記",
+      "content": "津門雜記三卷。張燾撰。",
+      "work_id": "d59f2n6b61oi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江南星野辨",
+      "content": "江南星野辨一卷。葉燮撰。",
+      "work_id": "d59f2me5b9c1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三吳採風類記",
+      "content": "三吳採風類記十卷。張大純撰。",
+      "work_id": "d59f2neepp1d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "百城煙水",
+      "content": "百城煙水九卷。徐崧、張大純同撰。",
+      "work_id": "d59f2mdv0feo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "白下瑣言",
+      "content": "白下瑣言十卷。甘熙撰。",
+      "work_id": "d59f2neepp1e"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "清嘉錄",
+      "content": "清嘉錄十二卷。顧祿撰。",
+      "work_id": "d59f2nef0xkw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "具區志",
+      "content": "具區志十六卷。翁澍撰。",
+      "work_id": "d59f2mdmw9a8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "林屋民風",
+      "content": "林屋民風十二卷。王維德撰。",
+      "work_id": "d59f2mdw9dkx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廣陵通典",
+      "content": "廣陵通典三十卷。汪中撰。",
+      "work_id": "d59f2nef0xkx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廣陵事略",
+      "content": "廣陵事略七卷。姚文田撰。",
+      "work_id": "d59f2nefc64g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "揚州畫舫錄",
+      "content": "揚州畫舫錄十八卷。李斗撰。",
+      "work_id": "d59f2nefc64h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "邗記",
+      "content": "邗記六卷，北湖小志五卷。焦循撰。",
+      "work_id": "d59f2nefc64i"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北湖小志",
+      "content": "",
+      "content_from": "邗記",
+      "work_id": "d59f2nefneo0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮壖小記",
+      "content": "淮壖小記六卷。范以煦撰。",
+      "work_id": "d59f2nefneo1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "桃溪客語",
+      "content": "桃溪客語五卷。吳騫撰。",
+      "work_id": "d59f2nefyn7k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "太倉風俗記",
+      "content": "太倉風俗記一卷。程穆衡撰。",
+      "work_id": "d59f2nefyn7l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雲間第宅志",
+      "content": "雲間第宅志一卷。王澐撰。",
+      "work_id": "d59f2nefyn7m"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皖省志略",
+      "content": "皖省志略四卷。朱雲錦撰。",
+      "work_id": "d59f2neg9vr4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皖游紀略",
+      "content": "皖游紀略二卷。陳克劬撰。",
+      "work_id": "d59f2neg9vr5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "姑孰備考",
+      "content": "姑孰備考八卷。夏之符撰。",
+      "work_id": "d59f2me500sg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "杏花村志",
+      "content": "杏花村志十二卷。郎遂撰。",
+      "work_id": "d59f2me0083k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "二樓小志",
+      "content": "二樓小志四卷。程元愈撰，汪越、沈廷璐補。潯陽蹠醢六卷。文行遠撰。",
+      "work_id": "d59f2ntvl24h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "潯陽蹠醢",
+      "content": "",
+      "content_from": "二樓小志",
+      "work_id": "d59f2me68yyp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東鄉風土記",
+      "content": "東鄉風土記一卷，鵝湖書田志四卷。吳嵩梁撰。",
+      "work_id": "d59f2negl4ao"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鵝湖書田志",
+      "content": "",
+      "content_from": "東鄉風土記",
+      "work_id": "d59f2negl4ap"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浙江通志圖說",
+      "content": "浙江通志圖說一卷。沈德潛撰。",
+      "work_id": "d59f2negl4aq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "杭志三詰三誤辨",
+      "content": "杭志三詰三誤辨一卷。毛奇齡撰。",
+      "work_id": "d59f2mdk34e9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武林志餘",
+      "content": "武林志餘三十二卷。張暘撰。",
+      "work_id": "d59f2me26vwg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西湖夢尋",
+      "content": "西湖夢尋五卷。張岱撰。",
+      "work_id": "d59f2mdudybl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西湖覽勝志",
+      "content": "西湖覽勝志十四卷。夏基撰。",
+      "work_id": "d59f2mdzdr0g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "增修雲林寺志",
+      "content": "增修雲林寺志八卷。厲鶚撰。",
+      "work_id": "d59f2me2i4g0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武林第宅考",
+      "content": "武林第宅考一卷。柯汝霖撰。",
+      "work_id": "d59f2negwcu8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東城雜記",
+      "content": "東城雜記四卷。厲鶚撰。",
+      "work_id": "d59f2mdgnif5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北隅掌錄",
+      "content": "北隅掌錄二卷。黃士珣撰。",
+      "work_id": "d59f2negwcu9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "清波小志",
+      "content": "清波小志二卷。徐逢吉撰。",
+      "work_id": "d59f2negwcua"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南湖紀略藁",
+      "content": "南湖紀略藁六卷。邱峻撰。",
+      "work_id": "d59f2neh7lds"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "龍井見聞錄",
+      "content": "龍井見聞錄六卷。汪志鋗撰。",
+      "work_id": "d59f2neh7ldt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "定鄉小志",
+      "content": "定鄉小志十六卷。張道撰。",
+      "work_id": "d59f2nehitxc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "湖壖雜記",
+      "content": "湖壖雜記一卷，北墅瑣言一卷。陸次雲撰。",
+      "work_id": "d59f2me4os8x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北墅瑣言",
+      "content": "",
+      "content_from": "湖壖雜記",
+      "work_id": "d59f2nehitxd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "唐棲景物略",
+      "content": "唐棲景物略二卷。張半菴撰。",
+      "work_id": "d59f2nehitxe"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "乍浦九山補志",
+      "content": "乍浦九山補志十二卷。李確撰。",
+      "work_id": "d59f2mdr9kw1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "峽石山水志",
+      "content": "峽石山水志一卷。蔣宏任撰。",
+      "work_id": "d59f2mdyg1ds"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "濮川所聞錄",
+      "content": "濮川所聞錄六卷。金淮、濮璜同撰。",
+      "work_id": "d59f2nehu2gw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海昌外志",
+      "content": "海昌外志不分卷。談遷撰。",
+      "work_id": "d59f2mdj5erk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "石柱記箋釋",
+      "content": "石柱記箋釋五卷。鄭元慶撰。",
+      "work_id": "d59f2mdfpssg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "四明談助",
+      "content": "四明談助十六卷。徐兆昺撰。",
+      "work_id": "d59f2nehu2gx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "越中觀感錄",
+      "content": "越中觀感錄一卷。陳錦撰。",
+      "work_id": "d59f2nei5b0g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蕭山縣志刊誤",
+      "content": "蕭山縣志刊誤三卷。毛奇齡撰。",
+      "work_id": "d59f2mdkecxs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "偁陽雜錄",
+      "content": "偁陽雜錄一卷。章大來撰。",
+      "work_id": "d59f2nei5b0h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "甌江逸志",
+      "content": "甌江逸志一卷。勞大與撰。",
+      "work_id": "d59f2me42b5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江心志",
+      "content": "江心志十二卷。釋元奇撰。",
+      "work_id": "d59f2me0mp6p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "閩越巡視紀略",
+      "content": "閩越巡視紀略六卷。杜臻撰。",
+      "work_id": "d59f2nei5b0i"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "閩小紀",
+      "content": "閩小紀四卷。周亮工撰。",
+      "work_id": "d59f2m8hsj5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續閩小紀",
+      "content": "續閩小紀一卷。黎定國撰。",
+      "work_id": "d59f2me6vg1s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "台海使槎錄",
+      "content": "台海使槎錄八卷。黃叔璥撰。",
+      "work_id": "d59f2mdgc9vl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東槎紀略",
+      "content": "東槎紀略五卷。姚瑩撰。",
+      "work_id": "d59f2neigjk0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中州雜俎",
+      "content": "中州雜俎三十五卷。汪價撰。",
+      "work_id": "d59f2me4os8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鄢署雜鈔",
+      "content": "鄢署雜鈔十二卷。汪為熹撰。",
+      "work_id": "d59f2mwxqigw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "光緒湖北輿地記",
+      "content": "光緒湖北輿地記二十四卷。不著撰人氏名。漢口叢談六卷。范鍇撰。",
+      "work_id": "d59f2neigjk1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "監利風土記",
+      "content": "監利風土記一卷。王柏心撰。",
+      "work_id": "d59f2neigjk2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "湖南方物志",
+      "content": "湖南方物志八卷。黃本驤撰。",
+      "work_id": "d59f2neirs3k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浯溪考",
+      "content": "浯溪考二卷。王士禛撰。",
+      "work_id": "d59f2mdsij29"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "澧志舉要",
+      "content": "澧志舉要三卷，補一卷。潘相撰。",
+      "work_id": "d59f2neirs3l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海岱史略",
+      "content": "海岱史略一百三十卷。王馭超撰。",
+      "work_id": "d59f2nej30n4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "濟寧圖記",
+      "content": "濟寧圖記二卷。王元啟撰。",
+      "work_id": "d59f2nej30n5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海岱日記",
+      "content": "海岱日記一卷。張榕端撰。",
+      "work_id": "d59f2md3us5c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雲中紀程",
+      "content": "雲中紀程二卷。高懋功撰。",
+      "work_id": "d59f2nej30n6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "高平物產記",
+      "content": "高平物產記二卷。鄒漢勛撰。",
+      "work_id": "d59f2neje96o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "河套志",
+      "content": "河套志六卷。陳履中撰。",
+      "work_id": "d59f2mdlyjnk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "延綏鎮志",
+      "content": "延綏鎮志六卷。譚吉璁撰。",
+      "work_id": "d59f2mdqbv9d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "陝西南山谷口考",
+      "content": "陝西南山谷口考一卷。毛鳳梧撰。",
+      "work_id": "d59f2neje96p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三省山內風土雜記",
+      "content": "三省山內風土雜記一卷。嚴如熤撰。",
+      "work_id": "d59f2nejphq8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "新疆大記",
+      "content": "新疆大記六卷。闞鳳樓撰。",
+      "work_id": "d59f2nejphq9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "伊犁日記",
+      "content": "伊犁日記二卷，天山客話二卷。洪亮吉撰。",
+      "work_id": "d59f2nejphqa"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "天山客話",
+      "content": "",
+      "content_from": "伊犁日記",
+      "work_id": "d59f2nlrq681"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "荷戈紀程",
+      "content": "荷戈紀程一卷。林則徐撰。",
+      "work_id": "d59f2nek0q9s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "輪台雜記",
+      "content": "輪台雜記二卷。史善長撰。",
+      "work_id": "d59f2nek0q9t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蜀徼紀聞",
+      "content": "蜀徼紀聞四卷，隴蜀餘聞一卷。王士禛撰。",
+      "work_id": "d59f2nekbytc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "隴蜀餘聞",
+      "content": "",
+      "content_from": "蜀徼紀聞",
+      "work_id": "d59f2mwx41du"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蜀典",
+      "content": "蜀典十二卷。張澍撰。",
+      "work_id": "d59f2nekbytd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蜀都碎事",
+      "content": "蜀都碎事六卷。陳祥裔撰。",
+      "work_id": "d59f2me6k7i8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "錦江脞記",
+      "content": "錦江脞記十二卷。戴璐撰。",
+      "work_id": "d59f2nekbyte"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廣東新語",
+      "content": "廣東新語二十六卷。屈大均撰。",
+      "work_id": "d59f2nekn7cw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "羊城古鈔",
+      "content": "羊城古鈔八卷。仇巨川撰。",
+      "work_id": "d59f2nekn7cx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廣州遊覽志",
+      "content": "廣州遊覽志一卷。王士禛撰。",
+      "work_id": "d59f2nekyfwg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "嶺南雜記",
+      "content": "嶺南雜記二卷。吳方震撰。",
+      "work_id": "d59f2me5mhvk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "韓江聞見錄",
+      "content": "韓江聞見錄十卷。鄭昌時撰。",
+      "work_id": "d59f2nekyfwh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南粵筆記",
+      "content": "南粵筆記十六卷。李調元撰。",
+      "work_id": "d59f2nekyfwi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "嶺海見聞",
+      "content": "嶺海見聞四卷。錢以塏撰。",
+      "work_id": "d59f2me6vg1t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "粵行紀事",
+      "content": "粵行紀事三卷。瞿昌文撰。",
+      "work_id": "d59f2nel9og0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "嶺南風物記",
+      "content": "嶺南風物記一卷。吳綺撰。",
+      "work_id": "d59f2nel9og1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "連陽八排風土記",
+      "content": "連陽八排風土記八卷。李來章撰。",
+      "work_id": "d59f2meab20w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "惠陽山水紀勝",
+      "content": "惠陽山水紀勝四卷。吳騫撰。",
+      "work_id": "d59f2mdxibr4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "星餘筆記",
+      "content": "星餘筆記一卷。王鉞撰。",
+      "work_id": "d59f2me4djpd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "粵西偶記",
+      "content": "粵西偶記一卷。陸祚蕃撰。",
+      "work_id": "d59f2md3jjls"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "桂游日記",
+      "content": "桂游日記三卷。張維屏撰。",
+      "work_id": "d59f2nelkwzk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滇系",
+      "content": "滇系四十卷。師範撰。",
+      "work_id": "d59f2nelkwzl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "雲南備徵志",
+      "content": "雲南備徵志二十一卷。王崧撰。",
+      "work_id": "d59f2nelw5j4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滇南雜誌",
+      "content": "滇南雜誌二十四卷。曹樹翹撰。",
+      "work_id": "d59f2nelw5j5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滇海虞衡志",
+      "content": "滇海虞衡志十三卷。檀萃撰。",
+      "work_id": "d59f2nelw5j6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "洱海叢談",
+      "content": "洱海叢談一卷。釋同揆撰。",
+      "work_id": "d59f2me923uo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滇黔土司婚禮記",
+      "content": "滇黔土司婚禮記一卷。陳鼎撰。",
+      "work_id": "d59f2nem7e2o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黔書",
+      "content": "黔書二卷。田雯撰。",
+      "work_id": "d59f2moovtvk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續黔書",
+      "content": "續黔書八卷。張澍撰。",
+      "work_id": "d59f2nem7e2p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黔記",
+      "content": "黔記四卷。李宗昉撰。",
+      "work_id": "d59f2ntvwao0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黔話",
+      "content": "黔話二卷。吳振棫撰。",
+      "work_id": "d59f2nemimm8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "黔軺紀程",
+      "content": "黔軺紀程一卷。黎培敬撰。",
+      "work_id": "d59f2nemimm9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮西見聞記",
+      "content": "淮西見聞記一卷。俞慶遠撰。",
+      "work_id": "d59f2nemimma"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "嶺表錄異",
+      "content": "唐劉恂嶺表錄異三卷。",
+      "work_id": "d59f28krld6q",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "河朔訪古記",
+      "content": "元訥新河朔訪古記二卷。",
+      "work_id": "d59f2gnyr8ch",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "外志之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海國聞見錄",
+      "content": "海國聞見錄二卷。陳倫炯撰。",
+      "work_id": "d59f2mdhl81s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "坤輿圖志",
+      "content": "坤輿圖志二卷。西洋南懷仁撰。",
+      "work_id": "d59f2nemtv5s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "異域錄",
+      "content": "異域錄一卷。圖理琛撰。",
+      "work_id": "d59f2mdh9zi9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八紘譯史",
+      "content": "八紘譯史四卷，紀餘四卷，八紘荒史一卷。陸次雲撰。",
+      "work_id": "d59f2me923up"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "紀餘",
+      "content": "",
+      "content_from": "八紘譯史",
+      "work_id": "d59f2nemtv5t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八紘荒史",
+      "content": "",
+      "content_from": "八紘譯史",
+      "work_id": "d59f2me9dce8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海錄",
+      "content": "海錄二卷。楊炳南撰。",
+      "work_id": "d59f2nen53pc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "瀛寰志略",
+      "content": "瀛寰志略十卷。徐繼畬撰。",
+      "work_id": "d59f2nen53pd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海國圖志",
+      "content": "海國圖志一百卷。魏源撰。",
+      "work_id": "d59f2nen53pe"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "朝鮮史略",
+      "content": "朝鮮史略六卷。不著撰人氏名。朝鮮載記備編二卷，朝鮮史表一卷。周家祿撰。",
+      "work_id": "d59f2md7ae4h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "朝鮮史表",
+      "content": "",
+      "content_from": "朝鮮史略",
+      "work_id": "d59f2nengc8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "奉使朝鮮日記",
+      "content": "奉使朝鮮日記一卷。柏葰撰。",
+      "work_id": "d59f2nengc8x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "朝鮮箕田考",
+      "content": "朝鮮箕田考一卷。韓百謙撰。",
+      "work_id": "d59f2nenrksg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "越史略",
+      "content": "越史略三卷。不著人氏名。海外紀事六卷。釋大汕撰。",
+      "work_id": "d59f2md7ae4g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "安南史事記",
+      "content": "安南史事記一卷。李仙根撰。",
+      "work_id": "d59f2nenrksh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "安南紀游",
+      "content": "安南紀游一卷。潘鼎珪撰。",
+      "work_id": "d59f2me9okxt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "越南世系沿革略",
+      "content": "越南世系沿革略一卷，越南山川略一卷，中外交界各隘卡略一卷。徐延旭撰。",
+      "work_id": "d59f2nenrksi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "越南山川略",
+      "content": "",
+      "content_from": "越南世系沿革略",
+      "work_id": "d59f2neo2tc0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中外交界各隘卡略",
+      "content": "",
+      "content_from": "越南世系沿革略",
+      "work_id": "d59f2neo2tc1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中山沿革志",
+      "content": "中山沿革志二卷。汪楫撰。",
+      "work_id": "d59f2md883r4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中山傳信錄",
+      "content": "中山傳信錄六卷。徐葆光撰。",
+      "work_id": "d59f2meab20x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "琉球志略",
+      "content": "琉球志略十五卷。周煌撰。",
+      "work_id": "d59f2neo2tc2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續琉球志略",
+      "content": "續琉球志略五卷。費錫章撰。",
+      "work_id": "d59f2neoe1vk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中山見聞辨異",
+      "content": "中山見聞辨異二卷。黃景福撰。",
+      "work_id": "d59f2neoe1vl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "記琉球入學始末",
+      "content": "記琉球入學始末一卷。王士禛撰。",
+      "work_id": "d59f2neopaf4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "琉球入學見聞錄",
+      "content": "琉球入學見聞錄四卷。潘相撰。",
+      "work_id": "d59f2neopaf5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "琉球朝貢考",
+      "content": "琉球朝貢考一卷。王韜撰。",
+      "work_id": "d59f2neopaf6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "緬述",
+      "content": "緬述一卷。彭崧毓撰。",
+      "work_id": "d59f2nep0iyo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "緬事述聞",
+      "content": "緬事述聞一卷。師範撰。",
+      "work_id": "d59f2nep0iyp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "緬甸瑣記",
+      "content": "緬甸瑣記一卷。傅顯撰。",
+      "work_id": "d59f2nep0iyq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "征緬紀聞",
+      "content": "征緬紀聞一卷。王昶撰。",
+      "work_id": "d59f2nepbri8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "從征緬甸日記",
+      "content": "從征緬甸日記一卷。周裕撰。",
+      "work_id": "d59f2nepbri9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滇緬邊界紀略",
+      "content": "滇緬邊界紀略一卷。不著撰人氏名。暹邏考略一卷。龔柴撰。",
+      "work_id": "d59f2nepn01s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "暹邏別記",
+      "content": "暹邏別記一卷。李麟光撰。",
+      "work_id": "d59f2nepn01t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遊歷日本圖經",
+      "content": "遊歷日本圖經三十卷。傅雲龍撰。",
+      "work_id": "d59f2nepn01u"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日本國志",
+      "content": "日本國志四十卷。黃遵憲撰。",
+      "work_id": "d59f2nepy8lc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "日本新政考",
+      "content": "日本新政考二卷。顧厚焜撰。",
+      "work_id": "d59f2nepy8ld"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東槎聞見錄",
+      "content": "東槎聞見錄四卷。陳家麟撰。",
+      "work_id": "d59f2nepy8le"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使東雜記",
+      "content": "使東雜記一卷。何如璋撰。",
+      "work_id": "d59f2neq9h4w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東遊叢錄",
+      "content": "東遊叢錄四卷。吳汝綸撰。",
+      "work_id": "d59f2neq9h4x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使俄羅斯行程錄",
+      "content": "使俄羅斯行程錄一卷。張鵬翮撰。",
+      "work_id": "d59f2neqkpog"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "綏服紀略",
+      "content": "綏服紀略一卷。松筠撰。",
+      "work_id": "d59f2neqkpoh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "俄羅斯國紀要",
+      "content": "俄羅斯國紀要一卷。林則徐撰。",
+      "work_id": "d59f2neqkpoi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "俄游彙編",
+      "content": "俄游彙編十二卷。繆祐孫撰。",
+      "work_id": "d59f2neqvy80"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "俄羅斯疆界碑記",
+      "content": "俄羅斯疆界碑記一卷。徐元文撰。",
+      "work_id": "d59f2neqvy81"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吉林勘界記",
+      "content": "吉林勘界記一卷。吳大澂撰。",
+      "work_id": "d59f2ner76rk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中俄交界圖",
+      "content": "中俄交界圖不分卷。洪鈞撰。",
+      "work_id": "d59f2ner76rl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西北邊界俄文譯漢圖例言",
+      "content": "西北邊界俄文譯漢圖例言一卷，帕米爾圖說一卷。許景澄撰。",
+      "work_id": "d59f2ner76rm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "帕米爾圖說",
+      "content": "",
+      "content_from": "西北邊界俄文譯漢圖例言",
+      "work_id": "d59f2nerifb4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "東三省韓俄交界表",
+      "content": "東三省韓俄交界表一卷。聶士成撰。",
+      "work_id": "d59f2nerifb5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使俄草",
+      "content": "使俄草八卷。王之春撰。",
+      "work_id": "d59f2nertnuo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "英吉利考略",
+      "content": "英吉利考略一卷。汪文台撰。",
+      "work_id": "d59f2nertnup"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "英政概",
+      "content": "英政概一卷，英籓政概四卷，法政概一卷。劉錫彤撰。",
+      "work_id": "d59f2nertnuq"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "英籓政概",
+      "content": "",
+      "content_from": "英政概",
+      "work_id": "d59f2nes4we8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "法政概",
+      "content": "",
+      "content_from": "英政概",
+      "work_id": "d59f2nes4we9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "法國志略",
+      "content": "法國志略二十四卷。王韜撰。",
+      "work_id": "d59f2nesg4xs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "英法德俄四國志略",
+      "content": "英法德俄四國志略四卷。沈敦和撰。",
+      "work_id": "d59f2nesg4xt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "美利加圖經",
+      "content": "美利加圖經三十二卷。傅雲龍撰。",
+      "work_id": "d59f2nesg4xu"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "初使泰西記",
+      "content": "初使泰西記一卷。宜厚撰。",
+      "work_id": "d59f2nesrdhc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "乘槎筆記",
+      "content": "乘槎筆記一卷。斌春撰。",
+      "work_id": "d59f2nesrdhd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使西紀程",
+      "content": "使西紀程一卷。郭嵩燾撰。",
+      "work_id": "d59f2net2m0w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "奉使英倫記",
+      "content": "奉使英倫記一卷。黎庶昌撰。",
+      "work_id": "d59f2net2m0x"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "英軺私記",
+      "content": "英軺私記一卷。劉錫鴻撰。",
+      "work_id": "d59f2netdukg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西軺紀略",
+      "content": "西軺紀略四卷。劉瑞芬撰。",
+      "work_id": "d59f2netdukh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "出使英法日記",
+      "content": "出使英法日記二卷。曾紀澤撰。",
+      "work_id": "d59f2netduki"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "出使英法義比日記",
+      "content": "出使英法義比日記六卷，續十卷。薛福成撰。",
+      "work_id": "d59f2netp340"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "出使美日秘日記",
+      "content": "出使美日秘日記十六卷。崔國因撰。",
+      "work_id": "d59f2netp341"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使德日記",
+      "content": "使德日記一卷。李鳳苞撰。",
+      "work_id": "d59f2neu0bnk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "李傅相歷聘歐美記",
+      "content": "李傅相歷聘歐美記二卷。蔡爾康編。",
+      "work_id": "d59f2neu0bnl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三洲日記",
+      "content": "三洲日記八卷。張廕桓撰。",
+      "work_id": "d59f2neu0bnm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遊歷巴西圖經",
+      "content": "遊歷巴西圖經十卷，遊歷圖經餘記十五卷。傅雲龍撰。",
+      "work_id": "d59f2neubk74"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "遊歷圖經餘記",
+      "content": "",
+      "content_from": "遊歷巴西圖經",
+      "work_id": "d59f2neubk75"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "使美紀略",
+      "content": "使美紀略一卷。陳蘭彬撰。",
+      "work_id": "d59f2neumsqo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "四述奇",
+      "content": "四述奇十六卷。張德彝撰。",
+      "work_id": "d59f2neuy1a8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "環遊地球新錄",
+      "content": "環遊地球新錄四卷。李圭撰。",
+      "work_id": "d59f2neuy1a9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西史綱目",
+      "content": "西史綱目二十卷。周維翰撰。",
+      "work_id": "d59f2n6bha82"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "邊事匯鈔",
+      "content": "邊事匯鈔十二卷，續鈔七卷。朱克敬撰。",
+      "work_id": "d59f2neuy1aa"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "適諸蕃志",
+      "content": "宋趙汝適諸蕃志二卷。",
+      "work_id": "d59f2hpelxxe",
+      "is_jiyi": true
+    }
+  ]
+}

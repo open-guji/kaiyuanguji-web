@@ -1,0 +1,41 @@
+{
+  "title": "卷十八　賦",
+  "sections": [
+    {
+      "title": "長笛賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f23o138xz",
+      "author": "馬融",
+      "sub_cat": "壬",
+      "content": ""
+    },
+    {
+      "title": "琴賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f27xjz30i",
+      "author": "嵇康",
+      "sub_cat": "壬",
+      "content": ""
+    },
+    {
+      "title": "笙賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f282qmzup",
+      "author": "潘岳",
+      "sub_cat": "壬",
+      "content": ""
+    },
+    {
+      "title": "嘯賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f27ynm803",
+      "author": "成公綏",
+      "sub_cat": "壬",
+      "content": ""
+    }
+  ]
+}

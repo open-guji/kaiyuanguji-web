@@ -1,0 +1,448 @@
+{
+  "title": "樂類",
+  "sections": [
+    {
+      "title": "桓譚樂元起",
+      "level": 3,
+      "type": "book",
+      "content": "桓譚樂元起二卷",
+      "work_id": "d59f23nsz2tc"
+    },
+    {
+      "title": "又琴操",
+      "level": 3,
+      "type": "book",
+      "content": "又琴操二卷",
+      "work_id": "d59f209mi4g0"
+    },
+    {
+      "title": "孔衍琴操",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍琴操二卷",
+      "work_id": "d59f27tt4kci",
+      "link_basis": "原繫 1evcs08ctho1s，該條已併入 1evilzhl4ecxs（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "荀勗太樂雜歌辭",
+      "level": 3,
+      "type": "book",
+      "content": "荀勗太樂雜歌辭三卷",
+      "work_id": "d59f2q9ye22p"
+    },
+    {
+      "title": "又太樂歌辭",
+      "level": 3,
+      "type": "book",
+      "content": "又太樂歌辭二卷",
+      "work_id": "d59f27uo124i"
+    },
+    {
+      "title": "樂府歌詩",
+      "level": 3,
+      "type": "book",
+      "content": "樂府歌詩十卷",
+      "work_id": "d59f2q7ywphd"
+    },
+    {
+      "title": "謝靈運新錄樂府集",
+      "level": 3,
+      "type": "book",
+      "content": "謝靈運新錄樂府集十一卷",
+      "work_id": "d59f2858uku9",
+      "link_basis": "原繫 1evcs08e1i4n4，該條已併入 1evgoqlnou0ao（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "信都芳刪注樂書",
+      "level": 3,
+      "type": "book",
+      "content": "信都芳刪注樂書九卷",
+      "work_id": "d59f286qje9v"
+    },
+    {
+      "title": "留進管絃記",
+      "level": 3,
+      "type": "book",
+      "content": "留進管絃記十二卷",
+      "work_id": "d59f2q3mu29t",
+      "link_basis": "原繫 1evcs08en1i4g，該條已併入 1evgoqnzjxa80（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "凌秀管絃志",
+      "level": 3,
+      "type": "book",
+      "content": "凌秀管絃志十卷",
+      "work_id": "d59f2pysyvpe"
+    },
+    {
+      "title": "公孫崇鍾磬志",
+      "level": 3,
+      "type": "book",
+      "content": "公孫崇鍾磬志二卷",
+      "work_id": "d59f27s8mm0y"
+    },
+    {
+      "title": "梁武帝樂社大義",
+      "level": 3,
+      "type": "book",
+      "content": "梁武帝樂社大義十卷",
+      "work_id": "d59f2pv5jyma"
+    },
+    {
+      "title": "又樂論",
+      "level": 3,
+      "type": "book",
+      "content": "又樂論三卷",
+      "work_id": "d59f27t1nojk"
+    },
+    {
+      "title": "沈重鍾律",
+      "level": 3,
+      "type": "book",
+      "content": "沈重鍾律五卷",
+      "work_id": "d59f2psg5xc1"
+    },
+    {
+      "title": "釋智匠古今樂錄",
+      "level": 3,
+      "type": "book",
+      "content": "釋智匠古今樂錄十三卷",
+      "work_id": "d59f2q6e3im9"
+    },
+    {
+      "title": "鄭譯樂府歌辭",
+      "level": 3,
+      "type": "book",
+      "content": "鄭譯樂府歌辭八卷",
+      "work_id": "d59f28lkb75z",
+      "link_basis": "原繫 1evcs08gigrgg，該條已併入 1evgoqlq0hlvk（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "又樂府聲調",
+      "level": 3,
+      "type": "book",
+      "content": "又樂府聲調六卷",
+      "work_id": "d59f28jq4w00"
+    },
+    {
+      "title": "蘇夔樂府志",
+      "level": 3,
+      "type": "book",
+      "content": "蘇夔樂府志十卷",
+      "work_id": "d59f2psh3myo"
+    },
+    {
+      "title": "李玄楚樂經",
+      "level": 3,
+      "type": "book",
+      "content": "李玄楚樂經三十卷",
+      "work_id": "d59f2q90zocg"
+    },
+    {
+      "title": "元慇樂略",
+      "level": 3,
+      "type": "book",
+      "content": "元慇樂略四卷",
+      "work_id": "d59f2q0783cy"
+    },
+    {
+      "title": "又聲律指歸",
+      "level": 3,
+      "type": "book",
+      "content": "又聲律指歸一卷",
+      "work_id": "d59f28lrhnno"
+    },
+    {
+      "title": "翟子樂府歌詩",
+      "level": 3,
+      "type": "book",
+      "content": "翟子樂府歌詩十卷",
+      "work_id": "d59f2q48dfcx"
+    },
+    {
+      "title": "又三調相和歌辭",
+      "level": 3,
+      "type": "book",
+      "content": "又三調相和歌辭五卷",
+      "work_id": "d59f2pylsf7l"
+    },
+    {
+      "title": "劉氏、周氏琴譜",
+      "level": 3,
+      "type": "book",
+      "content": "劉氏、周氏琴譜四卷",
+      "work_id": "d59f2q5kfz0h"
+    },
+    {
+      "title": "陳懷琴譜",
+      "level": 3,
+      "type": "book",
+      "content": "陳懷琴譜二十一卷",
+      "work_id": "d59f2q4jlz42"
+    },
+    {
+      "title": "漢魏吳晉鼓吹曲",
+      "level": 3,
+      "type": "book",
+      "content": "漢魏吳晉鼓吹曲四卷",
+      "work_id": "d59f2q7pjl6o"
+    },
+    {
+      "title": "琴集歷頭拍簿",
+      "level": 3,
+      "type": "book",
+      "content": "琴集歷頭拍簿一卷",
+      "work_id": "d59f2ptik4cg"
+    },
+    {
+      "title": "外國伎曲",
+      "level": 3,
+      "type": "book",
+      "content": "外國伎曲三卷",
+      "work_id": "d59f2q0ba5tu"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷",
+      "work_id": null
+    },
+    {
+      "title": "論樂事",
+      "level": 3,
+      "type": "book",
+      "content": "論樂事二卷",
+      "work_id": "d59f2pv8zl6q"
+    },
+    {
+      "title": "歷代曲名",
+      "level": 3,
+      "type": "book",
+      "content": "歷代曲名一卷",
+      "work_id": "d59f2q5pr0ua"
+    },
+    {
+      "title": "推七音",
+      "level": 3,
+      "type": "book",
+      "content": "推七音一卷",
+      "work_id": "d59f2q4w3gn6"
+    },
+    {
+      "title": "十二律譜義",
+      "level": 3,
+      "type": "book",
+      "content": "十二律譜義一卷",
+      "work_id": "d59f2pvzircw"
+    },
+    {
+      "title": "鼓吹樂章",
+      "level": 3,
+      "type": "book",
+      "content": "鼓吹樂章一卷",
+      "work_id": "d59f2q3epvya"
+    },
+    {
+      "title": "李守真古今樂記",
+      "level": 3,
+      "type": "book",
+      "content": "李守真古今樂記八卷",
+      "work_id": "d59f2q8vde68"
+    },
+    {
+      "title": "蕭吉樂譜集解",
+      "level": 3,
+      "type": "book",
+      "content": "蕭吉樂譜集解二十卷",
+      "work_id": "d59f28llk5c6",
+      "link_basis": "原繫 1evcs08lcn6kg，該條已併入 1evcpcttwkcn4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "武后樂書要錄",
+      "level": 3,
+      "type": "book",
+      "content": "武后樂書要錄十卷",
+      "work_id": "d59f2pyvgrup"
+    },
+    {
+      "title": "趙邪利琴敍譜",
+      "level": 3,
+      "type": "book",
+      "content": "趙邪利琴敍譜九卷",
+      "work_id": "d59f2q2rmbya"
+    },
+    {
+      "title": "張文收新樂書",
+      "level": 3,
+      "type": "book",
+      "content": "張文收新樂書十二卷",
+      "work_id": "d59f28k1zwn5",
+      "link_basis": "原繫 1evcs08m0oge8，該條已併入 1evgoqj2d6tq8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "劉貺太樂令壁記",
+      "level": 3,
+      "type": "book",
+      "content": "劉貺太樂令壁記三卷",
+      "work_id": "d59f2q72r9xd"
+    },
+    {
+      "title": "徐景安歷代樂儀",
+      "level": 3,
+      "type": "book",
+      "content": "徐景安歷代樂儀三十卷",
+      "work_id": "d59f28k4hszq"
+    },
+    {
+      "title": "崔令欽教坊記",
+      "level": 3,
+      "type": "book",
+      "content": "崔令欽教坊記一卷",
+      "work_id": "d59f28lb9bes",
+      "link_basis": "原繫 1evcs08mvw6ps，該條已併入 1ev3bcir41hq8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "吳兢樂府古題要解",
+      "level": 3,
+      "type": "book",
+      "content": "吳兢樂府古題要解一卷",
+      "work_id": "d59f28l1kyki",
+      "link_basis": "原繫 1evcs08n905j4，該條已併入 1ev3bf10q2ku8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "郗昂樂府古今題解",
+      "level": 3,
+      "type": "book",
+      "content": "郗昂樂府古今題解三卷",
+      "work_id": "d59f2pyc41z5"
+    },
+    {
+      "title": "段安節樂府雜錄",
+      "level": 3,
+      "type": "book",
+      "content": "段安節樂府雜錄一卷",
+      "work_id": "d59f28l2twqs",
+      "link_basis": "原繫 1evcs08ol2p6o，該條已併入 1ev3bbpssh1xc（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "竇璡正聲樂調",
+      "level": 3,
+      "type": "book",
+      "content": "竇璡正聲樂調一卷",
+      "work_id": "d59f2q2kfv29"
+    },
+    {
+      "title": "玄宗金風樂",
+      "level": 3,
+      "type": "book",
+      "content": "玄宗金風樂一卷",
+      "work_id": "d59f2q6te5mp"
+    },
+    {
+      "title": "蕭祜無射商九調譜",
+      "level": 3,
+      "type": "book",
+      "content": "蕭祜無射商九調譜一卷",
+      "work_id": "d59f2pyw394y"
+    },
+    {
+      "title": "趙惟暕琴書",
+      "level": 3,
+      "type": "book",
+      "content": "趙惟暕琴書三卷",
+      "work_id": "d59f28kcx7nq"
+    },
+    {
+      "title": "陳拙大唐正聲新址琴譜",
+      "level": 3,
+      "type": "book",
+      "content": "陳拙大唐正聲新址琴譜十卷",
+      "work_id": "d59f2qa0kpog"
+    },
+    {
+      "title": "呂渭廣陵止息譜",
+      "level": 3,
+      "type": "book",
+      "content": "呂渭廣陵止息譜一卷",
+      "work_id": "d59f2q6y2ps1"
+    },
+    {
+      "title": "李良輔廣陵止息譜",
+      "level": 3,
+      "type": "book",
+      "content": "李良輔廣陵止息譜一卷",
+      "work_id": "d59f285sij2a"
+    },
+    {
+      "title": "李約東杓引譜",
+      "level": 3,
+      "type": "book",
+      "content": "李約東杓引譜一卷",
+      "work_id": "d59f2q5v21oh"
+    },
+    {
+      "title": "齊嵩琴雅略",
+      "level": 3,
+      "type": "book",
+      "content": "齊嵩琴雅略一卷",
+      "work_id": "d59f28lvjqpw"
+    },
+    {
+      "title": "王大力琴聲律圖",
+      "level": 3,
+      "type": "book",
+      "content": "王大力琴聲律圖一卷",
+      "work_id": "d59f2qa9xudd"
+    },
+    {
+      "title": "陳康士琴譜",
+      "level": 3,
+      "type": "book",
+      "content": "陳康士琴譜十三卷",
+      "work_id": "d59f28lnfkld"
+    },
+    {
+      "title": "又琴調",
+      "level": 3,
+      "type": "book",
+      "content": "又琴調四卷",
+      "work_id": "d59f28lj28zo"
+    },
+    {
+      "title": "琴譜",
+      "level": 3,
+      "type": "book",
+      "content": "琴譜一卷",
+      "work_id": "d59f2pvjwvsy"
+    },
+    {
+      "title": "離騷譜",
+      "level": 3,
+      "type": "book",
+      "content": "離騷譜一卷",
+      "work_id": "d59f2q5gdwch"
+    },
+    {
+      "title": "趙邪利琴手勢譜",
+      "level": 3,
+      "type": "book",
+      "content": "趙邪利琴手勢譜一卷",
+      "work_id": "d59f2pvqs3k1"
+    },
+    {
+      "title": "南卓羯鼓錄",
+      "level": 3,
+      "type": "book",
+      "content": "南卓羯鼓錄一卷",
+      "work_id": "d59f28ljoq2q",
+      "link_basis": "原繫 1evcs08t82nsw，該條已併入 1ev3bbps9fksg（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右樂類三十一家，三十八部，二百五十七卷。"
+    }
+  ]
+}

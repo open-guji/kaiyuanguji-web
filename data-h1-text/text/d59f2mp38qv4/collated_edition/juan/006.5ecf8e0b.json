@@ -1,0 +1,32 @@
+{
+  "title": "經部·禮樂書類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·禮樂書類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "內外服制通釋九卷",
+      "content": "車垓撰。",
+      "work_id": "d59f2hrxr8jk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律通二卷",
+      "content": "歐陽士秀撰。",
+      "work_id": "d59f2hh8ke82"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右禮樂書類",
+      "content": "右禮樂書類二家十一卷。"
+    }
+  ]
+}

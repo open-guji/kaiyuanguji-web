@@ -1,0 +1,53 @@
+{
+  "title": "史部·儀注類",
+  "sections": [
+    {
+      "title": "儀注類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "宋儀注",
+      "level": 3,
+      "type": "book",
+      "content": "宋儀注十卷",
+      "work_id": "d59f2pr7iznm"
+    },
+    {
+      "title": "宋儀注",
+      "level": 3,
+      "type": "book",
+      "content": "又　二十卷⑦",
+      "work_id": "d59f2qaszbb4"
+    },
+    {
+      "title": "宋尚書雜注",
+      "level": 3,
+      "type": "book",
+      "content": "宋尚書雜注十八卷　《隋志》「本二十卷」。",
+      "work_id": "d59f2puqkkjk"
+    },
+    {
+      "title": "新安太守張鏡　宋東宮儀記",
+      "level": 3,
+      "type": "book",
+      "content": "宋東宮儀記二十三卷　新安太守張鏡。⑧",
+      "work_id": "d59f285ntywx"
+    },
+    {
+      "title": "徐爰　徐爰家儀",
+      "level": 3,
+      "type": "book",
+      "content": "徐爰家儀一卷　《隋志》。",
+      "work_id": "d59f2pvxnbi9"
+    },
+    {
+      "title": "天門太守郭緣生　武昌先賢志",
+      "level": 3,
+      "type": "book",
+      "content": "天門太守郭緣生　武昌先賢志二卷　《隋志》。",
+      "work_id": "d59f285rktfl"
+    }
+  ]
+}

@@ -1,0 +1,697 @@
+{
+  "title": "故事類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "故事類",
+      "content": ""
+    },
+    {
+      "title": "太祖《御製永鑒錄》一卷訓親籓、《紀非錄》一卷訓周、齊、潭、魯諸王。",
+      "level": 3,
+      "type": "book",
+      "content": "太祖《御製永鑒錄》一卷訓親籓、《紀非錄》一卷訓周、齊、潭、魯諸王。",
+      "work_id": "d59f2nh5o1dv"
+    },
+    {
+      "title": "《祖訓錄》一卷洪武中編集，太祖制序，頒賜諸王。",
+      "level": 3,
+      "type": "book",
+      "content": "《祖訓錄》一卷洪武中編集，太祖制序，頒賜諸王。",
+      "work_id": "d59f2nkdh2pt"
+    },
+    {
+      "title": "《祖訓條章》一卷封建王國之制。",
+      "level": 3,
+      "type": "book",
+      "content": "《祖訓條章》一卷封建王國之制。",
+      "work_id": "d59f2ne0zda8"
+    },
+    {
+      "title": "《宗籓昭鑒錄》五卷洪武中陶凱等編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《宗籓昭鑒錄》五卷洪武中陶凱等編集。",
+      "work_id": "d59f2nicfk03"
+    },
+    {
+      "title": "《歷代公主錄》一卷洪武中編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代公主錄》一卷洪武中編集。",
+      "work_id": "d59f2nh3658j"
+    },
+    {
+      "title": "《世臣總錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《世臣總錄》二卷",
+      "work_id": "d59f2ndn8xkw"
+    },
+    {
+      "title": "《為政要錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《為政要錄》一卷",
+      "work_id": "d59f2nirq6m9"
+    },
+    {
+      "title": "《醒貪簡要錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《醒貪簡要錄》二卷",
+      "work_id": "d59f2nedgv7m"
+    },
+    {
+      "title": "《武士訓戒錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《武士訓戒錄》一卷",
+      "work_id": "d59f2ng20we9"
+    },
+    {
+      "title": "《臣戒錄》一卷俱洪武中頒行。",
+      "level": 3,
+      "type": "book",
+      "content": "《臣戒錄》一卷俱洪武中頒行。",
+      "work_id": "d59f2nkql1xd"
+    },
+    {
+      "title": "《存心錄》十八卷吳沉等編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《存心錄》十八卷吳沉等編集。",
+      "work_id": "d59f2nl4mqde"
+    },
+    {
+      "title": "《省躬錄》三卷劉三吾等編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《省躬錄》三卷劉三吾等編集。",
+      "work_id": "d59f2nhy2mm9"
+    },
+    {
+      "title": "《精誠錄》三卷吳沉等編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《精誠錄》三卷吳沉等編集。",
+      "work_id": "d59f2niywn41"
+    },
+    {
+      "title": "《國朝製作》一卷王叔銘等編集。",
+      "level": 3,
+      "type": "book",
+      "content": "《國朝製作》一卷王叔銘等編集。",
+      "work_id": "d59f2nhjeha9"
+    },
+    {
+      "title": "宣宗《御製歷代臣鑒》三十七卷，《外戚事鑒》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "宣宗《御製歷代臣鑒》三十七卷，《外戚事鑒》五卷",
+      "work_id": "d59f2nkjpts1"
+    },
+    {
+      "title": "萬曆中重修《大明會典》二百二十八卷，《條例全文》三十卷，《增修條例備考》二十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "萬曆中重修《大明會典》二百二十八卷，《條例全文》三十卷，《增修條例備考》二十六卷",
+      "work_id": "d59f2ndufdvk"
+    },
+    {
+      "title": "《大明會要》八十卷太祖開國時事，凡三十九則，不知撰人。",
+      "level": 3,
+      "type": "book",
+      "content": "《大明會要》八十卷太祖開國時事，凡三十九則，不知撰人。",
+      "work_id": "d59f2nfuufwh"
+    },
+    {
+      "title": "李賢《鑒古錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李賢《鑒古錄》一卷",
+      "work_id": "d59f2nhds7b8"
+    },
+    {
+      "title": "夏寅《政鑒》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "夏寅《政鑒》三十卷",
+      "work_id": "d59f2ngths01"
+    },
+    {
+      "title": "顧灒《稽古政要》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧灒《稽古政要》十卷",
+      "work_id": "d59f2nfwemtc"
+    },
+    {
+      "title": "王圻《續文獻通考》二百五十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王圻《續文獻通考》二百五十四卷",
+      "work_id": "d59f2nkt2y9u"
+    },
+    {
+      "title": "鄧球《續泳化編》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧球《續泳化編》十七卷",
+      "work_id": "d59f2nepn477"
+    },
+    {
+      "title": "鄒泉《古今經史格要》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄒泉《古今經史格要》二十八卷",
+      "work_id": "d59f2ndt6fwi"
+    },
+    {
+      "title": "黃光升《昭代典則》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃光升《昭代典則》二十八卷",
+      "work_id": "d59f2njkg0le"
+    },
+    {
+      "title": "周子義《國朝故實》二百卷一名《國朝典故備遺》。",
+      "level": 3,
+      "type": "book",
+      "content": "周子義《國朝故實》二百卷一名《國朝典故備遺》。",
+      "work_id": "d59f2nis1eyo"
+    },
+    {
+      "title": "張居正《帝鑒圖說》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張居正《帝鑒圖說》六卷",
+      "work_id": "d59f2nkglgcj"
+    },
+    {
+      "title": "焦竑《養正圖解》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "焦竑《養正圖解》二卷",
+      "work_id": "d59f2njdksn6"
+    },
+    {
+      "title": "勞堪《皇明憲章類編》四十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "勞堪《皇明憲章類編》四十二卷",
+      "work_id": "d59f2nhp0qv7"
+    },
+    {
+      "title": "徐學聚《國朝典匯》二百卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐學聚《國朝典匯》二百卷",
+      "work_id": "d59f2nk861he"
+    },
+    {
+      "title": "唐瑤《歷代志略》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐瑤《歷代志略》四卷",
+      "work_id": "d59f2ne4q7sw"
+    },
+    {
+      "title": "張銓《鑒古錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "張銓《鑒古錄》六卷",
+      "work_id": "d59f2niioao1"
+    },
+    {
+      "title": "喬懋敬《古今廉鑒》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "喬懋敬《古今廉鑒》八卷",
+      "work_id": "d59f2ndtho8z"
+    },
+    {
+      "title": "馮應京《皇明經世實用編》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮應京《皇明經世實用編》二十八卷",
+      "work_id": "d59f2nj9ipkz"
+    },
+    {
+      "title": "鄧士龍《國朝典故》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧士龍《國朝典故》一百卷",
+      "work_id": "d59f2nf5vgg2"
+    },
+    {
+      "title": "黃溥《皇明經濟錄》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃溥《皇明經濟錄》十八卷",
+      "work_id": "d59f2ndu454x"
+    },
+    {
+      "title": "徐奮鵬《古今治統》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐奮鵬《古今治統》二十卷",
+      "work_id": "d59f2nfak0le"
+    },
+    {
+      "title": "朱健《古今治平略》三十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱健《古今治平略》三十六卷",
+      "work_id": "d59f2niolssh"
+    },
+    {
+      "title": "餘繼登《皇明典故紀聞》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "餘繼登《皇明典故紀聞》十八卷",
+      "work_id": "d59f2niweqkg"
+    },
+    {
+      "title": "《宗籓條例》二卷李春芳等輯。",
+      "level": 3,
+      "type": "book",
+      "content": "《宗籓條例》二卷李春芳等輯。",
+      "work_id": "d59f2ne1x2wy"
+    },
+    {
+      "title": "戚元佐《宗籓議》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "戚元佐《宗籓議》一卷",
+      "work_id": "d59f2ng3wbgi"
+    },
+    {
+      "title": "馮柯《歷代宗籓訓典》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "馮柯《歷代宗籓訓典》十二卷",
+      "work_id": "d59f2ng0ry80"
+    },
+    {
+      "title": "張志淳《諡法》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張志淳《諡法》二卷",
+      "work_id": "d59f2nh6lr0h"
+    },
+    {
+      "title": "何三省《帝后尊諡紀略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "何三省《帝后尊諡紀略》一卷",
+      "work_id": "d59f2nhqkxky"
+    },
+    {
+      "title": "鮑應ＢＩ《皇明臣諡匯考》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑應ＢＩ《皇明臣諡匯考》二卷",
+      "work_id": "d59f2nfexc01"
+    },
+    {
+      "title": "葉來敬《皇明諡考》三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉來敬《皇明諡考》三十八卷",
+      "work_id": "d59f2ni3do1w"
+    },
+    {
+      "title": "郭良翰《皇明諡紀彙編》二十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭良翰《皇明諡紀彙編》二十五卷",
+      "work_id": "d59f2nh85xj4"
+    },
+    {
+      "title": "鄭汝璧《功臣封考》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭汝璧《功臣封考》八卷",
+      "work_id": "d59f2nisnw8z"
+    },
+    {
+      "title": "陸深《科場條貫》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸深《科場條貫》一卷",
+      "work_id": "d59f2ngwm5fm"
+    },
+    {
+      "title": "張朝瑞《皇明貢舉考》八卷，《明曆科殿試錄》七十卷，《曆科會試錄》七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張朝瑞《皇明貢舉考》八卷，《明曆科殿試錄》七十卷，《曆科會試錄》七十卷",
+      "work_id": "d59f2nimf5du"
+    },
+    {
+      "title": "汪鯨《大明會計類要》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "汪鯨《大明會計類要》十二卷",
+      "work_id": "d59f2ng0gpoi"
+    },
+    {
+      "title": "張學顏《萬曆會計錄》四十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張學顏《萬曆會計錄》四十三卷",
+      "work_id": "d59f2nev9ds1"
+    },
+    {
+      "title": "趙官《後湖志》十一卷，《後湖黃志》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙官《後湖志》十一卷，《後湖黃志》六卷",
+      "work_id": "d59f2njc0lj5"
+    },
+    {
+      "title": "劉斯潔《太倉考》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉斯潔《太倉考》十卷",
+      "work_id": "d59f2nfa8s1u"
+    },
+    {
+      "title": "王儀《吳中田賦錄》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "王儀《吳中田賦錄》五卷",
+      "work_id": "d59f2ndk4jr6"
+    },
+    {
+      "title": "徐民式《三吳均役全書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐民式《三吳均役全書》四卷",
+      "work_id": "d59f2nhzbkzm"
+    },
+    {
+      "title": "婁志德《兩浙賦役全書》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "婁志德《兩浙賦役全書》十二卷",
+      "work_id": "d59f2nhu0jy8"
+    },
+    {
+      "title": "何士晉《廠庫須知》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "何士晉《廠庫須知》十二卷",
+      "work_id": "d59f2neanqbm"
+    },
+    {
+      "title": "邵寶《漕政錄》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵寶《漕政錄》十八卷",
+      "work_id": "d59f2nelw9oh"
+    },
+    {
+      "title": "席書《漕船志》一卷，《漕運錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "席書《漕船志》一卷，《漕運錄》二卷",
+      "work_id": "d59f2nfp86bo"
+    },
+    {
+      "title": "楊宏《漕運志》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊宏《漕運志》四卷",
+      "work_id": "d59f2nhwifwj"
+    },
+    {
+      "title": "王在晉《通漕類編》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "王在晉《通漕類編》九卷",
+      "work_id": "d59f2njdksg0"
+    },
+    {
+      "title": "陳仁錫《漕政考》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳仁錫《漕政考》二卷",
+      "work_id": "d59f2ne0cw01"
+    },
+    {
+      "title": "崔旦《海運編》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "崔旦《海運編》二卷",
+      "work_id": "d59f2ni4xurm"
+    },
+    {
+      "title": "劉體仁《海道漕運記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉體仁《海道漕運記》一卷",
+      "work_id": "d59f2nh51k3l"
+    },
+    {
+      "title": "王宗沐《海運志》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王宗沐《海運志》二卷",
+      "work_id": "d59f2nhj38xu"
+    },
+    {
+      "title": "樑夢龍《海運新考》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "樑夢龍《海運新考》三卷",
+      "work_id": "d59f2nkmiygx"
+    },
+    {
+      "title": "史繼偕《皇明兵志考》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "史繼偕《皇明兵志考》三卷",
+      "work_id": "d59f2nffjta8"
+    },
+    {
+      "title": "侯繼高《全浙兵志考》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "侯繼高《全浙兵志考》四卷",
+      "work_id": "d59f2ni0vrpe"
+    },
+    {
+      "title": "王士琦《三雲籌俎考》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王士琦《三雲籌俎考》四卷",
+      "work_id": "d59f2nge75ky"
+    },
+    {
+      "title": "何孟春《軍務集錄》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "何孟春《軍務集錄》六卷",
+      "work_id": "d59f2nevvv28"
+    },
+    {
+      "title": "閻世科《計遼始末》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "閻世科《計遼始末》四卷",
+      "work_id": "d59f2ndjtb7n"
+    },
+    {
+      "title": "蔡鼎《邊務要略》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡鼎《邊務要略》十卷",
+      "work_id": "d59f2ndwatc0"
+    },
+    {
+      "title": "周文鬱《邊事小紀》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "周文鬱《邊事小紀》六卷",
+      "work_id": "d59f2ni6ta81"
+    },
+    {
+      "title": "王士騏《馭倭錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "王士騏《馭倭錄》八卷",
+      "work_id": "d59f2nkfnqwy"
+    },
+    {
+      "title": "方日乾《屯田事宜》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "方日乾《屯田事宜》五卷",
+      "work_id": "d59f2nhkc6ww"
+    },
+    {
+      "title": "楊守謙《屯田議》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊守謙《屯田議》一卷",
+      "work_id": "d59f2nfc47b4"
+    },
+    {
+      "title": "張抱赤《屯田書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張抱赤《屯田書》一卷",
+      "work_id": "d59f2nf4mi2o"
+    },
+    {
+      "title": "沈摐《南船記》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈摐《南船記》四卷",
+      "work_id": "d59f2nipjitf"
+    },
+    {
+      "title": "倪涷《船政新書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "倪涷《船政新書》四卷",
+      "work_id": "d59f2ndohvr5"
+    },
+    {
+      "title": "朱廷立《鹽政志》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱廷立《鹽政志》十卷",
+      "work_id": "d59f2njhmvi9"
+    },
+    {
+      "title": "史啟哲《兩淮鹽法志》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "史啟哲《兩淮鹽法志》十二卷",
+      "work_id": "d59f2ndpqtq9"
+    },
+    {
+      "title": "王圻《兩浙鹽志》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "王圻《兩浙鹽志》二十四卷",
+      "work_id": "d59f2nf7qvwj"
+    },
+    {
+      "title": "冷宗元《長蘆鹺志》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "冷宗元《長蘆鹺志》七卷",
+      "work_id": "d59f2nfwpvcx"
+    },
+    {
+      "title": "李開先《山東鹽法志》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "李開先《山東鹽法志》四卷",
+      "work_id": "d59f2nhknf9c"
+    },
+    {
+      "title": "詹榮《河東運司志》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "詹榮《河東運司志》十七卷",
+      "work_id": "d59f2ne51g5f"
+    },
+    {
+      "title": "謝肇淛《八閩鹺政志》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝肇淛《八閩鹺政志》十六卷",
+      "work_id": "d59f2nh4qbk4"
+    },
+    {
+      "title": "李涷《粵東鹽政考》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李涷《粵東鹽政考》二卷",
+      "work_id": "d59f2nek0uf6"
+    },
+    {
+      "title": "陳善《黑白鹽井事宜》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳善《黑白鹽井事宜》二卷",
+      "work_id": "d59f2nhngkjk"
+    },
+    {
+      "title": "傅浚《鐵冶志》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅浚《鐵冶志》二卷",
+      "work_id": "d59f2nfeav42"
+    },
+    {
+      "title": "胡彥《茶馬類考》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "胡彥《茶馬類考》六卷",
+      "work_id": "d59f2neirwg0"
+    },
+    {
+      "title": "陳講《茶馬志》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳講《茶馬志》四卷",
+      "work_id": "d59f2ng1ef44"
+    },
+    {
+      "title": "徐彥登《歷朝茶馬奏議》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐彥登《歷朝茶馬奏議》四卷",
+      "work_id": "d59f2ngy6c5c"
+    },
+    {
+      "title": "王宗聖《榷政記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王宗聖《榷政記》十卷",
+      "work_id": "d59f2nho31mo"
+    },
+    {
+      "title": "薛僑《南關志》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "薛僑《南關志》六卷",
+      "work_id": "d59f2ni1i8ld"
+    },
+    {
+      "title": "許天贈《北關志》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "許天贈《北關志》十二卷",
+      "work_id": "d59f2ngnvima"
+    },
+    {
+      "title": "林希元《荒政叢言》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "林希元《荒政叢言》一卷",
+      "work_id": "d59f2nh7jgg0"
+    },
+    {
+      "title": "賀燦然《備荒議》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "賀燦然《備荒議》一卷",
+      "work_id": "d59f2nidd98g"
+    },
+    {
+      "title": "俞汝為《荒政要覽》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "俞汝為《荒政要覽》十卷",
+      "work_id": "d59f2nkubw1s"
+    }
+  ]
+}

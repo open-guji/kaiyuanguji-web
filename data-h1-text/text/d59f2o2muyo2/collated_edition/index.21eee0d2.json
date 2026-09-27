@@ -1,0 +1,172 @@
+{
+  "work_id": "d59f2o2muyo2",
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json",
+    "juan/009.json",
+    "juan/010.json",
+    "juan/011.json",
+    "juan/012.json",
+    "juan/013.json",
+    "juan/014.json",
+    "juan/015.json",
+    "juan/016.json",
+    "juan/017.json",
+    "juan/018.json",
+    "juan/019.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "經部",
+      "children": [
+        {
+          "label": "易類",
+          "files": [
+            "juan/001.json"
+          ]
+        },
+        {
+          "label": "書類",
+          "files": [
+            "juan/002.json"
+          ]
+        },
+        {
+          "label": "詩類",
+          "files": [
+            "juan/003.json"
+          ]
+        },
+        {
+          "label": "禮類",
+          "files": [
+            "juan/004.json"
+          ]
+        },
+        {
+          "label": "樂類",
+          "files": [
+            "juan/005.json"
+          ]
+        },
+        {
+          "label": "春秋類",
+          "files": [
+            "juan/006.json"
+          ]
+        },
+        {
+          "label": "孝經類",
+          "files": [
+            "juan/007.json"
+          ]
+        },
+        {
+          "label": "論語類",
+          "files": [
+            "juan/008.json"
+          ]
+        },
+        {
+          "label": "總經類",
+          "files": [
+            "juan/009.json"
+          ]
+        },
+        {
+          "label": "小學類",
+          "files": [
+            "juan/010.json"
+          ]
+        }
+      ],
+      "files": []
+    },
+    {
+      "label": "史部",
+      "children": [
+        {
+          "label": "史類",
+          "files": [
+            "juan/011.json"
+          ]
+        },
+        {
+          "label": "儀注類",
+          "files": [
+            "juan/012.json"
+          ]
+        },
+        {
+          "label": "職官類",
+          "files": [
+            "juan/013.json"
+          ]
+        }
+      ],
+      "files": []
+    },
+    {
+      "label": "子部",
+      "children": [
+        {
+          "label": "子類",
+          "files": [
+            "juan/014.json"
+          ]
+        },
+        {
+          "label": "兵家類",
+          "files": [
+            "juan/015.json"
+          ]
+        },
+        {
+          "label": "醫方類",
+          "files": [
+            "juan/016.json"
+          ]
+        }
+      ],
+      "files": []
+    },
+    {
+      "label": "集部",
+      "children": [
+        {
+          "label": "集",
+          "files": [
+            "juan/017.json"
+          ]
+        },
+        {
+          "label": "楚辭",
+          "files": [
+            "juan/018.json"
+          ]
+        },
+        {
+          "label": "别集",
+          "files": [
+            "juan/019.json"
+          ]
+        }
+      ],
+      "files": []
+    }
+  ],
+  "text_quality": {
+    "grade": "rough",
+    "source_note": "PaddleOCR（GPU）識別 + 人工逐頁對照原圖校對，共187條書目。原書無獨立卷次劃分，按經史子集四部十九類整理。"
+  },
+  "type": "catalog",
+  "revision": "1.0.0",
+  "revised_at": "2026-09-06",
+  "total_entries": 187
+}

@@ -1,0 +1,643 @@
+{
+  "title": "丁部集錄·總集類",
+  "sections": [
+    {
+      "title": "總集類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "總集類序",
+      "level": 3,
+      "type": "preface",
+      "content": "丁部集錄，其類三。一曰楚辭，二曰別集，三曰總集。"
+    },
+    {
+      "title": "考證",
+      "level": 3,
+      "type": "verification",
+      "content": "卷端題「補晉書經籍志卷四　錢塘吳士鑑纂」。"
+    },
+    {
+      "title": "摯虞　文章流別集六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　文章流別集六十卷",
+      "work_id": "d59f27vz5w5c"
+    },
+    {
+      "title": "摯虞　志二卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　志二卷",
+      "work_id": "d59f9s1oin0g",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "摯虞　論二卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　論二卷　《隋志》：「《流別集》四十一卷，《流別志》、《論》二卷。」注云：「梁六十卷，《志》二卷，《論》二卷。」兩《唐志》作「三十卷」。",
+      "work_id": "d59f9s1oin0h",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "杜預　善文五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜預　善文五十卷　見《隋志》。兩《唐志》作「四十九卷」。",
+      "work_id": "d59f27vtjmdg"
+    },
+    {
+      "title": "杜預　集林鈔一卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜預　集林鈔一卷　《通志畧》。",
+      "work_id": "d59f9s1q2tqd",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "謝沈　名文集四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈　名文集四十卷　見兩《唐志》。",
+      "work_id": "d59f27x2hsle"
+    },
+    {
+      "title": "謝沈　文章志錄雜文八卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈　文章志錄雜文八卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27tbyigx",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "謝混　集苑六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝混　集苑六十卷　兩《唐志》並同。《隋志》四十五卷，並云：「梁六十卷。」不著撰人，當即是書。",
+      "work_id": "d59f27u3qmtf"
+    },
+    {
+      "title": "謝混　文章流別本十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝混　文章流別本十二卷　見《隋志》。",
+      "work_id": "d59f27uez6dc",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "孔寧　續文章流別三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔寧　續文章流別三卷　見《隋志》。",
+      "work_id": "d59f2q6m7oxt"
+    },
+    {
+      "title": "傅祗　文章駁論",
+      "level": 3,
+      "type": "book",
+      "content": "傅祗　文章駁論　本傳。",
+      "work_id": "d59f9s1oin0i"
+    },
+    {
+      "title": "郭象　碑論十二篇",
+      "level": 3,
+      "type": "book",
+      "content": "郭象　碑論十二篇　本傳。",
+      "work_id": "d59f27wo4vlu"
+    },
+    {
+      "title": "二晉雜詩二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "二晉雜詩二十卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f2pqxjeo0"
+    },
+    {
+      "title": "王履　書集八十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王履　書集八十卷　《隋志》八十八卷，注云：「梁八十卷。」履，晉散騎常侍。",
+      "work_id": "d59f27x2t14x"
+    },
+    {
+      "title": "陳勰　碑文十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳勰　碑文十五卷",
+      "work_id": "d59f27vqqhhf"
+    },
+    {
+      "title": "陳勰　雜碑二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳勰　雜碑二十二卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f2q5rxon5",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "車灌　碑文十卷",
+      "level": 3,
+      "type": "book",
+      "content": "車灌　碑文十卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27v9kfls"
+    },
+    {
+      "title": "葛洪　碑誄詩賦百卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　碑誄詩賦百卷",
+      "work_id": "d59f9nn3ng1w"
+    },
+    {
+      "title": "葛洪　移檄章表三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　移檄章表三十卷　本傳。",
+      "work_id": "d59f9s1oin0j",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "葛洪　抱朴君書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "葛洪　抱朴君書一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9nn4l5og",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "干寶　百志詩集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "干寶　百志詩集五卷　《隋志》九卷，注云：「梁五卷。」「集」字據兩《唐志》增。",
+      "work_id": "d59f27whw4qr"
+    },
+    {
+      "title": "伏滔等　元正宴會詩集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "伏滔等　元正宴會詩集四卷　《唐志》：「伏滔、袁豹、謝靈運集。」《舊唐志》作「元氏宴會游集」。",
+      "work_id": "d59f27vyjf2a"
+    },
+    {
+      "title": "李充　翰林論三卷",
+      "level": 3,
+      "type": "book",
+      "content": "李充　翰林論三卷　《舊唐志》二卷，今從《唐志》。",
+      "work_id": "d59f27uul1j5"
+    },
+    {
+      "title": "李軌　二京賦二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　二京賦二卷　《隋志》云：「《二京賦》二卷，李軌、綦母邃撰。」蓋因邃有《三都賦注》誤為「三京」，因又誤與李軌同撰《二京》也。或李軌撰《二京賦》，綦母邃注之，《隋志》必有敓誤。",
+      "work_id": "d59f9nn3ng20"
+    },
+    {
+      "title": "李軌　二都賦音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李軌　二都賦音一卷　見《隋志》。",
+      "work_id": "d59f27werrb6",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "左思　齊都賦一卷",
+      "level": 3,
+      "type": "book",
+      "content": "左思　齊都賦一卷　見兩《唐志》。《隋志》云：「梁有《齊都賦》二卷，并《音》，左思撰。」是誤以《音》亦屬之左思矣。《隋志》又有《五都賦》六卷，並《錄》，張衡及左思撰。蓋即《齊都賦》也。",
+      "work_id": "d59f27uflngj"
+    },
+    {
+      "title": "綦母邃　三都賦注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "綦母邃　三都賦注三卷　《隋志》云：「梁有，亡。」兩《唐志》作「《三京賦音》一卷」，蓋因李軌《二京賦》，因誤以此三都為三京。",
+      "work_id": "d59f27yh28lc"
+    },
+    {
+      "title": "綦母邃　誡林三卷",
+      "level": 3,
+      "type": "book",
+      "content": "綦母邃　誡林三卷　見《隋志》。《唐志》入儒家。",
+      "work_id": "d59f2putdpmp",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "曹毗　魏都賦注",
+      "level": 3,
+      "type": "book",
+      "content": "曹毗　魏都賦注　《文選》注引。",
+      "work_id": "d59f9s1oin0k"
+    },
+    {
+      "title": "皇甫謐　南都賦注",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫謐　南都賦注　《文選》注引。",
+      "work_id": "d59f9s1oin0l"
+    },
+    {
+      "title": "司馬彪　上林子虛賦注",
+      "level": 3,
+      "type": "book",
+      "content": "司馬彪　上林子虛賦注　《文選》注、《一切經音義》引。",
+      "work_id": "d59f9s1oin0m"
+    },
+    {
+      "title": "晉灼　子虛甘泉賦注",
+      "level": 3,
+      "type": "book",
+      "content": "晉灼　子虛甘泉賦注　《文選》注引。",
+      "work_id": "d59f9s1oin0n"
+    },
+    {
+      "title": "郭璞　子虛上林賦注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞　子虛上林賦注一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27w0q2v6"
+    },
+    {
+      "title": "庾闡　揚都賦注",
+      "level": 3,
+      "type": "book",
+      "content": "庾闡　揚都賦注　見《吳志・吳主傳》注。《水經・濡水》注引庾杲之《注揚都賦》。按闡字仲初，不字杲之，酈氏蓋誤。惟此注下文又云「仲初言在南，非也」，則又不誤，殆誤以杲之為闡歟？",
+      "work_id": "d59f9s1oin0o"
+    },
+    {
+      "title": "張載　劉逵　衛瓘　左思三都賦三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張載　劉逵　衛瓘　左思三都賦三卷　《隋志》。",
+      "work_id": "d59f9nn3ng24"
+    },
+    {
+      "title": "傅玄等　相風賦七卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅玄等　相風賦七卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27v8bhfl"
+    },
+    {
+      "title": "虞千紀　迦維國賦二卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞千紀　迦維國賦二卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27vyunlu"
+    },
+    {
+      "title": "蕭廣濟　木玄虛海賦注一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭廣濟　木玄虛海賦注一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27ygr01s"
+    },
+    {
+      "title": "陸機　連珠一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸機　連珠一卷　《隋志》云：「梁有《連珠》一卷，陸機撰，何承天注。亡。」",
+      "work_id": "d59f27uqiygy"
+    },
+    {
+      "title": "李嵩靖　恭堂頌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李嵩靖　恭堂頌一卷　見《隋》、《唐志》。",
+      "work_id": "d59f27tzojr6"
+    },
+    {
+      "title": "李嵩靖　木連理頌二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李嵩靖　木連理頌二卷　《隋志》云：「晉太元十九年羣臣上。」凡兩見。",
+      "work_id": "d59f27u7spvk",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "張湛　古今箴銘集十四卷　一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張湛　古今箴銘集十四卷　一卷",
+      "work_id": "d59f27twvev4",
+      "note": "【原有附錄「一卷」，併入 measure】"
+    },
+    {
+      "title": "殷仲堪　雜論九十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "殷仲堪　雜論九十五卷　見兩《唐志》。",
+      "work_id": "d59f27wh9nnl"
+    },
+    {
+      "title": "殷仲堪　雜集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "殷仲堪　雜集一卷",
+      "work_id": "d59f27v30g74",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "殷仲堪　策集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "殷仲堪　策集一卷　見《隋志》。",
+      "work_id": "d59f27wpp2bk",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "宗岱　明真論一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗岱　明真論一卷　見《隋志》。",
+      "work_id": "d59f27waefpd"
+    },
+    {
+      "title": "應貞　古遊仙詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "應貞　古遊仙詩一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9nn3yolk"
+    },
+    {
+      "title": "李彪　百一詩二卷",
+      "level": 3,
+      "type": "book",
+      "content": "李彪　百一詩二卷　《隋志》：「晉蜀郡太守。」",
+      "work_id": "d59f9bl8q3nl"
+    },
+    {
+      "title": "荀綽　古今五言詩美文五卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀綽　古今五言詩美文五卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27w6143l"
+    },
+    {
+      "title": "山濤　山公啟事三卷",
+      "level": 3,
+      "type": "book",
+      "content": "山濤　山公啟事三卷　見《隋志》。兩《唐志》作「十卷」。《文選》注引賈弼之《山公表注》，或即此書。",
+      "work_id": "d59f27upl8u8"
+    },
+    {
+      "title": "王誕　四帝誡三卷",
+      "level": 3,
+      "type": "book",
+      "content": "王誕　四帝誡三卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27tvb85d"
+    },
+    {
+      "title": "范甯　啟事十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范甯　啟事十卷　《隋志》三卷，注云：「梁十卷。」兩《唐志》仍十卷。",
+      "work_id": "d59f27vh24n4"
+    },
+    {
+      "title": "晉諸公奏十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉諸公奏十一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27w1cjy8"
+    },
+    {
+      "title": "陳壽　漢名臣奏三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　漢名臣奏三十卷",
+      "work_id": "d59f27u18qgz"
+    },
+    {
+      "title": "陳壽　魏名臣奏三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　魏名臣奏三十卷　《隋志》均作「陳長壽撰」，「長」字蓋誤衍。案《隋志》刑法類有陳壽《魏名臣奏事》四十卷，又《漢名臣奏事》三十卷，不著撰人。《唐志》亦作「陳壽」，疑即此二書，今仍《隋志》兩列之。",
+      "work_id": "d59f27uaam83",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "陳壽　諸葛亮故事二十四篇",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽　諸葛亮故事二十四篇　《蜀志》云：「陳壽定。」本書壽傳言「撰蜀相《諸葛亮集》奏之」，即指此書。",
+      "work_id": "d59f27tyflkz",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "傅咸　集奏",
+      "level": 3,
+      "type": "book",
+      "content": "傅咸　集奏　《太平御覽》。",
+      "work_id": "d59f27wwka9s"
+    },
+    {
+      "title": "孫楚　集奏",
+      "level": 3,
+      "type": "book",
+      "content": "孫楚　集奏　《太平御覽》。",
+      "work_id": "d59f27ukwooy"
+    },
+    {
+      "title": "劉宏　教",
+      "level": 3,
+      "type": "book",
+      "content": "劉宏　教　《太平御覽》。",
+      "work_id": "d59f27v3boqp"
+    },
+    {
+      "title": "杜預　奏事",
+      "level": 3,
+      "type": "book",
+      "content": "杜預　奏事　《太平御覽》。",
+      "work_id": "d59f6ssrrvgp"
+    },
+    {
+      "title": "孔羣　奏二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔羣　奏二十二卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9nn49x54"
+    },
+    {
+      "title": "周閔　奏事四卷",
+      "level": 3,
+      "type": "book",
+      "content": "周閔　奏事四卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk0"
+    },
+    {
+      "title": "虞谷　奏事六卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞谷　奏事六卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk1"
+    },
+    {
+      "title": "劉邵　奏事六卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉邵　奏事六卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk2"
+    },
+    {
+      "title": "高崧　奏事五卷",
+      "level": 3,
+      "type": "book",
+      "content": "高崧　奏事五卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk3"
+    },
+    {
+      "title": "司馬無忌　奏事十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬無忌　奏事十三卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk4"
+    },
+    {
+      "title": "劉隗　奏五卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉隗　奏五卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f2pqxjegx"
+    },
+    {
+      "title": "索靖　晉詩二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "索靖　晉詩二十卷　本傳。",
+      "work_id": "d59f9nn3yolj"
+    },
+    {
+      "title": "荀勗　讌樂歌辭十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勗　讌樂歌辭十卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9s1otvk5"
+    },
+    {
+      "title": "荀勗　太樂歌辭二卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勗　太樂歌辭二卷",
+      "work_id": "d59f27uo124i",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "荀勗　太樂雜歌辭三卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勗　太樂雜歌辭三卷　見《唐志》樂類。今從《舊唐志》入總集。",
+      "work_id": "d59f2q9ye22p",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "王鎮惡　與劉丹陽書一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王鎮惡　與劉丹陽書一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27wi7da8"
+    },
+    {
+      "title": "羊祜　墮淚碑一卷",
+      "level": 3,
+      "type": "book",
+      "content": "羊祜　墮淚碑一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f2pqz3kzl"
+    },
+    {
+      "title": "桓宣武　碑十卷",
+      "level": 3,
+      "type": "book",
+      "content": "桓宣武　碑十卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27tuor2b"
+    },
+    {
+      "title": "設論集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "設論集三卷　《隋志》云：「東晉人撰。」",
+      "work_id": "d59f27y80cua"
+    },
+    {
+      "title": "杜嵩　任子春秋一卷",
+      "level": 3,
+      "type": "book",
+      "content": "杜嵩　任子春秋一卷　見《隋志》。《惠帝紀》亦作「嵩」，《杜夷傳》作「崧」。",
+      "work_id": "d59f27u0m9ds"
+    },
+    {
+      "title": "蔡謨　蔡司徒書三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蔡謨　蔡司徒書三卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27uq7pxf"
+    },
+    {
+      "title": "毛伯成　詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "毛伯成　詩一卷　見《隋志》。又別集有《毛伯成集》一卷，疑即一書，今仍《隋志》兩列之。",
+      "work_id": "d59f9s1otvk6"
+    },
+    {
+      "title": "晉歌章十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉歌章十卷　《隋志》云：「八卷，梁十卷。」下又有《晉歌章》十卷，云：「梁有，亡。」",
+      "work_id": "d59f2q3zy1aa"
+    },
+    {
+      "title": "晉歌詩十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉歌詩十八卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f9nmj1s7c"
+    },
+    {
+      "title": "索綏　六夷頌",
+      "level": 3,
+      "type": "book",
+      "content": "索綏　六夷頌　《前涼錄》。",
+      "work_id": "d59f27vd01kx"
+    },
+    {
+      "title": "夏侯湛　周詩",
+      "level": 3,
+      "type": "book",
+      "content": "夏侯湛　周詩　本傳。",
+      "work_id": "d59f27w1z11d"
+    },
+    {
+      "title": "傅咸　七經詩",
+      "level": 3,
+      "type": "book",
+      "content": "傅咸　七經詩　《藝文類聚》、《初學記》。",
+      "work_id": "d59f27v3boqo"
+    },
+    {
+      "title": "蘇氏　迴文詩八卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇氏　迴文詩八卷",
+      "work_id": "d59f9s1otvk7"
+    },
+    {
+      "title": "蘇氏　織錦迴文詩一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇氏　織錦迴文詩一卷　《隋志》云：「梁有，亡。」",
+      "work_id": "d59f27uzku81",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "總集類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右總集類，六十八家。失姓名七家。"
+    }
+  ]
+}

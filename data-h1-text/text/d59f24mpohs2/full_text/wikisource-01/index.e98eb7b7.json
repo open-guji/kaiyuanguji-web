@@ -1,0 +1,176 @@
+{
+  "work_id": "d59f24mpohs2",
+  "version_label": "爾雅",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%88%BE%E9%9B%85",
+    "page_title": "爾雅",
+    "revid": 9736004,
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "釋詁第一起，十九篇；正文内部另有 釋天 篇下的四時/祥/災 等四级子目，未再细分文件。",
+  "total_chapters": 19,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "釋詁 第一",
+      "file": "001.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 2682
+    },
+    {
+      "n": 2,
+      "title": "釋言 第二",
+      "file": "002.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 1958
+    },
+    {
+      "n": 3,
+      "title": "釋訓 第三",
+      "file": "003.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 1214
+    },
+    {
+      "n": 4,
+      "title": "釋親 第四",
+      "file": "004.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 891
+    },
+    {
+      "n": 5,
+      "title": "釋宮 第五",
+      "file": "005.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 568
+    },
+    {
+      "n": 6,
+      "title": "釋器 第六",
+      "file": "006.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 830
+    },
+    {
+      "n": 7,
+      "title": "釋樂 第七",
+      "file": "007.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 233
+    },
+    {
+      "n": 8,
+      "title": "釋天 第八",
+      "file": "008.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 1110
+    },
+    {
+      "n": 9,
+      "title": "釋地 第九",
+      "file": "009.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 676
+    },
+    {
+      "n": 10,
+      "title": "釋丘 第十",
+      "file": "010.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 349
+    },
+    {
+      "n": 11,
+      "title": "釋山 第十一",
+      "file": "011.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 319
+    },
+    {
+      "n": 12,
+      "title": "釋水 第十二",
+      "file": "012.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 511
+    },
+    {
+      "n": 13,
+      "title": "釋草 第十三",
+      "file": "013.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 1341
+    },
+    {
+      "n": 14,
+      "title": "釋木 第十四",
+      "file": "014.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 733
+    },
+    {
+      "n": 15,
+      "title": "釋蟲 第十五",
+      "file": "015.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 564
+    },
+    {
+      "n": 16,
+      "title": "釋魚 第十六",
+      "file": "016.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 473
+    },
+    {
+      "n": 17,
+      "title": "釋鳥 第十七",
+      "file": "017.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 850
+    },
+    {
+      "n": 18,
+      "title": "釋獸 第十八",
+      "file": "018.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 654
+    },
+    {
+      "n": 19,
+      "title": "釋畜 第十九",
+      "file": "019.md",
+      "page_title": "爾雅",
+      "revid": 9736004,
+      "md_len": 632
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "requests": 3,
+    "retries_429": 0
+  },
+  "revision": "1.0.0"
+}

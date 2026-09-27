@@ -1,0 +1,431 @@
+{
+  "title": "紀事本末類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "紀事本末類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定三逆方略",
+      "content": "《平定三逆方略》六十卷。康熙二十一年，勒德洪等奉敕撰。",
+      "work_id": "d59f2mcb4y69"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "親征平定朔漠方略",
+      "content": "《親征平定朔漠方略》四十八卷。康熙四十七年，溫達等奉敕撰。",
+      "work_id": "d59f2nc4xipt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定金川方略",
+      "content": "《平定金川方略》三十二卷。乾隆十三年，來保等奉敕撰。",
+      "work_id": "d59f2ntpnjsw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定準噶爾方略前編",
+      "content": "《平定準噶爾方略前編》五十四卷，《正編》八十五卷，《續編》三十三卷。乾隆三十七年，傅恆等奉敕撰。",
+      "work_id": "d59f2moi0lxc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "正編",
+      "content": "",
+      "content_from": "平定準噶爾方略前編",
+      "work_id": "d59f2moi0lxc",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《平定準噶爾方略》一條所連著之附屬部帙（《正編》八十五卷、《續編》三十三卷，與《前編》五十四卷同出乾隆三十七年傅恆等奉敕之一書；四庫總目亦作一條「《禦定平定準噶爾方略前編》五十四卷、《正編》八十五卷、《續編》三十三卷」），隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉甲類不別立 Work，繫於母條。2026-08-24 N3 磁鐵補標 `section_kind`——M3 一輪已裁其為甲類並正母條之題，然未標此欄，故仍計為磁鐵。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續編",
+      "content": "",
+      "content_from": "平定準噶爾方略前編",
+      "work_id": "d59f2moi0lxc",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《平定準噶爾方略》一條所連著之附屬部帙（《正編》八十五卷、《續編》三十三卷，與《前編》五十四卷同出乾隆三十七年傅恆等奉敕之一書；四庫總目亦作一條「《禦定平定準噶爾方略前編》五十四卷、《正編》八十五卷、《續編》三十三卷」），隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉甲類不別立 Work，繫於母條。2026-08-24 N3 磁鐵補標 `section_kind`——M3 一輪已裁其為甲類並正母條之題，然未標此欄，故仍計為磁鐵。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "臨清紀略",
+      "content": "《臨清紀略》十六卷。乾隆四十二年，于敏中等奉敕撰。",
+      "work_id": "d59f2nc58r9c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定兩金川方略",
+      "content": "《平定兩金川方略》一百五十二卷。乾隆四十六年，阿桂等奉敕撰。",
+      "work_id": "d59f2moi0lxd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蘭州紀略",
+      "content": "《蘭州紀略》二十卷。乾隆四十六年敕撰。",
+      "work_id": "d59f2ntpnjsx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "石峰堡紀略",
+      "content": "《石峰堡紀略》二十卷。乾隆四十九年敕撰。",
+      "work_id": "d59f2ntpnjsy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "台灣紀略",
+      "content": "《台灣紀略》七十卷。乾隆五十三年敕撰。",
+      "work_id": "d59f2nc58r9d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "安南紀略",
+      "content": "《安南紀略》三十二卷。乾隆五十六年敕撰。",
+      "work_id": "d59f2nc58r9e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "廓爾喀紀略",
+      "content": "《廓爾喀紀略》五十四卷。乾隆六十年敕撰。",
+      "work_id": "d59f2nc5jzsw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "巴布勒紀略",
+      "content": "《巴布勒紀略》二十六卷。乾隆時敕撰。",
+      "work_id": "d59f2nc5jzsx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平苗匪紀略",
+      "content": "《平苗匪紀略》五十二卷。嘉慶二年，鄂輝等奉敕撰。",
+      "work_id": "d59f2nc5v8cg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "剿平三省邪匪方略前編",
+      "content": "《剿平三省邪匪方略前編》三百六十一卷，《續編》三十六卷，《附編》十二卷。嘉慶十五年，慶桂等奉敕撰。",
+      "work_id": "d59f2nc5v8ch"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續編",
+      "content": "",
+      "content_from": "剿平三省邪匪方略前編",
+      "work_id": "d59f2nc5v8ch",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《剿平三省邪匪方略前編》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "附編",
+      "content": "",
+      "content_from": "剿平三省邪匪方略前編",
+      "work_id": "d59f2nc5v8ch",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《剿平三省邪匪方略前編》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定教匪紀略",
+      "content": "《平定教匪紀略》四十二卷。嘉慶二十一年，托津等奉敕撰。",
+      "work_id": "d59f2nc5v8ci"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定回疆剿捦逆裔方略",
+      "content": "《平定回疆剿捦逆裔方略》八十卷。道光九年，曹振鏞等奉敕撰。",
+      "work_id": "d59f2nc66gw0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "剿平粵匪方略",
+      "content": "《剿平粵匪方略》四百二十卷。同治十一年敕撰。",
+      "work_id": "d59f2nc66gw1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "剿平捻匪方略",
+      "content": "《剿平捻匪方略》三百二十卷。同治十一年敕撰。",
+      "work_id": "d59f2nc6hpfk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定陝甘新疆回匪方略",
+      "content": "《平定陝甘新疆回匪方略》三百二十卷。光緒二十二年敕撰。",
+      "work_id": "d59f2nc6hpfl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定雲南回匪方略",
+      "content": "《平定雲南回匪方略》五十卷。光緒二十二年敕撰。",
+      "work_id": "d59f2nc6sxz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定貴州苗匪紀略",
+      "content": "《平定貴州苗匪紀略》四十卷。光緒二十二年敕撰。",
+      "work_id": "d59f2nc6sxz5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "繹史",
+      "content": "《繹史》一百六十卷。馬驌撰。",
+      "work_id": "d59f2mccdwcg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "左傳紀事本末",
+      "content": "《左傳紀事本末》五十三卷。高士奇撰。",
+      "work_id": "d59f2mccdwch"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通鑒本末紀要",
+      "content": "《通鑒本末紀要》八十一卷。蔡毓榮撰。",
+      "work_id": "d59f2nc746io"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "遼史紀事本末",
+      "content": "《遼史紀事本末》四十卷，《金史紀事本末》五十二卷。李有棠撰。",
+      "work_id": "d59f2nc746ip"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金史紀事本末",
+      "content": "",
+      "content_from": "遼史紀事本末",
+      "work_id": "d59f2nc746iq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史紀事本末",
+      "content": "《明史紀事本末》八十卷。谷應泰撰。",
+      "work_id": "d59f2mcbrf9d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續明紀事本末",
+      "content": "《續明紀事本末》十八卷。倪在田撰。",
+      "work_id": "d59f2nc7ff28"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明朝紀事本末補編",
+      "content": "《明朝紀事本末補編》五卷。彭孫貽撰。",
+      "work_id": "d59f2nc7ff29"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三籓紀事本末",
+      "content": "《三籓紀事本末》四卷。楊陸榮撰。",
+      "work_id": "d59f2nc7qnls"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四籓始末",
+      "content": "《四籓始末》四卷。錢名世撰。",
+      "work_id": "d59f2nc7qnlt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "綏寇紀略",
+      "content": "《綏寇紀略》十二卷。吳偉業撰。",
+      "work_id": "d59f2mcbrf9c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "滇考",
+      "content": "《滇考》二卷。馮甦撰。",
+      "work_id": "d59f2ntql9fk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "皇朝武功紀盛",
+      "content": "《皇朝武功紀盛》四卷。趙翼撰。",
+      "work_id": "d59f2nc7qnlu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "聖武記",
+      "content": "《聖武記》十四卷。魏源撰。",
+      "work_id": "d59f2nc81w5c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定羅剎方略",
+      "content": "《平定羅剎方略》四卷。不著撰人氏名。《平台紀略》一卷，附《東徵集》六卷。藍鼎元撰。",
+      "work_id": "d59f2nc81w5d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定粵匪紀略",
+      "content": "《平定粵匪紀略》十卷，《附記》四卷。杜文瀾撰。",
+      "work_id": "d59f2nc8d4ow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "附記",
+      "content": "",
+      "content_from": "平定粵匪紀略",
+      "work_id": "d59f2nc8d4ox"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "湘軍志",
+      "content": "《湘軍志》十六卷。王闓運撰。",
+      "work_id": "d59f2mxmphxe"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "湘軍記",
+      "content": "《湘軍記》二十卷。王定安撰。",
+      "work_id": "d59f2nc8d4oy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平浙紀略",
+      "content": "《平浙紀略》十六卷。秦緗業、陳鍾英同撰。",
+      "work_id": "d59f2nc8od8g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "吳中平寇記",
+      "content": "《吳中平寇記》八卷。錢勖撰。",
+      "work_id": "d59f2nc8od8h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "淮軍平捻記",
+      "content": "《淮軍平捻記》十二卷。周世澄撰。",
+      "work_id": "d59f2nc8zls0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "豫軍紀略",
+      "content": "《豫軍紀略》十二卷。尹耕雲撰。",
+      "work_id": "d59f2nc9aubk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "山東軍興紀略",
+      "content": "《山東軍興紀略》二十二卷。不著撰人氏名。《霆軍紀略》十六卷。陳昌撰。",
+      "work_id": "d59f2nc9aubl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平定關隴紀略",
+      "content": "《平定關隴紀略》十三卷。易孔昭、胡孚駿同撰。",
+      "work_id": "d59f2nc9m2v4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "粵東剿匪紀略",
+      "content": "《粵東剿匪紀略》五卷。陳坤撰。",
+      "work_id": "d59f2nc9m2v5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "平回志",
+      "content": "《平回志》八卷。楊毓秀撰。",
+      "work_id": "d59f2nc9xbeo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "剿定新疆記",
+      "content": "《剿定新疆記》八卷。魏光燾撰。",
+      "work_id": "d59f2nc9xbep"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "浙東籌防錄",
+      "content": "《浙東籌防錄》四卷。薛福成撰。",
+      "work_id": "d59f2nc9xbeq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "國朝柔遠記",
+      "content": "《國朝柔遠記》十八卷。王之春撰。",
+      "work_id": "d59f2nca8jy8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中西紀事",
+      "content": "《中西紀事》二十四卷。夏燮撰。",
+      "work_id": "d59f2nca8jy9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "普法戰紀",
+      "content": "《普法戰紀》二十卷。王韜撰。",
+      "work_id": "d59f2nca8jya"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中東戰紀本末",
+      "content": "《中東戰紀本末》八卷。蔡爾康撰。",
+      "work_id": "d59f2ncajshs"
+    }
+  ]
+}

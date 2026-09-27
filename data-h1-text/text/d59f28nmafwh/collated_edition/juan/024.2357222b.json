@@ -1,0 +1,450 @@
+{
+  "title": "儒家類",
+  "updated_at": "2026-08-08",
+  "sections": [
+    {
+      "title": "《曾子》二卷目一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《曾子》二卷目一卷。魯國曾參撰。",
+      "work_id": "d59f2evpqr5s",
+      "book_title": "曾子",
+      "n_juan": 2,
+      "author_info": "目一卷"
+    },
+    {
+      "title": "《子思子》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《子思子》七卷魯穆公師孔伋撰。",
+      "work_id": "d59f2evwlz40",
+      "book_title": "子思子",
+      "n_juan": 7,
+      "author_info": "魯穆公師孔伋撰"
+    },
+    {
+      "title": "《公孫尼子》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《公孫尼子》一卷尼，似孔子弟子。",
+      "work_id": "d59f2evq1zpe",
+      "book_title": "公孫尼子",
+      "n_juan": 1
+    },
+    {
+      "title": "《孟子》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孟子》十四卷齊卿孟軻撰，趙岐注。",
+      "work_id": "d59f20a3cxs0",
+      "book_title": "孟子",
+      "n_juan": 14,
+      "author_info": "齊卿孟軻撰"
+    },
+    {
+      "title": "《孟子》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孟子》七卷鄭玄注。",
+      "work_id": "d59f24mhvk76",
+      "book_title": "孟子",
+      "n_juan": 7,
+      "author_info": "鄭玄注"
+    },
+    {
+      "title": "《孟子》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孟子》七卷劉熙注。梁有《孟子》九卷，綦毋邃撰，亡。",
+      "work_id": "d59ezajwvda8",
+      "book_title": "孟子",
+      "n_juan": 7,
+      "author_info": "劉熙注"
+    },
+    {
+      "title": "《董子》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《董子》一卷戰國時董無心撰。",
+      "work_id": "d59f2evp4a2o",
+      "book_title": "董子",
+      "n_juan": 1,
+      "author_info": "戰國時董無心撰"
+    },
+    {
+      "title": "《魯連子》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魯連子》五卷、錄一卷魯連，齊人，不仕，稱為先生。",
+      "book_title": "魯連子",
+      "n_juan": 5,
+      "author_info": "魯連",
+      "work_id": "d59f2evxuxa9"
+    },
+    {
+      "title": "《賈子》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《賈子》十卷錄一卷。漢梁太傅賈誼撰。",
+      "work_id": "d59f1i9chatc",
+      "book_title": "賈子",
+      "n_juan": 10
+    },
+    {
+      "title": "《揚子法言》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《揚子法言》十五卷、解一卷揚雄撰，李軌注。梁有《揚子法言》六卷，侯苞注。亡。",
+      "work_id": "d59f2087mfwg",
+      "book_title": "揚子法言",
+      "n_juan": 15,
+      "author_info": "揚雄撰"
+    },
+    {
+      "title": "《揚子法言》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《揚子法言》十三卷宋衷注。",
+      "work_id": "d59f23ntwsg2",
+      "book_title": "揚子法言",
+      "n_juan": 13,
+      "author_info": "宋衷注",
+      "link_basis": "隋志儒家類「《揚子法言》十三卷宋衷注」，是宋衷注本——依 SCHEMA〈同題二條〉六，注家有其創作；庫中正有《楊子法言》宋衷注 1evcpd0il5n28，今改繫，非李軌注十五卷本。"
+    },
+    {
+      "title": "《揚子太玄經》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《揚子太玄經》九卷宋衷注。梁有《揚子太玄經》九卷，揚雄自作章句，亡。",
+      "work_id": "d59f24lmntvq",
+      "book_title": "揚子太玄經",
+      "n_juan": 9,
+      "author_info": "宋衷注"
+    },
+    {
+      "title": "《揚子太玄經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《揚子太玄經》十卷陸績、宋衷注。",
+      "work_id": "d59f2pvrel1c",
+      "book_title": "揚子太玄經",
+      "n_juan": 10,
+      "author_info": "陸績、宋衷注",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcmnc6yk1z4，今歸 1evcs0kvtj6kg《揚子太玄經陸績注》。隋志儒家類三著《揚子太玄經》，注者各異（宋衷九卷、陸績宋衷十卷、蔡文邵十卷）；依 SCHEMA〈同題二條〉六，注本自是一物，注者異即二書。新唐志「陸績注揚子太玄經十二卷」異志卷數異不作二書之證。"
+    },
+    {
+      "title": "《揚子太玄經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《揚子太玄經》十卷蔡文邵注。梁有《揚子太玄經》十四卷，虞翻注；《揚子太玄經》十三卷，陸凱注；《揚子太玄經》七卷，王肅注。亡。",
+      "work_id": "d59f2q0knaps",
+      "book_title": "揚子太玄經",
+      "n_juan": 10,
+      "author_info": "蔡文邵注",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcmnc6yk1z4，今歸 1evcpd0jffnr4《楊子太玄經》蔡文邵注。隋志「《揚子太玄經》十卷蔡文邵注」，與舊唐志「又一十卷蔡文邵注」卷數撰人全合。"
+    },
+    {
+      "title": "《魏子》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏子》三卷後漢會稽人魏朗撰。梁有《文檢》六卷，似後漢末人作，亡。",
+      "work_id": "d59f23jpbtvk",
+      "book_title": "魏子",
+      "n_juan": 3,
+      "author_info": "後漢會稽人魏朗撰"
+    },
+    {
+      "title": "《牟子》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《牟子》二卷後漢太尉牟融撰。",
+      "work_id": "d59f23nqh6h1",
+      "book_title": "牟子",
+      "n_juan": 2,
+      "author_info": "後漢太尉牟融撰"
+    },
+    {
+      "title": "《王子正論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《王子正論》十卷王肅撰。梁有《去伐論集》三卷，王粲撰。亡。",
+      "work_id": "d59f27sy82kk",
+      "book_title": "王子正論",
+      "n_juan": 10,
+      "author_info": "王肅撰"
+    },
+    {
+      "title": "《杜氏體論》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《杜氏體論》四卷魏幽州刺史杜恕撰。梁有《新書》五卷，王基撰；《周子》九卷，吳中書郎周昭撰。亡。",
+      "work_id": "d59f27sdxn9c",
+      "book_title": "杜氏體論",
+      "n_juan": 4,
+      "author_info": "魏幽州刺史杜恕撰"
+    },
+    {
+      "title": "《顧子新語》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《顧子新語》十二卷吳太常顧譚撰。《通語》十卷，晉尚書左丞殷興撰；《典語》十卷、《典語別》二卷，並吳中夏督陸景撰。亡。",
+      "work_id": "d59f27t3uccj",
+      "book_title": "顧子新語",
+      "n_juan": 12,
+      "author_info": "吳太常顧譚撰"
+    },
+    {
+      "title": "《譙子法訓》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《譙子法訓》八卷譙周撰。梁有《譙子五教志》五卷，亡。",
+      "work_id": "d59f27svexog",
+      "book_title": "譙子法訓",
+      "n_juan": 8,
+      "author_info": "譙周撰"
+    },
+    {
+      "title": "《袁子正論》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《袁子正論》十九卷袁准撰。梁又有《袁子正書》二十五卷，袁准撰；《孫氏成敗志》三卷，孫毓撰；《古今通論》二卷，王嬰撰；《蔡氏化清經》十卷，松滋令蔡洪撰；《通經》二卷，晉丞相從事中郎王長文撰。",
+      "work_id": "d59f27uxpeyo",
+      "book_title": "袁子正論",
+      "n_juan": 19,
+      "author_info": "袁准撰"
+    },
+    {
+      "title": "《新論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新論》十卷晉散騎常侍夏侯湛撰。梁有《楊子物理論》十六卷，《楊子大元經》十四卷，並晉徵士楊泉撰；《新論》十卷，晉金紫光祿大夫華譚撰；《梅子新論》一卷。亡。",
+      "work_id": "d59f27w5en0h",
+      "book_title": "新論",
+      "n_juan": 10,
+      "author_info": "晉散騎常侍夏侯湛撰"
+    },
+    {
+      "title": "《志林新書》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《志林新書》三十卷虞喜撰。梁有《廣林》二十四卷，又《後林》十卷，虞喜撰；《干子》十八卷，干寶撰；《閎論》二卷，晉江州從事蔡韶撰；《顧子》十卷，晉揚州主簿顧夷撰。亡。",
+      "work_id": "d59f27uflngk",
+      "book_title": "志林新書",
+      "n_juan": 30,
+      "author_info": "虞喜撰"
+    },
+    {
+      "title": "《要覽》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《要覽》十卷晉郡儒林祭酒呂竦撰。",
+      "work_id": "d59f27uc61hd",
+      "book_title": "要覽",
+      "n_juan": 10,
+      "author_info": "晉郡儒林祭酒呂竦撰"
+    },
+    {
+      "title": "《正覽》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《正覽》六卷梁太子詹事周舍撰。梁有《三統五德論》二卷，曹思文撰，亡。",
+      "work_id": "d59f285bnpqb",
+      "book_title": "正覽",
+      "n_juan": 6,
+      "author_info": "梁太子詹事周舍撰"
+    },
+    {
+      "title": "《諸葛武侯集誡》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《諸葛武侯集誡》二卷",
+      "work_id": "d59f2q7h4742",
+      "book_title": "諸葛武侯集誡",
+      "n_juan": 2
+    },
+    {
+      "title": "《眾賢誡》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《眾賢誡》十三卷",
+      "work_id": "d59f2q18ok5c",
+      "book_title": "眾賢誡",
+      "n_juan": 13
+    },
+    {
+      "title": "《女篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《女篇》一卷",
+      "work_id": "d59f2q6nrvnl",
+      "book_title": "女篇",
+      "n_juan": 1
+    },
+    {
+      "title": "《女鑒》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《女鑒》一卷",
+      "work_id": "d59f2nekc2yq",
+      "book_title": "女鑒",
+      "n_juan": 1
+    },
+    {
+      "title": "《婦人訓誡集》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《婦人訓誡集》十一卷",
+      "work_id": "d59f285trh8g",
+      "book_title": "婦人訓誡集",
+      "n_juan": 11
+    },
+    {
+      "title": "《娣姒訓》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《娣姒訓》一卷",
+      "work_id": "d59f2q5cn20w",
+      "book_title": "娣姒訓",
+      "n_juan": 1
+    },
+    {
+      "title": "《曹大家女誡》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《曹大家女誡》一卷",
+      "work_id": "d59f2pt1pb7k",
+      "book_title": "曹大家女誡",
+      "n_juan": 1
+    },
+    {
+      "title": "《貞順志》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《貞順志》一卷",
+      "work_id": "d59f2pxepo8w",
+      "book_title": "貞順志",
+      "n_juan": 1
+    },
+    {
+      "title": "《桓子新論》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桓子新論》十七卷後漢六安丞桓譚撰。",
+      "work_id": "d59f23nr3nk1",
+      "book_title": "桓子新論",
+      "n_juan": 17,
+      "author_info": "後漢六安丞桓譚撰"
+    },
+    {
+      "title": "《晏子春秋》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晏子春秋》七卷齊大夫晏嬰撰。",
+      "work_id": "d59ezkwzbxfk",
+      "book_title": "晏子春秋",
+      "n_juan": 7,
+      "author_info": "齊大夫晏嬰撰"
+    },
+    {
+      "title": "《孫卿子》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孫卿子》十二卷楚蘭陵令荀況撰。梁有王孫子一卷，亡。",
+      "work_id": "d59ezahp9urk",
+      "book_title": "孫卿子",
+      "n_juan": 12,
+      "author_info": "楚蘭陵令荀況撰"
+    },
+    {
+      "title": "《新語》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新語》二卷陸賈撰。",
+      "work_id": "d59f1ir76xa8",
+      "book_title": "新語",
+      "n_juan": 2,
+      "author_info": "陸賈撰"
+    },
+    {
+      "title": "《鹽鐵論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鹽鐵論》十卷漢廬江府丞桓寬撰。",
+      "work_id": "d59f208wwnwg",
+      "book_title": "鹽鐵論",
+      "n_juan": 10,
+      "author_info": "漢廬江府丞桓寬撰"
+    },
+    {
+      "title": "《新序》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新序》三十卷錄一卷。劉向撰。",
+      "work_id": "d59f1iqjs4jk",
+      "book_title": "新序",
+      "n_juan": 30
+    },
+    {
+      "title": "《說苑》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《說苑》二十卷劉向撰。",
+      "work_id": "d59f1iqmwhz4",
+      "book_title": "說苑",
+      "n_juan": 20,
+      "author_info": "劉向撰"
+    },
+    {
+      "title": "《潛夫論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《潛夫論》十卷後漢處士王符撰。梁有王逸《正部論》八卷，後漢侍中王逸撰；《後序》十二卷，後漢司隸校尉應奉撰，《周生子要論》一卷，錄一卷，魏侍中周生烈撰。亡。",
+      "work_id": "d59f1iqww3cw",
+      "book_title": "潛夫論",
+      "n_juan": 10,
+      "author_info": "後漢處士王符撰"
+    },
+    {
+      "title": "《申鑒》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《申鑒》五卷荀悅撰。",
+      "work_id": "d59f207cpy4g",
+      "book_title": "申鑒",
+      "n_juan": 5,
+      "author_info": "荀悅撰"
+    },
+    {
+      "title": "《典論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《典論》五卷魏文帝撰。",
+      "work_id": "d59f27ssx1c0",
+      "book_title": "典論",
+      "n_juan": 5,
+      "author_info": "魏文帝撰"
+    },
+    {
+      "title": "《徐氏中論》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《徐氏中論》六卷魏太子文學徐幹撰，梁目一卷。",
+      "work_id": "d59f27t5ej2a",
+      "book_title": "徐氏中論",
+      "n_juan": 6,
+      "author_info": "魏太子文學徐幹撰"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右六十二部，五百三十卷。通計亡書，合六十七部，六百九卷。"
+    },
+    {
+      "title": "儒家類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "儒者，所以助人君明教化者也。聖人之教，非家至而戶說，故有儒者宣而明之。其大抵本于仁義及五常之道，黃帝、堯、舜、禹、湯、文、武，鹹由此則。《周官》：太宰以九兩系邦國之人，其四曰儒是也。其後陵夷衰亂，儒道廢闕。仲尼祖述前代，修正六經，三千之徒，並受其義。至於戰國，孟軻、子思、荀卿之流，宗而師之，各有著述，發明其指。所謂中庸之教，百王不易者也。俗儒為之，不顧其本，苟欲嘩眾，多設問難，便辭巧說，亂其大體，致令學者難曉，故曰「博而寡要」。"
+    }
+  ]
+}

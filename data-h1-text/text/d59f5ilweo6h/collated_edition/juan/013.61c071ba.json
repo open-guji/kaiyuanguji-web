@@ -1,0 +1,89 @@
+{
+  "title": "經部·樂類",
+  "sections": [
+    {
+      "title": "樂類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "阮籍　樂論",
+      "level": 3,
+      "type": "book",
+      "content": "阮籍　樂論　阮籍撰。據《漢書·五行志》注引。",
+      "work_id": "d59f27t1nojk",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "裴秀　樂論",
+      "level": 3,
+      "type": "book",
+      "content": "裴秀　樂論　裴秀撰。據裴注《國志》引《文章叙錄》。",
+      "work_id": "d59f27vwz8cj",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "嵇康　聲無哀樂論",
+      "level": 3,
+      "type": "book",
+      "content": "嵇康　聲無哀樂論　嵇康撰。據本書傳。",
+      "work_id": "d59f27sa6sqr",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "荀勖　樂府歌詩十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　樂府歌詩十卷",
+      "work_id": "d59f9uwbeosk",
+      "note": "撰人後置：原文「上四種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖　太樂歌辭二卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　太樂歌辭二卷　案《通志略》作「大」。",
+      "work_id": "d59f27uo124i",
+      "note": "撰人後置：原文「上四種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖　太常雜歌辭三卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　太常雜歌辭三卷　案《舊唐志》作「樂」。",
+      "work_id": "d59f9uwbeosl",
+      "note": "撰人後置：原文「上四種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖　燕樂歌辭十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　燕樂歌辭十卷　據《通志略》。　上四種並荀勖撰。",
+      "work_id": "d59f9s1otvk5",
+      "note": "撰人後置：原文「上四種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "琴操三卷",
+      "level": 3,
+      "type": "book",
+      "content": "琴操三卷　案《宋志》有「引」字。；案《新唐志》作「一」。；孔衍撰。　案《中興書目》云：「以琴聲調中《周詩》五篇，古《操引曲》共五十五篇，①述所以命題之意。」《直齋書錄》曰：「今《操引》才二十一篇，非全書也。」",
+      "work_id": "d59f9uwbpxc0",
+      "note": "【題為校語所隔，今合】　【題為校語所隔，今合】"
+    },
+    {
+      "title": "戴氏　琴譜四卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴氏　琴譜四卷　戴氏撰。　案疑即戴逵。",
+      "work_id": "d59f28jrdu6b",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "樂類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右樂類九種。"
+    }
+  ]
+}

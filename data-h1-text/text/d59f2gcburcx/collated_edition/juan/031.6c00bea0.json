@@ -1,0 +1,307 @@
+{
+  "title": "兵書類",
+  "sections": [
+    {
+      "title": "《太公陰謀》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太公陰謀》三卷",
+      "work_id": "d59f2q91m58g"
+    },
+    {
+      "title": "《太公金匱》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太公金匱》二卷",
+      "work_id": "d59f2q7596gx"
+    },
+    {
+      "title": "《太公六韜》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太公六韜》六卷",
+      "work_id": "d59ezai3mrr4"
+    },
+    {
+      "title": "《司馬法》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《司馬法》三卷田穰苴撰。",
+      "work_id": "d59f2evs8ni8"
+    },
+    {
+      "title": "《孫子兵法》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《孫子兵法》十三卷孫武撰，魏武帝注。",
+      "work_id": "d59f27xeo1s0"
+    },
+    {
+      "title": "又二卷孟氏解。",
+      "level": 3,
+      "type": "book",
+      "content": "又二卷孟氏解。",
+      "work_id": "d59f2846ge0y"
+    },
+    {
+      "title": "又二卷沈友注。",
+      "level": 3,
+      "type": "book",
+      "content": "又二卷沈友注。",
+      "work_id": "d59f24mhvk78"
+    },
+    {
+      "title": "《黃石公三略》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃石公三略》三卷。",
+      "work_id": "d59f1mpa1ibk"
+    },
+    {
+      "title": "《三略訓》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三略訓》三卷",
+      "work_id": "d59f2q2x8lqa"
+    },
+    {
+      "title": "《張良經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《張良經》一卷張良撰。",
+      "work_id": "d59f24lnws1v"
+    },
+    {
+      "title": "《雜兵法》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜兵法》二十四卷",
+      "work_id": "d59f2q393m69"
+    },
+    {
+      "title": "《兵法捷要》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵法捷要》七卷魏武帝撰。",
+      "work_id": "d59f27sim7es"
+    },
+    {
+      "title": "《兵法要略》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵法要略》十卷魏文帝撰。",
+      "work_id": "d59f27sdxn9e"
+    },
+    {
+      "title": "《兵記》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵記》十二卷司馬彪撰。",
+      "work_id": "d59f27w1cjy9"
+    },
+    {
+      "title": "《兵林》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵林》六卷孔衍撰。",
+      "work_id": "d59f27vdmio0"
+    },
+    {
+      "title": "《玉韜》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玉韜》十卷梁元帝撰。",
+      "work_id": "d59f285zozk4"
+    },
+    {
+      "title": "《真人水鏡》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《真人水鏡》十卷陶弘景撰。",
+      "work_id": "d59f285hl81v"
+    },
+    {
+      "title": "《握鏡》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《握鏡》一卷陶弘景撰。",
+      "work_id": "d59f286l8d1e"
+    },
+    {
+      "title": "《兵書要略》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書要略》十卷宇文憲撰。",
+      "work_id": "d59f286hsr28"
+    },
+    {
+      "title": "《太一兵法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太一兵法》一卷",
+      "work_id": "d59f2qaox88x"
+    },
+    {
+      "title": "《太公陰謀三十六用》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太公陰謀三十六用》一卷",
+      "work_id": "d59f2q6ll7nk"
+    },
+    {
+      "title": "《伍子公兵法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《伍子公兵法》一卷",
+      "work_id": "d59f2q5agdts"
+    },
+    {
+      "title": "《吳孫子三十二壘經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吳孫子三十二壘經》一卷",
+      "work_id": "d59f2q8be7sw"
+    },
+    {
+      "title": "《玉帳經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玉帳經》一卷",
+      "work_id": "d59f2pyizabk"
+    },
+    {
+      "title": "《黃石公陰謀乘鬥魁剛行軍秘》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃石公陰謀乘鬥魁剛行軍秘》一卷",
+      "work_id": "d59f2q9gaakg"
+    },
+    {
+      "title": "《武德圖五兵八陣法要》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《武德圖五兵八陣法要》一卷",
+      "work_id": "d59f28ki88w4"
+    },
+    {
+      "title": "《三陰圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三陰圖》一卷",
+      "work_id": "d59f2pu2ujnl"
+    },
+    {
+      "title": "《黃帝太公三宮法要訣》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃帝太公三宮法要訣》一卷",
+      "work_id": "d59f2qa9xukg"
+    },
+    {
+      "title": "《張氏七篇》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《張氏七篇》七卷張良撰。",
+      "work_id": "d59f24lnws1w"
+    },
+    {
+      "title": "《承神兵書》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《承神兵書》八卷",
+      "work_id": "d59f2q08h14w"
+    },
+    {
+      "title": "《兵機》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵機》十五卷",
+      "work_id": "d59f2pygsmip"
+    },
+    {
+      "title": "《兵書要略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵書要略》一卷",
+      "work_id": "d59f2pruxs74",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evcmndfw3sw0，今另立《兵書要略》1ex0docus4t8h 繫之。舊唐志兵書類「《兵書要略》十卷宇文憲撰」之外別著「《兵書要略》一卷」，同志兩著、各有全著錄語而卷數異，前者明著撰人、後者不著，依 SCHEMA〈同題二條〉一（同志卷數異疑二書）別出。附記：庫中本條所繫宋史藝文志「《兵書要略》一卷」疑亦屬此新條，本輪未移。"
+    },
+    {
+      "title": "《新授兵書》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新授兵書》三十卷隋高祖撰。",
+      "work_id": "d59f2q3l9v5s"
+    },
+    {
+      "title": "《六軍鏡》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《六軍鏡》三卷李靖撰。",
+      "work_id": "d59f28jw2ebp"
+    },
+    {
+      "title": "《用兵撮要》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《用兵撮要》二卷",
+      "work_id": "d59f2pz977k1"
+    },
+    {
+      "title": "《兵春秋》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《兵春秋》一卷",
+      "work_id": "d59f2q0acgsg"
+    },
+    {
+      "title": "《許子新書軍勝》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《許子新書軍勝》十卷",
+      "work_id": "d59f2q2pfo5c"
+    },
+    {
+      "title": "《金海》四十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《金海》四十七卷蕭吉撰。",
+      "work_id": "d59f28m3z5du"
+    },
+    {
+      "title": "《王佐秘珠》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《王佐秘珠》五卷樂產撰。",
+      "work_id": "d59f2ptzq5ts"
+    },
+    {
+      "title": "《金韜》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《金韜》十卷劉祐撰。",
+      "work_id": "d59f2mpvyku8"
+    },
+    {
+      "title": "《懸鏡》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《懸鏡》十卷李淳風撰。",
+      "work_id": "d59f28kd8g74"
+    },
+    {
+      "title": "《龍武玄兵圖》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《龍武玄兵圖》二卷解忠鯁饌。",
+      "work_id": "d59f2q9xrl6p"
+    },
+    {
+      "title": "《臨戎孝經》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《臨戎孝經》二卷員半千撰。</poem>",
+      "work_id": "d59f28n04lc4"
+    }
+  ]
+}

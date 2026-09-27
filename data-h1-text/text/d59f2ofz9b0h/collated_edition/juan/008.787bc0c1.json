@@ -1,0 +1,39 @@
+{
+  "title": "經部·論語類",
+  "sections": [
+    {
+      "title": "論語類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "論語集註補闕　　明帝注",
+      "level": 3,
+      "type": "book",
+      "content": "論語集註補闕　二卷。　　明帝注",
+      "work_id": "d59f7z433ock"
+    },
+    {
+      "title": "論語注　　孔澄之注",
+      "level": 3,
+      "type": "book",
+      "content": "論語注　十卷。　　孔澄之注",
+      "work_id": "d59f7z433ocl"
+    },
+    {
+      "title": "論語疏　　張略等撰",
+      "level": 3,
+      "type": "book",
+      "content": "論語疏　八卷。　　張略等撰",
+      "work_id": "d59f284aih34"
+    },
+    {
+      "title": "五經雜義　　孫暢之撰",
+      "level": 3,
+      "type": "book",
+      "content": "五經雜義　六卷。　　孫暢之撰",
+      "work_id": "d59f27u2hon7"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "丙部子錄·名家類",
+  "sections": [
+    {
+      "title": "名家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "劉昞　注人物志三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉昞　注人物志三卷　見兩《唐志》，惟「昞」作「炳」，今從《隋志》史部改正。",
+      "work_id": "d59f9s1mygap"
+    },
+    {
+      "title": "張湛　文子注",
+      "level": 3,
+      "type": "book",
+      "content": "張湛　文子注　見《文選》注。",
+      "work_id": "d59f27wk2sjm"
+    },
+    {
+      "title": "名家類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右名家類，二家。"
+    }
+  ]
+}

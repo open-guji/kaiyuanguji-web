@@ -1,0 +1,38 @@
+{
+  "title": "經部·春秋類",
+  "sections": [
+    {
+      "title": "春秋類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "張思伯　左氏傳刊例十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張思伯　左氏傳刊例十卷　張思伯撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98exombq"
+    },
+    {
+      "title": "姚文安　左傳服氏解駁妄",
+      "level": 3,
+      "type": "book",
+      "content": "姚文安　左傳服氏解駁妄　姚文安撰，見《北史·李崇祖傳》。《齊書》文安、崇祖俱無傳。《隋志》未收。",
+      "work_id": "d59f98exombr"
+    },
+    {
+      "title": "李鉉　三傳異同",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　三傳異同　李鉉撰，見本傳。《北史》同。《隋志》未收。",
+      "work_id": "d59f98exombs"
+    },
+    {
+      "title": "春秋類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右《春秋》四部，卷數可考者一部十卷，卷數失考者三部。未收入《隋志》。"
+    }
+  ]
+}

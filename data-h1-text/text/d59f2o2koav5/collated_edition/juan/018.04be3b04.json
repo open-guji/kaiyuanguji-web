@@ -1,0 +1,228 @@
+{
+  "title": "經部·雜傳類",
+  "sections": [
+    {
+      "title": "雜傳類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "武帝　孝子傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　孝子傳三十卷　《唐志》。",
+      "work_id": "d59f2862i4g3",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "阮孝緒　高隱傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮孝緒　高隱傳十卷　《唐》。《隋志》。",
+      "work_id": "d59f286oz7k3",
+      "note": "原書腳註①：《舊唐志》作「二卷」"
+    },
+    {
+      "title": "鍾杬　良吏傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "鍾杬　良吏傳十卷　《唐》。",
+      "work_id": "d59f286onz0j"
+    },
+    {
+      "title": "先儒傳五卷",
+      "level": 3,
+      "type": "book",
+      "content": "先儒傳五卷　《唐》。",
+      "work_id": "d59f2pupbmrk",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "王縝之　童子傳二卷",
+      "level": 3,
+      "type": "book",
+      "content": "王縝之　童子傳二卷　《隋志》。",
+      "work_id": "d59f285gyqyp"
+    },
+    {
+      "title": "元帝　孝德傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　孝德傳三十卷　《唐》。",
+      "work_id": "d59f285883r6"
+    },
+    {
+      "title": "元帝　忠臣傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　忠臣傳三十卷　《唐》。",
+      "work_id": "d59f286m62o0",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "元帝　全德志一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　全德志一卷　《唐》。",
+      "work_id": "d59f285orojl",
+      "note": "承前省略撰人（元帝）"
+    },
+    {
+      "title": "元帝　丹陽尹傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　丹陽尹傳十卷　《唐》。",
+      "work_id": "d59f286eodmp",
+      "note": "承前省略撰人（元帝）"
+    },
+    {
+      "title": "元帝　同姓名錄",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　同姓名錄　《唐》。",
+      "work_id": "d59f285strlu",
+      "note": "承前省略撰人（元帝）"
+    },
+    {
+      "title": "元帝　懷舊志九卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　懷舊志九卷　《唐》。",
+      "work_id": "d59f286t1am9",
+      "note": "承前省略撰人（元帝）。原書腳註②"
+    },
+    {
+      "title": "劉昭　幼童傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉昭　幼童傳十卷　《唐》。",
+      "work_id": "d59f28668yyp"
+    },
+    {
+      "title": "任昉　雜傳一百二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉　雜傳一百二十卷　《唐》。《隋志》「三十六卷，本一百四十七卷」。",
+      "work_id": "d59f285yr9xf",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "吴均　錢塘先賢傳五卷",
+      "level": 3,
+      "type": "book",
+      "content": "吴均　錢塘先賢傳五卷　《唐》。",
+      "work_id": "d59f99gnixaa"
+    },
+    {
+      "title": "蕭子顯　貴儉傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子顯　貴儉傳三十卷　《唐》。",
+      "work_id": "d59f99gnixab",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "文帝　昭明太子傳五卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　昭明太子傳五卷　紀。",
+      "work_id": "d59f9c0xee4n"
+    },
+    {
+      "title": "文帝　諸王傳三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　諸王傳三十卷　紀。",
+      "work_id": "d59f2pv0k6bm",
+      "note": "「又」承前省略撰人（文帝）"
+    },
+    {
+      "title": "劉緄　先聖本紀十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉緄　先聖本紀十卷　《隋志》。昭子。",
+      "work_id": "d59f2q6hud4w",
+      "note": "OCR 作「劉縉」，劉昭子名緄，姑改作「緄」，把握中等，待覈"
+    },
+    {
+      "title": "明粲　明氏世錄六卷",
+      "level": 3,
+      "type": "book",
+      "content": "明粲　明氏世錄六卷　「信武記室」，《隋志》。《舊》五卷。《唐》同。",
+      "work_id": "d59f286onz0g",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "來奧　訪來傳十卷",
+      "level": 3,
+      "type": "book",
+      "content": "來奧　訪來傳十卷",
+      "work_id": "d59f2q2ji60x",
+      "note": "原書腳註⑥。「來奧」未詳，待覈"
+    },
+    {
+      "title": "盧思道　知己傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "盧思道　知己傳一卷",
+      "work_id": "d59f28kgctmo",
+      "note": "原書腳註⑦"
+    },
+    {
+      "title": "釋法進　江東名德傳三卷",
+      "level": 3,
+      "type": "book",
+      "content": "釋法進　江東名德傳三卷",
+      "work_id": "d59f2q774l4x",
+      "note": "原書腳註⑧"
+    },
+    {
+      "title": "梁故草堂法師傳一卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁故草堂法師傳一卷",
+      "work_id": "d59f2q813dog",
+      "note": "原書無撰人。原書腳註⑧"
+    },
+    {
+      "title": "華陽子自序一卷",
+      "level": 3,
+      "type": "book",
+      "content": "華陽子自序一卷",
+      "work_id": "d59f2q7fv8ch",
+      "note": "原書無撰人。原書腳註⑨：《舊唐志》《新唐志》作茅處玄撰"
+    },
+    {
+      "title": "裴子野　續裴氏家傳三卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　續裴氏家傳三卷　本傳。",
+      "work_id": "d59f99gnixad",
+      "note": "原書腳註①：《梁書》《南史》本傳均作「二卷」"
+    },
+    {
+      "title": "元帝　繁華傳三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　繁華傳三卷　《金樓子》。",
+      "work_id": "d59f99gnixae"
+    },
+    {
+      "title": "元帝　黄妳自序三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　黄妳自序三卷　《金樓子》。",
+      "work_id": "d59f99gnixaf",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "劉向　高士傳二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉向　高士傳二卷　俊按：「向」乃「杳」字之誤。",
+      "work_id": "d59f99gnixag",
+      "note": "原書腳註②。原書自出校語，「劉向」當作「劉杳」，正文照錄"
+    }
+  ]
+}

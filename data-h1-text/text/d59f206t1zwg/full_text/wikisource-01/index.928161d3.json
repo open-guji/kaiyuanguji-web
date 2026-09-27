@@ -1,0 +1,268 @@
+{
+  "work_id": "d59f206t1zwg",
+  "version_label": "淮南子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E6%B7%AE%E5%8D%97%E5%AD%90",
+    "page_title": "淮南子",
+    "revid": 2375739,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "",
+  "total_chapters": 22,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "敘目",
+      "file": "001.md",
+      "page_title": "淮南子/敘目",
+      "revid": 1317353,
+      "md_len": 972
+    },
+    {
+      "n": 2,
+      "title": "原道訓",
+      "file": "002.md",
+      "page_title": "淮南子/原道訓",
+      "revid": 2630005,
+      "md_len": 7128
+    },
+    {
+      "n": 3,
+      "title": "俶真訓",
+      "file": "003.md",
+      "page_title": "淮南子/俶真訓",
+      "revid": 7909094,
+      "md_len": 6132
+    },
+    {
+      "n": 4,
+      "title": "天文訓",
+      "file": "004.md",
+      "page_title": "淮南子/天文訓",
+      "revid": 7909148,
+      "md_len": 8996
+    },
+    {
+      "n": 5,
+      "title": "墬形訓",
+      "file": "005.md",
+      "page_title": "淮南子/墜形訓",
+      "revid": 7908921,
+      "md_len": 4566
+    },
+    {
+      "n": 6,
+      "title": "時則訓",
+      "file": "006.md",
+      "page_title": "淮南子/時則訓",
+      "revid": 7909283,
+      "md_len": 6813
+    },
+    {
+      "n": 7,
+      "title": "覽冥訓",
+      "file": "007.md",
+      "page_title": "淮南子/覽冥訓",
+      "revid": 3933631,
+      "md_len": 3648
+    },
+    {
+      "n": 8,
+      "title": "精神訓",
+      "file": "008.md",
+      "page_title": "淮南子/精神訓",
+      "revid": 7909697,
+      "md_len": 5231
+    },
+    {
+      "n": 9,
+      "title": "本經訓",
+      "file": "009.md",
+      "page_title": "淮南子/本經訓",
+      "revid": 2606194,
+      "md_len": 4663
+    },
+    {
+      "n": 10,
+      "title": "主術訓",
+      "file": "010.md",
+      "page_title": "淮南子/主術訓",
+      "revid": 1513234,
+      "md_len": 11931
+    },
+    {
+      "n": 11,
+      "title": "繆稱訓",
+      "file": "011.md",
+      "page_title": "淮南子/繆稱訓",
+      "revid": 7904648,
+      "md_len": 6759
+    },
+    {
+      "n": 12,
+      "title": "齊俗訓",
+      "file": "012.md",
+      "page_title": "淮南子/齊俗訓",
+      "revid": 1809081,
+      "md_len": 8789
+    },
+    {
+      "n": 13,
+      "title": "道應訓",
+      "file": "013.md",
+      "page_title": "淮南子/道應訓",
+      "revid": 1965494,
+      "md_len": 11366
+    },
+    {
+      "n": 14,
+      "title": "氾論訓",
+      "file": "014.md",
+      "page_title": "淮南子/氾論訓",
+      "revid": 1809092,
+      "md_len": 9827
+    },
+    {
+      "n": 15,
+      "title": "詮言訓",
+      "file": "015.md",
+      "page_title": "淮南子/詮言訓",
+      "revid": 7904511,
+      "md_len": 7129
+    },
+    {
+      "n": 16,
+      "title": "兵略訓",
+      "file": "016.md",
+      "page_title": "淮南子/兵略訓",
+      "revid": 850046,
+      "md_len": 9471
+    },
+    {
+      "n": 17,
+      "title": "說山訓",
+      "file": "017.md",
+      "page_title": "淮南子/說山訓",
+      "revid": 1809109,
+      "md_len": 6543
+    },
+    {
+      "n": 18,
+      "title": "說林訓",
+      "file": "018.md",
+      "page_title": "淮南子/說林訓",
+      "revid": 1809119,
+      "md_len": 6109
+    },
+    {
+      "n": 19,
+      "title": "人間訓",
+      "file": "019.md",
+      "page_title": "淮南子/人間訓",
+      "revid": 8737759,
+      "md_len": 12619
+    },
+    {
+      "n": 20,
+      "title": "脩務訓",
+      "file": "020.md",
+      "page_title": "淮南子/脩務訓",
+      "revid": 7904476,
+      "md_len": 6103
+    },
+    {
+      "n": 21,
+      "title": "泰族訓",
+      "file": "021.md",
+      "page_title": "淮南子/泰族訓",
+      "revid": 7904569,
+      "md_len": 10957
+    },
+    {
+      "n": 22,
+      "title": "要略",
+      "file": "022.md",
+      "page_title": "淮南子/要略",
+      "revid": 850053,
+      "md_len": 4167
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "variants": [
+    {
+      "primary": "收",
+      "alt": [
+        "牧"
+      ]
+    },
+    {
+      "primary": "徐",
+      "alt": [
+        "除"
+      ]
+    },
+    {
+      "primary": "舍",
+      "alt": [
+        "含"
+      ]
+    },
+    {
+      "primary": "牂",
+      "alt": [
+        "䍧"
+      ]
+    },
+    {
+      "primary": "雟",
+      "alt": [
+        "雋"
+      ]
+    },
+    {
+      "primary": "日[爲]",
+      "alt": [
+        "曰"
+      ]
+    },
+    {
+      "primary": "星七",
+      "alt": [
+        "七星"
+      ]
+    },
+    {
+      "primary": "有",
+      "alt": [
+        "地"
+      ]
+    },
+    {
+      "primary": "斗",
+      "alt": [
+        "十"
+      ]
+    },
+    {
+      "primary": "牂",
+      "alt": [
+        "䍧"
+      ]
+    },
+    {
+      "primary": "臞",
+      "alt": [
+        "癯"
+      ]
+    }
+  ]
+}

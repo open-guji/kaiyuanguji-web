@@ -1,0 +1,207 @@
+{
+  "title": "史部·地誌類",
+  "sections": [
+    {
+      "title": "地誌類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "述征記　　郭緣生撰",
+      "level": 3,
+      "type": "book",
+      "content": "述征記　二卷。　　郭緣生撰",
+      "work_id": "d59f286gv1fm"
+    },
+    {
+      "title": "吳興記　　山謙之撰",
+      "level": 3,
+      "type": "book",
+      "content": "吳興記　三卷。　　山謙之撰",
+      "work_id": "d59f2855eyv6"
+    },
+    {
+      "title": "京口記　　劉損撰",
+      "level": 3,
+      "type": "book",
+      "content": "京口記　二卷。兩《唐志》作劉損之。　　劉　損撰",
+      "work_id": "d59f285qyccg"
+    },
+    {
+      "title": "南徐州記　　山謙之撰",
+      "level": 3,
+      "type": "book",
+      "content": "南徐州記　二卷。　　山謙之撰",
+      "work_id": "d59f286msjr7"
+    },
+    {
+      "title": "隋王入沔記　　沈懷文撰",
+      "level": 3,
+      "type": "book",
+      "content": "隋王入沔記　六卷。兩《唐志》作十卷。　　沈懷文撰",
+      "work_id": "d59f286if85f"
+    },
+    {
+      "title": "荊州記　　盛弘之撰",
+      "level": 3,
+      "type": "book",
+      "content": "荊州記　三卷。　　盛弘之撰",
+      "work_id": "d59f28626vwi"
+    },
+    {
+      "title": "豫章記　　雷次宗撰",
+      "level": 3,
+      "type": "book",
+      "content": "豫章記　一卷。《宋史・藝文志》作《豫章古今記》三卷。　　雷次宗撰",
+      "work_id": "d59f286923uo"
+    },
+    {
+      "title": "遊名山記　　謝靈運撰",
+      "level": 3,
+      "type": "book",
+      "content": "遊名山記　一卷。　　謝靈運撰",
+      "work_id": "d59f7z43q5fk"
+    },
+    {
+      "title": "遊行外國傳　　釋智猛撰",
+      "level": 3,
+      "type": "book",
+      "content": "遊行外國傳　一卷。《舊唐志》無\"遊行\"二字。　　釋智猛撰",
+      "work_id": "d59f2q49b4zk"
+    },
+    {
+      "title": "居名山志　　謝靈運撰",
+      "level": 3,
+      "type": "book",
+      "content": "居名山志　一卷。　　謝靈運撰",
+      "work_id": "d59f286csydf"
+    },
+    {
+      "title": "十三州志　　闞駰撰",
+      "level": 3,
+      "type": "book",
+      "content": "十三州志　十卷。兩《唐志》作十四卷，《舊唐志》\"闞駰\"作\"闕駰\"。　　闞　駰撰",
+      "work_id": "d59f9c18mxoi"
+    },
+    {
+      "title": "宋武北征記　　戴氏撰",
+      "level": 3,
+      "type": "book",
+      "content": "宋武北征記　一卷。　　戴　氏撰",
+      "work_id": "d59f28jv4op0"
+    },
+    {
+      "title": "元嘉六年地記",
+      "level": 3,
+      "type": "book",
+      "content": "元嘉六年地記　三卷。",
+      "work_id": "d59f2q58w6ww"
+    },
+    {
+      "title": "東陽記　　鄭緝之撰",
+      "level": 3,
+      "type": "book",
+      "content": "東陽記　一卷。見兩《唐志》。　　鄭緝之撰",
+      "work_id": "d59f286if85e"
+    },
+    {
+      "title": "續述征記　　郭緣生撰",
+      "level": 3,
+      "type": "book",
+      "content": "續述征記　以下十四種均見章宗源《隋志攷證》，除《廬山記略》外，餘均不知卷數。　　郭緣生撰",
+      "work_id": "d59f7z43q5fl"
+    },
+    {
+      "title": "述征記　　裴松之撰",
+      "level": 3,
+      "type": "book",
+      "content": "述征記　　裴松之撰",
+      "work_id": "d59f7z43q5fm"
+    },
+    {
+      "title": "西征記　　裴松之撰",
+      "level": 3,
+      "type": "book",
+      "content": "西征記。　　裴松之撰",
+      "work_id": "d59f7z43q5fn"
+    },
+    {
+      "title": "廬山記略　　釋慧遠撰",
+      "level": 3,
+      "type": "book",
+      "content": "廬山記略　一卷。　　釋慧遠撰",
+      "work_id": "d59f27uspm9t"
+    },
+    {
+      "title": "廬山記　　張野撰",
+      "level": 3,
+      "type": "book",
+      "content": "廬山記。　　張野撰",
+      "work_id": "d59f7z43q5fo"
+    },
+    {
+      "title": "益州記　　任預撰",
+      "level": 3,
+      "type": "book",
+      "content": "益州記。　　任預撰",
+      "work_id": "d59f7z43q5fp"
+    },
+    {
+      "title": "沙州記　　段國撰",
+      "level": 3,
+      "type": "book",
+      "content": "沙州記。　　段國撰",
+      "work_id": "d59f7z43q5fq"
+    },
+    {
+      "title": "丹陽記　　山謙之撰",
+      "level": 3,
+      "type": "book",
+      "content": "丹陽記。　　山謙之撰",
+      "work_id": "d59f2pyyl5oh"
+    },
+    {
+      "title": "南康記　　王韶之撰",
+      "level": 3,
+      "type": "book",
+      "content": "南康記。　　王韶之撰",
+      "work_id": "d59f7z43q5fr"
+    },
+    {
+      "title": "神境記　　王韶之撰",
+      "level": 3,
+      "type": "book",
+      "content": "神境記。　　王韶之撰",
+      "work_id": "d59f2pqu3sao"
+    },
+    {
+      "title": "永嘉記　　鄭緝之撰",
+      "level": 3,
+      "type": "book",
+      "content": "永嘉記。　　鄭緝之撰",
+      "work_id": "d59f7z43q5fs"
+    },
+    {
+      "title": "壽陽記　　王元模撰",
+      "level": 3,
+      "type": "book",
+      "content": "壽陽記。　　王元模撰",
+      "work_id": "d59f7z43q5ft"
+    },
+    {
+      "title": "北征記　　裴松之撰",
+      "level": 3,
+      "type": "book",
+      "content": "北征記。　　裴松之撰",
+      "work_id": "d59f7z43q5fu"
+    },
+    {
+      "title": "從征記　　伍緝之撰",
+      "level": 3,
+      "type": "book",
+      "content": "從征記。　　伍緝之撰",
+      "work_id": "d59f27wh9nnk"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "title": "經部·孟子類",
+  "source_juan": "正文",
+  "related_works": [
+    {
+      "id": "d59ezajwvda8",
+      "title": "孟子",
+      "relation": "contains_text_of"
+    }
+  ],
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·孟子類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "孟子集疏十四卷",
+      "content": "蔡謨撰。",
+      "work_id": "d59f2hsfv01v"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "孟子發題一卷",
+      "content": "施德操撰。",
+      "work_id": "d59f2hf8rta9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "注孟子外書",
+      "content": "熙時子撰。四篇。",
+      "work_id": "d59f2hg1svsx"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右孟子類",
+      "content": "右孟子類三家十九卷。"
+    }
+  ]
+}

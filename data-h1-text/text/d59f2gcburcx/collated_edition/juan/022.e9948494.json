@@ -1,0 +1,103 @@
+{
+  "title": "法家類",
+  "sections": [
+    {
+      "title": "《商子》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《商子》五卷商鞅撰。",
+      "work_id": "d59ezkxd2dc0"
+    },
+    {
+      "title": "《慎子》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《慎子》十卷慎到撰，滕輔注。",
+      "work_id": "d59ezaisaio0"
+    },
+    {
+      "title": "《申子》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《申子》三卷申不害撰。",
+      "work_id": "d59f2evqogsg"
+    },
+    {
+      "title": "《韓子》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韓子》二十卷韓非撰。",
+      "work_id": "d59ezkx3p91c"
+    },
+    {
+      "title": "《晁氏新書》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晁氏新書》三卷晁錯撰。",
+      "work_id": "d59f25dg14ht"
+    },
+    {
+      "title": "《崔氏政論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《崔氏政論》五卷崔實撰。",
+      "work_id": "d59f2pu6a5mp"
+    },
+    {
+      "title": "《劉氏法言》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《劉氏法言》十卷劉邵撰。",
+      "work_id": "d59f27suh81v"
+    },
+    {
+      "title": "《劉氏正論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《劉氏正論》五卷劉撰。",
+      "work_id": "d59f2puodwqo"
+    },
+    {
+      "title": "《阮子正論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《阮子正論》五卷阮武撰。",
+      "work_id": "d59f27t7l6v6"
+    },
+    {
+      "title": "《桓氏代要論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桓氏代要論》十卷桓範撰。",
+      "work_id": "d59f27sczxmq"
+    },
+    {
+      "title": "《陳子要言》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳子要言》十四卷陳融撰。",
+      "work_id": "d59f27t117gk"
+    },
+    {
+      "title": "《治道集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《治道集》十卷李文博撰。",
+      "work_id": "d59f28jt99fq"
+    },
+    {
+      "title": "《春秋決獄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋決獄》十卷董仲舒撰。",
+      "work_id": "d59f23nu80zk"
+    },
+    {
+      "title": "《五經析疑》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五經析疑》三十卷邯鄲綽撰。</poem>",
+      "work_id": "d59f27t1yx35"
+    }
+  ]
+}

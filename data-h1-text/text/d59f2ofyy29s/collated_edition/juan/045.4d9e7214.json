@@ -1,0 +1,185 @@
+{
+  "title": "北史·經部·論語 并五經總義類",
+  "sections": [
+    {
+      "title": "論語 并五經總義類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "崔浩　論語解",
+      "level": 3,
+      "type": "book",
+      "content": "崔浩　論語解　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15tssj"
+    },
+    {
+      "title": "盧景裕　論語注",
+      "level": 3,
+      "type": "book",
+      "content": "盧景裕　論語注　見本傳。《魏書》同。；《隋·經籍志》：《論語》七卷，盧氏撰，有姓無名。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15tssk"
+    },
+    {
+      "title": "陳奇　論語注",
+      "level": 3,
+      "type": "book",
+      "content": "陳奇　論語注　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f2851cvsy"
+    },
+    {
+      "title": "信都芳　五經宗",
+      "level": 3,
+      "type": "book",
+      "content": "信都芳　五經宗　見本傳。《魏書》同。《齊書》芳傳未載。；《隋·經籍志》未收。；按《北史》芳傳：“抄集五經算事為《五經宗》。”；又；按《魏書》、《齊書》俱有芳傳。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c1aicxx"
+    },
+    {
+      "title": "元延明　五經宗略",
+      "level": 3,
+      "type": "book",
+      "content": "元延明　五經宗略　見《安豐王猛傳》。《魏書》延明傳同。；《隋·經籍志》：《五經宗略》二十二卷，元延明撰。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f286n3sao"
+    },
+    {
+      "title": "張鳳　五經異同評十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張鳳　五經異同評十卷　見《張湛傳》。《魏書》湛傳未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f2ps3d72b"
+    },
+    {
+      "title": "王神貴　五經辨疑十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王神貴　五經辨疑十卷　見《房景伯傳》。《魏書》景伯傳未載。；《隋·經籍志》未收。；按《北史》景伯傳：“景伯弟景先，作五經疑問百餘篇，其言典核。符璽郎王神貴益之，名爲《辨疑》，合成十卷，亦有可觀。”",
+      "dynasty_tag": "魏",
+      "work_id": "d59f284y8idj"
+    },
+    {
+      "title": "常爽　六經略注",
+      "level": 3,
+      "type": "book",
+      "content": "常爽　六經略注　見本傳。《魏書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15tssm"
+    },
+    {
+      "title": "封偉伯　禮傳詩易疑事",
+      "level": 3,
+      "type": "book",
+      "content": "封偉伯　禮傳詩易疑事　見《封軌傳》。《魏書》偉伯傳同。；《隋·經籍志》未收。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15tssn"
+    },
+    {
+      "title": "劉延明　方言三卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉延明　方言三卷　見本傳。《魏書·劉昞傳》同。；《隋·經籍志》未收。；按延明，劉昞字。",
+      "dynasty_tag": "魏",
+      "work_id": "d59f9c15tsso"
+    },
+    {
+      "title": "李鉉　論語義疏",
+      "level": 3,
+      "type": "book",
+      "content": "李鉉　論語義疏　見本傳。《齊書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f98exombu"
+    },
+    {
+      "title": "樊深　七經異同三卷",
+      "level": 3,
+      "type": "book",
+      "content": "樊深　七經異同三卷　見本傳。《周書》同。；《隋·經籍志》：《七經論》三卷，樊文深撰。；按文深，樊深字。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c15tssp"
+    },
+    {
+      "title": "樂遜　孝經論語毛詩左氏春秋序論",
+      "level": 3,
+      "type": "book",
+      "content": "樂遜　孝經論語毛詩左氏春秋序論　見本傳。《周書》同。；《隋·經籍志》未收。；按《北史》遜傳：“所著《孝經》、《論語》、《毛詩》、《左氏春秋》序論十餘篇。”",
+      "dynasty_tag": "北周",
+      "work_id": "d59f9c15tssq"
+    },
+    {
+      "title": "蘇綽　七經論",
+      "level": 3,
+      "type": "book",
+      "content": "蘇綽　七經論　見本傳。《周書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "北周",
+      "work_id": "d59f2prmidq9"
+    },
+    {
+      "title": "劉炫　論語述議十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫　論語述議十卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c15tssr"
+    },
+    {
+      "title": "張冲　論語義十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張冲　論語義十卷　見本傳。；《隋書》同。；《隋·經籍志》:《論語義疏》二卷，張冲撰。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c15tsss"
+    },
+    {
+      "title": "劉焯　五經述議十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉焯　五經述議十卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1651c0"
+    },
+    {
+      "title": "劉炫　五經正名十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫　五經正名十二卷　見本傳。；《隋書》同。；《隋·經籍志》同。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28jovxtu"
+    },
+    {
+      "title": "辛彥之　五經異義",
+      "level": 3,
+      "type": "book",
+      "content": "辛彥之　五經異義　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f28j6gxsb"
+    },
+    {
+      "title": "王頍　五經大義三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王頍　五經大義三十卷　見本傳。；《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "隋",
+      "work_id": "d59f9c1651c1"
+    },
+    {
+      "title": "潘徽　江都集禮",
+      "level": 3,
+      "type": "book",
+      "content": "潘徽　江都集禮　見本傳。《隋書》徽傳：《江都集禮》一百二十卷。；《隋·經籍志》：《江都集禮》一百二十六卷，無撰人姓名。；按《北史》徽傳：“晋王廣引爲揚州博士，令與諸儒撰著《江都集禮》一部。”",
+      "dynasty_tag": "隋",
+      "work_id": "d59f2q5loxds"
+    },
+    {
+      "title": "論語 并五經總義類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右論語并五經總義二十一部，已收《隋·經籍志》者六部，未收《隋·經籍志》者十五部。"
+    }
+  ]
+}

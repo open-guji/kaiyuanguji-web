@@ -1,0 +1,109 @@
+{
+  "title": "子部·兵家類",
+  "sections": [
+    {
+      "title": "兵家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "武帝　神人書",
+      "level": 3,
+      "type": "book",
+      "content": "武帝所傳神人書　《隋志》，在「皇帝兵法」下。",
+      "work_id": "d59f7v5zbdog"
+    },
+    {
+      "title": "推元嘉十二年日時兵法",
+      "level": 3,
+      "type": "book",
+      "content": "推元嘉十二年日時兵法二卷　《七録》。",
+      "work_id": "d59f6ssrrv4v"
+    },
+    {
+      "title": "逆推元嘉二十年太歲計用兵法",
+      "level": 3,
+      "type": "book",
+      "content": "逆推元嘉二十年太歲計用兵法一卷③　《七録》。",
+      "work_id": "d59f7v5zbdoh"
+    },
+    {
+      "title": "孫暢之　術藝略叙",
+      "level": 3,
+      "type": "book",
+      "content": "孫暢之　術藝略叙五卷　《七録》。",
+      "work_id": "d59f7v5zbdoi"
+    },
+    {
+      "title": "員外殿中將軍褚思荘　建元永明碁品",
+      "level": 3,
+      "type": "book",
+      "content": "員外殿中將軍褚思荘　建元永明碁品二卷　《七録》。",
+      "work_id": "d59f7v5zbdoj"
+    },
+    {
+      "title": "通直郎劉嚴　荆州占",
+      "level": 3,
+      "type": "book",
+      "content": "通直郎劉嚴　荆州占二十卷　《隋志》。《七録》「二十二卷」。",
+      "work_id": "d59f7v5zbdok"
+    },
+    {
+      "title": "何承天　元嘉曆",
+      "level": 3,
+      "type": "book",
+      "content": "何承天　元嘉曆二卷　《隋志》。",
+      "work_id": "d59f7v5zbdol"
+    },
+    {
+      "title": "何承天　元嘉曆統",
+      "level": 3,
+      "type": "book",
+      "content": "元嘉曆統二卷　《七録》。",
+      "work_id": "d59f2pr3s54y"
+    },
+    {
+      "title": "何承天　元嘉中論曆事",
+      "level": 3,
+      "type": "book",
+      "content": "元嘉中論曆事六卷　《七録》。",
+      "work_id": "d59f2pqyscg3"
+    },
+    {
+      "title": "何承天　元嘉曆疏",
+      "level": 3,
+      "type": "book",
+      "content": "元嘉曆疏一卷　《七録》。",
+      "work_id": "d59f2pqsjldt"
+    },
+    {
+      "title": "何承天　元嘉二十六年度日景數",
+      "level": 3,
+      "type": "book",
+      "content": "元嘉二十六年度日景數一卷　《七録》。",
+      "work_id": "d59f2pvqgvlt"
+    },
+    {
+      "title": "何承天　曆術",
+      "level": 3,
+      "type": "book",
+      "content": "何承天　曆術一卷　《隋志》。",
+      "work_id": "d59f2868fmrm"
+    },
+    {
+      "title": "何承天　驗日食法",
+      "level": 3,
+      "type": "book",
+      "content": "又　驗日食法三卷　《七録》。",
+      "work_id": "d59f285qn3sz"
+    },
+    {
+      "title": "何承天　漏刻經",
+      "level": 3,
+      "type": "book",
+      "content": "何承天　漏刻經一卷①",
+      "work_id": "d59f286chptv"
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "title": "詩類",
+  "sections": [
+    {
+      "title": "《韓詩》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韓詩》二十卷卜商序，韓嬰撰。",
+      "work_id": "d59f24mhkbnq"
+    },
+    {
+      "title": "《韓詩外傳》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韓詩外傳》十卷韓嬰撰。",
+      "work_id": "d59f1iqgnr40"
+    },
+    {
+      "title": "《毛詩》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩》十卷毛萇撰。",
+      "work_id": "d59f20am36dc"
+    },
+    {
+      "title": "《毛詩詁訓》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩詁訓》二十卷鄭玄箋。",
+      "work_id": "d59f2q3t2sxu"
+    },
+    {
+      "title": "《毛詩》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩》二十卷王肅注。",
+      "work_id": "d59f27ywo3r7",
+      "link_basis": "2026-08-24 磁鐵殘逐條裁：本節著錄語作「《毛詩》二十卷**王肅注**」，是王肅之注本，非毛萇傳鄭玄箋之本經。庫中《毛詩王肅注》二十卷 `1evc5pck6r9xc` 已具其條，且**已繫本節同文之著錄**（其 indexed_by 有隋志、舊唐志二節，文與此全同）——是著錄側早已各歸其位，只整理本之節未隨，故改繫之。（二書之關係已以 related_works `contains_text_of` 相繫。）"
+    },
+    {
+      "title": "《葉詩》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《葉詩》二十卷葉遵注。",
+      "work_id": "d59f2psinu2o"
+    },
+    {
+      "title": "《集注毛詩》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注毛詩》二十四卷崔靈恩集注。",
+      "work_id": "d59f2846rmkh"
+    },
+    {
+      "title": "《韓詩翼要》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韓詩翼要》十卷卜商撰。",
+      "work_id": "d59f23nqsf0j"
+    },
+    {
+      "title": "《毛詩譜》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩譜》二卷鄭玄撰。",
+      "work_id": "d59f2moy8y6b"
+    },
+    {
+      "title": "《毛詩集序》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩集序》二卷卜商撰。",
+      "work_id": "d59f2evn8ute"
+    },
+    {
+      "title": "《毛詩義注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩義注》五卷",
+      "work_id": "d59f2pw4ijuq"
+    },
+    {
+      "title": "《毛詩雜義駁》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩雜義駁》八卷王肅撰。",
+      "work_id": "d59f2pxzbbpc"
+    },
+    {
+      "title": "《毛詩問難》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩問難》二卷王肅撰。",
+      "work_id": "d59f2og0i8sj"
+    },
+    {
+      "title": "《毛詩駁》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩駁》五卷王伯輿撰。",
+      "work_id": "d59f28mptreq"
+    },
+    {
+      "title": "《毛詩義問》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩義問》十卷劉楨撰。",
+      "work_id": "d59f23nxyvi9"
+    },
+    {
+      "title": "《毛詩雜答問》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩雜答問》五卷",
+      "work_id": "d59f2q47qyv5"
+    },
+    {
+      "title": "《毛詩雜義難》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩雜義難》十卷",
+      "work_id": "d59f23nsnu9z"
+    },
+    {
+      "title": "《毛詩異同評》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩異同評》十卷孫毓撰。",
+      "work_id": "d59f27yib6rn"
+    },
+    {
+      "title": "《毛詩釋義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩釋義》十卷謝沈撰。",
+      "work_id": "d59f27xzky6a"
+    },
+    {
+      "title": "《毛詩辯》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩辯》三卷楊乂撰。",
+      "work_id": "d59f27xwrta9"
+    },
+    {
+      "title": "《毛詩序義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩序義》一卷劉氏撰。",
+      "work_id": "d59f284bg6ps"
+    },
+    {
+      "title": "《毛詩表隱》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩表隱》二卷",
+      "work_id": "d59f27y0twcj"
+    },
+    {
+      "title": "《毛詩義疏》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩義疏》五卷張氏撰。",
+      "work_id": "d59f2ptk4b29"
+    },
+    {
+      "title": "《毛詩誼府》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩誼府》三卷元延明撰。",
+      "work_id": "d59f2842eayq"
+    },
+    {
+      "title": "《毛詩草木鳥獸魚蟲疏》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩草木鳥獸魚蟲疏》二卷陸璣撰。",
+      "work_id": "d59f27xax79f"
+    },
+    {
+      "title": "《毛詩述義》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩述義》三十卷劉炫撰。",
+      "work_id": "d59f28no5v5x"
+    },
+    {
+      "title": "《毛詩正義》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩正義》四十卷孔穎達撰。",
+      "work_id": "d59f28ngzeo1"
+    },
+    {
+      "title": "《毛詩音義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩音義》二卷魯世達撰。",
+      "work_id": "d59f2pxp0i68"
+    },
+    {
+      "title": "《毛詩諸家音》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛詩諸家音》十五卷鄭玄等注。",
+      "work_id": "d59f2em894w3"
+    },
+    {
+      "title": "《難孫氏詩評》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《難孫氏詩評》四卷陳統撰。",
+      "work_id": "d59f27y3y9s2"
+    }
+  ]
+}

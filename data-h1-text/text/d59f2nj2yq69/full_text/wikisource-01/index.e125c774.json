@@ -1,0 +1,850 @@
+{
+  "work_id": "d59f2nj2yq69",
+  "version_label": "金瓶梅",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%87%91%E7%93%B6%E6%A2%85",
+    "page_title": "金瓶梅",
+    "revid": 2647836,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 101,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "金瓶梅/序",
+      "revid": 2082499,
+      "md_len": 348
+    },
+    {
+      "n": 2,
+      "title": "第01回",
+      "file": "002.md",
+      "page_title": "金瓶梅/第01回",
+      "revid": 2128370,
+      "md_len": 13575
+    },
+    {
+      "n": 3,
+      "title": "第02回",
+      "file": "003.md",
+      "page_title": "金瓶梅/第02回",
+      "revid": 1611120,
+      "md_len": 8908
+    },
+    {
+      "n": 4,
+      "title": "第03回",
+      "file": "004.md",
+      "page_title": "金瓶梅/第03回",
+      "revid": 2504628,
+      "md_len": 6751
+    },
+    {
+      "n": 5,
+      "title": "第04回",
+      "file": "005.md",
+      "page_title": "金瓶梅/第04回",
+      "revid": 2119490,
+      "md_len": 4375
+    },
+    {
+      "n": 6,
+      "title": "第05回",
+      "file": "006.md",
+      "page_title": "金瓶梅/第05回",
+      "revid": 1611123,
+      "md_len": 5226
+    },
+    {
+      "n": 7,
+      "title": "第06回",
+      "file": "007.md",
+      "page_title": "金瓶梅/第06回",
+      "revid": 1611124,
+      "md_len": 4066
+    },
+    {
+      "n": 8,
+      "title": "第07回",
+      "file": "008.md",
+      "page_title": "金瓶梅/第07回",
+      "revid": 2004221,
+      "md_len": 6467
+    },
+    {
+      "n": 9,
+      "title": "第08回",
+      "file": "009.md",
+      "page_title": "金瓶梅/第08回",
+      "revid": 7903665,
+      "md_len": 5935
+    },
+    {
+      "n": 10,
+      "title": "第09回",
+      "file": "010.md",
+      "page_title": "金瓶梅/第09回",
+      "revid": 1611127,
+      "md_len": 5859
+    },
+    {
+      "n": 11,
+      "title": "第10回",
+      "file": "011.md",
+      "page_title": "金瓶梅/第10回",
+      "revid": 1611128,
+      "md_len": 4465
+    },
+    {
+      "n": 12,
+      "title": "第11回",
+      "file": "012.md",
+      "page_title": "金瓶梅/第11回",
+      "revid": 7903666,
+      "md_len": 5732
+    },
+    {
+      "n": 13,
+      "title": "第12回",
+      "file": "013.md",
+      "page_title": "金瓶梅/第12回",
+      "revid": 7903667,
+      "md_len": 9944
+    },
+    {
+      "n": 14,
+      "title": "第13回",
+      "file": "014.md",
+      "page_title": "金瓶梅/第13回",
+      "revid": 2004241,
+      "md_len": 6737
+    },
+    {
+      "n": 15,
+      "title": "第14回",
+      "file": "015.md",
+      "page_title": "金瓶梅/第14回",
+      "revid": 1611132,
+      "md_len": 7568
+    },
+    {
+      "n": 16,
+      "title": "第15回",
+      "file": "016.md",
+      "page_title": "金瓶梅/第15回",
+      "revid": 1611133,
+      "md_len": 5024
+    },
+    {
+      "n": 17,
+      "title": "第16回",
+      "file": "017.md",
+      "page_title": "金瓶梅/第16回",
+      "revid": 6547075,
+      "md_len": 6869
+    },
+    {
+      "n": 18,
+      "title": "第17回",
+      "file": "018.md",
+      "page_title": "金瓶梅/第17回",
+      "revid": 7903668,
+      "md_len": 5950
+    },
+    {
+      "n": 19,
+      "title": "第18回",
+      "file": "019.md",
+      "page_title": "金瓶梅/第18回",
+      "revid": 2004222,
+      "md_len": 6781
+    },
+    {
+      "n": 20,
+      "title": "第19回",
+      "file": "020.md",
+      "page_title": "金瓶梅/第19回",
+      "revid": 7903670,
+      "md_len": 8640
+    },
+    {
+      "n": 21,
+      "title": "第20回",
+      "file": "021.md",
+      "page_title": "金瓶梅/第20回",
+      "revid": 2004217,
+      "md_len": 8234
+    },
+    {
+      "n": 22,
+      "title": "第21回",
+      "file": "022.md",
+      "page_title": "金瓶梅/第21回",
+      "revid": 2004224,
+      "md_len": 9400
+    },
+    {
+      "n": 23,
+      "title": "第22回",
+      "file": "023.md",
+      "page_title": "金瓶梅/第22回",
+      "revid": 1611140,
+      "md_len": 4107
+    },
+    {
+      "n": 24,
+      "title": "第23回",
+      "file": "024.md",
+      "page_title": "金瓶梅/第23回",
+      "revid": 2004225,
+      "md_len": 6889
+    },
+    {
+      "n": 25,
+      "title": "第24回",
+      "file": "025.md",
+      "page_title": "金瓶梅/第24回",
+      "revid": 2004246,
+      "md_len": 5864
+    },
+    {
+      "n": 26,
+      "title": "第25回",
+      "file": "026.md",
+      "page_title": "金瓶梅/第25回",
+      "revid": 2004262,
+      "md_len": 6459
+    },
+    {
+      "n": 27,
+      "title": "第26回",
+      "file": "027.md",
+      "page_title": "金瓶梅/第26回",
+      "revid": 2004256,
+      "md_len": 9475
+    },
+    {
+      "n": 28,
+      "title": "第27回",
+      "file": "028.md",
+      "page_title": "金瓶梅/第27回",
+      "revid": 2004253,
+      "md_len": 6568
+    },
+    {
+      "n": 29,
+      "title": "第28回",
+      "file": "029.md",
+      "page_title": "金瓶梅/第28回",
+      "revid": 2004255,
+      "md_len": 5548
+    },
+    {
+      "n": 30,
+      "title": "第29回",
+      "file": "030.md",
+      "page_title": "金瓶梅/第29回",
+      "revid": 7903726,
+      "md_len": 7605
+    },
+    {
+      "n": 31,
+      "title": "第30回",
+      "file": "031.md",
+      "page_title": "金瓶梅/第30回",
+      "revid": 2004232,
+      "md_len": 6000
+    },
+    {
+      "n": 32,
+      "title": "第31回",
+      "file": "032.md",
+      "page_title": "金瓶梅/第31回",
+      "revid": 2540049,
+      "md_len": 7583
+    },
+    {
+      "n": 33,
+      "title": "第32回",
+      "file": "033.md",
+      "page_title": "金瓶梅/第32回",
+      "revid": 2004229,
+      "md_len": 6908
+    },
+    {
+      "n": 34,
+      "title": "第33回",
+      "file": "034.md",
+      "page_title": "金瓶梅/第33回",
+      "revid": 2004239,
+      "md_len": 6771
+    },
+    {
+      "n": 35,
+      "title": "第34回",
+      "file": "035.md",
+      "page_title": "金瓶梅/第34回",
+      "revid": 2610742,
+      "md_len": 9103
+    },
+    {
+      "n": 36,
+      "title": "第35回",
+      "file": "036.md",
+      "page_title": "金瓶梅/第35回",
+      "revid": 2004228,
+      "md_len": 12451
+    },
+    {
+      "n": 37,
+      "title": "第36回",
+      "file": "037.md",
+      "page_title": "金瓶梅/第36回",
+      "revid": 1968330,
+      "md_len": 3784
+    },
+    {
+      "n": 38,
+      "title": "第37回",
+      "file": "038.md",
+      "page_title": "金瓶梅/第37回",
+      "revid": 1611154,
+      "md_len": 7209
+    },
+    {
+      "n": 39,
+      "title": "第38回",
+      "file": "039.md",
+      "page_title": "金瓶梅/第38回",
+      "revid": 2004231,
+      "md_len": 6506
+    },
+    {
+      "n": 40,
+      "title": "第39回",
+      "file": "040.md",
+      "page_title": "金瓶梅/第39回",
+      "revid": 7902122,
+      "md_len": 7574
+    },
+    {
+      "n": 41,
+      "title": "第40回",
+      "file": "041.md",
+      "page_title": "金瓶梅/第40回",
+      "revid": 1611157,
+      "md_len": 4814
+    },
+    {
+      "n": 42,
+      "title": "第41回",
+      "file": "042.md",
+      "page_title": "金瓶梅/第41回",
+      "revid": 2004233,
+      "md_len": 5226
+    },
+    {
+      "n": 43,
+      "title": "第42回",
+      "file": "043.md",
+      "page_title": "金瓶梅/第42回",
+      "revid": 1611159,
+      "md_len": 6036
+    },
+    {
+      "n": 44,
+      "title": "第43回",
+      "file": "044.md",
+      "page_title": "金瓶梅/第43回",
+      "revid": 1611160,
+      "md_len": 7241
+    },
+    {
+      "n": 45,
+      "title": "第44回",
+      "file": "045.md",
+      "page_title": "金瓶梅/第44回",
+      "revid": 1611161,
+      "md_len": 3569
+    },
+    {
+      "n": 46,
+      "title": "第45回",
+      "file": "046.md",
+      "page_title": "金瓶梅/第45回",
+      "revid": 1611162,
+      "md_len": 5316
+    },
+    {
+      "n": 47,
+      "title": "第46回",
+      "file": "047.md",
+      "page_title": "金瓶梅/第46回",
+      "revid": 2504431,
+      "md_len": 9226
+    },
+    {
+      "n": 48,
+      "title": "第47回",
+      "file": "048.md",
+      "page_title": "金瓶梅/第47回",
+      "revid": 1611164,
+      "md_len": 5682
+    },
+    {
+      "n": 49,
+      "title": "第48回",
+      "file": "049.md",
+      "page_title": "金瓶梅/第48回",
+      "revid": 7902096,
+      "md_len": 8154
+    },
+    {
+      "n": 50,
+      "title": "第49回",
+      "file": "050.md",
+      "page_title": "金瓶梅/第49回",
+      "revid": 7902119,
+      "md_len": 8654
+    },
+    {
+      "n": 51,
+      "title": "第50回",
+      "file": "051.md",
+      "page_title": "金瓶梅/第50回",
+      "revid": 2505410,
+      "md_len": 6046
+    },
+    {
+      "n": 52,
+      "title": "第51回",
+      "file": "052.md",
+      "page_title": "金瓶梅/第51回",
+      "revid": 2004238,
+      "md_len": 12437
+    },
+    {
+      "n": 53,
+      "title": "第52回",
+      "file": "053.md",
+      "page_title": "金瓶梅/第52回",
+      "revid": 7903725,
+      "md_len": 10315
+    },
+    {
+      "n": 54,
+      "title": "第53回",
+      "file": "054.md",
+      "page_title": "金瓶梅/第53回",
+      "revid": 1611170,
+      "md_len": 4203
+    },
+    {
+      "n": 55,
+      "title": "第54回",
+      "file": "055.md",
+      "page_title": "金瓶梅/第54回",
+      "revid": 7903648,
+      "md_len": 5723
+    },
+    {
+      "n": 56,
+      "title": "第55回",
+      "file": "056.md",
+      "page_title": "金瓶梅/第55回",
+      "revid": 1611172,
+      "md_len": 7467
+    },
+    {
+      "n": 57,
+      "title": "第56回",
+      "file": "057.md",
+      "page_title": "金瓶梅/第56回",
+      "revid": 1611173,
+      "md_len": 4898
+    },
+    {
+      "n": 58,
+      "title": "第57回",
+      "file": "058.md",
+      "page_title": "金瓶梅/第57回",
+      "revid": 7903721,
+      "md_len": 6064
+    },
+    {
+      "n": 59,
+      "title": "第58回",
+      "file": "059.md",
+      "page_title": "金瓶梅/第58回",
+      "revid": 2004242,
+      "md_len": 11786
+    },
+    {
+      "n": 60,
+      "title": "第59回",
+      "file": "060.md",
+      "page_title": "金瓶梅/第59回",
+      "revid": 7902120,
+      "md_len": 10582
+    },
+    {
+      "n": 61,
+      "title": "第60回",
+      "file": "061.md",
+      "page_title": "金瓶梅/第60回",
+      "revid": 1611177,
+      "md_len": 3957
+    },
+    {
+      "n": 62,
+      "title": "第61回",
+      "file": "062.md",
+      "page_title": "金瓶梅/第61回",
+      "revid": 2612352,
+      "md_len": 12469
+    },
+    {
+      "n": 63,
+      "title": "第62回",
+      "file": "063.md",
+      "page_title": "金瓶梅/第62回",
+      "revid": 2636163,
+      "md_len": 14971
+    },
+    {
+      "n": 64,
+      "title": "第63回",
+      "file": "064.md",
+      "page_title": "金瓶梅/第63回",
+      "revid": 2004260,
+      "md_len": 6990
+    },
+    {
+      "n": 65,
+      "title": "第64回",
+      "file": "065.md",
+      "page_title": "金瓶梅/第64回",
+      "revid": 1611181,
+      "md_len": 5100
+    },
+    {
+      "n": 66,
+      "title": "第65回",
+      "file": "066.md",
+      "page_title": "金瓶梅/第65回",
+      "revid": 1611182,
+      "md_len": 8349
+    },
+    {
+      "n": 67,
+      "title": "第66回",
+      "file": "067.md",
+      "page_title": "金瓶梅/第66回",
+      "revid": 1611183,
+      "md_len": 3719
+    },
+    {
+      "n": 68,
+      "title": "第67回",
+      "file": "068.md",
+      "page_title": "金瓶梅/第67回",
+      "revid": 7903654,
+      "md_len": 13367
+    },
+    {
+      "n": 69,
+      "title": "第68回",
+      "file": "069.md",
+      "page_title": "金瓶梅/第68回",
+      "revid": 2610758,
+      "md_len": 10761
+    },
+    {
+      "n": 70,
+      "title": "第69回",
+      "file": "070.md",
+      "page_title": "金瓶梅/第69回",
+      "revid": 7903658,
+      "md_len": 10795
+    },
+    {
+      "n": 71,
+      "title": "第70回",
+      "file": "071.md",
+      "page_title": "金瓶梅/第70回",
+      "revid": 2004230,
+      "md_len": 6822
+    },
+    {
+      "n": 72,
+      "title": "第71回",
+      "file": "072.md",
+      "page_title": "金瓶梅/第71回",
+      "revid": 1611188,
+      "md_len": 6945
+    },
+    {
+      "n": 73,
+      "title": "第72回",
+      "file": "073.md",
+      "page_title": "金瓶梅/第72回",
+      "revid": 7903660,
+      "md_len": 12450
+    },
+    {
+      "n": 74,
+      "title": "第73回",
+      "file": "074.md",
+      "page_title": "金瓶梅/第73回",
+      "revid": 7903662,
+      "md_len": 8063
+    },
+    {
+      "n": 75,
+      "title": "第74回",
+      "file": "075.md",
+      "page_title": "金瓶梅/第74回",
+      "revid": 7903663,
+      "md_len": 6403
+    },
+    {
+      "n": 76,
+      "title": "第75回",
+      "file": "076.md",
+      "page_title": "金瓶梅/第75回",
+      "revid": 2004226,
+      "md_len": 16676
+    },
+    {
+      "n": 77,
+      "title": "第76回",
+      "file": "077.md",
+      "page_title": "金瓶梅/第76回",
+      "revid": 2004254,
+      "md_len": 14668
+    },
+    {
+      "n": 78,
+      "title": "第77回",
+      "file": "078.md",
+      "page_title": "金瓶梅/第77回",
+      "revid": 7903664,
+      "md_len": 10136
+    },
+    {
+      "n": 79,
+      "title": "第78回",
+      "file": "079.md",
+      "page_title": "金瓶梅/第78回",
+      "revid": 1756487,
+      "md_len": 15400
+    },
+    {
+      "n": 80,
+      "title": "第79回",
+      "file": "080.md",
+      "page_title": "金瓶梅/第79回",
+      "revid": 5251769,
+      "md_len": 14706
+    },
+    {
+      "n": 81,
+      "title": "第80回",
+      "file": "081.md",
+      "page_title": "金瓶梅/第80回",
+      "revid": 1611197,
+      "md_len": 5740
+    },
+    {
+      "n": 82,
+      "title": "第81回",
+      "file": "082.md",
+      "page_title": "金瓶梅/第81回",
+      "revid": 1611198,
+      "md_len": 5426
+    },
+    {
+      "n": 83,
+      "title": "第82回",
+      "file": "083.md",
+      "page_title": "金瓶梅/第82回",
+      "revid": 7903723,
+      "md_len": 5223
+    },
+    {
+      "n": 84,
+      "title": "第83回",
+      "file": "084.md",
+      "page_title": "金瓶梅/第83回",
+      "revid": 1611200,
+      "md_len": 4879
+    },
+    {
+      "n": 85,
+      "title": "第84回",
+      "file": "085.md",
+      "page_title": "金瓶梅/第84回",
+      "revid": 1611201,
+      "md_len": 3798
+    },
+    {
+      "n": 86,
+      "title": "第85回",
+      "file": "086.md",
+      "page_title": "金瓶梅/第85回",
+      "revid": 7903724,
+      "md_len": 5549
+    },
+    {
+      "n": 87,
+      "title": "第86回",
+      "file": "087.md",
+      "page_title": "金瓶梅/第86回",
+      "revid": 7903722,
+      "md_len": 8022
+    },
+    {
+      "n": 88,
+      "title": "第87回",
+      "file": "088.md",
+      "page_title": "金瓶梅/第87回",
+      "revid": 2004261,
+      "md_len": 5977
+    },
+    {
+      "n": 89,
+      "title": "第88回",
+      "file": "089.md",
+      "page_title": "金瓶梅/第88回",
+      "revid": 1611205,
+      "md_len": 6809
+    },
+    {
+      "n": 90,
+      "title": "第89回",
+      "file": "090.md",
+      "page_title": "金瓶梅/第89回",
+      "revid": 1611206,
+      "md_len": 6184
+    },
+    {
+      "n": 91,
+      "title": "第90回",
+      "file": "091.md",
+      "page_title": "金瓶梅/第90回",
+      "revid": 1611207,
+      "md_len": 6221
+    },
+    {
+      "n": 92,
+      "title": "第91回",
+      "file": "092.md",
+      "page_title": "金瓶梅/第91回",
+      "revid": 2621915,
+      "md_len": 7263
+    },
+    {
+      "n": 93,
+      "title": "第92回",
+      "file": "093.md",
+      "page_title": "金瓶梅/第92回",
+      "revid": 7902117,
+      "md_len": 8673
+    },
+    {
+      "n": 94,
+      "title": "第93回",
+      "file": "094.md",
+      "page_title": "金瓶梅/第93回",
+      "revid": 1611210,
+      "md_len": 6149
+    },
+    {
+      "n": 95,
+      "title": "第94回",
+      "file": "095.md",
+      "page_title": "金瓶梅/第94回",
+      "revid": 1611211,
+      "md_len": 7201
+    },
+    {
+      "n": 96,
+      "title": "第95回",
+      "file": "096.md",
+      "page_title": "金瓶梅/第95回",
+      "revid": 2004249,
+      "md_len": 7734
+    },
+    {
+      "n": 97,
+      "title": "第96回",
+      "file": "097.md",
+      "page_title": "金瓶梅/第96回",
+      "revid": 1611213,
+      "md_len": 6591
+    },
+    {
+      "n": 98,
+      "title": "第97回",
+      "file": "098.md",
+      "page_title": "金瓶梅/第97回",
+      "revid": 1611214,
+      "md_len": 6573
+    },
+    {
+      "n": 99,
+      "title": "第98回",
+      "file": "099.md",
+      "page_title": "金瓶梅/第98回",
+      "revid": 1611215,
+      "md_len": 6832
+    },
+    {
+      "n": 100,
+      "title": "第99回",
+      "file": "100.md",
+      "page_title": "金瓶梅/第99回",
+      "revid": 7902118,
+      "md_len": 6169
+    },
+    {
+      "n": 101,
+      "title": "第100回",
+      "file": "101.md",
+      "page_title": "金瓶梅/第100回",
+      "revid": 8736229,
+      "md_len": 8878
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "明朝作品": 2
+  },
+  "variants": [
+    {
+      "primary": "飢",
+      "alt": [
+        "饑"
+      ]
+    },
+    {
+      "primary": "單",
+      "alt": [
+        "覃"
+      ]
+    }
+  ],
+  "dropped_refs": 4
+}

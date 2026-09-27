@@ -1,0 +1,60 @@
+{
+  "title": "子部·兵家類",
+  "sections": [
+    {
+      "title": "兵家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "皇帝兵法　　武帝撰",
+      "level": 3,
+      "type": "book",
+      "content": "皇帝兵法　一卷。　　武帝撰",
+      "work_id": "d59f2ptthf5s"
+    },
+    {
+      "title": "推元嘉十二年日時兵法",
+      "level": 3,
+      "type": "book",
+      "content": "推元嘉十二年日時兵法　二卷。",
+      "work_id": "d59f6ssrrv4v"
+    },
+    {
+      "title": "逆推元嘉五十年太歲計用兵法",
+      "level": 3,
+      "type": "book",
+      "content": "逆推元嘉五十年太歲計用兵法　一卷。",
+      "work_id": "d59f6ssrrv4w"
+    },
+    {
+      "title": "術藝略序　　孫暢之撰",
+      "level": 3,
+      "type": "book",
+      "content": "術藝略序　五卷。　　孫暢之撰",
+      "work_id": "d59f284wd340"
+    },
+    {
+      "title": "圍碁勢　　徐泓撰",
+      "level": 3,
+      "type": "book",
+      "content": "圍碁勢　七卷。　　徐泓撰",
+      "work_id": "d59f7z44cmip"
+    },
+    {
+      "title": "建元永明碁品　　褚思莊撰",
+      "level": 3,
+      "type": "book",
+      "content": "建元永明碁品　二卷。　　褚思莊撰",
+      "work_id": "d59f7v5zbdoj"
+    },
+    {
+      "title": "彈碁譜　　徐廣撰",
+      "level": 3,
+      "type": "book",
+      "content": "彈碁譜　一卷。　　徐廣撰",
+      "work_id": "d59f7z44cmiq"
+    }
+  ]
+}

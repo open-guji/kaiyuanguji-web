@@ -1,0 +1,45 @@
+{
+  "title": "墨家類",
+  "sections": [
+    {
+      "title": "《隋巢子》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《隋巢子》一卷巢，似墨翟弟子。",
+      "work_id": "d59f2q3pbyma",
+      "book_title": "隋巢子",
+      "n_juan": 1
+    },
+    {
+      "title": "《胡非子》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《胡非子》一卷非，似墨翟弟子。梁有《田俅子》一卷，亡。",
+      "work_id": "d59f2evwaqkk",
+      "book_title": "胡非子",
+      "n_juan": 1
+    },
+    {
+      "title": "《墨子》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《墨子》十五卷、目一卷宋大夫墨翟撰。",
+      "work_id": "d59ezahzvx8g",
+      "book_title": "墨子",
+      "n_juan": 15,
+      "author_info": "宋大夫墨翟撰"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右三部，合一十七卷。"
+    },
+    {
+      "title": "墨家類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "墨者，強本節用之術也。上述堯、舜、夏禹之行，茅茨不翦，糲粱之食，桐棺三寸，貴儉兼愛，嚴父上德，以孝示天下，右鬼神而非命。《漢書》以為本出清廟之守。然則《周官》宗伯「掌建邦之天神地禋人鬼」，肆師「掌立國祀及兆中廟中之禁令」，是其職也。愚者為之，則守于節儉，不達時變，推心兼愛，而混於親疏也。"
+    }
+  ]
+}

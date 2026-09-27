@@ -1,0 +1,39 @@
+{
+  "title": "縱橫家類",
+  "sections": [
+    {
+      "title": "鬼谷子",
+      "level": 3,
+      "type": "book",
+      "content": "鬼谷子二卷",
+      "work_id": "d59f1i9fwwsg"
+    },
+    {
+      "title": "樂臺注鬼谷子",
+      "level": 3,
+      "type": "book",
+      "content": "樂臺注鬼谷子三卷",
+      "work_id": "d59f2q158xz6"
+    },
+    {
+      "title": "梁元帝補闕子",
+      "level": 3,
+      "type": "book",
+      "content": "梁元帝補闕子十卷",
+      "work_id": "d59f2q8e7c3k"
+    },
+    {
+      "title": "尹知章注鬼谷子",
+      "level": 3,
+      "type": "book",
+      "content": "尹知章注鬼谷子三卷",
+      "work_id": "d59f28mptrer"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右縱橫家類四家，四部，一十五卷。"
+    }
+  ]
+}

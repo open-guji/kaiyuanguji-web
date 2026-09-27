@@ -1,0 +1,25 @@
+{
+  "title": "史部·霸史類",
+  "sections": [
+    {
+      "title": "霸史類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "秦記　　裴景仁撰",
+      "level": 3,
+      "type": "book",
+      "content": "秦記　十一卷。　　裴景仁撰",
+      "work_id": "d59f286amakh"
+    },
+    {
+      "title": "吐谷渾記　　段國撰",
+      "level": 3,
+      "type": "book",
+      "content": "吐谷渾記　二卷。　　段　國撰",
+      "work_id": "d59f286kaneo"
+    }
+  ]
+}

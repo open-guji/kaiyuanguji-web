@@ -1,0 +1,25 @@
+{
+  "title": "史部·職官類",
+  "sections": [
+    {
+      "title": "職官類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "百官階次　　范曄撰",
+      "level": 3,
+      "type": "book",
+      "content": "百官階次　一卷。見《新唐志》。　　范　曄撰",
+      "work_id": "d59f285kplhd"
+    },
+    {
+      "title": "宋百官階次　　荀欽明撰",
+      "level": 3,
+      "type": "book",
+      "content": "宋百官階次　三卷。見兩《唐志》。　　荀欽明撰",
+      "work_id": "d59f2q2135dt"
+    }
+  ]
+}

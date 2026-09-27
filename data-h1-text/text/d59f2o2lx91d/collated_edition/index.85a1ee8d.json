@@ -1,0 +1,319 @@
+{
+  "work_id": "d59f2o2lx91d",
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json",
+    "juan/005.json",
+    "juan/006.json",
+    "juan/007.json",
+    "juan/008.json",
+    "juan/009.json",
+    "juan/010.json",
+    "juan/011.json",
+    "juan/012.json",
+    "juan/013.json",
+    "juan/014.json",
+    "juan/015.json",
+    "juan/016.json",
+    "juan/017.json",
+    "juan/018.json",
+    "juan/019.json",
+    "juan/020.json",
+    "juan/021.json",
+    "juan/022.json",
+    "juan/023.json",
+    "juan/024.json",
+    "juan/025.json",
+    "juan/026.json",
+    "juan/027.json",
+    "juan/028.json",
+    "juan/029.json",
+    "juan/030.json",
+    "juan/031.json",
+    "juan/032.json",
+    "juan/033.json",
+    "juan/034.json",
+    "juan/035.json",
+    "juan/036.json",
+    "juan/037.json",
+    "juan/038.json",
+    "juan/039.json",
+    "juan/040.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "甲部經錄",
+      "files": [],
+      "children": [
+        {
+          "label": "小學類",
+          "files": [
+            "juan/001.json"
+          ]
+        },
+        {
+          "label": "易類",
+          "files": [
+            "juan/002.json"
+          ]
+        },
+        {
+          "label": "書類",
+          "files": [
+            "juan/003.json"
+          ]
+        },
+        {
+          "label": "詩類",
+          "files": [
+            "juan/004.json"
+          ]
+        },
+        {
+          "label": "禮類",
+          "files": [
+            "juan/005.json"
+          ]
+        },
+        {
+          "label": "樂類",
+          "files": [
+            "juan/006.json"
+          ]
+        },
+        {
+          "label": "春秋類",
+          "files": [
+            "juan/007.json"
+          ]
+        },
+        {
+          "label": "孝經類",
+          "files": [
+            "juan/008.json"
+          ]
+        },
+        {
+          "label": "論語類",
+          "files": [
+            "juan/009.json"
+          ]
+        },
+        {
+          "label": "經解類",
+          "files": [
+            "juan/010.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "乙部史錄",
+      "files": [],
+      "children": [
+        {
+          "label": "簿録類",
+          "files": [
+            "juan/011.json"
+          ]
+        },
+        {
+          "label": "正史類",
+          "files": [
+            "juan/012.json"
+          ]
+        },
+        {
+          "label": "編年類",
+          "files": [
+            "juan/013.json"
+          ]
+        },
+        {
+          "label": "雜史類",
+          "files": [
+            "juan/014.json"
+          ]
+        },
+        {
+          "label": "僞史類",
+          "files": [
+            "juan/015.json"
+          ]
+        },
+        {
+          "label": "起居注類",
+          "files": [
+            "juan/016.json"
+          ]
+        },
+        {
+          "label": "舊事類",
+          "files": [
+            "juan/017.json"
+          ]
+        },
+        {
+          "label": "職官類",
+          "files": [
+            "juan/018.json"
+          ]
+        },
+        {
+          "label": "儀注類",
+          "files": [
+            "juan/019.json"
+          ]
+        },
+        {
+          "label": "刑法類",
+          "files": [
+            "juan/020.json"
+          ]
+        },
+        {
+          "label": "雜傳類",
+          "files": [
+            "juan/021.json"
+          ]
+        },
+        {
+          "label": "地理類",
+          "files": [
+            "juan/022.json"
+          ]
+        },
+        {
+          "label": "譜系類",
+          "files": [
+            "juan/023.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "丙部子錄",
+      "files": [],
+      "children": [
+        {
+          "label": "雜藝術類",
+          "files": [
+            "juan/024.json"
+          ]
+        },
+        {
+          "label": "儒家類",
+          "files": [
+            "juan/025.json"
+          ]
+        },
+        {
+          "label": "道家類",
+          "files": [
+            "juan/026.json"
+          ]
+        },
+        {
+          "label": "法家類",
+          "files": [
+            "juan/027.json"
+          ]
+        },
+        {
+          "label": "墨家類",
+          "files": [
+            "juan/028.json"
+          ]
+        },
+        {
+          "label": "從橫家類",
+          "files": [
+            "juan/029.json"
+          ]
+        },
+        {
+          "label": "雜家類",
+          "files": [
+            "juan/030.json"
+          ]
+        },
+        {
+          "label": "農家類",
+          "files": [
+            "juan/031.json"
+          ]
+        },
+        {
+          "label": "小説家類",
+          "files": [
+            "juan/032.json"
+          ]
+        },
+        {
+          "label": "兵書類",
+          "files": [
+            "juan/033.json"
+          ]
+        },
+        {
+          "label": "天文類",
+          "files": [
+            "juan/034.json"
+          ]
+        },
+        {
+          "label": "曆數類",
+          "files": [
+            "juan/035.json"
+          ]
+        },
+        {
+          "label": "五行類",
+          "files": [
+            "juan/036.json"
+          ]
+        },
+        {
+          "label": "醫方類",
+          "files": [
+            "juan/037.json"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "丁部集錄",
+      "files": [],
+      "children": [
+        {
+          "label": "總集類",
+          "files": [
+            "juan/038.json"
+          ]
+        },
+        {
+          "label": "楚辭類",
+          "files": [
+            "juan/039.json"
+          ]
+        },
+        {
+          "label": "別集類",
+          "files": [
+            "juan/040.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "text_quality": {
+    "grade": "rough",
+    "source_note": "《二十五史藝文經籍志考補萃編》第十卷（第163-436頁）逐頁人工校對。本志專收晉代，體例為「撰人頂格粗體→書名卷數→小注→低格考證」。全志無「右X類，N部」統計語，惟釋家類連文組有「以上N部」之自計，據以校核，三處全合（95=95、64=64、4=4）。經部枚舉十一類而正文只十類（「經緯」全無），乃原書自身之不一致，照錄不改。"
+  },
+  "type": "catalog",
+  "revision": "1.0.0",
+  "revised_at": "2026-09-06",
+  "total_entries": 1588
+}

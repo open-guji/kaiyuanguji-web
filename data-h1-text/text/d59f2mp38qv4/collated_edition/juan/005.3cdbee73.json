@@ -1,0 +1,138 @@
+{
+  "title": "經部·三禮類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·三禮類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮經會元四卷",
+      "content": "葉時撰。",
+      "work_id": "d59f2hspulfm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "周禮句解十二卷",
+      "content": "朱申撰。",
+      "work_id": "d59f2hrtp5hc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "考工記圖解四卷",
+      "content": "林希逸撰。",
+      "work_id": "d59f2hgheqyr"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮記詳解十卷",
+      "content": "朱申撰。",
+      "work_id": "d59f2hfvvdhd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮記正義一卷",
+      "content": "鄭樸翁撰。",
+      "work_id": "d59f2hfqkc8y"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮記釋",
+      "content": "陳煥撰。",
+      "work_id": "d59f2himid4w"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮記解",
+      "content": "方慤撰。",
+      "work_id": "d59f2hi2j6df"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中庸指歸一卷",
+      "content": "黎立武撰。",
+      "work_id": "d59f2htvd5oi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "提網一卷",
+      "content": "黎立武撰。",
+      "work_id": "d59f2hfee328"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大學發微一卷",
+      "content": "黎立武撰。",
+      "book_id": "988lpnjym9",
+      "ai_note": "本條原以 work_id 載 11qfrvos555og，而該 id 實為 Book《大學發微》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "提綱一卷",
+      "content": "黎立武撰。",
+      "work_id": "d59f2hianchu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "中庸發明一卷",
+      "content": "王奎文撰。",
+      "book_id": "988lpnv75u",
+      "ai_note": "本條原以 work_id 載 11qfrvovot7uo，而該 id 實為 Book《中庸發明》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大學集傳",
+      "content": "馬端臨撰。",
+      "book_id": "988lpnv75w",
+      "ai_note": "本條原以 work_id 載 11qfrvoxid1xc，而該 id 實為 Book《大學集傳》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大學口義",
+      "content": "熊禾撰。",
+      "work_id": "d59f2hi3s4jm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大學廣義",
+      "content": "熊禾撰。",
+      "book_id": "988lpnjymc",
+      "ai_note": "本條原以 work_id 載 11qfrvp12ytq8，而該 id 實為 Book《大學廣義》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "三禮考異",
+      "content": "熊禾撰。",
+      "work_id": "d59f2hgf835u"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右三禮類",
+      "content": "右三禮類十一家三十六卷。"
+    }
+  ]
+}

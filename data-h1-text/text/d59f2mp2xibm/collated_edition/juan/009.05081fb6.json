@@ -1,0 +1,33 @@
+{
+  "title": "甲部經錄·識緯類",
+  "source_juan": "卷一",
+  "sections": [
+    {
+      "title": "甲部經錄·識緯類",
+      "level": 2,
+      "type": "tally",
+      "content": "右識緯類,存三家,三部。"
+    },
+    {
+      "title": "王子年歌一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王嘉。謹按見《七録》。《南齊書·祥瑞記》屢引。",
+      "work_id": "d59f27vyunls"
+    },
+    {
+      "title": "金雄記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭文。謹按見《七錄》。《南齊書,祥瑞記》引。",
+      "work_id": "d59f27ws6yo2"
+    },
+    {
+      "title": "孝經錯緯",
+      "level": 3,
+      "type": "book",
+      "content": "郭璃。謹按見本書 傳。互見孝經類。",
+      "work_id": "d59f27xquayr"
+    }
+  ]
+}

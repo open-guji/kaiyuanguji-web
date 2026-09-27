@@ -1,0 +1,34 @@
+{
+  "title": "補編·經編周官禮類",
+  "part": "main",
+  "bian": "supplement",
+  "lei": "經編周官禮類",
+  "ai_note": "本檔據光緒九年長沙嫏嬛館補校刊本之目錄立。佚文未錄——sections[].fragments 為空陣列者，謂尚未錄入，非謂馬氏無所輯，見各 section 之 coverage.level。",
+  "sections": [
+    {
+      "title": "周官禮異同評一卷",
+      "type": "reconstruction",
+      "level": 3,
+      "book_title": "周官禮異同評",
+      "measure": 1,
+      "part": "main",
+      "bian": "supplement",
+      "lei": "經編周官禮類",
+      "zhi_no": 8,
+      "juan_no": 79,
+      "dynasty": "晉",
+      "author": "陳邵",
+      "author_role": "撰",
+      "work_id": "d59f27v6g26b",
+      "link_basis": "題同且撰人「陳邵」合，唯一",
+      "preface": null,
+      "pian": [],
+      "fragments": [],
+      "coverage": {
+        "level": "toc",
+        "fragments_recorded": 0
+      },
+      "content": ""
+    }
+  ]
+}

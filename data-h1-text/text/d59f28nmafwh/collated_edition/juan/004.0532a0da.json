@@ -1,0 +1,1355 @@
+{
+  "title": "禮類",
+  "sections": [
+    {
+      "title": "《周官禮》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮》十二卷馬融注。",
+      "work_id": "d59f24mgxukn",
+      "book_title": "周官禮",
+      "n_juan": 12,
+      "author_info": "馬融注"
+    },
+    {
+      "title": "《周官禮》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮》十二卷鄭玄注。",
+      "work_id": "d59f23nz7toh",
+      "book_title": "周官禮",
+      "n_juan": 12,
+      "author_info": "鄭玄注"
+    },
+    {
+      "title": "《周官禮》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮》十二卷王肅注。",
+      "work_id": "d59f27xh5y4j",
+      "book_title": "周官禮",
+      "n_juan": 12,
+      "author_info": "王肅注"
+    },
+    {
+      "title": "《周官禮》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮》十二卷伊說注。",
+      "work_id": "d59f27yhdh4w",
+      "book_title": "周官禮",
+      "n_juan": 12,
+      "author_info": "伊說注"
+    },
+    {
+      "title": "《周官禮》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮》十二卷干寶注。梁又有《周官甯朔新書》八卷，晉燕王師王懋約撰，亡。",
+      "work_id": "d59f27yb4q9t",
+      "book_title": "周官禮",
+      "n_juan": 12,
+      "author_info": "干寶注"
+    },
+    {
+      "title": "《集注周官禮》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注周官禮》二十卷崔靈恩注。",
+      "work_id": "d59f284aih37",
+      "book_title": "集注周官禮",
+      "n_juan": 20,
+      "author_info": "崔靈恩注"
+    },
+    {
+      "title": "《禮音》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮音》三卷劉昌宗撰。",
+      "work_id": "d59f27v808w2",
+      "book_title": "禮音",
+      "n_juan": 3,
+      "author_info": "劉昌宗撰"
+    },
+    {
+      "title": "《周官禮異同評》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮異同評》十二卷晉司空長史陳劭撰。",
+      "work_id": "d59f27v6g26b",
+      "book_title": "周官禮異同評",
+      "n_juan": 12,
+      "author_info": "晉司空長史陳劭撰"
+    },
+    {
+      "title": "《周官禮駁難》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮駁難》四卷孫略撰。梁有《周官駁難》三卷，孫琦問，干寶駁，晉散騎常侍虞喜撰。",
+      "work_id": "d59f27vqf8xt",
+      "book_title": "周官禮駁難",
+      "n_juan": 4,
+      "author_info": "孫略撰"
+    },
+    {
+      "title": "《周官禮義疏》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮義疏》四十卷沈重撰。",
+      "work_id": "d59f286mhb7n",
+      "book_title": "周官禮義疏",
+      "n_juan": 40,
+      "author_info": "沈重撰"
+    },
+    {
+      "title": "《周官禮義疏》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮義疏》十九卷",
+      "work_id": "d59f2pu0cnb5",
+      "book_title": "周官禮義疏",
+      "n_juan": 19
+    },
+    {
+      "title": "《周官禮義疏》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮義疏》十卷",
+      "work_id": "d59f2q1qsbnl",
+      "book_title": "周官禮義疏",
+      "n_juan": 10
+    },
+    {
+      "title": "《周官禮義疏》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮義疏》九卷",
+      "work_id": "d59f2px93eo2",
+      "book_title": "周官禮義疏",
+      "n_juan": 9
+    },
+    {
+      "title": "《周官分職》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官分職》四卷",
+      "work_id": "d59f2q7nzev4",
+      "book_title": "周官分職",
+      "n_juan": 4
+    },
+    {
+      "title": "《周官禮圖》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周官禮圖》十四卷梁有《郊祀圖》二卷，亡。",
+      "work_id": "d59f2q76i4n4",
+      "book_title": "周官禮圖",
+      "n_juan": 14
+    },
+    {
+      "title": "《儀禮》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《儀禮》十七卷鄭玄注。",
+      "work_id": "d59f205fqi2o",
+      "book_title": "儀禮",
+      "n_juan": 17,
+      "author_info": "鄭玄注"
+    },
+    {
+      "title": "《儀禮》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《儀禮》十七卷王肅注。梁有李軌、劉昌宗音各一卷，鄭玄音二卷，亡。",
+      "work_id": "d59f27yxakub",
+      "book_title": "儀禮",
+      "n_juan": 17,
+      "author_info": "王肅注"
+    },
+    {
+      "title": "《儀禮義疏見》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《儀禮義疏見》二卷",
+      "work_id": "d59f2q3vkp34",
+      "book_title": "儀禮義疏見",
+      "n_juan": 2
+    },
+    {
+      "title": "《儀禮義疏》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《儀禮義疏》六卷",
+      "work_id": "d59f2mox0001",
+      "book_title": "儀禮義疏",
+      "n_juan": 6
+    },
+    {
+      "title": "《喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳》一卷馬融注。",
+      "work_id": "d59f23nya41w",
+      "book_title": "喪服經傳",
+      "n_juan": 1,
+      "author_info": "馬融注"
+    },
+    {
+      "title": "《喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳》一卷鄭玄注。",
+      "work_id": "d59f24mgxuko",
+      "book_title": "喪服經傳",
+      "n_juan": 1,
+      "author_info": "鄭玄注"
+    },
+    {
+      "title": "《喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳》一卷王肅注。",
+      "work_id": "d59f27xiewao",
+      "book_title": "喪服經傳",
+      "n_juan": 1,
+      "author_info": "王肅注"
+    },
+    {
+      "title": "《喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳》一卷晉給事中袁准注。",
+      "work_id": "d59f27vxwxz7",
+      "book_title": "喪服經傳",
+      "n_juan": 1,
+      "author_info": "晉給事中袁准注"
+    },
+    {
+      "title": "《喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳》一卷陳銓注。",
+      "work_id": "d59f27ygfri8",
+      "book_title": "喪服經傳",
+      "n_juan": 1,
+      "author_info": "陳銓注"
+    },
+    {
+      "title": "《集注喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注喪服經傳》一卷晉廬陵太守孔倫撰。",
+      "work_id": "d59f27yathqb",
+      "book_title": "集注喪服經傳",
+      "n_juan": 1,
+      "author_info": "晉廬陵太守孔倫撰"
+    },
+    {
+      "title": "《集注喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注喪服經傳》一卷宋太中大夫裴松之撰。",
+      "work_id": "d59f2848bta8",
+      "book_title": "集注喪服經傳",
+      "n_juan": 1,
+      "author_info": "宋太中大夫裴松之撰"
+    },
+    {
+      "title": "《集注喪服經傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注喪服經傳》二卷宋丞相諮議參軍蔡超注。梁又有《喪服經傳》一卷，宋徵士劉道拔注，亡。",
+      "book_title": "集注喪服經傳",
+      "n_juan": 2,
+      "author_info": "宋丞相諮議參軍蔡超注",
+      "_dead_work_id": "d59f27xaaq69",
+      "_dead_work_id_note": "2026-09-06 所指之 Work 於兩庫皆已不存（經他車道刪併），降欄存查；改指待人覈。",
+      "work_id": null
+    },
+    {
+      "title": "《略注喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《略注喪服經傳》一卷雷次宗注。",
+      "work_id": "d59f2844w7b5",
+      "book_title": "略注喪服經傳",
+      "n_juan": 1,
+      "author_info": "雷次宗注"
+    },
+    {
+      "title": "《集解喪服經傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集解喪服經傳》二卷齊東平太守田僧紹解。",
+      "work_id": "d59f284aih35",
+      "book_title": "集解喪服經傳",
+      "n_juan": 2,
+      "author_info": "齊東平太守田僧紹解"
+    },
+    {
+      "title": "《喪服義疏》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服義疏》二卷梁步兵校尉、五經博士賀瑒撰。梁又有《喪服經傳義疏》五卷，齊散騎郎司馬憲撰；《喪服經傳義疏》二卷，齊給事中樓幼瑜撰；《喪服經傳義疏》一卷，劉瓛撰；《喪服經傳義疏》一卷，齊徵士沈麟士撰。",
+      "work_id": "d59f285o57gh",
+      "book_title": "喪服義疏",
+      "n_juan": 2,
+      "author_info": "梁步兵校尉、五經博士賀瑒撰"
+    },
+    {
+      "title": "《喪服經傳義疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服經傳義疏》一卷梁尚書左丞何佟之撰，亡。",
+      "work_id": "d59f286c6ha9",
+      "book_title": "喪服經傳義疏",
+      "n_juan": 1,
+      "author_info": "梁尚書左丞何佟之撰"
+    },
+    {
+      "title": "《喪服傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服傳》一卷梁通直郎裴子野撰。",
+      "work_id": "d59f286eodmq",
+      "book_title": "喪服傳",
+      "n_juan": 1,
+      "author_info": "梁通直郎裴子野撰"
+    },
+    {
+      "title": "《喪服文句義疏》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服文句義疏》十卷梁國子助教皇侃撰。",
+      "work_id": "d59f2859sagy",
+      "book_title": "喪服文句義疏",
+      "n_juan": 10,
+      "author_info": "梁國子助教皇侃撰"
+    },
+    {
+      "title": "《喪服義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服義》十卷陳國子祭酒謝嶠撰。",
+      "work_id": "d59f28538b2b",
+      "book_title": "喪服義",
+      "n_juan": 10,
+      "author_info": "陳國子祭酒謝嶠撰"
+    },
+    {
+      "title": "《喪服義鈔》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服義鈔》三卷梁有《喪服經傳隱義》一卷，亡。",
+      "work_id": "d59f2q3s53i8",
+      "book_title": "喪服義鈔",
+      "n_juan": 3
+    },
+    {
+      "title": "《喪服要記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要記》一卷王肅注。",
+      "work_id": "d59f27x9zhmp",
+      "book_title": "喪服要記",
+      "n_juan": 1,
+      "author_info": "王肅注"
+    },
+    {
+      "title": "《喪服要記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要記》一卷蜀丞相蔣琬撰。梁有《喪服變除圖》五卷，吳齊王傅射慈撰，亡。",
+      "work_id": "d59f27t117gg",
+      "book_title": "喪服要記",
+      "n_juan": 1,
+      "author_info": "蜀丞相蔣琬撰"
+    },
+    {
+      "title": "《喪服要記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要記》十卷賀循撰。梁有《喪服要記》，宋員外常侍庾蔚之注；又《喪服世要》一卷，庾蔚之撰；《喪服集議》十卷，宋撫軍司馬費沈撰。",
+      "work_id": "d59f27uzku82",
+      "book_title": "喪服要記",
+      "n_juan": 10,
+      "author_info": "賀循撰"
+    },
+    {
+      "title": "《喪服要集》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要集》二卷晉征南將軍杜預撰。又有《喪服要記》二卷，晉侍中劉逵撰，亡。",
+      "work_id": "d59f27ukwoox",
+      "book_title": "喪服要集",
+      "n_juan": 2,
+      "author_info": "晉征南將軍杜預撰"
+    },
+    {
+      "title": "《喪服儀》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服儀》一卷晉太保衛瓘撰。梁有《喪服要記》六卷，晉司空賀循撰；《喪服要問》六卷，劉德明撰；《喪服》三十一卷，宋員外郎散騎庾蔚之撰；《喪服要問》二卷，張耀撰；《喪服難問》六卷，崔凱撰；《喪服雜記》二十卷，伊氏撰；《喪服釋疑》二十卷，劉智撰。亡。",
+      "work_id": "d59f27uhsb9e",
+      "book_title": "喪服儀",
+      "n_juan": 1,
+      "author_info": "晉太保衛瓘撰"
+    },
+    {
+      "title": "《喪服要問》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要問》一卷",
+      "work_id": "d59f2q5g2o02",
+      "book_title": "喪服要問",
+      "n_juan": 1
+    },
+    {
+      "title": "《漢荊州刺史劉表新定禮》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢荊州刺史劉表新定禮》一卷",
+      "work_id": "d59f2q0srgn4",
+      "book_title": "漢荊州刺史劉表新定禮",
+      "n_juan": 1
+    },
+    {
+      "title": "《喪服要略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要略》一卷晉太學博士環濟撰。",
+      "work_id": "d59f27uhh2ps",
+      "book_title": "喪服要略",
+      "n_juan": 1,
+      "author_info": "晉太學博士環濟撰"
+    },
+    {
+      "title": "《喪服要略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服要略》二卷",
+      "work_id": "d59f2prxfojm",
+      "book_title": "喪服要略",
+      "n_juan": 2
+    },
+    {
+      "title": "《喪服制要》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服制要》一卷徐氏撰。",
+      "work_id": "d59f2pvp7x8h",
+      "book_title": "喪服制要",
+      "n_juan": 1,
+      "author_info": "徐氏撰"
+    },
+    {
+      "title": "《喪服譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服譜》一卷鄭玄注。",
+      "work_id": "d59f23nvs7pc",
+      "book_title": "喪服譜",
+      "n_juan": 1,
+      "author_info": "鄭玄注"
+    },
+    {
+      "title": "《喪服譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服譜》一卷晉開府儀同三司蔡謨撰。",
+      "work_id": "d59f27u1jz0j",
+      "book_title": "喪服譜",
+      "n_juan": 1,
+      "author_info": "晉開府儀同三司蔡謨撰"
+    },
+    {
+      "title": "《喪服譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服譜》一卷賀循撰。",
+      "work_id": "d59f27vvf1mo",
+      "book_title": "喪服譜",
+      "n_juan": 1,
+      "author_info": "賀循撰"
+    },
+    {
+      "title": "《喪服變除》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服變除》一卷晉散騎常侍葛洪撰。",
+      "work_id": "d59f24mhkbns",
+      "book_title": "喪服變除",
+      "n_juan": 1,
+      "author_info": "晉散騎常侍葛洪撰"
+    },
+    {
+      "title": "《凶禮》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《凶禮》一卷晉廣陵相孔衍撰。",
+      "work_id": "d59f27wg0phd",
+      "book_title": "凶禮",
+      "n_juan": 1,
+      "author_info": "晉廣陵相孔衍撰"
+    },
+    {
+      "title": "《喪服古今集記》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服古今集記》三卷齊太尉王儉撰。",
+      "work_id": "d59f28676ole",
+      "book_title": "喪服古今集記",
+      "n_juan": 3,
+      "author_info": "齊太尉王儉撰"
+    },
+    {
+      "title": "《喪服世行要記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服世行要記》十卷齊光祿大夫王逡撰。",
+      "work_id": "d59f286jzev6",
+      "book_title": "喪服世行要記",
+      "n_juan": 10,
+      "author_info": "齊光祿大夫王逡撰"
+    },
+    {
+      "title": "《喪服答要難》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服答要難》一卷袁祈撰。",
+      "work_id": "d59f2pypj9j5",
+      "book_title": "喪服答要難",
+      "n_juan": 1,
+      "author_info": "袁祈撰"
+    },
+    {
+      "title": "《喪服記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服記》十卷王氏撰。",
+      "work_id": "d59f2gd5iayo",
+      "book_title": "喪服記",
+      "n_juan": 10,
+      "author_info": "王氏撰"
+    },
+    {
+      "title": "《喪服五要》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服五要》一卷嚴氏撰。",
+      "work_id": "d59f2psdcsn6",
+      "book_title": "喪服五要",
+      "n_juan": 1,
+      "author_info": "嚴氏撰"
+    },
+    {
+      "title": "《駁喪服經傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《駁喪服經傳》一卷卜氏傳。",
+      "work_id": "d59f2q132a68",
+      "book_title": "駁喪服經傳",
+      "n_juan": 1,
+      "author_info": "卜氏傳"
+    },
+    {
+      "title": "《喪服疑問》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服疑問》一卷樊氏撰。",
+      "work_id": "d59f28ksubd1",
+      "book_title": "喪服疑問",
+      "n_juan": 1,
+      "author_info": "樊氏撰"
+    },
+    {
+      "title": "《喪服圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服圖》一卷王儉撰。",
+      "work_id": "d59f285ml0qr",
+      "book_title": "喪服圖",
+      "n_juan": 1,
+      "author_info": "王儉撰"
+    },
+    {
+      "title": "《喪服圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服圖》一卷賀遊撰。",
+      "work_id": "d59f2pwzqadc",
+      "link_basis": "原繫 1evcpk00c92io，該條已併入 1evfubjfrwz5s（「賀遊」為「崔遊」之訛，同書一卷，2026-08-11），今改繫。",
+      "book_title": "喪服圖",
+      "n_juan": 1,
+      "author_info": "賀遊撰"
+    },
+    {
+      "title": "《喪服圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服圖》一卷崔逸撰。梁有《喪服祥禫雜議二十九卷，《喪服雜議故事》二十一卷，又《戴氏喪服五家要記圖譜》五卷，《喪服君臣圖儀》一卷，亡。",
+      "work_id": "d59f2q8cbx1c",
+      "book_title": "喪服圖",
+      "n_juan": 1,
+      "author_info": "崔逸撰"
+    },
+    {
+      "title": "《五服圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五服圖》一卷",
+      "work_id": "d59f2px2un7k",
+      "book_title": "五服圖",
+      "n_juan": 1
+    },
+    {
+      "title": "《五服圖儀》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五服圖儀》一卷",
+      "work_id": "d59f2qapuxvl",
+      "book_title": "五服圖儀",
+      "n_juan": 1
+    },
+    {
+      "title": "《喪服禮圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服禮圖》一卷",
+      "work_id": "d59f2pvrptkw",
+      "book_title": "喪服禮圖",
+      "n_juan": 1
+    },
+    {
+      "title": "《五服略例》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五服略例》一卷",
+      "work_id": "d59f2pydd0jk",
+      "book_title": "五服略例",
+      "n_juan": 1
+    },
+    {
+      "title": "《喪服問答目》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服問答目》十三卷皇侃撰。",
+      "work_id": "d59f285aq03k",
+      "book_title": "喪服問答目",
+      "n_juan": 13,
+      "author_info": "皇侃撰"
+    },
+    {
+      "title": "《喪服假寧制》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪服假寧制》三卷",
+      "work_id": "d59f2pz9ig3k",
+      "book_title": "喪服假寧制",
+      "n_juan": 3
+    },
+    {
+      "title": "《喪禮五服》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪禮五服》七卷大將軍袁憲撰。",
+      "work_id": "d59f285clfcy",
+      "book_title": "喪禮五服",
+      "n_juan": 7,
+      "author_info": "大將軍袁憲撰"
+    },
+    {
+      "title": "《論喪服決》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論喪服決》一卷",
+      "work_id": "d59f2pw9tl36",
+      "book_title": "論喪服決",
+      "n_juan": 1
+    },
+    {
+      "title": "《喪禮鈔》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪禮鈔》三卷王隆伯撰。",
+      "work_id": "d59f2py8zojk",
+      "book_title": "喪禮鈔",
+      "n_juan": 3,
+      "author_info": "王隆伯撰"
+    },
+    {
+      "title": "《大戴禮記》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大戴禮記》十三卷漢信都王太傅戴德撰。梁有《諡法》三卷，後漢安南太守劉熙注，亡。",
+      "work_id": "d59f1ikv0g74",
+      "book_title": "大戴禮記",
+      "n_juan": 13,
+      "author_info": "漢信都王太傅戴德撰"
+    },
+    {
+      "title": "《夏小正》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《夏小正》一卷戴德撰。",
+      "work_id": "d59f24lm1csm",
+      "book_title": "夏小正",
+      "n_juan": 1,
+      "author_info": "戴德撰"
+    },
+    {
+      "title": "《禮記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記》十卷漢北中郎將盧植注。",
+      "work_id": "d59f23nxcefa",
+      "book_title": "禮記",
+      "n_juan": 10,
+      "author_info": "漢北中郎將盧植注"
+    },
+    {
+      "title": "《禮記》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記》二十卷漢九江太守戴聖撰，鄭玄注。",
+      "work_id": "d59f20aja1hc",
+      "book_title": "禮記",
+      "n_juan": 20,
+      "author_info": "漢九江太守戴聖撰"
+    },
+    {
+      "title": "《禮記》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記》三十卷王肅注。梁有《禮記》十二卷，業遵注，亡。",
+      "work_id": "d59f27yxltdt",
+      "book_title": "禮記",
+      "n_juan": 30,
+      "author_info": "王肅注"
+    },
+    {
+      "title": "《禮記》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記》三十卷魏秘書監孫炎注。",
+      "work_id": "d59f27yxltds",
+      "book_title": "禮記",
+      "n_juan": 30,
+      "author_info": "魏秘書監孫炎注"
+    },
+    {
+      "title": "《禮記甯朔新書》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記甯朔新書》八卷王懋約注。梁有二十卷。",
+      "work_id": "d59f27yz603l",
+      "book_title": "禮記甯朔新書",
+      "n_juan": 8,
+      "author_info": "王懋約注"
+    },
+    {
+      "title": "《月令章句》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《月令章句》十二卷漢左中郎將蔡邕撰。",
+      "work_id": "d59f209an3sw",
+      "book_title": "月令章句",
+      "n_juan": 12,
+      "author_info": "漢左中郎將蔡邕撰"
+    },
+    {
+      "title": "《禮記音義隱》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記音義隱》一卷謝氏撰。",
+      "work_id": "d59f2ps0vb42",
+      "book_title": "禮記音義隱",
+      "n_juan": 1,
+      "author_info": "謝氏撰",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evc5pd2pi680，今另立《禮記音義隱》1ex0e1hlur7k9 繫之。隋志禮類「《禮記音義隱》一卷謝氏撰」與「《禮記音義隱》七卷」撰人異（本條之撰人為射慈，七卷本），依 SCHEMA〈同題二條〉一別出。"
+    },
+    {
+      "title": "《禮記音義隱》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記音義隱》七卷",
+      "work_id": "d59f27xdqc5c",
+      "book_title": "禮記音義隱",
+      "n_juan": 7
+    },
+    {
+      "title": "《禮記音》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記音》二卷宋中散大夫徐爰撰。梁有鄭玄、王肅、射慈、射貞、孫毓、繆炳音各一卷，蔡謨、東晉安北諮議參軍曹耽、國子助教尹毅、李軌、員外郎范宣音各二卷，徐邈音三卷，劉昌宗音五卷，亡。",
+      "work_id": "d59f283xei9v",
+      "book_title": "禮記音",
+      "n_juan": 2,
+      "author_info": "宋中散大夫徐爰撰"
+    },
+    {
+      "title": "《禮略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮略》二卷",
+      "work_id": "d59f23nr3nk8",
+      "book_title": "禮略",
+      "n_juan": 2
+    },
+    {
+      "title": "《禮記要鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記要鈔》十卷緱氏撰。梁有禮義四卷，魏侍中鄭小同撰；《摭遺別記》一卷，樓幼瑜撰，亡。",
+      "work_id": "d59f23nowzr8",
+      "book_title": "禮記要鈔",
+      "n_juan": 10,
+      "author_info": "緱氏撰"
+    },
+    {
+      "title": "《禮記新義疏》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記新義疏》二十卷賀瑒撰。梁有《義疏》三卷，宋豫章郡丞雷肅之撰，亡。",
+      "work_id": "d59f2848n1tv",
+      "book_title": "禮記新義疏",
+      "n_juan": 20,
+      "author_info": "賀瑒撰"
+    },
+    {
+      "title": "《禮記講疏》九十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記講疏》九十九卷皇侃撰。",
+      "work_id": "d59f28415csj",
+      "book_title": "禮記講疏",
+      "n_juan": 99,
+      "author_info": "皇侃撰"
+    },
+    {
+      "title": "《禮記義疏》四十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記義疏》四十八卷皇侃撰。",
+      "work_id": "d59f284232f5",
+      "book_title": "禮記義疏",
+      "n_juan": 48,
+      "author_info": "皇侃撰"
+    },
+    {
+      "title": "《禮記義疏》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記義疏》四十卷沈重撰。",
+      "work_id": "d59f28430s1w",
+      "book_title": "禮記義疏",
+      "n_juan": 40,
+      "author_info": "沈重撰"
+    },
+    {
+      "title": "《禮記義疏》三十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記義疏》三十八卷。",
+      "work_id": "d59f2mox0002",
+      "book_title": "禮記義疏",
+      "n_juan": 38
+    },
+    {
+      "title": "《禮記義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記義》十卷何氏撰。",
+      "work_id": "d59f284brf9d",
+      "book_title": "禮記義",
+      "n_juan": 10,
+      "author_info": "何氏撰"
+    },
+    {
+      "title": "《禮記疏》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記疏》十一卷",
+      "work_id": "d59f28mk7hmp",
+      "book_title": "禮記疏",
+      "n_juan": 11
+    },
+    {
+      "title": "《禮記大義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記大義》十卷梁武帝撰。",
+      "work_id": "d59f2846ge0w",
+      "book_title": "禮記大義",
+      "n_juan": 10,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《禮記文外大義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記文外大義》二卷秘書學士褚暉撰。",
+      "work_id": "d59f28mrp6o2",
+      "book_title": "禮記文外大義",
+      "n_juan": 2,
+      "author_info": "秘書學士褚暉撰"
+    },
+    {
+      "title": "《禮大義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮大義》十卷",
+      "work_id": "d59f285e5m2q",
+      "book_title": "禮大義",
+      "n_juan": 10
+    },
+    {
+      "title": "《禮記義證》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記義證》十卷劉芳撰。",
+      "work_id": "d59f284bg6pt",
+      "book_title": "禮記義證",
+      "n_juan": 10,
+      "author_info": "劉芳撰"
+    },
+    {
+      "title": "《禮大義章》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮大義章》七卷",
+      "work_id": "d59f2psxn7y8",
+      "book_title": "禮大義章",
+      "n_juan": 7
+    },
+    {
+      "title": "《喪禮雜義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《喪禮雜義》三卷",
+      "work_id": "d59f2pudruo1",
+      "book_title": "喪禮雜義",
+      "n_juan": 3
+    },
+    {
+      "title": "《禮記中庸傳》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記中庸傳》二卷宋散騎常侍戴顒撰。",
+      "work_id": "d59f28407n5u",
+      "book_title": "禮記中庸傳",
+      "n_juan": 2,
+      "author_info": "宋散騎常侍戴顒撰"
+    },
+    {
+      "title": "《中庸講疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《中庸講疏》一卷梁武帝撰。",
+      "work_id": "d59f286csydc",
+      "book_title": "中庸講疏",
+      "n_juan": 1,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《私記制旨中庸義》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《私記制旨中庸義》五卷",
+      "work_id": "d59f2pv4m9dt",
+      "book_title": "私記制旨中庸義",
+      "n_juan": 5
+    },
+    {
+      "title": "《禮記略解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記略解》十卷庚氏撰。",
+      "work_id": "d59f2pv7fe9s",
+      "book_title": "禮記略解",
+      "n_juan": 10,
+      "author_info": "庚氏撰"
+    },
+    {
+      "title": "《禮記評》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮記評》十一卷劉雋撰。",
+      "work_id": "d59f2nipjif4",
+      "book_title": "禮記評",
+      "n_juan": 11,
+      "author_info": "劉雋撰"
+    },
+    {
+      "title": "《石渠禮論》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《石渠禮論》四卷戴聖撰。梁有《群儒疑義》十二卷，戴聖撰。",
+      "work_id": "d59f23nqh6gx",
+      "book_title": "石渠禮論",
+      "n_juan": 4,
+      "author_info": "戴聖撰"
+    },
+    {
+      "title": "《禮論》三百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論》三百卷宋禦史中丞何承天撰。",
+      "work_id": "d59f285vbnyb",
+      "book_title": "禮論",
+      "n_juan": 300,
+      "author_info": "宋禦史中丞何承天撰",
+      "link_basis": "原繫 1evc5pd6kq0hs，該條已併入 1evr5e3meoguk（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《禮論條牒》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論條牒》十卷宋太尉參軍任預撰。",
+      "work_id": "d59f285lyjnk",
+      "book_title": "禮論條牒",
+      "n_juan": 10,
+      "author_info": "宋太尉參軍任預撰"
+    },
+    {
+      "title": "《禮論帖》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論帖》三卷任預撰。梁四卷。",
+      "work_id": "d59f2ofyy2gy",
+      "book_title": "禮論帖",
+      "n_juan": 3,
+      "author_info": "任預撰"
+    },
+    {
+      "title": "《禮論鈔》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論鈔》二十卷庾蔚之撰。",
+      "work_id": "d59f286j1p8g",
+      "book_title": "禮論鈔",
+      "n_juan": 20,
+      "author_info": "庾蔚之撰"
+    },
+    {
+      "title": "《禮論鈔》六十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論鈔》六十九卷",
+      "work_id": "d59f286l8d1g",
+      "book_title": "禮論鈔",
+      "n_juan": 69
+    },
+    {
+      "title": "《禮論要鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論要鈔》十卷王儉撰。梁三卷。",
+      "work_id": "d59f285iixoh",
+      "book_title": "禮論要鈔",
+      "n_juan": 10,
+      "author_info": "王儉撰"
+    },
+    {
+      "title": "《禮論要鈔》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論要鈔》一百卷賀瑒撰。",
+      "work_id": "d59f285lnb41",
+      "book_title": "禮論要鈔",
+      "n_juan": 100,
+      "author_info": "賀瑒撰"
+    },
+    {
+      "title": "《禮論要鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論要鈔》十卷梁有齊禦史中丞荀萬秋《鈔略》二卷；尚書儀曹郎丘季彬論五十八卷，議一百三十卷，統六卷。亡。",
+      "work_id": "d59f286jo6bl",
+      "book_title": "禮論要鈔",
+      "n_juan": 10
+    },
+    {
+      "title": "《禮論答問》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論答問》八卷宋中散大夫徐廣撰。",
+      "work_id": "d59f27u41vcw",
+      "book_title": "禮論答問",
+      "n_juan": 8,
+      "author_info": "宋中散大夫徐廣撰"
+    },
+    {
+      "title": "《禮論答問》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮論答問》十三卷徐廣撰。",
+      "work_id": "d59f27u41vcw",
+      "book_title": "禮論答問",
+      "n_juan": 13,
+      "author_info": "徐廣撰",
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24：本節與同志第 110 節同指本 work，已逐條裁為正當共繫（其據見所繫 work 之 ai_note）。依 SCHEMA〈一書兩著〉，書目次第在先者為正著不標，其後重出者標之。"
+    },
+    {
+      "title": "《禮答問》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮答問》二卷徐廣撰，殘缺。梁十一卷。",
+      "work_id": "d59f27wrkhkz",
+      "book_title": "禮答問",
+      "n_juan": 2,
+      "author_info": "徐廣撰"
+    },
+    {
+      "title": "《禮答問》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮答問》六卷庾蔚之撰。",
+      "work_id": "d59f285xtkar",
+      "book_title": "禮答問",
+      "n_juan": 6,
+      "author_info": "庾蔚之撰"
+    },
+    {
+      "title": "《禮答問》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮答問》三卷王儉撰。梁有晉益陽令吳商《禮難》十二卷，《雜議》十二卷，又《禮議雜記故事》十三卷，《喪雜事》二十卷；宋光祿大夫傅隆議二卷，《祭法》五卷。亡。",
+      "work_id": "d59f286g8kcj",
+      "book_title": "禮答問",
+      "n_juan": 3,
+      "author_info": "王儉撰"
+    },
+    {
+      "title": "《禮答問》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮答問》十二卷",
+      "work_id": "d59f285v0feq",
+      "book_title": "禮答問",
+      "n_juan": 12
+    },
+    {
+      "title": "《禮答問》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮答問》十卷何佟之撰。梁二十卷。",
+      "work_id": "d59f286j1p8k",
+      "book_title": "禮答問",
+      "n_juan": 10,
+      "author_info": "何佟之撰"
+    },
+    {
+      "title": "《禮雜問》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮雜問》十卷范寧撰。",
+      "work_id": "d59f27tkp5oi",
+      "book_title": "禮雜問",
+      "n_juan": 10,
+      "author_info": "范寧撰",
+      "section_kind": "一書兩著"
+    },
+    {
+      "title": "《禮雜問》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮雜問》十卷",
+      "work_id": "d59f27tkp5oi",
+      "book_title": "禮雜問",
+      "n_juan": 10,
+      "section_kind": "一書兩著"
+    },
+    {
+      "title": "《禮雜答問》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮雜答問》八卷",
+      "work_id": "d59f2q028agx",
+      "book_title": "禮雜答問",
+      "n_juan": 8
+    },
+    {
+      "title": "《禮雜答問》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮雜答問》六卷",
+      "work_id": "d59f2pud5dkx",
+      "book_title": "禮雜答問",
+      "n_juan": 6
+    },
+    {
+      "title": "《禮雜問答鈔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮雜問答鈔》一卷何佟之撰。",
+      "work_id": "d59f2860bgn4",
+      "book_title": "禮雜問答鈔",
+      "n_juan": 1,
+      "author_info": "何佟之撰"
+    },
+    {
+      "title": "《問禮俗》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《問禮俗》十卷董勳撰。",
+      "work_id": "d59f27w4gxds",
+      "book_title": "問禮俗",
+      "n_juan": 10,
+      "author_info": "董勳撰"
+    },
+    {
+      "title": "《問禮俗》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《問禮俗》九卷董子弘撰。",
+      "work_id": "d59f2q0ydq0w",
+      "book_title": "問禮俗",
+      "n_juan": 9,
+      "author_info": "董子弘撰"
+    },
+    {
+      "title": "《答問雜儀》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《答問雜儀》二卷任預撰。",
+      "work_id": "d59f2oga6ltt",
+      "book_title": "答問雜儀",
+      "n_juan": 2,
+      "author_info": "任預撰"
+    },
+    {
+      "title": "《禮義答問》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮義答問》八卷王儉撰。",
+      "work_id": "d59f285rw1z5",
+      "book_title": "禮義答問",
+      "n_juan": 8,
+      "author_info": "王儉撰"
+    },
+    {
+      "title": "《禮疑義》五十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮疑義》五十二卷梁護軍周舍撰。",
+      "work_id": "d59f286sq22p",
+      "book_title": "禮疑義",
+      "n_juan": 52,
+      "author_info": "梁護軍周舍撰",
+      "link_basis": "原繫 1evc5pd9yrsw0，該條已併入 1evgoqhl08etc（撰人字首式重出 Phase 2b 補正，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《制旨革牲大義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《制旨革牲大義》三卷梁武帝撰。",
+      "work_id": "d59f286923up",
+      "book_title": "制旨革牲大義",
+      "n_juan": 3,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《禮樂義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮樂義》十卷",
+      "work_id": "d59f2q4x16o1",
+      "book_title": "禮樂義",
+      "n_juan": 10
+    },
+    {
+      "title": "《禮秘義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《禮秘義》三卷",
+      "work_id": "d59f2pzlzy82",
+      "book_title": "禮秘義",
+      "n_juan": 3
+    },
+    {
+      "title": "《三禮目錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮目錄》一卷鄭玄撰。梁有陶弘景注一卷，亡。",
+      "work_id": "d59f2092ixog",
+      "book_title": "三禮目錄",
+      "n_juan": 1,
+      "author_info": "鄭玄撰"
+    },
+    {
+      "title": "《三禮義宗》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮義宗》三十卷崔靈恩撰。",
+      "work_id": "d59f285d7wg3",
+      "book_title": "三禮義宗",
+      "n_juan": 30,
+      "author_info": "崔靈恩撰"
+    },
+    {
+      "title": "《三禮宗略》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮宗略》二十卷元延明撰。",
+      "work_id": "d59f286rh3wh",
+      "book_title": "三禮宗略",
+      "n_juan": 20,
+      "author_info": "元延明撰"
+    },
+    {
+      "title": "《三禮大義》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮大義》十三卷",
+      "work_id": "d59f2puodx4y",
+      "book_title": "三禮大義",
+      "n_juan": 13
+    },
+    {
+      "title": "《三禮大義》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮大義》四卷",
+      "work_id": "d59f283z9xj5",
+      "book_title": "三禮大義",
+      "n_juan": 4
+    },
+    {
+      "title": "《三禮雜大義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮雜大義》三卷梁有《司馬法》三卷，《李氏訓記》三卷；又《郊丘議》三卷，魏太尉蔣濟撰；《祭法》五卷，又《明堂議》三卷，王肅撰；《雜祭法》六卷，晉司空中郎盧諶撰；《祭典》三卷，晉安北將軍范汪撰；《七廟議》一卷，又《後養議》五卷，干寶撰；《雜鄉射等議》三卷，晉太尉庾亮撰；《逆降義》三卷，宋特進延顏之撰；《逆降義》一卷，田僧紹撰；《分明士制》三卷，何承天撰；《釋疑》二卷，郭鴻撰；《答問》四卷，徐廣撰；《答問》五十卷，何胤撰；又《答問》十卷。亡。",
+      "work_id": "d59f2pzxjpxd",
+      "book_title": "三禮雜大義",
+      "n_juan": 3
+    },
+    {
+      "title": "《三禮圖》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三禮圖》九卷鄭玄及後漢侍中阮諶等撰。",
+      "work_id": "d59f23noaioh",
+      "book_title": "三禮圖",
+      "n_juan": 9,
+      "author_info": "鄭玄及後漢侍中阮諶等撰"
+    },
+    {
+      "title": "《周室王城明堂宗廟圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周室王城明堂宗廟圖》一卷祁諶撰。梁又有《冠服圖》一卷，《五宗圖》一卷，《月令圖》一卷，亡。右一百三十六部，一千六百二十二卷。通計亡書，二百一十一郎，二千一百八十六卷。",
+      "work_id": "d59f2pvnnq4h",
+      "book_title": "周室王城明堂宗廟圖",
+      "n_juan": 1,
+      "author_info": "祁諶撰"
+    },
+    {
+      "title": "禮類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "自大道既隱，天下為家，先王制其夫婦、父子、君臣、上下、親疏之節。至於三代，損益不同。周衰，諸侯僭忒，惡其害己，多被焚削。自孔子時，已不能具，至秦而頓滅。漢初，有高堂生傳十七篇，又有古經，出於淹中，而河間獻王好古愛學，收集餘燼，得而獻之，合五十六篇，並威儀之事。而又得《司馬穰苴兵法》一百五十五篇，及《明堂陰陽》之記，並無敢傳之者。唯古經十七篇與高堂生所傳不殊，而字多異。自高堂生至宣帝時後蒼，最明其業，乃為《曲台記》。蒼授梁人戴德，及德從兄子聖、沛人慶普，於是有大戴、小戴、慶氏，三家並立。後漢唯曹元傳慶氏，以授其子褒。然三家雖存並微，相傳不絕。漢末，鄭玄傳小戴之學，後以古經校之，取其于義長者作注，為鄭氏學。其《喪服》一篇，子夏先傳之，諸儒多為注解，今又別行。而漢時有李氏得《周官》。《周官》蓋周公所制官政之法，上于河間獻王，獨闕《冬官》一篇。獻王購以千金不得，遂取《考工記》以補其處，合成六篇奏之。至王莽時，劉歆始置博士，以行於世。河南緱氏及杜子春受業於歆，因以教授。是後馬融作《周官傳》，以授鄭玄，玄作《周官注》。漢初，河間獻王又得仲尼弟子及後學者所記一百三十一篇獻之，時亦無傳之者。至劉向考校經籍，檢得一百三十篇，向因第而敘之。而又得《明堂陰陽記》三十三篇、《孔子三朝記》七篇、《王史氏記》二十一篇、《樂記》二十三篇，凡五種，合二百十四篇。戴德刪其煩重，合而記之，為八十五篇，謂之《大戴記》。而戴聖又刪大戴之書，為四十六篇，謂之《小戴記》。漢末馬融，遂傳小戴之學。融又定《月令》一篇、《明堂位》一篇、《樂記》一篇，合四十九篇；而鄭玄受業於融，又為之注。今《周官》六篇、古經十七篇、《小戴記》四十九篇，凡三種。唯《鄭注》立于國學，其餘並多散亡，又無師說。"
+    }
+  ]
+}

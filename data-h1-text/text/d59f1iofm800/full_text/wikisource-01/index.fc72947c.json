@@ -1,0 +1,455 @@
+{
+  "work_id": "d59f1iofm800",
+  "version_label": "禮記",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%A6%AE%E8%A8%98",
+    "page_title": "禮記",
+    "revid": 2611168,
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "",
+  "total_chapters": 49,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "曲禮上",
+      "file": "001.md",
+      "page_title": "禮記/曲禮上",
+      "revid": 2592817,
+      "md_len": 4533
+    },
+    {
+      "n": 2,
+      "title": "曲禮下",
+      "file": "002.md",
+      "page_title": "禮記/曲禮下",
+      "revid": 2633691,
+      "md_len": 2998
+    },
+    {
+      "n": 3,
+      "title": "檀弓上",
+      "file": "003.md",
+      "page_title": "禮記/檀弓上",
+      "revid": 2346509,
+      "md_len": 6964
+    },
+    {
+      "n": 4,
+      "title": "檀弓下",
+      "file": "004.md",
+      "page_title": "禮記/檀弓下",
+      "revid": 2346897,
+      "md_len": 6642
+    },
+    {
+      "n": 5,
+      "title": "王制",
+      "file": "005.md",
+      "page_title": "禮記/王制",
+      "revid": 2346513,
+      "md_len": 5552
+    },
+    {
+      "n": 6,
+      "title": "月令",
+      "file": "006.md",
+      "page_title": "禮記/月令",
+      "revid": 2346506,
+      "md_len": 6872
+    },
+    {
+      "n": 7,
+      "title": "曾子問",
+      "file": "007.md",
+      "page_title": "禮記/曾子問",
+      "revid": 2346505,
+      "md_len": 4745
+    },
+    {
+      "n": 8,
+      "title": "文王世子",
+      "file": "008.md",
+      "page_title": "禮記/文王世子",
+      "revid": 2346501,
+      "md_len": 2844
+    },
+    {
+      "n": 9,
+      "title": "禮運",
+      "file": "009.md",
+      "page_title": "禮記/禮運",
+      "revid": 2626644,
+      "md_len": 3607
+    },
+    {
+      "n": 10,
+      "title": "禮器",
+      "file": "010.md",
+      "page_title": "禮記/禮器",
+      "revid": 2346517,
+      "md_len": 2969
+    },
+    {
+      "n": 11,
+      "title": "郊特牲",
+      "file": "011.md",
+      "page_title": "禮記/郊特牲",
+      "revid": 2346522,
+      "md_len": 3612
+    },
+    {
+      "n": 12,
+      "title": "內則",
+      "file": "012.md",
+      "page_title": "禮記/內則",
+      "revid": 1649882,
+      "md_len": 4796
+    },
+    {
+      "n": 13,
+      "title": "明堂位",
+      "file": "013.md",
+      "page_title": "禮記/明堂位",
+      "revid": 2346502,
+      "md_len": 1313
+    },
+    {
+      "n": 14,
+      "title": "玉藻",
+      "file": "014.md",
+      "page_title": "禮記/玉藻",
+      "revid": 2346512,
+      "md_len": 3225
+    },
+    {
+      "n": 15,
+      "title": "喪服小記",
+      "file": "015.md",
+      "page_title": "禮記/喪服小記",
+      "revid": 2346492,
+      "md_len": 1982
+    },
+    {
+      "n": 16,
+      "title": "大傳",
+      "file": "016.md",
+      "page_title": "禮記/大傳",
+      "revid": 2633369,
+      "md_len": 1011
+    },
+    {
+      "n": 17,
+      "title": "少儀",
+      "file": "017.md",
+      "page_title": "禮記/少儀",
+      "revid": 2346499,
+      "md_len": 2000
+    },
+    {
+      "n": 18,
+      "title": "學記",
+      "file": "018.md",
+      "page_title": "禮記/學記",
+      "revid": 2346497,
+      "md_len": 1544
+    },
+    {
+      "n": 19,
+      "title": "樂記",
+      "file": "019.md",
+      "page_title": "禮記/樂記",
+      "revid": 2346508,
+      "md_len": 6581
+    },
+    {
+      "n": 20,
+      "title": "雜記上",
+      "file": "020.md",
+      "page_title": "禮記/雜記上",
+      "revid": 2346525,
+      "md_len": 2697
+    },
+    {
+      "n": 21,
+      "title": "雜記下",
+      "file": "021.md",
+      "page_title": "禮記/雜記下",
+      "revid": 2346526,
+      "md_len": 3808
+    },
+    {
+      "n": 22,
+      "title": "喪大記",
+      "file": "022.md",
+      "page_title": "禮記/喪大記",
+      "revid": 2346490,
+      "md_len": 4156
+    },
+    {
+      "n": 23,
+      "title": "祭法",
+      "file": "023.md",
+      "page_title": "禮記/祭法",
+      "revid": 2372569,
+      "md_len": 1094
+    },
+    {
+      "n": 24,
+      "title": "祭義",
+      "file": "024.md",
+      "page_title": "禮記/祭義",
+      "revid": 2626583,
+      "md_len": 4352
+    },
+    {
+      "n": 25,
+      "title": "祭統",
+      "file": "025.md",
+      "page_title": "禮記/祭統",
+      "revid": 2346515,
+      "md_len": 3452
+    },
+    {
+      "n": 26,
+      "title": "經解",
+      "file": "026.md",
+      "page_title": "禮記/經解",
+      "revid": 2611189,
+      "md_len": 917
+    },
+    {
+      "n": 27,
+      "title": "哀公問",
+      "file": "027.md",
+      "page_title": "禮記/哀公問",
+      "revid": 2611186,
+      "md_len": 1485
+    },
+    {
+      "n": 28,
+      "title": "仲尼燕居",
+      "file": "028.md",
+      "page_title": "禮記/仲尼燕居",
+      "revid": 2611184,
+      "md_len": 1390
+    },
+    {
+      "n": 29,
+      "title": "孔子閒居",
+      "file": "029.md",
+      "page_title": "禮記/孔子閒居",
+      "revid": 2346496,
+      "md_len": 950
+    },
+    {
+      "n": 30,
+      "title": "坊記",
+      "file": "030.md",
+      "page_title": "禮記/坊記",
+      "revid": 2611197,
+      "md_len": 2541
+    },
+    {
+      "n": 31,
+      "title": "中庸",
+      "file": "031.md",
+      "page_title": "禮記/中庸",
+      "revid": 2346484,
+      "md_len": 4588
+    },
+    {
+      "n": 32,
+      "title": "表記",
+      "file": "032.md",
+      "page_title": "禮記/表記",
+      "revid": 7904360,
+      "md_len": 3280
+    },
+    {
+      "n": 33,
+      "title": "緇衣",
+      "file": "033.md",
+      "page_title": "禮記/緇衣",
+      "revid": 2346904,
+      "md_len": 2115
+    },
+    {
+      "n": 34,
+      "title": "奔喪",
+      "file": "034.md",
+      "page_title": "禮記/奔喪",
+      "revid": 2346495,
+      "md_len": 1351
+    },
+    {
+      "n": 35,
+      "title": "問喪",
+      "file": "035.md",
+      "page_title": "禮記/問喪",
+      "revid": 2346489,
+      "md_len": 877
+    },
+    {
+      "n": 36,
+      "title": "服問",
+      "file": "036.md",
+      "page_title": "禮記/服問",
+      "revid": 2346507,
+      "md_len": 536
+    },
+    {
+      "n": 37,
+      "title": "間傳",
+      "file": "037.md",
+      "page_title": "禮記/間傳",
+      "revid": 2346524,
+      "md_len": 807
+    },
+    {
+      "n": 38,
+      "title": "三年問",
+      "file": "038.md",
+      "page_title": "禮記/三年問",
+      "revid": 2346483,
+      "md_len": 614
+    },
+    {
+      "n": 39,
+      "title": "深衣",
+      "file": "039.md",
+      "page_title": "禮記/深衣",
+      "revid": 2346510,
+      "md_len": 303
+    },
+    {
+      "n": 40,
+      "title": "投壺",
+      "file": "040.md",
+      "page_title": "禮記/投壺",
+      "revid": 2346500,
+      "md_len": 856
+    },
+    {
+      "n": 41,
+      "title": "儒行",
+      "file": "041.md",
+      "page_title": "禮記/儒行",
+      "revid": 2346486,
+      "md_len": 1308
+    },
+    {
+      "n": 42,
+      "title": "大學",
+      "file": "042.md",
+      "page_title": "禮記/大學",
+      "revid": 2809685,
+      "md_len": 2233
+    },
+    {
+      "n": 43,
+      "title": "冠義",
+      "file": "043.md",
+      "page_title": "禮記/冠義",
+      "revid": 2346487,
+      "md_len": 431
+    },
+    {
+      "n": 44,
+      "title": "昏義",
+      "file": "044.md",
+      "page_title": "禮記/昏義",
+      "revid": 2346503,
+      "md_len": 923
+    },
+    {
+      "n": 45,
+      "title": "鄉飲酒義",
+      "file": "045.md",
+      "page_title": "禮記/鄉飲酒義",
+      "revid": 2346523,
+      "md_len": 1376
+    },
+    {
+      "n": 46,
+      "title": "射義",
+      "file": "046.md",
+      "page_title": "禮記/射義",
+      "revid": 2346498,
+      "md_len": 1274
+    },
+    {
+      "n": 47,
+      "title": "燕義",
+      "file": "047.md",
+      "page_title": "禮記/燕義",
+      "revid": 2346511,
+      "md_len": 553
+    },
+    {
+      "n": 48,
+      "title": "聘義",
+      "file": "048.md",
+      "page_title": "禮記/聘義",
+      "revid": 2346520,
+      "md_len": 1007
+    },
+    {
+      "n": 49,
+      "title": "喪服四制",
+      "file": "049.md",
+      "page_title": "禮記/喪服四制",
+      "revid": 2346491,
+      "md_len": 817
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "requests": 22,
+    "retries_429": 8
+  },
+  "revision": "1.0.0",
+  "variants": [
+    {
+      "primary": "途",
+      "alt": [
+        "塗"
+      ]
+    },
+    {
+      "primary": "答",
+      "alt": [
+        "荅 下同"
+      ]
+    },
+    {
+      "primary": "蘩",
+      "alt": [
+        "繁"
+      ]
+    },
+    {
+      "primary": "蘩",
+      "alt": [
+        "繁"
+      ]
+    },
+    {
+      "primary": "修",
+      "alt": [
+        "脩"
+      ]
+    },
+    {
+      "primary": "修",
+      "alt": [
+        "脩"
+      ]
+    }
+  ],
+  "dropped_refs": 7
+}

@@ -1,0 +1,566 @@
+{
+  "work_id": "d59f23o7ygw2",
+  "title": "兵書略",
+  "lue": "兵書略",
+  "type": "collated_edition",
+  "collated_edition_type": "catalog",
+  "total": "凡兵書五十三家七百九十篇圖四十三卷",
+  "total_notes": [
+    "省十家二百七十一",
+    "篇重入蹵〓一家二十五篇出司馬法百五十五篇入禮也○劉奉世曰此註二百七十一又當作五百九十",
+    "二两註篇數皆不足蓋訛謬也"
+  ],
+  "page": "KR2a0007_WYG_030-51a",
+  "lue_xu": "兵家者蓋出古司馬之職王官之武備也洪範八政八曰師孔子曰為國者足食足兵以不教民戰是謂棄之明兵之重也易曰古者弦木為弧剡木為矢弧矢之利以威天下其用上矣後世燿金為刃割革為甲器械甚備下及湯武受命以師克亂而濟百姓動之以仁義行之以禮讓司馬法是其遺事也自春秋至於戰國出竒設伏變詐之兵並作漢興張良韓信序次兵法凡百八十二家刪取要用定著三十五家諸吕用事而盜取之武帝時軍政楊僕捃摭遺逸紀奏兵録猶未能備至于孝成命任宏論次兵書為四種",
+  "zhong_count": 4,
+  "schema_version": 1,
+  "updated_at": "2026-08-06T18:46:04+00:00",
+  "sections": [
+    {
+      "title": "兵權謀",
+      "level": 2,
+      "index": 0,
+      "zi_idx": 25,
+      "type": "category",
+      "page": "KR2a0007_WYG_030-47b",
+      "content": ""
+    },
+    {
+      "title": "兵權謀類序",
+      "level": 3,
+      "type": "preface",
+      "content": "權謀者，以正守國，以奇用兵，先計而後戰，兼形埶，包陰陽，用技巧者也。"
+    },
+    {
+      "title": "吳孫子兵法八十二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59ezai72dq8",
+      "page": "KR2a0007_WYG_030-46b",
+      "content": "吴孫子兵法八十二篇<圖九卷。師古曰：“孫武也。臣於闔廬。”>"
+    },
+    {
+      "title": "公孫鞅二十七篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evraxvl",
+      "page": "KR2a0007_WYG_030-46b",
+      "content": "公孫鞅二十七篇"
+    },
+    {
+      "title": "齊孫子八十九篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evthloh",
+      "page": "KR2a0007_WYG_030-46b",
+      "content": "齊孫子八十九篇<圖四卷。師古曰：“孫臏。”>"
+    },
+    {
+      "title": "大夫種二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evqd88z",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "大夫種三篇<與范蠡俱事句踐。>"
+    },
+    {
+      "title": "兒良一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evp4a2r",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "兒良一篇<師古曰：“六國時人也。兒，音五奚反。”>"
+    },
+    {
+      "title": "范蠡二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evwlz44",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "范蠡二篇<越王句踐臣也。>"
+    },
+    {
+      "title": "季子十篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evy65ts",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "李子十篇"
+    },
+    {
+      "title": "吳起四十八篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evzqcjm",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "吴起四十八篇<有《列傳》。>"
+    },
+    {
+      "title": "娷一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2pyex729",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "娷一篇<師古曰：“娷，音女瑞反。蓋說兵法者人名也。”>"
+    },
+    {
+      "title": "龐煖三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evp4a2q",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "龐煖二篇<師古曰：“煖，音許遠反，又音許元反。”>"
+    },
+    {
+      "title": "兵春秋一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q0acgsg",
+      "page": "KR2a0007_WYG_030-47a",
+      "content": "兵春秋三篇"
+    },
+    {
+      "title": "廣武君一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23ntljwn",
+      "page": "KR2a0007_WYG_030-47b",
+      "content": "廣武君一篇<李左車。>"
+    },
+    {
+      "title": "韓信三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nr3nk6",
+      "page": "KR2a0007_WYG_030-47b",
+      "content": "韓信三篇<師古曰：“淮陰侯。”>"
+    },
+    {
+      "title": "兵權謀類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右兵權謀十三家，二百五十九篇。<省伊尹、太公、《管子》、《孫卿子》、《鶡冠子》、《蘇子》、蒯通、陸賈、淮南王二百五十九種，出《司馬法》人禮也。>"
+    },
+    {
+      "title": "兵形勢",
+      "level": 2,
+      "index": 1,
+      "zi_idx": 26,
+      "type": "category",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": ""
+    },
+    {
+      "title": "兵形勢類序",
+      "level": 3,
+      "type": "preface",
+      "content": "形埶者，靁動風舉，後發而先至，離合背鄉，變化無常，<師古曰：“背，音步內反。鄉讀曰嚮。”>以輕疾制敵者也。"
+    },
+    {
+      "title": "楚兵法七篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q3bwr29",
+      "page": "KR2a0007_WYG_030-47b",
+      "content": "楚兵法七篇<圖四卷。>"
+    },
+    {
+      "title": "尉繚三十一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59ezaihog74",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "尉繚三十一篇"
+    },
+    {
+      "title": "蚩尤二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evwlz41",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "蚩尤二篇<見《呂刑》。>"
+    },
+    {
+      "title": "李良三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nwpxc8",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "李良三篇"
+    },
+    {
+      "title": "孫軫五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evnk3cz",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "孫軫五篇<圖三卷。>"
+    },
+    {
+      "title": "王孫十六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q0p0m4g",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "王孫十六篇<圖五卷。>"
+    },
+    {
+      "title": "魏公子二十一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evy65tv",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "魏公子二十一篇<圖十卷。名無忌，有《列傳》。>"
+    },
+    {
+      "title": "繇叙二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evraxvm",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "繇叙二篇"
+    },
+    {
+      "title": "景子十三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evt6d4x",
+      "page": "KR2a0007_WYG_030-48a",
+      "content": "景子十三篇"
+    },
+    {
+      "title": "丁子一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nweosn",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": "丁子一篇"
+    },
+    {
+      "title": "項王一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nsclq8",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": "項王一篇<名籍。>"
+    },
+    {
+      "title": "兵形勢類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右兵形埶十一家，九十二篇，圖十八卷。"
+    },
+    {
+      "title": "隂陽",
+      "level": 2,
+      "index": 2,
+      "zi_idx": 27,
+      "type": "category",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": ""
+    },
+    {
+      "title": "隂陽類序",
+      "level": 3,
+      "type": "preface",
+      "content": "陰陽者，順時而發，推刑德，隨斗擊，因五勝，<師古曰：“五勝，五行相勝也。”>假鬼神而爲助者也。"
+    },
+    {
+      "title": "神農兵法一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evvo9hd",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": "神農兵法一篇"
+    },
+    {
+      "title": "太壹兵法一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2ptei0w0",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": "太壹兵法一篇"
+    },
+    {
+      "title": "天一兵法三十五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q8t6q68",
+      "page": "KR2a0007_WYG_030-48b",
+      "content": "天一兵法三十五篇"
+    },
+    {
+      "title": "力牧十五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q0hu58h",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "力牧十五篇<黄帝臣，依託也。>"
+    },
+    {
+      "title": "地典六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evqzpc0",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "地典六篇"
+    },
+    {
+      "title": "風后十三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evthloi",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "風后十三篇<圖二卷。黃帝臣，依託也。>"
+    },
+    {
+      "title": "封胡五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evwx7nk",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "封胡五篇<黄帝臣，依託也。>"
+    },
+    {
+      "title": "鬼容區三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evvzi10",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "鬼容區三篇<圖一卷。黄帝臣，依託。師古曰：“即鬼臾區也。”>"
+    },
+    {
+      "title": "黄帝十六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evqzpc2",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "黄帝十六篇<圖三卷。>"
+    },
+    {
+      "title": "孟子一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q1095vk",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "孟子一篇"
+    },
+    {
+      "title": "鵊冶子一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2pzvd2pu",
+      "page": "KR2a0007_WYG_030-49a",
+      "content": "鴆冶子一篇<圖一卷。晉灼曰：“鴆音夾。”>"
+    },
+    {
+      "title": "辟兵威勝方七十篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2pvziqyq",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": "辟兵威勝方七十篇"
+    },
+    {
+      "title": "别成子望軍氣六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evn8utf",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": "別成子望軍氣六篇<圖三卷。>"
+    },
+    {
+      "title": "東父三十一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2pxl9ngh",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": "東父三十一篇"
+    },
+    {
+      "title": "師曠八篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evpqr5v",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": "師曠八篇<晋平公臣。>"
+    },
+    {
+      "title": "萇弘十五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evvzi0z",
+      "page": "KR2a0007_WYG_030-49b",
+      "content": "萇弘十五篇<周史。>"
+    },
+    {
+      "title": "隂陽類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右陰陽十六家，二百四十九篇。<圖十卷。>"
+    },
+    {
+      "title": "兵技巧",
+      "level": 2,
+      "index": 3,
+      "zi_idx": 28,
+      "type": "category",
+      "page": "KR2a0007_WYG_030-51a",
+      "content": ""
+    },
+    {
+      "title": "兵技巧類序",
+      "level": 3,
+      "type": "preface",
+      "content": "技巧者，習手足，便器械，積機關，以立攻守之勝者也。e"
+    },
+    {
+      "title": "伍子胥十篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evsv4lf",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "五子胥十篇<圖一卷。>",
+      "note": "2026-09-07 漢志複查：使用者 2026-09-07 裁：維基文庫兵技巧作「五子胥十篇」，誤。伍子胥是名將，兵技巧著錄其兵法合乎情理，而「五子胥」無此人。庫作「伍子胥」是。"
+    },
+    {
+      "title": "鮑子兵法十篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evohszn",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "鮑子兵法十篇<圖一卷。>"
+    },
+    {
+      "title": "逢門射法二篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evpqr5u",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "逄門射法二篇<師古曰：“即逢蒙。”>"
+    },
+    {
+      "title": "公勝子五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evs8nib",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "公勝子五篇"
+    },
+    {
+      "title": "李將軍射法三篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nv5qm8",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "李將軍射法三篇<師古曰：“李廣。”>"
+    },
+    {
+      "title": "魏氏射法六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nywl51",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "魏氏射法六篇"
+    },
+    {
+      "title": "隂通成射法十一篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evv1se9",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "陰通成射法十一篇"
+    },
+    {
+      "title": "苗子五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q7k8k5c",
+      "page": "KR2a0007_WYG_030-50a",
+      "content": "苗子五篇<圖一卷。>"
+    },
+    {
+      "title": "護軍射師王賀射書五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23nzj281",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "護軍射師王賀射書五篇"
+    },
+    {
+      "title": "蒲苴子弋法四篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2evohszm",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "蒲苴子弋法四篇<師古曰：“苴，音子余反。”>"
+    },
+    {
+      "title": "手搏六篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2pxdgq9s",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "手搏六篇"
+    },
+    {
+      "title": "雜家兵法五十七篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2py6t0xu",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "雜家兵法五十七篇"
+    },
+    {
+      "title": "強弩將軍王圍射法五卷",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f23ntwsg4",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "彊弩將軍王圍射法五卷<師古曰：“圍，郁郅人也，見《趙充國傳》也。”>"
+    },
+    {
+      "title": "望遠連弩射法具十五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q1z7qip",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "望遠連弩射法具十五篇"
+    },
+    {
+      "title": "劍道三十八篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2q6r7i0w",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "劍道三十八篇"
+    },
+    {
+      "title": "蹴鞠二十五篇",
+      "level": 3,
+      "type": "book",
+      "work_id": "d59f2qaavk01",
+      "page": "KR2a0007_WYG_030-50b",
+      "content": "蹴鞠二十五篇<師古曰：“鞠以韋爲之，實以物，蹴蹋之以爲戲也。蹴鞠，陳力之事，故附於兵法焉。蹴，音子六反。鞠，音巨六反。”>"
+    },
+    {
+      "title": "兵技巧類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右兵技巧十三家，百九十九篇。<省《墨子》，重，入《蹴鞠》也。>"
+    },
+    {
+      "title": "兵書略總計",
+      "level": 2,
+      "type": "tally",
+      "content": "凡兵書五十三家，七百九十篇，圖四十三卷。<省十家二百七十一篇，重，入《蹴鞠》一家二十五篇，出《司馬法》百五十五篇入禮也。>",
+      "note": "2026-09-07 漢志複查：原文六略各有總計，而庫中原只錄到「種」一級之統計，略之總計全缺。今補。"
+    },
+    {
+      "title": "兵書略序",
+      "level": "2",
+      "type": "preface",
+      "content": "兵家者，蓋出古司馬之職，王官之武備也。《鴻範》八政，八曰師。孔子曰爲國者“足食足兵”，<師古曰：“《論語》載孔子之言。無兵與食，不可以爲國。”>“以不教民戰，是謂棄之”，<師古曰：“亦《論語》所載孔子之言，非其不素習武備。”>明兵之重也。《易》曰“古者弦木爲弧，剡木爲矢，弧矢之利，以威天<下”，師古曰：“《下繫》之辭也。弧，木弓也。剡，謂銳而利之也，音弋冉反。”>其用上矣。後世燿金爲刃，割革爲甲，<師古曰：“燿讀與鑠同，謂銷也。”>器械甚備。下及湯武受命，以師克亂而濟百姓，動之以仁義，行之以禮讓，《司馬法》是其遺事也。自春秋至於戰國，出奇設伏，變詐之兵並作。漢興，張良、韓信序次兵法，凡百八十二家，刪取要用，定著三十五家。諸吕用事而盜取之。武帝時，軍政楊僕捃摭遺逸，紀奏兵録，<師古曰：“捃摭，謂拾取之。捃，音九問反。摭，音之石反。”>猶未能備。至于孝成，命任宏論次兵書爲四種。"
+    }
+  ]
+}

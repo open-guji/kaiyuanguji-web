@@ -1,0 +1,711 @@
+{
+  "title": "易類",
+  "sections": [
+    {
+      "title": "《歸藏》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歸藏》十三卷晉太尉參軍薛貞注。",
+      "work_id": "d59f27yathq8",
+      "book_title": "歸藏",
+      "n_juan": 13,
+      "author_info": "晉太尉參軍薛貞注"
+    },
+    {
+      "title": "《周易》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》二卷魏文侯師卜子夏傳，殘缺。梁六卷。",
+      "work_id": "d59f2evwaqkj",
+      "book_title": "周易",
+      "n_juan": 2,
+      "author_info": "魏文侯師卜子夏傳"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷漢魏郡太守京房章句。",
+      "work_id": "d59f24moqs5c",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "漢魏郡太守京房章句"
+    },
+    {
+      "title": "《周易》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》八卷漢曲台長孟喜章句，殘缺。梁十卷。又有漢單父長費直注《周易》四卷，亡。",
+      "work_id": "d59f24mofjm1",
+      "book_title": "周易",
+      "n_juan": 8,
+      "author_info": "漢曲台長孟喜章句"
+    },
+    {
+      "title": "《周易》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》九卷後漢大司農鄭玄注。梁又有漢南郡太守馬融注《周易》一卷，亡。",
+      "work_id": "d59f24mofjm2",
+      "book_title": "周易",
+      "n_juan": 9,
+      "author_info": "後漢大司農鄭玄注"
+    },
+    {
+      "title": "《周易》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》五卷漢荊州牧劉表章句。梁有漢荊州五業從事宋忠注《周易》十卷，亡。",
+      "work_id": "d59f23nxyvic",
+      "book_title": "周易",
+      "n_juan": 5,
+      "author_info": "漢荊州牧劉表章句"
+    },
+    {
+      "title": "《周易》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十一卷漢司空荀爽注。",
+      "work_id": "d59f24moqs5d",
+      "book_title": "周易",
+      "n_juan": 11,
+      "author_info": "漢司空荀爽注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷魏衛將軍王肅注。",
+      "work_id": "d59f27yxltdu",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "魏衛將軍王肅注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷魏尚書郎王弼注《六十四卦》六卷，韓康伯注《繫辭》以下三卷，王弼又撰《易略例》一卷，梁有魏大司農卿董遇注《周易》十卷，魏散騎常侍荀煇注《周易》十卷，亡。",
+      "work_id": "d59f282rkphd",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "魏尚書郎王弼注《六十四卦》六卷"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷吳太常姚信注。",
+      "work_id": "d59f27yxltdv",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "吳太常姚信注"
+    },
+    {
+      "title": "《周易》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》四卷晉儒林從事黃穎注。梁有十卷，今殘缺。",
+      "work_id": "d59f2gjxan7m",
+      "book_title": "周易",
+      "n_juan": 4,
+      "author_info": "晉儒林從事黃穎注"
+    },
+    {
+      "title": "《周易》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》九卷吳侍御史虞翻注。",
+      "work_id": "d59f24mofjm3",
+      "book_title": "周易",
+      "n_juan": 9,
+      "author_info": "吳侍御史虞翻注"
+    },
+    {
+      "title": "《周易》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十五卷吳郁林太守陸績注。",
+      "work_id": "d59f23nzuarl",
+      "book_title": "周易",
+      "n_juan": 15,
+      "author_info": "吳郁林太守陸績注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷晉散騎常侍干寶注。",
+      "work_id": "d59f27yyurk0",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "晉散騎常侍干寶注"
+    },
+    {
+      "title": "《周易》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》三卷晉驃騎將軍王暠注，殘缺。梁有十卷。",
+      "work_id": "d59f27yzsh6q",
+      "book_title": "周易",
+      "n_juan": 3,
+      "author_info": "晉驃騎將軍王暠注"
+    },
+    {
+      "title": "《周易》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》八卷晉著作郎張璠注，殘缺。梁有十卷。",
+      "work_id": "d59f27yyurk2",
+      "book_title": "周易",
+      "n_juan": 8,
+      "author_info": "晉著作郎張璠注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷蜀才注。梁有齊安參軍費元珪注《周易》九卷，謝氏注《周易》八卷，尹濤注《周易》六卷，亡。",
+      "work_id": "d59f27yyjj0j",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "蜀才注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷後魏司徒崔浩注。",
+      "work_id": "d59f283v7ugx",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "後魏司徒崔浩注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十卷梁處士何胤注。梁有臨海令伏曼容注《周易》八卷，侍中朱異集注《周易》一百卷，又《周易集注》三十卷，亡。",
+      "work_id": "d59f283vj30j",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "梁處士何胤注"
+    },
+    {
+      "title": "《周易》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》七卷姚規注。",
+      "work_id": "d59f283vubk0",
+      "book_title": "周易",
+      "n_juan": 7,
+      "author_info": "姚規注"
+    },
+    {
+      "title": "《周易》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十三卷崔覲注。",
+      "work_id": "d59f28nlnytf",
+      "book_title": "周易",
+      "n_juan": 13,
+      "author_info": "崔覲注"
+    },
+    {
+      "title": "《周易》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》十三卷傅氏注。",
+      "work_id": "d59f283vj30k",
+      "book_title": "周易",
+      "n_juan": 13,
+      "author_info": "傅氏注"
+    },
+    {
+      "title": "《周易》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易》一帙十卷盧氏注。",
+      "work_id": "d59f283vubk2",
+      "book_title": "周易",
+      "n_juan": 10,
+      "author_info": "盧氏注"
+    },
+    {
+      "title": "《周易馬、鄭、二王四家集解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易馬、鄭、二王四家集解》十卷",
+      "work_id": "d59f2q1x12bk",
+      "book_title": "周易馬、鄭、二王四家集解",
+      "n_juan": 10
+    },
+    {
+      "title": "《周易荀爽九家注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易荀爽九家注》十卷",
+      "work_id": "d59f2qa7r669",
+      "book_title": "周易荀爽九家注",
+      "n_juan": 10
+    },
+    {
+      "title": "《周易楊氏集二王注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易楊氏集二王注》五卷，梁有《集馬、鄭、二王解》十卷，亡。",
+      "work_id": "d59f2q9w7e2p",
+      "book_title": "周易楊氏集二王注",
+      "n_juan": 5
+    },
+    {
+      "title": "《周易繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭》二卷晉桓玄注。",
+      "work_id": "d59f27yy8agw",
+      "book_title": "周易繫辭",
+      "n_juan": 2,
+      "author_info": "晉桓玄注"
+    },
+    {
+      "title": "《周易繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭》二卷晉西中郎將謝萬等注。",
+      "work_id": "d59f27yzh8n5",
+      "book_title": "周易繫辭",
+      "n_juan": 2,
+      "author_info": "晉西中郎將謝萬等注"
+    },
+    {
+      "title": "《周易繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭》二卷晉太常韓康伯注。",
+      "work_id": "d59f282qbrb4",
+      "book_title": "周易繫辭",
+      "n_juan": 2,
+      "author_info": "晉太常韓康伯注"
+    },
+    {
+      "title": "《周易繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭》二卷梁太中大夫宋褰注。又有宋東陽太守卞伯玉注《繫辭》二卷，亡。",
+      "work_id": "d59f283vubk1",
+      "book_title": "周易繫辭",
+      "n_juan": 2,
+      "author_info": "梁太中大夫宋褰注"
+    },
+    {
+      "title": "《周易繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭》二卷荀柔之注。",
+      "work_id": "d59f283vj30g",
+      "book_title": "周易繫辭",
+      "n_juan": 2,
+      "author_info": "荀柔之注"
+    },
+    {
+      "title": "《周易集注繫辭》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易集注繫辭》二卷梁有宋太中大夫徐爰注《繫辭》二卷，亡。",
+      "work_id": "d59f283vj30h",
+      "book_title": "周易集注繫辭",
+      "n_juan": 2
+    },
+    {
+      "title": "《周易音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易音》一卷東晉太子前率徐邈撰。",
+      "work_id": "d59f27xy0rgi",
+      "book_title": "周易音",
+      "n_juan": 1,
+      "author_info": "東晉太子前率徐邈撰"
+    },
+    {
+      "title": "《周易音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易音》一卷東晉尚書郎李軌弘範撰。",
+      "work_id": "d59f27xd3v2a",
+      "book_title": "周易音",
+      "n_juan": 1,
+      "author_info": "東晉尚書郎李軌弘範撰"
+    },
+    {
+      "title": "《周易音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易音》一卷范氏撰。",
+      "work_id": "d59f2pwdvo5d",
+      "book_title": "周易音",
+      "n_juan": 1,
+      "author_info": "范氏撰"
+    },
+    {
+      "title": "《周易並注音》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易並注音》七卷秘書學士陸德明撰。",
+      "work_id": "d59f28muibk4",
+      "book_title": "周易並注音",
+      "n_juan": 7,
+      "author_info": "秘書學士陸德明撰"
+    },
+    {
+      "title": "《周易盡神論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易盡神論》一卷魏司空鐘會撰。梁有《周易無互體論》三卷，鐘會撰，亡。",
+      "work_id": "d59f27xiewaq",
+      "book_title": "周易盡神論",
+      "n_juan": 1,
+      "author_info": "魏司空鐘會撰"
+    },
+    {
+      "title": "《周易象論》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易象論》三卷晉尚書郎欒肇撰。",
+      "work_id": "d59f27y49ibk",
+      "book_title": "周易象論",
+      "n_juan": 3,
+      "author_info": "晉尚書郎欒肇撰"
+    },
+    {
+      "title": "《周易卦序論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易卦序論》一卷晉司徒右長史楊乂撰。",
+      "work_id": "d59f27y3n18i",
+      "book_title": "周易卦序論",
+      "n_juan": 1,
+      "author_info": "晉司徒右長史楊乂撰"
+    },
+    {
+      "title": "《周易統略》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易統略》五卷晉少府卿鄒湛撰。",
+      "work_id": "d59f27xxpiww",
+      "book_title": "周易統略",
+      "n_juan": 5,
+      "author_info": "晉少府卿鄒湛撰"
+    },
+    {
+      "title": "《周易論》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易論》二卷晉馮翊太守阮常撰。",
+      "work_id": "d59f27yf6tc2",
+      "book_title": "周易論",
+      "n_juan": 2,
+      "author_info": "晉馮翊太守阮常撰"
+    },
+    {
+      "title": "《周易論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易論》一卷晉荊州刺史宋岱撰。梁有《擬周易說》八卷，范氏撰；《周易宗塗》四卷，干寶撰；《周易問難》二卷，王氏撰；《周易問答》一卷，揚州從事徐伯珍撰；《周易難王輔嗣義》一卷，晉揚州刺史顧夷等撰；《周易雜論》十四卷。亡。",
+      "work_id": "d59f27yc2fwg",
+      "book_title": "周易論",
+      "n_juan": 1,
+      "author_info": "晉荊州刺史宋岱撰"
+    },
+    {
+      "title": "《周易論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易論》十卷齊中書郎周顒撰。梁有三十卷，亡。",
+      "work_id": "d59f2848yadf",
+      "book_title": "周易論",
+      "n_juan": 10,
+      "author_info": "齊中書郎周顒撰"
+    },
+    {
+      "title": "《周易論》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易論》四卷范氏撰。",
+      "work_id": "d59f27xzky6b",
+      "book_title": "周易論",
+      "n_juan": 4,
+      "author_info": "范氏撰"
+    },
+    {
+      "title": "《周易義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易義》一卷宋陳令範歆撰。",
+      "work_id": "d59f27y5ighs",
+      "book_title": "周易義",
+      "n_juan": 1,
+      "author_info": "宋陳令範歆撰"
+    },
+    {
+      "title": "《周易玄品》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易玄品》二卷",
+      "work_id": "d59f27y80cu9",
+      "book_title": "周易玄品",
+      "n_juan": 2
+    },
+    {
+      "title": "《周易統例》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易統例》十卷崔覲撰。",
+      "work_id": "d59f28me9zba",
+      "book_title": "周易統例",
+      "n_juan": 10,
+      "author_info": "崔覲撰"
+    },
+    {
+      "title": "《周易爻義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易爻義》一卷干寶撰。",
+      "work_id": "d59f27ygr01u",
+      "book_title": "周易爻義",
+      "n_juan": 1,
+      "author_info": "干寶撰"
+    },
+    {
+      "title": "《周易乾坤義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易乾坤義》一卷齊步兵校尉劉瓛撰。梁又有齊臨沂令李玉之、梁釋法通等《乾坤義》各一卷，亡。",
+      "work_id": "d59f2848n1ts",
+      "book_title": "周易乾坤義",
+      "n_juan": 1,
+      "author_info": "齊步兵校尉劉瓛撰"
+    },
+    {
+      "title": "《周易大義》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易大義》二十一卷梁武帝撰。",
+      "work_id": "d59f28457fup",
+      "book_title": "周易大義",
+      "n_juan": 21,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《周易大義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易大義》一卷梁有《周易錯》八卷，京房撰；《周易日月變例》六卷，虞翻、陸績撰；《周易卦象數旨》六卷，東晉樂安亭侯李顒撰；《周易爻》一卷，馬揩撰。亡。",
+      "work_id": "d59f2psg5xc2",
+      "book_title": "周易大義",
+      "n_juan": 1
+    },
+    {
+      "title": "《周易幾義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易幾義》一卷梁南平王撰。梁有《周易疑通》五卷，宋中散大夫何諲之撰；《周易四德例》一卷，劉瓛撰。亡。",
+      "work_id": "d59f28472v43",
+      "book_title": "周易幾義",
+      "n_juan": 1,
+      "author_info": "梁南平王撰"
+    },
+    {
+      "title": "《周易太義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易太義》二卷陸德明撰。",
+      "work_id": "d59f28mvr9qa",
+      "book_title": "周易太義",
+      "n_juan": 2,
+      "author_info": "陸德明撰"
+    },
+    {
+      "title": "《周易釋序義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易釋序義》三卷",
+      "work_id": "d59f284232f8",
+      "book_title": "周易釋序義",
+      "n_juan": 3
+    },
+    {
+      "title": "《周易開題義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易開題義》十卷梁蕃撰。",
+      "work_id": "d59f28499iww",
+      "book_title": "周易開題義",
+      "n_juan": 10,
+      "author_info": "梁蕃撰"
+    },
+    {
+      "title": "《周易問》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易問》二十卷",
+      "work_id": "d59f2qa9mlts",
+      "book_title": "周易問",
+      "n_juan": 20
+    },
+    {
+      "title": "《周易義疏》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易義疏》十九卷宋明帝集群臣講。梁又有《國子講易》議六卷；《宋明帝集群臣講易義疏》二十卷；《齊永明國學講周易講疏》二十六卷；又《周易義》三卷，沈林撰。亡。",
+      "work_id": "d59f284b4y6a",
+      "book_title": "周易義疏",
+      "n_juan": 19,
+      "author_info": "宋明帝集群臣講",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcpcsu2rs3k，今歸 1evdmn8duetxc《周易義疏宋明帝集群臣講》。隋志易類「《周易義疏》十九卷宋明帝集群臣講」，與周弘正十六卷本撰人判然有別，撰人異即二書。"
+    },
+    {
+      "title": "《周易義疏》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易義疏》十四卷梁都官尚書蕭子政撰。",
+      "work_id": "d59f284atpmq",
+      "book_title": "周易義疏",
+      "n_juan": 14,
+      "author_info": "梁都官尚書蕭子政撰"
+    },
+    {
+      "title": "《周易義疏》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易義疏》十六卷陳尚書左僕射周弘正撰。",
+      "work_id": "d59f283zl62s",
+      "book_title": "周易義疏",
+      "n_juan": 16,
+      "author_info": "陳尚書左僕射周弘正撰"
+    },
+    {
+      "title": "《周易講疏》三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易講疏》三十五卷梁武帝撰。",
+      "work_id": "d59f28480kqr",
+      "book_title": "周易講疏",
+      "n_juan": 35,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《周易講疏》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易講疏》十六卷梁五經博士褚仲都撰。",
+      "work_id": "d59f283y0zcw",
+      "book_title": "周易講疏",
+      "n_juan": 16,
+      "author_info": "梁五經博士褚仲都撰"
+    },
+    {
+      "title": "《周易講疏》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易講疏》三十卷陳諮議參軍張譏撰。",
+      "work_id": "d59f283y0zcy",
+      "book_title": "周易講疏",
+      "n_juan": 30,
+      "author_info": "陳諮議參軍張譏撰"
+    },
+    {
+      "title": "《周易講疏》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易講疏》十三卷國子祭酒何妥撰。",
+      "work_id": "d59f28n200ld",
+      "book_title": "周易講疏",
+      "n_juan": 13,
+      "author_info": "國子祭酒何妥撰"
+    },
+    {
+      "title": "《周易繫辭義疏》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭義疏》三卷蕭子政撰。",
+      "work_id": "d59f2843n94x",
+      "book_title": "周易繫辭義疏",
+      "n_juan": 3,
+      "author_info": "蕭子政撰",
+      "ai_note": "隋志蕭子政周易繫辭義疏兩出（此三卷，卷末又出二卷），同撰人同題同志，蓋一書兩出卷數異文，並繫一條。"
+    },
+    {
+      "title": "《周易繫辭義疏》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭義疏》二卷劉瓛撰。",
+      "work_id": "d59f2841glc0",
+      "book_title": "周易繫辭義疏",
+      "n_juan": 2,
+      "author_info": "劉瓛撰"
+    },
+    {
+      "title": "《周易繫辭義疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭義疏》一卷梁武帝撰。",
+      "work_id": "d59f2842eayr",
+      "book_title": "周易繫辭義疏",
+      "n_juan": 1,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《周易繫辭義疏》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易繫辭義疏》二卷蕭子政撰。梁有《周易乾坤三象》、《周易新圖》各一卷；又《周易普玄圖》八卷，薛景和撰；《周易大演通統》一卷，顏氏撰。",
+      "work_id": "d59f2843n94x",
+      "book_title": "周易繫辭義疏",
+      "n_juan": 2,
+      "author_info": "蕭子政撰",
+      "ai_note": "隋志蕭子政周易繫辭義疏兩出之又一出（二卷）。",
+      "section_kind": "一書兩著",
+      "section_kind_basis": "2026-08-24：本節與同志第 64 節同指本 work，已逐條裁為正當共繫（其據見所繫 work 之 ai_note）。依 SCHEMA〈一書兩著〉，書目次第在先者為正著不標，其後重出者標之。"
+    },
+    {
+      "title": "《周易文句義》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易文句義》二十卷梁有《擬周易義疏》十三卷。",
+      "work_id": "d59f28430s1v",
+      "book_title": "周易文句義",
+      "n_juan": 20
+    },
+    {
+      "title": "《周易私記》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易私記》二十卷",
+      "work_id": "d59f2pvm3jlt",
+      "book_title": "周易私記",
+      "n_juan": 20
+    },
+    {
+      "title": "《周易譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《周易譜》一卷。",
+      "work_id": "d59f27xtc7b5",
+      "book_title": "周易譜",
+      "n_juan": 1
+    },
+    {
+      "title": "易類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "昔宓羲氏始畫八卦，以通神明之德，以類萬物之情，蓋因而重之，為六十四卦。及乎三代，實為三《易》，夏曰《連山》；殷曰《歸藏》；周文王作卦辭，謂之《周易》。周公又作《爻辭》，孔子為《彖》、《象》、《繫辭》、《文言》、《序卦》、《說卦》、《雜卦》，而子夏為之傳。及秦焚書，《周易》獨以卜筮得存，唯失《說卦》三篇。後河內女子得之。漢初，傳《易》者有田何，何授丁寬，寬授田王孫，王孫授沛人施仇、東海孟喜、琅邪梁丘賀。由是有施、孟、梁丘之學。又有東郡京房，自雲受《易》于梁國焦延壽，別為京氏學。嘗立，後罷。後漢施、孟、梁丘、京氏，凡四家並立，而傳者甚眾。漢初又有東萊費直傳《易》，其本皆古字，號曰《古文易》。以授琅邪王璜，璜授沛人高相，相以授子康及蘭陵母將永。故有費氏之學，行於人間，而未得立。後漢陳元、鄭眾，皆傳費氏之學。馬融又為其傳，以授鄭玄。玄作《易注》，荀爽又作《易傳》。魏代王肅、王弼，並為之注。自是費氏大興，高氏遂衰。梁丘、施氏、高氏，亡於西晉。孟氏、京氏，有書無師。梁、陳鄭玄、王弼二注，列于國學。齊代唯傳鄭義。至隋，王注盛行，鄭學浸微，今殆絕矣。《歸藏》，漢初已亡，案晉《中經》有之，唯載卜筮，不似聖人之旨。以本卦尚存，故取貫于《周易》之首，以備《殷易》之缺。"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右六十九部，五百五十一卷。通計亡書，合九十四部，八百二十九卷。"
+    }
+  ]
+}

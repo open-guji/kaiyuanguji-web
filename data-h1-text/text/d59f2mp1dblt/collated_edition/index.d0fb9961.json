@@ -1,0 +1,43 @@
+{
+  "work_id": "d59f2mp1dblt",
+  "type": "catalog",
+  "juan_files": [
+    "juan/001.json",
+    "juan/002.json",
+    "juan/003.json",
+    "juan/004.json"
+  ],
+  "juan_groups": [
+    {
+      "label": "卷一（經部）",
+      "files": [
+        "juan/001.json"
+      ]
+    },
+    {
+      "label": "卷二（史部）",
+      "files": [
+        "juan/002.json"
+      ]
+    },
+    {
+      "label": "卷三（子部）",
+      "files": [
+        "juan/003.json"
+      ]
+    },
+    {
+      "label": "卷四（集部·佛道）",
+      "files": [
+        "juan/004.json"
+      ]
+    }
+  ],
+  "text_quality": {
+    "grade": "ocr",
+    "source_note": "二十五史藝文經籍志考補萃編第九卷PDF OCR"
+  },
+  "revision": "1.0.0",
+  "revised_at": "2026-08-25",
+  "total_entries": 465
+}

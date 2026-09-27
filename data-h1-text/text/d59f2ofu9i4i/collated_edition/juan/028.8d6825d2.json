@@ -1,0 +1,92 @@
+{
+  "title": "經部·春秋類",
+  "sections": [
+    {
+      "title": "春秋類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "晋安王子懋　春秋例苑三十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "永明八年，進號鎮南將軍。撰《春秋例苑》三十卷，奏之。世祖嘉之，勅付秘閣。",
+          "source": "《南齊書》四○《晋安王子懋傳》、《南史》四四《齊武帝諸子傳》。"
+        }
+      ],
+      "author": "晋安王子懋",
+      "work_id": "d59f284xx9tt"
+    },
+    {
+      "title": "沈驎士　春秋要略",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "見沈驎士《周易兩繫訓注》條。",
+          "source": ""
+        }
+      ],
+      "author": "沈驎士",
+      "work_id": "d59f8ii6euiu"
+    },
+    {
+      "title": "杜乾光　春秋釋例引序一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》杜預《春秋釋例》條注。"
+        }
+      ],
+      "author": "杜乾光",
+      "work_id": "d59f284t8poh"
+    },
+    {
+      "title": "王述之　春秋左氏經傳通解四卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        },
+        {
+          "text": "按\"述之\"係\"延之\"之誤，應照次條改正。",
+          "source": ""
+        }
+      ],
+      "author": "王述之",
+      "work_id": "d59f2pr936dd"
+    },
+    {
+      "title": "王延之　春秋旨通十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》、二《唐志》。"
+        }
+      ],
+      "author": "王延之",
+      "work_id": "d59f27uu9szk"
+    },
+    {
+      "title": "王儉　公羊音二卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《舊唐志》。《新志》作《王儉音》二卷。"
+        }
+      ],
+      "author": "王儉",
+      "work_id": "d59f2846ge0x"
+    }
+  ]
+}

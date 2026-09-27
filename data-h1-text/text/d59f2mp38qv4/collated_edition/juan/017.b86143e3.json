@@ -1,0 +1,39 @@
+{
+  "title": "史部·史學類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·史學類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "資治通鑑釋文辨誤十二卷",
+      "content": "胡三省撰。",
+      "work_id": "d59f2hsu7x1e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "小學史斷六卷",
+      "content": "南宮靖一撰。",
+      "work_id": "d59f2hpd1r7k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "諸史偶論十卷",
+      "content": "南宮靖一撰。",
+      "work_id": "d59f2pt9th4w"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右史學類",
+      "content": "右史學類三家二十八卷。"
+    }
+  ]
+}

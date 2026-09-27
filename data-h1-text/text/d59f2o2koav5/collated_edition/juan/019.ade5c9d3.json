@@ -1,0 +1,137 @@
+{
+  "title": "經部·土地類",
+  "sections": [
+    {
+      "title": "土地類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "任昉　地記二百五十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉　地記二百五十二卷　《唐志》。《隋志》。",
+      "work_id": "d59f286csydd"
+    },
+    {
+      "title": "庾仲容　衆家地理書鈔三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾仲容　衆家地理書鈔三十卷　傳。",
+      "work_id": "d59f99gnixah",
+      "note": "原書腳註③：《梁書·庾仲容》作「二十卷」"
+    },
+    {
+      "title": "任昉　地理書鈔九卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉　地理書鈔九卷　《隋志》。",
+      "work_id": "d59f99gnixai"
+    },
+    {
+      "title": "元帝　職貢圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　職貢圖一卷　《唐》。",
+      "work_id": "d59f2866vg1v"
+    },
+    {
+      "title": "元帝　荆南地志二卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　荆南地志二卷　《隋志》。《唐志》。",
+      "work_id": "d59f99gnixaj",
+      "note": "「又」承前省略撰人（元帝）。原書腳註④"
+    },
+    {
+      "title": "元帝　江州記",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　江州記　紀。",
+      "work_id": "d59f99gnixak",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "顧憲之　衡陽郡記",
+      "level": 3,
+      "type": "book",
+      "content": "顧憲之　衡陽郡記　本傳。",
+      "work_id": "d59f99gnixal"
+    },
+    {
+      "title": "劉孝標　注九州春秋鈔一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝標　注九州春秋鈔一卷　《通志》。如《御覽·兵部》引《九州春秋》，多有注語，即是矣。",
+      "work_id": "d59f99gnixam",
+      "note": "與古史類「劉峻　九州春秋鈔一卷」實同（劉孝標即劉峻）"
+    },
+    {
+      "title": "席惠明　注裴景仁秦紀十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "席惠明　注裴景仁秦紀十一卷　雍州主簿。《隋志》。《舊唐志》入編年類，非是。",
+      "work_id": "d59f99gnu5ts",
+      "note": "與僞史類同條重出"
+    },
+    {
+      "title": "庾詵　續伍端休江陵記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾詵　續伍端休江陵記一卷　傳。",
+      "work_id": "d59f99gnu5tt"
+    },
+    {
+      "title": "劉孝標　金華山栖志",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝標　金華山栖志　本傳。",
+      "work_id": "d59f99gnu5tu"
+    },
+    {
+      "title": "許懋　述行記四卷",
+      "level": 3,
+      "type": "book",
+      "content": "許懋　述行記四卷　本傳。",
+      "work_id": "d59f99gnu5tv"
+    },
+    {
+      "title": "裴子野　方國使圖一卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野　方國使圖一卷　本傳。",
+      "work_id": "d59f99gnu5tw"
+    },
+    {
+      "title": "吴均　入東記",
+      "level": 3,
+      "type": "book",
+      "content": "吴均　入東記　《寰宇記·江南西道》引。",
+      "work_id": "d59f99gnu5tx",
+      "note": "原書腳註⑤：據《太平寰宇記》卷九十四《江南東道六》，「西」當作「東」"
+    },
+    {
+      "title": "陸煦　陸氏驪泉志一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸煦　陸氏驪泉志一卷　本傳。",
+      "work_id": "d59f99gnu5ty"
+    },
+    {
+      "title": "釋僧祐　世界記五卷",
+      "level": 3,
+      "type": "book",
+      "content": "釋僧祐　世界記五卷　《隋志》。",
+      "work_id": "d59f285zozk2",
+      "note": "與佛法類「世界記五卷」重出"
+    },
+    {
+      "title": "蕭子顯　普通北伐記五卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子顯　普通北伐記五卷　本傳。",
+      "work_id": "d59f99gnu5tz"
+    }
+  ]
+}

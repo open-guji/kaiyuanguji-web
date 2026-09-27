@@ -1,0 +1,40 @@
+{
+  "title": "名家類",
+  "sections": [
+    {
+      "title": "《公孫龍子》",
+      "level": 3,
+      "type": "book",
+      "content": "《公孫龍子》一卷⟨趙人⟩",
+      "work_id": "d59ezaiouwow"
+    },
+    {
+      "title": "《尹文子》",
+      "level": 3,
+      "type": "book",
+      "content": "《尹文子》一卷⟨齊人⟩",
+      "work_id": "d59ezail4268"
+    },
+    {
+      "title": "《鄧析子》",
+      "level": 3,
+      "type": "book",
+      "content": "《鄧析子》二卷⟨鄭人⟩",
+      "work_id": "d59ezkxhfoxs"
+    },
+    {
+      "title": "《人物志》",
+      "level": 3,
+      "type": "book",
+      "content": "劉邵《人物志》二卷",
+      "work_id": "d59f27t8u51e"
+    },
+    {
+      "title": "《廣人物志》",
+      "level": 3,
+      "type": "book",
+      "content": "杜周士《廣人物志》二卷",
+      "work_id": "d59f28jovxtx"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "work_id": "d59f1iqgnr40",
+  "version_label": "韓詩外傳",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E9%9F%93%E8%A9%A9%E5%A4%96%E5%82%B3",
+    "page_title": "韓詩外傳",
+    "revid": 1740160,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "自 book-index 挂链维基文库自动批量抓取（T15），未逐部人工核对具体底本，见 22-维基批量一.md。",
+  "total_chapters": 10,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "卷第1",
+      "file": "001.md",
+      "page_title": "韓詩外傳/卷第1",
+      "revid": 340132,
+      "md_len": 4985
+    },
+    {
+      "n": 2,
+      "title": "卷第2",
+      "file": "002.md",
+      "page_title": "韓詩外傳/卷第2",
+      "revid": 340133,
+      "md_len": 7327
+    },
+    {
+      "n": 3,
+      "title": "卷第3",
+      "file": "003.md",
+      "page_title": "韓詩外傳/卷第3",
+      "revid": 2175970,
+      "md_len": 9050
+    },
+    {
+      "n": 4,
+      "title": "卷第4",
+      "file": "004.md",
+      "page_title": "韓詩外傳/卷第4",
+      "revid": 340135,
+      "md_len": 5727
+    },
+    {
+      "n": 5,
+      "title": "卷第5",
+      "file": "005.md",
+      "page_title": "韓詩外傳/卷第5",
+      "revid": 340136,
+      "md_len": 6288
+    },
+    {
+      "n": 6,
+      "title": "卷第6",
+      "file": "006.md",
+      "page_title": "韓詩外傳/卷第6",
+      "revid": 1547866,
+      "md_len": 6164
+    },
+    {
+      "n": 7,
+      "title": "卷第7",
+      "file": "007.md",
+      "page_title": "韓詩外傳/卷第7",
+      "revid": 427523,
+      "md_len": 6425
+    },
+    {
+      "n": 8,
+      "title": "卷第8",
+      "file": "008.md",
+      "page_title": "韓詩外傳/卷第8",
+      "revid": 2096932,
+      "md_len": 7260
+    },
+    {
+      "n": 9,
+      "title": "卷第9",
+      "file": "009.md",
+      "page_title": "韓詩外傳/卷第9",
+      "revid": 427525,
+      "md_len": 5649
+    },
+    {
+      "n": 10,
+      "title": "卷第10",
+      "file": "010.md",
+      "page_title": "韓詩外傳/卷第10",
+      "revid": 427526,
+      "md_len": 6281
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "dropped_refs": 1
+}

@@ -1,0 +1,96 @@
+{
+  "title": "丙部子録·天文類",
+  "source_juan": "卷三",
+  "sections": [
+    {
+      "title": "丙部子録·天文類",
+      "level": 2,
+      "type": "tally",
+      "content": "右天文類,存七家,十二部。"
+    },
+    {
+      "title": "天文集占十卷",
+      "level": 3,
+      "type": "book",
+      "content": "太史令陳卓定,謹按見《隋志》。卓字季胃,見虞喜《安天論》。《御覽》卷二引。武帝時為太史令,至 帝建興五年尚在,見本書《天文志》。是書兩《唐志》均七卷,《玉海》云“梁有百卷”,蓋誤以《隋志》《天文集占》下子注屬之此書也,不足据。《隋·天文志》上以卓為三國時吴太史令,意卓初仕吴,後入普,仍其舊官也。",
+      "work_id": "d59f27wuov0j"
+    },
+    {
+      "title": "五星占一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳卓,謹按見《隋志》。",
+      "work_id": "d59f27wqmry9"
+    },
+    {
+      "title": "石氏星經七卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳卓記。謹按見《七錄》。",
+      "work_id": "d59f27whkw76"
+    },
+    {
+      "title": "天官星占十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳卓,謹按見《隋志》。",
+      "work_id": "d59f27u5atj7"
+    },
+    {
+      "title": "四方宿占四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳卓,謹按見《七録》。《隋》、《唐志》均存一卷。宿,《唐志》作“星”。",
+      "work_id": "d59f27tyqu4i"
+    },
+    {
+      "title": "安天論六卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞喜,謹按見《七録》。兩《唐志》存一卷。",
+      "work_id": "d59f27wntn28"
+    },
+    {
+      "title": "天文要集四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "太史令韓楊,謹按見《隋志》。",
+      "work_id": "d59f27ujyz2a"
+    },
+    {
+      "title": "天文志",
+      "level": 3,
+      "type": "book",
+      "content": "郭琦,謹按見本書琦傳。",
+      "work_id": "d59f27vzsd8i"
+    },
+    {
+      "title": "穹天論",
+      "level": 3,
+      "type": "book",
+      "content": "虞聳,謹按見本書《天文志》。聳字世龍,翻第六子,人晋為河間相,見《會稽典錄》。祖 《天文録》、《御覽》卷二引。賀道養《渾天記》《玉海》卷二引。及《御覽》引書綱目皆以《穹天》為虞 作。 虞喜《安天論》有“族祖河間相立穹天”之語,則《論》為聳著甚明。宋、隋兩《天文志》亦作“虞聳”。",
+      "work_id": "d59f27w6143k"
+    },
+    {
+      "title": "星圖定紀",
+      "level": 3,
+      "type": "book",
+      "content": "陳卓。謹按見本書《天文志》。",
+      "work_id": "d59f27u9cwld"
+    },
+    {
+      "title": "正天論",
+      "level": 3,
+      "type": "book",
+      "content": "魯勝,謹按見本書勝傳。",
+      "work_id": "d59f27uw588z"
+    },
+    {
+      "title": "天論",
+      "level": 3,
+      "type": "book",
+      "content": "劉智,謹按見《開元占經》。",
+      "work_id": "d59f27vsx5a8"
+    }
+  ]
+}

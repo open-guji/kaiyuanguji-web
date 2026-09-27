@@ -1,0 +1,74 @@
+{
+  "title": "史部·編年類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·編年類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代編年",
+      "content": "胡一桂撰。",
+      "work_id": "d59f2ggai7lt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十七史纂",
+      "content": "",
+      "work_id": "d59f2q0yoykh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音注資治通鑑二百九十四卷",
+      "content": "胡三省撰。",
+      "work_id": "d59f2hfnfytc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋史全文續資治通鑑長編三十六卷",
+      "content": "",
+      "work_id": "d59f2pselr0g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "集百家音注資治通鑑一百二十卷",
+      "content": "陸唐老撰。",
+      "work_id": "d59f2hfc7f9d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "少微通鑑詳節三十卷",
+      "content": "江贄撰。",
+      "work_id": "d59f2hht622p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通鑑節要續編三十卷",
+      "content": "劉剡撰。",
+      "work_id": "d59f2hgm3b40"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "增節僃注資治通鑑一百二十卷",
+      "content": "呂大著撰。",
+      "work_id": "d59f2hhu3rpe"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右編年類",
+      "content": "右編年類七家六百三十卷。"
+    }
+  ]
+}

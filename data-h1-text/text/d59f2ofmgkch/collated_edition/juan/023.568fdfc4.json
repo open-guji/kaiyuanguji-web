@@ -1,0 +1,954 @@
+{
+  "title": "第23册",
+  "sections": [
+    {
+      "title": "兵部为推叶廷柱王泽补大同总兵标下火攻右营游击将军缺事题稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十三日　　頁1",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八四九",
+        "date": "崇祯九年十月十三日",
+        "page": 1
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为荐刘有声等顶补大同总兵标下火攻左营游击员缺事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十三日　　頁5",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五○",
+        "date": "崇祯九年十月十三日",
+        "page": 5
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为宣府龙门所路等地缺官推张巍等人充补事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十四日　　頁12",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五一",
+        "date": "崇祯九年十月十四日",
+        "page": 12
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为叛丁就抚边口无疏事题本奉旨",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十四日※　　頁13",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五二",
+        "date": "崇祯九年十月十四日※",
+        "page": 13
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为官兵于荆门连获大捷并遵旨查叙请功事题行稿（尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十四日　　頁14",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五三",
+        "date": "崇祯九年十月十四日",
+        "page": 14
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为着湖广巡抚王梦尹速回镇办贼奉旨事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十四日　　頁53",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五四",
+        "date": "崇祯九年十月十四日",
+        "page": 53
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为着革任擅责之藩尉傅朝翰奉旨事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月十四日　　頁55",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五五",
+        "date": "崇祯九年十月十四日",
+        "page": 55
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为吴暐顶补左卫道员缺请写敕书事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月二十二日　　頁58",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五六",
+        "date": "崇祯九年十月二十二日",
+        "page": 58
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为荐侯国弼堪补书堂典仗员缺等事题行稿（尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月二十三日　　頁65",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五七",
+        "date": "崇祯九年十月二十三日",
+        "page": 65
+      },
+      "work_id": null
+    },
+    {
+      "title": "顺天府尹李玄为兵部储备将材咨举黄诗一员事咨访单",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十月　　頁72",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五八",
+        "date": "崇祯九年十月",
+        "page": 72
+      },
+      "work_id": null
+    },
+    {
+      "title": "京营总督朱纯臣为厘饬不力恳乞摈斥事奏本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初四日　　頁75",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八五九",
+        "date": "崇祯九年十一月初四日",
+        "page": 75
+      },
+      "work_id": null
+    },
+    {
+      "title": "司礼监太监张国元为嗣后班军验明正身以杜雇替事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初四日　　頁78",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六○",
+        "date": "崇祯九年十一月初四日",
+        "page": 78
+      },
+      "work_id": null
+    },
+    {
+      "title": "司礼监太监张国元为厘饬不力众怒愈深恳乞罢斥事奏本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初五日　　頁80",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六一",
+        "date": "崇祯九年十一月初五日",
+        "page": 80
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为钦奉圣旨钱朝以锦衣卫实授百户带俸事题稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初五日　　頁83",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六二",
+        "date": "崇祯九年十一月初五日",
+        "page": 83
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为塘报山西静乐等处孙虎等贼抢掠情形并有旨事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初五日　　頁86",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六三",
+        "date": "崇祯九年十一月初五日",
+        "page": 86
+      },
+      "work_id": null
+    },
+    {
+      "title": "工部尚书刘遵宪等为虏患不测防御宜周炮房重城均应修筑事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月初九日　　頁94",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六四",
+        "date": "崇祯九年十一月初九日",
+        "page": 94
+      },
+      "work_id": null
+    },
+    {
+      "title": "京营戎政提督张国元为恭报皇赏钱数并缴犒剩余银事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十一日※　　頁96",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六五",
+        "date": "崇祯九年十一月十一日※",
+        "page": 96
+      },
+      "work_id": null
+    },
+    {
+      "title": "京营戎政提督张国元为戎政府围房等租税银两归总提协科道公用以杜滥费事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十一日　　頁98",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六六",
+        "date": "崇祯九年十一月十一日",
+        "page": 98
+      },
+      "work_id": null
+    },
+    {
+      "title": "吴阿郑为当房屋所立契约",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十一日　　頁99",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六七",
+        "date": "崇祯九年十一月十一日",
+        "page": 99
+      },
+      "work_id": null
+    },
+    {
+      "title": "户部尚书侯恂为虏患不测防御宜周炮房重城均应修筑事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十二日　　頁100",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六八",
+        "date": "崇祯九年十一月十二日",
+        "page": 100
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为虏患不测防御宜周炮房重城均应修筑事题本奉旨",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十三日　　頁103",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八六九",
+        "date": "崇祯九年十一月十三日",
+        "page": 103
+      },
+      "work_id": null
+    },
+    {
+      "title": "户部山东清吏司员外郎刘大猷为开列原任德州卫游击只启第实绩事揭帖",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十三日　　頁104",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七○",
+        "date": "崇祯九年十一月十三日",
+        "page": 104
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为遵旨再行查议造船钱粮事宜事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十五日　　頁108",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七一",
+        "date": "崇祯九年十一月十五日",
+        "page": 108
+      },
+      "work_id": null
+    },
+    {
+      "title": "[工部尚书刘遵宪］为京城添设城台建立铺房预办工料请勅户兵二部协济事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月十九日　　頁113",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七二",
+        "date": "崇祯九年十一月十九日",
+        "page": 113
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为李乔昆顶补厦平道员缺请写敕书事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月二十一日　　頁115",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七三",
+        "date": "崇祯九年十一月二十一日",
+        "page": 115
+      },
+      "work_id": null
+    },
+    {
+      "title": "刑部广西清吏司为保举朱师谟堪充边将事手本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十一月二十八日　　頁124",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七四",
+        "date": "崇祯九年十一月二十八日",
+        "page": 124
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为分守大同山西太监牛文炳请循例设立标下官丁事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月初三日　　頁127",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七五",
+        "date": "崇祯九年十二月初三日",
+        "page": 127
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为贼势猖獗陵藩重地可虞着湖广巡抚王梦尹合力速剿奉旨事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月初九日　　頁135",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七六",
+        "date": "崇祯九年十二月初九日",
+        "page": 135
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为请遵旨查议速奏纠苗抚治藉招抚为名任贼掳掠情事事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "[崇祯九年］十二月初九日　　頁138",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七七",
+        "date": "[崇祯九年］十二月初九日",
+        "page": 138
+      },
+      "work_id": null
+    },
+    {
+      "title": "都察院为虏患日探议将云镇平远等各城收并以保无虞事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月十二日　　頁142",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七八",
+        "date": "崇祯九年十二月十二日",
+        "page": 142
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为荐张开远顶补山东武定守备员缺事题行稿（尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月十九日　　頁158",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八七九",
+        "date": "崇祯九年十二月十九日",
+        "page": 158
+      },
+      "work_id": null
+    },
+    {
+      "title": "署兵部尚书王业浩等为居庸关参将王从谦患病解任并荐王家栋补缺事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月二十二日　　頁166",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八○",
+        "date": "崇祯九年十二月二十二日",
+        "page": 166
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为照旧规差委巡补把总一员前来巡逻事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月二十四日　　頁176",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八一",
+        "date": "崇祯九年十二月二十四日",
+        "page": 176
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为开列俸荐捕营各官人名事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月二十五日　　頁179",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八二",
+        "date": "崇祯九年十二月二十五日",
+        "page": 179
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为徐州卫班官徐中行奉旨革任请委指挥王文炯照旧接管并有旨事行稿（尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "[崇祯九年十二月］　　頁182",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八三",
+        "date": "[崇祯九年十二月］",
+        "page": 182
+      },
+      "work_id": null
+    },
+    {
+      "title": "朱良缙为卖土地所立契约",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯九年十二月　　頁190",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八四",
+        "date": "崇祯九年十二月",
+        "page": 190
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为遵查宣大台墙火器等事宜事行稿（尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "[崇祯九年］　　頁191",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八五",
+        "date": "[崇祯九年］",
+        "page": 191
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为山西万全都司于应元等失修墩台失查铅弹应即革任事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年正月二十日　　頁221",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八六",
+        "date": "崇祯十年正月二十日",
+        "page": 221
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为推补柴奇任宣府四海冶守备员缺事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年正月二十七日　　頁254",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八七",
+        "date": "崇祯十年正月二十七日",
+        "page": 254
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部等部为辽东将领统兵无纪官兵践踏田苗依律处次事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月初二日　　頁262",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八八",
+        "date": "崇祯十年二月初二日",
+        "page": 262
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为宣镇颓废已极遵旨整顿兵马酌改战守严明烽哨事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月初六日　　頁296",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八八九",
+        "date": "崇祯十年二月初六日",
+        "page": 296
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为地震事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月十二日　　頁310",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九○",
+        "date": "崇祯十年二月十二日",
+        "page": 310
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为荐张凤鸣及赵之璧分别补授昌宣二镇标下中军游击和旗鼓员缺事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月十四日　　頁315",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九一",
+        "date": "崇祯十年二月十四日",
+        "page": 315
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为奏报有关江西倪绳武一案事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月二十日　　頁324",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九二",
+        "date": "崇祯十年二月二十日",
+        "page": 324
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为守备周宇生即赴浙江巡抚标下听用事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月二十五日　　頁327",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九三",
+        "date": "崇祯十年二月二十五日",
+        "page": 327
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为遵旨查明宣府炮儿梁一役阵亡及失守情形事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年二月二十五日　　頁330",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九四",
+        "date": "崇祯十年二月二十五日",
+        "page": 330
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为推补游击许国元升任宣府右卫参将员缺事题行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月初四月　　頁343",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九五",
+        "date": "崇祯十年三月初四月",
+        "page": 343
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为独石口探报夷情事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月初七日　　頁354",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九六",
+        "date": "崇祯十年三月初七日",
+        "page": 354
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为各省夷情塘报另具报戎政衙门事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月初十日　　頁359",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九七",
+        "date": "崇祯十年三月初十日",
+        "page": 359
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为捉获奸细事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月十七日　　頁362",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九八",
+        "date": "崇祯十年三月十七日",
+        "page": 362
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为广东应解武官军俸粮银赴本部交纳事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月十八日　　頁366",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一八九九",
+        "date": "崇祯十年三月十八日",
+        "page": 366
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为哨探夷情东行事题稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年三月　　頁371",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○○",
+        "date": "崇祯十年三月",
+        "page": 371
+      },
+      "work_id": null
+    },
+    {
+      "title": "[兵部尚书杨嗣昌］等为推董大胜任江西南赣参将事题行稿（首尾缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月初七日　　頁375",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○一",
+        "date": "崇祯十年四月初七日",
+        "page": 375
+      },
+      "work_id": null
+    },
+    {
+      "title": "职方清吏司郎中王升为公费抵补墙工查无原题事呈稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月初八日　　頁381",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○二",
+        "date": "崇祯十年四月初八日",
+        "page": 381
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为查明陜西延长县令等遇难照例荫袭事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月十一日　　頁383",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○三",
+        "date": "崇祯十年四月十一日",
+        "page": 383
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为挑选官员押解赏功银两事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月十七日　　頁387",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○四",
+        "date": "崇祯十年四月十七日",
+        "page": 387
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为甘肃乘时治安整饬兵马事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月十九日　　頁391",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○五",
+        "date": "崇祯十年四月十九日",
+        "page": 391
+      },
+      "work_id": null
+    },
+    {
+      "title": "[兵部］为摘参未完事件奉旨严催速结事行稿（首缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年四月二十三日　　頁396",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○六",
+        "date": "崇祯十年四月二十三日",
+        "page": 396
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为筹议阵亡军选银两事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月初四日　　頁431",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○七",
+        "date": "崇祯十年闰四月初四日",
+        "page": 431
+      },
+      "work_id": null
+    },
+    {
+      "title": "[兵部］为张明住侵盗仓豆事行稿（首缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月初六日　　頁435",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○八",
+        "date": "崇祯十年闰四月初六日",
+        "page": 435
+      },
+      "work_id": null
+    },
+    {
+      "title": "宣府总兵杨国柱为推选何呜升等补内丁营守备员缺事揭帖",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月初六日　　頁439",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九○九",
+        "date": "崇祯十年闰四月初六日",
+        "page": 439
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部尚书杨嗣昌等为陈选将必须内外双清以厘积弊事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十一日　　頁444",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一○",
+        "date": "崇祯十年闰四月十一日",
+        "page": 444
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为查明两广会剿有功官员议叙事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十五日　　頁448",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一一",
+        "date": "崇祯十年闰四月十五日",
+        "page": 448
+      },
+      "work_id": null
+    },
+    {
+      "title": "户部尚书杨嗣昌等为山东总兵塘报失岛战殁官兵数目事题本奉旨",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十六日　　頁475",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一二",
+        "date": "崇祯十年闰四月十六日",
+        "page": 475
+      },
+      "work_id": null
+    },
+    {
+      "title": "登岛太监陈应祥为会报皮岛等地失陷报明战殁官兵数目事题本（首缺）",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十六日　　頁476",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一三",
+        "date": "崇祯十年闰四月十六日",
+        "page": 476
+      },
+      "work_id": null
+    },
+    {
+      "title": "真定巡按李模为遵旨申报窝赃数目事奏本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十七日　　頁480",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一四",
+        "date": "崇祯十年闰四月十七日",
+        "page": 480
+      },
+      "work_id": null
+    },
+    {
+      "title": "西关巡按杜廷琏为由王定一填补团练镇标右营参将事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十九日※　　頁481",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一五",
+        "date": "崇祯十年闰四月十九日※",
+        "page": 481
+      },
+      "work_id": null
+    },
+    {
+      "title": "登莱巡抚杨文岳为皮岛等地失陷报明战殁官兵数目事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月十九日※　　頁483",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一六",
+        "date": "崇祯十年闰四月十九日※",
+        "page": 483
+      },
+      "work_id": null
+    },
+    {
+      "title": "职方清吏司为清查河南班军赴宣边工程事呈稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月二十日　　頁488",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一七",
+        "date": "崇祯十年闰四月二十日",
+        "page": 488
+      },
+      "work_id": null
+    },
+    {
+      "title": "兵部为湖广协图援剿事行稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月二十日　　頁490",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一八",
+        "date": "崇祯十年闰四月二十日",
+        "page": 490
+      },
+      "work_id": null
+    },
+    {
+      "title": "蓟辽总督张福臻为愿领危疆恳祈待命事奏本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年闰四月二十二日　　頁494",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九一九",
+        "date": "崇祯十年闰四月二十二日",
+        "page": 494
+      },
+      "work_id": null
+    },
+    {
+      "title": "为铁岭卫阵亡指挥同知楚继雄之子应袭祖职事题本",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年五月初一日　　頁496",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九二○",
+        "date": "崇祯十年五月初一日",
+        "page": 496
+      },
+      "work_id": null
+    },
+    {
+      "title": "职方清吏司为题授实职遵例请给札付事呈稿",
+      "level": 3,
+      "type": "book",
+      "content": "崇祯十年五月初一日　　頁498",
+      "metadata": {
+        "doc_type": "档",
+        "no": "一九二一",
+        "date": "崇祯十年五月初一日",
+        "page": 498
+      },
+      "work_id": null
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "title": "史部·地理類古蹟之屬",
+  "sections": [
+    {
+      "title": "地理類古蹟之屬",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "晉世　三輔故事二卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉世　三輔故事二卷　晉世撰。",
+      "work_id": "d59f27v5tl37",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "三輔舊事三卷",
+      "level": 3,
+      "type": "book",
+      "content": "三輔舊事三卷",
+      "work_id": "d59f9uwl31ms"
+    },
+    {
+      "title": "韋氏三輔舊事一卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋氏三輔舊事一卷　上三種並据《唐志》。",
+      "work_id": "d59f24lo80lg"
+    },
+    {
+      "title": "李彤　聖賢冢墓記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李彤　聖賢冢墓記一卷　李彤撰。　案\"彤\"當作\"肜\"。",
+      "work_id": "d59f27wvxt6r",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "城冢記一卷",
+      "level": 3,
+      "type": "book",
+      "content": "城冢記一卷　据《宋・藝文志》云：\"案序，魏文三年，劉裕得此《記》。\"　案\"魏文\"二語難曉，疑《記》作於魏後，得自裕耳。",
+      "work_id": "d59f2q643x8h"
+    },
+    {
+      "title": "地理類古蹟之屬結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右地理類古蹟之屬，五種。"
+    }
+  ]
+}

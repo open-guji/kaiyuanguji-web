@@ -1,0 +1,1106 @@
+{
+  "title": "編年類",
+  "sections": [
+    {
+      "title": "《漢紀》",
+      "level": 3,
+      "type": "book",
+      "content": "荀悅《漢紀》三十卷",
+      "work_id": "d59f207wdwcg"
+    },
+    {
+      "title": "《後漢紀》",
+      "level": 3,
+      "type": "book",
+      "content": "袁宏《後漢紀》三十卷",
+      "work_id": "d59f27x4ogea"
+    },
+    {
+      "title": "《漢春秋》",
+      "level": 3,
+      "type": "book",
+      "content": "胡旦《漢春秋》一百卷",
+      "work_id": "d59f27x18uf5"
+    },
+    {
+      "title": "《問答》",
+      "level": 3,
+      "type": "book",
+      "content": "《問答》一卷",
+      "work_id": "d59f2q26pfcx"
+    },
+    {
+      "title": "《帝王世紀》",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫謐《帝王世紀》九卷",
+      "work_id": "d59f27vmd5vm"
+    },
+    {
+      "title": "《竹書》",
+      "level": 3,
+      "type": "book",
+      "content": "《竹書》三卷⟨荀勖、和嶠編⟩",
+      "work_id": "d59f2q9r7lkx"
+    },
+    {
+      "title": "《三十國春秋》",
+      "level": 3,
+      "type": "book",
+      "content": "蕭方等《三十國春秋》三十卷",
+      "work_id": "d59f283ws16r"
+    },
+    {
+      "title": "《晉陽秋》",
+      "level": 3,
+      "type": "book",
+      "content": "孫盛《晉陽秋》三十卷",
+      "work_id": "d59f2855q7eo"
+    },
+    {
+      "title": "《晉春秋略》",
+      "level": 3,
+      "type": "book",
+      "content": "杜延業《晉春秋略》二十卷",
+      "work_id": "d59f28jtkhz4"
+    },
+    {
+      "title": "《宋略》",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野《宋略》二十卷",
+      "work_id": "d59f285iu683"
+    },
+    {
+      "title": "《王通元經薛氏傳》",
+      "level": 3,
+      "type": "book",
+      "content": "《王通元經薛氏傳》十五卷",
+      "work_id": "d59f28m3coat",
+      "link_basis": "原繫 1evcsx8657e9s，該條已併入 1evkafvi9whds（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《通曆》",
+      "level": 3,
+      "type": "book",
+      "content": "馬總《通曆》十卷",
+      "work_id": "d59f27t0eqdc"
+    },
+    {
+      "title": "《唐曆》",
+      "level": 3,
+      "type": "book",
+      "content": "柳芳《唐曆》四十卷",
+      "work_id": "d59f28j8nll3"
+    },
+    {
+      "title": "《續唐曆》",
+      "level": 3,
+      "type": "book",
+      "content": "崔龜從《續唐曆》二十二卷",
+      "work_id": "d59f28lmhuys"
+    },
+    {
+      "title": "《唐太宗建元實跡》",
+      "level": 3,
+      "type": "book",
+      "content": "裴煜之《唐太宗建元實跡》一卷",
+      "work_id": "d59f2q4fjw1t"
+    },
+    {
+      "title": "《帝王曆數圖》",
+      "level": 3,
+      "type": "book",
+      "content": "路惟衡《帝王曆數圖》十卷",
+      "work_id": "d59f2pshq48x"
+    },
+    {
+      "title": "《唐統紀》",
+      "level": 3,
+      "type": "book",
+      "content": "陳嶽《唐統紀》一百卷",
+      "work_id": "d59f2pzthngi"
+    },
+    {
+      "title": "《三國典略》",
+      "level": 3,
+      "type": "book",
+      "content": "丘悅《三國典略》二十卷",
+      "work_id": "d59f2pvvrwn4"
+    },
+    {
+      "title": "《古今年號錄》",
+      "level": 3,
+      "type": "book",
+      "content": "封演《古今年號錄》一卷",
+      "work_id": "d59f28jl53b9"
+    },
+    {
+      "title": "《大唐聖運圖略》",
+      "level": 3,
+      "type": "book",
+      "content": "薛璫《大唐聖運圖略》三卷",
+      "work_id": "d59f2q8vomww"
+    },
+    {
+      "title": "《帝王照錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《帝王照錄》一卷",
+      "work_id": "d59f2q9fcl4w"
+    },
+    {
+      "title": "《五位圖》",
+      "level": 3,
+      "type": "book",
+      "content": "王起《五位圖》三卷",
+      "work_id": "d59f28lcti4m"
+    },
+    {
+      "title": "《古今通要》",
+      "level": 3,
+      "type": "book",
+      "content": "苗台符《古今通要》四卷",
+      "work_id": "d59f28jcpon7"
+    },
+    {
+      "title": "《元和錄》",
+      "level": 3,
+      "type": "book",
+      "content": "馬永易《元和錄》三卷",
+      "work_id": "d59f2ofspblv"
+    },
+    {
+      "title": "《大唐中興新書紀年》",
+      "level": 3,
+      "type": "book",
+      "content": "《大唐中興新書紀年》三卷⟨不知作者⟩",
+      "work_id": "d59f2py0ka9t"
+    },
+    {
+      "title": "《續皇王寶運錄》",
+      "level": 3,
+      "type": "book",
+      "content": "韋昭度《續皇王寶運錄》十卷",
+      "work_id": "d59f28lnfklf"
+    },
+    {
+      "title": "《大唐補紀》",
+      "level": 3,
+      "type": "book",
+      "content": "程正柔《大唐補紀》三卷",
+      "work_id": "d59f2pudglxd"
+    },
+    {
+      "title": "《唐錄政要》",
+      "level": 3,
+      "type": "book",
+      "content": "淩璠《唐錄政要》十三卷",
+      "work_id": "d59f2pvkultu"
+    },
+    {
+      "title": "《唐天祐二年日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐天祐二年日曆》一卷",
+      "work_id": "d59f2pzqzqio"
+    },
+    {
+      "title": "《古今類聚年號圖》",
+      "level": 3,
+      "type": "book",
+      "content": "杜光庭《古今類聚年號圖》一卷",
+      "work_id": "d59f2gcipzb6"
+    },
+    {
+      "title": "《唐創業起居注》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐創業起居注》三卷⟨溫大雅撰⟩",
+      "work_id": "d59f2q06ad4x"
+    },
+    {
+      "title": "《唐高祖實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐高祖實錄》二十卷⟨許敬宗、房玄齡等撰⟩",
+      "work_id": "d59f28jewcg0"
+    },
+    {
+      "title": "《唐太宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐太宗實錄》四十卷⟨許敬宗撰⟩",
+      "work_id": "d59f2q6t2xa8"
+    },
+    {
+      "title": "《唐高宗後修實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐高宗後修實錄》三十卷。",
+      "work_id": "d59f2q4u81dt"
+    },
+    {
+      "title": "《唐武后實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐武后實錄》二十卷",
+      "work_id": "d59f2pyta3uo"
+    },
+    {
+      "title": "《唐中宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐中宗實錄》二十卷",
+      "work_id": "d59f2psztvcx"
+    },
+    {
+      "title": "《唐睿宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐睿宗實錄》十卷又五卷⟨並劉知幾、吳兢撰⟩",
+      "work_id": "d59f2px7ug3l"
+    },
+    {
+      "title": "《唐玄宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐玄宗實錄》一百卷⟨元載、令狐亙撰⟩",
+      "work_id": "d59f2q01lt6q"
+    },
+    {
+      "title": "《唐肅宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐肅宗實錄》三十卷⟨元載撰⟩",
+      "work_id": "d59f2q0p0lqa"
+    },
+    {
+      "title": "《唐代宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐代宗實錄》四十卷⟨令狐亙撰⟩",
+      "work_id": "d59f2q34f2f5"
+    },
+    {
+      "title": "《唐德宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐德宗實錄》五十卷⟨裴垍等撰⟩",
+      "work_id": "d59f2pydo8w0"
+    },
+    {
+      "title": "《唐建中實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐建中實錄》十五卷⟨沈既濟撰⟩",
+      "work_id": "d59f2q782bcx"
+    },
+    {
+      "title": "《唐順宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐順宗實錄》五卷⟨韓愈撰⟩",
+      "work_id": "d59f2q1eau4g"
+    },
+    {
+      "title": "《唐憲宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐憲宗實錄》四十卷",
+      "work_id": "d59f28jm2sxz"
+    },
+    {
+      "title": "《唐穆宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐穆宗實錄》二十卷",
+      "work_id": "d59f2pxoe1a9"
+    },
+    {
+      "title": "《唐宣宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐宣宗實錄》三十卷",
+      "work_id": "d59f2pzdkjcw"
+    },
+    {
+      "title": "《唐懿宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐懿宗實錄》二十五卷",
+      "work_id": "d59f2psx0qv5"
+    },
+    {
+      "title": "《唐僖宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐僖宗實錄》三十卷",
+      "work_id": "d59f2py7qqki"
+    },
+    {
+      "title": "《唐昭宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐昭宗實錄》三十卷",
+      "work_id": "d59f2pzlopvm"
+    },
+    {
+      "title": "《唐哀帝實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《唐哀帝實錄》八卷⟨並宋敏求撰⟩",
+      "work_id": "d59f2pur71mq"
+    },
+    {
+      "title": "《五代梁太祖實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代梁太祖實錄》三十卷⟨張袞、郤象等撰⟩",
+      "work_id": "d59f2pwetdz6"
+    },
+    {
+      "title": "《五代唐懿祖紀年錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐懿祖紀年錄》一卷",
+      "work_id": "d59f2pw6p79e"
+    },
+    {
+      "title": "《五代唐獻祖紀年錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐獻祖紀年錄》一卷",
+      "work_id": "d59f2q385wjm"
+    },
+    {
+      "title": "《五代唐莊宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐莊宗實錄》三十卷⟨並趙鳳、張昭遠等撰⟩",
+      "work_id": "d59f2q3fnlky"
+    },
+    {
+      "title": "《五代唐明宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐明宗實錄》三十卷⟨姚顗等撰⟩",
+      "work_id": "d59f2q42r5z5"
+    },
+    {
+      "title": "《五代唐湣帝實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐湣帝實錄》三卷⟨張昭遠等撰⟩",
+      "work_id": "d59f2q5gdwcg"
+    },
+    {
+      "title": "《五代唐廢帝實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代唐廢帝實錄》十七卷⟨張昭等同撰⟩",
+      "work_id": "d59f2pzsjx8h"
+    },
+    {
+      "title": "《五代晉高祖實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代晉高祖實錄》三十卷",
+      "work_id": "d59f2pshevb6"
+    },
+    {
+      "title": "《五代晉少帝實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代晉少帝實錄》二十卷",
+      "work_id": "d59f2q0pn37l"
+    },
+    {
+      "title": "《後蜀主實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《後蜀主實錄》四十卷⟨並李昊撰⟩",
+      "work_id": "d59f2pt1pama"
+    },
+    {
+      "title": "《宋太祖實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋太祖實錄》五十卷⟨李沆、沈倫修⟩",
+      "work_id": "d59f2hlgkyrn"
+    },
+    {
+      "title": "《太宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《太宗實錄》八十卷⟨錢若水修⟩",
+      "work_id": "d59f2hm7qm0y"
+    },
+    {
+      "title": "《真宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《真宗實錄》一百五十卷⟨晏殊等同修⟩",
+      "work_id": "d59f2hkmxf5t"
+    },
+    {
+      "title": "《仁宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《仁宗實錄》二百卷⟨韓琦等修⟩",
+      "work_id": "d59f2hh7bg1v"
+    },
+    {
+      "title": "《英宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《英宗實錄》三十卷⟨曾公亮等修⟩",
+      "work_id": "d59f2hgnc9a9"
+    },
+    {
+      "title": "《神宗實錄朱墨本》",
+      "level": 3,
+      "type": "book",
+      "content": "《神宗實錄朱墨本》三百卷⟨舊錄本用墨書，添入者用朱書，刪去者用黃抹⟩",
+      "work_id": "d59f2pzyhfr5"
+    },
+    {
+      "title": "《神宗實錄考異》",
+      "level": 3,
+      "type": "book",
+      "content": "《神宗實錄考異》五卷⟨范沖撰⟩",
+      "work_id": "d59f2q9pc6ps"
+    },
+    {
+      "title": "《宋高宗日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋高宗日曆》一千卷",
+      "work_id": "d59f2puje41s"
+    },
+    {
+      "title": "《孝宗日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《孝宗日曆》二千卷",
+      "work_id": "d59f2q52ng8x"
+    },
+    {
+      "title": "《光宗日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《光宗日曆》三百卷",
+      "work_id": "d59f2pwqd5vm"
+    },
+    {
+      "title": "《寧宗日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《寧宗日曆》五百一十卷",
+      "work_id": "d59f2py6t0qo"
+    },
+    {
+      "title": "《神宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "重修五百卷《神宗實錄》二百卷⟨趙鼎、范沖重修⟩",
+      "work_id": "d59f2nhf15hf"
+    },
+    {
+      "title": "《哲宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《哲宗實錄》一百五十卷",
+      "work_id": "d59f2hf0cemb"
+    },
+    {
+      "title": "《徽宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《徽宗實錄》二百卷",
+      "work_id": "d59f2hik0gsi"
+    },
+    {
+      "title": "《徽宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "李燾重修《徽宗實錄》二百卷⟨李燾重修⟩",
+      "work_id": "d59f2hik0gsi"
+    },
+    {
+      "title": "《欽宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《欽宗實錄》四十卷⟨洪邁修⟩",
+      "work_id": "d59f2heuewap"
+    },
+    {
+      "title": "《高宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《高宗實錄》五百卷⟨傅伯壽撰⟩",
+      "work_id": "d59f28jjw54z"
+    },
+    {
+      "title": "《孝宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《孝宗實錄》五百卷",
+      "work_id": "d59f2ofnea69"
+    },
+    {
+      "title": "《光宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《光宗實錄》一百卷",
+      "work_id": "d59f2ofr54w2"
+    },
+    {
+      "title": "《日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "又《日曆》一百八十冊",
+      "work_id": "d59f2hhnv0u8"
+    },
+    {
+      "title": "《度宗時政記》",
+      "level": 3,
+      "type": "book",
+      "content": "《度宗時政記》七十八冊",
+      "work_id": "d59f2q1lsj5t"
+    },
+    {
+      "title": "《德祐事跡日記》",
+      "level": 3,
+      "type": "book",
+      "content": "《德祐事跡日記》四十五冊",
+      "work_id": "d59f2hfg9ibm"
+    },
+    {
+      "title": "《續通曆》",
+      "level": 3,
+      "type": "book",
+      "content": "孫光憲《續通曆》十卷",
+      "work_id": "d59f2hgy9kar"
+    },
+    {
+      "title": "《五代通錄》",
+      "level": 3,
+      "type": "book",
+      "content": "范質《五代通錄》六十五卷",
+      "work_id": "d59f2gcn3awx"
+    },
+    {
+      "title": "《甲子編年》",
+      "level": 3,
+      "type": "book",
+      "content": "劉蒙叟《甲子編年》二卷",
+      "work_id": "d59f2ng47k74"
+    },
+    {
+      "title": "《顯德日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《顯德日曆》一卷⟨周扈蒙、董淳、賈黃中撰⟩",
+      "work_id": "d59f2pvsyry9"
+    },
+    {
+      "title": "《運曆圖》",
+      "level": 3,
+      "type": "book",
+      "content": "龔穎《運曆圖》三卷",
+      "work_id": "d59f2hf0yvpc"
+    },
+    {
+      "title": "《唐紀》",
+      "level": 3,
+      "type": "book",
+      "content": "陳彭年《唐紀》四十卷",
+      "work_id": "d59f2ndrb0g1"
+    },
+    {
+      "title": "《紀年通譜》",
+      "level": 3,
+      "type": "book",
+      "content": "宋庠《紀年通譜》十二卷",
+      "work_id": "d59f2hhz3keb"
+    },
+    {
+      "title": "《五代開皇記》",
+      "level": 3,
+      "type": "book",
+      "content": "鄭向《五代開皇記》三十卷",
+      "work_id": "d59f2hmauzgi"
+    },
+    {
+      "title": "《兩朝實錄大事》",
+      "level": 3,
+      "type": "book",
+      "content": "《兩朝實錄大事》二卷",
+      "work_id": "d59f2q1nnyf5"
+    },
+    {
+      "title": "《文武賢臣治蜀編年志》",
+      "level": 3,
+      "type": "book",
+      "content": "王玉《文武賢臣治蜀編年志》一卷",
+      "work_id": "d59f2pwravia"
+    },
+    {
+      "title": "《帝王興衰年代錄》",
+      "level": 3,
+      "type": "book",
+      "content": "武密《帝王興衰年代錄》二卷",
+      "work_id": "d59f28ldr7r5"
+    },
+    {
+      "title": "《五代春秋》",
+      "level": 3,
+      "type": "book",
+      "content": "《五代春秋》一卷",
+      "work_id": "d59f2hkxuq6b"
+    },
+    {
+      "title": "《十代編年紀》",
+      "level": 3,
+      "type": "book",
+      "content": "《十代編年紀》一卷",
+      "work_id": "d59f2q239tdt"
+    },
+    {
+      "title": "《通鑒前例》",
+      "level": 3,
+      "type": "book",
+      "content": "《通鑒前例》一卷",
+      "work_id": "d59f2pt6dv5u"
+    },
+    {
+      "title": "《稽古錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《稽古錄》二十卷",
+      "work_id": "d59f2hrw71tt"
+    },
+    {
+      "title": "《曆年圖》",
+      "level": 3,
+      "type": "book",
+      "content": "《曆年圖》六卷",
+      "work_id": "d59f2q8rmjgg"
+    },
+    {
+      "title": "《通鑒節要》",
+      "level": 3,
+      "type": "book",
+      "content": "《通鑒節要》六十卷",
+      "work_id": "d59f2pwe6whs"
+    },
+    {
+      "title": "《帝統編年紀事珠璣》",
+      "level": 3,
+      "type": "book",
+      "content": "《帝統編年紀事珠璣》十二卷",
+      "work_id": "d59f2qajxfy8"
+    },
+    {
+      "title": "《歷代累年》",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代累年》二卷",
+      "work_id": "d59f2q02urk1"
+    },
+    {
+      "title": "《資治通鑒外紀》",
+      "level": 3,
+      "type": "book",
+      "content": "劉恕《資治通鑒外紀》十卷",
+      "work_id": "d59f2his4mww"
+    },
+    {
+      "title": "《疑年譜》",
+      "level": 3,
+      "type": "book",
+      "content": "又《疑年譜》一卷",
+      "work_id": "d59f2hlfyhoh"
+    },
+    {
+      "title": "《通鑒問疑》",
+      "level": 3,
+      "type": "book",
+      "content": "《通鑒問疑》一卷",
+      "work_id": "d59f2hqwx8g1"
+    },
+    {
+      "title": "《編年通載》",
+      "level": 3,
+      "type": "book",
+      "content": "章衡《編年通載》十卷",
+      "work_id": "d59f2hrn562p"
+    },
+    {
+      "title": "《係年錄》",
+      "level": 3,
+      "type": "book",
+      "content": "王岩叟《係年錄》一卷",
+      "work_id": "d59f2oftn11c"
+    },
+    {
+      "title": "《元祐時政記》",
+      "level": 3,
+      "type": "book",
+      "content": "《元祐時政記》一卷",
+      "work_id": "d59f2hj4xd6p"
+    },
+    {
+      "title": "《紹運圖》",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛深《紹運圖》一卷",
+      "work_id": "d59f2ogat340"
+    },
+    {
+      "title": "《歷代紀元賦》",
+      "level": 3,
+      "type": "book",
+      "content": "楊備《歷代紀元賦》一卷",
+      "work_id": "d59f2hl7ubk2"
+    },
+    {
+      "title": "《孔子編年》",
+      "level": 3,
+      "type": "book",
+      "content": "胡仔《孔子編年》五卷",
+      "work_id": "d59f2hs4xp1d"
+    },
+    {
+      "title": "《歷代帝王年運銓要》",
+      "level": 3,
+      "type": "book",
+      "content": "朱繪《歷代帝王年運銓要》十卷",
+      "work_id": "d59f2q4gsuma"
+    },
+    {
+      "title": "《通鑒釋文》",
+      "level": 3,
+      "type": "book",
+      "content": "司馬康《通鑒釋文》六卷",
+      "work_id": "d59f2hlu064g"
+    },
+    {
+      "title": "《續資治通鑒長編》",
+      "level": 3,
+      "type": "book",
+      "content": "李燾《續資治通鑒長編》一百六十八卷",
+      "work_id": "d59f2hqysnpd"
+    },
+    {
+      "title": "《四朝史稿》",
+      "level": 3,
+      "type": "book",
+      "content": "又《四朝史稿》五十卷",
+      "work_id": "d59f2q5pr0u9"
+    },
+    {
+      "title": "《江左方鎮年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《江左方鎮年表》十六卷",
+      "work_id": "d59f2q3q9og2"
+    },
+    {
+      "title": "《混天帝王五運圖古今須知》",
+      "level": 3,
+      "type": "book",
+      "content": "《混天帝王五運圖古今須知》一卷",
+      "work_id": "d59f2pte6sqp"
+    },
+    {
+      "title": "《宋政錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋政錄》十二卷",
+      "work_id": "d59f2psd1jpd"
+    },
+    {
+      "title": "《宋異錄》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋異錄》一卷",
+      "work_id": "d59f2puvkdfk"
+    },
+    {
+      "title": "《宋年表》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋年表》一卷",
+      "work_id": "d59f2q96lxxd"
+    },
+    {
+      "title": "《年表》",
+      "level": 3,
+      "type": "book",
+      "content": "又《年表》一卷",
+      "work_id": "d59f2psjwrnm"
+    },
+    {
+      "title": "《資治通鑒釋文》",
+      "level": 3,
+      "type": "book",
+      "content": "史炤《資治通鑒釋文》三十卷",
+      "work_id": "d59f2htq24g2"
+    },
+    {
+      "title": "《歷代記年》",
+      "level": 3,
+      "type": "book",
+      "content": "晁公邁《歷代記年》十卷",
+      "work_id": "d59f2hh6oyyp"
+    },
+    {
+      "title": "《九朝通略》",
+      "level": 3,
+      "type": "book",
+      "content": "熊克《九朝通略》一百六十八卷",
+      "work_id": "d59f2hff0k5e"
+    },
+    {
+      "title": "《中興小曆》",
+      "level": 3,
+      "type": "book",
+      "content": "《中興小曆》四十一卷",
+      "work_id": "d59f2hg4x98h"
+    },
+    {
+      "title": "《大事記》",
+      "level": 3,
+      "type": "book",
+      "content": "呂祖謙《大事記》二十七卷",
+      "work_id": "d59f2hrg9y4j"
+    },
+    {
+      "title": "《宋通鑒節》",
+      "level": 3,
+      "type": "book",
+      "content": "又《宋通鑒節》五卷",
+      "work_id": "d59f2pya8mpu"
+    },
+    {
+      "title": "《呂氏家塾通鑒節要》",
+      "level": 3,
+      "type": "book",
+      "content": "《呂氏家塾通鑒節要》二十四卷",
+      "work_id": "d59f2pw89e68"
+    },
+    {
+      "title": "《通鑒綱目》",
+      "level": 3,
+      "type": "book",
+      "content": "朱熹《通鑒綱目》五十九卷",
+      "work_id": "d59f2hg8cv7m"
+    },
+    {
+      "title": "《提要》",
+      "level": 3,
+      "type": "book",
+      "content": "又《提要》五十九卷",
+      "work_id": "d59f2q93hk3k"
+    },
+    {
+      "title": "《宋聖政編年》",
+      "level": 3,
+      "type": "book",
+      "content": "《宋聖政編年》十二卷⟨不知作者⟩",
+      "work_id": "d59f2q7avg8w"
+    },
+    {
+      "title": "《建炎中興日曆》",
+      "level": 3,
+      "type": "book",
+      "content": "汪伯彥《建炎中興日曆》一卷",
+      "work_id": "d59f2hfqkc8x"
+    },
+    {
+      "title": "《通鑒紀事本末》",
+      "level": 3,
+      "type": "book",
+      "content": "袁樞《通鑒紀事本末》四十二卷",
+      "work_id": "d59f2hr1lsle"
+    },
+    {
+      "title": "《通鑒總考》",
+      "level": 3,
+      "type": "book",
+      "content": "喻漢卿《通鑒總考》一百十二卷",
+      "work_id": "d59f2pw4tsld"
+    },
+    {
+      "title": "《南北征伐編年》",
+      "level": 3,
+      "type": "book",
+      "content": "吳曾《南北征伐編年》二十三卷",
+      "work_id": "d59f2og8xnuo"
+    },
+    {
+      "title": "《國紀》",
+      "level": 3,
+      "type": "book",
+      "content": "徐度《國紀》六十五卷",
+      "work_id": "d59f2hf0cema"
+    },
+    {
+      "title": "《皇王大紀》",
+      "level": 3,
+      "type": "book",
+      "content": "胡宏《皇王大紀》八十卷",
+      "work_id": "d59f2hu43sw2"
+    },
+    {
+      "title": "《丁未錄》",
+      "level": 3,
+      "type": "book",
+      "content": "李丙《丁未錄》二百卷",
+      "work_id": "d59f2hjmpw5e"
+    },
+    {
+      "title": "《建炎以來係年要錄》",
+      "level": 3,
+      "type": "book",
+      "content": "李心傳《建炎以來係年要錄》二百卷",
+      "work_id": "d59f2htetkw0"
+    },
+    {
+      "title": "《國史英華》",
+      "level": 3,
+      "type": "book",
+      "content": "《國史英華》一卷⟨不知作者⟩",
+      "work_id": "d59f2q3xrdhc"
+    },
+    {
+      "title": "《甲子紀年圖》",
+      "level": 3,
+      "type": "book",
+      "content": "何許《甲子紀年圖》一卷",
+      "work_id": "d59f2pz8vzlu"
+    },
+    {
+      "title": "《通鑒補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "曾慥《通鑒補遺》一百篇",
+      "work_id": "d59f2hginp4w"
+    },
+    {
+      "title": "《讀史》",
+      "level": 3,
+      "type": "book",
+      "content": "李孟傳《讀史》十卷",
+      "work_id": "d59f2heqo1s3",
+      "link_basis": "2026-08-24 宋志頂真格覆讀：本節作「一百篇李孟傳《讀史》十卷崔敦詩」——「一百篇」是前節 #140《通鑒補遺》之卷數，「李孟傳」是本節撰人，「崔敦詩」屬下節 #142《通鑒要覽》（崔敦詩《通鑒要覽》正合）。舊主 `1evdic73ew2yo` 是明楊以任《讀史四集》四卷（明志著錄），與此無涉。"
+    },
+    {
+      "title": "《通鑒要覽》",
+      "level": 3,
+      "type": "book",
+      "content": "崔敦詩《通鑒要覽》六十卷",
+      "work_id": "d59f2hk2brb6"
+    },
+    {
+      "title": "《通鑒答問》",
+      "level": 3,
+      "type": "book",
+      "content": "王應麟《通鑒答問》四卷",
+      "work_id": "d59f2htxv20w"
+    },
+    {
+      "title": "《通鑒舉要補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "胡安國《通鑒舉要補遺》一百二十卷",
+      "work_id": "d59f2hibl24h"
+    },
+    {
+      "title": "《通鑒總類》",
+      "level": 3,
+      "type": "book",
+      "content": "沈樞《通鑒總類》二十卷",
+      "work_id": "d59f2hsq5tz4"
+    },
+    {
+      "title": "《歷代指掌編》",
+      "level": 3,
+      "type": "book",
+      "content": "張根《歷代指掌編》九十卷",
+      "work_id": "d59f2hhrlvcz"
+    },
+    {
+      "title": "《孝宗要略初草》",
+      "level": 3,
+      "type": "book",
+      "content": "李心傳《孝宗要略初草》二十三卷",
+      "work_id": "d59f2hikbpc0"
+    },
+    {
+      "title": "《大宋綱目》",
+      "level": 3,
+      "type": "book",
+      "content": "張公明《大宋綱目》一百六十七卷",
+      "work_id": "d59f2hfxfk77"
+    },
+    {
+      "title": "《節資治通鑒》",
+      "level": 3,
+      "type": "book",
+      "content": "洪邁《節資治通鑒》一百五十卷",
+      "work_id": "d59f2hjyw5c2"
+    },
+    {
+      "title": "《太祖太宗本紀》",
+      "level": 3,
+      "type": "book",
+      "content": "又《太祖太宗本紀》三十五卷",
+      "work_id": "d59f2q01lszl"
+    },
+    {
+      "title": "《四朝史紀》",
+      "level": 3,
+      "type": "book",
+      "content": "又《四朝史紀》三十卷",
+      "work_id": "d59f2pzn8w75"
+    },
+    {
+      "title": "《列傳》",
+      "level": 3,
+      "type": "book",
+      "content": "又《列傳》一百三十五卷",
+      "work_id": "d59f2pwmmbk0"
+    },
+    {
+      "title": "《太祖政要》",
+      "level": 3,
+      "type": "book",
+      "content": "黃維之《太祖政要》一十卷",
+      "work_id": "d59f2psjaayo"
+    },
+    {
+      "title": "《國朝治跡要略》",
+      "level": 3,
+      "type": "book",
+      "content": "呂中《國朝治跡要略》十四卷",
+      "work_id": "d59f2hgreccj"
+    },
+    {
+      "title": "《寧宗實錄》",
+      "level": 3,
+      "type": "book",
+      "content": "::右編年類一百五十一部，一萬五百七十五卷。（（《寧宗實錄》",
+      "work_id": null
+    },
+    {
+      "title": "《通鑒補遺》",
+      "level": 3,
+      "type": "book",
+      "content": "以下不著錄六部，無卷。曾慥《通鑒補遺》以下不著錄十五部，九百六十八卷））",
+      "work_id": null
+    }
+  ]
+}

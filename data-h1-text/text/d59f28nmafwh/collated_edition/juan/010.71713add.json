@@ -1,0 +1,1085 @@
+{
+  "title": "小學類",
+  "sections": [
+    {
+      "title": "《三蒼》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三蒼》三卷郭璞注。秦相李斯作《蒼頡篇》，漢揚雄作《訓纂篇》，後漢郎中賈魴作《滂喜篇》，故曰《三蒼》。梁有《蒼頡》二卷，後漢司空杜林注，亡。",
+      "work_id": "d59f27twk6bk",
+      "book_title": "三蒼",
+      "n_juan": 3,
+      "author_info": "郭璞注"
+    },
+    {
+      "title": "《埤蒼》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《埤蒼》三卷張揖撰。梁有《廣蒼》一卷，樊恭撰，亡。",
+      "work_id": "d59f27sjv5kz",
+      "book_title": "埤蒼",
+      "n_juan": 3,
+      "author_info": "張揖撰"
+    },
+    {
+      "title": "《急就章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《急就章》一卷漢黃門令史遊撰。",
+      "work_id": "d59f1ir3rbb4",
+      "book_title": "急就章",
+      "n_juan": 1,
+      "author_info": "漢黃門令史遊撰"
+    },
+    {
+      "title": "《急就章》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《急就章》二卷崔浩撰。",
+      "work_id": "d59f2843c0lc",
+      "book_title": "急就章",
+      "n_juan": 2,
+      "author_info": "崔浩撰"
+    },
+    {
+      "title": "《急就章》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《急就章》三卷豆盧氏撰。",
+      "work_id": "d59f2ptrx8u8",
+      "book_title": "急就章",
+      "n_juan": 3,
+      "author_info": "豆盧氏撰"
+    },
+    {
+      "title": "《吳章》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吳章》二卷陸機撰。",
+      "work_id": "d59f27uiesck",
+      "book_title": "吳章",
+      "n_juan": 2,
+      "author_info": "陸機撰"
+    },
+    {
+      "title": "《小學篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《小學篇》一卷晉下邳內史王義撰。",
+      "work_id": "d59f27wzonpg",
+      "book_title": "小學篇",
+      "n_juan": 1,
+      "author_info": "晉下邳內史王義撰"
+    },
+    {
+      "title": "《少學》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《少學》九卷楊方撰。",
+      "work_id": "d59f27wz26m8",
+      "book_title": "少學",
+      "n_juan": 9,
+      "author_info": "楊方撰"
+    },
+    {
+      "title": "《始學》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《始學》一卷",
+      "work_id": "d59f2q57c0sg",
+      "book_title": "始學",
+      "n_juan": 1
+    },
+    {
+      "title": "《勸學》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《勸學》一卷蔡邕撰。有司馬相如《凡將篇》，班固《太甲篇》、《在昔篇》，崔瑗《飛龍篇》，蔡邕《聖皇篇》、《黃初篇》、《吳章篇》，蔡邕《女史篇》，合八卷，又《幼學》二卷，朱育撰；《始學》十二卷，吳郎中項峻撰；又《月儀》十二卷。亡。",
+      "work_id": "d59f24m5e2h5",
+      "book_title": "勸學",
+      "n_juan": 1,
+      "author_info": "蔡邕撰"
+    },
+    {
+      "title": "《發蒙記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《發蒙記》一卷晉著作郎束皙撰。",
+      "work_id": "d59f27tuor29",
+      "book_title": "發蒙記",
+      "n_juan": 1,
+      "author_info": "晉著作郎束皙撰"
+    },
+    {
+      "title": "《啟蒙記》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《啟蒙記》三卷晉散騎常侍顧愷之撰。",
+      "work_id": "d59f27titqf6",
+      "book_title": "啟蒙記",
+      "n_juan": 3,
+      "author_info": "晉散騎常侍顧愷之撰"
+    },
+    {
+      "title": "《啟疑記》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《啟疑記》三卷顧愷之撰。",
+      "work_id": "d59f27uflngh",
+      "book_title": "啟疑記",
+      "n_juan": 3,
+      "author_info": "顧愷之撰"
+    },
+    {
+      "title": "《千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《千字文》一卷梁給事郎周興嗣撰。",
+      "work_id": "d59f286vj6ys",
+      "book_title": "千字文",
+      "n_juan": 1,
+      "author_info": "梁給事郎周興嗣撰"
+    },
+    {
+      "title": "《千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《千字文》一卷梁國子祭酒蕭子雲注。",
+      "work_id": "d59f2857ae4j",
+      "book_title": "千字文",
+      "n_juan": 1,
+      "author_info": "梁國子祭酒蕭子雲注"
+    },
+    {
+      "title": "《千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《千字文》一卷胡肅注。",
+      "work_id": "d59f2pz7y9z6",
+      "book_title": "千字文",
+      "n_juan": 1,
+      "author_info": "胡肅注"
+    },
+    {
+      "title": "《篆書千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《篆書千字文》一卷",
+      "work_id": "d59f2px7j7y8",
+      "book_title": "篆書千字文",
+      "n_juan": 1
+    },
+    {
+      "title": "《演千字文》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《演千字文》五卷",
+      "work_id": "d59f2pypj9j6",
+      "book_title": "演千字文",
+      "n_juan": 5
+    },
+    {
+      "title": "《草書千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《草書千字文》一卷",
+      "work_id": "d59f2pvxyk1s",
+      "book_title": "草書千字文",
+      "n_juan": 1
+    },
+    {
+      "title": "《古今字詁》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今字詁》三卷張揖撰。梁有《難字》一卷，《錯誤字》一卷，並張揖撰；《異字》二卷，朱育撰；《字屬》一卷，賈魴撰。亡。",
+      "work_id": "d59f27sim7eo",
+      "book_title": "古今字詁",
+      "n_juan": 3,
+      "author_info": "張揖撰"
+    },
+    {
+      "title": "《雜字解詁》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜字解詁》四卷魏掖庭右丞周氏撰。梁有《解文字》七卷，周成撰；《字義訓音》六卷，《古今字苑》十卷，曹侯彥撰。亡。",
+      "work_id": "d59f2pxh7kea",
+      "book_title": "雜字解詁",
+      "n_juan": 4,
+      "author_info": "魏掖庭右丞周氏撰"
+    },
+    {
+      "title": "《雜字指》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜字指》一卷後漢太子中庶子郭顯卿撰。",
+      "work_id": "d59f23jds1s0",
+      "book_title": "雜字指",
+      "n_juan": 1,
+      "author_info": "後漢太子中庶子郭顯卿撰"
+    },
+    {
+      "title": "《字指》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字指》二卷晉朝議大夫李彤撰。梁有《單行字》四卷，李彤撰；又《字偶》五卷。亡。",
+      "work_id": "d59f27ul7x8k",
+      "book_title": "字指",
+      "n_juan": 2,
+      "author_info": "晉朝議大夫李彤撰"
+    },
+    {
+      "title": "《說文》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《說文》十五卷許慎撰。梁有《演說文》一卷，庾儼默注，亡。",
+      "work_id": "d59f24lmclc5",
+      "book_title": "說文",
+      "n_juan": 15,
+      "author_info": "許慎撰"
+    },
+    {
+      "title": "《說文音隱》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《說文音隱》四卷",
+      "work_id": "d59f2q1ajzsx",
+      "book_title": "說文音隱",
+      "n_juan": 4
+    },
+    {
+      "title": "《字林》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字林》七卷晉弦令呂忱撰。",
+      "work_id": "d59f27ujnqio",
+      "book_title": "字林",
+      "n_juan": 7,
+      "author_info": "晉弦令呂忱撰",
+      "link_basis": "原繫 1evc5peumnmrk，該條已併入 1evgorcckedq8（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《字林音義》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字林音義》五卷宋揚州督護吳恭撰。",
+      "work_id": "d59f285lc2ki",
+      "book_title": "字林音義",
+      "n_juan": 5,
+      "author_info": "宋揚州督護吳恭撰"
+    },
+    {
+      "title": "《古今字書》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今字書》十卷",
+      "work_id": "d59f2q1yl9mq",
+      "book_title": "古今字書",
+      "n_juan": 10
+    },
+    {
+      "title": "《字書》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字書》三卷",
+      "work_id": "d59f2ps7qigx",
+      "book_title": "字書",
+      "n_juan": 3,
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evc5pev1y9ds，今另立《字書》1ex0e0siwnbba 繫之。隋志小學類「《字書》三卷」與「《字書》十卷」皆不著撰人（考證：「皆不著撰人」）而卷數異，依 SCHEMA〈同題二條〉一別出；本條 1evc5pev1y9ds 之 juan_count 十卷，是十卷本。"
+    },
+    {
+      "title": "《字書》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字書》十卷",
+      "work_id": "d59f2q9sgjk0",
+      "book_title": "字書",
+      "n_juan": 10
+    },
+    {
+      "title": "《字統》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字統》二十一卷陽承慶撰。",
+      "work_id": "d59f2858uku8",
+      "book_title": "字統",
+      "n_juan": 21,
+      "author_info": "陽承慶撰"
+    },
+    {
+      "title": "《玉篇》三十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玉篇》三十一卷陳左衛將軍顧野王撰。",
+      "work_id": "d59f286uwpvl",
+      "book_title": "玉篇",
+      "n_juan": 31,
+      "author_info": "陳左衛將軍顧野王撰",
+      "link_basis": "原繫 1evc5pevgxngg，該條已併入 1evgorcmc6txc（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《字類敘評》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字類敘評》三卷侯洪伯撰。",
+      "work_id": "d59f2q0gl79e",
+      "book_title": "字類敘評",
+      "n_juan": 3,
+      "author_info": "侯洪伯撰"
+    },
+    {
+      "title": "《要字苑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《要字苑》一卷宋豫章太守謝康樂撰。梁有《常用字訓》一卷，殷仲堪撰；《要用字對誤》四卷，梁輕車參軍鄒誕生撰，亡。",
+      "work_id": "d59f286500sj",
+      "book_title": "要字苑",
+      "n_juan": 1,
+      "author_info": "宋豫章太守謝康樂撰"
+    },
+    {
+      "title": "《要用雜字》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《要用雜字》三卷鄒裡撰。梁有《文字要記》三卷，王義撰，亡。",
+      "work_id": "d59f28kmlkhy",
+      "book_title": "要用雜字",
+      "n_juan": 3,
+      "author_info": "鄒裡撰"
+    },
+    {
+      "title": "《俗語難字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《俗語難字》一卷秘書少監王劭撰。",
+      "work_id": "d59f28kwl5vm",
+      "book_title": "俗語難字",
+      "n_juan": 1,
+      "author_info": "秘書少監王劭撰"
+    },
+    {
+      "title": "《雜字要》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜字要》三卷密州行參軍李少通撰。",
+      "work_id": "d59f28ja7sar",
+      "book_title": "雜字要",
+      "n_juan": 3,
+      "author_info": "密州行參軍李少通撰"
+    },
+    {
+      "title": "《文字整疑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字整疑》一卷",
+      "work_id": "d59f2qabt9ts",
+      "book_title": "文字整疑",
+      "n_juan": 1
+    },
+    {
+      "title": "《正名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《正名》一卷",
+      "work_id": "d59f2q2aritc",
+      "book_title": "正名",
+      "n_juan": 1
+    },
+    {
+      "title": "《文字集略》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字集略》六卷梁文貞處士阮孝緒撰。",
+      "work_id": "d59f2854shs0",
+      "book_title": "文字集略",
+      "n_juan": 6,
+      "author_info": "梁文貞處士阮孝緒撰"
+    },
+    {
+      "title": "《今字辯疑》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字辯疑》三卷李少通撰。",
+      "work_id": "d59f28khaj9c",
+      "book_title": "今字辯疑",
+      "n_juan": 3,
+      "author_info": "李少通撰"
+    },
+    {
+      "title": "《異字同音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《異字同音》一卷梁有《釋字同音》三卷，宋散騎常侍吉文甫撰。",
+      "work_id": "d59f2pvfusxs",
+      "book_title": "異字同音",
+      "n_juan": 1
+    },
+    {
+      "title": "《字宗》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字宗》三卷薛立撰。",
+      "work_id": "d59f2ptdvk02",
+      "book_title": "字宗",
+      "n_juan": 3,
+      "author_info": "薛立撰"
+    },
+    {
+      "title": "《文字譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字譜》一卷梁有《古今文字序》一卷，劉歊撰；《文字統略》一卷，焦子明撰。亡。",
+      "work_id": "d59f2q4x16v5",
+      "book_title": "文字譜",
+      "n_juan": 1
+    },
+    {
+      "title": "《文字辯嫌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字辯嫌》一卷彭立撰。",
+      "work_id": "d59f2q4exf5t",
+      "book_title": "文字辯嫌",
+      "n_juan": 1,
+      "author_info": "彭立撰"
+    },
+    {
+      "title": "《辯字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《辯字》一卷戴規撰。",
+      "work_id": "d59f285gc9vk",
+      "book_title": "辯字",
+      "n_juan": 1,
+      "author_info": "戴規撰"
+    },
+    {
+      "title": "《雜字音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜字音》一卷",
+      "work_id": "d59f2qaf8vsx",
+      "book_title": "雜字音",
+      "n_juan": 1
+    },
+    {
+      "title": "《借音字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《借音字》一卷",
+      "work_id": "d59f2puciwhu",
+      "book_title": "借音字",
+      "n_juan": 1
+    },
+    {
+      "title": "《音書考源》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《音書考源》一卷",
+      "work_id": "d59f2puq9cle",
+      "book_title": "音書考源",
+      "n_juan": 1
+    },
+    {
+      "title": "《聲韻》四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聲韻》四十一卷周研撰。",
+      "work_id": "d59f2q589qf4",
+      "book_title": "聲韻",
+      "n_juan": 41,
+      "author_info": "周研撰"
+    },
+    {
+      "title": "《聲類》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聲類》十卷魏左校令李登撰。",
+      "work_id": "d59f27t3uccg",
+      "book_title": "聲類",
+      "n_juan": 10,
+      "author_info": "魏左校令李登撰",
+      "link_basis": "原繫 1evc5pey8icqo，該條已併入 1evfteibygs8w（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《韻集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻集》十卷",
+      "work_id": "d59f2pr9pnup",
+      "book_title": "韻集",
+      "n_juan": 10,
+      "link_basis": "原繫 1evc5peys6ayo，該條已併入 1evfubzqibd34（撰人字首式重出 Phase 2c，2026-08-07），今改繫。 | 2026-08-23 M2 磁鐵專項：原繫 1evfubzqibd34，今另立《韻集》1ex0e2fg5cvsz 繫之。隋志小學類「《韻集》十卷」與「《韻集》六卷晉安複令呂靜撰」卷數異、一不著撰人（庫中另有段弘《韻集》八卷，皆非），依 SCHEMA〈同題二條〉一別出。"
+    },
+    {
+      "title": "《韻集》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻集》六卷晉安複令呂靜撰。",
+      "work_id": "d59f27wlbqps",
+      "book_title": "韻集",
+      "n_juan": 6,
+      "author_info": "晉安複令呂靜撰",
+      "link_basis": "原繫 1evc5peyn6i9s，該條已併入 1evfubzqibd34（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《韻集》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻集》八卷段弘撰。",
+      "work_id": "d59f2pzlzy0y",
+      "book_title": "韻集",
+      "n_juan": 8,
+      "author_info": "段弘撰"
+    },
+    {
+      "title": "《四聲韻林》二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲韻林》二十八卷張諒撰。",
+      "work_id": "d59f28jf7kzl",
+      "book_title": "四聲韻林",
+      "n_juan": 28,
+      "author_info": "張諒撰"
+    },
+    {
+      "title": "《群玉典韻》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《群玉典韻》五卷梁有《文章音韻》二卷，王該撰；又《五音韻》五卷。亡。",
+      "work_id": "d59f2q4ncttt",
+      "book_title": "群玉典韻",
+      "n_juan": 5
+    },
+    {
+      "title": "《韻略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻略》一卷陽休之撰。",
+      "work_id": "d59f286mhb7l",
+      "book_title": "韻略",
+      "n_juan": 1,
+      "author_info": "陽休之撰",
+      "link_basis": "原繫 1evc5pez25wcg，該條已併入 1evr5e3meogw5（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《修續音韻訣疑》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《修續音韻訣疑》十四卷李概撰。",
+      "work_id": "d59f285iixog",
+      "book_title": "修續音韻訣疑",
+      "n_juan": 14,
+      "author_info": "李概撰"
+    },
+    {
+      "title": "《纂韻鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《纂韻鈔》十卷",
+      "work_id": "d59f2q3ga2v5",
+      "book_title": "纂韻鈔",
+      "n_juan": 10
+    },
+    {
+      "title": "《四聲指歸》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲指歸》一卷劉善經撰。",
+      "work_id": "d59f28m9a6m8",
+      "book_title": "四聲指歸",
+      "n_juan": 1,
+      "author_info": "劉善經撰"
+    },
+    {
+      "title": "《四聲》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲》一卷梁太子少傅沈約撰。",
+      "work_id": "d59f2852ltz6",
+      "book_title": "四聲",
+      "n_juan": 1,
+      "author_info": "梁太子少傅沈約撰"
+    },
+    {
+      "title": "《四聲韻略》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲韻略》十三卷夏侯詠撰。",
+      "work_id": "d59f2q9kcdmo",
+      "book_title": "四聲韻略",
+      "n_juan": 13,
+      "author_info": "夏侯詠撰"
+    },
+    {
+      "title": "《音譜》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《音譜》四卷李概撰。",
+      "work_id": "d59f285zdr0i",
+      "book_title": "音譜",
+      "n_juan": 4,
+      "author_info": "李概撰"
+    },
+    {
+      "title": "《韻英》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻英》三卷釋靜洪撰。",
+      "work_id": "d59f2q7nzf29",
+      "book_title": "韻英",
+      "n_juan": 3,
+      "author_info": "釋靜洪撰"
+    },
+    {
+      "title": "《通俗文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《通俗文》一卷服虔撰。",
+      "work_id": "d59f24madv5u",
+      "book_title": "通俗文",
+      "n_juan": 1,
+      "author_info": "服虔撰"
+    },
+    {
+      "title": "《訓俗文字略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《訓俗文字略》一卷後齊黃門郎顏之推撰。",
+      "work_id": "d59f28loda82",
+      "book_title": "訓俗文字略",
+      "n_juan": 1,
+      "author_info": "後齊黃門郎顏之推撰"
+    },
+    {
+      "title": "《證俗音字略》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《證俗音字略》六卷梁有《詁幼》二卷，顏延之撰；《廣詁幼》一卷，宋給事中荀楷撰。亡。",
+      "work_id": "d59f2psajnr5",
+      "book_title": "證俗音字略",
+      "n_juan": 6
+    },
+    {
+      "title": "《文字音》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字音》七卷晉蕩昌長王延撰。梁有《纂文》三卷，亡。",
+      "work_id": "d59f27uyyd4w",
+      "book_title": "文字音",
+      "n_juan": 7,
+      "author_info": "晉蕩昌長王延撰"
+    },
+    {
+      "title": "《翻真語》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《翻真語》一卷王延撰。",
+      "work_id": "d59f27vslwqr",
+      "book_title": "翻真語",
+      "n_juan": 1,
+      "author_info": "王延撰"
+    },
+    {
+      "title": "《真言鑒誡》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《真言鑒誡》一卷",
+      "work_id": "d59f2q49xm9t",
+      "book_title": "真言鑒誡",
+      "n_juan": 1
+    },
+    {
+      "title": "《字書音同異》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字書音同異》一卷",
+      "work_id": "d59f2py9xerk",
+      "book_title": "字書音同異",
+      "n_juan": 1
+    },
+    {
+      "title": "《敘同音義》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《敘同音義》三卷",
+      "work_id": "d59f2q7w3kld",
+      "book_title": "敘同音義",
+      "n_juan": 3
+    },
+    {
+      "title": "《河洛語音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《河洛語音》一卷王長孫撰。",
+      "work_id": "d59f2q8arq4h",
+      "book_title": "河洛語音",
+      "n_juan": 1,
+      "author_info": "王長孫撰"
+    },
+    {
+      "title": "《國語》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語》十五卷",
+      "work_id": "d59ezahlu8sg",
+      "book_title": "國語",
+      "n_juan": 15
+    },
+    {
+      "title": "《國語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語》十卷",
+      "work_id": "d59ezahlu8sg",
+      "book_title": "國語",
+      "n_juan": 10
+    },
+    {
+      "title": "《鮮卑語》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鮮卑語》五卷",
+      "work_id": "d59f2q0kc1z4",
+      "book_title": "鮮卑語",
+      "n_juan": 5
+    },
+    {
+      "title": "《鮮卑語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鮮卑語》十卷",
+      "work_id": "d59f2q7xz0g0",
+      "book_title": "鮮卑語",
+      "n_juan": 10
+    },
+    {
+      "title": "《國語物名》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語物名》四卷後魏侯伏侯可悉陵撰。",
+      "work_id": "d59f285v0fes",
+      "book_title": "國語物名",
+      "n_juan": 4,
+      "author_info": "後魏侯伏侯可悉陵撰"
+    },
+    {
+      "title": "《國語真歌》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語真歌》十卷",
+      "work_id": "d59f2pvdo54y",
+      "book_title": "國語真歌",
+      "n_juan": 10
+    },
+    {
+      "title": "《國語雜物名》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語雜物名》三卷侯伏侯可悉陵撰。",
+      "work_id": "d59f285t505g",
+      "book_title": "國語雜物名",
+      "n_juan": 3,
+      "author_info": "侯伏侯可悉陵撰"
+    },
+    {
+      "title": "《國語十八傳》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語十八傳》一卷",
+      "work_id": "d59f2q4s1dz6",
+      "book_title": "國語十八傳",
+      "n_juan": 1
+    },
+    {
+      "title": "《國語禦歌》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語禦歌》十一卷",
+      "work_id": "d59f2pvlsbgh",
+      "book_title": "國語禦歌",
+      "n_juan": 11
+    },
+    {
+      "title": "《國語號令》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語號令》四卷",
+      "work_id": "d59f2pu1ll34",
+      "book_title": "國語號令",
+      "n_juan": 4
+    },
+    {
+      "title": "《國語雜文》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《國語雜文》十五卷",
+      "work_id": "d59f2q5ji9z4",
+      "book_title": "國語雜文",
+      "n_juan": 15
+    },
+    {
+      "title": "《鮮卑號令》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鮮卑號令》一卷周武帝撰。",
+      "work_id": "d59f285yg1dw",
+      "book_title": "鮮卑號令",
+      "n_juan": 1,
+      "author_info": "周武帝撰"
+    },
+    {
+      "title": "《雜號令》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜號令》一卷",
+      "work_id": "d59f2q52ng1t",
+      "book_title": "雜號令",
+      "n_juan": 1
+    },
+    {
+      "title": "《古文官書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文官書》一卷後漢議郎衛敬仲撰。",
+      "work_id": "d59f24lmclc6",
+      "book_title": "古文官書",
+      "n_juan": 1,
+      "author_info": "後漢議郎衛敬仲撰"
+    },
+    {
+      "title": "《古今奇字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今奇字》一卷郭顯卿撰。",
+      "work_id": "d59f24lmclc7",
+      "book_title": "古今奇字",
+      "n_juan": 1,
+      "author_info": "郭顯卿撰"
+    },
+    {
+      "title": "《六文書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《六文書》一卷",
+      "work_id": "d59f2q132a6a",
+      "book_title": "六文書",
+      "n_juan": 1
+    },
+    {
+      "title": "《四體書勢》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四體書勢》一卷晉長水校尉衛恆撰。",
+      "work_id": "d59f27uka7lt",
+      "book_title": "四體書勢",
+      "n_juan": 1,
+      "author_info": "晉長水校尉衛恆撰"
+    },
+    {
+      "title": "《雜體書》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜體書》九卷釋正度撰。",
+      "work_id": "d59f2q9is7b6",
+      "book_title": "雜體書",
+      "n_juan": 9,
+      "author_info": "釋正度撰"
+    },
+    {
+      "title": "《古今八體六文書法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今八體六文書法》一卷",
+      "work_id": "d59f2pz7n1fk",
+      "book_title": "古今八體六文書法",
+      "n_juan": 1
+    },
+    {
+      "title": "《古今篆隸雜字體》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今篆隸雜字體》一卷蕭子政撰。",
+      "work_id": "d59f286nf0ub",
+      "book_title": "古今篆隸雜字體",
+      "n_juan": 1,
+      "author_info": "蕭子政撰"
+    },
+    {
+      "title": "《古今文等書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今文等書》一卷",
+      "work_id": "d59f2pyg651c",
+      "book_title": "古今文等書",
+      "n_juan": 1
+    },
+    {
+      "title": "《篆隸雜體書》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《篆隸雜體書》二卷",
+      "work_id": "d59f2ptrark0",
+      "book_title": "篆隸雜體書",
+      "n_juan": 2
+    },
+    {
+      "title": "《文字圖》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字圖》二卷",
+      "work_id": "d59f2pxjpgqo",
+      "book_title": "文字圖",
+      "n_juan": 2
+    },
+    {
+      "title": "《古今字圖雜錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今字圖雜錄》一卷秘書學士曹憲撰。",
+      "work_id": "d59f28js0b9g",
+      "book_title": "古今字圖雜錄",
+      "n_juan": 1,
+      "author_info": "秘書學士曹憲撰"
+    },
+    {
+      "title": "《婆羅門書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《婆羅門書》一卷梁有《扶南胡書》一卷。",
+      "work_id": "d59f24lmclc8",
+      "book_title": "婆羅門書",
+      "n_juan": 1
+    },
+    {
+      "title": "《外國書》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《外國書》四卷",
+      "work_id": "d59f2pscqbr4",
+      "book_title": "外國書",
+      "n_juan": 4
+    },
+    {
+      "title": "《秦皇東巡會稽刻石文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《秦皇東巡會稽刻石文》一卷",
+      "work_id": "d59f23o05jbb",
+      "book_title": "秦皇東巡會稽刻石文",
+      "n_juan": 1,
+      "link_basis": "原繫 1evc5pf5687b4（秦皇東巡會稽刻石文，已併入 1evhnsc0fnmkg，2026-08-11），今改繫。"
+    },
+    {
+      "title": "《一字石經周易》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經周易》一卷梁有三卷。",
+      "work_id": "d59f2q5voirl",
+      "book_title": "一字石經周易",
+      "n_juan": 1
+    },
+    {
+      "title": "《一字石經尚書》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經尚書》六卷梁有《今字石經鄭氏尚書》八卷，亡",
+      "work_id": "d59f2q14xpfl",
+      "book_title": "一字石經尚書",
+      "n_juan": 6
+    },
+    {
+      "title": "《一字石經魯詩》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經魯詩》六卷梁有《毛詩》二卷，亡。",
+      "work_id": "d59f2pv0vev4",
+      "book_title": "一字石經魯詩",
+      "n_juan": 6
+    },
+    {
+      "title": "《一字石經儀禮》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經儀禮》九卷",
+      "work_id": "d59f2qaq66m8",
+      "book_title": "一字石經儀禮",
+      "n_juan": 9
+    },
+    {
+      "title": "《一字石經春秋》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經春秋》一卷梁有一卷。",
+      "work_id": "d59f2pxtdtkx",
+      "book_title": "一字石經春秋",
+      "n_juan": 1
+    },
+    {
+      "title": "《一字石經公羊傳》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經公羊傳》九卷",
+      "work_id": "d59f2puangub",
+      "book_title": "一字石經公羊傳",
+      "n_juan": 9
+    },
+    {
+      "title": "《一字石經論語》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經論語》一卷梁有二卷。",
+      "work_id": "d59f2q5ivsht",
+      "book_title": "一字石經論語",
+      "n_juan": 1
+    },
+    {
+      "title": "《一字石經典論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《一字石經典論》一卷",
+      "work_id": "d59f2pv4m96q",
+      "book_title": "一字石經典論",
+      "n_juan": 1
+    },
+    {
+      "title": "《三字石經尚書》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三字石經尚書》九卷梁有十三卷。",
+      "work_id": "d59f2q9vw5xe",
+      "book_title": "三字石經尚書",
+      "n_juan": 9
+    },
+    {
+      "title": "《三字石經尚書》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三字石經尚書》五卷",
+      "work_id": "d59f2pryzvup",
+      "book_title": "三字石經尚書",
+      "n_juan": 5,
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evgopkm8ad4w，今另立《三字石經尚書》1ex0dz443hmv6 繫之。隋志小學類「《三字石經尚書》九卷梁有十三卷」之外別著「《三字石經尚書》五卷」，同志兩著、各有全著錄語而卷數異，皆不著撰人，依 SCHEMA〈同題二條〉一別出。"
+    },
+    {
+      "title": "《三字石經春秋》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三字石經春秋》三卷梁有十二卷。",
+      "work_id": "d59f2pxo2s5c",
+      "book_title": "三字石經春秋",
+      "n_juan": 3
+    },
+    {
+      "title": "小學類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "孔子曰：「必也正名乎！」名謂書字。「名不正則言不順，言不順則事不成。」說者以為書之所起，起自黃帝蒼頡。比類象形謂之文，形聲相益謂之字，著於竹帛謂之書。故有象形、諧聲、會意、轉注、假借、處事六義之別。古者童子示而不誑，六年教之數與方名。十歲入小學，學書計。二十而冠，始習先王之道，故能成其德而任事。然自蒼頡訖于漢初，書經五變：一曰古文，即蒼頡所作。二曰大篆，周宣王時史籀所作。三曰小篆，秦時李斯所作。四曰隸書，程邈所作。五曰草書，漢初作。秦世既廢古文，始用八體，有大篆、小篆、刻符、摹印、蟲書、署書、殳書、隸書。漢時以六體教學童，有古文、奇字、篆書、隸書、繆篆、蟲鳥，並槁書、楷書、懸針、垂露、飛白等二十餘種之勢，皆出於上六書，因事生變也。魏世又有八分書，其字義訓讀，有《史籀篇》、《蒼頡篇》、《三蒼》、《埤蒼》、《廣蒼》等諸篇章，訓詁、《說文》《字林》、音義、聲韻、體勢等諸書。自後漢佛法行於中國，又得西域胡書，能以十四字貫一切音，文省而義廣，謂之婆羅門書，與八體六文之義殊別，今取以附體勢之下。又後魏初定中原，軍容號令，皆經夷語，後染華俗，多不能通，故錄其本言，相傳教習，謂之「國語」，今取以附音韻之末。又後漢鐫刻七經，著於石碑，皆蔡邕所書。魏正始中，又立三字石經，相承以為七經正字。後魏之末，齊神武執政，自洛陽徙於鄴都，行至河陽，值岸崩，遂沒于水。其得至鄴者，不盈太半。至隋開皇六年，又自鄴京載入長安，置於秘書內省，議欲補緝，立于國學。尋屬隋亂，事遂寢廢，營造之司，因用為柱礎。貞觀初，秘書監臣魏徵，始收聚之，十不存一。其相承傳拓之本，猶在秘府，並秦帝刻石，附於此篇，以備小學。"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右一百八部，四百四十七卷。通計亡書，合一百三十五部，五百六十九卷。"
+    }
+  ]
+}

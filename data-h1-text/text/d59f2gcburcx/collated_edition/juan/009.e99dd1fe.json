@@ -1,0 +1,725 @@
+{
+  "title": "詁訓小學類",
+  "sections": [
+    {
+      "title": "《爾雅》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅》三卷李巡注。",
+      "work_id": "d59f24mpohs2"
+    },
+    {
+      "title": "《爾雅》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅》六卷樊光注。",
+      "work_id": "d59f23nr3nk0"
+    },
+    {
+      "title": "又六卷孫炎注。",
+      "level": 3,
+      "type": "book",
+      "content": "又六卷孫炎注。",
+      "work_id": "d59f27st89vk"
+    },
+    {
+      "title": "又三卷郭璞注。",
+      "level": 3,
+      "type": "book",
+      "content": "又三卷郭璞注。",
+      "work_id": "d59f282qy8eb"
+    },
+    {
+      "title": "《集注爾雅》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集注爾雅》十卷沈璿注。",
+      "work_id": "d59f284655he"
+    },
+    {
+      "title": "《爾雅音義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅音義》一卷郭璞注。",
+      "work_id": "d59f27xyyh34"
+    },
+    {
+      "title": "又二卷曹憲撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又二卷曹憲撰。",
+      "work_id": "d59f28mjl0jm"
+    },
+    {
+      "title": "《爾雅圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅圖》一卷郭璞注。",
+      "work_id": "d59f27xtyoea"
+    },
+    {
+      "title": "《爾雅圖贊》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅圖贊》二卷江灌注。",
+      "work_id": "d59f27ybr7cx"
+    },
+    {
+      "title": "《爾雅音》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《爾雅音》六卷江灌注。",
+      "work_id": "d59f2845twxs"
+    },
+    {
+      "title": "《續爾雅》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《續爾雅》一卷劉伯莊撰。",
+      "work_id": "d59f28lifrwi"
+    },
+    {
+      "title": "《別國方言》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《別國方言》十三卷楊雄撰。",
+      "work_id": "d59f206kbcow"
+    },
+    {
+      "title": "《釋名》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《釋名》八卷劉熙撰。",
+      "work_id": "d59f1iqtrpxc"
+    },
+    {
+      "title": "《廣雅》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《廣雅》四卷張揖撰。",
+      "work_id": "d59f27xonn5v"
+    },
+    {
+      "title": "《博雅》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《博雅》十卷曹憲撰。",
+      "work_id": "d59f28kg1l37"
+    },
+    {
+      "title": "《小爾雅》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《小爾雅》一卷李軌撰。",
+      "work_id": "d59f20ac3kzk"
+    },
+    {
+      "title": "《纂文》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《纂文》三卷何承天撰。",
+      "work_id": "d59f286ljlkw"
+    },
+    {
+      "title": "《纂要》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《纂要》六卷顏延之撰。",
+      "work_id": "d59f285w9dkx"
+    },
+    {
+      "title": "《三蒼》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三蒼》三卷李斯等撰，郭璞解。",
+      "work_id": "d59f27twk6bk",
+      "link_basis": "原繫 1evcpcv0ridq8（三蒼異志著錄殘條，已併入 1evc5pequvegw，2026-08-11），今改繫。"
+    },
+    {
+      "title": "《蒼頡訓詁》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《蒼頡訓詁》二卷杜林撰。",
+      "work_id": "d59f23ntabcz"
+    },
+    {
+      "title": "《三蒼訓詁》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三蒼訓詁》二卷張揖撰。",
+      "work_id": "d59f27sslssj"
+    },
+    {
+      "title": "《埤蒼》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《埤蒼》三卷張揖撰。",
+      "work_id": "d59f27sjv5kz"
+    },
+    {
+      "title": "《廣蒼》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《廣蒼》一卷樊恭撰。",
+      "work_id": "d59f2866vg1s"
+    },
+    {
+      "title": "《說文解字》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《說文解字》十五卷許慎撰。",
+      "work_id": "d59f2068rklc"
+    },
+    {
+      "title": "《說文音隱》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《說文音隱》四卷",
+      "work_id": "d59f2q1ajzsx"
+    },
+    {
+      "title": "《字林》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字林》十卷呂忱撰。",
+      "work_id": "d59f27ujnqio",
+      "link_basis": "原繫 1evcpcv270jcw，該條已併入 1evgorcckedq8（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《字統》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字統》二十卷楊承慶撰。",
+      "work_id": "d59f2865mhvn"
+    },
+    {
+      "title": "《玉篇》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玉篇》三十卷顧野王撰。",
+      "work_id": "d59f286uwpvl"
+    },
+    {
+      "title": "《字海》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字海》一百卷大聖天后撰。",
+      "work_id": "d59f28kkewp2"
+    },
+    {
+      "title": "《文字釋訓》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字釋訓》三十卷釋寶志撰。",
+      "work_id": "d59f2q3e3f9c"
+    },
+    {
+      "title": "《括字苑》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《括字苑》十三卷馮幹撰。",
+      "work_id": "d59f28jt99fn"
+    },
+    {
+      "title": "《字屬篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字屬篇》一卷賈魴撰。",
+      "work_id": "d59f23jsg7b4"
+    },
+    {
+      "title": "《古文奇字》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文奇字》二卷郭訓撰。",
+      "work_id": "d59f25tozugw"
+    },
+    {
+      "title": "《字旨篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字旨篇》一卷郭訓撰。",
+      "work_id": "d59f2qaa9341"
+    },
+    {
+      "title": "《古文字詁》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古文字詁》二卷張揖撰。",
+      "work_id": "d59f27t37v9g"
+    },
+    {
+      "title": "《詔定古文官書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詔定古文官書》一卷衛宏撰。",
+      "work_id": "d59f24madv5v"
+    },
+    {
+      "title": "《解字文》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《解字文》七卷周成撰。",
+      "work_id": "d59f2ofxp4ap"
+    },
+    {
+      "title": "《雜文字音》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜文字音》七卷王延撰。",
+      "work_id": "d59f27wke136"
+    },
+    {
+      "title": "《文字要說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字要說》一卷王氏注。",
+      "work_id": "d59f2q5ldp1e"
+    },
+    {
+      "title": "《字書》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《字書》十卷",
+      "work_id": "d59f2q9sgjk0"
+    },
+    {
+      "title": "《古今八體六文書法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今八體六文書法》一卷",
+      "work_id": "d59f2pz7n1fk"
+    },
+    {
+      "title": "《四體書勢》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四體書勢》一卷衛恆撰。",
+      "work_id": "d59f27uka7lt"
+    },
+    {
+      "title": "《要用字苑》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《要用字苑》一卷葛洪撰。",
+      "work_id": "d59f27vtuuwx"
+    },
+    {
+      "title": "《難要字》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《難要字》三卷",
+      "work_id": "d59f2q6vw1z4"
+    },
+    {
+      "title": "《文字集略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字集略》一卷阮孝緒撰。",
+      "work_id": "d59f2854shs0"
+    },
+    {
+      "title": "《辯嫌音》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《辯嫌音》二卷楊休之撰。",
+      "work_id": "d59f2q51pqm8"
+    },
+    {
+      "title": "《文字指歸》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字指歸》四卷曹憲撰。",
+      "work_id": "d59f28lfbegz"
+    },
+    {
+      "title": "《證俗音略》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《證俗音略》二卷顏湣楚撰。",
+      "work_id": "d59f28kxivi9"
+    },
+    {
+      "title": "《敘同音》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《敘同音》三卷",
+      "work_id": "d59f2q0g9ypu"
+    },
+    {
+      "title": "《覽字知源》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《覽字知源》三卷",
+      "work_id": "d59f2q49me4g"
+    },
+    {
+      "title": "《文字辯嫌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字辯嫌》一卷彭立撰。",
+      "work_id": "d59f2q4exf5t"
+    },
+    {
+      "title": "《聲類》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聲類》十卷李登撰。",
+      "work_id": "d59f27t3uccg",
+      "link_basis": "原繫 1evcpcv6kndog，該條已併入 1evfteibygs8w（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《韻集》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻集》五卷呂靜撰。",
+      "work_id": "d59f27wlbqps",
+      "link_basis": "原繫 1evc5peys6ayo，該條已併入 1evfubzqibd34（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《韻略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻略》一卷楊休之撰。",
+      "work_id": "d59f286mhb7l",
+      "link_basis": "原繫 1evcpcv6z0ao0，該條已併入 1evr5e3meogw5（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《四聲韻略》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲韻略》十三卷夏侯詠撰。",
+      "work_id": "d59f2q9kcdmo"
+    },
+    {
+      "title": "《四聲部》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四聲部》三十卷張諒撰。",
+      "work_id": "d59f28jsmsci"
+    },
+    {
+      "title": "《韻篇》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《韻篇》十二卷趙氏撰。",
+      "work_id": "d59f2gmcp3b4"
+    },
+    {
+      "title": "《切韻》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《切韻》五卷陸慈撰。",
+      "work_id": "d59f28maj4sj"
+    },
+    {
+      "title": "《桂苑珠叢》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桂苑珠叢》一百卷諸葛穎撰。",
+      "work_id": "d59f28kwwefb"
+    },
+    {
+      "title": "《桂苑珠叢略要》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桂苑珠叢略要》二十卷",
+      "work_id": "d59f2pyta3up"
+    },
+    {
+      "title": "《急就章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《急就章》一卷史游撰，曹壽解。",
+      "work_id": "d59f1ir3rbb4"
+    },
+    {
+      "title": "《急就章注》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《急就章注》一卷顏之推撰。",
+      "work_id": "d59f283y0zcx"
+    },
+    {
+      "title": "又一卷顏師古撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷顏師古撰。",
+      "work_id": "d59f28nfqghv"
+    },
+    {
+      "title": "《凡將篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《凡將篇》一卷司馬相如撰。",
+      "work_id": "d59f23nylclc"
+    },
+    {
+      "title": "《飛龍篇篆草勢》",
+      "level": 3,
+      "type": "book",
+      "content": "《飛龍篇篆草勢》合三卷崔瑗撰。",
+      "work_id": "d59f2q3un01u"
+    },
+    {
+      "title": "《在昔篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《在昔篇》一卷班固撰。",
+      "work_id": "d59f24m5e2h3"
+    },
+    {
+      "title": "《太甲篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太甲篇》一卷班固撰。",
+      "work_id": "d59f24lnljig"
+    },
+    {
+      "title": "《聖草章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聖草章》一卷蔡邕撰。",
+      "work_id": "d59f25dg14hu"
+    },
+    {
+      "title": "《勸學篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《勸學篇》一卷蔡邕撰。",
+      "work_id": "d59f2mt1w742"
+    },
+    {
+      "title": "《黃初章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃初章》一卷",
+      "work_id": "d59f2py4b4e9"
+    },
+    {
+      "title": "《吳章》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吳章》一卷",
+      "work_id": "d59f27uiesck"
+    },
+    {
+      "title": "《初學篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《初學篇》一卷朱嗣卿撰。",
+      "work_id": "d59f2px5z11c"
+    },
+    {
+      "title": "《始學篇》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《始學篇》十二卷項峻撰。",
+      "work_id": "d59f27slqkuc"
+    },
+    {
+      "title": "《少學集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《少學集》十卷楊方撰。",
+      "work_id": "d59f27vcdkhs"
+    },
+    {
+      "title": "《小學篇》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《小學篇》一卷王羲之撰。",
+      "work_id": "d59f27wzonpg"
+    },
+    {
+      "title": "《續通俗文》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《續通俗文》二卷李虔撰。",
+      "work_id": "d59f27wwvite"
+    },
+    {
+      "title": "《啟疑》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《啟疑》三卷顧凱之撰。",
+      "work_id": "d59f27w0eubn"
+    },
+    {
+      "title": "《詰幼文》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詰幼文》三卷顏延之撰。",
+      "work_id": "d59f2861ketd"
+    },
+    {
+      "title": "《辯字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《辯字》一卷戴規撰。",
+      "work_id": "d59f285gc9vk"
+    },
+    {
+      "title": "《俗語難字》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《俗語難字》一卷李少通撰。",
+      "work_id": "d59f28kwl5vm"
+    },
+    {
+      "title": "《文字志》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文字志》三卷王愔撰。",
+      "work_id": "d59f28k3vbwn"
+    },
+    {
+      "title": "《五十二體書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五十二體書》一卷蕭子雲撰。",
+      "work_id": "d59f28626vwj"
+    },
+    {
+      "title": "《古來篆隸詁訓名錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古來篆隸詁訓名錄》一卷",
+      "work_id": "d59f2q81pudd"
+    },
+    {
+      "title": "《書品》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書品》一卷庾肩吾撰。",
+      "work_id": "d59f286ycbuo"
+    },
+    {
+      "title": "《書後品》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書後品》一卷李嗣貞撰。",
+      "work_id": "d59f28llvdvr"
+    },
+    {
+      "title": "《筆墨法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《筆墨法》一卷",
+      "work_id": "d59f27sc2804"
+    },
+    {
+      "title": "《鹿紙筆墨疏》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鹿紙筆墨疏》一卷",
+      "work_id": "d59f2q3qkwsg"
+    },
+    {
+      "title": "《千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《千字文》一卷蕭子範撰。",
+      "work_id": "d59f2857ae4j",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcpcvdb6rr4，今歸 1evcpjzu5dmo0《千字文》蕭子範撰。舊唐志詁訓小學類「《千字文》一卷蕭子範撰。又一卷周興嗣撰」，撰人異即二書；本條原繫周興嗣之條。"
+    },
+    {
+      "title": "又一卷周興嗣撰。",
+      "level": 3,
+      "type": "book",
+      "content": "又一卷周興嗣撰。",
+      "work_id": "d59f286vj6ys"
+    },
+    {
+      "title": "《篆書千字文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《篆書千字文》一卷",
+      "work_id": "d59f2px7j7y8"
+    },
+    {
+      "title": "《演千字文》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《演千字文》五卷",
+      "work_id": "d59f2pypj9j6"
+    },
+    {
+      "title": "《今字石經易篆》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經易篆》三卷",
+      "work_id": "d59f2pzq20w1"
+    },
+    {
+      "title": "《今字石經尚書》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經尚書》五卷",
+      "work_id": "d59f2q3ds6ip"
+    },
+    {
+      "title": "《今字石經鄭玄尚書》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經鄭玄尚書》八卷",
+      "work_id": "d59f2q08h1c0"
+    },
+    {
+      "title": "《三字石經尚書古篆》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三字石經尚書古篆》三卷",
+      "work_id": "d59f2puk0lj6"
+    },
+    {
+      "title": "《今字石經毛詩》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經毛詩》三卷",
+      "work_id": "d59f2q99f30g"
+    },
+    {
+      "title": "《今字石經儀禮》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經儀禮》四卷",
+      "work_id": "d59f2q57n8xt"
+    },
+    {
+      "title": "《三字石經左傳古篆書》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三字石經左傳古篆書》十三卷",
+      "work_id": "d59f2q3bliww"
+    },
+    {
+      "title": "《今字石經左傳經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經左傳經》十卷",
+      "work_id": "d59f2q5rb75s"
+    },
+    {
+      "title": "《今字石經公羊傳》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經公羊傳》九卷",
+      "work_id": "d59f2psl5q80"
+    },
+    {
+      "title": "《今字石經論語》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今字石經論語》二卷蔡邕注。",
+      "work_id": "d59f2em8kdfk"
+    },
+    {
+      "title": "《雜字書》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜字書》八卷釋正度作。",
+      "work_id": "d59f2qaszbpd"
+    }
+  ]
+}

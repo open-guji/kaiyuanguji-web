@@ -1,0 +1,140 @@
+{
+  "title": "經部·孝經類",
+  "sections": [
+    {
+      "title": "孝經類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "周顒　孝經義疏",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "永明三年，於崇正殿講《孝經》，少傅王儉以擿句令太子僕周顒撰爲《義疏》。",
+          "source": "《南齊書》二一《文惠太子傳》、《南史》四四《齊文惠太子傳》。"
+        }
+      ],
+      "author": "周顒",
+      "work_id": "d59f284zhgjq"
+    },
+    {
+      "title": "永明三年東宫講孝經義疏一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》釋慧琳注《孝經》條注。"
+        }
+      ],
+      "note": "此條與下二條（永明中諸王講孝經義疏一卷、李玉之爲始興王講孝經義一卷）共用此出處。",
+      "work_id": "d59f8ii63lz7"
+    },
+    {
+      "title": "永明中諸王講孝經義疏一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》釋慧琳注《孝經》條注。"
+        }
+      ],
+      "work_id": "d59f8ii63lz8"
+    },
+    {
+      "title": "李玉之爲始興王講孝經義一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》釋慧琳注《孝經》條注。"
+        }
+      ],
+      "author": "李玉之",
+      "work_id": "d59f8ii63lz9"
+    },
+    {
+      "title": "祖冲之　孝經注",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "見祖冲之《易義釋》條。",
+          "source": ""
+        }
+      ],
+      "author": "祖冲之",
+      "work_id": "d59f8ii7ck5c"
+    },
+    {
+      "title": "沈驎士　孝經要略",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "見沈驎士《周易兩繫訓注》條。",
+          "source": ""
+        }
+      ],
+      "author": "沈驎士",
+      "work_id": "d59f8ii63lza"
+    },
+    {
+      "title": "陸澄　孝經義",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "按陸澄《孝經義》，《隋》、《唐志》、《經典·序録》皆不載。然在開元所采六家之例，故特著之。",
+          "source": "《經義考》。"
+        }
+      ],
+      "author": "陸澄",
+      "work_id": "d59f284xx9tx"
+    },
+    {
+      "title": "王玄載　注孝經一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《集議孝經》條注。"
+        }
+      ],
+      "author": "王玄載",
+      "note": "此條與下條（明僧紹　注孝經一卷）共用此出處。",
+      "work_id": "d59f8ii63lzc"
+    },
+    {
+      "title": "明僧紹　注孝經一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《集議孝經》條注。"
+        }
+      ],
+      "author": "明僧紹",
+      "work_id": "d59f8ii63lzd"
+    },
+    {
+      "title": "劉瓛　孝經說一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "瓛有《周易乾坤義》、《毛詩序義》，已各著錄。其說《孝經》，《隋》、《唐志》皆不載，邢昺《正義序》稱之，卷數未詳，今佚。即從《正義》所引，輯得五節。說仲尼居，述張禹中和之義，《正義》所不取。說孝無終而患不及者，以謝萬少賤之辭爲失，《正義》從其解。要其全書，固醇疵互見者也。",
+          "source": "《玉函山房輯佚書》二五。"
+        }
+      ],
+      "author": "劉瓛",
+      "work_id": "d59f28430s1u"
+    }
+  ]
+}

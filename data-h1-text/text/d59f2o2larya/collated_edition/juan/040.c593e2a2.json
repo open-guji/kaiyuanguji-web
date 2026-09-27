@@ -1,0 +1,31 @@
+{
+  "title": "丁部集錄·楚辭類",
+  "sections": [
+    {
+      "title": "楚辭類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "郭璞　楚辭注三卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞　楚辭注三卷　見《隋志》。兩《唐志》並十卷。",
+      "work_id": "d59f9nmzlczm"
+    },
+    {
+      "title": "徐邈　楚辭音一卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐邈　楚辭音一卷　見《隋》、《唐志》。",
+      "work_id": "d59f27uul1j6"
+    },
+    {
+      "title": "楚辭類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右楚辭類，二家。"
+    }
+  ]
+}

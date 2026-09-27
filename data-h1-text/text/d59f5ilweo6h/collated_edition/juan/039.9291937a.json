@@ -1,0 +1,107 @@
+{
+  "title": "史部·政書類通制之屬",
+  "sections": [
+    {
+      "title": "政書類通制之屬",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "荀顗　新禮百六十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀顗　新禮百六十五卷　卷各一篇，合十五萬言。据本書《禮志》。　案本書《荀顗傳》云：\"請羊祜、任愷、庾峻、應貞、孔顥共撰定《晉禮》。\"即指此也。",
+      "work_id": "d59f9pql7hfo",
+      "note": "撰人後置：原文「上二種並荀顗撰」總標於數條之後"
+    },
+    {
+      "title": "荀顗　晉雜議十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀顗　晉雜議十卷　据《唐志》。　上二種並荀顗撰。",
+      "work_id": "d59f9uwmbzt1",
+      "note": "撰人後置：原文「上二種並荀顗撰」總標於數條之後"
+    },
+    {
+      "title": "摯虞　新禮討論十五篇",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　新禮討論十五篇　摯虞撰。据本書《禮志》。",
+      "work_id": "d59f9uwmbzsw",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "晉雜制六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜制六十卷",
+      "work_id": "d59f2q7v5vk1"
+    },
+    {
+      "title": "晉刺史六條制一卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉刺史六條制一卷",
+      "work_id": "d59f2qaso35u"
+    },
+    {
+      "title": "甲午制",
+      "level": 3,
+      "type": "book",
+      "content": "甲午制　据本書《王戎傳》。",
+      "work_id": "d59f27tgyb5u"
+    },
+    {
+      "title": "己亥格",
+      "level": 3,
+      "type": "book",
+      "content": "己亥格　据本書《陳顗傳》云：\"作於三王討趙王倫時，後皆依用。\"",
+      "work_id": "d59f27uonj7n"
+    },
+    {
+      "title": "庚戌制",
+      "level": 3,
+      "type": "book",
+      "content": "庚戌制　興寧二年三月庚戌朔，大閲户人，令所在土斷，嚴其法制，稱爲《庚戌制》。据本書《哀帝紀》。",
+      "work_id": "d59f9pql7hfu"
+    },
+    {
+      "title": "干寶　雜議五卷",
+      "level": 3,
+      "type": "book",
+      "content": "干寶　雜議五卷　干寶撰。据《唐志》。",
+      "work_id": "d59f27u83yf4",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "尚書大事二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "尚書大事二十卷　案《新唐志》有\"一\"字。；范汪撰。",
+      "work_id": "d59f9uwmbzsx",
+      "note": "【題為校語所隔，今合】"
+    },
+    {
+      "title": "王景之　要典三十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "王景之　要典三十九卷　王景之撰。据《舊唐志》。",
+      "work_id": "d59f9uwmbzsy",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "晉籍",
+      "level": 3,
+      "type": "book",
+      "content": "晉籍　起咸和二年，以至於宋，所書皆詳實，並在下省同左右曹前箱，①謂之《晉籍》，有東西庫。据《南史・王僧孺傳》。",
+      "work_id": "d59f9uwmbzsz"
+    },
+    {
+      "title": "政書類通制之屬結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右政書類通制之屬，十二種。"
+    }
+  ]
+}

@@ -1,0 +1,1073 @@
+{
+  "work_id": "d59f2nk1atq9",
+  "version_label": "三國演義",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E4%B8%89%E5%9C%8B%E6%BC%94%E7%BE%A9",
+    "page_title": "三國演義",
+    "revid": 5401635,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "毛綸、毛宗崗父子修改批注版本（毛本），維基頁面未指定具體刊本／年代（book-index 該 Work 下有醉耕堂本／第一才子書等多個毛本刻本，維基自述不足以唯一對應，故落 Work）。",
+  "total_chapters": 122,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "三國演義/序",
+      "revid": 2575201,
+      "md_len": 1260
+    },
+    {
+      "n": 2,
+      "title": "凡例",
+      "file": "002.md",
+      "page_title": "三國演義/凡例",
+      "revid": 2575203,
+      "md_len": 858
+    },
+    {
+      "n": 3,
+      "title": "第001回",
+      "file": "003.md",
+      "page_title": "三國演義/第001回",
+      "revid": 2583915,
+      "md_len": 4736
+    },
+    {
+      "n": 4,
+      "title": "第002回",
+      "file": "004.md",
+      "page_title": "三國演義/第002回",
+      "revid": 8185068,
+      "md_len": 5782
+    },
+    {
+      "n": 5,
+      "title": "第003回",
+      "file": "005.md",
+      "page_title": "三國演義/第003回",
+      "revid": 2567965,
+      "md_len": 4967
+    },
+    {
+      "n": 6,
+      "title": "第004回",
+      "file": "006.md",
+      "page_title": "三國演義/第004回",
+      "revid": 2567966,
+      "md_len": 4137
+    },
+    {
+      "n": 7,
+      "title": "第005回",
+      "file": "007.md",
+      "page_title": "三國演義/第005回",
+      "revid": 7910939,
+      "md_len": 5681
+    },
+    {
+      "n": 8,
+      "title": "第006回",
+      "file": "008.md",
+      "page_title": "三國演義/第006回",
+      "revid": 2567969,
+      "md_len": 4158
+    },
+    {
+      "n": 9,
+      "title": "第007回",
+      "file": "009.md",
+      "page_title": "三國演義/第007回",
+      "revid": 2567970,
+      "md_len": 4610
+    },
+    {
+      "n": 10,
+      "title": "第008回",
+      "file": "010.md",
+      "page_title": "三國演義/第008回",
+      "revid": 5314829,
+      "md_len": 4227
+    },
+    {
+      "n": 11,
+      "title": "第009回",
+      "file": "011.md",
+      "page_title": "三國演義/第009回",
+      "revid": 2567971,
+      "md_len": 5327
+    },
+    {
+      "n": 12,
+      "title": "第010回",
+      "file": "012.md",
+      "page_title": "三國演義/第010回",
+      "revid": 2567973,
+      "md_len": 4209
+    },
+    {
+      "n": 13,
+      "title": "第011回",
+      "file": "013.md",
+      "page_title": "三國演義/第011回",
+      "revid": 2567975,
+      "md_len": 5779
+    },
+    {
+      "n": 14,
+      "title": "第012回",
+      "file": "014.md",
+      "page_title": "三國演義/第012回",
+      "revid": 2567974,
+      "md_len": 4566
+    },
+    {
+      "n": 15,
+      "title": "第013回",
+      "file": "015.md",
+      "page_title": "三國演義/第013回",
+      "revid": 8185567,
+      "md_len": 5961
+    },
+    {
+      "n": 16,
+      "title": "第014回",
+      "file": "016.md",
+      "page_title": "三國演義/第014回",
+      "revid": 2613836,
+      "md_len": 6336
+    },
+    {
+      "n": 17,
+      "title": "第015回",
+      "file": "017.md",
+      "page_title": "三國演義/第015回",
+      "revid": 8729938,
+      "md_len": 7229
+    },
+    {
+      "n": 18,
+      "title": "第016回",
+      "file": "018.md",
+      "page_title": "三國演義/第016回",
+      "revid": 2567978,
+      "md_len": 6762
+    },
+    {
+      "n": 19,
+      "title": "第017回",
+      "file": "019.md",
+      "page_title": "三國演義/第017回",
+      "revid": 2567979,
+      "md_len": 4362
+    },
+    {
+      "n": 20,
+      "title": "第018回",
+      "file": "020.md",
+      "page_title": "三國演義/第018回",
+      "revid": 2567980,
+      "md_len": 3802
+    },
+    {
+      "n": 21,
+      "title": "第019回",
+      "file": "021.md",
+      "page_title": "三國演義/第019回",
+      "revid": 2567981,
+      "md_len": 6503
+    },
+    {
+      "n": 22,
+      "title": "第020回",
+      "file": "022.md",
+      "page_title": "三國演義/第020回",
+      "revid": 8187289,
+      "md_len": 4530
+    },
+    {
+      "n": 23,
+      "title": "第021回",
+      "file": "023.md",
+      "page_title": "三國演義/第021回",
+      "revid": 2567982,
+      "md_len": 4779
+    },
+    {
+      "n": 24,
+      "title": "第022回",
+      "file": "024.md",
+      "page_title": "三國演義/第022回",
+      "revid": 2567985,
+      "md_len": 5461
+    },
+    {
+      "n": 25,
+      "title": "第023回",
+      "file": "025.md",
+      "page_title": "三國演義/第023回",
+      "revid": 2567986,
+      "md_len": 5703
+    },
+    {
+      "n": 26,
+      "title": "第024回",
+      "file": "026.md",
+      "page_title": "三國演義/第024回",
+      "revid": 2567987,
+      "md_len": 2799
+    },
+    {
+      "n": 27,
+      "title": "第025回",
+      "file": "027.md",
+      "page_title": "三國演義/第025回",
+      "revid": 2567988,
+      "md_len": 5025
+    },
+    {
+      "n": 28,
+      "title": "第026回",
+      "file": "028.md",
+      "page_title": "三國演義/第026回",
+      "revid": 8185862,
+      "md_len": 4134
+    },
+    {
+      "n": 29,
+      "title": "第027回",
+      "file": "029.md",
+      "page_title": "三國演義/第027回",
+      "revid": 8186000,
+      "md_len": 5124
+    },
+    {
+      "n": 30,
+      "title": "第028回",
+      "file": "030.md",
+      "page_title": "三國演義/第028回",
+      "revid": 2567993,
+      "md_len": 6058
+    },
+    {
+      "n": 31,
+      "title": "第029回",
+      "file": "031.md",
+      "page_title": "三國演義/第029回",
+      "revid": 2567991,
+      "md_len": 5035
+    },
+    {
+      "n": 32,
+      "title": "第030回",
+      "file": "032.md",
+      "page_title": "三國演義/第030回",
+      "revid": 2567996,
+      "md_len": 5814
+    },
+    {
+      "n": 33,
+      "title": "第031回",
+      "file": "033.md",
+      "page_title": "三國演義/第031回",
+      "revid": 2567992,
+      "md_len": 4800
+    },
+    {
+      "n": 34,
+      "title": "第032回",
+      "file": "034.md",
+      "page_title": "三國演義/第032回",
+      "revid": 2567994,
+      "md_len": 5580
+    },
+    {
+      "n": 35,
+      "title": "第033回",
+      "file": "035.md",
+      "page_title": "三國演義/第033回",
+      "revid": 2567995,
+      "md_len": 5177
+    },
+    {
+      "n": 36,
+      "title": "第034回",
+      "file": "036.md",
+      "page_title": "三國演義/第034回",
+      "revid": 2567997,
+      "md_len": 4376
+    },
+    {
+      "n": 37,
+      "title": "第035回",
+      "file": "037.md",
+      "page_title": "三國演義/第035回",
+      "revid": 2568001,
+      "md_len": 3844
+    },
+    {
+      "n": 38,
+      "title": "第036回",
+      "file": "038.md",
+      "page_title": "三國演義/第036回",
+      "revid": 2568002,
+      "md_len": 4219
+    },
+    {
+      "n": 39,
+      "title": "第037回",
+      "file": "039.md",
+      "page_title": "三國演義/第037回",
+      "revid": 2567998,
+      "md_len": 4808
+    },
+    {
+      "n": 40,
+      "title": "第038回",
+      "file": "040.md",
+      "page_title": "三國演義/第038回",
+      "revid": 4256828,
+      "md_len": 5050
+    },
+    {
+      "n": 41,
+      "title": "第039回",
+      "file": "041.md",
+      "page_title": "三國演義/第039回",
+      "revid": 2567999,
+      "md_len": 4809
+    },
+    {
+      "n": 42,
+      "title": "第040回",
+      "file": "042.md",
+      "page_title": "三國演義/第040回",
+      "revid": 2568003,
+      "md_len": 4540
+    },
+    {
+      "n": 43,
+      "title": "第041回",
+      "file": "043.md",
+      "page_title": "三國演義/第041回",
+      "revid": 2568004,
+      "md_len": 6100
+    },
+    {
+      "n": 44,
+      "title": "第042回",
+      "file": "044.md",
+      "page_title": "三國演義/第042回",
+      "revid": 2568005,
+      "md_len": 3745
+    },
+    {
+      "n": 45,
+      "title": "第043回",
+      "file": "045.md",
+      "page_title": "三國演義/第043回",
+      "revid": 2568006,
+      "md_len": 5415
+    },
+    {
+      "n": 46,
+      "title": "第044回",
+      "file": "046.md",
+      "page_title": "三國演義/第044回",
+      "revid": 2568008,
+      "md_len": 4706
+    },
+    {
+      "n": 47,
+      "title": "第045回",
+      "file": "047.md",
+      "page_title": "三國演義/第045回",
+      "revid": 2568007,
+      "md_len": 5584
+    },
+    {
+      "n": 48,
+      "title": "第046回",
+      "file": "048.md",
+      "page_title": "三國演義/第046回",
+      "revid": 2568009,
+      "md_len": 4889
+    },
+    {
+      "n": 49,
+      "title": "第047回",
+      "file": "049.md",
+      "page_title": "三國演義/第047回",
+      "revid": 2568010,
+      "md_len": 4074
+    },
+    {
+      "n": 50,
+      "title": "第048回",
+      "file": "050.md",
+      "page_title": "三國演義/第048回",
+      "revid": 2568011,
+      "md_len": 3454
+    },
+    {
+      "n": 51,
+      "title": "第049回",
+      "file": "051.md",
+      "page_title": "三國演義/第049回",
+      "revid": 2568012,
+      "md_len": 5348
+    },
+    {
+      "n": 52,
+      "title": "第050回",
+      "file": "052.md",
+      "page_title": "三國演義/第050回",
+      "revid": 2568013,
+      "md_len": 3947
+    },
+    {
+      "n": 53,
+      "title": "第051回",
+      "file": "053.md",
+      "page_title": "三國演義/第051回",
+      "revid": 2568014,
+      "md_len": 4472
+    },
+    {
+      "n": 54,
+      "title": "第052回",
+      "file": "054.md",
+      "page_title": "三國演義/第052回",
+      "revid": 2568016,
+      "md_len": 4611
+    },
+    {
+      "n": 55,
+      "title": "第053回",
+      "file": "055.md",
+      "page_title": "三國演義/第053回",
+      "revid": 2568015,
+      "md_len": 4736
+    },
+    {
+      "n": 56,
+      "title": "第054回",
+      "file": "056.md",
+      "page_title": "三國演義/第054回",
+      "revid": 2568017,
+      "md_len": 5186
+    },
+    {
+      "n": 57,
+      "title": "第055回",
+      "file": "057.md",
+      "page_title": "三國演義/第055回",
+      "revid": 2568018,
+      "md_len": 4338
+    },
+    {
+      "n": 58,
+      "title": "第056回",
+      "file": "058.md",
+      "page_title": "三國演義/第056回",
+      "revid": 2568019,
+      "md_len": 4839
+    },
+    {
+      "n": 59,
+      "title": "第057回",
+      "file": "059.md",
+      "page_title": "三國演義/第057回",
+      "revid": 2568020,
+      "md_len": 5616
+    },
+    {
+      "n": 60,
+      "title": "第058回",
+      "file": "060.md",
+      "page_title": "三國演義/第058回",
+      "revid": 7909160,
+      "md_len": 5244
+    },
+    {
+      "n": 61,
+      "title": "第059回",
+      "file": "061.md",
+      "page_title": "三國演義/第059回",
+      "revid": 2568022,
+      "md_len": 5376
+    },
+    {
+      "n": 62,
+      "title": "第060回",
+      "file": "062.md",
+      "page_title": "三國演義/第060回",
+      "revid": 2568025,
+      "md_len": 7354
+    },
+    {
+      "n": 63,
+      "title": "第061回",
+      "file": "063.md",
+      "page_title": "三國演義/第061回",
+      "revid": 2568023,
+      "md_len": 4823
+    },
+    {
+      "n": 64,
+      "title": "第062回",
+      "file": "064.md",
+      "page_title": "三國演義/第062回",
+      "revid": 2568027,
+      "md_len": 5483
+    },
+    {
+      "n": 65,
+      "title": "第063回",
+      "file": "065.md",
+      "page_title": "三國演義/第063回",
+      "revid": 2568024,
+      "md_len": 5422
+    },
+    {
+      "n": 66,
+      "title": "第064回",
+      "file": "066.md",
+      "page_title": "三國演義/第064回",
+      "revid": 2568026,
+      "md_len": 5267
+    },
+    {
+      "n": 67,
+      "title": "第065回",
+      "file": "067.md",
+      "page_title": "三國演義/第065回",
+      "revid": 2568028,
+      "md_len": 6083
+    },
+    {
+      "n": 68,
+      "title": "第066回",
+      "file": "068.md",
+      "page_title": "三國演義/第066回",
+      "revid": 2568029,
+      "md_len": 5206
+    },
+    {
+      "n": 69,
+      "title": "第067回",
+      "file": "069.md",
+      "page_title": "三國演義/第067回",
+      "revid": 2568030,
+      "md_len": 5405
+    },
+    {
+      "n": 70,
+      "title": "第068回",
+      "file": "070.md",
+      "page_title": "三國演義/第068回",
+      "revid": 2568031,
+      "md_len": 5061
+    },
+    {
+      "n": 71,
+      "title": "第069回",
+      "file": "071.md",
+      "page_title": "三國演義/第069回",
+      "revid": 7907113,
+      "md_len": 4956
+    },
+    {
+      "n": 72,
+      "title": "第070回",
+      "file": "072.md",
+      "page_title": "三國演義/第070回",
+      "revid": 2568033,
+      "md_len": 5185
+    },
+    {
+      "n": 73,
+      "title": "第071回",
+      "file": "073.md",
+      "page_title": "三國演義/第071回",
+      "revid": 2568034,
+      "md_len": 5557
+    },
+    {
+      "n": 74,
+      "title": "第072回",
+      "file": "074.md",
+      "page_title": "三國演義/第072回",
+      "revid": 2568036,
+      "md_len": 4251
+    },
+    {
+      "n": 75,
+      "title": "第073回",
+      "file": "075.md",
+      "page_title": "三國演義/第073回",
+      "revid": 2568035,
+      "md_len": 4997
+    },
+    {
+      "n": 76,
+      "title": "第074回",
+      "file": "076.md",
+      "page_title": "三國演義/第074回",
+      "revid": 2568037,
+      "md_len": 4466
+    },
+    {
+      "n": 77,
+      "title": "第075回",
+      "file": "077.md",
+      "page_title": "三國演義/第075回",
+      "revid": 2568039,
+      "md_len": 3985
+    },
+    {
+      "n": 78,
+      "title": "第076回",
+      "file": "078.md",
+      "page_title": "三國演義/第076回",
+      "revid": 2568038,
+      "md_len": 4731
+    },
+    {
+      "n": 79,
+      "title": "第077回",
+      "file": "079.md",
+      "page_title": "三國演義/第077回",
+      "revid": 2568041,
+      "md_len": 4448
+    },
+    {
+      "n": 80,
+      "title": "第078回",
+      "file": "080.md",
+      "page_title": "三國演義/第078回",
+      "revid": 2568040,
+      "md_len": 4075
+    },
+    {
+      "n": 81,
+      "title": "第079回",
+      "file": "081.md",
+      "page_title": "三國演義/第079回",
+      "revid": 2568043,
+      "md_len": 3904
+    },
+    {
+      "n": 82,
+      "title": "第080回",
+      "file": "082.md",
+      "page_title": "三國演義/第080回",
+      "revid": 7909161,
+      "md_len": 4399
+    },
+    {
+      "n": 83,
+      "title": "第081回",
+      "file": "083.md",
+      "page_title": "三國演義/第081回",
+      "revid": 8730381,
+      "md_len": 3997
+    },
+    {
+      "n": 84,
+      "title": "第082回",
+      "file": "084.md",
+      "page_title": "三國演義/第082回",
+      "revid": 2568044,
+      "md_len": 4384
+    },
+    {
+      "n": 85,
+      "title": "第083回",
+      "file": "085.md",
+      "page_title": "三國演義/第083回",
+      "revid": 8730382,
+      "md_len": 5764
+    },
+    {
+      "n": 86,
+      "title": "第084回",
+      "file": "086.md",
+      "page_title": "三國演義/第084回",
+      "revid": 2568047,
+      "md_len": 4943
+    },
+    {
+      "n": 87,
+      "title": "第085回",
+      "file": "087.md",
+      "page_title": "三國演義/第085回",
+      "revid": 2568048,
+      "md_len": 5389
+    },
+    {
+      "n": 88,
+      "title": "第086回",
+      "file": "088.md",
+      "page_title": "三國演義/第086回",
+      "revid": 2568049,
+      "md_len": 5209
+    },
+    {
+      "n": 89,
+      "title": "第087回",
+      "file": "089.md",
+      "page_title": "三國演義/第087回",
+      "revid": 2568051,
+      "md_len": 5703
+    },
+    {
+      "n": 90,
+      "title": "第088回",
+      "file": "090.md",
+      "page_title": "三國演義/第088回",
+      "revid": 2568052,
+      "md_len": 4924
+    },
+    {
+      "n": 91,
+      "title": "第089回",
+      "file": "091.md",
+      "page_title": "三國演義/第089回",
+      "revid": 2646272,
+      "md_len": 5494
+    },
+    {
+      "n": 92,
+      "title": "第090回",
+      "file": "092.md",
+      "page_title": "三國演義/第090回",
+      "revid": 2568053,
+      "md_len": 6846
+    },
+    {
+      "n": 93,
+      "title": "第091回",
+      "file": "093.md",
+      "page_title": "三國演義/第091回",
+      "revid": 7909162,
+      "md_len": 5507
+    },
+    {
+      "n": 94,
+      "title": "第092回",
+      "file": "094.md",
+      "page_title": "三國演義/第092回",
+      "revid": 2568054,
+      "md_len": 4943
+    },
+    {
+      "n": 95,
+      "title": "第093回",
+      "file": "095.md",
+      "page_title": "三國演義/第093回",
+      "revid": 2568056,
+      "md_len": 5429
+    },
+    {
+      "n": 96,
+      "title": "第094回",
+      "file": "096.md",
+      "page_title": "三國演義/第094回",
+      "revid": 2568057,
+      "md_len": 5456
+    },
+    {
+      "n": 97,
+      "title": "第095回",
+      "file": "097.md",
+      "page_title": "三國演義/第095回",
+      "revid": 2568058,
+      "md_len": 5982
+    },
+    {
+      "n": 98,
+      "title": "第096回",
+      "file": "098.md",
+      "page_title": "三國演義/第096回",
+      "revid": 2568062,
+      "md_len": 4616
+    },
+    {
+      "n": 99,
+      "title": "第097回",
+      "file": "099.md",
+      "page_title": "三國演義/第097回",
+      "revid": 2568059,
+      "md_len": 4767
+    },
+    {
+      "n": 100,
+      "title": "第098回",
+      "file": "100.md",
+      "page_title": "三國演義/第098回",
+      "revid": 2568061,
+      "md_len": 5099
+    },
+    {
+      "n": 101,
+      "title": "第099回",
+      "file": "101.md",
+      "page_title": "三國演義/第099回",
+      "revid": 2568060,
+      "md_len": 5649
+    },
+    {
+      "n": 102,
+      "title": "第100回",
+      "file": "102.md",
+      "page_title": "三國演義/第100回",
+      "revid": 2568063,
+      "md_len": 5276
+    },
+    {
+      "n": 103,
+      "title": "第101回",
+      "file": "103.md",
+      "page_title": "三國演義/第101回",
+      "revid": 2568067,
+      "md_len": 5707
+    },
+    {
+      "n": 104,
+      "title": "第102回",
+      "file": "104.md",
+      "page_title": "三國演義/第102回",
+      "revid": 2568065,
+      "md_len": 6547
+    },
+    {
+      "n": 105,
+      "title": "第103回",
+      "file": "105.md",
+      "page_title": "三國演義/第103回",
+      "revid": 2568064,
+      "md_len": 5734
+    },
+    {
+      "n": 106,
+      "title": "第104回",
+      "file": "106.md",
+      "page_title": "三國演義/第104回",
+      "revid": 2568066,
+      "md_len": 3846
+    },
+    {
+      "n": 107,
+      "title": "第105回",
+      "file": "107.md",
+      "page_title": "三國演義/第105回",
+      "revid": 2602415,
+      "md_len": 5402
+    },
+    {
+      "n": 108,
+      "title": "第106回",
+      "file": "108.md",
+      "page_title": "三國演義/第106回",
+      "revid": 7909163,
+      "md_len": 5092
+    },
+    {
+      "n": 109,
+      "title": "第107回",
+      "file": "109.md",
+      "page_title": "三國演義/第107回",
+      "revid": 2568071,
+      "md_len": 5463
+    },
+    {
+      "n": 110,
+      "title": "第108回",
+      "file": "110.md",
+      "page_title": "三國演義/第108回",
+      "revid": 2568069,
+      "md_len": 3967
+    },
+    {
+      "n": 111,
+      "title": "第109回",
+      "file": "111.md",
+      "page_title": "三國演義/第109回",
+      "revid": 2568073,
+      "md_len": 4368
+    },
+    {
+      "n": 112,
+      "title": "第110回",
+      "file": "112.md",
+      "page_title": "三國演義/第110回",
+      "revid": 2568072,
+      "md_len": 4544
+    },
+    {
+      "n": 113,
+      "title": "第111回",
+      "file": "113.md",
+      "page_title": "三國演義/第111回",
+      "revid": 2568075,
+      "md_len": 3879
+    },
+    {
+      "n": 114,
+      "title": "第112回",
+      "file": "114.md",
+      "page_title": "三國演義/第112回",
+      "revid": 2568074,
+      "md_len": 3991
+    },
+    {
+      "n": 115,
+      "title": "第113回",
+      "file": "115.md",
+      "page_title": "三國演義/第113回",
+      "revid": 2568076,
+      "md_len": 4515
+    },
+    {
+      "n": 116,
+      "title": "第114回",
+      "file": "116.md",
+      "page_title": "三國演義/第114回",
+      "revid": 2568077,
+      "md_len": 3889
+    },
+    {
+      "n": 117,
+      "title": "第115回",
+      "file": "117.md",
+      "page_title": "三國演義/第115回",
+      "revid": 2568078,
+      "md_len": 4106
+    },
+    {
+      "n": 118,
+      "title": "第116回",
+      "file": "118.md",
+      "page_title": "三國演義/第116回",
+      "revid": 2568079,
+      "md_len": 4308
+    },
+    {
+      "n": 119,
+      "title": "第117回",
+      "file": "119.md",
+      "page_title": "三國演義/第117回",
+      "revid": 2568080,
+      "md_len": 4592
+    },
+    {
+      "n": 120,
+      "title": "第118回",
+      "file": "120.md",
+      "page_title": "三國演義/第118回",
+      "revid": 2568082,
+      "md_len": 3604
+    },
+    {
+      "n": 121,
+      "title": "第119回",
+      "file": "121.md",
+      "page_title": "三國演義/第119回",
+      "revid": 2568081,
+      "md_len": 4914
+    },
+    {
+      "n": 122,
+      "title": "第120回",
+      "file": "122.md",
+      "page_title": "三國演義/第120回",
+      "revid": 2568085,
+      "md_len": 6578
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "requests": 0,
+    "retries_429": 0,
+    "source": "dump"
+  },
+  "revision": "1.0.0",
+  "unknown_templates": {
+    "原文無標點": 1
+  },
+  "variants": [
+    {
+      "primary": "紀",
+      "alt": [
+        "通「記」"
+      ]
+    },
+    {
+      "primary": "闕",
+      "alt": [
+        "通「缺」"
+      ]
+    },
+    {
+      "primary": "甯",
+      "alt": [
+        "通「寧」"
+      ]
+    },
+    {
+      "primary": "豹",
+      "alt": [
+        "一作「貌」"
+      ]
+    },
+    {
+      "primary": "寔",
+      "alt": [
+        "同「實」"
+      ]
+    },
+    {
+      "primary": "悅",
+      "alt": [
+        "疑為「閱」字之誤"
+      ]
+    },
+    {
+      "primary": "寃",
+      "alt": [
+        "同「冤」"
+      ]
+    },
+    {
+      "primary": "璟",
+      "alt": [
+        "景"
+      ]
+    },
+    {
+      "primary": "璟",
+      "alt": [
+        "景"
+      ]
+    },
+    {
+      "primary": "璟",
+      "alt": [
+        "景"
+      ]
+    },
+    {
+      "primary": "縛",
+      "alt": [
+        "縳"
+      ]
+    }
+  ]
+}

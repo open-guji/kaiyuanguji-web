@@ -1,0 +1,187 @@
+{
+  "title": "經部·方術類",
+  "sections": [
+    {
+      "title": "方術類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "武帝　坐右方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　坐右方十卷　《唐志》。",
+      "work_id": "d59f99gogmx3"
+    },
+    {
+      "title": "武帝　如意方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　如意方十卷　《唐志》。",
+      "work_id": "d59f2q5139j5",
+      "note": "「又」承前省略撰人（武帝）。原書腳註②"
+    },
+    {
+      "title": "陶弘景　集注神農本草七卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　集注神農本草七卷　《唐志》。《隋志》。",
+      "work_id": "d59f99go5edg",
+      "note": "原書腳註③：《舊唐志》作「本草集經七卷」"
+    },
+    {
+      "title": "陶弘景　本鈔十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　本鈔十卷",
+      "work_id": "d59f99go5edh",
+      "note": "「又」承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "陶弘景　效驗方十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　效驗方十卷　《唐志》。《隋志》「陶氏效驗方六卷」。《七錄》「五卷」。",
+      "work_id": "d59f99go5edi",
+      "note": "「又」承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "陶弘景　補肘後救雜備急方六卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　補肘後救雜備急方六卷　《唐志》。《隋志》作「補闕肘後百一方九卷」。",
+      "work_id": "d59f99go5edj",
+      "note": "承前省略撰人（陶弘景）。原書腳註④⑤。OCR「補時後」正作「補肘後」"
+    },
+    {
+      "title": "陶弘景　太清玉石丹藥要集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　太清玉石丹藥要集三卷　《唐志》。《隋志》「太清諸丹集要四卷」。",
+      "work_id": "d59f285ml0qp",
+      "note": "承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "陶弘景　太清諸草木方集要三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　太清諸草木方集要三卷　《唐志》。《隋》「二卷」。",
+      "work_id": "d59f2q3ds6io",
+      "note": "承前省略撰人（陶弘景）。原書腳註⑥：《隋書》作「太清草木集要」"
+    },
+    {
+      "title": "陶弘景　練化雜術一卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　練化雜術一卷　《隋志》。",
+      "work_id": "d59f285aq03m",
+      "note": "「又」承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "陶弘景　合丹節度四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　合丹節度四卷　《隋志》。",
+      "work_id": "d59f286pag3l",
+      "note": "「又」承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "陶弘景　服餌方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　服餌方三卷　《隋志》。",
+      "work_id": "d59f28595tds",
+      "note": "「又」承前省略撰人（陶弘景）"
+    },
+    {
+      "title": "武帝所服雜藥方一卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝所服雜藥方一卷　《隋志》。",
+      "work_id": "d59f99go5edk",
+      "note": "原書無撰人"
+    },
+    {
+      "title": "陶弘景　名醫别錄三卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　名醫别錄三卷",
+      "work_id": "d59f99go5edl"
+    },
+    {
+      "title": "元帝　寶帳仙方三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　寶帳仙方三卷　《金樓子》。",
+      "work_id": "d59f99go5edm"
+    },
+    {
+      "title": "元帝　虞預食要十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　虞預食要十卷　代撰。《金樓子》。",
+      "work_id": "d59f99go5edn",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "簡文帝　光明符十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝　光明符十二卷　《隋志》。",
+      "work_id": "d59f99go5edo"
+    },
+    {
+      "title": "元帝　洞林三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　洞林三卷　《隋志》。",
+      "work_id": "d59f2851o4ch"
+    },
+    {
+      "title": "元帝　連山三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　連山三十卷　《隋志》。",
+      "work_id": "d59f99go5edp",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "簡文帝　竈經十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝　竈經十四卷",
+      "work_id": "d59f285udybk"
+    },
+    {
+      "title": "簡文帝　稱物重率術二卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝　稱物重率術二卷　《七錄》。",
+      "work_id": "d59f2pqwag3n",
+      "note": "「又」承前省略撰人（簡文帝）"
+    },
+    {
+      "title": "元帝　筮經十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　筮經十二卷　紀。",
+      "work_id": "d59f2prwt7up"
+    },
+    {
+      "title": "元帝　式贊三卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　式贊三卷　紀。《金樓子》有「《式苑》一帙三卷」，疑即此。",
+      "work_id": "d59f99go5edq",
+      "note": "「又」承前省略撰人（元帝）"
+    },
+    {
+      "title": "顏協　日月災異圖二卷",
+      "level": 3,
+      "type": "book",
+      "content": "顏協　日月災異圖二卷　本傳。",
+      "work_id": "d59f99gogmww"
+    }
+  ]
+}

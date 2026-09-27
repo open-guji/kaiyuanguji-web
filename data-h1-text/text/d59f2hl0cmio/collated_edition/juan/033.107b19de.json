@@ -1,0 +1,895 @@
+{
+  "title": "小說家類",
+  "sections": [
+    {
+      "title": "燕丹子",
+      "level": 3,
+      "type": "book",
+      "content": "燕丹子一卷",
+      "work_id": "d59f2mhtcn40"
+    },
+    {
+      "title": "邯鄲淳笑林",
+      "level": 3,
+      "type": "book",
+      "content": "邯鄲淳笑林三卷",
+      "work_id": "d59f27sphfcz"
+    },
+    {
+      "title": "裴子野類林",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野類林三卷",
+      "work_id": "d59f286bv8qo"
+    },
+    {
+      "title": "張華博物志",
+      "level": 3,
+      "type": "book",
+      "content": "張華博物志十卷",
+      "work_id": "d59f27x6jvnl"
+    },
+    {
+      "title": "又列異傳",
+      "level": 3,
+      "type": "book",
+      "content": "又列異傳一卷",
+      "work_id": "d59f27sat9tw"
+    },
+    {
+      "title": "賈泉注郭子",
+      "level": 3,
+      "type": "book",
+      "content": "賈泉注郭子三卷",
+      "work_id": "d59f2pt89a82"
+    },
+    {
+      "title": "劉義慶世說",
+      "level": 3,
+      "type": "book",
+      "content": "劉義慶世說八卷",
+      "work_id": "d59f286plon7",
+      "link_basis": "原繫 1evcs0qfbf8qo，該條已併入 1evcmnd6hfbi8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "又小說",
+      "level": 3,
+      "type": "book",
+      "content": "又小說十卷",
+      "work_id": "d59f28561fya",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcs0qg52scg，今歸 1evcpjoj7o4qo《小說》劉義慶撰。新唐志小說家類「劉義慶《世說》八卷，又《小說》十卷」——「又」承上條之撰人，是劉義慶書；下距二條方著「殷芸《小說》十卷」。"
+    },
+    {
+      "title": "劉孝標續世說",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝標續世說十卷",
+      "work_id": "d59f2860bgn6"
+    },
+    {
+      "title": "殷芸小說",
+      "level": 3,
+      "type": "book",
+      "content": "殷芸小說十卷",
+      "work_id": "d59f286i3zls"
+    },
+    {
+      "title": "劉齊釋俗語",
+      "level": 3,
+      "type": "book",
+      "content": "劉齊釋俗語八卷",
+      "work_id": "d59f2pz47ev6"
+    },
+    {
+      "title": "蕭賁辨林",
+      "level": 3,
+      "type": "book",
+      "content": "蕭賁辨林二十卷",
+      "work_id": "d59f28lum137"
+    },
+    {
+      "title": "劉炫酒孝經",
+      "level": 3,
+      "type": "book",
+      "content": "劉炫酒孝經一卷",
+      "work_id": "d59f28ki88w2"
+    },
+    {
+      "title": "庾元威座右方",
+      "level": 3,
+      "type": "book",
+      "content": "庾元威座右方三卷",
+      "work_id": "d59f286mhb7m",
+      "link_basis": "原繫 1evcs0qgzo1kw，該條已併入 1evcmnd7ufksg（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "侯白啟顏錄",
+      "level": 3,
+      "type": "book",
+      "content": "侯白啟顏錄十卷",
+      "work_id": "d59f2pyav3sy"
+    },
+    {
+      "title": "雜語",
+      "level": 3,
+      "type": "book",
+      "content": "雜語五卷",
+      "work_id": "d59f27v7drsz"
+    },
+    {
+      "title": "戴祚甄異傳",
+      "level": 3,
+      "type": "book",
+      "content": "戴祚甄異傳三卷",
+      "work_id": "d59f27vb4mbm"
+    },
+    {
+      "title": "袁王壽古異傳",
+      "level": 3,
+      "type": "book",
+      "content": "袁王壽古異傳三卷",
+      "work_id": "d59f2861969v",
+      "link_basis": "原繫 1evcs0qi48w74，該條已併入 1evcml3lhk9a8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "祖沖之述異記",
+      "level": 3,
+      "type": "book",
+      "content": "祖沖之述異記十卷",
+      "work_id": "d59f2856cohs"
+    },
+    {
+      "title": "劉質近異錄",
+      "level": 3,
+      "type": "book",
+      "content": "劉質近異錄二卷",
+      "work_id": "d59f2q3q9nuo",
+      "link_basis": "原繫 1evcs0qiksgzk，該條已併入 1evcml3pjyk1s（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "干寶搜神記",
+      "level": 3,
+      "type": "book",
+      "content": "干寶搜神記三十卷",
+      "work_id": "d59f27wqbjeo",
+      "link_basis": "原繫 1evcs0qiswn40，該條已併入 1evfuuo0zmgow（撰人字首式重出 Phase 2a，2026-08-07），今改繫。"
+    },
+    {
+      "title": "劉之遴神錄",
+      "level": 3,
+      "type": "book",
+      "content": "劉之遴神錄五卷",
+      "work_id": "d59f285clfcw",
+      "link_basis": "原繫 1evcs0qj3ipkw，該條已併入 1evcml3nix0xs（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "梁元帝妍神記",
+      "level": 3,
+      "type": "book",
+      "content": "梁元帝妍神記十卷",
+      "work_id": "d59f2q19b1fk"
+    },
+    {
+      "title": "祖台之志怪",
+      "level": 3,
+      "type": "book",
+      "content": "祖台之志怪四卷",
+      "work_id": "d59f27u9o54x"
+    },
+    {
+      "title": "孔氏志怪",
+      "level": 3,
+      "type": "book",
+      "content": "孔氏志怪四卷",
+      "work_id": "d59f27xrgs1v"
+    },
+    {
+      "title": "荀氏靈鬼志",
+      "level": 3,
+      "type": "book",
+      "content": "荀氏靈鬼志三卷",
+      "work_id": "d59f28lvjqpv"
+    },
+    {
+      "title": "謝氏鬼神列傳",
+      "level": 3,
+      "type": "book",
+      "content": "謝氏鬼神列傳二卷",
+      "work_id": "d59f2q2xju2o"
+    },
+    {
+      "title": "劉義慶幽明錄",
+      "level": 3,
+      "type": "book",
+      "content": "劉義慶幽明錄三十卷",
+      "work_id": "d59f2853us5d",
+      "link_basis": "原繫 1evcs0qkp9m2o，該條已併入 1evcml3o37g8w（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "東陽無疑齊諧記",
+      "level": 3,
+      "type": "book",
+      "content": "東陽無疑齊諧記七卷",
+      "work_id": "d59f286onz0h"
+    },
+    {
+      "title": "吳均續齊諧記",
+      "level": 3,
+      "type": "book",
+      "content": "吳均續齊諧記一卷",
+      "work_id": "d59f286v7yf4",
+      "link_basis": "原繫 1evcs0ql98su8，該條已併入 1ev3bckfhiw3k（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "王延秀感應傳",
+      "level": 3,
+      "type": "book",
+      "content": "王延秀感應傳八卷",
+      "work_id": "d59f27u9zdoh",
+      "link_basis": "原繫 1evcs0qlj8e80，該條已併入 1evcml3lbmqyo（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "陸果繫應驗記",
+      "level": 3,
+      "type": "book",
+      "content": "陸果繫應驗記一卷",
+      "work_id": "d59f2px0cqv6"
+    },
+    {
+      "title": "王琰冥祥記",
+      "level": 3,
+      "type": "book",
+      "content": "王琰冥祥記一卷",
+      "work_id": "d59f2gljcs8x",
+      "link_basis": "原繫 1evcs0qm1ne9s，該條已併入 1evcml3kzrqbk（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "王曼潁續冥祥記",
+      "level": 3,
+      "type": "book",
+      "content": "王曼潁續冥祥記十一卷",
+      "work_id": "d59f2pvjwvlu"
+    },
+    {
+      "title": "劉泳因果記",
+      "level": 3,
+      "type": "book",
+      "content": "劉泳因果記十卷",
+      "work_id": "d59f28k1zwna"
+    },
+    {
+      "title": "顏之推冤魂志",
+      "level": 3,
+      "type": "book",
+      "content": "顏之推冤魂志三卷",
+      "work_id": "d59f28m9a6me",
+      "link_basis": "原繫 1evcs0qmvxeyo，該條已併入 1evcml3qhcy68（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "又集靈記",
+      "level": 3,
+      "type": "book",
+      "content": "又集靈記十卷",
+      "work_id": "d59f28k1oo3k"
+    },
+    {
+      "title": "徵應集",
+      "level": 3,
+      "type": "book",
+      "content": "徵應集二卷",
+      "work_id": "d59f2pwn8s1t"
+    },
+    {
+      "title": "侯君素旌異記",
+      "level": 3,
+      "type": "book",
+      "content": "侯君素旌異記十五卷",
+      "work_id": "d59f28lxqeio",
+      "link_basis": "原繫 1evcs0qnoyhhc，該條已併入 1evcml3peyrcw（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "唐臨冥報記",
+      "level": 3,
+      "type": "book",
+      "content": "唐臨冥報記二卷",
+      "work_id": "d59f28jsbjt0",
+      "link_basis": "原繫 1evcs0qnzvshs，該條已併入 1evcpcys3tkow（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "李恕誡子拾遺",
+      "level": 3,
+      "type": "book",
+      "content": "李恕誡子拾遺四卷",
+      "work_id": "d59f28ljzym9"
+    },
+    {
+      "title": "開元御集誡子書",
+      "level": 3,
+      "type": "book",
+      "content": "開元御集誡子書一卷",
+      "work_id": "d59f28lrhnnp"
+    },
+    {
+      "title": "王方慶王氏神通記",
+      "level": 3,
+      "type": "book",
+      "content": "王方慶王氏神通記十卷",
+      "work_id": "d59f28kzpjb7",
+      "link_basis": "原繫 1evcs0qornwu8，該條已併入 1evgpjhcs42dc（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "狄仁傑家範",
+      "level": 3,
+      "type": "book",
+      "content": "狄仁傑家範一卷",
+      "work_id": "d59f2q04q6ma"
+    },
+    {
+      "title": "盧公家範",
+      "level": 3,
+      "type": "book",
+      "content": "盧公家範一卷",
+      "work_id": "d59f2px5ck5d"
+    },
+    {
+      "title": "蘇瓌中樞龜鏡",
+      "level": 3,
+      "type": "book",
+      "content": "蘇瓌中樞龜鏡一卷",
+      "work_id": "d59f2q48dfk0"
+    },
+    {
+      "title": "姚元崇六誡",
+      "level": 3,
+      "type": "book",
+      "content": "姚元崇六誡一卷",
+      "work_id": "d59f2q0g9z40"
+    },
+    {
+      "title": "事始",
+      "level": 3,
+      "type": "book",
+      "content": "事始三卷",
+      "work_id": "d59f28jui7lz"
+    },
+    {
+      "title": "劉睿續事始",
+      "level": 3,
+      "type": "book",
+      "content": "劉睿續事始三卷",
+      "work_id": "d59f2q3kne2p"
+    },
+    {
+      "title": "元結猗犴子",
+      "level": 3,
+      "type": "book",
+      "content": "元結猗犴子一卷",
+      "work_id": "d59f2q9tpibl"
+    },
+    {
+      "title": "趙自勔造化權輿",
+      "level": 3,
+      "type": "book",
+      "content": "趙自勔造化權輿六卷",
+      "work_id": "d59f2q9vkxkw"
+    },
+    {
+      "title": "通微子十物志",
+      "level": 3,
+      "type": "book",
+      "content": "通微子十物志一卷",
+      "work_id": "d59f2q8c0oap"
+    },
+    {
+      "title": "吳筠兩同書",
+      "level": 3,
+      "type": "book",
+      "content": "吳筠兩同書一卷",
+      "work_id": "d59f2pvajri9"
+    },
+    {
+      "title": "李涪刊誤",
+      "level": 3,
+      "type": "book",
+      "content": "李涪刊誤二卷",
+      "work_id": "d59f28mhplad"
+    },
+    {
+      "title": "李匡文資暇",
+      "level": 3,
+      "type": "book",
+      "content": "李匡文資暇三卷",
+      "work_id": "d59f28jw2ebk"
+    },
+    {
+      "title": "炙轂子雜錄注解",
+      "level": 3,
+      "type": "book",
+      "content": "炙轂子雜錄注解五卷",
+      "work_id": "d59f28kx7myo"
+    },
+    {
+      "title": "蘇鶚演義",
+      "level": 3,
+      "type": "book",
+      "content": "蘇鶚演義十卷",
+      "work_id": "d59f2pv3db0h"
+    },
+    {
+      "title": "又杜陽雜編",
+      "level": 3,
+      "type": "book",
+      "content": "又杜陽雜編三卷",
+      "work_id": "d59f28k54a2t"
+    },
+    {
+      "title": "柳氏家學要錄",
+      "level": 3,
+      "type": "book",
+      "content": "柳氏家學要錄二卷",
+      "work_id": "d59f2py7qqyo"
+    },
+    {
+      "title": "盧光啟初舉子",
+      "level": 3,
+      "type": "book",
+      "content": "盧光啟初舉子一卷",
+      "work_id": "d59f2qatajnl"
+    },
+    {
+      "title": "劉訥言俳諧集",
+      "level": 3,
+      "type": "book",
+      "content": "劉訥言俳諧集十五卷",
+      "work_id": "d59f2puepjwi"
+    },
+    {
+      "title": "陳翱卓異記",
+      "level": 3,
+      "type": "book",
+      "content": "陳翱卓異記一卷",
+      "work_id": "d59f2q9cuolc"
+    },
+    {
+      "title": "裴紫芝續卓異記",
+      "level": 3,
+      "type": "book",
+      "content": "裴紫芝續卓異記一卷",
+      "work_id": "d59f2pyjaigy"
+    },
+    {
+      "title": "薛用弱集異記",
+      "level": 3,
+      "type": "book",
+      "content": "薛用弱集異記三卷",
+      "work_id": "d59f28lxqeit"
+    },
+    {
+      "title": "李玫纂異記",
+      "level": 3,
+      "type": "book",
+      "content": "李玫纂異記一卷",
+      "work_id": "d59f28k88nie"
+    },
+    {
+      "title": "李亢獨異志",
+      "level": 3,
+      "type": "book",
+      "content": "李亢獨異志十卷",
+      "work_id": "d59f2pvi1gxu"
+    },
+    {
+      "title": "谷神子博異志",
+      "level": 3,
+      "type": "book",
+      "content": "谷神子博異志三卷",
+      "work_id": "d59f2gfpwjr5"
+    },
+    {
+      "title": "沈如筠異物志",
+      "level": 3,
+      "type": "book",
+      "content": "沈如筠異物志三卷",
+      "work_id": "d59f2pst9vyb"
+    },
+    {
+      "title": "古異記",
+      "level": 3,
+      "type": "book",
+      "content": "古異記一卷",
+      "work_id": "d59f2pu01ekg"
+    },
+    {
+      "title": "劉餗傳記",
+      "level": 3,
+      "type": "book",
+      "content": "劉餗傳記三卷",
+      "work_id": "d59f2q1095oh"
+    },
+    {
+      "title": "牛肅紀聞",
+      "level": 3,
+      "type": "book",
+      "content": "牛肅紀聞十卷",
+      "work_id": "d59f2q2k4n41"
+    },
+    {
+      "title": "陳鴻開元升平源",
+      "level": 3,
+      "type": "book",
+      "content": "陳鴻開元升平源一卷",
+      "work_id": "d59f28ka42rq"
+    },
+    {
+      "title": "張薦靈怪集",
+      "level": 3,
+      "type": "book",
+      "content": "張薦靈怪集二卷",
+      "work_id": "d59f28kxu41v"
+    },
+    {
+      "title": "陸長源辨疑志",
+      "level": 3,
+      "type": "book",
+      "content": "陸長源辨疑志三卷",
+      "work_id": "d59f28k2xm9w"
+    },
+    {
+      "title": "李繁說纂",
+      "level": 3,
+      "type": "book",
+      "content": "李繁說纂四卷",
+      "work_id": "d59f2q54u48x"
+    },
+    {
+      "title": "戴少平還魂記",
+      "level": 3,
+      "type": "book",
+      "content": "戴少平還魂記一卷",
+      "work_id": "d59f28jrdu69",
+      "link_basis": "原繫 1evcs0qxf6qyo，該條已併入 1evgpjhmsyebk（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "牛僧孺玄怪錄",
+      "level": 3,
+      "type": "book",
+      "content": "牛僧孺玄怪錄十卷",
+      "work_id": "d59f28kesmx2"
+    },
+    {
+      "title": "李復言續玄怪錄",
+      "level": 3,
+      "type": "book",
+      "content": "李復言續玄怪錄五卷",
+      "work_id": "d59f28k7m6fa",
+      "link_basis": "原繫 1evcs0qxzh69s，該條已併入 1ev3bcmt2qe4g（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "陳翰異聞集",
+      "level": 3,
+      "type": "book",
+      "content": "陳翰異聞集十卷",
+      "work_id": "d59f28l5bt37"
+    },
+    {
+      "title": "鄭遂洽聞記",
+      "level": 3,
+      "type": "book",
+      "content": "鄭遂洽聞記一卷",
+      "work_id": "d59f2q74xxj6"
+    },
+    {
+      "title": "鍾簵前定錄",
+      "level": 3,
+      "type": "book",
+      "content": "鍾簵前定錄一卷",
+      "work_id": "d59f28lum136"
+    },
+    {
+      "title": "趙自勤定命論",
+      "level": 3,
+      "type": "book",
+      "content": "趙自勤定命論十卷",
+      "work_id": "d59f2q3ant34"
+    },
+    {
+      "title": "呂道生定命錄",
+      "level": 3,
+      "type": "book",
+      "content": "呂道生定命錄二卷",
+      "work_id": "d59f28m0ury8"
+    },
+    {
+      "title": "溫畬續定命錄",
+      "level": 3,
+      "type": "book",
+      "content": "溫畬續定命錄一卷",
+      "work_id": "d59f2q0ba6f4"
+    },
+    {
+      "title": "胡璩譚賓錄",
+      "level": 3,
+      "type": "book",
+      "content": "胡璩譚賓錄十卷",
+      "work_id": "d59f28kgctmt"
+    },
+    {
+      "title": "韋絢劉公嘉話錄",
+      "level": 3,
+      "type": "book",
+      "content": "韋絢劉公嘉話錄一卷",
+      "work_id": "d59f2q8hbpqa"
+    },
+    {
+      "title": "戎幕閑談",
+      "level": 3,
+      "type": "book",
+      "content": "戎幕閑談一卷",
+      "work_id": "d59f28lsfda8"
+    },
+    {
+      "title": "趙璘因話錄",
+      "level": 3,
+      "type": "book",
+      "content": "趙璘因話錄六卷",
+      "work_id": "d59f28jjkwlh",
+      "link_basis": "原繫 1evcs0r0y8c1s，該條已併入 1ev3bciprnpj4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "袁郊甘澤謠",
+      "level": 3,
+      "type": "book",
+      "content": "袁郊甘澤謠一卷",
+      "work_id": "d59f28l7tpfk"
+    },
+    {
+      "title": "溫庭筠乾𦠆子",
+      "level": 3,
+      "type": "book",
+      "content": "溫庭筠乾𦠆子三卷",
+      "work_id": "d59f28ja7sat"
+    },
+    {
+      "title": "又採茶錄",
+      "level": 3,
+      "type": "book",
+      "content": "又採茶錄一卷",
+      "work_id": "d59f28jbgqh2"
+    },
+    {
+      "title": "段成式酉陽雜俎",
+      "level": 3,
+      "type": "book",
+      "content": "段成式酉陽雜俎三十卷",
+      "work_id": "d59f28k54a2q"
+    },
+    {
+      "title": "廬陵官下記",
+      "level": 3,
+      "type": "book",
+      "content": "廬陵官下記二卷",
+      "work_id": "d59f2pw4ik1s"
+    },
+    {
+      "title": "康軿劇談錄",
+      "level": 3,
+      "type": "book",
+      "content": "康軿劇談錄三卷",
+      "work_id": "d59f2puaypz5"
+    },
+    {
+      "title": "高彥休闕史",
+      "level": 3,
+      "type": "book",
+      "content": "高彥休闕史三卷",
+      "work_id": "d59f28m4wv0j"
+    },
+    {
+      "title": "盧子史錄",
+      "level": 3,
+      "type": "book",
+      "content": "盧子史錄",
+      "work_id": "d59f2ptxuqrl"
+    },
+    {
+      "title": "又逸史",
+      "level": 3,
+      "type": "book",
+      "content": "又逸史三卷大中時人。",
+      "work_id": "d59f2moz6nsx"
+    },
+    {
+      "title": "李隱大唐奇事記",
+      "level": 3,
+      "type": "book",
+      "content": "李隱大唐奇事記十卷",
+      "work_id": "d59f2psewzcy"
+    },
+    {
+      "title": "陳劭通幽記",
+      "level": 3,
+      "type": "book",
+      "content": "陳劭通幽記一卷",
+      "work_id": "d59f28m9wnpf"
+    },
+    {
+      "title": "范攄雲溪友議",
+      "level": 3,
+      "type": "book",
+      "content": "范攄雲溪友議三卷",
+      "work_id": "d59f28m9a6ma",
+      "link_basis": "原繫 1evcs0r4h9x4w，該條已併入 1ev3bcit530u8（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "李躍嵐齋集",
+      "level": 3,
+      "type": "book",
+      "content": "李躍嵐齋集二十五卷",
+      "work_id": "d59f28klcmbq"
+    },
+    {
+      "title": "尉遲樞南楚新聞",
+      "level": 3,
+      "type": "book",
+      "content": "尉遲樞南楚新聞三卷",
+      "work_id": "d59f2psh3myp"
+    },
+    {
+      "title": "張固幽閑鼓吹",
+      "level": 3,
+      "type": "book",
+      "content": "張固幽閑鼓吹一卷",
+      "work_id": "d59f2q9v9on5"
+    },
+    {
+      "title": "常侍言旨",
+      "level": 3,
+      "type": "book",
+      "content": "常侍言旨一卷",
+      "work_id": "d59f28ltobgg"
+    },
+    {
+      "title": "盧氏雜說",
+      "level": 3,
+      "type": "book",
+      "content": "盧氏雜說一卷",
+      "work_id": "d59f28j814hz"
+    },
+    {
+      "title": "桂苑叢譚",
+      "level": 3,
+      "type": "book",
+      "content": "桂苑叢譚一卷",
+      "work_id": "d59f2q3n5atd"
+    },
+    {
+      "title": "樹萱錄",
+      "level": 3,
+      "type": "book",
+      "content": "樹萱錄一卷",
+      "work_id": "d59f2qa176rl"
+    },
+    {
+      "title": "會昌解頤",
+      "level": 3,
+      "type": "book",
+      "content": "會昌解頤四卷",
+      "work_id": "d59f28ln4c1y"
+    },
+    {
+      "title": "松牕錄",
+      "level": 3,
+      "type": "book",
+      "content": "松牕錄一卷",
+      "work_id": "d59f2pvnnqpt"
+    },
+    {
+      "title": "芝田錄",
+      "level": 3,
+      "type": "book",
+      "content": "芝田錄一卷",
+      "work_id": "d59f2pwravpd"
+    },
+    {
+      "title": "玉泉子見聞真錄",
+      "level": 3,
+      "type": "book",
+      "content": "玉泉子見聞真錄五卷",
+      "work_id": "d59f2pxt2lfm"
+    },
+    {
+      "title": "張讀宣室志",
+      "level": 3,
+      "type": "book",
+      "content": "張讀宣室志十卷",
+      "work_id": "d59f28k3vbwm",
+      "link_basis": "原繫 1evcs0r7p2yo0，該條已併入 1ev3bckkuqscg（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "柳祥瀟湘錄",
+      "level": 3,
+      "type": "book",
+      "content": "柳祥瀟湘錄十卷",
+      "work_id": "d59f28m2q77r"
+    },
+    {
+      "title": "皇甫松醉鄉日月",
+      "level": 3,
+      "type": "book",
+      "content": "皇甫松醉鄉日月三卷",
+      "work_id": "d59f28mcek1u"
+    },
+    {
+      "title": "何自然笑林",
+      "level": 3,
+      "type": "book",
+      "content": "何自然笑林三卷",
+      "work_id": "d59f28lmt3if"
+    },
+    {
+      "title": "焦璐窮神祕苑",
+      "level": 3,
+      "type": "book",
+      "content": "焦璐窮神祕苑十卷",
+      "work_id": "d59f2pyta4g0"
+    },
+    {
+      "title": "裴鉶傳奇",
+      "level": 3,
+      "type": "book",
+      "content": "裴鉶傳奇三卷",
+      "work_id": "d59f2q14xq0w"
+    },
+    {
+      "title": "劉軻牛羊日曆",
+      "level": 3,
+      "type": "book",
+      "content": "劉軻牛羊日曆一卷",
+      "work_id": "d59f2pzaregx"
+    },
+    {
+      "title": "補江總白猿傳",
+      "level": 3,
+      "type": "book",
+      "content": "補江總白猿傳一卷",
+      "work_id": "d59f2q6bwv0h"
+    },
+    {
+      "title": "郭良輔武孝經",
+      "level": 3,
+      "type": "book",
+      "content": "郭良輔武孝經一卷",
+      "work_id": "d59f28jxxtkw",
+      "ai_note": "記錄撰人「郭良𨏬」乃郭良輔之異寫。"
+    },
+    {
+      "title": "陸羽茶經",
+      "level": 3,
+      "type": "book",
+      "content": "陸羽茶經三卷",
+      "work_id": "d59f28lr6f45",
+      "link_basis": "原繫 1evcs0ra8uqdc，該條已併入 1ev3bbroqgmio（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "張又新煎茶水記",
+      "level": 3,
+      "type": "book",
+      "content": "張又新煎茶水記一卷",
+      "work_id": "d59f28jdne9s",
+      "link_basis": "原繫 1evcs0rak39xc，該條已併入 1ev3bbt1lq41s（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "封演續錢譜",
+      "level": 3,
+      "type": "book",
+      "content": "封演續錢譜一卷",
+      "work_id": "d59f28ju6z2a"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右小說家類三十九家，四十一部，三百八卷。"
+    }
+  ]
+}

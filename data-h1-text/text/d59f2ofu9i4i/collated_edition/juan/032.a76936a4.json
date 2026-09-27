@@ -1,0 +1,49 @@
+{
+  "title": "經部·詩類",
+  "sections": [
+    {
+      "title": "詩類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "顧歡等　毛詩集解叙義一卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "author": "顧歡",
+      "work_id": "d59f8ii6q32c"
+    },
+    {
+      "title": "劉瓛等　毛詩序義疏三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》本條注。《新唐志》作《劉氏序義》一卷。"
+        }
+      ],
+      "author": "劉瓛",
+      "work_id": "d59f284232f4"
+    },
+    {
+      "title": "劉瓛　毛詩篇次義一卷　又　毛詩雜義注三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》，同上條注。"
+        }
+      ],
+      "author": "劉瓛",
+      "work_id": "d59f284uhnuu"
+    }
+  ]
+}

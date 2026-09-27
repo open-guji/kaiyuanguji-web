@@ -1,0 +1,441 @@
+{
+  "title": "樂類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "樂類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂正義",
+      "content": "《律呂正義》五卷。康熙五十二年御撰。",
+      "work_id": "d59f2n9n169t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂正義後編",
+      "content": "《律呂正義後編》一百二十卷。乾隆十一年敕撰。",
+      "work_id": "d59f2mbneww0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "詩經樂譜",
+      "content": "《詩經樂譜》三十卷，《樂律正俗一卷。乾隆五十三年敕撰。",
+      "work_id": "d59f2ntk1a0x"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂律正俗",
+      "content": "",
+      "content_from": "詩經樂譜",
+      "work_id": "d59f2n9n169u"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂律",
+      "content": "《樂律》二卷。薛鳳祚撰。",
+      "work_id": "d59f2n9ncetc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大成樂律",
+      "content": "《大成樂律》一卷。孔貞瑄撰。",
+      "work_id": "d59f2mbplkow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古樂經傳",
+      "content": "《古樂經傳》五卷。李光地撰。",
+      "work_id": "d59f2mbneww1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "聖諭樂本解說",
+      "content": "《聖諭樂本解說》二卷，《皇言定聲錄八卷，《竟山樂錄四卷。毛奇齡撰。",
+      "work_id": "d59f2mbo1dz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "皇言定聲錄",
+      "content": "",
+      "content_from": "聖諭樂本解說",
+      "work_id": "d59f2mbo1dz5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "竟山樂錄",
+      "content": "",
+      "content_from": "聖諭樂本解說",
+      "work_id": "d59f2mbocmio"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古樂書",
+      "content": "《古樂書》二卷。應撝謙撰。",
+      "work_id": "d59f2mbnq5fk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "李氏學樂錄",
+      "content": "《李氏學樂錄》二卷。李恭撰。",
+      "work_id": "d59f2mbonv28"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "昭代樂章恭紀",
+      "content": "《昭代樂章恭紀一卷。張廷玉撰。",
+      "work_id": "d59f2n9ncetd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "易律通解",
+      "content": "《易律通解》八卷。沈光邦撰。",
+      "work_id": "d59f2mbr5reo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂律古義",
+      "content": "《樂律古義》二卷。童能靈撰。",
+      "work_id": "d59f2mbr5rep"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂經律呂通解",
+      "content": "《樂經律呂通解五卷，《樂經或問》三卷。汪紱撰。",
+      "work_id": "d59f2n9nnncw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂經或問",
+      "content": "",
+      "content_from": "樂經律呂通解",
+      "work_id": "d59f2n9nnncx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂律表微",
+      "content": "《樂律表微》八卷。胡彥升撰。",
+      "work_id": "d59f2mbonv29"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "琴旨",
+      "content": "《琴旨》三卷。王坦撰。",
+      "work_id": "d59f2mbpac5d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂新論",
+      "content": "《律呂新論》二卷，《律呂闡微》十卷。江永撰。",
+      "work_id": "d59f2mboz3ls"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂闡微",
+      "content": "",
+      "content_from": "律呂新論",
+      "work_id": "d59f2mbpac5c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂考略",
+      "content": "《律呂考略》一卷。孔毓焞撰。",
+      "work_id": "d59f2n9nyvwg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "大樂元音",
+      "content": "《大樂元音》七卷。潘士權撰。",
+      "work_id": "d59f2mwk02ki"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂古義",
+      "content": "《律呂古義六卷。錢塘撰。",
+      "work_id": "d59f2ntkcikg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "燕樂考原",
+      "content": "《燕樂考原》六卷，晉泰始《笛律匡謬一卷。凌廷堪撰。",
+      "work_id": "d59f2n9nyvwh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉泰始笛律匡謬",
+      "content": "",
+      "content_from": "燕樂考原",
+      "work_id": "d59f2n9nyvwi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂懸考",
+      "content": "《樂懸考》二卷。江籓撰。",
+      "work_id": "d59f2n9oa4g0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂譜",
+      "content": "《樂譜》一卷。任兆麟撰。",
+      "work_id": "d59f2ntkcikh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂臆說",
+      "content": "《律呂臆說》一卷，《荀勖笛律圖註》一卷，《管色考》一卷。徐養原撰。",
+      "work_id": "d59f2n9oa4g1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "荀勖笛律圖註",
+      "content": "",
+      "content_from": "律呂臆說",
+      "work_id": "d59f2n9oa4g2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "管色考",
+      "content": "",
+      "content_from": "律呂臆說",
+      "work_id": "d59f2n9olczk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古律經傳附考",
+      "content": "《古律經傳附考六卷。紀大奎撰。",
+      "work_id": "d59f2n9olczl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂志輯略",
+      "content": "《樂志輯略三卷。倪元坦撰。",
+      "work_id": "d59f2n9owlj4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音分古義",
+      "content": "《音分古義二卷，《附一卷。戴煦撰。",
+      "work_id": "d59f2n9owlj5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音分古義附",
+      "content": "",
+      "content_from": "音分古義",
+      "work_id": "d59f2n9owlj5",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《音分古義》一條所連著之附屬部帙（《附》一卷，戴煦附於本書之後），隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉甲類不別立 Work，繫於母條。2026-08-24 N3 磁鐵補標 `section_kind`——M3 一輪已裁其為甲類並正母條之題，然未標此欄，故仍計為磁鐵。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "聲律通考",
+      "content": "《聲律通考》十卷。陳澧撰。",
+      "work_id": "d59f2n9owlj6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂通今圖說",
+      "content": "《律呂通今圖說一卷，《律易》一卷，《音調定程》一卷。繆闐撰。",
+      "work_id": "d59f2n9p7u2o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律易",
+      "content": "",
+      "content_from": "律呂通今圖說",
+      "work_id": "d59f2n9p7u2p"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "音調定程",
+      "content": "",
+      "content_from": "律呂通今圖說",
+      "work_id": "d59f2n9p7u2q"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元熊朋來瑟譜",
+      "content": "元熊朋來《瑟譜六卷。",
+      "work_id": "d59f2gjnxiwx",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元余載韶舞九成樂補",
+      "content": "元余載《韶舞九成樂補一卷。",
+      "work_id": "d59f2gh1cmbk",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "律呂成書",
+      "content": "元劉瑾《律呂成書》二卷。",
+      "work_id": "d59f2go3r11d",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "子長樂經",
+      "content": "漢陽城《子長樂經》一卷。",
+      "work_id": "d59f24ma2mm9",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂記",
+      "content": "漢劉向《樂記》一卷。",
+      "work_id": "d59f23nolr7r",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂元語",
+      "content": "漢劉德《樂元語》一卷。",
+      "work_id": "d59f24ma2mma",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "琴清英",
+      "content": "漢揚雄《琴清英》一卷。",
+      "work_id": "d59f24ma2mmb",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂社大義",
+      "content": "梁武帝《樂社大義》一卷。",
+      "work_id": "d59f286bk075",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鍾律緯",
+      "content": "《鍾律緯一卷。",
+      "work_id": "d59f284wd346",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古今樂錄",
+      "content": "陳僧智匠《古今樂錄》一卷。",
+      "work_id": "d59f285vmwhv",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂書",
+      "content": "後魏信都芳《樂書》一卷。",
+      "work_id": "d59f286qje9v",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂律義",
+      "content": "後周沈重《樂律義》一卷，不著時代。",
+      "work_id": "d59f286ezm6b",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂部",
+      "content": "撰人《樂部》一卷。",
+      "work_id": "d59f2px2unlu",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "琴歷",
+      "content": "《琴歷》一卷。",
+      "work_id": "d59f2puyzz7k",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "樂譜集解",
+      "content": "隋蕭吉《樂譜集解》一卷。",
+      "work_id": "d59f28llk5c6",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "暕琴書",
+      "content": "唐趙惟《暕琴書》一卷。",
+      "work_id": "d59f28kcx7nq",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鍾律書",
+      "content": "漢劉歆《鍾律書》一卷。",
+      "work_id": "d59f24ma2mmc",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "琴操",
+      "content": "漢蔡邕《琴操》一卷。",
+      "work_id": "d59f209mi4g0",
+      "is_jiyi": true
+    }
+  ]
+}

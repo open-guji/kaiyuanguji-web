@@ -1,0 +1,38 @@
+{
+  "title": "南史載記·史部·地記類",
+  "sections": [
+    {
+      "title": "地記類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "按語",
+      "level": 3,
+      "type": "verification",
+      "content": "史之類，凡二：曰儀注，曰地記。"
+    },
+    {
+      "title": "元帝　江州記",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　江州記　元帝撰，見《梁書·元帝本紀》。《南史》帝紀未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "梁",
+      "work_id": "d59f99gnixak",
+      "note": "梁元帝蕭繹。"
+    },
+    {
+      "title": "地記類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右地記一部，已收《隋·經籍志》者無部，未收《隋·經籍志》者一部。"
+    },
+    {
+      "title": "地記類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "凡史類六部，已收《隋·經籍志》者無部，未收《隋·經籍志》者六部。"
+    }
+  ]
+}

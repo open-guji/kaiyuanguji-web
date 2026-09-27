@@ -1,0 +1,651 @@
+{
+  "title": "起居注類",
+  "sections": [
+    {
+      "title": "郭璞穆天子傳",
+      "level": 3,
+      "type": "book",
+      "content": "郭璞穆天子傳六卷",
+      "work_id": "d59f2q6ga6m8"
+    },
+    {
+      "title": "漢獻帝起居注",
+      "level": 3,
+      "type": "book",
+      "content": "漢獻帝起居注五卷",
+      "work_id": "d59f23nsnu9y"
+    },
+    {
+      "title": "李軌晉泰始起居注",
+      "level": 3,
+      "type": "book",
+      "content": "李軌晉泰始起居注二十卷",
+      "work_id": "d59f27tudiis",
+      "link_basis": "原繫 1evcs0dhzegao，該條已併入 1evcml2or7eo0（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "又晉咸寧起居注",
+      "level": 3,
+      "type": "book",
+      "content": "又晉咸寧起居注二十二卷",
+      "work_id": "d59f27uv7im8"
+    },
+    {
+      "title": "晉太康起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉太康起居注二十二卷",
+      "work_id": "d59f27vhzu9s"
+    },
+    {
+      "title": "晉永平起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉永平起居注八卷",
+      "work_id": "d59f27w2li4g"
+    },
+    {
+      "title": "晉咸和起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸和起居注十八卷",
+      "work_id": "d59f27werrb5"
+    },
+    {
+      "title": "晉咸康起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸康起居注二十二卷",
+      "work_id": "d59f27vlqosg"
+    },
+    {
+      "title": "劉道薈晉起居注",
+      "level": 3,
+      "type": "book",
+      "content": "劉道薈晉起居注三百二十卷",
+      "work_id": "d59f2q7x1a81"
+    },
+    {
+      "title": "晉建武大興永昌起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉建武大興永昌起居注二十二卷",
+      "work_id": "d59f2pydo9a9"
+    },
+    {
+      "title": "晉建元起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉建元起居注四卷",
+      "work_id": "d59f2q247jep"
+    },
+    {
+      "title": "晉永和起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉永和起居注二十四卷",
+      "work_id": "d59f2q6igute"
+    },
+    {
+      "title": "晉升平起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉升平起居注十卷",
+      "work_id": "d59f2q9gws1t"
+    },
+    {
+      "title": "晉隆和興寧起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉隆和興寧起居注五卷",
+      "work_id": "d59f2psyw5xc"
+    },
+    {
+      "title": "晉太和起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉太和起居注六卷",
+      "work_id": "d59f2q847qpt"
+    },
+    {
+      "title": "晉咸安起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉咸安起居注三卷",
+      "work_id": "d59f2q2b2rcy"
+    },
+    {
+      "title": "晉寧康起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉寧康起居注六卷",
+      "work_id": "d59f2q9uyght"
+    },
+    {
+      "title": "晉太元起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉太元起居注五十二卷",
+      "work_id": "d59f2q7z7y82"
+    },
+    {
+      "title": "晉崇寧起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉崇寧起居注十卷",
+      "work_id": "d59f2q87ylmp"
+    },
+    {
+      "title": "晉元興起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉元興起居注九卷",
+      "work_id": "d59f2qand1j4"
+    },
+    {
+      "title": "晉義熙起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉義熙起居注三十四卷",
+      "work_id": "d59f2qaavk00"
+    },
+    {
+      "title": "晉元熙起居注",
+      "level": 3,
+      "type": "book",
+      "content": "晉元熙起居注二卷",
+      "work_id": "d59f2qa6701s"
+    },
+    {
+      "title": "何始真晉起居鈔",
+      "level": 3,
+      "type": "book",
+      "content": "何始真晉起居鈔五十一卷",
+      "work_id": "d59f2q0d5la8"
+    },
+    {
+      "title": "晉起居注鈔",
+      "level": 3,
+      "type": "book",
+      "content": "晉起居注鈔二十四卷",
+      "work_id": "d59f27thks8y"
+    },
+    {
+      "title": "宋永初起居注",
+      "level": 3,
+      "type": "book",
+      "content": "宋永初起居注六卷",
+      "work_id": "d59f2q4v5r7k"
+    },
+    {
+      "title": "宋景平起居注",
+      "level": 3,
+      "type": "book",
+      "content": "宋景平起居注三卷",
+      "work_id": "d59f2pu1acjl"
+    },
+    {
+      "title": "宋元嘉起居注",
+      "level": 3,
+      "type": "book",
+      "content": "宋元嘉起居注七十一卷",
+      "work_id": "d59f2q5b2v41"
+    },
+    {
+      "title": "宋孝建起居注",
+      "level": 3,
+      "type": "book",
+      "content": "宋孝建起居注十七卷",
+      "work_id": "d59f2q0ubn5u"
+    },
+    {
+      "title": "宋大明起居注",
+      "level": 3,
+      "type": "book",
+      "content": "宋大明起居注十五卷",
+      "work_id": "d59f2pvicow1"
+    },
+    {
+      "title": "後魏起居注",
+      "level": 3,
+      "type": "book",
+      "content": "後魏起居注二百七十六卷",
+      "work_id": "d59f2pwnk16p"
+    },
+    {
+      "title": "齊永明起居注",
+      "level": 3,
+      "type": "book",
+      "content": "齊永明起居注二十五卷",
+      "work_id": "d59f2ptx8a2q"
+    },
+    {
+      "title": "梁大同七年起居注",
+      "level": 3,
+      "type": "book",
+      "content": "梁大同七年起居注十卷",
+      "work_id": "d59f2q3pbytd"
+    },
+    {
+      "title": "陳起居注",
+      "level": 3,
+      "type": "book",
+      "content": "陳起居注四十一卷",
+      "work_id": "d59f2pxl9n9d"
+    },
+    {
+      "title": "隋開皇元年起居注",
+      "level": 3,
+      "type": "book",
+      "content": "隋開皇元年起居注六卷",
+      "work_id": "d59f2q1sci68"
+    },
+    {
+      "title": "王逡之三代起居注鈔",
+      "level": 3,
+      "type": "book",
+      "content": "王逡之三代起居注鈔十五卷",
+      "work_id": "d59f2ptv1m2q"
+    },
+    {
+      "title": "流別起居注",
+      "level": 3,
+      "type": "book",
+      "content": "流別起居注四十七卷",
+      "work_id": "d59f2pxmiltu"
+    },
+    {
+      "title": "溫大雅大唐創業起居注",
+      "level": 3,
+      "type": "book",
+      "content": "溫大雅大唐創業起居注三卷",
+      "work_id": "d59f28jtkhz5",
+      "link_basis": "原繫 1evcs0drig9a8，該條已併入 1ev3babealukg（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "開元起居注",
+      "level": 3,
+      "type": "book",
+      "content": "開元起居注三千六百八十二卷",
+      "work_id": "d59f28klz3eo"
+    },
+    {
+      "title": "姚璹脩時政記",
+      "level": 3,
+      "type": "book",
+      "content": "姚璹脩時政記四十卷",
+      "work_id": "d59f2q84u801"
+    },
+    {
+      "title": "凡實錄二十八部，",
+      "level": 3,
+      "type": "tally",
+      "content": "凡實錄二十八部，三百四十五卷。",
+      "ai_note": "2026-08-20 非書條之誤析：本節為新唐書藝文志之類末統計語（「凡某類N家，N部，N卷」），非一書之著錄；匯入時誤析為書條並生 work `1evcs0ds9lwjk`，今刪其 work，本節之繫連隨去。"
+    },
+    {
+      "title": "周興嗣梁皇帝實錄",
+      "level": 3,
+      "type": "book",
+      "content": "周興嗣梁皇帝實錄二卷",
+      "work_id": "d59f2864os8z"
+    },
+    {
+      "title": "謝昊梁皇帝實錄",
+      "level": 3,
+      "type": "book",
+      "content": "謝昊梁皇帝實錄五卷",
+      "work_id": "d59f2q3hu9dt"
+    },
+    {
+      "title": "梁太清實錄",
+      "level": 3,
+      "type": "book",
+      "content": "梁太清實錄十卷",
+      "work_id": "d59f2q1twpa9"
+    },
+    {
+      "title": "高祖實錄",
+      "level": 3,
+      "type": "book",
+      "content": "高祖實錄二十卷",
+      "work_id": "d59f28jsbjt1"
+    },
+    {
+      "title": "今上實錄",
+      "level": 3,
+      "type": "book",
+      "content": "今上實錄二十卷",
+      "work_id": "d59f2qa5kiyo"
+    },
+    {
+      "title": "長孫無忌貞觀實錄",
+      "level": 3,
+      "type": "book",
+      "content": "長孫無忌貞觀實錄四十卷",
+      "work_id": "d59f28kq16h2",
+      "link_basis": "原繫 1evcs0dtvo1kw，該條已併入 1evgphgusw7b4（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "title": "許敬宗皇帝實錄",
+      "level": 3,
+      "type": "book",
+      "content": "許敬宗皇帝實錄三十卷",
+      "work_id": "d59f28m8npj8"
+    },
+    {
+      "title": "高宗後脩實錄",
+      "level": 3,
+      "type": "book",
+      "content": "高宗後脩實錄三十卷",
+      "work_id": "d59f2qaiohds"
+    },
+    {
+      "title": "韋述高宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "韋述高宗實錄三十卷",
+      "work_id": "d59f2pup0dts"
+    },
+    {
+      "title": "武后高宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "武后高宗實錄一百卷",
+      "work_id": "d59f2q56earl"
+    },
+    {
+      "title": "則天皇后實錄",
+      "level": 3,
+      "type": "book",
+      "content": "則天皇后實錄二十卷",
+      "work_id": "d59f2psmpwxt"
+    },
+    {
+      "title": "宗秦客聖母神皇實錄",
+      "level": 3,
+      "type": "book",
+      "content": "宗秦客聖母神皇實錄十八卷",
+      "work_id": "d59f2pz7y9z4"
+    },
+    {
+      "title": "吳兢中宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "吳兢中宗實錄二十卷",
+      "work_id": "d59f2q3rtv5u"
+    },
+    {
+      "title": "劉知幾太上皇實錄",
+      "level": 3,
+      "type": "book",
+      "content": "劉知幾太上皇實錄十卷",
+      "work_id": "d59f28m4lmgz"
+    },
+    {
+      "title": "吳兢睿宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "吳兢睿宗實錄五卷",
+      "work_id": "d59f2ptcmlmo"
+    },
+    {
+      "title": "張說今上實錄",
+      "level": 3,
+      "type": "book",
+      "content": "張說今上實錄二十卷",
+      "work_id": "d59f2q0m7hfk"
+    },
+    {
+      "title": "開元實錄",
+      "level": 3,
+      "type": "book",
+      "content": "開元實錄四十七卷",
+      "work_id": "d59f28j8cd1g"
+    },
+    {
+      "title": "玄宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "玄宗實錄一百卷",
+      "work_id": "d59f28kqyw3q"
+    },
+    {
+      "title": "肅宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "肅宗實錄三十卷",
+      "work_id": "d59f28k0qyh0"
+    },
+    {
+      "title": "令狐峘代宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "令狐峘代宗實錄四十卷",
+      "work_id": "d59f2q2hbi0x"
+    },
+    {
+      "title": "沈既濟建中實錄",
+      "level": 3,
+      "type": "book",
+      "content": "沈既濟建中實錄十卷",
+      "work_id": "d59f28kos8ao"
+    },
+    {
+      "title": "德宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "德宗實錄五十卷",
+      "work_id": "d59f2moyvf9d"
+    },
+    {
+      "title": "順宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "順宗實錄五卷",
+      "work_id": "d59f28kj5yio"
+    },
+    {
+      "title": "憲宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "憲宗實錄四十卷",
+      "work_id": "d59f28jm2sxz"
+    },
+    {
+      "title": "穆宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "穆宗實錄二十卷",
+      "work_id": "d59f2moyvf9e"
+    },
+    {
+      "title": "敬宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "敬宗實錄十卷",
+      "work_id": "d59f28jwover"
+    },
+    {
+      "title": "文宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "文宗實錄四十卷",
+      "work_id": "d59f2moz6nsw"
+    },
+    {
+      "title": "武宗實錄",
+      "level": 3,
+      "type": "book",
+      "content": "武宗實錄三十卷",
+      "work_id": "d59f2og1fytd"
+    },
+    {
+      "title": "凡詔令一家，一十一部，",
+      "level": 3,
+      "type": "tally",
+      "content": "凡詔令一家，一十一部，三百五卷。",
+      "ai_note": "2026-08-20 非書條之誤析：本節為新唐書藝文志之類末統計語（「凡某類N家，N部，N卷」），非一書之著錄；匯入時誤析為書條並生 work `1evcs0dzhxtkw`，今刪其 work，本節之繫連隨去。"
+    },
+    {
+      "title": "晉雜詔書",
+      "level": 3,
+      "type": "book",
+      "content": "晉雜詔書一百卷",
+      "work_id": "d59f2ptkfjls"
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又二十八卷",
+      "work_id": null
+    },
+    {
+      "title": "又",
+      "level": 3,
+      "type": "book",
+      "content": "又六十六卷",
+      "work_id": null
+    },
+    {
+      "title": "晉詔書黃素制",
+      "level": 3,
+      "type": "book",
+      "content": "晉詔書黃素制五卷",
+      "work_id": "d59f2q05z4sg"
+    },
+    {
+      "title": "晉定品雜制",
+      "level": 3,
+      "type": "book",
+      "content": "晉定品雜制一卷",
+      "work_id": "d59f2pwxuuww"
+    },
+    {
+      "title": "晉太元副詔",
+      "level": 3,
+      "type": "book",
+      "content": "晉太元副詔二十一卷",
+      "work_id": "d59f2q1n1hj6"
+    },
+    {
+      "title": "晉崇安元興大亨副詔",
+      "level": 3,
+      "type": "book",
+      "content": "晉崇安元興大亨副詔八卷",
+      "work_id": "d59f2q4pjhfk"
+    },
+    {
+      "title": "晉義熙詔",
+      "level": 3,
+      "type": "book",
+      "content": "晉義熙詔二十二卷",
+      "work_id": "d59f2q7emarl"
+    },
+    {
+      "title": "宋永初詔",
+      "level": 3,
+      "type": "book",
+      "content": "宋永初詔六卷",
+      "work_id": "d59f2q4nctfm"
+    },
+    {
+      "title": "宋元嘉詔",
+      "level": 3,
+      "type": "book",
+      "content": "宋元嘉詔二十一卷",
+      "work_id": "d59f2puzxp1e"
+    },
+    {
+      "title": "宋幹詔集區別",
+      "level": 3,
+      "type": "book",
+      "content": "宋幹詔集區別二十七卷",
+      "work_id": "d59f2px01ips"
+    },
+    {
+      "title": "溫彥博古今詔集",
+      "level": 3,
+      "type": "book",
+      "content": "溫彥博古今詔集三十卷",
+      "work_id": "d59f2q5xjyf5"
+    },
+    {
+      "title": "李義府古今詔集",
+      "level": 3,
+      "type": "book",
+      "content": "李義府古今詔集一百卷",
+      "work_id": "d59f28mlrocg"
+    },
+    {
+      "title": "薛克構聖朝詔集",
+      "level": 3,
+      "type": "book",
+      "content": "薛克構聖朝詔集三十卷",
+      "work_id": "d59f2q709ddt"
+    },
+    {
+      "title": "唐德音錄",
+      "level": 3,
+      "type": "book",
+      "content": "唐德音錄三十卷",
+      "work_id": "d59f2q53wem8"
+    },
+    {
+      "title": "太平內制",
+      "level": 3,
+      "type": "book",
+      "content": "太平內制五卷",
+      "work_id": "d59f2puh7g8w"
+    },
+    {
+      "title": "明皇制詔錄",
+      "level": 3,
+      "type": "book",
+      "content": "明皇制詔錄一卷",
+      "work_id": "d59f2q74xxj5"
+    },
+    {
+      "title": "元和制集",
+      "level": 3,
+      "type": "book",
+      "content": "元和制集十卷",
+      "work_id": "d59f2pxr75s2"
+    },
+    {
+      "title": "王起寫宣",
+      "level": 3,
+      "type": "book",
+      "content": "王起寫宣十卷",
+      "work_id": "d59f2pxba2gy"
+    },
+    {
+      "title": "馬文敏王言會最",
+      "level": 3,
+      "type": "book",
+      "content": "馬文敏王言會最五卷",
+      "work_id": "d59f2q0pn2td"
+    },
+    {
+      "title": "唐舊制編錄",
+      "level": 3,
+      "type": "book",
+      "content": "唐舊制編錄六卷",
+      "work_id": "d59f28kgo268"
+    },
+    {
+      "title": "擬狀注制",
+      "level": 3,
+      "type": "book",
+      "content": "擬狀注制十卷",
+      "work_id": "d59f2q0gwfsy"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右起居注類六家，三十八部，一千二百七十二卷。總七家，七十七部。"
+    }
+  ]
+}

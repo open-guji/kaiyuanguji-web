@@ -1,0 +1,46 @@
+{
+  "title": "名家類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "名家類",
+      "content": ""
+    },
+    {
+      "title": "尹文子二卷",
+      "level": 3,
+      "type": "book",
+      "content": "尹文子二卷",
+      "work_id": "d59ezail4268"
+    },
+    {
+      "title": "鄧析子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧析子一卷。鄧析子戰國時人漢志二篇初析著書四篇劉歆有目有一篇凡五歆復校為二篇",
+      "work_id": "d59ezkxhfoxs"
+    },
+    {
+      "title": "公孫龍子一卷",
+      "level": 3,
+      "type": "book",
+      "content": "公孫龍子一卷",
+      "work_id": "d59ezaiouwow"
+    },
+    {
+      "title": "人物志三卷",
+      "level": 3,
+      "type": "book",
+      "content": "人物志三卷",
+      "work_id": "d59f27t8u51e"
+    },
+    {
+      "title": "廣人物志三卷",
+      "level": 3,
+      "type": "book",
+      "content": "廣人物志三卷",
+      "work_id": "d59f28jovxtx"
+    }
+  ]
+}

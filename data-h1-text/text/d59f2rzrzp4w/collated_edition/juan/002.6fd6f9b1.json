@@ -1,0 +1,44 @@
+{
+  "title": "卷之二会稿",
+  "sections": [
+    {
+      "title": "议盐法疏",
+      "level": 3,
+      "type": "book",
+      "content": "頁45",
+      "metadata": {
+        "doc_type": "档",
+        "no": "卷之二会稿",
+        "date": "",
+        "page": 45
+      },
+      "work_id": null
+    },
+    {
+      "title": "议兴化县民灶粮疏",
+      "level": 3,
+      "type": "book",
+      "content": "頁113",
+      "metadata": {
+        "doc_type": "档",
+        "no": "卷之二会稿",
+        "date": "",
+        "page": 113
+      },
+      "work_id": null
+    },
+    {
+      "title": "建运学疏",
+      "level": 3,
+      "type": "book",
+      "content": "頁119",
+      "metadata": {
+        "doc_type": "档",
+        "no": "卷之二会稿",
+        "date": "",
+        "page": 119
+      },
+      "work_id": null
+    }
+  ]
+}

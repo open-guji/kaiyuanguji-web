@@ -1,0 +1,128 @@
+{
+  "title": "史部·儀注類",
+  "sections": [
+    {
+      "title": "儀注類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "陳淑等　江左以來儀典令",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "會王儉亡，上徵孝嗣爲五兵尚書。其年，上敕儀曹令史陳淑、王景之、朱玄真、陳義民，撰《江左以來儀典》，令諮受孝嗣。",
+          "source": "《南齊書》四四《徐孝嗣傳》、《南史》一五《宋徐羨之傳·徐孝嗣》。"
+        }
+      ],
+      "author": "陳淑、王景之、朱玄真、陳義民",
+      "note": "“江左以來儀典令”句，原書據下文考證，“令”字當屬下讀。",
+      "work_id": "d59f8ii3ah39"
+    },
+    {
+      "title": "王逡之　齊國儀禮　又　世行五卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "昇明末，右僕射王儉重儒術，逡之以著作郎兼尚書左丞，參定齊國儀禮。初儉撰《古今喪服集記》，逡之難儉十一條。更撰《世行》五卷。",
+          "source": "《南齊書》五二《王逡之傳》、《南史》二四《宋王准之傳·王逡之》。"
+        }
+      ],
+      "author": "王逡之",
+      "work_id": "d59f8ii3ah3a"
+    },
+    {
+      "title": "王逡之　禮儀制度十三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "author": "王逡之",
+      "work_id": "d59f285dj4zl"
+    },
+    {
+      "title": "何胤等　新禮",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "仕齊爲建安太守，政有恩信，人不忍欺，每伏臘放囚還家，依期而反。歷黃門侍郎、太子中庶子。尚書令王儉受詔撰《新禮》，未就而卒。又使特進張緒續成，緒又卒。屬在司徒竟陵王子良。子良以讓胤，乃置學士二十人佐胤撰録。",
+          "source": "《南史》三○《宋何尚之傳·何胤》。"
+        }
+      ],
+      "author": "何胤",
+      "work_id": "d59f8ii3ah3b"
+    },
+    {
+      "title": "宗史　禮儀",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "梁武屢表勸和帝即尊號，穎使別駕宗史撰定《禮儀》。上尊號，改元。於江陵立宗廟南北郊。州府門城，悉依建康。",
+          "source": "《南史》四一《齊宗室傳·蕭穎胄》。"
+        }
+      ],
+      "author": "宗史",
+      "work_id": "d59f8ii3ah3d"
+    },
+    {
+      "title": "王儉　吉書儀二卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》、二《唐志》。"
+        }
+      ],
+      "author": "王儉",
+      "work_id": "d59f285strls"
+    },
+    {
+      "title": "王儉　弔答儀十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。二《唐志》作《弔答書儀》。"
+        }
+      ],
+      "author": "王儉",
+      "work_id": "d59f8ii3ah3e"
+    },
+    {
+      "title": "王儉　皇室書儀七卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《新唐志》。"
+        }
+      ],
+      "author": "王儉",
+      "work_id": "d59f8ii6q32i"
+    },
+    {
+      "title": "謝朓　書筆儀二十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《舊唐志》。"
+        }
+      ],
+      "author": "謝朓",
+      "work_id": "d59f8ii71bls"
+    }
+  ]
+}

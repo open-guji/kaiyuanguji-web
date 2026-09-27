@@ -1,0 +1,571 @@
+{
+  "title": "別史類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "別史類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代紀事年表",
+      "content": "歷代紀事年表一百卷。康熙五十一年，王之樞等奉敕撰。",
+      "work_id": "d59f2ntpyscg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續通志",
+      "content": "續通志五百二十七卷。乾隆三十二年敕撰。",
+      "work_id": "d59f2mowdiww"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸周書補註",
+      "content": "逸周書補註二十二卷，補遺一卷。陳逢衡撰。",
+      "work_id": "d59f2ncajsht"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "汲冢周書輯要",
+      "content": "汲冢周書輯要一卷。郝懿行撰。",
+      "work_id": "d59f2ncav11c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸周書集訓校釋",
+      "content": "逸周書集訓校釋十卷，逸文一卷。朱右曾撰。",
+      "work_id": "d59f2ncav11d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸文",
+      "content": "",
+      "content_from": "逸周書集訓校釋",
+      "work_id": "d59f2ncav11e"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸周書集訓校釋增校",
+      "content": "逸周書集訓校釋增校一卷。朱駿聲撰。",
+      "work_id": "d59f2ncb69kw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸周書管箋",
+      "content": "逸周書管箋十六卷。丁宗洛撰。",
+      "work_id": "d59f2ncb69kx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸周書王會篇箋釋",
+      "content": "逸周書王會篇箋釋三卷。何秋濤撰。",
+      "work_id": "d59f2ncb69ky"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "校輯世本",
+      "content": "校輯世本二卷。雷學淇撰。",
+      "work_id": "d59f2ncbhi4g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "世本輯補",
+      "content": "世本輯補十卷。秦嘉謨撰。",
+      "work_id": "d59f2ncbhi4h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "帝王世紀考異",
+      "content": "帝王世紀考異一卷。宋翔鳳撰。",
+      "work_id": "d59f2ncbsqo0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "帝王世紀地名衍",
+      "content": "帝王世紀地名衍四卷。迮鶴壽撰。",
+      "work_id": "d59f2ncbsqo1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋戰國異詞",
+      "content": "春秋戰國異詞五十六卷，通表二卷，摭遺一卷。陳厚耀撰。",
+      "work_id": "d59f2ncbsqo2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "通表",
+      "content": "",
+      "content_from": "春秋戰國異詞",
+      "work_id": "d59f2ncc3z7k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "摭遺",
+      "content": "",
+      "content_from": "春秋戰國異詞",
+      "work_id": "d59f2ncc3z7k",
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《通表》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "春秋紀傳",
+      "content": "春秋紀傳五十一卷。李鳳雛撰。",
+      "work_id": "d59f2mce9bls"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "尚史",
+      "content": "尚史一百七卷。李鍇撰。",
+      "work_id": "d59f2mcdmuip"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書補逸",
+      "content": "後漢書補逸二十一卷。姚之駰撰。",
+      "work_id": "d59f2mcdblz4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "季漢書",
+      "content": "季漢書九十卷。章陶撰。",
+      "work_id": "d59f2ntpysch"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "季漢書",
+      "content": "季漢書九十卷。湯成烈撰。",
+      "work_id": "d59f2ntqa0w0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "季漢五志",
+      "content": "季漢五志十二卷。王復禮撰。",
+      "work_id": "d59f2mcekk5d"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "後漢書",
+      "content": "後漢書十四卷。王廷璨撰。",
+      "work_id": "d59f2nuq6bcw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉記",
+      "content": "晉記六十八卷。郭倫撰。",
+      "work_id": "d59f2mcevsow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "晉略",
+      "content": "晉略六十卷。周濟撰。",
+      "work_id": "d59f2ntqa0w1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西魏書",
+      "content": "西魏書二十四卷。謝啟昆撰。",
+      "work_id": "d59f2ncc3z7l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續唐書",
+      "content": "續唐書七十卷。陳鱣撰。",
+      "work_id": "d59f2ncc3z7m"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋史翼",
+      "content": "宋史翼四十卷。陸心源撰。",
+      "work_id": "d59f2nccf7r4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史新編",
+      "content": "元史新編九十五卷。魏源撰。",
+      "work_id": "d59f2nccf7r5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元祕史注",
+      "content": "元祕史注十五卷。李文田撰。",
+      "work_id": "d59f2nccf7r6"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元史備志",
+      "content": "元史備志五卷。王光魯撰。",
+      "work_id": "d59f2nccqgao"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續宏簡錄",
+      "content": "續宏簡錄四十二卷。邵遠平撰。",
+      "work_id": "d59f2nccqgap"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明書",
+      "content": "明書一百七十一卷。傅維鱗撰。",
+      "work_id": "d59f2mcdy328"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史稿",
+      "content": "明史稿三百十卷。王鴻緒撰。",
+      "work_id": "d59f2ncd1ou8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史稿",
+      "content": "明史稿二十卷，續二卷。湯斌撰。",
+      "work_id": "d59f2ncd1ou9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "擬明史列傳",
+      "content": "擬明史列傳二十四卷。汪琬撰。",
+      "work_id": "d59f2ncd1oua"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "擬明史傳",
+      "content": "擬明史傳不分卷。姜宸英撰。",
+      "work_id": "d59f2ncdcxds"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史分稿殘編",
+      "content": "明史分稿殘編二卷。方象英撰。",
+      "work_id": "d59f2ncdcxdt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "明史擬傳",
+      "content": "明史擬傳六卷，藝文志五卷，外國志五卷。尤侗撰。",
+      "work_id": "d59f2ncdcxdu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "藝文志",
+      "content": "",
+      "content_from": "明史擬傳",
+      "work_id": "d59f2meocqgx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "外國志",
+      "content": "",
+      "content_from": "明史擬傳",
+      "work_id": "d59f2ncdo5xc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "國史考異",
+      "content": "國史考異六卷。潘檉章撰。",
+      "work_id": "d59f2m8i3rpc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "開闢傳疑",
+      "content": "開闢傳疑二卷。林春溥撰。",
+      "work_id": "d59f2ncdo5xd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代甲子考",
+      "content": "歷代甲子考一卷。黃宗羲撰。",
+      "work_id": "d59f2mesq22o"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "二十一史年表",
+      "content": "二十一史年表十卷。顧炎武撰。",
+      "work_id": "d59f2ncdzegw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代史表",
+      "content": "歷代史表五十九卷。萬斯同撰。",
+      "work_id": "d59f2mcd0dfl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "二十一史四譜",
+      "content": "二十一史四譜五十四卷，歷代世系紀年編一卷。沈炳震撰。",
+      "work_id": "d59f2ncdzegx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代世系紀年編",
+      "content": "",
+      "content_from": "二十一史四譜",
+      "work_id": "d59f2ncdzegy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代帝王年表",
+      "content": "歷代帝王年表三卷。齊召南撰。",
+      "work_id": "d59f2ncean0g"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代帝王廟諡年諱譜",
+      "content": "歷代帝王廟諡年諱譜一卷。陸費墀撰。",
+      "work_id": "d59f2ncean0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "紀元要略",
+      "content": "紀元要略二卷。陳景雲撰。",
+      "work_id": "d59f2meiqgow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代建元考",
+      "content": "歷代建元考十卷。鍾淵映撰。",
+      "work_id": "d59f2meeodmp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "元號略",
+      "content": "元號略四卷，補遺一卷。梁玉繩撰。",
+      "work_id": "d59f2ncelvk0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "紀元通考",
+      "content": "紀元通考十二卷。葉維庚撰。",
+      "work_id": "d59f2ncelvk1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "列代建元表",
+      "content": "列代建元表十卷，建元類聚考二卷。錢東垣撰。",
+      "work_id": "d59f2ncelvk2"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "建元類聚考",
+      "content": "",
+      "content_from": "列代建元表",
+      "work_id": "d59f2ncex43k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "紀元編",
+      "content": "紀元編三卷。李兆洛撰。",
+      "work_id": "d59f2ncex43l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歷代統紀表",
+      "content": "歷代統紀表十三卷。段承基撰。",
+      "work_id": "d59f2ncf8cn4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "東觀漢記",
+      "content": "漢劉珍東觀漢記二十四卷。",
+      "work_id": "d59f2074ajgg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "續後漢書",
+      "content": "元郝經續後漢書九十卷。",
+      "work_id": "d59f2gp9ktts",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "世本",
+      "content": "世本一卷。",
+      "work_id": "d59f2evwx7nm",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "世本注",
+      "content": "漢宋衷世本注五卷。",
+      "work_id": "d59f24madv5x",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "七家後漢書",
+      "content": "七家後漢書二十一卷。",
+      "work_id": "d59f2ncf8cn5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "重訂謝承後漢書補逸",
+      "content": "重訂謝承後漢書補逸五卷。",
+      "work_id": "d59f2pzcmtj4",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "薛瑩後漢書",
+      "content": "薛瑩後漢書一卷。",
+      "work_id": "d59f2og5ta0w",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "華嶠後漢書注",
+      "content": "華嶠後漢書注一卷。",
+      "work_id": "d59f2og9k4xv",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "謝沈後漢書",
+      "content": "謝沈後漢書一卷。",
+      "work_id": "d59f27y7dvr7",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "袁山松後漢書",
+      "content": "袁山松後漢書一卷。",
+      "work_id": "d59f27y9vs3l",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "張璠後漢記",
+      "content": "張璠後漢記一卷。",
+      "work_id": "d59f2ofon85f",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "虞預晉書",
+      "content": "虞預晉書一卷。",
+      "work_id": "d59f27y7dvr5",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "朱鳳晉書",
+      "content": "朱鳳晉書一卷。",
+      "work_id": "d59f27yevksj",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "何法盛晉中興書",
+      "content": "何法盛晉中興書一卷。",
+      "work_id": "d59f285bch6o",
+      "is_jiyi": true,
+      "link_basis": "原繫 1evcs0bekcbgg，該條已併入 1evcml230ypds（撰人字首式重出，2026-08-07），今改繫。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "謝靈運晉書",
+      "content": "謝靈運晉書一卷。",
+      "work_id": "d59f283wgsn7",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "臧榮緒晉書",
+      "content": "臧榮緒晉書一卷。",
+      "work_id": "d59f283w5k3n",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "眾家晉書",
+      "content": "眾家晉書一卷。",
+      "work_id": "d59f2q3j37cw",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "九家舊晉書",
+      "content": "九家舊晉書三十七卷。",
+      "work_id": "d59f2pu9prsy",
+      "is_jiyi": true
+    }
+  ]
+}

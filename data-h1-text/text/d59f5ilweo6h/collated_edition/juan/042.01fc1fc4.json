@@ -1,0 +1,195 @@
+{
+  "title": "史部·目録類",
+  "sections": [
+    {
+      "title": "目録類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "晉中經",
+      "level": 3,
+      "type": "book",
+      "content": "晉中經　案《舊唐志》作\"書\"。",
+      "work_id": "d59f9uwnw6iq"
+    },
+    {
+      "title": "荀勖　簿十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　簿十四卷　案《隋志》無\"簿\"字。；据《新唐志》。　案《國志・王肅傳》注引作\"晉武帝中經簿\"。",
+      "work_id": "d59f9uwnw6ir",
+      "note": "撰人後置：原文「上三種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖　雜撰文章家集叙十卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　雜撰文章家集叙十卷　案《唐志》作\"新\"字。；案《舊唐志》無\"叙\"字。；案《唐志》作\"五\"。",
+      "work_id": "d59f27u26g3o",
+      "note": "撰人後置：原文「上三種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖　文章叙録",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖　文章叙録　据《國志・王粲傳》注引。　上三種並荀勖撰。",
+      "work_id": "d59f9uwnw6is",
+      "note": "撰人後置：原文「上三種並荀勖撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖、和嶠　汲冢書并竹書同異一卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖、和嶠　汲冢書并竹書同異一卷",
+      "work_id": "d59f9uwnw6it",
+      "note": "撰人後置：原文「上二種並荀勖、和嶠撰」總標於數條之後"
+    },
+    {
+      "title": "荀勖、和嶠　古文璅語四卷",
+      "level": 3,
+      "type": "book",
+      "content": "荀勖、和嶠　古文璅語四卷　上二種並荀勖、和嶠撰次。",
+      "work_id": "d59f9uwo7f28",
+      "note": "撰人後置：原文「上二種並荀勖、和嶠撰」總標於數條之後"
+    },
+    {
+      "title": "摯虞　文章志四卷",
+      "level": 3,
+      "type": "book",
+      "content": "摯虞　文章志四卷　摯虞撰。",
+      "work_id": "d59f27wh9nnm",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "衛恒　汲冢竹書考正",
+      "level": 3,
+      "type": "book",
+      "content": "衛恒　汲冢竹書考正　衛恒撰。",
+      "work_id": "d59f9uwo7f29",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "束皙　汲冢書鈔",
+      "level": 3,
+      "type": "book",
+      "content": "束皙　汲冢書鈔　束皙撰。据《初學記》引。",
+      "work_id": "d59f2pquq9dv",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "汲冢書異義",
+      "level": 3,
+      "type": "book",
+      "content": "汲冢書異義　衛恒撰，束皙述成。①",
+      "work_id": "d59f9uwo7f2a"
+    },
+    {
+      "title": "王庭堅　難汲冢書異義",
+      "level": 3,
+      "type": "book",
+      "content": "王庭堅　難汲冢書異義　東萊太守陳留王庭堅撰。亦有證據。",
+      "work_id": "d59f9uwo7f2b",
+      "note": "原文「東萊太守陳留王庭堅撰」——「陳留」為其籍貫"
+    },
+    {
+      "title": "束皙　汲冢書異義釋難",
+      "level": 3,
+      "type": "book",
+      "content": "束皙　汲冢書異義釋難　束皙撰。据皙傳云：\"隨款引釋，皆有義證。\"",
+      "work_id": "d59f9uwo7f2c",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王接　詳正汲冢書異義釋難得失",
+      "level": 3,
+      "type": "book",
+      "content": "王接　詳正汲冢書異義釋難得失　王接撰。　上五種並据本書《王接傳》。",
+      "work_id": "d59f9uwoinls",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "繽咸　汲冢古文釋十卷",
+      "level": 3,
+      "type": "book",
+      "content": "繽咸　汲冢古文釋十卷　繽咸撰。据本書傳。",
+      "work_id": "d59f9uwoinlt",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "晉元帝書目",
+      "level": 3,
+      "type": "book",
+      "content": "晉元帝書目　据《弘明集》所載。",
+      "work_id": "d59f6ssrrv9a"
+    },
+    {
+      "title": "王朝目録",
+      "level": 3,
+      "type": "book",
+      "content": "王朝目録　据《世説》注引。",
+      "work_id": "d59f27x0b4sg"
+    },
+    {
+      "title": "李充　四部簿",
+      "level": 3,
+      "type": "book",
+      "content": "李充　四部簿　李充撰。据本書傳。",
+      "work_id": "d59f9uwoinlu",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "顧愷之　晉文章紀",
+      "level": 3,
+      "type": "book",
+      "content": "顧愷之　晉文章紀　顧愷之撰。据《世説》注引。",
+      "work_id": "d59f27udeznm",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "隆安西庫書目二卷",
+      "level": 3,
+      "type": "book",
+      "content": "隆安西庫書目二卷　据《宋・藝文志》。",
+      "work_id": "d59f27ucha0y"
+    },
+    {
+      "title": "義熙四年祕閣四部書目",
+      "level": 3,
+      "type": "book",
+      "content": "義熙四年祕閣四部書目　据《弘明集》所載。",
+      "work_id": "d59f9uwoinlv"
+    },
+    {
+      "title": "邱淵之　晉義熙已來新集目録三卷",
+      "level": 3,
+      "type": "book",
+      "content": "邱淵之　晉義熙已來新集目録三卷　案《世説》注引作\"邱淵之新集録\"。《隋志》原作\"邱深之撰\"，蓋唐避淵諱，改淵爲深耳。",
+      "work_id": "d59f27wgyf43",
+      "note": "撰人後置：原文「上三種並邱淵之撰」總標於數條之後"
+    },
+    {
+      "title": "邱淵之　文章録",
+      "level": 3,
+      "type": "book",
+      "content": "邱淵之　文章録",
+      "work_id": "d59f9uwoinlw",
+      "note": "撰人後置：原文「上三種並邱淵之撰」總標於數條之後"
+    },
+    {
+      "title": "邱淵之　別集録",
+      "level": 3,
+      "type": "book",
+      "content": "邱淵之　別集録　上二種並据《玉海》。　上三種並邱淵之撰。",
+      "work_id": "d59f9uwotw5c",
+      "note": "撰人後置：原文「上三種並邱淵之撰」總標於數條之後"
+    },
+    {
+      "title": "目録類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右目録類二十二種。"
+    }
+  ]
+}

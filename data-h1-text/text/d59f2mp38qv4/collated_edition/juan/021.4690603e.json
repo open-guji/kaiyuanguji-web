@@ -1,0 +1,32 @@
+{
+  "title": "史部·時令類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "史部·時令類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "歲時廣記四卷",
+      "content": "陳元靚撰。",
+      "work_id": "d59f2htwm3uo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "養生月覽二卷",
+      "content": "周守忠撰。",
+      "work_id": "d59f2hl1lkoy"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右時令類",
+      "content": "右時令類二家六卷。"
+    }
+  ]
+}

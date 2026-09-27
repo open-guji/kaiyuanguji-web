@@ -1,0 +1,69 @@
+{
+  "title": "甲部經錄·樂類",
+  "sections": [
+    {
+      "title": "樂類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "阮籍　樂論",
+      "level": 3,
+      "type": "book",
+      "content": "阮籍　樂論　《漢書・五行志》注、《御覽》引書綱目。",
+      "work_id": "d59f27t1nojk"
+    },
+    {
+      "title": "裴秀　樂論",
+      "level": 3,
+      "type": "book",
+      "content": "裴秀　樂論　《魏志・裴潛傳》注引《文章序錄》。",
+      "work_id": "d59f27vwz8cj"
+    },
+    {
+      "title": "孔衍　琴操三卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔衍　琴操三卷　《隋志》、《舊唐志》同。《唐志》作「一卷」。",
+      "work_id": "d59f9s1a5q0y"
+    },
+    {
+      "title": "阮咸譜一卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮咸譜一卷　《通志略》云：「蔡逸撰。」",
+      "work_id": "d59f2q4vs8ht"
+    },
+    {
+      "title": "阮咸調弄二卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮咸調弄二卷",
+      "work_id": "d59f2q94qio0",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "阮咸金羽調一卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮咸金羽調一卷",
+      "work_id": "d59f2q1d1vk1",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "阮咸譜二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮咸譜二十卷　並《通志略》。",
+      "work_id": "d59f2pux4k5d",
+      "note": "承前撰人，本志同行著錄"
+    },
+    {
+      "title": "樂類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右樂類，四家。"
+    }
+  ]
+}

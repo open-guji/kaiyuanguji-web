@@ -1,0 +1,1173 @@
+{
+  "title": "政書類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "政書類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "通制之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清會典",
+      "content": "大清會典二百五十卷。起崇德元年迄康熙二十五年，聖祖敕撰。",
+      "work_id": "d59f2ntwirr4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清會典",
+      "content": "大清會典八十卷，圖一百三十二卷，事例九百二十卷。嘉慶二十三年敕撰。",
+      "work_id": "d59f2ntwirr5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "事例",
+      "content": "",
+      "content_from": "大清會典",
+      "work_id": "d59f2nf1t98g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清會典",
+      "content": "大清會典一百卷，圖二百七十卷，事例一千二百二十卷。光緒二十五年敕撰。",
+      "work_id": "d59f2ntwirr5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "事例",
+      "content": "",
+      "content_from": "大清會典",
+      "work_id": "d59f2nf1t98g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續通典",
+      "content": "續通典一百四十四卷。乾隆三十二年敕撰。",
+      "work_id": "d59f2mow2ade"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續文獻通考",
+      "content": "續文獻通考二百五十二卷。乾隆十二年敕撰。",
+      "work_id": "d59f2ntwirr6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝通典",
+      "content": "皇朝通典一百卷。乾隆三十二年敕撰。",
+      "work_id": "d59f2n7tskqp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝通志",
+      "content": "皇朝通志二百卷。乾隆三十二年敕撰。",
+      "work_id": "d59f2ntwu0ao"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝文獻通考",
+      "content": "皇朝文獻通考二百六十六卷。乾隆十二年敕撰。",
+      "work_id": "d59f2my6zx8h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "元朝典故編年考",
+      "content": "元朝典故編年考十卷。孫承澤撰。",
+      "work_id": "d59f2medffgg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "明會要",
+      "content": "明會要八十卷。紀文彬撰。",
+      "work_id": "d59f2mslz3ep"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "宋朝事實",
+      "content": "宋李攸宋朝事實二十卷。",
+      "work_id": "d59f2hr2uqrl",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "典禮之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "幸魯盛典",
+      "content": "幸魯盛典四十卷。康熙二十三年，孔毓圻編。",
+      "work_id": "d59f2medffgh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬壽盛典",
+      "content": "萬壽盛典一百二十卷。康熙五十二年，王原祁等編。",
+      "work_id": "d59f2medqo00"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "南巡盛典",
+      "content": "南巡盛典一百二十卷。乾隆三十一年，高晉等編。",
+      "work_id": "d59f2mee1wjk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八旬萬壽盛典",
+      "content": "八旬萬壽盛典一百二十卷。乾隆五十四年，阿桂等編。",
+      "work_id": "d59f2meeodmo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "西巡盛典",
+      "content": "西巡盛典二十四卷。嘉慶十六年，董誥等編。",
+      "work_id": "d59f2nf1t98h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清通典",
+      "content": "大清通典四十卷。乾隆元年敕撰。",
+      "work_id": "d59f2nf24hs0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝禮器圖式",
+      "content": "皇朝禮器圖式二十八卷。乾隆二十四年敕撰。",
+      "work_id": "d59f2moworgi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滿洲祭神祭天典禮",
+      "content": "滿洲祭神祭天典禮六卷。乾隆四十二年敕撰。",
+      "work_id": "d59f2ntwu0ap"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝宮史",
+      "content": "國朝宮史三十六卷。乾隆七年敕撰。",
+      "work_id": "d59f2mee1wjl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "宮史續編",
+      "content": "宮史續編一百卷。嘉慶六年敕撰。",
+      "work_id": "d59f2nf24hs1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清通禮",
+      "content": "大清通禮五十四卷。道光四年敕撰。",
+      "work_id": "d59f2n7wah35"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "廟製圖考",
+      "content": "廟製圖考一卷。萬斯同撰。",
+      "work_id": "d59f2meezm69"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "壇廟祀典",
+      "content": "壇廟祀典三卷。方觀承撰。",
+      "work_id": "d59f2nf24hs2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "壇廟樂章",
+      "content": "壇廟樂章一卷。張樂盛撰。",
+      "work_id": "d59f2nf2fqbk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "萬壽衢歌樂章",
+      "content": "萬壽衢歌樂章六卷。彭元瑞撰。",
+      "work_id": "d59f2mow2adc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北郊配位議",
+      "content": "北郊配位議一卷，辨定嘉靖大禮議二卷。毛奇齡撰。",
+      "work_id": "d59f2meezm68"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "辨定嘉靖大禮議",
+      "content": "",
+      "content_from": "北郊配位議",
+      "work_id": "d59f2megv1fl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北嶽恆山歷祀上曲陽考",
+      "content": "北嶽恆山歷祀上曲陽考一卷。劉師峻撰。",
+      "work_id": "d59f2nf2fqbl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "盛京典制備考",
+      "content": "盛京典制備考八卷。崇厚撰。",
+      "work_id": "d59f2nf2qyv4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "滿洲四禮考",
+      "content": "滿洲四禮考四卷。索寧安撰。",
+      "work_id": "d59f2nf2qyv5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "太常紀要",
+      "content": "太常紀要十五卷，四譯館考十五卷。江蘩撰。",
+      "work_id": "d59f2meif85d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "四譯館考",
+      "content": "",
+      "content_from": "太常紀要",
+      "work_id": "d59f2meif85c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "學典",
+      "content": "學典三十卷。孫承澤撰。",
+      "work_id": "d59f2meg8kcg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國學禮樂錄",
+      "content": "國學禮樂錄二十四卷。李周望、謝履忠同撰。",
+      "work_id": "d59f2mehhiio"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "泮宮禮樂全書",
+      "content": "泮宮禮樂全書十六卷。張安茂撰。",
+      "work_id": "d59f2nf2qyv6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "聖門禮樂統",
+      "content": "聖門禮樂統二十四卷。張行言撰。",
+      "work_id": "d59f2mehsr29"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "文廟祀典考",
+      "content": "文廟祀典考五十卷。龐鍾璐撰。",
+      "work_id": "d59f2nf327eo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "直省釋奠禮樂記",
+      "content": "直省釋奠禮樂記六卷。應寶時撰。",
+      "work_id": "d59f2n6d1gxs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "醴陵縣文廟丁祭譜",
+      "content": "醴陵縣文廟丁祭譜四卷。藍錫瑞撰。",
+      "work_id": "d59f2nf327ep"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "文廟從祀先賢先儒考",
+      "content": "文廟從祀先賢先儒考一卷。郎廷極撰。",
+      "work_id": "d59f2meg8kch"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "孔廟從祀末議",
+      "content": "孔廟從祀末議一卷。閻若璩撰。",
+      "work_id": "d59f2nf3dfy8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "家塾祀典",
+      "content": "家塾祀典一卷。應扌為謙撰。",
+      "work_id": "d59f2nf3dfy9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清通禮品官士庶儀纂",
+      "content": "大清通禮品官士庶儀纂六卷。劉師陸撰。",
+      "work_id": "d59f2nf3dfya"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吾學錄初編",
+      "content": "吾學錄初編二十四卷。吳榮光撰。",
+      "work_id": "d59f2nf3oohs"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝諡法考",
+      "content": "國朝諡法考一卷。王士禛撰。",
+      "work_id": "d59f2mwqvaio"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝大臣諡法錄",
+      "content": "皇朝大臣諡法錄四卷。邵晉涵撰。",
+      "work_id": "d59f2nf3ooht"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "皇朝諡法考",
+      "content": "皇朝諡法考五卷。鮑康撰。",
+      "work_id": "d59f2nf3zx1c"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "漢官舊儀",
+      "content": "漢衛宏漢官舊儀一卷。",
+      "work_id": "d59f208afksg",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補遺",
+      "content": "補遺一卷。",
+      "work_id": "d59f208afksg",
+      "is_jiyi": true,
+      "section_kind": "附屬部帙",
+      "ai_note": "本節乃《漢官舊儀》一本所含之附屬部帙，隨本刊行、不單行，依 SCHEMA〈版本附屬部帙〉不別立 Work，繫於母條。 ｜ 2026-08-24：母條《漢官舊儀》`1ev3bb1v1dmgw` 已於 `554956c7c5`（兩漢H3）併入《漢舊儀》`1evcml0tkopvk`，而本附屬部帙之節未隨遷，遂成落空（chk〈整理本繫連落空〉0→1）。今改繫其承繼者。"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "典禮",
+      "content": "不著撰人廟學典禮四卷。",
+      "work_id": "d59f2og8xngh",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "銓選科舉之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "學政全書",
+      "content": "學政全書八十卷。乾隆三十九年，素爾納等奉敕撰。",
+      "work_id": "d59f2nf3zx1d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "磨勘簡明條例",
+      "content": "磨勘簡明條例二卷，續二卷。乾隆時奉敕撰。",
+      "work_id": "d59f2nf4b5kw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "科場條例",
+      "content": "科場條例六十卷。光緒十四年奉敕撰。",
+      "work_id": "d59f2nf4b5kx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "奏定學堂章程",
+      "content": "奏定學堂章程不分卷。光緒二十九年，管學大臣奉敕撰。",
+      "work_id": "d59f2n13vnr4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吏部銓選則例",
+      "content": "吏部銓選則例十七卷。嘉慶十年敕撰。",
+      "work_id": "d59f2nf4b5ky"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "吏部處分則例",
+      "content": "吏部處分則例五十二卷，驗封司則例六卷，稽勛司則例八卷。道光十年敕撰，光緒十三年重修。歷代銓選志一卷。袁定遠撰。",
+      "work_id": "d59f2nf4me4g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "驗封司則例",
+      "content": "",
+      "content_from": "吏部處分則例",
+      "work_id": "d59f2nf4me4h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "稽勛司則例",
+      "content": "",
+      "content_from": "吏部處分則例",
+      "work_id": "d59f2nf4xmo0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代銓選志",
+      "content": "",
+      "content_from": "吏部處分則例",
+      "work_id": "d59f2mwqk1z4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "銓政論略",
+      "content": "銓政論略一卷。蔡方炳撰。",
+      "work_id": "d59f2meb8rnl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "登科記考",
+      "content": "登科記考三十卷。徐松撰。",
+      "work_id": "d59f2nf4xmo1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝貢舉年表",
+      "content": "國朝貢舉年表三卷。陳國霖、顧錫中同撰。",
+      "work_id": "d59f2nf4xmo2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝貢舉考略",
+      "content": "國朝貢舉考略三卷。黃崇簡撰。",
+      "work_id": "d59f2nf58v7k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷科典試題名錄",
+      "content": "歷科典試題名錄一卷，考官試題錄四卷。黃崇簡、饒玉成同撰。",
+      "work_id": "d59f2nf58v7l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "考官試題錄",
+      "content": "",
+      "content_from": "歷科典試題名錄",
+      "work_id": "d59f2nf5k3r4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝鼎甲考",
+      "content": "國朝鼎甲考一卷，狀元事考一卷。饒玉成撰。",
+      "work_id": "d59f2nf5k3r5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "狀元事考",
+      "content": "",
+      "content_from": "國朝鼎甲考",
+      "work_id": "d59f2nf5k3r6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "制義科瑣記",
+      "content": "制義科瑣記四卷，續記一卷，淡墨錄十六卷。李調元撰。",
+      "work_id": "d59f2nf5vcao"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淡墨錄",
+      "content": "",
+      "content_from": "制義科瑣記",
+      "work_id": "d59f2nf5vcap"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "國朝右文掌錄",
+      "content": "國朝右文掌錄一卷。宗源瀚撰。",
+      "work_id": "d59f2nf66ku8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "制科雜錄",
+      "content": "制科雜錄一卷。毛奇齡撰。",
+      "work_id": "d59f2meh69z4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "匯征錄",
+      "content": "匯征錄一卷。不著撰人氏名。歷代武舉考一卷。譚吉璁撰。",
+      "work_id": "d59f2meh69z5"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "邦計之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "賦役全書",
+      "content": "賦役全書一百卷。順治間敕撰。",
+      "work_id": "d59f2nf66ku9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "孚惠全書",
+      "content": "孚惠全書六十四卷。乾隆六十年，彭元瑞奉敕撰。",
+      "work_id": "d59f2nf66kua"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "辛酉工賑紀事",
+      "content": "辛酉工賑紀事三十八卷。嘉慶六年敕撰。",
+      "work_id": "d59f2nf6htds"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "戶部漕運全書",
+      "content": "戶部漕運全書九十六卷。光緒二年敕撰。",
+      "work_id": "d59f2nf6htdt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "官田始末考",
+      "content": "官田始末考一卷。顧炎武撰。",
+      "work_id": "d59f2nf6t1xc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蘇松歷代財賦考",
+      "content": "蘇松歷代財賦考一卷。不著撰人氏名。杭州府賦役全書一卷。不著撰人氏名。浙江減賦全案十卷。楊昌濬編。",
+      "work_id": "d59f2mejcxs1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大元海運記",
+      "content": "大元海運記二卷。胡敬撰。",
+      "work_id": "d59f2nf6t1xd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "明漕運志",
+      "content": "明漕運志一卷。曹溶撰。",
+      "work_id": "d59f2mejcxs0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "丁漕指掌",
+      "content": "丁漕指掌十卷。王大經撰。",
+      "work_id": "d59f2nf74agw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "海運芻言",
+      "content": "海運芻言一卷。施彥士撰。",
+      "work_id": "d59f2nf74agx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江蘇海運全案",
+      "content": "江蘇海運全案十二卷。賀長齡撰。",
+      "work_id": "d59f2nf74agy"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浙江海運全案",
+      "content": "浙江海運全案十卷。黃宗漢編。",
+      "work_id": "d59f2nf7fj0g"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "江北運程",
+      "content": "江北運程四十卷。董恂編。",
+      "work_id": "d59f2nf7fj0h"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "錢幣芻言",
+      "content": "錢幣芻言一卷。王鎏撰。",
+      "work_id": "d59f2nf7qrk0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "泉刀彙纂",
+      "content": "泉刀彙纂不分卷。邱峻撰。",
+      "work_id": "d59f2mejzev5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "錢錄",
+      "content": "錢錄十二卷。張端本撰。",
+      "work_id": "d59f2ntypfk2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大錢圖錄",
+      "content": "大錢圖錄一卷。鮑康撰。",
+      "work_id": "d59f2nf7qrk1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "長蘆鹽法志",
+      "content": "長蘆鹽法志二十卷，附編十卷。珠隆阿修。河東鹽法志十卷。石麟等修。山東鹽法志二十四卷，附編十卷。崇福等修。山東鹽法續增備考六卷。王定柱編。",
+      "work_id": "d59f2ntx58u8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩淮鹽法志",
+      "content": "兩淮鹽法志四十卷。吉慶修。兩淮鹽法志五十六卷。佶山修。兩淮鹽法志一百二十卷。劉坤一修。淮南鹽法紀略十卷。龐際雲撰。",
+      "work_id": "d59f2ntx58u9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮鹽備要",
+      "content": "淮鹽備要十卷。李澄撰。",
+      "work_id": "d59f2nf7qrk2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮鹽問答",
+      "content": "淮鹽問答一卷。周濟撰。",
+      "work_id": "d59f2nf8203k"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "淮南調劑志略",
+      "content": "淮南調劑志略四卷。不著撰人氏名。淮北票鹽續略十二卷。許寶書撰。",
+      "work_id": "d59f2nf8203l"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩浙鹽法續纂備考",
+      "content": "兩浙鹽法續纂備考十二卷。楊昌濬編。",
+      "work_id": "d59f2nf8d8n4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "兩廣鹽法志",
+      "content": "兩廣鹽法志三十五卷。阮元等修。粵鹽蠡測編一卷。陳銓撰。",
+      "work_id": "d59f2nf8d8n5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鹽法議略",
+      "content": "鹽法議略一卷。王守基撰。",
+      "work_id": "d59f2nf8d8n6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "歷代徵稅紀",
+      "content": "歷代徵稅紀一卷。彭寧和撰。",
+      "work_id": "d59f2nf8oh6o"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "續纂淮關統志",
+      "content": "續纂淮關統志十四卷。元成編。",
+      "work_id": "d59f2nf8oh6p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "北新關志",
+      "content": "北新關志十六卷。許夢閎撰。",
+      "work_id": "d59f2nf8zpq8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "粵海關志",
+      "content": "粵海關志三十卷。豫堃編。",
+      "work_id": "d59f2nf8zpq9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "荒政叢書",
+      "content": "荒政叢書十卷，附錄二卷。俞森撰。",
+      "work_id": "d59f2mefm39c"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "救荒備覽",
+      "content": "救荒備覽四卷。勞潼撰。",
+      "work_id": "d59f2nf9ay9s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "荒政輯要",
+      "content": "荒政輯要十卷。汪志伊撰。",
+      "work_id": "d59f2nf9ay9t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "康濟錄",
+      "content": "康濟錄六卷。倪國璉撰。",
+      "work_id": "d59f2ntxghds"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "籌濟編",
+      "content": "籌濟編三十二卷。楊景仁撰。",
+      "work_id": "d59f2nf9m6tc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "捕蝗考",
+      "content": "捕蝗考一卷。陳芳生撰。",
+      "work_id": "d59f2mefaups"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "捕蝗彙編",
+      "content": "捕蝗彙編一卷。陳僅撰。",
+      "work_id": "d59f2nf9m6td"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "伐蛟說",
+      "content": "伐蛟說一卷。魏廷珍撰。",
+      "work_id": "d59f2nf9m6te"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "畿輔義倉圖",
+      "content": "畿輔義倉圖六卷。方觀承撰。",
+      "work_id": "d59f2nf9xfcw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "左司筆記",
+      "content": "左司筆記二十卷。吳璟撰。",
+      "work_id": "d59f2mejzev4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "己庚編",
+      "content": "己庚編六卷。祁韻士撰。",
+      "work_id": "d59f2nf9xfcx"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "石渠餘紀",
+      "content": "石渠餘紀六卷。王慶雲撰。",
+      "work_id": "d59f2nfa8nwg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "光緒會計錄",
+      "content": "光緒會計錄三卷。李希聖撰。",
+      "work_id": "d59f2nfa8nwh"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "軍政之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八旗通志初集",
+      "content": "八旗通志初集二百五十卷。雍正五年，鄂爾泰奉敕撰。",
+      "work_id": "d59f2mefm39d"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八旗通志",
+      "content": "八旗通志三百五十四卷。乾隆三十七年，福隆安等奉敕撰。",
+      "work_id": "d59f2ntxghdt"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "八旗則例",
+      "content": "八旗則例十二卷。乾隆三十七年，福隆安等撰。",
+      "work_id": "d59f2nfa8nwi"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "軍器則例",
+      "content": "軍器則例二十四卷。嘉慶十九年敕撰。",
+      "work_id": "d59f2nfajwg0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "綠營則例",
+      "content": "綠營則例十六卷。官本。中樞政考三十二卷。嘉慶二十年，明亮等奉敕撰。",
+      "work_id": "d59f2nfajwg1"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "中樞政考續纂",
+      "content": "中樞政考續纂七十二卷。道光九年，長齡等奉敕撰。",
+      "work_id": "d59f2nfav4zk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "杭州駐防八旗志略",
+      "content": "杭州駐防八旗志略二十五卷。張大昌撰。",
+      "work_id": "d59f2nfav4zl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "荊州駐防八旗志",
+      "content": "荊州駐防八旗志十六卷。希元撰。",
+      "work_id": "d59f2nfav4zm"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "駐粵八旗志",
+      "content": "駐粵八旗志二十四卷。長善撰。",
+      "work_id": "d59f2nfb6dj4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "馬政志",
+      "content": "馬政志一卷。蔡方炳撰。",
+      "work_id": "d59f2ntxrpxc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "保甲書",
+      "content": "保甲書四卷。徐棟撰。",
+      "work_id": "d59f2nfb6dj5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "鄉守外編輯要",
+      "content": "鄉守外編輯要十卷。許乃釗撰。",
+      "work_id": "d59f2nfbhm2o"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "法令之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "督捕則例",
+      "content": "督捕則例二卷。乾隆二年，徐本等奉敕撰。",
+      "work_id": "d59f2nfbhm2p"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清律例",
+      "content": "大清律例四十七卷。乾隆五年，三泰等奉敕撰。",
+      "work_id": "d59f2mefxbsw"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "大清律續纂條例總類",
+      "content": "大清律續纂條例總類二卷。乾隆二十五年敕撰。",
+      "work_id": "d59f2nfbhm2q"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "五軍道里表",
+      "content": "五軍道里表四卷。乾隆四十四年，福隆安等奉敕撰。",
+      "work_id": "d59f2nfbsum8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "三流道里表",
+      "content": "三流道里表四卷。乾隆四十九年，阿桂等奉敕撰。",
+      "work_id": "d59f2nfbsum9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "刪除律例附商律",
+      "content": "刪除律例附商律不分卷。光緒三十一年，沈家本奉敕撰；商律，三十二年，商部奉敕撰。",
+      "work_id": "d59f2nfbsuma"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "清現行刑律",
+      "content": "清現行刑律三十六卷，秋審條款一卷。光緒時，沈家本等奉敕撰。",
+      "work_id": "d59f2nfc435s"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "秋審條款",
+      "content": "",
+      "content_from": "清現行刑律",
+      "work_id": "d59f2nfc435t"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "禁煙條例",
+      "content": "禁煙條例一卷。光緒時，善耆等奉敕撰。",
+      "work_id": "d59f2nfcfbpc"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "蒙古律例",
+      "content": "蒙古律例十二卷。官本。刑部奏定新章四卷。官本。刑部比照加減成案三十二卷。許槤、熊義同撰。",
+      "work_id": "d59f2nfcfbpd"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "刑案匯覽",
+      "content": "刑案匯覽六十卷，卷首一卷，卷末一卷，拾遺備考一卷，續編十卷。祝慶祺撰。",
+      "work_id": "d59f2nfcqk8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "卷首",
+      "content": "",
+      "content_from": "刑案匯覽",
+      "work_id": "d59f2nfcqk8w"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "卷末",
+      "content": "",
+      "content_from": "刑案匯覽",
+      "work_id": "d59f2nfcqk8y"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "駁案新編",
+      "content": "駁案新編三十九卷。全士潮等編。",
+      "work_id": "d59f2nfd1ssg"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "秋審比較匯案續編",
+      "content": "秋審比較匯案續編八卷。不著撰人氏名。清律例歌括一卷。不著撰人氏名，丁承禧注。",
+      "work_id": "d59f2nfd1ssh"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "重修名法指掌圖",
+      "content": "重修名法指掌圖四卷。徐灝撰。",
+      "work_id": "d59f2nfdd1c0"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "法曹事宜",
+      "content": "法曹事宜四卷。不著撰人氏名。",
+      "work_id": "d59f2nfdd1c1"
+    },
+    {
+      "level": 3,
+      "type": "category",
+      "title": "考工之屬",
+      "content": ""
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "乘輿儀仗做法",
+      "content": "乘輿儀仗做法二卷。乾隆十三年奏刊。工程做法七十四卷。雍正十二年，果親王允禮等撰。",
+      "work_id": "d59f2nfdd1c2"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "物料價值則例",
+      "content": "物料價值則例二百二十卷。乾隆三十三年，陳宏謀等奉敕撰。",
+      "work_id": "d59f2nfdo9vk"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "武英殿聚珍板程式",
+      "content": "武英殿聚珍板程式一卷。乾隆三十八年，金簡等奉敕撰。",
+      "work_id": "d59f2nfdo9vl"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "內廷工程做法",
+      "content": "內廷工程做法八卷，簡明做法無卷數。工部會同內務府撰。",
+      "work_id": "d59f2nfdzif4"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "簡明做法",
+      "content": "",
+      "content_from": "內廷工程做法",
+      "work_id": "d59f2nfdzif5"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "圓明園工部則例",
+      "content": "圓明園工部則例不分卷。不著撰人氏名。城垣做法冊式一卷。官本。工部軍器則例六十卷。嘉慶十六年，劉權之等奉敕撰。",
+      "work_id": "d59f2nfdzif6"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "戰船則例內河",
+      "content": "戰船則例內河五十八卷，外海四十卷。官本。重訂鐵路簡明章程一卷。光緒二十九年，商部撰。",
+      "work_id": "d59f2nfeaqyo"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "外海",
+      "content": "",
+      "content_from": "戰船則例內河",
+      "work_id": "d59f2nfeaqyp"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "河工器具圖式",
+      "content": "河工器具圖式四卷。麟慶撰。",
+      "work_id": "d59f2nfelzi8"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "浮梁陶政志",
+      "content": "浮梁陶政志一卷。吳允嘉撰。",
+      "work_id": "d59f2meklvy9"
+    },
+    {
+      "level": 4,
+      "type": "book",
+      "title": "築圩圖式",
+      "content": "築圩圖式一卷。孫峻撰。",
+      "work_id": "d59f2nfelzi9"
+    }
+  ]
+}

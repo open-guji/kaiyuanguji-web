@@ -1,0 +1,330 @@
+{
+  "title": "語孟類",
+  "sections": [
+    {
+      "title": "《論語》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "漢有齊、魯及古文三家，今行於世者《魯論語》也。傳授本末，何晏序文備矣。",
+      "work_id": "d59f1iopaku8"
+    },
+    {
+      "title": "《論語集解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏尚書駙馬都尉南陽何晏平叔撰。",
+      "work_id": "d59f2psd1jpe"
+    },
+    {
+      "title": "《論語釋文》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐陸德明撰。",
+      "work_id": "d59f2pzvoao0"
+    },
+    {
+      "title": "《論語注疏解經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "邢昺撰。唐人止為《五經》疏，而不及《孝經》、《論語》，至昺始奉詔為之。",
+      "work_id": "d59f2hqvd1qa"
+    },
+    {
+      "title": "《孟子章句》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "後漢太僕京兆趙岐邠卿撰。本名嘉，字臺卿，避難改名。",
+      "work_id": "d59f24mkzxmp"
+    },
+    {
+      "title": "《孟子音義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "龍圖閣學士侍讀博平孫奭宗右撰。舊有張鎰、丁公著為之音，俱未精當。奭方奉詔校定，撰集《正義》，遂討論音釋，疏其疑滯備其闕遺，既成上之。",
+      "work_id": "d59f2hqqd91e"
+    },
+    {
+      "title": "《孟子正義》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "孫奭撰。序言為之注者，有趙岐、陸善經，其所訓說，雖小有異同，而共宗趙氏，今惟據趙注為本。",
+      "work_id": "d59f2hpsnmdc"
+    },
+    {
+      "title": "《論語筆解》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐韓愈退之、李翺習之撰。按《館閣書目》雲秘書丞許勃為之序，今本乃王存序。雲得於錢塘汪充，而無許序。",
+      "work_id": "d59f28mjw934"
+    },
+    {
+      "title": "《東坡論語傳》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇軾撰。",
+      "work_id": "d59f2psk8076"
+    },
+    {
+      "title": "《潁濱論語拾遺》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇轍撰。於其兄之說，意有未安者。凡二十七章。",
+      "work_id": "d59f2q28kutc"
+    },
+    {
+      "title": "《潁濱孟子解》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇轍撰。其少年時所作，凡二十四章。",
+      "work_id": "d59f2pz6pbls"
+    },
+    {
+      "title": "《王氏論語解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "廣陵王令逢原撰。令年二十八，終於布衣。所講《孟子》才盡二篇，其第三篇盡二章而止。王荊公志其墓，不言其所著書。而晁氏《讀書志》云，令於《堯曰篇》解曰：「四海不困窮，則天祿不永終矣。」王氏《新經書義》取之。",
+      "work_id": "d59f2q0l9rep"
+    },
+    {
+      "title": "《孟子解》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《王氏論語解》十卷",
+      "work_id": "d59f2hd3cykk",
+      "link_basis": "原繫 1evr5e3mi42v0（直齋連書著錄之母條），本節別為一書而庫中無同條，今新建專條 1ex4o5uekfhv4 繫之（M1 磁鐵專項）。直齋語孟類「《王氏論語解》十卷、《孟子解》五卷，廣陵王令逢原撰」連書著錄，解題明言「所講《孟子》才盡二篇」——別為一書。庫中同題諸條皆他人之書（徐存、沈括、袁甫、程頤、蘇轍等），無王令本條，今別出。"
+    },
+    {
+      "title": "《龜山論語解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "工部侍郎延平楊時中立撰。",
+      "work_id": "d59f2q3qw54x"
+    },
+    {
+      "title": "《謝氏論語解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "上蔡謝良佐顯道撰。",
+      "work_id": "d59f2px1wy69"
+    },
+    {
+      "title": "《遊氏論語解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "監察御史建陽遊酢定夫撰。",
+      "work_id": "d59f2pvn198h"
+    },
+    {
+      "title": "《尹氏論語解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "徽猷閣待制河南尹焞彥明撰。紹興中經筵所上。《孟子解》未成，不及上而卒。自龜山而下，皆程氏高弟也。",
+      "work_id": "d59f2ps8czr4"
+    },
+    {
+      "title": "《孟子解》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《尹氏論語解》十卷",
+      "work_id": "d59f2hpreo77"
+    },
+    {
+      "title": "《論語釋言》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "葉夢得少蘊撰。",
+      "work_id": "d59f2hf7iv41"
+    },
+    {
+      "title": "《張氏論語解》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張九成撰。",
+      "work_id": "d59f2pz8kqo2"
+    },
+    {
+      "title": "《孟子解》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "張九成撰。",
+      "work_id": "d59f2htcy5mr"
+    },
+    {
+      "title": "《致堂論語詳說》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "禮部侍郎建安胡寅明仲撰。文定之子也。",
+      "work_id": "d59f2pw89eki"
+    },
+    {
+      "title": "《五峰論語指南》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "監南嶽廟胡宏仁仲撰。詳論黃祖舜、沈大廉之說。宏，文定之季子也。",
+      "work_id": "d59f2q53l69s"
+    },
+    {
+      "title": "《竹西論語感發》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "中書舍人江都王居正撰。",
+      "work_id": "d59f2ptjt24g"
+    },
+    {
+      "title": "《論語探古》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "畢良史撰。",
+      "work_id": "d59f2hfepbls"
+    },
+    {
+      "title": "《論語續解》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳棫撰。其所援引百家諸史傳，出入詳洽。所稱樂肇駁王、鄭之說，間取一二。肇，晉人。《隋》、《唐志》載《論語釋》二卷，《駁》二卷。按董逌《藏書志》，《釋》已亡，《駁》幸存。而《崇文總目》及諸藏書皆無有，棫蓋嘗見其書也。《館閣書目》亦不載。",
+      "work_id": "d59f2ptk4av6"
+    },
+    {
+      "title": "《考異說例》各一卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《論語續解》十卷",
+      "work_id": null
+    },
+    {
+      "title": "《玉泉論語學》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "工部郎官嚴陵喻樗子才撰。樗與沈元用、張子韶、淩彥文、樊茂實諸公厚善，為館職，坐與張通書，得罪秦檜。玉山汪端明應辰，其婿也。",
+      "work_id": "d59f2pubwf0h"
+    },
+    {
+      "title": "《論語義》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "禮部侍郎章貢曾幾吉父撰。胡文定門人也。",
+      "work_id": "d59f2hhzq1hc"
+    },
+    {
+      "title": "《南軒論語說》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "侍講廣漢張栻敬夫撰。",
+      "work_id": "d59f2pwpffuq"
+    },
+    {
+      "title": "《孟子說》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "侍講廣漢張栻敬夫撰。",
+      "work_id": "d59f2hcnr3eq"
+    },
+    {
+      "title": "《語孟集義》三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱熹撰。集二程、張氏及范祖禹、呂希哲、呂大臨、謝良佐、遊酢、楊時、侯仲良、周孚先凡十二家，初名「精義」，後刻於豫章郡學，始名「集義」。其所言「外自託於程氏，而竊其近似之言、以文異端之說」者，蓋指張無垢也。無垢與僧宗杲遊，故云爾。",
+      "work_id": "d59f2pyp816p"
+    },
+    {
+      "title": "《論語集注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱熹撰。大略本程氏學，通取注疏古今諸儒之說，間復斷以己見。晦翁生平講解，此為第一，所謂毫髮無遺憾者矣。",
+      "work_id": "d59f2hfxqsqo"
+    },
+    {
+      "title": "《孟子集注》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《論語集注》十卷",
+      "work_id": "d59f2hgl5lhd"
+    },
+    {
+      "title": "《論語或問》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "朱熹撰。《集注》既成，復論次其取舍之所以然，別為一書，而篇首述二書綱領，與讀書者之要法。其與《集注》實相表裏，學者所當並觀也。",
+      "work_id": "d59f2hk899mp"
+    },
+    {
+      "title": "《孟子或問》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《論語或問》十卷",
+      "work_id": "d59f2hkdvjeq",
+      "link_basis": "原繫 1evgoqzx2gqo0（朱熹《論語或問》連書著錄），庫中既有《孟子或問》十四卷專條（宋志、經義考皆錄），卷數正合，今改繫。"
+    },
+    {
+      "title": "《石鼓論語答問》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "戴溪撰。岷隱初仕衡嶽祠官，領石鼓書院山長，所與諸生講說者也。其說切近明白，故朱晦翁亦稱其近道。",
+      "work_id": "d59f2hs8zs3m"
+    },
+    {
+      "title": "《孟子答問》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《石鼓論語答問》三卷",
+      "work_id": "d59f2hg5uyv4",
+      "link_basis": "原繫 1evkpgg39g1kw（戴溪《石鼓論語答問》連書著錄），庫中既有《石鼓孟子答問》專條（宋志作「戴溪《石鼓孟子答問》三卷」），卷數正合，今改繫。"
+    },
+    {
+      "title": "《論語通釋》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃幹撰。其書兼載《或問》，發明晦翁未盡之意。",
+      "work_id": "d59f2mozhwcg"
+    },
+    {
+      "title": "《論語意原》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "不知作者。",
+      "work_id": "d59f2hqei8e9"
+    },
+    {
+      "title": "《論語本旨》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "建昌軍教授永嘉姜得平撰。",
+      "work_id": "d59f2pvscagx"
+    },
+    {
+      "title": "《論語大意》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "海陵卞圜撰。",
+      "work_id": "d59f2ofvton7"
+    },
+    {
+      "title": "《晦庵語類》二十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "蜀人以晦庵語錄類成編，處州教授東陽潘墀取其《論語》一類，增益其未備，刊於學宮。",
+      "work_id": "d59f2psjwrup"
+    },
+    {
+      "title": "《論語紀蒙》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "國子司業臨海陳耆卿壽老撰。水心葉適為之序。耆卿，學於水心者也。嘗主麗水簿，當嘉定初年成此書。",
+      "work_id": "d59f2hi9eebm"
+    },
+    {
+      "title": "《孟子紀蒙》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "",
+      "content_from": "《論語紀蒙》六卷",
+      "work_id": "d59f2hgowg00"
+    }
+  ]
+}

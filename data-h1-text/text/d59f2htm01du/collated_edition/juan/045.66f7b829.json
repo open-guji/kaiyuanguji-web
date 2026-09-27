@@ -1,0 +1,684 @@
+{
+  "title": "雜藝類",
+  "sections": [
+    {
+      "title": "《九鏡射經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐檢校太子詹事韋韓撰。《制弓矢法》三篇，《射法》九篇。",
+      "work_id": "d59f28j9wjrb"
+    },
+    {
+      "title": "《射訣》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋韓撰。敘其學射之初，有張宗者授之訣，遼著於篇。",
+      "work_id": "d59f2ptvcu83"
+    },
+    {
+      "title": "《射評要略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "稱李廣撰。固依託也，而亦鄙淺亡奇。",
+      "work_id": "d59f2q5mbev5"
+    },
+    {
+      "title": "《射訓》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "監察御史張仲殷撰。《中興書目》雲本朝人，果也，不應名犯廟諱。",
+      "work_id": "d59f28jmpa0z"
+    },
+    {
+      "title": "《射議》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "元城王越石仲寶撰。凡七條。",
+      "work_id": "d59f2hlige0x"
+    },
+    {
+      "title": "《增廣射譜》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "淳熙中詔進士習射，書坊為此以射利。末二卷為盧宗邁《射法》，亦簡要可觀。",
+      "work_id": "d59f2q6jek8w"
+    },
+    {
+      "title": "《書品》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁度支尚書庾肩吾撰。",
+      "work_id": "d59f286ycbuo"
+    },
+    {
+      "title": "《書評》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁侍中袁昂撰。",
+      "work_id": "d59f2pykupkw"
+    },
+    {
+      "title": "《藥石論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐昇州司馬張懷瓘撰。",
+      "work_id": "d59f2ptdkb9d"
+    },
+    {
+      "title": "《六體論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《六體論》一卷",
+      "work_id": "d59f28lmt3ic"
+    },
+    {
+      "title": "《書斷》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書斷》三卷",
+      "work_id": "d59f28kvng90"
+    },
+    {
+      "title": "《書估》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書估》一卷",
+      "work_id": "d59f2q6zy58g"
+    },
+    {
+      "title": "《論書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "以上四種亦皆張懷瓘撰。",
+      "work_id": "d59f2q0fni0x"
+    },
+    {
+      "title": "《翰林禁書》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "無名氏。",
+      "work_id": "d59f2q1wpts0"
+    },
+    {
+      "title": "《書後品》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐御史中丞李嗣真撰。",
+      "work_id": "d59f28llvdvr"
+    },
+    {
+      "title": "《墨藪》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "不知何人所集。凡十八篇。又一本二十一篇。",
+      "work_id": "d59f28kuei2s"
+    },
+    {
+      "title": "《古今法書苑》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "主客郎中臨淄周越撰。越與兄起皆有書名。起書未見，越書間有之，俗甚。",
+      "work_id": "d59f2q8hy70h"
+    },
+    {
+      "title": "《金壺記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧適之撰。集書家故事。以二字為題，而注所出於其下。凡三百餘條。",
+      "work_id": "d59f2hgmejnl"
+    },
+    {
+      "title": "《書史》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "禮部員外郎米芾元章撰。",
+      "work_id": "d59f2ht0gnwi"
+    },
+    {
+      "title": "《秘閣法帖跋》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "米芾撰。",
+      "work_id": "d59f2py2fpq9"
+    },
+    {
+      "title": "《翰墨志》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "高宗皇帝御製。",
+      "work_id": "d59f2huh7rpc"
+    },
+    {
+      "title": "《法帖刊誤》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃伯思長睿撰。《淳化法帖》出於待詔王著去取。時秘府墨跡真贗雜居，著不能辨也，但欲備晉、宋間名跡，遂至以江南人一手偽帖，竄入其間，鄙惡之甚。米南宮辨之，十已得七八，至長睿，益精詳矣。",
+      "work_id": "d59f2hs16uip"
+    },
+    {
+      "title": "《籀史》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "翟耆年伯壽撰。裒諸家鐘鼎圖說為一編，頗有考究。",
+      "work_id": "d59f2hr6wttt"
+    },
+    {
+      "title": "《續書譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄱陽姜夔堯章撰。",
+      "work_id": "d59f2hqf4phc"
+    },
+    {
+      "title": "《絳帖評》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "姜夔撰。",
+      "work_id": "d59f2pxoe0w0"
+    },
+    {
+      "title": "《法帖要錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐大理卿河東張彥遠愛賓撰。彥遠，宏靖之孫。三世相門。其父文規嘗刺湖州，著《吳興雜錄》。",
+      "work_id": "d59f2q1c46bl"
+    },
+    {
+      "title": "《飛白敘錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢惟演希聖撰。天聖四年序進。",
+      "work_id": "d59f2pt1e2gx"
+    },
+    {
+      "title": "《蘭亭博議》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "淮海桑世昌澤卿撰。世昌居天臺，放翁陸氏諸甥也，博雅能詩。又嘗為《西湖紀逸》，考林逋遺事甚詳。",
+      "work_id": "d59f2q8e7cao"
+    },
+    {
+      "title": "《蘭亭考》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "即前書。浙東庾司所刻，視初本頗有刪改。初十五篇，今存十三篇，去其《集字篇》後人集《蘭亭》字作書帖、詩銘之類者，又《附見篇》兼及右軍他書跡，於《樂毅論》尤詳。其書始成，本名《博議》，高內翰文虎炳如為之序。及其刊也，其子似孫，主為刪改，去此二篇固當，而其他務從省文，多失事實，或戾本意。其最甚者，序文本亦條達可觀，亦竄改無完篇，首末闕漏，文理斷續，於其父猶然，深可怪也。此書累十餘卷，不過為晉人一遺帖，自是作無益，玩物喪志，本無足雲。其中所錄諸家跋語，有昭然偽妄而不能辨者，未暇疏舉。",
+      "work_id": "d59f2ht47if6"
+    },
+    {
+      "title": "《法書撮要》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "吳興蔡耑山父撰。以書家事實，分門條類，亦無所發明。淳熙中人，雲紹聖御史之孫，吾鄉不聞有此人也，當考。然其名耑而字山父，「耑」者，物之初生，從「屮」，不從「山」也。偏旁之未審，何取其為法書？余於小學家黜書法於雜藝，有以也。",
+      "work_id": "d59f2q41i7eo"
+    },
+    {
+      "title": "《武岡法帖釋文》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉次莊元祐中為《官帖釋文》，刻石於臨江。而武岡又嘗傳刻絳州民潘氏帖。嘉定中，汪立中取劉本分入二十卷中。《官帖》所無者，增附之。",
+      "work_id": "d59f2q6kni81"
+    },
+    {
+      "title": "《書苑菁華》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "臨安書肆陳思者集。",
+      "work_id": "d59f2huc7z0i"
+    },
+    {
+      "title": "《齊梁畫目錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐竇蒙子泉錄。",
+      "work_id": "d59f2pz20rnk"
+    },
+    {
+      "title": "《古今畫人名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐李嗣真錄。",
+      "work_id": "d59f2q5uqt4x"
+    },
+    {
+      "title": "《唐朝畫斷》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐翰林學士朱景玄撰。一名《唐朝名畫錄。》前有目錄，後有天聖三年商宗儒後序，與《畫斷》大同小異。",
+      "work_id": "d59f2pt54wlc"
+    },
+    {
+      "title": "《唐朝名畫錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "即《畫斷》也。前有目錄，後有天聖三年商宗儒後序，與前本大同小異。",
+      "work_id": "d59f28m65t6u"
+    },
+    {
+      "title": "《歷代名畫記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐張彥遠撰。彥遠家世藏法書、名畫，收藏鑒識，自謂有一日之長。既作《法書要錄》，又為此《記》，且曰：「有好事者傳余二書，書畫之事畢矣。」\n△《五代名畫記》\n大梁劉道醇撰。嘉祐四年陳洵直序。",
+      "work_id": "d59f28lyzcp0"
+    },
+    {
+      "title": "《聖朝名畫評》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉道醇撰。",
+      "work_id": "d59f2hu4f1fl"
+    },
+    {
+      "title": "《益州名畫錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "黃休復撰。中興書目以為李略撰，而謂休復書今亡。",
+      "work_id": "d59f2ht8w2kj"
+    },
+    {
+      "title": "《山水受筆法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐沁水荊浩浩然撰。",
+      "work_id": "d59f2pzxjqbm"
+    },
+    {
+      "title": "《圖畫見聞志》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "太原郭若虛撰。元豐中自序，稱大父司徒公，未知何人。郭氏在國初無顯人，但有郭承祐耳。其書欲繼張彥遠之後。",
+      "work_id": "d59f2huwiebl"
+    },
+    {
+      "title": "《畫史》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "米芾撰。",
+      "work_id": "d59f2htqzu2o"
+    },
+    {
+      "title": "《德隅堂畫品》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李廌方叔撰。趙令時德麟官襄陽，行橐中諸畫，方叔皆為評品之。元符元年也。",
+      "work_id": "d59f2hlp0dfl"
+    },
+    {
+      "title": "《林泉高致集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "直徽猷閣待制河陽郭思撰。其父熙，字淳夫，善畫。思，元豐五年進士。既貴，追述其父遺跡、事實。待制許光疑為之序。曰《畫訓》、《畫意》、《畫題》、《畫訣》。而序又稱《詩歌》、《贊記》、《詔誥》、《銘志》，今本闕。",
+      "work_id": "d59f2hsg68le"
+    },
+    {
+      "title": "《廣川畫跋》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "董逌撰。",
+      "work_id": "d59f2hpg64n6"
+    },
+    {
+      "title": "《畫繼》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄧椿公壽撰。以繼郭若虛之後。張彥遠《記》止會昌元年，若虛《志》止熙寧七年，今書止乾道三年。",
+      "work_id": "d59f2hsexaf6"
+    },
+    {
+      "title": "《文房四譜》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "參政梓潼蘇易簡太簡撰。",
+      "work_id": "d59f2hur7d35"
+    },
+    {
+      "title": "《歙硯圖譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "太子中舍知婺源縣唐積撰。治平丙午歲。",
+      "work_id": "d59f2q1pjdvl"
+    },
+    {
+      "title": "《歙硯說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "皆不著名氏。",
+      "work_id": "d59f2hpajuv4"
+    },
+    {
+      "title": "《墨苑》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙郡李孝美伯揚撰。曰《圖》，曰《式》，曰《法》。元符中馬涓、李元膺為之序。",
+      "work_id": "d59f2hhhm9z5"
+    },
+    {
+      "title": "《硯史》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "米芾撰。",
+      "work_id": "d59f2hpelxxd"
+    },
+    {
+      "title": "《北海公硯錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐詢彥猷撰。專以青州紅絲石為貴。",
+      "work_id": "d59f2pw39log"
+    },
+    {
+      "title": "《閑堂雜記》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "不著名氏。述《文房四譜》，而首載唐氏《硯錄》。",
+      "work_id": "d59f2q40vqbk"
+    },
+    {
+      "title": "《硯箋》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "高似孫撰。",
+      "work_id": "d59f2hscqmma"
+    },
+    {
+      "title": "《續文房四譜》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "司農卿李洪秀穎撰。",
+      "work_id": "d59f2hhijzlv"
+    },
+    {
+      "title": "《算經》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "夏侯陽撰。大抵乘除法。《隋志》二卷；《唐志》一卷，甄鸞注。今本無注，元豐京監本。",
+      "work_id": "d59f286ua8sk"
+    },
+    {
+      "title": "《算經》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "張丘建撰。有序，首言：「算者不患乘除之為難，而患分之為難，是以序列諸分之本原，宣明約通之要法。」",
+      "work_id": "d59f286ua8sj"
+    },
+    {
+      "title": "《應用算法》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "夷門叟郭京元豐三年序。稱平陽奇士蔣舜元撰。凡八篇，曰：《釋數》、《田畝》、《粟米》、《端匹》、《斤秤》、《修築》、《差分》、《雜法》，總為百五十七門。前《志》在歷算類。",
+      "work_id": "d59f2py4mdc1"
+    },
+    {
+      "title": "《香譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "不知名氏。",
+      "work_id": "d59f2pyxyoe9"
+    },
+    {
+      "title": "《萱堂香譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "稱侯氏萱堂，而不著名。",
+      "work_id": "d59f2q8lp1c1"
+    },
+    {
+      "title": "《香嚴三昧》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "不知名氏。",
+      "work_id": "d59f2q9nrzlt"
+    },
+    {
+      "title": "《南蕃香錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "知泉州葉廷珪撰。",
+      "work_id": "d59f2hhv1hc1"
+    },
+    {
+      "title": "《茶經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐陸羽鴻漸撰。羽自號竟陵子，又號桑苧翁。",
+      "work_id": "d59f28lr6f45"
+    },
+    {
+      "title": "《煎茶水記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐涪州刺史張又新撰。本刑部侍郎劉伯芻稱水之與茶，宜者凡七等。又新復言得李季卿所筆錄陸鴻漸《水品》，凡二十。歐公《大明水記》嘗辨之，今亦載卷末。余足跡所至不廣，於《水品》僅嘗三四，若惠山泉甘美，置之第二不忝，特未知康王谷水何如爾。其次，吳淞第四橋水亦不惡。虎丘劍池殊未佳，而在第四，已不可曉。至於雪水，清甘絕佳，而居其末，尤不可曉也。大抵水活而後宜茶，活而不清潔猶不宜，故乳泉、石池、漫流者為上，為其活且潔也。若夫天一生水，烝為雲雨，水之活且潔者，何以過此？余嘗用凈器承雨水，試以烹煎，不減雪水。故知又新之說妄也。",
+      "work_id": "d59f28jdne9s"
+    },
+    {
+      "title": "《茶譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "後蜀毛文錫撰。",
+      "work_id": "d59f2gcnejgi"
+    },
+    {
+      "title": "《北苑茶錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "三司戶部判官丁謂謂之撰。咸平中進。",
+      "work_id": "d59f2hfjdvr7"
+    },
+    {
+      "title": "《茶錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "右正言修起居注莆田蔡襄君謨撰。皇祐中進。",
+      "work_id": "d59f2ht89lhf"
+    },
+    {
+      "title": "《北苑拾遺》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉昇撰。慶歷元年序。",
+      "work_id": "d59f2hgvrnya"
+    },
+    {
+      "title": "《補茶經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "知建州周絳撰。當大中祥符間。",
+      "work_id": "d59f2hf8rtab"
+    },
+    {
+      "title": "《東溪試茶錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "宋子安撰。",
+      "work_id": "d59f2hsr3jlu"
+    },
+    {
+      "title": "《北苑總錄》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "興化軍判官曾伉錄《茶經》諸書，而益以詩歌二首。",
+      "work_id": "d59f2pvav08y"
+    },
+    {
+      "title": "《茶山節對》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "攝衢州長史蔡宗顏撰。",
+      "work_id": "d59f2hfy21a9"
+    },
+    {
+      "title": "《宣和北苑貢茶錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "建陽熊蕃叔茂撰。其子克又益寫其形制而傳之。",
+      "work_id": "d59f2hstlfya"
+    },
+    {
+      "title": "《北苑別錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙汝礪撰。",
+      "work_id": "d59f2pvq5mo1"
+    },
+    {
+      "title": "《品茶要錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "建安黃儒道父撰。元祐中東坡嘗跋其後。",
+      "work_id": "d59f2hrr794y"
+    },
+    {
+      "title": "《酒譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "汶上竇蘋叔野撰。其人即著《唐書音訓》者。",
+      "work_id": "d59f2hpc41kz"
+    },
+    {
+      "title": "《北山酒經》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "大隱翁撰。",
+      "work_id": "d59f2htf4tfm"
+    },
+    {
+      "title": "《鼎錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "梁中書侍郎虞荔纂。",
+      "work_id": "d59f286tcj5s"
+    },
+    {
+      "title": "《古今刀劍錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "粱陶弘景撰。",
+      "work_id": "d59f286w5o1v"
+    },
+    {
+      "title": "《泉志》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "洪遵景伯撰。記歷代錢貨。",
+      "work_id": "d59f2hlpblz6"
+    },
+    {
+      "title": "《浸銅要略》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張甲撰。稱德興草澤紹聖元年序。蓋膽水浸鐵成銅之始。甲，參政子公之祖。",
+      "work_id": "d59f2q2hmqdc"
+    },
+    {
+      "title": "《冶金錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "泉司吏所為也。",
+      "work_id": "d59f2mui0tts"
+    },
+    {
+      "title": "《彈棋經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "題張柬之撰。\n△《五木經》一卷並圖例\n唐李翺撰，元革注。蓋古樗蒱之戲也。",
+      "work_id": "d59f28kzearo"
+    },
+    {
+      "title": "《三象戲圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "汲陽成師仲編。",
+      "work_id": "d59f2pthmewy"
+    },
+    {
+      "title": "《打馬格局》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "無名氏。",
+      "work_id": "d59f2py6hs74"
+    },
+    {
+      "title": "《打馬圖式》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鄭寅子敬撰。用五十馬。",
+      "work_id": "d59f2psgsef4"
+    },
+    {
+      "title": "《打馬賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "易安李氏撰。用二十馬。以上三者，各不同。今世打馬，大約與古之樗蒱相類。",
+      "work_id": "d59f2q6glf5s"
+    },
+    {
+      "title": "《譜雙》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "洪遵集。此戲今人不復為。",
+      "work_id": "d59f2q0uy48y"
+    },
+    {
+      "title": "《進士采選》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "趙明遠景昭撰。此元豐未改官制時遷轉格例也。",
+      "work_id": "d59f2q5thvcw"
+    },
+    {
+      "title": "《希古集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "括蒼何宗姚取投壺新舊式及馮氏《射法》為一編。",
+      "work_id": "d59f2q25591c"
+    },
+    {
+      "title": "《忘憂清樂集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "棋待詔李逸民撰集。",
+      "work_id": "d59f2hqpfjeq"
+    },
+    {
+      "title": "《通遠集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "無名氏。視《清樂》為略。",
+      "work_id": "d59f2q1g696q"
+    },
+    {
+      "title": "《象棋神機集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "稱於陽葉茂卿撰。",
+      "work_id": "d59f2q9vkxkx"
+    },
+    {
+      "title": "《約鰲圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《約鰲圖》一卷",
+      "work_id": "d59f2py091j6"
+    },
+    {
+      "title": "《采珠格局》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《采珠格局》一卷",
+      "work_id": "d59f2pw6p7gg"
+    },
+    {
+      "title": "《勸酒玉燭詩》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "皆無名氏。",
+      "work_id": "d59f2pva8j5s"
+    },
+    {
+      "title": "《捉臥甕人事數》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "李庭中撰。以上四種皆酒邊雅戲。",
+      "work_id": "d59f2q4em6f6"
+    }
+  ]
+}

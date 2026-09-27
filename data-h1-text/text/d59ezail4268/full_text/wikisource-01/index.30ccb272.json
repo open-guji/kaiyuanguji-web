@@ -1,0 +1,56 @@
+{
+  "work_id": "d59ezail4268",
+  "version_label": "尹文子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%B0%B9%E6%96%87%E5%AD%90",
+    "page_title": "尹文子",
+    "revid": 1488756,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "",
+  "total_chapters": 4,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "序",
+      "file": "001.md",
+      "page_title": "尹文子/序",
+      "revid": 356669,
+      "md_len": 197
+    },
+    {
+      "n": 2,
+      "title": "大道上",
+      "file": "002.md",
+      "page_title": "尹文子/大道上",
+      "revid": 356670,
+      "md_len": 4376
+    },
+    {
+      "n": 3,
+      "title": "大道下",
+      "file": "003.md",
+      "page_title": "尹文子/大道下",
+      "revid": 356672,
+      "md_len": 2612
+    },
+    {
+      "n": 4,
+      "title": "佚文",
+      "file": "004.md",
+      "page_title": "尹文子/佚文",
+      "revid": 506700,
+      "md_len": 1210
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

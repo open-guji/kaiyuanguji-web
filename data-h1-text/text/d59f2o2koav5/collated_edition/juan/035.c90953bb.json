@@ -1,0 +1,1093 @@
+{
+  "title": "經部·别集類",
+  "sections": [
+    {
+      "title": "别集類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "文帝集十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝集十八卷　《唐志》。",
+      "work_id": "d59f7z44nv2b",
+      "note": "集名即撰人，原書不另出撰人"
+    },
+    {
+      "title": "武帝集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝集十卷　《唐志》。《隋志》「二十六卷」。",
+      "work_id": "d59f2q6fnpxe"
+    },
+    {
+      "title": "詩賦集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "詩賦集二十卷　《隋志》。",
+      "work_id": "d59f99gp3406",
+      "note": "承前武帝"
+    },
+    {
+      "title": "武帝雜文集九卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝雜文集九卷　《隋志》。",
+      "work_id": "d59f2pv24cn5"
+    },
+    {
+      "title": "武帝别集目錄二卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝别集目錄二卷　《隋志》。",
+      "work_id": "d59f99gp3407"
+    },
+    {
+      "title": "武帝淨業賦三卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝淨業賦三卷　《隋志》。",
+      "work_id": "d59f99gp3408"
+    },
+    {
+      "title": "簡文帝集八十卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝集八十卷　《唐志》。《隋志》「八十五卷，陸罩撰，并錄」。",
+      "work_id": "d59f2863r2ma"
+    },
+    {
+      "title": "元帝集五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝集五十卷　紀。《唐志》。《隋》作「五十二卷」。",
+      "work_id": "d59f2852x2ip"
+    },
+    {
+      "title": "元帝小集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝小集十卷　紀。《唐志》。",
+      "work_id": "d59f2pv9xa80",
+      "note": "原書作「小集十卷」，承前元帝"
+    },
+    {
+      "title": "晉安成王集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "晉安成王集三十卷　《隋志》。",
+      "work_id": "d59f2pt8kirm"
+    },
+    {
+      "title": "昭明太子集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "昭明太子集二十卷　《唐志》。《隋志》同。",
+      "work_id": "d59f286ua8sh"
+    },
+    {
+      "title": "安成煬王集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "安成煬王集五卷　《隋志》。",
+      "work_id": "d59f2pqyscg0"
+    },
+    {
+      "title": "岳陽王詧集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "岳陽王詧集十卷　《隋志》。",
+      "work_id": "d59f2q6xrhfl"
+    },
+    {
+      "title": "邵陵王綸集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "邵陵王綸集四卷　《唐志》。《隋志》作「六卷」。",
+      "work_id": "d59f2q09er5u"
+    },
+    {
+      "title": "武陵王紀集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "武陵王紀集八卷　《唐志》。",
+      "work_id": "d59f2q3yp340"
+    },
+    {
+      "title": "蕭巋集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭巋集二十卷　《隋志》。",
+      "work_id": "d59f990dxqf4",
+      "note": "原書腳註①：《隋志》作「十卷」"
+    },
+    {
+      "title": "蕭業集文",
+      "level": 3,
+      "type": "book",
+      "content": "蕭業集文　《唐志》。本傳云：「所著詩賦數千言，世祖集而序之。」",
+      "work_id": "d59f99gp340a",
+      "note": "原書腳註②：此段文字見於《梁書·蕭機傳》"
+    },
+    {
+      "title": "蕭琮集七卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭琮集七卷　《隋志》。",
+      "work_id": "d59f285hwglf"
+    },
+    {
+      "title": "蕭秀集",
+      "level": 3,
+      "type": "book",
+      "content": "蕭秀集",
+      "work_id": "d59f99gp340b"
+    },
+    {
+      "title": "沈約　注武帝連珠一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約　注武帝連珠一卷",
+      "work_id": "d59f99gp340c",
+      "note": "原書腳註③：「注」原作「著」，據《隋志》改。與總集類同條重出"
+    },
+    {
+      "title": "范雲集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "范雲集十二卷　《唐志》。《隋志》「十一卷」。",
+      "work_id": "d59f2854h98i"
+    },
+    {
+      "title": "江淹前集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "江淹前集十卷　《唐志》。《隋志》「九卷」。",
+      "work_id": "d59f2q6dsa9s"
+    },
+    {
+      "title": "江淹後集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "江淹後集十卷　《唐志》。《隋志》同。",
+      "work_id": "d59f2pu7j3eq",
+      "note": "原書作「後集十卷」，承前江淹"
+    },
+    {
+      "title": "任昉集三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "任昉集三十四卷　《隋志》「太常卿」。",
+      "work_id": "d59f2863r2mb"
+    },
+    {
+      "title": "宗夬集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗夬集十卷",
+      "work_id": "d59f2q4gsu80",
+      "note": "原書腳註④：《隋志》作「九卷」"
+    },
+    {
+      "title": "王暕集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王暕集二十卷　《唐志》。《隋》「二十一卷」。",
+      "work_id": "d59f2px5cjya"
+    },
+    {
+      "title": "魏道微集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "魏道微集三卷　《唐志》。《隋》同。徵士。",
+      "work_id": "d59f2py1t8g0"
+    },
+    {
+      "title": "司馬聚集九卷",
+      "level": 3,
+      "type": "book",
+      "content": "司馬聚集九卷　《唐志》。《隋》「仁威府長史司馬」。",
+      "work_id": "d59f99gp340d"
+    },
+    {
+      "title": "沈約集百卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約集百卷　《唐志》。《隋志》「一百一卷」。",
+      "work_id": "d59f2q94416p"
+    },
+    {
+      "title": "沈約集略三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約集略三十卷",
+      "work_id": "d59f2q95o8hs",
+      "note": "原書作「又集略三十卷」，承前沈約"
+    },
+    {
+      "title": "沈約詩極一卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約詩極一卷",
+      "work_id": "d59f99gp340e",
+      "note": "原書作「又詩極一卷」，承前沈約"
+    },
+    {
+      "title": "傅昭集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "傅昭集十卷",
+      "work_id": "d59f2ofu9i4g",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "宗史集九卷",
+      "level": 3,
+      "type": "book",
+      "content": "宗史集九卷　官司徒諮議。",
+      "work_id": "d59f2q53wef5",
+      "note": "原書腳註①：《隋志》曰「梁司徒諮議《宗夬集》九卷并錄」。「宗史」當為「宗夬」之訛，與前「宗夬集十卷」重出，照錄不改"
+    },
+    {
+      "title": "袁昂集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "袁昂集二十卷",
+      "work_id": "d59f2pz70jya",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "徐勉前集三十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐勉前集三十五卷",
+      "work_id": "d59f2q3x4w01",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "徐勉後集十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐勉後集十六卷",
+      "work_id": "d59f2q1bsxdu",
+      "note": "原書作「後集十六卷」，承前徐勉"
+    },
+    {
+      "title": "陶弘景集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景集三十卷　《唐志》。《隋志》同。",
+      "work_id": "d59f285es35s"
+    },
+    {
+      "title": "陶弘景内集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景内集十五卷　《隋志》。",
+      "work_id": "d59f99gpecjk",
+      "note": "原書作「内集十五卷」，承前陶弘景"
+    },
+    {
+      "title": "周捨集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "周捨集二十卷",
+      "work_id": "d59f2pumtq80",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "何遜集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "何遜集八卷　《唐志》。《隋》「七卷，仁威記室」。",
+      "work_id": "d59f2og1fyf6"
+    },
+    {
+      "title": "謝琛集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝琛集五卷　《唐志》。",
+      "work_id": "d59f285hwgle"
+    },
+    {
+      "title": "謝郁集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝郁集五卷",
+      "work_id": "d59f286rscg3",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "王僧儒集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王僧儒集三十卷",
+      "work_id": "d59f99gpecjl",
+      "note": "原書腳註⑥：「儒」諸志均作「孺」"
+    },
+    {
+      "title": "張率集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張率集三十卷",
+      "work_id": "d59f285y4sub",
+      "note": "原書腳註⑦"
+    },
+    {
+      "title": "張率文衡十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "張率文衡十五卷",
+      "work_id": "d59f99gpecjm",
+      "note": "原書作「又文衡十五卷」，承前張率。原書腳註⑧"
+    },
+    {
+      "title": "楊眺集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊眺集十卷　《唐志》。《隋志》「并錄，十一卷」。",
+      "work_id": "d59f2q7no6io"
+    },
+    {
+      "title": "鮑畿集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑畿集八卷　《唐志》。《隋》同。鎮西府記室。",
+      "work_id": "d59f2854h98g"
+    },
+    {
+      "title": "周興嗣集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "周興嗣集十卷",
+      "work_id": "d59f2865xqf7",
+      "note": "原書腳註⑨"
+    },
+    {
+      "title": "許懋集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "許懋集十五卷",
+      "work_id": "d59f99gpecjn",
+      "note": "原書腳註⑩"
+    },
+    {
+      "title": "蕭洽集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭洽集二卷",
+      "work_id": "d59f2q4ghm2p",
+      "note": "原書腳註⑪"
+    },
+    {
+      "title": "裴子野集十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "裴子野集十四卷　《唐志》。《隋》「鴻臚卿」，同。",
+      "work_id": "d59f286500sh"
+    },
+    {
+      "title": "庾曇隆集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾曇隆集二十卷　《唐志》。《隋志》「十卷」。",
+      "work_id": "d59f2q7408aq",
+      "note": "原書腳註⑫：《新唐志》作「十卷」"
+    },
+    {
+      "title": "劉之遴前集十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉之遴前集十一卷",
+      "work_id": "d59f2859sagx",
+      "note": "原書腳註①"
+    },
+    {
+      "title": "劉之遴後集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉之遴後集三十卷",
+      "work_id": "d59f285p2x35",
+      "note": "原書作「後集三十卷」，承前劉之遴。原書腳註①：《隋志》曰「劉之遴後集二十一卷」"
+    },
+    {
+      "title": "到溉集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "到溉集二十卷",
+      "work_id": "d59f99gpecjo",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "虞嚼集六卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞嚼集六卷",
+      "work_id": "d59f99gppl38",
+      "note": "原書腳註③：《隋志》作「十卷」"
+    },
+    {
+      "title": "王冏集三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王冏集三十卷　《唐志》。《隋》「三卷，南徐州治中」。",
+      "work_id": "d59f2q3e3ev4",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "劉孝綽集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝綽集十二卷",
+      "work_id": "d59f2q1jamm8",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "王規文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王規文集二十卷",
+      "work_id": "d59f99gpecjq",
+      "note": "原書腳註⑥"
+    },
+    {
+      "title": "劉孺文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孺文集二十卷",
+      "work_id": "d59f99gpecjr",
+      "note": "原書腳註⑦"
+    },
+    {
+      "title": "劉孝儀集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝儀集二十卷",
+      "work_id": "d59f2q2xv2f6",
+      "note": "原書腳註⑧。OCR 作「劉孝義」，梁彭城劉氏無「孝義」，正作「孝儀」"
+    },
+    {
+      "title": "劉孝威前集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝威前集十卷",
+      "work_id": "d59f2q6wtrsy",
+      "note": "原書腳註⑨"
+    },
+    {
+      "title": "劉孝威後集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉孝威後集十卷",
+      "work_id": "d59f2q2thqtc",
+      "note": "原書作「後集十卷」，承前劉孝威"
+    },
+    {
+      "title": "丘遲集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "丘遲集十卷　《隋志》「國子博士」。",
+      "work_id": "d59f2ofpky68"
+    },
+    {
+      "title": "丘遲集鈔四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "丘遲集鈔四十卷",
+      "work_id": "d59f99gpecjs",
+      "note": "原書作「又集鈔四十卷」，承前丘遲。與總集類「丘遲　集鈔四十卷」重出"
+    },
+    {
+      "title": "王錫集七卷",
+      "level": 3,
+      "type": "book",
+      "content": "王錫集七卷　《唐志》。《隋》同，「吏部郎」。",
+      "work_id": "d59f285qbv9e"
+    },
+    {
+      "title": "蕭子範集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子範集三卷　《唐志》。官始興内史。",
+      "work_id": "d59f2857lmo1",
+      "note": "OCR「宫始興内史」正作「官始興内史」"
+    },
+    {
+      "title": "蕭子雲集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子雲集二十卷",
+      "work_id": "d59f2861vncx",
+      "note": "原書腳註⑩：《隋志》作「十三卷」"
+    },
+    {
+      "title": "蕭子暉集十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子暉集十一卷",
+      "work_id": "d59f2q0x4s1t",
+      "note": "原書腳註⑪"
+    },
+    {
+      "title": "蕭子恪文集前後三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子恪文集前後三十卷　本傳。",
+      "work_id": "d59f99gpecjt",
+      "note": "原書腳註⑬：《梁書》《南史》本傳皆曰「不傳文集」"
+    },
+    {
+      "title": "蕭子顯文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭子顯文集二十卷　本傳。",
+      "work_id": "d59f99gpecju"
+    },
+    {
+      "title": "孔休源集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "孔休源集十五卷",
+      "work_id": "d59f99gpecjv",
+      "note": "原書腳註①"
+    },
+    {
+      "title": "江革集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "江革集十卷",
+      "work_id": "d59f2pwf4lxd",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "吴均集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "吴均集二十卷",
+      "work_id": "d59f99gpecjw",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "江行敏集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "江行敏集五卷",
+      "work_id": "d59f99gpecjx"
+    },
+    {
+      "title": "庾肩吾集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾肩吾集十卷",
+      "work_id": "d59f285hl81s",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "王筠　王筠洗馬集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　王筠洗馬集十卷",
+      "work_id": "d59f2pxdgpoh"
+    },
+    {
+      "title": "王筠　中庶子集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　中庶子集十卷",
+      "work_id": "d59f2q9dsef4",
+      "note": "承前王筠"
+    },
+    {
+      "title": "王筠　敕撰中書表奏三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　敕撰中書表奏三十卷",
+      "work_id": "d59f99gpecjy",
+      "note": "承前王筠。原書腳註⑤"
+    },
+    {
+      "title": "王筠　左佐集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　左佐集十卷",
+      "work_id": "d59f2853jjlt",
+      "note": "承前王筠。原書腳註⑥：《舊唐志》《新唐志》均作「左右集十卷」"
+    },
+    {
+      "title": "王筠　尚書集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　尚書集十卷",
+      "work_id": "d59f285a3j0k",
+      "note": "承前王筠。原 OCR 因夾行斷作「尚書集十／一卷」，據《唐志》《隋志》小注定"
+    },
+    {
+      "title": "王筠　臨海集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　臨海集十卷　《唐志》。《隋志》「十一卷」。",
+      "work_id": "d59f28553qbk",
+      "note": "承前王筠"
+    },
+    {
+      "title": "王筠　中書集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "王筠　中書集一卷　《唐志》。《隋》「九卷」。",
+      "work_id": "d59f286chptu",
+      "note": "承前王筠。OCR 夾行錯位，卷數歸屬待覈"
+    },
+    {
+      "title": "范縝集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "范縝集十卷",
+      "work_id": "d59f2pxxr5dt",
+      "note": "原書腳註⑦：《隋志》作「十一卷」"
+    },
+    {
+      "title": "劉昭文集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉昭文集十卷",
+      "work_id": "d59f99gppl34",
+      "note": "原書腳註⑧"
+    },
+    {
+      "title": "鮑泉集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鮑泉集一卷　《隋志》。《唐》同。平北府長史。",
+      "work_id": "d59f286fm39e"
+    },
+    {
+      "title": "謝瑱集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝瑱集十卷　《唐志》。《隋志》「八卷，東陽郡丞」。",
+      "work_id": "d59f2q9t318g"
+    },
+    {
+      "title": "謝纂集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝纂集十卷　《隋志》「晉安太守」。",
+      "work_id": "d59f2ptxjif6"
+    },
+    {
+      "title": "柳憺集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳憺集二十卷　《隋志》「撫軍將軍」。",
+      "work_id": "d59f2q7oanlt"
+    },
+    {
+      "title": "柳惲集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳惲集十二卷　《隋志》「護軍」。",
+      "work_id": "d59f284wd342"
+    },
+    {
+      "title": "柳橙集六卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳橙集六卷　《隋志》「御州刺史」。",
+      "work_id": "d59f99gppl35"
+    },
+    {
+      "title": "柳忱集十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳忱集十三卷　《隋志》「尚書令」。",
+      "work_id": "d59f284sm8lh"
+    },
+    {
+      "title": "何澗集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "何澗集三卷　《隋志》「義安郡丞」。",
+      "work_id": "d59f99gppl36",
+      "note": "原書腳註⑨：《隋志》作「義興郡丞」"
+    },
+    {
+      "title": "韋温集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "韋温集十卷　《隋志》「撫軍中兵參軍」。",
+      "work_id": "d59f99gppl37"
+    },
+    {
+      "title": "劉苞集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉苞集十卷　《隋志》「太子洗馬」。",
+      "work_id": "d59f284tv6rl"
+    },
+    {
+      "title": "謝綽集十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝綽集十一卷　《隋志》。",
+      "work_id": "d59f2pzdkjcx"
+    },
+    {
+      "title": "張熾金河集六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張熾金河集六十卷　《隋志》「秘書」。",
+      "work_id": "d59f2q2s8sn4"
+    },
+    {
+      "title": "劉敲集八卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉敲集八卷",
+      "work_id": "d59f284sb01s",
+      "note": "原書腳註①。「敲」疑「歊」之訛（劉歊，劉訏從兄），未逕改"
+    },
+    {
+      "title": "劉訏集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉訏集一卷　《隋志》「玄貞處士」。",
+      "work_id": "d59f285x737n"
+    },
+    {
+      "title": "江洪集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "江洪集二卷　《隋志》「建陽令」。",
+      "work_id": "d59f285z2igy"
+    },
+    {
+      "title": "虞嚼集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "虞嚼集十卷　《隋志》「尚書祠部郎」。《唐志》「七卷」。",
+      "work_id": "d59f99gppl38",
+      "note": "原書腳註②：此條重出，當删"
+    },
+    {
+      "title": "費昶集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "費昶集三卷　《隋志》「新田令」。",
+      "work_id": "d59f286gv1fk"
+    },
+    {
+      "title": "蕭機集二卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭機集二卷　《隋志》。",
+      "work_id": "d59f99gppl39",
+      "note": "原書腳註③：「機」《隋志》據《梁書》本傳改為「幾」"
+    },
+    {
+      "title": "謝琛集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝琛集五卷　《隋志》「通直郎」。",
+      "work_id": "d59f285hwgle",
+      "note": "與前謝琛集五卷重出"
+    },
+    {
+      "title": "劉緩集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉緩集四卷　《隋志》「安西記室」。",
+      "work_id": "d59f284tjy82"
+    },
+    {
+      "title": "沙門智藏集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "沙門智藏集五卷",
+      "work_id": "d59f99gppl3a",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "王揖集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "王揖集五卷　《隋志》「東陽太守」。",
+      "work_id": "d59f285aq03l"
+    },
+    {
+      "title": "任孝恭集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "任孝恭集十卷　《隋志》。《唐》同。中書郎。",
+      "work_id": "d59f2q2qddz5"
+    },
+    {
+      "title": "張纘集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張纘集十卷　《唐志》。《隋》「十一卷，雍州刺史」。",
+      "work_id": "d59f2px4etxd"
+    },
+    {
+      "title": "張緬集五卷",
+      "level": 3,
+      "type": "book",
+      "content": "張緬集五卷",
+      "work_id": "d59f99gppl3b",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "陸雲公集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陸雲公集四卷",
+      "work_id": "d59f2pzh05j5",
+      "note": "原書腳註⑥"
+    },
+    {
+      "title": "張綰集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "張綰集十卷　《唐志》。《隋》「十一卷」。",
+      "work_id": "d59f286nq9dt"
+    },
+    {
+      "title": "甄立成集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "甄立成集十卷　《隋志》。《唐》同。",
+      "work_id": "d59f99gppl3c",
+      "note": "原書腳註⑦：「立」諸志均作「玄」（甄玄成），照錄不改"
+    },
+    {
+      "title": "蕭欣集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭欣集十卷　《隋志》「安成蕃王」。",
+      "work_id": "d59f2qanoagy"
+    },
+    {
+      "title": "沈君攸集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈君攸集十二卷　《唐志》。《隋》作「十三卷，散騎常侍」。",
+      "work_id": "d59f2q0c7vnl",
+      "note": "原書腳註①：「攸」《隋志》作「游」"
+    },
+    {
+      "title": "柳吴興集一卷",
+      "level": 3,
+      "type": "book",
+      "content": "柳吴興集一卷",
+      "work_id": "d59f99gppl3d",
+      "note": "原書腳註②：柳吴興即柳惲，前已著錄柳惲集，此條重出，當删"
+    },
+    {
+      "title": "阮孝緒　阮孝緒文十卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮孝緒　阮孝緒文十卷",
+      "work_id": "d59f99gppl3e"
+    },
+    {
+      "title": "阮孝緒　聲偉一卷",
+      "level": 3,
+      "type": "book",
+      "content": "阮孝緒　聲偉一卷",
+      "work_id": "d59f99gppl3f",
+      "note": "「又」承前省略撰人（阮孝緒）。原書腳註③：「聲偉」不辭，疑「偉」當做「緯」"
+    },
+    {
+      "title": "謝幾卿文集",
+      "level": 3,
+      "type": "book",
+      "content": "謝幾卿文集",
+      "work_id": "d59f99gppl3g",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "劉勰文集",
+      "level": 3,
+      "type": "book",
+      "content": "劉勰文集",
+      "work_id": "d59f99gppl3h",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "王籍文集",
+      "level": 3,
+      "type": "book",
+      "content": "王籍文集",
+      "work_id": "d59f99gq0tmo",
+      "note": "原書腳註⑥"
+    },
+    {
+      "title": "何思澄文集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "何思澄文集十五卷",
+      "work_id": "d59f99gq0tmp",
+      "note": "原書腳註⑦"
+    },
+    {
+      "title": "何子朗文集",
+      "level": 3,
+      "type": "book",
+      "content": "何子朗文集",
+      "work_id": "d59f99gq0tmq",
+      "note": "原書腳註⑧"
+    },
+    {
+      "title": "謝徵文集十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝徵文集十二卷",
+      "work_id": "d59f99gq0tmr",
+      "note": "原書腳註⑨：《梁書·謝徵傳》作「二十卷」"
+    },
+    {
+      "title": "臧嚴文集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "臧嚴文集十卷",
+      "work_id": "d59f99gq0tms",
+      "note": "原書腳註⑩"
+    },
+    {
+      "title": "伏挺文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "伏挺文集二十卷",
+      "work_id": "d59f99gq0tmt",
+      "note": "原書腳註⑪"
+    },
+    {
+      "title": "庾仲容文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾仲容文集二十卷",
+      "work_id": "d59f99gq0tmu",
+      "note": "原書腳註⑫"
+    },
+    {
+      "title": "陸才子文集",
+      "level": 3,
+      "type": "book",
+      "content": "陸才子文集　雲兄，從兄。",
+      "work_id": "d59f99gq0tmv",
+      "note": "原書腳註⑬：《梁書·陸雲公傳》曰「雲公從兄才子」"
+    },
+    {
+      "title": "諸葛璩文集二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "諸葛璩文集二十卷　《唐志》。《隋志》「十卷，南徐州秀才」。",
+      "work_id": "d59f99gq0tmw",
+      "note": "原書腳註⑭"
+    },
+    {
+      "title": "庾曼倩集九十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾曼倩集九十五卷　《庾詵傳》：「詵子。」",
+      "work_id": "d59f99gq0tmx"
+    },
+    {
+      "title": "劉霽文集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉霽文集十卷",
+      "work_id": "d59f99gq0tmy",
+      "note": "原書腳註①"
+    },
+    {
+      "title": "庾於陵文集十卷",
+      "level": 3,
+      "type": "book",
+      "content": "庾於陵文集十卷",
+      "work_id": "d59f99gq0tmz",
+      "note": "原書腳註②"
+    },
+    {
+      "title": "鍾嶼文集",
+      "level": 3,
+      "type": "book",
+      "content": "鍾嶼文集",
+      "work_id": "d59f99gq0tn0"
+    },
+    {
+      "title": "鍾岳文集",
+      "level": 3,
+      "type": "book",
+      "content": "鍾岳文集",
+      "work_id": "d59f99gq0tn1"
+    },
+    {
+      "title": "江蒨文集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "江蒨文集十五卷",
+      "work_id": "d59f99gq0tn2",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "范岫文集",
+      "level": 3,
+      "type": "book",
+      "content": "范岫文集",
+      "work_id": "d59f99gqc268",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "到洽文集十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "到洽文集十一卷　《隋志》「鎮西錄事參軍」。",
+      "work_id": "d59f99gqc269"
+    },
+    {
+      "title": "楊眺集十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊眺集十一卷　《隋志》「征西長史」。",
+      "work_id": "d59f2q7no6io",
+      "note": "與前「楊眺集十卷」重出"
+    },
+    {
+      "title": "蕭深藻集四卷",
+      "level": 3,
+      "type": "book",
+      "content": "蕭深藻集四卷　《隋志》「西昌侯」。",
+      "work_id": "d59f2q4twsu9"
+    },
+    {
+      "title": "謝朏集十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝朏集十五卷　《隋志》。",
+      "work_id": "d59f2og1r75t"
+    },
+    {
+      "title": "臨安恭公主集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "臨安恭公主集三卷　《隋志》「武帝女」。",
+      "work_id": "d59f28595tdu"
+    },
+    {
+      "title": "徐悱妻劉令嫺集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐悱妻劉令嫺集三卷　《隋志》「悱，太子洗馬」。",
+      "work_id": "d59f99gqc26a"
+    },
+    {
+      "title": "范靖妻沈滿願集三卷",
+      "level": 3,
+      "type": "book",
+      "content": "范靖妻沈滿願集三卷　《隋志》「靖，征西記室」。",
+      "work_id": "d59f2pzffyf4"
+    }
+  ]
+}

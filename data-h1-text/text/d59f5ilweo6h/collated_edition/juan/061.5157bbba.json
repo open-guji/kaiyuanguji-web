@@ -1,0 +1,745 @@
+{
+  "title": "集部·石刻類",
+  "sections": [
+    {
+      "title": "石刻類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "晉辟雍行禮碑",
+      "level": 3,
+      "type": "book",
+      "content": "晉辟雍行禮碑　泰始二年。",
+      "work_id": "d59f9uxd6eiv"
+    },
+    {
+      "title": "征南大將軍宋均碑",
+      "level": 3,
+      "type": "book",
+      "content": "征南大將軍宋均碑　泰始三年。　上二種並据《水經注》。",
+      "work_id": "d59f9uxd6eiw"
+    },
+    {
+      "title": "南鄉太守司馬整德政碑頌",
+      "level": 3,
+      "type": "book",
+      "content": "南鄉太守司馬整德政碑頌　泰始四年。",
+      "work_id": "d59f9uxdhn28"
+    },
+    {
+      "title": "南鄉郡建國碑",
+      "level": 3,
+      "type": "book",
+      "content": "南鄉郡建國碑　上二種並据《金石録》。　案趙明誠曰：“碑文有云河内司馬府君者，即整也。碑無建立年月，因附於整碑之次。”",
+      "work_id": "d59f9uxdhn29"
+    },
+    {
+      "title": "晉城門校尉昌原恭侯鄭仲林碑",
+      "level": 3,
+      "type": "book",
+      "content": "晉城門校尉昌原恭侯鄭仲林碑　泰始六年。",
+      "work_id": "d59f9uxdhn2a"
+    },
+    {
+      "title": "潘宗伯韓仲元造橋格題字",
+      "level": 3,
+      "type": "book",
+      "content": "潘宗伯韓仲元造橋格題字　泰始六年。据《寰宇訪碑録》。　案翁方綱曰：“宋晏袤謂魏泰和，愚按魏太和是‘太’非‘泰’，今審石本，是‘始’字非‘和’字也。”",
+      "work_id": "d59f9uxdhn2b"
+    },
+    {
+      "title": "南鄉太守郭休碑",
+      "level": 3,
+      "type": "book",
+      "content": "南鄉太守郭休碑　有陰，泰始六年。　案張德容曰：“碑稱其先出黄軒后稷，有虢叔者以德建國，命氏爲郭。按字書，郭，郭也。郭姓世系正出自虢叔，顏魯公《郭家廟碑》與《唐書·世系表》並同，似郭即郭字。”",
+      "work_id": "d59f9uxdhn2c"
+    },
+    {
+      "title": "任城太守孫夫人碑",
+      "level": 3,
+      "type": "book",
+      "content": "任城太守孫夫人碑　泰始六年。　案錢大昕曰：“任城太守，據文有‘夫人在羊氏’語，其姓羊也。年號已損，‘庚寅’上有‘八年’字，泰始六年，歲次庚寅，但‘六’字殘其上耳。”",
+      "work_id": "d59f9uxdhn2d"
+    },
+    {
+      "title": "北嶽祠堂頌",
+      "level": 3,
+      "type": "book",
+      "content": "北嶽祠堂頌　泰始六年。据《通志·金石略》。",
+      "work_id": "d59f9uxdhn2e"
+    },
+    {
+      "title": "千金渠石人脅下文",
+      "level": 3,
+      "type": "book",
+      "content": "千金渠石人脅下文　泰始八年。据《水經注》。",
+      "work_id": "d59f9uxdhn2f"
+    },
+    {
+      "title": "天發神讖碑",
+      "level": 3,
+      "type": "book",
+      "content": "天發神讖碑　吳天璽元年。案即晉泰始八年。",
+      "work_id": "d59f9uxdhn2g"
+    },
+    {
+      "title": "禪國山寺碑",
+      "level": 3,
+      "type": "book",
+      "content": "禪國山寺碑　吳天璽元年。　上二種並据《金石萃編》。",
+      "work_id": "d59f9uxdhn2h"
+    },
+    {
+      "title": "魏大長秋游述碑",
+      "level": 3,
+      "type": "book",
+      "content": "魏大長秋游述碑　泰始十年追造，碑陰咸甯中書。据《通志·金石略》。",
+      "work_id": "d59f9uxdhn2i"
+    },
+    {
+      "title": "晉右嶠北山石銘",
+      "level": 3,
+      "type": "book",
+      "content": "晉右嶠北山石銘　太康三年。据《水經注》。",
+      "work_id": "d59f9uxdsvls"
+    },
+    {
+      "title": "右將軍鄭烈碑",
+      "level": 3,
+      "type": "book",
+      "content": "右將軍鄭烈碑　太康四年。据《通志·金石略》。",
+      "work_id": "d59f9uxdsvlt"
+    },
+    {
+      "title": "楊紹買冢莂",
+      "level": 3,
+      "type": "book",
+      "content": "楊紹買冢莂　太康五年。据《金石萃編》。",
+      "work_id": "d59f9uxdsvlu"
+    },
+    {
+      "title": "晉六門碣碑",
+      "level": 3,
+      "type": "book",
+      "content": "晉六門碣碑　太康五年。据《水經注》。",
+      "work_id": "d59f9uxdsvlv"
+    },
+    {
+      "title": "太原寺塼浮圖石銘",
+      "level": 3,
+      "type": "book",
+      "content": "太原寺塼浮圖石銘　太康六年。据《洛陽伽藍記》。",
+      "work_id": "d59f9uxdsvlw"
+    },
+    {
+      "title": "晉梁王妃王氏碑",
+      "level": 3,
+      "type": "book",
+      "content": "晉梁王妃王氏碑　太康十年。据《水經注》。",
+      "work_id": "d59f9uxdsvlx"
+    },
+    {
+      "title": "太公吕望表",
+      "level": 3,
+      "type": "book",
+      "content": "太公吕望表　有陰有側，太康十年。据《金石萃編》。",
+      "work_id": "d59f9uxdsvly"
+    },
+    {
+      "title": "雲南太守碑",
+      "level": 3,
+      "type": "book",
+      "content": "雲南太守碑　太熙元年。",
+      "work_id": "d59f9uxdsvlz"
+    },
+    {
+      "title": "議郎陳先生碑",
+      "level": 3,
+      "type": "book",
+      "content": "議郎陳先生碑　元康二年。　上二種並据《通志·金石略》。",
+      "work_id": "d59f9uxdsvm0"
+    },
+    {
+      "title": "護羌校尉彭祈碑",
+      "level": 3,
+      "type": "book",
+      "content": "護羌校尉彭祈碑　有陰，元康二年。据《金石録》。",
+      "work_id": "d59f9uxe445c"
+    },
+    {
+      "title": "伊闕石壁銘",
+      "level": 3,
+      "type": "book",
+      "content": "伊闕石壁銘　永康五年。　案永康祇一年，當是元康五年。",
+      "work_id": "d59f9uxe445d"
+    },
+    {
+      "title": "中散大夫胡均碑",
+      "level": 3,
+      "type": "book",
+      "content": "中散大夫胡均碑　元康八年。　上二種並据《水經注》。",
+      "work_id": "d59f9uxe445e"
+    },
+    {
+      "title": "太子詹事裴權碑",
+      "level": 3,
+      "type": "book",
+      "content": "太子詹事裴權碑　有陰，元康九年。",
+      "work_id": "d59f9uxe445f"
+    },
+    {
+      "title": "裴權後碑",
+      "level": 3,
+      "type": "book",
+      "content": "裴權後碑",
+      "work_id": "d59f9uxe445g"
+    },
+    {
+      "title": "光禄勳向凱碑",
+      "level": 3,
+      "type": "book",
+      "content": "光禄勳向凱碑　永康元年。　上三種並据《通志·金石略》。",
+      "work_id": "d59f9uxe445h"
+    },
+    {
+      "title": "郭巨石室泰山高全明題名",
+      "level": 3,
+      "type": "book",
+      "content": "郭巨石室泰山高全明題名　永康元年。据《寰宇訪碑録》。",
+      "work_id": "d59f9uxe445i"
+    },
+    {
+      "title": "鴻臚成公重墓碑",
+      "level": 3,
+      "type": "book",
+      "content": "鴻臚成公重墓碑　永甯二年。据《通志·金石略》。",
+      "work_id": "d59f9uxe445j"
+    },
+    {
+      "title": "陸機太山吟",
+      "level": 3,
+      "type": "book",
+      "content": "陸機太山吟　据《金石索》。",
+      "work_id": "d59f9uxe445k"
+    },
+    {
+      "title": "郭巨石室庾其連題名",
+      "level": 3,
+      "type": "book",
+      "content": "郭巨石室庾其連題名　据《寰宇訪碑録》。",
+      "work_id": "d59f9uxe445l"
+    },
+    {
+      "title": "青山神君頌",
+      "level": 3,
+      "type": "book",
+      "content": "青山神君頌　永安元年。据《通志·金石略》。",
+      "work_id": "d59f9uxe445m"
+    },
+    {
+      "title": "郭巨石室侯泰題名",
+      "level": 3,
+      "type": "book",
+      "content": "郭巨石室侯泰題名　永興二年。据《寰宇訪碑録》。",
+      "work_id": "d59f9uxefcow"
+    },
+    {
+      "title": "故西戎令范君墓碑",
+      "level": 3,
+      "type": "book",
+      "content": "故西戎令范君墓碑　永嘉二年。",
+      "work_id": "d59f9uxefcox"
+    },
+    {
+      "title": "譙定王司馬士會碑",
+      "level": 3,
+      "type": "book",
+      "content": "譙定王司馬士會碑　永嘉三年。据《水經注》。",
+      "work_id": "d59f9uxefcoy"
+    },
+    {
+      "title": "僞漢司徒劉雄碑",
+      "level": 3,
+      "type": "book",
+      "content": "僞漢司徒劉雄碑　嘉平三年，即晉建興元年。据《通志·金石略》。",
+      "work_id": "d59f9uxefcoz"
+    },
+    {
+      "title": "征南將軍胡奮碑",
+      "level": 3,
+      "type": "book",
+      "content": "征南將軍胡奮碑　据《元和郡縣志》。",
+      "work_id": "d59f9uxefcp0"
+    },
+    {
+      "title": "太傅羊祜碑",
+      "level": 3,
+      "type": "book",
+      "content": "太傅羊祜碑",
+      "work_id": "d59f9uxefcp1"
+    },
+    {
+      "title": "鎮南將軍杜預碑",
+      "level": 3,
+      "type": "book",
+      "content": "鎮南將軍杜預碑　上二種並据《水經注》。",
+      "work_id": "d59f9uxefcp2"
+    },
+    {
+      "title": "方城侯鄧艾碑",
+      "level": 3,
+      "type": "book",
+      "content": "方城侯鄧艾碑",
+      "work_id": "d59f9uxefcp3"
+    },
+    {
+      "title": "陳武王碑",
+      "level": 3,
+      "type": "book",
+      "content": "陳武王碑",
+      "work_id": "d59f9uxefcp4"
+    },
+    {
+      "title": "陳壽碑",
+      "level": 3,
+      "type": "book",
+      "content": "陳壽碑",
+      "work_id": "d59f9uxefcp5"
+    },
+    {
+      "title": "王戎碑",
+      "level": 3,
+      "type": "book",
+      "content": "王戎碑",
+      "work_id": "d59f9uxeql8g"
+    },
+    {
+      "title": "僞趙浮圖澄遺像碑",
+      "level": 3,
+      "type": "book",
+      "content": "僞趙浮圖澄遺像碑　光初五年，即晉永昌元年。",
+      "work_id": "d59f9uxeql8h"
+    },
+    {
+      "title": "宣城内史陸嗜碑",
+      "level": 3,
+      "type": "book",
+      "content": "宣城内史陸嗜碑　咸和七年。",
+      "work_id": "d59f9uxeql8i"
+    },
+    {
+      "title": "廣昌長曁遜碑",
+      "level": 3,
+      "type": "book",
+      "content": "廣昌長曁遜碑　咸和中。",
+      "work_id": "d59f9uxeql8j"
+    },
+    {
+      "title": "郭文碑",
+      "level": 3,
+      "type": "book",
+      "content": "郭文碑　咸和中。",
+      "work_id": "d59f9uxeql8k"
+    },
+    {
+      "title": "老父嚴氏碑",
+      "level": 3,
+      "type": "book",
+      "content": "老父嚴氏碑　咸康五年。",
+      "work_id": "d59f9uxeql8l"
+    },
+    {
+      "title": "僞趙横山神李君碑",
+      "level": 3,
+      "type": "book",
+      "content": "僞趙横山神李君碑　建武六年，即晉咸康六年。　上十種並据《通志·金石略》。",
+      "work_id": "d59f9uxeql8m"
+    },
+    {
+      "title": "僞趙西門豹祠殿基記",
+      "level": 3,
+      "type": "book",
+      "content": "僞趙西門豹祠殿基記　建武六年，即晉咸康六年。据《金石録》。",
+      "work_id": "d59f9uxeql8n"
+    },
+    {
+      "title": "鄧太尉祠碑",
+      "level": 3,
+      "type": "book",
+      "content": "鄧太尉祠碑　建元二年。据《寰宇訪碑録》。",
+      "work_id": "d59f9uxeql8o"
+    },
+    {
+      "title": "路君墓石闕文",
+      "level": 3,
+      "type": "book",
+      "content": "路君墓石闕文　永和元年。",
+      "work_id": "d59f9uxeql8p"
+    },
+    {
+      "title": "樂毅論",
+      "level": 3,
+      "type": "book",
+      "content": "樂毅論　永和四年。",
+      "work_id": "d59f9uxf1ts0"
+    },
+    {
+      "title": "蘭亭脩禊序",
+      "level": 3,
+      "type": "book",
+      "content": "蘭亭脩禊序　永和九年。　上二種並王羲之書。",
+      "work_id": "d59f9uxf1ts1"
+    },
+    {
+      "title": "白石神君碑陰主簿程疵家題名",
+      "level": 3,
+      "type": "book",
+      "content": "白石神君碑陰主簿程疵家題名　前燕元璽三年，即晉永和十年。",
+      "work_id": "d59f9uxf1ts2"
+    },
+    {
+      "title": "黄庭經",
+      "level": 3,
+      "type": "book",
+      "content": "黄庭經　永和十一年。",
+      "work_id": "d59f9uxf1ts3"
+    },
+    {
+      "title": "散騎常侍周處碑",
+      "level": 3,
+      "type": "book",
+      "content": "散騎常侍周處碑　陸機文。",
+      "work_id": "d59f9uxf1ts4"
+    },
+    {
+      "title": "東方朔畫贊",
+      "level": 3,
+      "type": "book",
+      "content": "東方朔畫贊",
+      "work_id": "d59f9uxf1ts5"
+    },
+    {
+      "title": "平西將軍墓銘",
+      "level": 3,
+      "type": "book",
+      "content": "平西將軍墓銘",
+      "work_id": "d59f9uxf1ts6"
+    },
+    {
+      "title": "定水寺題",
+      "level": 3,
+      "type": "book",
+      "content": "定水寺題　上五種並王羲之書。",
+      "work_id": "d59f9uxf1ts7"
+    },
+    {
+      "title": "泰山君改高樓碑",
+      "level": 3,
+      "type": "book",
+      "content": "泰山君改高樓碑　升平三年。　上九種並据《通志·金石略》。",
+      "work_id": "d59f9uxf1ts8"
+    },
+    {
+      "title": "保母塼志",
+      "level": 3,
+      "type": "book",
+      "content": "保母塼志　興甯三年。据《金石萃編》。",
+      "work_id": "d59f9uxf1ts9"
+    },
+    {
+      "title": "遺教經",
+      "level": 3,
+      "type": "book",
+      "content": "遺教經　世言小王書。",
+      "work_id": "d59f2q9pc6ip"
+    },
+    {
+      "title": "洛陽賦",
+      "level": 3,
+      "type": "book",
+      "content": "洛陽賦　王獻之書。　上二種並据《通志·金石略》。",
+      "work_id": "d59f9uxf1tsa"
+    },
+    {
+      "title": "王大令桓山碑",
+      "level": 3,
+      "type": "book",
+      "content": "王大令桓山碑　据絳帖。",
+      "work_id": "d59f9uxf1tsb"
+    },
+    {
+      "title": "王獻之法帖",
+      "level": 3,
+      "type": "book",
+      "content": "王獻之法帖",
+      "work_id": "d59f9uxfd2bk"
+    },
+    {
+      "title": "晉七賢帖",
+      "level": 3,
+      "type": "book",
+      "content": "晉七賢帖",
+      "work_id": "d59f9uxfd2bl"
+    },
+    {
+      "title": "晉賢法帖",
+      "level": 3,
+      "type": "book",
+      "content": "晉賢法帖　上三種並据《集古録》。",
+      "work_id": "d59f9uxfd2bm"
+    },
+    {
+      "title": "廣武將軍□産碑",
+      "level": 3,
+      "type": "book",
+      "content": "廣武將軍□産碑　有陰，前秦建元四年，即晉太和三年。据《金石萃編》。",
+      "work_id": "d59f9uxfd2bn"
+    },
+    {
+      "title": "石柱文",
+      "level": 3,
+      "type": "book",
+      "content": "石柱文　太元十年。据《通志·金石略》。",
+      "work_id": "d59f9uxfd2bo"
+    },
+    {
+      "title": "徵士龔玄墓銘",
+      "level": 3,
+      "type": "book",
+      "content": "徵士龔玄墓銘　太元中車武子立。据《水經注》。",
+      "work_id": "d59f9uxfd2bp"
+    },
+    {
+      "title": "騎都尉枳陽府君神道碑",
+      "level": 3,
+      "type": "book",
+      "content": "騎都尉枳陽府君神道碑　隆安三年。",
+      "work_id": "d59f9uxfd2bq"
+    },
+    {
+      "title": "夜郎太守毋稚碑",
+      "level": 3,
+      "type": "book",
+      "content": "夜郎太守毋稚碑　隆安三年。",
+      "work_id": "d59f9uxfd2br"
+    },
+    {
+      "title": "遼東太守吕憲墓表",
+      "level": 3,
+      "type": "book",
+      "content": "遼東太守吕憲墓表　姚秦弘始元年，即晉隆安三年。",
+      "work_id": "d59f9uxfd2bs"
+    },
+    {
+      "title": "爨寶子碑",
+      "level": 3,
+      "type": "book",
+      "content": "爨寶子碑　太亨四年。　案安帝元興元年，改元太亨，次年復爲元興，四年已改義熙元年。此碑蓋在偏遠不知，故仍書太亨四年也。",
+      "work_id": "d59f9uxfd2bt"
+    },
+    {
+      "title": "宋武帝檄譙縱文",
+      "level": 3,
+      "type": "book",
+      "content": "宋武帝檄譙縱文　義熙九年，晉刺史朱齡石勒。",
+      "work_id": "d59f9uxfoav4"
+    },
+    {
+      "title": "安南將軍劉儼碑",
+      "level": 3,
+      "type": "book",
+      "content": "安南將軍劉儼碑",
+      "work_id": "d59f9uxfoav5"
+    },
+    {
+      "title": "征南將軍胡羆碑",
+      "level": 3,
+      "type": "book",
+      "content": "征南將軍胡羆碑",
+      "work_id": "d59f9uxfoav6"
+    },
+    {
+      "title": "征西將軍周訪碑",
+      "level": 3,
+      "type": "book",
+      "content": "征西將軍周訪碑",
+      "work_id": "d59f9uxfoav7"
+    },
+    {
+      "title": "桓宣碑",
+      "level": 3,
+      "type": "book",
+      "content": "桓宣碑",
+      "work_id": "d59f9uxfoav8"
+    },
+    {
+      "title": "郗恢碑",
+      "level": 3,
+      "type": "book",
+      "content": "郗恢碑　魯宗之立。　上五種並据《水經注》。",
+      "work_id": "d59f9uxfoav9"
+    },
+    {
+      "title": "丁議碑",
+      "level": 3,
+      "type": "book",
+      "content": "丁議碑",
+      "work_id": "d59f9uxfoava"
+    },
+    {
+      "title": "巴西太守盧茂碑",
+      "level": 3,
+      "type": "book",
+      "content": "巴西太守盧茂碑",
+      "work_id": "d59f9uxfoavb"
+    },
+    {
+      "title": "紀穆侯碑",
+      "level": 3,
+      "type": "book",
+      "content": "紀穆侯碑",
+      "work_id": "d59f9uxfoavc"
+    },
+    {
+      "title": "遂州刺史李豪碑",
+      "level": 3,
+      "type": "book",
+      "content": "遂州刺史李豪碑",
+      "work_id": "d59f9uxfoavd"
+    },
+    {
+      "title": "西平將軍葛府君碑",
+      "level": 3,
+      "type": "book",
+      "content": "西平將軍葛府君碑",
+      "work_id": "d59f9uxfzjeo"
+    },
+    {
+      "title": "尉氏令陳君單碑",
+      "level": 3,
+      "type": "book",
+      "content": "尉氏令陳君單碑",
+      "work_id": "d59f9uxfzjep"
+    },
+    {
+      "title": "周胙墓石柱題",
+      "level": 3,
+      "type": "book",
+      "content": "周胙墓石柱題",
+      "work_id": "d59f9uxfzjeq"
+    },
+    {
+      "title": "西平侯顏含碑",
+      "level": 3,
+      "type": "book",
+      "content": "西平侯顏含碑",
+      "work_id": "d59f9uxfzjer"
+    },
+    {
+      "title": "魏興郡太守覃毅德政碑",
+      "level": 3,
+      "type": "book",
+      "content": "魏興郡太守覃毅德政碑",
+      "work_id": "d59f9uxfzjes"
+    },
+    {
+      "title": "張愷碑",
+      "level": 3,
+      "type": "book",
+      "content": "張愷碑",
+      "work_id": "d59f9uxfzjet"
+    },
+    {
+      "title": "征虜將軍楊亮碑",
+      "level": 3,
+      "type": "book",
+      "content": "征虜將軍楊亮碑",
+      "work_id": "d59f9uxfzjeu"
+    },
+    {
+      "title": "安邑令徐君碑",
+      "level": 3,
+      "type": "book",
+      "content": "安邑令徐君碑",
+      "work_id": "d59f9uxfzjev"
+    },
+    {
+      "title": "金鄉長薛君頌",
+      "level": 3,
+      "type": "book",
+      "content": "金鄉長薛君頌",
+      "work_id": "d59f9uxfzjew"
+    },
+    {
+      "title": "張子平碑",
+      "level": 3,
+      "type": "book",
+      "content": "張子平碑",
+      "work_id": "d59f9uxfzjex"
+    },
+    {
+      "title": "吳延陵季子二碑",
+      "level": 3,
+      "type": "book",
+      "content": "吳延陵季子二碑　殷仲堪文。　上十五種並据《通志·金石略》。",
+      "work_id": "d59f9uxfzjey"
+    },
+    {
+      "title": "征東將軍司馬韜碑",
+      "level": 3,
+      "type": "book",
+      "content": "征東將軍司馬韜碑",
+      "work_id": "d59f9uxgary8"
+    },
+    {
+      "title": "散騎常侍韓府君神道碑",
+      "level": 3,
+      "type": "book",
+      "content": "散騎常侍韓府君神道碑",
+      "work_id": "d59f9uxgary9"
+    },
+    {
+      "title": "處州南明山葛洪題字",
+      "level": 3,
+      "type": "book",
+      "content": "處州南明山葛洪題字",
+      "work_id": "d59f9uxgarya"
+    },
+    {
+      "title": "侍中楊君闕",
+      "level": 3,
+      "type": "book",
+      "content": "侍中楊君闕",
+      "work_id": "d59f9uxgaryb"
+    },
+    {
+      "title": "中書賈公闕",
+      "level": 3,
+      "type": "book",
+      "content": "中書賈公闕",
+      "work_id": "d59f9uxgaryc"
+    },
+    {
+      "title": "關中侯劉韜墓志",
+      "level": 3,
+      "type": "book",
+      "content": "關中侯劉韜墓志",
+      "work_id": "d59f9uxgaryd"
+    },
+    {
+      "title": "學生題名",
+      "level": 3,
+      "type": "book",
+      "content": "學生題名　据《金石録》。　案趙明誠曰：“《集古録》以爲漢文翁學生題名，余考甯蜀、遂甯、晉原，並桓温平蜀後置，則碑爲東晉人所立矣。”",
+      "work_id": "d59f9uxgarye"
+    },
+    {
+      "title": "石刻類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右石刻類一百三種。"
+    }
+  ]
+}

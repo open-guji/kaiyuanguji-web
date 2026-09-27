@@ -1,0 +1,222 @@
+{
+  "title": "釋氏類",
+  "sections": [
+    {
+      "title": "《金剛般若經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚秦三藏鳩摩羅什譯。",
+      "work_id": "d59f2q48277l"
+    },
+    {
+      "title": "《石本金剛經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "南唐保大五年壽春所刻。乾道中劉岑季高再刻於建昌軍。不分三十二分，相傳以為最善。",
+      "work_id": "d59f2q0wiarl"
+    },
+    {
+      "title": "《六譯金剛經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "此經前後六譯，各有異同，有弘農楊皡者集為此本。太和中，中貴人楊永和集右軍書，刻之興唐寺。",
+      "work_id": "d59f2pv3db0i"
+    },
+    {
+      "title": "《圓覺了義經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐罽賓佛陀多羅譯。",
+      "work_id": "d59f2q14mha9"
+    },
+    {
+      "title": "《華嚴經》八十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐于闐實叉難陀譯。",
+      "work_id": "d59f2q6xg8ow"
+    },
+    {
+      "title": "《萬行首楞嚴經》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐天竺般刺密諦、烏長國彌迦釋迦譯語，宰相房融筆受。所謂譯經潤文者也。",
+      "work_id": "d59f2q6z0fep"
+    },
+    {
+      "title": "《維摩詰所說經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "鳩摩羅什譯。",
+      "work_id": "d59f27x5m60z"
+    },
+    {
+      "title": "《維摩經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "蘇轍所書。",
+      "work_id": "d59f27v1ri0z"
+    },
+    {
+      "title": "《楞伽經》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "有宋、魏、唐三譯。宋譯四卷，唐譯七卷。正平張戒集注。蓋以三譯參校研究，得舊注本，莫知誰氏，頗有偷理，亦多可取，句讀遂明白。其八卷者，分上下也。",
+      "work_id": "d59f2q3tpaf5"
+    },
+    {
+      "title": "《四十二章經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "後漢竺法蘭譯。佛書到中國，此其首也，所謂「經來白馬寺者」。其後千經萬論，一大藏教乘，要不出於此。中國之士，往往取老、莊之遺說以附益之者多矣。",
+      "work_id": "d59f24m4rldy"
+    },
+    {
+      "title": "《遺教經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "佛涅槃時所說。唐碑本。以下三種同。",
+      "work_id": "d59f2q9pc6ip"
+    },
+    {
+      "title": "《阿彌陁經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐陳仁稜所書。刻於襄陽。",
+      "work_id": "d59f2qag6lfk"
+    },
+    {
+      "title": "《金剛經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐武敏之所書。在長安。",
+      "work_id": "d59f2psn15he"
+    },
+    {
+      "title": "《金剛經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐鄔彤所書。在吳興墨妙亭。",
+      "work_id": "d59f2psn15he"
+    },
+    {
+      "title": "《羅漢因果識見頌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "天竺阇那多迦譯。首有范仲淹序，言宣撫河東，得於傳舍，《藏經》所末錄者。十六羅漢為比丘摩挐羅等說。",
+      "work_id": "d59f2q7rq96o"
+    },
+    {
+      "title": "《六祖壇經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧法海集。",
+      "work_id": "d59f28k8v4lj"
+    },
+    {
+      "title": "《宗門統要》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "建溪僧宗永集。",
+      "work_id": "d59f2hgq5e68"
+    },
+    {
+      "title": "《法藏碎金》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "太子少傅晁迥撰。",
+      "work_id": "d59f2hfmthq9"
+    },
+    {
+      "title": "《景祐天竺字源》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧惟凈等集進。以華梵封翻，有十二轉聲、三十四字母，各有齒、牙、舌、喉、唇五音。仁宗御製序，鏤板頒行。吳郡虎丘寺有賜本如新，己亥借錄。",
+      "work_id": "d59f2ht9ts75"
+    },
+    {
+      "title": "《金園集》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "錢唐天竺僧遵式撰。",
+      "work_id": "d59f2hiumj9e"
+    },
+    {
+      "title": "《天竺別集》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "遵式撰。世所謂「式懺主」者也。",
+      "work_id": "d59f2pyh3uv6"
+    },
+    {
+      "title": "《華嚴合論法相撮要》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "青谷真際禪師以唐李長者《通玄合論》，撮其要義，手稿為圖。",
+      "work_id": "d59f2psd1jwg"
+    },
+    {
+      "title": "《僧寶傳》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧惠洪撰。",
+      "work_id": "d59f2ptvcu81"
+    },
+    {
+      "title": "《林閑錄》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "惠洪撰。",
+      "work_id": "d59f2q6jpssh"
+    },
+    {
+      "title": "《道院集要》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "戶部尚書三槐王右敏仲撰。以晁迥《法藏碎金》、《耄智余書》刪重集粹，別為此編。",
+      "work_id": "d59f2ht0rwg2"
+    },
+    {
+      "title": "《禪宗頌古聯珠集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧法應編。",
+      "work_id": "d59f2pvscagw"
+    },
+    {
+      "title": "《嘉泰普燈錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧正受編。三《錄》大抵與《傳燈》相出入，接續機緣語句前後一律，先儒所謂遁辭也。然本初自謂直指人心，不立文字。今四《燈》總一百二十卷，數千萬言，乃正不離文字耳。",
+      "work_id": "d59f2hh7xx4z"
+    },
+    {
+      "title": "《雪峰廣錄》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "唐真覺大師義存語。丞相王隨序之。隨及楊大年皆號參禪有得者也。",
+      "work_id": "d59f28m3coap"
+    },
+    {
+      "title": "《龍牙和尚頌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《龍牙和尚頌》一卷",
+      "work_id": "d59f2q2mxrsx"
+    },
+    {
+      "title": "《釋書品次錄》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《釋書品次錄》一卷",
+      "work_id": "d59f2pshevb5"
+    },
+    {
+      "title": "《大慧語錄》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "僧宗杲語。其徒道謙所錄，張魏公序之。",
+      "work_id": "d59f2q5f4yde"
+    }
+  ]
+}

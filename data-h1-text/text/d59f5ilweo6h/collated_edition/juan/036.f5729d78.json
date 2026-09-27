@@ -1,0 +1,56 @@
+{
+  "title": "史部·地理類游記之屬",
+  "sections": [
+    {
+      "title": "地理類游記之屬",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "繽咸　遠遊志十卷",
+      "level": 3,
+      "type": "book",
+      "content": "繽咸　遠遊志十卷　繽咸撰。",
+      "work_id": "d59f9uwlea6c",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "王羲之　游郡記",
+      "level": 3,
+      "type": "book",
+      "content": "王羲之　游郡記　王羲之撰。据《御覽》引。",
+      "work_id": "d59f9uwlea6d",
+      "note": "撰人自考證文首句提取（A）"
+    },
+    {
+      "title": "郭緣生　述征記二卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭緣生　述征記二卷　据《唐志》。",
+      "work_id": "d59f286gv1fm",
+      "note": "撰人後置：原文「上二種並郭緣生撰」總標於數條之後"
+    },
+    {
+      "title": "郭緣生　續述征記",
+      "level": 3,
+      "type": "book",
+      "content": "郭緣生　續述征記　据《初學記》引。　上二種並郭緣生撰。",
+      "work_id": "d59f7z43q5fl",
+      "note": "撰人後置：原文「上二種並郭緣生撰」總標於數條之後"
+    },
+    {
+      "title": "遠法師遊山記",
+      "level": 3,
+      "type": "book",
+      "content": "遠法師遊山記　据《世説》。",
+      "work_id": "d59f9uwlpips"
+    },
+    {
+      "title": "地理類游記之屬結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右地理類游記之屬，五種。"
+    }
+  ]
+}

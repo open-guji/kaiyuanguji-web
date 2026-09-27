@@ -1,0 +1,72 @@
+{
+  "work_id": "d59f2evqogsj",
+  "version_label": "吳子",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E5%90%B3%E5%AD%90",
+    "page_title": "吳子",
+    "revid": 2358297,
+    "dump_date": "2026-09-27",
+    "license": "CC BY-SA 4.0"
+  },
+  "edition_note": "",
+  "total_chapters": 6,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "圖國第一",
+      "file": "001.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 1347
+    },
+    {
+      "n": 2,
+      "title": "料敵第二",
+      "file": "002.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 1193
+    },
+    {
+      "n": 3,
+      "title": "治兵第三",
+      "file": "003.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 1000
+    },
+    {
+      "n": 4,
+      "title": "論將第四",
+      "file": "004.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 838
+    },
+    {
+      "n": 5,
+      "title": "應變第五",
+      "file": "005.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 1132
+    },
+    {
+      "n": 6,
+      "title": "勵士第六",
+      "file": "006.md",
+      "page_title": "吳子",
+      "revid": 2358297,
+      "md_len": 501
+    }
+  ],
+  "text_quality": {
+    "grade": "source"
+  },
+  "fetched_at": "2026-09-27",
+  "fetch_stats": {
+    "source": "dump"
+  },
+  "revision": "1.0.0"
+}

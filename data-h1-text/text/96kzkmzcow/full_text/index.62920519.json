@@ -1,0 +1,100 @@
+{
+  "book_id": "96kzkmzcow",
+  "version_label": "程乙本（紅樓夢）",
+  "source": {
+    "name": "維基文庫",
+    "url": "https://zh.wikisource.org/wiki/%E7%B4%85%E6%A8%93%E5%A4%A2%EF%BC%88%E7%A8%8B%E4%B9%99%E6%9C%AC%EF%BC%89",
+    "license": "CC BY-SA 4.0",
+    "note": "120 回完整本，分 12 頁（每 10 回一頁）"
+  },
+  "total_chapters": 12,
+  "chapters": [
+    {
+      "n": 1,
+      "title": "第一回 至第十回",
+      "file": "001.md",
+      "page_title": "紅樓夢（程乙本）/第一回 至第十回",
+      "md_len": 65477
+    },
+    {
+      "n": 2,
+      "title": "第十一回 至第二十回",
+      "file": "002.md",
+      "page_title": "紅樓夢（程乙本）/第十一回 至第二十回",
+      "md_len": 62193
+    },
+    {
+      "n": 3,
+      "title": "第二十一回 至第三十回",
+      "file": "003.md",
+      "page_title": "紅樓夢（程乙本）/第二十一回 至第三十回",
+      "md_len": 71442
+    },
+    {
+      "n": 4,
+      "title": "第三十一回 至第四十回",
+      "file": "004.md",
+      "page_title": "紅樓夢（程乙本）/第三十一回 至第四十回",
+      "md_len": 72071
+    },
+    {
+      "n": 5,
+      "title": "第四十一回 至第五十回",
+      "file": "005.md",
+      "page_title": "紅樓夢（程乙本）/第四十一回 至第五十回",
+      "md_len": 73244
+    },
+    {
+      "n": 6,
+      "title": "第五十一回 至第六十回",
+      "file": "006.md",
+      "page_title": "紅樓夢（程乙本）/第五十一回 至第六十回",
+      "md_len": 78520
+    },
+    {
+      "n": 7,
+      "title": "第六十一回 至第七十回",
+      "file": "007.md",
+      "page_title": "紅樓夢（程乙本）/第六十一回 至第七十回",
+      "md_len": 81389
+    },
+    {
+      "n": 8,
+      "title": "第七十一回 至第八十回",
+      "file": "008.md",
+      "page_title": "紅樓夢（程乙本）/第七十一回 至第八十回",
+      "md_len": 80333
+    },
+    {
+      "n": 9,
+      "title": "第八十一回 至第九十回",
+      "file": "009.md",
+      "page_title": "紅樓夢（程乙本）/第八十一回 至第九十回",
+      "md_len": 73148
+    },
+    {
+      "n": 10,
+      "title": "第九十一回 至第一百回",
+      "file": "010.md",
+      "page_title": "紅樓夢（程乙本）/第九十一回 至第一百回",
+      "md_len": 69787
+    },
+    {
+      "n": 11,
+      "title": "第一百零一回 至第一百一十回",
+      "file": "011.md",
+      "page_title": "紅樓夢（程乙本）/第一百零一回 至第一百一十回",
+      "md_len": 67929
+    },
+    {
+      "n": 12,
+      "title": "第一百十一回 至第一百二十回",
+      "file": "012.md",
+      "page_title": "紅樓夢（程乙本）/第一百十一回 至第一百二十回",
+      "md_len": 74536
+    }
+  ],
+  "scraped_at": "2026-05-16",
+  "scraped_from": "wikisource-multistream.xml.bz2 (2026-04-25 dump)",
+  "revision": "1.0.0"
+}

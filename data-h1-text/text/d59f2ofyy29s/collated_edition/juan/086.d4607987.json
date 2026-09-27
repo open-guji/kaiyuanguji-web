@@ -1,0 +1,37 @@
+{
+  "title": "北史載記·史部·譜録類",
+  "sections": [
+    {
+      "title": "譜録類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "按語",
+      "level": 3,
+      "type": "verification",
+      "content": "史之類，凡三：曰正史，曰雜傳，曰譜録。"
+    },
+    {
+      "title": "宋繪　姓系譜錄五十篇",
+      "level": 3,
+      "type": "book",
+      "content": "宋繪　姓系譜錄五十篇　宋繪撰，見《齊書·宋顯傳》。《北史》顯傳未載。；《隋·經籍志》未收。",
+      "dynasty_tag": "北齊",
+      "work_id": "d59f9c1evojl"
+    },
+    {
+      "title": "譜録類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右譜錄一部，已收《隋·經籍志》者無部，未收《隋·經籍志》者一部。"
+    },
+    {
+      "title": "譜録類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "凡史類三部，已收《隋·經籍志》者無部，未收《隋·經籍志》者三部。"
+    }
+  ]
+}

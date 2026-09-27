@@ -1,0 +1,46 @@
+{
+  "title": "子部·五行類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "子部·五行類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "子平三命通變三卷",
+      "content": "徐大昇撰。",
+      "work_id": "d59f2hez3gg1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "王髓眞經五十卷",
+      "content": "張子微撰。",
+      "work_id": "d59f2hk6p2wy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "發微論一卷",
+      "content": "蔡牧堂撰。",
+      "work_id": "d59f2hlng6pu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "管氏指蒙",
+      "content": "二册。",
+      "work_id": "d59f27smoagy"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右五行類",
+      "content": "右五行類四家五十六卷。"
+    }
+  ]
+}

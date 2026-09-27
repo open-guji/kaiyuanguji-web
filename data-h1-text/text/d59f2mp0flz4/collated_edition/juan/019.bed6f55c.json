@@ -1,0 +1,252 @@
+{
+  "title": "載記類",
+  "sections": [
+    {
+      "level": 2,
+      "type": "category",
+      "title": "載記類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "吳越春秋校文",
+      "content": "吳越春秋校文一卷。蔣光煦撰。",
+      "work_id": "d59f2ndgdlaa"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "吳越春秋校勘記",
+      "content": "吳越春秋校勘記一卷，逸文一卷。顧觀光撰。",
+      "work_id": "d59f2ndgotts"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "逸文",
+      "content": "",
+      "content_from": "吳越春秋校勘記",
+      "work_id": "d59f2ndgottt"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀吳越春秋",
+      "content": "讀吳越春秋一卷，讀越絕書一卷。俞樾撰。",
+      "work_id": "d59f2ndgottu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "讀越絕書",
+      "content": "",
+      "content_from": "讀吳越春秋",
+      "work_id": "d59f2ndh02dc"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "越絕書札記",
+      "content": "越絕書札記一卷，逸文一名。錢培名撰。",
+      "work_id": "d59f2ndh02dd"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "增訂吳越備史",
+      "content": "增訂吳越備史五卷，補遺一卷。錢時鈺撰。",
+      "work_id": "d59f2ndhbaww"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "補華陽國志三州郡縣目錄",
+      "content": "補華陽國志三州郡縣目錄一卷。廖寅撰。",
+      "work_id": "d59f2ndhbawx"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "華陽國志校勘記",
+      "content": "華陽國志校勘記一卷。顧觀光撰。",
+      "work_id": "d59f2ndhbawy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十六國疆域志",
+      "content": "十六國疆域志十六卷。洪亮吉撰。",
+      "work_id": "d59f2ndhmjgg"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十六國春秋輯補",
+      "content": "十六國春秋輯補一百卷，十六國春秋纂錄校本十卷。湯球撰。",
+      "work_id": "d59f2ndhmjgh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十六國春秋纂錄校本",
+      "content": "",
+      "content_from": "十六國春秋輯補",
+      "work_id": "d59f2ndhmjgi"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十六國年表",
+      "content": "十六國年表一卷。張愉曾撰。",
+      "work_id": "d59f2md7wv7l"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十六國年表",
+      "content": "十六國年表三十二卷。孔尚質撰。",
+      "work_id": "d59f2md8jcao"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西秦百官表",
+      "content": "西秦百官表一卷。練恕撰。",
+      "work_id": "d59f2ndhxs00"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "十國春秋",
+      "content": "十國春秋一百十四卷。吳任臣撰。",
+      "work_id": "d59f2md6z5kw"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "拾遺",
+      "content": "拾遺一卷，備考一卷。周昂撰。",
+      "work_id": "d59f2ntsgoow"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "備考",
+      "content": "拾遺一卷，備考一卷。周昂撰。",
+      "work_id": "d59f2ndhxs01"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南漢書",
+      "content": "南漢書十八卷，考異十八卷，叢錄二卷，文字略二卷。梁廷相撰。",
+      "work_id": "d59f2ndi90jk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "叢錄",
+      "content": "",
+      "content_from": "南漢書",
+      "work_id": "d59f2ndi90jl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "文字略",
+      "content": "",
+      "content_from": "南漢書",
+      "work_id": "d59f2ndi90jm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南漢紀",
+      "content": "南漢紀五卷，地理志一卷，金石志一卷。吳蘭修撰。",
+      "work_id": "d59f2ndik934"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "地理志",
+      "content": "",
+      "content_from": "南漢紀",
+      "work_id": "d59f2ndik935"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "金石志",
+      "content": "",
+      "content_from": "南漢紀",
+      "work_id": "d59f2ndivhmo"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "南唐拾遺記",
+      "content": "南唐拾遺記一卷。毛先舒撰。",
+      "work_id": "d59f2md7wv7k"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西夏國志",
+      "content": "西夏國志十六卷。洪亮吉撰。",
+      "work_id": "d59f2ndivhmp"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西夏書事",
+      "content": "西夏書事四十二卷。吳廣成撰。",
+      "work_id": "d59f2ndivhmq"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西夏紀事本末",
+      "content": "西夏紀事本末三十六卷。張鑒撰。",
+      "work_id": "d59f2ndj6q68"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西夏書",
+      "content": "西夏書十卷。周春撰。",
+      "work_id": "d59f2ndj6q69"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "西夏事略",
+      "content": "西夏事略十六卷。陳昆撰。",
+      "work_id": "d59f2md7lmo0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "鄴中記",
+      "content": "晉陸翽鄴中記一卷。",
+      "work_id": "d59f27x4oge8",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "蠻書",
+      "content": "唐樊綽蠻書十卷。",
+      "work_id": "d59f28jxbchv",
+      "is_jiyi": true
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "撰人江南餘載",
+      "content": "宋不著撰人江南餘載二卷。",
+      "work_id": "d59f2hqj6sjk",
+      "is_jiyi": true
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "title": "丁部·總集類",
+  "sections": [
+    {
+      "title": "總集類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "丘靈鞠　江左文章錄",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "靈鞠好飲酒，臧否人物，在沈淵座見王儉詩，淵曰：「王令文章大進。」靈鞠曰：「何如我未進時？」此言達儉。靈鞠宋世文名甚盛，入齊頗減。蓬髮弛縱，無形儀，不治家業。王儉謂人曰：「丘公仕宦不進，才亦退矣。」遷長沙王車騎長史，太中大夫，卒。著《江左文章錄序》，起太興，訖元熙。文集行於世。",
+          "source": "《南齊書》五二《丘靈鞠傳》、《南史》七二《文學·丘靈鞠傳》。"
+        }
+      ],
+      "author": "丘靈鞠",
+      "work_id": "d59f8ii2z8jw"
+    },
+    {
+      "title": "虞愿　會稽記文翰",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "見《五經論問》條。",
+          "source": ""
+        }
+      ],
+      "author": "虞愿",
+      "work_id": "d59f8ii2z8jy"
+    },
+    {
+      "title": "中興二年詔三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "work_id": "d59f8ii2z8jz"
+    },
+    {
+      "title": "建元詔五卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《中興詔》條注。"
+        }
+      ],
+      "note": "此條與下三條（永明詔三卷、武帝中詔十卷、隆平延興建武詔九卷）共用此出處，指向「中興二年詔三卷」條。",
+      "work_id": "d59f8ii2z8k0"
+    },
+    {
+      "title": "永明詔三卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《中興詔》條注。"
+        }
+      ],
+      "work_id": "d59f284sm8ld"
+    },
+    {
+      "title": "武帝中詔十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《中興詔》條注。"
+        }
+      ],
+      "work_id": "d59f2pqxun0j"
+    },
+    {
+      "title": "隆平延興建武詔九卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《中興詔》條注。"
+        }
+      ],
+      "work_id": "d59f8ii2z8k1"
+    },
+    {
+      "title": "建武二年副詔九卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "均《隋志》《中興詔》條注。"
+        }
+      ],
+      "work_id": "d59f8ii3ah34"
+    },
+    {
+      "title": "雜詔十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。"
+        }
+      ],
+      "note": "【存疑：與庫中同題書是否一書未能定奪，暫不繫 work_id】",
+      "work_id": null
+    },
+    {
+      "title": "釋奠會詩一十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》。《舊唐志》作二十卷。"
+        }
+      ],
+      "work_id": "d59f2q2uqozl"
+    },
+    {
+      "title": "青溪詩三十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "齊讌會作。",
+          "source": "《隋志》及注。"
+        }
+      ],
+      "work_id": "d59f2q0ds2de"
+    },
+    {
+      "title": "武帝清溪集三十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《舊唐志》。"
+        }
+      ],
+      "author": "武帝",
+      "work_id": "d59f2pux4jy9"
+    },
+    {
+      "title": "清溪集三十卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "武帝敕譔。",
+          "source": "《新唐志》。"
+        }
+      ],
+      "author": "武帝",
+      "work_id": "d59f2pux4jy9"
+    },
+    {
+      "title": "孔逍　文苑一百卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》、《舊唐志》。"
+        }
+      ],
+      "author": "孔逍",
+      "work_id": "d59f286axj40"
+    },
+    {
+      "title": "孔逍　二京賦二卷",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "",
+          "source": "《隋志》《雜都賦》條注。"
+        }
+      ],
+      "author": "孔逍",
+      "work_id": "d59f8ii6q32h"
+    }
+  ]
+}

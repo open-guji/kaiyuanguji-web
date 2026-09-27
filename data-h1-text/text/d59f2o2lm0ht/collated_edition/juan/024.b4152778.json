@@ -1,0 +1,353 @@
+{
+ "title": "儒家類",
+ "sections": [
+  {
+   "title": "子部",
+   "level": 2,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "子之類十有二",
+   "level": 2,
+   "type": "prose",
+   "content": "子之類十有二：一曰儒家，二曰法家，三曰兵家，四曰農家，五曰道家，六曰雜家，七曰天文，八曰曆算，九曰五行，十曰醫方，十一曰雜藝，十二曰小説。"
+  },
+  {
+   "title": "儒家類",
+   "level": 3,
+   "type": "category",
+   "content": ""
+  },
+  {
+   "title": "《新論》十七卷",
+   "level": 3,
+   "type": "book",
+   "content": "桓譚 新論十七卷",
+   "work_id": "d59fkwn4qc5h"
+  },
+  {
+   "title": "《新論》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《御覽》卷六百二引《新論》曰：“余爲《新論》，述古今，亦欲興治也，何異《春秋》褒貶耶？今有疑者，所謂蚌異蛤，二五爲非十也。譚見劉向《新序》、陸賈《新語》，乃爲《新論》。莊周寓言乃云‘堯問孔子’，《淮南子》云‘共工爭帝地維絶’，亦皆爲妄作，故世人多云短書不可用。然論天莫明于聖人，莊周等雖虛誕，故當采其善，何云盡棄耶？”康案此文似《新論》自序，故録之。餘見諸書引者甚多，孫馮翼有輯本，未見。《論衡·超奇篇》云：“桓君山作《新論》，論世閒事，辨照然否，虛妄之言，僞飾之辭，莫不證定。彼子長、子雲説論之徒，君山爲甲。”《定賢篇》云：“世閒爲文者衆矣，是非不分，然否不定，桓君山之論，可謂得實。孔子素王之業在于《春秋》，桓君山素丞相之跡，存于《新論》者也。”《案書篇》云：“質定世事，論説世疑，桓君山莫上也。”又云：“《新論》之義，與《春秋》會一也。”《对作篇》云：“衆事不失實，凡論不壞乱，则桓谭之論不起。”"
+  },
+  {
+   "title": "《元思》",
+   "level": 3,
+   "type": "book",
+   "content": "鄒伯奇 元思<東番人。>",
+   "work_id": "d59fkwn4qc5i"
+  },
+  {
+   "title": "《元思》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《論衡·案書篇》。"
+  },
+  {
+   "title": "《檢論》",
+   "level": 3,
+   "type": "book",
+   "content": "鄒伯奇 檢論",
+   "work_id": "d59fkwn4qc5j"
+  },
+  {
+   "title": "《檢論》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《論衡·對作篇》：“桓君山《新論》、鄒伯奇《檢論》，可謂論矣。”"
+  },
+  {
+   "title": "《韋卿子》十二篇",
+   "level": 3,
+   "type": "book",
+   "content": "韋卿子十二篇<韋彪撰。>",
+   "work_id": "d59f24lxwdft"
+  },
+  {
+   "title": "《唐子》",
+   "level": 3,
+   "type": "book",
+   "content": "唐子<唐羌撰，字伯游。汝南人，臨武長書，凡三十餘篇。>",
+   "work_id": "d59f24ly7lz4"
+  },
+  {
+   "title": "《唐子》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《和帝紀》注引謝承書。"
+  },
+  {
+   "title": "《孟子章句》",
+   "level": 3,
+   "type": "book",
+   "content": "程曾 孟子章句",
+   "work_id": "d59f24mlxn9f"
+  },
+  {
+   "title": "《復孟子》",
+   "level": 3,
+   "type": "book",
+   "content": "劉陶 復孟子",
+   "work_id": "d59f24mkzxmr"
+  },
+  {
+   "title": "《孟子注》七卷（鄭康成）",
+   "level": 3,
+   "type": "book",
+   "content": "鄭康成 孟子注七卷",
+   "work_id": "d59f24mkzxmo"
+  },
+  {
+   "title": "《孟子注》（鄭康成）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《讀書叢録》云：“《史記·五帝本紀》‘堯知子丹朱之不肖’，《索隱》：‘鄭玄云：“肖，似也。不似，言不如人也。”’疑即《孟子注》。”"
+  },
+  {
+   "title": "《孟子注》十四卷（趙岐）",
+   "level": 3,
+   "type": "book",
+   "content": "趙岐 孟云注十四卷",
+   "work_id": "d59fkwn51kow"
+  },
+  {
+   "title": "《正孟子章句》",
+   "level": 3,
+   "type": "book",
+   "content": "高誘 正孟子章句",
+   "work_id": "d59fkwn51kox"
+  },
+  {
+   "title": "《正孟子章句》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《吕氏春秋》序。似是正程曾之書也。"
+  },
+  {
+   "title": "《孟子注》七卷（劉熙）",
+   "level": 3,
+   "type": "book",
+   "content": "劉熙 孟子注七卷",
+   "work_id": "d59f24mkzxmq"
+  },
+  {
+   "title": "《孟子注》（劉熙）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "康案劉氏《孟子注》與今本不同者：“孟子去齊，宿于晝”，“晝”作“畫”，音獲，云“齊西南近邑”。《史記·田單傳》注。“摩頂放踵”，作“摩頂致于踵”，云“致，至也”。《文選·江文通詣建平王上書》注。"
+  },
+  {
+   "title": "《太玄經注》（張衡）",
+   "level": 3,
+   "type": "book",
+   "content": "張衡 太玄經注",
+   "work_id": "d59f24lxwdfn"
+  },
+  {
+   "title": "《太玄經注》（崔瑗）",
+   "level": 3,
+   "type": "book",
+   "content": "崔瑗 太玄經注",
+   "work_id": "d59f24lxwdfo"
+  },
+  {
+   "title": "《太玄經注》（張衡、崔瑗）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "並見《華陽國志·蜀郡士女讚》。"
+  },
+  {
+   "title": "《太玄經注》九卷（宋衷）",
+   "level": 3,
+   "type": "book",
+   "content": "宋衷 太玄經注九卷",
+   "work_id": "d59f24lxwdfp"
+  },
+  {
+   "title": "《太玄經注》（宋衷）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "陸績《太玄經注》自述云：“章陵宋仲子作《太玄解詁》。仲子之思慮誠爲信篤，然玄道廣遠，淹废歷載，師讀斷絶，難可一備，故往往有違本錯誤。”又云：“夫玄之大義，揲蓍之謂，而仲子失其指歸，休咎之占，靡所取定，雖得文閒異説，大體乖矣。”"
+  },
+  {
+   "title": "《法言注》十三卷",
+   "level": 3,
+   "type": "book",
+   "content": "宋衷 法言注十三卷",
+   "work_id": "d59fkwn51koy"
+  },
+  {
+   "title": "《法言注》六卷",
+   "level": 3,
+   "type": "book",
+   "content": "侯苞 法言注六卷",
+   "work_id": "d59fkwn51koz"
+  },
+  {
+   "title": "《法言注》（侯苞）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《御覽》九百二十二引揚子《法言》曰：“朱鳥翾翾，歸其肆矣。”侯苞注曰：“朱鳥，燕別名。肆，恣肆也。”"
+  },
+  {
+   "title": "《王子》五篇",
+   "level": 3,
+   "type": "book",
+   "content": "王子五篇<王祐撰，字平仲，郪人。>",
+   "work_id": "d59f24ly7lz6"
+  },
+  {
+   "title": "《王子》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《華陽國志·廣漢士女讚》：“王祐，字平仲，郪人也。少與雒高士張浮齊名，不應州郡辟命。司隸校尉陳紀山，名知人，稱祐天下高士。年四十二卒。弟獲志其遺言，撰《王子》五篇。”"
+  },
+  {
+   "title": "《正部論》八卷",
+   "level": 3,
+   "type": "book",
+   "content": "王逸 正部論八卷",
+   "work_id": "d59f24ly7lz7"
+  },
+  {
+   "title": "《正部論》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《意林》載《正部》十卷，徵引凡十二條。其中一條云：“《淮南》浮僞而多恢，《太玄》幽虛而少效，《法言》雜錯而無主，《新書》繁文而鮮用。”其自負蓋出數書之上也。"
+  },
+  {
+   "title": "《潛夫論》十卷",
+   "level": 3,
+   "type": "book",
+   "content": "王符 潜夫論十卷",
+   "work_id": "d59f1iqww3cw"
+  },
+  {
+   "title": "《刺奢説》",
+   "level": 3,
+   "type": "book",
+   "content": "馮顥 刺奢説",
+   "work_id": "d59f24ly7lz8"
+  },
+  {
+   "title": "《刺奢説》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見常璩《廣漢士女讚》。"
+  },
+  {
+   "title": "《後序》十二卷",
+   "level": 3,
+   "type": "book",
+   "content": "應奉 後序十二卷",
+   "work_id": "d59f24ly7lz9"
+  },
+  {
+   "title": "《魏子》三卷",
+   "level": 3,
+   "type": "book",
+   "content": "魏子三卷<魏朗撰。>",
+   "work_id": "d59f23jpbtvk"
+  },
+  {
+   "title": "《魏子》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《意林》作十卷，徵引數條。餘見《御覽》卷十五所引者云：“北夷之氣象羣羊，南夷之氣類船，山海之氣象樓臺，宫闕、都邑之氣象林木。”又云：“雲霧之盛須臾而訖，暴雨之盛不過終日。是以人君喜怒不見于容。”五百九十八引云：“仲尼無券契于天下，而德著古今，善惡明也。”七百三十八引云：“待扁鵲乃治病，終身不愈也。用道術，則無所不治也。”九百三十二引云：“夫樹樹異風，人人異心，不可以一檢量。故黿鼉得水則生，虎豹得水則死。”多《意林》所未載，惟“仲尼”一條與《意林》同。"
+  },
+  {
+   "title": "《新書》",
+   "level": 3,
+   "type": "book",
+   "content": "荀爽 新書",
+   "work_id": "d59fkwn5ct8g"
+  },
+  {
+   "title": "《申鑒》五卷",
+   "level": 3,
+   "type": "book",
+   "content": "荀悦 申鑒五卷",
+   "work_id": "d59f207cpy4g"
+  },
+  {
+   "title": "《陳子》",
+   "level": 3,
+   "type": "book",
+   "content": "陳子<陳紀撰。>",
+   "work_id": "d59f24ly7lza"
+  },
+  {
+   "title": "《陳子》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "邯鄲淳《鴻臚陳君碑》云：“既處隱約，潜躬味道。足不踰閾，乃覃思著書三十餘萬言，言不務華，事不虛設，其所交釋合贊規聖哲，而後建旨明歸焉，今所謂《陳子》者也。”"
+  },
+  {
+   "title": "《昌言》十卷",
+   "level": 3,
+   "type": "book",
+   "content": "仲長統 昌言十卷",
+   "work_id": "d59fkwn5ct8h"
+  },
+  {
+   "title": "《昌言》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《抱朴子》曰：“仲長統作《昌言》未竟而亡，後董襲撰次之。”《御覽》卷七百三十九引繆襲撰《仲長統昌言表》。《崇文總目》：“今所存十五篇，分爲二卷，餘皆亡。”《玉海》引《中興書目》：“今存十六篇。”"
+  },
+  {
+   "title": "《文檢》六卷",
+   "level": 3,
+   "type": "book",
+   "content": "文檢六卷<似是後漢末人撰。>",
+   "work_id": "d59fkwn5ct8i"
+  },
+  {
+   "title": "《文檢》考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《宋書·大且渠蒙遜傳》：“茂虔獻《文檢》六卷。”"
+  },
+  {
+   "title": "《女誡》一卷",
+   "level": 3,
+   "type": "book",
+   "content": "曹大家 女誡一卷",
+   "work_id": "d59fkwn5ct8j"
+  },
+  {
+   "title": "《女誡》（曹大家）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《書録解題》云：“俗號《女孝經》。”"
+  },
+  {
+   "title": "《女誡》（蔡邕）",
+   "level": 3,
+   "type": "book",
+   "content": "蔡邕 女誡",
+   "work_id": "d59fkwn5ct8k"
+  },
+  {
+   "title": "《女誡》（蔡邕）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "《文選·女史箴》注及《御覽》俱引之，或作《女訓》。"
+  },
+  {
+   "title": "《女誡》（荀爽）",
+   "level": 3,
+   "type": "book",
+   "content": "荀爽 女誡",
+   "work_id": "d59f24lyiuis"
+  },
+  {
+   "title": "《女誡》（荀爽）考證",
+   "level": 3,
+   "type": "verification",
+   "content": "見《藝文類聚》卷二十三。"
+  }
+ ]
+}

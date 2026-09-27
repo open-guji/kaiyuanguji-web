@@ -1,0 +1,26 @@
+{
+  "title": "縱橫家類",
+  "sections": [
+    {
+      "title": "《鬼谷子》",
+      "level": 3,
+      "type": "book",
+      "content": "《鬼谷子》三卷",
+      "work_id": "d59f1i9fwwsg"
+    },
+    {
+      "title": "《戰國策》",
+      "level": 3,
+      "type": "book",
+      "content": "高誘注《戰國策》三十三卷",
+      "work_id": "d59f2hreeiv4"
+    },
+    {
+      "title": "《國策》",
+      "level": 3,
+      "type": "book",
+      "content": "鮑彪注《國策》十卷",
+      "work_id": "d59f2hjw30g3"
+    }
+  ]
+}

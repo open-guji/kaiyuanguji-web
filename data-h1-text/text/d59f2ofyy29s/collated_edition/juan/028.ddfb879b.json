@@ -1,0 +1,73 @@
+{
+  "title": "南史·子部·小說家類",
+  "sections": [
+    {
+      "title": "小說家類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "劉義慶　世說十卷",
+      "level": 3,
+      "type": "book",
+      "content": "劉義慶　世說十卷　見《臨川王道規傳》。《宋書》義慶見道規傳，《世說》未載。；《隋·經籍志》:《世說》八卷，宋劉義慶撰。",
+      "dynasty_tag": "宋",
+      "work_id": "d59f286plon7"
+    },
+    {
+      "title": "賈希鏡　郭子注",
+      "level": 3,
+      "type": "book",
+      "content": "賈希鏡　郭子注　見本傳。《齊書·賈淵傳》同。；《隋·經籍志》未收。；按《南史》，希鏡，賈淵字。",
+      "dynasty_tag": "齊",
+      "work_id": "d59f9bcjybd3"
+    },
+    {
+      "title": "顧協　瑣語十卷",
+      "level": 3,
+      "type": "book",
+      "content": "顧協　瑣語十卷　見本傳。《梁書》同。；《隋·經籍志》：《瑣語》一卷，梁顧協撰。",
+      "dynasty_tag": "梁",
+      "work_id": "d59f285pe5mp"
+    },
+    {
+      "title": "沈約　邇言十卷",
+      "level": 3,
+      "type": "book",
+      "content": "沈約　邇言十卷　見本傳。《梁書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "梁",
+      "work_id": "d59f9c107j0k"
+    },
+    {
+      "title": "沈旋　邇言集注",
+      "level": 3,
+      "type": "book",
+      "content": "沈旋　邇言集注　見本傳。《梁書》旋無傳。；《隋·經籍志》未收。；按《南史》旋傳，沈約子。",
+      "dynasty_tag": "梁",
+      "work_id": "d59f9c107j0l"
+    },
+    {
+      "title": "伏挺　邇說十卷",
+      "level": 3,
+      "type": "book",
+      "content": "伏挺　邇說十卷　見本傳。《梁書》同。；《隋·經籍志》：《邇說》一卷，伏捶撰。；按“捶”，疑“挺”字之誤。",
+      "dynasty_tag": "梁",
+      "work_id": "d59f285aq03n"
+    },
+    {
+      "title": "姚察　說林十卷",
+      "level": 3,
+      "type": "book",
+      "content": "姚察　說林十卷　見本傳。《隋書》同。；《隋·經籍志》未收。",
+      "dynasty_tag": "陳",
+      "work_id": "d59f9c107j0m"
+    },
+    {
+      "title": "小說家類結語",
+      "level": 3,
+      "type": "tally",
+      "content": "右小說家七部，已收《隋·經籍志》者三部，未收《隋·經籍志》者四部。"
+    }
+  ]
+}

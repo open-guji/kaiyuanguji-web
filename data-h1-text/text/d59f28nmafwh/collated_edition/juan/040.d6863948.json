@@ -1,0 +1,1398 @@
+{
+  "title": "總集類",
+  "sections": [
+    {
+      "title": "《文章流別集》四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文章流別集》四十一卷梁六十卷，志二卷，論二卷，摯虞撰。",
+      "work_id": "d59f27vz5w5c",
+      "book_title": "文章流別集",
+      "n_juan": 41
+    },
+    {
+      "title": "《文章流別志》",
+      "level": 3,
+      "type": "book",
+      "content": "《文章流別志》、《論》二卷摯虞撰。",
+      "work_id": "d59f2q4avc3m",
+      "book_title": "論",
+      "n_juan": 2,
+      "author_info": "《文章流別志》、"
+    },
+    {
+      "title": "《文章流別本》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文章流別本》十二卷謝混撰。",
+      "work_id": "d59f27uez6dc",
+      "book_title": "文章流別本",
+      "n_juan": 12,
+      "author_info": "謝混撰"
+    },
+    {
+      "title": "《續文章流別》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《續文章流別》三卷孔寧撰。",
+      "work_id": "d59f2q6m7oxt",
+      "book_title": "續文章流別",
+      "n_juan": 3,
+      "author_info": "孔寧撰"
+    },
+    {
+      "title": "《集苑》四十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集苑》四十五卷梁六十卷。",
+      "work_id": "d59f27u3qmtf",
+      "book_title": "集苑",
+      "n_juan": 45
+    },
+    {
+      "title": "《集林》一百八十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集林》一百八十一卷宋臨川王劉義慶撰。梁二百卷。",
+      "work_id": "d59f2856z5kz",
+      "book_title": "集林",
+      "n_juan": 181,
+      "author_info": "宋臨川王劉義慶撰"
+    },
+    {
+      "title": "《集林鈔》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集林鈔》十一卷",
+      "work_id": "d59f2pzthn28",
+      "book_title": "集林鈔",
+      "n_juan": 11
+    },
+    {
+      "title": "《集鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集鈔》十卷沈約撰。梁有《集鈔》四十卷，丘遲撰，亡。",
+      "work_id": "d59f285t505f",
+      "book_title": "集鈔",
+      "n_juan": 10,
+      "author_info": "沈約撰"
+    },
+    {
+      "title": "《集略》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集略》二十卷",
+      "work_id": "d59f2861kete",
+      "book_title": "集略",
+      "n_juan": 20
+    },
+    {
+      "title": "《撰遺》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《撰遺》六卷梁又有《零集》三十六卷，亡。",
+      "work_id": "d59f2q7putxe",
+      "book_title": "撰遺",
+      "n_juan": 6
+    },
+    {
+      "title": "《翰林論》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《翰林論》三卷李充撰。梁五十四卷。",
+      "work_id": "d59f27uul1j5",
+      "book_title": "翰林論",
+      "n_juan": 3,
+      "author_info": "李充撰"
+    },
+    {
+      "title": "《文苑》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文苑》一百卷孔道撰。",
+      "work_id": "d59f286axj40",
+      "book_title": "文苑",
+      "n_juan": 100,
+      "author_info": "孔道撰"
+    },
+    {
+      "title": "《文苑鈔》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文苑鈔》三十卷",
+      "work_id": "d59f2pu8s1s1",
+      "book_title": "文苑鈔",
+      "n_juan": 30
+    },
+    {
+      "title": "《詞林》五十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詞林》五十八卷",
+      "work_id": "d59f2pu85kw2",
+      "book_title": "詞林",
+      "n_juan": 58
+    },
+    {
+      "title": "《文海》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文海》五十卷",
+      "work_id": "d59f2q0v9czk",
+      "book_title": "文海",
+      "n_juan": 50
+    },
+    {
+      "title": "《吳朝士文集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吳朝士文集》十卷梁十三卷。又有《漢書文府》三卷，亡。",
+      "work_id": "d59f27t6c8oy",
+      "book_title": "吳朝士文集",
+      "n_juan": 10
+    },
+    {
+      "title": "《巾箱集》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《巾箱集》七卷梁有《文章志錄雜文》八卷，謝沈撰，又《名士雜文》八卷，亡。",
+      "work_id": "d59f2pv3ojcx",
+      "book_title": "巾箱集",
+      "n_juan": 7
+    },
+    {
+      "title": "《婦人集》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《婦人集》二十卷梁有《婦人集》三十卷，殷淳撰。又有《婦人集》十一卷，亡。",
+      "work_id": "d59f2moxb8jm",
+      "book_title": "婦人集",
+      "n_juan": 20
+    },
+    {
+      "title": "《婦人集鈔》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《婦人集鈔》二卷",
+      "work_id": "d59f2q7ddce9",
+      "book_title": "婦人集鈔",
+      "n_juan": 2
+    },
+    {
+      "title": "《雜文》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜文》十六卷為婦人作。",
+      "work_id": "d59f2q1wpudd",
+      "book_title": "雜文",
+      "n_juan": 16,
+      "author_info": "為婦人作"
+    },
+    {
+      "title": "《文選》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文選》三十卷梁昭明太子撰。",
+      "work_id": "d59f2870u874",
+      "book_title": "文選",
+      "n_juan": 30
+    },
+    {
+      "title": "《文選音》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文選音》三卷蕭該撰。",
+      "work_id": "d59f28l8g6ir",
+      "book_title": "文選音",
+      "n_juan": 3,
+      "author_info": "蕭該撰"
+    },
+    {
+      "title": "《文章始》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文章始》一卷姚察撰。梁有《文章始》一卷，任昉撰；《四代文章記》一卷，吳郡功曹張防撰。亡。",
+      "work_id": "d59f28krwlqb",
+      "book_title": "文章始",
+      "n_juan": 1,
+      "author_info": "姚察撰"
+    },
+    {
+      "title": "《賦集》九十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《賦集》九十二卷謝靈運撰。梁又有《賦集》五十卷，宋新渝惠侯撰；《賦集》四十卷，宋明帝撰；《樂器賦》十卷；《伎藝賦》六卷。亡。",
+      "work_id": "d59f285lnb42",
+      "book_title": "賦集",
+      "n_juan": 92,
+      "author_info": "謝靈運撰",
+      "ai_note": "本節謝靈運《賦集》九十二卷，原誤繫崔浩《賦集》（八十六卷）之條，今移歸謝靈運本。"
+    },
+    {
+      "title": "《賦集》八十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《賦集》八十六卷後魏秘書丞崔浩撰。",
+      "work_id": "d59f286b8rnn",
+      "book_title": "賦集",
+      "n_juan": 86,
+      "author_info": "後魏秘書丞崔浩撰"
+    },
+    {
+      "title": "《賦集鈔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《賦集鈔》一卷",
+      "work_id": "d59f2pwetdkx",
+      "book_title": "賦集鈔",
+      "n_juan": 1
+    },
+    {
+      "title": "《續賦集》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《續賦集》十九卷殘缺。",
+      "work_id": "d59f2q1yl91d",
+      "book_title": "續賦集",
+      "n_juan": 19
+    },
+    {
+      "title": "《歷代賦》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代賦》十卷梁武帝撰。",
+      "work_id": "d59f28676olc",
+      "book_title": "歷代賦",
+      "n_juan": 10
+    },
+    {
+      "title": "《皇德瑞應賦頌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《皇德瑞應賦頌》一卷梁十六卷。",
+      "work_id": "d59f2q8xk1z6",
+      "book_title": "皇德瑞應賦頌",
+      "n_juan": 1
+    },
+    {
+      "title": "《五都賦》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五都賦》六卷並錄。張衡及左思撰。",
+      "work_id": "d59f27wp2l8j",
+      "book_title": "五都賦",
+      "n_juan": 6,
+      "author_info": "並錄"
+    },
+    {
+      "title": "《雜都賦》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜都賦》十一卷梁《雜賦》十六卷。又《東都賦》一卷，孔逭作；《二京賦音》二卷，李軌、綦毋邃撰；《齊都賦》二卷並音，左思撰；《相風賦》七卷，傅玄等撰；《迦維國賦》二卷，晉右軍行參軍虞干紀撰；《遂志賦》十卷，《乘輿赭白馬》二卷。亡。",
+      "work_id": "d59f2pzjta0x",
+      "book_title": "雜都賦",
+      "n_juan": 11
+    },
+    {
+      "title": "《述征賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《述征賦》一卷",
+      "work_id": "d59f2q7izls1",
+      "book_title": "述征賦",
+      "n_juan": 1
+    },
+    {
+      "title": "《神雀賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《神雀賦》一卷後漢傅毅撰。",
+      "work_id": "d59f24lnljia",
+      "book_title": "神雀賦",
+      "n_juan": 1,
+      "author_info": "後漢傅毅撰"
+    },
+    {
+      "title": "《雜賦注本》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜賦注本》三卷梁有郭璞注《子虛上林賦》一卷，薛綜注張衡《二京賦》二卷，晁矯注《二京賦》一卷，傅巽注《二京賦》二卷，張載及晉侍中劉逵、晉懷令衛權注左思《三都賦》三卷，綦毋邃注《三都賦》三卷，項氏注《幽通賦》，蕭廣濟注木玄虛《海賦》一卷，徐爰注《射雉賦》一卷，亡。",
+      "work_id": "d59f2pxt2l8g",
+      "book_title": "雜賦注本",
+      "n_juan": 3
+    },
+    {
+      "title": "《獻賦》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《獻賦》十八卷",
+      "work_id": "d59f2q351jia",
+      "book_title": "獻賦",
+      "n_juan": 18
+    },
+    {
+      "title": "《圍棋賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《圍棋賦》一卷梁武帝撰。",
+      "work_id": "d59f285q0mpv",
+      "book_title": "圍棋賦",
+      "n_juan": 1
+    },
+    {
+      "title": "《觀象賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《觀象賦》一卷",
+      "work_id": "d59f2ptrm0ao",
+      "book_title": "觀象賦",
+      "n_juan": 1
+    },
+    {
+      "title": "《洛神賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《洛神賦》一卷孫壑注。",
+      "work_id": "d59f2pxvvpqa",
+      "book_title": "洛神賦",
+      "n_juan": 1,
+      "author_info": "孫壑注"
+    },
+    {
+      "title": "《枕賦》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《枕賦》一卷張君祖撰。",
+      "work_id": "d59f2q7vh3pc",
+      "book_title": "枕賦",
+      "n_juan": 1,
+      "author_info": "張君祖撰"
+    },
+    {
+      "title": "《二都賦音》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《二都賦音》一卷李軌撰。",
+      "work_id": "d59f27werrb6",
+      "book_title": "二都賦音",
+      "n_juan": 1,
+      "author_info": "李軌撰"
+    },
+    {
+      "title": "《百賦音》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百賦音》十卷宋御史褚詮之撰。梁有《賦音》二卷，郭徵之撰；《雜賦圖》十七卷。亡。",
+      "work_id": "d59f285tg8ow",
+      "book_title": "百賦音",
+      "n_juan": 10,
+      "author_info": "宋御史褚詮之撰"
+    },
+    {
+      "title": "《大隋封禪書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大隋封禪書》一卷",
+      "work_id": "d59f2ptik3y8",
+      "book_title": "大隋封禪書",
+      "n_juan": 1
+    },
+    {
+      "title": "《上封禪書》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《上封禪書》二卷梁有《雜封禪文》八卷，《秦帝刻石文》一卷，宋會稽太守褚淡撰，亡。",
+      "work_id": "d59f2pwivgg0",
+      "book_title": "上封禪書",
+      "n_juan": 2
+    },
+    {
+      "title": "《集雅篇》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《集雅篇》五卷",
+      "work_id": "d59f2pxw6y9u",
+      "book_title": "集雅篇",
+      "n_juan": 5
+    },
+    {
+      "title": "《靖恭堂頌》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《靖恭堂頌》一卷晉涼王李灊撰。梁有《頌集》二十卷，王僧綽撰；《木連理頌》二卷，太元十九年群臣上。亡。",
+      "work_id": "d59f27tzojr6",
+      "book_title": "靖恭堂頌",
+      "n_juan": 1,
+      "author_info": "晉涼王李灊撰"
+    },
+    {
+      "title": "《詩集》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩集》五十卷謝靈運撰。梁五十一卷。又有宋侍中張敷、袁淑補謝靈運《詩集》一百卷；又《詩集》百卷，並例、錄二卷，顏峻撰；《詩集》四十卷，宋明帝撰；《雜詩》七十九卷，江邃撰；《雜詩》二十卷，宋太子洗馬劉和注；《二晉雜詩》二十卷；《古今五言詩美文》五卷，荀綽撰；《詩鈔》十卷。亡。",
+      "work_id": "d59f2862tczk",
+      "book_title": "詩集",
+      "n_juan": 50,
+      "author_info": "謝靈運撰"
+    },
+    {
+      "title": "《詩集鈔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩集鈔》十卷謝靈運撰。梁有《雜詩鈔》十卷，錄一卷，謝靈運撰，亡。",
+      "work_id": "d59f285zdr0j",
+      "book_title": "詩集鈔",
+      "n_juan": 10,
+      "author_info": "謝靈運撰"
+    },
+    {
+      "title": "《古詩集》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古詩集》九卷",
+      "work_id": "d59f2q07jbi8",
+      "book_title": "古詩集",
+      "n_juan": 9
+    },
+    {
+      "title": "《六代詩集鈔》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《六代詩集鈔》四卷梁有《雜言詩鈔》五卷，謝朏撰，亡。",
+      "work_id": "d59f2858ukua",
+      "book_title": "六代詩集鈔",
+      "n_juan": 4
+    },
+    {
+      "title": "《詩英》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩英》九卷謝靈運集。梁十卷。又有《文章英華》三十卷，梁昭明太子撰，亡。",
+      "work_id": "d59f286dffgj",
+      "book_title": "詩英",
+      "n_juan": 9,
+      "author_info": "謝靈運集"
+    },
+    {
+      "title": "《今詩英》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《今詩英》八卷",
+      "work_id": "d59f2q2zf9j4",
+      "book_title": "今詩英",
+      "n_juan": 8
+    },
+    {
+      "title": "《古今詩苑英華》十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今詩苑英華》十九卷梁昭明太子撰。",
+      "work_id": "d59f286i3zlu",
+      "book_title": "古今詩苑英華",
+      "n_juan": 19
+    },
+    {
+      "title": "《詩纘》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩纘》十三卷",
+      "work_id": "d59f2q9kcdfm",
+      "book_title": "詩纘",
+      "n_juan": 13
+    },
+    {
+      "title": "《眾詩英華》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《眾詩英華》一卷",
+      "work_id": "d59f2q82nk01",
+      "book_title": "眾詩英華",
+      "n_juan": 1
+    },
+    {
+      "title": "《詩類》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩類》六卷",
+      "work_id": "d59f2q9mu9s0",
+      "book_title": "詩類",
+      "n_juan": 6
+    },
+    {
+      "title": "《玉台新詠》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《玉台新詠》十卷徐陵撰。",
+      "work_id": "d59f286vufi9",
+      "book_title": "玉台新詠",
+      "n_juan": 10,
+      "author_info": "徐陵撰"
+    },
+    {
+      "title": "《百志詩》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百志詩》九卷干寶撰。梁五卷。又有《古遊仙詩》一卷；應貞注應璩《百一詩》八卷；《百一詩》二卷，晉蜀郡太守李彪撰。亡。",
+      "work_id": "d59f27umgvep",
+      "book_title": "百志詩",
+      "n_juan": 9,
+      "author_info": "干寶撰"
+    },
+    {
+      "title": "《釋奠會詩》一十卷",
+      "level": 3,
+      "type": "book",
+      "content": "齊《釋奠會詩》一十卷",
+      "work_id": "d59f2q2uqozl",
+      "book_title": "釋奠會詩",
+      "n_juan": 10,
+      "author_info": "齊"
+    },
+    {
+      "title": "《齊宴會詩》十七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊宴會詩》十七卷",
+      "work_id": "d59f2pt54wsi",
+      "book_title": "齊宴會詩",
+      "n_juan": 17
+    },
+    {
+      "title": "《青溪詩》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《青溪詩》三十卷齊宴會作。梁有魏、晉、宋《雜祖餞宴會詩集》二十一部，一百四十三卷，亡，今略其數。",
+      "work_id": "d59f2q0ds2de",
+      "book_title": "青溪詩",
+      "n_juan": 30,
+      "author_info": "齊宴會作"
+    },
+    {
+      "title": "《西府新文》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《西府新文》十一卷並錄。梁蕭淑撰。",
+      "work_id": "d59f28jzt8ua",
+      "book_title": "西府新文",
+      "n_juan": 11,
+      "author_info": "並錄"
+    },
+    {
+      "title": "《百國詩》四十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百國詩》四十三卷",
+      "work_id": "d59f2pu1acjk",
+      "book_title": "百國詩",
+      "n_juan": 43
+    },
+    {
+      "title": "《文林館詩府》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文林館詩府》八卷後齊文林館作。",
+      "work_id": "d59f2pzz3x8h",
+      "book_title": "文林館詩府",
+      "n_juan": 8,
+      "author_info": "後齊文林館作"
+    },
+    {
+      "title": "《詩評》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詩評》三卷鐘嶸撰，或曰《詩品》。",
+      "work_id": "d59f285lc2kj",
+      "book_title": "詩評",
+      "n_juan": 3,
+      "author_info": "鐘嶸撰"
+    },
+    {
+      "title": "《古樂府》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古樂府》八卷",
+      "work_id": "d59f2gpr248x",
+      "book_title": "古樂府",
+      "n_juan": 8
+    },
+    {
+      "title": "《文會詩》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文會詩》三卷陳仁威記室徐伯陽撰。",
+      "work_id": "d59f285dudj5",
+      "book_title": "文會詩",
+      "n_juan": 3,
+      "author_info": "陳仁威記室徐伯陽撰"
+    },
+    {
+      "title": "《五嶽七星回文詩》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《五嶽七星回文詩》一卷梁有《雜詩圖》一卷，亡。",
+      "work_id": "d59f2pvvgoao",
+      "book_title": "五嶽七星回文詩",
+      "n_juan": 1
+    },
+    {
+      "title": "《毛伯成詩》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《毛伯成詩》一卷伯成，東晉征西參軍。",
+      "work_id": "d59f2q21eebk",
+      "book_title": "毛伯成詩",
+      "n_juan": 1,
+      "author_info": "伯成"
+    },
+    {
+      "title": "《春秋寶藏詩》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《春秋寶藏詩》四卷張朏撰。",
+      "work_id": "d59f2q0pbuv4",
+      "book_title": "春秋寶藏詩",
+      "n_juan": 4,
+      "author_info": "張朏撰"
+    },
+    {
+      "title": "《江淹擬古》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《江淹擬古》一卷羅潛注。",
+      "work_id": "d59f2q4ox05c",
+      "book_title": "江淹擬古",
+      "n_juan": 1,
+      "author_info": "羅潛注"
+    },
+    {
+      "title": "《樂府歌辭鈔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府歌辭鈔》一卷",
+      "work_id": "d59f2pthxngh",
+      "book_title": "樂府歌辭鈔",
+      "n_juan": 1
+    },
+    {
+      "title": "《歌錄》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歌錄》十卷",
+      "work_id": "d59f24lnljib",
+      "book_title": "歌錄",
+      "n_juan": 10
+    },
+    {
+      "title": "《古歌錄鈔》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古歌錄鈔》二卷",
+      "work_id": "d59f2pxoe0w1",
+      "book_title": "古歌錄鈔",
+      "n_juan": 2
+    },
+    {
+      "title": "《晉歌章》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉歌章》八卷梁十卷。",
+      "work_id": "d59f2q3zy1aa",
+      "book_title": "晉歌章",
+      "n_juan": 8
+    },
+    {
+      "title": "《吳聲歌辭曲》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《吳聲歌辭曲》一卷梁二卷。又有《樂府歌詩》二十卷，秦伯文撰；《樂府歌詩》十二卷，《樂府三校歌詩》十卷，《樂府歌辭》九卷；《太樂歌詩》八卷，《歌辭》四卷，張永記；《魏宴樂歌辭》七卷，《晉歌章》十卷；又《晉歌詩》十八卷，《晉宴樂歌辭》十卷，荀勖撰；《宋太始祭高禖歌辭》十一卷，《齊三調雅辭》五卷；《古今九代歌詩》七卷，張湛撰；《三調相和歌辭》五卷，《三調詩吟錄》六卷，《奏鞞鐸舞曲》二卷，《管弦錄》一卷，《伎錄》一卷；《太樂備問鍾鐸律奏舞歌》四卷，郝生撰；《回文集》十卷，謝靈運撰；又《回文詩》八卷，《織錦回文詩》一卷，苻堅秦州刺史竇氏妻蘇氏作；《頌集》二十卷，王僧綽撰；《木連理頌》二卷，晉太元十九年群臣上；又有鼓吹、清商、樂府、宴樂、高禖、鞞、鐸等《歌辭舞錄》，凡十部。",
+      "work_id": "d59f2pyfuwoy",
+      "book_title": "吳聲歌辭曲",
+      "n_juan": 1
+    },
+    {
+      "title": "《陳郊廟歌辭》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳郊廟歌辭》三卷並錄。徐陵撰。",
+      "work_id": "d59f2867hx4x",
+      "book_title": "陳郊廟歌辭",
+      "n_juan": 3,
+      "author_info": "並錄"
+    },
+    {
+      "title": "《樂府新歌》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府新歌》十卷秦王記室崔子發撰。",
+      "work_id": "d59f284zsp38",
+      "book_title": "樂府新歌",
+      "n_juan": 10,
+      "author_info": "秦王記室崔子發撰",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evcmod423bwg，今別立《樂府新歌》十卷崔子發撰 1ex0j4cblb8jl 繫之——與同志殷僧首二卷本撰人異、卷數異。"
+    },
+    {
+      "title": "《樂府新歌》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府新歌》二卷秦王司馬殷僧首撰",
+      "work_id": "d59f28kwl5vp",
+      "book_title": "樂府新歌",
+      "n_juan": 2,
+      "author_info": "秦王司馬殷僧首撰"
+    },
+    {
+      "title": "《古今箴銘集》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今箴銘集》十四卷張湛撰。錄一卷。梁有《箴集》十六卷，《雜誡箴》二十四卷，《女箴》一卷，《女史箴圖》一卷，又有《銘集》十一卷，又陸少玄撰《佛像雜銘》十三卷，釋僧祐撰《箴器雜銘》五卷，亡。",
+      "work_id": "d59f27twvev4",
+      "book_title": "古今箴銘集",
+      "n_juan": 14,
+      "author_info": "張湛撰"
+    },
+    {
+      "title": "《眾賢誡集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《眾賢誡集》十卷殘缺。梁有《誡林》三卷，綦毋邃撰；《四帝誡》三卷，王誕撰；《雜家誡》七卷，《諸家雜誡》九卷，《集誡》二十二卷。亡。",
+      "work_id": "d59f2pts8gzl",
+      "book_title": "眾賢誡集",
+      "n_juan": 10
+    },
+    {
+      "title": "《諸葛武侯誡》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《諸葛武侯誡》一卷、《女誡》一卷",
+      "work_id": "d59f2q12fthe",
+      "book_title": "諸葛武侯誡",
+      "n_juan": 1
+    },
+    {
+      "title": "《女誡》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《女誡》一卷曹大家撰。",
+      "work_id": "d59f23nylcli",
+      "book_title": "女誡",
+      "n_juan": 1,
+      "author_info": "曹大家撰"
+    },
+    {
+      "title": "《女鑒》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《女鑒》一卷梁有《女訓》十六卷。",
+      "work_id": "d59f2nekc2yq",
+      "book_title": "女鑒",
+      "n_juan": 1
+    },
+    {
+      "title": "《婦人訓誡集》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《婦人訓誡集》十一卷並錄。梁十卷。宋司空徐湛之撰。",
+      "work_id": "d59f285trh8g",
+      "book_title": "婦人訓誡集",
+      "n_juan": 11,
+      "author_info": "並錄"
+    },
+    {
+      "title": "《娣姒訓》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《娣姒訓》一卷馮少胄撰。",
+      "work_id": "d59f2q5cn20w",
+      "book_title": "娣姒訓",
+      "n_juan": 1,
+      "author_info": "馮少胄撰"
+    },
+    {
+      "title": "《貞順志》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《貞順志》一卷",
+      "work_id": "d59f2pxepo8w",
+      "book_title": "貞順志",
+      "n_juan": 1
+    },
+    {
+      "title": "《贊集》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《贊集》五卷謝莊撰。",
+      "work_id": "d59f285dudj4",
+      "book_title": "贊集",
+      "n_juan": 5,
+      "author_info": "謝莊撰"
+    },
+    {
+      "title": "《畫贊》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《畫贊》五卷漢明帝殿閣畫，魏陳思王贊。梁五十卷。又有《誄集》十五卷，謝莊撰，亡。",
+      "work_id": "d59f27t6c8ox",
+      "book_title": "畫贊",
+      "n_juan": 5,
+      "author_info": "漢明帝殿閣畫"
+    },
+    {
+      "title": "《七集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《七集》十卷謝靈運集。",
+      "work_id": "d59f286faupt",
+      "book_title": "七集",
+      "n_juan": 10,
+      "author_info": "謝靈運集"
+    },
+    {
+      "title": "《七林》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《七林》十卷梁十二卷，錄二卷。卞景撰。梁有又有《七林》三十卷，音一卷，亡。",
+      "work_id": "d59f2q3rtuyo",
+      "book_title": "七林",
+      "n_juan": 10
+    },
+    {
+      "title": "《七悟》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《七悟》一卷顏之推撰。梁有《吊文集》六卷，錄一卷；《吊文》二卷，亡。",
+      "work_id": "d59f28maj4sm",
+      "book_title": "七悟",
+      "n_juan": 1,
+      "author_info": "顏之推撰"
+    },
+    {
+      "title": "《碑集》二十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《碑集》二十九卷",
+      "work_id": "d59f2q7uun0g",
+      "book_title": "碑集",
+      "n_juan": 29
+    },
+    {
+      "title": "《雜碑集》二十九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜碑集》二十九卷",
+      "work_id": "d59f2ptik45e",
+      "book_title": "雜碑集",
+      "n_juan": 29
+    },
+    {
+      "title": "《雜碑集》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜碑集》二十二卷梁有《碑集》十卷，謝莊撰；《釋氏碑文》三十卷，梁元帝撰；《雜碑》二十二卷，《碑文》十五卷，晉將作大匠陳勰撰；《碑文》十卷，車灌撰；又有《羊祜墮淚碑》一卷，《桓宣武碑》十卷，《長沙景王碑文》三卷，《荊州雜碑》三卷，《雍州雜碑》四卷，《廣州刺史碑》十二卷，《義興周處碑》一卷，《太原王氏家碑誄頌贊銘集》二十六卷；《諸寺碑文》四十六卷，釋僧祐撰；《雜祭文》六卷，《眾僧行狀》四十卷，釋僧祐撰。亡。",
+      "work_id": "d59f2q4cfim8",
+      "book_title": "雜碑集",
+      "n_juan": 22
+    },
+    {
+      "title": "《設論集》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《設論集》二卷劉楷撰。梁有《設論集》三卷，東晉人撰；《客難集》二十卷，亡。",
+      "work_id": "d59f27y80cua",
+      "book_title": "設論集",
+      "n_juan": 2,
+      "author_info": "劉楷撰"
+    },
+    {
+      "title": "《論集》七十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《論集》七十三卷",
+      "work_id": "d59f27vro742",
+      "book_title": "論集",
+      "n_juan": 73
+    },
+    {
+      "title": "《雜論》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜論》十卷",
+      "work_id": "d59f27wh9nnl",
+      "book_title": "雜論",
+      "n_juan": 10
+    },
+    {
+      "title": "《明真論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《明真論》一卷晉兗州刺史宗岱撰。",
+      "work_id": "d59f27waefpd",
+      "book_title": "明真論",
+      "n_juan": 1,
+      "author_info": "晉兗州刺史宗岱撰"
+    },
+    {
+      "title": "《東西晉興亡論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《東西晉興亡論》一卷",
+      "work_id": "d59f2pxl9n9c",
+      "book_title": "東西晉興亡論",
+      "n_juan": 1
+    },
+    {
+      "title": "《陶神論》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陶神論》五卷",
+      "work_id": "d59f2pviz669",
+      "book_title": "陶神論",
+      "n_juan": 5
+    },
+    {
+      "title": "《正流論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《正流論》一卷",
+      "work_id": "d59f2q6wij9d",
+      "book_title": "正流論",
+      "n_juan": 1
+    },
+    {
+      "title": "《黃芳引連珠》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃芳引連珠》一卷",
+      "work_id": "d59f2pxv991e",
+      "book_title": "黃芳引連珠",
+      "n_juan": 1
+    },
+    {
+      "title": "《梁武連珠》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁武連珠》一卷沈約注。",
+      "work_id": "d59f2855eyv7",
+      "book_title": "梁武連珠",
+      "n_juan": 1,
+      "author_info": "沈約注"
+    },
+    {
+      "title": "《梁武帝制旨連珠》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁武帝制旨連珠》十卷梁邵陵王綸注。",
+      "work_id": "d59f2865b9c0",
+      "book_title": "梁武帝制旨連珠",
+      "n_juan": 10
+    },
+    {
+      "title": "《梁武帝制旨連珠》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁武帝制旨連珠》十卷陸緬注。梁有《設論連珠》十卷，謝靈運撰《連珠集》五卷，陳證撰《連珠》十五卷；又《連珠》一卷，陸機撰，何承天注；又班固《典引》一卷，蔡邕注。亡。",
+      "work_id": "d59f2865b9c0",
+      "book_title": "梁武帝制旨連珠",
+      "n_juan": 10,
+      "author_info": "陸緬注"
+    },
+    {
+      "title": "《梁代雜文》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁代雜文》三卷",
+      "work_id": "d59f2q993tvl",
+      "book_title": "梁代雜文",
+      "n_juan": 3
+    },
+    {
+      "title": "《詔集區分》四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《詔集區分》四十一卷後周獸門學士宗幹撰。",
+      "work_id": "d59f285gnif6",
+      "book_title": "詔集區分",
+      "n_juan": 41,
+      "author_info": "後周獸門學士宗幹撰"
+    },
+    {
+      "title": "《魏朝雜詔》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏朝雜詔》二卷梁有《漢高祖手詔》一卷，亡。",
+      "work_id": "d59f27t6yps0",
+      "book_title": "魏朝雜詔",
+      "n_juan": 2
+    },
+    {
+      "title": "《錄魏吳二志詔》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《錄魏吳二志詔》二卷梁有《三國詔誥》十卷，亡。",
+      "work_id": "d59f2qa4mt4y",
+      "book_title": "錄魏吳二志詔",
+      "n_juan": 2
+    },
+    {
+      "title": "《晉咸康詔》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸康詔》四卷",
+      "work_id": "d59f2pxxfwn6",
+      "book_title": "晉咸康詔",
+      "n_juan": 4
+    },
+    {
+      "title": "《晉朝雜詔》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉朝雜詔》九卷梁有《晉雜詔》百卷，錄一卷。又有《晉雜詔》二十八卷，錄一卷；又《晉詔》六十卷，《晉文王》、《武帝雜詔》十二卷。亡。",
+      "work_id": "d59f2pv7fegx",
+      "book_title": "晉朝雜詔",
+      "n_juan": 9
+    },
+    {
+      "title": "《錄晉詔》十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《錄晉詔》十四卷梁有《晉武帝詔》十二卷，《成帝詔草》十七卷，《康帝詔草》十卷，《建元直詔》三卷，《永和副詔》九卷，《升平、隆和、興寧副詔》十卷，《泰元、咸甯、甯康副詔》二十二卷，《隆安直詔》五卷，《元興大亨副詔》三卷，亡。",
+      "work_id": "d59f2q7c4ef4",
+      "book_title": "錄晉詔",
+      "n_juan": 14
+    },
+    {
+      "title": "《晉義熙詔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉義熙詔》十卷梁有《義熙副詔》十卷，《義熙以來至於大明詔》三十卷，《晉宋雜詔》四卷；又《晉宋雜詔》八卷，王韶之撰；又《雜詔》十四卷，《班五條詔》十卷。亡。",
+      "work_id": "d59f2q7emarl",
+      "book_title": "晉義熙詔",
+      "n_juan": 10
+    },
+    {
+      "title": "《雜詔》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜詔》八卷",
+      "work_id": "d59f2pt20jcx",
+      "book_title": "雜詔",
+      "n_juan": 8
+    },
+    {
+      "title": "《宋永初雜詔》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋永初雜詔》十三卷梁有《詔集》百卷，起漢訖宋；《武帝詔》四卷，宋《元熙詔令》五卷，《永初二年五年詔》三卷，《永初已來中書雜詔》二十卷。亡。",
+      "work_id": "d59f2q928mbl",
+      "book_title": "宋永初雜詔",
+      "n_juan": 13
+    },
+    {
+      "title": "《宋孝建詔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋孝建詔》一卷梁有《宋景平詔》三卷，亡。",
+      "work_id": "d59f2pxl9nuq",
+      "book_title": "宋孝建詔",
+      "n_juan": 1
+    },
+    {
+      "title": "《宋元嘉副詔》十五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋元嘉副詔》十五卷梁有《宋元嘉詔》六十二卷，又《宋孝武詔》五卷，《宋大明詔》七十卷，《宋永光、景和詔》五卷，《宋泰始、泰豫詔》二十二卷，《宋義嘉偽詔》一卷，《宋元徽詔》十三卷，《宋升明詔》四卷，亡。",
+      "work_id": "d59f2psu7m68",
+      "book_title": "宋元嘉副詔",
+      "n_juan": 15
+    },
+    {
+      "title": "《齊雜詔》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊雜詔》十卷",
+      "work_id": "d59f2px5nsao",
+      "book_title": "齊雜詔",
+      "n_juan": 10
+    },
+    {
+      "title": "《齊中興二年詔》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊中興二年詔》三卷梁有《齊建元詔》五卷，《永明詔》三卷，《武帝中詔》十卷，《齊隆昌、延興、建武詔》九卷，《齊建武二年副詔》九卷，《梁天監元年至七年詔》十二卷，《天監九年、十年詔》二卷，亡。",
+      "work_id": "d59f2q4qh6v4",
+      "book_title": "齊中興二年詔",
+      "n_juan": 3
+    },
+    {
+      "title": "《後魏詔集》十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後魏詔集》十六卷",
+      "work_id": "d59f2pz0rta9",
+      "book_title": "後魏詔集",
+      "n_juan": 16
+    },
+    {
+      "title": "《後周雜詔》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後周雜詔》八卷",
+      "work_id": "d59f2pwag1z5",
+      "book_title": "後周雜詔",
+      "n_juan": 8
+    },
+    {
+      "title": "《雜赦書》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜赦書》六卷",
+      "work_id": "d59f2pvztzwh",
+      "book_title": "雜赦書",
+      "n_juan": 6
+    },
+    {
+      "title": "《陳天嘉詔草》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳天嘉詔草》三卷",
+      "work_id": "d59f2q7xyzup",
+      "book_title": "陳天嘉詔草",
+      "n_juan": 3
+    },
+    {
+      "title": "《霸朝集》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《霸朝集》三卷李德林撰。",
+      "work_id": "d59f28kijhfo",
+      "book_title": "霸朝集",
+      "n_juan": 3,
+      "author_info": "李德林撰"
+    },
+    {
+      "title": "《皇朝詔集》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《皇朝詔集》九卷",
+      "work_id": "d59f2q6hudq8",
+      "book_title": "皇朝詔集",
+      "n_juan": 9
+    },
+    {
+      "title": "《皇朝陳事詔》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《皇朝陳事詔》十三卷梁有《雜九錫文》四卷，亡。",
+      "work_id": "d59f2ptosv0i",
+      "book_title": "皇朝陳事詔",
+      "n_juan": 13
+    },
+    {
+      "title": "《上法書表》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《上法書表》一卷虞和撰。",
+      "work_id": "d59f2857ae4i",
+      "book_title": "上法書表",
+      "n_juan": 1,
+      "author_info": "虞和撰"
+    },
+    {
+      "title": "《梁中表》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁中表》十一卷梁邵陵王撰。梁有《漢名臣奏》三十卷；《魏名臣奏》三十卷，陳長壽撰；《魏雜事》七卷，《晉諸公奏》十一卷，《雜表奏駁》三十五卷，《漢丞相匡衡、大司馬王鳳奏》五卷，《劉隗奏》五卷，《孔群奏》二十二卷，《晉金紫光祿大夫周閔奏事》四卷，《晉中丞劉邵奏事》六卷，《中丞司馬無忌奏事》十三卷，《中丞虞穀奏事》六卷，《中丞高崧奏事》五卷，又《諸彈事》等十四部。亡。",
+      "work_id": "d59f285trh8i",
+      "book_title": "梁中表",
+      "n_juan": 11
+    },
+    {
+      "title": "《雜露布》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜露布》十二卷梁有《雜檄文》十七卷，《魏武帝露布文》九卷，亡。",
+      "work_id": "d59f2q8vddz4",
+      "book_title": "雜露布",
+      "n_juan": 12
+    },
+    {
+      "title": "《山公啟事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《山公啟事》三卷",
+      "work_id": "d59f27upl8u8",
+      "book_title": "山公啟事",
+      "n_juan": 3
+    },
+    {
+      "title": "《范寧啟事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《范寧啟事》三卷梁十卷。梁有《雜薦文》十二卷，《薦文集》七卷，亡。",
+      "work_id": "d59f27vh24n4",
+      "book_title": "范寧啟事",
+      "n_juan": 3
+    },
+    {
+      "title": "《善文》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《善文》五十卷杜預撰。",
+      "work_id": "d59f27vtjmdg",
+      "book_title": "善文",
+      "n_juan": 50,
+      "author_info": "杜預撰"
+    },
+    {
+      "title": "《雜集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜集》一卷殷仲堪撰。",
+      "work_id": "d59f27v30g74",
+      "book_title": "雜集",
+      "n_juan": 1,
+      "author_info": "殷仲堪撰"
+    },
+    {
+      "title": "《梁、魏、周、齊、陳皇朝聘使雜啟》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁、魏、周、齊、陳皇朝聘使雜啟》九卷",
+      "work_id": "d59f2q0oe58i",
+      "book_title": "梁、魏、周、齊、陳皇朝聘使雜啟",
+      "n_juan": 9
+    },
+    {
+      "title": "《政道集》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《政道集》十卷",
+      "work_id": "d59f2px6wq9s",
+      "book_title": "政道集",
+      "n_juan": 10
+    },
+    {
+      "title": "《書集》八十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書集》八十八卷晉散騎常侍王履撰。梁八十卷，亡。",
+      "work_id": "d59f27x2t14x",
+      "book_title": "書集",
+      "n_juan": 88,
+      "author_info": "晉散騎常侍王履撰"
+    },
+    {
+      "title": "《書林》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《書林》十卷",
+      "work_id": "d59f2q8m09og",
+      "book_title": "書林",
+      "n_juan": 10
+    },
+    {
+      "title": "《雜逸書》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《雜逸書》六卷梁二十二卷。徐爰撰。《應璩書林》八卷，夏赤松撰；《抱樸君書》一卷，葛洪撰；《蔡司徒書》三卷，蔡謨撰；《前漢雜筆》十卷，《吳晉雜筆》九卷，《吳朝文》二十四卷，《李氏家書》八卷，晉左將軍《王鎮惡與劉丹陽書》一卷，亡。",
+      "work_id": "d59f286jzev5",
+      "book_title": "雜逸書",
+      "n_juan": 6
+    },
+    {
+      "title": "《後周與齊軍國書》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後周與齊軍國書》二卷",
+      "work_id": "d59f2q1docua",
+      "book_title": "後周與齊軍國書",
+      "n_juan": 2
+    },
+    {
+      "title": "《高澄與侯景書》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《高澄與侯景書》一卷",
+      "work_id": "d59f2pynclxc",
+      "book_title": "高澄與侯景書",
+      "n_juan": 1
+    },
+    {
+      "title": "《策集》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《策集》一卷殷仲堪撰。",
+      "work_id": "d59f27wpp2bk",
+      "book_title": "策集",
+      "n_juan": 1,
+      "author_info": "殷仲堪撰"
+    },
+    {
+      "title": "《策集》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《策集》六卷梁有《孝秀對策》十二卷，亡。",
+      "work_id": "d59f285v0fer",
+      "book_title": "策集",
+      "n_juan": 6
+    },
+    {
+      "title": "《宋元嘉策孝秀文》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋元嘉策孝秀文》十卷",
+      "work_id": "d59f2q1twpa8",
+      "book_title": "宋元嘉策孝秀文",
+      "n_juan": 10
+    },
+    {
+      "title": "《誹諧文》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《誹諧文》三卷",
+      "work_id": "d59f2q5fg6ps",
+      "book_title": "誹諧文",
+      "n_juan": 3
+    },
+    {
+      "title": "《誹諧文》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《誹諧文》十卷袁淑撰。梁有《續誹諧文集》十卷；又有《誹諧文》一卷，沈宗之撰；《任子春秋》一卷，杜嵩撰；《博陽秋》一卷，宋零陵令辛邕之撰。亡。",
+      "work_id": "d59f286qje9u",
+      "book_title": "誹諧文",
+      "n_juan": 10,
+      "author_info": "袁淑撰"
+    },
+    {
+      "title": "《法集》百七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《法集》百七卷梁沙門釋寶唱撰。",
+      "work_id": "d59f2864djpc",
+      "book_title": "法集",
+      "n_juan": 107
+    },
+    {
+      "title": "《文心雕龍》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《文心雕龍》十卷梁兼東宮通事舍人劉勰撰。",
+      "work_id": "d59f286w5o1u",
+      "book_title": "文心雕龍",
+      "n_juan": 10
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右一百七部，二千二百一十三卷。通計亡書，合二百四十九部，五千二百二十四卷。"
+    },
+    {
+      "title": "總集類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "總集者，以建安之後，辭賦轉繁，眾家之集，日以滋廣，晉代摯虞苦覽者之勞倦，於是採摘孔翠，芟剪繁蕪，自詩賦下，各為條貫，合而編之，謂為《流別》。是後文集總鈔，作者繼軌，屬辭之士，以為覃奧，而取則焉。今次其前後，並解釋評論，總於此篇。"
+    }
+  ]
+}

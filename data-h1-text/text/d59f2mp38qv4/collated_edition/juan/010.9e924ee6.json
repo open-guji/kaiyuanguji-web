@@ -1,0 +1,139 @@
+{
+  "title": "經部·經解類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·經解類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "對制談經十三卷",
+      "content": "葉時撰。",
+      "work_id": "d59f2hjm3f28"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "潛室木鍾集十一卷",
+      "content": "陳埴撰。",
+      "work_id": "d59f2hgqgmpu"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書六經講稿六卷",
+      "content": "黃淵撰。",
+      "work_id": "d59f2hja8ef5"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "講義四卷",
+      "content": "曹涇撰。",
+      "work_id": "d59f2hfd54w3"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "天裕堂講義一卷",
+      "content": "梅寬撰。",
+      "work_id": "d59f2hfodog1"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "六經集傳",
+      "content": "馬廷鸞撰。",
+      "work_id": "d59f2hm321vm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "編次四經",
+      "content": "張惟政撰。",
+      "work_id": "d59f2hlp0dfm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "六經奥論六卷",
+      "content": "張惟政撰。",
+      "work_id": "d59f2hjc3toh"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "六經雅言圖辨十卷",
+      "content": "莆陽二鄭撰。",
+      "work_id": "d59f2hkbdn28"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "融堂四書管見十三卷",
+      "content": "錢時撰。",
+      "work_id": "d59f2hujpo1t"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書集編二十六卷",
+      "content": "眞德秀撰。",
+      "work_id": "d59f2htfg1z4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書集解",
+      "content": "陳普撰。",
+      "work_id": "d59f2hkgdfr4"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書標題",
+      "content": "熊禾撰。",
+      "book_id": "988lpnjymd",
+      "ai_note": "本條原以 work_id 載 11qfrvpxuvv28，而該 id 實為 Book《四書標題》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書要指二十卷",
+      "content": "鄭樸翁撰。",
+      "work_id": "d59f2hg2qlfk"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書朱陸會同注釋二十九卷",
+      "content": "張霆松撰。",
+      "work_id": "d59f2hkb2eio"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "舉要一卷",
+      "content": "張霆松撰。",
+      "work_id": "d59f2hh62hvm"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "四書集注附錄",
+      "content": "祝泳撰。十一册。",
+      "work_id": "d59f2hj81qm9"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右經解類",
+      "content": "右經解類十六家一百五十一卷。"
+    }
+  ]
+}

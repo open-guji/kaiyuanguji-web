@@ -1,0 +1,433 @@
+{
+  "title": "樂類",
+  "sections": [
+    {
+      "title": "《樂社大義》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂社大義》十卷梁武帝撰。",
+      "work_id": "d59f286bk075",
+      "book_title": "樂社大義",
+      "n_juan": 10,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《樂論》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂論》三卷梁武帝撰。梁有《樂義》十一卷，武帝集朝臣撰，亡。",
+      "work_id": "d59f286923uq",
+      "book_title": "樂論",
+      "n_juan": 3,
+      "author_info": "梁武帝撰"
+    },
+    {
+      "title": "《樂論》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂論》一卷衛尉少卿蕭吉撰。",
+      "work_id": "d59f2hfri1vm",
+      "book_title": "樂論",
+      "n_juan": 1,
+      "author_info": "衛尉少卿蕭吉撰"
+    },
+    {
+      "title": "《古今樂錄》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《古今樂錄》十二卷陳沙門智匠撰。",
+      "work_id": "d59f286chpts",
+      "book_title": "古今樂錄",
+      "n_juan": 12,
+      "author_info": "陳沙門智匠撰"
+    },
+    {
+      "title": "《樂書》七卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂書》七卷後魏丞相士曹行參軍信都芳撰。",
+      "work_id": "d59f286qje9v",
+      "book_title": "樂書",
+      "n_juan": 7,
+      "author_info": "後魏丞相士曹行參軍信都芳撰"
+    },
+    {
+      "title": "《樂雜書》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂雜書》三卷",
+      "work_id": "d59f2pzysohu",
+      "book_title": "樂雜書",
+      "n_juan": 3
+    },
+    {
+      "title": "《樂元》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂元》一卷魏僧撰。",
+      "work_id": "d59f2q2cy682",
+      "book_title": "樂元",
+      "n_juan": 1,
+      "author_info": "魏僧撰"
+    },
+    {
+      "title": "《管弦記》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《管弦記》十卷淩秀撰。",
+      "work_id": "d59f2qajm70h",
+      "book_title": "管弦記",
+      "n_juan": 10,
+      "author_info": "淩秀撰"
+    },
+    {
+      "title": "《樂要》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂要》一卷何妥撰。",
+      "work_id": "d59f28ko5r7p",
+      "book_title": "樂要",
+      "n_juan": 1,
+      "author_info": "何妥撰"
+    },
+    {
+      "title": "《樂部》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂部》一卷",
+      "work_id": "d59f2q297bi9",
+      "book_title": "樂部",
+      "n_juan": 1
+    },
+    {
+      "title": "《春官樂部》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《春官樂部》五卷梁有《宋元嘉正聲伎錄》一卷，張解撰，亡。",
+      "work_id": "d59f286nf0u9",
+      "book_title": "春官樂部",
+      "n_juan": 5
+    },
+    {
+      "title": "《樂府聲調》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府聲調》六卷岐州刺史、沛國公鄭譯撰。",
+      "work_id": "d59f28jq4w00",
+      "book_title": "樂府聲調",
+      "n_juan": 6,
+      "author_info": "岐州刺史、沛國公鄭譯撰"
+    },
+    {
+      "title": "《樂府聲調》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂府聲調》三卷鄭譯撰。",
+      "work_id": "d59f28j73ev8",
+      "book_title": "樂府聲調",
+      "n_juan": 3,
+      "author_info": "鄭譯撰",
+      "link_basis": "2026-08-24 N2 磁鐵第二輪：原繫 1evc5pdg3gkxs，今別立《樂府聲調》三卷鄭譯撰 1ex0j4cc261vm 繫之——姚振宗《考證》謂三卷本乃還朝定樂時另作。"
+    },
+    {
+      "title": "《樂經》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂經》四卷",
+      "work_id": "d59f24mgxukp",
+      "book_title": "樂經",
+      "n_juan": 4
+    },
+    {
+      "title": "《琴操》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴操》三卷晉廣陵相孔衍撰。",
+      "work_id": "d59f27tt4kci",
+      "book_title": "琴操",
+      "n_juan": 3,
+      "author_info": "晉廣陵相孔衍撰",
+      "link_basis": "原繫 1evc5pdgifz0g，該條已併入 1evilzhl4ecxs（撰人字首式重出 Phase 2c，2026-08-07），今改繫。"
+    },
+    {
+      "title": "《琴操鈔》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴操鈔》二卷",
+      "work_id": "d59f2pul9jwg",
+      "book_title": "琴操鈔",
+      "n_juan": 2
+    },
+    {
+      "title": "《琴操鈔》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴操鈔》一卷",
+      "work_id": "d59f2q9jpwxt",
+      "book_title": "琴操鈔",
+      "n_juan": 1
+    },
+    {
+      "title": "《琴譜》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴譜》四卷戴氏撰。",
+      "work_id": "d59f28jrdu6b",
+      "book_title": "琴譜",
+      "n_juan": 4,
+      "author_info": "戴氏撰"
+    },
+    {
+      "title": "《琴經》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴經》一卷",
+      "work_id": "d59f2nes50cg",
+      "book_title": "琴經",
+      "n_juan": 1
+    },
+    {
+      "title": "《琴說》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴說》一卷",
+      "work_id": "d59f2q57c075",
+      "book_title": "琴說",
+      "n_juan": 1
+    },
+    {
+      "title": "《琴曆頭簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《琴曆頭簿》一卷",
+      "work_id": "d59f2q5q28zm",
+      "book_title": "琴曆頭簿",
+      "n_juan": 1
+    },
+    {
+      "title": "《新雜漆調弦譜》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《新雜漆調弦譜》一卷",
+      "work_id": "d59f2q5nkcn6",
+      "book_title": "新雜漆調弦譜",
+      "n_juan": 1
+    },
+    {
+      "title": "《樂譜》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂譜》四卷",
+      "work_id": "d59f2pvd1nnk",
+      "book_title": "樂譜",
+      "n_juan": 4
+    },
+    {
+      "title": "《樂譜集》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂譜集》二十卷蕭吉撰。",
+      "work_id": "d59f28ldfz7m",
+      "book_title": "樂譜集",
+      "n_juan": 20,
+      "author_info": "蕭吉撰"
+    },
+    {
+      "title": "《樂略》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂略》四卷",
+      "work_id": "d59f28kb1sef",
+      "book_title": "樂略",
+      "n_juan": 4
+    },
+    {
+      "title": "《樂律義》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂律義》四卷沈重撰。",
+      "work_id": "d59f286ezm6b",
+      "book_title": "樂律義",
+      "n_juan": 4,
+      "author_info": "沈重撰"
+    },
+    {
+      "title": "《鐘律義》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鐘律義》一卷",
+      "work_id": "d59f2puzb8cg",
+      "book_title": "鐘律義",
+      "n_juan": 1
+    },
+    {
+      "title": "《樂簿》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂簿》十卷",
+      "work_id": "d59f2q7v5vcw",
+      "book_title": "樂簿",
+      "n_juan": 10
+    },
+    {
+      "title": "《齊朝曲簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊朝曲簿》一卷",
+      "work_id": "d59f2q3p0q2o",
+      "book_title": "齊朝曲簿",
+      "n_juan": 1
+    },
+    {
+      "title": "《大隋總曲簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大隋總曲簿》一卷",
+      "work_id": "d59f2pszin7m",
+      "book_title": "大隋總曲簿",
+      "n_juan": 1
+    },
+    {
+      "title": "《推七音》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《推七音》二卷並尺法。",
+      "work_id": "d59f2q4w3gn6",
+      "book_title": "推七音",
+      "n_juan": 2,
+      "author_info": "並尺法"
+    },
+    {
+      "title": "《樂論事》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂論事》一卷",
+      "work_id": "d59f2pst9w5d",
+      "book_title": "樂論事",
+      "n_juan": 1
+    },
+    {
+      "title": "《樂事》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂事》一卷",
+      "work_id": "d59f2qaakbgg",
+      "book_title": "樂事",
+      "n_juan": 1
+    },
+    {
+      "title": "《正聲伎雜等曲簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《正聲伎雜等曲簿》一卷",
+      "work_id": "d59f2pzt6ept",
+      "book_title": "正聲伎雜等曲簿",
+      "n_juan": 1
+    },
+    {
+      "title": "《太常寺曲名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太常寺曲名》一卷",
+      "work_id": "d59f2puwi39d",
+      "book_title": "太常寺曲名",
+      "n_juan": 1
+    },
+    {
+      "title": "《太常寺曲簿》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太常寺曲簿》十一卷",
+      "work_id": "d59f2q58w7b5",
+      "book_title": "太常寺曲簿",
+      "n_juan": 11
+    },
+    {
+      "title": "《歌曲名》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歌曲名》五卷",
+      "work_id": "d59f2q2135kx",
+      "book_title": "歌曲名",
+      "n_juan": 5
+    },
+    {
+      "title": "《歷代樂名》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《歷代樂名》一卷",
+      "work_id": "d59f2py326f4",
+      "book_title": "歷代樂名",
+      "n_juan": 1
+    },
+    {
+      "title": "《鐘磬志》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鐘磬志》二卷公孫崇撰。",
+      "work_id": "d59f27s8mm0y",
+      "book_title": "鐘磬志",
+      "n_juan": 2,
+      "author_info": "公孫崇撰"
+    },
+    {
+      "title": "《樂懸》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂懸》一卷何晏等撰議。",
+      "work_id": "d59f27sphfcy",
+      "book_title": "樂懸",
+      "n_juan": 1,
+      "author_info": "何晏等撰議"
+    },
+    {
+      "title": "《樂懸圖》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《樂懸圖》一卷",
+      "work_id": "d59f2pv2qubk",
+      "book_title": "樂懸圖",
+      "n_juan": 1
+    },
+    {
+      "title": "《鐘律緯辯宗見》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《鐘律緯辯宗見》一卷",
+      "work_id": "d59f2q45vjlt",
+      "book_title": "鐘律緯辯宗見",
+      "n_juan": 1
+    },
+    {
+      "title": "《當管七聲》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《當管七聲》二卷魏僧撰。",
+      "work_id": "d59f2q5ji9kw",
+      "book_title": "當管七聲",
+      "n_juan": 2,
+      "author_info": "魏僧撰"
+    },
+    {
+      "title": "《黃鐘律》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《黃鐘律》一卷梁有《鐘律緯》六卷，梁武帝撰，亡。",
+      "work_id": "d59f286pag3m",
+      "book_title": "黃鐘律",
+      "n_juan": 1
+    },
+    {
+      "title": "樂類小序",
+      "level": 2,
+      "type": "tally",
+      "content": "樂者，先王所以致神祇，和邦國，諧萬姓，安賓客，悅遠人，所從來久矣。周人存六代之樂，曰《雲門》、《咸池》、《大韶》、《大夏》、《大護》、《大武》。其後衰微崩壞，及秦而頓滅。漢初，制氏雖紀其鏗鏘彭儛，而不能通其義。其後竇公、河間獻王、常山王、張禹，咸獻《樂書》。魏、晉已後，雖加損益，去正轉遠，事在《聲樂志》。今錄其見書，以補樂章之闕。"
+    },
+    {
+      "title": "统计",
+      "level": 2,
+      "type": "tally",
+      "content": "右四十二部，一百四十二卷。通計亡書，合四十六部，二百六十三卷。"
+    }
+  ]
+}

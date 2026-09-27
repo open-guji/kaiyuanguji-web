@@ -1,0 +1,18 @@
+{
+  "title": "汉赋一篇",
+  "sections": [
+    {
+      "title": "浮淮赋",
+      "level": 3,
+      "type": "book",
+      "content": "王粲　　頁264",
+      "metadata": {
+        "doc_type": "档",
+        "no": "汉赋一篇",
+        "date": "王粲",
+        "page": 264
+      },
+      "work_id": null
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "title": "甲部經錄·詩類",
+  "source_juan": "卷一",
+  "sections": [
+    {
+      "title": "甲部經錄·詩類",
+      "level": 2,
+      "type": "tally",
+      "content": "右詩類,存十五家,二十一部。"
+    },
+    {
+      "title": "毛詩注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝。謹按見《七録》。",
+      "work_id": "d59f27y1rlz7"
+    },
+    {
+      "title": "毛詩注二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "兖州别駕江熙。謹按見《七録》。《釋文・敘録》言:“熙字太和,濟陽人。”",
+      "work_id": "d59f27yhdh4x"
+    },
+    {
+      "title": "毛詩釋義十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈。謹按見《七録》。",
+      "work_id": "d59f27xzky6a"
+    },
+    {
+      "title": "毛詩義疏十卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝。謹按見《七錄》。",
+      "work_id": "d59f27xuwe0w"
+    },
+    {
+      "title": "毛詩譜鈔一卷",
+      "level": 3,
+      "type": "book",
+      "content": "謝沈。謹按見《隋志》。舊題“謝氏”,蓋亦沈書。",
+      "work_id": "d59f27yhzy80"
+    },
+    {
+      "title": "袁氏詩傳",
+      "level": 3,
+      "type": "book",
+      "content": "袁準。謹按見《袁氏世紀》。《魏志· 涣傳》注引。",
+      "work_id": "d59f27w9gq2r"
+    },
+    {
+      "title": "袁氏詩注",
+      "level": 3,
+      "type": "book",
+      "content": "袁喬。謹按見本書喬傳。",
+      "work_id": "d59f27ty4d1e"
+    },
+    {
+      "title": "毛詩異同評十卷",
+      "level": 3,
+      "type": "book",
+      "content": "長沙太守孫毓。謹按見《七錄》。長沙太守,《隋志》集部作“汝南太守”,《釋文·敘録》作“豫州刺史”,標題互異。陸德明謂:“毓字休朗,北海平昌人。”《意林》則云:“毓字仲。”下疑脱一字,亦不相合。此書所評,為毛、鄭、王肅三家,而朋於王,故有陳統之難。",
+      "work_id": "d59f27yib6rn"
+    },
+    {
+      "title": "難孫氏毛詩評四卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐州從事陳統。謹按見《隋志》。是書難王申鄭,兩《唐志》均著録。陸德明曰:“統字元方。”",
+      "work_id": "d59f27y3y9s2"
+    },
+    {
+      "title": "毛詩表隱二卷",
+      "level": 3,
+      "type": "book",
+      "content": "陳統。謹按見《七錄》。兩《唐志》著録。",
+      "work_id": "d59f27y0twcj"
+    },
+    {
+      "title": "毛詩拾遺一卷",
+      "level": 3,
+      "type": "book",
+      "content": "郭理。謹按見《隋志》。是書下舊注云:“梁又有《毛詩略》四卷。”蓋謂《七錄》有此書,非指郭氏也。馬氏國翰輯是書序以《毛詩略》亦屬之璞,誤甚。",
+      "work_id": "d59f27y0insz"
+    },
+    {
+      "title": "毛詩辨異三卷",
+      "level": 3,
+      "type": "book",
+      "content": "給事中楊义。謹按見《隋志》。兩《唐志》作“毛詩辨”,無“異”字。",
+      "work_id": "d59f27ybfytc"
+    },
+    {
+      "title": "毛詩異義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊义。謹按見《隋志》。",
+      "work_id": "d59f27y5ight"
+    },
+    {
+      "title": "毛詩雜義五卷",
+      "level": 3,
+      "type": "book",
+      "content": "楊义。謹按見《七錄》。",
+      "work_id": "d59f27y8y2gw"
+    },
+    {
+      "title": "毛詩釋略",
+      "level": 3,
+      "type": "book",
+      "content": "虞喜。謹按見本書喜傳。《册府元龜》作“說毛詩略”,殆聲同而誤。《隋志》於《毛詩拾遺》下注云:“梁有《毛詩略》四卷。”不標撰人,疑即喜是書。",
+      "work_id": "d59f27xtyoeb"
+    },
+    {
+      "title": "毛詩雜義四卷",
+      "level": 3,
+      "type": "book",
+      "content": "江州刺史股仲堪。謹按見《七錄》。",
+      "work_id": "d59f27xrgs1u"
+    },
+    {
+      "title": "毛詩背隱義二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐廣。謹按見《七錄》。",
+      "work_id": "d59f27y8mtxe"
+    },
+    {
+      "title": "毛詩音二卷",
+      "level": 3,
+      "type": "book",
+      "content": "徐。謹按見《七録》。家大人曰:“《隋志》又言梁有《毛詩音》十六卷,徐 等撰。”蓋集各家詩音而徐為首,故有“等”字。實則 所著即此二卷也,不再複列。",
+      "work_id": "d59f27xzky68"
+    },
+    {
+      "title": "毛詩音隱一卷",
+      "level": 3,
+      "type": "book",
+      "content": "干寶。謹按見《七錄》。舊但题“干氏撰”。家大人曰:“《釋文敘録》言為詩音者九人,干寶其一。”知即此書,今補寶名著録。",
+      "work_id": "d59f27xviv43"
+    },
+    {
+      "title": "毛詩音",
+      "level": 3,
+      "type": "book",
+      "content": "江淳。謹按見《釋文·敘録》。",
+      "work_id": "d59f27xviv42"
+    },
+    {
+      "title": "毛詩音",
+      "level": 3,
+      "type": "book",
+      "content": "阮侃。謹按見《釋文·敘錄》。陸德明曰:“侃字德恕,陳留人,河內太守。”",
+      "work_id": "d59f27xpwlc1"
+    }
+  ]
+}

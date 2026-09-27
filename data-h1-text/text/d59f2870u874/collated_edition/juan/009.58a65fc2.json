@@ -1,0 +1,41 @@
+{
+  "title": "卷九　賦",
+  "sections": [
+    {
+      "title": "長楊賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f23o2c741",
+      "author": "揚雄",
+      "sub_cat": "戊",
+      "content": ""
+    },
+    {
+      "title": "射雉賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f282qmzuo",
+      "author": "潘岳",
+      "sub_cat": "戊",
+      "content": ""
+    },
+    {
+      "title": "北征賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f23o2c746",
+      "author": "班彪",
+      "sub_cat": "戊",
+      "content": ""
+    },
+    {
+      "title": "東征賦",
+      "level": 3,
+      "type": "prose",
+      "work_id": "d59f23o4iux0",
+      "author": "班昭",
+      "sub_cat": "戊",
+      "content": ""
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "title": "經部·子老莊類",
+  "sections": [
+    {
+      "title": "子老莊類",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "韓非　老子玄示一卷",
+      "level": 3,
+      "type": "book",
+      "content": "韓非　老子玄示一卷　《七錄》。",
+      "work_id": "d59f2pqvnz0i",
+      "note": "原書腳註②：《隋志》作「韓壯」。原書作「韓非」係承誤，照錄不改"
+    },
+    {
+      "title": "簡文帝　老子ム記十卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文帝　老子ム記十卷　《七錄》。",
+      "work_id": "d59f99gogmx4",
+      "note": "「ム」原書字，疑即「私」之古寫（厶），未逕改"
+    },
+    {
+      "title": "武帝　老子講疏六卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　老子講疏六卷　《隋志》。",
+      "work_id": "d59f285w9dkz"
+    },
+    {
+      "title": "武帝　老子講疏四卷",
+      "level": 3,
+      "type": "book",
+      "content": "武帝　老子講疏四卷　《唐志》。",
+      "work_id": "d59f285w9dkz",
+      "note": "原書作「又四卷」，只有卷數無書名，係同書異本（武帝《老子講疏》）"
+    },
+    {
+      "title": "庾曼倩　莊老義疏",
+      "level": 3,
+      "type": "book",
+      "content": "庾曼倩　莊老義疏　《庾詵傳》：「詵子。」",
+      "work_id": "d59f99gogmx5"
+    },
+    {
+      "title": "簡文　莊子講疏十卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文　莊子講疏十卷　《唐志》。《隋》「本二十卷」。",
+      "work_id": "d59f285aerk3",
+      "note": "原書腳註③"
+    },
+    {
+      "title": "簡文　莊子義二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文　莊子義二十卷　本紀。",
+      "work_id": "d59f2pxdgpog",
+      "note": "「又」承前省略撰人（簡文帝）"
+    },
+    {
+      "title": "張機　莊子講疏二卷",
+      "level": 3,
+      "type": "book",
+      "content": "張機　莊子講疏二卷　《隋》。",
+      "work_id": "d59f285z2igw"
+    },
+    {
+      "title": "簡文　談疏六卷",
+      "level": 3,
+      "type": "book",
+      "content": "簡文　談疏六卷",
+      "work_id": "d59f27vksz5t",
+      "note": "原書腳註④"
+    },
+    {
+      "title": "張機　遊玄桂林二十一卷目一卷",
+      "level": 3,
+      "type": "book",
+      "content": "張機　遊玄桂林二十一卷目一卷",
+      "work_id": "d59f286gjsw2"
+    },
+    {
+      "title": "釋慧觀　老子義疏",
+      "level": 3,
+      "type": "book",
+      "content": "釋慧觀　老子義疏　《七錄》。",
+      "work_id": "d59f99gogmx6"
+    },
+    {
+      "title": "伏曼容　老莊義",
+      "level": 3,
+      "type": "book",
+      "content": "伏曼容　老莊義　本傳。",
+      "work_id": "d59f99gogmx7"
+    },
+    {
+      "title": "陶弘景　莊子注四卷",
+      "level": 3,
+      "type": "book",
+      "content": "陶弘景　莊子注四卷　《唐志》。",
+      "work_id": "d59f99gogmx8",
+      "note": "原書腳註⑤"
+    },
+    {
+      "title": "元帝　老子講疏四卷",
+      "level": 3,
+      "type": "book",
+      "content": "元帝　老子講疏四卷　紀。",
+      "work_id": "d59f285w9dkz"
+    },
+    {
+      "title": "文帝　老子義二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "文帝　老子義二十卷　本紀。",
+      "work_id": "d59f99gogmx9"
+    }
+  ]
+}

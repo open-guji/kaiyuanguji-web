@@ -1,0 +1,83 @@
+{
+  "title": "三卷",
+  "sections": [
+    {
+      "title": "草场科",
+      "level": 3,
+      "type": "book",
+      "content": "頁392",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 392
+      },
+      "work_id": null
+    },
+    {
+      "title": "草场沿革",
+      "level": 3,
+      "type": "book",
+      "content": "頁392",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 392
+      },
+      "work_id": null
+    },
+    {
+      "title": "征银额例",
+      "level": 3,
+      "type": "book",
+      "content": "頁407",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 407
+      },
+      "work_id": null
+    },
+    {
+      "title": "草场租银额支款目",
+      "level": 3,
+      "type": "book",
+      "content": "頁423",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 423
+      },
+      "work_id": null
+    },
+    {
+      "title": "芦课租银",
+      "level": 3,
+      "type": "book",
+      "content": "頁425",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 425
+      },
+      "work_id": null
+    },
+    {
+      "title": "集场租银",
+      "level": 3,
+      "type": "book",
+      "content": "頁428",
+      "metadata": {
+        "doc_type": "档",
+        "no": "三卷",
+        "date": "",
+        "page": 428
+      },
+      "work_id": null
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "title": "經部·小學類",
+  "source_juan": "正文",
+  "sections": [
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "經部·小學類",
+      "content": ""
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "禮部韻略五卷",
+      "content": "毛晃撰。",
+      "work_id": "d59f2hjx0q2r"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "古今韻會舉要三十卷",
+      "content": "黃公紹撰。",
+      "book_id": "988lpnv75v",
+      "ai_note": "本條原以 work_id 載 11qfrvq9x2yo0，而該 id 實為 Book《古今韻會舉要》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "押韻釋疑五卷",
+      "content": "歐陽德宏撰。",
+      "work_id": "d59f2hhysbur"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "韻譜三卷",
+      "content": "楊俊撰。",
+      "work_id": "d59f2ney2io0"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "復古編二卷",
+      "content": "張有撰。",
+      "work_id": "d59f2q59ioe9"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "字通一卷",
+      "content": "李從周撰。",
+      "work_id": "d59f2hqi92wy"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "小學詳斷",
+      "content": "蔣捷撰。",
+      "book_id": "988lpnjym8",
+      "ai_note": "本條原以 work_id 載 11qfrvqgbg3k0，而該 id 實為 Book《小學詳斷》，非 work。section 無指 Book 之欄位（target_bid 別有其義），今改記於 book_id。　本庫無 work 收此 Book，故不繫 work_id。",
+      "work_id": null
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "數學九章九卷",
+      "content": "秦九韶撰。",
+      "work_id": "d59f2huc7z0h"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "善誘文一卷",
+      "content": "陳錄撰。",
+      "work_id": "d59f2hkwx0jl"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "發蒙宏綱",
+      "content": "羅黃裳撰。二冊。",
+      "work_id": "d59f2hjgh5a8"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "名物蒙求一卷",
+      "content": "方逢辰撰。",
+      "work_id": "d59f2hfe2uip"
+    },
+    {
+      "level": 3,
+      "type": "book",
+      "title": "達齋吿蒙一卷",
+      "content": "虞俊撰。",
+      "work_id": "d59f2hg8zcar"
+    },
+    {
+      "level": 2,
+      "type": "tally",
+      "title": "右小學類",
+      "content": "右小學類十二家六十卷。"
+    }
+  ]
+}

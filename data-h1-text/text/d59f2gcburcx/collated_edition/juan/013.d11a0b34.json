@@ -1,0 +1,729 @@
+{
+  "title": "起居注故事職官類",
+  "sections": [
+    {
+      "title": "《穆天子傳》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《穆天子傳》六卷郭璞撰。",
+      "work_id": "d59f27yyjj0h"
+    },
+    {
+      "title": "《漢獻帝起居注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢獻帝起居注》五卷",
+      "work_id": "d59f23nsnu9y"
+    },
+    {
+      "title": "《晉太始起居注》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太始起居注》二十卷李軌撰。",
+      "work_id": "d59f27vz5w5e"
+    },
+    {
+      "title": "《晉湣帝起居注》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉湣帝起居注》三十卷李軌撰。",
+      "work_id": "d59f27wvxt6q"
+    },
+    {
+      "title": "《晉太康起居注》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太康起居注》二十二卷李軌撰。",
+      "work_id": "d59f27vhzu9s"
+    },
+    {
+      "title": "《晉永平起居注》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉永平起居注》八卷李軌撰",
+      "work_id": "d59f27w2li4g"
+    },
+    {
+      "title": "《晉建武大興永昌起居注》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武大興永昌起居注》二十二卷",
+      "work_id": "d59f2pydo9a9"
+    },
+    {
+      "title": "《晉鹹和起居注》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉鹹和起居注》十八卷李軌撰。",
+      "work_id": "d59f27tstbsx"
+    },
+    {
+      "title": "《晉咸康起居注》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸康起居注》二十二卷李軌撰。",
+      "work_id": "d59f27vlqosg"
+    },
+    {
+      "title": "《晉建元起居注》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建元起居注》四卷",
+      "work_id": "d59f2q247jep"
+    },
+    {
+      "title": "《晉永和起居注》二十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉永和起居注》二十四卷",
+      "work_id": "d59f2q6igute"
+    },
+    {
+      "title": "《晉升平起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉升平起居注》十卷",
+      "work_id": "d59f2q9gws1t"
+    },
+    {
+      "title": "《晉崇和興寧起居注》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉崇和興寧起居注》五卷",
+      "work_id": "d59f2pwlolj4"
+    },
+    {
+      "title": "《晉太和起居注》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太和起居注》六卷",
+      "work_id": "d59f2q847qpt"
+    },
+    {
+      "title": "《晉咸安起居注》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉咸安起居注》三卷",
+      "work_id": "d59f2q2b2rcy"
+    },
+    {
+      "title": "《晉甯康起居注》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉甯康起居注》六卷",
+      "work_id": "d59f2q17quip"
+    },
+    {
+      "title": "《晉太元起居注》五十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太元起居注》五十二卷",
+      "work_id": "d59f2q7z7y82"
+    },
+    {
+      "title": "《晉崇安起居注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉崇安起居注》十卷",
+      "work_id": "d59f2pvyw9vm"
+    },
+    {
+      "title": "《晉元興起居注》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元興起居注》九卷",
+      "work_id": "d59f2qand1j4"
+    },
+    {
+      "title": "《晉義熙起居注》三十四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉義熙起居注》三十四卷",
+      "work_id": "d59f2qaavk00"
+    },
+    {
+      "title": "《晉元熙起居注》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉元熙起居注》二卷",
+      "work_id": "d59f2qa6701s"
+    },
+    {
+      "title": "《晉起居注》三百二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉起居注》三百二十卷劉道會撰。",
+      "work_id": "d59f27thks8y"
+    },
+    {
+      "title": "《宋永初起居注》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋永初起居注》六卷",
+      "work_id": "d59f2q4v5r7k"
+    },
+    {
+      "title": "《宋景平起居注》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋景平起居注》三卷",
+      "work_id": "d59f2pu1acjl"
+    },
+    {
+      "title": "《宋元嘉起居注》六十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋元嘉起居注》六十卷",
+      "work_id": "d59f2q5b2v41"
+    },
+    {
+      "title": "《宋大明起居注》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋大明起居注》八卷",
+      "work_id": "d59f2pvicow1"
+    },
+    {
+      "title": "《梁皇帝實錄》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁皇帝實錄》三卷周興嗣撰。",
+      "work_id": "d59f2864os8z"
+    },
+    {
+      "title": "又五卷",
+      "level": 3,
+      "type": "book",
+      "content": "又五卷",
+      "work_id": "d59f285lnb43"
+    },
+    {
+      "title": "《梁太清實錄》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁太清實錄》八卷",
+      "work_id": "d59f2q1twpa9"
+    },
+    {
+      "title": "《後魏起居注》二百七十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《後魏起居注》二百七十六卷",
+      "work_id": "d59f2pwnk16p"
+    },
+    {
+      "title": "《陳起居注》四十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳起居注》四十一卷",
+      "work_id": "d59f2pxl9n9d"
+    },
+    {
+      "title": "《太唐創業起居注》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太唐創業起居注》三卷溫大雅撰。",
+      "work_id": "d59f28llvdvo"
+    },
+    {
+      "title": "《高祖實錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《高祖實錄》二十卷房玄齡撰。",
+      "work_id": "d59f28jsbjt1"
+    },
+    {
+      "title": "《太宗實錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太宗實錄》二十卷房玄齡撰。",
+      "work_id": "d59f28l4e3gg"
+    },
+    {
+      "title": "《太宗實錄》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太宗實錄》四十卷長孫無忌撰。",
+      "work_id": "d59f28jrp2py"
+    },
+    {
+      "title": "《高宗實錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《高宗實錄》三十卷許敬宗撰。",
+      "work_id": "d59f28jzt8ue"
+    },
+    {
+      "title": "《述聖記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《述聖記》一卷大聖天后撰。",
+      "work_id": "d59f28mcek1t"
+    },
+    {
+      "title": "《高宗實錄》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《高宗實錄》一百卷大聖天后撰。",
+      "work_id": "d59f28jjw54z"
+    },
+    {
+      "title": "《聖母神皇實錄》十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《聖母神皇實錄》十八卷宗秦客撰。",
+      "work_id": "d59f2psfjgn6"
+    },
+    {
+      "title": "《中宗皇帝實錄》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《中宗皇帝實錄》二十卷吳兢撰。",
+      "work_id": "d59f28l42uwz"
+    },
+    {
+      "title": "《漢武故事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢武故事》二卷",
+      "work_id": "d59f209pmhvk"
+    },
+    {
+      "title": "《西京雜記》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《西京雜記》一卷葛洪撰。",
+      "work_id": "d59f27x41zb4"
+    },
+    {
+      "title": "《三輔舊事》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《三輔舊事》一卷韋氏撰。",
+      "work_id": "d59f24lnws1s"
+    },
+    {
+      "title": "《秦漢已來舊事》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《秦漢已來舊事》八卷",
+      "work_id": "d59f2pt054hu"
+    },
+    {
+      "title": "《晉建武已來故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武已來故事》三卷",
+      "work_id": "d59f2pvcf6yo"
+    },
+    {
+      "title": "《漢魏吳蜀舊事》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢魏吳蜀舊事》八卷",
+      "work_id": "d59f2ptxjim8"
+    },
+    {
+      "title": "《晉書雜詔書》一百卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉書雜詔書》一百卷",
+      "work_id": "d59f2q8p4ni8"
+    },
+    {
+      "title": "又二十八卷",
+      "level": 3,
+      "type": "book",
+      "content": "又二十八卷",
+      "work_id": "d59f2px35wci"
+    },
+    {
+      "title": "《晉雜詔書》六十六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉雜詔書》六十六卷",
+      "work_id": "d59f2ptkfjls"
+    },
+    {
+      "title": "《晉詔書黃素制》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉詔書黃素制》五卷",
+      "work_id": "d59f2q05z4sg"
+    },
+    {
+      "title": "《晉定品制》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉定品制》一卷",
+      "work_id": "d59f2pw5g936"
+    },
+    {
+      "title": "《晉太元副詔》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太元副詔》二十一卷",
+      "work_id": "d59f2q1n1hj6"
+    },
+    {
+      "title": "《晉崇安元興大亨副詔》八卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉崇安元興大亨副詔》八卷",
+      "work_id": "d59f2q4pjhfk"
+    },
+    {
+      "title": "《晉義熙詔》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉義熙詔》二十二卷",
+      "work_id": "d59f2q7emarl"
+    },
+    {
+      "title": "《晉故事》四十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉故事》四十三卷",
+      "work_id": "d59f27x2t14z"
+    },
+    {
+      "title": "《晉諸雜故事》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉諸雜故事》二十二卷",
+      "work_id": "d59f2pw7bojm"
+    },
+    {
+      "title": "《尚書大事》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《尚書大事》二十一卷",
+      "work_id": "d59f27w2a9l0"
+    },
+    {
+      "title": "《晉太始太康故事》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉太始太康故事》五卷",
+      "work_id": "d59f2pz20r9d"
+    },
+    {
+      "title": "《晉建武咸和咸康故事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武咸和咸康故事》四卷孔愉撰。",
+      "work_id": "d59f27u26g3l"
+    },
+    {
+      "title": "《晉建武以來故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉建武以來故事》三卷",
+      "work_id": "d59f2q97jncw"
+    },
+    {
+      "title": "《修復山林故事》五卷",
+      "level": 3,
+      "type": "book",
+      "content": "《修復山林故事》五卷車灌撰。",
+      "work_id": "d59f27vh24n6"
+    },
+    {
+      "title": "《先朝故事》二十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《先朝故事》二十卷劉道會撰。",
+      "work_id": "d59f2q3t2sxs"
+    },
+    {
+      "title": "《東宮舊事》十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《東宮舊事》十一卷張敞撰。",
+      "work_id": "d59f27w9rym8"
+    },
+    {
+      "title": "《交州雜故事》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《交州雜故事》九卷",
+      "work_id": "d59f2q0d5l36"
+    },
+    {
+      "title": "《四王起事》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《四王起事》四卷盧綝撰。",
+      "work_id": "d59f27ufaewx"
+    },
+    {
+      "title": "《晉八王故事》十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉八王故事》十二卷盧綝撰。",
+      "work_id": "d59f27vy86ir"
+    },
+    {
+      "title": "《晉故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉故事》三卷",
+      "work_id": "d59f2prac4xs",
+      "link_basis": "2026-08-23 M2 磁鐵專項：原繫 1evcml2fg9rsw，今另立《晉故事》1ex0dp6fxwbur 繫之。舊唐志起居注故事職官類「《晉故事》四十三卷」之外，於盧綝諸書後別著「《晉故事》三卷」——同志兩著、各有全著錄語而卷數異、皆不著撰人，依 SCHEMA〈同題二條〉一（同志卷數異疑二書）別出。"
+    },
+    {
+      "title": "《晉朝雜事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉朝雜事》二卷",
+      "work_id": "d59f285cwnwg"
+    },
+    {
+      "title": "《江南故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《江南故事》三卷",
+      "work_id": "d59f2q9cjg8x"
+    },
+    {
+      "title": "《大司馬陶公故事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《大司馬陶公故事》三卷",
+      "work_id": "d59f27uyn4lf"
+    },
+    {
+      "title": "《郗太尉為尚書令故事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《郗太尉為尚書令故事》二卷",
+      "work_id": "d59f2pw550jk"
+    },
+    {
+      "title": "《桓公偽事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《桓公偽事》二卷應德詹撰。",
+      "work_id": "d59f2ptsuygy"
+    },
+    {
+      "title": "《救襄陽上都督府事》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《救襄陽上都督府事》一卷王愆期撰。",
+      "work_id": "d59f27v7p0ci"
+    },
+    {
+      "title": "《荊江揚州遷代記》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《荊江揚州遷代記》四卷",
+      "work_id": "d59f2q8hbpj5"
+    },
+    {
+      "title": "《宋永初詔》六卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋永初詔》六卷",
+      "work_id": "d59f2q4nctfm"
+    },
+    {
+      "title": "《宋元嘉詔》二十一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋元嘉詔》二十一卷",
+      "work_id": "d59f2puzxp1e"
+    },
+    {
+      "title": "《晉宋舊事》一百三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉宋舊事》一百三十卷",
+      "work_id": "d59f2q1z7qiq"
+    },
+    {
+      "title": "《中興伐逆事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《中興伐逆事》二卷",
+      "work_id": "d59f2px51b7m"
+    },
+    {
+      "title": "《東宮儀記》二十二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《東宮儀記》二十二卷張鏡撰。",
+      "_dead_work_id": "d59f2hhramtd",
+      "_dead_work_id_note": "2026-09-06 所指之 Work 於兩庫皆已不存（經他車道刪併），降欄存查；改指待人覈。",
+      "work_id": null
+    },
+    {
+      "title": "《東宮典記》七十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《東宮典記》七十卷宇文愷等撰。",
+      "work_id": "d59f28labls0"
+    },
+    {
+      "title": "《春坊要錄》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《春坊要錄》四卷杜正倫撰。",
+      "work_id": "d59f28jjw54x"
+    },
+    {
+      "title": "《春坊舊事》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《春坊舊事》三卷",
+      "work_id": "d59f2q9blq80"
+    },
+    {
+      "title": "《漢官儀》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官儀》十卷應劭志。",
+      "work_id": "d59f206n4hkw"
+    },
+    {
+      "title": "《公卿故事》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《公卿故事》二卷王方慶撰。",
+      "work_id": "d59f27um5mv6"
+    },
+    {
+      "title": "《漢官解故》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《漢官解故》三卷",
+      "work_id": "d59f2pw3w2yp"
+    },
+    {
+      "title": "《魏官儀》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《魏官儀》一卷荀攸撰。",
+      "work_id": "d59f24lnws1t"
+    },
+    {
+      "title": "《晉公卿禮秩》九卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉公卿禮秩》九卷傅暢撰。",
+      "work_id": "d59f27ukwooz"
+    },
+    {
+      "title": "《百官名》四十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官名》四十卷",
+      "work_id": "d59f2px2jev4"
+    },
+    {
+      "title": "《晉惠帝百官名》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉惠帝百官名》三卷陸機撰。",
+      "work_id": "d59f27uxpeys"
+    },
+    {
+      "title": "《晉官屬名》四卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉官屬名》四卷",
+      "work_id": "d59f2py5k35s"
+    },
+    {
+      "title": "《晉過江人士目》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉過江人士目》一卷",
+      "work_id": "d59f2q3t2sqo"
+    },
+    {
+      "title": "《晉永嘉流士》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《晉永嘉流士》十三卷衛禹撰。",
+      "work_id": "d59f27vo8l4z"
+    },
+    {
+      "title": "《登城三戰簿》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《登城三戰簿》三卷",
+      "work_id": "d59f2q7bt5oh"
+    },
+    {
+      "title": "《百官階次》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官階次》一卷范曄撰。",
+      "work_id": "d59f285kplhd"
+    },
+    {
+      "title": "《宋百官階次》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《宋百官階次》三卷荀欽明撰。",
+      "work_id": "d59f2q2135dt"
+    },
+    {
+      "title": "《百官春秋》十三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《百官春秋》十三卷王道秀撰。",
+      "work_id": "d59f2869zthe"
+    },
+    {
+      "title": "《齊職儀》五十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《齊職儀》五十卷范曄撰。",
+      "work_id": "d59f2858ukub"
+    },
+    {
+      "title": "《職官要錄》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《職官要錄》三十卷陶藻撰。",
+      "work_id": "d59f2pyq5r0i"
+    },
+    {
+      "title": "《梁選簿》三卷",
+      "level": 3,
+      "type": "book",
+      "content": "《梁選簿》三卷徐勉撰。",
+      "work_id": "d59f286jcxs3"
+    },
+    {
+      "title": "《陳將軍簿》一卷",
+      "level": 3,
+      "type": "book",
+      "content": "《陳將軍簿》一卷",
+      "work_id": "d59f2q7twxds"
+    },
+    {
+      "title": "《職令百官古今注》十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《職令百官古今注》十卷郭演之撰。",
+      "work_id": "d59f2pvvgo3m"
+    },
+    {
+      "title": "《太建十一年百官簿狀》二卷",
+      "level": 3,
+      "type": "book",
+      "content": "《太建十一年百官簿狀》二卷",
+      "work_id": "d59f2q6tpdz4"
+    },
+    {
+      "title": "《職員舊事》三十卷",
+      "level": 3,
+      "type": "book",
+      "content": "《職員舊事》三十卷",
+      "work_id": "d59f2pui55vk"
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "title": "集部·别集",
+  "sections": [
+    {
+      "title": "别集",
+      "level": 2,
+      "type": "category",
+      "content": ""
+    },
+    {
+      "title": "宋武帝劉裕　宋武帝集",
+      "level": 3,
+      "type": "book",
+      "content": "武帝集十二卷《隋志》。《七録》「二十卷，録二卷」。②",
+      "work_id": "d59f2q6u0mbl"
+    },
+    {
+      "title": "宋文帝劉義隆　宋文帝集",
+      "level": 3,
+      "type": "book",
+      "content": "文帝集七卷《隋志》。《七録》「十卷，亡」。",
+      "work_id": "d59f286kaneq"
+    },
+    {
+      "title": "宋孝武帝劉駿　宋孝武帝集",
+      "level": 3,
+      "type": "book",
+      "content": "孝武帝集二十五卷《隋志》。《七録》「十一卷，録一卷」。",
+      "work_id": "d59f285udybn"
+    },
+    {
+      "title": "宋前廢帝劉子業　宋前廢帝集",
+      "level": 3,
+      "type": "book",
+      "content": "廢帝景和集十卷《七録》「録一卷」。",
+      "work_id": "d59f7v5zmm88"
+    },
+    {
+      "title": "宋明帝劉彧　宋明帝集",
+      "level": 3,
+      "type": "book",
+      "content": "明帝集三十三卷《七録》。",
+      "work_id": "d59f2ofvtou9"
+    },
+    {
+      "title": "長沙王劉道憐　劉道憐集",
+      "level": 3,
+      "type": "book",
+      "content": "長沙王道憐集十卷《隋志》「録一卷」。",
+      "work_id": "d59f7v5zmm89"
+    },
+    {
+      "title": "臨川王劉道規　劉道規集",
+      "level": 3,
+      "type": "book",
+      "content": "臨川王道規集四卷《隋志》「録一卷，亡」。",
+      "work_id": "d59f7v5zmm8a"
+    },
+    {
+      "title": "臨川王劉義恭　劉義恭集",
+      "level": 3,
+      "type": "book",
+      "content": "臨川王義恭集八卷《隋志》。",
+      "work_id": "d59f2pvmq0hs",
+      "note": "原書題「臨川王義恭集」，然臨川王是劉義慶而義恭封江夏王；隋志原文作「《宋臨川王義慶集》八卷」。本節所指實為義慶之集，故繫《宋臨川王義慶集》。原書之題照錄不改。"
+    },
+    {
+      "title": "江夏王劉義恭　江夏王義恭集",
+      "level": 3,
+      "type": "book",
+      "content": "江夏王義恭集十一卷《隋志》。《七録》「十五卷，録一卷」。",
+      "work_id": "d59f2pv0k5xc"
+    },
+    {
+      "title": "江夏王劉義恭　江夏王集别本",
+      "level": 3,
+      "type": "book",
+      "content": "江夏王集别本十五卷《七録》。",
+      "work_id": "d59f7v5zmm8c"
+    },
+    {
+      "title": "衡陽王劉義季　劉義季集",
+      "level": 3,
+      "type": "book",
+      "content": "衡陽王義季集十卷「録一卷」，《七録》。",
+      "work_id": "d59f7v5zmm8d"
+    },
+    {
+      "title": "南平王劉鑠　劉鑠集",
+      "level": 3,
+      "type": "book",
+      "content": "南平王鑠集五卷《隋志》。",
+      "work_id": "d59f7v5zmm8e"
+    },
+    {
+      "title": "竟陵王劉誕　劉誕集",
+      "level": 3,
+      "type": "book",
+      "content": "竟陵王誕集二十卷《七録》。",
+      "work_id": "d59f7v5zxurk"
+    },
+    {
+      "title": "建平王劉休度　劉休度集",
+      "level": 3,
+      "type": "book",
+      "content": "建平王休度集十卷《七録》。",
+      "work_id": "d59f7v5zxurl"
+    },
+    {
+      "title": "新渝惠侯劉義宗　劉義宗集",
+      "level": 3,
+      "type": "book",
+      "content": "新渝惠侯義宗集十二卷《七録》。",
+      "work_id": "d59f7v5zxurm"
+    },
+    {
+      "title": "散騎常侍祖柔之　祖柔之集",
+      "level": 3,
+      "type": "book",
+      "content": "散騎常侍祖柔之集二十卷《七録》。",
+      "work_id": "d59f2q709dkw"
+    },
+    {
+      "title": "豫章太守謝瞻　謝瞻集",
+      "level": 3,
+      "type": "book",
+      "content": "豫章太守謝瞻集三卷《隋志》。",
+      "work_id": "d59f285kecxs"
+    },
+    {
+      "title": "征虜將軍沈林子　沈林子集",
+      "level": 3,
+      "type": "book",
+      "content": "征虜將軍沈林子集《七録》。",
+      "work_id": "d59f2pz5rls2"
+    },
+    {
+      "title": "太常卿孔琳之　孔琳之集",
+      "level": 3,
+      "type": "book",
+      "content": "太常卿孔琳之集九卷　并目録，《隋志》。《七録》「十卷，録一卷」。",
+      "work_id": "d59f2q05cni8"
+    },
+    {
+      "title": "王叙之　王叙之集",
+      "level": 3,
+      "type": "book",
+      "content": "王叙之集七卷①《隋志》。《七録》「十卷，録一卷」。",
+      "work_id": "d59f7v5zxurn"
+    },
+    {
+      "title": "太中大夫徐廣　徐廣集",
+      "level": 3,
+      "type": "book",
+      "content": "太中大夫徐廣集十五卷《隋志》「録一卷」。",
+      "work_id": "d59f27vq40e8"
+    },
+    {
+      "title": "秘書監盧繁　盧繁集",
+      "level": 3,
+      "type": "book",
+      "content": "秘書監盧繁集一卷　「殘缺」，《隋志》。《七録》「十卷，録」。②",
+      "work_id": "d59f2q9un7y9"
+    },
+    {
+      "title": "侍中孔甯子　孔甯子集",
+      "level": 3,
+      "type": "book",
+      "content": "侍中孔甯子集十一卷并目《隋志》。《七録》「十五卷，録一卷」。",
+      "work_id": "d59f2psnnmkh"
+    }
+  ]
+}

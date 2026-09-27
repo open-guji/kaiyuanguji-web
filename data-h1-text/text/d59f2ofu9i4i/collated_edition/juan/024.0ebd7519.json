@@ -1,0 +1,23 @@
+{
+  "title": "子部·類書類",
+  "sections": [
+    {
+      "title": "類書類",
+      "level": 2,
+      "type": "category"
+    },
+    {
+      "title": "高帝　史林三十篇",
+      "level": 3,
+      "type": "book",
+      "paragraphs": [
+        {
+          "text": "又詔東觀學士撰《史林》三十篇，魏文帝《皇覽》之流也。",
+          "source": "《南史》四《齊高帝本紀》。"
+        }
+      ],
+      "author": "高帝",
+      "work_id": "d59f8ii63lz6"
+    }
+  ]
+}
