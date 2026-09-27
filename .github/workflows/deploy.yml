@@ -526,6 +526,7 @@ jobs:
           # E1：带 kyg-staging 的项目变量构建并查产物（脚本内含与正式站那一步同样的 3 次重试，
           # 只重试构建本身——Google Fonts 偶发抖动）
           python3 ../ops/edgeone-fullstack-build.py -n kyg-staging --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
@@ -767,6 +768,7 @@ jobs:
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（同测试站那一步；EDGEONE_API_TOKEN 不进构建子进程）
           python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
           # 产物校验：正式站配置（无 noindex、无角标、robots 允许收录、读正式数据）＋条目页由云函数渲染
           A=.edgeone/assets

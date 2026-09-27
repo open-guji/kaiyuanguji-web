@@ -103,8 +103,9 @@ def select_vars(env_vars, environment="production"):
     out = {}
     for e in env_vars:
         key, value = e.get("Key") or "", e.get("Value")
-        envs = e.get("Env") or []
-        if envs and environment not in envs:
+        # 接口里是首字母大写的 "Production"／"Preview"（ModifyPagesProjectEnvs 也这么写），比较不分大小写
+        envs = [str(x).lower() for x in (e.get("Env") or [])]
+        if envs and environment.lower() not in envs:
             continue
         if not KEY_RE.match(key) or key in NEVER_KEYS or not isinstance(value, str):
             continue
@@ -177,6 +178,8 @@ def main(argv=None):
     ap.add_argument("--environment", default="production", choices=["production", "preview"])
     ap.add_argument("--forbid-env", action="append", default=[],
                     help="CI 变量名：其值在产物任何位置都不许出现（可多次）")
+    ap.add_argument("--require", action="append", default=[],
+                    help="必须从项目读到的变量名：缺了直接失败，别让「没带上变量」静默通过（可多次）")
     ap.add_argument("--pass-env", action="append", default=[], help="额外放进构建子进程的变量名")
     ap.add_argument("--out", default=".edgeone", help="构建产物目录")
     ap.add_argument("--retries", type=int, default=3)
@@ -206,6 +209,9 @@ def main(argv=None):
             if len(v) >= 4 and "\n" not in v:
                 print(f"::add-mask::{v}", flush=True)
     log(f"· 项目变量 {len(project_vars)} 个（{a.environment}）：{' '.join(sorted(project_vars)) or '无'}")
+    missing = [k for k in a.require if not project_vars.get(k)]
+    if missing:
+        sys.exit(f"❌ 项目里没有读到必需的变量：{' '.join(missing)}（控制台是否配了、是否作用于 {a.environment}）")
 
     env, clash = child_env(os.environ, project_vars, set(a.pass_env))
     if clash:

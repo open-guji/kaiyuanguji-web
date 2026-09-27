@@ -44,6 +44,14 @@ class SelectVars(unittest.TestCase):
         ])
         self.assertEqual(got, {"A": "1", "B": "2"})
 
+    def test_env_case_insensitive(self):
+        # 接口实际返回首字母大写
+        got = efb.select_vars([
+            {"Key": "A", "Value": "1", "Env": ["Production", "Preview"]},
+            {"Key": "B", "Value": "2", "Env": ["Preview"]},
+        ])
+        self.assertEqual(got, {"A": "1"})
+
     def test_preview(self):
         got = efb.select_vars([{"Key": "C", "Value": "3", "Env": ["preview"]}], "preview")
         self.assertEqual(got, {"C": "3"})
@@ -138,7 +146,7 @@ class ScanBundle(unittest.TestCase):
 class MainEndToEnd(unittest.TestCase):
     """用一个假「构建命令」走完 main：子进程看不到 CI 机密、产物校验生效、输出不含值。"""
 
-    def run_main(self, build_py, extra_env=None):
+    def run_main(self, build_py, extra_env=None, argv_extra=()):
         with tempfile.TemporaryDirectory() as d:
             pv = Path(d, "pv.json")
             pv.write_text(json.dumps({"AUTH_JWT_SECRET": SECRET}), encoding="utf-8")
@@ -152,7 +160,7 @@ class MainEndToEnd(unittest.TestCase):
             try:
                 with redirect_stdout(buf):
                     efb.main(["--env-json", str(pv), "--forbid-env", "EDGEONE_API_TOKEN",
-                              "--out", str(out), "--retries", "1", "--",
+                              "--out", str(out), "--retries", "1", *argv_extra, "--",
                               sys.executable, str(script), str(out)])
             except SystemExit as e:
                 code = e.code
@@ -184,6 +192,14 @@ class MainEndToEnd(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("EDGEONE_API_TOKEN", out)
         self.assertNotIn(TOKEN, out)
+
+    def test_require_missing(self):
+        code, out = self.run_main(self.FAKE_BUILD, argv_extra=["--require", "ERROR_VIEW_TOKEN"])
+        self.assertIn("ERROR_VIEW_TOKEN", str(code))
+
+    def test_require_present(self):
+        code, _ = self.run_main(self.FAKE_BUILD, argv_extra=["--require", "AUTH_JWT_SECRET"])
+        self.assertIn(code, (0, None))
 
     def test_build_failure(self):
         code, _ = self.run_main("import sys; sys.exit(3)")
