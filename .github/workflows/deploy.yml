@@ -205,6 +205,11 @@ jobs:
         run: |
           git clone --depth 1 "https://x-access-token:${BOOK_TEXT_PRIVATE_TOKEN}@github.com/open-guji-core/book-text-private.git" book-text-private
 
+      # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
+      # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
+      - name: Set data output root (outside nextjs/)
+        run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
+
       - name: Bundle data for EdgeOne
         working-directory: nextjs
         env:
@@ -215,8 +220,8 @@ jobs:
           node scripts/bundle-data.mjs
           # T1：指针里记下这次用的网站代码 commit，promote 时据此取同一版代码
           python3 - <<'PY'
-          import json
-          p = 'public/latest.json'
+          import json, os
+          p = os.path.join(os.environ['KYG_DATA_ROOT'], 'latest.json')
           with open(p) as f:
               d = json.load(f)
           d['webCommitId'] = '${{ needs.resolve.outputs.web_ref }}'
@@ -226,7 +231,13 @@ jobs:
 
       - name: Verify bundled data
         run: |
-          cd nextjs/public/data
+          # S2：public/ 下不应再有任何数据产物
+          for f in data data-h1 data-h1-text latest.json; do
+            if [ -e "nextjs/public/$f" ]; then
+              echo "❌ nextjs/public/$f 不应存在（数据产物应在 KYG_DATA_ROOT=$KYG_DATA_ROOT）" && exit 1
+            fi
+          done
+          cd "$KYG_DATA_ROOT/data"
           # 历史遗留产物（Phase 1 之前的 index.json / search_s.json，Phase 2 的 chunks/）
           # 若仍存在说明 bundle-data.mjs 没走干净，提前阻止上线
           for f in index.json search_s.json; do
@@ -246,7 +257,7 @@ jobs:
           ls entry/*.json | wc -l | xargs -I{} echo "✓ {} entry files"
           ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
           # latest.json 由 bundle-data.mjs 输出到 public/ (data/ 同级)，sync-to-cos.mjs 单独上传
-          [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing public/latest.json" && exit 1)
+          [ -f ../latest.json ] && echo "✓ latest.json ($(wc -c < ../latest.json) bytes)" || (echo "❌ Missing \$KYG_DATA_ROOT/latest.json" && exit 1)
 
       # 守卫：production（已升格）条目必须进入产物。
       # bundle-data.mjs 在 production 仓缺失时是**静默**跳过的，只靠上面的
@@ -263,7 +274,7 @@ jobs:
             process.exit(0);
           }
           const missing = ids.filter(
-            id => !fs.existsSync('nextjs/public/data/entry/' + id + '.json'));
+            id => !fs.existsSync(process.env.KYG_DATA_ROOT + '/data/entry/' + id + '.json'));
           if (missing.length) {
             console.error('❌ ' + missing.length + '/' + ids.length +
               ' 个正式条目未进入产物（BOOK_INDEX_PRODUCTION_DIR 没生效？）');
@@ -279,7 +290,7 @@ jobs:
       # 这一次没接。命令与判据都在这（PR 里贴的实测即这一步的日志）。
       - name: Verify no private text leaked into public data
         run: |
-          cd nextjs/public/data
+          cd "$KYG_DATA_ROOT/data"
           if grep -rl "book-text-private\|仅内部校对使用\|不得公开" . ; then
             echo "❌ 公开产物里出现了私有文本相关内容，上一条命令列出的文件即命中位置" && exit 1
           fi
@@ -420,13 +431,18 @@ jobs:
           # 2026-09-27 A3 起它们随 out/ 一起推到 edgeone-release，产物从 ~550 涨到 16 万文件，
           # Pages 静默不再发布，线上停在 09-26 23:09Z 那版，只有 verify 的 ui 版本下限测试报红。
           rm -rf ../build/edgeone/data-h1 ../build/edgeone/data-h1-text
-          # cos 模式下，out/data/ 已在 COS，EdgeOne Pages 不需要重复，剥离以瘦身
+          # cos 模式：数据全在 COS，Pages 产物不带数据（S2 起 out/ 里本就没有，rm 只是保险）。
+          # bundle 降级模式（无 COS secrets）：数据要走 Pages /data/，从 KYG_DATA_ROOT 拷回——
+          # 但约 14.7 万文件必然撞下面的文件数闸，降级模式实际上不上 Pages，闸会给出明确报错。
           if [ "$NEXT_PUBLIC_DATA_SOURCE" = "cos" ]; then
-            echo "Stripping out/data from EdgeOne Pages bundle (data served from COS)"
             rm -rf ../build/edgeone/data
-            du -sh ../build/edgeone | xargs echo "EdgeOne bundle size after strip:"
-            find ../build/edgeone -type f | wc -l | xargs echo "EdgeOne file count after strip:"
+          else
+            echo "bundle 降级模式：从 $KYG_DATA_ROOT 拷回 data/ 与 latest.json"
+            cp -r "$KYG_DATA_ROOT/data" ../build/edgeone/data
+            cp "$KYG_DATA_ROOT/latest.json" ../build/edgeone/latest.json
           fi
+          du -sh ../build/edgeone | xargs echo "EdgeOne bundle size:"
+          find ../build/edgeone -type f | wc -l | xargs echo "EdgeOne file count:"
 
       - name: Verify EdgeOne build mode
         run: |
@@ -472,6 +488,9 @@ jobs:
           if [ "$N" -gt 5000 ]; then
             echo "❌ 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
             find build/edgeone -type f | awk -F/ '{print $3}' | sort | uniq -c | sort -rn | head -10
+            if [ "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" = bundle ]; then
+              echo "❌ 当前是 bundle 降级模式（COS secrets 缺失）：降级产物上不了 Pages，请恢复 COS secrets，不要放宽本闸"
+            fi
             exit 1
           fi
 
