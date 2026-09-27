@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # 主动推送探活失败到 IM webhook（飞书/钉钉/Telegram 等通用 webhook 或自定义服务）。
-# 与 ops/health-alert.sh 并存：issue 是留痕，webhook 是“推到人眼前”的一跳。
+# 由 .github/workflows/monitor.yml 在「开单／内容变化／恢复」时调用：issue 是留痕，webhook 是“推到人眼前”的一跳。
 # 设计要点：
-# - 跑在 GitHub 托管 runner 上，与被监控对象解耦（同 health-check.yml 注释）
+# - 跑在 GitHub 托管 runner 上，与被监控对象解耦（同 monitor.yml 注释）
 # - 无 HEALTH_NOTIFY_WEBHOOK 时静默跳过，不影响原有 issue 链路
 # - 失败不阻断 workflow（curl 失败不 set -e 退出），但失败会以 ::warning:: 打印到 Actions 日志
 # - 需显式配置 HEALTH_NOTIFY_FORMAT：generic | feishu | dingtalk（默认 generic），避免“猜格式、失败再换”导致静默丢弃
@@ -28,7 +28,8 @@ fi
 REPORT="${REPORT:-（无报告）}"
 RUN_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-open-guji/kaiyuanguji-web}/actions/runs/${GITHUB_RUN_ID:-unknown}"
 
-title="🔴 生产探活失败：搜索 L1 / 站点端点不可达"
+# 标题可由调用方覆盖（monitor.yml 用它推「开单／恢复」）
+title="${NOTIFY_TITLE:-🔴 生产探活失败：搜索 L1 / 站点端点不可达}"
 body_text="${title}
 时间：$(date -u '+%Y-%m-%d %H:%M UTC')
 Run: ${RUN_URL}

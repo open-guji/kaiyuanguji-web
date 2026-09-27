@@ -1,0 +1,101 @@
+name: Monitor (private half)
+
+# 线上监控的私有那一半（MON 道，任务书 §八，2026-09-27 用户定）。
+#
+# 监控代码只在公开仓 open-guji/open-guji-monitor 维护；那边每 15 分钟跑 A 主动探测、
+# 每 6 小时跑 C 契约冒烟与新旧架构对比，Actions 免费，告警开在公开仓。
+# 本仓只每小时跑要私有信息的部分，告警开在本仓（标签 monitor）：
+#   A1-deploy-lag  部署停更：要读本仓 nextjs/package.json 及其 git 历史
+#   B1-errors      前端错误突增：要 ERROR_VIEW_TOKEN
+#   B2-feedback    反馈量：可选 FEEDBACK_ADMIN_TOKEN（没有就数公开列表）
+#   B3-freshness   三数据仓新鲜度
+# 错误汇总、反馈计数只出现在本仓（私有）的日志与 issue 里。
+#
+# 月用量约 24 × 30 = 720 分钟。取代原 health-check.yml（其探活项已并入公开仓的 A2）。
+# 连续 2 次失败才开 issue、恢复自动关；检查失败不让 job 变红，job 红只意味着告警链路自己坏了。
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只出报告，不开／评／关 issue'
+        type: boolean
+        default: false
+      monitor_ref:
+        description: '公开监控仓的分支／commit（默认 main）'
+        type: string
+        default: ''
+  # 改本文件或两个汇总接口时：用 PR 的 secret 跑一次 dry-run，验证能 checkout 公开仓、token 通不通
+  pull_request:
+    paths:
+      - '.github/workflows/monitor.yml'
+      - 'edge-functions/api/track-error.js'
+      - 'edge-functions/api/feedback.js'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  private:
+    name: A1 部署停更 ＋ B 数据监测
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: monitor-private
+      cancel-in-progress: false
+    steps:
+      # 本仓：只要 package.json（及 50 个提交的历史，算 main 改 UI 版本的时间）、锚点、IM 推送脚本
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+          filter: blob:none
+          sparse-checkout: |
+            nextjs/package.json
+            e2e/fixtures
+            ops/health-notify.sh
+          sparse-checkout-cone-mode: false
+      # 公开的监控代码（公开仓，不需要 token）。可用仓库变量 MONITOR_REF 钉 commit
+      - uses: actions/checkout@v4
+        with:
+          repository: open-guji/open-guji-monitor
+          ref: ${{ inputs.monitor_ref || vars.MONITOR_REF || 'main' }}
+          path: monitor-src
+          sparse-checkout: monitor
+      - name: Restore monitor state
+        uses: actions/cache/restore@v4
+        with:
+          path: .monitor
+          key: monitor-state-private-${{ github.run_id }}
+          restore-keys: monitor-state-private-
+      - name: Run checks
+        id: run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          # 缺这两个 secret 时 B1／B2 自动跳过或降级，并在报告里注明「未配置」
+          ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
+          FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
+        run: |
+          ARGS="--suite private --repo-root . --state .monitor/state.json --out .monitor/last.json"
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          echo "监控代码：open-guji/open-guji-monitor@$(git -C monitor-src rev-parse --short HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
+          node monitor-src/monitor/run.mjs $ARGS
+      - name: Save monitor state
+        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        uses: actions/cache/save@v4
+        with:
+          path: .monitor
+          key: monitor-state-private-${{ github.run_id }}
+      # 只在开单／内容变化／恢复时推；未配 HEALTH_NOTIFY_WEBHOOK 时脚本静默跳过
+      - name: Push to IM webhook
+        if: ${{ !cancelled() && steps.run.outputs.notify != '' }}
+        env:
+          HEALTH_NOTIFY_WEBHOOK: ${{ secrets.HEALTH_NOTIFY_WEBHOOK }}
+          HEALTH_NOTIFY_FORMAT: ${{ vars.HEALTH_NOTIFY_FORMAT }}
+          NOTIFY_TITLE: '开鉴古籍线上监控（私有：部署停更／数据监测）'
+          REPORT: ${{ steps.run.outputs.notify }}
+        run: bash ops/health-notify.sh
