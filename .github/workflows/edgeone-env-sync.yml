@@ -1,0 +1,39 @@
+name: EdgeOne env sync
+
+# 33 卡 §六·1：把旧正式站 Pages 项目的环境变量原样抄到 kyg-ssr-spike（新正式站）。
+# 只打印变量名，不打印值。KV 绑定没有写接口，仍在控制台改绑（3 项）。
+# 先跑 list 看项目名 → dry-run 看要写什么 → sync 真写。
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: list=列项目与变量名；dry-run=只报要写哪些；sync=真写
+        required: true
+        default: list
+        type: choice
+        options: [list, dry-run, sync]
+      source:
+        description: 源项目名（旧正式站）
+        required: false
+        default: ''
+      target:
+        description: 目标项目名
+        required: false
+        default: kyg-ssr-spike
+
+permissions:
+  contents: read
+
+jobs:
+  env-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          MODE: ${{ inputs.mode }}
+          SOURCE: ${{ inputs.source }}
+          TARGET: ${{ inputs.target }}
+        run: python3 ops/edgeone-env-sync.py
