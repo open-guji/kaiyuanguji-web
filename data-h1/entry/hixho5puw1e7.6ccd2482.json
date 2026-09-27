@@ -1,0 +1,1 @@
+{"schema_version":1,"id":"hixho5puw1e7","type":"entity","subtype":"people","primary_name":"劉仕","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《方脈全書》(d59f6ej9rt34) 之舊邊——現查該書 authors[] 已無「劉仕」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/e/7/hixho5puw1e7-劉仕.json","_isDraft":false}

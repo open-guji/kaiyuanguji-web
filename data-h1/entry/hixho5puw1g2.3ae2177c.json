@@ -1,0 +1,1 @@
+{"schema_version":1,"id":"hixho5puw1g2","type":"entity","subtype":"people","primary_name":"方興","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《矞村集》(d59f6erb4sn5) 之舊邊——現查該書 authors[] 已無「方興」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/g/2/hixho5puw1g2-方興.json","_isDraft":false}

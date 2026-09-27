@@ -1,0 +1,1 @@
+{"schema_version":1,"id":"hixho5puw1gd","type":"entity","subtype":"people","primary_name":"朱泰","works":[],"ai_note":"2026-09-26 D9-链接清零：Entity.works[] 移除對 《飲酒須知》(d59f6er49kp2) 之舊邊——現查該書 authors[] 已無「朱泰」其名（書已改繫他人或原繫本屬誤植），單向死鏈，依 rule D9-oneway-刪舊邊 清理。","_path":"Entity/1/g/d/hixho5puw1gd-朱泰.json","_isDraft":false}
