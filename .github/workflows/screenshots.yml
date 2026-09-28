@@ -1,0 +1,104 @@
+name: Page screenshots
+
+# 主要页面一键截图（桌面 1440 + 手机 390，整页），供人直接审图。overview#261。
+# 只发 GET、不点任何按钮（测试站与 www 都连正式 KV）；只截公开页面，不用任何 secret。
+# 产物：① Actions artifact（含 index.html 图集）；② 孤儿分支 `shots` 的 <日期>-<短sha>/ 目录（带 README.md，
+#       GitHub 上直接看），shots 分支只保留最近 10 次，每次重建为单个孤儿提交，旧图的 blob 随之丢弃。
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 被测站点
+        required: true
+        default: https://staging.kaiyuanguji.com
+        type: string
+      compare:
+        description: 可选，对照站点（如 https://www.kaiyuanguji.com），图集里并排放
+        required: false
+        default: ''
+        type: string
+  workflow_run:
+    workflows: ['Deploy to EdgeOne']
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: false
+
+jobs:
+  shots:
+    # workflow_run 只在部署成功后跑
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TARGET: ${{ inputs.target || 'https://staging.kaiyuanguji.com' }}
+      COMPARE: ${{ inputs.compare || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+
+      - name: Install chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Take screenshots
+        working-directory: e2e
+        run: npm run shots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: e2e/out/shots
+          retention-days: 14
+
+      - name: Publish to shots branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse --short=7 "${{ github.event.workflow_run.head_sha || github.sha }}")
+          DIR="$(date -u +%Y-%m-%d)-$SHA"
+          [ "${{ github.run_attempt }}" = 1 ] || DIR="$DIR-r${{ github.run_attempt }}"
+          node e2e/screenshots/readme.mjs e2e/out/shots "截图 $DIR"
+
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          rm -rf /tmp/shots && mkdir /tmp/shots && cd /tmp/shots
+          git init -q
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add origin "$REPO_URL"
+          if git fetch -q origin shots 2>/dev/null; then
+            git checkout -q -b shots FETCH_HEAD
+            # 只留最近 9 个旧目录（按各目录首次提交时间），加上本次共 10 个
+            for d in */; do
+              d=${d%/}
+              echo "$(git log --diff-filter=A --format=%ct -1 -- "$d") $d"
+            done | sort -rn | awk 'NR>9 {print $2}' | xargs -r rm -rf
+            rm -rf "$DIR"
+          fi
+          mkdir -p "$DIR"
+          cp "$GITHUB_WORKSPACE"/e2e/out/shots/*.jpg "$GITHUB_WORKSPACE"/e2e/out/shots/README.md "$DIR"/
+          {
+            echo "# 截图历史（最近 10 次）"; echo
+            for d in $(ls -d */ | tr -d / | sort -r); do echo "- [$d]($d/README.md)"; done
+          } > README.md
+          # 每次重建为单个孤儿提交，丢弃旧图历史，仓库不膨胀
+          git checkout -q --orphan shots-new
+          git add -A
+          git commit -q -m "shots: $DIR (target ${TARGET})"
+          git push -q --force origin shots-new:shots
+          echo "https://github.com/${{ github.repository }}/blob/shots/$DIR/README.md" | tee -a "$GITHUB_STEP_SUMMARY"
