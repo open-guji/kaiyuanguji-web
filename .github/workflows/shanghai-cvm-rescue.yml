@@ -31,13 +31,13 @@ env:
 
 jobs:
   rescue:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
       - name: Install SDK
-        run: pip install tencentcloud-sdk-python-cvm -q
+        run: python3 -m pip install --user tencentcloud-sdk-python-cvm -q
 
       - name: Run CVM action
         env:
@@ -48,7 +48,7 @@ jobs:
           TARGET_UIN: '450200301165'   # whoami 查出的子账号 Uin
         run: |
           if [ "$ACTION" = whoami ]; then
-            pip install tencentcloud-sdk-python-cam -q
+            python3 -m pip install --user tencentcloud-sdk-python-cam -q
             python3 ops/cvm-whoami.py
           elif [ "$ACTION" = list ]; then
             python3 ops/cvm-list.py
