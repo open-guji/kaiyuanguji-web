@@ -13,7 +13,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { SITE_URL } from '@/lib/constants';
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { parseItemId } from '@/lib/item-id';
 import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
@@ -61,15 +61,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const s = await load(id);
     if (!s) return { title: '未找到条目', robots: { index: false, follow: false } };
     const { seo } = s;
+    // openGraph／twitter 是整块覆盖 layout 的，不是逐字段合并：siteName、locale、图片要在这里重新带上，
+    // 否则条目页的分享卡片没有站名和图，twitter 卡片还停在全站默认文案
+    const ogTitle = `${seo.title} - ${SITE_NAME}`;
     return {
         title: seo.title,
         description: seo.description,
         alternates: { canonical: seo.canonicalPath },
         openGraph: {
-            title: seo.title,
+            title: ogTitle,
             description: seo.description,
             url: seo.canonicalPath,
+            siteName: SITE_NAME,
+            locale: 'zh_CN',
             type: seo.ogType,
+            images: [{ url: '/images/og-image.png', width: 1200, height: 630, alt: SITE_NAME }],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: ogTitle,
+            description: seo.description,
+            images: ['/images/og-image.png'],
         },
     };
 }
