@@ -76,10 +76,11 @@ class ChildEnv(unittest.TestCase):
 
     def test_kyg_exact_names_only(self):
         # SEC overview#134 第 5 条：KYG_* 不按前缀放行，只放点名的
-        parent = {"KYG_RENDER_MODE": "fullstack", "KYG_REVALIDATE_SECRET": REVAL,
+        parent = {"KYG_RENDER_MODE": "fullstack", "KYG_REVALIDATE_SECRET": REVAL, "KYG_DEPLOY_TARGET": "production",
                   "KYG_DATA_ROOT": "/tmp/d", "KYG_SOME_FUTURE_SECRET": "s3cr3t-value-xyz"}
         env, _ = efb.child_env(parent, {})
-        self.assertEqual(sorted(env), ["KYG_RENDER_MODE", "KYG_REVALIDATE_SECRET"])
+        # KYG_DEPLOY_TARGET：CUT2 正式站全栈构建要把 /api/version 的 target 写成 production，不放行就会记成 ssr-test
+        self.assertEqual(sorted(env), ["KYG_DEPLOY_TARGET", "KYG_RENDER_MODE", "KYG_REVALIDATE_SECRET"])
 
     def test_extra_pass(self):
         env, _ = efb.child_env({"FOO": "1"}, {}, {"FOO"})

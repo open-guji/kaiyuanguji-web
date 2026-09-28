@@ -4,7 +4,7 @@
   python3 ops/rollback-check.py --site staging --web <40 位 sha> [--pointer] [--timeout 600]
 
 --pointer：同时要求数据指针（staging/latest.json 或 latest.json）的 webCommitId ＝ 目标
-          （promote 路会写它；release-branch 路不写，不要带）。
+          （promote 会写它）。
 /api/version：目标 commit 有这个接口时 web 必须＝目标；没有（早于 DBG）则只看指针。
 在超时内每 20 秒重试一次（CDN 传播要时间），超时仍不对就非零退出。
 """
