@@ -14,10 +14,10 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { parseItemId } from '@/lib/item-id';
 import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
-import { buildItemSeo, jsonLdScript, mergedTarget, type ItemSeo } from '@/lib/server/item-seo';
+import { buildItemSeo, jsonLdScript, type ItemSeo } from '@/lib/server/item-seo';
+import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import ItemDetailClient from './ItemDetailClient';
 
 // 页面缓存：CDN 按 s-maxage 缓存（EdgeOne 上 Next 自己的 ISR 缓存不持久，25 卡）。
@@ -41,18 +41,11 @@ type Loaded = ItemSummary & { source: 'h1' | 'current'; version: string; seo: It
  */
 async function load(id: string): Promise<Loaded | null> {
     const hit = await getItemServer(id);
-    if (!hit) {
-        if (parseItemId(id)?.status === 'draft') {
-            // 草稿 id 多半已升格：查 h1 里对应的一片对照表（31 卡 §A.6 第 5 条）
-            const p = await getPromotionServer(id);
-            if (p.status === 'promoted') permanentRedirect(`/item/${p.to}`);
-            // 查不了：临时（307）跳回 /book-index，由客户端查表；middleware 不改写草稿 id，不会绕回来
-            if (p.status === 'unknown') redirect(`/book-index?id=${id}`);
-        }
-        return null;
-    }
-    const target = mergedTarget(hit.entry, id);
-    if (target) permanentRedirect(`/item/${target}`);
+    // 被并条目 308、草稿升格 308、对照表查不了 307——判断在 item-redirect.ts。整页导航由中间件
+    // 先跳（这里在 ISR 未命中时会把 Location 写两遍，见该文件头）；这里兜 RSC 导航与中间件放过的情况
+    const r = await resolveItemRedirect(id, hit, getPromotionServer);
+    if (r) (r.permanent ? permanentRedirect : redirect)(r.to);
+    if (!hit) return null;
     return { ...summarizeItem(hit.entry, id), source: hit.source, version: hit.version, seo: buildItemSeo(hit.entry, id, SITE_URL) };
 }
 

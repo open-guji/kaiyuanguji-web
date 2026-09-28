@@ -8,7 +8,7 @@
  *   1. h1 哈希寻址：指针 h1/manifest-root.json → 根清单 h1/roots/<key>.json
  *      → 分片 h1/manifest/<后缀>.<hash8>.json → 条目 h1/entry/<id>.<hash8>.json
  *   2. h1 任何一步读不到（指针缺、旧格式指针没有 root、分片里没有这个 id、
- *      网络错……）→ 回退现行 latest.json → current/entry/<id>.json?v=<commit>
+ *      网络错……）→ 回退现行 latest.json → current/entry/<id>.json?v=<cacheKey|commit>
  *   3. 两条都确定「没有」才返回 null（页面据此出 404）；回退路径本身出网络错
  *      或 5xx 则抛错——临时故障不能被当成「条目不存在」缓存到 CDN 上。
  *
@@ -24,6 +24,7 @@
  */
 
 import { isValidItemId } from '../item-id';
+import { dataVersionKey, type LatestPointer } from '../data-version';
 
 export { isValidItemId };
 
@@ -34,7 +35,7 @@ export interface ItemFetchResult {
     /** 这条是从哪条路径取到的：h1 哈希寻址，还是回退到 current/ */
     source: 'h1' | 'current';
     /**
-     * 取到的是哪一版数据：`h1:<root 文件名>` 或 `current:<commitId>`。
+     * 取到的是哪一版数据：`h1:<root 文件名>` 或 `current:<版本键>`（cacheKey，旧数据回退 commitId）。
      * 页面写进 data-ssr-version，发版后的实测据此判断 CDN 上的页面是否已换新（W2-3）。
      */
     version: string;
@@ -53,6 +54,11 @@ export interface ItemFetcherOptions {
     timeoutMs?: number;
     /** 不可变对象（root、分片、entry）的进程内缓存条数上限 */
     lruSize?: number;
+    /**
+     * 请求是否带 cache: 'force-cache'（默认 true，页面据此保持 ISR）。
+     * 中间件（边缘运行时）传 false：那里不认这个选项，可能直接抛错。
+     */
+    forceCache?: boolean;
 }
 
 interface H1Pointer { root?: string }
@@ -73,7 +79,6 @@ export type PromotionLookup =
     | { status: 'promoted'; to: string }
     | { status: 'absent' }
     | { status: 'unknown' };
-interface LatestPointer { commitId?: string }
 
 
 class Lru<V> {
@@ -106,12 +111,15 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     const now = opts.now ?? Date.now;
     const pointerTtl = opts.pointerTtlMs ?? 60_000;
     const timeoutMs = opts.timeoutMs ?? 8_000;
+    const forceCache = opts.forceCache ?? true;
     const immutable = new Lru<Promise<unknown>>(opts.lruSize ?? 500);
     const pointers = new Map<string, { at: number; value: Promise<unknown> }>();
 
     async function getJson<T>(url: string): Promise<T> {
         // force-cache：让页面保持 ISR（带 s-maxage），no-store 会把整页变成动态渲染、CDN 不缓存
-        const res = await doFetch(url, { cache: 'force-cache', signal: AbortSignal.timeout(timeoutMs) });
+        const init: RequestInit = { signal: AbortSignal.timeout(timeoutMs) };
+        if (forceCache) init.cache = 'force-cache';
+        const res = await doFetch(url, init);
         if (res.status === 404 || res.status === 403) throw new NotFound(`${url} HTTP ${res.status}`);
         if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
         return (await res.json()) as T;
@@ -173,10 +181,12 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
 
     async function fromCurrent(id: string): Promise<{ entry: ItemEntry; version: string } | null> {
         const latest = await getPointer<LatestPointer>('latest.json');
-        const v = latest.commitId ? `?v=${latest.commitId}` : '';
+        // 版本键优先 cacheKey（三仓合成），旧 latest.json 没有时回退 commitId（overview#169）
+        const key = dataVersionKey(latest);
+        const v = key ? `?v=${key}` : '';
         try {
             const entry = await getImmutable<ItemEntry>(`${base}/current/entry/${id}.json${v}`);
-            return { entry, version: `current:${latest.commitId ?? ''}` };
+            return { entry, version: `current:${key ?? ''}` };
         } catch (err) {
             if (err instanceof NotFound) return null;
             throw err;

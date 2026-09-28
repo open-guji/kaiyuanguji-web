@@ -28,6 +28,8 @@ const kvStub = {
   },
 };
 
+/** M1：共享 token 只走 Authorization: Bearer（不再认 ?token=） */
+const bearer = (t: string): RequestInit => ({ headers: { Authorization: `Bearer ${t}` } });
 function ctx(url: string, init?: RequestInit) {
   return { request: new Request(url, init) };
 }
@@ -67,13 +69,13 @@ describe('GET /api/track-error 鉴权', () => {
   });
 
   it('没配 ERROR_VIEW_TOKEN 时，带上任意 token 也不放行', async () => {
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=whatever'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('whatever')));
     expect(res.status).toBe(503);
   });
 
   it('配了变量、token 不对 → 401', async () => {
     g.ERROR_VIEW_TOKEN = 'right-token';
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=wrong'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('wrong')));
     expect(res.status).toBe(401);
     expect((await body(res)).items).toBeUndefined();
   });
@@ -86,7 +88,7 @@ describe('GET /api/track-error 鉴权', () => {
 
   it('token 对 → 正常返回记录', async () => {
     g.ERROR_VIEW_TOKEN = 'right-token';
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=right-token'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('right-token')));
     expect(res.status).toBe(200);
     const j = await body(res);
     expect(j.success).toBe(true);
@@ -146,3 +148,33 @@ describe('POST 上报（公开）不受影响', () => {
     expect((await body(res)).success).toBe(true);
   });
 });
+
+describe('POST 上报记录版本（DBG）', () => {
+  it('web／data 原样存下（截到 60 字），不带时为空串', async () => {
+    const SHA = 'd'.repeat(40);
+    const res = await fn.onRequestPost(
+      ctx('https://x/api/track-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'js', message: '带版本', web: SHA, data: '501935e5be70', release: '501935e5be70' }),
+      }),
+    );
+    const { id } = await body(res);
+    const rec = JSON.parse(kvStub.store.get(id)!);
+    expect(rec.web).toBe(SHA);
+    expect(rec.data).toBe('501935e5be70');
+    expect(rec.release).toBe('501935e5be70');
+
+    const res2 = await fn.onRequestPost(
+      ctx('https://x/api/track-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'js', message: '旧前端不带版本', web: 'x'.repeat(200) }),
+      }),
+    );
+    const rec2 = JSON.parse(kvStub.store.get((await body(res2)).id)!);
+    expect(rec2.web).toHaveLength(60);
+    expect(rec2.data).toBe('');
+  });
+});
+

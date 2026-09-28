@@ -1,0 +1,232 @@
+name: Rollback
+
+# DBG：一键退回上一版。先读 docs/runbook.md 的「回滚」一节。
+#
+# 两条路（method）：
+#   promote（默认，首选）：复用平时发版那条路，分三段（stage），每段手动触发一次：
+#       start   在测试站重建目标 web commit（dispatch deploy.yml target=staging，跑完整 verify）
+#       promote 确认那次重建绿了、测试站指针是目标，dispatch deploy.yml target=production promote=code+data
+#       check   核对站点已是目标版本
+#       target=staging 时只走 start → check ＝ 在测试站演练。
+#       为什么不在一个 job 里等下去：runner 是自托管的（overview#184），各 job 共用一台机器；
+#       本 job 占着 runner 等 deploy.yml，deploy.yml 就永远排不上——死锁。所以每段只发起、不等待。
+#   release-branch（快，只限正式站）：edgeone-release 恢复成当时那版产物的树＋清 CDN，约 2 分钟，
+#       不重建、数据不动；但下一次自动 promote=data 会冲掉它（计划里有提醒）。
+# 数据不单独回退：deploy.yml 还没有「指定数据 commit」的入口（见 PR 描述「要改 deploy.yml 的部分」）。
+#
+# dry_run 默认开：只出计划（现在线上是哪版、要退到哪版、会连带动什么），不做任何改动。
+# 本 workflow 不改 deploy.yml，只 dispatch 它。
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'staging = 在测试站演练（只做重建测试站那半段）；production = 真回滚正式站'
+        type: choice
+        options: [staging, production]
+        default: staging
+      web_commit:
+        description: '退回到哪个网站 commit（空 = 上一次正式发布的那版）'
+        required: false
+        default: ''
+      method:
+        description: 'promote = 测试站重建→verify→promote（首选）；release-branch = 直接恢复 edgeone-release 产物（快，仅正式站）'
+        type: choice
+        options: [promote, release-branch]
+        default: promote
+      stage:
+        description: 'promote 路分段：start = 测试站重建；promote = 绿后发正式站（仅 production）；check = 核对已是目标版本。release-branch 路忽略此项'
+        type: choice
+        options: [start, promote, check]
+        default: start
+      dry_run:
+        description: '只出计划、不做改动'
+        type: boolean
+        default: true
+  # 改到回滚相关文件的 PR 自动跑一遍 dry-run（两个目标各一次），保证计划逻辑在真实历史上是通的
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/rollback.yml
+      - ops/rollback-*.py
+      - ops/tests/test_rollback_plan.py
+
+# 顶层只读（PR 触发的 dry-run 也只有读权限）；写权限只下放到真要写的 job
+permissions:
+  contents: read
+
+# 与发布不抢：同一时间只允许一个回滚
+concurrency:
+  group: rollback-${{ github.event_name == 'pull_request' && github.ref || 'live' }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # PR 上两个目标都 dry-run；手动触发只跑选中的那一个
+        target: ${{ fromJSON(github.event_name == 'pull_request' && '["staging","production"]' || format('["{0}"]', inputs.target)) }}
+    outputs:
+      web_commit: ${{ steps.plan.outputs.web_commit }}
+      release_sha: ${{ steps.plan.outputs.release_sha }}
+      has_version_endpoint: ${{ steps.plan.outputs.has_version_endpoint }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 要看目标 commit 的 deploy.yml／有没有 version.js
+      - run: git fetch -q origin edgeone-release main
+      - name: Unit tests (ops/tests)
+        run: python3 -m unittest discover -s ops/tests
+      - id: plan
+        env:
+          # 自由文本输入只经环境变量进脚本，不直接拼进 shell（防注入）；脚本里再校验是不是 commit
+          TARGET: ${{ matrix.target }}
+          METHOD: ${{ inputs.method || 'promote' }}
+          STAGE: ${{ inputs.stage || 'start' }}
+          WEB_INPUT: ${{ inputs.web_commit }}
+          DRY: ${{ (github.event_name == 'pull_request' || inputs.dry_run) && '--dry-run' || '' }}
+        run: python3 ops/rollback-plan.py --target "$TARGET" --method "$METHOD" --stage "$STAGE" --web-commit "$WEB_INPUT" $DRY
+
+  # ---- promote 路 · start：测试站重建（只发起，不等） ----
+  start:
+    needs: plan
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'start' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 经 refs API 打／删临时 tag
+      actions: write    # dispatch deploy.yml、读运行列表
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      WEB: ${{ needs.plan.outputs.web_commit }}
+      TARGET: ${{ inputs.target }}
+    steps:
+      - name: Dispatch deploy.yml target=staging at the target commit
+        run: |
+          # deploy.yml 只能按分支／tag dispatch：临时 tag 指向目标 commit，运行建好后即删
+          # （运行按 sha 检出，tag 没了不影响；运行列表里 headBranch 仍记着这个名字，promote 段据此找它）
+          T="rollback-${WEB:0:12}-${{ github.run_id }}"
+          gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$T" -f sha="$WEB" > /dev/null
+          trap 'gh api -X DELETE "repos/$GH_REPO/git/refs/tags/$T" > /dev/null || echo "::warning::临时 tag $T 没删掉，请手动删"' EXIT
+          SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run deploy.yml --ref "$T" -f target=staging
+          RUN=''
+          for i in $(seq 1 30); do
+            sleep 10
+            RUN=$(gh run list --workflow deploy.yml --event workflow_dispatch --limit 20 \
+              --json databaseId,headBranch,createdAt \
+              -q "[.[] | select(.headBranch == \"$T\" and .createdAt >= \"$SINCE\")][0].databaseId // empty")
+            [ -n "$RUN" ] && break
+          done
+          [ -n "$RUN" ] || { echo "❌ 5 分钟内没看到 deploy.yml 的这次运行"; exit 1; }
+          URL="${{ github.server_url }}/$GH_REPO/actions/runs/$RUN"
+          NEXT="stage=check"; [ "$TARGET" = production ] && NEXT="stage=promote"
+          {
+            echo "### 测试站重建已发起"
+            echo ""
+            echo "- 运行：$URL（约 15 分钟，含 verify）"
+            echo "- 它绿了之后：再跑 Rollback，\`target=$TARGET\` \`web_commit=$WEB\` \`$NEXT\` \`dry_run=false\`"
+            echo "- 期间 main 有 push 会取消这次重建（测试站连推只跑最后一次），那样 promote 段会拒绝继续，重来 start 即可"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "· 测试站重建：$URL"
+
+  # ---- promote 路 · promote：测试站验过 → 发正式站（只发起，不等） ----
+  promote:
+    needs: plan
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'promote' && inputs.target == 'production' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write    # dispatch deploy.yml、读运行列表
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      WEB: ${{ needs.plan.outputs.web_commit }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require a green staging rebuild of the target
+        run: |
+          R=$(gh run list --workflow deploy.yml --event workflow_dispatch --limit 50 \
+            --json databaseId,headBranch,headSha,status,conclusion \
+            -q "[.[] | select((.headBranch | startswith(\"rollback-\")) and .headSha == \"$WEB\")][0] // empty")
+          [ -n "$R" ] || { echo "❌ 没找到 ${WEB:0:12} 的测试站重建（先跑 stage=start）"; exit 1; }
+          echo "· 最近一次测试站重建：$R"
+          ST=$(echo "$R" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['status'], d.get('conclusion') or '')")
+          [ "$ST" = "completed success" ] || { echo "❌ 那次重建是「$ST」，不是 completed success——还在跑就等它，红了／被取消就重来 start"; exit 1; }
+      - name: Dispatch promote code+data
+        run: |
+          # promote 取的是测试站指针此刻的 webCommitId：main 若刚好有 push，测试站会被改写成新代码。
+          # 发之前核一遍；check 段再核正式站指针（见 PR 描述「promote 安全方案」）
+          python3 ops/rollback-check.py --site staging --web "$WEB" --pointer --version-endpoint false --timeout 0
+          SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run deploy.yml --ref main -f target=production -f promote=code+data
+          RUN=''
+          for i in $(seq 1 30); do
+            sleep 10
+            RUN=$(gh run list --workflow deploy.yml --event workflow_dispatch --branch main --limit 20 \
+              --json databaseId,createdAt -q "[.[] | select(.createdAt >= \"$SINCE\")][0].databaseId // empty")
+            [ -n "$RUN" ] && break
+          done
+          [ -n "$RUN" ] || { echo "❌ 5 分钟内没看到 promote 这次运行"; exit 1; }
+          URL="${{ github.server_url }}/$GH_REPO/actions/runs/$RUN"
+          {
+            echo "### 正式站 promote 已发起"
+            echo ""
+            echo "- 运行：$URL"
+            echo "- 它绿了之后：再跑 Rollback，\`target=production\` \`web_commit=$WEB\` \`stage=check\` \`dry_run=false\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "· 正式站 promote：$URL"
+
+  # ---- promote 路 · check：核对 ----
+  check:
+    needs: plan
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'check' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 ops/rollback-check.py --site "${{ inputs.target }}" --web "${{ needs.plan.outputs.web_commit }}" --pointer --version-endpoint "${{ needs.plan.outputs.has_version_endpoint }}" --timeout 300
+
+  # ---- release-branch 路：直接恢复正式站产物 ----
+  release-branch:
+    needs: plan
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'release-branch' && inputs.target == 'production' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 推 edgeone-release
+    env:
+      WEB: ${{ needs.plan.outputs.web_commit }}
+      REL: ${{ needs.plan.outputs.release_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore edgeone-release tree (new commit, no history rewrite)
+        run: |
+          git fetch -q origin edgeone-release
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -B rollback-release origin/edgeone-release
+          git read-tree -u --reset "$REL"
+          # 提交信息沿用发布格式，rollback-plan.py 据此把这次也当成一次正式发布
+          git commit -q --allow-empty -m "Deploying to edgeone-release from @ ${{ github.repository }}@$WEB 🚀 (rollback to release ${REL:0:12}, run ${{ github.run_id }})"
+          git push origin HEAD:edgeone-release
+          echo "- edgeone-release 已恢复为 ${REL:0:12} 的产物（web ${WEB:0:12}）" >> "$GITHUB_STEP_SUMMARY"
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - name: Purge CDN
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+        run: python3 ops/rollback-purge.py
+      - name: Check production is at the target
+        if: ${{ needs.plan.outputs.has_version_endpoint == 'true' }}
+        run: python3 ops/rollback-check.py --site production --web "$WEB" --timeout 600
+      - name: Remind about auto-promote
+        run: |
+          echo "::warning title=回滚会被自动 promote 冲掉::正式站 latest.json 的 webCommitId 没变，每天 04:30 的自动 promote=data 会按它重建代码。修好前把仓库变量 AUTO_PROMOTE_DATA 设为 false，或补走一次 method=promote。"

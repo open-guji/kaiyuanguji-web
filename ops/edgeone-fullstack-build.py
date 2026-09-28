@@ -13,12 +13,15 @@ edgeone@1.6.41 的 `makers build` 编译 edge-functions 时，把**构建进程�
    只留作用于 production（或不分环境）的；值只在内存里，不写文件、不打印。
    不用 `makers env pull` 写 .env：Next standalone 会把 .env 原样复制进
    `.edgeone/cloud-functions/ssr-node/`，而且 ./.env 也不能阻止 process.env 整份被烘进去。
-2. 用**白名单**环境跑构建命令：PATH/HOME 等基础变量 ＋ NEXT_PUBLIC_*／KYG_*／SITEMAP_* ＋ 项目变量。
+2. 用**白名单**环境跑构建命令：PATH/HOME 等基础变量 ＋ NEXT_PUBLIC_*／SITEMAP_* ＋ 点名的 KYG_* ＋ 项目变量。
    CI 的其余变量（token、secret）进不了子进程，自然也进不了产物。
+   KYG_* 不按前缀放行（SEC overview#134 第 5 条）：只列构建真用到的名字，见 PASS_EXACT。
 3. 构建后查产物（值只在内存里比对，报错只报变量名＋sha256 前 12 位）：
    - 产物里不得有任何 `.env*` 文件；
    - 项目变量的值只许出现在 `.edgeone/edge-functions/` 下，assets／cloud-functions 里一律不许有；
    - `--forbid-env` 点名的 CI 变量（如 EDGEONE_API_TOKEN）的值在产物任何位置都不许有；
+   - ASSETS_FORBIDDEN_ENV 里的构建变量（KYG_REVALIDATE_SECRET）的值不许出现在 assets/（浏览器能下载的静态文件）——
+     next.config 的 env 会把它内联进引用它的代码，只许落在服务端；
    - 每个项目变量都必须真的进了 edge-functions/index.js（否则等于没修）。
 
 用法（在 nextjs/ 下）：
@@ -43,8 +46,15 @@ API = "https://pages-api.edgeone.ai/v1"
 PASS_EXACT = {
     "PATH", "HOME", "LANG", "LC_ALL", "TZ", "TMPDIR", "CI", "RUNNER_TEMP",
     "NODE_OPTIONS", "NODE_ENV", "NEXT_TELEMETRY_DISABLED", "npm_config_cache",
+    # KYG_*：只列 next build 实际读的（next.config.ts）。别再按前缀放行——
+    # CI 里 KYG_ 开头的还有 KYG_DATA_ROOT 等，将来谁加个 KYG_ 机密就会悄悄进构建。
+    "KYG_RENDER_MODE",        # 全栈／静态开关
+    "KYG_REVALIDATE_SECRET",  # /internal/revalidate 的密钥：next.config env 内联进服务端路由，见 ASSETS_FORBIDDEN_ENV
 }
-PASS_PREFIXES = ("NEXT_PUBLIC_", "KYG_", "SITEMAP_")
+PASS_PREFIXES = ("NEXT_PUBLIC_", "SITEMAP_")
+# 构建要用、但值只许落在服务端的变量：assets/（浏览器能下到的静态文件）里一律不许出现
+ASSETS_FORBIDDEN_ENV = ("KYG_REVALIDATE_SECRET",)
+ASSETS_DIR = "assets"
 # 这些键就算控制台里配了也不带进函数（CLI 自己也会删 TENCENT_SECRET_*）
 NEVER_KEYS = {"TENCENT_SECRET_ID", "TENCENT_SECRET_KEY", "EDGEONE_API_TOKEN"}
 KEY_RE = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*$")
@@ -132,12 +142,18 @@ def _forms(value):
     return {value.encode(), _js(value)[1:-1].encode()}
 
 
-def scan_bundle(root, project_vars, forbidden):
-    """返回问题列表（只含路径、变量名、sha 前缀，不含值）；并核对每个项目变量已进边缘函数。"""
+def scan_bundle(root, project_vars, forbidden, assets_forbidden=None):
+    """返回问题列表（只含路径、变量名、sha 前缀，不含值）；并核对每个项目变量已进边缘函数。
+
+    assets_forbidden：{名: 值}，值不许出现在 assets/ 下（服务端代码里可以有）。
+    """
     problems = []
+    assets_forbidden = assets_forbidden or {}
     proj = {k: _forms(v) for k, v in project_vars.items() if len(v) >= MIN_SCAN_LEN}
     forb = {k: _forms(v) for k, v in forbidden.items() if len(v) >= MIN_SCAN_LEN}
+    asset_forb = {k: _forms(v) for k, v in assets_forbidden.items() if len(v) >= MIN_SCAN_LEN}
     edge_prefix = os.path.join(root, EDGE_DIR) + os.sep
+    assets_prefix = os.path.join(root, ASSETS_DIR) + os.sep
     for dirpath, _dirs, files in os.walk(root):
         for fn in files:
             path = os.path.join(dirpath, fn)
@@ -152,6 +168,11 @@ def scan_bundle(root, project_vars, forbidden):
             for k, forms in forb.items():
                 if any(v in data for v in forms):
                     problems.append(f"CI 变量 {k}（sha {tag(forbidden[k])}）的值出现在 {rel}")
+            if path.startswith(assets_prefix):
+                for k, forms in asset_forb.items():
+                    if any(v in data for v in forms):
+                        problems.append(f"构建变量 {k}（sha {tag(assets_forbidden[k])}）的值出现在 {ASSETS_DIR}/ 下"
+                                        f"（浏览器能下载）：{rel}")
             if not path.startswith(edge_prefix):
                 for k, forms in proj.items():
                     if any(v in data for v in forms):
@@ -231,13 +252,16 @@ def main(argv=None):
         n += 1
 
     forbidden = {k: os.environ[k] for k in a.forbid_env if os.environ.get(k)}
-    problems = scan_bundle(a.out, project_vars, forbidden)
+    # 以构建子进程实际拿到的值为准（CI 与项目变量撞名时是 CI 的）
+    assets_forbidden = {k: env[k] for k in ASSETS_FORBIDDEN_ENV if env.get(k)}
+    problems = scan_bundle(a.out, project_vars, forbidden, assets_forbidden)
     if problems:
         for p in problems:
             log(f"❌ {p}")
         sys.exit(1)
     log(f"✓ 产物无 .env；{len(project_vars)} 个项目变量都已进边缘函数且只在其中；"
-        f"{len(forbidden)} 个 CI 机密变量未出现在产物里")
+        f"{len(forbidden)} 个 CI 机密变量未出现在产物里；"
+        f"{len(assets_forbidden)} 个服务端构建变量未出现在 {ASSETS_DIR}/")
 
 
 if __name__ == "__main__":

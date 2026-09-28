@@ -30,6 +30,10 @@ export function setRelease(v: string): void {
   if (v) release = v;
 }
 
+// DBG：网站代码版本（构建时由 next.config.ts 注入的 commit）。与上面的数据版本分开报，
+// 查看页／监控汇总据此区分「错误出在哪一版代码、哪一版数据」。release 字段保留作兼容。
+const WEB_VERSION = (process.env.NEXT_PUBLIC_WEB_COMMIT || '').slice(0, 40);
+
 const seen = new Set<string>();
 let sentCount = 0;
 
@@ -119,6 +123,8 @@ export function reportError(payload: ErrorPayload): void {
     stack: payload.stack ? String(payload.stack).slice(0, 4000) : undefined,
     pageUrl: window.location.href,
     release,
+    web: WEB_VERSION,
+    data: release,
   });
 
   try {

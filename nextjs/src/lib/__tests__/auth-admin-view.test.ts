@@ -32,10 +32,10 @@ beforeEach(()=>{ kv.m.clear(); });
 describe('admin view',()=>{
   it('members 仅 admin 可见',async()=>{
     const now=Math.floor(Date.now()/1000);
-    const adminTok=await sign({sub:'a@x.com',iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
-    const editorTok=await sign({sub:'b@x.com',iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
-    await kv.put('member:a@x.com', JSON.stringify({role:'admin',joinedAt:now}));
-    await kv.put('member:b@x.com', JSON.stringify({role:'editor',joinedAt:now}));
+    const adminTok=await sign({sub:'a@x.com',tv:1,iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
+    const editorTok=await sign({sub:'b@x.com',tv:1,iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
+    await kv.put('member:a@x.com', JSON.stringify({role:'admin',joinedAt:now,tokenVersion:1}));
+    await kv.put('member:b@x.com', JSON.stringify({role:'editor',joinedAt:now,tokenVersion:1}));
     let r=await members.onRequestGet(ctx('https://x/api/auth/members',{headers:{'Cookie':`session=${adminTok}`}} as any));
     expect(r.status).toBe(200); expect((await body(r)).members).toHaveLength(2);
     r=await members.onRequestGet(ctx('https://x/api/auth/members',{headers:{'Cookie':`session=${editorTok}`}} as any));
@@ -45,8 +45,8 @@ describe('admin view',()=>{
   });
   it('invites 仅返回未使用未过期',async()=>{
     const now=Math.floor(Date.now()/1000);
-    const adminTok=await sign({sub:'a@x.com',iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
-    await kv.put('member:a@x.com', JSON.stringify({role:'admin',joinedAt:now}));
+    const adminTok=await sign({sub:'a@x.com',tv:1,iat:now,exp:now+180*86400}, String(g.AUTH_JWT_SECRET));
+    await kv.put('member:a@x.com', JSON.stringify({role:'admin',joinedAt:now,tokenVersion:1}));
     let r=await invite.onRequestPost(ctx('https://x/api/auth/invite',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${String(g.AUTH_ADMIN_TOKEN)}`},body:JSON.stringify({email:'x@x.com',role:'reviewer'})}));
     expect(r.status).toBe(200);
     r=await invites.onRequestGet(ctx('https://x/api/auth/invites',{headers:{'Cookie':`session=${adminTok}`}} as any));

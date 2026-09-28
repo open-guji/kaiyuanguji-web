@@ -6,10 +6,16 @@
  *   cos://{bucket}/current/*                数据文件（entry/, items/, pagefind-fulltext/,
  *                                           promotions.json, recommended.json, meta.json,
  *                                           resource*.json, version.json）
- *                                           单副本，原地覆盖，按 ?v=<commit> CDN cache-bust
- *   cos://{bucket}/v/{shortCommit}/search/* search shards（每次重建，必须与当前 entry
- *                                           snapshot 一致 → commit 隔离避免 stale index）
- *   cos://{bucket}/latest.json              软指针 { commitId }，30s TTL，唯一需 PURGE
+ *                                           单副本，原地覆盖，按 ?v=<cacheKey> CDN cache-bust
+ *   cos://{bucket}/v/{cacheKey}/search/*    search shards（每次重建，必须与当前 entry
+ *                                           snapshot 一致 → 按版本隔离避免 stale index）
+ *   cos://{bucket}/v/{shortCommit}/search/* 同一批分片的服务端副本，只给还没刷新的旧前端
+ *                                           （它们按 commitId 拼路径）用，见 LEGACY_SEARCH_COPY
+ *   cos://{bucket}/latest.json              软指针 { commitId, cacheKey, ... }，30s TTL，唯一需 PURGE
+ *
+ * cacheKey = 三仓（draft/production/book-text）commit 合成键（lib/latest-cache-key.mjs）。
+ * 此前只用 draft 的 commitId：只有 production 或 book-text 变的发布 v 不变，
+ * immutable 缓存一直吐旧版（overview#169）。前端优先读 cacheKey，缺字段回退 commitId。
  *
  * 增量算法（state-driven）：
  *   1. 读 .next/.sync-state.json（上次 sync 成功时的 relative → {md5, size, mtimeMs}）
@@ -18,7 +24,7 @@
  *        state 无 / md5 不同 → PUT current/X
  *        state 有且 md5 一致 → skip
  *   4. state 有但本地不存在 → DELETE current/X（孤儿清理）
- *   5. search shards 始终全量 PUT 到 v/{commit}/search/
+ *   5. search shards 始终全量 PUT 到 v/{cacheKey}/search/（再服务端 copy 一份到 v/{commit}/search/ 给旧前端）
  *   6. 最后写 latest.json
  *
  * state 丢失/损坏的 fallback：从 COS 拉 current/ 的 ETag 重建 state，
@@ -43,6 +49,7 @@ import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSy
 import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { withCacheKey } from './lib/latest-cache-key.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -93,12 +100,17 @@ if (!existsSync(LATEST_FILE)) {
     process.exit(1);
 }
 
-const latest = JSON.parse(readFileSync(LATEST_FILE, 'utf-8'));
+// 补上 cacheKey（bundle-data.mjs 产出的 latest.json 没有这个字段）。写回本地文件，
+// 让本步之后读 $KYG_DATA_ROOT/latest.json 的环节（bundle 降级拷贝等）拿到同一份。
+const latest = withCacheKey(JSON.parse(readFileSync(LATEST_FILE, 'utf-8')));
 const shortCommit = latest.commitId;
 if (!shortCommit || shortCommit === 'unknown') {
     console.error('❌ latest.json has no usable commitId. Aborting.');
     process.exit(1);
 }
+const cacheKey = latest.cacheKey;
+const latestBody = Buffer.from(JSON.stringify(latest, null, 2) + '\n', 'utf-8');
+if (!DRY_RUN) writeFileSync(LATEST_FILE, latestBody);
 
 if (!DRY_RUN) {
     for (const [name, val] of Object.entries({ COS_SECRET_ID: SECRET_ID, COS_SECRET_KEY: SECRET_KEY, COS_BUCKET: BUCKET })) {
@@ -139,10 +151,17 @@ function joinKey(...parts) {
 }
 
 const currentPrefix = joinKey(PATH_PREFIX, 'current');
-const versionPrefix = joinKey(PATH_PREFIX, 'v', shortCommit);  // 仅 search shards 用
+const versionPrefix = joinKey(PATH_PREFIX, 'v', cacheKey);  // 仅 search shards 用
+// 旧前端（本次发布前加载的页面、CDN 上还没换掉的 JS）只认 commitId，拼的是
+// v/<commitId>/search/。数据先于前端部署，这段时间里若只写新路径，旧页面的 L2
+// 搜索会整片 404。所以 search 分片再用服务端 copy 放一份到旧路径（不走带宽）。
+// 旧路径仍有「只 production 变时同 URL 换内容」的老问题，只影响旧前端；
+// 新前端全量上线一段时间后可删掉这份副本。
+const LEGACY_SEARCH_COPY = true;
+const legacyVersionPrefix = joinKey(PATH_PREFIX, 'v', shortCommit);
 const latestKey = joinKey(PATH_PREFIX, 'latest.json');
 
-/** 给本地相对路径决定它的 COS key（数据走 current/，search 走 v/<commit>/）。 */
+/** 给本地相对路径决定它的 COS key（数据走 current/，search 走 v/<cacheKey>/）。 */
 function keyFor(relative) {
     const topDir = relative.split('/')[0];
     if (ISOLATED_DIRS.has(topDir)) {
@@ -160,7 +179,8 @@ console.log(`  region:   ${REGION}`);
 console.log(`  source:   ${DATA_DIR}`);
 console.log(`  shared:   cos://${BUCKET}/${currentPrefix}/  (${sharedFiles.length} files, ${(sharedFiles.reduce((s,f)=>s+f.size,0)/1024/1024).toFixed(1)} MB — 增量)`);
 console.log(`  isolated: cos://${BUCKET}/${versionPrefix}/  (${isolatedFiles.length} files, ${(isolatedFiles.reduce((s,f)=>s+f.size,0)/1024/1024).toFixed(1)} MB — 全量)`);
-console.log(`  latest:   cos://${BUCKET}/${latestKey}  → { commitId: "${shortCommit}" }`);
+if (LEGACY_SEARCH_COPY) console.log(`  legacy:   cos://${BUCKET}/${legacyVersionPrefix}/  (search 副本，给旧前端)`);
+console.log(`  latest:   cos://${BUCKET}/${latestKey}  → { commitId: "${shortCommit}", cacheKey: "${cacheKey}" }`);
 console.log(`  mode:     ${DRY_RUN ? 'DRY RUN' : 'UPLOAD'}\n`);
 
 if (DRY_RUN) {
@@ -213,9 +233,9 @@ function contentTypeFor(relative) {
     }
 }
 
-// v/{commit}/search/ 下文件不可变（永远新 commit），1 年长缓存
+// v/{cacheKey}/search/ 下文件不可变（任一仓变 cacheKey 就变），1 年长缓存
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
-// current/ 下文件按 ?v=<commit> cache-bust，所以也按 immutable 缓存（不同 ?v 视为不同对象）
+// current/ 下文件按 ?v=<cacheKey> cache-bust，所以也按 immutable 缓存（不同 ?v 视为不同对象）
 const SHARED_CACHE = 'public, max-age=31536000, immutable';
 // latest.json 是软指针，30 秒
 const LATEST_CACHE = 'public, max-age=30, must-revalidate';
@@ -285,7 +305,7 @@ async function uploadLatest() {
             Bucket: BUCKET,
             Region: REGION,
             Key: latestKey,
-            Body: readFileSync(LATEST_FILE),
+            Body: latestBody,
             ContentType: 'application/json; charset=utf-8',
             CacheControl: LATEST_CACHE,
         }, (err) => err ? rejectP(err) : resolveP());
@@ -525,7 +545,7 @@ async function main() {
             sharedToUpload.push(f);
         }
     }
-    // isolated: 每次必传到新 v/<commit>/search/
+    // isolated: 每次必传到新 v/<cacheKey>/search/
     const isolatedToUpload = isolatedFiles;
     // orphan: state 里有但本地没了
     const localRelSet = new Set(files.map(f => f.relative));
@@ -540,7 +560,7 @@ async function main() {
     const isolatedUploadBytes = isolatedToUpload.reduce((s, f) => s + f.size, 0);
     console.log(`  plan:`);
     console.log(`    shared:   ${sharedSkipped} skip · ${sharedToUpload.length} upload (${(sharedUploadBytes / 1024 / 1024).toFixed(1)} MB) · ${orphanKeys.length} delete`);
-    console.log(`    isolated: ${isolatedToUpload.length} upload (${(isolatedUploadBytes / 1024 / 1024).toFixed(1)} MB) — 全量到 v/${shortCommit}/`);
+    console.log(`    isolated: ${isolatedToUpload.length} upload (${(isolatedUploadBytes / 1024 / 1024).toFixed(1)} MB) — 全量到 v/${cacheKey}/`);
 
     const allFailures = [];
 
@@ -557,6 +577,15 @@ async function main() {
         console.log(`  uploading isolated (search shards)...`);
         const r = await runQueue(isolatedToUpload, CONCURRENCY, uploadOne, 'isolated-up');
         console.log(`  ✓ isolated uploaded ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
+        allFailures.push(...r.failures);
+    }
+
+    // ── Step 4b': search 分片服务端 copy 到旧路径 v/<commitId>/（给旧前端） ──
+    if (LEGACY_SEARCH_COPY && isolatedToUpload.length > 0 && allFailures.length === 0) {
+        console.log(`  copying isolated → ${legacyVersionPrefix}/ (legacy)...`);
+        const r = await runQueue(isolatedToUpload, CONCURRENCY,
+            (f) => copyOne(keyFor(f.relative), `${legacyVersionPrefix}/${f.relative}`), 'legacy-copy');
+        console.log(`  ✓ legacy copied ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
     }
 
@@ -585,7 +614,7 @@ async function main() {
     // ── Step 6: latest.json ──
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
-    console.log(`  ✓ latest.json now points to commit ${shortCommit}`);
+    console.log(`  ✓ latest.json now points to commit ${shortCommit} (cacheKey ${cacheKey})`);
 
     console.log(`\n✅ sync-to-cos complete\n`);
 }

@@ -63,6 +63,8 @@ beforeAll(async () => {
     g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/feedback.js');
 });
+// 只取反馈记录：store 里还有 M3 的限速计数（ratelimit:*）与推送节流状态（notify:*）
+const fbKeys = () => [...store.keys()].filter((k) => k.startsWith('fb_'));
 beforeEach(() => store.clear());
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 
@@ -122,14 +124,14 @@ describe('公开读的过滤', () => {
 
     it('带管理 token 读：全量原样，含 hidden / test / contact', async () => {
         g.FEEDBACK_ADMIN_TOKEN = 'right';
-        const j = await json(await fn.onRequestGet(get('limit=20&token=right')));
+        const j = await json(await fn.onRequestGet(get('limit=20', { Authorization: 'Bearer right' })));
         expect(j.items).toHaveLength(5);
         expect(JSON.stringify(j)).toContain('reader@example.com');
     });
 
     it('token 错：按公开规则，不报错', async () => {
         g.FEEDBACK_ADMIN_TOKEN = 'right';
-        const res = await fn.onRequestGet(get('limit=20&token=wrong'));
+        const res = await fn.onRequestGet(get('limit=20', { Authorization: 'Bearer wrong' }));
         expect(res.status).toBe(200);
         expect((await json(res)).items).toHaveLength(3);
     });
@@ -139,7 +141,7 @@ describe('提交：contact 与测试标记', () => {
     it('contact 落库（去空白、截 200 字），公开读看不到', async () => {
         const res = await fn.onRequestPost(post({ type: 'bug', content: '有错字', contact: `  me@example.com${' '.repeat(3)}` }));
         expect(res.status).toBe(200);
-        const rec = JSON.parse([...store.values()][0]);
+        const rec = JSON.parse(store.get(fbKeys()[0])!);
         expect(rec.contact).toBe('me@example.com');
         expect(rec.test).toBeUndefined();
         const j = await json(await fn.onRequestGet(get('limit=20')));
@@ -149,18 +151,18 @@ describe('提交：contact 与测试标记', () => {
 
     it('Origin 是 localhost：记为测试数据，公开读看不到', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: '本地点了一下' }, { Origin: 'http://localhost:3000' }));
-        expect(JSON.parse([...store.values()][0]).test).toBe(true);
+        expect(JSON.parse(store.get(fbKeys()[0])!).test).toBe(true);
         expect((await json(await fn.onRequestGet(get('limit=20')))).items).toHaveLength(0);
     });
 
     it('显式 test:true（探针）：同样不公开', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: 'probe', test: true }));
-        expect(JSON.parse([...store.values()][0]).test).toBe(true);
+        expect(JSON.parse(store.get(fbKeys()[0])!).test).toBe(true);
     });
 
     it('线上正常 Origin：不是测试数据', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: '读者' }, { Origin: 'https://www.kaiyuanguji.com' }));
-        expect(JSON.parse([...store.values()][0]).test).toBeUndefined();
+        expect(JSON.parse(store.get(fbKeys()[0])!).test).toBeUndefined();
     });
 });
 

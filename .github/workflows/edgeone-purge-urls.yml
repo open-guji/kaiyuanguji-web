@@ -22,10 +22,9 @@ jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
+      # 自托管 runner 共用工作目录，不用 sparse-checkout（会弄残后续 job 的工作树，overview#184）
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ops
-      - run: pip install tencentcloud-sdk-python-teo -q
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
       - name: Purge
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}

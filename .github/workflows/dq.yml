@@ -1,0 +1,78 @@
+name: Data quality (DQ)
+
+# 正式数据巡检（DQ 道，看板卡 open-guji-core/overview#137）。
+#
+# 只读巡检 data.kaiyuanguji.com 上的 current/ 与 h1/：latest.json → h1 root → 1,296 个 manifest 分片
+# → 抽样条目（与 current/ 逐字节比对）→ 引用完整性 → 全文／整理本登记的卷章文件是否都在。
+# 代码在 ops/dq-lib.mjs、ops/dq-check.mjs，不用 npm 依赖、不用任何 secret、不写 COS。
+#
+# 报告写进 job summary，并作为 artifact（dq-report.md/json）留 30 天。
+# 退出码：默认只有「网站打包问题」让 job 变红；「数据仓问题」只进报告（fail_on=any 可改）。
+#
+# 抓取客气：并发 ≤ 8、带重试、429 共享退避。2% 抽样约一万五千个请求，十来分钟；
+# 撞上部署（指针先后翻转）时最多再等 10 分钟。
+
+on:
+  workflow_dispatch:
+    inputs:
+      entry_rate:
+        description: '条目抽样率（0–1）'
+        type: string
+        default: '0.02'
+      text_rate:
+        description: '全文／整理本 owner 抽样率（0–1）'
+        type: string
+        default: '0.05'
+      seed:
+        description: '抽样种子（空＝按时间取；填上次报告里的值可复现）'
+        type: string
+        default: ''
+      h1_prefix:
+        description: 'h1 子路径（正式站 h1；测试站 staging/h1）'
+        type: string
+        default: 'h1'
+      fail_on:
+        description: '哪类问题让 job 变红'
+        type: choice
+        options: [packaging, any, none]
+        default: packaging
+  schedule:
+    # 每周一 03:17 UTC（北京时间 11:17），避开整点
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dq
+  cancel-in-progress: false
+
+jobs:
+  dq:
+    name: 数据巡检
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      # 自托管 runner 共用工作目录，不用 sparse-checkout（会弄残后续 job 的工作树，overview#184）
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 单测
+        run: node --test ops/tests/dq-lib.test.mjs
+      - name: 巡检
+        env:
+          DQ_ENTRY_RATE: ${{ inputs.entry_rate }}
+          DQ_TEXT_RATE: ${{ inputs.text_rate }}
+          DQ_SEED: ${{ inputs.seed }}
+          DQ_H1_PREFIX: ${{ inputs.h1_prefix }}
+          DQ_FAIL_ON: ${{ inputs.fail_on }}
+        run: node ops/dq-check.mjs --out dq-report
+      - name: 上传报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dq-report
+          path: dq-report.*
+          if-no-files-found: ignore
+          retention-days: 30

@@ -162,7 +162,8 @@ test.describe('整理本', () => {
         expect(itemRequests.length, '没有发出任何 items 请求').toBeGreaterThan(0);
 
         // 所有请求都必须带当前版本号做 cache-bust——版本号分裂时这里会露馅
-        const badVersion = itemRequests.filter((r) => !/[?&]v=[0-9a-f]{12}(&|$)/.test(r.url));
+        // 版本键：cacheKey 16 位 hex；旧数据回退 commitId 12 位
+        const badVersion = itemRequests.filter((r) => !/[?&]v=([0-9a-f]{16}|[0-9a-f]{12})(&|$)/.test(r.url));
         expect(
             badVersion.map((r) => r.url),
             'items 请求缺少 ?v= 版本号（或格式不对），CDN 会返回陈旧内容',

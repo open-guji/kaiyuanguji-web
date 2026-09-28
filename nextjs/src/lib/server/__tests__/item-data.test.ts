@@ -93,6 +93,14 @@ describe('createItemFetcher.getItem', () => {
         expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=abc123`);
     });
 
+    it('latest.json 带 cacheKey → current/ 的 ?v= 用 cacheKey 而不是 commitId（overview#169）', async () => {
+        const routes = { ...currentRoutes, [`${BASE}/latest.json`]: { commitId: 'abc123', cacheKey: 'k0123456789abcde' } };
+        const { f, calls } = make(routes);
+        const r = await f.getItem(ID);
+        expect(r?.version).toBe('current:k0123456789abcde');
+        expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=k0123456789abcde`);
+    });
+
     it('h1 指针不存在（404）→ 回退 current/', async () => {
         const routes = { ...currentRoutes };
         const { f } = make(routes);
@@ -179,6 +187,28 @@ describe('createItemFetcher.getItem', () => {
         routes[`${BASE}/h1/roots/r1.json`] = { shardKeyLength: 2, shards: { '9c': 's9c00000' } };
         fn.mockImplementation(mockFetch(routes).fn as never);
         expect((await f.getItem(ID))?.source).toBe('h1');
+    });
+});
+
+describe('createItemFetcher 的 forceCache 选项', () => {
+    it('默认带 cache: force-cache（页面保持 ISR）', async () => {
+        const { f, fn } = make({ ...h1Routes(), ...currentRoutes });
+        await f.getItem(ID);
+        expect(fn).toHaveBeenCalled();
+        for (const [, init] of fn.mock.calls as unknown as [string, RequestInit][]) {
+            expect(init.cache).toBe('force-cache');
+        }
+    });
+
+    it('forceCache: false 时 init 里没有 cache（中间件／边缘运行时）', async () => {
+        const { fn } = mockFetch({ ...h1Routes(), ...currentRoutes });
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, now: () => 1_000_000, forceCache: false });
+        expect(await f.getItem(ID)).toMatchObject({ source: 'h1' });
+        expect(fn).toHaveBeenCalled();
+        for (const [, init] of fn.mock.calls as unknown as [string, RequestInit][]) {
+            expect(init).not.toHaveProperty('cache');
+            expect(init.signal).toBeDefined();
+        }
     });
 });
 

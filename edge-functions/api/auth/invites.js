@@ -4,14 +4,13 @@ function getCorsHeaders(request){ const o=request.headers.get('origin')||''; con
 function getAdminToken(c){ if(c&&c.env&&c.env.AUTH_ADMIN_TOKEN) return c.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }
 function getJwtSecret(c){ if(c&&c.env&&c.env.AUTH_JWT_SECRET) return c.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(c){
+  // M2：成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV
   if(c&&c.env&&c.env.AUTH_KV) return c.env.AUTH_KV;
-  if(c&&c.env&&c.env.ERROR_KV) return c.env.ERROR_KV;
-  if(c&&c.env&&c.env.FEEDBACK_KV) return c.env.FEEDBACK_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
-  if(typeof ERROR_KV!=='undefined') return ERROR_KV;
-  if(typeof FEEDBACK_KV!=='undefined') return FEEDBACK_KV;
   return null;
 }
+// H1：令牌 tv 须等于成员 tokenVersion；旧令牌／旧记录没有版本号一律失效
+function tokenVersionOk(pl,m){ const v=m&&m.tokenVersion; return Number.isInteger(v) && v>0 && !!pl && pl.tv===v; }
 function getCookie(req,n){ const c=req.headers.get('cookie')||''; const m=c.match(new RegExp('(?:^|;\\s*)'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }
 function b64urlEncode(b){ let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
 function b64urlDecode(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); const p=s.length%4; if(p) s+='===='.slice(p); const bin=atob(s); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
@@ -25,12 +24,13 @@ async function checkAdmin(req, ctx){
     if(pl && pl.sub){
       const kv=getKV(ctx); if(kv){
         const m=await kv.get(`member:${pl.sub}`,'json').catch(()=>null);
-        if(m && typeof m==='object' && !m._deleted && m.role==='admin') return {ok:true};
+        if(m && typeof m==='object' && !m._deleted && m.role==='admin' && tokenVersionOk(pl,m)) return {ok:true};
       }
     }
   }
   const exp=getAdminToken(ctx); if(!exp) return {ok:false,status:503,error:'服务未配置 AUTH_ADMIN_TOKEN'};
-  const h=(req.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim(); const q=new URL(req.url).searchParams.get('token')||''; const g=h||q;
+  // M1：只认 Authorization: Bearer，不认 ?token=（查询串会进访问日志／Referer）
+  const g=(req.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
   if(g && constantTimeEqual(g,String(exp))) return {ok:true};
   return {ok:false,status:401,error:'未授权'};
 }

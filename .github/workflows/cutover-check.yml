@@ -1,0 +1,42 @@
+name: Cutover check
+
+# CUT（overview#141）：切站验收。www／kaiyuanguji.com 从旧静态项目 kaiyuanguji 换绑到
+# 全栈项目 kyg-ssr-spike 之后手动跑一次，看成没成、要不要回滚（口径与回滚线见 docs/cutover.md）。
+# 演练：domain 填 ssr-test.kaiyuanguji.com。
+#
+# 全程只读：只对目标域名、kaiyuanguji.com、data.kaiyuanguji.com 发 GET，
+# 不用任何 secret，不碰 EdgeOne 配置。回滚项有失败时 job 红。
+# 本地也能跑同一条：node ops/cutover-check.mjs [域名]
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: '要查的域名（演练填 ssr-test.kaiyuanguji.com）'
+        type: string
+        default: www.kaiyuanguji.com
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: 切站检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # 要 main 的 nextjs/package-lock.json（期望的 UI 版本），以及 latest.json 里 webCommitId
+      # 那版的 package-lock（核对新项目跑的就是 promote 的那版代码），所以取全历史。
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run cutover check
+        env:
+          DOMAIN: ${{ inputs.domain }}
+        run: |
+          set -o pipefail
+          node ops/cutover-check.mjs "$DOMAIN" | tee -a "$GITHUB_STEP_SUMMARY"
