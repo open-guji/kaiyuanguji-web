@@ -56,7 +56,6 @@ beforeAll(async () => {
     for (const n of ['invite', 'invites', 'join', 'me', 'members', 'revoke']) EP[n] = await import(`${API}/auth/${n}.js`);
     EP.feedback = await import(`${API}/feedback.js`);
     EP.trackError = await import(`${API}/track-error.js`);
-    EP.privateText = await import(`${API}/private-text/[[path]].js`);
 });
 
 let kv: ReturnType<typeof makeKv>;
@@ -66,7 +65,6 @@ beforeEach(() => {
     env = {
         AUTH_JWT_SECRET: SECRET, AUTH_ADMIN_TOKEN: ADMIN_TOKEN, AUTH_KV: kv,
         ERROR_KV: makeKv(), FEEDBACK_KV: makeKv(), ERROR_VIEW_TOKEN: VIEW, FEEDBACK_ADMIN_TOKEN: FB_ADMIN,
-        PRIVATE_COS_READ_SECRET_ID: 'ak', PRIVATE_COS_READ_SECRET_KEY: 'sk', PRIVATE_COS_BUCKET: 'b', PRIVATE_COS_REGION: 'ap-singapore',
     };
 });
 
@@ -102,11 +100,10 @@ async function probeAll(session: string) {
         revoke: (await EP.revoke.onRequestPost(req('/api/auth/revoke', { method: 'POST', headers: H(c), body: JSON.stringify({ email: 'z@x.com', role: 'reader' }) }))).status,
         trackError: (await EP.trackError.onRequestGet(req('/api/track-error?limit=5', { headers: c }))).status,
         feedbackUpdate: (await EP.feedback.onRequestPost(req('/api/feedback', { method: 'POST', headers: H(c), body: JSON.stringify({ action: 'update', id: 'fb_1_a', status: 'resolved' }) }))).status,
-        privateText: (await EP.privateText.onRequestGet(req('/api/private-text/Work/a.md', { headers: c }))).status,
     };
 }
-const ALL_OK = { me: 200, members: 200, invites: 200, invite: 200, revoke: 200, trackError: 200, feedbackUpdate: 200, privateText: 200 };
-const ALL_401 = { me: 401, members: 401, invites: 401, invite: 401, revoke: 401, trackError: 401, feedbackUpdate: 401, privateText: 401 };
+const ALL_OK = { me: 200, members: 200, invites: 200, invite: 200, revoke: 200, trackError: 200, feedbackUpdate: 200 };
+const ALL_401 = { me: 401, members: 401, invites: 401, invite: 401, revoke: 401, trackError: 401, feedbackUpdate: 401 };
 const originalFetch = global.fetch;
 afterEach(() => { global.fetch = originalFetch; });
 
