@@ -50,7 +50,7 @@ concurrency:
 jobs:
   dq:
     name: 数据巡检
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       # 自托管 runner 共用工作目录，不用 sparse-checkout（会弄残后续 job 的工作树，overview#184）
