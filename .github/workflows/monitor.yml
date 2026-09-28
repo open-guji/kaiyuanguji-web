@@ -41,7 +41,7 @@ permissions:
 jobs:
   private:
     name: A1 部署停更 ＋ B 数据监测
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 5
     concurrency:
       group: monitor-private

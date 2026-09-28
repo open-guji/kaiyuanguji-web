@@ -17,7 +17,7 @@ on:
 jobs:
   unit:
     name: Jest unit tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,7 +34,7 @@ jobs:
 
   smoke:
     name: Browser smoke (build + serve + Playwright)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     # nightly schedule + 手动触发跑；PR 也跑，确保 build 流程不挂
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +53,7 @@ jobs:
         run: npm ci
       - name: Install Chromium for Playwright
         working-directory: perf
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Build static export
         working-directory: nextjs
         env:
@@ -99,7 +99,7 @@ jobs:
     # nightly only — 跑生产环境真实 perf，回归基线
     name: Production perf benchmark
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -110,7 +110,7 @@ jobs:
         run: npm ci
       - name: Install Chromium
         working-directory: perf
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run perf vs prod
         working-directory: perf
         run: npm run perf -- --profiles=fast

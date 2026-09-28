@@ -20,12 +20,12 @@ permissions:
 
 jobs:
   purge:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: ops
-      - run: pip install tencentcloud-sdk-python-teo -q
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
       - name: Purge
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
