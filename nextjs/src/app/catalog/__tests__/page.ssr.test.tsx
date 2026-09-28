@@ -16,6 +16,7 @@ jest.mock('../catalog-data', () => ({
 }));
 jest.mock('next/navigation', () => ({
     notFound: () => { throw new Error('NEXT_NOT_FOUND'); },
+    useRouter: () => ({ push: () => {} }),
 }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: unknown }) => children);
 
@@ -59,8 +60,9 @@ describe('古籍总目 page.ssr', () => {
         expect(mockPage).toHaveBeenCalledWith('czhengshi', 2);
         expect(h).toContain('href="/item/w21"');
         expect(h).toContain('書22');
-        expect(h).toContain('href="/catalog?node=czhengshi" rel="prev"');
-        expect(h).toContain('aria-current="page" aria-label="第2页"');
+        // 分页是真链接（组件的 pageHref）
+        expect(h).toContain('href="/catalog?node=czhengshi"');
+        expect(h).toContain('正史類');
     });
 
     it('不带 node：落到经部，canonical 指向经部节点页', async () => {
@@ -68,6 +70,13 @@ describe('古籍总目 page.ssr', () => {
         const m = await meta({});
         expect(m.alternates?.canonical).toBe('/catalog?node=cjing');
         expect(await html({})).toContain('書9');
+    });
+
+    it('node=all（组件的「全部」行）：待用户定，先落到默认节点，不 404', async () => {
+        mockPage.mockResolvedValue([card(9)]);
+        const m = await meta({ node: 'all' });
+        expect(m.alternates?.canonical).toBe('/catalog?node=cjing');
+        expect(await html({ node: 'all' })).toContain('書9');
     });
 
     it('节点不存在、页码越界、乱填：真 404 且 noindex', async () => {

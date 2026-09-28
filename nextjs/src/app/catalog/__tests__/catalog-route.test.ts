@@ -30,6 +30,8 @@ describe('parseCatalogQuery', () => {
         expect(parseCatalogQuery({})).toEqual({ node: undefined, page: 1 });
         expect(parseCatalogQuery({ node: 'cshi', page: '3' })).toEqual({ node: 'cshi', page: 3 });
         expect(parseCatalogQuery({ node: ['cshi', 'x'] })).toEqual({ node: 'cshi', page: 1 });
+        // 组件的「全部」行：与不带 node 相同
+        expect(parseCatalogQuery({ node: 'all', page: '2' })).toEqual({ node: undefined, page: 2 });
     });
     it('形态不对：null（404）', () => {
         for (const sp of [{ page: '0' }, { page: '-1' }, { page: '1.5' }, { page: 'abc' }, { page: '01' },

@@ -17,7 +17,8 @@ export interface CatalogNode {
 export interface CatalogWorkCard {
     id: string;
     title: string;
-    juan?: number;
+    /** 数字按「N卷」显示，字符串原样显示（与 book-index-ui 0.10.1 的 CatalogWorkCard 一致） */
+    juan?: number | string;
     authors?: { name: string; dynasty?: string }[];
     summary?: string;
     classification?: string[];
@@ -26,6 +27,11 @@ export interface CatalogWorkCard {
 /** 与 build-catalog-index.mjs 的 CATALOG_PAGE_SIZE 一致 */
 export const CATALOG_PAGE_SIZE = 20;
 export const CATALOG_PATH = '/catalog';
+/**
+ * 组件的「全部」行（book-index-ui 的 CATALOG_ALL_ID）。「全部」怎么呈现待用户定（overview#229），
+ * 定之前 node=all 与不带 node 一样落到默认节点，不出 404。这里不 import 组件包：本文件服务端也用。
+ */
+export const CATALOG_ALL_ID = 'all';
 
 /** 节点 id 形态：构建脚本出的 c+10 位 hex，或 unclassified。挡掉路径穿越 */
 export function isValidNodeId(id: string): boolean {
@@ -53,14 +59,15 @@ function one(v: string | string[] | undefined): string | undefined {
 }
 
 export interface CatalogQuery {
-    /** 查询串里的 node；没给为 undefined（落到第一个节点） */
+    /** 查询串里的 node；没给或为 all 时是 undefined（落到第一个节点） */
     node?: string;
     page: number;
 }
 
 /** 解析查询串。形态不对（node 乱码、page 不是正整数）返回 null ＝ 404 */
 export function parseCatalogQuery(sp: Record<string, string | string[] | undefined>): CatalogQuery | null {
-    const node = one(sp.node);
+    const rawNode = one(sp.node);
+    const node = rawNode === CATALOG_ALL_ID ? undefined : rawNode;
     const rawPage = one(sp.page);
     if (node !== undefined && !isValidNodeId(node)) return null;
     let page = 1;
