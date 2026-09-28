@@ -3,6 +3,7 @@
  *
  * W2-2 中间件：/book-index?id=<正式 id> → 308 /item/<id>，其余一律放过。
  * FX1：/item/<id> 的整页导航由中间件先跳（被并条目、草稿升格），只出一个 Location。
+ * N5b：旧阅读入口 ?tab=fulltext／collated → 308 /item/<id>/read，保留卷号，站内请求也跳。
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
@@ -39,7 +40,7 @@ describe('middleware.ssr：/book-index', () => {
     });
     it.each([
         '/book-index',
-        '/book-index?id=d59f20aowb9c&tab=collated', // 详情组件自己的 URL 同步，改写会丢 tab
+        '/book-index?id=d59f20aowb9c&tab=lineage', // 详情组件自己的 URL 同步，改写会丢 tab
         '/book-index?id=1evgpgqsis9hc', // 草稿 id：交给客户端查升格表
         '/book-index?id=1evgpgqsis9hc&redirected_from=x',
         '/book-index?id=bad..id',
@@ -116,6 +117,34 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
 
     it('不合法的 id 不查数据', async () => {
         expect((await run('/item/BAD..id')).location).toBeNull();
+        expect(mockGetItem).not.toHaveBeenCalled();
+    });
+});
+
+describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => {
+    const ZHIZHAI = 'd59f2htm01du';
+    const BOOK = '988fbiuha8';
+
+    beforeEach(() => { mockGetItem.mockReset(); });
+
+    it.each<[string, string]>([
+        [`/book-index?tab=fulltext&id=${BOOK}&juan=003`, `/item/${BOOK}/read?kind=fulltext&juan=003`],
+        [`/book-index?id=${ZHIZHAI}&tab=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`],
+        [`/item/${ZHIZHAI}?tab=collated`, `/item/${ZHIZHAI}/read?kind=collated`],
+    ])('%s → 308 %s', async (from, to) => {
+        const r = await run(from);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
+    });
+
+    it('站内点击与 RSC 导航也跳（条目页的 tab 仍往 /book-index 推）', async () => {
+        const inSite = { referer: `https://staging.kaiyuanguji.com/item/${ZHIZHAI}`, 'sec-fetch-dest': 'empty' };
+        expect((await run(`/book-index?id=${ZHIZHAI}&tab=collated`, inSite)).status).toBe(308);
+        expect((await run(`/item/${ZHIZHAI}?tab=collated`, inSite)).status).toBe(308);
+    });
+
+    it('/item/<id>?tab= 不查数据', async () => {
+        await run(`/item/${ZHIZHAI}?tab=fulltext`);
         expect(mockGetItem).not.toHaveBeenCalled();
     });
 });
