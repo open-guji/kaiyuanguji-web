@@ -12,6 +12,8 @@
 
 const g = globalThis as unknown as Record<string, unknown>;
 
+/** M1：共享 token 只走 Authorization: Bearer（不再认 ?token=） */
+const bearer = (t: string): RequestInit => ({ headers: { Authorization: `Bearer ${t}` } });
 function ctx(url: string, init?: RequestInit) {
   return { request: new Request(url, init) };
 }
@@ -83,7 +85,7 @@ describe('GET /api/track-error 分块并发', () => {
     const kv = makeKvWithTracker(store, 2);
     (g as Record<string, unknown>).ERROR_KV = kv;
 
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=test-token&kind=js&limit=10'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error?kind=js&limit=10', bearer('test-token')));
     expect(res.status).toBe(200);
     const j = await body(res);
     // 只剩 kind=js 的两条，且按 createdAt 倒序
@@ -96,14 +98,14 @@ describe('GET /api/track-error 分块并发', () => {
   it('空列表与单条不报错', async () => {
     const emptyStore = new Map<string, string>();
     (g as Record<string, unknown>).ERROR_KV = makeKvWithTracker(emptyStore, 1);
-    const res0 = await fn.onRequestGet(ctx('https://x/api/track-error?token=test-token'));
+    const res0 = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('test-token')));
     expect(res0.status).toBe(200);
     expect((await body(res0)).items).toHaveLength(0);
 
     emptyStore.set('err_1_a', JSON.stringify({ id: 'err_1_a', kind: 'js', message: 'x', createdAt: '2026-09-10T00:00:00.000Z' }));
     const kv1 = makeKvWithTracker(emptyStore, 1);
     (g as Record<string, unknown>).ERROR_KV = kv1;
-    const res1 = await fn.onRequestGet(ctx('https://x/api/track-error?token=test-token'));
+    const res1 = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('test-token')));
     expect((await body(res1)).items).toHaveLength(1);
   });
 
@@ -118,7 +120,7 @@ describe('GET /api/track-error 分块并发', () => {
     const kv = makeKvWithTracker(store, delayMs);
     (g as Record<string, unknown>).ERROR_KV = kv;
 
-    const res = await fn.onRequestGet(ctx(`https://x/api/track-error?token=test-token&limit=${N}`));
+    const res = await fn.onRequestGet(ctx(`https://x/api/track-error?limit=${N}`, bearer('test-token')));
     expect(res.status).toBe(200);
     const j = await body(res);
     expect(j.items).toHaveLength(N);
@@ -135,7 +137,7 @@ describe('GET /api/track-error 分块并发', () => {
     }
     const kv = makeKvWithTracker(store, 5);
     (g as Record<string, unknown>).ERROR_KV = kv;
-    const res = await fn.onRequestGet(ctx(`https://x/api/track-error?token=test-token&limit=${N}`));
+    const res = await fn.onRequestGet(ctx(`https://x/api/track-error?limit=${N}`, bearer('test-token')));
     const j = await body(res);
     expect(j.items).toHaveLength(N);
   });
@@ -155,7 +157,7 @@ describe('GET /api/track-error 分块并发', () => {
       },
     };
     (g as Record<string, unknown>).ERROR_KV = kv;
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=test-token&limit=10'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error?limit=10', bearer('test-token')));
     const j = await body(res);
     expect(j.items).toHaveLength(1);
     expect(j.items[0].id).toBe('err_1_a');
@@ -176,7 +178,7 @@ describe('GET /api/track-error 分块并发', () => {
       },
     };
     (g as Record<string, unknown>).ERROR_KV = kv;
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=test-token&limit=10'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error?limit=10', bearer('test-token')));
     expect(res.status).toBe(200);
     const j = await body(res);
     expect(j.items).toHaveLength(1);

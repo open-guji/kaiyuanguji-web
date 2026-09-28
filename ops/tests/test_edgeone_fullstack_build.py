@@ -19,6 +19,7 @@ spec.loader.exec_module(efb)
 
 SECRET = "jwt_secret_ABCDEFGHIJKLMNOP"
 TOKEN = "api_token_ZYXWVUTSRQPONMLK"
+REVAL = "revalidate_secret_0123456789abcdef"
 
 
 def write(root, rel, text):
@@ -72,6 +73,13 @@ class ChildEnv(unittest.TestCase):
             self.assertNotIn(k, env)
         for k in ("PATH", "HOME", "KYG_RENDER_MODE", "SITEMAP_SITE"):
             self.assertIn(k, env)
+
+    def test_kyg_exact_names_only(self):
+        # SEC overview#134 第 5 条：KYG_* 不按前缀放行，只放点名的
+        parent = {"KYG_RENDER_MODE": "fullstack", "KYG_REVALIDATE_SECRET": REVAL,
+                  "KYG_DATA_ROOT": "/tmp/d", "KYG_SOME_FUTURE_SECRET": "s3cr3t-value-xyz"}
+        env, _ = efb.child_env(parent, {})
+        self.assertEqual(sorted(env), ["KYG_RENDER_MODE", "KYG_REVALIDATE_SECRET"])
 
     def test_extra_pass(self):
         env, _ = efb.child_env({"FOO": "1"}, {}, {"FOO"})
@@ -137,6 +145,26 @@ class ScanBundle(unittest.TestCase):
             "项目变量 OAUTH_CLIENTS 没有进 edge-functions/index.js 的 context.env",
         ]))
 
+    def test_assets_forbidden_in_assets(self):
+        write(self.root, "assets/_next/static/chunks/app.js", f'var k="{REVAL}"')
+        probs = efb.scan_bundle(self.root, self.pv, {}, {"KYG_REVALIDATE_SECRET": REVAL})
+        self.assertEqual(len(probs), 1)
+        self.assertIn("KYG_REVALIDATE_SECRET", probs[0])
+        self.assertIn(f"sha {efb.tag(REVAL)}", probs[0])
+        self.assertIn("assets/_next/static/chunks/app.js", probs[0])
+        self.assertNotIn(REVAL, probs[0])  # 报错不含值
+
+    def test_assets_forbidden_json_escaped(self):
+        write(self.root, "assets/data.json", json.dumps({"k": REVAL}))
+        probs = efb.scan_bundle(self.root, self.pv, {}, {"KYG_REVALIDATE_SECRET": REVAL})
+        self.assertEqual(len(probs), 1)
+
+    def test_assets_forbidden_allowed_server_side(self):
+        # 服务端路由（cloud-functions）与边缘函数里有它是预期的
+        write(self.root, "cloud-functions/ssr-node/app/internal/revalidate/route.js", f'const s="{REVAL}"')
+        write(self.root, "edge-functions/index.js", edge_index({**self.pv, "KYG_REVALIDATE_SECRET": REVAL}))
+        self.assertEqual(efb.scan_bundle(self.root, self.pv, {}, {"KYG_REVALIDATE_SECRET": REVAL}), [])
+
     def test_no_edge_index(self):
         os.remove(Path(self.root, "edge-functions/index.js"))
         probs = self.scan()
@@ -192,6 +220,23 @@ class MainEndToEnd(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("EDGEONE_API_TOKEN", out)
         self.assertNotIn(TOKEN, out)
+
+    def test_revalidate_secret_in_assets_is_caught(self):
+        leak = self.FAKE_BUILD + (
+            "os.makedirs(os.path.join(root, 'assets'), exist_ok=True)\n"
+            "open(os.path.join(root, 'assets', 'chunk.js'), 'w').write(os.environ.get('KYG_REVALIDATE_SECRET', ''))\n")
+        code, out = self.run_main(leak, extra_env={"KYG_REVALIDATE_SECRET": REVAL})
+        self.assertEqual(code, 1)
+        self.assertIn("KYG_REVALIDATE_SECRET", out)
+        self.assertIn("assets", out)
+        self.assertNotIn(REVAL, out)
+
+    def test_revalidate_secret_reaches_build_but_not_assets(self):
+        # 构建子进程拿得到（服务端路由要用），产物 assets 里没有 → 通过
+        code, out = self.run_main(self.FAKE_BUILD, extra_env={"KYG_REVALIDATE_SECRET": REVAL, "KYG_DATA_ROOT": "/tmp/x"})
+        self.assertIn(code, (0, None))
+        self.assertIn("1 个服务端构建变量未出现在 assets/", out)
+        self.assertNotIn(REVAL, out)
 
     def test_require_missing(self):
         code, out = self.run_main(self.FAKE_BUILD, argv_extra=["--require", "ERROR_VIEW_TOKEN"])

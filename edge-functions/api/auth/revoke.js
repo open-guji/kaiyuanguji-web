@@ -23,6 +23,15 @@ async function getMember(kv, email){
     return m;
   }catch{ return null; }
 }
+// H1：令牌 tv 须等于成员 tokenVersion；旧令牌／旧记录没有版本号一律失效
+function tokenVersionOk(payload, member){ const v=member&&member.tokenVersion; return Number.isInteger(v) && v>0 && !!payload && payload.tv===v; }
+// 取成员记录上的 tokenVersion（墓碑上的也算），用来 +1
+async function currentTokenVersion(kv, email){
+  let raw=null;
+  try{ raw=await kv.get(`member:${email}`,'json'); }catch{ raw=null; }
+  const v=raw&&typeof raw==='object'?raw.tokenVersion:0;
+  return Number.isInteger(v)&&v>0?v:0;
+}
 function getCookie(request,name){ const c=request.headers.get('cookie')||''; const m=c.match(new RegExp('(?:^|;\\s*)'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }
 function b64urlEncode(bytes){ let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
 function b64urlDecode(str){ str=str.replace(/-/g,'+').replace(/_/g,'/'); const pad=str.length%4; if(pad) str+='===='.slice(pad); const bin=atob(str); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
@@ -38,16 +47,14 @@ async function checkAdmin(request, context){
       const kv=getKV(context);
       if(kv){
         const member=await kv.get(`member:${payload.sub}`,'json');
-        if(member && !member._deleted && typeof member==='object' && member.role==='admin') return {ok:true,by:payload.sub};
+        if(member && !member._deleted && typeof member==='object' && member.role==='admin' && tokenVersionOk(payload, member)) return {ok:true,by:payload.sub};
       }
     }
   }
   const expected=getAdminToken(context);
   if(!expected) return {ok:false,status:503,error:'服务未配置 AUTH_ADMIN_TOKEN'};
-  const headerToken=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
-  const url=new URL(request.url);
-  const q=url.searchParams.get('token')||'';
-  const given=headerToken||q;
+  // M1：只看 Authorization header，不认 ?token=；body.token 在 POST handler 里查
+  const given=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
   if(given && constantTimeEqual(given, String(expected))) return {ok:true,by:'admin_token'};
   return {ok:false,status:401,error:'未授权'};
 }
@@ -69,21 +76,20 @@ export async function onRequestPost(context){
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return new Response(JSON.stringify({success:false,error:'请提供正确 email'}),{status:400,headers});
     const kv=getKV(context);
     if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
+    const now=Math.floor(Date.now()/1000);
+    // H1：删除、改角色都把 tokenVersion 加 1，旧 cookie 立即失效。
+    // 改角色时下面保留了 joinedAt，所以不能靠比 iat 与 joinedAt 判新旧，只能靠版本号。
+    const tokenVersion=(await currentTokenVersion(kv, email))+1;
     if(body.role === undefined || body.role === null || body.role === ''){
-      // 删除：优先物理删除，兜底写墓碑
-      try{
-        if(kv.delete) await kv.delete(`member:${email}`);
-        else await kv.put(`member:${email}`, JSON.stringify({ _deleted: true }));
-      }catch{
-        try{ await kv.put(`member:${email}`, JSON.stringify({ _deleted: true })); }catch{}
-      }
+      // 删除：写墓碑而不物理删除——墓碑留着 tokenVersion，日后再 join 时接着往上加，
+      // 不会回到 1 而让删除前签出去的旧令牌重新对上号。各处都按 _deleted 视为不存在。
+      await kv.put(`member:${email}`, JSON.stringify({ _deleted: true, tokenVersion, deletedAt: now, deletedBy: auth.by||'admin' }));
       return new Response(JSON.stringify({success:true,action:'deleted'}),{status:200,headers});
     }
     const role=String(body.role).trim();
     if(!ALLOWED_ROLES.includes(role)) return new Response(JSON.stringify({success:false,error:`role 必须为 ${ALLOWED_ROLES.join('/')}`}),{status:400,headers});
-    const now=Math.floor(Date.now()/1000);
     const existing=await getMember(kv, email);
-    const rec={ role, joinedAt: existing && existing.joinedAt ? existing.joinedAt : now, invitedBy: auth.by||'admin', updatedAt: now };
+    const rec={ role, joinedAt: existing && existing.joinedAt ? existing.joinedAt : now, invitedBy: auth.by||'admin', updatedAt: now, tokenVersion };
     await kv.put(`member:${email}`, JSON.stringify(rec));
     return new Response(JSON.stringify({success:true,action:'updated',member:rec}),{status:200,headers});
   }catch(e){

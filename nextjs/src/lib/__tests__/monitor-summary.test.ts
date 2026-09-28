@@ -107,10 +107,10 @@ describe('GET /api/track-error?summary=1', () => {
         expect(b.top[1].count).toBe(2);
     });
 
-    it('也认 ?token=（与原读接口同口径）', async () => {
+    it('不再认 ?token=（M1：查询串会进访问日志），只认 Authorization: Bearer', async () => {
         g.ERROR_VIEW_TOKEN = 'right';
         const res = await te.onRequestGet({ request: new Request('https://x/api/track-error?summary=1&token=right') });
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(401);
     });
 
     it('返回体不含 IP／stack／UA／pageUrl，消息里的邮箱与 IP 打码', async () => {

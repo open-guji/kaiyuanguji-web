@@ -27,7 +27,7 @@ function sign(payload: Record<string, unknown>, secret = SECRET) {
     return `${h}.${p}.${s}`;
 }
 const now = () => Math.floor(Date.now() / 1000);
-const cookieFor = (sub: string, exp = now() + 3600) => `session=${sign({ sub, iat: now(), exp })}`;
+const cookieFor = (sub: string, exp = now() + 3600) => `session=${sign({ sub, iat: now(), exp, tv: 1 })}`;
 
 function makeKv(seed: Record<string, unknown> = {}) {
     const store = new Map<string, string>(Object.entries(seed).map(([k, v]) => [k, JSON.stringify(v)]));
@@ -47,11 +47,11 @@ function makeKv(seed: Record<string, unknown> = {}) {
 }
 
 const MEMBERS = {
-    'member:rev@x.com': { role: 'reviewer' },
-    'member:ed@x.com': { role: 'editor' },
-    'member:adm@x.com': { role: 'admin' },
-    'member:rd@x.com': { role: 'reader' },
-    'member:gone@x.com': { _deleted: true },
+    'member:rev@x.com': { role: 'reviewer', tokenVersion: 1 },
+    'member:ed@x.com': { role: 'editor', tokenVersion: 1 },
+    'member:adm@x.com': { role: 'admin', tokenVersion: 1 },
+    'member:rd@x.com': { role: 'reader', tokenVersion: 1 },
+    'member:gone@x.com': { _deleted: true, tokenVersion: 1 },
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -76,8 +76,13 @@ function envs() {
     };
 }
 
-const teGet = (env: unknown, cookie?: string, qs = '') =>
-    te.onRequestGet({ env, request: new Request(`https://x/api/track-error?limit=10${qs}`, { headers: cookie ? { cookie } : {} }) });
+const teGet = (env: unknown, cookie?: string, qs = '', bearer?: string) =>
+    te.onRequestGet({
+        env,
+        request: new Request(`https://x/api/track-error?limit=10${qs}`, {
+            headers: { ...(cookie ? { cookie } : {}), ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}) },
+        }),
+    });
 const tePost = (env: unknown, body: unknown, cookie?: string) =>
     te.onRequestPost({ env, request: new Request('https://x/api/track-error', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) }) });
 const fbPost = (env: unknown, body: unknown, cookie?: string) =>
@@ -122,7 +127,7 @@ describe('原有的共享 token 一路不受影响', () => {
     it('什么都不带仍 401；token 对了照常过', async () => {
         const { full } = envs();
         expect((await teGet(full)).status).toBe(401);
-        expect((await teGet(full, undefined, `&token=${VIEW}`)).status).toBe(200);
+        expect((await teGet(full, undefined, '', VIEW)).status).toBe(200);
         expect((await fbPost(full, { action: 'update', id: 'fb_1_a', status: 'resolved' })).status).toBe(401);
         expect((await fbPost(full, { action: 'update', id: 'fb_1_a', status: 'resolved', token: FB_ADMIN })).status).toBe(200);
     });
@@ -140,6 +145,6 @@ describe('?debug=eo 只给共享 token 或 admin', () => {
         expect((await teGet(full, cookieFor('rev@x.com'), '&debug=eo')).status).toBe(403);
         expect((await teGet(full, cookieFor('ed@x.com'), '&debug=eo')).status).toBe(403);
         expect((await teGet(full, cookieFor('adm@x.com'), '&debug=eo')).status).toBe(200);
-        expect((await teGet(full, undefined, `&debug=eo&token=${VIEW}`)).status).toBe(200);
+        expect((await teGet(full, undefined, '&debug=eo', VIEW)).status).toBe(200);
     });
 });

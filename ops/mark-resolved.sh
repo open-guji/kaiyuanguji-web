@@ -17,8 +17,9 @@ import fs from 'fs';
 const token=process.argv[2], tmp=process.argv[3];
 let cursor=""; let all=[];
 while(true){
-  const url=`https://www.kaiyuanguji.com/api/track-error?limit=200&token=${encodeURIComponent(token)}${cursor?`&cursor=${encodeURIComponent(cursor)}`:""}`;
-  const r=await fetch(url); const j=await r.json();
+  // 接口不再认 ?token=（SEC overview#134 M1），token 走 Authorization 头
+  const url=`https://www.kaiyuanguji.com/api/track-error?limit=200${cursor?`&cursor=${encodeURIComponent(cursor)}`:""}`;
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}}); const j=await r.json();
   if(!j.success){console.error(j);process.exit(1)}
   all.push(...j.items);
   if(!j.hasMore) break; cursor=j.cursor;

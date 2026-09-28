@@ -21,6 +21,9 @@ async function getMember(kv, email){
     return m;
   }catch{ return null; }
 }
+// H1：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）。旧令牌没有 tv、
+// 旧记录没有 tokenVersion 的一律视为失效，要求重新走邀请登录。
+function tokenVersionOk(payload, member){ const v=member&&member.tokenVersion; return Number.isInteger(v) && v>0 && !!payload && payload.tv===v; }
 function getCookie(request,name){
   const c=request.headers.get('cookie')||'';
   const m=c.match(new RegExp('(?:^|;\\s*)'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)'));
@@ -61,10 +64,11 @@ export async function onRequestGet(context){
     if(!kv) return new Response(JSON.stringify({success:false,error:'KV 未绑定'}),{status:503,headers});
     const member=await getMember(kv, payload.sub);
     if(!member) return new Response(JSON.stringify({success:false,error:'成员不存在或已移除'}),{status:401,headers});
-    // 滑动续期
+    if(!tokenVersionOk(payload, member)) return new Response(JSON.stringify({success:false,error:'登录已失效，请重新登录'}),{status:401,headers});
+    // 滑动续期（只给版本号对得上的令牌续，续出来的仍带同一个 tv）
     const now=Math.floor(Date.now()/1000);
     if(payload.exp && (payload.exp - now) < RENEW_THRESHOLD){
-      const newPayload={ sub: payload.sub, iat: now, exp: now + COOKIE_MAX_AGE };
+      const newPayload={ sub: payload.sub, iat: now, exp: now + COOKIE_MAX_AGE, tv: member.tokenVersion };
       const newToken=await signJWT(newPayload, secret);
       headers['Set-Cookie']=`session=${newToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}`;
     }
