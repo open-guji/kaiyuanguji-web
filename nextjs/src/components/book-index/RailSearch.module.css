@@ -1,0 +1,41 @@
+/* 条目页左栏顶部的站内检索框（book-index-ui 三栏的 railTop 插槽） */
+.form {
+  position: relative;
+  display: block;
+}
+
+.icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: var(--bim-aux-fg, #6f6457);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 36px;
+  border: 0;
+  border-radius: var(--radius-pill, 8px);
+  outline: none;
+  background: var(--color-tint);
+  color: var(--color-ink);
+  /* 16px：iOS 聚焦时不自动放大 */
+  font: 16px/1.4 var(--font-sans);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: var(--bim-aux-fg, #6f6457);
+  font-size: var(--fs-sm, 13px);
+}
+
+.input:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-zhu);
+  background: var(--color-raise);
+}
