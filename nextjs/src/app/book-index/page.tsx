@@ -13,7 +13,8 @@ import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
-import SearchResultCard from '@/components/book-index/SearchResultCard';
+import { useSearchTitle } from '@/lib/use-search-title';
+import SearchResultCard, { entryHref } from '@/components/book-index/SearchResultCard';
 import styles from './page.module.css';
 
 function DataVersion() {
@@ -63,6 +64,9 @@ function BookIndexContent() {
   const searchQuery = searchParams.get('q');
   const tabParam = searchParams.get('tab') as TabKey | null;
 
+  // title 带上检索词（P2-9）；详情视图有自己的 title，不动
+  useSearchTitle(searchQuery, !detailId);
+
   // 预热搜索 worker — 详细策略见 use-prefetch-search.ts。
   // 配了 L1 (Meili) 时，搜索默认走 L1，不预热 worker shard（省 2 MB gzip 流量）。
   // L1 失败的 fallback 路径会按需 init worker。
@@ -76,12 +80,13 @@ function BookIndexContent() {
     enabled: !hasMeiliL1,
   });
 
+  // 搜索结果、首页各 tab 里的条目直接去 /item/<id>，不再绕 /book-index?id=（overview#267 P2-7）
   const handleEntryClick = useCallback((entry: IndexEntry) => {
-    router.push(`/book-index?id=${entry.id}`);
+    router.push(entryHref(entry.id));
   }, [router]);
 
   const handleNavigate = useCallback((id: string) => {
-    router.push(`/book-index?id=${id}`);
+    router.push(entryHref(id));
   }, [router]);
 
   const handleQueryChange = useCallback((query: string) => {

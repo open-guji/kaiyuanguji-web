@@ -9,7 +9,8 @@ import styles from './SearchResultCard.module.css';
  *
  * 按新设计：整张卡是一个真链接（键盘可达、可长按新开）；不画边框，靠抬起的底色分组；
  * 朝代、作者、版本、类型写成小一号的辅助字、用「·」分隔；只有「有影印」用色块。
- * 地址仍是 /book-index?id=（静态站与全栈站都能开，全栈站由中间件 308 到 /item/<id>）。
+ * 直接链到 /item/<id>（overview#267 P2-7）：两站都是全栈后不必再绕 /book-index?id=，
+ * 点开后地址栏、<title>、复制出去的链接都是条目页自己的。
  */
 
 // 与 book-index-ui IndexBrowser 的「最近浏览」共用一份 localStorage，
@@ -31,7 +32,7 @@ function isPlainLeftClick(e: React.MouseEvent) {
 }
 
 export function entryHref(id: string) {
-    return `/book-index?id=${encodeURIComponent(id)}`;
+    return `/item/${encodeURIComponent(id)}`;
 }
 
 export default function SearchResultCard({ entry, query }: { entry: IndexEntry; query?: string }) {

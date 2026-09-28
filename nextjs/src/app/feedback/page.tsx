@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: '用户反馈',
   description: '查看开源古籍项目的用户反馈与处理进展。',
+  alternates: { canonical: '/feedback' },
 };
 
 export default function FeedbackPage() {

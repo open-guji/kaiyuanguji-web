@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: '隐私说明',
   description: '开源古籍网站收集哪些访问数据、用来做什么、保留多久，以及如何拒绝。',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {

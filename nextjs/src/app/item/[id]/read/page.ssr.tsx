@@ -14,11 +14,11 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
-import { checkReaderQuery } from '@/lib/server/reader-check';
+import { checkReader } from '@/lib/server/reader-check';
 import { parseItemId } from '@/lib/item-id';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
-import { parseReaderQuery, readerHref, readerTitle, juanLabel, type ReaderQuery } from '@/lib/reader-route';
+import { parseReaderQuery, readerHref, readerTitle, juanLabel, legacyCollatedJuanTarget, type ReaderQuery } from '@/lib/reader-route';
 import ReaderClient from './ReaderClient';
 import { preloadReader } from './preload';
 import type { ReaderSeed } from './reader-seed';
@@ -33,7 +33,7 @@ type Props = {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type Loaded = { q: ReaderQuery; title: string; canonical: string; isWork: boolean };
+type Loaded = { q: ReaderQuery; title: string; canonical: string; isWork: boolean; chapterTitle?: string };
 
 /** 首屏数据最多等这么久：目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取 */
 const PRELOAD_BUDGET_MS = 1500;
@@ -50,10 +50,13 @@ async function load(id: string, sp: Record<string, string | string[] | undefined
     }
     if (!hit) return null;
     const isWork = parseItemId(id)?.type === 'work';
-    const checked = await checkReaderQuery(id, q, isWork, getCurrentJsonServer);
+    const { status: checked, chapterTitle } = await checkReader(id, q, isWork, getCurrentJsonServer);
     if (checked === 'missing') return null;
+    // 整理本旧地址（juan=juan/011.json）→ 308 到短形式（juan=011）；已分享出去的链接照常能开
+    const legacy = legacyCollatedJuanTarget(id, q);
+    if (legacy) permanentRedirect(legacy);
     const canonical = readerHref(id, checked === 'found' ? q : { kind: q.kind });
-    return { q, title: summarizeItem(hit.entry, id).title, canonical, isWork };
+    return { q, title: summarizeItem(hit.entry, id).title, canonical, isWork, chapterTitle };
 }
 
 async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
@@ -70,9 +73,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const { id } = await params;
     const s = await load(id, await searchParams);
     if (!s) return { title: '未找到', robots: { index: false, follow: false } };
-    const title = readerTitle(s.title, s.q);
+    const title = readerTitle(s.title, s.q, s.chapterTitle);
     const what = s.q.kind === 'collated' ? '整理本' : '全文';
-    const description = `${s.title}${s.q.juan ? juanLabel(s.q.juan) : ''}${what}，在线阅读。`;
+    const description = `${s.title}${s.chapterTitle ?? (s.q.juan ? juanLabel(s.q.juan) : '')}${what}，在线阅读。`;
     const { canonical } = s;
     return {
         title,

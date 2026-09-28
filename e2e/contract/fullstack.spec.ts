@@ -265,9 +265,11 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
 
     const C = ANCHORS.collated;
     const juan = 'juan/011.json';
+    /** 地址里的卷号是短形式；卷文件名只在内部用（overview#267 P2-5） */
+    const shortJuan = '011';
 
     test('每卷各有 <title> 与 canonical，出在首屏 HTML 里', async ({ request }) => {
-        const path = `/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`;
+        const path = `/item/${C.id}/read?kind=collated&juan=${shortJuan}`;
         const res = await request.get(`${TARGET}${path}`, noFollow);
         expect(res.status(), `${path} 应直接 200`).toBe(200);
         const html = await res.text();
@@ -278,8 +280,10 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
 
     test('旧入口 ?tab=collated／fulltext 308 到阅读页，保留卷号', async ({ request }) => {
         const cases: [string, string][] = [
-            [`/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`],
+            [`/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${shortJuan}`],
             [`/item/${C.id}?tab=collated`, `/item/${C.id}/read?kind=collated`],
+            // 已分享出去的旧形式阅读页地址：308 到短形式
+            [`/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${shortJuan}`],
         ];
         for (const [from, to] of cases) {
             const res = await request.get(`${TARGET}${from}`, noFollow);
@@ -293,10 +297,29 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
     test('没有这种阅读页、或卷号查不到的给真 404（不出软 404）', async ({ request }) => {
         const res = await request.get(`${TARGET}/item/${ANCHORS.entity.id}/read`, noFollow);
         expect(res.status(), '人物条目没有阅读页').toBe(404);
-        const bad = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`, noFollow);
-        expect(bad.status(), '乱填的卷号应 404').toBe(404);
-        expect(metaContent(await bad.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
+        for (const bad of ['juan%2F999.json', '999']) {
+            const r = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=${bad}`, noFollow);
+            expect(r.status(), `乱填的卷号 ${bad} 应 404`).toBe(404);
+            expect(metaContent(await r.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
+        }
     });
+});
+
+test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
+    test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
+
+    for (const path of ['/no-such-page', '/item/zzzzzzzzzz', '/catalog?node=zzz']) {
+        test(`${path}：真 404，中文 title，noindex，有回首页／总目／搜索三个入口`, async ({ request }) => {
+            const res = await request.get(`${TARGET}${path}`, noFollow);
+            expect(res.status(), `${path} 应 404`).toBe(404);
+            const html = await res.text();
+            expect(decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? ''), 'title 应是中文').toContain('找不到这个页面');
+            expect(metaContent(html, 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
+            expect(html, '应是站点自己的页，不是 Next 默认英文页').not.toContain('This page could not be found');
+            expect(html).toContain('找不到这个页面');
+            for (const href of ['href="/"', 'href="/catalog"', 'href="/book-index"']) expect(html, `缺入口 ${href}`).toContain(href);
+        });
+    }
 });
 
 test.describe('新架构：sitemap', () => {
