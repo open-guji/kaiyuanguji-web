@@ -6,7 +6,7 @@
    视觉方针：布局学新稿，UI 沿用现网暖纸＋朱色并做现代化；
    少边框、少分隔线（分组靠留白与底色阶）、少按钮（一屏一个主按钮）、
    少 badge（元数据写成小一号浅色文字，「·」分隔）。
-   全站黑体（Noto Sans SC），整理本正文宋体（Noto Serif SC）。不做暗色。
+   全站系统黑体，整理本正文系统宋体（不下载网络字体）。不做暗色。
 
    旧 token 名（paper / ink / vermilion / secondary / border / surface /
    nav-*）保留，取值对齐新令牌，现有组件零改动继承新配色。
@@ -43,12 +43,15 @@
   --color-nav-vermilion: #9e2a2b;
   --color-nav-border: #ebe4d9;
 
-  /* ---- 字体：全站黑体；宋体只给整理本正文 ---- */
-  --font-sans: var(--font-noto-sans), "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC",
-    "WenQuanYi Zen Hei", system-ui, sans-serif;
-  --font-serif: var(--font-noto-serif), "Songti SC", "Songti TC", "STSong",
-    "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+  /* ---- 字体：全站系统黑体；宋体只给整理本正文 ----
+     只用系统字体，不下载任何网络字体（overview#240 定、#220 Q1 方案 C）：
+     Noto 网络字体按 unicode-range 分片下载，条目页首访约 2.9 MB、阅读页一卷约 4 MB。
+     "Noto Sans CJK SC"／"Noto Serif CJK SC" 是系统自带的版本（Linux、部分 Android），不是网络字体。 */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei",
+    system-ui, sans-serif;
+  --font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
 
   /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
