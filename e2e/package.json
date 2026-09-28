@@ -11,6 +11,7 @@
     "test:degradable": "playwright test --project=degradable",
     "test:all": "playwright test",
     "report": "playwright show-report out/report",
+    "shots": "node --experimental-strip-types --no-warnings screenshots/shots.mjs",
     "install-browser": "playwright install --with-deps chromium"
   },
   "devDependencies": {

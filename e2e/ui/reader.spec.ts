@@ -11,6 +11,9 @@ import { requireUiVersion } from '../fixtures/preconditions';
 
 const C = ANCHORS.collated;
 
+/** 詩序：Work，维基文库与 Kanripo 各一份全文 */
+const SHIXU = 'd59f2ew0ctmo';
+
 /**
  * 直齋卷一、卷二的正文锚点（档位 3：经典原文，不随整理变）。繁简两种写法都认。
  * 分类标题＋该卷首条书目解题里的一句——只锚地址写回了 juan 不够，正文得真是这一卷。
@@ -51,5 +54,35 @@ test.describe('阅读页', () => {
         await expect(main.getByText(j2.text).first(), '卷二正文没有渲染出实际文字').toBeVisible();
         await expect(main.getByText(j1.text), '翻卷后还显示着卷一的正文').toHaveCount(0);
         expect(await page.evaluate(() => (window as unknown as { __n5b?: number }).__n5b), '翻卷触发了整页刷新').toBe(1);
+    });
+
+    test('Work 全文有两份时可来回切换版本：地址的 key 变、出处与授权跟着变', async ({ page, request }) => {
+        await requireUiVersion(request, '0.10.4', '阅读器工具条的版本下拉框');
+        // 詩序：维基文库与 Kanripo 两份全文（overview#235）
+        await page.goto(`${TARGET}/item/${SHIXU}/read?kind=fulltext`);
+        const select = page.getByRole('combobox', { name: '版本' });
+        await expect(select, '两份全文应出版本下拉框').toBeVisible({ timeout: 30_000 });
+        const keys = await select.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+        expect(keys.length, '詩序应有维基与 Kanripo 两份全文').toBeGreaterThanOrEqual(2);
+
+        // 出处那一行（“来源 …·授权”）在正文标题下，取它随版本变化的整段文字
+        const sourceLine = page.locator('.bim-rd-meta').first();
+        await expect(sourceLine).toContainText(/来源|來源/, { timeout: 30_000 });
+        const first = await select.inputValue();
+        const firstText = await sourceLine.innerText();
+
+        const other = keys.find((k) => k !== first)!;
+        await page.evaluate(() => { (window as unknown as { __w5: number }).__w5 = 1; });
+        await select.selectOption(other);
+        await expect(page).toHaveURL(new RegExp(`[?&]key=${encodeURIComponent(other)}(&|$)`));
+        await expect(sourceLine, '出处与授权应跟着所选版本变').not.toHaveText(firstText, { timeout: 30_000 });
+        const otherText = await sourceLine.innerText();
+        expect(otherText, '授权文字缺失').toMatch(/CC|公[有共]|Public|授权|授權|许可|許可|licen/i);
+
+        // 切回去，出处回到第一份的
+        await select.selectOption(first);
+        await expect(page).toHaveURL(new RegExp(`[?&]key=${encodeURIComponent(first)}(&|$)`));
+        await expect(sourceLine).toHaveText(firstText, { timeout: 30_000 });
+        expect(await page.evaluate(() => (window as unknown as { __w5?: number }).__w5), '换版本触发了整页刷新').toBe(1);
     });
 });

@@ -48,6 +48,15 @@ describe('BookDetailContent 接三栏组件', () => {
         }
     });
 
+    it('readLink 带上 ctx.juan，回目网格直接跳到对应那一回（B1）', () => {
+        const readLink = captured.props!.readLink as ReadLink;
+        expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource', juan: '003' }))
+            .toBe('/item/d59f20aowb9c/read?kind=fulltext&key=wikisource&juan=003');
+        expect(readLink({ kind: 'fulltext', juan: '001' })).toBe('/item/d59f20aowb9c/read?kind=fulltext&juan=001');
+        // 整理本没有 key，但 juan 照带
+        expect(readLink({ kind: 'collated', juan: '002' })).toBe('/item/d59f20aowb9c/read?kind=collated&juan=002');
+    });
+
     it('没有可读内容时不出「阅读全文」', () => {
         const readLink = captured.props!.readLink as ReadLink;
         expect(readLink({ kind: null })).toBeNull();
