@@ -12,6 +12,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
+import { cmpVersion, fetchUiVersion } from '../fixtures/preconditions';
 
 const C = ANCHORS.collated;
 
@@ -22,8 +23,19 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 }
 
 test.describe('整理本', () => {
-    test('概览页有整理本入口', async ({ page }) => {
+    test('概览页有整理本入口', async ({ page, request }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}`);
+
+        // N3b（0.10.0 三栏条目页）：横幅没了，入口是提要卡里的「阅读全文」链接，整理本 → kind=collated。
+        // 守的仍是「清单档 404 时入口别静默消失」。
+        const live = await fetchUiVersion(request);
+        if (live !== null && cmpVersion(live, '0.10.0') >= 0) {
+            await expect(
+                page.getByRole('link', { name: /^(阅读|閱讀)全文$/ }),
+                '整理本入口不存在：清单档可能 404（文件名或版本号错）',
+            ).toHaveAttribute('href', new RegExp(`^/item/${C.id}/read\\?kind=collated`), { timeout: 30_000 });
+            return;
+        }
 
         /*
          * 整理本入口曾经整个消失——清单档 404 被静默 catch 成 null，无任何报错。
