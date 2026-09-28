@@ -2,7 +2,7 @@
  * dq-lib.mjs — 正式数据巡检（DQ 道）的纯函数与编排逻辑
  *
  * 只读巡检 data.kaiyuanguji.com 上的 current/ 与 h1/：
- *   latest.json ─┬─ current/{version,meta,promotions}.json（?v=<commitId> cache-bust，与前端同法）
+ *   latest.json ─┬─ current/{version,meta,promotions}.json（?v=<cacheKey，缺则 commitId> cache-bust，与前端同法）
  *                └─ h1/manifest-root.json → roots/<key>.json → 1,296 个 manifest 分片 → entry/<id>.<hash8>.json
  *                   h1/text-manifest-root.json → text-roots/<key>.json → text-manifest 分片 → text/<owner>/…
  *
@@ -342,7 +342,8 @@ export async function runDq(opts = {}) {
     }
     const latest = latestRes.json;
     report.latest = latest;
-    const v = latest.commitId;
+    // 与前端同口径（nextjs/src/lib/data-version.ts）：优先三仓合成键，旧数据回退 commitId
+    const v = latest.cacheKey || latest.commitId;
     const cur = (p) => `${base}/current/${p}?v=${v}`;
 
     const [versionRes, metaRes, promoRes] = await Promise.all([

@@ -93,6 +93,14 @@ describe('createItemFetcher.getItem', () => {
         expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=abc123`);
     });
 
+    it('latest.json 带 cacheKey → current/ 的 ?v= 用 cacheKey 而不是 commitId（overview#169）', async () => {
+        const routes = { ...currentRoutes, [`${BASE}/latest.json`]: { commitId: 'abc123', cacheKey: 'k0123456789abcde' } };
+        const { f, calls } = make(routes);
+        const r = await f.getItem(ID);
+        expect(r?.version).toBe('current:k0123456789abcde');
+        expect(calls).toContain(`${BASE}/current/entry/${ID}.json?v=k0123456789abcde`);
+    });
+
     it('h1 指针不存在（404）→ 回退 current/', async () => {
         const routes = { ...currentRoutes };
         const { f } = make(routes);

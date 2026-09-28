@@ -68,7 +68,7 @@ function BookIndexContent() {
   usePrefetchSearch({
     detailId,
     searchQuery,
-    // cos 模式下，搜索分片在 https://data.kaiyuanguji.com/v/{commit}/search/
+    // cos 模式下，搜索分片在 https://data.kaiyuanguji.com/v/{cacheKey 或 commitId}/search/
     // getSearchBaseUrl 返回 Promise<string>，client.init 会自动 await
     init: () => getSearchClient().init(getSearchBaseUrl(source)),
     enabled: !hasMeiliL1,

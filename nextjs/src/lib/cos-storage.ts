@@ -2,10 +2,13 @@
  * COS 数据源支持
  *
  * 流程：
- *   1. 浏览器启动 fetch `${COS_BASE}/latest.json` 拿当前发布的 commitId（12位短哈希）
+ *   1. 浏览器启动 fetch `${COS_BASE}/latest.json` 拿当前发布的版本键：优先 cacheKey
+ *      （三仓 commit 合成键），旧数据没有该字段时回退 commitId（见 data-version.ts）
  *   2. entry/ 与 index/ 走 commit-independent 的 `${COS_BASE}/current/`，
- *      靠 `?v=${commit}` 让 CDN 区分版本（见 withCacheBust）；
- *      search 分片仍走 `${COS_BASE}/v/${commit}/search`，commit 隔离（见 getCosSearchBaseUrl）
+ *      靠 `?v=${版本键}` 让 CDN 区分版本（见 withCacheBust）；
+ *      search 分片仍走 `${COS_BASE}/v/${版本键}/search`，版本隔离（见 getCosSearchBaseUrl）
+ *      只用 draft 的 commitId 当版本键时，只有 production／book-text 变的发布
+ *      URL 不变，immutable 缓存一直吐旧版（overview#169），所以改用 cacheKey。
  *   3. 回滚 = 改 latest.json 一个文件，30 秒生效
  *
  * ⚠️ 排查线上数据别只用 `?v=<commit>` 做 cache-buster
@@ -27,6 +30,7 @@ import { extractType } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
 import { buildPromotionMap } from './promotions';
 import { reportError, setRelease } from './error-report';
+import { dataVersionKey, type LatestPointer } from './data-version';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
 
@@ -41,7 +45,7 @@ const DATA_LAYOUT: 'legacy' | 'hashed' =
 let _versionPromise: Promise<string> | null = null;
 
 /**
- * 解析 COS 上当前发布的 commitId（12位短哈希）。
+ * 解析 COS 上当前发布的版本键（cacheKey，缺则回退 commitId）。
  * 模块级 memoization：单次页面生命周期只 fetch 一次 latest.json。
  */
 export function resolveCosVersion(): Promise<string> {
@@ -56,10 +60,11 @@ export function resolveCosVersion(): Promise<string> {
                 if (!r.ok) throw new Error(`latest.json HTTP ${r.status}`);
                 return r.json();
             })
-            .then((j: { commitId?: string }) => {
-                if (!j.commitId) throw new Error('latest.json missing commitId');
-                setRelease(j.commitId); // 把数据版本附到后续错误上报里
-                return j.commitId;
+            .then((j: LatestPointer) => {
+                const key = dataVersionKey(j);
+                if (!j.commitId || !key) throw new Error('latest.json missing commitId');
+                setRelease(j.commitId); // 把数据版本（draft commit）附到后续错误上报里
+                return key;
             })
             .catch(err => {
                 // 失败时清掉 promise，让下次 fetch 重试（不长期粘在错误状态）
@@ -76,7 +81,7 @@ export function resolveCosVersion(): Promise<string> {
  * 数据布局自 2026-05-17：
  *   - 数据文件（entry/, items/, promotions, recommended, meta, pagefind-fulltext 等）
  *     在 COS 上单副本 `current/*`，每次 sync 仅 PUT 变化的文件。
- *   - 客户端用 BundleStorage 的 ?v=<commit> 自动 cache-bust。
+ *   - 客户端用 BundleStorage 的 ?v=<版本键> 自动 cache-bust（版本键由本模块注入）。
  *   - 已废弃的 v/<commit>/ 数据前缀仍由 listPrefixEtags 列文件，但新 sync 不再写。
  *
  * 搜索分片（倒排索引）独立维护：[[getCosSearchBaseUrl]]。
@@ -89,15 +94,19 @@ export async function getCosDataBaseUrl(): Promise<string> {
 }
 
 /**
- * 搜索分片根 URL —— 走 v/<commit>/search/，commit-isolated。
+ * 搜索分片根 URL —— 走 v/<版本键>/search/，按版本隔离。
+ *
+ * 路径本身带版本，但以前的版本只是 draft commit：只有 production 变时 search
+ * 会重建、却覆盖写回同一路径（immutable 缓存）→ 与 ?v= 同样的旧缓存问题。
+ * 现在与 ?v= 同用 cacheKey。
  *
  * search 倒排索引文件互相引用，必须跟当前 entry snapshot 一致。如果跟 entry/
  * 一起进 current/，部分 client 会在版本切换时拉到混合 snapshot（旧 ID 找不到新
  * entry / 新 ID 取到旧 entry），出现搜索结果失效。所以 search 维持 commit 隔离。
  */
 export async function getCosSearchBaseUrl(): Promise<string> {
-    const commit = await resolveCosVersion();
-    return `${COS_BASE}/v/${commit}/search`;
+    const key = await resolveCosVersion();
+    return `${COS_BASE}/v/${key}/search`;
 }
 
 // ─── h1（哈希寻址）取数路径：读指针 → 读 root → 读条目所在分片 → 取 entry ───
@@ -481,7 +490,7 @@ export function createCosStorage(): IndexStorage {
     // entry/{id}.json 内存缓存：同 ID 反复 getEntry 不重复 fetch
     const entryCache = new Map<string, Promise<unknown>>();
 
-    // current/ 是 commit-independent 单副本，必须靠 ?v=<commit> 让 CDN 把不同版本
+    // current/ 是 commit-independent 单副本，必须靠 ?v=<版本键> 让 CDN 把不同版本
     // 分离缓存；否则浏览器/CDN 会把上次的内容当成"还新"。
     async function withCacheBust(path: string): Promise<string> {
         const { baseUrl } = await ensureInner();

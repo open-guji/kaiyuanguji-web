@@ -97,7 +97,7 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
 
 /**
  * 取当前数据源对应的搜索分片根 URL —— 供 SearchClient.init(baseUrl) 使用。
- * - cos:    Promise<`${COS_BASE}/v/${commit}/search`>，会等 latest.json
+ * - cos:    Promise<`${COS_BASE}/v/${cacheKey 或 commitId}/search`>，会等 latest.json
  * - 其他:   '/data/search'（同站静态）
  */
 export function getSearchBaseUrl(source: DataSource): string | Promise<string> {

@@ -9,14 +9,14 @@
  */
 import { test, expect } from '@playwright/test';
 import { DATA_BASE } from '../fixtures/anchors';
-import { fetchLatest } from '../fixtures/version';
+import { fetchLatest, versionKey } from '../fixtures/version';
 
 test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () => {
     test('分片清单可取且四类索引齐全', async ({ request }) => {
         const v = await fetchLatest(request);
-        // 分片走 v/<commit>/search/，与 entry 的 current/ 不同：
+        // 分片走 v/<版本键>/search/，与 entry 的 current/ 不同：
         // 倒排索引文件互相引用，必须 commit 隔离，否则版本切换时会拿到混合快照
-        const res = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`);
+        const res = await request.get(`${DATA_BASE}/v/${versionKey(v)}/search/meta.json?_=${Date.now()}`);
         expect(
             res.ok(),
             'L2 分片清单取不到——L1 一旦故障搜索就彻底不可用',
@@ -45,8 +45,8 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
         // 这里用 meta.json 的全站统计做基准，覆盖率过低即报警。
         const v = await fetchLatest(request);
         const [metaRes, searchRes] = await Promise.all([
-            request.get(`${DATA_BASE}/current/meta.json?v=${v.commitId}`),
-            request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`),
+            request.get(`${DATA_BASE}/current/meta.json?v=${versionKey(v)}`),
+            request.get(`${DATA_BASE}/v/${versionKey(v)}/search/meta.json?_=${Date.now()}`),
         ]);
         expect(metaRes.ok() && searchRes.ok()).toBeTruthy();
 
@@ -73,13 +73,13 @@ test.describe('搜索 L2 — worker 分片索引（L1 挂时的兜底）', () =>
 
     test('首个 work 分片可下载', async ({ request }) => {
         const v = await fetchLatest(request);
-        const metaRes = await request.get(`${DATA_BASE}/v/${v.commitId}/search/meta.json?_=${Date.now()}`);
+        const metaRes = await request.get(`${DATA_BASE}/v/${versionKey(v)}/search/meta.json?_=${Date.now()}`);
         const meta = await metaRes.json();
         const workIdx = meta.indices.find((i: any) => i.type === 'work');
         const first = workIdx.shards?.[0] ?? workIdx.file;
         expect(first, 'work 索引既无 shards 也无 file').toBeTruthy();
 
-        const res = await request.get(`${DATA_BASE}/v/${v.commitId}/search/${first}`);
+        const res = await request.get(`${DATA_BASE}/v/${versionKey(v)}/search/${first}`);
         expect(res.ok(), `分片 ${first} 下载失败`).toBeTruthy();
     });
 });
