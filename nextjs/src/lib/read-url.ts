@@ -17,7 +17,8 @@ export interface ReadUrlOptions {
 
 export function buildReadUrl(id: string, { kind, key, juan }: ReadUrlOptions): string {
     const p = new URLSearchParams({ kind });
-    if (key) p.set('key', key);
+    // key 只对全文有意义；整理本带上它只会多出一个非规范地址（N5b 的 readerHref 同样丢掉）
+    if (key && kind === 'fulltext') p.set('key', key);
     if (juan) p.set('juan', juan);
     return `/item/${encodeURIComponent(id)}/read?${p.toString()}`;
 }
