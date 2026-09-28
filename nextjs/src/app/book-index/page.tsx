@@ -13,6 +13,8 @@ import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
+import SearchResultCard from '@/components/book-index/SearchResultCard';
+import styles from './page.module.css';
 
 function DataVersion() {
   const { source } = useSource();
@@ -44,7 +46,7 @@ function DataVersion() {
   if (!info) return null;
 
   return (
-    <div style={{ textAlign: 'center', padding: '16px 0 8px', fontSize: '12px', color: '#999' }}>
+    <div style={{ textAlign: 'center', padding: '16px 0 8px', fontSize: '12px', color: 'var(--bim-aux-fg, #6f6457)' }}>
       {info}
     </div>
   );
@@ -103,15 +105,15 @@ function BookIndexContent() {
   return (
     <LayoutWrapper hideFooter>
       {/*
-        * 有搜索词时放宽容器，让 resultVariant="card" 的自适应网格能排到 3 列
-        * （对齐设计稿的「右侧卡片网格」）；无搜索词的首页态维持原来的 800px，
-        * 否则搜索框和空状态会被拉得过宽。
+        * 有搜索词时放宽容器，让卡片网格能排到 3 列；无搜索词的首页态维持 800px，
+        * 否则搜索框和空状态会被拉得过宽。手机上左右留外壳的 16px 边距。
         */}
-      <div style={{ maxWidth: searchQuery ? '1120px' : '800px', margin: '0 auto', padding: '32px 16px' }}>
+      <div className={searchQuery ? `${styles.page} ${styles.withQuery}` : styles.page}>
         <IndexBrowser
           transport={transport}
           onEntryClick={handleEntryClick}
           resultVariant="card"
+          renderEntry={(entry) => <SearchResultCard entry={entry} query={searchQuery || undefined} />}
           hideModeIndicator
           initialQuery={searchQuery || undefined}
           onQueryChange={handleQueryChange}

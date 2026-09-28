@@ -22,6 +22,15 @@ const BOOK = '988fbiuha8';
 const COLLECTION = '8rlcsybg2hhf';
 
 /**
+ * 表格行。0.10.0（N3a 三栏）起版本表、子目表、著作表都是 <table class="bim-d-zt">，
+ * 之前是 .bim-d-row 的 div 行。两种都认，版本门禁切换前后同一条用例都能跑。
+ */
+const ROWS = '.bim-d-row, .bim-d-zt tbody tr';
+
+/** 三栏版（N3a / N3b）上线的 book-index-ui 版本 */
+const THREE_COLUMN = '0.10.0';
+
+/**
  * 是不是一次「条目数据」请求：只数数据域（DATA_BASE）下的 entry/、items/、h1/。
  * 2026-09-27 起条目页地址是 /item/<id>（W2），原先的正则 /\/(entry|item|items)\//
  * 会把页面自己的地址和 app/item/[id] 的 JS chunk 也算进来，离上限只剩 1（网站总管裁决收窄）。
@@ -72,7 +81,7 @@ test.describe('详情页版式', () => {
     test('作品页：版本表分页渲染，展开后给全量', async ({ page }) => {
         await openDetail(page, WORK);
 
-        const rows = page.locator('.bim-d-row');
+        const rows = page.locator(ROWS);
         const initial = await rows.count();
         // 默认只渲染 cap（12）条，不是一次性 35 条
         expect(initial, `首屏版本行数 ${initial}，应为 cap 12 条左右`).toBeLessThanOrEqual(14);
@@ -88,20 +97,26 @@ test.describe('详情页版式', () => {
         }).toPass({ timeout: 30_000 });
     });
 
-    test('作品页：书目收录展开后显示提要正文', async ({ page }) => {
-        // 「歷代書目收錄」的提要是这页最有价值的内容之一（史記 9 部书目
-        // 里 8 部有提要），旧版折在卡片里不展开就看不见。
+    test('作品页：著录分栏，左列书目、右列提要正文', async ({ page, request }) => {
+        // 「歷代書目收錄」的提要是这页最有价值的内容之一（史記 9 部书目里 8 部有提要）。
+        // 0.10.0 起改成左列书目页签、右列原文，提要不用再点开，一眼可见。
+        await requireUiVersion(request, THREE_COLUMN, '著录分栏');
         await openDetail(page, WORK);
 
         const catalogs = page.locator('#catalogs');
         await expect(catalogs).toBeVisible();
 
-        const before = (await catalogs.innerText()).length;
-        await catalogs.getByRole('button', { name: '＋' }).first().click();
+        const tabs = catalogs.getByRole('tab');
+        expect(await tabs.count(), '著录书目页签少于 2 个').toBeGreaterThan(1);
+        const panel = catalogs.getByRole('tabpanel');
+        const first = await panel.innerText();
+        expect(first.length, '右列没有提要正文').toBeGreaterThan(40);
 
+        // 换一部书目，右列跟着换
+        await tabs.nth(1).click();
+        await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
         await expect(async () => {
-            const after = (await catalogs.innerText()).length;
-            expect(after, '展开后没有新增文本，提要没渲染出来').toBeGreaterThan(before + 40);
+            expect(await panel.innerText()).not.toBe(first);
         }).toPass({ timeout: 15_000 });
     });
 
@@ -114,7 +129,7 @@ test.describe('详情页版式', () => {
         await song.click();
 
         await expect(async () => {
-            const texts = await page.locator('.bim-d-row').allInnerTexts();
+            const texts = await page.locator(ROWS).allInnerTexts();
             expect(texts.length).toBeGreaterThan(0);
             // 筛选后每行的年代列都该是宋
             for (const t of texts) {
@@ -159,7 +174,7 @@ test.describe('详情页版式', () => {
         await openDetail(page, COLLECTION);
         await expect(page.getByRole('heading', { name: /收錄書籍|收录书籍/ })).toBeVisible();
 
-        const rows = await page.locator('.bim-d-row').count();
+        const rows = await page.locator(ROWS).count();
         expect(rows, '子目表没渲染出来').toBeGreaterThan(5);
 
         expect(
@@ -195,11 +210,31 @@ test.describe('详情页版式', () => {
         await expect(page.getByText(new RegExp(WORK))).toBeVisible();
     });
 
-    test('旧的 ?tab=emendated 链接不失效', async ({ page }) => {
-        // 考證已从独立 tab 并入正文区块，旧链接改为滚到锚点
+    test('旧的 ?tab=emendated 链接不失效', async ({ page, request }) => {
+        // 考證先并入正文区块（旧链接滚到 #studies），0.10.0 三栏版又只在提要卡里计数，
+        // 不再有独立区块——旧链接至少要落到概览页，而不是空白或报错。
+        await requireUiVersion(request, THREE_COLUMN, '三栏版概览');
         await page.goto(`${TARGET}/book-index?id=${WORK}&tab=emendated`);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
-        await expect(page.locator('#studies')).toBeVisible({ timeout: 15_000 });
+        await expect(page.locator('#versions')).toBeVisible({ timeout: 15_000 });
+    });
+
+    test('「阅读全文」是提要卡里唯一的主按钮，链到阅读页', async ({ page, request }) => {
+        // N3b：网站给三栏组件传 readLink，地址约定 /item/<id>/read?kind=collated|fulltext[&key=]（与 N5b 共用）
+        await requireUiVersion(request, THREE_COLUMN, '阅读全文入口');
+        await openDetail(page, WORK);
+        const read = page.getByRole('link', { name: /^(阅读|閱讀)全文$/ });
+        await expect(read).toHaveCount(1);
+        await expect(read).toHaveAttribute('href', new RegExp(`^/item/${WORK}/read\\?kind=(collated|fulltext)`));
+    });
+
+    test('左栏检索框回车进搜索结果页', async ({ page, request }) => {
+        await requireUiVersion(request, THREE_COLUMN, '条目页左栏检索框');
+        await openDetail(page, WORK);
+        const box = page.getByRole('searchbox', { name: '检索古籍索引' });
+        await box.fill('論語');
+        await box.press('Enter');
+        await expect(page).toHaveURL(/\/book-index\?q=/, { timeout: 30_000 });
     });
 
     test('窄屏下表格降级为两行布局且不横向溢出', async ({ page }) => {
@@ -212,7 +247,7 @@ test.describe('详情页版式', () => {
         expect(overflow, '窄屏出现横向滚动').toBeLessThanOrEqual(2);
 
         // 表头在窄屏隐藏，meta 折到第二行
-        const headVisible = await page.locator('.bim-d-thead').first().isVisible().catch(() => false);
+        const headVisible = await page.locator('.bim-d-thead, .bim-d-zt thead').first().isVisible().catch(() => false);
         expect(headVisible, '窄屏不应显示表头').toBe(false);
     });
 });
@@ -242,7 +277,7 @@ test.describe('人物页', () => {
 
         await openDetail(page, OUYANG);
 
-        const rows = page.locator('.bim-d-row');
+        const rows = page.locator(ROWS);
         const n = await rows.count();
         expect(n, `首屏作品行 ${n} 条，应为 cap 16 条左右`).toBeLessThanOrEqual(18);
         expect(n).toBeGreaterThan(5);
@@ -270,7 +305,7 @@ test.describe('人物页', () => {
         if (await bian.count()) {
             await bian.click();
             await expect(async () => {
-                const texts = await page.locator('.bim-d-row').allInnerTexts();
+                const texts = await page.locator(ROWS).allInnerTexts();
                 expect(texts.length).toBeGreaterThan(0);
             }).toPass({ timeout: 15_000 });
         }
@@ -304,9 +339,10 @@ test.describe('人物页', () => {
 
     test('展开后给出全部作品', async ({ page }) => {
         await openDetail(page, OUYANG);
-        const rows = page.locator('.bim-d-row');
+        const rows = page.locator(ROWS);
         const before = await rows.count();
-        const more = page.getByRole('button', { name: /展[開开]其[餘余]\s*\d+\s*[條条]著作/ });
+        // 0.10.0 起文案是「種著作」，之前是「條著作」
+        const more = page.getByRole('button', { name: /展[開开]其[餘余]\s*\d+\s*[條条種种]著作/ });
         await expect(more).toBeVisible();
         await more.click();
         await expect(async () => {
@@ -360,8 +396,8 @@ test.describe('空状态', () => {
         // 直接渲染就是「紀昀等編 author」这种中英夹杂。
         // 这条不挑样本：它断言的是「不该出现」，数据被修好之后依然成立。
         await openDetail(page, '8rlb6yirb1ts');  // 欽定四庫全書·文溯閣本
-        // 站点外壳自己也有一个 header，取详情页版心里的那个
-        const byline = await page.locator('.bim-d-main header').innerText();
+        // 站点外壳自己也有一个 header，取详情页版心里的那个；0.10.0 起署名在右栏提要卡
+        const byline = await page.locator('.bim-d-main header, .bim-d-card').first().innerText();
         expect(byline, `页头出现了英文占位值：${byline}`).not.toMatch(/\bauthor\b/i);
     });
 });
