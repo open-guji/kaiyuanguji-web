@@ -191,7 +191,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     // kind 为 null（没有整理本／全文，或次级数据还没取到）时不出按钮。
     const readLink = useCallback((ctx: ReadLinkContext) => {
         if (!ctx.kind) return null;
-        return readerHref(id, { kind: ctx.kind, key: ctx.fullTextKey });
+        return readerHref(id, { kind: ctx.kind, key: ctx.fullTextKey, juan: ctx.juan });
     }, [id]);
 
     // ── 数字化 tab（kyg 特有，via extraTabs slot） ──

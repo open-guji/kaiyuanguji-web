@@ -165,14 +165,15 @@ test.describe('详情页版式', () => {
 
     test('丛编页：子目表来自 contained_works，不对 books 逐条发请求', async ({ page }) => {
         // 武英殿有 144 条子目。旧版对 books[] 逐条 getItem 只为拿标题，
-        // 一个页面 144 次请求；contained_works 自带标题与册次，应为 0 次。
+        // 一个页面 144 次请求；contained_works 自带标题与册次。
+        // 0.10.3 起为可见的 16 行补取撰人与卷数，再加上级丛编，约 17 次，仍须低于 20。
         const itemRequests: string[] = [];
         page.on('request', (r) => {
             if (isEntryDataRequest(r.url())) itemRequests.push(r.url());
         });
 
         await openDetail(page, COLLECTION);
-        await expect(page.getByRole('heading', { name: /收錄書籍|收录书籍/ })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /^子目$/ })).toBeVisible();
 
         const rows = await page.locator(ROWS).count();
         expect(rows, '子目表没渲染出来').toBeGreaterThan(5);
