@@ -23,7 +23,7 @@ jobs:
   check:
     name: 切站检查
     # Actions 额度用完后全部 workflow 跑自托管 runner（overview#184）
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       # 要 main 的 nextjs/package-lock.json（期望的 UI 版本），以及 latest.json 里 webCommitId
