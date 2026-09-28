@@ -1,0 +1,78 @@
+name: E2E on a live site
+
+# 手动对任意一个线上站跑 e2e（Q4 #132：切域名前在 ssr-test 上补跑 ui 层）。
+# 只读：e2e 不提交反馈、不上报错误（自动化浏览器不上报）、不登录——ssr-test 接的是正式 KV。
+# 不部署、不改任何线上状态；只把报告作为 artifact 留 14 天。
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 被测站点
+        required: true
+        default: https://ssr-test.kaiyuanguji.com
+        type: choice
+        options:
+          - https://ssr-test.kaiyuanguji.com
+          - https://staging.kaiyuanguji.com
+          - https://www.kaiyuanguji.com
+      project:
+        description: 跑哪一层（contract / ui / degradable / all）
+        required: true
+        default: ui
+        type: choice
+        options: [ui, contract, degradable, all]
+      ref:
+        description: e2e 代码取哪个 ref（应与被测站点同版）
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-remote-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+    env:
+      TARGET: ${{ inputs.target }}
+      DATA_BASE: ${{ inputs.target == 'https://staging.kaiyuanguji.com' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+
+      - name: Install chromium
+        working-directory: e2e
+        run: npx playwright install chromium
+
+      - name: Run
+        working-directory: e2e
+        env:
+          PROJECT: ${{ inputs.project }}
+        run: |
+          if [ "$PROJECT" = all ]; then
+            npx playwright test
+          else
+            npx playwright test --project="$PROJECT"
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-remote-report
+          path: e2e/out/report
+          retention-days: 14
