@@ -18,7 +18,7 @@ import BidLink from './BidLink';
 import CitationBar from './CitationBar';
 import DigitalizationView from './DigitalizationView';
 import RailSearch from './RailSearch';
-import { buildReadUrl } from '@/lib/read-url';
+import { readerHref } from '@/lib/reader-route';
 import { buildSourceLinks } from '@/lib/repo-source';
 import type { DigitalAssets } from '@/types';
 
@@ -187,11 +187,11 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         return null;
     }, []);
 
-    // ── 「阅读全文」主按钮 → 阅读页（地址约定见 lib/read-url.ts，与 N5b 共用） ──
+    // ── 「阅读全文」主按钮 → 阅读页（地址约定见 lib/reader-route.ts，与阅读页共用一个 readerHref） ──
     // kind 为 null（没有整理本／全文，或次级数据还没取到）时不出按钮。
     const readLink = useCallback((ctx: ReadLinkContext) => {
         if (!ctx.kind) return null;
-        return buildReadUrl(id, { kind: ctx.kind, key: ctx.fullTextKey });
+        return readerHref(id, { kind: ctx.kind, key: ctx.fullTextKey });
     }, [id]);
 
     // ── 数字化 tab（kyg 特有，via extraTabs slot） ──

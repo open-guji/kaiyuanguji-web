@@ -374,3 +374,34 @@ describe('超时信号（FX1c）', () => {
         });
     });
 });
+
+describe('getCurrentText（WEB2：阅读页首卷正文）', () => {
+    function textFetch(routes: Record<string, string | number>) {
+        const calls: string[] = [];
+        const fn = jest.fn(async (url: string) => {
+            calls.push(url);
+            const key = url.split('?')[0];
+            if (key === `${BASE}/latest.json`) return { ok: true, status: 200, json: async () => ({ commitId: 'c1', cacheKey: 'k1' }) } as Response;
+            const v = routes[key];
+            if (v === undefined) return { ok: false, status: 404, text: async () => '' } as Response;
+            if (typeof v === 'number') return { ok: v < 400, status: v, text: async () => '' } as Response;
+            return { ok: true, status: 200, text: async () => v } as Response;
+        });
+        return { fn, calls };
+    }
+
+    it('带版本键取 current/ 下的文本；没有返回 null；超过上限返回 null', async () => {
+        const { fn, calls } = textFetch({ [`${BASE}/current/items/x/full_text/001.txt`]: '正文' });
+        const f = createItemFetcher({ base: BASE, fetch: fn });
+        await expect(f.getCurrentText('items/x/full_text/001.txt')).resolves.toBe('正文');
+        expect(calls).toContain(`${BASE}/current/items/x/full_text/001.txt?v=k1`);
+        await expect(f.getCurrentText('items/x/full_text/002.txt')).resolves.toBeNull();
+        await expect(f.getCurrentText('items/x/full_text/001.txt', 1)).resolves.toBeNull();
+    });
+
+    it('5xx 抛错，不当成没有', async () => {
+        const { fn } = textFetch({ [`${BASE}/current/a.txt`]: 502 });
+        const f = createItemFetcher({ base: BASE, fetch: fn });
+        await expect(f.getCurrentText('a.txt')).rejects.toThrow('HTTP 502');
+    });
+});

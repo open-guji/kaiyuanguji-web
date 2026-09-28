@@ -1,7 +1,7 @@
 name: Tests
 
 # 触发：
-#  - PR 提交：跑全套
+#  - PR 提交：跑全套（单测、静态导出 smoke、全栈 e2e）
 #  - 手动 workflow_dispatch
 #  - 每日 02:00 UTC（10:00 北京时间）跑 perf 回归
 #
@@ -89,6 +89,78 @@ jobs:
         with:
           name: smoke-output
           path: perf/out/
+          retention-days: 7
+
+  fullstack:
+    # WEB2（overview#249 Q6）：smoke 只测静态导出，全栈路由（/item/*、/item/*/read、中间件跳转）
+    # 以前要部署到测试站后 verify 才有人测——阅读页全 500（INT P1）就是这么漏过去的。
+    # 这里全栈构建＋next start，跑 e2e 的 reader.spec 与 contract/fullstack.spec。
+    # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
+    name: Fullstack (build + next start + e2e reader/contract)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      KYG_RENDER_MODE: fullstack
+      NEXT_PUBLIC_MODE: ''
+      NEXT_PUBLIC_DATA_SOURCE: cos
+      NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+      NEXT_PUBLIC_SITE_ENV: ''
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_PATH: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (nextjs)
+        working-directory: nextjs
+        run: npm ci
+      - name: Install (e2e)
+        working-directory: e2e
+        run: npm ci
+      - name: Install Chromium for Playwright
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - name: Build (fullstack)
+        working-directory: nextjs
+        run: npm run build
+      - name: Start (next start)
+        working-directory: nextjs
+        # next start 也读 next.config：KYG_RENDER_MODE 必须同样是 fullstack，否则按静态导出拒绝启动
+        run: |
+          npx next start -p 3000 > "$RUNNER_TEMP/next-start.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:3000/ && exit 0
+            sleep 1
+          done
+          echo "❌ next start 60 秒内没起来"; cat "$RUNNER_TEMP/next-start.log"; exit 1
+      - name: e2e contract (fullstack.spec)
+        working-directory: e2e
+        env:
+          TARGET: http://localhost:3000
+          SITE_ARCH: fullstack
+          EXPECT_NOINDEX: '0'
+        # 排除两条只有部署产物才有的：sitemap 分片（deploy 里 gen-sitemaps 生成）、
+        # /api/feedback（EdgeOne 边缘函数，next start 没有）。它们仍由 deploy 的 verify 守着。
+        run: npx playwright test --project=contract contract/fullstack.spec.ts --grep-invert "新架构：sitemap|/api/feedback"
+      - name: e2e ui (reader.spec)
+        if: ${{ !cancelled() }}
+        working-directory: e2e
+        env:
+          TARGET: http://localhost:3000
+          SITE_ARCH: fullstack
+        run: npx playwright test --project=ui ui/reader.spec.ts
+      - name: Upload e2e report and server log on failure
+        if: failure()
+        run: mkdir -p e2e/out && cp "$RUNNER_TEMP/next-start.log" e2e/out/ || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fullstack-e2e-output
+          path: |
+            e2e/out/
+            e2e/test-results/
           retention-days: 7
 
   perf-prod:

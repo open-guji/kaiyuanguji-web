@@ -44,6 +44,13 @@ describe('readerHref／readerTitle／juanLabel', () => {
         expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`);
         expect(readerHref(BOOK, { kind: 'fulltext' })).toBe(`/item/${BOOK}/read?kind=fulltext`);
     });
+    it('条目页「阅读全文」也用它（原 read-url.ts#buildReadUrl 的用例，行为不变）', () => {
+        expect(readerHref(WORK, { kind: 'fulltext', key: 'wikisource' })).toBe(`/item/${WORK}/read?kind=fulltext&key=wikisource`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'wikisource-01' })).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
+        expect(readerHref(BOOK, { kind: 'fulltext', key: undefined, juan: '001' })).toBe(`/item/${BOOK}/read?kind=fulltext&juan=001`);
+        expect(readerHref(BOOK, { kind: 'fulltext', key: 'a b', juan: '卷一' }))
+            .toBe(`/item/${BOOK}/read?kind=fulltext&key=a+b&juan=%E5%8D%B7%E4%B8%80`);
+    });
     it('卷名', () => {
         expect(juanLabel('juan/011.json')).toBe('卷11');
         expect(juanLabel('001')).toBe('卷1');
