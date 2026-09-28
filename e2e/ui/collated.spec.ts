@@ -56,7 +56,11 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('URL 不带 juan 时自动选中首卷并渲染正文', async ({ page }) => {
+    test('URL 不带 juan 时自动选中首卷并渲染正文', async ({ page, request }) => {
+        // N5b：全栈站上旧入口 ?tab=collated 308 到新阅读器 /item/<id>/read，
+        // 旧阅读区（.bim-d-reader-main）不再出现；同一回归由 reader.spec「不带 juan 进来自动选首卷」守。
+        const live = await fetchUiVersion(request);
+        test.skip(live !== null && cmpVersion(live, '0.10.0') >= 0, `book-index-ui ${live} 用新阅读器，本条由 reader.spec 覆盖`);
         /*
          * 读者从概览页横幅点进整理本，URL 里是没有 juan 参数的。此时必须
          * 自动选中第一卷——否则侧栏列着卷号、正文区空白，看起来像没加载出来。
@@ -137,11 +141,14 @@ test.describe('整理本', () => {
         ).toBeVisible();
     });
 
-    test('原文视图有内容且带书名标题', async ({ page }) => {
+    test('原文视图有内容且带书名标题', async ({ page, request }) => {
         await page.goto(
             `${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`,
         );
-        await page.getByRole('button', { name: /^原文$/ }).click();
+        // N5b（0.10.0 新阅读器）：「原文」视图改名「正文」
+        const live = await fetchUiVersion(request);
+        const rawView = live !== null && cmpVersion(live, '0.10.0') >= 0 ? /^正文$/ : /^原文$/;
+        await page.getByRole('button', { name: rawView }).click();
 
         // 修复前 RawTextView 的分组循环一条都匹配不上，groups 为空 → 整页空白
         await expect(

@@ -248,7 +248,22 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         return hit ? { ...hit, source: 'current' } : null;
     }
 
-    return { getItem, resolvePromotion };
+    /**
+     * 取 current/ 下的一个数据文件（N5b：阅读页服务端校验卷号用，如 items/<id>/collated_edition/index.json）。
+     * 与浏览器端 BundleStorage 同一个地址（带 ?v=<版本键>）。确定没有返回 null；网络错、5xx 抛错。
+     */
+    async function getCurrentJson<T>(relPath: string): Promise<T | null> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        try {
+            return await getImmutable<T>(`${base}/current/${relPath}${key ? `?v=${key}` : ''}`);
+        } catch (err) {
+            if (err instanceof NotFound) return null;
+            throw err;
+        }
+    }
+
+    return { getItem, resolvePromotion, getCurrentJson };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -266,6 +281,11 @@ function defaultFetcher(): ReturnType<typeof createItemFetcher> {
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
 export function getItemServer(id: string): Promise<ItemFetchResult | null> {
     return defaultFetcher().getItem(id);
+}
+
+/** current/ 下的数据文件（同一个取数实例，latest.json 指针缓存共用） */
+export function getCurrentJsonServer<T>(relPath: string): Promise<T | null> {
+    return defaultFetcher().getCurrentJson<T>(relPath);
 }
 
 /** 草稿 id 查升格对照表（同一个取数实例，指针与 root 缓存共用） */

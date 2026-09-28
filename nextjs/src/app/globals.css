@@ -1082,3 +1082,20 @@
   --bim-danger: #b91c1c;
   --bim-success: #2f6b3f;
 }
+
+/* =========================================================
+   阅读页（N5b）正文用系统字体，不走 Noto 网络字体（overview#220 Q1，方案二）。
+   一卷正文几万字，按 unicode-range 分片下载 Noto：宋史卷一实测 162 片 ≈ 4 MB。
+   界面其余部分仍按 N1 用 Noto；这里只在阅读器（.bim-rd）范围内换成系统字体栈。
+   注意字体栈里不能出现 "Noto Sans SC" / "Noto Serif SC"：next/font 以这两个名字注册了网络字体，
+   写上就会命中网络字体。--bim-font-body／reading 在 :root 上由 ui／serif 推出，
+   这里要一起覆盖，否则仍取 :root 的值。
+   ========================================================= */
+.bim-rd {
+  --bim-font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", system-ui, sans-serif;
+  --bim-font-body: var(--bim-font-ui);
+  --bim-font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+  --bim-font-reading: var(--bim-font-serif);
+}
