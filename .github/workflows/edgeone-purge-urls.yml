@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   purge:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       # 自托管 runner 共用工作目录，不用 sparse-checkout（会弄残后续 job 的工作树，overview#184）
       - uses: actions/checkout@v4
