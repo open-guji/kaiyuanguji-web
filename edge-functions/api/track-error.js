@@ -228,6 +228,8 @@ export async function onRequestPost(context) {
       status: typeof body.status === 'number' ? body.status : null,
       state: 'open',                          // 处理状态：open | resolved（与上面 HTTP status 区分）
       release: clip(body.release, 60),        // 构建版本（version.json commit），便于归因
+      web: clip(body.web, 60),                // DBG：网站代码 commit（构建时注入），前端原样上报
+      data: clip(body.data, 60),              // DBG：数据指针 commitId（latest.json），前端原样上报
       ua: clip(context.request.headers.get('user-agent'), 300),
       clientIp: ip,                           // 服务端取，可信
       geo,
