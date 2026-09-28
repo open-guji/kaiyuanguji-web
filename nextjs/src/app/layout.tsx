@@ -76,10 +76,7 @@ export default function RootLayout({
 }>) {
   // 静态导出环境下不能在 Server Component 中使用 cookies()
   return (
-    // 字体变量类必须挂在 <html>：globals.css 在 :root 上用 var(--font-noto-sans) 拼 --font-sans，
-    // 挂在 <body> 上时 :root 取不到，整条 --font-sans（连同 --bim-font-*）失效，
-    // 全站退回 Tailwind 默认字体栈（INT 预合实测，overview#220）。
-    <html lang="zh-CN" className={`${notoSans.variable} ${notoSerif.variable}`}>
+    <html lang="zh-CN">
       <head>
         {/* 线上前端版本的唯一可查证来源。运维排查（「线上到底是不是新版？」）
             和 e2e 前置条件都读它；由 next.config.ts 从 node_modules 实际解析
@@ -100,7 +97,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className={`antialiased ${notoSans.variable} ${notoSerif.variable}`}>
         <StagingBadge />
         <ErrorMonitor />
         <Suspense fallback={null}>
