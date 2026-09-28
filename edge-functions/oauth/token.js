@@ -21,8 +21,15 @@
 //   OAUTH_CLIENTS          同 authorize.js；secret_hash = sha256 hex(client_secret)，
 //                          可选 aud（不配就用 client_id 当 id_token 的 aud）
 //   OAUTH_CODE_SECRET      验 code 签名，与 authorize.js 用同一把
-//   OAUTH_ID_TOKEN_SECRET  id_token 签名密钥，与 AUTH_JWT_SECRET／OAUTH_CODE_SECRET 都分开
+//   OAUTH_ID_TOKEN_SECRET  id_token 主密钥，与 AUTH_JWT_SECRET／OAUTH_CODE_SECRET 都分开；
+//                          不直接拿来签，按客户端派生（见下）
 //   AUTH_KV                与 auth/* 共用（记 jti、查成员表）
+//
+// FX3b（overview#196，L9）：不同客户端的 id_token 不再共用同一把密钥。每个客户端的签名密钥
+//   = hex(HMAC-SHA256(OAUTH_ID_TOKEN_SECRET, "kyg-oauth-id-token:" + client_id))
+// 客户端拿这串 64 位十六进制文本当 HS256 密钥验签（配置时算一次交给对方，例如
+//   printf '%s' "kyg-oauth-id-token:collate" | openssl dgst -sha256 -hmac "$OAUTH_ID_TOKEN_SECRET"
+// 取输出的十六进制部分）。这样 A 客户端手里的密钥伪造不了发给 B 的 id_token；aud 仍照旧填。
 
 function getEnvVar(context, name) {
   if (context && context.env && context.env[name] !== undefined && context.env[name] !== null) {
@@ -97,6 +104,14 @@ async function signJWT(payload, secret) {
   const data = `${h}.${p}`;
   const s = await hmacSign(data, secret);
   return `${data}.${s}`;
+}
+
+// 按客户端派生 id_token 签名密钥（L9），推导式见文件头
+const ID_TOKEN_KEY_LABEL = 'kyg-oauth-id-token:';
+async function deriveIdTokenKey(masterSecret, clientId) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(masterSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ID_TOKEN_KEY_LABEL + clientId));
+  return toHex(sig);
 }
 
 const JTI_TTL_SECONDS = 120;
@@ -200,7 +215,7 @@ export async function onRequestPost(context) {
     aud: client.aud || clientId,
     iat: now,
     exp: now + 600,
-  }, idTokenSecret);
+  }, await deriveIdTokenKey(idTokenSecret, clientId));
 
   return new Response(
     JSON.stringify({ id_token: idToken, token_type: 'Bearer', expires_in: 600 }),

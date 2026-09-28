@@ -15,7 +15,7 @@
 // no-store：排障时要的是「此刻」的版本，绝不能被 CDN 缓存成旧答案。
 
 // __BUILD_INFO_START__
-const BUILD_INFO = {"web":"81f71f433ccb2d62bdaf8d6914db5e5bbe7f05b2","bimUi":"0.9.8","builtAt":"2026-09-28T11:12:05.863Z","target":"production","dataBase":"https://data.kaiyuanguji.com"};
+const BUILD_INFO = {"web":"11c68848bb30bc9091673ce0359e4d3284f81c94","bimUi":"0.9.8","builtAt":"2026-09-28T17:11:30.905Z","target":"production","dataBase":"https://data.kaiyuanguji.com"};
 // __BUILD_INFO_END__
 
 const DEFAULT_DATA_BASE = 'https://data.kaiyuanguji.com';
