@@ -174,24 +174,29 @@ done
 | `target` | `staging` = 在测试站演练；`production` = 真回滚正式站 |
 | `web_commit` | 退回到哪个网站 commit；空 = 上一次正式发布的那版（从 edgeone-release 历史推出） |
 | `method` | `promote`（首选）／`release-branch`（快） |
+| `stage` | 只对 promote 路：`start`（测试站重建）→ `promote`（发正式站，仅 production）→ `check`（核对）。每段手动跑一次，`promote`/`check` 必须填 `web_commit` |
 | `dry_run` | 只出计划。计划写在运行摘要里：当前版本、目标版本、对应的发布产物、数据指针、将执行的步骤、注意事项 |
 
 两条路怎么选：
 
 | | promote（首选） | release-branch |
 |---|---|---|
-| 做什么 | 目标 commit 在测试站重建（deploy.yml `target=staging`，完整 verify），绿了再 `target=production promote=code+data` | edgeone-release 新建一个提交＝当时那版产物的树；清 CDN |
+| 做什么 | 分三段：`start` 目标 commit 在测试站重建（deploy.yml `target=staging`，完整 verify）；绿了跑 `promote`（`target=production promote=code+data`）；再跑 `check` | edgeone-release 新建一个提交＝当时那版产物的树；清 CDN |
 | 耗时 | 约 20 分钟 | 约 2 分钟 |
 | 数据 | 换成测试站重建时的数据（三仓 main HEAD） | 不动 |
 | 发布后 e2e | 有（deploy.yml 的 verify） | 没有，只核对 `/api/version` |
 | 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标） | **会**：正式站指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码。回滚后先把仓库变量 `AUTO_PROMOTE_DATA` 设成 `false`，修好再改回 |
-| 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后） | 目标 commit 须正式发布过；只能用于正式站 |
+| 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后）；早于改自托管 runner（overview#184）的目标，托管额度用完时测试站重建排不上，只能走 release-branch | 目标 commit 须正式发布过；只能用于正式站 |
 
 步骤：
 
 1. `target=production`、`dry_run` 勾着跑一次，读计划。计划里有 ❌ 就不能执行，按提示换 method 或 commit。
 2. 读者正受影响、等不了 20 分钟 → 先 `release-branch` 止血，再设 `AUTO_PROMOTE_DATA=false`。
-3. 否则 → `promote`，取消 `dry_run` 再跑。
+3. 否则走 promote，取消 `dry_run`，按段跑：
+   - `stage=start`：摘要里给出测试站重建那次运行的链接和目标 commit；
+   - 那次运行绿了 → `stage=promote`，`web_commit` 填摘要里那个 commit；
+   - promote 那次运行绿了 → `stage=check`，同一个 `web_commit`。
+   为什么分段：runner 是自托管的，各 job 共用一台机器；一个 job 占着 runner 等 deploy.yml，deploy.yml 就排不上（死锁）。所以每段只发起、不等待。
 4. 跑完看摘要里的链接与核对结果；自己再 `curl https://www.kaiyuanguji.com/api/version` 看一眼。
 5. 在 main 上修（revert 或 fix），正常发版；回滚期间改过 `AUTO_PROMOTE_DATA` 的记得改回。
 
@@ -199,7 +204,8 @@ done
 再手动 `Deploy to EdgeOne`（`target=staging`），verify 绿后 `target=production promote=data`。
 
 **promote 的已知风险**：`target=production` 的 promote 读的是测试站指针「此刻」的 webCommitId。如果回滚途中 main 正好有 push，
-测试站会被改写成新代码，promote 就会发新代码。Rollback workflow 在 dispatch 前后各核一次指针，不一致会红——看到红了先看正式站 `/api/version` 实际是哪版。
+测试站会被改写成新代码，promote 就会发新代码（main 有 push 还会直接取消进行中的测试站重建）。`stage=promote` 先确认那次重建是 completed success、
+dispatch 前再核一次测试站指针，`stage=check` 再核正式站指针，不一致会红——看到红了先看正式站 `/api/version` 实际是哪版。
 根治方案见 PR「DBG」描述里的「promote 安全方案」（`verifiedWebCommitId`）。
 
 **演练或回滚后测试站指针停在旧 commit**：`staging/latest.json` 的 `webCommitId` 会一直是回滚目标，直到下一次 push 到 main（或手动 `target=staging`）重建测试站。
@@ -208,5 +214,5 @@ done
 **目标早于 E1 或 deploy.yml 与 main 不同**：promote 路的测试站按目标 commit 自己的 deploy.yml 重建，正式站按 main 的 deploy.yml 构建，两次不是同一套流程；
 早于 E1（没有 `ops/edgeone-fullstack-build.py`）时测试站 `/api/auth/*` 会 503、正式站发布时 ssr-test 双跑失败（不拦发布）。计划里会有对应警告。
 
-演练：每次改到回滚相关文件后，在测试站跑一次 `target=staging method=promote dry_run=false`，
+演练：每次改到回滚相关文件后，在测试站跑一次 `target=staging method=promote dry_run=false`（`stage=start`，绿后 `stage=check`），
 确认测试站 `/api/version` 回到目标版本，再正常发一次 main 把测试站拉回来。

@@ -21,11 +21,11 @@ POINTERS = {"production": {"commitId": "d1", "webCommitId": C}, "staging": {"com
 
 
 def plan(target="production", method="promote", web="", supports=True, has_version=True, log=LOG, pointers=POINTERS,
-         skew=None):
+         skew=None, stage="start"):
     known = {A, B, C}
     return rp.make_plan(target, method, web, rp.parse_releases(log), pointers,
                         lambda c: next((k for k in known if k.startswith(c)), None),
-                        lambda s: supports, lambda s: has_version, skew=skew)
+                        lambda s: supports, lambda s: has_version, skew=skew, stage=stage)
 
 
 class Releases(unittest.TestCase):
@@ -100,6 +100,38 @@ class Plan(unittest.TestCase):
 
     def test_skew_warnings_are_not_errors(self):
         self.assertEqual(plan(skew=lambda s: {"e1": False, "same_deploy": False})["errors"], [])
+
+    def test_later_stages_need_explicit_commit(self):
+        # promote 完 edgeone-release 多一版，「上一次正式发布」就变了——后续段不许靠默认
+        for st in ("promote", "check"):
+            self.assertTrue(any("必须显式给 web_commit" in e for e in plan(stage=st)["errors"]))
+            self.assertEqual(plan(stage=st, web=B)["errors"], [])
+
+    def test_promote_stage_only_for_production(self):
+        self.assertTrue(any("只用于 target=production" in e for e in plan(target="staging", stage="promote", web=B)["errors"]))
+        self.assertEqual(plan(target="staging", stage="check", web=B)["errors"], [])
+
+    def test_stage_steps_never_wait_on_deploy(self):
+        # 自托管单 runner：任何一段都只发起、不等 deploy.yml（等就死锁）
+        for st, t in (("start", "production"), ("start", "staging"), ("promote", "production")):
+            steps = plan(target=t, stage=st, web=B)["steps"]
+            self.assertTrue(any("不等" in x for x in steps), (st, t, steps))
+        self.assertIn("stage=promote", " ".join(plan(stage="start")["steps"]))
+        self.assertIn("stage=check", " ".join(plan(target="staging", stage="start")["steps"]))
+
+    def test_release_branch_ignores_stage(self):
+        p = plan(method="release-branch", stage="check")
+        self.assertEqual((p["stage"], p["errors"]), ("start", []))
+
+    def test_current_version_warning_only_on_start(self):
+        self.assertFalse(any("当前版本" in w for w in plan(web=C, stage="check")["warnings"]))
+
+    def test_hosted_runner_target_warns_first(self):
+        w = plan(skew=lambda s: {"e1": True, "same_deploy": False, "self_hosted": False})["warnings"]
+        self.assertIn("托管 runner", w[0])
+        self.assertIn("release-branch", w[0])
+        w2 = plan(skew=lambda s: {"e1": True, "same_deploy": True, "self_hosted": True})["warnings"]
+        self.assertFalse(any("托管 runner" in x for x in w2))
 
     def test_empty_history_is_error_not_crash(self):
         p = plan(log="")

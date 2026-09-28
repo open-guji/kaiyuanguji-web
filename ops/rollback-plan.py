@@ -104,17 +104,33 @@ def pipeline_skew(sha, main_ref="origin/main"):
     e1 = git("cat-file", "-e", f"{sha}:ops/edgeone-fullstack-build.py", check=False) is not None
     mine = git("show", f"{sha}:.github/workflows/deploy.yml", check=False)
     main = git("show", f"{main_ref}:.github/workflows/deploy.yml", check=False)
-    return {"e1": e1, "same_deploy": None if main is None else mine == main}
+    return {"e1": e1, "same_deploy": None if main is None else mine == main,
+            # overview#184 起 runner 改自托管；更早的 deploy.yml 仍写 ubuntu-latest
+            "self_hosted": None if mine is None else "self-hosted" in mine}
 
 
 def has_version_endpoint(sha):
     return git("cat-file", "-e", f"{sha}:edge-functions/api/version.js", check=False) is not None
 
 
+STAGES = ("start", "promote", "check")
+
+
 def make_plan(target, method, web_commit, releases, pointers, resolve_commit, supports_promote, has_version,
-              skew=None):
-    """纯逻辑：给定历史与指针，产出计划（dict）。errors 非空 ＝ 不能执行。"""
+              skew=None, stage="start"):
+    """纯逻辑：给定历史与指针，产出计划（dict）。errors 非空 ＝ 不能执行。
+
+    stage 只对 promote 路有意义（start → promote → check 分段手动触发，见 rollback.yml 顶部注释）。"""
     errors, warnings = [], []
+    if method == "release-branch":
+        stage = "start"  # release-branch 一段走完，不分段
+    if stage not in STAGES:
+        errors.append(f"stage 只能是 {'/'.join(STAGES)}：{stage}")
+    if stage != "start" and not web_commit:
+        # 正式站 promote 完 edgeone-release 就多了一版，「上一次正式发布」随之变了——后续段必须钉死 commit
+        errors.append(f"stage={stage} 必须显式给 web_commit（照抄 start 段摘要里的那个 commit）")
+    if stage == "promote" and target != "production":
+        errors.append("stage=promote 只用于 target=production（测试站演练走 start → check）")
     prod_ptr = pointers.get("production") or {}
     stg_ptr = pointers.get("staging") or {}
     current_prod = releases[0][1] if releases else (prod_ptr.get("webCommitId") or "")
@@ -144,10 +160,13 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
     if resolved and method == "promote" and not supports_promote(resolved):
         errors.append(f"{resolved[:12]} 的 deploy.yml 还没有 target/promote 输入（T1 之前），promote 路重建不了测试站；"
                       "正式站请改用 method=release-branch")
-    if resolved and resolved == current:
+    if resolved and resolved == current and stage == "start":
         warnings.append(f"目标就是{'正式站' if target == 'production' else '测试站'}当前版本 {resolved[:12]}，回滚等于重发一遍")
     if resolved and method == "promote" and skew:
         k = skew(resolved) or {}
+        if k.get("self_hosted") is False:
+            warnings.insert(0, f"{resolved[:12]} 的 deploy.yml 还跑 GitHub 托管 runner（早于 overview#184 改自托管）：托管额度用完期间，"
+                               "测试站重建会一直排队、永远不开跑。这种情况下正式站请改用 method=release-branch")
         if k.get("e1") is False:
             warnings.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py）：测试站按它自己的 deploy.yml 重建，"
                             "不走白名单构建，重建后测试站 /api/auth/* 会 503；正式站 promote 时 ssr-test 双跑也会失败（不拦发布，只出警告）")
@@ -168,13 +187,18 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
             warnings.append(f"{name} 数据指针读不到：{p['_error']}")
 
     steps = []
-    if method == "promote":
-        steps.append(f"打临时 tag 指向 {resolved[:12] if resolved else '?'}，按该 tag dispatch deploy.yml target=staging，等 verify 绿")
-        steps.append("核对 staging/latest.json 的 webCommitId（和 /api/version，若有）＝目标")
-        if target == "production":
-            steps.append("再核一遍测试站指针仍是目标（防 main 刚好有 push 抢先改写），dispatch deploy.yml target=production promote=code+data，等绿")
-            steps.append("核对正式站 latest.json webCommitId ＝ 目标、www /api/version（若有）")
-        steps.append("删除临时 tag")
+    short = resolved[:12] if resolved else "?"
+    if method == "promote" and stage == "start":
+        steps.append(f"打临时 tag 指向 {short}，按该 tag dispatch deploy.yml target=staging（完整 verify），运行建好即删 tag；本段不等它跑完")
+        nxt = "stage=promote" if target == "production" else "stage=check"
+        steps.append(f"那次重建绿了之后，再跑 Rollback：web_commit={short} {nxt}")
+    elif method == "promote" and stage == "promote":
+        steps.append(f"确认 {short} 最近一次测试站重建是 completed success")
+        steps.append("再核一遍测试站指针仍是目标（防 main 刚好有 push 抢先改写），dispatch deploy.yml target=production promote=code+data；本段不等它跑完")
+        steps.append(f"它绿了之后，再跑 Rollback：web_commit={short} stage=check")
+    elif method == "promote":
+        site = "www" if target == "production" else "测试站"
+        steps.append(f"核对{site}数据指针 webCommitId ＝ {short}、{site} /api/version（若有），最多等 5 分钟")
     else:
         steps.append(f"edgeone-release 上新建一个提交，树＝发布提交 {release_sha[:12] if release_sha else '?'} 的树，推上去（不改写历史）")
         steps.append("清 CDN：purge_host kaiyuanguji.com ＋ purge_url 正式站数据指针")
@@ -183,6 +207,7 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
     return {
         "target": target,
         "method": method,
+        "stage": stage,
         "current_web": current,
         "current_prod_web": current_prod,
         "web_commit": resolved or "",
@@ -205,7 +230,7 @@ def summary_md(plan, dry_run):
         "| 项 | 值 |",
         "|---|---|",
         f"| 目标站 | {plan['target']} |",
-        f"| 方式 | {plan['method']} |",
+        f"| 方式 | {plan['method']}{'' if plan['method'] == 'release-branch' else ' · ' + plan['stage']} |",
         f"| 当前 web | `{s(plan['current_web'])}` |",
         f"| 退回到 web | `{s(plan['web_commit'])}`（{plan['chosen_by']}） |",
         f"| 对应发布提交 | `{s(plan['release_sha'])}` |",
@@ -224,6 +249,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--target", choices=["production", "staging"], required=True)
     ap.add_argument("--method", choices=["promote", "release-branch"], default="promote")
+    ap.add_argument("--stage", choices=list(STAGES), default="start")
     ap.add_argument("--web-commit", default="")
     ap.add_argument("--release-ref", default="origin/edgeone-release")
     ap.add_argument("--main-ref", default="origin/main", help="与之比较 deploy.yml 的 ref")
@@ -239,7 +265,7 @@ def main():
 
     plan = make_plan(a.target, a.method, a.web_commit.strip(), releases, pointers,
                      resolve_commit, deploy_supports_promote, has_version_endpoint,
-                     skew=lambda sha: pipeline_skew(sha, a.main_ref))
+                     skew=lambda sha: pipeline_skew(sha, a.main_ref), stage=a.stage)
     md = summary_md(plan, a.dry_run)
     print(md)
     print(json.dumps(plan, ensure_ascii=False, indent=1))
