@@ -23,6 +23,7 @@ jest.mock('../DigitalizationView', () => ({ __esModule: true, default: () => nul
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 
 import BookDetailContent from '../BookDetailContent';
+import { readerHref } from '@/lib/reader-route';
 
 type ReadLink = (ctx: Partial<ReadLinkContext>) => string | null;
 
@@ -36,6 +37,15 @@ describe('BookDetailContent 接三栏组件', () => {
         expect(readLink({ kind: 'collated' })).toBe('/item/d59f20aowb9c/read?kind=collated');
         expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource' }))
             .toBe('/item/d59f20aowb9c/read?kind=fulltext&key=wikisource');
+    });
+
+    it('readLink 与阅读页同一个 readerHref（Q7：地址只有一套拼法）', () => {
+        const readLink = captured.props!.readLink as ReadLink;
+        // 有 Work 全文时整理本也会带着 fullTextKey 进来，不能写进地址（P4）
+        expect(readLink({ kind: 'collated', fullTextKey: 'wikisource-01' })).toBe('/item/d59f20aowb9c/read?kind=collated');
+        for (const ctx of [{ kind: 'collated' as const }, { kind: 'fulltext' as const }, { kind: 'fulltext' as const, fullTextKey: 'a b' }]) {
+            expect(readLink(ctx)).toBe(readerHref('d59f20aowb9c', { kind: ctx.kind, key: ctx.fullTextKey }));
+        }
     });
 
     it('没有可读内容时不出「阅读全文」', () => {

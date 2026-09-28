@@ -263,7 +263,30 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
     }
 
-    return { getItem, resolvePromotion, getCurrentJson };
+    /**
+     * 取 current/ 下的一个文本文件（WEB2：阅读页把首卷正文随页面交给浏览器）。
+     * 地址同 getCurrentJson。不进 LRU（正文可能上百 KB）；超过 maxBytes 当作不取，返回 null。
+     * 确定没有返回 null；网络错、5xx 抛错。
+     */
+    async function getCurrentText(relPath: string, maxBytes = Infinity): Promise<string | null> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        const url = `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;
+        const timeout = timeoutSignal(timeoutMs);
+        try {
+            const init: RequestInit = { signal: timeout.signal };
+            if (forceCache) init.cache = 'force-cache';
+            const res = await doFetch(url, init);
+            if (res.status === 404 || res.status === 403) return null;
+            if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
+            const text = await res.text();
+            return text.length > maxBytes ? null : text;
+        } finally {
+            timeout.clear();
+        }
+    }
+
+    return { getItem, resolvePromotion, getCurrentJson, getCurrentText };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -286,6 +309,11 @@ export function getItemServer(id: string): Promise<ItemFetchResult | null> {
 /** current/ 下的数据文件（同一个取数实例，latest.json 指针缓存共用） */
 export function getCurrentJsonServer<T>(relPath: string): Promise<T | null> {
     return defaultFetcher().getCurrentJson<T>(relPath);
+}
+
+/** current/ 下的文本文件（同一个取数实例） */
+export function getCurrentTextServer(relPath: string, maxBytes?: number): Promise<string | null> {
+    return defaultFetcher().getCurrentText(relPath, maxBytes);
 }
 
 /** 草稿 id 查升格对照表（同一个取数实例，指针与 root 缓存共用） */

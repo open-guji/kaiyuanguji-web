@@ -11,7 +11,8 @@ jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: 
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 
 const getWorkFullTextList = jest.fn();
-jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getWorkFullTextList }) }));
+const getWorkFullTextChapter = jest.fn();
+jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getWorkFullTextList, getWorkFullTextChapter }) }));
 
 type Cb = (v: string | null) => void;
 const last: { collated?: Record<string, unknown>; fulltext?: Record<string, unknown> } = {};
@@ -28,6 +29,7 @@ jest.mock('book-index-ui', () => ({
 }));
 
 import ReaderClient from '../ReaderClient';
+import { seedCallKey, type ReaderSeed } from '../reader-seed';
 
 const ZHIZHAI = 'd59f2htm01du'; // Work
 const BOOK = '988fbiuha8'; // Book
@@ -40,6 +42,7 @@ beforeEach(() => {
     last.collated = undefined;
     last.fulltext = undefined;
     getWorkFullTextList.mockReset();
+    getWorkFullTextChapter.mockReset();
     push.mockClear();
 });
 
@@ -92,6 +95,58 @@ describe('ReaderClient', () => {
         act(() => { (last.fulltext!.onVersionChange as (k: string) => void)('b'); });
         expect(screen.getByTestId('fulltext')).toHaveTextContent('b|null');
         expect(window.location.search).toBe('?kind=fulltext&key=b');
+    });
+
+    it('服务端给了首屏数据（WEB2）：不再取清单，首帧就是阅读器，目录作 index 传入，首章正文不发请求', async () => {
+        const versions = [{ key: 'a', owner_type: 'Work' }, { key: 'b', owner_type: 'Work', primary: true }];
+        const index = { chapters: [{ n: 1, title: '卷一', file: '001.md' }] };
+        const seed = {
+            workTexts: versions,
+            key: 'b',
+            fullTextIndex: index,
+            calls: { [seedCallKey('getWorkFullTextChapter', ZHIZHAI, 'b', '001.md')]: '正文' },
+        } as unknown as ReaderSeed;
+        render(<ReaderClient id={ZHIZHAI} initial={{ kind: 'fulltext' }} bookTitle="t" seed={seed} />);
+        expect(screen.queryByText('加载全文目录…')).toBeNull();
+        expect(screen.getByTestId('fulltext')).toHaveTextContent('b|null');
+        expect(last.fulltext!.index).toBe(index);
+        expect(getWorkFullTextList).not.toHaveBeenCalled();
+        const t = last.fulltext!.transport as { getWorkFullTextChapter: (...a: string[]) => Promise<unknown> };
+        await expect(t.getWorkFullTextChapter(ZHIZHAI, 'b', '001.md')).resolves.toBe('正文');
+        expect(getWorkFullTextChapter).not.toHaveBeenCalled();
+
+        // 换到另一份：目录不是这一份的，不能再传 index
+        act(() => { (last.fulltext!.onVersionChange as (k: string) => void)('a'); });
+        expect(screen.getByTestId('fulltext')).toHaveTextContent('a|null');
+        expect(last.fulltext!.index).toBeUndefined();
+    });
+
+    it('整理本：服务端给的卷目录作 index 传入', () => {
+        const index = { juan_files: ['juan/011.json'] };
+        render(<ReaderClient id={ZHIZHAI} initial={{ kind: 'collated' }} bookTitle="t" seed={{ collatedIndex: index } as unknown as ReaderSeed} />);
+        expect(last.collated!.index).toBe(index);
+    });
+
+    it('SSR 首帧与客户端一致（带首屏数据的全文页也一样）', async () => {
+        const seed = {
+            workTexts: [{ key: 'b', owner_type: 'Work', primary: true }],
+            key: 'b',
+            fullTextIndex: { chapters: [{ n: 1, title: '卷一', file: '001.md' }] },
+        } as unknown as ReaderSeed;
+        const el = <ReaderClient id={ZHIZHAI} initial={{ kind: 'fulltext' }} bookTitle="t" seed={seed} />;
+        const g = globalThis as { TextEncoder?: unknown; setImmediate?: unknown };
+        g.TextEncoder ??= (await import('node:util')).TextEncoder;
+        g.setImmediate ??= (fn: () => void) => setTimeout(fn, 0);
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { renderToString } = require('react-dom/server.node') as typeof import('react-dom/server');
+        const html = renderToString(el);
+        expect(html).toContain('b|null');
+        const host = document.createElement('div');
+        host.innerHTML = html;
+        document.body.appendChild(host);
+        const recoverable = jest.fn();
+        await act(async () => { hydrateRoot(host, el, { onRecoverableError: recoverable }); });
+        expect(recoverable).not.toHaveBeenCalled();
     });
 
     it('SSR 首帧与客户端一致（水合不报不一致）', async () => {

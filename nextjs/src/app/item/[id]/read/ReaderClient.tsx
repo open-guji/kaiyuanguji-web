@@ -9,6 +9,7 @@ import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
 import { parseItemId } from '@/lib/item-id';
 import { readerHref, readerTitle, type ReaderQuery } from '@/lib/reader-route';
+import { seedTransport, type ReaderSeed } from './reader-seed';
 
 interface ReaderClientProps {
     id: string;
@@ -16,6 +17,8 @@ interface ReaderClientProps {
     initial: ReaderQuery;
     /** 书名，只用于翻卷后改 <title> */
     bookTitle: string;
+    /** 服务端取好的首屏数据（全文清单、目录、首卷正文），见 reader-seed.ts；缺省则全由浏览器取 */
+    seed?: ReaderSeed;
 }
 
 /**
@@ -33,18 +36,18 @@ function syncLocation(id: string, q: ReaderQuery, bookTitle: string, updateCanon
     if (canonical) canonical.href = new URL(href, canonical.href).href;
 }
 
-/** Work 全文：先取清单，key 缺省取首选那份（与 BookDetailLayout 同一规则） */
-function useWorkFullTexts(id: string, enabled: boolean, transport: ReturnType<typeof getTransport>) {
-    const [list, setList] = useState<WorkFullTextEntry[] | null>(null);
+/** Work 全文：先取清单，key 缺省取首选那份（与 BookDetailLayout 同一规则）。服务端给了清单就不再取 */
+function useWorkFullTexts(id: string, enabled: boolean, transport: ReturnType<typeof getTransport>, seeded?: WorkFullTextEntry[]) {
+    const [list, setList] = useState<WorkFullTextEntry[] | null>(seeded ?? null);
     useEffect(() => {
-        if (!enabled) return;
+        if (!enabled || seeded) return;
         let cancelled = false;
         const get = transport.getWorkFullTextList?.bind(transport);
         (get ? get(id) : Promise.resolve([] as WorkFullTextEntry[]))
             .then((l) => { if (!cancelled) setList((l ?? []).filter((v) => v.owner_type !== 'Book')); })
             .catch(() => { if (!cancelled) setList([]); });
         return () => { cancelled = true; };
-    }, [id, enabled, transport]);
+    }, [id, enabled, transport, seeded]);
     return list;
 }
 
@@ -52,10 +55,10 @@ function Muted({ children }: { children: React.ReactNode }) {
     return <div style={{ padding: 24, color: 'var(--bim-desc-fg)' }}>{children}</div>;
 }
 
-function Reader({ id, initial, bookTitle }: ReaderClientProps) {
+function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
-    const transport = useMemo(() => getTransport(source), [source]);
+    const transport = useMemo(() => seedTransport(getTransport(source), seed?.calls), [source, seed]);
     const [q, setQ] = useState<ReaderQuery>(initial);
 
     // 首帧的 canonical 以服务端为准（卷号查不准时它会回落到不带卷号的地址），之后翻卷再跟着改
@@ -74,11 +77,12 @@ function Reader({ id, initial, bookTitle }: ReaderClientProps) {
     const onNavigate = useCallback((target: string) => router.push(`/item/${target}`), [router]);
 
     const isWork = parseItemId(id)?.type === 'work';
-    const workTexts = useWorkFullTexts(id, q.kind === 'fulltext' && isWork, transport);
+    const workTexts = useWorkFullTexts(id, q.kind === 'fulltext' && isWork, transport, seed?.workTexts);
 
     if (q.kind === 'collated') {
         return (
             <CollatedEdition
+                index={seed?.collatedIndex}
                 workId={id}
                 transport={transport}
                 onNavigate={onNavigate}
@@ -97,6 +101,7 @@ function Reader({ id, initial, bookTitle }: ReaderClientProps) {
         return (
             <BookFullText
                 key={key}
+                index={key === seed?.key ? seed?.fullTextIndex : undefined}
                 bookId={id}
                 workKey={key}
                 versions={workTexts}
@@ -110,6 +115,7 @@ function Reader({ id, initial, bookTitle }: ReaderClientProps) {
 
     return (
         <BookFullText
+            index={seed?.fullTextIndex}
             bookId={id}
             transport={transport}
             activeChapter={q.juan ?? null}
