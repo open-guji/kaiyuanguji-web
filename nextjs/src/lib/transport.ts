@@ -22,14 +22,21 @@ import {
 /**
  * Meilisearch L1 配置（编译时注入）。
  *
- * - NEXT_PUBLIC_MEILI_URL：API base，例如 https://api.kaiyuanguji.com
- *   或开发期 IP 直连 http://122.51.91.177:7700
- * - NEXT_PUBLIC_MEILI_KEY：tenant token / 公开搜索 key（绝不放 master key）
+ * - NEXT_PUBLIC_MEILI_URL：只作「启用 L1」的开关（`!!字面量` 编译期折成 true，地址本身
+ *   不进前端代码）；不设时搜索完全走 L2（worker），与未上线 Meili 等价。
+ * - 默认走同站代理 NEXT_PUBLIC_SEARCH_PROXY_URL（缺省 '/api/search'，见
+ *   edge-functions/api/search.js）：Meili 地址与 key 只在服务端。
+ * - 回退开关（保留一个版本）：同时设 NEXT_PUBLIC_SEARCH_DIRECT_URL 与
+ *   NEXT_PUBLIC_SEARCH_DIRECT_KEY → 浏览器直连 Meili（改造前的行为）。
  *
- * 不设这两个变量时，搜索完全走 L2（worker），与未上线 Meili 等价。
+ * 注意：前端**不再引用** NEXT_PUBLIC_MEILI_KEY。Next 只替换构建时有值的变量，
+ * 没值的原样留成运行时查找——所以「按开关三元取 key」的写法挡不住：开关没设时
+ * key 仍以字面量编进 chunk（本地构建实测过）。直连只认上面两个新变量，平时不设。
  */
-const MEILI_URL = process.env.NEXT_PUBLIC_MEILI_URL || '';
-const MEILI_KEY = process.env.NEXT_PUBLIC_MEILI_KEY || '';
+const MEILI_ENABLED = !!process.env.NEXT_PUBLIC_MEILI_URL;
+const SEARCH_DIRECT_URL = process.env.NEXT_PUBLIC_SEARCH_DIRECT_URL || '';
+const SEARCH_DIRECT_KEY = process.env.NEXT_PUBLIC_SEARCH_DIRECT_KEY || '';
+const SEARCH_PROXY_URL = process.env.NEXT_PUBLIC_SEARCH_PROXY_URL || '/api/search';
 
 /**
  * 只读 Storage 类型：GithubStorage 和 BundleStorage 共有的方法集合。
@@ -80,11 +87,12 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
     }
 
     // L1: Meilisearch（如果配了 URL）。失败时透传到 L2（v2-storage worker）。
-    if (MEILI_URL) {
+    if (MEILI_ENABLED) {
         s = wrapWithMeiliSearch(s, {
-            baseUrl: MEILI_URL,
-            apiKey: MEILI_KEY || undefined,
-            timeoutMs: 2000,
+            ...(SEARCH_DIRECT_URL
+                ? { baseUrl: SEARCH_DIRECT_URL, apiKey: SEARCH_DIRECT_KEY || undefined, timeoutMs: 2000 }
+                // 代理对上游 2 s 超时后回 503；这里多留 1 s 给边缘自身
+                : { proxyUrl: SEARCH_PROXY_URL, timeoutMs: 3000 }),
             failuresBeforeBreak: 3,
             breakerCooldownMs: 5 * 60_000,
             debug: process.env.NODE_ENV !== 'production',

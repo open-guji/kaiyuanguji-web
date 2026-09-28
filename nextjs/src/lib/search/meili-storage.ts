@@ -5,6 +5,13 @@
  *   L1: 上海云 Meilisearch（全文 + 拼音 + 异体 + completeness 排序）
  *   L2: 现有 worker 索引（v2-storage 包装的 base）— 任何 L1 错误时透传到 L2
  *
+ * 两种 L1 接法（S1，2026-09-28）：
+ *   - 代理（默认）：同站 /api/search（edge-functions/api/search.js）。浏览器看不到
+ *     Meili 地址与 key；四类索引一次请求。代理失败（503／超时）→ 当次就走 L2
+ *     （L2 已缩成只含书名＋作者的轻量分片），并通知页面显示「简易搜索」提示。
+ *   - 直连（回退开关 NEXT_PUBLIC_SEARCH_DIRECT_URL／_KEY，保留一个版本）：浏览器直连 Meili，
+ *     行为与改造前一致。
+ *
  * 客户端只在 searchAll / search 上做 L1，其他方法（getEntry / getCounts /
  * getCollatedJuan 等）暂保持透传到 L2。Phase 4 再把详情类也加 L1。
  *
@@ -17,8 +24,10 @@ import type { IndexEntry, IndexType, PageResult, LoadOptions, GroupedSearchResul
 import { SNIPPET_MARK_START, SNIPPET_MARK_END } from 'book-index-ui';
 
 export interface MeiliConfig {
-    /** API base, e.g. 'https://api.kaiyuanguji.com' or 'http://122.51.91.177:7700' */
-    baseUrl: string;
+    /** 代理地址（同站 '/api/search'）。给了就走代理，忽略 baseUrl/apiKey */
+    proxyUrl?: string;
+    /** 直连模式的 API base, e.g. 'https://api.kaiyuanguji.com' or 'http://122.51.91.177:7700' */
+    baseUrl?: string;
     /** Read-only key（不要用 master key）。可空 — 此时不发 Authorization 头 */
     apiKey?: string;
     /** 单次请求超时，默认 2000 ms */
@@ -106,6 +115,65 @@ class CircuitBreaker {
 // 全局 breaker（单例 — 同一域名只跟踪一份状态）
 const breaker = new CircuitBreaker(3, 5 * 60_000);
 
+// ─── 降级状态（页面据此显示「简易搜索」提示） ───
+
+let degraded = false;
+const degradedListeners = new Set<(d: boolean) => void>();
+
+function setDegraded(d: boolean): void {
+    if (d === degraded) return;
+    degraded = d;
+    for (const fn of degradedListeners) fn(d);
+}
+
+/** 当前搜索是否在走 L2 兜底（L1 故障） */
+export function isSearchDegraded(): boolean {
+    return degraded;
+}
+
+/** 订阅降级状态变化；返回取消订阅函数 */
+export function subscribeSearchDegraded(fn: (d: boolean) => void): () => void {
+    degradedListeners.add(fn);
+    return () => { degradedListeners.delete(fn); };
+}
+
+interface ProxyResult {
+    indexUid: string;
+    hits: MeiliHit[];
+    estimatedTotalHits: number;
+}
+
+function hitToEntry(h: MeiliHit): IndexEntry {
+    return {
+        id: h.id,
+        type: h.type,
+        title: h.title || h.primary_name || h.id,
+        // 缺字段时回落 true，保持旧索引的既有行为；full-reindex 补上
+        // is_draft 后，已升格条目才不会被误标成「草稿」
+        isDraft: h.is_draft ?? true,
+        author: h.author,
+        dynasty: h.dynasty,
+        era: h.era,
+        sort_year: h.sort_year,
+        role: h.role,
+        edition: h.edition,
+        subtype: h.subtype,
+        juan_count: h.juan_count,
+        has_text: h.has_text,
+        has_image: h.has_image,
+        has_collated: h.has_collated,
+        primary_name: h.primary_name,
+        birth_year: h.birth_year,
+        death_year: h.death_year,
+        cbdb_id: h.cbdb_id,
+        // 只有真正命中简介（含高亮标记）才展示；没标记说明是从头裁出来的无关片段，
+        // 展示反而误导用户以为搜中的是简介
+        descriptionSnippet: h._formatted?.description_search?.includes(SNIPPET_MARK_START)
+            ? h._formatted.description_search
+            : undefined,
+    };
+}
+
 /**
  * 包 base storage 一层 L1 拦截。base 应当已经被 wrapWithV2Search 包过
  * （提供 worker fallback）。
@@ -113,42 +181,12 @@ const breaker = new CircuitBreaker(3, 5 * 60_000);
  *   wrapWithMeiliSearch(wrapWithV2Search(bundleStorage), { baseUrl: ... })
  */
 export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: MeiliConfig): T {
-    const baseUrl = config.baseUrl.replace(/\/$/, '');
+    if (config.proxyUrl) return wrapWithSearchProxy(base, config);
+    const baseUrl = (config.baseUrl ?? '').replace(/\/$/, '');
     // 5 秒留够海外冷启动余地：cache MISS 回源上海 ~600ms，上海机器繁忙时偶发到
     // 1-2s。2 秒太紧 → 4 个并发里只要一个超时整个 searchAll 就被认为失败。
     const timeoutMs = config.timeoutMs ?? 5000;
     const debug = config.debug ?? false;
-
-    function hitToEntry(h: MeiliHit): IndexEntry {
-        return {
-            id: h.id,
-            type: h.type,
-            title: h.title || h.primary_name || h.id,
-            // 缺字段时回落 true，保持旧索引的既有行为；full-reindex 补上
-            // is_draft 后，已升格条目才不会被误标成「草稿」
-            isDraft: h.is_draft ?? true,
-            author: h.author,
-            dynasty: h.dynasty,
-            era: h.era,
-            sort_year: h.sort_year,
-            role: h.role,
-            edition: h.edition,
-            subtype: h.subtype,
-            juan_count: h.juan_count,
-            has_text: h.has_text,
-            has_image: h.has_image,
-            has_collated: h.has_collated,
-            primary_name: h.primary_name,
-            birth_year: h.birth_year,
-            death_year: h.death_year,
-            cbdb_id: h.cbdb_id,
-            // 只有真正命中简介（含高亮标记）才展示；没标记说明是从头裁出来的无关片段，
-            // 展示反而误导用户以为搜中的是简介
-            descriptionSnippet: h._formatted?.description_search?.includes(SNIPPET_MARK_START)
-                ? h._formatted.description_search
-                : undefined,
-        };
-    }
 
     async function meiliSearch(indexUid: string, query: string, opts: { limit?: number; offset?: number } = {}) {
         // 用 GET 而不是 POST：CDN（EdgeOne 等）默认不缓存 POST，无法享受
@@ -290,6 +328,10 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
         },
     };
 
+    return withOverrides(base, overrides);
+}
+
+function withOverrides<T extends IndexStorage>(base: T, overrides: Partial<IndexStorage>): T {
     return new Proxy(base, {
         get(target, prop, receiver) {
             if (prop in overrides) {
@@ -300,6 +342,124 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
             return typeof value === 'function' ? value.bind(target) : value;
         },
     }) as T;
+}
+
+const TYPE_TO_INDEX: Record<string, string> = {
+    work: 'works', book: 'books', collection: 'collections', entity: 'entities',
+};
+
+/**
+ * 代理模式：L1 走同站 /api/search。
+ *
+ * 与直连模式的区别：
+ *   - 四类索引一次请求（代理在服务端 multi-search），省三个往返；
+ *   - 失败（代理 503／超时／网络错）当次就透传 L2，不再「先返回空结果」——
+ *     L2 已是轻量分片（书名＋作者），Meili 停机时用户仍能按书名搜到；
+ *   - breaker 仍在：连续失败后冷却期内不再请求代理，直接 L2，省得每次等超时。
+ */
+function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfig): T {
+    const proxyUrl = config.proxyUrl!;
+    // 代理对上游有 2 s 超时，自身再留 1 s 余量
+    const timeoutMs = config.timeoutMs ?? 3000;
+    const debug = config.debug ?? false;
+
+    async function proxySearch(params: Record<string, string>): Promise<ProxyResult[]> {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(new DOMException('search proxy timeout', 'TimeoutError')), timeoutMs);
+        try {
+            const r = await fetch(`${proxyUrl}?${new URLSearchParams(params)}`, {
+                method: 'GET',
+                signal: ctrl.signal,
+            });
+            if (!r.ok) {
+                const err = new Error(`HTTP ${r.status}`) as Error & { status?: number };
+                err.status = r.status;
+                throw err;
+            }
+            const data = await r.json() as { results?: ProxyResult[] };
+            if (!Array.isArray(data.results)) throw new Error('bad proxy response');
+            return data.results;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    function onFailure(e: unknown, where: string): void {
+        const status = (e as { status?: number })?.status;
+        // 400 是请求本身的问题（如查询超长），不代表 L1 挂了，不计入熔断
+        if (status !== 400) breaker.recordFailure();
+        setDegraded(true);
+        if (debug) console.warn(`[search-proxy] ${where} failed, → L2:`, (e as Error)?.message);
+    }
+
+    const overrides: Partial<IndexStorage> = {
+        async searchAll(query: string, limit: number = 5): Promise<GroupedSearchResult> {
+            const q = query.trim();
+            if (!q) {
+                return {
+                    works: [], books: [], collections: [], entities: [],
+                    totalWorks: 0, totalBooks: 0, totalCollections: 0, totalEntities: 0,
+                };
+            }
+            if (!breaker.canCall()) {
+                setDegraded(true);
+                return base.searchAll!(query, limit);
+            }
+            try {
+                const results = await proxySearch({ q, limit: String(limit) });
+                breaker.recordSuccess();
+                setDegraded(false);
+                const by = new Map(results.map(r => [r.indexUid, r]));
+                const pick = (uid: string) => by.get(uid) ?? { indexUid: uid, hits: [], estimatedTotalHits: 0 };
+                const [w, b, c, e] = ['works', 'books', 'collections', 'entities'].map(pick);
+                return {
+                    works: w.hits.map(hitToEntry),
+                    books: b.hits.map(hitToEntry),
+                    collections: c.hits.map(hitToEntry),
+                    entities: e.hits.map(hitToEntry),
+                    totalWorks: w.estimatedTotalHits,
+                    totalBooks: b.estimatedTotalHits,
+                    totalCollections: c.estimatedTotalHits,
+                    totalEntities: e.estimatedTotalHits,
+                };
+            } catch (err) {
+                onFailure(err, 'searchAll');
+                return base.searchAll!(query, limit);
+            }
+        },
+
+        async search(query: string, type: IndexType, options: LoadOptions): Promise<PageResult<IndexEntry>> {
+            const q = query.trim();
+            const page = options.page ?? 1;
+            const pageSize = options.pageSize ?? 50;
+            if (!q) return base.search(query, type, options);
+            if (!breaker.canCall()) {
+                setDegraded(true);
+                return base.search(query, type, options);
+            }
+            try {
+                const [r] = await proxySearch({
+                    q,
+                    index: TYPE_TO_INDEX[type] ?? 'works',
+                    limit: String(pageSize),
+                    offset: String((page - 1) * pageSize),
+                });
+                breaker.recordSuccess();
+                setDegraded(false);
+                return {
+                    entries: (r?.hits ?? []).map(hitToEntry),
+                    total: r?.estimatedTotalHits ?? 0,
+                    page,
+                    pageSize,
+                };
+            } catch (err) {
+                onFailure(err, 'search');
+                return base.search(query, type, options);
+            }
+        },
+    };
+
+    return withOverrides(base, overrides);
 }
 
 /** 给外部查询当前 breaker 状态（埋点用） */
