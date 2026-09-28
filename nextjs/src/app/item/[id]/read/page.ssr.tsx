@@ -19,11 +19,10 @@ import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { parseReaderQuery, readerHref, readerTitle, juanLabel, type ReaderQuery } from '@/lib/reader-route';
 import ReaderClient from './ReaderClient';
 
-export const dynamicParams = true;
-
-export async function generateStaticParams(): Promise<{ id: string }[]> {
-    return [];
-}
+// 必须显式 force-dynamic，且不能导出 generateStaticParams：有了它（哪怕返回 []）Next 就把本页当
+// SSG／ISR（构建输出里是 ●），请求时一读 searchParams 就抛 DYNAMIC_SERVER_USAGE，每个阅读页都 500。
+// 静态导出不打包 .ssr.tsx，不需要它来过 output: 'export'（INT 预合实测，overview#220）。
+export const dynamic = 'force-dynamic';
 
 type Props = {
     params: Promise<{ id: string }>;

@@ -57,4 +57,10 @@ describe('阅读页 page.ssr', () => {
         expect(m.alternates?.canonical).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
         await expect(page({ kind: 'collated', juan: 'juan/011.json' })).resolves.toBeTruthy();
     });
+
+    it('按请求渲染：force-dynamic、不导出 generateStaticParams（否则读查询串 DYNAMIC_SERVER_USAGE，全 500）', async () => {
+        const mod: Record<string, unknown> = await import('../page.ssr');
+        expect(mod.dynamic).toBe('force-dynamic');
+        expect(mod.generateStaticParams).toBeUndefined();
+    });
 });
