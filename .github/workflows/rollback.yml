@@ -40,10 +40,11 @@ on:
     paths:
       - .github/workflows/rollback.yml
       - ops/rollback-*.py
+      - ops/tests/test_rollback_plan.py
 
+# 顶层只读（PR 触发的 dry-run 也只有读权限）；写权限只下放到真要写的 job
 permissions:
-  contents: write   # 推临时 tag；release-branch 路推 edgeone-release
-  actions: write    # dispatch deploy.yml
+  contents: read
 
 # 与发布不抢：同一时间只允许一个回滚
 concurrency:
@@ -53,6 +54,8 @@ concurrency:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -66,7 +69,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # 要看目标 commit 的 deploy.yml／有没有 version.js
-      - run: git fetch -q origin edgeone-release
+      - run: git fetch -q origin edgeone-release main
+      - name: Unit tests (ops/tests)
+        run: python3 -m unittest discover -s ops/tests
       - id: plan
         env:
           # 自由文本输入只经环境变量进脚本，不直接拼进 shell（防注入）；脚本里再校验是不是 commit
@@ -81,6 +86,9 @@ jobs:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 经 refs API 打临时 tag
+      actions: write    # dispatch deploy.yml、读运行列表
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -124,6 +132,9 @@ jobs:
     needs: [plan, staging]
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.target == 'production' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write    # dispatch deploy.yml、读运行列表
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -156,6 +167,8 @@ jobs:
     needs: [staging, production]
     if: ${{ always() && needs.staging.outputs.tag != '' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 删临时 tag
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -166,6 +179,8 @@ jobs:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'release-branch' && inputs.target == 'production' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 推 edgeone-release
     env:
       WEB: ${{ needs.plan.outputs.web_commit }}
       REL: ${{ needs.plan.outputs.release_sha }}

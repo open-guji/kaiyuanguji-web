@@ -20,11 +20,12 @@ LOG = "\n".join([f"{R4}\t{MSG.format(C)}", f"{R3}\t{MSG.format(B)}", f"{R2}\t{MS
 POINTERS = {"production": {"commitId": "d1", "webCommitId": C}, "staging": {"commitId": "d1", "webCommitId": C}}
 
 
-def plan(target="production", method="promote", web="", supports=True, has_version=True, log=LOG, pointers=POINTERS):
+def plan(target="production", method="promote", web="", supports=True, has_version=True, log=LOG, pointers=POINTERS,
+         skew=None):
     known = {A, B, C}
     return rp.make_plan(target, method, web, rp.parse_releases(log), pointers,
                         lambda c: next((k for k in known if k.startswith(c)), None),
-                        lambda s: supports, lambda s: has_version)
+                        lambda s: supports, lambda s: has_version, skew=skew)
 
 
 class Releases(unittest.TestCase):
@@ -76,6 +77,29 @@ class Plan(unittest.TestCase):
         self.assertTrue(any("main HEAD" in w for w in plan()["warnings"]))
         self.assertTrue(any("AUTO_PROMOTE_DATA" in w for w in plan(method="release-branch")["warnings"]))
         self.assertTrue(any("当前版本" in w for w in plan(web=C)["warnings"]))
+
+    def test_pre_e1_target_warns(self):
+        w = plan(skew=lambda s: {"e1": False, "same_deploy": True})["warnings"]
+        self.assertTrue(any("E1" in x and "503" in x for x in w))
+        self.assertFalse(any("与 main 不同" in x for x in w))
+
+    def test_deploy_yml_differs_from_main_warns(self):
+        w = plan(skew=lambda s: {"e1": True, "same_deploy": False})["warnings"]
+        self.assertTrue(any("与 main 不同" in x for x in w))
+        self.assertFalse(any("E1" in x for x in w))
+
+    def test_no_skew_warning_when_pipeline_matches_or_unknown(self):
+        for k in ({"e1": True, "same_deploy": True}, {"e1": True, "same_deploy": None}):
+            w = plan(skew=lambda s, k=k: k)["warnings"]
+            self.assertFalse(any("E1" in x or "与 main 不同" in x for x in w))
+
+    def test_skew_warnings_only_for_promote(self):
+        # release-branch 不重建，流程差异无关
+        w = plan(method="release-branch", skew=lambda s: {"e1": False, "same_deploy": False})["warnings"]
+        self.assertFalse(any("E1" in x or "与 main 不同" in x for x in w))
+
+    def test_skew_warnings_are_not_errors(self):
+        self.assertEqual(plan(skew=lambda s: {"e1": False, "same_deploy": False})["errors"], [])
 
     def test_empty_history_is_error_not_crash(self):
         p = plan(log="")

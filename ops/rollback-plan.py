@@ -97,11 +97,22 @@ def deploy_supports_promote(sha):
     return bool(y) and "options: [staging, production]" in y and "promote:" in y
 
 
+def pipeline_skew(sha, main_ref="origin/main"):
+    """目标 commit 与 main 的发布流程差多少（promote 路：测试站按目标自己的 deploy.yml 重建，
+    正式站却按 main 的 deploy.yml 构建——两次不是同一套流程）。
+    返回 {"e1": 目标是否已有 ops/edgeone-fullstack-build.py, "same_deploy": 目标 deploy.yml 是否与 main 相同（main 读不到时为 None）}。"""
+    e1 = git("cat-file", "-e", f"{sha}:ops/edgeone-fullstack-build.py", check=False) is not None
+    mine = git("show", f"{sha}:.github/workflows/deploy.yml", check=False)
+    main = git("show", f"{main_ref}:.github/workflows/deploy.yml", check=False)
+    return {"e1": e1, "same_deploy": None if main is None else mine == main}
+
+
 def has_version_endpoint(sha):
     return git("cat-file", "-e", f"{sha}:edge-functions/api/version.js", check=False) is not None
 
 
-def make_plan(target, method, web_commit, releases, pointers, resolve_commit, supports_promote, has_version):
+def make_plan(target, method, web_commit, releases, pointers, resolve_commit, supports_promote, has_version,
+              skew=None):
     """纯逻辑：给定历史与指针，产出计划（dict）。errors 非空 ＝ 不能执行。"""
     errors, warnings = [], []
     prod_ptr = pointers.get("production") or {}
@@ -135,6 +146,14 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
                       "正式站请改用 method=release-branch")
     if resolved and resolved == current:
         warnings.append(f"目标就是{'正式站' if target == 'production' else '测试站'}当前版本 {resolved[:12]}，回滚等于重发一遍")
+    if resolved and method == "promote" and skew:
+        k = skew(resolved) or {}
+        if k.get("e1") is False:
+            warnings.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py）：测试站按它自己的 deploy.yml 重建，"
+                            "不走白名单构建，重建后测试站 /api/auth/* 会 503；正式站 promote 时 ssr-test 双跑也会失败（不拦发布，只出警告）")
+        if k.get("same_deploy") is False:
+            warnings.append(f"{resolved[:12]} 的 deploy.yml 与 main 不同：测试站按目标的旧流程重建并 verify，正式站却按 main 的流程构建，"
+                            "测试站验过的不完全等于正式站要发的（根治需 deploy.yml 加 web_ref 输入，见 PR 描述）")
     if resolved and not has_version(resolved):
         warnings.append(f"{resolved[:12]} 早于 /api/version，回滚后该接口会 404；改以数据指针 webCommitId 核对")
     if target == "production" and resolved and release_sha is None and method == "promote":
@@ -207,6 +226,7 @@ def main():
     ap.add_argument("--method", choices=["promote", "release-branch"], default="promote")
     ap.add_argument("--web-commit", default="")
     ap.add_argument("--release-ref", default="origin/edgeone-release")
+    ap.add_argument("--main-ref", default="origin/main", help="与之比较 deploy.yml 的 ref")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -218,7 +238,8 @@ def main():
         return git("rev-parse", "--verify", "--quiet", f"{c}^{{commit}}", check=False)
 
     plan = make_plan(a.target, a.method, a.web_commit.strip(), releases, pointers,
-                     resolve_commit, deploy_supports_promote, has_version_endpoint)
+                     resolve_commit, deploy_supports_promote, has_version_endpoint,
+                     skew=lambda sha: pipeline_skew(sha, a.main_ref))
     md = summary_md(plan, a.dry_run)
     print(md)
     print(json.dumps(plan, ensure_ascii=False, indent=1))

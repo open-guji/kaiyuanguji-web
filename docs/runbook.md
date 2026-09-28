@@ -115,7 +115,7 @@ done
 
 处理：
 
-- 数据仓 push 后不会自动发（跨仓 webhook 不可靠）：等北京 04:30 定时，或手动 `Deploy to EdgeOne`（`target=staging`）。
+- 数据仓 push 后**不一定会自动发**（有 `repository_dispatch: data-updated` 跨仓 webhook，但依赖跨仓 PAT，不可靠）：等北京 04:30 定时，或手动 `Deploy to EdgeOne`（`target=staging`）。
 - 测试站已是新数据、正式站没跟上：
   - 仓库变量 `AUTO_PROMOTE_DATA` 是否被设成 `false`（回滚后常会这样设，记得改回）；
   - 自动 promote 只在 **定时／repository_dispatch** 触发且 verify 绿时跑；手动 staging 发布不会自动 promote——手动跑 `target=production promote=data`。
@@ -201,6 +201,12 @@ done
 **promote 的已知风险**：`target=production` 的 promote 读的是测试站指针「此刻」的 webCommitId。如果回滚途中 main 正好有 push，
 测试站会被改写成新代码，promote 就会发新代码。Rollback workflow 在 dispatch 前后各核一次指针，不一致会红——看到红了先看正式站 `/api/version` 实际是哪版。
 根治方案见 PR「DBG」描述里的「promote 安全方案」（`verifiedWebCommitId`）。
+
+**演练或回滚后测试站指针停在旧 commit**：`staging/latest.json` 的 `webCommitId` 会一直是回滚目标，直到下一次 push 到 main（或手动 `target=staging`）重建测试站。
+这段时间里**别手动 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
+
+**目标早于 E1 或 deploy.yml 与 main 不同**：promote 路的测试站按目标 commit 自己的 deploy.yml 重建，正式站按 main 的 deploy.yml 构建，两次不是同一套流程；
+早于 E1（没有 `ops/edgeone-fullstack-build.py`）时测试站 `/api/auth/*` 会 503、正式站发布时 ssr-test 双跑失败（不拦发布）。计划里会有对应警告。
 
 演练：每次改到回滚相关文件后，在测试站跑一次 `target=staging method=promote dry_run=false`，
 确认测试站 `/api/version` 回到目标版本，再正常发一次 main 把测试站拉回来。
