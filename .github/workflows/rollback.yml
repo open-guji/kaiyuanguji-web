@@ -62,7 +62,7 @@ concurrency:
 
 jobs:
   plan:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
@@ -95,7 +95,7 @@ jobs:
   start:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'start' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     permissions:
       contents: write   # 经 refs API 打／删临时 tag
       actions: write    # dispatch deploy.yml、读运行列表
@@ -138,7 +138,7 @@ jobs:
   promote:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'promote' && inputs.target == 'production' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: write    # dispatch deploy.yml、读运行列表
@@ -185,7 +185,7 @@ jobs:
   check:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'promote' && inputs.stage == 'check' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -196,7 +196,7 @@ jobs:
   release-branch:
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run && inputs.method == 'release-branch' && inputs.target == 'production' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     permissions:
       contents: write   # 推 edgeone-release
     env:

@@ -127,11 +127,14 @@ class Plan(unittest.TestCase):
         self.assertFalse(any("当前版本" in w for w in plan(web=C, stage="check")["warnings"]))
 
     def test_hosted_runner_target_warns_first(self):
-        w = plan(skew=lambda s: {"e1": True, "same_deploy": False, "self_hosted": False})["warnings"]
+        w = plan(skew=lambda s: {"e1": True, "same_deploy": False, "self_hosted": False, "main_self_hosted": True})["warnings"]
         self.assertIn("托管 runner", w[0])
         self.assertIn("release-branch", w[0])
         w2 = plan(skew=lambda s: {"e1": True, "same_deploy": True, "self_hosted": True})["warnings"]
         self.assertFalse(any("托管 runner" in x for x in w2))
+        # main 也跑托管（仓库公开期间）：目标跑托管不算问题
+        w3 = plan(skew=lambda s: {"e1": True, "same_deploy": True, "self_hosted": False, "main_self_hosted": False})["warnings"]
+        self.assertFalse(any("托管 runner" in x for x in w3))
 
     def test_empty_history_is_error_not_crash(self):
         p = plan(log="")

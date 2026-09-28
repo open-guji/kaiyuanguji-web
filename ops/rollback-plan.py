@@ -105,8 +105,9 @@ def pipeline_skew(sha, main_ref="origin/main"):
     mine = git("show", f"{sha}:.github/workflows/deploy.yml", check=False)
     main = git("show", f"{main_ref}:.github/workflows/deploy.yml", check=False)
     return {"e1": e1, "same_deploy": None if main is None else mine == main,
-            # overview#184 起 runner 改自托管；更早的 deploy.yml 仍写 ubuntu-latest
-            "self_hosted": None if mine is None else "self-hosted" in mine}
+            # runner 口径：overview#184 改过自托管，仓库公开期间（09-28 起）又回到托管——只有目标与 main 不一致时才要紧
+            "self_hosted": None if mine is None else "self-hosted" in mine,
+            "main_self_hosted": None if main is None else "self-hosted" in main}
 
 
 def has_version_endpoint(sha):
@@ -164,8 +165,8 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         warnings.append(f"目标就是{'正式站' if target == 'production' else '测试站'}当前版本 {resolved[:12]}，回滚等于重发一遍")
     if resolved and method == "promote" and skew:
         k = skew(resolved) or {}
-        if k.get("self_hosted") is False:
-            warnings.insert(0, f"{resolved[:12]} 的 deploy.yml 还跑 GitHub 托管 runner（早于 overview#184 改自托管）：托管额度用完期间，"
+        if k.get("main_self_hosted") is True and k.get("self_hosted") is False:
+            warnings.insert(0, f"{resolved[:12]} 的 deploy.yml 还跑 GitHub 托管 runner（main 已改自托管，overview#184）：托管额度用完期间，"
                                "测试站重建会一直排队、永远不开跑。这种情况下正式站请改用 method=release-branch")
         if k.get("e1") is False:
             warnings.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py）：测试站按它自己的 deploy.yml 重建，"
