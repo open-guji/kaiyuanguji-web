@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import {
-    runCutoverCheck, renderMarkdown, parseArgs, uiVersionFromLock, metaContent, httpGet, ITEMS,
+    runCutoverCheck, renderMarkdown, parseArgs, uiVersionFromLock, metaContent, robotsVerdict, httpGet, ITEMS,
 } from '../cutover-check.mjs';
 
 const NOW = new Date('2026-09-28T00:00:00Z');
@@ -88,6 +88,26 @@ test('绑成了测试站构建：noindex、角标、robots 全禁都抓到', asy
     const rep = await run(host, fakeSite(host, over));
     for (const id of ['noindex', 'badge', 'robots']) assert.equal(byId(rep, id).status, 'fail', id);
     assert.equal(rep.ok, false);
+});
+
+test('robots：空的 Disallow: 算允许，行尾注释忽略', async () => {
+    const host = 'www.kaiyuanguji.com';
+    const robotsIs = async (body) => byId(await run(host, fakeSite(host, { [`https://${host}/robots.txt`]: { status: 200, body } })), 'robots');
+    let r = await robotsIs('User-agent: *\nDisallow:\n');
+    assert.equal(r.status, 'pass');
+    assert.match(r.detail, /空的 Disallow:/);
+    assert.equal((await robotsIs('User-agent: *\nAllow: / # 全站开放\n')).status, 'pass');
+    assert.equal((await robotsIs('User-agent: *\nDisallow:   # 不禁止任何路径\n')).status, 'pass');
+    assert.equal((await robotsIs('User-agent: *\nDisallow: / # 测试站\n')).status, 'fail');
+    assert.equal((await robotsIs('User-agent: *\nDisallow: /private/\n')).status, 'fail');
+    assert.equal((await robotsIs('# Allow: /\nUser-agent: *\n')).status, 'fail');
+});
+
+test('robotsVerdict', () => {
+    assert.deepEqual(robotsVerdict('User-agent: *\r\nDisallow:\r\n'), { disallowAll: false, allowRoot: false, emptyDisallow: true });
+    assert.deepEqual(robotsVerdict('allow: /#x\nDISALLOW : /'), { disallowAll: true, allowRoot: true, emptyDisallow: false });
+    assert.deepEqual(robotsVerdict('Disallow: /admin/\n# Disallow: /'), { disallowAll: false, allowRoot: false, emptyDisallow: false });
+    assert.deepEqual(robotsVerdict(''), { disallowAll: false, allowRoot: false, emptyDisallow: false });
 });
 
 test('/api/auth/me 503：说明控制台配置没带进去', async () => {

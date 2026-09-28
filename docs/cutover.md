@@ -3,24 +3,30 @@
 把 `www.kaiyuanguji.com` 和 `kaiyuanguji.com` 两个域名从旧的静态项目 **kaiyuanguji** 换绑到全栈项目 **kyg-ssr-spike**（现挂在 `ssr-test.kaiyuanguji.com`）。
 切站在凌晨做，由**用户在 EdgeOne 控制台**解绑、换绑域名。出了问题就回滚，也就是把域名绑回旧项目，约 5 分钟。
 
-判断成没成只看一条命令：
+判断成没成只看一个检查：**cutover-check**。
+
+**当晚一律在 GitHub Actions 里手动运行 Cutover check**：`domain` 参数默认 `www.kaiyuanguji.com`，演练填 `ssr-test.kaiyuanguji.com`，结果写在 job 摘要里。
+workflow 固定检出最新的 `main`，所以「UI 期望版本」取的一定是 main 的 package-lock。
+
+本地只作备用。本地跑之前**必须**先切到最新的 main，否则 UI 期望版本会取成当前分支的，结论不可信：
 
 ```bash
+git fetch && git checkout --detach origin/main
 node ops/cutover-check.mjs                 # 默认查 www.kaiyuanguji.com
+node ops/cutover-check.mjs ssr-test.kaiyuanguji.com
 ```
 
-也可以在 GitHub Actions 里手动运行 **Cutover check**，`domain` 参数默认 `www.kaiyuanguji.com`，结果写在 job 摘要里。
-这条命令全程只读：只发 GET 请求，不带凭证，也不碰 EdgeOne 配置。
-退出码 0 表示回滚项全部通过，1 表示有回滚项失败。
+这个检查全程只读：只发 GET 请求，不带凭证，也不碰 EdgeOne 配置。
+退出码 0 表示回滚项全部通过，1 表示有回滚项失败。下文写「跑 cutover-check」都指上面这个 Actions。
 
 ## 两个角色
 
 | 谁 | 做什么 |
 |---|---|
 | **用户**（EdgeOne 控制台） | 解绑、换绑域名，看域名和证书状态，登录做手测 |
-| **网站总管**（会话） | 跑检查，读结果，喊「成」或「回滚」 |
+| **网站总管**（会话） | 冻结／恢复发布，跑检查，读结果，清缓存，喊「成」或「回滚」 |
 
-网站总管**不操作**域名。这份文档和脚本也都不改任何 EdgeOne 配置。
+网站总管**不操作**域名。这份文档和脚本也都不改任何 EdgeOne 域名配置；网站总管只做清缓存。
 
 ## 检查项与回滚线
 
@@ -33,7 +39,7 @@ node ops/cutover-check.mjs                 # 默认查 www.kaiyuanguji.com
 | bim-ui-version 与 main 一致 | 回滚 | 新项目跑的是别的版本。如果页面版本≠main，但与 latest.json 记录的 promote 版本一致，就降为 ⚠️：说明 main 刚升了 UI，还没 promote，这不算问题 |
 | 没有 noindex | 回滚 | 绑上去的是测试站构建，会被搜索引擎除名 |
 | 没有测试站角标 | 回滚 | 同上 |
-| robots.txt 允许收录 | 回滚 | 同上 |
+| robots.txt 允许收录 | 回滚 | 同上。有 `Allow: /` 或空的 `Disallow:` 算允许，有 `Disallow: /` 算禁止；行尾 `#` 注释忽略 |
 | 3 个 `/item/<id>` 返回 200 且带书名 | 回滚 | 旧静态站上这 3 页是 404。它们失败说明域名还指向旧项目，或者条目页渲染坏了 |
 | `/book-index?id=` 308 跳到 `/item/<id>` | 回滚 | 中间件没生效，旧链接进不了新地址 |
 | `/api/feedback` 200 | 回滚 | 边缘函数没部署上 |
@@ -47,14 +53,14 @@ node ops/cutover-check.mjs                 # 默认查 www.kaiyuanguji.com
 
 ## 切站当晚逐分钟清单
 
-T 表示用户开始解绑的那一刻。所有命令都在仓库根目录跑，用 Actions 跑也可以。
+T 表示用户开始解绑的那一刻。「跑 cutover-check」一律指在 Actions 里运行 Cutover check（见文首）。
 
 ### 前一天（必须全部做完才能约时间）
 
 | 谁 | 做什么 | 看到什么算过 |
 |---|---|---|
 | 网站总管 | 确认 kyg-ssr-spike 已经带上 E1（#78）重新部署过，也就是 `main` 合入 E1 之后跑过一次 production promote | 下一行的 auth 检查为 ✅ |
-| 网站总管 | `node ops/cutover-check.mjs ssr-test.kaiyuanguji.com` | **回滚项全部 ✅**。裸域跳转和 http→https 在演练时只是关注项。**2026-09-28 演练时 `/api/auth/me` 是 503**，见文末 |
+| 网站总管 | 跑 cutover-check，`domain` 填 `ssr-test.kaiyuanguji.com` | **回滚项全部 ✅**。裸域跳转和 http→https 在演练时只是关注项。**2026-09-28 演练时 `/api/auth/me` 是 503**，见文末 |
 | 用户 | 在控制台确认 kyg-ssr-spike 的**生产环境**变量已配置（AUTH_JWT_SECRET、ERROR_VIEW_TOKEN 等，与旧项目 kaiyuanguji 对齐） | 与旧项目逐项一致 |
 | 用户 | 查清 `kaiyuanguji.com → www` 的 301 现在配在哪里：是站点层规则，还是旧项目里的重定向。换绑后这条规则要在新项目上依然生效 | 知道换绑后裸域由谁负责跳转 |
 | 用户 | 截图旧项目 kaiyuanguji 的域名绑定页（域名、证书、回源设置），回滚时照着绑 | 截图已保存 |
@@ -63,16 +69,34 @@ T 表示用户开始解绑的那一刻。所有命令都在仓库根目录跑，
 
 | 时刻 | 谁 | 做什么 | 看到什么 → 怎么办 |
 |---|---|---|---|
-| T−15 | 网站总管 | 跑基线：`node ops/cutover-check.mjs`（这时查的还是旧站） | 应该**正好** 4 个 ❌：3 个 `/item/` 返回 404，`/book-index` 返回 200，这是旧站的特征。其余项与文末「基线」一致。多出任何其他 ❌ 都**不切**，先查原因 |
-| T−10 | 网站总管 | `node ops/cutover-check.mjs ssr-test.kaiyuanguji.com` | 回滚项全部 ✅ 才继续，否则**不切** |
+| T−30 | 网站总管 | **冻结发布**：把仓库变量 `AUTO_PROMOTE_DATA` 设为 `false`；在 Actions 里确认没有正在跑的 deploy（Deploy 工作流没有排队或运行中的 run） | 变量已是 `false`，没有在跑的 deploy。从现在到「窗口结束」：**不 promote、不合 main、不发数据** |
+| T−15 | 网站总管 | 跑基线：跑 cutover-check，`domain` 用默认的 www（这时查的还是旧站） | 应该**正好** 4 个 ❌：3 个 `/item/` 返回 404，`/book-index` 返回 200，这是旧站的特征。其余项与文末「基线」一致。多出任何其他 ❌ 都**不切**，先查原因 |
+| T−10 | 网站总管 | 跑 cutover-check，`domain` 填 `ssr-test.kaiyuanguji.com` | 回滚项全部 ✅ 才继续，否则**不切** |
 | T−5 | 网站总管 | 在群里喊「可以切」 | |
 | T+0 | 用户 | 在旧项目 **kaiyuanguji** 上解绑 `www.kaiyuanguji.com` 和 `kaiyuanguji.com` | |
-| T+1 | 用户 | 在 **kyg-ssr-spike** 上绑定这两个域名，等域名状态变为「已生效」、证书变为「已部署」 | 超过 T+4 仍未生效：回滚 |
-| T+3 | 网站总管 | `node ops/cutover-check.mjs` | 结论为 ✅：进入 T+6。结论为 ❌：进入 T+4 |
-| T+4 | 网站总管 | 只有 T+3 出现 ❌ 时才做：等 1 分钟后重跑一次（边缘节点生效可能有延迟） | 仍然 ❌：**回滚**。特别是 `/api/auth/me` 返回 503、noindex 或角标出现、条目页 5xx，这些不是延迟造成的，**不用等，直接回滚** |
-| T+6 | 用户 | 用无痕窗口打开 www：首页、搜索一本书、打开详情页，然后**登录一次** | 打不开或登不上：回滚 |
-| T+8 | 网站总管 | 再跑一次 `node ops/cutover-check.mjs`，结果贴到看板卡 | 仍然 ✅：**切站完成** |
+| T+1 | 用户 | 在 **kyg-ssr-spike** 上绑定这两个域名，等域名状态变为「已生效」、证书变为「已部署」 | 迟迟不生效：按 T+4 的「还没生效」处理 |
+| T+2 | 网站总管 | **清缓存**，见下文「清缓存」 | 返回 `DomainNotFound`：**不回滚**，说明换绑还没生效，按 T+4 的「还没生效」处理 |
+| T+3 | 网站总管 | 跑 cutover-check | 结论为 ✅：进入 T+6。结论为 ❌：进入 T+4 |
+| T+4 | 网站总管 | 只有 T+3 出现 ❌ 时才做：先看 ❌ 属于哪一类，见下表「T+4 分类」 | 新站故障：**立即回滚**。还没生效：按 TTL 等，每 2 分钟重跑 |
+| T+6 | 用户 | 用无痕窗口打开 www：首页、搜索一本书、打开详情页、打开一本书的**全文页**、打开 `/admin/errors`，然后**登录一次** | 任何一页打不开，或登不上：回滚 |
+| T+8 | 网站总管 | 再跑一次 cutover-check，结果贴到看板卡 | 仍然 ✅：**切站完成**，进入「窗口结束：恢复发布」 |
 | T+10 起 | 网站总管 | 盯 30 分钟监控：私有仓的 Monitor，以及公开仓 open-guji-monitor 的 A 探测 | 错误突增：回滚 |
+
+#### T+4 分类
+
+| 类别 | 特征 | 怎么办 |
+|---|---|---|
+| **新站故障** | 任一项：`/api/auth/me` 返回 503；出现 noindex；出现测试站角标；robots 禁止收录；任何 5xx；证书握手失败 | 不是延迟造成的，**不用等，立即回滚** |
+| **还没生效** | 3 个 `/item/` **都**返回 404，**且** `/book-index?id=` 返回 200。这就是 T−15 基线里的旧站特征，说明请求还落在旧项目上 | **不回滚**，按 TTL 等：每 2 分钟重跑一次 cutover-check，并重做一次 T+2 清缓存。等到 TTL 过去仍是旧站特征，再回滚 |
+
+两类都不像（比如只有 1 个 `/item/` 404，或 `/api/feedback` 失败），按新站故障处理：先重跑一次确认，仍然 ❌ 就回滚。
+
+### 清缓存（T+2、R+2，网站总管执行）
+
+- **首选** `purge_host`，目标 `kaiyuanguji.com`（EdgeOne `CreatePurgeTask`，`Type=purge_host`，`Targets=["kaiyuanguji.com"]`；与 deploy.yml 正式站发布后那一步相同）。这会清整站，www 也在内。
+- **备选** 在 Actions 里手动运行 **EdgeOne purge URLs**，`urls` 填要清的完整 URL。
+- 目标**不要写 www**：zone 里注册的加速域名是裸域 `kaiyuanguji.com`，用 `www.kaiyuanguji.com` 的 URL 做目标会进 `FailedList`，等于没清。
+- 换绑后清缓存可能返回 `DomainNotFound`（域名在换绑过程中暂时不在 zone 的加速域名里）。这种情况**不回滚**，按「还没生效」处理：等几分钟再清一次。
 
 ### 回滚（约 5 分钟）
 
@@ -80,13 +104,22 @@ T 表示用户开始解绑的那一刻。所有命令都在仓库根目录跑，
 |---|---|---|---|
 | R+0 | 用户 | 在 kyg-ssr-spike 上解绑两个域名 | |
 | R+1 | 用户 | 照截图把两个域名绑回旧项目 kaiyuanguji | 状态为「已生效」 |
-| R+3 | 网站总管 | `node ops/cutover-check.mjs` | 回到 T−15 的基线：正好那 4 个旧站特征项 ❌，其余项和基线一样 |
-| R+5 | 网站总管 | 把失败的检查表贴到看板卡，写明原因和下次切站的前置条件 | |
+| R+2 | 网站总管 | **清缓存**，同 T+2（见「清缓存」） | 返回 `DomainNotFound` 不算失败，等几分钟再清一次 |
+| R+3 | 网站总管 | 跑 cutover-check | 回到 T−15 的基线：正好那 4 个旧站特征项 ❌，其余项和基线一样 |
+| R+5 | 网站总管 | 把失败的检查表贴到看板卡，写明原因和下次切站的前置条件，然后进入「窗口结束：恢复发布」 | |
+
+### 窗口结束：恢复发布
+
+切站完成（T+8 仍然 ✅、T+10 起的 30 分钟监控没有异常）或回滚完成（R+5）之后，由网站总管做：
+
+1. 把仓库变量 `AUTO_PROMOTE_DATA` 改回 `true`，或者删掉这个变量（默认就是开）。
+2. 在看板卡上写明「发布已恢复」和时间。
+3. 窗口里压下的 promote、合 main、数据发布从这时起照常进行。切站成功的话，下一次 production promote 之后再跑一次 cutover-check，确认新项目还是 ✅。
 
 ## 切完以后（不在当晚做）
 
 - 现在 `deploy.yml` 的正式站发布仍然推送到旧项目 kaiyuanguji，kyg-ssr-spike 只是双跑镜像，条目页失效打的也是 `ssr-test` 域名。切站成功后要另开一道，把正式发布和失效目标改到新项目和 www。在那之前，每次 production promote 仍会同步到 kyg-ssr-spike（W2b 双跑），数据不会断。
-- 旧项目 kaiyuanguji 至少保留一周，不要删，留作回滚目标。
+- 旧项目 kaiyuanguji 和 `edgeone-release` 分支**至少保留 4 周**（与 33 卡一致），不要删，留作回滚目标。
 - 关注项里的 http→https：切站稳定后，在控制台给新项目打开强制 HTTPS。
 
 ## 附：2026-09-28 演练记录

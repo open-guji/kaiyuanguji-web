@@ -181,6 +181,21 @@ export function metaContent(html, name) {
     return html.match(re)?.[1] ?? null;
 }
 
+/**
+ * 读 robots.txt 的三个信号（去掉行尾 # 注释、不分大小写）：
+ *   disallowAll    有 `Disallow: /`
+ *   allowRoot      有 `Allow: /`
+ *   emptyDisallow  有值为空的 `Disallow:`——按标准等于全部允许
+ */
+export function robotsVerdict(text) {
+    const lines = String(text ?? '').split(/\r?\n/).map((l) => l.replace(/#.*$/, '').trim());
+    return {
+        disallowAll: lines.some((l) => /^disallow\s*:\s*\/$/i.test(l)),
+        allowRoot: lines.some((l) => /^allow\s*:\s*\/$/i.test(l)),
+        emptyDisallow: lines.some((l) => /^disallow\s*:$/i.test(l)),
+    };
+}
+
 function isRedirect(status) {
     return [301, 302, 303, 307, 308].includes(status);
 }
@@ -250,11 +265,11 @@ export async function runCutoverCheck({
     if (robots.err || robots.res.status !== 200) {
         add('robots', 'robots.txt 允许收录', 'block', 'fail', robots.err ?? `HTTP ${robots.res.status}`);
     } else {
-        const lines = robots.res.body.split(/\r?\n/).map((l) => l.trim());
-        const disallowAll = lines.some((l) => /^disallow:\s*\/\s*$/i.test(l));
-        const allowRoot = lines.some((l) => /^allow:\s*\/\s*$/i.test(l));
-        add('robots', 'robots.txt 允许收录', 'block', !disallowAll && allowRoot ? 'pass' : 'fail',
-            disallowAll ? '有 Disallow: /（测试站口径）' : allowRoot ? `Allow: /${/sitemap:/i.test(robots.res.body) ? '，带 Sitemap' : ''}` : `没有 Allow: /：${short(robots.res.body)}`);
+        const { disallowAll, allowRoot, emptyDisallow } = robotsVerdict(robots.res.body);
+        const allowed = allowRoot || emptyDisallow;
+        const how = allowRoot ? 'Allow: /' : '空的 Disallow:';
+        add('robots', 'robots.txt 允许收录', 'block', !disallowAll && allowed ? 'pass' : 'fail',
+            disallowAll ? '有 Disallow: /（测试站口径）' : allowed ? `${how}${/sitemap:/i.test(robots.res.body) ? '，带 Sitemap' : ''}` : `没有 Allow: / 或空的 Disallow:：${short(robots.res.body)}`);
     }
 
     // 条目页
