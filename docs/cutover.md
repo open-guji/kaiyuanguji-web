@@ -75,6 +75,7 @@ T 表示用户开始解绑的那一刻。「跑 cutover-check」一律指在 Act
 | T−5 | 网站总管 | 在群里喊「可以切」 | |
 | T+0 | 用户 | 在旧项目 **kaiyuanguji** 上解绑 `www.kaiyuanguji.com` 和 `kaiyuanguji.com` | |
 | T+1 | 用户 | 在 **kyg-ssr-spike** 上绑定这两个域名，等域名状态变为「已生效」、证书变为「已部署」 | 迟迟不生效：按 T+4 的「还没生效」处理 |
+| T+1.5 | 用户 | **改 DNS**：站点 kaiyuanguji.com → 域名服务 → DNS 记录，把主机记录 `www` 的 CNAME 改成 kyg-ssr-spike 域名管理里 www 那一行显示的 CNAME。**这一步不做，旧项目一解绑 www 就 NXDOMAIN、整站打不开**（2026-09-28 实际切站时漏了这步，断了约 30 分钟） | `dig www.kaiyuanguji.com` 解析到与 ssr-test 相同的 IP |
 | T+2 | 网站总管 | **清缓存**，见下文「清缓存」 | 返回 `DomainNotFound`：**不回滚**，说明换绑还没生效，按 T+4 的「还没生效」处理 |
 | T+3 | 网站总管 | 跑 cutover-check | 结论为 ✅：进入 T+6。结论为 ❌：进入 T+4 |
 | T+4 | 网站总管 | 只有 T+3 出现 ❌ 时才做：先看 ❌ 属于哪一类，见下表「T+4 分类」 | 新站故障：**立即回滚**。还没生效：按 TTL 等，每 2 分钟重跑 |
@@ -149,3 +150,11 @@ T 表示用户开始解绑的那一刻。「跑 cutover-check」一律指在 Act
 `/api/auth/me` 返回 503 的原因：ssr-test 最后一次部署在 2026-09-27 21:53 UTC，早于 E1（#78，2026-09-28 01:06 UTC 合入）。E1 之前构建时没有带上控制台环境变量。**合入 E1 后需要跑一次 production promote，让 kyg-ssr-spike 重新部署**，然后再演练。这一步没过就不能切站。
 
 **基线**：同一时间对当前的 www（旧静态项目）跑 `node ops/cutover-check.mjs`，结果是 3 个 `/item/` 返回 404，`/book-index?id=` 返回 200（不是 308）。这 4 个 ❌ 就是旧站的特征。另有两个 ⚠️：sitemap-index.xml 返回 404，http 不跳 https。其余项全部 ✅，裸域 301 到 www，证书到 2026-12-04。
+
+## 附：2026-09-28 实际切站记录
+
+- 只换了 `www`：裸域 `kaiyuanguji.com` 是站点加速域名，301 由规则引擎（HOST=kaiyuanguji.com → 访问 URL 重定向到 www）负责，不在 Pages 项目上，不用换绑。
+- 约 18:10Z 用户在旧项目删掉 www；DNS 的 `www` 仍 CNAME 到旧项目的 `www.kaiyuanguji.com.pages.dnsoe8.com`（已 NXDOMAIN），www 打不开。
+- 约 18:42Z 用户在 kyg-ssr-spike 加上 www、并把 DNS 的 www 记录改成新 CNAME，恢复。
+- 18:43Z cutover-check（www）回滚项全过；用户无痕手测通过；`AUTO_PROMOTE_DATA` 已改回 true。
+- 旧项目 kaiyuanguji 保留至少 4 周作回滚目标。DNS 第 2 页还有一条 `@ → www...dnsoe8.com` 的旧 CNAME（仅 DNS、未加速），与加速的 `@` 并存，待清理。
