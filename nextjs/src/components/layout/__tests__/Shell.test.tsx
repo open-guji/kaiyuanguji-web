@@ -6,10 +6,14 @@ jest.mock('next/navigation', () => ({
     useRouter: () => ({ push: jest.fn() }),
 }));
 
+// 浮动反馈钮来自 book-index-ui，这里只关心它在不在
+jest.mock('../../common/FeedbackWidget', () => () => <div data-testid="fab" />);
+
 import Navbar from '../Navbar';
 import MobileDrawer from '../MobileDrawer';
 import Footer from '../Footer';
-import { isCurrent, MORE_LINKS, PRIMARY_LINKS } from '../nav-links';
+import LayoutWrapper from '../LayoutWrapper';
+import { isCurrent, MAIN_CONTENT_ID, MOBILE_DRAWER_ID, MORE_LINKS, PRIMARY_LINKS } from '../nav-links';
 
 describe('isCurrent', () => {
     it('首页只精确匹配', () => {
@@ -74,6 +78,69 @@ describe('MobileDrawer', () => {
         render(<MobileDrawer isOpen onClose={onClose} />);
         fireEvent.keyDown(window, { key: 'Escape' });
         expect(onClose).toHaveBeenCalled();
+    });
+});
+
+describe('无障碍（B9 / A2）', () => {
+    beforeEach(() => {
+        mockPath = '/';
+    });
+
+    it('汉堡按钮带 aria-expanded / aria-controls，随抽屉开合变化', () => {
+        render(<LayoutWrapper>正文</LayoutWrapper>);
+        const burger = screen.getByRole('button', { name: '打开菜单' });
+        expect(burger).toHaveAttribute('aria-controls', MOBILE_DRAWER_ID);
+        expect(burger).toHaveAttribute('aria-expanded', 'false');
+        fireEvent.click(burger);
+        expect(burger).toHaveAttribute('aria-expanded', 'true');
+        expect(document.getElementById(MOBILE_DRAWER_ID)).toBeInTheDocument();
+    });
+
+    it('抽屉是模态对话框：打开时焦点进来，Tab 困在里面，关闭后焦点回到汉堡按钮', () => {
+        render(<LayoutWrapper>正文</LayoutWrapper>);
+        const burger = screen.getByRole('button', { name: '打开菜单' });
+        burger.focus();
+        fireEvent.click(burger);
+
+        const dialog = screen.getByRole('dialog', { name: '站点菜单' });
+        expect(dialog).toHaveAttribute('aria-modal', 'true');
+        const close = within(dialog).getByRole('button', { name: '关闭菜单' });
+        expect(close).toHaveFocus();
+
+        // 最后一个可聚焦元素上按 Tab → 回到第一个
+        const focusables = dialog.querySelectorAll<HTMLElement>('a[href], button');
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        last.focus();
+        fireEvent.keyDown(window, { key: 'Tab' });
+        expect(first).toHaveFocus();
+        // 第一个上按 Shift+Tab → 到最后一个
+        fireEvent.keyDown(window, { key: 'Tab', shiftKey: true });
+        expect(last).toHaveFocus();
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(burger).toHaveFocus();
+    });
+
+    it('「跳到正文」指向 main', () => {
+        render(<LayoutWrapper>正文</LayoutWrapper>);
+        expect(screen.getByRole('link', { name: '跳到正文' })).toHaveAttribute('href', `#${MAIN_CONTENT_ID}`);
+        expect(screen.getByRole('main')).toHaveAttribute('id', MAIN_CONTENT_ID);
+    });
+
+    it('抽屉打开时不渲染浮动反馈钮；页面底部给浮钮留白', () => {
+        const { container } = render(<LayoutWrapper>正文</LayoutWrapper>);
+        expect(screen.getByTestId('fab')).toBeInTheDocument();
+        expect(container.querySelector('.og-fab-space')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: '打开菜单' }));
+        expect(screen.queryByTestId('fab')).not.toBeInTheDocument();
+    });
+
+    it('hideFeedbackButton 时既无浮钮也无留白', () => {
+        const { container } = render(<LayoutWrapper hideFeedbackButton>正文</LayoutWrapper>);
+        expect(screen.queryByTestId('fab')).not.toBeInTheDocument();
+        expect(container.querySelector('.og-fab-space')).not.toBeInTheDocument();
     });
 });
 

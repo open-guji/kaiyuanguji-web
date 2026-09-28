@@ -3,10 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { PRIMARY_LINKS, isCurrent } from './nav-links';
+import { MOBILE_DRAWER_ID, PRIMARY_LINKS, isCurrent } from './nav-links';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
+  /** 抽屉是否打开（给汉堡按钮的 aria-expanded） */
+  menuOpen?: boolean;
+  /** 汉堡按钮的 ref：抽屉关闭后把焦点还给它 */
+  menuButtonRef?: React.Ref<HTMLButtonElement>;
   /** 首页：页头透明，浮在坤舆图上 */
   onHero?: boolean;
 }
@@ -15,7 +19,7 @@ interface NavbarProps {
  * 顶栏（N1）：无底边线、无竖线分隔，当前项只用一条朱色下划线。
  * 手机端收成右侧汉堡按钮（44×44）。
  */
-export default function Navbar({ onMobileMenuToggle, onHero = false }: NavbarProps) {
+export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButtonRef, onHero = false }: NavbarProps) {
   const pathname = usePathname();
 
   return (
@@ -39,7 +43,15 @@ export default function Navbar({ onMobileMenuToggle, onHero = false }: NavbarPro
         </nav>
 
         <div className="og-nav-right">
-          <button type="button" onClick={onMobileMenuToggle} className="og-burger" aria-label="打开菜单">
+          <button
+            ref={menuButtonRef}
+            type="button"
+            onClick={onMobileMenuToggle}
+            className="og-burger"
+            aria-label="打开菜单"
+            aria-expanded={menuOpen}
+            aria-controls={MOBILE_DRAWER_ID}
+          >
             <svg
               width="22"
               height="22"

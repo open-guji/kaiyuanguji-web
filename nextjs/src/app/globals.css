@@ -583,6 +583,41 @@
     cursor: pointer;
   }
 
+  .og-burger--close {
+    display: inline-flex;
+  }
+
+  /* 「跳到正文」：平时移出视口，键盘聚焦时出现在左上角 */
+  .og-skip {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 1100;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: #fff;
+    font-size: var(--fs-base);
+    text-decoration: none;
+    transform: translateY(-200%);
+  }
+  .og-skip:focus {
+    transform: none;
+    text-decoration: none;
+  }
+
+  /* 浮动反馈钮的底部留白，与浮钮等高（48px 按钮 + 24px 底距 + 余量）。
+     FX4 起 book-index-ui 提供 --bim-feedback-fab-offset，届时自动跟随。 */
+  .og-fab-space {
+    height: var(--bim-feedback-fab-offset, 88px);
+  }
+  .og-footer + .og-fab-space {
+    background: var(--color-tint);
+  }
+
   /* 手机抽屉：无竖条、无图标，当前项朱色字＋浅朱底 */
   .og-drawer-mask {
     position: fixed;
@@ -619,7 +654,7 @@
     margin: 20px 12px 4px;
     font-size: var(--fs-xs);
     letter-spacing: 0.2em;
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
   }
   .og-drawer-body a {
     display: flex;
@@ -677,7 +712,7 @@
   .og-footer li a {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
     color: var(--color-ink-2);
     text-decoration: none;
   }
@@ -700,14 +735,14 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0 20px;
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
     font-size: var(--fs-xs);
   }
   .og-footer-bottom a {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
-    color: var(--color-ink-3);
+    min-height: 44px;
+    color: var(--color-ink-2);
     text-decoration: none;
   }
 
@@ -733,11 +768,6 @@
     }
     .og-footer-grid > :first-child {
       grid-column: 1 / -1;
-    }
-    /* 手机上的点击目标 ≥ 44px */
-    .og-footer li a,
-    .og-footer-bottom a {
-      min-height: 44px;
     }
   }
 }
@@ -783,7 +813,13 @@
   .home-hero-bg {
     position: absolute;
     inset: 0;
-    background: url("/images/kunyu-hero.webp") center 30% / cover no-repeat;
+  }
+  .home-hero-bg img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
   }
   /* 宣纸色罩：左浓右淡，右侧露出古地图 */
   .home-hero-veil {
@@ -857,12 +893,12 @@
     align-items: center;
     gap: 0 1.2em;
     font-size: var(--fs-sm);
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
   }
   .home-under a {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
   }
 
   .home-band {
@@ -882,7 +918,7 @@
     font-weight: var(--fw-bold);
   }
   .home-meta {
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
     font-size: var(--fs-sm);
   }
   .home-features {
@@ -904,7 +940,7 @@
   .home-feature .status {
     font-size: var(--fs-xs);
     font-weight: var(--fw-regular);
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
   }
   .home-feature .status.is-live {
     color: var(--color-zhu);
@@ -950,8 +986,8 @@
     .home-hero {
       min-height: 0;
     }
-    .home-hero-bg {
-      background-position: 70% 20%;
+    .home-hero-bg img {
+      object-position: 70% 20%;
     }
     .home-hero-veil {
       background: linear-gradient(180deg, rgba(250, 247, 242, 0.55) 0%, rgba(250, 247, 242, 0.9) 45%, rgba(250, 247, 242, 1) 100%);
@@ -984,9 +1020,6 @@
       flex-direction: column;
       align-items: flex-start;
     }
-    .home-under a {
-      min-height: 44px;
-    }
     .home-band {
       padding: 16px var(--shell-gutter) 48px;
     }
@@ -1013,4 +1046,17 @@
       min-height: 44px;
     }
   }
+}
+
+/* =========================================================
+   反馈页（B3）：book-index-ui 的 FeedbackList 用白字压在语义色块上，
+   默认橙 #ff9800 / 红 #f44336 / 绿 #4caf50 对白字只有 2.2–3.7。
+   只在这一页把三个语义色压深（色相不变），白字对比度 ≥ 5：
+   橙 #b45309 = 5.02，红 #b91c1c = 6.47，绿 #2f6b3f = 6.37。
+   不改全局：别处这几个色当文字色用在浅底上，本来就够。
+   ========================================================= */
+.og-feedback-page {
+  --bim-warning: #b45309;
+  --bim-danger: #b91c1c;
+  --bim-success: #2f6b3f;
 }

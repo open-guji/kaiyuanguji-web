@@ -26,6 +26,12 @@ export const MORE_LINKS: ShellLink[] = [
   { label: '反馈', href: '/feedback' },
 ];
 
+/** 手机抽屉的 id：汉堡按钮 aria-controls 指向它 */
+export const MOBILE_DRAWER_ID = 'og-mobile-drawer';
+
+/** 正文容器的 id：「跳到正文」链接指向它 */
+export const MAIN_CONTENT_ID = 'main-content';
+
 /** 当前路由是否落在某个入口下（首页只精确匹配） */
 export function isCurrent(pathname: string | null, href: string): boolean {
   if (!pathname) return false;

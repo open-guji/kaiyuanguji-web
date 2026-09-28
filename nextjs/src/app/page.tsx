@@ -10,7 +10,13 @@ export default function HomePage() {
   return (
     <LayoutWrapper navOnHero>
       <section className="home-hero">
-        <div className="home-hero-bg" aria-hidden="true" />
+        {/* 用 <picture> 而不是 CSS 背景：预加载扫描器能在 HTML 里直接发现它，
+            手机拿 800px 小图；fetchPriority=high 让首屏大图先下 */}
+        <picture className="home-hero-bg" aria-hidden="true">
+          <source media="(max-width: 760px)" srcSet="/images/kunyu-hero-m.webp" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/kunyu-hero.webp" alt="" width={1600} height={1337} fetchPriority="high" />
+        </picture>
         <div className="home-hero-veil" aria-hidden="true" />
         <div className="home-hero-inner">
           <p className="home-kicker">开源古籍 · 古籍数字化开放平台</p>

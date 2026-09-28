@@ -8,10 +8,11 @@ import ErrorMonitor from "@/components/common/ErrorMonitor";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
 
-// 全站黑体（N1）：字重只用 400 / 500 / 700 三档
+// 全站黑体（N1）：只加载 400 / 700 两档，少下一套 CJK 字形。
+// --fw-medium（500）按 CSS 字重匹配规则回落到 400，系统黑体有 500 的仍按 500 显示。
 const notoSans = Noto_Sans_SC({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "700"],
   display: "swap",
   variable: "--font-noto-sans",
 });
