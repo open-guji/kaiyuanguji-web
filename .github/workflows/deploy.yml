@@ -214,18 +214,6 @@ jobs:
           # 构建照样成功——整理本页在站上空白，无人得知。
           fetch_at book-text book-text "${{ needs.resolve.outputs.text_ref }}"
 
-      # 私有文本仓（P1-私有文本后端，2026-09-26）：内容不进 bundle-data.mjs 的产物、
-      # 不进公开 COS 路径，只单独同步到私有前缀（见下面 Sync private text 步骤）。
-      # BOOK_TEXT_PRIVATE_TOKEN 缺失时跳过——私有文本是增量功能，不能因为它没配
-      # 就把整个公开站的部署堵死。
-      - name: Clone private text repo
-        if: ${{ env.HAS_BOOK_TEXT_PRIVATE == 'true' }}
-        env:
-          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
-          BOOK_TEXT_PRIVATE_TOKEN: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN }}
-        run: |
-          git clone --depth 1 "https://x-access-token:${BOOK_TEXT_PRIVATE_TOKEN}@github.com/open-guji-core/book-text-private.git" book-text-private
-
       # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
       # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
       - name: Set data output root (outside nextjs/)
@@ -333,25 +321,6 @@ jobs:
         run: |
           cd nextjs
           node scripts/sync-to-cos.mjs
-
-      # 私有文本单独同步到同桶的私有前缀（ACL: private，逐对象覆盖）——见
-      # nextjs/scripts/sync-private-text-to-cos.mjs 文件头。与上一步公开同步
-      # 完全独立：任一步缺配置只跳过自己，不互相阻塞。
-      # T1：私有文本只由正式发布同步；测试站的 private-text 函数只读同一私有前缀，
-      # 不需要（也不应该）测试站自己再写一份。
-      - name: Sync private text to Tencent COS
-        if: ${{ env.DEPLOY_TARGET == 'production' && env.HAS_BOOK_TEXT_PRIVATE == 'true' && env.HAS_COS_SECRETS == 'true' }}
-        env:
-          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
-          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
-          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
-          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
-          COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
-          BOOK_TEXT_PRIVATE_DIR: ${{ github.workspace }}/book-text-private
-        run: |
-          cd nextjs
-          node scripts/sync-private-text-to-cos.mjs
 
       # --- A3 第一期：条目按内容哈希寻址，双写到同一个桶的新前缀 h1/ ---
       #
@@ -850,11 +819,11 @@ jobs:
             echo "::warning title=W2b 双跑失败::kyg-ssr-spike 本次没有部署成功（构建 $BUILD／部署 $DEPLOY），ssr-test 停在上一版；正式站发布不受影响"
           fi
 
-      # 自托管 runner（2026-09-28，overview#184）的工作目录跨 run 保留：私有文本仓的 clone
-      # 在 .git/config 里带着 token，数据仓 clone 也占盘——job 结束就删，不等下次 checkout 清。
+      # 自托管 runner（2026-09-28，overview#184）的工作目录跨 run 保留：数据仓 clone
+      # 占盘——job 结束就删，不等下次 checkout 清。
       - name: Clean up clones (self-hosted)
         if: always()
-        run: rm -rf book-text-private book-index-draft book-index book-text
+        run: rm -rf book-index-draft book-index book-text
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
