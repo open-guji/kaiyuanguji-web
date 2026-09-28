@@ -50,6 +50,7 @@ PASS_EXACT = {
     # CI 里 KYG_ 开头的还有 KYG_DATA_ROOT 等，将来谁加个 KYG_ 机密就会悄悄进构建。
     "KYG_RENDER_MODE",        # 全栈／静态开关
     "KYG_REVALIDATE_SECRET",  # /internal/revalidate 的密钥：next.config env 内联进服务端路由，见 ASSETS_FORBIDDEN_ENV
+    "KYG_DEPLOY_TARGET",      # /api/version 的 target（scripts/lib/build-info.cjs）；CUT2 起正式站全栈构建显式写 production
 }
 PASS_PREFIXES = ("NEXT_PUBLIC_", "SITEMAP_")
 # 构建要用、但值只许落在服务端的变量：assets/（浏览器能下到的静态文件）里一律不许出现

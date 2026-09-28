@@ -3,21 +3,22 @@
 
 回答三件事：现在线上是哪一版、要退回哪一版、用哪条路退、会连带动什么。
 
-  · 正式站（www）每次发布都是 edgeone-release 分支上的一个提交，提交信息里带源 commit：
-      Deploying to edgeone-release from @ open-guji/kaiyuanguji-web@<40 位 sha> 🚀
-    所以「上一次正式发布的 web commit」＝该分支历史里、比当前那版更早的第一个不同的源 commit。
-  · 两条回滚路（method）：
-      promote（默认，首选）：把目标 commit 在测试站重建一遍（deploy.yml target=staging，
-          跑完整 verify），绿了再 promote=code+data 上正式站。慢（约 20 分钟），但走的就是
-          平时发版那条路，发布后 e2e 照跑。数据＝测试站此刻的数据（main HEAD），不是回退前那版。
-      release-branch（快，只限正式站）：直接把 edgeone-release 恢复成当时那版产物的树，
-          推上去＋清 CDN。约 2 分钟、不重建、数据不动。但正式站 latest.json 的 webCommitId
-          不变——下一次自动 promote=data（每天 04:30）会按它重建代码，把回滚冲掉。
+  · 正式站（www）＝全栈项目 kyg-ssr-spike（CUT2，overview#241）。它是 CLI 直传，没有发布分支，
+    deploy.yml 每次正式发布在 release-log 分支追加一个空提交，提交信息里带源 commit：
+      Released to kyg-ssr-spike from @ open-guji/kaiyuanguji-web@<40 位 sha> 🚀 (…)
+    切站前的正式发布是 edgeone-release 分支上的提交（Deploying to edgeone-release from @ …@<sha> 🚀）；
+    那段时间 kyg-ssr-spike 每次同版本双跑，所以这段历史接在 release-log 后面照样算数。
+    「上一次正式发布的 web commit」＝这份历史里、比当前那版更早的第一个不同的源 commit。
+  · 回滚路（method）只剩 promote：把目标 commit 在测试站重建一遍（deploy.yml target=staging，
+    跑完整 verify），绿了再 promote=code+data 上正式站（kyg-ssr-spike）。约 20 分钟，走的就是
+    平时发版那条路，发布后 e2e 照跑。数据＝测试站此刻的数据（main HEAD），不是回退前那版。
+    原来的 release-branch（恢复 edgeone-release 产物）已停用：那条分支发的是旧项目 kaiyuanguji，
+    www 已不在它上面。要比 20 分钟更快止血，见 docs/runbook.md §8（控制台操作，不走 CI）。
   · 数据：deploy.yml 目前只接受「测试站指针里记的三仓 commit」或 main HEAD，没有「指定数据
     commit」的入口，所以本计划不单独回退数据（见 PR 描述「要改 deploy.yml 的部分」）。
 
-用法（仓库根，需要完整历史与 edgeone-release 分支）：
-  git fetch origin edgeone-release main
+用法（仓库根，需要完整历史、release-log 与 edgeone-release 分支）：
+  git fetch origin main edgeone-release release-log
   python3 ops/rollback-plan.py --target production                    # 退回上一次正式发布
   python3 ops/rollback-plan.py --target staging --web-commit <sha>    # 测试站演练
 在 GitHub Actions 里还会把结果写进 $GITHUB_OUTPUT 与 $GITHUB_STEP_SUMMARY。
@@ -34,7 +35,8 @@ import urllib.request
 DATA = "https://data.kaiyuanguji.com"
 SITES = {"production": "https://www.kaiyuanguji.com", "staging": "https://staging.kaiyuanguji.com"}
 POINTERS = {"production": f"{DATA}/latest.json", "staging": f"{DATA}/staging/latest.json"}
-RELEASE_RE = re.compile(r"Deploying to edgeone-release from @ [\w.-]+/[\w.-]+@([0-9a-f]{40})")
+# 两种发布记录：CUT2 起 release-log 上的「Released to kyg-ssr-spike」，之前 edgeone-release 上的「Deploying to edgeone-release」
+RELEASE_RE = re.compile(r"(?:Released to kyg-ssr-spike|Deploying to edgeone-release) from @ [\w.-]+/[\w.-]+@([0-9a-f]{40})")
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
 
 
@@ -66,6 +68,13 @@ def parse_releases(log_text):
         if m:
             out.append((rel.strip(), m.group(1)))
     return out
+
+
+def merged_releases(release_log_text, legacy_log_text):
+    """release-log（CUT2 起，较新）接在前、edgeone-release（切站前，较旧）接在后，新的在前。
+
+    切站后 edgeone-release 不再有新提交，所以直接拼接就是按时间排好的。"""
+    return parse_releases(release_log_text) + parse_releases(legacy_log_text)
 
 
 def previous_source(releases, current):
@@ -115,6 +124,8 @@ def has_version_endpoint(sha):
 
 
 STAGES = ("start", "promote", "check")
+METHODS = ("promote", "release-branch")  # release-branch 只为给出「已停用」的明确报错而保留
+FAST_PATH = "要更快止血：EdgeOne 控制台 kyg-ssr-spike 回退到上一次部署，或把 www 换绑回旧项目 kaiyuanguji（docs/runbook.md §8）"
 
 
 def make_plan(target, method, web_commit, releases, pointers, resolve_commit, supports_promote, has_version,
@@ -124,11 +135,15 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
     stage 只对 promote 路有意义（start → promote → check 分段手动触发，见 rollback.yml 顶部注释）。"""
     errors, warnings = [], []
     if method == "release-branch":
-        stage = "start"  # release-branch 一段走完，不分段
+        errors.append("release-branch 已停用（CUT2，overview#241）：它恢复的是 edgeone-release，发的是旧项目 kaiyuanguji，"
+                      "www 已不在那里。请用 method=promote；" + FAST_PATH)
+        stage = "start"
+    elif method not in METHODS:
+        errors.append(f"method 只能是 promote：{method}")
     if stage not in STAGES:
         errors.append(f"stage 只能是 {'/'.join(STAGES)}：{stage}")
     if stage != "start" and not web_commit:
-        # 正式站 promote 完 edgeone-release 就多了一版，「上一次正式发布」随之变了——后续段必须钉死 commit
+        # 正式站 promote 完 release-log 就多了一版，「上一次正式发布」随之变了——后续段必须钉死 commit
         errors.append(f"stage={stage} 必须显式给 web_commit（照抄 start 段摘要里的那个 commit）")
     if stage == "promote" and target != "production":
         errors.append("stage=promote 只用于 target=production（测试站演练走 start → check）")
@@ -150,27 +165,22 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         resolved = previous_source(releases, current_prod)
         chosen_by = "默认：上一次正式发布"
         if not resolved:
-            errors.append("edgeone-release 历史里找不到上一次正式发布（git fetch origin edgeone-release 了吗？）")
-
-    if method == "release-branch" and target != "production":
-        errors.append("release-branch 只能用于正式站（测试站是直接上传型项目，没有发布分支）")
+            errors.append("发布历史里找不到上一次正式发布（git fetch origin release-log edgeone-release 了吗？）")
 
     release_sha = release_for(releases, resolved) if resolved else None
-    if resolved and method == "release-branch" and not release_sha:
-        errors.append(f"{resolved[:12]} 从没正式发布过（edgeone-release 里没有它的产物），release-branch 路走不了，改用 promote")
     if resolved and method == "promote" and not supports_promote(resolved):
         errors.append(f"{resolved[:12]} 的 deploy.yml 还没有 target/promote 输入（T1 之前），promote 路重建不了测试站；"
-                      "正式站请改用 method=release-branch")
+                      "请换一个 T1 之后的 commit，或" + FAST_PATH[len("要更快止血："):])
     if resolved and resolved == current and stage == "start":
         warnings.append(f"目标就是{'正式站' if target == 'production' else '测试站'}当前版本 {resolved[:12]}，回滚等于重发一遍")
     if resolved and method == "promote" and skew:
         k = skew(resolved) or {}
         if k.get("main_self_hosted") is True and k.get("self_hosted") is False:
             warnings.insert(0, f"{resolved[:12]} 的 deploy.yml 还跑 GitHub 托管 runner（main 已改自托管，overview#184）：托管额度用完期间，"
-                               "测试站重建会一直排队、永远不开跑。这种情况下正式站请改用 method=release-branch")
+                               "测试站重建会一直排队、永远不开跑。" + FAST_PATH)
         if k.get("e1") is False:
             warnings.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py）：测试站按它自己的 deploy.yml 重建，"
-                            "不走白名单构建，重建后测试站 /api/auth/* 会 503；正式站 promote 时 ssr-test 双跑也会失败（不拦发布，只出警告）")
+                            "不走白名单构建，重建后测试站 /api/auth/* 会 503（正式站按 main 的 deploy.yml 构建，不受影响）")
         if k.get("same_deploy") is False:
             warnings.append(f"{resolved[:12]} 的 deploy.yml 与 main 不同：测试站按目标的旧流程重建并 verify，正式站却按 main 的流程构建，"
                             "测试站验过的不完全等于正式站要发的（根治需 deploy.yml 加 web_ref 输入，见 PR 描述）")
@@ -180,30 +190,25 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         warnings.append(f"{resolved[:12]} 没正式发布过——确认这是你要的版本")
     if method == "promote" and target == "production":
         warnings.append("promote 路：正式站数据会换成测试站此刻重建时的数据（三仓 main HEAD），不是回退前那版")
-    if method == "release-branch":
-        warnings.append("release-branch 路：正式站 latest.json 的 webCommitId 不会变，每天 04:30 的自动 promote=data 会按它"
-                        "重建代码、冲掉回滚——修好之前把仓库变量 AUTO_PROMOTE_DATA 设为 false，或随后补走一次 promote 路")
     for name, p in pointers.items():
         if p.get("_error"):
             warnings.append(f"{name} 数据指针读不到：{p['_error']}")
 
     steps = []
     short = resolved[:12] if resolved else "?"
-    if method == "promote" and stage == "start":
+    if method != "promote":
+        pass  # 已停用的 method：errors 里已说明，不给步骤
+    elif stage == "start":
         steps.append(f"打临时 tag 指向 {short}，按该 tag dispatch deploy.yml target=staging（完整 verify），运行建好即删 tag；本段不等它跑完")
         nxt = "stage=promote" if target == "production" else "stage=check"
         steps.append(f"那次重建绿了之后，再跑 Rollback：web_commit={short} {nxt}")
-    elif method == "promote" and stage == "promote":
+    elif stage == "promote":
         steps.append(f"确认 {short} 最近一次测试站重建是 completed success")
         steps.append("再核一遍测试站指针仍是目标（防 main 刚好有 push 抢先改写），dispatch deploy.yml target=production promote=code+data；本段不等它跑完")
         steps.append(f"它绿了之后，再跑 Rollback：web_commit={short} stage=check")
-    elif method == "promote":
+    else:
         site = "www" if target == "production" else "测试站"
         steps.append(f"核对{site}数据指针 webCommitId ＝ {short}、{site} /api/version（若有），最多等 5 分钟")
-    else:
-        steps.append(f"edgeone-release 上新建一个提交，树＝发布提交 {release_sha[:12] if release_sha else '?'} 的树，推上去（不改写历史）")
-        steps.append("清 CDN：purge_host kaiyuanguji.com ＋ purge_url 正式站数据指针")
-        steps.append("等 EdgeOne 发布，核对 www /api/version（若有）")
 
     return {
         "target": target,
@@ -231,10 +236,10 @@ def summary_md(plan, dry_run):
         "| 项 | 值 |",
         "|---|---|",
         f"| 目标站 | {plan['target']} |",
-        f"| 方式 | {plan['method']}{'' if plan['method'] == 'release-branch' else ' · ' + plan['stage']} |",
+        f"| 方式 | {plan['method']} · {plan['stage']} |",
         f"| 当前 web | `{s(plan['current_web'])}` |",
         f"| 退回到 web | `{s(plan['web_commit'])}`（{plan['chosen_by']}） |",
-        f"| 对应发布提交 | `{s(plan['release_sha'])}` |",
+        f"| 对应发布记录 | `{s(plan['release_sha'])}` |",
     ]
     for k, p in plan["data_pointer"].items():
         lines.append(f"| {k} 数据指针 | commit `{s(p.get('commitId'))}` · web `{s(p.get('webCommitId'))}` · {p.get('bundleDate') or '—'} |")
@@ -249,16 +254,19 @@ def summary_md(plan, dry_run):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--target", choices=["production", "staging"], required=True)
-    ap.add_argument("--method", choices=["promote", "release-branch"], default="promote")
+    ap.add_argument("--method", choices=list(METHODS), default="promote")
     ap.add_argument("--stage", choices=list(STAGES), default="start")
     ap.add_argument("--web-commit", default="")
-    ap.add_argument("--release-ref", default="origin/edgeone-release")
+    ap.add_argument("--release-ref", default="origin/release-log", help="CUT2 起的正式发布记录")
+    ap.add_argument("--legacy-release-ref", default="origin/edgeone-release", help="切站前的正式发布历史")
     ap.add_argument("--main-ref", default="origin/main", help="与之比较 deploy.yml 的 ref")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
+    # 分支不存在（例如 CUT2 后还没有过正式发布，release-log 尚未建）时当作空历史
     log = git("log", a.release_ref, "--format=%H%x09%s", "-n", "300", check=False) or ""
-    releases = parse_releases(log)
+    legacy = git("log", a.legacy_release_ref, "--format=%H%x09%s", "-n", "300", check=False) or ""
+    releases = merged_releases(log, legacy)
     pointers = {k: fetch_json(u) for k, u in POINTERS.items()}
 
     def resolve_commit(c):

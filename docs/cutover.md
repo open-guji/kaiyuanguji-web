@@ -119,9 +119,33 @@ T 表示用户开始解绑的那一刻。「跑 cutover-check」一律指在 Act
 
 ## 切完以后（不在当晚做）
 
-- 现在 `deploy.yml` 的正式站发布仍然推送到旧项目 kaiyuanguji，kyg-ssr-spike 只是双跑镜像，条目页失效打的也是 `ssr-test` 域名。切站成功后要另开一道，把正式发布和失效目标改到新项目和 www。在那之前，每次 production promote 仍会同步到 kyg-ssr-spike（W2b 双跑），数据不会断。
-- 旧项目 kaiyuanguji 和 `edgeone-release` 分支**至少保留 4 周**（与 33 卡一致），不要删，留作回滚目标。
+- ~~现在 `deploy.yml` 的正式站发布仍然推送到旧项目 kaiyuanguji……~~ **已由 CUT2（overview#241）改完**：正式站发布（`promote=code+data` 和 `promote=data`）只全栈部署到 **kyg-ssr-spike**，条目页失效、实测、预热和发布后 e2e 的对象都是 `https://www.kaiyuanguji.com`。W2b 双跑（静态主路＋ssr-test 镜像）已去掉，只剩一路。详见下面「切站后的发布与回滚」。
+- 旧项目 kaiyuanguji 和 `edgeone-release` 分支**至少保留 4 周**（与 33 卡一致，到 2026-10-26 前后），不要删，留作回滚目标。CI 不再往 `edgeone-release` 推送，旧项目停在切站前最后一版。
 - 关注项里的 http→https：切站稳定后，在控制台给新项目打开强制 HTTPS。
+
+### 切站后的发布与回滚
+
+**发布**（`deploy.yml`，staging 那一路不变）：
+
+| | 测试站 | 正式站 |
+|---|---|---|
+| Pages 项目 | kyg-staging | **kyg-ssr-spike**（www） |
+| 构建 | 全栈，`ops/edgeone-fullstack-build.py -n kyg-staging` | 全栈，`ops/edgeone-fullstack-build.py -n kyg-ssr-spike`，`/api/version` 的 `target` 记 `production` |
+| 部署 | `makers deploy .edgeone -n kyg-staging` | `makers deploy .edgeone -n kyg-ssr-spike`，然后在 `release-log` 分支记一笔 |
+| 条目页失效／实测／预热 | staging.kaiyuanguji.com | www.kaiyuanguji.com |
+| 发布后 e2e | staging（`SITE_ARCH=fullstack`） | www（`SITE_ARCH=fullstack`） |
+
+- `ssr-test.kaiyuanguji.com` 仍挂在 kyg-ssr-spike 上，和 www 是同一份部署，不再单独测。
+- `EDGEONE_API_TOKEN` 现在是两站发布的前提：缺了 deploy 在 resolve 一步就报错，不再有「跳过测试站、直接推 edgeone-release」的 fallback。
+- `release-log` 分支：每次正式发布追加一个空提交（树为空，不含产物），提交信息 `Released to kyg-ssr-spike from @ open-guji/kaiyuanguji-web@<sha> 🚀 (promote=…, run …)`。Rollback 据此推算「上一次正式发布」，更早的接切站前 `edgeone-release` 的历史。这个分支只由 CI 写，别手动改。
+
+**回滚**，按快慢从上往下选：
+
+1. **Rollback workflow（首选，约 20 分钟）**：Actions → Rollback，`start → promote → check` 三段，见 `docs/runbook.md` §8。目标 commit 在测试站重建、verify 绿了再 promote 到 kyg-ssr-spike，发布后 e2e 照跑。`web_commit` 留空＝上一次正式发布。
+2. **控制台回退 kyg-ssr-spike 的上一次部署（几分钟，不走 CI）**：EdgeOne 控制台 → Pages → kyg-ssr-spike → 部署记录，找上一次成功的生产部署，用它重新发布／回滚。注意：
+   - 数据指针 `latest.json` 不变，代码回去了、`webCommitId` 还是新的；每天 04:30 的自动 `promote=data` 会按指针里的 `webCommitId` 重建代码，把回退冲掉——回退后先把仓库变量 `AUTO_PROMOTE_DATA` 设为 `false`，修好再改回。
+   - 控制台上的部署记录是否带「回滚」按钮、能保留多少条，以控制台为准；没有就走第 1 条。
+3. **换绑回旧项目 kaiyuanguji（最后手段，只在保留期内）**：新项目整个坏掉（不是某一版代码的问题）时用。做法同上面「回滚（约 5 分钟）」：在 kyg-ssr-spike 删掉 www → 旧项目加回 www → DNS 的 `www` CNAME 改回旧项目那一行显示的值 → 清缓存 → 跑 cutover-check（应回到旧站基线）。旧项目停在切站前最后一版、没有全栈功能（`/item/` 404、`/api/auth/*` 按旧项目环境变量），**CI 不会给它发新版**；换绑回去后要恢复发布，得先修好新项目再换绑回来。
 
 ## 附：2026-09-28 演练记录
 

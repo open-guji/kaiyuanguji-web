@@ -14,6 +14,8 @@ spec.loader.exec_module(rp)
 A, B, C = "a" * 40, "b" * 40, "c" * 40
 R1, R2, R3, R4 = "1" * 40, "2" * 40, "3" * 40, "4" * 40
 MSG = "Deploying to edgeone-release from @ open-guji/kaiyuanguji-web@{} 🚀"
+# CUT2 起 deploy.yml 在 release-log 上写的发布记录
+NEW_MSG = "Released to kyg-ssr-spike from @ open-guji/kaiyuanguji-web@{} 🚀 (promote=code+data, run 42)"
 # 新的在前：C 发了一次；B 发了两次（promote=data 重建同一版代码）；A 最早
 LOG = "\n".join([f"{R4}\t{MSG.format(C)}", f"{R3}\t{MSG.format(B)}", f"{R2}\t{MSG.format(B)}",
                  f"{R1}\t{MSG.format(A)}", f"{'9' * 40}\tsome manual commit"])
@@ -43,9 +45,26 @@ class Releases(unittest.TestCase):
         self.assertEqual(rp.release_for(rp.parse_releases(LOG), B), R3)
 
     def test_rollback_commit_message_counts_as_release(self):
-        # rollback.yml release-branch 路写的提交信息必须仍被识别，否则下次「上一版」会算错
+        # 切站前 release-branch 回滚在 edgeone-release 写过的提交信息，仍须识别为一次发布
         line = f"{'5' * 40}\t{MSG.format(B)} (rollback to release 333333333333, run 1)"
         self.assertEqual(rp.parse_releases(line), [("5" * 40, B)])
+
+    def test_release_log_message_counts_as_release(self):
+        # 格式须与 deploy.yml「Record production release (release-log)」一致
+        line = f"{'6' * 40}\t{NEW_MSG.format(C)}"
+        self.assertEqual(rp.parse_releases(line), [("6" * 40, C)])
+
+    def test_release_log_comes_before_legacy_history(self):
+        # CUT2 后：release-log 上发过 D（最新），再往前接切站前 edgeone-release 的历史
+        D, R5 = "d" * 40, "5" * 40
+        rels = rp.merged_releases(f"{R5}\t{NEW_MSG.format(D)}", LOG)
+        self.assertEqual(rels[0], (R5, D))
+        self.assertEqual(rp.previous_source(rels, D), C)   # 跨过切站，上一版是切站前最后那次发布
+        self.assertEqual(rp.previous_source(rels, C), B)
+
+    def test_empty_release_log_falls_back_to_legacy(self):
+        # CUT2 合入后、第一次正式发布前 release-log 还没建
+        self.assertEqual(rp.merged_releases("", LOG), rp.parse_releases(LOG))
 
 
 class Plan(unittest.TestCase):
@@ -62,20 +81,21 @@ class Plan(unittest.TestCase):
         self.assertTrue(plan(web="f" * 12)["errors"])
         self.assertTrue(plan(web="not-a-sha; rm -rf /")["errors"])
 
-    def test_release_branch_only_for_production_and_only_released_commits(self):
-        self.assertTrue(plan(target="staging", method="release-branch")["errors"])
-        known_unreleased = rp.make_plan("production", "release-branch", "", [], POINTERS, lambda c: None,
-                                        lambda s: True, lambda s: True)
-        self.assertTrue(known_unreleased["errors"])
+    def test_release_branch_is_retired(self):
+        # CUT2：edgeone-release 发的是旧项目，www 已不在那里——明确报错并指向控制台止血
+        for t in ("production", "staging"):
+            p = plan(target=t, method="release-branch")
+            self.assertTrue(any("已停用" in e and "kyg-ssr-spike" in e for e in p["errors"]), p["errors"])
+            self.assertEqual(p["steps"], [])
 
     def test_promote_needs_t1_deploy_yml(self):
         p = plan(supports=False)
-        self.assertTrue(any("release-branch" in e for e in p["errors"]))
+        self.assertTrue(any("T1 之前" in e and "控制台" in e for e in p["errors"]))
+        self.assertFalse(any("method=release-branch" in e for e in p["errors"]))
 
     def test_warnings(self):
         self.assertTrue(any("404" in w for w in plan(has_version=False)["warnings"]))
         self.assertTrue(any("main HEAD" in w for w in plan()["warnings"]))
-        self.assertTrue(any("AUTO_PROMOTE_DATA" in w for w in plan(method="release-branch")["warnings"]))
         self.assertTrue(any("当前版本" in w for w in plan(web=C)["warnings"]))
 
     def test_pre_e1_target_warns(self):
@@ -93,16 +113,11 @@ class Plan(unittest.TestCase):
             w = plan(skew=lambda s, k=k: k)["warnings"]
             self.assertFalse(any("E1" in x or "与 main 不同" in x for x in w))
 
-    def test_skew_warnings_only_for_promote(self):
-        # release-branch 不重建，流程差异无关
-        w = plan(method="release-branch", skew=lambda s: {"e1": False, "same_deploy": False})["warnings"]
-        self.assertFalse(any("E1" in x or "与 main 不同" in x for x in w))
-
     def test_skew_warnings_are_not_errors(self):
         self.assertEqual(plan(skew=lambda s: {"e1": False, "same_deploy": False})["errors"], [])
 
     def test_later_stages_need_explicit_commit(self):
-        # promote 完 edgeone-release 多一版，「上一次正式发布」就变了——后续段不许靠默认
+        # promote 完 release-log 多一版，「上一次正式发布」就变了——后续段不许靠默认
         for st in ("promote", "check"):
             self.assertTrue(any("必须显式给 web_commit" in e for e in plan(stage=st)["errors"]))
             self.assertEqual(plan(stage=st, web=B)["errors"], [])
@@ -119,17 +134,13 @@ class Plan(unittest.TestCase):
         self.assertIn("stage=promote", " ".join(plan(stage="start")["steps"]))
         self.assertIn("stage=check", " ".join(plan(target="staging", stage="start")["steps"]))
 
-    def test_release_branch_ignores_stage(self):
-        p = plan(method="release-branch", stage="check")
-        self.assertEqual((p["stage"], p["errors"]), ("start", []))
-
     def test_current_version_warning_only_on_start(self):
         self.assertFalse(any("当前版本" in w for w in plan(web=C, stage="check")["warnings"]))
 
     def test_hosted_runner_target_warns_first(self):
         w = plan(skew=lambda s: {"e1": True, "same_deploy": False, "self_hosted": False, "main_self_hosted": True})["warnings"]
         self.assertIn("托管 runner", w[0])
-        self.assertIn("release-branch", w[0])
+        self.assertIn("控制台", w[0])
         w2 = plan(skew=lambda s: {"e1": True, "same_deploy": True, "self_hosted": True})["warnings"]
         self.assertFalse(any("托管 runner" in x for x in w2))
         # main 也跑托管（仓库公开期间）：目标跑托管不算问题
