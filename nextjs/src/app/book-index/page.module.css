@@ -1,7 +1,6 @@
 /*
  * 搜索页（/book-index 与 /book-index?q=）按新设计：少线少框、手机适配（N3b）。
- * IndexBrowser 的外框与分组标题是组件内联样式，网站只能用 !important 压掉那几条线；
- * 只选到组件自带的 class 和结构，不改组件行为。
+ * 能走 --bim-* 换肤变量的就走变量；只有内边距没有变量，才按组件结构压（见下）。
  */
 .page {
   max-width: 800px;
@@ -13,23 +12,26 @@
   max-width: 1120px;
 }
 
-/* 标题栏的下划线去掉，靠留白分组 */
-.page :global(.bim-browser-container) > header {
-  border-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+/*
+ * 少线少框：IndexBrowser 标题栏下划线、分组标题（作品 N 条 / 书籍 N 条）下的细线、
+ * 联想下拉和「最近浏览」卡片的描边都取 --bim-widget-border，只在组件内把它调成透明。
+ * 走换肤变量，不依赖组件 DOM 层级；分组靠留白和抬起底色（下拉自带阴影）。
+ */
+.page :global(.bim-browser-container) {
+  --bim-widget-border: transparent;
 }
 
-/* 检索框行、结果区贴齐版心，不再多缩 20px */
+/*
+ * 贴齐版心：组件给标题栏、检索框行、结果区各加了 20px 左右内边距（内联样式），
+ * 没有变量可调，只能压。依赖的 DOM（book-index-ui 0.10.0 IndexBrowser）：
+ *   .bim-browser-container > header  标题栏
+ *   .bim-browser-container > div     检索框行、统计摘要、结果区
+ * 组件改了这层结构时选择器落空，只会退回多缩 20px，不影响功能。
+ */
+.page :global(.bim-browser-container) > header,
 .page :global(.bim-browser-container) > div {
   padding-left: 0 !important;
   padding-right: 0 !important;
-}
-
-/* 分组标题（作品 N 条 / 书籍 N 条）下的细线去掉 */
-.page :global(.bim-browser-container) > div > div > div > div:first-child[style*="border-bottom"] {
-  border-bottom: 0 !important;
-  margin-bottom: 10px !important;
 }
 
 @media (max-width: 600px) {

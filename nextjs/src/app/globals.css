@@ -160,7 +160,7 @@
   --bim-sidebar-bg: var(--color-tint);
   --bim-fg: var(--color-ink);
   --bim-desc-fg: var(--color-ink-2);
-  --bim-muted: var(--color-ink-3);
+  --bim-muted: var(--bim-aux-fg);  /* 同 label / hint：ink-3 对纸底只有 3.17 */
 
   /* 描边：统一退到最浅的一阶 */
   --bim-widget-border: var(--color-tint-2);
