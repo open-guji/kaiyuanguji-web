@@ -2,19 +2,31 @@
  * @jest-environment node
  *
  * W2-2 中间件：/book-index?id=<正式 id> → 308 /item/<id>，其余一律放过。
+ * FX1：/item/<id> 的整页导航由中间件先跳（被并条目、草稿升格），只出一个 Location。
  */
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
-import { middleware } from '../middleware.ssr';
+import type { ItemFetchResult, PromotionLookup } from '../lib/server/item-data';
 
-function run(path: string, headers: Record<string, string> = {}) {
-    const res = middleware(new NextRequest(`https://staging.kaiyuanguji.com${path}`, { headers }));
-    return { status: res.status, location: res.headers.get('location') };
+const mockGetItem = jest.fn<(id: string) => Promise<ItemFetchResult | null>>();
+const mockResolvePromotion = jest.fn<(id: string) => Promise<PromotionLookup>>();
+
+jest.mock('../lib/server/item-data', () => ({
+    createItemFetcher: () => ({ getItem: mockGetItem, resolvePromotion: mockResolvePromotion }),
+    defaultItemDataBase: () => 'https://data.example.com',
+}));
+
+// jest.mock 与从 @jest/globals 引入的 jest 同用时不会被提升到 import 之前，中间件改为用到时再引
+async function run(path: string, headers: Record<string, string> = {}) {
+    const { middleware } = await import('../middleware.ssr');
+    const res = await middleware(new NextRequest(`https://staging.kaiyuanguji.com${path}`, { headers }));
+    return { status: res.status, location: res.headers.get('location'), all: res.headers.get('location')?.split(',') ?? [] };
 }
 
-describe('middleware.ssr', () => {
-    it('只有一个正式 id → 308 /item/<id>', () => {
-        expect(run('/book-index?id=d59f20aowb9c')).toEqual({
+describe('middleware.ssr：/book-index', () => {
+    it('只有一个正式 id → 308 /item/<id>', async () => {
+        const r = await run('/book-index?id=d59f20aowb9c');
+        expect({ status: r.status, location: r.location }).toEqual({
             status: 308,
             location: 'https://staging.kaiyuanguji.com/item/d59f20aowb9c',
         });
@@ -26,19 +38,72 @@ describe('middleware.ssr', () => {
         '/book-index?id=1evgpgqsis9hc&redirected_from=x',
         '/book-index?id=bad..id',
         '/book-index?q=史記',
-    ])('放过：%s', (path) => {
-        expect(run(path).location).toBeNull();
+    ])('放过：%s', async (path) => {
+        expect((await run(path)).location).toBeNull();
     });
 
-    it('站外入口（无 Referer、或 Referer 是别的站）→ 308', () => {
-        expect(run('/book-index?id=d59f20aowb9c', { referer: 'https://www.google.com/' }).status).toBe(308);
-        expect(run('/book-index?id=d59f20aowb9c', { 'sec-fetch-dest': 'document' }).status).toBe(308);
+    it('站外入口（无 Referer、或 Referer 是别的站）→ 308', async () => {
+        expect((await run('/book-index?id=d59f20aowb9c', { referer: 'https://www.google.com/' })).status).toBe(308);
+        expect((await run('/book-index?id=d59f20aowb9c', { 'sec-fetch-dest': 'document' })).status).toBe(308);
     });
     it.each<[Record<string, string>, string]>([
         [{ referer: 'https://staging.kaiyuanguji.com/item/988fbiuha8' }, '站内点击（面包屑等）'],
         [{ referer: 'https://staging.kaiyuanguji.com/book-index', 'sec-fetch-dest': 'empty' }, 'RSC 预取'],
         [{ 'sec-fetch-dest': 'empty' }, '非整页请求'],
-    ])('站内请求放过：%j（%s）', (headers) => {
-        expect(run('/book-index?id=d59f20aowb9c', headers).location).toBeNull();
+    ])('站内请求放过：%j（%s）', async (headers) => {
+        expect((await run('/book-index?id=d59f20aowb9c', headers)).location).toBeNull();
+    });
+});
+
+describe('middleware.ssr：/item/<id>（FX1）', () => {
+    const MERGED = 'd59f2q8ge0ap';
+    const TARGET = 'd59f2evs8ni8';
+    const DRAFT = '1j96hewiuieps';
+    const hit = (entry: Record<string, unknown>): ItemFetchResult => ({ entry, source: 'h1', version: 'h1:r' });
+
+    beforeEach(() => {
+        mockGetItem.mockReset();
+        mockResolvePromotion.mockReset();
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    it('被并条目 → 308，Location 只有一个值', async () => {
+        mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
+        const r = await run(`/item/${MERGED}`);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com/item/${TARGET}`]);
+        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'document', referer: 'https://staging.kaiyuanguji.com/' })).status).toBe(308);
+    });
+
+    it('已升格的草稿 id → 308 正式 id；对照表查不了 → 307 /book-index', async () => {
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'promoted', to: 'hixhd2h9bk4b' });
+        expect(await run(`/item/${DRAFT}`)).toMatchObject({ status: 308, location: 'https://staging.kaiyuanguji.com/item/hixhd2h9bk4b' });
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        expect(await run(`/item/${DRAFT}`)).toMatchObject({ status: 307, location: `https://staging.kaiyuanguji.com/book-index?id=${DRAFT}` });
+    });
+
+    it.each<[string, () => void]>([
+        ['正常条目', () => mockGetItem.mockResolvedValue(hit({ title: '史記' }))],
+        ['查不到的正式 id（页面 404）', () => mockGetItem.mockResolvedValue(null)],
+        ['草稿 id 对照表确定没有（页面 404）', () => { mockGetItem.mockResolvedValue(null); mockResolvePromotion.mockResolvedValue({ status: 'absent' }); }],
+        ['取数出错（交给页面）', () => mockGetItem.mockRejectedValue(new Error('network down'))],
+    ])('放过：%s', async (_name, setup) => {
+        setup();
+        const id = _name.startsWith('草稿') ? DRAFT : MERGED;
+        const r = await run(`/item/${id}`);
+        expect(r.location).toBeNull();
+        expect(r.status).toBe(200);
+    });
+
+    it('RSC 导航与预取（sec-fetch-dest 不是 document）不查数据、直接放过', async () => {
+        mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
+        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
+        expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it('不合法的 id 不查数据', async () => {
+        expect((await run('/item/BAD..id')).location).toBeNull();
+        expect(mockGetItem).not.toHaveBeenCalled();
     });
 });
