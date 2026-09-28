@@ -91,6 +91,35 @@ function buildNotifyPayload(format, text) {
   return { text }; // slack 与 generic 同构（{"text":...}）
 }
 
+// M3（SEC overview#134）：推送节流。公开 POST 谁都能刷，每条都推会把微信刷爆。
+// 每 NOTIFY_MIN_INTERVAL_SECONDS 最多推 1 条；窗口内的新反馈只在 KV 里记个数，
+// 下一条真正推出去的消息里带上「另有 N 条已合并」。没有定时器，窗口过后若再无新反馈，
+// 合并的条数不会单独补推——/admin/feedback 里照样看得到，推送只是提醒。
+const NOTIFY_MIN_INTERVAL_SECONDS = 5 * 60;
+const NOTIFY_STATE_KEY = 'notify:feedback'; // 不以 fb_ 开头：列反馈只扫 fb_ 前缀
+/**
+ * 能推返回此前合并的条数（≥0）；在节流窗口内返回 null。
+ * KV 没绑或读写出错时照推（返回 0）——宁可多推一条，不因节流状态坏了就一条都不推。
+ */
+async function claimNotifySlot(kv) {
+  if (!kv) return 0;
+  const nowS = Math.floor(Date.now() / 1000);
+  try {
+    const st = (await kv.get(NOTIFY_STATE_KEY, 'json')) || {};
+    const last = Number(st.lastSentAt) || 0;
+    const pending = Number(st.pending) || 0;
+    if (last && nowS - last < NOTIFY_MIN_INTERVAL_SECONDS) {
+      await kv.put(NOTIFY_STATE_KEY, JSON.stringify({ lastSentAt: last, pending: pending + 1 }));
+      return null;
+    }
+    await kv.put(NOTIFY_STATE_KEY, JSON.stringify({ lastSentAt: nowS, pending: 0 }));
+    return pending;
+  } catch (e) {
+    console.error('反馈推送节流状态读写失败（照推）:', e);
+    return 0;
+  }
+}
+
 /**
  * 新反馈推送到 19 卡已有的 HEALTH_NOTIFY_WEBHOOK。**失败不影响提交结果**——
  * 调用方（onRequestPost）用 waitUntil／fire-and-forget 触发，本函数内部吞掉所有异常。
@@ -101,9 +130,12 @@ async function notifyNewFeedback(context, record) {
   if (record.test === true) return; // 测试数据不推
   const webhook = getNotifyWebhook(context);
   if (!webhook) return; // 未配置：静默跳过，不算失败
+  const merged = await claimNotifySlot(getKV(context));
+  if (merged === null) return; // 节流窗口内：只记一笔，并进下一条推送
   const label = TYPE_LABEL_ZH[record.type] || record.type;
   const preview = (record.content || '').slice(0, 40);
-  const text = `新反馈：${label} ${preview} → /admin/feedback`;
+  const extra = merged > 0 ? `（另有 ${merged} 条新反馈已合并，未单独推送）` : '';
+  const text = `新反馈：${label} ${preview}${extra} → /admin/feedback`;
   const { url, payload } = buildNotifyRequest(getNotifyFormat(context), webhook, `新反馈：${label}`, text);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
@@ -215,6 +247,17 @@ async function verifyJWT(token, secret) {
     return payload;
   } catch { return null; }
 }
+// H1（SEC overview#134）：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）。
+// 旧令牌没有 tv、旧记录没有 tokenVersion 的一律视为失效。
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
+/** Authorization: Bearer <token>；没带返回 undefined。M1：不再认 ?token= 查询串（会进访问日志／Referer）。 */
+function bearerToken(request) {
+  const h = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  return h || undefined;
+}
 async function checkMemberCookie(request, context, allowedRoles) {
   const secret = getJwtSecret(context);
   const token = getCookie(request, 'session');
@@ -226,6 +269,7 @@ async function checkMemberCookie(request, context, allowedRoles) {
   let member = null;
   try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
   if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
+  if (!tokenVersionOk(payload, member)) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
   return { ...member, email: payload.sub };
 }
@@ -233,6 +277,57 @@ async function checkMemberCookie(request, context, allowedRoles) {
 function getGithubToken(context) {
   if (context && context.env && context.env.GITHUB_TOKEN) return context.env.GITHUB_TOKEN;
   return (typeof GITHUB_TOKEN !== 'undefined') ? GITHUB_TOKEN : null;
+}
+
+// --- M3（SEC overview#134）：公开提交的输入约束与按 IP 限速 ---
+
+const MAX_REF_LEN = 500; // pageUrl／resourceId 上限：两者会原样进公开读，不许塞大段文本
+/** 可选字符串字段：缺省给 ''，非字符串返回 null（调用方回 400），超长截断。 */
+function optionalRef(v) {
+  if (v === undefined || v === null) return '';
+  if (typeof v !== 'string') return null;
+  return v.slice(0, MAX_REF_LEN);
+}
+
+// 同一 IP 每 RATE_LIMIT_WINDOW_SECONDS 最多 RATE_LIMIT_MAX 条，超了回 429。
+// 计数放 FEEDBACK_KV，key 用 IP 的 sha256（反馈记录本身不存 IP，这里也不存明文 IP）。
+// 固定窗口：窗口从该 IP 本窗口第一条算起。KV 最终一致，并发下可能多放过一两条，够用。
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
+const RATE_LIMIT_PREFIX = 'ratelimit:feedback:'; // 不以 fb_ 开头
+
+// 与 track-error.js 同口径：EdgeOne 把客户端 IP 挂在 request.eo.clientIp，header 兜底
+function getClientIp(request) {
+  const eo = request.eo || {};
+  const xff = request.headers.get('x-forwarded-for') || '';
+  return eo.clientIp || request.headers.get('eo-client-ip') || (xff ? xff.split(',')[0].trim() : '') || 'unknown';
+}
+async function sha256Hex(text) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+/**
+ * 记一笔并判断是否超限：{ ok:true } 或 { ok:false, retryAfter }。
+ * KV 出错时放行（记日志）：限速是防刷的增强项，不因它坏了挡住正常读者。
+ */
+async function checkRateLimit(kv, request) {
+  if (!kv) return { ok: true };
+  const nowS = Math.floor(Date.now() / 1000);
+  try {
+    const key = RATE_LIMIT_PREFIX + (await sha256Hex(getClientIp(request)));
+    const cur = (await kv.get(key, 'json')) || {};
+    let start = Number(cur.start) || 0;
+    let count = Number(cur.count) || 0;
+    if (!start || nowS - start >= RATE_LIMIT_WINDOW_SECONDS) { start = nowS; count = 0; }
+    if (count >= RATE_LIMIT_MAX) {
+      return { ok: false, retryAfter: Math.max(1, start + RATE_LIMIT_WINDOW_SECONDS - nowS) };
+    }
+    await kv.put(key, JSON.stringify({ start, count: count + 1 }), { expirationTtl: RATE_LIMIT_WINDOW_SECONDS * 2 });
+    return { ok: true };
+  } catch (e) {
+    console.error('反馈限速计数失败（放行）:', e);
+    return { ok: true };
+  }
 }
 
 // --- KV 模式 ---
@@ -525,7 +620,14 @@ export async function onRequestPost(context) {
     }
 
     // 默认：提交新反馈
-    const { type, content, pageUrl, resourceId } = body;
+    const { type, content } = body;
+    const pageUrl = optionalRef(body.pageUrl);
+    const resourceId = optionalRef(body.resourceId);
+    if (pageUrl === null || resourceId === null) {
+      return new Response(JSON.stringify({ success: false, error: 'pageUrl／resourceId 须为字符串' }), {
+        status: 400, headers,
+      });
+    }
     // 联系方式：选填，只给站方看（公开读剔除）。只做长度与去空白，不校验格式——读者可能留微信号
     const contact = typeof body.contact === 'string' ? body.contact.trim().slice(0, 200) : '';
     // 测试数据：本地开发（Origin 是 localhost，FeedbackTab 等在 localhost 下直连生产）或探针显式带 test:true。
@@ -546,6 +648,14 @@ export async function onRequestPost(context) {
     if (content.length > 2000) {
       return new Response(JSON.stringify({ success: false, error: '反馈内容不能超过2000字' }), {
         status: 400, headers,
+      });
+    }
+
+    // M3：按 IP 限速（只管公开提交；action:'update' 在上面已经分流，要凭证，不限）
+    const limited = await checkRateLimit(getKV(context), context.request);
+    if (!limited.ok) {
+      return new Response(JSON.stringify({ success: false, error: '提交太频繁，请稍后再试' }), {
+        status: 429, headers: { ...headers, 'Retry-After': String(limited.retryAfter) },
       });
     }
 
@@ -594,12 +704,18 @@ export async function onRequestGet(context) {
 
   try {
     const url = new URL(context.request.url);
+    // MON：监控用的计数汇总（?summary=1&window=1h）。只返回条数，不返回任何反馈内容；
+    // 仍要管理 token（与管理读同一把），缺配置一样 fail-closed 回 503
+    if (url.searchParams.get('summary') === '1') {
+      return summaryResponse(context, url, headers);
+    }
+
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';
     const resourceId = url.searchParams.get('resourceId') || '';
-    // 管理读：带 token（?token=）或成员 cookie 时返回全量原样；否则按公开规则过滤。
+    // 管理读：带 token（Authorization: Bearer）或成员 cookie 时返回全量原样；否则按公开规则过滤。
     // 没凭证不是错误，照常返回公开结果（不回 401，站内反馈 tab 靠它）
-    let full = checkAdminAuth(url.searchParams.get('token') || undefined, context).ok;
+    let full = checkAdminAuth(bearerToken(context.request), context).ok;
     if (!full) full = !!(await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']));
 
     const mode = getMode(context);
@@ -632,6 +748,48 @@ export async function onRequestGet(context) {
       status: 500, headers,
     });
   }
+}
+
+/**
+ * 监控汇总：最近 window 小时（1～24，默认 1）与最近 24 小时的新反馈条数。
+ * key 是 `fb_<13 位毫秒>_…`，从 key 名就能读出时间——只列 key、不取值，
+ * 既便宜，也保证这个接口碰不到任何反馈正文与联系方式。
+ * token 只取 Authorization: Bearer（M1：不认 ?token=，免得进访问日志的 URL）。
+ */
+async function summaryResponse(context, url, headers) {
+  const auth = checkAdminAuth(bearerToken(context.request), context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
+  }
+  if (getMode(context) === 'github') {
+    return new Response(JSON.stringify({ success: false, error: 'github 模式不支持汇总' }), { status: 400, headers });
+  }
+  const kv = getKV(context);
+  if (!kv) {
+    return new Response(JSON.stringify({ success: false, error: '服务配置错误：KV 未绑定' }), { status: 500, headers });
+  }
+  const windowHours = parseWindowHours(url.searchParams.get('window'));
+  const now = Date.now();
+  const names = await listAllKeys(kv);
+  let count = 0;
+  let count24h = 0;
+  for (const n of names) {
+    const m = /^fb_(\d{13})_/.exec(n);
+    if (!m) continue;
+    const age = now - Number(m[1]);
+    if (age < 0) continue;
+    if (age <= windowHours * 3600000) count += 1;
+    if (age <= 24 * 3600000) count24h += 1;
+  }
+  return new Response(JSON.stringify({
+    success: true, windowHours, count, count24h, total: names.length, now: new Date(now).toISOString(),
+  }), { status: 200, headers: { ...headers, 'Cache-Control': 'no-store' } });
+}
+
+/** "1h" / "6" → 1..24 的整数小时，非法值回落 1 */
+function parseWindowHours(v) {
+  const n = parseInt(String(v || '1').replace(/h$/i, ''), 10);
+  return Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
 }
 
 /**
@@ -705,7 +863,7 @@ export function onRequestOptions(context) {
     headers: {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     },
   });

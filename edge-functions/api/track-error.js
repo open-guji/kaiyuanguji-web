@@ -1,5 +1,5 @@
 // 轻量前端错误自收端点（EdgeOne Pages Function）
-// 前端 POST 上报错误 → 写入 ERROR_KV（带 TTL 自动过期）；管理端凭 token GET 查询。
+// 前端 POST 上报错误 → 写入 ERROR_KV（带 TTL 自动过期）；管理端凭成员 cookie 或 Authorization: Bearer 查询。
 // 与 feedback.js 同模式：KV 经全局变量绑定，环境变量经全局变量注入。
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
@@ -124,6 +124,17 @@ async function verifyJWT(token, secret) {
     return payload;
   } catch { return null; }
 }
+// H1（SEC overview#134）：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）。
+// 旧令牌没有 tv、旧记录没有 tokenVersion 的一律视为失效。
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
+/** Authorization: Bearer <token>；没带返回 undefined。M1：不再认 ?token= 查询串（会进访问日志／Referer）。 */
+function bearerToken(request) {
+  const h = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  return h || undefined;
+}
 async function checkMemberCookie(request, context, allowedRoles) {
   const secret = getJwtSecret(context);
   const token = getCookie(request, 'session');
@@ -135,6 +146,7 @@ async function checkMemberCookie(request, context, allowedRoles) {
   let member = null;
   try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
   if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
+  if (!tokenVersionOk(payload, member)) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
   return member;
 }
@@ -228,6 +240,8 @@ export async function onRequestPost(context) {
       status: typeof body.status === 'number' ? body.status : null,
       state: 'open',                          // 处理状态：open | resolved（与上面 HTTP status 区分）
       release: clip(body.release, 60),        // 构建版本（version.json commit），便于归因
+      web: clip(body.web, 60),                // DBG：网站代码 commit（构建时注入），前端原样上报
+      data: clip(body.data, 60),              // DBG：数据指针 commitId（latest.json），前端原样上报
       ua: clip(context.request.headers.get('user-agent'), 300),
       clientIp: ip,                           // 服务端取，可信
       geo,
@@ -246,15 +260,21 @@ export async function onRequestPost(context) {
   }
 }
 
-// --- 查询：管理端凭 token 列出最近错误 ---
+// --- 查询：管理端凭成员 cookie 或 Bearer token 列出最近错误 ---
 export async function onRequestGet(context) {
   const headers = getCorsHeaders(context.request);
 
   try {
     const url = new URL(context.request.url);
 
-    // 鉴权：共享 token 或 member cookie 双轨
-    let auth = checkViewAuth(url.searchParams.get('token'), context);
+    // MON：监控用的计数汇总（?summary=1&window=1h）。只要共享 token（监控跑在 CI 里没有 cookie），
+    // 只返回计数与前 5 种错误的消息摘要——不返回 IP、地理、stack、UA、pageUrl
+    if (url.searchParams.get('summary') === '1') {
+      return summaryResponse(context, url, headers);
+    }
+
+    // 鉴权：共享 token（Authorization: Bearer）或 member cookie 双轨
+    let auth = checkViewAuth(bearerToken(context.request), context);
     let viaRole = auth.ok ? 'token' : null; // 走哪一路通过的：token / 成员角色
     if (!auth.ok) {
       const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
@@ -329,6 +349,81 @@ export async function onRequestGet(context) {
   }
 }
 
+/**
+ * 监控汇总。key 是 `err_<13 位毫秒>_…`：计数只看 key 名，不取值；
+ * 只有落在窗口内的至多 SUMMARY_MAX_GET 条才取值，用来归并「前 5 种错误」。
+ * 摘要只取 kind + message 前 120 字，message 里若混进邮箱／长数字串一并打码。
+ */
+const SUMMARY_MAX_GET = 200;
+async function summaryResponse(context, url, headers) {
+  const auth = checkViewAuth(bearerToken(context.request), context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
+  }
+  const kv = getKV(context);
+  if (!kv) {
+    return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), { status: 500, headers });
+  }
+  const n = parseInt(String(url.searchParams.get('window') || '1').replace(/h$/i, ''), 10);
+  const windowHours = Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
+  const now = Date.now();
+
+  const names = [];
+  let cursor = '';
+  for (let i = 0; i < 100; i += 1) {
+    const opts = { prefix: 'err_', limit: 256 };
+    if (cursor) opts.cursor = cursor;
+    const r = await kv.list(opts);
+    for (const k of r.keys || []) names.push(k.key);
+    if (r.complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+
+  const inWindow = [];
+  let count24h = 0;
+  for (const name of names) {
+    const m = /^err_(\d{13})_/.exec(name);
+    if (!m) continue;
+    const age = now - Number(m[1]);
+    if (age < 0) continue;
+    if (age <= windowHours * 3600000) inWindow.push(name);
+    if (age <= 24 * 3600000) count24h += 1;
+  }
+
+  const sample = inWindow.sort().reverse().slice(0, SUMMARY_MAX_GET);
+  const groups = new Map();
+  for (let i = 0; i < sample.length; i += 20) {
+    const settled = await Promise.allSettled(sample.slice(i, i + 20).map((k) => kv.get(k, 'json')));
+    for (const r of settled) {
+      if (r.status !== 'fulfilled' || !r.value) continue;
+      const key = `${r.value.kind || 'js'}|${redact(clip(r.value.message, 120))}`;
+      groups.set(key, (groups.get(key) || 0) + 1);
+    }
+  }
+  const top = [...groups.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([k, count]) => { const i = k.indexOf('|'); return { kind: k.slice(0, i), message: k.slice(i + 1), count }; });
+
+  return new Response(JSON.stringify({
+    success: true,
+    windowHours,
+    count: inWindow.length,
+    count24h,
+    avgPerHour24h: Math.round((count24h / 24) * 100) / 100,
+    sampled: sample.length,
+    top,
+    now: new Date(now).toISOString(),
+  }), { status: 200, headers: { ...headers, 'Cache-Control': 'no-store' } });
+}
+
+function redact(s) {
+  return String(s)
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '***@***')
+    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, '*.*.*.*')
+    .replace(/\d{7,}/g, '***');
+}
+
 export function onRequestOptions(context) {
   const origin = context.request.headers.get('origin') || '';
   const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -338,7 +433,7 @@ export function onRequestOptions(context) {
     headers: {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     },
   });
