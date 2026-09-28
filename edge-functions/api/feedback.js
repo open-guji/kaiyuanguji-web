@@ -296,11 +296,13 @@ const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_PREFIX = 'ratelimit:feedback:'; // 不以 fb_ 开头
 
-// 与 track-error.js 同口径：EdgeOne 把客户端 IP 挂在 request.eo.clientIp，header 兜底
+// 只认 EdgeOne 挂在 request.eo.clientIp 上的客户端 IP（FX3b，overview#196）。
+// 不回落到请求头：X-Forwarded-For 之类由客户端可随意填写，拿来当限速键等于让人每次换一个
+// 名额；也不回落到 'unknown'：那会让所有取不到 IP 的读者挤同一个名额、互相误伤。
+// 取不到就返回 null，由 checkRateLimit 跳过限速并记 warn。
 function getClientIp(request) {
-  const eo = request.eo || {};
-  const xff = request.headers.get('x-forwarded-for') || '';
-  return eo.clientIp || request.headers.get('eo-client-ip') || (xff ? xff.split(',')[0].trim() : '') || 'unknown';
+  const ip = request && request.eo && request.eo.clientIp;
+  return typeof ip === 'string' && ip.trim() ? ip.trim() : null;
 }
 async function sha256Hex(text) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -312,9 +314,14 @@ async function sha256Hex(text) {
  */
 async function checkRateLimit(kv, request) {
   if (!kv) return { ok: true };
+  const ip = getClientIp(request);
+  if (!ip) {
+    console.warn('反馈限速：取不到 request.eo.clientIp，本条跳过限速');
+    return { ok: true };
+  }
   const nowS = Math.floor(Date.now() / 1000);
   try {
-    const key = RATE_LIMIT_PREFIX + (await sha256Hex(getClientIp(request)));
+    const key = RATE_LIMIT_PREFIX + (await sha256Hex(ip));
     const cur = (await kv.get(key, 'json')) || {};
     let start = Number(cur.start) || 0;
     let count = Number(cur.count) || 0;

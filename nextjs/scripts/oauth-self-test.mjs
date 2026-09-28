@@ -69,8 +69,12 @@ const EMAIL = 'reviewer@example.com';
 const oauthClients = JSON.stringify({
   [CLIENT_ID]: { secret_hash: await sha256Hex(CLIENT_SECRET), redirect_uris: [REDIRECT_URI] },
 });
-// authorize 不写 KV（见 authorize.js 文件头），所以它的 env 里压根不需要 AUTH_KV。
-const authorizeEnv = { AUTH_JWT_SECRET, OAUTH_CODE_SECRET, OAUTH_CLIENTS: oauthClients };
+// authorize 不写 KV（见 authorize.js 文件头），但 FX3b 起要只读查成员记录比对 tokenVersion：
+// 给它一个「边缘节点 A」的 KV，写操作一调就抛，顺带证明它确实不写。
+const kvNodeA = new MockKV();
+await kvNodeA.put(`member:${EMAIL}`, JSON.stringify({ role: 'reviewer', tokenVersion: 1 }));
+kvNodeA.put = async () => { throw new Error('authorize 不应写 KV'); };
+const authorizeEnv = { AUTH_JWT_SECRET, OAUTH_CODE_SECRET, OAUTH_CLIENTS: oauthClients, AUTH_KV: kvNodeA };
 // token 端要查成员表、记 jti 防重放，需要 AUTH_KV；下面每次都传一个「假装是另一个边缘节点」的 KV 实例。
 function freshTokenEnv(kv) {
   return { OAUTH_CODE_SECRET, OAUTH_ID_TOKEN_SECRET, AUTH_KV: kv, OAUTH_CLIENTS: oauthClients };
@@ -138,10 +142,10 @@ function tokenReq(code, verifier, kv, extra = {}) {
 // 3. 模拟已用邀请链接登录：种下 session cookie（与真实 join.js 签发的同款）；
 //    成员表种在哪个 KV 由后面各步自己决定（authorize 本身不查成员表、不碰 KV）。
 const now = Math.floor(Date.now() / 1000);
-const sessionCookie = await signJWT({ sub: EMAIL, iat: now, exp: now + 180 * 24 * 3600 }, AUTH_JWT_SECRET);
+const sessionCookie = await signJWT({ sub: EMAIL, iat: now, exp: now + 180 * 24 * 3600, tv: 1 }, AUTH_JWT_SECRET);
 log(`模拟已登录成员 ${EMAIL}（role=reviewer），站内 session cookie 就绪`);
 
-// 4. 已登录 → 302 带 code（自包含签名令牌，authorize 全程没碰任何 KV）
+// 4. 已登录 → 302 带 code（自包含签名令牌，authorize 只读了成员记录、没写 KV）
 let code;
 {
   const res = await authorize.onRequestGet({
@@ -179,7 +183,10 @@ await kv.put(`member:${EMAIL}`, JSON.stringify({ role: 'reviewer', joinedAt: now
   const body = await res.json();
   assert.ok(body.id_token, 'id_token missing');
   const [h, p, s] = body.id_token.split('.');
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(OAUTH_ID_TOKEN_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  // FX3b（L9）：id_token 用按客户端派生的密钥签，推导式见 token.js 文件头
+  const master = await crypto.subtle.importKey('raw', new TextEncoder().encode(OAUTH_ID_TOKEN_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const derived = Buffer.from(await crypto.subtle.sign('HMAC', master, new TextEncoder().encode(`kyg-oauth-id-token:${CLIENT_ID}`))).toString('hex');
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(derived), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${h}.${p}`));
   assert.equal(b64url(new Uint8Array(sig)), s, 'id_token signature mismatch');
   const claims = JSON.parse(b64urlDecode(p).toString('utf8'));
@@ -213,6 +220,18 @@ await kv.put(`member:${EMAIL}`, JSON.stringify({ role: 'reviewer', joinedAt: now
   const j = await res2.json();
   assert.equal(j.error, 'access_denied');
   log('成员被停用后再走一遍 → 403 access_denied');
+}
+
+// 9. FX3b：令牌版本号对不上（改过角色／被撤销）→ authorize 直接 401，不发 code
+{
+  const staleCookie = await signJWT({ sub: EMAIL, iat: now, exp: now + 3600, tv: 0 }, AUTH_JWT_SECRET);
+  const res = await authorize.onRequestGet({
+    request: new Request(authorizeUrl({ state: 'st3' }), { headers: { Cookie: `session=${staleCookie}` } }),
+    env: authorizeEnv,
+  });
+  assert.equal(res.status, 401);
+  assert.equal(res.headers.get('Location'), null);
+  log('旧令牌（tv 对不上成员记录的 tokenVersion）→ authorize 401，不发 code');
 }
 
 console.log('\n全部通过 ✓');

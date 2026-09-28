@@ -6,8 +6,24 @@
  * redirect_uri 不在白名单→400、缺配置→503。
  *
  * 09-27 04:40Z 协调者验收第一轮后：code 改为自包含签名令牌，authorize 不再写 KV
- * （见 edge-functions/oauth/authorize.js 文件头），所以这里不再需要 AUTH_KV。
+ * （见 edge-functions/oauth/authorize.js 文件头）。
+ *
+ * FX3b（overview#196）：authorize 只读 AUTH_KV 查成员记录，令牌 tv 必须等于 tokenVersion，
+ * 对不上／墓碑／查不到一律 401。测试用的 KV 写操作一调就抛，顺带证明 authorize 仍不写 KV。
  */
+
+class ReadOnlyKV {
+  m = new Map<string, string>();
+  seed(k: string, v: unknown) { this.m.set(k, typeof v === 'string' ? v : JSON.stringify(v)); }
+  async get(k: string, type?: string) {
+    const v = this.m.get(k);
+    if (v === undefined) return null;
+    if (type === 'json') { try { return JSON.parse(v); } catch { return null; } }
+    return v;
+  }
+  async put() { throw new Error('authorize 不应写 KV'); }
+  async delete() { throw new Error('authorize 不应写 KV'); }
+}
 
 const JWT_SECRET = 'test-jwt-secret-32bytes-long-1234567890';
 const CODE_SECRET = 'test-code-secret-32bytes-long-abcdefghij';
@@ -47,18 +63,23 @@ async function verifyCode(token: string, secret: string) {
   expect(b64url(new Uint8Array(sig))).toBe(parts[2]);
   return JSON.parse(b64urlDecode(parts[1]).toString('utf8'));
 }
-async function sessionCookieFor(email: string) {
+// tv 传 null 表示令牌里不带 tv（FX3 之前签的旧令牌）
+async function sessionCookieFor(email: string, tv: unknown = 1) {
   const now = Math.floor(Date.now() / 1000);
-  const token = await signJWT({ sub: email, iat: now, exp: now + 3600 }, JWT_SECRET);
+  const payload: Record<string, unknown> = { sub: email, iat: now, exp: now + 3600 };
+  if (tv !== null) payload.tv = tv;
+  const token = await signJWT(payload, JWT_SECRET);
   return `session=${token}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
+let kv: ReadOnlyKV;
 
 async function baseEnv() {
   return {
     AUTH_JWT_SECRET: JWT_SECRET,
+    AUTH_KV: kv,
     OAUTH_CODE_SECRET: CODE_SECRET,
     OAUTH_CLIENTS: JSON.stringify({
       [CLIENT_ID]: { secret_hash: await sha256Hex(CLIENT_SECRET), redirect_uris: [REDIRECT_URI] },
@@ -85,6 +106,10 @@ function ctx(url: string, env: Record<string, unknown>, cookie?: string) {
 
 beforeAll(async () => {
   fn = await import('../../../../edge-functions/oauth/authorize.js');
+});
+beforeEach(() => {
+  kv = new ReadOnlyKV();
+  kv.seed('member:alice@example.com', { role: 'reviewer', tokenVersion: 1 });
 });
 
 describe('未登录', () => {
@@ -155,6 +180,61 @@ describe('已登录', () => {
   });
 });
 
+describe('tokenVersion 比对（FX3b，接 FX3/H1）', () => {
+  async function expect401NoCode(cookie: string) {
+    const env = await baseEnv();
+    const res = await fn.onRequestGet(ctx(authorizeUrl(), env, cookie));
+    expect(res.status).toBe(401);
+    expect(res.headers.get('Location')).toBeNull();
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const j = JSON.parse(await res.text());
+    expect(j.error).toBe('login_required');
+    return res;
+  }
+
+  it('令牌 tv 与成员记录 tokenVersion 对不上（改过角色／被撤销后的旧令牌）→ 401，不发 code', async () => {
+    kv.seed('member:alice@example.com', { role: 'reviewer', tokenVersion: 2 });
+    await expect401NoCode(await sessionCookieFor('alice@example.com', 1));
+  });
+
+  it('旧令牌没有 tv → 401', async () => {
+    await expect401NoCode(await sessionCookieFor('alice@example.com', null));
+  });
+
+  it('旧成员记录没有 tokenVersion → 401', async () => {
+    kv.seed('member:alice@example.com', { role: 'reviewer' });
+    await expect401NoCode(await sessionCookieFor('alice@example.com', 1));
+  });
+
+  it('tv 类型不对（字符串 "1"）→ 401', async () => {
+    await expect401NoCode(await sessionCookieFor('alice@example.com', '1'));
+  });
+
+  it('墓碑（_deleted）当作不存在 → 401，即使 tv 恰好对得上', async () => {
+    kv.seed('member:alice@example.com', { role: 'reviewer', tokenVersion: 1, _deleted: true });
+    await expect401NoCode(await sessionCookieFor('alice@example.com', 1));
+  });
+
+  it('成员记录不存在 → 401', async () => {
+    await expect401NoCode(await sessionCookieFor('bob@example.com', 1));
+  });
+
+  it('prompt=none 时版本对不上同样 401，不静默发 code', async () => {
+    kv.seed('member:alice@example.com', { role: 'reviewer', tokenVersion: 3 });
+    const env = await baseEnv();
+    const res = await fn.onRequestGet(ctx(authorizeUrl({ prompt: 'none' }), env, await sessionCookieFor('alice@example.com', 1)));
+    expect(res.status).toBe(401);
+  });
+
+  it('版本对得上 → 302 带 code（KV 只读，没写）', async () => {
+    kv.seed('member:alice@example.com', { role: 'editor', tokenVersion: 5 });
+    const env = await baseEnv();
+    const res = await fn.onRequestGet(ctx(authorizeUrl(), env, await sessionCookieFor('alice@example.com', 5)));
+    expect(res.status).toBe(302);
+    expect(new URL(res.headers.get('Location') || '').searchParams.get('code')).toBeTruthy();
+  });
+});
+
 describe('redirect_uri 不在白名单', () => {
   it('→ 400', async () => {
     const env = await baseEnv();
@@ -190,7 +270,7 @@ describe('code_challenge_method 不是 S256', () => {
 
 describe('缺配置', () => {
   it('OAUTH_CLIENTS 未配置 → 503', async () => {
-    const res = await fn.onRequestGet(ctx(authorizeUrl(), { AUTH_JWT_SECRET: JWT_SECRET, OAUTH_CODE_SECRET: CODE_SECRET }));
+    const res = await fn.onRequestGet(ctx(authorizeUrl(), { AUTH_JWT_SECRET: JWT_SECRET, OAUTH_CODE_SECRET: CODE_SECRET, AUTH_KV: kv }));
     expect(res.status).toBe(503);
   });
   it('AUTH_JWT_SECRET 未配置 → 503', async () => {
@@ -203,6 +283,12 @@ describe('缺配置', () => {
     const env = await baseEnv();
     delete (env as Record<string, unknown>).OAUTH_CODE_SECRET;
     const res = await fn.onRequestGet(ctx(authorizeUrl(), env));
+    expect(res.status).toBe(503);
+  });
+  it('AUTH_KV 未绑定 → 503（没法比对 tokenVersion 就不发 code）', async () => {
+    const env = await baseEnv();
+    delete (env as Record<string, unknown>).AUTH_KV;
+    const res = await fn.onRequestGet(ctx(authorizeUrl(), env, await sessionCookieFor('alice@example.com')));
     expect(res.status).toBe(503);
   });
 });
