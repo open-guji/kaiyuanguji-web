@@ -1,33 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
-
-// 全站黑体（N1）的兜底：系统没有中文黑体时才用到。只加载 400 / 700 两档，少下一套 CJK 字形。
-// --fw-medium（500）按 CSS 字重匹配规则回落到 400，系统黑体有 500 的仍按 500 显示。
-const notoSans = Noto_Sans_SC({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  // 只做兜底（系统中文字体优先），不预加载
-  preload: false,
-  variable: "--font-noto-sans",
-});
-
-// 宋体只给整理本正文
-const notoSerif = Noto_Serif_SC({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  // 只做兜底（系统中文字体优先），不预加载
-  preload: false,
-  variable: "--font-noto-serif",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -97,7 +75,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`antialiased ${notoSans.variable} ${notoSerif.variable}`}>
+      <body className="antialiased">
         <StagingBadge />
         <ErrorMonitor />
         <Suspense fallback={null}>
