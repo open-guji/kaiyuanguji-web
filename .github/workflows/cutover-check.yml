@@ -22,13 +22,11 @@ permissions:
 jobs:
   check:
     name: 切站检查
-    # Actions 额度用完后全部 workflow 跑自托管 runner（overview#184）
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       # 要 main 的 nextjs/package-lock.json（期望的 UI 版本），以及 latest.json 里 webCommitId
       # 那版的 package-lock（核对新项目跑的就是 promote 的那版代码），所以取全历史。
-      # 自托管 runner 各 job 共用工作目录，不用 sparse-checkout／blob:none（会弄残后续 job 的工作树）
       - uses: actions/checkout@v4
         with:
           ref: main
