@@ -25,6 +25,12 @@
 //                    secret_hash = sha256 hex(client_secret)，校验见 token.js
 //   OAUTH_CODE_SECRET  签 code 用，与 AUTH_JWT_SECRET／OAUTH_ID_TOKEN_SECRET 都分开另起一把
 //   AUTH_JWT_SECRET  与 auth/* 共用（校验站内登录态 cookie）
+//   AUTH_KV          与 auth/* 共用，只读：查成员记录比对 tokenVersion（见下）
+//
+// FX3b（overview#196，接 FX3/H1）：cookie 验签通过后还要查成员记录——令牌里的 `tv` 必须等于
+// 记录的 tokenVersion（与 api/auth/me.js 同一口径），对不上一律 401，墓碑（_deleted）、没有
+// 角色、查不到都当作成员不存在，同样 401。否则被撤销／改过角色的旧令牌仍能经 OAuth 换到
+// id_token。这里只读 KV：成员记录不是刚写的，跨节点传播延迟不影响；code 本身仍不写 KV。
 
 function getEnvVar(context, name) {
   if (context && context.env && context.env[name] !== undefined && context.env[name] !== null) {
@@ -35,6 +41,7 @@ function getEnvVar(context, name) {
 }
 const getJwtSecret = (c) => getEnvVar(c, 'AUTH_JWT_SECRET');
 const getCodeSecret = (c) => getEnvVar(c, 'OAUTH_CODE_SECRET');
+const getAuthKV = (c) => getEnvVar(c, 'AUTH_KV');
 function getOAuthClients(c) {
   const raw = getEnvVar(c, 'OAUTH_CLIENTS');
   if (!raw) return null;
@@ -99,6 +106,20 @@ function randomJti() {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// 墓碑、空记录、没有角色都当作不存在（返回 null）
+async function getMember(kv, email) {
+  let m = null;
+  try { m = await kv.get(`member:${email}`, 'json'); } catch { return null; }
+  if (typeof m === 'string') { try { m = JSON.parse(m); } catch { return null; } }
+  if (!m || typeof m !== 'object' || m._deleted || !m.role) return null;
+  return m;
+}
+// 与 api/auth/me.js 的 tokenVersionOk 同口径：旧令牌没有 tv、旧记录没有 tokenVersion 一律失效
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
+
 const CODE_TTL_SECONDS = 60;
 const noStore = { 'Cache-Control': 'no-store' };
 
@@ -123,8 +144,9 @@ export async function onRequestGet(context) {
   const clients = getOAuthClients(context);
   const jwtSecret = getJwtSecret(context);
   const codeSecret = getCodeSecret(context);
-  if (!clients || !jwtSecret || !codeSecret) {
-    return jsonError(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／AUTH_JWT_SECRET／OAUTH_CODE_SECRET）');
+  const kv = getAuthKV(context);
+  if (!clients || !jwtSecret || !codeSecret || !kv) {
+    return jsonError(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／AUTH_JWT_SECRET／OAUTH_CODE_SECRET／AUTH_KV）');
   }
 
   const client = clients[clientId];
@@ -153,6 +175,12 @@ export async function onRequestGet(context) {
     const loginPage = new URL('/oauth/login-required', url.origin);
     loginPage.searchParams.set('return_to', returnTo);
     return new Response(null, { status: 302, headers: { Location: loginPage.toString(), ...noStore } });
+  }
+
+  // FX3b：验签通过的令牌还要对得上成员记录的 tokenVersion
+  const member = await getMember(kv, email);
+  if (!member || !tokenVersionOk(payload, member)) {
+    return jsonError(401, 'login_required', '登录已失效，请重新登录');
   }
 
   const now = Math.floor(Date.now() / 1000);

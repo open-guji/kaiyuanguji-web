@@ -66,6 +66,19 @@ async function verifyJWT(token: string, secret: string) {
   return JSON.parse(b64urlDecode(parts[1]).toString('utf8'));
 }
 
+// FX3b（L9）：每个客户端的 id_token 密钥 = hex(HMAC-SHA256(主密钥, "kyg-oauth-id-token:" + client_id))
+async function derivedKey(clientId: string, master = ID_TOKEN_SECRET) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(master), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`kyg-oauth-id-token:${clientId}`));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+function signatureValid(token: string, secret: string) {
+  const [h, p, s] = token.split('.');
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+    .then((key) => crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${h}.${p}`)))
+    .then((sig) => b64url(new Uint8Array(sig)) === s);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 let kv: MockKV;
@@ -138,7 +151,7 @@ describe('token 正确', () => {
     expect(res.status).toBe(200);
     const j = JSON.parse(await res.text());
     expect(j.id_token).toBeTruthy();
-    const claims = await verifyJWT(j.id_token, ID_TOKEN_SECRET);
+    const claims = await verifyJWT(j.id_token, await derivedKey(CLIENT_ID));
     expect(claims.iss).toBe('https://www.kaiyuanguji.com');
     expect(claims.sub).toBe(EMAIL);
     expect(claims.email).toBe(EMAIL);
@@ -157,15 +170,21 @@ describe('token 正确', () => {
   });
 
   it('authorize 签出的 code 在跟签发时完全不同的 KV 实例上照样能换 token（不依赖跨节点 KV 传播）', async () => {
-    // 真实走一遍 authorize.onRequestGet（不是 makeCode 手搓），证明它确实不碰 KV：
-    // 传入的 env 压根不带 AUTH_KV／kv 字段，如果实现偷偷读写了 KV 这里会直接抛错。
+    // 真实走一遍 authorize.onRequestGet（不是 makeCode 手搓），证明它不写 KV：
+    // FX3b 起 authorize 要只读查成员记录比对 tokenVersion，所以给它一个「节点 A」的 KV，
+    // put/delete 一调就抛——如果实现偷偷写了 KV 这里会直接失败。
+    const kvNodeA = new MockKV();
+    await kvNodeA.put(`member:${EMAIL}`, JSON.stringify({ role: 'reviewer', tokenVersion: 1 }));
+    kvNodeA.put = async () => { throw new Error('authorize 不应写 KV'); };
+    kvNodeA.delete = async () => { throw new Error('authorize 不应写 KV'); };
     const authorize = await import('../../../../edge-functions/oauth/authorize.js');
     const codeVerifier = 'cross-kv-code-verifier-abcdefghijklmnopqrstuvwxyz012345';
     const codeChallenge = await sha256B64url(codeVerifier);
     const now = Math.floor(Date.now() / 1000);
-    const sessionCookie = await signJWT({ sub: EMAIL, iat: now, exp: now + 3600 }, 'test-auth-jwt-secret-32bytes-xx');
+    const sessionCookie = await signJWT({ sub: EMAIL, iat: now, exp: now + 3600, tv: 1 }, 'test-auth-jwt-secret-32bytes-xx');
     const authorizeEnv = {
       AUTH_JWT_SECRET: 'test-auth-jwt-secret-32bytes-xx',
+      AUTH_KV: kvNodeA,
       OAUTH_CODE_SECRET: CODE_SECRET,
       OAUTH_CLIENTS: JSON.stringify({
         [CLIENT_ID]: { secret_hash: await sha256Hex(CLIENT_SECRET), redirect_uris: [REDIRECT_URI] },
@@ -192,6 +211,61 @@ describe('token 正确', () => {
     const env = await baseEnv(kvAtRedemption);
     const res = await fn.onRequestPost(tokenRequest(goodBody(code as string, codeVerifier), env));
     expect(res.status).toBe(200);
+  });
+});
+
+describe('id_token 按客户端派生密钥（FX3b／L9）', () => {
+  const OTHER_ID = 'other-app';
+  const OTHER_SECRET = 'other-client-secret';
+  const OTHER_REDIRECT = 'https://other.example.com/cb';
+
+  async function twoClientEnv() {
+    return {
+      ...(await baseEnv()),
+      OAUTH_CLIENTS: JSON.stringify({
+        [CLIENT_ID]: { secret_hash: await sha256Hex(CLIENT_SECRET), redirect_uris: [REDIRECT_URI] },
+        [OTHER_ID]: { secret_hash: await sha256Hex(OTHER_SECRET), redirect_uris: [OTHER_REDIRECT], aud: 'other-aud' },
+      }),
+    };
+  }
+
+  it('不再用主密钥直接签：主密钥验不过，派生密钥验得过', async () => {
+    const env = await baseEnv();
+    await seedMember(kv);
+    const { code, codeVerifier } = await makeCode();
+    const j = JSON.parse(await (await fn.onRequestPost(tokenRequest(goodBody(code, codeVerifier), env))).text());
+    expect(await signatureValid(j.id_token, ID_TOKEN_SECRET)).toBe(false);
+    expect(await signatureValid(j.id_token, await derivedKey(CLIENT_ID))).toBe(true);
+  });
+
+  it('两个客户端的密钥不同：A 的 id_token 用 B 的密钥验不过，反之亦然；aud 各自对得上', async () => {
+    const env = await twoClientEnv();
+    await seedMember(kv);
+    const a = await makeCode();
+    const tokA = JSON.parse(await (await fn.onRequestPost(tokenRequest(goodBody(a.code, a.codeVerifier), env))).text()).id_token;
+    const b = await makeCode({ cid: OTHER_ID, ruri: OTHER_REDIRECT });
+    const resB = await fn.onRequestPost(tokenRequest(goodBody(b.code, b.codeVerifier, {
+      client_id: OTHER_ID, client_secret: OTHER_SECRET, redirect_uri: OTHER_REDIRECT,
+    }), env));
+    expect(resB.status).toBe(200);
+    const tokB = JSON.parse(await resB.text()).id_token;
+
+    const keyA = await derivedKey(CLIENT_ID);
+    const keyB = await derivedKey(OTHER_ID);
+    expect(keyA).not.toBe(keyB);
+    expect(await signatureValid(tokA, keyA)).toBe(true);
+    expect(await signatureValid(tokA, keyB)).toBe(false);
+    expect(await signatureValid(tokB, keyB)).toBe(true);
+    expect(await signatureValid(tokB, keyA)).toBe(false);
+    expect((await verifyJWT(tokA, keyA)).aud).toBe('collate');
+    expect((await verifyJWT(tokB, keyB)).aud).toBe('other-aud');
+  });
+
+  it('派生密钥与文件头给运维的 openssl 推导式一致（64 位十六进制）', async () => {
+    const { createHmac } = await import('crypto');
+    const expected = createHmac('sha256', ID_TOKEN_SECRET).update(`kyg-oauth-id-token:${CLIENT_ID}`).digest('hex');
+    expect(await derivedKey(CLIENT_ID)).toBe(expected);
+    expect(expected).toMatch(/^[0-9a-f]{64}$/);
   });
 });
 

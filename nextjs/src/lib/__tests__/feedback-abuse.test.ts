@@ -46,14 +46,17 @@ afterEach(() => {
     delete (global as any).fetch;
 });
 
-function post(body: unknown, ip = '1.2.3.4', headers: Record<string, string> = {}) {
+// ip 挂到 request.eo.clientIp（EdgeOne 的做法）；传 null 模拟取不到
+function post(body: unknown, ip: string | null = '1.2.3.4', headers: Record<string, string> = {}) {
+    const request = new Request('https://x/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify(body),
+    });
+    if (ip !== null) (request as any).eo = { clientIp: ip };
     return {
         env,
-        request: new Request('https://x/api/feedback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'eo-client-ip': ip, ...headers },
-            body: JSON.stringify(body),
-        }),
+        request,
         waitUntil: (p: Promise<unknown>) => { pending.push(p); },
     };
 }
@@ -131,6 +134,41 @@ describe('按 IP 限速：10 分钟 10 条', () => {
         expect([...kv.store.entries()].join('\n')).not.toContain('203.0.113.9');
         const j = JSON.parse(await (await fn.onRequestGet({ env, request: new Request('https://x/api/feedback?limit=20') })).text());
         expect(j.items).toHaveLength(1);
+    });
+});
+
+describe('取不到 eo.clientIp（FX3b，overview#196）', () => {
+    const rlKeys = () => [...kv.store.keys()].filter((k) => k.startsWith('ratelimit:feedback:'));
+
+    it('跳过限速并记 warn：不计数、不共用 unknown 名额，第 11 条照样 200', async () => {
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        for (let i = 0; i < 12; i += 1) {
+            expect((await fn.onRequestPost(post({ type: 'bug', content: `c${i}` }, null))).status).toBe(200);
+        }
+        expect(rlKeys()).toHaveLength(0);
+        expect(fbRecords()).toHaveLength(12);
+        expect(warn).toHaveBeenCalled();
+        expect(String(warn.mock.calls[0][0])).toContain('clientIp');
+    });
+
+    it('不回落到 X-Forwarded-For／eo-client-ip 头：换头不能换名额，也不按头计数', async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        for (let i = 0; i < 12; i += 1) {
+            const res = await fn.onRequestPost(post({ type: 'bug', content: `c${i}` }, null, {
+                'X-Forwarded-For': `198.51.100.${i}`, 'eo-client-ip': `198.51.100.${i}`,
+            }));
+            expect(res.status).toBe(200);
+        }
+        expect(rlKeys()).toHaveLength(0);
+    });
+
+    it('有 eo.clientIp 时带着伪造的 X-Forwarded-For 也按 eo.clientIp 计数', async () => {
+        for (let i = 0; i < 10; i += 1) {
+            await fn.onRequestPost(post({ type: 'bug', content: `c${i}` }, '1.2.3.4', { 'X-Forwarded-For': `198.51.100.${i}` }));
+        }
+        const res = await fn.onRequestPost(post({ type: 'bug', content: '超' }, '1.2.3.4', { 'X-Forwarded-For': '198.51.100.99' }));
+        expect(res.status).toBe(429);
+        expect(rlKeys()).toHaveLength(1);
     });
 });
 
