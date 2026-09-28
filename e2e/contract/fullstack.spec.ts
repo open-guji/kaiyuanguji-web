@@ -297,9 +297,14 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
     test('没有这种阅读页、或卷号查不到的给真 404（不出软 404）', async ({ request }) => {
         const res = await request.get(`${TARGET}/item/${ANCHORS.entity.id}/read`, noFollow);
         expect(res.status(), '人物条目没有阅读页').toBe(404);
-        for (const bad of ['juan%2F999.json', '999']) {
-            const r = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=${bad}`, noFollow);
-            expect(r.status(), `乱填的卷号 ${bad} 应 404`).toBe(404);
+        // 旧形式先 308 到短形式（不查数据），短形式再 404；所以旧形式这条跟着跳，看终点
+        const legacyBad = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`, noFollow);
+        expect(legacyBad.status(), '旧形式的卷号先 308 到短形式').toBe(308);
+        for (const [what, r] of [
+            ['旧形式跟随跳转后', await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`)],
+            ['短形式', await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=999`, noFollow)],
+        ] as const) {
+            expect(r.status(), `乱填的卷号（${what}）应 404`).toBe(404);
             expect(metaContent(await r.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
         }
     });
@@ -309,7 +314,7 @@ test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
     for (const path of ['/no-such-page', '/item/zzzzzzzzzz', '/catalog?node=zzz']) {
-        test(`${path}：真 404，中文 title，noindex，有回首页／总目／搜索三个入口`, async ({ request }) => {
+        test(`${path}：真 404，中文 title，noindex，未匹配路由带回首页／总目／搜索三个入口`, async ({ request }) => {
             const res = await request.get(`${TARGET}${path}`, noFollow);
             expect(res.status(), `${path} 应 404`).toBe(404);
             const html = await res.text();
@@ -317,7 +322,11 @@ test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
             expect(metaContent(html, 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
             expect(html, '应是站点自己的页，不是 Next 默认英文页').not.toContain('This page could not be found');
             expect(html).toContain('找不到这个页面');
-            for (const href of ['href="/"', 'href="/catalog"', 'href="/book-index"']) expect(html, `缺入口 ${href}`).toContain(href);
+            // 页面调 notFound() 时 Next 先流出错误壳、内容走客户端渲染，首屏 HTML 里没有链接；
+            // 三个入口只在未匹配路由（直接渲染 not-found）的 HTML 里断言
+            if (path === '/no-such-page') {
+                for (const href of ['href="/"', 'href="/catalog"', 'href="/book-index"']) expect(html, `缺入口 ${href}`).toContain(href);
+            }
         });
     }
 });
