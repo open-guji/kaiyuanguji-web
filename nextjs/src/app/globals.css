@@ -1,43 +1,54 @@
 @import "tailwindcss";
 
 /* =========================================================
-   开源古籍 · 设计 token（新版视觉：宣纸 / 墨夜）
+   开源古籍 · 设计令牌（N1，照 design/n1-samples 样张）
    ---------------------------------------------------------
-   迁移说明：
-   - token 名称沿用旧版（paper / ink / vermilion / secondary /
-     border / nav-*），只替换取值，使现有组件零改动继承新配色。
-   - 新增 surface / surface-border / vermilion-deep / accent-gold /
-     muted 等分层色，供新版外壳与卡片使用。
-   - 深色（墨夜）调色板已在下方定义完毕，但**尚未挂切换入口**：
-     book-index-ui 内部仍有硬编码颜色，待其换肤完成后再开放切换，
-     避免出现半深半浅的割裂状态。
+   视觉方针：布局学新稿，UI 沿用现网暖纸＋朱色并做现代化；
+   少边框、少分隔线（分组靠留白与底色阶）、少按钮（一屏一个主按钮）、
+   少 badge（元数据写成小一号浅色文字，「·」分隔）。
+   全站黑体（Noto Sans SC），整理本正文宋体（Noto Serif SC）。不做暗色。
+
+   旧 token 名（paper / ink / vermilion / secondary / border / surface /
+   nav-*）保留，取值对齐新令牌，现有组件零改动继承新配色。
    ========================================================= */
 
 @theme {
-  /* ---- 基础色（宣纸 / 浅色，默认） ---- */
-  --color-paper: #faf7f2;          /* 页面底色 */
-  --color-surface: #ffffff;        /* 卡片/浮层 */
-  --color-surface-border: #e6dfd3; /* 卡片描边 */
-  --color-ink: #26211c;            /* 正文墨色 */
-  --color-secondary: #6b6156;      /* 次要文字（旧名保留） */
-  --color-border: #e2dacd;         /* 通用分隔线 */
+  /* ---- 底色阶：纸 → 抬起 → 浅一阶 → 深一阶，分组全靠它 ---- */
+  --color-paper: #faf7f2;          /* 页底 */
+  --color-raise: #fffdf9;          /* 抬起的面（卡片、检索框） */
+  --color-tint: #f3eee6;           /* 分组底（侧栏、斑马、页脚） */
+  --color-tint-2: #ebe4d9;         /* 悬停／选中；也是仅存的细线色 */
 
-  /* ---- 强调色 ---- */
-  --color-vermilion: #9e2a2b;      /* 朱砂（主强调） */
-  --color-vermilion-deep: #7a1c1f; /* 朱砂（hover/按压） */
-  --color-accent-gold: #a37b43;    /* 泥金（点缀） */
+  /* ---- 墨色三阶：层级靠字重和墨色深浅 ---- */
+  --color-ink: #26211c;            /* 正文、标题 */
+  --color-ink-2: #5f564d;          /* 次要文字 */
+  --color-ink-3: #948a7e;          /* 元数据、注记 */
 
-  /* ---- 导航栏（旧名保留，取值对齐新版） ---- */
+  /* ---- 朱色：只做点缀（链接、当前项、唯一主按钮） ---- */
+  --color-zhu: #9e2a2b;
+  --color-zhu-deep: #7a1c1f;
+  --color-zhu-tint: rgba(158, 42, 43, 0.08);
+  --color-gold: #a37b43;
+
+  /* ---- 旧名（取值接到新令牌） ---- */
+  --color-surface: #fffdf9;        /* = raise */
+  --color-surface-border: #ebe4d9; /* = tint-2 */
+  --color-secondary: #5f564d;      /* = ink-2 */
+  --color-border: #ebe4d9;         /* = tint-2 */
+  --color-vermilion: #9e2a2b;      /* = zhu */
+  --color-vermilion-deep: #7a1c1f; /* = zhu-deep */
+  --color-accent-gold: #a37b43;    /* = gold */
   --color-nav-bg: #faf7f2;
   --color-nav-ink: #26211c;
   --color-nav-vermilion: #9e2a2b;
-  --color-nav-border: #e2dacd;
+  --color-nav-border: #ebe4d9;
 
-  /* ---- 字体：全站宋体 ---- */
+  /* ---- 字体：全站黑体；宋体只给整理本正文 ---- */
+  --font-sans: var(--font-noto-sans), "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC",
+    "WenQuanYi Zen Hei", system-ui, sans-serif;
   --font-serif: var(--font-noto-serif), "Songti SC", "Songti TC", "STSong",
     "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "PMingLiU", serif;
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
 
   /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
@@ -49,44 +60,40 @@
   --max-width-content-tablet: 600px;
 }
 
-/* ---------- 非 Tailwind token（阴影 / 圆角 / 动效曲线） ---------- */
+/* ---------- 非 Tailwind 令牌（字号阶 / 字重 / 阴影 / 圆角 / 动效） ---------- */
 :root {
-  --shadow-soft: 0 8px 24px rgba(60, 50, 40, 0.08);
-  --shadow-lift: 0 14px 30px rgba(158, 42, 43, 0.12);
-  --radius-card: 12px;
-  --radius-pill: 6px;
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 字号阶：基准 15，标题逐级拉开 */
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 15px;
+  --fs-md: 17px;
+  --fs-lg: 20px;
+  --fs-xl: 28px;
+  --fs-2xl: 36px;
+  --fs-3xl: 52px;
 
-  /* 首页主视觉压在古地图上的宣纸色渐变（上淡下浓，让底部文字/搜索框可读） */
-  --hero-grad-a: rgba(250, 247, 242, 0.38);
-  --hero-grad-b: rgba(250, 247, 242, 0.82);
+  /* 字重：只用三档 */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  /* 外壳尺寸 */
+  --shell-max: 1440px;
+  --shell-gutter: 32px;
+  --nav-h: 60px;
+
+  --shadow-soft: 0 1px 2px rgba(60, 50, 40, 0.06), 0 8px 24px rgba(60, 50, 40, 0.08);
+  --shadow-lift: 0 10px 32px rgba(60, 50, 40, 0.07);
+  --radius-card: 10px;
+  --radius-pill: 8px;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ---------- 深色（墨夜）调色板 ----------
-   已就绪，等 book-index-ui 换肤完成后开放 data-theme 切换。 */
-[data-theme="dark"] {
-  --color-paper: #181512;
-  --color-surface: #221e19;
-  --color-surface-border: #3a332b;
-  --color-ink: #f3ece1;
-  --color-secondary: #a2968a;
-  --color-border: #38312a;
-
-  --color-vermilion: #d9534f;
-  --color-vermilion-deep: #b23a37;
-  --color-accent-gold: #c9a15c;
-
-  --color-nav-bg: #181512;
-  --color-nav-ink: #f3ece1;
-  --color-nav-vermilion: #d9534f;
-  --color-nav-border: #38312a;
-
-  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lift: 0 14px 30px rgba(0, 0, 0, 0.45);
-
-  /* 墨夜下这张古地图本身很亮，需要更重的压暗才压得住白字 */
-  --hero-grad-a: rgba(24, 21, 18, 0.62);
-  --hero-grad-b: rgba(24, 21, 18, 0.88);
+@media (max-width: 760px) {
+  :root {
+    --shell-gutter: 16px;
+    --nav-h: 52px;
+  }
 }
 
 /* 全局基础样式 */
@@ -98,21 +105,24 @@
   body {
     background-color: var(--color-paper);
     color: var(--color-ink);
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
+    /* 继承用的默认字号暂保持现网 17px / 1.8：条目页、阅读页等旧页面
+       靠继承排版，本卡只换色不动布局。新令牌的基准 15px 由外壳和首页
+       显式声明；各页换到新布局（N3 / N5）时再改这里。 */
     font-size: 17px;
     line-height: 1.8;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   /* 链接默认样式 */
   a {
-    color: var(--color-vermilion);
+    color: var(--color-zhu);
   }
 
   a:hover {
     text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   /* 标题样式 */
@@ -126,68 +136,63 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-vermilion) 30%, transparent);
+    background: color-mix(in srgb, var(--color-zhu) 22%, transparent);
   }
 }
 
 /* =========================================================
-   book-index-ui 换肤接口（--bim-*）
+   book-index-ui 换肤接口（--bim-*，共 76 个）
    ---------------------------------------------------------
-   组件内部以 var(--bim-x, 回退值) 的形式取色，这里把它们全部
-   接到本站 token 上，使 /book-index 的列表与详情跟随新皮肤，
-   且深浅色切换时自动跟随（因为下面引用的 --color-* 会随主题变）。
+   组件内部以 var(--bim-x, 回退值) 取色。这里全部接到上面的新令牌，
+   让条目页、阅读页、搜索页先跟着换色——**只动颜色和字体，不动布局**
+   （布局分别归 N3 / N5）。
 
-   覆盖范围对齐组件实际引用的全部变量；语义状态色
-   （danger / warning / success / info）**有意保持默认**：
-   它们承担「危险/警告/成功/提示」的语义区分，换成暖色系会削弱
-   可辨识度，待与设计者确认后再统一。
+   换色原则同外壳：线条一律退到 tint-2（原来的粗黑线也降成浅线，
+   粗细不变，所以不影响布局），分组靠底色阶。
+   语义状态色（danger / warning / success / info）与置信度四色
+   **有意保持默认**：它们承担语义区分，换成暖色会削弱可辨识度。
    ========================================================= */
 :root {
   /* 底色与文字 */
-  --bim-bg: var(--color-surface);
+  --bim-bg: var(--color-raise);
   --bim-bg-subtle: var(--color-paper);
   --bim-widget-bg: var(--color-paper);
-  --bim-sidebar-bg: var(--color-paper);
+  --bim-sidebar-bg: var(--color-tint);
   --bim-fg: var(--color-ink);
-  --bim-desc-fg: var(--color-secondary);
-  --bim-muted: color-mix(in srgb, var(--color-secondary) 75%, var(--color-paper));
+  --bim-desc-fg: var(--color-ink-2);
+  --bim-muted: var(--color-ink-3);
 
-  /* 描边 */
-  --bim-widget-border: var(--color-border);
-  --bim-border: var(--color-border);
-  --bim-input-border: var(--color-border);
-  --bim-focus-border: var(--color-vermilion);
+  /* 描边：统一退到最浅的一阶 */
+  --bim-widget-border: var(--color-tint-2);
+  --bim-border: var(--color-tint-2);
+  --bim-input-border: var(--color-tint-2);
+  --bim-focus-border: var(--color-zhu);
 
   /* 输入控件 */
-  --bim-input-bg: var(--color-surface);
+  --bim-input-bg: var(--color-raise);
   --bim-input-fg: var(--color-ink);
 
-  /* 主色（朱砂） */
-  --bim-primary: var(--color-vermilion);
+  /* 主色（朱） */
+  --bim-primary: var(--color-zhu);
   --bim-primary-fg: #fff;
-  --bim-primary-soft: color-mix(in srgb, var(--color-vermilion) 15%, transparent);
-  --bim-primary-bg: color-mix(in srgb, var(--color-vermilion) 6%, var(--color-surface));
+  --bim-primary-soft: color-mix(in srgb, var(--color-zhu) 12%, transparent);
+  --bim-primary-bg: var(--color-zhu-tint);
 
   /* 链接 */
-  --bim-link: var(--color-vermilion);
-  --bim-link-fg: var(--color-vermilion);
+  --bim-link: var(--color-zhu);
+  --bim-link-fg: var(--color-zhu);
 
   /* 列表交互态 */
-  --bim-list-hover-bg: color-mix(in srgb, var(--color-ink) 4%, transparent);
-  --bim-list-active-bg: color-mix(in srgb, var(--color-vermilion) 8%, transparent);
+  --bim-list-hover-bg: var(--color-tint);
+  --bim-list-active-bg: var(--color-zhu-tint);
 
   /* 标签与点缀（泥金） */
-  --bim-tag-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
-  --bim-accent-bg: var(--color-accent-gold);
+  --bim-tag-bg: var(--color-tint);
+  --bim-accent-bg: var(--color-gold);
 
-  /* -------------------------------------------------------
-     以下变量需要 book-index-ui > 0.4.2（把原先写死的颜色变量化）。
-     在旧版本上它们不会被读到，属于安全的空操作；发包升级后自动生效。
-     ------------------------------------------------------- */
-
-  /* 条目类型徽章：保持四类可区分，同时向暖色系靠拢 */
-  --bim-type-book: var(--color-vermilion);
-  --bim-type-work: var(--color-accent-gold);
+  /* 条目类型徽章：保持四类可区分，向暖色系靠拢 */
+  --bim-type-book: var(--color-zhu);
+  --bim-type-work: var(--color-gold);
   --bim-type-collection: #2f6a8d;
   --bim-type-entity: #6a4a86;
 
@@ -195,7 +200,7 @@
   --bim-status-draft: #b5762e;
   --bim-status-official: #3f7d54;
 
-  /* 资源类型标记：原为高饱和的蓝/橙/紫，压暗以融入宣纸底 */
+  /* 资源类型标记：压暗以融入纸底 */
   --bim-restype-text: #3a6b8a;
   --bim-restype-image: #b5762e;
   --bim-restype-text-image: #7a5192;
@@ -203,85 +208,69 @@
   --bim-missing-fg: #b5762e;
 
   /* 影印件色彩模式标记 */
-  --bim-colormode-bw-bg: color-mix(in srgb, var(--color-ink) 6%, transparent);
-  --bim-colormode-bw-fg: var(--color-secondary);
-  --bim-colormode-color-bg: color-mix(in srgb, var(--color-accent-gold) 14%, transparent);
+  --bim-colormode-bw-bg: var(--color-tint);
+  --bim-colormode-bw-fg: var(--color-ink-2);
+  --bim-colormode-color-bg: color-mix(in srgb, var(--color-gold) 14%, transparent);
   --bim-colormode-color-fg: #8a6320;
 
   /* 资源导入进度 */
-  --bim-progress-active: var(--color-accent-gold);
+  --bim-progress-active: var(--color-gold);
   --bim-progress-done: #3f7d54;
-  --bim-progress-todo: var(--color-secondary);
+  --bim-progress-todo: var(--color-ink-3);
 
   /* 警告条（草稿提示等） */
-  --bim-warn-bg: color-mix(in srgb, var(--color-accent-gold) 14%, transparent);
-  --bim-warn-border: color-mix(in srgb, var(--color-accent-gold) 55%, transparent);
+  --bim-warn-bg: color-mix(in srgb, var(--color-gold) 14%, transparent);
+  --bim-warn-border: color-mix(in srgb, var(--color-gold) 40%, transparent);
   --bim-warn-fg: #8a6320;
 
-  /* -------------------------------------------------------
-     以下需要 book-index-ui > 0.5.0（整理本 / 版本传承 / 书目卡片）。
-     旧版本读不到，属安全的空操作。
-     ------------------------------------------------------- */
-
   /* 整理本 */
-  --bim-highlight-bg: color-mix(in srgb, var(--color-accent-gold) 28%, transparent);
-  --bim-section-lei: var(--color-accent-gold);
-  --bim-section-shu: var(--color-vermilion);
+  --bim-highlight-bg: color-mix(in srgb, var(--color-gold) 28%, transparent);
+  --bim-section-lei: var(--color-gold);
+  --bim-section-shu: var(--color-zhu);
   --bim-section-xu: #2f6a8d;
   --bim-section-jieyu: #7d6608;
-  --bim-section-kaozhen: var(--color-secondary);
-  --bim-section-tag-fg: var(--color-vermilion);
-  --bim-matchstate-fg: var(--color-accent-gold);
+  --bim-section-kaozhen: var(--color-ink-2);
+  --bim-section-tag-fg: var(--color-zhu);
+  --bim-matchstate-fg: var(--color-gold);
 
-  /* 版本传承：佚失标记压暗以融入暖色系；
-     置信度四色**有意保持默认** —— 它们承担「确定/共识/推测/有争议」的
-     语义分级，换成暖色会削弱可辨识度，同 danger/warning/success 的处理。 */
+  /* 版本传承：佚失标记压暗；置信度四色保持默认（见上） */
   --bim-lost-fg: #a8322c;
 
-  /* 关系方向：原为高饱和蓝/绿/橙，压暗后与宣纸底协调 */
+  /* 关系方向 */
   --bim-relation-up: #3a6b8a;
   --bim-relation-down: #3f7d54;
   --bim-relation-flat: #b5762e;
 
-  /* 书目卡片「封面」点缀（IndexBrowser resultVariant="card"） */
-  --bim-cover-accent: var(--color-accent-gold);
+  /* 书目卡片「封面」点缀 */
+  --bim-cover-accent: var(--color-gold);
 
-  /* -------------------------------------------------------
-     详情页（作品 / 版本 / 丛编），需要 book-index-ui >= 0.7.0。
-
-     组件库自带的默认值本身就是宣纸+朱砂（与设计稿一致），这里把它们
-     接到本站 token 上，好处是深色模式开放时详情页自动跟随——否则
-     墨夜主题下会保留一张亮底的纸。
-     ------------------------------------------------------- */
-
-  /* 底色 */
+  /* 详情页底色 */
   --bim-page-bg: var(--color-paper);
-  --bim-row-hover-bg: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
-  --bim-selection-bg: color-mix(in srgb, var(--color-accent-gold) 30%, transparent);
-  /* 整理本横幅：泥金掺纸调出暖沙。**必须不透明**——组件里这个值不再套
-     color-mix，但横幅是大色块，半透明会透出下面的分隔线。 */
-  --bim-band-bg: color-mix(in srgb, var(--color-accent-gold) 18%, var(--color-paper));
-  --bim-band-bg-hover: color-mix(in srgb, var(--color-accent-gold) 30%, var(--color-paper));
+  --bim-row-hover-bg: var(--color-tint);
+  --bim-selection-bg: color-mix(in srgb, var(--color-gold) 30%, transparent);
+  /* 整理本横幅：大色块，**必须不透明**（半透明会透出下面的线） */
+  --bim-band-bg: var(--color-tint);
+  --bim-band-bg-hover: var(--color-tint-2);
 
-  /* 文字层次 */
+  /* 文字层次：墨色三阶 */
   --bim-ink: var(--color-ink);
-  --bim-body-fg: color-mix(in srgb, var(--color-ink) 92%, var(--color-paper));
-  --bim-quiet-fg: color-mix(in srgb, var(--color-ink) 78%, var(--color-paper));
-  --bim-meta-fg: var(--color-secondary);
-  --bim-label-fg: color-mix(in srgb, var(--color-secondary) 82%, var(--color-paper));
-  --bim-hint-fg: color-mix(in srgb, var(--color-secondary) 58%, var(--color-paper));
+  --bim-body-fg: var(--color-ink);
+  --bim-quiet-fg: var(--color-ink-2);
+  --bim-meta-fg: var(--color-ink-2);
+  --bim-label-fg: var(--color-ink-3);
+  --bim-hint-fg: var(--color-ink-3);
 
   /* 强调 */
-  --bim-accent: var(--color-vermilion);
-  --bim-accent-deep: var(--color-vermilion-deep);
+  --bim-accent: var(--color-zhu);
+  --bim-accent-deep: var(--color-zhu-deep);
 
-  /* 分隔线 */
-  --bim-rule-strong: var(--color-ink);
-  --bim-rule: var(--color-border);
-  --bim-rule-dashed: color-mix(in srgb, var(--color-secondary) 42%, var(--color-paper));
-  --bim-rule-accent-soft: color-mix(in srgb, var(--color-vermilion) 32%, var(--color-paper));
+  /* 分隔线：粗黑线降成浅线（粗细由组件定，这里只换色） */
+  --bim-rule-strong: var(--color-tint-2);
+  --bim-rule: var(--color-tint-2);
+  --bim-rule-dashed: var(--color-tint-2);
+  --bim-rule-accent-soft: color-mix(in srgb, var(--color-zhu) 24%, var(--color-paper));
 
-  /* 字体：详情页全站无衬线（2026-09-05 定），与站点正文的宋体区分开 */
+  /* 字体：全站黑体 */
   --bim-font-ui: var(--font-sans);
   --bim-font-body: var(--font-sans);
 }
@@ -407,8 +396,9 @@
     }
   }
 
-  /* 古籍正文样式（更大字号和行距） */
+  /* 古籍正文样式（整理本正文：宋体、更大字号和行距） */
   .classic-text {
+    font-family: var(--font-serif);
     font-size: 1.125rem;
     line-height: 2;
     letter-spacing: 0.025em;
@@ -473,44 +463,6 @@
     border-radius: 0.25rem;
   }
 
-  /* 首页主视觉：坤舆万国全图作底，上覆宣纸色渐变保证文字可读 */
-  .hero-banner {
-    background-image: linear-gradient(
-        var(--hero-grad-a),
-        var(--hero-grad-b)
-      ),
-      url("/images/kunyu-wanguo-quantu.webp");
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    aspect-ratio: 16 / 9;
-    width: 100%;
-  }
-
-  /* 窄屏放弃 16:9（否则高度被压得读不了字），改为最小高度 */
-  @media (max-width: 900px) {
-    .hero-banner {
-      aspect-ratio: auto;
-      min-height: 460px;
-    }
-  }
-
-  /* 首页专题卡片（对齐设计稿 feature-banner-card） */
-  .feature-card {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-soft);
-    transition: transform 0.3s ease, border-color 0.3s ease,
-      box-shadow 0.3s ease;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--color-accent-gold) 55%, var(--color-border));
-    box-shadow: var(--shadow-lift);
-  }
-
   /* 路线图等网格卡片：悬停上浮 + 朱砂描边 */
   .lift-card {
     background-color: var(--color-surface);
@@ -525,5 +477,540 @@
     transform: translateY(-6px);
     border-color: color-mix(in srgb, var(--color-vermilion) 45%, var(--color-border));
     box-shadow: var(--shadow-lift);
+  }
+}
+
+/* =========================================================
+   全站外壳：页头 / 手机抽屉 / 页脚（照 N1a 样张）
+   页头去掉粗线与竖线，当前项只用一条朱色下划线。
+   ========================================================= */
+@layer components {
+  .og-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--color-paper) 90%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  /* 首页：页头浮在坤舆图上 */
+  .og-nav--hero {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  .og-nav-inner {
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 0 var(--shell-gutter);
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .og-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    flex: none;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .og-brand:hover {
+    text-decoration: none;
+  }
+  .og-brand img {
+    width: 26px;
+    height: 26px;
+  }
+  .og-brand span {
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-md);
+    letter-spacing: 0.18em;
+  }
+  .og-links {
+    display: flex;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .og-links a {
+    position: relative;
+    display: block;
+    padding: 18px 0;
+    color: var(--color-ink-2);
+    font-size: var(--fs-base);
+    line-height: 24px;
+    text-decoration: none;
+  }
+  .og-links a:hover {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .og-links a[aria-current="page"] {
+    color: var(--color-ink);
+    font-weight: var(--fw-bold);
+  }
+  .og-links a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-zhu);
+  }
+  .og-nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .og-burger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+    border: 0;
+    background: none;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  /* 手机抽屉：无竖条、无图标，当前项朱色字＋浅朱底 */
+  .og-drawer-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 1000; /* 压过 book-index-ui 的浮动反馈按钮（900） */
+    background: rgba(38, 33, 28, 0.4);
+  }
+  .og-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+    width: 300px;
+    max-width: 85vw;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-paper);
+    box-shadow: -12px 0 40px rgba(60, 50, 40, 0.16);
+  }
+  .og-drawer-head {
+    height: var(--nav-h);
+    padding: 0 16px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .og-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px 24px;
+  }
+  .og-drawer-cap {
+    margin: 20px 12px 4px;
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    color: var(--color-ink-3);
+  }
+  .og-drawer-body a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 6px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-md);
+    text-decoration: none;
+  }
+  .og-drawer-body a:hover {
+    background: var(--color-tint);
+    text-decoration: none;
+  }
+  .og-drawer-body a[aria-current="page"] {
+    background: var(--color-zhu-tint);
+    color: var(--color-zhu);
+    font-weight: var(--fw-medium);
+  }
+
+  /* 页脚：浅一阶底色，不用分隔线 */
+  .og-footer {
+    margin-top: 80px;
+    line-height: 1.7;
+    background: var(--color-tint);
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
+  .og-footer-inner {
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 56px var(--shell-gutter) 32px;
+  }
+  .og-footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: 40px 48px;
+  }
+  .og-footer h2 {
+    margin: 0 0 10px;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-ink);
+  }
+  .og-footer p {
+    margin: 0;
+    line-height: 1.85;
+  }
+  .og-footer ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .og-footer li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--color-ink-2);
+    text-decoration: none;
+  }
+  .og-footer a:hover {
+    color: var(--color-zhu);
+  }
+  .og-footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--color-ink);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.18em;
+  }
+  .og-footer-bottom {
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 20px;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+  }
+  .og-footer-bottom a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--color-ink-3);
+    text-decoration: none;
+  }
+
+  @media (max-width: 760px) {
+    .og-nav-inner {
+      gap: 12px;
+    }
+    .og-links {
+      display: none;
+    }
+    .og-burger {
+      display: inline-flex;
+    }
+    .og-footer {
+      margin-top: 56px;
+    }
+    .og-footer-inner {
+      padding: 40px var(--shell-gutter) 24px;
+    }
+    .og-footer-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 28px 24px;
+    }
+    .og-footer-grid > :first-child {
+      grid-column: 1 / -1;
+    }
+    /* 手机上的点击目标 ≥ 44px */
+    .og-footer li a,
+    .og-footer-bottom a {
+      min-height: 44px;
+    }
+  }
+}
+
+/* =========================================================
+   首页（照 N1a 样张 /samples/home）
+   首屏：坤舆图满幅、左对齐大标题、大检索框、唯一主按钮「搜索」。
+   ========================================================= */
+@layer components {
+  .og-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-zhu);
+    color: #fff;
+    font: var(--fw-medium) var(--fs-base) / 1 var(--font-sans);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .og-btn:hover {
+    background: var(--color-zhu-deep);
+  }
+
+  .home-hero,
+  .home-band,
+  .home-open {
+    font-size: var(--fs-base);
+    line-height: 1.7;
+  }
+  .home-hero {
+    position: relative;
+    min-height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .home-hero-bg {
+    position: absolute;
+    inset: 0;
+    background: url("/images/kunyu-hero.webp") center 30% / cover no-repeat;
+  }
+  /* 宣纸色罩：左浓右淡，右侧露出古地图 */
+  .home-hero-veil {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(250, 247, 242, 0.94) 0%, rgba(250, 247, 242, 0.82) 42%, rgba(250, 247, 242, 0.35) 72%, rgba(250, 247, 242, 0.15) 100%),
+      linear-gradient(180deg, rgba(250, 247, 242, 0) 55%, rgba(250, 247, 242, 1) 100%);
+  }
+  .home-hero-inner {
+    position: relative;
+    width: 100%;
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 120px var(--shell-gutter) 56px;
+  }
+  .home-kicker {
+    margin: 0 0 18px;
+    color: var(--color-zhu);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.3em;
+  }
+  .home-title {
+    margin: 0;
+    font-size: var(--fs-3xl);
+    line-height: 1.2;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.06em;
+  }
+  .home-lead {
+    margin: 20px 0 0;
+    max-width: 34em;
+    font-size: var(--fs-md);
+    line-height: 1.9;
+    color: var(--color-ink-2);
+  }
+  .home-search {
+    margin-top: 36px;
+    display: flex;
+    gap: 12px;
+    max-width: 720px;
+  }
+  .home-search input {
+    flex: 1;
+    min-width: 0;
+    height: 52px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    outline: none;
+    background: var(--color-raise);
+    color: var(--color-ink);
+    font: var(--fs-md) var(--font-sans);
+    box-shadow: var(--shadow-soft);
+  }
+  .home-search input::placeholder {
+    color: var(--color-ink-3);
+  }
+  .home-search input:focus {
+    box-shadow: 0 0 0 2px var(--color-zhu), 0 8px 24px rgba(60, 50, 40, 0.08);
+  }
+  .home-search .og-btn {
+    height: 52px;
+    padding: 0 32px;
+  }
+  .home-under {
+    margin: 16px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1.2em;
+    font-size: var(--fs-sm);
+    color: var(--color-ink-3);
+  }
+  .home-under a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .home-band {
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 24px var(--shell-gutter) 72px;
+  }
+  .home-band-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .home-band-head h2 {
+    margin: 0;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
+  }
+  .home-meta {
+    color: var(--color-ink-3);
+    font-size: var(--fs-sm);
+  }
+  .home-features {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px 48px;
+  }
+  .home-feature h3 {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+  .home-feature .status {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-regular);
+    color: var(--color-ink-3);
+  }
+  .home-feature .status.is-live {
+    color: var(--color-zhu);
+    font-weight: var(--fw-medium);
+  }
+  .home-feature p {
+    margin: 8px 0 0;
+    color: var(--color-ink-2);
+    line-height: 1.8;
+  }
+  .home-feature .num {
+    display: block;
+    margin-bottom: 6px;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.1em;
+    color: var(--color-gold);
+  }
+
+  .home-open {
+    background: var(--color-tint);
+  }
+  .home-open-inner {
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 56px var(--shell-gutter);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 64px;
+  }
+  .home-open h2 {
+    margin: 0 0 12px;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+  }
+  .home-open p {
+    margin: 0;
+    color: var(--color-ink-2);
+    line-height: 1.9;
+  }
+
+  @media (max-width: 760px) {
+    .home-hero {
+      min-height: 0;
+    }
+    .home-hero-bg {
+      background-position: 70% 20%;
+    }
+    .home-hero-veil {
+      background: linear-gradient(180deg, rgba(250, 247, 242, 0.55) 0%, rgba(250, 247, 242, 0.9) 45%, rgba(250, 247, 242, 1) 100%);
+    }
+    .home-hero-inner {
+      padding: 96px var(--shell-gutter) 32px;
+    }
+    .home-title {
+      font-size: 29px;
+      letter-spacing: 0.02em;
+    }
+    .home-lead {
+      margin-top: 14px;
+      font-size: var(--fs-base);
+    }
+    .home-search {
+      flex-direction: column;
+      margin-top: 24px;
+    }
+    .home-search input {
+      flex: none;
+      height: 48px;
+      font-size: 16px; /* 16px 以下 iOS 聚焦会放大页面 */
+    }
+    .home-search .og-btn {
+      width: 100%;
+      height: 48px;
+    }
+    .home-under {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .home-under a {
+      min-height: 44px;
+    }
+    .home-band {
+      padding: 16px var(--shell-gutter) 48px;
+    }
+    .home-band-head {
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .home-band-head h2 {
+      font-size: var(--fs-lg);
+    }
+    .home-features {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+    .home-open-inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 32px;
+      padding: 40px var(--shell-gutter);
+    }
+    .home-open p a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+    }
   }
 }

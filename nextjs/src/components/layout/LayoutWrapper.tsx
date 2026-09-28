@@ -11,9 +11,11 @@ interface LayoutWrapperProps {
   children: React.ReactNode;
   hideFooter?: boolean;
   hideFeedbackButton?: boolean;
+  /** 首页：页头透明浮在首屏大图上 */
+  navOnHero?: boolean;
 }
 
-export default function LayoutWrapper({ children, hideFooter = false, hideFeedbackButton = false }: LayoutWrapperProps) {
+export default function LayoutWrapper({ children, hideFooter = false, hideFeedbackButton = false, navOnHero = false }: LayoutWrapperProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 滚动进场动效（观察全站 .reveal 元素）
@@ -21,12 +23,12 @@ export default function LayoutWrapper({ children, hideFooter = false, hideFeedba
 
   return (
     <>
-      <Navbar onMobileMenuToggle={() => setIsMobileMenuOpen(true)} />
+      <Navbar onHero={navOnHero} onMobileMenuToggle={() => setIsMobileMenuOpen(true)} />
       <MobileDrawer
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-      <main className="min-h-[calc(100vh-3.5rem)]">
+      <main className="min-h-[calc(100vh-var(--nav-h))]">
         {children}
       </main>
       {!hideFooter && <Footer />}
