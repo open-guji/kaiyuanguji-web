@@ -9,9 +9,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:5173',
 ];
-// internal：能看私有文本仓（book-text-private）内容的角色，2026-09-26 P1 加。
 // 谁有由用户在 /admin/members 指定；对 reviewer/editor/admin 三者行为无影响。
-const ALLOWED_ROLES = ['reader', 'reviewer', 'editor', 'admin', 'internal'];
+const ALLOWED_ROLES = ['reader', 'reviewer', 'editor', 'admin'];
 const INVITE_TTL_SECONDS = 7 * 24 * 3600;
 
 function getCorsHeaders(request) {

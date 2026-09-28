@@ -80,7 +80,6 @@ export default function MembersPage() {
             <option value="reviewer">reviewer</option>
             <option value="editor">editor</option>
             <option value="admin">admin</option>
-            <option value="internal">internal</option>
           </select>
           <button onClick={handleInvite} className="bg-black text-white rounded px-3 py-1 text-sm">生成链接</button>
         </div>
@@ -106,7 +105,7 @@ export default function MembersPage() {
                     <td>
                       <div className="flex items-center gap-1">
                         <select value={pending} onChange={e => setPendingRoles(prev => ({ ...prev, [m.email]: e.target.value }))} className="border rounded px-1 py-0.5 text-xs">
-                          <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option><option value="internal">internal</option>
+                          <option value="reviewer">reviewer</option><option value="editor">editor</option><option value="admin">admin</option>{m.role === 'internal' && <option value="internal" disabled>internal（已停用）</option>}
                         </select>
                         {changed && (
                           <button onClick={() => handleConfirmRole(m.email)} disabled={updating === m.email} className="text-xs bg-black text-white rounded px-2 py-0.5 disabled:opacity-50">确定</button>

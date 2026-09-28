@@ -144,6 +144,17 @@ describe('invite/invite-info/join 闭环', () => {
     expect(res.status).toBe(401);
   });
 
+  it('邀请已停用的 internal 角色被拒，和其他非法角色一样返回 400', async () => {
+    for (const role of ['internal', 'nonsense']) {
+      const res = await invite.onRequestPost(ctx('https://x/api/auth/invite', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${g.AUTH_ADMIN_TOKEN}` },
+        body: JSON.stringify({ email: 'carol@example.com', role })
+      }));
+      expect(res.status).toBe(400);
+      expect((await body(res)).success).toBe(false);
+    }
+  });
+
   it('logout 清 cookie', async () => {
     const res = await logout.onRequestPost(ctx('https://x/api/auth/logout', { method: 'POST', headers: { 'Cookie': 'session=abc' } } as any));
     expect(res.status).toBe(200);
