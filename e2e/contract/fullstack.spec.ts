@@ -290,9 +290,12 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
         }
     });
 
-    test('没有这种阅读页的给真 404', async ({ request }) => {
+    test('没有这种阅读页、或卷号查不到的给真 404（不出软 404）', async ({ request }) => {
         const res = await request.get(`${TARGET}/item/${ANCHORS.entity.id}/read`, noFollow);
         expect(res.status(), '人物条目没有阅读页').toBe(404);
+        const bad = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`, noFollow);
+        expect(bad.status(), '乱填的卷号应 404').toBe(404);
+        expect(metaContent(await bad.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
     });
 });
 

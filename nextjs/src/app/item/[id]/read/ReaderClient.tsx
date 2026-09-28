@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookFullText, CollatedEdition, LocaleProvider, type WorkFullTextEntry } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
@@ -23,13 +23,13 @@ interface ReaderClientProps {
  * 用 history.replaceState（Next 会同步到路由状态）而不是 router.replace：
  * 后者对这个动态页会再请求一次服务端，没有必要；与旧详情页一样用 replace，不给每一卷留一条历史。
  */
-function syncLocation(id: string, q: ReaderQuery, bookTitle: string) {
+function syncLocation(id: string, q: ReaderQuery, bookTitle: string, updateCanonical: boolean) {
     const href = readerHref(id, q);
     if (window.location.pathname + window.location.search !== href) {
         window.history.replaceState(window.history.state, '', href);
     }
     document.title = `${readerTitle(bookTitle, q)} - ${SITE_NAME}`;
-    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const canonical = updateCanonical ? document.querySelector<HTMLLinkElement>('link[rel="canonical"]') : null;
     if (canonical) canonical.href = new URL(href, canonical.href).href;
 }
 
@@ -58,7 +58,12 @@ function Reader({ id, initial, bookTitle }: ReaderClientProps) {
     const transport = useMemo(() => getTransport(source), [source]);
     const [q, setQ] = useState<ReaderQuery>(initial);
 
-    useEffect(() => { syncLocation(id, q, bookTitle); }, [id, q, bookTitle]);
+    // 首帧的 canonical 以服务端为准（卷号查不准时它会回落到不带卷号的地址），之后翻卷再跟着改
+    const synced = useRef(false);
+    useEffect(() => {
+        syncLocation(id, q, bookTitle, synced.current);
+        synced.current = true;
+    }, [id, q, bookTitle]);
 
     const onJuanChange = useCallback((juan: string | null) => {
         setQ((prev) => (prev.juan === (juan ?? undefined) ? prev : { ...prev, juan: juan ?? undefined }));

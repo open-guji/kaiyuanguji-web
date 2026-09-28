@@ -5,11 +5,15 @@
 //
 // - 整理本渲染 CollatedEdition，全文渲染 BookFullText；直接全宽，不套页面框；标题、副题用组件默认值。
 // - 每卷各有 <title> 与 canonical（按 kind、key、juan 拼，参数顺序固定）。
+// - 服务端按目录校验 kind／key／juan（lib/server/reader-check.ts）：查不到就真 404，不出软 404；
+//   查不了（网络错）照常渲染，canonical 回落到不带 key／juan 的地址。
 // - 旧入口 ?tab=fulltext／collated 的 308 在 middleware.ssr.ts。
 // - 本页读查询串，是按请求渲染的动态页（不走 ISR）；正文由客户端组件挂载后取，服务端只取条目本身。
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
+import { getCurrentJsonServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
+import { checkReaderQuery } from '@/lib/server/reader-check';
+import { parseItemId } from '@/lib/item-id';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { parseReaderQuery, readerHref, readerTitle, juanLabel, type ReaderQuery } from '@/lib/reader-route';
@@ -26,8 +30,10 @@ type Props = {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type Loaded = { q: ReaderQuery; title: string; canonical: string };
+
 /** 返回 null ＝ 真 404。被并条目、草稿升格照条目页一样跳，但落到目标的阅读页 */
-async function load(id: string, sp: Record<string, string | string[] | undefined>): Promise<{ q: ReaderQuery; title: string } | null> {
+async function load(id: string, sp: Record<string, string | string[] | undefined>): Promise<Loaded | null> {
     const q = parseReaderQuery(id, sp);
     if (!q) return null;
     const hit = await getItemServer(id);
@@ -37,7 +43,10 @@ async function load(id: string, sp: Record<string, string | string[] | undefined
         (r.permanent ? permanentRedirect : redirect)(target ? readerHref(target, q) : r.to);
     }
     if (!hit) return null;
-    return { q, title: summarizeItem(hit.entry, id).title };
+    const checked = await checkReaderQuery(id, q, parseItemId(id)?.type === 'work', getCurrentJsonServer);
+    if (checked === 'missing') return null;
+    const canonical = readerHref(id, checked === 'found' ? q : { kind: q.kind });
+    return { q, title: summarizeItem(hit.entry, id).title, canonical };
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
@@ -47,7 +56,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const title = readerTitle(s.title, s.q);
     const what = s.q.kind === 'collated' ? '整理本' : '全文';
     const description = `${s.title}${s.q.juan ? juanLabel(s.q.juan) : ''}${what}，在线阅读。`;
-    const canonical = readerHref(id, s.q);
+    const { canonical } = s;
     return {
         title,
         description,
