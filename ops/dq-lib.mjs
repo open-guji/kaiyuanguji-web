@@ -618,11 +618,19 @@ export function summarizeFindings(findings) {
     return byKind;
 }
 
+/**
+ * 已知、已开修复卡的问题：照常进报告，但不让 job 变红（否则修好之前每次都红，真正的新问题会被淹没）。
+ * 修好后从这里删掉对应 code。
+ *   current-cdn-stale / current-version-cdn-stale：?v 只用 draft 仓 commit（overview#169 FX2）
+ */
+export const KNOWN_ISSUE_CODES = new Set(['current-cdn-stale', 'current-version-cdn-stale']);
+
 export function hasFailures(report, failOn = 'packaging') {
     if (failOn === 'none') return false;
     const reqs = report.http?.requests ?? 0;
     if (reqs > 0 && (report.http.failures ?? 0) / reqs > FETCH_FAIL_RATIO) return true;
-    return report.findings.some((f) => f.kind === 'packaging' || (failOn === 'any' && f.kind === 'data'));
+    return report.findings.some((f) => !KNOWN_ISSUE_CODES.has(f.code)
+        && (f.kind === 'packaging' || (failOn === 'any' && f.kind === 'data')));
 }
 
 const n = (x) => (typeof x === 'number' ? x.toLocaleString('en-US') : String(x ?? '—'));

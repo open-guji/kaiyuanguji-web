@@ -256,6 +256,8 @@ test('runDq：?v=<commitId> 命中 CDN 旧缓存、源站已一致 → current-c
     assert.equal(r.findings.find((x) => x.code === 'current-version-cdn-stale')?.kind, 'packaging');
     // 带 cache-bust 的 current 请求确实用的是 latest.json 的短 commitId
     assert.ok(site.requested.some((q) => q.key.includes('/current/entry/') && q.query === `v=${COMMIT.commitId.slice(0, 12)}`));
+    // 已知问题（overview#169）：进报告但不让 job 变红
+    assert.equal(hasFailures(r), false);
 });
 
 test('runDq：悬空引用 → 数据仓问题，默认不让任务变红', async () => {
