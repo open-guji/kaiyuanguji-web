@@ -3,215 +3,121 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { NAV_ITEMS, type NavItem } from '../../lib/constants';
-
-const NAV_ICONS: Record<string, string> = {
-  '/': '🏠',
-  '/book-index': '📚',
-  '/assistant': '🛠️',
-  '/roadmap': '🗺️',
-  '/tools': '🧰',
-  '/feedback': '💬',
-};
+import { useEffect, useRef } from 'react';
+import { MOBILE_DRAWER_ID, MORE_LINKS, PRIMARY_LINKS, isCurrent } from './nav-links';
 
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  /** 关闭后把焦点还给谁（汉堡按钮） */
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
-export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * 手机抽屉（N1）：主导航 + 「更多」（顶栏拿下来的现网入口）。
+ * 每行 ≥ 44px；当前项用朱色字和浅朱底，不再用左侧竖条。
+ *
+ * 无障碍（B9）：模态对话框。打开时焦点移进来并困在里面（Tab / Shift+Tab 循环），
+ * Esc 或点遮罩关闭，关闭后焦点还给汉堡按钮。
+ */
+export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: MobileDrawerProps) {
   const pathname = usePathname();
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   // 抽屉打开时锁定页面滚动
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
 
-  const matches = (href: string) =>
-    href === '/' ? pathname === '/' : pathname.startsWith(href);
-
-  const isActive = (item: NavItem) =>
-    matches(item.href) || (item.children?.some((c) => matches(c.href)) ?? false);
-
-  // 打开时自动展开命中当前路由的分组
+  // 焦点：打开时移进抽屉，关闭（卸载）时还给汉堡按钮
   useEffect(() => {
     if (!isOpen) return;
-    const hit = NAV_ITEMS.find((i) => i.children?.length && isActive(i));
-    setExpanded(hit?.href ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, pathname]);
+    const returnTo = returnFocusRef?.current;
+    // 先落在「关闭」上：读屏先听到怎么退出
+    panelRef.current?.querySelector<HTMLElement>('.og-burger--close')?.focus();
+    return () => returnTo?.focus();
+  }, [isOpen, returnFocusRef]);
+
+  // Esc 关闭；Tab 困在抽屉里
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !panelRef.current.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !panelRef.current.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const rowBase =
-    'flex items-center gap-3 px-6 py-3 text-sm tracking-wide transition-colors border-l-4 no-underline w-full text-left';
-
-  const rowActive =
-    'border-[var(--color-nav-vermilion)] text-[var(--color-nav-vermilion)] font-bold bg-[color-mix(in_srgb,var(--color-nav-vermilion)_6%,transparent)]';
-
-  const rowIdle =
-    'border-transparent text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)] hover:bg-[color-mix(in_srgb,var(--color-nav-border)_25%,transparent)]';
+  const row = (l: { label: string; href: string }) => (
+    <Link
+      key={l.href}
+      href={l.href}
+      onClick={onClose}
+      aria-current={isCurrent(pathname, l.href) ? 'page' : undefined}
+    >
+      {l.label}
+    </Link>
+  );
 
   return (
     <>
-      {/* 遮罩层 */}
-      <div
-        className="fixed inset-0 z-40 bg-black/50 md:hidden"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* 抽屉（右侧滑入，与设计稿一致） */}
+      <div className="og-drawer-mask" onClick={onClose} aria-hidden="true" />
       <aside
-        className="fixed bottom-0 right-0 top-0 z-50 flex w-80 max-w-[85vw] flex-col
-                   bg-[var(--color-nav-bg)] shadow-2xl md:hidden"
-        aria-label="移动端菜单"
+        ref={panelRef}
+        id={MOBILE_DRAWER_ID}
+        className="og-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="站点菜单"
       >
-        {/* 头部 */}
-        <div className="border-b border-[var(--color-nav-border)] p-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" onClick={onClose} className="flex items-center gap-3 no-underline">
-              <Image
-                src="/images/open-guji-logo.webp"
-                alt="开源古籍 Logo"
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
-              <span className="text-lg font-bold tracking-[0.15em] text-[var(--color-nav-ink)]">
-                开源古籍
-              </span>
-            </Link>
-            <button
-              onClick={onClose}
-              className="p-2 text-[var(--color-nav-ink)] transition-colors hover:text-[var(--color-nav-vermilion)]"
-              aria-label="关闭菜单"
+        <div className="og-drawer-head">
+          <Link href="/" onClick={onClose} className="og-brand">
+            <Image src="/images/open-guji-logo.webp" alt="开源古籍 Logo" width={26} height={26} />
+            <span>开源古籍</span>
+          </Link>
+          <button type="button" onClick={onClose} className="og-burger og-burger--close" aria-label="关闭菜单">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              aria-hidden="true"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-
-        {/* 导航项 */}
-        <nav className="flex-1 overflow-y-auto py-4">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(item);
-            const icon = NAV_ICONS[item.href] || '📄';
-
-            if (!item.children?.length) {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={`${rowBase} ${active ? rowActive : rowIdle}`}
-                >
-                  <span className="text-xl" aria-hidden="true">
-                    {icon}
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
-              );
-            }
-
-            const open = expanded === item.href;
-            return (
-              <div key={item.href}>
-                <button
-                  type="button"
-                  onClick={() => setExpanded(open ? null : item.href)}
-                  aria-expanded={open}
-                  className={`${rowBase} ${active ? rowActive : rowIdle}`}
-                >
-                  <span className="text-xl" aria-hidden="true">
-                    {icon}
-                  </span>
-                  <span>{item.label}</span>
-                  <span
-                    aria-hidden="true"
-                    className={`ml-auto text-[0.65rem] transition-transform duration-200 ${
-                      open ? 'rotate-180' : ''
-                    }`}
-                  >
-                    ▼
-                  </span>
-                </button>
-
-                {open && (
-                  <div className="bg-[color-mix(in_srgb,var(--color-nav-border)_18%,transparent)]">
-                    {/* 分组总览页本身也要能进入 */}
-                    <Link
-                      href={item.href}
-                      onClick={onClose}
-                      className={`block py-2.5 pl-[4.25rem] pr-6 text-sm no-underline transition-colors ${
-                        matches(item.href) && pathname === item.href
-                          ? 'font-bold text-[var(--color-nav-vermilion)]'
-                          : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
-                      }`}
-                    >
-                      {item.label}总览
-                    </Link>
-                    {item.children.map((child, i) => {
-                      const showGroup =
-                        child.group && child.group !== item.children?.[i - 1]?.group;
-                      return (
-                        <div key={child.href}>
-                          {showGroup && (
-                            <div className="pl-[4.25rem] pr-6 pb-0.5 pt-2 text-[11px] font-bold tracking-wider text-[var(--color-secondary)]">
-                              {child.group}
-                            </div>
-                          )}
-                          <Link
-                            href={child.href}
-                            onClick={onClose}
-                            className={`block py-2.5 pr-6 text-sm no-underline transition-colors ${
-                              child.group ? 'pl-[5.25rem]' : 'pl-[4.25rem]'
-                            } ${
-                              matches(child.href)
-                                ? 'font-bold text-[var(--color-nav-vermilion)]'
-                                : 'text-[var(--color-nav-ink)] hover:text-[var(--color-nav-vermilion)]'
-                            }`}
-                          >
-                            {child.label}
-                          </Link>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <nav className="og-drawer-body" aria-label="移动端导航">
+          {PRIMARY_LINKS.map(row)}
+          <p className="og-drawer-cap">更多</p>
+          {MORE_LINKS.map(row)}
         </nav>
-
-        {/* 底部信息 */}
-        <div className="border-t border-[var(--color-nav-border)] p-6 text-center">
-          <p className="text-sm leading-relaxed text-[var(--color-nav-ink)]/60">
-            开源古籍项目
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-nav-ink)]/40">
-            让古籍数字化更简单
-          </p>
-        </div>
       </aside>
     </>
   );

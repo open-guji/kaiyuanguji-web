@@ -25,6 +25,7 @@ export default function FeedbackPageContent() {
 
   return (
     <div
+      className="og-feedback-page"
       style={{
         maxWidth: 800,
         margin: '0 auto',
@@ -36,12 +37,12 @@ export default function FeedbackPageContent() {
       <h1 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
         用户反馈
       </h1>
-      <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '32px' }}>
+      <p style={{ color: 'var(--color-ink-2)', fontSize: '14px', marginBottom: '32px' }}>
         查看社区反馈与处理进展
       </p>
 
       {error ? (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: '#f44336' }}>
+        <div style={{ textAlign: 'center', padding: '40px 0', color: '#b91c1c' }}>
           {error}
         </div>
       ) : (
