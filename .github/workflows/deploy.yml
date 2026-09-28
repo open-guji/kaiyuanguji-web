@@ -66,7 +66,7 @@ jobs:
   # 注：这里的比对口径不随 T1 改变——仍然只问「正式站」是否已是最新数据，
   # 测试站配置齐不齐、这次要不要先落测试站，交给 resolve job 决定。
   check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     outputs:
       should_deploy: ${{ steps.compare.outputs.should_deploy }}
     steps:
@@ -109,7 +109,7 @@ jobs:
   #             数据=测试站 staging/latest.json 里记下的三仓 commit（钉死，不取 HEAD）；
   #             代码 = code+data 时取测试站记下的 webCommitId，data 时取正式站现有 webCommitId
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: check
     if: ${{ needs.check.outputs.should_deploy == 'true' }}
     outputs:
@@ -161,7 +161,7 @@ jobs:
           echo "· 部署到测试站 kyg-staging"
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: resolve
     outputs:
       # W2b 双跑：kyg-ssr-spike 这次有没有部署成功（verify job 据此决定测不测 ssr-test）
@@ -180,8 +180,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nextjs/package-lock.json
 
       # npm ci 严格按 lockfile 安装（与 test.yml 保持一致）；
       # 原先的 npm install 会在 CI 里悄悄升级依赖，导致「本地能过、线上挂」
@@ -657,7 +655,7 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
         run: |
-          pip install tencentcloud-sdk-python-teo -q
+          python3 -m pip install --user tencentcloud-sdk-python-teo -q
           python3 -c "
           import json, os
           from tencentcloud.common import credential
@@ -852,13 +850,19 @@ jobs:
             echo "::warning title=W2b 双跑失败::kyg-ssr-spike 本次没有部署成功（构建 $BUILD／部署 $DEPLOY），ssr-test 停在上一版；正式站发布不受影响"
           fi
 
+      # 自托管 runner（2026-09-28，overview#184）的工作目录跨 run 保留：私有文本仓的 clone
+      # 在 .git/config 里带着 token，数据仓 clone 也占盘——job 结束就删，不等下次 checkout 清。
+      - name: Clean up clones (self-hosted)
+        if: always()
+        run: rm -rf book-text-private book-index-draft book-index book-text
+
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
   # 老 smoke 只看网络层（字节数/404/pageerror），2026-09-02~03 那批故障
   # （整理本 tab 消失、"0 部书"、书名不渲染）它一个都发现不了——那些请求全是
   # 200。这个 job 断言的是「内容」。
   verify:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: [resolve, build]
     # 部署失败就没必要验收了；但 build 被 check 跳过时（数据无变化）也不必跑
     if: needs.build.result == 'success'
@@ -883,7 +887,7 @@ jobs:
 
       - name: Install chromium
         working-directory: e2e
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
       - name: Wait for CDN propagation
