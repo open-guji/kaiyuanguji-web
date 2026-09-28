@@ -1348,6 +1348,9 @@
     justify-content: space-between;
     gap: 16px;
   }
+  .og-fb-page-head > div {
+    min-width: 0;
+  }
   .og-fb-page-head h1 {
     margin: 0 0 6px;
     font-size: var(--fs-xl);
@@ -1478,7 +1481,7 @@
       flex-direction: column;
       align-items: stretch;
     }
-    .og-fb-submit {
+    .og-fb-dialog .og-fb-submit {
       width: 100%;
     }
   }

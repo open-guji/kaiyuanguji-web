@@ -41,7 +41,10 @@ export default function CitationBar({ id, transport, redirectedFrom }: CitationB
             setMeta({
                 revision: (detail as { revision?: string }).revision,
                 revised_at: (detail as { revised_at?: string }).revised_at,
-                title: (detail as { title?: string }).title,
+                // 与服务端摘要同一取法（lib/server/item-summary.ts）：人物用 primary_name
+                title: (detail as { primary_name?: string }).primary_name
+                    || (detail as { title?: string }).title
+                    || (detail as { name?: string }).name,
             });
         }).catch(() => { /* 静默：detail 加载错误 BookDetailLayout 自己会报 */ });
         return () => { cancelled = true; };
