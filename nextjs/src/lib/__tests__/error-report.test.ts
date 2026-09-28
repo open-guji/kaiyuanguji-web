@@ -144,3 +144,31 @@ describe('reportError', () => {
         expect(beacons).toHaveLength(1);
     });
 });
+
+describe('reportError 带版本（DBG）', () => {
+    const SHA = 'c'.repeat(40);
+    const realFetch = global.fetch;
+    afterEach(() => {
+        delete process.env.NEXT_PUBLIC_WEB_COMMIT;
+        global.fetch = realFetch;
+    });
+
+    it('每条上报带 web（构建注入的代码 commit）与 data（数据 commitId）', async () => {
+        process.env.NEXT_PUBLIC_WEB_COMMIT = SHA;
+        // 走 fetch 分支拿到 body 原文（sendBeacon 的 Blob 在 jsdom 里读不出来）
+        Object.defineProperty(window.navigator, 'sendBeacon', { value: undefined, configurable: true });
+        const sent: string[] = [];
+        global.fetch = jest.fn(async (_u: unknown, init?: RequestInit) => {
+            sent.push(String(init?.body));
+            return new Response('{}');
+        }) as unknown as typeof fetch;
+        const { reportError, setRelease } = await freshModule();
+        setRelease('501935e5be70');
+        reportError({ kind: 'js', message: '带版本的错误' });
+        expect(sent).toHaveLength(1);
+        const b = JSON.parse(sent[0]);
+        expect(b.web).toBe(SHA);
+        expect(b.data).toBe('501935e5be70');
+        expect(b.release).toBe('501935e5be70'); // 老字段保留，兼容旧查看页
+    });
+});

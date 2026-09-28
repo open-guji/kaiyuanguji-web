@@ -210,8 +210,10 @@ class MainEndToEnd(unittest.TestCase):
         code, out = self.run_main(self.FAKE_BUILD)
         self.assertIn(code, (0, None))
         self.assertIn("✓ 产物无 .env", out)
-        self.assertNotIn(SECRET, out)
-        self.assertNotIn(TOKEN, out)
+        # 在 Actions 里脚本会先输出 ::add-mask::<值> 让 runner 遮蔽它（该行本身不显示），不算泄露
+        visible = "\n".join(l for l in out.splitlines() if not l.startswith("::add-mask::"))
+        self.assertNotIn(SECRET, visible)
+        self.assertNotIn(TOKEN, visible)
 
     def test_leak_is_caught_when_token_passed(self):
         leak = self.FAKE_BUILD + (

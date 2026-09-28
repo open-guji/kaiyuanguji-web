@@ -3,6 +3,7 @@
 // 从 /toolkit/errors 搬来（21 第 3 步）。鉴权改走成员 cookie（/api/track-error 双轨），不再用 ?token=。
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../fetchAll';
+import { groupByVersion, versionKey, versionOf } from './versions';
 
 interface ErrorRecord {
   id: string;
@@ -15,6 +16,8 @@ interface ErrorRecord {
   status?: number | null; // HTTP 状态码（fetch 失败时）
   state?: string; // 处理状态：open | resolved
   release?: string;
+  web?: string;  // 网站代码 commit（DBG）
+  data?: string; // 数据 commitId（DBG）
   ua?: string;
   clientIp?: string;
   geo?: string;
@@ -43,6 +46,7 @@ export default function ErrorsView() {
   const [hideNotFound, setHideNotFound] = useState(false);
   const [hideResolved, setHideResolved] = useState(true); // 默认隐藏已处理
   const [updatingId, setUpdatingId] = useState('');
+  const [versionFilter, setVersionFilter] = useState(''); // `${web}|${data}`，空 = 全部
 
   async function load() {
     setLoading(true);
@@ -90,14 +94,25 @@ export default function ErrorsView() {
         if (kindFilter && it.kind !== kindFilter) return false;
         if (hideNotFound && it.status === 404) return false;
         if (hideResolved && it.state === 'resolved') return false;
+        if (versionFilter && versionKey(it) !== versionFilter) return false;
         return true;
       }),
-    [items, kindFilter, hideNotFound, hideResolved],
+    [items, kindFilter, hideNotFound, hideResolved, versionFilter],
   );
 
   const openCount = useMemo(() => items.filter((i) => i.state !== 'resolved').length, [items]);
   const resolvedCount = items.length - openCount;
   const notFoundCount = useMemo(() => items.filter((i) => i.status === 404).length, [items]);
+  // 按版本的 top 列表：跟随类型／404／已处理筛选，不跟随版本筛选本身（否则只剩一行）
+  const versionGroups = useMemo(
+    () => groupByVersion(items.filter((it) => {
+      if (kindFilter && it.kind !== kindFilter) return false;
+      if (hideNotFound && it.status === 404) return false;
+      if (hideResolved && it.state === 'resolved') return false;
+      return true;
+    })),
+    [items, kindFilter, hideNotFound, hideResolved],
+  );
 
   return (
     <div className="space-y-4">
@@ -136,10 +151,40 @@ export default function ErrorsView() {
               <input type="checkbox" checked={hideNotFound} onChange={(e) => setHideNotFound(e.target.checked)} />
               隐藏 404（{notFoundCount}）
             </label>
+            <label>
+              版本：
+              <select value={versionFilter} onChange={(e) => setVersionFilter(e.target.value)} className="ml-1 border rounded px-2 py-1 text-sm">
+                <option value="">全部</option>
+                {versionGroups.map((g) => (
+                  <option key={g.key} value={g.key}>{`代码 ${g.web || '?'} · 数据 ${g.data || '?'}（${g.count}）`}</option>
+                ))}
+              </select>
+            </label>
             <span className="ml-auto text-gray-500">
               未处理 {openCount} · 共 {items.length} · 显示 {filtered.length}
             </span>
           </div>
+
+          {versionGroups.length > 0 && (
+            <details className="bg-white rounded border p-3 text-sm" open={versionGroups.length > 1}>
+              <summary className="cursor-pointer font-medium">按版本（{versionGroups.length} 个版本）</summary>
+              <table className="mt-2 w-full text-xs">
+                <thead className="text-gray-500 text-left">
+                  <tr><th className="py-1 pr-3">代码</th><th className="py-1 pr-3">数据</th><th className="py-1 pr-3">条数</th><th className="py-1">最多的错误</th></tr>
+                </thead>
+                <tbody>
+                  {versionGroups.map((g) => (
+                    <tr key={g.key} className="border-t align-top cursor-pointer hover:bg-gray-50" onClick={() => setVersionFilter(g.key)}>
+                      <td className="py-1 pr-3 font-mono">{g.web || '未知'}</td>
+                      <td className="py-1 pr-3 font-mono">{g.data || '未知'}</td>
+                      <td className="py-1 pr-3">{g.count}</td>
+                      <td className="py-1 break-all">{g.top.map((t) => `${t.kind}·${t.message}（${t.count}）`).join('；')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+          )}
 
           {filtered.length === 0 ? (
             <div className="bg-white rounded border p-8 text-center text-sm text-gray-400">无记录</div>
@@ -175,7 +220,9 @@ export default function ErrorsView() {
                       <div>
                         {it.clientIp && <span>IP：{it.clientIp}　</span>}
                         {it.geo && <span>地区：{it.geo}　</span>}
-                        {it.release && <span>版本：{it.release}</span>}
+                        {(it.web || it.data || it.release) && (
+                          <span>版本：代码 {versionOf(it).web || '?'} · 数据 {versionOf(it).data || '?'}</span>
+                        )}
                       </div>
                       {it.ua && <div className="text-gray-400">UA：{it.ua}</div>}
                     </div>

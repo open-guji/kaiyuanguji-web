@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -45,6 +46,11 @@ function resolveUiVersion(): string {
 
 const uiVersion = resolveUiVersion();
 
+// DBG：构建信息（web commit／bimUi／builtAt／target），见 scripts/lib/build-info.cjs。
+// 前端错误上报带上 web；next build 阶段在 CI 里把同一份写进 edge-functions/api/version.js。
+const { computeBuildInfo, writeBuildInfo } = createRequire(import.meta.url)('./scripts/lib/build-info.cjs');
+const buildInfo = computeBuildInfo({ cwd: process.cwd(), bimUi: uiVersion });
+
 const nextConfig: NextConfig = {
   // local mode 需要 API routes、fullstack 要函数渲染，都不能用 static export
   ...(isLocal || isFullstack ? {} : { output: 'export' as const }),
@@ -61,6 +67,7 @@ const nextConfig: NextConfig = {
 
   env: {
     NEXT_PUBLIC_BIM_UI_VERSION: uiVersion,
+    NEXT_PUBLIC_WEB_COMMIT: buildInfo.web,
     // W2-3：条目页按需失效接口（app/internal/revalidate/route.ssr.ts）的密钥，只在全栈构建注入。
     // 构建期写进服务端代码：EdgeOne 运行时只有控制台项目变量，拿不到 CI 的环境变量。
     // 只有服务端路由引用它，不会进浏览器端 chunk。
@@ -87,4 +94,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default function config(phase: string): NextConfig {
+  // 只在 CI 的 next build 里改文件：本地 build 不弄脏工作区；jest（next/jest 也会加载本文件）不触发
+  if (phase === PHASE_PRODUCTION_BUILD && process.env.CI === 'true') {
+    const written: string[] = writeBuildInfo(process.cwd(), buildInfo);
+    console.log(`[next.config] 构建信息 web=${buildInfo.web.slice(0, 12) || '（空）'} target=${buildInfo.target} → ${written.length} 份 version.js`);
+  }
+  return nextConfig;
+}
