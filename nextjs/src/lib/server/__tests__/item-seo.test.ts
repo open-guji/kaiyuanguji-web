@@ -70,6 +70,10 @@ describe('seoDescription：作品', () => {
         const bare = seoDescription({ type: 'work', title: '尚書舊事', dynasty: '漢', loss_status: 'unknown', additional_titles: ['謹按見《世說》注'] }, 'x');
         expect(bare).toBe('《尚書舊事》（漢）。開源古籍索引作品條目。');
     });
+    it('引文以「。」」收尾时不再补句号', () => {
+        expect(seoDescription({ type: 'work', title: '伊川易解', description: '陳振孫曰：「止解六十四卦。」' }, 'x'))
+            .toBe('《伊川易解》。陳振孫曰：「止解六十四卦。」開源古籍索引作品條目。');
+    });
     it('长简介：总长不过 160，整句放不下时截断收尾', () => {
         const long = `${'甲'.repeat(300)}。`;
         const d = seoDescription({ type: 'work', title: '某書', description: long }, 'x');

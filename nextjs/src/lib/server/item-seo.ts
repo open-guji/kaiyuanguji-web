@@ -60,7 +60,7 @@ export function mergedTarget(e: ItemEntry, id: string): string | null {
 /** 句子补句号（已有句末标点则不补） */
 function stop(s: string): string {
     const t = s.trim().replace(/[，、,\s]+$/, '');
-    return !t || /[。！？；…]$/.test(t) ? t : `${t}。`;
+    return !t || /[。！？；…][」』”）)]?$/.test(t) ? t : `${t}。`;
 }
 
 function uniq(xs: string[]): string[] {
