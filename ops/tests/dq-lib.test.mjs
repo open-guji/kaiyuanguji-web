@@ -148,7 +148,7 @@ test('pool：同时在飞不超过 8，哪怕要求更多', async () => {
 const COMMIT = { commitId: 'c'.repeat(40), productionCommitId: 'p'.repeat(40), textCommitId: 't'.repeat(40) };
 const idOf = (typeBits, seq) => ((BigInt(typeBits) << 59n) | (1700000000n << 19n) | BigInt(seq)).toString(36);
 
-function buildSite({ staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false } = {}) {
+function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false } = {}) {
     const files = new Map();
     const put = (p, v) => files.set(p, Buffer.from(typeof v === 'string' ? v : JSON.stringify(v)));
     const B = 'https://d.test';
@@ -203,6 +203,10 @@ function buildSite({ staleCdn = false, breakCurrent = false, danglingRef = false
         if (staleCdn && key.endsWith(`/current/entry/${book}.json`) && query === `v=${COMMIT.commitId.slice(0, 12)}`) {
             return resp(200, JSON.stringify({ ...entries[book], classification: undefined, title: '旧' }));
         }
+        if (staleCdn && key.endsWith('/current/version.json') && query === `v=${COMMIT.commitId.slice(0, 12)}`) {
+            return resp(200, JSON.stringify({ ...COMMIT, productionCommitId: 'old' }));
+        }
+        if (netFail && key.includes(netFail)) throw new TypeError('fetch failed');
         const buf = files.get(key);
         if (!buf) return resp(404);
         return resp(200, init.method === 'HEAD' ? null : buf);
@@ -249,6 +253,7 @@ test('runDq：?v=<commitId> 命中 CDN 旧缓存、源站已一致 → current-c
     assert.equal(f.kind, 'packaging');
     assert.deepEqual(f.detail.changed, ['title']);
     assert.ok(!r.findings.some((x) => x.code === 'current-h1-differ'));
+    assert.equal(r.findings.find((x) => x.code === 'current-version-cdn-stale')?.kind, 'packaging');
     // 带 cache-bust 的 current 请求确实用的是 latest.json 的短 commitId
     assert.ok(site.requested.some((q) => q.key.includes('/current/entry/') && q.query === `v=${COMMIT.commitId.slice(0, 12)}`));
 });
@@ -285,4 +290,24 @@ test('runDq：latest.json 取不到直接收尾', async () => {
     const r = await runDq({ base: 'https://none.test', fetchImpl: async () => resp(404), sleepImpl: noSleep });
     assert.equal(r.findings[0].code, 'latest-unreadable');
     assert.equal(hasFailures(r), true);
+});
+
+test('runDq：网络错误重试用尽 → 单列「巡检取数失败」，比例小不让 job 变红', async () => {
+    const site = buildSite();
+    const r = await runOn({ ...site, fetchImpl: buildSite({ netFail: '/full_text/ws/001.' }).fetchImpl });
+    const f = r.findings.filter((x) => x.code === 'text-file-unreachable');
+    assert.equal(f.length, 1);
+    assert.equal(f[0].kind, 'fetch');
+    assert.equal(r.http.failures, 1);
+    assert.match(renderMarkdown(r), /巡检取数失败.*：1/);
+    // 1 次失败 / 几十次请求 > 1%：这个小站点上会变红；大站点上同样 1 次则不会
+    assert.equal(hasFailures(r), true);
+    assert.equal(hasFailures({ ...r, http: { ...r.http, requests: 10_000 } }), false);
+});
+
+test('runDq：404 仍算网站打包问题', async () => {
+    const site = buildSite({ missingChapter: false });
+    const base = site.fetchImpl;
+    const r = await runOn({ ...site, fetchImpl: async (url, init) => (url.includes('/full_text/ws/001.') ? resp(404) : base(url, init)) });
+    assert.equal(r.findings.find((x) => x.code === 'text-file-unreachable').kind, 'packaging');
 });

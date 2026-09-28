@@ -30,8 +30,15 @@ export const REF_FIELDS = ['work_id', 'books', 'related_works', 'contained_in'];
 export const FINDING_KINDS = {
     packaging: '网站打包问题',
     data: '数据仓问题',
+    fetch: '巡检取数失败（重试用尽的网络错误，不算数据问题）',
     info: '提示（不算问题）',
 };
+
+/** 取不到的资源：真有 HTTP 状态（404/403…）算打包问题；status 0（网络错误重试用尽）单列。 */
+const missKind = (r) => (r.status === 0 ? 'fetch' : 'packaging');
+
+/** 网络错误占全部请求超过这个比例时，巡检本身不可信，job 也该变红。 */
+export const FETCH_FAIL_RATIO = 0.01;
 
 // ─── id 解码（book-index-ui extractType 的同一套位布局） ───
 //
@@ -185,7 +192,7 @@ export function isTextIndexPath(p) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export function createHttp({ fetchImpl = fetch, maxAttempts = 5, baseDelayMs = 500, timeoutMs = 30_000, sleepImpl = sleep } = {}) {
+export function createHttp({ fetchImpl = fetch, maxAttempts = 5, baseDelayMs = 1000, timeoutMs = 30_000, sleepImpl = sleep } = {}) {
     let cooldownUntil = 0;
     const stats = { requests: 0, retries: 0, throttled: 0, failures: 0 };
 
@@ -297,7 +304,7 @@ function sameDataCommit(latest, dc) {
  *   textRate        全文 owner 抽样率（默认 0.05）
  *   seed            抽样种子
  *   concurrency     并发（≤ 8）
- *   pointerRetryMs  指针与 latest.json 对不上时，等多久再看一次（部署进行中）；0 不重试
+ *   pointerRetryMs  指针与 latest.json 对不上时（部署进行中）最多等多久，每 60s 看一次；0 不等
  *   fetchImpl, sleepImpl, log
  * → report 对象（见 renderMarkdown）
  */
@@ -308,7 +315,7 @@ export async function runDq(opts = {}) {
     const textRate = opts.textRate ?? 0.05;
     const seed = opts.seed ?? 1;
     const concurrency = Math.min(MAX_CONCURRENCY, opts.concurrency ?? MAX_CONCURRENCY);
-    const pointerRetryMs = opts.pointerRetryMs ?? 90_000;
+    const pointerRetryMs = opts.pointerRetryMs ?? 600_000;
     const log = opts.log ?? (() => {});
     const sleepImpl = opts.sleepImpl ?? sleep;
     const http = createHttp({ fetchImpl: opts.fetchImpl, sleepImpl, baseDelayMs: opts.baseDelayMs });
@@ -342,10 +349,11 @@ export async function runDq(opts = {}) {
         http.getJson(cur('version.json')), http.getJson(cur('meta.json')), http.getJson(cur('promotions.json')),
     ]);
     if (!versionRes.json) add('packaging', 'current-version-unreadable', `current/version.json 取不到（HTTP ${versionRes.status}）`);
-    else if (versionRes.json.commitId !== (latest.fullCommitId ?? latest.commitId)
-        || versionRes.json.productionCommitId !== latest.productionCommitId
-        || versionRes.json.textCommitId !== latest.textCommitId) {
-        add('packaging', 'current-version-mismatch', 'current/version.json 与 latest.json 指的不是同一版数据',
+    else if (!sameDataCommit(latest, versionRes.json)) {
+        const fresh = await http.getJson(`${base}/current/version.json?v=dq-${t0}`);
+        const cdnStale = fresh.json && sameDataCommit(latest, fresh.json);
+        add('packaging', cdnStale ? 'current-version-cdn-stale' : 'current-version-mismatch',
+            cdnStale ? `current/version.json?v=${v} 命中 CDN 旧缓存，源站已是新版` : 'current/version.json 与 latest.json 指的不是同一版数据（绕过 CDN 后仍不一致）',
             { latest: fmtCommit({ commitId: latest.fullCommitId, productionCommitId: latest.productionCommitId, textCommitId: latest.textCommitId }), current: fmtCommit(versionRes.json) });
     }
     const meta = metaRes.json;
@@ -362,18 +370,22 @@ export async function runDq(opts = {}) {
     let entryP = await loadPointer('manifest-root.json', 'roots');
     let textP = await loadPointer('text-manifest-root.json', 'text-roots');
     const lagging = () => [entryP, textP].some((p) => p.ptr && !sameDataCommit(latest, p.ptr.dataCommit));
-    if (lagging() && pointerRetryMs > 0) {
-        log(`指针与 latest.json 对不上，可能正在部署，${Math.round(pointerRetryMs / 1000)}s 后再看一次`);
-        await sleepImpl(pointerRetryMs);
+    // 部署时 latest.json、entry 指针、text 指针先后翻转，相隔几分钟（实测 text 比 entry 晚约 4.5 分钟）
+    for (let waited = 0; lagging() && waited < pointerRetryMs; ) {
+        const step = Math.min(60_000, pointerRetryMs - waited);
+        log(`指针与 latest.json 对不上，可能正在部署，${Math.round(step / 1000)}s 后再看（已等 ${Math.round(waited / 1000)}s）`);
+        await sleepImpl(step);
+        waited += step;
         entryP = await loadPointer('manifest-root.json', 'roots');
         textP = await loadPointer('text-manifest-root.json', 'text-roots');
     }
+    report.pointerWaitNeeded = lagging() ? 'timeout' : undefined;
     for (const [label, p] of [['h1/manifest-root.json', entryP], ['h1/text-manifest-root.json', textP]]) {
         report.pointers[label] = p.ptr ? { root: p.ptr.root, generatedAt: p.ptr.generatedAt, dataCommit: fmtCommit(p.ptr.dataCommit) } : null;
         if (!p.ptr) { add('packaging', 'pointer-unreadable', `${label} 取不到或缺 root（HTTP ${p.status}）`); continue; }
         if (!p.root) { add('packaging', 'root-unreadable', `${label} 指向的 ${p.ptr.root} 取不到（HTTP ${p.rootStatus}）`); continue; }
         if (!sameDataCommit(latest, p.ptr.dataCommit)) {
-            add('packaging', 'pointer-lag', `${label} 与 latest.json 不是同一版数据（重看一次后仍不一致）`,
+            add('packaging', 'pointer-lag', `${label} 与 latest.json 不是同一版数据（等待部署后仍不一致）`,
                 { latest: fmtCommit({ commitId: latest.fullCommitId, productionCommitId: latest.productionCommitId, textCommitId: latest.textCommitId }), pointer: fmtCommit(p.ptr.dataCommit) });
         }
         if (p.root && JSON.stringify(p.root.dataCommit) !== JSON.stringify(p.ptr.dataCommit)) {
@@ -397,7 +409,7 @@ export async function runDq(opts = {}) {
             const r = await http.getJson(`${h1}/manifest/${key}.${h}.json`);
             if (!r.json) {
                 shardsBad++;
-                add('packaging', 'shard-unreadable', `manifest/${key}.${h}.json 取不到或不是 JSON（HTTP ${r.status}）`);
+                add(missKind(r), 'shard-unreadable', `manifest/${key}.${h}.json 取不到或不是 JSON（HTTP ${r.status}）`);
                 return;
             }
             if (hash8(r.body) !== h) add('packaging', 'shard-hash-mismatch', `manifest/${key}.${h}.json 内容哈希对不上文件名（实际 ${hash8(r.body)}）`);
@@ -440,7 +452,7 @@ export async function runDq(opts = {}) {
     await pool(sampledIds, concurrency, async (id) => {
         const h = manifest.get(id);
         const r = await http.request(`${h1}/entry/${encodeURIComponent(id)}.${h}.json`);
-        if (!r.ok) { E.h1Bad++; add('packaging', 'h1-entry-missing', `h1/entry/${id}.${h}.json 取不到（HTTP ${r.status}）`); return; }
+        if (!r.ok) { E.h1Bad++; add(missKind(r), 'h1-entry-missing', `h1/entry/${id}.${h}.json 取不到（HTTP ${r.status}）`); return; }
         if (hash8(r.body) !== h) { E.hashMismatch++; add('packaging', 'h1-entry-hash-mismatch', `h1/entry/${id}.${h}.json 内容哈希实际是 ${hash8(r.body)}`); }
         let e;
         try { e = JSON.parse(r.body.toString('utf-8')); } catch (err) {
@@ -455,7 +467,7 @@ export async function runDq(opts = {}) {
         }
 
         const c = await http.request(cur(`entry/${encodeURIComponent(id)}.json`));
-        if (!c.ok) { E.currentMissing++; add('packaging', 'current-entry-missing', `current/entry/${id}.json 取不到（HTTP ${c.status}），h1 有`); return; }
+        if (!c.ok) { E.currentMissing++; add(missKind(c), 'current-entry-missing', `current/entry/${id}.json 取不到（HTTP ${c.status}），h1 有`); return; }
         if (c.body.equals(r.body)) { E.currentMatch++; return; }
         E.currentDiffer++;
         // 分清是 CDN 按 ?v=<commitId> 缓存了旧版（源站其实已一致），还是源站本身就不一致：
@@ -508,7 +520,7 @@ export async function runDq(opts = {}) {
         const r = await http.request(`${h1}/entry/${encodeURIComponent(id)}.${manifest.get(id)}.json`, { method: 'HEAD' });
         if (!r.ok) {
             R.unreachable++;
-            add('packaging', 'ref-unreachable', `被引用的 ${id} 在 manifest 里，但 h1 entry 取不到（HTTP ${r.status}）`, { referencedBy: toFetch.get(id).slice(0, 3) });
+            add(missKind(r), 'ref-unreachable', `被引用的 ${id} 在 manifest 里，但 h1 entry 取不到（HTTP ${r.status}）`, { referencedBy: toFetch.get(id).slice(0, 3) });
         }
     });
     phases.refs = Date.now() - tp;
@@ -529,7 +541,7 @@ export async function runDq(opts = {}) {
         const owners = new Map(); // owner → { relPath → hash }
         await pool(tshards, concurrency, async ([key, h]) => {
             const r = await http.getJson(`${h1}/text-manifest/${key}.${h}.json`);
-            if (!r.json) { add('packaging', 'text-shard-unreadable', `text-manifest/${key}.${h}.json 取不到（HTTP ${r.status}）`); return; }
+            if (!r.json) { add(missKind(r), 'text-shard-unreadable', `text-manifest/${key}.${h}.json 取不到（HTTP ${r.status}）`); return; }
             if (hash8(r.body) !== h) add('packaging', 'text-shard-hash-mismatch', `text-manifest/${key}.${h}.json 内容哈希对不上`);
             for (const [owner, files] of Object.entries(r.json)) {
                 if (shardKeyFor(owner, keyLen) !== key) add('packaging', 'text-shard-misplaced', `owner ${owner} 出现在分片 ${key}`);
@@ -557,7 +569,7 @@ export async function runDq(opts = {}) {
                 T.indexes++;
                 const url = `${h1}/text/${encodeURIComponent(owner)}/${insertHash(ip, files[ip])}`;
                 const r = await http.request(url);
-                if (!r.ok) { T.indexBad++; add('packaging', 'text-index-missing', `${owner}/${ip} 登记在 manifest，取不到（HTTP ${r.status}）`); continue; }
+                if (!r.ok) { T.indexBad++; add(missKind(r), 'text-index-missing', `${owner}/${ip} 登记在 manifest，取不到（HTTP ${r.status}）`); continue; }
                 if (hash8(r.body) !== files[ip]) add('packaging', 'text-index-hash-mismatch', `${owner}/${ip} 内容哈希对不上`);
                 let doc;
                 try { doc = JSON.parse(r.body.toString('utf-8')); } catch (e) {
@@ -584,7 +596,7 @@ export async function runDq(opts = {}) {
         await pool(fileChecks, concurrency, async ({ owner, rel, hash }) => {
             T.filesChecked++;
             const r = await http.request(`${h1}/text/${encodeURIComponent(owner)}/${insertHash(rel, hash)}`, { method: 'HEAD' });
-            if (!r.ok) { T.filesUnreachable++; add('packaging', 'text-file-unreachable', `${owner}/${rel} 在 manifest 里，取不到（HTTP ${r.status}）`); }
+            if (!r.ok) { T.filesUnreachable++; add(missKind(r), 'text-file-unreachable', `${owner}/${rel} 在 manifest 里，取不到（HTTP ${r.status}）`); }
         });
     }
     phases.text = Date.now() - tp;
@@ -598,7 +610,7 @@ export async function runDq(opts = {}) {
 // ─── 报告 ───
 
 export function summarizeFindings(findings) {
-    const byKind = { packaging: {}, data: {}, info: {} };
+    const byKind = { packaging: {}, data: {}, fetch: {}, info: {} };
     for (const f of findings) {
         const k = (byKind[f.kind] ??= {});
         (k[f.code] ??= []).push(f);
@@ -608,6 +620,8 @@ export function summarizeFindings(findings) {
 
 export function hasFailures(report, failOn = 'packaging') {
     if (failOn === 'none') return false;
+    const reqs = report.http?.requests ?? 0;
+    if (reqs > 0 && (report.http.failures ?? 0) / reqs > FETCH_FAIL_RATIO) return true;
     return report.findings.some((f) => f.kind === 'packaging' || (failOn === 'any' && f.kind === 'data'));
 }
 
@@ -665,7 +679,7 @@ export function renderMarkdown(report, { maxPerCode = 15 } = {}) {
         L.push(`引用分字段：${Object.entries(R.byField).map(([f, s]) => `${f} ${n(s.refs)}（悬空 ${n(s.dangling)}）`).join('，')}`);
     }
     const grouped = summarizeFindings(report.findings);
-    for (const kind of ['packaging', 'data', 'info']) {
+    for (const kind of ['packaging', 'data', 'fetch', 'info']) {
         const codes = grouped[kind];
         const total = Object.values(codes).reduce((s, l) => s + l.length, 0);
         L.push('');

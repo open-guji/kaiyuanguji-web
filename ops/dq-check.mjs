@@ -17,8 +17,8 @@
  *   --text-rate     全文／整理本 owner 抽样率，默认 0.05
  *   --seed          抽样种子（整数），默认取当前时间；报告里会写出来，用同一个值可复现
  *   --concurrency   并发，默认 8，上限 8
- *   --pointer-retry 指针与 latest.json 对不上时等多少秒再看一次，默认 90（0 不等）
- *   --fail-on       packaging（默认：有打包问题就退出码 1）| any（数据仓问题也算）| none
+ *   --pointer-retry 指针与 latest.json 对不上（部署进行中）时最多等多少秒，每 60s 看一次，默认 600（0 不等）
+ *   --fail-on       packaging（默认：有打包问题、或网络错误超过请求数 1% 就退出码 1）| any（数据仓问题也算）| none
  *   --out           报告文件前缀（写 <out>.md、<out>.json）
  *
  * 在 GitHub Actions 里会把 Markdown 报告追加到 $GITHUB_STEP_SUMMARY。
@@ -72,7 +72,7 @@ const report = await runDq({
     textRate: num('text-rate', 0.05, { min: 0, max: 1 }),
     seed: Math.trunc(num('seed', Date.now() % 2 ** 31, { min: 0 })),
     concurrency: Math.trunc(num('concurrency', MAX_CONCURRENCY, { min: 1, max: MAX_CONCURRENCY })),
-    pointerRetryMs: num('pointer-retry', 90, { min: 0, max: 600 }) * 1000,
+    pointerRetryMs: num('pointer-retry', 600, { min: 0, max: 1800 }) * 1000,
     log: (m) => console.log(`[dq] ${m}`),
 });
 
