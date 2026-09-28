@@ -970,7 +970,8 @@
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
     letter-spacing: 0.1em;
-    color: var(--color-gold);
+    /* 金色 #a37b43 对纸底只有 3.59；同色相压深到 4.88（INT 预合 axe，overview#220） */
+    color: #8a6634;
   }
 
   .home-open {
@@ -993,6 +994,11 @@
     margin: 0;
     color: var(--color-ink-2);
     line-height: 1.9;
+  }
+  /* 段内链接和正文只差色（朱 vs ink-2，1.03:1），要有下划线才看得出是链接（axe link-in-text-block） */
+  .home-open p a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
   @media (max-width: 760px) {
