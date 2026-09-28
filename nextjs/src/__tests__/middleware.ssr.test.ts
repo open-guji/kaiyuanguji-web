@@ -18,11 +18,19 @@ jest.mock('../lib/server/item-data', () => ({
     defaultItemDataBase: () => 'https://data.example.com',
 }));
 
+// 诊断头 x-kyg-mw 只在测试站构建里出（中间件加载时读取）
+process.env.NEXT_PUBLIC_SITE_ENV = 'staging';
+
 // jest.mock 与从 @jest/globals 引入的 jest 同用时不会被提升到 import 之前，中间件改为用到时再引
 async function run(path: string, headers: Record<string, string> = {}) {
     const { middleware } = await import('../middleware.ssr');
     const res = await middleware(new NextRequest(`https://staging.kaiyuanguji.com${path}`, { headers }));
-    return { status: res.status, location: res.headers.get('location'), all: res.headers.get('location')?.split(',') ?? [] };
+    return {
+        status: res.status,
+        location: res.headers.get('location'),
+        all: res.headers.get('location')?.split(',') ?? [],
+        diag: res.headers.get('x-kyg-mw'),
+    };
 }
 
 describe('middleware.ssr：/book-index', () => {
@@ -113,5 +121,26 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
     it('不合法的 id 不查数据', async () => {
         expect((await run('/item/BAD..id')).location).toBeNull();
         expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it('诊断头 x-kyg-mw（FX1c）：说明跳了、为何放过、出错的错误类名与取数途中的标记', async () => {
+        mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
+        expect((await run(`/item/${MERGED}`)).diag).toBe('redirect');
+        mockGetItem.mockResolvedValue(hit({ title: '史記' }));
+        expect((await run(`/item/${MERGED}`)).diag).toBe('none:h1');
+        mockGetItem.mockResolvedValue(null);
+        expect((await run(`/item/${MERGED}`)).diag).toBe('none:miss');
+        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).diag).toBe('pass:dest');
+
+        // 取数途中的标记经 createItemFetcher 的 trace 回调带进头里；不带错误信息
+        const { trace } = mockCreateItemFetcher.mock.calls[0][0] as { trace: (n: string) => void };
+        mockGetItem.mockImplementation(async () => {
+            trace('http:403');
+            trace('fetch:TypeError');
+            throw new TypeError('secret detail');
+        });
+        const r = await run(`/item/${MERGED}`);
+        expect(r.diag).toBe('err:TypeError http:403 fetch:TypeError');
+        expect(r.status).toBe(200);
     });
 });

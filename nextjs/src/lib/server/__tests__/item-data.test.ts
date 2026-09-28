@@ -315,3 +315,28 @@ describe('summarizeItem', () => {
         });
     });
 });
+
+describe('诊断标记与超时信号（FX1c）', () => {
+    it('非 2xx 与网络错回调短标记，不带 URL', async () => {
+        const { fn } = mockFetch({ ...currentRoutes, [`${BASE}/h1/manifest-root.json`]: 'THROW', [`${BASE}/latest.json`]: 503 });
+        const notes: string[] = [];
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, trace: (n) => notes.push(n) });
+        await expect(f.getItem(ID)).rejects.toThrow('HTTP 503');
+        expect(notes).toEqual(['fetch:Error', 'http:503']);
+    });
+
+    it('运行时没有 AbortSignal.timeout 时退回 AbortController，照样带 signal', async () => {
+        const orig = AbortSignal.timeout;
+        // @ts-expect-error 模拟不支持的运行时
+        delete AbortSignal.timeout;
+        try {
+            const { fn } = mockFetch(h1Routes());
+            const f = createItemFetcher({ base: BASE, fetch: fn as never, timeoutMs: 50 });
+            expect((await f.getItem(ID))?.entry.title).toBe('史記');
+            const init = (fn.mock.calls[0] as unknown[])[1] as RequestInit;
+            expect(init.signal).toBeInstanceOf(AbortSignal);
+        } finally {
+            AbortSignal.timeout = orig;
+        }
+    });
+});
