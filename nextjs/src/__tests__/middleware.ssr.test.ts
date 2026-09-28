@@ -125,12 +125,12 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
 
     it('诊断头 x-kyg-mw（FX1c）：说明跳了、为何放过、出错的错误类名与取数途中的标记', async () => {
         mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
-        expect((await run(`/item/${MERGED}`)).diag).toBe('redirect');
+        expect((await run(`/item/${MERGED}`)).diag).toBe('redirect rt:native');
         mockGetItem.mockResolvedValue(hit({ title: '史記' }));
-        expect((await run(`/item/${MERGED}`)).diag).toBe('none:h1');
+        expect((await run(`/item/${MERGED}`)).diag).toBe('none:h1 rt:native');
         mockGetItem.mockResolvedValue(null);
-        expect((await run(`/item/${MERGED}`)).diag).toBe('none:miss');
-        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).diag).toBe('pass:dest');
+        expect((await run(`/item/${MERGED}`)).diag).toBe('none:miss rt:native');
+        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).diag).toBe('pass:dest rt:native');
 
         // 取数途中的标记经 createItemFetcher 的 trace 回调带进头里；不带错误信息
         const { trace } = mockCreateItemFetcher.mock.calls[0][0] as { trace: (n: string) => void };
@@ -140,7 +140,18 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
             throw new TypeError('secret detail');
         });
         const r = await run(`/item/${MERGED}`);
-        expect(r.diag).toBe('err:TypeError http:403 fetch:TypeError');
+        expect(r.diag).toBe('err:TypeError rt:native http:403 fetch:TypeError');
         expect(r.status).toBe(200);
+
+        // 运行时没有 AbortSignal.timeout（EdgeOne 边缘运行时）时标 rt:poly
+        const orig = AbortSignal.timeout;
+        // @ts-expect-error 模拟不支持的运行时
+        delete AbortSignal.timeout;
+        try {
+            mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
+            expect((await run(`/item/${MERGED}`)).diag).toBe('redirect rt:poly');
+        } finally {
+            AbortSignal.timeout = orig;
+        }
     });
 });

@@ -339,4 +339,46 @@ describe('诊断标记与超时信号（FX1c）', () => {
             AbortSignal.timeout = orig;
         }
     });
+
+    describe('兜底分支的定时器（没有 AbortSignal.timeout 时）', () => {
+        let orig: typeof AbortSignal.timeout;
+        beforeEach(() => {
+            orig = AbortSignal.timeout;
+            // @ts-expect-error 模拟不支持的运行时
+            delete AbortSignal.timeout;
+            jest.useFakeTimers();
+        });
+        afterEach(() => {
+            jest.useRealTimers();
+            AbortSignal.timeout = orig;
+        });
+
+        it('取数成功与失败后都清掉定时器，不留挂起的计时器', async () => {
+            const { fn } = mockFetch(h1Routes());
+            const f = createItemFetcher({ base: BASE, fetch: fn as never, timeoutMs: 3_000 });
+            expect((await f.getItem(ID))?.entry.title).toBe('史記');
+            expect(jest.getTimerCount()).toBe(0);
+
+            const bad = mockFetch({ [`${BASE}/h1/manifest-root.json`]: 'THROW', [`${BASE}/latest.json`]: 503 });
+            const g = createItemFetcher({ base: BASE, fetch: bad.fn as never, timeoutMs: 3_000 });
+            await expect(g.getItem(ID)).rejects.toThrow('HTTP 503');
+            expect(jest.getTimerCount()).toBe(0);
+        });
+
+        it('超时时以 DOMException TimeoutError 中止，与原生 AbortSignal.timeout 一致', async () => {
+            let seen: AbortSignal | undefined;
+            const hang = jest.fn((_url: string, init?: RequestInit) => new Promise<Response>((_res, rej) => {
+                seen = init?.signal ?? undefined;
+                seen?.addEventListener('abort', () => rej(seen?.reason));
+            }));
+            const f = createItemFetcher({ base: BASE, fetch: hang as never, timeoutMs: 3_000 });
+            // 先挂断言再推进时间：h1 超时回退 current/，current/ 也超时 → 抛出超时错误
+            const done = expect(f.getItem(ID)).rejects.toMatchObject({ name: 'TimeoutError' });
+            await jest.advanceTimersByTimeAsync(3_000);
+            await jest.advanceTimersByTimeAsync(3_000);
+            await done;
+            expect(seen?.reason).toBeInstanceOf(DOMException);
+            expect(jest.getTimerCount()).toBe(0);
+        });
+    });
 });

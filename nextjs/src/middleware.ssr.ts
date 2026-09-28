@@ -45,10 +45,12 @@ function isInSite(req: NextRequest): boolean {
 // forceCache: false —— 边缘运行时里 cache: 'force-cache' 可能直接抛错，被下面的 catch
 // 静默放过，结果等于中间件从不跳、没修。
 //
-// FX1c 诊断：测试站上被并条目仍是页面出的双 Location，中间件的 /item 分支在 EdgeOne 里
-// 没跳成，本地 next start 与本地 makers build 产物都复现不了。测试站响应头 x-kyg-mw 说明
-// 中间件这一步的结局（跳了／为何放过／出错的错误类名）和取数途中的短标记（http:403、fetch:TypeError），
-// 不带 URL 与错误信息。只在测试站构建里出。
+// FX1c：FX1 上线后测试站被并条目仍是页面出的双 Location——中间件的 /item 分支在 EdgeOne
+// 边缘运行时里调 AbortSignal.timeout 抛错（那里没有这个静态方法；本地 next start 与 Node 模拟
+// 都有，复现不了），被下面的 catch 静默放过。item-data 已改为缺时退回 AbortController。
+// 测试站响应头 x-kyg-mw 留作排查：中间件结局（redirect／pass:*／none:*／err:<错误类名>）、
+// 运行时有无 AbortSignal.timeout（rt:native／rt:poly）与取数途中的短标记（http:403、
+// fetch:TypeError），不带 URL 与错误信息。只在测试站构建里出，正式站没有中间件。
 const DIAG = process.env.NEXT_PUBLIC_SITE_ENV === 'staging';
 let _notes: string[] = [];
 let _fetcher: ReturnType<typeof createItemFetcher> | null = null;
@@ -65,7 +67,10 @@ function fetcher() {
 }
 
 function withDiag(res: NextResponse, outcome: string): NextResponse {
-    if (DIAG) res.headers.set('x-kyg-mw', [outcome, ..._notes].join(' '));
+    if (DIAG) {
+        const rt = typeof AbortSignal.timeout === 'function' ? 'rt:native' : 'rt:poly';
+        res.headers.set('x-kyg-mw', [outcome, rt, ..._notes].join(' '));
+    }
     return res;
 }
 
