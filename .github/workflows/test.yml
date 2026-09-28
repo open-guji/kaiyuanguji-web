@@ -23,8 +23,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nextjs/package-lock.json
       - name: Install
         working-directory: nextjs
         run: npm ci
@@ -41,8 +39,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nextjs/package-lock.json
       - name: Clone book-index-draft
         run: git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
       - name: Install (nextjs)

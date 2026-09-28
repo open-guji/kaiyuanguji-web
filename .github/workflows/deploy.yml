@@ -180,8 +180,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nextjs/package-lock.json
 
       # npm ci 严格按 lockfile 安装（与 test.yml 保持一致）；
       # 原先的 npm install 会在 CI 里悄悄升级依赖，导致「本地能过、线上挂」
