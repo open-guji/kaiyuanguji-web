@@ -130,6 +130,27 @@ describe('seoDescription：丛编', () => {
     });
 });
 
+describe('seoDescription：简介按原文顺序取，不跳句（复审修订）', () => {
+    // 抽样 #30：「；」分隔的枚举，旧实现按「；」切句、放不下就跳，拼出「一、…；三、…」少了第二项
+    it('「；」不当句末：枚举整句取，放不下就截断，不会只取其中几项', () => {
+        const d = seoDescription({
+            type: 'collection', title: '三教同理小說', count: { zhong: 3 },
+            description: `所收三書以三人代表三教。一、《王陽明出身靖難錄》；二、《${'濟'.repeat(150)}》；三、《許真君鐵樹記》。`,
+        }, 'x');
+        expect(L(d)).toBe(160);
+        expect(d.endsWith('…')).toBe(true);
+        expect(d).toContain('一、《王陽明出身靖難錄》；二、《濟');
+        expect(d).not.toContain('三、《許真君鐵樹記》');
+    });
+    it('已够下限时，放不下的句子连同其后的句子都不取', () => {
+        const a = `${'甲'.repeat(90)}。`;
+        const b = `${'乙'.repeat(80)}。`;
+        const d = seoDescription({ type: 'collection', title: '叢', description: `${a}${b}丙。` }, 'x');
+        expect(d).toBe(`《叢》。${a}`);
+        expect(d).not.toContain('丙');
+    });
+});
+
 describe('seoDescription：人物', () => {
     it('名、字號（字在前）、（朝代）籍贯人、生卒、作品数（多角色分列）', () => {
         const d = seoDescription({
@@ -241,6 +262,19 @@ describe('buildItemSeo', () => {
         const d = buildItemSeo({ type: 'entity', primary_name: '某', dates: { birth: null, death: 706 } }, 'hixhd2h9bhma', SITE);
         expect(d.jsonLd).toMatchObject({ deathDate: '0706' });
         expect(d.jsonLd).not.toHaveProperty('birthDate');
+    });
+
+    it('JSON-LD 的 alternateName 与 description 同规则：作品去掉书名＋撰人、按语、著錄形；人物去掉著錄形', () => {
+        const w = buildItemSeo({
+            type: 'work', title: '守法守令', authors: [{ name: '孫臏' }],
+            additional_titles: ['守法守令孫臏撰', '謹按見《世說》注', { book_title: '守令', type: '著錄形' }, '孫子守令篇'],
+        }, 'd59f20aowb9c', SITE);
+        expect(w.jsonLd.alternateName).toEqual(['孫子守令篇']);
+        const p = buildItemSeo({
+            type: 'entity', primary_name: '何秋濤',
+            alt_names: [{ name: '巨源', type: '字' }, { name: '何秋濤', type: '著錄形' }, { name: '何氏秋濤', type: '著錄形' }, '海槎'],
+        }, 'hixhd2h9bhma', SITE);
+        expect(p.jsonLd.alternateName).toEqual(['巨源', '海槎']);
     });
 
     it('人物：subtype=collective → Organization，不出生卒', () => {

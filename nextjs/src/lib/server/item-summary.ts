@@ -82,7 +82,8 @@ export function plainText(s: string): string {
         .trim();
 }
 
-/** 按句末标点切句，标点留在句尾；引号、括号里的句号不切 */
+/** 按句末标点（。！？）切句，标点留在句尾；引号、括号里的句号不切。「；」只是分句，不切——
+ *  切了之后拼 description 时会只取枚举的一部分，读起来像少了一项 */
 export function sentences(s: string): string[] {
     const out: string[] = [];
     let cur = '';
@@ -91,7 +92,7 @@ export function sentences(s: string): string[] {
         cur += ch;
         if ('「『《（(“'.includes(ch)) depth++;
         else if ('」』》）)”'.includes(ch)) depth = Math.max(0, depth - 1);
-        else if (depth === 0 && '。！？；'.includes(ch)) {
+        else if (depth === 0 && '。！？'.includes(ch)) {
             if (cur.trim()) out.push(cur.trim());
             cur = '';
         }

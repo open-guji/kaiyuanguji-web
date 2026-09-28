@@ -91,8 +91,9 @@ function freshSentences(text: string, known: string[]): string[] {
 }
 
 /**
- * 按顺序拼句子，总长不过 SEO_DESC_MAX：放不下的句子跳过、试下一句（后面的往往更短），
- * 一句都放不下的开头句（长简介）截断收尾。
+ * 按顺序拼句子，总长不过 SEO_DESC_MAX。简介（body）是连贯的原文：一句放不下就停，
+ * 不跳过它去拼后面的句子（跳着取会让原文意思走样）；此时还不足下限就把这句截断收尾。
+ * head／tail 是互相独立的字段，放不下的单项照旧跳过。
  */
 function assemble(head: string[], body: string[], tail: string[]): string {
     let out = '';
@@ -105,10 +106,9 @@ function assemble(head: string[], body: string[], tail: string[]): string {
     };
     head.forEach(add);
     for (const s of body) {
-        if (!add(s) && len(out) < SEO_DESC_MIN) {
-            out += clip(stop(s), SEO_DESC_MAX - len(out));
-            break;
-        }
+        if (add(s)) continue;
+        if (len(out) < SEO_DESC_MIN) out += clip(stop(s), SEO_DESC_MAX - len(out));
+        break;
     }
     tail.forEach(add);
     return out;
@@ -253,6 +253,26 @@ function provenanceText(e: ItemEntry): string {
     return `${inst}藏${call ? `，索書號${call}` : ''}`;
 }
 
+/**
+ * 作品的别名（description 与 JSON-LD 共用）：别名里混着「书名＋撰人」「书名＋按语」的著录原形，
+ * 以及标了「著錄形」的，这些不当别名出
+ */
+function workAliases(e: ItemEntry, title: string): string[] {
+    const authors = authorsOf(e).names.filter((n) => len(n) > 1);
+    const typed = arr(e.additional_titles).filter((x) => !/^著[錄录]形$/.test(str(obj(x).type)));
+    return uniq(names(typed, 'book_title'))
+        .filter((t) => t !== title && len(t) <= 20 && !/[《》]/.test(t) && !authors.some((n) => t.includes(n)));
+}
+
+/** 人物的别名（JSON-LD 用）：与 description 同规则，只取认得的类型（字、號、別名…）和不标类型的，著錄形等内部类型不出 */
+function entityAliases(e: ItemEntry, name: string): string[] {
+    return uniq(arr(e.alt_names).map((a) => {
+        if (typeof a === 'string') return a.trim();
+        const t = str(obj(a).type);
+        return !t || ALT_LABEL[t] ? str(obj(a).name) : '';
+    })).filter((n) => n !== name);
+}
+
 /** 不足 80 字时补的站名句：只说这是本站哪一类条目，不涉及条目本身的任何事实 */
 const SITE_LINE: Record<string, string> = {
     work: '開源古籍索引作品條目。',
@@ -316,10 +336,7 @@ export function seoDescription(e: ItemEntry, id: string): string {
             break;
         }
         default: {
-            // 别名里混着「书名＋撰人」「书名＋按语」的著录原形，这类不当别名出
-            const alts = names(e.additional_titles, 'book_title')
-                .filter((t) => t !== s.title && len(t) <= 20 && !/[《》]/.test(t) && !a.names.some((n) => len(n) > 1 && t.includes(n)))
-                .slice(0, 3);
+            const alts = workAliases(e, s.title).slice(0, 3);
             const dyn = !a.line && str(e.dynasty) ? `（${str(e.dynasty)}）` : '';
             head = [
                 [`${bookName(s.title)}${dyn}`, alts.length ? `又名${alts.map(bookName).join('')}` : '', a.line]
@@ -336,7 +353,7 @@ export function seoDescription(e: ItemEntry, id: string): string {
     }
 
     let text = assemble(head, body, tail);
-    if (!text) return `${s.title}，开源古籍索引条目。`;
+    if (!text) return `${s.title}，開源古籍索引條目。`;
     if (len(text) < SEO_DESC_MIN) text += SITE_LINE[s.type] ?? SITE_LINE.work;
     return clip(text);
 }
@@ -499,7 +516,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': org ? 'Organization' : 'Person',
-                alternateName: names(e.alt_names, 'name'),
+                alternateName: entityAliases(e, s.title),
                 birthDate: org ? undefined : year(e.birth_year ?? d.birth),
                 deathDate: org ? undefined : year(e.death_year ?? d.death),
             });
@@ -510,7 +527,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': PIECE.has(str(e.subtype)) ? 'CreativeWork' : 'Book',
-                alternateName: names(e.additional_titles, 'book_title').filter((t) => t !== s.title),
+                alternateName: workAliases(e, s.title),
                 author: persons(e, site),
                 inLanguage: language(s.title),
                 genre: genre(e),
