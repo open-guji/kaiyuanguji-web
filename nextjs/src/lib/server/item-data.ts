@@ -53,6 +53,11 @@ export interface ItemFetcherOptions {
     timeoutMs?: number;
     /** 不可变对象（root、分片、entry）的进程内缓存条数上限 */
     lruSize?: number;
+    /**
+     * 请求是否带 cache: 'force-cache'（默认 true，页面据此保持 ISR）。
+     * 中间件（边缘运行时）传 false：那里不认这个选项，可能直接抛错。
+     */
+    forceCache?: boolean;
 }
 
 interface H1Pointer { root?: string }
@@ -106,12 +111,15 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     const now = opts.now ?? Date.now;
     const pointerTtl = opts.pointerTtlMs ?? 60_000;
     const timeoutMs = opts.timeoutMs ?? 8_000;
+    const forceCache = opts.forceCache ?? true;
     const immutable = new Lru<Promise<unknown>>(opts.lruSize ?? 500);
     const pointers = new Map<string, { at: number; value: Promise<unknown> }>();
 
     async function getJson<T>(url: string): Promise<T> {
         // force-cache：让页面保持 ISR（带 s-maxage），no-store 会把整页变成动态渲染、CDN 不缓存
-        const res = await doFetch(url, { cache: 'force-cache', signal: AbortSignal.timeout(timeoutMs) });
+        const init: RequestInit = { signal: AbortSignal.timeout(timeoutMs) };
+        if (forceCache) init.cache = 'force-cache';
+        const res = await doFetch(url, init);
         if (res.status === 404 || res.status === 403) throw new NotFound(`${url} HTTP ${res.status}`);
         if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
         return (await res.json()) as T;

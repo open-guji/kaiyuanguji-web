@@ -11,8 +11,10 @@ import type { ItemFetchResult, PromotionLookup } from '../lib/server/item-data';
 const mockGetItem = jest.fn<(id: string) => Promise<ItemFetchResult | null>>();
 const mockResolvePromotion = jest.fn<(id: string) => Promise<PromotionLookup>>();
 
+const mockCreateItemFetcher = jest.fn((_opts: Record<string, unknown>) => ({ getItem: mockGetItem, resolvePromotion: mockResolvePromotion }));
+
 jest.mock('../lib/server/item-data', () => ({
-    createItemFetcher: () => ({ getItem: mockGetItem, resolvePromotion: mockResolvePromotion }),
+    createItemFetcher: (opts: Record<string, unknown>) => mockCreateItemFetcher(opts),
     defaultItemDataBase: () => 'https://data.example.com',
 }));
 
@@ -100,6 +102,12 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
         expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
         expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it('建取数实例时传 forceCache: false（边缘运行时不认 force-cache）', async () => {
+        mockGetItem.mockResolvedValue(hit({ title: '史記' }));
+        await run(`/item/${MERGED}`);
+        expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false }));
     });
 
     it('不合法的 id 不查数据', async () => {

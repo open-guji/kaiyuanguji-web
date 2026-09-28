@@ -41,10 +41,12 @@ function isInSite(req: NextRequest): boolean {
 }
 
 // 边缘运行时的取数实例：指针 60 秒、不可变对象 LRU，跨请求复用。超时比页面（8 秒）短：
-// 中间件查不出来就放过，让页面自己取
+// 中间件查不出来就放过，让页面自己取。
+// forceCache: false —— 边缘运行时里 cache: 'force-cache' 可能直接抛错，被下面的 catch
+// 静默放过，结果等于中间件从不跳、没修。
 let _fetcher: ReturnType<typeof createItemFetcher> | null = null;
 function fetcher() {
-    if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000 });
+    if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000, forceCache: false });
     return _fetcher;
 }
 

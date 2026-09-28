@@ -19,6 +19,9 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: '/private/',
         },
-        sitemap: `${SITE_URL}/sitemap.xml`,
+        // 全栈构建的 /sitemap.xml 只列静态页，条目在 /sitemaps/* 分片里，由 sitemap-index.xml 汇总
+        sitemap: process.env.KYG_RENDER_MODE === 'fullstack'
+            ? `${SITE_URL}/sitemap-index.xml`
+            : `${SITE_URL}/sitemap.xml`,
     };
 }
