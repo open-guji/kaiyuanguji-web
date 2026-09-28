@@ -48,48 +48,27 @@ function isInSite(req: NextRequest): boolean {
 // FX1c：FX1 上线后测试站被并条目仍是页面出的双 Location——中间件的 /item 分支在 EdgeOne
 // 边缘运行时里调 AbortSignal.timeout 抛错（那里没有这个静态方法；本地 next start 与 Node 模拟
 // 都有，复现不了），被下面的 catch 静默放过。item-data 已改为缺时退回 AbortController。
-// 测试站响应头 x-kyg-mw 留作排查：中间件结局（redirect／pass:*／none:*／err:<错误类名>）、
-// 运行时有无 AbortSignal.timeout（rt:native／rt:poly）与取数途中的短标记（http:403、
-// fetch:TypeError），不带 URL 与错误信息。只在测试站构建里出，正式站没有中间件。
-const DIAG = process.env.NEXT_PUBLIC_SITE_ENV === 'staging';
-let _notes: string[] = [];
+// 当时靠测试站诊断响应头证实（rt:poly），根因证实后已删。
 let _fetcher: ReturnType<typeof createItemFetcher> | null = null;
 function fetcher() {
-    if (!_fetcher) {
-        _fetcher = createItemFetcher({
-            base: defaultItemDataBase(),
-            timeoutMs: 3_000,
-            forceCache: false,
-            trace: (n) => { if (_notes.length < 8) _notes.push(n); },
-        });
-    }
+    if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000, forceCache: false });
     return _fetcher;
 }
 
-function withDiag(res: NextResponse, outcome: string): NextResponse {
-    if (DIAG) {
-        const rt = typeof AbortSignal.timeout === 'function' ? 'rt:native' : 'rt:poly';
-        res.headers.set('x-kyg-mw', [outcome, rt, ..._notes].join(' '));
-    }
-    return res;
-}
-
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
-    _notes = [];
     // RSC 导航与预取：页面的跳转编码在 RSC 负载里，不受 Location 重复影响，不必多查一次
     const dest = req.headers.get('sec-fetch-dest');
-    if (dest && dest !== 'document') return withDiag(NextResponse.next(), 'pass:dest');
+    if (dest && dest !== 'document') return NextResponse.next();
     const id = req.nextUrl.pathname.slice('/item/'.length);
-    if (!isValidItemId(id)) return withDiag(NextResponse.next(), 'pass:id');
+    if (!isValidItemId(id)) return NextResponse.next();
     try {
         const f = fetcher();
-        const hit = await f.getItem(id);
-        const r = await resolveItemRedirect(id, hit, f.resolvePromotion);
-        if (!r) return withDiag(NextResponse.next(), hit ? `none:${hit.source}` : 'none:miss');
-        return withDiag(NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307), 'redirect');
+        const r = await resolveItemRedirect(id, await f.getItem(id), f.resolvePromotion);
+        if (!r) return NextResponse.next();
+        return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
     } catch (err) {
         console.warn(`[middleware] /item/${id} 跳转判断失败，交给页面：${(err as Error).message}`);
-        return withDiag(NextResponse.next(), `err:${(err as Error)?.name ?? typeof err}`);
+        return NextResponse.next();
     }
 }
 

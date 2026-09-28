@@ -59,11 +59,6 @@ export interface ItemFetcherOptions {
      * 中间件（边缘运行时）传 false：那里不认这个选项，可能直接抛错。
      */
     forceCache?: boolean;
-    /**
-     * 诊断（FX1c）：每次取数出错或非 2xx 时回调一个短标记（fetch:<错误类名>、http:<状态码>），
-     * 不带 URL 与错误信息。中间件据此在测试站响应头里说明它为什么没跳。
-     */
-    trace?: (note: string) => void;
 }
 
 interface H1Pointer { root?: string }
@@ -129,7 +124,6 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     const pointerTtl = opts.pointerTtlMs ?? 60_000;
     const timeoutMs = opts.timeoutMs ?? 8_000;
     const forceCache = opts.forceCache ?? true;
-    const trace = opts.trace ?? (() => {});
     const immutable = new Lru<Promise<unknown>>(opts.lruSize ?? 500);
     const pointers = new Map<string, { at: number; value: Promise<unknown> }>();
 
@@ -137,24 +131,12 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         // force-cache：让页面保持 ISR（带 s-maxage），no-store 会把整页变成动态渲染、CDN 不缓存
         const timeout = timeoutSignal(timeoutMs);
         try {
-            let res: Response;
-            try {
-                const init: RequestInit = { signal: timeout.signal };
-                if (forceCache) init.cache = 'force-cache';
-                res = await doFetch(url, init);
-            } catch (err) {
-                trace(`fetch:${(err as Error)?.name ?? typeof err}`);
-                throw err;
-            }
-            if (!res.ok) trace(`http:${res.status}`);
+            const init: RequestInit = { signal: timeout.signal };
+            if (forceCache) init.cache = 'force-cache';
+            const res = await doFetch(url, init);
             if (res.status === 404 || res.status === 403) throw new NotFound(`${url} HTTP ${res.status}`);
             if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
-            try {
-                return (await res.json()) as T;
-            } catch (err) {
-                trace(`json:${(err as Error)?.name ?? typeof err}`);
-                throw err;
-            }
+            return (await res.json()) as T;
         } finally {
             timeout.clear();
         }
