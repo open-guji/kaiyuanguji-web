@@ -68,3 +68,41 @@ export function summarizeItem(e: ItemEntry, id: string): ItemSummary {
         description: descriptionText(e),
     };
 }
+
+// ── 以下给 SEO（item-seo.ts）用：不改上面首屏摘要的任何输出 ──
+
+/** 简介 → 纯文本：去 Markdown 粗体／标题记号，【标签】改成「标签：」，空白压成一格 */
+export function plainText(s: string): string {
+    return s
+        .replace(/\*\*|__|`/g, '')
+        .replace(/^\s*#+\s*/gm, '')
+        .replace(/^\s*[-*]\s+/gm, '')
+        .replace(/【([^】]{1,12})】/g, '$1：')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/** 按句末标点（。！？）切句，标点留在句尾；引号、括号里的句号不切。「；」只是分句，不切——
+ *  切了之后拼 description 时会只取枚举的一部分，读起来像少了一项 */
+export function sentences(s: string): string[] {
+    const out: string[] = [];
+    let cur = '';
+    let depth = 0;
+    for (const ch of Array.from(plainText(s))) {
+        cur += ch;
+        if ('「『《（(“'.includes(ch)) depth++;
+        else if ('」』》）)”'.includes(ch)) depth = Math.max(0, depth - 1);
+        else if (depth === 0 && '。！？'.includes(ch)) {
+            if (cur.trim()) out.push(cur.trim());
+            cur = '';
+        }
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+}
+
+/** 存佚：只认数据里的三个值，别的（含缺）不出 */
+export function lossStatusText(e: ItemEntry): string {
+    const m: Record<string, string> = { extant: '今存', partially_extant: '今殘', lost: '已佚' };
+    return m[str(e.loss_status)] ?? '';
+}
