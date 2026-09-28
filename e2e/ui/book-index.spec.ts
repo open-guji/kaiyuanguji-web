@@ -17,6 +17,29 @@ test.describe('首页', () => {
         await page.goto(TARGET);
         await expect(page.getByRole('link', { name: /古籍索引/ }).first()).toBeVisible();
     });
+
+    // N1 首页：大检索框 + 唯一主按钮「搜索」，搜索落到索引页
+    test('首屏检索跳到索引页', async ({ page }) => {
+        await page.goto(TARGET);
+        await page.getByRole('searchbox', { name: '搜索古籍索引' }).fill('史記');
+        await page.getByRole('button', { name: '搜索', exact: true }).click();
+        await expect(page).toHaveURL(/\/book-index\?q=/);
+    });
+
+    test('写明 CC0', async ({ page }) => {
+        await page.goto(TARGET);
+        await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
+    });
+
+    for (const width of [390, 360]) {
+        test(`手机 ${width}px 不横向溢出`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 800 });
+            await page.goto(TARGET);
+            await expect(page.getByRole('searchbox', { name: '搜索古籍索引' })).toBeVisible();
+            const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+            expect(scrollWidth, '页面出现横向滚动').toBeLessThanOrEqual(width);
+        });
+    }
 });
 
 test.describe('古籍索引页', () => {

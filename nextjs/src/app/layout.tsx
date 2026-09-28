@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
-
-const notoSerif = Noto_Serif_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "900"],
-  display: "swap",
-  variable: "--font-noto-serif",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -83,7 +75,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`antialiased ${notoSerif.variable}`}>
+      <body className="antialiased">
         <StagingBadge />
         <ErrorMonitor />
         <Suspense fallback={null}>
