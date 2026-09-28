@@ -43,12 +43,14 @@
   --color-nav-vermilion: #9e2a2b;
   --color-nav-border: #ebe4d9;
 
-  /* ---- 字体：全站黑体；宋体只给整理本正文 ---- */
-  --font-sans: var(--font-noto-sans), "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC",
-    "WenQuanYi Zen Hei", system-ui, sans-serif;
-  --font-serif: var(--font-noto-serif), "Songti SC", "Songti TC", "STSong",
-    "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+  /* ---- 字体：全站黑体；宋体只给整理本正文 ----
+     系统中文字体优先，Noto 网络字体只兜底（overview#220 Q1 方案 C）：
+     Noto 放第一位时，每页按 unicode-range 分片下载，条目页首访约 2.9 MB、搜索页约 2.4 MB。 */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei",
+    var(--font-noto-sans), system-ui, sans-serif;
+  --font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", "SimSun", "PMingLiU", var(--font-noto-serif), serif;
 
   /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
