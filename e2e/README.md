@@ -13,7 +13,18 @@ npm run test:degradable   # 可降级依赖（搜索 L1），不阻断发版
 npm run report            # 看上一次的 HTML 报告
 
 TARGET=http://localhost:3000 npm run test:ui   # 打本地
+
+# 新架构（全栈）两站，只读：
+TARGET=https://staging.kaiyuanguji.com DATA_BASE=https://data.kaiyuanguji.com/staging npm run test:contract
+TARGET=https://ssr-test.kaiyuanguji.com npm run test:contract
 ```
+
+`contract/fullstack.spec.ts` 守新架构特有的行为（/item/<id> 服务端 HTML 头部、
+308 跳转、真 404、sitemap 分片、/api/feedback、首访耗时只记录）。站点是不是全栈、
+该不该 noindex、canonical 指向谁，由 `fixtures/site-profile.ts` 按 host 判定，
+可用 `SITE_ARCH`／`EXPECT_NOINDEX`／`CANONICAL_ORIGIN` 覆盖。**切域名后**要么把
+www 加进 `FULLSTACK_HOSTS`，要么 verify 传 `SITE_ARCH=fullstack`——忘了的话
+「静态站声明仍然成立」那条会报红提醒，不会静默跳过。
 
 ## 三层的分工
 
@@ -68,6 +79,7 @@ test.skip(sample === null, '候选池全部已被整理，空状态无从验证'
 | `anchors.ts` | 被测地址、断言锚点与区间、空状态候选池 |
 | `version.ts` | 解析 `latest.json`，拼带版本号的 data URL（含 cache-buster） |
 | `preconditions.ts` | 版本门禁 `requireUiVersion`、空样本挑选 `pickEmptySample` |
+| `site-profile.ts` | 被测站形态：全栈/静态、noindex、canonical 源站 |
 
 ## 跳过 vs 失败
 
