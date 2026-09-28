@@ -30,6 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
 
     // 3. 古籍详情页 (从 GitHub 获取)
+    // 全栈构建（KYG_RENDER_MODE=fullstack）不列：条目地址是 /item/<id>，由 scripts/gen-sitemaps.mjs
+    // 生成的 /sitemaps/* 分片列出（sitemap-index.xml 汇总），这里再列旧的 /book-index?id= 只会重复，
+    // 还会带出草稿 id。静态导出（正式站现行）照旧列，切域名前行为不变。
+    if (process.env.KYG_RENDER_MODE === 'fullstack') {
+        return [...staticRoutes, ...roadmapRoutes, ...footerOnlyRoutes];
+    }
     // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
     let bookRoutes: MetadataRoute.Sitemap = [];
     try {

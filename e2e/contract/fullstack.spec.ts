@@ -11,12 +11,11 @@
  *
  * 站点形态（全栈与否、该不该 noindex、canonical 指向谁）见 fixtures/site-profile.ts。
  *
- * 已知的站点问题（2026-09-28 实测，两站相同，只报告不在此修；修好后按注释收紧断言）：
- *   · 被并条目 308 的 Location 是「/item/<目标>, /item/<目标>」——同一值重复了一遍，
- *     按字面跟随会落到 /item/<目标>,%20/item/<目标> 的 404。用例现在只核第一个值，
- *     并在报告里留一条 known-issue 注记。
- *   · /sitemap.xml（索引里的「静态页」那一片）仍带 11 万余条旧的 /book-index?id= 地址
- *     （nextjs/src/app/sitemap.ts 的 bookRoutes，含草稿 id），与条目分片重复。同样只注记。
+ * 2026-09-28 实测两站相同的两个站点问题，已由 FX1 修掉，这里改成断言守住：
+ *   · 被并条目 308 的 Location 曾是「/item/<目标>, /item/<目标>」（Next 的 ISR 页面抛 redirect
+ *     会把 Location 写两遍，vercel/next.js#82117；EdgeOne 拼成一行）——现由中间件出 308，只一个值。
+ *   · /sitemap.xml（索引里的「静态页」那一片）曾带 11 万余条旧的 /book-index?id= 地址，
+ *     与条目分片重复——全栈构建的 sitemap.ts 现只列静态页。
  */
 import { test, expect, type APIRequestContext, type APIResponse } from '@playwright/test';
 import { ANCHORS, DATA_BASE, TARGET } from '../fixtures/anchors';
@@ -96,21 +95,11 @@ function jsonLdBlocks(html: string): Json[] {
     return out;
 }
 
-/** Location 头按规范应是单个 URL；已知问题是同值被逗号拼了两遍（见文件头） */
+/** Location 头按规范应是单个 URL；按逗号拆开，重复（见文件头）会拆成多个值、断言失败 */
 function locationTargets(res: APIResponse): string[] {
     const raw = res.headers()['location'] ?? '';
     return raw.split(',').map((s) => s.trim()).filter(Boolean)
         .map((s) => new URL(s, TARGET).pathname);
-}
-
-function noteLocationIssue(res: APIResponse, what: string) {
-    const raw = res.headers()['location'] ?? '';
-    if (raw.includes(',')) {
-        test.info().annotations.push({
-            type: 'known-issue',
-            description: `${what} 的 Location 头不是单个 URL：「${raw}」——浏览器按字面跟随会 404（站点问题，待修）`,
-        });
-    }
 }
 
 async function getEntry(request: APIRequestContext, id: string, commitId: string): Promise<Json | null> {
@@ -233,11 +222,8 @@ test.describe('新架构：跳转与 404', () => {
 
         const res = await request.get(`${TARGET}/item/${picked!.id}`, noFollow);
         expect(res.status()).toBe(308);
-        noteLocationIssue(res, `/item/${picked!.id}`);
-        // TODO(站点修好 Location 重复后)：改成 toEqual([`/item/${picked!.to}`])
-        const targets = locationTargets(res);
-        expect(targets.length, 'Location 为空').toBeGreaterThan(0);
-        for (const t of targets) expect(t, 'Location 没指向合并目标').toBe(`/item/${picked!.to}`);
+        expect(locationTargets(res), `Location 应是单个合并目标，实际「${res.headers()['location'] ?? ''}」`)
+            .toEqual([`/item/${picked!.to}`]);
 
         const dest = await request.get(`${TARGET}/item/${picked!.to}`, noFollow);
         expect(dest.status(), `合并目标 /item/${picked!.to} 本身应能打开`).toBe(200);
@@ -256,7 +242,8 @@ test.describe('新架构：跳转与 404', () => {
                 expect(res.status(), `${id} 不在升格对照表里，应 404`).toBe(404);
             } else {
                 expect(res.status(), `${id} 已升格为 ${p.to}，应 308`).toBe(308);
-                expect(locationTargets(res)[0]).toBe(`/item/${p.to}`);
+                expect(locationTargets(res), `Location 应是单个正式 id，实际「${res.headers()['location'] ?? ''}」`)
+                    .toEqual([`/item/${p.to}`]);
             }
             checked++;
         }
@@ -305,17 +292,11 @@ test.describe('新架构：sitemap', () => {
         expect(total, '条目 sitemap 总数不在合理区间').toBeGreaterThanOrEqual(100_000);
         expect(total).toBeLessThanOrEqual(400_000);
 
-        // 已知问题（见文件头）：只注记，不断言
+        // 静态页 sitemap 不再列旧详情地址（条目只由上面的分片列，见文件头）
         const legacy = await request.get(`${TARGET}/sitemap.xml`);
-        if (legacy.ok()) {
-            const n = ((await legacy.text()).match(/\/book-index\?id=/g) ?? []).length;
-            if (n > 0) {
-                test.info().annotations.push({
-                    type: 'known-issue',
-                    description: `/sitemap.xml 仍有 ${n} 条旧 /book-index?id= 地址，与条目分片重复（站点问题，待修）`,
-                });
-            }
-        }
+        expect(legacy.status(), '/sitemap.xml 取不到').toBe(200);
+        const n = ((await legacy.text()).match(/\/book-index\?id=/g) ?? []).length;
+        expect(n, `/sitemap.xml 仍有 ${n} 条旧 /book-index?id= 地址，与条目分片重复`).toBe(0);
     });
 });
 

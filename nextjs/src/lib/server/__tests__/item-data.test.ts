@@ -182,6 +182,28 @@ describe('createItemFetcher.getItem', () => {
     });
 });
 
+describe('createItemFetcher 的 forceCache 选项', () => {
+    it('默认带 cache: force-cache（页面保持 ISR）', async () => {
+        const { f, fn } = make({ ...h1Routes(), ...currentRoutes });
+        await f.getItem(ID);
+        expect(fn).toHaveBeenCalled();
+        for (const [, init] of fn.mock.calls as unknown as [string, RequestInit][]) {
+            expect(init.cache).toBe('force-cache');
+        }
+    });
+
+    it('forceCache: false 时 init 里没有 cache（中间件／边缘运行时）', async () => {
+        const { fn } = mockFetch({ ...h1Routes(), ...currentRoutes });
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, now: () => 1_000_000, forceCache: false });
+        expect(await f.getItem(ID)).toMatchObject({ source: 'h1' });
+        expect(fn).toHaveBeenCalled();
+        for (const [, init] of fn.mock.calls as unknown as [string, RequestInit][]) {
+            expect(init).not.toHaveProperty('cache');
+            expect(init.signal).toBeDefined();
+        }
+    });
+});
+
 describe('createItemFetcher.resolvePromotion（PH）', () => {
     const DRAFT = '11pcgxhot4bnk';   // 分片键 'nk'
     const PROD = '96kzii6z28';
