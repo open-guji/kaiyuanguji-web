@@ -168,10 +168,10 @@ describe('Footer', () => {
         expect(screen.getByRole('link', { name: /冀ICP备/ })).toBeInTheDocument();
     });
 
-    it('顶栏拿掉的入口在页脚保留', () => {
-        render(<Footer />);
+    it('顶栏拿掉的入口在页脚保留（反馈在「关于与联系」栏，名为「反馈与纠错」）', () => {
+        const { container } = render(<Footer />);
         for (const l of MORE_LINKS) {
-            expect(screen.getByRole('link', { name: l.label })).toHaveAttribute('href', l.href);
+            expect(container.querySelectorAll(`footer a[href="${l.href}"]`)).toHaveLength(1);
         }
     });
 });

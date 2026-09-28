@@ -6,6 +6,13 @@ import { HOME_FEATURES } from '@/components/home/features';
 // 首页（N1，照 design/n1-samples 的 /samples/home）：
 // 首屏坤舆图满幅、左对齐大标题、大检索框、唯一主按钮「搜索」；
 // 特性区只有已上线的两项标「已上线」，其余标「规划中」；写明 CC0。
+// 页尾（N6，overview#259 方案 A）：开放区下另起一段「关于与联系」，只用文字链接，首屏「搜索」仍是唯一主按钮。
+const JOIN_LINKS = [
+  { label: '关于我们', href: '/about', text: '项目在做什么、数据来源与授权、致谢' },
+  { label: '联系我们', href: '/contact', text: '站内反馈、GitHub Issues' },
+  { label: '反馈与纠错', href: '/feedback', text: '看到哪里不对，随手提交，可以跟踪处理进展' },
+];
+
 export default function HomePage() {
   return (
     <LayoutWrapper navOnHero>
@@ -67,6 +74,25 @@ export default function HomePage() {
               <a href="https://github.com/open-guji">在 GitHub 查看 →</a>
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="home-join" aria-labelledby="home-join-title">
+        <div className="home-join-inner">
+          <div className="home-join-head">
+            <h2 id="home-join-title">一起把古籍做成开放数据</h2>
+            <p>这是一个开源项目，书目、文本和代码都放在 GitHub 上。发现错误、缺了资源，或者想参与整理，都欢迎来找我们。</p>
+          </div>
+          <ul className="home-join-links">
+            {JOIN_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href}>
+                  <strong>{l.label} →</strong>
+                  <span>{l.text}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </LayoutWrapper>

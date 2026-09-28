@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 2b. 只在页脚出现、不在主导航里的独立页面
     const footerOnlyRoutes: MetadataRoute.Sitemap = [
         { url: `${SITE_URL}/about`, lastModified, changeFrequency: 'monthly' as const, priority: 0.5 },
+        { url: `${SITE_URL}/contact`, lastModified, changeFrequency: 'monthly' as const, priority: 0.5 },
         { url: `${SITE_URL}/beta`, lastModified, changeFrequency: 'monthly' as const, priority: 0.5 },
     ];
 
