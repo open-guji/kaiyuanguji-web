@@ -6,9 +6,6 @@ jest.mock('next/navigation', () => ({
     useRouter: () => ({ push: jest.fn() }),
 }));
 
-// 浮动反馈钮来自 book-index-ui，这里只关心它在不在
-jest.mock('../../common/FeedbackWidget', () => () => <div data-testid="fab" />);
-
 import Navbar from '../Navbar';
 import MobileDrawer from '../MobileDrawer';
 import Footer from '../Footer';
@@ -145,18 +142,18 @@ describe('无障碍（B9 / A2）', () => {
         expect(screen.getByRole('main')).toHaveAttribute('id', MAIN_CONTENT_ID);
     });
 
-    it('抽屉打开时不渲染浮动反馈钮；页面底部给浮钮留白', () => {
+    it('没有右下角浮钮（N7 去掉），反馈入口在顶栏右侧，打开的是模态弹窗', () => {
         const { container } = render(<LayoutWrapper>正文</LayoutWrapper>);
-        expect(screen.getByTestId('fab')).toBeInTheDocument();
-        expect(container.querySelector('.og-fab-space')).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: '打开菜单' }));
-        expect(screen.queryByTestId('fab')).not.toBeInTheDocument();
-    });
-
-    it('hideFeedbackButton 时既无浮钮也无留白', () => {
-        const { container } = render(<LayoutWrapper hideFeedbackButton>正文</LayoutWrapper>);
-        expect(screen.queryByTestId('fab')).not.toBeInTheDocument();
         expect(container.querySelector('.og-fab-space')).not.toBeInTheDocument();
+        const header = container.querySelector('header')!;
+        const fb = within(header).getByRole('button', { name: '反馈' });
+        fb.focus();
+        fireEvent.click(fb);
+        const dialog = screen.getByRole('dialog', { name: '反馈' });
+        expect(dialog).toHaveAttribute('aria-modal', 'true');
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(screen.queryByRole('dialog', { name: '反馈' })).not.toBeInTheDocument();
+        expect(fb).toHaveFocus();
     });
 });
 

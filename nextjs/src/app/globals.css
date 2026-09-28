@@ -625,20 +625,29 @@
     text-decoration: none;
   }
 
-  /* 浮动反馈钮的底部留白，与浮钮等高（48px 按钮 + 24px 底距 + 余量）。
-     FX4 起 book-index-ui 提供 --bim-feedback-fab-offset，届时自动跟随。 */
-  .og-fab-space {
-    height: var(--bim-feedback-fab-offset, 88px);
+  /* 顶栏右侧「反馈」（N7）：浅色图标＋文字，不是按钮样式；手机只留图标 */
+  .og-nav-fb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--color-ink-2);
+    font: inherit;
+    font-size: var(--fs-base);
+    cursor: pointer;
   }
-  .og-footer + .og-fab-space {
-    background: var(--color-tint);
+  .og-nav-fb:hover {
+    color: var(--color-ink);
   }
 
   /* 手机抽屉：无竖条、无图标，当前项朱色字＋浅朱底 */
   .og-drawer-mask {
     position: fixed;
     inset: 0;
-    z-index: 1000; /* 压过 book-index-ui 的浮动反馈按钮（900） */
+    z-index: 1000;
     background: rgba(38, 33, 28, 0.4);
   }
   .og-drawer {
@@ -771,6 +780,21 @@
     }
     .og-burger {
       display: inline-flex;
+    }
+    .og-nav-right {
+      gap: 0;
+    }
+    .og-nav-fb {
+      justify-content: center;
+      width: 44px;
+      padding: 0;
+    }
+    .og-nav-fb svg {
+      width: 20px;
+      height: 20px;
+    }
+    .og-nav-fb-label {
+      display: none;
     }
     .og-footer {
       margin-top: 56px;
@@ -1098,4 +1122,364 @@
   --bim-font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
     "Source Han Serif SC", "SimSun", "PMingLiU", serif;
   --bim-font-reading: var(--bim-font-serif);
+}
+
+/* =========================================================
+   反馈（N7，overview#260 样张第 2–4 组）
+   弹窗：少边框，输入框靠底色区分，只有「提交」一个按钮；手机贴底成抽屉。
+   ========================================================= */
+@layer components {
+  .og-fb-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(38, 33, 28, 0.28);
+  }
+  .og-fb-dialog {
+    width: 520px;
+    max-width: 100%;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 20px 24px 20px;
+    border-radius: 14px;
+    background: var(--color-raise);
+    box-shadow: 0 20px 60px rgba(60, 50, 40, 0.18);
+    color: var(--color-ink);
+  }
+  .og-fb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .og-fb-head h2 {
+    margin: 0;
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+  .og-fb-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -12px;
+    border: 0;
+    background: none;
+    color: var(--color-ink-3);
+    cursor: pointer;
+  }
+  .og-fb-close:hover {
+    color: var(--color-ink);
+  }
+  .og-fb-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 20px;
+    margin-bottom: 12px;
+  }
+  .og-fb-types button {
+    position: relative;
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-ink-2);
+    font: inherit;
+    font-size: var(--fs-base);
+    cursor: pointer;
+  }
+  .og-fb-types button[aria-checked="true"] {
+    color: var(--color-ink);
+    font-weight: var(--fw-bold);
+  }
+  .og-fb-types button[aria-checked="true"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-zhu);
+  }
+  .og-fb-context {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-tint);
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .og-fb-context-head {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+  }
+  .og-fb-context-head button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-ink-3);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .og-fb-quote {
+    display: block;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    quotes: "「" "」";
+  }
+  .og-fb-field {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-tint);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: var(--fs-base);
+    line-height: 1.7;
+  }
+  .og-fb-field::placeholder {
+    color: var(--color-ink-3);
+  }
+  .og-fb-field:focus {
+    outline: 2px solid color-mix(in srgb, var(--color-zhu) 35%, transparent);
+    outline-offset: 0;
+  }
+  .og-fb-text {
+    min-height: 120px;
+    resize: vertical;
+  }
+  .og-fb-count {
+    margin-top: 4px;
+    text-align: right;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+  }
+  .og-fb-contact {
+    margin-top: 10px;
+  }
+  .og-fb-error {
+    margin: 10px 0 0;
+    color: var(--color-zhu);
+    font-size: var(--fs-sm);
+  }
+  .og-fb-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .og-fb-note {
+    margin: 0;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+    line-height: 1.6;
+  }
+  .og-fb-note a {
+    color: var(--color-ink-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .og-fb-submit {
+    flex: none;
+    min-height: 44px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-zhu);
+    color: #fff;
+    font: inherit;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+  }
+  .og-fb-submit:hover {
+    background: var(--color-zhu-deep);
+  }
+  .og-fb-submit:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .og-fb-done {
+    padding: 8px 0 4px;
+  }
+  .og-fb-done p:first-child {
+    margin: 0 0 6px;
+    font-size: var(--fs-md);
+  }
+  .og-fb-done .og-fb-submit {
+    margin-top: 20px;
+  }
+  /* 只给读屏看的标签 */
+  .og-fb-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* /feedback 列表页 */
+  .og-fb-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px var(--shell-gutter);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .og-fb-page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .og-fb-page-head h1 {
+    margin: 0 0 6px;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
+  }
+  .og-fb-page-head p {
+    margin: 0;
+    color: var(--color-ink-2);
+    font-size: var(--fs-base);
+  }
+  .og-fb-filter {
+    margin: 24px 0 4px;
+  }
+  .og-fb-page-empty {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--color-ink-3);
+  }
+  .og-fb-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .og-fb-list li {
+    padding: 16px 0;
+  }
+  .og-fb-list li + li {
+    border-top: 1px solid var(--color-tint-2);
+  }
+  .og-fb-meta {
+    margin-bottom: 6px;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+  }
+  .og-fb-meta a {
+    color: var(--color-ink-2);
+  }
+  .og-fb-meta-type {
+    color: var(--color-ink-2);
+    font-weight: var(--fw-medium);
+  }
+  .og-fb-meta-ok {
+    color: #3d7a4f;
+  }
+  .og-fb-body {
+    margin: 0;
+    font-size: var(--fs-base);
+    line-height: 1.75;
+    white-space: pre-wrap;
+  }
+  .og-fb-reply {
+    margin: 8px 0 0;
+    padding-left: 12px;
+    box-shadow: inset 2px 0 0 var(--color-tint-2);
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+    white-space: pre-wrap;
+  }
+
+  /* 条目页页脚的「这条有误？」：文字链接 */
+  .og-fb-inline {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-zhu);
+    font: inherit;
+    cursor: pointer;
+  }
+  .og-fb-inline:hover {
+    text-decoration: underline;
+  }
+
+  /* 阅读页选字浮条「复制 ｜ 报错」 */
+  .og-fb-pop {
+    position: fixed;
+    z-index: 60;
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    box-shadow: var(--shadow-soft);
+    transform: translate(-50%, -100%);
+  }
+  .og-fb-pop--below {
+    transform: translate(-50%, 0);
+  }
+  .og-fb-pop button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: rgba(255, 255, 255, 0.72);
+    font: inherit;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .og-fb-pop button:last-child {
+    color: #fff;
+    font-weight: var(--fw-medium);
+  }
+  .og-fb-pop button:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  @media (max-width: 760px) {
+    .og-fb-mask {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .og-fb-dialog {
+      width: 100%;
+      max-height: 92vh;
+      padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+      border-radius: 16px 16px 0 0;
+    }
+    .og-fb-dialog::before {
+      content: "";
+      display: block;
+      width: 36px;
+      height: 4px;
+      margin: 0 auto 4px;
+      border-radius: 2px;
+      background: var(--color-tint-2);
+    }
+    .og-fb-foot {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .og-fb-submit {
+      width: 100%;
+    }
+  }
 }

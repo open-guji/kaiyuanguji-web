@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { MOBILE_DRAWER_ID, PRIMARY_LINKS, isCurrent } from './nav-links';
+import { useFeedback } from '../feedback/FeedbackProvider';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
@@ -18,9 +19,12 @@ interface NavbarProps {
 /**
  * 顶栏（N1）：无底边线、无竖线分隔，当前项只用一条朱色下划线。
  * 手机端收成右侧汉堡按钮（44×44）。
+ * 右侧「反馈」（N7）：桌面是图标＋文字，手机只留图标；打开全站统一的反馈弹窗，
+ * 条目页、阅读页会自动带上本页的条目与卷。
  */
 export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButtonRef, onHero = false }: NavbarProps) {
   const pathname = usePathname();
+  const { open: openFeedback } = useFeedback();
 
   return (
     <header className={onHero ? 'og-nav og-nav--hero' : 'og-nav'}>
@@ -43,6 +47,22 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
         </nav>
 
         <div className="og-nav-right">
+          <button type="button" className="og-nav-fb" onClick={() => openFeedback()} aria-label="反馈" aria-haspopup="dialog">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 5.5h16v10H9l-5 4v-14z" />
+            </svg>
+            <span className="og-nav-fb-label" aria-hidden="true">反馈</span>
+          </button>
           <button
             ref={menuButtonRef}
             type="button"

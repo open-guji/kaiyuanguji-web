@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookFullText, CollatedEdition, LocaleProvider, type WorkFullTextEntry } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
+import SelectionReport from '@/components/feedback/SelectionReport';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
 import { parseItemId } from '@/lib/item-id';
 import { readerHref, readerTitle, type ReaderQuery } from '@/lib/reader-route';
+import { readerFeedbackLabel } from '@/lib/feedback';
 import { seedTransport, type ReaderSeed } from './reader-seed';
 
 interface ReaderClientProps {
@@ -79,6 +82,36 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     const isWork = parseItemId(id)?.type === 'work';
     const workTexts = useWorkFullTexts(id, q.kind === 'fulltext' && isWork, transport, seed?.workTexts);
 
+    // N7：本页反馈上下文（书名 · 整理本/全文 · 卷），导航栏「反馈」和选字「报错」都带上；卷号另随 pageUrl 提交
+    const feedbackContext = useMemo(
+        () => ({ resourceId: id, label: readerFeedbackLabel(bookTitle, q) }),
+        [id, bookTitle, q],
+    );
+    useFeedbackPageContext(feedbackContext);
+    const textRef = useRef<HTMLDivElement>(null);
+
+    return (
+        <div ref={textRef}>
+            <ReaderBody id={id} q={q} isWork={isWork} workTexts={workTexts} seed={seed} transport={transport}
+                onNavigate={onNavigate} onJuanChange={onJuanChange} onVersionChange={onVersionChange} />
+            <SelectionReport containerRef={textRef} context={feedbackContext} />
+        </div>
+    );
+}
+
+interface ReaderBodyProps {
+    id: string;
+    q: ReaderQuery;
+    isWork: boolean;
+    workTexts: WorkFullTextEntry[] | null;
+    seed?: ReaderSeed;
+    transport: ReturnType<typeof getTransport>;
+    onNavigate: (target: string) => void;
+    onJuanChange: (juan: string | null) => void;
+    onVersionChange: (key: string) => void;
+}
+
+function ReaderBody({ id, q, isWork, workTexts, seed, transport, onNavigate, onJuanChange, onVersionChange }: ReaderBodyProps) {
     if (q.kind === 'collated') {
         return (
             <CollatedEdition
@@ -124,11 +157,11 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     );
 }
 
-/** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚与反馈浮钮） */
+/** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚） */
 export default function ReaderClient(props: ReaderClientProps) {
     return (
         <LocaleProvider>
-            <LayoutWrapper hideFooter hideFeedbackButton>
+            <LayoutWrapper hideFooter>
                 <Reader {...props} />
             </LayoutWrapper>
         </LocaleProvider>
