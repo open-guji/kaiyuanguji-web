@@ -24,6 +24,7 @@ import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
+import { bundleCatalog } from './build-catalog-index.mjs';
 
 // ─── 配置 ───
 
@@ -580,6 +581,8 @@ if (!existsSync(DRAFT_DIR)) {
 checkIndex();
 bundleMeta();
 bundleL1();
+// 古籍总目分类索引 catalog/（N4b，见 build-catalog-index.mjs）
+bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
 bundleL2();
 bundleWorkFullTextIndex();
 bundleExtraFiles();
