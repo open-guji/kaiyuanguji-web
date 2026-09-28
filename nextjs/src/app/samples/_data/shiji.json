@@ -1,0 +1,961 @@
+{
+ "snapshot": "book-index@main 2026-09-28",
+ "work": {
+  "id": "d59f20aowb9c",
+  "title": "史記",
+  "authors": [
+   {
+    "name": "司馬遷",
+    "role": "撰",
+    "dynasty": "西漢",
+    "note": "漢太史令",
+    "entity_id": "hixhd2h9bhma"
+   }
+  ],
+  "description": {
+   "text": "今存。或稱《太史公記》、《太史公傳》、《太史公書》，然皆非正稱。錢穆《太史公考釋》認爲正名以稱應曰《太史公》。全書凡一百三十篇，缺十篇，張晏說缺《景紀》《武紀》《禮書》《樂書》《律書》《漢興以來將相年表》《日者列傳》《三王世家》《龜策列傳》《傅靳蒯成列傳》，元成之間褚先生補闕。",
+   "sources": []
+  },
+  "juan_count": {
+   "number": 130,
+   "description": "百三十篇，十篇有錄無書"
+  },
+  "measure_info": "一百三十篇",
+  "period": "qin-han",
+  "classification": {
+   "l1": "經部",
+   "l2": "春秋類",
+   "l3": "",
+   "l4": "",
+   "basis": "A",
+   "source": "漢書藝文志/六藝略／春秋"
+  },
+  "loss_status": "extant",
+  "revision": "1.0.3",
+  "revised_at": "2026-08-31"
+ },
+ "books": [
+  {
+   "id": "988g3f0wsu",
+   "title": "史記",
+   "edition": "欽定四庫全書·文淵閣本",
+   "era": "清",
+   "sort_year": 1736,
+   "holder": "台北故宫博物院",
+   "measure_info": "一百三十卷十二册",
+   "has_image": true
+  },
+  {
+   "id": "988g82c3ya",
+   "title": "史記四庫全書文瀾閣本",
+   "edition": null,
+   "era": "清",
+   "sort_year": null,
+   "holder": "浙江图书馆",
+   "measure_info": "一百三十卷",
+   "has_image": true
+  },
+  {
+   "id": "988mkgxd71",
+   "title": "史記四庫全書文溯閣本",
+   "edition": null,
+   "era": "清",
+   "sort_year": 1782,
+   "holder": "甘肃省图书馆（文溯阁四库全书藏书楼）",
+   "measure_info": "一百三十卷二十册",
+   "has_image": null
+  },
+  {
+   "id": "988mkgxd72",
+   "title": "史記四庫全書文津閣本",
+   "edition": null,
+   "era": "清",
+   "sort_year": 1736,
+   "holder": "中国国家图书馆",
+   "measure_info": "一百三十卷",
+   "has_image": null
+  },
+  {
+   "id": "988g7syznm",
+   "title": "百衲本二十四史·史記",
+   "edition": "百衲本·宋慶元黃善夫刊本",
+   "era": "民國",
+   "sort_year": null,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g46t152",
+   "title": "史記",
+   "edition": "武英殿本",
+   "era": "清",
+   "sort_year": null,
+   "holder": null,
+   "measure_info": "一百三十卷",
+   "has_image": true
+  },
+  {
+   "id": "988fbgckxs",
+   "title": "史記",
+   "edition": "欽定四庫全書薈要·摛藻堂本",
+   "era": "清",
+   "sort_year": 1773,
+   "holder": "台北故宫博物院（原存紫禁城景阳宫摛藻堂）",
+   "measure_info": "一百三十卷",
+   "has_image": true
+  },
+  {
+   "id": "988g0u06xa",
+   "title": "史記",
+   "edition": "宋乾道七年蔡夢弼東塾刻本",
+   "era": "宋",
+   "sort_year": 1171,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g0umo02",
+   "title": "史記",
+   "edition": "宋淳熙三年張杅桐川郡齋刻八年耿秉重修本",
+   "era": "宋",
+   "sort_year": 1176,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g0u06xf",
+   "title": "史記",
+   "edition": "宋建安黄善夫家塾刻本",
+   "era": "宋",
+   "sort_year": null,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g7exb80",
+   "title": "史記",
+   "edition": "明萬曆二十四年南京國子監刊崇禎及清順治間遞修本",
+   "era": "明",
+   "sort_year": 1573,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fzhmepy",
+   "title": "史記",
+   "edition": "清光緒三十一年上海久敬齋石印本",
+   "era": "清",
+   "sort_year": 1905,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fzafy83",
+   "title": "史記",
+   "edition": "清光緒四年金陵書局刻本",
+   "era": "清",
+   "sort_year": 1878,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fz97026",
+   "title": "史記",
+   "edition": "清同治十一年四川成都書局覆刊武英殿本",
+   "era": "清",
+   "sort_year": 1872,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fz054b9",
+   "title": "史記",
+   "edition": "清光緒二年武昌張氏校刊本",
+   "era": "清",
+   "sort_year": 1876,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g12fll6",
+   "title": "史記",
+   "edition": "明嘉靖十三年秦藩覆宋刊本",
+   "era": "明",
+   "sort_year": 1534,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fzik4cv",
+   "title": "史記",
+   "edition": "明正德九年建陽劉氏慎獨齋刊本",
+   "era": "明",
+   "sort_year": 1514,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g2ivgub",
+   "title": "史記",
+   "edition": "明嘉靖四至六年震澤王延復宋刊本",
+   "era": "明",
+   "sort_year": 1522,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g7n1hcg",
+   "title": "史記",
+   "edition": "明嘉靖四年金臺汪諒刊本",
+   "era": "明",
+   "sort_year": 1525,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fzwlssm",
+   "title": "史記",
+   "edition": "清乾隆間寫四庫全書薈要本",
+   "era": "清",
+   "sort_year": 1736,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fz6p3pj",
+   "title": "史記",
+   "edition": "日本慶長間活字本",
+   "era": "日本",
+   "sort_year": 1596,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g8c0gsv",
+   "title": "史記",
+   "edition": "明萬曆二十六年北京國子監刊本",
+   "era": "明",
+   "sort_year": 1598,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g57y9s5",
+   "title": "史記",
+   "edition": "清乾隆四年武英殿刊本",
+   "era": "清",
+   "sort_year": 1739,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g1owoox",
+   "title": "史記",
+   "edition": "清道光十六年重刊殿本",
+   "era": "清",
+   "sort_year": 1836,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g1g61hk",
+   "title": "史記",
+   "edition": "乾隆十三年武英殿刊古香齋袖珍本",
+   "era": "清",
+   "sort_year": 1748,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g27mxaa",
+   "title": "史記",
+   "edition": "清乾隆四年武英殿刊本",
+   "era": "清",
+   "sort_year": 1739,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fz20jkf",
+   "title": "史記",
+   "edition": "明正德戊寅(十三年)建陽令邵宗周刊十六年劉氏慎獨齋校訂本",
+   "era": "明",
+   "sort_year": 1518,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g0toydh",
+   "title": "史記",
+   "edition": "明刊十行本",
+   "era": "明",
+   "sort_year": null,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988fzo6e4p",
+   "title": "史記",
+   "edition": "明嘉靖四年金臺汪諒刊本",
+   "era": "明",
+   "sort_year": 1525,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g2h01l6",
+   "title": "史記",
+   "edition": "明正德十二年閩中廖鎧關西刊本",
+   "era": "明",
+   "sort_year": 1517,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g25ri1e",
+   "title": "史記",
+   "edition": "明嘉靖十三年秦藩朱惟焯刊二十九年朱懷埢修補本",
+   "era": "明",
+   "sort_year": 1534,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g67uk94",
+   "title": "史記",
+   "edition": "清光緒年間刊本",
+   "era": "清",
+   "sort_year": 1875,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  },
+  {
+   "id": "988g6zxx5c",
+   "title": "史記",
+   "edition": "蒙古中統二年段子成刻明修本",
+   "era": null,
+   "sort_year": null,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g6zxx5b",
+   "title": "史記",
+   "edition": "元至元二十五年彭寅翁崇道精舍刻本",
+   "era": "元",
+   "sort_year": 1288,
+   "holder": null,
+   "measure_info": null,
+   "has_image": true
+  },
+  {
+   "id": "988g3h7klv",
+   "title": "史記",
+   "edition": "明崇禎十三年刊本",
+   "era": "明",
+   "sort_year": 1640,
+   "holder": null,
+   "measure_info": null,
+   "has_image": null
+  }
+ ],
+ "indexed_by": [
+  {
+   "source": "漢書藝文志",
+   "source_bid": "d59f23o7ygw2",
+   "title_info": "太史公一百三十篇",
+   "summary": "《太史公》百三十篇。十篇有錄無書。",
+   "section": "六藝略／春秋"
+  },
+  {
+   "source": "隋書經籍志",
+   "source_bid": "d59f28nmafwh",
+   "title_info": "《史記》一百三十卷目錄一卷，漢中書令司馬遷撰。",
+   "summary": "《史記》一百三十卷目錄一卷，漢中書令司馬遷撰。",
+   "section": null
+  },
+  {
+   "source": "舊唐書經籍志",
+   "source_bid": "d59f2gcburcx",
+   "title_info": "《史記》一百三十卷",
+   "summary": "《史記》一百三十卷司馬遷作。",
+   "section": null
+  },
+  {
+   "source": "新唐書藝文志",
+   "source_bid": "d59f2hl0cmio",
+   "title_info": "司馬遷史記",
+   "summary": "司馬遷史記一百三十卷",
+   "section": null
+  },
+  {
+   "source": "宋史藝文志",
+   "source_bid": "d59f2gdp696q",
+   "title_info": "司馬遷《史記》一百三十卷⟨裴駰等集注⟩又",
+   "summary": "司馬遷《史記》一百三十卷⟨裴駰等集注⟩又",
+   "section": null
+  },
+  {
+   "source": "欽定四庫全書總目",
+   "source_bid": "d59dh3vo9af4",
+   "title_info": "史記•一百三十卷",
+   "summary": "漢司馬遷撰，褚少孫補。遷事蹟具《漢書》本傳。少孫，據張守節《正義》引張晏之説，以爲潁川人，元成閒博士。又引《褚顗家傳》，以爲梁相褚大弟之孫，宣帝時爲博士，寓居沛，事大儒王式，故號先生。二説不同。然宣帝末距成帝初不過十七八年，其相去亦未遠也。案：遷《自序》，凡十二本紀、十表、八書、三十世家、七十列傳，共爲百三十篇。《漢書》本傳稱其十篇闕，有録無書。張晏注以爲遷歿之後，亡《景帝紀》、《武帝紀》、《禮書》、《樂書》、《兵書》、《漢興以來將相年表》、《日者列傳》、《三王世家》、《龜策列傳》、《傳靳列傳》。劉知幾《史通》則以爲十篇未成，有録而已，駁張晏之説爲非。今考《日者》、《龜策》二傳並有「太史公曰」，又有「褚先生曰」，是爲補綴殘稾之明證，當以知幾爲是也。然《漢志·春秋家》載《史記》百三十篇，不云有闕。蓋是時官本已以少孫所續，合爲一編。觀其《日者》、《龜策》二傳並有「臣爲郞時」云云，是必嘗經奏進，故有是稱。其「褚先生曰」字殆後人追題，以爲別識歟。周密《齊東野語》摘《司馬相如傳贊》中有「揚雄以爲《靡麗之賦》，勸百而諷一」之語，又摘《公孫宏傳》中有「平帝元始中，詔賜宏子孫爵」語，焦竑《筆乘》摘《賈誼傳》中有「賈嘉最好學，至孝昭時列爲九卿」語，皆非遷所及見。王懋竑《白田雜著》亦謂《史記》止紀年而無歳名，今《十二諸侯年表》上列一行載庚申、甲子等字，乃後人所增，則非惟有所散佚，且兼有所竄易。年祀縣邈，今亦不得而考矣。然字句竄亂，或不能無，至其全書，則仍遷原本。焦竑《筆乘》據《張湯傳贊》如淳註以爲續之者有馮商、孟柳。又據《後漢書·楊經傳》，以爲嘗删遷書爲十餘萬言，指今《史記》非本書，則非其實也。其書自晉唐以來，傳本無大同異。惟唐開元二十三年。敕升《史記·老子列傳》於《伯夷列傳》上。錢曾《讀書敏求記》云尚有宋刻，今未之見。南宋廣漢張材又嘗刊去褚少孫所續，趙山甫復病其不全，取少孫書別刊附入，今亦均未見其本。世所通行，惟此本耳。至爲孫奭《孟子疏》所引《史記》「西子金錢事」，今本無之。蓋宋人詐託古書，非今本之脫漏。又《學海類編》中載僞洪遵《史記真本凡例》一卷，於原書臆爲刊削，稱即遷藏在名山之舊槀。其事與梁鄱陽王《漢書》真本相類，益荒誕不足爲據矣。註其書者，今惟裴駰、司馬貞、張守節三家尚存。其初各爲部帙，北宋始合爲一編。明代國子監刊版頗有刊除點竄。南監本至以司馬貞所補《三皇本紀》冠《五帝本紀》之上，殊失舊觀。然彙合羣説，檢尋校易，故今録合倂之本，以便觀覽。仍別録三家之書，以存其完本焉。",
+   "section": null
+  },
+  {
+   "source": "崇文總目",
+   "source_bid": "d59f2hqc0c1t",
+   "title_info": "史記一百三十卷",
+   "summary": "史記一百三十卷",
+   "section": null
+  },
+  {
+   "source": "書目答問",
+   "source_bid": "d59f2nfowtfm",
+   "title_info": "史記",
+   "summary": "重刻明震澤王氏本《史記》一百三十卷。⟨武昌局本，間有依明柯校汪刻本者，王延喆、柯維熊、汪諒，有《索隱》《正義》。⟩",
+   "section": null
+  },
+  {
+   "source": "直齋書錄解題",
+   "source_bid": "d59f2htm01du",
+   "title_info": "《史記》一百三十卷",
+   "summary": "漢太史令夏陽司馬遷子長撰。宋南中郎參軍河東裴駰集注。案班固云︰「遷擄《左氏》、《國語》，采《世本》、《戰國策》，述《楚漢春秋》，接其後事，迄於大漢，斯以勤矣。十篇缺，有錄亡書。」張晏曰：「遷沒之後，亡《景武紀》、《禮樂兵書》、《漢興將相年表》、《三王世家》、《日者》、《龜策傳》、《靳歙傅寬列傳》。元、成之間，褚先生補作《武紀》、《三王世家》、《日者》、《龜策傳》。言辭鄙陋，非遷本意也。」顏師古曰：「本無《兵書》，張說非也。」今案此十篇者，皆具在，褚所補《武紀》，全寫《封禪書》，《三王世家》但述封拜策書，二列傳皆猥釀不足進，而其餘六篇，《景紀》最疏略，《禮》、《樂書》謄荀子《禮論》、河間王《樂記》，《傳靳列傳》與《漢書》同，而《將相年表》迄鴻嘉，則未知何人所補也。褚先生者，名少孫。裴駰即注《三國志》松之之子也。始，徐廣作《史記音義》，駰本之以成《集解》。竊嘗謂著書立言，述舊易，作古難。六藝之後，有四人焉：摭實而有文采者，左氏也；恁虛而有理致者，莊子也；屈原變《國風》、《雅》、《頌》而為《離騷》；及子長易編年而為紀傳，皆前未有其比，後可以為法，非豪傑特起之士，其孰能之？",
+   "section": null
+  }
+ ],
+ "emendated_count": 2,
+ "collected_in": [
+  {
+   "id": "8rlcsybg2hhi",
+   "title": "二十四史",
+   "relation": "collected_in"
+  }
+ ],
+ "related": [
+  {
+   "id": "d59f2huxrchs",
+   "title": "五代史記纂誤",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hgf835t",
+   "title": "訂正史記真本凡例",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hl4epky",
+   "title": "史記法語",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nfizf28",
+   "title": "史記鈔",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f284rdaf7",
+   "title": "史記集解",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mxmozq",
+   "title": "史記索隱",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mnyc5d",
+   "title": "史記正義",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2moh2waq",
+   "title": "讀史記十表",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2mohe4u8",
+   "title": "史記疑問",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2842pji8",
+   "title": "史記音",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2pwyhc00",
+   "title": "陳承香殿五經史記目錄",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f27yd05j7",
+   "title": "史記正傳",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2qac4i69",
+   "title": "太史記注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q7fv8cg",
+   "title": "史記要傳",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28md114w",
+   "title": "史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f284b4y68",
+   "title": "史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f28msmwas",
+   "title": "史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f2pyp80sg",
+   "title": "史記又音",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hgyw1ds",
+   "title": "史記牴牾論",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hm8zk74",
+   "title": "唐史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2psnnmkg",
+   "title": "史記掇英",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q6ripz4",
+   "title": "三國史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q5k4qo0",
+   "title": "帝王血脈小史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q5o6tq8",
+   "title": "史記律曆誌訛辨",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f284bg6pu",
+   "title": "史記裴駰集解",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mutk3q",
+   "title": "史記陳伯宣注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mxxxj8",
+   "title": "史記許子儒注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nhjeh35",
+   "title": "史記考要",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2o2n677l",
+   "title": "五代史記補考藝文考",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mkdgjo",
+   "title": "許慎史記注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mkdgjp",
+   "title": "延篤史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f24mkdgjq",
+   "title": "史記音隱",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f27xplcsj",
+   "title": "史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f27xx31tv",
+   "title": "史記鈔",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2gjlqv40",
+   "title": "史記注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2gjdmozl",
+   "title": "注史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mhecqr",
+   "title": "史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28nbd4w0",
+   "title": "史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28n7madd",
+   "title": "史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q96lxq8",
+   "title": "史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28na46pv",
+   "title": "續史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28nf3zer",
+   "title": "史記音",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hlepji9",
+   "title": "史記義林",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28ng1p1g",
+   "title": "史記纂訓",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28n8v8jm",
+   "title": "史記地名",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mo9kp2",
+   "title": "史記名臣疏",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2hqsv5ds",
+   "title": "五代史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2njbpd6r",
+   "title": "增訂史記評林",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q6t2wow",
+   "title": "史記三書正訛",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2mqgk8ox",
+   "title": "五代史記纂誤補",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2q46t8u8",
+   "title": "新五代史記補注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2mrvr5s2",
+   "title": "史記探源",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2pvwpm9t",
+   "title": "史記疏證",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f2mrwoveo",
+   "title": "五代史記注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2mrxbcht",
+   "title": "五代史記纂誤補附錄",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2mrxbchu",
+   "title": "五代史記纂誤補續",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nh2uwao",
+   "title": "批點史記瑣瑣",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mm8vt0",
+   "title": "孫月峯先生批評史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mm8vt3",
+   "title": "史記評林",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mmk4ci",
+   "title": "史記河渠書",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mmk4cl",
+   "title": "史記扁鵲倉公列傳",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2ogb4bgg",
+   "title": "蒙兀兒史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2n14i4u9",
+   "title": "史記菁華錄",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2n15r30g",
+   "title": "歸方評點史記合筆",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f24mmk4cm",
+   "title": "古香齋鑑賞袖珍史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2n1rlp1d",
+   "title": "史記惠景間侯者年表校補",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2n5cipdu",
+   "title": "桐城吳先生點勘史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2n6dny0y",
+   "title": "讀史記十表",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbm7a4i",
+   "title": "史記補注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbmiio0",
+   "title": "史記考證",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f2nbmiio1",
+   "title": "史記志疑",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbmtr7k",
+   "title": "史記天官書補目",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbmtr7l",
+   "title": "史記律歷天官書正譌",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f2nbmtr7m",
+   "title": "史記三書釋疑",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbn4zr4",
+   "title": "史記功比說",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbn4zr5",
+   "title": "史記毛本正誤",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2nbn4zr6",
+   "title": "校刊史記札記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2ngtswld",
+   "title": "史記評注",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f28mi0tts",
+   "title": "史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f2psz7e9t",
+   "title": "史記音義",
+   "relation": "studied_by"
+  },
+  {
+   "id": "d59f2pxc7rwi",
+   "title": "新校史記",
+   "relation": "text_carried_by"
+  },
+  {
+   "id": "d59f23nu80zp",
+   "title": "續太史公",
+   "relation": "followed_by"
+  },
+  {
+   "id": "d59f2evwx7nm",
+   "title": "世本",
+   "relation": "preceded_by"
+  },
+  {
+   "id": "d59f23nvs7pg",
+   "title": "楚漢春秋",
+   "relation": "preceded_by"
+  },
+  {
+   "id": "d59f23nylclg",
+   "title": "司馬遷賦",
+   "relation": "related",
+   "note": "同為司馬遷所撰。漢志六藝略春秋類著錄《太史公》百三十篇，即《史記》。"
+  },
+  {
+   "id": "d59f7sccirex",
+   "title": "諜記",
+   "relation": "preceded_by",
+   "note": "《三代世表》序引「余讀諜記」句，用為纂表之據"
+  },
+  {
+   "id": "d59fyong6dur",
+   "title": "春秋歷譜諜",
+   "relation": "preceded_by",
+   "note": "《十二諸侯年表》序引「讀春秋歷譜諜」句，用為纂表之據"
+  },
+  {
+   "id": "d59f7vjcz9d8",
+   "title": "孔子弟子籍",
+   "relation": "preceded_by",
+   "note": "《仲尼弟子列傳》太史公曰引「弟子籍出孔氏古文近是」句，用為列傳之據"
+  }
+ ],
+ "resources": [
+  {
+   "id": "wikisource",
+   "name": "维基文库",
+   "url": "https://zh.wikisource.org/wiki/史記",
+   "types": [
+    "text"
+   ]
+  },
+  {
+   "id": "shidianguji-bainaben",
+   "name": "识典古籍",
+   "url": "https://www.shidianguji.com/book/LS0001",
+   "types": [
+    "text",
+    "image"
+   ]
+  },
+  {
+   "id": "shidianguji-sikuquanshuben",
+   "name": "识典古籍",
+   "url": "https://www.shidianguji.com/book/SK0698",
+   "types": [
+    "text",
+    "image"
+   ]
+  },
+  {
+   "id": "shidianguji-chongzhenyuanshiqima",
+   "name": "识典古籍",
+   "url": "https://www.shidianguji.com/book/HY2996",
+   "types": [
+    "text",
+    "image"
+   ]
+  },
+  {
+   "id": "internet-archive",
+   "name": "Internet Archive",
+   "url": "https://archive.org/details/02077347.cn",
+   "types": [
+    "image"
+   ]
+  },
+  {
+   "id": "wikisource",
+   "name": "维基文库",
+   "url": "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98",
+   "types": [
+    "text"
+   ]
+  }
+ ]
+}
