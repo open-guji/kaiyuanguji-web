@@ -1,0 +1,40 @@
+/*
+ * 搜索页（/book-index 与 /book-index?q=）按新设计：少线少框、手机适配（N3b）。
+ * IndexBrowser 的外框与分组标题是组件内联样式，网站只能用 !important 压掉那几条线；
+ * 只选到组件自带的 class 和结构，不改组件行为。
+ */
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px var(--shell-gutter, 32px) 48px;
+}
+
+.page.withQuery {
+  max-width: 1120px;
+}
+
+/* 标题栏的下划线去掉，靠留白分组 */
+.page :global(.bim-browser-container) > header {
+  border-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 检索框行、结果区贴齐版心，不再多缩 20px */
+.page :global(.bim-browser-container) > div {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 分组标题（作品 N 条 / 书籍 N 条）下的细线去掉 */
+.page :global(.bim-browser-container) > div > div > div > div:first-child[style*="border-bottom"] {
+  border-bottom: 0 !important;
+  margin-bottom: 10px !important;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-top: 20px;
+    padding-bottom: 32px;
+  }
+}

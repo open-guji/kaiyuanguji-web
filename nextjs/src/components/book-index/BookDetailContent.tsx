@@ -9,6 +9,7 @@ import {
     BookDetailLayout,
     type ExtraTab,
     type SourceLinkContext,
+    type ReadLinkContext,
     type IndexEntry,
     type IndexDetailData,
 } from 'book-index-ui';
@@ -16,6 +17,8 @@ import { useSource } from '@/components/common/SourceContext';
 import BidLink from './BidLink';
 import CitationBar from './CitationBar';
 import DigitalizationView from './DigitalizationView';
+import RailSearch from './RailSearch';
+import { buildReadUrl } from '@/lib/read-url';
 import { buildSourceLinks } from '@/lib/repo-source';
 import type { DigitalAssets } from '@/types';
 
@@ -184,6 +187,13 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
         return null;
     }, []);
 
+    // ── 「阅读全文」主按钮 → 阅读页（地址约定见 lib/read-url.ts，与 N5b 共用） ──
+    // kind 为 null（没有整理本／全文，或次级数据还没取到）时不出按钮。
+    const readLink = useCallback((ctx: ReadLinkContext) => {
+        if (!ctx.kind) return null;
+        return buildReadUrl(id, { kind: ctx.kind, key: ctx.fullTextKey });
+    }, [id]);
+
     // ── 数字化 tab（kyg 特有，via extraTabs slot） ──
     const extraTabs: ExtraTab[] = useMemo(() => [
         {
@@ -253,6 +263,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 )}
                 enrichDetail={(entry, detail) => enrichDigitalAssets(id, entry, detail as DetailWithAssets)}
                 getSourceLink={getSourceLink}
+                readLink={readLink}
+                railTop={<RailSearch />}
+                /* 「数字化」在三栏版里出现在左栏「更多」 */
                 extraTabs={extraTabs}
                 feedbackApiUrl={resolveFeedbackUrl}
                 footerExtra={
