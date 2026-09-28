@@ -1,5 +1,5 @@
 // 轻量前端错误自收端点（EdgeOne Pages Function）
-// 前端 POST 上报错误 → 写入 ERROR_KV（带 TTL 自动过期）；管理端凭 token GET 查询。
+// 前端 POST 上报错误 → 写入 ERROR_KV（带 TTL 自动过期）；管理端凭成员 cookie 或 Authorization: Bearer 查询。
 // 与 feedback.js 同模式：KV 经全局变量绑定，环境变量经全局变量注入。
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
@@ -124,6 +124,17 @@ async function verifyJWT(token, secret) {
     return payload;
   } catch { return null; }
 }
+// H1（SEC overview#134）：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）。
+// 旧令牌没有 tv、旧记录没有 tokenVersion 的一律视为失效。
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
+/** Authorization: Bearer <token>；没带返回 undefined。M1：不再认 ?token= 查询串（会进访问日志／Referer）。 */
+function bearerToken(request) {
+  const h = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  return h || undefined;
+}
 async function checkMemberCookie(request, context, allowedRoles) {
   const secret = getJwtSecret(context);
   const token = getCookie(request, 'session');
@@ -135,6 +146,7 @@ async function checkMemberCookie(request, context, allowedRoles) {
   let member = null;
   try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { return null; }
   if (!member || typeof member !== 'object' || member._deleted || !member.role) return null;
+  if (!tokenVersionOk(payload, member)) return null;
   if (allowedRoles && !allowedRoles.includes(member.role)) return null;
   return member;
 }
@@ -246,7 +258,7 @@ export async function onRequestPost(context) {
   }
 }
 
-// --- 查询：管理端凭 token 列出最近错误 ---
+// --- 查询：管理端凭成员 cookie 或 Bearer token 列出最近错误 ---
 export async function onRequestGet(context) {
   const headers = getCorsHeaders(context.request);
 
@@ -259,8 +271,8 @@ export async function onRequestGet(context) {
       return summaryResponse(context, url, headers);
     }
 
-    // 鉴权：共享 token 或 member cookie 双轨
-    let auth = checkViewAuth(url.searchParams.get('token'), context);
+    // 鉴权：共享 token（Authorization: Bearer）或 member cookie 双轨
+    let auth = checkViewAuth(bearerToken(context.request), context);
     let viaRole = auth.ok ? 'token' : null; // 走哪一路通过的：token / 成员角色
     if (!auth.ok) {
       const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
@@ -342,9 +354,7 @@ export async function onRequestGet(context) {
  */
 const SUMMARY_MAX_GET = 200;
 async function summaryResponse(context, url, headers) {
-  const given = (context.request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
-    || url.searchParams.get('token');
-  const auth = checkViewAuth(given, context);
+  const auth = checkViewAuth(bearerToken(context.request), context);
   if (!auth.ok) {
     return new Response(JSON.stringify({ success: false, error: auth.error }), { status: auth.status, headers });
   }
@@ -421,7 +431,7 @@ export function onRequestOptions(context) {
     headers: {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     },
   });

@@ -1,4 +1,4 @@
-// POST /api/auth/invite — 管理员生成邀请链接（需 admin cookie 或 AUTH_ADMIN_TOKEN）
+// POST /api/auth/invite — 管理员生成邀请链接（需 admin cookie，或 AUTH_ADMIN_TOKEN 走 Authorization: Bearer／body.token）
 // body: { email?: string | null, role: string }
 // 返回: { success:true, code, link, email, role, expires }
 
@@ -75,6 +75,12 @@ async function verifyJWT(token, secret) {
     return payload;
   } catch { return null; }
 }
+// H1：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）；
+// 旧令牌没有 tv、旧记录没有 tokenVersion 的一律视为失效
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
 async function checkAdmin(request, context) {
   // 1) 尝试 cookie + 成员表
   const jwtSecret = getJwtSecret(context);
@@ -85,18 +91,17 @@ async function checkAdmin(request, context) {
       const kv = getKV(context);
       if (kv) {
         const member = await kv.get(`member:${payload.sub}`, 'json');
-        if (member && !member._deleted && member.role === 'admin') return { ok: true, by: payload.sub };
+        if (member && typeof member === 'object' && !member._deleted && member.role === 'admin' && tokenVersionOk(payload, member)) {
+          return { ok: true, by: payload.sub };
+        }
       }
     }
   }
   // 2) 尝试 AUTH_ADMIN_TOKEN (Bearer 或 body.token)
   const expected = getAdminToken(context);
   if (!expected) return { ok: false, status: 503, error: '服务未配置 AUTH_ADMIN_TOKEN' };
-  const headerToken = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
-  // body 里的 token 需要上层传入，这里先看 header/query
-  const url = new URL(request.url);
-  const queryToken = url.searchParams.get('token') || '';
-  const given = headerToken || queryToken;
+  // M1：只看 Authorization header，不认 ?token=（查询串会进访问日志／Referer）；body.token 在 POST handler 里查
+  const given = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
   if (given && constantTimeEqual(given, String(expected))) return { ok: true, by: 'admin_token' };
   // 也允许 body.token（在 POST handler 里额外检查）
   return { ok: false, status: 401, error: '未授权' };
@@ -122,7 +127,7 @@ export async function onRequestPost(context) {
     const jwtSecret = getJwtSecret(context);
     if (!jwtSecret) return new Response(JSON.stringify({ success: false, error: '服务未配置 AUTH_JWT_SECRET' }), { status: 503, headers });
 
-    // 鉴权：先看 cookie，其次看 body.token / header
+    // 鉴权：先看 cookie，其次看 Authorization header / body.token
     let auth = await checkAdmin(context.request, context);
     let body = {};
     try { body = await context.request.json(); } catch { body = {}; }

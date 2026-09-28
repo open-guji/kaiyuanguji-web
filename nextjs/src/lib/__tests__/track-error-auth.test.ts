@@ -28,6 +28,8 @@ const kvStub = {
   },
 };
 
+/** M1：共享 token 只走 Authorization: Bearer（不再认 ?token=） */
+const bearer = (t: string): RequestInit => ({ headers: { Authorization: `Bearer ${t}` } });
 function ctx(url: string, init?: RequestInit) {
   return { request: new Request(url, init) };
 }
@@ -67,13 +69,13 @@ describe('GET /api/track-error 鉴权', () => {
   });
 
   it('没配 ERROR_VIEW_TOKEN 时，带上任意 token 也不放行', async () => {
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=whatever'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('whatever')));
     expect(res.status).toBe(503);
   });
 
   it('配了变量、token 不对 → 401', async () => {
     g.ERROR_VIEW_TOKEN = 'right-token';
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=wrong'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('wrong')));
     expect(res.status).toBe(401);
     expect((await body(res)).items).toBeUndefined();
   });
@@ -86,7 +88,7 @@ describe('GET /api/track-error 鉴权', () => {
 
   it('token 对 → 正常返回记录', async () => {
     g.ERROR_VIEW_TOKEN = 'right-token';
-    const res = await fn.onRequestGet(ctx('https://x/api/track-error?token=right-token'));
+    const res = await fn.onRequestGet(ctx('https://x/api/track-error', bearer('right-token')));
     expect(res.status).toBe(200);
     const j = await body(res);
     expect(j.success).toBe(true);

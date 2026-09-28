@@ -17,14 +17,16 @@ const kv = {
         store.set(k, v);
     },
     async list(opts: { prefix?: string }) {
-        const all = [...store.keys()].filter((k) => k.startsWith(opts.prefix || '')).sort();
+        const all = fbKeys().filter((k) => k.startsWith(opts.prefix || '')).sort();
         return { keys: all.map((key) => ({ key })), complete: true, cursor: '' };
     },
 };
 
-function get(qs: string) {
-    return { request: new Request(`https://x/api/feedback?${qs}`) };
+function get(qs: string, headers: Record<string, string> = {}) {
+    return { request: new Request(`https://x/api/feedback?${qs}`, { headers }) };
 }
+/** M1：管理 token 只走 Authorization: Bearer（不再认 ?token=） */
+const ADMIN = { Authorization: 'Bearer right' };
 function post(body: unknown, headers: Record<string, string> = {}) {
     return {
         request: new Request('https://x/api/feedback', {
@@ -46,6 +48,8 @@ beforeAll(async () => {
     g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/feedback.js');
 });
+// 只取反馈记录：store 里还有 M3 的限速计数（ratelimit:*）与推送节流状态（notify:*）
+const fbKeys = () => [...store.keys()].filter((k) => k.startsWith('fb_'));
 beforeEach(() => store.clear());
 afterEach(() => {
     delete g.FEEDBACK_ADMIN_TOKEN;
@@ -68,13 +72,13 @@ describe('类型白名单扩充', () => {
 
     it('contact 类型永不出现在公开列表，即便 visibility 被手动设为 public', async () => {
         await fn.onRequestPost(post({ type: 'contact', content: '想参与项目' }));
-        const id = [...store.keys()][0];
+        const id = fbKeys()[0];
         g.FEEDBACK_ADMIN_TOKEN = 'right';
         // 手滑把 visibility 设回 public，isPubliclyVisible 的 type 判断仍应拦住
         await fn.onRequestPost(post({ action: 'update', id, visibility: 'public', token: 'right' }));
         const pub = await json(await fn.onRequestGet(get('limit=20')));
         expect(pub.items).toHaveLength(0);
-        const full = await json(await fn.onRequestGet(get('limit=20&token=right')));
+        const full = await json(await fn.onRequestGet(get('limit=20', ADMIN)));
         expect(full.items).toHaveLength(1);
     });
 });
@@ -82,7 +86,7 @@ describe('类型白名单扩充', () => {
 describe('状态白名单扩充 ＋ 标重复', () => {
     it('五种状态都能改；非法状态 400', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: '原始记录' }));
-        const id = [...store.keys()][0];
+        const id = fbKeys()[0];
         g.FEEDBACK_ADMIN_TOKEN = 'right';
         for (const status of ['pending', 'in_progress', 'resolved', 'wontfix']) {
             const res = await fn.onRequestPost(post({ action: 'update', id, status, token: 'right' }));
@@ -95,7 +99,7 @@ describe('状态白名单扩充 ＋ 标重复', () => {
     it('标重复：duplicateOf 指向不存在的 id 时 400；指向存在的记录时写入成功', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: 'A' }));
         await fn.onRequestPost(post({ type: 'bug', content: 'B（和 A 重复）' }));
-        const ids = [...store.keys()];
+        const ids = fbKeys();
         g.FEEDBACK_ADMIN_TOKEN = 'right';
         const bad = await fn.onRequestPost(
             post({ action: 'update', id: ids[1], status: 'duplicate', duplicateOf: 'fb_no_such_id', token: 'right' }),
@@ -113,7 +117,7 @@ describe('状态白名单扩充 ＋ 标重复', () => {
 describe('updatedBy', () => {
     it('token 鉴权：updatedBy 记为 token', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: 'x' }));
-        const id = [...store.keys()][0];
+        const id = fbKeys()[0];
         g.FEEDBACK_ADMIN_TOKEN = 'right';
         await fn.onRequestPost(post({ action: 'update', id, status: 'resolved', token: 'right' }));
         expect(JSON.parse(store.get(id)!).updatedBy).toBe('token');
@@ -121,13 +125,13 @@ describe('updatedBy', () => {
 
     it('updatedBy 是内部字段：公开 GET 一律不带出（哪怕记录本身公开），带凭证读才有', async () => {
         await fn.onRequestPost(post({ type: 'bug', content: 'x' }));
-        const id = [...store.keys()][0];
+        const id = fbKeys()[0];
         g.FEEDBACK_ADMIN_TOKEN = 'right';
         await fn.onRequestPost(post({ action: 'update', id, visibility: 'public', reply: '已处理', token: 'right' }));
         const pub = await json(await fn.onRequestGet(get('limit=20')));
         expect(pub.items).toHaveLength(1);
         expect('updatedBy' in pub.items[0]).toBe(false);
-        const full = await json(await fn.onRequestGet(get('limit=20&token=right')));
+        const full = await json(await fn.onRequestGet(get('limit=20', ADMIN)));
         expect(full.items[0].updatedBy).toBe('token');
     });
 });

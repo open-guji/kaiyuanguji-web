@@ -80,8 +80,8 @@ describe('未登录', () => {
 
 describe('角色不符', () => {
   it('reviewer 登录 → 403', async () => {
-    await kv.put('member:reviewer@example.com', { role: 'reviewer', joinedAt: 1 });
-    const session = await signJWT({ sub: 'reviewer@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:reviewer@example.com', { role: 'reviewer', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'reviewer@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const res = await fn.onRequestGet(
       ctx('https://x/api/private-text/Work/q/4/g/d59ezak6jq4g/full_text/shidian-01/001.md', baseEnv(), `session=${session}`),
     );
@@ -90,8 +90,8 @@ describe('角色不符', () => {
   });
 
   it('editor 登录 → 403（同 reviewer，非 internal/admin 一律拦）', async () => {
-    await kv.put('member:editor@example.com', { role: 'editor', joinedAt: 1 });
-    const session = await signJWT({ sub: 'editor@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:editor@example.com', { role: 'editor', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'editor@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const res = await fn.onRequestGet(
       ctx('https://x/api/private-text/Work/q/4/g/d59ezak6jq4g/full_text/shidian-01/001.md', baseEnv(), `session=${session}`),
     );
@@ -101,8 +101,8 @@ describe('角色不符', () => {
 
 describe('internal 角色', () => {
   it('internal 登录 → 200，原样转发 COS 内容', async () => {
-    await kv.put('member:staff@example.com', { role: 'internal', joinedAt: 1 });
-    const session = await signJWT({ sub: 'staff@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:staff@example.com', { role: 'internal', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'staff@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const res = await fn.onRequestGet(
       ctx('https://x/api/private-text/Work/q/4/g/d59ezak6jq4g/full_text/shidian-01/001.md', baseEnv(), `session=${session}`),
     );
@@ -119,8 +119,8 @@ describe('internal 角色', () => {
   });
 
   it('admin 登录同样放行（角色白名单含 admin）', async () => {
-    await kv.put('member:boss@example.com', { role: 'admin', joinedAt: 1 });
-    const session = await signJWT({ sub: 'boss@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:boss@example.com', { role: 'admin', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'boss@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const res = await fn.onRequestGet(
       ctx('https://x/api/private-text/Work/q/4/g/d59ezak6jq4g/full_text/shidian-01/001.md', baseEnv(), `session=${session}`),
     );
@@ -138,8 +138,8 @@ describe('缺配置', () => {
   });
 
   it('已登录 internal，但私有 COS 凭据未配置 → 503（不会误判成 401/403）', async () => {
-    await kv.put('member:staff2@example.com', { role: 'internal', joinedAt: 1 });
-    const session = await signJWT({ sub: 'staff2@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:staff2@example.com', { role: 'internal', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'staff2@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const env = baseEnv();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (env as any).PRIVATE_COS_READ_SECRET_KEY;
@@ -152,8 +152,8 @@ describe('缺配置', () => {
 
 describe('路径与上游边界', () => {
   it('路径含 .. 上跳段 → 400，且不会去请求 COS', async () => {
-    await kv.put('member:staff3@example.com', { role: 'internal', joinedAt: 1 });
-    const session = await signJWT({ sub: 'staff3@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:staff3@example.com', { role: 'internal', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'staff3@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const c = ctx('https://x/api/private-text/../../etc/passwd', baseEnv(), `session=${session}`);
     c.params = { path: ['..', '..', 'etc', 'passwd'] };
     const res = await fn.onRequestGet(c);
@@ -164,9 +164,9 @@ describe('路径与上游边界', () => {
   // 09-27 00:45Z 协调者验收第一轮：原实现在解码前查 `..`，这四条编码变体都能绕过去。
   describe('编码过的上跳/越权字符，解码后才现形 → 400', () => {
     async function internalCtx(pathSegments: string[]) {
-      await kv.put('member:staff-enc@example.com', { role: 'internal', joinedAt: 1 });
+      await kv.put('member:staff-enc@example.com', { role: 'internal', joinedAt: 1, tokenVersion: 1 });
       const session = await signJWT(
-        { sub: 'staff-enc@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 },
+        { sub: 'staff-enc@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 },
         JWT_SECRET,
       );
       const c = ctx('https://x/api/private-text/x', baseEnv(), `session=${session}`);
@@ -201,8 +201,8 @@ describe('路径与上游边界', () => {
 
   it('COS 对象不存在 → 404', async () => {
     global.fetch = jest.fn(async () => new Response('NoSuchKey', { status: 404 })) as unknown as typeof fetch;
-    await kv.put('member:staff4@example.com', { role: 'internal', joinedAt: 1 });
-    const session = await signJWT({ sub: 'staff4@example.com', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+    await kv.put('member:staff4@example.com', { role: 'internal', joinedAt: 1, tokenVersion: 1 });
+    const session = await signJWT({ sub: 'staff4@example.com', tv: 1, iat: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
     const res = await fn.onRequestGet(
       ctx('https://x/api/private-text/Work/q/4/g/d59ezak6jq4g/full_text/shidian-01/999.md', baseEnv(), `session=${session}`),
     );

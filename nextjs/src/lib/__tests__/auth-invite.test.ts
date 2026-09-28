@@ -2,7 +2,7 @@
  * @jest-environment node
  *
  * G-20 邀请链接最小闭环的 durable 闸
- * 覆盖 v3 铁律：GET 不消耗、一次性、7d 过期、180d JWT、删人/改角色立即生效
+ * 覆盖 v3 铁律：GET 不消耗、一次性、7d 过期、180d JWT、删人/改角色立即生效（旧 cookie 作废）
  */
 const g = globalThis as unknown as Record<string, unknown>;
 g.AUTH_JWT_SECRET = 'test-jwt-secret-32bytes-long-1234567890';
@@ -107,8 +107,8 @@ describe('invite/invite-info/join 闭环', () => {
     expect(res.status).toBe(200);
     expect((await body(res)).role).toBe('editor');
 
-    // 改成 admin
-    await kv.put('member:alice@example.com', JSON.stringify({ role: 'admin', joinedAt: 1, invitedBy: 'x' }));
+    // 改成 admin（直接改 KV，保留 join 时写的 tokenVersion=1，所以 alice 的 cookie 仍有效）
+    await kv.put('member:alice@example.com', JSON.stringify({ role: 'admin', joinedAt: 1, invitedBy: 'x', tokenVersion: 1 }));
     res = await revoke.onRequestPost(ctx('https://x/api/auth/revoke', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `session=${sess}` },
       body: JSON.stringify({ email: 'charlie@example.com', role: 'editor' })
@@ -132,8 +132,10 @@ describe('invite/invite-info/join 闭环', () => {
       body: JSON.stringify({ email: 'bob@example.com', role: 'editor' })
     }));
     expect(res.status).toBe(200);
+    // H1：改角色把 tokenVersion 加 1，bob 手里的旧 cookie 立即失效（不再带着新角色继续用）
     res = await me.onRequestGet(ctx('https://x/api/auth/me', { headers: { 'Cookie': `session=${bobSess}` } } as any));
-    expect((await body(res)).role).toBe('editor');
+    expect(res.status).toBe(401);
+    expect(JSON.parse(kv.m.get('member:bob@example.com')).role).toBe('editor');
     // 删 bob
     res = await revoke.onRequestPost(ctx('https://x/api/auth/revoke', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `session=${sess}` },

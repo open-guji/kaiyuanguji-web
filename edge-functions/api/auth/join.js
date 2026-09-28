@@ -11,6 +11,7 @@ function getKV(context){
 }
 function b64urlEncode(bytes){ let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
 async function hashCode(code, secret){ const key=await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']); const sig=await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(code)); return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function nextTokenVersion(prev){ const v=prev&&typeof prev==='object'?prev.tokenVersion:0; return (Number.isInteger(v)&&v>0?v:0)+1; }
 async function signJWT(payload, secret){
   const header=b64urlEncode(new TextEncoder().encode(JSON.stringify({alg:'HS256',typ:'JWT'})));
   const body=b64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
@@ -42,9 +43,9 @@ export async function onRequestPost(context){
       email=supplied;
     }
     // 已存在成员：绑定邀请（email 明确）允许覆盖以重登录；开放邀请（email 为空）冒用已有邮箱则 409
+    let existing = null;
+    try { existing = await kv.get(`member:${email}`, 'json'); } catch { existing = null; }
     {
-      let existing = null;
-      try { existing = await kv.get(`member:${email}`, 'json'); } catch { existing = null; }
       const isDeleted = !existing || existing._deleted || (typeof existing === 'string' && existing.trim() === '');
       if (!isDeleted) {
         if (!rec.email) {
@@ -56,11 +57,14 @@ export async function onRequestPost(context){
     // 标记已使用
     rec.usedAt=now;
     await kv.put(`invite:${hash}`, JSON.stringify(rec));
-    // 写成员表
-    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin' };
+    // H1（SEC overview#134）：每次 join 把 tokenVersion 加 1 并写进 JWT（tv）。
+    // 开放邀请自填了别人的邮箱、日后管理员再给这个邮箱发绑定邀请时，join 覆盖成员记录，
+    // 旧 cookie 的 tv 与新 tokenVersion 对不上，各验会话的地方一律拒绝——不再继承新角色。
+    // 墓碑（revoke 删除时写的 {_deleted, tokenVersion}）上的计数照样接着加，防止删了再加回来时版本号回到 1。
+    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin', tokenVersion: nextTokenVersion(existing) };
     await kv.put(`member:${email}`, JSON.stringify(member));
     // 签 JWT
-    const payload={ sub: email, iat: now, exp: now + COOKIE_MAX_AGE };
+    const payload={ sub: email, iat: now, exp: now + COOKIE_MAX_AGE, tv: member.tokenVersion };
     const token=await signJWT(payload, secret);
     headers['Set-Cookie'] = `session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}`;
     return new Response(JSON.stringify({success:true,email,role:rec.role}),{status:200,headers});

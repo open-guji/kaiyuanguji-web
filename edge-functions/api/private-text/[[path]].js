@@ -119,6 +119,13 @@ async function verifyJWT(token, secret) {
   } catch { return null; }
 }
 
+// H1（SEC overview#134）：令牌的 tv 必须等于成员记录的 tokenVersion（join／改角色／删除时 +1）。
+// 旧令牌没有 tv、旧记录没有 tokenVersion 的一律视为失效。
+function tokenVersionOk(payload, member) {
+  const v = member && member.tokenVersion;
+  return Number.isInteger(v) && v > 0 && !!payload && payload.tv === v;
+}
+
 /**
  * 鉴权：登录 cookie → 成员表角色。返回 {ok:true, email} 或 {ok:false, status, error}。
  * 与 auth/me.js 同一份成员表（AUTH_KV `member:<email>`），但角色白名单不同
@@ -137,6 +144,9 @@ async function checkPrivateTextAuth(request, context) {
   try { member = await kv.get(`member:${payload.sub}`, 'json'); } catch { member = null; }
   if (!member || typeof member !== 'object' || member._deleted || !member.role) {
     return { ok: false, status: 401, error: '成员不存在或已移除' };
+  }
+  if (!tokenVersionOk(payload, member)) {
+    return { ok: false, status: 401, error: '登录已失效，请重新登录' };
   }
   if (!ALLOWED_ROLES.includes(member.role)) {
     return { ok: false, status: 403, error: '角色不符，需 internal 或 admin' };

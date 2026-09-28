@@ -40,9 +40,11 @@ function seedOne(content: string, extra: Record<string, unknown> = {}) {
     return id;
 }
 
-function get(qs: string) {
-    return { request: new Request(`https://x/api/feedback?${qs}`) };
+function get(qs: string, headers: Record<string, string> = {}) {
+    return { request: new Request(`https://x/api/feedback?${qs}`, { headers }) };
 }
+/** M1：管理 token 只走 Authorization: Bearer（不再认 ?token=） */
+const ADMIN = { Authorization: 'Bearer right' };
 async function json(res: Response) {
     return JSON.parse(await res.text());
 }
@@ -52,7 +54,7 @@ async function publicContent(): Promise<string> {
 }
 async function adminContent(): Promise<string> {
     g.FEEDBACK_ADMIN_TOKEN = 'right';
-    const j = await json(await fn.onRequestGet(get('limit=20&token=right')));
+    const j = await json(await fn.onRequestGet(get('limit=20', ADMIN)));
     return j.items[0].content;
 }
 
