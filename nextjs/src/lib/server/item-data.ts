@@ -108,7 +108,8 @@ class Lru<V> {
 }
 
 /**
- * 单次请求的超时信号。AbortSignal.timeout 在某些边缘运行时里没有，退回 AbortController＋setTimeout。
+ * 单次请求的超时信号。EdgeOne 边缘运行时（中间件跑在那里）没有 AbortSignal.timeout，
+ * 直接调会抛 TypeError，中间件的 /item 跳转因此从没生效过（FX1c）；缺时退回 AbortController＋setTimeout。
  */
 function timeoutSignal(ms: number): AbortSignal {
     if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
