@@ -1,7 +1,7 @@
 // POST /api/auth/revoke — 删人或改角色（需 admin）
 // body: { email: string, role?: string | null }  // role=null 或不传则删除，传 role 则改
 const ALLOWED_ORIGINS = ['https://www.kaiyuanguji.com','https://kaiyuanguji.com','https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
-// internal：能看私有文本仓（book-text-private）内容的角色，2026-09-26 P1 加。
+// internal 已停用（overview#256），只留着用来撤销旧记录。
 const ALLOWED_ROLES = ['reader','reviewer','editor','admin','internal'];
 function getCorsHeaders(request){ const origin=request.headers.get('origin')||''; const corsOrigin=ALLOWED_ORIGINS.includes(origin)?origin:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':corsOrigin,'Content-Type':'application/json'}; }
 function getAdminToken(context){ if(context&&context.env&&context.env.AUTH_ADMIN_TOKEN) return context.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }

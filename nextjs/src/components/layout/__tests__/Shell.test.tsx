@@ -36,6 +36,16 @@ describe('Navbar（N1 顶栏）', () => {
         );
     });
 
+    it('顶栏有「古籍总目」（/catalog），「阅读页」不单独进导航（WEB2）', () => {
+        mockPath = '/catalog';
+        render(<Navbar />);
+        const nav = screen.getByRole('navigation', { name: '主导航' });
+        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍索引', '关于']);
+        expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
+        expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('aria-current', 'page');
+        expect(within(nav).queryByRole('link', { name: /阅读/ })).toBeNull();
+    });
+
     it('当前项用 aria-current 标记（样式是一条朱色下划线），且只有一个', () => {
         mockPath = '/book-index';
         render(<Navbar />);
@@ -63,6 +73,12 @@ describe('MobileDrawer', () => {
     it('关着时不渲染', () => {
         const { container } = render(<MobileDrawer isOpen={false} onClose={() => {}} />);
         expect(container).toBeEmptyDOMElement();
+    });
+
+    it('抽屉与顶栏同步有「古籍总目」', () => {
+        mockPath = '/';
+        render(<MobileDrawer isOpen onClose={() => {}} />);
+        expect(screen.getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
     });
 
     it('打开后顶栏拿掉的入口仍能在「更多」里点到', () => {

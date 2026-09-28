@@ -17,6 +17,8 @@
 //     面包屑点击后地址栏也变了。注意 Next 会在中间件里剥掉 RSC 请求头与 _rsc 参数，
 //     只能靠浏览器自带、Next 不剥的 Referer／Sec-Fetch-Dest 来判断。
 //
+// N5b：旧阅读入口 ?tab=fulltext／collated → 308 /item/<id>/read（readerRedirect，保留卷号）。
+//
 // FX1：/item/<id> 的整页导航也在这里跳——被并条目 308 到目标、已升格的草稿 id 308 到正式 id、
 // 升格对照表查不了 307 回 /book-index。页面里本来就会跳，但 Next 的 ISR 页面在缓存未命中时
 // 抛 redirect 会把 Location 写两遍（vercel/next.js#82117），EdgeOne 拼成「/item/x, /item/x」
@@ -26,6 +28,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
+import { legacyReaderTarget } from '@/lib/reader-route';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -44,6 +47,11 @@ function isInSite(req: NextRequest): boolean {
 // 中间件查不出来就放过，让页面自己取。
 // forceCache: false —— 边缘运行时里 cache: 'force-cache' 可能直接抛错，被下面的 catch
 // 静默放过，结果等于中间件从不跳、没修。
+//
+// FX1c：FX1 上线后测试站被并条目仍是页面出的双 Location——中间件的 /item 分支在 EdgeOne
+// 边缘运行时里调 AbortSignal.timeout 抛错（那里没有这个静态方法；本地 next start 与 Node 模拟
+// 都有，复现不了），被下面的 catch 静默放过。item-data 已改为缺时退回 AbortController。
+// 当时靠测试站诊断响应头证实（rt:poly），根因证实后已删。
 let _fetcher: ReturnType<typeof createItemFetcher> | null = null;
 function fetcher() {
     if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000, forceCache: false });
@@ -80,7 +88,19 @@ function bookIndexRedirect(req: NextRequest): NextResponse {
     return NextResponse.redirect(url, 308);
 }
 
+/**
+ * N5b：旧阅读入口（?tab=fulltext／collated，/book-index 与 /item/<id> 都算）→ 308 /item/<id>/read，保留卷号。
+ * 与上面两条不同，站内请求也跳：条目页的 tab 与卷切换仍往 /book-index?…&tab= 推（组件不在本道写域），
+ * 客户端导航拿到 308 后 Next 会跟到新地址——阅读器从此只有一处。
+ */
+function readerRedirect(req: NextRequest): NextResponse | null {
+    const to = legacyReaderTarget(req.nextUrl.pathname, req.nextUrl.searchParams);
+    return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
+}
+
 export function middleware(req: NextRequest): NextResponse | Promise<NextResponse> {
+    const reader = readerRedirect(req);
+    if (reader) return reader;
     return req.nextUrl.pathname.startsWith('/item/') ? itemRedirect(req) : bookIndexRedirect(req);
 }
 

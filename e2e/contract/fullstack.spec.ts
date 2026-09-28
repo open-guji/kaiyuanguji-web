@@ -21,6 +21,7 @@ import { test, expect, type APIRequestContext, type APIResponse } from '@playwri
 import { ANCHORS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { dataUrl, fetchLatest } from '../fixtures/version';
+import { requireUiVersion } from '../fixtures/preconditions';
 
 /* ------------------------------------------------------------------ *
  * 样本（档位 3：经典条目，与 ui/ 现有用例同一批，已由 perf-ids 闸看着）
@@ -255,6 +256,46 @@ test.describe('新架构：跳转与 404', () => {
         expect(res.status()).toBe(404);
         const robots = metaContent(await res.text(), 'robots') ?? '';
         expect(robots, '404 页必须 noindex，否则搜索引擎会收一堆空页').toMatch(/noindex/);
+    });
+});
+
+test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
+    test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由与中间件`);
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.10.0', '新阅读器 ReaderShell'));
+
+    const C = ANCHORS.collated;
+    const juan = 'juan/011.json';
+
+    test('每卷各有 <title> 与 canonical，出在首屏 HTML 里', async ({ request }) => {
+        const path = `/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`;
+        const res = await request.get(`${TARGET}${path}`, noFollow);
+        expect(res.status(), `${path} 应直接 200`).toBe(200);
+        const html = await res.text();
+        const title = decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? '');
+        expect(title, '<title> 应含书名与卷号').toContain(`${C.title} · 卷11 · 整理本`);
+        expect(canonicalHref(html), 'canonical 应指向本卷').toBe(`${SITE.canonicalOrigin}${path}`);
+    });
+
+    test('旧入口 ?tab=collated／fulltext 308 到阅读页，保留卷号', async ({ request }) => {
+        const cases: [string, string][] = [
+            [`/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`],
+            [`/item/${C.id}?tab=collated`, `/item/${C.id}/read?kind=collated`],
+        ];
+        for (const [from, to] of cases) {
+            const res = await request.get(`${TARGET}${from}`, noFollow);
+            expect(res.status(), `${from} 应 308`).toBe(308);
+            const loc = (res.headers()['location'] ?? '').split(',').map((v) => v.trim()).filter(Boolean)
+                .map((v) => { const u = new URL(v, TARGET); return u.pathname + u.search; });
+            expect(loc, `${from}（Location 须只有一个值，且带上卷号）`).toEqual([to]);
+        }
+    });
+
+    test('没有这种阅读页、或卷号查不到的给真 404（不出软 404）', async ({ request }) => {
+        const res = await request.get(`${TARGET}/item/${ANCHORS.entity.id}/read`, noFollow);
+        expect(res.status(), '人物条目没有阅读页').toBe(404);
+        const bad = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`, noFollow);
+        expect(bad.status(), '乱填的卷号应 404').toBe(404);
+        expect(metaContent(await bad.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
     });
 });
 

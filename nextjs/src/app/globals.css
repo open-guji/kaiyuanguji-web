@@ -144,7 +144,7 @@
 }
 
 /* =========================================================
-   book-index-ui 换肤接口（--bim-*，共 76 个）
+   book-index-ui 换肤接口（--bim-*）
    ---------------------------------------------------------
    组件内部以 var(--bim-x, 回退值) 取色。这里全部接到上面的新令牌，
    让条目页、阅读页、搜索页先跟着换色——**只动颜色和字体，不动布局**
@@ -163,7 +163,7 @@
   --bim-sidebar-bg: var(--color-tint);
   --bim-fg: var(--color-ink);
   --bim-desc-fg: var(--color-ink-2);
-  --bim-muted: var(--color-ink-3);
+  --bim-muted: var(--bim-aux-fg);  /* 同 label / hint：ink-3 对纸底只有 3.17 */
 
   /* 描边：统一退到最浅的一阶 */
   --bim-widget-border: var(--color-tint-2);
@@ -260,8 +260,12 @@
   --bim-body-fg: var(--color-ink);
   --bim-quiet-fg: var(--color-ink-2);
   --bim-meta-fg: var(--color-ink-2);
-  --bim-label-fg: var(--color-ink-3);
-  --bim-hint-fg: var(--color-ink-3);
+  /* 辅助字（标签、注记、朝代·分类等小一号文字）。ink-3 #948a7e 对纸底只有 3.17，
+     不够 4.5，所以 label / hint 改接 aux-fg；aux-fg 取 book-index-ui 0.10.0 的默认值
+     #6f6457（对 paper / raise / 斑马底 / 卡底都 ≥4.5）。ink-3 本身不动，外壳别处还在用。 */
+  --bim-aux-fg: #6f6457;
+  --bim-label-fg: var(--bim-aux-fg);
+  --bim-hint-fg: var(--bim-aux-fg);
 
   /* 强调 */
   --bim-accent: var(--color-zhu);
@@ -273,9 +277,18 @@
   --bim-rule-dashed: var(--color-tint-2);
   --bim-rule-accent-soft: color-mix(in srgb, var(--color-zhu) 24%, var(--color-paper));
 
-  /* 字体：全站黑体 */
+  /* 条目页三栏（0.10.0）：提要卡、斑马行、分组底 */
+  --bim-card-bg: var(--color-raise);
+  --bim-zebra-bg: color-mix(in srgb, var(--color-tint) 60%, transparent);
+  --bim-tint-bg: var(--color-tint);
+
+  /* 字体：全站黑体；著录原文用宋体 */
   --bim-font-ui: var(--font-sans);
   --bim-font-body: var(--font-sans);
+  --bim-font-serif: var(--font-serif);
+
+  /* 阅读页（N5b）：吸顶工具条让出外壳页头的高度 */
+  --bim-reader-top: var(--nav-h);
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */
@@ -1068,4 +1081,21 @@
   --bim-warning: #b45309;
   --bim-danger: #b91c1c;
   --bim-success: #2f6b3f;
+}
+
+/* =========================================================
+   阅读页（N5b）正文用系统字体，不走 Noto 网络字体（overview#220 Q1，方案二）。
+   一卷正文几万字，按 unicode-range 分片下载 Noto：宋史卷一实测 162 片 ≈ 4 MB。
+   界面其余部分仍按 N1 用 Noto；这里只在阅读器（.bim-rd）范围内换成系统字体栈。
+   注意字体栈里不能出现 "Noto Sans SC" / "Noto Serif SC"：next/font 以这两个名字注册了网络字体，
+   写上就会命中网络字体。--bim-font-body／reading 在 :root 上由 ui／serif 推出，
+   这里要一起覆盖，否则仍取 :root 的值。
+   ========================================================= */
+.bim-rd {
+  --bim-font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", system-ui, sans-serif;
+  --bim-font-body: var(--bim-font-ui);
+  --bim-font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+  --bim-font-reading: var(--bim-font-serif);
 }

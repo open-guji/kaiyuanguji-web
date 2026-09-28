@@ -7,9 +7,11 @@
 
 | 站 | 地址 | 托管方式 | 数据指针 |
 |---|---|---|---|
-| 正式站 | https://www.kaiyuanguji.com | 静态导出，推 `edgeone-release` 分支由 EdgeOne Pages 发布 | `https://data.kaiyuanguji.com/latest.json` |
+| 正式站 | https://www.kaiyuanguji.com | 全栈，CLI 直传 `kyg-ssr-spike`（2026-09-28 切站，CUT2 起 deploy 直接发这里） | `https://data.kaiyuanguji.com/latest.json` |
 | 测试站 | https://staging.kaiyuanguji.com | 全栈，CLI 直传 `kyg-staging` | `https://data.kaiyuanguji.com/staging/latest.json` |
-| 双跑站 | https://ssr-test.kaiyuanguji.com | 全栈，CLI 直传 `kyg-ssr-spike`（正式站每次发布同版本同数据再发一份） | 同正式站 |
+
+`ssr-test.kaiyuanguji.com` 也挂在 `kyg-ssr-spike` 上，与 www 是同一份部署。旧静态项目 `kaiyuanguji`（原 www，推 `edgeone-release` 分支发布）
+切站后不再发布，保留到 2026-10-26 前后作回滚目标（`docs/cutover.md`「切站后的发布与回滚」）。
 
 > 读数据指针**必须带随机串**：`curl -s "https://data.kaiyuanguji.com/latest.json?cb=$RANDOM$RANDOM"`。
 > 不带会拿到 EdgeOne 节点上的旧副本，看到的「线上版本」是错的。
@@ -19,7 +21,7 @@
 ## 0. 第一步永远是：线上现在是哪一版
 
 ```bash
-for s in www staging ssr-test; do
+for s in www staging; do
   echo "== $s"; curl -s "https://$s.kaiyuanguji.com/api/version" | python3 -m json.tool
 done
 ```
@@ -33,7 +35,7 @@ done
 | `data` | 数据指针 `latest.json` 的 `commitId`（book-index-draft 短 commit） | 运行时读 COS |
 | `dataPointer` | 指针全文：三仓 commit、`bundleDate`、`webCommitId` | 运行时读 COS |
 | `builtAt` | 构建时间 | 构建时写入 |
-| `target` | `production` / `staging` / `ssr-test` | 构建时写入 |
+| `target` | `production` / `staging`（切站前 kyg-ssr-spike 双跑的构建记为 `ssr-test`） | 构建时写入 |
 | `webMatchesPointer` | `web` 是否等于指针里记的 `webCommitId` | — |
 
 怎么读：
@@ -127,7 +129,7 @@ done
 
 | 回包 error | 原因 | 处理 |
 |---|---|---|
-| `服务未配置 AUTH_JWT_SECRET` / `AUTH_ADMIN_TOKEN` | 该站 Pages 项目没配这个环境变量 | 正式站（静态、分支托管）：控制台配好即生效。全栈站（staging／ssr-test）：**配了还要重新构建**——`makers build` 把变量烘进函数，运行时不再读控制台（E1）。用 Actions → **EdgeOne env sync**（`list` → `dry-run` → `set`/`sync`）写变量，然后重发该站 |
+| `服务未配置 AUTH_JWT_SECRET` / `AUTH_ADMIN_TOKEN` | 该站 Pages 项目没配这个环境变量 | 两站都是全栈：**配了还要重新构建**——`makers build` 把变量烘进函数，运行时不再读控制台（E1）。用 Actions → **EdgeOne env sync**（`list` → `dry-run` → `set`/`sync`）写变量，然后重发该站 |
 | `KV 未绑定` | 项目的 KV 命名空间没绑定为全局变量 | 控制台绑定（没有写接口） |
 | `/api/track-error` 读接口 503 | `ERROR_VIEW_TOKEN` 没配 | 同第一行；这是故意 fail-closed 的 |
 
@@ -139,7 +141,7 @@ done
 
 | 看什么 | 怎么判断 |
 |---|---|
-| `curl -sI https://www.kaiyuanguji.com/ \| grep -i -E 'etag\|last-modified\|age'` | 与 edgeone-release 最新提交时间对比 |
+| `curl -sI https://www.kaiyuanguji.com/ \| grep -i -E 'etag\|last-modified\|age'` | 与 `/api/version` 的 `builtAt`、Actions 里最近一次正式发布的时间对比 |
 | 指针带／不带随机串各读一次 | 不一致 → 节点缓存了旧指针 |
 | h1 指针 `h1/manifest-root.json` | 曾被节点缓存 18.7 小时（源站 max-age 被无视） |
 
@@ -147,8 +149,8 @@ done
 
 - 按 URL 清：Actions → **EdgeOne purge URLs**（默认清四个 h1 指针；可填任意完整 https URL，空格分隔）。例如清正式站数据指针：
   `https://data.kaiyuanguji.com/latest.json`。
-- 整站清：正式站每次发布都会 `purge_host kaiyuanguji.com`；手动整站清可跑 `ops/rollback-purge.py`（需要 TENCENT_SECRET_* 与 EDGEONE_ZONE_ID，一般通过 Rollback workflow 的 release-branch 路间接执行）。
-- 测试站域名不在 zone 的加速域名里，`purge_url`／`purge_host` 都清不到；它是 CLI 直传，重发一次就是新版本。条目页走按需失效（deploy 里 W2-3 那几步）。
+- 整站：www 和测试站一样是 Pages 项目的自定义域名，不在 zone 的加速域名里，`purge_host kaiyuanguji.com` 只清得到裸域那条 301，清不到 www 的页面。
+  两站都是 CLI 直传，重发一次就是新版本；条目页走按需失效（deploy 里 W2-3 那几步，正式站打 www）。
 
 ## 7. 监控在哪
 
@@ -156,7 +158,7 @@ done
 |---|---|
 | 公开仓 `open-guji/open-guji-monitor`（每 15 分钟 A 探测、每 6 小时 C 契约冒烟） | 各站可达、关键页面与接口 |
 | 本仓 **Monitor (private half)**（每小时） | A1 部署停更、B1 前端错误突增（读 `/api/track-error?summary=1`）、B2 反馈量、B3 三数据仓新鲜度；告警开在本仓 `monitor` 标签 issue，并推 IM |
-| Deploy 的 `verify` job | 每次发布后的契约＋UI e2e（staging／www），双跑站契约 |
+| Deploy 的 `verify` job | 每次发布后的契约＋UI e2e（staging／www，都按全栈 `SITE_ARCH=fullstack` 验） |
 | `/api/version` | 线上是哪一版（§0） |
 | /admin/errors | 错误明细，按版本分组（§0） |
 
@@ -172,27 +174,29 @@ done
 | 输入 | 说明 |
 |---|---|
 | `target` | `staging` = 在测试站演练；`production` = 真回滚正式站 |
-| `web_commit` | 退回到哪个网站 commit；空 = 上一次正式发布的那版（从 edgeone-release 历史推出） |
-| `method` | `promote`（首选）／`release-branch`（快） |
-| `stage` | 只对 promote 路：`start`（测试站重建）→ `promote`（发正式站，仅 production）→ `check`（核对）。每段手动跑一次，`promote`/`check` 必须填 `web_commit` |
-| `dry_run` | 只出计划。计划写在运行摘要里：当前版本、目标版本、对应的发布产物、数据指针、将执行的步骤、注意事项 |
+| `web_commit` | 退回到哪个网站 commit；空 = 上一次正式发布的那版（从 `release-log` 分支推出，更早的接切站前 `edgeone-release` 的历史） |
+| `stage` | `start`（测试站重建）→ `promote`（发正式站，仅 production）→ `check`（核对）。每段手动跑一次，`promote`/`check` 必须填 `web_commit` |
+| `dry_run` | 只出计划。计划写在运行摘要里：当前版本、目标版本、对应的发布记录、数据指针、将执行的步骤、注意事项 |
 
-两条路怎么选：
+回滚路怎么选（2026-09-28 切站、CUT2 之后）：
 
-| | promote（首选） | release-branch |
-|---|---|---|
-| 做什么 | 分三段：`start` 目标 commit 在测试站重建（deploy.yml `target=staging`，完整 verify）；绿了跑 `promote`（`target=production promote=code+data`）；再跑 `check` | edgeone-release 新建一个提交＝当时那版产物的树；清 CDN |
-| 耗时 | 约 20 分钟 | 约 2 分钟 |
-| 数据 | 换成测试站重建时的数据（三仓 main HEAD） | 不动 |
-| 发布后 e2e | 有（deploy.yml 的 verify） | 没有，只核对 `/api/version` |
-| 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标） | **会**：正式站指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码。回滚后先把仓库变量 `AUTO_PROMOTE_DATA` 设成 `false`，修好再改回 |
-| 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后）；早于改自托管 runner（overview#184）的目标，托管额度用完时测试站重建排不上，只能走 release-branch | 目标 commit 须正式发布过；只能用于正式站 |
+| | Rollback workflow（首选） | 控制台回退 kyg-ssr-spike | 换绑回旧项目 kaiyuanguji |
+|---|---|---|---|
+| 做什么 | 分三段：`start` 目标 commit 在测试站重建（deploy.yml `target=staging`，完整 verify）；绿了跑 `promote`（`target=production promote=code+data`，部署到 kyg-ssr-spike）；再跑 `check` | EdgeOne 控制台 → Pages → kyg-ssr-spike → 部署记录，用上一次成功的生产部署重新发布 | www 从 kyg-ssr-spike 换绑回旧静态项目，DNS 的 `www` CNAME 改回去（`docs/cutover.md`） |
+| 耗时 | 约 20 分钟 | 几分钟 | 约 5 分钟＋DNS 生效 |
+| 数据 | 换成测试站重建时的数据（三仓 main HEAD） | 不动 | 不动 |
+| 发布后 e2e | 有（deploy.yml 的 verify） | 没有，自己看 `/api/version` | 没有，跑 cutover-check |
+| 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标） | **会**：指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码。先把仓库变量 `AUTO_PROMOTE_DATA` 设成 `false`，修好再改回 | 不会被冲，但也**收不到任何新发布**（CI 不再推旧项目） |
+| 什么时候用 | 默认 | 读者正受影响、等不了 20 分钟 | 新项目整个坏了（不是某一版代码的问题）；只在旧项目保留期内（到 2026-10-26 前后） |
+| 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后）；早于改自托管 runner（overview#184）的目标，托管额度用完时测试站重建排不上 | 控制台能否回退、保留多少条部署记录以控制台为准 | 旧项目停在切站前最后一版，没有全栈功能 |
+
+原来的 `method=release-branch`（把 `edgeone-release` 恢复成当时那版产物）已随 CUT2 去掉：那条分支发的是旧项目，www 已经不在上面，恢复它对读者没有任何效果。
 
 步骤：
 
-1. `target=production`、`dry_run` 勾着跑一次，读计划。计划里有 ❌ 就不能执行，按提示换 method 或 commit。
-2. 读者正受影响、等不了 20 分钟 → 先 `release-branch` 止血，再设 `AUTO_PROMOTE_DATA=false`。
-3. 否则走 promote，取消 `dry_run`，按段跑：
+1. `target=production`、`dry_run` 勾着跑一次，读计划。计划里有 ❌ 就不能执行，按提示换 commit 或改走控制台。
+2. 读者正受影响、等不了 20 分钟 → 先在控制台回退 kyg-ssr-spike 止血，再设 `AUTO_PROMOTE_DATA=false`，然后照常走下面的 workflow 把 webCommitId 也对上。
+3. 取消 `dry_run`，按段跑：
    - `stage=start`：摘要里给出测试站重建那次运行的链接和目标 commit；
    - 那次运行绿了 → `stage=promote`，`web_commit` 填摘要里那个 commit；
    - promote 那次运行绿了 → `stage=check`，同一个 `web_commit`。
@@ -212,7 +216,8 @@ dispatch 前再核一次测试站指针，`stage=check` 再核正式站指针，
 这段时间里**别手动 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
 
 **目标早于 E1 或 deploy.yml 与 main 不同**：promote 路的测试站按目标 commit 自己的 deploy.yml 重建，正式站按 main 的 deploy.yml 构建，两次不是同一套流程；
-早于 E1（没有 `ops/edgeone-fullstack-build.py`）时测试站 `/api/auth/*` 会 503、正式站发布时 ssr-test 双跑失败（不拦发布）。计划里会有对应警告。
+早于 E1（没有 `ops/edgeone-fullstack-build.py`）时：测试站演练只出警告（重建后 `/api/auth/*` 会 503）；**正式站回滚直接报错**——正式站构建检出目标 commit、调用它自己的构建脚本，
+早于 E1 必失败。请选 `81f71f4` 或更新的版本，或走控制台把 www 换绑回旧项目（上表第三列）。
 
 演练：每次改到回滚相关文件后，在测试站跑一次 `target=staging method=promote dry_run=false`（`stage=start`，绿后 `stage=check`），
 确认测试站 `/api/version` 回到目标版本，再正常发一次 main 把测试站拉回来。

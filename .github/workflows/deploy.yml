@@ -1,6 +1,8 @@
 name: Deploy to EdgeOne
 # 显示名原为「Deploy to GitHub Pages」——2026-05 起早已不部署 GitHub Pages，
 # 产物推到 edgeone-release 分支由 EdgeOne Pages 托管。2026-09-06 改名以免误导新人。
+# CUT2（2026-09-28，overview#241）起两站都是全栈、CLI 直传：测试站 kyg-staging，
+# 正式站 kyg-ssr-spike（www）。edgeone-release／旧项目 kaiyuanguji 不再推送。
 
 on:
   # 2026-09-28（overview#182，Actions 额度 90%）：本仓私有、按分钟计费，一次部署约 17 分钟。
@@ -52,10 +54,10 @@ permissions:
   actions: write   # T1：数据自动 promote 时由 verify job 触发本 workflow（workflow_dispatch）
 
 # 同一时间只允许一个部署在跑；连续 push 时取消旧的排队任务，
-# 避免两个 job 争抢 edgeone-release 分支导致部署乱序。
+# 避免两个 job 争抢同一个 Pages 项目导致部署乱序。
 # T1：测试站与正式站各排各的队，互不阻塞。
 # 2026-09-28（overview#182）：测试站连推时取消在跑的旧 run、只跑最后一次（省分钟数）；
-# 正式站仍排队不取消——半途取消可能让 edgeone-release 与 COS 指针处在不一致状态。
+# 正式站仍排队不取消——半途取消可能让线上代码与 COS 指针处在不一致状态。
 concurrency:
   group: deploy-edgeone-${{ inputs.target || 'staging' }}
   cancel-in-progress: ${{ (inputs.target || 'staging') == 'staging' }}
@@ -101,13 +103,14 @@ jobs:
             echo "· 数据有更新（或无法确认），执行部署"
           fi
 
-  # T1：定这次发往哪个站、用哪一版代码、哪一版数据。三种 mode——
-  #   staging ：测试站配置齐、且不是手动 promote。代码=触发的 commit，数据=三仓 HEAD
-  #   fallback：EDGEONE_API_TOKEN 缺（测试站没配好）。整段跳过测试站，
-  #             代码/数据取法与 T1 改造前完全一致，直接部署正式站——不许被测试站配置卡住
+  # T1：定这次发往哪个站、用哪一版代码、哪一版数据。两种 mode——
+  #   staging ：不是手动 promote。代码=触发的 commit，数据=三仓 HEAD
   #   promote ：workflow_dispatch target=production，人手动按的。
   #             数据=测试站 staging/latest.json 里记下的三仓 commit（钉死，不取 HEAD）；
   #             代码 = code+data 时取测试站记下的 webCommitId，data 时取正式站现有 webCommitId
+  # CUT2（overview#241）：原来还有第三种 fallback（EDGEONE_API_TOKEN 缺时跳过测试站、直接推
+  # edgeone-release 发旧项目 kaiyuanguji）。切站后正式站也是 CLI 直传 kyg-ssr-spike，没有
+  # token 哪个站都发不了，旧项目又不再接收推送——fallback 去掉，缺 token 直接报错。
   resolve:
     runs-on: ubuntu-latest
     needs: check
@@ -125,6 +128,10 @@ jobs:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
+          if [ -z "$EDGEONE_API_TOKEN" ]; then
+            echo "❌ EDGEONE_API_TOKEN 未配置：测试站 kyg-staging 与正式站 kyg-ssr-spike 都是 CLI 直传，没有它哪个站都发不了"
+            exit 1
+          fi
 
           if [ "$REQ" = "production" ]; then
             echo "mode=promote" >> "$GITHUB_OUTPUT"
@@ -145,15 +152,6 @@ jobs:
             exit 0
           fi
 
-          if [ -z "$EDGEONE_API_TOKEN" ]; then
-            echo "mode=fallback" >> "$GITHUB_OUTPUT"
-            echo "target=production" >> "$GITHUB_OUTPUT"
-            echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-            for k in draft_ref prod_ref text_ref; do echo "$k=main" >> "$GITHUB_OUTPUT"; done
-            echo "· EDGEONE_API_TOKEN 未配置：测试站整段跳过，正式站照旧直接发布（与 T1 改造前行为一致）"
-            exit 0
-          fi
-
           echo "mode=staging" >> "$GITHUB_OUTPUT"
           echo "target=staging" >> "$GITHUB_OUTPUT"
           echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
@@ -163,9 +161,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: resolve
-    outputs:
-      # W2b 双跑：kyg-ssr-spike 这次有没有部署成功（verify job 据此决定测不测 ssr-test）
-      mirror: ${{ steps.mirror_deploy.outcome }}
     env:
       DEPLOY_TARGET: ${{ needs.resolve.outputs.target }}
       DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
@@ -201,7 +196,7 @@ jobs:
       # tombstone，会重定向到 production ID，而该 ID 不在产物里。
       - name: Clone index data repos
         run: |
-          # T1：按 resolve 给的 ref 取（staging/fallback=main；promote=测试站钉下的 commit）
+          # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
           fetch_at() {
             git init -q "$2"
             git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
@@ -213,18 +208,6 @@ jobs:
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
           # 构建照样成功——整理本页在站上空白，无人得知。
           fetch_at book-text book-text "${{ needs.resolve.outputs.text_ref }}"
-
-      # 私有文本仓（P1-私有文本后端，2026-09-26）：内容不进 bundle-data.mjs 的产物、
-      # 不进公开 COS 路径，只单独同步到私有前缀（见下面 Sync private text 步骤）。
-      # BOOK_TEXT_PRIVATE_TOKEN 缺失时跳过——私有文本是增量功能，不能因为它没配
-      # 就把整个公开站的部署堵死。
-      - name: Clone private text repo
-        if: ${{ env.HAS_BOOK_TEXT_PRIVATE == 'true' }}
-        env:
-          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
-          BOOK_TEXT_PRIVATE_TOKEN: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN }}
-        run: |
-          git clone --depth 1 "https://x-access-token:${BOOK_TEXT_PRIVATE_TOKEN}@github.com/open-guji-core/book-text-private.git" book-text-private
 
       # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
       # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
@@ -334,25 +317,6 @@ jobs:
           cd nextjs
           node scripts/sync-to-cos.mjs
 
-      # 私有文本单独同步到同桶的私有前缀（ACL: private，逐对象覆盖）——见
-      # nextjs/scripts/sync-private-text-to-cos.mjs 文件头。与上一步公开同步
-      # 完全独立：任一步缺配置只跳过自己，不互相阻塞。
-      # T1：私有文本只由正式发布同步；测试站的 private-text 函数只读同一私有前缀，
-      # 不需要（也不应该）测试站自己再写一份。
-      - name: Sync private text to Tencent COS
-        if: ${{ env.DEPLOY_TARGET == 'production' && env.HAS_BOOK_TEXT_PRIVATE == 'true' && env.HAS_COS_SECRETS == 'true' }}
-        env:
-          HAS_BOOK_TEXT_PRIVATE: ${{ secrets.BOOK_TEXT_PRIVATE_TOKEN != '' }}
-          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
-          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
-          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
-          COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
-          BOOK_TEXT_PRIVATE_DIR: ${{ github.workspace }}/book-text-private
-        run: |
-          cd nextjs
-          node scripts/sync-private-text-to-cos.mjs
-
       # --- A3 第一期：条目按内容哈希寻址，双写到同一个桶的新前缀 h1/ ---
       #
       # 与上面 current/ 那条链路完全并行、互不影响：读的是同一份 public/data/entry/
@@ -372,9 +336,8 @@ jobs:
 
       # W2-3：测试站在 h1 指针翻转之前记下旧 root，部署后据此算「哪些条目变了」
       # （item-changes.mjs）。取不到（首次发布／指针格式旧）就留空，按全部新增处理。
-      # W2b 起正式站也记：双跑到 kyg-ssr-spike 后按改动失效 ssr-test 的条目页
-      - name: Record previous h1 root (staging, W2-3)
-        if: ${{ env.DEPLOY_MODE != 'fallback' }}
+      # CUT2 起正式站也全栈：部署到 kyg-ssr-spike 后据此按改动失效 www 的条目页
+      - name: Record previous h1 root (W2-3)
         run: |
           P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
           R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
@@ -423,20 +386,25 @@ jobs:
           cd nextjs
           node scripts/sync-h1-text-to-cos.mjs
 
-      # W2：正式站仍是静态导出（本步骤 run 脚本不动）；测试站改走下一步的全栈构建
-      - name: Build for EdgeOne
+      # CUT2（overview#241）：正式站＝全栈项目 kyg-ssr-spike（www 已于 09-28 换绑过去）。
+      # 原来的静态导出＋推 edgeone-release（发旧项目 kaiyuanguji）去掉：旧项目保留 4 周作回滚目标，
+      # 回滚靠控制台换绑，CI 不再推它（docs/cutover.md「切完以后」）。
+      # 本步骤即原 W2b 双跑那一步转正：同一套全栈构建，失败就拦发布（不再 continue-on-error）。
+      # 为什么经 ops/edgeone-fullstack-build.py、为什么先 makers build 再 deploy：见下面测试站那一步的注释。
+      - name: Build for EdgeOne (production, fullstack → kyg-ssr-spike)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
         env:
-          # 必须为空：NEXT_PUBLIC_MODE=local 会让 next.config.ts 关掉 output:'export'，
-          # 产不出静态站。CI 里本来就没有 .env.local，这里显式置空作为防线。
+          # E1：只用来读 kyg-ssr-spike 的项目环境变量、派生失效密钥；不进构建子进程
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          KYG_RENDER_MODE: fullstack
+          # /api/version 的 target：全栈＋正式站配置按默认会记成 ssr-test（双跑期口径），这里显式写 production
+          KYG_DEPLOY_TARGET: production
           NEXT_PUBLIC_MODE: ''
-          # 数据源 = cos：浏览器从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
-          # 当 COS secrets 缺失时降级回 bundle 模式（数据走 EdgeOne Pages /data/）
+          # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
-          # T1：驱动 robots 全禁＋页面「测试站」角标＋noindex meta（nextjs/src/lib/constants.ts）
-          NEXT_PUBLIC_SITE_ENV: ${{ env.DEPLOY_TARGET == 'staging' && 'staging' || '' }}
-          NEXT_PUBLIC_SITE_URL: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_ENV: ''
+          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
@@ -446,43 +414,33 @@ jobs:
           NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
           # 访问统计站点 ID（G-24）：仓库 Settings → Variables 里配 BAIDU_TONGJI_ID / GA_ID。
           # 非机密（本来就写在页面里）；没配则不加载统计脚本。
-          # T1：测试站不上报统计，免得把自测流量混进正式站数字
-          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ env.DEPLOY_TARGET == 'production' && vars.BAIDU_TONGJI_ID || '' }}
-          NEXT_PUBLIC_GA_ID: ${{ env.DEPLOY_TARGET == 'production' && vars.GA_ID || '' }}
+          # 双跑期 ssr-test 不带（免得与 www 重复计数）；现在它就是 www，照旧带上
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ vars.BAIDU_TONGJI_ID }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
+          NEXT_PUBLIC_BASE_PATH: ''
+          SITEMAP_SITE: https://www.kaiyuanguji.com
         run: |
-          cd nextjs
-          rm -rf .next out
-          export NEXT_PUBLIC_BASE_PATH=""
-          # T1：Google Fonts 在构建期抓取偶发抖动会导致整个 build 失败——只重试
-          # 这一条命令本身，最多 3 次、每次间隔 20 秒，不重跑前面的克隆/装依赖。
-          n=1
-          until npm run build; do
-            if [ "$n" -ge 3 ]; then
-              echo "❌ npm run build 重试 3 次仍失败"
-              exit 1
-            fi
-            echo "⚠️ npm run build 第 ${n} 次失败，20 秒后重试（下一次 $((n + 1))/3）"
-            sleep 20
-            n=$((n + 1))
-          done
-          mkdir -p ../build/edgeone
-          cp -r out/* ../build/edgeone/
-          # h1 哈希数据（public/data-h1、data-h1-text，约 15 万文件）只走 COS，绝不进 Pages 产物：
-          # 2026-09-27 A3 起它们随 out/ 一起推到 edgeone-release，产物从 ~550 涨到 16 万文件，
-          # Pages 静默不再发布，线上停在 09-26 23:09Z 那版，只有 verify 的 ui 版本下限测试报红。
-          rm -rf ../build/edgeone/data-h1 ../build/edgeone/data-h1-text
-          # cos 模式：数据全在 COS，Pages 产物不带数据（S2 起 out/ 里本就没有，rm 只是保险）。
-          # bundle 降级模式（无 COS secrets）：数据要走 Pages /data/，从 KYG_DATA_ROOT 拷回——
-          # 但约 14.7 万文件必然撞下面的文件数闸，降级模式实际上不上 Pages，闸会给出明确报错。
-          if [ "$NEXT_PUBLIC_DATA_SOURCE" = "cos" ]; then
-            rm -rf ../build/edgeone/data
-          else
-            echo "bundle 降级模式：从 $KYG_DATA_ROOT 拷回 data/ 与 latest.json"
-            cp -r "$KYG_DATA_ROOT/data" ../build/edgeone/data
-            cp "$KYG_DATA_ROOT/latest.json" ../build/edgeone/latest.json
+          if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
+            echo "❌ 全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
+            exit 1
           fi
-          du -sh ../build/edgeone | xargs echo "EdgeOne bundle size:"
-          find ../build/edgeone -type f | wc -l | xargs echo "EdgeOne file count:"
+          # 条目页按需失效接口的密钥（与测试站同一派生法），部署后的失效步骤也要用
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
+          export KYG_REVALIDATE_SECRET="$S"
+          cd nextjs
+          rm -rf .next out .edgeone edge-functions public/sitemaps public/sitemap-index.xml
+          # 条目 sitemap 分片（W2-3），写进 public/ 随全栈产物发布；<loc> 指向 www
+          node scripts/gen-sitemaps.mjs
+          # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
+          cp -r ../edge-functions ./edge-functions
+          # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
+            -- npx -y edgeone@1.6.41 makers build
+          du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
+          find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
       # W2（31 卡 §A）：测试站全栈构建——静态页照旧构建期预渲染，/item/[id] 由云函数按请求渲染。
       # 为什么先 `makers build` 再 `makers deploy .edgeone`、不让 deploy 自动构建：
@@ -506,7 +464,7 @@ jobs:
           echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
 
       # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布。
-      # 只在测试站这一支跑，正式站静态导出产物不变；测试站 robots.txt 全禁、不列 sitemap。
+      # 测试站这一支；正式站在自己的构建步骤里生成（<loc> 指向 www）。测试站 robots.txt 全禁、不列 sitemap。
       - name: Generate item sitemaps (staging, W2-3)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         working-directory: nextjs
@@ -552,9 +510,8 @@ jobs:
       - name: Verify EdgeOne build mode
         run: |
           MODE="${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
-          # W2：测试站是全栈产物，客户端 chunk 在 .edgeone/assets 下；正式站路径不变
-          CHUNKS=nextjs/out/_next/static/chunks/
-          if [ "$DEPLOY_TARGET" = "staging" ]; then CHUNKS=nextjs/.edgeone/assets/_next/static/chunks/; fi
+          # W2／CUT2：两站都是全栈产物，客户端 chunk 在 .edgeone/assets 下
+          CHUNKS=nextjs/.edgeone/assets/_next/static/chunks/
           if grep -r "\"$MODE\"" "$CHUNKS" > /dev/null 2>&1; then
             echo "✓ EdgeOne build confirmed using $MODE mode"
           else
@@ -584,41 +541,27 @@ jobs:
           grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json && echo "✓ /internal/revalidate 已由云函数处理" \
             || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 
-      - name: Verify production build has no staging artifacts
+      # 正式站产物：正式站配置（无 noindex、无角标、robots 允许收录、读正式数据）＋条目页由云函数渲染
+      # （原 W2b 双跑构建步骤里的产物校验，转正后单列一步）
+      - name: Verify production artifacts (fullstack)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
         run: |
-          if grep -q 'noindex' build/edgeone/index.html; then
-            echo "❌ 正式站产物含 noindex meta，混入了测试站构建" && exit 1
-          fi
-          if grep -q 'staging-badge' build/edgeone/index.html; then
-            echo "❌ 正式站产物含测试站角标" && exit 1
-          fi
-          echo "✓ 正式站产物无测试站痕迹（无 noindex、无角标）"
+          A=nextjs/.edgeone/assets
+          ! grep -q 'noindex' $A/index.html || { echo "❌ 正式站产物含 noindex meta，混入了测试站构建"; exit 1; }
+          ! grep -q 'staging-badge' $A/index.html || { echo "❌ 正式站产物含测试站角标"; exit 1; }
+          grep -qx 'Allow: /' $A/robots.txt || { echo "❌ robots.txt 不是正式站口径："; cat $A/robots.txt; exit 1; }
+          ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ 正式站产物读的是测试站数据"; exit 1; }
+          grep -q '"\^/item/' nextjs/.edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
+          grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
+          test -f nextjs/.edgeone/edge-functions/config.json || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
+          test -f $A/sitemap-index.xml || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
+          echo "✓ 正式站产物：无 noindex、无角标、robots 允许收录、读正式数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap"
 
-      - name: Copy Edge Functions to EdgeOne build
-        if: ${{ env.DEPLOY_TARGET == 'production' }}
-        run: cp -r edge-functions build/edgeone/edge-functions
-
-      # 闸：产物文件数异常时直接失败，别让部署静默不生效。
-      # W2 起本步只管正式站的 build/edgeone；测试站是全栈产物，闸见下一步。
-      - name: Guard EdgeOne bundle file count
-        if: ${{ env.DEPLOY_TARGET == 'production' }}
-        run: |
-          N=$(find build/edgeone -type f | wc -l)
-          echo "EdgeOne bundle file count: $N"
-          if [ "$N" -gt 5000 ]; then
-            echo "❌ 产物 $N 个文件（上限 5000）——数据目录混进来了？按目录统计："
-            find build/edgeone -type f | awk -F/ '{print $3}' | sort | uniq -c | sort -rn | head -10
-            if [ "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" = bundle ]; then
-              echo "❌ 当前是 bundle 降级模式（COS secrets 缺失）：降级产物上不了 Pages，请恢复 COS secrets，不要放宽本闸"
-            fi
-            exit 1
-          fi
-
-      # W2：测试站全栈产物的同一道闸。产物里多了云函数（opennext 打包的 node_modules，
+      # 闸：产物文件数异常时直接失败，别让部署静默不生效（2026-09-27 h1 数据混进产物、
+      # Pages 静默不发布的教训）。全栈产物里多了云函数（opennext 打包的 node_modules，
       # 2026-09-27 本地实测约 2,500 个文件），总数约 2,850；静态部分仍须远低于平台 2 万上限。
-      - name: Guard EdgeOne bundle file count (staging, fullstack)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+      # CUT2 起两站同一道闸。
+      - name: Guard EdgeOne bundle file count (fullstack)
         run: |
           N=$(find nextjs/.edgeone -type f | wc -l)
           echo "EdgeOne (fullstack) bundle file count: $N"
@@ -629,7 +572,7 @@ jobs:
           fi
 
       # --- 步骤 2：部署 ---
-      # 测试站：直接上传型项目 kyg-staging（CLI）。SSR 转正后正式站也改走这条（26 卡步骤 6）
+      # 测试站：直接上传型项目 kyg-staging（CLI）。正式站见下一步（kyg-ssr-spike，同一条路）
       - name: Deploy to EdgeOne (staging, direct upload)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
@@ -639,12 +582,35 @@ jobs:
         run: |
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
 
-      - name: Deploy to EdgeOne Branch
+      # CUT2：正式站＝kyg-ssr-spike（www），与测试站同一条 CLI 直传。不再推 edgeone-release——
+      # 旧项目 kaiyuanguji 保留作回滚目标，回滚时在控制台把 www 换绑回去（docs/cutover.md）。
+      - name: Deploy to EdgeOne (production, kyg-ssr-spike)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: build/edgeone
-          branch: edgeone-release # 部署到专门给 EdgeOne 用的分支
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        working-directory: nextjs
+        run: |
+          npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-ssr-spike -t "$EDGEONE_API_TOKEN"
+
+      # 发布记录：kyg-ssr-spike 是直传项目，没有 edgeone-release 那样的发布分支可以翻历史，
+      # 「上一个正式版本」（ops/rollback-plan.py）改从 release-log 分支读。每次正式发布在该分支
+      # 追加一个空提交（树恒为空，不含任何产物），提交信息带源 commit，格式见 rollback-plan.py 的 RELEASE_RE。
+      # 部署已成功，本步失败不拦（只影响回滚时自动推算「上一版」，手填 web_commit 不受影响）。
+      - name: Record production release (release-log)
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
+        continue-on-error: true
+        env:
+          WEB: ${{ needs.resolve.outputs.web_ref }}
+          PROMOTE: ${{ inputs.promote }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          EMPTY=$(git hash-object -t tree /dev/null)
+          PARENT=''
+          if git fetch -q --depth 1 origin release-log 2>/dev/null; then PARENT="-p $(git rev-parse FETCH_HEAD)"; fi
+          C=$(git commit-tree "$EMPTY" $PARENT -m "Released to kyg-ssr-spike from @ ${{ github.repository }}@$WEB 🚀 (promote=${PROMOTE:-?}, run ${{ github.run_id }})")
+          git push -q origin "$C:refs/heads/release-log"
+          echo "· release-log ← ${C:0:12}（web ${WEB:0:12}）"
 
       # --- 步骤 3：清除 EdgeOne CDN 缓存 ---
       - name: Purge EdgeOne CDN cache
@@ -678,6 +644,9 @@ jobs:
           # data.kaiyuanguji.com/latest.json 单独 purge_url（新版本指针，让浏览器
           # 拉到新 commit）；不 purge_host data.kaiyuanguji.com 整站——那 318MB
           # 缓存白丢，回源费贵。
+          # CUT2：www 已换绑到全栈项目 kyg-ssr-spike，同测试站一样是 Pages 自定义域名，
+          # purge_host kaiyuanguji.com 清不到 www 的页面（只清裸域那条 301）；www 的静态页随新部署
+          # 更新，条目页靠下面的按需失效。数据指针仍靠这里的 purge_url。
           # T1：按目标清——测试站清 staging.kaiyuanguji.com 与 staging/latest.json；
           # 正式站照旧。purge_host 对「未开站点加速」方式绑定的自定义域名是否生效
           # 待网站总管核实（31 卡 §B.8.6），本步骤先按同一逻辑发出，不影响正式站。
@@ -707,154 +676,44 @@ jobs:
               print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
 
-      # --- W2-3：测试站条目页按改动失效、实测、预热（31 卡 §A.6）---
-      # 测试站域名是 Pages 自定义域名，不在 zone 加速域名里，purge_url 清不到（T1 实测）；
+      # --- W2-3：条目页按改动失效、实测、预热（31 卡 §A.6）---
+      # 测试站与 www（CUT2 起）都是 Pages 自定义域名，不在 zone 加速域名里，purge_url 清不到（T1 实测）；
       # 改走 Next 的按需失效（EdgeOne 全栈项目把它接到了自家 CDN）。
+      # CUT2：正式站同一套四步，对象是 www（原 W2b 双跑时打的是 ssr-test）。
       # 这四步都不拦发布：失效没生效，最坏是条目页按 s-maxage（1 小时）自然过期。
       # 但「实测」一步失败会在 job 摘要里标 ✗——首跑几次都绿之后，改成拦发布（去掉 continue-on-error）。
-      - name: Compute changed items (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+      - name: Compute changed items (W2-3)
         id: item_changes
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_DATA_BASE: https://data.kaiyuanguji.com/staging
+          ITEM_DATA_BASE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
         run: node scripts/item-changes.mjs
 
-      - name: Revalidate changed item pages (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' && steps.item_changes.outcome == 'success' }}
+      - name: Revalidate changed item pages (W2-3)
+        if: ${{ steps.item_changes.outcome == 'success' }}
         id: item_revalidate
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: https://staging.kaiyuanguji.com
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
         run: node scripts/item-revalidate.mjs
 
-      - name: Verify item cache refresh (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' && steps.item_revalidate.outcome == 'success' }}
+      - name: Verify item cache refresh (W2-3)
+        if: ${{ steps.item_revalidate.outcome == 'success' }}
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: https://staging.kaiyuanguji.com
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
         run: node scripts/item-cache-verify.mjs
 
-      - name: Prewarm item pages (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+      - name: Prewarm item pages (W2-3)
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: https://staging.kaiyuanguji.com
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
           ITEM_PREWARM_CONCURRENCY: '4'
         run: node scripts/item-prewarm.mjs
-
-      # --- W2b 双跑（33 卡 §六，任务书 W2 §十一）：正式站每次发布，同一版代码、同一份数据
-      # 再全栈部署一份到 kyg-ssr-spike（ssr-test.kaiyuanguji.com），供内测与新旧对比（MON）。
-      # 线上仍由上面的静态发布（edgeone-release）服务，本段任何一步失败都不许拦正式站发布，
-      # 结果写进 job 摘要。mode=fallback（没有 EDGEONE_API_TOKEN）时整段跳过。
-      # 配置与正式站相同：正式数据、不加 noindex、不带角标；统计 ID 暂不带（免得与 www 重复计数）。
-      - name: Mirror — fullstack build for kyg-ssr-spike (W2b)
-        id: mirror_build
-        if: ${{ env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' }}
-        continue-on-error: true
-        env:
-          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
-          KYG_RENDER_MODE: fullstack
-          NEXT_PUBLIC_MODE: ''
-          NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
-          NEXT_PUBLIC_SITE_ENV: ''
-          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
-          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
-          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
-          NEXT_PUBLIC_BAIDU_TONGJI_ID: ''
-          NEXT_PUBLIC_GA_ID: ''
-          NEXT_PUBLIC_BASE_PATH: ''
-          SITEMAP_SITE: https://www.kaiyuanguji.com
-        run: |
-          if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
-            echo "❌ 全栈构建只支持 cos 数据源"; exit 1
-          fi
-          # 条目页按需失效接口的密钥（与测试站同一派生法），下面的失效步骤也要用
-          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
-          echo "::add-mask::$S"
-          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
-          export KYG_REVALIDATE_SECRET="$S"
-          cd nextjs
-          # 上面的静态产物已拷到 build/edgeone 并发布，这里可以放心重建
-          rm -rf .next out .edgeone edge-functions public/sitemaps public/sitemap-index.xml
-          node scripts/gen-sitemaps.mjs
-          cp -r ../edge-functions ./edge-functions
-          # E1：带 kyg-ssr-spike 的项目变量构建并查产物（同测试站那一步；EDGEONE_API_TOKEN 不进构建子进程）
-          python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
-            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
-            -- npx -y edgeone@1.6.41 makers build
-          # 产物校验：正式站配置（无 noindex、无角标、robots 允许收录、读正式数据）＋条目页由云函数渲染
-          A=.edgeone/assets
-          ! grep -q 'noindex' $A/index.html || { echo "❌ 双跑产物含 noindex"; exit 1; }
-          ! grep -q 'staging-badge' $A/index.html || { echo "❌ 双跑产物含测试站角标"; exit 1; }
-          grep -qx 'Allow: /' $A/robots.txt || { echo "❌ robots.txt 不是正式站口径："; cat $A/robots.txt; exit 1; }
-          ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ 双跑产物读的是测试站数据"; exit 1; }
-          grep -q '"\^/item/' .edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
-          test -f .edgeone/edge-functions/config.json || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
-          test -f $A/sitemap-index.xml || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
-          N=$(find .edgeone -type f | wc -l)
-          echo "✓ 双跑产物校验通过：$N 个文件，$(du -sh .edgeone | cut -f1)"
-          [ "$N" -le 5000 ] || { echo "❌ 产物 $N 个文件（上限 5000）"; exit 1; }
-
-      - name: Mirror — deploy to kyg-ssr-spike (W2b)
-        id: mirror_deploy
-        if: ${{ env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' && steps.mirror_build.outcome == 'success' }}
-        continue-on-error: true
-        working-directory: nextjs
-        env:
-          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
-        run: npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-ssr-spike -t "$EDGEONE_API_TOKEN"
-
-      # 数据 promote 后按改动失效 ssr-test 上的条目页，与 www 保持同一版数据（否则最多滞后 s-maxage 1 小时）
-      - name: Mirror — compute changed items (W2b)
-        id: mirror_changes
-        if: ${{ env.DEPLOY_TARGET == 'production' && steps.mirror_deploy.outcome == 'success' }}
-        continue-on-error: true
-        working-directory: nextjs
-        env:
-          ITEM_DATA_BASE: https://data.kaiyuanguji.com
-        run: node scripts/item-changes.mjs
-
-      - name: Mirror — revalidate changed item pages (W2b)
-        if: ${{ env.DEPLOY_TARGET == 'production' && steps.mirror_changes.outcome == 'success' }}
-        continue-on-error: true
-        working-directory: nextjs
-        env:
-          ITEM_SITE: https://ssr-test.kaiyuanguji.com
-        run: node scripts/item-revalidate.mjs
-
-      - name: Mirror — summary (W2b)
-        if: ${{ always() && env.DEPLOY_TARGET == 'production' && env.DEPLOY_MODE != 'fallback' }}
-        env:
-          BUILD: ${{ steps.mirror_build.outcome }}
-          DEPLOY: ${{ steps.mirror_deploy.outcome }}
-          CHANGES: ${{ steps.mirror_changes.outcome }}
-        run: |
-          {
-            echo "### W2b 双跑：kyg-ssr-spike（ssr-test.kaiyuanguji.com）"
-            echo ""
-            for kv in "全栈构建:$BUILD" "部署:$DEPLOY" "改动集/失效:$CHANGES"; do
-              k=${kv%%:*}; v=${kv#*:}
-              case "$v" in success) m="✓";; skipped|"") m="—";; *) m="✗";; esac
-              echo "- $m $k（$v）"
-            done
-            echo ""
-            echo "线上 www 仍由静态发布服务，本段失败不影响正式站。"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$BUILD" != "success" ] || [ "$DEPLOY" != "success" ]; then
-            echo "::warning title=W2b 双跑失败::kyg-ssr-spike 本次没有部署成功（构建 $BUILD／部署 $DEPLOY），ssr-test 停在上一版；正式站发布不受影响"
-          fi
-
-      # 自托管 runner（2026-09-28，overview#184）的工作目录跨 run 保留：私有文本仓的 clone
-      # 在 .git/config 里带着 token，数据仓 clone 也占盘——job 结束就删，不等下次 checkout 清。
-      - name: Clean up clones (self-hosted)
-        if: always()
-        run: rm -rf book-text-private book-index-draft book-index book-text
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
@@ -870,6 +729,10 @@ jobs:
       # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
       TARGET: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
       DATA_BASE: ${{ needs.resolve.outputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+      # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
+      # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
+      # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
+      SITE_ARCH: fullstack
     steps:
       # e2e 必须和被测站点是同一版代码：promote=data 时正式站代码可能比 main 旧，
       # 用 main 的 e2e 去测会命中「线上前端不比本 commit 要求的旧」而误报红。
@@ -918,48 +781,11 @@ jobs:
           path: e2e/out/report
           retention-days: 14
 
-      # W2b 双跑：对 ssr-test（kyg-ssr-spike）跑一遍契约层，不拦发布，结果写摘要。
-      # 放在上面 www 的报告上传之后：Playwright 报告目录是同一个，会被覆盖。
-      - name: Mirror — contract tests on ssr-test (W2b)
-        id: mirror_contract
-        if: ${{ always() && needs.resolve.outputs.target == 'production' && needs.build.outputs.mirror == 'success' }}
-        continue-on-error: true
-        working-directory: e2e
-        env:
-          TARGET: https://ssr-test.kaiyuanguji.com
-        run: npm run test:contract
-
-      - name: Mirror — contract summary (W2b)
-        if: ${{ always() && needs.resolve.outputs.target == 'production' }}
-        env:
-          MIRROR: ${{ needs.build.outputs.mirror }}
-          CONTRACT: ${{ steps.mirror_contract.outcome }}
-        run: |
-          case "$CONTRACT" in success) m="✓";; skipped|"") m="—";; *) m="✗";; esac
-          {
-            echo "### W2b 双跑：ssr-test 契约测试"
-            echo ""
-            echo "- 部署：${MIRROR:-未跑}"
-            echo "- $m contract（${CONTRACT:-skipped}）——报告见 artifact e2e-report-ssr-test"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$CONTRACT" = "failure" ]; then
-            echo "::warning title=W2b ssr-test 契约测试失败::见 artifact e2e-report-ssr-test；正式站发布不受影响"
-          fi
-
-      - name: Upload report (ssr-test, W2b)
-        if: ${{ always() && steps.mirror_contract.outcome != 'skipped' && steps.mirror_contract.outcome != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-report-ssr-test
-          path: e2e/out/report
-          retention-days: 14
-
       # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
       # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
       # 就是默认开，符合用户预期，也符合网站总管已告诉用户「不用配」的口径）。
       # 只在 mode=staging（真的经过了测试站且 e2e 已验）且触发是数据（dispatch／
-      # 定时）时生效——mode=fallback 本身已经是正式站了，mode=promote 不该再
-      # 自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
+      # 定时）时生效——mode=promote 不该再自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
       # 没 promote 的代码不会被数据发布夹带上线。
       - name: Auto-promote data to production
         if: ${{ success() && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
