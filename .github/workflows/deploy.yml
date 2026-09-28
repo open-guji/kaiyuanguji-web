@@ -471,6 +471,10 @@ jobs:
       # deploy 自动构建时**不继承本步骤的环境变量**（只用控制台项目变量＋./.env），
       # NEXT_PUBLIC_*、KYG_RENDER_MODE 全丢——spike 分支当年只好把开关写死。
       # `makers build` 则继承 process.env（edgeone 1.6.41 源码与本地实跑均已核对）。
+      # E1（2026-09-27）：它还把构建进程的**整份** process.env 当字面量烘进边缘函数的 context.env，
+      # 控制台配的项目变量运行时并不注入（/api/auth/me 因此 503）。所以两支全栈构建都经
+      # ops/edgeone-fullstack-build.py 跑：读项目变量只放进白名单环境的构建子进程（CI 的 token
+      # 等进不去），构建后查产物无 .env、项目变量只在边缘函数里、CI 机密不在产物里。不打印值。
       # CLI 版本钉死：构建产物格式须与部署时的 CLI 一致。
       # W2-3：条目页按需失效接口（/internal/revalidate）的密钥。由 EDGEONE_API_TOKEN
       # 派生（HMAC），不需要另建 secret；构建期写进服务端代码，部署后的失效步骤用同一个值。
@@ -495,6 +499,8 @@ jobs:
       - name: Build for EdgeOne (staging, fullstack)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
+          # E1：只用来读 kyg-staging 的项目环境变量；不进构建子进程
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
           KYG_RENDER_MODE: fullstack
           NEXT_PUBLIC_MODE: ''
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
@@ -517,17 +523,11 @@ jobs:
           rm -rf .next out .edgeone edge-functions
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
-          # 与正式站那一步同样的重试：只重试构建本身（Google Fonts 偶发抖动）
-          n=1
-          until npx -y edgeone@1.6.41 makers build; do
-            if [ "$n" -ge 3 ]; then
-              echo "❌ edgeone makers build 重试 3 次仍失败"
-              exit 1
-            fi
-            echo "⚠️ edgeone makers build 第 ${n} 次失败，20 秒后重试（下一次 $((n + 1))/3）"
-            sleep 20
-            n=$((n + 1))
-          done
+          # E1：带 kyg-staging 的项目变量构建并查产物（脚本内含与正式站那一步同样的 3 次重试，
+          # 只重试构建本身——Google Fonts 偶发抖动）
+          python3 ../ops/edgeone-fullstack-build.py -n kyg-staging --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
+            -- npx -y edgeone@1.6.41 makers build
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
@@ -766,11 +766,10 @@ jobs:
           rm -rf .next out .edgeone edge-functions public/sitemaps public/sitemap-index.xml
           node scripts/gen-sitemaps.mjs
           cp -r ../edge-functions ./edge-functions
-          n=1
-          until npx -y edgeone@1.6.41 makers build; do
-            if [ "$n" -ge 3 ]; then echo "❌ edgeone makers build 重试 3 次仍失败"; exit 1; fi
-            echo "⚠️ edgeone makers build 第 ${n} 次失败，20 秒后重试"; sleep 20; n=$((n + 1))
-          done
+          # E1：带 kyg-ssr-spike 的项目变量构建并查产物（同测试站那一步；EDGEONE_API_TOKEN 不进构建子进程）
+          python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
+            -- npx -y edgeone@1.6.41 makers build
           # 产物校验：正式站配置（无 noindex、无角标、robots 允许收录、读正式数据）＋条目页由云函数渲染
           A=.edgeone/assets
           ! grep -q 'noindex' $A/index.html || { echo "❌ 双跑产物含 noindex"; exit 1; }
