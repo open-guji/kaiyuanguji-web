@@ -59,4 +59,16 @@ test.describe('搜索', () => {
         await expect(page.locator('main')).toBeVisible({ timeout: 60_000 });
         expect(errors, '空结果导致 JS 崩溃').toEqual([]);
     });
+
+    test('title 带检索词；点结果卡直接到 /item/<id>，不停在 /book-index?id=（overview#267 P2-7、P2-9）', async ({ page }) => {
+        await page.goto(`${TARGET}/book-index?q=${encodeURIComponent('朱熹')}`);
+        await expect(page).toHaveTitle('朱熹 - 搜索 - 开源古籍');
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/book-index$/);
+
+        const card = page.locator('a.bim-result-card').first();
+        await expect(card).toBeVisible({ timeout: 90_000 });
+        await expect(card).toHaveAttribute('href', /^\/item\/[0-9a-z]+$/);
+        await card.click();
+        await expect(page, '点结果卡后地址应是条目页自己的').toHaveURL(/\/item\/[0-9a-z]+$/, { timeout: 30_000 });
+    });
 });

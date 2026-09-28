@@ -6,7 +6,7 @@
  * 首屏数据只是提速，缺了阅读器会自己去取。
  */
 import type { BookFullTextIndex, CollatedEditionIndex, WorkFullTextEntry } from 'book-index-ui';
-import type { ReaderQuery } from '@/lib/reader-route';
+import { collatedJuanFile, type ReaderQuery } from '@/lib/reader-route';
 import type { GetCurrentJson } from '@/lib/server/reader-check';
 import { fullTextShardOf } from '@/lib/server/reader-check';
 import { collatedJuanFiles, firstChapterFile, seedCallKey, type ReaderSeed } from './reader-seed';
@@ -37,7 +37,8 @@ async function collated(id: string, q: ReaderQuery, getJson: GetCurrentJson, get
     const index = await orNull(getJson<CollatedEditionIndex>(`items/${id}/collated_edition/index.json`));
     if (!index) return {};
     const files = collatedJuanFiles(index);
-    const juan = q.juan && files.includes(q.juan) ? q.juan : files[0];
+    const want = q.juan ? collatedJuanFile(q.juan, files) : undefined;
+    const juan = want && files.includes(want) ? want : files[0];
     const seed: ReaderSeed = { collatedIndex: index, calls: {} };
     if (!juan || badSegment(juan) || !juan.endsWith('.json')) return seed;
     const [data, text] = await Promise.all([

@@ -129,7 +129,7 @@ describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => 
 
     it.each<[string, string]>([
         [`/book-index?tab=fulltext&id=${BOOK}&juan=003`, `/item/${BOOK}/read?kind=fulltext&juan=003`],
-        [`/book-index?id=${ZHIZHAI}&tab=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`],
+        [`/book-index?id=${ZHIZHAI}&tab=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=011`],
         [`/item/${ZHIZHAI}?tab=collated`, `/item/${ZHIZHAI}/read?kind=collated`],
     ])('%s → 308 %s', async (from, to) => {
         const r = await run(from);
@@ -146,5 +146,34 @@ describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => 
     it('/item/<id>?tab= 不查数据', async () => {
         await run(`/item/${ZHIZHAI}?tab=fulltext`);
         expect(mockGetItem).not.toHaveBeenCalled();
+    });
+});
+
+describe('middleware.ssr：阅读页整理本旧卷号 → 短形式（overview#267 P2-5）', () => {
+    const ZHIZHAI = 'd59f2htm01du';
+    const BOOK = '988fbiuha8';
+
+    it.each<[string, string]>([
+        [`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=011`],
+        [`/item/${ZHIZHAI}/read?juan=juan%2F003.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=003`],
+    ])('%s → 308 %s，只有一个 Location，站内请求也跳', async (from, to) => {
+        for (const headers of [{}, { 'sec-fetch-dest': 'empty', referer: 'https://staging.kaiyuanguji.com/' }] as Record<string, string>[]) {
+            const r = await run(from, headers);
+            expect(r.status).toBe(308);
+            expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
+        }
+    });
+
+    it.each([
+        `/item/${ZHIZHAI}/read?kind=collated&juan=011`, // 已是短形式
+        `/item/${ZHIZHAI}/read?kind=collated`,
+        `/item/${BOOK}/read?kind=fulltext&juan=juan%2F003.json`, // 全文不动，交给页面 404
+        `/item/${ZHIZHAI}/read?kind=collated&juan=..%2F..%2Fx.json`, // 不是 juan/<名>.json，交给页面 404
+        `/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F..%2Fx.json`,
+        `/item/${ZHIZHAI}/read?kind=nope&juan=juan%2F011.json`,
+    ])('不跳：%s', async (from) => {
+        const r = await run(from);
+        expect(r.status).toBe(200);
+        expect(r.location).toBeNull();
     });
 });

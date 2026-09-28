@@ -6,6 +6,7 @@ import { GITHUB_ORG } from '@/lib/constants';
 export const metadata: Metadata = {
   title: '关于开源古籍',
   description: '开源古籍是什么、在做什么、数据从哪里来、以及怎么参与。',
+  alternates: { canonical: '/about' },
 };
 
 const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;

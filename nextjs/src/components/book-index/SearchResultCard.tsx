@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { splitHighlightSnippet, useConvert, useT, type IndexEntry } from 'book-index-ui';
+import { RECENT_IDS_STORAGE_KEY, splitHighlightSnippet, useConvert, useT, type IndexEntry } from 'book-index-ui';
 import styles from './SearchResultCard.module.css';
 
 /**
@@ -9,20 +9,20 @@ import styles from './SearchResultCard.module.css';
  *
  * 按新设计：整张卡是一个真链接（键盘可达、可长按新开）；不画边框，靠抬起的底色分组；
  * 朝代、作者、版本、类型写成小一号的辅助字、用「·」分隔；只有「有影印」用色块。
- * 地址仍是 /book-index?id=（静态站与全栈站都能开，全栈站由中间件 308 到 /item/<id>）。
+ * 直接链到 /item/<id>（overview#267 P2-7）：两站都是全栈后不必再绕 /book-index?id=，
+ * 点开后地址栏、<title>、复制出去的链接都是条目页自己的。
  */
 
-// 与 book-index-ui IndexBrowser 的「最近浏览」共用一份 localStorage，
+// 与 book-index-ui IndexBrowser 的「最近浏览」共用一份 localStorage（键取组件库导出的常量，不手写），
 // 自定义卡片不经过组件内部的点击处理，这里补记一笔，空搜索时的「最近浏览」才不断档。
-const RECENT_KEY = 'bim-recent-ids';
 const MAX_RECENT = 50;
 
 function rememberRecent(id: string) {
     try {
-        const raw = localStorage.getItem(RECENT_KEY);
+        const raw = localStorage.getItem(RECENT_IDS_STORAGE_KEY);
         const list = (raw ? (JSON.parse(raw) as string[]) : []).filter((i) => i !== id);
         list.unshift(id);
-        localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+        localStorage.setItem(RECENT_IDS_STORAGE_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
     } catch { /* 隐私模式等：忽略 */ }
 }
 
@@ -31,7 +31,7 @@ function isPlainLeftClick(e: React.MouseEvent) {
 }
 
 export function entryHref(id: string) {
-    return `/book-index?id=${encodeURIComponent(id)}`;
+    return `/item/${encodeURIComponent(id)}`;
 }
 
 export default function SearchResultCard({ entry, query }: { entry: IndexEntry; query?: string }) {
