@@ -1,0 +1,383 @@
+/* N6 样张（overview#259）。沿用现网令牌：暖纸底、朱色点缀、少边框，分组靠底色阶和留白。 */
+
+.n6 {
+  font-size: var(--fs-base);
+  line-height: 1.8;
+  color: var(--color-ink);
+}
+.n6-index a,
+.n6-article a,
+.n6-page a {
+  color: var(--color-zhu);
+}
+
+/* 样张目录页 */
+.n6-index {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+.n6-index h1 {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  margin: 0 0 12px;
+}
+.n6-index ul {
+  margin: 20px 0;
+  padding-left: 1.2em;
+}
+.n6-index li {
+  margin: 8px 0;
+}
+
+/* 占位：浅底、ink-2 字，一眼能看出不是真内容 */
+.n6-ph {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-tint-2);
+  color: var(--color-ink-2);
+}
+.n6-qr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  height: 128px;
+  border-radius: 6px;
+  background: var(--color-tint-2);
+  color: var(--color-ink-2);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  text-align: center;
+}
+.n6-qr-sm {
+  width: 88px;
+  height: 88px;
+  flex: none;
+}
+.n6-meta {
+  display: block;
+  color: var(--color-ink-2);
+  font-size: var(--fs-sm);
+}
+.n6-note {
+  color: var(--color-ink-2);
+  font-size: var(--fs-sm);
+}
+
+/* 页脚品牌栏下的二维码 */
+.n6-foot-qr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+}
+.og-footer .n6-foot-qr .n6-qr {
+  background: var(--color-tint-2);
+}
+
+/* 首页 A：开放区之后的「关于与联系」段，纸底（与上面 tint 的开放区拉开层次） */
+.n6-join-inner {
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: 64px var(--shell-gutter) 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 64px;
+  align-items: start;
+}
+.n6-join-head h2 {
+  margin: 0 0 12px;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+.n6-join-head p {
+  margin: 0;
+  color: var(--color-ink-2);
+  line-height: 1.9;
+}
+.n6-join-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+.n6 .n6-join-links a {
+  display: block;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.n6-join-links strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-zhu);
+}
+.n6-join-links span {
+  color: var(--color-ink-2);
+  font-size: var(--fs-sm);
+}
+.n6 .n6-join-links a:hover strong {
+  color: var(--color-zhu-deep);
+}
+
+/* 首页 B：开放区三栏 */
+.home-open-inner.n6-open-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 48px;
+}
+.n6 .home-open p a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* 关于页：左侧目录（不画线）＋正文 */
+.n6-doc {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px var(--shell-gutter) 24px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 64px;
+}
+.n6-toc {
+  position: sticky;
+  top: calc(var(--nav-h) + 32px);
+  align-self: start;
+  font-size: var(--fs-sm);
+}
+.n6-toc-title {
+  margin: 0 0 8px;
+  color: var(--color-ink);
+  font-weight: var(--fw-bold);
+}
+.n6-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.n6 .n6-toc a {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--color-ink-2);
+  text-decoration: none;
+}
+.n6 .n6-toc a:hover {
+  color: var(--color-zhu);
+}
+.n6-article {
+  max-width: 680px;
+}
+.n6-article h1,
+.n6-page h1 {
+  margin: 0 0 16px;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+}
+.n6-lead {
+  margin: 0 0 40px;
+  color: var(--color-ink-2);
+  font-size: var(--fs-md);
+  line-height: 1.9;
+}
+.n6-article section {
+  margin-top: 48px;
+  scroll-margin-top: calc(var(--nav-h) + 24px);
+}
+.n6-article h2,
+.n6-page h2 {
+  margin: 0 0 12px;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+.n6-article p {
+  margin: 0 0 12px;
+}
+.n6-article p a,
+.n6-page p a,
+.n6-ways a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.n6-dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 8em minmax(0, 1fr);
+  gap: 16px 24px;
+}
+.n6-dl dt {
+  font-weight: var(--fw-bold);
+}
+.n6-dl dd {
+  margin: 0;
+}
+/* 表格不画格线，靠斑马底分行 */
+.n6-table {
+  width: 100%;
+  margin: 16px 0;
+  border-collapse: collapse;
+}
+.n6-table th,
+.n6-table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+.n6-table th {
+  width: 40%;
+  font-weight: var(--fw-medium);
+}
+.n6-table tr:nth-child(odd) {
+  background: var(--color-tint);
+}
+.n6-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.n6-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 16px;
+  min-height: 44px;
+  padding: 8px 0;
+}
+.n6-rows .n6-meta {
+  display: inline;
+}
+
+/* 联系页 */
+.n6-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px var(--shell-gutter) 24px;
+}
+.n6-primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 28px 32px;
+  border-radius: var(--radius-card);
+  background: var(--color-tint);
+}
+.n6-primary p {
+  margin: 0;
+  color: var(--color-ink-2);
+}
+.n6 .n6-primary .og-btn {
+  color: #fff;
+  text-decoration: none;
+  flex: none;
+}
+.n6-ways {
+  margin: 48px 0 32px;
+  display: grid;
+  grid-template-columns: 9em minmax(0, 1fr);
+  gap: 32px 24px;
+}
+.n6-ways dt {
+  font-weight: var(--fw-bold);
+}
+.n6-ways dd {
+  margin: 0;
+}
+.n6-ways .n6-meta {
+  margin-top: 4px;
+}
+.n6-qrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.n6-qrs figure {
+  margin: 0;
+}
+.n6-qrs figcaption {
+  margin-top: 6px;
+  color: var(--color-ink-2);
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 760px) {
+  .n6-join-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 48px var(--shell-gutter) 8px;
+  }
+  .n6-join-links {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .n6 .n6-join-links a {
+    min-height: 44px;
+  }
+  .home-open-inner.n6-open-3 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .n6-doc {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding-top: 32px;
+  }
+  /* 手机：目录变成正文上方一行可横滑的锚点 */
+  .n6-toc {
+    position: static;
+    order: -1;
+  }
+  .n6-toc-title {
+    display: none;
+  }
+  .n6-toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 16px;
+  }
+  .n6 .n6-toc a {
+    min-height: 44px;
+  }
+  .n6-dl,
+  .n6-ways {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .n6-dl dd,
+  .n6-ways dd {
+    margin-bottom: 20px;
+  }
+  .n6-table th,
+  .n6-table td {
+    display: block;
+    width: auto;
+    padding: 4px 12px;
+  }
+  .n6-table th {
+    padding-top: 10px;
+  }
+  .n6-table td {
+    padding-bottom: 10px;
+    color: var(--color-ink-2);
+  }
+  .n6-page {
+    padding-top: 32px;
+  }
+  .n6-primary {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+    gap: 16px;
+  }
+  .n6-foot-qr {
+    margin-top: 16px;
+  }
+}
