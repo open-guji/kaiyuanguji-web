@@ -125,6 +125,8 @@ def has_version_endpoint(sha):
 
 STAGES = ("start", "promote", "check")
 METHODS = ("promote", "release-branch")  # release-branch 只为给出「已停用」的明确报错而保留
+# 带 E1（ops/edgeone-fullstack-build.py）的最早一次正式发布；更早的版本回滚不到 kyg-ssr-spike
+E1_MIN = "81f71f4"
 FAST_PATH = "要更快止血：EdgeOne 控制台 kyg-ssr-spike 回退到上一次部署，或把 www 换绑回旧项目 kaiyuanguji（docs/runbook.md §8）"
 
 
@@ -178,9 +180,15 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         if k.get("main_self_hosted") is True and k.get("self_hosted") is False:
             warnings.insert(0, f"{resolved[:12]} 的 deploy.yml 还跑 GitHub 托管 runner（main 已改自托管，overview#184）：托管额度用完期间，"
                                "测试站重建会一直排队、永远不开跑。" + FAST_PATH)
-        if k.get("e1") is False:
+        if k.get("e1") is False and target == "production":
+            # 正式站 promote 时 build job 检出的是目标 commit（deploy.yml 的 web_ref），调用的是目标自己的
+            # ops/edgeone-fullstack-build.py——早于 E1 就没有这个文件，构建必失败、回滚卡住（CUT2 后它是主路，不再 continue-on-error）
+            errors.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py），不能回滚到新项目 kyg-ssr-spike："
+                          f"正式站构建检出目标 commit、调用它自己的构建脚本，会直接失败。请选 {E1_MIN} 或更新的版本，"
+                          "或走控制台把 www 换绑回旧项目 kaiyuanguji（docs/cutover.md「切站后的发布与回滚」）")
+        elif k.get("e1") is False:
             warnings.append(f"{resolved[:12]} 早于 E1（没有 ops/edgeone-fullstack-build.py）：测试站按它自己的 deploy.yml 重建，"
-                            "不走白名单构建，重建后测试站 /api/auth/* 会 503（正式站按 main 的 deploy.yml 构建，不受影响）")
+                            "不走白名单构建，重建后测试站 /api/auth/* 会 503；这版也回滚不了正式站")
         if k.get("same_deploy") is False:
             warnings.append(f"{resolved[:12]} 的 deploy.yml 与 main 不同：测试站按目标的旧流程重建并 verify，正式站却按 main 的流程构建，"
                             "测试站验过的不完全等于正式站要发的（根治需 deploy.yml 加 web_ref 输入，见 PR 描述）")

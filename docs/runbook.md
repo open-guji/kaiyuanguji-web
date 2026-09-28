@@ -216,7 +216,8 @@ dispatch 前再核一次测试站指针，`stage=check` 再核正式站指针，
 这段时间里**别手动 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
 
 **目标早于 E1 或 deploy.yml 与 main 不同**：promote 路的测试站按目标 commit 自己的 deploy.yml 重建，正式站按 main 的 deploy.yml 构建，两次不是同一套流程；
-早于 E1（没有 `ops/edgeone-fullstack-build.py`）时测试站 `/api/auth/*` 会 503（正式站按 main 的流程构建，不受影响）。计划里会有对应警告。
+早于 E1（没有 `ops/edgeone-fullstack-build.py`）时：测试站演练只出警告（重建后 `/api/auth/*` 会 503）；**正式站回滚直接报错**——正式站构建检出目标 commit、调用它自己的构建脚本，
+早于 E1 必失败。请选 `81f71f4` 或更新的版本，或走控制台把 www 换绑回旧项目（上表第三列）。
 
 演练：每次改到回滚相关文件后，在测试站跑一次 `target=staging method=promote dry_run=false`（`stage=start`，绿后 `stage=check`），
 确认测试站 `/api/version` 回到目标版本，再正常发一次 main 把测试站拉回来。

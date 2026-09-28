@@ -98,10 +98,18 @@ class Plan(unittest.TestCase):
         self.assertTrue(any("main HEAD" in w for w in plan()["warnings"]))
         self.assertTrue(any("当前版本" in w for w in plan(web=C)["warnings"]))
 
-    def test_pre_e1_target_warns(self):
-        w = plan(skew=lambda s: {"e1": False, "same_deploy": True})["warnings"]
+    def test_pre_e1_target_warns_on_staging(self):
+        w = plan(target="staging", skew=lambda s: {"e1": False, "same_deploy": True})["warnings"]
         self.assertTrue(any("E1" in x and "503" in x for x in w))
         self.assertFalse(any("与 main 不同" in x for x in w))
+        self.assertFalse(any("不受影响" in x for x in w))
+
+    def test_pre_e1_target_is_error_on_production(self):
+        # 正式站构建检出目标 commit、调用它自己的 ops/edgeone-fullstack-build.py：早于 E1 必失败
+        for st in ("start", "promote", "check"):
+            p = plan(stage=st, web=B, skew=lambda s: {"e1": False, "same_deploy": True})
+            self.assertTrue(any("早于 E1" in e and rp.E1_MIN in e and "换绑回旧项目" in e for e in p["errors"]), (st, p["errors"]))
+            self.assertFalse(any("E1" in w for w in p["warnings"]))
 
     def test_deploy_yml_differs_from_main_warns(self):
         w = plan(skew=lambda s: {"e1": True, "same_deploy": False})["warnings"]
@@ -114,7 +122,8 @@ class Plan(unittest.TestCase):
             self.assertFalse(any("E1" in x or "与 main 不同" in x for x in w))
 
     def test_skew_warnings_are_not_errors(self):
-        self.assertEqual(plan(skew=lambda s: {"e1": False, "same_deploy": False})["errors"], [])
+        self.assertEqual(plan(skew=lambda s: {"e1": True, "same_deploy": False})["errors"], [])
+        self.assertEqual(plan(target="staging", skew=lambda s: {"e1": False, "same_deploy": False})["errors"], [])
 
     def test_later_stages_need_explicit_commit(self):
         # promote 完 release-log 多一版，「上一次正式发布」就变了——后续段不许靠默认
