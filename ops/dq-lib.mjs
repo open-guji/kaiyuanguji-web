@@ -270,6 +270,14 @@ export async function pool(items, n, fn) {
 
 // ─── 巡检编排 ───
 
+/** current 版（Buffer）与 h1 版（已解析对象）有哪些顶层字段不同；current 不是 JSON 返回 null。 */
+function diffKeys(currentBuf, h1Entry) {
+    let ce;
+    try { ce = JSON.parse(currentBuf.toString('utf-8')); } catch { return null; }
+    const keys = new Set([...Object.keys(ce), ...Object.keys(h1Entry)]);
+    return [...keys].filter((k) => JSON.stringify(ce[k]) !== JSON.stringify(h1Entry[k]));
+}
+
 function fmtCommit(dc) {
     return dc ? `${(dc.commitId ?? '').slice(0, 12)}/${(dc.productionCommitId ?? '').slice(0, 12)}/${(dc.textCommitId ?? '').slice(0, 12)}` : '(无)';
 }
@@ -426,7 +434,7 @@ export async function runDq(opts = {}) {
     // ── 2. 条目抽样：h1 可解析、id／type 合法、与 current 一致 ──
     tp = Date.now();
     const sampledIds = sample([...manifest.keys()], entryRate, seed);
-    const E = { sampled: sampledIds.length, h1Bad: 0, hashMismatch: 0, idMismatch: 0, typeInvalid: 0, typeBitMismatch: 0, currentMissing: 0, currentDiffer: 0, currentMatch: 0 };
+    const E = { sampled: sampledIds.length, h1Bad: 0, hashMismatch: 0, idMismatch: 0, typeInvalid: 0, typeBitMismatch: 0, currentMissing: 0, currentDiffer: 0, currentCdnStale: 0, currentMatch: 0 };
     report.entries = E;
     const sampledEntries = new Map();
     await pool(sampledIds, concurrency, async (id) => {
@@ -450,14 +458,19 @@ export async function runDq(opts = {}) {
         if (!c.ok) { E.currentMissing++; add('packaging', 'current-entry-missing', `current/entry/${id}.json 取不到（HTTP ${c.status}），h1 有`); return; }
         if (c.body.equals(r.body)) { E.currentMatch++; return; }
         E.currentDiffer++;
-        let explain = '字节不同';
-        try {
-            const ce = JSON.parse(c.body.toString('utf-8'));
-            const keys = new Set([...Object.keys(ce), ...Object.keys(e)]);
-            const changed = [...keys].filter((k) => JSON.stringify(ce[k]) !== JSON.stringify(e[k]));
-            explain = changed.length ? `字段不同：${changed.join(', ')}` : '仅格式／字段顺序不同，内容等价';
-        } catch { explain = 'current 版不是合法 JSON'; }
-        add('packaging', 'current-h1-differ', `${id}：current 与 h1 不一致（${explain}）`);
+        // 分清是 CDN 按 ?v=<commitId> 缓存了旧版（源站其实已一致），还是源站本身就不一致：
+        // 换一个没人用过的 v 绕过节点缓存再取一次。
+        const fresh = await http.request(`${base}/current/entry/${encodeURIComponent(id)}.json?v=dq-${t0}`);
+        if (fresh.ok && fresh.body.equals(r.body)) {
+            E.currentCdnStale++;
+            add('packaging', 'current-cdn-stale', `${id}：current/entry?v=${v} 命中 CDN 旧缓存，源站已与 h1 一致`,
+                { changed: diffKeys(c.body, e) });
+            return;
+        }
+        const changed = diffKeys(c.body, e);
+        const explain = changed === null ? 'current 版不是合法 JSON'
+            : changed.length ? `字段不同：${changed.join(', ')}` : '仅格式／字段顺序不同，内容等价';
+        add('packaging', 'current-h1-differ', `${id}：current 与 h1 不一致，绕过 CDN 缓存后仍不一致（${explain}）`);
     });
     phases.entries = Date.now() - tp;
     log(`条目：抽 ${E.sampled}，current 一致 ${E.currentMatch}`);
@@ -635,7 +648,7 @@ export function renderMarkdown(report, { maxPerCode = 15 } = {}) {
     L.push(`| type 不合法 | ${n(E.typeInvalid)} |`);
     L.push(`| type 与 id 类型位不符 | ${n(E.typeBitMismatch)} |`);
     L.push(`| current 与 h1 逐字节一致 | ${n(E.currentMatch)} |`);
-    L.push(`| current 与 h1 不一致 | ${n(E.currentDiffer)} |`);
+    L.push(`| current 与 h1 不一致 | ${n(E.currentDiffer)}（其中 CDN 旧缓存 ${n(E.currentCdnStale)}） |`);
     L.push(`| current 取不到 | ${n(E.currentMissing)} |`);
     L.push(`| 引用（${REF_FIELDS.join('／')}） | ${n(R.refs)}（去重 ${n(R.unique)}） |`);
     L.push(`| 经升格表解析 | ${n(R.resolvedViaPromotion)} |`);

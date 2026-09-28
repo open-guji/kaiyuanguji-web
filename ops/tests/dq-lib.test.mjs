@@ -148,7 +148,7 @@ test('pool：同时在飞不超过 8，哪怕要求更多', async () => {
 const COMMIT = { commitId: 'c'.repeat(40), productionCommitId: 'p'.repeat(40), textCommitId: 't'.repeat(40) };
 const idOf = (typeBits, seq) => ((BigInt(typeBits) << 59n) | (1700000000n << 19n) | BigInt(seq)).toString(36);
 
-function buildSite({ breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false } = {}) {
+function buildSite({ staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false } = {}) {
     const files = new Map();
     const put = (p, v) => files.set(p, Buffer.from(typeof v === 'string' ? v : JSON.stringify(v)));
     const B = 'https://d.test';
@@ -197,8 +197,12 @@ function buildSite({ breakCurrent = false, danglingRef = false, missingChapter =
 
     const requested = [];
     const fetchImpl = async (url, init = {}) => {
-        const key = url.split('?')[0];
-        requested.push({ key, method: init.method ?? 'GET' });
+        const [key, query = ''] = url.split('?');
+        requested.push({ key, query, method: init.method ?? 'GET' });
+        // staleCdn：节点按 ?v=<commitId> 缓存了 book 的旧版，换个 v 就拿到源站新版
+        if (staleCdn && key.endsWith(`/current/entry/${book}.json`) && query === `v=${COMMIT.commitId.slice(0, 12)}`) {
+            return resp(200, JSON.stringify({ ...entries[book], classification: undefined, title: '旧' }));
+        }
         const buf = files.get(key);
         if (!buf) return resp(404);
         return resp(200, init.method === 'HEAD' ? null : buf);
@@ -232,7 +236,21 @@ test('runDq：current 与 h1 不一致 → 网站打包问题，并说出差在�
     assert.equal(f.length, 1);
     assert.equal(f[0].kind, 'packaging');
     assert.match(f[0].message, /title/);
+    assert.match(f[0].message, /绕过 CDN 缓存后仍不一致/);
     assert.equal(hasFailures(r), true);
+});
+
+test('runDq：?v=<commitId> 命中 CDN 旧缓存、源站已一致 → current-cdn-stale', async () => {
+    const site = buildSite({ staleCdn: true });
+    const r = await runOn(site);
+    assert.equal(r.entries.currentDiffer, 1);
+    assert.equal(r.entries.currentCdnStale, 1);
+    const f = r.findings.find((x) => x.code === 'current-cdn-stale');
+    assert.equal(f.kind, 'packaging');
+    assert.deepEqual(f.detail.changed, ['title']);
+    assert.ok(!r.findings.some((x) => x.code === 'current-h1-differ'));
+    // 带 cache-bust 的 current 请求确实用的是 latest.json 的短 commitId
+    assert.ok(site.requested.some((q) => q.key.includes('/current/entry/') && q.query === `v=${COMMIT.commitId.slice(0, 12)}`));
 });
 
 test('runDq：悬空引用 → 数据仓问题，默认不让任务变红', async () => {
