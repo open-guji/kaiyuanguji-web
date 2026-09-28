@@ -3,10 +3,28 @@ name: Deploy to EdgeOne
 # 产物推到 edgeone-release 分支由 EdgeOne Pages 托管。2026-09-06 改名以免误导新人。
 
 on:
+  # 2026-09-28（overview#182，Actions 额度 90%）：本仓私有、按分钟计费，一次部署约 17 分钟。
+  # ① 只有会改变站点的改动才触发部署：文档、e2e、ops 脚本、其它 workflow、indexer、perf、
+  #    测试文件改了不部署（需要时手动 dispatch）。deploy.yml 自己改了仍部署。
+  # ② 去掉 repository_dispatch: data-updated——数据仓每推一次就整套重部署，一夜 19 次。
+  #    数据上线只走每日定时（下方 schedule，三仓无变化即跳过）或手动触发。
   push:
     branches: [ main ]
-  repository_dispatch:
-    types: [ data-updated ]
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!docs/**'
+      - '!e2e/**'
+      - '!ops/**'
+      - '!indexer/**'
+      - '!perf/**'
+      - '!.claude/**'
+      - '!**/__tests__/**'
+      - '!**/*.test.ts'
+      - '!**/*.test.tsx'
+      - '!**/*.test.mjs'
+      - '!.github/**'
+      - '.github/workflows/deploy.yml'
   # 手动触发（Actions 页面 Run workflow 按钮 / API）
   # T1（2026-09-27）：target=staging 重建测试站（默认）；target=production 是
   # 人手动 promote——把测试站验过的版本（或仅数据）打到正式站。
@@ -36,9 +54,11 @@ permissions:
 # 同一时间只允许一个部署在跑；连续 push 时取消旧的排队任务，
 # 避免两个 job 争抢 edgeone-release 分支导致部署乱序。
 # T1：测试站与正式站各排各的队，互不阻塞。
+# 2026-09-28（overview#182）：测试站连推时取消在跑的旧 run、只跑最后一次（省分钟数）；
+# 正式站仍排队不取消——半途取消可能让 edgeone-release 与 COS 指针处在不一致状态。
 concurrency:
   group: deploy-edgeone-${{ inputs.target || 'staging' }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ (inputs.target || 'staging') == 'staging' }}
 
 jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过整个构建。
@@ -46,7 +66,7 @@ jobs:
   # 注：这里的比对口径不随 T1 改变——仍然只问「正式站」是否已是最新数据，
   # 测试站配置齐不齐、这次要不要先落测试站，交给 resolve job 决定。
   check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     outputs:
       should_deploy: ${{ steps.compare.outputs.should_deploy }}
     steps:
@@ -89,7 +109,7 @@ jobs:
   #             数据=测试站 staging/latest.json 里记下的三仓 commit（钉死，不取 HEAD）；
   #             代码 = code+data 时取测试站记下的 webCommitId，data 时取正式站现有 webCommitId
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: check
     if: ${{ needs.check.outputs.should_deploy == 'true' }}
     outputs:
@@ -141,7 +161,7 @@ jobs:
           echo "· 部署到测试站 kyg-staging"
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: resolve
     outputs:
       # W2b 双跑：kyg-ssr-spike 这次有没有部署成功（verify job 据此决定测不测 ssr-test）
@@ -160,8 +180,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nextjs/package-lock.json
 
       # npm ci 严格按 lockfile 安装（与 test.yml 保持一致）；
       # 原先的 npm install 会在 CI 里悄悄升级依赖，导致「本地能过、线上挂」
@@ -637,7 +655,7 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
         run: |
-          pip install tencentcloud-sdk-python-teo -q
+          python3 -m pip install --user tencentcloud-sdk-python-teo -q
           python3 -c "
           import json, os
           from tencentcloud.common import credential
@@ -832,13 +850,19 @@ jobs:
             echo "::warning title=W2b 双跑失败::kyg-ssr-spike 本次没有部署成功（构建 $BUILD／部署 $DEPLOY），ssr-test 停在上一版；正式站发布不受影响"
           fi
 
+      # 自托管 runner（2026-09-28，overview#184）的工作目录跨 run 保留：私有文本仓的 clone
+      # 在 .git/config 里带着 token，数据仓 clone 也占盘——job 结束就删，不等下次 checkout 清。
+      - name: Clean up clones (self-hosted)
+        if: always()
+        run: rm -rf book-text-private book-index-draft book-index book-text
+
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
   # 老 smoke 只看网络层（字节数/404/pageerror），2026-09-02~03 那批故障
   # （整理本 tab 消失、"0 部书"、书名不渲染）它一个都发现不了——那些请求全是
   # 200。这个 job 断言的是「内容」。
   verify:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: [resolve, build]
     # 部署失败就没必要验收了；但 build 被 check 跳过时（数据无变化）也不必跑
     if: needs.build.result == 'success'
@@ -863,7 +887,7 @@ jobs:
 
       - name: Install chromium
         working-directory: e2e
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
       - name: Wait for CDN propagation

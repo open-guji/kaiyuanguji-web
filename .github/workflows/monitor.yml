@@ -41,22 +41,18 @@ permissions:
 jobs:
   private:
     name: A1 部署停更 ＋ B 数据监测
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 5
     concurrency:
       group: monitor-private
       cancel-in-progress: false
     steps:
-      # 本仓：只要 package.json（及 50 个提交的历史，算 main 改 UI 版本的时间）、锚点、IM 推送脚本
+      # 本仓：用到 package.json（及 50 个提交的历史，算 main 改 UI 版本的时间）、锚点、IM 推送脚本。
+      # 自托管 runner（overview#184）上各 job 共用同一个工作目录：不能用 sparse-checkout／blob:none，
+      # 否则后续 job 的 checkout 会拿到残缺的工作树（09-28 实测：nextjs/package-lock.json 缺失，npm ci 失败）。
       - uses: actions/checkout@v4
         with:
           fetch-depth: 50
-          filter: blob:none
-          sparse-checkout: |
-            nextjs/package.json
-            e2e/fixtures
-            ops/health-notify.sh
-          sparse-checkout-cone-mode: false
       # 公开的监控代码（公开仓，不需要 token）。可用仓库变量 MONITOR_REF 钉 commit
       - uses: actions/checkout@v4
         with:
