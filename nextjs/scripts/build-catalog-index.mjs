@@ -94,12 +94,28 @@ export function toCard(d) {
 // 书名按汉语拼音（zh）排；zh-Hant 默认是笔画序，对简体界面的读者不直观
 const collator = new Intl.Collator('zh');
 
-/** 有提要优先，再按书名，最后按 id（保证输出稳定） */
+/**
+ * 书名的排序键：去掉开头的标点与括注（如「(开庆)四明续志」「《妙法蓮華經》…」「@言」），
+ * 否则这类书名会整批排到拼音序最前面。括注整段去掉，只剩书名本身。
+ */
+export function titleSortKey(title) {
+    let t = String(title ?? '').trim();
+    for (let i = 0; i < 4; i++) {
+        const next = t
+            .replace(/^[(（〔［\[【][^)）〕］\]】]{0,12}[)）〕］\]】]/u, '')
+            .replace(/^[^\p{L}\p{N}]+/u, '');
+        if (next === t) break;
+        t = next;
+    }
+    return t || String(title ?? '');
+}
+
+/** 有提要优先，再按书名拼音（overview#229 定），最后按 id（保证输出稳定） */
 export function compareCards(a, b) {
     const sa = a.summary ? 0 : 1;
     const sb = b.summary ? 0 : 1;
     if (sa !== sb) return sa - sb;
-    const t = collator.compare(a.title, b.title);
+    const t = collator.compare(titleSortKey(a.title), titleSortKey(b.title));
     if (t !== 0) return t;
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }

@@ -27,6 +27,7 @@ import {
     compareCards,
     nodeIdFor,
     taxonomyRank,
+    titleSortKey,
     toCard,
     writeCatalog,
 } from './build-catalog-index.mjs';
@@ -78,6 +79,18 @@ test('compareCards：有提要优先，再按书名，再按 id', () => {
         { id: '0', title: '乙' },
     ];
     assert.deepEqual(cards.sort(compareCards).map((c) => c.id), ['2', '1', '0', '3']);
+});
+
+test('titleSortKey：去掉开头的标点与括注，按书名本身排', () => {
+    assert.equal(titleSortKey('(开庆)四明续志'), '四明续志');
+    assert.equal(titleSortKey('〔明〕某書'), '某書');
+    assert.equal(titleSortKey('《妙法蓮華經》一卷'), '妙法蓮華經》一卷');
+    assert.equal(titleSortKey('@言'), '言');
+    assert.equal(titleSortKey('史記'), '史記');
+    assert.equal(titleSortKey('()'), '()'); // 全是标点：原样，不出空键
+    // 同为无提要：「(开庆)四明续志」按「四明」排，不再整批排到最前
+    const cards = [{ id: '1', title: '(开庆)四明续志' }, { id: '2', title: '安陽集' }, { id: '3', title: '@言' }];
+    assert.deepEqual(cards.sort(compareCards).map((c) => c.id), ['2', '1', '3']);
 });
 
 test('buildCatalog：计数含子孙，经史子集顺序，分类表次序，未分類最后', () => {

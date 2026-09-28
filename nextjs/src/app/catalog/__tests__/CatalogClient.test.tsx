@@ -60,10 +60,20 @@ describe('CatalogClient', () => {
         expect(mockPush).toHaveBeenCalledWith('/catalog?node=cjing');
     });
 
-    it('「全部」行：先落到不带 node 的地址（默认节点），不出 404', async () => {
+    it('不做「全部」（overview#229）：树上没有「全部」行，未分類在最后并标数量', async () => {
         await setup();
         const tree = screen.getAllByRole('tree')[0];
-        await userEvent.click(within(tree).getByText('全部'));
-        expect(mockPush).toHaveBeenCalledWith('/catalog');
+        expect(within(tree).queryByText('全部')).toBeNull();
+        const items = within(tree).getAllByRole('treeitem').filter((li) => li.getAttribute('aria-level') === '1');
+        const last = items[items.length - 1];
+        expect(last).toHaveTextContent(/未分[類类]/);
+        expect(last).toHaveTextContent('5');
+    });
+
+    it('点未分類：跳到它的节点页，照常翻页', async () => {
+        await setup();
+        const tree = screen.getAllByRole('tree')[0];
+        await userEvent.click(within(tree).getByText(/未分[類类]/));
+        expect(mockPush).toHaveBeenCalledWith('/catalog?node=unclassified');
     });
 });

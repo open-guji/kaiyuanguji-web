@@ -28,8 +28,9 @@ export interface CatalogWorkCard {
 export const CATALOG_PAGE_SIZE = 20;
 export const CATALOG_PATH = '/catalog';
 /**
- * 组件的「全部」行（book-index-ui 的 CATALOG_ALL_ID）。「全部」怎么呈现待用户定（overview#229），
- * 定之前 node=all 与不带 node 一样落到默认节点，不出 404。这里不 import 组件包：本文件服务端也用。
+ * 组件的「全部」行（book-index-ui 的 CATALOG_ALL_ID）。overview#229 定了不做「全部」：
+ * 页面不显示这一行，node=all 与不带 node 一样落到默认节点（經部），不出 404。
+ * 这里不 import 组件包：本文件服务端也用。
  */
 export const CATALOG_ALL_ID = 'all';
 

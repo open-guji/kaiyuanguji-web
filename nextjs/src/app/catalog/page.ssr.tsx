@@ -5,8 +5,8 @@
 //
 // - 服务端取构建期索引（scripts/build-catalog-index.mjs 产出、随 current/ 同步）渲染首屏：
 //   tree.json 定节点与页数，<node>/<page>.json 是本页 20 条作品卡。
-// - 不带 node（或 node=all，组件的「全部」行）时落到分类树第一个节点（經部），canonical 指向该节点页，
-//   不另生成「全部」分页——「全部」怎么呈现待用户定（overview#229）。
+// - 不带 node（或 node=all）时落到分类树第一个节点（經部），canonical 指向该节点页；
+//   不做「全部」分页（overview#229 定）。
 // - 渲染用 book-index-ui 的 CatalogPage（CatalogClient.tsx）。
 // - 每个节点页各有 title 与 canonical（第 1 页不带 page）；node 不存在、page 越界或乱填真 404。
 // - 索引读不到（网络错、5xx）抛错走错误页，不当成 404 缓存。
