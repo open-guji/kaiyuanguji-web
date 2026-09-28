@@ -1,7 +1,9 @@
 /**
  * 版本解析 —— 所有 data 请求的 cache-bust 依据。
  *
- * 线上数据布局：条目在 `current/` 单副本，靠 `?v=<commitId>` 让 CDN 分离缓存。
+ * 线上数据布局：条目在 `current/` 单副本，靠 `?v=<版本键>` 让 CDN 分离缓存。
+ * 版本键 = latest.json 的 cacheKey（三仓合成），旧数据无此字段时回退 commitId
+ * （与前端 nextjs/src/lib/data-version.ts 同一口径，见 overview#169）。
  * 版本号的唯一权威来源是根目录的 `latest.json`（EdgeOne 配了不缓存）；
  * `current/version.json` 带 immutable 长缓存，读它会拿到过期值——2026-09-02
  * 就是因为 BundleStorage 自己去读 current/version.json，拿到 9 天前的旧
@@ -11,8 +13,10 @@ import type { APIRequestContext } from '@playwright/test';
 import { DATA_BASE } from './anchors';
 
 export interface DataVersion {
-    /** 12 位短哈希，用作 ?v= */
+    /** draft 仓 12 位短哈希（旧数据的 ?v=） */
     commitId: string;
+    /** 三仓合成键（16 位 hex），有则优先用作 ?v= 与 v/<key>/search */
+    cacheKey?: string;
     fullCommitId?: string;
     productionCommitId?: string;
     /** book-text 仓（整理本/全文资产）的 commit */
@@ -35,6 +39,11 @@ export async function fetchLatest(request: APIRequestContext): Promise<DataVersi
         throw new Error(`latest.json 缺 commitId: ${JSON.stringify(json)}`);
     }
     return json;
+}
+
+/** 前端实际用的版本键：优先 cacheKey，缺则回退 commitId */
+export function versionKey(v: DataVersion): string {
+    return v.cacheKey || v.commitId;
 }
 
 /** 拼一个带正确版本号的 data URL */
