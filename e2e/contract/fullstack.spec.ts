@@ -458,6 +458,19 @@ test.describe('条目页多余查询参数 308 到干净地址（overview#280 S1
     });
 });
 
+test.describe('条目页 Eo-Cdn-Cache-Control（overview#280 S2 实验 B2）', () => {
+    test('条目页响应 200；Eo-Cdn-Cache-Control 与 Content-Encoding 只记录不断言', async ({ request }) => {
+        // 本地 next start 上头是我们在 next.config 里设的值；EdgeOne 上适配器认不认、压不压正是要量的东西，
+        // 所以这里不断言，只把实测值留在用例注解里（判定规则见 overview#280）
+        const res = await request.get(`${TARGET}/item/${ANCHORS.work.id}`, { ...noFollow, headers: { 'accept-encoding': 'gzip, br' } });
+        expect(res.status()).toBe(200);
+        test.info().annotations.push(
+            { type: 'eo-cdn-cache-control', description: res.headers()['eo-cdn-cache-control'] ?? '（无）' },
+            { type: 'content-encoding', description: res.headers()['content-encoding'] ?? '（无）' },
+        );
+    });
+});
+
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
