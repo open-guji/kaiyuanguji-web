@@ -52,11 +52,12 @@ async function shoot(browser, base, p, vp, file) {
             content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}',
         });
         await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
-        await scrollThrough(page);
+        // 只截首屏的页（阅读页）不滚到底：不需要触发下面内容的懒加载
+        if (!p.firstScreenOnly) await scrollThrough(page);
         await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(500);
-        await page.screenshot({ path: file, type: 'jpeg', quality: 70, fullPage: true });
+        await page.screenshot({ path: file, type: 'jpeg', quality: 70, fullPage: !p.firstScreenOnly });
         return { ok: true, status: resp?.status() ?? 0 };
     } catch (e) {
         return { ok: false, error: String(e.message ?? e).split('\n')[0] };
