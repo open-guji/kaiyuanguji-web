@@ -9,15 +9,7 @@
 import Link from 'next/link';
 import { LocaleProvider, useConvert } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import {
-    isTruncated,
-    readCardHref,
-    readHomeHref,
-    readPageCount,
-    sortDynasties,
-    READ_MAX_HITS,
-    type ReadCard,
-} from './read-route';
+import { readCardHref, readHomeHref, type CatalogNode, type ReadCard, type ReadFeatured } from './read-route';
 
 const S = {
     wrap: { maxWidth: '64rem', margin: '0 auto', padding: '40px 20px 64px', color: 'var(--color-ink)' },
@@ -41,8 +33,7 @@ const S = {
     cardTitle: { fontWeight: 600 },
     meta: { color: 'var(--color-ink-3)', fontSize: '0.8125rem', marginTop: 2 },
     pager: { display: 'flex', gap: 16, alignItems: 'center', marginTop: 24, fontSize: '0.9375rem' },
-    switch: { margin: '4px 0 0' },
-    switchSummary: { cursor: 'pointer', color: 'var(--color-ink-2)', fontSize: '0.875rem', margin: '0 0 10px' },
+    sub: { marginTop: 12 },
     empty: { padding: '48px 0', color: 'var(--color-ink-2)' },
 };
 
@@ -55,7 +46,7 @@ function Cards({ cards }: { cards: ReadCard[] }) {
                     <Link href={readCardHref(c)} style={S.card} data-read-card={c.id}>
                         <div style={S.cardTitle}>{convert(c.title)}</div>
                         <div style={S.meta}>
-                            {[c.dynasty && convert(c.dynasty), c.author && convert(c.author), c.juanCount && `${c.juanCount}卷`, c.hasCollated && '整理本']
+                            {[c.authors?.[0] && convert([c.authors[0].dynasty, c.authors[0].name].filter(Boolean).join(' ')), c.juan && (typeof c.juan === 'number' ? `${c.juan}卷` : convert(c.juan)), c.collated && '整理本']
                                 .filter(Boolean)
                                 .join(' · ')}
                         </div>
@@ -66,18 +57,18 @@ function Cards({ cards }: { cards: ReadCard[] }) {
     );
 }
 
-function DynastyChips({ facet, current }: { facet: Record<string, number>; current?: string }) {
+function NodeChips({ nodes, currentId, label }: { nodes: CatalogNode[]; currentId?: string; label: string }) {
     const { convert } = useConvert();
     return (
-        <ul style={S.chips} aria-label="按朝代">
-            {sortDynasties(facet).map((d) => (
-                <li key={d.name}>
+        <ul style={S.chips} aria-label={label}>
+            {nodes.map((n) => (
+                <li key={n.id}>
                     <Link
-                        href={readHomeHref(d.name)}
-                        style={{ ...S.chip, ...(d.name === current ? S.chipOn : null) }}
-                        aria-current={d.name === current ? 'true' : undefined}
+                        href={readHomeHref(n.id)}
+                        style={{ ...S.chip, ...(n.id === currentId ? S.chipOn : null) }}
+                        aria-current={n.id === currentId ? 'true' : undefined}
                     >
-                        {convert(d.name)} {d.count}
+                        {convert(n.label)} {n.count}
                     </Link>
                 </li>
             ))}
@@ -86,71 +77,73 @@ function DynastyChips({ facet, current }: { facet: Record<string, number>; curre
 }
 
 export interface ReadHomeProps {
-    /** null＝没配 Meili，无法取数 */
-    data: null | {
-        facet: Record<string, number>;
-        dynasty?: string;
-        page: number;
-        /** 首页（无朝代）：整理本与书本；朝代页：本页作品 */
-        collated?: ReadCard[];
-        books?: ReadCard[];
-        works?: ReadCard[];
-    };
+    /** null＝这一版数据还没有阅读索引 */
+    tree: CatalogNode[] | null;
+    /** 首页：整理本与书本 */
+    featured?: ReadFeatured;
+    /** 节点页：从根到当前节点的路径、页码、本页作品 */
+    current?: { path: CatalogNode[]; page: number; pageCount: number; cards: ReadCard[] };
 }
 
-function Body({ data }: ReadHomeProps) {
+function Body({ tree, featured, current }: ReadHomeProps) {
     const { convert } = useConvert();
-    if (!data) return <p style={S.empty}>阅读列表暂时无法加载，请稍后再试。</p>;
-    const total = data.dynasty ? data.facet[data.dynasty] ?? 0 : 0;
-    const pageCount = readPageCount(total);
+    if (!tree) return <p style={S.empty}>阅读列表正在准备中，请稍后再来。</p>;
+    if (current) {
+        const node = current.path[current.path.length - 1];
+        const top = current.path[0];
+        const children = node.children ?? [];
+        return (
+            <>
+                <p style={S.note}>
+                    <Link href="/read">阅读</Link>
+                    {current.path.map((n) => (
+                        <span key={n.id}>
+                            {' › '}
+                            <Link href={readHomeHref(n.id)}>{convert(n.label)}</Link>
+                        </span>
+                    ))}
+                    ，共 {node.count} 部
+                </p>
+                <NodeChips nodes={tree} currentId={top.id} label="四部分类" />
+                {children.length > 0 && (
+                    <div style={S.sub}>
+                        <NodeChips nodes={children} label={`${node.label}下的分类`} />
+                    </div>
+                )}
+                <h2 style={S.h2}>{convert(current.path.map((n) => n.label).join('·'))}</h2>
+                <Cards cards={current.cards} />
+                {current.pageCount > 1 && (
+                    <nav style={S.pager} aria-label="分页">
+                        {current.page > 1 && <Link href={readHomeHref(node.id, current.page - 1)} rel="prev">上一页</Link>}
+                        <span>第 {current.page} / {current.pageCount} 页</span>
+                        {current.page < current.pageCount && <Link href={readHomeHref(node.id, current.page + 1)} rel="next">下一页</Link>}
+                    </nav>
+                )}
+            </>
+        );
+    }
     return (
         <>
-            {data.dynasty ? (
-                <>
-                    <p style={S.note}>
-                        <Link href="/read">阅读</Link> › {convert(data.dynasty)}，共 {total} 部
-                    </p>
-                    <details style={S.switch}>
-                        <summary style={S.switchSummary}>换朝代</summary>
-                        <DynastyChips facet={data.facet} current={data.dynasty} />
-                    </details>
-                    <h2 style={S.h2}>{convert(data.dynasty)}代作品</h2>
-                    <Cards cards={data.works ?? []} />
-                    {pageCount > 1 && (
-                        <nav style={S.pager} aria-label="分页">
-                            {data.page > 1 && <Link href={readHomeHref(data.dynasty, data.page - 1)} rel="prev">上一页</Link>}
-                            <span>第 {data.page} / {pageCount} 页</span>
-                            {data.page < pageCount && <Link href={readHomeHref(data.dynasty, data.page + 1)} rel="next">下一页</Link>}
-                        </nav>
-                    )}
-                    {isTruncated(total) && (
-                        <p style={S.note}>此朝代共 {total} 部，这里只能翻到前 {READ_MAX_HITS} 部，其余请用「古籍元数据」搜索。</p>
-                    )}
-                </>
-            ) : (
-                <>
-                    <h2 style={S.h2}>整理本（{data.collated?.length ?? 0} 部）</h2>
-                    <p style={S.note}>人工校对过的整理本，逐卷阅读。</p>
-                    <Cards cards={data.collated ?? []} />
-                    <h2 style={S.h2}>书本全文（{data.books?.length ?? 0} 部）</h2>
-                    <Cards cards={data.books ?? []} />
-                    <h2 style={S.h2}>全文作品（按朝代）</h2>
-                    <p style={S.note}>选一个朝代，浏览该朝代有全文的作品。</p>
-                    <DynastyChips facet={data.facet} />
-                </>
-            )}
+            <h2 style={S.h2}>整理本（{featured?.collated.length ?? 0} 部）</h2>
+            <p style={S.note}>人工校对过的整理本，逐卷阅读。</p>
+            <Cards cards={featured?.collated ?? []} />
+            <h2 style={S.h2}>书本全文（{featured?.books.length ?? 0} 部）</h2>
+            <Cards cards={featured?.books ?? []} />
+            <h2 style={S.h2}>全文作品（按四部分类）</h2>
+            <p style={S.note}>与古籍总目同一套分类；选一部，浏览其中有整理本或全文的作品，有整理本的排在前面。</p>
+            <NodeChips nodes={tree} label="四部分类" />
         </>
     );
 }
 
-export default function ReadHome({ data }: ReadHomeProps) {
+export default function ReadHome(props: ReadHomeProps) {
     return (
         <LocaleProvider>
             <LayoutWrapper>
                 <div style={S.wrap}>
                     <h1 style={S.h1}>阅读</h1>
                     <p style={S.lead}>站上所有有整理本或全文的古籍，点开即可阅读。</p>
-                    <Body data={data} />
+                    <Body {...props} />
                 </div>
             </LayoutWrapper>
         </LocaleProvider>

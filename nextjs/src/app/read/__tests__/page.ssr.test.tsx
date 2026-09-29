@@ -1,25 +1,30 @@
 /**
  * @jest-environment node
  *
- * 阅读首页服务端（overview#267 第 16 项）：首页列整理本与朝代入口，朝代页列作品并分页，
- * 参数不对／朝代不存在／页码越界真 404，没配 Meili 显示提示不 404，取数出错抛错。
+ * 阅读首页服务端（overview#267 第 16 项）：首页列整理本、书本与四部入口，节点页列作品并分页，
+ * 参数不对／节点不存在／页码越界真 404，这一版没有索引首页显示「正在准备」不 404，取数出错抛错。
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactElement } from 'react';
 
-const f = {
-    getDynastyFacet: jest.fn<() => Promise<Record<string, number>>>(),
-    getCollated: jest.fn<() => Promise<unknown[]>>(),
-    getBooks: jest.fn<() => Promise<unknown[]>>(),
-    getDynastyPage: jest.fn<(d: string, p: number) => Promise<unknown[]>>(),
-};
-let configured = true;
-jest.mock('../read-data', () => ({ getReadFetcher: () => (configured ? f : null) }));
+const mockTree = jest.fn<() => Promise<unknown>>();
+const mockFeatured = jest.fn<() => Promise<unknown>>();
+const mockPage = jest.fn<(node: string, page: number) => Promise<unknown>>();
+jest.mock('../read-data', () => ({
+    getReadTreeServer: () => mockTree(),
+    getReadFeaturedServer: () => mockFeatured(),
+    getReadPageServer: (n: string, p: number) => mockPage(n, p),
+}));
 jest.mock('next/navigation', () => ({ notFound: () => { throw new Error('NEXT_NOT_FOUND'); } }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: unknown }) => children);
 
-const card = (id: string, title: string, over = {}) => ({ id, title, hasCollated: false, hasText: true, ...over });
+const TREE = [
+    { id: 'cjing', label: '經部', count: 1 },
+    { id: 'cshi', label: '史部', count: 45, children: [{ id: 'czheng', label: '正史類', count: 45 }] },
+    { id: 'unclassified', label: '未分類', count: 2 },
+];
+const card = (id: string, title: string, over = {}) => ({ id, title, ...over });
 
 async function meta(sp: Record<string, string>) {
     const { generateMetadata } = await import('../page.ssr');
@@ -31,60 +36,62 @@ async function html(sp: Record<string, string>) {
 }
 
 beforeEach(() => {
-    configured = true;
-    Object.values(f).forEach((m) => m.mockReset());
-    f.getDynastyFacet.mockResolvedValue({ 明: 65, 唐: 2 });
-    f.getCollated.mockResolvedValue([card('w1', '易經', { hasCollated: true })]);
-    f.getBooks.mockResolvedValue([card('b1', '某書')]);
-    f.getDynastyPage.mockImplementation(async (_d, p) => (p === 2 ? [card('w9', '第二頁書')] : [card('w2', '明書')]));
+    mockTree.mockReset().mockResolvedValue(TREE);
+    mockFeatured.mockReset().mockResolvedValue({
+        collated: [card('w1', '易經', { collated: true, juan: 3, authors: [{ name: '某', dynasty: '周' }] })],
+        books: [card('b1', '某書')],
+    });
+    mockPage.mockReset().mockImplementation(async (node, page) =>
+        node === 'czheng' && page === 2 ? [card('w9', '第二頁書')] : (node === 'czheng' || node === 'cshi') ? [card('w2', '史記', { collated: true })] : null);
 });
 
 describe('阅读首页 page.ssr', () => {
-    it('首页：整理本与书本全部列出，朝代入口带数量，链接是真链接', async () => {
+    it('首页：整理本与书本全部列出，四部入口带数量，链接是真链接', async () => {
         const h = await html({});
         expect(h).toContain('<h1');
         expect(h).toContain('整理本（1 部）');
+        expect(h).toContain('书本全文（1 部）');
         expect(h).toContain('href="/read/w1?kind=collated"');
         expect(h).toContain('href="/read/b1?kind=fulltext"');
-        expect(h).toContain('href="/read?dynasty=%E5%94%90"');
-        expect(h).toContain('>唐');
-        expect(h.indexOf('唐')).toBeLessThan(h.indexOf('明'));
-        expect(f.getDynastyPage).not.toHaveBeenCalled();
+        expect(h).toContain('href="/read?node=cshi"');
+        expect(h).toContain('史部');
+        expect(h).toContain('3卷');
+        expect(mockPage).not.toHaveBeenCalled();
+        expect((await meta({})).alternates?.canonical).toBe('/read');
     });
 
-    it('朝代页：本页作品、上下页链接、canonical 与标题', async () => {
-        const h = await html({ dynasty: '明', page: '2' });
+    it('节点页：本页作品、上下页、子分类、canonical 与标题', async () => {
+        const h = await html({ node: 'czheng', page: '2' });
         expect(h).toContain('第二');
         expect(h).toContain('第 2 / 3 页');
         expect(h).toContain('rel="prev"');
         expect(h).toContain('rel="next"');
-        expect(await html({ dynasty: '明', page: '3' })).not.toContain('rel="next"');
-        expect(f.getDynastyPage).toHaveBeenCalledWith('明', 2);
-        const m = await meta({ dynasty: '明', page: '2' });
-        expect(m.title).toBe('明代作品（第2页） - 阅读');
-        expect(m.alternates?.canonical).toBe('/read?dynasty=%E6%98%8E&page=2');
-        expect((await meta({})).alternates?.canonical).toBe('/read');
+        expect(mockPage).toHaveBeenCalledWith('czheng', 2);
+        const top = await html({ node: 'cshi' });
+        expect(top).toContain('href="/read?node=czheng"'); // 子分类
+        expect(top).toContain('aria-current="true"'); // 当前部
+        const m = await meta({ node: 'czheng', page: '2' });
+        expect(m.title).toBe('史部·正史類（第2页） - 阅读');
+        expect(m.alternates?.canonical).toBe('/read?node=czheng&page=2');
     });
 
-    it('超过 1000 条的朝代提示改用搜索', async () => {
-        f.getDynastyFacet.mockResolvedValue({ 明: 2630 });
-        expect(await html({ dynasty: '明' })).toContain('只能翻到前 1000 部');
+    it('404：参数不对、节点不存在、页码越界、树上有页文件没有', async () => {
+        await expect(html({ node: '../x' })).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(html({ node: 'nope' })).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(html({ node: 'czheng', page: '4' })).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(html({ node: 'cjing' })).rejects.toThrow('NEXT_NOT_FOUND'); // mockPage 返回 null
+        await expect(html({ page: '2' })).rejects.toThrow('NEXT_NOT_FOUND');
+        expect((await meta({ node: 'nope' })).robots).toEqual({ index: false, follow: false });
     });
 
-    it('404：参数不对、朝代不在分组里、页码越界', async () => {
-        await expect(html({ dynasty: 'a"b' })).rejects.toThrow('NEXT_NOT_FOUND');
-        await expect(html({ dynasty: '清' })).rejects.toThrow('NEXT_NOT_FOUND');
-        await expect(html({ dynasty: '明', page: '4' })).rejects.toThrow('NEXT_NOT_FOUND');
-        expect((await meta({ dynasty: '清' })).robots).toEqual({ index: false, follow: false });
-    });
-
-    it('没配 Meili：提示暂时无法加载，不 404', async () => {
-        configured = false;
-        expect(await html({})).toContain('暂时无法加载');
+    it('这一版数据还没有阅读索引：首页显示正在准备（不 404），节点页 404', async () => {
+        mockTree.mockResolvedValue(null);
+        expect(await html({})).toContain('正在准备');
+        await expect(html({ node: 'cshi' })).rejects.toThrow('NEXT_NOT_FOUND');
     });
 
     it('取数出错抛错，不当 404 或空页', async () => {
-        f.getDynastyFacet.mockRejectedValue(new Error('meili HTTP 503'));
+        mockTree.mockRejectedValue(new Error('HTTP 503'));
         await expect(html({})).rejects.toThrow('HTTP 503');
     });
 });

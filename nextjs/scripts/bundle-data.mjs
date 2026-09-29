@@ -25,6 +25,7 @@ import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
+import { bundleRead } from './build-read-index.mjs';
 
 // ─── 配置 ───
 
@@ -583,6 +584,8 @@ bundleMeta();
 bundleL1();
 // 古籍总目分类索引 catalog/（N4b，见 build-catalog-index.mjs）
 bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
+// 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
+bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
 bundleL2();
 bundleWorkFullTextIndex();
 bundleExtraFiles();

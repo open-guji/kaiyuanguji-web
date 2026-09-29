@@ -74,6 +74,8 @@ export function createCatalogFetcher(opts: CatalogFetcherOptions) {
     }
 
     return {
+        /** 通用读取 current/<rel>（阅读首页的 read/ 索引也走这里）；404/403 返回 null */
+        getCurrent,
         getTree: () => getCurrent<CatalogNode[]>('catalog/tree.json'),
         getPage: (nodeId: string, page: number) => getCurrent<CatalogWorkCard[]>(`catalog/${nodeId}/${page}.json`),
     };
