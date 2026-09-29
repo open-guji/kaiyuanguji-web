@@ -1328,6 +1328,37 @@
   .contact-ways .doc-meta {
     margin-top: 4px;
   }
+  .contact-qr {
+    margin: 16px 0 0;
+  }
+  .contact-qr img {
+    display: block;
+    width: 160px;
+    height: 160px;
+    border-radius: 6px;
+  }
+  .contact-qr figcaption {
+    margin-top: 6px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
+  /* 页脚品牌栏下的微信群二维码 */
+  .og-footer-qr {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .og-footer-qr img {
+    flex: none;
+    width: 96px;
+    height: 96px;
+    border-radius: 6px;
+  }
+  .og-footer .og-footer-qr p {
+    font-size: var(--fs-xs);
+    line-height: 1.7;
+  }
 
   @media (max-width: 760px) {
     .home-join-inner {

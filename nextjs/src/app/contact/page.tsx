@@ -5,12 +5,15 @@ import { GITHUB_ORG } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '联系我们',
-  description: '发现错误、缺了资源、有建议或想参与开源古籍，可以通过站内反馈或 GitHub Issues 找到我们。',
+  description: '发现错误、缺了资源、有建议或想参与开源古籍，可以通过站内反馈、GitHub Issues、邮箱、QQ 群或微信群找到我们。',
 };
 
 const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
 
-// N6（overview#259）：只放已确定的联系方式。邮箱、公众号、交流群等用户给了再加，不放占位。
+// N6（overview#259）：只放用户给定的联系方式。没有公众号。
+// 微信群二维码 7 天过期（当前这张 10 月 5 日前有效），过期后要换 public/images/wechat-group-qr.png。
+const CONTACT_EMAIL = 'sheldonli.dev@gmail.com';
+const QQ_GROUP = '111362573';
 export default function ContactPage() {
   return (
     <LayoutWrapper>
@@ -41,6 +44,23 @@ export default function ContactPage() {
               kaiyuanguji-web Issues
             </a>
             <span className="doc-meta">也欢迎直接提 PR</span>
+          </dd>
+
+          <dt>邮箱</dt>
+          <dd>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <span className="doc-meta">合作、授权等不便公开的事</span>
+          </dd>
+
+          <dt>交流群</dt>
+          <dd>
+            QQ 群：{QQ_GROUP}
+            <span className="doc-meta">在 QQ 里搜索群号加入</span>
+            <figure className="contact-qr">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/wechat-group-qr.png" alt="微信群「开源古籍交流群」二维码" width={160} height={160} />
+              <figcaption>微信群：开源古籍交流群，微信扫码加入</figcaption>
+            </figure>
           </dd>
         </dl>
 

@@ -9,7 +9,7 @@ import { HOME_FEATURES } from '@/components/home/features';
 // 页尾（N6，overview#259 方案 A）：开放区下另起一段「关于与联系」，只用文字链接，首屏「搜索」仍是唯一主按钮。
 const JOIN_LINKS = [
   { label: '关于我们', href: '/about', text: '项目在做什么、数据来源与授权、致谢' },
-  { label: '联系我们', href: '/contact', text: '站内反馈、GitHub Issues' },
+  { label: '联系我们', href: '/contact', text: '站内反馈、GitHub Issues、邮箱、QQ 群、微信群' },
   { label: '反馈与纠错', href: '/feedback', text: '看到哪里不对，随手提交，可以跟踪处理进展' },
 ];
 

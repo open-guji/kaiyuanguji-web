@@ -48,10 +48,11 @@ describe('首页（N1）', () => {
         expect(within(band).queryByRole('button')).not.toBeInTheDocument();
     });
 
-    it('写明 CC0，不放二维码', () => {
-        const { container } = render(<HomePage />);
+    it('写明 CC0；二维码只在页脚，正文里没有（N6）', () => {
+        render(<HomePage />);
         const main = screen.getByRole('main');
         expect(within(main).getByText(/CC0 公有领域/)).toBeInTheDocument();
-        expect(container.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
+        expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
+        expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
     });
 });
