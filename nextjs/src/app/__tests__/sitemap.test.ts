@@ -32,6 +32,7 @@ describe('app/sitemap.ts', () => {
         expect(u.filter((x) => x.includes('/book-index?id='))).toEqual([]);
         expect(u.some((x) => x.endsWith('/about'))).toBe(true);
         expect(u.some((x) => x.endsWith('/contact'))).toBe(true);
+        expect(u.some((x) => x.endsWith('/read'))).toBe(true);
         expect(mockGetAllEntries).not.toHaveBeenCalled();
     });
 
@@ -40,5 +41,7 @@ describe('app/sitemap.ts', () => {
         const u = await urls();
         expect(u.filter((x) => x.includes('/book-index?id='))).toHaveLength(2);
         expect(u.some((x) => x.endsWith('/book-index?id=d59f20aowb9c'))).toBe(true);
+        // /read 只在全栈构建里有，静态导出的 sitemap 不列
+        expect(u.some((x) => x.endsWith('/read'))).toBe(false);
     });
 });

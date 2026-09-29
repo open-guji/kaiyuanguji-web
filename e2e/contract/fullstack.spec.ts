@@ -411,6 +411,26 @@ test.describe('QA 回归 P2（overview#267）：条目页直出简体、旧入�
     }
 });
 
+test.describe('阅读首页 /read（overview#267 第 16 项）', () => {
+    // CI 的全栈构建没有配 Meili：这里只验不依赖数据的部分（导航、状态码、参数校验）；
+    // 列表内容（整理本 64 部＋书本 35 部＋朝代入口）由本地带 Meili 环境的实测与 PR 截图覆盖。
+    test('顶栏有「阅读」指向 /read，页面 200 且有 h1', async ({ request }) => {
+        const home = await (await request.get(`${TARGET}/`, noFollow)).text();
+        expect(home).toMatch(/<a[^>]*href="\/read"[^>]*>阅读<\/a>/);
+        const res = await request.get(`${TARGET}/read`, noFollow);
+        expect(res.status()).toBe(200);
+        const html = await res.text();
+        expect(html).toMatch(/<h1[^>]*>阅读<\/h1>/);
+        expect(html).toMatch(/<link[^>]*rel="canonical"[^>]*href="[^"]*\/read"/);
+    });
+
+    test('参数不对真 404：乱码朝代、页码非法、没有朝代却翻页', async ({ request }) => {
+        for (const q of ['dynasty=a%22b', 'dynasty=%E6%98%8E&page=0', 'dynasty=%E6%98%8E&page=x', 'page=2']) {
+            expect((await request.get(`${TARGET}/read?${q}`, noFollow)).status(), q).toBe(404);
+        }
+    });
+});
+
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
