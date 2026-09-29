@@ -63,7 +63,7 @@ describe('contentBudget', () => {
 });
 
 describe('buildFeedbackBody', () => {
-    const pageUrl = `https://www.kaiyuanguji.com/item/${WORK}/read?kind=collated&juan=juan%2F004.json`;
+    const pageUrl = `https://www.kaiyuanguji.com/read/${WORK}?kind=collated&juan=juan%2F004.json`;
 
     it('条目 id 进 resourceId，卷号随 pageUrl，选中文字拼在正文开头', () => {
         const body = buildFeedbackBody({

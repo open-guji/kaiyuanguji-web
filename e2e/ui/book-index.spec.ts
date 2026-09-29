@@ -15,7 +15,9 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 test.describe('首页', () => {
     test('正常加载且导航完整', async ({ page }) => {
         await page.goto(TARGET);
-        await expect(page.getByRole('link', { name: /古籍索引/ }).first()).toBeVisible();
+        // 搜索入口原名「古籍索引」，用户意见改名「古籍元数据」（overview#267）
+        await expect(page.getByRole('link', { name: '古籍元数据' }).first()).toBeVisible();
+        await expect(page.getByRole('link', { name: '古籍索引' })).toHaveCount(0);
     });
 
     // N1 首页：大检索框 + 唯一主按钮「搜索」，搜索落到索引页
@@ -29,6 +31,31 @@ test.describe('首页', () => {
     test('写明 CC0', async ({ page }) => {
         await page.goto(TARGET);
         await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
+    });
+
+    // 用户意见（overview#267）：搜索框下面只有三个例子，史记→作品页、四库全书→丛编页、红楼梦甲戌本→阅读页
+    test('搜索框下面只有三个例子，没有「看一个例子」', async ({ page }) => {
+        await page.goto(TARGET);
+        const under = page.locator('.home-under');
+        await expect(under.getByRole('link')).toHaveText(['史记', '四库全书', '红楼梦甲戌本']);
+        await expect(under.getByRole('link').nth(0)).toHaveAttribute('href', '/item/d59f20aowb9c');
+        await expect(under.getByRole('link').nth(1)).toHaveAttribute('href', '/item/8rlb6yi1ecqo');
+        await expect(under.getByRole('link').nth(2)).toHaveAttribute('href', '/read/96kzii6z28?kind=fulltext');
+        await expect(page.getByText(/看一个例子/)).toHaveCount(0);
+    });
+
+    test('「我们在做的事」六项标题；「一起把古籍做成开放数据」已删；页脚是黑底、没有开放协议一栏', async ({ page }) => {
+        await page.goto(TARGET);
+        await expect(page.locator('.home-feature h3')).toHaveText([
+            /^古籍元数据/, /^资源收集/, /^图文对读/, /^全文检索/, /^协同校对/, /^古籍专用模型/,
+        ]);
+        await expect(page.getByText('一起把古籍做成开放数据')).toHaveCount(0);
+        const footer = page.getByRole('contentinfo');
+        await expect(footer).toBeVisible();
+        await expect(footer).not.toContainText('开放协议');
+        // 页脚底色用墨色令牌 --color-ink（rgb(38, 33, 28)），不再是浅色
+        const bg = await footer.evaluate((el) => getComputedStyle(el).backgroundColor);
+        expect(bg).toBe('rgb(38, 33, 28)');
     });
 
     for (const width of [390, 360]) {

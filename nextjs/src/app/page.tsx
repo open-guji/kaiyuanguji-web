@@ -6,11 +6,27 @@ import { HOME_FEATURES } from '@/components/home/features';
 // 首页（N1，照 design/n1-samples 的 /samples/home）：
 // 首屏坤舆图满幅、左对齐大标题、大检索框、唯一主按钮「搜索」；
 // 特性区只有已上线的两项标「已上线」，其余标「规划中」；写明 CC0。
-// 页尾（N6，overview#259 方案 A）：开放区下另起一段「关于与联系」，只用文字链接，首屏「搜索」仍是唯一主按钮。
-const JOIN_LINKS = [
-  { label: '关于我们', href: '/about', text: '项目在做什么、数据来源与授权、致谢' },
-  { label: '联系我们', href: '/contact', text: '站内反馈、GitHub Issues、邮箱、QQ 群、微信群' },
-  { label: '反馈与纠错', href: '/feedback', text: '看到哪里不对，随手提交，可以跟踪处理进展' },
+// 「一起把古籍做成开放数据」一段已删（用户意见，overview#267）：关于、联系、反馈在页脚里都有。
+// 搜索框下面的三个例子（用户意见，overview#267）：只写名字，点进去分别是作品页、丛编页、阅读页。
+//   史记 → 作品页（史記 d59f20aowb9c）
+//   四库全书 → 丛编页（欽定四庫全書·文淵閣本 8rlb6yi1ecqo，四庫全書七阁之首，没有更上一级的总丛编）
+//   红楼梦甲戌本 → 直接进阅读页（脂硯齋重評石頭記·甲戌本 96kzii6z28 的全文）
+const HOME_EXAMPLES = [
+  { label: '史记', href: '/item/d59f20aowb9c' },
+  { label: '四库全书', href: '/item/8rlb6yi1ecqo' },
+  { label: '红楼梦甲戌本', href: '/read/96kzii6z28?kind=fulltext' },
+];
+
+// 「文本开放、代码开源」两栏（用户意见，overview#267）。仓库地址与说明已对照各仓 README 核实：
+// book-index 只存元数据，book-text 存整理本与全文（CC0）；luatex-cn、bookget-py 为 Apache-2.0。
+const GITHUB = 'https://github.com/open-guji';
+const OPEN_TEXT_REPOS = [
+  { name: 'book-text', note: '整理本、輯佚与全文' },
+  { name: 'book-index', note: '古籍目录索引，只存元数据：作品、版本、丛编、人物条目' },
+];
+const OPEN_CODE_REPOS = [
+  { name: 'luatex-cn', note: '基于 LuaTeX 的中文排版包：古籍竖排版式复刻，以及现代中文排版，已上 CTAN' },
+  { name: 'bookget-py', note: '古籍数字资源下载与管理工具，支持 37 个数字图书馆站点，走 IIIF' },
 ];
 
 export default function HomePage() {
@@ -34,8 +50,11 @@ export default function HomePage() {
           <HomeSearch />
           <p className="home-under">
             <span>已收录 11 万+ 条古籍索引</span>
-            <Link href="/book-index?id=d59f20aowb9c">看一个例子：《史記》→</Link>
-            <Link href="/book-index?id=d59f2htm01du&tab=collated">读整理本《直齋書錄解題》→</Link>
+            {HOME_EXAMPLES.map((e) => (
+              <Link key={e.href} href={e.href}>
+                {e.label}
+              </Link>
+            ))}
           </p>
         </div>
       </section>
@@ -43,7 +62,7 @@ export default function HomePage() {
       <section className="home-band" aria-labelledby="home-features-title">
         <div className="home-band-head">
           <h2 id="home-features-title">我们在做的事</h2>
-          <span className="home-meta">目录与版本聚类、整理本阅读已上线，其余在陆续推进</span>
+          <span className="home-meta">古籍元数据、资源收集已上线，其余在陆续推进</span>
         </div>
         <ul className="home-features">
           {HOME_FEATURES.map((f, i) => (
@@ -61,38 +80,42 @@ export default function HomePage() {
         </ul>
       </section>
 
-      <section className="home-open">
+      <section className="home-open" aria-label="开放">
         <div className="home-open-inner">
-          <div>
+          <div className="home-open-col">
             <h2>文本开放</h2>
-            <p>站内全部文本以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
-          </div>
-          <div>
-            <h2>代码开源</h2>
-            <p>
-              网站、排版（LuaTeX-cn）、资源抓取（bookget-py）等工具以 Apache-2.0 开源，
-              <a href="https://github.com/open-guji">在 GitHub 查看 →</a>
+            <p className="home-open-sub">整理本与全文以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
+            <ul className="home-repos">
+              {OPEN_TEXT_REPOS.map((r) => (
+                <li key={r.name}>
+                  <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
+                    {r.name}
+                  </a>
+                  <span>{r.note}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="home-open-note">
+              转录自维基文库、Kanripo 的全文沿用来源许可（CC BY-SA），每部全文的阅读页顶部标有来源与许可，详见
+              <Link href="/about">关于我们</Link>的「数据来源与授权」。
             </p>
           </div>
-        </div>
-      </section>
-
-      <section className="home-join" aria-labelledby="home-join-title">
-        <div className="home-join-inner">
-          <div className="home-join-head">
-            <h2 id="home-join-title">一起把古籍做成开放数据</h2>
-            <p>这是一个开源项目，书目、文本和代码都放在 GitHub 上。发现错误、缺了资源，或者想参与整理，都欢迎来找我们。</p>
+          <div className="home-open-col">
+            <h2>代码开源</h2>
+            <p className="home-open-sub">
+              网站、排版、资源抓取等工具以 Apache-2.0 开源。<a href={GITHUB} target="_blank" rel="noopener noreferrer">在 GitHub 查看全部 →</a>
+            </p>
+            <ul className="home-repos">
+              {OPEN_CODE_REPOS.map((r) => (
+                <li key={r.name}>
+                  <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
+                    {r.name}
+                  </a>
+                  <span>{r.note}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="home-join-links">
-            {JOIN_LINKS.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href}>
-                  <strong>{l.label} →</strong>
-                  <span>{l.text}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
     </LayoutWrapper>

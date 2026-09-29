@@ -17,7 +17,7 @@
 //     面包屑点击后地址栏也变了。注意 Next 会在中间件里剥掉 RSC 请求头与 _rsc 参数，
 //     只能靠浏览器自带、Next 不剥的 Referer／Sec-Fetch-Dest 来判断。
 //
-// N5b：旧阅读入口 ?tab=fulltext／collated → 308 /item/<id>/read（readerRedirect，保留卷号）。
+// N5b：旧阅读入口 ?tab=fulltext／collated → 308 /read/<id>（readerRedirect，保留卷号；阅读页现在在一级目录 /read/<id>，overview#267）。
 //
 // FX1：/item/<id> 的整页导航也在这里跳——被并条目 308 到目标、已升格的草稿 id 308 到正式 id、
 // 升格对照表查不了 307 回 /book-index。页面里本来就会跳，但 Next 的 ISR 页面在缓存未命中时
@@ -28,7 +28,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
-import { entryHasReaderContent, legacyCollatedJuanTarget, legacyReaderParts, parseReaderQuery, readerHref } from '@/lib/reader-route';
+import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
+import { entryHasReaderContent, legacyCollatedJuanTarget, legacyReaderParts, parseReaderQuery, readerHref, readerPath } from '@/lib/reader-route';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -89,7 +90,8 @@ function bookIndexRedirect(req: NextRequest): NextResponse {
 }
 
 /**
- * N5b：旧阅读入口（?tab=fulltext／collated，/book-index 与 /item/<id> 都算）→ 308 /item/<id>/read，保留卷号。
+ * N5b：旧阅读入口（?tab=fulltext／collated，/book-index 与 /item/<id> 都算）→ 308 /read/<id>，保留卷号；
+ * 一步到位，不先跳到 /item/<id>/read 再跳一次。
  * 与上面两条不同，站内请求也跳：条目页的 tab 与卷切换仍往 /book-index?…&tab= 推（组件不在本道写域），
  * 客户端导航拿到 308 后 Next 会跟到新地址——阅读器从此只有一处。
  *
@@ -112,25 +114,45 @@ async function readerRedirect(req: NextRequest): Promise<NextResponse | null> {
 }
 
 /**
- * 整理本旧地址 /item/<id>/read?kind=collated&juan=juan%2F011.json → 308 到短形式 juan=011。
- * 只做字符串换算、不查数据；卷号在不在目录里由页面校验（不在就 404）。页面里也有同样的跳转，
- * 这里先出一个只有单个 Location 的 308（EdgeOne 上页面抛 redirect 会把 Location 写两遍，见上面 FX1）。
+ * 阅读页地址的整理（overview#267，阅读页搬到一级目录 /read/<id>）。只做字符串换算、不查数据：
+ *   - /item/<id>/read?…（上一版的阅读页地址）→ 308 /read/<id>?…，查询参数保留；
+ *     整理本的旧卷号 juan=juan%2F011.json 同一跳里换成短形式 juan=011，不跳两次；
+ *   - /read/<说明页名>（旧的 public/content 说明页，与阅读页同一层）→ 308 /read/md/<名>；
+ *   - /read/<id>?…juan=juan%2F011.json → 308 到短形式。
+ * 卷号在不在目录里由页面校验（不在就 404）。页面里也有同样的跳转，这里先出一个只有单个 Location 的 308
+ * （EdgeOne 上页面抛 redirect 会把 Location 写两遍，见上面 FX1）。
  */
-function readerJuanRedirect(req: NextRequest): NextResponse | null {
-    const id = req.nextUrl.pathname.match(/^\/item\/([^/]+)\/read\/?$/)?.[1];
+function readerPathRedirect(req: NextRequest): NextResponse | null {
+    const { pathname, searchParams } = req.nextUrl;
+    const legacyPath = pathname.match(/^\/item\/([^/]+)\/read\/?$/)?.[1];
+    const id = legacyPath ?? pathname.match(/^\/read\/([^/]+)\/?$/)?.[1];
     if (!id) return null;
-    const q = parseReaderQuery(id, req.nextUrl.searchParams);
-    const to = q ? legacyCollatedJuanTarget(id, q) : null;
-    return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
+
+    if (!legacyPath) {
+        const md = legacyMarkdownName(id);
+        if (md) return NextResponse.redirect(new URL(markdownPagePath(md), req.url), 308);
+    }
+
+    const q = parseReaderQuery(id, searchParams);
+    const juanTo = q ? legacyCollatedJuanTarget(id, q) : null;
+    if (juanTo) return NextResponse.redirect(new URL(juanTo, req.url), 308);
+    if (!legacyPath) return null;
+
+    // 上一版地址：路径换成 /read/<id>，查询参数原样带过去
+    const to = new URL(readerPath(id), req.url);
+    to.search = req.nextUrl.search;
+    return NextResponse.redirect(to, 308);
 }
 
+const isReaderPath = (pathname: string) => /^\/item\/[^/]+\/read\/?$/.test(pathname) || /^\/read\/[^/]+\/?$/.test(pathname);
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
-    if (req.nextUrl.pathname.endsWith('/read') || req.nextUrl.pathname.endsWith('/read/')) return readerJuanRedirect(req) ?? NextResponse.next();
+    if (isReaderPath(req.nextUrl.pathname)) return readerPathRedirect(req) ?? NextResponse.next();
     const reader = await readerRedirect(req);
     if (reader) return reader;
     return req.nextUrl.pathname.startsWith('/item/') ? itemRedirect(req) : bookIndexRedirect(req);
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id', '/item/:id/read'],
+    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id'],
 };

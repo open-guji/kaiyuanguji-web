@@ -40,16 +40,16 @@ describe('parseReaderQuery', () => {
 
 describe('readerHref／readerTitle／juanLabel', () => {
     it('参数顺序固定，collated 不带 key', () => {
-        expect(readerHref(WORK, { kind: 'fulltext', juan: '001', key: 'k' })).toBe(`/item/${WORK}/read?kind=fulltext&key=k&juan=001`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
-        expect(readerHref(BOOK, { kind: 'fulltext' })).toBe(`/item/${BOOK}/read?kind=fulltext`);
+        expect(readerHref(WORK, { kind: 'fulltext', juan: '001', key: 'k' })).toBe(`/read/${WORK}?kind=fulltext&key=k&juan=001`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
+        expect(readerHref(BOOK, { kind: 'fulltext' })).toBe(`/read/${BOOK}?kind=fulltext`);
     });
     it('条目页「阅读全文」也用它（原 read-url.ts#buildReadUrl 的用例，行为不变）', () => {
-        expect(readerHref(WORK, { kind: 'fulltext', key: 'wikisource' })).toBe(`/item/${WORK}/read?kind=fulltext&key=wikisource`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'wikisource-01' })).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
-        expect(readerHref(BOOK, { kind: 'fulltext', key: undefined, juan: '001' })).toBe(`/item/${BOOK}/read?kind=fulltext&juan=001`);
+        expect(readerHref(WORK, { kind: 'fulltext', key: 'wikisource' })).toBe(`/read/${WORK}?kind=fulltext&key=wikisource`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'wikisource-01' })).toBe(`/read/${ZHIZHAI}?kind=collated`);
+        expect(readerHref(BOOK, { kind: 'fulltext', key: undefined, juan: '001' })).toBe(`/read/${BOOK}?kind=fulltext&juan=001`);
         expect(readerHref(BOOK, { kind: 'fulltext', key: 'a b', juan: '卷一' }))
-            .toBe(`/item/${BOOK}/read?kind=fulltext&key=a+b&juan=%E5%8D%B7%E4%B8%80`);
+            .toBe(`/read/${BOOK}?kind=fulltext&key=a+b&juan=%E5%8D%B7%E4%B8%80`);
     });
     it('卷名', () => {
         expect(juanLabel('juan/011.json')).toBe('卷11');
@@ -58,10 +58,10 @@ describe('readerHref／readerTitle／juanLabel', () => {
         expect(juanLabel('序')).toBe('序');
     });
     it('整理本卷号：地址里是短形式，旧的卷文件名换成短形式', () => {
-        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: '011' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: '011' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
         // 全文的 juan 不动
-        expect(readerHref(BOOK, { kind: 'fulltext', juan: 'juan/x.json' })).toBe(`/item/${BOOK}/read?kind=fulltext&juan=juan%2Fx.json`);
+        expect(readerHref(BOOK, { kind: 'fulltext', juan: 'juan/x.json' })).toBe(`/read/${BOOK}?kind=fulltext&juan=juan%2Fx.json`);
     });
     it('juanStem／isLegacyCollatedJuan／collatedJuanFile', () => {
         expect(juanStem('juan/011.json')).toBe('011');
@@ -76,7 +76,7 @@ describe('readerHref／readerTitle／juanLabel', () => {
         expect(collatedJuanFile('099', ['juan/011.json'])).toBe('juan/099.json');
     });
     it('legacyCollatedJuanTarget：只有整理本的旧形式才给目标', () => {
-        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
         expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: '011' })).toBeNull();
         expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated' })).toBeNull();
         expect(legacyCollatedJuanTarget(BOOK, { kind: 'fulltext', juan: 'juan/011.json' })).toBeNull();
@@ -99,17 +99,17 @@ describe('legacyReaderTarget：旧入口 → 阅读页', () => {
         return legacyReaderTarget(u.pathname, u.searchParams);
     };
     it('/book-index?tab=fulltext&id=…&juan=… 保留卷号', () => {
-        expect(t(`/book-index?tab=fulltext&id=${BOOK}&juan=003`)).toBe(`/item/${BOOK}/read?kind=fulltext&juan=003`);
+        expect(t(`/book-index?tab=fulltext&id=${BOOK}&juan=003`)).toBe(`/read/${BOOK}?kind=fulltext&juan=003`);
     });
     it('/book-index?id=…&tab=collated（无卷号）', () => {
-        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated`)).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
+        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated`)).toBe(`/read/${ZHIZHAI}?kind=collated`);
     });
     it('条目页的 fulltext／collated tab', () => {
-        expect(t(`/item/${ZHIZHAI}?tab=collated&juan=juan%2F011.json`)).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
-        expect(t(`/item/${WORK}?tab=fulltext`)).toBe(`/item/${WORK}/read?kind=fulltext`);
+        expect(t(`/item/${ZHIZHAI}?tab=collated&juan=juan%2F011.json`)).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
+        expect(t(`/item/${WORK}?tab=fulltext`)).toBe(`/read/${WORK}?kind=fulltext`);
     });
     it('别的 tab 的参数丢掉', () => {
-        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated&page=3&mode=graph`)).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
+        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated&page=3&mode=graph`)).toBe(`/read/${ZHIZHAI}?kind=collated`);
     });
     it.each([
         `/book-index?id=${WORK}`,

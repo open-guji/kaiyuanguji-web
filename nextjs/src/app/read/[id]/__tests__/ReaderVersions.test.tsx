@@ -35,7 +35,7 @@ const entry = (key: string, primary = false) => ({ key, owner_type: 'Work', prim
 
 beforeEach(() => {
     getWorkFullTextList.mockReset();
-    window.history.replaceState(null, '', `/item/${SHIXU}/read?kind=fulltext`);
+    window.history.replaceState(null, '', `/read/${SHIXU}?kind=fulltext`);
 });
 
 describe('阅读页版本下拉框', () => {
@@ -49,14 +49,14 @@ describe('阅读页版本下拉框', () => {
 
     it('切换版本：地址的 key 变、卷号去掉，出处授权跟着变', async () => {
         getWorkFullTextList.mockResolvedValue([entry('wikisource', true), entry('kanripo-01')]);
-        window.history.replaceState(null, '', `/item/${SHIXU}/read?kind=fulltext&juan=002`);
+        window.history.replaceState(null, '', `/read/${SHIXU}?kind=fulltext&juan=002`);
         render(<ReaderClient id={SHIXU} initial={{ kind: 'fulltext', juan: '002' }} bookTitle="詩序" />);
         const select = await screen.findByRole('combobox', { name: '版本' });
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
 
         act(() => { fireEvent.change(select, { target: { value: 'kanripo-01' } }); });
         await waitFor(() => expect(window.location.pathname + window.location.search)
-            .toBe(`/item/${SHIXU}/read?kind=fulltext&key=kanripo-01`));
+            .toBe(`/read/${SHIXU}?kind=fulltext&key=kanripo-01`));
         await waitFor(() => expect(screen.getAllByText(/CC BY 4\.0/).length).toBeGreaterThan(0));
         expect(screen.queryByText(/CC BY-SA 4\.0/)).toBeNull();
     });

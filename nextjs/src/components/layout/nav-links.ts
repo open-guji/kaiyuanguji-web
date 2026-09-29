@@ -1,7 +1,8 @@
 /**
  * 全站外壳的导航清单（N1，照样张）。
  *
- * 顶栏按新稿只留主干入口，顺序照样张：首页｜古籍总目｜古籍索引｜关于。
+ * 顶栏按新稿只留主干入口，顺序照样张：首页｜古籍总目｜古籍元数据｜关于。
+ * 「古籍元数据」（/book-index，搜索入口）原名「古籍索引」，用户意见改名（overview#267）。
  * 「古籍总目」（/catalog）由 WEB2（overview#249）加上，页面归 N4b，可能晚于本项合入。
  * 样张里的「阅读页」不单独进导航：它是从条目页的「阅读全文」进去的。从顶栏拿下来的现网入口（整理平台、
  * 路线图、小工具、反馈）仍然有效，改放手机抽屉的「更多」和页脚，
@@ -17,7 +18,7 @@ export interface ShellLink {
 export const PRIMARY_LINKS: ShellLink[] = [
   { label: '首页', href: '/' },
   { label: '古籍总目', href: '/catalog' },
-  { label: '古籍索引', href: '/book-index' },
+  { label: '古籍元数据', href: '/book-index' },
   { label: '关于', href: '/about' },
 ];
 

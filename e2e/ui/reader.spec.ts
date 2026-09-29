@@ -1,5 +1,5 @@
 /**
- * 阅读页 /item/<id>/read（N5b）：旧入口跳过来、卷号与地址双向同步、翻卷不整页刷新。
+ * 阅读页 /read/<id>（N5b）：旧入口跳过来、卷号与地址双向同步、翻卷不整页刷新。
  *
  * 只在全栈站跑（静态站没有这条路由）；前端须 >= 0.10.0（新阅读器）。
  * 地址约定见 nextjs/src/lib/reader-route.ts。
@@ -30,14 +30,14 @@ test.describe('阅读页', () => {
     test('旧入口保留卷号跳到阅读页，正文渲染出来', async ({ page }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`);
         // 整理本的 juan 是短形式（004），不是内部文件路径 juan/004.json（overview#267 P2-5）
-        await expect(page).toHaveURL(new RegExp(`/item/${C.id}/read\\?kind=collated&juan=${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}$`));
+        await expect(page).toHaveURL(new RegExp(`/read/${C.id}\\?kind=collated&juan=${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}$`));
         await expect(page.getByText(/加载整理本|加載整理本/)).toBeHidden({ timeout: 30_000 });
         await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
             .toBeVisible({ timeout: 30_000 });
     });
 
     test('不带 juan 进来自动选首卷并写回地址；翻卷改地址与标题、不整页刷新', async ({ page }) => {
-        await page.goto(`${TARGET}/item/${C.id}/read?kind=collated`);
+        await page.goto(`${TARGET}/read/${C.id}?kind=collated`);
         await expect(page).toHaveURL(/[?&]juan=001(&|$)/, { timeout: 30_000 });
         // 地址写回了卷一，正文也得是卷一：分类标题与解题原文都在
         const main = page.getByRole('main');
@@ -58,7 +58,7 @@ test.describe('阅读页', () => {
     });
 
     test('翻卷后按浏览器返回，回到上一卷而不是离开阅读页（overview#267 P2-3）', async ({ page }) => {
-        await page.goto(`${TARGET}/item/${C.id}/read?kind=collated`);
+        await page.goto(`${TARGET}/read/${C.id}?kind=collated`);
         await expect(page).toHaveURL(/[?&]juan=001(&|$)/, { timeout: 30_000 });
         const main = page.getByRole('main');
         const j1 = JUAN_TEXT['juan/001.json'];
@@ -68,14 +68,14 @@ test.describe('阅读页', () => {
         await expect(page).toHaveURL(/[?&]juan=002(&|$)/);
 
         await page.goBack();
-        await expect(page, '返回应回到卷一，仍在阅读页').toHaveURL(new RegExp(`/item/${C.id}/read\\?kind=collated&juan=001$`));
+        await expect(page, '返回应回到卷一，仍在阅读页').toHaveURL(new RegExp(`/read/${C.id}\\?kind=collated&juan=001$`));
         await expect(main.getByText(j1.text).first(), '返回后正文应换回卷一').toBeVisible({ timeout: 30_000 });
     });
 
     test('Work 全文有两份时可来回切换版本：地址的 key 变、出处与授权跟着变', async ({ page, request }) => {
         await requireUiVersion(request, '0.10.4', '阅读器工具条的版本下拉框');
         // 詩序：维基文库与 Kanripo 两份全文（overview#235）
-        await page.goto(`${TARGET}/item/${SHIXU}/read?kind=fulltext`);
+        await page.goto(`${TARGET}/read/${SHIXU}?kind=fulltext`);
         const select = page.getByRole('combobox', { name: '版本' });
         await expect(select, '两份全文应出版本下拉框').toBeVisible({ timeout: 30_000 });
         const keys = await select.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));

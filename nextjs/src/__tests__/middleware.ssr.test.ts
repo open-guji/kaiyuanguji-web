@@ -3,7 +3,7 @@
  *
  * W2-2 中间件：/book-index?id=<正式 id> → 308 /item/<id>，其余一律放过。
  * FX1：/item/<id> 的整页导航由中间件先跳（被并条目、草稿升格），只出一个 Location。
- * N5b：旧阅读入口 ?tab=fulltext／collated → 308 /item/<id>/read，保留卷号，站内请求也跳。
+ * N5b：旧阅读入口 ?tab=fulltext／collated → 308 /read/<id>（overview#267 起阅读页在一级目录），保留卷号，站内请求也跳。
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NextRequest } from 'next/server';
@@ -121,16 +121,16 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
     });
 });
 
-describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => {
+describe('middleware.ssr：旧阅读入口 → /read/<id>（N5b，overview#267 改一级目录）', () => {
     const ZHIZHAI = 'd59f2htm01du';
     const BOOK = '988fbiuha8';
 
     beforeEach(() => { mockGetItem.mockReset(); });
 
     it.each<[string, string]>([
-        [`/book-index?tab=fulltext&id=${BOOK}&juan=003`, `/item/${BOOK}/read?kind=fulltext&juan=003`],
-        [`/book-index?id=${ZHIZHAI}&tab=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=011`],
-        [`/item/${ZHIZHAI}?tab=collated`, `/item/${ZHIZHAI}/read?kind=collated`],
+        [`/book-index?tab=fulltext&id=${BOOK}&juan=003`, `/read/${BOOK}?kind=fulltext&juan=003`],
+        [`/book-index?id=${ZHIZHAI}&tab=collated&juan=juan%2F011.json`, `/read/${ZHIZHAI}?kind=collated&juan=011`],
+        [`/item/${ZHIZHAI}?tab=collated`, `/read/${ZHIZHAI}?kind=collated`],
     ])('%s → 308 %s', async (from, to) => {
         const r = await run(from);
         expect(r.status).toBe(308);
@@ -145,10 +145,10 @@ describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => 
 
     it('查得到条目才判断有没有这类内容；查不到、取数出错都照旧跳阅读页（由那边的页面判断）', async () => {
         mockGetItem.mockResolvedValueOnce(null);
-        expect((await run(`/item/${ZHIZHAI}?tab=fulltext`)).all).toEqual([`https://staging.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=fulltext`]);
+        expect((await run(`/item/${ZHIZHAI}?tab=fulltext`)).all).toEqual([`https://staging.kaiyuanguji.com/read/${ZHIZHAI}?kind=fulltext`]);
         mockGetItem.mockRejectedValueOnce(new Error('HTTP 502'));
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-        expect((await run(`/book-index?id=${ZHIZHAI}&tab=collated`)).all).toEqual([`https://staging.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=collated`]);
+        expect((await run(`/book-index?id=${ZHIZHAI}&tab=collated`)).all).toEqual([`https://staging.kaiyuanguji.com/read/${ZHIZHAI}?kind=collated`]);
         warn.mockRestore();
         expect(mockGetItem).toHaveBeenCalledTimes(2);
     });
@@ -176,10 +176,10 @@ describe('middleware.ssr：旧阅读入口 · 条目没有这类内容 → 308 �
     });
 
     it.each<[string, Record<string, unknown>, string, string]>([
-        ['Work 有整理本', { type: 'work', has_collated: true }, `/book-index?id=${WORK}&tab=collated&juan=juan%2F011.json`, `/item/${WORK}/read?kind=collated&juan=011`],
-        ['Work 有全文（has_text）', { type: 'work', has_text: true }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}/read?kind=fulltext`],
-        ['Work 有全文（_has_text 同义）', { type: 'work', _has_text: true }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}/read?kind=fulltext`],
-        ['Book 有全文（has_full_text）', { type: 'book', has_full_text: true }, `/book-index?id=${BOOK}&tab=fulltext&juan=003`, `/item/${BOOK}/read?kind=fulltext&juan=003`],
+        ['Work 有整理本', { type: 'work', has_collated: true }, `/book-index?id=${WORK}&tab=collated&juan=juan%2F011.json`, `/read/${WORK}?kind=collated&juan=011`],
+        ['Work 有全文（has_text）', { type: 'work', has_text: true }, `/item/${WORK}?tab=fulltext`, `/read/${WORK}?kind=fulltext`],
+        ['Work 有全文（_has_text 同义）', { type: 'work', _has_text: true }, `/item/${WORK}?tab=fulltext`, `/read/${WORK}?kind=fulltext`],
+        ['Book 有全文（has_full_text）', { type: 'book', has_full_text: true }, `/book-index?id=${BOOK}&tab=fulltext&juan=003`, `/read/${BOOK}?kind=fulltext&juan=003`],
     ])('%s → 照旧 308 阅读页', async (_n, entry, from, to) => {
         mockGetItem.mockResolvedValue(hit(entry));
         const r = await run(from);
@@ -194,31 +194,70 @@ describe('middleware.ssr：旧阅读入口 · 条目没有这类内容 → 308 �
     });
 });
 
-describe('middleware.ssr：阅读页整理本旧卷号 → 短形式（overview#267 P2-5）', () => {
+describe('middleware.ssr：阅读页搬到 /read/<id>（overview#267）', () => {
     const ZHIZHAI = 'd59f2htm01du';
     const BOOK = '988fbiuha8';
 
+    beforeEach(() => { mockGetItem.mockReset(); });
+
     it.each<[string, string]>([
-        [`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=011`],
-        [`/item/${ZHIZHAI}/read?juan=juan%2F003.json`, `/item/${ZHIZHAI}/read?kind=collated&juan=003`],
-    ])('%s → 308 %s，只有一个 Location，站内请求也跳', async (from, to) => {
+        // 上一版地址：路径换成 /read/<id>，查询参数原样带过去（含不认识的、顺序不变）
+        [`/item/${ZHIZHAI}/read?kind=collated&juan=011`, `/read/${ZHIZHAI}?kind=collated&juan=011`],
+        [`/item/${BOOK}/read?kind=fulltext&key=a&juan=001&x=1`, `/read/${BOOK}?kind=fulltext&key=a&juan=001&x=1`],
+        [`/item/${ZHIZHAI}/read`, `/read/${ZHIZHAI}`],
+        [`/item/${ZHIZHAI}/read/?kind=collated`, `/read/${ZHIZHAI}?kind=collated`],
+        // 整理本的旧卷号同一跳里换成短形式，不先跳到 /read/<id> 再跳一次
+        [`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`, `/read/${ZHIZHAI}?kind=collated&juan=011`],
+        [`/item/${ZHIZHAI}/read?juan=juan%2F003.json`, `/read/${ZHIZHAI}?kind=collated&juan=003`],
+        // 参数不合法的也照样搬过去，由新页面出真 404
+        [`/item/${ZHIZHAI}/read?kind=nope&juan=x`, `/read/${ZHIZHAI}?kind=nope&juan=x`],
+    ])('%s → 308 %s，只有一个 Location，站内请求也跳，不查数据', async (from, to) => {
         for (const headers of [{}, { 'sec-fetch-dest': 'empty', referer: 'https://staging.kaiyuanguji.com/' }] as Record<string, string>[]) {
             const r = await run(from, headers);
             expect(r.status).toBe(308);
             expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
         }
+        expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it.each<[string, string]>([
+        [`/read/${ZHIZHAI}?kind=collated&juan=juan%2F011.json`, `/read/${ZHIZHAI}?kind=collated&juan=011`],
+        [`/read/${ZHIZHAI}?juan=juan%2F003.json`, `/read/${ZHIZHAI}?kind=collated&juan=003`],
+    ])('新地址上的旧卷号 %s → 308 %s', async (from, to) => {
+        const r = await run(from);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
     });
 
     it.each([
-        `/item/${ZHIZHAI}/read?kind=collated&juan=011`, // 已是短形式
-        `/item/${ZHIZHAI}/read?kind=collated`,
-        `/item/${BOOK}/read?kind=fulltext&juan=juan%2F003.json`, // 全文不动，交给页面 404
-        `/item/${ZHIZHAI}/read?kind=collated&juan=..%2F..%2Fx.json`, // 不是 juan/<名>.json，交给页面 404
-        `/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F..%2Fx.json`,
-        `/item/${ZHIZHAI}/read?kind=nope&juan=juan%2F011.json`,
+        `/read/${ZHIZHAI}?kind=collated&juan=011`, // 已是短形式
+        `/read/${ZHIZHAI}?kind=collated`,
+        `/read/${ZHIZHAI}`,
+        `/read/${BOOK}?kind=fulltext&juan=juan%2F003.json`, // 全文不动，交给页面 404
+        `/read/${ZHIZHAI}?kind=collated&juan=..%2F..%2Fx.json`, // 不是 juan/<名>.json，交给页面 404
+        `/read/${ZHIZHAI}?kind=collated&juan=juan%2F..%2Fx.json`,
+        `/read/${ZHIZHAI}?kind=nope&juan=juan%2F011.json`,
     ])('不跳：%s', async (from) => {
         const r = await run(from);
         expect(r.status).toBe(200);
         expect(r.location).toBeNull();
+    });
+
+    it.each([
+        ['/read/assistant', '/read/md/assistant'],
+        ['/read/assistant.md', '/read/md/assistant'],
+        ['/read/roadmap_overview.md', '/read/md/roadmap_overview'],
+        ['/read/typesetting?x=1', '/read/md/typesetting'],
+    ])('旧的说明页地址 %s → 308 %s', async (from, to) => {
+        const r = await run(from);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
+    });
+
+    it('说明页新地址、不是说明页的名字都不动', async () => {
+        for (const path of ['/read/md/assistant', '/read/md', '/read/not-a-page']) {
+            const r = await run(path);
+            expect(r.status).toBe(200);
+        }
     });
 });

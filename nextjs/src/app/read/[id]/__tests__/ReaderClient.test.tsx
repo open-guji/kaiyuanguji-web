@@ -53,7 +53,7 @@ beforeEach(() => {
 
 describe('ReaderClient', () => {
     it('collated：渲染整理本，不传书影（resolveImages 不给，书影区自动收起），标题副题用组件默认', () => {
-        window.history.replaceState(null, '', `/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        window.history.replaceState(null, '', `/read/${ZHIZHAI}?kind=collated&juan=011`);
         // 地址与本页状态是短形式（011），传给组件的是它要的卷文件名
         render(<ReaderClient id={ZHIZHAI} initial={{ kind: 'collated', juan: '011' }} bookTitle="直齋書錄解題" />);
         expect(screen.getByTestId('collated')).toHaveTextContent('juan/011.json');
@@ -64,14 +64,14 @@ describe('ReaderClient', () => {
     });
 
     it('翻卷：地址、<title>、canonical 跟着改，不整页刷新', () => {
-        setCanonical(`https://www.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=collated`);
-        window.history.replaceState(null, '', `/item/${ZHIZHAI}/read?kind=collated`);
+        setCanonical(`https://www.kaiyuanguji.com/read/${ZHIZHAI}?kind=collated`);
+        window.history.replaceState(null, '', `/read/${ZHIZHAI}?kind=collated`);
         render(<ReaderClient id={ZHIZHAI} initial={{ kind: 'collated' }} bookTitle="直齋書錄解題" />);
         act(() => { (last.collated!.onJuanChange as Cb)('juan/011.json'); });
-        expect(window.location.pathname + window.location.search).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(window.location.pathname + window.location.search).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
         expect(document.title).toBe('直齋書錄解題 · 卷11 · 整理本 - 开源古籍');
         expect(document.querySelector('link[rel=canonical]')!.getAttribute('href'))
-            .toBe(`https://www.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+            .toBe(`https://www.kaiyuanguji.com/read/${ZHIZHAI}?kind=collated&juan=011`);
         expect(screen.getByTestId('collated')).toHaveTextContent('juan/011.json');
         expect(push).not.toHaveBeenCalled();
     });
@@ -186,7 +186,7 @@ describe('ReaderClient', () => {
 /** overview#267 P2-3：翻卷、换版本留历史，浏览器返回回到上一卷；阅读器自己补第一卷、首帧只 replace */
 describe('ReaderClient：历史记录', () => {
     it('翻一卷 pushState 一次；首帧与阅读器补第一卷只 replaceState', () => {
-        window.history.replaceState(null, '', `/item/${BOOK}/read?kind=fulltext`);
+        window.history.replaceState(null, '', `/read/${BOOK}?kind=fulltext`);
         const pushState = jest.spyOn(window.history, 'pushState');
         const replaceState = jest.spyOn(window.history, 'replaceState');
         render(<ReaderClient id={BOOK} initial={{ kind: 'fulltext' }} bookTitle="紅樓夢" />);
@@ -195,12 +195,12 @@ describe('ReaderClient：历史记录', () => {
         // 地址没带卷号，组件回报第一卷：不是读者翻的，与当前这条合并
         act(() => { (last.fulltext!.onChapterChange as Cb)('001'); });
         expect(pushState).not.toHaveBeenCalled();
-        expect(replaceState).toHaveBeenCalledWith(null, '', `/item/${BOOK}/read?kind=fulltext&juan=001`);
+        expect(replaceState).toHaveBeenCalledWith(null, '', `/read/${BOOK}?kind=fulltext&juan=001`);
 
         // 读者翻到下一回：新增一条历史
         act(() => { (last.fulltext!.onChapterChange as Cb)('002'); });
         expect(pushState).toHaveBeenCalledTimes(1);
-        expect(pushState).toHaveBeenLastCalledWith(null, '', `/item/${BOOK}/read?kind=fulltext&juan=002`);
+        expect(pushState).toHaveBeenLastCalledWith(null, '', `/read/${BOOK}?kind=fulltext&juan=002`);
         act(() => { (last.fulltext!.onChapterChange as Cb)('003'); });
         expect(pushState).toHaveBeenCalledTimes(2);
         // 再回报同一卷不重复推
@@ -209,7 +209,7 @@ describe('ReaderClient：历史记录', () => {
     });
 
     it('浏览器返回（地址变了）：状态与阅读器跟着回到上一卷，且不再多推一条', () => {
-        window.history.replaceState(null, '', `/item/${BOOK}/read?kind=fulltext&juan=003`);
+        window.history.replaceState(null, '', `/read/${BOOK}?kind=fulltext&juan=003`);
         searchParams = new URLSearchParams('kind=fulltext&juan=003');
         const { rerender } = render(<ReaderClient id={BOOK} initial={{ kind: 'fulltext', juan: '003' }} bookTitle="t" />);
         act(() => { (last.fulltext!.onChapterChange as Cb)('004'); });
@@ -222,7 +222,7 @@ describe('ReaderClient：历史记录', () => {
 
         // 模拟返回：地址栏回到第三回，Next 的 useSearchParams 随之变化
         const pushState = jest.spyOn(window.history, 'pushState');
-        window.history.replaceState(null, '', `/item/${BOOK}/read?kind=fulltext&juan=003`);
+        window.history.replaceState(null, '', `/read/${BOOK}?kind=fulltext&juan=003`);
         searchParams = new URLSearchParams('kind=fulltext&juan=003');
         rerender(<ReaderClient id={BOOK} initial={{ kind: 'fulltext', juan: '003' }} bookTitle="t" />);
         expect(screen.getByTestId('fulltext')).toHaveTextContent('|003');
@@ -235,7 +235,7 @@ describe('ReaderClient：历史记录', () => {
             { key: 'a', owner_type: 'Work' },
             { key: 'b', owner_type: 'Work', primary: true },
         ]);
-        window.history.replaceState(null, '', `/item/${ZHIZHAI}/read?kind=fulltext&key=a&juan=003`);
+        window.history.replaceState(null, '', `/read/${ZHIZHAI}?kind=fulltext&key=a&juan=003`);
         const pushState = jest.spyOn(window.history, 'pushState');
         render(<ReaderClient id={ZHIZHAI} initial={{ kind: 'fulltext', key: 'a', juan: '003' }} bookTitle="t" />);
         await waitFor(() => expect(screen.getByTestId('fulltext')).toHaveTextContent('a|003'));
@@ -255,7 +255,7 @@ describe('ReaderClient：<title> 用章名', () => {
                 { n: 5, title: '', file: '005.md' },
             ] },
         } as unknown as ReaderSeed;
-        window.history.replaceState(null, '', `/item/${BOOK}/read?kind=fulltext&juan=003`);
+        window.history.replaceState(null, '', `/read/${BOOK}?kind=fulltext&juan=003`);
         render(<ReaderClient id={BOOK} initial={{ kind: 'fulltext', juan: '003' }} bookTitle="紅樓夢" seed={seed} />);
         expect(document.title).toBe('紅樓夢 · 第三回 · 全文 - 开源古籍');
         act(() => { (last.fulltext!.onChapterChange as Cb)('004'); });
@@ -268,7 +268,7 @@ describe('ReaderClient：<title> 用章名', () => {
         const getBookFullTextIndex = jest.fn().mockResolvedValue({ chapters: [{ n: 3, title: '第三回', file: '003.md' }] });
         const tr = jest.requireMock('@/lib/transport') as { getTransport: () => unknown };
         jest.spyOn(tr, 'getTransport').mockReturnValue({ getBookFullTextIndex });
-        window.history.replaceState(null, '', `/item/${BOOK}/read?kind=fulltext&juan=003`);
+        window.history.replaceState(null, '', `/read/${BOOK}?kind=fulltext&juan=003`);
         render(<ReaderClient id={BOOK} initial={{ kind: 'fulltext', juan: '003' }} bookTitle="紅樓夢" />);
         await waitFor(() => expect(document.title).toBe('紅樓夢 · 第三回 · 全文 - 开源古籍'));
         expect(getBookFullTextIndex).toHaveBeenCalledWith(BOOK);

@@ -262,7 +262,7 @@ test.describe('新架构：跳转与 404', () => {
     });
 });
 
-test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
+test.describe('新架构：阅读页 /read/<id>（N5b；overview#267 起在一级目录）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由与中间件`);
     test.beforeEach(({ request }) => requireUiVersion(request, '0.10.0', '新阅读器 ReaderShell'));
 
@@ -271,45 +271,102 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
     /** 地址里的卷号是短形式；卷文件名只在内部用（overview#267 P2-5） */
     const shortJuan = '011';
 
+    /** 取 Location（只应有一个值），换成 path+search */
+    const locationOf = (res: APIResponse) =>
+        (res.headers()['location'] ?? '').split(',').map((v) => v.trim()).filter(Boolean)
+            .map((v) => { const u = new URL(v, TARGET); return u.pathname + u.search; });
+
     test('每卷各有 <title> 与 canonical，出在首屏 HTML 里', async ({ request }) => {
-        const path = `/item/${C.id}/read?kind=collated&juan=${shortJuan}`;
+        const path = `/read/${C.id}?kind=collated&juan=${shortJuan}`;
         const res = await request.get(`${TARGET}${path}`, noFollow);
         expect(res.status(), `${path} 应直接 200`).toBe(200);
         const html = await res.text();
         const title = decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? '');
         expect(title, '<title> 应含书名与卷号').toContain(`${C.title} · 卷11 · 整理本`);
-        expect(canonicalHref(html), 'canonical 应指向本卷').toBe(`${SITE.canonicalOrigin}${path}`);
+        expect(canonicalHref(html), 'canonical 应指向本卷（新的一级地址）').toBe(`${SITE.canonicalOrigin}${path}`);
     });
 
-    test('旧入口 ?tab=collated／fulltext 308 到阅读页，保留卷号', async ({ request }) => {
+    test('旧入口 ?tab=collated／fulltext 一步 308 到 /read/<id>，保留卷号，不先跳 /item/<id>/read', async ({ request }) => {
         const cases: [string, string][] = [
-            [`/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${shortJuan}`],
-            [`/item/${C.id}?tab=collated`, `/item/${C.id}/read?kind=collated`],
-            // 已分享出去的旧形式阅读页地址：308 到短形式
-            [`/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`, `/item/${C.id}/read?kind=collated&juan=${shortJuan}`],
+            [`/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(juan)}`, `/read/${C.id}?kind=collated&juan=${shortJuan}`],
+            [`/item/${C.id}?tab=collated`, `/read/${C.id}?kind=collated`],
         ];
         for (const [from, to] of cases) {
             const res = await request.get(`${TARGET}${from}`, noFollow);
             expect(res.status(), `${from} 应 308`).toBe(308);
-            const loc = (res.headers()['location'] ?? '').split(',').map((v) => v.trim()).filter(Boolean)
-                .map((v) => { const u = new URL(v, TARGET); return u.pathname + u.search; });
-            expect(loc, `${from}（Location 须只有一个值，且带上卷号）`).toEqual([to]);
+            expect(locationOf(res), `${from}（Location 须只有一个值，且带上卷号）`).toEqual([to]);
         }
     });
 
+    test('旧阅读页地址 /item/<id>/read?… 308 到 /read/<id>?…，查询参数保留；旧卷号同一跳换成短形式', async ({ request }) => {
+        const cases: [string, string][] = [
+            [`/item/${C.id}/read?kind=collated&juan=${shortJuan}`, `/read/${C.id}?kind=collated&juan=${shortJuan}`],
+            [`/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(juan)}`, `/read/${C.id}?kind=collated&juan=${shortJuan}`],
+            [`/item/${C.id}/read?kind=fulltext&key=a&juan=001&x=1`, `/read/${C.id}?kind=fulltext&key=a&juan=001&x=1`],
+            [`/item/${C.id}/read`, `/read/${C.id}`],
+        ];
+        for (const [from, to] of cases) {
+            const res = await request.get(`${TARGET}${from}`, noFollow);
+            expect(res.status(), `${from} 应 308`).toBe(308);
+            expect(locationOf(res), `${from}（一步到位，Location 只有一个值）`).toEqual([to]);
+        }
+    });
+
+    test('旧的说明页 /read/<名>（含 .md）308 到 /read/md/<名>，新地址能打开', async ({ request }) => {
+        for (const from of ['/read/assistant', '/read/assistant.md', '/read/roadmap_overview.md']) {
+            const res = await request.get(`${TARGET}${from}`, noFollow);
+            expect(res.status(), `${from} 应 308`).toBe(308);
+            expect(locationOf(res)).toEqual([`/read/md/${from.replace(/^\/read\//, '').replace(/\.md$/, '')}`]);
+        }
+        const page = await request.get(`${TARGET}/read/md/assistant`, noFollow);
+        expect(page.status(), '说明页新地址应 200').toBe(200);
+    });
+
     test('没有这种阅读页、或卷号查不到的给真 404（不出软 404）', async ({ request }) => {
-        const res = await request.get(`${TARGET}/item/${ANCHORS.entity.id}/read`, noFollow);
+        const res = await request.get(`${TARGET}/read/${ANCHORS.entity.id}`, noFollow);
         expect(res.status(), '人物条目没有阅读页').toBe(404);
-        // 旧形式先 308 到短形式（不查数据），短形式再 404；所以旧形式这条跟着跳，看终点
-        const legacyBad = await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`, noFollow);
+        // 旧形式的卷号先 308 到短形式（不查数据），短形式再 404；所以旧形式这条跟着跳，看终点
+        const legacyBad = await request.get(`${TARGET}/read/${C.id}?kind=collated&juan=juan%2F999.json`, noFollow);
         expect(legacyBad.status(), '旧形式的卷号先 308 到短形式').toBe(308);
         for (const [what, r] of [
-            ['旧形式跟随跳转后', await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=juan%2F999.json`)],
-            ['短形式', await request.get(`${TARGET}/item/${C.id}/read?kind=collated&juan=999`, noFollow)],
+            ['旧形式跟随跳转后', await request.get(`${TARGET}/read/${C.id}?kind=collated&juan=juan%2F999.json`)],
+            ['短形式', await request.get(`${TARGET}/read/${C.id}?kind=collated&juan=999`, noFollow)],
         ] as const) {
             expect(r.status(), `乱填的卷号（${what}）应 404`).toBe(404);
             expect(metaContent(await r.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
         }
+    });
+});
+
+test.describe('用户意见（overview#267）：总目不要页脚、页脚黑底、关于页精简', () => {
+    test.skip(!SITE.fullstack, `${SITE.host} 是静态站`);
+
+    const footerOf = (html: string) => html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? '';
+
+    test('/catalog 没有页脚；/about、/feedback、/privacy 有', async ({ request }) => {
+        const catalog = await (await request.get(`${TARGET}/catalog`, noFollow)).text();
+        expect(footerOf(catalog), '古籍总目页不该有页脚').toBe('');
+        for (const path of ['/about', '/feedback', '/privacy']) {
+            const html = await (await request.get(`${TARGET}${path}`, noFollow)).text();
+            const footer = footerOf(html);
+            expect(footer, `${path} 应有页脚`).toContain('og-footer');
+            expect(footer, `${path} 的页脚不该再有「开放协议」`).not.toContain('开放协议');
+        }
+    });
+
+    test('/about 只剩数据来源与授权、致谢、联系我们三节；底色用 og-paper', async ({ request }) => {
+        const html = await (await request.get(`${TARGET}/about`, noFollow)).text();
+        expect(html).toContain('数据来源与授权');
+        expect(html).toContain('致谢');
+        expect(html).not.toContain('项目介绍');
+        expect(html).not.toContain('开源仓库');
+        expect(html).toContain('og-paper');
+    });
+
+    test('顶栏搜索入口叫「古籍元数据」', async ({ request }) => {
+        const html = await (await request.get(`${TARGET}/about`, noFollow)).text();
+        expect(html).toMatch(/<a[^>]*href="\/book-index"[^>]*>古籍元数据<\/a>/);
+        expect(html).not.toContain('>古籍索引<');
     });
 });
 

@@ -10,22 +10,22 @@ export interface HomeFeature {
 
 export const HOME_FEATURES: HomeFeature[] = [
   {
-    title: '目录与版本聚类',
+    title: '古籍元数据',
     live: true,
     text: '以作品为纲，把历代官私书目的著录与存世各版本汇到同一条目下，一眼看清一部书的来龙去脉。',
   },
   {
-    title: '整理本阅读',
+    title: '资源收集',
     live: true,
-    text: '书目、正史等整理本按卷分篇、横排宋体阅读，条目与索引互相跳转。',
+    text: '收集网上已有的文字资源和影印资源，逐条挂到对应的作品与版本下，顺着链接就能查到出处。',
   },
   {
-    title: '书影与文字逐字对照',
+    title: '图文对读',
     live: false,
     text: '识别出的每个字对回书影上的位置，读文字时随时对看原书。',
   },
   {
-    title: '全文与语义检索',
+    title: '全文检索',
     live: false,
     text: '在书名、作者之外，检索整理本全文；异体、繁简自动归并。',
   },

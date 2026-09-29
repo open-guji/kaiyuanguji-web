@@ -33,7 +33,7 @@ test.describe('整理本', () => {
             await expect(
                 page.getByRole('link', { name: /^(阅读|閱讀)全文$/ }),
                 '整理本入口不存在：清单档可能 404（文件名或版本号错）',
-            ).toHaveAttribute('href', new RegExp(`^/item/${C.id}/read\\?kind=collated`), { timeout: 30_000 });
+            ).toHaveAttribute('href', new RegExp(`^/read/${C.id}\\?kind=collated`), { timeout: 30_000 });
             return;
         }
 
@@ -57,7 +57,7 @@ test.describe('整理本', () => {
     });
 
     test('URL 不带 juan 时自动选中首卷并渲染正文', async ({ page, request }) => {
-        // N5b：全栈站上旧入口 ?tab=collated 308 到新阅读器 /item/<id>/read，
+        // N5b：全栈站上旧入口 ?tab=collated 308 到新阅读器 /read/<id>，
         // 旧阅读区（.bim-d-reader-main）不再出现；同一回归由 reader.spec「不带 juan 进来自动选首卷」守。
         const live = await fetchUiVersion(request);
         test.skip(live !== null && cmpVersion(live, '0.10.0') >= 0, `book-index-ui ${live} 用新阅读器，本条由 reader.spec 覆盖`);

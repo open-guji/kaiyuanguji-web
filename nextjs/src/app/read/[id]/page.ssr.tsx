@@ -1,4 +1,7 @@
-// N5b（overview#213）：阅读页 /item/<id>/read?kind=collated|fulltext[&key=…][&juan=…]。
+// N5b（overview#213）：阅读页 /read/<id>?kind=collated|fulltext[&key=…][&juan=…]（独立的一级目录，overview#267；
+// 原来是 /item/<id>/read，那个地址现在只剩一个 308，见 app/item/[id]/read/page.ssr.tsx 与中间件）。
+//
+// /read/<说明页名>（旧的 public/content/*.md 说明页，与阅读页同一层）308 到 /read/md/<名>，见 lib/markdown-pages.ts。
 //
 // 文件名带 .ssr：与条目页一样只在全栈构建里是页面（静态导出没有动态路由），切站（#79）后上线。
 // 地址约定见 lib/reader-route.ts，与 N3b 条目页的「阅读全文」共用。
@@ -18,6 +21,7 @@ import { checkReader } from '@/lib/server/reader-check';
 import { parseItemId } from '@/lib/item-id';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
+import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { parseReaderQuery, readerHref, readerTitle, juanLabel, legacyCollatedJuanTarget, type ReaderQuery } from '@/lib/reader-route';
 import ReaderClient from './ReaderClient';
 import { preloadReader } from './preload';
@@ -69,8 +73,15 @@ async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
     }
 }
 
+/** 旧的说明页地址（/read/assistant 等）落到这里：308 到 /read/md/<名> */
+function redirectLegacyMarkdown(id: string) {
+    const name = legacyMarkdownName(id);
+    if (name) permanentRedirect(markdownPagePath(name));
+}
+
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
     const { id } = await params;
+    redirectLegacyMarkdown(id);
     const s = await load(id, await searchParams);
     if (!s) return { title: '未找到', robots: { index: false, follow: false } };
     const title = readerTitle(s.title, s.q, s.chapterTitle);
@@ -87,6 +98,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
 export default async function ReaderPage({ params, searchParams }: Props) {
     const { id } = await params;
+    redirectLegacyMarkdown(id);
     const s = await load(id, await searchParams);
     if (!s) notFound();
     const seed = await preload(id, s);

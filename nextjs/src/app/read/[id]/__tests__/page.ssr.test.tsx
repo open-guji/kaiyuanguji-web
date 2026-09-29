@@ -39,16 +39,30 @@ beforeEach(() => {
 });
 
 describe('阅读页 page.ssr', () => {
+    it.each(['assistant', 'assistant.md', 'roadmap_overview', 'typesetting.md'])('旧的说明页地址 /read/%s：308 到 /read/md/<名>，不查数据', async (id) => {
+        const { generateMetadata, default: ReaderPage } = await import('../page.ssr');
+        const to = `REDIRECT /read/md/${id.replace(/\.md$/, '')}`;
+        await expect(generateMetadata({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) })).rejects.toThrow(to);
+        await expect(ReaderPage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) })).rejects.toThrow(to);
+        expect(mockGetCurrentJson).not.toHaveBeenCalled();
+    });
+
+    it('canonical 用新的一级地址 /read/<id>，不是 /item/<id>/read', async () => {
+        const m = await meta({ kind: 'collated' });
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}?kind=collated`);
+        expect(String(m.alternates?.canonical)).not.toContain('/item/');
+    });
+
     it('卷号查得到（短形式 juan=011）：200，canonical 指向本卷的短形式', async () => {
         const m = await meta({ kind: 'collated', juan: '011' });
-        expect(m.alternates?.canonical).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
         expect(m.title).toBe('直齋書錄解題 · 卷11 · 整理本');
         expect(m.robots).toBeUndefined();
         await expect(page({ kind: 'collated', juan: '011' })).resolves.toBeTruthy();
     });
 
     it('旧形式（juan=juan/011.json）：308 到短形式，已分享的链接不坏', async () => {
-        const target = `/item/${ZHIZHAI}/read?kind=collated&juan=011`;
+        const target = `/read/${ZHIZHAI}?kind=collated&juan=011`;
         await expect(page({ kind: 'collated', juan: 'juan/011.json' })).rejects.toThrow(`REDIRECT ${target}`);
         await expect(meta({ kind: 'collated', juan: 'juan/011.json' })).rejects.toThrow(`REDIRECT ${target}`);
     });
@@ -64,7 +78,7 @@ describe('阅读页 page.ssr', () => {
         jest.spyOn(console, 'warn').mockImplementation(() => {});
         mockGetCurrentJson.mockRejectedValue(new Error('HTTP 502'));
         const m = await meta({ kind: 'collated', juan: '011' });
-        expect(m.alternates?.canonical).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}?kind=collated`);
         await expect(page({ kind: 'collated', juan: '011' })).resolves.toBeTruthy();
     });
 

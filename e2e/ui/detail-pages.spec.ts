@@ -221,12 +221,12 @@ test.describe('详情页版式', () => {
     });
 
     test('「阅读全文」是提要卡里唯一的主按钮，链到阅读页', async ({ page, request }) => {
-        // N3b：网站给三栏组件传 readLink，地址约定 /item/<id>/read?kind=collated|fulltext[&key=]（与 N5b 共用）
+        // N3b：网站给三栏组件传 readLink，地址约定 /read/<id>?kind=collated|fulltext[&key=]（与 N5b 共用）
         await requireUiVersion(request, THREE_COLUMN, '阅读全文入口');
         await openDetail(page, WORK);
         const read = page.getByRole('link', { name: /^(阅读|閱讀)全文$/ });
         await expect(read).toHaveCount(1);
-        await expect(read).toHaveAttribute('href', new RegExp(`^/item/${WORK}/read\\?kind=(collated|fulltext)`));
+        await expect(read).toHaveAttribute('href', new RegExp(`^/read/${WORK}\\?kind=(collated|fulltext)`));
     });
 
     test('左栏检索框回车进搜索结果页', async ({ page, request }) => {

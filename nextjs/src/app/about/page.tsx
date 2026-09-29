@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { Metadata } from 'next';
-import { GITHUB_ORG } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '关于开源古籍',
@@ -9,14 +8,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 };
 
-const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
-
 // N6（overview#259）：左侧目录＋分节正文。团队一节等用户给了名单再加，不放占位。
+// 用户意见（overview#267）：去掉「项目介绍」「开源仓库」两节（首页「我们在做的事」「文本开放、代码开源」里有）。
 const TOC = [
-  { id: 'intro', label: '项目介绍' },
   { id: 'license', label: '数据来源与授权' },
   { id: 'thanks', label: '致谢' },
-  { id: 'repos', label: '开源仓库' },
   { id: 'contact', label: '联系我们' },
 ];
 
@@ -25,18 +21,10 @@ const THANKS = [
   { name: 'Kanripo（漢籍リポジトリ）', note: '部分全文转录自此，CC BY-SA', href: 'https://www.kanripo.org/' },
 ];
 
-const REPOS = [
-  { name: 'book-index', note: '古籍目录索引（正式）' },
-  { name: 'book-index-draft', note: '古籍目录索引（草稿）' },
-  { name: 'book-text', note: '整理本与全文' },
-  { name: 'open-guji-cv', note: '图片数字化引擎' },
-  { name: 'kaiyuanguji-web', note: '本网站' },
-];
-
 export default function AboutPage() {
   return (
     <LayoutWrapper>
-      <div className="doc-layout">
+      <div className="og-paper doc-layout">
         <nav className="doc-toc" aria-label="本页目录">
           <p className="doc-toc-title">关于开源古籍</p>
           <ul>
@@ -53,27 +41,6 @@ export default function AboutPage() {
           <p className="doc-lead">
             开源古籍把古籍数字化的全链路公开出来：从扫描图片、预处理、版面与字符识别、人工校对，到索引与知识关联、排版还原，再到开放发布，每一段的代码与数据都公开在 GitHub 上。
           </p>
-
-          <section id="intro">
-            <h2>项目介绍</h2>
-            <dl className="doc-dl">
-              <dt>古籍目录索引</dt>
-              <dd>
-                汇集历代目录学著录与公开馆藏书目，做一部尽量准确完整、可供程序直接调用的在线古籍目录，收录作品、版本、丛编与相关人物。
-                <span className="doc-meta">已上线</span>
-              </dd>
-              <dt>整理本与全文</dt>
-              <dd>
-                把古籍原文整理成结构化文本，收录已校勘的整理本与全文，与目录索引共用同一套编号互相关联。
-                <span className="doc-meta">已上线</span>
-              </dd>
-              <dt>图片初步数字化</dt>
-              <dd>
-                用自研 OCR 与版面分析模型让机器先做第一遍识别，再靠人工校对把工作量压缩到「只看差异」。
-                <span className="doc-meta">规划中</span>
-              </dd>
-            </dl>
-          </section>
 
           <section id="license">
             <h2>数据来源与授权</h2>
@@ -119,26 +86,6 @@ export default function AboutPage() {
                   <span className="doc-meta">{t.note}</span>
                 </li>
               ))}
-            </ul>
-          </section>
-
-          <section id="repos">
-            <h2>开源仓库</h2>
-            <ul className="doc-rows">
-              {REPOS.map((r) => (
-                <li key={r.name}>
-                  <a href={`${GITHUB_BASE}/${r.name}`} target="_blank" rel="noopener noreferrer">
-                    {r.name}
-                  </a>
-                  <span className="doc-meta">{r.note}</span>
-                </li>
-              ))}
-              <li>
-                <a href={GITHUB_BASE} target="_blank" rel="noopener noreferrer">
-                  github.com/{GITHUB_ORG}
-                </a>
-                <span className="doc-meta">全部仓库</span>
-              </li>
             </ul>
           </section>
 
