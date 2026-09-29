@@ -31,7 +31,7 @@ describe('SearchResultCard', () => {
     it('整张卡是指向条目的真链接', () => {
         renderCard(shiji);
         const link = screen.getByRole('link');
-        expect(link).toHaveAttribute('href', '/book-index?id=988g3f0wsu');
+        expect(link).toHaveAttribute('href', '/item/988g3f0wsu');
         expect(link).toHaveTextContent(/史[記记]/);
     });
 
@@ -48,7 +48,7 @@ describe('SearchResultCard', () => {
         renderCard(shiji);
         const link = screen.getByRole('link');
         fireEvent.click(link, { button: 0 });
-        expect(push).toHaveBeenCalledWith('/book-index?id=988g3f0wsu');
+        expect(push).toHaveBeenCalledWith('/item/988g3f0wsu');
         expect(JSON.parse(localStorage.getItem('bim-recent-ids') || '[]')).toEqual(['988g3f0wsu']);
 
         push.mockClear();

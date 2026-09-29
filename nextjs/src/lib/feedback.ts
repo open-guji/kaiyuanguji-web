@@ -118,7 +118,7 @@ export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch
     }
 }
 
-/** 阅读页的「关于」一行：「直斋书录解题 · 整理本 · 卷4」。卷号取卷文件名／章节名里的数字 */
+/** 阅读页的「关于」一行：「直斋书录解题 · 整理本 · 卷4」。卷号取地址里的卷号（011，或旧式 juan/011.json）／章节名里的数字 */
 export function readerFeedbackLabel(bookTitle: string, q: { kind: 'collated' | 'fulltext'; juan?: string }): string {
     const n = q.juan?.match(/(\d+)(?:\.json)?$/)?.[1];
     const part = n ? (q.kind === 'collated' ? `卷${Number(n)}` : `第 ${Number(n)} 章`) : null;

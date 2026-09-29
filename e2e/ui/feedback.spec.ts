@@ -13,6 +13,8 @@ import { SITE } from '../fixtures/site-profile';
 
 const WORK = ANCHORS.work.id;
 const C = ANCHORS.collated;
+/** 阅读页地址里的整理本卷号是短形式（juan/004.json → 004），见 lib/reader-route.ts */
+const JUAN = C.sampleJuanFile.replace(/^juan\/|\.json$/g, '');
 
 interface Captured {
     posts: Record<string, unknown>[];
@@ -105,7 +107,7 @@ test.describe('反馈入口（N7）', () => {
 
     test('阅读页：选中文字「报错」，选中的文字拼在正文开头，卷号随 pageUrl', async ({ page }) => {
         test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
-        await page.goto(`${TARGET}/item/${C.id}/read?kind=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`);
+        await page.goto(`${TARGET}/item/${C.id}/read?kind=collated&juan=${JUAN}`);
         await requireN7(page);
         await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
             .toBeVisible({ timeout: 30_000 });
@@ -139,7 +141,7 @@ test.describe('反馈入口（N7）', () => {
         const body = captured.posts[0];
         expect(body).toMatchObject({ type: 'bug', resourceId: C.id });
         expect(String(body.content)).toBe(`【原文】${picked.replace(/\s+/g, ' ')}\n\ne2e：阅读页报错`);
-        expect(String(body.pageUrl)).toContain(`juan=${encodeURIComponent(C.sampleJuanFile)}`);
+        expect(String(body.pageUrl)).toMatch(new RegExp(`[?&]juan=${JUAN}(&|$)`));
     });
 
     test('/feedback：「写反馈」打开弹窗', async ({ page }) => {

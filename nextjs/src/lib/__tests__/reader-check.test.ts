@@ -4,7 +4,7 @@
  * N5b：阅读页服务端校验 kind／key／juan（web#99 审查：乱填卷号不能 200 出软 404）。
  */
 import { describe, it, expect, jest } from '@jest/globals';
-import { checkReaderQuery, fullTextShardOf, type GetCurrentJson } from '../server/reader-check';
+import { checkReader, checkReaderQuery, fullTextShardOf, type GetCurrentJson } from '../server/reader-check';
 
 const ZHIZHAI = 'd59f2htm01du'; // Work，有整理本
 const SONGSHI = 'd59f2gonq7sy'; // Work，有 Work 全文 wikisource-01
@@ -31,7 +31,8 @@ describe('checkReaderQuery', () => {
 
     it.each<[string, string, Parameters<typeof checkReaderQuery>[1], boolean]>([
         ['整理本、无卷号', ZHIZHAI, { kind: 'collated' }, true],
-        ['整理本、卷号在 juan_files 里', ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' }, true],
+        ['整理本、卷号在 juan_files 里（旧的卷文件名）', ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' }, true],
+        ['整理本、短形式卷号', ZHIZHAI, { kind: 'collated', juan: '011' }, true],
         ['Work 全文、无 key 取首选（跳过 Book 层那份）', SONGSHI, { kind: 'fulltext', juan: '002' }, true],
         ['Work 全文、key 对', SONGSHI, { kind: 'fulltext', key: 'wikisource-01', juan: '001.md' }, true],
         ['Book 全文、章节 stem', BOOK, { kind: 'fulltext', juan: '第001' }, false],
@@ -41,6 +42,8 @@ describe('checkReaderQuery', () => {
 
     it.each<[string, string, Parameters<typeof checkReaderQuery>[1], boolean]>([
         ['乱填的整理本卷号', ZHIZHAI, { kind: 'collated', juan: 'juan/999.json' }, true],
+        ['乱填的整理本短卷号', ZHIZHAI, { kind: 'collated', juan: '999' }, true],
+        ['整理本卷号带扩展名却不是卷文件名', ZHIZHAI, { kind: 'collated', juan: '011.json' }, true],
         ['没有整理本的 Work', SONGSHI, { kind: 'collated' }, true],
         ['乱填的全文卷号', SONGSHI, { kind: 'fulltext', juan: '999' }, true],
         ['不存在的 key', SONGSHI, { kind: 'fulltext', key: 'nope' }, true],
@@ -56,5 +59,26 @@ describe('checkReaderQuery', () => {
         jest.spyOn(console, 'warn').mockImplementation(() => {});
         const broken: GetCurrentJson = async () => { throw new Error('HTTP 502'); };
         expect(await checkReaderQuery(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' }, true, broken)).toBe('unknown');
+    });
+});
+
+describe('checkReader：带回章名', () => {
+    const withTitles: GetCurrentJson = async <T,>(rel: string) => ({
+        ...FILES,
+        [`items/${BOOK}/full_text/index.json`]: { chapters: [{ file: '003.md', title: ' 第三回 ' }, { file: '004.md', title: '' }, { file: '005.md' }] },
+        [`items/${SONGSHI}/full_text/wikisource-01/index.json`]: { chapters: [{ file: '001.md', title: '卷一' }] },
+    } as Record<string, unknown>)[rel] as T | null ?? null;
+
+    it('Book、Work 全文取目录里的章名（去空白）；没有章名、没带卷号、整理本都是 undefined', async () => {
+        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '003' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: '第三回' });
+        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '003.md' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: '第三回' });
+        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '004' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
+        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '005' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
+        expect(await checkReader(BOOK, { kind: 'fulltext' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
+        expect(await checkReader(SONGSHI, { kind: 'fulltext', key: 'wikisource-01', juan: '001' }, true, withTitles)).toEqual({ status: 'found', chapterTitle: '卷一' });
+        expect(await checkReader(ZHIZHAI, { kind: 'collated', juan: '011' }, true, withTitles)).toEqual({ status: 'found' });
+    });
+    it('查不到就 missing，没有章名', async () => {
+        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '999' }, false, withTitles)).toEqual({ status: 'missing' });
     });
 });

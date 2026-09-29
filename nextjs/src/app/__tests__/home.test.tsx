@@ -37,6 +37,17 @@ describe('首页（N1）', () => {
         expect(screen.getAllByText('规划中')).toHaveLength(HOME_FEATURES.length - 2);
     });
 
+    it('页尾「关于与联系」：三组文字链接，不加按钮（N6）', () => {
+        render(<HomePage />);
+        const band = screen.getByRole('region', { name: '一起把古籍做成开放数据' });
+        expect(within(band).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual([
+            '/about',
+            '/contact',
+            '/feedback',
+        ]);
+        expect(within(band).queryByRole('button')).not.toBeInTheDocument();
+    });
+
     it('写明 CC0，不放二维码', () => {
         const { container } = render(<HomePage />);
         const main = screen.getByRole('main');

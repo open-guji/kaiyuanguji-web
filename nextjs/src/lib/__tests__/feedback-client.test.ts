@@ -101,6 +101,9 @@ describe('readerFeedbackLabel', () => {
     it('整理本：卷文件名里的数字是卷号', () => {
         expect(readerFeedbackLabel('直斋书录解题', { kind: 'collated', juan: 'juan/004.json' })).toBe('直斋书录解题 · 整理本 · 卷4');
     });
+    it('整理本地址里的短卷号（011）也认', () => {
+        expect(readerFeedbackLabel('直斋书录解题', { kind: 'collated', juan: '011' })).toBe('直斋书录解题 · 整理本 · 卷11');
+    });
     it('全文：章节 stem', () => {
         expect(readerFeedbackLabel('诗序', { kind: 'fulltext', juan: '012' })).toBe('诗序 · 全文 · 第 12 章');
     });

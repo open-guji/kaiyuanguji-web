@@ -3,7 +3,8 @@
  *
  *   /item/<id>/read?kind=collated|fulltext[&key=<fullTextKey>][&juan=<卷>]
  *
- *   - kind=collated：整理本（Work），juan 是卷文件名（如 juan/011.json）；
+ *   - kind=collated：整理本（Work），juan 是卷号短形式（如 011），与全文一致；组件内部用的卷文件名
+ *     （juan/011.json）只在客户端与服务端取数时换算，不出现在地址里。旧地址 juan=juan%2F011.json 仍认，308 到短形式；
  *   - kind=fulltext：全文（Book，或 Work 带 key 选其中一份），juan 是章节 stem（如 001）；
  *   - key 只对 Work 全文有意义，不带就由阅读器取首选那份。
  *
@@ -55,13 +56,40 @@ export function parseReaderQuery(id: string, src: ParamSource): ReaderQuery | nu
     return q;
 }
 
-/** 拼阅读页地址。参数顺序固定（kind、key、juan），canonical 与跳转目标因此唯一 */
+/** 拼阅读页地址。参数顺序固定（kind、key、juan），canonical 与跳转目标因此唯一（整理本卷号统一成短形式） */
 export function readerHref(id: string, q: ReaderQuery): string {
     const p = new URLSearchParams();
     p.set('kind', q.kind);
     if (q.key && q.kind === 'fulltext') p.set('key', q.key);
-    if (q.juan) p.set('juan', q.juan);
+    // 整理本组件给的是卷文件名（juan/011.json），地址里一律写短形式（011）
+    if (q.juan) p.set('juan', q.kind === 'collated' && isLegacyCollatedJuan(q.juan) ? juanStem(q.juan) : q.juan);
     return `/item/${id}/read?${p.toString()}`;
+}
+
+/** 卷文件名 → 卷号短形式：取末段、去扩展名。juan/011.json → 011；011 → 011 */
+export function juanStem(juan: string): string {
+    return (juan.split('/').pop() ?? juan).replace(/\.(json|md)$/, '');
+}
+
+/** 旧地址里的整理本卷号：卷文件路径 juan/011.json（不是短形式） */
+export function isLegacyCollatedJuan(juan: string): boolean {
+    return /^juan\/[^/\\]+\.json$/.test(juan);
+}
+
+/** 整理本卷号（地址里的短形式或旧的文件名）→ 卷文件名。files 是目录里的 juan_files；目录还没取到就按惯例拼 */
+export function collatedJuanFile(juan: string, files?: readonly string[]): string {
+    if (files?.includes(juan)) return juan;
+    const hit = files?.find((f) => juanStem(f) === juan);
+    return hit ?? `juan/${juan}.json`;
+}
+
+/**
+ * 旧形式整理本地址（juan=juan/011.json）→ 短形式的规范地址；不是旧形式就返回 null。
+ * 只认 juan/<名>.json 这一种写法，其余（含 ..）交给页面校验成 404。
+ */
+export function legacyCollatedJuanTarget(id: string, q: ReaderQuery): string | null {
+    if (q.kind !== 'collated' || !q.juan || !isLegacyCollatedJuan(q.juan)) return null;
+    return readerHref(id, { ...q, juan: juanStem(q.juan) });
 }
 
 /**
@@ -74,9 +102,12 @@ export function juanLabel(juan: string): string {
     return m ? `卷${Number(m[1])}` : stem;
 }
 
-/** 阅读页 <title>：「书名 · 卷N · 整理本／全文」 */
-export function readerTitle(bookTitle: string, q: ReaderQuery): string {
-    return [bookTitle, q.juan ? juanLabel(q.juan) : '', q.kind === 'collated' ? '整理本' : '全文']
+/**
+ * 阅读页 <title>：「书名 · 卷N · 整理本／全文」。
+ * chapterTitle 是目录里的章名（如红楼梦的「第三回」），给了就用它，不再写死「卷N」。
+ */
+export function readerTitle(bookTitle: string, q: ReaderQuery, chapterTitle?: string): string {
+    return [bookTitle, chapterTitle?.trim() || (q.juan ? juanLabel(q.juan) : ''), q.kind === 'collated' ? '整理本' : '全文']
         .filter(Boolean)
         .join(' · ');
 }

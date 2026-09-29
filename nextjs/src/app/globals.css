@@ -1095,6 +1095,308 @@
 }
 
 /* =========================================================
+   N6（overview#259）：首页页尾「关于与联系」、关于页、联系页。
+   沿用暖纸底＋朱色点缀，分组靠底色阶和留白，不画框线；只用文字链接，不加按钮。
+   ========================================================= */
+@layer components {
+  /* 首页页尾：纸底，与上面 tint 的开放区拉开层次 */
+  .home-join {
+    font-size: var(--fs-base);
+    line-height: 1.7;
+  }
+  .home-join-inner {
+    max-width: var(--shell-max);
+    margin: 0 auto;
+    padding: 64px var(--shell-gutter) 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 64px;
+    align-items: start;
+  }
+  .home-join-head h2 {
+    margin: 0 0 12px;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+  }
+  .home-join-head p {
+    margin: 0;
+    color: var(--color-ink-2);
+    line-height: 1.9;
+  }
+  .home-join-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .home-join-links a {
+    display: block;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .home-join-links a:hover {
+    text-decoration: none;
+  }
+  .home-join-links strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-zhu);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+  .home-join-links a:hover strong {
+    color: var(--color-zhu-deep);
+  }
+  .home-join-links span {
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
+
+  /* 关于页、联系页共用的文档版式 */
+  .doc-layout,
+  .doc-page {
+    font-size: var(--fs-base);
+    line-height: 1.8;
+    color: var(--color-ink);
+  }
+  .doc-layout {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px var(--shell-gutter) 24px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 64px;
+  }
+  .doc-toc {
+    position: sticky;
+    top: calc(var(--nav-h) + 32px);
+    align-self: start;
+    font-size: var(--fs-sm);
+  }
+  .doc-toc-title {
+    margin: 0 0 8px;
+    font-weight: var(--fw-bold);
+  }
+  .doc-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .doc-toc a {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    color: var(--color-ink-2);
+    text-decoration: none;
+  }
+  .doc-toc a:hover {
+    color: var(--color-zhu);
+  }
+  .doc-article {
+    max-width: 680px;
+  }
+  .doc-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px var(--shell-gutter) 24px;
+  }
+  .doc-article h1,
+  .doc-page h1 {
+    margin: 0 0 16px;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
+    line-height: 1.4;
+  }
+  .doc-lead {
+    margin: 0 0 40px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-md);
+    line-height: 1.9;
+  }
+  .doc-article section {
+    margin-top: 48px;
+    scroll-margin-top: calc(var(--nav-h) + 24px);
+  }
+  .doc-article h2,
+  .doc-page h2 {
+    margin: 0 0 12px;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+  }
+  .doc-article p {
+    margin: 0 0 12px;
+  }
+  /* 段内链接和正文只差色，要下划线才看得出（axe link-in-text-block） */
+  .doc-article p a,
+  .doc-page p a,
+  .contact-ways a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .doc-meta {
+    display: block;
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
+  .doc-note {
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
+  .doc-dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 8em minmax(0, 1fr);
+    gap: 16px 24px;
+  }
+  .doc-dl dt {
+    font-weight: var(--fw-bold);
+  }
+  .doc-dl dd {
+    margin: 0;
+  }
+  /* 表格不画格线，靠斑马底分行 */
+  .doc-table {
+    width: 100%;
+    margin: 16px 0;
+    border-collapse: collapse;
+  }
+  .doc-table th,
+  .doc-table td {
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .doc-table th {
+    width: 40%;
+    font-weight: var(--fw-medium);
+  }
+  .doc-table tr:nth-child(odd) {
+    background: var(--color-tint);
+  }
+  .doc-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .doc-rows li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 16px;
+    min-height: 44px;
+    padding: 8px 0;
+  }
+  .doc-rows .doc-meta {
+    display: inline;
+  }
+
+  /* 联系页：反馈是唯一主操作，放在浅底块里；其余方式是定义列表 */
+  .contact-primary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 28px 32px;
+    border-radius: var(--radius-card);
+    background: var(--color-tint);
+  }
+  .contact-primary p {
+    margin: 0;
+    color: var(--color-ink-2);
+  }
+  .contact-primary .og-btn {
+    flex: none;
+    color: #fff;
+  }
+  .contact-primary .og-btn:hover {
+    text-decoration: none;
+  }
+  .contact-ways {
+    margin: 48px 0 32px;
+    display: grid;
+    grid-template-columns: 9em minmax(0, 1fr);
+    gap: 32px 24px;
+  }
+  .contact-ways dt {
+    font-weight: var(--fw-bold);
+  }
+  .contact-ways dd {
+    margin: 0;
+  }
+  .contact-ways .doc-meta {
+    margin-top: 4px;
+  }
+
+  @media (max-width: 760px) {
+    .home-join-inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+      padding: 48px var(--shell-gutter) 8px;
+    }
+    .home-join-links {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+    .home-join-links a {
+      min-height: 44px;
+    }
+    .doc-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      padding-top: 32px;
+    }
+    /* 手机：目录变成正文上方一行锚点 */
+    .doc-toc {
+      position: static;
+    }
+    .doc-toc-title {
+      display: none;
+    }
+    .doc-toc ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 16px;
+    }
+    .doc-toc a {
+      min-height: 44px;
+    }
+    .doc-dl,
+    .contact-ways {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    .doc-dl dd,
+    .contact-ways dd {
+      margin-bottom: 20px;
+    }
+    .doc-table th,
+    .doc-table td {
+      display: block;
+      width: auto;
+      padding: 4px 12px;
+    }
+    .doc-table th {
+      padding-top: 10px;
+    }
+    .doc-table td {
+      padding-bottom: 10px;
+      color: var(--color-ink-2);
+    }
+    .doc-page {
+      padding-top: 32px;
+    }
+    .contact-primary {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px;
+      gap: 16px;
+    }
+  }
+}
+
+/* =========================================================
    反馈页（B3）：book-index-ui 的 FeedbackList 用白字压在语义色块上，
    默认橙 #ff9800 / 红 #f44336 / 绿 #4caf50 对白字只有 2.2–3.7。
    只在这一页把三个语义色压深（色相不变），白字对比度 ≥ 5：

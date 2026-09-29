@@ -4,7 +4,7 @@
  * N5b：阅读页地址约定（/item/<id>/read?kind=…&key=…&juan=…）与旧入口跳转。
  */
 import { describe, it, expect } from '@jest/globals';
-import { juanLabel, legacyReaderTarget, parseReaderQuery, readerHref, readerTitle } from '../reader-route';
+import { collatedJuanFile, isLegacyCollatedJuan, juanLabel, juanStem, legacyCollatedJuanTarget, legacyReaderTarget, parseReaderQuery, readerHref, readerTitle } from '../reader-route';
 
 const WORK = 'd59f20aowb9c'; // 史記（Work）
 const ZHIZHAI = 'd59f2htm01du'; // 直齋書錄解題（Work，有整理本）
@@ -41,7 +41,7 @@ describe('parseReaderQuery', () => {
 describe('readerHref／readerTitle／juanLabel', () => {
     it('参数顺序固定，collated 不带 key', () => {
         expect(readerHref(WORK, { kind: 'fulltext', juan: '001', key: 'k' })).toBe(`/item/${WORK}/read?kind=fulltext&key=k&juan=001`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
         expect(readerHref(BOOK, { kind: 'fulltext' })).toBe(`/item/${BOOK}/read?kind=fulltext`);
     });
     it('条目页「阅读全文」也用它（原 read-url.ts#buildReadUrl 的用例，行为不变）', () => {
@@ -56,6 +56,36 @@ describe('readerHref／readerTitle／juanLabel', () => {
         expect(juanLabel('001')).toBe('卷1');
         expect(juanLabel('第001.md')).toBe('卷1');
         expect(juanLabel('序')).toBe('序');
+    });
+    it('整理本卷号：地址里是短形式，旧的卷文件名换成短形式', () => {
+        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: '011' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        // 全文的 juan 不动
+        expect(readerHref(BOOK, { kind: 'fulltext', juan: 'juan/x.json' })).toBe(`/item/${BOOK}/read?kind=fulltext&juan=juan%2Fx.json`);
+    });
+    it('juanStem／isLegacyCollatedJuan／collatedJuanFile', () => {
+        expect(juanStem('juan/011.json')).toBe('011');
+        expect(juanStem('011')).toBe('011');
+        expect(juanStem('003.md')).toBe('003');
+        expect(isLegacyCollatedJuan('juan/011.json')).toBe(true);
+        for (const v of ['011', '011.json', 'juan/../x.json', '../x.json', 'juan/a/b.json', 'juan\\x.json']) expect(isLegacyCollatedJuan(v)).toBe(false);
+        expect(collatedJuanFile('011')).toBe('juan/011.json');
+        expect(collatedJuanFile('011', ['juan/序.json', 'juan/011.json'])).toBe('juan/011.json');
+        expect(collatedJuanFile('序', ['juan/序.json'])).toBe('juan/序.json');
+        expect(collatedJuanFile('juan/011.json', ['juan/011.json'])).toBe('juan/011.json');
+        expect(collatedJuanFile('099', ['juan/011.json'])).toBe('juan/099.json');
+    });
+    it('legacyCollatedJuanTarget：只有整理本的旧形式才给目标', () => {
+        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
+        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: '011' })).toBeNull();
+        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated' })).toBeNull();
+        expect(legacyCollatedJuanTarget(BOOK, { kind: 'fulltext', juan: 'juan/011.json' })).toBeNull();
+        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/../x.json' })).toBeNull();
+    });
+    it('有章名用章名，空白或没有就回落「卷N」', () => {
+        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' }, '第三回')).toBe('紅樓夢 · 第三回 · 全文');
+        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' }, '  ')).toBe('紅樓夢 · 卷3 · 全文');
+        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' })).toBe('紅樓夢 · 卷3 · 全文');
     });
     it('每卷各自的标题', () => {
         expect(readerTitle('直齋書錄解題', { kind: 'collated', juan: 'juan/011.json' })).toBe('直齋書錄解題 · 卷11 · 整理本');
@@ -75,7 +105,7 @@ describe('legacyReaderTarget：旧入口 → 阅读页', () => {
         expect(t(`/book-index?id=${ZHIZHAI}&tab=collated`)).toBe(`/item/${ZHIZHAI}/read?kind=collated`);
     });
     it('条目页的 fulltext／collated tab', () => {
-        expect(t(`/item/${ZHIZHAI}?tab=collated&juan=juan%2F011.json`)).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=juan%2F011.json`);
+        expect(t(`/item/${ZHIZHAI}?tab=collated&juan=juan%2F011.json`)).toBe(`/item/${ZHIZHAI}/read?kind=collated&juan=011`);
         expect(t(`/item/${WORK}?tab=fulltext`)).toBe(`/item/${WORK}/read?kind=fulltext`);
     });
     it('别的 tab 的参数丢掉', () => {

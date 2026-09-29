@@ -4,7 +4,7 @@
  */
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }), useSearchParams: () => new URLSearchParams() }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <main>{children}</main>);
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 

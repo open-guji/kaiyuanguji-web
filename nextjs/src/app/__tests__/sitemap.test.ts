@@ -31,6 +31,7 @@ describe('app/sitemap.ts', () => {
         expect(u.length).toBeGreaterThan(0);
         expect(u.filter((x) => x.includes('/book-index?id='))).toEqual([]);
         expect(u.some((x) => x.endsWith('/about'))).toBe(true);
+        expect(u.some((x) => x.endsWith('/contact'))).toBe(true);
         expect(mockGetAllEntries).not.toHaveBeenCalled();
     });
 

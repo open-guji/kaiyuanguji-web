@@ -28,7 +28,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
-import { legacyReaderTarget } from '@/lib/reader-route';
+import { legacyCollatedJuanTarget, legacyReaderTarget, parseReaderQuery } from '@/lib/reader-route';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -98,12 +98,26 @@ function readerRedirect(req: NextRequest): NextResponse | null {
     return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
 }
 
+/**
+ * 整理本旧地址 /item/<id>/read?kind=collated&juan=juan%2F011.json → 308 到短形式 juan=011。
+ * 只做字符串换算、不查数据；卷号在不在目录里由页面校验（不在就 404）。页面里也有同样的跳转，
+ * 这里先出一个只有单个 Location 的 308（EdgeOne 上页面抛 redirect 会把 Location 写两遍，见上面 FX1）。
+ */
+function readerJuanRedirect(req: NextRequest): NextResponse | null {
+    const id = req.nextUrl.pathname.match(/^\/item\/([^/]+)\/read\/?$/)?.[1];
+    if (!id) return null;
+    const q = parseReaderQuery(id, req.nextUrl.searchParams);
+    const to = q ? legacyCollatedJuanTarget(id, q) : null;
+    return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
+}
+
 export function middleware(req: NextRequest): NextResponse | Promise<NextResponse> {
+    if (req.nextUrl.pathname.endsWith('/read') || req.nextUrl.pathname.endsWith('/read/')) return readerJuanRedirect(req) ?? NextResponse.next();
     const reader = readerRedirect(req);
     if (reader) return reader;
     return req.nextUrl.pathname.startsWith('/item/') ? itemRedirect(req) : bookIndexRedirect(req);
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id'],
+    matcher: ['/book-index', '/item/:id', '/item/:id/read'],
 };
