@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from '@jest/globals';
 import { buildItemSeo, clip, jsonLdScript, mergedTarget, seoDescription } from '../item-seo';
+import { toSimplified } from '../simplify';
 import { parseItemId } from '../../item-id';
 
 const SITE = 'https://staging.kaiyuanguji.com';
@@ -184,7 +185,7 @@ describe('buildItemSeo', () => {
             name: '史記',
             url: `${SITE}/item/d59f20aowb9c`,
             description: s.description,
-            alternateName: ['太史公書', '太史公記'],
+            alternateName: ['太史公書', '太史公記', '史记'], // S4：末尾是书名的简体写法
             author: [
                 { '@type': 'Person', name: '司馬遷', '@id': `${SITE}/item/hixhd2h9bhma` },
                 { '@type': 'Person', name: '無名' },
@@ -257,7 +258,7 @@ describe('buildItemSeo', () => {
         }, 'hixhd2h9bhma', SITE);
         expect(s.title).toBe('司馬遷（西漢）');
         expect(s.ogType).toBe('profile');
-        expect(s.jsonLd).toMatchObject({ '@type': 'Person', alternateName: ['子長'], birthDate: '-0145' });
+        expect(s.jsonLd).toMatchObject({ '@type': 'Person', alternateName: ['子長', '司马迁'], birthDate: '-0145' });
         expect(s.jsonLd).not.toHaveProperty('deathDate');
         const d = buildItemSeo({ type: 'entity', primary_name: '某', dates: { birth: null, death: 706 } }, 'hixhd2h9bhma', SITE);
         expect(d.jsonLd).toMatchObject({ deathDate: '0706' });
@@ -274,7 +275,7 @@ describe('buildItemSeo', () => {
             type: 'entity', primary_name: '何秋濤',
             alt_names: [{ name: '巨源', type: '字' }, { name: '何秋濤', type: '著錄形' }, { name: '何氏秋濤', type: '著錄形' }, '海槎'],
         }, 'hixhd2h9bhma', SITE);
-        expect(p.jsonLd.alternateName).toEqual(['巨源', '海槎']);
+        expect(p.jsonLd.alternateName).toEqual(['巨源', '海槎', '何秋涛']); // 末尾是名字的简体写法（S4）
     });
 
     it('人物：subtype=collective → Organization，不出生卒', () => {
@@ -290,6 +291,58 @@ describe('buildItemSeo', () => {
             expect(s.jsonLd.name).toBeTruthy();
             expect(s.jsonLd.url).toBe(`${SITE}/item/hixhd2h9bhma`);
         }
+    });
+});
+
+describe('S4：简体版 meta description（overview#280）', () => {
+    it('descriptionSimplified 是 description 的简体；JSON-LD 的 description 仍是原文（繁体）', () => {
+        const s = buildItemSeo(WORK, WORK.id, SITE);
+        expect(s.description).toContain('司馬遷');
+        expect(s.descriptionSimplified).toContain('司马迁');
+        expect(s.descriptionSimplified).not.toContain('司馬遷');
+        expect(s.descriptionSimplified).toBe(toSimplified(s.description));
+        expect(s.jsonLd.description).toBe(s.description);
+        expect(s.jsonLd.description).toContain('司馬遷');
+    });
+
+    it('简体化不改长度区间（80–160 字）：逐字转换，长度不变', () => {
+        const s = buildItemSeo(WORK, WORK.id, SITE);
+        expect(Array.from(s.descriptionSimplified).length).toBe(Array.from(s.description).length);
+    });
+
+    it('name 保持原文，简体名放 alternateName；四种类型都有；没有繁简差异的不重复', () => {
+        expect(buildItemSeo(WORK, WORK.id, SITE).jsonLd).toMatchObject({ name: '史記', alternateName: expect.arrayContaining(['史记']) });
+        expect(buildItemSeo({ type: 'book', title: '紅樓夢', edition: '甲戌本' }, '988g3gl3if', SITE).jsonLd)
+            .toMatchObject({ name: '紅樓夢', alternateName: ['红楼梦'] });
+        expect(buildItemSeo({ type: 'collection', title: '四庫全書' }, '8rlcsybg2hhi', SITE).jsonLd)
+            .toMatchObject({ name: '四庫全書', alternateName: ['四库全书'] });
+        expect(buildItemSeo({ type: 'entity', primary_name: '司馬遷' }, 'hixhd2h9bhma', SITE).jsonLd)
+            .toMatchObject({ name: '司馬遷', alternateName: ['司马迁'] });
+        // 书名本来就没有繁简差异：不加、不重复
+        expect(buildItemSeo({ type: 'work', title: '論語' }, 'd59f20aowb9c', SITE).jsonLd.alternateName).toEqual(['论语']);
+        expect(buildItemSeo({ type: 'work', title: '孟子' }, 'd59f20aowb9c', SITE).jsonLd).not.toHaveProperty('alternateName');
+    });
+
+    it('别名里已经有简体写法时不重复', () => {
+        const j = buildItemSeo({ type: 'work', title: '史記', additional_titles: ['史记'] }, 'd59f20aowb9c', SITE).jsonLd;
+        expect(j.alternateName).toEqual(['史记']);
+    });
+
+    it('title（<title> 与 og:title 的来源）不动，仍是原文', () => {
+        expect(buildItemSeo(WORK, WORK.id, SITE).title).toBe('史記');
+    });
+});
+
+describe('toSimplified', () => {
+    it.each([
+        ['史記', '史记'],
+        ['欽定四庫全書總目', '钦定四库全书总目'],
+        ['脂硯齋重評石頭記', '脂砚斋重评石头记'],
+        ['卷一百三十', '卷一百三十'],
+        ['abc 123', 'abc 123'],
+        ['', ''],
+    ])('%s → %s', (a, b) => {
+        expect(toSimplified(a)).toBe(b);
     });
 });
 

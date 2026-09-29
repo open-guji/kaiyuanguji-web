@@ -78,6 +78,16 @@ function metaContent(html: string, name: string): string | null {
     return null;
 }
 
+/** <meta property="og:…" content="…">（Open Graph 用 property，不是 name） */
+function metaProperty(html: string, prop: string): string | null {
+    for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+        if (!new RegExp(`\\bproperty=["']${prop}["']`, 'i').test(tag)) continue;
+        const m = tag.match(/\bcontent=["']([^"']*)["']/i);
+        if (m) return decode(m[1]);
+    }
+    return null;
+}
+
 function canonicalHref(html: string): string | null {
     for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
         if (!/\brel=["']canonical["']/i.test(tag)) continue;
@@ -187,6 +197,21 @@ test.describe('新架构：条目页服务端 HTML', () => {
             expect(ld!['@type'], 'JSON-LD @type').toBe(s.ldType);
             expect(ld!.name, 'JSON-LD name').toBe(s.title);
             expect(ld!.url).toBe(`${SITE.canonicalOrigin}/item/${s.id}`);
+
+            // S4（overview#280）：meta／og／twitter 的 description 是简体；JSON-LD 的 name／description 保持原文，
+            // 简体名放 alternateName。书名有繁简差异的样本（s.h1Title !== s.title）才能靠书名判断
+            expect(metaProperty(html, 'og:description'), 'og:description 与 meta description 应一致').toBe(desc);
+            expect(metaContent(html, 'twitter:description'), 'twitter:description 与 meta description 应一致').toBe(desc);
+            if (s.h1Title !== s.title) {
+                const ldDesc = String(ld!.description ?? '');
+                if (ldDesc.includes(s.title)) {
+                    expect(desc, 'meta description 里的书名应是简体').toContain(s.h1Title);
+                    expect(desc, 'meta description 不该还是繁体书名').not.toContain(s.title);
+                    expect(ldDesc, 'JSON-LD 的 description 应保持原文（繁体）').toContain(s.title);
+                }
+                const alt = Array.isArray(ld!.alternateName) ? (ld!.alternateName as string[]) : [];
+                expect(alt, 'JSON-LD 的 alternateName 应含书名的简体写法').toContain(s.h1Title);
+            }
 
             const robots = metaContent(html, 'robots') ?? '';
             if (SITE.noindex) {
