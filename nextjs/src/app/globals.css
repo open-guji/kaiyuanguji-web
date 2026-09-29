@@ -946,11 +946,20 @@
     padding: 120px var(--shell-gutter) 8px;
   }
   .home-kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin: 0 0 18px;
     color: var(--color-zhu);
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
     letter-spacing: 0.3em;
+  }
+  .home-kicker::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: currentColor;
   }
   .home-title {
     margin: 0;
@@ -967,33 +976,44 @@
     color: var(--color-ink-2);
   }
   .home-search {
+    position: relative;
     margin-top: 36px;
     display: flex;
-    gap: 12px;
+    gap: 0;
     max-width: 720px;
+    border-radius: 6px;
+    background: var(--color-raise);
+    box-shadow: var(--shadow-soft);
+  }
+  .home-search-icon {
+    position: absolute;
+    left: 18px;
+    top: 17px;
+    color: var(--color-ink-3);
+    pointer-events: none;
   }
   .home-search input {
     flex: 1;
     min-width: 0;
     height: 52px;
-    padding: 0 20px;
+    padding: 0 20px 0 48px;
     border: 0;
-    border-radius: var(--radius-pill);
+    border-radius: 6px 0 0 6px;
     outline: none;
-    background: var(--color-raise);
+    background: transparent;
     color: var(--color-ink);
     font: var(--fs-md) var(--font-sans);
-    box-shadow: var(--shadow-soft);
   }
   .home-search input::placeholder {
     color: var(--color-ink-3);
   }
-  .home-search input:focus {
+  .home-search:focus-within {
     box-shadow: 0 0 0 2px var(--color-zhu), 0 8px 24px rgba(60, 50, 40, 0.08);
   }
   .home-search .og-btn {
     height: 52px;
     padding: 0 32px;
+    border-radius: 0 6px 6px 0;
   }
   .home-under {
     margin: 16px 0 0;
@@ -1036,7 +1056,33 @@
     list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px 40px;
+    gap: 20px;
+  }
+  .home-feature {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 22px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px var(--color-tint-2);
+    background-image: none;
+  }
+  /* 规划中：虚线框、不抬起；已上线：抬起的卡片 */
+  .home-feature:not(.is-live) {
+    box-shadow: none;
+    border: 1px dashed var(--color-ink-3);
+  }
+  .home-feature.is-live {
+    background: var(--color-raise);
+    box-shadow: var(--shadow-soft), inset 0 0 0 1px var(--color-tint-2);
+  }
+  .home-feature-cta {
+    margin-top: auto;
+    padding-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-zhu);
+    font-size: var(--fs-sm);
   }
   .home-feature h3 {
     margin: 0;
@@ -1080,6 +1126,28 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 48px;
+  }
+  .home-open-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .home-open-head h2 {
+    margin: 0;
+  }
+  .home-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 3px;
+    background: var(--color-zhu-tint);
+    color: var(--color-zhu);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.04em;
+  }
+  .home-repo-arrow {
+    font-weight: var(--fw-regular);
   }
   .home-open h2 {
     margin: 0 0 8px;

@@ -3,6 +3,9 @@ import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import HomeSearch from '@/components/home/HomeSearch';
 import { HOME_FEATURES } from '@/components/home/features';
 
+// 2026-09-29 设计稿 v3（overview#286）：眉题前加短横；检索框改成一体的方框（图标＋输入＋按钮）；
+// 「我们在做的事」已上线的做成抬起的卡片并带入口，规划中的用虚线框；「文本开放／代码开源」标题前加许可徽标，
+// 仓库清单一行一个、右端 ↗。首屏坤舆图与页脚二维码按用户意见保留（设计稿里是占位）。
 // 首页（N1，照 design/n1-samples 的 /samples/home）：
 // 首屏坤舆图满幅、左对齐大标题、大检索框、唯一主按钮「搜索」；
 // 特性区只有已上线的两项标「已上线」，其余标「规划中」；写明 CC0。
@@ -42,7 +45,7 @@ export default function HomePage() {
         </picture>
         <div className="home-hero-veil" aria-hidden="true" />
         <div className="home-hero-inner">
-          <p className="home-kicker">开源古籍 · 古籍数字化开放平台</p>
+          <p className="home-kicker">古籍数字化开放平台</p>
           <h1 className="home-title">让科技赋予古籍数字生命</h1>
           <p className="home-lead">
             把散在各处的历代书目、存世版本与整理文本聚到一起，建一座开放、可查证、自由使用的古籍文库。
@@ -66,7 +69,7 @@ export default function HomePage() {
         </div>
         <ul className="home-features">
           {HOME_FEATURES.map((f, i) => (
-            <li key={f.title} className="home-feature">
+            <li key={f.title} className={f.live ? 'home-feature is-live' : 'home-feature'}>
               <span className="num" aria-hidden="true">
                 {String(i + 1).padStart(2, '0')}
               </span>
@@ -75,6 +78,11 @@ export default function HomePage() {
                 <span className={f.live ? 'status is-live' : 'status'}>{f.live ? '已上线' : '规划中'}</span>
               </h3>
               <p>{f.text}</p>
+              {f.cta && (
+                <Link className="home-feature-cta" href={f.cta.href}>
+                  {f.cta.label} <span aria-hidden="true">→</span>
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -83,13 +91,13 @@ export default function HomePage() {
       <section className="home-open" aria-label="开放">
         <div className="home-open-inner">
           <div className="home-open-col">
-            <h2>文本开放</h2>
+            <div className="home-open-head"><span className="home-badge" aria-label="许可：CC0">CC0</span><h2>文本开放</h2></div>
             <p className="home-open-sub">整理本与全文以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
             <ul className="home-repos">
               {OPEN_TEXT_REPOS.map((r) => (
                 <li key={r.name}>
                   <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
-                    {r.name}
+                    {r.name}<span className="home-repo-arrow" aria-hidden="true"> ↗</span>
                   </a>
                   <span>{r.note}</span>
                 </li>
@@ -101,7 +109,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="home-open-col">
-            <h2>代码开源</h2>
+            <div className="home-open-head"><span className="home-badge" aria-label="许可：Apache-2.0">Apache-2.0</span><h2>代码开源</h2></div>
             <p className="home-open-sub">
               网站、排版、资源抓取等工具以 Apache-2.0 开源。<a href={GITHUB} target="_blank" rel="noopener noreferrer">在 GitHub 查看全部 →</a>
             </p>
@@ -109,7 +117,7 @@ export default function HomePage() {
               {OPEN_CODE_REPOS.map((r) => (
                 <li key={r.name}>
                   <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
-                    {r.name}
+                    {r.name}<span className="home-repo-arrow" aria-hidden="true"> ↗</span>
                   </a>
                   <span>{r.note}</span>
                 </li>
