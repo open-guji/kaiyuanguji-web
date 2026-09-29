@@ -85,6 +85,18 @@ const nextConfig: NextConfig = {
     'remark-gfm',
   ],
 
+  // S2 实验 B2（overview#280，只做这一次）：直接设 EdgeOne 自己看的 Eo-Cdn-Cache-Control，去掉 swr。
+  // 上一轮 A 只改了响应头 Cache-Control，平台产出的 Eo-Cdn-Cache-Control 仍带 swr、条目页仍不压缩；
+  // 这一轮看适配器认不认用户设的这个头，以及去掉 swr 后平台会不会压缩。判定规则见 #280：
+  // 头没变或变了仍不压 → 撤回并放弃。只在全栈构建里生效（静态导出不支持 headers()）。
+  ...(isFullstack
+    ? {
+        async headers() {
+          return [{ source: '/item/:id', headers: [{ key: 'Eo-Cdn-Cache-Control', value: 's-maxage=3600, durable' }] }];
+        },
+      }
+    : {}),
+
   images: {
     unoptimized: true, // 静态导出需要禁用默认图片优化
     qualities: [75, 90],
