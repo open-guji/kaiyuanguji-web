@@ -280,7 +280,7 @@ svg .arh { fill: var(--ink-2); }
       <tr><td>数据指针</td><td>边缘不缓存、浏览器 30 秒（控制台规则引擎配置）</td><td>每次发布都清；服务端取指针时带按分钟取整的时间戳</td></tr>
       <tr><td>h1 哈希文件</td><td>永久，文件名即版本</td><td>内容变了就换名字，旧文件不用清，7 天后按「没被任何根引用」回收</td></tr>
       <tr><td><code>current/</code> 文件</td><td>URL 带 <code>?v=&lt;commit&gt;</code></td><td>换版本就换 URL</td></tr>
-      <tr><td>条目页 HTML</td><td><code>s-maxage=3600</code>。缓存键含查询串：<code>/item/&lt;id&gt;?x=1</code> 这类地址会绕过缓存，每次都进云函数（改法见「已知限制」）</td><td>发布时只清改动的条目（<code>item-changes.mjs</code> 算出改动集 → <code>item-revalidate.mjs</code> 调 <code>/internal/revalidate</code>），再预热前 2,000 个热门页</td></tr>
+      <tr><td>条目页 HTML</td><td><code>s-maxage=3600</code>。缓存键含查询串，所以中间件把带多余参数的条目页（<code>utm_*</code>、<code>fbclid</code> 等）308 到干净地址，只保留详情组件自己用的参数（<code>tab</code>、<code>juan</code>、<code>page</code>、<code>mode</code>、<code>collection</code> 等）</td><td>发布时只清改动的条目（<code>item-changes.mjs</code> 算出改动集 → <code>item-revalidate.mjs</code> 调 <code>/internal/revalidate</code>），再预热前 2,000 个热门页</td></tr>
     </tbody>
   </table></div>
   <p>失效不成功最坏的结果是条目页按 1 小时自然过期。全站的页面缓存不做整站清除：整站清除只清得到裸域，清不到 www 的条目页，而且会把几百 MB 的缓存白丢。</p>
@@ -355,6 +355,7 @@ svg .arh { fill: var(--ink-2); }
     <thead><tr><th>闸</th><th>内容</th><th>什么时候跑</th></tr></thead>
     <tbody>
       <tr><td>PR 闸</td><td>Jest 单测（约 770 个）；Browser smoke（静态构建、起服务、Playwright）；Fullstack（全栈构建、<code>next start</code>、reader／feedback／read-home／contract 用例）。修失败的测试只能改代码，不许放宽断言</td><td>每个 PR，以及夜间</td></tr>
+      <tr><td>自动检查</td><td><b>无障碍</b>：e2e 里用 axe 扫首页、总目、阅读首页、条目页、阅读页（桌面和手机），只拦严重和关键级。<b>性能门槛</b>：夜间对正式站量首页与条目页 LCP、条目页缓存命中首字节，超标自动开 issue（<code>perf/thresholds.json</code>）。<b>搜索质量</b>：夜间跑搜索用例，只报告不拦发布</td><td>PR／夜间</td></tr>
       <tr><td>测试站闸</td><td><code>verify</code> job：<b>contract</b>（纯 HTTP，几秒：头部、308、真 404、sitemap、数据管线）、<b>ui</b>（真实浏览器：条目、检索、阅读器、整理本、反馈）、<b>degradable</b>（可降级依赖，例如搜索 L1，只报告不拦）。合计 50 多个用例</td><td>每次测试站部署后</td></tr>
       <tr><td>人眼闸</td><td>QA 在测试站按计划逐页测；截图流水线出 1440 宽的整站图集，给用户看</td><td>大改动上线前</td></tr>
       <tr><td>冻结闸</td><td>测过的 commit 就是上线的 commit，promote 按钉住的版本发</td><td>每次 promote</td></tr>
@@ -371,14 +372,14 @@ svg .arh { fill: var(--ink-2); }
   <div class="scroll"><table>
     <thead><tr><th>位置</th><th>设计频率</th><th>检查什么</th></tr></thead>
     <tbody>
-      <tr><td>公开仓 A 探测</td><td>每 15 分钟</td><td>首页与组件库版本；搜索 L1、L2；数据桶与指针；条目页（含测试站）；边缘函数（只读）；测试站 robots；四个域名证书剩余天数是否大于 14</td></tr>
+      <tr><td>公开仓 A 探测</td><td>每 5 分钟（自续循环）</td><td>首页与组件库版本；搜索 L1、L2；数据桶与指针；条目页（含测试站）；边缘函数（只读）；测试站 robots；四个域名证书剩余天数是否大于 14</td></tr>
       <tr><td>公开仓 C 冒烟</td><td>每 6 小时</td><td>契约 e2e 打正式站；浏览器指标（LCP 等）；24 小时新旧架构对比报告</td></tr>
       <tr><td>网站仓私有半边</td><td>每小时</td><td>部署停更（测试站 3 小时、正式站 72 小时跟不上 main）；前端错误突增；反馈量；三个数据仓的新鲜度</td></tr>
       <tr><td>每次发布的 verify</td><td>发布后</td><td>见上一节</td></tr>
     </tbody>
   </table></div>
   <p>告警的做法：连续 2 次失败才开 issue，恢复自动关，持续失败 6 小时提醒一次；一个检查项至多一张 open 单。检查失败不会让 workflow 变红，workflow 红只表示告警链路自己坏了，所以判断「监控还活着」要看距上次运行多久。对正式站的探测只发 GET。</p>
-  <p class="note">GitHub 对定时任务会降频。09-29 实测：公开仓 31 小时内只触发了 10 次，设计是约 125 次探测；私有半边 28 小时触发 5 次，设计是 28 次。也就是说现在的探测间隔是几小时，不是 15 分钟。改进方案已立卡，见 overview 仓的 SEO／监控／测试补强卡。</p>
+  <p class="note">GitHub 对定时任务会降频（09-29 实测：公开仓 31 小时只触发 10 次，设计约 125 次探测），所以 A 探测不靠定时器：一个长任务（一段约 5.5 小时）里每 5 分钟自己调一次探测，到点用 <code>workflow_dispatch</code> 发起下一段，定时器（每 15 分钟）只作兜底，发现没有在跑的段就重新起一段。网站仓里每小时的私有检查仍靠定时器，实际间隔可能是几小时。</p>
   <p>排障入口：<code>docs/runbook.md</code>。第一步永远是先看 <code>/api/version</code>，确认线上是哪一版；错误明细在 <code>/admin/errors</code>，按版本分组。</p>
 </section>
 
@@ -392,7 +393,7 @@ svg .arh { fill: var(--ink-2); }
       <tr><td>标题与描述</td><td><code>&lt;title&gt;</code> 为「书名 - 开源古籍」。描述优先用数据里的 SEO 描述字段，没有则用模板：朝代、作者、卷数、简介，截 120 字</td></tr>
       <tr><td>canonical</td><td>指向正式 id 的 <code>https://www.kaiyuanguji.com/item/&lt;id&gt;</code>；被合并条目和已升格草稿不出页面，直接 308</td></tr>
       <tr><td>结构化数据</td><td>JSON-LD：作品和版本用 <code>Book</code>，丛编用 <code>Collection</code>，人物用 <code>Person</code>；只写数据里已有的字段</td></tr>
-      <tr><td>sitemap</td><td>索引型 <code>sitemap-index.xml</code>，分片按类型切（作品、版本、丛编、人物），每片不超过 5 万条、10 MB；构建时生成成静态文件。条目数低于阈值（10 万）构建直接失败。<code>robots.txt</code> 逐个列出分片</td></tr>
+      <tr><td>sitemap</td><td>索引型 <code>sitemap-index.xml</code>，分片按类型切（作品、版本、丛编、人物），每片不超过 5 万条、10 MB；另有一片 <code>nodes-001.xml</code> 列总目和阅读首页的分类节点页；构建时生成成静态文件。条目数低于阈值（10 万）构建直接失败。<code>robots.txt</code> 逐个列出分片</td></tr>
       <tr><td>测试站</td><td>全站 <code>noindex</code>，<code>robots.txt</code> 全禁，页面带「测试站」角标</td></tr>
       <tr><td>真 404</td><td>不存在的条目返回 404 状态码，不返回 200 的空页面</td></tr>
     </tbody>
@@ -431,9 +432,8 @@ svg .arh { fill: var(--ink-2); }
     <li><b>搜索代理与轻量分片</b>：让搜索请求走同域代理，并把浏览器兜底分片缩小；观察期结束后再上。</li>
     <li><b>全文搜索</b>：目前只搜书名、目录和部分元数据，全文检索的引擎还在评估。</li>
     <li><b>国内数据桶与大陆加速</b>：数据桶现在在新加坡，国内读者主要靠 EdgeOne 缓存；影像上线前要迁国内并换付费套餐，会改变数据链路。</li>
-    <li><b>条目页缓存键含查询串</b>：Pages 自定义域名不经过 zone 的规则引擎，控制台里「忽略查询串」的规则建了也不生效。09-29 实测 <code>/item/&lt;id&gt;?cb=随机串</code> 每次都是 Cache Miss。计划在中间件里把带多余参数的条目页 308 到干净地址。</li>
-    <li><b>条目页响应未压缩</b>：未命中缓存时 Pages 云函数的响应不经过站点的 Gzip／Brotli，一页约 25 KB 原样发出。计划在函数里压缩，或让平台压缩这条路径。</li>
-    <li><b>监控频率</b>：定时触发被降频，需要一个可靠的时钟来驱动探测（见监控一节）。</li>
+    <li><b>条目页响应未压缩</b>：条目页（约 25 KB）未命中和命中时都不经过站点的 Gzip／Brotli，静态页和预渲染页是压缩的。09-29 试过两种办法都没用：去掉响应头里的 <code>stale-while-revalidate</code>；直接设平台自己看的 <code>Eo-Cdn-Cache-Control</code>（平台认这个头，但仍不压）。暂不处理，成本是每次多传约 19 KB。</li>
+    <li><b>私有监控半边的频率</b>：网站仓里每小时的私有检查（部署停更、前端错误、反馈量、数据新鲜度）仍靠被降频的定时器，实际间隔可能是几小时；这几项不急，暂不改。</li>
     <li><b>条目 SEO 描述</b>：长描述还在分批生成，写入数据后条目页会自动用上。</li>
   </ul>
 </section>
