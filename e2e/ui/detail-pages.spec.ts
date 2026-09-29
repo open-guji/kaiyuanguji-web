@@ -124,13 +124,20 @@ test.describe('详情页版式', () => {
         await openDetail(page, WORK);
 
         // 朝代来自版本题名推断（生产仓 94% 的 Book 能推出朝代）
-        const song = page.getByRole('button', { name: /^宋$/ });
+        // v3 起标签带条数（「宋 3」），条数须与筛选后的行数一致
+        const song = page.getByRole('button', { name: /^宋(\s*\d+)?$/ });
         await expect(song, '史記有多个宋本，应出现「宋」筛选项').toBeVisible();
+        const label = (await song.innerText()).trim();
+        const count = Number(label.replace(/\D/g, '')) || 0;
         await song.click();
 
         await expect(async () => {
             const texts = await page.locator(ROWS).allInnerTexts();
             expect(texts.length).toBeGreaterThan(0);
+            if (count > 0) {
+                // 版本表默认最多显示 12 行，条数标签不应少于或多于实际可见行
+                expect(texts.length, `「${label}」与筛选后行数不符`).toBe(Math.min(count, 12));
+            }
             // 筛选后每行的年代列都该是宋
             for (const t of texts) {
                 expect(t, `筛选「宋」后仍出现非宋版本：${t.slice(0, 40)}`).toMatch(/宋/);
