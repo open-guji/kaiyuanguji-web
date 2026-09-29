@@ -28,7 +28,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
-import { legacyCollatedJuanTarget, legacyReaderTarget, parseReaderQuery } from '@/lib/reader-route';
+import { entryHasReaderContent, legacyCollatedJuanTarget, legacyReaderParts, parseReaderQuery, readerHref } from '@/lib/reader-route';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -92,10 +92,23 @@ function bookIndexRedirect(req: NextRequest): NextResponse {
  * N5b：旧阅读入口（?tab=fulltext／collated，/book-index 与 /item/<id> 都算）→ 308 /item/<id>/read，保留卷号。
  * 与上面两条不同，站内请求也跳：条目页的 tab 与卷切换仍往 /book-index?…&tab= 推（组件不在本道写域），
  * 客户端导航拿到 308 后 Next 会跟到新地址——阅读器从此只有一处。
+ *
+ * 条目本身没有这类内容（entry 的 has_collated／has_text 等标记不是 true）就 308 到条目页 /item/<id>：
+ * 阅读页那里只会是 404（overview#267 QA 回归 P2）。查不到条目、取数出错都照旧跳阅读页，
+ * 由那边的页面判断（真 404、升格跳转等），不在这里替它下结论。
  */
-function readerRedirect(req: NextRequest): NextResponse | null {
-    const to = legacyReaderTarget(req.nextUrl.pathname, req.nextUrl.searchParams);
-    return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
+async function readerRedirect(req: NextRequest): Promise<NextResponse | null> {
+    const parts = legacyReaderParts(req.nextUrl.pathname, req.nextUrl.searchParams);
+    if (!parts) return null;
+    try {
+        const hit = await fetcher().getItem(parts.id);
+        if (hit && !entryHasReaderContent(hit.entry, parts.q.kind)) {
+            return NextResponse.redirect(new URL(`/item/${parts.id}`, req.url), 308);
+        }
+    } catch (err) {
+        console.warn(`[middleware] ${parts.id} 有没有${parts.q.kind}查不了，照旧跳阅读页：${(err as Error).message}`);
+    }
+    return NextResponse.redirect(new URL(readerHref(parts.id, parts.q), req.url), 308);
 }
 
 /**
@@ -111,9 +124,9 @@ function readerJuanRedirect(req: NextRequest): NextResponse | null {
     return to ? NextResponse.redirect(new URL(to, req.url), 308) : null;
 }
 
-export function middleware(req: NextRequest): NextResponse | Promise<NextResponse> {
+export async function middleware(req: NextRequest): Promise<NextResponse> {
     if (req.nextUrl.pathname.endsWith('/read') || req.nextUrl.pathname.endsWith('/read/')) return readerJuanRedirect(req) ?? NextResponse.next();
-    const reader = readerRedirect(req);
+    const reader = await readerRedirect(req);
     if (reader) return reader;
     return req.nextUrl.pathname.startsWith('/item/') ? itemRedirect(req) : bookIndexRedirect(req);
 }

@@ -12,13 +12,13 @@
 // 按改动清缓存与 sitemap 归 W2-3。
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
 import { buildItemSeo, jsonLdScript, type ItemSeo } from '@/lib/server/item-seo';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import ItemDetailClient from './ItemDetailClient';
+import ItemSummaryView from './ItemSummaryView';
 
 // 页面缓存：CDN 按 s-maxage 缓存（EdgeOne 上 Next 自己的 ISR 缓存不持久，25 卡）。
 // W2-3 做完「发版按改动清缓存」后再放长到 30 天（31 卡 §A.6）；在那之前取 1 小时，
@@ -79,44 +79,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
-// 样式一律行内写：Tailwind 会扫描全部源文件生成全站 CSS，这里若用到新类名，
-// 正式站（静态导出，看不到本页）的 CSS 与所有页面的引用哈希也会跟着变。
-const S = {
-    article: { maxWidth: '48rem', margin: '0 auto', padding: '40px 20px', lineHeight: 1.75, color: '#44403c' },
-    h1: { fontSize: '1.5rem', fontWeight: 700, color: '#1c1917', marginBottom: 8 },
-    edition: { marginLeft: 8, fontSize: '1rem', fontWeight: 400, color: '#78716c' },
-    authors: { color: '#57534e', marginBottom: 8 },
-    measure: { fontSize: '0.875rem', color: '#78716c', marginBottom: 16 },
-    desc: { whiteSpace: 'pre-wrap' as const, marginBottom: 24 },
-    loading: { fontSize: '0.875rem', color: '#a8a29e' },
-};
-
-function ItemSummaryView({ s }: { s: Loaded }) {
-    return (
-        <LayoutWrapper hideFooter>
-            {/* data-ssr-source／data-ssr-version：取数走的哪条路、哪一版数据；排查与发版后实测（W2-3）用 */}
-            <article data-ssr-item={s.id} data-ssr-source={s.source} data-ssr-version={s.version} style={S.article}>
-                <h1 style={S.h1}>
-                    {s.title}
-                    {s.edition && <span style={S.edition}>{s.edition}</span>}
-                </h1>
-                {s.authorLine && <p style={S.authors}>{s.authorLine}</p>}
-                {s.measure && <p style={S.measure}>{s.measure}</p>}
-                {s.description && <p style={S.desc}>{s.description}</p>}
-                <p style={S.loading}>加载中...</p>
-            </article>
-        </LayoutWrapper>
-    );
-}
-
 export default async function ItemPage({ params }: Props) {
     const { id } = await params;
     const s = await load(id);
     if (!s) notFound();
+    // 只把摘要那几个字段交给客户端组件：s 里还带着 seo（JSON-LD 等），不该进 RSC 载荷
+    const { seo: _seo, source, version, ...summary } = s; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(s.seo.jsonLd) }} />
-            <ItemDetailClient id={id} fallback={<ItemSummaryView s={s} />} />
+            <ItemDetailClient
+                id={id}
+                fallback={<ItemSummaryView s={summary} source={source} version={version} />}
+            />
         </>
     );
 }
