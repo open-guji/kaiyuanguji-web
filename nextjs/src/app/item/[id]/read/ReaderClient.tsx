@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BookFullText, CollatedEdition, LocaleProvider, type WorkFullTextEntry } from 'book-index-ui';
+import { BookFullText, CollatedEdition, type WorkFullTextEntry } from 'book-index-ui';
+import SyncLocaleProvider from '@/components/common/SyncLocaleProvider';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -225,10 +226,10 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
 /** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚） */
 export default function ReaderClient(props: ReaderClientProps) {
     return (
-        <LocaleProvider>
+        <SyncLocaleProvider>
             <LayoutWrapper hideFooter>
                 <Reader {...props} />
             </LayoutWrapper>
-        </LocaleProvider>
+        </SyncLocaleProvider>
     );
 }

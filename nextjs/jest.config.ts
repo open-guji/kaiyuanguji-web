@@ -19,6 +19,8 @@ const config: Config = {
         '^@/(.*)$': '<rootDir>/src/$1',
         '^react-markdown$': '<rootDir>/__mocks__/react-markdown.js',
         '^remark-gfm$': '<rootDir>/__mocks__/remark-gfm.js',
+        // opencc-js 的 ESM 入口 jest 不转译；测试里用它的 UMD 构建（同一份词表）
+        '^opencc-js/t2cn$': '<rootDir>/node_modules/opencc-js/dist/umd/t2cn.js',
     },
 };
 
