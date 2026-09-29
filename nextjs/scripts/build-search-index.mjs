@@ -1,27 +1,26 @@
 #!/usr/bin/env node
 /**
- * build-search-index.mjs — 基于 MiniSearch 构建 L0 核心搜索索引
+ * build-search-index.mjs — 构建 L2（浏览器兜底搜索）轻量分片
  *
- * 按类型拆分为三个文件，Worker 端并行加载：
- *   public/data/search/core-work.json
- *   public/data/search/core-book.json
- *   public/data/search/core-collection.json
- *   public/data/search/meta.json
+ * L2 只在 L1（Meili，经 /api/search 代理）不可用时才下载。S1（2026-09-28）起改为
+ * 轻量格式：每条只存 id＋书名＋作者＋朝代（＋与原文不同时的简体），浏览器里线性扫描，
+ * 不再序列化 MiniSearch 倒排索引。14.7 万条：52 MB → 约 8.7 MB（br 后 7.1 → 2.4 MB）。
+ * 格式与检索见 src/lib/search/lite.js。
  *
- * 索引字段（仅 L0 核心）:
- *   title_search, aliases_search, author_search, dynasty
- *   *_search 字段把繁 + 简（若有差异）拼在一起，使用户输入任一形式皆可命中。
- *
- * 分词: 纯 bigram + CJK 单字段兜底（见 normalize.js），相比 bigram+unigram 约减半 token 数。
+ * 产物（文件名与 meta.json 形状沿用旧版，deploy.yml／e2e 契约不用改）：
+ *   search/core-work-{0..3}.json   work 分 4 片并行加载
+ *   search/core-book.json
+ *   search/core-collection.json
+ *   search/core-entity.json
+ *   search/meta.json               { version: 5, format: 'lite', indices: [...] }
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
-import MiniSearch from 'minisearch';
 import * as OpenCC from 'opencc-js';
-import { tokenize, joinFields } from '../src/lib/search/normalize.js';
+import { LITE_FORMAT, encodeLiteRow } from '../src/lib/search/lite.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const { dataDir: OUT_DIR } = resolveDataDirs();
@@ -40,100 +39,59 @@ function ensureSearchDir() {
     mkdirSync(SEARCH_DIR, { recursive: true });
 }
 
-/** 按 (groupKey, typeLabel) 产出单类型的 docs 数组。*/
-function buildDocs(index, searchS, groupKey, typeLabel) {
-    const group = index[groupKey];
-    if (!group) return [];
-    const docs = [];
-    for (const entry of Object.values(group)) {
-        const s = searchS[entry.id] || {};
-
-        // entity 的标题字段是 primary_name
-        const title = entry.title || (typeLabel === 'entity' ? (entry.primary_name || '') : '');
-        const titleS = s.t || '';
-        const titleSearch = joinFields([title, titleS && titleS !== title ? titleS : null]);
-
-        const author = entry.author || '';
-        const authorS = s.a || '';
-        const authorSearch = joinFields([author, authorS && authorS !== author ? authorS : null]);
-
-        // additional_titles 可能是字符串或 {book_title} 对象
-        const aliases = (entry.additional_titles || [])
-            .map(t => typeof t === 'string' ? t : t?.book_title)
-            .filter(Boolean);
-        const attached = (entry.attached_texts || [])
-            .map(t => typeof t === 'string' ? t : t?.book_title)
-            .filter(Boolean);
-        const aliasesS = (s.at || []);
-        const aliasesSearch = joinFields([
-            ...aliases,
-            ...aliasesS.filter((x, i) => x && x !== aliases[i]),
-            ...attached,
-        ]);
-
-        docs.push({
-            id: entry.id,
-            type: typeLabel,
-            title_search: titleSearch,
-            author_search: authorSearch,
-            aliases_search: aliasesSearch,
-            // storeFields 透传给 worker hits, 直接渲染卡片不需 hydration
-            title,
-            author,
-            dynasty: entry.dynasty || '',   // 撰人朝代
-            era: entry.era,                  // 刊刻朝代（Book/Collection，投影自 dating）
-            sort_year: entry.sort_year,
-            role: entry.role,
-            edition: entry.edition,
-            additional_titles: aliases,
-            attached_texts: attached,
-            juan_count: entry.juan_count,
-            has_text: entry.has_text,
-            has_image: entry.has_image,
-            has_collated: entry.has_collated,
-            subtype: entry.subtype,
-            primary_name: entry.primary_name,
-            birth_year: entry.birth_year,
-            death_year: entry.death_year,
-            cbdb_id: entry.cbdb_id,
-        });
-    }
-    return docs;
+/** 条目资料丰富度：整理本 > 全文 > 影像 > 有卷数 > 有作者 */
+function richness(e) {
+    return (e.has_collated ? 8 : 0) + (e.has_text ? 4 : 0) + (e.has_image ? 2 : 0)
+        + (e.juan_count ? 1 : 0) + (e.author ? 1 : 0);
 }
 
-function msOptions() {
-    return {
-        idField: 'id',
-        fields: ['title_search', 'author_search', 'aliases_search'],
-        storeFields: [
-            'id', 'type', 'title', 'author', 'dynasty', 'era', 'sort_year', 'role', 'edition',
-            'additional_titles', 'attached_texts', 'juan_count',
-            'has_text', 'has_image', 'has_collated',
-            'subtype', 'primary_name', 'birth_year', 'death_year', 'cbdb_id',
-        ],
-        tokenize: (text) => tokenize(text),
-        processTerm: (term) => term,
-    };
+/**
+ * 按 (groupKey, typeLabel) 产出单类型的轻量行。
+ * 别名（additional_titles）与各种展示字段（卷数、有无全文……）都不进 L2：
+ * 兜底只保证「按书名、作者搜得到」，完整结果由 L1 负责。
+ */
+function buildRows(index, searchS, groupKey, typeLabel) {
+    const group = index[groupKey];
+    if (!group) return [];
+    // 行序即同分时的名次（lite.js 的排序是稳定的）：资料越全的排越前，
+    // 让「史記」搜出来司馬遷那部（有全文、130 卷）排在同名的佚書前面。
+    const entries = Object.values(group)
+        .map((e, i) => ({ e, i, r: richness(e) }))
+        .sort((x, y) => (y.r - x.r) || (x.i - y.i))
+        .map(x => x.e);
+    const rows = [];
+    for (const entry of entries) {
+        const s = searchS[entry.id] || {};
+        // entity 的标题字段是 primary_name
+        const title = entry.title || (typeLabel === 'entity' ? (entry.primary_name || '') : '');
+        rows.push(encodeLiteRow({
+            id: entry.id,
+            title,
+            author: entry.author || '',
+            dynasty: entry.dynasty || '',   // 撰人朝代
+            titleS: s.t,
+            authorS: s.a,
+        }));
+    }
+    return rows;
 }
 
 const WORK_SHARD_COUNT = 4;
 
 function buildIndexForType(index, searchS, groupKey, typeLabel) {
-    const docs = buildDocs(index, searchS, groupKey, typeLabel);
+    const rows = buildRows(index, searchS, groupKey, typeLabel);
     const shardCount = typeLabel === 'work' ? WORK_SHARD_COUNT : 1;
-    const chunkSize = Math.ceil(docs.length / shardCount);
+    const chunkSize = Math.ceil(rows.length / shardCount);
 
     const shardInfos = [];
     let totalBuildMs = 0;
     for (let i = 0; i < shardCount; i++) {
-        const chunk = docs.slice(i * chunkSize, (i + 1) * chunkSize);
+        const chunk = rows.slice(i * chunkSize, (i + 1) * chunkSize);
         if (chunk.length === 0) continue;
-        const ms = new MiniSearch(msOptions());
         const t0 = Date.now();
-        ms.addAll(chunk);
+        const json = JSON.stringify(chunk);
         const buildMs = Date.now() - t0;
         totalBuildMs += buildMs;
-        const json = JSON.stringify(ms);
         const sizeKb = Math.round(Buffer.byteLength(json) / 1024);
         const file = shardCount > 1 ? `core-${typeLabel}-${i}.json` : `core-${typeLabel}.json`;
         ensureSearchDir();
@@ -230,7 +188,7 @@ function loadShardedIndex() {
     return kept;
 }
 
-/** 构建搜索专用的繁→简差异表（仅 title/author/additional_titles 与原文不同的条目） */
+/** 构建搜索专用的繁→简差异表（仅 title/author 与原文不同的条目） */
 function buildSearchSimplified(index) {
     const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
     const out = {};
@@ -247,13 +205,6 @@ function buildSearchSimplified(index) {
             if (item.author) {
                 const as = t2s(item.author);
                 if (as !== item.author) simplified.a = as;
-            }
-            if (item.additional_titles && item.additional_titles.length > 0) {
-                const titles = item.additional_titles
-                    .map(t => typeof t === 'string' ? t : t?.book_title)
-                    .filter(Boolean);
-                const ats = titles.map(t => t2s(t));
-                if (ats.some((s, i) => s !== titles[i])) simplified.at = ats;
             }
             if (Object.keys(simplified).length > 0) out[item.id] = simplified;
         }
@@ -274,9 +225,9 @@ function build() {
     const indices = shards.map(([gk, tl]) => buildIndexForType(index, searchS, gk, tl));
 
     const meta = {
-        version: 4,
-        fields: ['title_search', 'author_search', 'aliases_search'],
-        tokenizer: 'bigram+unigram-fallback',
+        version: 5,
+        format: LITE_FORMAT,
+        fields: ['title', 'author'],
         indices,
         builtAt: new Date().toISOString(),
     };

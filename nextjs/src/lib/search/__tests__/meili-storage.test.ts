@@ -273,3 +273,120 @@ describe('meili-storage HybridTransport', () => {
         expect(callArgs.headers).toMatchObject({ Authorization: 'Bearer secret-token' });
     });
 });
+
+describe('meili-storage 代理模式（S1：/api/search）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => {
+        originalFetch = global.fetch;
+    });
+    afterEach(() => {
+        global.fetch = originalFetch;
+        jest.clearAllMocks();
+    });
+
+    const proxyOk = (results: unknown[]) => jest.fn().mockResolvedValue({
+        ok: true, status: 200, json: async () => ({ results }),
+    });
+
+    it('searchAll 只发一次同站 GET，浏览器不碰 Meili 地址与 key', async () => {
+        const fetchMock = proxyOk([
+            { indexUid: 'works', hits: [{ id: 'w1', type: 'work', title: '史記', is_draft: false }], estimatedTotalHits: 7 },
+            { indexUid: 'books', hits: [], estimatedTotalHits: 0 },
+            { indexUid: 'collections', hits: [], estimatedTotalHits: 0 },
+            { indexUid: 'entities', hits: [{ id: 'p1', type: 'entity', primary_name: '司馬遷' }], estimatedTotalHits: 1 },
+        ]);
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search', baseUrl: 'https://meili.example', apiKey: 'k' });
+        const r = await wrapped.searchAll!('史記', 5);
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+        expect(url).toBe('/api/search?q=%E5%8F%B2%E8%A8%98&limit=5');
+        expect(url).not.toContain('meili.example');
+        expect((init as any).headers).toBeUndefined();
+        expect(base.searchAll).not.toHaveBeenCalled();
+        expect(r.works[0]).toMatchObject({ id: 'w1', title: '史記', isDraft: false });
+        expect(r.totalWorks).toBe(7);
+        expect(r.entities[0]).toMatchObject({ id: 'p1', title: '司馬遷' });
+        expect(isSearchDegraded()).toBe(false);
+    });
+
+    it('代理 503：当次就走 L2，并置降级标志（页面显示提示）', async () => {
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded, subscribeSearchDegraded } = freshModule();
+        const seen: boolean[] = [];
+        subscribeSearchDegraded((d: boolean) => seen.push(d));
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        await wrapped.searchAll!('史記', 5);
+        expect(base.searchAll).toHaveBeenCalledWith('史記', 5);
+        expect(isSearchDegraded()).toBe(true);
+        expect(seen).toEqual([true]);
+    });
+
+    it('代理恢复后降级标志清除', async () => {
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        global.fetch = jest.fn().mockRejectedValue(new Error('network')) as any;
+        await wrapped.searchAll!('史記', 5);
+        expect(isSearchDegraded()).toBe(true);
+        global.fetch = proxyOk([]) as any;
+        await wrapped.searchAll!('史記', 5);
+        expect(isSearchDegraded()).toBe(false);
+    });
+
+    it('连续 3 次失败后熔断：冷却期内不再请求代理', async () => {
+        const fetchMock = jest.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, getMeiliBreakerState } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        for (let i = 0; i < 4; i++) await wrapped.searchAll!('史記', 5);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(base.searchAll).toHaveBeenCalledTimes(4);
+        expect(getMeiliBreakerState().open).toBe(true);
+    });
+
+    it('400（如查询超长）不计入熔断', async () => {
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 400, json: async () => ({}) }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, getMeiliBreakerState } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        for (let i = 0; i < 4; i++) await wrapped.searchAll!('史記', 5);
+        expect(getMeiliBreakerState().failures).toBe(0);
+    });
+
+    it('search(type) 翻页：index／limit／offset 参数', async () => {
+        const fetchMock = proxyOk([{ indexUid: 'books', hits: [{ id: 'b1', type: 'book', title: '史記' }], estimatedTotalHits: 99 }]);
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        const r = await wrapped.search('史記', 'book', { page: 3, pageSize: 20 });
+        const url = fetchMock.mock.calls[0][0] as string;
+        expect(url).toBe('/api/search?q=%E5%8F%B2%E8%A8%98&index=books&limit=20&offset=40');
+        expect(r).toMatchObject({ total: 99, page: 3, pageSize: 20 });
+        expect(r.entries[0]).toMatchObject({ id: 'b1' });
+    });
+
+    it('search(type) 失败 → base.search', async () => {
+        global.fetch = jest.fn().mockRejectedValue(new Error('network')) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        await wrapped.search('史記', 'work', { page: 1, pageSize: 20 });
+        expect(base.search).toHaveBeenCalled();
+    });
+
+    it('代理返回形状不对也当失败 → L2', async () => {
+        global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ hits: [] }) }) as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        await wrapped.searchAll!('史記', 5);
+        expect(base.searchAll).toHaveBeenCalled();
+    });
+});

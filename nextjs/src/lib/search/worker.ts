@@ -1,8 +1,11 @@
 /// <reference lib="webworker" />
 /**
- * 搜索 Worker：在单独线程跑 MiniSearch，避免主线程卡顿。
+ * 搜索 Worker：在单独线程跑 L2 兜底搜索，避免主线程卡顿。
  *
- * L0 索引字段：title_search, author_search。
+ * 两种分片格式（按 meta.json 的 format 分派）：
+ *   - 'lite'（S1 起的默认）：只含 id＋书名＋作者＋朝代，线性扫描，见 lite.js；
+ *   - 旧格式（无 format）：序列化 MiniSearch，字段 title_search/author_search/aliases_search。
+ *     保留读取以兼容旧版本数据快照（v/<commit>/search/ 与代码不同步时）。
  * work 类型分 4 个分片并行加载，搜索时跨片合并结果。
  *
  * 协议（postMessage）:
@@ -13,6 +16,7 @@
 
 import MiniSearch, { type SearchResult } from 'minisearch';
 import { tokenize, hasCjkBigram } from './normalize.js';
+import { LITE_FORMAT, decodeLiteRows, liteSearch, type LiteDoc } from './lite.js';
 
 type EntryType = 'work' | 'book' | 'collection' | 'entity';
 
@@ -49,6 +53,7 @@ interface MetaIndex {
 
 interface Meta {
     version: number;
+    format?: string;
     indices: MetaIndex[];
 }
 
@@ -65,6 +70,7 @@ type SearchEntriesReq = {
 type Req = InitReq | SearchAllReq | SearchEntriesReq;
 
 const engines = new Map<EntryType, MiniSearch<StoredFields>[]>();
+const liteDocs = new Map<EntryType, LiteDoc[]>();
 let initPromise: Promise<void> | null = null;
 
 export function msOptions() {
@@ -88,19 +94,23 @@ export async function init(baseUrl: string) {
         const metaRes = await fetch(`${baseUrl}/meta.json`);
         if (!metaRes.ok) throw new Error(`failed to load meta.json: ${metaRes.status}`);
         const meta = (await metaRes.json()) as Meta;
+        const lite = meta.format === LITE_FORMAT;
 
         await Promise.all(
             meta.indices.map(async (idx) => {
                 const files = idx.shards ?? (idx.file ? [idx.file] : []);
-                const shardEngines = await Promise.all(
+                const loaded = await Promise.all(
                     files.map(async (f) => {
                         const res = await fetch(`${baseUrl}/${f}`);
                         if (!res.ok) throw new Error(`failed to load ${f}: ${res.status}`);
-                        const json = await res.text();
-                        return MiniSearch.loadJSON<StoredFields>(json, msOptions());
+                        return res.text();
                     }),
                 );
-                engines.set(idx.type, shardEngines);
+                if (lite) {
+                    liteDocs.set(idx.type, loaded.flatMap(json => decodeLiteRows(JSON.parse(json), idx.type)));
+                } else {
+                    engines.set(idx.type, loaded.map(json => MiniSearch.loadJSON<StoredFields>(json, msOptions())));
+                }
             }),
         );
     })();
@@ -108,7 +118,7 @@ export async function init(baseUrl: string) {
 }
 
 function ensureReady(): void {
-    if (engines.size === 0) throw new Error('search worker not initialized');
+    if (engines.size === 0 && liteDocs.size === 0) throw new Error('search worker not initialized');
 }
 
 /** 测试用：注入预构建的 MiniSearch 引擎，跳过 fetch */
@@ -117,9 +127,16 @@ export function _setEnginesForTesting(map: Map<EntryType, MiniSearch<StoredField
     for (const [k, v] of map) engines.set(k, v);
 }
 
+/** 测试用：注入轻量分片文档 */
+export function _setLiteDocsForTesting(map: Map<EntryType, LiteDoc[]>): void {
+    liteDocs.clear();
+    for (const [k, v] of map) liteDocs.set(k, v);
+}
+
 /** 测试用：重置 module 状态（init promise + engines） */
 export function _resetForTesting(): void {
     engines.clear();
+    liteDocs.clear();
     initPromise = null;
 }
 
@@ -208,6 +225,19 @@ export function searchAllShards(shards: MiniSearch<StoredFields>[], q: string): 
     return [];
 }
 
+/** 轻量分片命中 → Hit（只有 id/书名/作者/朝代；entity 的书名即 primary_name） */
+export function searchLite(docs: LiteDoc[], q: string): Hit[] {
+    return liteSearch(docs, q).map(({ doc, score }) => ({
+        id: doc.id,
+        type: doc.type as EntryType,
+        title: doc.title,
+        author: doc.author || undefined,
+        dynasty: doc.dynasty || undefined,
+        primary_name: doc.type === 'entity' ? doc.title : undefined,
+        score,
+    }));
+}
+
 export function runSearchAll(query: string): Map<EntryType, Hit[]> {
     ensureReady();
     const q = query.trim();
@@ -216,6 +246,9 @@ export function runSearchAll(query: string): Map<EntryType, Hit[]> {
     for (const [type, shards] of engines) {
         out.set(type, searchAllShards(shards, q));
     }
+    for (const [type, docs] of liteDocs) {
+        out.set(type, searchLite(docs, q));
+    }
     return out;
 }
 
@@ -223,6 +256,8 @@ export function runSearchType(query: string, type: EntryType): Hit[] {
     ensureReady();
     const q = query.trim();
     if (!q) return [];
+    const docs = liteDocs.get(type);
+    if (docs) return searchLite(docs, q);
     const shards = engines.get(type);
     if (!shards) return [];
     return searchAllShards(shards, q);

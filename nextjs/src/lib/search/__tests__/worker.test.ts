@@ -265,6 +265,37 @@ describe('init', () => {
         expect(hits.length).toBeGreaterThan(0);
     });
 
+    it('format=lite：加载轻量分片，按书名／作者／简体搜得到', async () => {
+        mockFetch((url) => {
+            if (url.endsWith('/meta.json')) {
+                return { ok: true, body: { version: 5, format: 'lite', indices: [
+                    { type: 'work', shards: ['core-work-0.json', 'core-work-1.json'], docCount: 3 },
+                    { type: 'entity', file: 'core-entity.json', docCount: 1 },
+                ] } };
+            }
+            if (url.endsWith('/core-work-0.json')) {
+                return { ok: true, body: [['w1', '史記', '司馬遷', '西漢', '史记', '司马迁'], ['w2', '漢書', '班固']] };
+            }
+            if (url.endsWith('/core-work-1.json')) return { ok: true, body: [['w3', '史記索隱', '司馬貞', '唐', '史记索隐', '司马贞']] };
+            if (url.endsWith('/core-entity.json')) return { ok: true, body: [['p1', '司馬遷', '', '西漢', '司马迁']] };
+            return { ok: false, status: 404 };
+        });
+        await init('http://test/data/search');
+
+        const works = runSearchType('史记', 'work');
+        expect(works.map(h => h.id)).toEqual(['w1', 'w3']);
+        expect(works[0]).toMatchObject({ id: 'w1', type: 'work', title: '史記', author: '司馬遷', dynasty: '西漢' });
+        expect(runSearchType('班固', 'work').map(h => h.id)).toEqual(['w2']);
+
+        const all = runSearchAll('司马迁');
+        expect(all.get('work')!.map(h => h.id)).toEqual(['w1']);
+        expect(all.get('entity')![0]).toMatchObject({ id: 'p1', type: 'entity', title: '司馬遷', primary_name: '司馬遷' });
+
+        const res = await handleMessage({ id: 9, type: 'searchAll', query: '史記', limit: 1 }) as any;
+        expect(res.result.works).toHaveLength(1);
+        expect(res.result.totalWorks).toBe(2);
+    });
+
     it('meta.json 404 → 抛错', async () => {
         mockFetch(() => ({ ok: false, status: 404 }));
         await expect(init('http://test/x')).rejects.toThrow(/meta\.json/);
