@@ -11,7 +11,7 @@ const siteLinks = [
 ];
 
 // 关于与联系（N6，overview#259）：反馈统一到站内 /feedback，不再外链腾讯问卷。
-// 二维码等用户给了图再加；没给的联系方式不渲染，不放占位。
+// 品牌栏下放微信群二维码（7 天过期，过期后换 public/images/wechat-group-qr.png）。
 const aboutLinks = [
   { label: '关于我们', href: '/about' },
   { label: '联系我们', href: '/contact' },
@@ -34,6 +34,15 @@ export default function Footer() {
               开源古籍
             </div>
             <p>{SITE_DESCRIPTION}</p>
+            <div className="og-footer-qr">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/wechat-group-qr.png" alt="微信群「开源古籍交流群」二维码" width={96} height={96} loading="lazy" />
+              <p>
+                开源古籍交流群
+                <br />
+                微信扫码加入
+              </p>
+            </div>
           </div>
 
           <nav aria-label="站内链接">

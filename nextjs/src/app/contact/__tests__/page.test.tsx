@@ -35,11 +35,12 @@ describe('联系页（N6）', () => {
         expect(screen.getByText(/QQ 群：111362573/)).toBeInTheDocument();
     });
 
-    it('没给的不渲染：无公众号、无二维码、无占位', () => {
+    it('微信群二维码在正文里；无公众号、无占位', () => {
         const { container } = render(<ContactPage />);
         const main = screen.getByRole('main');
+        expect(within(main).getByRole('img', { name: /微信群.*二维码/ })).toHaveAttribute('src', '/images/wechat-group-qr.png');
+        expect(within(main).getByText(/微信群：开源古籍交流群/)).toBeInTheDocument();
         expect(within(main).queryByText(/公众号/)).toBeNull();
-        expect(main.querySelector('img')).toBeNull();
-        expect(container.textContent).not.toMatch(/〔|待定|待提供|二维码/);
+        expect(container.textContent).not.toMatch(/〔|待定|待提供/);
     });
 });

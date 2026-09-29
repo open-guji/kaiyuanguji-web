@@ -23,9 +23,9 @@ describe('Footer · 关于与联系（N6）', () => {
         expect(within(site).getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
     });
 
-    it('不出现占位文字和二维码', () => {
+    it('品牌栏放微信群二维码，不出现占位文字', () => {
         const { container } = render(<Footer />);
+        expect(screen.getByRole('img', { name: /微信群.*二维码/ })).toHaveAttribute('src', '/images/wechat-group-qr.png');
         expect(container.textContent).not.toMatch(/〔|待定|待提供/);
-        expect(container.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
     });
 });
