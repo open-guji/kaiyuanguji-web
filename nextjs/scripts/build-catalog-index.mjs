@@ -144,13 +144,16 @@ export function taxonomyRank(list) {
  */
 export function buildCatalog(works, opts = {}) {
     const rank = opts.rank ?? new Map();
+    // 阅读首页索引（build-read-index.mjs）与总目共用分类树与节点 id，只换卡片形态与排序
+    const makeCard = opts.toCard ?? toCard;
+    const compare = opts.compare ?? compareCards;
     // 内部节点：{ id, label, key, cards: [], children: Map }
     const roots = new Map();
     const unclassified = { id: UNCLASSIFIED_ID, label: UNCLASSIFIED_LABEL, key: '', cards: [], children: new Map() };
     const stats = { total: 0, classified: 0, unclassified: 0, byTop: {} };
 
     for (const d of works) {
-        const card = toCard(d);
+        const card = makeCard(d);
         stats.total++;
         const path = card.classification ?? [];
         if (!path.length) {
@@ -190,7 +193,7 @@ export function buildCatalog(works, opts = {}) {
         return collator.compare(a.label, b.label);
     });
     const finish = (node, isTop) => {
-        lists.set(node.id, node.cards.sort(compareCards));
+        lists.set(node.id, node.cards.sort(compare));
         const out = { id: node.id, label: node.label, count: node.cards.length };
         if (node.children.size) {
             out.children = sortSiblings([...node.children.values()], false).map((c) => finish(c, false));
@@ -222,8 +225,11 @@ function writeIfChanged(path, text) {
  * 这一版不再有的文件删掉（sync-to-cos 随后从 COS 清孤儿）。
  * @returns {{ files: number, bytes: number, removed: number }}
  */
-export function writeCatalog(dataDir, built) {
-    const dir = join(dataDir, 'catalog');
+export function writeCatalog(dataDir, built, opts = {}) {
+    const dirName = opts.dirName ?? 'catalog';
+    const pageSize = opts.pageSize ?? CATALOG_PAGE_SIZE;
+    const dir = join(dataDir, dirName);
+    mkdirSync(dir, { recursive: true });
     const keep = new Set();
     let bytes = 0;
     const put = (rel, data) => {
@@ -231,10 +237,12 @@ export function writeCatalog(dataDir, built) {
         bytes += writeIfChanged(join(dir, rel), JSON.stringify(data));
     };
     put('tree.json', built.tree);
+    // 额外的整文件（如阅读首页的精选清单）
+    for (const [rel, data] of Object.entries(opts.extra ?? {})) put(rel, data);
     for (const [id, cards] of built.lists) {
-        const pages = pageCountOf(cards.length);
+        const pages = Math.max(1, Math.ceil(cards.length / pageSize));
         for (let p = 1; p <= pages; p++) {
-            put(`${id}/${p}.json`, cards.slice((p - 1) * CATALOG_PAGE_SIZE, p * CATALOG_PAGE_SIZE));
+            put(`${id}/${p}.json`, cards.slice((p - 1) * pageSize, p * pageSize));
         }
     }
     let removed = 0;

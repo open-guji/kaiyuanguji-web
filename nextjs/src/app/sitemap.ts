@@ -35,7 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 生成的 /sitemaps/* 分片列出（sitemap-index.xml 汇总），这里再列旧的 /book-index?id= 只会重复，
     // 还会带出草稿 id。静态导出（正式站现行）照旧列，切域名前行为不变。
     if (process.env.KYG_RENDER_MODE === 'fullstack') {
-        return [...staticRoutes, ...roadmapRoutes, ...footerOnlyRoutes];
+        const readHome = { url: `${SITE_URL}/read`, lastModified, changeFrequency: 'weekly' as const, priority: 0.8 };
+        return [...staticRoutes, readHome, ...roadmapRoutes, ...footerOnlyRoutes];
     }
     // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
     let bookRoutes: MetadataRoute.Sitemap = [];

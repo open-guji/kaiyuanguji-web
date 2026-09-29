@@ -411,6 +411,28 @@ test.describe('QA 回归 P2（overview#267）：条目页直出简体、旧入�
     }
 });
 
+test.describe('阅读首页 /read（overview#267 第 16 项）', () => {
+    // 数据是构建期「可读条目」索引（current/read/…）。线上数据 CDN 在下一次数据同步前还没有这份索引：
+    // 那时首页显示「正在准备」（200），节点页 404；同步之后首页列出整理本、书本与四部入口。
+    // 这里只验两种数据状态下都成立的部分：导航、首页 200＋h1＋canonical、参数校验；
+    // 列表内容由本地带索引的实测与 PR 截图覆盖。
+    test('顶栏有「阅读」指向 /read，页面 200 且有 h1', async ({ request }) => {
+        const home = await (await request.get(`${TARGET}/`, noFollow)).text();
+        expect(home).toMatch(/<a[^>]*href="\/read"[^>]*>阅读<\/a>/);
+        const res = await request.get(`${TARGET}/read`, noFollow);
+        expect(res.status()).toBe(200);
+        const html = await res.text();
+        expect(html).toMatch(/<h1[^>]*>阅读<\/h1>/);
+        expect(html).toMatch(/<link[^>]*rel="canonical"[^>]*href="[^"]*\/read"/);
+    });
+
+    test('参数不对真 404：乱码节点、页码非法、没有节点却翻页、不存在的节点', async ({ request }) => {
+        for (const q of ['node=..%2Fx', 'node=%E5%8F%B2%E9%83%A8', 'node=cshi&page=0', 'node=cshi&page=x', 'page=2', 'node=cnopenope00']) {
+            expect((await request.get(`${TARGET}/read?${q}`, noFollow)).status(), q).toBe(404);
+        }
+    });
+});
+
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 

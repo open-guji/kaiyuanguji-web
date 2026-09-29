@@ -33,14 +33,14 @@ describe('Navbar（N1 顶栏）', () => {
         );
     });
 
-    it('顶栏有「古籍总目」（/catalog），「阅读页」不单独进导航（WEB2）', () => {
+    it('顶栏有「古籍总目」（/catalog），「阅读」入口指向阅读首页 /read（WEB2、overview#267 第 16 项）', () => {
         mockPath = '/catalog';
         render(<Navbar />);
         const nav = screen.getByRole('navigation', { name: '主导航' });
-        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍元数据', '关于']);
+        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍元数据', '阅读', '关于']);
         expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
         expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('aria-current', 'page');
-        expect(within(nav).queryByRole('link', { name: /阅读/ })).toBeNull();
+        expect(within(nav).getByRole('link', { name: '阅读' })).toHaveAttribute('href', '/read');
     });
 
     it('当前项用 aria-current 标记（样式是一条朱色下划线），且只有一个', () => {
