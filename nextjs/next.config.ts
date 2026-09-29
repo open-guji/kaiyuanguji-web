@@ -68,6 +68,9 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BIM_UI_VERSION: uiVersion,
     NEXT_PUBLIC_WEB_COMMIT: buildInfo.web,
+    // 渲染模式在构建期内联：EdgeOne 运行时拿不到 CI 的构建环境变量（见上面 KYG_RENDER_MODE 的注释），
+    // 代码里读 process.env.KYG_RENDER_MODE（如 book-index 的 generateMetadata）要靠它。不是机密。
+    KYG_RENDER_MODE: process.env.KYG_RENDER_MODE || '',
     // W2-3：条目页按需失效接口（app/internal/revalidate/route.ssr.ts）的密钥，只在全栈构建注入。
     // 构建期写进服务端代码：EdgeOne 运行时只有控制台项目变量，拿不到 CI 的环境变量。
     // 只有服务端路由引用它，不会进浏览器端 chunk。
