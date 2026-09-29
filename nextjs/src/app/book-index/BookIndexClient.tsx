@@ -133,7 +133,7 @@ function BookIndexContent() {
         <IndexBrowser
           transport={transport}
           onEntryClick={handleEntryClick}
-          resultVariant="card"
+          resultVariant="list"
           renderEntry={(entry) => <SearchResultCard entry={entry} query={searchQuery || undefined} />}
           hideModeIndicator
           // 有检索词才预留一屏高度（结果加载时页面不跳）；没有检索词时下面的首页页签不能被推出首屏（book-index-ui 0.11.1）

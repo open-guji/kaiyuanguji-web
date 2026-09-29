@@ -9,7 +9,8 @@
 }
 
 .page.withQuery {
-  max-width: 1120px;
+  /* 结果是单列纵向列表（设计稿 v3，book-index-ui 0.22.0 的 resultVariant="list"），不再排 3 列卡片，版心收窄到易读的宽度 */
+  max-width: 960px;
 }
 
 /*

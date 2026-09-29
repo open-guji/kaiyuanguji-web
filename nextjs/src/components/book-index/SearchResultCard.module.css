@@ -1,21 +1,29 @@
-/* 搜索结果卡片：无边框，抬起底色分组；辅助字用 --bim-aux-fg（对比度 ≥4.5） */
+/*
+ * 搜索结果行（设计稿 v3：纵向列表）：整行是一个链接；不画卡片，行与行之间一条浅线，悬停换一阶底色。
+ * 辅助字用 --bim-aux-fg（对比度 ≥4.5）
+ */
 .card {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  padding: 16px 18px;
-  border-radius: var(--radius-card, 10px);
-  background: var(--color-raise);
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--color-tint-2);
+  border-radius: 0;
+  background: transparent;
   color: var(--color-ink);
   text-decoration: none;
   line-height: 1.6;
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.15s ease;
+}
+
+.card:last-child {
+  border-bottom: 0;
 }
 
 .card:hover {
   text-decoration: none;
-  box-shadow: var(--shadow-lift);
+  background: var(--color-tint);
 }
 
 .card:focus-visible {
@@ -80,6 +88,6 @@
 
 @media (max-width: 600px) {
   .card {
-    padding: 14px 16px;
+    padding: 14px 8px;
   }
 }
