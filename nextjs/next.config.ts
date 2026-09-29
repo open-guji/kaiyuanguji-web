@@ -85,6 +85,18 @@ const nextConfig: NextConfig = {
     'remark-gfm',
   ],
 
+  // S2 实验（overview#280）：条目页不带 stale-while-revalidate，只留 s-maxage=3600。
+  // 线上实测 EdgeOne 对带 swr 的条目页 ISR 响应不做 gzip／br（预渲染、无 swr 的响应会压），推断是这个缓存头挡了压缩。
+  // 只在全栈构建里生效（静态导出不支持 headers()）。代价：过期后第一个请求要等重渲染，不再先返回旧页。
+  // 没效果就撤回（同一处删掉）。
+  ...(isFullstack
+    ? {
+        async headers() {
+          return [{ source: '/item/:id', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=3600' }] }];
+        },
+      }
+    : {}),
+
   images: {
     unoptimized: true, // 静态导出需要禁用默认图片优化
     qualities: [75, 90],
