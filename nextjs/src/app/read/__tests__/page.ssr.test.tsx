@@ -39,7 +39,7 @@ beforeEach(() => {
     mockTree.mockReset().mockResolvedValue(TREE);
     mockFeatured.mockReset().mockResolvedValue({
         collated: [card('w1', '易經', { collated: true, juan: 3, authors: [{ name: '某', dynasty: '周' }] })],
-        books: [card('b1', '某書')],
+        books: [card('b1', '某書'), card('b2', '某書', { edition: '甲戌本' }), card('b3', '某書', { edition: '庚辰本' })],
     });
     mockPage.mockReset().mockImplementation(async (node, page) =>
         node === 'czheng' && page === 2 ? [card('w9', '第二頁書')] : (node === 'czheng' || node === 'cshi') ? [card('w2', '史記', { collated: true })] : null);
@@ -50,12 +50,16 @@ describe('阅读首页 page.ssr', () => {
         const h = await html({});
         expect(h).toContain('<h1');
         expect(h).toContain('整理本（1 部）');
-        expect(h).toContain('书本全文（1 部）');
+        expect(h).toContain('书本全文（3 部）');
         expect(h).toContain('href="/read/w1?kind=collated"');
         expect(h).toContain('href="/read/b1?kind=fulltext"');
         expect(h).toContain('href="/read?node=cshi"');
         expect(h).toContain('史部');
         expect(h).toContain('3卷');
+        // 同名书靠版本名分辨（简体直出）
+        expect(h).toContain('甲戌本');
+        expect(h).toContain('庚辰本');
+        expect(h.match(/某书/g)).toHaveLength(3);
         expect(mockPage).not.toHaveBeenCalled();
         expect((await meta({})).alternates?.canonical).toBe('/read');
     });

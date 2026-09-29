@@ -31,6 +31,7 @@ const S = {
         background: 'var(--color-raise)', textDecoration: 'none', color: 'var(--color-ink)',
     } as const,
     cardTitle: { fontWeight: 600 },
+    edition: { color: 'var(--color-ink-2)', fontSize: '0.8125rem', marginTop: 2 },
     meta: { color: 'var(--color-ink-3)', fontSize: '0.8125rem', marginTop: 2 },
     pager: { display: 'flex', gap: 16, alignItems: 'center', marginTop: 24, fontSize: '0.9375rem' },
     sub: { marginTop: 12 },
@@ -45,6 +46,7 @@ function Cards({ cards }: { cards: ReadCard[] }) {
                 <li key={c.id}>
                     <Link href={readCardHref(c)} style={S.card} data-read-card={c.id}>
                         <div style={S.cardTitle}>{convert(c.title)}</div>
+                        {c.edition && <div style={S.edition}>{convert(c.edition)}</div>}
                         <div style={S.meta}>
                             {[c.authors?.[0] && convert([c.authors[0].dynasty, c.authors[0].name].filter(Boolean).join(' ')), c.juan && (typeof c.juan === 'number' ? `${c.juan}卷` : convert(c.juan)), c.collated && '整理本']
                                 .filter(Boolean)

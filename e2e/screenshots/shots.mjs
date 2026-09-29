@@ -29,13 +29,16 @@ async function scrollThrough(page) {
         const step = Math.max(300, window.innerHeight * 0.8);
         let y = 0;
         for (let i = 0; i < 60; i++) {
-            window.scrollTo(0, y);
+            window.scrollTo({ top: y, behavior: 'instant' });
             await new Promise((r) => setTimeout(r, 150));
             y += step;
             if (y >= document.documentElement.scrollHeight) break;
         }
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'instant' });
     });
+    // 站点 CSS 是 html{scroll-behavior:smooth}：不写 instant 的话，回顶是一段动画，长页（如 /read）
+    // 在截图时可能还停在半路（测试站 /read 整页图里顶栏被画在 y≈180 处）。这里再确认一次真的回到顶
+    await page.waitForFunction(() => window.scrollY === 0, undefined, { timeout: 5_000 }).catch(() => {});
 }
 
 async function shoot(browser, base, p, vp, file) {
@@ -49,7 +52,7 @@ async function shoot(browser, base, p, vp, file) {
     try {
         const resp = await page.goto(base + p.path, { waitUntil: 'load', timeout: 60_000 });
         await page.addStyleTag({
-            content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}',
+            content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}html{scroll-behavior:auto!important}',
         });
         await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
         // 只截首屏的页（阅读页）不滚到底：不需要触发下面内容的懒加载
