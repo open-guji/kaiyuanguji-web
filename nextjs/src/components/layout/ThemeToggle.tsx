@@ -16,8 +16,7 @@ export default function ThemeToggle() {
   }, []);
 
   const choose = (t: ThemeName) => {
-    setTheme(t);
-    applyTheme(t);
+    setTheme(applyTheme(t));
     storeTheme(t);
   };
 
