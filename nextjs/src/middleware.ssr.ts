@@ -29,6 +29,7 @@ import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
+import { cleanItemSearch } from '@/lib/item-query';
 import { entryHasReaderContent, legacyCollatedJuanTarget, legacyReaderParts, parseReaderQuery, readerHref, readerPath } from '@/lib/reader-route';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
@@ -68,12 +69,24 @@ async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     try {
         const f = fetcher();
         const r = await resolveItemRedirect(id, await f.getItem(id), f.resolvePromotion);
-        if (!r) return NextResponse.next();
-        return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
+        // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
+        if (r) return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
     } catch (err) {
         console.warn(`[middleware] /item/${id} 跳转判断失败，交给页面：${(err as Error).message}`);
-        return NextResponse.next();
     }
+    return itemQueryRedirect(req);
+}
+
+/**
+ * S1（overview#280）：条目页带白名单之外的查询参数 → 308 到只留白名单参数的地址，
+ * 让 CDN 只缓存一份（见 lib/item-query.ts）。只处理整页导航；取数失败也照跳，与数据无关。
+ */
+function itemQueryRedirect(req: NextRequest): NextResponse {
+    const cleaned = cleanItemSearch(req.nextUrl.searchParams);
+    if (cleaned === null) return NextResponse.next();
+    const url = req.nextUrl.clone();
+    url.search = cleaned;
+    return NextResponse.redirect(url, 308);
 }
 
 function bookIndexRedirect(req: NextRequest): NextResponse {

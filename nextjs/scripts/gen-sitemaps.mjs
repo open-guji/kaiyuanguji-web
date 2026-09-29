@@ -5,6 +5,8 @@
  * 读 bundle-data.mjs 的产物 data/entry/*.json，写：
  *   <OUT>/sitemap-index.xml              索引：静态页 /sitemap.xml ＋ 各条目分片
  *   <OUT>/sitemaps/<类型>-NNN.xml         work／book／collection／entity 各自切片
+ *   <OUT>/sitemaps/nodes-001.xml        总目 /catalog?node= 与阅读首页 /read?node= 的分类节点页（overview#280 S3；
+ *                                       读 catalog/tree.json、read/tree.json，缺哪份就不列哪份）
  * 每片 ≤ 50,000 条（取 Google 50 MB 与百度 10 MB 的较严者，实测最大片约 4.9 MB）；
  * lastmod 取 updated_at／revised_at；被并条目（merged_into，SSR 端 308）不收。
  * 按类型分片，便于在站长平台按类型看收录；百度不认 sitemap 索引，要逐片提交（§A.7）。
@@ -22,6 +24,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { nodePagePaths } from './lib/sitemap-nodes.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE = (process.env.SITEMAP_SITE || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kaiyuanguji.com').replace(/\/$/, '');
@@ -53,6 +56,7 @@ if (existsSync(shardDir)) rmSync(shardDir, { recursive: true });
 mkdirSync(shardDir, { recursive: true });
 
 const shards = [];
+let nodeShard = null;
 for (const type of TYPES) {
     const list = byType[type].sort((a, b) => (a[0] < b[0] ? -1 : 1));
     for (let i = 0; i < list.length; i += PER) {
@@ -66,8 +70,23 @@ for (const type of TYPES) {
     }
 }
 
+// 总目与阅读首页的分类节点页（S3）。不进下面「收入＋被并＝entry 文件数」的核对，也不算 MIN 闸
+const readTree = (name) => {
+    const p = join(dataDir, name, 'tree.json');
+    if (!existsSync(p)) return null;
+    try { return JSON.parse(readFileSync(p, 'utf-8')); } catch { return null; }
+};
+const nodePaths = nodePagePaths({ catalog: readTree('catalog'), read: readTree('read') });
+if (nodePaths.length) {
+    const name = 'sitemaps/nodes-001.xml';
+    const body = nodePaths.map((p) => `<url><loc>${esc(`${SITE}${p}`)}</loc></url>`).join('\n');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+    writeFileSync(join(OUT, name), xml);
+    nodeShard = { name, urls: nodePaths.length, bytes: Buffer.byteLength(xml) };
+}
+
 const today = new Date().toISOString().slice(0, 10);
-const index = ['sitemap.xml', ...shards.map((s) => s.name)]
+const index = ['sitemap.xml', ...shards.map((s) => s.name), ...(nodeShard ? [nodeShard.name] : [])]
     .map((n) => `<sitemap><loc>${SITE}/${n}</loc><lastmod>${today}</lastmod></sitemap>`).join('\n');
 writeFileSync(join(OUT, 'sitemap-index.xml'),
     `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${index}\n</sitemapindex>\n`);
@@ -76,6 +95,7 @@ const total = shards.reduce((n, s) => n + s.urls, 0);
 const report = {
     site: SITE, entryFiles: files, urls: total, skipped,
     byType: Object.fromEntries(TYPES.map((t) => [t, byType[t].length])),
+    nodePages: nodeShard ? nodeShard.urls : 0,
     shards: shards.length, maxShardBytes: Math.max(0, ...shards.map((s) => s.bytes)), ms: Date.now() - t0,
 };
 console.log(`sitemap：${JSON.stringify(report)}`);

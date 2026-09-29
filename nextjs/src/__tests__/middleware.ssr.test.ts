@@ -121,6 +121,58 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
     });
 });
 
+describe('middleware.ssr：/item/<id>?多余参数 → 308 干净地址（overview#280 S1）', () => {
+    const ID = 'd59f2evs8ni8';
+    const MERGED = 'd59f2q8ge0ap';
+    const hit = (entry: Record<string, unknown>): ItemFetchResult => ({ entry, source: 'h1', version: 'h1:r' });
+
+    beforeEach(() => {
+        mockGetItem.mockReset();
+        mockResolvePromotion.mockReset();
+        mockGetItem.mockResolvedValue(hit({ title: '史記' }));
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    it('utm／fbclid／spm 等一律去掉，Location 只有一个值', async () => {
+        for (const q of ['utm_source=x&utm_medium=y', 'fbclid=abc', 'spm=1.2.3', 'x=1&y=2', 'q=']) {
+            const r = await run(`/item/${ID}?${q}`);
+            expect({ q, status: r.status, all: r.all }).toEqual({ q, status: 308, all: [`https://staging.kaiyuanguji.com/item/${ID}`] });
+        }
+    });
+
+    it('白名单里的参数保留（顺序、值不变），只去掉多余的', async () => {
+        expect((await run(`/item/${ID}?utm_source=x&tab=lineage&fbclid=1&page=2`)).location)
+            .toBe(`https://staging.kaiyuanguji.com/item/${ID}?tab=lineage&page=2`);
+        expect((await run(`/item/${ID}?collection=abc&mode=graph&x=1`)).location)
+            .toBe(`https://staging.kaiyuanguji.com/item/${ID}?collection=abc&mode=graph`);
+    });
+
+    it('只有白名单参数（或没有参数）→ 放过', async () => {
+        for (const q of ['', '?tab=lineage', '?tab=lineage&page=2&mode=graph', '?redirected_from=1j96hewiuieps', '?no_redirect=true']) {
+            const r = await run(`/item/${ID}${q}`);
+            expect({ q, location: r.location }).toEqual({ q, location: null });
+        }
+    });
+
+    it('被并条目带参数：一步 308 到目标（干净地址），不先去参数再跳一次', async () => {
+        mockGetItem.mockResolvedValue(hit({ merged_into: ID }));
+        const r = await run(`/item/${MERGED}?utm_source=x`);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com/item/${ID}`]);
+    });
+
+    it('取数出错也照跳（与数据无关）；RSC 导航与预取不动；不合法 id 不动', async () => {
+        mockGetItem.mockRejectedValue(new Error('network down'));
+        expect((await run(`/item/${ID}?utm_source=x`)).location).toBe(`https://staging.kaiyuanguji.com/item/${ID}`);
+        expect((await run(`/item/${ID}?utm_source=x`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
+        expect((await run('/item/BAD..id?utm_source=x')).location).toBeNull();
+    });
+
+    it('旧阅读入口 ?tab=fulltext 仍先按阅读入口跳，不被去参数抢走', async () => {
+        mockGetItem.mockResolvedValue(hit({ has_text: true }));
+        expect((await run(`/item/${ID}?tab=fulltext&utm_source=x`)).location).toContain(`/read/${ID}`);
+    });
+});
+
 describe('middleware.ssr：旧阅读入口 → /read/<id>（N5b，overview#267 改一级目录）', () => {
     const ZHIZHAI = 'd59f2htm01du';
     const BOOK = '988fbiuha8';
