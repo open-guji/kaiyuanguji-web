@@ -26,11 +26,20 @@ describe('联系页（N6）', () => {
         );
     });
 
-    it('没给的联系方式不渲染：无邮箱、无二维码、无占位', () => {
+    it('邮箱与 QQ 群', () => {
+        render(<ContactPage />);
+        expect(screen.getByRole('link', { name: 'sheldonli.dev@gmail.com' })).toHaveAttribute(
+            'href',
+            'mailto:sheldonli.dev@gmail.com',
+        );
+        expect(screen.getByText(/QQ 群：111362573/)).toBeInTheDocument();
+    });
+
+    it('没给的不渲染：无公众号、无二维码、无占位', () => {
         const { container } = render(<ContactPage />);
         const main = screen.getByRole('main');
-        expect(within(main).queryByText(/邮箱|公众号|交流群/)).toBeNull();
-        expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
+        expect(within(main).queryByText(/公众号/)).toBeNull();
+        expect(main.querySelector('img')).toBeNull();
         expect(container.textContent).not.toMatch(/〔|待定|待提供|二维码/);
     });
 });
