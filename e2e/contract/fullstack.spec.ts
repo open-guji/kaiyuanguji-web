@@ -560,12 +560,13 @@ test.describe('新架构：条目页首访耗时（只记录）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站`);
 
     test('各类条目首访耗时', async ({ request }) => {
-        // 带一次性查询串，尽量绕开 CDN 已缓存的那份，量到函数渲染的真实耗时
+        // 带一次性查询串，尽量绕开 CDN 已缓存的那份，量到函数渲染的真实耗时。
+        // 参数名用白名单里的 page（lib/item-query.ts）：别的参数会被 S1 的中间件 308 到干净地址，量到的就是 308 而不是渲染
         const bust = Date.now().toString(36);
         const rows = await Promise.all(ITEM_SAMPLES.map(async (s) => {
             const t0 = Date.now();
             try {
-                const r = await request.get(`${TARGET}/item/${s.id}?_e2e=${bust}`, { ...noFollow, timeout: 60_000 });
+                const r = await request.get(`${TARGET}/item/${s.id}?page=${bust}`, { ...noFollow, timeout: 60_000 });
                 await r.body();
                 return { ...s, ms: Date.now() - t0, status: String(r.status()), cache: r.headers()['eo-cache-status'] ?? '-' };
             } catch (e) {
