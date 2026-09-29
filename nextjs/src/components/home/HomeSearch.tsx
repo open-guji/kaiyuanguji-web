@@ -19,6 +19,10 @@ export default function HomeSearch() {
 
   return (
     <form className="home-search" action="/book-index" method="get" role="search" onSubmit={handleSearch}>
+      <svg className="home-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="M16 16l4.5 4.5" />
+      </svg>
       <input
         type="search"
         name="q"

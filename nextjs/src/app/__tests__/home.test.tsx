@@ -98,4 +98,16 @@ describe('首页（N1）', () => {
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
         expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
     });
+
+    it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', () => {
+        render(<HomePage />);
+        const live = document.querySelectorAll('.home-feature.is-live');
+        expect(live).toHaveLength(2);
+        expect(document.querySelectorAll('.home-feature:not(.is-live)')).toHaveLength(HOME_FEATURES.length - 2);
+        expect(within(live[0] as HTMLElement).getByRole('link', { name: /进入古籍总目/ }).getAttribute('href')).toBe('/catalog');
+        expect(document.querySelectorAll('.home-feature:not(.is-live) a')).toHaveLength(0);
+        expect(screen.getByLabelText('许可：CC0').textContent).toBe('CC0');
+        expect(screen.getByLabelText('许可：Apache-2.0').textContent).toBe('Apache-2.0');
+        expect(screen.getByRole('search')).toBeInTheDocument();
+    });
 });
