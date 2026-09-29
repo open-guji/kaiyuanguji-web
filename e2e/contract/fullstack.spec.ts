@@ -433,6 +433,31 @@ test.describe('阅读首页 /read（overview#267 第 16 项）', () => {
     });
 });
 
+test.describe('条目页多余查询参数 308 到干净地址（overview#280 S1）', () => {
+    const ID = ANCHORS.work.id;
+
+    test('utm／fbclid 等多余参数 → 一个 Location 的 308，指向 /item/<id>', async ({ request }) => {
+        for (const q of ['utm_source=x&utm_medium=y', 'fbclid=abc', 'spm=1.2.3']) {
+            const res = await request.get(`${TARGET}/item/${ID}?${q}`, noFollow);
+            expect(res.status(), q).toBe(308);
+            const loc = res.headers()['location'] ?? '';
+            expect(loc.includes(','), `Location 有两个值：${loc}`).toBe(false);
+            expect(new URL(loc, TARGET).pathname + new URL(loc, TARGET).search, q).toBe(`/item/${ID}`);
+        }
+    });
+
+    test('白名单参数保留，多余的去掉；干净地址与只带白名单参数的地址不跳', async ({ request }) => {
+        const mixed = await request.get(`${TARGET}/item/${ID}?utm_source=x&tab=lineage&page=2`, noFollow);
+        expect(mixed.status()).toBe(308);
+        const to = new URL(mixed.headers()['location'] ?? '', TARGET);
+        expect(to.pathname + to.search).toBe(`/item/${ID}?tab=lineage&page=2`);
+        for (const q of ['', '?tab=lineage']) {
+            const r = await request.get(`${TARGET}/item/${ID}${q}`, noFollow);
+            expect(r.status(), q).toBe(200);
+        }
+    });
+});
+
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
@@ -488,11 +513,24 @@ test.describe('新架构：sitemap', () => {
         expect(total, '条目 sitemap 总数不在合理区间').toBeGreaterThanOrEqual(100_000);
         expect(total).toBeLessThanOrEqual(400_000);
 
+        // 总目与阅读首页的分类节点页（overview#280 S3，#242）
+        expect(paths, '索引里没有分类节点页分片').toContain('/sitemaps/nodes-001.xml');
+        const nodesXml = await (await request.get(`${TARGET}/sitemaps/nodes-001.xml`)).text();
+        const nodeUrls = [...nodesXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+        expect(nodeUrls.filter((u) => u.includes('/catalog?node=')).length, '总目节点页太少').toBeGreaterThanOrEqual(20);
+        for (const u of nodeUrls) expect(u, u).toMatch(/\/(catalog|read)\?node=[0-9a-z]{1,24}$/);
+
         // 静态页 sitemap 不再列旧详情地址（条目只由上面的分片列，见文件头）
         const legacy = await request.get(`${TARGET}/sitemap.xml`);
         expect(legacy.status(), '/sitemap.xml 取不到').toBe(200);
         const n = ((await legacy.text()).match(/\/book-index\?id=/g) ?? []).length;
         expect(n, `/sitemap.xml 仍有 ${n} 条旧 /book-index?id= 地址，与条目分片重复`).toBe(0);
+    });
+
+    test('sitemap.xml 静态页清单有 /catalog、/read、/contact', async ({ request }) => {
+        const xml = await (await request.get(`${TARGET}/sitemap.xml`)).text();
+        const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+        for (const p of ['/catalog', '/read', '/contact']) expect(paths, `sitemap.xml 缺 ${p}`).toContain(p);
     });
 });
 
