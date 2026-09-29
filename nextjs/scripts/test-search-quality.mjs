@@ -44,6 +44,30 @@ async function meiliSearch(index, q, limit = 5) {
     return r.json();
 }
 
+// 用例里的 id 是草稿时代的 id（1e… 开头）。这些草稿后来升格成了正式 id（d59f…），
+// 旧 id 现在在站上是 404、也不再有升格跳转，直接比 id 会让整套用例全红（2026-09-29 实测 52/64）。
+// 所以对下表里的 id，命中条件放宽为「id 相同，或标题与下表相同」——标题不随 id 变。
+// 新加用例请直接写正式 id 或用 firstTitle／TitleContains，不要再往这里加。
+const LEGACY_ID_TITLE = {
+    '1euidlec1g8ow': '漢書',
+    '1eujfe7s94veo': '史記',
+    '1ev3bab5e14ow': '宋史',
+    '1ev3bezdr5mgw': '文心雕龍',
+    '1ev3c1fleonpc': '三國志',
+    '1ev7w0euvaeww': '論語',
+    '1ev7xm3w3445c': '孟子',
+    '1evcmnd8q9s74': '孫子兵法',
+    '1evglwzzi2ww0': '三國演義',
+    '1evgoj8abhgjk': '金瓶梅',
+    '1evgoj8kp4irk': '紅樓夢',
+    '1evgoslsegs8w': '西遊記',
+    '1evgowbkc2qyo': '水滸傳',
+    '1evgoyqwyb8cg': '儒林外史',
+    '1evincino4a9s': '韓非子',
+};
+/** 命中是否是期望的那条：id 相同，或（旧草稿 id）标题相同 */
+const isExpected = (h, id) => h?.id === id || (LEGACY_ID_TITLE[id] !== undefined && titleOf(h) === LEGACY_ID_TITLE[id]);
+
 // ─── 测试用例 ───
 const cases = [
     // ─── A. 完整标题匹配（繁简等价 / 异体）───
@@ -137,7 +161,7 @@ const titleOf = (h) => h?.title || h?.primary_name || '';
 // ─── 断言 ───
 function check(c, hits) {
     const failures = [];
-    if (c.firstId && hits[0]?.id !== c.firstId) {
+    if (c.firstId && !isExpected(hits[0], c.firstId)) {
         failures.push(`firstId 期待 ${c.firstId}，实际 ${hits[0]?.id} (${titleOf(hits[0])})`);
     }
     if (c.firstTitle && titleOf(hits[0]) !== c.firstTitle) {
@@ -148,7 +172,7 @@ function check(c, hits) {
     }
     for (const [n, key] of [[3, 'top3HasId'], [5, 'top5HasId'], [10, 'top10HasId']]) {
         if (c[key]) {
-            const inTopN = hits.slice(0, n).some(h => h.id === c[key]);
+            const inTopN = hits.slice(0, n).some(h => isExpected(h, c[key]));
             if (!inTopN) failures.push(`${key} 期待 id=${c[key]} 在前 ${n}，前 ${n} 实际：${hits.slice(0,n).map(h=>`${h.id}(${titleOf(h)})`).join(', ')}`);
         }
     }
@@ -156,7 +180,7 @@ function check(c, hits) {
     for (const [n, key] of [[3, 'top3HasAnyId'], [5, 'top5HasAnyId']]) {
         if (c[key]) {
             const ids = c[key];
-            const inTopN = hits.slice(0, n).some(h => ids.includes(h.id));
+            const inTopN = hits.slice(0, n).some(h => ids.some(id => isExpected(h, id)));
             if (!inTopN) failures.push(`${key} 期待 [${ids.join('/')}] 任一在前 ${n}，前 ${n} 实际：${hits.slice(0,n).map(h=>`${h.id}(${titleOf(h)})`).join(', ')}`);
         }
     }

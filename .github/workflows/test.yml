@@ -171,6 +171,46 @@ jobs:
             e2e/test-results/
           retention-days: 7
 
+  search-quality:
+    # nightly／手动：搜索质量用例（overview#280 T3）。只报告不拦发布：失败不让本 job 变红，
+    # 结果贴在 job 摘要里、全文作为工件留 30 天；哪天想拦，把 continue-on-error 去掉即可。
+    name: Search quality (report only)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run search quality cases vs prod
+        id: sq
+        continue-on-error: true
+        run: |
+          mkdir -p search-quality-out
+          set +e
+          node nextjs/scripts/test-search-quality.mjs -v 2>&1 | tee search-quality-out/report.txt
+          echo "exit=${PIPESTATUS[0]}" >> search-quality-out/report.txt
+          exit "${PIPESTATUS[0]}"
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## 搜索质量（只报告，不拦发布）"
+            echo
+            echo "结果：\`${{ steps.sq.outcome }}\`（failure＝有用例失败）"
+            echo
+            echo '```'
+            grep -E "❌|⚠️|通过 [0-9]+ / 失败" -A1 search-quality-out/report.txt | head -80
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload search quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-quality-${{ github.run_id }}
+          path: search-quality-out/
+          retention-days: 30
+
   perf-prod:
     # nightly only — 跑生产环境真实 perf，回归基线
     name: Production perf benchmark
