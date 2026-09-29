@@ -10,6 +10,7 @@ import { useSource } from '@/components/common/SourceContext';
 import { getTransport, getSearchBaseUrl } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
 import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
+import { isSearchDegraded, subscribeSearchDegraded } from '@/lib/search/meili-storage';
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
@@ -48,6 +49,24 @@ function DataVersion() {
   return (
     <div style={{ textAlign: 'center', padding: '16px 0 8px', fontSize: '12px', color: 'var(--bim-aux-fg, #6f6457)' }}>
       {info}
+    </div>
+  );
+}
+
+/** L1（搜索代理）故障、当前结果来自浏览器兜底（L2 轻量分片）时的提示 */
+function SearchDegradedNotice() {
+  const [degraded, setDegraded] = useState(isSearchDegraded);
+  useEffect(() => subscribeSearchDegraded(setDegraded), []);
+  if (!degraded) return null;
+  return (
+    <div
+      role="status"
+      style={{
+        margin: '0 0 12px', padding: '8px 12px', fontSize: '13px', lineHeight: 1.6,
+        color: '#8a5a00', background: '#fff8e6', border: '1px solid #f0d9a8', borderRadius: 6,
+      }}
+    >
+      搜索服务暂时不可用，当前为简易搜索（仅按书名、作者匹配），结果可能不全。
     </div>
   );
 }
@@ -110,6 +129,7 @@ function BookIndexContent() {
         * 否则搜索框和空状态会被拉得过宽。手机上左右留外壳的 16px 边距。
         */}
       <div className={searchQuery ? `${styles.page} ${styles.withQuery}` : styles.page}>
+        {searchQuery && <SearchDegradedNotice />}
         <IndexBrowser
           transport={transport}
           onEntryClick={handleEntryClick}
