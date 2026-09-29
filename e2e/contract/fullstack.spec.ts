@@ -27,11 +27,13 @@ import { requireUiVersion } from '../fixtures/preconditions';
  * 样本（档位 3：经典条目，与 ui/ 现有用例同一批，已由 perf-ids 闸看着）
  * ------------------------------------------------------------------ */
 
+// title 是数据原文（繁体），<title>／JSON-LD 用它；h1 是页面正文里的首屏摘要，直出也是简体（overview#267 QA 回归 P2），
+// 所以另给 h1Title（简体）。两处都严格比对，不是「繁简任一」。
 const ITEM_SAMPLES = [
-    { kind: 'Work', id: ANCHORS.work.id, title: '史記', ldType: 'Book' },
-    { kind: 'Book', id: '988fbiuha8', title: '御定佩文韻府', ldType: 'Book' },
-    { kind: 'Collection', id: '8rlcsybg2hhf', title: '武英殿聚珍版叢書', ldType: 'Collection' },
-    { kind: 'Entity', id: ANCHORS.entity.id, title: '孔子', ldType: 'Person' },
+    { kind: 'Work', id: ANCHORS.work.id, title: '史記', h1Title: '史记', ldType: 'Book' },
+    { kind: 'Book', id: '988fbiuha8', title: '御定佩文韻府', h1Title: '御定佩文韵府', ldType: 'Book' },
+    { kind: 'Collection', id: '8rlcsybg2hhf', title: '武英殿聚珍版叢書', h1Title: '武英殿聚珍版丛书', ldType: 'Collection' },
+    { kind: 'Entity', id: ANCHORS.entity.id, title: '孔子', h1Title: '孔子', ldType: 'Person' },
 ] as const;
 
 /** 被并条目候选：运行时核 merged_into 仍在才用，目标取数据里的值而不写死 */
@@ -169,7 +171,8 @@ test.describe('新架构：条目页服务端 HTML', () => {
             expect(title, '<title> 不含书名').toContain(s.title);
             expect(html, 'SSR 摘要没渲染（缺 data-ssr-item）').toContain(`data-ssr-item="${s.id}"`);
             const h1 = decode(html.match(/<h1\b[^>]*>([^<]*)/i)?.[1] ?? '');
-            expect(h1, '服务端 HTML 的 <h1> 不含书名').toContain(s.title);
+            expect(h1, '服务端 HTML 的 <h1> 不含书名（简体）').toContain(s.h1Title);
+            if (s.h1Title !== s.title) expect(h1, '服务端 HTML 的 <h1> 不该还是繁体').not.toContain(s.title);
 
             const desc = metaContent(html, 'description');
             expect(desc, '缺 <meta name="description">').not.toBeNull();
@@ -308,6 +311,47 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
             expect(metaContent(await r.text(), 'robots') ?? '', '404 页必须 noindex').toMatch(/noindex/);
         }
     });
+});
+
+test.describe('QA 回归 P2（overview#267）：条目页直出简体、旧入口没有内容不跳 404', () => {
+    test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有条目页 SSR 与中间件`);
+
+    // 档位 3：经典条目。程甲本（Book）、史記（Work）、武英殿聚珍版叢書（Collection）、朱熹（Entity）
+    const SAMPLES: [string, string, RegExp, string][] = [
+        ['程甲本 Book', '96kzkdm8e8', /红楼梦/, '紅樓夢'],
+        ['史記 Work', 'd59f20aowb9c', /史记/, '史記'],
+        ['武英殿聚珍版叢書 Collection', '8rlcsybg2hhf', /丛书/, '叢書'],
+        ['朱熹 Entity', 'hixhd2h9bgah', /朱熹/, ''],
+    ];
+
+    for (const [name, id, simp, trad] of SAMPLES) {
+        test(`${name}：关 JS 直出的首屏摘要是简体`, async ({ request }) => {
+            const res = await request.get(`${TARGET}/item/${id}`, noFollow);
+            expect(res.status()).toBe(200);
+            const html = await res.text();
+            const article = html.match(/<article[^>]*data-ssr-item[^>]*>[\s\S]*?<\/article>/)?.[0] ?? '';
+            expect(article, '直出 HTML 里没有首屏摘要 article').not.toBe('');
+            const text = decode(article.replace(/<[^>]+>/g, ''));
+            expect(text, `${name} 的首屏摘要应是简体`).toMatch(simp);
+            if (trad) expect(text, `${name} 的首屏摘要不该还是繁体`).not.toContain(trad);
+        });
+    }
+
+    // 詩序考（d59f2pra0vsw）：Work，条目 JSON 里没有 has_collated／has_text
+    const NO_CONTENT = 'd59f2pra0vsw';
+    for (const [from, to] of [
+        [`/book-index?id=${NO_CONTENT}&tab=collated`, `/item/${NO_CONTENT}`],
+        [`/book-index?id=${NO_CONTENT}&tab=fulltext`, `/item/${NO_CONTENT}`],
+        [`/item/${NO_CONTENT}?tab=fulltext`, `/item/${NO_CONTENT}`],
+    ]) {
+        test(`条目没有这类内容：${from} → 308 ${to}（不跳只会 404 的阅读页）`, async ({ request }) => {
+            const res = await request.get(`${TARGET}${from}`, noFollow);
+            expect(res.status(), `${from} 应 308`).toBe(308);
+            const loc = (res.headers()['location'] ?? '').split(',').map((v) => v.trim()).filter(Boolean)
+                .map((v) => { const u = new URL(v, TARGET); return u.pathname + u.search; });
+            expect(loc).toEqual([to]);
+        });
+    }
 });
 
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {

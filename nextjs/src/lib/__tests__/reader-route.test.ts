@@ -4,7 +4,7 @@
  * N5b：阅读页地址约定（/item/<id>/read?kind=…&key=…&juan=…）与旧入口跳转。
  */
 import { describe, it, expect } from '@jest/globals';
-import { collatedJuanFile, isLegacyCollatedJuan, juanLabel, juanStem, legacyCollatedJuanTarget, legacyReaderTarget, parseReaderQuery, readerHref, readerTitle } from '../reader-route';
+import { collatedJuanFile, entryHasReaderContent, isLegacyCollatedJuan, juanLabel, juanStem, legacyCollatedJuanTarget, legacyReaderParts, legacyReaderTarget, parseReaderQuery, readerHref, readerTitle } from '../reader-route';
 
 const WORK = 'd59f20aowb9c'; // 史記（Work）
 const ZHIZHAI = 'd59f2htm01du'; // 直齋書錄解題（Work，有整理本）
@@ -123,5 +123,30 @@ describe('legacyReaderTarget：旧入口 → 阅读页', () => {
         `/about?tab=fulltext&id=${WORK}`,
     ])('不是旧阅读入口：%s', (path) => {
         expect(t(path)).toBeNull();
+    });
+});
+
+describe('legacyReaderParts／entryHasReaderContent（overview#267 QA 回归 P2）', () => {
+    const p = (path: string) => { const u = new URL(`https://x${path}`); return legacyReaderParts(u.pathname, u.searchParams); };
+    it('拆出 id 与阅读页查询；不是旧阅读入口就 null', () => {
+        expect(p(`/book-index?id=${BOOK}&tab=fulltext&juan=003`)).toEqual({ id: BOOK, q: { kind: 'fulltext', juan: '003' } });
+        expect(p(`/item/${ZHIZHAI}?tab=collated`)).toEqual({ id: ZHIZHAI, q: { kind: 'collated' } });
+        expect(p(`/book-index?id=${WORK}&tab=lineage`)).toBeNull();
+        expect(p(`/item/${BOOK}?tab=collated`)).toBeNull(); // Book 没有整理本
+    });
+    it('整理本看 has_collated（_has_collated 同义），只认明确为 true', () => {
+        expect(entryHasReaderContent({ has_collated: true }, 'collated')).toBe(true);
+        expect(entryHasReaderContent({ _has_collated: true }, 'collated')).toBe(true);
+        expect(entryHasReaderContent({ has_text: true }, 'collated')).toBe(false);
+        expect(entryHasReaderContent({ has_collated: 'true' }, 'collated')).toBe(false);
+        expect(entryHasReaderContent({}, 'collated')).toBe(false);
+    });
+    it('全文看 has_text／_has_text／has_full_text', () => {
+        expect(entryHasReaderContent({ has_text: true }, 'fulltext')).toBe(true);
+        expect(entryHasReaderContent({ _has_text: true }, 'fulltext')).toBe(true);
+        expect(entryHasReaderContent({ has_full_text: true }, 'fulltext')).toBe(true);
+        expect(entryHasReaderContent({ has_collated: true }, 'fulltext')).toBe(false);
+        expect(entryHasReaderContent({ has_text: 1 }, 'fulltext')).toBe(false);
+        expect(entryHasReaderContent({}, 'fulltext')).toBe(false);
     });
 });

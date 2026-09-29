@@ -143,9 +143,54 @@ describe('middleware.ssr：旧阅读入口 → /item/<id>/read（N5b）', () => 
         expect((await run(`/item/${ZHIZHAI}?tab=collated`, inSite)).status).toBe(308);
     });
 
-    it('/item/<id>?tab= 不查数据', async () => {
-        await run(`/item/${ZHIZHAI}?tab=fulltext`);
-        expect(mockGetItem).not.toHaveBeenCalled();
+    it('查得到条目才判断有没有这类内容；查不到、取数出错都照旧跳阅读页（由那边的页面判断）', async () => {
+        mockGetItem.mockResolvedValueOnce(null);
+        expect((await run(`/item/${ZHIZHAI}?tab=fulltext`)).all).toEqual([`https://staging.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=fulltext`]);
+        mockGetItem.mockRejectedValueOnce(new Error('HTTP 502'));
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        expect((await run(`/book-index?id=${ZHIZHAI}&tab=collated`)).all).toEqual([`https://staging.kaiyuanguji.com/item/${ZHIZHAI}/read?kind=collated`]);
+        warn.mockRestore();
+        expect(mockGetItem).toHaveBeenCalledTimes(2);
+    });
+});
+
+/** overview#267 QA 回归 P2：条目没有这类内容，旧入口不再跳到只会 404 的阅读页 */
+describe('middleware.ssr：旧阅读入口 · 条目没有这类内容 → 308 条目页', () => {
+    const WORK = 'd59f2pra0vsw';
+    const BOOK = '96kzkdm8e8';
+    const hit = (entry: Record<string, unknown>): ItemFetchResult => ({ entry, source: 'h1', version: 'h1:r' });
+
+    beforeEach(() => { mockGetItem.mockReset(); });
+
+    it.each<[string, Record<string, unknown>, string, string]>([
+        ['Work 没有整理本', { id: WORK, type: 'work', has_text: true }, `/book-index?id=${WORK}&tab=collated`, `/item/${WORK}`],
+        ['Work 没有整理本（/item 入口，带卷号也丢掉）', { id: WORK, type: 'work' }, `/item/${WORK}?tab=collated&juan=juan%2F011.json`, `/item/${WORK}`],
+        ['Work 没有全文', { id: WORK, type: 'work' }, `/book-index?id=${WORK}&tab=fulltext`, `/item/${WORK}`],
+        ['Work 的标记不是 true（字符串、假）当作没有', { id: WORK, type: 'work', has_collated: 'true', has_text: false }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}`],
+        ['Book 没有全文', { id: BOOK, type: 'book' }, `/book-index?id=${BOOK}&tab=fulltext&juan=003`, `/item/${BOOK}`],
+    ])('%s → 308 条目页', async (_n, entry, from, to) => {
+        mockGetItem.mockResolvedValue(hit(entry));
+        const r = await run(from);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
+    });
+
+    it.each<[string, Record<string, unknown>, string, string]>([
+        ['Work 有整理本', { type: 'work', has_collated: true }, `/book-index?id=${WORK}&tab=collated&juan=juan%2F011.json`, `/item/${WORK}/read?kind=collated&juan=011`],
+        ['Work 有全文（has_text）', { type: 'work', has_text: true }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}/read?kind=fulltext`],
+        ['Work 有全文（_has_text 同义）', { type: 'work', _has_text: true }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}/read?kind=fulltext`],
+        ['Book 有全文（has_full_text）', { type: 'book', has_full_text: true }, `/book-index?id=${BOOK}&tab=fulltext&juan=003`, `/item/${BOOK}/read?kind=fulltext&juan=003`],
+    ])('%s → 照旧 308 阅读页', async (_n, entry, from, to) => {
+        mockGetItem.mockResolvedValue(hit(entry));
+        const r = await run(from);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com${to}`]);
+    });
+
+    it('站内请求也一样判断', async () => {
+        mockGetItem.mockResolvedValue(hit({ type: 'work' }));
+        const r = await run(`/book-index?id=${WORK}&tab=collated`, { referer: `https://staging.kaiyuanguji.com/item/${WORK}`, 'sec-fetch-dest': 'empty' });
+        expect(r.all).toEqual([`https://staging.kaiyuanguji.com/item/${WORK}`]);
     });
 });
 

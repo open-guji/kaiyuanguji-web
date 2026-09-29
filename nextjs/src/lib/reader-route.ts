@@ -121,7 +121,7 @@ export function readerTitle(bookTitle: string, q: ReaderQuery, chapterTitle?: st
  * 只认 tab 为 fulltext／collated 的；其余参数（page、mode 等）是别的 tab 的状态，丢掉。
  * redirected_from／no_redirect（草稿升格横幅的往返）在场时放过，留给详情组件处理。
  */
-export function legacyReaderTarget(pathname: string, params: URLSearchParams): string | null {
+export function legacyReaderParts(pathname: string, params: URLSearchParams): { id: string; q: ReaderQuery } | null {
     const tab = params.get('tab');
     if (!isKind(tab ?? undefined)) return null;
     if (params.has('redirected_from') || params.has('no_redirect')) return null;
@@ -133,5 +133,22 @@ export function legacyReaderTarget(pathname: string, params: URLSearchParams): s
 
     // 条目类型没有这种阅读页（如 Book 的 tab=collated）就不跳，免得跳进 404
     const q = parseReaderQuery(id, { kind: tab ?? undefined, juan: params.get('juan') ?? undefined });
-    return q ? readerHref(id, q) : null;
+    return q ? { id, q } : null;
+}
+
+export function legacyReaderTarget(pathname: string, params: URLSearchParams): string | null {
+    const parts = legacyReaderParts(pathname, params);
+    return parts ? readerHref(parts.id, parts.q) : null;
+}
+
+/**
+ * 条目 JSON 自己的标记：有没有这类阅读内容（overview#267 QA 回归 P2）。
+ *   整理本：has_collated（另有 _has_collated 同义）
+ *   全文  ：has_text（Work 与 Book 都有）、Book 另有 has_full_text；_has_text 同义
+ * 只认明确为 true 的；数据里没这个标记就当没有。用于旧入口 ?tab=fulltext／collated：
+ * 条目没有这类内容就不必跳阅读页（那里只会是 404）。
+ */
+export function entryHasReaderContent(entry: Record<string, unknown>, kind: ReaderKind): boolean {
+    if (kind === 'collated') return entry.has_collated === true || entry._has_collated === true;
+    return entry.has_text === true || entry._has_text === true || entry.has_full_text === true;
 }
