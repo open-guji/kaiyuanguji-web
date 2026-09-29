@@ -1,0 +1,13 @@
+{
+  "_说明": "夜间性能门槛（overview#280 T2）。超过就失败并开单。初始值按 2026-09-02 夜间基线（GitHub 美国 runner → 国内 CDN，fast 档、手机视口：首页 LCP 3.4s，作品详情 6.2–6.9s）放宽约 1.5 倍；跑一周后按 perf-report 工件里的真实分布收紧。LCP 单位 ms，key 是 scenarios.ts 的场景 id，只对 fast 档判。",
+  "lcpMs": {
+    "A1-home": 6000,
+    "I1-item-page": 10000
+  },
+  "itemTtfb": {
+    "path": "/item/d59f1iopaku8",
+    "samples": 8,
+    "minHits": 3,
+    "medianMs": 3000
+  }
+}
