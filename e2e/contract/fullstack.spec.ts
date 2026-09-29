@@ -458,20 +458,6 @@ test.describe('条目页多余查询参数 308 到干净地址（overview#280 S1
     });
 });
 
-test.describe('条目页缓存头与压缩（overview#280 S2 实验）', () => {
-    const ID = ANCHORS.work.id;
-
-    test('条目页 Cache-Control 只留 s-maxage，不带 stale-while-revalidate', async ({ request }) => {
-        const res = await request.get(`${TARGET}/item/${ID}`, { ...noFollow, headers: { 'accept-encoding': 'gzip, br' } });
-        expect(res.status()).toBe(200);
-        const cc = res.headers()['cache-control'] ?? '';
-        expect(cc, 'Cache-Control').toMatch(/s-maxage=3600/);
-        expect(cc, 'Cache-Control 不应带 stale-while-revalidate（实验：疑似它让 EdgeOne 不压缩条目页）').not.toMatch(/stale-while-revalidate/);
-        // 是否压缩只记录、不断言：本地 next start 自带 gzip，EdgeOne 上是否压缩正是要量的东西
-        test.info().annotations.push({ type: 'content-encoding', description: res.headers()['content-encoding'] ?? '（无）' });
-    });
-});
-
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
