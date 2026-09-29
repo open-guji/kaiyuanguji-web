@@ -63,6 +63,21 @@
   --max-width-content-tablet: 600px;
 }
 
+/* ---- 靛藍主题（overview#286 第 0 步）：<html data-theme="indigo">，朱砂 = 不设属性 ----
+   只换朱色一族；--bim-* 里凡写成 var(--color-zhu) 的（链接、主按钮、选中、强调）随之变色。
+   纸色、墨色、泥金、语义状态色不动。色值与 book-index-ui 的 indigo 主题一致（accent #2e5266）。 */
+:root[data-theme="indigo"] {
+  --color-zhu: #2e5266;
+  --color-zhu-deep: #23414f;
+  --color-zhu-tint: rgba(46, 82, 102, 0.08);
+  --color-vermilion: #2e5266;
+  --color-vermilion-deep: #23414f;
+  --color-nav-vermilion: #2e5266;
+  /* 分类色不随主题：书籍徽章、整理本「疏」类仍用朱色，免得与同页的蓝色（丛编徽章、「序」类）撞色 */
+  --bim-type-book: #9e2a2b;
+  --bim-section-shu: #9e2a2b;
+}
+
 /* ---------- 非 Tailwind 令牌（字号阶 / 字重 / 阴影 / 圆角 / 动效） ---------- */
 :root {
   /* 字号阶：基准 15，标题逐级拉开 */
@@ -623,6 +638,50 @@
   .og-skip:focus {
     transform: none;
     text-decoration: none;
+  }
+
+  /* 顶栏右上角主题切换：两个色点，当前项外圈描边 */
+  .og-theme {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 6px;
+  }
+  .og-theme-dot {
+    position: relative;
+    width: 28px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .og-theme-dot::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .og-theme-dot--zhusha::before {
+    background-color: #9e2a2b;
+  }
+  .og-theme-dot--indigo::before {
+    background-color: #2e5266;
+  }
+  .og-theme-dot[aria-checked="true"]::before {
+    border-color: var(--color-paper);
+    box-shadow: 0 0 0 1.5px var(--color-ink-2);
+  }
+  .og-theme-dot:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: -4px;
   }
 
   /* 顶栏右侧「反馈」（N7）：浅色图标＋文字，不是按钮样式；手机只留图标 */

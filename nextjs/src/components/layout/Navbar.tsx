@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { MOBILE_DRAWER_ID, PRIMARY_LINKS, isCurrent } from './nav-links';
 import { useFeedback } from '../feedback/FeedbackProvider';
+import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
@@ -47,6 +48,7 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
         </nav>
 
         <div className="og-nav-right">
+          <ThemeToggle />
           <button type="button" className="og-nav-fb" onClick={() => openFeedback()} aria-label="反馈" aria-haspopup="dialog">
             <svg
               width="18"
