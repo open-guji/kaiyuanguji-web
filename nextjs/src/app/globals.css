@@ -285,6 +285,10 @@
   /* 强调 */
   --bim-accent: var(--color-zhu);
   --bim-accent-deep: var(--color-zhu-deep);
+  /* 「有影印」块、提要卡「看原書影印」按钮的底：跟朱色令牌走。本站不引 book-index-ui 的 variables.css，
+     组件库的 :root[data-theme="indigo"] 覆盖块到不了这里，所以每个随主题变的 --bim-* 都要在本站自己映射一遍，
+     否则靛蓝下这些块留着朱色底、配蓝字。 */
+  --bim-flag-bg: var(--color-zhu-tint);
 
   /* 分隔线：粗黑线降成浅线（粗细由组件定，这里只换色） */
   --bim-rule-strong: var(--color-tint-2);
