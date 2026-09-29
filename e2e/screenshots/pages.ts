@@ -10,6 +10,8 @@ export interface ShotPage {
     /** 图集里显示的中文标题 */
     title: string;
     path: string;
+    /** 只截首屏（不整页）：阅读页整页有一万八千多像素高，没法看 */
+    firstScreenOnly?: boolean;
 }
 
 export const PAGES: ShotPage[] = [
@@ -21,9 +23,11 @@ export const PAGES: ShotPage[] = [
     { name: 'book-chengjia', title: 'Book：程甲本', path: '/item/96kzkdm8e8' },
     { name: 'collection-juzhen', title: 'Collection：武英殿聚珍版叢書', path: '/item/8rlcsybg2hhf' },
     { name: 'entity-zhuxi', title: 'Entity：朱熹', path: '/item/hixhd2h9bgah' },
-    { name: 'read-collated', title: '阅读页·整理本（直齋書錄解題）', path: `/read/${ANCHORS.collated.id}?kind=collated` },
-    { name: 'read-fulltext', title: '阅读页·全文（詩序，有版本下拉框）', path: '/read/d59f2ew0ctmo?kind=fulltext' },
+    { name: 'read-home', title: '阅读首页', path: '/read' },
+    { name: 'read-collated', title: '阅读页·整理本（直齋書錄解題）', path: `/read/${ANCHORS.collated.id}?kind=collated`, firstScreenOnly: true },
+    { name: 'read-fulltext', title: '阅读页·全文（詩序，有版本下拉框）', path: '/read/d59f2ew0ctmo?kind=fulltext', firstScreenOnly: true },
     { name: 'about', title: '关于', path: '/about' },
+    { name: 'contact', title: '联系', path: '/contact' },
     { name: 'privacy', title: '隐私', path: '/privacy' },
     { name: 'feedback', title: '反馈', path: '/feedback' },
     { name: 'not-found', title: '404：不存在的条目', path: '/item/nonexistent000' },
