@@ -86,8 +86,10 @@ const cases = [
     { tag: 'A.标题', q: '水滸傳',    firstId: '1evgowbkc2qyo' },
     { tag: 'A.标题', q: '三国演义',  firstId: '1evglwzzi2ww0', desc: '简体' },
     { tag: 'A.标题', q: '三國演義',  firstId: '1evglwzzi2ww0' },
-    { tag: 'A.标题', q: '韓非子',   firstId: '1evincino4a9s' },
-    { tag: 'A.标题', q: '韩非子',   firstId: '1evincino4a9s', desc: '简体' },
+    { tag: 'A.标题', q: '韓非子',   firstId: '1evincino4a9s',
+      knownIssue: '正题在目录里叫《韓子》（d59ezkx3p91c），「後世改稱韓非子」只写在简介里，没有「韓非子」别名；标题是「韓非子」的作品库里不存在。要目录给《韓子》补 additional_titles，并且别名命中目前排在所有标题命中之后，另议（#281）' },
+    { tag: 'A.标题', q: '韩非子',   firstId: '1evincino4a9s', desc: '简体',
+      knownIssue: '正题在目录里叫《韓子》（d59ezkx3p91c），「後世改稱韓非子」只写在简介里，没有「韓非子」别名；标题是「韓非子」的作品库里不存在。要目录给《韓子》补 additional_titles，并且别名命中目前排在所有标题命中之后，另议（#281）' },
     { tag: 'A.标题', q: '西游记',   firstId: '1evgoslsegs8w', desc: '简体' },
     { tag: 'A.标题', q: '西遊記',   firstId: '1evgoslsegs8w' },
     { tag: 'A.标题', q: '金瓶梅',   firstId: '1evgoj8abhgjk' },
@@ -132,12 +134,15 @@ const cases = [
     { tag: 'D.作者', q: '曹霑',     top3HasId: '1evgoj8kp4irk', desc: '本名' },
     { tag: 'D.作者', q: '罗贯中',   top5HasId: '1evglwzzi2ww0', desc: '简体' },
     { tag: 'D.作者', q: '羅貫中',   top5HasId: '1evglwzzi2ww0' },
-    { tag: 'D.作者', q: '韓非',     top3HasId: '1evincino4a9s' },
+    { tag: 'D.作者', q: '韓非',     top3HasId: '1evincino4a9s',
+      knownIssue: '正题在目录里叫《韓子》（d59ezkx3p91c），「後世改稱韓非子」只写在简介里，没有「韓非子」别名；标题是「韓非子」的作品库里不存在。要目录给《韓子》补 additional_titles，并且别名命中目前排在所有标题命中之后，另议（#281）' },
     { tag: 'D.作者', q: '吴承恩',   top10HasId: '1evgoslsegs8w', desc: '简体' },
     { tag: 'D.作者', q: '吳承恩',   top10HasId: '1evgoslsegs8w' },
     { tag: 'D.作者', q: '吴敬梓',   top10HasId: '1evgoyqwyb8cg', desc: '简体' },
-    { tag: 'D.作者', q: '孙武',     top10HasId: '1evcmnd8q9s74', desc: '简体' },
-    { tag: 'D.作者', q: '孫武',     top10HasId: '1evcmnd8q9s74' },
+    // 孫武本人的作品在库里是《孫子》（d59ezai72dq8，authors=孫武）；旧草稿 id 1evcmnd8q9s74 按标题对上的
+    // 《孫子兵法》（d59f27xeo1s0）是曹操注本，作者不是孫武，拿它当期望是用例写错了（#281）。
+    { tag: 'D.作者', q: '孙武',     top10HasId: 'd59ezai72dq8', desc: '简体' },
+    { tag: 'D.作者', q: '孫武',     top10HasId: 'd59ezai72dq8' },
 
     // ─── E. description / indexed_by 全文 ───
     { tag: 'E.全文', q: '通俗小說',  top5HasTitleContains: '通俗', desc: '描述含此词的作品' },
