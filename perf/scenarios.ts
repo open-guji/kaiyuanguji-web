@@ -91,6 +91,15 @@ export const SCENARIOS: Scenario[] = [
         ],
     },
     {
+        // 条目页 SSR（/item/<id>）：夜间门槛（gate.ts）盯它的 LCP；缓存命中首字节由 gate.ts 单独量
+        id: 'I1-item-page',
+        name: '条目页 SSR（論語 /item/d59f1iopaku8）',
+        actions: [
+            { kind: 'goto', path: '/item/d59f1iopaku8' },
+            { kind: 'wait_idle', timeoutMs: 120000 },
+        ],
+    },
+    {
         id: 'D3-detail-entity',
         name: '人物详情（孔子）',
         actions: [

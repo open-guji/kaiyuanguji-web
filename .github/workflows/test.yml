@@ -29,6 +29,13 @@ jobs:
       - name: Test
         working-directory: nextjs
         run: npm test
+      # 夜间性能门槛的判定逻辑（perf/gate.ts）：纯函数，PR 上就跑，不碰线上
+      - name: Install (perf)
+        working-directory: perf
+        run: npm ci
+      - name: Perf gate unit tests
+        working-directory: perf
+        run: npx tsx --test gate.test.ts
 
   smoke:
     name: Browser smoke (build + serve + Playwright)
@@ -169,6 +176,9 @@ jobs:
     name: Production perf benchmark
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -183,9 +193,40 @@ jobs:
       - name: Run perf vs prod
         working-directory: perf
         run: npm run perf -- --profiles=fast
+      # 门槛（overview#280 T2）：perf/thresholds.json。超标时先把报告上传、开单，最后让本 job 变红
+      - name: Perf gate (thresholds.json)
+        id: gate
+        continue-on-error: true
+        working-directory: perf
+        run: npx tsx gate.ts --target=https://www.kaiyuanguji.com
+      - name: Gate summary
+        if: always()
+        run: '[ -f perf/out/gate.md ] && cat perf/out/gate.md >> "$GITHUB_STEP_SUMMARY" || true'
       - name: Upload perf report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: perf-report-${{ github.run_id }}
           path: perf/out/
           retention-days: 30
+      - name: Open or update perf issue on breach
+        if: steps.gate.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const md = fs.existsSync('perf/out/gate.md') ? fs.readFileSync('perf/out/gate.md', 'utf8') : '（没有 gate.md，见 job 日志）';
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = '[perf] 夜间性能门槛未通过';
+            const body = `${md}\n\n工件（完整报告）与日志：${run}\n\n门槛在 \`perf/thresholds.json\`；连续几晚都红再当真，单晚可能是网络抖动。恢复后请手动关闭本单。`;
+            try { await github.rest.issues.createLabel({ ...context.repo, name: 'perf', color: 'fbca04' }); } catch (e) { /* 已存在 */ }
+            const open = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'perf', per_page: 20 });
+            const existing = open.data.find((i) => !i.pull_request && i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['perf'] });
+            }
+      - name: Fail job on gate breach
+        if: steps.gate.outcome == 'failure'
+        run: exit 1
