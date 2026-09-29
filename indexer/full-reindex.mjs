@@ -443,7 +443,12 @@ const SETTINGS = {
         searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'pinyin', 'description_search', 'indexed_by_search'],
         filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
         sortableAttributes: ['completeness', 'juan_count', 'title_chars'],
-        rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
+        // #281（2026-09-29）：completeness 提到 exactness 前面。同长度标题平局时先看「分量」，
+        // 不再让 exactness 决胜——中文的 exactness 受 jieba 分词左右（简体「三国志」切成一个词、
+        // 「三国论」切成「三国」＋「论」），搜「三国」时《三國論》算开头匹配、《三國志》不算，
+        // 于是三國論／文／評把三國志、三國演義压到第 5 名以后。换序后 1,973 个压测查询里第 1 名
+        // 只变了 14 个（0.7%），且多是变好（春→春秋、金→金史、明→明史、千→千字文）。
+        rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'completeness:desc', 'exactness'],
     },
     books: {
         searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'edition_search', 'holder_search', 'pinyin', 'description_search'],
