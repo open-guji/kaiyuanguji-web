@@ -5,8 +5,6 @@ jest.mock('next/navigation', () => ({
     usePathname: () => '/',
     useRouter: () => ({ push }),
 }));
-// 首页不测反馈浮钮（它来自 book-index-ui）
-jest.mock('@/components/common/FeedbackWidget', () => () => null);
 
 import HomePage from '../page';
 import { HOME_FEATURES } from '@/components/home/features';

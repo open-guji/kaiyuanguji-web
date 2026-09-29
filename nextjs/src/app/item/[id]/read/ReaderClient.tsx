@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BookFullText, CollatedEdition, LocaleProvider, type WorkFullTextEntry } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
+import SelectionReport from '@/components/feedback/SelectionReport';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
 import { parseItemId } from '@/lib/item-id';
 import { collatedJuanFile, juanStem, parseReaderQuery, readerHref, readerTitle, type ReaderQuery } from '@/lib/reader-route';
+import { readerFeedbackLabel } from '@/lib/feedback';
 import { chapterKey, collatedJuanFiles, seedTransport, type ReaderSeed } from './reader-seed';
 
 interface ReaderClientProps {
@@ -159,54 +162,71 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, []);
     const onNavigate = useCallback((target: string) => router.push(`/item/${target}`), [router]);
 
-    if (q.kind === 'collated') {
-        return (
-            <CollatedEdition
-                index={seed?.collatedIndex}
-                workId={id}
-                transport={transport}
-                onNavigate={onNavigate}
-                activeJuan={q.juan ? collatedJuanFile(q.juan, collatedFiles) : null}
-                onJuanChange={onJuanChange}
-            />
-        );
-    }
+    // N7：本页反馈上下文（书名 · 整理本/全文 · 卷），导航栏「反馈」和选字「报错」都带上；卷号另随 pageUrl 提交
+    const feedbackContext = useMemo(
+        () => ({ resourceId: id, label: readerFeedbackLabel(bookTitle, q) }),
+        [id, bookTitle, q],
+    );
+    useFeedbackPageContext(feedbackContext);
+    const textRef = useRef<HTMLDivElement>(null);
 
-    if (isWork) {
-        if (!workTexts) return <Muted>加载全文目录…</Muted>;
-        const key = workKey;
-        if (!key) return <Muted>暂无全文</Muted>;
+    const renderReader = () => {
+        if (q.kind === 'collated') {
+            return (
+                <CollatedEdition
+                    index={seed?.collatedIndex}
+                    workId={id}
+                    transport={transport}
+                    onNavigate={onNavigate}
+                    activeJuan={q.juan ? collatedJuanFile(q.juan, collatedFiles) : null}
+                    onJuanChange={onJuanChange}
+                />
+            );
+        }
+
+        if (isWork) {
+            if (!workTexts) return <Muted>加载全文目录…</Muted>;
+            const key = workKey;
+            if (!key) return <Muted>暂无全文</Muted>;
+            return (
+                <BookFullText
+                    key={key}
+                    index={key === seed?.key ? seed?.fullTextIndex : undefined}
+                    bookId={id}
+                    workKey={key}
+                    versions={workTexts}
+                    onVersionChange={onVersionChange}
+                    transport={transport}
+                    activeChapter={q.juan ?? null}
+                    onChapterChange={onJuanChange}
+                />
+            );
+        }
+
         return (
             <BookFullText
-                key={key}
-                index={key === seed?.key ? seed?.fullTextIndex : undefined}
+                index={seed?.fullTextIndex}
                 bookId={id}
-                workKey={key}
-                versions={workTexts}
-                onVersionChange={onVersionChange}
                 transport={transport}
                 activeChapter={q.juan ?? null}
                 onChapterChange={onJuanChange}
             />
         );
-    }
+    };
 
     return (
-        <BookFullText
-            index={seed?.fullTextIndex}
-            bookId={id}
-            transport={transport}
-            activeChapter={q.juan ?? null}
-            onChapterChange={onJuanChange}
-        />
+        <div ref={textRef}>
+            {renderReader()}
+            <SelectionReport containerRef={textRef} context={feedbackContext} />
+        </div>
     );
 }
 
-/** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚与反馈浮钮） */
+/** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚） */
 export default function ReaderClient(props: ReaderClientProps) {
     return (
         <LocaleProvider>
-            <LayoutWrapper hideFooter hideFeedbackButton>
+            <LayoutWrapper hideFooter>
                 <Reader {...props} />
             </LayoutWrapper>
         </LocaleProvider>

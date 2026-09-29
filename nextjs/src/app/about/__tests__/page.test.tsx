@@ -4,7 +4,6 @@ jest.mock('next/navigation', () => ({
     usePathname: () => '/about',
     useRouter: () => ({ push: jest.fn() }),
 }));
-jest.mock('@/components/common/FeedbackWidget', () => () => null);
 
 import AboutPage from '../page';
 

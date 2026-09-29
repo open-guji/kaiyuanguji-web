@@ -94,9 +94,9 @@ jobs:
   fullstack:
     # WEB2（overview#249 Q6）：smoke 只测静态导出，全栈路由（/item/*、/item/*/read、中间件跳转）
     # 以前要部署到测试站后 verify 才有人测——阅读页全 500（INT P1）就是这么漏过去的。
-    # 这里全栈构建＋next start，跑 e2e 的 reader.spec 与 contract/fullstack.spec。
+    # 这里全栈构建＋next start，跑 e2e 的 reader.spec、feedback.spec 与 contract/fullstack.spec。
     # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
-    name: Fullstack (build + next start + e2e reader/contract)
+    name: Fullstack (build + next start + e2e reader/feedback/contract)
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
@@ -144,13 +144,14 @@ jobs:
         # 排除两条只有部署产物才有的：sitemap 分片（deploy 里 gen-sitemaps 生成）、
         # /api/feedback（EdgeOne 边缘函数，next start 没有）。它们仍由 deploy 的 verify 守着。
         run: npx playwright test --project=contract contract/fullstack.spec.ts --grep-invert "新架构：sitemap|/api/feedback"
-      - name: e2e ui (reader.spec)
+      - name: e2e ui (reader.spec, feedback.spec)
         if: ${{ !cancelled() }}
         working-directory: e2e
         env:
           TARGET: http://localhost:3000
           SITE_ARCH: fullstack
-        run: npx playwright test --project=ui ui/reader.spec.ts
+        # feedback.spec 把 /api/feedback 全部拦在浏览器里 mock，不会提交到任何站点
+        run: npx playwright test --project=ui ui/reader.spec.ts ui/feedback.spec.ts
       - name: Upload e2e report and server log on failure
         if: failure()
         run: mkdir -p e2e/out && cp "$RUNNER_TEMP/next-start.log" e2e/out/ || true

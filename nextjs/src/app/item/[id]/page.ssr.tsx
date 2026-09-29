@@ -93,7 +93,7 @@ const S = {
 
 function ItemSummaryView({ s }: { s: Loaded }) {
     return (
-        <LayoutWrapper hideFooter hideFeedbackButton>
+        <LayoutWrapper hideFooter>
             {/* data-ssr-source／data-ssr-version：取数走的哪条路、哪一版数据；排查与发版后实测（W2-3）用 */}
             <article data-ssr-item={s.id} data-ssr-source={s.source} data-ssr-version={s.version} style={S.article}>
                 <h1 style={S.h1}>

@@ -222,7 +222,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
      */
 
     return (
-        <LayoutWrapper hideFooter hideFeedbackButton>
+        <LayoutWrapper hideFooter>
             {redirectedFrom && (
                 <div
                     role="status"
