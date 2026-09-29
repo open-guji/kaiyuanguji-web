@@ -33,4 +33,15 @@ describe('StagingBadge（T1 测试站角标）', () => {
         const { container } = render(<StagingBadge />);
         expect(container).toBeEmptyDOMElement();
     });
+
+    it('字色是深琥珀、不是白：白字压 #fe9a00 只有 2.13:1（axe color-contrast 要 4.5）', async () => {
+        jest.resetModules();
+        process.env.NEXT_PUBLIC_SITE_ENV = 'staging';
+        const { default: StagingBadge } = await import('../StagingBadge');
+        render(<StagingBadge />);
+        const cls = screen.getByTestId('staging-badge').className;
+        expect(cls).toContain('bg-amber-500');
+        expect(cls).toContain('text-amber-950');
+        expect(cls).not.toMatch(/text-white/);
+    });
 });
