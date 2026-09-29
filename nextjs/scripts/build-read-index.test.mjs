@@ -34,6 +34,12 @@ test('toReadCard：没有提要，整理本带标记', () => {
     assert.equal('collated' in toReadCard({ id: 'w2', title: '书' }, false), false);
 });
 
+test('toReadCard：带版本名（Book 的 edition），空白版本名不带', () => {
+    assert.equal(toReadCard({ id: 'b1', title: '石頭記', edition: ' 甲戌本 ' }, false).edition, '甲戌本');
+    assert.equal('edition' in toReadCard({ id: 'b2', title: '石頭記', edition: '  ' }, false), false);
+    assert.equal('edition' in toReadCard({ id: 'b3', title: '石頭記' }, false), false);
+});
+
 test('compareReadCards：整理本在前，再按书名拼音，再按 id', () => {
     const list = [
         { id: 'c', title: '乙' },

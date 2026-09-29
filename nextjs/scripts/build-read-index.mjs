@@ -14,7 +14,7 @@
  * 可读：Work 的索引项 has_collated 或 has_text 为 true（详情里同名或 _ 前缀标记也认）；
  *       Book 的索引项 has_text，或 full_text/index.json 存在（has_full_text）。
  *
- * ReadCard { id, title, juan?, authors?: {name, dynasty?}[], collated?: true, classification?: string[] }
+ * ReadCard { id, title, edition?, juan?, authors?: {name, dynasty?}[], collated?: true, classification?: string[] }
  *
  * 用法：bundle-data.mjs 在总目之后调用 bundleRead()（正常流程）；
  *       node scripts/build-read-index.mjs [draftDir]   单独重建
@@ -48,6 +48,8 @@ export function workCollated(item, d = {}) {
 export function toReadCard(d, collated) {
     const c = toCard(d);
     delete c.summary;
+    // 版本名（Book 的 edition）：同名书（《钦定四库全书总目》《脂砚斋重评石头记》等）靠它在卡片上分辨
+    if (typeof d.edition === 'string' && d.edition.trim()) c.edition = d.edition.trim();
     if (collated) c.collated = true;
     return c;
 }

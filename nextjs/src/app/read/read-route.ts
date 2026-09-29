@@ -18,6 +18,8 @@ export const READ_PAGE_SIZE = 20;
 export interface ReadCard {
     id: string;
     title: string;
+    /** 版本名（Book 的 edition）：同名书靠它分辨 */
+    edition?: string;
     juan?: number | string;
     authors?: { name: string; dynasty?: string }[];
     /** 有整理本 */
