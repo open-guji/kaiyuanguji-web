@@ -57,13 +57,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // openGraph／twitter 是整块覆盖 layout 的，不是逐字段合并：siteName、locale、图片要在这里重新带上，
     // 否则条目页的分享卡片没有站名和图，twitter 卡片还停在全站默认文案
     const ogTitle = `${seo.title} - ${SITE_NAME}`;
+    // S4（overview#280）：meta／og／twitter 的 description 出简体（服务端转换，数据不动）；
+    // JSON-LD 的 description 仍是原文（item-seo.ts 的 buildItemSeo）
+    const description = seo.descriptionSimplified;
     return {
         title: seo.title,
-        description: seo.description,
+        description,
         alternates: { canonical: seo.canonicalPath },
         openGraph: {
             title: ogTitle,
-            description: seo.description,
+            description,
             url: seo.canonicalPath,
             siteName: SITE_NAME,
             locale: 'zh_CN',
@@ -73,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         twitter: {
             card: 'summary_large_image',
             title: ogTitle,
-            description: seo.description,
+            description,
             images: ['/images/og-image.png'],
         },
     };

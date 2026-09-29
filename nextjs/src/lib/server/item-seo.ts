@@ -11,6 +11,7 @@
 import type { ItemEntry } from './item-data';
 import { summarizeItem, sentences, lossStatusText } from './item-summary';
 import { isValidItemId } from '../item-id';
+import { toSimplified } from './simplify';
 
 /** meta description 的长度区间（按码点）：短于下限才补站名句，长于上限截断 */
 export const SEO_DESC_MIN = 80;
@@ -20,7 +21,10 @@ type Json = Record<string, unknown>;
 
 export interface ItemSeo {
     title: string;
+    /** 原文（繁体）：JSON-LD 的 description 用它，保持数据原样 */
     description: string;
+    /** 简体版（服务端转换，S4）：页面的 <meta name="description">、og:description、twitter:description 用它 */
+    descriptionSimplified: string;
     /** 站内路径，如 /item/<id>；由 layout 的 metadataBase 补成绝对地址 */
     canonicalPath: string;
     ogType: 'book' | 'website' | 'profile';
@@ -466,6 +470,11 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
     const description = seoDescription(e, id);
     const base = { '@context': 'https://schema.org', '@id': url, name: s.title, url, description };
     const containedIn = parts(site, ids(e.contained_in), 'Collection');
+    // S4：JSON-LD 的 name／description 保持数据原文；书名（人物则是名字）的简体写法放进 alternateName，
+    // 大陆读者搜简体时实体名也对得上。与原名相同（本来就没有繁简差异）或已在别名里的不重复
+    const simplifiedName = toSimplified(s.title);
+    const withSimplified = (aliases: string[]): string[] =>
+        simplifiedName !== s.title ? uniq([...aliases, simplifiedName]) : aliases;
     let jsonLd: Json;
     let ogType: ItemSeo['ogType'] = 'book';
     let title = s.title;
@@ -477,7 +486,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': 'Book',
-                alternateName: names(e.additional_titles, 'book_title'),
+                alternateName: withSimplified(names(e.additional_titles, 'book_title')),
                 bookEdition: s.edition,
                 exampleOfWork: isValidItemId(work) ? { '@type': 'Book', '@id': itemUrl(site, work) } : undefined,
                 author: persons(e, site),
@@ -497,7 +506,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': 'Collection',
-                alternateName: names(e.additional_titles, 'book_title'),
+                alternateName: withSimplified(names(e.additional_titles, 'book_title')),
                 author: persons(e, site),
                 publisher: publisher(e),
                 datePublished: pubYear(e),
@@ -516,7 +525,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': org ? 'Organization' : 'Person',
-                alternateName: entityAliases(e, s.title),
+                alternateName: withSimplified(entityAliases(e, s.title)),
                 birthDate: org ? undefined : year(e.birth_year ?? d.birth),
                 deathDate: org ? undefined : year(e.death_year ?? d.death),
             });
@@ -527,7 +536,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': PIECE.has(str(e.subtype)) ? 'CreativeWork' : 'Book',
-                alternateName: workAliases(e, s.title),
+                alternateName: withSimplified(workAliases(e, s.title)),
                 author: persons(e, site),
                 inLanguage: language(s.title),
                 genre: genre(e),
@@ -536,7 +545,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             });
         }
     }
-    return { title, description, canonicalPath: `/item/${id}`, ogType, jsonLd };
+    return { title, description, descriptionSimplified: toSimplified(description), canonicalPath: `/item/${id}`, ogType, jsonLd };
 }
 
 /** 写进 <script type="application/ld+json"> 的文本：转义 <，数据里的「</script>」不能截断脚本 */
