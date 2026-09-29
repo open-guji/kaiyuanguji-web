@@ -59,24 +59,25 @@ describe('古籍总目 page.ssr', () => {
         const h = await html({ node: 'czhengshi', page: '2' });
         expect(mockPage).toHaveBeenCalledWith('czhengshi', 2);
         expect(h).toContain('href="/item/w21"');
-        expect(h).toContain('書22');
+        // book-index-ui 0.11.0 起首帧（含服务端 HTML）就是简体：書22 → 书22
+        expect(h).toContain('书22');
         // 分页是真链接（组件的 pageHref）
         expect(h).toContain('href="/catalog?node=czhengshi"');
-        expect(h).toContain('正史類');
+        expect(h).toContain('正史类');
     });
 
     it('不带 node：落到经部，canonical 指向经部节点页', async () => {
         mockPage.mockResolvedValue([card(9)]);
         const m = await meta({});
         expect(m.alternates?.canonical).toBe('/catalog?node=cjing');
-        expect(await html({})).toContain('書9');
+        expect(await html({})).toContain('书9');
     });
 
     it('node=all（组件的「全部」行）：待用户定，先落到默认节点，不 404', async () => {
         mockPage.mockResolvedValue([card(9)]);
         const m = await meta({ node: 'all' });
         expect(m.alternates?.canonical).toBe('/catalog?node=cjing');
-        expect(await html({ node: 'all' })).toContain('書9');
+        expect(await html({ node: 'all' })).toContain('书9');
     });
 
     it('节点不存在、页码越界、乱填：真 404 且 noindex', async () => {

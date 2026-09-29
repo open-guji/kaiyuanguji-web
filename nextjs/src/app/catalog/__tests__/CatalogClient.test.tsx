@@ -42,7 +42,8 @@ describe('CatalogClient', () => {
         await setup();
         const card = screen.getAllByRole('link').find((a) => a.getAttribute('href') === '/item/d59f282rkphc');
         expect(card).toBeTruthy();
-        expect(card).toHaveTextContent('三國志');
+        // book-index-ui 0.11.0 起首帧就是简体（不再先出繁体、异步转换）
+        expect(card).toHaveTextContent('三国志');
         expect(screen.getByText(/一百三十篇/)).toBeInTheDocument();
     });
 
@@ -56,7 +57,7 @@ describe('CatalogClient', () => {
     it('选节点：跳到该节点页', async () => {
         await setup();
         const tree = screen.getAllByRole('tree')[0];
-        await userEvent.click(within(tree).getByText('經部'));
+        await userEvent.click(within(tree).getByText('经部'));
         expect(mockPush).toHaveBeenCalledWith('/catalog?node=cjing');
     });
 
