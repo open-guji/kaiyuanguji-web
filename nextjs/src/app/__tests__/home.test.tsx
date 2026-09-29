@@ -27,25 +27,68 @@ describe('首页（N1）', () => {
         expect(push).toHaveBeenCalledWith(`/book-index?q=${encodeURIComponent('史記')}`);
     });
 
-    it('只有「目录与版本聚类」「整理本阅读」标已上线，其余标规划中', () => {
-        expect(HOME_FEATURES.filter((f) => f.live).map((f) => f.title)).toEqual([
-            '目录与版本聚类',
-            '整理本阅读',
+    it('只有「古籍元数据」「资源收集」标已上线，其余标规划中；六项标题照用户意见', () => {
+        expect(HOME_FEATURES.map((f) => f.title)).toEqual([
+            '古籍元数据',
+            '资源收集',
+            '图文对读',
+            '全文检索',
+            '协同校对',
+            '古籍专用模型',
         ]);
+        expect(HOME_FEATURES.filter((f) => f.live).map((f) => f.title)).toEqual(['古籍元数据', '资源收集']);
         render(<HomePage />);
         expect(screen.getAllByText('已上线')).toHaveLength(2);
         expect(screen.getAllByText('规划中')).toHaveLength(HOME_FEATURES.length - 2);
+        // 「资源收集」的说明：收集网上的文字资源和影印资源
+        expect(HOME_FEATURES[1].text).toMatch(/文字资源和影印资源/);
     });
 
-    it('页尾「关于与联系」：三组文字链接，不加按钮（N6）', () => {
+    it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦甲戌本→阅读页；没有「看一个例子」', () => {
         render(<HomePage />);
-        const band = screen.getByRole('region', { name: '一起把古籍做成开放数据' });
-        expect(within(band).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual([
-            '/about',
-            '/contact',
-            '/feedback',
+        const under = document.querySelector('.home-under') as HTMLElement;
+        const links = within(under).getAllByRole('link');
+        expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+            ['史记', '/item/d59f20aowb9c'],
+            ['四库全书', '/item/8rlb6yi1ecqo'],
+            ['红楼梦甲戌本', '/read/96kzii6z28?kind=fulltext'],
         ]);
-        expect(within(band).queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.getByRole('main').textContent).not.toMatch(/看一个例子|读整理本/);
+    });
+
+    it('「一起把古籍做成开放数据」一整段已删，页尾的三个入口在页脚里都有', () => {
+        render(<HomePage />);
+        expect(screen.queryByRole('region', { name: '一起把古籍做成开放数据' })).not.toBeInTheDocument();
+        expect(screen.queryByText('一起把古籍做成开放数据')).not.toBeInTheDocument();
+        const footer = within(screen.getByRole('contentinfo'));
+        for (const href of ['/about', '/contact', '/feedback']) {
+            expect(footer.getAllByRole('link').map((a) => a.getAttribute('href'))).toContain(href);
+        }
+    });
+
+    it('「文本开放、代码开源」两栏：各自给出两个仓库的链接和说明', () => {
+        render(<HomePage />);
+        const open = screen.getByRole('region', { name: '开放' });
+        const cols = open.querySelectorAll('.home-open-col');
+        expect(cols).toHaveLength(2);
+        expect(within(cols[0] as HTMLElement).getByRole('heading', { name: '文本开放' })).toBeInTheDocument();
+        expect(within(cols[1] as HTMLElement).getByRole('heading', { name: '代码开源' })).toBeInTheDocument();
+        const repoLinks = (col: Element) =>
+            within(col as HTMLElement)
+                .getAllByRole('link')
+                .map((a) => a.getAttribute('href'))
+                .filter((h) => h!.startsWith('https://github.com/open-guji/'));
+        expect(repoLinks(cols[0])).toEqual([
+            'https://github.com/open-guji/book-text',
+            'https://github.com/open-guji/book-index',
+        ]);
+        expect(repoLinks(cols[1])).toEqual([
+            'https://github.com/open-guji/luatex-cn',
+            'https://github.com/open-guji/bookget-py',
+        ]);
+        for (const r of ['book-text', 'book-index', 'luatex-cn', 'bookget-py']) {
+            expect(within(open).getByRole('link', { name: r })).toBeInTheDocument();
+        }
     });
 
     it('写明 CC0；二维码只在页脚，正文里没有（N6）', () => {

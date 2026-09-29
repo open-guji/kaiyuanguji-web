@@ -34,15 +34,15 @@ describe('BookDetailContent 接三栏组件', () => {
 
     it('readLink 按阅读页地址约定出地址', () => {
         const readLink = captured.props!.readLink as ReadLink;
-        expect(readLink({ kind: 'collated' })).toBe('/item/d59f20aowb9c/read?kind=collated');
+        expect(readLink({ kind: 'collated' })).toBe('/read/d59f20aowb9c?kind=collated');
         expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource' }))
-            .toBe('/item/d59f20aowb9c/read?kind=fulltext&key=wikisource');
+            .toBe('/read/d59f20aowb9c?kind=fulltext&key=wikisource');
     });
 
     it('readLink 与阅读页同一个 readerHref（Q7：地址只有一套拼法）', () => {
         const readLink = captured.props!.readLink as ReadLink;
         // 有 Work 全文时整理本也会带着 fullTextKey 进来，不能写进地址（P4）
-        expect(readLink({ kind: 'collated', fullTextKey: 'wikisource-01' })).toBe('/item/d59f20aowb9c/read?kind=collated');
+        expect(readLink({ kind: 'collated', fullTextKey: 'wikisource-01' })).toBe('/read/d59f20aowb9c?kind=collated');
         for (const ctx of [{ kind: 'collated' as const }, { kind: 'fulltext' as const }, { kind: 'fulltext' as const, fullTextKey: 'a b' }]) {
             expect(readLink(ctx)).toBe(readerHref('d59f20aowb9c', { kind: ctx.kind, key: ctx.fullTextKey }));
         }
@@ -51,10 +51,10 @@ describe('BookDetailContent 接三栏组件', () => {
     it('readLink 带上 ctx.juan，回目网格直接跳到对应那一回（B1）', () => {
         const readLink = captured.props!.readLink as ReadLink;
         expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource', juan: '003' }))
-            .toBe('/item/d59f20aowb9c/read?kind=fulltext&key=wikisource&juan=003');
-        expect(readLink({ kind: 'fulltext', juan: '001' })).toBe('/item/d59f20aowb9c/read?kind=fulltext&juan=001');
+            .toBe('/read/d59f20aowb9c?kind=fulltext&key=wikisource&juan=003');
+        expect(readLink({ kind: 'fulltext', juan: '001' })).toBe('/read/d59f20aowb9c?kind=fulltext&juan=001');
         // 整理本没有 key，但 juan 照带
-        expect(readLink({ kind: 'collated', juan: '002' })).toBe('/item/d59f20aowb9c/read?kind=collated&juan=002');
+        expect(readLink({ kind: 'collated', juan: '002' })).toBe('/read/d59f20aowb9c?kind=collated&juan=002');
     });
 
     it('没有可读内容时不出「阅读全文」', () => {

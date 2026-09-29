@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
     return (
         <LayoutWrapper>
-            <div className="mx-auto max-w-xl px-5 py-20 text-center">
+            <div className="og-paper mx-auto max-w-xl px-5 py-20 text-center">
                 <p className="mb-2 text-sm text-[var(--color-ink-3)]">404</p>
                 <h1 className="mb-3 text-2xl font-bold text-[var(--color-ink)]">找不到这个页面</h1>
                 <p className="mb-8 leading-relaxed text-[var(--color-ink-2)]">

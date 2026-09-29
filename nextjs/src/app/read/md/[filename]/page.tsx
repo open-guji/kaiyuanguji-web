@@ -4,6 +4,7 @@ import path from 'path';
 import MarkdownPageContent from '@/components/markdown/MarkdownPageContent';
 import { getMarkdownContent } from '@/lib/markdown';
 
+// 说明页（public/content/*.md）。阅读页搬到 /read/<id> 后这些页挪到 /read/md/<名>，旧的 /read/<名> 见 lib/markdown-pages.ts。
 interface ReadPageProps {
   params: Promise<{ filename: string }>;
 }
@@ -23,13 +24,13 @@ export async function generateMetadata({
       title,
       description,
       alternates: {
-        canonical: `/read/${filename}`,
+        canonical: `/read/md/${filename}`,
       },
       openGraph: {
         title,
         description,
         type: 'article',
-        url: `/read/${filename}`,
+        url: `/read/md/${filename}`,
       },
     };
   } catch {
@@ -37,7 +38,7 @@ export async function generateMetadata({
       title: decodedFilename,
       description: `阅读《${decodedFilename}》`,
       alternates: {
-        canonical: `/read/${filename}`,
+        canonical: `/read/md/${filename}`,
       },
     };
   }

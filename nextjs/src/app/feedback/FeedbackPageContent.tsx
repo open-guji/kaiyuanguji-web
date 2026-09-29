@@ -61,7 +61,7 @@ export default function FeedbackPageContent() {
     const shown = useMemo(() => (filter ? items.filter((i) => i.type === filter) : items), [items, filter]);
 
     return (
-        <div className="og-fb-page">
+        <div className="og-paper og-fb-page">
             <div className="og-fb-page-head">
                 <div>
                     <h1>用户反馈</h1>

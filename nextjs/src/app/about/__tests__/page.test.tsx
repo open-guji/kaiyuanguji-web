@@ -8,11 +8,21 @@ jest.mock('next/navigation', () => ({
 import AboutPage from '../page';
 
 describe('关于页（N6）', () => {
+    it('底色用暖纸色令牌的 og-paper 类', () => {
+        const { container } = render(<AboutPage />);
+        expect(container.querySelector('.og-paper')).not.toBeNull();
+    });
+
     it('目录与各节一一对应，没有团队一节', () => {
         render(<AboutPage />);
         const toc = screen.getByRole('navigation', { name: '本页目录' });
         const hrefs = within(toc).getAllByRole('link').map((a) => a.getAttribute('href'));
-        expect(hrefs).toEqual(['#intro', '#license', '#thanks', '#repos', '#contact']);
+        // 「项目介绍」「开源仓库」两节已删（用户意见，overview#267）
+        expect(hrefs).toEqual(['#license', '#thanks', '#contact']);
+        expect(document.getElementById('intro')).toBeNull();
+        expect(document.getElementById('repos')).toBeNull();
+        expect(screen.queryByRole('heading', { name: '项目介绍' })).toBeNull();
+        expect(screen.queryByRole('heading', { name: '开源仓库' })).toBeNull();
         for (const h of hrefs) {
             expect(document.getElementById(h!.slice(1))).not.toBeNull();
         }

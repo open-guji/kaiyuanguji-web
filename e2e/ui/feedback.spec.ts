@@ -107,7 +107,7 @@ test.describe('反馈入口（N7）', () => {
 
     test('阅读页：选中文字「报错」，选中的文字拼在正文开头，卷号随 pageUrl', async ({ page }) => {
         test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
-        await page.goto(`${TARGET}/item/${C.id}/read?kind=collated&juan=${JUAN}`);
+        await page.goto(`${TARGET}/read/${C.id}?kind=collated&juan=${JUAN}`);
         await requireN7(page);
         await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
             .toBeVisible({ timeout: 30_000 });

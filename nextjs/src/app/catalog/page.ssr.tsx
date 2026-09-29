@@ -58,8 +58,9 @@ export default async function CatalogRoute({ searchParams }: Props) {
     const works = await getCatalogPageServer(r.node.id, r.page);
     // 树上有这一页、文件却没有：索引与树不同步（发布中途），按 404 处理，下一次请求会读到新版
     if (!works) notFound();
+    // 总目页不要页脚（用户意见，overview#267）
     return (
-        <LayoutWrapper>
+        <LayoutWrapper hideFooter>
             <CatalogClient tree={tree} selectedId={r.node.id} page={r.page} pageCount={r.pageCount} works={works} />
         </LayoutWrapper>
     );

@@ -37,7 +37,7 @@ describe('Navbar（N1 顶栏）', () => {
         mockPath = '/catalog';
         render(<Navbar />);
         const nav = screen.getByRole('navigation', { name: '主导航' });
-        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍索引', '关于']);
+        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍元数据', '关于']);
         expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
         expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('aria-current', 'page');
         expect(within(nav).queryByRole('link', { name: /阅读/ })).toBeNull();
@@ -50,7 +50,7 @@ describe('Navbar（N1 顶栏）', () => {
         const current = within(nav)
             .getAllByRole('link')
             .filter((a) => a.getAttribute('aria-current') === 'page');
-        expect(current.map((a) => a.textContent)).toEqual(['古籍索引']);
+        expect(current.map((a) => a.textContent)).toEqual(['古籍元数据']);
     });
 
     it('首页模式页头透明浮在首屏上', () => {
@@ -158,11 +158,25 @@ describe('无障碍（B9 / A2）', () => {
 });
 
 describe('Footer', () => {
-    it('写明文本 CC0、代码 Apache-2.0，保留备案号', () => {
-        render(<Footer />);
-        expect(screen.getByText(/CC0/)).toBeInTheDocument();
-        expect(screen.getByText(/Apache-2\.0/)).toBeInTheDocument();
+    it('保留备案号、隐私与内测说明；不再有「开源古籍」标题与介绍、「开放协议」一栏（用户意见，overview#267）', () => {
+        const { container } = render(<Footer />);
         expect(screen.getByRole('link', { name: /冀ICP备/ })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: '隐私说明' })).toHaveAttribute('href', '/privacy');
+        expect(screen.getByRole('link', { name: '内测说明' })).toHaveAttribute('href', '/beta');
+        const text = container.textContent ?? '';
+        expect(text).not.toMatch(/开放协议|CC0|Apache-2\.0/);
+        expect(text).not.toContain('致力于让传统文化触手可及');
+        expect(container.querySelector('.og-footer-brand')).toBeNull();
+        // 只剩两组链接（站内、关于与联系）＋二维码，横着并排
+        expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['站内', '关于与联系']);
+        expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
+    });
+
+    it('站内链接里搜索入口叫「古籍元数据」', () => {
+        render(<Footer />);
+        const nav = screen.getByRole('navigation', { name: '站内链接' });
+        expect(within(nav).getByRole('link', { name: '古籍元数据' })).toHaveAttribute('href', '/book-index');
+        expect(within(nav).queryByRole('link', { name: '古籍索引' })).toBeNull();
     });
 
     it('顶栏拿掉的入口在页脚保留（反馈在「关于与联系」栏，名为「反馈与纠错」）', () => {

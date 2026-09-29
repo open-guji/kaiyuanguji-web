@@ -701,74 +701,79 @@
     font-weight: var(--fw-medium);
   }
 
-  /* 页脚：浅一阶底色，不用分隔线 */
+  /* 页脚：黑底、一行排开（overview#267 用户意见）。底色用墨色令牌，字用暖纸的深一阶；
+     朱色在黑底上对比不够，悬停改成亮色加下划线。桌面点击区取 32px（≥ WCAG 2.2 的 24px），手机仍是 44px。 */
   .og-footer {
-    margin-top: 80px;
-    line-height: 1.7;
-    background: var(--color-tint);
-    color: var(--color-ink-2);
+    margin-top: 56px;
+    line-height: 1.6;
+    background: var(--color-ink);
+    color: var(--color-tint-2);
     font-size: var(--fs-sm);
+  }
+  /* 首页最后一段（开放区）自带底色，页脚紧贴它，中间不留一条纸色缝 */
+  main:has(.home-open) + .og-footer {
+    margin-top: 0;
   }
   .og-footer-inner {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 56px var(--shell-gutter) 32px;
+    padding: 14px var(--shell-gutter) 6px;
   }
-  .og-footer-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
-    gap: 40px 48px;
+  .og-footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 40px;
+  }
+  .og-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
   }
   .og-footer h2 {
-    margin: 0 0 10px;
-    font-size: var(--fs-base);
-    font-weight: var(--fw-bold);
-    color: var(--color-ink);
+    margin: 0;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-ink-3);
   }
   .og-footer p {
     margin: 0;
-    line-height: 1.85;
   }
   .og-footer ul {
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-  .og-footer li a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--color-ink-2);
-    text-decoration: none;
-  }
-  .og-footer a:hover {
-    color: var(--color-zhu);
-  }
-  .og-footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    color: var(--color-ink);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.18em;
-  }
-  .og-footer-bottom {
-    margin-top: 40px;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0 20px;
-    color: var(--color-ink-2);
-    font-size: var(--fs-xs);
+    gap: 0 4px;
   }
+  .og-footer li a,
   .og-footer-bottom a {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    color: var(--color-ink-2);
+    min-height: 32px;
+    padding: 0 6px;
+    color: var(--color-tint-2);
     text-decoration: none;
+  }
+  .og-footer a:hover {
+    color: var(--color-raise);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .og-footer-bottom {
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    color: var(--color-ink-3);
+    font-size: var(--fs-xs);
+  }
+  .og-footer-bottom a {
+    color: var(--color-ink-3);
+    padding: 0;
   }
 
   @media (max-width: 760px) {
@@ -797,17 +802,22 @@
       display: none;
     }
     .og-footer {
-      margin-top: 56px;
+      margin-top: 40px;
     }
     .og-footer-inner {
-      padding: 40px var(--shell-gutter) 24px;
+      padding: 16px var(--shell-gutter) 8px;
     }
-    .og-footer-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 28px 24px;
+    .og-footer-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
     }
-    .og-footer-grid > :first-child {
-      grid-column: 1 / -1;
+    .og-footer li a,
+    .og-footer-bottom a {
+      min-height: 44px;
+    }
+    .og-footer-qr {
+      margin-left: 0;
     }
   }
 }
@@ -874,7 +884,7 @@
     width: 100%;
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 120px var(--shell-gutter) 56px;
+    padding: 120px var(--shell-gutter) 8px;
   }
   .home-kicker {
     margin: 0 0 18px;
@@ -944,13 +954,13 @@
   .home-band {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 24px var(--shell-gutter) 72px;
+    padding: 0 var(--shell-gutter) 40px;
   }
   .home-band-head {
     display: flex;
     align-items: baseline;
     gap: 16px;
-    margin-bottom: 28px;
+    margin-bottom: 12px;
   }
   .home-band-head h2 {
     margin: 0;
@@ -967,7 +977,7 @@
     list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 40px 48px;
+    gap: 20px 40px;
   }
   .home-feature h3 {
     margin: 0;
@@ -987,13 +997,13 @@
     font-weight: var(--fw-medium);
   }
   .home-feature p {
-    margin: 8px 0 0;
+    margin: 4px 0 0;
     color: var(--color-ink-2);
-    line-height: 1.8;
+    line-height: 1.7;
   }
   .home-feature .num {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
     letter-spacing: 0.1em;
@@ -1007,25 +1017,52 @@
   .home-open-inner {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 56px var(--shell-gutter);
+    padding: 36px var(--shell-gutter);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 64px;
+    gap: 48px;
   }
   .home-open h2 {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
   }
   .home-open p {
     margin: 0;
     color: var(--color-ink-2);
-    line-height: 1.9;
+    line-height: 1.8;
   }
   /* 段内链接和正文只差色（朱 vs ink-2，1.03:1），要有下划线才看得出是链接（axe link-in-text-block） */
   .home-open p a {
     text-decoration: underline;
     text-underline-offset: 0.2em;
+  }
+  /* 两栏里的仓库清单：仓库名（链接）＋一句说明，不画框线 */
+  .home-repos {
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+  .home-repos li {
+    display: grid;
+    grid-template-columns: 8.5em minmax(0, 1fr);
+    gap: 4px 16px;
+    align-items: baseline;
+    color: var(--color-ink-2);
+    line-height: 1.7;
+  }
+  .home-repos a {
+    font-weight: var(--fw-medium);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    word-break: break-all;
+  }
+  .home-open .home-open-note {
+    margin-top: 12px;
+    font-size: var(--fs-sm);
+    color: var(--color-ink-2);
   }
 
   @media (max-width: 760px) {
@@ -1083,11 +1120,15 @@
     }
     .home-open-inner {
       grid-template-columns: minmax(0, 1fr);
-      gap: 32px;
-      padding: 40px var(--shell-gutter);
+      gap: 28px;
+      padding: 28px var(--shell-gutter);
     }
+    .home-repos li {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .home-repos a,
     .home-open p a {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       min-height: 44px;
     }
@@ -1095,63 +1136,14 @@
 }
 
 /* =========================================================
-   N6（overview#259）：首页页尾「关于与联系」、关于页、联系页。
+   N6（overview#259）：关于页、联系页（首页「一起把古籍做成开放数据」一段已删，overview#267）。
    沿用暖纸底＋朱色点缀，分组靠底色阶和留白，不画框线；只用文字链接，不加按钮。
    ========================================================= */
 @layer components {
-  /* 首页页尾：纸底，与上面 tint 的开放区拉开层次 */
-  .home-join {
-    font-size: var(--fs-base);
-    line-height: 1.7;
-  }
-  .home-join-inner {
-    max-width: var(--shell-max);
-    margin: 0 auto;
-    padding: 64px var(--shell-gutter) 16px;
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: 64px;
-    align-items: start;
-  }
-  .home-join-head h2 {
-    margin: 0 0 12px;
-    font-size: var(--fs-lg);
-    font-weight: var(--fw-bold);
-  }
-  .home-join-head p {
-    margin: 0;
-    color: var(--color-ink-2);
-    line-height: 1.9;
-  }
-  .home-join-links {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 32px;
-  }
-  .home-join-links a {
-    display: block;
-    color: var(--color-ink);
-    text-decoration: none;
-  }
-  .home-join-links a:hover {
-    text-decoration: none;
-  }
-  .home-join-links strong {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--color-zhu);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
-  }
-  .home-join-links a:hover strong {
-    color: var(--color-zhu-deep);
-  }
-  .home-join-links span {
-    color: var(--color-ink-2);
-    font-size: var(--fs-sm);
+  /* 关于、反馈、隐私、404 页的底色：暖纸色令牌（与首页、条目页同一个 --color-paper，不写死色值）。
+     body 本来就是这个色，这里显式写一遍，是让这几页的底色有一个名字、想换整体换一处（overview#267 用户意见）。 */
+  .og-paper {
+    background: var(--color-paper);
   }
 
   /* 关于页、联系页共用的文档版式 */
@@ -1342,36 +1334,27 @@
     color: var(--color-ink-2);
     font-size: var(--fs-sm);
   }
-  /* 页脚品牌栏下的微信群二维码 */
+  /* 页脚右侧的微信群二维码 */
   .og-footer-qr {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-left: auto;
   }
   .og-footer-qr img {
     flex: none;
-    width: 96px;
-    height: 96px;
-    border-radius: 6px;
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
   }
   .og-footer .og-footer-qr p {
     font-size: var(--fs-xs);
-    line-height: 1.7;
+    line-height: 1.6;
   }
 
   @media (max-width: 760px) {
-    .home-join-inner {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 24px;
-      padding: 48px var(--shell-gutter) 8px;
-    }
-    .home-join-links {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
-    }
-    .home-join-links a {
-      min-height: 44px;
+    .og-footer-qr {
+      margin-left: 0;
     }
     .doc-layout {
       grid-template-columns: minmax(0, 1fr);

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <LayoutWrapper>
-      <article className="mx-auto max-w-3xl px-5 py-12 leading-relaxed text-[var(--color-ink,#222)]">
+      <article className="og-paper mx-auto max-w-3xl px-5 py-12 leading-relaxed text-[var(--color-ink,#222)]">
         <h1 className="mb-6 text-2xl font-bold">隐私说明</h1>
         <p className="mb-4">本站无需注册即可使用。为了解有多少人在用、哪些内容最常被查阅、网站哪里出了问题，我们收集以下有限的数据。</p>
 

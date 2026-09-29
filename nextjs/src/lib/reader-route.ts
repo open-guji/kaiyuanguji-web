@@ -1,7 +1,8 @@
 /**
- * N5b：阅读页 /item/<id>/read 的地址约定（与 N3b 条目页的「阅读全文」共用）。
+ * N5b：阅读页 /read/<id> 的地址约定（与 N3b 条目页的「阅读全文」共用）。
+ * 阅读页是独立的一级目录（overview#267 用户意见）；旧地址 /item/<id>/read?… 一律 308 到这里，查询参数保留。
  *
- *   /item/<id>/read?kind=collated|fulltext[&key=<fullTextKey>][&juan=<卷>]
+ *   /read/<id>?kind=collated|fulltext[&key=<fullTextKey>][&juan=<卷>]
  *
  *   - kind=collated：整理本（Work），juan 是卷号短形式（如 011），与全文一致；组件内部用的卷文件名
  *     （juan/011.json）只在客户端与服务端取数时换算，不出现在地址里。旧地址 juan=juan%2F011.json 仍认，308 到短形式；
@@ -56,6 +57,11 @@ export function parseReaderQuery(id: string, src: ParamSource): ReaderQuery | nu
     return q;
 }
 
+/** 阅读页路径（不含查询串） */
+export function readerPath(id: string): string {
+    return `/read/${id}`;
+}
+
 /** 拼阅读页地址。参数顺序固定（kind、key、juan），canonical 与跳转目标因此唯一（整理本卷号统一成短形式） */
 export function readerHref(id: string, q: ReaderQuery): string {
     const p = new URLSearchParams();
@@ -63,7 +69,7 @@ export function readerHref(id: string, q: ReaderQuery): string {
     if (q.key && q.kind === 'fulltext') p.set('key', q.key);
     // 整理本组件给的是卷文件名（juan/011.json），地址里一律写短形式（011）
     if (q.juan) p.set('juan', q.kind === 'collated' && isLegacyCollatedJuan(q.juan) ? juanStem(q.juan) : q.juan);
-    return `/item/${id}/read?${p.toString()}`;
+    return `${readerPath(id)}?${p.toString()}`;
 }
 
 /** 卷文件名 → 卷号短形式：取末段、去扩展名。juan/011.json → 011；011 → 011 */
@@ -117,6 +123,7 @@ export function readerTitle(bookTitle: string, q: ReaderQuery, chapterTitle?: st
  *
  *   /book-index?id=<id>&tab=fulltext|collated[&juan=…]
  *   /item/<id>?tab=fulltext|collated[&juan=…]
+ * （/item/<id>/read?… 是上一版的阅读页地址，由中间件整体搬到 /read/<id>，不在这里）
  *
  * 只认 tab 为 fulltext／collated 的；其余参数（page、mode 等）是别的 tab 的状态，丢掉。
  * redirected_from／no_redirect（草稿升格横幅的往返）在场时放过，留给详情组件处理。

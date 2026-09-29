@@ -45,6 +45,12 @@ beforeEach(() => {
 });
 
 describe('古籍总目 page.ssr', () => {
+    it('总目页不要页脚（用户意见，overview#267）', async () => {
+        const { default: CatalogRoute } = await import('../page.ssr');
+        const el = (await CatalogRoute({ searchParams: Promise.resolve({ node: 'czhengshi' }) })) as ReactElement<{ hideFooter?: boolean }>;
+        expect(el.props.hideFooter).toBe(true);
+    });
+
     it('节点第 1 页：canonical 不带 page，标题带分类路径', async () => {
         const m = await meta({ node: 'czhengshi' });
         expect(m.title).toBe('史部·正史類 - 古籍总目');
