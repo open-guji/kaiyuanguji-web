@@ -53,14 +53,19 @@ permissions:
   contents: write
   actions: write   # T1：数据自动 promote 时由 verify job 触发本 workflow（workflow_dispatch）
 
-# 同一时间只允许一个部署在跑；连续 push 时取消旧的排队任务，
-# 避免两个 job 争抢同一个 Pages 项目导致部署乱序。
-# T1：测试站与正式站各排各的队，互不阻塞。
-# 2026-09-28（overview#182）：测试站连推时取消在跑的旧 run、只跑最后一次（省分钟数）；
-# 正式站仍排队不取消——半途取消可能让线上代码与 COS 指针处在不一致状态。
+# 并发（overview#267；此前 push 会取消正在跑的定时发布，09-27、09-28 各一次，当天数据没上线）：
+#   - push：自成一组 deploy-edgeone-push，cancel-in-progress=true——连推时只跑最后一次（省分钟数，overview#182），
+#     但只取消 push，够不着别的组；
+#   - schedule／dispatch：按目标各一组（deploy-edgeone-staging／deploy-edgeone-production），
+#     **不取消在跑的**，也不会被 push 取消。正式站原本就是这样，路径没动；
+#   - 两组之间不会同时部署测试站，靠两层：① resolve 里 push 先等非 push 的 run 跑完（再进 build）；
+#     ② build 任务在测试站上共用一把锁（见 build 的 concurrency），万一 ① 没拦住也是排队，不并行。
+#     不用「一个组里 cancel 设成 false」：GitHub 同组只留一个排队项，后来的会顶掉先排队的——
+#     push 会把排在后面的定时发布顶掉，和取消一样。
+# 组名里的 target 与 resolve 一致：没有 inputs（schedule）按 staging。
 concurrency:
-  group: deploy-edgeone-${{ inputs.target || 'staging' }}
-  cancel-in-progress: ${{ (inputs.target || 'staging') == 'staging' }}
+  group: deploy-edgeone-${{ github.event_name == 'push' && 'push' || inputs.target || 'staging' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过整个构建。
@@ -123,6 +128,38 @@ jobs:
       prod_ref: ${{ steps.r.outputs.prod_ref }}
       text_ref: ${{ steps.r.outputs.text_ref }}
     steps:
+      # push 部署要让路给定时／手动部署：有非 push 的 deploy run 在排队或在跑就等它跑完再往下走。
+      # 只有最新的 push 会在这里等（push 组 cancel-in-progress，新 push 会取消旧的等待者）。
+      # 查不了（API 报错）或等满 60 分钟都放行——这一步只是让路，不能反过来卡住部署；
+      # 真要并行也被 build 的测试站锁挡住。
+      - name: Yield to scheduled / manual deploys (push only)
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          busy_runs() {
+            local total=0 n st
+            for st in in_progress queued waiting pending; do
+              n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --status "$st" --limit 50 \
+                    --json event --jq '[.[] | select(.event != "push")] | length') || return 1
+              total=$((total + n))
+            done
+            echo "$total"
+          }
+          for i in $(seq 1 120); do
+            if ! n=$(busy_runs); then
+              echo "⚠️ 查不了其他部署 run 的状态，不等了，直接往下走（build 的测试站锁仍会排队）"
+              exit 0
+            fi
+            if [ "$n" = "0" ]; then
+              [ "$i" -gt 1 ] && echo "· 定时／手动部署已结束，继续"
+              exit 0
+            fi
+            echo "· 有 $n 个定时／手动部署在排队或在跑，30 秒后再看（第 $i/120 次）"
+            sleep 30
+          done
+          echo "⚠️ 等了 60 分钟仍有定时／手动部署在跑，放行（build 的测试站锁会排队）"
+
       - id: r
         env:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
@@ -161,6 +198,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: resolve
+    # 测试站的构建＋部署共用一把锁，push 与定时／手动部署不会同时写测试站（EdgeOne 项目、COS staging/ 前缀）。
+    # 不取消在跑的：排队者等着（同组只留最后一个排队项，见文件上方并发说明——push 在 resolve 里已让路，
+    # 不会有 push 来顶掉排着的定时发布）。正式站每个 run 一个独一无二的组，等于不加锁：
+    # 它由上面的 workflow 级 deploy-edgeone-production 组排队，这里不改正式站的行为。
+    concurrency:
+      group: ${{ needs.resolve.outputs.target == 'staging' && 'deploy-edgeone-build-staging' || format('deploy-edgeone-build-{0}-{1}', needs.resolve.outputs.target, github.run_id) }}
+      cancel-in-progress: false
     env:
       DEPLOY_TARGET: ${{ needs.resolve.outputs.target }}
       DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
