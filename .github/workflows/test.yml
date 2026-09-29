@@ -144,14 +144,14 @@ jobs:
         # 排除两条只有部署产物才有的：sitemap 分片（deploy 里 gen-sitemaps 生成）、
         # /api/feedback（EdgeOne 边缘函数，next start 没有）。它们仍由 deploy 的 verify 守着。
         run: npx playwright test --project=contract contract/fullstack.spec.ts --grep-invert "新架构：sitemap|/api/feedback"
-      - name: e2e ui (reader.spec, feedback.spec, read-home.spec)
+      - name: e2e ui (reader.spec, feedback.spec, read-home.spec, a11y.spec)
         if: ${{ !cancelled() }}
         working-directory: e2e
         env:
           TARGET: http://localhost:3000
           SITE_ARCH: fullstack
         # feedback.spec 把 /api/feedback 全部拦在浏览器里 mock，不会提交到任何站点
-        run: npx playwright test --project=ui ui/reader.spec.ts ui/feedback.spec.ts ui/read-home.spec.ts
+        run: npx playwright test --project=ui ui/reader.spec.ts ui/feedback.spec.ts ui/read-home.spec.ts ui/a11y.spec.ts
       - name: Upload e2e report and server log on failure
         if: failure()
         run: mkdir -p e2e/out && cp "$RUNNER_TEMP/next-start.log" e2e/out/ || true
