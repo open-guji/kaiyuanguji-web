@@ -5,6 +5,7 @@ import { GITHUB_ORG } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '联系我们',
+  alternates: { canonical: '/contact' },
   description: '发现错误、缺了资源、有建议或想参与开源古籍，可以通过站内反馈、GitHub Issues、邮箱、QQ 群或微信群找到我们。',
 };
 

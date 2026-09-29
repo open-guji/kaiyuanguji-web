@@ -310,6 +310,47 @@ test.describe('新架构：阅读页 /item/<id>/read（N5b）', () => {
     });
 });
 
+test.describe('QA 回归 P2（overview#267）：条目页直出简体、旧入口没有内容不跳 404', () => {
+    test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有条目页 SSR 与中间件`);
+
+    // 档位 3：经典条目。程甲本（Book）、史記（Work）、武英殿聚珍版叢書（Collection）、朱熹（Entity）
+    const SAMPLES: [string, string, RegExp, string][] = [
+        ['程甲本 Book', '96kzkdm8e8', /红楼梦/, '紅樓夢'],
+        ['史記 Work', 'd59f20aowb9c', /史记/, '史記'],
+        ['武英殿聚珍版叢書 Collection', '8rlcsybg2hhf', /丛书/, '叢書'],
+        ['朱熹 Entity', 'hixhd2h9bgah', /朱熹/, ''],
+    ];
+
+    for (const [name, id, simp, trad] of SAMPLES) {
+        test(`${name}：关 JS 直出的首屏摘要是简体`, async ({ request }) => {
+            const res = await request.get(`${TARGET}/item/${id}`, noFollow);
+            expect(res.status()).toBe(200);
+            const html = await res.text();
+            const article = html.match(/<article[^>]*data-ssr-item[^>]*>[\s\S]*?<\/article>/)?.[0] ?? '';
+            expect(article, '直出 HTML 里没有首屏摘要 article').not.toBe('');
+            const text = decode(article.replace(/<[^>]+>/g, ''));
+            expect(text, `${name} 的首屏摘要应是简体`).toMatch(simp);
+            if (trad) expect(text, `${name} 的首屏摘要不该还是繁体`).not.toContain(trad);
+        });
+    }
+
+    // 詩序考（d59f2pra0vsw）：Work，条目 JSON 里没有 has_collated／has_text
+    const NO_CONTENT = 'd59f2pra0vsw';
+    for (const [from, to] of [
+        [`/book-index?id=${NO_CONTENT}&tab=collated`, `/item/${NO_CONTENT}`],
+        [`/book-index?id=${NO_CONTENT}&tab=fulltext`, `/item/${NO_CONTENT}`],
+        [`/item/${NO_CONTENT}?tab=fulltext`, `/item/${NO_CONTENT}`],
+    ]) {
+        test(`条目没有这类内容：${from} → 308 ${to}（不跳只会 404 的阅读页）`, async ({ request }) => {
+            const res = await request.get(`${TARGET}${from}`, noFollow);
+            expect(res.status(), `${from} 应 308`).toBe(308);
+            const loc = (res.headers()['location'] ?? '').split(',').map((v) => v.trim()).filter(Boolean)
+                .map((v) => { const u = new URL(v, TARGET); return u.pathname + u.search; });
+            expect(loc).toEqual([to]);
+        });
+    }
+});
+
 test.describe('站点自己的 404 页（overview#267 P2-4）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，404 行为不同`);
 
