@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
@@ -6,6 +6,7 @@ import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
+import { THEME_COLOR, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -47,6 +48,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** theme-color 随主题变：SSR 默认朱砂，ThemeToggle／防闪脚本按主题改 content */
+export const viewport: Viewport = { themeColor: THEME_COLOR.zhusha };
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,8 +58,10 @@ export default function RootLayout({
 }>) {
   // 静态导出环境下不能在 Server Component 中使用 cookies()
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" data-theme="zhusha" suppressHydrationWarning>
       <head>
+        {/* 主题防闪：首帧前按 localStorage 设 <html data-theme>；没存过或读不了就是默认朱砂 */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/* 线上前端版本的唯一可查证来源。运维排查（「线上到底是不是新版？」）
             和 e2e 前置条件都读它；由 next.config.ts 从 node_modules 实际解析
             到的 book-index-ui 版本注入，不是 package.json 里的 ^ 区间。 */}
