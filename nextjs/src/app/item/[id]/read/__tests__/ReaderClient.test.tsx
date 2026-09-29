@@ -19,8 +19,6 @@ jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getWorkFullTextList
 type Cb = (v: string | null) => void;
 const last: { collated?: Record<string, unknown>; fulltext?: Record<string, unknown> } = {};
 jest.mock('book-index-ui', () => ({
-    // SyncLocaleProvider 会读它；这里的 LocaleProvider 是桩，没有上下文，值为 null
-    LocaleContext: jest.requireActual<typeof import('react')>('react').createContext(null),
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     CollatedEdition: (p: Record<string, unknown>) => {
         last.collated = p;
