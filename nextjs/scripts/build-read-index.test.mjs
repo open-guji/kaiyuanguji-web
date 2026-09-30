@@ -177,6 +177,27 @@ test('bundleRead：重跑不留旧文件（作品不再可读后其页文件被�
     }
 });
 
+test('verifyReadProbes：新结构整理本首章只有 json（has_json，没有 md）不算缺；没有 has_json 时 md 必须在', () => {
+    const root = mkdtempSync(join(tmpdir(), 'read-verify-new-'));
+    try {
+        const put = (rel, data) => { const p = join(root, 'items', rel); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, data); };
+        put('w1/manifest.json', '{}');
+        put('w1/default/index.json', '{}');
+        put('w1/default/001.json', '{}');
+        assert.deepEqual(verifyReadProbes([
+            { id: 'w1', kind: 'manifest' },
+            { id: 'w1', kind: 'text', key: 'default', first: { file: '001', hasJson: true } },
+        ], root), []);
+        const bad = verifyReadProbes([{ id: 'w1', kind: 'text', key: 'default', first: { file: '001', hasJson: false } }], root);
+        assert.equal(bad.length, 1);
+        assert.match(bad[0], /default\/001\.txt/);
+        // has_json 但 json 也没有：照样报缺
+        assert.match(verifyReadProbes([{ id: 'w1', kind: 'text', key: 'default', first: { file: '002', hasJson: true } }], root)[0], /default\/002\.json/);
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+    }
+});
+
 test('verifyReadProbes：产物里目录或首章／首卷缺了就列出来（.md 按 .txt 找）', () => {
     const root = mkdtempSync(join(tmpdir(), 'read-verify-'));
     try {

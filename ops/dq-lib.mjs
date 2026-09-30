@@ -181,14 +181,16 @@ export function registeredTextFiles(indexPath, doc) {
     }
     // 新结构（overview#307）：<key>/index.json，chapters[{ file: '001', has_json }]，章文件 NNN.md→NNN.txt，has_json 的另有 NNN.json
     if (newStructureKey(indexPath)) {
+        const optional = [];
         if (Array.isArray(doc?.chapters)) {
             for (const c of doc.chapters) {
                 const f = typeof c === 'string' ? c : c?.file;
                 if (typeof f !== 'string' || !f) continue;
-                out.push(`${dir}${chapterTxtFile(f)}`);
-                if (c?.has_json === true) out.push(`${dir}${f.replace(/\.(md|txt)$/, '')}.json`);
+                // has_json 的章可以没有 md（只有结构化 json）：md 记为可选（有就算登记过，没有不算缺）
+                if (c?.has_json === true) { optional.push(`${dir}${chapterTxtFile(f)}`); out.push(`${dir}${f.replace(/\.(md|txt)$/, '')}.json`); }
+                else out.push(`${dir}${chapterTxtFile(f)}`);
             }
-            return { format: 'texts.chapters', registered: out };
+            return { format: 'texts.chapters', registered: out, optional };
         }
         return { format: 'texts.unknown', registered: out };
     }
@@ -597,7 +599,7 @@ export async function runDq(opts = {}) {
                 try { doc = JSON.parse(r.body.toString('utf-8')); } catch (e) {
                     T.indexBad++; add('data', 'text-index-not-json', `${owner}/${ip} 不是合法 JSON：${e.message}`); continue;
                 }
-                const { format, registered } = registeredTextFiles(ip, doc);
+                const { format, registered, optional = [] } = registeredTextFiles(ip, doc);
                 T.formats[format] = (T.formats[format] ?? 0) + 1;
                 if (format.endsWith('unknown')) add('info', 'text-index-format-unknown', `${owner}/${ip} 的格式巡检不认识，未核对登记文件`, { keys: Object.keys(doc ?? {}).slice(0, 12) });
                 const missing = [];
@@ -606,6 +608,10 @@ export async function runDq(opts = {}) {
                     registeredAll.add(rel);
                     if (!(rel in files)) { T.registeredMissing++; missing.push(rel); continue; }
                     fileChecks.push({ owner, rel, hash: files[rel] });
+                }
+                for (const rel of optional) {
+                    registeredAll.add(rel);
+                    if (rel in files) fileChecks.push({ owner, rel, hash: files[rel] });
                 }
                 if (missing.length) add('data', 'text-registered-missing', `${owner}/${ip} 登记了 ${missing.length} 个卷／章文件，manifest 里没有`, { missing: missing.slice(0, 10) });
             }
