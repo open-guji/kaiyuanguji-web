@@ -42,6 +42,20 @@ on:
         type: choice
         options: [code+data, data]
         default: code+data
+      # 联调用（只影响手动触发、且只对 target=staging 生效）：默认都是 main。
+      # 代码版本不在这里选——在「Use workflow from」里选分支，web 取该分支的 HEAD。
+      draft_ref:
+        description: '仅 target=staging：book-index-draft 的分支／tag／commit（默认 main）'
+        type: string
+        default: main
+      prod_ref:
+        description: '仅 target=staging：book-index 的分支／tag／commit（默认 main）'
+        type: string
+        default: main
+      text_ref:
+        description: '仅 target=staging：book-text 的分支／tag／commit（默认 main），联调文本迁移用'
+        type: string
+        default: main
   # 每日定时兜底：book-index-draft 的 notify-web webhook 依赖跨仓 PAT
   # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
   # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
@@ -163,6 +177,10 @@ jobs:
       - id: r
         env:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          # 经 env 传入，不把输入直接拼进脚本
+          IN_DRAFT_REF: ${{ inputs.draft_ref }}
+          IN_PROD_REF: ${{ inputs.prod_ref }}
+          IN_TEXT_REF: ${{ inputs.text_ref }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
           if [ -z "$EDGEONE_API_TOKEN" ]; then
@@ -192,8 +210,16 @@ jobs:
           echo "mode=staging" >> "$GITHUB_OUTPUT"
           echo "target=staging" >> "$GITHUB_OUTPUT"
           echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          for k in draft_ref prod_ref text_ref; do echo "$k=main" >> "$GITHUB_OUTPUT"; done
-          echo "· 部署到测试站 kyg-staging"
+          # 数据仓 ref：push／定时没有输入，一律 main；手动触发可指定（联调分支）。
+          # 只接受 git ref 常见字符，其余当作 main 之外的非法输入直接报错。
+          for pair in "draft_ref:$IN_DRAFT_REF" "prod_ref:$IN_PROD_REF" "text_ref:$IN_TEXT_REF"; do
+            k="${pair%%:*}"; v="${pair#*:}"; v="${v:-main}"
+            if ! printf '%s' "$v" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+              echo "❌ $k 含非法字符：$v"; exit 1
+            fi
+            echo "$k=$v" >> "$GITHUB_OUTPUT"
+          done
+          echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} draft=${IN_DRAFT_REF:-main} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
 
   build:
     runs-on: ubuntu-latest
