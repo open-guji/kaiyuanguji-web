@@ -14,7 +14,7 @@ import { isSearchDegraded, subscribeSearchDegraded } from '@/lib/search/meili-st
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
-import { entryHref } from '@/components/book-index/SearchResultCard';
+import { entryHref } from '@/lib/item-id';
 import styles from './page.module.css';
 
 function DataVersion() {

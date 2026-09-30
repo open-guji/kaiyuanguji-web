@@ -80,7 +80,7 @@ test.describe('搜索', () => {
 });
 
 test.describe('搜索页 v4：筛选、表格／卡片（overview#298）', () => {
-    test.beforeEach(({ request }) => requireUiVersion(request, '0.28.0', '搜索页 v4 筛选与表格'));
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.27.1', '搜索页 v4 筛选与表格'));
 
     const Q = encodeURIComponent('史記');
     const rows = (page: import('@playwright/test').Page) => page.locator('.bim-sr-table tbody tr');
@@ -135,6 +135,20 @@ test.describe('搜索页 v4：筛选、表格／卡片（overview#298）', () =>
         await expect(page.locator('a.bim-sc').first()).toBeVisible({ timeout: 60_000 });
         await page.getByRole('button', { name: /^(表格)$/ }).click();
         await expect(rows(page).first()).toBeVisible();
+    });
+
+    test('排序：点「年代」sort 进 URL 且仍有结果；再点翻转方向；点「相关度」还原（排序生效要等索引重建，这里只验交互与不报错）', async ({ page }) => {
+        await page.goto(`${TARGET}/book-index?q=${Q}`);
+        await expect(rows(page).first()).toBeVisible({ timeout: 90_000 });
+        const sorts = page.locator('.bim-sr-sorts');
+        await sorts.getByRole('button', { name: /^年代|^年代/ }).click();
+        await expect(page).toHaveURL(/sort=era(%3A|:)asc/);
+        await expect(rows(page).first()).toBeVisible({ timeout: 60_000 });
+        await sorts.getByRole('button', { name: /年代/ }).click();
+        await expect(page).toHaveURL(/sort=era(%3A|:)desc/);
+        await expect(rows(page).first()).toBeVisible({ timeout: 60_000 });
+        await sorts.getByRole('button', { name: /^(相关度|相關度)$/ }).click();
+        await expect(page).not.toHaveURL(/sort=/);
     });
 
     test('翻页：点作品页签有页码，点第 2 页换一批', async ({ page }) => {

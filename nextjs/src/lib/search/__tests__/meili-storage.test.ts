@@ -396,7 +396,7 @@ describe('meili-storage 代理模式：搜索页 v4 筛选（overview#298）', (
     beforeEach(() => { originalFetch = global.fetch; });
     afterEach(() => { global.fetch = originalFetch; jest.clearAllMocks(); });
     const ok = (results: unknown[]) => jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ results }) });
-    const F = (p: Record<string, unknown>) => ({ dynasty: [], classification: [], hasImage: false, hasText: false, hasCollated: false, loss: '', ...p });
+    const F = (p: Record<string, unknown>) => ({ dynasty: [], classification: [], hasImage: false, hasText: false, hasCollated: false, loss: '', sort: '', ...p });
 
     it('searchAll 带筛选：一次 POST multi-search，每类各带自己的 filter；不支持已选字段的类不发、按 0 条', async () => {
         const fetchMock = ok([
@@ -462,5 +462,31 @@ describe('meili-storage 代理模式：搜索页 v4 筛选（overview#298）', (
         const { wrapWithMeiliSearch: w2 } = freshModule();
         global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 400, json: async () => ({}) }) as any;
         await expect(w2(makeBase(), { proxyUrl: '/api/search' }).search('史記', 'work', { filters: F({ dynasty: ['清'] }) as any })).rejects.toThrow('筛选条件太多');
+    });
+
+    it('只有排序（无筛选）：searchAll 也走 POST；丛编不带 sort，其余三类带对应的键', async () => {
+        const fetchMock = ok([]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        await wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5, F({ sort: 'era:desc' }) as any);
+        expect(fetchMock.mock.calls[0][1].method).toBe('POST');
+        const qs = JSON.parse(fetchMock.mock.calls[0][1].body).queries;
+        expect(qs).toHaveLength(4);
+        for (const x of qs) {
+          if (x.indexUid === 'collections') expect(x.sort).toBeUndefined();
+          else expect(x.sort).toBe('era:desc');
+          expect(x.filter).toBeUndefined();
+        }
+    });
+
+    it('search(type) 带 sort：GET 参数 sort；丛编不带', async () => {
+        const fetchMock = ok([{ indexUid: 'works', hits: [], estimatedTotalHits: 0 }]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' });
+        await wrapped.search('史記', 'work', { page: 1, pageSize: 50, filters: F({ sort: 'title:asc' }) as any });
+        expect(new URL(fetchMock.mock.calls[0][0], 'http://x').searchParams.get('sort')).toBe('title:asc');
+        await wrapped.search('史記', 'collection', { page: 1, pageSize: 50, filters: F({ sort: 'title:asc' }) as any });
+        expect(new URL(fetchMock.mock.calls[1][0], 'http://x').searchParams.has('sort')).toBe(false);
     });
 });

@@ -21,7 +21,7 @@
 
 import type { IndexStorage } from 'book-index-ui/storage';
 import type { IndexEntry, IndexType, PageResult, LoadOptions, GroupedSearchResult } from 'book-index-ui';
-import { SNIPPET_MARK_START, SNIPPET_MARK_END, buildMeiliFilter, hasActiveFilters } from 'book-index-ui';
+import { SNIPPET_MARK_START, SNIPPET_MARK_END, buildMeiliFilter, hasSearchOptions, sortFor } from 'book-index-ui';
 import type { SearchFilters } from 'book-index-ui';
 
 export interface MeiliConfig {
@@ -403,12 +403,13 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
      * （各类能筛的字段不同，见 book-index-ui 的 FILTER_SUPPORT）；不支持已选字段的类不发、按 0 条。
      */
     async function proxyMultiSearch(q: string, limit: number, offset: number, filters: SearchFilters): Promise<ProxyResult[]> {
-        const queries: { indexUid: string; q: string; limit: number; offset: number; filter?: string }[] = [];
+        const queries: { indexUid: string; q: string; limit: number; offset: number; filter?: string; sort?: string }[] = [];
         const empty: ProxyResult[] = [];
         for (const [type, uid] of Object.entries(TYPE_TO_INDEX) as [IndexType, string][]) {
             const f = buildMeiliFilter(filters, type);
             if (f === null) { empty.push({ indexUid: uid, hits: [], estimatedTotalHits: 0 }); continue; }
-            queries.push({ indexUid: uid, q, limit, offset, ...(f ? { filter: f } : {}) });
+            const sort = sortFor(type, filters);
+            queries.push({ indexUid: uid, q, limit, offset, ...(f ? { filter: f } : {}), ...(sort ? { sort } : {}) });
         }
         if (queries.length === 0) return empty;
         const ctrl = new AbortController();
@@ -450,7 +451,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                     totalWorks: 0, totalBooks: 0, totalCollections: 0, totalEntities: 0,
                 };
             }
-            const filtered = !!filters && hasActiveFilters(filters);
+            const filtered = !!filters && hasSearchOptions(filters);
             // 简易搜索（L2）不认筛选：带筛选时不退回它，免得用户看到「筛了但没筛」的结果
             if (!breaker.canCall()) {
                 setDegraded(true);
@@ -488,7 +489,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
             const page = options.page ?? 1;
             const pageSize = options.pageSize ?? 50;
             if (!q) return base.search(query, type, options);
-            const filtered = !!options.filters && hasActiveFilters(options.filters);
+            const filtered = !!options.filters && hasSearchOptions(options.filters);
             const filterStr = filtered ? buildMeiliFilter(options.filters!, type) : '';
             // 这类索引不支持已选的筛选字段（如版本没有部类）：没有可比较的结果，按 0 条
             if (filterStr === null) return { entries: [], total: 0, page, pageSize };
@@ -504,6 +505,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                     limit: String(pageSize),
                     offset: String((page - 1) * pageSize),
                     ...(filterStr ? { filter: filterStr } : {}),
+                    ...(options.filters && sortFor(type, options.filters) ? { sort: sortFor(type, options.filters)! } : {}),
                 });
                 breaker.recordSuccess();
                 setDegraded(false);
