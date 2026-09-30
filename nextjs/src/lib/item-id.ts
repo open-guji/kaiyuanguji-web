@@ -32,3 +32,8 @@ export function parseItemId(id: string): { status: ItemStatus; type: ItemType } 
     if (!type) return null;
     return { status: ((v >> SHIFT_STATUS) & ONE) === ONE ? 'draft' : 'official', type };
 }
+
+/** 条目页地址：搜索结果、首页各页签里的条目一律直接去 /item/<id>（overview#267 P2-7） */
+export function entryHref(id: string): string {
+    return `/item/${encodeURIComponent(id)}`;
+}

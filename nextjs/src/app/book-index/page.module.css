@@ -9,8 +9,8 @@
 }
 
 .page.withQuery {
-  /* 结果是单列纵向列表（设计稿 v3，book-index-ui 0.22.0 的 resultVariant="list"），不再排 3 列卡片，版心收窄到易读的宽度 */
-  max-width: 960px;
+  /* v4：左栏筛选＋结果表格／卡片，版心放宽到与外壳一致（设计稿搜索页 v2：1440） */
+  max-width: var(--shell-max, 1440px);
 }
 
 /*

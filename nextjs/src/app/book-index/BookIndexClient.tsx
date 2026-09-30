@@ -3,8 +3,8 @@
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { IndexBrowser, HomePage, LocaleProvider, LocaleToggle, RepoSourceLink } from 'book-index-ui';
-import type { IndexEntry } from 'book-index-ui';
+import { BidUrlProvider, IndexBrowser, HomePage, LocaleProvider, LocaleToggle, RepoSourceLink, filtersFromParams, filtersToParams } from 'book-index-ui';
+import type { IndexEntry, SearchFilters } from 'book-index-ui';
 type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport, getSearchBaseUrl } from '@/lib/transport';
@@ -14,7 +14,7 @@ import { isSearchDegraded, subscribeSearchDegraded } from '@/lib/search/meili-st
 import { REPO_ROOT_DRAFT } from '@/lib/repo-source';
 import { COS_BASE } from '@/lib/cos-storage';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
-import SearchResultCard, { entryHref } from '@/components/book-index/SearchResultCard';
+import { entryHref } from '@/lib/item-id';
 import styles from './page.module.css';
 
 function DataVersion() {
@@ -80,6 +80,8 @@ function BookIndexContent() {
 
   const detailId = searchParams.get('id');
   const searchQuery = searchParams.get('q');
+  // 搜索筛选（朝代／部类／资源／存佚）在 URL 里：dy／cls／img／txt／col／loss，可分享、可后退
+  const filters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
   const tabParam = searchParams.get('tab') as TabKey | null;
 
   // 预热搜索 worker — 详细策略见 use-prefetch-search.ts。
@@ -104,13 +106,21 @@ function BookIndexContent() {
     router.push(entryHref(id));
   }, [router]);
 
+  // 换检索词时保留已选筛选（筛选是「怎么看这批结果」，不随词清掉）；清空检索词回首页态，筛选一并去掉
   const handleQueryChange = useCallback((query: string) => {
     if (query.trim()) {
-      router.push(`/book-index?q=${encodeURIComponent(query.trim())}`);
+      const params = filtersToParams(filters);
+      params.set('q', query.trim());
+      router.push(`/book-index?${params}`);
     } else {
       router.push('/book-index');
     }
-  }, [router]);
+  }, [router, filters]);
+
+  const handleFiltersChange = useCallback((next: SearchFilters) => {
+    const params = filtersToParams(next, new URLSearchParams(searchParams.toString()));
+    router.push(`/book-index?${params}`, { scroll: false });
+  }, [router, searchParams]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
     router.push(`/book-index?tab=${tab}`, { scroll: false });
@@ -124,6 +134,8 @@ function BookIndexContent() {
   // 首页视图（含搜索结果）
   return (
     <LayoutWrapper hideFooter>
+      {/* 条目链接一律是 /item/<id>（真 <a href>：新标签页、复制链接都对）；组件库默认是 /book-index?id= */}
+      <BidUrlProvider buildUrl={entryHref}>
       {/*
         * 有搜索词时放宽容器，让卡片网格能排到 3 列；无搜索词的首页态维持 800px，
         * 否则搜索框和空状态会被拉得过宽。手机上左右留外壳的 16px 边距。
@@ -133,8 +145,9 @@ function BookIndexContent() {
         <IndexBrowser
           transport={transport}
           onEntryClick={handleEntryClick}
-          resultVariant="list"
-          renderEntry={(entry) => <SearchResultCard entry={entry} query={searchQuery || undefined} />}
+          filtersEnabled
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
           hideModeIndicator
           // 有检索词才预留一屏高度（结果加载时页面不跳）；没有检索词时下面的首页页签不能被推出首屏（book-index-ui 0.11.1）
           reserveViewportHeight={!!searchQuery}
@@ -156,6 +169,7 @@ function BookIndexContent() {
         />
         <DataVersion />
       </div>
+      </BidUrlProvider>
     </LayoutWrapper>
   );
 }
