@@ -86,4 +86,12 @@ describe('v4 墨主题与版式令牌', () => {
         expect(boxed['--bim-fr-bd']).toContain('1px solid');
         expect(boxed['--bim-fr-bg']).toContain('--bim-card-bg');
     });
+
+    it('本站首页的界栏规则只在 data-layout="boxed" 下、读 --bim-fr-* 令牌，不写死颜色', () => {
+        const rules = [...css.matchAll(/:root\[data-layout="boxed"\] \.home-[^{]*\{([^}]*)\}/g)].map((m) => m[1]);
+        expect(rules.length).toBeGreaterThan(0);
+        const body = rules.join('\n');
+        expect(body).toContain('var(--bim-fr-bd)');
+        expect(body).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(/i);
+    });
 });

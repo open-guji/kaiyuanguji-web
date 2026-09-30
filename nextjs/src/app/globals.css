@@ -2129,3 +2129,25 @@
     }
   }
 }
+
+/* ---- 版式「界栏」（v4 P0）：本站自己的页面。<html data-layout="boxed"> 才生效，疏朗（默认）零变化；
+   值走 --bim-fr-* 令牌。组件库的页面（详情、总目、阅读）由 book-index-ui 同一组令牌负责。 ---- */
+:root[data-layout="boxed"] .home-feature.is-live {
+  border-radius: 0;
+  box-shadow: none;
+  border: var(--bim-fr-bd);
+  background: var(--bim-fr-bg);
+}
+:root[data-layout="boxed"] .home-feature:not(.is-live) {
+  border-radius: 0;
+}
+:root[data-layout="boxed"] .home-open-col {
+  border: var(--bim-fr-bd);
+  background: var(--bim-fr-bg);
+  padding: 22px 24px;
+}
+:root[data-layout="boxed"] .home-open-head {
+  margin: -22px -24px 12px;
+  padding: var(--bim-fr-hd-pad);
+  border-bottom: var(--bim-fr-hd-bd);
+}
