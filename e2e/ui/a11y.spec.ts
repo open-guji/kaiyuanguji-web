@@ -102,8 +102,9 @@ for (const combo of COMBOS) {
     for (const vp of vps) {
         test.describe(`无障碍外观矩阵 · ${combo.theme}＋${combo.layout} · ${vp.name}`, () => {
             for (const t of TARGETS) {
-                test(t.name, async ({ browser }) => {
+                test(t.name, async ({ browser, request }) => {
                     test.skip(!!t.fullstackOnly && !SITE.fullstack, `${SITE.host} 是静态站，没有 ${t.path}`);
+                    if (t.needsNewText) await requireNewTextData(request, ANCHORS.collated.id, t.name);
                     test.skip(!(await siteHasAppearance()), `${SITE.host} 还没上外观面板（v4 P0），跳过矩阵`);
                     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, reducedMotion: 'reduce' });
                     await ctx.addInitScript(([th, ly]) => {
