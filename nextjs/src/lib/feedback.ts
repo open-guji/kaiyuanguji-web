@@ -39,6 +39,8 @@ export interface FeedbackContext {
     label?: string;
     /** 选中的原文 */
     quote?: string;
+    /** 阅读页当前位置锚点（如 `rd-e-3`）：提交时拼在 pageUrl 的 # 后面 */
+    anchor?: string;
 }
 
 const TYPE_LABEL: Record<ItemType, string> = { work: '作品', book: '版本', collection: '丛编', entity: '人物' };
@@ -86,11 +88,17 @@ export interface FeedbackBody {
     resourceId: string;
 }
 
+/** 锚点只认 `rd-e-N` 这种简单 id，其余丢掉；换掉地址里原有的 # 部分 */
+function withAnchor(pageUrl: string, anchor: string | undefined): string {
+    if (!anchor || !/^[\w-]{1,40}$/.test(anchor)) return pageUrl;
+    return `${pageUrl.split('#')[0]}#${anchor}`;
+}
+
 export function buildFeedbackBody({ type, text, contact, context, pageUrl }: FeedbackInput): FeedbackBody {
     const body: FeedbackBody = {
         type,
         content: quotePrefix(context?.quote) + text.trim(),
-        pageUrl,
+        pageUrl: withAnchor(pageUrl, context?.anchor),
         resourceId: normalizeResourceId(context?.resourceId),
     };
     const c = contact?.trim().slice(0, CONTACT_MAX);

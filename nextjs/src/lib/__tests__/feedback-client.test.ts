@@ -132,3 +132,16 @@ describe('submitFeedback', () => {
         await expect(submitFeedback(body, fetchImpl as unknown as typeof fetch)).rejects.toThrow('网络错误，请稍后重试');
     });
 });
+
+describe('阅读页位置锚点（v4 P2，overview#299）', () => {
+    const ctx = { resourceId: WORK, quote: '易者象也' };
+    it('anchor 拼在 pageUrl 的 # 后面，换掉原有的 #', () => {
+        const body = buildFeedbackBody({ type: 'bug', text: '错字', context: { ...ctx, anchor: 'rd-e-3' }, pageUrl: 'https://x.test/read/a?kind=collated&juan=011#old' });
+        expect(body.pageUrl).toBe('https://x.test/read/a?kind=collated&juan=011#rd-e-3');
+    });
+    it('没有 anchor 或 anchor 不合法就不动 pageUrl', () => {
+        const url = 'https://x.test/read/a?juan=011';
+        expect(buildFeedbackBody({ type: 'bug', text: 'x', context: ctx, pageUrl: url }).pageUrl).toBe(url);
+        expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor: '"><script>' }, pageUrl: url }).pageUrl).toBe(url);
+    });
+});
