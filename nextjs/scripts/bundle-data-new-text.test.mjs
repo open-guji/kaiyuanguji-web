@@ -79,6 +79,10 @@ function makeFixture(base) {
     put(nw, 'default/001.json', { sections: [{ title: '一', content: '道可道' }] });
     put(nw, 'wikisource/index.json', idx());
     put(nw, 'wikisource/001.md', '# 维基\n');
+    put(nw, 'fragments/f.json', { x: 1 }); // 非文本资产照旧公开
+    put(nw, 'lineage_graph.json', { nodes: [] });
+    put(nw, 'extra/index.json', idx()); // manifest 没列的文本版本目录：不公开
+    put(nw, 'extra/001.md', '# 未登记\n');
     put(nw, 'shidian/index.json', idx());
     put(nw, 'shidian/001.md', '# 私有識典\n');
     // 新结构 Work：顶层 internal，整条目文本都不公开
@@ -99,8 +103,8 @@ function makeFixture(base) {
 
     // 全局清单 index/texts：一片含 internal 版本（要被滤），一片干净（字节不变）
     put(text, 'index/texts/1.json', {
-        [IDS.newWork]: [{ key: 'default', kind: 'collated', label: '整理本', chapters_total: 1 }, { key: 'shidian', kind: 'transcription', label: 'x', chapters_total: 1, visibility: 'internal' }],
-        [IDS.privWork]: [{ key: 'default', kind: 'transcription', label: 'x', chapters_total: 1, visibility: 'internal' }],
+        [IDS.newWork]: [{ key: 'default', kind: 'collated', label: '整理本', chapters_total: 1 }, { key: 'shidian', kind: 'transcription', label: 'x', chapters_total: 1 }],
+        [IDS.privWork]: [{ key: 'default', kind: 'transcription', label: 'x', chapters_total: 1 }], // 清单里没标 visibility，靠条目 manifest 判
     });
     put(text, 'index/texts/2.json', { [IDS.newBook]: [{ key: 'default', kind: 'transcription', label: 'x', chapters_total: 2 }] });
 
@@ -176,12 +180,19 @@ try {
         assert.match(log, /visibility=internal 的文本版本未进公开产物/);
     });
 
+    test('新结构条目里非文本资产（fragments、lineage_graph.json）照旧公开；manifest 没列的文本版本目录不公开', () => {
+        const d = join(data, 'items', IDS.newWork);
+        assert.ok(existsSync(join(d, 'fragments', 'f.json')));
+        assert.ok(existsSync(join(d, 'lineage_graph.json')));
+        assert.ok(!existsSync(join(d, 'extra')), '未登记的 extra/ 不应公开');
+    });
+
     test('没有 internal 的新结构 manifest.json 原样拷字节', () => {
         const nbSrc = join(text, 'Book', 'f', IDS.newBook, 'manifest.json');
         assert.equal(rd(join(data, 'items', IDS.newBook, 'manifest.json')), rd(nbSrc));
     });
 
-    test('index/texts/{0-f}.json：拷进产物，internal 版本被滤，干净的分片字节不变', () => {
+    test('index/texts/{0-f}.json：拷进产物，按条目 manifest 滤掉私有（清单里没标也滤），干净的分片字节不变', () => {
         const s1 = readJ(join(data, 'index', 'texts', '1.json'));
         assert.deepEqual(s1[IDS.newWork].map((v) => v.key), ['default']);
         assert.equal(s1[IDS.privWork], undefined);
@@ -225,6 +236,20 @@ try {
         assert.equal(reg[IDS.privWork], undefined);
         assert.equal(Object.keys(reg[IDS.newWork]).some((k) => k.startsWith('shidian/')), false);
         assert.ok(reg[IDS.oldWork]['collated_edition/index.json']);
+    });
+
+    test('manifest.json 存在但不合法：bundle-data 失败，不当旧结构放过', () => {
+        const tmp3 = mkdtempSync(join(tmpdir(), 'new-text-badmanifest-'));
+        try {
+            const f3 = makeFixture(tmp3);
+            writeFileSync(join(f3.text, 'Work', 'c', IDS.newWork, 'manifest.json'), '{ 坏的');
+            assert.throws(
+                () => run('bundle-data.mjs', env(join(tmp3, 'kyg-data'), f3.draft, f3.text)),
+                (err) => /不是合法的 manifest/.test(String(err.stderr)) && String(err.stderr).includes(IDS.newWork),
+            );
+        } finally {
+            rmSync(tmp3, { recursive: true, force: true });
+        }
     });
 
     test('构建期核对覆盖新结构：产物里缺首章时 bundle-data 失败并列出', () => {

@@ -125,7 +125,8 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         // 新结构：有 manifest.json 就按新结构查；旧结构 404 是预期
         const manifest = await json(`items/${id}/manifest.json`);
         if (manifest.ok) return checkNewCard(id, manifest.body);
-        if (manifest.status === 0) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
+        // 只有 404 才是「旧结构、没有 manifest」；5xx、网络错误、JSON 坏都记失败，不往旧路径上走
+        if (manifest.status !== 404) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
         const isBook = decodeId(id).type === 'book';
         const kind = collated ? 'collated' : 'fulltext';
         const page = await get(`${site}/read/${id}?kind=${kind}`, false);

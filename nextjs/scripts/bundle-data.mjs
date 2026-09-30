@@ -26,7 +26,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bookFirstChapter, bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
-import { filterTextsShard, isInternal, newStructureReadable, publicManifest, readManifest } from './lib/text-layout.mjs';
+import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
 
@@ -118,20 +118,30 @@ function copyDirRecursive(src, dest, skip = null, rel = '') {
  * 把文本仓里一个条目的目录拷进 items/<id>/。
  * 旧结构（没有 manifest.json）：整个目录原样拷，md 改 txt，与以前逐字节一致。
  * 新结构（有 manifest.json，overview#307）：同样整体拷，但私有的不进公开产物——
- *   manifest 顶层 visibility:internal → 不拷 manifest.json 与全部版本目录；
- *   某个 version 标 internal → 不拷它的目录，公开版 manifest.json 里也去掉这一项（没去掉任何版本则原样拷字节）。
+ *   manifest 顶层 visibility:internal → 整个条目目录都不拷；
+ *   某个 version 标 internal → 不拷它的目录，公开版 manifest.json 里也去掉这一项（没去掉任何版本则原样拷字节）；
+ *   manifest 没列的文本版本目录（顶层目录里直接有 index.json、名字像版本 key）→ 不拷；
+ *   manifest.json 存在但不合法 → 抛错，构建失败。
  * 返回 { internalSkipped: 被挡在外面的版本数 }，供日志。
  */
 function copyItemDir(itemDir, destDir) {
-    const manifest = readManifest(itemDir);
+    const manifest = readManifest(itemDir); // manifest.json 存在但不合法会抛错：构建失败，不当旧结构放过
     if (!manifest) {
         copyDirRecursive(itemDir, destDir);
         return { internalSkipped: 0 };
     }
+    // 顶层 internal：整个条目目录都不进公开产物
+    if (isInternal(manifest)) return { internalSkipped: manifest.versions.length };
     const pub = publicManifest(manifest);
+    const listed = new Set(manifest.versions.map((v) => v?.key));
     const blocked = new Set(manifest.versions
-        .filter((v) => typeof v?.key === 'string' && (isInternal(manifest) || isInternal(v) || !pub?.versions.includes(v)))
+        .filter((v) => typeof v?.key === 'string' && (isInternal(v) || !pub?.versions.includes(v)))
         .map((v) => v.key));
+    // manifest 没列的文本版本目录（顶层目录里直接有 index.json、名字又像版本 key）不公开：没登记就当没有，
+    // 免得未声明可见性的文本混进来。fragments／sources／lineage_graph.json 等非文本资产照旧公开。
+    for (const name of readdirSync(itemDir)) {
+        if (!listed.has(name) && isTextKey(name) && existsSync(join(itemDir, name, 'index.json'))) blocked.add(name);
+    }
     copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]));
     if (pub) {
         const dest = join(destDir, 'manifest.json');
@@ -412,25 +422,36 @@ function bundleMeta() {
  * 有就拷到产物 index/texts/（条目里有 internal 版本的过滤掉，没有需要过滤的原样拷字节）；没有这个目录就跳过。
  * 与旧的 index/full_text 并存，过渡期两套都认。
  */
-function bundleTextsIndex() {
+function bundleTextsIndex(index) {
     const srcDir = join(TEXT_DIR, 'index', 'texts');
     if (!existsSync(srcDir)) return;
     const destDir = join(OUT_DIR, 'index', 'texts');
     ensureDir(destDir);
     let shardCount = 0;
     let filtered = 0;
+    // 用条目自己的 manifest 判可见性（顶层 internal、版本 internal 都算），不只信清单里的标记
+    const pathById = new Map([...Object.values(index.works ?? {}), ...Object.values(index.books ?? {})].map((it) => [it.id, it.path]));
+    const publicKeysOf = (id) => {
+        const rel = pathById.get(id);
+        if (!rel) return null;
+        const manifest = readManifest(join(TEXT_DIR, dirname(rel), id));
+        return manifest ? new Set(publicVersions(manifest).map((v) => v.key)) : null;
+    };
     for (let i = 0; i < NUM_SHARDS; i++) {
         const fname = `${i.toString(16)}.json`;
         const srcPath = join(srcDir, fname);
         if (!existsSync(srcPath)) continue;
         const buf = readFileSync(srcPath);
         let out = buf;
+        let doc;
         try {
-            const f = filterTextsShard(JSON.parse(buf.toString('utf-8')));
-            if (f) { out = Buffer.from(JSON.stringify(f)); filtered++; }
+            doc = JSON.parse(buf.toString('utf-8'));
         } catch (e) {
-            console.warn(`  ⚠ index/texts/${fname} 不是合法 JSON，原样拷贝：${e.message}`);
+            // 读不了就没法过滤私有版本，不能原样放出去：构建失败
+            throw new Error(`index/texts/${fname} 不是合法 JSON：${e.message}`);
         }
+        const f = filterTextsShard(doc, publicKeysOf);
+        if (f) { out = Buffer.from(JSON.stringify(f)); filtered++; }
         writeIfChanged(join(destDir, fname), out);
         shardCount++;
     }
@@ -666,7 +687,7 @@ bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonom
 bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
 bundleL2();
 bundleWorkFullTextIndex();
-bundleTextsIndex();
+bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();
 bundleVersion();
 

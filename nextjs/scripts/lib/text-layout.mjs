@@ -38,12 +38,19 @@ function readJsonOrNull(p) {
     }
 }
 
-/** 条目目录的 manifest.json；没有或读不了返回 null（＝旧结构） */
+/**
+ * 条目目录的 manifest.json：没有这个文件返回 null（＝旧结构）；
+ * 有但不是合法 JSON、或缺 versions 数组，**抛错**——不能当旧结构悄悄放过：
+ * 那样版本目录不会被打包，私有标记也不会被看到（fail closed，构建／检查直接失败并指出是哪个文件）。
+ */
 export function readManifest(itemDir) {
     const p = join(itemDir, 'manifest.json');
     if (!existsSync(p)) return null;
     const m = readJsonOrNull(p);
-    return m && typeof m === 'object' && Array.isArray(m.versions) ? m : null;
+    if (!m || typeof m !== 'object' || !Array.isArray(m.versions)) {
+        throw new Error(`${p} 存在但不是合法的 manifest（要求是带 versions 数组的 JSON）`);
+    }
+    return m;
 }
 
 export const isInternal = (o) => o?.visibility === 'internal';
@@ -112,16 +119,19 @@ export function publicKeys(itemDir) {
 }
 
 /**
- * 全局清单 index/texts/{0-f}.json（{ id: [{ key, kind, label, chapters_total, visibility? }] }）去掉内部版本；
+ * 全局清单 index/texts/{0-f}.json（{ id: [{ key, kind, label, chapters_total, visibility? }] }）去掉不公开的版本：
+ * 清单里自己标了 internal 的版本；以及条目 manifest 说不公开的（publicKeysOf(id) 返回公开 key 的 Set，
+ * 顶层 internal 或版本 internal 时不在集合里；返回 null 表示没有这个条目的 manifest，按清单自己的标记判）。
  * 滤完一份都没有的条目整条去掉。无需过滤时返回 null（调用方原样拷字节，保证字节一致）。
  */
-export function filterTextsShard(shard) {
+export function filterTextsShard(shard, publicKeysOf = () => null) {
     if (!shard || typeof shard !== 'object') return null;
     let changed = false;
     const out = {};
     for (const [id, list] of Object.entries(shard)) {
         const arr = Array.isArray(list) ? list : [];
-        const pub = arr.filter((v) => !isInternal(v));
+        const allowed = publicKeysOf(id);
+        const pub = arr.filter((v) => !isInternal(v) && (!allowed || allowed.has(v?.key)));
         if (pub.length !== arr.length) changed = true;
         if (pub.length) out[id] = pub;
         else if (arr.length) changed = true;

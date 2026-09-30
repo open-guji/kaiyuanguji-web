@@ -164,3 +164,17 @@ test('新结构：manifest 带 internal、versions[0] 不是 default、key 不�
     assert.match(details, /versions\[0\] 不是 default/);
     assert.match(details, /不合法的版本 key/);
 });
+
+test('manifest 请求返回 404 才当旧结构；5xx 记失败、不往旧路径上走', async () => {
+    const files = baseFiles();
+    const pages = basePages();
+    const inner = fakeFetch(files, pages);
+    const flaky = async (url, init) => {
+        if (new URL(url).pathname.endsWith(`/items/${WORK}/manifest.json`)) return { ok: false, status: 503 };
+        return inner(url, init);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flaky, seed: 1 });
+    assert.ok(r.failures.some((f) => f.id === WORK && /manifest\.json → HTTP 503/.test(f.detail)));
+    // 其余（BOOK 的旧结构）照常通过
+    assert.ok(!r.failures.some((f) => f.id === BOOK));
+});

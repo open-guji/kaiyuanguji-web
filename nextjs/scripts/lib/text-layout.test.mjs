@@ -35,12 +35,12 @@ test('章文件名：新结构 file 不带扩展名，md／txt 换算，容忍�
     assert.equal(firstChapterOf({}), null);
 });
 
-test('readManifest：没有／坏 JSON／没有 versions 都当旧结构（null）', () => {
+test('readManifest：没有文件＝旧结构（null）；有但坏 JSON／没有 versions 抛错（fail closed，不当旧结构）', () => {
     const r = item({ 'a/manifest.json': { id: 'a', versions: [ver('default')] }, 'b/manifest.json': '{oops', 'c/manifest.json': { id: 'c' } });
     try {
         assert.equal(readManifest(join(r, 'a')).versions.length, 1);
-        assert.equal(readManifest(join(r, 'b')), null);
-        assert.equal(readManifest(join(r, 'c')), null);
+        assert.throws(() => readManifest(join(r, 'b')), /不是合法的 manifest/);
+        assert.throws(() => readManifest(join(r, 'c')), /b\/manifest\.json|c\/manifest\.json/);
         assert.equal(readManifest(join(r, 'none')), null);
     } finally { rmSync(r, { recursive: true, force: true }); }
 });
@@ -86,6 +86,13 @@ test('newStructureReadable：每个公开版本要章目录非空；整理本标
             assert.equal(x.versions.length, 1);
         } finally { rmSync(o, { recursive: true, force: true }); }
     } finally { rmSync(r, { recursive: true, force: true }); }
+});
+
+test('filterTextsShard：用条目 manifest 的公开 key 集合滤（顶层 internal 的条目即使清单里没标 visibility 也整条丢）', () => {
+    const shard = { a: [{ key: 'default' }, { key: 'shidian' }], b: [{ key: 'default' }], c: [{ key: 'default' }] };
+    const pk = (id) => ({ a: new Set(['default']), b: new Set() }[id] ?? null); // b：顶层 internal；c：没有 manifest（旧结构）
+    assert.deepEqual(filterTextsShard(shard, pk), { a: [{ key: 'default' }], c: [{ key: 'default' }] });
+    assert.equal(filterTextsShard({ c: [{ key: 'default' }] }, pk), null);
 });
 
 test('filterTextsShard：无内部版本返回 null（原样拷字节）；有则去掉，去空的条目整条丢', () => {
