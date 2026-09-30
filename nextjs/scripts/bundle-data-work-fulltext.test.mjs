@@ -78,14 +78,14 @@ function makeFixture(base) {
     for (const key of ['wikisource-01', 'wikisource-02']) {
         const dir = join(text, dirname(workRel), workId, 'full_text', key);
         mkdirSync(dir, { recursive: true });
-        writeFileSync(join(dir, 'index.json'), JSON.stringify({ chapters: ['001.md'], key }));
+        writeFileSync(join(dir, 'index.json'), JSON.stringify({ chapters: [{ file: '001.md', title: '第一章' }], key }));
         writeFileSync(join(dir, '001.md'), `# ${key} 第一章\n道可道，非常道。\n`);
     }
 
     // Book 全文：flat，无 <key> 层（回归对照组）
     const bookFtDir = join(text, dirname(bookRel), bookId, 'full_text');
     mkdirSync(bookFtDir, { recursive: true });
-    writeFileSync(join(bookFtDir, 'index.json'), JSON.stringify({ chapters: ['001.md'] }));
+    writeFileSync(join(bookFtDir, 'index.json'), JSON.stringify({ chapters: [{ file: '001.md', title: '第一章' }] }));
     writeFileSync(join(bookFtDir, '001.md'), '# 第一回\n某某某。\n');
 
     // book-text 顶层全局清单：两片，workId 分到片 'a'
