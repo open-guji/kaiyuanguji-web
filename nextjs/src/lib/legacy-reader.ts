@@ -116,10 +116,21 @@ export function legacyVersionKey(manifest: ManifestLike | null | undefined, ref:
 }
 
 /**
+ * 规则推不出来的个案（按 2026-09-30 迁移对照表逐行比对，全表只有这一处）：
+ * 同一来源有两份时，迁移把章数多的那份（旧 wikisource-02）升成 default，少的那份（旧 wikisource-01）取 key `wikisource`，
+ * 与「旧序号 N → 第 N 份」的规则相反。条目 d59ezkx8dt6o（81 行）。
+ */
+const LEGACY_KEY_EXCEPTIONS: Record<string, Record<string, string>> = {
+    d59ezkx8dt6o: { 'wikisource-02': 'default' },
+};
+
+/**
  * 旧引用 → 新路径。manifest 为 null（条目没有文本）返回 null，由调用方决定（通常跳条目页 /item/<id>）。
  * 那份版本是 default 的，路径里不写 key；章号按 legacyChapter 补成三位，没有就是该版本第一章的短地址。
  */
 export function legacyReaderTarget(ref: LegacyReaderRef, manifest: ManifestLike | null | undefined): string | null {
+    const fixed = ref.key ? LEGACY_KEY_EXCEPTIONS[ref.id]?.[ref.key] : undefined;
+    if (fixed && manifest?.versions?.some((v) => v?.key === fixed)) return readerPath(ref.id, { key: fixed, chapter: legacyChapter(ref.juan) });
     const key = legacyVersionKey(manifest, ref);
     if (key === null) return null;
     return readerPath(ref.id, { key, chapter: legacyChapter(ref.juan) });

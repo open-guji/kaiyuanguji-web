@@ -75,6 +75,14 @@ describe('legacyVersionKey：旧引用对应 manifest 的哪份', () => {
         expect(legacyVersionKey(TWO_WIKI, ref({ key: 'wikisource-02' }))).toBe('wikisource-2');
         expect(legacyVersionKey(TWO_WIKI, ref({ key: 'wikisource-01' }))).toBe('default');
     });
+    it('个案 d59ezkx8dt6o：章数多的旧 wikisource-02 成了 default、旧 wikisource-01 取 key wikisource（与序号规则相反，走例外表）', () => {
+        const m = { versions: [v('default', 'transcription', 'wikisource'), v('wikisource', 'transcription', 'wikisource')] };
+        const id = 'd59ezkx8dt6o';
+        expect(legacyReaderTarget(ref({ id, key: 'wikisource-02', juan: '3' }), m)).toBe(`/read/${id}/003`);
+        expect(legacyReaderTarget(ref({ id, key: 'wikisource-01', juan: '1' }), m)).toBe(`/read/${id}/wikisource/001`);
+        // 其他条目同样的形状仍走通用规则
+        expect(legacyReaderTarget(ref({ id: WORK, key: 'wikisource-02', juan: '3' }), m)).toBe(`/read/${WORK}/wikisource/003`);
+    });
     it('旧的 wikisource-02 迁移后是唯一一份（成了 default）：同来源只有一份就是它', () => {
         expect(legacyVersionKey({ versions: [v('default', 'transcription', 'wikisource')] }, ref({ key: 'wikisource-02' }))).toBe('default');
         expect(legacyVersionKey(KANRIPO_ONLY, ref({ key: 'kanripo-01' }))).toBe('default');
