@@ -35,6 +35,7 @@ import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, lossStatusValue } from './lib/work-fields.mjs';
+import { eraRank } from './lib/sort-fields.mjs';
 
 const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
@@ -147,6 +148,8 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         juan_count: entry.juan_count || 0,
         completeness,
         title_chars: Array.from(title).length,
+        era_rank: eraRank(entry.dynasty),
+        title_sort: allPinyin(title),
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
@@ -182,6 +185,8 @@ function buildBookDoc(entry, detail, isDraft = true) {
         has_image: !!entry.has_image,
         completeness: (entry.has_text ? 3 : 0) + (entry.has_image ? 2 : 0),
         title_chars: Array.from(title).length,
+        era_rank: eraRank(entry.era || entry.dynasty),
+        title_sort: allPinyin(title),
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
@@ -220,6 +225,8 @@ function buildEntityDoc(entry, isDraft = true) {
         cbdb_id: entry.cbdb_id ?? null,
         completeness: entry.cbdb_id ? 1 : 0,
         title_chars: Array.from(name).length,
+        era_rank: eraRank(entry.dynasty),
+        title_sort: allPinyin(name),
         name_search: mergeSimp(name),
         pinyin: allPinyin(name),
     };
@@ -446,19 +453,20 @@ const SETTINGS = {
     works: {
         searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'pinyin', 'description_search', 'indexed_by_search'],
         filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image', 'classification', 'loss_status'],
-        sortableAttributes: ['completeness', 'juan_count', 'title_chars'],
+        sortableAttributes: ['completeness', 'juan_count', 'title_chars', 'era_rank', 'title_sort'],
         // #281（2026-09-29）：completeness 提到 exactness 前面。同长度标题平局时先看「分量」，
         // 不再让 exactness 决胜——中文的 exactness 受 jieba 分词左右（简体「三国志」切成一个词、
         // 「三国论」切成「三国」＋「论」），搜「三国」时《三國論》算开头匹配、《三國志》不算，
         // 于是三國論／文／評把三國志、三國演義压到第 5 名以后。换序后 1,973 个压测查询里第 1 名
         // 只变了 14 个（0.7%），且多是变好（春→春秋、金→金史、明→明史、千→千字文）。
-        rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'completeness:desc', 'exactness'],
+        // sort 放最前：搜索页 v4 选了「按年代／按书名」就严格按它排（没带 sort 参数时这条规则不起作用）
+        rankingRules: ['sort', 'words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'completeness:desc', 'exactness'],
     },
     books: {
         searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'edition_search', 'holder_search', 'pinyin', 'description_search'],
         filterableAttributes: ['type', 'is_draft', 'dynasty', 'has_text', 'has_image', 'holder'],
-        sortableAttributes: ['completeness', 'title_chars'],
-        rankingRules: ['words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
+        sortableAttributes: ['completeness', 'title_chars', 'era_rank', 'title_sort'],
+        rankingRules: ['sort', 'words', 'typo', 'proximity', 'attribute', 'title_chars:asc', 'exactness', 'completeness:desc'],
     },
     collections: {
         searchableAttributes: ['title_search', 'pinyin'],
@@ -467,7 +475,8 @@ const SETTINGS = {
     entities: {
         searchableAttributes: ['name_search', 'pinyin'],
         filterableAttributes: ['type', 'is_draft', 'subtype', 'dynasty'],
-        sortableAttributes: ['completeness', 'title_chars'],
+        sortableAttributes: ['completeness', 'title_chars', 'era_rank', 'title_sort'],
+        rankingRules: ['sort', 'words', 'typo', 'proximity', 'attribute', 'exactness'],
     },
     juans: {
         searchableAttributes: ['content_search', 'juan_name'],
