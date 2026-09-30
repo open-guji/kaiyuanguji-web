@@ -35,7 +35,7 @@ import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, lossStatusValue } from './lib/work-fields.mjs';
-import { eraRank } from './lib/sort-fields.mjs';
+import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 
 const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
@@ -149,7 +149,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         completeness,
         title_chars: Array.from(title).length,
         era_rank: eraRank(entry.dynasty),
-        title_sort: allPinyin(title),
+        title_sort: allPinyin(sortTitle(title)),
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
@@ -186,7 +186,7 @@ function buildBookDoc(entry, detail, isDraft = true) {
         completeness: (entry.has_text ? 3 : 0) + (entry.has_image ? 2 : 0),
         title_chars: Array.from(title).length,
         era_rank: eraRank(entry.era || entry.dynasty),
-        title_sort: allPinyin(title),
+        title_sort: allPinyin(sortTitle(title)),
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
@@ -226,7 +226,7 @@ function buildEntityDoc(entry, isDraft = true) {
         completeness: entry.cbdb_id ? 1 : 0,
         title_chars: Array.from(name).length,
         era_rank: eraRank(entry.dynasty),
-        title_sort: allPinyin(name),
+        title_sort: allPinyin(sortTitle(name)),
         name_search: mergeSimp(name),
         pinyin: allPinyin(name),
     };

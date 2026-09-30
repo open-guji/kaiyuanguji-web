@@ -43,3 +43,29 @@ describe('eraRank', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('sortTitle（title_sort 去前缀）', () => {
+  test.each([
+    ['1詩顯微論', '詩顯微論'],
+    ['[寶慶]四明志', '四明志'],
+    ['［道光］廣東通志', '廣東通志'],
+    ['【清】某書', '某書'],
+    ['〔民國〕某志', '某志'],
+    ['[清][乾隆]某志', '某志'],
+    ['［清］【乾隆】 某志', '某志'],
+    ['12 [宋]某書', '某書'],
+    ['[宋]1 某書', '某書'],
+    ['易經', '易經'],
+    ['四明[續]志', '四明[續]志'],
+  ])('%s → %s', (input, expected) => {
+    expect(m.sortTitle(input)).toBe(expected);
+  });
+
+  test('剥完为空则退回原题名；非字符串返回空串', () => {
+    expect(m.sortTitle('[寶慶]')).toBe('[寶慶]');
+    expect(m.sortTitle('123')).toBe('123');
+    expect(m.sortTitle('［清］【乾隆】')).toBe('［清］【乾隆】');
+    expect(m.sortTitle('')).toBe('');
+    expect(m.sortTitle(undefined as never)).toBe('');
+  });
+});
