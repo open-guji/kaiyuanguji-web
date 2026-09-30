@@ -4,8 +4,8 @@
  * S1 · 搜索代理 edge-functions/api/search.js
  *
  * 盯的几件事：
- *  1) 白名单：只放行 works/books/collections/entities；其余参数（sort、
- *     attributesToRetrieve……）不透传，is_draft = false 由服务端写死；
+ *  1) 白名单：只放行 works/books/collections/entities；其余参数（attributesToRetrieve……）不透传；
+ *     sort 只认 era／title 的 asc／desc 四个键（overview#298），见 describe('sort')，is_draft = false 由服务端写死；
  *     filter 只放行受限语法（见 describe('filter')，overview#291 P1a）
  *  2) limit／offset 上限、查询长度上限
  *  3) key 只在服务端（Authorization 头），响应里不带上游地址
@@ -67,7 +67,7 @@ describe('白名单', () => {
   test('GET 不带 index：四类索引一次 multi-search，filter 服务端写死', async () => {
     stubUpstream();
     const q = uq();
-    const res = await fn.onRequestGet(ctx(`https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=5&sort=title:asc`));
+    const res = await fn.onRequestGet(ctx(`https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=5`));
     expect(res.status).toBe(200);
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe('https://meili.internal.example/multi-search');
@@ -104,7 +104,7 @@ describe('白名单', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ queries: [
-        { indexUid: 'works', q, limit: 3, attributesToRetrieve: ['*'], showRankingScore: true, sort: ['title_chars:asc'] },
+        { indexUid: 'works', q, limit: 3, attributesToRetrieve: ['*'], showRankingScore: true },
       ] }),
     }));
     expect(res.status).toBe(200);
@@ -345,7 +345,7 @@ describe('filter（overview#291 P1a）', () => {
 
   test('POST 里的 filter 同样过校验，其余字段照旧丢弃', async () => {
     stubUpstream();
-    const res = await post({ indexUid: 'works', q: uq(), filter: 'classification = "經部"', sort: ['completeness:desc'], showRankingScore: true });
+    const res = await post({ indexUid: 'works', q: uq(), filter: 'classification = "經部"', showRankingScore: true });
     expect(res.status).toBe(200);
     const sent = calls[0].body.queries[0];
     expect(sent.filter).toBe('is_draft = false AND classification = "經部"');
@@ -421,14 +421,14 @@ describe('filter（overview#291 P1a）', () => {
   test('超长：整串超过上限、值超过上限、条数过多、IN 值过多 → 400', async () => {
     stubUpstream();
     const many = (n: number) => Array.from({ length: n }, (_, i) => `"甲${i}"`).join(',');
-    expect((await get('a', `dynasty IN [${many(30)}] AND ${'x'.repeat(300)}`)).status).toBe(400);
+    expect((await get('a', `dynasty IN [${many(30)}] AND ${'x'.repeat(700)}`)).status).toBe(400);
     expect((await get('a', `dynasty = "${'唐'.repeat(21)}"`)).status).toBe(400);
     expect((await get('a', 'dynasty = "唐" AND classification = "史部" AND loss_status = "lost" AND has_image = true AND has_text = true AND has_collated = true AND type = "work"')).status).toBe(400); // 7 条
-    expect((await get('a', `dynasty IN [${many(13)}]`)).status).toBe(400);
+    expect((await get('a', `dynasty IN [${many(41)}]`)).status).toBe(400);
     expect(calls).toHaveLength(0);
-    // 边界内可以：6 条、12 个值、20 字
+    // 边界内可以：6 条、40 个值（朝代分组展开后的量）、20 字
     expect((await get(uq(), 'dynasty = "唐" AND classification = "史部" AND loss_status = "lost" AND has_image = true AND has_text = true AND has_collated = true')).status).toBe(200);
-    expect((await get(uq(), `dynasty IN [${many(12)}]`)).status).toBe(200);
+    expect((await get(uq(), `dynasty IN [${many(40)}]`)).status).toBe(200);
     expect((await get(uq(), `dynasty = "${'唐'.repeat(20)}"`)).status).toBe(200);
   });
 
@@ -449,5 +449,91 @@ describe('filter（overview#291 P1a）', () => {
     expect(hit.loss_status).toBe('extant');
     expect(hit.title_search).toBeUndefined();
     expect(hit.completeness).toBeUndefined();
+  });
+});
+
+describe('sort（搜索页 v4「按年代／按书名」，overview#298）', () => {
+  const post = (query: object) => fn.onRequestPost(ctx('https://x/api/search', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ queries: [query] }),
+  }));
+  const getSort = (sort: string, index = 'works') =>
+    fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(uq())}&index=${index}&sort=${encodeURIComponent(sort)}`));
+
+  test('四个键翻译成索引里的可排序字段，发给 Meili 的 sort 是数组', async () => {
+    const want: Record<string, string> = {
+      'era:asc': 'era_rank:asc', 'era:desc': 'era_rank:desc', 'title:asc': 'title_sort:asc', 'title:desc': 'title_sort:desc',
+    };
+    for (const [k, v] of Object.entries(want)) {
+      stubUpstream();
+      expect((await getSort(k)).status).toBe(200);
+      expect(calls[0].body.queries[0].sort).toEqual([v]);
+    }
+  });
+
+  test('works／books／entities 可排；collections 不可（没有这两个字段）→ 400', async () => {
+    stubUpstream();
+    for (const idx of ['works', 'books', 'entities']) expect((await getSort('era:asc', idx)).status).toBe(200);
+    expect((await getSort('era:asc', 'collections')).status).toBe(400);
+    expect((await getSort('era:asc', 'collections').then((r: Response) => body(r))).code).toBe('bad_request');
+  });
+
+  test('不认识的键、数组、Meili 语法一律 400，不打上游；POST 里同样', async () => {
+    stubUpstream();
+    for (const bad of ['completeness:desc', 'era_rank:asc', 'era', 'title:sideways', '_geoPoint(1,2):asc']) expect((await getSort(bad)).status).toBe(400);
+    expect((await post({ indexUid: 'works', q: uq(), sort: ['era:asc'] })).status).toBe(400);
+    expect(calls).toHaveLength(0);
+    expect((await post({ indexUid: 'works', q: uq(), sort: 'era:desc' })).status).toBe(200);
+    expect(calls[0].body.queries[0].sort).toEqual(['era_rank:desc']);
+  });
+
+  test('同一查询不同 sort 不共用缓存', async () => {
+    stubUpstream();
+    const q = uq();
+    const url = (s: string) => `https://x/api/search?q=${encodeURIComponent(q)}&index=works&sort=${s}`;
+    await fn.onRequestGet(ctx(url('era:asc')));
+    await fn.onRequestGet(ctx(url('era:desc')));
+    await fn.onRequestGet(ctx(url('era:asc')));
+    expect(calls).toHaveLength(2);
+  });
+
+  test('索引还没重建出可排序字段（Meili 回 400＋invalid_search_sort）：去掉 sort 重发一次，按相关度出结果并标 sortIgnored', async () => {
+    let n = 0;
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      n++;
+      if (parsed.queries.some((q: { sort?: string[] }) => q.sort)) return new Response('{"code":"invalid_search_sort","message":"x"}', { status: 400 });
+      return new Response(JSON.stringify({ results: parsed.queries.map((q: { indexUid: string }) => ({ indexUid: q.indexUid, hits: [], estimatedTotalHits: 0 })) }), { status: 200 });
+    });
+    const res = await getSort('title:asc');
+    expect(res.status).toBe(200);
+    expect(n).toBe(2);
+    expect(calls[1].body.queries[0].sort).toBeUndefined();
+    expect((await body(res)).results[0].sortIgnored).toBe(true);
+  });
+
+  test('别的 400（错误码不是排序类、或没有错误码）不降级：照常 503，不重发', async () => {
+    for (const upstream of ['{"code":"invalid_search_filter","message":"x"}', 'not json', '{}']) {
+      let n = 0;
+      stubUpstream(async () => { n++; return new Response(upstream, { status: 400 }); });
+      const res = await getSort('era:asc');
+      expect(res.status).toBe(503);
+      expect(n).toBe(1);
+    }
+  });
+
+  test('降级结果不缓存：同一查询再来一次仍打上游（重建索引后不会 60 秒内还拿到未排序的）；响应 no-store', async () => {
+    let n = 0;
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      n++;
+      if (parsed.queries.some((q: { sort?: string[] }) => q.sort)) return new Response('{"code":"invalid_search_sort"}', { status: 400 });
+      return new Response(JSON.stringify({ results: parsed.queries.map((q: { indexUid: string }) => ({ indexUid: q.indexUid, hits: [], estimatedTotalHits: 0 })) }), { status: 200 });
+    });
+    const q = uq();
+    const url = `https://x/api/search?q=${encodeURIComponent(q)}&index=works&sort=era:asc`;
+    const r1 = await fn.onRequestGet(ctx(url));
+    expect(r1.headers.get('Cache-Control')).toBe('no-store');
+    await fn.onRequestGet(ctx(url));
+    expect(n).toBe(4); // 每次都是「带 sort 一次 + 去掉 sort 一次」
   });
 });
