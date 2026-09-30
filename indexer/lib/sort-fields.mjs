@@ -17,3 +17,17 @@ export function eraRank(name) {
     return i < 0 ? ERA_RANK_UNKNOWN : i;
 }
 
+
+// 题名排序键的前缀清理（overview#298）：「[寶慶]四明志」「［道光］廣東通志」「1詩顯微論」按拼音排会落到 a 前面。
+// 先剥开头的方括号段（[]、［］、【】、〔〕，连同其中内容，可连续多段）和阿拉伯数字、空白；剥完为空则退回原题名。
+const LEADING_BRACKET = /^\s*(?:\[[^\]]*\]|［[^］]*］|【[^】]*】|〔[^〕]*〕)/;
+export function sortTitle(title) {
+    if (typeof title !== 'string') return '';
+    let rest = title;
+    for (;;) {
+        const next = rest.replace(LEADING_BRACKET, '').replace(/^[\s0-9]+/, '');
+        if (next === rest) break;
+        rest = next;
+    }
+    return rest === '' ? title : rest;
+}
