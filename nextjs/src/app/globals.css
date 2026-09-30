@@ -78,6 +78,38 @@
   --bim-section-shu: #9e2a2b;
 }
 
+/* ---- 墨主题（v4 P0）：<html data-theme="ink">，素白底、主色近黑，整套中性灰。
+   色值取自设计稿「墨」，与 book-index-ui 的 ink 主题一致（accent #222221，页底 #f5f5f3）。
+   辅助字按 AA 调深（--bim-aux-fg #63625e）；分类色（书籍徽章、疏类）仍用朱色，靠色相区分类型，
+   其余强调（链接、当前项、主按钮）与正文都是近黑，所以链接／选中另有下划线与描边，见文末 ink 区块。 ---- */
+:root[data-theme="ink"] {
+  --color-paper: #f5f5f3;
+  --color-raise: #fcfcfb;
+  --color-tint: #ecebe8;
+  --color-tint-2: #dfdedb;
+  --color-ink: #1b1b1a;
+  --color-ink-2: #4a4a47;
+  --color-ink-3: #63625e;
+  --color-zhu: #222221;
+  --color-zhu-deep: #000000;
+  --color-zhu-tint: rgba(34, 34, 33, 0.08);
+  --color-gold: #63625e;
+  --color-surface: #fcfcfb;
+  --color-surface-border: #dfdedb;
+  --color-secondary: #4a4a47;
+  --color-border: #dfdedb;
+  --color-vermilion: #222221;
+  --color-vermilion-deep: #000000;
+  --color-accent-gold: #63625e;
+  --color-nav-bg: #f5f5f3;
+  --color-nav-ink: #1b1b1a;
+  --color-nav-vermilion: #222221;
+  --color-nav-border: #dfdedb;
+  --bim-aux-fg: #63625e;
+  --bim-type-book: #9e2a2b;
+  --bim-section-shu: #9e2a2b;
+}
+
 /* ---------- 非 Tailwind 令牌（字号阶 / 字重 / 阴影 / 圆角 / 动效） ---------- */
 :root {
   /* 字号阶：基准 15，标题逐级拉开 */
@@ -308,6 +340,52 @@
 
   /* 阅读页（N5b）：吸顶工具条让出外壳页头的高度 */
   --bim-reader-top: var(--nav-h);
+}
+
+/* ---- 版式令牌（v4 P0）：默认＝疏朗（无框）；<html data-layout="boxed"> ＝界栏（1px 框线＋卡面底）。
+   与 book-index-ui 的 --bim-fr-* 同名同值——本站不引它的 variables.css，所以这里自己定义一遍。
+   组件（bim 详情页、总目、阅读、搜索，以及本站首页等）读这组令牌，不逐组件写死框线。 ---- */
+:root {
+  --bim-fr-bd: 0 solid transparent;
+  --bim-fr-bg: transparent;
+  --bim-fr-hd-pad: 0;
+  --bim-fr-hd-bd: 0 solid transparent;
+  --bim-fr-bd-pad: 0;
+  --bim-fr-gap: 56px;
+  --bim-fr-side-gap: 34px;
+  --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(40, 36, 31, 0.25);
+  --bim-fr-tab-bd: transparent;
+  /* 页脚（深底）上的次要字：默认接 ink-3；墨主题的 ink-3 是给浅底调深的，深底上要另给一个亮的（见 ink 块） */
+  --og-foot-dim: var(--color-ink-3);
+}
+:root[data-layout="boxed"] {
+  --bim-fr-bd: 1px solid var(--bim-rule);
+  --bim-fr-bg: var(--bim-card-bg);
+  --bim-fr-hd-pad: 12px 18px;
+  --bim-fr-hd-bd: 1px solid var(--bim-rule);
+  --bim-fr-bd-pad: 14px 18px 18px;
+  --bim-fr-gap: 24px;
+  --bim-fr-side-gap: 20px;
+  --bim-fr-shadow: none;
+  --bim-fr-tab-bd: var(--bim-rule);
+}
+:root[data-theme="ink"] {
+  --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(0, 0, 0, 0.22);
+  --og-foot-dim: #a3a29d;
+}
+:root[data-theme="ink"][data-layout="boxed"] {
+  --bim-fr-shadow: none;
+}
+
+/* 墨：强调色≈正文色，段落／列表／表格里的链接另加下划线（悬停加粗），不只靠颜色认得出 */
+:root[data-theme="ink"] :is(p, li, td, dd) a:not([class]) {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 3px;
+}
+:root[data-theme="ink"] :is(p, li, td, dd) a:not([class]):hover {
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
 }
 
 /* ---------- 动效：入场与滚动进场 ---------- */
@@ -645,47 +723,165 @@
   }
 
   /* 顶栏右上角主题切换：两个色点，当前项外圈描边 */
-  .og-theme {
+  /* 顶栏「外观」面板（v4 P0）：按钮＋弹层；选项选中态＝主色描边＋淡底＋✓（不只靠颜色，「墨」下主色≈正文色） */
+  .og-look {
+    position: relative;
     display: inline-flex;
-    align-items: center;
-    gap: 2px;
     margin-right: 6px;
   }
-  .og-theme-dot {
-    position: relative;
-    width: 28px;
-    height: 44px;
-    padding: 0;
+  .og-look-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 44px;
+    padding: 0 6px;
     border: 0;
     background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-ink-2);
     cursor: pointer;
   }
-  .og-theme-dot::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 14px;
-    height: 14px;
-    margin: -7px 0 0 -7px;
-    border-radius: 50%;
-    box-sizing: border-box;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+  .og-look-btn:hover,
+  .og-look-btn[aria-expanded="true"] {
+    color: var(--color-ink);
   }
-  .og-theme-dot--zhusha::before {
-    background-color: #9e2a2b;
-  }
-  .og-theme-dot--indigo::before {
-    background-color: #2e5266;
-  }
-  .og-theme-dot[aria-checked="true"]::before {
-    border-color: var(--color-paper);
-    box-shadow: 0 0 0 1.5px var(--color-ink-2);
-  }
-  .og-theme-dot:focus-visible {
+  .og-look-btn:focus-visible,
+  .og-look-opt:focus-visible {
     outline: 2px solid var(--color-ink);
-    outline-offset: -4px;
+    outline-offset: 2px;
+  }
+  .og-look-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: -8px;
+    z-index: 70;
+    width: 248px;
+    max-width: calc(100vw - 24px);
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: var(--color-raise);
+    border: 1px solid var(--color-tint-2);
+    box-shadow: 0 14px 36px -14px rgba(20, 24, 28, 0.28);
+    font-size: 12.5px;
+    color: var(--color-ink);
+    white-space: normal;
+  }
+  .og-look-sec {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .og-look-cap {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--bim-aux-fg);
+  }
+  .og-look-grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .og-look-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .og-look-opt {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-tint-2);
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .og-look-opt:hover {
+    background: var(--color-tint);
+  }
+  .og-look-opt[aria-checked="true"] {
+    border-color: var(--color-zhu);
+    background: var(--color-zhu-tint);
+    font-weight: 600;
+  }
+  .og-look-opt[aria-checked="true"]::after {
+    content: "✓";
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--color-zhu);
+  }
+  .og-look-name {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    white-space: nowrap;
+  }
+  .og-look-hint {
+    font-size: 10.5px;
+    font-weight: 400;
+    color: var(--bim-aux-fg);
+  }
+  .og-look-hint--r {
+    margin-left: auto;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  .og-look-ly {
+    flex: none;
+    width: 34px;
+    height: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+  .og-look-ly i {
+    display: block;
+    height: 1px;
+    background: var(--color-ink-3);
+  }
+  .og-look-ly--boxed {
+    border: 1px solid var(--color-ink-3);
+  }
+  .og-look-sw {
+    display: flex;
+    flex: none;
+    width: 30px;
+    height: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .og-look-sw i {
+    flex: 1;
+  }
+  .og-look-note {
+    margin: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-tint-2);
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--bim-aux-fg);
+  }
+  @media (max-width: 720px) {
+    .og-look-label {
+      display: none;
+    }
+    .og-look-btn {
+      min-width: 44px;
+      justify-content: center;
+    }
   }
 
   /* 顶栏右侧「反馈」（N7）：浅色图标＋文字，不是按钮样式；手机只留图标 */
@@ -798,7 +994,7 @@
     margin: 0;
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
-    color: var(--color-ink-3);
+    color: var(--og-foot-dim);
   }
   .og-footer p {
     margin: 0;
@@ -831,11 +1027,11 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0 14px;
-    color: var(--color-ink-3);
+    color: var(--og-foot-dim);
     font-size: var(--fs-xs);
   }
   .og-footer-bottom a {
-    color: var(--color-ink-3);
+    color: var(--og-foot-dim);
     padding: 0;
   }
 
