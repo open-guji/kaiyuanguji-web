@@ -349,7 +349,21 @@ jobs:
           fi
           echo "✓ public/data 全量 grep 私有文本标记（book-text-private／仅内部校对使用／不得公开）：0 命中"
 
-      - name: Sync data to Tencent COS (Singapore)
+      # --- COS 数据同步（overview#293 提速：数据没变就不传；没变不了就三路并行）---
+      #
+      # 原来是串行的五步：同步 current/ → 打包 h1 → 记旧 root → 同步 h1 → 打包 h1 文本 → 同步 h1 文本，约 8 分钟。
+      # 现在：
+      #   ① 先判定（cos-sync-decision.mjs decide）：三个数据仓的 commit、网站打包脚本的指纹，和线上
+      #      「上次完整同步」的标记、线上 latest.json 全部对得上，才跳过；任何读不到／对不上都照常同步。
+      #      只比三仓 commit 不够：网站的打包脚本（总目、阅读索引、搜索分片、h1 哈希）一改，产物就变，
+      #      数据仓却没动——那样跳过会让新产物永远上不了线；所以脚本指纹也要一致（见 lib/cos-sync-decision.mjs 头注释）。
+      #   ② 跳过时 latest.json 仍然要写：以线上现有的为底只改 webCommitId（promote 靠它决定上正式站的代码），
+      #      其它字段原样保留。这一步失败就退回照常同步。
+      #   ③ 不跳过时，三路（current/、h1/ 条目、h1/ 文本）并行，COS 并发各自调小、总数不超过串行时的 80。
+      #   ④ 三路都成功才写「同步标记」（_deploy/sync-marker.json）——h1 两路失败只警告（同以前），
+      #      但不写标记，下次不会把没传全的当成已同步。
+      - name: Decide COS data sync (skip when data unchanged)
+        id: cos_decide
         if: ${{ env.HAS_COS_SECRETS == 'true' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
@@ -359,28 +373,31 @@ jobs:
           COS_REGION: ap-singapore
         run: |
           cd nextjs
-          node scripts/sync-to-cos.mjs
+          # 这次实际用来打包的三个数据仓 commit（与 latest.json 里 fullCommitId／productionCommitId／textCommitId 同口径）
+          export DRAFT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index-draft" rev-parse HEAD)"
+          export PROD_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index" rev-parse HEAD)"
+          export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
+          node scripts/cos-sync-decision.mjs decide
 
-      # --- A3 第一期：条目按内容哈希寻址，双写到同一个桶的新前缀 h1/ ---
-      #
-      # 与上面 current/ 那条链路完全并行、互不影响：读的是同一份 public/data/entry/
-      # （上面 bundle-data.mjs 已产出），写到 h1/ 前缀，不覆盖、不清理 current/ 或
-      # v/ 下的任何对象。前端默认（NEXT_PUBLIC_DATA_LAYOUT 不设或非 'hashed'）
-      # 完全不读 h1/，这两步等于是「先把新布局在生产桶里跑通，但没人在用」。
-      #
-      # continue-on-error：新脚本还在验证阶段，一旦有 bug 也绝不能拖累 current/
-      # 已经成功的发布——真实读者当下依赖的是 current/，不是 h1/。
-      - name: Bundle hashed (h1) data — dual-write, parallel to current/ (A3 第一期)
-        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+      - name: Write latest.json only (data unchanged, skip COS data upload)
+        id: cos_latest_only
+        if: ${{ env.HAS_COS_SECRETS == 'true' && steps.cos_decide.outputs.skip == 'true' }}
         continue-on-error: true
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
-        working-directory: nextjs
-        run: node scripts/bundle-hashed.mjs
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          node scripts/cos-sync-decision.mjs latest-only
 
       # W2-3：测试站在 h1 指针翻转之前记下旧 root，部署后据此算「哪些条目变了」
       # （item-changes.mjs）。取不到（首次发布／指针格式旧）就留空，按全部新增处理。
-      # CUT2 起正式站也全栈：部署到 kyg-ssr-spike 后据此按改动失效 www 的条目页
+      # CUT2 起正式站也全栈：部署到 kyg-ssr-spike 后据此按改动失效 www 的条目页。
+      # 必须在下面的 h1 同步（会翻转指针）之前；数据没变时它就是现行 root，item-changes 算出来是「没变」。
       - name: Record previous h1 root (W2-3)
         run: |
           P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
@@ -389,9 +406,17 @@ jobs:
           echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
           echo "· 发布前 ${DEPLOY_TARGET} h1 root：${R:-（无）}"
 
-      - name: Sync hashed (h1) data to Tencent COS — dual-write, parallel to current/ (A3 第一期)
-        if: ${{ env.HAS_COS_SECRETS == 'true' }}
-        continue-on-error: true
+      # 三路并行，各自写不同的前缀，互不覆盖：
+      #   current/ 与 v/<cacheKey>/search/（sync-to-cos.mjs，失败则整步失败，同以前）
+      #   h1/entry、h1/manifest…（bundle-hashed.mjs → sync-h1-to-cos.mjs；A3 第一期，失败只警告）
+      #   h1/text、h1/text-manifest…（bundle-hashed-text.mjs → sync-h1-text-to-cos.mjs；A3b 第二期，失败只警告）
+      # h1 两路 continue-on-error 的理由不变：新链路不能拖累 current/ 已经成功的发布。
+      # COS 限流：三个脚本的并发原来都是 80（串行，同一时刻只有一个在传）；并行时各自调小，
+      # 加起来仍是 80（COS_CONCURRENCY，见 lib/cos-sync-decision.mjs），不会因为叠加而撞限流。
+      # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
+      - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
+        id: cos_sync
+        if: ${{ env.HAS_COS_SECRETS == 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -400,25 +425,38 @@ jobs:
           COS_REGION: ap-singapore
         run: |
           cd nextjs
-          node scripts/sync-h1-to-cos.mjs
+          LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
+          set +e
+          ( COS_CONCURRENCY=48 node scripts/sync-to-cos.mjs ) > "$LOGS/current.log" 2>&1 &
+          P_CUR=$!
+          ( node scripts/bundle-hashed.mjs && COS_CONCURRENCY=24 node scripts/sync-h1-to-cos.mjs ) > "$LOGS/h1-entry.log" 2>&1 &
+          P_H1=$!
+          ( node scripts/bundle-hashed-text.mjs && COS_CONCURRENCY=8 node scripts/sync-h1-text-to-cos.mjs ) > "$LOGS/h1-text.log" 2>&1 &
+          P_TXT=$!
+          ( while :; do sleep 60; echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC（current/ pid $P_CUR、h1 条目 pid $P_H1、h1 文本 pid $P_TXT）"; done ) &
+          HB=$!
+          wait $P_CUR; R_CUR=$?
+          wait $P_H1;  R_H1=$?
+          wait $P_TXT; R_TXT=$?
+          kill $HB 2>/dev/null
+          for pair in "current/:current:$R_CUR" "h1 条目:h1-entry:$R_H1" "h1 文本:h1-text:$R_TXT"; do
+            title="${pair%%:*}"; rest="${pair#*:}"; f="${rest%%:*}"; rc="${rest##*:}"
+            echo "::group::COS 同步 · $title（exit $rc）"
+            tr '\r' '\n' < "$LOGS/$f.log" | awk 'BEGIN{last=""} { if ($0 ~ /^  [a-z0-9-]+: [0-9]+\/[0-9]+ \(/) { last=$0; next } if (last != "") { print last; last="" } print } END{ if (last != "") print last }'
+            echo "::endgroup::"
+          done
+          if [ "$R_CUR" -ne 0 ]; then
+            echo "❌ current/ 同步失败（exit $R_CUR）——数据没有上线，整步失败"
+            exit 1
+          fi
+          ALL_OK=true
+          if [ "$R_H1" -ne 0 ];  then echo "::warning::h1 条目同步失败（exit $R_H1），只警告，不拦发布（A3 第一期，前端默认不读 h1/）"; ALL_OK=false; fi
+          if [ "$R_TXT" -ne 0 ]; then echo "::warning::h1 文本同步失败（exit $R_TXT），只警告，不拦发布（A3b 第二期，前端默认不读 h1/）"; ALL_OK=false; fi
+          echo "all_ok=$ALL_OK" >> "$GITHUB_OUTPUT"
 
-      # --- A3b 第二期：整理本／全文按内容哈希寻址，双写到同一个 h1/ 前缀 ---
-      #
-      # 与上面 entry 的两步是同一套机制（scripts/lib/h1-sync-core.mjs 共用），
-      # 读的是同一次 bundle-data.mjs 已产出的 public/data/items/（整理本/全文
-      # 部分），写到 h1/text/、h1/text-manifest/，不覆盖、不清理 current/、v/
-      # 或上面 h1/entry/、h1/manifest/ 下的任何对象。前端默认同样不读，
-      # continue-on-error 的理由与上面一致：新链路不能拖累 current/ 已经成功的发布。
-      - name: Bundle hashed (h1) collated text/full text — dual-write, parallel to current/ (A3b 第二期)
-        if: ${{ env.HAS_COS_SECRETS == 'true' }}
-        continue-on-error: true
-        env:
-          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
-        working-directory: nextjs
-        run: node scripts/bundle-hashed-text.mjs
-
-      - name: Sync hashed (h1) collated text/full text to Tencent COS — dual-write, parallel to current/ (A3b 第二期)
-        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+      # 三路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步
+      - name: Mark COS sync complete
+        if: ${{ env.HAS_COS_SECRETS == 'true' && steps.cos_sync.outputs.all_ok == 'true' }}
         continue-on-error: true
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
@@ -426,9 +464,13 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-singapore
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
         run: |
           cd nextjs
-          node scripts/sync-h1-text-to-cos.mjs
+          export DRAFT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index-draft" rev-parse HEAD)"
+          export PROD_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index" rev-parse HEAD)"
+          export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
+          node scripts/cos-sync-decision.mjs mark
 
       # CUT2（overview#241）：正式站＝全栈项目 kyg-ssr-spike（www 已于 09-28 换绑过去）。
       # 原来的静态导出＋推 edgeone-release（发旧项目 kaiyuanguji）去掉：旧项目保留 4 周作回滚目标，
@@ -720,11 +762,13 @@ jobs:
               print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
 
-      # --- W2-3：条目页按改动失效、实测、预热（31 卡 §A.6）---
+      # --- W2-3：条目页按改动失效、实测（31 卡 §A.6）---
+      # overview#293：原来最后还有一步「预热」（并发 4 请求 2000 个条目页，约 19 分钟，verify 要等它跑完才开始），
+      # 用户 09-30 定「完全没必要预热」，已删。条目页失效后第一次访问是冷渲染，之后走 CDN 缓存。
       # 测试站与 www（CUT2 起）都是 Pages 自定义域名，不在 zone 加速域名里，purge_url 清不到（T1 实测）；
       # 改走 Next 的按需失效（EdgeOne 全栈项目把它接到了自家 CDN）。
-      # CUT2：正式站同一套四步，对象是 www（原 W2b 双跑时打的是 ssr-test）。
-      # 这四步都不拦发布：失效没生效，最坏是条目页按 s-maxage（1 小时）自然过期。
+      # CUT2：正式站同一套步骤，对象是 www（原 W2b 双跑时打的是 ssr-test）。
+      # 这几步都不拦发布：失效没生效，最坏是条目页按 s-maxage（1 小时）自然过期。
       # 但「实测」一步失败会在 job 摘要里标 ✗——首跑几次都绿之后，改成拦发布（去掉 continue-on-error）。
       - name: Compute changed items (W2-3)
         id: item_changes
@@ -751,88 +795,40 @@ jobs:
           ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
         run: node scripts/item-cache-verify.mjs
 
-      - name: Prewarm item pages (W2-3)
-        continue-on-error: true
-        working-directory: nextjs
-        env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
-          ITEM_PREWARM_CONCURRENCY: '4'
-        run: node scripts/item-prewarm.mjs
-
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #
   # 老 smoke 只看网络层（字节数/404/pageerror），2026-09-02~03 那批故障
   # （整理本 tab 消失、"0 部书"、书名不渲染）它一个都发现不了——那些请求全是
-  # 200。这个 job 断言的是「内容」。
+  # 200。验收断言的是「内容」。
+  # overview#293：验收的步骤抽成了可复用工作流 verify.yml（workflow_call），本处与它自己的手动入口
+  # （workflow_dispatch，只重跑验收，不构建、不部署、不 promote）共用同一份，避免两份漂移。
   verify:
-    runs-on: ubuntu-latest
     needs: [resolve, build]
     # 部署失败就没必要验收了；但 build 被 check 跳过时（数据无变化）也不必跑
     if: needs.build.result == 'success'
-    env:
-      # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
-      TARGET: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
-      DATA_BASE: ${{ needs.resolve.outputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
-      # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
-      # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
-      # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
-      SITE_ARCH: fullstack
-    steps:
+    uses: ./.github/workflows/verify.yml
+    with:
+      target: ${{ needs.resolve.outputs.target }}
       # e2e 必须和被测站点是同一版代码：promote=data 时正式站代码可能比 main 旧，
       # 用 main 的 e2e 去测会命中「线上前端不比本 commit 要求的旧」而误报红。
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.resolve.outputs.web_ref }}
+      ref: ${{ needs.resolve.outputs.web_ref }}
+      # 刚部署完：CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
+      wait_cdn: true
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install e2e deps
-        working-directory: e2e
-        run: npm ci || npm install
-
-      - name: Install chromium
-        working-directory: e2e
-        run: npx playwright install --with-deps chromium
-
-      # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
-      - name: Wait for CDN propagation
-        run: sleep 60
-
-      # 契约层先跑：不开浏览器、几秒出结果，红了就不用往下走
-      - name: Contract tests
-        working-directory: e2e
-        run: npm run test:contract
-
-      - name: UI tests
-        working-directory: e2e
-        run: npm run test:ui
-
-      # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，
-      # 但不把发版判定为失败——前端有 L2 兜底，用户无感。
-      # 让它阻断的话每次发版都亮红灯，真正的回归反而会被淹没。
-      - name: Degradable deps (non-blocking)
-        working-directory: e2e
-        continue-on-error: true
-        run: npm run test:degradable
-
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-report
-          path: e2e/out/report
-          retention-days: 14
-
-      # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
-      # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
-      # 就是默认开，符合用户预期，也符合网站总管已告诉用户「不用配」的口径）。
-      # 只在 mode=staging（真的经过了测试站且 e2e 已验）且触发是数据（dispatch／
-      # 定时）时生效——mode=promote 不该再自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
-      # 没 promote 的代码不会被数据发布夹带上线。
+  # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
+  # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
+  # 就是默认开，符合用户预期，也符合网站总管已告诉用户「不用配」的口径）。
+  # 只在 mode=staging（真的经过了测试站且 e2e 已验）且触发是数据（dispatch／
+  # 定时）时生效——mode=promote 不该再自己触发下一轮 promote。走 data 模式：正式站代码不动，只换数据——所以
+  # 没 promote 的代码不会被数据发布夹带上线。
+  # overview#293 前它是 verify 任务的最后一步，验收抽成可复用工作流后单列一个任务，条件不变
+  # （needs.verify.result == 'success' 即原来的 success()）。
+  auto-promote:
+    needs: [resolve, verify]
+    if: ${{ needs.verify.result == 'success' && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Auto-promote data to production
-        if: ${{ success() && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

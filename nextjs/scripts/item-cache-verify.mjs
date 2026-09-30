@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * item-cache-verify.mjs — 发版后实测「改一条数据 → 该页 5 分钟内更新，其它页 CDN 仍命中」
- * （W2-3 判据）。在 item-revalidate.mjs 之后、item-prewarm.mjs 之前跑。
+ * （W2-3 判据）。在 item-revalidate.mjs 之后跑。（原来后面还有 item-prewarm.mjs，overview#293 起已删。）
  *
  *  1. 改动页：从改动集里抽至多 3 个（新增／变更），每 20 秒取一次，直到页面的
  *     data-ssr-version 等于本轮新 root（h1:<newRoot>），超时 5 分钟判失败；

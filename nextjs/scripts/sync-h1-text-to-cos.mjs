@@ -55,7 +55,7 @@ import {
     planBatches, logPlan, logOrphansPlan,
     requireCosSdk, createCosOps, runUploadBatch, runQueue,
     getOrphansTableFromCos, putOrphansTableToCos,
-    createCosRootsBackend, runRootsRetention, logRootsRetentionPlan,
+    createCosRootsBackend, runRootsRetention, logRootsRetentionPlan, COS_CONCURRENCY,
 } from './lib/h1-sync-core.mjs';
 import { createDryRunRootsBackend } from './lib/h1-roots-dryrun-backend.mjs';
 
@@ -252,7 +252,7 @@ async function main() {
     const cos = new COS({
         SecretId: SECRET_ID,
         SecretKey: SECRET_KEY,
-        FileParallelLimit: 80,
+        FileParallelLimit: COS_CONCURRENCY,
         ChunkParallelLimit: 8,
         Timeout: 60 * 1000,
     });
@@ -302,7 +302,7 @@ async function main() {
 
     if (orphansResult.toDelete.length > 0) {
         console.log(`  删除已满 7 天的 text 孤儿...`);
-        const r = await runQueue(orphansResult.toDelete, 80, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-text-orphan');
+        const r = await runQueue(orphansResult.toDelete, COS_CONCURRENCY, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-text-orphan');
         console.log(`  ✓ 删除 ${r.done}/${orphansResult.toDelete.length} 个已过期 text 孤儿`);
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 text 孤儿删除失败。text-orphans.json 与 state 均不落，重跑整轮即可重试。`);

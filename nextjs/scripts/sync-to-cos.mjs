@@ -50,6 +50,7 @@ import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { withCacheKey } from './lib/latest-cache-key.mjs';
+import { cosConcurrency } from './lib/cos-sync-decision.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -206,10 +207,13 @@ try {
 }
 
 // FileParallelLimit + ChunkParallelLimit 提升整体并发；UserAgent 便于在 COS 访问日志里识别
+// 并发上限：默认 80；三次 COS 同步在 deploy.yml 里并行跑时，用 COS_CONCURRENCY 各自调小，
+// 总数不超过串行时的 80（overview#293 第 3 项，避免叠加后撞 COS 限流）
+const CONCURRENCY = cosConcurrency(80);
 const cos = new COS({
     SecretId: SECRET_ID,
     SecretKey: SECRET_KEY,
-    FileParallelLimit: 80,
+    FileParallelLimit: CONCURRENCY,
     ChunkParallelLimit: 8,
     Timeout: 60 * 1000,
 });
@@ -501,7 +505,6 @@ async function runQueue(items, concurrency, worker, label) {
 }
 
 async function main() {
-    const CONCURRENCY = 80;
 
     // ── Step 1: 加载或重建 state ──
     let stateMap = REBUILD_STATE ? null : loadSyncState();

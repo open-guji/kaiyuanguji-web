@@ -30,8 +30,12 @@ import {
     serializeRootsLedger, parseRootsLedger, commitFromRootFilename,
 } from './h1-roots.mjs';
 import { walk } from './h1-hash-common.mjs';
+import { cosConcurrency } from './cos-sync-decision.mjs';
 
 const require = createRequire(import.meta.url);
+
+// COS 并发上限：默认 80；三次 COS 同步并行跑时用 COS_CONCURRENCY 各自调小（overview#293 第 3 项）
+export const COS_CONCURRENCY = cosConcurrency(80);
 
 // walk() 从 h1-hash-common.mjs 转发：bundle-hashed*.mjs 与本文件都要递归收集
 // 文件（前者收集打包源、后者收集要同步的产物），是同一个纯 fs 工具，不重复定义。
@@ -307,7 +311,7 @@ export async function runUploadBatch(label, items, uploadOneForFile) {
         return;
     }
     console.log(`  ${label}: 上传 ${items.length} 个...`);
-    const r = await runQueue(items, 80, uploadOneForFile, label);
+    const r = await runQueue(items, COS_CONCURRENCY, uploadOneForFile, label);
     if (r.failures.length > 0) {
         console.error(`\n❌ ${label} 有 ${r.failures.length}/${items.length} 个失败，不进下一批，state 不落。重跑整轮即可重试。`);
         process.exit(2);
@@ -473,7 +477,7 @@ export async function runRootsRetention(backend, config) {
     const { toDelete: rootsToDelete } = planRootsFileRetention({ liveCommitSet, cosRootFiles });
 
     if (shardsToDelete.length > 0) {
-        const r = await runQueue(shardsToDelete, 80, (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
+        const r = await runQueue(shardsToDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 manifest 分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
@@ -481,14 +485,14 @@ export async function runRootsRetention(backend, config) {
     }
     for (const p of extraPlans) {
         if (p.toDelete.length === 0) continue;
-        const r = await runQueue(p.toDelete, 80, (rel) => backend.deleteKey(`${p.prefix}${rel}`), `delete-${p.subdir}-shard-retired`);
+        const r = await runQueue(p.toDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${p.prefix}${rel}`), `delete-${p.subdir}-shard-retired`);
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 ${p.label}分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
         }
     }
     if (rootsToDelete.length > 0) {
-        const r = await runQueue(rootsToDelete, 80, (rel) => backend.deleteKey(`${rootsPrefix}${rel}`), 'delete-root-retired');
+        const r = await runQueue(rootsToDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${rootsPrefix}${rel}`), 'delete-root-retired');
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 roots 文件删除失败。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
