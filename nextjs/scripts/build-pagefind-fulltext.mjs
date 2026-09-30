@@ -9,6 +9,10 @@
  *
  * 输出：public/data/pagefind-fulltext/
  *
+ * 两种结构都认（overview#307）：旧结构从 draft 仓的 Work/…/collated_edition/ 取章 JSON；
+ * 新结构（条目目录有 manifest.json）从文本仓（BOOK_TEXT_DIR，默认 ../../../book-text）取 kind=collated 的
+ * 公开版本的章 JSON，链接指向 /read/<id>[/<key>]/<章>。internal 版本不索引。
+ *
  * 用法：
  *   node scripts/build-pagefind-fulltext.mjs [draft-dir]
  */
@@ -17,12 +21,15 @@ import { readFileSync, existsSync, readdirSync, statSync, rmSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { collatedChapterJsons, readManifest } from './lib/text-layout.mjs';
 import * as pagefind from 'pagefind';
 import { Converter } from 'opencc-js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DRAFT_DIR = resolve(process.argv[2] || join(__dirname, '..', '..', '..', 'book-index-draft'));
 const OUT_DIR = join(resolveDataDirs().dataDir, 'pagefind-fulltext');
+
+const TEXT_DIR = resolve(process.env.BOOK_TEXT_DIR || join(__dirname, '..', '..', '..', 'book-text'));
 
 if (!existsSync(DRAFT_DIR)) {
     console.error(`❌ book-index-draft not found: ${DRAFT_DIR}`);
@@ -92,6 +99,29 @@ function collectCollatedJsons() {
     return result;
 }
 
+// 新结构：文本仓里有 manifest.json 的条目目录，取整理本版本的章 JSON
+function collectNewStructureJsons() {
+    const result = [];
+    function walk(dir) {
+        for (const name of readdirSync(dir)) {
+            const full = join(dir, name);
+            if (!statSync(full).isDirectory()) continue;
+            if (readManifest(full)) {
+                for (const c of collatedChapterJsons(full)) {
+                    result.push({ workDir: full, jsonPath: c.jsonPath, jsonName: `${c.stem}.json`, key: c.key, stem: c.stem });
+                }
+            } else if (!/^[a-z0-9]{8,}$/.test(name)) {
+                walk(full); // 分片目录（Work/G/Y/L/…）；条目目录名是 id，不往下钻
+            }
+        }
+    }
+    for (const top of ['Work', 'Book']) {
+        const p = join(TEXT_DIR, top);
+        if (existsSync(p)) walk(p);
+    }
+    return result;
+}
+
 const { index, errors } = await pagefind.createIndex({ forceLanguage: 'zh' });
 if (errors?.length) console.warn('createIndex warnings:', errors);
 
@@ -101,10 +131,10 @@ let totalChars = 0;
 let skippedEmpty = 0;
 let totalWorks = 0;
 
-const collatedJsons = collectCollatedJsons();
+const collatedJsons = [...collectCollatedJsons(), ...collectNewStructureJsons()];
 console.log(`Found ${collatedJsons.length} collated JSON files\n`);
 
-for (const { workDir, jsonPath, jsonName } of collatedJsons) {
+for (const { workDir, jsonPath, jsonName, key, stem } of collatedJsons) {
     // workDir 末段是 work id（按 book-index-draft 路径约定 Work/1/e/u/1euxxx/）
     const workId = workDir.split(/[\\/]/).pop();
     const meta = workMeta.get(workId) || { title: '', author: '', dynasty: '' };
@@ -129,7 +159,9 @@ for (const { workDir, jsonPath, jsonName } of collatedJsons) {
         if (!indexedText) { skippedEmpty++; continue; }
 
         const result = await index.addCustomRecord({
-            url: `/book-index?id=${workId}&juan=${encodeURIComponent(jsonName)}&sec=${i}`,
+            url: key
+                ? `/read/${workId}${key === 'default' ? '' : `/${key}`}/${stem}?sec=${i}`
+                : `/book-index?id=${workId}&juan=${encodeURIComponent(jsonName)}&sec=${i}`,
             content: indexedText,
             language: 'zh',
             // meta 保存**原始繁体**（不转换）供 UI 展示

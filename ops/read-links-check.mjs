@@ -11,6 +11,10 @@
  *     整理本  items/<id>/collated_edition/index.json → juan_files[0]
  *     Work 全文  index/full_text/<分片>.json → 首选条目 key → items/<id>/full_text/<key>/index.json → chapters[0].file（.md→.txt）
  *     Book 全文  items/<id>/full_text/index.json → chapters[0].file
+ *     新结构（overview#307）：items/<id>/manifest.json 存在就走这条——manifest.versions 逐份查
+ *       items/<id>/<key>/index.json → chapters[0].file（.md→.txt，has_json 的再查同名 .json）；
+ *       页面查 /read/<id>（主版本）与 /read/<id>/<key>（其他版本）；manifest 里不得有 visibility=internal。
+ *       旧结构条目没有 manifest.json（404 是预期，不记失败）。
  *
  * 只发 GET，无依赖、无 secret。CLI：
  *   node ops/read-links-check.mjs --target https://www.kaiyuanguji.com --data https://data.kaiyuanguji.com [--per-node 20] [--seed 1]
@@ -19,6 +23,7 @@
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { decodeId, mulberry32 } from './dq-lib.mjs';
+import { chapterTxtFile, firstChapterOf, isInternal, isTextKey } from '../nextjs/scripts/lib/text-layout.mjs';
 
 /** 与 reader-check.ts／book-index-ui 的 shardOf 同一算法（16 片） */
 export function fullTextShardOf(id) {
@@ -91,7 +96,37 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         }
     }
 
+    // 新结构条目：manifest.versions 逐份核对目录、首章与页面
+    async function checkNewCard(id, manifest) {
+        const versions = Array.isArray(manifest?.versions) ? manifest.versions : [];
+        if (versions.length === 0) { fail(id, '数据', `items/${id}/manifest.json 没有 versions`); return; }
+        if (isInternal(manifest) || versions.some(isInternal)) fail(id, '数据', `items/${id}/manifest.json 带 visibility=internal，私有文本进了公开产物`);
+        if (versions[0]?.key !== 'default') fail(id, '数据', `items/${id}/manifest.json 的 versions[0] 不是 default`);
+        for (const v of versions) {
+            if (!isTextKey(v?.key)) { fail(id, '数据', `items/${id}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
+            const pagePath = v.key === 'default' ? `/read/${id}` : `/read/${id}/${v.key}`;
+            const page = await get(`${site}${pagePath}`, false);
+            if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}`);
+            const base = `items/${id}/${v.key}`;
+            const idx = await json(`${base}/index.json`);
+            if (!idx.ok) { fail(id, '数据', `${base}/index.json → ${why(idx)}`); continue; }
+            const first = firstChapterOf(idx.body);
+            if (!first) { fail(id, '数据', `${base}/index.json 的 chapters 为空`); continue; }
+            const ch = await get(`${cur}/${base}/${chapterTxtFile(first.file)}?${bust}`, false);
+            if (!ch.ok) fail(id, '数据', `${base}/${chapterTxtFile(first.file)} → ${why(ch)}`);
+            if (first.hasJson) {
+                const cj = await get(`${cur}/${base}/${first.file.replace(/\.(md|txt)$/, '')}.json?${bust}`, false);
+                if (!cj.ok) fail(id, '数据', `${base}/${first.file.replace(/\.(md|txt)$/, '')}.json → ${why(cj)}`);
+            }
+        }
+    }
+
     async function checkCard(id, { collated }) {
+        // 新结构：有 manifest.json 就按新结构查；旧结构 404 是预期
+        const manifest = await json(`items/${id}/manifest.json`);
+        if (manifest.ok) return checkNewCard(id, manifest.body);
+        // 只有 404 才是「旧结构、没有 manifest」；5xx、网络错误、JSON 坏都记失败，不往旧路径上走
+        if (manifest.status !== 404) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
         const isBook = decodeId(id).type === 'book';
         const kind = collated ? 'collated' : 'fulltext';
         const page = await get(`${site}/read/${id}?kind=${kind}`, false);

@@ -20,6 +20,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { join, dirname, extname, basename } from 'path';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { publicKeys, readManifest } from './lib/text-layout.mjs';
 
 const { dataDir: DATA_DIR, h1TextDir: H1_TEXT_DIR } = resolveDataDirs();
 const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
@@ -64,7 +65,7 @@ function loadTextManifestMap() {
 /** 抽样候选：{ ownerId, relPath, kind }，kind ∈ 整理本／Book全文／Work全文 */
 async function collectCandidates() {
     const { extractType } = await import('book-index-ui');
-    const candidates = { 整理本: [], Book全文: [], Work全文: [] };
+    const candidates = { 整理本: [], Book全文: [], Work全文: [], 新结构文本: [] };
 
     for (const ownerId of readdirSync(ITEMS_SRC_DIR)) {
         const ownerDir = join(ITEMS_SRC_DIR, ownerId);
@@ -80,6 +81,16 @@ async function collectCandidates() {
         if (existsSync(ftDir) && statSync(ftDir).isDirectory()) {
             const kind = type === 'book' ? 'Book全文' : 'Work全文';
             for (const f of walkRel(ftDir, ownerDir)) candidates[kind].push({ ownerId, relPath: f });
+        }
+        // 新结构（overview#307）：manifest.json 与公开版本目录，与 bundle-hashed-text 同一范围
+        if (readManifest(ownerDir)) {
+            candidates['新结构文本'].push({ ownerId, relPath: 'manifest.json' });
+            for (const key of publicKeys(ownerDir)) {
+                const keyDir = join(ownerDir, key);
+                if (existsSync(keyDir) && statSync(keyDir).isDirectory()) {
+                    for (const f of walkRel(keyDir, ownerDir)) candidates['新结构文本'].push({ ownerId, relPath: f });
+                }
+            }
         }
     }
     return candidates;

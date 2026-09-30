@@ -16,6 +16,8 @@
  *   Work：整理本 collated_edition/index.json 的 juan_files 非空，
  *         或 book-text/index/full_text 里有非 Book 所有、total_chapters>0 的条目；
  *   Book：full_text/index.json 存在且 chapters 非空。
+ * 新结构（条目目录有 manifest.json，overview#307）：manifest 里有可公开版本、且该版本 index.json 章目录非空才算，
+ *   整理本标记＝有 kind=collated 的版本；internal 版本不算。有 manifest 就只按新结构判，不再回头看旧的目录。
  * 构建期再逐卡核对产物里的目录与首章／首卷文件在不在（bundleRead 的 verifyItems），缺则构建失败。
  *
  * ReadCard { id, title, edition?, juan?, authors?: {name, dynasty?}[], collated?: true, classification?: string[] }
@@ -26,6 +28,7 @@
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { chapterTxtFile, newStructureReadable, readManifest } from './lib/text-layout.mjs';
 import {
     buildCatalog,
     classificationPath,
@@ -68,6 +71,12 @@ export function bookFirstChapter(itemDir) {
     const idx = readJsonOrNull(join(itemDir, 'full_text', 'index.json'));
     const ch = Array.isArray(idx?.chapters) ? idx.chapters.find((c) => typeof c?.file === 'string' && c.file) : null;
     return ch ? ch.file : null;
+}
+
+/** 新结构条目的核对清单：manifest.json 一条，每个可读版本的 index.json 与首章（有 json 的再加首章 json） */
+function pushNewProbes(probes, id, nt) {
+    probes.push({ id, kind: 'manifest' });
+    for (const v of nt.versions) probes.push({ id, kind: 'text', key: v.key, first: v.first });
 }
 
 /** 读 book-text/index/full_text/*.json 合并成 { workId: entry[] } */
@@ -151,6 +160,13 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
             if (!d || d.merged_into) { if (d) merged++; continue; }
             if (!d.id) d.id = item.id;
             const itemDir = join(textDirFor(item), dirname(item.path), d.id);
+            if (readManifest(itemDir)) {
+                const nt = newStructureReadable(itemDir);
+                if (!nt) continue;
+                pushNewProbes(probes, d.id, nt);
+                yield { d, card: toReadCard(d, nt.collated) };
+                continue;
+            }
             const juan = collatedFirstJuan(itemDir);
             const pick = workFullTextPick(fullTexts.get(d.id));
             if (!juan && !pick) continue;
@@ -173,7 +189,15 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
         const d = readJsonSafe(p, log, item.path);
         if (!d || d.merged_into) continue;
         if (!d.id) d.id = item.id;
-        const first = bookFirstChapter(join(textDirFor(item), dirname(item.path), d.id));
+        const itemDir = join(textDirFor(item), dirname(item.path), d.id);
+        if (readManifest(itemDir)) {
+            const nt = newStructureReadable(itemDir);
+            if (!nt) continue;
+            pushNewProbes(probes, d.id, nt);
+            books.push(toReadCard(d, false));
+            continue;
+        }
+        const first = bookFirstChapter(itemDir);
         if (!first) continue;
         probes.push({ id: d.id, kind: 'book', first });
         books.push(toReadCard(d, false));
@@ -209,7 +233,13 @@ export function verifyReadProbes(probes, dataDir) {
     };
     const txt = (f) => (f.endsWith('.md') ? `${f.slice(0, -3)}.txt` : f);
     for (const p of probes) {
-        if (p.kind === 'collated') {
+        if (p.kind === 'manifest') {
+            need(p.id, 'manifest.json');
+        } else if (p.kind === 'text') {
+            need(p.id, `${p.key}/index.json`);
+            need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
+            if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file.replace(/\.(md|txt)$/, '')}.json`);
+        } else if (p.kind === 'collated') {
             need(p.id, 'collated_edition/index.json');
             need(p.id, `collated_edition/${p.first}`);
         } else if (p.kind === 'fulltext') {

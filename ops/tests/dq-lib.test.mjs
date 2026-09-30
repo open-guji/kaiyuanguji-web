@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    decodeId, insertHash, hash8, sample, extractRefs, registeredTextFiles, isTextIndexPath,
+    decodeId, insertHash, hash8, sample, extractRefs, registeredTextFiles, isTextIndexPath, newStructureKey,
     createHttp, pool, runDq, renderMarkdown, hasFailures, MAX_CONCURRENCY,
 } from '../dq-lib.mjs';
 
@@ -83,6 +83,23 @@ test('registeredTextFiles：整理本 juan_files；全文 chapters 的 .md 改 .
     assert.equal(registeredTextFiles('full_text/index.json', { versions: [] }).format, 'full_text.unknown');
 });
 
+test('registeredTextFiles：新结构 <key>/index.json，file 不带扩展名，has_json 的另登记 .json', () => {
+    const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003.md' }, { n: 4 }] });
+    assert.equal(r.format, 'texts.chapters');
+    assert.deepEqual(r.registered, ['default/001.txt', 'default/001.json', 'default/002.txt', 'default/003.txt']);
+    assert.deepEqual(registeredTextFiles('wikisource-2/index.json', { chapters: [{ file: '001' }] }).registered, ['wikisource-2/001.txt']);
+    assert.equal(registeredTextFiles('default/index.json', { versions: [] }).format, 'texts.unknown');
+});
+
+test('newStructureKey／isTextIndexPath 认新结构，不撞旧结构目录和保留字', () => {
+    assert.equal(newStructureKey('default/index.json'), 'default');
+    assert.equal(newStructureKey('wikisource-2/index.json'), 'wikisource-2');
+    for (const p of ['collated_edition/index.json', 'full_text/index.json', 'manifest/index.json', 'fragments/index.json', '001/index.json', 'a/b/index.json', 'default/001.json']) assert.equal(newStructureKey(p), null, p);
+    assert.ok(isTextIndexPath('default/index.json'));
+    assert.ok(isTextIndexPath('kanripo/index.json'));
+    assert.ok(!isTextIndexPath('manifest.json'));
+});
+
 test('isTextIndexPath', () => {
     assert.ok(isTextIndexPath('collated_edition/index.json'));
     assert.ok(isTextIndexPath('full_text/index.json'));
@@ -148,7 +165,7 @@ test('pool：同时在飞不超过 8，哪怕要求更多', async () => {
 const COMMIT = { commitId: 'c'.repeat(40), productionCommitId: 'p'.repeat(40), textCommitId: 't'.repeat(40) };
 const idOf = (typeBits, seq) => ((BigInt(typeBits) << 59n) | (1700000000n << 19n) | BigInt(seq)).toString(36);
 
-function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false } = {}) {
+function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false, newStructure = null } = {}) {
     const files = new Map();
     const put = (p, v) => files.set(p, Buffer.from(typeof v === 'string' ? v : JSON.stringify(v)));
     const B = 'https://d.test';
@@ -184,9 +201,23 @@ function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, dan
     // 全文：work 有一个 wikisource 版本两章
     const tfiles = {};
     const addText = (rel, content) => { const buf = Buffer.from(content); const h = hash8(buf); tfiles[rel] = h; files.set(`${B}/h1/text/${work}/${insertHash(rel, h)}`, buf); };
-    addText('full_text/ws/index.json', JSON.stringify({ chapters: [{ file: '001.md' }, { file: '002.md' }] }));
-    addText('full_text/ws/001.txt', '卷一');
-    if (!missingChapter) addText('full_text/ws/002.txt', '卷二');
+    if (!newStructure) {
+        addText('full_text/ws/index.json', JSON.stringify({ chapters: [{ file: '001.md' }, { file: '002.md' }] }));
+        addText('full_text/ws/001.txt', '卷一');
+        if (!missingChapter) addText('full_text/ws/002.txt', '卷二');
+    } else {
+        // 新结构（overview#307）：manifest.json＋<key>/index.json（file 不带扩展名）＋NNN.txt，整理本章另有 NNN.json
+        const versions = [{ key: 'default', kind: 'collated', label: '整理本' }, { key: 'wikisource', kind: 'transcription', label: '維基文庫' }];
+        if (newStructure === 'leak') versions.push({ key: 'shidian', kind: 'transcription', label: '識典', visibility: 'internal' });
+        if (newStructure === 'missingVersion') versions.push({ key: 'kanripo', kind: 'transcription', label: 'Kanripo' });
+        addText('manifest.json', JSON.stringify({ id: work, versions }));
+        addText('default/index.json', JSON.stringify({ chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002', has_json: false }] }));
+        addText('default/001.txt', '卷一');
+        addText('default/001.json', '{}');
+        if (newStructure !== 'missingChapter') addText('default/002.txt', '卷二');
+        addText('wikisource/index.json', JSON.stringify({ chapters: [{ n: 1, file: '001', has_json: false }] }));
+        addText('wikisource/001.txt', '維基');
+    }
     const tshard = { [work]: tfiles };
     const tbuf = Buffer.from(JSON.stringify(tshard));
     const tk = work.slice(-2);
@@ -312,4 +343,27 @@ test('runDq：404 仍算网站打包问题', async () => {
     const base = site.fetchImpl;
     const r = await runOn({ ...site, fetchImpl: async (url, init) => (url.includes('/full_text/ws/001.') ? resp(404) : base(url, init)) });
     assert.equal(r.findings.find((x) => x.code === 'text-file-unreachable').kind, 'packaging');
+});
+
+test('runDq：新结构文本干净——manifest.json、各版本目录、章文件（含 has_json）都核对到', async () => {
+    const r = await runOn(buildSite({ newStructure: 'clean' }));
+    assert.deepEqual(r.findings, []);
+    assert.equal(r.text.manifests, 1);
+    assert.equal(r.text.indexes, 2);
+    assert.equal(r.text.registered, 4); // default 的 001.txt／001.json／002.txt＋wikisource 的 001.txt
+    assert.equal(r.text.filesChecked, 4);
+    assert.equal(hasFailures(r), false);
+});
+
+test('runDq：新结构缺登记的章文件、manifest 列了没有目录的版本、internal 版本泄漏，各报各的', async () => {
+    let r = await runOn(buildSite({ newStructure: 'missingChapter' }));
+    assert.ok(r.findings.some((f) => f.code === 'text-registered-missing' && f.kind === 'data'));
+    r = await runOn(buildSite({ newStructure: 'missingVersion' }));
+    const f = r.findings.find((x) => x.code === 'text-manifest-version-missing');
+    assert.ok(f && f.kind === 'data');
+    assert.match(f.message, /kanripo/);
+    r = await runOn(buildSite({ newStructure: 'leak' }));
+    const leak = r.findings.find((x) => x.code === 'text-internal-leak');
+    assert.ok(leak && leak.kind === 'packaging', 'internal 进了公开产物是打包问题');
+    assert.equal(hasFailures(r), true);
 });
