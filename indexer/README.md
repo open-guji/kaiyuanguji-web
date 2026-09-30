@@ -11,6 +11,7 @@
 | 文件 | 作用 |
 |---|---|
 | `full-reindex.mjs` | 主程序。流式遍历三仓，建 works / juans / books / collections / entities 五个 index，最后 PATCH settings |
+| `lib/work-fields.mjs` | works 文档里 `classification`（部）、`loss_status`（存佚）的取值逻辑。**full-reindex.mjs 依赖它，同步时要一起带上** |
 | `reindex-and-purge.sh` | wrapper：读凭证 → 三仓 `git pull`（缺则 clone）→ 跑 full-reindex → 成功才 purge。**不要直接跑** |
 | `reindex-limited.sh` | 平时用这个。`systemd-run --scope` 给上面的 wrapper 加 cgroup 上限（默认内存 600M / CPU 50%），压不垮 Meili 和 sshd |
 | `purge-edgeone.mjs` | `purge_host api.kaiyuanguji.com`（EdgeOne 国际版凭证，读 `/opt/indexer/.env`） |
@@ -19,16 +20,20 @@
 
 ## 把仓库里的脚本同步到服务器
 
-六个文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合。
+这些文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合；
+`full-reindex.mjs` 还 import 了 `lib/work-fields.mjs`（2026-09-30 起），漏了 `lib/` 会在启动时报 `ERR_MODULE_NOT_FOUND`
+——那是在动任何索引之前就报错，线上索引不受影响，补上 `lib/` 重跑即可。
 
 **上海机直连 GitHub 不通**（2026-09-06 实测：`git ls-remote` 60 秒超时，raw.githubusercontent.com 同样不通），
 所以脚本用 `scp` 从本机推，数据仓经 `gh-proxy.com` 前缀拉（三仓的 origin 都已指向它）：
 
 ```bash
 cd D:/workspace/kaiyuanguji-web/indexer
+ssh root@122.51.91.177 'mkdir -p /opt/indexer/lib'
 scp full-reindex.mjs reindex-and-purge.sh reindex-limited.sh purge-edgeone.mjs package.json README.md root@122.51.91.177:/opt/indexer/
-ssh root@122.51.91.177 'cd /opt/indexer && chmod +x *.sh && npm install --omit=dev && md5sum *.mjs *.sh package.json README.md'
-md5sum *.mjs *.sh package.json README.md    # 本机对一遍
+scp lib/*.mjs root@122.51.91.177:/opt/indexer/lib/
+ssh root@122.51.91.177 'cd /opt/indexer && chmod +x *.sh && npm install --omit=dev && md5sum *.mjs lib/*.mjs *.sh package.json README.md'
+md5sum *.mjs lib/*.mjs *.sh package.json README.md    # 本机对一遍
 ```
 
 ## 数据仓怎么更新
@@ -94,3 +99,43 @@ import sys,json; d=json.load(sys.stdin); print('lastUpdate', d['lastUpdate'])
 - 前端用的是公开只读 key，401/403 会立即熔断转 L2；轮换 key 要同时改 GitHub secret `MEILI_SEARCH_KEY` 与 `deploy.yml` 里的兜底值。
 - 前端 `filter=is_draft = false` 依赖每个 doc 的 `is_draft` 字段，改 doc 结构时别丢它。
 - 机器 IP 曾变过一次（2026-09-03）导致 EdgeOne 回源 522；现已绑弹性 IP。再遇 522 先去控制台确认 IP，再看源站组 `meili-shanghai`。
+
+## 搜索页 v4 的筛选字段（overview#291 P1a，2026-09-30）
+
+works 索引新增两个可过滤字段，`/api/search` 的 `filter` 参数据此放行（语法与限额见 `edge-functions/api/search.js` 文件头）：
+
+| 字段 | 取值 | 来源 |
+|---|---|---|
+| `classification` | 部（一级分类）原文，如 `經部`／`史部`／`子部`／`集部`；没有的**空串**（前端当「未分類」） | Work 详情的 `classification.l1` |
+| `loss_status` | `extant`／`partially_extant`／`lost`；别的或缺失为空串 | Work 的 `loss_status` |
+
+已有的 `dynasty`、`has_image`、`has_text`、`has_collated`、`type` 不动。books／entities 这一版没加（设计稿表格的「部类」列只对作品有意义）。
+
+**空串筛不到**：Meili 里 `classification = ""` 永远筛不到空值（要写 `IS EMPTY`）。代理已经把 `= ""`／`IN [..., ""]` 改写成 `IS EMPTY`，前端照索引里的值用 `""` 就行；直接打 Meili 时要自己写 `IS EMPTY`。
+
+### 重建与验证
+
+索引改动不重建不生效。只改了 works，可以只重建它（约 1 分钟量级，swap 零停机；每晚 04:15 的全量重建也会带上）：
+
+```bash
+cd /opt/indexer && ./reindex-limited.sh --only works
+```
+
+重建自检（swap 前）会核对 settings 里有新字段，并用 `is_draft = false AND classification IN ["史部"] AND loss_status IN ["extant"]` 跑一条查询，报 400 就放弃这次 swap、旧索引原封不动。
+
+重建后验证（都只读；`$KEY` 用 search key 即可读 facets）：
+
+```bash
+# 1. settings：filterableAttributes 里有 classification、loss_status
+curl -s -H "Authorization: Bearer $KEY" https://api.kaiyuanguji.com/indexes/works/settings | python3 -c "import sys,json; print(json.load(sys.stdin)['filterableAttributes'])"
+
+# 2. 分布：与总目树的一级节点数量对得上（经/史/子/集 加 空串≈未分類）
+curl -s -X POST -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' https://api.kaiyuanguji.com/indexes/works/search \
+  -d '{"q":"","limit":0,"filter":"is_draft = false","facets":["classification","loss_status"]}'
+
+# 3. 朝代＋部类组合（经代理）：结果与预期一致
+curl -s 'https://www.kaiyuanguji.com/api/search?q=%E5%8F%B2&index=works&filter=dynasty%20IN%20%5B%22%E5%94%90%22%5D%20AND%20classification%20%3D%20%22%E5%8F%B2%E9%83%A8%22'
+
+# 4. 搜索质量不退步：基线 通过 59 / 失败 0 / known-issue 5 / 共 64（2026-09-30 重建前）
+node nextjs/scripts/test-search-quality.mjs
+```
