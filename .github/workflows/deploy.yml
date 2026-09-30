@@ -217,6 +217,11 @@ jobs:
             if ! printf '%s' "$v" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
               echo "❌ $k 含非法字符：$v"; exit 1
             fi
+            # 语法上也要是合法的 ref 名（拒绝 .. 、foo. 、foo.lock 等，免得到 clone 步骤才失败）；
+            # 7～40 位十六进制的 commit SHA 同样能过这条
+            if ! git check-ref-format "refs/heads/$v" >/dev/null 2>&1; then
+              echo "❌ $k 不是合法的 git ref 名：$v"; exit 1
+            fi
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
           echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} draft=${IN_DRAFT_REF:-main} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
