@@ -16,7 +16,7 @@ const S = {
     h1: { fontSize: '1.75rem', fontWeight: 700, margin: 0 },
     lead: { color: 'var(--color-ink-2)', margin: '8px 0 28px', lineHeight: 1.7 },
     h2: { fontSize: '1.15rem', fontWeight: 700, margin: '32px 0 12px' },
-    note: { color: 'var(--color-ink-3)', fontSize: '0.875rem', margin: '4px 0 12px' },
+    note: { color: 'var(--bim-aux-fg)', fontSize: '0.875rem', margin: '4px 0 12px' },
     chips: { display: 'flex', flexWrap: 'wrap', gap: 8, listStyle: 'none', padding: 0, margin: 0 } as const,
     chip: {
         display: 'inline-block', padding: '4px 12px', borderRadius: 999, fontSize: '0.875rem',
@@ -32,7 +32,7 @@ const S = {
     } as const,
     cardTitle: { fontWeight: 600 },
     edition: { color: 'var(--color-ink-2)', fontSize: '0.8125rem', marginTop: 2 },
-    meta: { color: 'var(--color-ink-3)', fontSize: '0.8125rem', marginTop: 2 },
+    meta: { color: 'var(--bim-aux-fg)', fontSize: '0.8125rem', marginTop: 2 },
     pager: { display: 'flex', gap: 16, alignItems: 'center', marginTop: 24, fontSize: '0.9375rem' },
     sub: { marginTop: 12 },
     empty: { padding: '48px 0', color: 'var(--color-ink-2)' },
