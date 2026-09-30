@@ -22,6 +22,19 @@
 //   - 环境变量  HEALTH_NOTIFY_WEBHOOK／HEALTH_NOTIFY_FORMAT（19 卡已有）
 //                        新反馈推送用；未配置时静默跳过，不影响提交（G-23 第二批 §一·8）
 //
+// 公开列表的缓存与超时（overview#304，监控发现 GET 要 4～16 秒、偶发 500）：
+//   - 慢的根因：每次公开读都要「列全部 key → 取值」两轮 KV 往返，EdgeOne KV 一轮就要 1.5～3.5 秒
+//     （测试站 0 条反馈时也要 2.4～3 秒，说明是往返本身慢，不是数据多）；偶发 500 是某一轮 KV 卡住
+//     直到平台掐断（约 15.6 秒），异常被 catch 成 500；
+//   - 现在：公开读（不带管理凭证）走「新鲜 30 秒／过期 10 分钟内先给旧的再后台刷新」的缓存
+//     （isolate 内存＋边缘 Cache API），同一个 key 的并发读合并成一次；读 KV 有 8 秒总预算，
+//     超时／出错时有旧缓存就给旧的（X-Feedback-Cache: STALE），没有就回 503 + code（不是 500），前端与监控据此区分
+//     「服务暂时读不到」和「代码坏了」；
+//   - 带管理凭证的读（含 contact 等全量字段）永不进缓存，也不读缓存；
+//   - 提交／更新成功后清本 isolate 的缓存；边缘缓存清不到，只在新鲜期内采用，所以其它 isolate 最长 30 秒内可能看不到新条目，
+//     想立刻看到（例如刚提交完刷新列表）带 fresh=1 绕过缓存；
+//   - 响应头 X-Feedback-Cache: HIT｜STALE｜MISS｜BYPASS 便于监控与排查。
+//
 // type 白名单：bug｜resource｜suggestion｜contact｜other（contact＝想参与/联系我们，永远不公开）
 // status 白名单：pending｜in_progress｜resolved｜wontfix｜duplicate（duplicate 时应带 duplicateOf）
 
@@ -357,6 +370,7 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
   // 双保险，这里顺手把 visibility 也标成 hidden，admin 列表上看得出「已隐藏」
   if (type === 'contact') record.visibility = 'hidden';
   await kv.put(id, JSON.stringify(record));
+  invalidateListCache();
   return { id };
 }
 
@@ -436,7 +450,7 @@ async function listAllKeys(kv) {
  * 代价：每次读都列一遍全部 key；按 resourceId 过滤时最坏要读遍所有值。
  * 现在只有十几条，无所谓；到上千条再给 resourceId 建索引 key。
  */
-async function kvGet(kv, limit, cursor, resourceId, full) {
+async function kvGet(kv, limit, cursor, resourceId, full, stats) {
   const names = (await listAllKeys(kv)).sort().reverse();
   let start = 0;
   if (cursor) {
@@ -450,7 +464,11 @@ async function kvGet(kv, limit, cursor, resourceId, full) {
   const BATCH = 20;
   while (i < names.length && items.length < limit) {
     const batch = names.slice(i, i + BATCH);
-    const vals = await Promise.all(batch.map((k) => kv.get(k, 'json').catch(() => null)));
+    const vals = await Promise.all(batch.map((k) => kv.get(k, 'json').catch(() => {
+      // 单条读失败照旧跳过（一条坏记录不该拖垮整个列表），但记下来：带缓存的公开读不能把残缺列表缓存 30 秒
+      if (stats) stats.failed += 1;
+      return null;
+    })));
     for (let j = 0; j < batch.length; j += 1) {
       i += 1;
       const val = vals[j];
@@ -546,6 +564,7 @@ async function kvPatch(kv, id, patch) {
   record.updatedAt = new Date().toISOString();
   if (patch.updatedBy) record.updatedBy = patch.updatedBy;
   await kv.put(id, JSON.stringify(record));
+  invalidateListCache();
   return record;
 }
 
@@ -706,6 +725,158 @@ export async function onRequestPost(context) {
   }
 }
 
+// --- 公开列表的缓存与超时（overview#304，说明见文件头）---
+
+const LIST_FRESH_MS = 30 * 1000;
+const LIST_STALE_MS = 10 * 60 * 1000;
+const LIST_CACHE_MAX = 100;
+const KV_READ_BUDGET_MS = 8000;
+const EDGE_CACHE_URL = 'https://feedback-cache.invalid/v1?k=';
+
+// 状态挂在 globalThis 上（isolate 内共享）：本文件按 EdgeOne 约定只导出 onRequest* 处理函数，
+// 不为测试多导出别的；单测通过删这个全局来复位。
+function listCacheState() {
+  if (!globalThis.__kygFeedbackListCache) {
+    globalThis.__kygFeedbackListCache = { entries: new Map(), inflight: new Map() };
+  }
+  return globalThis.__kygFeedbackListCache;
+}
+
+function invalidateListCache() {
+  const st = listCacheState();
+  st.entries.clear();
+  // 在途的读不再往缓存里写（它读的是写入之前的数据）
+  st.inflight.clear();
+}
+
+function listCacheKey(limit, cursor, resourceId) {
+  return JSON.stringify([limit, cursor, resourceId]);
+}
+
+function listCacheSet(st, key, body, now) {
+  st.entries.set(key, { t: now, body });
+  while (st.entries.size > LIST_CACHE_MAX) st.entries.delete(st.entries.keys().next().value);
+}
+
+function edgeListCache() {
+  try {
+    return (typeof caches !== 'undefined' && caches && caches.default) ? caches.default : null;
+  } catch {
+    return null;
+  }
+}
+
+async function edgeListGet(key) {
+  const cache = edgeListCache();
+  if (!cache) return null;
+  try {
+    const res = await cache.match(new Request(EDGE_CACHE_URL + encodeURIComponent(key)));
+    if (!res) return null;
+    const v = JSON.parse(await res.text());
+    return v && typeof v.t === 'number' && typeof v.body === 'string' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+async function edgeListPut(key, entry) {
+  const cache = edgeListCache();
+  if (!cache) return;
+  try {
+    await cache.put(new Request(EDGE_CACHE_URL + encodeURIComponent(key)), new Response(JSON.stringify(entry), {
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${Math.floor(LIST_STALE_MS / 1000)}` },
+    }));
+  } catch {
+    // 缓存失败不影响结果
+  }
+}
+
+/** 给一个 Promise 加总预算；超时抛 BudgetError（底层 KV 调用取消不了，任它自己结束） */
+class BudgetError extends Error {}
+function withBudget(promise, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new BudgetError(`KV 读取超过 ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+function listResponse(bodyText, headers, cacheState, status = 200) {
+  return new Response(bodyText, { status, headers: { ...headers, 'X-Feedback-Cache': cacheState } });
+}
+
+function unavailableResponse(headers, e) {
+  const code = e instanceof BudgetError ? 'upstream_timeout' : 'upstream_error';
+  console.error('Feedback GET upstream failure:', code, e && e.message);
+  return new Response(JSON.stringify({ success: false, error: '反馈列表暂时读不到，请稍后再试', code }), {
+    status: 503, headers: { ...headers, 'Cache-Control': 'no-store', 'Retry-After': '10' },
+  });
+}
+
+/**
+ * 公开读（KV 模式）：带缓存与预算。返回 Response。
+ * 新鲜期内直接给；过期但在 10 分钟内先给旧的、后台刷新；否则同步读，读不到回 503。
+ */
+async function publicKvList(context, kv, headers, limit, cursor, resourceId, bypass) {
+  const st = listCacheState();
+  const key = listCacheKey(limit, cursor, resourceId);
+  const now = Date.now();
+
+  const load = () => {
+    let p = st.inflight.get(key);
+    if (!p) {
+      const stats = { failed: 0 };
+      p = withBudget(kvGet(kv, limit, cursor, resourceId, false, stats), KV_READ_BUDGET_MS).then(async (result) => {
+        const body = JSON.stringify({ success: true, ...result });
+        // 写入前确认这条在途读没被清过（清过说明其间有写入，它读到的可能已经旧了）；
+        // 有单条读失败时结果可能残缺，照给但不进缓存
+        if (st.inflight.get(key) === p && stats.failed === 0) {
+          listCacheSet(st, key, body, Date.now());
+          await edgeListPut(key, { t: Date.now(), body });
+        }
+        return body;
+      }).finally(() => {
+        if (st.inflight.get(key) === p) st.inflight.delete(key);
+      });
+      st.inflight.set(key, p);
+    }
+    return p;
+  };
+
+  if (!bypass) {
+    let entry = st.entries.get(key);
+    if (!entry) {
+      const edge = await edgeListGet(key);
+      // 边缘缓存的条目写入后无法主动失效（别的 isolate 写入时清不到它），所以只在新鲜期内采用，
+      // 过了新鲜期就同步重读，不当「过期旧数据」用
+      if (edge && Date.now() - edge.t < LIST_FRESH_MS) {
+        entry = edge;
+        listCacheSet(st, key, edge.body, edge.t);
+      }
+    }
+    if (entry) {
+      const age = now - entry.t;
+      if (age < LIST_FRESH_MS) return listResponse(entry.body, headers, 'HIT');
+      if (age < LIST_STALE_MS) {
+        // 先给旧的，后台刷新；刷新失败不影响这次响应（旧的还能再撑到 10 分钟）
+        const refresh = load().catch((e) => console.error('Feedback list refresh failed:', e && e.message));
+        if (context && typeof context.waitUntil === 'function') context.waitUntil(refresh);
+        return listResponse(entry.body, headers, 'STALE');
+      }
+    }
+  }
+
+  try {
+    const body = await load();
+    return listResponse(body, headers, bypass ? 'BYPASS' : 'MISS');
+  } catch (e) {
+    // 读不到：有能撑的旧数据（例如 fresh=1 或过期后第一次读）就给旧的
+    const old = st.entries.get(key);
+    if (old && Date.now() - old.t < LIST_STALE_MS) return listResponse(old.body, headers, 'STALE');
+    return unavailableResponse(headers, e);
+  }
+}
+
 export async function onRequestGet(context) {
   const headers = getCorsHeaders(context.request);
 
@@ -743,7 +914,15 @@ export async function onRequestGet(context) {
           status: 500, headers,
         });
       }
-      result = await kvGet(kv, limit, cursor, resourceId, full);
+      if (!full) {
+        return await publicKvList(context, kv, headers, limit, cursor, resourceId, url.searchParams.get('fresh') === '1');
+      }
+      // 管理读：全量字段，不进缓存；也加读取预算，超时回 503 而不是等平台掐断变 500
+      try {
+        result = await withBudget(kvGet(kv, limit, cursor, resourceId, true), KV_READ_BUDGET_MS);
+      } catch (e) {
+        return unavailableResponse(headers, e);
+      }
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {

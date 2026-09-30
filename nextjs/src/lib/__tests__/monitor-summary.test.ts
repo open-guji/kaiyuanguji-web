@@ -53,6 +53,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+    delete (globalThis as Record<string, unknown>).__kygFeedbackListCache;
     errKv.store.clear();
     fbKv.store.clear();
     const rec = (ts: number, i: number, message: string) => {
