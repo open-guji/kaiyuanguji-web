@@ -33,14 +33,14 @@ test.describe('首页', () => {
         await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
     });
 
-    // 用户意见（overview#267）：搜索框下面只有三个例子，史记→作品页、四库全书→丛编页、红楼梦甲戌本→阅读页
+    // 用户意见（overview#267）：搜索框下面只有三个例子，史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页（09-30 用户重申）
     test('搜索框下面只有三个例子，没有「看一个例子」', async ({ page }) => {
         await page.goto(TARGET);
         const under = page.locator('.home-under');
-        await expect(under.getByRole('link')).toHaveText(['史记', '四库全书', '红楼梦甲戌本']);
+        await expect(under.getByRole('link')).toHaveText(['史记', '四库全书', '红楼梦程甲本']);
         await expect(under.getByRole('link').nth(0)).toHaveAttribute('href', '/item/d59f20aowb9c');
         await expect(under.getByRole('link').nth(1)).toHaveAttribute('href', '/item/8rlb6yi1ecqo');
-        await expect(under.getByRole('link').nth(2)).toHaveAttribute('href', '/read/96kzii6z28?kind=fulltext');
+        await expect(under.getByRole('link').nth(2)).toHaveAttribute('href', '/read/96kzkdm8e8?kind=fulltext');
         await expect(page.getByText(/看一个例子/)).toHaveCount(0);
     });
 
