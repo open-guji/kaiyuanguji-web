@@ -127,8 +127,9 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
 
         // 统计：修复前恒为"0 部书"（type 是英文 'book'，代码却比对中文 '书'）
+        // 阅读页 v3（0.25.0）起卷头与右栏都出现「N 部书」字样，取第一处：仍要求页面上显示 N 部书。
         await expect(
-            page.getByText(new RegExp(`${C.sampleJuanBookCount}\\s*部[书書]`)),
+            page.getByText(new RegExp(`${C.sampleJuanBookCount}\\s*部[书書]`)).first(),
             `书目统计不对：期望 ${C.sampleJuanBookCount} 部书。显示 0 = section.type 映射失效`,
         ).toBeVisible();
 
