@@ -489,4 +489,10 @@ describe('meili-storage 代理模式：搜索页 v4 筛选（overview#298）', (
         await wrapped.search('史記', 'collection', { page: 1, pageSize: 50, filters: F({ sort: 'title:asc' }) as any });
         expect(new URL(fetchMock.mock.calls[1][0], 'http://x').searchParams.has('sort')).toBe(false);
     });
+
+    it('代理模式声明 supportsSearchFilters（搜索页据此显示筛选栏）；直连回退模式不声明', () => {
+        const { wrapWithMeiliSearch } = freshModule();
+        expect((wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }) as any).supportsSearchFilters).toBe(true);
+        expect((wrapWithMeiliSearch(makeBase(), { baseUrl: 'https://meili.example', apiKey: 'k' }) as any).supportsSearchFilters).toBeUndefined();
+    });
 });

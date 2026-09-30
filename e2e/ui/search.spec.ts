@@ -80,7 +80,7 @@ test.describe('搜索', () => {
 });
 
 test.describe('搜索页 v4：筛选、表格／卡片（overview#298）', () => {
-    test.beforeEach(({ request }) => requireUiVersion(request, '0.27.1', '搜索页 v4 筛选与表格'));
+    test.beforeEach(({ request }) => requireUiVersion(request, '0.28.0', '搜索页 v4 筛选与表格'));
 
     const Q = encodeURIComponent('史記');
     const rows = (page: import('@playwright/test').Page) => page.locator('.bim-sr-table tbody tr');

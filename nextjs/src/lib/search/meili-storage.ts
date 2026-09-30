@@ -443,6 +443,8 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
     }
 
     const overrides: Partial<IndexStorage> = {
+        // 代理模式真正应用 filters／sort：搜索页据此才显示筛选栏与排序控件（book-index-ui 的 supportsSearchFilters）
+        supportsSearchFilters: true,
         async searchAll(query: string, limit: number = 5, filters?: SearchFilters): Promise<GroupedSearchResult> {
             const q = query.trim();
             if (!q) {
