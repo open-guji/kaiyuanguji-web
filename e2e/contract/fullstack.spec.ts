@@ -386,7 +386,6 @@ test.describe('新架构：阅读页 /read/<id>[/<key>][/<章>]（overview#307�
         }
     });
 });
-});
 
 test.describe('用户意见（overview#267）：总目不要页脚、页脚黑底、关于页精简', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站`);
