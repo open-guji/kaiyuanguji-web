@@ -88,9 +88,9 @@ export interface FeedbackBody {
     resourceId: string;
 }
 
-/** 锚点只认 `rd-e-N` 这种简单 id，其余丢掉；换掉地址里原有的 # 部分 */
+/** 锚点只认阅读器条目锚点 `rd-e-N`，其余丢掉；换掉地址里原有的 # 部分 */
 function withAnchor(pageUrl: string, anchor: string | undefined): string {
-    if (!anchor || !/^[\w-]{1,40}$/.test(anchor)) return pageUrl;
+    if (!anchor || !/^rd-e-\d+$/.test(anchor)) return pageUrl;
     return `${pageUrl.split('#')[0]}#${anchor}`;
 }
 

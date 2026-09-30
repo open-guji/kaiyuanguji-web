@@ -144,4 +144,11 @@ describe('阅读页位置锚点（v4 P2，overview#299）', () => {
         expect(buildFeedbackBody({ type: 'bug', text: 'x', context: ctx, pageUrl: url }).pageUrl).toBe(url);
         expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor: '"><script>' }, pageUrl: url }).pageUrl).toBe(url);
     });
+    it('只认 rd-e-N：foo、section-1、rd-e-、rd-e-3x 等一律丢弃', () => {
+        const url = 'https://x.test/read/a?juan=011';
+        for (const anchor of ['foo', 'section-1', 'rd-e-', 'rd-e-3x', 'xrd-e-3', 'rd-e-3 ']) {
+            expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor }, pageUrl: url }).pageUrl).toBe(url);
+        }
+        expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor: 'rd-e-12' }, pageUrl: url }).pageUrl).toBe(`${url}#rd-e-12`);
+    });
 });
