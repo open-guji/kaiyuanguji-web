@@ -71,7 +71,7 @@ describe('v4 墨主题与版式令牌', () => {
 
     it('墨：强调色≈正文色，所以段落里的链接另有下划线（不只靠颜色）', () => {
         expect(contrast(ink['--color-zhu'], ink['--color-ink'])).toBeLessThan(1.5);
-        expect(css).toMatch(/:root\[data-theme="ink"\] :is\(p, li, td, dd\) a:not\(\[class\]\) \{[^}]*text-decoration: underline/);
+        expect(css).toMatch(/:root\[data-theme="ink"\] main :is\(p, td, dd\) a:not\(\[class\]\) \{[^}]*text-decoration: underline/);
     });
 
     it('版式令牌 --bim-fr-* 本站自己定义：默认疏朗（无框），boxed 覆盖成框线', () => {

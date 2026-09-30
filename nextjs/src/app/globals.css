@@ -377,13 +377,13 @@
   --bim-fr-shadow: none;
 }
 
-/* 墨：强调色≈正文色，段落／列表／表格里的链接另加下划线（悬停加粗），不只靠颜色认得出 */
-:root[data-theme="ink"] :is(p, li, td, dd) a:not([class]) {
+/* 墨：强调色≈正文色，正文段落／表格里的链接另加下划线（悬停加粗），不只靠颜色认得出；导航、清单类链接不加 */
+:root[data-theme="ink"] main :is(p, td, dd) a:not([class]) {
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
   text-underline-offset: 3px;
 }
-:root[data-theme="ink"] :is(p, li, td, dd) a:not([class]):hover {
+:root[data-theme="ink"] main :is(p, td, dd) a:not([class]):hover {
   text-decoration-color: currentColor;
   text-decoration-thickness: 2px;
 }
