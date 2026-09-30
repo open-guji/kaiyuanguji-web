@@ -8,6 +8,7 @@
  * 不带 node ＝ 首页（精选＋四部入口）；带 node ＝ 该节点（含子孙）的作品分页。
  */
 import { findNode, isValidNodeId, type CatalogNode } from '../catalog/catalog-route';
+import { readerPath } from '@/lib/reader-route';
 
 export type { CatalogNode };
 
@@ -83,9 +84,9 @@ export function readHomeHref(nodeId?: string, page = 1): string {
     return `${READ_PATH}?node=${encodeURIComponent(nodeId)}${page > 1 ? `&page=${page}` : ''}`;
 }
 
-/** 卡片的阅读地址：有整理本读整理本，否则读全文（Work 不带 key，由阅读器取首选那份；Book 只有全文） */
-export function readCardHref(c: Pick<ReadCard, 'id' | 'collated'>): string {
-    return `/read/${c.id}?kind=${c.collated ? 'collated' : 'fulltext'}`;
+/** 卡片的阅读地址：主版本（default，按来源优先级排出：整理本 → 維基文庫 → Kanripo）的第一章，路径式（overview#307） */
+export function readCardHref(c: Pick<ReadCard, 'id'>): string {
+    return readerPath(c.id);
 }
 
 export function readTitle(r?: ResolvedRead): string {

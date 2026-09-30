@@ -87,6 +87,23 @@ export async function requireUiVersion(
 }
 
 /* ------------------------------------------------------------------ *
+ * 新结构文本数据（overview#307）
+ * ------------------------------------------------------------------ */
+
+/**
+ * 阅读页只认新结构（items/<id>/manifest.json + <key>/）。文本迁移落地前，站点上这个条目的
+ * /read/<id> 是 404；这类用例断言的是「迁移后」的行为，前提不在就跳过，迁移后自动生效。
+ * 只看页面状态码，不猜数据布局（散列布局、版本号前缀都不用管）。
+ */
+export async function requireNewTextData(request: APIRequestContext, id: string, feature: string): Promise<void> {
+    const res = await request.get(`${TARGET}/read/${id}`, { maxRedirects: 0 });
+    test.skip(
+        res.status() === 404,
+        `${TARGET} 上 ${id} 还没有新结构文本数据（/read/${id} 为 404）；「${feature}」待文本迁移落地后自动生效`,
+    );
+}
+
+/* ------------------------------------------------------------------ *
  * 空状态样本
  * ------------------------------------------------------------------ */
 

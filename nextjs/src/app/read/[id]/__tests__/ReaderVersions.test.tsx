@@ -1,69 +1,68 @@
 /**
- * overview#235：阅读页的「版本」下拉框（book-index-ui ≥ 0.10.4 的 ReaderShell 工具条）。
- * 这里用真组件、假 transport，验网站这一半的接线：两份出下拉框、切换后地址变化、单份没有下拉框。
+ * overview#235／#307：阅读页的「版本」下拉框（book-index-ui ≥ 0.28.1 的 TextReader 工具条）。
+ * 这里用真组件、假 transport（新结构：manifest＋<key>/index.json），验网站这一半的接线：
+ * 多份版本出下拉框（含整理本）、切换后地址变化且停在同一章、单份没有下拉框。
  */
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }), useSearchParams: () => new URLSearchParams() }));
+let pathname = '';
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }), usePathname: () => pathname }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <main>{children}</main>);
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 
-const source = (name: string, license: string) => ({ name, url: `https://example.org/${name}`, license });
-const indexOf = (label: string, src: ReturnType<typeof source>) => ({
-    version_label: label,
-    source: src,
-    chapters: [{ file: '001.md', title: '第一卷' }, { file: '002.md', title: '第二卷' }],
-});
-const INDEXES: Record<string, ReturnType<typeof indexOf>> = {
-    wikisource: indexOf('維基文庫本', source('維基文庫', 'CC BY-SA 4.0')),
-    'kanripo-01': indexOf('Kanripo本', source('Kanripo', 'CC BY 4.0')),
-};
+const version = (key: string, label: string, kind: string, license: string) => ({ key, kind, label, source: key === 'default' ? 'collated' : key, source_name: label, license });
+const indexOf = (n: number) => ({ chapters: Array.from({ length: n }, (_, i) => ({ n: i + 1, file: String(i + 1).padStart(3, '0'), title: `第${i + 1}卷` })) });
 
-const getWorkFullTextList = jest.fn();
+let manifest: { id: string; versions: ReturnType<typeof version>[] };
 jest.mock('@/lib/transport', () => ({
     getTransport: () => ({
-        getWorkFullTextList,
-        getWorkFullTextIndex: async (_id: string, key: string) => INDEXES[key],
-        getWorkFullTextChapter: async () => '正文',
+        getItem: async () => ({ title: '詩序' }),
+        getTextManifest: async () => manifest,
+        getTextIndex: async (_id: string, key: string) => (key === 'kanripo' ? indexOf(1) : indexOf(3)),
+        getChapter: async (_id: string, key: string, ch: string) => ({ md: `# ${key}-${ch}\n${key}正文${ch}`, json: null }),
     }),
 }));
 
 import ReaderClient from '../ReaderClient';
 
 const SHIXU = 'd59f2ew0ctmo';
-const entry = (key: string, primary = false) => ({ key, owner_type: 'Work', primary, source_name: key, version_label: key });
+const TWO = { id: SHIXU, versions: [version('default', '維基文庫', 'transcription', 'CC BY-SA 4.0'), version('kanripo', 'Kanripo', 'transcription', 'CC BY 4.0')] };
 
 beforeEach(() => {
-    getWorkFullTextList.mockReset();
-    window.history.replaceState(null, '', `/read/${SHIXU}?kind=fulltext`);
+    manifest = TWO;
+    pathname = `/read/${SHIXU}`;
+    window.history.replaceState(null, '', `/read/${SHIXU}`);
 });
 
 describe('阅读页版本下拉框', () => {
-    it('两份全文：工具条出「版本」下拉框，默认首选那份', async () => {
-        getWorkFullTextList.mockResolvedValue([entry('wikisource', true), entry('kanripo-01')]);
-        render(<ReaderClient id={SHIXU} initial={{ kind: 'fulltext' }} bookTitle="詩序" />);
+    it('两份版本：工具条出「版本」下拉框，默认主版本，选项只写来源', async () => {
+        render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         const select = await screen.findByRole('combobox', { name: '版本' });
-        expect(select).toHaveValue('wikisource');
-        expect(select.querySelectorAll('option')).toHaveLength(2);
+        expect(select).toHaveValue('default');
+        expect(Array.from(select.querySelectorAll('option')).map((o) => o.textContent)).toEqual(['维基文库', 'Kanripo']);
     });
 
-    it('切换版本：地址的 key 变、卷号去掉，出处授权跟着变', async () => {
-        getWorkFullTextList.mockResolvedValue([entry('wikisource', true), entry('kanripo-01')]);
-        window.history.replaceState(null, '', `/read/${SHIXU}?kind=fulltext&juan=002`);
-        render(<ReaderClient id={SHIXU} initial={{ kind: 'fulltext', juan: '002' }} bookTitle="詩序" />);
+    it('切换版本：地址变成 /<key>/<章>，停在同一章（对不上回第一章），出处授权跟着变', async () => {
+        window.history.replaceState(null, '', `/read/${SHIXU}/003`);
+        pathname = `/read/${SHIXU}/003`;
+        render(<ReaderClient id={SHIXU} initial={{ chapter: '003' }} bookTitle="詩序" />);
         const select = await screen.findByRole('combobox', { name: '版本' });
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
 
-        act(() => { fireEvent.change(select, { target: { value: 'kanripo-01' } }); });
-        await waitFor(() => expect(window.location.pathname + window.location.search)
-            .toBe(`/read/${SHIXU}?kind=fulltext&key=kanripo-01`));
+        // Kanripo 只有 1 章，003 对不上 → 第一章
+        await act(async () => { fireEvent.change(select, { target: { value: 'kanripo' } }); });
+        await waitFor(() => expect(window.location.pathname).toBe(`/read/${SHIXU}/kanripo/001`));
         await waitFor(() => expect(screen.getAllByText(/CC BY 4\.0/).length).toBeGreaterThan(0));
         expect(screen.queryByText(/CC BY-SA 4\.0/)).toBeNull();
+
+        // 切回主版本，地址里不带 key
+        await act(async () => { fireEvent.change(await screen.findByRole('combobox', { name: '版本' }), { target: { value: 'default' } }); });
+        await waitFor(() => expect(window.location.pathname).toBe(`/read/${SHIXU}/001`));
     });
 
-    it('只有一份全文：没有下拉框', async () => {
-        getWorkFullTextList.mockResolvedValue([entry('wikisource', true)]);
-        render(<ReaderClient id={SHIXU} initial={{ kind: 'fulltext' }} bookTitle="詩序" />);
+    it('只有一份版本：没有下拉框', async () => {
+        manifest = { id: SHIXU, versions: [TWO.versions[0]] };
+        render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
         expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
     });

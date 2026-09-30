@@ -1,11 +1,15 @@
-// 阅读页原来的地址 /item/<id>/read?…（N5b）→ 308 /read/<id>?…（overview#267：阅读页改成独立的一级目录）。
+// 阅读页原来的地址 /item/<id>/read?…（N5b）→ 308 新路径式地址（overview#267 搬到 /read/<id>；overview#307 E 块改成路径式）。
 //
-// 整页导航由中间件先跳（只出一个 Location，还顺手把整理本旧卷号换成短形式，不跳两次）；
-// 这里兜 RSC 导航与中间件放过的情况。查询参数原样带过去。
-// 本页读查询串，是按请求渲染的动态页（不能导出 generateStaticParams，见 read/[id]/page.ssr.tsx 头部的说明）。
+// 整页导航由中间件先跳（只出一个 Location）；这里兜 RSC 导航与中间件放过的情况。
+// 旧查询串（kind／key／juan）按该条目的 manifest 换算成新地址（lib/legacy-reader.ts）；条目没有文本就去条目页；
+// 没带旧参数就是 /read/<id>。
+// 本页读查询串，是按请求渲染的动态页（不能导出 generateStaticParams，见 read/[id]/[[...seg]]/page.ssr.tsx 头部的说明）。
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
+import { getCurrentJsonServer } from '@/lib/server/item-data';
+import { getManifest } from '@/lib/server/reader-check';
 import { readerPath } from '@/lib/reader-route';
+import { legacyReaderTarget, parseLegacyReaderParams } from '@/lib/legacy-reader';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +29,7 @@ export default async function LegacyReaderPage({ params, searchParams }: Props) 
     for (const [k, v] of Object.entries(sp)) {
         for (const x of Array.isArray(v) ? v : v === undefined ? [] : [v]) qs.append(k, x);
     }
-    const s = qs.toString();
-    permanentRedirect(`${readerPath(id)}${s ? `?${s}` : ''}`);
+    const legacy = parseLegacyReaderParams(id, qs);
+    if (!legacy) permanentRedirect(readerPath(id));
+    permanentRedirect(legacyReaderTarget(legacy, await getManifest(id, getCurrentJsonServer)) ?? `/item/${id}`);
 }

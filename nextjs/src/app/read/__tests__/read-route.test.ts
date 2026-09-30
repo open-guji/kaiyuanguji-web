@@ -53,9 +53,8 @@ describe('地址、页数、标题', () => {
         expect(readPageCount(20)).toBe(1);
         expect(readPageCount(21)).toBe(2);
     });
-    it('有整理本读整理本，否则读全文', () => {
-        expect(readCardHref({ id: 'd1', collated: true })).toBe('/read/d1?kind=collated');
-        expect(readCardHref({ id: 'd1' })).toBe('/read/d1?kind=fulltext');
+    it('卡片去主版本（default）的第一章：路径式，不带 kind（overview#307）', () => {
+        expect(readCardHref({ id: 'd1' })).toBe('/read/d1');
     });
     it('标题与描述', () => {
         const r = resolveRead(TREE, { node: 'czheng', page: 2 })!;

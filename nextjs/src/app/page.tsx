@@ -17,7 +17,7 @@ import { HOME_FEATURES } from '@/components/home/features';
 const HOME_EXAMPLES = [
   { label: '史记', href: '/item/d59f20aowb9c' },
   { label: '四库全书', href: '/item/8rlb6yi1ecqo' },
-  { label: '红楼梦程甲本', href: '/read/96kzkdm8e8?kind=fulltext' },
+  { label: '红楼梦程甲本', href: '/read/96kzkdm8e8' },
 ];
 
 // 「文本开放、代码开源」两栏（用户意见，overview#267）。仓库地址与说明已对照各仓 README 核实：

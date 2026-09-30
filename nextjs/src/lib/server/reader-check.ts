@@ -1,101 +1,74 @@
 /**
- * N5b：阅读页服务端校验 kind／key／juan 在数据里是否真有（网站总管审查 web#99）。
+ * 阅读页服务端校验：版本 key／章号在数据里是否真有（网站总管审查 web#99；overview#307 E 块改读新结构）。
  *
- * 不校验的话，乱填的卷号也回 200、还带着指向自己的 canonical，会被当作大批软 404 收录。
- * 查的是阅读器组件自己要读的同几份目录（与浏览器端 BundleStorage 同一地址）：
- *   整理本      items/<id>/collated_edition/index.json 的 juan_files
- *   Book 全文   items/<id>/full_text/index.json 的 chapters[].file
- *   Work 全文   index/full_text/<分片>.json 的清单（key 缺省取首选）→ items/<id>/full_text/<key>/index.json
+ * 不校验的话，乱填的地址也回 200、还带着指向自己的 canonical，会被当作大批软 404 收录。
+ * 只认新结构（用户 09-30 定），查的是阅读器组件自己要读的同几份文件：
+ *   items/<id>/manifest.json            版本清单（versions[0] 是 default）；没有 ＝ 这个条目没有文本 ＝ 404
+ *   items/<id>/<key>/index.json         该版本的章目录（chapters[].file 是三位章号）
  *
- * 结果：found ＝ 都查到了；missing ＝ 确定没有（页面 404）；unknown ＝ 查不了（网络错等），
- * 页面照常渲染，但 canonical 回落到不带 key／juan 的地址，不给查不准的地址背书。
+ * 结果：found ＝ 都查到了（带回 manifest、版本、目录与落实的章，首屏预取直接用）；
+ *       missing ＝ 确定没有（页面 404）；
+ *       unknown ＝ 查不了（网络错等），页面照常渲染，但 canonical 回落到不带章号的地址，不给查不准的地址背书。
  */
-import { juanStem, type ReaderQuery } from '../reader-route';
+import type { ReaderSel } from '../reader-route';
 
 export type ReaderCheck = 'found' | 'missing' | 'unknown';
 
-/** 校验结果：status 同 ReaderCheck；chapterTitle 是全文目录里这一章的章名（查到才有），给 <title> 用 */
-export interface ReaderCheckResult { status: ReaderCheck; chapterTitle?: string }
+export interface ManifestVersion {
+    key: string;
+    kind?: string;
+    label?: string;
+    source?: string;
+    source_name?: string;
+    source_url?: string | null;
+    license?: string | null;
+}
+export interface Manifest { id?: string; versions: ManifestVersion[] }
+export interface TextChapterMeta { n?: number; file: string; title?: string; has_json?: boolean }
+export interface TextIndexDoc { chapters: TextChapterMeta[] }
+
+export interface ReaderCheckResult {
+    status: ReaderCheck;
+    manifest?: Manifest;
+    version?: ManifestVersion;
+    index?: TextIndexDoc;
+    /** 落实的章号：地址里给了就是它，没给是第一章 */
+    chapter?: string;
+    chapterTitle?: string;
+}
 
 /** 取 current/ 下一个 JSON：确定没有返回 null，查不了抛错 */
 export type GetCurrentJson = <T>(relPath: string) => Promise<T | null>;
 
-interface CollatedIndex { juan_files?: unknown }
-interface FullTextIndex { chapters?: { file?: unknown; title?: unknown }[] }
-interface WorkFullTextEntry { key?: unknown; owner_type?: unknown; primary?: unknown }
-
-/** 与 book-index-ui 的 shardOf 同一算法（16 片）；不为一个哈希函数把 UI 包拉进服务端 */
-export function fullTextShardOf(id: string): string {
-    let h = 0;
-    for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) >>> 0;
-    return (h % 16).toString(16);
+function validManifest(m: Manifest | null): m is Manifest {
+    return !!m && Array.isArray(m.versions) && m.versions.length > 0 && m.versions.every((v) => v && typeof v.key === 'string');
 }
 
-/** 全文章节 key：去掉 .md，与 BookFullText 的 normalizeChapterKey 一致（"001.md" ↔ "001"） */
-function chapterKey(s: string): string {
-    return s.replace(/\.md$/, '');
+/** 取条目的 manifest：没有返回 null（条目没有文本）；查不了抛错 */
+export async function getManifest(id: string, get: GetCurrentJson): Promise<Manifest | null> {
+    const m = await get<Manifest>(`items/${id}/manifest.json`);
+    return validManifest(m) ? m : null;
 }
 
-function findChapter(index: FullTextIndex, juan: string) {
-    const want = chapterKey(juan);
-    return Array.isArray(index.chapters) ? index.chapters.find((c) => typeof c?.file === 'string' && chapterKey(c.file) === want) : undefined;
+async function check(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheckResult> {
+    const manifest = await getManifest(id, get);
+    if (!manifest) return { status: 'missing' };
+    const version = sel.key
+        ? manifest.versions.find((v) => v.key === sel.key)
+        : (manifest.versions.find((v) => v.key === 'default') ?? manifest.versions[0]);
+    if (!version) return { status: 'missing' };
+    const index = await get<TextIndexDoc>(`items/${id}/${version.key}/index.json`);
+    if (!index || !Array.isArray(index.chapters) || index.chapters.length === 0) return { status: 'missing' };
+    const hit = sel.chapter ? index.chapters.find((c) => c.file === sel.chapter) : index.chapters[0];
+    if (!hit) return { status: 'missing' };
+    const title = typeof hit.title === 'string' && hit.title.trim() ? hit.title.trim() : undefined;
+    return { status: 'found', manifest, version, index, chapter: hit.file, chapterTitle: title };
 }
 
-function hasChapter(index: FullTextIndex, juan: string): boolean {
-    return !!findChapter(index, juan);
-}
-
-/** 这一章在目录里的章名（如「第三回」）；没带卷号、查不到、章名为空都返回 undefined */
-export function chapterTitleOf(index: FullTextIndex, juan: string | undefined): string | undefined {
-    const t = juan ? findChapter(index, juan)?.title : undefined;
-    return typeof t === 'string' && t.trim() ? t.trim() : undefined;
-}
-
-/** 全文目录有章：chapters 非空（与构建期阅读索引的 bookFirstChapter 同一判据；空目录的阅读页没有东西可读，404） */
-function hasAnyChapter(index: FullTextIndex): boolean {
-    return Array.isArray(index.chapters) && index.chapters.some((c) => typeof c?.file === 'string' && c.file !== '');
-}
-
-function badPathSegment(s: string): boolean {
-    return s.includes('..') || s.includes('/') || s.includes('\\');
-}
-
-async function check(id: string, q: ReaderQuery, isWork: boolean, get: GetCurrentJson): Promise<{ ok: boolean; chapterTitle?: string }> {
-    if (q.kind === 'collated') {
-        const index = await get<CollatedIndex>(`items/${id}/collated_edition/index.json`);
-        if (!index || !Array.isArray(index.juan_files) || index.juan_files.length === 0) return { ok: false };
-        // 地址里是短形式（011），旧地址是卷文件名（juan/011.json），两种都认；旧的由页面 308 到短的
-        const files = index.juan_files as unknown[];
-        return { ok: !q.juan || files.includes(q.juan) || files.some((f) => typeof f === 'string' && juanStem(f) === q.juan) };
-    }
-
-    if (!isWork) {
-        const index = await get<FullTextIndex>(`items/${id}/full_text/index.json`);
-        if (!index || !hasAnyChapter(index)) return { ok: false };
-        return { ok: !q.juan || hasChapter(index, q.juan), chapterTitle: chapterTitleOf(index, q.juan) };
-    }
-
-    let key = q.key;
-    if (key) {
-        if (badPathSegment(key)) return { ok: false };
-    } else {
-        const shard = await get<Record<string, WorkFullTextEntry[]>>(`index/full_text/${fullTextShardOf(id)}.json`);
-        const list = (shard?.[id] ?? []).filter((v) => v.owner_type !== 'Book' && typeof v.key === 'string');
-        const pick = list.find((v) => v.primary) ?? list[0];
-        if (!pick) return { ok: false };
-        key = pick.key as string;
-        if (!q.juan) return { ok: true };
-    }
-    const index = await get<FullTextIndex>(`items/${id}/full_text/${key}/index.json`);
-    if (!index || !hasAnyChapter(index)) return { ok: false };
-    return { ok: !q.juan || hasChapter(index, q.juan), chapterTitle: chapterTitleOf(index, q.juan) };
-}
-
-/** 校验一个已通过 parseReaderQuery 的阅读页地址，并带回章名。isWork：条目是 Work（否则是 Book） */
-export async function checkReader(id: string, q: ReaderQuery, isWork: boolean, get: GetCurrentJson): Promise<ReaderCheckResult> {
+/** 校验一个已通过 parseReaderSegments 的阅读页地址，并带回落实的版本、目录与章 */
+export async function checkReader(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheckResult> {
     try {
-        const r = await check(id, q, isWork, get);
-        return r.ok ? { status: 'found', chapterTitle: r.chapterTitle } : { status: 'missing' };
+        return await check(id, sel, get);
     } catch (err) {
         console.warn(`[reader-check] ${id} 查不了，canonical 回落：${(err as Error).message}`);
         return { status: 'unknown' };
@@ -103,6 +76,6 @@ export async function checkReader(id: string, q: ReaderQuery, isWork: boolean, g
 }
 
 /** 同 checkReader，只要结论 */
-export async function checkReaderQuery(id: string, q: ReaderQuery, isWork: boolean, get: GetCurrentJson): Promise<ReaderCheck> {
-    return (await checkReader(id, q, isWork, get)).status;
+export async function checkReaderSel(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheck> {
+    return (await checkReader(id, sel, get)).status;
 }
