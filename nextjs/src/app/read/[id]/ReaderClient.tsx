@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BookFullText, CollatedEdition, LocaleProvider, type WorkFullTextEntry } from 'book-index-ui';
+import { BookFullText, CollatedEdition, LocaleProvider, type ReaderReportContext, type WorkFullTextEntry } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
+import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
@@ -168,6 +168,19 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
         [id, bookTitle, q],
     );
     useFeedbackPageContext(feedbackContext);
+    // v4 P2：阅读器右栏「报告错字」→ 同一个反馈弹窗，带上书名、条目 id、卷、位置锚点与选中文字
+    const { open: openFeedback } = useFeedback();
+    const onReportError = useCallback((ctx: ReaderReportContext) => {
+        openFeedback({
+            context: {
+                resourceId: ctx.entryId || id,
+                label: feedbackContext.label,
+                quote: ctx.selectedText,
+                anchor: ctx.anchor,
+            },
+            type: 'bug',
+        });
+    }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
     const renderReader = () => {
@@ -180,6 +193,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                     onNavigate={onNavigate}
                     activeJuan={q.juan ? collatedJuanFile(q.juan, collatedFiles) : null}
                     onJuanChange={onJuanChange}
+                    onReportError={onReportError}
                 />
             );
         }
@@ -199,6 +213,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                     transport={transport}
                     activeChapter={q.juan ?? null}
                     onChapterChange={onJuanChange}
+                    onReportError={onReportError}
                 />
             );
         }
@@ -210,6 +225,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 transport={transport}
                 activeChapter={q.juan ?? null}
                 onChapterChange={onJuanChange}
+                onReportError={onReportError}
             />
         );
     };

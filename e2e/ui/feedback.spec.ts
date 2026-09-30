@@ -144,6 +144,30 @@ test.describe('反馈入口（N7）', () => {
         expect(String(body.pageUrl)).toMatch(new RegExp(`[?&]juan=${JUAN}(&|$)`));
     });
 
+    test('阅读页：右栏「报告错字」打开反馈，带上条目 id、卷、位置锚点（v4 P2，overview#299）', async ({ page }) => {
+        test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
+        await page.setViewportSize({ width: 1440, height: 900 }); // 右栏 ≥860px 才显示
+        await page.goto(`${TARGET}/read/${C.id}?kind=collated&juan=${JUAN}`);
+        await requireN7(page);
+        const report = page.getByRole('button', { name: '报告错字' });
+        // 站点还没升到带「报告错字」的 book-index-ui（≥0.28）时整条跳过
+        await report.waitFor({ state: 'visible', timeout: 30_000 }).catch(() => {});
+        test.skip((await report.count()) === 0, `${SITE.host} 的阅读器还没有「报告错字」（book-index-ui < 0.28）`);
+
+        await report.click();
+        const dialog = page.getByRole('dialog', { name: '反馈' });
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole('radio', { name: '内容有误' })).toHaveAttribute('aria-checked', 'true');
+        // 「关于」一行是「书名 · 整理本 · 卷N」（不含条目 id；id 在下面的提交体 resourceId 里断言）
+        await expect(dialog.getByText(new RegExp(`整理本 · 卷${Number(JUAN)}`))).toBeVisible();
+
+        await fillAndSubmit(page, 'e2e：报告错字');
+        const body = captured.posts[0];
+        expect(body).toMatchObject({ type: 'bug', resourceId: C.id });
+        expect(String(body.content)).toBe('e2e：报告错字'); // 没选字就没有【原文】
+        expect(String(body.pageUrl)).toMatch(new RegExp(`[?&]juan=${JUAN}(&|#|$)`));
+    });
+
     test('/feedback：「写反馈」打开弹窗', async ({ page }) => {
         await page.goto(`${TARGET}/feedback`);
         await requireN7(page);
