@@ -63,6 +63,7 @@ import { existsSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileS
 import { join, dirname, extname, basename } from 'path';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { ensureDir, readJson, hash8, writeHashedShards, dataCommitKey, walk } from './lib/h1-hash-common.mjs';
+import { publicKeys, readManifest } from './lib/text-layout.mjs';
 
 
 const { dataDir: DATA_DIR, h1TextDir: OUT_DIR } = resolveDataDirs();
@@ -70,8 +71,11 @@ const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const VERSION_FILE = join(DATA_DIR, 'version.json');
 const CLEAN = process.env.H1_TEXT_CLEAN === '1';
 
-// 只扫这两个子树——「整理本」与「全文」，任务书 A3b §一·1 点名的范围。
+// 旧结构只扫这两个子树——「整理本」与「全文」，任务书 A3b §一·1 点名的范围。
 const SCAN_SUBDIRS = ['collated_edition', 'full_text'];
+// 新结构（条目目录有 manifest.json，overview#307）：扫 manifest.json 本身与它列出的公开版本目录（default／<key>/），
+// relPath 形如 'manifest.json'、'default/001.txt'、'wikisource/index.json'——与 items/<id>/ 下的路径逐段对应，
+// 前端照抄路径、在最后一段文件名里插哈希即可。旧结构条目的产物不受影响。
 
 // 分片键长度：owner_id 末 2 位，与 entry 同一套理由（见文件头注释）。
 const SHARD_KEY_LEN = 2;
@@ -122,6 +126,16 @@ function scanOwnerFiles() {
             if (!existsSync(subDir) || !statSync(subDir).isDirectory()) continue;
             for (const f of walk(subDir, ownerDir)) {
                 files.push({ ownerId, relPath: f.relative, full: f.full });
+            }
+        }
+        if (readManifest(ownerDir)) {
+            files.push({ ownerId, relPath: 'manifest.json', full: join(ownerDir, 'manifest.json') });
+            for (const key of publicKeys(ownerDir)) {
+                const keyDir = join(ownerDir, key);
+                if (!existsSync(keyDir) || !statSync(keyDir).isDirectory()) continue;
+                for (const f of walk(keyDir, ownerDir)) {
+                    files.push({ ownerId, relPath: f.relative, full: f.full });
+                }
             }
         }
     }
@@ -250,7 +264,7 @@ function bundleRootsAndPointer(shardStat, scanStat, dataCommit) {
 
 function main() {
     console.log(`\nbundle-hashed-text（h1 布局，整理本／全文）`);
-    console.log(`  source: ${ITEMS_SRC_DIR}（只扫 ${SCAN_SUBDIRS.join('、')} 两个子树）`);
+    console.log(`  source: ${ITEMS_SRC_DIR}（旧结构扫 ${SCAN_SUBDIRS.join('、')} 两个子树；新结构扫 manifest.json 与公开版本目录）`);
     console.log(`  out:    ${OUT_DIR}${CLEAN ? '  (H1_TEXT_CLEAN=1，按全量重建对待)' : ''}\n`);
 
     const files = scanOwnerFiles();

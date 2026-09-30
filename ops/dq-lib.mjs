@@ -22,6 +22,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import { chapterTxtFile, isInternal, isTextKey } from '../nextjs/scripts/lib/text-layout.mjs';
 
 export const DEFAULT_BASE = 'https://data.kaiyuanguji.com';
 export const MAX_CONCURRENCY = 8;
@@ -178,14 +179,34 @@ export function registeredTextFiles(indexPath, doc) {
         }
         return { format: 'full_text.unknown', registered: out };
     }
+    // 新结构（overview#307）：<key>/index.json，chapters[{ file: '001', has_json }]，章文件 NNN.md→NNN.txt，has_json 的另有 NNN.json
+    if (newStructureKey(indexPath)) {
+        if (Array.isArray(doc?.chapters)) {
+            for (const c of doc.chapters) {
+                const f = typeof c === 'string' ? c : c?.file;
+                if (typeof f !== 'string' || !f) continue;
+                out.push(`${dir}${chapterTxtFile(f)}`);
+                if (c?.has_json === true) out.push(`${dir}${f.replace(/\.(md|txt)$/, '')}.json`);
+            }
+            return { format: 'texts.chapters', registered: out };
+        }
+        return { format: 'texts.unknown', registered: out };
+    }
     return { format: 'unknown', registered: out };
+}
+
+/** 新结构章目录路径 <key>/index.json → key；不是（或 key 不合法）返回 null。旧结构的 collated_edition／full_text 含下划线，不会撞 */
+export function newStructureKey(p) {
+    const m = /^([a-z][a-z0-9-]*)\/index\.json$/.exec(p);
+    return m && isTextKey(m[1]) ? m[1] : null;
 }
 
 export function isTextIndexPath(p) {
     return p === 'collated_edition/index.json'
         || p === 'collated_edition/collated_edition_index.json'
         || p === 'full_text/index.json'
-        || /^full_text\/[^/]+\/index\.json$/.test(p);
+        || /^full_text\/[^/]+\/index\.json$/.test(p)
+        || newStructureKey(p) !== null;
 }
 
 // ─── 客气的 HTTP ───
@@ -529,7 +550,7 @@ export async function runDq(opts = {}) {
 
     // ── 4. 全文与整理本 ──
     tp = Date.now();
-    const T = { shards: 0, owners: 0, files: 0, ownersSampled: 0, indexes: 0, indexBad: 0, registered: 0, registeredMissing: 0, filesChecked: 0, filesUnreachable: 0, ownersNotInManifest: 0, unregisteredFiles: 0, formats: {} };
+    const T = { shards: 0, owners: 0, files: 0, ownersSampled: 0, indexes: 0, indexBad: 0, registered: 0, registeredMissing: 0, manifests: 0, filesChecked: 0, filesUnreachable: 0, ownersNotInManifest: 0, unregisteredFiles: 0, formats: {} };
     report.text = T;
     const textRoot = textP.root;
     if (textRoot?.shards) {
@@ -588,8 +609,28 @@ export async function runDq(opts = {}) {
                 }
                 if (missing.length) add('data', 'text-registered-missing', `${owner}/${ip} 登记了 ${missing.length} 个卷／章文件，manifest 里没有`, { missing: missing.slice(0, 10) });
             }
+            // 新结构：manifest.json 与各版本目录对得上，且不含 internal（私有文本不得进公开产物）
+            if ('manifest.json' in files) {
+                const mr = await http.request(`${h1}/text/${encodeURIComponent(owner)}/${insertHash('manifest.json', files['manifest.json'])}`);
+                T.manifests++;
+                if (!mr.ok) { add(missKind(mr), 'text-manifest-json-missing', `${owner}/manifest.json 登记在 manifest，取不到（HTTP ${mr.status}）`); }
+                else {
+                    if (hash8(mr.body) !== files['manifest.json']) add('packaging', 'text-manifest-json-hash-mismatch', `${owner}/manifest.json 内容哈希对不上`);
+                    let doc = null;
+                    try { doc = JSON.parse(mr.body.toString('utf-8')); } catch (e) { add('data', 'text-manifest-json-not-json', `${owner}/manifest.json 不是合法 JSON：${e.message}`); }
+                    if (doc) {
+                        const versions = Array.isArray(doc.versions) ? doc.versions : [];
+                        if (isInternal(doc) || versions.some(isInternal)) add('packaging', 'text-internal-leak', `${owner}/manifest.json 带 visibility=internal，私有文本进了公开产物`);
+                        if (versions[0]?.key !== 'default') add('data', 'text-manifest-no-default', `${owner}/manifest.json 的 versions[0] 不是 default`);
+                        for (const v of versions) {
+                            if (!isTextKey(v?.key)) { add('data', 'text-manifest-bad-key', `${owner}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
+                            if (!(`${v.key}/index.json` in files)) add('data', 'text-manifest-version-missing', `${owner}/manifest.json 列了版本 ${v.key}，产物里没有 ${v.key}/index.json`);
+                        }
+                    }
+                }
+            }
             // 没被任何 index 登记的正文文件（pages.tsv、整理本 text/*.txt 这类旁路文件不算）
-            const unregistered = Object.keys(files).filter((p) => !isTextIndexPath(p) && !registeredAll.has(p)
+            const unregistered = Object.keys(files).filter((p) => !isTextIndexPath(p) && p !== 'manifest.json' && !registeredAll.has(p)
                 && !p.endsWith('.tsv') && !p.startsWith('collated_edition/text/'));
             T.unregisteredFiles += unregistered.length;
             if (unregistered.length && indexPaths.length) add('info', 'text-unregistered', `${owner} 有 ${unregistered.length} 个文件没被 index 登记`, { examples: unregistered.slice(0, 5) });

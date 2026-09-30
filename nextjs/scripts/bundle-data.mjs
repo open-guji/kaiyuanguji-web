@@ -26,6 +26,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bookFirstChapter, bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
+import { filterTextsShard, isInternal, newStructureReadable, publicManifest, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
 
@@ -88,13 +89,17 @@ function ensureDir(dir) {
 // 重命名为 *.txt（EdgeOne 默认只对 text/plain 等做 wire-gzip，不对 text/markdown
 // 压缩，1MB+ 的整理本文本不压缩会拖慢国内移动网络的加载）。
 // 源仓库 book-index-draft 仍保留 .md 后缀，仅打包产物改名。
-function copyDirRecursive(src, dest) {
+// skip(relPath)：可选，相对 src 的路径（'/' 分隔）返回 true 就不拷（新结构的内部版本，见 copyItemDir）；
+// 不传＝与旧行为逐字节一致。
+function copyDirRecursive(src, dest, skip = null, rel = '') {
     mkdirSync(dest, { recursive: true });
     for (const name of readdirSync(src)) {
+        const relPath = rel ? `${rel}/${name}` : name;
+        if (skip && skip(relPath)) continue;
         const srcPath = join(src, name);
         const stat = statSync(srcPath);
         if (stat.isDirectory()) {
-            copyDirRecursive(srcPath, join(dest, name));
+            copyDirRecursive(srcPath, join(dest, name), skip, relPath);
         } else {
             const destName = name.endsWith('.md') ? name.slice(0, -3) + '.txt' : name;
             const destPath = join(dest, destName);
@@ -107,6 +112,33 @@ function copyDirRecursive(src, dest) {
             writeFileSync(destPath, buf);
         }
     }
+}
+
+/**
+ * 把文本仓里一个条目的目录拷进 items/<id>/。
+ * 旧结构（没有 manifest.json）：整个目录原样拷，md 改 txt，与以前逐字节一致。
+ * 新结构（有 manifest.json，overview#307）：同样整体拷，但私有的不进公开产物——
+ *   manifest 顶层 visibility:internal → 不拷 manifest.json 与全部版本目录；
+ *   某个 version 标 internal → 不拷它的目录，公开版 manifest.json 里也去掉这一项（没去掉任何版本则原样拷字节）。
+ * 返回 { internalSkipped: 被挡在外面的版本数 }，供日志。
+ */
+function copyItemDir(itemDir, destDir) {
+    const manifest = readManifest(itemDir);
+    if (!manifest) {
+        copyDirRecursive(itemDir, destDir);
+        return { internalSkipped: 0 };
+    }
+    const pub = publicManifest(manifest);
+    const blocked = new Set(manifest.versions
+        .filter((v) => typeof v?.key === 'string' && (isInternal(manifest) || isInternal(v) || !pub?.versions.includes(v)))
+        .map((v) => v.key));
+    copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]));
+    if (pub) {
+        const dest = join(destDir, 'manifest.json');
+        if (pub === manifest) writeIfChanged(dest, readFileSync(join(itemDir, 'manifest.json')));
+        else writeIfChanged(dest, JSON.stringify(pub));
+    }
+    return { internalSkipped: blocked.size };
 }
 
 const NUM_SHARDS = 16;
@@ -187,6 +219,7 @@ function bundleL1() {
     let totalEntries = 0;
     let totalBytes = 0;
     let itemFileCount = 0;
+    let internalSkipped = 0; // 新结构里标 internal、没进公开产物的版本数
     const entryDir = join(OUT_DIR, 'entry');
     const itemsDir = join(OUT_DIR, 'items');
     const legacyChunksDir = join(OUT_DIR, 'chunks');
@@ -218,6 +251,13 @@ function bundleL1() {
                     // has_text 只表示「有外部文本资源」，不代表站内有正文；站内真有全文（book-text/index/full_text
                     // 里有非 Book 所有、total_chapters>0 的条目）才标 has_site_fulltext，阅读入口判断用它（overview#306）
                     if (typeName === 'works' && workFullTextPick(workFullTexts.get(id))) detail.has_site_fulltext = true;
+                    // 新结构（有 manifest.json）：text_count／text_kinds 取代上面各种 has_* 标记（overview#307，规格 §四）。
+                    // 只认可公开且章目录非空的版本；旧结构的条目不加这两个字段，产物不变
+                    const newText = newStructureReadable(join(TEXT_DIR, dirname(path), id));
+                    if (newText) {
+                        detail.text_count = newText.versions.length;
+                        detail.text_kinds = [...new Set(newText.versions.map((v) => v.kind))].sort();
+                    }
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
                     // 注入仓库归属，供前端拼右上角 GitHub 源文件链接：
@@ -245,7 +285,7 @@ function bundleL1() {
             // existsSync 为假就静默跳过——不报错，只是 items/ 空了。
             const itemDir = join(TEXT_DIR, dirname(path), id);
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
-                copyDirRecursive(itemDir, join(itemsDir, id));
+                internalSkipped += copyItemDir(itemDir, join(itemsDir, id)).internalSkipped;
                 itemFileCount++;
             }
         }
@@ -254,6 +294,9 @@ function bundleL1() {
     console.log(`L1  ${totalEntries} entry/*.json files (${(totalBytes / 1024 / 1024).toFixed(1)} MB)`);
     if (itemFileCount > 0) {
         console.log(`    items: ${itemFileCount} directories copied to items/`);
+    }
+    if (internalSkipped > 0) {
+        console.log(`    items: ${internalSkipped} 份 visibility=internal 的文本版本未进公开产物`);
     }
 }
 
@@ -363,6 +406,36 @@ function bundleMeta() {
 // 代码路径，不需要专门为 Work 全文另写复制逻辑）——此前缺的只是这份全局清单，
 // 没有它 BundleStorage 就无从得知该向哪个 Work 的 items/ 下取 full_text。
 // 不需要合并 draft/production：这份清单只按 book-text 一个仓的内容为准。
+
+/**
+ * 新结构的全局清单 index/texts/{0-f}.json（由各条目 manifest 汇总生成，overview#307）：
+ * 有就拷到产物 index/texts/（条目里有 internal 版本的过滤掉，没有需要过滤的原样拷字节）；没有这个目录就跳过。
+ * 与旧的 index/full_text 并存，过渡期两套都认。
+ */
+function bundleTextsIndex() {
+    const srcDir = join(TEXT_DIR, 'index', 'texts');
+    if (!existsSync(srcDir)) return;
+    const destDir = join(OUT_DIR, 'index', 'texts');
+    ensureDir(destDir);
+    let shardCount = 0;
+    let filtered = 0;
+    for (let i = 0; i < NUM_SHARDS; i++) {
+        const fname = `${i.toString(16)}.json`;
+        const srcPath = join(srcDir, fname);
+        if (!existsSync(srcPath)) continue;
+        const buf = readFileSync(srcPath);
+        let out = buf;
+        try {
+            const f = filterTextsShard(JSON.parse(buf.toString('utf-8')));
+            if (f) { out = Buffer.from(JSON.stringify(f)); filtered++; }
+        } catch (e) {
+            console.warn(`  ⚠ index/texts/${fname} 不是合法 JSON，原样拷贝：${e.message}`);
+        }
+        writeIfChanged(join(destDir, fname), out);
+        shardCount++;
+    }
+    console.log(`TXT  ${shardCount} index/texts 分片${filtered ? `（${filtered} 片去掉了 internal 版本）` : ''}`);
+}
 
 function bundleWorkFullTextIndex() {
     const srcDir = join(TEXT_DIR, 'index', 'full_text');
@@ -593,6 +666,7 @@ bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonom
 bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
 bundleL2();
 bundleWorkFullTextIndex();
+bundleTextsIndex();
 bundleExtraFiles();
 bundleVersion();
 

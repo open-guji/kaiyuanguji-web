@@ -116,3 +116,51 @@ test('多页节点：从随机的若干页抽卡，不只看第 1 页；某页�
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, {}), perNode: 6, seed: 3 });
     assert.ok(r.failures.some((f) => f.id === 'read/n1/2.json'));
 });
+
+// ─── 新结构（overview#307）：items/<id>/manifest.json ───
+
+function newStructureFiles(extra = {}) {
+    const files = baseFiles();
+    files['read/tree.json'] = [{ id: 'n1', label: '史部', count: 1 }];
+    files['read/n1/1.json'] = [{ id: WORK, title: '禮記' }];
+    files['read/featured.json'] = { collated: [], books: [] };
+    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'default', kind: 'collated' }, { key: 'wikisource', kind: 'transcription' }] };
+    files[`items/${WORK}/default/index.json`] = { chapters: [{ n: 1, file: '001', has_json: true }] };
+    files[`items/${WORK}/default/001.txt`] = '正文';
+    files[`items/${WORK}/default/001.json`] = {};
+    files[`items/${WORK}/wikisource/index.json`] = { chapters: [{ n: 1, file: '001', has_json: false }] };
+    files[`items/${WORK}/wikisource/001.txt`] = '维基';
+    return { ...files, ...extra };
+}
+const newPages = () => ({ [`/read/${WORK}`]: 'ok', [`/read/${WORK}/wikisource`]: 'ok' });
+
+test('新结构：每个版本的目录、首章（has_json 的含 json）和页面（主版本 /read/<id>、其他 /read/<id>/<key>）都查', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(newStructureFiles(), newPages()), seed: 1 });
+    assert.equal(r.checked, 1);
+    assert.deepEqual(r.failures, []);
+});
+
+test('新结构：缺首章 json、缺非主版本页面、目录 chapters 为空都报；旧结构 404 的 manifest 不算失败', async () => {
+    const files = newStructureFiles();
+    delete files[`items/${WORK}/default/001.json`];
+    files[`items/${WORK}/wikisource/index.json`] = { chapters: [] };
+    const pages = { [`/read/${WORK}`]: 'ok' }; // 缺 /read/<id>/wikisource
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, pages), seed: 1 });
+    const details = r.failures.map((f) => f.detail).join('\n');
+    assert.match(details, /default\/001\.json/);
+    assert.match(details, /\/read\/[^\s]+\/wikisource/);
+    assert.match(details, /wikisource\/index\.json 的 chapters 为空/);
+    // 旧结构的 baseFiles 没有 manifest.json，前面的旧结构用例已覆盖「不算失败」
+});
+
+test('新结构：manifest 带 internal、versions[0] 不是 default、key 不合法，都报', async () => {
+    const files = newStructureFiles();
+    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'wikisource', kind: 'transcription' }, { key: 'shidian', kind: 'transcription', visibility: 'internal' }, { key: 'manifest' }] };
+    files[`items/${WORK}/shidian/index.json`] = { chapters: [{ file: '001' }] };
+    files[`items/${WORK}/shidian/001.txt`] = 'x';
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1 });
+    const details = r.failures.map((f) => f.detail).join('\n');
+    assert.match(details, /visibility=internal/);
+    assert.match(details, /versions\[0\] 不是 default/);
+    assert.match(details, /不合法的版本 key/);
+});
