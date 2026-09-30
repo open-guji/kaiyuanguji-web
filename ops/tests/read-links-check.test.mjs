@@ -71,8 +71,7 @@ test('整理本卡：查 collated_edition 目录与首卷', async () => {
     assert.deepEqual(r.failures, []);
 });
 
-test('tree.json 读不了直接抛错；pickSome 带种子可复现；summary 列出失败', async () => {
-    await assert.rejects(checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch({}, {}) }), /tree\.json/);
+test('pickSome 带种子可复现；summary 列出失败', () => {
     const a = pickSome([1, 2, 3, 4, 5, 6, 7, 8], 3, mulberry32(7));
     const b = pickSome([1, 2, 3, 4, 5, 6, 7, 8], 3, mulberry32(7));
     assert.deepEqual(a, b);
@@ -81,4 +80,39 @@ test('tree.json 读不了直接抛错；pickSome 带种子可复现；summary �
     const md = renderSummary({ checked: 3, failures: [{ id: 'x', what: '数据', detail: 'y' }] }, { target: SITE, seed: 9 });
     assert.match(md, /失败 1 处/);
     assert.match(md, /\| x \| 数据 \| y \|/);
+});
+
+test('顶层清单读不了（404、网络错误、JSON 坏）：记成失败返回，不抛', async () => {
+    let r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch({}, {}) });
+    assert.equal(r.checked, 0);
+    assert.ok(r.failures.some((f) => f.id === 'read/tree.json' && /HTTP 404/.test(f.detail)));
+    const boom = async () => { throw new Error('ECONNRESET'); };
+    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: boom });
+    assert.ok(r.failures.some((f) => f.id === 'read/tree.json' && /ECONNRESET/.test(f.detail)));
+    const badJson = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token'); } });
+    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: badJson });
+    assert.ok(r.failures.some((f) => /Unexpected token/.test(f.detail)));
+    // 失败照样能渲染 summary
+    assert.match(renderSummary(r, { target: SITE, seed: 1 }), /read\/tree\.json/);
+});
+
+test('多页节点：从随机的若干页抽卡，不只看第 1 页；某页读不了记失败', async () => {
+    const files = baseFiles();
+    // 节点 120 张卡 → 6 页；每页一张卡，id 形如 p<页号>
+    files['read/tree.json'] = [{ id: 'n1', label: '史部', count: 120 }];
+    files['read/featured.json'] = { collated: [], books: [] };
+    for (let n = 1; n <= 6; n++) files[`read/n1/${n}.json`] = [{ id: `p${n}`, title: `书${n}` }];
+    const seen = new Set();
+    const spy = async (url) => {
+        const m = new URL(url).pathname.match(/read\/n1\/(\d+)\.json$/);
+        if (m) seen.add(Number(m[1]));
+        return fakeFetch(files, {})(url);
+    };
+    await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: spy, perNode: 4, seed: 3 });
+    assert.equal(seen.size, 4); // 6 页里挑 4 个不同的页
+    assert.ok([...seen].some((n) => n > 1), '不只是第 1 页');
+    // 某一页读不了：记失败，不抛，其余页照常抽
+    delete files['read/n1/2.json'];
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, {}), perNode: 6, seed: 3 });
+    assert.ok(r.failures.some((f) => f.id === 'read/n1/2.json'));
 });

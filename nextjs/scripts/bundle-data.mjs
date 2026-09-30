@@ -25,7 +25,7 @@ import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
-import { bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
+import { bookFirstChapter, bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
 
 // ─── 配置 ───
 
@@ -225,10 +225,10 @@ function bundleL1() {
                     //   _isDraft  —— item._root === 'draft'（production 条目应链到 book-index）
                     detail._path = item.path;
                     detail._isDraft = item._root !== 'official';
-                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json
+                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json，
+                    // 且 chapters 非空（与阅读索引 bookFirstChapter、阅读页 reader-check 同一判据，overview#306）
                     if (item.type === 'book' || typeName === 'books') {
-                        const ftIdx = join(TEXT_DIR, dirname(path), id, 'full_text', 'index.json');
-                        if (existsSync(ftIdx)) detail.has_full_text = true;
+                        if (bookFirstChapter(join(TEXT_DIR, dirname(path), id))) detail.has_full_text = true;
                     }
                     const json = JSON.stringify(detail);
                     writeIfChanged(join(entryDir, `${id}.json`), json);
