@@ -44,14 +44,14 @@ describe('首页（N1）', () => {
         expect(HOME_FEATURES[1].text).toMatch(/文字资源和影印资源/);
     });
 
-    it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦甲戌本→阅读页；没有「看一个例子」', () => {
+    it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页；没有「看一个例子」', () => {
         render(<HomePage />);
         const under = document.querySelector('.home-under') as HTMLElement;
         const links = within(under).getAllByRole('link');
         expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
             ['史记', '/item/d59f20aowb9c'],
             ['四库全书', '/item/8rlb6yi1ecqo'],
-            ['红楼梦甲戌本', '/read/96kzii6z28?kind=fulltext'],
+            ['红楼梦程甲本', '/read/96kzkdm8e8?kind=fulltext'],
         ]);
         expect(screen.getByRole('main').textContent).not.toMatch(/看一个例子|读整理本/);
     });

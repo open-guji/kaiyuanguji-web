@@ -13,11 +13,11 @@ import { HOME_FEATURES } from '@/components/home/features';
 // 搜索框下面的三个例子（用户意见，overview#267）：只写名字，点进去分别是作品页、丛编页、阅读页。
 //   史记 → 作品页（史記 d59f20aowb9c）
 //   四库全书 → 丛编页（欽定四庫全書·文淵閣本 8rlb6yi1ecqo，四庫全書七阁之首，没有更上一级的总丛编）
-//   红楼梦甲戌本 → 直接进阅读页（脂硯齋重評石頭記·甲戌本 96kzii6z28 的全文）
+//   红楼梦程甲本 → 直接进阅读页（新鐫全部繡像紅樓夢·程甲本 96kzkdm8e8 的全文，维基文库 120 回；09-30 用户重申，取代此前的「甲戌本」）
 const HOME_EXAMPLES = [
   { label: '史记', href: '/item/d59f20aowb9c' },
   { label: '四库全书', href: '/item/8rlb6yi1ecqo' },
-  { label: '红楼梦甲戌本', href: '/read/96kzii6z28?kind=fulltext' },
+  { label: '红楼梦程甲本', href: '/read/96kzkdm8e8?kind=fulltext' },
 ];
 
 // 「文本开放、代码开源」两栏（用户意见，overview#267）。仓库地址与说明已对照各仓 README 核实：
