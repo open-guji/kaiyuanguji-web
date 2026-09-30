@@ -25,7 +25,7 @@ import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
-import { bundleRead } from './build-read-index.mjs';
+import { bookFirstChapter, bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
 
 // ─── 配置 ───
 
@@ -196,6 +196,8 @@ function bundleL1() {
     if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
     if (existsSync(legacyChunksDir)) rmSync(legacyChunksDir, { recursive: true });
     ensureDir(entryDir);
+    // 站内全文清单：给 Work 的条目 JSON 注入 has_site_fulltext（overview#306）
+    const workFullTexts = loadWorkFullTextLists(TEXT_DIR);
 
     for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
         const items = index[typeName];
@@ -213,6 +215,9 @@ function bundleL1() {
                     if (item.has_collated) detail.has_collated = true;
                     if (item.has_text) detail.has_text = true;
                     if (item.has_image) detail.has_image = true;
+                    // has_text 只表示「有外部文本资源」，不代表站内有正文；站内真有全文（book-text/index/full_text
+                    // 里有非 Book 所有、total_chapters>0 的条目）才标 has_site_fulltext，阅读入口判断用它（overview#306）
+                    if (typeName === 'works' && workFullTextPick(workFullTexts.get(id))) detail.has_site_fulltext = true;
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
                     // 注入仓库归属，供前端拼右上角 GitHub 源文件链接：
@@ -220,10 +225,10 @@ function bundleL1() {
                     //   _isDraft  —— item._root === 'draft'（production 条目应链到 book-index）
                     detail._path = item.path;
                     detail._isDraft = item._root !== 'official';
-                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json
+                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json，
+                    // 且 chapters 非空（与阅读索引 bookFirstChapter、阅读页 reader-check 同一判据，overview#306）
                     if (item.type === 'book' || typeName === 'books') {
-                        const ftIdx = join(TEXT_DIR, dirname(path), id, 'full_text', 'index.json');
-                        if (existsSync(ftIdx)) detail.has_full_text = true;
+                        if (bookFirstChapter(join(TEXT_DIR, dirname(path), id))) detail.has_full_text = true;
                     }
                     const json = JSON.stringify(detail);
                     writeIfChanged(join(entryDir, `${id}.json`), json);
@@ -585,7 +590,7 @@ bundleL1();
 // 古籍总目分类索引 catalog/（N4b，见 build-catalog-index.mjs）
 bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
 // 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
-bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
+bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
 bundleL2();
 bundleWorkFullTextIndex();
 bundleExtraFiles();

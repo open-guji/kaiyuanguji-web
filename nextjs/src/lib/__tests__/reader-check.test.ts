@@ -82,3 +82,22 @@ describe('checkReader：带回章名', () => {
         expect(await checkReader(BOOK, { kind: 'fulltext', juan: '999' }, false, withTitles)).toEqual({ status: 'missing' });
     });
 });
+
+describe('checkReaderQuery：全文目录 chapters 为空算没有（与阅读索引判据一致，overview#306）', () => {
+    const EMPTY_BOOK = '988fbiuha9';
+    const EMPTY_WORK = 'd59f2gonq7sz';
+    const files: Record<string, unknown> = {
+        [`items/${EMPTY_BOOK}/full_text/index.json`]: { chapters: [] },
+        [`index/full_text/${fullTextShardOf(EMPTY_WORK)}.json`]: { [EMPTY_WORK]: [{ key: 'k1', owner_type: 'Work', primary: true }] },
+        [`items/${EMPTY_WORK}/full_text/k1/index.json`]: { chapters: [] },
+    };
+    const g: GetCurrentJson = async <T,>(rel: string) => (files[rel] ?? null) as T | null;
+
+    it('Book：full_text/index.json 存在但 chapters 为空 → missing', async () => {
+        expect(await checkReaderQuery(EMPTY_BOOK, { kind: 'fulltext' }, false, g)).toBe('missing');
+    });
+    it('Work：带 key 取目录，chapters 为空 → missing', async () => {
+        expect(await checkReaderQuery(EMPTY_WORK, { kind: 'fulltext', key: 'k1' }, true, g)).toBe('missing');
+    });
+});
+

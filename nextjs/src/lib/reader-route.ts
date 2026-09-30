@@ -151,11 +151,12 @@ export function legacyReaderTarget(pathname: string, params: URLSearchParams): s
 /**
  * 条目 JSON 自己的标记：有没有这类阅读内容（overview#267 QA 回归 P2）。
  *   整理本：has_collated（另有 _has_collated 同义）
- *   全文  ：has_text（Work 与 Book 都有）、Book 另有 has_full_text；_has_text 同义
+ *   全文  ：Work 看 has_site_fulltext（站内 index/full_text 真有正文）；Book 看 has_full_text（full_text/index.json 存在）。
+ *           不看 has_text——那只表示有外部文本资源，站内未必有正文（overview#306）
  * 只认明确为 true 的；数据里没这个标记就当没有。用于旧入口 ?tab=fulltext／collated：
  * 条目没有这类内容就不必跳阅读页（那里只会是 404）。
  */
 export function entryHasReaderContent(entry: Record<string, unknown>, kind: ReaderKind): boolean {
     if (kind === 'collated') return entry.has_collated === true || entry._has_collated === true;
-    return entry.has_text === true || entry._has_text === true || entry.has_full_text === true;
+    return entry.has_site_fulltext === true || entry.has_full_text === true;
 }

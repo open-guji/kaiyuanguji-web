@@ -60,33 +60,44 @@ function makeFixture(base) {
     const text = join(base, 'text');
     const workId = 'aaaaaaaaaaa';
     const bookId = 'bbbbbbbbbbb';
+    const emptyBookId = 'ccccccccccc'; // full_text/index.json 在但 chapters 为空
     const workRel = `Work/a/a/a/${workId}-老子.json`;
     const bookRel = `Book/b/b/b/${bookId}-某刻本.json`;
+    const emptyBookRel = `Book/c/c/c/${emptyBookId}-空目录本.json`;
 
     mkdirSync(join(draft, 'index', 'works'), { recursive: true });
     mkdirSync(join(draft, 'index', 'books'), { recursive: true });
     mkdirSync(join(draft, dirname(workRel)), { recursive: true });
     mkdirSync(join(draft, dirname(bookRel)), { recursive: true });
+    mkdirSync(join(draft, dirname(emptyBookRel)), { recursive: true });
     writeFileSync(join(draft, 'index', 'works', '0.json'),
         JSON.stringify({ [workId]: { id: workId, name: '老子', type: 'work', path: workRel } }));
     writeFileSync(join(draft, 'index', 'books', '0.json'),
-        JSON.stringify({ [bookId]: { id: bookId, name: '某刻本', type: 'book', path: bookRel } }));
+        JSON.stringify({
+            [bookId]: { id: bookId, name: '某刻本', type: 'book', path: bookRel },
+            [emptyBookId]: { id: emptyBookId, name: '空目录本', type: 'book', path: emptyBookRel },
+        }));
     writeFileSync(join(draft, workRel), JSON.stringify({ id: workId, title: '老子', type: 'work' }));
     writeFileSync(join(draft, bookRel), JSON.stringify({ id: bookId, title: '某刻本', type: 'book' }));
+    writeFileSync(join(draft, emptyBookRel), JSON.stringify({ id: emptyBookId, title: '空目录本', type: 'book' }));
 
     // Work 全文：两个来源 key，各一章
     for (const key of ['wikisource-01', 'wikisource-02']) {
         const dir = join(text, dirname(workRel), workId, 'full_text', key);
         mkdirSync(dir, { recursive: true });
-        writeFileSync(join(dir, 'index.json'), JSON.stringify({ chapters: ['001.md'], key }));
+        writeFileSync(join(dir, 'index.json'), JSON.stringify({ chapters: [{ file: '001.md', title: '第一章' }], key }));
         writeFileSync(join(dir, '001.md'), `# ${key} 第一章\n道可道，非常道。\n`);
     }
 
     // Book 全文：flat，无 <key> 层（回归对照组）
     const bookFtDir = join(text, dirname(bookRel), bookId, 'full_text');
     mkdirSync(bookFtDir, { recursive: true });
-    writeFileSync(join(bookFtDir, 'index.json'), JSON.stringify({ chapters: ['001.md'] }));
+    writeFileSync(join(bookFtDir, 'index.json'), JSON.stringify({ chapters: [{ file: '001.md', title: '第一章' }] }));
     writeFileSync(join(bookFtDir, '001.md'), '# 第一回\n某某某。\n');
+
+    const emptyFtDir = join(text, dirname(emptyBookRel), emptyBookId, 'full_text');
+    mkdirSync(emptyFtDir, { recursive: true });
+    writeFileSync(join(emptyFtDir, 'index.json'), JSON.stringify({ chapters: [] }));
 
     // book-text 顶层全局清单：两片，workId 分到片 'a'
     const globalDir = join(text, 'index', 'full_text');
@@ -102,7 +113,7 @@ function makeFixture(base) {
     git(draft, 'add', '-A');
     git(draft, 'commit', '-q', '-m', 'fixture');
 
-    return { draft, text, workId, bookId, shardEntry };
+    return { draft, text, workId, bookId, emptyBookId, shardEntry };
 }
 
 function runBundleData(env) {
@@ -128,7 +139,7 @@ function baseEnv(outRoot, draft, text) {
 
 const tmp = mkdtempSync(join(tmpdir(), 'w6b-bundle-'));
 try {
-    const { draft, text, workId, bookId, shardEntry } = makeFixture(tmp);
+    const { draft, text, workId, bookId, emptyBookId, shardEntry } = makeFixture(tmp);
     const outRoot = join(tmp, 'kyg-data');
     const env = baseEnv(outRoot, draft, text);
 
@@ -167,6 +178,13 @@ try {
         const chapterTxt = join(outRoot, 'data', 'items', bookId, 'full_text', '001.txt');
         assert.ok(existsSync(idxPath));
         assert.ok(existsSync(chapterTxt));
+    });
+
+    test('条目 JSON 的阅读标记：Work 有全文标 has_site_fulltext；Book 按 chapters 非空标 has_full_text（空目录的不标）', () => {
+        const entry = (id) => JSON.parse(readFileSync(join(outRoot, 'data', 'entry', `${id}.json`), 'utf-8'));
+        assert.equal(entry(workId).has_site_fulltext, true);
+        assert.equal(entry(bookId).has_full_text, true);
+        assert.equal(entry(emptyBookId).has_full_text, undefined);
     });
 
     test('book-text 无 index/full_text/ 目录时：跳过，不报错、不建空目录', () => {

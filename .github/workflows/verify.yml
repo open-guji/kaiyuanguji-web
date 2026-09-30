@@ -98,6 +98,13 @@ jobs:
         working-directory: e2e
         run: npm run test:contract
 
+      # 阅读首页的卡片点进去真能读（overview#306）：每个一级节点抽 20 张＋精选清单全部，
+      # 页面 200、数据目录与首章／首卷都 200。只发 GET，无依赖
+      - name: Read links check
+        run: |
+          node --test ops/tests/read-links-check.test.mjs
+          node ops/read-links-check.mjs
+
       - name: UI tests
         working-directory: e2e
         run: npm run test:ui

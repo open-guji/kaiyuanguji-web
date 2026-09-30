@@ -141,10 +141,11 @@ describe('legacyReaderParts／entryHasReaderContent（overview#267 QA 回归 P2�
         expect(entryHasReaderContent({ has_collated: 'true' }, 'collated')).toBe(false);
         expect(entryHasReaderContent({}, 'collated')).toBe(false);
     });
-    it('全文看 has_text／_has_text／has_full_text', () => {
-        expect(entryHasReaderContent({ has_text: true }, 'fulltext')).toBe(true);
-        expect(entryHasReaderContent({ _has_text: true }, 'fulltext')).toBe(true);
+    it('全文看 has_site_fulltext／has_full_text，不看 has_text（外部资源不等于站内有正文，overview#306）', () => {
+        expect(entryHasReaderContent({ has_site_fulltext: true }, 'fulltext')).toBe(true);
         expect(entryHasReaderContent({ has_full_text: true }, 'fulltext')).toBe(true);
+        expect(entryHasReaderContent({ has_text: true }, 'fulltext')).toBe(false);
+        expect(entryHasReaderContent({ _has_text: true }, 'fulltext')).toBe(false);
         expect(entryHasReaderContent({ has_collated: true }, 'fulltext')).toBe(false);
         expect(entryHasReaderContent({ has_text: 1 }, 'fulltext')).toBe(false);
         expect(entryHasReaderContent({}, 'fulltext')).toBe(false);

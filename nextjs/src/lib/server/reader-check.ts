@@ -51,6 +51,11 @@ export function chapterTitleOf(index: FullTextIndex, juan: string | undefined): 
     return typeof t === 'string' && t.trim() ? t.trim() : undefined;
 }
 
+/** 全文目录有章：chapters 非空（与构建期阅读索引的 bookFirstChapter 同一判据；空目录的阅读页没有东西可读，404） */
+function hasAnyChapter(index: FullTextIndex): boolean {
+    return Array.isArray(index.chapters) && index.chapters.some((c) => typeof c?.file === 'string' && c.file !== '');
+}
+
 function badPathSegment(s: string): boolean {
     return s.includes('..') || s.includes('/') || s.includes('\\');
 }
@@ -66,7 +71,7 @@ async function check(id: string, q: ReaderQuery, isWork: boolean, get: GetCurren
 
     if (!isWork) {
         const index = await get<FullTextIndex>(`items/${id}/full_text/index.json`);
-        if (!index) return { ok: false };
+        if (!index || !hasAnyChapter(index)) return { ok: false };
         return { ok: !q.juan || hasChapter(index, q.juan), chapterTitle: chapterTitleOf(index, q.juan) };
     }
 
@@ -82,7 +87,7 @@ async function check(id: string, q: ReaderQuery, isWork: boolean, get: GetCurren
         if (!q.juan) return { ok: true };
     }
     const index = await get<FullTextIndex>(`items/${id}/full_text/${key}/index.json`);
-    if (!index) return { ok: false };
+    if (!index || !hasAnyChapter(index)) return { ok: false };
     return { ok: !q.juan || hasChapter(index, q.juan), chapterTitle: chapterTitleOf(index, q.juan) };
 }
 
