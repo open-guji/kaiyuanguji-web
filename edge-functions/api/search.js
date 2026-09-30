@@ -22,7 +22,7 @@
 //   FILTER_MAX_IN_VALUES）、同一字段出现两次，一律 400 bad_request，不会悄悄丢掉再放行（悄悄丢掉会让用户看到「筛了但没筛」）。
 //   解析后按 AST 重新拼串再发给 Meili（值用 JSON.stringify），原串不会到上游；`is_draft = false` 永远排在最前。
 //   空串值表示「该字段为空」（如 classification = "" ＝ 未分類），代理改写成 Meili 的 IS EMPTY（`= ""` 在 Meili 里筛不到空值）。
-//   sort 暂不放行：这几个索引的 rankingRules 里没有 `sort` 规则，放行了也不会生效（要用得先改 indexer 的 SETTINGS）。
+//   sort：只认 era:asc|desc（按年代）、title:asc|desc（按书名），只对 works／books／entities；见 SORT_MAP。
 // 返回：{ results: [{ indexUid, hits, estimatedTotalHits, limit, offset }] }
 //   hits 只含卡片渲染要的字段；works/books 的 _formatted 只留 description_search（简介命中片段）。
 // 失败：Meili 不可用／超时 → 503 { error, code }，前端据此退回浏览器兜底（L2）。
@@ -44,9 +44,10 @@ const CACHE_TTL_SECONDS = 60;
 
 // filter 的限额与字段白名单（'s' = 字符串字段，'b' = 布尔字段）。字段必须是该索引的 filterableAttributes
 // （indexer/full-reindex.mjs 的 SETTINGS），否则 Meili 会 400；is_draft 不在其中，由服务端强制。
-const FILTER_MAX_CHARS = 300;
+const FILTER_MAX_CHARS = 700;
 const FILTER_MAX_CLAUSES = 6;
-const FILTER_MAX_IN_VALUES = 12;
+// 朝代分组（搜索页 v4）展开成 30+ 个取值，IN 上限与总长按它放宽（2026-09-30，overview#298）
+const FILTER_MAX_IN_VALUES = 40;
 const FILTER_MAX_VALUE_CHARS = 20;
 const FILTER_FIELDS = {
   works: { type: 's', dynasty: 's', classification: 's', loss_status: 's', has_image: 'b', has_text: 'b', has_collated: 'b' },
@@ -54,6 +55,16 @@ const FILTER_FIELDS = {
   collections: { type: 's' },
   entities: { type: 's', dynasty: 's' },
 };
+// sort（搜索页 v4「按年代／按书名」）：对外只认这四个键，翻译成索引里的可排序字段；
+// collections 没有这两个字段，带 sort 一律 400。索引重建前没有这些可排序字段，Meili 会 400，
+// 代理这时去掉 sort 重发（结果按相关度，响应里 sortIgnored: true），不让搜索页整页报错。
+const SORT_MAP = {
+  'era:asc': 'era_rank:asc',
+  'era:desc': 'era_rank:desc',
+  'title:asc': 'title_sort:asc',
+  'title:desc': 'title_sort:desc',
+};
+const SORT_INDEXES = new Set(['works', 'books', 'entities']);
 const MEMORY_CACHE_MAX = 500;
 
 // 只有 works/books 有 description_search（见 indexer/full-reindex.mjs 的 SETTINGS）
@@ -234,7 +245,16 @@ function sanitizeQuery(raw, defaultLimit = 5) {
   const limit = Math.min(MAX_LIMIT, Math.max(1, toInt(raw.limit, defaultLimit)));
   const offset = Math.min(MAX_OFFSET, Math.max(0, toInt(raw.offset, 0)));
   const filter = parseFilter(raw.filter, indexUid);
-  return { indexUid, q, limit, offset, filter };
+  const sort = parseSort(raw.sort, indexUid);
+  return { indexUid, q, limit, offset, filter, sort };
+}
+
+/** sort 参数 → 索引里的排序键（如 'era_rank:asc'）；缺省返回 null；不认识／该索引不支持一律 400 */
+function parseSort(raw, indexUid) {
+  if (raw === undefined || raw === null || raw === '') return null;
+  if (typeof raw !== 'string' || !Object.prototype.hasOwnProperty.call(SORT_MAP, raw)) throw new BadRequest('sort 只认 era:asc|desc、title:asc|desc');
+  if (!SORT_INDEXES.has(indexUid)) throw new BadRequest(`${indexUid} 索引不支持 sort`);
+  return SORT_MAP[raw];
 }
 
 /** 规整后的 query → Meili multi-search 里的一条（服务端写死 filter／字段／高亮） */
@@ -249,6 +269,7 @@ function toMeiliQuery(sq) {
     filter: buildFilterString(sq.filter),
     attributesToRetrieve: ATTRIBUTES_TO_RETRIEVE,
   };
+  if (sq.sort) out.sort = [sq.sort];
   if (DESCRIPTION_HIGHLIGHT_INDEXES.has(sq.indexUid)) {
     out.attributesToHighlight = ['description_search'];
     out.attributesToCrop = ['description_search'];
@@ -285,7 +306,7 @@ async function parseQueries(request) {
   const defaultLimit = index ? 20 : 5;
   const uniq = [...new Set(indexes)];
   return uniq.map((indexUid) => sanitizeQuery({
-    indexUid, q, limit: params.get('limit'), offset: params.get('offset'), filter: params.get('filter'),
+    indexUid, q, limit: params.get('limit'), offset: params.get('offset'), filter: params.get('filter'), sort: params.get('sort'),
   }, defaultLimit));
 }
 
@@ -316,7 +337,7 @@ function shapeResults(meiliJson, queries) {
 const memoryCache = new Map(); // key → { expires, body }
 
 function cacheKey(queries) {
-  return JSON.stringify(queries.map((q) => [q.indexUid, q.q, q.limit, q.offset, buildFilterString(q.filter)]));
+  return JSON.stringify(queries.map((q) => [q.indexUid, q.q, q.limit, q.offset, buildFilterString(q.filter), q.sort]));
 }
 
 function memoryGet(key, now) {
@@ -452,8 +473,19 @@ async function handleSearch(context) {
 
   const config = getConfig(context);
   let meiliJson;
+  let sortIgnored = false;
   try {
-    meiliJson = await callMeili(config, queries);
+    try {
+      meiliJson = await callMeili(config, queries);
+    } catch (e) {
+      // 索引还没重建出可排序字段时 Meili 对 sort 回 400：去掉 sort 重发一次，按相关度出结果
+      if (e && e.status === 400 && queries.some((q) => q.sort)) {
+        sortIgnored = true;
+        meiliJson = await callMeili(config, queries.map((q) => ({ ...q, sort: null })));
+      } else {
+        throw e;
+      }
+    }
   } catch (e) {
     const status = e && e.status;
     const code = (status === 401 || status === 403) ? 'upstream_auth' : 'upstream_unavailable';
@@ -461,7 +493,8 @@ async function handleSearch(context) {
     return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30' });
   }
 
-  const body = JSON.stringify({ results: shapeResults(meiliJson, queries) });
+  const shaped = shapeResults(meiliJson, queries);
+  const body = JSON.stringify({ results: sortIgnored ? shaped.map((r) => ({ ...r, sortIgnored: true })) : shaped });
   memorySet(key, body, now);
   await edgePut(key, body);
   return json(200, body, okHeaders('MISS'));
