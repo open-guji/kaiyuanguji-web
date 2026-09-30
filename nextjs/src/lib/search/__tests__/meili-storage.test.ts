@@ -390,3 +390,77 @@ describe('meili-storage 代理模式（S1：/api/search）', () => {
         expect(base.searchAll).toHaveBeenCalled();
     });
 });
+
+describe('meili-storage 代理模式：搜索页 v4 筛选（overview#298）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; jest.clearAllMocks(); });
+    const ok = (results: unknown[]) => jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ results }) });
+    const F = (p: Record<string, unknown>) => ({ dynasty: [], classification: [], hasImage: false, hasText: false, hasCollated: false, loss: '', ...p });
+
+    it('searchAll 带筛选：一次 POST multi-search，每类各带自己的 filter；不支持已选字段的类不发、按 0 条', async () => {
+        const fetchMock = ok([
+            { indexUid: 'works', hits: [{ id: 'w1', type: 'work', title: '史記', classification: '史部', loss_status: 'lost' }], estimatedTotalHits: 9 },
+        ]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' });
+        const r = await wrapped.searchAll!('史記', 5, F({ classification: ['史部'], hasImage: true }) as any);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchMock.mock.calls[0];
+        expect(url).toBe('/api/search');
+        expect(init.method).toBe('POST');
+        const body = JSON.parse(init.body);
+        // 部类只有 works 支持 → 只发 works；带自己的 filter
+        expect(body.queries).toEqual([{ indexUid: 'works', q: '史記', limit: 5, offset: 0, filter: 'classification = "史部" AND has_image = true' }]);
+        expect(r.totalWorks).toBe(9);
+        expect(r.totalBooks + r.totalCollections + r.totalEntities).toBe(0);
+        // 表格的「部类」「存佚」列要的字段都映射进条目
+        expect(r.works[0]).toMatchObject({ id: 'w1', classification: '史部', loss_status: 'lost' });
+    });
+
+    it('朝代筛选对 works／books／entities 发 IN 串，丛编不发', async () => {
+        const fetchMock = ok([]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        await wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5, F({ dynasty: ['明'] }) as any);
+        const qs = JSON.parse(fetchMock.mock.calls[0][1].body).queries;
+        expect(qs.map((x: any) => x.indexUid).sort()).toEqual(['books', 'entities', 'works']);
+        expect(qs.every((x: any) => x.filter === 'dynasty IN ["明", "明末清初"]')).toBe(true);
+    });
+
+    it('没有筛选：仍是原来的 GET（可被边缘缓存），不发 POST', async () => {
+        const fetchMock = ok([]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        await wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5, F({}) as any);
+        expect(fetchMock.mock.calls[0][0]).toBe('/api/search?q=%E5%8F%B2%E8%A8%98&limit=5');
+        expect(fetchMock.mock.calls[0][1].method).toBe('GET');
+    });
+
+    it('search(type) 带筛选：filter 参数；不支持的类直接 0 条不发请求；翻页 offset 照旧', async () => {
+        const fetchMock = ok([{ indexUid: 'works', hits: [], estimatedTotalHits: 0 }]);
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch } = freshModule();
+        const wrapped = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' });
+        await wrapped.search('史記', 'work', { page: 2, pageSize: 50, filters: F({ loss: 'lost' }) as any });
+        const params = new URL(fetchMock.mock.calls[0][0], 'http://x').searchParams;
+        expect(params.get('filter')).toBe('loss_status = "lost"');
+        expect(params.get('offset')).toBe('50');
+        const none = await wrapped.search('史記', 'book', { page: 1, pageSize: 50, filters: F({ loss: 'lost' }) as any });
+        expect(none).toMatchObject({ entries: [], total: 0 });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('带筛选时代理失败：不退回不认筛选的简易搜索（免得「筛了但没筛」），抛一句人话；400 说条件太多', async () => {
+        const base = makeBase();
+        const { wrapWithMeiliSearch } = freshModule();
+        global.fetch = jest.fn().mockRejectedValue(new Error('network')) as any;
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        await expect(wrapped.searchAll!('史記', 5, F({ dynasty: ['清'] }) as any)).rejects.toThrow('筛选需要完整搜索');
+        expect(base.searchAll).not.toHaveBeenCalled();
+        const { wrapWithMeiliSearch: w2 } = freshModule();
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 400, json: async () => ({}) }) as any;
+        await expect(w2(makeBase(), { proxyUrl: '/api/search' }).search('史記', 'work', { filters: F({ dynasty: ['清'] }) as any })).rejects.toThrow('筛选条件太多');
+    });
+});

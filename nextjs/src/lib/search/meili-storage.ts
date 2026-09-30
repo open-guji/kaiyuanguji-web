@@ -21,7 +21,8 @@
 
 import type { IndexStorage } from 'book-index-ui/storage';
 import type { IndexEntry, IndexType, PageResult, LoadOptions, GroupedSearchResult } from 'book-index-ui';
-import { SNIPPET_MARK_START, SNIPPET_MARK_END } from 'book-index-ui';
+import { SNIPPET_MARK_START, SNIPPET_MARK_END, buildMeiliFilter, hasActiveFilters } from 'book-index-ui';
+import type { SearchFilters } from 'book-index-ui';
 
 export interface MeiliConfig {
     /** 代理地址（同站 '/api/search'）。给了就走代理，忽略 baseUrl/apiKey */
@@ -58,6 +59,9 @@ interface MeiliHit {
     has_text?: boolean;
     has_image?: boolean;
     has_collated?: boolean;
+    /** 部类一级、存佚（只有 works 有；重建索引后才出现） */
+    classification?: string;
+    loss_status?: string;
     birth_year?: number;
     death_year?: number;
     cbdb_id?: number;
@@ -162,6 +166,8 @@ function hitToEntry(h: MeiliHit): IndexEntry {
         has_text: h.has_text,
         has_image: h.has_image,
         has_collated: h.has_collated,
+        classification: h.classification || undefined,
+        loss_status: h.loss_status || undefined,
         primary_name: h.primary_name,
         birth_year: h.birth_year,
         death_year: h.death_year,
@@ -344,6 +350,14 @@ function withOverrides<T extends IndexStorage>(base: T, overrides: Partial<Index
     }) as T;
 }
 
+const FILTER_UNAVAILABLE = '搜索服务暂时不可用，筛选需要完整搜索，请稍后再试。';
+const FILTER_TOO_MANY = '筛选条件太多，请减少几项后再试。';
+
+/** 带筛选的请求失败：400＝条件本身不被接受（超限等），其余＝服务不可用；都给用户一句人话 */
+function filterError(e: unknown): Error {
+    return new Error((e as { status?: number })?.status === 400 ? FILTER_TOO_MANY : FILTER_UNAVAILABLE);
+}
+
 const TYPE_TO_INDEX: Record<string, string> = {
     work: 'works', book: 'books', collection: 'collections', entity: 'entities',
 };
@@ -384,6 +398,41 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
         }
     }
 
+    /**
+     * 带筛选的「全部」：POST multi-search，一次请求里每类索引各带自己的 filter
+     * （各类能筛的字段不同，见 book-index-ui 的 FILTER_SUPPORT）；不支持已选字段的类不发、按 0 条。
+     */
+    async function proxyMultiSearch(q: string, limit: number, offset: number, filters: SearchFilters): Promise<ProxyResult[]> {
+        const queries: { indexUid: string; q: string; limit: number; offset: number; filter?: string }[] = [];
+        const empty: ProxyResult[] = [];
+        for (const [type, uid] of Object.entries(TYPE_TO_INDEX) as [IndexType, string][]) {
+            const f = buildMeiliFilter(filters, type);
+            if (f === null) { empty.push({ indexUid: uid, hits: [], estimatedTotalHits: 0 }); continue; }
+            queries.push({ indexUid: uid, q, limit, offset, ...(f ? { filter: f } : {}) });
+        }
+        if (queries.length === 0) return empty;
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(new DOMException('search proxy timeout', 'TimeoutError')), timeoutMs);
+        try {
+            const r = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ queries }),
+                signal: ctrl.signal,
+            });
+            if (!r.ok) {
+                const err = new Error(`HTTP ${r.status}`) as Error & { status?: number };
+                err.status = r.status;
+                throw err;
+            }
+            const data = await r.json() as { results?: ProxyResult[] };
+            if (!Array.isArray(data.results)) throw new Error('bad proxy response');
+            return [...data.results, ...empty];
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
     function onFailure(e: unknown, where: string): void {
         const status = (e as { status?: number })?.status;
         // 400 是请求本身的问题（如查询超长），不代表 L1 挂了，不计入熔断
@@ -393,7 +442,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
     }
 
     const overrides: Partial<IndexStorage> = {
-        async searchAll(query: string, limit: number = 5): Promise<GroupedSearchResult> {
+        async searchAll(query: string, limit: number = 5, filters?: SearchFilters): Promise<GroupedSearchResult> {
             const q = query.trim();
             if (!q) {
                 return {
@@ -401,12 +450,17 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                     totalWorks: 0, totalBooks: 0, totalCollections: 0, totalEntities: 0,
                 };
             }
+            const filtered = !!filters && hasActiveFilters(filters);
+            // 简易搜索（L2）不认筛选：带筛选时不退回它，免得用户看到「筛了但没筛」的结果
             if (!breaker.canCall()) {
                 setDegraded(true);
+                if (filtered) throw new Error(FILTER_UNAVAILABLE);
                 return base.searchAll!(query, limit);
             }
             try {
-                const results = await proxySearch({ q, limit: String(limit) });
+                const results = filtered
+                    ? await proxyMultiSearch(q, limit, 0, filters!)
+                    : await proxySearch({ q, limit: String(limit) });
                 breaker.recordSuccess();
                 setDegraded(false);
                 const by = new Map(results.map(r => [r.indexUid, r]));
@@ -424,6 +478,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 };
             } catch (err) {
                 onFailure(err, 'searchAll');
+                if (filtered) throw filterError(err);
                 return base.searchAll!(query, limit);
             }
         },
@@ -433,8 +488,13 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
             const page = options.page ?? 1;
             const pageSize = options.pageSize ?? 50;
             if (!q) return base.search(query, type, options);
+            const filtered = !!options.filters && hasActiveFilters(options.filters);
+            const filterStr = filtered ? buildMeiliFilter(options.filters!, type) : '';
+            // 这类索引不支持已选的筛选字段（如版本没有部类）：没有可比较的结果，按 0 条
+            if (filterStr === null) return { entries: [], total: 0, page, pageSize };
             if (!breaker.canCall()) {
                 setDegraded(true);
+                if (filtered) throw new Error(FILTER_UNAVAILABLE);
                 return base.search(query, type, options);
             }
             try {
@@ -443,6 +503,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                     index: TYPE_TO_INDEX[type] ?? 'works',
                     limit: String(pageSize),
                     offset: String((page - 1) * pageSize),
+                    ...(filterStr ? { filter: filterStr } : {}),
                 });
                 breaker.recordSuccess();
                 setDegraded(false);
@@ -454,6 +515,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 };
             } catch (err) {
                 onFailure(err, 'search');
+                if (filtered) throw filterError(err);
                 return base.search(query, type, options);
             }
         },
