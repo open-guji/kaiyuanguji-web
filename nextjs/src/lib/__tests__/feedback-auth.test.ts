@@ -54,6 +54,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+    delete (globalThis as Record<string, unknown>).__kygFeedbackListCache;
     kvStub.store.clear();
     kvStub.store.set(
         FB,

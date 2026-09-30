@@ -37,6 +37,7 @@ beforeAll(async () => {
     fn = await import('../../../../edge-functions/api/feedback.js');
 });
 beforeEach(() => {
+    delete (globalThis as Record<string, unknown>).__kygFeedbackListCache;
     kv = makeKv();
     pending = [];
     env = { FEEDBACK_KV: kv, FEEDBACK_ADMIN_TOKEN: 'right' };

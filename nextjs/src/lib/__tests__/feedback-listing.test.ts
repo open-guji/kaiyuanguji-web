@@ -65,7 +65,7 @@ beforeAll(async () => {
 });
 // 只取反馈记录：store 里还有 M3 的限速计数（ratelimit:*）与推送节流状态（notify:*）
 const fbKeys = () => [...store.keys()].filter((k) => k.startsWith('fb_'));
-beforeEach(() => store.clear());
+beforeEach(() => { store.clear(); delete (globalThis as Record<string, unknown>).__kygFeedbackListCache; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 
 describe('排序与分页', () => {

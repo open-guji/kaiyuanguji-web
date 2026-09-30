@@ -64,7 +64,7 @@ beforeAll(async () => {
     g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/feedback.js');
 });
-beforeEach(() => store.clear());
+beforeEach(() => { store.clear(); delete (globalThis as Record<string, unknown>).__kygFeedbackListCache; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 
 describe('公开读脱敏：各样式命中', () => {
