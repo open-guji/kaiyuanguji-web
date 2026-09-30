@@ -1,11 +1,13 @@
 import {
   DEFAULT_THEME, THEME_COLOR, THEME_INIT_SCRIPT, THEME_KEY, applyTheme, currentTheme, isTheme, normalizeTheme,
   readStoredTheme, storeTheme,
+  DEFAULT_LAYOUT, LAYOUT_KEY, applyLayout, currentLayout, isLayout, normalizeLayout, readStoredLayout, storeLayout,
 } from '../theme';
 
 beforeEach(() => {
   window.localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute('data-layout');
   document.head.innerHTML = '<meta name="theme-color" content="#9e2a2b">';
 });
 
@@ -68,6 +70,57 @@ describe('theme', () => {
     window.localStorage.setItem(THEME_KEY, '"><script>');
     run();
     expect(document.documentElement.getAttribute('data-theme')).toBe('zhusha');
+    const spy = jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
+    expect(run).not.toThrow();
+    spy.mockRestore();
+  });
+});
+
+describe('v4 外观：墨与版式', () => {
+  it('三种配色都合法；老用户存的 zhusha／indigo 原样有效，不需要迁移', () => {
+    for (const t of ['zhusha', 'indigo', 'ink'] as const) {
+      window.localStorage.setItem(THEME_KEY, t);
+      expect(readStoredTheme()).toBe(t);
+    }
+    expect(applyTheme('ink')).toBe('ink');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('ink');
+    expect(themeColor()).toBe('#222221');
+  });
+
+  it('版式：默认疏朗；存取往返；非法值回退疏朗', () => {
+    expect(DEFAULT_LAYOUT).toBe('airy');
+    expect(readStoredLayout()).toBe('airy');
+    expect(currentLayout()).toBe('airy');
+    expect(applyLayout('boxed')).toBe('boxed');
+    expect(document.documentElement.getAttribute('data-layout')).toBe('boxed');
+    storeLayout('boxed');
+    expect(window.localStorage.getItem(LAYOUT_KEY)).toBe('boxed');
+    expect(readStoredLayout()).toBe('boxed');
+    expect(isLayout('grid')).toBe(false);
+    expect(normalizeLayout('grid')).toBe('airy');
+    expect(applyLayout('grid')).toBe('airy');
+    document.documentElement.setAttribute('data-layout', '"><x');
+    expect(currentLayout()).toBe('airy');
+  });
+
+  it('防闪脚本读两个键：ink／boxed 才改属性（ink 同步 theme-color）；没存、非法值、存储抛错都不改也不抛', () => {
+    const run = () => new Function(THEME_INIT_SCRIPT)();
+    run();
+    expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+    expect(document.documentElement.getAttribute('data-layout')).toBeNull();
+    window.localStorage.setItem(THEME_KEY, 'ink');
+    window.localStorage.setItem(LAYOUT_KEY, 'boxed');
+    run();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('ink');
+    expect(document.documentElement.getAttribute('data-layout')).toBe('boxed');
+    expect(themeColor()).toBe('#222221');
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.removeAttribute('data-layout');
+    window.localStorage.setItem(THEME_KEY, 'purple');
+    window.localStorage.setItem(LAYOUT_KEY, 'grid');
+    run();
+    expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+    expect(document.documentElement.getAttribute('data-layout')).toBeNull();
     const spy = jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
     expect(run).not.toThrow();
     spy.mockRestore();
