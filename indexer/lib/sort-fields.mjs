@@ -12,7 +12,8 @@ export const DYNASTY_ORDER = [
 ];
 export const ERA_RANK_UNKNOWN = 9999;
 export function eraRank(name) {
-    const i = DYNASTY_ORDER.indexOf((name || '').trim());
+    if (typeof name !== 'string') return ERA_RANK_UNKNOWN;
+    const i = DYNASTY_ORDER.indexOf(name.trim());
     return i < 0 ? ERA_RANK_UNKNOWN : i;
 }
 

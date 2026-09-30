@@ -29,6 +29,8 @@ describe('eraRank', () => {
     expect(m.eraRank('火星')).toBe(m.ERA_RANK_UNKNOWN);
     expect(m.eraRank(undefined)).toBe(m.ERA_RANK_UNKNOWN);
     expect(m.eraRank(null)).toBe(m.ERA_RANK_UNKNOWN);
+    // 数据脏（数字、数组、对象）也不抛
+    for (const bad of [0, 42, ['清'], { a: 1 }, true]) expect(m.eraRank(bad as never)).toBe(m.ERA_RANK_UNKNOWN);
     expect(m.eraRank(' 清 ')).toBe(m.eraRank('清'));
     expect(m.eraRank('清')).toBeLessThan(m.ERA_RANK_UNKNOWN);
   });

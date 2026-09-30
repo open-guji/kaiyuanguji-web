@@ -496,12 +496,12 @@ describe('sort（搜索页 v4「按年代／按书名」，overview#298）', () 
     expect(calls).toHaveLength(2);
   });
 
-  test('索引还没重建出可排序字段（Meili 对 sort 回 400）：去掉 sort 重发一次，按相关度出结果并标 sortIgnored', async () => {
+  test('索引还没重建出可排序字段（Meili 回 400＋invalid_search_sort）：去掉 sort 重发一次，按相关度出结果并标 sortIgnored', async () => {
     let n = 0;
     stubUpstream(async (init) => {
       const parsed = JSON.parse(String(init.body));
       n++;
-      if (parsed.queries.some((q: { sort?: string[] }) => q.sort)) return new Response('{"code":"invalid_search_sort"}', { status: 400 });
+      if (parsed.queries.some((q: { sort?: string[] }) => q.sort)) return new Response('{"code":"invalid_search_sort","message":"x"}', { status: 400 });
       return new Response(JSON.stringify({ results: parsed.queries.map((q: { indexUid: string }) => ({ indexUid: q.indexUid, hits: [], estimatedTotalHits: 0 })) }), { status: 200 });
     });
     const res = await getSort('title:asc');
@@ -509,5 +509,31 @@ describe('sort（搜索页 v4「按年代／按书名」，overview#298）', () 
     expect(n).toBe(2);
     expect(calls[1].body.queries[0].sort).toBeUndefined();
     expect((await body(res)).results[0].sortIgnored).toBe(true);
+  });
+
+  test('别的 400（错误码不是排序类、或没有错误码）不降级：照常 503，不重发', async () => {
+    for (const upstream of ['{"code":"invalid_search_filter","message":"x"}', 'not json', '{}']) {
+      let n = 0;
+      stubUpstream(async () => { n++; return new Response(upstream, { status: 400 }); });
+      const res = await getSort('era:asc');
+      expect(res.status).toBe(503);
+      expect(n).toBe(1);
+    }
+  });
+
+  test('降级结果不缓存：同一查询再来一次仍打上游（重建索引后不会 60 秒内还拿到未排序的）；响应 no-store', async () => {
+    let n = 0;
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      n++;
+      if (parsed.queries.some((q: { sort?: string[] }) => q.sort)) return new Response('{"code":"invalid_search_sort"}', { status: 400 });
+      return new Response(JSON.stringify({ results: parsed.queries.map((q: { indexUid: string }) => ({ indexUid: q.indexUid, hits: [], estimatedTotalHits: 0 })) }), { status: 200 });
+    });
+    const q = uq();
+    const url = `https://x/api/search?q=${encodeURIComponent(q)}&index=works&sort=era:asc`;
+    const r1 = await fn.onRequestGet(ctx(url));
+    expect(r1.headers.get('Cache-Control')).toBe('no-store');
+    await fn.onRequestGet(ctx(url));
+    expect(n).toBe(4); // 每次都是「带 sort 一次 + 去掉 sort 一次」
   });
 });

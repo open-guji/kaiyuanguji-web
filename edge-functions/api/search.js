@@ -399,9 +399,10 @@ async function edgePut(key, body) {
 // ─── 上游 ───
 
 class UpstreamError extends Error {
-  constructor(message, status) {
+  constructor(message, status, code) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -424,7 +425,17 @@ async function callMeili(config, queries) {
       const timedOut = ctrl.signal.aborted;
       throw new UpstreamError(timedOut ? 'timeout' : `fetch failed: ${e && e.message}`, timedOut ? 504 : 502);
     }
-    if (!res.ok) throw new UpstreamError(`HTTP ${res.status}`, res.status);
+    if (!res.ok) {
+      // 带上 Meili 的错误码（只在服务端用，不回传给浏览器）：sort 降级只认排序类错误
+      let code;
+      try {
+        const err = await res.json();
+        if (err && typeof err.code === 'string') code = err.code;
+      } catch {
+        // 上游没给 JSON 就没有 code
+      }
+      throw new UpstreamError(`HTTP ${res.status}`, res.status, code);
+    }
     return await res.json();
   } finally {
     clearTimeout(timer);
@@ -478,8 +489,9 @@ async function handleSearch(context) {
     try {
       meiliJson = await callMeili(config, queries);
     } catch (e) {
-      // 索引还没重建出可排序字段时 Meili 对 sort 回 400：去掉 sort 重发一次，按相关度出结果
-      if (e && e.status === 400 && queries.some((q) => q.sort)) {
+      // 索引还没重建出可排序字段时 Meili 对 sort 回 400 + invalid_search_sort：去掉 sort 重发一次，按相关度出结果。
+      // 只认排序类错误码——其它 400（filter 写错等）照常当失败，不能被降级悄悄吞掉
+      if (e && e.status === 400 && typeof e.code === 'string' && e.code.startsWith('invalid_search_sort') && queries.some((q) => q.sort)) {
         sortIgnored = true;
         meiliJson = await callMeili(config, queries.map((q) => ({ ...q, sort: null })));
       } else {
@@ -494,7 +506,12 @@ async function handleSearch(context) {
   }
 
   const shaped = shapeResults(meiliJson, queries);
-  const body = JSON.stringify({ results: sortIgnored ? shaped.map((r) => ({ ...r, sortIgnored: true })) : shaped });
+  if (sortIgnored) {
+    // 降级结果（没排序）不进缓存：否则索引重建后 60 秒内同一查询还会命中这份未排序的结果
+    const degraded = JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) });
+    return json(200, degraded, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS' });
+  }
+  const body = JSON.stringify({ results: shaped });
   memorySet(key, body, now);
   await edgePut(key, body);
   return json(200, body, okHeaders('MISS'));
