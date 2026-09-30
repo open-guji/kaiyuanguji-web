@@ -34,6 +34,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
+import { classificationL1, lossStatusValue } from './lib/work-fields.mjs';
 
 const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
@@ -137,6 +138,9 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         dynasty: entry.dynasty || '',
         role: entry.role || '',
         subtype: entry.subtype || '',
+        // 搜索页 v4 的筛选（overview#291 P1a）：部（一级分类，没有的空串）与存佚
+        classification: classificationL1(detail.classification, entry.classification),
+        loss_status: lossStatusValue(detail.loss_status, entry.loss_status),
         has_collated: !!entry.has_collated,
         has_text: !!entry.has_text,
         has_image: !!entry.has_image,
@@ -441,7 +445,7 @@ function* iterAllRoots(typeDir) {
 const SETTINGS = {
     works: {
         searchableAttributes: ['title_search', 'author_search', 'aliases_search', 'pinyin', 'description_search', 'indexed_by_search'],
-        filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image'],
+        filterableAttributes: ['type', 'is_draft', 'dynasty', 'subtype', 'has_collated', 'has_text', 'has_image', 'classification', 'loss_status'],
         sortableAttributes: ['completeness', 'juan_count', 'title_chars'],
         // #281（2026-09-29）：completeness 提到 exactness 前面。同长度标题平局时先看「分量」，
         // 不再让 exactness 决胜——中文的 exactness 受 jieba 分词左右（简体「三国志」切成一个词、
@@ -739,6 +743,19 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
             }
         } catch (e) {
             failures.push(`前端形态查询失败 — ${e.message}（前端每条搜索都带此 filter，该索引对用户恒为空）`);
+        }
+    }
+
+    // works 新增的筛选字段（overview#291 P1a）：带它们的过滤要能跑通。0 条命中没关系（可能数据里就没有），
+    // 报 400 才是问题——说明 filterableAttributes 没生效，搜索页的部类／存佚筛选会整个报错。
+    if (settingsKey === 'works') {
+        try {
+            await meiliRequest(
+                'GET',
+                `/indexes/${testUid}/search?q=&limit=1&filter=${encodeURIComponent('is_draft = false AND classification IN ["史部"] AND loss_status IN ["extant"]')}`,
+            );
+        } catch (e) {
+            failures.push(`带 classification／loss_status 的过滤失败 — ${e.message}（搜索页 v4 的部类、存佚筛选会报错）`);
         }
     }
 

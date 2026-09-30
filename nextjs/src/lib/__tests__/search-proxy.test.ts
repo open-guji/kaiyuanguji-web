@@ -4,8 +4,9 @@
  * S1 · 搜索代理 edge-functions/api/search.js
  *
  * 盯的几件事：
- *  1) 白名单：只放行 works/books/collections/entities；其余参数（filter、sort、
- *     attributesToRetrieve……）不透传，filter 由服务端写死 is_draft = false
+ *  1) 白名单：只放行 works/books/collections/entities；其余参数（sort、
+ *     attributesToRetrieve……）不透传，is_draft = false 由服务端写死；
+ *     filter 只放行受限语法（见 describe('filter')，overview#291 P1a）
  *  2) limit／offset 上限、查询长度上限
  *  3) key 只在服务端（Authorization 头），响应里不带上游地址
  *  4) 60 秒短缓存：同一查询第二次不打上游
@@ -66,7 +67,7 @@ describe('白名单', () => {
   test('GET 不带 index：四类索引一次 multi-search，filter 服务端写死', async () => {
     stubUpstream();
     const q = uq();
-    const res = await fn.onRequestGet(ctx(`https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=5&filter=is_draft%20%3D%20true&sort=title:asc`));
+    const res = await fn.onRequestGet(ctx(`https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=5&sort=title:asc`));
     expect(res.status).toBe(200);
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe('https://meili.internal.example/multi-search');
@@ -103,7 +104,7 @@ describe('白名单', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ queries: [
-        { indexUid: 'works', q, limit: 3, filter: 'is_draft = true', attributesToRetrieve: ['*'], showRankingScore: true },
+        { indexUid: 'works', q, limit: 3, attributesToRetrieve: ['*'], showRankingScore: true, sort: ['title_chars:asc'] },
       ] }),
     }));
     expect(res.status).toBe(200);
@@ -111,6 +112,7 @@ describe('白名单', () => {
     expect(sent.filter).toBe('is_draft = false');
     expect(sent.attributesToRetrieve).not.toContain('*');
     expect(sent.showRankingScore).toBeUndefined();
+    expect(sent.sort).toBeUndefined();
     expect(sent.limit).toBe(3);
   });
 
@@ -286,5 +288,166 @@ describe('上游故障 → 503', () => {
     expect((await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}`))).status).toBe(503);
     stubUpstream();
     expect((await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}`))).status).toBe(200);
+  });
+});
+
+describe('filter（overview#291 P1a）', () => {
+  const get = (q: string, filter: string | null, index = 'works') =>
+    fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}&index=${index}${filter === null ? '' : `&filter=${encodeURIComponent(filter)}`}`));
+  const post = (query: Record<string, unknown>) =>
+    fn.onRequestPost(ctx('https://x/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ queries: [query] }) }));
+  const sentFilter = () => calls[0].body.queries[0].filter as string;
+
+  test('不带 filter：只有 is_draft = false（与之前一致）', async () => {
+    stubUpstream();
+    expect((await get(uq(), null)).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false');
+    stubUpstream();
+    expect((await get(uq(), '')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false');
+  });
+
+  test('朝代＋部类组合：is_draft = false 在最前，其余按 AST 重新拼', async () => {
+    stubUpstream();
+    const res = await get(uq(), 'dynasty IN ["唐","宋"] AND classification = "史部"');
+    expect(res.status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND dynasty IN ["唐", "宋"] AND classification = "史部"');
+  });
+
+  test('布尔字段、存佚多选', async () => {
+    stubUpstream();
+    expect((await get(uq(), 'has_image = true AND has_text = false AND loss_status IN ["extant","partially_extant","lost"]')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND has_image = true AND has_text = false AND loss_status IN ["extant", "partially_extant", "lost"]');
+  });
+
+  test('空串值（未分類）改写成 Meili 的 IS EMPTY：`= ""` 在 Meili 里筛不到空值', async () => {
+    stubUpstream();
+    expect((await get(uq(), 'classification = ""')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND classification IS EMPTY');
+    stubUpstream();
+    expect((await get(uq(), 'classification IN [""]')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND classification IS EMPTY');
+    // 多选里带空串：其余值 OR IS EMPTY，括号包住，不影响后面的 AND
+    stubUpstream();
+    expect((await get(uq(), 'classification IN ["史部","", "經部"] AND dynasty = "唐"')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND (classification IN ["史部", "經部"] OR classification IS EMPTY) AND dynasty = "唐"');
+    stubUpstream();
+    expect((await get(uq(), 'classification IN ["史部",""]')).status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND (classification IN ["史部"] OR classification IS EMPTY)');
+  });
+
+  test('规整：关键字大小写、空白不影响，发给上游的是重新拼的串（不含原串）', async () => {
+    stubUpstream();
+    const res = await get(uq(), '  dynasty   in  [ "明" ]\n and   HAS_TEXT=TRUE'.replace('HAS_TEXT', 'has_text'));
+    expect(res.status).toBe(200);
+    expect(sentFilter()).toBe('is_draft = false AND dynasty IN ["明"] AND has_text = true');
+  });
+
+  test('POST 里的 filter 同样过校验，其余字段照旧丢弃', async () => {
+    stubUpstream();
+    const res = await post({ indexUid: 'works', q: uq(), filter: 'classification = "經部"', sort: ['completeness:desc'], showRankingScore: true });
+    expect(res.status).toBe(200);
+    const sent = calls[0].body.queries[0];
+    expect(sent.filter).toBe('is_draft = false AND classification = "經部"');
+    expect(sent.sort).toBeUndefined();
+    expect(sent.showRankingScore).toBeUndefined();
+  });
+
+  test('同一 q 不同 filter 不共用缓存；相同 filter（含 GET／POST）共用', async () => {
+    stubUpstream();
+    const q = uq();
+    await get(q, 'dynasty = "唐"');
+    await get(q, 'dynasty = "宋"');
+    expect(calls).toHaveLength(2);
+    await get(q, 'dynasty  =  "唐"');
+    await post({ indexUid: 'works', q, limit: 20, filter: 'dynasty = "唐"' }); // GET 单索引默认 20 条
+    expect(calls).toHaveLength(2);
+  });
+
+  test('多索引请求：filter 对每个索引各自校验，某个索引不支持的字段 → 400', async () => {
+    stubUpstream();
+    // has_collated 只有 works 有
+    const bad = await fn.onRequestGet(ctx(`https://x/api/search?q=a&indexes=works,books&filter=${encodeURIComponent('has_collated = true')}`));
+    expect(bad.status).toBe(400);
+    const ok = await fn.onRequestGet(ctx(`https://x/api/search?q=${uq()}&indexes=works,books&filter=${encodeURIComponent('dynasty = "唐"')}`));
+    expect(ok.status).toBe(200);
+    expect(calls[0].body.queries.map((x: { filter: string }) => x.filter)).toEqual(['is_draft = false AND dynasty = "唐"', 'is_draft = false AND dynasty = "唐"']);
+  });
+
+  const rejected: [string, string, string?][] = [
+    ['is_draft 不许碰（绕过只搜正式条目）', 'is_draft = true'],
+    ['is_draft 用 IN 也不行', 'is_draft IN ["true"]'],
+    ['不在白名单的字段', 'holder = "某"'],
+    ['字段名带路径', 'a.b = "c"'],
+    ['books 没有 classification', 'classification = "史部"', 'books'],
+    ['entities 没有 has_image', 'has_image = true', 'entities'],
+    ['collections 只有 type', 'dynasty = "唐"', 'collections'],
+    ['OR 不支持', 'dynasty = "唐" OR dynasty = "宋"'],
+    ['括号不支持', '(dynasty = "唐")'],
+    ['NOT 不支持', 'NOT dynasty = "唐"'],
+    ['!= 不支持', 'dynasty != "唐"'],
+    ['字符串没引号', 'dynasty = 唐'],
+    ['单引号', "dynasty = '唐'"],
+    ['字符串字段等于 true', 'dynasty = true'],
+    ['布尔字段等于字符串', 'has_image = "true"'],
+    ['布尔字段用 IN', 'has_image IN [true]'],
+    ['IN 后不是数组', 'dynasty IN "唐"'],
+    ['IN 数组没闭合', 'dynasty IN ["唐"'],
+    ['IN 空数组', 'dynasty IN []'],
+    ['引号没闭合', 'dynasty = "唐'],
+    ['值里有反斜杠', 'dynasty = "唐\\"'],
+    ['值里有控制字符', 'dynasty = "唐\u0001"'],
+    ['注入：值里塞引号和 OR', 'dynasty = "唐" OR is_draft = true OR dynasty = "x"'],
+    ['同一字段两次', 'dynasty = "唐" AND dynasty = "宋"'],
+    ['只有字段名', 'dynasty'],
+    ['结尾多余 AND', 'dynasty = "唐" AND'],
+    ['乱码', '@@@'],
+  ];
+  test.each(rejected)('非法：%s → 400，不打上游', async (_name, filter, index = 'works') => {
+    stubUpstream();
+    const res = await get(uq(), filter, index);
+    expect(res.status).toBe(400);
+    expect((await body(res)).code).toBe('bad_request');
+    expect(calls).toHaveLength(0);
+  });
+
+  test('非法：POST 里 filter 不是字符串（数组、对象）→ 400', async () => {
+    stubUpstream();
+    expect((await post({ indexUid: 'works', q: 'a', filter: ['dynasty = "唐"'] })).status).toBe(400);
+    expect((await post({ indexUid: 'works', q: 'a', filter: { dynasty: '唐' } })).status).toBe(400);
+    expect(calls).toHaveLength(0);
+  });
+
+  test('超长：整串超过上限、值超过上限、条数过多、IN 值过多 → 400', async () => {
+    stubUpstream();
+    const many = (n: number) => Array.from({ length: n }, (_, i) => `"甲${i}"`).join(',');
+    expect((await get('a', `dynasty IN [${many(30)}] AND ${'x'.repeat(300)}`)).status).toBe(400);
+    expect((await get('a', `dynasty = "${'唐'.repeat(21)}"`)).status).toBe(400);
+    expect((await get('a', 'dynasty = "唐" AND classification = "史部" AND loss_status = "lost" AND has_image = true AND has_text = true AND has_collated = true AND type = "work"')).status).toBe(400); // 7 条
+    expect((await get('a', `dynasty IN [${many(13)}]`)).status).toBe(400);
+    expect(calls).toHaveLength(0);
+    // 边界内可以：6 条、12 个值、20 字
+    expect((await get(uq(), 'dynasty = "唐" AND classification = "史部" AND loss_status = "lost" AND has_image = true AND has_text = true AND has_collated = true')).status).toBe(200);
+    expect((await get(uq(), `dynasty IN [${many(12)}]`)).status).toBe(200);
+    expect((await get(uq(), `dynasty = "${'唐'.repeat(20)}"`)).status).toBe(200);
+  });
+
+  test('命中里带 classification／loss_status（表格的「部类」列），不在白名单的字段仍不外传', async () => {
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      return new Response(JSON.stringify({
+        results: parsed.queries.map((q: { indexUid: string }) => ({
+          indexUid: q.indexUid,
+          hits: [{ id: 'w1', type: 'work', title: '史記', classification: '史部', loss_status: 'extant', title_search: '史記 史记', completeness: 9 }],
+          estimatedTotalHits: 1,
+        })),
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
+    const res = await get(uq(), 'classification = "史部"');
+    const hit = (await body(res)).results[0].hits[0];
+    expect(hit.classification).toBe('史部');
+    expect(hit.loss_status).toBe('extant');
+    expect(hit.title_search).toBeUndefined();
+    expect(hit.completeness).toBeUndefined();
   });
 });
