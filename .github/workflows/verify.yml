@@ -1,0 +1,119 @@
+name: Verify deployed site
+
+# 部署后验收（contract + UI，可降级依赖另跑且不拦）——从 deploy.yml 抽出来的可复用工作流（overview#293 第 4 项）。
+#   · deploy.yml 部署完成后经 workflow_call 调用它（wait_cdn=true，等 CDN 传播）；
+#   · 也可以手动只重跑验收：Actions → Verify deployed site → Run workflow，选 target（staging／production）
+#     和 ref（默认 main，取该 ref 的 e2e 代码）。不构建、不部署、不 promote；只发 GET，反馈用例自己 mock 了
+#     /api/feedback，不向任何站点提交表单。
+# 只改 e2e 的 PR（例如 web#154）合进去不会触发部署（push 的 paths 排除了 e2e/**），
+# 合并后想验证就在这里选 target 手动跑一次，几分钟出结果。
+#
+# ref 的选法：e2e 必须和被测站点是同一版代码——站点部署的是哪个 commit，就填哪个（测试站部署的 commit
+# 记在 staging/latest.json 的 webCommitId）。只改了 e2e、想用新 e2e 测现有站点时填 main（或那个 PR 的分支）。
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: 被测站点：staging（staging.kaiyuanguji.com）或 production（www.kaiyuanguji.com）
+        type: string
+        required: true
+      ref:
+        description: e2e 代码取哪个 ref
+        type: string
+        required: true
+      wait_cdn:
+        description: 是否先等 60 秒让 CDN purge 传播（刚部署完才需要）
+        type: boolean
+        required: false
+        default: false
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 被测站点
+        type: choice
+        options: [staging, production]
+        default: staging
+      ref:
+        description: e2e 代码取哪个 ref（应与被测站点同版；只改了 e2e 想测现有站点就填 main）
+        type: string
+        required: false
+        default: main
+      wait_cdn:
+        description: 先等 60 秒让 CDN 传播（刚部署完才需要）
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
+      TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+      DATA_BASE: ${{ inputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+      # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
+      # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
+      # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
+      SITE_ARCH: fullstack
+    steps:
+      - name: Check inputs
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          IN_REF: ${{ inputs.ref }}
+        run: |
+          case "$IN_TARGET" in
+            staging|production) ;;
+            *) echo "❌ target 只能是 staging 或 production"; exit 1 ;;
+          esac
+          echo "· 验收 $IN_TARGET（$TARGET），e2e 取自 ref=$IN_REF"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+
+      - name: Install chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物（只在刚部署完时才等）
+      - name: Wait for CDN propagation
+        if: ${{ inputs.wait_cdn }}
+        run: sleep 60
+
+      # 契约层先跑：不开浏览器、几秒出结果，红了就不用往下走
+      - name: Contract tests
+        working-directory: e2e
+        run: npm run test:contract
+
+      - name: UI tests
+        working-directory: e2e
+        run: npm run test:ui
+
+      # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，
+      # 但不把发版判定为失败——前端有 L2 兜底，用户无感。
+      # 让它阻断的话每次发版都亮红灯，真正的回归反而会被淹没。
+      - name: Degradable deps (non-blocking)
+        working-directory: e2e
+        continue-on-error: true
+        run: npm run test:degradable
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e/out/report
+          retention-days: 14

@@ -9,7 +9,7 @@
  *
  * 输出 JSON（ITEM_CHANGES_OUT，默认 $KYG_DATA_ROOT/item-changes.json）：
  *   { oldRoot, newRoot, shardsCompared, added[], changed[], removed[] }
- * 下游：item-revalidate.mjs（失效这些页）、item-prewarm.mjs（先预热这些页）。
+ * 下游：item-revalidate.mjs（失效这些页）。（原来还有 item-prewarm.mjs 预热这些页，overview#293 起已删，不再预热。）
  *
  * 环境变量：
  *   ITEM_DATA_BASE  数据根（测试站 https://data.kaiyuanguji.com/staging）
