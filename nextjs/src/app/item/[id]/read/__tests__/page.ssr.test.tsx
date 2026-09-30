@@ -9,6 +9,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
 jest.mock('@/lib/server/item-data', () => ({ getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel) }));
 jest.mock('next/navigation', () => ({
+    redirect: (to: string) => { throw new Error(`TEMP ${to}`); },
     permanentRedirect: (to: string) => { throw new Error(`REDIRECT ${to}`); },
 }));
 
@@ -40,6 +41,11 @@ describe('旧阅读页地址 page.ssr', () => {
     it('条目没有文本（没有 manifest）：去条目页', async () => {
         mockGetCurrentJson.mockResolvedValue(null);
         await expect(go({ kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ID}`);
+    });
+
+    it('取 manifest 出错：临时跳条目页（不 500，也不发会被缓存的 308）', async () => {
+        mockGetCurrentJson.mockRejectedValue(new Error('cos down'));
+        await expect(go({ kind: 'collated' })).rejects.toThrow(`TEMP /item/${ID}`);
     });
 
     it('本页不进搜索引擎、按请求渲染，且不导出 generateStaticParams', async () => {

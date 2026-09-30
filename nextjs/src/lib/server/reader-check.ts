@@ -50,6 +50,18 @@ export async function getManifest(id: string, get: GetCurrentJson): Promise<Mani
     return validManifest(m) ? m : null;
 }
 
+/**
+ * 旧地址换算用：取 manifest 失败（网络／存储错误）时给 'error'，与「确实没有」(null) 区分——
+ * 前者只能临时跳走，不能发会被缓存的永久重定向。
+ */
+export async function getManifestOrError(id: string, get: GetCurrentJson): Promise<Manifest | null | 'error'> {
+    try {
+        return await getManifest(id, get);
+    } catch {
+        return 'error';
+    }
+}
+
 async function check(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheckResult> {
     const manifest = await getManifest(id, get);
     if (!manifest) return { status: 'missing' };

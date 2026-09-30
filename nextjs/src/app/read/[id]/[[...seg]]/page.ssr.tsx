@@ -23,7 +23,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
-import { checkReader, getManifest, type ReaderCheckResult } from '@/lib/server/reader-check';
+import { checkReader, getManifestOrError, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
@@ -64,7 +64,12 @@ async function load(id: string, seg: string[] | undefined, sp: Record<string, st
     // 旧地址 /read/<id>?kind=…&key=…&juan=…：按 manifest 换算成新地址（没有文本就去条目页）
     if (!seg || seg.length === 0) {
         const legacy = parseLegacyReaderParams(id, toParams(sp));
-        if (legacy) permanentRedirect(legacyReaderTarget(legacy, await getManifest(id, getCurrentJsonServer)) ?? `/item/${id}`);
+        if (legacy) {
+            const manifest = await getManifestOrError(id, getCurrentJsonServer);
+            // 取数出错：临时跳条目页，别发会被缓存的 308
+            if (manifest === 'error') redirect(`/item/${id}`);
+            permanentRedirect(legacyReaderTarget(legacy, manifest) ?? `/item/${id}`);
+        }
     }
 
     const hit = await getItemServer(id);

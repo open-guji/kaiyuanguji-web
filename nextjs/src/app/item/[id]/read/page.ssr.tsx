@@ -5,9 +5,9 @@
 // 没带旧参数就是 /read/<id>。
 // 本页读查询串，是按请求渲染的动态页（不能导出 generateStaticParams，见 read/[id]/[[...seg]]/page.ssr.tsx 头部的说明）。
 import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
+import { permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer } from '@/lib/server/item-data';
-import { getManifest } from '@/lib/server/reader-check';
+import { getManifestOrError } from '@/lib/server/reader-check';
 import { readerPath } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams } from '@/lib/legacy-reader';
 
@@ -31,5 +31,8 @@ export default async function LegacyReaderPage({ params, searchParams }: Props) 
     }
     const legacy = parseLegacyReaderParams(id, qs);
     if (!legacy) permanentRedirect(readerPath(id));
-    permanentRedirect(legacyReaderTarget(legacy, await getManifest(id, getCurrentJsonServer)) ?? `/item/${id}`);
+    const manifest = await getManifestOrError(id, getCurrentJsonServer);
+    // 取数出错：临时跳条目页，别发会被缓存的 308
+    if (manifest === 'error') redirect(`/item/${id}`);
+    permanentRedirect(legacyReaderTarget(legacy, manifest) ?? `/item/${id}`);
 }

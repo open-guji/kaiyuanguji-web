@@ -98,6 +98,11 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
     });
 
+    it('旧查询串但取 manifest 出错：临时跳条目页（不 500，不发 308）', async () => {
+        mockGetCurrentJson.mockRejectedValue(new Error('cos down'));
+        await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
+    });
+
     it.each([['999'], ['wikisource', '009'], ['nonesuch'], ['nonesuch', '001']])('乱填的地址 %j：真 404 且 noindex，不出自指 canonical', async (...seg) => {
         const m = await meta(seg);
         expect(m.robots).toEqual({ index: false, follow: false });
