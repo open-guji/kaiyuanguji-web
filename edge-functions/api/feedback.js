@@ -31,7 +31,7 @@
 //     超时／出错时有旧缓存就给旧的（X-Feedback-Cache: STALE），没有就回 503 + code（不是 500），前端与监控据此区分
 //     「服务暂时读不到」和「代码坏了」；
 //   - 带管理凭证的读（含 contact 等全量字段）永不进缓存，也不读缓存；
-//   - 提交／更新成功后清本 isolate 的缓存；其它 isolate 最长 30 秒（新鲜期）内可能看不到新条目，
+//   - 提交／更新成功后清本 isolate 的缓存；边缘缓存清不到，只在新鲜期内采用，所以其它 isolate 最长 30 秒内可能看不到新条目，
 //     想立刻看到（例如刚提交完刷新列表）带 fresh=1 绕过缓存；
 //   - 响应头 X-Feedback-Cache: HIT｜STALE｜MISS｜BYPASS 便于监控与排查。
 //
@@ -450,7 +450,7 @@ async function listAllKeys(kv) {
  * 代价：每次读都列一遍全部 key；按 resourceId 过滤时最坏要读遍所有值。
  * 现在只有十几条，无所谓；到上千条再给 resourceId 建索引 key。
  */
-async function kvGet(kv, limit, cursor, resourceId, full) {
+async function kvGet(kv, limit, cursor, resourceId, full, stats) {
   const names = (await listAllKeys(kv)).sort().reverse();
   let start = 0;
   if (cursor) {
@@ -464,7 +464,11 @@ async function kvGet(kv, limit, cursor, resourceId, full) {
   const BATCH = 20;
   while (i < names.length && items.length < limit) {
     const batch = names.slice(i, i + BATCH);
-    const vals = await Promise.all(batch.map((k) => kv.get(k, 'json').catch(() => null)));
+    const vals = await Promise.all(batch.map((k) => kv.get(k, 'json').catch(() => {
+      // 单条读失败照旧跳过（一条坏记录不该拖垮整个列表），但记下来：带缓存的公开读不能把残缺列表缓存 30 秒
+      if (stats) stats.failed += 1;
+      return null;
+    })));
     for (let j = 0; j < batch.length; j += 1) {
       i += 1;
       const val = vals[j];
@@ -821,10 +825,12 @@ async function publicKvList(context, kv, headers, limit, cursor, resourceId, byp
   const load = () => {
     let p = st.inflight.get(key);
     if (!p) {
-      p = withBudget(kvGet(kv, limit, cursor, resourceId, false), KV_READ_BUDGET_MS).then(async (result) => {
+      const stats = { failed: 0 };
+      p = withBudget(kvGet(kv, limit, cursor, resourceId, false, stats), KV_READ_BUDGET_MS).then(async (result) => {
         const body = JSON.stringify({ success: true, ...result });
-        // 写入前确认这条在途读没被清过（清过说明其间有写入，它读到的可能已经旧了）
-        if (st.inflight.get(key) === p) {
+        // 写入前确认这条在途读没被清过（清过说明其间有写入，它读到的可能已经旧了）；
+        // 有单条读失败时结果可能残缺，照给但不进缓存
+        if (st.inflight.get(key) === p && stats.failed === 0) {
           listCacheSet(st, key, body, Date.now());
           await edgeListPut(key, { t: Date.now(), body });
         }
@@ -841,7 +847,9 @@ async function publicKvList(context, kv, headers, limit, cursor, resourceId, byp
     let entry = st.entries.get(key);
     if (!entry) {
       const edge = await edgeListGet(key);
-      if (edge && Date.now() - edge.t < LIST_STALE_MS) {
+      // 边缘缓存的条目写入后无法主动失效（别的 isolate 写入时清不到它），所以只在新鲜期内采用，
+      // 过了新鲜期就同步重读，不当「过期旧数据」用
+      if (edge && Date.now() - edge.t < LIST_FRESH_MS) {
         entry = edge;
         listCacheSet(st, key, edge.body, edge.t);
       }

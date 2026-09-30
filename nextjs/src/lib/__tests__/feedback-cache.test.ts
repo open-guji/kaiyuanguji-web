@@ -167,3 +167,17 @@ describe('超时与失败', () => {
         expect((await p).status).toBe(503);
     });
 });
+
+describe('残缺结果不进缓存', () => {
+    it('单条读失败：照给（200），但下一次仍重读 KV', async () => {
+        seedOne(1); seedOne(2);
+        const realGet = kv.get;
+        let n = 0;
+        kv.get = async (k: string) => { n += 1; if (n === 1) throw new Error('one bad'); return realGet(k); };
+        const r1 = await mod.onRequestGet(ctx());
+        expect(r1.status).toBe(200);
+        kv.get = realGet;
+        const r2 = await mod.onRequestGet(ctx());
+        expect(r2.headers.get('X-Feedback-Cache')).toBe('MISS');
+    });
+});
