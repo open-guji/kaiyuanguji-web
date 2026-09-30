@@ -237,7 +237,8 @@ export function verifyReadProbes(probes, dataDir) {
             need(p.id, 'manifest.json');
         } else if (p.kind === 'text') {
             need(p.id, `${p.key}/index.json`);
-            need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
+            // 整理本的章可以只有结构化 json、没有 md（has_json 时 md 可缺）；其余章 md 必须在
+            if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
             if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file.replace(/\.(md|txt)$/, '')}.json`);
         } else if (p.kind === 'collated') {
             need(p.id, 'collated_edition/index.json');

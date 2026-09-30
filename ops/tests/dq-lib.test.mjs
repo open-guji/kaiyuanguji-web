@@ -83,10 +83,11 @@ test('registeredTextFiles：整理本 juan_files；全文 chapters 的 .md 改 .
     assert.equal(registeredTextFiles('full_text/index.json', { versions: [] }).format, 'full_text.unknown');
 });
 
-test('registeredTextFiles：新结构 <key>/index.json，file 不带扩展名，has_json 的另登记 .json', () => {
+test('registeredTextFiles：新结构 <key>/index.json，file 不带扩展名，has_json 的章登记 .json（md 可缺，不登记）', () => {
     const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003.md' }, { n: 4 }] });
     assert.equal(r.format, 'texts.chapters');
-    assert.deepEqual(r.registered, ['default/001.txt', 'default/001.json', 'default/002.txt', 'default/003.txt']);
+    assert.deepEqual(r.registered, ['default/001.json', 'default/002.txt', 'default/003.txt']);
+    assert.deepEqual(r.optional, ['default/001.txt']); // has_json 的章 md 可缺
     assert.deepEqual(registeredTextFiles('wikisource-2/index.json', { chapters: [{ file: '001' }] }).registered, ['wikisource-2/001.txt']);
     assert.equal(registeredTextFiles('default/index.json', { versions: [] }).format, 'texts.unknown');
 });
@@ -350,8 +351,8 @@ test('runDq：新结构文本干净——manifest.json、各版本目录、章�
     assert.deepEqual(r.findings, []);
     assert.equal(r.text.manifests, 1);
     assert.equal(r.text.indexes, 2);
-    assert.equal(r.text.registered, 4); // default 的 001.txt／001.json／002.txt＋wikisource 的 001.txt
-    assert.equal(r.text.filesChecked, 4);
+    assert.equal(r.text.registered, 3); // default 的 001.json／002.txt＋wikisource 的 001.txt；default 的 001.txt 是 has_json 章的可选 md，不计登记
+    assert.equal(r.text.filesChecked, 4); // 但在产物里就照样核对取得到、哈希对得上
     assert.equal(hasFailures(r), false);
 });
 
