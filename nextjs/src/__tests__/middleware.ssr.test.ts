@@ -168,7 +168,7 @@ describe('middleware.ssr：/item/<id>?多余参数 → 308 干净地址（overvi
     });
 
     it('旧阅读入口 ?tab=fulltext 仍先按阅读入口跳，不被去参数抢走', async () => {
-        mockGetItem.mockResolvedValue(hit({ has_text: true }));
+        mockGetItem.mockResolvedValue(hit({ has_site_fulltext: true }));
         expect((await run(`/item/${ID}?tab=fulltext&utm_source=x`)).location).toContain(`/read/${ID}`);
     });
 });
@@ -215,6 +215,7 @@ describe('middleware.ssr：旧阅读入口 · 条目没有这类内容 → 308 �
     beforeEach(() => { mockGetItem.mockReset(); });
 
     it.each<[string, Record<string, unknown>, string, string]>([
+        ['Work 只有外部文本资源（has_text）不算站内全文', { id: WORK, type: 'work', has_text: true }, `/item/${WORK}?tab=fulltext`, `/item/${WORK}`],
         ['Work 没有整理本', { id: WORK, type: 'work', has_text: true }, `/book-index?id=${WORK}&tab=collated`, `/item/${WORK}`],
         ['Work 没有整理本（/item 入口，带卷号也丢掉）', { id: WORK, type: 'work' }, `/item/${WORK}?tab=collated&juan=juan%2F011.json`, `/item/${WORK}`],
         ['Work 没有全文', { id: WORK, type: 'work' }, `/book-index?id=${WORK}&tab=fulltext`, `/item/${WORK}`],
@@ -229,8 +230,7 @@ describe('middleware.ssr：旧阅读入口 · 条目没有这类内容 → 308 �
 
     it.each<[string, Record<string, unknown>, string, string]>([
         ['Work 有整理本', { type: 'work', has_collated: true }, `/book-index?id=${WORK}&tab=collated&juan=juan%2F011.json`, `/read/${WORK}?kind=collated&juan=011`],
-        ['Work 有全文（has_text）', { type: 'work', has_text: true }, `/item/${WORK}?tab=fulltext`, `/read/${WORK}?kind=fulltext`],
-        ['Work 有全文（_has_text 同义）', { type: 'work', _has_text: true }, `/item/${WORK}?tab=fulltext`, `/read/${WORK}?kind=fulltext`],
+        ['Work 有全文（has_site_fulltext）', { type: 'work', has_site_fulltext: true }, `/item/${WORK}?tab=fulltext`, `/read/${WORK}?kind=fulltext`],
         ['Book 有全文（has_full_text）', { type: 'book', has_full_text: true }, `/book-index?id=${BOOK}&tab=fulltext&juan=003`, `/read/${BOOK}?kind=fulltext&juan=003`],
     ])('%s → 照旧 308 阅读页', async (_n, entry, from, to) => {
         mockGetItem.mockResolvedValue(hit(entry));
