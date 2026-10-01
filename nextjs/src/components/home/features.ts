@@ -32,7 +32,7 @@ export const HOME_FEATURES: HomeFeature[] = [
   {
     title: '全文检索',
     live: false,
-    text: '在书名、作者之外，检索整理本全文；异体、繁简自动归并。',
+    text: '在书名、作者之外，检索古籍文本；异体、繁简自动归并。',
   },
   {
     title: '协同校对',

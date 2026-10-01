@@ -20,8 +20,8 @@ const TOC = [
 ];
 
 const THANKS = [
-  { name: '维基文库', note: '部分全文转录自此，CC BY-SA 4.0', href: 'https://zh.wikisource.org/' },
-  { name: 'Kanripo（漢籍リポジトリ）', note: '部分全文转录自此，CC BY-SA', href: 'https://www.kanripo.org/' },
+  { name: '维基文库', note: '部分文本转录自此，CC BY-SA 4.0', href: 'https://zh.wikisource.org/' },
+  { name: 'Kanripo（漢籍リポジトリ）', note: '部分文本转录自此，CC BY-SA', href: 'https://www.kanripo.org/' },
 ];
 
 const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
@@ -34,15 +34,15 @@ const LICENSES = [
     license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
   },
   {
-    what: '整理本与全文（book-text）',
-    note: '本站整理的整理本、輯佚与全文',
+    what: '古籍文本（book-text）',
+    note: '本站整理的古籍文本与輯佚',
     license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
   },
   {
-    what: '转录自第三方的全文',
+    what: '转录自第三方的文本',
     note: '维基文库、Kanripo 等',
     license:
-      '沿用来源许可，不适用 CC0：维基文库为 CC BY-SA 4.0，Kanripo 为 CC BY-SA。每部全文的阅读页顶部标有来源名称、原始链接和许可，转载时请按对应许可署名，并以相同许可发布',
+      '沿用来源许可，不适用 CC0：维基文库为 CC BY-SA 4.0，Kanripo 为 CC BY-SA。每部文本的阅读页顶部标有来源名称、原始链接和许可，转载时请按对应许可署名，并以相同许可发布',
   },
   {
     what: '代码',
@@ -83,7 +83,7 @@ export default function AboutPage() {
               索引数据来自历代目录学著录、公开馆藏书目，以及各类可获取的古籍扫描与文本资源；每条索引的来源都在它自己的资源字段里逐条标注，顺着链接可以查到出处。
             </p>
             <p>
-              本站自己整理的数据——古籍目录索引和整理本、全文——都以 CC0 公有领域发布；转录自第三方的全文沿用来源许可；代码以 Apache-2.0 开源。
+              本站自己整理的数据——古籍目录索引和古籍文本——都以 CC0 公有领域发布；转录自第三方的文本沿用来源许可；代码以 Apache-2.0 开源。
             </p>
             <table className="doc-table">
               <tbody>

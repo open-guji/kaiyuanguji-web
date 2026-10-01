@@ -21,10 +21,10 @@ const HOME_EXAMPLES = [
 ];
 
 // 「文本开放、代码开源」两栏（用户意见，overview#267）。仓库地址与说明已对照各仓 README 核实：
-// book-index 只存元数据，book-text 存整理本与全文（CC0）；luatex-cn、bookget-py 为 Apache-2.0。
+// book-index 只存元数据，book-text 存古籍文本（CC0）；luatex-cn、bookget-py 为 Apache-2.0。
 const GITHUB = 'https://github.com/open-guji';
 const OPEN_TEXT_REPOS = [
-  { name: 'book-text', note: '整理本、輯佚与全文' },
+  { name: 'book-text', note: '古籍文本与輯佚' },
   { name: 'book-index', note: '古籍目录索引，只存元数据：作品、版本、丛编、人物条目' },
 ];
 const OPEN_CODE_REPOS = [
@@ -92,7 +92,7 @@ export default function HomePage() {
         <div className="home-open-inner">
           <div className="home-open-col">
             <div className="home-open-head"><span className="home-badge" aria-label="许可：CC0">CC0</span><h2>文本开放</h2></div>
-            <p className="home-open-sub">整理本与全文以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
+            <p className="home-open-sub">古籍文本以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
             <ul className="home-repos">
               {OPEN_TEXT_REPOS.map((r) => (
                 <li key={r.name}>
@@ -104,7 +104,7 @@ export default function HomePage() {
               ))}
             </ul>
             <p className="home-open-note">
-              转录自维基文库、Kanripo 的全文沿用来源许可（CC BY-SA），每部全文的阅读页顶部标有来源与许可，详见
+              转录自维基文库、Kanripo 的文本沿用来源许可（CC BY-SA），每部文本的阅读页顶部标有来源与许可，详见
               <Link href="/about">关于我们</Link>的「数据来源与授权」。
             </p>
           </div>
