@@ -162,7 +162,8 @@ test.describe('反馈入口（N7）', () => {
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole('radio', { name: '内容有误' })).toHaveAttribute('aria-checked', 'true');
         // 「关于」一行是「书名 · 卷N」：默认版本不写版本名，也不出现「整理本」等类别词（不含条目 id；id 在下面的提交体 resourceId 里断言）
-        await expect(dialog.getByText(new RegExp(`${C.title} · 卷${Number(JUAN)}`))).toBeVisible();
+        // 书名按繁简偏好转（overview#337），默认简体
+        await expect(dialog.getByText(new RegExp(`(${C.title}|${C.titleSimplified}) · 卷${Number(JUAN)}`))).toBeVisible();
         await expect(dialog.getByText(/整理本/)).toHaveCount(0);
 
         await fillAndSubmit(page, 'e2e：报告错字');
