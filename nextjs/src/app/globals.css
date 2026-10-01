@@ -355,6 +355,19 @@
   --bim-fr-side-gap: 34px;
   --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(40, 36, 31, 0.25);
   --bim-fr-tab-bd: transparent;
+  /* 版式判准（overview 设计/v4/版式判准.md，R8 10-01）新增的几组：边框一律写 border 简写；
+     疏朗取 1px solid transparent（不是 none），两种版式盒子一样大，切换时页面不跳 */
+  --bim-fr-card-bd: 1px solid transparent;
+  --bim-fr-row-bd: 1px solid transparent;
+  --bim-fr-chrome-bd: 1px solid transparent;
+  --bim-fr-tag-bd: 1px solid transparent;
+  --bim-fr-tbl-cell-bd: 0 solid transparent;
+  --bim-fr-tbl-zebra: var(--bim-tint-bg);
+  --bim-fr-rail-bd: 1px solid transparent;
+  --bim-fr-rail-bg: var(--bim-tint-bg);
+  /* 本站自己的：抬起的卡片与检索框的投影（疏朗有、界栏无）；页脚深底上的分隔线 */
+  --og-card-sh: var(--shadow-soft);
+  --og-foot-bd: 1px solid transparent;
   /* 页脚（深底）上的次要字：默认接 ink-3；墨主题的 ink-3 是给浅底调深的，深底上要另给一个亮的（见 ink 块） */
   --og-foot-dim: var(--color-ink-3);
 }
@@ -368,6 +381,16 @@
   --bim-fr-side-gap: 20px;
   --bim-fr-shadow: none;
   --bim-fr-tab-bd: var(--bim-rule);
+  --bim-fr-card-bd: 1px solid var(--bim-rule);
+  --bim-fr-row-bd: 1px solid var(--bim-rule);
+  --bim-fr-chrome-bd: 1px solid var(--bim-rule);
+  --bim-fr-tag-bd: 1px solid var(--bim-rule-strong);
+  --bim-fr-tbl-cell-bd: 1px solid var(--bim-rule);
+  --bim-fr-tbl-zebra: transparent;
+  --bim-fr-rail-bd: 1px solid var(--bim-rule);
+  --bim-fr-rail-bg: var(--bim-card-bg);
+  --og-card-sh: none;
+  --og-foot-bd: 1px solid rgba(255, 255, 255, 0.16);
 }
 :root[data-theme="ink"] {
   --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(0, 0, 0, 0.22);
@@ -604,6 +627,8 @@
     z-index: 50;
     background: color-mix(in srgb, var(--color-paper) 90%, transparent);
     backdrop-filter: blur(10px);
+    /* 版式判准：疏朗下沿不画线，界栏 1px（令牌） */
+    border-bottom: var(--bim-fr-chrome-bd);
   }
   /* 首页：页头浮在坤舆图上 */
   .og-nav--hero {
@@ -1054,6 +1079,9 @@
   }
   .og-footer-bottom {
     margin-top: 2px;
+    /* 版式判准：版权行上方疏朗不画线（用间距），界栏 1px */
+    border-top: var(--og-foot-bd);
+    padding-top: 4px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1212,9 +1240,10 @@
     display: flex;
     gap: 0;
     max-width: 720px;
-    border-radius: 6px;
+    /* 版式判准：直角；疏朗无边框、加投影，界栏 1px 边框、不加投影 */
+    border: var(--bim-fr-card-bd);
     background: var(--color-raise);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--og-card-sh);
   }
   .home-search-icon {
     position: absolute;
@@ -1229,7 +1258,6 @@
     height: 52px;
     padding: 0 20px 0 48px;
     border: 0;
-    border-radius: 6px 0 0 6px;
     outline: none;
     background: transparent;
     color: var(--color-ink);
@@ -1244,7 +1272,7 @@
   .home-search .og-btn {
     height: 52px;
     padding: 0 32px;
-    border-radius: 0 6px 6px 0;
+    border-radius: 0;
   }
   .home-under {
     margin: 16px 0 0;
@@ -1289,22 +1317,18 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
+  /* 版式判准：卡片直角。疏朗不画框——已上线是抬起的卡面（卡面底＋淡投影），规划中不抬起、无底；
+     界栏两种都是 1px 框、无投影，已上线有卡面底 */
   .home-feature {
     display: flex;
     flex-direction: column;
     padding: 20px 22px;
-    border-radius: 10px;
-    box-shadow: inset 0 0 0 1px var(--color-tint-2);
+    border: var(--bim-fr-card-bd);
     background-image: none;
-  }
-  /* 规划中：虚线框、不抬起；已上线：抬起的卡片 */
-  .home-feature:not(.is-live) {
-    box-shadow: none;
-    border: 1px dashed var(--color-ink-3);
   }
   .home-feature.is-live {
     background: var(--color-raise);
-    box-shadow: var(--shadow-soft), inset 0 0 0 1px var(--color-tint-2);
+    box-shadow: var(--og-card-sh);
   }
   .home-feature-cta {
     margin-top: auto;
@@ -1381,10 +1405,11 @@
   .home-open-head h2 {
     margin: 0;
   }
+  /* 许可签：疏朗浅底无框，界栏透明底＋1px 框（版式判准「标签」） */
   .home-badge {
     display: inline-block;
-    padding: 1px 8px;
-    border-radius: 3px;
+    padding: 0 7px;
+    border: var(--bim-fr-tag-bd);
     background: var(--color-zhu-tint);
     color: var(--color-zhu);
     font-size: var(--fs-xs);
@@ -1537,11 +1562,15 @@
     grid-template-columns: 200px minmax(0, 1fr);
     gap: 64px;
   }
+  /* 侧栏本身：疏朗不加底、不加框；界栏 1px 框＋卡面底＋内边距（版式判准） */
   .doc-toc {
     position: sticky;
     top: calc(var(--nav-h) + 32px);
     align-self: start;
     font-size: var(--fs-sm);
+    border: var(--bim-fr-bd);
+    background: var(--bim-fr-bg);
+    padding: var(--bim-fr-bd-pad);
   }
   .doc-toc-title {
     margin: 0 0 8px;
@@ -1624,7 +1653,7 @@
   .doc-dl dd {
     margin: 0;
   }
-  /* 表格不画格线，靠斑马底分行 */
+  /* 表格：疏朗不画格线、靠斑马底分行；界栏全格线、无斑马（版式判准，走令牌） */
   .doc-table {
     width: 100%;
     margin: 16px 0;
@@ -1635,13 +1664,14 @@
     padding: 10px 14px;
     text-align: left;
     vertical-align: top;
+    border: var(--bim-fr-tbl-cell-bd);
   }
   .doc-table th {
     width: 40%;
     font-weight: var(--fw-medium);
   }
   .doc-table tr:nth-child(odd) {
-    background: var(--color-tint);
+    background: var(--bim-fr-tbl-zebra);
   }
   .doc-rows {
     margin: 0;
@@ -1667,8 +1697,9 @@
     justify-content: space-between;
     gap: 32px;
     padding: 28px 32px;
-    border-radius: var(--radius-card);
-    background: var(--color-tint);
+    /* 版式判准「提示块」：疏朗浅底无框，界栏 1px 框＋卡面底；直角 */
+    border: var(--bim-fr-rail-bd);
+    background: var(--bim-fr-rail-bg);
   }
   .contact-primary h3 {
     margin: 0 0 6px;
@@ -2207,15 +2238,6 @@
 
 /* ---- 版式「界栏」（v4 P0）：本站自己的页面。<html data-layout="boxed"> 才生效，疏朗（默认）零变化；
    值走 --bim-fr-* 令牌。组件库的页面（详情、总目、阅读）由 book-index-ui 同一组令牌负责。 ---- */
-:root[data-layout="boxed"] .home-feature.is-live {
-  border-radius: 0;
-  box-shadow: none;
-  border: var(--bim-fr-bd);
-  background: var(--bim-fr-bg);
-}
-:root[data-layout="boxed"] .home-feature:not(.is-live) {
-  border-radius: 0;
-}
 :root[data-layout="boxed"] .home-open-col {
   border: var(--bim-fr-bd);
   background: var(--bim-fr-bg);
