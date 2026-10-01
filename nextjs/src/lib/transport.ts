@@ -44,8 +44,7 @@ const SEARCH_PROXY_URL = process.env.NEXT_PUBLIC_SEARCH_PROXY_URL || '/api/searc
  */
 type ReadonlyStorage = IndexStorage & Required<Pick<IndexStorage,
     'searchAll' | 'getEntry' | 'getAllEntries' |
-    'getCollectionCatalogs' | 'getCollectionCatalog' |
-    'getCollatedEditionIndex' | 'getCollatedJuan'
+    'getCollectionCatalogs' | 'getCollectionCatalog'
 >> & Partial<Pick<IndexStorage, 'getLineageGraph'>>;
 
 /** 按数据源缓存 storage 实例 */

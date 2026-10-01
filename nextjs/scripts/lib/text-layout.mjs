@@ -1,15 +1,13 @@
 /**
- * text-layout.mjs — book-text 文本目录的「新旧两种结构」识别与公共判据（overview#307 D 块）
+ * text-layout.mjs — book-text 文本目录结构（manifest.json＋<key>/）的识别与公共判据（overview#307）
  *
- * 旧结构（现状）：<id>/collated_edition/{index.json, juan/NNN.json, text/…}、<id>/full_text/…（Book 直放，Work 按 <key>/）；
- *               全局清单 index/full_text/{0-f}.json（Work 全文）。
- * 新结构（规格见 overview 项目进展/古籍索引网站/设计/阅读文本.md）：
+ * 结构（规格见 overview 项目进展/古籍索引网站/设计/阅读文本.md）：
  *   <id>/manifest.json                  { id, visibility?, versions: [{ key, kind, label, source, …, visibility? }] }
  *   <id>/default/ 与 <id>/<key>/        index.json（{ chapters: [{ n, file: '001', title, has_json }] ）、NNN.md、NNN.json（整理本可选）
  *   全局清单 index/texts/{0-f}.json
  *
- * 判别：条目目录下有 manifest.json 就是新结构；没有就按旧结构，旧结构的一切逻辑与产物保持不变。
- * 过渡期同一个仓里两种结构可以并存（逐条目迁移）。
+ * 条目目录下有 manifest.json 才有阅读文本；没有就是没有文本（旧的 collated_edition／full_text 结构已在 2026-09-30 迁移掉，
+ * 2026-10-01 起代码里不再认，规格 §十）。
  *
  * 私有：manifest 顶层或某个 version 标 `visibility: 'internal'`（book-text-private 的識典等）的不得进公开产物——
  * 顶层标了整个条目的文本都不公开，version 标了只去掉那一份（公开版的 manifest.json 里也不列它）。
@@ -39,8 +37,8 @@ function readJsonOrNull(p) {
 }
 
 /**
- * 条目目录的 manifest.json：没有这个文件返回 null（＝旧结构）；
- * 有但不是合法 JSON、或缺 versions 数组，**抛错**——不能当旧结构悄悄放过：
+ * 条目目录的 manifest.json：没有这个文件返回 null（＝没有阅读文本）；
+ * 有但不是合法 JSON、或缺 versions 数组，**抛错**——不能当没有文本悄悄放过：
  * 那样版本目录不会被打包，私有标记也不会被看到（fail closed，构建／检查直接失败并指出是哪个文件）。
  */
 export function readManifest(itemDir) {
@@ -94,7 +92,7 @@ export function firstChapterOf(indexDoc) {
 /**
  * 新结构条目的可读性（阅读首页判据，与 #306 同一思路：站内真有正文）：
  * manifest 存在、有可公开版本，且每个公开版本的 index.json 章目录非空才算这个版本可读；一份可读版本都没有就不可读。
- * 返回 null（不可读／旧结构）或 { versions: [{ key, kind, first: { file, hasJson } }], collated, defaultFirst }。
+ * 返回 null（不可读）或 { versions: [{ key, kind, first: { file, hasJson } }], collated, defaultFirst }。
  * collated：有 kind=collated 的版本（阅读首页「整理本」标记）；defaultFirst：主版本首章（可能为 null，主版本不可读时）。
  */
 export function newStructureReadable(itemDir) {

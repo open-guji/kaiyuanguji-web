@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 /**
- * bundle-data-new-text.test.mjs — 打包层同时认 book-text 新旧两种结构（overview#307 D 块）的脚本单测
- * （不进 jest，同 bundle-data-work-fulltext.test.mjs 一套写法）。
+ * bundle-data-new-text.test.mjs — 打包层按 book-text 的 manifest.json＋<key>/ 结构打包（overview#307）的脚本单测
+ * （不进 jest，自带最小的 test() 小框架；CI 里由 test.yml 的 node --test 跑）。
  *
- * 造一份新旧并存的最小 draft + text 仓，真跑 bundle-data.mjs 与 bundle-hashed-text.mjs，核对：
- *   1. 旧结构条目（Work 整理本＋全文、Book 全文）的产物与以前一样：items/<id>/ 下路径、md→txt、条目 JSON 不带 text_* 字段；
+ * 造一份最小的 draft + text 仓（外加一个只有旧目录、没有 manifest.json 的条目，验证它不再被当文本），
+ * 真跑 bundle-data.mjs 与 bundle-hashed-text.mjs，核对：
+ *   1. 没有 manifest.json 的条目目录（旧的 collated_edition／full_text 不再认）：只当非文本资产原样拷，条目 JSON 不带 text_*，不算可读，不进 h1 文本；
  *   2. 新结构条目：manifest.json 与各版本目录进 items/<id>/（md→txt，章 json 原样）；条目 JSON 带 text_count／text_kinds；
  *   3. 私有：manifest 顶层 internal 的条目文本一个字节都不进公开产物；某个 version internal 的，该版本目录不拷、
  *      公开 manifest.json 里也不列；
  *   4. 全局清单 index/texts/{0-f}.json 拷进产物，internal 版本被滤掉（无需过滤的分片字节不变）；
- *   5. 阅读首页 read/：新结构可读条目（含整理本标记）进来，空目录、私有的、旧结构的不进；
+ *   5. 阅读首页 read/：有 manifest.json 的可读条目（含整理本标记）进来，空目录、私有的、没有 manifest 的不进；
  *   6. bundle-hashed-text：新结构条目的 manifest.json 与公开版本目录进 text/<id>/…，manifest 分片里有；私有的没有；
- *   7. 构建期核对（verifyItems）覆盖新结构：产物里缺首章会让 bundle-data 失败。
+ *   7. 构建期核对（verifyItems）：首章没有 json 也没有 md、或 has_json 的首章 json 缺了，bundle-data 失败；has_json 的首章只有 json（md 可缺）不算缺。
  *
  * 用法：node scripts/bundle-data-new-text.test.mjs
  */
@@ -60,7 +61,7 @@ function makeFixture(base) {
         return join(text, dirname(rel), id); // 文本仓里的条目目录
     };
 
-    // 旧结构：Work 有整理本与 Work 全文（全局清单 index/full_text），Book 有全文
+    // 没有 manifest.json 的旧目录（2026-09-30 已迁移掉的旧结构）：现在只当普通目录，不再认作文本
     const oldW = addEntry('Work', IDS.oldWork, 'a');
     put(oldW, 'collated_edition/index.json', { juan_files: ['juan/001.json'] });
     put(oldW, 'collated_edition/juan/001.json', { sections: [] });
@@ -69,7 +70,6 @@ function makeFixture(base) {
     const oldB = addEntry('Book', IDS.oldBook, 'b');
     put(oldB, 'full_text/index.json', { chapters: [{ file: '001.md', title: '一' }] });
     put(oldB, 'full_text/001.md', '# 旧书全文\n');
-    put(text, 'index/full_text/0.json', { [IDS.oldWork]: [{ key: 'wikisource-01', owner_type: 'Work', primary: true, total_chapters: 1 }] });
 
     // 新结构 Work：default 整理本（章 json）＋维基＋內部的識典
     const nw = addEntry('Work', IDS.newWork, 'c');
@@ -133,20 +133,18 @@ try {
     const e = env(outRoot, draft, text);
     const data = join(outRoot, 'data');
     let log = '';
-    test('bundle-data.mjs 新旧并存的仓能跑完（含构建期核对）', () => { log = run('bundle-data.mjs', e); });
+    test('bundle-data.mjs 能跑完（含构建期核对）', () => { log = run('bundle-data.mjs', e); });
 
-    test('旧结构条目：items/<id>/ 路径与 md→txt 与以前一致，条目 JSON 没有 text_* 字段', () => {
+    test('没有 manifest.json 的旧目录：原样拷成普通目录，条目 JSON 没有 text_*／旧阅读标记', () => {
         assert.ok(existsSync(join(data, 'items', IDS.oldWork, 'collated_edition', 'juan', '001.json')));
-        assert.ok(existsSync(join(data, 'items', IDS.oldWork, 'full_text', 'wikisource-01', '001.txt')));
         assert.ok(!existsSync(join(data, 'items', IDS.oldWork, 'manifest.json')));
-        assert.ok(existsSync(join(data, 'items', IDS.oldBook, 'full_text', '001.txt')));
         for (const id of [IDS.oldWork, IDS.oldBook]) {
             const entry = readJ(join(data, 'entry', `${id}.json`));
             assert.equal(entry.text_count, undefined);
             assert.equal(entry.text_kinds, undefined);
+            assert.equal(entry.has_site_fulltext, undefined);
+            assert.equal(entry.has_full_text, undefined);
         }
-        assert.equal(readJ(join(data, 'entry', `${IDS.oldWork}.json`)).has_site_fulltext, true);
-        assert.equal(readJ(join(data, 'entry', `${IDS.oldBook}.json`)).has_full_text, true);
     });
 
     test('新结构条目：manifest.json 与版本目录进 items/<id>/（md→txt，章 json 原样），条目 JSON 带 text_count／text_kinds', () => {
@@ -197,10 +195,10 @@ try {
         assert.deepEqual(s1[IDS.newWork].map((v) => v.key), ['default']);
         assert.equal(s1[IDS.privWork], undefined);
         assert.equal(rd(join(data, 'index', 'texts', '2.json')), rd(join(text, 'index', 'texts', '2.json')));
-        assert.ok(existsSync(join(data, 'index', 'full_text', '0.json')), '旧的 index/full_text 照旧拷');
+        assert.ok(!existsSync(join(data, 'index', 'full_text')), '旧的 index/full_text 不再拷');
     });
 
-    test('阅读首页 read/：新结构可读条目进（含整理本标记），空目录、私有的不进；旧结构不再算可读（overview#307 §十）', () => {
+    test('阅读首页 read/：新结构可读条目进（含整理本标记），空目录、私有的、没有 manifest 的不进（overview#307 §十）', () => {
         const feat = readJ(join(data, 'read', 'featured.json'));
         assert.deepEqual(feat.collated.map((c) => c.id), [IDS.newWork]);
         assert.deepEqual(feat.books.map((c) => c.id), [IDS.newBook]);
@@ -214,7 +212,7 @@ try {
         assert.match(log, /核对 \d+ 项阅读入口的数据文件：全部在产物里/);
     });
 
-    test('bundle-hashed-text：新结构 manifest.json 与公开版本目录进 text/<id>/…，manifest 分片登记；私有的没有；旧结构不变', () => {
+    test('bundle-hashed-text：新结构 manifest.json 与公开版本目录进 text/<id>/…，manifest 分片登记；私有的没有；没有 manifest 的旧目录不进', () => {
         run('bundle-hashed-text.mjs', e);
         const h1 = join(outRoot, 'data-h1-text');
         const files = walkFiles(join(h1, 'text')).map((f) => f.replace(/\\/g, '/'));
@@ -226,19 +224,17 @@ try {
         assert.ok(has(new RegExp(`^${IDS.newBook}/default/002\\.[0-9a-f]{8}\\.txt$`)));
         assert.ok(!has(new RegExp(`^${IDS.newWork}/shidian/`)), 'internal 版本不进 h1 文本');
         assert.ok(!has(new RegExp(`^${IDS.privWork}/`)), '顶层 internal 的条目不进 h1 文本');
-        // 旧结构仍在老位置
-        assert.ok(has(new RegExp(`^${IDS.oldWork}/collated_edition/juan/001\\.[0-9a-f]{8}\\.json$`)));
-        assert.ok(has(new RegExp(`^${IDS.oldWork}/full_text/wikisource-01/001\\.[0-9a-f]{8}\\.txt$`)));
+        assert.ok(!has(new RegExp(`^${IDS.oldWork}/`)), '没有 manifest 的旧目录不进 h1 文本');
         // text-manifest 分片里登记了新结构文件
         const reg = {};
         for (const f of readdirSync(join(h1, 'text-manifest'))) Object.assign(reg, readJ(join(h1, 'text-manifest', f)));
         assert.ok(reg[IDS.newWork]['manifest.json'] && reg[IDS.newWork]['default/001.txt'] && reg[IDS.newWork]['wikisource/001.txt']);
         assert.equal(reg[IDS.privWork], undefined);
         assert.equal(Object.keys(reg[IDS.newWork]).some((k) => k.startsWith('shidian/')), false);
-        assert.ok(reg[IDS.oldWork]['collated_edition/index.json']);
+        assert.equal(reg[IDS.oldWork], undefined);
     });
 
-    test('manifest.json 存在但不合法：bundle-data 失败，不当旧结构放过', () => {
+    test('manifest.json 存在但不合法：bundle-data 失败，不当没有文本放过', () => {
         const tmp3 = mkdtempSync(join(tmpdir(), 'new-text-badmanifest-'));
         try {
             const f3 = makeFixture(tmp3);
@@ -252,19 +248,38 @@ try {
         }
     });
 
-    test('构建期核对覆盖新结构：产物里缺首章时 bundle-data 失败并列出', () => {
-        // 换一份文本仓：新结构 Work 的 index 登记了 001，但文本仓里没有 001.md
-        const tmp2 = mkdtempSync(join(tmpdir(), 'new-text-bad-'));
+    // 构建期核对：default 版本（整理本，has_json）与 wikisource 版本（没有 has_json）的首章
+    const withBad = (mutate, check) => {
+        const t = mkdtempSync(join(tmpdir(), 'new-text-bad-'));
         try {
-            const f2 = makeFixture(tmp2);
-            unlinkSync(join(f2.text, 'Work', 'c', IDS.newWork, 'default', '001.md'));
-            assert.throws(
-                () => run('bundle-data.mjs', env(join(tmp2, 'kyg-data'), f2.draft, f2.text)),
-                (err) => /阅读卡片对应的数据文件在产物里缺失/.test(String(err.stderr)) && new RegExp(`${IDS.newWork}: items/${IDS.newWork}/default/001\\.txt`).test(String(err.stderr)),
-            );
+            const f = makeFixture(t);
+            mutate(f.text);
+            check(() => run('bundle-data.mjs', env(join(t, 'kyg-data'), f.draft, f.text)));
         } finally {
-            rmSync(tmp2, { recursive: true, force: true });
+            rmSync(t, { recursive: true, force: true });
         }
+    };
+    const stderrOf = (err) => String(err.stderr);
+
+    test('构建期核对：has_json 的首章只有 json、没有 md（整理本的 md 可缺）→ 不算缺，bundle-data 照常跑完', () => {
+        withBad(
+            (text) => unlinkSync(join(text, 'Work', 'c', IDS.newWork, 'default', '001.md')),
+            (go) => assert.doesNotThrow(go),
+        );
+    });
+
+    test('构建期核对：没有 has_json 的版本首章缺 md → bundle-data 失败并列出（.txt）', () => {
+        withBad(
+            (text) => unlinkSync(join(text, 'Work', 'c', IDS.newWork, 'wikisource', '001.md')),
+            (go) => assert.throws(go, (err) => /阅读卡片对应的数据文件在产物里缺失/.test(stderrOf(err)) && new RegExp(`${IDS.newWork}: items/${IDS.newWork}/wikisource/001\\.txt`).test(stderrOf(err))),
+        );
+    });
+
+    test('构建期核对：has_json 的首章 json 缺了 → bundle-data 失败并列出（.json）；md 在也不行', () => {
+        withBad(
+            (text) => unlinkSync(join(text, 'Work', 'c', IDS.newWork, 'default', '001.json')),
+            (go) => assert.throws(go, (err) => /阅读卡片对应的数据文件在产物里缺失/.test(stderrOf(err)) && new RegExp(`${IDS.newWork}: items/${IDS.newWork}/default/001\\.json`).test(stderrOf(err))),
+        );
     });
 } finally {
     rmSync(tmp, { recursive: true, force: true });

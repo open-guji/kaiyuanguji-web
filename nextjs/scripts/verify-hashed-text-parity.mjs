@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * verify-hashed-text-parity.mjs — A3b 完成判据 1：抽样比对 h1 整理本／全文
+ * verify-hashed-text-parity.mjs — A3b 完成判据 1：抽样比对 h1 阅读文本
  * 路径与现行 items/ 路径内容是否逐字一致
  *
  * 现行路径的真值 = public/data/items/<owner_id>/<relPath>（bundle-data.mjs 产出，
@@ -9,7 +9,7 @@
  *                  <owner_id>/<relPath> 的哈希，再读
  *                  public/data-h1-text/text/<owner_id>/<relPath 插入哈希>。
  * 两边字节必须完全一致——bundle-hashed-text.mjs 就是直接从前者复制字节写后者，
- * 这里做端到端核验：抽真实样本（覆盖整理本／Book 全文／Work 全文三类），证明
+ * 这里做端到端核验：抽真实样本（manifest、章目录、章文本），证明
  * 「设计上应该一致」在磁盘上真的一致，不是只在单测的 mock 数据上一致。
  *
  * 用法：
@@ -62,33 +62,20 @@ function loadTextManifestMap() {
     return map;
 }
 
-/** 抽样候选：{ ownerId, relPath, kind }，kind ∈ 整理本／Book全文／Work全文 */
+/** 抽样候选：{ ownerId, relPath, kind }，kind 是文本的类别（manifest／按 default 版本的 kind 与条目类型分桶） */
 async function collectCandidates() {
-    const { extractType } = await import('book-index-ui');
-    const candidates = { 整理本: [], Book全文: [], Work全文: [], 新结构文本: [] };
+    const candidates = { 文本: [] };
 
     for (const ownerId of readdirSync(ITEMS_SRC_DIR)) {
         const ownerDir = join(ITEMS_SRC_DIR, ownerId);
         if (!statSync(ownerDir).isDirectory()) continue;
-        let type;
-        try { type = extractType(ownerId); } catch { continue; }
-
-        const ceDir = join(ownerDir, 'collated_edition');
-        if (existsSync(ceDir) && statSync(ceDir).isDirectory()) {
-            for (const f of walkRel(ceDir, ownerDir)) candidates['整理本'].push({ ownerId, relPath: f });
-        }
-        const ftDir = join(ownerDir, 'full_text');
-        if (existsSync(ftDir) && statSync(ftDir).isDirectory()) {
-            const kind = type === 'book' ? 'Book全文' : 'Work全文';
-            for (const f of walkRel(ftDir, ownerDir)) candidates[kind].push({ ownerId, relPath: f });
-        }
-        // 新结构（overview#307）：manifest.json 与公开版本目录，与 bundle-hashed-text 同一范围
+        // manifest.json 与公开版本目录，与 bundle-hashed-text 同一范围（overview#307）
         if (readManifest(ownerDir)) {
-            candidates['新结构文本'].push({ ownerId, relPath: 'manifest.json' });
+            candidates['文本'].push({ ownerId, relPath: 'manifest.json' });
             for (const key of publicKeys(ownerDir)) {
                 const keyDir = join(ownerDir, key);
                 if (existsSync(keyDir) && statSync(keyDir).isDirectory()) {
-                    for (const f of walkRel(keyDir, ownerDir)) candidates['新结构文本'].push({ ownerId, relPath: f });
+                    for (const f of walkRel(keyDir, ownerDir)) candidates['文本'].push({ ownerId, relPath: f });
                 }
             }
         }
@@ -132,13 +119,13 @@ async function main() {
     }
 
     const samples = sampleFrom(candidates, SAMPLE_SIZE);
-    if (samples.length === 0) fail('抽不到任何样本，检查 public/data/items 下是否有 collated_edition/full_text');
+    if (samples.length === 0) fail('抽不到任何样本，检查 public/data/items 下是否有 manifest.json');
 
     let matched = 0;
     const mismatches = [];
     for (const { ownerId, relPath, kind } of samples) {
-        const legacyPath = join(ITEMS_SRC_DIR, ownerId, relPath);
-        const legacyBuf = readFileSync(legacyPath);
+        const srcPath = join(ITEMS_SRC_DIR, ownerId, relPath);
+        const srcBuf = readFileSync(srcPath);
 
         const key = `${ownerId}/${relPath}`;
         const hash = manifestMap.get(key);
@@ -153,10 +140,10 @@ async function main() {
         }
         const h1Buf = readFileSync(h1Path);
 
-        if (legacyBuf.equals(h1Buf)) {
+        if (srcBuf.equals(h1Buf)) {
             matched++;
         } else {
-            mismatches.push({ key, kind, reason: `字节不一致（legacy ${legacyBuf.length}B vs h1 ${h1Buf.length}B）` });
+            mismatches.push({ key, kind, reason: `字节不一致（items ${srcBuf.length}B vs h1 ${h1Buf.length}B）` });
         }
     }
 

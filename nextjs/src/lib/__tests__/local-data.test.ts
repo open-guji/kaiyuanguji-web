@@ -167,16 +167,6 @@ describe('local-data getItem', () => {
         expect(data?.title).toBe('红楼梦');
     });
 
-    it('Work 含 collated_edition 目录 → has_collated=true', () => {
-        const id = 'work1234';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', '2', '3', '4');
-        writeJson(path.join(dir, `${id}-t.json`), { id, title: 't', type: 'Work' });
-        // 资产在 book-text（2026-08-26 文本拆分），不在元数据仓
-        fs.mkdirSync(path.join(workspace, 'book-text', 'Work', '2', '3', '4', id, 'collated_edition'), { recursive: true });
-        const data = loadModule().getItem(id);
-        expect(data?.has_collated).toBe(true);
-    });
-
     it('Entity title 缺失时用 primary_name', () => {
         const id = 'ent12345';
         const filePath = path.join(workspace, 'book-index-draft', 'Entity', '3', '4', '5', `${id}-x.json`);
@@ -236,63 +226,6 @@ describe('local-data searchAll / searchEntries', () => {
         const r = await loadModule().searchEntries('', 'work', 2, 2);
         expect(r.entries.length).toBe(1);
         expect(r.total).toBe(3);
-    });
-});
-
-describe('local-data collated edition', () => {
-    it('getCollatedEditionIndex 优先读 collated_edition_index.json', () => {
-        const id = 'wcoll123';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
-        writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
-        const idxData = { work_id: id, juans: [{ name: 'juan1' }] };
-        writeJson(path.join(workspace, 'book-text', 'Work', '1', '2', '3', id, 'collated_edition', 'collated_edition_index.json'), idxData);
-
-        expect(loadModule().getCollatedEditionIndex(id)).toEqual(idxData);
-    });
-
-    it('getCollatedEditionIndex 无索引文件时按 juan*.json 排序生成', () => {
-        const id = 'wcoll456';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', '4', '5', '6');
-        writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
-        const collDir = path.join(workspace, 'book-text', 'Work', '4', '5', '6', id, 'collated_edition');
-        // 几个 juan 文件
-        writeJson(path.join(collDir, 'juan2.json'), { name: '卷二' });
-        writeJson(path.join(collDir, 'juan1.json'), { name: '卷一' });
-        writeJson(path.join(collDir, 'juanshou.json'), { name: '卷首' });
-
-        const idx = loadModule().getCollatedEditionIndex(id);
-        expect(idx).toBeTruthy();
-        // juanshou 应排第一
-        expect((idx as any).work_id).toBe(id);
-    });
-
-    it('找不到 work 时 getCollatedEditionIndex 返回 null', () => {
-        expect(loadModule().getCollatedEditionIndex('nonexistent')).toBeNull();
-    });
-
-    it('getCollatedJuanText 读取 markdown 文件', () => {
-        const id = 'wjuan123';
-        const dir = path.join(workspace, 'book-index-draft', 'Work', '1', '2', '3');
-        writeJson(path.join(dir, `${id}-x.json`), { id, type: 'Work' });
-        const collTextDir = path.join(workspace, 'book-text', 'Work', '1', '2', '3', id, 'collated_edition', 'text');
-        fs.mkdirSync(collTextDir, { recursive: true });
-        fs.writeFileSync(path.join(collTextDir, 'juan1.md'), '# 卷一\n内容', 'utf-8');
-
-        // API 接受 .json 形式，内部转 .md
-        const text = loadModule().getCollatedJuanText(id, 'juan1.json');
-        expect(text).toContain('卷一');
-    });
-
-    it('getCollatedJuanText 找不到返回 null', () => {
-        expect(loadModule().getCollatedJuanText('nonexistent', 'foo.json')).toBeNull();
-    });
-
-    it('getCollatedJuanText 拒绝 path traversal（含 ..）', () => {
-        expect(loadModule().getCollatedJuanText('any', '../../etc/passwd')).toBeNull();
-    });
-
-    it('getCollatedJuanText 拒绝非 .json 后缀', () => {
-        expect(loadModule().getCollatedJuanText('any', 'juan1.exe')).toBeNull();
     });
 });
 
