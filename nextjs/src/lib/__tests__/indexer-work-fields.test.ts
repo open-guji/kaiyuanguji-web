@@ -46,3 +46,17 @@ describe('lossStatusValue', () => {
     expect(m.lossStatusValue('bogus', 'extant')).toBe('extant');
   });
 });
+
+describe('hasTextValue（「有文本」＝有转录全文或整理本，overview#322）', () => {
+  test('has_text 或 has_collated 任一为真即真', () => {
+    expect(m.hasTextValue({ has_text: true })).toBe(true);
+    expect(m.hasTextValue({ has_collated: true })).toBe(true);
+    expect(m.hasTextValue({ has_text: true, has_collated: true })).toBe(true);
+  });
+  test('都没有、缺字段、空值：假', () => {
+    expect(m.hasTextValue({ has_text: false, has_collated: false })).toBe(false);
+    expect(m.hasTextValue({})).toBe(false);
+    expect(m.hasTextValue(null)).toBe(false);
+    expect(m.hasTextValue(undefined)).toBe(false);
+  });
+});

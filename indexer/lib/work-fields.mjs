@@ -25,3 +25,12 @@ export function lossStatusValue(...values) {
     }
     return '';
 }
+
+/**
+ * 「有文本」（用户 10-01：页面上「全文」「整理本」统一叫「文本」，搜索筛选合成一个「有文本」，overview#322）。
+ * 代理的 filter 只放行 AND，写不出 has_text OR has_collated，所以在索引侧合一：
+ * has_text 写成「有转录全文或有整理本」。has_collated 字段照旧保留（排序加权、旧链接用）。
+ */
+export function hasTextValue(entry) {
+    return !!(entry && (entry.has_text || entry.has_collated));
+}
