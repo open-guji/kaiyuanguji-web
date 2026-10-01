@@ -1055,10 +1055,12 @@
   main:has(.home-open) + .og-footer {
     margin-top: 0;
   }
+  /* 用户 10-01 反馈（overview#337 B2）：左栏＝四项链接＋版权备案行（两行紧贴），右栏＝二维码；
+     版权行不再单占页脚最底一行，二维码下面只留内边距 */
   .og-footer-inner {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 20px var(--shell-gutter) 8px;
+    padding: 16px var(--shell-gutter) 12px;
   }
   .og-footer-row {
     display: flex;
@@ -1066,11 +1068,18 @@
     align-items: center;
     gap: 4px 40px;
   }
+  .og-footer-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
   .og-footer-links {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0 14px;
+    /* 链接自带 6px 左右内边距（加大点击区），左移抵掉，字与下面的版权行左缘对齐 */
+    margin-left: -6px;
   }
   .og-footer h2 {
     margin: 0;
@@ -1104,10 +1113,9 @@
     text-underline-offset: 3px;
   }
   .og-footer-bottom {
-    margin-top: 2px;
-    /* 版式判准：版权行上方疏朗不画线（用间距），界栏 1px */
+    /* 版式判准：版权行上方疏朗不画线，界栏 1px */
     border-top: var(--og-foot-bd);
-    padding-top: 4px;
+    padding-top: 2px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1118,6 +1126,8 @@
   .og-footer-bottom a {
     color: var(--og-foot-dim);
     padding: 0;
+    /* 版权行字小、点击区取 24px（WCAG 2.2 最低），与上面一行链接贴得更近（overview#337 B2）；手机仍是 44px */
+    min-height: 24px;
   }
 
   @media (max-width: 760px) {
@@ -1149,12 +1159,12 @@
       margin-top: 40px;
     }
     .og-footer-inner {
-      padding: 16px var(--shell-gutter) 8px;
+      padding: 16px var(--shell-gutter) 12px;
     }
     .og-footer-row {
       flex-direction: column;
       align-items: flex-start;
-      gap: 8px;
+      gap: 12px;
     }
     .og-footer li a,
     .og-footer-bottom a {
@@ -2185,8 +2195,32 @@
     color: var(--color-ink-2);
     font-size: var(--fs-base);
   }
+  /* 类型页签在左、「显示已处理」勾选框在右（overview#337 C1）；窄屏放不下就折到下一行 */
   .og-fb-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 20px;
     margin: 24px 0 4px;
+  }
+  .og-fb-filter .og-fb-types {
+    margin-bottom: 0;
+  }
+  .og-fb-show-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .og-fb-show-done input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-zhu);
   }
   .og-fb-page-empty {
     padding: 40px 0;

@@ -3,7 +3,7 @@
  * minor／moderate 与 best-practice 不在这里拦（噪声大，另行人工巡检）。
  *
  * 覆盖：首页、总目、搜索页、阅读首页、条目页、阅读页（整理本）。桌面与手机两个宽度各一遍。
- * v4 外观矩阵（overview#291 P0）：3 配色 × 2 版式共 6 种组合，默认组合（朱砂＋疏朗）就是上面的基础用例，
+ * v4 外观矩阵（overview#291 P0）：3 配色 × 2 版式共 6 种组合，默认组合（靛青＋疏朗，overview#337 B1）就是上面的基础用例，
  * 其余 5 种在桌面 1440 各扫一遍，「墨＋界栏」再补手机 390。组合靠写 localStorage（kyg-theme／kyg-layout）
  * 由页面自己的防闪脚本生效——顺带验证了「存了就生效」这条路径。站点还没上外观面板时（旧部署）自动跳过矩阵。
  * 只发 GET，不点任何按钮。总目、阅读首页、阅读页只有全栈站才有，静态站自动跳过。
@@ -82,8 +82,8 @@ for (const vp of VIEWPORTS) {
 // ── v4 外观矩阵 ──
 
 const COMBOS: { theme: 'zhusha' | 'indigo' | 'ink'; layout: 'airy' | 'boxed' }[] = [
+    { theme: 'zhusha', layout: 'airy' },
     { theme: 'zhusha', layout: 'boxed' },
-    { theme: 'indigo', layout: 'airy' },
     { theme: 'indigo', layout: 'boxed' },
     { theme: 'ink', layout: 'airy' },
     { theme: 'ink', layout: 'boxed' },

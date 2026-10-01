@@ -1,13 +1,14 @@
 /**
  * 站点外观（overview#286 第 0 步 → #291 v4 P0）：配色＋版式两个维度。
  *
- * 配色：朱砂（默认）／靛青／墨，开关是 `<html data-theme="zhusha|indigo|ink">`；
+ * 配色：朱砂／靛青（默认，overview#337 B1）／墨，开关是 `<html data-theme="zhusha|indigo|ink">`；
  * 版式：疏朗（默认）／界栏，开关是 `<html data-layout="airy|boxed">`。
- * 未设、空、值不认识一律按默认（样式只有 indigo／ink／boxed 有覆盖）。老用户存的 `zhusha`／`indigo` 原样有效。
+ * 未设、空、值不认识一律按默认（样式只有 indigo／ink／boxed 有覆盖，朱砂是 :root 底色）。
+ * 老用户存过的 `zhusha`／`indigo`／`ink` 原样有效——存过朱砂的仍是朱砂。
  * 选择存 localStorage（键 THEME_KEY），
- * 读写一律 try/catch——隐私窗口、清站点数据、被禁用时抛错，页面照常按朱砂渲染。
+ * 读写一律 try/catch——隐私窗口、清站点数据、被禁用时抛错，页面照常按默认（靛青）渲染。
  * 首屏防闪：layout.tsx 在 <head> 放 THEME_INIT_SCRIPT，浏览器画第一帧前就设好属性；
- * 首次访问（存储里没有）和存储不可用时不设，即默认朱砂。
+ * 首次访问（存储里没有）和存储不可用时不改，即 SSR 默认靛青。
  */
 export type ThemeName = 'zhusha' | 'indigo' | 'ink';
 
@@ -21,7 +22,7 @@ export const THEMES: { name: ThemeName; label: string }[] = [
 export const THEME_COLOR: Record<ThemeName, string> = { zhusha: '#9e2a2b', indigo: '#2e5266', ink: '#222221' };
 
 export const THEME_KEY = 'kyg-theme';
-export const DEFAULT_THEME: ThemeName = 'zhusha';
+export const DEFAULT_THEME: ThemeName = 'indigo';
 
 export function isTheme(v: unknown): v is ThemeName {
   return v === 'zhusha' || v === 'indigo' || v === 'ink';
@@ -108,10 +109,10 @@ export function currentLayout(): LayoutName {
 }
 
 /**
- * 内联在 <head> 的防闪脚本：读两个键；存的是 indigo／ink 才改 data-theme（并同步 theme-color）、
- * 存的是 boxed 才改 data-layout，其余保持 SSR 默认（朱砂＋疏朗）。须自包含、不抛错。
+ * 内联在 <head> 的防闪脚本：读两个键；存的是 zhusha／ink 才改 data-theme（并同步 theme-color）、
+ * 存的是 boxed 才改 data-layout，其余保持 SSR 默认（靛青＋疏朗）。须自包含、不抛错。
  */
 export const THEME_INIT_SCRIPT =
   `try{var c=${JSON.stringify(THEME_COLOR)},t=localStorage.getItem(${JSON.stringify(THEME_KEY)});`
-  + `if(t==='indigo'||t==='ink'){document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',c[t])}`
+  + `if(t==='zhusha'||t==='ink'){document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',c[t])}`
   + `if(localStorage.getItem(${JSON.stringify(LAYOUT_KEY)})==='boxed')document.documentElement.setAttribute('data-layout','boxed')}catch(e){}`;

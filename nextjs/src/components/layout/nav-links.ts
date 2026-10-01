@@ -36,9 +36,18 @@ export const MOBILE_DRAWER_ID = 'og-mobile-drawer';
 /** 正文容器的 id：「跳到正文」链接指向它 */
 export const MAIN_CONTENT_ID = 'main-content';
 
+/**
+ * 不在入口路径下、但归属某个入口的路由：条目页 /item/<id> 属「元数据」（用户 10-01 反馈，overview#337 B6）。
+ */
+const CURRENT_ALIASES: Record<string, string[]> = {
+  '/book-index': ['/item'],
+};
+
+const under = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`);
+
 /** 当前路由是否落在某个入口下（首页只精确匹配） */
 export function isCurrent(pathname: string | null, href: string): boolean {
   if (!pathname) return false;
   if (href === '/') return pathname === '/';
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return under(pathname, href) || (CURRENT_ALIASES[href] ?? []).some((a) => under(pathname, a));
 }

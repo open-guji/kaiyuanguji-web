@@ -21,6 +21,13 @@ describe('isCurrent', () => {
         expect(isCurrent('/tools/shuowen', '/tools')).toBe(true);
         expect(isCurrent('/toolkit', '/tools')).toBe(false);
     });
+    it('条目页 /item/<id> 归「元数据」（overview#337 B6），不连带别的入口', () => {
+        expect(isCurrent('/item/96kzii6z28', '/book-index')).toBe(true);
+        expect(isCurrent('/item', '/book-index')).toBe(true);
+        expect(isCurrent('/items', '/book-index')).toBe(false);
+        expect(isCurrent('/item/96kzii6z28', '/read')).toBe(false);
+        expect(isCurrent('/item/96kzii6z28', '/')).toBe(false);
+    });
 });
 
 describe('Navbar（N1 顶栏）', () => {

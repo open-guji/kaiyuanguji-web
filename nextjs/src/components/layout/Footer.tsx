@@ -18,7 +18,8 @@ const groups = [
 
 /**
  * 分支页（首页、目录、元数据、阅读、关于）共用的页脚；具体条目页、阅读页不显示（LayoutWrapper hideFooter）。
- * 黑底；左边四项链接，右边两张二维码（中间留足间距）；版权、隐私、备案压成最下面一行。
+ * 黑底；左栏是四项链接，紧接着版权、隐私、备案一行；右栏两张二维码（中间留足间距）。
+ * 用户 10-01 反馈（overview#337 B2）：链接与备案行合成左栏、两者间距压小；二维码下方空白减小。
  */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -27,20 +28,31 @@ export default function Footer() {
     <footer className="og-footer">
       <div className="og-footer-inner">
         <div className="og-footer-row">
-          <nav aria-label="关于与联系" className="og-footer-links">
-            <ul>
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href}>{link.label}</Link>
+          <div className="og-footer-main">
+            <nav aria-label="关于与联系" className="og-footer-links">
+              <ul>
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href}>{link.label}</Link>
+                  </li>
+                ))}
+                <li>
+                  <a href="https://github.com/open-guji" target="_blank" rel="noopener noreferrer">
+                    项目源码
+                  </a>
                 </li>
-              ))}
-              <li>
-                <a href="https://github.com/open-guji" target="_blank" rel="noopener noreferrer">
-                  项目源码
-                </a>
-              </li>
-            </ul>
-          </nav>
+              </ul>
+            </nav>
+
+            <div className="og-footer-bottom">
+              <span>© {currentYear} 开源古籍项目组</span>
+              <Link href="/privacy">隐私说明</Link>
+              <Link href="/beta">内测说明</Link>
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+                冀ICP备2026013455号
+              </a>
+            </div>
+          </div>
 
           <div className="og-footer-qrs">
             {groups.map((g) => (
@@ -55,15 +67,6 @@ export default function Footer() {
               </figure>
             ))}
           </div>
-        </div>
-
-        <div className="og-footer-bottom">
-          <span>© {currentYear} 开源古籍项目组</span>
-          <Link href="/privacy">隐私说明</Link>
-          <Link href="/beta">内测说明</Link>
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-            冀ICP备2026013455号
-          </a>
         </div>
       </div>
     </footer>
