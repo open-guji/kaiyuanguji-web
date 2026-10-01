@@ -11,7 +11,7 @@ import { useSiteT } from '@/i18n/use-site-t';
 const SWATCH: Record<ThemeName, { bg: string; ac: string }> = {
   zhusha: { bg: '#f6f3ec', ac: '#9c3a2c' },
   indigo: { bg: '#f4efe4', ac: '#2e5266' },
-  ink: { bg: '#f5f5f3', ac: '#222221' },
+  ink: { bg: '#ffffff', ac: '#3b4a58' },
 };
 
 /**

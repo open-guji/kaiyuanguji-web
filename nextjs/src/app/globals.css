@@ -78,36 +78,38 @@
   --bim-section-shu: #9e2a2b;
 }
 
-/* ---- 墨主题（v4 P0）：<html data-theme="ink">，素白底、主色近黑，整套中性灰。
-   色值取自设计稿「墨」，与 book-index-ui 的 ink 主题一致（accent #222221，页底 #f5f5f3）。
-   辅助字按 AA 调深（--bim-aux-fg #63625e）；分类色（书籍徽章、疏类）仍用朱色，靠色相区分类型，
-   其余强调（链接、当前项、主按钮）与正文都是近黑，所以链接／选中另有下划线与描边，见文末 ink 区块。 ---- */
+/* ---- 墨主题（v4 P0；overview#340 换新色值）：<html data-theme="ink">，纯白底、冷灰中性色，主色石板蓝灰。
+   色值取自设计稿 10-01「墨」（黑白设计.zip），与 book-index-ui 的 ink 主题同一套（accent #3b4a58，页底 #ffffff）。
+   对照设计稿令牌：paper=bg raise=sf tint=ln2 tint-2=ln ink=ink ink-2=ink2 ink-3=ink3 zhu=ac zhu-deep=ac-d gold=oc。
+   辅助字按 AA 核：设计稿 mut #6b7178 白底 4.93，但分组底 #eceef0 只有 4.24、悬停底 #e3e5e8 只有 3.9，
+   所以 --bim-aux-fg 调深到 #5f656c（白底 5.89，最深的悬停底 4.67）；fnt #9aa0a6 白底 2.6，不拿来写字，只在深色页脚上用（5.05）。
+   分类色（书籍徽章、疏类）用设计稿的朱红 hi #a8453a，靠色相区分类型。 ---- */
 :root[data-theme="ink"] {
-  --color-paper: #f5f5f3;
-  --color-raise: #fcfcfb;
-  --color-tint: #ecebe8;
-  --color-tint-2: #dfdedb;
-  --color-ink: #1b1b1a;
-  --color-ink-2: #4a4a47;
-  --color-ink-3: #63625e;
-  --color-zhu: #222221;
-  --color-zhu-deep: #000000;
-  --color-zhu-tint: rgba(34, 34, 33, 0.08);
-  --color-gold: #63625e;
-  --color-surface: #fcfcfb;
-  --color-surface-border: #dfdedb;
-  --color-secondary: #4a4a47;
-  --color-border: #dfdedb;
-  --color-vermilion: #222221;
-  --color-vermilion-deep: #000000;
-  --color-accent-gold: #63625e;
-  --color-nav-bg: #f5f5f3;
-  --color-nav-ink: #1b1b1a;
-  --color-nav-vermilion: #222221;
-  --color-nav-border: #dfdedb;
-  --bim-aux-fg: #63625e;
-  --bim-type-book: #9e2a2b;
-  --bim-section-shu: #9e2a2b;
+  --color-paper: #ffffff;
+  --color-raise: #f6f7f8;
+  --color-tint: #eceef0;
+  --color-tint-2: #e3e5e8;
+  --color-ink: #1d2024;
+  --color-ink-2: #3b4046;
+  --color-ink-3: #565c63;
+  --color-zhu: #3b4a58;
+  --color-zhu-deep: #2e3a46;
+  --color-zhu-tint: rgba(59, 74, 88, 0.08);
+  --color-gold: #7d6a48;
+  --color-surface: #f6f7f8;
+  --color-surface-border: #e3e5e8;
+  --color-secondary: #3b4046;
+  --color-border: #e3e5e8;
+  --color-vermilion: #3b4a58;
+  --color-vermilion-deep: #2e3a46;
+  --color-accent-gold: #7d6a48;
+  --color-nav-bg: #ffffff;
+  --color-nav-ink: #1d2024;
+  --color-nav-vermilion: #3b4a58;
+  --color-nav-border: #e3e5e8;
+  --bim-aux-fg: #5f656c;
+  --bim-type-book: #a8453a;
+  --bim-section-shu: #a8453a;
 }
 
 /* ---------- 非 Tailwind 令牌（字号阶 / 字重 / 阴影 / 圆角 / 动效） ---------- */
@@ -384,6 +386,8 @@
   --og-foot-bd: 1px solid transparent;
   /* 页脚（深底）上的次要字：默认接 ink-3；墨主题的 ink-3 是给浅底调深的，深底上要另给一个亮的（见 ink 块） */
   --og-foot-dim: var(--color-ink-3);
+  /* 页脚底色：默认接墨色令牌；墨主题按设计稿 ft-bg 另给（见 ink 块） */
+  --og-foot-bg: var(--color-ink);
 }
 :root[data-layout="boxed"] {
   --bim-fr-bd: 1px solid var(--bim-rule);
@@ -419,14 +423,17 @@
   --og-foot-bd: 1px solid rgba(255, 255, 255, 0.16);
 }
 :root[data-theme="ink"] {
-  --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(0, 0, 0, 0.22);
-  --og-foot-dim: #a3a29d;
+  --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(29, 32, 36, 0.22);
+  /* 设计稿 ft-bg；页脚次要字用 fnt #9aa0a6（对 #2a3036 为 5.05） */
+  --og-foot-bg: #2a3036;
+  --og-foot-dim: #9aa0a6;
 }
 :root[data-theme="ink"][data-layout="boxed"] {
   --bim-fr-shadow: none;
 }
 
-/* 墨：强调色≈正文色，正文段落／表格里的链接另加下划线（悬停加粗），不只靠颜色认得出；导航、清单类链接不加 */
+/* 墨：主色石板蓝灰 #3b4a58 与正文 #1d2024 色相相近、明度差小，正文段落／表格里的链接仍加下划线（悬停加粗），
+   不只靠颜色认得出（WCAG 1.4.1）；导航、清单类链接不加 */
 :root[data-theme="ink"] main :is(p, td, dd) a:not([class]) {
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
@@ -1047,7 +1054,7 @@
   .og-footer {
     margin-top: 56px;
     line-height: 1.6;
-    background: var(--color-ink);
+    background: var(--og-foot-bg);
     color: var(--color-tint-2);
     font-size: var(--fs-sm);
   }

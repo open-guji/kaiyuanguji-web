@@ -63,14 +63,14 @@ describe('v4 墨主题与版式令牌', () => {
 
     it('墨：各层文字在纸／面／浅底上对比度 ≥ 4.5（AA）；强调色也是', () => {
         for (const fg of ['--color-ink', '--color-ink-2', '--color-ink-3', '--bim-aux-fg', '--color-zhu']) {
-            for (const bg of ['--color-paper', '--color-raise', '--color-tint']) {
+            for (const bg of ['--color-paper', '--color-raise', '--color-tint', '--color-tint-2']) {
                 if (contrast(ink[fg], ink[bg]) < 4.5) throw new Error(`${fg} on ${bg} = ${contrast(ink[fg], ink[bg]).toFixed(2)}`);
             }
         }
     });
 
-    it('墨：强调色≈正文色，所以段落里的链接另有下划线（不只靠颜色）', () => {
-        expect(contrast(ink['--color-zhu'], ink['--color-ink'])).toBeLessThan(1.5);
+    it('墨：主色与正文色对比不到 3:1（WCAG 1.4.1 只靠颜色区分链接的门槛），所以段落里的链接另有下划线', () => {
+        expect(contrast(ink['--color-zhu'], ink['--color-ink'])).toBeLessThan(3);
         expect(css).toMatch(/:root\[data-theme="ink"\] main :is\(p, td, dd\) a:not\(\[class\]\) \{[^}]*text-decoration: underline/);
     });
 
