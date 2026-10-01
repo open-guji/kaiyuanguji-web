@@ -14,7 +14,7 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { requireNewTextData } from '../fixtures/preconditions';
+import { requireNewTextData, requireReadSections } from '../fixtures/preconditions';
 
 interface Target {
     name: string;
@@ -23,6 +23,8 @@ interface Target {
     fullstackOnly?: boolean;
     /** 需要新结构文本数据（overview#307）：迁移落地前跳过 */
     needsNewText?: boolean;
+    /** 需要阅读首页分区数据（overview#308）：新数据上线前跳过 */
+    needsReadSections?: boolean;
 }
 
 const TARGETS: Target[] = [
@@ -30,6 +32,7 @@ const TARGETS: Target[] = [
     { name: '古籍总目', path: '/catalog', fullstackOnly: true },
     { name: '古籍元数据（搜索页）', path: '/book-index?q=%E6%98%93' },
     { name: '阅读首页', path: '/read', fullstackOnly: true },
+    { name: '阅读首页·按年代', path: '/read?period=song', fullstackOnly: true, needsReadSections: true },
     { name: '条目页', path: `/item/${ANCHORS.work.id}`, fullstackOnly: true },
     { name: '阅读页（整理本）', path: `/read/${ANCHORS.collated.id}`, fullstackOnly: true, needsNewText: true },
 ];
@@ -58,6 +61,7 @@ for (const vp of VIEWPORTS) {
             test(t.name, async ({ browser, request }) => {
                 test.skip(!!t.fullstackOnly && !SITE.fullstack, `${SITE.host} 是静态站，没有 ${t.path}`);
                 if (t.needsNewText) await requireNewTextData(request, ANCHORS.collated.id, t.name);
+                if (t.needsReadSections) await requireReadSections(request, t.name);
                 const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, reducedMotion: 'reduce' });
                 const page = await ctx.newPage();
                 try {
@@ -105,6 +109,7 @@ for (const combo of COMBOS) {
                 test(t.name, async ({ browser, request }) => {
                     test.skip(!!t.fullstackOnly && !SITE.fullstack, `${SITE.host} 是静态站，没有 ${t.path}`);
                     if (t.needsNewText) await requireNewTextData(request, ANCHORS.collated.id, t.name);
+                    if (t.needsReadSections) await requireReadSections(request, t.name);
                     test.skip(!(await siteHasAppearance()), `${SITE.host} 还没上外观面板（v4 P0），跳过矩阵`);
                     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, reducedMotion: 'reduce' });
                     await ctx.addInitScript(([th, ly]) => {
