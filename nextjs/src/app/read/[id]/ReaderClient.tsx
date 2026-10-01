@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LocaleProvider, TextReader, createTextApi, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
+import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
@@ -137,6 +138,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 onLocationChange={onLocationChange}
                 onNavigate={onNavigate}
                 title={bookTitle}
+                backHref="/read"
                 onReportError={onReportError}
             />
             <SelectionReport containerRef={textRef} context={feedbackContext} />
@@ -147,10 +149,10 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
 /** 阅读页客户端部分：站点页头 + 全宽阅读器（不套页面框、不要页脚） */
 export default function ReaderClient(props: ReaderClientProps) {
     return (
-        <LocaleProvider>
+        <BimLocaleProvider>
             <LayoutWrapper hideFooter>
                 <Reader {...props} />
             </LayoutWrapper>
-        </LocaleProvider>
+        </BimLocaleProvider>
     );
 }
