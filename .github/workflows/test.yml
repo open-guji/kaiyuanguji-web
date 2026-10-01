@@ -29,6 +29,11 @@ jobs:
       - name: Test
         working-directory: nextjs
         run: npm test
+      # 打包／同步脚本的单测（nextjs/scripts 下的 *.test.mjs，不进 jest）。此前没有任何 CI 跑它们，
+      # #166 改了构建期核对而这里的期望没跟着改，main 上白挂了一阵（overview#307）。
+      - name: Script tests (nextjs/scripts)
+        working-directory: nextjs
+        run: node --test scripts/*.test.mjs scripts/lib/*.test.mjs
       # 夜间性能门槛的判定逻辑（perf/gate.ts）：纯函数，PR 上就跑，不碰线上
       - name: Install (perf)
         working-directory: perf

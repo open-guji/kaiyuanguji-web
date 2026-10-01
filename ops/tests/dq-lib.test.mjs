@@ -29,8 +29,8 @@ test('decodeId：按位构造的 id 能解回来', () => {
 });
 
 test('insertHash：与 cos-storage.ts 同一算法', () => {
-    assert.equal(insertHash('collated_edition/juan/001.json', 'abcd1234'), 'collated_edition/juan/001.abcd1234.json');
-    assert.equal(insertHash('full_text/k/index.json', 'x'), 'full_text/k/index.x.json');
+    assert.equal(insertHash('default/001.json', 'abcd1234'), 'default/001.abcd1234.json');
+    assert.equal(insertHash('wikisource/index.json', 'x'), 'wikisource/index.x.json');
     assert.equal(insertHash('noext', 'h'), 'noext.h');
     assert.equal(insertHash('a.b.txt', 'h'), 'a.b.h.txt');
 });
@@ -67,23 +67,7 @@ test('extractRefs：字符串、{id}、{work_id} 三种形状，认不出的单�
     assert.deepEqual(extractRefs({ work_id: '' }), []);
 });
 
-test('registeredTextFiles：整理本 juan_files；全文 chapters 的 .md 改 .txt、相对 index 所在目录', () => {
-    assert.deepEqual(
-        registeredTextFiles('collated_edition/index.json', { juan_files: ['juan/001.json', 'juan/002.json'] }),
-        { format: 'collated.juan_files', registered: ['collated_edition/juan/001.json', 'collated_edition/juan/002.json'] },
-    );
-    assert.deepEqual(
-        registeredTextFiles('full_text/wikisource-01/index.json', { chapters: [{ file: '001.md' }, { file: '002.txt' }, { n: 3 }] }),
-        { format: 'full_text.chapters', registered: ['full_text/wikisource-01/001.txt', 'full_text/wikisource-01/002.txt'] },
-    );
-    assert.deepEqual(
-        registeredTextFiles('full_text/index.json', { chapters: [{ file: '001.md' }] }).registered,
-        ['full_text/001.txt'],
-    );
-    assert.equal(registeredTextFiles('full_text/index.json', { versions: [] }).format, 'full_text.unknown');
-});
-
-test('registeredTextFiles：新结构 <key>/index.json，file 不带扩展名，has_json 的章登记 .json（md 可缺，不登记）', () => {
+test('registeredTextFiles：<key>/index.json，file 不带扩展名，has_json 的章登记 .json（md 可缺，不登记）', () => {
     const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003.md' }, { n: 4 }] });
     assert.equal(r.format, 'texts.chapters');
     assert.deepEqual(r.registered, ['default/001.json', 'default/002.txt', 'default/003.txt']);
@@ -92,21 +76,13 @@ test('registeredTextFiles：新结构 <key>/index.json，file 不带扩展名，
     assert.equal(registeredTextFiles('default/index.json', { versions: [] }).format, 'texts.unknown');
 });
 
-test('newStructureKey／isTextIndexPath 认新结构，不撞旧结构目录和保留字', () => {
+test('newStructureKey／isTextIndexPath 认 <key>/index.json，不撞保留字', () => {
     assert.equal(newStructureKey('default/index.json'), 'default');
     assert.equal(newStructureKey('wikisource-2/index.json'), 'wikisource-2');
     for (const p of ['collated_edition/index.json', 'full_text/index.json', 'manifest/index.json', 'fragments/index.json', '001/index.json', 'a/b/index.json', 'default/001.json']) assert.equal(newStructureKey(p), null, p);
     assert.ok(isTextIndexPath('default/index.json'));
     assert.ok(isTextIndexPath('kanripo/index.json'));
     assert.ok(!isTextIndexPath('manifest.json'));
-});
-
-test('isTextIndexPath', () => {
-    assert.ok(isTextIndexPath('collated_edition/index.json'));
-    assert.ok(isTextIndexPath('full_text/index.json'));
-    assert.ok(isTextIndexPath('full_text/wikisource-01/index.json'));
-    assert.ok(!isTextIndexPath('full_text/a/b/index.json'));
-    assert.ok(!isTextIndexPath('collated_edition/juan/001.json'));
 });
 
 // ─── HTTP：重试、429 退避、并发上限 ───
@@ -166,7 +142,8 @@ test('pool：同时在飞不超过 8，哪怕要求更多', async () => {
 const COMMIT = { commitId: 'c'.repeat(40), productionCommitId: 'p'.repeat(40), textCommitId: 't'.repeat(40) };
 const idOf = (typeBits, seq) => ((BigInt(typeBits) << 59n) | (1700000000n << 19n) | BigInt(seq)).toString(36);
 
-function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false, newStructure = null } = {}) {
+function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, danglingRef = false, missingChapter = false, lagTextPointer = false, newStructure = 'clean' } = {}) {
+    if (missingChapter) newStructure = 'missingChapter';
     const files = new Map();
     const put = (p, v) => files.set(p, Buffer.from(typeof v === 'string' ? v : JSON.stringify(v)));
     const B = 'https://d.test';
@@ -199,14 +176,10 @@ function buildSite({ netFail = null, staleCdn = false, breakCurrent = false, dan
     put(`${B}/h1/manifest-root.json`, { version: 2, root: 'k1.json', dataCommit: COMMIT });
     put(`${B}/h1/roots/k1.json`, { shardKeyLength: 2, shardCount: Object.keys(rootShards).length, dataCommit: COMMIT, shards: rootShards });
 
-    // 全文：work 有一个 wikisource 版本两章
+    // 阅读文本：work 有 default（整理本）与 wikisource 两个版本
     const tfiles = {};
     const addText = (rel, content) => { const buf = Buffer.from(content); const h = hash8(buf); tfiles[rel] = h; files.set(`${B}/h1/text/${work}/${insertHash(rel, h)}`, buf); };
-    if (!newStructure) {
-        addText('full_text/ws/index.json', JSON.stringify({ chapters: [{ file: '001.md' }, { file: '002.md' }] }));
-        addText('full_text/ws/001.txt', '卷一');
-        if (!missingChapter) addText('full_text/ws/002.txt', '卷二');
-    } else {
+    {
         // 新结构（overview#307）：manifest.json＋<key>/index.json（file 不带扩展名）＋NNN.txt，整理本章另有 NNN.json
         const versions = [{ key: 'default', kind: 'collated', label: '整理本' }, { key: 'wikisource', kind: 'transcription', label: '維基文庫' }];
         if (newStructure === 'leak') versions.push({ key: 'shidian', kind: 'transcription', label: '識典', visibility: 'internal' });
@@ -258,8 +231,8 @@ test('runDq：干净的站点没有任何问题，计数正确', async () => {
     assert.equal(r.entries.currentMatch, 4);
     assert.equal(r.refs.refs, 3); // book.work_id、book.contained_in、coll.books
     assert.equal(r.refs.dangling, 0);
-    assert.equal(r.text.registered, 2);
-    assert.equal(r.text.filesChecked, 2);
+    assert.equal(r.text.registered, 3); // default 的 001.json／002.txt＋wikisource 的 001.txt（001.txt 是 has_json 章的可选 md）
+    assert.equal(r.text.filesChecked, 4);
     assert.equal(hasFailures(r), false);
     // current/ 请求都带 ?v= cache-bust（fetchImpl 看不到 query，这里只核对走的是 current 路径）
     assert.ok(site.requested.some((q) => q.key.endsWith(`/current/entry/${site.ids.book}.json`)));
@@ -302,12 +275,12 @@ test('runDq：悬空引用 → 数据仓问题，默认不让任务变红', asyn
     assert.equal(hasFailures(r, 'any'), true);
 });
 
-test('runDq：全文 index 登记了 manifest 里没有的章 → 数据仓问题', async () => {
+test('runDq：index 登记了 manifest 里没有的章 → 数据仓问题', async () => {
     const r = await runOn(buildSite({ missingChapter: true }));
     assert.equal(r.text.registeredMissing, 1);
     const f = r.findings.find((x) => x.code === 'text-registered-missing');
     assert.equal(f.kind, 'data');
-    assert.deepEqual(f.detail.missing, ['full_text/ws/002.txt']);
+    assert.deepEqual(f.detail.missing, ['default/002.txt']);
 });
 
 test('runDq：指针落后于 latest.json → 重看一次，仍落后才记打包问题', async () => {
@@ -328,7 +301,7 @@ test('runDq：latest.json 取不到直接收尾', async () => {
 
 test('runDq：网络错误重试用尽 → 单列「巡检取数失败」，比例小不让 job 变红', async () => {
     const site = buildSite();
-    const r = await runOn({ ...site, fetchImpl: buildSite({ netFail: '/full_text/ws/001.' }).fetchImpl });
+    const r = await runOn({ ...site, fetchImpl: buildSite({ netFail: '/wikisource/001.' }).fetchImpl });
     const f = r.findings.filter((x) => x.code === 'text-file-unreachable');
     assert.equal(f.length, 1);
     assert.equal(f[0].kind, 'fetch');
@@ -342,12 +315,12 @@ test('runDq：网络错误重试用尽 → 单列「巡检取数失败」，比�
 test('runDq：404 仍算网站打包问题', async () => {
     const site = buildSite({ missingChapter: false });
     const base = site.fetchImpl;
-    const r = await runOn({ ...site, fetchImpl: async (url, init) => (url.includes('/full_text/ws/001.') ? resp(404) : base(url, init)) });
+    const r = await runOn({ ...site, fetchImpl: async (url, init) => (url.includes('/wikisource/001.') ? resp(404) : base(url, init)) });
     assert.equal(r.findings.find((x) => x.code === 'text-file-unreachable').kind, 'packaging');
 });
 
 test('runDq：新结构文本干净——manifest.json、各版本目录、章文件（含 has_json）都核对到', async () => {
-    const r = await runOn(buildSite({ newStructure: 'clean' }));
+    const r = await runOn(buildSite());
     assert.deepEqual(r.findings, []);
     assert.equal(r.text.manifests, 1);
     assert.equal(r.text.indexes, 2);

@@ -387,15 +387,14 @@ test.describe('新架构：阅读页 /read/<id>[/<key>][/<章>]（overview#307�
     });
 });
 
-test.describe('用户意见（overview#267）：总目不要页脚、页脚黑底、关于页精简', () => {
+test.describe('用户意见（overview#267、#322）：分支页有页脚、页脚黑底、关于页精简', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站`);
 
     const footerOf = (html: string) => html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? '';
 
-    test('/catalog 没有页脚；/about、/feedback、/privacy 有', async ({ request }) => {
-        const catalog = await (await request.get(`${TARGET}/catalog`, noFollow)).text();
-        expect(footerOf(catalog), '古籍总目页不该有页脚').toBe('');
-        for (const path of ['/about', '/feedback', '/privacy']) {
+    // 9-30 反馈（overview#322）改了口径：分支页（首页、目录、元数据、阅读、关于）共用页脚，具体条目、阅读页不要
+    test('/catalog 有页脚（分支页）；/about、/feedback、/privacy 有', async ({ request }) => {
+        for (const path of ['/catalog', '/about', '/feedback', '/privacy']) {
             const html = await (await request.get(`${TARGET}${path}`, noFollow)).text();
             const footer = footerOf(html);
             expect(footer, `${path} 应有页脚`).toContain('og-footer');
@@ -418,9 +417,9 @@ test.describe('用户意见（overview#267）：总目不要页脚、页脚黑�
         expect(decodeURI(r.headers()['location'] ?? '')).toMatch(/\/about#联系$/);
     });
 
-    test('顶栏搜索入口叫「古籍元数据」', async ({ request }) => {
+    test('顶栏搜索入口叫「元数据」（9-30 反馈，overview#322）', async ({ request }) => {
         const html = await (await request.get(`${TARGET}/about`, noFollow)).text();
-        expect(html).toMatch(/<a[^>]*href="\/book-index"[^>]*>古籍元数据<\/a>/);
+        expect(html).toMatch(/<a[^>]*href="\/book-index"[^>]*>元数据<\/a>/);
         expect(html).not.toContain('>古籍索引<');
     });
 });

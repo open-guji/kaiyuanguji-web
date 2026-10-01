@@ -171,14 +171,6 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const getSourceLink = useCallback((ctx: SourceLinkContext) => {
         const links = buildSourceLinks(ctx.entry);
         if (ctx.activeTab === 'basic' || ctx.activeTab === 'emendated') return links.basic;
-        if (ctx.activeTab === 'collated') {
-            return ctx.activeJuan ? links.collatedJuan(ctx.activeJuan) : links.collatedDir;
-        }
-        if (ctx.activeTab === 'fulltext') {
-            if (!ctx.activeJuan) return links.fullTextDir;
-            // URL 里 juan 用 stem (e.g. "001")，GitHub 链接需要拼回 .md
-            return links.fullTextChapter(`${ctx.activeJuan}.md`);
-        }
         if (ctx.activeTab === 'lineage') return links.lineage;
         if (ctx.activeTab.startsWith('catalog:')) {
             const rid = ctx.activeTab.slice('catalog:'.length);

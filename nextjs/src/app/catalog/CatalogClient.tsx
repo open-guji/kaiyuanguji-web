@@ -8,7 +8,8 @@
  * （pageHref），普通点击走 onPage。组件把 id 当成不透明字符串，节点 id 用构建脚本的 ASCII 方案。
  */
 import { useRouter } from 'next/navigation';
-import { CatalogPage, LocaleProvider } from 'book-index-ui';
+import { CatalogPage } from 'book-index-ui';
+import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { CATALOG_ALL_ID, CATALOG_PATH, catalogHref, workHref, type CatalogNode, type CatalogWorkCard } from './catalog-route';
 
 export interface CatalogClientProps {
@@ -25,7 +26,7 @@ export default function CatalogClient({ tree, selectedId, page, pageCount, works
     const onSelect = (id: string) => router.push(id === CATALOG_ALL_ID ? CATALOG_PATH : catalogHref(id));
     const onPage = (p: number) => router.push(catalogHref(selectedId, p));
     return (
-        <LocaleProvider>
+        <BimLocaleProvider>
             <CatalogPage
                 tree={tree}
                 selectedId={selectedId}
@@ -38,6 +39,6 @@ export default function CatalogClient({ tree, selectedId, page, pageCount, works
                 pageHref={(p) => catalogHref(selectedId, p)}
                 workLink={workHref}
             />
-        </LocaleProvider>
+        </BimLocaleProvider>
     );
 }

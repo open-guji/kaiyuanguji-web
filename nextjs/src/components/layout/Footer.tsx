@@ -1,25 +1,24 @@
 import Link from 'next/link';
-import { MORE_LINKS } from './nav-links';
 
-// 站内栏：主干入口＋顶栏拿下来的入口（整理平台、路线图、小工具）。反馈归「关于与联系」栏，这里不重复。
-const siteLinks = [
-  { label: '古籍元数据', href: '/book-index' },
-  { label: '古籍总目', href: '/catalog' },
-  ...MORE_LINKS.filter((l) => l.href !== '/feedback'),
-];
-
-// 关于与联系（N6，overview#259）：反馈统一到站内 /feedback，不再外链腾讯问卷。
-// 微信群二维码放在右侧（7 天过期，过期后换 public/images/wechat-group-qr.png）。
-const aboutLinks = [
+// 用户 9-30 反馈（overview#322）：页脚左边只留这四项，「站内」一栏（古籍元数据、古籍总目、整理平台、路线图、小工具）删掉。
+// 「联系我们」并进关于页（/contact 跳到 /about#联系）。
+const links = [
   { label: '关于我们', href: '/about' },
-  { label: '联系我们', href: '/contact' },
+  { label: '联系我们', href: '/about#联系' },
   { label: '反馈与纠错', href: '/feedback' },
 ];
 
+// 右边两张群二维码，各配一行说明；QQ 那张再加一行群号。
+// 微信群二维码 7 天过期，过期后换 public/images/wechat-group-qr.png。
+const QQ_GROUP = '111362573';
+const groups = [
+  { src: '/images/wechat-group-qr.png', alt: '微信群「开源古籍交流群」二维码', lines: ['微信扫码进群'] },
+  { src: '/images/qq-group-qr.png', alt: 'QQ 群「开源古籍交流群」二维码', lines: ['QQ 扫码进群', `群号 ${QQ_GROUP}`] },
+];
+
 /**
- * 页脚：黑底、一行排开（用户意见，overview#267）。
- * 去掉了「开源古籍」标题与介绍（上面页面已经说过）和「开放协议」一栏（首页「文本开放、代码开源」里有）；
- * 站内链接、关于与联系、二维码横着并排，纵向越低越好；版权、隐私、备案压成最下面一行。
+ * 分支页（首页、目录、元数据、阅读、关于）共用的页脚；具体条目页、阅读页不显示（LayoutWrapper hideFooter）。
+ * 黑底；左边四项链接，右边两张二维码（中间留足间距）；版权、隐私、备案压成最下面一行。
  */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -28,21 +27,9 @@ export default function Footer() {
     <footer className="og-footer">
       <div className="og-footer-inner">
         <div className="og-footer-row">
-          <nav aria-label="站内链接" className="og-footer-links">
-            <h2>站内</h2>
-            <ul>
-              {siteLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href}>{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
           <nav aria-label="关于与联系" className="og-footer-links">
-            <h2>关于与联系</h2>
             <ul>
-              {aboutLinks.map((link) => (
+              {links.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>{link.label}</Link>
                 </li>
@@ -55,14 +42,18 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <div className="og-footer-qr">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/wechat-group-qr.png" alt="微信群「开源古籍交流群」二维码" width={72} height={72} loading="lazy" />
-            <p>
-              开源古籍交流群
-              <br />
-              微信扫码加入
-            </p>
+          <div className="og-footer-qrs">
+            {groups.map((g) => (
+              <figure key={g.src} className="og-footer-qr">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={g.src} alt={g.alt} width={88} height={88} loading="lazy" />
+                <figcaption>
+                  {g.lines.map((l) => (
+                    <span key={l}>{l}</span>
+                  ))}
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
 

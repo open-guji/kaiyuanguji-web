@@ -6,7 +6,7 @@
  */
 
 import type { IndexStorage } from 'book-index-ui/storage';
-import type { IndexType, IndexEntry, PageResult, LoadOptions, GroupedSearchResult, VolumeBookMapping, ResourceCatalog, CollatedEditionIndex, CollatedJuan, ResourceProgress } from 'book-index-ui';
+import type { IndexType, IndexEntry, PageResult, LoadOptions, GroupedSearchResult, VolumeBookMapping, ResourceCatalog, ResourceProgress } from 'book-index-ui';
 import { normalizeCatalog } from 'book-index-ui';
 
 export class LocalApiStorage implements IndexStorage {
@@ -81,41 +81,6 @@ export class LocalApiStorage implements IndexStorage {
     async getCollectionCatalog(collectionId: string): Promise<VolumeBookMapping | null> {
         const catalogs = await this.getCollectionCatalogs(collectionId);
         return catalogs?.[0]?.data ?? null;
-    }
-
-    async getCollatedEditionIndex(workId: string): Promise<CollatedEditionIndex | null> {
-        const res = await fetch(`${this.base}/collated/${encodeURIComponent(workId)}`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    }
-
-    async getCollatedJuan(workId: string, juanFile: string): Promise<CollatedJuan | null> {
-        const res = await fetch(`${this.base}/collated/${encodeURIComponent(workId)}/${encodeURIComponent(juanFile)}`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    }
-
-    async getCollatedJuanText(workId: string, juanFile: string): Promise<string | null> {
-        const res = await fetch(`${this.base}/collated/${encodeURIComponent(workId)}/${encodeURIComponent(juanFile)}/text`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
-    }
-
-    async getBookFullTextIndex(bookId: string) {
-        const res = await fetch(`${this.base}/book-fulltext/${encodeURIComponent(bookId)}`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    }
-
-    async getBookFullTextChapter(bookId: string, file: string): Promise<string | null> {
-        const res = await fetch(`${this.base}/book-fulltext/${encodeURIComponent(bookId)}/${encodeURIComponent(file)}`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
     }
 
     async getResourceProgress(): Promise<ResourceProgress | null> {

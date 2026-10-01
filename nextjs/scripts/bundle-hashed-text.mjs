@@ -1,26 +1,24 @@
 #!/usr/bin/env node
 /**
- * bundle-hashed-text.mjs — A3b 第二期：整理本／全文按内容哈希寻址打包（h1 布局）
+ * bundle-hashed-text.mjs — A3b 第二期：阅读文本按内容哈希寻址打包（h1 布局）
  *
- * 背景：A3 第一期（bundle-hashed.mjs）只做了条目（entry）。整理本
- * （collated_edition）与全文（full_text）留到本期——同一个痛点（改一卷/一章
- * 就换全局版本号，CDN 靠 `?v=<commit>` 做 cache-bust，全站视同一起失效）在这两类
- * 资产上更严重：单个文件可以到 MB 级，改一卷不该带上全书重新分发。
+ * 背景：A3 第一期（bundle-hashed.mjs）只做了条目（entry）。阅读文本留到本期——同一个痛点
+ * （改一章就换全局版本号，CDN 靠 `?v=<commit>` 做 cache-bust，全站视同一起失效）在文本上更严重：
+ * 单个文件可以到 MB 级，改一章不该带上全书重新分发。
  *
- * 直接读 bundle-data.mjs 已产出的 public/data/items/<owner_id>/{collated_edition,
- * full_text}/**（不重新生成，保证与现行路径逐字节一致——这是完成判据「20 份文本
- * 逐字节比对」能过的前提）。因此本脚本必须在 bundle-data.mjs **之后**运行。
+ * 直接读 bundle-data.mjs 已产出的 public/data/items/<owner_id>/（不重新生成，保证与现行路径逐字节一致）：
+ * 条目的 manifest.json 与它列出的公开版本目录（default/、<key>/：index.json、NNN.txt、NNN.json）。
+ * 因此本脚本必须在 bundle-data.mjs **之后**运行。（overview#307 起只认这套新结构。）
  *
- * 只扫两个子树，其余 items/<owner_id>/ 下的目录（fragments/sources/
- * volume_book_mapping.json/lineage_graph.json 等）不在本期范围内，原样留在
- * 现行 items/ 路径下，不受影响。
+ * 其余 items/<owner_id>/ 下的内容（fragments/sources/volume_book_mapping.json/lineage_graph.json 等）
+ * 不在本期范围内，原样留在现行 items/ 路径下，不受影响。
  *
  * 产出（写到 public/data-h1-text/，与 public/data-h1/ 并列，互不覆盖）：
  *   - text/<owner_id>/<相对路径插入哈希>          如
- *     text/d59f2mp12329/collated_edition/index.<hash8>.json、
- *     text/d59f2mp12329/collated_edition/juan/001.<hash8>.json、
- *     text/96kzkdm8e8/full_text/038.<hash8>.md
- *     （相对路径 = collated_edition/… 或 full_text/…，相对 owner 目录，与现行
+ *     text/d59f2htm01du/manifest.<hash8>.json、
+ *     text/d59f2htm01du/default/index.<hash8>.json、
+ *     text/d59f2htm01du/default/004.<hash8>.txt
+ *     （相对路径 = manifest.json 或 <key>/…，相对 owner 目录，与现行
  *     items/<owner_id>/… 下的路径逐段对应，只在最后一段的文件名里插入哈希，
  *     不改目录层级——前端按 owner+relPath 反查 hash 后能照抄现行路径拼 URL）
  *   - text-manifest/<owner id 后缀 2 位>.<hash8>.json  owner_id → { 相对路径 →
@@ -71,11 +69,9 @@ const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const VERSION_FILE = join(DATA_DIR, 'version.json');
 const CLEAN = process.env.H1_TEXT_CLEAN === '1';
 
-// 旧结构只扫这两个子树——「整理本」与「全文」，任务书 A3b §一·1 点名的范围。
-const SCAN_SUBDIRS = ['collated_edition', 'full_text'];
-// 新结构（条目目录有 manifest.json，overview#307）：扫 manifest.json 本身与它列出的公开版本目录（default／<key>/），
+// 条目目录有 manifest.json（overview#307）：扫 manifest.json 本身与它列出的公开版本目录（default／<key>/），
 // relPath 形如 'manifest.json'、'default/001.txt'、'wikisource/index.json'——与 items/<id>/ 下的路径逐段对应，
-// 前端照抄路径、在最后一段文件名里插哈希即可。旧结构条目的产物不受影响。
+// 前端照抄路径、在最后一段文件名里插哈希即可。
 
 // 分片键长度：owner_id 末 2 位，与 entry 同一套理由（见文件头注释）。
 const SHARD_KEY_LEN = 2;
@@ -89,7 +85,7 @@ const STATE_FILE = join(OUT_DIR, '.text-manifest-state.json');
 
 function shardKeyFor(ownerId) { return ownerId.slice(-SHARD_KEY_LEN); }
 
-/** relPath 最后一段插入哈希：'collated_edition/juan/001.json' → '.../001.<hash8>.json'。 */
+/** relPath 最后一段插入哈希：'default/001.json' → 'default/001.<hash8>.json'。 */
 function insertHash(relPath, hash) {
     const dir = dirname(relPath);
     const base = basename(relPath);
@@ -109,7 +105,7 @@ function loadState() {
     }
 }
 
-// ─── 1. 扫源：每个 owner 目录下 collated_edition/、full_text/ 两个子树 ───
+// ─── 1. 扫源：每个有 manifest.json 的 owner 目录：manifest 与公开版本目录 ───
 
 function scanOwnerFiles() {
     if (!existsSync(ITEMS_SRC_DIR)) {
@@ -121,13 +117,6 @@ function scanOwnerFiles() {
     for (const ownerId of readdirSync(ITEMS_SRC_DIR)) {
         const ownerDir = join(ITEMS_SRC_DIR, ownerId);
         if (!statSync(ownerDir).isDirectory()) continue;
-        for (const sub of SCAN_SUBDIRS) {
-            const subDir = join(ownerDir, sub);
-            if (!existsSync(subDir) || !statSync(subDir).isDirectory()) continue;
-            for (const f of walk(subDir, ownerDir)) {
-                files.push({ ownerId, relPath: f.relative, full: f.full });
-            }
-        }
         if (readManifest(ownerDir)) {
             files.push({ ownerId, relPath: 'manifest.json', full: join(ownerDir, 'manifest.json') });
             for (const key of publicKeys(ownerDir)) {
@@ -263,15 +252,15 @@ function bundleRootsAndPointer(shardStat, scanStat, dataCommit) {
 // ─── main ───
 
 function main() {
-    console.log(`\nbundle-hashed-text（h1 布局，整理本／全文）`);
-    console.log(`  source: ${ITEMS_SRC_DIR}（旧结构扫 ${SCAN_SUBDIRS.join('、')} 两个子树；新结构扫 manifest.json 与公开版本目录）`);
+    console.log(`\nbundle-hashed-text（h1 布局，阅读文本）`);
+    console.log(`  source: ${ITEMS_SRC_DIR}（扫各条目的 manifest.json 与公开版本目录）`);
     console.log(`  out:    ${OUT_DIR}${CLEAN ? '  (H1_TEXT_CLEAN=1，按全量重建对待)' : ''}\n`);
 
     const files = scanOwnerFiles();
     const { oldState, newState, scanned, newFilesWritten, bytesWritten, ownerCount } = bundleTextFiles(files);
 
     if (scanned === 0) {
-        console.error('❌ 扫到 0 份文本，检查 public/data/items 下是否有 collated_edition/full_text 子目录（是否已跑 bundle-data.mjs）');
+        console.error('❌ 扫到 0 份文本，检查 public/data/items 下是否有 manifest.json（是否已跑 bundle-data.mjs）');
         process.exit(1);
     }
 

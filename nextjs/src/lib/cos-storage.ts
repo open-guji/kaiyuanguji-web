@@ -276,19 +276,15 @@ async function fetchRawDetailH1(canonicalId: string): Promise<Record<string, unk
     return cached as Promise<Record<string, unknown> | null>;
 }
 
-// ─── h1（哈希寻址）取整理本／全文：读 text-manifest-root → 读 owner 所在分片 → 取文件 ───
+// ─── h1（哈希寻址）取阅读文本：读 text-manifest-root → 读 owner 所在分片 → 取文件 ───
 //
 // A3b 第二期。与上面 entry 的哈希寻址是并列的两套 manifest 空间——entry 的 key
 // 是「条目 id」，这里的 key 是「owner_id + 相对路径」二元组——各自独立缓存、
 // 各自的 manifest-root，互不干扰，但取数思路一致：先查 manifest 拿到内容哈希，
 // 再拼 immutable URL 去取真正的文件。
 //
-// 五个方法与 book-index-ui 的 BundleStorage（bim/ui，本道不改）逐条对齐：
-// getCollatedEditionIndex / getCollatedJuan / getCollatedJuanText /
-// getBookFullTextIndex / getBookFullTextChapter——URL 拼法、参数校验
-// （拒绝 `..`、拒绝非 `.json`/`.md` 后缀）、404 语义（返回 null）全部照抄，
-// 保证两条路径对同一份字节的读取结果一致。见 bundle-hashed-text.mjs 的
-// 文件头注释：relPath 与 items/<owner_id>/ 下的现行路径逐段对应。
+// 取数方法 getTextManifest／getTextIndex／getChapter 与 book-index-ui 的 BundleStorage 同名方法逐条对齐，见下方「阅读文本」一节；
+// relPath 与 items/<owner_id>/ 下的现行路径逐段对应（见 bundle-hashed-text.mjs 文件头注释）。
 
 interface H1TextManifestRoot {
     version: number;
@@ -393,8 +389,7 @@ function insertH1TextHash(relPath: string, hash: string): string {
 /**
  * 取一份哈希寻址的文本文件，原样返回字符串；查不到 manifest 条目或 HTTP
  * 非 2xx（含分片滞后于最新哈希导致的 404，清缓存重取一次分片）一律返回 null，
- * 不抛错——与 BundleStorage 的 getCollatedJuanText/getBookFullTextChapter
- * 404→null 语义保持一致。
+ * 不抛错——与 BundleStorage 的 getChapter 404→null 语义保持一致。
  */
 async function fetchH1TextRaw(ownerId: string, relPath: string): Promise<string | null> {
     try {
@@ -424,38 +419,6 @@ async function fetchH1TextJson(ownerId: string, relPath: string): Promise<Record
     } catch {
         return null;
     }
-}
-
-// ─── 整理本 ───
-
-async function getCollatedEditionIndexH1(workId: string): Promise<Record<string, unknown> | null> {
-    const primary = await fetchH1TextJson(workId, 'collated_edition/index.json');
-    if (primary !== null) return primary;
-    // 旧命名兜底（同目录下的 collated_edition_index.json），与 BundleStorage 一致。
-    return fetchH1TextJson(workId, 'collated_edition/collated_edition_index.json');
-}
-
-async function getCollatedJuanH1(workId: string, juanFile: string): Promise<Record<string, unknown> | null> {
-    if (juanFile.includes('..') || !juanFile.endsWith('.json')) return null;
-    return fetchH1TextJson(workId, `collated_edition/${juanFile}`);
-}
-
-async function getCollatedJuanTextH1(workId: string, juanFile: string): Promise<string | null> {
-    if (juanFile.includes('..') || !juanFile.endsWith('.json')) return null;
-    const txtName = juanFile.replace(/\.json$/, '.txt');
-    return fetchH1TextRaw(workId, `collated_edition/text/${txtName}`);
-}
-
-// ─── Book 全文 ───
-
-async function getBookFullTextIndexH1(bookId: string): Promise<Record<string, unknown> | null> {
-    return fetchH1TextJson(bookId, 'full_text/index.json');
-}
-
-async function getBookFullTextChapterH1(bookId: string, file: string): Promise<string | null> {
-    if (file.includes('..')) return null;
-    const txtName = file.endsWith('.md') ? file.replace(/\.md$/, '.txt') : file;
-    return fetchH1TextRaw(bookId, `full_text/${txtName}`);
 }
 
 // ─── 阅读文本（新结构，overview#307）───
@@ -502,7 +465,7 @@ async function getChapterH1(id: string, key: string, chapter: string, opts?: { j
  * 重新 fetch latest.json 拿真实版本，构造正式 BundleStorage 替换之。
  *
  * Phase 3：getEntry 改为单文件直拉 entry/{id}.json，跳过 BundleStorage 的
- * chunks 逻辑。其他方法（getCollatedJuan / getCounts 等）仍委托给 BundleStorage。
+ * chunks 逻辑。其他方法（getCounts 等）仍委托给 BundleStorage。
  */
 export function createCosStorage(): IndexStorage {
     let resolved: { inner: BundleStorage; baseUrl: string } | null = null;
@@ -672,16 +635,11 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
-            // 整理本／全文／新结构文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
+            // 阅读文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
             // 默认（未设置或非 'hashed'）不特殊处理这些方法名，走下面的
             // 通用分支委托给 inner（book-index-ui 的 BundleStorage），
             // 与开这个开关之前的行为完全一致——bim/ui 本道不改。
             if (DATA_LAYOUT === 'hashed') {
-                if (prop === 'getCollatedEditionIndex') return (workId: string) => getCollatedEditionIndexH1(workId);
-                if (prop === 'getCollatedJuan') return (workId: string, juanFile: string) => getCollatedJuanH1(workId, juanFile);
-                if (prop === 'getCollatedJuanText') return (workId: string, juanFile: string) => getCollatedJuanTextH1(workId, juanFile);
-                if (prop === 'getBookFullTextIndex') return (bookId: string) => getBookFullTextIndexH1(bookId);
-                if (prop === 'getBookFullTextChapter') return (bookId: string, file: string) => getBookFullTextChapterH1(bookId, file);
                 if (prop === 'getTextManifest') return (id: string) => getTextManifestH1(id);
                 if (prop === 'getTextIndex') return (id: string, key: string) => getTextIndexH1(id, key);
                 if (prop === 'getChapter') return (id: string, key: string, chapter: string, opts?: { json?: boolean }) => getChapterH1(id, key, chapter, opts);

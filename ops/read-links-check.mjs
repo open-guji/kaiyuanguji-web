@@ -6,15 +6,11 @@
  * 构建期已逐卡核对产物（nextjs/scripts/build-read-index.mjs 的 verifyItems），这里是上线后的外部复核：
  *   read/tree.json 的每个一级节点随机抽 N 张（默认 20；先随机挑页、再从页里抽，不只看第 1 页）
  *   ＋ read/featured.json（整理本、Book 全文）全部；
- *   每张卡：① /read/<id>?kind=… 页面 200；② 数据里目录（index）与首章／首卷文件都 200。
- *   数据路径与阅读页同源（nextjs/src/lib/server/reader-check.ts）：
- *     整理本  items/<id>/collated_edition/index.json → juan_files[0]
- *     Work 全文  index/full_text/<分片>.json → 首选条目 key → items/<id>/full_text/<key>/index.json → chapters[0].file（.md→.txt）
- *     Book 全文  items/<id>/full_text/index.json → chapters[0].file
- *     新结构（overview#307）：items/<id>/manifest.json 存在就走这条——manifest.versions 逐份查
- *       items/<id>/<key>/index.json → chapters[0].file（.md→.txt，has_json 的再查同名 .json）；
- *       页面查 /read/<id>（主版本）与 /read/<id>/<key>（其他版本）；manifest 里不得有 visibility=internal。
- *       旧结构条目没有 manifest.json（404 是预期，不记失败）。
+ *   每张卡：① /read/<id> 页面（主版本）与 /read/<id>/<key>（其他版本）200；② 数据里目录（index）与首章文件都 200。
+ *   数据路径与阅读页同源（nextjs/src/lib/server/reader-check.ts，只认新结构 overview#307）：
+ *     items/<id>/manifest.json → versions 逐份查 items/<id>/<key>/index.json → chapters[0].file
+ *     （.md→.txt；has_json 的章查同名 .json，md 可缺）；manifest 里不得有 visibility=internal。
+ *   阅读首页列出的卡片都必须有 manifest.json（没有就是数据缺失，记失败）。
  *
  * 只发 GET，无依赖、无 secret。CLI：
  *   node ops/read-links-check.mjs --target https://www.kaiyuanguji.com --data https://data.kaiyuanguji.com [--per-node 20] [--seed 1]
@@ -22,17 +18,8 @@
  */
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { decodeId, mulberry32 } from './dq-lib.mjs';
+import { mulberry32 } from './dq-lib.mjs';
 import { chapterTxtFile, firstChapterOf, isInternal, isTextKey } from '../nextjs/scripts/lib/text-layout.mjs';
-
-/** 与 reader-check.ts／book-index-ui 的 shardOf 同一算法（16 片） */
-export function fullTextShardOf(id) {
-    let h = 0;
-    for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) >>> 0;
-    return (h % 16).toString(16);
-}
-
-const txt = (f) => (f.endsWith('.md') ? `${f.slice(0, -3)}.txt` : f);
 
 /** 带种子从数组里抽 n 个（不足则全取），顺序稳定 */
 export function pickSome(items, n, rand) {
@@ -78,9 +65,9 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     if (!featured.ok || typeof featured.body !== 'object' || !featured.body) fail('read/featured.json', '数据', featured.ok ? '不是对象' : `read/featured.json → ${why(featured)}`);
     if (failures.length) return { checked: 0, failures };
 
-    // 待查的卡：id → { collated }
-    const cards = new Map();
-    const add = (c) => { if (c?.id && !cards.has(c.id)) cards.set(c.id, { collated: !!c.collated }); };
+    // 待查的卡：id
+    const cards = new Set();
+    const add = (c) => { if (c?.id) cards.add(c.id); };
     for (const c of featured.body.collated ?? []) add(c);
     for (const c of featured.body.books ?? []) add(c);
     for (const node of tree.body) {
@@ -124,55 +111,20 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         }
     }
 
-    async function checkCard(id, { collated }) {
-        // 新结构：有 manifest.json 就按新结构查；旧结构 404 是预期
+    async function checkCard(id) {
+        // 阅读首页的卡片必须有 manifest.json；只有 404 / 5xx / 网络错误 / JSON 坏都记失败
         const manifest = await json(`items/${id}/manifest.json`);
-        if (manifest.ok) return checkNewCard(id, manifest.body);
-        // 只有 404 才是「旧结构、没有 manifest」；5xx、网络错误、JSON 坏都记失败，不往旧路径上走
-        if (manifest.status !== 404) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
-        const isBook = decodeId(id).type === 'book';
-        const kind = collated ? 'collated' : 'fulltext';
-        const page = await get(`${site}/read/${id}?kind=${kind}`, false);
-        if (!page.ok) fail(id, '阅读页', `${site}/read/${id}?kind=${kind} → ${why(page)}`);
-
-        // 数据：目录与首章／首卷
-        const need = async (rel, asJson) => {
-            const r = await get(`${cur}/${rel}?${bust}`, asJson);
-            if (!r.ok) fail(id, '数据', `${rel} → ${why(r)}`);
-            return r;
-        };
-        if (collated) {
-            const idx = await need(`items/${id}/collated_edition/index.json`, true);
-            const first = idx.ok && Array.isArray(idx.body?.juan_files) ? idx.body.juan_files.find((f) => typeof f === 'string' && f) : null;
-            if (idx.ok && !first) fail(id, '数据', `items/${id}/collated_edition/index.json 的 juan_files 为空`);
-            else if (first) await need(`items/${id}/collated_edition/${first}`, false);
-            return;
-        }
-        let base;
-        if (isBook) {
-            base = `items/${id}/full_text`;
-        } else {
-            const shard = await json(`index/full_text/${fullTextShardOf(id)}.json`);
-            if (!shard.ok) { fail(id, '数据', `index/full_text/${fullTextShardOf(id)}.json → ${why(shard)}`); return; }
-            const list = (shard.body?.[id] ?? []).filter((v) => v.owner_type !== 'Book' && typeof v.key === 'string');
-            const pick = list.find((v) => v.primary) ?? list[0];
-            if (!pick) { fail(id, '数据', `index/full_text 里没有 ${id} 的站内全文条目`); return; }
-            base = `items/${id}/full_text/${pick.key}`;
-        }
-        const idx = await need(`${base}/index.json`, true);
-        if (!idx.ok) return;
-        const first = Array.isArray(idx.body?.chapters) ? idx.body.chapters.find((c) => typeof c?.file === 'string' && c.file) : null;
-        if (!first) fail(id, '数据', `${base}/index.json 的 chapters 为空`);
-        else await need(`${base}/${txt(first.file)}`, false);
+        if (!manifest.ok) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
+        return checkNewCard(id, manifest.body);
     }
 
-    const queue = [...cards.entries()];
+    const queue = [...cards];
     await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
         for (let next = queue.shift(); next; next = queue.shift()) {
             try {
-                await checkCard(next[0], next[1]);
+                await checkCard(next);
             } catch (e) {
-                fail(next[0], '请求', e.message);
+                fail(next, '请求', e.message);
             }
         }
     }));

@@ -15,8 +15,8 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 test.describe('首页', () => {
     test('正常加载且导航完整', async ({ page }) => {
         await page.goto(TARGET);
-        // 搜索入口原名「古籍索引」，用户意见改名「古籍元数据」（overview#267）
-        await expect(page.getByRole('link', { name: '古籍元数据' }).first()).toBeVisible();
+        // 搜索入口原名「古籍索引」→「古籍元数据」（overview#267）→ 顶栏简称「元数据」（9-30 反馈，overview#322）
+        await expect(page.getByRole('link', { name: '元数据', exact: true }).first()).toBeVisible();
         await expect(page.getByRole('link', { name: '古籍索引' })).toHaveCount(0);
     });
 

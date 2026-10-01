@@ -884,6 +884,37 @@
     }
   }
 
+  /* 顶栏右侧「繁／简」（9-30 反馈，overview#322）：与「外观」「反馈」同一套浅色文字按钮，当前项加深加粗 */
+  .og-locale {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-ink-2);
+    cursor: pointer;
+  }
+  .og-locale .is-on {
+    color: var(--color-ink);
+    font-weight: var(--fw-medium);
+  }
+  .og-locale-sep {
+    opacity: 0.45;
+  }
+  .og-locale:hover {
+    color: var(--color-ink);
+  }
+  .og-locale:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
   /* 顶栏右侧「反馈」（N7）：浅色图标＋文字，不是按钮样式；手机只留图标 */
   .og-nav-fb {
     display: inline-flex;
@@ -976,7 +1007,7 @@
   .og-footer-inner {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 14px var(--shell-gutter) 6px;
+    padding: 20px var(--shell-gutter) 8px;
   }
   .og-footer-row {
     display: flex;
@@ -1333,6 +1364,20 @@
     gap: 10px;
     margin-bottom: 8px;
   }
+  /* 「文本开放」「代码开源」之间的竖分割线（9-30 反馈，overview#322）：只在疏朗下画（界栏两栏各自有框）；
+     落在两栏间距正中，上下各缩进一段，不顶到边 */
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col {
+    position: relative;
+  }
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
   .home-open-head h2 {
     margin: 0;
   }
@@ -1449,6 +1494,10 @@
       grid-template-columns: minmax(0, 1fr);
       gap: 28px;
       padding: 28px var(--shell-gutter);
+    }
+    /* 手机上两栏上下排，竖线不画 */
+    :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+      display: none;
     }
     .home-repos li {
       grid-template-columns: minmax(0, 1fr);
@@ -1675,27 +1724,39 @@
     color: var(--color-ink-2);
     font-size: var(--fs-sm);
   }
-  /* 页脚右侧的微信群二维码 */
-  .og-footer-qr {
+  /* 页脚右侧两张群二维码（9-30 反馈）：靠右，两张之间留足间距，图下一行说明（QQ 多一行群号） */
+  .og-footer-qrs {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 48px;
     margin-left: auto;
+  }
+  .og-footer-qr {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
   }
   .og-footer-qr img {
     flex: none;
-    width: 72px;
-    height: 72px;
+    width: 88px;
+    height: 88px;
     border-radius: 4px;
+    background: #fff;
   }
-  .og-footer .og-footer-qr p {
+  .og-footer-qr figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     font-size: var(--fs-xs);
     line-height: 1.6;
   }
 
   @media (max-width: 760px) {
-    .og-footer-qr {
+    .og-footer-qrs {
       margin-left: 0;
+      gap: 40px;
     }
     .doc-layout {
       grid-template-columns: minmax(0, 1fr);
