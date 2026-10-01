@@ -1,0 +1,437 @@
+{
+  "_comment": "测试与开发用样例：取自 overview 设计稿 阅读首页.html（R8，10-01 定稿）的数据；正式数据由 book-index curation/read-home.json 提供（overview#308 B 块）",
+  "picks": [
+    {
+      "id": "96kzii6z28",
+      "blurb": "现存《红楼梦》最早的抄本系统，存十六回，脂批最密。想读脂批，从这一本起。",
+      "slip": "石頭記",
+      "type_label": "小说"
+    },
+    {
+      "id": "d59f2mpwwagw",
+      "blurb": "选先秦至明代文章二百二十二篇，三百年来最通行的古文读本。",
+      "slip": "古文觀止",
+      "type_label": "文章选本"
+    },
+    {
+      "id": "d59f2mpwl1xf",
+      "blurb": "蘅塘退士按诗体编次的唐诗选本，五古、七律、绝句各成一卷。",
+      "slip": "唐詩三百首",
+      "type_label": "诗选"
+    },
+    {
+      "id": "d59f2870u874",
+      "blurb": "现存最早的诗文总集，收先秦至梁七百余篇，分体编次，唐宋人读书必备。",
+      "slip": "昭明文選",
+      "type_label": "诗文总集"
+    },
+    {
+      "id": "d59f23o7ygw2",
+      "blurb": "据刘歆《七略》删订的现存最早图书目录，六略三十八种，每条可跳到作品页。",
+      "slip": "漢書藝文志",
+      "type_label": "史志目录"
+    },
+    {
+      "id": "d59dh3vo9af4",
+      "blurb": "二百卷，著录与存目一万余种，一书一篇提要，是查考古书的总门径。",
+      "slip": "四庫總目",
+      "type_label": "书目提要"
+    }
+  ],
+  "topics": [
+    {
+      "key": "shizhi",
+      "label": "史志目錄",
+      "shelf": true,
+      "items": [
+        {
+          "id": "d59f23o7ygw2",
+          "period_of": "漢",
+          "orig": true
+        },
+        {
+          "id": "d59f2o2lm0ht",
+          "period_of": "後漢"
+        },
+        {
+          "id": "d59f2mp12329",
+          "period_of": "後漢"
+        },
+        {
+          "id": "d59f2mp1dblt",
+          "period_of": "三國"
+        },
+        {
+          "id": "d59f2o2larya",
+          "period_of": "晉"
+        },
+        {
+          "id": "d59f2mp2xibm",
+          "period_of": "晉"
+        },
+        {
+          "id": "d59f2o2lx91d",
+          "period_of": "晉"
+        },
+        {
+          "id": "d59f2o2m8hky",
+          "period_of": "晉"
+        },
+        {
+          "id": "d59f5ilweo6h",
+          "period_of": "晉"
+        },
+        {
+          "id": "d59f2o2muyo2",
+          "period_of": "劉宋"
+        },
+        {
+          "id": "d59f2ofz9b0h",
+          "period_of": "劉宋"
+        },
+        {
+          "id": "d59f2ofu9i4i",
+          "period_of": "南齊"
+        },
+        {
+          "id": "d59f2ofr54ht",
+          "period_of": "南齊"
+        },
+        {
+          "id": "d59f2o2koav5",
+          "period_of": "梁"
+        },
+        {
+          "id": "d59f2ofrgdfm",
+          "period_of": "陳"
+        },
+        {
+          "id": "d59f2og3xv5t",
+          "period_of": "魏"
+        },
+        {
+          "id": "d59f2og3xv5s",
+          "period_of": "北齊"
+        },
+        {
+          "id": "d59f2og98w75",
+          "period_of": "周"
+        },
+        {
+          "id": "d59f2ofyy29s",
+          "period_of": "南北朝"
+        },
+        {
+          "id": "d59f28nmafwh",
+          "period_of": "隋",
+          "orig": true
+        },
+        {
+          "id": "d59f2gcburcx",
+          "period_of": "唐",
+          "orig": true
+        },
+        {
+          "id": "d59f2hl0cmio",
+          "period_of": "唐",
+          "orig": true
+        },
+        {
+          "id": "d59f2gdp696q",
+          "period_of": "宋",
+          "orig": true
+        },
+        {
+          "id": "d59f2mp38qv4",
+          "period_of": "宋"
+        },
+        {
+          "id": "d59f2mp1zsox",
+          "period_of": "遼金元"
+        },
+        {
+          "id": "d59f2mp1zsoz",
+          "period_of": "元"
+        },
+        {
+          "id": "d59f2mox0000",
+          "period_of": "明",
+          "orig": true
+        },
+        {
+          "id": "d59f2mp0flz4",
+          "period_of": "清",
+          "orig": true
+        }
+      ]
+    },
+    {
+      "key": "bibliography",
+      "label": "書目與考證",
+      "items": [
+        "d59f2hqc0c1t",
+        "az9irz0xim",
+        "d59f2htm01du",
+        "d59f2nl40936",
+        "d59f2mel8d1c",
+        "d59f2mel8d1d",
+        "d59dh3vo9af4",
+        "4j2miiaic2",
+        "c359vh0hyr",
+        "9q9og758p7",
+        "d59f2ofwg64g",
+        "d59f2hr9pypt",
+        "d59f2mp0quip",
+        "d59f2o2lx91e",
+        "d59f2mp0flz6"
+      ]
+    },
+    {
+      "key": "congshu",
+      "label": "叢書",
+      "items": [
+        "d59f2og4vke9",
+        "d59f2og4vksh"
+      ]
+    },
+    {
+      "key": "archives",
+      "label": "檔案",
+      "items": [
+        "d59f2nfhf8cg",
+        "d59f2ng9il8j",
+        "d59f2nh7uozl",
+        "d59f2nfdoe0z",
+        "d59f2neu0fsx",
+        "d59f2nf16w3o",
+        "d59f2ndl29s2",
+        "d59f2ng20wlc",
+        "d59f2neqw26a",
+        "d59f2s1hhg5c",
+        "d59f2s1j1mv4",
+        "d59f2rzrzp4w",
+        "d59f2rxyfv28",
+        "d59f2ofmgkch",
+        "d59f2og0708x",
+        "d59f2rujgd1c"
+      ]
+    },
+    {
+      "key": "history",
+      "label": "史書與史料",
+      "items": [
+        "988lpnv75x",
+        "kpbt9o3xd3",
+        "d59f2ncf8cn5",
+        "d59f2mcdblz4"
+      ]
+    },
+    {
+      "key": "anthologies",
+      "label": "詩文集",
+      "items": [
+        "98ji05um82",
+        "d59f2870u874",
+        "d59f2mpwl1xf",
+        "d59f2mpwwagw",
+        "d59f2mpwwagx",
+        "d59f2og5taf4"
+      ]
+    },
+    {
+      "key": "zishu",
+      "label": "子書與輯佚",
+      "items": [
+        "98ji05um80",
+        "d59f2mua7w8y",
+        "h6nlgrnoc6",
+        "u04zro04s0",
+        "zdiwtiilsg",
+        "ui6x6usoho",
+        "98ji05um84"
+      ]
+    }
+  ],
+  "famous": [
+    {
+      "title": "紅樓夢",
+      "authors": "曹雪芹",
+      "systems": [
+        {
+          "label": "脂本",
+          "items": [
+            {
+              "id": "96kzii6z28",
+              "short": "甲戌本"
+            },
+            {
+              "id": "96kzirvbwg",
+              "short": "庚辰本"
+            },
+            {
+              "id": "96kzjb81kw",
+              "short": "戚正本"
+            }
+          ]
+        },
+        {
+          "label": "程本",
+          "items": [
+            {
+              "id": "96kzkdm8e8",
+              "short": "程甲本"
+            },
+            {
+              "id": "96kzkmzcow",
+              "short": "程乙本"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "水滸傳",
+      "authors": "施耐庵　羅貫中",
+      "systems": [
+        {
+          "label": "百回本",
+          "items": [
+            {
+              "id": "988g9bwr9g",
+              "short": "容與堂本"
+            }
+          ]
+        },
+        {
+          "label": "簡本",
+          "items": [
+            {
+              "id": "988g9bwr9n",
+              "short": "插增本"
+            }
+          ]
+        },
+        {
+          "label": "七十回本",
+          "items": [
+            {
+              "id": "988g9blipt",
+              "short": "貫華堂本"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "三國演義",
+      "authors": "羅貫中",
+      "systems": [
+        {
+          "label": "嘉靖本",
+          "items": [
+            {
+              "id": "988g31lpfr",
+              "short": "嘉靖壬午本"
+            }
+          ]
+        },
+        {
+          "label": "毛評本",
+          "items": [
+            {
+              "id": "988g9ant3e",
+              "short": "醉耕堂本"
+            },
+            {
+              "id": "988g9ant3i",
+              "short": "第一才子書"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "欽定四庫全書總目",
+      "authors": "紀昀 等",
+      "systems": [
+        {
+          "label": "",
+          "items": [
+            {
+              "id": "d59dh3vo9af4",
+              "short": "開源古籍"
+            }
+          ]
+        },
+        {
+          "label": "刻本",
+          "items": [
+            {
+              "id": "96mid1ogzk",
+              "short": "武英殿本"
+            },
+            {
+              "id": "96mmy9nfuo",
+              "short": "浙江本"
+            }
+          ]
+        },
+        {
+          "label": "排印",
+          "items": [
+            {
+              "id": "96mmyltp1c",
+              "short": "萬有文庫本"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "漢書·藝文志",
+      "authors": "班固",
+      "systems": [
+        {
+          "label": "",
+          "items": [
+            {
+              "id": "d59f23o7ygw2",
+              "short": "開源古籍"
+            }
+          ]
+        },
+        {
+          "label": "刻本",
+          "items": [
+            {
+              "id": "988g239lop",
+              "short": "百衲本（景祐）"
+            },
+            {
+              "id": "988g7ywhzl",
+              "short": "文淵閣四庫本"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "司馬法",
+      "systems": [
+        {
+          "label": "",
+          "items": [
+            {
+              "id": "98ji05um80",
+              "short": "四部叢刊本"
+            },
+            {
+              "id": "98ji05um81",
+              "short": "四庫全書本"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
