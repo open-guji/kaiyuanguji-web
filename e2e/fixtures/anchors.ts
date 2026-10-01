@@ -219,7 +219,7 @@ export const MEILI_INDEX_SETTINGS = {
     },
 } as const;
 
-/** book-index 页的 5 个 tab */
+/** book-index 页旧的 5 个页签（10-01 起首页态改为元数据首页，页签已去掉；旧地址仍要能打开） */
 export const BOOK_INDEX_TABS = [
     'recommend',
     'catalog',

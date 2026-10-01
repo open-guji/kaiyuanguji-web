@@ -22,7 +22,7 @@
  * 跳过会带着原因出现在 Playwright 报告里，覆盖真的掉了看得见。
  */
 import { test, type APIRequestContext } from '@playwright/test';
-import { TARGET } from './anchors';
+import { DATA_BASE, TARGET } from './anchors';
 import { dataUrl, fetchLatest, type DataVersion } from './version';
 
 /* ------------------------------------------------------------------ *
@@ -113,6 +113,18 @@ export async function requireReadSections(request: APIRequestContext, feature: s
     test.skip(
         res.status() === 404,
         `${TARGET} 上还没有阅读首页分区数据（/read?period=song 为 404）；「${feature}」待新数据上线后自动生效`,
+    );
+}
+
+/**
+ * 元数据首页分区数据（meta-home/sections.json，overview#322 块 A）上线了没有。
+ * /book-index 是静态页，分区数据在浏览器里取；数据没上线时页面只出检索框、最近浏览与授权说明，分区用例跳过。
+ */
+export async function requireMetaHomeData(request: APIRequestContext, feature: string): Promise<void> {
+    const res = await request.get(`${DATA_BASE}/current/meta-home/sections.json?_=${Date.now()}`);
+    test.skip(
+        !res.ok(),
+        `${DATA_BASE} 上还没有元数据首页分区数据（current/meta-home/sections.json 为 ${res.status()}）；「${feature}」待新数据上线后自动生效`,
     );
 }
 

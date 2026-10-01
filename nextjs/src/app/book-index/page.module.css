@@ -8,6 +8,11 @@
   padding: 32px var(--shell-gutter, 32px) 48px;
 }
 
+.page.home {
+  /* 元数据首页（overview#322）：分区多栏，版心与外壳一致；手机上留外壳的 16px 边距 */
+  max-width: var(--shell-max, 1440px);
+}
+
 .page.withQuery {
   /* v4：左栏筛选＋结果表格／卡片，版心放宽到与外壳一致（设计稿搜索页 v2：1440） */
   max-width: var(--shell-max, 1440px);
