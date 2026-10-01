@@ -175,7 +175,7 @@ const idOf = (x) => (typeof x === 'string' ? str(x) : str(x?.id));
  * 读并规整策展文件。格式（字段都可缺，认不出的项跳过）：
  *   {
  *     picks:  [{ id, blurb, slip?, type_label? }],                       推荐阅读，按数组顺序
- *     topics: [{ key, label, shelf?: true,                               专题分组；shelf＝画成书脊架（史志目录）
+ *     topics: [{ key, label, shelf?: true | layout?: 'shelf'|'list',     专题分组；shelf（或 layout: 'shelf'，目录总管 10-01 实交的写法）＝画成书脊架（史志目录）
  *                items: [id | { id, period_of?, orig?: true }] }],      period_of：所志朝代；orig：正史原志
  *     famous: [{ title, authors?: string, work_id?,                      名著与版本，一部作品一张卡
  *                systems?: [{ label?, items: [id | { id, short? }] }] }] 版本系统分行；没有 systems 就按 work_id 平铺可读 Book
@@ -198,7 +198,7 @@ export function readCuration(file, log = console.log) {
             id: idOf(p), blurb: str(p.blurb), slip: str(p.slip), type_label: str(p.type_label),
         })),
         topics: arr(raw.topics).filter((t) => str(t?.key) && str(t?.label)).map((t) => ({
-            key: str(t.key), label: str(t.label), shelf: t.shelf === true,
+            key: str(t.key), label: str(t.label), shelf: t.shelf === true || t.layout === 'shelf',
             items: arr(t.items).filter(idOf).map((x) => ({
                 id: idOf(x), period_of: str(x?.period_of), orig: x?.orig === true,
             })),
