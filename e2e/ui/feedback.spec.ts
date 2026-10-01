@@ -10,10 +10,11 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
+import { requireNewTextData } from '../fixtures/preconditions';
 
 const WORK = ANCHORS.work.id;
 const C = ANCHORS.collated;
-/** 阅读页地址里的整理本卷号是短形式（juan/004.json → 004），见 lib/reader-route.ts */
+/** 阅读页地址里的章号是三位短形式（juan/004.json → 004），见 lib/reader-route.ts */
 const JUAN = C.sampleJuanFile.replace(/^juan\/|\.json$/g, '');
 
 interface Captured {
@@ -105,9 +106,10 @@ test.describe('反馈入口（N7）', () => {
         expect(captured.posts[0]).toMatchObject({ type: 'bug', content: 'e2e：条目页报错', resourceId: WORK });
     });
 
-    test('阅读页：选中文字「报错」，选中的文字拼在正文开头，卷号随 pageUrl', async ({ page }) => {
+    test('阅读页：选中文字「报错」，选中的文字拼在正文开头，章号随 pageUrl', async ({ page, request }) => {
         test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
-        await page.goto(`${TARGET}/read/${C.id}?kind=collated&juan=${JUAN}`);
+        await requireNewTextData(request, C.id, '阅读页反馈（新结构）');
+        await page.goto(`${TARGET}/read/${C.id}/${JUAN}`);
         await requireN7(page);
         await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
             .toBeVisible({ timeout: 30_000 });
@@ -141,13 +143,14 @@ test.describe('反馈入口（N7）', () => {
         const body = captured.posts[0];
         expect(body).toMatchObject({ type: 'bug', resourceId: C.id });
         expect(String(body.content)).toBe(`【原文】${picked.replace(/\s+/g, ' ')}\n\ne2e：阅读页报错`);
-        expect(String(body.pageUrl)).toMatch(new RegExp(`[?&]juan=${JUAN}(&|$)`));
+        expect(String(body.pageUrl)).toMatch(new RegExp(`/read/${C.id}/${JUAN}(\\?|#|$)`));
     });
 
-    test('阅读页：右栏「报告错字」打开反馈，带上条目 id、卷、位置锚点（v4 P2，overview#299）', async ({ page }) => {
+    test('阅读页：右栏「报告错字」打开反馈，带上条目 id、卷、位置锚点（v4 P2，overview#299）', async ({ page, request }) => {
         test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
+        await requireNewTextData(request, C.id, '阅读页反馈（新结构）');
         await page.setViewportSize({ width: 1440, height: 900 }); // 右栏 ≥860px 才显示
-        await page.goto(`${TARGET}/read/${C.id}?kind=collated&juan=${JUAN}`);
+        await page.goto(`${TARGET}/read/${C.id}/${JUAN}`);
         await requireN7(page);
         const report = page.getByRole('button', { name: '报告错字' });
         // 站点还没升到带「报告错字」的 book-index-ui（≥0.28）时整条跳过
@@ -165,7 +168,7 @@ test.describe('反馈入口（N7）', () => {
         const body = captured.posts[0];
         expect(body).toMatchObject({ type: 'bug', resourceId: C.id });
         expect(String(body.content)).toBe('e2e：报告错字'); // 没选字就没有【原文】
-        expect(String(body.pageUrl)).toMatch(new RegExp(`[?&]juan=${JUAN}(&|#|$)`));
+        expect(String(body.pageUrl)).toMatch(new RegExp(`/read/${C.id}/${JUAN}(\\?|#|$)`));
     });
 
     test('/feedback：「写反馈」打开弹窗', async ({ page }) => {

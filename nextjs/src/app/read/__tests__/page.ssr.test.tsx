@@ -51,8 +51,8 @@ describe('阅读首页 page.ssr', () => {
         expect(h).toContain('<h1');
         expect(h).toContain('整理本（1 部）');
         expect(h).toContain('书本全文（3 部）');
-        expect(h).toContain('href="/read/w1?kind=collated"');
-        expect(h).toContain('href="/read/b1?kind=fulltext"');
+        expect(h).toContain('href="/read/w1"');
+        expect(h).toContain('href="/read/b1"');
         expect(h).toContain('href="/read?node=cshi"');
         expect(h).toContain('史部');
         expect(h).toContain('3卷');

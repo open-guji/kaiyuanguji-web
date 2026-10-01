@@ -1,0 +1,157 @@
+/**
+ * @jest-environment node
+ *
+ * overview#307 E 块：阅读页服务端——路径式地址按 manifest 与版本目录校验，查不到真 404，
+ * 查不了时 canonical 回落到不带章号的地址；旧查询串、default 地址 308。
+ */
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+
+const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
+jest.mock('@/lib/server/item-data', () => ({
+    getItemServer: async (id: string) => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }),
+    getPromotionServer: async () => ({ status: 'absent' }),
+    getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
+    getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
+}));
+jest.mock('next/navigation', () => ({
+    notFound: () => { throw new Error('NEXT_NOT_FOUND'); },
+    redirect: (to: string) => { throw new Error(`REDIRECT ${to}`); },
+    permanentRedirect: (to: string) => { throw new Error(`REDIRECT ${to}`); },
+}));
+jest.mock('../../ReaderClient', () => () => null);
+
+const ZHIZHAI = 'd59f2htm01du';
+const MANIFEST = {
+    id: ZHIZHAI,
+    versions: [
+        { key: 'default', kind: 'collated', label: '整理本', source: 'collated' },
+        { key: 'wikisource', kind: 'transcription', label: '維基文庫', source: 'wikisource' },
+    ],
+};
+const FILES: Record<string, unknown> = {
+    [`items/${ZHIZHAI}/manifest.json`]: MANIFEST,
+    [`items/${ZHIZHAI}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '經錄', has_json: true }, { n: 2, file: '002', title: '史錄', has_json: true }] },
+    [`items/${ZHIZHAI}/default/002.json`]: { title: '史錄', sections: [] },
+    [`items/${ZHIZHAI}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '' }, { n: 2, file: '002', title: '卷二' }] },
+};
+
+type Sp = Record<string, string | string[] | undefined>;
+async function meta(seg: string[] | undefined, sp: Sp = {}, id = ZHIZHAI) {
+    const { generateMetadata } = await import('../page.ssr');
+    return generateMetadata({ params: Promise.resolve({ id, seg }), searchParams: Promise.resolve(sp) });
+}
+async function page(seg: string[] | undefined, sp: Sp = {}, id = ZHIZHAI) {
+    const { default: ReaderPage } = await import('../page.ssr');
+    return ReaderPage({ params: Promise.resolve({ id, seg }), searchParams: Promise.resolve(sp) });
+}
+
+beforeEach(() => {
+    mockGetCurrentJson.mockReset();
+    mockGetCurrentJson.mockImplementation(async (rel) => FILES[rel] ?? null);
+});
+
+describe('阅读页 page.ssr（路径式地址）', () => {
+    it.each(['assistant', 'assistant.md', 'roadmap_overview', 'typesetting.md'])('旧的说明页地址 /read/%s：308 到 /read/md/<名>，不查数据', async (id) => {
+        const to = `REDIRECT /read/md/${id.replace(/\.md$/, '')}`;
+        await expect(meta([], {}, id)).rejects.toThrow(to);
+        await expect(page(undefined, {}, id)).rejects.toThrow(to);
+        expect(mockGetCurrentJson).not.toHaveBeenCalled();
+    });
+
+    it('/read/<id>：主版本第一章 200；canonical 指向第一章的全形，title 是「书名 · 章名 · 版本名」', async () => {
+        const m = await meta([]);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/001`);
+        expect(m.title).toBe('直齋書錄解題 · 經錄 · 整理本');
+        expect(m.robots).toBeUndefined();
+        expect(String(m.alternates?.canonical)).not.toContain('?');
+    });
+
+    it('/read/<id>/<章>：canonical 是本章；章名进 title 与 description', async () => {
+        const m = await meta(['002']);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/002`);
+        expect(m.title).toBe('直齋書錄解題 · 史錄 · 整理本');
+        expect(m.description).toBe('直齋書錄解題史錄整理本，在线阅读。');
+    });
+
+    it('其他版本：/read/<id>/<key> 与 /read/<id>/<key>/<章>；目录里章名为空回落「卷N」', async () => {
+        expect((await meta(['wikisource'])).alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource/001`);
+        expect((await meta(['wikisource'])).title).toBe('直齋書錄解題 · 卷1 · 維基文庫');
+        const m = await meta(['wikisource', '002']);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource/002`);
+        expect(m.title).toBe('直齋書錄解題 · 卷二 · 維基文庫');
+    });
+
+    it('地址里写了 default：308 到不带 default 的形式，元数据与页面都一样', async () => {
+        await expect(page(['default'])).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}`);
+        await expect(meta(['default', '002'])).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/002`);
+    });
+
+    it('旧查询串 ?kind=…&key=…&juan=…：按 manifest 换算成新地址 308', async () => {
+        await expect(page([], { kind: 'collated', juan: 'juan/002.json' })).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/002`);
+        await expect(meta([], { kind: 'fulltext', key: 'wikisource-01', juan: '2' })).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/wikisource/002`);
+        // 没带旧参数（utm 等）不算旧地址
+        await expect(page([], { utm_source: 'x' })).resolves.toBeTruthy();
+    });
+
+    it('旧查询串但条目没有文本：308 条目页', async () => {
+        mockGetCurrentJson.mockResolvedValue(null);
+        await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
+    });
+
+    it('旧查询串但取 manifest 出错：临时跳条目页（不 500，不发 308）', async () => {
+        mockGetCurrentJson.mockRejectedValue(new Error('cos down'));
+        await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
+    });
+
+    it.each([['999'], ['wikisource', '009'], ['nonesuch'], ['nonesuch', '001']])('乱填的地址 %j：真 404 且 noindex，不出自指 canonical', async (...seg) => {
+        const m = await meta(seg);
+        expect(m.robots).toEqual({ index: false, follow: false });
+        expect(m.alternates).toBeUndefined();
+        await expect(page(seg)).rejects.toThrow('NEXT_NOT_FOUND');
+    });
+
+    it.each([['Bad_Key'], ['manifest'], ['a', 'b', 'c'], ['wikisource', 'abc']])('形态不对的地址 %j：真 404', async (...seg) => {
+        await expect(page(seg)).rejects.toThrow('NEXT_NOT_FOUND');
+    });
+
+    it('条目没有文本（没有 manifest）：真 404；人物等没有阅读页的类型也是', async () => {
+        mockGetCurrentJson.mockResolvedValue(null);
+        await expect(page([])).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(page([], {}, 'hixhd2h9bk4b')).rejects.toThrow('NEXT_NOT_FOUND');
+    });
+
+    it('查不了（网络错）：照常渲染，canonical 回落到不带章号的地址', async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mockGetCurrentJson.mockRejectedValue(new Error('HTTP 502'));
+        const m = await meta(['wikisource', '002']);
+        expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource`);
+        await expect(page(['wikisource', '002'])).resolves.toBeTruthy();
+    });
+
+    it('首屏数据随页面交给 ReaderClient（WEB2）：manifest、版本目录、本章 md 与 json', async () => {
+        const el = (await page(['002'])) as { props: { initial: unknown; seed: { calls?: Record<string, unknown> } } };
+        expect(el.props.initial).toEqual({ key: undefined, chapter: '002' });
+        const calls = el.props.seed.calls ?? {};
+        expect(Object.values(calls)).toEqual([MANIFEST, FILES[`items/${ZHIZHAI}/default/index.json`], { md: '卷二正文', json: { title: '史錄', sections: [] } }]);
+    });
+
+    it('没给章号：落实到第一章交给阅读器；其他版本带 key', async () => {
+        const a = (await page([])) as { props: { initial: unknown } };
+        expect(a.props.initial).toEqual({ key: undefined, chapter: '001' });
+        const b = (await page(['wikisource'])) as { props: { initial: unknown } };
+        expect(b.props.initial).toEqual({ key: 'wikisource', chapter: '001' });
+    });
+
+    it('首屏数据取不了：照常渲染，seed 为空，交给浏览器取', async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mockGetCurrentJson.mockRejectedValue(new Error('HTTP 502'));
+        const el = (await page([])) as { props: { seed: unknown } };
+        expect(el.props.seed).toEqual({});
+    });
+
+    it('按请求渲染：force-dynamic、不导出 generateStaticParams（否则读查询串 DYNAMIC_SERVER_USAGE，全 500）', async () => {
+        const mod: Record<string, unknown> = await import('../page.ssr');
+        expect(mod.dynamic).toBe('force-dynamic');
+        expect(mod.generateStaticParams).toBeUndefined();
+    });
+});

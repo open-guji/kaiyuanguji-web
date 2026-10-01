@@ -302,3 +302,81 @@ describe('cos-storage：h1 哈希寻址路径（整理本／全文，开关）',
         expect(pointerFetchCount).toBe(2);
     });
 });
+
+describe('cos-storage：h1 哈希寻址路径（阅读文本新结构，overview#307）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; });
+
+    const manifest = { id: WORK_ID, versions: [{ key: 'default', kind: 'collated', label: '整理本' }] };
+    const files: Record<string, { hash: string; body: unknown; text?: boolean }> = {
+        'manifest.json': { hash: 'aaaaaaa1', body: manifest },
+        'default/index.json': { hash: 'aaaaaaa2', body: { chapters: [{ n: 1, file: '001', title: '一', has_json: true }] } },
+        'default/001.txt': { hash: 'aaaaaaa3', body: '# 一\n正文', text: true },
+        'default/001.json': { hash: 'aaaaaaa4', body: { title: '一', sections: [] } },
+    };
+    const shardHash = 'shard-n1';
+
+    function mockH1() {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [WORK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${WORK_SHARD}.${shardHash}.json`)) {
+                return jsonResponse({ [WORK_ID]: Object.fromEntries(Object.entries(files).map(([rel, f]) => [rel, f.hash])) });
+            }
+            for (const [rel, f] of Object.entries(files)) {
+                const i = rel.lastIndexOf('.');
+                if (url.endsWith(`/h1/text/${WORK_ID}/${rel.slice(0, i)}.${f.hash}${rel.slice(i)}`)) return f.text ? textResponse(f.body as string) : jsonResponse(f.body);
+            }
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+        return calls;
+    }
+
+    it('hashed：getTextManifest／getTextIndex／getChapter 走 h1 路径（manifest.json、<key>/index.json、<key>/NNN.txt、NNN.json）', async () => {
+        const calls = mockH1();
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        expect(await storage.getTextManifest?.(WORK_ID)).toMatchObject({ id: WORK_ID });
+        expect((await storage.getTextIndex?.(WORK_ID, 'default'))?.chapters).toHaveLength(1);
+        const both = await storage.getChapter?.(WORK_ID, 'default', '001', { json: true });
+        expect(both?.md).toBe('# 一\n正文');
+        expect(both?.json).toMatchObject({ title: '一' });
+        const mdOnly = await storage.getChapter?.(WORK_ID, 'default', '001');
+        expect(mdOnly).toEqual({ md: '# 一\n正文', json: null });
+        expect(calls.some(u => u.includes('/current/'))).toBe(false);
+    });
+
+    it('hashed：没有这个文件 → null；key／章不合法 → null 且不发 h1 请求', async () => {
+        const calls = mockH1();
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage();
+        expect(await storage.getTextIndex?.(WORK_ID, 'wikisource')).toBeNull(); // manifest 分片里没有这一项
+        const before = calls.length;
+        for (const key of ['../x', 'a/b', 'manifest', '001', 'Wiki']) expect(await storage.getTextIndex?.(WORK_ID, key)).toBeNull();
+        expect(await storage.getChapter?.(WORK_ID, 'default', '../001')).toBeNull();
+        expect(await storage.getChapter?.(WORK_ID, 'default', '001?x=1')).toBeNull();
+        expect(await storage.getTextManifest?.('../x')).toBeNull();
+        expect(calls.length).toBe(before);
+    });
+
+    it('不设置开关：三个方法原样委托给 inner（BundleStorage，current/items/…），一次不碰 h1/', async () => {
+        // jsdom 没有 AbortSignal.timeout，BundleStorage 取数前就抛了（返回 null）：补一个，才看得到它真的发了请求
+        const as = AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal };
+        if (!as.timeout) as.timeout = () => new AbortController().signal;
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json') || url.endsWith('/version.json')) return jsonResponse({ commitId: 'legacycommit123456' });
+            if (url.includes('/items/') && url.includes('/manifest.json')) return jsonResponse(manifest);
+            return jsonResponse({}, false, 404);
+        }) as unknown as typeof fetch;
+        const { createCosStorage } = await freshCosStorage({ layout: undefined });
+        const storage = createCosStorage();
+        expect(await storage.getTextManifest?.(WORK_ID)).toMatchObject({ id: WORK_ID });
+        expect(calls.some(u => u.includes(`/current/items/${WORK_ID}/manifest.json`))).toBe(true);
+        expect(calls.some(u => u.includes('/h1/'))).toBe(false);
+    });
+});

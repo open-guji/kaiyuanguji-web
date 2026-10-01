@@ -51,7 +51,7 @@ describe('首页（N1）', () => {
         expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
             ['史记', '/item/d59f20aowb9c'],
             ['四库全书', '/item/8rlb6yi1ecqo'],
-            ['红楼梦程甲本', '/read/96kzkdm8e8?kind=fulltext'],
+            ['红楼梦程甲本', '/read/96kzkdm8e8'],
         ]);
         expect(screen.getByRole('main').textContent).not.toMatch(/看一个例子|读整理本/);
     });

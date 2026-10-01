@@ -1,162 +1,105 @@
 /**
- * N5b：阅读页 /read/<id> 的地址约定（与 N3b 条目页的「阅读全文」共用）。
- * 阅读页是独立的一级目录（overview#267 用户意见）；旧地址 /item/<id>/read?… 一律 308 到这里，查询参数保留。
+ * 阅读页 /read/<id> 的地址约定（overview#307 E 块，规格 overview 项目进展/古籍索引网站/设计/阅读文本.md §六）。
+ * 路径式 URL，只认新结构（manifest＋<key>/）：
  *
- *   /read/<id>?kind=collated|fulltext[&key=<fullTextKey>][&juan=<卷>]
+ *   /read/<id>                   主版本（default）第一章
+ *   /read/<id>/<章>              主版本某章，章用三位编号（如 /read/d59ezkx8dt6o/003）
+ *   /read/<id>/<key>             其他版本第一章
+ *   /read/<id>/<key>/<章>        其他版本某章（如 /read/d59ezkx8dt6o/wikisource-2/003）
  *
- *   - kind=collated：整理本（Work），juan 是卷号短形式（如 011），与全文一致；组件内部用的卷文件名
- *     （juan/011.json）只在客户端与服务端取数时换算，不出现在地址里。旧地址 juan=juan%2F011.json 仍认，308 到短形式；
- *   - kind=fulltext：全文（Book，或 Work 带 key 选其中一份），juan 是章节 stem（如 001）；
- *   - key 只对 Work 全文有意义，不带就由阅读器取首选那份。
+ * - 主版本的 URL 里不写 default：`/read/<id>/default[/<章>]` 308 到不带 default 的形式；
+ * - 第二段纯数字＝章号，以字母开头＝版本 key（key 必须以字母开头，见 isTextKey）；
+ * - canonical：主版本 `/read/<id>/<章>`，其他版本 `/read/<id>/<key>/<章>`（不带章号的短地址 200 显示，canonical 指向第一章的全形）；
+ * - 旧地址（?kind=&key=&juan=、/item/<id>/read、?tab=）的 308 见 legacy-reader.ts。
  *
  * 纯函数，不依赖 React／Next：页面、中间件（边缘运行时）、测试共用。
+ * key／章的形态规则与 book-index-ui 的 core/text-model 一致（中间件里不拉整个 UI 包，这里单写一份）。
  */
 import { parseItemId } from './item-id';
 
-export type ReaderKind = 'collated' | 'fulltext';
-
-export interface ReaderQuery {
-    kind: ReaderKind;
+/** 版本选择：key 缺省＝主版本（default）；chapter 缺省＝第一章 */
+export interface ReaderSel {
     key?: string;
-    juan?: string;
+    chapter?: string;
 }
 
-type ParamSource = URLSearchParams | Record<string, string | string[] | undefined>;
+/** 非主版本的 key 不能用的保留字（规格 §二）；default 是主版本专用 */
+const RESERVED_KEYS = ['default', 'manifest', 'fragments', 'sources'];
 
-function first(src: ParamSource, name: string): string | undefined {
-    if (src instanceof URLSearchParams) return src.get(name) ?? undefined;
-    const v = src[name];
-    return (Array.isArray(v) ? v[0] : v) ?? undefined;
+/** 合法的版本 key：主版本固定 default；其余 [a-z0-9-]、字母开头、非保留字 */
+export function isTextKey(key: string): boolean {
+    if (key === 'default') return true;
+    return /^[a-z][a-z0-9-]*$/.test(key) && !RESERVED_KEYS.includes(key);
 }
 
-function isKind(v: string | undefined): v is ReaderKind {
-    return v === 'collated' || v === 'fulltext';
+/** URL 片段是章号（纯数字）还是版本 key（字母开头） */
+export function isChapterSegment(seg: string): boolean {
+    return /^[0-9]{1,6}$/.test(seg);
 }
 
-/** 不带 kind 时按条目类型取默认：Work 看整理本，Book 看全文；其余类型没有阅读页 */
-export function defaultReaderKind(id: string): ReaderKind | null {
+/** 有阅读页的条目类型：Work 与 Book（整理本与全文都是「文本」）；其余类型没有 */
+export function hasReaderType(id: string): boolean {
     const t = parseItemId(id)?.type;
-    return t === 'work' ? 'collated' : t === 'book' ? 'fulltext' : null;
+    return t === 'work' || t === 'book';
+}
+
+/** 阅读页路径。key 为 default 或空＝主版本，不写进路径；chapter 空＝不带章号的短地址 */
+export function readerPath(id: string, sel: ReaderSel = {}): string {
+    const parts = [sel.key && sel.key !== 'default' ? sel.key : '', sel.chapter ?? ''].filter(Boolean);
+    return `/read/${id}${parts.map((p) => `/${p}`).join('')}`;
+}
+
+/** 同 readerPath，保留旧名（条目页「阅读全文」、翻章同步地址栏都用它） */
+export const readerHref = readerPath;
+
+export type ReaderParse =
+    | { sel: ReaderSel }
+    /** 地址写了 default：308 到不带 default 的形式 */
+    | { redirect: string };
+
+/**
+ * 解析 /read/<id>/… 的路径段（[id] 之后的部分）。条目类型没有阅读页、形态不对 → null（页面 404）。
+ * 章号只看形态（纯数字），在不在目录里由服务端按 manifest／目录校验。
+ */
+export function parseReaderSegments(id: string, segs: readonly string[] | undefined): ReaderParse | null {
+    if (!hasReaderType(id)) return null;
+    const s = segs ?? [];
+    if (s.length === 0) return { sel: {} };
+    if (s.length === 1) {
+        const [a] = s;
+        if (a === 'default') return { redirect: readerPath(id) };
+        if (isChapterSegment(a)) return { sel: { chapter: a } };
+        if (isTextKey(a)) return { sel: { key: a } };
+        return null;
+    }
+    if (s.length === 2) {
+        const [a, b] = s;
+        if (!isChapterSegment(b)) return null;
+        if (a === 'default') return { redirect: readerPath(id, { chapter: b }) };
+        if (isTextKey(a)) return { sel: { key: a, chapter: b } };
+    }
+    return null;
+}
+
+/** 从 /read/ 之后的路径名切出 id 与其后的段；不是阅读页路径返回 null */
+export function splitReaderPathname(pathname: string): { id: string; segs: string[] } | null {
+    const m = /^\/read\/([^/]+)((?:\/[^/]+)*)\/?$/.exec(pathname);
+    if (!m) return null;
+    return { id: m[1], segs: m[2].split('/').filter(Boolean) };
+}
+
+/** 章的显示名兜底（目录里没有章名时，<title> 用）：三位编号 003 → 卷3 */
+export function chapterFallbackLabel(chapter: string): string {
+    const n = chapter.match(/(\d+)$/)?.[1];
+    return n ? `卷${Number(n)}` : chapter;
 }
 
 /**
- * 解析阅读页查询串。kind 不合法、条目类型没有这种阅读页（整理本只有 Work，全文只有 Work／Book）
- * → null（页面 404）。kind 缺省按类型取默认；空的 key／juan 视同没带。
+ * 阅读页 <title>：「书名 · 章名 · 版本名」。
+ * chapterTitle 是目录里的章名（如红楼梦的「第三回」），没有就用「卷N」；版本名只写来源（整理本／維基文庫…）。
  */
-export function parseReaderQuery(id: string, src: ParamSource): ReaderQuery | null {
-    const type = parseItemId(id)?.type;
-    const rawKind = first(src, 'kind');
-    const kind = rawKind === undefined ? defaultReaderKind(id) : isKind(rawKind) ? rawKind : null;
-    if (!kind) return null;
-    if (kind === 'collated' ? type !== 'work' : type !== 'work' && type !== 'book') return null;
-    const q: ReaderQuery = { kind };
-    const key = first(src, 'key');
-    const juan = first(src, 'juan');
-    if (key && kind === 'fulltext') q.key = key;
-    if (juan) q.juan = juan;
-    return q;
-}
-
-/** 阅读页路径（不含查询串） */
-export function readerPath(id: string): string {
-    return `/read/${id}`;
-}
-
-/** 拼阅读页地址。参数顺序固定（kind、key、juan），canonical 与跳转目标因此唯一（整理本卷号统一成短形式） */
-export function readerHref(id: string, q: ReaderQuery): string {
-    const p = new URLSearchParams();
-    p.set('kind', q.kind);
-    if (q.key && q.kind === 'fulltext') p.set('key', q.key);
-    // 整理本组件给的是卷文件名（juan/011.json），地址里一律写短形式（011）
-    if (q.juan) p.set('juan', q.kind === 'collated' && isLegacyCollatedJuan(q.juan) ? juanStem(q.juan) : q.juan);
-    return `${readerPath(id)}?${p.toString()}`;
-}
-
-/** 卷文件名 → 卷号短形式：取末段、去扩展名。juan/011.json → 011；011 → 011 */
-export function juanStem(juan: string): string {
-    return (juan.split('/').pop() ?? juan).replace(/\.(json|md)$/, '');
-}
-
-/** 旧地址里的整理本卷号：卷文件路径 juan/011.json（不是短形式） */
-export function isLegacyCollatedJuan(juan: string): boolean {
-    return /^juan\/[^/\\]+\.json$/.test(juan);
-}
-
-/** 整理本卷号（地址里的短形式或旧的文件名）→ 卷文件名。files 是目录里的 juan_files；目录还没取到就按惯例拼 */
-export function collatedJuanFile(juan: string, files?: readonly string[]): string {
-    if (files?.includes(juan)) return juan;
-    const hit = files?.find((f) => juanStem(f) === juan);
-    return hit ?? `juan/${juan}.json`;
-}
-
-/**
- * 旧形式整理本地址（juan=juan/011.json）→ 短形式的规范地址；不是旧形式就返回 null。
- * 只认 juan/<名>.json 这一种写法，其余（含 ..）交给页面校验成 404。
- */
-export function legacyCollatedJuanTarget(id: string, q: ReaderQuery): string | null {
-    if (q.kind !== 'collated' || !q.juan || !isLegacyCollatedJuan(q.juan)) return null;
-    return readerHref(id, { ...q, juan: juanStem(q.juan) });
-}
-
-/**
- * 卷的显示名，给 <title> 用：取末段、去扩展名，末尾是数字就写成「卷N」。
- *   juan/011.json → 卷11；001 → 卷1；第001 → 卷1；序 → 序
- */
-export function juanLabel(juan: string): string {
-    const stem = (juan.split('/').pop() ?? juan).replace(/\.(json|md)$/, '');
-    const m = stem.match(/(\d+)$/);
-    return m ? `卷${Number(m[1])}` : stem;
-}
-
-/**
- * 阅读页 <title>：「书名 · 卷N · 整理本／全文」。
- * chapterTitle 是目录里的章名（如红楼梦的「第三回」），给了就用它，不再写死「卷N」。
- */
-export function readerTitle(bookTitle: string, q: ReaderQuery, chapterTitle?: string): string {
-    return [bookTitle, chapterTitle?.trim() || (q.juan ? juanLabel(q.juan) : ''), q.kind === 'collated' ? '整理本' : '全文']
+export function readerTitle(bookTitle: string, chapter: string | undefined, chapterTitle?: string, versionLabel?: string): string {
+    return [bookTitle, chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel?.trim() ?? '']
         .filter(Boolean)
         .join(' · ');
-}
-
-/**
- * 旧入口 → 新阅读页（保留卷号）。不是旧阅读入口就返回 null。
- *
- *   /book-index?id=<id>&tab=fulltext|collated[&juan=…]
- *   /item/<id>?tab=fulltext|collated[&juan=…]
- * （/item/<id>/read?… 是上一版的阅读页地址，由中间件整体搬到 /read/<id>，不在这里）
- *
- * 只认 tab 为 fulltext／collated 的；其余参数（page、mode 等）是别的 tab 的状态，丢掉。
- * redirected_from／no_redirect（草稿升格横幅的往返）在场时放过，留给详情组件处理。
- */
-export function legacyReaderParts(pathname: string, params: URLSearchParams): { id: string; q: ReaderQuery } | null {
-    const tab = params.get('tab');
-    if (!isKind(tab ?? undefined)) return null;
-    if (params.has('redirected_from') || params.has('no_redirect')) return null;
-
-    let id: string | null = null;
-    if (pathname === '/book-index') id = params.get('id');
-    else if (pathname.startsWith('/item/')) id = pathname.slice('/item/'.length);
-    if (!id) return null;
-
-    // 条目类型没有这种阅读页（如 Book 的 tab=collated）就不跳，免得跳进 404
-    const q = parseReaderQuery(id, { kind: tab ?? undefined, juan: params.get('juan') ?? undefined });
-    return q ? { id, q } : null;
-}
-
-export function legacyReaderTarget(pathname: string, params: URLSearchParams): string | null {
-    const parts = legacyReaderParts(pathname, params);
-    return parts ? readerHref(parts.id, parts.q) : null;
-}
-
-/**
- * 条目 JSON 自己的标记：有没有这类阅读内容（overview#267 QA 回归 P2）。
- *   整理本：has_collated（另有 _has_collated 同义）
- *   全文  ：Work 看 has_site_fulltext（站内 index/full_text 真有正文）；Book 看 has_full_text（full_text/index.json 存在）。
- *           不看 has_text——那只表示有外部文本资源，站内未必有正文（overview#306）
- * 只认明确为 true 的；数据里没这个标记就当没有。用于旧入口 ?tab=fulltext／collated：
- * 条目没有这类内容就不必跳阅读页（那里只会是 404）。
- */
-export function entryHasReaderContent(entry: Record<string, unknown>, kind: ReaderKind): boolean {
-    if (kind === 'collated') return entry.has_collated === true || entry._has_collated === true;
-    return entry.has_site_fulltext === true || entry.has_full_text === true;
 }

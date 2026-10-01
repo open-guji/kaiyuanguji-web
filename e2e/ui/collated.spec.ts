@@ -12,7 +12,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
-import { cmpVersion, fetchUiVersion } from '../fixtures/preconditions';
+import { cmpVersion, fetchUiVersion, requireNewTextData } from '../fixtures/preconditions';
 
 const C = ANCHORS.collated;
 
@@ -23,17 +23,20 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 }
 
 test.describe('整理本', () => {
+    // 阅读页只认新结构（overview#307）：文本迁移落地前，这组针对阅读页内容的用例整体休眠
+    test.beforeEach(({ request }) => requireNewTextData(request, C.id, '整理本阅读页（新结构）'));
+
     test('概览页有整理本入口', async ({ page, request }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}`);
 
-        // N3b（0.10.0 三栏条目页）：横幅没了，入口是提要卡里的「阅读全文」链接，整理本 → kind=collated。
+        // N3b（0.10.0 三栏条目页）：横幅没了，入口是提要卡里的「阅读全文」链接，整理本 → /read/<id>/<章>（新结构，主版本不写 key）。
         // 守的仍是「清单档 404 时入口别静默消失」。
         const live = await fetchUiVersion(request);
         if (live !== null && cmpVersion(live, '0.10.0') >= 0) {
             await expect(
                 page.getByRole('link', { name: /^(阅读|閱讀)全文$/ }),
                 '整理本入口不存在：清单档可能 404（文件名或版本号错）',
-            ).toHaveAttribute('href', new RegExp(`^/read/${C.id}\\?kind=collated`), { timeout: 30_000 });
+            ).toHaveAttribute('href', new RegExp(`^/read/${C.id}(/|$)`), { timeout: 30_000 });
             return;
         }
 
@@ -86,32 +89,23 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('侧栏卷按钮数与 juan_files 条数一致', async ({ page }) => {
+    test('侧栏章目录条数与 index.json 的 chapters 条数一致', async ({ page }) => {
         /*
-         * 卷数来源曾是 index.total_juan——一个没人维护的独立声明，与实际卷
-         * 文件数对不上（d59f2mp38qv4 声明「共 1 卷」却列出 43 个按钮）。
-         * 改用 juan_files.length 后两者必须相等，这条断言钉住这一点。
-         *
-         * 0.9.0 撤掉了头部那行「共 N 卷」——左侧栏已逐卷列出、数量一目了然，
-         * 再写一遍是同一事实的第二处表述。故不再断言那行文案，改为直接数
-         * 侧栏按钮：它才是「卷数」在页面上的唯一体现，也更贴近读者视角。
+         * 章数来源是 default/index.json 的 chapters（旧的 juan_files／total_juan 都不再有）。
+         * 统一阅读器（TextReader）的目录是 role=navigation「目录」里的一排按钮，每个按钮带 data-rd-toc-key（章文件名 001…）；
+         * 不按按钮文字找——文字是章名（「卷1　易類」「第三回」），随整理变；按 key 数才是「有几章」。
          */
-        await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated`);
+        await page.goto(`${TARGET}/read/${C.id}`);
 
-        // 按钮文案是 juanDisplayName() 的产物：juan/001.json → 「卷1」。
-        // 此前这里写 /^卷\//，锚的是 0.8.1 修掉的那个 bug——带目录的文件名
-        // 只剥了 juan 前缀、剩下 /001，于是显示成「卷/001」。修好后此选择器
-        // 匹配 0 个，用例反而变成守着旧 bug。改锚正确形态。
-        const juanButtons = page.getByRole('button', { name: /^卷\s*\d+$/ });
-        // 先等第一个卷按钮出现再数：原先靠「共 N 卷」那条断言兜住加载等待，
-        // 它撤掉后若直接 count()，会在侧栏渲染完成前拿到 0。
-        await expect(juanButtons.first()).toBeVisible({ timeout: 30_000 });
-        // 用会重试的 toHaveCount 而非一次性 count()：首个按钮可见的瞬间可能正赶上
-        // 自动选中首卷触发的重渲染，侧栏按钮会短暂清空（W2 道本地复现 20 次红 6 次）。
+        const toc = page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key]');
+        // 先等第一章出现再数：目录随 index.json 异步到达
+        await expect(toc.first()).toBeVisible({ timeout: 30_000 });
+        // 用会重试的 toHaveCount 而非一次性 count()：自动选中首章触发的重渲染会让目录短暂清空
         await expect(
-            juanButtons,
-            '侧栏卷按钮数与 juan_files 条数不符——卷数来源又被改回不可信字段了？',
+            toc,
+            '目录条数与 chapters 条数不符——章数来源又被改回不可信字段了？',
         ).toHaveCount(C.juanFileCount, { timeout: 30_000 });
+        await expect(toc.first(), '章的 key 是三位编号').toHaveAttribute('data-rd-toc-key', '001');
     });
 
     test('目录视图渲染书名标题与正确统计', async ({ page }) => {
@@ -160,43 +154,52 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 15_000 });
     });
 
-    test('items 请求使用当前版本号且不 404', async ({ page }) => {
-        // 直接盯网络层：版本号分裂时 URL 会带上过期 commit，整片 404
-        const itemRequests: { url: string; status: number }[] = [];
+    test('点开另一章：章数据请求都成功、不 404', async ({ page }) => {
+        // 直接盯网络层：数据路径或版本号错时整片 404。首屏（manifest、章目录、首章）由服务端预载进 HTML，浏览器不会再请求；
+        // 所以点开第 2 章，它才走浏览器取数。数据布局有两种——current/items/<id>/…（带 ?v=<版本号>）
+        // 与按内容哈希的 h1/text/<id>/…（文件名里带哈希）；站点用哪种都认，只看是不是本条目的 fetch／xhr 请求。
+        const dataRequests: { url: string; status: number }[] = [];
         page.on('response', (res) => {
             const u = res.url();
-            if (u.includes('/current/items/') && u.includes(C.id)) {
-                itemRequests.push({ url: u, status: res.status() });
+            const type = res.request().resourceType();
+            if ((type === 'fetch' || type === 'xhr') && u.includes(C.id) && !u.includes('/api/')) {
+                dataRequests.push({ url: u, status: res.status() });
             }
         });
 
-        await page.goto(
-            `${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`,
-        );
+        await page.goto(`${TARGET}/read/${C.id}/001`);
+        await expect(page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key="002"]')).toBeVisible({ timeout: 30_000 });
+        await page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key="002"]').click();
+        await expect(page).toHaveURL(new RegExp(`/read/${C.id}/002$`), { timeout: 30_000 });
         await expect(
-            page.getByRole('heading', {
-                name: eitherScript(C.sampleJuanCategory, C.sampleJuanCategorySimplified),
-            }),
+            page.getByRole('heading', { name: eitherScript('書類', '书类') }),
+            '第 2 章正文没渲染出来',
         ).toBeVisible({ timeout: 30_000 });
 
-        expect(itemRequests.length, '没有发出任何 items 请求').toBeGreaterThan(0);
+        expect(dataRequests.length, '点开第 2 章后没有发出任何本条目的数据请求').toBeGreaterThan(0);
+        expect(
+            dataRequests.some((r) => r.url.includes('002') && r.status === 200),
+            '没有成功取到第 2 章的数据文件',
+        ).toBe(true);
 
-        // 所有请求都必须带当前版本号做 cache-bust——版本号分裂时这里会露馅
+        // current/ 布局的请求必须带当前版本号做 cache-bust——版本号分裂时这里会露馅
         // 版本键：cacheKey 16 位 hex；旧数据回退 commitId 12 位
-        const badVersion = itemRequests.filter((r) => !/[?&]v=([0-9a-f]{16}|[0-9a-f]{12})(&|$)/.test(r.url));
+        const badVersion = dataRequests
+            .filter((r) => r.url.includes('/current/items/'))
+            .filter((r) => !/[?&]v=([0-9a-f]{16}|[0-9a-f]{12})(&|$)/.test(r.url));
         expect(
             badVersion.map((r) => r.url),
             'items 请求缺少 ?v= 版本号（或格式不对），CDN 会返回陈旧内容',
         ).toEqual([]);
 
-        // 允许 404 的两类「可选资源」——前端探测不到就降级，属设计内行为：
+        // 允许 404 的「可选资源」——前端探测不到就降级，属设计内行为：
         //   lineage_graph.json —— 多数书没有版本传承图
-        //   collated_edition/text/*.txt —— 原始 md 原文，全库仅约三分之一的书有
-        const OPTIONAL = /lineage_graph\.json|\/collated_edition\/text\//;
-        const failed = itemRequests.filter((r) => r.status >= 400 && !OPTIONAL.test(r.url));
+        //   章 md（.txt）—— 整理本的章可以只有结构化 json（has_json），md 可缺
+        const OPTIONAL = /lineage_graph\.json|\.txt(\?|$)|\.[0-9a-f]{8}\.md(\?|$)/;
+        const failed = dataRequests.filter((r) => r.status >= 400 && !OPTIONAL.test(r.url));
         expect(
             failed.map((f) => `${f.status} ${f.url}`),
-            '必需的 items 资源请求失败——多半是版本号或文件名错',
+            '必需的文本数据请求失败——多半是路径或版本号错',
         ).toEqual([]);
     });
 });

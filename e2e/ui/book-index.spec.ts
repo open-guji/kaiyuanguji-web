@@ -40,7 +40,7 @@ test.describe('首页', () => {
         await expect(under.getByRole('link')).toHaveText(['史记', '四库全书', '红楼梦程甲本']);
         await expect(under.getByRole('link').nth(0)).toHaveAttribute('href', '/item/d59f20aowb9c');
         await expect(under.getByRole('link').nth(1)).toHaveAttribute('href', '/item/8rlb6yi1ecqo');
-        await expect(under.getByRole('link').nth(2)).toHaveAttribute('href', '/read/96kzkdm8e8?kind=fulltext');
+        await expect(under.getByRole('link').nth(2)).toHaveAttribute('href', '/read/96kzkdm8e8');
         await expect(page.getByText(/看一个例子/)).toHaveCount(0);
     });
 

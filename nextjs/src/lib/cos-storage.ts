@@ -458,6 +458,43 @@ async function getBookFullTextChapterH1(bookId: string, file: string): Promise<s
     return fetchH1TextRaw(bookId, `full_text/${txtName}`);
 }
 
+// ─── 阅读文本（新结构，overview#307）───
+//
+// items/<id>/manifest.json、<key>/index.json、<key>/NNN.txt、<key>/NNN.json 在哈希寻址里的 relPath 与现行路径逐段对应
+// （bundle-hashed-text.mjs 扫 manifest.json 与公开版本目录），与 book-index-ui 的 BundleStorage 同名三个方法逐条对齐：
+// getTextManifest／getTextIndex／getChapter——参数校验、404 语义（返回 null）照抄。
+
+/** 路径安全的单段：不含 `..`、路径分隔符、URL 分隔符（? # %）、空白与控制字符（与 book-index-ui 的 isSafeSegment 一致） */
+function isSafeTextSegment(s: string): boolean {
+    return s.length > 0 && !s.includes('..') && !/[\\/?#%\s\u0000-\u001f\u007f]/.test(s);
+}
+
+/** 版本 key：default，或 [a-z0-9-] 字母开头的非保留字 */
+function isTextVersionKey(k: string): boolean {
+    return k === 'default' || (/^[a-z][a-z0-9-]*$/.test(k) && !['manifest', 'fragments', 'sources'].includes(k));
+}
+
+async function getTextManifestH1(id: string): Promise<Record<string, unknown> | null> {
+    if (!isSafeTextSegment(id)) return null;
+    const m = await fetchH1TextJson(id, 'manifest.json');
+    return m && Array.isArray((m as { versions?: unknown }).versions) ? m : null;
+}
+
+async function getTextIndexH1(id: string, key: string): Promise<Record<string, unknown> | null> {
+    if (!isSafeTextSegment(id) || !isTextVersionKey(key)) return null;
+    const idx = await fetchH1TextJson(id, `${key}/index.json`);
+    return idx && Array.isArray((idx as { chapters?: unknown }).chapters) ? idx : null;
+}
+
+async function getChapterH1(id: string, key: string, chapter: string, opts?: { json?: boolean }): Promise<{ md: string | null; json: Record<string, unknown> | null } | null> {
+    if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isSafeTextSegment(chapter)) return null;
+    const [md, json] = await Promise.all([
+        fetchH1TextRaw(id, `${key}/${chapter}.txt`),
+        opts?.json ? fetchH1TextJson(id, `${key}/${chapter}.json`) : Promise.resolve(null),
+    ]);
+    return md !== null || json ? { md, json } : null;
+}
+
 /**
  * 创建一个延迟解析版本号的 IndexStorage —— 同步返回，方法调用时才 await。
  *
@@ -635,8 +672,8 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
-            // 整理本／全文：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
-            // 默认（未设置或非 'hashed'）不特殊处理这五个方法名，走下面的
+            // 整理本／全文／新结构文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
+            // 默认（未设置或非 'hashed'）不特殊处理这些方法名，走下面的
             // 通用分支委托给 inner（book-index-ui 的 BundleStorage），
             // 与开这个开关之前的行为完全一致——bim/ui 本道不改。
             if (DATA_LAYOUT === 'hashed') {
@@ -645,6 +682,9 @@ export function createCosStorage(): IndexStorage {
                 if (prop === 'getCollatedJuanText') return (workId: string, juanFile: string) => getCollatedJuanTextH1(workId, juanFile);
                 if (prop === 'getBookFullTextIndex') return (bookId: string) => getBookFullTextIndexH1(bookId);
                 if (prop === 'getBookFullTextChapter') return (bookId: string, file: string) => getBookFullTextChapterH1(bookId, file);
+                if (prop === 'getTextManifest') return (id: string) => getTextManifestH1(id);
+                if (prop === 'getTextIndex') return (id: string, key: string) => getTextIndexH1(id, key);
+                if (prop === 'getChapter') return (id: string, key: string, chapter: string, opts?: { json?: boolean }) => getChapterH1(id, key, chapter, opts);
             }
             return (...args: unknown[]) =>
                 ensureInner().then(({ inner }) => {

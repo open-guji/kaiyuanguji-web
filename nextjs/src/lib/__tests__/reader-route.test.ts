@@ -1,153 +1,91 @@
 /**
  * @jest-environment node
  *
- * N5b：阅读页地址约定（/item/<id>/read?kind=…&key=…&juan=…）与旧入口跳转。
+ * overview#307 E 块：阅读页路径式地址（/read/<id>[/<key>][/<章>]）的解析与拼写。
  */
 import { describe, it, expect } from '@jest/globals';
-import { collatedJuanFile, entryHasReaderContent, isLegacyCollatedJuan, juanLabel, juanStem, legacyCollatedJuanTarget, legacyReaderParts, legacyReaderTarget, parseReaderQuery, readerHref, readerTitle } from '../reader-route';
+import {
+    chapterFallbackLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, splitReaderPathname,
+} from '../reader-route';
 
-const WORK = 'd59f20aowb9c'; // 史記（Work）
-const ZHIZHAI = 'd59f2htm01du'; // 直齋書錄解題（Work，有整理本）
+const WORK = 'd59f2htm01du'; // 直齋書錄解題（Work）
 const BOOK = '988fbiuha8'; // 御定佩文韻府（Book）
 const ENTITY = 'hixhd2h9bk4b'; // 孔子（Entity）
 
-describe('parseReaderQuery', () => {
-    it('整理本、全文带卷号', () => {
-        expect(parseReaderQuery(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toEqual({ kind: 'collated', juan: 'juan/011.json' });
-        expect(parseReaderQuery(BOOK, new URLSearchParams('kind=fulltext&juan=001'))).toEqual({ kind: 'fulltext', juan: '001' });
+describe('key 与章号的形态', () => {
+    it('isTextKey：default 与 [a-z0-9-] 字母开头的非保留字', () => {
+        for (const k of ['default', 'collated', 'wikisource', 'wikisource-2', 'open-guji', 'shidian']) expect(isTextKey(k)).toBe(true);
+        for (const k of ['manifest', 'fragments', 'sources', '001', '3d', 'Wiki', 'a_b', '', 'a/b', '..']) expect(isTextKey(k)).toBe(false);
     });
-    it('key 只对全文留下，空值视同没带', () => {
-        expect(parseReaderQuery(WORK, { kind: 'fulltext', key: 'wiki-1', juan: '' })).toEqual({ kind: 'fulltext', key: 'wiki-1' });
-        expect(parseReaderQuery(WORK, { kind: 'collated', key: 'wiki-1' })).toEqual({ kind: 'collated' });
+    it('章号纯数字、字母开头是 key', () => {
+        expect(isChapterSegment('003')).toBe(true);
+        expect(isChapterSegment('3')).toBe(true);
+        expect(isChapterSegment('wikisource-2')).toBe(false);
+        expect(isChapterSegment('3a')).toBe(false);
+        expect(isChapterSegment('')).toBe(false);
+        expect(isChapterSegment('1234567')).toBe(false);
     });
-    it('重复参数取第一个', () => {
-        expect(parseReaderQuery(WORK, { kind: ['collated', 'fulltext'] })).toEqual({ kind: 'collated' });
-    });
-    it('kind 缺省：Work 看整理本，Book 看全文', () => {
-        expect(parseReaderQuery(WORK, {})).toEqual({ kind: 'collated' });
-        expect(parseReaderQuery(BOOK, {})).toEqual({ kind: 'fulltext' });
-    });
-    it.each<[string, Record<string, string>]>([
-        [WORK, { kind: 'lineage' }],
-        [BOOK, { kind: 'collated' }], // Book 没有整理本
-        [ENTITY, {}],
-        [ENTITY, { kind: 'fulltext' }],
-        ['BAD..id', { kind: 'fulltext' }],
-    ])('没有这种阅读页 → null：%s %j', (id, sp) => {
-        expect(parseReaderQuery(id, sp)).toBeNull();
+    it('只有 Work 与 Book 有阅读页', () => {
+        expect(hasReaderType(WORK)).toBe(true);
+        expect(hasReaderType(BOOK)).toBe(true);
+        expect(hasReaderType(ENTITY)).toBe(false);
+        expect(hasReaderType('not-an-id')).toBe(false);
     });
 });
 
-describe('readerHref／readerTitle／juanLabel', () => {
-    it('参数顺序固定，collated 不带 key', () => {
-        expect(readerHref(WORK, { kind: 'fulltext', juan: '001', key: 'k' })).toBe(`/read/${WORK}?kind=fulltext&key=k&juan=001`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'k', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
-        expect(readerHref(BOOK, { kind: 'fulltext' })).toBe(`/read/${BOOK}?kind=fulltext`);
+describe('readerPath／readerHref：主版本不写 key，章号可省', () => {
+    it('四种形态', () => {
+        expect(readerPath(WORK)).toBe(`/read/${WORK}`);
+        expect(readerPath(WORK, { chapter: '003' })).toBe(`/read/${WORK}/003`);
+        expect(readerPath(WORK, { key: 'wikisource-2' })).toBe(`/read/${WORK}/wikisource-2`);
+        expect(readerPath(WORK, { key: 'wikisource-2', chapter: '003' })).toBe(`/read/${WORK}/wikisource-2/003`);
     });
-    it('条目页「阅读全文」也用它（原 read-url.ts#buildReadUrl 的用例，行为不变）', () => {
-        expect(readerHref(WORK, { kind: 'fulltext', key: 'wikisource' })).toBe(`/read/${WORK}?kind=fulltext&key=wikisource`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', key: 'wikisource-01' })).toBe(`/read/${ZHIZHAI}?kind=collated`);
-        expect(readerHref(BOOK, { kind: 'fulltext', key: undefined, juan: '001' })).toBe(`/read/${BOOK}?kind=fulltext&juan=001`);
-        expect(readerHref(BOOK, { kind: 'fulltext', key: 'a b', juan: '卷一' }))
-            .toBe(`/read/${BOOK}?kind=fulltext&key=a+b&juan=%E5%8D%B7%E4%B8%80`);
-    });
-    it('卷名', () => {
-        expect(juanLabel('juan/011.json')).toBe('卷11');
-        expect(juanLabel('001')).toBe('卷1');
-        expect(juanLabel('第001.md')).toBe('卷1');
-        expect(juanLabel('序')).toBe('序');
-    });
-    it('整理本卷号：地址里是短形式，旧的卷文件名换成短形式', () => {
-        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
-        expect(readerHref(ZHIZHAI, { kind: 'collated', juan: '011' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
-        // 全文的 juan 不动
-        expect(readerHref(BOOK, { kind: 'fulltext', juan: 'juan/x.json' })).toBe(`/read/${BOOK}?kind=fulltext&juan=juan%2Fx.json`);
-    });
-    it('juanStem／isLegacyCollatedJuan／collatedJuanFile', () => {
-        expect(juanStem('juan/011.json')).toBe('011');
-        expect(juanStem('011')).toBe('011');
-        expect(juanStem('003.md')).toBe('003');
-        expect(isLegacyCollatedJuan('juan/011.json')).toBe(true);
-        for (const v of ['011', '011.json', 'juan/../x.json', '../x.json', 'juan/a/b.json', 'juan\\x.json']) expect(isLegacyCollatedJuan(v)).toBe(false);
-        expect(collatedJuanFile('011')).toBe('juan/011.json');
-        expect(collatedJuanFile('011', ['juan/序.json', 'juan/011.json'])).toBe('juan/011.json');
-        expect(collatedJuanFile('序', ['juan/序.json'])).toBe('juan/序.json');
-        expect(collatedJuanFile('juan/011.json', ['juan/011.json'])).toBe('juan/011.json');
-        expect(collatedJuanFile('099', ['juan/011.json'])).toBe('juan/099.json');
-    });
-    it('legacyCollatedJuanTarget：只有整理本的旧形式才给目标', () => {
-        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' })).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
-        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: '011' })).toBeNull();
-        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated' })).toBeNull();
-        expect(legacyCollatedJuanTarget(BOOK, { kind: 'fulltext', juan: 'juan/011.json' })).toBeNull();
-        expect(legacyCollatedJuanTarget(ZHIZHAI, { kind: 'collated', juan: 'juan/../x.json' })).toBeNull();
-    });
-    it('有章名用章名，空白或没有就回落「卷N」', () => {
-        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' }, '第三回')).toBe('紅樓夢 · 第三回 · 全文');
-        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' }, '  ')).toBe('紅樓夢 · 卷3 · 全文');
-        expect(readerTitle('紅樓夢', { kind: 'fulltext', juan: '003' })).toBe('紅樓夢 · 卷3 · 全文');
-    });
-    it('每卷各自的标题', () => {
-        expect(readerTitle('直齋書錄解題', { kind: 'collated', juan: 'juan/011.json' })).toBe('直齋書錄解題 · 卷11 · 整理本');
-        expect(readerTitle('宋史全文', { kind: 'fulltext' })).toBe('宋史全文 · 全文');
+    it('key 为 default 或空串都当主版本', () => {
+        expect(readerPath(WORK, { key: 'default', chapter: '003' })).toBe(`/read/${WORK}/003`);
+        expect(readerPath(WORK, { key: '', chapter: '003' })).toBe(`/read/${WORK}/003`);
+        expect(readerHref).toBe(readerPath);
     });
 });
 
-describe('legacyReaderTarget：旧入口 → 阅读页', () => {
-    const t = (path: string) => {
-        const u = new URL(`https://x${path}`);
-        return legacyReaderTarget(u.pathname, u.searchParams);
-    };
-    it('/book-index?tab=fulltext&id=…&juan=… 保留卷号', () => {
-        expect(t(`/book-index?tab=fulltext&id=${BOOK}&juan=003`)).toBe(`/read/${BOOK}?kind=fulltext&juan=003`);
+describe('parseReaderSegments', () => {
+    it('没有段＝主版本第一章；一段按形态分章号与 key；两段是 key＋章', () => {
+        expect(parseReaderSegments(WORK, [])).toEqual({ sel: {} });
+        expect(parseReaderSegments(WORK, undefined)).toEqual({ sel: {} });
+        expect(parseReaderSegments(WORK, ['003'])).toEqual({ sel: { chapter: '003' } });
+        expect(parseReaderSegments(WORK, ['wikisource'])).toEqual({ sel: { key: 'wikisource' } });
+        expect(parseReaderSegments(BOOK, ['wikisource-2', '003'])).toEqual({ sel: { key: 'wikisource-2', chapter: '003' } });
     });
-    it('/book-index?id=…&tab=collated（无卷号）', () => {
-        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated`)).toBe(`/read/${ZHIZHAI}?kind=collated`);
+    it('地址里写了 default：308 到不带 default 的形式', () => {
+        expect(parseReaderSegments(WORK, ['default'])).toEqual({ redirect: `/read/${WORK}` });
+        expect(parseReaderSegments(WORK, ['default', '003'])).toEqual({ redirect: `/read/${WORK}/003` });
     });
-    it('条目页的 fulltext／collated tab', () => {
-        expect(t(`/item/${ZHIZHAI}?tab=collated&juan=juan%2F011.json`)).toBe(`/read/${ZHIZHAI}?kind=collated&juan=011`);
-        expect(t(`/item/${WORK}?tab=fulltext`)).toBe(`/read/${WORK}?kind=fulltext`);
+    it('形态不对 → null（404）：保留字、大写、三段、章号不是数字、第一段是章号又带第二段', () => {
+        for (const segs of [['manifest'], ['Wiki'], ['a', 'b', 'c'], ['wikisource', 'abc'], ['003', '004'], ['fragments', '001'], ['wiki_source']]) {
+            expect(parseReaderSegments(WORK, segs)).toBeNull();
+        }
     });
-    it('别的 tab 的参数丢掉', () => {
-        expect(t(`/book-index?id=${ZHIZHAI}&tab=collated&page=3&mode=graph`)).toBe(`/read/${ZHIZHAI}?kind=collated`);
-    });
-    it.each([
-        `/book-index?id=${WORK}`,
-        `/book-index?id=${WORK}&tab=lineage`,
-        `/book-index?tab=fulltext`,
-        `/book-index?id=${BOOK}&tab=collated`, // Book 没有整理本，不跳进 404
-        `/book-index?id=${WORK}&tab=collated&redirected_from=1eujfe7s94veo`,
-        `/book-index?id=${WORK}&tab=collated&no_redirect=true`,
-        `/item/${WORK}`,
-        `/item/${ENTITY}?tab=fulltext`,
-        `/about?tab=fulltext&id=${WORK}`,
-    ])('不是旧阅读入口：%s', (path) => {
-        expect(t(path)).toBeNull();
+    it('条目类型没有阅读页（人物、丛编、乱填的 id）→ null', () => {
+        expect(parseReaderSegments(ENTITY, [])).toBeNull();
+        expect(parseReaderSegments('xx', [])).toBeNull();
     });
 });
 
-describe('legacyReaderParts／entryHasReaderContent（overview#267 QA 回归 P2）', () => {
-    const p = (path: string) => { const u = new URL(`https://x${path}`); return legacyReaderParts(u.pathname, u.searchParams); };
-    it('拆出 id 与阅读页查询；不是旧阅读入口就 null', () => {
-        expect(p(`/book-index?id=${BOOK}&tab=fulltext&juan=003`)).toEqual({ id: BOOK, q: { kind: 'fulltext', juan: '003' } });
-        expect(p(`/item/${ZHIZHAI}?tab=collated`)).toEqual({ id: ZHIZHAI, q: { kind: 'collated' } });
-        expect(p(`/book-index?id=${WORK}&tab=lineage`)).toBeNull();
-        expect(p(`/item/${BOOK}?tab=collated`)).toBeNull(); // Book 没有整理本
+describe('splitReaderPathname', () => {
+    it('切出 id 与其后的段；末尾斜杠忽略；不是阅读页路径返回 null', () => {
+        expect(splitReaderPathname(`/read/${WORK}`)).toEqual({ id: WORK, segs: [] });
+        expect(splitReaderPathname(`/read/${WORK}/wikisource/003/`)).toEqual({ id: WORK, segs: ['wikisource', '003'] });
+        expect(splitReaderPathname('/read')).toBeNull();
+        expect(splitReaderPathname('/item/x')).toBeNull();
     });
-    it('整理本看 has_collated（_has_collated 同义），只认明确为 true', () => {
-        expect(entryHasReaderContent({ has_collated: true }, 'collated')).toBe(true);
-        expect(entryHasReaderContent({ _has_collated: true }, 'collated')).toBe(true);
-        expect(entryHasReaderContent({ has_text: true }, 'collated')).toBe(false);
-        expect(entryHasReaderContent({ has_collated: 'true' }, 'collated')).toBe(false);
-        expect(entryHasReaderContent({}, 'collated')).toBe(false);
-    });
-    it('全文看 has_site_fulltext／has_full_text，不看 has_text（外部资源不等于站内有正文，overview#306）', () => {
-        expect(entryHasReaderContent({ has_site_fulltext: true }, 'fulltext')).toBe(true);
-        expect(entryHasReaderContent({ has_full_text: true }, 'fulltext')).toBe(true);
-        expect(entryHasReaderContent({ has_text: true }, 'fulltext')).toBe(false);
-        expect(entryHasReaderContent({ _has_text: true }, 'fulltext')).toBe(false);
-        expect(entryHasReaderContent({ has_collated: true }, 'fulltext')).toBe(false);
-        expect(entryHasReaderContent({ has_text: 1 }, 'fulltext')).toBe(false);
-        expect(entryHasReaderContent({}, 'fulltext')).toBe(false);
+});
+
+describe('readerTitle', () => {
+    it('书名 · 章名 · 版本名；没有章名用「卷N」；没有章号也不写', () => {
+        expect(readerTitle('直齋書錄解題', '003', '史錄', '整理本')).toBe('直齋書錄解題 · 史錄 · 整理本');
+        expect(readerTitle('紅樓夢', '003', undefined, '維基文庫')).toBe('紅樓夢 · 卷3 · 維基文庫');
+        expect(readerTitle('紅樓夢', undefined, undefined, '維基文庫')).toBe('紅樓夢 · 維基文庫');
+        expect(readerTitle('紅樓夢', '003', ' 第三回 ')).toBe('紅樓夢 · 第三回');
+        expect(chapterFallbackLabel('011')).toBe('卷11');
+        expect(chapterFallbackLabel('序')).toBe('序');
     });
 });

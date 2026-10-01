@@ -23,7 +23,7 @@ jest.mock('../DigitalizationView', () => ({ __esModule: true, default: () => nul
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 
 import BookDetailContent from '../BookDetailContent';
-import { readerHref } from '@/lib/reader-route';
+import { readerPath } from '@/lib/reader-route';
 
 type ReadLink = (ctx: Partial<ReadLinkContext>) => string | null;
 
@@ -32,34 +32,36 @@ describe('BookDetailContent 接三栏组件', () => {
         render(<BookDetailContent id="d59f20aowb9c" />);
     });
 
-    it('readLink 按阅读页地址约定出地址', () => {
+    const withText = (over: Partial<ReadLinkContext> = {}): Partial<ReadLinkContext> => ({ detail: { text_count: 2 } as never, ...over });
+
+    it('条目有可读文本（text_count>0）：阅读全文进主版本的阅读页，路径式、不带 kind／key（overview#307）', () => {
         const readLink = captured.props!.readLink as ReadLink;
-        expect(readLink({ kind: 'collated' })).toBe('/read/d59f20aowb9c?kind=collated');
-        expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource' }))
-            .toBe('/read/d59f20aowb9c?kind=fulltext&key=wikisource');
+        expect(readLink(withText())).toBe('/read/d59f20aowb9c');
+        // bim 的 ctx.kind 是按旧目录探测的，迁移后是 null 也照样出按钮
+        expect(readLink(withText({ kind: null }))).toBe('/read/d59f20aowb9c');
+        expect(readLink(withText({ kind: 'collated', fullTextKey: 'wikisource-01' }))).toBe('/read/d59f20aowb9c');
     });
 
-    it('readLink 与阅读页同一个 readerHref（Q7：地址只有一套拼法）', () => {
+    it('readLink 与阅读页同一个 readerPath（Q7：地址只有一套拼法）', () => {
         const readLink = captured.props!.readLink as ReadLink;
-        // 有 Work 全文时整理本也会带着 fullTextKey 进来，不能写进地址（P4）
-        expect(readLink({ kind: 'collated', fullTextKey: 'wikisource-01' })).toBe('/read/d59f20aowb9c?kind=collated');
-        for (const ctx of [{ kind: 'collated' as const }, { kind: 'fulltext' as const }, { kind: 'fulltext' as const, fullTextKey: 'a b' }]) {
-            expect(readLink(ctx)).toBe(readerHref('d59f20aowb9c', { kind: ctx.kind, key: ctx.fullTextKey }));
-        }
+        expect(readLink(withText())).toBe(readerPath('d59f20aowb9c'));
+        expect(readLink(withText({ juan: '003' }))).toBe(readerPath('d59f20aowb9c', { chapter: '003' }));
     });
 
-    it('readLink 带上 ctx.juan，回目网格直接跳到对应那一回（B1）', () => {
+    it('readLink 带上 ctx.juan（回目网格的一回）：补成三位章号，直接打开那一章（B1）', () => {
         const readLink = captured.props!.readLink as ReadLink;
-        expect(readLink({ kind: 'fulltext', fullTextKey: 'wikisource', juan: '003' }))
-            .toBe('/read/d59f20aowb9c?kind=fulltext&key=wikisource&juan=003');
-        expect(readLink({ kind: 'fulltext', juan: '001' })).toBe('/read/d59f20aowb9c?kind=fulltext&juan=001');
-        // 整理本没有 key，但 juan 照带
-        expect(readLink({ kind: 'collated', juan: '002' })).toBe('/read/d59f20aowb9c?kind=collated&juan=002');
+        expect(readLink(withText({ kind: 'fulltext', juan: '003' }))).toBe('/read/d59f20aowb9c/003');
+        expect(readLink(withText({ juan: '第001' }))).toBe('/read/d59f20aowb9c/001');
+        expect(readLink(withText({ juan: '12' }))).toBe('/read/d59f20aowb9c/012');
+        // 没有数字的章名：退回第一章
+        expect(readLink(withText({ juan: '序' }))).toBe('/read/d59f20aowb9c');
     });
 
-    it('没有可读内容时不出「阅读全文」', () => {
+    it('没有可读文本（没有 text_count、为 0）时不出「阅读全文」', () => {
         const readLink = captured.props!.readLink as ReadLink;
         expect(readLink({ kind: null })).toBeNull();
+        expect(readLink({ detail: {} as never, kind: 'collated' })).toBeNull();
+        expect(readLink({ detail: { text_count: 0 } as never })).toBeNull();
     });
 
     it('左栏顶部放站内检索框，回退表单 GET 到搜索页', () => {

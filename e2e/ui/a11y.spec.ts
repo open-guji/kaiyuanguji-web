@@ -14,12 +14,15 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
+import { requireNewTextData } from '../fixtures/preconditions';
 
 interface Target {
     name: string;
     path: string;
     /** 只在全栈站有 */
     fullstackOnly?: boolean;
+    /** 需要新结构文本数据（overview#307）：迁移落地前跳过 */
+    needsNewText?: boolean;
 }
 
 const TARGETS: Target[] = [
@@ -28,7 +31,7 @@ const TARGETS: Target[] = [
     { name: '古籍元数据（搜索页）', path: '/book-index?q=%E6%98%93' },
     { name: '阅读首页', path: '/read', fullstackOnly: true },
     { name: '条目页', path: `/item/${ANCHORS.work.id}`, fullstackOnly: true },
-    { name: '阅读页（整理本）', path: `/read/${ANCHORS.collated.id}?kind=collated`, fullstackOnly: true },
+    { name: '阅读页（整理本）', path: `/read/${ANCHORS.collated.id}`, fullstackOnly: true, needsNewText: true },
 ];
 
 const VIEWPORTS = [
@@ -52,8 +55,9 @@ function describeViolations(vs: Awaited<ReturnType<typeof scan>>): string {
 for (const vp of VIEWPORTS) {
     test.describe(`无障碍（axe critical／serious）· ${vp.name}`, () => {
         for (const t of TARGETS) {
-            test(t.name, async ({ browser }) => {
+            test(t.name, async ({ browser, request }) => {
                 test.skip(!!t.fullstackOnly && !SITE.fullstack, `${SITE.host} 是静态站，没有 ${t.path}`);
+                if (t.needsNewText) await requireNewTextData(request, ANCHORS.collated.id, t.name);
                 const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, reducedMotion: 'reduce' });
                 const page = await ctx.newPage();
                 try {
@@ -98,8 +102,9 @@ for (const combo of COMBOS) {
     for (const vp of vps) {
         test.describe(`无障碍外观矩阵 · ${combo.theme}＋${combo.layout} · ${vp.name}`, () => {
             for (const t of TARGETS) {
-                test(t.name, async ({ browser }) => {
+                test(t.name, async ({ browser, request }) => {
                     test.skip(!!t.fullstackOnly && !SITE.fullstack, `${SITE.host} 是静态站，没有 ${t.path}`);
+                    if (t.needsNewText) await requireNewTextData(request, ANCHORS.collated.id, t.name);
                     test.skip(!(await siteHasAppearance()), `${SITE.host} 还没上外观面板（v4 P0），跳过矩阵`);
                     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, reducedMotion: 'reduce' });
                     await ctx.addInitScript(([th, ly]) => {

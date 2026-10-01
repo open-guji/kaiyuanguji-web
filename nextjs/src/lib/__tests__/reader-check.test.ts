@@ -1,103 +1,67 @@
 /**
  * @jest-environment node
  *
- * N5b：阅读页服务端校验 kind／key／juan（web#99 审查：乱填卷号不能 200 出软 404）。
+ * overview#307 E 块：阅读页服务端校验读 manifest（web#99 审查：乱填地址不能 200 出软 404）。
  */
 import { describe, it, expect, jest } from '@jest/globals';
-import { checkReader, checkReaderQuery, fullTextShardOf, type GetCurrentJson } from '../server/reader-check';
+import { checkReader, checkReaderSel, getManifest, type GetCurrentJson } from '../server/reader-check';
 
-const ZHIZHAI = 'd59f2htm01du'; // Work，有整理本
-const SONGSHI = 'd59f2gonq7sy'; // Work，有 Work 全文 wikisource-01
-const BOOK = '988fbiuha8';
+const WORK = 'd59f2htm01du';
 
 const FILES: Record<string, unknown> = {
-    [`items/${ZHIZHAI}/collated_edition/index.json`]: { juan_files: ['juan/001.json', 'juan/011.json'] },
-    [`index/full_text/${fullTextShardOf(SONGSHI)}.json`]: {
-        [SONGSHI]: [
-            { key: 'from-book', owner_type: 'Book' },
-            { key: 'wikisource-01', owner_type: 'Work', primary: true },
-        ],
-    },
-    [`items/${SONGSHI}/full_text/wikisource-01/index.json`]: { chapters: [{ file: '001.md' }, { file: '002.md' }] },
-    [`items/${BOOK}/full_text/index.json`]: { chapters: [{ file: '第001.md' }] },
+    [`items/${WORK}/manifest.json`]: { id: WORK, versions: [{ key: 'default', kind: 'collated', label: '整理本' }, { key: 'wikisource', kind: 'transcription', label: '維基文庫' }] },
+    [`items/${WORK}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '經錄', has_json: true }, { n: 2, file: '002', title: ' 史錄 ', has_json: true }] },
+    [`items/${WORK}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '' }, { n: 2, file: '002' }, { n: 3, file: '003', title: '卷三' }] },
 };
-
 const get: GetCurrentJson = async <T,>(rel: string) => (FILES[rel] ?? null) as T | null;
 
-describe('checkReaderQuery', () => {
-    it('宋史的全文分片与 book-index-ui 的 shardOf 一致（e）', () => {
-        expect(fullTextShardOf(SONGSHI)).toBe('e');
+describe('checkReader', () => {
+    it('没给版本和章：主版本第一章，带回 manifest、版本、目录与章名', async () => {
+        const r = await checkReader(WORK, {}, get);
+        expect(r.status).toBe('found');
+        expect(r.version?.key).toBe('default');
+        expect(r.chapter).toBe('001');
+        expect(r.chapterTitle).toBe('經錄');
+        expect(r.index?.chapters).toHaveLength(2);
+        expect(r.manifest?.versions).toHaveLength(2);
     });
 
-    it.each<[string, string, Parameters<typeof checkReaderQuery>[1], boolean]>([
-        ['整理本、无卷号', ZHIZHAI, { kind: 'collated' }, true],
-        ['整理本、卷号在 juan_files 里（旧的卷文件名）', ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' }, true],
-        ['整理本、短形式卷号', ZHIZHAI, { kind: 'collated', juan: '011' }, true],
-        ['Work 全文、无 key 取首选（跳过 Book 层那份）', SONGSHI, { kind: 'fulltext', juan: '002' }, true],
-        ['Work 全文、key 对', SONGSHI, { kind: 'fulltext', key: 'wikisource-01', juan: '001.md' }, true],
-        ['Book 全文、章节 stem', BOOK, { kind: 'fulltext', juan: '第001' }, false],
-    ])('found：%s', async (_n, id, q, isWork) => {
-        expect(await checkReaderQuery(id, q, isWork, get)).toBe('found');
+    it('给了章：章名按目录（去首尾空白）；其他版本按 key', async () => {
+        expect((await checkReader(WORK, { chapter: '002' }, get)).chapterTitle).toBe('史錄');
+        const w = await checkReader(WORK, { key: 'wikisource', chapter: '003' }, get);
+        expect(w).toMatchObject({ status: 'found', chapter: '003', chapterTitle: '卷三' });
+        expect((await checkReader(WORK, { key: 'wikisource' }, get)).chapter).toBe('001');
+        expect((await checkReader(WORK, { key: 'wikisource' }, get)).chapterTitle).toBeUndefined(); // 目录里章名为空
     });
 
-    it.each<[string, string, Parameters<typeof checkReaderQuery>[1], boolean]>([
-        ['乱填的整理本卷号', ZHIZHAI, { kind: 'collated', juan: 'juan/999.json' }, true],
-        ['乱填的整理本短卷号', ZHIZHAI, { kind: 'collated', juan: '999' }, true],
-        ['整理本卷号带扩展名却不是卷文件名', ZHIZHAI, { kind: 'collated', juan: '011.json' }, true],
-        ['没有整理本的 Work', SONGSHI, { kind: 'collated' }, true],
-        ['乱填的全文卷号', SONGSHI, { kind: 'fulltext', juan: '999' }, true],
-        ['不存在的 key', SONGSHI, { kind: 'fulltext', key: 'nope' }, true],
-        ['key 带路径穿越', SONGSHI, { kind: 'fulltext', key: '../x' }, true],
-        ['没有 Work 全文的 Work', ZHIZHAI, { kind: 'fulltext' }, true],
-        ['没有全文的 Book', '988fbiuhaz', { kind: 'fulltext' }, false],
-        ['Book 全文乱填卷号', BOOK, { kind: 'fulltext', juan: '002' }, false],
-    ])('missing：%s', async (_n, id, q, isWork) => {
-        expect(await checkReaderQuery(id, q, isWork, get)).toBe('missing');
+    it('版本或章不存在 → missing（页面真 404）', async () => {
+        expect((await checkReader(WORK, { key: 'kanripo' }, get)).status).toBe('missing');
+        expect((await checkReader(WORK, { chapter: '009' }, get)).status).toBe('missing');
+        expect((await checkReader(WORK, { key: 'wikisource', chapter: '004' }, get)).status).toBe('missing');
     });
 
-    it('查不了（网络错）→ unknown，不当成 404', async () => {
-        jest.spyOn(console, 'warn').mockImplementation(() => {});
-        const broken: GetCurrentJson = async () => { throw new Error('HTTP 502'); };
-        expect(await checkReaderQuery(ZHIZHAI, { kind: 'collated', juan: 'juan/011.json' }, true, broken)).toBe('unknown');
+    it('条目没有 manifest（没有文本）、manifest 没有版本、目录为空 → missing', async () => {
+        expect((await checkReader('d59f2aaaaaaa', {}, get)).status).toBe('missing');
+        const g1: GetCurrentJson = async <T,>(rel: string) => (rel.endsWith('manifest.json') ? { versions: [] } : null) as T | null;
+        expect((await checkReader(WORK, {}, g1)).status).toBe('missing');
+        const g2: GetCurrentJson = async <T,>(rel: string) => (rel.endsWith('manifest.json') ? FILES[`items/${WORK}/manifest.json`] : { chapters: [] }) as T | null;
+        expect((await checkReader(WORK, {}, g2)).status).toBe('missing');
     });
-});
 
-describe('checkReader：带回章名', () => {
-    const withTitles: GetCurrentJson = async <T,>(rel: string) => ({
-        ...FILES,
-        [`items/${BOOK}/full_text/index.json`]: { chapters: [{ file: '003.md', title: ' 第三回 ' }, { file: '004.md', title: '' }, { file: '005.md' }] },
-        [`items/${SONGSHI}/full_text/wikisource-01/index.json`]: { chapters: [{ file: '001.md', title: '卷一' }] },
-    } as Record<string, unknown>)[rel] as T | null ?? null;
-
-    it('Book、Work 全文取目录里的章名（去空白）；没有章名、没带卷号、整理本都是 undefined', async () => {
-        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '003' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: '第三回' });
-        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '003.md' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: '第三回' });
-        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '004' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
-        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '005' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
-        expect(await checkReader(BOOK, { kind: 'fulltext' }, false, withTitles)).toEqual({ status: 'found', chapterTitle: undefined });
-        expect(await checkReader(SONGSHI, { kind: 'fulltext', key: 'wikisource-01', juan: '001' }, true, withTitles)).toEqual({ status: 'found', chapterTitle: '卷一' });
-        expect(await checkReader(ZHIZHAI, { kind: 'collated', juan: '011' }, true, withTitles)).toEqual({ status: 'found' });
-    });
-    it('查不到就 missing，没有章名', async () => {
-        expect(await checkReader(BOOK, { kind: 'fulltext', juan: '999' }, false, withTitles)).toEqual({ status: 'missing' });
+    it('查不了（网络错）→ unknown，不当 404', async () => {
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const boom: GetCurrentJson = async () => { throw new Error('ECONNRESET'); };
+        expect((await checkReader(WORK, { chapter: '001' }, boom)).status).toBe('unknown');
+        expect(await checkReaderSel(WORK, {}, boom)).toBe('unknown');
+        warn.mockRestore();
     });
 });
 
-describe('checkReaderQuery：全文目录 chapters 为空算没有（与阅读索引判据一致，overview#306）', () => {
-    const EMPTY_BOOK = '988fbiuha9';
-    const EMPTY_WORK = 'd59f2gonq7sz';
-    const files: Record<string, unknown> = {
-        [`items/${EMPTY_BOOK}/full_text/index.json`]: { chapters: [] },
-        [`index/full_text/${fullTextShardOf(EMPTY_WORK)}.json`]: { [EMPTY_WORK]: [{ key: 'k1', owner_type: 'Work', primary: true }] },
-        [`items/${EMPTY_WORK}/full_text/k1/index.json`]: { chapters: [] },
-    };
-    const g: GetCurrentJson = async <T,>(rel: string) => (files[rel] ?? null) as T | null;
-
-    it('Book：full_text/index.json 存在但 chapters 为空 → missing', async () => {
-        expect(await checkReaderQuery(EMPTY_BOOK, { kind: 'fulltext' }, false, g)).toBe('missing');
-    });
-    it('Work：带 key 取目录，chapters 为空 → missing', async () => {
-        expect(await checkReaderQuery(EMPTY_WORK, { kind: 'fulltext', key: 'k1' }, true, g)).toBe('missing');
+describe('getManifest', () => {
+    it('取到返回；没有返回 null；形态不对（版本没有 key）当没有', async () => {
+        expect((await getManifest(WORK, get))?.versions.map((v) => v.key)).toEqual(['default', 'wikisource']);
+        expect(await getManifest('d59f2aaaaaaa', get)).toBeNull();
+        const bad: GetCurrentJson = async <T,>() => ({ versions: [{ kind: 'collated' }] }) as T;
+        expect(await getManifest(WORK, bad)).toBeNull();
     });
 });
-

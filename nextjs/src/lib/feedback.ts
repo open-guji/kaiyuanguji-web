@@ -4,7 +4,7 @@
  * 后端 edge-functions/api/feedback.js 不改，只收 type／content／contact／pageUrl／resourceId。
  * 页面上下文按用户定的方案塞进这几个现成字段：
  *   - 条目 id → resourceId（只认合法条目 id，其余给空）；
- *   - 卷号 → pageUrl（阅读页地址本来就带 &juan=，提交时取当前地址即可）；
+ *   - 章号 → pageUrl（阅读页地址本来就带章号 /read/<id>/<章>，提交时取当前地址即可）；
  *   - 选中的文字 → 拼在正文开头，形如「【原文】……」，与读者写的话空一行隔开。
  */
 import { parseItemId, type ItemType } from './item-id';
@@ -126,9 +126,13 @@ export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch
     }
 }
 
-/** 阅读页的「关于」一行：「直斋书录解题 · 整理本 · 卷4」。卷号取地址里的卷号（011，或旧式 juan/011.json）／章节名里的数字 */
-export function readerFeedbackLabel(bookTitle: string, q: { kind: 'collated' | 'fulltext'; juan?: string }): string {
-    const n = q.juan?.match(/(\d+)(?:\.json)?$/)?.[1];
-    const part = n ? (q.kind === 'collated' ? `卷${Number(n)}` : `第 ${Number(n)} 章`) : null;
-    return [bookTitle.trim(), q.kind === 'collated' ? '整理本' : '全文', part].filter(Boolean).join(' · ');
+/**
+ * 阅读页的「关于」一行：「直斋书录解题 · 整理本 · 卷4」「诗序 · 維基文庫 · 第 12 章」。
+ * version 是版本名（整理本／維基文庫…，来自 manifest）；kind 是版本类别（整理本按「卷」，其余按「章」）；
+ * chapter 是三位章号（004）或章名里带的数字。
+ */
+export function readerFeedbackLabel(bookTitle: string, loc: { version?: string; kind?: string; chapter?: string }): string {
+    const n = loc.chapter?.match(/(\d+)$/)?.[1];
+    const part = n ? (loc.kind === 'collated' ? `卷${Number(n)}` : `第 ${Number(n)} 章`) : null;
+    return [bookTitle.trim(), loc.version?.trim(), part].filter(Boolean).join(' · ');
 }
