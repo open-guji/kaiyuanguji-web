@@ -34,7 +34,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { classificationL1, lossStatusValue } from './lib/work-fields.mjs';
+import { classificationL1, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 
 const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
@@ -143,7 +143,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         classification: classificationL1(detail.classification, entry.classification),
         loss_status: lossStatusValue(detail.loss_status, entry.loss_status),
         has_collated: !!entry.has_collated,
-        has_text: !!entry.has_text,
+        has_text: hasTextValue(entry),   // 有转录全文或整理本（「有文本」筛选，overview#322）
         has_image: !!entry.has_image,
         juan_count: entry.juan_count || 0,
         completeness,
@@ -181,7 +181,7 @@ function buildBookDoc(entry, detail, isDraft = true) {
         dynasty: entry.dynasty || '',          // 撰人朝代
         era: entry.era || '',                  // 刊刻朝代（2026-09 投影自 Book.dating，与 dynasty 不是一回事）
         sort_year: entry.sort_year ?? null,
-        has_text: !!entry.has_text,
+        has_text: hasTextValue(entry),
         has_image: !!entry.has_image,
         completeness: (entry.has_text ? 3 : 0) + (entry.has_image ? 2 : 0),
         title_chars: Array.from(title).length,
