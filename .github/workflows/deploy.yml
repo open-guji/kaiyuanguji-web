@@ -444,6 +444,10 @@ jobs:
       # h1 两路 continue-on-error 的理由不变：新链路不能拖累 current/ 已经成功的发布。
       # COS 限流：三个脚本的并发原来都是 80（串行，同一时刻只有一个在传）；并行时各自调小，
       # 加起来仍是 80（COS_CONCURRENCY，见 lib/cos-sync-decision.mjs），不会因为叠加而撞限流。
+      # 并发分配（2026-10-01 按文本迁移后第一次全量上传的实测重分：每个并发槽约 4 个对象/秒，上传耗时只与「对象数／并发」有关）：
+      #   current/ 13.3 万个对象 c=48 用了 657 秒（≈203 个/秒）；h1 文本 12.7 万个对象 c=8 用了约 66 分钟（≈32 个/秒）。
+      #   h1 条目平时只传增量、很轻，h1 文本在数据大换血（如文本迁移）时才重。三路加起来仍是 80：
+      #   current/ 36＋h1 条目 12＋h1 文本 32，同样的全量上传三路都在 15～17 分钟内结束（原来文本那一路拖 66 分钟）。
       # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
       - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
         id: cos_sync
@@ -458,11 +462,11 @@ jobs:
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
           set +e
-          ( COS_CONCURRENCY=48 node scripts/sync-to-cos.mjs ) > "$LOGS/current.log" 2>&1 &
+          ( COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs ) > "$LOGS/current.log" 2>&1 &
           P_CUR=$!
-          ( node scripts/bundle-hashed.mjs && COS_CONCURRENCY=24 node scripts/sync-h1-to-cos.mjs ) > "$LOGS/h1-entry.log" 2>&1 &
+          ( node scripts/bundle-hashed.mjs && COS_CONCURRENCY=12 node scripts/sync-h1-to-cos.mjs ) > "$LOGS/h1-entry.log" 2>&1 &
           P_H1=$!
-          ( node scripts/bundle-hashed-text.mjs && COS_CONCURRENCY=8 node scripts/sync-h1-text-to-cos.mjs ) > "$LOGS/h1-text.log" 2>&1 &
+          ( node scripts/bundle-hashed-text.mjs && COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs ) > "$LOGS/h1-text.log" 2>&1 &
           P_TXT=$!
           ( while :; do sleep 60; echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC（current/ pid $P_CUR、h1 条目 pid $P_H1、h1 文本 pid $P_TXT）"; done ) &
           HB=$!
