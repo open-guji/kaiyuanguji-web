@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import HomeSearch from '@/components/home/HomeSearch';
-import { HOME_FEATURES } from '@/components/home/features';
+import HomeFeatures from '@/components/home/HomeFeatures';
 
 // 2026-09-29 设计稿 v3（overview#286）：眉题前加短横；检索框改成一体的方框（图标＋输入＋按钮）；
 // 「我们在做的事」已上线的做成抬起的卡片并带入口，规划中的用虚线框；「文本开放／代码开源」标题前加许可徽标，
@@ -67,25 +67,7 @@ export default function HomePage() {
           <h2 id="home-features-title">我们在做的事</h2>
           <span className="home-meta">古籍元数据、资源收集已上线，其余在陆续推进</span>
         </div>
-        <ul className="home-features">
-          {HOME_FEATURES.map((f, i) => (
-            <li key={f.title} className={f.live ? 'home-feature is-live' : 'home-feature'}>
-              <span className="num" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <h3>
-                {f.title}
-                <span className={f.live ? 'status is-live' : 'status'}>{f.live ? '已上线' : '规划中'}</span>
-              </h3>
-              <p>{f.text}</p>
-              {f.cta && (
-                <Link className="home-feature-cta" href={f.cta.href}>
-                  {f.cta.label} <span aria-hidden="true">→</span>
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+        <HomeFeatures />
       </section>
 
       <section className="home-open" aria-label="开放">

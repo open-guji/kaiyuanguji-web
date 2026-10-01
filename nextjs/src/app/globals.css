@@ -1361,6 +1361,10 @@
     color: var(--color-ink-2);
     line-height: 1.7;
   }
+  /* 「还有 N 项规划中」展开键：只在手机端出现（overview#325） */
+  .home-features-more {
+    display: none;
+  }
   .home-feature .num {
     display: block;
     margin-bottom: 2px;
@@ -1514,6 +1518,32 @@
     .home-features {
       grid-template-columns: minmax(0, 1fr);
       gap: 24px;
+    }
+    /* 手机端（overview#325）：规划中的四张卡默认收起，只留一行名目＋「展开」 */
+    .home-features[data-collapsed] .home-feature:not(.is-live) {
+      display: none;
+    }
+    .home-features-more {
+      display: flex;
+      width: 100%;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 44px;
+      margin-top: 16px;
+      padding: 10px 0;
+      border: 0;
+      border-top: var(--bim-fr-row-bd);
+      background: none;
+      font: inherit;
+      font-size: var(--fs-sm);
+      text-align: left;
+      color: var(--color-ink-2);
+      cursor: pointer;
+    }
+    .home-features-more-act {
+      flex: none;
+      color: var(--color-zhu);
     }
     .home-open-inner {
       grid-template-columns: minmax(0, 1fr);

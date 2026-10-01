@@ -17,7 +17,23 @@ describe('首页（N1）', () => {
         expect(screen.getByRole('heading', { level: 1, name: '让科技赋予古籍数字生命' })).toBeInTheDocument();
         expect(screen.getByRole('searchbox', { name: '搜索古籍索引' })).toBeInTheDocument();
         const main = screen.getByRole('main');
-        expect(within(main).getAllByRole('button').map((b) => b.textContent)).toEqual(['搜索']);
+        // 「还有 N 项规划中」是手机端的展开键（overview#325），不算主按钮
+        const actions = within(main).getAllByRole('button').filter((b) => !b.hasAttribute('aria-expanded'));
+        expect(actions.map((b) => b.textContent)).toEqual(['搜索']);
+    });
+
+    it('手机端规划中的卡默认收起，点「展开」再出来（overview#325）', () => {
+        render(<HomePage />);
+        const list = document.getElementById('home-features')!;
+        const more = screen.getByRole('button', { name: /还有 4 项规划中/ });
+        expect(list).toHaveAttribute('data-collapsed');
+        expect(more).toHaveAttribute('aria-expanded', 'false');
+        expect(more).toHaveAttribute('aria-controls', 'home-features');
+        fireEvent.click(more);
+        expect(list).not.toHaveAttribute('data-collapsed');
+        expect(more).toHaveAttribute('aria-expanded', 'true');
+        // 收起只是样式：六张卡始终都在 DOM 里，桌面照旧全显示
+        expect(list.querySelectorAll('.home-feature')).toHaveLength(HOME_FEATURES.length);
     });
 
     it('导语去掉「整理」二字；搜索提示改为简体例子（9-30 反馈，overview#322）', () => {
