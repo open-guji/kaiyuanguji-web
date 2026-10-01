@@ -6,7 +6,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { ANCHORS, COUNT_RANGES, DATA_BASE } from '../fixtures/anchors';
-import { fetchLatest, dataUrl } from '../fixtures/version';
+import { fetchLatest, dataUrl, versionKey } from '../fixtures/version';
 
 test.describe('数据管线契约', () => {
     test('latest.json 可达、格式正确、不陈旧', async ({ request }) => {
@@ -166,4 +166,24 @@ test.describe('数据管线契约', () => {
             'textCommitId 缺失 = book-text 没打包，整理本/全文会全空',
         ).toMatch(/^[0-9a-f]{40}$/);
     });
+
+    // 派生产物（总目 catalog/、阅读首页 read/、元数据首页 meta-home/）由网站打包脚本生成：脚本改了、数据仓没动，
+    // 产物变了而旧 cacheKey 不变，`?v=<cacheKey>` 的 URL 一字不变，CDN 继续吐旧产物（10-01：build-meta-home 修了 shelf，
+    // 页面取到的还是 shelf: null，测试站 verify 连挂两轮）。cacheKey 现在并进了产物内容摘要；这条按**前端实际用的 URL**
+    // （只带 ?v=<版本键>、不挂时间戳）取，与绕开缓存取到的源站内容比，不一致就是 CDN 在吐旧的。
+    for (const rel of ['meta-home/sections.json', 'catalog/tree.json', 'read/sections.json']) {
+        test(`派生产物 current/${rel}：按前端的带版本键 URL 取到的就是源站现状（CDN 没吐旧的）`, async ({ request }) => {
+            const latest = await fetchLatest(request);
+            const key = versionKey(latest);
+            const asFrontend = await request.get(`${DATA_BASE}/current/${rel}?v=${key}`);
+            test.skip(asFrontend.status() === 404, `${rel} 这个站点没有（旧版产物）`);
+            expect(asFrontend.ok(), `${rel} 带 ?v=${key} 取不到`).toBeTruthy();
+            const origin = await request.get(dataUrl(`current/${rel}`, key));
+            expect(origin.ok()).toBeTruthy();
+            expect(
+                await asFrontend.json(),
+                `${rel} 带 ?v=${key} 取到的与源站现状不一致——cacheKey 没随产物变，CDN 在吐旧产物（overview#322）`,
+            ).toEqual(await origin.json());
+        });
+    }
 });

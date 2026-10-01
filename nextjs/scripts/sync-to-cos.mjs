@@ -13,7 +13,8 @@
  *                                           （它们按 commitId 拼路径）用，见 LEGACY_SEARCH_COPY
  *   cos://{bucket}/latest.json              软指针 { commitId, cacheKey, ... }，30s TTL，唯一需 PURGE
  *
- * cacheKey = 三仓（draft/production/book-text）commit 合成键（lib/latest-cache-key.mjs）。
+ * cacheKey = 三仓（draft/production/book-text）commit 合成键，再并进打包产物的内容摘要（lib/latest-cache-key.mjs、lib/data-content-digest.mjs）：
+ * 网站打包脚本改了、数据仓没动时产物变了，键也要变，否则 ?v= 的 URL 不变、CDN 吐旧产物（overview#322）。
  * 此前只用 draft 的 commitId：只有 production 或 book-text 变的发布 v 不变，
  * immutable 缓存一直吐旧版（overview#169）。前端优先读 cacheKey，缺字段回退 commitId。
  *
@@ -50,6 +51,7 @@ import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { withCacheKey } from './lib/latest-cache-key.mjs';
+import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
@@ -103,7 +105,9 @@ if (!existsSync(LATEST_FILE)) {
 
 // 补上 cacheKey（bundle-data.mjs 产出的 latest.json 没有这个字段）。写回本地文件，
 // 让本步之后读 $KYG_DATA_ROOT/latest.json 的环节（bundle 降级拷贝等）拿到同一份。
-const latest = withCacheKey(JSON.parse(readFileSync(LATEST_FILE, 'utf-8')));
+// 产物内容摘要也并进 cacheKey：打包脚本改了而三仓 commit 没变时，产物变了、键也要变（见 lib/data-content-digest.mjs）。
+const contentDigest = computeDataContentDigest(DATA_DIR);
+const latest = withCacheKey(JSON.parse(readFileSync(LATEST_FILE, 'utf-8')), contentDigest);
 const shortCommit = latest.commitId;
 if (!shortCommit || shortCommit === 'unknown') {
     console.error('❌ latest.json has no usable commitId. Aborting.');
