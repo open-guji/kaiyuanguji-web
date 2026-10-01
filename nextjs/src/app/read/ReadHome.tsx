@@ -39,7 +39,8 @@ const S = {
         display: 'grid', gap: 12, listStyle: 'none', padding: 0, margin: '20px 0 0',
     } as const,
     card: {
-        display: 'block', padding: '12px 14px', border: '1px solid var(--color-border)', borderRadius: 8,
+        /* 版式判准（overview#325 第 14 条）：直角；框线走令牌——疏朗 1px 透明（不画框、盒子不跳），界栏 1px 实线 */
+        display: 'block', padding: '12px 14px', border: 'var(--bim-fr-card-bd)',
         background: 'var(--color-raise)', textDecoration: 'none', color: 'var(--color-ink)',
     } as const,
     cardTitle: { fontWeight: 600 },
