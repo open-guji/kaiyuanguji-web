@@ -6,14 +6,15 @@
  */
 import { createCatalogFetcher } from '../catalog/catalog-data';
 import { defaultItemDataBase } from '@/lib/server/item-data';
-import type { CatalogNode, ReadCard, ReadFeatured } from './read-route';
+import type { CatalogNode, ReadCard, ReadSections } from './read-route';
 
 export function createReadFetcher(opts: Parameters<typeof createCatalogFetcher>[0]) {
     const { getCurrent } = createCatalogFetcher(opts);
     return {
-        getFeatured: () => getCurrent<ReadFeatured>('read/featured.json'),
+        getSections: () => getCurrent<ReadSections>('read/sections.json'),
         getTree: () => getCurrent<CatalogNode[]>('read/tree.json'),
         getPage: (nodeId: string, page: number) => getCurrent<ReadCard[]>(`read/${nodeId}/${page}.json`),
+        getPeriodPage: (key: string, page: number) => getCurrent<ReadCard[]>(`read/period/${key}/${page}.json`),
     };
 }
 
@@ -24,6 +25,7 @@ function defaultFetcher() {
     return _default;
 }
 
-export const getReadFeaturedServer = () => defaultFetcher().getFeatured();
+export const getReadSectionsServer = () => defaultFetcher().getSections();
 export const getReadTreeServer = () => defaultFetcher().getTree();
 export const getReadPageServer = (nodeId: string, page: number) => defaultFetcher().getPage(nodeId, page);
+export const getReadPeriodPageServer = (key: string, page: number) => defaultFetcher().getPeriodPage(key, page);

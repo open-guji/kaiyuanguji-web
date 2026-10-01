@@ -103,6 +103,19 @@ export async function requireNewTextData(request: APIRequestContext, id: string,
     );
 }
 
+/**
+ * 阅读首页分区数据（overview#308：read/sections.json 与 read/period/…）。新的打包脚本跑过一版数据之前，
+ * /read 只显示「正在准备」、/read?period=… 是 404；这类用例断言的是「数据上线后」的行为，前提不在就跳过。
+ * 同样只看页面，不猜数据布局。
+ */
+export async function requireReadSections(request: APIRequestContext, feature: string): Promise<void> {
+    const res = await request.get(`${TARGET}/read?period=song`, { maxRedirects: 0 });
+    test.skip(
+        res.status() === 404,
+        `${TARGET} 上还没有阅读首页分区数据（/read?period=song 为 404）；「${feature}」待新数据上线后自动生效`,
+    );
+}
+
 /* ------------------------------------------------------------------ *
  * 空状态样本
  * ------------------------------------------------------------------ */
