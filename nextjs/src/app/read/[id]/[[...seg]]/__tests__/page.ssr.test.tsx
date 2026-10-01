@@ -2,13 +2,15 @@
  * @jest-environment node
  *
  * overview#307 E 块：阅读页服务端——路径式地址按 manifest 与版本目录校验，查不到真 404，
- * 查不了时 canonical 回落到不带章号的地址；旧查询串、default 地址 308。
+ * 查不了时 canonical 回落到不带章号的地址；default 地址 308。
+ * overview#322：页面是 ISR、不读查询串（旧查询串的换算只在中间件），条目与 manifest 两条取数链并行。
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
+const mockGetItem = jest.fn(async (id: string): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
 jest.mock('@/lib/server/item-data', () => ({
-    getItemServer: async (id: string) => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }),
+    getItemServer: (id: string) => mockGetItem(id),
     getPromotionServer: async () => ({ status: 'absent' }),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
@@ -38,14 +40,13 @@ const FILES: Record<string, unknown> = {
     [`items/${ZHIZHAI}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '' }, { n: 2, file: '002', title: '卷二' }] },
 };
 
-type Sp = Record<string, string | string[] | undefined>;
-async function meta(seg: string[] | undefined, sp: Sp = {}, id = ZHIZHAI) {
+async function meta(seg: string[] | undefined, id = ZHIZHAI) {
     const { generateMetadata } = await import('../page.ssr');
-    return generateMetadata({ params: Promise.resolve({ id, seg }), searchParams: Promise.resolve(sp) });
+    return generateMetadata({ params: Promise.resolve({ id, seg }) });
 }
-async function page(seg: string[] | undefined, sp: Sp = {}, id = ZHIZHAI) {
+async function page(seg: string[] | undefined, id = ZHIZHAI) {
     const { default: ReaderPage } = await import('../page.ssr');
-    return ReaderPage({ params: Promise.resolve({ id, seg }), searchParams: Promise.resolve(sp) });
+    return ReaderPage({ params: Promise.resolve({ id, seg }) });
 }
 
 beforeEach(() => {
@@ -56,8 +57,8 @@ beforeEach(() => {
 describe('阅读页 page.ssr（路径式地址）', () => {
     it.each(['assistant', 'assistant.md', 'roadmap_overview', 'typesetting.md'])('旧的说明页地址 /read/%s：308 到 /read/md/<名>，不查数据', async (id) => {
         const to = `REDIRECT /read/md/${id.replace(/\.md$/, '')}`;
-        await expect(meta([], {}, id)).rejects.toThrow(to);
-        await expect(page(undefined, {}, id)).rejects.toThrow(to);
+        await expect(meta([], id)).rejects.toThrow(to);
+        await expect(page(undefined, id)).rejects.toThrow(to);
         expect(mockGetCurrentJson).not.toHaveBeenCalled();
     });
 
@@ -77,7 +78,7 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     });
 
     it('默认版本就是维基文库转录：title、description 都不写版本名', async () => {
-        const m = await meta(['001'], {}, 'd59f2evysmww');
+        const m = await meta(['001'], 'd59f2evysmww');
         expect(m.title).toBe('直齋書錄解題 · 伊尹');
         expect(String(m.description)).not.toContain('維基文庫');
     });
@@ -95,23 +96,6 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         await expect(meta(['default', '002'])).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/002`);
     });
 
-    it('旧查询串 ?kind=…&key=…&juan=…：按 manifest 换算成新地址 308', async () => {
-        await expect(page([], { kind: 'collated', juan: 'juan/002.json' })).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/002`);
-        await expect(meta([], { kind: 'fulltext', key: 'wikisource-01', juan: '2' })).rejects.toThrow(`REDIRECT /read/${ZHIZHAI}/wikisource/002`);
-        // 没带旧参数（utm 等）不算旧地址
-        await expect(page([], { utm_source: 'x' })).resolves.toBeTruthy();
-    });
-
-    it('旧查询串但条目没有文本：308 条目页', async () => {
-        mockGetCurrentJson.mockResolvedValue(null);
-        await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
-    });
-
-    it('旧查询串但取 manifest 出错：临时跳条目页（不 500，不发 308）', async () => {
-        mockGetCurrentJson.mockRejectedValue(new Error('cos down'));
-        await expect(page([], { kind: 'collated' })).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
-    });
-
     it.each([['999'], ['wikisource', '009'], ['nonesuch'], ['nonesuch', '001']])('乱填的地址 %j：真 404 且 noindex，不出自指 canonical', async (...seg) => {
         const m = await meta(seg);
         expect(m.robots).toEqual({ index: false, follow: false });
@@ -126,7 +110,7 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     it('条目没有文本（没有 manifest）：真 404；人物等没有阅读页的类型也是', async () => {
         mockGetCurrentJson.mockResolvedValue(null);
         await expect(page([])).rejects.toThrow('NEXT_NOT_FOUND');
-        await expect(page([], {}, 'hixhd2h9bk4b')).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(page([], 'hixhd2h9bk4b')).rejects.toThrow('NEXT_NOT_FOUND');
     });
 
     it('查不了（网络错）：照常渲染，canonical 回落到不带章号的地址', async () => {
@@ -158,9 +142,26 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         expect(el.props.seed).toEqual({});
     });
 
-    it('按请求渲染：force-dynamic、不导出 generateStaticParams（否则读查询串 DYNAMIC_SERVER_USAGE，全 500）', async () => {
+    it('ISR（overview#322）：revalidate 1 小时、构建时不预渲染；不再 force-dynamic', async () => {
         const mod: Record<string, unknown> = await import('../page.ssr');
-        expect(mod.dynamic).toBe('force-dynamic');
-        expect(mod.generateStaticParams).toBeUndefined();
+        expect(mod.dynamic).toBeUndefined();
+        expect(mod.revalidate).toBe(3600);
+        expect(mod.dynamicParams).toBe(true);
+        await expect((mod.generateStaticParams as () => Promise<unknown[]>)()).resolves.toEqual([]);
+    });
+
+    it('条目与 manifest 两条取数链并行：条目还没回来，manifest 已经在取（overview#322）', async () => {
+        let release: (v: unknown) => void = () => {};
+        mockGetItem.mockImplementationOnce(() => new Promise((r) => { release = r; }));
+        const p = page(['002']);
+        await new Promise((r) => setTimeout(r, 0));
+        expect(mockGetCurrentJson).toHaveBeenCalledWith(`items/${ZHIZHAI}/manifest.json`);
+        release({ entry: { id: ZHIZHAI, type: 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' });
+        await expect(p).resolves.toBeTruthy();
+    });
+
+    it('被并条目：跳到目标的阅读页（同一版本与章）', async () => {
+        mockGetItem.mockResolvedValueOnce({ entry: { id: ZHIZHAI, merged_into: 'd59f2evs8ni8' }, source: 'h1', version: 'h1:r' });
+        await expect(page(['wikisource', '002'])).rejects.toThrow('REDIRECT /read/d59f2evs8ni8/wikisource/002');
     });
 });

@@ -17,30 +17,37 @@
 // - 每章各有 <title> 与 canonical（不带章号的短地址 canonical 指向第一章的全形）。
 // - 服务端按 manifest 与版本目录校验版本 key／章号（lib/server/reader-check.ts）：查不到就真 404，不出软 404；
 //   查不了（网络错）照常渲染，canonical 回落到不带章号的地址。
-// - 本页读查询串（只为认旧地址），是按请求渲染的动态页（不走 ISR）。
+// - 本页走 ISR，CDN 按 s-maxage 缓存（overview#322：原先 force-dynamic、每次访问都冷渲染，
+//   首访 1.5–4.5 秒、约 5% 超过 EdgeOne 回源时限回 503）。页面因此不能读查询串：
+//   旧查询串地址（?kind=&key=&juan=）的换算只在 middleware.ssr.ts 里做（取数出错时 307 条目页）。
+//   被并条目、草稿升格的跳转也由中间件先出（ISR 未命中时页面抛 redirect 会把 Location 写两遍，vercel/next.js#82117），
+//   页面里的跳转留作 RSC 导航的兜底。数据发版后由 /internal/revalidate 的 read 开关整体失效。
 // - 首屏数据（WEB2，overview#249）：服务端把 manifest、版本目录与首章正文一起交给 ReaderClient，
 //   浏览器不再走 manifest → 目录 → 正文 这条串行链（preload.ts）。
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
-import { checkReader, getManifestOrError, type ReaderCheckResult } from '@/lib/server/reader-check';
+import { checkReader, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
-import { legacyReaderTarget, parseLegacyReaderParams } from '@/lib/legacy-reader';
 import ReaderClient from '../ReaderClient';
 import { preloadReader } from '../preload';
 import type { ReaderSeed } from '../reader-seed';
 
-// 必须显式 force-dynamic，且不能导出 generateStaticParams：有了它（哪怕返回 []）Next 就把本页当
-// SSG／ISR（构建输出里是 ●），请求时一读 searchParams 就抛 DYNAMIC_SERVER_USAGE，每个阅读页都 500。
-// 静态导出不打包 .ssr.tsx，不需要它来过 output: 'export'（INT 预合实测，overview#220）。
-export const dynamic = 'force-dynamic';
+// ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
+// 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
+// 所以 Props 里没有 searchParams（overview#220 的教训）。
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<{ id: string; seg?: string[] }[]> {
+    return [];
+}
 
 type Props = {
     params: Promise<{ id: string; seg?: string[] }>;
-    searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult };
@@ -48,38 +55,26 @@ type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: Reade
 /** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取 */
 const PRELOAD_BUDGET_MS = 1500;
 
-function toParams(sp: Record<string, string | string[] | undefined>): URLSearchParams {
-    const p = new URLSearchParams();
-    for (const [k, v] of Object.entries(sp)) for (const x of Array.isArray(v) ? v : v === undefined ? [] : [v]) p.append(k, x);
-    return p;
-}
-
-/** 返回 null ＝ 真 404。被并条目、草稿升格照条目页一样跳，但落到目标的阅读页 */
-async function load(id: string, seg: string[] | undefined, sp: Record<string, string | string[] | undefined>): Promise<Loaded | null> {
+/**
+ * 返回 null ＝ 真 404。被并条目、草稿升格照条目页一样跳，但落到目标的阅读页。
+ *
+ * 条目（h1：指针 → 根清单 → 分片 → 条目）与 manifest／版本目录（latest.json → manifest → index）两条取数链互不依赖，
+ * 并行取（overview#322：串行时冷实例要走 8 跳，实测约 4 秒）。checkReader 自己兜住网络错（unknown），
+ * 条目查不到时它的结果不用，多取的那次落进 LRU。
+ */
+async function load(id: string, seg: string[] | undefined): Promise<Loaded | null> {
     const parsed = parseReaderSegments(id, seg);
     if (!parsed) return null;
     if ('redirect' in parsed) permanentRedirect(parsed.redirect);
     const { sel } = parsed;
 
-    // 旧地址 /read/<id>?kind=…&key=…&juan=…：按 manifest 换算成新地址（没有文本就去条目页）
-    if (!seg || seg.length === 0) {
-        const legacy = parseLegacyReaderParams(id, toParams(sp));
-        if (legacy) {
-            const manifest = await getManifestOrError(id, getCurrentJsonServer);
-            // 取数出错：临时跳条目页，别发会被缓存的 308
-            if (manifest === 'error') redirect(`/item/${id}`);
-            permanentRedirect(legacyReaderTarget(legacy, manifest) ?? `/item/${id}`);
-        }
-    }
-
-    const hit = await getItemServer(id);
+    const [hit, checked] = await Promise.all([getItemServer(id), checkReader(id, sel, getCurrentJsonServer)]);
     const r = await resolveItemRedirect(id, hit, getPromotionServer);
     if (r) {
         const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
         (r.permanent ? permanentRedirect : redirect)(target ? readerPath(target, sel) : r.to);
     }
     if (!hit) return null;
-    const checked = await checkReader(id, sel, getCurrentJsonServer);
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
     return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked };
@@ -102,10 +97,10 @@ function redirectLegacyMarkdown(id: string, seg: string[] | undefined) {
     if (name) permanentRedirect(markdownPagePath(name));
 }
 
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
-    const s = await load(id, seg, await searchParams);
+    const s = await load(id, seg);
     if (!s) return { title: '未找到', robots: { index: false, follow: false } };
     const chapter = s.checked.chapter;
     const versionLabel = readerVersionName(s.checked.version);
@@ -121,10 +116,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     };
 }
 
-export default async function ReaderPage({ params, searchParams }: Props) {
+export default async function ReaderPage({ params }: Props) {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
-    const s = await load(id, seg, await searchParams);
+    const s = await load(id, seg);
     if (!s) notFound();
     const seed = await preload(id, s);
     // 首帧照服务端落实的版本与章渲染，与服务端 HTML 一致；查不准（unknown）时按地址里给的

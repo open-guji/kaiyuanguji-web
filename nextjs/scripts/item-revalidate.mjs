@@ -5,6 +5,7 @@
  * 读 item-changes.mjs 的改动集，POST 给站点的 /internal/revalidate（只在全栈构建存在）。
  * 新增／变更／删除都要失效：删除的条目页要从缓存里的旧内容变成 404。
  * 超过阈值（ITEM_REVALIDATE_ALL_OVER，默认 5000，大宗批量修改时）改为整体失效。
+ * 阅读页 /read/<id>…（ISR，overview#322）不看改动集，每次都整体失效。
  *
  * 环境变量：ITEM_SITE、KYG_REVALIDATE_SECRET、ITEM_CHANGES_OUT（默认 $KYG_DATA_ROOT/item-changes.json）
  */
@@ -35,8 +36,11 @@ async function post(body) {
     }
 }
 
+// 阅读页（ISR，overview#322）每次发版整体失效一次：文本改动不一定体现在条目改动集里
+console.log('✓ 已整体失效阅读页', await post({ read: true }));
+
 if (ids.length === 0) {
-    console.log('· 没有条目改动，不失效任何页');
+    console.log('· 没有条目改动，不失效任何条目页');
 } else if (ids.length > ALL_OVER) {
     console.log(`· 改动 ${ids.length} 条，超过 ${ALL_OVER}：整体失效全部条目页`, await post({ all: true }));
 } else {
