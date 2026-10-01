@@ -25,6 +25,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
+import { bundleMetaHome } from './build-meta-home.mjs';
 import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
@@ -639,6 +640,8 @@ bundleL1();
 bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
 // 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
 bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
+// 元数据首页分区 meta-home/（overview#322，见 build-meta-home.mjs）：要用上面写好的 meta.json 与 catalog/tree.json
+bundleMetaHome({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, draftDir: DRAFT_DIR, curationDir: join(PRODUCTION_DIR, 'curation') });
 bundleL2();
 bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();

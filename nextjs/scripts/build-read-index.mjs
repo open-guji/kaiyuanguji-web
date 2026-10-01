@@ -222,6 +222,24 @@ function compact(o) {
 }
 
 /**
+ * 四部方块：经史子集各部的总数与前几个子类（按数量），未分類单列。阅读首页与元数据首页（build-meta-home）共用。
+ * @param {object[]} tree CatalogNode[]
+ */
+export function summarizeBu(tree) {
+    const bu = [];
+    let unclassified = 0;
+    for (const n of tree ?? []) {
+        if (n.id === UNCLASSIFIED_ID) { unclassified = n.count; continue; }
+        const kids = [...(n.children ?? [])].sort((a, b) => b.count - a.count || collator.compare(a.label, b.label));
+        bu.push({
+            id: n.id, label: n.label, count: n.count, children_total: kids.length,
+            top: kids.slice(0, BU_TOP_CHILDREN).map((k) => ({ id: k.id, label: k.label, count: k.count })),
+        });
+    }
+    return { bu, unclassified };
+}
+
+/**
  * 首页分区（纯函数，便于单测）。
  * @param {{ works: object[], books: object[], tree: object[], curation: ReturnType<typeof readCuration> }} args
  *   works／books：可读条目的 ReadCard
@@ -278,17 +296,7 @@ export function buildSections({ works, books, tree, curation }) {
         if (n) famous.push(compact({ title: f.title, authors: f.authors, work_id: f.work_id, text_count: n, systems }));
     }
 
-    // 四部：经史子集各部的总数与前几个子类（按数量），未分類单列
-    const bu = [];
-    let unclassified = 0;
-    for (const n of tree) {
-        if (n.id === UNCLASSIFIED_ID) { unclassified = n.count; continue; }
-        const kids = [...(n.children ?? [])].sort((a, b) => b.count - a.count || collator.compare(a.label, b.label));
-        bu.push({
-            id: n.id, label: n.label, count: n.count, children_total: kids.length,
-            top: kids.slice(0, BU_TOP_CHILDREN).map((k) => ({ id: k.id, label: k.label, count: k.count })),
-        });
-    }
+    const { bu, unclassified } = summarizeBu(tree);
 
     // 年代带：每段部数；认不出朝代的单计
     const periodCounts = new Map(READ_PERIODS.map((p) => [p.key, 0]));
