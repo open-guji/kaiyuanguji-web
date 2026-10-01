@@ -20,6 +20,15 @@ describe('首页（N1）', () => {
         expect(within(main).getAllByRole('button').map((b) => b.textContent)).toEqual(['搜索']);
     });
 
+    it('导语去掉「整理」二字；搜索提示改为简体例子（9-30 反馈，overview#322）', () => {
+        render(<HomePage />);
+        expect(
+            screen.getByText('把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。'),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('main').textContent).not.toContain('整理文本聚到一起');
+        expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', '书名、作者、版本，如：史记、苏轼');
+    });
+
     it('搜索跳到索引页并带上关键词', () => {
         render(<HomePage />);
         fireEvent.change(screen.getByRole('searchbox'), { target: { value: ' 史記 ' } });
@@ -61,7 +70,7 @@ describe('首页（N1）', () => {
         expect(screen.queryByRole('region', { name: '一起把古籍做成开放数据' })).not.toBeInTheDocument();
         expect(screen.queryByText('一起把古籍做成开放数据')).not.toBeInTheDocument();
         const footer = within(screen.getByRole('contentinfo'));
-        for (const href of ['/about', '/contact', '/feedback']) {
+        for (const href of ['/about', '/about#联系', '/feedback']) {
             expect(footer.getAllByRole('link').map((a) => a.getAttribute('href'))).toContain(href);
         }
     });
@@ -96,7 +105,7 @@ describe('首页（N1）', () => {
         const main = screen.getByRole('main');
         expect(within(main).getByText(/CC0 公有领域/)).toBeInTheDocument();
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
-        expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
+        expect(within(screen.getByRole('contentinfo')).getAllByRole('img', { name: /二维码/ })).toHaveLength(2);
     });
 
     it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', () => {

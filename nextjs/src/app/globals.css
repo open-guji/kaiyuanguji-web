@@ -355,6 +355,19 @@
   --bim-fr-side-gap: 34px;
   --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(40, 36, 31, 0.25);
   --bim-fr-tab-bd: transparent;
+  /* 版式判准（overview 设计/v4/版式判准.md，R8 10-01）新增的几组：边框一律写 border 简写；
+     疏朗取 1px solid transparent（不是 none），两种版式盒子一样大，切换时页面不跳 */
+  --bim-fr-card-bd: 1px solid transparent;
+  --bim-fr-row-bd: 1px solid transparent;
+  --bim-fr-chrome-bd: 1px solid transparent;
+  --bim-fr-tag-bd: 1px solid transparent;
+  --bim-fr-tbl-cell-bd: 0 solid transparent;
+  --bim-fr-tbl-zebra: var(--bim-tint-bg);
+  --bim-fr-rail-bd: 1px solid transparent;
+  --bim-fr-rail-bg: var(--bim-tint-bg);
+  /* 本站自己的：抬起的卡片与检索框的投影（疏朗有、界栏无）；页脚深底上的分隔线 */
+  --og-card-sh: var(--shadow-soft);
+  --og-foot-bd: 1px solid transparent;
   /* 页脚（深底）上的次要字：默认接 ink-3；墨主题的 ink-3 是给浅底调深的，深底上要另给一个亮的（见 ink 块） */
   --og-foot-dim: var(--color-ink-3);
 }
@@ -368,6 +381,16 @@
   --bim-fr-side-gap: 20px;
   --bim-fr-shadow: none;
   --bim-fr-tab-bd: var(--bim-rule);
+  --bim-fr-card-bd: 1px solid var(--bim-rule);
+  --bim-fr-row-bd: 1px solid var(--bim-rule);
+  --bim-fr-chrome-bd: 1px solid var(--bim-rule);
+  --bim-fr-tag-bd: 1px solid var(--bim-rule-strong);
+  --bim-fr-tbl-cell-bd: 1px solid var(--bim-rule);
+  --bim-fr-tbl-zebra: transparent;
+  --bim-fr-rail-bd: 1px solid var(--bim-rule);
+  --bim-fr-rail-bg: var(--bim-card-bg);
+  --og-card-sh: none;
+  --og-foot-bd: 1px solid rgba(255, 255, 255, 0.16);
 }
 :root[data-theme="ink"] {
   --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(0, 0, 0, 0.22);
@@ -604,6 +627,8 @@
     z-index: 50;
     background: color-mix(in srgb, var(--color-paper) 90%, transparent);
     backdrop-filter: blur(10px);
+    /* 版式判准：疏朗下沿不画线，界栏 1px（令牌） */
+    border-bottom: var(--bim-fr-chrome-bd);
   }
   /* 首页：页头浮在坤舆图上 */
   .og-nav--hero {
@@ -884,6 +909,37 @@
     }
   }
 
+  /* 顶栏右侧「繁／简」（9-30 反馈，overview#322）：与「外观」「反馈」同一套浅色文字按钮，当前项加深加粗 */
+  .og-locale {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-ink-2);
+    cursor: pointer;
+  }
+  .og-locale .is-on {
+    color: var(--color-ink);
+    font-weight: var(--fw-medium);
+  }
+  .og-locale-sep {
+    opacity: 0.45;
+  }
+  .og-locale:hover {
+    color: var(--color-ink);
+  }
+  .og-locale:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
   /* 顶栏右侧「反馈」（N7）：浅色图标＋文字，不是按钮样式；手机只留图标 */
   .og-nav-fb {
     display: inline-flex;
@@ -976,7 +1032,7 @@
   .og-footer-inner {
     max-width: var(--shell-max);
     margin: 0 auto;
-    padding: 14px var(--shell-gutter) 6px;
+    padding: 20px var(--shell-gutter) 8px;
   }
   .og-footer-row {
     display: flex;
@@ -1023,6 +1079,9 @@
   }
   .og-footer-bottom {
     margin-top: 2px;
+    /* 版式判准：版权行上方疏朗不画线（用间距），界栏 1px */
+    border-top: var(--og-foot-bd);
+    padding-top: 4px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1181,9 +1240,10 @@
     display: flex;
     gap: 0;
     max-width: 720px;
-    border-radius: 6px;
+    /* 版式判准：直角；疏朗无边框、加投影，界栏 1px 边框、不加投影 */
+    border: var(--bim-fr-card-bd);
     background: var(--color-raise);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--og-card-sh);
   }
   .home-search-icon {
     position: absolute;
@@ -1198,7 +1258,6 @@
     height: 52px;
     padding: 0 20px 0 48px;
     border: 0;
-    border-radius: 6px 0 0 6px;
     outline: none;
     background: transparent;
     color: var(--color-ink);
@@ -1213,7 +1272,7 @@
   .home-search .og-btn {
     height: 52px;
     padding: 0 32px;
-    border-radius: 0 6px 6px 0;
+    border-radius: 0;
   }
   .home-under {
     margin: 16px 0 0;
@@ -1258,22 +1317,18 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
+  /* 版式判准：卡片直角。疏朗不画框——已上线是抬起的卡面（卡面底＋淡投影），规划中不抬起、无底；
+     界栏两种都是 1px 框、无投影，已上线有卡面底 */
   .home-feature {
     display: flex;
     flex-direction: column;
     padding: 20px 22px;
-    border-radius: 10px;
-    box-shadow: inset 0 0 0 1px var(--color-tint-2);
+    border: var(--bim-fr-card-bd);
     background-image: none;
-  }
-  /* 规划中：虚线框、不抬起；已上线：抬起的卡片 */
-  .home-feature:not(.is-live) {
-    box-shadow: none;
-    border: 1px dashed var(--color-ink-3);
   }
   .home-feature.is-live {
     background: var(--color-raise);
-    box-shadow: var(--shadow-soft), inset 0 0 0 1px var(--color-tint-2);
+    box-shadow: var(--og-card-sh);
   }
   .home-feature-cta {
     margin-top: auto;
@@ -1333,13 +1388,28 @@
     gap: 10px;
     margin-bottom: 8px;
   }
+  /* 「文本开放」「代码开源」之间的竖分割线（9-30 反馈，overview#322）：只在疏朗下画（界栏两栏各自有框）；
+     落在两栏间距正中，上下各缩进一段，不顶到边 */
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col {
+    position: relative;
+  }
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
   .home-open-head h2 {
     margin: 0;
   }
+  /* 许可签：疏朗浅底无框，界栏透明底＋1px 框（版式判准「标签」） */
   .home-badge {
     display: inline-block;
-    padding: 1px 8px;
-    border-radius: 3px;
+    padding: 0 7px;
+    border: var(--bim-fr-tag-bd);
     background: var(--color-zhu-tint);
     color: var(--color-zhu);
     font-size: var(--fs-xs);
@@ -1450,6 +1520,10 @@
       gap: 28px;
       padding: 28px var(--shell-gutter);
     }
+    /* 手机上两栏上下排，竖线不画 */
+    :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+      display: none;
+    }
     .home-repos li {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -1488,11 +1562,15 @@
     grid-template-columns: 200px minmax(0, 1fr);
     gap: 64px;
   }
+  /* 侧栏本身：疏朗不加底、不加框；界栏 1px 框＋卡面底＋内边距（版式判准） */
   .doc-toc {
     position: sticky;
     top: calc(var(--nav-h) + 32px);
     align-self: start;
     font-size: var(--fs-sm);
+    border: var(--bim-fr-bd);
+    background: var(--bim-fr-bg);
+    padding: var(--bim-fr-bd-pad);
   }
   .doc-toc-title {
     margin: 0 0 8px;
@@ -1575,7 +1653,7 @@
   .doc-dl dd {
     margin: 0;
   }
-  /* 表格不画格线，靠斑马底分行 */
+  /* 表格：疏朗不画格线、靠斑马底分行；界栏全格线、无斑马（版式判准，走令牌） */
   .doc-table {
     width: 100%;
     margin: 16px 0;
@@ -1586,13 +1664,14 @@
     padding: 10px 14px;
     text-align: left;
     vertical-align: top;
+    border: var(--bim-fr-tbl-cell-bd);
   }
   .doc-table th {
     width: 40%;
     font-weight: var(--fw-medium);
   }
   .doc-table tr:nth-child(odd) {
-    background: var(--color-tint);
+    background: var(--bim-fr-tbl-zebra);
   }
   .doc-rows {
     margin: 0;
@@ -1618,8 +1697,14 @@
     justify-content: space-between;
     gap: 32px;
     padding: 28px 32px;
-    border-radius: var(--radius-card);
-    background: var(--color-tint);
+    /* 版式判准「提示块」：疏朗浅底无框，界栏 1px 框＋卡面底；直角 */
+    border: var(--bim-fr-rail-bd);
+    background: var(--bim-fr-rail-bg);
+  }
+  .contact-primary h3 {
+    margin: 0 0 6px;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
   }
   .contact-primary p {
     margin: 0;
@@ -1633,7 +1718,7 @@
     text-decoration: none;
   }
   .contact-ways {
-    margin: 48px 0 32px;
+    margin: 32px 0;
     display: grid;
     grid-template-columns: 9em minmax(0, 1fr);
     gap: 32px 24px;
@@ -1650,6 +1735,15 @@
   .contact-qr {
     margin: 16px 0 0;
   }
+  /* 关于页「联系我们」：微信、QQ 两张群二维码并排，留足间距（9-30 反馈） */
+  .contact-qrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 48px;
+  }
+  .contact-qrs .contact-qr {
+    margin-top: 0;
+  }
   .contact-qr img {
     display: block;
     width: 160px;
@@ -1661,27 +1755,39 @@
     color: var(--color-ink-2);
     font-size: var(--fs-sm);
   }
-  /* 页脚右侧的微信群二维码 */
-  .og-footer-qr {
+  /* 页脚右侧两张群二维码（9-30 反馈）：靠右，两张之间留足间距，图下一行说明（QQ 多一行群号） */
+  .og-footer-qrs {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 48px;
     margin-left: auto;
+  }
+  .og-footer-qr {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
   }
   .og-footer-qr img {
     flex: none;
-    width: 72px;
-    height: 72px;
+    width: 88px;
+    height: 88px;
     border-radius: 4px;
+    background: #fff;
   }
-  .og-footer .og-footer-qr p {
+  .og-footer-qr figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     font-size: var(--fs-xs);
     line-height: 1.6;
   }
 
   @media (max-width: 760px) {
-    .og-footer-qr {
+    .og-footer-qrs {
       margin-left: 0;
+      gap: 40px;
     }
     .doc-layout {
       grid-template-columns: minmax(0, 1fr);
@@ -2132,15 +2238,6 @@
 
 /* ---- 版式「界栏」（v4 P0）：本站自己的页面。<html data-layout="boxed"> 才生效，疏朗（默认）零变化；
    值走 --bim-fr-* 令牌。组件库的页面（详情、总目、阅读）由 book-index-ui 同一组令牌负责。 ---- */
-:root[data-layout="boxed"] .home-feature.is-live {
-  border-radius: 0;
-  box-shadow: none;
-  border: var(--bim-fr-bd);
-  background: var(--bim-fr-bg);
-}
-:root[data-layout="boxed"] .home-feature:not(.is-live) {
-  border-radius: 0;
-}
 :root[data-layout="boxed"] .home-open-col {
   border: var(--bim-fr-bd);
   background: var(--bim-fr-bg);

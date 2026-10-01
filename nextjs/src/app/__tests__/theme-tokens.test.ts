@@ -94,4 +94,40 @@ describe('v4 墨主题与版式令牌', () => {
         expect(body).toContain('var(--bim-fr-bd)');
         expect(body).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(/i);
     });
+
+    describe('版式判准（设计/v4/版式判准.md，overview#322）：疏朗不画线，界栏画框', () => {
+        const all = [...css.matchAll(/:root \{([^}]*--bim-fr-bd[^}]*)\}/g)][0]?.[1] ?? '';
+        const boxed = block(':root[data-layout="boxed"]');
+        const lineTokens = ['card-bd', 'row-bd', 'chrome-bd', 'tag-bd', 'rail-bd'].map((n) => `--bim-fr-${n}`);
+
+        it('边框令牌：疏朗是 1px 透明（盒子不跳），界栏是 1px 实线', () => {
+            for (const n of lineTokens) {
+                expect(all).toMatch(new RegExp(`${n}:\\s*1px solid transparent`));
+                expect(boxed[n]).toMatch(/^1px solid var\(--bim-rule/);
+            }
+            expect(all).toMatch(/--bim-fr-tbl-cell-bd:\s*0 solid transparent/);
+            expect(boxed['--bim-fr-tbl-cell-bd']).toContain('1px solid');
+            expect(boxed['--bim-fr-tbl-zebra']).toBe('transparent');
+            expect(boxed['--og-card-sh']).toBe('none');
+        });
+
+        const rule = (sel: string) => css.match(new RegExp(`\\n  ${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`))?.[1] ?? '';
+
+        it('顶栏下沿、页脚版权行上沿、首页卡片与检索框、许可签、关于页提示块与表格都走令牌', () => {
+            expect(rule('.og-nav')).toContain('border-bottom: var(--bim-fr-chrome-bd)');
+            expect(rule('.og-footer-bottom')).toContain('border-top: var(--og-foot-bd)');
+            expect(rule('.home-feature')).toContain('border: var(--bim-fr-card-bd)');
+            expect(rule('.home-search')).toContain('border: var(--bim-fr-card-bd)');
+            expect(rule('.home-badge')).toContain('border: var(--bim-fr-tag-bd)');
+            expect(rule('.contact-primary')).toContain('border: var(--bim-fr-rail-bd)');
+            expect(css).toMatch(/\.doc-table td \{[^}]*border: var\(--bim-fr-tbl-cell-bd\)/);
+        });
+
+        it('首页「规划中」不再用虚线框；卡片、检索框直角', () => {
+            expect(css).not.toMatch(/home-feature[^{]*\{[^}]*dashed/);
+            for (const sel of ['.home-feature', '.home-search', '.contact-primary']) {
+                expect(rule(sel)).not.toMatch(/border-radius/);
+            }
+        });
+    });
 });

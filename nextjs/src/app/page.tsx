@@ -48,7 +48,7 @@ export default function HomePage() {
           <p className="home-kicker">古籍数字化开放平台</p>
           <h1 className="home-title">让科技赋予古籍数字生命</h1>
           <p className="home-lead">
-            把散在各处的历代书目、存世版本与整理文本聚到一起，建一座开放、可查证、自由使用的古籍文库。
+            把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。
           </p>
           <HomeSearch />
           <p className="home-under">

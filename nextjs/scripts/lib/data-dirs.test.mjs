@@ -139,9 +139,12 @@ function makeFixture(base) {
     writeFileSync(join(draft, 'index', 'works', '0.json'),
         JSON.stringify({ [id]: { id, name: '測試', type: 'work', path: rel } }));
     writeFileSync(join(draft, rel), JSON.stringify({ id, title: '測試', type: 'work' }));
-    const ce = join(text, dirname(rel), id, 'collated_edition');
-    mkdirSync(ce, { recursive: true });
-    writeFileSync(join(ce, 'juan1.md'), '# 卷一\n測試正文\n');
+    // 阅读文本：manifest.json＋default/{index.json,001.md}（overview#307）
+    const item = join(text, dirname(rel), id);
+    mkdirSync(join(item, 'default'), { recursive: true });
+    writeFileSync(join(item, 'manifest.json'), JSON.stringify({ id, versions: [{ key: 'default', kind: 'transcription', label: '維基文庫', source: 'wikisource', license: 'CC BY-SA 4.0' }] }));
+    writeFileSync(join(item, 'default', 'index.json'), JSON.stringify({ chapters: [{ n: 1, file: '001', title: '卷一', has_json: false }] }));
+    writeFileSync(join(item, 'default', '001.md'), '# 卷一\n測試正文\n');
     // bundle-data 从 draft 仓取 commitId
     const git = (...args) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd: draft, stdio: 'ignore' });
     git('init', '-q');
@@ -172,7 +175,7 @@ try {
         assert.ok(existsSync(join(outRoot, 'data', 'entry', `${id}.json`)));
         assert.ok(existsSync(join(outRoot, 'data', 'version.json')));
         assert.ok(existsSync(join(outRoot, 'data', 'search', 'meta.json')), 'build-search-index 子进程也应写到同一目录');
-        assert.ok(existsSync(join(outRoot, 'data', 'items', id, 'collated_edition', 'juan1.txt')), 'items/ 应复制过来（.md 改名 .txt）');
+        assert.ok(existsSync(join(outRoot, 'data', 'items', id, 'default', '001.txt')), 'items/ 应复制过来（.md 改名 .txt）');
         assert.ok(existsSync(join(outRoot, 'latest.json')));
     });
 
@@ -185,7 +188,7 @@ try {
     test('bundle-hashed-text.mjs：写到 KYG_DATA_ROOT/data-h1-text', () => {
         run('bundle-hashed-text.mjs');
         assert.ok(existsSync(join(outRoot, 'data-h1-text', 'text-manifest-root.json')));
-        assert.ok(existsSync(join(outRoot, 'data-h1-text', 'text', id, 'collated_edition')));
+        assert.ok(existsSync(join(outRoot, 'data-h1-text', 'text', id, 'default')));
     });
 
     test('verify-hashed-parity／verify-hashed-text-parity：从同一目录读，校验通过', () => {

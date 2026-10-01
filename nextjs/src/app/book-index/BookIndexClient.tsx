@@ -3,7 +3,8 @@
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { BidUrlProvider, IndexBrowser, HomePage, LocaleProvider, LocaleToggle, RepoSourceLink, filtersFromParams, filtersToParams } from 'book-index-ui';
+import { BidUrlProvider, IndexBrowser, HomePage, RepoSourceLink, filtersFromParams, filtersToParams } from 'book-index-ui';
+import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import type { IndexEntry, SearchFilters } from 'book-index-ui';
 type TabKey = 'recommend' | 'catalog' | 'collection' | 'site' | 'feedback';
 import { useSource } from '@/components/common/SourceContext';
@@ -131,9 +132,9 @@ function BookIndexContent() {
     return <BookDetailContent id={detailId} />;
   }
 
-  // 首页视图（含搜索结果）
+  // 首页视图（含搜索结果）：元数据是分支页，有页脚（用户 9-30 反馈，overview#322）
   return (
-    <LayoutWrapper hideFooter>
+    <LayoutWrapper>
       {/* 条目链接一律是 /item/<id>（真 <a href>：新标签页、复制链接都对）；组件库默认是 /book-index?id= */}
       <BidUrlProvider buildUrl={entryHref}>
       {/*
@@ -153,12 +154,6 @@ function BookIndexContent() {
           reserveViewportHeight={!!searchQuery}
           initialQuery={searchQuery || undefined}
           onQueryChange={handleQueryChange}
-          headerRight={
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <LocaleToggle />
-              <RepoSourceLink {...REPO_ROOT_DRAFT} />
-            </span>
-          }
         />
         <HomePage
           transport={transport}
@@ -167,7 +162,11 @@ function BookIndexContent() {
           onTabChange={handleTabChange}
           feedbackApiUrl="/api/feedback"
         />
-        <DataVersion />
+        {/* 繁简切换已挪到顶栏；GitHub 图标从搜索框旁挪到右下角，与数据版本同一行（9-30 反馈） */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          <DataVersion />
+          <RepoSourceLink {...REPO_ROOT_DRAFT} />
+        </div>
       </div>
       </BidUrlProvider>
     </LayoutWrapper>
@@ -176,10 +175,10 @@ function BookIndexContent() {
 
 export default function BookIndexPage() {
   return (
-    <LocaleProvider>
+    <BimLocaleProvider>
       <Suspense fallback={<div className="min-h-screen bg-paper flex items-center justify-center text-sm text-stone-400">加载中...</div>}>
         <BookIndexContent />
       </Suspense>
-    </LocaleProvider>
+    </BimLocaleProvider>
   );
 }

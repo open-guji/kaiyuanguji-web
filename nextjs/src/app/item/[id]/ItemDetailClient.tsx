@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { LocaleProvider } from 'book-index-ui';
+import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 
 /**
@@ -13,10 +13,10 @@ import BookDetailContent from '@/components/book-index/BookDetailContent';
  */
 export default function ItemDetailClient({ id, fallback }: { id: string; fallback: React.ReactNode }) {
     return (
-        <LocaleProvider>
+        <BimLocaleProvider>
             <Suspense fallback={fallback}>
                 <BookDetailContent id={id} />
             </Suspense>
-        </LocaleProvider>
+        </BimLocaleProvider>
     );
 }
