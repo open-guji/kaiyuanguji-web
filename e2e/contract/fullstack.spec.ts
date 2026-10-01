@@ -27,8 +27,8 @@ import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions'
  * 样本（档位 3：经典条目，与 ui/ 现有用例同一批，已由 perf-ids 闸看着）
  * ------------------------------------------------------------------ */
 
-// title 是数据原文（繁体），<title>／JSON-LD 用它；h1 是页面正文里的首屏摘要，直出也是简体（overview#267 QA 回归 P2），
-// 所以另给 h1Title（简体）。两处都严格比对，不是「繁简任一」。
+// title 是数据原文（繁体），JSON-LD 的 name／description 用它；h1Title 是简体：首屏摘要 <h1>（overview#267 QA 回归 P2）
+// 与 <title>（overview#337：服务端直出一律简体）都用它。各处都严格比对，不是「繁简任一」。
 const ITEM_SAMPLES = [
     { kind: 'Work', id: ANCHORS.work.id, title: '史記', h1Title: '史记', ldType: 'Book' },
     { kind: 'Book', id: '988fbiuha8', title: '御定佩文韻府', h1Title: '御定佩文韵府', ldType: 'Book' },
@@ -178,7 +178,8 @@ test.describe('新架构：条目页服务端 HTML', () => {
 
             // 书名：<title> 与 SSR 摘要的 <h1> 都要有——客户端组件挂载前搜索引擎只看得到这些
             const title = decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? '');
-            expect(title, '<title> 不含书名').toContain(s.title);
+            expect(title, '<title> 不含书名（简体）').toContain(s.h1Title);
+            if (s.h1Title !== s.title) expect(title, '<title> 不该还是繁体（overview#337）').not.toContain(s.title);
             expect(html, 'SSR 摘要没渲染（缺 data-ssr-item）').toContain(`data-ssr-item="${s.id}"`);
             const h1 = decode(html.match(/<h1\b[^>]*>([^<]*)/i)?.[1] ?? '');
             expect(h1, '服务端 HTML 的 <h1> 不含书名（简体）').toContain(s.h1Title);
@@ -308,7 +309,8 @@ test.describe('新架构：阅读页 /read/<id>[/<key>][/<章>]（overview#307�
         expect(res.status(), `${path} 应直接 200`).toBe(200);
         const html = await res.text();
         const title = decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? '');
-        expect(title, '<title> 应含书名').toContain(C.title);
+        // 服务端直出一律简体（overview#337）
+        expect(title, '<title> 应含书名（简体）').toContain(C.titleSimplified);
         expect(title, '<title> 不带「整理本」等类别词（默认版本不写版本名，非默认只写来源）').not.toMatch(/整理本|转录全文|全文/);
         expect(canonicalHref(html), 'canonical 应指向本章（主版本不写 default）').toBe(`${SITE.canonicalOrigin}${path}`);
 

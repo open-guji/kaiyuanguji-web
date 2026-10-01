@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { IndexStorage } from 'book-index-ui';
+import { useConvert, type IndexStorage } from 'book-index-ui';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import { itemLabel } from '@/lib/feedback';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /**
  * 详情页的版本信息。展示 production 条目的 semver revision + 修订日期。
@@ -31,7 +32,10 @@ export default function CitationBar({ id, transport, redirectedFrom }: CitationB
         title?: string;
     } | null>(null);
     const { open: openFeedback } = useFeedback();
-    const feedbackContext = { resourceId: id, label: itemLabel(id, meta?.title) };
+    const t = useSiteT();
+    // 书名是数据，按繁简偏好转（useConvert，BimLocaleProvider 范围内）；类型名走字典
+    const { convert } = useConvert();
+    const feedbackContext = { resourceId: id, label: itemLabel(id, meta?.title && convert(meta.title), t) };
     useFeedbackPageContext(feedbackContext);
 
     useEffect(() => {
@@ -54,7 +58,7 @@ export default function CitationBar({ id, transport, redirectedFrom }: CitationB
         <>
             {' · '}
             <button type="button" className="og-fb-inline" onClick={() => openFeedback({ context: feedbackContext, type: 'bug' })}>
-                这条有误？
+                {t('bookIndex.citation.report')}
             </button>
         </>
     );
@@ -66,9 +70,10 @@ export default function CitationBar({ id, transport, redirectedFrom }: CitationB
     return (
         <span>
             rev. {meta.revision}
-            {meta.revised_at && <> · 最近校訂 {meta.revised_at}</>}
+            {/* 「最近校訂」原是写死的繁体，简体模式下也显示繁体；现走字典（overview#337） */}
+            {meta.revised_at && <> · {t('bookIndex.citation.revisedAt', { date: meta.revised_at })}</>}
             {redirectedFrom && (
-                <span title={`原草稿 ID: ${redirectedFrom}`}> · 已升級</span>
+                <span title={t('bookIndex.citation.draftIdTitle', { id: redirectedFrom })}> · {t('bookIndex.citation.promoted')}</span>
             )}
             {report}
         </span>

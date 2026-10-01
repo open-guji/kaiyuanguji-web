@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /**
  * 首屏大检索框 + 全页唯一的主按钮「搜索」。
@@ -9,6 +10,7 @@ import { useRouter } from 'next/navigation';
  */
 export default function HomeSearch() {
   const router = useRouter();
+  const t = useSiteT();
   const [query, setQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
@@ -28,11 +30,11 @@ export default function HomeSearch() {
         name="q"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="书名、作者、版本，如：史记、苏轼"
-        aria-label="搜索古籍索引"
+        placeholder={t('home.search.placeholder')}
+        aria-label={t('home.search.aria')}
       />
       <button type="submit" className="og-btn">
-        搜索
+        {t('home.search.submit')}
       </button>
     </form>
   );

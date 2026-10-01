@@ -12,10 +12,11 @@
  */
 export type ThemeName = 'zhusha' | 'indigo' | 'ink';
 
-export const THEMES: { name: ThemeName; label: string }[] = [
-  { name: 'zhusha', label: '朱砂' },
-  { name: 'indigo', label: '靛青' },
-  { name: 'ink', label: '墨' },
+/** 配色清单；名称、提示文字在字典 nav.look.themes／themeHints（overview#337） */
+export const THEMES: { name: ThemeName }[] = [
+  { name: 'zhusha' },
+  { name: 'indigo' },
+  { name: 'ink' },
 ];
 
 /** `<meta name="theme-color">`：浏览器地址栏／状态栏色，取各主题的主色 */
@@ -66,9 +67,10 @@ export function currentTheme(): ThemeName {
 
 export type LayoutName = 'airy' | 'boxed';
 
-export const LAYOUTS: { name: LayoutName; label: string; hint: string }[] = [
-  { name: 'airy', label: '疏朗', hint: '留白分区' },
-  { name: 'boxed', label: '界栏', hint: '框线分区' },
+/** 版式清单；名称、提示文字在字典 nav.look.layouts／layoutHints */
+export const LAYOUTS: { name: LayoutName }[] = [
+  { name: 'airy' },
+  { name: 'boxed' },
 ];
 
 export const LAYOUT_KEY = 'kyg-layout';

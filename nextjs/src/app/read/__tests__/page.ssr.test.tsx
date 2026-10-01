@@ -95,7 +95,7 @@ describe('阅读首页 page.ssr', () => {
         expect(top).toContain('3本');
         expect(visibleText(top)).not.toMatch(/整理本|全文/);
         const m = await meta({ node: 'czheng', page: '2' });
-        expect(m.title).toBe('史部·正史類（第2页） - 阅读');
+        expect(m.title).toBe('史部·正史类（第2页） - 阅读');
         expect(m.alternates?.canonical).toBe('/read?node=czheng&page=2');
     });
 

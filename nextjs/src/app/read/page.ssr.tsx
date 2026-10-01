@@ -17,6 +17,8 @@ import {
     type ResolvedPeriod, type ResolvedRead,
 } from './read-route';
 import ReadHome, { type ReadHomeProps } from './ReadHome';
+import { simplifyMetadata } from '@/lib/server/simplify';
+import { getSiteT } from '@/i18n/translate';
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -60,9 +62,9 @@ function canonicalOf(r?: ResolvedRead | ResolvedPeriod): string {
     return readHomeHref(r.node.id, r.page);
 }
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+async function buildMetadata({ searchParams }: Props): Promise<Metadata> {
     const s = await load(await searchParams);
-    if (!s) return { title: '未找到', robots: { index: false, follow: false } };
+    if (!s) return { title: getSiteT('zh-Hans')('seo.notFound'), robots: { index: false, follow: false } };
     const canonical = canonicalOf(s.r);
     return {
         title: readTitle(s.r),
@@ -70,6 +72,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         alternates: { canonical },
         openGraph: { title: readTitle(s.r), description: readDescription(s.r), url: canonical, type: 'website' },
     };
+}
+
+// 服务端直出的 title／meta 一律简体：数据部分（书名、分类、回目、检索词）在这里统一转（overview#337）
+export async function generateMetadata(props: Props): Promise<Metadata> {
+    return simplifyMetadata(await buildMetadata(props));
 }
 
 export default async function ReadRoute({ searchParams }: Props) {

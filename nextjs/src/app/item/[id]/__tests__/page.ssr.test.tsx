@@ -45,11 +45,11 @@ describe('条目页 generateMetadata（S4）', () => {
         expect(m.twitter?.description).toBe(m.description);
     });
 
-    it('title 与 og:title 不动（仍是原文）', async () => {
+    it('title 与 og:title 也出简体（overview#337：服务端直出一律简体）', async () => {
         const m = await meta();
-        expect(m.title).toBe('史記');
-        expect(m.openGraph?.title).toContain('史記');
-        expect(m.twitter?.title).toContain('史記');
+        expect(m.title).toBe('史记');
+        expect(m.openGraph?.title).toContain('史记');
+        expect(m.twitter?.title).toContain('史记');
     });
 
     it('页面里的 JSON-LD：description 是原文，name 是原文，简体名在 alternateName', async () => {

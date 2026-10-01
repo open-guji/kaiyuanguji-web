@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FeedbackList, FeedbackForm } from 'book-index-ui';
 import type { FeedbackItem } from 'book-index-ui';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface FeedbackTabProps {
     resourceId: string;
@@ -13,6 +14,7 @@ const FEEDBACK_API = typeof window !== 'undefined' && window.location.hostname =
     : '/api/feedback';
 
 export default function FeedbackTab({ resourceId }: FeedbackTabProps) {
+    const t = useSiteT();
     const [items, setItems] = useState<FeedbackItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -47,7 +49,7 @@ export default function FeedbackTab({ resourceId }: FeedbackTabProps) {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => null);
-            throw new Error(err?.error || '提交失败');
+            throw new Error(err?.error || t('bookIndex.feedbackSubmitFailed'));
         }
         setTimeout(() => loadFeedback(), 500);
     };

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSiteT } from '@/i18n';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -15,6 +16,7 @@ function safeReturnTo(raw: string | null): string | null {
 
 export default function LoginRequiredClient() {
   const sp = useSearchParams();
+  const t = useSiteT();
   const returnTo = safeReturnTo(sp.get('return_to'));
   const [checking, setChecking] = useState(Boolean(returnTo));
 
@@ -53,16 +55,16 @@ export default function LoginRequiredClient() {
 
   return (
     <div className="max-w-xl mx-auto p-8 text-center">
-      <h1 className="text-2xl font-bold mb-4">请先用邀请链接登录</h1>
-      <p className="mb-2 text-gray-700">这个操作需要先登录开源古籍网站。</p>
-      <p className="mb-4 text-gray-700">请在浏览器里打开你的邀请链接完成登录，登录后回到本页会自动继续；也可以手动点击下面的按钮。</p>
-      {checking && <p className="text-sm text-gray-400 mb-4">正在检测登录状态…</p>}
+      <h1 className="text-2xl font-bold mb-4">{t('pages.loginRequired.title')}</h1>
+      <p className="mb-2 text-gray-700">{t('pages.loginRequired.needLogin')}</p>
+      <p className="mb-4 text-gray-700">{t('pages.loginRequired.howTo')}</p>
+      {checking && <p className="text-sm text-gray-400 mb-4">{t('pages.loginRequired.checking')}</p>}
       {returnTo && (
         <button
           onClick={() => { window.location.href = returnTo; }}
           className="bg-black text-white rounded px-4 py-2"
         >
-          已登录，继续
+          {t('pages.loginRequired.continue')}
         </button>
       )}
     </div>

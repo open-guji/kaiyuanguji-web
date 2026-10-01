@@ -68,7 +68,7 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     it('/read/<id>：主版本第一章 200；canonical 指向第一章的全形，title 是「书名 · 章名 · 版本名」', async () => {
         const m = await meta([]);
         expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/001`);
-        expect(m.title).toBe('直齋書錄解題 · 經錄');
+        expect(m.title).toBe('直斋书录解题 · 经录');
         expect(m.robots).toBeUndefined();
         expect(String(m.alternates?.canonical)).not.toContain('?');
     });
@@ -76,29 +76,29 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     it('/read/<id>/<章>：canonical 是本章；章名进 title 与 description', async () => {
         const m = await meta(['002']);
         expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/002`);
-        expect(m.title).toBe('直齋書錄解題 · 史錄');
-        expect(m.description).toBe('直齋書錄解題史錄，在线阅读。');
+        expect(m.title).toBe('直斋书录解题 · 史录');
+        expect(m.description).toBe('直斋书录解题史录，在线阅读。');
     });
 
     it('默认版本就是维基文库转录：title、description 都不写版本名', async () => {
         const m = await meta(['001'], 'd59f2evysmww');
-        expect(m.title).toBe('直齋書錄解題 · 伊尹');
+        expect(m.title).toBe('直斋书录解题 · 伊尹');
         expect(String(m.description)).not.toContain('維基文庫');
     });
 
     it('其他版本：/read/<id>/<key> 与 /read/<id>/<key>/<章>；目录里章名为空回落「卷N」', async () => {
         expect((await meta(['wikisource'])).alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource/001`);
-        expect((await meta(['wikisource'])).title).toBe('直齋書錄解題 · 卷1 · 維基文庫');
+        expect((await meta(['wikisource'])).title).toBe('直斋书录解题 · 卷1 · 维基文库');
         const m = await meta(['wikisource', '002']);
         expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource/002`);
-        expect(m.title).toBe('直齋書錄解題 · 卷二 · 維基文庫');
+        expect(m.title).toBe('直斋书录解题 · 卷二 · 维基文库');
     });
 
     it('版本有 edition_label：title、og:title、description 写「版本名 · 来源名」（overview#307）', async () => {
         const m = await meta(['kanripo']);
-        expect(m.title).toBe('直齋書錄解題 · 卷一 · 四部叢刊本 · Kanripo');
+        expect(m.title).toBe('直斋书录解题 · 卷一 · 四部丛刊本 · Kanripo');
         expect((m.openGraph as { title?: string }).title).toBe(m.title);
-        expect(String(m.description)).toContain('四部叢刊本 · Kanripo');
+        expect(String(m.description)).toContain('四部丛刊本 · Kanripo');
     });
 
     it('地址里写了 default：308 到不带 default 的形式，元数据与页面都一样', async () => {

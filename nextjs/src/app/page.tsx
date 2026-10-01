@@ -2,6 +2,9 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import HomeSearch from '@/components/home/HomeSearch';
 import HomeFeatures from '@/components/home/HomeFeatures';
+import HomeOpen from '@/components/home/HomeOpen';
+import T from '@/i18n/T';
+import type { SiteMessageKey } from '@/i18n/translate';
 
 // 2026-09-29 设计稿 v3（overview#286）：眉题前加短横；检索框改成一体的方框（图标＋输入＋按钮）；
 // 「我们在做的事」已上线的做成抬起的卡片并带入口，规划中的用虚线框；「文本开放／代码开源」标题前加许可徽标，
@@ -14,23 +17,14 @@ import HomeFeatures from '@/components/home/HomeFeatures';
 //   史记 → 作品页（史記 d59f20aowb9c）
 //   四库全书 → 丛编页（欽定四庫全書·文淵閣本 8rlb6yi1ecqo，四庫全書七阁之首，没有更上一级的总丛编）
 //   红楼梦程甲本 → 直接进阅读页（新鐫全部繡像紅樓夢·程甲本 96kzkdm8e8 的全文，维基文库 120 回；09-30 用户重申，取代此前的「甲戌本」）
-const HOME_EXAMPLES = [
-  { label: '史记', href: '/item/d59f20aowb9c' },
-  { label: '四库全书', href: '/item/8rlb6yi1ecqo' },
-  { label: '红楼梦程甲本', href: '/read/96kzkdm8e8' },
+// 界面文字走字典（overview#337）：服务端组件用 <T>，首帧简体，挂载后跟随繁简偏好。
+const HOME_EXAMPLES: { labelKey: SiteMessageKey; href: string }[] = [
+  { labelKey: 'home.examples.shiji', href: '/item/d59f20aowb9c' },
+  { labelKey: 'home.examples.siku', href: '/item/8rlb6yi1ecqo' },
+  { labelKey: 'home.examples.hongloumeng', href: '/read/96kzkdm8e8' },
 ];
 
-// 「文本开放、代码开源」两栏（用户意见，overview#267）。仓库地址与说明已对照各仓 README 核实：
-// book-index 只存元数据，book-text 存古籍文本（CC0）；luatex-cn、bookget-py 为 Apache-2.0。
-const GITHUB = 'https://github.com/open-guji';
-const OPEN_TEXT_REPOS = [
-  { name: 'book-text', note: '古籍文本与輯佚' },
-  { name: 'book-index', note: '古籍目录索引，只存元数据：作品、版本、丛编、人物条目' },
-];
-const OPEN_CODE_REPOS = [
-  { name: 'luatex-cn', note: '基于 LuaTeX 的中文排版包：古籍竖排版式复刻，以及现代中文排版，已上 CTAN' },
-  { name: 'bookget-py', note: '古籍数字资源下载与管理工具，支持 37 个数字图书馆站点，走 IIIF' },
-];
+// 「文本开放、代码开源」两栏在 components/home/HomeOpen（属性文字要跟繁简偏好，做成了客户端组件）。
 
 export default function HomePage() {
   return (
@@ -45,17 +39,17 @@ export default function HomePage() {
         </picture>
         <div className="home-hero-veil" aria-hidden="true" />
         <div className="home-hero-inner">
-          <p className="home-kicker">古籍数字化开放平台</p>
-          <h1 className="home-title">让科技赋予古籍数字生命</h1>
+          <p className="home-kicker"><T k="home.kicker" /></p>
+          <h1 className="home-title"><T k="home.title" /></h1>
           <p className="home-lead">
-            把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。
+            <T k="home.lead" />
           </p>
           <HomeSearch />
           <p className="home-under">
-            <span>已收录 11 万+ 条古籍索引</span>
+            <span><T k="home.count" /></span>
             {HOME_EXAMPLES.map((e) => (
               <Link key={e.href} href={e.href}>
-                {e.label}
+                <T k={e.labelKey} />
               </Link>
             ))}
           </p>
@@ -64,50 +58,13 @@ export default function HomePage() {
 
       <section className="home-band" aria-labelledby="home-features-title">
         <div className="home-band-head">
-          <h2 id="home-features-title">我们在做的事</h2>
-          <span className="home-meta">古籍元数据、资源收集已上线，其余在陆续推进</span>
+          <h2 id="home-features-title"><T k="home.featuresTitle" /></h2>
+          <span className="home-meta"><T k="home.featuresMeta" /></span>
         </div>
         <HomeFeatures />
       </section>
 
-      <section className="home-open" aria-label="开放">
-        <div className="home-open-inner">
-          <div className="home-open-col">
-            <div className="home-open-head"><span className="home-badge" aria-label="许可：CC0">CC0</span><h2>文本开放</h2></div>
-            <p className="home-open-sub">古籍文本以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。</p>
-            <ul className="home-repos">
-              {OPEN_TEXT_REPOS.map((r) => (
-                <li key={r.name}>
-                  <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
-                    {r.name}<span className="home-repo-arrow" aria-hidden="true"> ↗</span>
-                  </a>
-                  <span>{r.note}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="home-open-note">
-              转录自维基文库、Kanripo 的文本沿用来源许可（CC BY-SA），每部文本的阅读页顶部标有来源与许可，详见
-              <Link href="/about">关于我们</Link>的「数据来源与授权」。
-            </p>
-          </div>
-          <div className="home-open-col">
-            <div className="home-open-head"><span className="home-badge" aria-label="许可：Apache-2.0">Apache-2.0</span><h2>代码开源</h2></div>
-            <p className="home-open-sub">
-              网站、排版、资源抓取等工具以 Apache-2.0 开源。<a href={GITHUB} target="_blank" rel="noopener noreferrer">在 GitHub 查看全部 →</a>
-            </p>
-            <ul className="home-repos">
-              {OPEN_CODE_REPOS.map((r) => (
-                <li key={r.name}>
-                  <a href={`${GITHUB}/${r.name}`} target="_blank" rel="noopener noreferrer">
-                    {r.name}<span className="home-repo-arrow" aria-hidden="true"> ↗</span>
-                  </a>
-                  <span>{r.note}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
+      <HomeOpen />
     </LayoutWrapper>
   );
 }

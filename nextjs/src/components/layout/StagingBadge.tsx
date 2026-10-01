@@ -1,4 +1,5 @@
 import { IS_STAGING } from '@/lib/constants';
+import T from '@/i18n/T';
 
 /**
  * T1 测试站角标：仅 NEXT_PUBLIC_SITE_ENV=staging 时渲染，正式站不出现。
@@ -16,7 +17,7 @@ export default function StagingBadge() {
       className="pointer-events-none fixed bottom-20 left-2 z-[60] rounded-full md:bottom-auto md:left-auto md:right-2 md:top-2
                  bg-amber-500 px-2.5 py-1 text-xs font-bold text-amber-950 shadow-md"
     >
-      测试站
+      <T k="nav.staging" />
     </div>
   );
 }

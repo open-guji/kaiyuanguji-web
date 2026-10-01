@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useFeedback } from './FeedbackProvider';
 import type { FeedbackContext } from '@/lib/feedback';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface SelectionReportProps {
     /** 只认这个容器里的选区（阅读器正文所在的外框） */
@@ -31,6 +32,7 @@ function inField(node: Node | null): boolean {
  */
 export default function SelectionReport({ containerRef, context }: SelectionReportProps) {
     const { open } = useFeedback();
+    const t = useSiteT();
     const [anchor, setAnchor] = useState<Anchor | null>(null);
     const [copied, setCopied] = useState(false);
 
@@ -102,12 +104,12 @@ export default function SelectionReport({ containerRef, context }: SelectionRepo
             className={anchor.below ? 'og-fb-pop og-fb-pop--below' : 'og-fb-pop'}
             style={{ left: anchor.left, top: anchor.top }}
             role="toolbar"
-            aria-label="选中文字"
+            aria-label={t('feedback.selection.toolbar')}
             // 按下时不让浏览器把选区清掉
             onMouseDown={(e) => e.preventDefault()}
         >
-            <button type="button" onClick={copy}>{copied ? '已复制' : '复制'}</button>
-            <button type="button" onClick={report}>报错</button>
+            <button type="button" onClick={copy}>{copied ? t('feedback.selection.copied') : t('feedback.selection.copy')}</button>
+            <button type="button" onClick={report}>{t('feedback.selection.report')}</button>
         </div>
     );
 }

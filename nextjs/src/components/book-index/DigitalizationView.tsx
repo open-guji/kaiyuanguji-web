@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { DigitalAssets } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface DigitalizationViewProps {
     id: string;
@@ -14,6 +15,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const t = useSiteT();
 
     const [texSource, setTexSource] = useState<string>('');
     const [imageManifest, setImageManifest] = useState<any>(null);
@@ -243,7 +245,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
 
 
     if (isLoading) {
-        return <div className="p-8 text-center text-secondary">加载数字化资源中...</div>;
+        return <div className="p-8 text-center text-secondary">{t('bookIndex.digital.loading')}</div>;
     }
 
     const basePath = assets.image_manifest_url?.replace(/\/images\/image_manifest\.json$/, '') || `/books/${id}`;
@@ -253,9 +255,9 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
             {/* 面板开关：设计稿的「签条」样式 */}
             <div className="mb-3 flex items-center justify-center gap-2 px-1">
                 {[
-                    { key: 'tex' as const, label: 'TeX 源码', icon: '{ }' },
-                    { key: 'render' as const, label: '排版预览', icon: '◫' },
-                    { key: 'images' as const, label: '影印影像', icon: '🖼' },
+                    { key: 'tex' as const, label: t('bookIndex.digital.tex'), icon: '{ }' },
+                    { key: 'render' as const, label: t('bookIndex.digital.render'), icon: '◫' },
+                    { key: 'images' as const, label: t('bookIndex.digital.images'), icon: '🖼' },
                 ].map(({ key, label, icon }) => (
                     <button
                         key={key}
@@ -278,11 +280,11 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                 {/* Column 1: TeX Source */}
                 <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.tex ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest flex items-center justify-between">
-                        <span>TeX 源码</span>
+                        <span>{t('bookIndex.digital.tex')}</span>
                         <span className="text-[10px] opacity-50 font-mono">{assets.tex_files?.[0]}</span>
                     </div>
                     <pre className="flex-1 overflow-auto p-5 text-sm font-mono text-ink leading-relaxed selection:bg-vermilion/10">
-                        {texSource || '无 TeX 源码'}
+                        {texSource || t('bookIndex.digital.noTex')}
                     </pre>
                 </div>
 
@@ -290,7 +292,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                 <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.render ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span>WebTeX 排版</span>
+                            <span>{t('bookIndex.digital.webtex')}</span>
                             {webtexVersion && (
                                 <span className="bg-ink/5 px-1.5 py-0.5 rounded text-[9px] font-mono text-secondary/60">
                                     v{webtexVersion}
@@ -329,7 +331,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                 {/* Column 3: Images */}
                 <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-surface shadow-[var(--shadow-soft)]" style={{ display: panels.images ? undefined : 'none' }}>
                     <div className="bg-paper border-b border-border/60 px-4 py-2.5 text-xs font-bold text-secondary uppercase tracking-widest">
-                        影印本影像
+                        {t('bookIndex.digital.scanImages')}
                     </div>
                     <div
                         ref={imagesRef}
@@ -356,7 +358,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                                 </div>
                             )}
                         </div>
-                        {!imageManifest && <div className="text-sm text-secondary p-4 text-center">无影像资源</div>}
+                        {!imageManifest && <div className="text-sm text-secondary p-4 text-center">{t('bookIndex.digital.noImages')}</div>}
                     </div>
                 </div>
             </div>
@@ -365,7 +367,7 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
             <div className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 rounded-[var(--radius-card)] border border-border/60 bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
                 {/* Tex Controls */}
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mr-2">排版</span>
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mr-2">{t('bookIndex.digital.typeset')}</span>
                     <button
                         onClick={() => goToPage('tex', pageTex - 1)}
                         disabled={pageTex <= 1}
@@ -405,12 +407,12 @@ export default function DigitalizationView({ id, assets, initialPage = 1 }: Digi
                             : 'bg-paper text-secondary border-border/60'}`}
                 >
                     <span className="text-sm">{isSynced ? '🔒' : '🔓'}</span>
-                    同步锁定
+                    {t('bookIndex.digital.syncLock')}
                 </button>
 
                 {/* Image Controls */}
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mr-2">影像</span>
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mr-2">{t('bookIndex.digital.image')}</span>
                     <button
                         onClick={() => goToPage('images', pageImages - 1)}
                         disabled={pageImages <= 1}
