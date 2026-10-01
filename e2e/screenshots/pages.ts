@@ -27,7 +27,7 @@ export const PAGES: ShotPage[] = [
     { name: 'read-collated', title: '阅读页·整理本（直齋書錄解題）', path: `/read/${ANCHORS.collated.id}`, firstScreenOnly: true },
     { name: 'read-fulltext', title: '阅读页·全文（詩序，有版本下拉框）', path: '/read/d59f2ew0ctmo', firstScreenOnly: true },
     { name: 'about', title: '关于', path: '/about' },
-    { name: 'contact', title: '联系', path: '/contact' },
+    { name: 'contact', title: '联系（并入关于页）', path: '/about#联系' },
     { name: 'privacy', title: '隐私', path: '/privacy' },
     { name: 'feedback', title: '反馈', path: '/feedback' },
     { name: 'not-found', title: '404：不存在的条目', path: '/item/nonexistent000' },
