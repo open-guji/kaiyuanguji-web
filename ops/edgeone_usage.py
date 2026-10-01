@@ -64,16 +64,25 @@ def main():
 
     month_start = now.replace(day=1, hour=0, minute=0, second=0)
     for metric in ("edgefunction_request", "acc_flux"):
-        def bill(metric=metric):
-            r = models.DescribeBillingDataRequest()
-            r.StartTime = fmt(month_start)
-            r.EndTime = fmt(now)
-            r.ZoneIds = [zone]
-            r.MetricName = metric
-            r.Interval = "day"
-            return json.loads(client.DescribeBillingData(r).to_json_string())
-        data["billing"][metric], err = _call(f"本月计费 {metric}", bill)
-        errors.append(err)
+        # Interval 要平台认：day 首次实测报 InvalidInterval，依次退到 hour、5min（取到哪个算哪个，原因都留在报告里）
+        tried = []
+        for interval in ("day", "hour"):
+            def bill(metric=metric, interval=interval):
+                r = models.DescribeBillingDataRequest()
+                r.StartTime = fmt(month_start)
+                r.EndTime = fmt(now)
+                r.ZoneIds = [zone]
+                r.MetricName = metric
+                r.Interval = interval
+                return json.loads(client.DescribeBillingData(r).to_json_string())
+            got, err = _call(f"本月计费 {metric}（Interval={interval}）", bill)
+            if got is not None:
+                data["billing"][metric] = got
+                break
+            tried.append(err)
+        else:
+            data["billing"][metric] = None
+        errors.extend(tried if data["billing"][metric] is None else tried[:0])
 
     with open(os.path.join(HERE, "edgeone-usage-thresholds.json"), encoding="utf-8") as f:
         thresholds = json.load(f)
