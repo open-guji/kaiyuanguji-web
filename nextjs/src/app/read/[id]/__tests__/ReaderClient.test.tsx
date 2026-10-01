@@ -12,6 +12,8 @@ let pathname = '/read/d59f2htm01du';
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => pathname }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <main>{children}</main>);
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
+// 全站繁简偏好：阅读页要包在跟全站走的 BimLocaleProvider 里（overview#322），这里用带标记的桩
+jest.mock('@/components/common/BimLocaleProvider', () => ({ children }: { children: React.ReactNode }) => <div data-testid="bim-locale">{children}</div>);
 
 const getTextManifest = jest.fn();
 const getTextIndex = jest.fn();
@@ -69,10 +71,15 @@ beforeEach(() => {
 });
 
 describe('ReaderClient', () => {
+    it('阅读器包在跟全站繁简走的 BimLocaleProvider 里（顶栏切繁简时阅读页跟着变）', () => {
+        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '003' }} bookTitle="直齋書錄解題" />);
+        expect(screen.getByTestId('bim-locale')).toContainElement(screen.getByTestId('reader'));
+    });
+
     it('把版本与章受控地交给阅读器：主版本 key 写 default，书名作工具条书名，带「报告错字」与条目跳转', async () => {
         render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '003' }} bookTitle="直齋書錄解題" />);
         expect(screen.getByTestId('reader')).toHaveTextContent('default|003');
-        expect(last.reader).toMatchObject({ id: ZHIZHAI, versionKey: 'default', chapter: '003', title: '直齋書錄解題' });
+        expect(last.reader).toMatchObject({ id: ZHIZHAI, versionKey: 'default', chapter: '003', title: '直齋書錄解題', backHref: '/read' });
         expect(typeof last.reader!.onLocationChange).toBe('function');
         expect(typeof last.reader!.onReportError).toBe('function');
         (last.reader!.onNavigate as (id: string) => void)('d59f2aaaaaaa');
