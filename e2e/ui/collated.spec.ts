@@ -154,33 +154,37 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 15_000 });
     });
 
-    test('文本数据请求都成功、不 404（章目录与章文件）', async ({ page }) => {
-        // 直接盯网络层：数据路径或版本号错时整片 404。数据布局有两种——current/items/<id>/…（带 ?v=<版本号>）
-        // 与按内容哈希的 h1/text/<id>/…（文件名里带哈希，不需要 ?v=）；站点用哪种都认。
-        const itemRequests: { url: string; status: number }[] = [];
+    test('点开另一章：章数据请求都成功、不 404', async ({ page }) => {
+        // 直接盯网络层：数据路径或版本号错时整片 404。首屏（manifest、章目录、首章）由服务端预载进 HTML，浏览器不会再请求；
+        // 所以点开第 2 章，它才走浏览器取数。数据布局有两种——current/items/<id>/…（带 ?v=<版本号>）
+        // 与按内容哈希的 h1/text/<id>/…（文件名里带哈希）；站点用哪种都认，只看是不是本条目的 fetch／xhr 请求。
+        const dataRequests: { url: string; status: number }[] = [];
         page.on('response', (res) => {
             const u = res.url();
-            if ((u.includes('/current/items/') || u.includes('/h1/text/')) && u.includes(C.id)) {
-                itemRequests.push({ url: u, status: res.status() });
+            const type = res.request().resourceType();
+            if ((type === 'fetch' || type === 'xhr') && u.includes(C.id) && !u.includes('/api/')) {
+                dataRequests.push({ url: u, status: res.status() });
             }
         });
 
-        await page.goto(`${TARGET}/read/${C.id}/${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}`);
+        await page.goto(`${TARGET}/read/${C.id}/001`);
+        await expect(page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key="002"]')).toBeVisible({ timeout: 30_000 });
+        await page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key="002"]').click();
+        await expect(page).toHaveURL(new RegExp(`/read/${C.id}/002$`), { timeout: 30_000 });
         await expect(
-            page.getByRole('heading', {
-                name: eitherScript(C.sampleJuanCategory, C.sampleJuanCategorySimplified),
-            }),
+            page.getByRole('heading', { name: eitherScript('書類', '书类') }),
+            '第 2 章正文没渲染出来',
         ).toBeVisible({ timeout: 30_000 });
 
-        expect(itemRequests.length, '没有发出任何文本数据请求').toBeGreaterThan(0);
+        expect(dataRequests.length, '点开第 2 章后没有发出任何本条目的数据请求').toBeGreaterThan(0);
         expect(
-            itemRequests.some((r) => /\/default\/index(\.[0-9a-f]+)?\.json/.test(r.url) && r.status === 200),
-            '没有成功取到 default/index.json（章目录）',
+            dataRequests.some((r) => r.url.includes('002') && r.status === 200),
+            '没有成功取到第 2 章的数据文件',
         ).toBe(true);
 
         // current/ 布局的请求必须带当前版本号做 cache-bust——版本号分裂时这里会露馅
         // 版本键：cacheKey 16 位 hex；旧数据回退 commitId 12 位
-        const badVersion = itemRequests
+        const badVersion = dataRequests
             .filter((r) => r.url.includes('/current/items/'))
             .filter((r) => !/[?&]v=([0-9a-f]{16}|[0-9a-f]{12})(&|$)/.test(r.url));
         expect(
@@ -192,7 +196,7 @@ test.describe('整理本', () => {
         //   lineage_graph.json —— 多数书没有版本传承图
         //   章 md（.txt）—— 整理本的章可以只有结构化 json（has_json），md 可缺
         const OPTIONAL = /lineage_graph\.json|\.txt(\?|$)|\.[0-9a-f]{8}\.md(\?|$)/;
-        const failed = itemRequests.filter((r) => r.status >= 400 && !OPTIONAL.test(r.url));
+        const failed = dataRequests.filter((r) => r.status >= 400 && !OPTIONAL.test(r.url));
         expect(
             failed.map((f) => `${f.status} ${f.url}`),
             '必需的文本数据请求失败——多半是路径或版本号错',
