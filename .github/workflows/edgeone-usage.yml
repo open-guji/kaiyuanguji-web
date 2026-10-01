@@ -30,10 +30,10 @@ jobs:
       - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
       - name: Unit tests
         run: python3 -m unittest discover -s ops/tests -p 'test_edgeone_usage.py' -v
-      # PR 上只跑单测（不碰密钥）；定时与手动才取数
+      # PR 上也取数（只读 API，同仓 PR 才有密钥；失败不拦 PR），为的是新工作流合入前就能看到哪些数读得到
       - name: Check usage
         id: usage
-        if: github.event_name != 'pull_request'
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
@@ -42,7 +42,7 @@ jobs:
           OUT_BREACH: ${{ runner.temp }}/breach.txt
         run: python3 ops/edgeone_usage.py
       - name: Summary
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         run: '[ -f "$RUNNER_TEMP/usage.md" ] && cat "$RUNNER_TEMP/usage.md" >> "$GITHUB_STEP_SUMMARY" || true'
       - name: Open or update usage issue on breach
         if: always() && github.event_name != 'pull_request'
