@@ -412,6 +412,12 @@ test.describe('用户意见（overview#267）：总目不要页脚、页脚黑�
         expect(html).toContain('og-paper');
     });
 
+    test('/contact 永久跳到 /about#联系（9-30 反馈，overview#322）', async ({ request }) => {
+        const r = await request.get(`${TARGET}/contact`, noFollow);
+        expect(r.status()).toBe(308);
+        expect(decodeURI(r.headers()['location'] ?? '')).toMatch(/\/about#联系$/);
+    });
+
     test('顶栏搜索入口叫「古籍元数据」', async ({ request }) => {
         const html = await (await request.get(`${TARGET}/about`, noFollow)).text();
         expect(html).toMatch(/<a[^>]*href="\/book-index"[^>]*>古籍元数据<\/a>/);
@@ -576,10 +582,11 @@ test.describe('新架构：sitemap', () => {
         expect(n, `/sitemap.xml 仍有 ${n} 条旧 /book-index?id= 地址，与条目分片重复`).toBe(0);
     });
 
-    test('sitemap.xml 静态页清单有 /catalog、/read、/contact', async ({ request }) => {
+    test('sitemap.xml 静态页清单有 /catalog、/read，没有已并进关于页的 /contact', async ({ request }) => {
         const xml = await (await request.get(`${TARGET}/sitemap.xml`)).text();
         const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
-        for (const p of ['/catalog', '/read', '/contact']) expect(paths, `sitemap.xml 缺 ${p}`).toContain(p);
+        for (const p of ['/catalog', '/read']) expect(paths, `sitemap.xml 缺 ${p}`).toContain(p);
+        expect(paths, '/contact 已 308 到 /about#联系，不该再进 sitemap').not.toContain('/contact');
     });
 });
 

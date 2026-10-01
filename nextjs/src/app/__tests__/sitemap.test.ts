@@ -31,10 +31,11 @@ describe('app/sitemap.ts', () => {
         expect(u.length).toBeGreaterThan(0);
         expect(u.filter((x) => x.includes('/book-index?id='))).toEqual([]);
         expect(u.some((x) => x.endsWith('/about'))).toBe(true);
-        expect(u.some((x) => x.endsWith('/contact'))).toBe(true);
+        // /contact 已并进关于页、308 到 /about#联系（9-30 反馈，overview#322），不再列
+        expect(u.some((x) => x.endsWith('/contact'))).toBe(false);
         expect(u.some((x) => x.endsWith('/read'))).toBe(true);
         expect(u.some((x) => x.endsWith('/catalog'))).toBe(true);
-        expect(u.filter((x) => x.endsWith('/read') || x.endsWith('/catalog') || x.endsWith('/contact'))).toHaveLength(3); // 不重复
+        expect(u.filter((x) => x.endsWith('/read') || x.endsWith('/catalog'))).toHaveLength(2); // 不重复
         expect(mockGetAllEntries).not.toHaveBeenCalled();
     });
 

@@ -1,74 +1,11 @@
-import Link from 'next/link';
-import { Metadata } from 'next';
-import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { GITHUB_ORG } from '@/lib/constants';
+import { permanentRedirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: '联系我们',
-  alternates: { canonical: '/contact' },
-  description: '发现错误、缺了资源、有建议或想参与开源古籍，可以通过站内反馈、GitHub Issues、邮箱、QQ 群或微信群找到我们。',
-};
+// 用户 9-30 反馈（overview#322）：联系页的内容直接展开放进关于页，旧地址跳到 /about#联系。
+// EdgeOne 不认 next.config 的 redirects（31 卡 §B.1），middleware 是 V3 的写域，所以在页面里跳：
+// 全栈（测试站）按请求渲染时回 308；静态导出（正式站）构建期生成的页面由 Next 带上跳转。
+// Location 头只能是 ASCII：锚点按百分号编码，浏览器解码后对上 id="联系"。
+const CONTACT_TARGET = `/about#${encodeURIComponent('联系')}`;
 
-const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
-
-// N6（overview#259）：只放用户给定的联系方式。没有公众号。
-// 微信群二维码 7 天过期（当前这张 10 月 5 日前有效），过期后要换 public/images/wechat-group-qr.png。
-const CONTACT_EMAIL = 'sheldonli.dev@gmail.com';
-const QQ_GROUP = '111362573';
 export default function ContactPage() {
-  return (
-    <LayoutWrapper>
-      <div className="doc-page">
-        <h1>联系我们</h1>
-        <p className="doc-lead">发现错误、缺了资源、有建议，或者想参与整理、校对、开发，都可以从下面找到我们。</p>
-
-        <section className="contact-primary" aria-labelledby="contact-feedback">
-          <div>
-            <h2 id="contact-feedback">反馈与纠错</h2>
-            <p>最快的方式。提交后可以在反馈页看到处理进展；想参与的话，类型选「想参与」并留下联系方式，我们会联系你。</p>
-          </div>
-          <Link href="/feedback" className="og-btn">
-            去反馈
-          </Link>
-        </section>
-
-        <dl className="contact-ways">
-          <dt>GitHub</dt>
-          <dd>
-            书目数据有误：
-            <a href={`${GITHUB_BASE}/book-index/issues`} target="_blank" rel="noopener noreferrer">
-              book-index Issues
-            </a>
-            <br />
-            网站问题：
-            <a href={`${GITHUB_BASE}/kaiyuanguji-web/issues`} target="_blank" rel="noopener noreferrer">
-              kaiyuanguji-web Issues
-            </a>
-            <span className="doc-meta">也欢迎直接提 PR</span>
-          </dd>
-
-          <dt>邮箱</dt>
-          <dd>
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            <span className="doc-meta">合作、授权等不便公开的事</span>
-          </dd>
-
-          <dt>交流群</dt>
-          <dd>
-            QQ 群：{QQ_GROUP}
-            <span className="doc-meta">在 QQ 里搜索群号加入</span>
-            <figure className="contact-qr">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/wechat-group-qr.png" alt="微信群「开源古籍交流群」二维码" width={160} height={160} />
-              <figcaption>微信群：开源古籍交流群，微信扫码加入</figcaption>
-            </figure>
-          </dd>
-        </dl>
-
-        <p className="doc-note">
-          项目本身的介绍、数据来源与授权，见<Link href="/about">关于我们</Link>。
-        </p>
-      </div>
-    </LayoutWrapper>
-  );
+  permanentRedirect(CONTACT_TARGET);
 }

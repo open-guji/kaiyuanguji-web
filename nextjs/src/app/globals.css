@@ -1621,6 +1621,11 @@
     border-radius: var(--radius-card);
     background: var(--color-tint);
   }
+  .contact-primary h3 {
+    margin: 0 0 6px;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+  }
   .contact-primary p {
     margin: 0;
     color: var(--color-ink-2);
@@ -1633,7 +1638,7 @@
     text-decoration: none;
   }
   .contact-ways {
-    margin: 48px 0 32px;
+    margin: 32px 0;
     display: grid;
     grid-template-columns: 9em minmax(0, 1fr);
     gap: 32px 24px;
@@ -1649,6 +1654,15 @@
   }
   .contact-qr {
     margin: 16px 0 0;
+  }
+  /* 关于页「联系我们」：微信、QQ 两张群二维码并排，留足间距（9-30 反馈） */
+  .contact-qrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 48px;
+  }
+  .contact-qrs .contact-qr {
+    margin-top: 0;
   }
   .contact-qr img {
     display: block;
