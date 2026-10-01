@@ -348,7 +348,7 @@
 :root {
   --bim-fr-bd: 0 solid transparent;
   --bim-fr-bg: transparent;
-  --bim-fr-hd-pad: 0;
+  --bim-fr-hd-pad: 14px 18px;
   --bim-fr-hd-bd: 0 solid transparent;
   --bim-fr-bd-pad: 0;
   --bim-fr-gap: 56px;
@@ -365,6 +365,20 @@
   --bim-fr-tbl-zebra: var(--bim-tint-bg);
   --bim-fr-rail-bd: 1px solid transparent;
   --bim-fr-rail-bg: var(--bim-tint-bg);
+  /* bim#78／#80／#81 加的：分区标题栏（字号、淡染底）、卡片底、列表行距、标签底、题签书脊、书架架板、时间轴、年代带 */
+  --bim-fr-hd-size: 24px;
+  --bim-fr-hd-bg: color-mix(in srgb, var(--bim-accent) 7%, var(--bim-page-bg));
+  --bim-fr-card-bg: var(--bim-card-bg);
+  --bim-fr-row-pad: 10px 2px;
+  --bim-fr-tag-bg: var(--bim-tint-bg);
+  --bim-fr-spine-bd: 1px solid transparent;
+  --bim-fr-spine-bg: var(--bim-flag-bg);
+  --bim-fr-plank: 0 solid transparent;
+  --bim-fr-axis-bd: 0 solid transparent;
+  --bim-fr-axis-band: 6px;
+  --bim-fr-tick: 0;
+  --bim-fr-band-gap: 3px;
+  --bim-fr-band-bd: 0 solid transparent;
   /* 本站自己的：抬起的卡片与检索框的投影（疏朗有、界栏无）；页脚深底上的分隔线 */
   --og-card-sh: var(--shadow-soft);
   --og-foot-bd: 1px solid transparent;
@@ -389,6 +403,18 @@
   --bim-fr-tbl-zebra: transparent;
   --bim-fr-rail-bd: 1px solid var(--bim-rule);
   --bim-fr-rail-bg: var(--bim-card-bg);
+  --bim-fr-hd-size: 19px;
+  --bim-fr-hd-bg: color-mix(in srgb, var(--bim-accent) 6%, var(--bim-card-bg));
+  --bim-fr-row-pad: 7px 2px;
+  --bim-fr-tag-bg: transparent;
+  --bim-fr-spine-bd: 1px solid var(--bim-rule-accent-soft);
+  --bim-fr-spine-bg: var(--bim-card-bg);
+  --bim-fr-plank: 3px solid var(--bim-rule-strong);
+  --bim-fr-axis-bd: 1px solid var(--bim-rule-strong);
+  --bim-fr-axis-band: 0;
+  --bim-fr-tick: 5px;
+  --bim-fr-band-gap: 0;
+  --bim-fr-band-bd: 1px solid var(--bim-rule-dashed);
   --og-card-sh: none;
   --og-foot-bd: 1px solid rgba(255, 255, 255, 0.16);
 }
