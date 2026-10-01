@@ -13,6 +13,7 @@ import { ANCHORS, DATA_BASE, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchor
 import {
     isEmptyEntity, isEmptyWork, pickEmptySample, requireUiVersion,
 } from '../fixtures/preconditions';
+import { readButton } from '../fixtures/detail';
 
 /** 史記：35 个版本、9 条著录、90 条关联 */
 const WORK = ANCHORS.work.id;
@@ -231,7 +232,7 @@ test.describe('详情页版式', () => {
         // N3b：网站给三栏组件传 readLink，地址约定 /read/<id>[/<章>]（主版本，新结构；overview#307）
         await requireUiVersion(request, THREE_COLUMN, '阅读全文入口');
         await openDetail(page, WORK);
-        const read = page.getByRole('link', { name: /^(阅读|閱讀)(全文)?$/ });
+        const read = readButton(page);
         await expect(read).toHaveCount(1);
         await expect(read).toHaveAttribute('href', new RegExp(`^/read/${WORK}(/\\d+)?$`));
     });
