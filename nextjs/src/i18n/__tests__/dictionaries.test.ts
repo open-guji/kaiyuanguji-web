@@ -3,7 +3,7 @@
  */
 import { NAMESPACES } from '../messages';
 import { getSiteT } from '../translate';
-import { findTraditionalChars } from '../traditional-check';
+import { findTraditionalChars } from 'book-index-ui';
 
 type Tree = { [k: string]: string | Tree };
 

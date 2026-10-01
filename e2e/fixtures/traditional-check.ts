@@ -2,14 +2,15 @@
  * 简体模式「残留繁体字」检测（overview#337）。
  *
  * 用法：简体模式下渲染出的正文交给 findTraditionalChars，返回值非空就是有文字没过 i18n / convert。
- * 本文件是 book-index-ui 的 src/i18n/traditional-check.ts 的副本：组件库 0.34 起导出同名函数，升级依赖后改为直接引用。
- * 网站的字典测试（jest）与 e2e/ui/zh-hans.spec.ts 共用这一份。
+ * 本文件是 book-index-ui（≥0.34）导出的 findTraditionalChars／COMMON_TRADITIONAL_CHARS／TRADITIONAL_ALLOWLIST 的副本，
+ * 只给 e2e 用：线上验收只装 e2e 的依赖，引不到组件库。网站代码与 jest 一律直接引组件库；
+ * 两边一致由 nextjs/src/i18n/__tests__/traditional-check-sync.test.ts 守着，组件库改了字表，那条测试会红，照着同步本文件即可。
  *
  * COMMON_TRADITIONAL_CHARS：opencc t2cn 单字会改写的字，取自本包界面文字、样例数据与一份常用字表，
  * 按出现频次排；去掉了在简体里也常规使用的「乾」（乾隆）、「著」（著录）。
  * 专名里的繁体（保护表 PROTECTED_TERMS 里的词等）不算残留，放进 allow 白名单。
  */
-/** 与 book-index-ui 的 PROTECTED_TERMS 同步（组件库发版并升级依赖后改为直接引用其 TRADITIONAL_ALLOWLIST） */
+/** 与 book-index-ui 的 PROTECTED_TERMS 同步 */
 const PROTECTED_TERMS: readonly string[] = ['曹霑'];
 
 export const COMMON_TRADITIONAL_CHARS: string = [

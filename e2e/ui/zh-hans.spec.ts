@@ -6,13 +6,13 @@
  * 与 <title>，用常用繁体字表检测；专名白名单另列。命中就说明有界面文字没走字典，或数据文字没过 convert。
  * 另一组反过来：切到繁体后，顶栏与页脚的界面文字要跟着变成繁体（以前它们写死简体，切了不变）。
  *
- * 字表与检测函数取自 nextjs/src/i18n/traditional-check.ts（book-index-ui 同名文件的副本）。
+ * 字表与检测函数取自 fixtures/traditional-check.ts（book-index-ui 导出的副本：线上验收只装 e2e 依赖，引不到组件库）。
  * 只发 GET。
  */
 import { test, expect, type Page } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { findTraditionalChars, TRADITIONAL_ALLOWLIST } from '../../nextjs/src/i18n/traditional-check';
+import { findTraditionalChars, TRADITIONAL_ALLOWLIST } from '../fixtures/traditional-check';
 
 /** 版本、丛编各取一个首页上推荐的经典条目（ANCHORS 里还没有这两类） */
 const BOOK_ID = '96kzkdm8e8';        // 新鐫全部繡像紅樓夢（程甲本）
@@ -20,12 +20,9 @@ const COLLECTION_ID = '8rlb6yi1ecqo'; // 欽定四庫全書·文淵閣本
 
 /**
  * 专名白名单：站上原样展示的外文或专名，不是漏转。
- * 默认表（保护表与「切換為繁體」按钮）之外再加这里的。
+ * 默认表已含保护表、「切換為繁體」按钮与 Kanripo 的日文名「漢籍リポジトリ」；网站另有专名时加在这里。
  */
-const ALLOW = [
-    ...TRADITIONAL_ALLOWLIST,
-    '漢籍リポジトリ',   // Kanripo 的日文名（关于页）
-];
+const ALLOW: readonly string[] = [...TRADITIONAL_ALLOWLIST];
 
 interface Target { name: string; path: string; fullstackOnly?: boolean }
 
