@@ -15,6 +15,7 @@ import { ReadHomeView, useConvert } from 'book-index-ui';
 import type { ReadHomeLinks } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
+import { useSiteT } from '@/i18n/use-site-t';
 import {
     READ_PERIODS, readCardHref, readHomeHref, readPeriodHref,
     type CatalogNode, type ReadCard, type ReadSections, type ResolvedPeriod,
@@ -63,18 +64,19 @@ const LINKS: Partial<ReadHomeLinks> = {
 
 /** 页首：「在可读书中搜索」——搜索页还没有「站内可读」筛选，先跳普通搜索 */
 function SearchBox() {
-    const { convert } = useConvert();
+    const t = useSiteT();
     return (
         <form role="search" action="/book-index" method="get" style={S.search} data-read-search>
-            <label htmlFor="read-q" style={S.sr}>{convert('在可讀書中搜索')}</label>
-            <input id="read-q" name="q" type="search" placeholder={convert('書名、作者，如 文選、蘇軾')} style={S.searchInput} />
-            <button type="submit" style={S.searchBtn}>{convert('搜索')}</button>
+            <label htmlFor="read-q" style={S.sr}>{t('readHome.searchLabel')}</label>
+            <input id="read-q" name="q" type="search" placeholder={t('readHome.searchPlaceholder')} style={S.searchInput} />
+            <button type="submit" style={S.searchBtn}>{t('readHome.search')}</button>
         </form>
     );
 }
 
 function Cards({ cards }: { cards: ReadCard[] }) {
     const { convert } = useConvert();
+    const t = useSiteT();
     return (
         <ul className="read-cards" style={S.grid} data-read-list>
             {cards.map((c) => (
@@ -85,8 +87,8 @@ function Cards({ cards }: { cards: ReadCard[] }) {
                         <div style={S.meta}>
                             {[
                                 c.authors?.[0] && convert([c.authors[0].dynasty, c.authors[0].name].filter(Boolean).join(' ')),
-                                c.juan && (typeof c.juan === 'number' ? `${c.juan}卷` : convert(c.juan)),
-                                c.text_count && c.text_count > 1 ? `${c.text_count}本` : null,
+                                c.juan && (typeof c.juan === 'number' ? t('readHome.juanCount', { n: c.juan }) : convert(c.juan)),
+                                c.text_count && c.text_count > 1 ? t('readHome.textCount', { n: c.text_count }) : null,
                             ].filter(Boolean).join(' · ')}
                         </div>
                     </Link>
@@ -97,12 +99,13 @@ function Cards({ cards }: { cards: ReadCard[] }) {
 }
 
 function Pager({ page, pageCount, href }: { page: number; pageCount: number; href: (p: number) => string }) {
+    const t = useSiteT();
     if (pageCount <= 1) return null;
     return (
-        <nav style={S.pager} aria-label="分页">
-            {page > 1 && <Link href={href(page - 1)} rel="prev">上一页</Link>}
-            <span>第 {page} / {pageCount} 页</span>
-            {page < pageCount && <Link href={href(page + 1)} rel="next">下一页</Link>}
+        <nav style={S.pager} aria-label={t('readHome.pagination')}>
+            {page > 1 && <Link href={href(page - 1)} rel="prev">{t('readHome.prev')}</Link>}
+            <span>{t('readHome.pageOf', { page, total: pageCount })}</span>
+            {page < pageCount && <Link href={href(page + 1)} rel="next">{t('readHome.next')}</Link>}
         </nav>
     );
 }
@@ -139,26 +142,27 @@ export interface ReadHomeProps {
 
 function NodePage({ tree, current }: { tree: CatalogNode[]; current: NonNullable<ReadHomeProps['current']> }) {
     const { convert } = useConvert();
+    const t = useSiteT();
     const node = current.path[current.path.length - 1];
     const top = current.path[0];
     const children = node.children ?? [];
     return (
         <div style={S.listWrap}>
             <p style={S.note}>
-                <Link href="/read" style={S.crumb}>阅读</Link>
+                <Link href="/read" style={S.crumb}>{t('readHome.read')}</Link>
                 {current.path.map((n) => (
                     <span key={n.id}>
                         {' › '}
                         <Link href={readHomeHref(n.id)} style={S.crumb}>{convert(n.label)}</Link>
                     </span>
                 ))}
-                ，共 {node.count} 部
+                {t('readHome.totalCount', { count: node.count })}
             </p>
             <h1 style={S.h1}>{convert(current.path.map((n) => n.label).join('·'))}</h1>
-            <NodeChips nodes={tree} currentId={top.id} label="四部分类" />
+            <NodeChips nodes={tree} currentId={top.id} label={t('readHome.fourBranches')} />
             {children.length > 0 && (
                 <div style={S.sub}>
-                    <NodeChips nodes={children} label={`${node.label}下的分类`} />
+                    <NodeChips nodes={children} label={t('readHome.subcategories', { label: convert(node.label) })} />
                 </div>
             )}
             <Cards cards={current.cards} />
@@ -169,13 +173,14 @@ function NodePage({ tree, current }: { tree: CatalogNode[]; current: NonNullable
 
 function PeriodPage({ period }: { period: NonNullable<ReadHomeProps['period']> }) {
     const { convert } = useConvert();
+    const t = useSiteT();
     return (
         <div style={S.listWrap}>
             <p style={S.note}>
-                <Link href="/read" style={S.crumb}>阅读</Link>{' › '}按年代{' › '}{convert(period.label)}，共 {period.count} 部
+                <Link href="/read" style={S.crumb}>{t('readHome.read')}</Link>{' › '}{t('readHome.byPeriod')}{' › '}{convert(period.label)}{t('readHome.totalCount', { count: period.count })}
             </p>
             <h1 style={S.h1}>{convert(period.label)}</h1>
-            <ul style={S.chips} aria-label="年代">
+            <ul style={S.chips} aria-label={t('readHome.periods')}>
                 {period.periods.map((p) => (
                     <li key={p.key}>
                         <Link
@@ -195,14 +200,15 @@ function PeriodPage({ period }: { period: NonNullable<ReadHomeProps['period']> }
 }
 
 function Body({ sections, tree, current, period }: ReadHomeProps) {
+    const t = useSiteT();
     if (period) return <PeriodPage period={period} />;
     if (current && tree) return <NodePage tree={tree} current={current} />;
     return (
         <div style={S.wrap}>
-            <h1 style={S.sr}>阅读</h1>
+            <h1 style={S.sr}>{t('readHome.read')}</h1>
             {sections
                 ? <ReadHomeView sections={sections} links={LINKS} head={<SearchBox />} />
-                : <p style={S.empty}>阅读列表正在准备中，请稍后再来。</p>}
+                : <p style={S.empty}>{t('readHome.empty')}</p>}
         </div>
     );
 }

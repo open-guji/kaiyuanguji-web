@@ -8,22 +8,29 @@
  *   - 选中的文字 → 拼在正文开头，形如「【原文】……」，与读者写的话空一行隔开。
  */
 import { parseItemId, type ItemType } from './item-id';
+import { getSiteT, type SiteMessageKey, type SiteT } from '@/i18n/translate';
+
+/** 不传 t 时用简体（与服务端首帧、单测一致）；组件里传 useSiteT() 的结果，跟随繁简偏好 */
+const HANS_T: SiteT = getSiteT('zh-Hans');
 
 export type FeedbackKind = 'bug' | 'resource' | 'suggestion' | 'contact';
 
 export interface FeedbackTypeOption {
     value: FeedbackKind;
+    /** 字典键（i18n/messages/feedback.ts）；组件里用 t(labelKey) 显示，跟随繁简偏好 */
+    labelKey: SiteMessageKey;
+    placeholderKey: SiteMessageKey;
+    /** 简体文案（= t(labelKey) 的简体），给不走 t 的地方与测试用 */
     label: string;
     placeholder: string;
 }
 
-/** 类型页签的顺序与文案。contact（想参与）后端永远不公开 */
-export const FEEDBACK_TYPES: FeedbackTypeOption[] = [
-    { value: 'bug', label: '内容有误', placeholder: '哪里不对？写下你看到的，以及应当是什么' },
-    { value: 'resource', label: '补充资源', placeholder: '哪里有这部书的影印本、文本或其他资料？请附上链接或出处' },
-    { value: 'suggestion', label: '功能建议', placeholder: '希望网站增加或改进什么？' },
-    { value: 'contact', label: '想参与', placeholder: '想参与整理、校对或合作？简单介绍一下自己（这类留言不公开）' },
-];
+/** 类型页签的顺序。contact（想参与）后端永远不公开；文案在字典 feedback.types／feedback.placeholders */
+export const FEEDBACK_TYPES: FeedbackTypeOption[] = (['bug', 'resource', 'suggestion', 'contact'] as const).map((value) => {
+    const labelKey = `feedback.types.${value}` as const;
+    const placeholderKey = `feedback.placeholders.${value}` as const;
+    return { value, labelKey, placeholderKey, label: HANS_T(labelKey), placeholder: HANS_T(placeholderKey) };
+});
 
 /** 与后端的上限一致：正文 2000、联系方式 200 */
 export const CONTENT_MAX = 2000;
@@ -43,17 +50,22 @@ export interface FeedbackContext {
     anchor?: string;
 }
 
-const TYPE_LABEL: Record<ItemType, string> = { work: '作品', book: '版本', collection: '丛编', entity: '人物' };
+const TYPE_LABEL_KEY: Record<ItemType, SiteMessageKey> = {
+    work: 'feedback.itemType.work',
+    book: 'feedback.itemType.book',
+    collection: 'feedback.itemType.collection',
+    entity: 'feedback.itemType.entity',
+};
 
 /** 条目 id 合法才返回，否则空串。旧浮钮用 11 位正则认 id，现行 id 是 12 位，所以一直是空的 */
 export function normalizeResourceId(id: string | null | undefined): string {
     return id && parseItemId(id) ? id : '';
 }
 
-/** 「史记 · 作品 · d59f20aowb9c」；没有书名时只写类型与 id */
-export function itemLabel(id: string, title?: string | null): string {
+/** 「史记 · 作品 · d59f20aowb9c」；没有书名时只写类型与 id。书名是数据，繁简由调用方转好再传 */
+export function itemLabel(id: string, title?: string | null, t: SiteT = HANS_T): string {
     const type = parseItemId(id)?.type;
-    return [title?.trim(), type ? TYPE_LABEL[type] : null, id].filter(Boolean).join(' · ');
+    return [title?.trim(), type ? t(TYPE_LABEL_KEY[type]) : null, id].filter(Boolean).join(' · ');
 }
 
 /** 选中文字：压掉换行与连续空白，超长截断 */
@@ -109,7 +121,8 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl }: Fee
 /** 反馈只走同源接口。本地开发时这里是 404，不会像旧组件那样直连正式站（正式站与测试站共用 KV） */
 export const FEEDBACK_API = '/api/feedback';
 
-export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch = fetch): Promise<void> {
+/** 出错时抛的 Error.message 给读者看：网络错与兜底文案走字典（t），后端给的 error 原样 */
+export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch = fetch, t: SiteT = HANS_T): Promise<void> {
     let res: Response;
     try {
         res = await fetchImpl(FEEDBACK_API, {
@@ -118,11 +131,11 @@ export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch
             body: JSON.stringify(body),
         });
     } catch {
-        throw new Error('网络错误，请稍后重试');
+        throw new Error(t('feedback.networkError'));
     }
     if (!res.ok) {
         const err = await res.json().catch(() => null) as { error?: string } | null;
-        throw new Error(err?.error || '提交失败，请稍后重试');
+        throw new Error(err?.error || t('feedback.submitFailed'));
     }
 }
 
@@ -131,8 +144,12 @@ export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch
  * version 是版本名（整理本／維基文庫…，来自 manifest）；kind 是版本类别（整理本按「卷」，其余按「章」）；
  * chapter 是三位章号（004）或章名里带的数字。
  */
-export function readerFeedbackLabel(bookTitle: string, loc: { version?: string; kind?: string; chapter?: string }): string {
+export function readerFeedbackLabel(
+    bookTitle: string,
+    loc: { version?: string; kind?: string; chapter?: string },
+    t: SiteT = HANS_T,
+): string {
     const n = loc.chapter?.match(/(\d+)$/)?.[1];
-    const part = n ? (loc.kind === 'collated' ? `卷${Number(n)}` : `第 ${Number(n)} 章`) : null;
+    const part = n ? t(loc.kind === 'collated' ? 'feedback.readerJuan' : 'feedback.readerChapter', { n: Number(n) }) : null;
     return [bookTitle.trim(), loc.version?.trim(), part].filter(Boolean).join(' · ');
 }

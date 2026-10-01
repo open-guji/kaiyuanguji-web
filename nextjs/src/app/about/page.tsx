@@ -2,6 +2,8 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { Metadata } from 'next';
 import { GITHUB_ORG } from '@/lib/constants';
+import { T, type SiteMessageKey } from '@/i18n';
+import { LabeledNav, LocalizedImg } from './AboutLocalized';
 
 export const metadata: Metadata = {
   title: '关于开源古籍',
@@ -13,43 +15,25 @@ export const metadata: Metadata = {
 // 用户意见（overview#267）：去掉「项目介绍」「开源仓库」两节（首页「我们在做的事」「文本开放、代码开源」里有）。
 // 用户 9-30 反馈（overview#322）：重写「数据来源与授权」（book-index 也是 CC0，不提 book-index-draft，口径同首页）；
 // 删「本站呈现的内容不是最终事实来源……」一段；联系页内容直接展开在本页（/contact 跳到 #联系）。
-const TOC = [
-  { id: 'license', label: '数据来源与授权' },
-  { id: 'thanks', label: '致谢' },
-  { id: '联系', label: '联系我们' },
+// 界面文字在 i18n/messages/about.ts（overview#337），这里只放键
+const TOC: Array<{ id: string; label: SiteMessageKey }> = [
+  { id: 'license', label: 'about.toc.license' },
+  { id: 'thanks', label: 'about.toc.thanks' },
+  { id: '联系', label: 'about.toc.contact' },
 ];
 
-const THANKS = [
-  { name: '维基文库', note: '部分文本转录自此，CC BY-SA 4.0', href: 'https://zh.wikisource.org/' },
-  { name: 'Kanripo（漢籍リポジトリ）', note: '部分文本转录自此，CC BY-SA', href: 'https://www.kanripo.org/' },
+// 「Kanripo（漢籍リポジトリ）」是专名，繁简都照原样，不进字典（字典测试查简体栏残留繁体字）
+const KANRIPO_NAME = 'Kanripo（漢籍リポジトリ）';
+
+const THANKS: Array<{ id: string; name: SiteMessageKey | { literal: string }; note: SiteMessageKey; href: string }> = [
+  { id: 'wikisource', name: 'about.thanks.wikisource', note: 'about.thanks.wikisourceNote', href: 'https://zh.wikisource.org/' },
+  { id: 'kanripo', name: { literal: KANRIPO_NAME }, note: 'about.thanks.kanripoNote', href: 'https://www.kanripo.org/' },
 ];
 
 const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
 
-// 授权口径与首页「文本开放、代码开源」一致
-const LICENSES = [
-  {
-    what: '古籍目录索引（book-index）',
-    note: '作品、版本、丛编、人物条目，只存元数据',
-    license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
-  },
-  {
-    what: '古籍文本（book-text）',
-    note: '本站整理的古籍文本与輯佚',
-    license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
-  },
-  {
-    what: '转录自第三方的文本',
-    note: '维基文库、Kanripo 等',
-    license:
-      '沿用来源许可，不适用 CC0：维基文库为 CC BY-SA 4.0，Kanripo 为 CC BY-SA。每部文本的阅读页顶部标有来源名称、原始链接和许可，转载时请按对应许可署名，并以相同许可发布',
-  },
-  {
-    what: '代码',
-    note: '网站、排版（luatex-cn）、资源抓取（bookget-py）、图片数字化（open-guji-cv）等',
-    license: 'Apache License 2.0',
-  },
-];
+// 授权口径与首页「文本开放、代码开源」一致；各行文字见 about.license.<id>.*
+const LICENSES = ['bookIndex', 'bookText', 'thirdParty', 'code'] as const;
 
 // N6（overview#259）：只放用户给定的联系方式。没有公众号。
 // 微信群二维码 7 天过期，过期后换 public/images/wechat-group-qr.png。
@@ -60,40 +44,40 @@ export default function AboutPage() {
   return (
     <LayoutWrapper>
       <div className="og-paper doc-layout">
-        <nav className="doc-toc" aria-label="本页目录">
-          <p className="doc-toc-title">关于开源古籍</p>
+        <LabeledNav className="doc-toc" labelKey="about.tocAria">
+          <p className="doc-toc-title"><T k="about.title" /></p>
           <ul>
             {TOC.map((t) => (
               <li key={t.id}>
-                <a href={`#${t.id}`}>{t.label}</a>
+                <a href={`#${t.id}`}><T k={t.label} /></a>
               </li>
             ))}
           </ul>
-        </nav>
+        </LabeledNav>
 
         <article className="doc-article">
-          <h1>关于开源古籍</h1>
+          <h1><T k="about.title" /></h1>
           <p className="doc-lead">
-            开源古籍把古籍数字化的全链路公开出来：从扫描图片、预处理、版面与字符识别、人工校对，到索引与知识关联、排版还原，再到开放发布，每一段的代码与数据都公开在 GitHub 上。
+            <T k="about.lead" />
           </p>
 
           <section id="license">
-            <h2>数据来源与授权</h2>
+            <h2><T k="about.toc.license" /></h2>
             <p>
-              索引数据来自历代目录学著录、公开馆藏书目，以及各类可获取的古籍扫描与文本资源；每条索引的来源都在它自己的资源字段里逐条标注，顺着链接可以查到出处。
+              <T k="about.license.p1" />
             </p>
             <p>
-              本站自己整理的数据——古籍目录索引和古籍文本——都以 CC0 公有领域发布；转录自第三方的文本沿用来源许可；代码以 Apache-2.0 开源。
+              <T k="about.license.p2" />
             </p>
             <table className="doc-table">
               <tbody>
-                {LICENSES.map((l) => (
-                  <tr key={l.what}>
+                {LICENSES.map((id) => (
+                  <tr key={id}>
                     <th scope="row">
-                      {l.what}
-                      <span className="doc-meta">{l.note}</span>
+                      <T k={`about.license.${id}.what`} />
+                      <span className="doc-meta"><T k={`about.license.${id}.note`} /></span>
                     </th>
-                    <td>{l.license}</td>
+                    <td><T k={`about.license.${id}.license`} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -101,70 +85,68 @@ export default function AboutPage() {
           </section>
 
           <section id="thanks">
-            <h2>致谢</h2>
-            <p>项目的探索离不开开放知识社群的积累，特此致谢：</p>
+            <h2><T k="about.toc.thanks" /></h2>
+            <p><T k="about.thanks.intro" /></p>
             <ul className="doc-rows">
               {THANKS.map((t) => (
-                <li key={t.name}>
+                <li key={t.id}>
                   <a href={t.href} target="_blank" rel="noopener noreferrer">
-                    {t.name}
+                    {typeof t.name === 'string' ? <T k={t.name} /> : t.name.literal}
                   </a>
-                  <span className="doc-meta">{t.note}</span>
+                  <span className="doc-meta"><T k={t.note} /></span>
                 </li>
               ))}
             </ul>
           </section>
 
           <section id="联系" aria-labelledby="about-contact">
-            <h2 id="about-contact">联系我们</h2>
-            <p>发现错误、缺了资源、有建议，或者想参与整理、校对、开发，都可以从下面找到我们。</p>
+            <h2 id="about-contact"><T k="about.toc.contact" /></h2>
+            <p><T k="about.contact.intro" /></p>
 
             <div className="contact-primary">
               <div>
-                <h3>反馈与纠错</h3>
-                <p>最快的方式。提交后可以在反馈页看到处理进展；想参与的话，类型选「想参与」并留下联系方式，我们会联系你。</p>
+                <h3><T k="about.contact.feedbackTitle" /></h3>
+                <p><T k="about.contact.feedbackDesc" /></p>
               </div>
               <Link href="/feedback" className="og-btn">
-                去反馈
+                <T k="about.contact.feedbackBtn" />
               </Link>
             </div>
 
             <dl className="contact-ways">
               <dt>GitHub</dt>
               <dd>
-                书目数据有误：
+                <T k="about.contact.bookDataIssue" />
                 <a href={`${GITHUB_BASE}/book-index/issues`} target="_blank" rel="noopener noreferrer">
                   book-index Issues
                 </a>
                 <br />
-                网站问题：
+                <T k="about.contact.siteIssue" />
                 <a href={`${GITHUB_BASE}/kaiyuanguji-web/issues`} target="_blank" rel="noopener noreferrer">
                   kaiyuanguji-web Issues
                 </a>
-                <span className="doc-meta">也欢迎直接提 PR</span>
+                <span className="doc-meta"><T k="about.contact.prWelcome" /></span>
               </dd>
 
-              <dt>邮箱</dt>
+              <dt><T k="about.contact.email" /></dt>
               <dd>
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-                <span className="doc-meta">合作、授权等不便公开的事</span>
+                <span className="doc-meta"><T k="about.contact.emailNote" /></span>
               </dd>
 
-              <dt>交流群</dt>
+              <dt><T k="about.contact.groups" /></dt>
               <dd>
                 <div className="contact-qrs">
                   <figure className="contact-qr">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/images/wechat-group-qr.png" alt="微信群「开源古籍交流群」二维码" width={160} height={160} loading="lazy" />
-                    <figcaption>微信群：微信扫码加入</figcaption>
+                    <LocalizedImg src="/images/wechat-group-qr.png" altKey="about.contact.wechatAlt" width={160} height={160} loading="lazy" />
+                    <figcaption><T k="about.contact.wechatCaption" /></figcaption>
                   </figure>
                   <figure className="contact-qr">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/images/qq-group-qr.png" alt="QQ 群「开源古籍交流群」二维码" width={160} height={160} loading="lazy" />
+                    <LocalizedImg src="/images/qq-group-qr.png" altKey="about.contact.qqAlt" width={160} height={160} loading="lazy" />
                     <figcaption>
-                      QQ 群：{QQ_GROUP}
+                      <T k="about.contact.qqGroup" vars={{ group: QQ_GROUP }} />
                       <br />
-                      QQ 扫码或搜索群号加入
+                      <T k="about.contact.qqHint" />
                     </figcaption>
                   </figure>
                 </div>
@@ -172,7 +154,11 @@ export default function AboutPage() {
             </dl>
 
             <p>
-              内测阶段的功能范围与已知限制见<Link href="/beta">内测说明</Link>，隐私相关见<Link href="/privacy">隐私说明</Link>。
+              <T k="about.contact.moreBefore" />
+              <Link href="/beta"><T k="about.contact.betaLink" /></Link>
+              <T k="about.contact.moreMiddle" />
+              <Link href="/privacy"><T k="about.contact.privacyLink" /></Link>
+              <T k="about.contact.moreAfter" />
             </p>
           </section>
         </article>

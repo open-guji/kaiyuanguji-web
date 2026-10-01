@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
-import type { IndexEntry, IndexType } from 'book-index-ui';
+import { useConvert, type IndexEntry, type IndexType } from 'book-index-ui';
 import type { DataSource } from '@/lib/constants';
 
 interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -36,6 +36,7 @@ export default function BidLink({ id, children, className, showIcon = true, ...p
     const { source } = useSource();
     const [type, setType] = useState<IndexType | null>(null);
     const [name, setName] = useState<string | null>(null);
+    const { convert } = useConvert();
 
     useEffect(() => {
         let isMounted = true;
@@ -80,7 +81,8 @@ export default function BidLink({ id, children, className, showIcon = true, ...p
 
     // 调用方传 id 作 children 当占位（标题尚未加载）时，回退到自取的 name
     const isIdPlaceholder = typeof children === 'string' && children === id;
-    const display = (!isIdPlaceholder && children) || name || id;
+    // 自取的 name 是数据原文（繁体），按繁简偏好转；调用方传的 children 由调用方负责
+    const display = (!isIdPlaceholder && children) || (name && convert(name)) || id;
 
     return (
         <Link

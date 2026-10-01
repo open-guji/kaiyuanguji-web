@@ -6,6 +6,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import T from '@/i18n/T';
 
 export const metadata: Metadata = {
     title: '找不到这个页面',
@@ -17,20 +18,20 @@ export default function NotFound() {
         <LayoutWrapper>
             <div className="og-paper mx-auto max-w-xl px-5 py-20 text-center">
                 <p className="mb-2 text-sm text-[var(--color-ink-3)]">404</p>
-                <h1 className="mb-3 text-2xl font-bold text-[var(--color-ink)]">找不到这个页面</h1>
+                <h1 className="mb-3 text-2xl font-bold text-[var(--color-ink)]"><T k="common.notFound.title" /></h1>
                 <p className="mb-8 leading-relaxed text-[var(--color-ink-2)]">
-                    地址可能写错了，或者这一页已经移走。可以从下面几处继续找。
+                    <T k="common.notFound.body" />
                 </p>
                 <Link
                     href="/"
                     className="inline-block rounded bg-[var(--color-zhu)] px-6 py-2.5 text-white no-underline hover:bg-[var(--color-zhu-deep)]"
                 >
-                    回首页
+                    <T k="common.notFound.home" />
                 </Link>
                 <p className="mt-6 text-[var(--color-ink-2)]">
-                    <Link href="/catalog" className="text-[var(--color-zhu)] underline-offset-4 hover:underline">去古籍总目</Link>
+                    <Link href="/catalog" className="text-[var(--color-zhu)] underline-offset-4 hover:underline"><T k="common.notFound.catalog" /></Link>
                     <span aria-hidden="true" className="mx-3 text-[var(--color-ink-3)]">·</span>
-                    <Link href="/book-index" className="text-[var(--color-zhu)] underline-offset-4 hover:underline">去搜索</Link>
+                    <Link href="/book-index" className="text-[var(--color-zhu)] underline-offset-4 hover:underline"><T k="common.notFound.search" /></Link>
                 </p>
             </div>
         </LayoutWrapper>

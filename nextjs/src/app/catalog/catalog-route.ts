@@ -6,6 +6,7 @@
  *   catalog/tree.json               CatalogNode[]
  *   catalog/<nodeId>/<page>.json    CatalogWorkCard[]，每页 CATALOG_PAGE_SIZE 条
  */
+import { getSiteT } from '@/i18n/translate';
 
 export interface CatalogNode {
     id: string;
@@ -104,13 +105,16 @@ export function catalogHref(nodeId: string, page = 1): string {
 
 /** 页面标题（不含站名，站名由根布局的 title.template 加） */
 export function catalogTitle(r: ResolvedCatalog): string {
+    const t = getSiteT('zh-Hans');
     const trail = r.path.map((n) => n.label).join('·');
-    return `${trail}${r.page > 1 ? `（第${r.page}页）` : ''} - 古籍总目`;
+    return t('seo.catalogTitle', { trail, page: r.page > 1 ? t('seo.pageSuffix', { n: r.page }) : '' });
 }
 
 export function catalogDescription(r: ResolvedCatalog): string {
+    const t = getSiteT('zh-Hans');
     const trail = r.path.map((n) => n.label).join(' › ');
-    return `古籍总目 ${trail}：共 ${r.node.count} 部作品${r.pageCount > 1 ? `，第 ${r.page}／${r.pageCount} 页` : ''}。`;
+    const page = r.pageCount > 1 ? t('seo.pageOf', { page: r.page, total: r.pageCount }) : '';
+    return t('seo.catalogDescription', { trail, count: r.node.count, page });
 }
 
 /** 条目页地址（与 N3b 条目页一致） */

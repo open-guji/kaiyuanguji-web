@@ -25,6 +25,8 @@ jest.mock('@/components/feedback/SelectionReport', () => () => null);
 const last: { reader?: Record<string, unknown> } = {};
 jest.mock('book-index-ui', () => ({
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）
+    useConvert: () => ({ convert: (s: string) => s }),
     TextReader: (p: Record<string, unknown>) => { last.reader = p; return null; },
     createTextApi: (t: { getTextManifest: (id: string) => Promise<unknown>; getTextIndex: (id: string, k: string) => Promise<unknown> }) => ({
         getManifest: (id: string) => t.getTextManifest(id),

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 let mockPath = '/';
 jest.mock('next/navigation', () => ({
@@ -11,6 +11,11 @@ import MobileDrawer from '../MobileDrawer';
 import Footer from '../Footer';
 import LayoutWrapper from '../LayoutWrapper';
 import { isCurrent, MAIN_CONTENT_ID, MOBILE_DRAWER_ID, MORE_LINKS, PRIMARY_LINKS } from '../nav-links';
+import { getSiteT } from '@/i18n/translate';
+import { writeSiteLocale } from '@/lib/site-locale';
+
+// 导航文字在字典里（overview#337），测试按默认的简体取
+const t = getSiteT('zh-Hans');
 
 describe('isCurrent', () => {
     it('首页只精确匹配', () => {
@@ -29,7 +34,7 @@ describe('Navbar（N1 顶栏）', () => {
         render(<Navbar />);
         const nav = screen.getByRole('navigation', { name: '主导航' });
         expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(
-            PRIMARY_LINKS.map((l) => l.label),
+            PRIMARY_LINKS.map((l) => t(l.labelKey)),
         );
     });
 
@@ -71,7 +76,11 @@ describe('Navbar（N1 顶栏）', () => {
         const btn = screen.getByRole('button', { name: /^繁\/简（当前简体/ });
         fireEvent.click(btn);
         expect(localStorage.getItem('bim-locale')).toBe('zh-Hant');
-        expect(screen.getByRole('button', { name: /^繁\/简（当前繁体/ })).toBeInTheDocument();
+        // 切到繁体后顶栏文字也跟着变（overview#337）：按钮名、导航都是繁体
+        expect(screen.getByRole('button', { name: /^繁\/簡（當前繁體/ })).toBeInTheDocument();
+        expect(screen.getByRole('navigation', { name: '主導航' })).toHaveTextContent('首頁');
+        // 偏好在内存里也有一份，只删存储不够，切回简体免得影响后面的用例
+        act(() => writeSiteLocale('zh-Hans'));
         localStorage.removeItem('bim-locale');
     });
 
@@ -104,7 +113,7 @@ describe('MobileDrawer', () => {
         mockPath = '/';
         render(<MobileDrawer isOpen onClose={() => {}} />);
         for (const l of [...PRIMARY_LINKS, ...MORE_LINKS]) {
-            expect(screen.getByRole('link', { name: l.label })).toHaveAttribute('href', l.href);
+            expect(screen.getByRole('link', { name: t(l.labelKey) })).toHaveAttribute('href', l.href);
         }
     });
 

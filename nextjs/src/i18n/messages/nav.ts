@@ -1,0 +1,109 @@
+import { defineMessages } from './define';
+
+/** 全站外壳：顶栏、手机抽屉、繁简切换、外观面板、跳到正文、测试站角标 */
+export const nav = defineMessages({
+    brand: '開源古籍',
+    logoAlt: '開源古籍 Logo',
+    primaryNav: '主導航',
+    mobileNav: '移動端導航',
+    drawer: '站點菜單',
+    openMenu: '打開菜單',
+    closeMenu: '關閉菜單',
+    more: '更多',
+    feedback: '反饋',
+    skipToMain: '跳到正文',
+    staging: '測試站',
+    links: {
+        home: '首頁',
+        catalog: '目錄',
+        bookIndex: '元數據',
+        read: '閱讀',
+        about: '關於',
+        assistant: '整理平台',
+        roadmap: '路線圖',
+        tools: '小工具',
+        feedback: '反饋',
+    },
+    locale: {
+        // 「繁」「简」两个字形本身不进字典（它们标的就是两种字体）
+        toHans: '繁/簡（當前繁體，點擊切換為簡體）',
+        toHant: '繁/簡（當前簡體，點擊切換為繁體）',
+    },
+    look: {
+        settings: '外觀設置',
+        button: '外觀',
+        layout: '版式',
+        theme: '配色',
+        note: '設置保存在本瀏覽器，全站通用',
+        themes: {
+            zhusha: '朱砂',
+            indigo: '靛青',
+            ink: '墨',
+        },
+        themeHints: {
+            zhusha: '宣紙底',
+            indigo: '米白底',
+            ink: '素白底',
+        },
+        layouts: {
+            airy: '疏朗',
+            boxed: '界欄',
+        },
+        layoutHints: {
+            airy: '留白分區',
+            boxed: '框線分區',
+        },
+    },
+}, {
+    brand: '开源古籍',
+    logoAlt: '开源古籍 Logo',
+    primaryNav: '主导航',
+    mobileNav: '移动端导航',
+    drawer: '站点菜单',
+    openMenu: '打开菜单',
+    closeMenu: '关闭菜单',
+    more: '更多',
+    feedback: '反馈',
+    skipToMain: '跳到正文',
+    staging: '测试站',
+    links: {
+        home: '首页',
+        catalog: '目录',
+        bookIndex: '元数据',
+        read: '阅读',
+        about: '关于',
+        assistant: '整理平台',
+        roadmap: '路线图',
+        tools: '小工具',
+        feedback: '反馈',
+    },
+    locale: {
+        toHans: '繁/简（当前繁体，点击切换为简体）',
+        toHant: '繁/简（当前简体，点击切换为繁体）',
+    },
+    look: {
+        settings: '外观设置',
+        button: '外观',
+        layout: '版式',
+        theme: '配色',
+        note: '设置保存在本浏览器，全站通用',
+        themes: {
+            zhusha: '朱砂',
+            indigo: '靛青',
+            ink: '墨',
+        },
+        themeHints: {
+            zhusha: '宣纸底',
+            indigo: '米白底',
+            ink: '素白底',
+        },
+        layouts: {
+            airy: '疏朗',
+            boxed: '界栏',
+        },
+        layoutHints: {
+            airy: '留白分区',
+            boxed: '框线分区',
+        },
+    },
+});

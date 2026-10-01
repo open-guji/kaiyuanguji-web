@@ -9,25 +9,28 @@
  * 路线图、小工具、反馈）仍然有效，放在手机抽屉的「更多」里（页脚按 9-30 反馈不再列它们）。
  *
  * 注意：sitemap 读的是 lib/constants 的 NAV_ITEMS，与这里无关，不要合并。
+ * 文字存字典键（nav.links.*），组件里 t(labelKey) 取，跟随繁简偏好（overview#337）。
  */
+import type { SiteMessageKey } from '@/i18n/translate';
+
 export interface ShellLink {
-  label: string;
+  labelKey: SiteMessageKey;
   href: string;
 }
 
 export const PRIMARY_LINKS: ShellLink[] = [
-  { label: '首页', href: '/' },
-  { label: '目录', href: '/catalog' },
-  { label: '元数据', href: '/book-index' },
-  { label: '阅读', href: '/read' },
-  { label: '关于', href: '/about' },
+  { labelKey: 'nav.links.home', href: '/' },
+  { labelKey: 'nav.links.catalog', href: '/catalog' },
+  { labelKey: 'nav.links.bookIndex', href: '/book-index' },
+  { labelKey: 'nav.links.read', href: '/read' },
+  { labelKey: 'nav.links.about', href: '/about' },
 ];
 
 export const MORE_LINKS: ShellLink[] = [
-  { label: '整理平台', href: '/assistant' },
-  { label: '路线图', href: '/roadmap' },
-  { label: '小工具', href: '/tools' },
-  { label: '反馈', href: '/feedback' },
+  { labelKey: 'nav.links.assistant', href: '/assistant' },
+  { labelKey: 'nav.links.roadmap', href: '/roadmap' },
+  { labelKey: 'nav.links.tools', href: '/tools' },
+  { labelKey: 'nav.links.feedback', href: '/feedback' },
 ];
 
 /** 手机抽屉的 id：汉堡按钮 aria-controls 指向它 */
