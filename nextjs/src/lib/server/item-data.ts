@@ -249,7 +249,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     }
 
     /**
-     * 取 current/ 下的一个数据文件（N5b：阅读页服务端校验卷号用，如 items/<id>/collated_edition/index.json）。
+     * 取 current/ 下的一个数据文件（N5b：阅读页服务端校验卷号用，如 items/<id>/manifest.json）。
      * 与浏览器端 BundleStorage 同一个地址（带 ?v=<版本键>）。确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentJson<T>(relPath: string): Promise<T | null> {

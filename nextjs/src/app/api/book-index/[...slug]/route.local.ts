@@ -10,9 +10,6 @@
  *   GET /api/book-index/search?q=xxx&type=book&page=1&pageSize=50
  *   GET /api/book-index/search-all?q=xxx&limit=5
  *   GET /api/book-index/catalog/:id
- *   GET /api/book-index/collated/:id
- *   GET /api/book-index/collated/:id/:juanFile
- *   GET /api/book-index/collated/:id/:juanFile/text
  *   GET /api/book-index/work-catalog/:id
  *   GET /api/book-index/resource-progress
  *   GET /api/book-index/resource-site-progress
@@ -100,54 +97,6 @@ export async function GET(
             const catalogs = localData.getCollectionCatalogs(decodeURIComponent(id));
             if (!catalogs) return json({ error: 'Not found' }, 404);
             return json(catalogs);
-        }
-
-        case 'collated': {
-            const id = slug[1];
-            if (!id) return json({ error: 'Missing id' }, 400);
-            const juanFile = slug[2];
-            const sub = slug[3];
-
-            if (juanFile && sub === 'text') {
-                const text = localData.getCollatedJuanText(
-                    decodeURIComponent(id),
-                    decodeURIComponent(juanFile),
-                );
-                if (text === null) return json({ error: 'Not found' }, 404);
-                return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-            }
-
-            if (juanFile) {
-                const juan = localData.getCollatedJuan(
-                    decodeURIComponent(id),
-                    decodeURIComponent(juanFile),
-                );
-                if (!juan) return json({ error: 'Not found' }, 404);
-                return json(juan);
-            }
-
-            const index = localData.getCollatedEditionIndex(decodeURIComponent(id));
-            if (!index) return json({ error: 'Not found' }, 404);
-            return json(index);
-        }
-
-        case 'book-fulltext': {
-            const id = slug[1];
-            if (!id) return json({ error: 'Missing id' }, 400);
-            const file = slug[2];
-
-            if (file) {
-                const text = localData.getBookFullTextChapter(
-                    decodeURIComponent(id),
-                    decodeURIComponent(file),
-                );
-                if (text === null) return json({ error: 'Not found' }, 404);
-                return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-            }
-
-            const index = localData.getBookFullTextIndex(decodeURIComponent(id));
-            if (!index) return json({ error: 'Not found' }, 404);
-            return json(index);
         }
 
         case 'work-catalog': {
