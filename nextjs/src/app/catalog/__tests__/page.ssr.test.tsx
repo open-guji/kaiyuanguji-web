@@ -45,10 +45,10 @@ beforeEach(() => {
 });
 
 describe('古籍总目 page.ssr', () => {
-    it('总目页不要页脚（用户意见，overview#267）', async () => {
+    it('目录是分支页，有页脚（9-30 反馈，overview#322；取代 overview#267 的「不要页脚」）', async () => {
         const { default: CatalogRoute } = await import('../page.ssr');
         const el = (await CatalogRoute({ searchParams: Promise.resolve({ node: 'czhengshi' }) })) as ReactElement<{ hideFooter?: boolean }>;
-        expect(el.props.hideFooter).toBe(true);
+        expect(el.props.hideFooter).toBeFalsy();
     });
 
     it('节点第 1 页：canonical 不带 page，标题带分类路径', async () => {

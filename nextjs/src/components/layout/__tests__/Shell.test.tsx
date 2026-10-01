@@ -33,13 +33,14 @@ describe('Navbar（N1 顶栏）', () => {
         );
     });
 
-    it('顶栏有「古籍总目」（/catalog），「阅读」入口指向阅读首页 /read（WEB2、overview#267 第 16 项）', () => {
+    it('顶栏是 首页、目录、元数据、阅读、关于（9-30 反馈，overview#322），「阅读」指向阅读首页 /read', () => {
         mockPath = '/catalog';
         render(<Navbar />);
         const nav = screen.getByRole('navigation', { name: '主导航' });
-        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '古籍总目', '古籍元数据', '阅读', '关于']);
-        expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
-        expect(within(nav).getByRole('link', { name: '古籍总目' })).toHaveAttribute('aria-current', 'page');
+        expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['首页', '目录', '元数据', '阅读', '关于']);
+        expect(within(nav).getByRole('link', { name: '目录' })).toHaveAttribute('href', '/catalog');
+        expect(within(nav).getByRole('link', { name: '目录' })).toHaveAttribute('aria-current', 'page');
+        expect(within(nav).getByRole('link', { name: '元数据' })).toHaveAttribute('href', '/book-index');
         expect(within(nav).getByRole('link', { name: '阅读' })).toHaveAttribute('href', '/read');
     });
 
@@ -50,7 +51,28 @@ describe('Navbar（N1 顶栏）', () => {
         const current = within(nav)
             .getAllByRole('link')
             .filter((a) => a.getAttribute('aria-current') === 'page');
-        expect(current.map((a) => a.textContent)).toEqual(['古籍元数据']);
+        expect(current.map((a) => a.textContent)).toEqual(['元数据']);
+    });
+
+    it('右上角依次是 繁简、外观、反馈，没有 GitHub 图标（9-30 反馈）', () => {
+        mockPath = '/';
+        const { container } = render(<Navbar />);
+        const right = container.querySelector('.og-nav-right')!;
+        const buttons = within(right as HTMLElement).getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent);
+        expect(buttons[0]).toMatch(/^繁\/简/);
+        expect(buttons[1]).toMatch(/外观/);
+        expect(buttons[2]).toBe('反馈');
+        expect(container.querySelector('a[href*="github.com"]')).toBeNull();
+    });
+
+    it('繁简切换记下偏好（与组件库同一个键 bim-locale）', () => {
+        localStorage.removeItem('bim-locale');
+        render(<Navbar />);
+        const btn = screen.getByRole('button', { name: /^繁\/简（当前简体/ });
+        fireEvent.click(btn);
+        expect(localStorage.getItem('bim-locale')).toBe('zh-Hant');
+        expect(screen.getByRole('button', { name: /^繁\/简（当前繁体/ })).toBeInTheDocument();
+        localStorage.removeItem('bim-locale');
     });
 
     it('首页模式页头透明浮在首屏上', () => {
@@ -72,10 +94,10 @@ describe('MobileDrawer', () => {
         expect(container).toBeEmptyDOMElement();
     });
 
-    it('抽屉与顶栏同步有「古籍总目」', () => {
+    it('抽屉与顶栏同步有「目录」', () => {
         mockPath = '/';
         render(<MobileDrawer isOpen onClose={() => {}} />);
-        expect(screen.getByRole('link', { name: '古籍总目' })).toHaveAttribute('href', '/catalog');
+        expect(screen.getByRole('link', { name: '目录' })).toHaveAttribute('href', '/catalog');
     });
 
     it('打开后顶栏拿掉的入口仍能在「更多」里点到', () => {
@@ -158,31 +180,22 @@ describe('无障碍（B9 / A2）', () => {
 });
 
 describe('Footer', () => {
-    it('保留备案号、隐私与内测说明；不再有「开源古籍」标题与介绍、「开放协议」一栏（用户意见，overview#267）', () => {
+    it('保留备案号、隐私与内测说明；没有「开放协议」与介绍', () => {
         const { container } = render(<Footer />);
         expect(screen.getByRole('link', { name: /冀ICP备/ })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '隐私说明' })).toHaveAttribute('href', '/privacy');
         expect(screen.getByRole('link', { name: '内测说明' })).toHaveAttribute('href', '/beta');
         const text = container.textContent ?? '';
         expect(text).not.toMatch(/开放协议|CC0|Apache-2\.0/);
-        expect(text).not.toContain('致力于让传统文化触手可及');
         expect(container.querySelector('.og-footer-brand')).toBeNull();
-        // 只剩两组链接（站内、关于与联系）＋二维码，横着并排
-        expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['站内', '关于与联系']);
-        expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
     });
 
-    it('站内链接里搜索入口叫「古籍元数据」', () => {
-        render(<Footer />);
-        const nav = screen.getByRole('navigation', { name: '站内链接' });
-        expect(within(nav).getByRole('link', { name: '古籍元数据' })).toHaveAttribute('href', '/book-index');
-        expect(within(nav).queryByRole('link', { name: '古籍索引' })).toBeNull();
-    });
-
-    it('顶栏拿掉的入口在页脚保留（反馈在「关于与联系」栏，名为「反馈与纠错」）', () => {
+    it('「站内」一栏和古籍元数据、古籍总目、整理平台、路线图、小工具都删掉（9-30 反馈）', () => {
         const { container } = render(<Footer />);
-        for (const l of MORE_LINKS) {
-            expect(container.querySelectorAll(`footer a[href="${l.href}"]`)).toHaveLength(1);
+        expect(screen.queryByRole('navigation', { name: '站内链接' })).toBeNull();
+        expect(container.textContent).not.toMatch(/站内|古籍元数据|古籍总目|整理平台|路线图|小工具/);
+        for (const l of MORE_LINKS.filter((x) => x.href !== '/feedback')) {
+            expect(container.querySelector(`footer a[href="${l.href}"]`)).toBeNull();
         }
     });
 });

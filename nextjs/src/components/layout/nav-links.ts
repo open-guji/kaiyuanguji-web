@@ -1,13 +1,12 @@
 /**
  * 全站外壳的导航清单（N1，照样张）。
  *
- * 顶栏按新稿只留主干入口，顺序照样张：首页｜古籍总目｜古籍元数据｜阅读｜关于。
+ * 顶栏只留主干入口：首页｜目录｜元数据｜阅读｜关于（用户 9-30 反馈改短，overview#322）。
  * 「阅读」（/read）是阅读首页，列出有整理本或全文的书（overview#267 第 16 项）。
  * 「古籍元数据」（/book-index，搜索入口）原名「古籍索引」，用户意见改名（overview#267）。
  * 「古籍总目」（/catalog）由 WEB2（overview#249）加上，页面归 N4b，可能晚于本项合入。
  * 单本的阅读页（/read/<id>）仍从条目页的「阅读全文」进去。从顶栏拿下来的现网入口（整理平台、
- * 路线图、小工具、反馈）仍然有效，改放手机抽屉的「更多」和页脚，
- * 保证每个页面都还能点进去。
+ * 路线图、小工具、反馈）仍然有效，放在手机抽屉的「更多」里（页脚按 9-30 反馈不再列它们）。
  *
  * 注意：sitemap 读的是 lib/constants 的 NAV_ITEMS，与这里无关，不要合并。
  */
@@ -18,8 +17,8 @@ export interface ShellLink {
 
 export const PRIMARY_LINKS: ShellLink[] = [
   { label: '首页', href: '/' },
-  { label: '古籍总目', href: '/catalog' },
-  { label: '古籍元数据', href: '/book-index' },
+  { label: '目录', href: '/catalog' },
+  { label: '元数据', href: '/book-index' },
   { label: '阅读', href: '/read' },
   { label: '关于', href: '/about' },
 ];
