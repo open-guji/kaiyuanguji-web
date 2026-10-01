@@ -33,17 +33,21 @@ export async function POST(req: NextRequest) {
     if (!authorized(req.headers.get('x-kyg-revalidate'))) {
         return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
-    let body: { ids?: unknown; all?: unknown };
+    let body: { ids?: unknown; all?: unknown; read?: unknown };
     try {
         body = await req.json();
     } catch {
         return NextResponse.json({ error: '请求体不是 JSON' }, { status: 400 });
     }
+    // 阅读页（ISR，overview#322）：首屏随页面带着 manifest、目录与首章，文本改动不一定体现在条目改动集里，
+    // 所以每次发版整体失效一次，不逐条
+    if (body.read === true) revalidatePath('/read/[id]/[[...seg]]', 'page');
     // 大宗批量修改（改动超过阈值）时整体失效所有条目页，而不是逐条
     if (body.all === true) {
         revalidatePath('/item/[id]', 'page');
-        return NextResponse.json({ all: true });
+        return NextResponse.json({ all: true, read: body.read === true });
     }
+    if (body.read === true && body.ids === undefined) return NextResponse.json({ read: true });
     const ids = Array.isArray(body.ids) ? body.ids.filter((x): x is string => typeof x === 'string') : [];
     if (ids.length > MAX_IDS) {
         return NextResponse.json({ error: `一次最多 ${MAX_IDS} 条，超过请用 all` }, { status: 413 });

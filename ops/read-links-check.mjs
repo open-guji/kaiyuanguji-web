@@ -7,6 +7,8 @@
  *   read/tree.json 的每个一级节点随机抽 N 张（默认 20；先随机挑页、再从页里抽，不只看第 1 页）
  *   ＋ read/featured.json（整理本、Book 全文）全部；
  *   每张卡：① /read/<id> 页面（主版本）与 /read/<id>/<key>（其他版本）200；② 数据里目录（index）与首章文件都 200。
+ *   页面回 503（EdgeOne 回源超时页，overview#322）先隔 retryDelayMs 重试一次，仍不是 200 才记失败；
+ *   重试过才通过的另记在 retried 里写进 summary——它只是兜底，根因在阅读页的首次渲染。
  *   数据路径与阅读页同源（nextjs/src/lib/server/reader-check.ts，只认新结构 overview#307）：
  *     items/<id>/manifest.json → versions 逐份查 items/<id>/<key>/index.json → chapters[0].file
  *     （.md→.txt；has_json 的章查同名 .json，md 可缺）；manifest 里不得有 visibility=internal。
@@ -33,10 +35,10 @@ export function pickSome(items, n, rand) {
 }
 
 /**
- * @param {{ target: string, dataBase: string, fetchImpl?: typeof fetch, perNode?: number, pageSize?: number, seed?: number, concurrency?: number }} o
- * @returns {Promise<{ checked: number, failures: { id: string, what: string, detail: string }[] }>}
+ * @param {{ target: string, dataBase: string, fetchImpl?: typeof fetch, perNode?: number, pageSize?: number, seed?: number, concurrency?: number, retryDelayMs?: number }} o
+ * @returns {Promise<{ checked: number, failures: { id: string, what: string, detail: string }[], retried: string[] }>}
  */
-export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perNode = 20, pageSize = 20, seed = Date.now() % 2 ** 31, concurrency = 6 }) {
+export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perNode = 20, pageSize = 20, seed = Date.now() % 2 ** 31, concurrency = 6, retryDelayMs = 3000 }) {
     const cur = `${dataBase.replace(/\/$/, '')}/current`;
     const site = target.replace(/\/$/, '');
     const rand = mulberry32(seed);
@@ -53,6 +55,16 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         }
     }
     const why = (r) => (r.status ? `HTTP ${r.status}` : `请求失败：${r.error}`);
+    /** 阅读页：503 重试一次（重试通过的记进 retried） */
+    const retried = [];
+    async function getPage(url) {
+        const first = await get(url, false);
+        if (first.status !== 503) return first;
+        await new Promise((r) => setTimeout(r, retryDelayMs));
+        const second = await get(url, false);
+        if (second.ok) retried.push(url);
+        return second.ok ? second : { ...second, retriedFrom: 503 };
+    }
     const json = async (rel) => get(`${cur}/${rel}?${bust}`, true);
 
     const failures = [];
@@ -63,7 +75,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     // 顶层清单读不了：记成失败返回（调用方照常渲染、写 summary 再退出），不抛
     if (!tree.ok || !Array.isArray(tree.body)) fail('read/tree.json', '数据', tree.ok ? '不是数组' : `read/tree.json → ${why(tree)}`);
     if (!featured.ok || typeof featured.body !== 'object' || !featured.body) fail('read/featured.json', '数据', featured.ok ? '不是对象' : `read/featured.json → ${why(featured)}`);
-    if (failures.length) return { checked: 0, failures };
+    if (failures.length) return { checked: 0, failures, retried };
 
     // 待查的卡：id
     const cards = new Set();
@@ -92,8 +104,8 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         for (const v of versions) {
             if (!isTextKey(v?.key)) { fail(id, '数据', `items/${id}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
             const pagePath = v.key === 'default' ? `/read/${id}` : `/read/${id}/${v.key}`;
-            const page = await get(`${site}${pagePath}`, false);
-            if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}`);
+            const page = await getPage(`${site}${pagePath}`);
+            if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}${page.retriedFrom ? '（503 后重试一次仍失败）' : ''}`);
             const base = `items/${id}/${v.key}`;
             const idx = await json(`${base}/index.json`);
             if (!idx.ok) { fail(id, '数据', `${base}/index.json → ${why(idx)}`); continue; }
@@ -128,11 +140,15 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             }
         }
     }));
-    return { checked: cards.size, failures };
+    return { checked: cards.size, failures, retried };
 }
 
-export function renderSummary({ checked, failures }, { target, seed }) {
+export function renderSummary({ checked, failures, retried = [] }, { target, seed }) {
     const lines = [`## 阅读链接抽检（${target}）`, '', `抽检 ${checked} 张卡，失败 ${failures.length} 处（seed=${seed}）。`];
+    if (retried.length) {
+        lines.push('', `阅读页首次 503、重试后通过 ${retried.length} 处（不记失败，但说明首次渲染仍超回源时限，overview#322）：`);
+        for (const u of retried.slice(0, 20)) lines.push(`- ${u}`);
+    }
     if (failures.length) {
         lines.push('', '| 条目 | 项 | 详情 |', '|---|---|---|');
         for (const f of failures.slice(0, 50)) lines.push(`| ${f.id} | ${f.what} | ${f.detail} |`);
@@ -158,7 +174,7 @@ if (isMain) {
         res = await checkReadLinks({ target, dataBase, perNode: a['per-node'] ? Number(a['per-node']) : 20, seed });
     } catch (e) {
         // 兜底：意料之外的异常也要出报告再退出
-        res = { checked: 0, failures: [{ id: '-', what: '检查脚本', detail: e.message }] };
+        res = { checked: 0, failures: [{ id: '-', what: '检查脚本', detail: e.message }], retried: [] };
     }
     const md = renderSummary(res, { target, seed });
     console.log(md);

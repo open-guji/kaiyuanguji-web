@@ -173,3 +173,33 @@ test('has_json 的首章只有 json、没有 md → 不算失败；没有 has_js
     r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1 });
     assert.ok(r.failures.some((f) => /wikisource\/001\.txt/.test(f.detail)));
 });
+
+// overview#322：阅读页首次 503（EdgeOne 回源超时）先重试一次
+function flakyPages(pages, statusSeq) {
+    const inner = fakeFetch(baseFiles(), pages);
+    const left = { ...statusSeq };
+    return async (url) => {
+        const path = new URL(url).pathname;
+        const seq = left[path];
+        if (seq && seq.length) {
+            const status = seq.shift();
+            return { ok: status === 200, status, json: async () => ({}), text: async () => '' };
+        }
+        return inner(url);
+    };
+}
+
+test('阅读页首次 503、重试后 200：不记失败，记进 retried 与 summary', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503] }), seed: 1, retryDelayMs: 0 });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
+    assert.match(renderSummary(r, { target: SITE, seed: 1 }), /重试后通过 1 处/);
+});
+
+test('阅读页连续两次 503：记失败并注明重试过；非 503（404、500）不重试', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503, 503], [`/read/${BOOK}`]: [500, 200] }), seed: 1, retryDelayMs: 0 });
+    assert.equal(r.failures.length, 2);
+    assert.ok(r.failures.some((f) => f.id === WORK && /HTTP 503（503 后重试一次仍失败）/.test(f.detail)));
+    assert.ok(r.failures.some((f) => f.id === BOOK && f.detail.endsWith('HTTP 500')));
+    assert.deepEqual(r.retried, []);
+});

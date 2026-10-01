@@ -298,6 +298,34 @@ describe('middleware.ssr：阅读页地址（overview#267／#307）', () => {
         expect(mockGetCurrentJson).not.toHaveBeenCalled();
     });
 
+    it('/read/<id>?kind=… 但取 manifest 出错：307 条目页（阅读页是 ISR、不读查询串，不能交给页面，overview#322）', async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mockGetCurrentJson.mockRejectedValue(new Error('cos down'));
+        const r = await run(`/read/${ZHIZHAI}?kind=collated&juan=011`);
+        expect(r.status).toBe(307);
+        expect(r.all).toEqual([`${SITE}/item/${ZHIZHAI}`]);
+    });
+
+    it('被并条目的阅读页：整页导航 308 到目标的阅读页（同版本、同章），只有一个 Location（overview#322）', async () => {
+        const TARGET = 'd59f2evs8ni8';
+        mockGetItem.mockResolvedValue({ entry: { merged_into: TARGET }, source: 'h1', version: 'h1:r' });
+        const r = await run(`/read/${ZHIZHAI}/wikisource/003`);
+        expect(r.status).toBe(308);
+        expect(r.all).toEqual([`${SITE}/read/${TARGET}/wikisource/003`]);
+        // RSC 导航与预取不查数据，交给页面
+        mockGetItem.mockClear();
+        expect((await run(`/read/${ZHIZHAI}`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
+        expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it('阅读页的条目取数出错：放过交给页面', async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mockGetItem.mockRejectedValue(new Error('network down'));
+        const r = await run(`/read/${ZHIZHAI}/003`);
+        expect(r.status).toBe(200);
+        expect(r.location).toBeNull();
+    });
+
     it.each([
         ['/read/assistant', '/read/md/assistant'],
         ['/read/assistant.md', '/read/md/assistant'],

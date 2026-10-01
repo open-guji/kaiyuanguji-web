@@ -31,7 +31,7 @@ import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { cleanItemSearch } from '@/lib/item-query';
-import { parseReaderSegments, readerPath, splitReaderPathname } from '@/lib/reader-route';
+import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
 
@@ -137,7 +137,8 @@ async function readerRedirect(req: NextRequest): Promise<NextResponse | null> {
  *   - /item/<id>/read?…（上一版的阅读页地址）→ 按旧查询串（kind／key／juan）换算成新路径，没带旧参数就是 /read/<id>；
  *   - /read/<id>?kind=…&key=…&juan=…（上一版的查询串形式）→ 同上换算；
  *   - /read/<id>/default[/<章>] → 不带 default 的形式（只做字符串换算，不查数据）；
- *   - /read/<说明页名>（旧的 public/content 说明页，与阅读页同一层）→ 308 /read/md/<名>。
+ *   - /read/<说明页名>（旧的 public/content 说明页，与阅读页同一层）→ 308 /read/md/<名>；
+ *   - /read/<被并条目／已升格草稿>[/…] → 目标条目的阅读页（readerItemRedirect）。
  * 页面里也有同样的跳转，这里先出一个只有单个 Location 的 308
  * （EdgeOne 上页面抛 redirect 会把 Location 写两遍，见上面 FX1）。
  */
@@ -155,11 +156,33 @@ async function readerPathRedirect(req: NextRequest): Promise<NextResponse | null
         const md = legacyMarkdownName(p.id);
         if (md) return NextResponse.redirect(new URL(markdownPagePath(md), req.url), 308);
         const ref = parseLegacyReaderParams(p.id, searchParams);
-        return ref ? legacyRedirect(req, ref) : null;
+        // 阅读页是 ISR、不读查询串（overview#322），旧查询串只能在这里换算：取数出错就临时跳条目页，别发会被缓存的 308
+        if (ref) return (await legacyRedirect(req, ref)) ?? NextResponse.redirect(new URL(`/item/${p.id}`, req.url), 307);
     }
     const parsed = parseReaderSegments(p.id, p.segs);
-    if (parsed && 'redirect' in parsed) return NextResponse.redirect(new URL(parsed.redirect, req.url), 308);
-    return null;
+    if (!parsed) return null;
+    if ('redirect' in parsed) return NextResponse.redirect(new URL(parsed.redirect, req.url), 308);
+    return readerItemRedirect(req, p.id, parsed.sel);
+}
+
+/**
+ * 阅读页的被并条目／草稿升格跳转（overview#322）：阅读页改成 ISR 后，页面在缓存未命中时抛 redirect
+ * 会把 Location 写两遍（同 FX1），所以整页导航与 /item 一样由这里先跳，落到目标的阅读页。
+ * RSC 导航、预取与取数出错一律放过交给页面。
+ */
+async function readerItemRedirect(req: NextRequest, id: string, sel: ReaderSel): Promise<NextResponse | null> {
+    const dest = req.headers.get('sec-fetch-dest');
+    if (dest && dest !== 'document') return null;
+    try {
+        const f = fetcher();
+        const r = await resolveItemRedirect(id, await f.getItem(id), f.resolvePromotion);
+        if (!r) return null;
+        const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
+        return NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
+    } catch (err) {
+        console.warn(`[middleware] /read/${id} 跳转判断失败，交给页面：${(err as Error).message}`);
+        return null;
+    }
 }
 
 const isReaderPath = (pathname: string) => /^\/item\/[^/]+\/read\/?$/.test(pathname) || /^\/read\/[^/]+(\/[^/]+)*\/?$/.test(pathname);
