@@ -37,7 +37,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const cls = (l1, l2 = '', l3 = '', l4 = '') => ({ l1, l2, l3, l4, basis: 'S', source: '千頃堂書目' });
 
 test('classificationPath：取 l1 起连续非空的几级', () => {
-    assert.deepEqual(classificationPath(cls('史部', '正史類')), ['史部', '正史類']);
+    assert.deepEqual(classificationPath(cls('史部', '紀傳類')), ['史部', '紀傳類']);
     assert.deepEqual(classificationPath(cls('子部', '', '雜家之屬')), ['子部']);
     assert.deepEqual(classificationPath(cls('')), []);
     assert.deepEqual(classificationPath(undefined), []);
@@ -45,9 +45,9 @@ test('classificationPath：取 l1 起连续非空的几级', () => {
 });
 
 test('nodeIdFor：稳定、URL 安全、按路径区分', () => {
-    const a = nodeIdFor(['史部', '正史類']);
+    const a = nodeIdFor(['史部', '紀傳類']);
     assert.match(a, /^c[0-9a-f]{10}$/);
-    assert.equal(a, nodeIdFor(['史部', '正史類']));
+    assert.equal(a, nodeIdFor(['史部', '紀傳類']));
     assert.notEqual(a, nodeIdFor(['史部']));
 });
 
@@ -57,7 +57,7 @@ test('toCard：契约字段，提要截断，第一作者借作品朝代', () =>
         id: 'w1', title: '史記', juan_count: 130, dynasty: '西漢',
         authors: [{ name: '司馬遷', role: '撰', entity_id: 'x' }, { name: '裴駰', role: '集解' }],
         description: { text: long, sources: [] },
-        classification: cls('史部', '正史類'),
+        classification: cls('史部', '紀傳類'),
         indexed_by: [{ source: 'x' }],
     });
     assert.deepEqual(Object.keys(c).sort(), ['authors', 'classification', 'id', 'juan', 'summary', 'title']);
@@ -65,7 +65,7 @@ test('toCard：契约字段，提要截断，第一作者借作品朝代', () =>
     assert.deepEqual(c.authors, [{ name: '司馬遷', dynasty: '西漢' }, { name: '裴駰' }]);
     assert.equal(Array.from(c.summary).length, SUMMARY_MAX + 1);
     assert.ok(c.summary.endsWith('…'));
-    assert.deepEqual(c.classification, ['史部', '正史類']);
+    assert.deepEqual(c.classification, ['史部', '紀傳類']);
 
     const bare = toCard({ id: 'w2', title: '某書', authors: [{ name: '' }], description: { text: '  ' } });
     assert.deepEqual(bare, { id: 'w2', title: '某書' });
@@ -96,7 +96,7 @@ test('titleSortKey：去掉开头的标点与括注，按书名本身排', () =>
 test('buildCatalog：计数含子孙，经史子集顺序，分类表次序，未分類最后', () => {
     const works = [
         { id: 'a', title: '甲', classification: cls('集部', '別集類') },
-        { id: 'b', title: '乙', classification: cls('史部', '正史類') },
+        { id: 'b', title: '乙', classification: cls('史部', '紀傳類') },
         { id: 'c', title: '丙', classification: cls('史部', '地理類') },
         { id: 'd', title: '丁', classification: cls('史部') },
         { id: 'e', title: '戊', classification: cls('史部', '地理類', '都會郡縣之屬') },
@@ -104,14 +104,14 @@ test('buildCatalog：计数含子孙，经史子集顺序，分类表次序，�
         { id: 'g', title: '庚', classification: cls('經部', '易類') },
     ];
     const rank = taxonomyRank([
-        { cata_l1: '史部', cata_l2: '正史類' },
+        { cata_l1: '史部', cata_l2: '紀傳類' },
         { cata_l1: '史部', cata_l2: '地理類', cata_l3: '都會郡縣之屬' },
     ]);
     const { tree, lists, stats } = buildCatalog(works, { rank });
     assert.deepEqual(tree.map((n) => n.label), ['經部', '史部', '集部', '未分類']);
     const shi = tree[1];
     assert.equal(shi.count, 4);
-    assert.deepEqual(shi.children.map((n) => [n.label, n.count]), [['正史類', 1], ['地理類', 2]]);
+    assert.deepEqual(shi.children.map((n) => [n.label, n.count]), [['紀傳類', 1], ['地理類', 2]]);
     assert.deepEqual(shi.children[1].children.map((n) => [n.label, n.count]), [['都會郡縣之屬', 1]]);
     assert.equal(shi.children[1].children[0].children, undefined);
     assert.equal(tree[3].id, UNCLASSIFIED_ID);
@@ -123,6 +123,64 @@ test('buildCatalog：计数含子孙，经史子集顺序，分类表次序，�
     const walk = (ns) => ns.forEach((n) => { ids.push(n.id); if (n.children) walk(n.children); });
     walk(tree);
     assert.deepEqual(ids.sort(), [...lists.keys()].sort());
+});
+
+test('buildCatalog：《中国古籍总目》词表（overview#292）——五部次序、各级未分類放最后、同名總類分开、空叢書部不出现', () => {
+    // 词表片段：照 classific.json 的真实次序，每部、每类的「未分類」都排在该级最前
+    const rank = taxonomyRank([
+        { cata_l1: '經部', cata_l2: '未分類' },
+        { cata_l1: '經部', cata_l2: '總類', cata_l3: '未分類' },
+        { cata_l1: '經部', cata_l2: '總類', cata_l3: '石經之屬' },
+        { cata_l1: '史部', cata_l2: '未分類' },
+        { cata_l1: '史部', cata_l2: '紀傳類' },
+        { cata_l1: '史部', cata_l2: '詔令奏議類', cata_l3: '未分類' },
+        { cata_l1: '史部', cata_l2: '詔令奏議類', cata_l3: '詔令之屬' },
+        { cata_l1: '史部', cata_l2: '詔令奏議類', cata_l3: '奏議之屬' },
+        { cata_l1: '子部', cata_l2: '總類' },
+        { cata_l1: '子部', cata_l2: '小說類', cata_l3: '文言之屬' },
+        { cata_l1: '集部', cata_l2: '未分類' },
+        { cata_l1: '集部', cata_l2: '詩文評類' },
+        { cata_l1: '叢書部', cata_l2: '彙編類' },
+    ]);
+    const works = [
+        { id: 'a', title: '甲', classification: cls('史部', '未分類') },
+        { id: 'b', title: '乙', classification: cls('史部', '紀傳類') },
+        { id: 'c', title: '丙', classification: cls('史部', '詔令奏議類', '奏議之屬') },
+        { id: 'd', title: '丁', classification: cls('史部', '詔令奏議類', '未分類') },
+        { id: 'e', title: '戊', classification: cls('史部', '詔令奏議類', '詔令之屬') },
+        { id: 'f', title: '己', classification: cls('經部', '總類', '石經之屬') },
+        { id: 'g', title: '庚', classification: cls('子部', '總類') },
+        { id: 'h', title: '辛', classification: cls('集部', '未分類') },
+        { id: 'i', title: '壬', classification: cls('集部', '詩文評類') },
+        { id: 'j', title: '癸', classification: cls('子部', '小說類', '文言之屬') },
+        { id: 'k', title: '無' },
+    ];
+    const { tree } = buildCatalog(works, { rank });
+    // 五部按词表次序；没有作品的叢書部不出现；顶层未分類（无 l1）最后
+    assert.deepEqual(tree.map((n) => n.label), ['經部', '史部', '子部', '集部', '未分類']);
+    const shi = tree[1];
+    assert.deepEqual(shi.children.map((n) => n.label), ['紀傳類', '詔令奏議類', '未分類']);
+    assert.deepEqual(shi.children[1].children.map((n) => n.label), ['詔令之屬', '奏議之屬', '未分類']);
+    assert.deepEqual(tree[3].children.map((n) => [n.label, n.count]), [['詩文評類', 1], ['未分類', 1]]);
+    // 部下的未分類是普通节点（按路径算 id），不是顶层 unclassified
+    assert.equal(shi.children[2].id, nodeIdFor(['史部', '未分類']));
+    assert.notEqual(shi.children[2].id, UNCLASSIFIED_ID);
+    assert.equal(tree[4].id, UNCLASSIFIED_ID);
+    // 經部／總類 与 子部／總類 是两个节点
+    const jingZong = tree[0].children[0];
+    const ziZong = tree[2].children.find((n) => n.label === '總類');
+    assert.equal(jingZong.label, '總類');
+    assert.notEqual(jingZong.id, ziZong.id);
+    assert.equal(jingZong.id, nodeIdFor(['經部', '總類']));
+});
+
+test('buildCatalog：叢書部有作品时排在集部之后（分类表缺部时退回内置次序）', () => {
+    const works = [
+        { id: 'a', title: '甲', classification: cls('叢書部', '彙編類') },
+        { id: 'b', title: '乙', classification: cls('集部', '別集類') },
+        { id: 'c', title: '丙', classification: cls('經部', '易類') },
+    ];
+    assert.deepEqual(buildCatalog(works).tree.map((n) => n.label), ['經部', '集部', '叢書部']);
 });
 
 test('writeCatalog：每页 20 条，内容不变不改写，旧文件清掉', () => {
@@ -194,7 +252,7 @@ test('bundle-data.mjs 整条流程产出 catalog/', () => {
         writeFileSync(join(draft, 'index', 'works', '0.json'),
             JSON.stringify({ aaaaaaaaaaa: { id: 'aaaaaaaaaaa', title: '史記', type: 'work', path: workRel } }));
         writeFileSync(join(draft, workRel), JSON.stringify({
-            id: 'aaaaaaaaaaa', title: '史記', type: 'work', classification: cls('史部', '正史類'),
+            id: 'aaaaaaaaaaa', title: '史記', type: 'work', classification: cls('史部', '紀傳類'),
         }));
         execFileSync('git', ['init', '-q'], { cwd: draft });
         const dataRoot = join(base, 'out');
@@ -212,10 +270,10 @@ test('bundle-data.mjs 整条流程产出 catalog/', () => {
         const tree = JSON.parse(readFileSync(join(dataRoot, 'data', 'catalog', 'tree.json'), 'utf-8'));
         assert.deepEqual(tree, [{
             id: nodeIdFor(['史部']), label: '史部', count: 1,
-            children: [{ id: nodeIdFor(['史部', '正史類']), label: '正史類', count: 1 }],
+            children: [{ id: nodeIdFor(['史部', '紀傳類']), label: '紀傳類', count: 1 }],
         }]);
-        const page = JSON.parse(readFileSync(join(dataRoot, 'data', 'catalog', nodeIdFor(['史部', '正史類']), '1.json'), 'utf-8'));
-        assert.deepEqual(page, [{ id: 'aaaaaaaaaaa', title: '史記', classification: ['史部', '正史類'] }]);
+        const page = JSON.parse(readFileSync(join(dataRoot, 'data', 'catalog', nodeIdFor(['史部', '紀傳類']), '1.json'), 'utf-8'));
+        assert.deepEqual(page, [{ id: 'aaaaaaaaaaa', title: '史記', classification: ['史部', '紀傳類'] }]);
     } finally {
         rmSync(base, { recursive: true, force: true });
     }

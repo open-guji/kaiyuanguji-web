@@ -16,8 +16,11 @@
  * 文件放在现有数据目录（resolveDataDirs().dataDir）下，随 sync-to-cos.mjs 进 current/catalog/，
  * 前端带 ?v=<cacheKey> 读；不另开存储。节点页数由 tree.json 的 count 推出，不另写清单。
  *
- * 节点 id：分类路径（如「史部/正史類」）的 sha1 前 10 位，前缀 c——只要分类名不变就稳定，
- * 地址里不出现中文。未分類固定为 `unclassified`。
+ * 节点 id：分类路径（如「史部/紀傳類」）的 sha1 前 10 位，前缀 c——只要分类名不变就稳定，
+ * 地址里不出现中文。没有 l1 的作品归顶层「未分類」，id 固定为 `unclassified`；
+ * 部、类下的「未分類」（如「史部/未分類」）是普通节点，按路径算 id，放在同级最后。
+ * 同名的类（如經、史、子三部各有「總類」）按完整路径区分，不会混。
+ * 类名一律来自数据与分类表（book-index 的 classific.json），本脚本不写死任何类名。
  *
  * 用法：
  *   bundle-data.mjs 在 L1 之后调用 bundleCatalog()（正常流程）
@@ -36,7 +39,12 @@ export const UNCLASSIFIED_LABEL = '未分類';
 export const SUMMARY_MAX = 120;
 /** 卡片最多带几位作者 */
 const AUTHORS_MAX = 3;
-const TOP_ORDER = ['經部', '史部', '子部', '集部'];
+/**
+ * 部的次序：优先按分类表（classific.json 的出现次序）；分类表缺部时退回这张表。
+ * 2026-09-30 起分类表改用《中国古籍总目》（overview#292）：五部，多了「叢書部」。
+ * 叢書部目前没有 Work（丛书是 Collection），树按作品生成，空部自然不出现。
+ */
+const TOP_ORDER = ['經部', '史部', '子部', '集部', '叢書部'];
 const LEVELS = ['l1', 'l2', 'l3', 'l4'];
 
 /** 分类路径 → 节点 id */
@@ -182,7 +190,12 @@ export function buildCatalog(works, opts = {}) {
         return i === -1 ? TOP_ORDER.length : i;
     };
     const sortSiblings = (nodes, isTop) => nodes.sort((a, b) => {
-        if (isTop) {
+        // 部、类、属各级的「未分類」（总目词表里每部、每类都有，且排在该级最前）一律放到同级最后
+        const ua = a.label === UNCLASSIFIED_LABEL ? 1 : 0;
+        const ub = b.label === UNCLASSIFIED_LABEL ? 1 : 0;
+        if (ua !== ub) return ua - ub;
+        // 部：两部都在分类表里才按分类表比，否则按内置次序（分类表不全时也保证经史子集叢）
+        if (isTop && !(rank.has(a.key) && rank.has(b.key))) {
             const r = topRank(a.label) - topRank(b.label);
             if (r !== 0) return r;
         }

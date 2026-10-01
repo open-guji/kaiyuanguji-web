@@ -13,7 +13,7 @@ import CatalogClient from '../CatalogClient';
 
 const TREE = [
     { id: 'cjing', label: '經部', count: 1 },
-    { id: 'cshi', label: '史部', count: 60, children: [{ id: 'czhengshi', label: '正史類', count: 60 }] },
+    { id: 'cshi', label: '史部', count: 60, children: [{ id: 'czhengshi', label: '紀傳類', count: 60 }] },
     { id: 'unclassified', label: '未分類', count: 5 },
 ];
 
@@ -25,7 +25,7 @@ async function setup(page = 2) {
             page={page}
             pageCount={3}
             works={[
-                { id: 'd59f282rkphc', title: '三國志', juan: 65, authors: [{ name: '陳壽', dynasty: '西晉' }], summary: '晉陳壽撰。', classification: ['史部', '正史類'] },
+                { id: 'd59f282rkphc', title: '三國志', juan: 65, authors: [{ name: '陳壽', dynasty: '西晉' }], summary: '晉陳壽撰。', classification: ['史部', '紀傳類'] },
                 { id: 'w2', title: '某書', juan: '一百三十篇' },
             ]}
         />,
