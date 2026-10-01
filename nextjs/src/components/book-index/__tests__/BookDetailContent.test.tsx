@@ -73,4 +73,8 @@ describe('BookDetailContent 接三栏组件', () => {
         const tabs = captured.props!.extraTabs as { key: string; label: string }[];
         expect(tabs.map((t) => [t.key, t.label])).toEqual([['digital', '数字化']]);
     });
+
+    it('页内顶部不放繁简与 GitHub 图标：繁简在全站顶栏（9-30 反馈，overview#322）', () => {
+        expect(captured.props!.hideHeaderControls).toBe(true);
+    });
 });
