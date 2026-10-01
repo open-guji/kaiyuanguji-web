@@ -20,6 +20,15 @@ describe('首页（N1）', () => {
         expect(within(main).getAllByRole('button').map((b) => b.textContent)).toEqual(['搜索']);
     });
 
+    it('导语去掉「整理」二字；搜索提示改为简体例子（9-30 反馈，overview#322）', () => {
+        render(<HomePage />);
+        expect(
+            screen.getByText('把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。'),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('main').textContent).not.toContain('整理文本聚到一起');
+        expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', '书名、作者、版本，如：史记、苏轼');
+    });
+
     it('搜索跳到索引页并带上关键词', () => {
         render(<HomePage />);
         fireEvent.change(screen.getByRole('searchbox'), { target: { value: ' 史記 ' } });
