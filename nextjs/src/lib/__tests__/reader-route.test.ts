@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from '@jest/globals';
 import {
-    chapterFallbackLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, splitReaderPathname,
+    chapterFallbackLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, readerVersionName, splitReaderPathname,
 } from '../reader-route';
 
 const WORK = 'd59f2htm01du'; // 直齋書錄解題（Work）
@@ -79,9 +79,26 @@ describe('splitReaderPathname', () => {
     });
 });
 
+describe('readerVersionName（页面上的版本名：默认版本不写，非默认只写来源，不出现类别词）', () => {
+    it('默认版本不写，不管它的 label 是「整理本」还是「維基文庫」', () => {
+        expect(readerVersionName({ key: 'default', label: '整理本' })).toBeUndefined();
+        expect(readerVersionName({ key: 'default', label: '維基文庫', source_name: '維基文庫' })).toBeUndefined();
+    });
+    it('非默认版本写来源名', () => {
+        expect(readerVersionName({ key: 'wikisource', label: '維基文庫' })).toBe('維基文庫');
+        expect(readerVersionName({ key: 'kanripo', label: ' Kanripo ' })).toBe('Kanripo');
+    });
+    it('label 若是类别词就改用来源名，都没有就不写', () => {
+        expect(readerVersionName({ key: 'x', label: '转录全文', source_name: '維基文庫' })).toBe('維基文庫');
+        expect(readerVersionName({ key: 'x', label: '整理本' })).toBeUndefined();
+        expect(readerVersionName({ key: 'x', label: '全文', source_name: '全文' })).toBeUndefined();
+        expect(readerVersionName(undefined)).toBeUndefined();
+    });
+});
+
 describe('readerTitle', () => {
     it('书名 · 章名 · 版本名；没有章名用「卷N」；没有章号也不写', () => {
-        expect(readerTitle('直齋書錄解題', '003', '史錄', '整理本')).toBe('直齋書錄解題 · 史錄 · 整理本');
+        expect(readerTitle('直齋書錄解題', '003', '史錄')).toBe('直齋書錄解題 · 史錄');
         expect(readerTitle('紅樓夢', '003', undefined, '維基文庫')).toBe('紅樓夢 · 卷3 · 維基文庫');
         expect(readerTitle('紅樓夢', undefined, undefined, '維基文庫')).toBe('紅樓夢 · 維基文庫');
         expect(readerTitle('紅樓夢', '003', ' 第三回 ')).toBe('紅樓夢 · 第三回');

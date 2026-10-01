@@ -98,18 +98,18 @@ describe('ReaderClient', () => {
         window.history.replaceState(null, '', `/read/${ZHIZHAI}/003`);
         render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '003' }} bookTitle="直齋書錄解題" />);
         await act(async () => { await Promise.resolve(); await Promise.resolve(); });
-        expect(document.title).toBe('直齋書錄解題 · 第三回 · 整理本 - 开源古籍');
+        expect(document.title).toBe('直齋書錄解題 · 第三回 - 开源古籍');
 
         await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'default', chapter: '004', isDefault: true }, 'chapter'); });
         expect(at()).toBe(`/read/${ZHIZHAI}/004`);
-        expect(document.title).toBe('直齋書錄解題 · 第四回 · 整理本 - 开源古籍');
+        expect(document.title).toBe('直齋書錄解題 · 第四回 - 开源古籍');
         expect(document.querySelector('link[rel=canonical]')!.getAttribute('href')).toBe(`https://www.kaiyuanguji.com/read/${ZHIZHAI}/004`);
         expect(screen.getByTestId('reader')).toHaveTextContent('default|004');
         expect(push).not.toHaveBeenCalled();
 
         // 没有章名的章回落「卷N」
         await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'default', chapter: '005', isDefault: true }, 'chapter'); });
-        expect(document.title).toBe('直齋書錄解題 · 卷5 · 整理本 - 开源古籍');
+        expect(document.title).toBe('直齋書錄解題 · 卷5 - 开源古籍');
     });
 
     it('切版本：地址换成 /<key>/<章>，title 里的版本名跟着变；切回主版本地址里不带 key', async () => {

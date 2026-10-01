@@ -10,7 +10,7 @@ import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
-import { parseReaderSegments, readerPath, readerTitle, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
+import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { seedTransport, type ReaderSeed } from './reader-seed';
 
@@ -59,7 +59,7 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             if (!version) return;
             const index = sel.chapter ? await api.getIndex(id, version.key) : null;
             const title = index?.chapters.find((c) => c.file === sel.chapter)?.title?.trim();
-            if (!cancelled) setMeta({ at, versionLabel: version.label || version.source_name, kind: version.kind, chapterTitle: title || undefined });
+            if (!cancelled) setMeta({ at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined });
         })().catch(() => {});
         return () => { cancelled = true; };
     }, [api, id, sel.key, sel.chapter, at]);

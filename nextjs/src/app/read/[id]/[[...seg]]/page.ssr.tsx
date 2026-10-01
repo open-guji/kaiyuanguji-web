@@ -27,7 +27,7 @@ import { checkReader, getManifestOrError, type ReaderCheckResult } from '@/lib/s
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
-import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, type ReaderSel } from '@/lib/reader-route';
+import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams } from '@/lib/legacy-reader';
 import ReaderClient from '../ReaderClient';
 import { preloadReader } from '../preload';
@@ -108,7 +108,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const s = await load(id, seg, await searchParams);
     if (!s) return { title: '未找到', robots: { index: false, follow: false } };
     const chapter = s.checked.chapter;
-    const versionLabel = s.checked.version?.label || s.checked.version?.source_name;
+    const versionLabel = readerVersionName(s.checked.version);
     const title = readerTitle(s.title, chapter, s.checked.chapterTitle, versionLabel);
     const what = [s.checked.chapterTitle ?? (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel].filter(Boolean).join('');
     const description = `${s.title}${what}，在线阅读。`;
