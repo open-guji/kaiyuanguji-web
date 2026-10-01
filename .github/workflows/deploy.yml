@@ -141,6 +141,11 @@ jobs:
       draft_ref: ${{ steps.r.outputs.draft_ref }}
       prod_ref: ${{ steps.r.outputs.prod_ref }}
       text_ref: ${{ steps.r.outputs.text_ref }}
+      # overview#341：三个数据仓 ref 解析成的完整 commit（解析不了的留空，例如手填的短 SHA）。
+      # build 据此在克隆之前就判断「数据有没有变」，没变就不克隆（见 build 的 Data fast path）。
+      draft_sha: ${{ steps.sha.outputs.draft_sha }}
+      prod_sha: ${{ steps.sha.outputs.prod_sha }}
+      text_sha: ${{ steps.sha.outputs.text_sha }}
     steps:
       # push 部署要让路给定时／手动部署：有非 push 的 deploy run 在排队或在跑就等它跑完再往下走。
       # 只有最新的 push 会在这里等（push 组 cancel-in-progress，新 push 会取消旧的等待者）。
@@ -226,6 +231,32 @@ jobs:
           done
           echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} draft=${IN_DRAFT_REF:-main} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
 
+      # overview#341：把三个 ref 解析成完整 commit。分支／tag 用 ls-remote；本来就是 40 位 SHA 的原样用；
+      # 解析不了（短 SHA、网络失败）就留空——build 照老路克隆，只是用不上「数据没变就跳过」。
+      - id: sha
+        env:
+          DRAFT_REF: ${{ steps.r.outputs.draft_ref }}
+          PROD_REF: ${{ steps.r.outputs.prod_ref }}
+          TEXT_REF: ${{ steps.r.outputs.text_ref }}
+        run: |
+          sha_of() {
+            local repo="$1" ref="$2" out
+            if printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$'; then echo "$ref"; return; fi
+            out=$(git ls-remote "https://github.com/open-guji/$repo.git" "refs/heads/$ref" 2>/dev/null | head -1 | cut -f1)
+            if [ -z "$out" ]; then
+              # tag：优先取 peel 过的 commit（附注 tag 的 ^{} 行）
+              out=$(git ls-remote "https://github.com/open-guji/$repo.git" "refs/tags/$ref^{}" "refs/tags/$ref" 2>/dev/null \
+                    | sort -k2 -r | head -1 | cut -f1)
+            fi
+            printf '%s' "$out" | grep -Eq '^[0-9a-f]{40}$' && echo "$out" || echo ''
+          }
+          for pair in "draft_sha:book-index-draft:$DRAFT_REF" "prod_sha:book-index:$PROD_REF" "text_sha:book-text:$TEXT_REF"; do
+            k="${pair%%:*}"; rest="${pair#*:}"; repo="${rest%%:*}"; ref="${rest#*:}"
+            v=$(sha_of "$repo" "$ref")
+            echo "$k=$v" >> "$GITHUB_OUTPUT"
+            echo "· $repo $ref → ${v:-（解析不了，build 照常克隆）}"
+          done
+
   build:
     runs-on: ubuntu-latest
     needs: resolve
@@ -262,6 +293,58 @@ jobs:
         working-directory: nextjs
         run: npm test
 
+      # --- overview#341：数据没变就不克隆、不打包、不同步 ---
+      # 只改代码的部署原来照样要克隆三个数据仓（book-text 检出约 5 GB，约 3 分钟）、打包（约 40 秒）——
+      # 打包出来和线上那份一模一样，下面的 COS 同步判定也会跳过上传，白花的只是克隆和打包。
+      # 克隆和打包产物在「数据没变」时只剩一个用处：条目 sitemap（gen-sitemaps 读 entry/*.json）。
+      # 所以这里在克隆之前就判定，两条都满足才走快路：
+      #   ① 与下面 COS 同步判定同一口径（cos-sync-decision.mjs decide）：三仓 commit（resolve 解析出的）
+      #      ＋打包脚本指纹，与线上「上次完整同步」标记、线上 latest.json 全对得上；
+      #   ② 条目 sitemap 有缓存：键＝站点＋三仓 commit＋打包脚本指纹，上次照常打包时存的（actions/cache）。
+      # 快路上只写 latest.json 的 webCommitId（同原来「数据没变」那一步），失败就退回老路照常克隆、打包、同步。
+      # 任何一条不满足、读不到，都走老路，行为与原来一样。
+      - name: Data fast path — decide before cloning (overview#341)
+        id: data_pre
+        if: ${{ env.HAS_COS_SECRETS == 'true' && needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+          DRAFT_COMMIT: ${{ needs.resolve.outputs.draft_sha }}
+          PROD_COMMIT: ${{ needs.resolve.outputs.prod_sha }}
+          TEXT_COMMIT: ${{ needs.resolve.outputs.text_sha }}
+        run: |
+          cd nextjs
+          FP=$(node -e "import('./scripts/lib/cos-sync-decision.mjs').then((m) => console.log(m.computeBundleFingerprint(process.env.GITHUB_WORKSPACE)))")
+          echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+          node scripts/cos-sync-decision.mjs decide
+
+      - name: Data fast path — restore item sitemaps
+        id: sitemap_cache
+        if: ${{ steps.data_pre.outputs.skip == 'true' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/item-sitemaps
+          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
+
+      - name: Data fast path — write latest.json only
+        id: fast_latest
+        if: ${{ steps.data_pre.outputs.skip == 'true' && steps.sitemap_cache.outputs.cache-hit == 'true' }}
+        continue-on-error: true
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-singapore
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          node scripts/cos-sync-decision.mjs latest-only
+          echo "DATA_FAST=true" >> "$GITHUB_ENV"
+          echo "✅ 数据没变：跳过克隆数据仓、打包、COS 同步；条目 sitemap 用缓存"
+
       # --- 步骤 1：为 EdgeOne 构建（cos 模式） ---
       #
       # 必须同时克隆 draft 与 production 两个数据仓：
@@ -270,6 +353,7 @@ jobs:
       # （四库全书、红楼梦等）在站上 404 —— 升格后的 draft 条目是
       # tombstone，会重定向到 production ID，而该 ID 不在产物里。
       - name: Clone index data repos
+        if: ${{ env.DATA_FAST != 'true' }}
         run: |
           # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
           fetch_at() {
@@ -277,12 +361,13 @@ jobs:
             git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
             git -C "$2" checkout -q FETCH_HEAD
           }
-          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_ref }}"
-          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_ref }}"
+          # overview#341：resolve 解析出了完整 commit 就按 commit 取，保证与上面「数据没变」的判断是同一版
+          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_sha || needs.resolve.outputs.draft_ref }}"
+          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
           # 构建照样成功——整理本页在站上空白，无人得知。
-          fetch_at book-text book-text "${{ needs.resolve.outputs.text_ref }}"
+          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
 
       # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
       # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
@@ -290,6 +375,7 @@ jobs:
         run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
 
       - name: Bundle data for EdgeOne
+        if: ${{ env.DATA_FAST != 'true' }}
         working-directory: nextjs
         env:
           BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
@@ -309,6 +395,7 @@ jobs:
           PY
 
       - name: Verify bundled data
+        if: ${{ env.DATA_FAST != 'true' }}
         run: |
           # S2：public/ 下不应再有任何数据产物
           for f in data data-h1 data-h1-text latest.json; do
@@ -347,6 +434,7 @@ jobs:
       # bundle-data.mjs 在 production 仓缺失时是**静默**跳过的，只靠上面的
       # 文件存在性检查发现不了 —— 这里逐个比对正式库索引里的 ID。
       - name: Verify production entries bundled
+        if: ${{ env.DATA_FAST != 'true' }}
         run: |
           node -e "
           const fs = require('fs');
@@ -373,6 +461,7 @@ jobs:
       # 防线——防的是「以后有人手滑把私有目录接进 bundle-data.mjs」，而不是防
       # 这一次没接。命令与判据都在这（PR 里贴的实测即这一步的日志）。
       - name: Verify no private text leaked into public data
+        if: ${{ env.DATA_FAST != 'true' }}
         run: |
           cd "$KYG_DATA_ROOT/data"
           if grep -rl "book-text-private\|仅内部校对使用\|不得公开" . ; then
@@ -395,7 +484,7 @@ jobs:
       #      但不写标记，下次不会把没传全的当成已同步。
       - name: Decide COS data sync (skip when data unchanged)
         id: cos_decide
-        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -412,7 +501,7 @@ jobs:
 
       - name: Write latest.json only (data unchanged, skip COS data upload)
         id: cos_latest_only
-        if: ${{ env.HAS_COS_SECRETS == 'true' && steps.cos_decide.outputs.skip == 'true' }}
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && steps.cos_decide.outputs.skip == 'true' }}
         continue-on-error: true
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
@@ -451,7 +540,7 @@ jobs:
       # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
       - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
         id: cos_sync
-        if: ${{ env.HAS_COS_SECRETS == 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -507,6 +596,37 @@ jobs:
           export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
           node scripts/cos-sync-decision.mjs mark
 
+      # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布；<loc> 按目标指向 www 或测试站
+      # （测试站 robots.txt 全禁、不列 sitemap）。overview#341：数据没变的快路上用缓存（同一站点、同一份数据、
+      # 同一版打包脚本生成的，内容一样）；照常打包时生成后存一份缓存，下次快路用。
+      - name: Item sitemaps (W2-3)
+        working-directory: nextjs
+        env:
+          SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+        run: |
+          OUT="$RUNNER_TEMP/item-sitemaps"
+          if [ "$DATA_FAST" != true ]; then
+            rm -rf "$OUT"
+            SITEMAP_OUT_DIR="$OUT" node scripts/gen-sitemaps.mjs
+          else
+            echo "· 用缓存的条目 sitemap（$(ls "$OUT"/sitemaps | wc -l) 个分片）"
+          fi
+          test -f "$OUT/sitemap-index.xml" && ls "$OUT"/sitemaps/*.xml > /dev/null \
+            || { echo "❌ 条目 sitemap 不全"; ls -la "$OUT"; exit 1; }
+          grep -q "<loc>$SITEMAP_SITE/" "$OUT/sitemap-index.xml" \
+            || { echo "❌ sitemap 索引里的地址不是 $SITEMAP_SITE"; head -c 600 "$OUT/sitemap-index.xml"; exit 1; }
+          rm -rf public/sitemaps public/sitemap-index.xml
+          cp -r "$OUT/sitemaps" public/sitemaps
+          cp "$OUT/sitemap-index.xml" public/sitemap-index.xml
+
+      - name: Save item sitemaps cache (overview#341)
+        if: ${{ env.DATA_FAST != 'true' && steps.data_pre.outputs.fingerprint != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/item-sitemaps
+          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
+
       # CUT2（overview#241）：正式站＝全栈项目 kyg-ssr-spike（www 已于 09-28 换绑过去）。
       # 原来的静态导出＋推 edgeone-release（发旧项目 kaiyuanguji）去掉：旧项目保留 4 周作回滚目标，
       # 回滚靠控制台换绑，CI 不再推它（docs/cutover.md「切完以后」）。
@@ -539,7 +659,6 @@ jobs:
           NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ vars.BAIDU_TONGJI_ID }}
           NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
           NEXT_PUBLIC_BASE_PATH: ''
-          SITEMAP_SITE: https://www.kaiyuanguji.com
         run: |
           if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
             echo "❌ 全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
@@ -551,9 +670,8 @@ jobs:
           echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
           export KYG_REVALIDATE_SECRET="$S"
           cd nextjs
-          rm -rf .next out .edgeone edge-functions public/sitemaps public/sitemap-index.xml
-          # 条目 sitemap 分片（W2-3），写进 public/ 随全栈产物发布；<loc> 指向 www
-          node scripts/gen-sitemaps.mjs
+          # 条目 sitemap 分片（W2-3）已由上面「Item sitemaps」一步放进 public/（<loc> 指向 www），这里不能删
+          rm -rf .next out .edgeone edge-functions
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
@@ -583,15 +701,6 @@ jobs:
           S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
           echo "::add-mask::$S"
           echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
-
-      # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布。
-      # 测试站这一支；正式站在自己的构建步骤里生成（<loc> 指向 www）。测试站 robots.txt 全禁、不列 sitemap。
-      - name: Generate item sitemaps (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
-        working-directory: nextjs
-        env:
-          SITEMAP_SITE: https://staging.kaiyuanguji.com
-        run: node scripts/gen-sitemaps.mjs
 
       - name: Build for EdgeOne (staging, fullstack)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
@@ -807,6 +916,8 @@ jobs:
       # 但「实测」一步失败会在 job 摘要里标 ✗——首跑几次都绿之后，改成拦发布（去掉 continue-on-error）。
       - name: Compute changed items (W2-3)
         id: item_changes
+        # 快路上数据没变，也没有本地 h1 产物可比——没有要失效的条目
+        if: ${{ env.DATA_FAST != 'true' }}
         continue-on-error: true
         working-directory: nextjs
         env:
