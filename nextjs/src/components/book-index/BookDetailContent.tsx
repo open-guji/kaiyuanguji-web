@@ -267,6 +267,9 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 footerExtra={
                     <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
                 }
+                /* 繁简切换在全站顶栏（9-30 反馈，overview#322）：页内顶部不再放繁简与 GitHub 图标；
+                   数据来源链接在页脚右侧（组件库「数据与许可」）。book-index-ui 0.30.0 起 */
+                hideHeaderControls
             />
         </LayoutWrapper>
     );
