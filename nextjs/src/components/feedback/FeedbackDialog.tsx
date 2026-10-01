@@ -12,6 +12,7 @@ import {
     type FeedbackContext,
     type FeedbackKind,
 } from '@/lib/feedback';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface FeedbackDialogProps {
     initialContext: FeedbackContext | null;
@@ -32,6 +33,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, [tabindex]:
  * 关闭后焦点还给打开它的那个元素。
  */
 export default function FeedbackDialog({ initialContext, initialType, onClose, onSubmitted, fetchImpl }: FeedbackDialogProps) {
+    const t = useSiteT();
     const [type, setType] = useState<FeedbackKind>(initialType);
     const [context, setContext] = useState<FeedbackContext | null>(initialContext);
     const [text, setText] = useState('');
@@ -99,11 +101,12 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
             await submitFeedback(
                 buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href }),
                 fetchImpl,
+                t,
             );
             setStatus('done');
             onSubmitted?.();
         } catch (err) {
-            setError(err instanceof Error ? err.message : '提交失败，请稍后重试');
+            setError(err instanceof Error ? err.message : t('feedback.submitFailed'));
             setStatus('idle');
         }
     };
@@ -112,8 +115,8 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
         <div className="og-fb-mask" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
             <div ref={panelRef} className="og-fb-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
                 <div className="og-fb-head">
-                    <h2 id={titleId}>反馈</h2>
-                    <button type="button" className="og-fb-close" onClick={onClose} aria-label="关闭">
+                    <h2 id={titleId}>{t('feedback.dialog.title')}</h2>
+                    <button type="button" className="og-fb-close" onClick={onClose} aria-label={t('feedback.dialog.close')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
                             <path d="M6 6l12 12M18 6L6 18" />
                         </svg>
@@ -122,24 +125,26 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
 
                 {status === 'done' ? (
                     <div className="og-fb-done" role="status">
-                        <p>谢谢，已经收到。</p>
+                        <p>{t('feedback.dialog.thanks')}</p>
                         <p className="og-fb-note">
-                            {isPrivate ? '这类留言不公开，我们会通过你留的方式联系你。' : <>处理进展可以在<Link href="/feedback" onClick={onClose}>反馈列表</Link>里看到。</>}
+                            {isPrivate
+                                ? t('feedback.dialog.privateDone')
+                                : <>{t('feedback.dialog.progressBefore')}<Link href="/feedback" onClick={onClose}>{t('feedback.dialog.listLink')}</Link>{t('feedback.dialog.progressAfter')}</>}
                         </p>
-                        <button type="button" className="og-fb-submit" onClick={onClose}>关闭</button>
+                        <button type="button" className="og-fb-submit" onClick={onClose}>{t('feedback.dialog.close')}</button>
                     </div>
                 ) : (
                     <form onSubmit={submit} noValidate>
-                        <div className="og-fb-types" role="radiogroup" aria-label="反馈类型">
-                            {FEEDBACK_TYPES.map((t) => (
+                        <div className="og-fb-types" role="radiogroup" aria-label={t('feedback.dialog.typeGroup')}>
+                            {FEEDBACK_TYPES.map((o) => (
                                 <button
-                                    key={t.value}
+                                    key={o.value}
                                     type="button"
                                     role="radio"
-                                    aria-checked={t.value === type}
-                                    onClick={() => setType(t.value)}
+                                    aria-checked={o.value === type}
+                                    onClick={() => setType(o.value)}
                                 >
-                                    {t.label}
+                                    {t(o.labelKey)}
                                 </button>
                             ))}
                         </div>
@@ -147,22 +152,22 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                         {context && (context.label || quote) && (
                             <div className="og-fb-context">
                                 <div className="og-fb-context-head">
-                                    <span>关于</span>
-                                    <button type="button" onClick={() => setContext(null)}>不带上</button>
+                                    <span>{t('feedback.dialog.about')}</span>
+                                    <button type="button" onClick={() => setContext(null)}>{t('feedback.dialog.detach')}</button>
                                 </div>
                                 {context.label && <div>{context.label}</div>}
                                 {quote && <q className="og-fb-quote">{quote}</q>}
                             </div>
                         )}
 
-                        <label className="og-fb-sr" htmlFor={`${titleId}-text`}>反馈内容</label>
+                        <label className="og-fb-sr" htmlFor={`${titleId}-text`}>{t('feedback.dialog.contentLabel')}</label>
                         <textarea
                             id={`${titleId}-text`}
                             ref={textRef}
                             className="og-fb-field og-fb-text"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            placeholder={option.placeholder}
+                            placeholder={t(option.placeholderKey)}
                             maxLength={budget}
                             rows={5}
                         />
@@ -170,13 +175,13 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                             <div className="og-fb-count">{text.length} / {budget}</div>
                         )}
 
-                        <label className="og-fb-sr" htmlFor={`${titleId}-contact`}>联系方式（选填）</label>
+                        <label className="og-fb-sr" htmlFor={`${titleId}-contact`}>{t('feedback.dialog.contactLabel')}</label>
                         <input
                             id={`${titleId}-contact`}
                             className="og-fb-field og-fb-contact"
                             value={contact}
                             onChange={(e) => setContact(e.target.value)}
-                            placeholder={isPrivate ? '联系方式：邮箱或微信（只有站方能看到）' : '联系方式（选填，只有站方能看到）'}
+                            placeholder={t(isPrivate ? 'feedback.dialog.contactPlaceholderPrivate' : 'feedback.dialog.contactPlaceholder')}
                             maxLength={CONTACT_MAX}
                             autoComplete="email"
                         />
@@ -186,11 +191,11 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                         <div className="og-fb-foot">
                             <p className="og-fb-note">
                                 {isPrivate
-                                    ? '这类留言不公开，只有站方能看到'
-                                    : <>反馈会公开在<Link href="/feedback" onClick={onClose}>反馈列表</Link>，联系方式不公开</>}
+                                    ? t('feedback.dialog.privateNote')
+                                    : <>{t('feedback.dialog.publicBefore')}<Link href="/feedback" onClick={onClose}>{t('feedback.dialog.listLink')}</Link>{t('feedback.dialog.publicAfter')}</>}
                             </p>
                             <button type="submit" className="og-fb-submit" disabled={!canSubmit}>
-                                {status === 'submitting' ? '提交中…' : '提交'}
+                                {status === 'submitting' ? t('feedback.dialog.submitting') : t('feedback.dialog.submit')}
                             </button>
                         </div>
                     </form>

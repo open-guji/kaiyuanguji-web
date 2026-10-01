@@ -43,7 +43,8 @@ describe('BimLocaleProvider ↔ 顶栏繁简', () => {
             </>,
         );
         fireEvent.click(screen.getByRole('button', { name: 'inner' }));
-        expect(screen.getByRole('button', { name: /当前繁体/ })).toBeInTheDocument();
+        // 切到繁体后顶栏自己的文字也跟着变（overview#337），按钮名是繁体
+        expect(screen.getByRole('button', { name: /當前繁體/ })).toBeInTheDocument();
     });
 
     it('挂载后读出已存的偏好', () => {

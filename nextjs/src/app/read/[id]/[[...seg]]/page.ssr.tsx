@@ -35,6 +35,8 @@ import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, rea
 import ReaderClient from '../ReaderClient';
 import { preloadReader } from '../preload';
 import type { ReaderSeed } from '../reader-seed';
+import { simplifyMetadata } from '@/lib/server/simplify';
+import { getSiteT } from '@/i18n/translate';
 
 // ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
 // 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
@@ -97,16 +99,16 @@ function redirectLegacyMarkdown(id: string, seg: string[] | undefined) {
     if (name) permanentRedirect(markdownPagePath(name));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+async function buildMetadata({ params }: Props): Promise<Metadata> {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
     const s = await load(id, seg);
-    if (!s) return { title: '未找到', robots: { index: false, follow: false } };
+    if (!s) return { title: getSiteT('zh-Hans')('seo.notFound'), robots: { index: false, follow: false } };
     const chapter = s.checked.chapter;
     const versionLabel = readerVersionName(s.checked.version);
     const title = readerTitle(s.title, chapter, s.checked.chapterTitle, versionLabel);
     const what = [s.checked.chapterTitle ?? (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel].filter(Boolean).join('');
-    const description = `${s.title}${what}，在线阅读。`;
+    const description = getSiteT('zh-Hans')('seo.readOnline', { what: `${s.title}${what}` });
     const { canonical } = s;
     return {
         title,
@@ -114,6 +116,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: { canonical },
         openGraph: { title, description, url: canonical, type: 'book' },
     };
+}
+
+// 服务端直出的 title／meta 一律简体：数据部分（书名、分类、回目、检索词）在这里统一转（overview#337）
+export async function generateMetadata(props: Props): Promise<Metadata> {
+    return simplifyMetadata(await buildMetadata(props));
 }
 
 export default async function ReaderPage({ params }: Props) {

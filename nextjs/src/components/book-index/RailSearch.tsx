@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './RailSearch.module.css';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /**
  * 条目页左栏的站内检索框（传给 BookDetailLayout 的 railTop）。
@@ -10,6 +11,7 @@ import styles from './RailSearch.module.css';
  */
 export default function RailSearch() {
     const router = useRouter();
+    const t = useSiteT();
     const [query, setQuery] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -30,8 +32,8 @@ export default function RailSearch() {
                 name="q"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="检索作品、版本、书目"
-                aria-label="检索古籍索引"
+                placeholder={t('bookIndex.rail.placeholder')}
+                aria-label={t('bookIndex.rail.label')}
                 enterKeyHint="search"
             />
         </form>

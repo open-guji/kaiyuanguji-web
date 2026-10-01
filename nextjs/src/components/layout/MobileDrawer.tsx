@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { MOBILE_DRAWER_ID, MORE_LINKS, PRIMARY_LINKS, isCurrent } from './nav-links';
+import { MOBILE_DRAWER_ID, MORE_LINKS, PRIMARY_LINKS, isCurrent, type ShellLink } from './nav-links';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
 export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: MobileDrawerProps) {
   const pathname = usePathname();
   const panelRef = useRef<HTMLElement>(null);
+  const t = useSiteT();
 
   // 抽屉打开时锁定页面滚动
   useEffect(() => {
@@ -71,14 +73,14 @@ export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: Mobile
 
   if (!isOpen) return null;
 
-  const row = (l: { label: string; href: string }) => (
+  const row = (l: ShellLink) => (
     <Link
       key={l.href}
       href={l.href}
       onClick={onClose}
       aria-current={isCurrent(pathname, l.href) ? 'page' : undefined}
     >
-      {l.label}
+      {t(l.labelKey)}
     </Link>
   );
 
@@ -91,14 +93,14 @@ export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: Mobile
         className="og-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="站点菜单"
+        aria-label={t('nav.drawer')}
       >
         <div className="og-drawer-head">
           <Link href="/" onClick={onClose} className="og-brand">
-            <Image src="/images/open-guji-logo.webp" alt="开源古籍 Logo" width={26} height={26} />
-            <span>开源古籍</span>
+            <Image src="/images/open-guji-logo.webp" alt={t('nav.logoAlt')} width={26} height={26} />
+            <span>{t('nav.brand')}</span>
           </Link>
-          <button type="button" onClick={onClose} className="og-burger og-burger--close" aria-label="关闭菜单">
+          <button type="button" onClick={onClose} className="og-burger og-burger--close" aria-label={t('nav.closeMenu')}>
             <svg
               width="22"
               height="22"
@@ -113,9 +115,9 @@ export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: Mobile
             </svg>
           </button>
         </div>
-        <nav className="og-drawer-body" aria-label="移动端导航">
+        <nav className="og-drawer-body" aria-label={t('nav.mobileNav')}>
           {PRIMARY_LINKS.map(row)}
-          <p className="og-drawer-cap">更多</p>
+          <p className="og-drawer-cap">{t('nav.more')}</p>
           {MORE_LINKS.map(row)}
         </nav>
       </aside>

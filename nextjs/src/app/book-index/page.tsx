@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { searchPageTitle } from '@/lib/search-title';
 import BookIndexClient from './BookIndexClient';
+import { simplifyMetadata } from '@/lib/server/simplify';
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -8,12 +9,17 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 // 在服务端出：客户端 effect 里改 document.title 会被 React 提升到 <head> 的 <title> 在水合后盖回去
 // （测试站 verify 实测：title 一直是「开源古籍」）。带 id 的是条目详情视图（旧地址），不动 title。
 // 静态导出（output: 'export'，不设 KYG_RENDER_MODE）读 searchParams 会让构建失败，那种构建下不带检索词，用默认 title。
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+async function buildMetadata({ searchParams }: Props): Promise<Metadata> {
   if (process.env.KYG_RENDER_MODE !== 'fullstack' && process.env.NEXT_PUBLIC_MODE !== 'local') return {};
   const sp = await searchParams;
   if (sp.id) return {};
   const title = searchPageTitle(sp.q);
   return title ? { title } : {};
+}
+
+// 服务端直出的 title／meta 一律简体：数据部分（书名、分类、回目、检索词）在这里统一转（overview#337）
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  return simplifyMetadata(await buildMetadata(props));
 }
 
 export default function BookIndexPage() {

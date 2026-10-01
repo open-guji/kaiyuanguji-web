@@ -22,6 +22,8 @@ jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getTextManifest, ge
 const last: { reader?: Record<string, unknown> } = {};
 jest.mock('book-index-ui', () => ({
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）
+    useConvert: () => ({ convert: (s: string) => s }),
     TextReader: (p: Record<string, unknown>) => {
         last.reader = p;
         return <div data-testid="reader">{`${String(p.versionKey)}|${String(p.chapter)}`}</div>;

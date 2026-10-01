@@ -22,6 +22,7 @@ import { readerPath } from '@/lib/reader-route';
 import { legacyChapter } from '@/lib/legacy-reader';
 import { buildSourceLinks } from '@/lib/repo-source';
 import type { DigitalAssets } from '@/types';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface BookDetailContentProps {
     id: string;
@@ -61,6 +62,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const { source } = useSource();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const t = useSiteT();
 
     const transport = useMemo(() => getTransport(source), [source]);
 
@@ -194,7 +196,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     const extraTabs: ExtraTab[] = useMemo(() => [
         {
             key: 'digital',
-            label: '数字化',
+            label: t('bookIndex.detail.digitalTab'),
             shouldShow: (detail) => !!(detail as DetailWithAssets).digital_assets,
             position: 'before-feedback',
             render: ({ detail }) => {
@@ -207,7 +209,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 );
             },
         },
-    ], [id, initialPage]);
+    ], [id, initialPage, t]);
 
     /*
      * 2026-09 版式重构：详情页改为文档流滚动，不再是「固定高度 + 内部滚动」。
@@ -226,14 +228,14 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                     className="bg-amber-50 border-b border-amber-200 px-4 flex items-center justify-center gap-3 text-xs"
                 >
                     <span className="text-amber-800">
-                        已自动跳转到正式版本（原草稿 <code className="font-mono text-amber-700">{redirectedFrom}</code>）
+                        {t('bookIndex.detail.redirectedBefore')}<code className="font-mono text-amber-700">{redirectedFrom}</code>{t('bookIndex.detail.redirectedAfter')}
                     </span>
                     <button
                         type="button"
                         onClick={handleReturnToDraft}
                         className="text-amber-700 hover:text-amber-900 underline underline-offset-2"
                     >
-                        返回草稿
+                        {t('bookIndex.detail.returnToDraft')}
                     </button>
                 </div>
             )}
@@ -251,7 +253,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
                 initialPage={initialPage}
                 onNavigate={handleNavigate}
                 onBack={handleBack}
-                backLabel="返回索引"
+                backLabel={t('bookIndex.detail.backToIndex')}
                 renderLink={(linkId, label, ctx) => (
                     // 表格/chip 里（ctx.dense）不显示类型图标：整列同类型时，
                     // 每行前面挂一个一模一样的小图标只是噪音

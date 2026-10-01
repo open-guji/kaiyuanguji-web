@@ -7,6 +7,7 @@ import { MOBILE_DRAWER_ID, PRIMARY_LINKS, isCurrent } from './nav-links';
 import { useFeedback } from '../feedback/FeedbackProvider';
 import AppearancePicker from './AppearancePicker';
 import LocaleSwitch from './LocaleSwitch';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface NavbarProps {
   onMobileMenuToggle?: () => void;
@@ -28,21 +29,22 @@ interface NavbarProps {
 export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButtonRef, onHero = false }: NavbarProps) {
   const pathname = usePathname();
   const { open: openFeedback } = useFeedback();
+  const t = useSiteT();
 
   return (
     <header className={onHero ? 'og-nav og-nav--hero' : 'og-nav'}>
       <div className="og-nav-inner">
         <Link href="/" className="og-brand">
-          <Image src="/images/open-guji-logo.webp" alt="开源古籍 Logo" width={26} height={26} />
-          <span>开源古籍</span>
+          <Image src="/images/open-guji-logo.webp" alt={t('nav.logoAlt')} width={26} height={26} />
+          <span>{t('nav.brand')}</span>
         </Link>
 
-        <nav aria-label="主导航">
+        <nav aria-label={t('nav.primaryNav')}>
           <ul className="og-links">
             {PRIMARY_LINKS.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} aria-current={isCurrent(pathname, l.href) ? 'page' : undefined}>
-                  {l.label}
+                  {t(l.labelKey)}
                 </Link>
               </li>
             ))}
@@ -52,7 +54,7 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
         <div className="og-nav-right">
           <LocaleSwitch />
           <AppearancePicker />
-          <button type="button" className="og-nav-fb" onClick={() => openFeedback()} aria-label="反馈" aria-haspopup="dialog">
+          <button type="button" className="og-nav-fb" onClick={() => openFeedback()} aria-label={t('nav.feedback')} aria-haspopup="dialog">
             <svg
               width="18"
               height="18"
@@ -66,14 +68,14 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
             >
               <path d="M4 5.5h16v10H9l-5 4v-14z" />
             </svg>
-            <span className="og-nav-fb-label" aria-hidden="true">反馈</span>
+            <span className="og-nav-fb-label" aria-hidden="true">{t('nav.feedback')}</span>
           </button>
           <button
             ref={menuButtonRef}
             type="button"
             onClick={onMobileMenuToggle}
             className="og-burger"
-            aria-label="打开菜单"
+            aria-label={t('nav.openMenu')}
             aria-expanded={menuOpen}
             aria-controls={MOBILE_DRAWER_ID}
           >

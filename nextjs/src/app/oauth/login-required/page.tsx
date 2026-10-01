@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import LoginRequiredClient from './LoginRequiredClient';
+import { T } from '@/i18n';
 
 export const metadata: Metadata = {
   title: '请先登录',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 // LoginRequiredClient 用了 useSearchParams：静态导出要求包在 Suspense 里，否则构建失败
 export default function LoginRequiredPage() {
   return (
-    <Suspense fallback={<div className="max-w-xl mx-auto p-8 text-center">加载中…</div>}>
+    <Suspense fallback={<div className="max-w-xl mx-auto p-8 text-center"><T k="pages.loginRequired.loading" /></div>}>
       <LoginRequiredClient />
     </Suspense>
   );

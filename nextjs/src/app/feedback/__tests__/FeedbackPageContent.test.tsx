@@ -19,9 +19,23 @@ function renderPage() {
 }
 
 describe('FeedbackPageContent', () => {
+    it('默认只列没处理完的；勾「显示已处理」才列已结的，取消再藏起来（overview#337 C1）', async () => {
+        renderPage();
+        expect(await screen.findByText('（示例）希望能调行距')).toBeInTheDocument();
+        expect(screen.queryByText('（示例）作者朝代写错了')).not.toBeInTheDocument();
+        const box = screen.getByRole('checkbox', { name: '显示已处理' });
+        expect(box).not.toBeChecked();
+        fireEvent.click(box);
+        expect(screen.getByText('（示例）作者朝代写错了')).toBeInTheDocument();
+        fireEvent.click(box);
+        expect(screen.queryByText('（示例）作者朝代写错了')).not.toBeInTheDocument();
+    });
+
     it('列出反馈：类型、相关条目、状态、站方回复', async () => {
         renderPage();
-        expect(await screen.findByText('（示例）作者朝代写错了')).toBeInTheDocument();
+        await screen.findByText('（示例）希望能调行距');
+        fireEvent.click(screen.getByRole('checkbox', { name: '显示已处理' }));
+        expect(screen.getByText('（示例）作者朝代写错了')).toBeInTheDocument();
         expect(screen.getByText('已处理')).toBeInTheDocument();
         expect(screen.getByText('站方回复：已更正')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '相关条目' })).toHaveAttribute('href', '/item/d59f20aowb9c');
@@ -30,7 +44,8 @@ describe('FeedbackPageContent', () => {
 
     it('按类型筛选；「想参与」不列（不公开）', async () => {
         renderPage();
-        await screen.findByText('（示例）作者朝代写错了');
+        await screen.findByText('（示例）希望能调行距');
+        fireEvent.click(screen.getByRole('checkbox', { name: '显示已处理' }));
         const group = screen.getByRole('radiogroup', { name: '按类型筛选' });
         expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual(['全部', '内容有误', '补充资源', '功能建议']);
         fireEvent.click(within(group).getByRole('radio', { name: '功能建议' }));
@@ -42,7 +57,7 @@ describe('FeedbackPageContent', () => {
 
     it('「写反馈」打开弹窗，不带条目上下文', async () => {
         renderPage();
-        await screen.findByText('（示例）作者朝代写错了');
+        await screen.findByText('（示例）希望能调行距');
         fireEvent.click(screen.getByRole('button', { name: '写反馈' }));
         const dialog = screen.getByRole('dialog', { name: '反馈' });
         expect(within(dialog).queryByText('关于')).not.toBeInTheDocument();

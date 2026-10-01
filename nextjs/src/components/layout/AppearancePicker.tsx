@@ -5,12 +5,13 @@ import {
   DEFAULT_LAYOUT, DEFAULT_THEME, LAYOUTS, THEMES, applyLayout, applyTheme, currentLayout, currentTheme,
   storeLayout, storeTheme, type LayoutName, type ThemeName,
 } from '../../lib/theme';
+import { useSiteT } from '@/i18n/use-site-t';
 
-/** 配色选项的小样：底色＋主色（设计稿「外观」面板） */
-const SWATCH: Record<ThemeName, { bg: string; ac: string; hint: string }> = {
-  zhusha: { bg: '#f6f3ec', ac: '#9c3a2c', hint: '宣纸底' },
-  indigo: { bg: '#f4efe4', ac: '#2e5266', hint: '米白底' },
-  ink: { bg: '#ffffff', ac: '#3b4a58', hint: '素白底' },
+/** 配色选项的小样：底色＋主色（设计稿「外观」面板）；提示文字在字典 nav.look.themeHints */
+const SWATCH: Record<ThemeName, { bg: string; ac: string }> = {
+  zhusha: { bg: '#f6f3ec', ac: '#9c3a2c' },
+  indigo: { bg: '#f4efe4', ac: '#2e5266' },
+  ink: { bg: '#ffffff', ac: '#3b4a58' },
 };
 
 /**
@@ -20,6 +21,7 @@ const SWATCH: Record<ThemeName, { bg: string; ac: string; hint: string }> = {
  * 键盘：Esc 关闭并把焦点还给按钮；点面板外关闭。
  */
 export default function AppearancePicker() {
+  const t = useSiteT();
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeName>(DEFAULT_THEME);
   const [layout, setLayout] = useState<LayoutName>(DEFAULT_LAYOUT);
@@ -71,7 +73,7 @@ export default function AppearancePicker() {
         ref={btnRef}
         type="button"
         className="og-look-btn"
-        aria-label="外观设置"
+        aria-label={t('nav.look.settings')}
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((o) => !o)}
@@ -80,12 +82,12 @@ export default function AppearancePicker() {
           <circle cx="7" cy="7" r="5.5" />
           <path d="M7 1.5a5.5 5.5 0 0 1 0 11z" fill="currentColor" stroke="none" />
         </svg>
-        <span className="og-look-label" aria-hidden="true">外观</span>
+        <span className="og-look-label" aria-hidden="true">{t('nav.look.button')}</span>
       </button>
       {open && (
-        <div className="og-look-panel" id={panelId} role="group" aria-label="外观设置">
+        <div className="og-look-panel" id={panelId} role="group" aria-label={t('nav.look.settings')}>
           <div className="og-look-sec">
-            <span className="og-look-cap" id={`${panelId}-ly`}>版式</span>
+            <span className="og-look-cap" id={`${panelId}-ly`}>{t('nav.look.layout')}</span>
             <div className="og-look-grid2" role="radiogroup" aria-labelledby={`${panelId}-ly`}>
               {LAYOUTS.map((l) => (
                 <button
@@ -102,36 +104,36 @@ export default function AppearancePicker() {
                     <i />
                   </span>
                   <span className="og-look-name">
-                    <span>{l.label}</span>
-                    <span className="og-look-hint">{l.hint}</span>
+                    <span>{t(`nav.look.layouts.${l.name}`)}</span>
+                    <span className="og-look-hint">{t(`nav.look.layoutHints.${l.name}`)}</span>
                   </span>
                 </button>
               ))}
             </div>
           </div>
           <div className="og-look-sec">
-            <span className="og-look-cap" id={`${panelId}-th`}>配色</span>
+            <span className="og-look-cap" id={`${panelId}-th`}>{t('nav.look.theme')}</span>
             <div className="og-look-list" role="radiogroup" aria-labelledby={`${panelId}-th`}>
-              {THEMES.map((t) => (
+              {THEMES.map((th) => (
                 <button
-                  key={t.name}
+                  key={th.name}
                   type="button"
                   role="radio"
-                  aria-checked={theme === t.name}
+                  aria-checked={theme === th.name}
                   className="og-look-opt"
-                  onClick={() => chooseTheme(t.name)}
+                  onClick={() => chooseTheme(th.name)}
                 >
                   <span className="og-look-sw" aria-hidden="true">
-                    <i style={{ background: SWATCH[t.name].bg }} />
-                    <i style={{ background: SWATCH[t.name].ac }} />
+                    <i style={{ background: SWATCH[th.name].bg }} />
+                    <i style={{ background: SWATCH[th.name].ac }} />
                   </span>
-                  <span>{t.label}</span>
-                  <span className="og-look-hint og-look-hint--r">{SWATCH[t.name].hint}</span>
+                  <span>{t(`nav.look.themes.${th.name}`)}</span>
+                  <span className="og-look-hint og-look-hint--r">{t(`nav.look.themeHints.${th.name}`)}</span>
                 </button>
               ))}
             </div>
           </div>
-          <p className="og-look-note">设置保存在本浏览器，全站通用</p>
+          <p className="og-look-note">{t('nav.look.note')}</p>
         </div>
       )}
     </span>

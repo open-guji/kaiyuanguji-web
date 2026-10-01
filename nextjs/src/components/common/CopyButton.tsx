@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface CopyButtonProps {
     text: string;
@@ -8,6 +9,7 @@ interface CopyButtonProps {
 }
 
 export default function CopyButton({ text, label }: CopyButtonProps) {
+    const t = useSiteT();
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
@@ -28,8 +30,8 @@ export default function CopyButton({ text, label }: CopyButtonProps) {
                 className="flex items-center gap-1.5 px-2 py-1 rounded bg-paper/50 hover:bg-border/30 
                    text-secondary hover:text-vermilion transition-all duration-200 
                    border border-border/40 group focus:ring-2 focus:ring-vermilion/20 focus:outline-none"
-                title={`复制 ${label || '内容'}`}
-                aria-label={copied ? '已复制' : `复制 ${label ? `${label}: ` : ''}${text}`}
+                title={t('common.copy.title', { label: label || t('common.copy.defaultLabel') })}
+                aria-label={copied ? t('common.copy.done') : label ? t('common.copy.ariaWithLabel', { label, text }) : t('common.copy.aria', { text })}
             >
                 <span className="font-mono text-secondary/80 group-hover:text-vermilion transition-colors">
                     {text}

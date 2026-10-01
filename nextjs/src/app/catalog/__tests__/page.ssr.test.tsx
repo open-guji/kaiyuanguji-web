@@ -53,7 +53,7 @@ describe('古籍总目 page.ssr', () => {
 
     it('节点第 1 页：canonical 不带 page，标题带分类路径', async () => {
         const m = await meta({ node: 'czhengshi' });
-        expect(m.title).toBe('史部·紀傳類 - 古籍总目');
+        expect(m.title).toBe('史部·纪传类 - 古籍总目');
         expect(m.alternates?.canonical).toBe('/catalog?node=czhengshi');
         expect(m.robots).toBeUndefined();
     });
@@ -61,7 +61,7 @@ describe('古籍总目 page.ssr', () => {
     it('第 2 页：各有 canonical；首屏 HTML 带作品卡、分页与条目链接', async () => {
         const m = await meta({ node: 'czhengshi', page: '2' });
         expect(m.alternates?.canonical).toBe('/catalog?node=czhengshi&page=2');
-        expect(m.title).toBe('史部·紀傳類（第2页） - 古籍总目');
+        expect(m.title).toBe('史部·纪传类（第2页） - 古籍总目');
         const h = await html({ node: 'czhengshi', page: '2' });
         expect(mockPage).toHaveBeenCalledWith('czhengshi', 2);
         expect(h).toContain('href="/item/w21"');

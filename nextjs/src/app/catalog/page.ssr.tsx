@@ -23,6 +23,8 @@ import {
     resolveCatalog,
 } from './catalog-route';
 import CatalogClient from './CatalogClient';
+import { simplifyMetadata } from '@/lib/server/simplify';
+import { getSiteT } from '@/i18n/translate';
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -37,9 +39,9 @@ async function load(sp: Record<string, string | string[] | undefined>) {
     return { tree, r };
 }
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+async function buildMetadata({ searchParams }: Props): Promise<Metadata> {
     const s = await load(await searchParams);
-    if (!s) return { title: '未找到', robots: { index: false, follow: false } };
+    if (!s) return { title: getSiteT('zh-Hans')('seo.notFound'), robots: { index: false, follow: false } };
     const title = catalogTitle(s.r);
     const description = catalogDescription(s.r);
     const canonical = catalogHref(s.r.node.id, s.r.page);
@@ -49,6 +51,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         alternates: { canonical },
         openGraph: { title, description, url: canonical, type: 'website' },
     };
+}
+
+// 服务端直出的 title／meta 一律简体：数据部分（书名、分类、回目、检索词）在这里统一转（overview#337）
+export async function generateMetadata(props: Props): Promise<Metadata> {
+    return simplifyMetadata(await buildMetadata(props));
 }
 
 export default async function CatalogRoute({ searchParams }: Props) {

@@ -8,6 +8,10 @@ jest.mock('next/navigation', () => ({
 
 import HomePage from '../page';
 import { HOME_FEATURES } from '@/components/home/features';
+import { getSiteT } from '@/i18n/translate';
+
+// 首页文字在字典里（overview#337），测试按默认的简体取
+const t = getSiteT('zh-Hans');
 
 describe('首页（N1）', () => {
     beforeEach(() => push.mockClear());
@@ -53,7 +57,7 @@ describe('首页（N1）', () => {
     });
 
     it('只有「古籍元数据」「资源收集」标已上线，其余标规划中；六项标题照用户意见', () => {
-        expect(HOME_FEATURES.map((f) => f.title)).toEqual([
+        expect(HOME_FEATURES.map((f) => t(f.titleKey))).toEqual([
             '古籍元数据',
             '资源收集',
             '图文对读',
@@ -61,12 +65,12 @@ describe('首页（N1）', () => {
             '协同校对',
             '古籍专用模型',
         ]);
-        expect(HOME_FEATURES.filter((f) => f.live).map((f) => f.title)).toEqual(['古籍元数据', '资源收集']);
+        expect(HOME_FEATURES.filter((f) => f.live).map((f) => t(f.titleKey))).toEqual(['古籍元数据', '资源收集']);
         render(<HomePage />);
         expect(screen.getAllByText('已上线')).toHaveLength(2);
         expect(screen.getAllByText('规划中')).toHaveLength(HOME_FEATURES.length - 2);
         // 「资源收集」的说明：收集网上的文字资源和影印资源
-        expect(HOME_FEATURES[1].text).toMatch(/文字资源和影印资源/);
+        expect(t(HOME_FEATURES[1].textKey)).toMatch(/文字资源和影印资源/);
     });
 
     it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页；没有「看一个例子」', () => {

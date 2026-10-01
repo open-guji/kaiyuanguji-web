@@ -22,7 +22,7 @@ describe('book-index generateMetadata', () => {
     it('全栈构建：带检索词的 title 是「<q> - 搜索」（根布局补站名）', async () => {
         process.env.KYG_RENDER_MODE = 'fullstack';
         expect(await meta({ q: '朱熹' })).toEqual({ title: '朱熹 - 搜索' });
-        expect(await meta({ q: ['史記', 'x'] })).toEqual({ title: '史記 - 搜索' });
+        expect(await meta({ q: ['史記', 'x'] })).toEqual({ title: '史记 - 搜索' });
     });
     it('没有检索词、空白检索词、带 id 的详情视图：不设 title', async () => {
         process.env.KYG_RENDER_MODE = 'fullstack';
