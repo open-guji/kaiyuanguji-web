@@ -9,9 +9,8 @@
  *
  * 输出：public/data/pagefind-fulltext/
  *
- * 两种结构都认（overview#307）：旧结构从 draft 仓的 Work/…/collated_edition/ 取章 JSON；
- * 新结构（条目目录有 manifest.json）从文本仓（BOOK_TEXT_DIR，默认 ../../../book-text）取 kind=collated 的
- * 公开版本的章 JSON，链接指向 /read/<id>[/<key>]/<章>。internal 版本不索引。
+ * 只认新结构（overview#307）：条目目录有 manifest.json 的，从文本仓（BOOK_TEXT_DIR，默认 ../../../book-text）取
+ * kind=collated 的公开版本的章 JSON，链接指向 /read/<id>[/<key>]/<章>。internal 版本不索引。
  *
  * 用法：
  *   node scripts/build-pagefind-fulltext.mjs [draft-dir]
@@ -70,37 +69,8 @@ function loadWorkIndex() {
 const workMeta = loadWorkIndex();
 console.log(`Loaded ${workMeta.size} works from index\n`);
 
-// 找所有 Work/.../collated_edition/ 目录，并解析里面的 *.json 取 sections
+// 文本仓里有 manifest.json 的条目目录，取整理本版本的章 JSON
 function collectCollatedJsons() {
-    const result = [];
-    function walk(dir) {
-        for (const name of readdirSync(dir)) {
-            const full = join(dir, name);
-            const st = statSync(full);
-            if (!st.isDirectory()) continue;
-            if (name === 'collated_edition') {
-                for (const f of readdirSync(full)) {
-                    if (!f.endsWith('.json')) continue;
-                    if (f === 'collated_edition_index.json') continue;
-                    const fullPath = join(full, f);
-                    if (statSync(fullPath).isFile()) {
-                        result.push({ workDir: dir, jsonPath: fullPath, jsonName: f });
-                    }
-                }
-            } else {
-                walk(full);
-            }
-        }
-    }
-    for (const top of ['Work', 'Book']) {
-        const p = join(DRAFT_DIR, top);
-        if (existsSync(p)) walk(p);
-    }
-    return result;
-}
-
-// 新结构：文本仓里有 manifest.json 的条目目录，取整理本版本的章 JSON
-function collectNewStructureJsons() {
     const result = [];
     function walk(dir) {
         for (const name of readdirSync(dir)) {
@@ -131,7 +101,7 @@ let totalChars = 0;
 let skippedEmpty = 0;
 let totalWorks = 0;
 
-const collatedJsons = [...collectCollatedJsons(), ...collectNewStructureJsons()];
+const collatedJsons = collectCollatedJsons();
 console.log(`Found ${collatedJsons.length} collated JSON files\n`);
 
 for (const { workDir, jsonPath, jsonName, key, stem } of collatedJsons) {
@@ -159,9 +129,7 @@ for (const { workDir, jsonPath, jsonName, key, stem } of collatedJsons) {
         if (!indexedText) { skippedEmpty++; continue; }
 
         const result = await index.addCustomRecord({
-            url: key
-                ? `/read/${workId}${key === 'default' ? '' : `/${key}`}/${stem}?sec=${i}`
-                : `/book-index?id=${workId}&juan=${encodeURIComponent(jsonName)}&sec=${i}`,
+            url: `/read/${workId}${key === 'default' ? '' : `/${key}`}/${stem}?sec=${i}`,
             content: indexedText,
             language: 'zh',
             // meta 保存**原始繁体**（不转换）供 UI 展示

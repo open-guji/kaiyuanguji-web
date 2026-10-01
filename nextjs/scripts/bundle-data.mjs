@@ -8,10 +8,9 @@
  * - L2: public/data/tiyao/juan-{start}-{end}.json — 整理本提要（按 10 卷分组）
  * - meta.json — 轻量计数（< 1 KB），HomePage 统计用
  * - search/* — MiniSearch 倒排索引，搜索 worker 用
- * - index/full_text/{0-f}.json — book-text 的 Work 全文清单原样拷贝（16 分片，
- *   供 BundleStorage.getWorkFullTextList 用）；每个 Work 的全文正文走 L1 同一套
- *   items/<id>/ 复制（full_text/<key>/index.json 与各章，.md 改 .txt），
- *   与 Book 全文（items/<id>/full_text/index.json，无 <key> 层）同规则
+ * - items/<id>/ — book-text 里一个条目的文本目录整体复制：manifest.json、<key>/index.json、各章（.md 改 .txt）、
+ *   章的 .json；私有（visibility=internal）的不进公开产物（overview#307，规格 阅读文本.md）
+ * - index/texts/{0-f}.json — 各条目 manifest 汇总出的全局清单（滤掉 internal 版本）
  *
  * 用法：
  *   node scripts/bundle-data.mjs                          # 默认 ../book-index-draft
@@ -25,7 +24,7 @@ import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
-import { bookFirstChapter, bundleRead, loadWorkFullTextLists, workFullTextPick } from './build-read-index.mjs';
+import { bundleRead } from './build-read-index.mjs';
 import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
@@ -85,12 +84,11 @@ function ensureDir(dir) {
     mkdirSync(dir, { recursive: true });
 }
 
-// 复制 items/{id}/ 到 public/data/items/{id}/，并把 collated_edition/text/*.md
-// 重命名为 *.txt（EdgeOne 默认只对 text/plain 等做 wire-gzip，不对 text/markdown
-// 压缩，1MB+ 的整理本文本不压缩会拖慢国内移动网络的加载）。
-// 源仓库 book-index-draft 仍保留 .md 后缀，仅打包产物改名。
-// skip(relPath)：可选，相对 src 的路径（'/' 分隔）返回 true 就不拷（新结构的内部版本，见 copyItemDir）；
-// 不传＝与旧行为逐字节一致。
+// 复制 items/{id}/ 到 public/data/items/{id}/，并把章的 *.md 重命名为 *.txt
+// （EdgeOne 默认只对 text/plain 等做 wire-gzip，不对 text/markdown 压缩，
+// 1MB+ 的章文本不压缩会拖慢国内移动网络的加载）。
+// 源仓库 book-text 仍保留 .md 后缀，仅打包产物改名。
+// skip(relPath)：可选，相对 src 的路径（'/' 分隔）返回 true 就不拷（内部版本，见 copyItemDir）。
 function copyDirRecursive(src, dest, skip = null, rel = '') {
     mkdirSync(dest, { recursive: true });
     for (const name of readdirSync(src)) {
@@ -116,8 +114,8 @@ function copyDirRecursive(src, dest, skip = null, rel = '') {
 
 /**
  * 把文本仓里一个条目的目录拷进 items/<id>/。
- * 旧结构（没有 manifest.json）：整个目录原样拷，md 改 txt，与以前逐字节一致。
- * 新结构（有 manifest.json，overview#307）：同样整体拷，但私有的不进公开产物——
+ * 没有 manifest.json 的目录（只有 fragments／sources／lineage_graph.json 这类非文本资产）：整个目录原样拷。
+ * 有 manifest.json（overview#307）：同样整体拷，但私有的不进公开产物——
  *   manifest 顶层 visibility:internal → 整个条目目录都不拷；
  *   某个 version 标 internal → 不拷它的目录，公开版 manifest.json 里也去掉这一项（没去掉任何版本则原样拷字节）；
  *   manifest 没列的文本版本目录（顶层目录里直接有 index.json、名字像版本 key）→ 不拷；
@@ -239,8 +237,6 @@ function bundleL1() {
     if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
     if (existsSync(legacyChunksDir)) rmSync(legacyChunksDir, { recursive: true });
     ensureDir(entryDir);
-    // 站内全文清单：给 Work 的条目 JSON 注入 has_site_fulltext（overview#306）
-    const workFullTexts = loadWorkFullTextLists(TEXT_DIR);
 
     for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
         const items = index[typeName];
@@ -258,11 +254,8 @@ function bundleL1() {
                     if (item.has_collated) detail.has_collated = true;
                     if (item.has_text) detail.has_text = true;
                     if (item.has_image) detail.has_image = true;
-                    // has_text 只表示「有外部文本资源」，不代表站内有正文；站内真有全文（book-text/index/full_text
-                    // 里有非 Book 所有、total_chapters>0 的条目）才标 has_site_fulltext，阅读入口判断用它（overview#306）
-                    if (typeName === 'works' && workFullTextPick(workFullTexts.get(id))) detail.has_site_fulltext = true;
-                    // 新结构（有 manifest.json）：text_count／text_kinds 取代上面各种 has_* 标记（overview#307，规格 §四）。
-                    // 只认可公开且章目录非空的版本；旧结构的条目不加这两个字段，产物不变
+                    // has_text 只表示「有外部文本资源」，不代表站内有正文。站内有几份可读文本看 text_count／text_kinds
+                    // （有 manifest.json，overview#307，规格 §四）：只认可公开且章目录非空的版本；没有文本的条目不加这两个字段
                     const newText = newStructureReadable(join(TEXT_DIR, dirname(path), id));
                     if (newText) {
                         detail.text_count = newText.versions.length;
@@ -275,11 +268,6 @@ function bundleL1() {
                     //   _isDraft  —— item._root === 'draft'（production 条目应链到 book-index）
                     detail._path = item.path;
                     detail._isDraft = item._root !== 'official';
-                    // has_full_text：index 里没有此 flag，直接探测 Book/<id>/full_text/index.json，
-                    // 且 chapters 非空（与阅读索引 bookFirstChapter、阅读页 reader-check 同一判据，overview#306）
-                    if (item.type === 'book' || typeName === 'books') {
-                        if (bookFirstChapter(join(TEXT_DIR, dirname(path), id))) detail.has_full_text = true;
-                    }
                     const json = JSON.stringify(detail);
                     writeIfChanged(join(entryDir, `${id}.json`), json);
                     totalEntries++;
@@ -289,7 +277,7 @@ function bundleL1() {
                 }
             }
 
-            // 关联文件（collated_edition / fragments / full_text / sources）
+            // 关联文件（文本 manifest.json＋<key>/、fragments、sources）
             // → 直接复制到 items/{id}/ 下。**根是 TEXT_DIR，不是 baseDir**：
             // 拆分之后资产不在元数据仓里，用 baseDir 则一个也找不着，且
             // existsSync 为假就静默跳过——不报错，只是 items/ 空了。
@@ -406,21 +394,9 @@ function bundleMeta() {
     );
 }
 
-// ─── Work 全文清单：book-text/index/full_text/*.json 原样拷贝 ───
-//
-// 这是全局清单（按 workId 首字节 hex 分 16 片，记录每个 Work 有哪些全文来源：
-// key/version_label/source_name/total_chapters 等），不含正文，供
-// BundleStorage.getWorkFullTextList 一次性判断「哪些 Work 有全文」。
-// 正文本身（index.json 与各章）在 bundleL1() 的 items/{id}/ 复制里已经带过去
-// （full_text/<key>/ 整目录递归复制，.md 改 .txt，与 collated_edition 同一套
-// 代码路径，不需要专门为 Work 全文另写复制逻辑）——此前缺的只是这份全局清单，
-// 没有它 BundleStorage 就无从得知该向哪个 Work 的 items/ 下取 full_text。
-// 不需要合并 draft/production：这份清单只按 book-text 一个仓的内容为准。
-
 /**
  * 新结构的全局清单 index/texts/{0-f}.json（由各条目 manifest 汇总生成，overview#307）：
  * 有就拷到产物 index/texts/（条目里有 internal 版本的过滤掉，没有需要过滤的原样拷字节）；没有这个目录就跳过。
- * 与旧的 index/full_text 并存，过渡期两套都认。
  */
 function bundleTextsIndex(index) {
     const srcDir = join(TEXT_DIR, 'index', 'texts');
@@ -456,28 +432,6 @@ function bundleTextsIndex(index) {
         shardCount++;
     }
     console.log(`TXT  ${shardCount} index/texts 分片${filtered ? `（${filtered} 片去掉了 internal 版本）` : ''}`);
-}
-
-function bundleWorkFullTextIndex() {
-    const srcDir = join(TEXT_DIR, 'index', 'full_text');
-    if (!existsSync(srcDir)) {
-        console.log('WFT  skipped (book-text 无 index/full_text/)');
-        return;
-    }
-    const destDir = join(OUT_DIR, 'index', 'full_text');
-    ensureDir(destDir);
-    let shardCount = 0;
-    let totalBytes = 0;
-    for (let i = 0; i < NUM_SHARDS; i++) {
-        const fname = `${i.toString(16)}.json`;
-        const srcPath = join(srcDir, fname);
-        if (!existsSync(srcPath)) continue;
-        const buf = readFileSync(srcPath);
-        writeIfChanged(join(destDir, fname), buf);
-        shardCount++;
-        totalBytes += buf.length;
-    }
-    console.log(`WFT  ${shardCount} index/full_text 分片 (${(totalBytes / 1024).toFixed(1)} KB)`);
 }
 
 // ─── 复制独立数据文件（resource.json, recommended.json, promotions.json） ───
@@ -686,7 +640,6 @@ bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonom
 // 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
 bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
 bundleL2();
-bundleWorkFullTextIndex();
 bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();
 bundleVersion();

@@ -149,37 +149,17 @@ export function extractRefs(entry, fields = REF_FIELDS) {
     return out;
 }
 
-// ─── 全文／整理本：index.json 登记了哪些文件 ───
+// ─── 阅读文本：<key>/index.json 登记了哪些文件 ───
 
 /**
- * 给一个 owner 的 text-manifest 条目（relPath → hash8），列出所有 index.json
- * 及它们登记的文件（relPath，已按 bundle-data.mjs 的规则把 .md 改 .txt）。
+ * 一份 <key>/index.json 登记了哪些文件（relPath，已按 bundle-data.mjs 的规则把 .md 改 .txt）。
  * 调用方负责取 index.json 内容，这里只接受已解析的对象：
- *   indexes: [{ path, doc }]
- * → [{ index, registered: [relPath...], format }]
+ * → { format, registered: [relPath...], optional: [relPath...] }（optional：has_json 章的 md，有就算登记过、没有不算缺）
  */
 export function registeredTextFiles(indexPath, doc) {
     const dir = indexPath.slice(0, indexPath.lastIndexOf('/') + 1);
     const out = [];
-    if (indexPath.startsWith('collated_edition/')) {
-        if (Array.isArray(doc?.juan_files)) {
-            for (const f of doc.juan_files) if (typeof f === 'string') out.push(`${dir}${f}`);
-            return { format: 'collated.juan_files', registered: out };
-        }
-        return { format: 'collated.unknown', registered: out };
-    }
-    if (indexPath.startsWith('full_text/')) {
-        if (Array.isArray(doc?.chapters)) {
-            for (const c of doc.chapters) {
-                const f = typeof c === 'string' ? c : c?.file;
-                if (typeof f !== 'string') continue;
-                out.push(`${dir}${f.endsWith('.md') ? f.slice(0, -3) + '.txt' : f}`);
-            }
-            return { format: 'full_text.chapters', registered: out };
-        }
-        return { format: 'full_text.unknown', registered: out };
-    }
-    // 新结构（overview#307）：<key>/index.json，chapters[{ file: '001', has_json }]，章文件 NNN.md→NNN.txt，has_json 的另有 NNN.json
+    // <key>/index.json（overview#307），chapters[{ file: '001', has_json }]，章文件 NNN.md→NNN.txt，has_json 的另有 NNN.json
     if (newStructureKey(indexPath)) {
         const optional = [];
         if (Array.isArray(doc?.chapters)) {
@@ -197,18 +177,14 @@ export function registeredTextFiles(indexPath, doc) {
     return { format: 'unknown', registered: out };
 }
 
-/** 新结构章目录路径 <key>/index.json → key；不是（或 key 不合法）返回 null。旧结构的 collated_edition／full_text 含下划线，不会撞 */
+/** 章目录路径 <key>/index.json → key；不是（或 key 不合法）返回 null */
 export function newStructureKey(p) {
     const m = /^([a-z][a-z0-9-]*)\/index\.json$/.exec(p);
     return m && isTextKey(m[1]) ? m[1] : null;
 }
 
 export function isTextIndexPath(p) {
-    return p === 'collated_edition/index.json'
-        || p === 'collated_edition/collated_edition_index.json'
-        || p === 'full_text/index.json'
-        || /^full_text\/[^/]+\/index\.json$/.test(p)
-        || newStructureKey(p) !== null;
+    return newStructureKey(p) !== null;
 }
 
 // ─── 客气的 HTTP ───
@@ -635,9 +611,9 @@ export async function runDq(opts = {}) {
                     }
                 }
             }
-            // 没被任何 index 登记的正文文件（pages.tsv、整理本 text/*.txt 这类旁路文件不算）
+            // 没被任何 index 登记的正文文件（pages.tsv 这类旁路文件不算）
             const unregistered = Object.keys(files).filter((p) => !isTextIndexPath(p) && p !== 'manifest.json' && !registeredAll.has(p)
-                && !p.endsWith('.tsv') && !p.startsWith('collated_edition/text/'));
+                && !p.endsWith('.tsv'));
             T.unregisteredFiles += unregistered.length;
             if (unregistered.length && indexPaths.length) add('info', 'text-unregistered', `${owner} 有 ${unregistered.length} 个文件没被 index 登记`, { examples: unregistered.slice(0, 5) });
         });

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkReadLinks, fullTextShardOf, pickSome, renderSummary } from '../read-links-check.mjs';
+import { checkReadLinks, pickSome, renderSummary } from '../read-links-check.mjs';
 import { mulberry32 } from '../dq-lib.mjs';
 
 const DATA = 'https://data.test';
@@ -19,16 +19,17 @@ function fakeFetch(files, pages) {
 }
 
 function baseFiles() {
-    const shard = fullTextShardOf(WORK);
+    const manifest = (id) => ({ id, versions: [{ key: 'default', kind: 'transcription' }] });
     return {
         'read/tree.json': [{ id: 'n1', label: '史部' }],
         'read/n1/1.json': [{ id: WORK, title: '禮記' }],
         'read/featured.json': { collated: [], books: [{ id: BOOK, title: '本' }] },
-        [`index/full_text/${shard}.json`]: { [WORK]: [{ key: 'k1', owner_type: 'Work', primary: true, total_chapters: 2 }] },
-        [`items/${WORK}/full_text/k1/index.json`]: { chapters: [{ file: '001.md' }] },
-        [`items/${WORK}/full_text/k1/001.txt`]: '正文',
-        [`items/${BOOK}/full_text/index.json`]: { chapters: [{ file: '001.md' }] },
-        [`items/${BOOK}/full_text/001.txt`]: '正文',
+        [`items/${WORK}/manifest.json`]: manifest(WORK),
+        [`items/${WORK}/default/index.json`]: { chapters: [{ n: 1, file: '001', has_json: false }] },
+        [`items/${WORK}/default/001.txt`]: '正文',
+        [`items/${BOOK}/manifest.json`]: manifest(BOOK),
+        [`items/${BOOK}/default/index.json`]: { chapters: [{ n: 1, file: '001', has_json: false }] },
+        [`items/${BOOK}/default/001.txt`]: '正文',
     };
 }
 const basePages = () => ({ [`/read/${WORK}`]: 'ok', [`/read/${BOOK}`]: 'ok' });
@@ -41,7 +42,7 @@ test('全部可读：页面与数据都 200，无失败', async () => {
 
 test('页面 404 与首章缺失都会报', async () => {
     const files = baseFiles();
-    delete files[`items/${WORK}/full_text/k1/001.txt`];
+    delete files[`items/${WORK}/default/001.txt`];
     const pages = basePages();
     delete pages[`/read/${BOOK}`];
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, pages), seed: 1 });
@@ -50,25 +51,11 @@ test('页面 404 与首章缺失都会报', async () => {
     assert.ok(r.failures.some((f) => f.id === BOOK && f.what === '阅读页'));
 });
 
-test('Work 在 index/full_text 里没有站内条目（只有 Book 所有）也报', async () => {
+test('阅读首页的卡片没有 manifest.json（404）→ 记失败', async () => {
     const files = baseFiles();
-    files[`index/full_text/${fullTextShardOf(WORK)}.json`] = { [WORK]: [{ key: 'k1', owner_type: 'Book' }] };
+    delete files[`items/${WORK}/manifest.json`];
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, basePages()), seed: 1 });
-    assert.ok(r.failures.some((f) => f.id === WORK && /没有/.test(f.detail)));
-});
-
-test('整理本卡：查 collated_edition 目录与首卷', async () => {
-    const files = baseFiles();
-    files['read/featured.json'] = { collated: [{ id: WORK, collated: true }], books: [] };
-    files['read/n1/1.json'] = [];
-    files[`items/${WORK}/collated_edition/index.json`] = { juan_files: ['juan/001.json'] };
-    const pages = { [`/read/${WORK}`]: 'ok' };
-    let r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, pages), seed: 1 });
-    assert.equal(r.failures.length, 1);
-    assert.match(r.failures[0].detail, /juan\/001\.json/);
-    files[`items/${WORK}/collated_edition/juan/001.json`] = {};
-    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, pages), seed: 1 });
-    assert.deepEqual(r.failures, []);
+    assert.ok(r.failures.some((f) => f.id === WORK && /manifest\.json → HTTP 404/.test(f.detail)));
 });
 
 test('pickSome 带种子可复现；summary 列出失败', () => {
@@ -140,7 +127,7 @@ test('新结构：每个版本的目录、首章（has_json 的含 json）和页
     assert.deepEqual(r.failures, []);
 });
 
-test('新结构：缺首章 json、缺非主版本页面、目录 chapters 为空都报；旧结构 404 的 manifest 不算失败', async () => {
+test('新结构：缺首章 json、缺非主版本页面、目录 chapters 为空都报', async () => {
     const files = newStructureFiles();
     delete files[`items/${WORK}/default/001.json`];
     files[`items/${WORK}/wikisource/index.json`] = { chapters: [] };
@@ -150,7 +137,6 @@ test('新结构：缺首章 json、缺非主版本页面、目录 chapters 为�
     assert.match(details, /default\/001\.json/);
     assert.match(details, /\/read\/[^\s]+\/wikisource/);
     assert.match(details, /wikisource\/index\.json 的 chapters 为空/);
-    // 旧结构的 baseFiles 没有 manifest.json，前面的旧结构用例已覆盖「不算失败」
 });
 
 test('新结构：manifest 带 internal、versions[0] 不是 default、key 不合法，都报', async () => {
@@ -165,7 +151,7 @@ test('新结构：manifest 带 internal、versions[0] 不是 default、key 不�
     assert.match(details, /不合法的版本 key/);
 });
 
-test('manifest 请求返回 404 才当旧结构；5xx 记失败、不往旧路径上走', async () => {
+test('manifest 请求 5xx 记失败，其余卡照常通过', async () => {
     const files = baseFiles();
     const pages = basePages();
     const inner = fakeFetch(files, pages);
@@ -175,6 +161,15 @@ test('manifest 请求返回 404 才当旧结构；5xx 记失败、不往旧路�
     };
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flaky, seed: 1 });
     assert.ok(r.failures.some((f) => f.id === WORK && /manifest\.json → HTTP 503/.test(f.detail)));
-    // 其余（BOOK 的旧结构）照常通过
     assert.ok(!r.failures.some((f) => f.id === BOOK));
+});
+
+test('has_json 的首章只有 json、没有 md → 不算失败；没有 has_json 缺 md → 报', async () => {
+    const files = newStructureFiles();
+    delete files[`items/${WORK}/default/001.txt`]; // default 的首章 has_json:true，md 可缺
+    let r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1 });
+    assert.deepEqual(r.failures, []);
+    delete files[`items/${WORK}/wikisource/001.txt`]; // wikisource 没有 has_json，md 必须在
+    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1 });
+    assert.ok(r.failures.some((f) => /wikisource\/001\.txt/.test(f.detail)));
 });

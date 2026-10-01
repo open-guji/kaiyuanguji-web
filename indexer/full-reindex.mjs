@@ -12,9 +12,9 @@
  * 设计：
  *   - 流式遍历 {draft,production}/index/{books,works,entities}/{0-f}.json
  *   - 每 1000 doc 推一批；最多 3 个 in-flight task
- *   - has_collated 的 work 同时把整理本正文推 juans index —— 正文在 **book-text**
- *     仓（2026-08-26 拆出），不在元数据仓。此前本脚本仍到元数据仓找
- *     collated_edition/，拆分后那里永远是空的，juans 索引因此为 0（2026-09-06 修）
+ *   - 有整理本（manifest.json 里有 kind=collated 的版本）的 work 同时把整理本正文推 juans index —— 正文在 **book-text**
+ *     仓（2026-08-26 拆出），不在元数据仓；只认新结构 manifest.json＋<key>/（overview#307，旧的
+ *     collated_edition/ 已于 2026-09-30 迁移掉）
  *   - 推完所有数据后再 PATCH settings（避免索引时反复 reindex）
  *
  * 两个数据仓缺一不可（2026-08-25 修）：升格（promote）会把条目搬到
@@ -245,48 +245,49 @@ function juanDoc(workId, juanName, clean) {
 }
 
 /**
- * 一部整理本的各卷正文 → juans 文档。
+ * 一部整理本的各章正文 → juans 文档。
  *
- * 正文在 book-text：`{TEXT_DIR}/Work/c1/c2/c3/{id}/collated_edition/`。
- * 优先读派生的 `text/*.md`；没有 md 时退到卷档 `juan/NNN.json`，拼各节
- * title + content。两种来源都没有就返回空。
+ * 正文在 book-text：`{TEXT_DIR}/Work/c1/c2/c3/{id}/`，只认新结构（overview#307）：
+ * `manifest.json` 里 kind=collated 的公开版本（主版本 default 或别的 key），章目录 `<key>/index.json` 的 chapters
+ * （`file` 不带扩展名，如 `001`）。每章优先读 `<key>/NNN.md`；没有 md 时退到 `<key>/NNN.json`（has_json），
+ * 拼各节 title + content。两种来源都没有就跳过这一章。
  */
+const TEXT_KEY_RE = /^[a-z][a-z0-9-]*$/;
+function readJsonSafe(path) {
+    try { return JSON.parse(readFileSync(path, 'utf-8')); } catch { return null; }
+}
 function buildJuanDocs(workEntry) {
     if (!TEXT_DIR) return [];
     const workId = workEntry.id;
     const relPath = workEntry.path || '';
     if (!relPath) return [];
-    const ceDir = join(TEXT_DIR, dirname(relPath), workId, 'collated_edition');
-    if (!existsSync(ceDir)) return [];
+    const itemDir = join(TEXT_DIR, dirname(relPath), workId);
+    const manifest = readJsonSafe(join(itemDir, 'manifest.json'));
+    if (!manifest || manifest.visibility === 'internal' || !Array.isArray(manifest.versions)) return [];
     const docs = [];
-
-    const textDir = join(ceDir, 'text');
-    let mdFiles = [];
-    try { if (existsSync(textDir)) mdFiles = readdirSync(textDir).filter(f => f.endsWith('.md')).sort(); } catch { mdFiles = []; }
-    if (mdFiles.length) {
-        for (const fname of mdFiles) {
-            let text;
-            try { text = readFileSync(join(textDir, fname), 'utf-8'); } catch { continue; }
-            const clean = text.replace(MD_RE, ' ').replace(/\s+/g, ' ').trim();
+    for (const v of manifest.versions) {
+        if (v?.kind !== 'collated' || v.visibility === 'internal' || typeof v.key !== 'string' || !TEXT_KEY_RE.test(v.key)) continue;
+        const keyDir = join(itemDir, v.key);
+        const chapters = readJsonSafe(join(keyDir, 'index.json'))?.chapters;
+        if (!Array.isArray(chapters)) continue;
+        for (const c of chapters) {
+            const stem = typeof c?.file === 'string' ? c.file.replace(/\.(md|txt|json)$/, '') : '';
+            if (!stem || !/^[0-9A-Za-z_-]+$/.test(stem)) continue;
+            const name = c.title || stem;
+            let clean = '';
+            try {
+                const mdPath = join(keyDir, `${stem}.md`);
+                if (existsSync(mdPath)) clean = readFileSync(mdPath, 'utf-8').replace(MD_RE, ' ').replace(/\s+/g, ' ').trim();
+            } catch { clean = ''; }
+            if (!clean && c.has_json) {
+                const secs = readJsonSafe(join(keyDir, `${stem}.json`))?.sections;
+                if (Array.isArray(secs)) {
+                    clean = secs.map(sec => [sec?.title, sec?.content].filter(Boolean).join(' ')).join(' ').replace(/\s+/g, ' ').trim();
+                }
+            }
             if (!clean) continue;
-            docs.push(juanDoc(workId, basename(fname, '.md'), clean));
+            docs.push(juanDoc(workId, name, clean));
         }
-        return docs;
-    }
-
-    const juanDir = join(ceDir, 'juan');
-    if (!existsSync(juanDir)) return [];
-    let jsonFiles;
-    try { jsonFiles = readdirSync(juanDir).filter(f => f.endsWith('.json')).sort(); } catch { return []; }
-    for (const fname of jsonFiles) {
-        let juan;
-        try { juan = JSON.parse(readFileSync(join(juanDir, fname), 'utf-8')); } catch { continue; }
-        const secs = Array.isArray(juan?.sections) ? juan.sections : [];
-        const clean = secs
-            .map(s => [s?.title, s?.content].filter(Boolean).join(' '))
-            .join(' ').replace(/\s+/g, ' ').trim();
-        if (!clean) continue;
-        docs.push(juanDoc(workId, juan?.title || basename(fname, '.json'), clean));
     }
     return docs;
 }
@@ -569,7 +570,8 @@ async function main() {
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
                 if (detail._promoted_to) continue;
                 if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
-                if (doJuans && entry.has_collated) {
+                // 不再看 has_collated 标记（它来自数据仓、会滞后）：有没有整理本版本以文本仓的 manifest.json 为准
+                if (doJuans) {
                     for (const j of buildJuanDocs(entry)) {
                         yield { kind: 'juan', doc: j };
                     }
