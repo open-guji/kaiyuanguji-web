@@ -18,7 +18,7 @@ const TREE: CatalogNode[] = [
     {
         id: 'cshi', label: '史部', count: 45,
         children: [
-            { id: 'czhengshi', label: '正史類', count: 21 },
+            { id: 'czhengshi', label: '紀傳類', count: 21 },
             { id: 'cdili', label: '地理類', count: 4, children: [{ id: 'cdu', label: '都會郡縣之屬', count: 1 }] },
         ],
     },
@@ -76,9 +76,9 @@ describe('canonical 与标题', () => {
     it('标题带分类路径与页码', () => {
         const r1 = resolveCatalog(TREE, { node: 'czhengshi', page: 1 })!;
         const r2 = resolveCatalog(TREE, { node: 'czhengshi', page: 2 })!;
-        expect(catalogTitle(r1)).toBe('史部·正史類 - 古籍总目');
-        expect(catalogTitle(r2)).toBe('史部·正史類（第2页） - 古籍总目');
-        expect(catalogDescription(r2)).toBe('古籍总目 史部 › 正史類：共 21 部作品，第 2／2 页。');
+        expect(catalogTitle(r1)).toBe('史部·紀傳類 - 古籍总目');
+        expect(catalogTitle(r2)).toBe('史部·紀傳類（第2页） - 古籍总目');
+        expect(catalogDescription(r2)).toBe('古籍总目 史部 › 紀傳類：共 21 部作品，第 2／2 页。');
         expect(catalogDescription(resolveCatalog(TREE, { node: 'unclassified', page: 1 })!)).toBe('古籍总目 未分類：共 20 部作品。');
     });
 });
