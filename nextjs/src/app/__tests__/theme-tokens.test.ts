@@ -130,4 +130,20 @@ describe('v4 墨主题与版式令牌', () => {
             }
         });
     });
+
+    describe('与组件库同名同值（本站不引 book-index-ui 的 variables.css，漏一个界栏下就出不来，overview#322）', () => {
+        const bimCss = readFileSync(join(process.cwd(), 'node_modules/book-index-ui/dist/book-index-ui.css'), 'utf8');
+        const vars = (body: string) => Object.fromEntries(
+            [...body.matchAll(/(--bim-fr-[\w-]+):\s*([^;]+);/g)].map(([, k, v]) => [k, v.trim()]),
+        );
+        const pick = (src: string, re: RegExp) => vars([...src.matchAll(re)][0]?.[1] ?? '');
+        const ROOT = /:root \{([^}]*--bim-fr-bd[^}]*)\}/g;
+        const BOXED = /:root\[data-layout="boxed"\] \{([^}]*)\}/g;
+
+        it.each([['疏朗（:root）', ROOT], ['界栏（boxed）', BOXED]])('%s：组件库的每个 --bim-fr-* 本站都有，取值一致', (_, re) => {
+            const lib = pick(bimCss, re);
+            expect(Object.keys(lib).length).toBeGreaterThan(20);
+            expect(pick(css, re)).toMatchObject(lib);
+        });
+    });
 });
