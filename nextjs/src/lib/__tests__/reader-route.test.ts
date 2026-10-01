@@ -94,6 +94,16 @@ describe('readerVersionName（页面上的版本名：默认版本不写，非�
         expect(readerVersionName({ key: 'x', label: '全文', source_name: '全文' })).toBeUndefined();
         expect(readerVersionName(undefined)).toBeUndefined();
     });
+    it('有 edition_label 时写「版本名 · 来源名」，默认版本仍不写（overview#307）', () => {
+        expect(readerVersionName({ key: 'kanripo', label: 'Kanripo', edition_label: '四部叢刊本' })).toBe('四部叢刊本 · Kanripo');
+        expect(readerVersionName({ key: 'wikisource', label: '維基文庫', edition_label: ' 文淵閣四庫全書本 ' })).toBe('文淵閣四庫全書本 · 維基文庫');
+        expect(readerVersionName({ key: 'x', label: '转录全文', source_name: '維基文庫', edition_label: '四部叢刊本' })).toBe('四部叢刊本 · 維基文庫');
+        expect(readerVersionName({ key: 'default', label: 'Kanripo', edition_label: '四部叢刊本' })).toBeUndefined();
+        // 空白等于没有；与来源同名不重复；没有来源名时只写版本名
+        expect(readerVersionName({ key: 'kanripo', label: 'Kanripo', edition_label: '  ' })).toBe('Kanripo');
+        expect(readerVersionName({ key: 'kanripo', label: 'Kanripo', edition_label: 'Kanripo' })).toBe('Kanripo');
+        expect(readerVersionName({ key: 'x', label: '整理本', edition_label: '四部叢刊本' })).toBe('四部叢刊本');
+    });
 });
 
 describe('readerTitle', () => {

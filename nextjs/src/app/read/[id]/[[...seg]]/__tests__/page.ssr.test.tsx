@@ -28,6 +28,8 @@ const MANIFEST = {
     versions: [
         { key: 'default', kind: 'collated', label: '整理本', source: 'collated' },
         { key: 'wikisource', kind: 'transcription', label: '維基文庫', source: 'wikisource' },
+        // 带版本名（edition_label，overview#307）
+        { key: 'kanripo', kind: 'transcription', label: 'Kanripo', source: 'kanripo', edition_label: '四部叢刊本' },
     ],
 };
 const FILES: Record<string, unknown> = {
@@ -38,6 +40,7 @@ const FILES: Record<string, unknown> = {
     'items/d59f2evysmww/manifest.json': { id: 'd59f2evysmww', versions: [{ key: 'default', kind: 'transcription', label: '維基文庫', source_name: '維基文庫' }] },
     'items/d59f2evysmww/default/index.json': { chapters: [{ n: 1, file: '001', title: '伊尹' }] },
     [`items/${ZHIZHAI}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '' }, { n: 2, file: '002', title: '卷二' }] },
+    [`items/${ZHIZHAI}/kanripo/index.json`]: { chapters: [{ n: 1, file: '001', title: '卷一' }] },
 };
 
 async function meta(seg: string[] | undefined, id = ZHIZHAI) {
@@ -89,6 +92,13 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         const m = await meta(['wikisource', '002']);
         expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/wikisource/002`);
         expect(m.title).toBe('直齋書錄解題 · 卷二 · 維基文庫');
+    });
+
+    it('版本有 edition_label：title、og:title、description 写「版本名 · 来源名」（overview#307）', async () => {
+        const m = await meta(['kanripo']);
+        expect(m.title).toBe('直齋書錄解題 · 卷一 · 四部叢刊本 · Kanripo');
+        expect((m.openGraph as { title?: string }).title).toBe(m.title);
+        expect(String(m.description)).toContain('四部叢刊本 · Kanripo');
     });
 
     it('地址里写了 default：308 到不带 default 的形式，元数据与页面都一样', async () => {
