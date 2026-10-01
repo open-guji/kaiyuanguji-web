@@ -182,7 +182,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
 
     // ── 「阅读全文」主按钮 → 阅读页（地址约定见 lib/reader-route.ts，新结构路径式 URL，overview#307） ──
     // 条目 JSON 由打包注入 text_count（有几份可读文本，见 scripts/bundle-data.mjs）：没有就不出按钮。
-    // bim 的 BookDetailLayout 仍按旧目录探测 ctx.kind，迁移后旧目录没了，所以这里不看 ctx.kind、只看 text_count。
+    // bim 0.30 起 BookDetailLayout 也只看 text_count（ctx.kind 仅为 'text' | null），版本页回目网格由 manifest＋默认版本目录取。
     // 版本页回目网格的每一回（ctx.juan，章文件名去扩展名）直接打开那一章。
     const readLink = useCallback((ctx: ReadLinkContext) => {
         const textCount = (ctx.detail as { text_count?: number } | undefined)?.text_count;
