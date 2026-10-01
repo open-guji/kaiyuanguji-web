@@ -46,7 +46,7 @@ it('onReportError 打开「内容有误」弹窗，带条目 id、「书名 · �
         });
     });
     expect(open).toHaveBeenCalledWith({
-        context: { resourceId: ZHIZHAI, label: '直齋書錄解題 · 整理本 · 卷11', quote: '易者象也', anchor: 'rd-e-3' },
+        context: { resourceId: ZHIZHAI, label: '直齋書錄解題 · 卷11', quote: '易者象也', anchor: 'rd-e-3' },
         type: 'bug',
     });
 });

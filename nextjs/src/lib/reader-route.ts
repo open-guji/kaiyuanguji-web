@@ -95,8 +95,23 @@ export function chapterFallbackLabel(chapter: string): string {
 }
 
 /**
+ * 页面上给读者看的版本名（<title>、og:title、描述、反馈标签）：**默认版本不写**，非默认版本只写来源名（如「維基文庫」）。
+ * 用户 10-01 定：页面上不再出现「整理本」「转录全文」「全文」这类类别词，统一叫「文本」；版本下拉也只写来源。
+ * 数据里的版本 label 本就只写来源，这里再兜一道：若 label 是类别词就改用 source_name，都没有就不写。
+ */
+const CATEGORY_WORD = /^(整理本|整理|转录全文|轉錄全文|转录|轉錄|全文|文本)$/;
+export function readerVersionName(v?: { key?: string; label?: string; source_name?: string } | null): string | undefined {
+    if (!v || !v.key || v.key === 'default') return undefined;
+    for (const cand of [v.label, v.source_name]) {
+        const s = cand?.trim();
+        if (s && !CATEGORY_WORD.test(s)) return s;
+    }
+    return undefined;
+}
+
+/**
  * 阅读页 <title>：「书名 · 章名 · 版本名」。
- * chapterTitle 是目录里的章名（如红楼梦的「第三回」），没有就用「卷N」；版本名只写来源（整理本／維基文庫…）。
+ * chapterTitle 是目录里的章名（如红楼梦的「第三回」），没有就用「卷N」；版本名用 readerVersionName（默认版本不写、非默认只写来源）。
  */
 export function readerTitle(bookTitle: string, chapter: string | undefined, chapterTitle?: string, versionLabel?: string): string {
     return [bookTitle, chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel?.trim() ?? '']

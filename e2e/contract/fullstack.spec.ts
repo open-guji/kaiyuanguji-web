@@ -308,8 +308,8 @@ test.describe('新架构：阅读页 /read/<id>[/<key>][/<章>]（overview#307�
         expect(res.status(), `${path} 应直接 200`).toBe(200);
         const html = await res.text();
         const title = decode(html.match(/<title>([^<]*)<\/title>/i)?.[1] ?? '');
-        expect(title, '<title> 应含书名与版本名').toContain(C.title);
-        expect(title).toContain('整理本');
+        expect(title, '<title> 应含书名').toContain(C.title);
+        expect(title, '<title> 不带「整理本」等类别词（默认版本不写版本名，非默认只写来源）').not.toMatch(/整理本|转录全文|全文/);
         expect(canonicalHref(html), 'canonical 应指向本章（主版本不写 default）').toBe(`${SITE.canonicalOrigin}${path}`);
 
         const short = await request.get(`${TARGET}/read/${C.id}`, noFollow);

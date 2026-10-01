@@ -161,8 +161,9 @@ test.describe('反馈入口（N7）', () => {
         const dialog = page.getByRole('dialog', { name: '反馈' });
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole('radio', { name: '内容有误' })).toHaveAttribute('aria-checked', 'true');
-        // 「关于」一行是「书名 · 整理本 · 卷N」（不含条目 id；id 在下面的提交体 resourceId 里断言）
-        await expect(dialog.getByText(new RegExp(`整理本 · 卷${Number(JUAN)}`))).toBeVisible();
+        // 「关于」一行是「书名 · 卷N」：默认版本不写版本名，也不出现「整理本」等类别词（不含条目 id；id 在下面的提交体 resourceId 里断言）
+        await expect(dialog.getByText(new RegExp(`${C.title} · 卷${Number(JUAN)}`))).toBeVisible();
+        await expect(dialog.getByText(/整理本/)).toHaveCount(0);
 
         await fillAndSubmit(page, 'e2e：报告错字');
         const body = captured.posts[0];
