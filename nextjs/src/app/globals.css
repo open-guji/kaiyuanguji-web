@@ -1522,9 +1522,10 @@
       width: 100%;
       height: 48px;
     }
-    .home-under {
-      flex-direction: column;
-      align-items: flex-start;
+    /* 手机端（overview#325）：三个例子原先一行一个，三个短词各占一行、下面一大块空白；
+       改成「已收录」独占一行，例子在下一行并排（仍保 44px 触控高） */
+    .home-under > span {
+      flex-basis: 100%;
     }
     .home-band {
       padding: 16px var(--shell-gutter) 48px;
@@ -1761,6 +1762,10 @@
   .contact-qr {
     margin: 16px 0 0;
   }
+  /* 阅读首页节点页、年代页的书目卡网格（ReadHome.tsx） */
+  .read-cards {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
   /* 关于页「联系我们」：微信、QQ 两张群二维码并排，留足间距（9-30 反馈） */
   .contact-qrs {
     display: flex;
@@ -1814,6 +1819,20 @@
     .og-footer-qrs {
       margin-left: 0;
       gap: 40px;
+    }
+    /* 手机端（overview#325）：阅读首页的节点页、年代页书目卡原先一行一张（minmax 240px），
+       卡里只有四五个字的书名和一行作者，右边大半空着；改成两列 */
+    .read-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    /* 手机端（overview#325）：160px×2＋48px 间距超过 343px 版心，两张码被挤成上下两行；
+       缩到 136px、间距 24px，并排放下 */
+    .contact-qrs {
+      gap: 0 24px;
+    }
+    .contact-qr img {
+      width: 136px;
+      height: 136px;
     }
     .doc-layout {
       grid-template-columns: minmax(0, 1fr);

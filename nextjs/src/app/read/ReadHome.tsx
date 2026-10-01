@@ -35,7 +35,8 @@ const S = {
     } as const,
     chipOn: { background: 'var(--color-zhu)', borderColor: 'var(--color-zhu)', color: '#fff' } as const,
     grid: {
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12, listStyle: 'none', padding: 0, margin: '20px 0 0',
+        /* 列宽在 globals.css 的 .read-cards：手机端要改成两列，内联样式进不了媒体查询 */
+        display: 'grid', gap: 12, listStyle: 'none', padding: 0, margin: '20px 0 0',
     } as const,
     card: {
         display: 'block', padding: '12px 14px', border: '1px solid var(--color-border)', borderRadius: 8,
@@ -74,7 +75,7 @@ function SearchBox() {
 function Cards({ cards }: { cards: ReadCard[] }) {
     const { convert } = useConvert();
     return (
-        <ul style={S.grid} data-read-list>
+        <ul className="read-cards" style={S.grid} data-read-list>
             {cards.map((c) => (
                 <li key={c.id}>
                     <Link href={readCardHref(c)} style={S.card} data-read-card={c.id}>
