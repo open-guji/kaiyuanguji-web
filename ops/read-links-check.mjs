@@ -55,15 +55,18 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         }
     }
     const why = (r) => (r.status ? `HTTP ${r.status}` : `请求失败：${r.error}`);
-    /** 阅读页：503 重试一次（重试通过的记进 retried） */
+    /**
+     * 阅读页：503（EdgeOne 回源超时页）或连接失败（status 0，回源太久被掐断，测试站 10-01 实测）重试一次，
+     * 重试通过的记进 retried。404、500 等确定的错误不重试。
+     */
     const retried = [];
     async function getPage(url) {
         const first = await get(url, false);
-        if (first.status !== 503) return first;
+        if (first.status !== 503 && first.status !== 0) return first;
         await new Promise((r) => setTimeout(r, retryDelayMs));
         const second = await get(url, false);
         if (second.ok) retried.push(url);
-        return second.ok ? second : { ...second, retriedFrom: 503 };
+        return second.ok ? second : { ...second, retriedFrom: first.status === 0 ? '连接失败' : '503' };
     }
     const json = async (rel) => get(`${cur}/${rel}?${bust}`, true);
 
@@ -105,7 +108,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             if (!isTextKey(v?.key)) { fail(id, '数据', `items/${id}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
             const pagePath = v.key === 'default' ? `/read/${id}` : `/read/${id}/${v.key}`;
             const page = await getPage(`${site}${pagePath}`);
-            if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}${page.retriedFrom ? '（503 后重试一次仍失败）' : ''}`);
+            if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}${page.retriedFrom ? `（${page.retriedFrom}后重试一次仍失败）` : ''}`);
             const base = `items/${id}/${v.key}`;
             const idx = await json(`${base}/index.json`);
             if (!idx.ok) { fail(id, '数据', `${base}/index.json → ${why(idx)}`); continue; }
@@ -146,7 +149,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
 export function renderSummary({ checked, failures, retried = [] }, { target, seed }) {
     const lines = [`## 阅读链接抽检（${target}）`, '', `抽检 ${checked} 张卡，失败 ${failures.length} 处（seed=${seed}）。`];
     if (retried.length) {
-        lines.push('', `阅读页首次 503、重试后通过 ${retried.length} 处（不记失败，但说明首次渲染仍超回源时限，overview#322）：`);
+        lines.push('', `阅读页首次 503／连接失败、重试后通过 ${retried.length} 处（不记失败，但说明首次渲染仍超回源时限，overview#322）：`);
         for (const u of retried.slice(0, 20)) lines.push(`- ${u}`);
     }
     if (failures.length) {

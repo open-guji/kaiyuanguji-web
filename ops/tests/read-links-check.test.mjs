@@ -199,7 +199,20 @@ test('阅读页首次 503、重试后 200：不记失败，记进 retried 与 su
 test('阅读页连续两次 503：记失败并注明重试过；非 503（404、500）不重试', async () => {
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503, 503], [`/read/${BOOK}`]: [500, 200] }), seed: 1, retryDelayMs: 0 });
     assert.equal(r.failures.length, 2);
-    assert.ok(r.failures.some((f) => f.id === WORK && /HTTP 503（503 后重试一次仍失败）/.test(f.detail)));
+    assert.ok(r.failures.some((f) => f.id === WORK && /HTTP 503（503后重试一次仍失败）/.test(f.detail)));
     assert.ok(r.failures.some((f) => f.id === BOOK && f.detail.endsWith('HTTP 500')));
     assert.deepEqual(r.retried, []);
+});
+
+test('阅读页首次连接失败（fetch failed）、重试后 200：不记失败，记进 retried', async () => {
+    const pages = basePages();
+    const inner = fakeFetch(baseFiles(), pages);
+    let thrown = false;
+    const f = async (url) => {
+        if (!thrown && new URL(url).pathname === `/read/${WORK}`) { thrown = true; throw new Error('fetch failed'); }
+        return inner(url);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, retryDelayMs: 0 });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
 });
