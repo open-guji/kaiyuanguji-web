@@ -61,7 +61,7 @@ describe('首页（N1）', () => {
         expect(screen.queryByRole('region', { name: '一起把古籍做成开放数据' })).not.toBeInTheDocument();
         expect(screen.queryByText('一起把古籍做成开放数据')).not.toBeInTheDocument();
         const footer = within(screen.getByRole('contentinfo'));
-        for (const href of ['/about', '/contact', '/feedback']) {
+        for (const href of ['/about', '/about#联系', '/feedback']) {
             expect(footer.getAllByRole('link').map((a) => a.getAttribute('href'))).toContain(href);
         }
     });
@@ -96,7 +96,7 @@ describe('首页（N1）', () => {
         const main = screen.getByRole('main');
         expect(within(main).getByText(/CC0 公有领域/)).toBeInTheDocument();
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
-        expect(within(screen.getByRole('contentinfo')).getByRole('img', { name: /二维码/ })).toBeInTheDocument();
+        expect(within(screen.getByRole('contentinfo')).getAllByRole('img', { name: /二维码/ })).toHaveLength(2);
     });
 
     it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', () => {
