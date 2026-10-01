@@ -20,6 +20,8 @@ export interface ManifestVersion {
     label?: string;
     source?: string;
     source_name?: string;
+    /** 版本名（底本）：「四部叢刊本」；可选（book-text 901182c50b） */
+    edition_label?: string;
     source_url?: string | null;
     license?: string | null;
 }
