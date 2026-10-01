@@ -77,6 +77,6 @@ npm run perf -- --profiles=fast,slow-4g
 - **LCP**：`thresholds.json` 的 `lcpMs`（场景 id → 毫秒，只判 fast 档）。场景没跑成、没观测到 LCP 也算超标——门槛失效比慢更糟。
 - **条目页缓存命中首字节**：`itemTtfb`。对同一个干净条目地址连续 GET `samples` 次（Node fetch，取到响应头的时刻），只统计响应头 `EO-Cache-Status: Cache Hit` 的样本，取中位数；命中样本不足 `minHits` 只警告不判（判的是命中路径的速度，不是命中率）。
 - 超标：`gate.ts` 退出 1 → 工件里有 `gate.md`／`gate.json`，job 摘要贴出，**开单**（标签 `perf`，同名单已开则追加评论），最后 job 变红。
-- 初始值是按 2026-09-02 夜间基线放宽约 1.5 倍定的（`thresholds.json` 开头有说明），跑一周后按真实分布收紧。
+- 初始值是按 2026-09-02 夜间基线放宽约 1.5 倍定的；10-01 按近 14 晚实测收过一次（首页 LCP 6000→4500、命中首字节 3000→1000，依据与余量见 `thresholds.json` 开头）。条目页 LCP 门槛（`I1-item-page`，现 10000）数据只有一晚，攒够 7 晚再收。再收紧时：取最近夜间 `perf-report-*` 工件里 fast 档 `runs[].timing.lcp` 的最大值 ×1.3。
 
 本地：`npm run perf -- --profiles=fast --scenarios=A1-home,I1-item-page` 之后 `npx tsx gate.ts [--target=…]`；判定逻辑的测试 `npx tsx --test gate.test.ts`。
