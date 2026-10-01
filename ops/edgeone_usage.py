@@ -4,9 +4,9 @@
 读三类数据（腾讯云 TEO API，同 edgeone-purge-urls.py 的凭据）：
   1. 清缓存额度（DescribeContentQuota）：每日剩余 vs 上限
   2. 近 7 天 L7 请求数与响应流量（DescribeTimingL7AnalysisData，按天）
-  3. 本月计费用量（DescribeBillingData）：边缘函数请求数 edgefunction_request、内容加速流量 acc_flux
-     注意：Pages 的「云函数调用」是否计在 edgefunction_request 里，要看首次运行的实际数值，
-     对不上就以控制台为准（见 overview 项目进展/古籍索引网站/进度/运维/EdgeOne用量-月度人工检查.md）。
+  3. 本月计费用量（DescribeBillingData，Interval 用 day 被拒、退到 hour）：内容加速流量 acc_flux、边缘函数请求数 edgefunction_request。
+     10-01 首次实测：edgefunction_request 恒为 0——它不含 Pages 云函数调用（站点 SSR 实际在用云函数），
+     所以 Pages 云函数调用次数 API 读不到，走月度人工清单（overview 项目进展/古籍索引网站/进度/运维/EdgeOne用量-月度人工检查.md）。
 
 输出：Markdown 到 stdout 与 $OUT_MD；超阈值项另写到 $OUT_BREACH（每行一条，空文件＝没有超标）。
 阈值来自 ops/edgeone-usage-thresholds.json。判定逻辑在 edgeone_usage_lib.py（纯函数，有单测）。

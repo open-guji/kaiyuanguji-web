@@ -52,7 +52,14 @@ class EvaluateTests(unittest.TestCase):
 
     def test_empty_billing_data_is_unknown_not_zero(self):
         r = evaluate({"quota": None, "l7_days": None, "billing": {"edgefunction_request": {"Data": []}}}, TH, NOW)
-        self.assertIn(("本月边缘函数请求数", "取不到", "Pages 云函数调用可能不计在这项里，以控制台为准"), r["rows"])
+        self.assertIn(("本月边缘函数请求数（不含 Pages 云函数）", "取不到", "Pages 云函数调用以控制台为准，见月度人工清单"), r["rows"])
+
+    def test_zero_function_requests_says_it_is_not_proof_of_no_usage(self):
+        b = {"edgefunction_request": {"Data": [{"Time": "x", "Value": 0}]}}
+        r = evaluate({"quota": None, "l7_days": None, "billing": b}, TH, NOW)
+        note = [n for name, v, n in r["rows"] if name.startswith("本月边缘函数请求数")][0]
+        self.assertIn("不代表没用量", note)
+        self.assertEqual(r["breaches"], [])
 
     def test_l7_rows(self):
         r = evaluate({"quota": None, "l7_days": l7([100, 200], [1e9, 2e9]), "billing": {}}, TH, NOW)

@@ -65,13 +65,16 @@ def evaluate(data, thresholds, now):
     days_in_month = calendar.monthrange(now.year, now.month)[1]
     elapsed = max(now.day - 1 + now.hour / 24, 0.5)
     if fn is None:
-        rows.append(("本月边缘函数请求数", "取不到", "Pages 云函数调用可能不计在这项里，以控制台为准"))
+        rows.append(("本月边缘函数请求数（不含 Pages 云函数）", "取不到", "Pages 云函数调用以控制台为准，见月度人工清单"))
     else:
         proj = fn / elapsed * days_in_month
         t = thresholds["functionRequestsMonth"]
-        rows.append(("本月边缘函数请求数", f"{int(fn):,}", f"按当前速率月底约 {int(proj):,}（上限 {t['limit']:,}）"))
+        # 10-01 首次实测：计费接口的 edgefunction_request 恒为 0（站点实际在跑 Pages 云函数），说明它不含 Pages 云函数调用。
+        # 所以 0 不代表没用量；非 0（用了边缘函数）才有意义。Pages 云函数调用次数 API 读不到，走月度人工清单。
+        note = f"按当前速率月底约 {int(proj):,}（上限 {t['limit']:,}）" if fn else "恒为 0 不代表没用量：Pages 云函数调用不计在这项里，以控制台为准（月度人工清单）"
+        rows.append(("本月边缘函数请求数（不含 Pages 云函数）", f"{int(fn):,}", note))
         if max(fn, proj) > t["limit"] * t["warnRatio"]:
-            breaches.append(f"函数请求数本月已 {int(fn):,}、月底预计 {int(proj):,}，超过上限 {t['limit']:,} 的 {int(t['warnRatio'] * 100)}%")
+            breaches.append(f"边缘函数请求数本月已 {int(fn):,}、月底预计 {int(proj):,}，超过上限 {t['limit']:,} 的 {int(t['warnRatio'] * 100)}%")
     if acc is None:
         rows.append(("本月内容加速流量", "取不到", ""))
     else:
