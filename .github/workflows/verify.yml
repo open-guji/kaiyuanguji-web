@@ -8,6 +8,16 @@ name: Verify deployed site
 # 只改 e2e 的 PR（例如 web#154）合进去不会触发部署（push 的 paths 排除了 e2e/**），
 # 合并后想验证就在这里选 target 手动跑一次，几分钟出结果。
 #
+# overview#341 起拆成并行任务（原来一个任务串行跑约 15–19 分钟，装浏览器就占 6 分钟）：
+#   prep      定浏览器镜像版本（取 e2e/package-lock.json 里 @playwright/test 的版本）、定 UI 分片、记 CDN 就绪时刻
+#   contract  契约层＋可降级依赖（纯 HTTP，不开浏览器，不用容器）
+#   read-links 阅读首页卡片抽查（纯 HTTP；只在测试站跑）
+#   ui        浏览器用例，跑在 Playwright 官方镜像里（浏览器与系统依赖都在镜像里，不再 apt 装）；
+#             测试站全套、按用例切 2 片并行；正式站只跑冒烟（首页／条目页、阅读页、搜索），
+#             手动跑时勾 full_suite 可让正式站也跑全套
+# 完整套件只在测试站跑——正式站上的是测试站验过的同一版代码，正式站这一遍只确认「上去了、没坏」。
+# 等 CDN 的 60 秒不再单独占一段：prep 记下就绪时刻，各任务装完依赖后只补等剩下的部分。
+#
 # ref 的选法：e2e 必须和被测站点是同一版代码——站点部署的是哪个 commit，就填哪个（测试站部署的 commit
 # 记在 staging/latest.json 的 webCommitId）。只改了 e2e、想用新 e2e 测现有站点时填 main（或那个 PR 的分支）。
 
@@ -24,6 +34,11 @@ on:
         required: true
       wait_cdn:
         description: 是否先等 60 秒让 CDN purge 传播（刚部署完才需要）
+        type: boolean
+        required: false
+        default: false
+      full_suite:
+        description: 正式站也跑完整套件（默认只跑冒烟；测试站总是完整套件）
         type: boolean
         required: false
         default: false
@@ -44,22 +59,32 @@ on:
         type: boolean
         required: false
         default: false
+      full_suite:
+        description: 正式站也跑完整套件（默认只跑冒烟；测试站总是完整套件）
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
+env:
+  # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
+  TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+  DATA_BASE: ${{ inputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+  # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
+  # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
+  # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
+  SITE_ARCH: fullstack
+
 jobs:
-  verify:
+  prep:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
-      TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
-      DATA_BASE: ${{ inputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
-      # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
-      # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
-      # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
-      SITE_ARCH: fullstack
+    timeout-minutes: 5
+    outputs:
+      pw_version: ${{ steps.pw.outputs.version }}
+      ui_matrix: ${{ steps.plan.outputs.ui_matrix }}
+      cdn_ready_at: ${{ steps.plan.outputs.cdn_ready_at }}
     steps:
       - name: Check inputs
         env:
@@ -75,52 +100,147 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
+          sparse-checkout: e2e/package-lock.json
+          sparse-checkout-cone-mode: false
 
+      # 镜像版本必须与 e2e 锁定的 @playwright/test 完全一致，否则镜像里的浏览器版本对不上、用例起不来。
+      # 从锁文件现取，依赖升级时不用另改这里。
+      - name: Playwright version (from e2e/package-lock.json)
+        id: pw
+        run: |
+          V=$(node -p "require('./e2e/package-lock.json').packages['node_modules/@playwright/test'].version")
+          if ! printf '%s' "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "❌ 从 e2e/package-lock.json 读不出 @playwright/test 版本：$V"; exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "· 浏览器镜像 mcr.microsoft.com/playwright:v$V-noble"
+
+      - name: Plan (UI shards, CDN ready time)
+        id: plan
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          WAIT_CDN: ${{ inputs.wait_cdn }}
+          FULL: ${{ inputs.full_suite }}
+        run: |
+          # 测试站（或显式要完整套件）：全套 UI 按用例（--fully-parallel）切 2 片；正式站：冒烟一片
+          if [ "$IN_TARGET" = staging ] || [ "$FULL" = true ]; then
+            echo 'ui_matrix={"include":[{"name":"ui 1/2","args":"--shard=1/2"},{"name":"ui 2/2","args":"--shard=2/2"}]}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ui_matrix={"include":[{"name":"ui smoke","args":"ui/book-index.spec.ts ui/reader.spec.ts ui/search.spec.ts"}]}' >> "$GITHUB_OUTPUT"
+          fi
+          # 刚部署完：CDN purge 在边缘节点传播需要时间（原来固定 sleep 60）。这里只记时刻，各任务装完依赖后补等
+          if [ "$WAIT_CDN" = true ]; then R=$(( $(date +%s) + 60 )); else R=0; fi
+          echo "cdn_ready_at=$R" >> "$GITHUB_OUTPUT"
+
+  # 契约层：不开浏览器、几秒出结果。可降级依赖（目前只有搜索 L1）也在这里跑：
+  # 仍然跑、仍然在日志里可见，但不把发版判定为失败——前端有 L2 兜底，用户无感。
+  # 让它阻断的话每次发版都亮红灯，真正的回归反而会被淹没。
+  contract:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install e2e deps
         working-directory: e2e
         run: npm ci || npm install
-
-      - name: Install chromium
-        working-directory: e2e
-        run: npx playwright install --with-deps chromium
-
-      # CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物（只在刚部署完时才等）
       - name: Wait for CDN propagation
-        if: ${{ inputs.wait_cdn }}
-        run: sleep 60
-
-      # 契约层先跑：不开浏览器、几秒出结果，红了就不用往下走
+        env:
+          READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
+        run: |
+          d=$(( READY_AT - $(date +%s) ))
+          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Contract tests
         working-directory: e2e
         run: npm run test:contract
+      - name: Degradable deps (non-blocking)
+        if: ${{ !cancelled() }}
+        working-directory: e2e
+        continue-on-error: true
+        run: npm run test:degradable
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-contract
+          path: e2e/out/report
+          retention-days: 14
 
-      # 阅读首页的卡片点进去真能读（overview#306）：每个一级节点抽 20 张＋精选清单全部，
-      # 页面 200、数据目录与首章／首卷都 200。只发 GET，无依赖
+  # 阅读首页的卡片点进去真能读（overview#306）：每个一级节点抽 20 张＋精选清单全部，
+  # 页面 200、数据目录与首章／首卷都 200。只发 GET，无依赖。约 3 分钟，只在测试站跑
+  # （正式站上的是同一版代码、同一份数据）。
+  read-links:
+    needs: prep
+    if: ${{ inputs.target == 'staging' || inputs.full_suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Wait for CDN propagation
+        env:
+          READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
+        run: |
+          d=$(( READY_AT - $(date +%s) ))
+          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Read links check
         run: |
           node --test ops/tests/read-links-check.test.mjs
           node ops/read-links-check.mjs
 
+  # 浏览器用例跑在 Playwright 官方镜像里：浏览器和系统依赖（含中日韩字体）都已装好，
+  # 原来 `playwright install --with-deps` 走 apt，源慢时一步 6 分钟以上（overview#304、#341）。
+  # --user 1001：与 runner 同一个用户，checkout 进来的工作目录才有写权限（Playwright 文档的写法）。
+  ui:
+    needs: prep
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.prep.outputs.pw_version }}-noble
+      options: --user 1001
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prep.outputs.ui_matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+      - name: Wait for CDN propagation
+        env:
+          READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
+        run: |
+          d=$(( READY_AT - $(date +%s) ))
+          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+      # --fully-parallel：按用例而不是按文件分给 worker、切片。a11y.spec 一个文件 64 条、约 8 分钟，
+      # 按文件分时整片都压在一个 worker 上，是原来 UI 一步 8 分钟的大头。各用例之间没有 serial／beforeAll 依赖。
       - name: UI tests
         working-directory: e2e
-        run: npm run test:ui
-
-      # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，
-      # 但不把发版判定为失败——前端有 L2 兜底，用户无感。
-      # 让它阻断的话每次发版都亮红灯，真正的回归反而会被淹没。
-      - name: Degradable deps (non-blocking)
-        working-directory: e2e
-        continue-on-error: true
-        run: npm run test:degradable
-
+        env:
+          ARGS: ${{ matrix.args }}
+        run: npx playwright test --project=ui --fully-parallel $ARGS
+      - name: Report name
+        if: always()
+        id: rn
+        env:
+          N: ${{ matrix.name }}
+        run: echo "name=e2e-report-$(printf '%s' "$N" | tr ' /' '--')" >> "$GITHUB_OUTPUT"
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-report
+          name: ${{ steps.rn.outputs.name }}
           path: e2e/out/report
           retention-days: 14
