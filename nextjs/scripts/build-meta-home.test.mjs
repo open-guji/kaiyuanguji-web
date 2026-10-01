@@ -185,3 +185,26 @@ test('bundleMetaHome：策展文件缺失或坏了，书架／丛编／人物／
         rmSync(f.root, { recursive: true, force: true });
     }
 });
+
+// 目录总管 10-01 实交的 curation/read-home.json：书架组写 layout: 'shelf'（不是 shelf: true），书目组 key 是 shumu。
+// 测试站曾因此出 shelf: null、related_catalogs: []（overview#322）
+test('bundleMetaHome：认实交格式——layout: shelf 的组是书架，shumu 组是同类书目', () => {
+    const f = fixture();
+    try {
+        f.put(f.cur, 'read-home.json', { schema: 'read-home/1', topics: [
+            { key: 'shizhi', label: '史志目录', layout: 'shelf', items: [
+                { id: 'hz', kind: 'Work', title: '漢書·藝文志', period_of: '漢', orig: true, text_count: 2 },
+                { id: 'bj', kind: 'Work', title: '補晉書藝文志', period_of: '晉', orig: false, text_count: 1 },
+            ] },
+            { key: 'shumu', label: '书目与考证', layout: 'list', items: [{ id: 'zz', kind: 'Work', title: '直齋書錄解題', text_count: 2 }] },
+            { key: 'dangan', label: '档案', layout: 'list', items: [{ id: 'hl', kind: 'Work' }] },
+        ] });
+        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, draftDir: f.draft, curationDir: f.cur, log: () => {} });
+        const s = json(join(f.out, 'meta-home/sections.json'));
+        assert.equal(s.shelf.label, '史志目录');
+        assert.deepEqual(s.shelf.items.map((x) => [x.id, x.period_of, x.orig ?? false, x.records ?? null]), [['hz', '漢', true, 621], ['bj', '晉', false, null]]);
+        assert.deepEqual(s.related_catalogs.map((x) => x.id), ['zz']);
+    } finally {
+        rmSync(f.root, { recursive: true, force: true });
+    }
+});

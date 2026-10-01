@@ -406,3 +406,18 @@ test('设计稿样例 read-home.sample.json：结构合法（推荐 6、专题 7
     // 页面不出现旧称（用户 10-01）
     assert.equal(/整理本|轉錄全文|转录全文|全文/.test(JSON.stringify(s)), false);
 });
+
+test('readCuration：layout: shelf 等同 shelf: true（目录总管 10-01 实交写法），阅读首页因此不出史志书架', () => {
+    const root = mkdtempSync(join(tmpdir(), 'read-cur-layout-'));
+    try {
+        const file = join(root, 'read-home.json');
+        writeFileSync(file, JSON.stringify({ topics: [
+            { key: 'shizhi', label: '史志目录', layout: 'shelf', items: [{ id: 'a', period_of: '漢', orig: true }] },
+            { key: 'shumu', label: '书目与考证', layout: 'list', items: [{ id: 'b' }] },
+        ] }));
+        const c = readCuration(file, () => {});
+        assert.deepEqual(c.topics.map((t) => [t.key, t.shelf]), [['shizhi', true], ['shumu', false]]);
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+    }
+});

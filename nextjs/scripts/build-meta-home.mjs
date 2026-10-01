@@ -10,7 +10,7 @@
  *   - book-text 条目目录的 lineage_graph.json：有就算有谱系
  *   - catalog/tree.json（总目，bundleCatalog 先写好）：四部方块
  *   - resource.json（书目著录进度）、resource-site.json（在线资源）：draft 仓根目录
- *   - curation/read-home.json 的 shelf 组（史志书架，period_of／orig）与 bibliography 组（同类书目与考证）
+ *   - curation/read-home.json 的 shelf 组（layout: 'shelf'，史志书架，period_of／orig）与书目组（key shumu 或 bibliography，同类书目与考证）
  *   - curation/meta-home.json：{ collection_groups, bibliographers, lineage_picks }（目录总管维护）
  *
  * MetaHomeSections {
@@ -111,6 +111,9 @@ function authorsOf(d) {
  *   readCur: ReturnType<typeof readCuration>, metaCur: ReturnType<typeof readMetaCuration>,
  * }} args
  */
+/** 「同类书目与考证」取自阅读首页策展文件里的哪一组：目录总管 10-01 实交的是 shumu（书目与考证），早先约定的是 bibliography */
+export const BIBLIOGRAPHY_TOPIC_KEYS = ['shumu', 'bibliography'];
+
 export function buildMetaSections({ index, workDetail, lineageOf, loss, meta, tree, resource, resourceSite, readCur, metaCur }) {
     const works = index.works ?? {};
     const collections = index.collections ?? {};
@@ -148,7 +151,7 @@ export function buildMetaSections({ index, workDetail, lineageOf, loss, meta, tr
         }
         if (items.length) shelf = { label: shelfTopic.label, items };
     }
-    const relTopic = readCur?.topics.find((t) => t.key === 'bibliography');
+    const relTopic = readCur?.topics.find((t) => BIBLIOGRAPHY_TOPIC_KEYS.includes(t.key));
     const related_catalogs = relTopic ? relTopic.items.map((x) => workCard(x.id)).filter(Boolean) : [];
 
     const collection_groups = [];
