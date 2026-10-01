@@ -5,12 +5,15 @@
  * 地址约定见 nextjs/src/lib/reader-route.ts：/read/<id>[/<key>][/<章>]，主版本不写 default。
  * 只认新结构数据（overview#307），文本迁移落地前整组自动跳过。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions';
 
 const C = ANCHORS.collated;
+
+/** 目录里的一章：按 data-rd-toc-key（章文件名）找，不按文字——文字是章名，随整理变 */
+const tocItem = (page: Page, key: string) => page.getByRole('navigation', { name: '目录' }).locator(`[data-rd-toc-key="${key}"]`);
 
 /** 詩序：Work，维基文库与 Kanripo 各一份全文 */
 const SHIXU = 'd59f2ew0ctmo';
@@ -51,7 +54,7 @@ test.describe('阅读页', () => {
         await expect(main.getByText(j1.text).first(), '卷一正文没有渲染出实际文字').toBeVisible();
 
         await page.evaluate(() => { (window as unknown as { __n5b: number }).__n5b = 1; });
-        await page.getByRole('button', { name: /^卷\s*2$/ }).first().click({ timeout: 30_000 });
+        await tocItem(page, '002').click({ timeout: 30_000 });
         await expect(page).toHaveURL(new RegExp(`/read/${C.id}/002$`));
         await expect(page).toHaveTitle(/整理本/);
         // 翻到卷二后正文跟着换：卷二的文字出现，卷一的不再显示
@@ -68,7 +71,7 @@ test.describe('阅读页', () => {
         const j1 = JUAN_TEXT['001'];
         await expect(main.getByText(j1.text).first()).toBeVisible({ timeout: 30_000 });
 
-        await page.getByRole('button', { name: /^卷\s*2$/ }).first().click({ timeout: 30_000 });
+        await tocItem(page, '002').click({ timeout: 30_000 });
         await expect(page).toHaveURL(new RegExp(`/read/${C.id}/002$`));
 
         await page.goBack();
