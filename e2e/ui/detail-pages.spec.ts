@@ -227,11 +227,11 @@ test.describe('详情页版式', () => {
         await expect(page.locator('#versions')).toBeVisible({ timeout: 15_000 });
     });
 
-    test('「阅读全文」是提要卡里唯一的主按钮，链到阅读页', async ({ page, request }) => {
+    test('「閱讀」（旧版「閱讀全文」）是提要卡里唯一的主按钮，链到阅读页', async ({ page, request }) => {
         // N3b：网站给三栏组件传 readLink，地址约定 /read/<id>[/<章>]（主版本，新结构；overview#307）
         await requireUiVersion(request, THREE_COLUMN, '阅读全文入口');
         await openDetail(page, WORK);
-        const read = page.getByRole('link', { name: /^(阅读|閱讀)全文$/ });
+        const read = page.getByRole('link', { name: /^(阅读|閱讀)(全文)?$/ });
         await expect(read).toHaveCount(1);
         await expect(read).toHaveAttribute('href', new RegExp(`^/read/${WORK}(/\\d+)?$`));
     });

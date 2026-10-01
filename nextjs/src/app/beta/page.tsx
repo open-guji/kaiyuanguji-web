@@ -22,8 +22,7 @@ export default function BetaPage() {
         <ul className="mb-4 list-disc space-y-1 pl-6">
           <li>搜索：按书名、作者、分类或来源检索古籍索引</li>
           <li>条目：作品、版本、丛编与相关人物的详情页</li>
-          <li>整理本：部分古籍的已校勘结构化文本</li>
-          <li>全文：部分古籍的全文文本</li>
+          <li>文本：部分古籍的文本（校勘整理或转录）</li>
           <li>反馈：随时提交问题或建议，并能看到处理进展</li>
         </ul>
 

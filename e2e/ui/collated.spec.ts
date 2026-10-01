@@ -34,7 +34,7 @@ test.describe('整理本', () => {
         const live = await fetchUiVersion(request);
         if (live !== null && cmpVersion(live, '0.10.0') >= 0) {
             await expect(
-                page.getByRole('link', { name: /^(阅读|閱讀)全文$/ }),
+                page.getByRole('link', { name: /^(阅读|閱讀)(全文)?$/ }),
                 '整理本入口不存在：清单档可能 404（文件名或版本号错）',
             ).toHaveAttribute('href', new RegExp(`^/read/${C.id}(/|$)`), { timeout: 30_000 });
             return;

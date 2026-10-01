@@ -20,7 +20,7 @@ export interface FeedbackTypeOption {
 /** 类型页签的顺序与文案。contact（想参与）后端永远不公开 */
 export const FEEDBACK_TYPES: FeedbackTypeOption[] = [
     { value: 'bug', label: '内容有误', placeholder: '哪里不对？写下你看到的，以及应当是什么' },
-    { value: 'resource', label: '补充资源', placeholder: '哪里有这部书的影印本、整理本或其他资料？请附上链接或出处' },
+    { value: 'resource', label: '补充资源', placeholder: '哪里有这部书的影印本、文本或其他资料？请附上链接或出处' },
     { value: 'suggestion', label: '功能建议', placeholder: '希望网站增加或改进什么？' },
     { value: 'contact', label: '想参与', placeholder: '想参与整理、校对或合作？简单介绍一下自己（这类留言不公开）' },
 ];
