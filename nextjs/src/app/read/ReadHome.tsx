@@ -11,9 +11,10 @@
  * 的 CSS 与引用哈希跟着变。
  */
 import Link from 'next/link';
-import { LocaleProvider, ReadHomeView, useConvert } from 'book-index-ui';
+import { ReadHomeView, useConvert } from 'book-index-ui';
 import type { ReadHomeLinks } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import {
     READ_PERIODS, readCardHref, readHomeHref, readPeriodHref,
     type CatalogNode, type ReadCard, type ReadSections, type ResolvedPeriod,
@@ -206,10 +207,10 @@ function Body({ sections, tree, current, period }: ReadHomeProps) {
 
 export default function ReadHome(props: ReadHomeProps) {
     return (
-        <LocaleProvider>
+        <BimLocaleProvider>
             <LayoutWrapper>
                 <Body {...props} />
             </LayoutWrapper>
-        </LocaleProvider>
+        </BimLocaleProvider>
     );
 }
