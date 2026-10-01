@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 // 用户意见（overview#267）：去掉「项目介绍」「开源仓库」两节（首页「我们在做的事」「文本开放、代码开源」里有）。
 // 用户 9-30 反馈（overview#322）：重写「数据来源与授权」（book-index 也是 CC0，不提 book-index-draft，口径同首页）；
 // 删「本站呈现的内容不是最终事实来源……」一段；联系页内容直接展开在本页（/contact 跳到 #联系）。
+// 用户 10-01 反馈（overview#337 B8）：「数据来源与授权」只留表格；开头一段换成用户给的原文（about.lead1／lead2，一字不改）。
 // 界面文字在 i18n/messages/about.ts（overview#337），这里只放键
 const TOC: Array<{ id: string; label: SiteMessageKey }> = [
   { id: 'license', label: 'about.toc.license' },
@@ -58,17 +59,14 @@ export default function AboutPage() {
         <article className="doc-article">
           <h1><T k="about.title" /></h1>
           <p className="doc-lead">
-            <T k="about.lead" />
+            <T k="about.lead1" />
+          </p>
+          <p className="doc-lead">
+            <T k="about.lead2" />
           </p>
 
           <section id="license">
             <h2><T k="about.toc.license" /></h2>
-            <p>
-              <T k="about.license.p1" />
-            </p>
-            <p>
-              <T k="about.license.p2" />
-            </p>
             <table className="doc-table">
               <tbody>
                 {LICENSES.map((id) => (

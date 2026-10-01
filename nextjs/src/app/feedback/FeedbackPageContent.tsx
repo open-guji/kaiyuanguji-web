@@ -21,6 +21,9 @@ const STATUS_LABEL_KEY: Record<string, SiteMessageKey> = {
     duplicate: 'feedback.status.duplicate',
 };
 
+/** 「已处理」一类：已结的状态。待处理、处理中都算还没处理完，默认列出（用户 10-01 反馈，overview#337 C1） */
+const DONE_STATUSES = new Set(['resolved', 'wontfix', 'duplicate']);
+
 /** 筛选页签：「想参与」后端永远不公开，这里不列 */
 const FILTERS: { value: string; labelKey: SiteMessageKey }[] = [
     { value: '', labelKey: 'feedback.page.all' },
@@ -35,6 +38,7 @@ function formatDate(iso: string): string {
 /**
  * /feedback：公开的反馈列表（N7 样张第 5 组）。
  * 页头唯一的主按钮「写反馈」打开全站统一的弹窗；类型用文字页签筛选；列表不画卡片框，条与条之间一条淡线。
+ * 默认只列没处理完的，页签右边勾「显示已处理」才把已结的也列出来。
  */
 export default function FeedbackPageContent() {
     const { open } = useFeedback();
@@ -44,6 +48,7 @@ export default function FeedbackPageContent() {
     // 后端给的错误原文，或字典键（加载失败、网络错误：渲染时再取，跟随繁简切换）
     const [error, setError] = useState<{ text?: string; key?: SiteMessageKey } | null>(null);
     const [filter, setFilter] = useState('');
+    const [showDone, setShowDone] = useState(false);
 
     const load = useCallback(() => {
         setLoading(true);
@@ -65,7 +70,10 @@ export default function FeedbackPageContent() {
         load();
     }, [load]);
 
-    const shown = useMemo(() => (filter ? items.filter((i) => i.type === filter) : items), [items, filter]);
+    const shown = useMemo(
+        () => items.filter((i) => (!filter || i.type === filter) && (showDone || !DONE_STATUSES.has(i.status))),
+        [items, filter, showDone],
+    );
 
     return (
         <div className="og-paper og-fb-page">
@@ -84,12 +92,18 @@ export default function FeedbackPageContent() {
                 </button>
             </div>
 
-            <div className="og-fb-types og-fb-filter" role="radiogroup" aria-label={t('feedback.page.filterLabel')}>
-                {FILTERS.map((f) => (
-                    <button key={f.value} type="button" role="radio" aria-checked={filter === f.value} onClick={() => setFilter(f.value)}>
-                        {t(f.labelKey)}
-                    </button>
-                ))}
+            <div className="og-fb-filter">
+                <div className="og-fb-types" role="radiogroup" aria-label={t('feedback.page.filterLabel')}>
+                    {FILTERS.map((f) => (
+                        <button key={f.value} type="button" role="radio" aria-checked={filter === f.value} onClick={() => setFilter(f.value)}>
+                            {t(f.labelKey)}
+                        </button>
+                    ))}
+                </div>
+                <label className="og-fb-show-done">
+                    <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
+                    {t('feedback.page.showDone')}
+                </label>
             </div>
 
             {error ? (

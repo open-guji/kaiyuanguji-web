@@ -37,6 +37,8 @@ export const feedback = defineMessages({
         intro: '大家提的問題和處理進展',
         write: '寫反饋',
         filterLabel: '按類型篩選',
+        /** 页签右边的勾选框（overview#337 C1） */
+        showDone: '顯示已處理',
         all: '全部',
         loadFailed: '加載失敗',
         loading: '加載中…',
@@ -107,6 +109,7 @@ export const feedback = defineMessages({
         intro: '大家提的问题和处理进展',
         write: '写反馈',
         filterLabel: '按类型筛选',
+        showDone: '显示已处理',
         all: '全部',
         loadFailed: '加载失败',
         loading: '加载中…',

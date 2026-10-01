@@ -16,6 +16,8 @@
 .page.withQuery {
   /* v4：左栏筛选＋结果表格／卡片，版心放宽到与外壳一致（设计稿搜索页 v2：1440） */
   max-width: var(--shell-max, 1440px);
+  /* 检索框顶到最上，和导航栏只隔一小段（用户 10-01 反馈，overview#337 B4） */
+  padding-top: 16px;
 }
 
 /*
@@ -44,5 +46,8 @@
   .page {
     padding-top: 20px;
     padding-bottom: 32px;
+  }
+  .page.withQuery {
+    padding-top: 12px;
   }
 }
