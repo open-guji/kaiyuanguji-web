@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { TOCItem } from '@/lib/markdown';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface TableOfContentsProps {
   items: TOCItem[];
 }
 
 export default function TableOfContents({ items }: TableOfContentsProps) {
+  const t = useSiteT();
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
 
   return (
     <nav className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <h3 className="text-sm font-bold text-ink mb-3 tracking-wide">目录</h3>
+      <h3 className="text-sm font-bold text-ink mb-3 tracking-wide">{t('common.toc')}</h3>
       <ul className="space-y-2 text-sm">
         {items.map((item) => (
           <li

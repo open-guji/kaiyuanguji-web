@@ -2,6 +2,7 @@
 
 import { useConvert } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { useSiteT } from '@/i18n/use-site-t';
 import type { ItemSummary } from '@/lib/server/item-summary';
 
 // 样式一律行内写：Tailwind 会扫描全部源文件生成全站 CSS，这里若用到新类名，
@@ -26,6 +27,7 @@ const S = {
  */
 export default function ItemSummaryView({ s, source, version }: { s: ItemSummary; source: string; version: string }) {
     const { convert } = useConvert();
+    const t = useSiteT();
     return (
         <LayoutWrapper hideFooter>
             {/* data-ssr-source／data-ssr-version：取数走的哪条路、哪一版数据；排查与发版后实测（W2-3）用 */}
@@ -37,7 +39,7 @@ export default function ItemSummaryView({ s, source, version }: { s: ItemSummary
                 {s.authorLine && <p style={S.authors}>{convert(s.authorLine)}</p>}
                 {s.measure && <p style={S.measure}>{convert(s.measure)}</p>}
                 {s.description && <p style={S.desc}>{convert(s.description)}</p>}
-                <p style={S.loading}>加载中...</p>
+                <p style={S.loading}>{t('bookIndex.loading')}</p>
             </article>
         </LayoutWrapper>
     );

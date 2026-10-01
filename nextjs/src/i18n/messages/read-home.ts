@@ -1,0 +1,38 @@
+import { defineMessages } from './define';
+
+/** 阅读首页 /read（首页检索框、节点页、年代页） */
+export const readHome = defineMessages({
+    searchLabel: '在可讀書中搜索',
+    searchPlaceholder: '書名、作者，如 文選、蘇軾',
+    search: '搜索',
+    juanCount: '{n}卷',
+    textCount: '{n}本',
+    pagination: '分頁',
+    prev: '上一頁',
+    next: '下一頁',
+    pageOf: '第 {page} / {total} 頁',
+    read: '閱讀',
+    totalCount: '，共 {count} 部',
+    fourBranches: '四部分類',
+    subcategories: '{label}下的分類',
+    byPeriod: '按年代',
+    periods: '年代',
+    empty: '閱讀列表正在準備中，請稍後再來。',
+}, {
+    searchLabel: '在可读书中搜索',
+    searchPlaceholder: '书名、作者，如 文选、苏轼',
+    search: '搜索',
+    juanCount: '{n}卷',
+    textCount: '{n}本',
+    pagination: '分页',
+    prev: '上一页',
+    next: '下一页',
+    pageOf: '第 {page} / {total} 页',
+    read: '阅读',
+    totalCount: '，共 {count} 部',
+    fourBranches: '四部分类',
+    subcategories: '{label}下的分类',
+    byPeriod: '按年代',
+    periods: '年代',
+    empty: '阅读列表正在准备中，请稍后再来。',
+});

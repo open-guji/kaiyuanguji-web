@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { HOME_FEATURES } from './features';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /**
  * 首页「我们在做的事」卡片列表。
@@ -11,6 +12,7 @@ import { HOME_FEATURES } from './features';
  * 收起只在 max-width: 760px 下生效（globals.css），桌面三列照旧全显示、这个按钮不出现。
  */
 export default function HomeFeatures() {
+  const t = useSiteT();
   const [collapsed, setCollapsed] = useState(true);
   const planned = HOME_FEATURES.filter((f) => !f.live);
 
@@ -18,18 +20,18 @@ export default function HomeFeatures() {
     <>
       <ul id="home-features" className="home-features" data-collapsed={collapsed || undefined}>
         {HOME_FEATURES.map((f, i) => (
-          <li key={f.title} className={f.live ? 'home-feature is-live' : 'home-feature'}>
+          <li key={f.id} className={f.live ? 'home-feature is-live' : 'home-feature'}>
             <span className="num" aria-hidden="true">
               {String(i + 1).padStart(2, '0')}
             </span>
             <h3>
-              {f.title}
-              <span className={f.live ? 'status is-live' : 'status'}>{f.live ? '已上线' : '规划中'}</span>
+              {t(f.titleKey)}
+              <span className={f.live ? 'status is-live' : 'status'}>{t(f.live ? 'home.live' : 'home.planned')}</span>
             </h3>
-            <p>{f.text}</p>
+            <p>{t(f.textKey)}</p>
             {f.cta && (
               <Link className="home-feature-cta" href={f.cta.href}>
-                {f.cta.label} <span aria-hidden="true">→</span>
+                {t(f.cta.labelKey)} <span aria-hidden="true">→</span>
               </Link>
             )}
           </li>
@@ -46,12 +48,15 @@ export default function HomeFeatures() {
           {collapsed ? (
             <>
               <span className="home-features-more-list">
-                还有 {planned.length} 项规划中：{planned.map((f) => f.title).join('、')}
+                {t('home.plannedMore', {
+                  count: planned.length,
+                  list: planned.map((f) => t(f.titleKey)).join(t('home.plannedSep')),
+                })}
               </span>
-              <span className="home-features-more-act">展开</span>
+              <span className="home-features-more-act">{t('home.expand')}</span>
             </>
           ) : (
-            <span className="home-features-more-act">收起规划中的 {planned.length} 项</span>
+            <span className="home-features-more-act">{t('home.collapse', { count: planned.length })}</span>
           )}
         </button>
       )}

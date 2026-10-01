@@ -1,5 +1,12 @@
 import { render, screen } from '@testing-library/react';
 
+// 角标文字走字典 <T>（overview#337，内部用 hook）。resetModules 后重新 import 会拿到另一份 React，
+// 与 testing-library 那份对不上（Invalid hook call）；把 react 钉成同一份。
+const REACT = jest.requireActual('react');
+beforeEach(() => {
+    jest.doMock('react', () => REACT);
+});
+
 // SITE_ENV 在 constants.ts 里是模块加载时读的 process.env，
 // 每个用例要不同取值，必须 resetModules 后动态 import 才能生效。
 describe('StagingBadge（T1 测试站角标）', () => {

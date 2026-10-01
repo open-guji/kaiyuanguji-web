@@ -14,10 +14,12 @@ import { isSearchDegraded, subscribeSearchDegraded } from '@/lib/search/meili-st
 import BookDetailContent from '@/components/book-index/BookDetailContent';
 import { entryHref } from '@/lib/item-id';
 import MetaHome from './MetaHome';
+import { useSiteT } from '@/i18n/use-site-t';
 import styles from './page.module.css';
 
 /** L1（搜索代理）故障、当前结果来自浏览器兜底（L2 轻量分片）时的提示 */
 function SearchDegradedNotice() {
+  const t = useSiteT();
   const [degraded, setDegraded] = useState(isSearchDegraded);
   useEffect(() => subscribeSearchDegraded(setDegraded), []);
   if (!degraded) return null;
@@ -29,7 +31,7 @@ function SearchDegradedNotice() {
         color: '#8a5a00', background: '#fff8e6', border: '1px solid #f0d9a8', borderRadius: 6,
       }}
     >
-      搜索服务暂时不可用，当前为简易搜索（仅按书名、作者匹配），结果可能不全。
+      {t('bookIndex.searchDegraded')}
     </div>
   );
 }
@@ -124,10 +126,15 @@ function BookIndexContent() {
   );
 }
 
+function LoadingFallback() {
+  const t = useSiteT();
+  return <div className="min-h-screen bg-paper flex items-center justify-center text-sm text-stone-400">{t('bookIndex.loading')}</div>;
+}
+
 export default function BookIndexPage() {
   return (
     <BimLocaleProvider>
-      <Suspense fallback={<div className="min-h-screen bg-paper flex items-center justify-center text-sm text-stone-400">加载中...</div>}>
+      <Suspense fallback={<LoadingFallback />}>
         <BookIndexContent />
       </Suspense>
     </BimLocaleProvider>

@@ -8,13 +8,14 @@
  * 分区数据在浏览器里取（正式站是静态导出），取到之前与取不到时只出检索框和最近浏览，缺数据的分区整块隐藏。
  */
 import { useEffect, useState } from 'react';
-import { MetaHomeView, useConvert, type MetaHomeSections } from 'book-index-ui';
+import { MetaHomeView, type MetaHomeSections } from 'book-index-ui';
 import type { IndexStorage } from 'book-index-ui';
 import type { DataSource } from '@/lib/constants';
 import { COS_BASE } from '@/lib/cos-storage';
 import { entryHref } from '@/lib/item-id';
 import { CATALOG_ALL_ID, catalogHref } from '@/app/catalog/catalog-route';
 import { fetchMetaHome, formatDataVersion } from './meta-home-data';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /** 数据仓库（CC0）。只提 book-index，不提 draft（9-30 反馈） */
 export const META_HOME_REPO_URL = 'https://github.com/open-guji/book-index';
@@ -35,15 +36,15 @@ const S = {
 };
 
 function SearchHead() {
-    const { convert } = useConvert();
+    const t = useSiteT();
     return (
         <>
             <form role="search" action="/book-index" method="get" style={S.search} data-meta-search>
-                <label htmlFor="meta-q" style={S.sr}>{convert('檢索古籍元數據')}</label>
-                <input id="meta-q" name="q" type="search" placeholder={convert('書名、作者、版本，如：史記、蘇軾')} style={S.searchInput} />
-                <button type="submit" style={S.searchBtn}>{convert('檢索')}</button>
+                <label htmlFor="meta-q" style={S.sr}>{t('bookIndex.meta.searchLabel')}</label>
+                <input id="meta-q" name="q" type="search" placeholder={t('bookIndex.meta.searchPlaceholder')} style={S.searchInput} />
+                <button type="submit" style={S.searchBtn}>{t('bookIndex.meta.search')}</button>
             </form>
-            <p style={S.hint}>{convert('結果頁可按朝代、部類、資源、存佚篩選')}</p>
+            <p style={S.hint}>{t('bookIndex.meta.hint')}</p>
         </>
     );
 }

@@ -14,7 +14,7 @@ function transportWith(detail: Record<string, unknown> | null) {
 describe('CitationBar', () => {
     it('显示修订号与日期', async () => {
         render(<FeedbackProvider><CitationBar id={WORK} transport={transportWith({ revision: '1.0.3', revised_at: '2026-08-31', title: '史记' })} /></FeedbackProvider>);
-        expect(await screen.findByText(/rev\. 1\.0\.3/)).toHaveTextContent('最近校訂 2026-08-31');
+        expect(await screen.findByText(/rev\. 1\.0\.3/)).toHaveTextContent('最近校订 2026-08-31');
     });
 
     it('「这条有误？」打开反馈弹窗，带上书名 · 类型 · id，类型是「内容有误」', async () => {

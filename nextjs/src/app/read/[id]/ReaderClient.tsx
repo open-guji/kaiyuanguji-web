@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, useConvert, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -12,6 +12,7 @@ import { getTransport } from '@/lib/transport';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
+import { useSiteT } from '@/i18n/use-site-t';
 import { seedTransport, type ReaderSeed } from './reader-seed';
 
 interface ReaderClientProps {
@@ -90,14 +91,16 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     // 首帧的 canonical 以服务端为准（章号查不准时它会回落到不带章号的地址），之后翻章再跟着改。
     const synced = useRef(false);
     const pushNext = useRef(false);
+    // 书名、版本名是数据，按繁简偏好转（useConvert）；<title> 挂载后跟随读者的繁简选择（overview#337）
+    const { convert } = useConvert();
     useEffect(() => {
-        syncLocation(id, sel, readerTitle(bookTitle, sel.chapter, meta?.chapterTitle, meta?.versionLabel), {
+        syncLocation(id, sel, convert(readerTitle(bookTitle, sel.chapter, meta?.chapterTitle, meta?.versionLabel)), {
             push: synced.current && pushNext.current,
             updateCanonical: synced.current,
         });
         pushNext.current = false;
         synced.current = true;
-    }, [id, sel, bookTitle, meta]);
+    }, [id, sel, bookTitle, meta, convert]);
 
     const onLocationChange = useCallback((loc: TextLocation, cause: TextLocationCause) => {
         const next: ReaderSel = { key: loc.isDefault ? undefined : loc.key, chapter: loc.chapter ?? undefined };
@@ -107,10 +110,19 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, []);
     const onNavigate = useCallback((target: string) => router.push(`/item/${target}`), [router]);
 
-    // N7：本页反馈上下文（书名 · 版本 · 章），导航栏「反馈」和选字「报错」都带上；章号另随 pageUrl 提交
+    // N7：本页反馈上下文（书名 · 版本 · 章），导航栏「反馈」和选字「报错」都带上；章号另随 pageUrl 提交。
+    // 「卷N」「第 N 章」走字典
+    const t = useSiteT();
     const feedbackContext = useMemo(
-        () => ({ resourceId: id, label: readerFeedbackLabel(bookTitle, { version: meta?.versionLabel, kind: meta?.kind, chapter: sel.chapter }) }),
-        [id, bookTitle, meta, sel.chapter],
+        () => ({
+            resourceId: id,
+            label: readerFeedbackLabel(
+                convert(bookTitle),
+                { version: meta?.versionLabel && convert(meta.versionLabel), kind: meta?.kind, chapter: sel.chapter },
+                t,
+            ),
+        }),
+        [id, bookTitle, meta, sel.chapter, convert, t],
     );
     useFeedbackPageContext(feedbackContext);
     // v4 P2：阅读器右栏「报告错字」→ 同一个反馈弹窗，带上书名、条目 id、章、位置锚点与选中文字

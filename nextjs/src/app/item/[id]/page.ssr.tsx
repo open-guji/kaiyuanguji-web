@@ -19,6 +19,8 @@ import { buildItemSeo, jsonLdScript, type ItemSeo } from '@/lib/server/item-seo'
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import ItemDetailClient from './ItemDetailClient';
 import ItemSummaryView from './ItemSummaryView';
+import { simplifyMetadata } from '@/lib/server/simplify';
+import { getSiteT } from '@/i18n/translate';
 
 // 页面缓存：CDN 按 s-maxage 缓存（EdgeOne 上 Next 自己的 ISR 缓存不持久，25 卡）。
 // W2-3 做完「发版按改动清缓存」后再放长到 30 天（31 卡 §A.6）；在那之前取 1 小时，
@@ -49,10 +51,10 @@ async function load(id: string): Promise<Loaded | null> {
     return { ...summarizeItem(hit.entry, id), source: hit.source, version: hit.version, seo: buildItemSeo(hit.entry, id, SITE_URL) };
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+async function buildMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
     const s = await load(id);
-    if (!s) return { title: '未找到条目', robots: { index: false, follow: false } };
+    if (!s) return { title: getSiteT('zh-Hans')('seo.notFoundItem'), robots: { index: false, follow: false } };
     const { seo } = s;
     // openGraph／twitter 是整块覆盖 layout 的，不是逐字段合并：siteName、locale、图片要在这里重新带上，
     // 否则条目页的分享卡片没有站名和图，twitter 卡片还停在全站默认文案
@@ -80,6 +82,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             images: ['/images/og-image.png'],
         },
     };
+}
+
+// 服务端直出的 title／meta 一律简体：数据部分（书名、分类、回目、检索词）在这里统一转（overview#337）
+export async function generateMetadata(props: Props): Promise<Metadata> {
+    return simplifyMetadata(await buildMetadata(props));
 }
 
 export default async function ItemPage({ params }: Props) {

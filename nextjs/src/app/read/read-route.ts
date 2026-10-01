@@ -12,6 +12,7 @@
 import { findNode, isValidNodeId, type CatalogNode } from '../catalog/catalog-route';
 import { readerPath } from '@/lib/reader-route';
 import type { ReadSections } from 'book-index-ui';
+import { getSiteT } from '@/i18n/translate';
 
 export type { CatalogNode, ReadSections };
 
@@ -136,15 +137,17 @@ export function readCardHref(c: Pick<ReadCard, 'id'>): string {
 }
 
 export function readTitle(r?: ResolvedRead | ResolvedPeriod): string {
-    if (!r) return '阅读';
-    if ('key' in r) return `${r.label}${r.page > 1 ? `（第${r.page}页）` : ''} - 阅读`;
-    const trail = r.path.map((n) => n.label).join('·');
-    return `${trail}${r.page > 1 ? `（第${r.page}页）` : ''} - 阅读`;
+    const t = getSiteT('zh-Hans');
+    if (!r) return t('seo.readHomeTitle');
+    const page = r.page > 1 ? t('seo.pageSuffix', { n: r.page }) : '';
+    if ('key' in r) return t('seo.readTitle', { trail: r.label, page });
+    return t('seo.readTitle', { trail: r.path.map((n) => n.label).join('·'), page });
 }
 
 export function readDescription(r?: ResolvedRead | ResolvedPeriod): string {
-    if (!r) return '开源古籍阅读首页：站上所有能直接阅读的古籍，有推荐、专题、名著版本，可按四部或年代浏览。';
-    if ('key' in r) return `作者属${r.label}的可直接阅读的古籍，共 ${r.count} 部${r.pageCount > 1 ? `，第 ${r.page}／${r.pageCount} 页` : ''}。`;
-    const trail = r.path.map((n) => n.label).join(' › ');
-    return `${trail}中可直接阅读的作品，共 ${r.node.count} 部${r.pageCount > 1 ? `，第 ${r.page}／${r.pageCount} 页` : ''}。`;
+    const t = getSiteT('zh-Hans');
+    if (!r) return t('seo.readHomeDescription');
+    const page = r.pageCount > 1 ? t('seo.pageOf', { page: r.page, total: r.pageCount }) : '';
+    if ('key' in r) return t('seo.readPeriodDescription', { label: r.label, count: r.count, page });
+    return t('seo.readNodeDescription', { trail: r.path.map((n) => n.label).join(' › '), count: r.node.count, page });
 }

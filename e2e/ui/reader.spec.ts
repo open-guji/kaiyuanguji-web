@@ -57,7 +57,8 @@ test.describe('阅读页', () => {
         await tocItem(page, '002').click({ timeout: 30_000 });
         await expect(page).toHaveURL(new RegExp(`/read/${C.id}/002$`));
         // <title> 带书名与章名，不带「整理本」等类别词（用户 10-01 定：统一叫「文本」；默认版本不写版本名）
-        await expect(page).toHaveTitle(new RegExp(C.title));
+        // 书名按繁简偏好转（overview#337），默认简体
+        await expect(page).toHaveTitle(new RegExp(`${C.title}|${C.titleSimplified}`));
         await expect(page).not.toHaveTitle(/整理本|转录全文|全文/);
         // 翻到卷二后正文跟着换：卷二的文字出现，卷一的不再显示
         await expect(main.getByRole('heading', { name: j2.category }), '翻卷后正文不是卷二').toBeVisible({ timeout: 30_000 });

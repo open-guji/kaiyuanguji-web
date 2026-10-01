@@ -7,6 +7,7 @@ import Footer from './Footer';
 import { FeedbackProvider } from '../feedback/FeedbackProvider';
 import { useReveal } from '../../lib/use-reveal';
 import { MAIN_CONTENT_ID } from './nav-links';
+import { useSiteT } from '@/i18n/use-site-t';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children, hideFooter = false, navOnHero = false }: LayoutWrapperProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const t = useSiteT();
 
   // 滚动进场动效（观察全站 .reveal 元素）
   useReveal();
@@ -26,7 +28,7 @@ export default function LayoutWrapper({ children, hideFooter = false, navOnHero 
   return (
     <FeedbackProvider>
       <a href={`#${MAIN_CONTENT_ID}`} className="og-skip">
-        跳到正文
+        {t('nav.skipToMain')}
       </a>
       <Navbar
         onHero={navOnHero}
