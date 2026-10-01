@@ -56,6 +56,24 @@ describe('latestCacheKey（脚本侧，写进 latest.json.cacheKey）', () => {
         }));
     });
 
+    it('带产物内容摘要：摘要变键就变（打包脚本改了、三仓 commit 没动，产物变了），摘要相同键相同', () => {
+        const withD = latestCacheKey(BASE_LATEST, 'aaaaaaaaaaaaaaaa');
+        expect(withD).toMatch(/^[0-9a-f]{16}$/);
+        expect(withD).not.toBe(k0);
+        expect(latestCacheKey(BASE_LATEST, 'bbbbbbbbbbbbbbbb')).not.toBe(withD);
+        expect(latestCacheKey(BASE_LATEST, 'aaaaaaaaaaaaaaaa')).toBe(withD);
+        // 三仓 commit 变了键照样变
+        expect(latestCacheKey({ ...BASE_LATEST, productionCommitId: 'dddd' }, 'aaaaaaaaaaaaaaaa')).not.toBe(withD);
+    });
+
+    it('不带摘要（旧调用方）与以前完全一致；withCacheKey 带摘要时把它留在 latest.json 里排查用', () => {
+        expect(latestCacheKey(BASE_LATEST, undefined)).toBe(k0);
+        expect(withCacheKey(BASE_LATEST).contentDigest).toBeUndefined();
+        const out = withCacheKey(BASE_LATEST, 'aaaaaaaaaaaaaaaa');
+        expect(out.contentDigest).toBe('aaaaaaaaaaaaaaaa');
+        expect(out.cacheKey).toBe(latestCacheKey(BASE_LATEST, 'aaaaaaaaaaaaaaaa'));
+    });
+
     it('withCacheKey 保留原字段、只补 cacheKey', () => {
         const out = withCacheKey(BASE_LATEST);
         expect(out).toEqual({ ...BASE_LATEST, cacheKey: k0 });
