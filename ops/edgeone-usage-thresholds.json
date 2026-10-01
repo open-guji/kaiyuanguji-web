@@ -1,0 +1,5 @@
+{
+  "_说明": "EdgeOne 用量门槛（overview#280 M3）。超过任一项，每日检查开单。数值是免费档/套餐的上限，按实际套餐改。warnRatio：用到上限的多少比例就告警。",
+  "purgeUrlDaily": { "warnRatio": 0.5, "_注": "按 URL 清缓存的每日额度，已用超过这个比例告警（发布后会批量清，平时应接近 0）" },
+  "functionRequestsMonth": { "limit": 1000000, "warnRatio": 0.7, "_注": "免费档函数调用每月 100 万次；本月已用或按当前速率月底预计超过 limit×warnRatio 就告警" }
+}
