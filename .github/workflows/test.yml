@@ -110,7 +110,9 @@ jobs:
     # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
     name: Fullstack (build + next start + e2e reader/feedback/contract)
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # 正常约 6 分钟。10-01 两次被 12 分钟上限掐掉：都是「Install Chromium for Playwright」里 apt 源
+    # 只有 ~100 kB/s，这一步从 39 秒拖到 574 秒，与代码无关。放到 20 分钟留出余量（overview#304）。
+    timeout-minutes: 20
     env:
       KYG_RENDER_MODE: fullstack
       NEXT_PUBLIC_MODE: ''
