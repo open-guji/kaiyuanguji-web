@@ -34,6 +34,9 @@ jobs:
       - name: Script tests (nextjs/scripts)
         working-directory: nextjs
         run: node --test scripts/*.test.mjs scripts/lib/*.test.mjs
+      # deploy.yml 里两份正式站构建（build／prod-artifact）必须一致（overview#341）
+      - name: Deploy workflow checks (ops/tests/test_deploy_workflow.py)
+        run: python3 -m unittest ops/tests/test_deploy_workflow.py -v
       # 夜间性能门槛的判定逻辑（perf/gate.ts）：纯函数，PR 上就跑，不碰线上
       - name: Install (perf)
         working-directory: perf
