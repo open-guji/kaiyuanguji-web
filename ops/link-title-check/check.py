@@ -2,6 +2,9 @@
 """阅读首页链接核对：抓 /read 服务端渲染 HTML，取出站内 /read 链接，
 逐个打开取目标页 <title>，繁转简后比对链接上的名字是否出现在 title 里。
 
+--meta-home 模式则核对元数据首页：读数据文件的 sections.json 取各区条目，
+逐个查 {BASE}/item/<id> 的 title（归一化去掉「·」和空白后再比）。
+
 只用标准库 + opencc（urllib / html.parser / concurrent.futures）。
 """
 
@@ -10,6 +13,7 @@ import concurrent.futures
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,6 +47,14 @@ _WS_RE = re.compile(r"\s+")
 
 def _norm(text):
     return _WS_RE.sub(" ", text).strip()
+
+
+_META_STRIP_RE = re.compile(r"[·\s]+")
+
+
+def _norm_meta(text):
+    """元数据模式归一化：去掉所有「·」和所有空白。"""
+    return _META_STRIP_RE.sub("", text)
 
 
 _VOID_TAGS = {
@@ -265,25 +277,27 @@ def extract_title(html):
     return _norm("".join(parser.parts))
 
 
-def judge(name, status, title, kind=None):
+def judge(name, status, title, kind=None, mode="read"):
     """判定单条链接。返回 (ok, reason)。
 
     规则：先过 status（None/0 为“请求失败”，非 200 为“HTTP xxx”）；
     之后只有 nav 类只看 200（kind 为 None 时按名字是否以 → 结尾判断）；
     其他 kind 名字为空记不符“未抽到名字”；否则 200 且
     t2s(name) in t2s(title) 为对，否则“title 不含名字”。
+    mode="meta" 时两边都用去「·」去空白的归一化再比。
     """
     if status is None or status == 0:
         return False, "请求失败"
     if status != 200:
         return False, "HTTP %s" % status
-    norm_name = _norm(t2s(name)) if name else ""
+    normalize = _norm_meta if mode == "meta" else _norm
+    norm_name = normalize(t2s(name)) if name else ""
     is_nav = (kind == "nav") if kind is not None else norm_name.endswith("→")
     if is_nav:
         return True, "OK"
     if not norm_name:
         return False, "未抽到名字"
-    norm_title = _norm(t2s(title)) if title else ""
+    norm_title = normalize(t2s(title)) if title else ""
     if norm_title and norm_name in norm_title:
         return True, "OK"
     return False, "title 不含名字"
@@ -322,31 +336,76 @@ def fetch_page(url, timeout=20):
         return None, None
 
 
-def run_check(base, pages, fetch=fetch_page, concurrency=4, timeout=20):
+def fetch_with_retry(fetch, url, timeout=20, sleep=time.sleep,
+                     max_retries=2, retry_interval=3):
+    """带重试的抓取。返回 (status, html, attempts, retried_ok)。
+
+    只有 HTTP 503 或超时／连接失败（status 为 None/0）才重试，
+    最多重试 max_retries 次，每次先睡 retry_interval 秒；
+    其他状态码直接返回。retried_ok 表示“重试后拿到 200”。
+    """
+    attempts = 0
+    status, html = None, None
+    while True:
+        attempts += 1
+        status, html = fetch(url, timeout)
+        retryable = status is None or status == 0 or status == 503
+        if not retryable or attempts > max_retries:
+            break
+        sleep(retry_interval)
+    return status, html, attempts, (attempts > 1 and status == 200)
+
+
+def _fetch_source(fetch, url, timeout, sleep):
+    """抓首页／数据文件（带重试），失败抛 RuntimeError。"""
+    status, text, _, _ = fetch_with_retry(fetch, url, timeout, sleep)
+    if status != 200 or not text:
+        raise RuntimeError("抓取 %s 失败：%s"
+                           % (url, "请求失败" if status in (None, 0)
+                              else "HTTP %s" % status))
+    return text
+
+
+def _fetch_targets(urls, fetch, concurrency, timeout, sleep):
+    """并发抓取去重后的目标 URL（保序无关，返回 {url: (status, html,
+    attempts, retried_ok)}），同一 URL 只请求一次。"""
+    uniq = list(OrderedDict.fromkeys(urls))
+    results = {}
+
+    def _one(url):
+        return url, fetch_with_retry(fetch, url, timeout, sleep)
+
+    with concurrent.futures.ThreadPoolExecutor(
+            max_workers=max(1, concurrency)) as pool:
+        future_map = {pool.submit(_one, u): u for u in uniq}
+        for future in concurrent.futures.as_completed(future_map):
+            url, res = future.result()
+            results[url] = res
+    return results
+
+
+def run_check(base, pages, fetch=fetch_page, concurrency=4, timeout=20,
+              sleep=time.sleep):
     """主流程（便于测试时替换 fetch）。返回记录 list，每条含
-    source_page, href, name, kind, status, title, ok, reason。"""
+    source_page, href, name, kind, status, title, ok, reason,
+    attempts, retried_ok。"""
     base = base.rstrip("/")
     jobs = []
     for page in pages:
-        source_url = base + page
-        status, html = fetch(source_url, timeout)
-        if status != 200 or not html:
-            raise RuntimeError("抓取 %s 失败：%s"
-                               % (source_url,
-                                  "请求失败" if status in (None, 0)
-                                  else "HTTP %s" % status))
+        html = _fetch_source(fetch, base + page, timeout, sleep)
         for link in extract_links(html):
             jobs.append((page, link))
 
-    records = [None] * len(jobs)
+    urls = [urllib.parse.urljoin(base + "/", link["href"].lstrip("/"))
+            for _, link in jobs]
+    fetched = _fetch_targets(urls, fetch, concurrency, timeout, sleep)
 
-    def _one(index):
-        source_page, link = jobs[index]
-        url = urllib.parse.urljoin(base + "/", link["href"].lstrip("/"))
-        status, html = fetch(url, timeout)
+    records = []
+    for (source_page, link), url in zip(jobs, urls):
+        status, html, attempts, retried_ok = fetched[url]
         title = extract_title(html) if html else None
         ok, reason = judge(link["name"], status, title, link["kind"])
-        return {
+        records.append({
             "source_page": source_page,
             "href": link["href"],
             "name": link["name"],
@@ -355,35 +414,134 @@ def run_check(base, pages, fetch=fetch_page, concurrency=4, timeout=20):
             "title": title,
             "ok": ok,
             "reason": reason,
-        }
-
-    workers = max(1, concurrency)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-        future_map = {pool.submit(_one, i): i for i in range(len(jobs))}
-        for future in concurrent.futures.as_completed(future_map):
-            records[future_map[future]] = future.result()
+            "attempts": attempts,
+            "retried_ok": retried_ok,
+        })
     return records
 
 
-def main(argv=None, fetch=fetch_page):
+META_ZONES = ("shelf", "related_catalogs", "catalog_progress",
+              "collection_groups", "bibliographers", "lineage")
+
+
+def extract_meta_entries(sections):
+    """从元数据首页 sections.json 抽取 (区名, id, 名字) 条目。
+
+    返回 [{"zone", "id", "name"}]，不去重（同一 id 在不同区出现要
+    分别记）。catalog_progress 的 id 取 work_id 或 collection_id，
+    都没有就跳过；其他区缺 id 的条目也跳过。
+    """
+    entries = []
+    if not isinstance(sections, dict):
+        return entries
+
+    def _add(zone, iid, name):
+        if iid:
+            entries.append({"zone": zone, "id": iid, "name": name or ""})
+
+    shelf = sections.get("shelf") or {}
+    shelf_items = shelf.get("items") if isinstance(shelf, dict) else shelf
+    for item in shelf_items or []:
+        if isinstance(item, dict):
+            _add("shelf", item.get("id"), item.get("title"))
+    for item in sections.get("related_catalogs") or []:
+        if isinstance(item, dict):
+            _add("related_catalogs", item.get("id"), item.get("title"))
+    for item in sections.get("catalog_progress") or []:
+        if isinstance(item, dict):
+            _add("catalog_progress",
+                 item.get("work_id") or item.get("collection_id"),
+                 item.get("name"))
+    for group in sections.get("collection_groups") or []:
+        if not isinstance(group, dict):
+            continue
+        for item in group.get("items") or []:
+            if isinstance(item, dict):
+                _add("collection_groups", item.get("id"), item.get("title"))
+    for item in sections.get("bibliographers") or []:
+        if isinstance(item, dict):
+            _add("bibliographers", item.get("id"), item.get("name"))
+    for item in sections.get("lineage") or []:
+        if isinstance(item, dict):
+            _add("lineage", item.get("id"), item.get("title"))
+    return entries
+
+
+def run_meta_check(base, data, fetch=fetch_page, concurrency=4, timeout=20,
+                   sleep=time.sleep):
+    """元数据首页核对：读 {DATA}/latest.json 取 cacheKey（没有用 commitId），
+    再读 sections.json，按区抽条目逐个查 {BASE}/item/<id> 的 title。"""
+    base = base.rstrip("/")
+    data = data.rstrip("/")
+    try:
+        latest = json.loads(_fetch_source(fetch, data + "/latest.json",
+                                          timeout, sleep))
+        cache_key = latest.get("cacheKey") or latest.get("commitId")
+    except (ValueError, AttributeError) as exc:
+        raise RuntimeError("解析 latest.json 失败：%s" % exc)
+    sections_url = data + "/current/meta-home/sections.json"
+    if cache_key:
+        sections_url += "?v=" + urllib.parse.quote(str(cache_key), safe="")
+    try:
+        sections = json.loads(_fetch_source(fetch, sections_url,
+                                            timeout, sleep))
+    except ValueError as exc:
+        raise RuntimeError("解析 sections.json 失败：%s" % exc)
+
+    entries = extract_meta_entries(sections)
+    urls = [base + "/item/" + entry["id"] for entry in entries]
+    fetched = _fetch_targets(urls, fetch, concurrency, timeout, sleep)
+
+    records = []
+    for entry, url in zip(entries, urls):
+        status, html, attempts, retried_ok = fetched[url]
+        title = extract_title(html) if html else None
+        ok, reason = judge(entry["name"], status, title,
+                           entry["zone"], mode="meta")
+        records.append({
+            "source_page": "meta-home:" + entry["zone"],
+            "href": "/item/" + entry["id"],
+            "name": entry["name"],
+            "kind": entry["zone"],
+            "status": status,
+            "title": title,
+            "ok": ok,
+            "reason": reason,
+            "attempts": attempts,
+            "retried_ok": retried_ok,
+        })
+    return records
+
+
+def main(argv=None, fetch=fetch_page, sleep=time.sleep):
     parser = argparse.ArgumentParser(description="核对阅读首页站内链接的书名与目标页 title")
     parser.add_argument("--base", default="https://staging.kaiyuanguji.com")
     parser.add_argument("--pages", nargs="*", default=["/read"])
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--timeout", type=int, default=20)
     parser.add_argument("--out", default=None)
+    parser.add_argument("--meta-home", action="store_true",
+                        help="只跑元数据首页模式（读数据文件，不抽 /read HTML）")
+    parser.add_argument("--data", default="https://data.kaiyuanguji.com")
     args = parser.parse_args(argv)
 
     try:
-        records = run_check(args.base, args.pages, fetch=fetch,
-                            concurrency=args.concurrency,
-                            timeout=args.timeout)
+        if args.meta_home:
+            records = run_meta_check(args.base, args.data, fetch=fetch,
+                                     concurrency=args.concurrency,
+                                     timeout=args.timeout, sleep=sleep)
+        else:
+            records = run_check(args.base, args.pages, fetch=fetch,
+                                concurrency=args.concurrency,
+                                timeout=args.timeout, sleep=sleep)
     except RuntimeError as exc:
         print("错误：%s" % exc, file=sys.stderr)
         return 1
 
     bad = [r for r in records if not r["ok"]]
-    print("核对 %d 个链接，不符 %d 个" % (len(records), len(bad)))
+    retried = sum(1 for r in records if r["retried_ok"])
+    print("核对 %d 个链接，不符 %d 个，重试后才成功 %d 个"
+          % (len(records), len(bad), retried))
     for item in bad:
         print("- [%s] %s %s -> %s（title：%s）"
               % (item["kind"], item["name"], item["href"],
