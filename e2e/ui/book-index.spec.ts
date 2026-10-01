@@ -5,7 +5,8 @@
  * 就是：HTTP 全 200、无 pageerror、字节数正常，但内容是空的或错的。
  */
 import { test, expect } from '@playwright/test';
-import { ANCHORS, BOOK_INDEX_TABS, TARGET } from '../fixtures/anchors';
+import { ANCHORS, BOOK_INDEX_TABS, DATA_BASE, TARGET } from '../fixtures/anchors';
+import { requireMetaHomeData } from '../fixtures/preconditions';
 
 function eitherScript(traditional: string, simplified: string): RegExp {
     const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -70,21 +71,58 @@ test.describe('首页', () => {
 });
 
 test.describe('古籍索引页', () => {
-    test('默认页显示全局统计', async ({ page }) => {
+    // 无检索词是元数据首页（overview#322 块 D）：检索框（GET 表单）＋最近浏览，下面是分区；原来的「推荐」「反馈」等页签已去掉
+    test('首页态：检索框、最近浏览、数据与授权，没有旧页签', async ({ page }) => {
+        const errors: string[] = [];
+        page.on('pageerror', (e) => errors.push(e.message));
         await page.goto(`${TARGET}/book-index`);
-
-        // 统计数字来自 meta.json；显示 0 或不显示 = 数据没加载上
-        await expect(page.getByText(/[\d,]+\s*本/).first()).toBeVisible({ timeout: 30_000 });
-        await expect(page.getByRole('heading', { name: /古籍资源索引|古籍資源索引/ })).toBeVisible();
+        const form = page.getByRole('search');
+        await expect(form.getByRole('searchbox', { name: '检索古籍元数据' })).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByRole('complementary', { name: '最近浏览' })).toBeVisible();
+        await expect(page.getByRole('heading', { level: 2, name: '数据与授权' })).toBeVisible();
+        await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
+        await expect(page.getByRole('tab')).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: /古籍资源索引|古籍資源索引/ })).toHaveCount(0);
+        expect(errors, `页面 JS 报错：${errors.join('; ')}`).toEqual([]);
     });
 
+    test('首页态检索：提交表单落到结果页', async ({ page }) => {
+        await page.goto(`${TARGET}/book-index`);
+        await page.getByRole('searchbox', { name: '检索古籍元数据' }).fill('史記');
+        await page.getByRole('button', { name: '检索', exact: true }).click();
+        await expect(page).toHaveURL(/\/book-index\?q=/);
+    });
+
+    test('首页态分区：历代史志书架进作品页，四部链到总目', async ({ page, request }) => {
+        await requireMetaHomeData(request, '元数据首页分区');
+        await page.goto(`${TARGET}/book-index`);
+        await expect(page.getByRole('heading', { level: 2, name: '历代史志' })).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByRole('heading', { level: 2, name: '四部' })).toBeVisible();
+        await expect(page.getByRole('navigation', { name: '元数据首页分区' })).toBeVisible();
+        const spine = page.locator('.bim-rh-spine').first();
+        await expect(spine).toHaveAttribute('href', /^\/item\//);
+        await expect(page.locator('.bim-rh-bu-h').first()).toHaveAttribute('href', /^\/catalog\?node=/);
+    });
+
+    for (const width of [390, 360]) {
+        test(`首页态手机 ${width}px 不横向溢出`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 800 });
+            await page.goto(`${TARGET}/book-index`);
+            await expect(page.getByRole('heading', { level: 2, name: '数据与授权' })).toBeVisible({ timeout: 30_000 });
+            await page.waitForLoadState('networkidle').catch(() => {});
+            const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+            expect(scrollWidth, '页面出现横向滚动').toBeLessThanOrEqual(width);
+        });
+    }
+
+    // 旧页签地址（外部收藏）不失效：照样打开首页态、不报错
     for (const tab of BOOK_INDEX_TABS) {
-        test(`tab=${tab} 可打开且无 JS 错误`, async ({ page }) => {
+        test(`旧地址 tab=${tab} 打开首页态且无 JS 错误`, async ({ page }) => {
             const errors: string[] = [];
             page.on('pageerror', (e) => errors.push(e.message));
 
             await page.goto(`${TARGET}/book-index?tab=${tab}`);
-            await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
+            await expect(page.getByRole('heading', { level: 2, name: '数据与授权' })).toBeVisible({ timeout: 30_000 });
 
             expect(errors, `tab=${tab} 出现 JS 异常`).toEqual([]);
         });
@@ -168,7 +206,8 @@ test.describe('数据版本标识', () => {
     test('页面显示的版本与线上发布版本一致', async ({ page, request }) => {
         // 2026-09-02：版本条读 current/version.json（immutable 长缓存），
         // 显示的 commit 落后 9 天。这既误导排查，也是版本号分裂的信号。
-        const latestRes = await request.get(`https://data.kaiyuanguji.com/latest.json?_=${Date.now()}`);
+        // 10-01 起版本号并进元数据首页「数据与授权」：「当前数据版本：<短 commit> · <日期>」（overview#322）
+        const latestRes = await request.get(`${DATA_BASE}/latest.json?_=${Date.now()}`);
         const latest = await latestRes.json();
         const shortId = String(latest.commitId).slice(0, 7);
 

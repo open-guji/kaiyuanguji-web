@@ -30,6 +30,7 @@ interface Target {
 const TARGETS: Target[] = [
     { name: '首页', path: '/' },
     { name: '古籍总目', path: '/catalog', fullstackOnly: true },
+    { name: '古籍元数据（首页）', path: '/book-index' },
     { name: '古籍元数据（搜索页）', path: '/book-index?q=%E6%98%93' },
     { name: '阅读首页', path: '/read', fullstackOnly: true },
     { name: '阅读首页·按年代', path: '/read?period=song', fullstackOnly: true, needsReadSections: true },
