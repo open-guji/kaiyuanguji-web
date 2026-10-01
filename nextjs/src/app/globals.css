@@ -1364,6 +1364,20 @@
     gap: 10px;
     margin-bottom: 8px;
   }
+  /* 「文本开放」「代码开源」之间的竖分割线（9-30 反馈，overview#322）：只在疏朗下画（界栏两栏各自有框）；
+     落在两栏间距正中，上下各缩进一段，不顶到边 */
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col {
+    position: relative;
+  }
+  :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
   .home-open-head h2 {
     margin: 0;
   }
@@ -1480,6 +1494,10 @@
       grid-template-columns: minmax(0, 1fr);
       gap: 28px;
       padding: 28px var(--shell-gutter);
+    }
+    /* 手机上两栏上下排，竖线不画 */
+    :root:not([data-layout="boxed"]) .home-open-col + .home-open-col::before {
+      display: none;
     }
     .home-repos li {
       grid-template-columns: minmax(0, 1fr);

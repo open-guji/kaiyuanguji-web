@@ -28,7 +28,7 @@ export default function HomeSearch() {
         name="q"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="书名、作者、版本，如：史記、陳振孫"
+        placeholder="书名、作者、版本，如：史记、苏轼"
         aria-label="搜索古籍索引"
       />
       <button type="submit" className="og-btn">
