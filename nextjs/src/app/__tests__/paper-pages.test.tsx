@@ -33,10 +33,11 @@ describe('暖纸色底（overview#267）', () => {
         expect(container.querySelector('.og-paper')).not.toBeNull();
     });
 
-    it('og-paper 用 --color-paper 令牌，不写死色值；页脚黑底用 --color-ink', () => {
+    it('og-paper 用 --color-paper 令牌，不写死色值；页脚深底走 --og-foot-bg（默认接 --color-ink，墨主题按设计稿 ft-bg）', () => {
         expect(css).toMatch(/\.og-paper\s*\{\s*background:\s*var\(--color-paper\);\s*\}/);
         const footer = css.match(/\n\s+\.og-footer\s*\{[^}]*\}/)?.[0] ?? '';
-        expect(footer).toMatch(/background:\s*var\(--color-ink\)/);
+        expect(footer).toMatch(/background:\s*var\(--og-foot-bg\)/);
+        expect(css).toMatch(/--og-foot-bg:\s*var\(--color-ink\);/);
         expect(footer).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
     });
 });

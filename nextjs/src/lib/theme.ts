@@ -18,7 +18,7 @@ export const THEMES: { name: ThemeName; label: string }[] = [
 ];
 
 /** `<meta name="theme-color">`：浏览器地址栏／状态栏色，取各主题的主色 */
-export const THEME_COLOR: Record<ThemeName, string> = { zhusha: '#9e2a2b', indigo: '#2e5266', ink: '#222221' };
+export const THEME_COLOR: Record<ThemeName, string> = { zhusha: '#9e2a2b', indigo: '#2e5266', ink: '#3b4a58' };
 
 export const THEME_KEY = 'kyg-theme';
 export const DEFAULT_THEME: ThemeName = 'zhusha';

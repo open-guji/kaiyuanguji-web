@@ -44,7 +44,7 @@ describe('AppearancePicker（外观面板）', () => {
     fireEvent.click(screen.getByRole('radio', { name: /墨/ }));
     expect(document.documentElement.getAttribute('data-theme')).toBe('ink');
     expect(window.localStorage.getItem(THEME_KEY)).toBe('ink');
-    expect(document.querySelector('meta[name="theme-color"]')!.getAttribute('content')).toBe('#222221');
+    expect(document.querySelector('meta[name="theme-color"]')!.getAttribute('content')).toBe('#3b4a58');
     // 还原
     fireEvent.click(screen.getByRole('radio', { name: /疏朗/ }));
     fireEvent.click(screen.getByRole('radio', { name: /朱砂/ }));

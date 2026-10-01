@@ -10,7 +10,7 @@ import {
 const SWATCH: Record<ThemeName, { bg: string; ac: string; hint: string }> = {
   zhusha: { bg: '#f6f3ec', ac: '#9c3a2c', hint: '宣纸底' },
   indigo: { bg: '#f4efe4', ac: '#2e5266', hint: '米白底' },
-  ink: { bg: '#f5f5f3', ac: '#222221', hint: '素白底' },
+  ink: { bg: '#ffffff', ac: '#3b4a58', hint: '素白底' },
 };
 
 /**

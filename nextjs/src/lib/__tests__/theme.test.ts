@@ -84,7 +84,7 @@ describe('v4 外观：墨与版式', () => {
     }
     expect(applyTheme('ink')).toBe('ink');
     expect(document.documentElement.getAttribute('data-theme')).toBe('ink');
-    expect(themeColor()).toBe('#222221');
+    expect(themeColor()).toBe('#3b4a58');
   });
 
   it('版式：默认疏朗；存取往返；非法值回退疏朗', () => {
@@ -113,7 +113,7 @@ describe('v4 外观：墨与版式', () => {
     run();
     expect(document.documentElement.getAttribute('data-theme')).toBe('ink');
     expect(document.documentElement.getAttribute('data-layout')).toBe('boxed');
-    expect(themeColor()).toBe('#222221');
+    expect(themeColor()).toBe('#3b4a58');
     document.documentElement.removeAttribute('data-theme');
     document.documentElement.removeAttribute('data-layout');
     window.localStorage.setItem(THEME_KEY, 'purple');
