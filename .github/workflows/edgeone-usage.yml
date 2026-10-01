@@ -1,0 +1,67 @@
+name: EdgeOne usage
+
+# EdgeOne 用量日检（overview#280 M3）：清缓存额度、近 7 天请求／流量、本月计费用量。
+# 只读（TEO API，凭据同 edgeone-purge-urls.yml）；超 ops/edgeone-usage-thresholds.json 的阈值就开单（标签 usage）。
+# 读不到的项目在报告里写「取不到」，不算失败；四类全读不到才红（多半是凭据没有读权限）。
+# 读不到的部分走月度人工清单：overview 项目进展/古籍索引网站/进度/运维/EdgeOne用量-月度人工检查.md。
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # 北京时间 11:30
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'ops/edgeone_usage*.py'
+      - 'ops/edgeone-usage-thresholds.json'
+      - 'ops/tests/test_edgeone_usage.py'
+      - '.github/workflows/edgeone-usage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  usage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - name: Unit tests
+        run: python3 -m unittest discover -s ops/tests -p 'test_edgeone_usage.py' -v
+      # PR 上也取数（只读 API，同仓 PR 才有密钥；失败不拦 PR），为的是新工作流合入前就能看到哪些数读得到
+      - name: Check usage
+        id: usage
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          OUT_MD: ${{ runner.temp }}/usage.md
+          OUT_BREACH: ${{ runner.temp }}/breach.txt
+        run: python3 ops/edgeone_usage.py
+      - name: Summary
+        if: always()
+        run: '[ -f "$RUNNER_TEMP/usage.md" ] && cat "$RUNNER_TEMP/usage.md" >> "$GITHUB_STEP_SUMMARY" || true'
+      - name: Open or update usage issue on breach
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const tmp = process.env.RUNNER_TEMP;
+            const breach = fs.existsSync(`${tmp}/breach.txt`) ? fs.readFileSync(`${tmp}/breach.txt`, 'utf8').trim() : '';
+            if (!breach) { core.info('没有超阈值项'); return; }
+            const md = fs.readFileSync(`${tmp}/usage.md`, 'utf8');
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = '[usage] EdgeOne 用量超阈值';
+            const body = `${md}\n\n日志：${run}\n\n阈值在 \`ops/edgeone-usage-thresholds.json\`。处理后请手动关闭本单。`;
+            try { await github.rest.issues.createLabel({ ...context.repo, name: 'usage', color: 'fbca04' }); } catch (e) { /* 已存在 */ }
+            const open = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'usage', per_page: 20 });
+            const existing = open.data.find((i) => !i.pull_request && i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['usage'] });
+            }
