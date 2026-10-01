@@ -9,7 +9,7 @@
  *   3. 私有：manifest 顶层 internal 的条目文本一个字节都不进公开产物；某个 version internal 的，该版本目录不拷、
  *      公开 manifest.json 里也不列；
  *   4. 全局清单 index/texts/{0-f}.json 拷进产物，internal 版本被滤掉（无需过滤的分片字节不变）；
- *   5. 阅读首页 read/：新结构可读条目（含整理本标记）进来，空目录、私有的不进；
+ *   5. 阅读首页 read/：新结构可读条目（含整理本标记）进来，空目录、私有的、旧结构的不进；
  *   6. bundle-hashed-text：新结构条目的 manifest.json 与公开版本目录进 text/<id>/…，manifest 分片里有；私有的没有；
  *   7. 构建期核对（verifyItems）覆盖新结构：产物里缺首章会让 bundle-data 失败。
  *
@@ -200,16 +200,16 @@ try {
         assert.ok(existsSync(join(data, 'index', 'full_text', '0.json')), '旧的 index/full_text 照旧拷');
     });
 
-    test('阅读首页 read/：新结构可读条目进（含整理本标记），空目录、私有的不进；旧结构照旧', () => {
+    test('阅读首页 read/：新结构可读条目进（含整理本标记），空目录、私有的不进；旧结构不再算可读（overview#307 §十）', () => {
         const feat = readJ(join(data, 'read', 'featured.json'));
-        assert.deepEqual(feat.collated.map((c) => c.id).sort(), [IDS.newWork, IDS.oldWork].sort());
-        assert.deepEqual(feat.books.map((c) => c.id).sort(), [IDS.newBook, IDS.oldBook].sort());
+        assert.deepEqual(feat.collated.map((c) => c.id), [IDS.newWork]);
+        assert.deepEqual(feat.books.map((c) => c.id), [IDS.newBook]);
         const all = JSON.stringify(readJ(join(data, 'read', 'tree.json')));
         assert.ok(all.length > 0);
         const ids = new Set();
         const tree = readJ(join(data, 'read', 'tree.json'));
         for (const n of tree) for (const f of walkFiles(join(data, 'read', n.id))) for (const c of readJ(join(data, 'read', n.id, f))) ids.add(c.id);
-        assert.ok(ids.has(IDS.newWork) && ids.has(IDS.oldWork));
+        assert.ok(ids.has(IDS.newWork) && !ids.has(IDS.oldWork));
         assert.ok(!ids.has(IDS.emptyWork) && !ids.has(IDS.privWork));
         assert.match(log, /核对 \d+ 项阅读入口的数据文件：全部在产物里/);
     });
