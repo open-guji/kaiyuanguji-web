@@ -23,6 +23,33 @@ describe('normalizeVariants／toSimplified', () => {
     });
 });
 
+describe('toSimplified：opencc t 预设（overview#368）', () => {
+    // tw 预设把「著録」「所著」「編著」里的「著」转成「着」；须与组件库 getSimplifiedConverter 同口径
+    const CASES: [string, string][] = [
+        ['著録', '著录'],
+        ['所著之數', '所著之数'],
+        ['編著', '编著'],
+        ['撰著', '撰著'],
+        ['著錄、著作、著名、顯著', '著录、著作、著名、显著'],
+        ['二百卷，著録書三千', '二百卷，著录书三千'],
+        ['乾隆', '乾隆'],
+        ['後漢書', '后汉书'],
+        ['於是', '于是'],
+        ['瞭解', '了解'],
+        ['嚮往', '向往'],
+        ['裡', '里'],
+        ['麵', '面'],
+        ['髮', '发'],
+    ];
+    for (const [input, expected] of CASES) {
+        it(`${input} → ${expected}`, () => expect(toSimplified(input)).toBe(expected));
+    }
+
+    it('异体字归一照常生效', () => {
+        expect(toSimplified('寳㫖著録')).toBe('宝旨著录');
+    });
+});
+
 describe('simplifyMetadata', () => {
     it('title、description、og 里的异体字同样转简体', () => {
         const m = simplifyMetadata({ title: '風月寳鑑', description: '凡例㫖要', openGraph: { title: '縂評' } });
