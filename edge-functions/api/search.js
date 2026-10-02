@@ -44,6 +44,8 @@
 // 绝不放 master key：本函数只调 /multi-search。
 
 import { Converter } from 'opencc-js/t2cn';
+// 异体字 → 正字（overview#350）：与组件库、nextjs/src/lib/server/simplify.ts 同一张表，t2cn 之前先归一
+import VARIANT_CHARS from 'book-index-ui/variant-chars';
 
 const DEFAULT_MEILI_URL = 'https://api.kaiyuanguji.com';
 
@@ -106,7 +108,19 @@ const LOCALES = ['zh-Hans', 'zh-Hant'];
 /** 转简体的显示字段；classification、loss_status 等是筛选取值，不动 */
 const DISPLAY_FIELDS = ['title', 'primary_name', 'author', 'dynasty', 'era', 'role', 'edition'];
 
-// 与 nextjs/src/lib/server/simplify.ts 同口径：Converter({ from: 'tw', to: 'cn' })，isolate 内只建一次；建不成就原样返回
+/** 异体字按码位换成正字（「㫖」→「旨」）；t2cn 不认这些字 */
+function normalizeVariants(text) {
+  let out = '';
+  let changed = false;
+  for (const ch of text) {
+    const to = VARIANT_CHARS[ch];
+    if (to !== undefined) changed = true;
+    out += to ?? ch;
+  }
+  return changed ? out : text;
+}
+
+// 与 nextjs/src/lib/server/simplify.ts 同口径：先异体字归一，再 Converter({ from: 'tw', to: 'cn' })；isolate 内只建一次，建不成就原样返回
 let t2cn;
 function toSimplified(text) {
   if (t2cn === undefined) {
@@ -118,7 +132,7 @@ function toSimplified(text) {
   }
   if (!t2cn || !text) return text;
   try {
-    return t2cn(text);
+    return t2cn(normalizeVariants(text));
   } catch {
     return text;
   }

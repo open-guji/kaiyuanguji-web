@@ -13,6 +13,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { findTraditionalChars, TRADITIONAL_ALLOWLIST } from '../fixtures/traditional-check';
+import { requireUiVersion } from '../fixtures/preconditions';
 
 /** 版本、丛编各取一个首页上推荐的经典条目（ANCHORS 里还没有这两类） */
 const BOOK_ID = '96kzkdm8e8';        // 新鐫全部繡像紅樓夢（程甲本）
@@ -75,6 +76,33 @@ test.describe('简体模式：页面不残留常见繁体字', () => {
             expect(lines, `${t.name}（${t.path}）简体模式残留繁体字`).toEqual([]);
         });
     }
+});
+
+test.describe('简体模式：异体字归一（overview#350）', () => {
+    // 脂评凡例：用户 10-02 报「㫖」「縂」「寳」（風月寳鑑）选简体后不转；繁体模式原样保留
+    const PATH = '/read/96kzii6z28/001';
+    const VARIANTS = /[㫖縂寳]/;
+
+    test('脂评凡例：简体下没有 㫖縂寳', async ({ page, request }) => {
+        test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有 ${PATH}`);
+        await requireUiVersion(request, '0.37.0', '异体字归一');
+        await setLocale(page, 'zh-Hans');
+        const res = await page.goto(`${TARGET}${PATH}`, { waitUntil: 'load' });
+        expect(res?.status(), PATH).toBeLessThan(400);
+        await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
+        const main = page.getByRole('main');
+        await expect(main).toContainText(/宝鉴|旨|总/, { timeout: 30_000 });
+        expect((await main.innerText()).match(new RegExp(VARIANTS, 'g')) ?? [], '简体模式残留异体字').toEqual([]);
+    });
+
+    test('脂评凡例：繁体下照原文显示异体字（归一只在简体模式做）', async ({ page, request }) => {
+        test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有 ${PATH}`);
+        await requireUiVersion(request, '0.37.0', '异体字归一');
+        await setLocale(page, 'zh-Hant');
+        await page.goto(`${TARGET}${PATH}`, { waitUntil: 'load' });
+        await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
+        await expect(page.getByRole('main')).toContainText(VARIANTS, { timeout: 30_000 });
+    });
 });
 
 test.describe('繁体模式：顶栏与页脚跟着切', () => {
