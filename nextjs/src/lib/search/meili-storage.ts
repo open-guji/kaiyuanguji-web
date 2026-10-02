@@ -17,6 +17,9 @@
  *
  * Circuit breaker：连续 N 次失败后短暂不再访问 L1，直接走 L2，避免
  * 每次搜索都等 2 秒超时。
+ *
+ * 代理模式的超时与重试（overview#370）：单次 6 秒超时；超时、网络错、5xx 先自动重试一次，
+ * 重试也失败才降级成简易搜索。降级后下一次请求成功就清掉降级标志（黄条随之消失）。
  */
 
 import type { IndexStorage } from 'book-index-ui/storage';
@@ -31,11 +34,11 @@ export interface MeiliConfig {
     baseUrl?: string;
     /** Read-only key（不要用 master key）。可空 — 此时不发 Authorization 头 */
     apiKey?: string;
-    /** 单次请求超时，默认 2000 ms */
+    /** 单次请求超时，默认直连 5000 ms、代理 6000 ms */
     timeoutMs?: number;
     /** 连续失败多少次进入降级模式，默认 3 */
     failuresBeforeBreak?: number;
-    /** 降级期持续时长（ms），过期后允许重试 L1，默认 5 分钟 */
+    /** 降级期持续时长（ms），过期后允许重试 L1，默认直连 5 分钟、代理 30 秒 */
     breakerCooldownMs?: number;
     /** 调试日志 */
     debug?: boolean;
@@ -80,9 +83,15 @@ class CircuitBreaker {
     private openUntil = 0;
 
     constructor(
-        private readonly threshold: number,
-        private readonly cooldownMs: number,
+        private threshold: number,
+        private cooldownMs: number,
     ) {}
+
+    /** 按 MeiliConfig 的 failuresBeforeBreak／breakerCooldownMs 调参（单例，最后一次 wrap 为准） */
+    configure(threshold: number, cooldownMs: number): void {
+        this.threshold = threshold;
+        this.cooldownMs = cooldownMs;
+    }
 
     canCall(): boolean {
         if (Date.now() < this.openUntil) return false;
@@ -193,6 +202,7 @@ export function wrapWithMeiliSearch<T extends IndexStorage>(base: T, config: Mei
     // 1-2s。2 秒太紧 → 4 个并发里只要一个超时整个 searchAll 就被认为失败。
     const timeoutMs = config.timeoutMs ?? 5000;
     const debug = config.debug ?? false;
+    breaker.configure(config.failuresBeforeBreak ?? 3, config.breakerCooldownMs ?? 5 * 60_000);
 
     async function meiliSearch(indexUid: string, query: string, opts: { limit?: number; offset?: number } = {}) {
         // 用 GET 而不是 POST：CDN（EdgeOne 等）默认不缓存 POST，无法享受
@@ -362,6 +372,18 @@ const TYPE_TO_INDEX: Record<string, string> = {
     work: 'works', book: 'books', collection: 'collections', entity: 'entities',
 };
 
+const BAD_PROXY_RESPONSE = 'bad proxy response';
+
+/**
+ * 值得再试一次的失败：超时、网络错、5xx（代理对上游超时回 503／504）。
+ * 4xx（请求本身的问题、key 失效）与响应形状不对，再试也一样，不重试。
+ */
+function isTransient(e: unknown): boolean {
+    const status = (e as { status?: number })?.status;
+    if (typeof status === 'number') return status >= 500;
+    return (e as Error)?.message !== BAD_PROXY_RESPONSE;
+}
+
 /**
  * 代理模式：L1 走同站 /api/search。
  *
@@ -369,13 +391,26 @@ const TYPE_TO_INDEX: Record<string, string> = {
  *   - 四类索引一次请求（代理在服务端 multi-search），省三个往返；
  *   - 失败（代理 503／超时／网络错）当次就透传 L2，不再「先返回空结果」——
  *     L2 已是轻量分片（书名＋作者），Meili 停机时用户仍能按书名搜到；
- *   - breaker 仍在：连续失败后冷却期内不再请求代理，直接 L2，省得每次等超时。
+ *   - 超时、网络错、5xx 先重试一次，重试也失败才算这次失败（overview#370）；
+ *   - breaker 仍在：连续失败后冷却期（默认 30 秒）内不再请求代理，直接 L2，省得每次等超时。
  */
 function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfig): T {
     const proxyUrl = config.proxyUrl!;
-    // 代理对上游有 2 s 超时，自身再留 1 s 余量
-    const timeoutMs = config.timeoutMs ?? 3000;
+    // 3 秒离常见耗时太近（实测中位 1.4 s、慢的 3.5 s），偶发一次慢请求就整页降级（overview#370）
+    const timeoutMs = config.timeoutMs ?? 6000;
     const debug = config.debug ?? false;
+    breaker.configure(config.failuresBeforeBreak ?? 3, config.breakerCooldownMs ?? 30_000);
+
+    /** 超时等偶发失败先原样再请求一次，重试也失败才交给调用方降级 */
+    async function withRetry<R>(fn: () => Promise<R>, where: string): Promise<R> {
+        try {
+            return await fn();
+        } catch (e) {
+            if (!isTransient(e)) throw e;
+            if (debug) console.warn(`[search-proxy] ${where} failed, retrying once:`, (e as Error)?.message);
+            return fn();
+        }
+    }
 
     async function proxySearch(params: Record<string, string>): Promise<ProxyResult[]> {
         const ctrl = new AbortController();
@@ -391,7 +426,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 throw err;
             }
             const data = await r.json() as { results?: ProxyResult[] };
-            if (!Array.isArray(data.results)) throw new Error('bad proxy response');
+            if (!Array.isArray(data.results)) throw new Error(BAD_PROXY_RESPONSE);
             return data.results;
         } finally {
             clearTimeout(timer);
@@ -427,7 +462,7 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 throw err;
             }
             const data = await r.json() as { results?: ProxyResult[] };
-            if (!Array.isArray(data.results)) throw new Error('bad proxy response');
+            if (!Array.isArray(data.results)) throw new Error(BAD_PROXY_RESPONSE);
             return [...data.results, ...empty];
         } finally {
             clearTimeout(timer);
@@ -461,9 +496,9 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 return base.searchAll!(query, limit);
             }
             try {
-                const results = filtered
-                    ? await proxyMultiSearch(q, limit, 0, filters!)
-                    : await proxySearch({ q, limit: String(limit) });
+                const results = await withRetry(() => filtered
+                    ? proxyMultiSearch(q, limit, 0, filters!)
+                    : proxySearch({ q, limit: String(limit) }), 'searchAll');
                 breaker.recordSuccess();
                 setDegraded(false);
                 const by = new Map(results.map(r => [r.indexUid, r]));
@@ -501,14 +536,14 @@ function wrapWithSearchProxy<T extends IndexStorage>(base: T, config: MeiliConfi
                 return base.search(query, type, options);
             }
             try {
-                const [r] = await proxySearch({
+                const [r] = await withRetry(() => proxySearch({
                     q,
                     index: TYPE_TO_INDEX[type] ?? 'works',
                     limit: String(pageSize),
                     offset: String((page - 1) * pageSize),
                     ...(filterStr ? { filter: filterStr } : {}),
                     ...(options.filters && sortFor(type, options.filters) ? { sort: sortFor(type, options.filters)! } : {}),
-                });
+                }), 'search');
                 breaker.recordSuccess();
                 setDegraded(false);
                 return {

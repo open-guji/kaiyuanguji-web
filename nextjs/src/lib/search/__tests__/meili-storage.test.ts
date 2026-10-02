@@ -345,7 +345,8 @@ describe('meili-storage 代理模式（S1：/api/search）', () => {
         const { wrapWithMeiliSearch, getMeiliBreakerState } = freshModule();
         const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
         for (let i = 0; i < 4; i++) await wrapped.searchAll!('史記', 5);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        // 前 3 次各请求两遍（503 先重试一次），第 4 次熔断不再请求
+        expect(fetchMock).toHaveBeenCalledTimes(6);
         expect(base.searchAll).toHaveBeenCalledTimes(4);
         expect(getMeiliBreakerState().open).toBe(true);
     });
@@ -388,6 +389,136 @@ describe('meili-storage 代理模式（S1：/api/search）', () => {
         const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
         await wrapped.searchAll!('史記', 5);
         expect(base.searchAll).toHaveBeenCalled();
+    });
+});
+
+describe('meili-storage 代理模式：超时先重试一次，重试也失败才降级（overview#370）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; jest.clearAllMocks(); jest.useRealTimers(); });
+    const okRes = (results: unknown[] = []) => ({ ok: true, status: 200, json: async () => ({ results }) });
+    const timeoutErr = () => new DOMException('search proxy timeout', 'TimeoutError');
+    const F = (p: Record<string, unknown>) => ({ dynasty: [], classification: [], hasImage: false, hasText: false, hasCollated: false, loss: '', sort: '', ...p });
+
+    it('第一次超时、重试成功：用 L1 结果，不降级、不计入熔断', async () => {
+        const fetchMock = jest.fn()
+            .mockRejectedValueOnce(timeoutErr())
+            .mockResolvedValueOnce(okRes([{ indexUid: 'works', hits: [{ id: 'w1', type: 'work', title: '史記' }], estimatedTotalHits: 1 }]));
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded, subscribeSearchDegraded, getMeiliBreakerState } = freshModule();
+        const seen: boolean[] = [];
+        subscribeSearchDegraded((d: boolean) => seen.push(d));
+        const r = await wrapWithMeiliSearch(base, { proxyUrl: '/api/search' }).searchAll!('史記', 5);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][0]).toBe(fetchMock.mock.calls[0][0]);
+        expect(r.works[0]).toMatchObject({ id: 'w1' });
+        expect(base.searchAll).not.toHaveBeenCalled();
+        expect(isSearchDegraded()).toBe(false);
+        expect(seen).toEqual([]);
+        expect(getMeiliBreakerState().failures).toBe(0);
+    });
+
+    it('带筛选（勾「有影印」）第一次超时、重试成功：筛选结果照常返回，不抛错', async () => {
+        const fetchMock = jest.fn()
+            .mockRejectedValueOnce(timeoutErr())
+            .mockResolvedValueOnce(okRes([{ indexUid: 'works', hits: [{ id: 'w1', type: 'work', title: '史記', has_image: true }], estimatedTotalHits: 3 }]));
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch, isSearchDegraded } = freshModule();
+        const r = await wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5, F({ hasImage: true }) as any);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][1].method).toBe('POST');
+        expect(fetchMock.mock.calls[1][1].body).toBe(fetchMock.mock.calls[0][1].body);
+        expect(r.totalWorks).toBe(3);
+        expect(isSearchDegraded()).toBe(false);
+    });
+
+    it('search(type) 翻页同样重试一次', async () => {
+        const fetchMock = jest.fn()
+            .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({}) })
+            .mockResolvedValueOnce(okRes([{ indexUid: 'works', hits: [{ id: 'w2', type: 'work', title: '漢書' }], estimatedTotalHits: 9 }]));
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded } = freshModule();
+        const r = await wrapWithMeiliSearch(base, { proxyUrl: '/api/search' }).search('漢書', 'work', { page: 2, pageSize: 20 });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(r).toMatchObject({ total: 9, page: 2 });
+        expect(base.search).not.toHaveBeenCalled();
+        expect(isSearchDegraded()).toBe(false);
+    });
+
+    it('两次都超时才降级：无筛选走 L2，带筛选抛「筛选需要完整搜索」', async () => {
+        const fetchMock = jest.fn().mockRejectedValue(timeoutErr());
+        global.fetch = fetchMock as any;
+        const base = makeBase();
+        const { wrapWithMeiliSearch, isSearchDegraded, getMeiliBreakerState } = freshModule();
+        const wrapped = wrapWithMeiliSearch(base, { proxyUrl: '/api/search' });
+        await wrapped.searchAll!('史記', 5);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(base.searchAll).toHaveBeenCalledWith('史記', 5);
+        expect(isSearchDegraded()).toBe(true);
+        expect(getMeiliBreakerState().failures).toBe(1);
+        await expect(wrapped.searchAll!('史記', 5, F({ hasImage: true }) as any)).rejects.toThrow('筛选需要完整搜索');
+        expect(fetchMock).toHaveBeenCalledTimes(4);
+    });
+
+    it('4xx 与响应形状不对不重试', async () => {
+        for (const res of [{ ok: false, status: 400, json: async () => ({}) }, { ok: true, status: 200, json: async () => ({ hits: [] }) }]) {
+            const fetchMock = jest.fn().mockResolvedValue(res);
+            global.fetch = fetchMock as any;
+            const { wrapWithMeiliSearch } = freshModule();
+            await wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5);
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        }
+    });
+
+    it('降级后下一次请求成功就自动恢复，黄条消失', async () => {
+        const fetchMock = jest.fn()
+            .mockRejectedValueOnce(timeoutErr())
+            .mockRejectedValueOnce(timeoutErr())
+            .mockResolvedValue(okRes());
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch, isSearchDegraded, subscribeSearchDegraded } = freshModule();
+        const seen: boolean[] = [];
+        subscribeSearchDegraded((d: boolean) => seen.push(d));
+        const wrapped = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' });
+        await wrapped.searchAll!('史記', 5);
+        expect(isSearchDegraded()).toBe(true);
+        await wrapped.searchAll!('史記', 5, F({ hasImage: true }) as any);
+        expect(isSearchDegraded()).toBe(false);
+        expect(seen).toEqual([true, false]);
+    });
+
+    it('熔断冷却默认 30 秒：过后下一次请求再试代理，成功即恢复', async () => {
+        jest.useFakeTimers({ now: 1_000_000 });
+        const fetchMock = jest.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+        global.fetch = fetchMock as any;
+        const { wrapWithMeiliSearch, isSearchDegraded, getMeiliBreakerState } = freshModule();
+        const wrapped = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' });
+        for (let i = 0; i < 3; i++) await wrapped.searchAll!('史記', 5);
+        expect(getMeiliBreakerState().open).toBe(true);
+        expect(getMeiliBreakerState().cooldownRemaining).toBe(30_000);
+        jest.setSystemTime(1_000_000 + 30_001);
+        fetchMock.mockResolvedValue(okRes());
+        await wrapped.searchAll!('史記', 5);
+        expect(isSearchDegraded()).toBe(false);
+        expect(getMeiliBreakerState()).toMatchObject({ open: false, failures: 0 });
+    });
+
+    it('单次超时默认 6 秒：6 秒内回来不算超时', async () => {
+        jest.useFakeTimers();
+        let aborted = 0;
+        global.fetch = jest.fn((_url: string, init: RequestInit) => new Promise((resolve, reject) => {
+            init.signal!.addEventListener('abort', () => { aborted++; reject(timeoutErr()); });
+            setTimeout(() => resolve(okRes()), 5_500);
+        })) as any;
+        const { wrapWithMeiliSearch, isSearchDegraded } = freshModule();
+        const p = wrapWithMeiliSearch(makeBase(), { proxyUrl: '/api/search' }).searchAll!('史記', 5);
+        await jest.advanceTimersByTimeAsync(5_600);
+        await p;
+        expect(aborted).toBe(0);
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(isSearchDegraded()).toBe(false);
     });
 });
 
