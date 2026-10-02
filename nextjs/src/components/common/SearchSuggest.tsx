@@ -4,6 +4,7 @@
  * 带候选下拉的检索框（overview#342）：首页、元数据首页共用。只管输入框和下拉，外面的 <form> 由页面自己写。
  *
  * - 输入时出条目候选（lib/search/suggest：调同站 /api/search，不引 book-index-ui，首页不变重）；
+ *   书名等跟繁简偏好走（请求带 locale，代理在服务端转简体）；
  *   空框聚焦出最近检索，与结果页的检索框共用历史。
  * - 选条目直接去 /item/<id>；选历史等于用这个词提交所在表单；没选中时回车照常提交表单。
  * - ↑↓ 选、回车确认、Esc 收起；输入法组字时的回车不算。取不到候选就不出下拉，检索不受影响。
@@ -12,6 +13,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { entryHref } from '@/lib/item-id';
 import { useSiteT } from '@/i18n/use-site-t';
+import { useSiteLocale } from '@/lib/site-locale';
 import {
     clearSearchHistory,
     fetchSuggestions,
@@ -43,6 +45,7 @@ export default function SearchSuggest({
     value, onChange, name = 'q', id, placeholder, className, style, inputStyle, ...rest
 }: SearchSuggestProps) {
     const t = useSiteT();
+    const [locale] = useSiteLocale();
     const router = useRouter();
     const listId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -65,7 +68,7 @@ export default function SearchSuggest({
         }
         const ctrl = new AbortController();
         const timer = setTimeout(() => {
-            fetchSuggestions(q, ctrl.signal)
+            fetchSuggestions(q, locale, ctrl.signal)
                 .then((list) => { if (!ctrl.signal.aborted) setEntries(list); })
                 .catch(() => { if (!ctrl.signal.aborted) setEntries([]); });
         }, DEBOUNCE_MS);
@@ -73,7 +76,7 @@ export default function SearchSuggest({
             clearTimeout(timer);
             ctrl.abort();
         };
-    }, [q, open]);
+    }, [q, open, locale]);
 
     // 提交所在表单（回车、点按钮、选历史）都记进最近检索
     useEffect(() => {

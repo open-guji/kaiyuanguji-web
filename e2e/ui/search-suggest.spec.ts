@@ -21,12 +21,15 @@ const CASES = [
 
 for (const { label, path, name } of CASES) {
     test.describe(`${label}检索候选`, () => {
-        test('输入「武职」出候选，点一条进条目页', async ({ page }) => {
+        test('输入「武职」出候选（默认简体：书名出简体），点一条进条目页', async ({ page }) => {
             await page.goto(`${TARGET}${path}`);
             const box = page.getByRole('combobox', { name });
             await box.fill('武职');
             const options = page.getByRole('listbox').getByRole('option');
             await expect(options.first(), '/api/search 有结果，下拉却没出来').toBeVisible({ timeout: 15_000 });
+            // 候选跟繁简偏好走（overview#342）：默认简体，代理按 locale=zh-Hans 转好
+            await expect(options.filter({ hasText: '武职选簿' }).first()).toBeVisible();
+            await expect(options.filter({ hasText: '武職選簿' })).toHaveCount(0);
             await expect(box).toHaveAttribute('aria-expanded', 'true');
             await options.first().click();
             await expect(page).toHaveURL(/\/item\/[0-9a-z]+/);

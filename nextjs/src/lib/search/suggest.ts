@@ -5,9 +5,14 @@
  * 那是单文件大包（顶层就引 opencc、react-markdown），首页引了首屏 JS 会大几百 KB。
  * 代理不通（本地 dev 没有边缘函数、Meili 故障）时不出候选，表单照常提交到结果页，结果页自有 L2 兜底。
  *
+ * 书名等显示字段跟繁简偏好走：请求带 locale，zh-Hans 时由代理在服务端转简体（与 lib/server/simplify 同一套字表），
+ * 首页仍不必引 opencc。
+ *
  * 候选口径与结果页 book-index-ui 的 SearchInput 一致：作品、书、丛编、人物依次排，取前 8 条；
  * 空框聚焦出最近检索，历史与它共用 localStorage 键 'bim-search-history'，两边互通。
  */
+
+import type { SiteLocale } from '@/lib/site-locale';
 
 export type SuggestType = 'work' | 'book' | 'collection' | 'entity';
 
@@ -57,22 +62,23 @@ export function toSuggestions(data: unknown): SuggestEntry[] {
 const cache = new Map<string, SuggestEntry[]>();
 const CACHE_MAX = 50;
 
-export async function fetchSuggestions(query: string, signal?: AbortSignal): Promise<SuggestEntry[]> {
+export async function fetchSuggestions(query: string, locale: SiteLocale, signal?: AbortSignal): Promise<SuggestEntry[]> {
     const q = query.trim();
     if (!q) return [];
-    const hit = cache.get(q);
+    const key = `${locale}|${q}`;
+    const hit = cache.get(key);
     if (hit) return hit;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
     const onAbort = () => ctrl.abort();
     signal?.addEventListener('abort', onAbort);
     try {
-        const params = new URLSearchParams({ q, limit: String(SUGGEST_LIMIT) });
+        const params = new URLSearchParams({ q, limit: String(SUGGEST_LIMIT), locale });
         const r = await fetch(`${SEARCH_PROXY_URL}?${params}`, { signal: ctrl.signal });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const list = toSuggestions(await r.json());
         if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value!);
-        cache.set(q, list);
+        cache.set(key, list);
         return list;
     } finally {
         clearTimeout(timer);

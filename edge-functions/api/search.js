@@ -23,6 +23,9 @@
 //   解析后按 AST 重新拼串再发给 Meili（值用 JSON.stringify），原串不会到上游；`is_draft = false` 永远排在最前。
 //   空串值表示「该字段为空」（如 classification = "" ＝ 未分類），代理改写成 Meili 的 IS EMPTY（`= ""` 在 Meili 里筛不到空值）。
 //   sort：只认 era:asc|desc（按年代）、title:asc|desc（按书名），只对 works／books／entities；见 SORT_MAP。
+// locale（overview#342）：`locale=zh-Hans`（POST 体里同名字段）时，命中的显示字段（DISPLAY_FIELDS：书名、作者、朝代等）
+//   在这里转简体，与 nextjs/src/lib/server/simplify.ts 同一套 opencc t2cn 字表——首页检索候选不引 opencc，靠它跟繁简偏好走。
+//   不传或 zh-Hant 原样返回（结果页 L1 不传，行为不变）；其他值一律 400。缓存键带 locale。
 // 返回：{ results: [{ indexUid, hits, estimatedTotalHits, limit, offset }] }
 //   hits 只含卡片渲染要的字段；works/books 的 _formatted 只留 description_search（简介命中片段）。
 // 失败：Meili 不可用／超时 → 503 { error, code }，前端据此退回浏览器兜底（L2）。
@@ -31,6 +34,8 @@
 //   MEILI_URL          Meili API base（不配则用 NEXT_PUBLIC_MEILI_URL，再不配用 DEFAULT_MEILI_URL）
 //   MEILI_SEARCH_KEY   只读搜索 key（不配则用 NEXT_PUBLIC_MEILI_KEY——全栈项目构建环境里有它）
 // 绝不放 master key：本函数只调 /multi-search。
+
+import { Converter } from 'opencc-js/t2cn';
 
 const DEFAULT_MEILI_URL = 'https://api.kaiyuanguji.com';
 
@@ -83,6 +88,49 @@ const ATTRIBUTES_TO_RETRIEVE = [
 ];
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
+
+// ─── 繁简（overview#342） ───
+
+const LOCALES = ['zh-Hans', 'zh-Hant'];
+/** 转简体的显示字段；classification、loss_status 等是筛选取值，不动 */
+const DISPLAY_FIELDS = ['title', 'primary_name', 'author', 'dynasty', 'era', 'role', 'edition'];
+
+// 与 nextjs/src/lib/server/simplify.ts 同口径：Converter({ from: 'tw', to: 'cn' })，isolate 内只建一次；建不成就原样返回
+let t2cn;
+function toSimplified(text) {
+  if (t2cn === undefined) {
+    try {
+      t2cn = Converter({ from: 'tw', to: 'cn' });
+    } catch {
+      t2cn = null;
+    }
+  }
+  if (!t2cn || !text) return text;
+  try {
+    return t2cn(text);
+  } catch {
+    return text;
+  }
+}
+
+/** 要转简体时返回 'zh-Hans'，否则 null（原样）：zh-Hant 与不传等价，共用同一份缓存；只认 LOCALES 里的值 */
+function parseLocale(raw) {
+  if (raw === undefined || raw === null || raw === '') return null;
+  if (!LOCALES.includes(raw)) throw new BadRequest('locale 只认 zh-Hans、zh-Hant');
+  return raw === 'zh-Hans' ? raw : null;
+}
+
+function localizeResults(results, locale) {
+  if (locale !== 'zh-Hans') return results;
+  return results.map((r) => ({
+    ...r,
+    hits: r.hits.map((h) => {
+      const out = { ...h };
+      for (const k of DISPLAY_FIELDS) if (typeof out[k] === 'string') out[k] = toSimplified(out[k]);
+      return out;
+    }),
+  }));
+}
 
 // 与 feedback.js / track-error.js 同样：先 context.env，再全局标识符
 function readEnv(context, name) {
@@ -280,7 +328,7 @@ function toMeiliQuery(sq) {
   return out;
 }
 
-/** 从请求里解析出规整后的 queries（GET 查询串或 POST multi-search 体） */
+/** 从请求里解析出规整后的 queries 与 locale（GET 查询串或 POST multi-search 体） */
 async function parseQueries(request) {
   if (request.method === 'POST') {
     let body;
@@ -292,7 +340,7 @@ async function parseQueries(request) {
     const queries = body && body.queries;
     if (!Array.isArray(queries) || queries.length === 0) throw new BadRequest('queries 须为非空数组');
     if (queries.length > MAX_QUERIES) throw new BadRequest(`queries 至多 ${MAX_QUERIES} 条`);
-    return queries.map((q) => sanitizeQuery(q));
+    return { queries: queries.map((q) => sanitizeQuery(q)), locale: parseLocale(body.locale) };
   }
   const params = new URL(request.url).searchParams;
   const q = params.get('q');
@@ -305,9 +353,10 @@ async function parseQueries(request) {
   // 单索引（翻页）默认 20 条，分组首页默认 5 条
   const defaultLimit = index ? 20 : 5;
   const uniq = [...new Set(indexes)];
-  return uniq.map((indexUid) => sanitizeQuery({
+  const queries = uniq.map((indexUid) => sanitizeQuery({
     indexUid, q, limit: params.get('limit'), offset: params.get('offset'), filter: params.get('filter'), sort: params.get('sort'),
   }, defaultLimit));
+  return { queries, locale: parseLocale(params.get('locale')) };
 }
 
 /** Meili 返回 → 对外结果：只留白名单字段，_formatted 只留简介片段 */
@@ -336,8 +385,10 @@ function shapeResults(meiliJson, queries) {
 
 const memoryCache = new Map(); // key → { expires, body }
 
-function cacheKey(queries) {
-  return JSON.stringify(queries.map((q) => [q.indexUid, q.q, q.limit, q.offset, buildFilterString(q.filter), q.sort]));
+function cacheKey(queries, locale) {
+  const key = JSON.stringify(queries.map((q) => [q.indexUid, q.q, q.limit, q.offset, buildFilterString(q.filter), q.sort]));
+  // 不带 locale 的键保持原样：结果页现有缓存不受影响
+  return locale ? `${locale}|${key}` : key;
 }
 
 function memoryGet(key, now) {
@@ -455,8 +506,9 @@ const UNAVAILABLE_MESSAGE = '搜索服务暂时不可用，已切换到简易搜
 async function handleSearch(context) {
   const { request } = context;
   let queries;
+  let locale;
   try {
-    queries = await parseQueries(request);
+    ({ queries, locale } = await parseQueries(request));
   } catch (e) {
     if (e instanceof BadRequest) return json(400, { error: e.message, code: 'bad_request' }, { 'Cache-Control': 'no-store' });
     throw e;
@@ -467,7 +519,7 @@ async function handleSearch(context) {
     return json(200, { results: shapeResults({ results: [] }, queries) }, { 'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}` });
   }
 
-  const key = cacheKey(queries);
+  const key = cacheKey(queries, locale);
   const now = Date.now();
   const okHeaders = (state) => ({
     'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}`,
@@ -505,7 +557,7 @@ async function handleSearch(context) {
     return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30' });
   }
 
-  const shaped = shapeResults(meiliJson, queries);
+  const shaped = localizeResults(shapeResults(meiliJson, queries), locale);
   if (sortIgnored) {
     // 降级结果（没排序）不进缓存：否则索引重建后 60 秒内同一查询还会命中这份未排序的结果
     const degraded = JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) });

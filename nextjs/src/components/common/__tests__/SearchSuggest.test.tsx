@@ -11,6 +11,7 @@ jest.mock('next/navigation', () => ({
 
 import SearchSuggest from '../SearchSuggest';
 import { clearSuggestCache, fetchSuggestions, pushSearchHistory, readSearchHistory, toSuggestions } from '@/lib/search/suggest';
+import { writeSiteLocale } from '@/lib/site-locale';
 
 const PROXY = {
     results: [
@@ -60,18 +61,43 @@ describe('toSuggestions／fetchSuggestions', () => {
         expect(() => toSuggestions({})).toThrow();
     });
 
-    it('调同站 /api/search（四类一次请求），同一个词只请求一次；失败抛错', async () => {
+    it('调同站 /api/search（四类一次请求，带 locale），同词同 locale 只请求一次；失败抛错', async () => {
         const fn = mockProxy();
-        await fetchSuggestions(' 武職 ');
-        await fetchSuggestions('武職');
+        await fetchSuggestions(' 武職 ', 'zh-Hans');
+        await fetchSuggestions('武職', 'zh-Hans');
         expect(fn).toHaveBeenCalledTimes(1);
-        expect(String((fn.mock.calls[0] as unknown[])[0])).toBe(`/api/search?q=${encodeURIComponent('武職')}&limit=8`);
+        expect(String((fn.mock.calls[0] as unknown[])[0])).toBe(`/api/search?q=${encodeURIComponent('武職')}&limit=8&locale=zh-Hans`);
+        // 换了繁简要重新取（服务端按 locale 出字）
+        await fetchSuggestions('武職', 'zh-Hant');
+        expect(fn).toHaveBeenCalledTimes(2);
+        expect(String((fn.mock.calls[1] as unknown[])[0])).toContain('locale=zh-Hant');
         mockProxy(null, false);
-        await expect(fetchSuggestions('史記')).rejects.toThrow('HTTP 503');
+        await expect(fetchSuggestions('史記', 'zh-Hans')).rejects.toThrow('HTTP 503');
     });
 });
 
 describe('SearchSuggest', () => {
+    it('默认简体：请求带 locale=zh-Hans，候选出代理转好的简体；切繁体后带 zh-Hant 重取', async () => {
+        const SIMP = { results: [{ indexUid: 'works', hits: [{ id: 'd59f2nfhf8cg', type: 'work', title: '武职选簿', author: '兵部武选司', dynasty: '明' }] }] };
+        const fn = jest.fn(async (u: RequestInfo | URL) => ({
+            ok: true, status: 200,
+            json: async () => (String(u).includes('locale=zh-Hans') ? SIMP : PROXY),
+        }) as Response);
+        global.fetch = fn as unknown as typeof fetch;
+        render(<Harness />);
+        const box = screen.getByRole('combobox');
+        fireEvent.focus(box);
+        fireEvent.change(box, { target: { value: '武职' } });
+        const [first] = await screen.findAllByRole('option');
+        expect(first).toHaveTextContent('作品武职选簿明 兵部武选司');
+        expect(String((fn.mock.calls[0] as unknown[])[0])).toContain('locale=zh-Hans');
+
+        act(() => writeSiteLocale('zh-Hant'));
+        await waitFor(() => expect(screen.getAllByRole('option')[0]).toHaveTextContent('作品武職選簿明 兵部武選司'));
+        expect(String((fn.mock.calls.at(-1) as unknown[])[0])).toContain('locale=zh-Hant');
+        act(() => writeSiteLocale('zh-Hans'));
+    });
+
     it('输入出候选，点条目去 /item/<id>', async () => {
         mockProxy();
         render(<Harness />);
