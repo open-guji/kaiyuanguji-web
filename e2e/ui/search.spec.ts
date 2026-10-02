@@ -165,6 +165,18 @@ test.describe('搜索页 v4：筛选、表格／卡片（overview#298）', () =>
         }).toPass({ timeout: 60_000 });
     });
 
+    test('页签进地址：点作品写 ?tab=work，刷新后仍在作品页签（overview#359 P2-3）', async ({ page }) => {
+        await page.goto(`${TARGET}/book-index?q=${Q}`);
+        await expect(rows(page).first()).toBeVisible({ timeout: 90_000 });
+        const tabs = page.locator('.bim-sr-main [aria-label="结果分类"], .bim-sr-main [aria-label="結果分類"]');
+        await tabs.getByRole('button', { name: /^(作品)/ }).click();
+        await expect(page).toHaveURL(/[?&]tab=work(&|$)/);
+        await page.reload();
+        await expect(tabs.getByRole('button', { name: /^(作品)/ })).toHaveAttribute('aria-pressed', 'true', { timeout: 90_000 });
+        await tabs.getByRole('button', { name: /^全部/ }).click();
+        await expect(page).not.toHaveURL(/[?&]tab=/);
+    });
+
     test('手机 390：筛选收成按钮、点开才出面板；表格不横向溢出', async ({ browser }) => {
         const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
         const page = await ctx.newPage();
