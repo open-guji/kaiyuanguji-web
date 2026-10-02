@@ -190,6 +190,42 @@ describe('createItemFetcher.getItem', () => {
     });
 });
 
+describe("createItemFetcher.getItem(id, { prefer: 'current' })（overview#322 B1）", () => {
+    it('先走 current/：latest.json → current/entry，2 跳，不碰 h1', async () => {
+        const { f, calls } = make({ ...h1Routes(), ...currentRoutes });
+        const r = await f.getItem(ID, { prefer: 'current' });
+        expect(r).toEqual({ entry: { ...ENTRY, title: '史記（current）' }, source: 'current', version: 'current:abc123' });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('current/ 确定没有 → 再问 h1；h1 有就用 h1', async () => {
+        const { f } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' } });
+        expect(await f.getItem(ID, { prefer: 'current' })).toEqual({ entry: ENTRY, source: 'h1', version: 'h1:r1.json' });
+    });
+
+    it('current/ 与 h1 都没有 → null；h1 查不了也按没有算', async () => {
+        expect(await make({ [`${BASE}/latest.json`]: { commitId: 'abc123' } }).f.getItem(ID, { prefer: 'current' })).toBeNull();
+        const down = make({ [`${BASE}/latest.json`]: { commitId: 'abc123' }, [`${BASE}/h1/manifest-root.json`]: 'THROW' });
+        expect(await down.f.getItem(ID, { prefer: 'current' })).toBeNull();
+    });
+
+    it('current/ 网络错 → 回到 h1 优先的取法', async () => {
+        const { f } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' }, [`${BASE}/current/entry/${ID}.json`]: 'THROW' });
+        expect(await f.getItem(ID, { prefer: 'current' })).toEqual({ entry: ENTRY, source: 'h1', version: 'h1:r1.json' });
+    });
+
+    it('两边都出网络错 → 抛错（临时故障不当成 404）', async () => {
+        const { f } = make({ [`${BASE}/latest.json`]: 'THROW', [`${BASE}/h1/manifest-root.json`]: 'THROW' });
+        await expect(f.getItem(ID, { prefer: 'current' })).rejects.toThrow();
+    });
+
+    it('非法 id 直接返回 null，一次请求都不发', async () => {
+        const { f, calls } = make({ ...currentRoutes });
+        expect(await f.getItem('bad..id', { prefer: 'current' })).toBeNull();
+        expect(calls).toEqual([]);
+    });
+});
+
 describe('createItemFetcher 的 forceCache 选项', () => {
     it('默认带 cache: force-cache（页面保持 ISR）', async () => {
         const { f, fn } = make({ ...h1Routes(), ...currentRoutes });
