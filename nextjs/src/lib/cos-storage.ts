@@ -477,9 +477,11 @@ export function createCosStorage(): IndexStorage {
             // 版本号必须从 resolveCosVersion()（读不缓存的 latest.json）拿，注入给
             // BundleStorage —— 不能让它自己 fetch basePath/version.json：那是
             // current/version.json，被 CDN 打了 immutable 长缓存，实测滞后 9+ 天。
+            // detailLayout 'entry'：数据只出 entry/{id}.json，不再有 chunks/；inner 内部取详情（丛编目录等）
+            // 直接走单文件，不先请求一次必然 404 的 chunks/_manifest.json（overview#371）
             resolving = Promise.all([getCosDataBaseUrl(), resolveCosVersion()]).then(
                 ([baseUrl, commit]) => {
-                    resolved = { inner: new BundleStorage({ basePath: baseUrl, version: commit }), baseUrl };
+                    resolved = { inner: new BundleStorage({ basePath: baseUrl, version: commit, detailLayout: 'entry' }), baseUrl };
                     return resolved;
                 }
             );
