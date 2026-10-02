@@ -9,8 +9,9 @@
  *     filter 只放行受限语法（见 describe('filter')，overview#291 P1a）
  *  2) limit／offset 上限、查询长度上限
  *  3) key 只在服务端（Authorization 头），响应里不带上游地址
- *  4) 60 秒短缓存：同一查询第二次不打上游
- *  5) 上游挂／超时 → 503 + code，前端据此退回 L2
+ *  4) 缓存：10 分钟新鲜、24 小时内先给旧的后台刷新（overview#353），见 describe('缓存')
+ *  5) 上游挂／超时 → 503 + code，前端据此退回 L2；有旧结果时先给旧的
+ *  6) Server-Timing：parse／cache／upstream／meili／total（overview#353）
  */
 
 const g = globalThis as unknown as Record<string, unknown>;
@@ -209,14 +210,16 @@ describe('配置与机密', () => {
   });
 });
 
-describe('短缓存', () => {
-  test('同一查询 60 秒内第二次不打上游（GET 与 POST 共用）', async () => {
+describe('缓存（overview#353）', () => {
+  const url = (q: string) => `https://x/api/search?q=${encodeURIComponent(q)}&index=works&limit=5`;
+
+  test('同一查询新鲜期内第二次不打上游（GET 与 POST 共用）', async () => {
     stubUpstream();
     const q = uq();
-    const r1 = await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}&index=works&limit=5`));
+    const r1 = await fn.onRequestGet(ctx(url(q)));
     expect(r1.headers.get('X-Search-Cache')).toBe('MISS');
-    expect(r1.headers.get('Cache-Control')).toBe('public, max-age=60');
-    const r2 = await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}&index=works&limit=5`));
+    expect(r1.headers.get('Cache-Control')).toBe('public, max-age=300');
+    const r2 = await fn.onRequestGet(ctx(url(q)));
     expect(r2.headers.get('X-Search-Cache')).toBe('HIT');
     const r3 = await fn.onRequestPost(ctx('https://x/api/search', {
       method: 'POST', body: JSON.stringify({ queries: [{ indexUid: 'works', q, limit: 5 }] }),
@@ -226,19 +229,132 @@ describe('短缓存', () => {
     expect(await body(r2)).toEqual(await body(r1));
   });
 
-  test('60 秒后过期重新取', async () => {
+  test('9 分钟仍新鲜；过了 10 分钟、平台没有 waitUntil：同步重取', async () => {
     stubUpstream();
     const q = uq();
     const now = Date.now();
     const spy = jest.spyOn(Date, 'now').mockReturnValue(now);
     try {
-      await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}&index=works`));
-      spy.mockReturnValue(now + 61_000);
-      await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}&index=works`));
+      await fn.onRequestGet(ctx(url(q)));
+      spy.mockReturnValue(now + 9 * 60_000);
+      expect((await fn.onRequestGet(ctx(url(q)))).headers.get('X-Search-Cache')).toBe('HIT');
+      spy.mockReturnValue(now + 10 * 60_000 + 1000);
+      expect((await fn.onRequestGet(ctx(url(q)))).headers.get('X-Search-Cache')).toBe('MISS');
     } finally {
       spy.mockRestore();
     }
     expect(calls).toHaveLength(2);
+  });
+
+  test('过了 10 分钟、有 waitUntil：先回旧结果（STALE），后台重取，再来就是新的', async () => {
+    stubUpstream();
+    const q = uq();
+    const now = Date.now();
+    const spy = jest.spyOn(Date, 'now').mockReturnValue(now);
+    const pending: Promise<unknown>[] = [];
+    const withWait = () => ({ ...ctx(url(q)), waitUntil: (p: Promise<unknown>) => { pending.push(p); } });
+    try {
+      await fn.onRequestGet(withWait());
+      await Promise.all(pending.splice(0));
+      spy.mockReturnValue(now + 11 * 60_000);
+      const r = await fn.onRequestGet(withWait());
+      expect(r.headers.get('X-Search-Cache')).toBe('STALE');
+      expect(r.status).toBe(200);
+      await Promise.all(pending.splice(0));
+      expect(calls).toHaveLength(2);
+      const r2 = await fn.onRequestGet(withWait());
+      expect(r2.headers.get('X-Search-Cache')).toBe('HIT');
+      expect(calls).toHaveLength(2);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test('超过 24 小时：旧结果作废，同步重取', async () => {
+    stubUpstream();
+    const q = uq();
+    const now = Date.now();
+    const spy = jest.spyOn(Date, 'now').mockReturnValue(now);
+    try {
+      await fn.onRequestGet(ctx(url(q)));
+      spy.mockReturnValue(now + 24 * 3600_000 + 1000);
+      const r = await fn.onRequestGet({ ...ctx(url(q)), waitUntil: () => {} });
+      expect(r.headers.get('X-Search-Cache')).toBe('MISS');
+    } finally {
+      spy.mockRestore();
+    }
+    expect(calls).toHaveLength(2);
+  });
+
+  test('上游挂了但有 24 小时内的旧结果：200 + STALE，不退回简易搜索', async () => {
+    stubUpstream();
+    const q = uq();
+    const now = Date.now();
+    const spy = jest.spyOn(Date, 'now').mockReturnValue(now);
+    try {
+      const r1 = await fn.onRequestGet(ctx(url(q)));
+      stubUpstream(async () => new Response('boom', { status: 502 }));
+      spy.mockReturnValue(now + 2 * 3600_000);
+      const r2 = await fn.onRequestGet(ctx(url(q)));
+      expect(r2.status).toBe(200);
+      expect(r2.headers.get('X-Search-Cache')).toBe('STALE');
+      expect(await body(r2)).toEqual(await body(r1));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test('同一查询并发：只打一次上游', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    stubUpstream(async (init) => {
+      await gate;
+      const parsed = JSON.parse(String(init.body));
+      return new Response(JSON.stringify({
+        results: parsed.queries.map((x: { indexUid: string }) => ({ indexUid: x.indexUid, hits: [], estimatedTotalHits: 0 })),
+      }), { status: 200 });
+    });
+    const q = uq();
+    const ps = [1, 2, 3].map(() => fn.onRequestGet(ctx(url(q))));
+    release();
+    const rs = await Promise.all(ps);
+    expect(rs.map((r: Response) => r.status)).toEqual([200, 200, 200]);
+    expect(calls).toHaveLength(1);
+  });
+});
+
+describe('Server-Timing（overview#353）', () => {
+  const metrics = (res: Response) => Object.fromEntries((res.headers.get('Server-Timing') || '').split(',').map((m) => {
+    const [name, ...params] = m.trim().split(';');
+    const dur = params.find((x) => x.startsWith('dur='));
+    return [name, dur ? Number(dur.slice(4)) : NaN];
+  }));
+
+  test('MISS：parse／cache／upstream／meili／total 都有，meili 取各索引 processingTimeMs 的最大值', async () => {
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      return new Response(JSON.stringify({
+        results: parsed.queries.map((x: { indexUid: string }, i: number) => ({ indexUid: x.indexUid, hits: [], estimatedTotalHits: 0, processingTimeMs: 3 + i * 4 })),
+      }), { status: 200 });
+    });
+    const res = await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(uq())}`));
+    const m = metrics(res);
+    for (const k of ['parse', 'cache', 'upstream', 'meili', 'total']) expect(Number.isFinite(m[k])).toBe(true);
+    expect(m.meili).toBe(15);
+    expect(res.headers.get('Server-Timing')).toContain('upstream;desc="1"');
+  });
+
+  test('HIT：没有 upstream；503 也带 Server-Timing', async () => {
+    stubUpstream();
+    const q = uq();
+    await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}`));
+    const hit = metrics(await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(q)}`)));
+    expect(hit.upstream).toBeUndefined();
+    expect(Number.isFinite(hit.total)).toBe(true);
+    stubUpstream(async () => new Response('boom', { status: 502 }));
+    const bad = await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(uq())}`));
+    expect(bad.status).toBe(503);
+    expect(metrics(bad).upstream).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -521,7 +637,7 @@ describe('sort（搜索页 v4「按年代／按书名」，overview#298）', () 
     }
   });
 
-  test('降级结果不缓存：同一查询再来一次仍打上游（重建索引后不会 60 秒内还拿到未排序的）；响应 no-store', async () => {
+  test('降级结果不缓存：同一查询再来一次仍打上游（重建索引后不会 一段时间内还拿到未排序的）；响应 no-store', async () => {
     let n = 0;
     stubUpstream(async (init) => {
       const parsed = JSON.parse(String(init.body));
