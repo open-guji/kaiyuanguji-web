@@ -37,7 +37,7 @@ import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 
-const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
+const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
 
 const DRAFT_DIR = process.env.DRAFT_DIR;
 const PRODUCTION_DIR = process.env.PRODUCTION_DIR;

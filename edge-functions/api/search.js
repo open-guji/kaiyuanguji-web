@@ -120,12 +120,12 @@ function normalizeVariants(text) {
   return changed ? out : text;
 }
 
-// 与 nextjs/src/lib/server/simplify.ts 同口径：先异体字归一，再 Converter({ from: 'tw', to: 'cn' })；isolate 内只建一次，建不成就原样返回
+// 与 nextjs/src/lib/server/simplify.ts 同口径：先异体字归一，再 Converter({ from: 't', to: 'cn' })；isolate 内只建一次，建不成就原样返回
 let t2cn;
 function toSimplified(text) {
   if (t2cn === undefined) {
     try {
-      t2cn = Converter({ from: 'tw', to: 'cn' });
+      t2cn = Converter({ from: 't', to: 'cn' });
     } catch {
       t2cn = null;
     }

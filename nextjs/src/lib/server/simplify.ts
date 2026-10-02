@@ -2,8 +2,9 @@
  * 服务端繁→简转换（overview#280 S4）：条目页的 meta description／og:description 出简体，
  * 大陆读者用简体搜索，搜索引擎对简繁的匹配不完全。数据不动，只在渲染时转。
  *
- * 用 opencc-js 的 t2cn，转换口径与 book-index-ui 的 LocaleProvider 一致（Converter({ from: 'tw', to: 'cn' })），
+ * 用 opencc-js 的 t2cn，转换口径与 book-index-ui 的 LocaleProvider 一致（Converter({ from: 't', to: 'cn' })），
  * 这样页面上看到的简体和 meta 里的简体是同一套字表。词典进程内只建一次。
+ * 不用 tw 预设：它带台湾用词表，把「著録」「所著」「編著」里的「著」转成「着」（overview#368）。
  * 转换出任何错都退回原文——meta 里多一段繁体不算事故，页面渲染不出来才是。
  *
  * t2cn 之前先做异体字归一（overview#350）：「㫖」「縂」「寳」这类异体字 t2cn 不认，会原样留在简体里。
@@ -33,7 +34,7 @@ let converter: Convert | null | undefined;
 function get(): Convert | null {
     if (converter !== undefined) return converter;
     try {
-        converter = Converter({ from: 'tw', to: 'cn' });
+        converter = Converter({ from: 't', to: 'cn' });
     } catch (err) {
         console.warn(`[simplify] 建繁简转换器失败，meta 退回原文：${(err as Error).message}`);
         converter = null;

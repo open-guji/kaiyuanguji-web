@@ -687,6 +687,18 @@ describe('locale（首页检索候选跟繁简走，overview#342）', () => {
         expect(hant.title).toBe('風月寳鑑');
     });
 
+    test('locale=zh-Hans：「著」不转成「着」（opencc t 预设，与组件库同口径，overview#368）', async () => {
+        stubUpstream(async () => new Response(JSON.stringify({
+            results: [{
+                indexUid: 'works', estimatedTotalHits: 1,
+                hits: [{ id: 'z1', type: 'work', is_draft: false, title: '四庫全書總目著録', author: '紀昀編著', _formatted: { id: 'z1', title: '四庫全書總目著録' } }],
+            }],
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+        const hit = (await body(await fn.onRequestGet(ctx(url(uq('著録'), '&locale=zh-Hans'))))).results[0].hits[0];
+        expect(hit.title).toBe('四库全书总目著录');
+        expect(hit.author).toBe('纪昀编著');
+    });
+
     test('不传 locale 或 zh-Hant：原样（结果页 L1 不传，行为不变）', async () => {
         for (const extra of ['', '&locale=zh-Hant']) {
             stubUpstream();

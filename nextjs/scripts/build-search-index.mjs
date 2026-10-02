@@ -190,7 +190,7 @@ function loadShardedIndex() {
 
 /** 构建搜索专用的繁→简差异表（仅 title/author 与原文不同的条目） */
 function buildSearchSimplified(index) {
-    const t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
+    const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
     const out = {};
     for (const groupKey of ['works', 'collections', 'books', 'entities']) {
         const group = index[groupKey];
