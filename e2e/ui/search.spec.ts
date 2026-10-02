@@ -177,6 +177,27 @@ test.describe('搜索页 v4：筛选、表格／卡片（overview#298）', () =>
         await expect(page).not.toHaveURL(/[?&]tab=/);
     });
 
+    test('页码进地址：第 2 页写 ?page=2，刷新后仍在第 2 页；翻页后回到结果区顶部', async ({ page }) => {
+        await page.goto(`${TARGET}/book-index?q=${Q}`);
+        await expect(rows(page).first()).toBeVisible({ timeout: 90_000 });
+        const tabs = page.locator('.bim-sr-main [aria-label="结果分类"], .bim-sr-main [aria-label="結果分類"]');
+        await tabs.getByRole('button', { name: /^(作品)/ }).click();
+        const pager = page.getByRole('navigation', { name: /翻页|翻頁/ });
+        await expect(pager).toBeVisible({ timeout: 60_000 });
+        await pager.scrollIntoViewIfNeeded();
+        await pager.getByRole('button', { name: '2', exact: true }).click();
+        await expect(page).toHaveURL(/[?&]page=2(&|$)/);
+        await expect(page).toHaveURL(/[?&]tab=work(&|$)/);
+        const top = await page.locator('.bim-sr-main').evaluate((el) => el.getBoundingClientRect().top);
+        expect(top, '翻页后结果区顶部应在视口内').toBeGreaterThanOrEqual(-1);
+        await page.reload();
+        await expect(page.getByRole('navigation', { name: /翻页|翻頁/ }).getByRole('button', { name: '2', exact: true }))
+            .toHaveAttribute('aria-current', 'page', { timeout: 90_000 });
+        // 换页签：page 去掉
+        await tabs.getByRole('button', { name: /^全部/ }).click();
+        await expect(page).not.toHaveURL(/[?&]page=/);
+    });
+
     test('手机 390：筛选收成按钮、点开才出面板；表格不横向溢出', async ({ browser }) => {
         const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
         const page = await ctx.newPage();
