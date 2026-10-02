@@ -114,7 +114,7 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
     it('建取数实例时传 forceCache: false（边缘运行时不认 force-cache）', async () => {
         mockGetItem.mockResolvedValue(hit({ title: '史記' }));
         await run(`/item/${MERGED}`);
-        expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false }));
+        expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false, retries: 0 }));
     });
 
     it("取条目走 prefer: 'current'（overview#322 B1：边缘上少发 h1 的 4 跳）", async () => {
