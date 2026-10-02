@@ -56,3 +56,25 @@ test('预热：记首次状态与耗时，网络错记 0，不重试', async () 
     assert.match(md, /连接失败／超时×1/);
     assert.match(md, /清单读不了/);
 });
+
+test('解析页面里的首次渲染计时；summary 按冷／热实例分栏', async () => {
+    const { parseRenderTiming } = await import('../warm-read-pages.mjs');
+    const tag = (v) => `<div></div><script type="application/json" id="kyg-render-timing">${JSON.stringify(v)}</script>`;
+    const t = parseRenderTiming(tag('item;dur=812, check;dur=640, redirect;dur=3, preload;dur=410, total;dur=1530, inst;desc="req=1 up=3s"'));
+    assert.deepEqual(t, { item: 812, check: 640, redirect: 3, preload: 410, total: 1530, req: 1, up: 3 });
+    assert.equal(parseRenderTiming('<html>没有计时</html>'), null);
+    assert.equal(parseRenderTiming(undefined), null);
+
+    const pages = {
+        a: tag('item;dur=900, check;dur=700, redirect;dur=0, preload;dur=400, total;dur=1600, inst;desc="req=1 up=2s"'),
+        b: tag('item;dur=20, check;dur=30, redirect;dur=0, preload;dur=10, total;dur=60, inst;desc="req=40 up=90s"'),
+        c: '<html>旧版本页面，没有计时</html>',
+    };
+    const f = async (url) => ({ ok: true, status: 200, text: async () => pages[url.slice(-1)] });
+    const { results } = await warmPages(['a', 'b', 'c'].map((x) => `${SITE}/read/${x}`), { fetchImpl: f });
+    assert.equal(results.filter((r) => r.timing).length, 2);
+    const md = renderSummary({ results }, { target: SITE });
+    assert.match(md, /2 页带计时/);
+    assert.match(md, /\| 冷实例 \| 1 \| 900 \/ 900 \| 700 \/ 700 \| 400 \/ 400 \| 1600 \/ 1600 \|/);
+    assert.match(md, /\| 热实例 \| 1 \| 20 \/ 20 \|/);
+});
