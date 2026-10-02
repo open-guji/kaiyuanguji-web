@@ -89,11 +89,10 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
     if (MEILI_ENABLED) {
         s = wrapWithMeiliSearch(s, {
             ...(SEARCH_DIRECT_URL
-                ? { baseUrl: SEARCH_DIRECT_URL, apiKey: SEARCH_DIRECT_KEY || undefined, timeoutMs: 2000 }
-                // 代理对上游 2 s 超时后回 503；这里多留 1 s 给边缘自身
-                : { proxyUrl: SEARCH_PROXY_URL, timeoutMs: 3000 }),
+                ? { baseUrl: SEARCH_DIRECT_URL, apiKey: SEARCH_DIRECT_KEY || undefined, timeoutMs: 2000, breakerCooldownMs: 5 * 60_000 }
+                // 代理：单次 6 s，超时先重试一次；熔断 30 s 后就再试，恢复了黄条随即消失（overview#370）
+                : { proxyUrl: SEARCH_PROXY_URL, timeoutMs: 6000, breakerCooldownMs: 30_000 }),
             failuresBeforeBreak: 3,
-            breakerCooldownMs: 5 * 60_000,
             debug: process.env.NODE_ENV !== 'production',
         }) as ReadonlyStorage;
     }
