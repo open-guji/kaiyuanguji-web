@@ -1217,7 +1217,8 @@
   .home-hero {
     position: relative;
     min-height: 600px;
-    overflow: hidden;
+    /* 只裁横向：纵向要让检索候选下拉伸出首屏（overview#342） */
+    overflow-x: clip;
     display: flex;
     align-items: flex-end;
   }
@@ -1316,6 +1317,103 @@
     height: 52px;
     padding: 0 32px;
     border-radius: 0;
+  }
+  .home-search-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+  }
+  .home-search-field input {
+    width: 100%;
+  }
+
+  /* 检索框候选下拉（overview#342）：首页、元数据首页共用，见 components/common/SearchSuggest */
+  .og-suggest {
+    position: relative;
+  }
+  .og-suggest-pop {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    margin-top: 2px;
+    max-height: min(400px, 60vh);
+    overflow-y: auto;
+    border: 1px solid var(--color-tint-2);
+    background: var(--color-raise);
+    box-shadow: var(--og-card-sh);
+    text-align: left;
+    font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+  .og-suggest-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 16px;
+    font-size: var(--fs-xs);
+    color: var(--color-ink-3);
+    border-bottom: 1px solid var(--color-tint-2);
+  }
+  .og-suggest-head button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .og-suggest-pop ul {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+  }
+  .og-suggest-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-height: 40px;
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+  .og-suggest-item:hover,
+  .og-suggest-item[aria-selected="true"] {
+    background: var(--color-tint);
+  }
+  .og-suggest-type {
+    flex: none;
+    font-size: var(--fs-xs);
+    color: var(--color-zhu);
+  }
+  .og-suggest-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+  .og-suggest-meta {
+    flex: 0 1 auto;
+    max-width: 40%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    font-size: var(--fs-sm);
+    color: var(--color-ink-3);
+  }
+  .og-suggest-remove {
+    margin-left: auto;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--color-ink-3);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
   }
   .home-under {
     margin: 16px 0 0;
@@ -1533,6 +1631,9 @@
     .home-search {
       flex-direction: column;
       margin-top: 24px;
+    }
+    .home-search-field {
+      flex: none;
     }
     .home-search input {
       flex: none;

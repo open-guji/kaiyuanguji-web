@@ -1,6 +1,6 @@
 import { defineMessages } from './define';
 
-/** 通用小件：复制按钮、文章目录、404 页 */
+/** 通用小件：复制按钮、文章目录、404 页、检索框候选 */
 export const common = defineMessages({
     copy: {
         done: '已複製',
@@ -17,6 +17,13 @@ export const common = defineMessages({
         catalog: '去古籍總目',
         search: '去搜索',
     },
+    suggest: {
+        label: '檢索候選',
+        history: '最近檢索',
+        clear: '清空',
+        remove: '刪除「{q}」',
+        types: { work: '作品', book: '書', collection: '叢編', entity: '人物' },
+    },
 }, {
     copy: {
         done: '已复制',
@@ -32,5 +39,12 @@ export const common = defineMessages({
         home: '回首页',
         catalog: '去古籍总目',
         search: '去搜索',
+    },
+    suggest: {
+        label: '检索候选',
+        history: '最近检索',
+        clear: '清空',
+        remove: '删除「{q}」',
+        types: { work: '作品', book: '书', collection: '丛编', entity: '人物' },
     },
 });

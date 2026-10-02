@@ -24,7 +24,7 @@ test.describe('首页', () => {
     // N1 首页：大检索框 + 唯一主按钮「搜索」，搜索落到索引页
     test('首屏检索跳到索引页', async ({ page }) => {
         await page.goto(TARGET);
-        await page.getByRole('searchbox', { name: '搜索古籍索引' }).fill('史記');
+        await page.getByRole('combobox', { name: '搜索古籍索引' }).fill('史記');
         await page.getByRole('button', { name: '搜索', exact: true }).click();
         await expect(page).toHaveURL(/\/book-index\?q=/);
     });
@@ -63,7 +63,7 @@ test.describe('首页', () => {
         test(`手机 ${width}px 不横向溢出`, async ({ page }) => {
             await page.setViewportSize({ width, height: 800 });
             await page.goto(TARGET);
-            await expect(page.getByRole('searchbox', { name: '搜索古籍索引' })).toBeVisible();
+            await expect(page.getByRole('combobox', { name: '搜索古籍索引' })).toBeVisible();
             const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
             expect(scrollWidth, '页面出现横向滚动').toBeLessThanOrEqual(width);
         });
@@ -77,7 +77,7 @@ test.describe('古籍索引页', () => {
         page.on('pageerror', (e) => errors.push(e.message));
         await page.goto(`${TARGET}/book-index`);
         const form = page.getByRole('search');
-        await expect(form.getByRole('searchbox', { name: '检索古籍元数据' })).toBeVisible({ timeout: 30_000 });
+        await expect(form.getByRole('combobox', { name: '检索古籍元数据' })).toBeVisible({ timeout: 30_000 });
         await expect(page.getByRole('complementary', { name: '最近浏览' })).toBeVisible();
         await expect(page.getByRole('heading', { level: 2, name: '数据与授权' })).toBeVisible();
         await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('古籍索引页', () => {
 
     test('首页态检索：提交表单落到结果页', async ({ page }) => {
         await page.goto(`${TARGET}/book-index`);
-        await page.getByRole('searchbox', { name: '检索古籍元数据' }).fill('史記');
+        await page.getByRole('combobox', { name: '检索古籍元数据' }).fill('史記');
         await page.getByRole('button', { name: '检索', exact: true }).click();
         await expect(page).toHaveURL(/\/book-index\?q=/);
     });

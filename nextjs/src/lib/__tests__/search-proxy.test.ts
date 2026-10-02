@@ -537,3 +537,60 @@ describe('sort（搜索页 v4「按年代／按书名」，overview#298）', () 
     expect(n).toBe(4); // 每次都是「带 sort 一次 + 去掉 sort 一次」
   });
 });
+
+describe('locale（首页检索候选跟繁简走，overview#342）', () => {
+    const url = (q: string, extra = '') => `https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=5${extra}`;
+
+    test('locale=zh-Hans：书名、作者转简体（opencc t2cn），筛选取值与简介片段不动；上游请求不变', async () => {
+        stubUpstream();
+        const q = uq('武職');
+        const res = await fn.onRequestGet(ctx(url(q, '&locale=zh-Hans')));
+        expect(res.status).toBe(200);
+        const hit = (await body(res)).results[0].hits[0];
+        expect(hit.title).toBe('史记');
+        expect(hit.author).toBe('司马迁');
+        expect(hit._formatted.description_search).toBe('\u0001史記\u0002 簡介');
+        // locale 不进上游请求
+        expect(calls[0].body.queries[0]).not.toHaveProperty('locale');
+        expect(calls[0].body.queries[0].q).toBe(q);
+    });
+
+    test('不传 locale 或 zh-Hant：原样（结果页 L1 不传，行为不变）', async () => {
+        for (const extra of ['', '&locale=zh-Hant']) {
+            stubUpstream();
+            const res = await fn.onRequestGet(ctx(url(uq(), extra)));
+            const hit = (await body(res)).results[0].hits[0];
+            expect(hit.title).toBe('史記');
+            expect(hit.author).toBe('司馬遷');
+        }
+    });
+
+    test('缓存键带 locale：同一查询先繁后简，各打一次上游、各回各的字', async () => {
+        stubUpstream();
+        const q = uq();
+        const a = await body(await fn.onRequestGet(ctx(url(q))));
+        const b = await body(await fn.onRequestGet(ctx(url(q, '&locale=zh-Hans'))));
+        const c = await fn.onRequestGet(ctx(url(q, '&locale=zh-Hans')));
+        expect(a.results[0].hits[0].title).toBe('史記');
+        expect(b.results[0].hits[0].title).toBe('史记');
+        expect(c.headers.get('X-Search-Cache')).toBe('HIT');
+        expect((await body(c)).results[0].hits[0].title).toBe('史记');
+        expect(calls).toHaveLength(2);
+    });
+
+    test('POST 体里的 locale 同样生效；不认识的 locale 一律 400', async () => {
+        stubUpstream();
+        const res = await fn.onRequestPost(ctx('https://www.example.com/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ locale: 'zh-Hans', queries: [{ indexUid: 'works', q: uq(), limit: 5 }] }),
+        }));
+        expect((await body(res)).results[0].hits[0].title).toBe('史记');
+
+        stubUpstream();
+        const bad = await fn.onRequestGet(ctx(url(uq(), '&locale=en')));
+        expect(bad.status).toBe(400);
+        expect((await body(bad)).code).toBe('bad_request');
+        expect(calls).toHaveLength(0);
+    });
+});
