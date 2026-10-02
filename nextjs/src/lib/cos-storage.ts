@@ -468,6 +468,20 @@ async function getChapterH1(id: string, key: string, chapter: string, opts?: { j
  * chunks 逻辑。其他方法（getCounts 等）仍委托给 BundleStorage。
  */
 export function createCosStorage(): IndexStorage {
+    /*
+     * inner 自己调 this.getItem／this.getEntry 的路径（getCollectionCatalogs 取丛编详情等）也改走外层的
+     * entry/ 取数与缓存：否则同一条丛编详情外层取一次、inner 又按自己的 URL 取一次（overview#371 之后
+     * e2e「丛编页条目请求 < 20」因此顶到 20）。外层代理接走的 getItem／getEntry 本来就不进 inner。
+     */
+    class CosBundleStorage extends BundleStorage {
+        async getItem(id: string): Promise<Record<string, unknown> | null> {
+            return getItemFromCos(id);
+        }
+        async getEntry(id: string): Promise<IndexEntry | null> {
+            return getEntryFromCos(id);
+        }
+    }
+
     let resolved: { inner: BundleStorage; baseUrl: string } | null = null;
     let resolving: Promise<{ inner: BundleStorage; baseUrl: string }> | null = null;
 
@@ -481,7 +495,7 @@ export function createCosStorage(): IndexStorage {
             // 直接走单文件，不先请求一次必然 404 的 chunks/_manifest.json（overview#371）
             resolving = Promise.all([getCosDataBaseUrl(), resolveCosVersion()]).then(
                 ([baseUrl, commit]) => {
-                    resolved = { inner: new BundleStorage({ basePath: baseUrl, version: commit, detailLayout: 'entry' }), baseUrl };
+                    resolved = { inner: new CosBundleStorage({ basePath: baseUrl, version: commit, detailLayout: 'entry' }), baseUrl };
                     return resolved;
                 }
             );
