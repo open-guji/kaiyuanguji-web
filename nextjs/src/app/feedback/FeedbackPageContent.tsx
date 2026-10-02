@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FeedbackItem } from 'book-index-ui';
 import { useFeedback } from '@/components/feedback/FeedbackProvider';
+import { useSource } from '@/components/common/SourceContext';
+import { getTransport } from '@/lib/transport';
+import type { DataSource } from '@/lib/constants';
 import { FEEDBACK_API, FEEDBACK_TYPES, normalizeResourceId } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import type { SiteMessageKey } from '@/i18n/translate';
@@ -29,6 +32,40 @@ const FILTERS: { value: string; labelKey: SiteMessageKey }[] = [
     { value: '', labelKey: 'feedback.page.all' },
     ...FEEDBACK_TYPES.filter((t) => t.value !== 'contact'),
 ];
+
+// 「相关条目」是否还在：同一 id 只查一次（多条反馈常指向同一条目）；查询本身失败按「在」处理，照旧给链接
+const entryExists = new Map<string, Promise<boolean>>();
+function checkEntry(source: DataSource, id: string): Promise<boolean> {
+    const key = `${source}:${id}`;
+    let p = entryExists.get(key);
+    if (!p) {
+        const transport = getTransport(source);
+        p = transport.getEntry
+            ? transport.getEntry(id).then((e) => !!e, () => true)
+            : Promise.resolve(true);
+        entryExists.set(key, p);
+    }
+    return p;
+}
+
+/**
+ * 「相关条目」：确认条目还在才给链接（overview#359 P2-10：有条反馈指向的条目已删，点进去 404）。
+ * 查到之前先出不带链接的文字，查不到写「相关条目已失效」，都不是可点的。
+ */
+function RelatedLink({ id }: { id: string }) {
+    const t = useSiteT();
+    const { source } = useSource();
+    const [state, setState] = useState<'checking' | 'ok' | 'gone'>('checking');
+    useEffect(() => {
+        let alive = true;
+        setState('checking');
+        checkEntry(source, id).then((ok) => { if (alive) setState(ok ? 'ok' : 'gone'); });
+        return () => { alive = false; };
+    }, [source, id]);
+    if (state === 'ok') return <Link href={`/item/${id}`}>{t('feedback.page.related')}</Link>;
+    if (state === 'gone') return <span className="og-fb-meta-gone">{t('feedback.page.relatedGone')}</span>;
+    return <span>{t('feedback.page.related')}</span>;
+}
 
 function formatDate(iso: string): string {
     const d = new Date(iso);
@@ -120,7 +157,7 @@ export default function FeedbackPageContent() {
                             <li key={item.id}>
                                 <div className="og-fb-meta">
                                     <span className="og-fb-meta-type">{TYPE_LABEL_KEY[item.type] ? t(TYPE_LABEL_KEY[item.type]) : item.type}</span>
-                                    {rid && <> · <Link href={`/item/${rid}`}>{t('feedback.page.related')}</Link></>}
+                                    {rid && <> · <RelatedLink id={rid} /></>}
                                     {formatDate(item.createdAt) && <> · {formatDate(item.createdAt)}</>}
                                     {' · '}
                                     <span className={item.status === 'resolved' ? 'og-fb-meta-ok' : undefined}>

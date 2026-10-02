@@ -44,6 +44,7 @@ export const feedback = defineMessages({
         loading: '加載中…',
         empty: '暫無反饋',
         related: '相關條目',
+        relatedGone: '相關條目已失效',
         reply: '站方回覆：{reply}',
     },
     dialog: {
@@ -115,6 +116,7 @@ export const feedback = defineMessages({
         loading: '加载中…',
         empty: '暂无反馈',
         related: '相关条目',
+        relatedGone: '相关条目已失效',
         reply: '站方回复：{reply}',
     },
     dialog: {
