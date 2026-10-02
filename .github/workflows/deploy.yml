@@ -3,6 +3,16 @@ name: Deploy to EdgeOne
 # 产物推到 edgeone-release 分支由 EdgeOne Pages 托管。2026-09-06 改名以免误导新人。
 # CUT2（2026-09-28，overview#241）起两站都是全栈、CLI 直传：测试站 kyg-staging，
 # 正式站 kyg-ssr-spike（www）。edgeone-release／旧项目 kaiyuanguji 不再推送。
+#
+# overview#341（10-01 用户定）：push 到 main → 测试站 → verify 全绿 → 自动上正式站。
+#   push 的这次 run 里，与测试站并行再构建一份正式站产物（同一版代码、同一份数据，prod-artifact 任务），
+#   加密存成本 run 的工件；测试站 verify 全绿后 auto-promote 派一次 target=production from_run=<本 run>，
+#   正式站那次 run 不再重新构建，直接部署这份产物（数据没变时也不重拉、不重传数据）。
+#   开关：仓库变量 AUTO_PROMOTE_CODE 设成 'false' 就停（回滚期间用，见 docs/runbook.md §8）；手动 promote 照旧可用。
+
+# 正式站 promote 的 run 起个可辨认的名字：push 的「让路」只等定时／手动的测试站部署，不等正式站 promote
+# （正式站不碰测试站，等它只会白白推迟下一次测试站部署）。其它触发保持默认名字。
+run-name: ${{ inputs.target == 'production' && format('Promote to production ({0}{1})', inputs.promote, inputs.from_run != '' && format(', from run {0}', inputs.from_run) || '') || '' }}
 
 on:
   # 2026-09-28（overview#182，Actions 额度 90%）：本仓私有、按分钟计费，一次部署约 17 分钟。
@@ -56,6 +66,15 @@ on:
         description: '仅 target=staging：book-text 的分支／tag／commit（默认 main），联调文本迁移用'
         type: string
         default: main
+      # overview#341：钉死「验过的那一次」。自动 promote 都带它；手动也可以填（Actions 里测试站那次 run 的编号）。
+      from_run:
+        description: '仅 target=production：测试站那次部署的 run id——代码与数据都钉成那次验过的；code+data 且那次存了正式站产物时直接部署产物、不重新构建。空＝按测试站指针（老办法）'
+        type: string
+        default: ''
+      rehearse_artifact:
+        description: '仅 target=staging：演练产物复用——同时构建并存正式站产物（不部署），测试站改用打包、加密、解包后的产物部署'
+        type: boolean
+        default: false
   # 每日定时兜底：book-index-draft 的 notify-web webhook 依赖跨仓 PAT
   # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
   # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
@@ -146,6 +165,8 @@ jobs:
       draft_sha: ${{ steps.sha.outputs.draft_sha }}
       prod_sha: ${{ steps.sha.outputs.prod_sha }}
       text_sha: ${{ steps.sha.outputs.text_sha }}
+      # overview#341：非空＝正式站直接部署这个 run 存的正式站产物（不重新构建）
+      artifact_run: ${{ steps.r.outputs.artifact_run }}
     steps:
       # push 部署要让路给定时／手动部署：有非 push 的 deploy run 在排队或在跑就等它跑完再往下走。
       # 只有最新的 push 会在这里等（push 组 cancel-in-progress，新 push 会取消旧的等待者）。
@@ -159,8 +180,10 @@ jobs:
           busy_runs() {
             local total=0 n st
             for st in in_progress queued waiting pending; do
+              # overview#341：正式站 promote（run-name 以 Promote to production 开头）不碰测试站，不等它
               n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --status "$st" --limit 50 \
-                    --json event --jq '[.[] | select(.event != "push")] | length') || return 1
+                    --json event,displayTitle \
+                    --jq '[.[] | select(.event != "push" and (.displayTitle | startswith("Promote to production") | not))] | length') || return 1
               total=$((total + n))
             done
             echo "$total"
@@ -186,11 +209,67 @@ jobs:
           IN_DRAFT_REF: ${{ inputs.draft_ref }}
           IN_PROD_REF: ${{ inputs.prod_ref }}
           IN_TEXT_REF: ${{ inputs.text_ref }}
+          IN_FROM_RUN: ${{ inputs.from_run }}
+          IN_PROMOTE: ${{ inputs.promote }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
           if [ -z "$EDGEONE_API_TOKEN" ]; then
             echo "❌ EDGEONE_API_TOKEN 未配置：测试站 kyg-staging 与正式站 kyg-ssr-spike 都是 CLI 直传，没有它哪个站都发不了"
             exit 1
+          fi
+
+          # overview#341：from_run——钉死测试站验过的那一次（代码＝那次的 commit，数据＝那次用的三仓 commit）。
+          # 核对：那次是本仓 deploy.yml 的 run、验收任务（verify / *）全绿、有它存的 promote-manifest。
+          # code+data 且那次存了正式站产物（prod-edgeone）→ artifact_run，build 直接部署产物、不重新构建；
+          # data → 代码仍取正式站现有的 webCommitId，只把数据钉成那次的（重新构建，同老办法）。
+          if [ "$REQ" = "production" ] && [ -n "$IN_FROM_RUN" ]; then
+            if ! printf '%s' "$IN_FROM_RUN" | grep -Eq '^[0-9]{1,20}$'; then echo "❌ from_run 应是 run 的数字 id：$IN_FROM_RUN"; exit 1; fi
+            R=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IN_FROM_RUN" --jq '[.path, .head_sha] | @tsv') \
+              || { echo "❌ 查不到 run $IN_FROM_RUN"; exit 1; }
+            RUN_PATH=$(printf '%s' "$R" | cut -f1); RUN_SHA=$(printf '%s' "$R" | cut -f2)
+            case "$RUN_PATH" in .github/workflows/deploy.yml*) ;; *) echo "❌ run $IN_FROM_RUN 不是 deploy.yml 的（$RUN_PATH）"; exit 1 ;; esac
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IN_FROM_RUN/jobs?per_page=100" --paginate \
+              --jq '.jobs[] | [.name, (.conclusion // .status)] | @tsv' > "$RUNNER_TEMP/src-jobs.tsv"
+            echo "· run $IN_FROM_RUN 的任务："; sed 's/^/    /' "$RUNNER_TEMP/src-jobs.tsv"
+            grep -q '^verify / ' "$RUNNER_TEMP/src-jobs.tsv" || { echo "❌ run $IN_FROM_RUN 没有验收任务（verify / *）"; exit 1; }
+            BAD=$(grep '^verify / ' "$RUNNER_TEMP/src-jobs.tsv" | awk -F'\t' '$2 != "success" && $2 != "skipped"' || true)
+            [ -z "$BAD" ] || { echo "❌ run $IN_FROM_RUN 的验收没有全绿："; echo "$BAD"; exit 1; }
+            grep -q $'^verify / .*\tsuccess$' "$RUNNER_TEMP/src-jobs.tsv" || { echo "❌ run $IN_FROM_RUN 的验收一项都没跑成"; exit 1; }
+            gh run download "$IN_FROM_RUN" --repo "$GITHUB_REPOSITORY" -n promote-manifest -D "$RUNNER_TEMP/manifest" \
+              || { echo "❌ run $IN_FROM_RUN 没有 promote-manifest 工件（过期了？工件只留 3 天）"; exit 1; }
+            M="$RUNNER_TEMP/manifest/promote-manifest.json"
+            mget() { python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2],''))" "$M" "$1"; }
+            M_WEB=$(mget webCommitId)
+            [ "$M_WEB" = "$RUN_SHA" ] || { echo "❌ manifest 的 webCommitId（$M_WEB）与 run 的 commit（$RUN_SHA）不一致"; exit 1; }
+            for k in fullCommitId productionCommitId textCommitId; do
+              printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
+            done
+            echo "mode=promote" >> "$GITHUB_OUTPUT"
+            echo "target=production" >> "$GITHUB_OUTPUT"
+            if [ "$IN_PROMOTE" = data ]; then
+              WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
+              [ -n "$WEB" ] || { echo "❌ 正式站 latest.json 没有 webCommitId（首次 promote 请用 code+data）"; exit 1; }
+              ART=''
+            else
+              WEB="$M_WEB"
+              if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IN_FROM_RUN/artifacts?per_page=100" \
+                   --jq '.artifacts[] | select(.expired | not) | .name' | grep -qx prod-edgeone \
+                 && grep -q $'^prod-artifact\tsuccess$' "$RUNNER_TEMP/src-jobs.tsv"; then
+                ART="$IN_FROM_RUN"
+              else
+                ART=''
+                echo "::warning::run $IN_FROM_RUN 没有可用的正式站产物，按钉死的代码与数据重新构建"
+              fi
+            fi
+            echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
+            echo "draft_ref=$(mget fullCommitId)" >> "$GITHUB_OUTPUT"
+            echo "prod_ref=$(mget productionCommitId)" >> "$GITHUB_OUTPUT"
+            echo "text_ref=$(mget textCommitId)" >> "$GITHUB_OUTPUT"
+            echo "artifact_run=$ART" >> "$GITHUB_OUTPUT"
+            if [ -n "$ART" ]; then HOW='部署那次存的正式站产物'; else HOW='重新构建'; fi
+            echo "· promote($IN_PROMOTE) from run $IN_FROM_RUN：web=$WEB 数据=那次的三仓 commit；$HOW"
+            exit 0
           fi
 
           if [ "$REQ" = "production" ]; then
@@ -272,6 +351,10 @@ jobs:
       DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
       # 测试站：数据写同桶 staging/ 前缀（current/、v/、h1/、latest.json 全在其下），与正式站互不覆盖
       COS_PATH_PREFIX: ${{ needs.resolve.outputs.target == 'staging' && 'staging' || '' }}
+      # overview#341：正式站直接部署测试站那次 run 存的正式站产物（不重新构建、不重跑单测、不生成 sitemap）
+      FROM_ARTIFACT: ${{ needs.resolve.outputs.artifact_run != '' }}
+      # 演练（仅手动 target=staging）：测试站产物打包、加密、删掉构建目录后再解包部署，走一遍 promote 的那条路
+      REHEARSE_ARTIFACT: ${{ needs.resolve.outputs.target == 'staging' && inputs.rehearse_artifact == true }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -289,7 +372,9 @@ jobs:
         run: npm ci
 
       # 部署前先跑单测：push 到 main 会直接上线，不能把未验证的代码发出去
+      # （部署现成产物时不跑：那份产物在测试站那次 run 里已经跑过单测、过了 verify）
       - name: Unit tests
+        if: ${{ env.FROM_ARTIFACT != 'true' }}
         working-directory: nextjs
         run: npm test
 
@@ -323,7 +408,7 @@ jobs:
 
       - name: Data fast path — restore item sitemaps
         id: sitemap_cache
-        if: ${{ steps.data_pre.outputs.skip == 'true' }}
+        if: ${{ steps.data_pre.outputs.skip == 'true' && env.FROM_ARTIFACT != 'true' }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
@@ -331,7 +416,8 @@ jobs:
 
       - name: Data fast path — write latest.json only
         id: fast_latest
-        if: ${{ steps.data_pre.outputs.skip == 'true' && steps.sitemap_cache.outputs.cache-hit == 'true' }}
+        # 部署现成产物时 sitemap 已在产物里，不需要缓存
+        if: ${{ steps.data_pre.outputs.skip == 'true' && (steps.sitemap_cache.outputs.cache-hit == 'true' || env.FROM_ARTIFACT == 'true') }}
         continue-on-error: true
         env:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -600,6 +686,7 @@ jobs:
       # （测试站 robots.txt 全禁、不列 sitemap）。overview#341：数据没变的快路上用缓存（同一站点、同一份数据、
       # 同一版打包脚本生成的，内容一样）；照常打包时生成后存一份缓存，下次快路用。
       - name: Item sitemaps (W2-3)
+        if: ${{ env.FROM_ARTIFACT != 'true' }}
         working-directory: nextjs
         env:
           SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
@@ -620,22 +707,34 @@ jobs:
           cp "$OUT/sitemap-index.xml" public/sitemap-index.xml
 
       - name: Save item sitemaps cache (overview#341)
-        if: ${{ env.DATA_FAST != 'true' && steps.data_pre.outputs.fingerprint != '' }}
+        if: ${{ env.DATA_FAST != 'true' && env.FROM_ARTIFACT != 'true' && steps.data_pre.outputs.fingerprint != '' }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
           key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
 
+      # W2-3：条目页按需失效接口（/internal/revalidate）的密钥。由 EDGEONE_API_TOKEN
+      # 派生（HMAC），不需要另建 secret；构建期写进服务端代码，部署后的失效步骤用同一个值。
+      # overview#341：两站都在这里派生（原来正式站在自己的构建步骤里派生）——部署现成产物时不构建，失效步骤也要它。
+      - name: Derive revalidate secret (W2-3)
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
+
       # CUT2（overview#241）：正式站＝全栈项目 kyg-ssr-spike（www 已于 09-28 换绑过去）。
       # 原来的静态导出＋推 edgeone-release（发旧项目 kaiyuanguji）去掉：旧项目保留 4 周作回滚目标，
       # 回滚靠控制台换绑，CI 不再推它（docs/cutover.md「切完以后」）。
       # 本步骤即原 W2b 双跑那一步转正：同一套全栈构建，失败就拦发布（不再 continue-on-error）。
       # 为什么经 ops/edgeone-fullstack-build.py、为什么先 makers build 再 deploy：见下面测试站那一步的注释。
+      # overview#341：prod-artifact 任务里有一份同样的构建（env 必须一致，ops/tests/test_deploy_workflow.py 守着）。
       - name: Build for EdgeOne (production, fullstack → kyg-ssr-spike)
-        if: ${{ env.DEPLOY_TARGET == 'production' }}
+        if: ${{ env.DEPLOY_TARGET == 'production' && env.FROM_ARTIFACT != 'true' }}
         env:
-          # E1：只用来读 kyg-ssr-spike 的项目环境变量、派生失效密钥；不进构建子进程
+          # E1：只用来读 kyg-ssr-spike 的项目环境变量；不进构建子进程
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
           KYG_RENDER_MODE: fullstack
           # /api/version 的 target：全栈＋正式站配置按默认会记成 ssr-test（双跑期口径），这里显式写 production
@@ -664,11 +763,7 @@ jobs:
             echo "❌ 全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
             exit 1
           fi
-          # 条目页按需失效接口的密钥（与测试站同一派生法），部署后的失效步骤也要用
-          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
-          echo "::add-mask::$S"
-          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
-          export KYG_REVALIDATE_SECRET="$S"
+          # 条目页按需失效接口的密钥 KYG_REVALIDATE_SECRET 已由上面「Derive revalidate secret」写进环境
           cd nextjs
           # 条目 sitemap 分片（W2-3）已由上面「Item sitemaps」一步放进 public/（<loc> 指向 www），这里不能删
           rm -rf .next out .edgeone edge-functions
@@ -691,17 +786,6 @@ jobs:
       # ops/edgeone-fullstack-build.py 跑：读项目变量只放进白名单环境的构建子进程（CI 的 token
       # 等进不去），构建后查产物无 .env、项目变量只在边缘函数里、CI 机密不在产物里。不打印值。
       # CLI 版本钉死：构建产物格式须与部署时的 CLI 一致。
-      # W2-3：条目页按需失效接口（/internal/revalidate）的密钥。由 EDGEONE_API_TOKEN
-      # 派生（HMAC），不需要另建 secret；构建期写进服务端代码，部署后的失效步骤用同一个值。
-      - name: Derive revalidate secret (staging, W2-3)
-        if: ${{ env.DEPLOY_TARGET == 'staging' }}
-        env:
-          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
-        run: |
-          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
-          echo "::add-mask::$S"
-          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
-
       - name: Build for EdgeOne (staging, fullstack)
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
@@ -736,6 +820,35 @@ jobs:
             -- npx -y edgeone@1.6.41 makers build
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
+
+      # overview#341：正式站部署测试站那次 run 存的正式站产物（prod-artifact 任务构建、加密），不重新构建
+      - name: Fetch production artifact (from staging run)
+        if: ${{ env.FROM_ARTIFACT == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-edgeone
+          run-id: ${{ needs.resolve.outputs.artifact_run }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/prod-artifact
+
+      - name: Unpack production artifact
+        if: ${{ env.FROM_ARTIFACT == 'true' }}
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          bash ops/edgeone-artifact.sh unpack "$RUNNER_TEMP/prod-artifact/prod-edgeone.tgz.enc" nextjs
+          echo "· 产物来自 run ${{ needs.resolve.outputs.artifact_run }}（web ${{ needs.resolve.outputs.web_ref }}）"
+
+      # 演练（rehearse_artifact，仅手动 target=staging）：把刚构建好的测试站产物走一遍 promote 那条路——
+      # 打包加密、删掉 .edgeone 与 .next、解包，再由下面照常检查、部署。验证产物离开构建目录后照样能部署。
+      - name: Rehearse artifact round trip (staging, manual only)
+        if: ${{ env.REHEARSE_ARTIFACT == 'true' }}
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          bash ops/edgeone-artifact.sh pack nextjs "$RUNNER_TEMP/rehearse.tgz.enc"
+          rm -rf nextjs/.edgeone nextjs/.next
+          bash ops/edgeone-artifact.sh unpack "$RUNNER_TEMP/rehearse.tgz.enc" nextjs
 
       - name: Verify EdgeOne build mode
         run: |
@@ -775,17 +888,8 @@ jobs:
       # （原 W2b 双跑构建步骤里的产物校验，转正后单列一步）
       - name: Verify production artifacts (fullstack)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
-        run: |
-          A=nextjs/.edgeone/assets
-          ! grep -q 'noindex' $A/index.html || { echo "❌ 正式站产物含 noindex meta，混入了测试站构建"; exit 1; }
-          ! grep -q 'staging-badge' $A/index.html || { echo "❌ 正式站产物含测试站角标"; exit 1; }
-          grep -qx 'Allow: /' $A/robots.txt || { echo "❌ robots.txt 不是正式站口径："; cat $A/robots.txt; exit 1; }
-          ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ 正式站产物读的是测试站数据"; exit 1; }
-          grep -q '"\^/item/' nextjs/.edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
-          grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
-          test -f nextjs/.edgeone/edge-functions/config.json || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
-          test -f $A/sitemap-index.xml || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
-          echo "✓ 正式站产物：无 noindex、无角标、robots 允许收录、读正式数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap"
+        # 判据抽到 ops/check-edgeone-artifact.sh（prod-artifact 任务构建时也用同一份）；部署现成产物时同样再查一遍
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
 
       # 闸：产物文件数异常时直接失败，别让部署静默不生效（2026-09-27 h1 数据混进产物、
       # Pages 静默不发布的教训）。全栈产物里多了云函数（opennext 打包的 node_modules，
@@ -811,6 +915,39 @@ jobs:
         working-directory: nextjs
         run: |
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
+
+      # overview#341：记下这次测试站用的代码与数据（完整 commit），存成工件。正式站 promote 带 from_run=<本 run>
+      # 时据此钉死版本，不再读测试站指针「此刻」的值（指针可能已被后来的部署改写）。
+      - name: Write promote manifest (staging)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        env:
+          WEB: ${{ needs.resolve.outputs.web_ref }}
+          R_DRAFT: ${{ needs.resolve.outputs.draft_sha }}
+          R_PROD: ${{ needs.resolve.outputs.prod_sha }}
+          R_TEXT: ${{ needs.resolve.outputs.text_sha }}
+        run: |
+          # 照常克隆时取克隆下来的 commit；快路上没克隆，就是 resolve 解析出的（快路的判定用的也是它们）
+          head_of() { git -C "$1" rev-parse HEAD 2>/dev/null || echo "$2"; }
+          mkdir -p "$RUNNER_TEMP/manifest"
+          python3 - "$RUNNER_TEMP/manifest/promote-manifest.json" <<PY
+          import json, sys
+          json.dump({
+              'webCommitId': '$WEB',
+              'fullCommitId': '$(head_of book-index-draft "$R_DRAFT")',
+              'productionCommitId': '$(head_of book-index "$R_PROD")',
+              'textCommitId': '$(head_of book-text "$R_TEXT")',
+              'runId': '${{ github.run_id }}',
+          }, open(sys.argv[1], 'w'), indent=2)
+          PY
+          cat "$RUNNER_TEMP/manifest/promote-manifest.json"
+
+      - name: Upload promote manifest (staging)
+        if: ${{ env.DEPLOY_TARGET == 'staging' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: promote-manifest
+          path: ${{ runner.temp }}/manifest/promote-manifest.json
+          retention-days: 3
 
       # CUT2：正式站＝kyg-ssr-spike（www），与测试站同一条 CLI 直传。不再推 edgeone-release——
       # 旧项目 kaiyuanguji 保留作回滚目标，回滚时在控制台把 www 换绑回去（docs/cutover.md）。
@@ -940,6 +1077,167 @@ jobs:
         env:
           ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
         run: node scripts/item-cache-verify.mjs
+
+  # overview#341：正式站产物——与测试站同一个 run、同一版代码（web_ref）、同一份数据（resolve 解析出的三仓 commit），
+  # 与 build 并行构建，加密存成本 run 的工件 prod-edgeone（3 天）。测试站 verify 全绿后，正式站那次 promote
+  # （from_run=本 run）直接部署它，不再重拉数据、重打包、重构建。
+  # 为什么不能直接把测试站产物发到正式站：NEXT_PUBLIC_*（数据地址、站点地址、角标、noindex）和项目变量在构建期烘进产物，
+  # 两站的产物本来就不一样（见 build 的两支构建）。所以是「同一次构建流程里多出一份正式站配置的产物」。
+  # 只有 push 才建（自动 promote 只对 push）；手动 target=staging 勾 rehearse_artifact 时也建，用来演练。
+  # 失败不影响测试站那一支（verify 不依赖本任务），只是这次不会自动 promote（auto-promote 依赖本任务成功）。
+  prod-artifact:
+    needs: resolve
+    if: ${{ needs.resolve.outputs.mode == 'staging' && (github.event_name == 'push' || inputs.rehearse_artifact == true) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEPLOY_TARGET: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.web_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: nextjs
+        run: npm ci
+
+      # 条目 sitemap（<loc> 指向 www）要读打包好的 entry/*.json。数据没变时用缓存（键同 build：站点＋三仓 commit＋打包脚本指纹），
+      # 缓存没有才克隆、打包——那样多花三四分钟，但与测试站那一支并行，测试站 verify 一般比它晚结束，不拖总时间。
+      - name: Bundle fingerprint
+        id: fp
+        working-directory: nextjs
+        run: |
+          FP=$(node -e "import('./scripts/lib/cos-sync-decision.mjs').then((m) => console.log(m.computeBundleFingerprint(process.env.GITHUB_WORKSPACE)))")
+          echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+
+      - name: Restore item sitemaps (www)
+        id: sitemap_cache
+        if: ${{ needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/item-sitemaps
+          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
+
+      - name: Clone, bundle and generate item sitemaps (cache miss)
+        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        env:
+          KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
+          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
+          BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
+          BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
+          SITEMAP_SITE: https://www.kaiyuanguji.com
+          SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
+        run: |
+          fetch_at() {
+            git init -q "$2"
+            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
+            git -C "$2" checkout -q FETCH_HEAD
+          }
+          # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
+          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_sha || needs.resolve.outputs.draft_ref }}"
+          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
+          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          cd nextjs
+          node scripts/bundle-data.mjs
+          rm -rf "$SITEMAP_OUT_DIR"
+          node scripts/gen-sitemaps.mjs
+
+      - name: Save item sitemaps cache (www)
+        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/item-sitemaps
+          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
+
+      - name: Place item sitemaps
+        working-directory: nextjs
+        run: |
+          OUT="$RUNNER_TEMP/item-sitemaps"
+          test -f "$OUT/sitemap-index.xml" && ls "$OUT"/sitemaps/*.xml > /dev/null \
+            || { echo "❌ 条目 sitemap 不全"; ls -la "$OUT"; exit 1; }
+          rm -rf public/sitemaps public/sitemap-index.xml
+          cp -r "$OUT/sitemaps" public/sitemaps
+          cp "$OUT/sitemap-index.xml" public/sitemap-index.xml
+
+      - name: Derive revalidate secret (W2-3)
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          echo "KYG_REVALIDATE_SECRET=$S" >> "$GITHUB_ENV"
+
+      # 与 build 的正式站构建步骤是同一份（env 与命令一致，ops/tests/test_deploy_workflow.py 守着）
+      - name: Build for EdgeOne (production, fullstack → kyg-ssr-spike)
+        env:
+          # E1：只用来读 kyg-ssr-spike 的项目环境变量；不进构建子进程
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          KYG_RENDER_MODE: fullstack
+          # /api/version 的 target：全栈＋正式站配置按默认会记成 ssr-test（双跑期口径），这里显式写 production
+          KYG_DEPLOY_TARGET: production
+          NEXT_PUBLIC_MODE: ''
+          # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
+          NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
+          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_ENV: ''
+          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
+          # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
+          # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
+          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          # 兜底值是「公开只读搜索 key」（本来就随 JS 发给每个浏览器，非机密；
+          # 绝不能在这里放 master key）。secret 缺失曾导致构建时 key 为空、
+          # 线上搜索全 401（2026-08 事故）。轮换 key 后请同步更新这里和 secret。
+          NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
+          # 访问统计站点 ID（G-24）：仓库 Settings → Variables 里配 BAIDU_TONGJI_ID / GA_ID。
+          # 非机密（本来就写在页面里）；没配则不加载统计脚本。
+          # 双跑期 ssr-test 不带（免得与 www 重复计数）；现在它就是 www，照旧带上
+          NEXT_PUBLIC_BAIDU_TONGJI_ID: ${{ vars.BAIDU_TONGJI_ID }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
+          NEXT_PUBLIC_BASE_PATH: ''
+        run: |
+          if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
+            echo "❌ 全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
+            exit 1
+          fi
+          # 条目页按需失效接口的密钥 KYG_REVALIDATE_SECRET 已由上面「Derive revalidate secret」写进环境
+          cd nextjs
+          # 条目 sitemap 分片（W2-3）已由上面「Item sitemaps」一步放进 public/（<loc> 指向 www），这里不能删
+          rm -rf .next out .edgeone edge-functions
+          # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
+          cp -r ../edge-functions ./edge-functions
+          # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
+            --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
+            -- npx -y edgeone@1.6.41 makers build
+          du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
+          find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
+
+      - name: Verify production artifacts (fullstack)
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+
+      - name: Pack production artifact (encrypted)
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/prod-artifact"
+          bash ops/edgeone-artifact.sh pack nextjs "$RUNNER_TEMP/prod-artifact/prod-edgeone.tgz.enc"
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-edgeone
+          path: |
+            ${{ runner.temp }}/prod-artifact/prod-edgeone.tgz.enc
+            ${{ runner.temp }}/prod-artifact/prod-edgeone.tgz.enc.sha256
+          retention-days: 3
+          # 已是 gzip＋密文，再压缩没用
+          compression-level: 0
 
   # --- 部署后验收：确认功能没坏、数据真的上线了 ---
   #

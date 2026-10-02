@@ -211,6 +211,9 @@ done
 测试站会被改写成新代码，promote 就会发新代码（main 有 push 还会直接取消进行中的测试站重建）。`stage=promote` 先确认那次重建是 completed success、
 dispatch 前再核一次测试站指针，`stage=check` 再核正式站指针，不一致会红——看到红了先看正式站 `/api/version` 实际是哪版。
 根治方案见 PR「DBG」描述里的「promote 安全方案」（`verifiedWebCommitId`）。
+overview#341 起手动 promote 可以填 `from_run`（测试站那次部署的 run 编号）：代码与数据都钉成那次验过的，不读指针「此刻」的值；
+那次是 push 触发的（存了正式站产物 `prod-edgeone`，工件留 3 天）且 `promote=code+data` 时，直接部署那份产物、不重新构建。
+resolve 会先核对那次的验收任务全绿，不绿就拒绝。
 
 **演练或回滚后测试站指针停在旧 commit**：`staging/latest.json` 的 `webCommitId` 会一直是回滚目标，直到下一次 push 到 main（或手动 `target=staging`）重建测试站。
 这段时间里**别手动 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
