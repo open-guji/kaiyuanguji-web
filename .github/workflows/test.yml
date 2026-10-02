@@ -106,16 +106,41 @@ jobs:
           path: perf/out/
           retention-days: 7
 
+  # 浏览器镜像版本＝e2e 锁定的 @playwright/test 版本（Fullstack 跑在 Playwright 官方镜像里，见下）
+  pw-image:
+    name: Playwright image version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.pw.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: e2e/package-lock.json
+          sparse-checkout-cone-mode: false
+      - id: pw
+        run: |
+          V=$(node -p "require('./e2e/package-lock.json').packages['node_modules/@playwright/test'].version")
+          if ! printf '%s' "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "❌ 从 e2e/package-lock.json 读不出 @playwright/test 版本：$V"; exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
   fullstack:
     # WEB2（overview#249 Q6）：smoke 只测静态导出，全栈路由（/item/*、/item/*/read、中间件跳转）
     # 以前要部署到测试站后 verify 才有人测——阅读页全 500（INT P1）就是这么漏过去的。
     # 这里全栈构建＋next start，跑 e2e 的 reader.spec、feedback.spec 与 contract/fullstack.spec。
     # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
     name: Fullstack (build + next start + e2e reader/feedback/contract)
+    needs: pw-image
     runs-on: ubuntu-latest
     # 正常约 6 分钟。10-01 两次被 12 分钟上限掐掉：都是「Install Chromium for Playwright」里 apt 源
     # 只有 ~100 kB/s，这一步从 39 秒拖到 574 秒，与代码无关。放到 20 分钟留出余量（overview#304）。
+    # overview#341：改在 Playwright 官方镜像里跑，浏览器与系统依赖都在镜像里，不再 apt 装。
+    # --user 1001：与 runner 同一个用户，checkout 进来的工作目录才有写权限（Playwright 文档的写法）。
     timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.pw-image.outputs.version }}-noble
+      options: --user 1001
     env:
       KYG_RENDER_MODE: fullstack
       NEXT_PUBLIC_MODE: ''
@@ -136,9 +161,6 @@ jobs:
       - name: Install (e2e)
         working-directory: e2e
         run: npm ci
-      - name: Install Chromium for Playwright
-        working-directory: e2e
-        run: npx playwright install --with-deps chromium
       - name: Build (fullstack)
         working-directory: nextjs
         run: npm run build
@@ -147,8 +169,9 @@ jobs:
         # next start 也读 next.config：KYG_RENDER_MODE 必须同样是 fullstack，否则按静态导出拒绝启动
         run: |
           npx next start -p 3000 > "$RUNNER_TEMP/next-start.log" 2>&1 &
+          # 镜像里不一定有 curl，用 node 探活
           for i in $(seq 1 60); do
-            curl -sf -o /dev/null http://localhost:3000/ && exit 0
+            node -e "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && exit 0
             sleep 1
           done
           echo "❌ next start 60 秒内没起来"; cat "$RUNNER_TEMP/next-start.log"; exit 1
