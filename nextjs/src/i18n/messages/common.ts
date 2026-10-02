@@ -17,6 +17,12 @@ export const common = defineMessages({
         catalog: '去古籍總目',
         search: '去搜索',
     },
+    error: {
+        title: '頁面沒能打開',
+        body: '多半是網絡一時不通。點「重試」或刷新一下通常就好；還不行，請稍後再來。',
+        retry: '重試',
+        reload: '刷新頁面',
+    },
     suggest: {
         label: '檢索候選',
         history: '最近檢索',
@@ -39,6 +45,12 @@ export const common = defineMessages({
         home: '回首页',
         catalog: '去古籍总目',
         search: '去搜索',
+    },
+    error: {
+        title: '页面没能打开',
+        body: '多半是网络一时不通。点「重试」或刷新一下通常就好；还不行，请稍后再来。',
+        retry: '重试',
+        reload: '刷新页面',
     },
     suggest: {
         label: '检索候选',
