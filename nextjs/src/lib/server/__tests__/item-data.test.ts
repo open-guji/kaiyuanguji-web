@@ -49,7 +49,7 @@ const currentRoutes: Routes = {
 
 function make(routes: Routes, now = () => 1_000_000) {
     const { fn, calls } = mockFetch(routes);
-    const f = createItemFetcher({ base: `${BASE}/`, fetch: fn as never, now });
+    const f = createItemFetcher({ base: `${BASE}/`, fetch: fn as never, now, retryDelayMs: 0 });
     return { f, fn, calls };
 }
 
@@ -226,6 +226,65 @@ describe("createItemFetcher.getItem(id, { prefer: 'current' })（overview#322 B1
     });
 });
 
+describe('网络错与 5xx 原地重试一次（overview#322：冷渲染时的临时故障不让整页 500）', () => {
+    /** 第 n 次请求某个 URL 时的行为：'THROW' | 状态码 | 数据 */
+    function flaky(plan: Record<string, unknown[]>) {
+        const seen: Record<string, number> = {};
+        const calls: string[] = [];
+        const fn = jest.fn(async (url: string) => {
+            calls.push(url);
+            const key = url.split('?')[0];
+            const steps = plan[key];
+            if (!steps) return { ok: false, status: 404, json: async () => ({}) } as Response;
+            const v = steps[Math.min(seen[key] = (seen[key] ?? -1) + 1, steps.length - 1)];
+            if (v === 'THROW') throw new TypeError('fetch failed');
+            if (typeof v === 'number') return { ok: v < 400, status: v, json: async () => ({}) } as Response;
+            return { ok: true, status: 200, json: async () => v } as Response;
+        });
+        return { fn, calls };
+    }
+
+    it('网络错一次 → 重试后拿到，不回退、不抛错', async () => {
+        const { fn, calls } = flaky({ [`${BASE}/latest.json`]: ['THROW', { commitId: 'abc123' }], [`${BASE}/current/entry/${ID}.json`]: [ENTRY] });
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 });
+        expect(await f.getItem(ID, { prefer: 'current' })).toMatchObject({ source: 'current' });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('5xx 一次 → 重试后拿到；连续失败只重试 retries 次就抛', async () => {
+        const ok = flaky({ [`${BASE}/latest.json`]: [{ commitId: 'c' }], [`${BASE}/current/items/x/manifest.json`]: [502, { versions: [] }] });
+        const f = createItemFetcher({ base: BASE, fetch: ok.fn as never, retryDelayMs: 0 });
+        expect(await f.getCurrentJson('items/x/manifest.json')).toEqual({ versions: [] });
+
+        const bad = flaky({ [`${BASE}/latest.json`]: [{ commitId: 'c' }], [`${BASE}/current/items/x/manifest.json`]: [503] });
+        const g = createItemFetcher({ base: BASE, fetch: bad.fn as never, retryDelayMs: 0, retries: 2 });
+        await expect(g.getCurrentJson('items/x/manifest.json')).rejects.toThrow('HTTP 503');
+        expect(bad.calls.filter((u) => u.includes('manifest.json'))).toHaveLength(3);
+    });
+
+    it('404 不重试（确定没有）；retries: 0（中间件）不重试', async () => {
+        const nf = flaky({ [`${BASE}/latest.json`]: [{ commitId: 'c' }] });
+        const f = createItemFetcher({ base: BASE, fetch: nf.fn as never, retryDelayMs: 0 });
+        expect(await f.getCurrentJson('items/x/manifest.json')).toBeNull();
+        expect(nf.calls.filter((u) => u.includes('manifest.json'))).toHaveLength(1);
+
+        const once = flaky({ [`${BASE}/latest.json`]: ['THROW', { commitId: 'c' }] });
+        const g = createItemFetcher({ base: BASE, fetch: once.fn as never, retryDelayMs: 0, retries: 0 });
+        await expect(g.getCurrentJson('items/x/manifest.json')).rejects.toThrow('fetch failed');
+        expect(once.calls).toHaveLength(1);
+    });
+
+    it('正文（getCurrentText）同样重试', async () => {
+        const fn = jest.fn()
+            .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ commitId: 'c' }) } as Response)
+            .mockRejectedValueOnce(new TypeError('fetch failed'))
+            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '正文' } as Response);
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 });
+        expect(await f.getCurrentText('items/x/default/001.txt')).toBe('正文');
+        expect(fn).toHaveBeenCalledTimes(3);
+    });
+});
+
 describe('createItemFetcher 的 forceCache 选项', () => {
     it('默认带 cache: force-cache（页面保持 ISR）', async () => {
         const { f, fn } = make({ ...h1Routes(), ...currentRoutes });
@@ -388,7 +447,7 @@ describe('超时信号（FX1c）', () => {
             expect(jest.getTimerCount()).toBe(0);
 
             const bad = mockFetch({ [`${BASE}/h1/manifest-root.json`]: 'THROW', [`${BASE}/latest.json`]: 503 });
-            const g = createItemFetcher({ base: BASE, fetch: bad.fn as never, timeoutMs: 3_000 });
+            const g = createItemFetcher({ base: BASE, fetch: bad.fn as never, timeoutMs: 3_000, retries: 0 });
             await expect(g.getItem(ID)).rejects.toThrow('HTTP 503');
             expect(jest.getTimerCount()).toBe(0);
         });
