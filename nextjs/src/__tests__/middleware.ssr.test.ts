@@ -117,6 +117,26 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false }));
     });
 
+    it("取条目走 prefer: 'current'（overview#322 B1：边缘上少发 h1 的 4 跳）", async () => {
+        mockGetItem.mockResolvedValue(hit({ title: '史記' }));
+        await run(`/item/${MERGED}`);
+        expect(mockGetItem).toHaveBeenCalledWith(MERGED, { prefer: 'current' });
+    });
+
+    it('跳转判断超过时限 → 放过交给页面，不挂着等', async () => {
+        jest.useFakeTimers();
+        try {
+            mockGetItem.mockImplementation(() => new Promise(() => {}));
+            const pending = run(`/item/${MERGED}`);
+            await jest.advanceTimersByTimeAsync(2_000);
+            const r = await pending;
+            expect(r.location).toBeNull();
+            expect(r.status).toBe(200);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
     it('不合法的 id 不查数据', async () => {
         expect((await run('/item/BAD..id')).location).toBeNull();
         expect(mockGetItem).not.toHaveBeenCalled();

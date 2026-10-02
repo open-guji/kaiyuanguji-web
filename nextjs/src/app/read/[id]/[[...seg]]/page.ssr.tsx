@@ -62,8 +62,8 @@ const PRELOAD_BUDGET_MS = 1500;
 /**
  * 返回 null ＝ 真 404。被并条目、草稿升格照条目页一样跳，但落到目标的阅读页。
  *
- * 条目（h1：指针 → 根清单 → 分片 → 条目）与 manifest／版本目录（latest.json → manifest → index）两条取数链互不依赖，
- * 并行取（overview#322：串行时冷实例要走 8 跳，实测约 4 秒）。checkReader 自己兜住网络错（unknown），
+ * 条目（latest.json → current/entry，overview#322 B1；原先走 h1 指针 → 根清单 → 分片 → 条目 4 跳）与
+ * manifest／版本目录（latest.json → manifest → index）两条取数链并行取，latest.json 两边共用一次。checkReader 自己兜住网络错（unknown），
  * 条目查不到时它的结果不用，多取的那次落进 LRU。
  */
 async function loadUncached(id: string, seg: string[] | undefined): Promise<Loaded | null> {
@@ -75,7 +75,8 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     // overview#322 方案 D：分段计时（只记录，见 lib/server/render-timing.ts）
     const timing = startRenderTiming();
     const [hit, checked] = await Promise.all([
-        timed(timing, 'item', getItemServer(id)),
+        // 只要书名与跳转信息：先走 current/（与 checkReader 共用 latest.json，冷实例上少 3 跳，overview#322 B1）
+        timed(timing, 'item', getItemServer(id, { prefer: 'current' })),
         timed(timing, 'check', checkReader(id, sel, getCurrentJsonServer)),
     ]);
     const r = await timed(timing, 'redirect', resolveItemRedirect(id, hit, getPromotionServer));

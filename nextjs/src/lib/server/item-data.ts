@@ -233,10 +233,36 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     }
 
     /**
-     * 取一条条目。确定不存在返回 null；回退路径也失败（网络错、5xx）则抛错。
+     * 先走 current/ 的取法（overview#322 B1）：latest.json 指针 → current/entry/<id>.json，冷实例上 2 跳，
+     * 指针还与 manifest 链共用（阅读页的 checkReader、中间件的旧地址换算都读它），多数时候只多 1 跳。
+     * current/ 确定没有时再问一次 h1（两边由同一次打包发出，不该不一致；h1 也查不了就按没有算）；
+     * current/ 出网络错或 5xx 时回到 h1 优先的完整取法。
      */
-    async function getItem(id: string): Promise<ItemFetchResult | null> {
+    async function getItemCurrentFirst(id: string): Promise<ItemFetchResult | null> {
+        try {
+            const hit = await fromCurrent(id);
+            if (hit) return { ...hit, source: 'current' };
+        } catch (err) {
+            console.warn(`[item-data] current/ 取 ${id} 失败，改走 h1：${(err as Error).message}`);
+            return getItem(id);
+        }
+        try {
+            return { ...(await fromH1(id)), source: 'h1' };
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * 取一条条目。确定不存在返回 null；回退路径也失败（网络错、5xx）则抛错。
+     *
+     * prefer: 'current' —— 只要条目内容（书名、被并、升格）、不在乎 data-ssr-version 是哪条路径的调用方用：
+     * 阅读页与中间件（overview#322 B1：h1 是 4 跳串行，冷实例与冷边缘实例上首个请求要等它走完）。
+     * 条目页 /item/<id> 仍走 h1 优先：发版后的 item-cache-verify 按 data-ssr-version=h1:<新 root> 判断缓存已换新。
+     */
+    async function getItem(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
         if (!isValidItemId(id)) return null;
+        if (opts?.prefer === 'current') return getItemCurrentFirst(id);
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch (err) {
@@ -302,8 +328,8 @@ function defaultFetcher(): ReturnType<typeof createItemFetcher> {
 }
 
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
-export function getItemServer(id: string): Promise<ItemFetchResult | null> {
-    return defaultFetcher().getItem(id);
+export function getItemServer(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+    return defaultFetcher().getItem(id, opts);
 }
 
 /** current/ 下的数据文件（同一个取数实例，latest.json 指针缓存共用） */

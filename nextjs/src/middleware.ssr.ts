@@ -63,6 +63,31 @@ function fetcher() {
     return _fetcher;
 }
 
+/**
+ * 被并／升格跳转的判断（overview#322「首次打开报错、刷新就好」）：
+ * - 取条目先走 current/（latest.json → current/entry，2 跳；原先 h1 指针 → 根清单 → 分片 → 条目 4 跳串行）。
+ *   10-02 正式站实测：冷 id 的整页请求 2% 被边缘直接断开（无响应头），中间件不取数的同批请求 0 断，
+ *   冷边缘实例上串着发的子请求越少越好。
+ * - 整段判断限时 REDIRECT_BUDGET_MS，到时放行交给页面（页面里同一套跳转兜底），不让整页请求挂在边缘上等子请求。
+ */
+const REDIRECT_BUDGET_MS = 2_000;
+
+async function lookupItemRedirect(id: string) {
+    const f = fetcher();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const budget = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`超过 ${REDIRECT_BUDGET_MS}ms`)), REDIRECT_BUDGET_MS);
+    });
+    try {
+        return await Promise.race([
+            (async () => resolveItemRedirect(id, await f.getItem(id, { prefer: 'current' }), f.resolvePromotion))(),
+            budget,
+        ]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     // RSC 导航与预取：页面的跳转编码在 RSC 负载里，不受 Location 重复影响，不必多查一次
     const dest = req.headers.get('sec-fetch-dest');
@@ -70,8 +95,7 @@ async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     const id = req.nextUrl.pathname.slice('/item/'.length);
     if (!isValidItemId(id)) return NextResponse.next();
     try {
-        const f = fetcher();
-        const r = await resolveItemRedirect(id, await f.getItem(id), f.resolvePromotion);
+        const r = await lookupItemRedirect(id);
         // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
         if (r) return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
     } catch (err) {
@@ -174,8 +198,7 @@ async function readerItemRedirect(req: NextRequest, id: string, sel: ReaderSel):
     const dest = req.headers.get('sec-fetch-dest');
     if (dest && dest !== 'document') return null;
     try {
-        const f = fetcher();
-        const r = await resolveItemRedirect(id, await f.getItem(id), f.resolvePromotion);
+        const r = await lookupItemRedirect(id);
         if (!r) return null;
         const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
         return NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
