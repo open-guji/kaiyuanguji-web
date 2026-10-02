@@ -1,0 +1,76 @@
+name: Feedback hide (manual)
+
+# 反馈「删除」与隐藏清单（overview#337 C2）。只能手动触发，代码在 ops/feedback-hide.mjs。
+#
+# feedback.js 没有硬删除：「删除」＝ action:'update' 写 test=true＋visibility=hidden，公开读即剔除，KV 原文留档。
+#   mode=hide         对 ids 里的每条先用管理读查现状；dry_run（默认勾着）只把「将改什么」写进 job summary，
+#                     取消勾选才真写。库里没有、格式不对的 id 一律不写，job 变红。
+#   mode=list_hidden  列出公开读看不到的那部分（test=true／visibility=hidden／「想参与」类），只读。
+#
+# 鉴权用 secrets.FEEDBACK_ADMIN_TOKEN（monitor.yml 已在用的同一把）。
+# 本仓是公开仓，日志与 summary 谁都能看：只出 id、时间、类型、状态、标记、来源页；
+# 正文只对公开读本来就看得到的条目出前 40 字（先脱敏），已不公开的（test／hidden／「想参与」）正文一字不出；
+# 读者留的联系方式（contact 字段）与 updatedBy 任何情况下都不输出。
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'hide＝隐藏指定 id；list_hidden＝只列出公开读看不到的'
+        type: choice
+        options: [hide, list_hidden]
+        default: hide
+      ids:
+        description: 'mode=hide 时：反馈 id，逗号分隔（如 fb_1790189101041_jrc4,fb_1790112255687_hsy5）'
+        type: string
+        default: ''
+      dry_run:
+        description: 'mode=hide 时：只打印将改什么、不写（取消勾选才真写）'
+        type: boolean
+        default: true
+      base:
+        description: '目标站'
+        type: choice
+        options: [https://www.kaiyuanguji.com, https://staging.kaiyuanguji.com]
+        default: https://www.kaiyuanguji.com
+
+permissions:
+  contents: read
+
+concurrency:
+  group: feedback-hide
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: ${{ inputs.mode }}${{ inputs.mode == 'hide' && (inputs.dry_run && '（dry_run）' || '（真跑）') || '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 必须 ≥22：ops/feedback-hide.mjs 直接复用 edge-functions/api/feedback.js 的 desensitizeText，
+          # 那个文件是 ESM 写法但仓库没有 "type": "module"；Node 22 起默认按语法认出 ESM，Node 20 会按 CommonJS 读而报错
+          node-version: '22'
+      - name: Unit tests (ops/feedback-hide)
+        run: node --test ops/tests/feedback-hide.test.mjs
+      - name: Run
+        env:
+          FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
+          FEEDBACK_BASE: ${{ inputs.base }}
+          # 输入走环境变量，不直接拼进 shell（防注入）
+          MODE: ${{ inputs.mode }}
+          IDS: ${{ inputs.ids }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ -z "$FEEDBACK_ADMIN_TOKEN" ]; then
+            echo "❌ 仓库没配 secrets.FEEDBACK_ADMIN_TOKEN"; exit 1
+          fi
+          if [ "$MODE" = "list_hidden" ]; then
+            node ops/feedback-hide.mjs list_hidden
+          elif [ "$DRY_RUN" = "true" ]; then
+            node ops/feedback-hide.mjs hide --ids "$IDS"
+          else
+            node ops/feedback-hide.mjs hide --ids "$IDS" --apply
+          fi
