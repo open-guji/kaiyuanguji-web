@@ -3,9 +3,9 @@
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-import { BidUrlProvider, IndexBrowser, filtersFromParams, filtersToParams } from 'book-index-ui';
+import { BidUrlProvider, IndexBrowser, filtersFromParams, filtersToParams, resultTabFromParam, resultTabToParam } from 'book-index-ui';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
-import type { IndexEntry, SearchFilters } from 'book-index-ui';
+import type { IndexEntry, ResultTab, SearchFilters } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport, getSearchBaseUrl } from '@/lib/transport';
 import { getSearchClient } from '@/lib/search/client';
@@ -47,6 +47,8 @@ function BookIndexContent() {
   const searchQuery = searchParams.get('q');
   // 搜索筛选（朝代／部类／资源／存佚）在 URL 里：dy／cls／img／txt／col／loss，可分享、可后退
   const filters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
+  // 结果页签（全部／作品／丛编／版本／人物）也在 URL 里：?tab=work，刷新、分享后保留（overview#359 P2-3）
+  const resultTab = resultTabFromParam(searchParams.get('tab'));
 
   // 预热搜索 worker — 详细策略见 use-prefetch-search.ts。
   // 配了 L1 (Meili) 时，搜索默认走 L1，不预热 worker shard（省 2 MB gzip 流量）。
@@ -77,9 +79,20 @@ function BookIndexContent() {
     }
   }, [router, filters]);
 
+  // 换了筛选（只换排序不算）组件会回到「全部」：地址里的 tab 一并去掉，与界面一致
   const handleFiltersChange = useCallback((next: SearchFilters) => {
     const params = filtersToParams(next, new URLSearchParams(searchParams.toString()));
+    const withoutSort = (f: SearchFilters) => filtersToParams({ ...f, sort: '' }).toString();
+    if (withoutSort(next) !== withoutSort(filters)) params.delete('tab');
     router.push(`/book-index?${params}`, { scroll: false });
+  }, [router, searchParams, filters]);
+
+  // 切页签只换地址里的 tab，不新增历史记录
+  const handleResultTabChange = useCallback((tab: ResultTab) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const v = resultTabToParam(tab);
+    if (v) params.set('tab', v); else params.delete('tab');
+    router.replace(`/book-index?${params}`, { scroll: false });
   }, [router, searchParams]);
 
   // 详情视图
@@ -114,6 +127,8 @@ function BookIndexContent() {
           filtersEnabled
           filters={filters}
           onFiltersChange={handleFiltersChange}
+          resultTab={resultTab}
+          onResultTabChange={handleResultTabChange}
           hideModeIndicator
           // 结果加载时预留一屏高度，页面不跳
           reserveViewportHeight
