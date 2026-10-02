@@ -19,7 +19,7 @@ describe('首页（N1）', () => {
     it('首屏：大标题 + 检索框 + 唯一主按钮「搜索」', () => {
         render(<HomePage />);
         expect(screen.getByRole('heading', { level: 1, name: '让科技赋予古籍数字生命' })).toBeInTheDocument();
-        expect(screen.getByRole('searchbox', { name: '搜索古籍索引' })).toBeInTheDocument();
+        expect(screen.getByRole('combobox', { name: '搜索古籍索引' })).toBeInTheDocument();
         const main = screen.getByRole('main');
         // 「还有 N 项规划中」是手机端的展开键（overview#325），不算主按钮
         const actions = within(main).getAllByRole('button').filter((b) => !b.hasAttribute('aria-expanded'));
@@ -46,12 +46,12 @@ describe('首页（N1）', () => {
             screen.getByText('把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。'),
         ).toBeInTheDocument();
         expect(screen.getByRole('main').textContent).not.toContain('整理文本聚到一起');
-        expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', '书名、作者、版本，如：史记、苏轼');
+        expect(screen.getByRole('combobox')).toHaveAttribute('placeholder', '书名、作者、版本，如：史记、苏轼');
     });
 
     it('搜索跳到索引页并带上关键词', () => {
         render(<HomePage />);
-        fireEvent.change(screen.getByRole('searchbox'), { target: { value: ' 史記 ' } });
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: ' 史記 ' } });
         fireEvent.click(screen.getByRole('button', { name: '搜索' }));
         expect(push).toHaveBeenCalledWith(`/book-index?q=${encodeURIComponent('史記')}`);
     });

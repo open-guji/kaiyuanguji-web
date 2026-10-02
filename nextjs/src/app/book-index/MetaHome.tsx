@@ -5,6 +5,7 @@
  * 取代原来的 HomePage 页签（推荐／目录／丛编／在线资源／反馈）和底部单独的数据版本行；数据版本并进「数据与授权」。
  *
  * 检索框是普通表单（GET /book-index?q=），关掉 JS 也能检索；提交后由 IndexBrowser 出结果。
+ * 边输边出候选（overview#342），与首页同一个 SearchSuggest。
  * 分区数据在浏览器里取（正式站是静态导出），取到之前与取不到时只出检索框和最近浏览，缺数据的分区整块隐藏。
  */
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import { entryHref } from '@/lib/item-id';
 import { CATALOG_ALL_ID, catalogHref } from '@/app/catalog/catalog-route';
 import { fetchMetaHome, formatDataVersion } from './meta-home-data';
 import { useSiteT } from '@/i18n/use-site-t';
+import SearchSuggest from '@/components/common/SearchSuggest';
 
 /** 数据仓库（CC0）。只提 book-index，不提 draft（9-30 反馈） */
 export const META_HOME_REPO_URL = 'https://github.com/open-guji/book-index';
@@ -30,6 +32,7 @@ const EMPTY: MetaHomeSections = {
 const S = {
     sr: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 } as const,
     search: { display: 'flex', alignItems: 'stretch', maxWidth: 760, margin: 0, border: '1px solid var(--bim-rule-dashed)', background: 'var(--bim-card-bg)' } as const,
+    searchField: { flex: 1, minWidth: 0, display: 'flex' } as const,
     searchInput: { flex: 1, minWidth: 0, padding: '12px 14px', border: 0, background: 'none', font: 'inherit', fontSize: 15, color: 'var(--bim-ink)' } as const,
     searchBtn: { padding: '0 22px', border: 0, background: 'var(--bim-accent)', color: 'var(--bim-page-bg)', font: 'inherit', fontSize: 15, letterSpacing: '0.2em', cursor: 'pointer' } as const,
     hint: { margin: '10px 0 0', fontSize: 12.5, color: 'var(--bim-meta-fg)' } as const,
@@ -37,11 +40,19 @@ const S = {
 
 function SearchHead() {
     const t = useSiteT();
+    const [q, setQ] = useState('');
     return (
         <>
             <form role="search" action="/book-index" method="get" style={S.search} data-meta-search>
                 <label htmlFor="meta-q" style={S.sr}>{t('bookIndex.meta.searchLabel')}</label>
-                <input id="meta-q" name="q" type="search" placeholder={t('bookIndex.meta.searchPlaceholder')} style={S.searchInput} />
+                <SearchSuggest
+                    id="meta-q"
+                    value={q}
+                    onChange={setQ}
+                    placeholder={t('bookIndex.meta.searchPlaceholder')}
+                    style={S.searchField}
+                    inputStyle={S.searchInput}
+                />
                 <button type="submit" style={S.searchBtn}>{t('bookIndex.meta.search')}</button>
             </form>
             <p style={S.hint}>{t('bookIndex.meta.hint')}</p>

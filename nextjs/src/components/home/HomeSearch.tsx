@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSiteT } from '@/i18n/use-site-t';
+import SearchSuggest from '@/components/common/SearchSuggest';
 
 /**
  * 首屏大检索框 + 全页唯一的主按钮「搜索」。
  * action 兜底：JS 未加载时表单照样 GET 到 /book-index?q=。
+ * 边输边出候选（overview#342）：调同站 /api/search，不引 book-index-ui，首页不变重。
  */
 export default function HomeSearch() {
   const router = useRouter();
@@ -25,11 +27,10 @@ export default function HomeSearch() {
         <circle cx="11" cy="11" r="6.5" />
         <path d="M16 16l4.5 4.5" />
       </svg>
-      <input
-        type="search"
-        name="q"
+      <SearchSuggest
+        className="home-search-field"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={setQuery}
         placeholder={t('home.search.placeholder')}
         aria-label={t('home.search.aria')}
       />

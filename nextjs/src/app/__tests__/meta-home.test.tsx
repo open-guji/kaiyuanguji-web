@@ -84,7 +84,7 @@ describe('/book-index 首页态', () => {
         render(<BookIndexPage />);
         const form = screen.getByRole('search');
         expect(form.getAttribute('action')).toBe('/book-index');
-        expect(within(form).getByRole('searchbox').getAttribute('name')).toBe('q');
+        expect(within(form).getByRole('combobox').getAttribute('name')).toBe('q');
         expect(screen.queryByTestId('browser')).toBeNull();
         await screen.findByRole('heading', { level: 2, name: '历代史志' });
         expect(screen.getByRole('heading', { level: 2, name: '四部' })).toBeInTheDocument();
