@@ -1079,6 +1079,41 @@ jobs:
           ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
         run: node scripts/item-cache-verify.mjs
 
+      # overview#322 方案 A：正式站部署、清缓存后预热热门阅读页（featured 全部＋各节点第 1 页），
+      # 让新实例热起来、把这批页写进 ISR 缓存，读者和随后的冒烟 verify 都不撞冷启动。结果不计成败。
+      # 测试站那一支在单独的 warm-staging 任务里，与 verify 并行（与它等 CDN 的时间重叠）。
+      - name: Warm hot reading pages (production, overview#322)
+        if: ${{ env.DEPLOY_TARGET == 'production' }}
+        continue-on-error: true
+        timeout-minutes: 8
+        env:
+          TARGET: https://www.kaiyuanguji.com
+          DATA_BASE: https://data.kaiyuanguji.com
+        # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
+        run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
+
+  # overview#322 方案 A（测试站）：部署后预热热门阅读页，与 verify 并行，不拦任何东西。
+  # 正式站的预热在 build 的最后一步（要排在冒烟 verify 前面）。
+  warm-staging:
+    needs: [resolve, build]
+    if: ${{ needs.build.result == 'success' && needs.resolve.outputs.target == 'staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.web_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Warm hot reading pages (staging, overview#322)
+        env:
+          TARGET: https://staging.kaiyuanguji.com
+          DATA_BASE: https://data.kaiyuanguji.com/staging
+        # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
+        run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
+
   # overview#341：正式站产物——与测试站同一个 run、同一版代码（web_ref）、同一份数据（resolve 解析出的三仓 commit），
   # 与 build 并行构建，加密存成本 run 的工件 prod-edgeone（3 天）。测试站 verify 全绿后，正式站那次 promote
   # （from_run=本 run）直接部署它，不再重拉数据、重打包、重构建。
