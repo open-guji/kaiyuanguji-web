@@ -1276,6 +1276,8 @@ jobs:
       - name: Auto-promote data to production
         env:
           GH_TOKEN: ${{ github.token }}
+          # 这几个任务不 checkout，gh 认不出当前仓，要显式给（否则 failed to run git: not a git repository）
+          GH_REPO: ${{ github.repository }}
         run: |
           # promote=data 读的是正式站现有 latest.json 的 webCommitId（T1 之前
           # 生成的正式站 latest.json 没有这个字段，得先手动 promote=code+data
@@ -1302,6 +1304,8 @@ jobs:
       - name: Auto-promote code+data to production (from this run)
         env:
           GH_TOKEN: ${{ github.token }}
+          # 这几个任务不 checkout，gh 认不出当前仓，要显式给（否则 failed to run git: not a git repository）
+          GH_REPO: ${{ github.repository }}
           RUN_SHA: ${{ github.sha }}
         run: |
           # main 已经有更新的 commit：那次 push 的 run 会自己验、自己 promote，这里不抢先把旧版发上去。
@@ -1325,6 +1329,8 @@ jobs:
       - name: Open or update production alert issue
         env:
           GH_TOKEN: ${{ github.token }}
+          # 这几个任务不 checkout，gh 认不出当前仓，要显式给（否则 failed to run git: not a git repository）
+          GH_REPO: ${{ github.repository }}
           BUILD: ${{ needs.build.result }}
           VERIFY: ${{ needs.verify.result }}
           WEB_REF: ${{ needs.resolve.outputs.web_ref }}
