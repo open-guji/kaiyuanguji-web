@@ -4,7 +4,7 @@
 //   - Meili 地址与只读 key 不再下发到浏览器（以前 NEXT_PUBLIC_MEILI_KEY 编进前端 chunk）；
 //   - 只放行白名单里的索引与参数，limit／offset 有上限；filter 里 `is_draft = false`（只搜正式条目）
 //     由服务端写死、浏览器改不了；浏览器只能在它后面 AND 上受限的筛选（见下「filter」）；
-//   - 热门查询在边缘缓存 60 秒；以后换搜索后端只改这里，前端不动。
+//   - 结果在 isolate 内存与边缘 Cache API 各存一份（见下「缓存」）；以后换搜索后端只改这里，前端不动。
 //
 // 接口（只读）：
 //   GET  /api/search?q=史記&limit=5                  → 四类索引各搜一次（首页分组结果）
@@ -28,7 +28,15 @@
 //   不传或 zh-Hant 原样返回（结果页 L1 不传，行为不变）；其他值一律 400。缓存键带 locale。
 // 返回：{ results: [{ indexUid, hits, estimatedTotalHits, limit, offset }] }
 //   hits 只含卡片渲染要的字段；works/books 的 _formatted 只留 description_search（简介命中片段）。
-// 失败：Meili 不可用／超时 → 503 { error, code }，前端据此退回浏览器兜底（L2）。
+// 失败：Meili 不可用／超时 → 503 { error, code }，前端据此退回浏览器兜底（L2）；手里有 24 小时内的旧结果时先给旧的（STALE）。
+//
+// 缓存（overview#353）：索引最多每晚重建一次（indexer/README.md），所以结果 10 分钟内算新鲜（HIT），
+//   10 分钟～24 小时之间先回旧结果、后台（context.waitUntil）重取（STALE）；平台没有 waitUntil 时过了新鲜期就同步重取。
+//   边缘缓存写入也走 waitUntil，不压在首个请求上；同一 isolate 里同一查询并发只打一次上游。浏览器侧 max-age 5 分钟。
+//   响应头 X-Search-Cache：HIT／STALE／MISS／BYPASS。
+// 观测（overview#353）：响应带 Server-Timing（DevTools「Timing」页可见，curl -D- 可看）：
+//   parse 解析校验、cache 查内存＋边缘缓存、upstream 函数→Meili 往返（desc 为第几次请求）、
+//   meili Meili 自报的 processingTimeMs（多条取最大）、total 函数内总耗时。upstream − meili ≈ 函数到源站的网络＋排队。
 //
 // 配置（EdgeOne 项目环境变量，经 context.env 读；E1 之后全栈项目在构建时烘进 context.env）：
 //   MEILI_URL          Meili API base（不配则用 NEXT_PUBLIC_MEILI_URL，再不配用 DEFAULT_MEILI_URL）
@@ -45,7 +53,10 @@ const MAX_OFFSET = 1000; // Meili 默认 maxTotalHits
 const MAX_QUERY_CHARS = 100;
 const MAX_QUERIES = ALLOWED_INDEXES.length;
 const UPSTREAM_TIMEOUT_MS = 2000;
-const CACHE_TTL_SECONDS = 60;
+// 新鲜期内直接给；过了新鲜期、在 STALE 期内先给旧的再后台刷新（见文件头「缓存」）
+const CACHE_FRESH_SECONDS = 600;
+const CACHE_STALE_SECONDS = 24 * 3600;
+const BROWSER_MAX_AGE_SECONDS = 300;
 
 // filter 的限额与字段白名单（'s' = 字符串字段，'b' = 布尔字段）。字段必须是该索引的 filterableAttributes
 // （indexer/full-reindex.mjs 的 SETTINGS），否则 Meili 会 400；is_draft 不在其中，由服务端强制。
@@ -381,9 +392,10 @@ function shapeResults(meiliJson, queries) {
   });
 }
 
-// ─── 缓存：isolate 内存 LRU ＋（有的话）边缘 Cache API ───
+// ─── 缓存：isolate 内存 LRU ＋（有的话）边缘 Cache API；条目都是 { t: 写入时刻, body } ───
 
-const memoryCache = new Map(); // key → { expires, body }
+const memoryCache = new Map(); // key → { t, body }
+const inflight = new Map(); // key → Promise<{ body, cacheable, timing }>
 
 function cacheKey(queries, locale) {
   const key = JSON.stringify(queries.map((q) => [q.indexUid, q.q, q.limit, q.offset, buildFilterString(q.filter), q.sort]));
@@ -394,18 +406,18 @@ function cacheKey(queries, locale) {
 function memoryGet(key, now) {
   const hit = memoryCache.get(key);
   if (!hit) return null;
-  if (hit.expires <= now) {
+  if (now - hit.t >= CACHE_STALE_SECONDS * 1000) {
     memoryCache.delete(key);
     return null;
   }
   // LRU：命中挪到末尾
   memoryCache.delete(key);
   memoryCache.set(key, hit);
-  return hit.body;
+  return hit;
 }
 
-function memorySet(key, body, now) {
-  memoryCache.set(key, { expires: now + CACHE_TTL_SECONDS * 1000, body });
+function memorySet(key, entry) {
+  memoryCache.set(key, entry);
   while (memoryCache.size > MEMORY_CACHE_MAX) {
     memoryCache.delete(memoryCache.keys().next().value);
   }
@@ -420,31 +432,76 @@ function edgeCache() {
 }
 
 function edgeCacheRequest(key) {
-  // 合成 GET 请求当缓存键：POST 与 GET 的同一查询共用一份
-  return new Request(`https://search-cache.invalid/v1?k=${encodeURIComponent(key)}`);
+  // 合成 GET 请求当缓存键：POST 与 GET 的同一查询共用一份。v2：条目带写入时刻（v1 是裸 body，不再读）
+  return new Request(`https://search-cache.invalid/v2?k=${encodeURIComponent(key)}`);
 }
 
-async function edgeGet(key) {
+async function edgeGet(key, now) {
   const cache = edgeCache();
   if (!cache) return null;
   try {
     const res = await cache.match(edgeCacheRequest(key));
-    return res ? await res.text() : null;
+    if (!res) return null;
+    const entry = JSON.parse(await res.text());
+    if (!entry || typeof entry.t !== 'number' || typeof entry.body !== 'string') return null;
+    return now - entry.t < CACHE_STALE_SECONDS * 1000 ? entry : null;
   } catch {
     return null;
   }
 }
 
-async function edgePut(key, body) {
+async function edgePut(key, entry) {
   const cache = edgeCache();
   if (!cache) return;
   try {
-    await cache.put(edgeCacheRequest(key), new Response(body, {
-      headers: { ...JSON_HEADERS, 'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}` },
+    await cache.put(edgeCacheRequest(key), new Response(JSON.stringify(entry), {
+      headers: { ...JSON_HEADERS, 'Cache-Control': `public, max-age=${CACHE_STALE_SECONDS}` },
     }));
   } catch {
     // 缓存失败不影响结果
   }
+}
+
+/** 把收尾活交给平台（响应先回）；没有 waitUntil 就当场等完 */
+async function deferOrAwait(context, promise) {
+  if (context && typeof context.waitUntil === 'function') {
+    context.waitUntil(promise);
+    return;
+  }
+  await promise;
+}
+
+// ─── Server-Timing ───
+
+function clock() {
+  return (typeof performance !== 'undefined' && performance && typeof performance.now === 'function')
+    ? performance.now() : Date.now();
+}
+
+/** 收集 Server-Timing 条目：metric(name, dur, desc?) */
+function serverTiming() {
+  const start = clock();
+  const items = [];
+  return {
+    start,
+    add(name, dur, desc) {
+      if (typeof dur === 'number' && Number.isFinite(dur)) items.push({ name, dur, desc });
+    },
+    since(t0) {
+      return clock() - t0;
+    },
+    header() {
+      const all = [...items, { name: 'total', dur: clock() - start }];
+      return all.map((m) => `${m.name};${m.desc ? `desc="${m.desc}";` : ''}dur=${Math.round(m.dur * 10) / 10}`).join(', ');
+    },
+  };
+}
+
+/** Meili 自报的处理耗时：multi-search 每条一个 processingTimeMs，取最大 */
+function meiliProcessingMs(meiliJson) {
+  const results = Array.isArray(meiliJson && meiliJson.results) ? meiliJson.results : [];
+  const ms = results.map((r) => r && r.processingTimeMs).filter((n) => typeof n === 'number');
+  return ms.length ? Math.max(...ms) : undefined;
 }
 
 // ─── 上游 ───
@@ -457,7 +514,8 @@ class UpstreamError extends Error {
   }
 }
 
-async function callMeili(config, queries) {
+async function callMeili(config, queries, timing, attempt = 1) {
+  const t0 = clock();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), UPSTREAM_TIMEOUT_MS);
   try {
@@ -490,6 +548,7 @@ async function callMeili(config, queries) {
     return await res.json();
   } finally {
     clearTimeout(timer);
+    if (timing) timing.add('upstream', clock() - t0, String(attempt));
   }
 }
 
@@ -502,71 +561,113 @@ function json(status, obj, extraHeaders = {}) {
 
 const UNAVAILABLE_MESSAGE = '搜索服务暂时不可用，已切换到简易搜索（仅按书名、作者匹配）。';
 
+/**
+ * 打上游并规整出响应体。sort 降级的结果标 cacheable: false（不进缓存）；成功且可缓存的顺手写缓存
+ * （内存当场写，边缘缓存交给 waitUntil）。上游失败抛 UpstreamError。
+ */
+async function loadFromUpstream(context, queries, locale, key, timing) {
+  const config = getConfig(context);
+  let meiliJson;
+  let sortIgnored = false;
+  try {
+    meiliJson = await callMeili(config, queries, timing);
+  } catch (e) {
+    // 索引还没重建出可排序字段时 Meili 对 sort 回 400 + invalid_search_sort：去掉 sort 重发一次，按相关度出结果。
+    // 只认排序类错误码——其它 400（filter 写错等）照常当失败，不能被降级悄悄吞掉
+    if (e && e.status === 400 && typeof e.code === 'string' && e.code.startsWith('invalid_search_sort') && queries.some((q) => q.sort)) {
+      sortIgnored = true;
+      meiliJson = await callMeili(config, queries.map((q) => ({ ...q, sort: null })), timing, 2);
+    } else {
+      throw e;
+    }
+  }
+  timing.add('meili', meiliProcessingMs(meiliJson));
+
+  const shaped = localizeResults(shapeResults(meiliJson, queries), locale);
+  if (sortIgnored) {
+    // 降级结果（没排序）不进缓存：否则索引重建后一段时间内同一查询还会命中这份未排序的结果
+    return { body: JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) }), cacheable: false };
+  }
+  const entry = { t: Date.now(), body: JSON.stringify({ results: shaped }) };
+  memorySet(key, entry);
+  await deferOrAwait(context, edgePut(key, entry));
+  return { body: entry.body, cacheable: true };
+}
+
+/** 同一 isolate 里同一查询并发只打一次上游（热门词刚过期时一拥而上） */
+function loadOnce(context, queries, locale, key, timing) {
+  let p = inflight.get(key);
+  if (!p) {
+    p = loadFromUpstream(context, queries, locale, key, timing).finally(() => {
+      if (inflight.get(key) === p) inflight.delete(key);
+    });
+    inflight.set(key, p);
+  }
+  return p;
+}
+
 // 只导出 onRequest* 两个处理函数（与本目录其余函数一致）；单测经它们走全链路、mock 全局 fetch
 async function handleSearch(context) {
   const { request } = context;
+  const timing = serverTiming();
   let queries;
   let locale;
+  let t0 = clock();
   try {
     ({ queries, locale } = await parseQueries(request));
   } catch (e) {
     if (e instanceof BadRequest) return json(400, { error: e.message, code: 'bad_request' }, { 'Cache-Control': 'no-store' });
     throw e;
   }
+  timing.add('parse', timing.since(t0));
+
+  const okHeaders = (state) => ({
+    'Cache-Control': `public, max-age=${BROWSER_MAX_AGE_SECONDS}`,
+    'X-Search-Cache': state,
+    'Server-Timing': timing.header(),
+  });
 
   // 空查询：不打上游（Meili 空 q 会返回全表占位结果）
   if (queries.every((q) => !q.q)) {
-    return json(200, { results: shapeResults({ results: [] }, queries) }, { 'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}` });
+    return json(200, { results: shapeResults({ results: [] }, queries) }, okHeaders('EMPTY'));
   }
 
   const key = cacheKey(queries, locale);
   const now = Date.now();
-  const okHeaders = (state) => ({
-    'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}`,
-    'X-Search-Cache': state,
-  });
+  t0 = clock();
+  let entry = memoryGet(key, now);
+  if (!entry) {
+    entry = await edgeGet(key, now);
+    if (entry) memorySet(key, entry);
+  }
+  timing.add('cache', timing.since(t0));
 
-  const mem = memoryGet(key, now);
-  if (mem) return json(200, mem, okHeaders('HIT'));
-  const edge = await edgeGet(key);
-  if (edge) {
-    memorySet(key, edge, now);
-    return json(200, edge, okHeaders('HIT'));
+  const canDefer = !!(context && typeof context.waitUntil === 'function');
+  if (entry) {
+    const age = now - entry.t;
+    if (age < CACHE_FRESH_SECONDS * 1000) return json(200, entry.body, okHeaders('HIT'));
+    if (canDefer) {
+      // 先给旧的，后台刷新；刷新失败不影响这次响应（旧的还能撑到 STALE 期满）
+      context.waitUntil(loadOnce(context, queries, locale, key, serverTiming()).catch(() => {}));
+      return json(200, entry.body, okHeaders('STALE'));
+    }
   }
 
-  const config = getConfig(context);
-  let meiliJson;
-  let sortIgnored = false;
+  let loaded;
   try {
-    try {
-      meiliJson = await callMeili(config, queries);
-    } catch (e) {
-      // 索引还没重建出可排序字段时 Meili 对 sort 回 400 + invalid_search_sort：去掉 sort 重发一次，按相关度出结果。
-      // 只认排序类错误码——其它 400（filter 写错等）照常当失败，不能被降级悄悄吞掉
-      if (e && e.status === 400 && typeof e.code === 'string' && e.code.startsWith('invalid_search_sort') && queries.some((q) => q.sort)) {
-        sortIgnored = true;
-        meiliJson = await callMeili(config, queries.map((q) => ({ ...q, sort: null })));
-      } else {
-        throw e;
-      }
-    }
+    loaded = await loadOnce(context, queries, locale, key, timing);
   } catch (e) {
+    // 上游挂了但手里有 STALE 期内的旧结果：先给旧的，比退回简易搜索强
+    if (entry) return json(200, entry.body, okHeaders('STALE'));
     const status = e && e.status;
     const code = (status === 401 || status === 403) ? 'upstream_auth' : 'upstream_unavailable';
     // 不回传上游地址与原始报错，只给代码与提示
-    return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30' });
+    return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30', 'Server-Timing': timing.header() });
   }
-
-  const shaped = localizeResults(shapeResults(meiliJson, queries), locale);
-  if (sortIgnored) {
-    // 降级结果（没排序）不进缓存：否则索引重建后 60 秒内同一查询还会命中这份未排序的结果
-    const degraded = JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) });
-    return json(200, degraded, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS' });
+  if (!loaded.cacheable) {
+    return json(200, loaded.body, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS', 'Server-Timing': timing.header() });
   }
-  const body = JSON.stringify({ results: shaped });
-  memorySet(key, body, now);
-  await edgePut(key, body);
-  return json(200, body, okHeaders('MISS'));
+  return json(200, loaded.body, okHeaders('MISS'));
 }
 
 export async function onRequestGet(context) {
