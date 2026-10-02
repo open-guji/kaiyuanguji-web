@@ -59,7 +59,7 @@ function isInSite(req: NextRequest): boolean {
 // 当时靠测试站诊断响应头证实（rt:poly），根因证实后已删。
 let _fetcher: ReturnType<typeof createItemFetcher> | null = null;
 function fetcher() {
-    if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000, forceCache: false });
+    if (!_fetcher) _fetcher = createItemFetcher({ base: defaultItemDataBase(), timeoutMs: 3_000, forceCache: false, retries: 0 });
     return _fetcher;
 }
 
