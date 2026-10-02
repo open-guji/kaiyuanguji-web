@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";
+import NavRetryWorker from "@/components/common/NavRetryWorker";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
 import { DEFAULT_THEME, DEFAULT_LAYOUT, THEME_COLOR, THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -84,6 +85,7 @@ export default function RootLayout({
       <body className="antialiased">
         <StagingBadge />
         <ErrorMonitor />
+        <NavRetryWorker />
         <Suspense fallback={null}>
           <Analytics />
         </Suspense>
