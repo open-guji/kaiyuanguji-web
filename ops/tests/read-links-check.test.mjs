@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkReadLinks, pickSome, renderSummary } from '../read-links-check.mjs';
+import { checkReadLinks, percentile, pickSome, renderSummary, retryWarning } from '../read-links-check.mjs';
 import { mulberry32 } from '../dq-lib.mjs';
 
 const DATA = 'https://data.test';
@@ -174,7 +174,8 @@ test('has_json 的首章只有 json、没有 md → 不算失败；没有 has_js
     assert.ok(r.failures.some((f) => /wikisource\/001\.txt/.test(f.detail)));
 });
 
-// overview#322：阅读页首次 503（EdgeOne 回源超时）先重试一次
+// overview#322：阅读页 503（EdgeOne 回源超时）或连接失败按退避重试；下面几条关掉预热，单测重试本身
+const NO_WAIT = { warm: false, sleep: async () => {} };
 function flakyPages(pages, statusSeq) {
     const inner = fakeFetch(baseFiles(), pages);
     const left = { ...statusSeq };
@@ -190,16 +191,18 @@ function flakyPages(pages, statusSeq) {
 }
 
 test('阅读页首次 503、重试后 200：不记失败，记进 retried 与 summary', async () => {
-    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503] }), seed: 1, retryDelayMs: 0 });
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503] }), seed: 1, ...NO_WAIT });
     assert.deepEqual(r.failures, []);
     assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
     assert.match(renderSummary(r, { target: SITE, seed: 1 }), /重试后通过 1 处/);
 });
 
-test('阅读页连续两次 503：记失败并注明重试过；非 503（404、500）不重试', async () => {
-    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503, 503], [`/read/${BOOK}`]: [500, 200] }), seed: 1, retryDelayMs: 0 });
+test('阅读页一直 503：重试 3 次（2s／5s／10s 退避）仍失败才记失败并注明；非 503（404、500）不重试', async () => {
+    const waits = [];
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503, 503, 503, 503], [`/read/${BOOK}`]: [500, 200] }), seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(waits, [2000, 5000, 10000]);
     assert.equal(r.failures.length, 2);
-    assert.ok(r.failures.some((f) => f.id === WORK && /HTTP 503（503后重试一次仍失败）/.test(f.detail)));
+    assert.ok(r.failures.some((f) => f.id === WORK && /HTTP 503（503后重试 3 次仍失败）/.test(f.detail)));
     assert.ok(r.failures.some((f) => f.id === BOOK && f.detail.endsWith('HTTP 500')));
     assert.deepEqual(r.retried, []);
 });
@@ -212,7 +215,50 @@ test('阅读页首次连接失败（fetch failed）、重试后 200：不记失�
         if (!thrown && new URL(url).pathname === `/read/${WORK}`) { thrown = true; throw new Error('fetch failed'); }
         return inner(url);
     };
-    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, retryDelayMs: 0 });
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, ...NO_WAIT });
     assert.deepEqual(r.failures, []);
     assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
+});
+
+test('第 3 次重试才 200：不记失败，记进 retried', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503, 0, 503] }), seed: 1, ...NO_WAIT });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
+    assert.equal(r.pagesChecked, 2);
+});
+
+test('预热：先把要查的阅读页 GET 一遍、不计成败；冷启动的首次 503 被预热吃掉，正式抽检不用重试', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [503] }), seed: 1, sleep: async () => {} });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.retried, []);
+    assert.equal(r.warm.pages, 2);
+    assert.deepEqual(r.warm.notOk, [{ url: `${SITE}/read/${WORK}`, status: 503 }]);
+    assert.equal(r.warm.ms.length, 2);
+    const md = renderSummary(r, { target: SITE, seed: 1 });
+    assert.match(md, /预热：2 个阅读页，首次请求非 200 的 1 个（50\.0%）/);
+    assert.match(md, /503×1/);
+});
+
+test('预热不包括 manifest 读不了的卡，也不包括不合法的版本 key', async () => {
+    const files = newStructureFiles();
+    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'default' }, { key: 'manifest' }] };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1, sleep: async () => {} });
+    assert.equal(r.warm.pages, 1);
+});
+
+test('重试后通过的占比 >20% 只告警：summary 写明，不记失败', () => {
+    assert.deepEqual(retryWarning({ pagesChecked: 10, retried: ['a', 'b'] }), { ratio: 0.2, warn: false });
+    const w = retryWarning({ pagesChecked: 10, retried: ['a', 'b', 'c'] });
+    assert.equal(w.warn, true);
+    const md = renderSummary({ checked: 5, pagesChecked: 10, failures: [], retried: ['a', 'b', 'c'] }, { target: SITE, seed: 1 });
+    assert.match(md, /重试后通过 3 处，占抽检阅读页 30\.0%/);
+    assert.match(md, /只告警，不拦发布/);
+    assert.match(renderSummary({ checked: 5, pagesChecked: 10, failures: [], retried: ['a'] }, { target: SITE, seed: 1 }), /^(?![\s\S]*只告警)/);
+});
+
+test('percentile', () => {
+    assert.equal(percentile([], 50), 0);
+    assert.equal(percentile([5, 1, 3, 2, 4], 50), 3);
+    assert.equal(percentile([5, 1, 3, 2, 4], 100), 5);
+    assert.equal(percentile([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 90), 9);
 });
