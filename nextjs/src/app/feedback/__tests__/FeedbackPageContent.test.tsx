@@ -5,6 +5,11 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import FeedbackPageContent from '../FeedbackPageContent';
 import { FeedbackProvider } from '@/components/feedback/FeedbackProvider';
 
+// 「相关条目」先查条目还在不在（overview#359 P2-10）：d59f20aowb9c 在，1evimvfwvwr9c 已删
+const getEntry = jest.fn(async (id: string) => (id === 'd59f20aowb9c' ? { id, type: 'work', title: '史記' } : null));
+jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
+jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getEntry: (id: string) => getEntry(id) }) }));
+
 const ITEMS = [
     { id: 'fb_1', type: 'bug', content: '（示例）作者朝代写错了', createdAt: '2026-09-20T01:00:00Z', status: 'resolved', reply: '已更正', resourceId: 'd59f20aowb9c' },
     { id: 'fb_2', type: 'suggestion', content: '（示例）希望能调行距', createdAt: '2026-09-21T01:00:00Z', status: 'in_progress' },
@@ -38,7 +43,7 @@ describe('FeedbackPageContent', () => {
         expect(screen.getByText('（示例）作者朝代写错了')).toBeInTheDocument();
         expect(screen.getByText('已处理')).toBeInTheDocument();
         expect(screen.getByText('站方回复：已更正')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: '相关条目' })).toHaveAttribute('href', '/item/d59f20aowb9c');
+        expect(await screen.findByRole('link', { name: '相关条目' })).toHaveAttribute('href', '/item/d59f20aowb9c');
         expect(screen.getByText('处理中')).toBeInTheDocument();
     });
 
@@ -67,5 +72,20 @@ describe('FeedbackPageContent', () => {
         global.fetch = jest.fn().mockRejectedValue(new Error('x')) as never;
         renderPage();
         expect(await screen.findByText('网络错误，请稍后重试')).toBeInTheDocument();
+    });
+});
+
+describe('相关条目已失效（overview#359 P2-10）', () => {
+    it('条目查不到：不出链接，写「相关条目已失效」；同一 id 只查一次', async () => {
+        const gone = [
+            { id: 'fb_3', type: 'bug', content: '（示例）甲', createdAt: '2026-09-22T01:00:00Z', status: 'pending', resourceId: '1evimvfwvwr9c' },
+            { id: 'fb_4', type: 'bug', content: '（示例）乙', createdAt: '2026-09-23T01:00:00Z', status: 'pending', resourceId: '1evimvfwvwr9c' },
+        ];
+        global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: true, items: gone }) }) as never;
+        getEntry.mockClear();
+        renderPage();
+        expect(await screen.findAllByText('相关条目已失效')).toHaveLength(2);
+        expect(screen.queryByRole('link', { name: /相关条目/ })).not.toBeInTheDocument();
+        expect(getEntry.mock.calls.filter(([id]) => id === '1evimvfwvwr9c')).toHaveLength(1);
     });
 });

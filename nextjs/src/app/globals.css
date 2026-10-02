@@ -2364,13 +2364,25 @@
   .og-fb-list li + li {
     border-top: 1px solid var(--color-tint-2);
   }
+  /* 元信息（类型、日期、状态）12px：ink-3 在纸色上只有 3.17:1，改用 ink-2（各配色、各底色都 ≥6.2:1，overview#359 P2-4） */
   .og-fb-meta {
     margin-bottom: 6px;
-    color: var(--color-ink-3);
+    color: var(--color-ink-2);
     font-size: var(--fs-xs);
   }
+  /* 「相关条目」与周围文字同色，靠下划线认出是链接，不只靠颜色（WCAG 1.4.1） */
   .og-fb-meta a {
     color: var(--color-ink-2);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+    text-underline-offset: 3px;
+  }
+  .og-fb-meta a:hover {
+    color: var(--color-zhu);
+    text-decoration-color: currentColor;
+  }
+  .og-fb-meta-gone {
+    font-style: italic;
   }
   .og-fb-meta-type {
     color: var(--color-ink-2);
