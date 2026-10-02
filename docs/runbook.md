@@ -167,6 +167,8 @@ done
 ## 8. 回滚
 
 **什么时候回滚**：新版本上线后正式站出现读者可见的回归，且修复不能在 30 分钟内发出。
+
+**自动上正式站（overview#341）**：push 到 main 后，测试站 verify 全绿且正式站产物构建成功，deploy.yml 的 `auto-promote-code` 会自动派 `target=production promote=code+data from_run=<那次 run>`。正式站发布或验收失败时，`alert-production` 在本仓开一张 `deploy-alert` 告警 issue（已有未关的就续评论），写明 run 与回滚步骤。回滚前先把仓库变量 `AUTO_PROMOTE_CODE` 设成 `false`，否则下一次 push 会把新版再发上去。
 只是测试站坏了不用回滚——测试站本来就是用来坏的。
 
 入口：Actions → **Rollback**。`dry_run` 默认勾着，先跑一遍看计划：
@@ -186,7 +188,7 @@ done
 | 耗时 | 约 20 分钟 | 几分钟 | 约 5 分钟＋DNS 生效 |
 | 数据 | 换成测试站重建时的数据（三仓 main HEAD） | 不动 | 不动 |
 | 发布后 e2e | 有（deploy.yml 的 verify） | 没有，自己看 `/api/version` | 没有，跑 cutover-check |
-| 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标） | **会**：指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码。先把仓库变量 `AUTO_PROMOTE_DATA` 设成 `false`，修好再改回 | 不会被冲，但也**收不到任何新发布**（CI 不再推旧项目） |
+| 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标）；但下一次 push 到 main 验过后会自动上正式站，回滚期间先把 `AUTO_PROMOTE_CODE` 设成 `false` | **会**：指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码；下一次 push 验过后也会自动 `promote=code+data`。先把仓库变量 `AUTO_PROMOTE_DATA`、`AUTO_PROMOTE_CODE` 都设成 `false`，修好再改回 | 不会被冲，但也**收不到任何新发布**（CI 不再推旧项目） |
 | 什么时候用 | 默认 | 读者正受影响、等不了 20 分钟 | 新项目整个坏了（不是某一版代码的问题）；只在旧项目保留期内（到 2026-10-26 前后） |
 | 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后）；早于改自托管 runner（overview#184）的目标，托管额度用完时测试站重建排不上 | 控制台能否回退、保留多少条部署记录以控制台为准 | 旧项目停在切站前最后一版，没有全栈功能 |
 

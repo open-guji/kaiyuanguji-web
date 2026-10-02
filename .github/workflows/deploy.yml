@@ -85,6 +85,7 @@ on:
 permissions:
   contents: write
   actions: write   # T1：数据自动 promote 时由 verify job 触发本 workflow（workflow_dispatch）
+  issues: write    # overview#341：正式站发布／验收失败时 alert-production 开（或续）告警 issue
 
 # 并发（overview#267；此前 push 会取消正在跑的定时发布，09-27、09-28 各一次，当天数据没上线）：
 #   - push：自成一组 deploy-edgeone-push，cancel-in-progress=true——连推时只跑最后一次（省分钟数，overview#182），
@@ -1287,3 +1288,75 @@ jobs:
             exit 0
           fi
           gh workflow run deploy.yml --ref main -f target=production -f promote=data
+
+  # overview#341（10-01 用户定「测试站通过就自动上正式站」）：push 的这次 run 测试站 verify 全绿、
+  # 且 prod-artifact（同一版代码、同一份数据构建的正式站产物）成功，就派一次正式站 promote，
+  # from_run 钉死本 run——正式站那次只核对、下载、部署这份产物，不重新构建（见 resolve 的 from_run 核对）。
+  # 开关：仓库变量 AUTO_PROMOTE_CODE 显式设成 'false' 才关（回滚期间必须先关，见 docs/runbook.md §8）。
+  # 只在 push 上：定时／手动的测试站部署不自动带代码上正式站（数据另由上面的 auto-promote 走 promote=data）。
+  auto-promote-code:
+    needs: [resolve, verify, prod-artifact]
+    if: ${{ github.event_name == 'push' && needs.resolve.outputs.mode == 'staging' && needs.verify.result == 'success' && needs.prod-artifact.result == 'success' && vars.AUTO_PROMOTE_CODE != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-promote code+data to production (from this run)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          # main 已经有更新的 commit：那次 push 的 run 会自己验、自己 promote，这里不抢先把旧版发上去。
+          # （push 组 cancel-in-progress 一般已把本 run 取消；这一道防的是新 push 落在本 run verify 刚结束之后。）
+          HEAD=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha 2>/dev/null || echo '')
+          if [ -n "$HEAD" ] && [ "$HEAD" != "$RUN_SHA" ]; then
+            echo "⏭️ main 已前进到 $HEAD（本 run 是 $RUN_SHA），交给那次 push 的 run 去 promote，这里跳过。"
+            echo "⏭️ main 已有更新的 commit，本次不自动 promote（由更新那次的 run 负责）" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh workflow run deploy.yml --ref main -f target=production -f promote=code+data -f from_run="$GITHUB_RUN_ID"
+          echo "🚀 已派正式站 promote：code+data，from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
+
+  # overview#341：正式站 promote（自动或手动）的发布或验收失败 → 在本仓开一张告警 issue（已有未关的就续一条评论），
+  # 写清哪次 run、哪一步、怎么回滚。只告警，不自动回滚：要不要回滚由人看了再定（runbook §8）。
+  alert-production:
+    needs: [resolve, build, verify]
+    if: ${{ always() && needs.resolve.outputs.mode == 'promote' && (needs.build.result == 'failure' || needs.verify.result == 'failure') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update production alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD: ${{ needs.build.result }}
+          VERIFY: ${{ needs.verify.result }}
+          WEB_REF: ${{ needs.resolve.outputs.web_ref }}
+          FROM_RUN: ${{ inputs.from_run }}
+        run: |
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ "$BUILD" = "failure" ]; then
+            WHAT="**部署失败**（build：$BUILD）——正式站多半还是上一版，读者不受影响，但这次没发上去。"
+          else
+            WHAT="**已部署、但正式站验收失败**（verify：$VERIFY）——新版已在线上，请尽快看是不是读者可见的回归。"
+          fi
+          BODY=$(cat <<MD
+          正式站 promote 出错：$WHAT
+
+          - run：$RUN_URL
+          - 代码：\`$WEB_REF\`${FROM_RUN:+；来自测试站 run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$FROM_RUN}
+
+          **先止血**：仓库变量 \`AUTO_PROMOTE_CODE\` 设成 \`false\`（停掉 push 后自动上正式站；数据的 \`AUTO_PROMOTE_DATA\` 视情况也设 \`false\`）。
+
+          **回滚**（docs/runbook.md §8）：
+          1. 首选 Actions → Rollback：\`target=production\`、\`dry_run\` 先跑看计划，再按 start → promote → check 三段执行；
+          2. 读者正受影响、等不了约 20 分钟：EdgeOne 控制台 → Pages → kyg-ssr-spike → 部署记录，重新发布上一次成功的生产部署；
+          3. 修好、正式站恢复后，把上面的变量改回（删掉或设成 \`true\`），再关本 issue。
+          MD
+          )
+          BODY=$(printf '%s\n' "$BODY" | sed 's/^          //')
+          gh label create deploy-alert --color B60205 --description '正式站发布／验收失败告警（deploy.yml alert-production）' 2>/dev/null || true
+          N=$(gh issue list --label deploy-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')
+          if [ -n "$N" ]; then
+            gh issue comment "$N" --body "$BODY"
+            echo "已在告警 issue #$N 续报" >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh issue create --label deploy-alert --title "正式站发布告警：$(date -u +%m-%d\ %H:%MZ) promote 出错" --body "$BODY"
+            echo "已开告警 issue" >> "$GITHUB_STEP_SUMMARY"
+          fi
