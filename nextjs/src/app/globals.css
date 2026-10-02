@@ -1233,13 +1233,26 @@
     object-fit: cover;
     object-position: center 30%;
   }
-  /* 宣纸色罩：左浓右淡，右侧露出古地图 */
+  /* 纸色罩（10-02 用户定）：只罩上下两头——顶部托住导航栏，底部渐变接到下方页面；中间古地图整幅露出。
+     颜色取 --color-paper，三套外观都与页底接得上（墨主题是纯白）。 */
   .home-hero-veil {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(90deg, rgba(250, 247, 242, 0.94) 0%, rgba(250, 247, 242, 0.82) 42%, rgba(250, 247, 242, 0.35) 72%, rgba(250, 247, 242, 0.15) 100%),
-      linear-gradient(180deg, rgba(250, 247, 242, 0) 55%, rgba(250, 247, 242, 1) 100%);
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--color-paper) 92%, transparent) 0%,
+        color-mix(in srgb, var(--color-paper) 55%, transparent) 12%,
+        transparent 24%,
+        transparent 34%,
+        color-mix(in srgb, var(--color-paper) 78%, transparent) 52%,
+        color-mix(in srgb, var(--color-paper) 92%, transparent) 75%,
+        var(--color-paper) 100%);
+  }
+  /* 中段不罩之后，首屏文字直接压在古地图上：加一圈淡淡的纸色光晕保证可读 */
+  .home-kicker,
+  .home-title,
+  .home-lead {
+    text-shadow: 0 0 12px var(--color-paper), 0 0 2px var(--color-paper);
   }
   .home-hero-inner {
     position: relative;
@@ -1615,7 +1628,12 @@
       object-position: 70% 20%;
     }
     .home-hero-veil {
-      background: linear-gradient(180deg, rgba(250, 247, 242, 0.55) 0%, rgba(250, 247, 242, 0.9) 45%, rgba(250, 247, 242, 1) 100%);
+      background: linear-gradient(180deg,
+        color-mix(in srgb, var(--color-paper) 85%, transparent) 0%,
+        color-mix(in srgb, var(--color-paper) 30%, transparent) 18%,
+        color-mix(in srgb, var(--color-paper) 30%, transparent) 30%,
+        color-mix(in srgb, var(--color-paper) 88%, transparent) 55%,
+        var(--color-paper) 100%);
     }
     .home-hero-inner {
       padding: 96px var(--shell-gutter) 32px;
