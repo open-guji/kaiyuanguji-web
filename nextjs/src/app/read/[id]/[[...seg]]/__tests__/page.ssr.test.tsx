@@ -8,9 +8,9 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
-const mockGetItem = jest.fn(async (id: string): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
+const mockGetItem = jest.fn(async (id: string, _opts?: unknown): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
 jest.mock('@/lib/server/item-data', () => ({
-    getItemServer: (id: string) => mockGetItem(id),
+    getItemServer: (id: string, opts?: unknown) => mockGetItem(id, opts),
     getPromotionServer: async () => ({ status: 'absent' }),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
@@ -85,6 +85,12 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         expect(m.title).toBe('直斋书录解题 · 经录');
         expect(m.robots).toBeUndefined();
         expect(String(m.alternates?.canonical)).not.toContain('?');
+    });
+
+    it("取条目走 prefer: 'current'（只要书名与跳转信息，overview#322 B1）", async () => {
+        mockGetItem.mockClear();
+        await meta([]);
+        expect(mockGetItem).toHaveBeenCalledWith(ZHIZHAI, { prefer: 'current' });
     });
 
     it('/read/<id>/<章>：canonical 是本章；章名进 title 与 description', async () => {

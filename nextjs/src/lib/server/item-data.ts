@@ -55,6 +55,14 @@ export interface ItemFetcherOptions {
     /** 不可变对象（root、分片、entry）的进程内缓存条数上限 */
     lruSize?: number;
     /**
+     * 网络错或 5xx 时原地再试几次（默认 1 次，间隔 retryDelayMs）。overview#322：冷渲染时取数一出临时故障，
+     * ISR 页面整页只回 21 字节的纯文本「Internal Server Error」，读者要自己刷新；在服务端多试一次就过去了。
+     * 超时（AbortError／TimeoutError）不重试：已经等了 timeoutMs，再等会超过 EdgeOne 回源时限。
+     * 中间件传 0：边缘上不多发子请求，取不到就放行交给页面。
+     */
+    retries?: number;
+    retryDelayMs?: number;
+    /**
      * 请求是否带 cache: 'force-cache'（默认 true，页面据此保持 ISR）。
      * 中间件（边缘运行时）传 false：那里不认这个选项，可能直接抛错。
      */
@@ -124,22 +132,44 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     const pointerTtl = opts.pointerTtlMs ?? 60_000;
     const timeoutMs = opts.timeoutMs ?? 8_000;
     const forceCache = opts.forceCache ?? true;
+    const retries = opts.retries ?? 1;
+    const retryDelayMs = opts.retryDelayMs ?? 250;
     const immutable = new Lru<Promise<unknown>>(opts.lruSize ?? 500);
     const pointers = new Map<string, { at: number; value: Promise<unknown> }>();
 
-    async function getJson<T>(url: string): Promise<T> {
-        // force-cache：让页面保持 ISR（带 s-maxage），no-store 会把整页变成动态渲染、CDN 不缓存
-        const timeout = timeoutSignal(timeoutMs);
-        try {
-            const init: RequestInit = { signal: timeout.signal };
-            if (forceCache) init.cache = 'force-cache';
-            const res = await doFetch(url, init);
+    /**
+     * 发一次请求并读完响应体（read 在超时信号的保护下）；网络错与 5xx 按 retries 原地重试，404/403 与超时不重试。
+     */
+    async function fetchRead<R>(url: string, read: (res: Response) => Promise<R>): Promise<R> {
+        for (let attempt = 0; ; attempt++) {
+            // force-cache：让页面保持 ISR（带 s-maxage），no-store 会把整页变成动态渲染、CDN 不缓存
+            const timeout = timeoutSignal(timeoutMs);
+            try {
+                const init: RequestInit = { signal: timeout.signal };
+                if (forceCache) init.cache = 'force-cache';
+                const res = await doFetch(url, init);
+                if (res.status >= 500 && attempt < retries) {
+                    console.warn(`[item-data] ${url} HTTP ${res.status}，${retryDelayMs}ms 后重试`);
+                } else {
+                    return await read(res);
+                }
+            } catch (err) {
+                const name = (err as Error)?.name;
+                if (err instanceof NotFound || name === 'AbortError' || name === 'TimeoutError' || attempt >= retries) throw err;
+                console.warn(`[item-data] ${url} 失败（${(err as Error).message}），${retryDelayMs}ms 后重试`);
+            } finally {
+                timeout.clear();
+            }
+            await new Promise((r) => setTimeout(r, retryDelayMs));
+        }
+    }
+
+    function getJson<T>(url: string): Promise<T> {
+        return fetchRead(url, async (res) => {
             if (res.status === 404 || res.status === 403) throw new NotFound(`${url} HTTP ${res.status}`);
             if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
             return (await res.json()) as T;
-        } finally {
-            timeout.clear();
-        }
+        });
     }
 
     /** 不可变对象：成功结果进 LRU；失败不留，下次重试 */
@@ -233,10 +263,36 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     }
 
     /**
-     * 取一条条目。确定不存在返回 null；回退路径也失败（网络错、5xx）则抛错。
+     * 先走 current/ 的取法（overview#322 B1）：latest.json 指针 → current/entry/<id>.json，冷实例上 2 跳，
+     * 指针还与 manifest 链共用（阅读页的 checkReader、中间件的旧地址换算都读它），多数时候只多 1 跳。
+     * current/ 确定没有时再问一次 h1（两边由同一次打包发出，不该不一致；h1 也查不了就按没有算）；
+     * current/ 出网络错或 5xx 时回到 h1 优先的完整取法。
      */
-    async function getItem(id: string): Promise<ItemFetchResult | null> {
+    async function getItemCurrentFirst(id: string): Promise<ItemFetchResult | null> {
+        try {
+            const hit = await fromCurrent(id);
+            if (hit) return { ...hit, source: 'current' };
+        } catch (err) {
+            console.warn(`[item-data] current/ 取 ${id} 失败，改走 h1：${(err as Error).message}`);
+            return getItem(id);
+        }
+        try {
+            return { ...(await fromH1(id)), source: 'h1' };
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * 取一条条目。确定不存在返回 null；回退路径也失败（网络错、5xx）则抛错。
+     *
+     * prefer: 'current' —— 只要条目内容（书名、被并、升格）、不在乎 data-ssr-version 是哪条路径的调用方用：
+     * 阅读页与中间件（overview#322 B1：h1 是 4 跳串行，冷实例与冷边缘实例上首个请求要等它走完）。
+     * 条目页 /item/<id> 仍走 h1 优先：发版后的 item-cache-verify 按 data-ssr-version=h1:<新 root> 判断缓存已换新。
+     */
+    async function getItem(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
         if (!isValidItemId(id)) return null;
+        if (opts?.prefer === 'current') return getItemCurrentFirst(id);
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch (err) {
@@ -272,18 +328,12 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         const url = `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;
-        const timeout = timeoutSignal(timeoutMs);
-        try {
-            const init: RequestInit = { signal: timeout.signal };
-            if (forceCache) init.cache = 'force-cache';
-            const res = await doFetch(url, init);
+        return fetchRead(url, async (res) => {
             if (res.status === 404 || res.status === 403) return null;
             if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
             const text = await res.text();
             return text.length > maxBytes ? null : text;
-        } finally {
-            timeout.clear();
-        }
+        });
     }
 
     return { getItem, resolvePromotion, getCurrentJson, getCurrentText };
@@ -302,8 +352,8 @@ function defaultFetcher(): ReturnType<typeof createItemFetcher> {
 }
 
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
-export function getItemServer(id: string): Promise<ItemFetchResult | null> {
-    return defaultFetcher().getItem(id);
+export function getItemServer(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+    return defaultFetcher().getItem(id, opts);
 }
 
 /** current/ 下的数据文件（同一个取数实例，latest.json 指针缓存共用） */
