@@ -47,9 +47,23 @@ async function meta(seg: string[] | undefined, id = ZHIZHAI) {
     const { generateMetadata } = await import('../page.ssr');
     return generateMetadata({ params: Promise.resolve({ id, seg }) });
 }
-async function page(seg: string[] | undefined, id = ZHIZHAI) {
+type El = { type?: unknown; props: Record<string, any> };
+/** 页面渲染出的整棵（ReaderClient ＋ 计时 script） */
+async function pageTree(seg: string[] | undefined, id = ZHIZHAI) {
     const { default: ReaderPage } = await import('../page.ssr');
-    return ReaderPage({ params: Promise.resolve({ id, seg }) });
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    return (await ReaderPage({ params: Promise.resolve({ id, seg }) })) as El;
+}
+/** 页面里的 ReaderClient 元素（overview#322 起页面外层多了一个 Fragment，装计时 script） */
+async function page(seg: string[] | undefined, id = ZHIZHAI) {
+    const tree = await pageTree(seg, id);
+    const kids = ([] as El[]).concat(tree.props.children);
+    return kids[0];
+}
+function timingOf(tree: El): string {
+    const kids = ([] as El[]).concat(tree.props.children);
+    const tag = kids.find((k) => k?.props?.id === 'kyg-render-timing');
+    return JSON.parse(tag!.props.dangerouslySetInnerHTML.__html) as string;
 }
 
 beforeEach(() => {
@@ -173,5 +187,15 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     it('被并条目：跳到目标的阅读页（同一版本与章）', async () => {
         mockGetItem.mockResolvedValueOnce({ entry: { id: ZHIZHAI, merged_into: 'd59f2evs8ni8' }, source: 'h1', version: 'h1:r' });
         await expect(page(['wikisource', '002'])).rejects.toThrow('REDIRECT /read/d59f2evs8ni8/wikisource/002');
+    });
+
+    it('overview#322 方案 D：首次渲染分段计时写进不渲染的 script（Server-Timing 语法），并打一行函数日志', async () => {
+        const logs: string[] = [];
+        const tree = await pageTree(['002']);
+        (console.log as unknown as jest.Mock).mock.calls.forEach((c) => logs.push(String(c[0])));
+        const t = timingOf(tree);
+        for (const name of ['item', 'check', 'redirect', 'preload', 'total']) expect(t).toMatch(new RegExp(`(^|, )${name};dur=\\d+`));
+        expect(t).toMatch(/inst;desc="req=\d+ up=\d+s"$/);
+        expect(logs.some((l) => l.startsWith(`[reader-timing] /read/${ZHIZHAI}/002 item;dur=`))).toBe(true);
     });
 });

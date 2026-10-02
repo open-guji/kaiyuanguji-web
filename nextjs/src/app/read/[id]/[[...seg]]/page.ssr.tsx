@@ -24,6 +24,7 @@
 //   页面里的跳转留作 RSC 导航的兜底。数据发版后由 /internal/revalidate 的 read 开关整体失效。
 // - 首屏数据（WEB2，overview#249）：服务端把 manifest、版本目录与首章正文一起交给 ReaderClient，
 //   浏览器不再走 manifest → 目录 → 正文 这条串行链（preload.ts）。
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
@@ -37,6 +38,7 @@ import { preloadReader } from '../preload';
 import type { ReaderSeed } from '../reader-seed';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
+import { startRenderTiming, serverTimingValue, timed, type RenderTiming } from '@/lib/server/render-timing';
 
 // ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
 // 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
@@ -52,7 +54,7 @@ type Props = {
     params: Promise<{ id: string; seg?: string[] }>;
 };
 
-type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult };
+type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming };
 
 /** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取 */
 const PRELOAD_BUDGET_MS = 1500;
@@ -64,14 +66,19 @@ const PRELOAD_BUDGET_MS = 1500;
  * 并行取（overview#322：串行时冷实例要走 8 跳，实测约 4 秒）。checkReader 自己兜住网络错（unknown），
  * 条目查不到时它的结果不用，多取的那次落进 LRU。
  */
-async function load(id: string, seg: string[] | undefined): Promise<Loaded | null> {
+async function loadUncached(id: string, seg: string[] | undefined): Promise<Loaded | null> {
     const parsed = parseReaderSegments(id, seg);
     if (!parsed) return null;
     if ('redirect' in parsed) permanentRedirect(parsed.redirect);
     const { sel } = parsed;
 
-    const [hit, checked] = await Promise.all([getItemServer(id), checkReader(id, sel, getCurrentJsonServer)]);
-    const r = await resolveItemRedirect(id, hit, getPromotionServer);
+    // overview#322 方案 D：分段计时（只记录，见 lib/server/render-timing.ts）
+    const timing = startRenderTiming();
+    const [hit, checked] = await Promise.all([
+        timed(timing, 'item', getItemServer(id)),
+        timed(timing, 'check', checkReader(id, sel, getCurrentJsonServer)),
+    ]);
+    const r = await timed(timing, 'redirect', resolveItemRedirect(id, hit, getPromotionServer));
     if (r) {
         const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
         (r.permanent ? permanentRedirect : redirect)(target ? readerPath(target, sel) : r.to);
@@ -79,7 +86,16 @@ async function load(id: string, seg: string[] | undefined): Promise<Loaded | nul
     if (!hit) return null;
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
-    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked };
+    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing };
+}
+
+/**
+ * generateMetadata 与页面本体各调一次 load()：用 React cache() 按请求去重，冷实例上同一批取数只走一遍
+ * （overview#322 方案 B3）。seg 数组每次调用不是同一个对象，按序列化后的字符串作键。
+ */
+const loadByKey = cache((id: string, segKey: string) => loadUncached(id, (JSON.parse(segKey) as string[] | null) ?? undefined));
+function load(id: string, seg: string[] | undefined): Promise<Loaded | null> {
+    return loadByKey(id, JSON.stringify(seg ?? null));
 }
 
 async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
@@ -128,8 +144,16 @@ export default async function ReaderPage({ params }: Props) {
     redirectLegacyMarkdown(id, seg);
     const s = await load(id, seg);
     if (!s) notFound();
-    const seed = await preload(id, s);
+    const seed = await timed(s.timing, 'preload', preload(id, s));
     // 首帧照服务端落实的版本与章渲染，与服务端 HTML 一致；查不准（unknown）时按地址里给的
     const initial = { key: s.sel.key, chapter: s.checked.chapter ?? s.sel.chapter };
-    return <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} />;
+    const timing = serverTimingValue(s.timing);
+    console.log(`[reader-timing] /read/${id}${seg?.length ? `/${seg.join('/')}` : ''} ${timing}`);
+    return (
+        <>
+            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} />
+            {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
+            <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
+        </>
+    );
 }
