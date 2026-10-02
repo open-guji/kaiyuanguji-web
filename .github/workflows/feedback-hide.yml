@@ -50,7 +50,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # 必须 ≥22：ops/feedback-hide.mjs 直接复用 edge-functions/api/feedback.js 的 desensitizeText，
+          # 那个文件是 ESM 写法但仓库没有 "type": "module"；Node 22 起默认按语法认出 ESM，Node 20 会按 CommonJS 读而报错
+          node-version: '22'
       - name: Unit tests (ops/feedback-hide)
         run: node --test ops/tests/feedback-hide.test.mjs
       - name: Run
