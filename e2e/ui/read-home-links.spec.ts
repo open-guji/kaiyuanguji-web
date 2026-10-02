@@ -3,12 +3,10 @@
  * - 从分区导航 `<nav class="bim-rh-secnav">` 读出全部 `#xxx` 锚点，
  *   对每个分区抽前 2 条可比名字的链接，点开后应 200，且目标页
  *   `document.title`（服务端直出）包含链接上的名字。
- * - 为什么先切繁体再比 title：站点数据本身是繁体原文，简体只是显示时转换；
- *   且阅读页的书名在简体模式下仍是原文繁体（只有作者行等界面文字转简），
- *   首页抽到的简体名根本比不上。读者选繁体时客户端按 localStorage
- *   `bim-locale=zh-Hant` 切回原文（见 nextjs/src/lib/site-locale.ts），
- *   所以用 addInitScript 预设繁体再打开 /read，抽到的就是原文繁体名，
- *   可直接与服务端 title（本来就是原文）比较，不再断 main 文字。
+ * - 为什么固定简体再比 title：overview#337 起服务端 `<title>` 一律出简体（simplifyMetadata，
+ *   opencc t2cn，与 book-index-ui 的 LocaleProvider 同一套字表），阅读页挂载后 document.title
+ *   也跟随偏好。所以用 addInitScript 预设 `bim-locale=zh-Hans` 再打开 /read，首页抽到的简体名
+ *   与目标页简体 title 同口径，可直接比较，不再断 main 文字。
  * - 为什么要抽查：分区与目标页由不同数据管线拼出来，ID 改名、参数改名、
  *   漏打包都会让首页链到 404 或错页，每个分区抽查真实链接是最直接的契约。
  *
@@ -30,15 +28,15 @@ test.describe('阅读首页 /read：分区链接契约', () => {
     test.beforeEach(async ({ request }) => { await requireReadSections(request, '阅读首页分区链接'); });
 
     test('每个分区抽查链接：目标页 200 且 title 包含链接名', async ({ page }) => {
-        // 先切繁体再打开首页：抽到的名字是原文繁体，才能与服务端 title 直接比较。
-        await page.addInitScript(() => localStorage.setItem('bim-locale', 'zh-Hant'));
+        // 固定简体再打开首页：抽到的名字是简体，与服务端简体 title 同口径（overview#337）。
+        await page.addInitScript(() => localStorage.setItem('bim-locale', 'zh-Hans'));
         await page.goto(`${TARGET}/read`, { waitUntil: 'load' });
         await page.waitForLoadState('networkidle');
 
         // 链接与名字的抽取全部在页面里执行，避免来回传 DOM。
         const { ids, picked } = await page.evaluate<{ ids: string[]; picked: ReadHomeLink[] }>(() => {
             const text = (el: Element | null): string => (el?.textContent ?? '').trim();
-            // 按类名定位，不按 aria-label 文字：切繁体后 label 会变成「閱讀首頁分區」。
+            // 按类名定位，不按 aria-label 文字：label 随繁简偏好变。
             const nav = document.querySelector('nav.bim-rh-secnav');
             const ids: string[] = nav
                 ? Array.from(nav.querySelectorAll('a[href^="#"]'))
@@ -90,7 +88,7 @@ test.describe('阅读首页 /read：分区链接契约', () => {
             expect(n, `分区 ${id} 没有可比名字的链接`).toBeGreaterThan(0);
         }
 
-        // 繁体若没生效，抽到的会是简体名，title 断言必挂；失败信息里带上实际值便于排查。
+        // 失败信息里带上实际的繁简偏好，便于排查口径不一致。
         const locale = await page.evaluate(() => localStorage.getItem('bim-locale'));
 
         for (const id of ids) {
