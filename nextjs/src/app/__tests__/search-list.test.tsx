@@ -84,18 +84,24 @@ describe('结果页签进地址（overview#359 P2-3）', () => {
         expect(captured.props?.resultTab).toBe('all');
     });
 
-    it('切页签：replace 地址里的 tab，其余参数不动；切回「全部」去掉 tab', () => {
+    it('切页签：history.replaceState 改当前地址里的 tab（不走 router、不发 RSC），去掉 page；切回「全部」去掉 tab', () => {
+        const spy = jest.spyOn(window.history, 'replaceState');
+        window.history.replaceState(null, '', `/book-index?${DEFAULT_QS}&page=3`);
+        spy.mockClear();
         render(<BookIndexPage />);
         captured.props?.onResultTabChange('collection');
-        const u = new URL(String(replace.mock.calls[0][0]), 'http://x');
+        const u = new URL(String(spy.mock.calls[0][2]), 'http://x');
+        expect(u.pathname).toBe('/book-index');
         expect(u.searchParams.get('tab')).toBe('collection');
         expect(u.searchParams.get('q')).toBe('史記');
         expect(u.searchParams.get('dy')).toBe('漢,唐');
+        expect(u.searchParams.has('page')).toBe(false);
         expect(push).not.toHaveBeenCalled();
-        qs = `${DEFAULT_QS}&tab=collection`;
-        render(<BookIndexPage />);
+        expect(replace).not.toHaveBeenCalled();
+        // 第二次基于「当前地址」改，不是渲染时的快照：连点两次不会互相覆盖
         captured.props?.onResultTabChange('all');
-        expect(new URL(String(replace.mock.calls[1][0]), 'http://x').searchParams.has('tab')).toBe(false);
+        expect(new URL(String(spy.mock.calls[1][2]), 'http://x').searchParams.has('tab')).toBe(false);
+        spy.mockRestore();
     });
 
     it('换了筛选去掉 tab（组件回「全部」）；只换排序保留 tab；换检索词也不带 tab', () => {
@@ -108,5 +114,51 @@ describe('结果页签进地址（overview#359 P2-3）', () => {
         expect(new URL(String(push.mock.calls[1][0]), 'http://x').searchParams.has('tab')).toBe(false);
         captured.props?.onQueryChange('漢書');
         expect(new URL(String(push.mock.calls[2][0]), 'http://x').searchParams.has('tab')).toBe(false);
+    });
+});
+
+describe('结果页码进地址', () => {
+    afterEach(() => { qs = DEFAULT_QS; push.mockClear(); replace.mockClear(); });
+
+    it('?page= 读出页码；没有、非正整数都按第 1 页', () => {
+        for (const [page, want] of [['2', 2], ['10', 10], ['0', 1], ['-3', 1], ['x', 1], ['2.5', 1]] as const) {
+            qs = `q=史記&tab=work&page=${page}`;
+            render(<BookIndexPage />);
+            expect(captured.props?.resultPage).toBe(want);
+        }
+        qs = 'q=史記';
+        render(<BookIndexPage />);
+        expect(captured.props?.resultPage).toBe(1);
+    });
+
+    it('翻页：replaceState 写 page，第 1 页去掉 page；其余参数不动', () => {
+        const spy = jest.spyOn(window.history, 'replaceState');
+        window.history.replaceState(null, '', `/book-index?${DEFAULT_QS}&tab=work`);
+        spy.mockClear();
+        render(<BookIndexPage />);
+        captured.props?.onResultPageChange(2);
+        const u = new URL(String(spy.mock.calls[0][2]), 'http://x');
+        expect(u.searchParams.get('page')).toBe('2');
+        expect(u.searchParams.get('tab')).toBe('work');
+        expect(u.searchParams.get('q')).toBe('史記');
+        window.history.replaceState(null, '', String(spy.mock.calls[0][2]));
+        captured.props?.onResultPageChange(1);
+        expect(new URL(String(spy.mock.calls.at(-1)![2]), 'http://x').searchParams.has('page')).toBe(false);
+        expect(push).not.toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
+    it('换筛选、换排序都去掉 page；换检索词也不带 page', () => {
+        qs = `${DEFAULT_QS}&tab=work&page=3`;
+        render(<BookIndexPage />);
+        const base = { dynasty: ['漢', '唐'], classification: ['史部'], hasImage: true, hasText: false, hasCollated: false, loss: '' };
+        captured.props?.onFiltersChange({ ...base, sort: 'title:asc' });
+        const u1 = new URL(String(push.mock.calls[0][0]), 'http://x');
+        expect(u1.searchParams.has('page')).toBe(false);
+        expect(u1.searchParams.get('tab')).toBe('work');
+        captured.props?.onFiltersChange({ ...base, dynasty: ['清'], sort: 'era:desc' });
+        expect(new URL(String(push.mock.calls[1][0]), 'http://x').searchParams.has('page')).toBe(false);
+        captured.props?.onQueryChange('漢書');
+        expect(new URL(String(push.mock.calls[2][0]), 'http://x').searchParams.has('page')).toBe(false);
     });
 });

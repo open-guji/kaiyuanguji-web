@@ -36,6 +36,20 @@ function SearchDegradedNotice() {
   );
 }
 
+/** ?page= → 页码：正整数才认，其余按第 1 页 */
+function pageFromParam(v: string | null): number {
+  const n = v ? Number(v) : NaN;
+  return Number.isInteger(n) && n >= 1 ? n : 1;
+}
+
+/** 在当前地址（不是渲染时的快照）上改查询串，replaceState 写回 */
+function replaceSearchParams(edit: (params: URLSearchParams) => void) {
+  const params = new URLSearchParams(window.location.search);
+  edit(params);
+  const qs = params.toString();
+  window.history.replaceState(window.history.state, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
+}
+
 function BookIndexContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +63,8 @@ function BookIndexContent() {
   const filters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
   // 结果页签（全部／作品／丛编／版本／人物）也在 URL 里：?tab=work，刷新、分享后保留（overview#359 P2-3）
   const resultTab = resultTabFromParam(searchParams.get('tab'));
+  // 结果页码也进地址：?page=2，刷新、分享后保留（认不出或 <1 按第 1 页）
+  const resultPage = pageFromParam(searchParams.get('page'));
 
   // 预热搜索 worker — 详细策略见 use-prefetch-search.ts。
   // 配了 L1 (Meili) 时，搜索默认走 L1，不预热 worker shard（省 2 MB gzip 流量）。
@@ -79,21 +95,31 @@ function BookIndexContent() {
     }
   }, [router, filters]);
 
-  // 换了筛选（只换排序不算）组件会回到「全部」：地址里的 tab 一并去掉，与界面一致
+  // 换了筛选（只换排序不算）组件会回到「全部」：地址里的 tab 一并去掉，与界面一致；换排序也回第 1 页，page 一律去掉
   const handleFiltersChange = useCallback((next: SearchFilters) => {
     const params = filtersToParams(next, new URLSearchParams(searchParams.toString()));
     const withoutSort = (f: SearchFilters) => filtersToParams({ ...f, sort: '' }).toString();
     if (withoutSort(next) !== withoutSort(filters)) params.delete('tab');
+    params.delete('page');
     router.push(`/book-index?${params}`, { scroll: false });
   }, [router, searchParams, filters]);
 
-  // 切页签只换地址里的 tab，不新增历史记录
+  // 切页签、翻页只改地址里的 tab／page，不新增历史记录，也不发服务端请求：
+  // 用 history.replaceState（Next 会同步到 useSearchParams），基于当前地址改——
+  // router.replace 要等 RSC 往返才落地，期间再操作会拿旧地址拼新地址、互相覆盖
   const handleResultTabChange = useCallback((tab: ResultTab) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const v = resultTabToParam(tab);
-    if (v) params.set('tab', v); else params.delete('tab');
-    router.replace(`/book-index?${params}`, { scroll: false });
-  }, [router, searchParams]);
+    replaceSearchParams((params) => {
+      const v = resultTabToParam(tab);
+      if (v) params.set('tab', v); else params.delete('tab');
+      params.delete('page');
+    });
+  }, []);
+
+  const handleResultPageChange = useCallback((page: number) => {
+    replaceSearchParams((params) => {
+      if (page > 1) params.set('page', String(page)); else params.delete('page');
+    });
+  }, []);
 
   // 详情视图
   if (detailId) {
@@ -129,6 +155,8 @@ function BookIndexContent() {
           onFiltersChange={handleFiltersChange}
           resultTab={resultTab}
           onResultTabChange={handleResultTabChange}
+          resultPage={resultPage}
+          onResultPageChange={handleResultPageChange}
           hideModeIndicator
           // 结果加载时预留一屏高度，页面不跳
           reserveViewportHeight
