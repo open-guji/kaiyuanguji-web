@@ -555,6 +555,22 @@ describe('locale（首页检索候选跟繁简走，overview#342）', () => {
         expect(calls[0].body.queries[0].q).toBe(q);
     });
 
+    test('locale=zh-Hans：异体字先归一再转（寳→宝、㫖→旨，overview#350）；zh-Hant 原样', async () => {
+        const variantHit = () => new Response(JSON.stringify({
+            results: [{
+                indexUid: 'works', estimatedTotalHits: 1,
+                hits: [{ id: 'v1', type: 'work', is_draft: false, title: '風月寳鑑', author: '㫖縂', _formatted: { id: 'v1', title: '風月寳鑑' } }],
+            }],
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        stubUpstream(async () => variantHit());
+        const hans = (await body(await fn.onRequestGet(ctx(url(uq('寳'), '&locale=zh-Hans'))))).results[0].hits[0];
+        expect(hans.title).toBe('风月宝鉴');
+        expect(hans.author).toBe('旨总');
+        stubUpstream(async () => variantHit());
+        const hant = (await body(await fn.onRequestGet(ctx(url(uq('寳'), '&locale=zh-Hant'))))).results[0].hits[0];
+        expect(hant.title).toBe('風月寳鑑');
+    });
+
     test('不传 locale 或 zh-Hant：原样（结果页 L1 不传，行为不变）', async () => {
         for (const extra of ['', '&locale=zh-Hant']) {
             stubUpstream();

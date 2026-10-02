@@ -21,6 +21,9 @@ const config: Config = {
         '^remark-gfm$': '<rootDir>/__mocks__/remark-gfm.js',
         // book-index-ui 0.11.0 起顶层静态 import 'opencc-js/t2cn'（ESM，jest 不转译）；测试里用它的 UMD 构建（同一份词表）
         '^opencc-js/t2cn$': '<rootDir>/node_modules/opencc-js/dist/umd/t2cn.js',
+        // 异体字归一表（overview#350）：edge-functions/ 在 nextjs 之外，jest 从那里解析不到 nextjs 的 node_modules；
+        // 指到同一份构建产物（JSON 与 ESM 两种入口内容相同）
+        '^book-index-ui/variant-chars(\\.json)?$': '<rootDir>/node_modules/book-index-ui/dist/variant-chars.json',
     },
 };
 

@@ -5,9 +5,27 @@
  * 用 opencc-js 的 t2cn，转换口径与 book-index-ui 的 LocaleProvider 一致（Converter({ from: 'tw', to: 'cn' })），
  * 这样页面上看到的简体和 meta 里的简体是同一套字表。词典进程内只建一次。
  * 转换出任何错都退回原文——meta 里多一段繁体不算事故，页面渲染不出来才是。
+ *
+ * t2cn 之前先做异体字归一（overview#350）：「㫖」「縂」「寳」这类异体字 t2cn 不认，会原样留在简体里。
+ * 归一表与组件库 LocaleProvider 用的是同一份（book-index-ui/variant-chars.json），不另存副本。
  */
 import type { Metadata } from 'next';
 import { Converter } from 'opencc-js/t2cn';
+import VARIANT_CHARS from 'book-index-ui/variant-chars.json';
+
+const VARIANTS: Readonly<Record<string, string>> = VARIANT_CHARS;
+
+/** 异体字 → 正字（按码位，含扩展区字）；没有异体字时原样返回 */
+export function normalizeVariants(text: string): string {
+    let out = '';
+    let changed = false;
+    for (const ch of text) {
+        const to = VARIANTS[ch];
+        if (to !== undefined) changed = true;
+        out += to ?? ch;
+    }
+    return changed ? out : text;
+}
 
 type Convert = (text: string) => string;
 let converter: Convert | null | undefined;
@@ -29,7 +47,7 @@ export function toSimplified(text: string): string {
     const c = get();
     if (!c) return text;
     try {
-        return c(text);
+        return c(normalizeVariants(text));
     } catch {
         return text;
     }
