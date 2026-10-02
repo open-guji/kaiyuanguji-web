@@ -153,7 +153,7 @@ works 索引新增两个可过滤字段，`/api/search` 的 `filter` 参数据�
 索引改动不重建不生效。只改了 works，可以只重建它（约 1 分钟量级，swap 零停机；每晚 04:15 的全量重建也会带上）：
 
 ```bash
-cd /opt/indexer && ./reindex-limited.sh --only works
+cd /opt/indexer && sudo env CPU_QUOTA=100% MEM_HIGH=700M MEM_MAX=1G NODE_HEAP=512 BATCH_SIZE=1000 MAX_CONCURRENT=2 ./reindex-limited.sh --only works
 ```
 
 重建自检（swap 前）会核对 settings 里有新字段，并用 `is_draft = false AND classification IN ["史部"] AND loss_status IN ["extant"]` 跑一条查询，报 400 就放弃这次 swap、旧索引原封不动。
