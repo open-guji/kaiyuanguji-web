@@ -397,7 +397,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
           DRAFT_COMMIT: ${{ needs.resolve.outputs.draft_sha }}
           PROD_COMMIT: ${{ needs.resolve.outputs.prod_sha }}
           TEXT_COMMIT: ${{ needs.resolve.outputs.text_sha }}
@@ -424,7 +424,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
           WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
         run: |
           cd nextjs
@@ -577,7 +577,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
         run: |
           cd nextjs
           # 这次实际用来打包的三个数据仓 commit（与 latest.json 里 fullCommitId／productionCommitId／textCommitId 同口径）
@@ -595,7 +595,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
           WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
         run: |
           cd nextjs
@@ -633,7 +633,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
@@ -674,7 +674,7 @@ jobs:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-singapore
+          COS_REGION: ap-shanghai
           WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
         run: |
           cd nextjs

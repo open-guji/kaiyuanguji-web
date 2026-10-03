@@ -26,7 +26,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..', '..');
 
 const { COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET } = process.env;
-const REGION = process.env.COS_REGION || 'ap-singapore';
+const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const LATEST_CACHE = 'public, max-age=30, must-revalidate'; // 与 sync-to-cos.mjs 写 latest.json 的一致
 
