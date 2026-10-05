@@ -95,6 +95,12 @@ class SikuIiif(unittest.TestCase):
                 m.upload_tree(root, workers=2)
         self.assertEqual(order[-2:], ['iiif/96mid1ogzk/03/manifest.json', 'iiif/96mid1ogzk/manifest.json'])
 
+    def test_commons_thumb_strips_tracking_query(self):
+        cf_ = {'url': 'https://upload.wikimedia.org/wikipedia/commons/8/86/X.djvu'
+                      '?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original'}
+        self.assertEqual(m.commons_thumb(cf_, 10),
+                         'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/X.djvu/page10-1280px-X.djvu.jpg')
+
     def test_commons_pagecount_mismatch_dropped(self):
         meta = {'ia': '06061302.cn', 'leaves': 107, 'juan': ''}
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))

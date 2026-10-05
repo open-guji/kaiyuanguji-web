@@ -296,8 +296,10 @@ def commons_file(ia_id):
 
 
 def commons_thumb(cf_, page):
-    fname = cf_['url'].rsplit('/', 1)[1]
-    return cf_['url'].replace('/wikipedia/commons/', '/wikipedia/commons/thumb/', 1) + f'/page{page}-{COMMONS_W}px-{fname}.jpg'
+    # imageinfo 的 url 现在带 ?utm_source=… 跟踪参数，拼缩略图前去掉
+    base = cf_['url'].split('?', 1)[0]
+    fname = base.rsplit('/', 1)[1]
+    return base.replace('/wikipedia/commons/', '/wikipedia/commons/thumb/', 1) + f'/page{page}-{COMMONS_W}px-{fname}.jpg'
 
 
 # ─── manifest ───
