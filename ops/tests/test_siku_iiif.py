@@ -79,6 +79,22 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(body[1]['id'],
                          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/X.djvu/page106-1280px-X.djvu.jpg')
 
+    def test_upload_order_images_then_manifests_then_collection(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as root:
+            for key in ['iiif/96mid1ogzk/manifest.json', 'iiif/96mid1ogzk/03/manifest.json',
+                        'iiif/96mid1ogzk/03/0001/info.json', 'iiif/96mid1ogzk/03/0001/full/300,/0/default.webp']:
+                os.makedirs(os.path.join(root, os.path.dirname(key)), exist_ok=True)
+                with open(os.path.join(root, key), 'wb') as f:
+                    f.write(b'x')
+            order = []
+            fake = mock.Mock()
+            fake.put.side_effect = lambda key, *a, **k: order.append(key)
+            with mock.patch.object(m, 'Cos', return_value=fake):
+                m.upload_tree(root, workers=2)
+        self.assertEqual(order[-2:], ['iiif/96mid1ogzk/03/manifest.json', 'iiif/96mid1ogzk/manifest.json'])
+
     def test_commons_pagecount_mismatch_dropped(self):
         meta = {'ia': '06061302.cn', 'leaves': 107, 'juan': ''}
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))

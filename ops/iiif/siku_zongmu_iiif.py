@@ -50,7 +50,8 @@ UA = 'kaiyuanguji-iiif/0.1 (https://www.kaiyuanguji.com; open-guji)'
 THUMB_W, READ_W, ZOOM_MAX_W_GRAY = 300, 1200, 2400
 COMMONS_W, IA_W = 1280, 1200
 
-# 图按内容不常变（重切才变），缓存 30 天；manifest 会随回退源调整，5 分钟
+# 图按内容不常变（编码是确定的，重跑字节不变），缓存 30 天；改了压法或裁剪框重切时，
+# 要用 edgeone-purge-urls.yml 清掉变了的图。manifest 会随回退源调整，5 分钟
 IMAGE_CACHE = 'public, max-age=2592000'
 JSON_CACHE = 'public, max-age=300'
 
@@ -87,9 +88,10 @@ def plan_canvases(vol, leaf_count, splits):
     out = []
     for leaf in range(1, leaf_count + 1):
         if leaf in vs:
-            out += [{'seq': p['seq'], 'leaf': leaf, 'xywh': p['xywh'], 'pos': p['pos']} for p in vs[leaf]]
+            out += [{'seq': p['seq'], 'leaf': leaf, 'xywh': p['xywh'], 'orig_size': p['orig_size'], 'pos': p['pos']}
+                    for p in vs[leaf]]
         else:
-            out.append({'seq': f'{leaf:04d}', 'leaf': leaf, 'xywh': None, 'pos': None})
+            out.append({'seq': f'{leaf:04d}', 'leaf': leaf, 'xywh': None, 'orig_size': None, 'pos': None})
     return out
 
 
@@ -217,6 +219,8 @@ def _slice_one(args):
         src.load()
     if c['xywh']:
         x, y, w, h = c['xywh']
+        if list(src.size) != list(c['orig_size']):
+            raise RuntimeError(f'vol{vol:02d} {c["seq"]} 原图 {src.size} ≠ 裁剪框表记的 {c["orig_size"]}（IA 换过图？）')
         if x + w > src.size[0] or y + h > src.size[1]:
             raise RuntimeError(f'vol{vol:02d} {c["seq"]} 裁剪框 {c["xywh"]} 超出原图 {src.size}')
         im = src.crop((x, y, x + w, y + h))
@@ -389,13 +393,16 @@ def build_collection(vols_meta, vols_present):
 
 
 def existing_volumes(vols_meta):
-    """线上已有 manifest 的册（书级 Collection 要列全，不只列本次跑的）。"""
+    """线上已有 manifest 的册（书级 Collection 要列全，不只列本次跑的）。
+    只有 404／403（对象不存在时 COS 经 EdgeOne 回 403/404）才算没有；其它错误抛出，免得已上线的册从 Collection 里掉出去。"""
     def probe(v):
         try:
-            http_get(public_url(manifest_key(v)) + f'?t={int(time.time())}', timeout=30, tries=2)
+            http_get(public_url(manifest_key(v)) + f'?t={int(time.time())}', timeout=30, tries=3)
             return v
-        except Exception:  # noqa: BLE001
-            return None
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 404):
+                return None
+            raise RuntimeError(f'探测第 {v} 册 manifest 失败：HTTP {e.code}') from None
     with cf.ThreadPoolExecutor(16) as ex:
         return {v for v in ex.map(probe, vols_meta) if v}
 
@@ -455,12 +462,14 @@ def walk_files(root):
             yield full, os.path.relpath(full, root).replace(os.sep, '/')
 
 
-def upload_tree(root, keys_first_last=('manifest.json',), workers=16):
-    """先传图和 info.json，最后传 manifest／Collection（manifest 上线时图已经都在）。"""
+def upload_tree(root, workers=16):
+    """分三批传：图和 info.json → 各册 manifest → 书级 Collection。前一批有失败就抛出，后一批不传，
+    线上不会出现指向缺图的 manifest、指向缺 manifest 的 Collection。"""
     cos = Cos()
     files = list(walk_files(root))
-    late = [f for f in files if f[1].endswith(keys_first_last)]
-    early = [f for f in files if f not in late]
+    coll = [f for f in files if f[1] == collection_key()]
+    mans = [f for f in files if f[1].endswith('/manifest.json') and f not in coll]
+    early = [f for f in files if f not in coll and f not in mans]
 
     def put(item):
         full, key = item
@@ -473,7 +482,7 @@ def upload_tree(root, keys_first_last=('manifest.json',), workers=16):
         return len(body)
 
     t0, total = time.perf_counter(), 0
-    for batch in (early, late):
+    for batch in (early, mans, coll):
         with cf.ThreadPoolExecutor(workers) as ex:
             for n in ex.map(put, batch):
                 total += n
@@ -492,7 +501,8 @@ def verify_online(root, workers=16):
         with open(full, 'rb') as fh:
             want = fh.read()
         try:
-            got, hdr = http_get(public_url(key), timeout=60, tries=3)
+            # 带查询串绕开 EdgeOne 里可能残留的旧缓存（缓存键含查询串，current/ 的 ?v= 也靠这个）
+            got, hdr = http_get(public_url(key) + f'?verify={int(time.time())}', timeout=60, tries=3)
         except Exception as e:  # noqa: BLE001
             return key, f'取不到：{e}'
         if got != want:
@@ -545,6 +555,8 @@ def main(argv=None):
         if v not in vols_meta:
             raise SystemExit(f'❌ 没有第 {v} 册（共 {len(vols_meta)} 册）')
     leaves = {int(x) for x in a.leaves.split(',')} if a.leaves else None
+    if leaves and a.upload:
+        raise SystemExit('❌ --leaves 只用于本地试跑：带着它上传会用残缺的 manifest 盖掉线上整册的')
     out = os.path.abspath(a.out)
     cache = os.path.abspath(a.cache or os.path.join(os.path.dirname(out), 'cache'))
     os.makedirs(out, exist_ok=True)
@@ -568,8 +580,12 @@ def main(argv=None):
 
     if not leaves:
         present = set(vols)
-        if a.upload:
+        try:
             present |= existing_volumes(vols_meta)
+        except RuntimeError as e:
+            if a.upload:
+                raise SystemExit(f'❌ {e}；不更新 Collection，免得漏掉已上线的册') from None
+            print(f'  ⚠ {e}；本地 Collection 只列本次的册', file=sys.stderr)
         with open(os.path.join(out, collection_key()), 'w', encoding='utf-8') as f:
             json.dump(build_collection(vols_meta, present), f, ensure_ascii=False, separators=(',', ':'))
 
