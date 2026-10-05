@@ -125,6 +125,23 @@ function timeoutSignal(ms: number): { signal: AbortSignal; clear: () => void } {
 /** 读不到（404 或数据里没有）——与网络错／5xx 区分开 */
 class NotFound extends Error {}
 
+/**
+ * 本地联调：设了 KYG_LOCAL_PUBLIC_DATA=1 时，条目与阅读文本先读本机 `nextjs/public/data/<相对路径>`，
+ * 读不到再走线上。给本地跑还没上线的新结构文本用，正式构建不设这个变量。
+ */
+function readLocalPublicData(relPath: string): string | null {
+    if (process.env.KYG_LOCAL_PUBLIC_DATA !== '1') return null;
+    try {
+        const req = eval('require');
+        const fs = req('fs');
+        const path = req('path');
+        const file = path.join(process.cwd(), 'public', 'data', ...relPath.split('/'));
+        return fs.existsSync(file) ? (fs.readFileSync(file, 'utf-8') as string) : null;
+    } catch {
+        return null;
+    }
+}
+
 export function createItemFetcher(opts: ItemFetcherOptions) {
     const base = opts.base.replace(/\/$/, '');
     const doFetch: FetchLike = opts.fetch ?? ((url, init) => fetch(url, init));
@@ -302,16 +319,8 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
         const hit = await fromCurrent(id);
         if (hit) return { ...hit, source: 'current' };
-        try {
-            const req = eval('require');
-            const fs = req('fs');
-            const path = req('path');
-            const localEntry = path.join(process.cwd(), 'public', 'data', 'entry', `${id}.json`);
-            if (fs.existsSync(localEntry)) {
-                const entry = JSON.parse(fs.readFileSync(localEntry, 'utf-8'));
-                return { entry, source: 'current', version: 'local' };
-            }
-        } catch {}
+        const local = readLocalPublicData(`entry/${id}.json`);
+        if (local !== null) return { entry: JSON.parse(local), source: 'current', version: 'local' };
         return null;
     }
 
@@ -320,16 +329,9 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 与浏览器端 BundleStorage 同一个地址（带 ?v=<版本键>）。确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentJson<T>(relPath: string): Promise<T | null> {
-        // 先检查本地 public/data/ 是否有该文件（本地开发/测试及 bundle 模式）
-        try {
-            const req = eval('require');
-            const fs = req('fs');
-            const path = req('path');
-            const localFile = path.join(process.cwd(), 'public', 'data', relPath.replace(/\//g, path.sep));
-            if (fs.existsSync(localFile)) {
-                return JSON.parse(fs.readFileSync(localFile, 'utf-8')) as T;
-            }
-        } catch {}
+        // 本地联调：public/data/ 里有就直接用（KYG_LOCAL_PUBLIC_DATA=1）
+        const localJson = readLocalPublicData(relPath);
+        if (localJson !== null) return JSON.parse(localJson) as T;
 
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
@@ -347,17 +349,8 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentText(relPath: string, maxBytes = Infinity): Promise<string | null> {
-        // 先检查本地 public/data/ 是否有该文件
-        try {
-            const req = eval('require');
-            const fs = req('fs');
-            const path = req('path');
-            const localFile = path.join(process.cwd(), 'public', 'data', relPath.replace(/\//g, path.sep));
-            if (fs.existsSync(localFile)) {
-                const text = fs.readFileSync(localFile, 'utf-8');
-                return text.length > maxBytes ? null : text;
-            }
-        } catch {}
+        const localText = readLocalPublicData(relPath);
+        if (localText !== null) return localText.length > maxBytes ? null : localText;
 
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
