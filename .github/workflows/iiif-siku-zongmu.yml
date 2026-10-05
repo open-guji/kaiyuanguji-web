@@ -1,0 +1,80 @@
+name: IIIF slice — 四庫總目
+
+# overview#388：四庫總目（武英殿本，IA 浙大 CADAL 扫描）书影切三档 WebP，上传数据桶 iiif/ 前缀，
+# 每册生成一份 IIIF Presentation 3 manifest，书级 Collection 列出线上已有的各册。
+# 方案见 overview `项目进展/古籍索引网站/进度/四库总目影像存储方案.md`，脚本 ops/iiif/siku_zongmu_iiif.py。
+# 只手动触发。用现有 COS 数据桶（与 deploy.yml 同一组 secrets），不新开桶。
+# 时长参考（4 核 runner）：vol02＋vol03 共 298 个 canvas，切片不到 1 分钟；全书 99 册约 1.6 万页，切片约 40 分钟。
+
+on:
+  workflow_dispatch:
+    inputs:
+      vols:
+        description: '册号，逗号分隔（如 02,03）；all = 全部 99 册'
+        required: true
+        default: '02,03'
+        type: string
+      upload:
+        description: '上传到 COS 并从 data.kaiyuanguji.com 取回核对（关掉＝只切片，结果看工件）'
+        type: boolean
+        default: true
+      commons:
+        description: 'manifest 里挂 Commons 回退源（Commons API 限流时自动不挂）'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iiif-siku-zongmu
+  cancel-in-progress: false
+
+jobs:
+  slice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install
+        run: python3 -m pip install -q 'pillow==12.3.0'
+
+      - name: Unit tests
+        run: python3 -m unittest ops/tests/test_siku_iiif.py -v
+
+      - name: Slice → manifest → upload → verify
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          VOLS: ${{ inputs.vols }}
+          UPLOAD: ${{ inputs.upload }}
+          COMMONS: ${{ inputs.commons }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$VOLS" =~ ^(all|[0-9]{1,2}(,[0-9]{1,2})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
+          ARGS=(--vols "$VOLS" --out "$RUNNER_TEMP/iiif/out" --cache "$RUNNER_TEMP/iiif/cache" --report "$RUNNER_TEMP/iiif/report.json")
+          if [ "$UPLOAD" = "true" ]; then
+            if [ -z "$COS_SECRET_ID" ]; then echo "❌ 没有 COS secrets"; exit 1; fi
+            ARGS+=(--upload --verify)
+          fi
+          [ "$COMMONS" = "true" ] || ARGS+=(--no-commons)
+          python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
+
+      - name: Upload report and samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iiif-siku-zongmu-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/iiif/report.json
+            ${{ runner.temp }}/iiif/samples/
+            ${{ runner.temp }}/iiif/out/iiif/96mid1ogzk/**/manifest.json
+          retention-days: 14
+          if-no-files-found: warn
