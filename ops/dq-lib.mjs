@@ -517,7 +517,8 @@ export async function runDq(opts = {}) {
     R.unique = toFetch.size;
     for (const d of dangling) add('data', 'ref-dangling', `${d.from}.${d.field} → ${d.to} 悬空（manifest 与升格表里都没有）`, { path: d.path });
     await pool([...toFetch.keys()], concurrency, async (id) => {
-        const r = await http.request(`${h1}/entry/${encodeURIComponent(id)}.${manifest.get(id)}.json`, { method: 'HEAD' });
+        // 用 GET 不用 HEAD：EdgeOne 缓存未命中时 HEAD 回源一律 403（GET 正常），HEAD 会把没缓存的对象全误报成取不到
+        const r = await http.request(`${h1}/entry/${encodeURIComponent(id)}.${manifest.get(id)}.json`);
         if (!r.ok) {
             R.unreachable++;
             add(missKind(r), 'ref-unreachable', `被引用的 ${id} 在 manifest 里，但 h1 entry 取不到（HTTP ${r.status}）`, { referencedBy: toFetch.get(id).slice(0, 3) });
@@ -619,7 +620,8 @@ export async function runDq(opts = {}) {
         });
         await pool(fileChecks, concurrency, async ({ owner, rel, hash }) => {
             T.filesChecked++;
-            const r = await http.request(`${h1}/text/${encodeURIComponent(owner)}/${insertHash(rel, hash)}`, { method: 'HEAD' });
+            // 同上：不用 HEAD（EdgeOne 缓存未命中的 HEAD 回源 403）
+            const r = await http.request(`${h1}/text/${encodeURIComponent(owner)}/${insertHash(rel, hash)}`);
             if (!r.ok) { T.filesUnreachable++; add(missKind(r), 'text-file-unreachable', `${owner}/${rel} 在 manifest 里，取不到（HTTP ${r.status}）`); }
         });
     }
