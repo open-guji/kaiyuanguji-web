@@ -166,6 +166,17 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
         }
     }, [id]);
 
+    // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
+    const resolveEntities = useCallback(async (chapterKey: string) => {
+        if (id !== '96mid1ogzk' || !/^\d{3}$/.test(chapterKey)) return null;
+        try {
+            const res = await fetch(`/data/items/${id}/original/${chapterKey}.entity.json`);
+            return res.ok ? await res.json() : null;
+        } catch {
+            return null;
+        }
+    }, [id]);
+
     // 书影来自 COS 的 IIIF manifest（页码对照见 lib/facsimile.ts）；章号 002 ＝ 第 02 册
     const resolveImages = useCallback(async (chapterKey: string) => {
         if (id !== '96mid1ogzk' || !/^\d{3}$/.test(chapterKey)) return null;
@@ -186,6 +197,8 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}
                 resolveImages={resolveImages}
+                resolveEntities={resolveEntities}
+                onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
             <SelectionReport containerRef={textRef} context={feedbackContext} />
         </div>
