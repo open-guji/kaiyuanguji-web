@@ -301,7 +301,18 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
             }
         }
         const hit = await fromCurrent(id);
-        return hit ? { ...hit, source: 'current' } : null;
+        if (hit) return { ...hit, source: 'current' };
+        try {
+            const req = eval('require');
+            const fs = req('fs');
+            const path = req('path');
+            const localEntry = path.join(process.cwd(), 'public', 'data', 'entry', `${id}.json`);
+            if (fs.existsSync(localEntry)) {
+                const entry = JSON.parse(fs.readFileSync(localEntry, 'utf-8'));
+                return { entry, source: 'current', version: 'local' };
+            }
+        } catch {}
+        return null;
     }
 
     /**
@@ -309,6 +320,17 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 与浏览器端 BundleStorage 同一个地址（带 ?v=<版本键>）。确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentJson<T>(relPath: string): Promise<T | null> {
+        // 先检查本地 public/data/ 是否有该文件（本地开发/测试及 bundle 模式）
+        try {
+            const req = eval('require');
+            const fs = req('fs');
+            const path = req('path');
+            const localFile = path.join(process.cwd(), 'public', 'data', relPath.replace(/\//g, path.sep));
+            if (fs.existsSync(localFile)) {
+                return JSON.parse(fs.readFileSync(localFile, 'utf-8')) as T;
+            }
+        } catch {}
+
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         try {
@@ -325,6 +347,18 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentText(relPath: string, maxBytes = Infinity): Promise<string | null> {
+        // 先检查本地 public/data/ 是否有该文件
+        try {
+            const req = eval('require');
+            const fs = req('fs');
+            const path = req('path');
+            const localFile = path.join(process.cwd(), 'public', 'data', relPath.replace(/\//g, path.sep));
+            if (fs.existsSync(localFile)) {
+                const text = fs.readFileSync(localFile, 'utf-8');
+                return text.length > maxBytes ? null : text;
+            }
+        } catch {}
+
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         const url = `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;

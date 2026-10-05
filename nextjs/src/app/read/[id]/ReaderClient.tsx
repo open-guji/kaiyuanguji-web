@@ -140,6 +140,49 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
+    const resolveWarpData = useCallback(async (chapterKey: string) => {
+        if (id === '96mid1ogzk' && (chapterKey === '002' || !chapterKey)) {
+            try {
+                // 加载精细矫正的第10页（含 WebGL 透视 strip 与双叶版心拼接）
+                const res10 = await fetch('/fixtures/vol02_p10.json');
+                const p10Data = res10.ok ? await res10.json() : null;
+
+                // 加载全册 188 页的列/字格与标点数据
+                const resPages = await fetch('/data/items/96mid1ogzk/original/002.pages.json');
+                const fullPages = resPages.ok ? await resPages.json() : null;
+
+                if (p10Data && fullPages) {
+                    return {
+                        ...p10Data,
+                        pages: fullPages.pages,
+                        punctuations: fullPages.punctuations,
+                    };
+                }
+                return p10Data;
+            } catch {
+                return null;
+            }
+        }
+        return null;
+    }, [id]);
+
+    const resolveImages = useCallback(async (chapterKey: string) => {
+        if (id === '96mid1ogzk') {
+            // 提供全卷 188 页书影高清晰度图片清单
+            const list = [];
+            for (let i = 1; i <= 188; i++) {
+                list.push({
+                    url: `/facsimiles/96mid1ogzk/vol02/${i}.png`,
+                    width: 2386,
+                    height: 3082,
+                    label: `第${i}葉`,
+                });
+            }
+            return list;
+        }
+        return null;
+    }, [id]);
+
     return (
         <div ref={textRef}>
             <TextReader
@@ -151,7 +194,8 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 onNavigate={onNavigate}
                 title={bookTitle}
                 backHref="/read"
-                onReportError={onReportError}
+                resolveWarpData={resolveWarpData}
+                resolveImages={resolveImages}
             />
             <SelectionReport containerRef={textRef} context={feedbackContext} />
         </div>
