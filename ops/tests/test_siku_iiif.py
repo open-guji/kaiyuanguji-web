@@ -114,6 +114,21 @@ class SikuIiif(unittest.TestCase):
             body, hdr = m.http_get('https://data.kaiyuanguji.com/x', tries=3)
         self.assertEqual(body, b'webp')
 
+    def test_cos_put_retries_when_error_body_truncated(self):
+        import http.client
+        import io as _io
+        import urllib.error
+        from unittest import mock
+        err = urllib.error.HTTPError('u', 503, 'busy', {}, _io.BytesIO(b''))
+        err.read = mock.Mock(side_effect=http.client.IncompleteRead(b'', 100))
+        ok = mock.MagicMock()
+        env = {'COS_SECRET_ID': 'id', 'COS_SECRET_KEY': 'k', 'COS_BUCKET': 'b-1', 'COS_REGION': 'ap-shanghai'}
+        with mock.patch.dict(os.environ, env), \
+                mock.patch.object(m.urllib.request, 'urlopen', side_effect=[err, ok]) as uo, \
+                mock.patch.object(m.time, 'sleep'):
+            m.Cos().put('iiif/x.webp', b'x', 'image/webp', 'public')
+        self.assertEqual(uo.call_count, 2)
+
     def test_commons_pagecount_mismatch_dropped(self):
         meta = {'ia': '06061302.cn', 'leaves': 107, 'juan': ''}
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))

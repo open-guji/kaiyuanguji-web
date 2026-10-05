@@ -447,7 +447,10 @@ class Cos:
                     r.read()
                     return
             except urllib.error.HTTPError as e:
-                msg = e.read()[:300].decode('utf-8', 'replace')
+                try:
+                    msg = e.read()[:300].decode('utf-8', 'replace')
+                except (http.client.HTTPException, OSError):  # 错误响应体读到一半断了，按 5xx 一样重试
+                    msg = '(响应体读取中断)'
                 last = RuntimeError(f'PUT {key} → {e.code} {msg}')
                 # 5xx、限流、签名过期（deploy.yml 10-05 遇到过）重试，其它 4xx 直接报
                 if not (e.code >= 500 or e.code in (408, 429) or 'Signature' in msg or 'RequestTimeTooSkewed' in msg):
