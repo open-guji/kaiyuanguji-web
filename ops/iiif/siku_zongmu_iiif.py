@@ -27,6 +27,7 @@ import argparse
 import concurrent.futures as cf
 import hashlib
 import hmac
+import http.client
 import io
 import json
 import os
@@ -136,7 +137,7 @@ def http_get(url, timeout=120, tries=4, headers=None):
             last = e
             if e.code not in (429, 500, 502, 503, 504):
                 raise
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError) as e:
             last = e
         time.sleep(min(60, 5 * 2 ** i))
     raise last
@@ -451,7 +452,7 @@ class Cos:
                 # 5xx、限流、签名过期（deploy.yml 10-05 遇到过）重试，其它 4xx 直接报
                 if not (e.code >= 500 or e.code in (408, 429) or 'Signature' in msg or 'RequestTimeTooSkewed' in msg):
                     raise last from None
-            except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError) as e:
                 last = e
             time.sleep(0.5 * 2 ** i)
         raise last

@@ -101,6 +101,19 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(m.commons_thumb(cf_, 10),
                          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/X.djvu/page10-1280px-X.djvu.jpg')
 
+    def test_http_get_retries_incomplete_read(self):
+        # 10-05 第一批核对：EdgeOne 偶发读到 0 字节就断（IncompleteRead），要重试而不是直接判失败
+        import http.client
+        from unittest import mock
+        ok = mock.MagicMock()
+        ok.__enter__.return_value.read.return_value = b'webp'
+        ok.__enter__.return_value.headers = {'Content-Type': 'image/webp'}
+        with mock.patch.object(m.urllib.request, 'urlopen',
+                               side_effect=[http.client.IncompleteRead(b'', 398), ok]), \
+                mock.patch.object(m.time, 'sleep'):
+            body, hdr = m.http_get('https://data.kaiyuanguji.com/x', tries=3)
+        self.assertEqual(body, b'webp')
+
     def test_commons_pagecount_mismatch_dropped(self):
         meta = {'ia': '06061302.cn', 'leaves': 107, 'juan': ''}
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))
