@@ -281,7 +281,10 @@ async function uploadOne({ full, relative, size }, attempt = 1) {
             }, (err) => err ? rejectP(err) : resolveP({ key, size }));
         });
     } catch (e) {
-        const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(e.message || '');
+        // 签名类错误也重试（重试会重新签名）：COS 迁上海后，美国 runner 传大文件（multipart）要几分钟，
+        // 偶发 SignatureDoesNotMatch「The Signature you specified is invalid」／签名过期，10-05 测试站部署因此整步失败
+        const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
+            .test(`${e.message || ''} ${e.code || ''}`);
         if (transient && attempt < 4) {
             await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
             return uploadOne({ full, relative, size }, attempt + 1);
