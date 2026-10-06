@@ -131,12 +131,21 @@ class SikuIiif(unittest.TestCase):
         files += [('/t/m', 'iiif/96mid1ogzk/03/manifest.json'), ('/t/c', 'iiif/96mid1ogzk/manifest.json')]
         self.assertEqual(len(m.pick_verify_files(files, None)), 502)  # 没做上传或 --force：全核
         up = [files[3][1], files[7][1]]
-        got = m.pick_verify_files(files, up)
+        import random
+        got = m.pick_verify_files(files, up, rnd=random.Random(7))
         keys = {k for _, k in got}
         self.assertTrue({files[3][1], files[7][1], 'iiif/96mid1ogzk/03/manifest.json',
                          'iiif/96mid1ogzk/manifest.json'} <= keys)
         self.assertEqual(len(got), 4 + max(20, int(498 * m.SKIP_SAMPLE_RATE)))
         self.assertEqual(len(keys), len(got))  # 没有重复
+        # 跳过的文件是随机抽的，不是取前 n 个；种子不同抽到的不同
+        must = {files[3][1], files[7][1], 'iiif/96mid1ogzk/03/manifest.json', 'iiif/96mid1ogzk/manifest.json'}
+        rest = [f for f in files if f[1] not in must]
+        n = max(20, int(len(rest) * m.SKIP_SAMPLE_RATE))
+        self.assertEqual(keys - must, {k for _, k in random.Random(7).sample(rest, n)})
+        self.assertNotEqual(keys - must, {k for _, k in rest[:n]})
+        other = {k for _, k in m.pick_verify_files(files, up, rnd=random.Random(8))}
+        self.assertNotEqual(keys, other)
 
     def test_cos_etag(self):
         import io as _io
@@ -147,8 +156,9 @@ class SikuIiif(unittest.TestCase):
         ok.__enter__.return_value.headers = {'ETag': '"ABCDEF0123"'}
         nf = urllib.error.HTTPError('u', 404, 'nf', {}, _io.BytesIO(b''))
         with mock.patch.dict(os.environ, env), mock.patch.object(m.time, 'sleep'):
-            with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[ok]):
+            with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[ok]) as uo:
                 self.assertEqual(m.Cos().etag('iiif/x.webp'), 'abcdef0123')
+                self.assertEqual(uo.call_args.args[0].get_method(), 'HEAD')
             with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[nf]):
                 self.assertIsNone(m.Cos().etag('iiif/x.webp'))
 

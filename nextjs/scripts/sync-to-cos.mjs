@@ -558,16 +558,29 @@ async function listVersionDirs() {
     return { root, dirs };
 }
 
-/** 删掉一个目录（前缀）下的全部对象，每批 1000 个。返回删除个数。 */
+/**
+ * 删掉一个目录（前缀）下的全部对象，每批 1000 个。返回删掉的个数。
+ * 按 Marker 往后翻页（不是每次从头重列），所以某几个删不掉也不会死循环；逐个检查返回里的 Error，
+ * 只统计真正删掉的，有删不掉的最后抛错（由 pruneOldVersions 记成警告，下次发布再试）。
+ */
 async function deletePrefix(prefix) {
-    let n = 0;
+    let deleted = 0;
+    const failed = [];
+    let marker = '';
     while (true) {
-        const res = await cosCall('getBucket', { Prefix: prefix, MaxKeys: 1000 });
+        const res = await cosCall('getBucket', { Prefix: prefix, Marker: marker, MaxKeys: 1000 });
         const keys = (res.Contents || []).map(o => ({ Key: o.Key }));
-        if (keys.length === 0) return n;
-        await cosCall('deleteMultipleObject', { Objects: keys, Quiet: true });
-        n += keys.length;
+        if (keys.length > 0) {
+            const del = await cosCall('deleteMultipleObject', { Objects: keys, Quiet: true });
+            const errs = del?.Error ? [].concat(del.Error) : [];
+            for (const e of errs) failed.push(e.Key);
+            deleted += keys.length - errs.length;
+        }
+        if (!isTruncated(res) || keys.length === 0) break;
+        marker = res.NextMarker || keys[keys.length - 1].Key;
     }
+    if (failed.length > 0) throw new Error(`${prefix} 下 ${failed.length} 个对象没删掉（如 ${failed[0]}）`);
+    return deleted;
 }
 
 async function pruneOldVersions() {
@@ -577,8 +590,8 @@ async function pruneOldVersions() {
     }
     try {
         const { root, dirs } = await listVersionDirs();
-        const { toDelete, toKeep } = planVersionPrune(dirs, { protect: [cacheKey, shortCommit], keep: KEEP_VERSIONS });
-        console.log(`\n  v/ 下 ${dirs.length} 个版本目录：留 ${toKeep.length}（最近 ${KEEP_VERSIONS} 个＋本次 2 个），删 ${toDelete.length}`);
+        const { toDelete, toKeep } = planVersionPrune(dirs, { protect: [cacheKey, shortCommit], keep: KEEP_VERSIONS, now: Date.now() });
+        console.log(`\n  v/ 下 ${dirs.length} 个版本目录：留 ${toKeep.length}（最近 ${KEEP_VERSIONS} 个＋24 小时内的＋本次 2 个），删 ${toDelete.length}`);
         if (toDelete.length === 0) return;
         let objects = 0;
         const r = await runQueue(toDelete, 4, async (name) => { const n = await deletePrefix(`${root}${name}/`); objects += n; }, 'prune-v');

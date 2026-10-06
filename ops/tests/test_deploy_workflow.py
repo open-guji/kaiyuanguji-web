@@ -81,6 +81,8 @@ class CosSyncStateCache(unittest.TestCase):
         for k in (restore['key'], save['key']):
             self.assertIn('needs.resolve.outputs.target', k)
             self.assertIn('cos_state_key.outputs.bucket', k)
+        for k in (restore['key'], save['key']):
+            self.assertIn('github.run_attempt', k)  # 重跑不命中自己当年存的旧状态
         self.assertTrue(save['key'].startswith(restore['restore-keys'].strip()))
         self.assertTrue(restore['key'].startswith(restore['restore-keys'].strip()))
 

@@ -540,7 +540,7 @@ def pick_verify_files(files, uploaded_keys, rnd=None):
     uploaded_keys 为 None（没做上传，或 --force）时核对全部。"""
     if uploaded_keys is None:
         return list(files)
-    rnd = rnd or random.Random(388)
+    rnd = rnd or random.Random()  # 每次运行抽不一样的，多跑几次就把跳过的文件轮流核对到
     up = set(uploaded_keys)
     must = [f for f in files if f[1] in up or f[1].endswith('manifest.json')]
     rest = [f for f in files if f not in must]

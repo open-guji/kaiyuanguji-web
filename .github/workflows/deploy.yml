@@ -608,7 +608,7 @@ jobs:
       # overview#410：sync-to-cos 增量同步靠 nextjs/.next/.sync-state.json（上次成功同步时 current/ 的远端状态：相对路径 → md5）。
       # 它不在 checkout 里，CI 每次都是全新环境，于是每次真同步都要先把 current/ 整个 LIST 一遍（约 330～700 次请求）。
       # 现在存进 actions/cache：键含目标站（测试站写 staging/ 前缀、正式站写根，两份状态不能混）和桶名的哈希（换桶自动作废），
-      # 取最近一份；同步成功后存一份新的。缓存拿不到或取到的状态不可信，都退回 LIST 重建，行为与原来一样。
+      # 取最近一份（精确键带 run_id 和 run_attempt：重跑老 run 时不会命中它自己当年存的旧状态，而是取最新的）；同步成功后存一份新的。缓存拿不到或取到的状态不可信，都退回 LIST 重建，行为与原来一样。
       # 要强制作废：把下面三处键里的 v1 改成 v2，或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
       - name: COS sync state — cache key (overview#410)
         id: cos_state_key
@@ -627,7 +627,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}
+          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
 
@@ -678,7 +678,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}
+          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       # 三路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步
       - name: Mark COS sync complete
