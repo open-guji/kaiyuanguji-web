@@ -122,3 +122,13 @@ if (process.exitCode) {
 } else {
     console.log('\n✅ h1-sync-core 单测全过');
 }
+
+test('分块上传的对象（state 记为 mp:大小）视为未变，不重复上传', () => {
+    const files = [file('primary/big.json', 3_400_000)];
+    const stateMap = new Map([['primary/big.json', 'mp:3400000']]);
+    const localMd5 = new Map([['primary/big.json', 'h1']]);
+
+    const plan = planBatches(CONFIG, files, stateMap, localMd5);
+
+    assert.equal(plan.uploadsByBatch.find(b => b.key === 'primary').upload.length, 0);
+});
