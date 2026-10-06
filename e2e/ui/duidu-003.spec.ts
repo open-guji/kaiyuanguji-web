@@ -14,6 +14,12 @@ const BOOK = '96mid1ogzk';
 const PATH = `${TARGET}/read/${BOOK}/original/003`;
 /** 带书影翻页／缩放（overview#425）的 book-index-ui 版本；bim 实际发版号定了以后核对这里 */
 const MIN_UI = '0.45.0';
+/** 003 起始页：第 1、2 页（书脊签、封面签条）无字，对读正文与书影从第 3 页起 */
+const FIRST_TEXT_PAGE = '3';
+/** 无字页进书影翻页（bim#126）所在的 book-index-ui 版本 */
+const NO_TEXT_PAGE_UI = '0.46.0';
+/** 「标点」等按钮补 aria-pressed、起始页在渲染阶段定（bim#129）所在的版本；发版后按实际版本号核对 */
+const ARIA_PRESSED_UI = '0.46.1';
 /** 标点 pos=before 修复所在的 book-index-ui 版本（bim#124 发版后核对） */
 const FIX_POS_UI = '0.45.1';
 
@@ -23,9 +29,28 @@ const warpPage = (page: Page) => page.locator('[data-warp-page]').first();
 async function openDuidu(page: Page) {
     await page.goto(PATH);
     await expect(page.locator('[data-char-id]').first()).toBeVisible({ timeout: 60_000 });
+    // 起始页是第一个有字的页（第 3 页）：先等书影区定下来再往下做，不读开头那一瞬的过渡页号
+    await expect(warpPage(page)).toHaveAttribute('data-warp-page', FIRST_TEXT_PAGE, { timeout: 30_000 });
     // 专名线默认关；对读正文的实体标注跟着它走
     const toggle = page.getByRole('button', { name: /专名线|專名線/ });
     if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
+    await settled(page);
+}
+
+/**
+ * 等页面「静下来」：开专名线会让整章三万个字重画，主线程忙好几秒，这期间排版位移、滚动锚定、迟到的滚动事件
+ * 都会改页码与滚动位置。后面的操作若紧跟着开线就做，在慢机器（CI）上偶发被这些迟到的事情带偏。
+ * 判据：专名线已画出，且书影页码与滚动位置连续 600ms 不变。
+ */
+async function settled(page: Page) {
+    await expect(page.locator('.bim-et').first()).toBeAttached({ timeout: 30_000 });
+    let last = '';
+    let since = Date.now();
+    await expect.poll(async () => {
+        const now = await page.evaluate(() => `${document.querySelector('[data-warp-page]')?.getAttribute('data-warp-page')}|${Math.round(scrollY)}`);
+        if (now !== last) { last = now; since = Date.now(); }
+        return Date.now() - since >= 600;
+    }, { timeout: 30_000, intervals: [100] }).toBe(true);
 }
 
 test.describe('图文对读（vol03）', () => {
@@ -79,8 +104,77 @@ test.describe('图文对读（vol03）', () => {
         await page.getByTestId('facsimile-panel').focus();
         await page.keyboard.press('ArrowRight');
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(before + 1));
+        // 翻页后正文要滚到新页、书影与字体陆续到位，版面会挪几下；等页码与滚动位置静下来再按下一个键，
+        // 并按「现在在哪页」算上一页，不假设一定停在 before+1（慢机器上偶发被迟到的滚动事件改回上一页）
+        await settled(page);
+        const cur = Number(await warpPage(page).getAttribute('data-warp-page'));
         await page.keyboard.press('ArrowLeft');
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(before));
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(cur - 1));
+    });
+
+    test('无字页（书脊签、封面签条、空白页）进书影翻页：只有书影、没有字框，正文不跳', async ({ page, request }) => {
+        await requireUiVersion(request, NO_TEXT_PAGE_UI, '无字页进书影翻页');
+        await openDuidu(page);
+        const prev = page.getByTestId('facsimile-prev');
+        const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
+        // 第 3 页起有字；往前翻就是第 2 页（封面签条）、第 1 页（书脊签）
+        await expect(prev).toBeEnabled();
+        const y0 = await scrollY();
+        await prev.click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '2');
+        await prev.click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '1');
+        await expect(prev).toBeDisabled();
+        // 只显示书影：有画面、没有字框；正文里没有这两页，也没有因为翻页而滚动
+        await expect(page.locator('.bim-zp canvas')).toBeVisible();
+        await expect(page.locator('.bim-zp svg rect[data-selected]')).toHaveCount(0);
+        await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
+        await expect(page.locator('[data-page-section="1"], [data-page-section="2"]')).toHaveCount(0);
+        expect(Math.abs((await scrollY()) - y0)).toBeLessThanOrEqual(2);
+        // 翻回有字页：书影页码对，字框又有了
+        await page.getByTestId('facsimile-next').click();
+        await page.getByTestId('facsimile-next').click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '3');
+        await page.locator('[data-char-id^="3:"]').nth(5).click();
+        await expect(page.locator('svg rect[data-selected="true"]').first()).toBeVisible();
+    });
+
+    test('「标点」「专名线」按钮带 aria-pressed，点一下状态跟着变', async ({ page, request }) => {
+        await requireUiVersion(request, ARIA_PRESSED_UI, '标点按钮 aria-pressed');
+        await openDuidu(page);
+        const punct = page.locator('button[title="切换外挂现代断句标点"]');
+        await expect(punct).toHaveAttribute('aria-pressed', 'true');
+        await punct.click();
+        await expect(punct).toHaveAttribute('aria-pressed', 'false');
+        await expect(page.locator('.guji-text-punct')).toHaveCount(0);
+        await punct.click();
+        await expect(punct).toHaveAttribute('aria-pressed', 'true');
+        // 专名线：openDuidu 已经打开
+        const names = page.getByRole('button', { name: /专名线|專名線/ });
+        await expect(names).toHaveAttribute('aria-pressed', 'true');
+        await names.click();
+        await expect(names).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    test('空白页（第 58 页）：从有字页翻过去只显示书影，正文不动；再翻到第 59 页正文滚过去', async ({ page, request }) => {
+        await requireUiVersion(request, NO_TEXT_PAGE_UI, '无字页进书影翻页');
+        await openDuidu(page);
+        const ch = page.locator('[data-char-id^="57:"]').first();
+        await ch.scrollIntoViewIfNeeded();
+        await ch.click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '57');
+        await settled(page);
+        const y0 = await page.evaluate(() => Math.round(window.scrollY));
+        await page.getByTestId('facsimile-next').click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '58');
+        await expect(page.locator('.bim-zp canvas')).toBeVisible();
+        await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
+        await expect(page.locator('[data-page-section="58"]')).toHaveCount(0);
+        await page.waitForTimeout(500);
+        expect(Math.abs((await page.evaluate(() => Math.round(window.scrollY))) - y0)).toBeLessThanOrEqual(2);
+        await page.getByTestId('facsimile-next').click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '59');
+        await expect.poll(() => page.locator('[data-page-section="59"]').evaluate((el) => Math.round(el.getBoundingClientRect().top)), { timeout: 10_000 }).toBeLessThan(300);
     });
 
     test('滚轮缩放后：拖动不选字，点字框仍能定位正文；双击复位', async ({ page }) => {
