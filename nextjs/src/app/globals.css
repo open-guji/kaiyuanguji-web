@@ -1,5 +1,364 @@
 @import "tailwindcss";
 
+/* HANAMIN-BEGIN 花园明朝扩展区兜底（overview#421）。取自 npm 包 hanamin@0.0.5 的 HanaMin.css，只留扩展 A、B–F、兼容表意文字（及补充）的 @font-face，
+   不整包引入（它还含拉丁、常用汉字等区块）；src 先 jsDelivr、再 unpkg（版本锁 0.0.5），unicode-range 原样。升版本时从新包的 HanaMin.css 重新摘。 */
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-1.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-1.woff2") format("woff2");
+  unicode-range: U+3400-37FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-2.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-2.woff2") format("woff2");
+  unicode-range: U+3800-3BFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-3.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-3.woff2") format("woff2");
+  unicode-range: U+3C00-3FFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-4.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-4.woff2") format("woff2");
+  unicode-range: U+4000-43FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-5.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-5.woff2") format("woff2");
+  unicode-range: U+4400-47FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-6.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-6.woff2") format("woff2");
+  unicode-range: U+4800-4BFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-7.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Unified-Ideographs-Extension-A-7.woff2") format("woff2");
+  unicode-range: U+4C00-4DB5; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Compatibility-Ideographs.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Compatibility-Ideographs.woff2") format("woff2");
+  unicode-range: U+F900-FA6D, U+FA70-FAD9; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-01.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-01.woff2") format("woff2");
+  unicode-range: U+20000-203FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-02.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-02.woff2") format("woff2");
+  unicode-range: U+20400-207FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-03.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-03.woff2") format("woff2");
+  unicode-range: U+20800-20BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-04.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-04.woff2") format("woff2");
+  unicode-range: U+20C00-20FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-05.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-05.woff2") format("woff2");
+  unicode-range: U+21000-213FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-06.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-06.woff2") format("woff2");
+  unicode-range: U+21400-217FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-07.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-07.woff2") format("woff2");
+  unicode-range: U+21800-21BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-08.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-08.woff2") format("woff2");
+  unicode-range: U+21C00-21FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-09.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-09.woff2") format("woff2");
+  unicode-range: U+22000-223FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-10.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-10.woff2") format("woff2");
+  unicode-range: U+22400-227FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-11.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-11.woff2") format("woff2");
+  unicode-range: U+22800-22BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-12.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-12.woff2") format("woff2");
+  unicode-range: U+22C00-22FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-13.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-13.woff2") format("woff2");
+  unicode-range: U+23000-233FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-14.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-14.woff2") format("woff2");
+  unicode-range: U+23400-237FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-15.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-15.woff2") format("woff2");
+  unicode-range: U+23800-23BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-16.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-16.woff2") format("woff2");
+  unicode-range: U+23C00-23FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-17.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-17.woff2") format("woff2");
+  unicode-range: U+24000-243FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-18.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-18.woff2") format("woff2");
+  unicode-range: U+24400-247FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-19.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-19.woff2") format("woff2");
+  unicode-range: U+24800-24BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-20.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-20.woff2") format("woff2");
+  unicode-range: U+24C00-24FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-21.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-21.woff2") format("woff2");
+  unicode-range: U+25000-253FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-22.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-22.woff2") format("woff2");
+  unicode-range: U+25400-257FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-23.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-23.woff2") format("woff2");
+  unicode-range: U+25800-25BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-24.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-24.woff2") format("woff2");
+  unicode-range: U+25C00-25FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-25.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-25.woff2") format("woff2");
+  unicode-range: U+26000-263FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-26.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-26.woff2") format("woff2");
+  unicode-range: U+26400-267FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-27.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-27.woff2") format("woff2");
+  unicode-range: U+26800-26BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-28.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-28.woff2") format("woff2");
+  unicode-range: U+26C00-26FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-29.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-29.woff2") format("woff2");
+  unicode-range: U+27000-273FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-30.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-30.woff2") format("woff2");
+  unicode-range: U+27400-277FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-31.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-31.woff2") format("woff2");
+  unicode-range: U+27800-27BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-32.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-32.woff2") format("woff2");
+  unicode-range: U+27C00-27FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-33.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-33.woff2") format("woff2");
+  unicode-range: U+28000-283FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-34.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-34.woff2") format("woff2");
+  unicode-range: U+28400-287FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-35.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-35.woff2") format("woff2");
+  unicode-range: U+28800-28BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-36.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-36.woff2") format("woff2");
+  unicode-range: U+28C00-28FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-37.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-37.woff2") format("woff2");
+  unicode-range: U+29000-293FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-38.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-38.woff2") format("woff2");
+  unicode-range: U+29400-297FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-39.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-39.woff2") format("woff2");
+  unicode-range: U+29800-29BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-40.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-40.woff2") format("woff2");
+  unicode-range: U+29C00-29FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-41.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-41.woff2") format("woff2");
+  unicode-range: U+2A000-2A3FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-42.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-42.woff2") format("woff2");
+  unicode-range: U+2A400-2A6D6; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-1.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-1.woff2") format("woff2");
+  unicode-range: U+2A700-2AAFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-2.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-2.woff2") format("woff2");
+  unicode-range: U+2AB00-2AEFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-3.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-3.woff2") format("woff2");
+  unicode-range: U+2AF00-2B2FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-4.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-4.woff2") format("woff2");
+  unicode-range: U+2B300-2B6FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-5.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-C-5.woff2") format("woff2");
+  unicode-range: U+2B700-2B734; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-D.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-D.woff2") format("woff2");
+  unicode-range: U+2B740-2B81D; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-1.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-1.woff2") format("woff2");
+  unicode-range: U+2B820-2BC1F; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-2.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-2.woff2") format("woff2");
+  unicode-range: U+2BC20-2C01F; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-3.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-3.woff2") format("woff2");
+  unicode-range: U+2C020-2C41F; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-4.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-4.woff2") format("woff2");
+  unicode-range: U+2C420-2C81F; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-5.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-5.woff2") format("woff2");
+  unicode-range: U+2C820-2CC1F; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-6.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-E-6.woff2") format("woff2");
+  unicode-range: U+2CC20-2CEA1; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-1.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-1.woff2") format("woff2");
+  unicode-range: U+2CEB0-2D2AF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-2.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-2.woff2") format("woff2");
+  unicode-range: U+2D2B0-2D6AF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-3.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-3.woff2") format("woff2");
+  unicode-range: U+2D6B0-2DAAF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-4.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-4.woff2") format("woff2");
+  unicode-range: U+2DAB0-2DEAF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-5.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-5.woff2") format("woff2");
+  unicode-range: U+2DEB0-2E2AF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-6.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-6.woff2") format("woff2");
+  unicode-range: U+2E2B0-2E6AF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-7.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-7.woff2") format("woff2");
+  unicode-range: U+2E6B0-2EAAF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝B Regular"), local("HanaMinB"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-8.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-F-8.woff2") format("woff2");
+  unicode-range: U+2EAB0-2EBE0; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: local("花園明朝A Regular"), local("HanaMinA"),
+    url("https://cdn.jsdelivr.net/npm/hanamin@0.0.5/HanaMinA.CJK-Compatibility-Ideographs-Supplement.woff2") format("woff2"),
+    url("https://unpkg.com/hanamin@0.0.5/HanaMinA.CJK-Compatibility-Ideographs-Supplement.woff2") format("woff2");
+  unicode-range: U+2F800-2FA1D; }
+/* HANAMIN-END */
+
 /* =========================================================
    开源古籍 · 设计令牌（N1，照 design/n1-samples 样张）
    ---------------------------------------------------------
@@ -46,12 +405,16 @@
   /* ---- 字体：全站系统黑体；宋体只给整理本正文 ----
      只用系统字体，不下载任何网络字体（overview#240 定、#220 Q1 方案 C）：
      Noto 网络字体按 unicode-range 分片下载，条目页首访约 2.9 MB、阅读页一卷约 4 MB。
-     "Noto Sans CJK SC"／"Noto Serif CJK SC" 是系统自带的版本（Linux、部分 Android），不是网络字体。 */
+     "Noto Sans CJK SC"／"Noto Serif CJK SC" 是系统自带的版本（Linux、部分 Android），不是网络字体。
+     唯一的例外（overview#421，用户定）：栈末尾的 "HanaMinA"／"HanaMinB"（花园明朝）兜底扩展区生僻字（扩展 A、B–F、兼容表意文字及补充）。
+     字体不放我们的 COS，直接用公共 CDN 上 npm 包 hanamin@0.0.5 的分片（jsDelivr，备 unpkg）；下面「HANAMIN」块里的 @font-face
+     全带 unicode-range，只在页面里出现了前面所有字体都没有的扩展区字时才下载对应的那几片（每片 150～280 KB，浏览器 immutable 长缓存），
+     普通页面一个字节也不下。字体授权与来源见仓库根目录 NOTICE。 */
   --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei",
-    system-ui, sans-serif;
+    "HanaMinA", "HanaMinB", system-ui, sans-serif;
   --font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
-    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+    "Source Han Serif SC", "SimSun", "PMingLiU", "HanaMinA", "HanaMinB", serif;
 
   /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
@@ -2077,10 +2440,10 @@
    ========================================================= */
 .bim-rd {
   --bim-font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", system-ui, sans-serif;
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", "HanaMinA", "HanaMinB", system-ui, sans-serif;
   --bim-font-body: var(--bim-font-ui);
   --bim-font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
-    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+    "Source Han Serif SC", "SimSun", "PMingLiU", "HanaMinA", "HanaMinB", serif;
   --bim-font-reading: var(--bim-font-serif);
 }
 
