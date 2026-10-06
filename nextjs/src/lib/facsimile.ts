@@ -4,9 +4,10 @@
  * 地址：<base>/iiif/<bookId>/<册>/manifest.json；canvas 的 body 是 Choice，第一项是本站图（阅读档 1200 宽，
  * 来自 Commons／IA 的在后面）；原图宽度那一档（放大档，透视矫正要用）地址同形，只把 `/full/<宽>,/` 换成原图宽。
  *
- * 页码对照：对读数据（pages.json 的 `canvas.seq`）给出每页对应的 IIIF 页序（`<页序>`，leaf 号零填 4 位，合扫拆页带 a–d
- * 后缀），书影按 `seq` 对位。卷二没有拆页，页号＝leaf 号（2026-10-05 抽 3、100、188 三叶对图核过）；卷三 105–108 页是同一叶
- * 拆成的 0105a–d。第 1 叶是书脊签，对读数据从第 3 叶起。
+ * 页码对照：对读数据（cord.json 每页的 `canvas`，`id` 形如 `…/iiif/<书>/canvas/<册2位>/<页序>`）给出每页对应的 IIIF 页序 `seq`
+ * （leaf 号零填 4 位，合扫拆页带 a–d 后缀）；册号取自 canvas id（见 book-index-ui 的 `iiifVolumeOf`），阅读器按 `seq` 到本册
+ * manifest 的 canvas 里对位取阅读档／原图档。格位 key 的「页」、cord 的 `page`、canvas 的 seq 是同一个数（扫描顺序号，从 1 起）；
+ * 合扫拆页已拆成独立页，卷三 105–108 页各对应 0105a–d。第 1 叶是书脊签，对读数据从第 3 叶起。
  *
  * TODO（本卡不做）：图挂了换 Commons／IA 的前端回退链（canvas body Choice 的后几项）。
  */

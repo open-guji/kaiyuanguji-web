@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, useConvert, adaptGujiPages, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, useConvert, adaptCharCord, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -142,14 +142,14 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // 对读（图文对读）：章条目带 `pages`（页范围）与 `lines_file` 就取同名的 `NNN.pages.json`（guji-pages/0.1，逐字坐标）、
-    // `NNN.punct.json`、`NNN.entity.json`；没有就是普通阅读，不发请求。
+    // 对读（图文对读）：章条目声明了 `char_file`＋`cord_file` 就按声明取 char／cord（再加 `punct_file`、`entity_file`），
+    // 两边按格位对上；没有 `cord_file` 就是普通阅读，不发请求（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey);
         if (!files) return null;
-        const pages = adaptGujiPages(files.pages);
+        const pages = adaptCharCord(files.char, files.cord);
         if (pages.length === 0) return null;
-        const vol = iiifVolumeOf(files.pages);
+        const vol = iiifVolumeOf(files.cord);
         // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
         let base: Record<string, any> = { page_id: '', title: '', image_size: [0, 0], total_warped_w: 0, columns: [] };
         if (id === '96mid1ogzk' && vol?.vol === '02' && pages.some(p => p.page === 10)) {
@@ -172,10 +172,10 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
         return (await loadDuiduFiles(id, ctx, chapterKey))?.entity ?? null;
     }, [id]);
 
-    // 书影来自 COS 的 IIIF manifest：册号从 pages.json 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
+    // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
     const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey);
-        const vol = files ? iiifVolumeOf(files.pages) : null;
+        const vol = files ? iiifVolumeOf(files.cord) : null;
         return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
     }, [id]);
 

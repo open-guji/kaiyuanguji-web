@@ -1,13 +1,15 @@
 /**
- * 图文对读的数据文件：`items/<id>/<版本 key>/` 下与章同名的 `NNN.pages.json`（guji-pages/0.1，逐字坐标）、
- * `NNN.punct.json`、`NNN.entity.json`（overview#389）。
- *
- * 判断「这章有没有对读」：章在 `index.json` 里的条目带 `pages`（页范围）与 `lines_file`，或直接写了 `pages_file`；
- * 都没有就不发请求（普通阅读的章不会多出三个 404）。待文本总管把声明字段定进规范后，只改这里。
+ * 图文对读的数据文件（overview#425）：章在 `items/<id>/<版本 key>/index.json` 里的条目用 `*_file` 字段声明有哪些层，
+ * 网站只按声明取，不写死书 id、不猜文件名：
+ *   - `char_file`（必有）：每格的字（guji-char，文本真源）；
+ *   - `cord_file`：每格的像素框（guji-cord）——**有它才有对读**，没有就是普通阅读，不发请求；
+ *   - `punct_file`：标点；`entity_file`：专名实体。
+ * `pages_file`、`has_warp` 随 pages.json 作废。四个文件在同一章里按格位 key（`页:列:格[子列]`）对上。
  */
 
 export interface DuiduFiles {
-    pages: unknown;
+    char: unknown;
+    cord: unknown;
     punct: unknown;
     entity: unknown;
 }
@@ -23,30 +25,39 @@ async function getJson(url: string): Promise<unknown> {
     }
 }
 
-/** 取本章的对读数据；本章不是对读章、或 pages.json 取不到返回 null（不缓存失败） */
+const fileField = (ch: Record<string, unknown>, k: string): string | null => {
+    const v = ch[k];
+    // 只认章目录所在目录下的文件名，不让条目写出路径把请求带到别处
+    return typeof v === 'string' && /^[\w.-]+$/.test(v) ? v : null;
+};
+
+/** 取本章的对读数据；本章没有声明 `char_file`＋`cord_file`、或这两个取不到返回 null（不缓存失败） */
 export function loadDuiduFiles(
     id: string,
     ctx: { versionKey: string | null; chapter: Record<string, unknown> | null } | undefined,
-    chapterKey: string,
+    _chapterKey: string,
 ): Promise<DuiduFiles | null> {
     const ch = ctx?.chapter;
     const key = ctx?.versionKey;
-    if (!ch || !key || !/^\d{3}$/.test(chapterKey)) return Promise.resolve(null);
-    const pagesFile = typeof ch.pages_file === 'string'
-        ? ch.pages_file
-        : ch.pages && ch.lines_file ? `${chapterKey}.pages.json` : null;
-    if (!pagesFile) return Promise.resolve(null);
+    if (!ch || !key) return Promise.resolve(null);
+    const charFile = fileField(ch, 'char_file');
+    const cordFile = fileField(ch, 'cord_file');
+    if (!charFile || !cordFile) return Promise.resolve(null);
+    const punctFile = fileField(ch, 'punct_file');
+    const entityFile = fileField(ch, 'entity_file');
     const base = `/data/items/${id}/${key}`;
-    const cacheKey = `${base}/${pagesFile}`;
+    const cacheKey = `${base}/${charFile}|${cordFile}|${punctFile ?? ''}|${entityFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
-            const pages = await getJson(`${base}/${pagesFile}`);
-            if (!pages) return null;
-            const punctFile = typeof ch.punct_file === 'string' ? ch.punct_file : `${chapterKey}.punct.json`;
-            const entityFile = typeof ch.entity_file === 'string' ? ch.entity_file : `${chapterKey}.entity.json`;
-            const [punct, entity] = await Promise.all([getJson(`${base}/${punctFile}`), getJson(`${base}/${entityFile}`)]);
-            return { pages, punct, entity };
+            const [char, cord, punct, entity] = await Promise.all([
+                getJson(`${base}/${charFile}`),
+                getJson(`${base}/${cordFile}`),
+                punctFile ? getJson(`${base}/${punctFile}`) : null,
+                entityFile ? getJson(`${base}/${entityFile}`) : null,
+            ]);
+            if (!char || !cord) return null;
+            return { char, cord, punct, entity };
         })();
         cache.set(cacheKey, p);
         p.then(v => { if (!v) cache.delete(cacheKey); });
