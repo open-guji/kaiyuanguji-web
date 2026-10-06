@@ -1,7 +1,7 @@
 /**
  * 图文对读 /read/96mid1ogzk/original/002（overview#389 A7）：点字高亮书影、滚动翻页、悬停专名出摘要卡并跳条目。
  *
- * 只在全栈站跑；前端须 >= 对读版 book-index-ui（发版后把下面 MIN_UI 改成实际版本号）。
+ * 只在全栈站跑；前端须 >= 对读版 book-index-ui。
  * 数据（新结构文本、002.pages.json、002.entity.json）没上线时整组跳过。
  * 书影来自 data.kaiyuanguji.com 的 IIIF（overview#388），页序＝IA leaf 号。
  */
