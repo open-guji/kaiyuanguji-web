@@ -1,0 +1,71 @@
+name: Sync fonts to COS
+
+# 花园明朝扩展区字兜底字体（overview#421）：从上游原始 ttf 生成 woff2，传到 COS 的 fonts/hanamin/。
+# 只手动触发：workflow_dispatch 的文件必须先在 main 上才能被调用，调用时用 ref 指定要生成的那个提交。
+# 先 dry_run（默认）看清单，再把 dry_run 设成 false 真传。字体与授权文件都按内容寻址／长缓存，重复传是幂等的。
+# 生成与上传的细节见 ops/fonts/README.md；密钥与 deploy.yml 里 COS 同步那一步用的是同一组 secrets，不带 COS_PATH_PREFIX
+# （测试站、正式站共用同一份字体）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'dry_run：true 只核对并列出会传什么，false 才真传'
+        type: choice
+        options: ['true', 'false']
+        default: 'true'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-fonts
+  cancel-in-progress: false
+
+jobs:
+  sync-fonts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DRY_RUN_INPUT: ${{ inputs.dry_run }}
+    steps:
+      # 默认就是调用时选的 ref（workflow_dispatch 的 Use workflow from）
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install fonttools and brotli
+        run: python3 -m pip install fonttools brotli
+
+      # sync-fonts-to-cos.mjs 要 cos-nodejs-sdk-v5（在 nextjs 的 lockfile 里）
+      - name: Install dependencies
+        working-directory: nextjs
+        run: npm ci
+
+      - name: Build woff2 subsets from the upstream font
+        run: python3 ops/fonts/build-hanamin.py
+
+      - name: Sync to COS (fonts/hanamin/)
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+        run: |
+          cd nextjs
+          if [ "$DRY_RUN_INPUT" != "false" ]; then
+            echo "dry run：只核对 manifest、列清单，不联网"
+            DRY_RUN=1 node scripts/sync-fonts-to-cos.mjs
+          else
+            if [ -z "$COS_SECRET_ID" ] || [ -z "$COS_SECRET_KEY" ] || [ -z "$COS_BUCKET" ]; then
+              echo "❌ 缺 COS secrets（COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET）"
+              exit 1
+            fi
+            node scripts/sync-fonts-to-cos.mjs
+          fi
