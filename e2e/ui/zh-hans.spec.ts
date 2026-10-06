@@ -9,7 +9,7 @@
  * 字表与检测函数取自 fixtures/traditional-check.ts（book-index-ui 导出的副本：线上验收只装 e2e 依赖，引不到组件库）。
  * 只发 GET。
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { findTraditionalChars, TRADITIONAL_ALLOWLIST } from '../fixtures/traditional-check';

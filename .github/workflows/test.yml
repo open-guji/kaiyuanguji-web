@@ -181,6 +181,11 @@ jobs:
         # 排除两条只有部署产物才有的：sitemap 分片（deploy 里 gen-sitemaps 生成）、
         # /api/feedback（EdgeOne 边缘函数，next start 没有）。它们仍由 deploy 的 verify 守着。
         run: npx playwright test --project=contract contract/fullstack.spec.ts --grep-invert "新架构：sitemap|/api/feedback"
+      # e2e/fixtures/test.ts 的网络重试自测（overview#345）：打本机假服务，不碰线上
+      - name: e2e net-retry selftest
+        if: ${{ !cancelled() }}
+        working-directory: e2e
+        run: npx playwright test --project=selftest
       - name: e2e ui (reader.spec, feedback.spec, read-home.spec, a11y.spec)
         if: ${{ !cancelled() }}
         working-directory: e2e

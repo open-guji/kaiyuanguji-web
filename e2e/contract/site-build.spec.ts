@@ -11,7 +11,7 @@
  * 坏掉就会变成一批用例集体静默跳过、无人察觉。这里红了，才知道那些跳过
  * 是机制坏了而不是版本没到。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TARGET } from '../fixtures/anchors';

@@ -5,7 +5,7 @@
  * 地址约定见 nextjs/src/lib/reader-route.ts：/read/<id>[/<key>][/<章>]，主版本不写 default。
  * 只认新结构数据（overview#307），文本迁移落地前整组自动跳过。
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions';

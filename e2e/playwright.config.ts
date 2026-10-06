@@ -45,6 +45,15 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
         /**
+         * 自测：fixtures/test.ts 的网络重试，打本机起的假服务，不碰线上（npm run test:selftest）。
+         * 不在 verify.yml 里跑，由 PR 的 test.yml 跑。
+         */
+        {
+            name: 'selftest',
+            testDir: './selftest',
+            use: { ...devices['Desktop Chrome'] },
+        },
+        /**
          * 可降级依赖：挂了也不该拦住发版。
          *
          * 目前只有搜索 L1 (Meilisearch)——它跑在一台 2GB 无 swap 的小机器上，

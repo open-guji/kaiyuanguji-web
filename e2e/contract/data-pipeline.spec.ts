@@ -4,7 +4,7 @@
  * 这是部署后的第一道门禁：数据到底有没有正确打包上线。
  * 覆盖 2026-09-02～03 那一连串故障的数据侧成因。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { ANCHORS, COUNT_RANGES, DATA_BASE } from '../fixtures/anchors';
 import { fetchLatest, dataUrl, versionKey } from '../fixtures/version';
 

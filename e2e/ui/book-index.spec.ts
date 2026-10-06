@@ -4,7 +4,7 @@
  * 除了"页面能打开"，重点验证数据真的渲染出来了——本次多个 bug 的共同特征
  * 就是：HTTP 全 200、无 pageerror、字节数正常，但内容是空的或错的。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { ANCHORS, BOOK_INDEX_TABS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { requireMetaHomeData } from '../fixtures/preconditions';
 

@@ -7,7 +7,7 @@
  *
  * 只发 GET。静态站没有 /read，整组跳过；分区数据（read/sections.json）上线前，分区用例跳过。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireReadSections } from '../fixtures/preconditions';

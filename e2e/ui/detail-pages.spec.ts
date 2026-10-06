@@ -8,7 +8,7 @@
  *   · 书目收录展开后能看到提要正文
  *   · 丛编子目表直接来自 contained_works，不对 books[] 逐条发请求
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { ANCHORS, DATA_BASE, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchors';
 import {
     isEmptyEntity, isEmptyWork, pickEmptySample, requireUiVersion,

@@ -7,7 +7,7 @@
  *
  * 站点还没上线 N7（顶栏没有「反馈」按钮）时整组跳过，上线后自动生效。
  */
-import { test, expect, type Page, type BrowserContext } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData } from '../fixtures/preconditions';
