@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, useConvert, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, useConvert, adaptGujiPages, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -10,6 +10,7 @@ import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { loadFacsimile } from '@/lib/facsimile';
+import { loadDuiduFiles } from '@/lib/duidu-data';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
@@ -141,46 +142,41 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // 对读（图文对读）目前只有《四库全书总目》卷二一册的数据；等 index.json 带上对读标记后改成按数据判断
-    const resolveWarpData = useCallback(async (chapterKey: string) => {
-        if (id !== '96mid1ogzk' || !(chapterKey === '002' || !chapterKey)) return null;
-        try {
-            // 精细矫正的第 10 页（含 WebGL 透视 strip 与双叶版心拼接）
-            const res10 = await fetch('/fixtures/vol02_p10.json');
-            const p10Data = res10.ok ? await res10.json() : null;
-            // 全册各页的列／字格与标点数据
-            const resPages = await fetch('/data/items/96mid1ogzk/original/002.pages.json');
-            const fullPages = resPages.ok ? await resPages.json() : null;
-            if (!p10Data) return null;
-            // 对偶页（第 9 叶）与第 10 叶同样改读 COS 原图档
-            const mate = await loadFacsimile(id, '02');
-            const mateImg = mate?.find(m => m.pageNo === 9);
-            const patched = mateImg?.hiresUrl && p10Data.banxin
-                ? { ...p10Data, banxin: { ...p10Data.banxin, mate_image_url: mateImg.hiresUrl } }
-                : p10Data;
-            return fullPages
-                ? { ...patched, pages: fullPages.pages, punctuations: fullPages.punctuations }
-                : patched;
-        } catch {
-            return null;
+    // 对读（图文对读）：章条目带 `pages`（页范围）与 `lines_file` 就取同名的 `NNN.pages.json`（guji-pages/0.1，逐字坐标）、
+    // `NNN.punct.json`、`NNN.entity.json`；没有就是普通阅读，不发请求。
+    const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
+        const files = await loadDuiduFiles(id, ctx, chapterKey);
+        if (!files) return null;
+        const pages = adaptGujiPages(files.pages);
+        if (pages.length === 0) return null;
+        const vol = iiifVolumeOf(files.pages);
+        // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
+        let base: Record<string, any> = { page_id: '', title: '', image_size: [0, 0], total_warped_w: 0, columns: [] };
+        if (id === '96mid1ogzk' && vol?.vol === '02' && pages.some(p => p.page === 10)) {
+            try {
+                const res10 = await fetch('/fixtures/vol02_p10.json');
+                if (res10.ok) {
+                    base = await res10.json();
+                    // 对偶页（第 9 叶）与第 10 叶同样改读 COS 原图档
+                    const mate = await loadFacsimile(vol.bookId, vol.vol);
+                    const mateImg = mate?.find(m => m.pageNo === 9);
+                    if (mateImg?.hiresUrl && base.banxin) base = { ...base, banxin: { ...base.banxin, mate_image_url: mateImg.hiresUrl } };
+                }
+            } catch { /* 样张取不到就全部平铺 */ }
         }
+        return { ...base, pages, punctuations: adaptPunctJson(files.punct) } as any;
     }, [id]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
-    const resolveEntities = useCallback(async (chapterKey: string) => {
-        if (id !== '96mid1ogzk' || !/^\d{3}$/.test(chapterKey)) return null;
-        try {
-            const res = await fetch(`/data/items/${id}/original/${chapterKey}.entity.json`);
-            return res.ok ? await res.json() : null;
-        } catch {
-            return null;
-        }
+    const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
+        return (await loadDuiduFiles(id, ctx, chapterKey))?.entity ?? null;
     }, [id]);
 
-    // 书影来自 COS 的 IIIF manifest（页码对照见 lib/facsimile.ts）；章号 002 ＝ 第 02 册
-    const resolveImages = useCallback(async (chapterKey: string) => {
-        if (id !== '96mid1ogzk' || !/^\d{3}$/.test(chapterKey)) return null;
-        return loadFacsimile(id, chapterKey.slice(1));
+    // 书影来自 COS 的 IIIF manifest：册号从 pages.json 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
+    const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
+        const files = await loadDuiduFiles(id, ctx, chapterKey);
+        const vol = files ? iiifVolumeOf(files.pages) : null;
+        return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
     }, [id]);
 
     return (
