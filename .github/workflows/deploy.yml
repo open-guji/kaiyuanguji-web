@@ -605,6 +605,32 @@ jobs:
       #   h1 条目平时只传增量、很轻，h1 文本在数据大换血（如文本迁移）时才重。三路加起来仍是 80：
       #   current/ 36＋h1 条目 12＋h1 文本 32，同样的全量上传三路都在 15～17 分钟内结束（原来文本那一路拖 66 分钟）。
       # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
+      # overview#410：sync-to-cos 增量同步靠 nextjs/.next/.sync-state.json（上次成功同步时 current/ 的远端状态：相对路径 → md5）。
+      # 它不在 checkout 里，CI 每次都是全新环境，于是每次真同步都要先把 current/ 整个 LIST 一遍（约 330～700 次请求）。
+      # 现在存进 actions/cache：键含目标站（测试站写 staging/ 前缀、正式站写根，两份状态不能混）和桶名的哈希（换桶自动作废），
+      # 取最近一份；同步成功后存一份新的。缓存拿不到或取到的状态不可信，都退回 LIST 重建，行为与原来一样。
+      # 要强制作废：把下面三处键里的 v1 改成 v2，或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
+      - name: COS sync state — cache key (overview#410)
+        id: cos_state_key
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+        run: echo "bucket=$(printf '%s' "$COS_BUCKET" | sha256sum | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
+      - name: COS sync state — restore (overview#410)
+        id: cos_state_restore
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: nextjs/.next/.sync-state.json
+          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}
+          restore-keys: |
+            cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
+
       - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
         id: cos_sync
         if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
@@ -644,6 +670,15 @@ jobs:
           if [ "$R_H1" -ne 0 ];  then echo "::warning::h1 条目同步失败（exit $R_H1），只警告，不拦发布（A3 第一期，前端默认不读 h1/）"; ALL_OK=false; fi
           if [ "$R_TXT" -ne 0 ]; then echo "::warning::h1 文本同步失败（exit $R_TXT），只警告，不拦发布（A3b 第二期，前端默认不读 h1/）"; ALL_OK=false; fi
           echo "all_ok=$ALL_OK" >> "$GITHUB_OUTPUT"
+
+      # 同步成功（current/ 那一路成功就会写新的 state）后把它存回缓存；失败或跳过时不存，免得把半截状态传给下一次
+      - name: COS sync state — save (overview#410)
+        if: ${{ steps.cos_sync.outcome == 'success' && steps.cos_state_key.outputs.bucket != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: nextjs/.next/.sync-state.json
+          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}
 
       # 三路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步
       - name: Mark COS sync complete
