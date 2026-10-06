@@ -95,6 +95,63 @@ class SikuIiif(unittest.TestCase):
                 m.upload_tree(root, workers=2)
         self.assertEqual(order[-2:], ['iiif/96mid1ogzk/03/manifest.json', 'iiif/96mid1ogzk/manifest.json'])
 
+    def _tree(self, root, keys):
+        for key in keys:
+            os.makedirs(os.path.join(root, os.path.dirname(key)), exist_ok=True)
+            with open(os.path.join(root, key), 'wb') as f:
+                f.write(b'x')
+
+    def test_upload_skips_images_already_in_bucket(self):
+        # overview#410：桶里 ETag 与本地 MD5 一致的图和 info.json 不再重传；manifest、Collection 每次都传
+        import hashlib
+        import tempfile
+        from unittest import mock
+        keys = ['iiif/96mid1ogzk/manifest.json', 'iiif/96mid1ogzk/03/manifest.json',
+                'iiif/96mid1ogzk/03/0001/info.json', 'iiif/96mid1ogzk/03/0001/full/300,/0/default.webp',
+                'iiif/96mid1ogzk/03/0002/full/300,/0/default.webp']
+        same = hashlib.md5(b'x').hexdigest()
+        with tempfile.TemporaryDirectory() as root:
+            self._tree(root, keys)
+            fake = mock.Mock()
+            fake.etag.side_effect = lambda key: {keys[3]: same, keys[2]: same, keys[4]: 'different'}.get(key)
+            with mock.patch.object(m, 'Cos', return_value=fake):
+                r = m.upload_tree(root, workers=2)
+                put_keys = [c.args[0] for c in fake.put.call_args_list]
+                self.assertEqual(sorted(put_keys), sorted([keys[0], keys[1], keys[4]]))
+                self.assertEqual((r['uploaded'], r['skipped']), (3, 2))
+                self.assertEqual(r['uploaded_keys'], sorted([keys[0], keys[1], keys[4]]))
+                fake.reset_mock()
+                r = m.upload_tree(root, workers=2, force=True)
+                self.assertEqual(fake.put.call_count, 5)
+                fake.etag.assert_not_called()
+                self.assertEqual(r['skipped'], 0)
+
+    def test_pick_verify_files(self):
+        files = [(f'/t/{i}', f'iiif/96mid1ogzk/03/{i:04d}/full/300,/0/default.webp') for i in range(500)]
+        files += [('/t/m', 'iiif/96mid1ogzk/03/manifest.json'), ('/t/c', 'iiif/96mid1ogzk/manifest.json')]
+        self.assertEqual(len(m.pick_verify_files(files, None)), 502)  # 没做上传或 --force：全核
+        up = [files[3][1], files[7][1]]
+        got = m.pick_verify_files(files, up)
+        keys = {k for _, k in got}
+        self.assertTrue({files[3][1], files[7][1], 'iiif/96mid1ogzk/03/manifest.json',
+                         'iiif/96mid1ogzk/manifest.json'} <= keys)
+        self.assertEqual(len(got), 4 + max(20, int(498 * m.SKIP_SAMPLE_RATE)))
+        self.assertEqual(len(keys), len(got))  # 没有重复
+
+    def test_cos_etag(self):
+        import io as _io
+        import urllib.error
+        from unittest import mock
+        env = {'COS_SECRET_ID': 'id', 'COS_SECRET_KEY': 'k', 'COS_BUCKET': 'b-1', 'COS_REGION': 'ap-shanghai'}
+        ok = mock.MagicMock()
+        ok.__enter__.return_value.headers = {'ETag': '"ABCDEF0123"'}
+        nf = urllib.error.HTTPError('u', 404, 'nf', {}, _io.BytesIO(b''))
+        with mock.patch.dict(os.environ, env), mock.patch.object(m.time, 'sleep'):
+            with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[ok]):
+                self.assertEqual(m.Cos().etag('iiif/x.webp'), 'abcdef0123')
+            with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[nf]):
+                self.assertIsNone(m.Cos().etag('iiif/x.webp'))
+
     def test_commons_thumb_strips_tracking_query(self):
         cf_ = {'url': 'https://upload.wikimedia.org/wikipedia/commons/8/86/X.djvu'
                       '?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original'}
