@@ -37,4 +37,3 @@ brain/
 # 部署时克隆的数据仓（deploy.yml / release-web 手动流程会在仓库根克隆）
 /book-index/
 /book-index-draft/
-ops/fonts/.cache/

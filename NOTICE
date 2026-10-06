@@ -2,9 +2,10 @@
 
 一、花园明朝（Hanazono Mincho：HanaMinA、HanaMinB）——扩展区生僻字兜底字体
   - 版权：Copyright 2008–2017 GlyphWiki Project（上游：https://glyphwiki.org/hanazono/，版本 2017-09-04）。
-  - 授权：Hanazono Font License 与 SIL Open Font License 1.1 双授权，我们按 SIL OFL 1.1 再分发。
-    保留字体名：Hanazono Font、HanaMinA、HanaMinB、花園フォント、花園明朝A、花園明朝B。
-  - 用法：网站把它切成 woff2 子集，放在 https://data.kaiyuanguji.com/fonts/hanamin/ ，只在页面里出现了系统字体没有的
-    扩展区字（扩展 A、B–G、兼容表意文字）时才由浏览器下载（CSS unicode-range，见 nextjs/src/app/globals.css 的 HANAMIN 块）。
-    子集由 ops/fonts/build-hanamin.py 从上游原始 ttf 生成（压缩包 sha256 在脚本里锁死），字体里的版权与授权记录原样保留。
-  - 授权全文：ops/fonts/HanaMin-LICENSE.txt；随字体放在 COS 上的 fonts/hanamin/LICENSE.txt、THANKS.txt。
+  - 授权：Hanazono Font License 与 SIL Open Font License 1.1 双授权（保留字体名：Hanazono Font、HanaMinA、HanaMinB、
+    花園フォント、花園明朝A、花園明朝B）。全文见上游压缩包里的 LICENSE.txt（https://glyphwiki.org/hanazono/hanazono-20170904.zip）。
+  - 提供方式：我们不托管、不修改这套字体。网站的 CSS（nextjs/src/app/globals.css 的 HANAMIN 块）直接引用公共 CDN 上 npm 包
+    hanamin@0.0.5（https://github.com/VdustR/hanamin，ViPro 把花园明朝按 Unicode 区块切成 woff2 分片，包本身 MIT 授权）的分片：
+    https://cdn.jsdelivr.net/npm/hanamin@0.0.5/ ，备源 https://unpkg.com/hanamin@0.0.5/ 。
+  - 用法：只声明扩展 A、B–F、兼容表意文字（及补充）的分片，带 unicode-range；只在页面里出现了系统字体没有的扩展区字时，
+    读者的浏览器才从 CDN 下载对应的那几片。
