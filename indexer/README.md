@@ -106,7 +106,7 @@ import sys,json; d=json.load(sys.stdin); print('lastUpdate', d['lastUpdate'])
 ```
 
 期望：`lastUpdate` 是刚才；2026-10-02 的实数是 `works` 95,055、`books` 20,899、`entities` 30,994、`collections` 84、**`juans` 1,812**。
-**五个都要看，不能只看脚本报 success**：swap 前的自检对 juans 不查条数，juans 建成 0 条也会照样换上去。
+**五个都要看，不能只看脚本报 success**：swap 前的自检对 juans 不查命中数。10-02 起 swap 前另有文档数下限闸（见下），新建的比线上少一半以上不换；但这条闸只防「大幅变少」，仍要核对各索引数量。
 
 ## 定时
 
@@ -123,6 +123,7 @@ workflow 做三件事：三仓 `git pull`（gh-proxy，失败重试 5 次）→ 
 - **2026-09-27（A4）起是 swap 式重建**：新数据先建到 `<idx>_tmp`，自检（前端形态查询）通过才
   `POST /swap-indexes` 原子换名，线上读到的索引全程有数据，不再有「DELETE 到重建完」之间的空窗。
   自检不通过就删掉 tmp、退出非 0，线上 `<idx>` 原样不动——不会出现"半成品覆盖旧索引"。
+  自检之外还有**文档数下限闸**（`lib/doc-floor.mjs`，overview#122）：线上原来有文档、新建的少了一半以上，同样放弃 swap（10-02 juans 两晚建出 0 条换上去的事故）。线上或新建索引的条数读不到时同样不换。`--limit` 的试跑结果条数少，也会被挡住；确实要大幅缩减（或确实要把试跑结果换上线）时带 `--allow-shrink`（或 `FORCE_SHRINK=1`）。
   代价：重建期间盘上短暂同时存在新旧两份数据（`<idx>` + `<idx>_tmp`），峰值盘占用比重建前
   高出约一个索引的量（现在整库约 2 GB，盘 60 GB，余量充足）。内存上，重建时 Meili 自己真正吃掉的约 1–1.5 GB，
   机器是 3.6 GB 加 4 GB swap，够用；2026-10-02 之前 swap 只有 2 GB，重建时曾顶满。
