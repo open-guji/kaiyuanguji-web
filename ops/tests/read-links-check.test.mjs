@@ -141,7 +141,9 @@ test('新结构：缺首章 json、缺非主版本页面、目录 chapters 为�
 
 test('新结构：manifest 带 internal、versions[0] 不是 default、key 不合法，都报', async () => {
     const files = newStructureFiles();
-    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'wikisource', kind: 'transcription' }, { key: 'shidian', kind: 'transcription', visibility: 'internal' }, { key: 'manifest' }] };
+    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'wikisource', kind: 'transcription' }, { key: 'default', kind: 'collated' }, { key: 'shidian', kind: 'transcription', visibility: 'internal' }, { key: 'manifest' }] };
+    files[`items/${WORK}/default/index.json`] = { chapters: [{ file: '001' }] };
+    files[`items/${WORK}/default/001.txt`] = 'x';
     files[`items/${WORK}/shidian/index.json`] = { chapters: [{ file: '001' }] };
     files[`items/${WORK}/shidian/001.txt`] = 'x';
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, newPages()), seed: 1 });
@@ -261,4 +263,14 @@ test('percentile', () => {
     assert.equal(percentile([5, 1, 3, 2, 4], 50), 3);
     assert.equal(percentile([5, 1, 3, 2, 4], 100), 5);
     assert.equal(percentile([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 90), 9);
+});
+
+test('新结构：只有原貌 original、没有 default 的书不报 versions[0]', async () => {
+    const files = newStructureFiles();
+    files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'original', kind: 'transcription' }] };
+    files[`items/${WORK}/original/index.json`] = { chapters: [{ file: '001' }] };
+    files[`items/${WORK}/original/001.txt`] = 'x';
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, { [`/read/${WORK}/original`]: 'ok' }), seed: 1 });
+    const details = r.failures.map((f) => f.detail).join('\n');
+    assert.doesNotMatch(details, /versions\[0\]/);
 });

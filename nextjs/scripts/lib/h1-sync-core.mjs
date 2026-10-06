@@ -148,7 +148,12 @@ export function defaultContentTypeFor(relative) {
  * （老不老交给 planOrphans）。不联网、不改任何文件。
  */
 export function planBatches(config, files, stateMap, localMd5) {
-    const changed = (rel) => stateMap.get(rel) !== localMd5.get(rel);
+    // mp:<字节数>：分块上传的对象（ETag 不是 MD5）。h1 的文件名里带内容哈希，同名就是同内容，不算变化
+    const changed = (rel) => {
+        const s = stateMap.get(rel);
+        if (typeof s === 'string' && s.startsWith('mp:')) return false;
+        return s !== localMd5.get(rel);
+    };
     const batchOf = (rel) => config.batches.find(b => b.match(rel))?.key ?? null;
 
     const uploadsByBatch = config.batches.map(b => ({
@@ -231,7 +236,9 @@ export function createCosOps({ cos, bucket, region }) {
                     (err, data) => err ? rejectP(err) : resolveP(data));
             });
             for (const obj of res.Contents || []) {
-                map.set(obj.Key.slice(prefix.length), stripQuotes(obj.ETag));
+                const etag = stripQuotes(obj.ETag);
+                // 分块上传的对象 ETag 形如 "<hash>-<块数>"，不是文件 MD5，记成 mp:<字节数>
+                map.set(obj.Key.slice(prefix.length), etag.includes('-') ? `mp:${obj.Size}` : etag);
             }
             if (res.IsTruncated === 'true' || res.IsTruncated === true) {
                 marker = res.NextMarker || res.Contents[res.Contents.length - 1].Key;
@@ -242,16 +249,35 @@ export function createCosOps({ cos, bucket, region }) {
 
     async function uploadOne(file, key, cacheControl, contentType, attempt = 1) {
         try {
+            const body = readFileSync(file.full);
+            // 超过 1 MB 走分块（每块 1 MB，各自签名、各自重试），理由同 sync-to-cos.mjs 的 SMALL_FILE_THRESHOLD
+            if (body.length > 1024 * 1024) {
+                return await new Promise((resolveP, rejectP) => {
+                    cos.uploadFile({
+                        Bucket: bucket, Region: region, Key: key,
+                        FilePath: file.full,
+                        ContentType: contentType,
+                        CacheControl: cacheControl,
+                        SliceSize: 1024 * 1024,
+                        ChunkSize: 1024 * 1024,
+                        ChunkRetryTimes: 4,
+                        onProgress: () => {},
+                    }, (err) => err ? rejectP(err) : resolveP());
+                });
+            }
             return await new Promise((resolveP, rejectP) => {
                 cos.putObject({
                     Bucket: bucket, Region: region, Key: key,
-                    Body: readFileSync(file.full),
+                    Body: body,
                     ContentType: contentType,
                     CacheControl: cacheControl,
                 }, (err) => err ? rejectP(err) : resolveP());
             });
         } catch (e) {
-            const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(e.message || '');
+            // 签名类错误也重试（重试会重新签名），同 sync-to-cos.mjs：COS 迁上海后，美国 runner 传大文件偶发
+            // SignatureDoesNotMatch「The Signature you specified is invalid」。10-06 测试站部署时，h1 文本里 vol03 的两个大文件就这样失败
+            const transient = /ECONNRESET|EPIPE|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
+                .test(`${e.message || ''} ${e.code || ''}`);
             if (transient && attempt < 4) {
                 await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
                 return uploadOne(file, key, cacheControl, contentType, attempt + 1);

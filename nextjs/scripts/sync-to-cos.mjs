@@ -250,7 +250,9 @@ const LATEST_CACHE = 'public, max-age=30, must-revalidate';
 
 // 小文件阈值：低于此走 putObject（轻量单 PUT，零事件循环开销）；
 // 高于此走 uploadFile（自动 multipart）。
-const SMALL_FILE_THRESHOLD = 5 * 1024 * 1024;  // 5 MB
+// 10-06：COS 迁上海后，美国 runner 单 PUT 上 MB 级文件会被对端断开（EPIPE 让整个进程崩）或报签名无效，
+// 所以超过 1 MB 就走分块（每块 1 MB，各自签名、各自重试）。
+const SMALL_FILE_THRESHOLD = 1 * 1024 * 1024;  // 1 MB
 
 async function uploadOne({ full, relative, size }, attempt = 1) {
     const key = keyFor(relative);
@@ -276,14 +278,16 @@ async function uploadOne({ full, relative, size }, attempt = 1) {
                 FilePath: full,
                 ContentType: contentTypeFor(relative),
                 CacheControl: cacheControl,
-                SliceSize: 1024 * 1024 * 10,
+                SliceSize: 1024 * 1024,      // 超过 1 MB 就分块
+                ChunkSize: 1024 * 1024,      // 每块 1 MB
+                ChunkRetryTimes: 4,
                 onProgress: () => {},
             }, (err) => err ? rejectP(err) : resolveP({ key, size }));
         });
     } catch (e) {
         // 签名类错误也重试（重试会重新签名）：COS 迁上海后，美国 runner 传大文件（multipart）要几分钟，
         // 偶发 SignatureDoesNotMatch「The Signature you specified is invalid」／签名过期，10-05 测试站部署因此整步失败
-        const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
+        const transient = /ECONNRESET|EPIPE|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
             .test(`${e.message || ''} ${e.code || ''}`);
         if (transient && attempt < 4) {
             await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
@@ -349,7 +353,9 @@ async function listPrefixEtags(prefix) {
         });
         for (const obj of res.Contents || []) {
             const rel = obj.Key.slice(prefix.length);
-            map.set(rel, stripQuotes(obj.ETag));
+            const etag = stripQuotes(obj.ETag);
+            // 分块上传的对象 ETag 形如 "<hash>-<块数>"，不是文件 MD5：记成 mp:<字节数>，比对时按大小判断，免得每次都重传
+            map.set(rel, etag.includes('-') ? `mp:${obj.Size}` : etag);
         }
         pages++;
         if (res.IsTruncated === 'true' || res.IsTruncated === true) {
@@ -549,7 +555,7 @@ async function main() {
     let sharedSkipped = 0;
     for (const f of sharedFiles) {
         const stateMd5 = stateMap.get(f.relative);
-        if (stateMd5 === localMd5.get(f.relative)) {
+        if (stateMd5 === localMd5.get(f.relative) || (stateMd5 && stateMd5 === `mp:${f.size}`)) {
             sharedSkipped++;
         } else {
             sharedToUpload.push(f);
