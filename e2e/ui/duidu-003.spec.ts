@@ -53,6 +53,18 @@ async function settled(page: Page) {
     }, { timeout: 30_000, intervals: [100] }).toBe(true);
 }
 
+/**
+ * 书影真的画上了。书影画布是 WebGL，页面里读不了像素，只能截图：整幅一个颜色（图没加载成功、还是空画布）
+ * 的 PNG 压缩后只有几百字节，一页古籍书影有几万字节以上。
+ */
+const PAINTED_MIN_BYTES = 8_000;
+async function expectFacsimilePainted(page: Page) {
+    await expect.poll(async () => (await page.locator('.bim-zp canvas').first().screenshot()).length, {
+        timeout: 15_000,
+        message: '书影画布上没有画出图像（截图几乎是纯色）',
+    }).toBeGreaterThan(PAINTED_MIN_BYTES);
+}
+
 test.describe('图文对读（vol03）', () => {
     test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有阅读页路由`);
     test.beforeEach(async ({ request }) => {
@@ -127,6 +139,7 @@ test.describe('图文对读（vol03）', () => {
         await expect(prev).toBeDisabled();
         // 只显示书影：有画面、没有字框；正文里没有这两页，也没有因为翻页而滚动
         await expect(page.locator('.bim-zp canvas')).toBeVisible();
+        await expectFacsimilePainted(page);
         await expect(page.locator('.bim-zp svg rect[data-selected]')).toHaveCount(0);
         await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
         await expect(page.locator('[data-page-section="1"], [data-page-section="2"]')).toHaveCount(0);
@@ -168,6 +181,7 @@ test.describe('图文对读（vol03）', () => {
         await page.getByTestId('facsimile-next').click();
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', '58');
         await expect(page.locator('.bim-zp canvas')).toBeVisible();
+        await expectFacsimilePainted(page);
         await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
         await expect(page.locator('[data-page-section="58"]')).toHaveCount(0);
         await page.waitForTimeout(500);
