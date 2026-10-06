@@ -104,6 +104,37 @@ export async function requireNewTextData(request: APIRequestContext, id: string,
 }
 
 /**
+ * 某本书的某个文本文件（如 `original/003.cord.json`）在数据层上有没有。
+ * 线上文本在 COS 的 h1 哈希寻址里（指针 → 根清单 → 分片），站点自己的 /data/items/... 是 404，
+ * 所以不能用站点地址探测；h1 指针不存在（旧布局）才退回 current/items/ 下的现行路径。
+ * 没有就跳过：这类用例断言的是「这份数据上线后」的行为（overview#421）。
+ */
+export async function requireTextFile(request: APIRequestContext, id: string, relPath: string, feature: string): Promise<void> {
+    const has = await hasTextFile(request, id, relPath);
+    test.skip(!has, `${DATA_BASE} 上还没有 ${id}/${relPath}；「${feature}」待这份数据上线后自动生效`);
+}
+
+async function hasTextFile(request: APIRequestContext, id: string, relPath: string): Promise<boolean> {
+    const ptr = await request.get(`${DATA_BASE}/h1/text-manifest-root.json?_=${Math.floor(Date.now() / 60000)}`);
+    if (!ptr.ok()) {
+        const legacy = await request.head(`${DATA_BASE}/current/items/${id}/${relPath}`);
+        return legacy.ok();
+    }
+    const root = (await ptr.json()).root as string | undefined;
+    if (!root) return false;
+    const rootRes = await request.get(`${DATA_BASE}/h1/text-roots/${root}`);
+    if (!rootRes.ok()) return false;
+    const rootDoc = await rootRes.json() as { shardKeyLength: number; shards: Record<string, string> };
+    const key = id.slice(-rootDoc.shardKeyLength);
+    const shardHash = rootDoc.shards[key];
+    if (!shardHash) return false;
+    const shardRes = await request.get(`${DATA_BASE}/h1/text-manifest/${key}.${shardHash}.json`);
+    if (!shardRes.ok()) return false;
+    const shard = await shardRes.json() as Record<string, Record<string, string>>;
+    return Boolean(shard[id]?.[relPath]);
+}
+
+/**
  * 阅读首页分区数据（overview#308：read/sections.json 与 read/period/…）。新的打包脚本跑过一版数据之前，
  * /read 只显示「正在准备」、/read?period=… 是 404；这类用例断言的是「数据上线后」的行为，前提不在就跳过。
  * 同样只看页面，不猜数据布局。

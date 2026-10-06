@@ -458,6 +458,17 @@ async function getChapterH1(id: string, key: string, chapter: string, opts?: { j
     return md !== null || json ? { md, json } : null;
 }
 
+/** 版本目录下的文件名：只认一段文件名，不让条目写出路径把请求带到别处（对读 char／cord／punct／entity 等） */
+function isTextFileName(f: string): boolean {
+    return /^[\w.-]+$/.test(f) && !f.includes('..');
+}
+
+/** 取版本目录下任意一份文本 JSON（对读的 char／cord／punct／entity）；参数不合规、查不到、不是 JSON 都返回 null */
+async function getTextFileH1(id: string, key: string, file: string): Promise<Record<string, unknown> | null> {
+    if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isTextFileName(file)) return null;
+    return fetchH1TextJson(id, `${key}/${file}`);
+}
+
 /**
  * 创建一个延迟解析版本号的 IndexStorage —— 同步返回，方法调用时才 await。
  *
@@ -501,6 +512,19 @@ export function createCosStorage(): IndexStorage {
             );
         }
         return resolving;
+    }
+
+    // 现行（非 hashed）布局下取版本目录里的文本 JSON：与 inner.getChapter 同一个地址、同一个版本号
+    async function getTextFileLegacy(id: string, key: string, file: string): Promise<Record<string, unknown> | null> {
+        if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isTextFileName(file)) return null;
+        try {
+            const { baseUrl } = await ensureInner();
+            const commit = await resolveCosVersion();
+            const res = await fetch(`${baseUrl}/items/${id}/${key}/${file}?v=${commit}`, { cache: 'no-cache' });
+            return res.ok ? await res.json() : null;
+        } catch {
+            return null;
+        }
     }
 
     // entry/{id}.json 内存缓存：同 ID 反复 getEntry 不重复 fetch
@@ -651,6 +675,8 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
+            // 对读数据文件（char／cord／punct／entity）：BundleStorage 没有这个方法，两种布局都在外层接走
+            if (prop === 'getTextFile') return (id: string, key: string, file: string) => (DATA_LAYOUT === 'hashed' ? getTextFileH1(id, key, file) : getTextFileLegacy(id, key, file));
             // 阅读文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
             // 默认（未设置或非 'hashed'）不特殊处理这些方法名，走下面的
             // 通用分支委托给 inner（book-index-ui 的 BundleStorage），

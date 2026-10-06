@@ -201,3 +201,74 @@ describe('cos-storage：h1 哈希寻址路径（阅读文本新结构，overview
         expect(calls.some(u => u.includes('/h1/'))).toBe(false);
     });
 });
+
+describe('cos-storage：对读数据文件 getTextFile（overview#421：线上文本在 h1 哈希寻址里，同域 /data/items 是 404）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; });
+
+    type TextFileApi = { getTextFile: (id: string, key: string, file: string) => Promise<unknown> };
+    const files: Record<string, { hash: string; body: unknown }> = {
+        'original/003.char.json': { hash: 'bbbbbbb1', body: { pages: [] } },
+        'original/003.cord.json': { hash: 'bbbbbbb2', body: { pages: [] } },
+        'original/003.entity.json': { hash: 'bbbbbbb3', body: { entities: [] } },
+    };
+    const shardHash = 'shard-d1';
+
+    function mockH1() {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.${shardHash}.json`)) {
+                return jsonResponse({ [BOOK_ID]: Object.fromEntries(Object.entries(files).map(([rel, f]) => [rel, f.hash])) });
+            }
+            for (const [rel, f] of Object.entries(files)) {
+                const i = rel.lastIndexOf('.');
+                if (url.endsWith(`/h1/text/${BOOK_ID}/${rel.slice(0, i)}.${f.hash}${rel.slice(i)}`)) return jsonResponse(f.body);
+            }
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+        return calls;
+    }
+
+    it('hashed：请求的是哈希路径 text/<id>/<版本>/<文件名.hash8.json>，不碰 /data/items', async () => {
+        const calls = mockH1();
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage() as unknown as TextFileApi;
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.char.json')).toEqual({ pages: [] });
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.entity.json')).toEqual({ entities: [] });
+        expect(calls).toContain(`${COS_BASE}/h1/text/${BOOK_ID}/original/003.char.bbbbbbb1.json`);
+        expect(calls).toContain(`${COS_BASE}/h1/text/${BOOK_ID}/original/003.entity.bbbbbbb3.json`);
+        expect(calls.some(u => u.includes('/data/items/') || u.includes('/current/'))).toBe(false);
+    });
+
+    it('hashed：清单里没有这个文件 → null；文件名／key 不合法 → null 且不发请求', async () => {
+        const calls = mockH1();
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage() as unknown as TextFileApi;
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.punct.json')).toBeNull();
+        const before = calls.length;
+        for (const f of ['../index.json', 'a/b.json', '003.char.json?x=1', '..', '']) expect(await storage.getTextFile(BOOK_ID, 'original', f)).toBeNull();
+        expect(await storage.getTextFile(BOOK_ID, '../x', '003.char.json')).toBeNull();
+        expect(await storage.getTextFile('../x', 'original', '003.char.json')).toBeNull();
+        expect(calls.length).toBe(before);
+    });
+
+    it('不设置开关：走现行 current/items/<id>/<版本>/<文件>?v=<版本号>，一次不碰 h1/', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json') || url.endsWith('/version.json')) return jsonResponse({ commitId: 'legacycommit123456' });
+            if (url.includes(`/items/${BOOK_ID}/original/003.cord.json`)) return jsonResponse({ pages: [1] });
+            return jsonResponse({}, false, 404);
+        }) as unknown as typeof fetch;
+        const { createCosStorage } = await freshCosStorage({ layout: undefined });
+        const storage = createCosStorage() as unknown as TextFileApi;
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [1] });
+        expect(calls.some(u => u.includes(`/current/items/${BOOK_ID}/original/003.cord.json?v=`))).toBe(true);
+        expect(calls.some(u => u.includes('/h1/'))).toBe(false);
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.missing.json')).toBeNull();
+    });
+});
