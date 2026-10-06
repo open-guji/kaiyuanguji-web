@@ -7,7 +7,7 @@
  *   TEXT_DIR=/root/book-text \
  *   MEILI_URL=http://127.0.0.1:7700 \
  *   MEILI_KEY=xxx \
- *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books]
+ *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books] [--allow-shrink]
  *
  * 设计：
  *   - 流式遍历 {draft,production}/index/{books,works,entities}/{0-f}.json
@@ -36,6 +36,7 @@ import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
+import { checkDocFloor } from './lib/doc-floor.mjs';
 
 const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
 
@@ -73,6 +74,9 @@ const limitArg = args.indexOf('--limit');
 const limit = limitArg >= 0 ? parseInt(args[limitArg + 1]) : null;
 const onlyArg = args.indexOf('--only');
 const only = onlyArg >= 0 ? args[onlyArg + 1].split(',') : null;
+// swap 前的文档数下限闸（lib/doc-floor.mjs）：新建的比线上少一半以上就不换。--limit 的试跑本来就少，不拦；
+// 确实要大幅缩减时带 --allow-shrink（或 FORCE_SHRINK=1）
+const ALLOW_SHRINK = args.includes('--allow-shrink') || process.env.FORCE_SHRINK === '1' || limit != null;
 
 // ─── 工具 ───
 
@@ -381,6 +385,24 @@ async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
     return tmp;
 }
 
+async function numberOfDocuments(indexUid) {
+    try {
+        const st = await meiliRequest('GET', `/indexes/${indexUid}/stats`);
+        return typeof st.numberOfDocuments === 'number' ? st.numberOfDocuments : null;
+    } catch {
+        return null;
+    }
+}
+
+/** 自检没过：删 tmp、线上原封不动，返回 false。 */
+async function discardTmp(indexUid, tmp, failures) {
+    console.error(`❌ [${indexUid}] 自检未通过，放弃本次更新：`);
+    for (const f of failures) console.error(`   · ${f}`);
+    console.error(`   已删除 ${tmp}，线上 ${indexUid} 保持不变（未 swap）`);
+    await meiliRequest('DELETE', `/indexes/${tmp}`).catch(() => {});
+    return false;
+}
+
 /**
  * 自检通过则原子 swap（tmp → 正式名），线上无空窗；不通过则删 tmp、退出非 0、
  * 保留旧索引不动。selfTestFn 收 tmp 的 indexUid，返回 { ok, failures }。
@@ -388,13 +410,14 @@ async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
 async function swapOrDiscard(indexUid, selfTestFn) {
     const tmp = tmpIndexUid(indexUid);
     const { ok, failures } = await selfTestFn(tmp);
-    if (!ok) {
-        console.error(`❌ [${indexUid}] 自检未通过，放弃本次更新：`);
-        for (const f of failures) console.error(`   · ${f}`);
-        console.error(`   已删除 ${tmp}，线上 ${indexUid} 保持不变（未 swap）`);
-        await meiliRequest('DELETE', `/indexes/${tmp}`).catch(() => {});
-        return false;
+    // 文档数下限闸（overview#122）：新建的比线上少一半以上，多半是脚本读不到数据，别把空的换上去
+    if (ok && !ALLOW_SHRINK) {
+        const live = await indexExists(indexUid) ? await numberOfDocuments(indexUid) : null;
+        const floor = checkDocFloor(live, await numberOfDocuments(tmp));
+        if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
+        if (!floor.ok) return await discardTmp(indexUid, tmp, failures);
     }
+    if (!ok) return await discardTmp(indexUid, tmp, failures);
     await ensureIndexExists(indexUid); // 首次跑：正式名还不存在，先占一个空的才有得 swap
     const swapTask = await meiliRequest('POST', '/swap-indexes', [{ indexes: [indexUid, tmp] }]);
     await waitForTask(swapTask.taskUid);

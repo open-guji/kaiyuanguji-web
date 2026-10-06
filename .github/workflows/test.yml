@@ -34,6 +34,9 @@ jobs:
       - name: Script tests (nextjs/scripts)
         working-directory: nextjs
         run: node --test scripts/*.test.mjs scripts/lib/*.test.mjs
+      # 搜索建索引脚本的纯函数单测（indexer/lib，不连 Meili）
+      - name: Indexer lib tests
+        run: node --test indexer/lib/*.test.mjs
       # deploy.yml 里两份正式站构建（build／prod-artifact）必须一致（overview#341）
       - name: Deploy workflow checks (ops/tests/test_deploy_workflow.py)
         run: python3 -m unittest ops/tests/test_deploy_workflow.py -v
