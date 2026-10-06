@@ -251,7 +251,10 @@ export function createCosOps({ cos, bucket, region }) {
                 }, (err) => err ? rejectP(err) : resolveP());
             });
         } catch (e) {
-            const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(e.message || '');
+            // 签名类错误也重试（重试会重新签名），同 sync-to-cos.mjs：COS 迁上海后，美国 runner 传大文件偶发
+            // SignatureDoesNotMatch「The Signature you specified is invalid」。10-06 测试站部署时，h1 文本里 vol03 的两个大文件就这样失败
+            const transient = /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
+                .test(`${e.message || ''} ${e.code || ''}`);
             if (transient && attempt < 4) {
                 await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
                 return uploadOne(file, key, cacheControl, contentType, attempt + 1);
