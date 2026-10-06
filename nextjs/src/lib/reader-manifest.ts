@@ -12,7 +12,7 @@ const UNKNOWN_LICENSE = '未知';
 const UNKNOWN_LICENSE_LABEL = '版权未知';
 
 /** 这里只 import type，客户端引用不会带进服务端代码 */
-export function readerManifest<T extends Pick<Manifest, 'versions'>>(manifest: T): T {
+export function readerManifest(manifest: Manifest): Manifest {
     const versions = manifest.versions;
     const needsChange = versions.some((v) => v.license?.trim() === UNKNOWN_LICENSE) || (versions.some((v) => v.kind === 'transcription') && versions.some((v) => v.key === 'default' && v.kind === 'collated'));
     if (!needsChange) return manifest; // 没有要改的就原样返回（种子命中判等、少一次拷贝）
