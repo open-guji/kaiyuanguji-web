@@ -8,6 +8,7 @@
     "test": "playwright test --project=contract --project=ui",
     "test:contract": "playwright test --project=contract",
     "test:ui": "playwright test --project=ui",
+    "test:selftest": "playwright test --project=selftest",
     "test:degradable": "playwright test --project=degradable",
     "test:all": "playwright test",
     "report": "playwright show-report out/report",

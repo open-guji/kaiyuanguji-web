@@ -6,7 +6,7 @@
  * CDN 取不到（公网抖动、被墙）时整组跳过，不拦发版——这类用例红了不等于线上回归。
  * 读到的是 vol03（含 𠮓、𫎇 等扩展 B 字；简体显示还有繁简转出来的 𪩘、𫄥、𫐖，在扩展 C、D）。
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireTextFile } from '../fixtures/preconditions';

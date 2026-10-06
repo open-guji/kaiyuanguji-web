@@ -14,7 +14,7 @@
  * 本闸的判据很窄，也正因为窄才不会误报：凡是被测试/压测拿来当锚点的条目 ID，
  * 都必须能在当前发布的数据里取到，且不是墓碑。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

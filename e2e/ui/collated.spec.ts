@@ -10,7 +10,7 @@
  * 选择器策略：不用 data-testid（生产代码里没有，加它要改 book-index-ui 并重新
  * 发包），改用用户可见文本 + ARIA role——更贴近真人视角，且组件重构时不易失效。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { cmpVersion, fetchUiVersion, requireNewTextData } from '../fixtures/preconditions';
 import { readButton } from '../fixtures/detail';

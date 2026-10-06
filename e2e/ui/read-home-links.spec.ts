@@ -12,7 +12,7 @@
  *
  * 只发 GET（page.goto 打开页面），不写任何数据。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireReadSections } from '../fixtures/preconditions';

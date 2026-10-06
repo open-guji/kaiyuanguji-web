@@ -5,7 +5,7 @@
  * 数据（新结构文本，章条目声明 char_file／cord_file，对应 003.char.json、003.cord.json 等）没上线时整组跳过。
  * 书影来自 data.kaiyuanguji.com 的 IIIF（overview#388），页序见 cord 每页的 canvas（overview#425）。
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireTextFile, requireUiVersion } from '../fixtures/preconditions';

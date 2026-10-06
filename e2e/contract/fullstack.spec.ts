@@ -17,7 +17,7 @@
  *   · /sitemap.xml（索引里的「静态页」那一片）曾带 11 万余条旧的 /book-index?id= 地址，
  *     与条目分片重复——全栈构建的 sitemap.ts 现只列静态页。
  */
-import { test, expect, type APIRequestContext, type APIResponse } from '@playwright/test';
+import { test, expect, type APIRequestContext, type APIResponse } from '../fixtures/test';
 import { ANCHORS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { dataUrl, fetchLatest } from '../fixtures/version';
