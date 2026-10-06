@@ -74,9 +74,9 @@ const limitArg = args.indexOf('--limit');
 const limit = limitArg >= 0 ? parseInt(args[limitArg + 1]) : null;
 const onlyArg = args.indexOf('--only');
 const only = onlyArg >= 0 ? args[onlyArg + 1].split(',') : null;
-// swap 前的文档数下限闸（lib/doc-floor.mjs）：新建的比线上少一半以上就不换。--limit 的试跑本来就少，不拦；
-// 确实要大幅缩减时带 --allow-shrink（或 FORCE_SHRINK=1）
-const ALLOW_SHRINK = args.includes('--allow-shrink') || process.env.FORCE_SHRINK === '1' || limit != null;
+// swap 前的文档数下限闸（lib/doc-floor.mjs）：新建的比线上少一半以上就不换。确实要大幅缩减时带 --allow-shrink
+// （或 FORCE_SHRINK=1）；--limit 的试跑结果也只有这样才会换上线（否则被闸挡住，线上不动）
+const ALLOW_SHRINK = args.includes('--allow-shrink') || process.env.FORCE_SHRINK === '1';
 
 // ─── 工具 ───
 
@@ -385,12 +385,15 @@ async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
     return tmp;
 }
 
-async function numberOfDocuments(indexUid) {
+/** 索引条数：{state:'ok',docs} 读到了；{state:'absent'} 明确 404（没建过）；{state:'unreadable',error} 其它情况一律读不到。 */
+async function docCount(indexUid) {
     try {
         const st = await meiliRequest('GET', `/indexes/${indexUid}/stats`);
-        return typeof st.numberOfDocuments === 'number' ? st.numberOfDocuments : null;
-    } catch {
-        return null;
+        if (typeof st.numberOfDocuments !== 'number') return { state: 'unreadable', error: 'stats 里没有 numberOfDocuments' };
+        return { state: 'ok', docs: st.numberOfDocuments };
+    } catch (e) {
+        if (/: 404 /.test(e.message)) return { state: 'absent' };
+        return { state: 'unreadable', error: e.message };
     }
 }
 
@@ -410,12 +413,18 @@ async function discardTmp(indexUid, tmp, failures) {
 async function swapOrDiscard(indexUid, selfTestFn) {
     const tmp = tmpIndexUid(indexUid);
     const { ok, failures } = await selfTestFn(tmp);
-    // 文档数下限闸（overview#122）：新建的比线上少一半以上，多半是脚本读不到数据，别把空的换上去
+    // 文档数下限闸（overview#122）：新建的比线上少一半以上，多半是脚本读不到数据，别把空的换上去。
+    // 线上或 tmp 的条数读不到（接口出错、没有数值）时也不换：没有可靠的基线就不放行。只有线上索引明确 404（还没建过）才算「线上没有」。
     if (ok && !ALLOW_SHRINK) {
-        const live = await indexExists(indexUid) ? await numberOfDocuments(indexUid) : null;
-        const floor = checkDocFloor(live, await numberOfDocuments(tmp));
-        if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
-        if (!floor.ok) return await discardTmp(indexUid, tmp, failures);
+        const live = await docCount(indexUid);
+        const fresh = await docCount(tmp);
+        if (live.state === 'unreadable') failures.push(`文档数下限：读不到线上 ${indexUid} 的条数（${live.error}），无法确认新索引没有缩水`);
+        else if (fresh.state !== 'ok') failures.push(`文档数下限：读不到新建的 ${tmp} 的条数（${fresh.error || '索引不存在'}）`);
+        else {
+            const floor = checkDocFloor(live.state === 'ok' ? live.docs : null, fresh.docs);
+            if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
+        }
+        if (failures.length > 0) return await discardTmp(indexUid, tmp, failures);
     }
     if (!ok) return await discardTmp(indexUid, tmp, failures);
     await ensureIndexExists(indexUid); // 首次跑：正式名还不存在，先占一个空的才有得 swap
