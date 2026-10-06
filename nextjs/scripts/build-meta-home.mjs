@@ -9,7 +9,7 @@
  *   - 作品详情：存佚（loss_status，详情优先、索引条目兜底，与 indexer 同口径）、有无版本谱系（version_graph.enabled）
  *   - book-text 条目目录的 lineage_graph.json：有就算有谱系
  *   - catalog/tree.json（总目，bundleCatalog 先写好）：四部方块
- *   - resource.json（书目著录进度）、resource-site.json（在线资源）：draft 仓根目录
+ *   - resource.json（书目著录进度）、resource-site.json（在线资源）：book-index 根目录
  *   - curation/read-home.json 的 shelf 组（layout: 'shelf'，史志书架，period_of／orig）与书目组（key shumu 或 bibliography，同类书目与考证）
  *   - curation/meta-home.json：{ collection_groups, bibliographers, lineage_picks }（目录总管维护）
  *
@@ -28,7 +28,7 @@
  * }
  *
  * 用法：bundle-data.mjs 在总目、阅读索引之后调用 bundleMetaHome()；
- *       node scripts/build-meta-home.mjs [draftDir]   单独重建
+ *       node scripts/build-meta-home.mjs [bookIndexDir]   单独重建
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
@@ -229,12 +229,12 @@ export function buildMetaSections({ index, workDetail, lineageOf, loss, meta, tr
 /**
  * bundle-data.mjs 的入口。
  * @param {{ index: any, rootDirFor: (e: any) => string, textDirFor: (e: any) => string, dataDir: string,
- *   draftDir: string, curationDir?: string|null, log?: (s: string) => void }} args
- * draftDir：resource.json／resource-site.json 所在（draft 仓根）。
+ *   siteDir: string, curationDir?: string|null, log?: (s: string) => void }} args
+ * siteDir：resource.json／resource-site.json 所在（book-index 仓根）。
  * curationDir：放 read-home.json、meta-home.json 的目录（生产 book-index 的 curation/）；null 表示不读策展。
  * dataDir 下要先有 meta.json 与 catalog/tree.json（bundleMeta、bundleCatalog 写的）。
  */
-export function bundleMetaHome({ index, rootDirFor, textDirFor, dataDir, draftDir, curationDir, log = console.log }) {
+export function bundleMetaHome({ index, rootDirFor, textDirFor, dataDir, siteDir, curationDir, log = console.log }) {
     const works = index.works ?? {};
     const detailCache = new Map();
     const workDetail = (id) => {
@@ -266,8 +266,8 @@ export function bundleMetaHome({ index, rootDirFor, textDirFor, dataDir, draftDi
         loss,
         meta: readJsonOrNull(join(dataDir, 'meta.json')),
         tree: readJsonOrNull(join(dataDir, 'catalog', 'tree.json')),
-        resource: readJsonOrNull(join(draftDir, 'resource.json')),
-        resourceSite: readJsonOrNull(join(draftDir, 'resource-site.json')),
+        resource: readJsonOrNull(join(siteDir, 'resource.json')),
+        resourceSite: readJsonOrNull(join(siteDir, 'resource-site.json')),
         readCur,
         metaCur,
     });
@@ -287,11 +287,12 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
     const { resolveDataDirs } = await import('./lib/data-dirs.mjs');
     const here = dirname(fileURLToPath(import.meta.url));
-    const draftDir = resolve(process.argv[2] || process.env.BOOK_INDEX_DRAFT_DIR || join(here, '..', '..', 'book-index-draft'));
-    const prodDir = resolve(process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const prodDir = resolve(process.argv[2] || process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const { assertProductionDir, assertSiteContentFiles } = await import('./lib/production-dir.mjs');
+    try { assertProductionDir(prodDir); assertSiteContentFiles(prodDir); } catch (e) { console.error(`❌ ${e.message}`); process.exit(1); }
     const textDir = resolve(process.env.BOOK_TEXT_DIR || join(here, '..', '..', 'book-text'));
     const index = { works: {}, books: {}, collections: {}, entities: {} };
-    for (const [dir, label] of [[draftDir, 'draft'], [prodDir, 'official']]) {
+    for (const [dir, label] of [[prodDir, 'official']]) {
         const colPath = join(dir, 'index', 'collections.json');
         if (existsSync(colPath)) {
             for (const [id, e] of Object.entries(JSON.parse(readFileSync(colPath, 'utf-8')))) if (!e?.promoted_to) index.collections[id] = { ...e, _root: label };
@@ -309,10 +310,10 @@ if (isMain) {
     }
     bundleMetaHome({
         index,
-        rootDirFor: (e) => (e._root === 'official' ? prodDir : draftDir),
+        rootDirFor: () => prodDir,
         textDirFor: () => textDir,
         dataDir: resolveDataDirs().dataDir,
-        draftDir,
+        siteDir: prodDir,
         curationDir: join(prodDir, 'curation'),
     });
 }

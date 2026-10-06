@@ -32,8 +32,8 @@ done
 |---|---|---|
 | `web` | 网站代码 commit | 构建时写入（CI 的 `next build` 把它写进 `edge-functions/api/version.js`） |
 | `bimUi` | 打进产物的 book-index-ui 版本 | 构建时写入 |
-| `data` | 数据指针 `latest.json` 的 `commitId`（book-index-draft 短 commit） | 运行时读 COS |
-| `dataPointer` | 指针全文：三仓 commit、`bundleDate`、`webCommitId` | 运行时读 COS |
+| `data` | 数据指针 `latest.json` 的 `commitId`（book-index 短 commit；2026-10-06 前是 book-index-draft 的） | 运行时读 COS |
+| `dataPointer` | 指针全文：数据仓 commit、`bundleDate`、`webCommitId` | 运行时读 COS |
 | `builtAt` | 构建时间 | 构建时写入 |
 | `target` | `production` / `staging`（切站前 kyg-ssr-spike 双跑的构建记为 `ssr-test`） | 构建时写入 |
 | `webMatchesPointer` | `web` 是否等于指针里记的 `webCommitId` | — |
@@ -110,7 +110,7 @@ done
 
 | 看什么 | 怎么判断 |
 |---|---|
-| 数据指针（带随机串） | `fullCommitId`／`productionCommitId`／`textCommitId` 对比三仓 main HEAD（`git ls-remote https://github.com/open-guji/<仓>.git refs/heads/main`） |
+| 数据指针（带随机串） | `productionCommitId`／`textCommitId` 对比 book-index、book-text 的 main HEAD（`fullCommitId` 自 overview#432 起与 `productionCommitId` 相同；草稿仓不参与部署）（`git ls-remote https://github.com/open-guji/<仓>.git refs/heads/main`） |
 | `/api/version` 的 `data` | 与上一行一致即站点读到的就是这版 |
 | Actions → Deploy to EdgeOne 最近的定时运行 | `check` job 写着「数据无变化，跳过」还是「执行部署」 |
 | 测试站指针 vs 正式站指针 | 测试站已新、正式站没新 → 自动 promote 没跑或被关 |
@@ -186,7 +186,7 @@ done
 |---|---|---|---|
 | 做什么 | 分三段：`start` 目标 commit 在测试站重建（deploy.yml `target=staging`，完整 verify）；绿了跑 `promote`（`target=production promote=code+data`，部署到 kyg-ssr-spike）；再跑 `check` | EdgeOne 控制台 → Pages → kyg-ssr-spike → 部署记录，用上一次成功的生产部署重新发布 | www 从 kyg-ssr-spike 换绑回旧静态项目，DNS 的 `www` CNAME 改回去（`docs/cutover.md`） |
 | 耗时 | 约 20 分钟 | 几分钟 | 约 5 分钟＋DNS 生效 |
-| 数据 | 换成测试站重建时的数据（三仓 main HEAD） | 不动 | 不动 |
+| 数据 | 换成测试站重建时的数据（book-index、book-text 的 main HEAD） | 不动 | 不动 |
 | 发布后 e2e | 有（deploy.yml 的 verify） | 没有，自己看 `/api/version` | 没有，跑 cutover-check |
 | 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标）；但下一次 push 到 main 验过后会自动上正式站，回滚期间先把 `AUTO_PROMOTE_CODE` 设成 `false` | **会**：指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码；下一次 push 验过后也会自动 `promote=code+data`。先把仓库变量 `AUTO_PROMOTE_DATA`、`AUTO_PROMOTE_CODE` 都设成 `false`，修好再改回 | 不会被冲，但也**收不到任何新发布**（CI 不再推旧项目） |
 | 什么时候用 | 默认 | 读者正受影响、等不了 20 分钟 | 新项目整个坏了（不是某一版代码的问题）；只在旧项目保留期内（到 2026-10-26 前后） |

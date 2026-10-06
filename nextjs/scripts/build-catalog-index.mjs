@@ -24,7 +24,7 @@
  *
  * 用法：
  *   bundle-data.mjs 在 L1 之后调用 bundleCatalog()（正常流程）
- *   node scripts/build-catalog-index.mjs [draftDir]   单独重建（目录解析与 bundle-data 相同）
+ *   node scripts/build-catalog-index.mjs [bookIndexDir]   单独重建（目录解析与 bundle-data 相同）
  */
 
 import { createHash } from 'crypto';
@@ -300,7 +300,7 @@ export function bundleCatalog({ index, rootDirFor, dataDir, taxonomyFile, log = 
             // 被并条目：页面会 308 到目标，总目里不再列
             if (d.merged_into) { merged++; continue; }
             if (!d.id) d.id = item.id;
-            const root = item._root ?? 'draft';
+            const root = item._root ?? 'official';
             const r = (perRoot[root] ??= { classified: 0, unclassified: 0 });
             if (classificationPath(d.classification).length) r.classified++; else r.unclassified++;
             yield d;
@@ -323,10 +323,11 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
     const { resolveDataDirs } = await import('./lib/data-dirs.mjs');
     const here = dirname(fileURLToPath(import.meta.url));
-    const draftDir = resolve(process.argv[2] || process.env.BOOK_INDEX_DRAFT_DIR || join(here, '..', '..', 'book-index-draft'));
-    const prodDir = resolve(process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const prodDir = resolve(process.argv[2] || process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const { assertProductionDir } = await import('./lib/production-dir.mjs');
+    try { assertProductionDir(prodDir); } catch (e) { console.error(`❌ ${e.message}`); process.exit(1); }
     const index = { works: {} };
-    for (const [dir, label] of [[draftDir, 'draft'], [prodDir, 'official']]) {
+    for (const [dir, label] of [[prodDir, 'official']]) {
         const shardDir = join(dir, 'index', 'works');
         if (!existsSync(shardDir)) continue;
         for (let i = 0; i < 16; i++) {
@@ -340,7 +341,7 @@ if (isMain) {
     }
     bundleCatalog({
         index,
-        rootDirFor: (e) => (e._root === 'official' ? prodDir : draftDir),
+        rootDirFor: () => prodDir,
         dataDir: resolveDataDirs().dataDir,
         taxonomyFile: join(prodDir, 'classific.json'),
     });

@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { assertProductionDir } from './lib/production-dir.mjs';
 import * as OpenCC from 'opencc-js';
 import { LITE_FORMAT, encodeLiteRow } from '../src/lib/search/lite.js';
 
@@ -118,7 +119,7 @@ function buildIndexForType(index, searchS, groupKey, typeLabel) {
 // ─── 主流程 ───
 
 /**
- * 读单个仓（draft 或 production）的 index/ 目录，entry 上打 _root 标签。
+ * 读正式仓 book-index 的 index/ 目录，entry 上打 _root 标签。
  */
 function loadRoot(rootDir, rootLabel, merged) {
     if (!existsSync(rootDir)) return;
@@ -159,20 +160,17 @@ function loadRoot(rootDir, rootLabel, merged) {
  * draft 先写、production 后写覆盖同 ID（与 bundle-data.mjs 的合并顺序一致）。
  */
 function loadShardedIndex() {
-    const draftDir = process.env.BOOK_INDEX_DRAFT_DIR
-        || resolve(__dirname, '..', '..', '..', 'book-index-draft');
     const productionDir = process.env.BOOK_INDEX_PRODUCTION_DIR
         || resolve(__dirname, '..', '..', '..', 'book-index');
-    if (!existsSync(join(draftDir, 'index'))) {
-        console.error(`❌ index directory not found: ${join(draftDir, 'index')}`);
+    // overview#432：只索引正式仓；缺了报错退出，不能静默打出一份空索引
+    try {
+        assertProductionDir(productionDir);
+    } catch (e) {
+        console.error(`❌ ${e.message}`);
         process.exit(1);
-    }
-    if (!existsSync(productionDir)) {
-        console.warn(`⚠️  production 仓未找到（${productionDir}）—— L2 只会索引 draft 侧活体条目，已升格的正式条目将全部缺席`);
     }
 
     const merged = { books: {}, collections: {}, works: {}, entities: {} };
-    loadRoot(draftDir, 'draft', merged);
     loadRoot(productionDir, 'official', merged);
 
     const kept = { books: {}, collections: {}, works: {}, entities: {} };
@@ -184,7 +182,7 @@ function loadShardedIndex() {
         }
     }
     const total = Object.values(kept).reduce((n, g) => n + Object.keys(g).length, 0);
-    console.log(`  索引来源：draft + production，跳过 ${tombstones} 个升格墓碑，实收 ${total} 条`);
+    console.log(`  索引来源：production，跳过 ${tombstones} 个升格墓碑，实收 ${total} 条`);
     return kept;
 }
 

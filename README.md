@@ -36,7 +36,7 @@ cd nextjs && npm install
 # A. 不需要任何数据仓，读 GitHub raw（首次加载慢）
 rm -f .env.local && npm run dev
 
-# B. 读本地 D:\workspace 下的 book-index / book-index-draft / book-text（推荐）
+# B. 读本地 D:\workspace 下的 book-index / book-text（推荐）
 bash scripts/setup-local.sh     # 写好 .env.local：NEXT_PUBLIC_MODE=local + BOOK_INDEX_WORKSPACE_ROOT
 npm run dev                     # http://localhost:3000/book-index
 ```

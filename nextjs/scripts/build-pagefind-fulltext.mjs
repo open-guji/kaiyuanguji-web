@@ -13,7 +13,7 @@
  * kind=collated 的公开版本的章 JSON，链接指向 /read/<id>[/<key>]/<章>。internal 版本不索引。
  *
  * 用法：
- *   node scripts/build-pagefind-fulltext.mjs [draft-dir]
+ *   node scripts/build-pagefind-fulltext.mjs [book-index-dir]
  */
 
 import { readFileSync, existsSync, readdirSync, statSync, rmSync } from 'fs';
@@ -25,17 +25,17 @@ import * as pagefind from 'pagefind';
 import { Converter } from 'opencc-js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DRAFT_DIR = resolve(process.argv[2] || join(__dirname, '..', '..', '..', 'book-index-draft'));
+const PRODUCTION_DIR = resolve(process.argv[2] || process.env.BOOK_INDEX_PRODUCTION_DIR || join(__dirname, '..', '..', '..', 'book-index'));
 const OUT_DIR = join(resolveDataDirs().dataDir, 'pagefind-fulltext');
 
 const TEXT_DIR = resolve(process.env.BOOK_TEXT_DIR || join(__dirname, '..', '..', '..', 'book-text'));
 
-if (!existsSync(DRAFT_DIR)) {
-    console.error(`❌ book-index-draft not found: ${DRAFT_DIR}`);
+if (!existsSync(PRODUCTION_DIR)) {
+    console.error(`❌ book-index（正式仓）not found: ${PRODUCTION_DIR}`);
     process.exit(1);
 }
 
-console.log(`build-pagefind-fulltext: ${DRAFT_DIR}`);
+console.log(`build-pagefind-fulltext: ${PRODUCTION_DIR}`);
 console.log(`output:                  ${OUT_DIR}\n`);
 
 if (existsSync(OUT_DIR)) rmSync(OUT_DIR, { recursive: true });
@@ -49,7 +49,7 @@ function readJson(path) {
 // 读 Work index 拿到 id → title 映射，给 fragment meta 用
 function loadWorkIndex() {
     const map = new Map();
-    const indexDir = join(DRAFT_DIR, 'index', 'works');
+    const indexDir = join(PRODUCTION_DIR, 'index', 'works');
     if (!existsSync(indexDir)) return map;
     for (let i = 0; i < 16; i++) {
         const shard = join(indexDir, `${i.toString(16)}.json`);
@@ -105,7 +105,7 @@ const collatedJsons = collectCollatedJsons();
 console.log(`Found ${collatedJsons.length} collated JSON files\n`);
 
 for (const { workDir, jsonPath, jsonName, key, stem } of collatedJsons) {
-    // workDir 末段是 work id（按 book-index-draft 路径约定 Work/1/e/u/1euxxx/）
+    // workDir 末段是 work id（按 book-index 路径约定 Work/1/e/u/1euxxx/）
     const workId = workDir.split(/[\\/]/).pop();
     const meta = workMeta.get(workId) || { title: '', author: '', dynasty: '' };
     let data;

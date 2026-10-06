@@ -20,7 +20,7 @@ import { dataCommitKey } from './h1-hash-common.mjs';
 
 /**
  * 由 latest.json（bundle-data.mjs 产出的字段）算 cacheKey。
- * draft 用完整 hash（fullCommitId），缺时退回 12 位 commitId；缺省字段按
+ * commitId 位取完整 hash（fullCommitId；overview#432 起即正式仓 commit），缺时退回 12 位 commitId；缺省字段按
  * bundle-hashed*.mjs 的约定记 'unknown'，保证与 version.json 算出的 root key 一致。
  */
 export function latestCacheKey(latest, contentDigest) {

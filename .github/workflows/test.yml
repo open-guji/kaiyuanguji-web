@@ -54,8 +54,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Clone book-index-draft
-        run: git clone --depth 1 https://github.com/open-guji/book-index-draft.git book-index-draft
       - name: Install (nextjs)
         working-directory: nextjs
         run: npm ci
@@ -71,7 +69,6 @@ jobs:
           NEXT_PUBLIC_MODE: remote
           NEXT_PUBLIC_DATA_SOURCE: bundle
           NEXT_PUBLIC_BASE_PATH: ''
-          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
         # T1：Google Fonts 在构建期抓取偶发抖动会导致整个 build 失败——只重试
         # 这一条命令本身，最多 3 次、每次间隔 20 秒（与 deploy.yml 的 Build for
         # EdgeOne 步骤同一套重试逻辑）。

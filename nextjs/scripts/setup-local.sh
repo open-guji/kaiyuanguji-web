@@ -1,21 +1,21 @@
 #!/bin/bash
 # 设置本地开发环境：链接本地数据 + 本地 webtex-cn
-# 用法: bash scripts/setup-local.sh [book-index-draft路径] [webtex-cn路径]
+# 用法: bash scripts/setup-local.sh [book-index路径] [webtex-cn路径]
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NEXTJS_DIR="$(dirname "$SCRIPT_DIR")"
-DRAFT_DIR="${1:-$NEXTJS_DIR/../../book-index-draft}"
+INDEX_DIR="${1:-$NEXTJS_DIR/../../book-index}"
 WEBTEX_DIR="${2:-$NEXTJS_DIR/../../webtex-cn}"
 
 echo "Setting up local development environment..."
 
 # 链接 book 数据
-if [ -d "$DRAFT_DIR" ]; then
-  DRAFT_DIR="$(cd "$DRAFT_DIR" && pwd)"
-  ln -sfn "$DRAFT_DIR" "$NEXTJS_DIR/public/local-data"
-  ln -sfn "$DRAFT_DIR/Book" "$NEXTJS_DIR/public/books"
-  echo "  Book data linked: $DRAFT_DIR"
+if [ -d "$INDEX_DIR" ]; then
+  INDEX_DIR="$(cd "$INDEX_DIR" && pwd)"
+  ln -sfn "$INDEX_DIR" "$NEXTJS_DIR/public/local-data"
+  ln -sfn "$INDEX_DIR/Book" "$NEXTJS_DIR/public/books"
+  echo "  Book data linked: $INDEX_DIR"
 else
-  echo "  Warning: book-index-draft not found at $DRAFT_DIR (skip)"
+  echo "  Warning: book-index not found at $INDEX_DIR (skip)"
 fi
 
 # 链接 webtex-cn 本地源码（替换 npm 包）

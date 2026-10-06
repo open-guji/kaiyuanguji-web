@@ -6,7 +6,7 @@
  * 子命令（都读 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET／COS_REGION／COS_PATH_PREFIX）：
  *   decide       比对这次要发的（三仓 commit＋打包脚本指纹）与线上的同步标记、latest.json，
  *                写 GITHUB_OUTPUT：skip=true|false。任何读不到／对不上都是 skip=false，本命令永远 exit 0。
- *                需要环境变量 DRAFT_COMMIT／PROD_COMMIT／TEXT_COMMIT（workflow 里用 git rev-parse HEAD 取）。
+ *                需要环境变量 PROD_COMMIT／TEXT_COMMIT（workflow 里用 git rev-parse HEAD 取）。
  *   latest-only  数据没变时：以线上 latest.json 为底只改 webCommitId 写回（其它字段不丢）。失败 exit 1
  *                （workflow 里失败就退回照常同步）。需要 WEB_COMMIT_ID。
  *   mark         三次同步都成功后写同步标记 _deploy/sync-marker.json。需要上面三个 commit＋WEB_COMMIT_ID。
@@ -37,7 +37,8 @@ function setOutput(k, v) {
 
 function currentInputs() {
     return {
-        fullCommitId: process.env.DRAFT_COMMIT || '',
+        // overview#432 起 fullCommitId 即正式仓 commit（草稿仓不再参与），与 latest.json 同口径
+        fullCommitId: process.env.PROD_COMMIT || '',
         productionCommitId: process.env.PROD_COMMIT || '',
         textCommitId: process.env.TEXT_COMMIT || '',
         bundleFingerprint: computeBundleFingerprint(REPO_ROOT),
@@ -80,8 +81,8 @@ async function decide() {
         const cos = makeCos();
         const [marker, latest] = await Promise.all([getJson(cos, markerKey(PREFIX)), getJson(cos, latestKey(PREFIX))]);
         ({ skip, reason } = decideSync({ marker, latest, current: cur }));
-        console.log(`· 这次：draft=${cur.fullCommitId.slice(0, 12)} prod=${cur.productionCommitId.slice(0, 12)} text=${cur.textCommitId.slice(0, 12)} 脚本指纹=${cur.bundleFingerprint.slice(0, 12)}`);
-        if (marker) console.log(`· 上次完整同步：draft=${String(marker.fullCommitId).slice(0, 12)} prod=${String(marker.productionCommitId).slice(0, 12)} text=${String(marker.textCommitId).slice(0, 12)} 脚本指纹=${String(marker.bundleFingerprint).slice(0, 12)}（${marker.syncedAt}）`);
+        console.log(`· 这次：prod=${cur.productionCommitId.slice(0, 12)} text=${cur.textCommitId.slice(0, 12)} 脚本指纹=${cur.bundleFingerprint.slice(0, 12)}`);
+        if (marker) console.log(`· 上次完整同步：prod=${String(marker.productionCommitId).slice(0, 12)} text=${String(marker.textCommitId).slice(0, 12)} 脚本指纹=${String(marker.bundleFingerprint).slice(0, 12)}（${marker.syncedAt}）`);
     } catch (e) {
         skip = false;
         reason = `比对失败（${e && e.message}），按有变化处理`;
