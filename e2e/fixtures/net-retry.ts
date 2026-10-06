@@ -7,8 +7,8 @@
  *
  * 重试范围：
  *   · 抛出的网络错误，消息命中 RETRYABLE_ERROR（连接重置／超时／被关）：page.goto / page.reload /
- *     APIRequestContext 的所有方法。
- *   · 仅 GET / HEAD：返回了 CDN 瞬时状态码（429 限速、522 回源超时、552）。
+ *     APIRequestContext 的 GET／HEAD（POST 等非幂等请求不重试：断连前服务器可能已处理）。
+ *   · 返回了 CDN 瞬时状态码（429 限速、522 回源超时、552）：page.goto / reload、GET／HEAD。
  *     返回 404、500 等「站点自己的回答」不重试。
  *   最多重试 3 次（共 4 次尝试），退避 1s、2s、4s（+ 抖动）；429 带 Retry-After 时按它等（上限 10s）。
  *   重试用尽仍失败，原样抛出最后一次的错误／返回最后一次的响应，由用例自己的断言判定。
@@ -16,10 +16,10 @@
  * 用法：用例从 `../fixtures/test` 导入 test / expect，page、request、context、browser 就都带重试，
  * 不必逐用例改。环境变量 NET_RETRY=0 可整体关闭（排查时看原始失败）。
  */
-import type { APIRequestContext, APIResponse, BrowserContext, Page } from '@playwright/test';
+import type { APIRequestContext, APIResponse, BrowserContext, Page, Response } from '@playwright/test';
 
 export const RETRYABLE_ERROR =
-    /ERR_CONNECTION_RESET|ERR_CONNECTION_CLOSED|ERR_CONNECTION_TIMED_OUT|ERR_EMPTY_RESPONSE|ECONNRESET|ETIMEDOUT|socket hang up/i;
+    /ERR_CONNECTION_RESET|ERR_CONNECTION_CLOSED|ERR_CONNECTION_TIMED_OUT|ERR_TIMED_OUT|ERR_EMPTY_RESPONSE|ECONNRESET|ETIMEDOUT|socket hang up/i;
 
 /** CDN／回源的瞬时状态码（只对 GET／HEAD 重试） */
 export const RETRYABLE_STATUS = new Set([429, 522, 552]);
@@ -42,19 +42,26 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export const retryEnabled = () => process.env.NET_RETRY !== '0';
 
-function retryAfter(res: APIResponse): number | undefined {
+/** Retry-After：秒数或 HTTP 日期，返回毫秒 */
+function retryAfter(res: { headers(): Record<string, string> }): number | undefined {
     const v = res.headers()['retry-after'];
-    const s = v ? Number(v) : NaN;
-    return Number.isFinite(s) && s >= 0 ? s * 1000 : undefined;
+    if (!v) return undefined;
+    const sec = Number(v);
+    if (Number.isFinite(sec) && sec >= 0) return sec * 1000;
+    const at = Date.parse(v);
+    return Number.isNaN(at) ? undefined : Math.max(0, at - Date.now());
 }
 
-/** 通用：fn 抛网络错误就重试；statusOf 给出时，返回值的状态码命中瞬时状态码也重试 */
+/**
+ * 通用：fn 抛网络错误就重试；statusOf 给出时，返回值的状态码命中瞬时状态码也重试。
+ * safe=false（非幂等请求）时一律不重试：连接断开前服务器可能已经处理了请求。
+ */
 export async function withNetRetry<T>(
     what: string,
     fn: () => Promise<T>,
-    opts: RetryOptions & { statusOf?: (r: T) => { status: number; retryAfterMs?: number } | undefined } = {},
+    opts: RetryOptions & { statusOf?: (r: T) => { status: number; retryAfterMs?: number } | undefined; safe?: boolean } = {},
 ): Promise<T> {
-    if (!retryEnabled()) return fn();
+    if (!retryEnabled() || opts.safe === false) return fn();
     const max = opts.maxRetries ?? MAX_RETRIES;
     const backoff = opts.backoffMs ?? defaultBackoff;
     for (let attempt = 0; ; attempt++) {
@@ -80,24 +87,24 @@ export async function withNetRetry<T>(
     }
 }
 
-const REQUEST_METHODS = ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch'] as const;
-
-/** 给 APIRequestContext 的实例方法套上重试（原地改，幂等） */
+/**
+ * 给 APIRequestContext 套上重试（原地改，幂等）。
+ * 只包 fetch 一层：get/head/post… 内部都调 this.fetch，包多层会让重试次数相乘。
+ */
 export function wrapRequest<T extends APIRequestContext>(ctx: T, opts: RetryOptions = {}): T {
     const marked = ctx as T & { __netRetry?: true };
     if (marked.__netRetry) return ctx;
     marked.__netRetry = true;
-    for (const m of REQUEST_METHODS) {
-        const orig = (ctx[m] as (...a: unknown[]) => Promise<APIResponse>).bind(ctx);
-        (ctx as unknown as Record<string, unknown>)[m] = (url: unknown, options?: { method?: string }) => {
-            const method = (m === 'fetch' ? options?.method ?? 'GET' : m).toUpperCase();
-            const idempotentRead = method === 'GET' || method === 'HEAD';
-            return withNetRetry(`${method} ${typeof url === 'string' ? url : '<request>'}`, () => orig(url, options), {
-                ...opts,
-                statusOf: idempotentRead ? (r) => ({ status: r.status(), retryAfterMs: retryAfter(r) }) : undefined,
-            });
-        };
-    }
+    const orig = ctx.fetch.bind(ctx) as (url: unknown, options?: { method?: string }) => Promise<APIResponse>;
+    (ctx as unknown as { fetch: unknown }).fetch = (url: unknown, options?: { method?: string }) => {
+        const method = (options?.method ?? 'GET').toUpperCase();
+        const safe = method === 'GET' || method === 'HEAD';
+        return withNetRetry(`${method} ${typeof url === 'string' ? url : '<request>'}`, () => orig(url, options), {
+            ...opts,
+            safe,
+            statusOf: (r) => ({ status: r.status(), retryAfterMs: retryAfter(r) }),
+        });
+    };
     return ctx;
 }
 
@@ -109,7 +116,10 @@ export function wrapPage<T extends Page>(page: T, opts: RetryOptions = {}): T {
     for (const m of ['goto', 'reload'] as const) {
         const orig = (page[m] as (...a: unknown[]) => Promise<unknown>).bind(page);
         (page as unknown as Record<string, unknown>)[m] = (...args: unknown[]) =>
-            withNetRetry(`page.${m}${typeof args[0] === 'string' && m === 'goto' ? ' ' + args[0] : ''}`, () => orig(...args), opts);
+            withNetRetry(`page.${m}${typeof args[0] === 'string' && m === 'goto' ? ' ' + args[0] : ''}`, () => orig(...args) as Promise<Response | null>, {
+                ...opts,
+                statusOf: (r) => (r ? { status: r.status(), retryAfterMs: retryAfter(r) } : undefined),
+            });
     }
     wrapRequest(page.request, opts);
     return page;

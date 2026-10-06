@@ -88,6 +88,26 @@ test('断言失败不重试：goto 成功后页面内容不对，只请求 1 次
     expect(hits.get('/c')).toBe(1);
 });
 
+test('POST 遇连接重置不重试（非幂等，只发 1 次）', async ({ request }) => {
+    plan.set('/postr', ['reset', 'reset']);
+    await expect(request.post(`${base}/postr`)).rejects.toThrow(/ECONNRESET|socket hang up/);
+    expect(hits.get('/postr')).toBe(1);
+});
+
+test('request.get 持续失败：只尝试 4 次，重试不嵌套', async ({ request }) => {
+    plan.set('/dead', Array(20).fill(522));
+    const res = await request.get(`${base}/dead`);
+    expect(res.status()).toBe(522);
+    expect(hits.get('/dead')).toBe(4);
+});
+
+test('page.goto 遇 429／522 也重试', async ({ page }) => {
+    plan.set('/g', [429, 522]);
+    const res = await page.goto(`${base}/g`);
+    expect(res?.status()).toBe(200);
+    expect(hits.get('/g')).toBe(3);
+});
+
 test('withNetRetry：重试用尽后抛出原错误，共 4 次尝试', async () => {
     let calls = 0;
     await expect(
