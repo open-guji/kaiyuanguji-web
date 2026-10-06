@@ -1,5 +1,217 @@
 @import "tailwindcss";
 
+/* HANAMIN-BEGIN 由 ops/fonts/build-hanamin.py --write-globals 生成，不要手改 */
+/* 花园明朝扩展区字兜底（overview#421）。由 ops/fonts/build-hanamin.py 生成，不要手改。
+   先声明的优先级低：全量分片在前，「实际用到的字」小子集在后。 */
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.001.r2.woff2") format("woff2");
+  unicode-range: U+3400-37FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.002.r2.woff2") format("woff2");
+  unicode-range: U+3800-3BFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.003.r2.woff2") format("woff2");
+  unicode-range: U+3C00-3FFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.004.r2.woff2") format("woff2");
+  unicode-range: U+4000-43FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.005.r2.woff2") format("woff2");
+  unicode-range: U+4400-47FF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.006.r2.woff2") format("woff2");
+  unicode-range: U+4800-4BFF; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.007.r2.woff2") format("woff2");
+  unicode-range: U+4C00-4DB5; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.008.r2.woff2") format("woff2");
+  unicode-range: U+F900-FA6D, U+FA70-FAD9; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.001.r2.woff2") format("woff2");
+  unicode-range: U+20000-203FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.002.r2.woff2") format("woff2");
+  unicode-range: U+20400-207FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.003.r2.woff2") format("woff2");
+  unicode-range: U+20800-20BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.004.r2.woff2") format("woff2");
+  unicode-range: U+20C00-20FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.005.r2.woff2") format("woff2");
+  unicode-range: U+21000-213FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.006.r2.woff2") format("woff2");
+  unicode-range: U+21400-217FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.007.r2.woff2") format("woff2");
+  unicode-range: U+21800-21BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.008.r2.woff2") format("woff2");
+  unicode-range: U+21C00-21FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.009.r2.woff2") format("woff2");
+  unicode-range: U+22000-223FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.010.r2.woff2") format("woff2");
+  unicode-range: U+22400-227FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.011.r2.woff2") format("woff2");
+  unicode-range: U+22800-22BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.012.r2.woff2") format("woff2");
+  unicode-range: U+22C00-22FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.013.r2.woff2") format("woff2");
+  unicode-range: U+23000-233FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.014.r2.woff2") format("woff2");
+  unicode-range: U+23400-237FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.015.r2.woff2") format("woff2");
+  unicode-range: U+23800-23BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.016.r2.woff2") format("woff2");
+  unicode-range: U+23C00-23FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.017.r2.woff2") format("woff2");
+  unicode-range: U+24000-243FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.018.r2.woff2") format("woff2");
+  unicode-range: U+24400-247FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.019.r2.woff2") format("woff2");
+  unicode-range: U+24800-24BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.020.r2.woff2") format("woff2");
+  unicode-range: U+24C00-24FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.021.r2.woff2") format("woff2");
+  unicode-range: U+25000-253FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.022.r2.woff2") format("woff2");
+  unicode-range: U+25400-257FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.023.r2.woff2") format("woff2");
+  unicode-range: U+25800-25BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.024.r2.woff2") format("woff2");
+  unicode-range: U+25C00-25FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.025.r2.woff2") format("woff2");
+  unicode-range: U+26000-263FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.026.r2.woff2") format("woff2");
+  unicode-range: U+26400-267FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.027.r2.woff2") format("woff2");
+  unicode-range: U+26800-26BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.028.r2.woff2") format("woff2");
+  unicode-range: U+26C00-26FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.029.r2.woff2") format("woff2");
+  unicode-range: U+27000-273FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.030.r2.woff2") format("woff2");
+  unicode-range: U+27400-277FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.031.r2.woff2") format("woff2");
+  unicode-range: U+27800-27BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.032.r2.woff2") format("woff2");
+  unicode-range: U+27C00-27FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.033.r2.woff2") format("woff2");
+  unicode-range: U+28000-283FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.034.r2.woff2") format("woff2");
+  unicode-range: U+28400-287FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.035.r2.woff2") format("woff2");
+  unicode-range: U+28800-28BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.036.r2.woff2") format("woff2");
+  unicode-range: U+28C00-28FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.037.r2.woff2") format("woff2");
+  unicode-range: U+29000-293FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.038.r2.woff2") format("woff2");
+  unicode-range: U+29400-297FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.039.r2.woff2") format("woff2");
+  unicode-range: U+29800-29BFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.040.r2.woff2") format("woff2");
+  unicode-range: U+29C00-29FFF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.041.r2.woff2") format("woff2");
+  unicode-range: U+2A000-2A3FF; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.042.r2.woff2") format("woff2");
+  unicode-range: U+2A400-2A6D6, U+2A700-2A828; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.043.r2.woff2") format("woff2");
+  unicode-range: U+2A829-2AC28; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.044.r2.woff2") format("woff2");
+  unicode-range: U+2AC29-2B028; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.045.r2.woff2") format("woff2");
+  unicode-range: U+2B029-2B428; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.046.r2.woff2") format("woff2");
+  unicode-range: U+2B429-2B734, U+2B740-2B81D, U+2B820-2B835; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.047.r2.woff2") format("woff2");
+  unicode-range: U+2B836-2BC35; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.048.r2.woff2") format("woff2");
+  unicode-range: U+2BC36-2C035; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.049.r2.woff2") format("woff2");
+  unicode-range: U+2C036-2C435; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.050.r2.woff2") format("woff2");
+  unicode-range: U+2C436-2C835; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.051.r2.woff2") format("woff2");
+  unicode-range: U+2C836-2CC35; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.052.r2.woff2") format("woff2");
+  unicode-range: U+2CC36-2CEA1, U+2CEB0-2D043; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.053.r2.woff2") format("woff2");
+  unicode-range: U+2D044-2D443; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.054.r2.woff2") format("woff2");
+  unicode-range: U+2D444-2D843; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.055.r2.woff2") format("woff2");
+  unicode-range: U+2D844-2DC43; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.056.r2.woff2") format("woff2");
+  unicode-range: U+2DC44-2E043; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.057.r2.woff2") format("woff2");
+  unicode-range: U+2E044-2E443; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.058.r2.woff2") format("woff2");
+  unicode-range: U+2E444-2E843; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.059.r2.woff2") format("woff2");
+  unicode-range: U+2E844-2EBE0; }
+@font-face { font-family: "HanaMinA"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinA.used.13a9bd88.r2.woff2") format("woff2");
+  unicode-range: U+348B, U+3558, U+3750, U+3760, U+38F2, U+3AD6, U+3B0A, U+3BAE, U+3E01, U+3E03, U+41FF, U+4576, U+462E, U+471F, U+4747, U+4749, U+47E6; }
+@font-face { font-family: "HanaMinB"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("https://data.kaiyuanguji.com/fonts/hanamin/HanaMinB.used.583c5ee7.r2.woff2") format("woff2");
+  unicode-range: U+20201, U+20240, U+2090E, U+20B93, U+21681, U+21F6A, U+22471, U+22474, U+229A4, U+22C05, U+233CC, U+233DA, U+23555, U+2365C, U+23E8C, U+24A0F, U+24BDD, U+2505E, U+26BF3, U+27BAA, U+284A6, U+284AA, U+2870A, U+28932, U+28F7E, U+2AA58, U+2B125, U+2B180, U+2B26C, U+2B2AB, U+2B387, U+2B416, U+2B5AE, U+2B7F9, U+2CD0A; }
+/* HANAMIN-END */
+
 /* =========================================================
    开源古籍 · 设计令牌（N1，照 design/n1-samples 样张）
    ---------------------------------------------------------
@@ -46,12 +258,16 @@
   /* ---- 字体：全站系统黑体；宋体只给整理本正文 ----
      只用系统字体，不下载任何网络字体（overview#240 定、#220 Q1 方案 C）：
      Noto 网络字体按 unicode-range 分片下载，条目页首访约 2.9 MB、阅读页一卷约 4 MB。
-     "Noto Sans CJK SC"／"Noto Serif CJK SC" 是系统自带的版本（Linux、部分 Android），不是网络字体。 */
+     "Noto Sans CJK SC"／"Noto Serif CJK SC" 是系统自带的版本（Linux、部分 Android），不是网络字体。
+     唯一的例外（overview#421，用户定）：栈末尾的 "HanaMinA"／"HanaMinB"（花园明朝）兜底扩展区生僻字（扩展 A、B–G、兼容表意文字）。
+     下面「HANAMIN」块里的 @font-face 全带 unicode-range，只在页面里出现了前面所有字体都没有的扩展区字时才下载：
+     我们的书实际用到的几十个字是一个 15 KB 左右的小子集，其余字才会去下 1024 字一片的全量分片；
+     普通页面一个字节也不下。文件在 COS 的 fonts/hanamin/ 下，长缓存。生成与上传见 ops/fonts/。 */
   --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei",
-    system-ui, sans-serif;
+    "HanaMinA", "HanaMinB", system-ui, sans-serif;
   --font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
-    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+    "Source Han Serif SC", "SimSun", "PMingLiU", "HanaMinA", "HanaMinB", serif;
 
   /* ---- 响应式断点 ---- */
   --breakpoint-mobile: 600px;
@@ -2077,10 +2293,10 @@
    ========================================================= */
 .bim-rd {
   --bim-font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", system-ui, sans-serif;
+    "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", "HanaMinA", "HanaMinB", system-ui, sans-serif;
   --bim-font-body: var(--bim-font-ui);
   --bim-font-serif: "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
-    "Source Han Serif SC", "SimSun", "PMingLiU", serif;
+    "Source Han Serif SC", "SimSun", "PMingLiU", "HanaMinA", "HanaMinB", serif;
   --bim-font-reading: var(--bim-font-serif);
 }
 

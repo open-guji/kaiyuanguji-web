@@ -1,0 +1,10 @@
+开源古籍网站（kaiyuanguji-web）第三方声明
+
+一、花园明朝（Hanazono Mincho：HanaMinA、HanaMinB）——扩展区生僻字兜底字体
+  - 版权：Copyright 2008–2017 GlyphWiki Project（上游：https://glyphwiki.org/hanazono/，版本 2017-09-04）。
+  - 授权：Hanazono Font License 与 SIL Open Font License 1.1 双授权，我们按 SIL OFL 1.1 再分发。
+    保留字体名：Hanazono Font、HanaMinA、HanaMinB、花園フォント、花園明朝A、花園明朝B。
+  - 用法：网站把它切成 woff2 子集，放在 https://data.kaiyuanguji.com/fonts/hanamin/ ，只在页面里出现了系统字体没有的
+    扩展区字（扩展 A、B–G、兼容表意文字）时才由浏览器下载（CSS unicode-range，见 nextjs/src/app/globals.css 的 HANAMIN 块）。
+    子集由 ops/fonts/build-hanamin.py 从上游原始 ttf 生成（压缩包 sha256 在脚本里锁死），字体里的版权与授权记录原样保留。
+  - 授权全文：ops/fonts/HanaMin-LICENSE.txt；随字体放在 COS 上的 fonts/hanamin/LICENSE.txt、THANKS.txt。
