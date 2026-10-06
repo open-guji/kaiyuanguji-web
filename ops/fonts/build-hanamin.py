@@ -31,6 +31,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.request
 import zipfile
@@ -51,21 +52,45 @@ FAMILIES = {
 KEEP_NAMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17]
 
 
+def write_atomic(path: str, data: bytes) -> None:
+    """先写临时文件再 os.replace：中断时不会在目标路径留下写了一半的文件"""
+    tmp = f'{path}.part.{os.getpid()}'
+    with open(tmp, 'wb') as f:
+        f.write(data)
+    os.replace(tmp, path)
+
+
 def fetch(cache: str) -> str:
+    """下载并解压上游压缩包到缓存；都是先落临时路径、校验通过再换成正式路径，中断不会留下半截缓存"""
     os.makedirs(cache, exist_ok=True)
     zpath = os.path.join(cache, 'hanazono-20170904.zip')
-    if not os.path.exists(zpath):
+    out = os.path.join(cache, 'hanazono')
+
+    def digest(path):
+        with open(path, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
+
+    if not os.path.exists(zpath) or digest(zpath) != SHA256:
         print('下载', URL, file=sys.stderr)
         req = urllib.request.Request(URL, headers={'User-Agent': 'Mozilla/5.0 (build-hanamin.py)'})
-        with urllib.request.urlopen(req, timeout=300) as r, open(zpath, 'wb') as f:
-            f.write(r.read())
-    h = hashlib.sha256(open(zpath, 'rb').read()).hexdigest()
-    if h != SHA256:
-        raise SystemExit(f'上游压缩包 sha256 不对：{h}')
-    out = os.path.join(cache, 'hanazono')
-    if not os.path.exists(os.path.join(out, 'HanaMinB.ttf')):
+        with urllib.request.urlopen(req, timeout=300) as r:
+            data = r.read()
+        h = hashlib.sha256(data).hexdigest()
+        if h != SHA256:
+            raise SystemExit(f'上游压缩包 sha256 不对：{h}')
+        write_atomic(zpath, data)
+    # 解压到临时目录，两个字体、授权文件都在才换成正式目录；已有的正式目录缺文件就重解
+    need = ('HanaMinA.ttf', 'HanaMinB.ttf', 'LICENSE.txt', 'THANKS.txt')
+    if not all(os.path.exists(os.path.join(out, n)) for n in need):
+        tmp = f'{out}.part.{os.getpid()}'
+        shutil.rmtree(tmp, ignore_errors=True)
         with zipfile.ZipFile(zpath) as z:
-            z.extractall(out)
+            z.extractall(tmp)
+        missing = [n for n in need if not os.path.exists(os.path.join(tmp, n))]
+        if missing:
+            raise SystemExit(f'上游压缩包里缺 {missing}')
+        shutil.rmtree(out, ignore_errors=True)
+        os.replace(tmp, out)
     return out
 
 
@@ -152,8 +177,7 @@ def main() -> int:
     with cf.ProcessPoolExecutor(args.jobs) as ex:
         for (name, data), item in zip(ex.map(job, [(p[3], p[4], p[2]) for p in plan]), plan):
             fn = f'{name}.woff2'
-            with open(os.path.join(args.out, fn), 'wb') as f:
-                f.write(data)
+            write_atomic(os.path.join(args.out, fn), data)
             results[name] = (fn, len(data), hashlib.sha256(data).hexdigest())
 
     def face(fam, p):
@@ -185,10 +209,11 @@ def main() -> int:
         'base': args.base,
         'files': {fn: {'bytes': n, 'sha256': h} for fn, n, h in results.values()},
     }
-    json.dump(manifest, open(os.path.join(args.out, 'manifest.json'), 'w'), indent=1, ensure_ascii=False)
     for n in ('LICENSE.txt', 'THANKS.txt'):
-        with open(os.path.join(src, n), 'rb') as r, open(os.path.join(args.out, n), 'wb') as w:
-            w.write(r.read())
+        with open(os.path.join(src, n), 'rb') as r:
+            write_atomic(os.path.join(args.out, n), r.read())
+    # manifest.json 最后写：sync-fonts-to-cos.mjs 只信它——有它才说明上面的文件都写完了，并按里面的 sha256 逐个核对
+    write_atomic(os.path.join(args.out, 'manifest.json'), (json.dumps(manifest, indent=1, ensure_ascii=False) + '\n').encode('utf-8'))
     total = sum(n for _, n, _ in results.values())
     used_total = sum(v[1] for k, v in results.items() if '.used.' in k)
     print(f'{len(results)} 个文件，共 {total / 1e6:.1f} MB（其中「用到的字」子集 {used_total / 1e3:.1f} KB）→ {args.out}', file=sys.stderr)

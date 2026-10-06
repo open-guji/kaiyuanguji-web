@@ -22,6 +22,8 @@ python3 ops/fonts/build-hanamin.py --write-globals        # 产出在 ops/fonts/
 DRY_RUN=1 node nextjs/scripts/sync-fonts-to-cos.mjs       # 先看会传什么
 COS_SECRET_ID=… COS_SECRET_KEY=… COS_BUCKET=… node nextjs/scripts/sync-fonts-to-cos.mjs
 ```
+- `build-hanamin.py` 的下载、解压、写文件都是先落临时路径再换名，`manifest.json` 最后写；`sync-fonts-to-cos.mjs` 只信它：没有 manifest 拒绝，每个 woff2 按里面的字节数与 sha256 核对，
+  对不上就整个中止、什么都不传；COS 上已有的同名对象比字节数，不一致重传；上传顺序是授权文件 → woff2 → manifest，没有授权文件就不会有公开的字体。
 - 字体文件名由规则与输入决定（分片＝区段序号＋修订号 `REV`，用到的字＝字表哈希），COS 上 `immutable` 长缓存，永不覆盖；
   改了分片规则就把 `build-hanamin.py` 里的 `REV` 加一。
 - 上游压缩包 `hanazono-20170904.zip` 的 sha256 锁在脚本里，下载后校验；授权全文见 `HanaMin-LICENSE.txt`，根目录 `NOTICE` 有声明。
