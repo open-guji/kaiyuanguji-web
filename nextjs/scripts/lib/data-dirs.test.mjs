@@ -21,6 +21,7 @@ import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolveDataDirs, DEFAULT_DATA_ROOT } from './data-dirs.mjs';
+import { SITE_CONTENT_FILES } from './production-dir.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const NEXTJS_DIR = resolve(__dirname, '..', '..');
@@ -145,7 +146,9 @@ function makeFixture(base) {
     writeFileSync(join(item, 'manifest.json'), JSON.stringify({ id, versions: [{ key: 'default', kind: 'transcription', label: '維基文庫', source: 'wikisource', license: 'CC BY-SA 4.0' }] }));
     writeFileSync(join(item, 'default', 'index.json'), JSON.stringify({ chapters: [{ n: 1, file: '001', title: '卷一', has_json: false }] }));
     writeFileSync(join(item, 'default', '001.md'), '# 卷一\n測試正文\n');
-    // bundle-data 从 draft 仓取 commitId
+    // 站点内容文件在 book-index 根目录，缺了 bundle-data 会报错（overview#432）
+    for (const f of SITE_CONTENT_FILES) writeFileSync(join(draft, f), f === 'recommended.json' ? '{"groups":[]}' : '{}');
+    // bundle-data 从正式仓（此处的 draft 目录当作 book-index）取 commitId
     const git = (...args) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd: draft, stdio: 'ignore' });
     git('init', '-q');
     git('add', '-A');
@@ -160,8 +163,7 @@ try {
     const env = {
         ...process.env,
         KYG_DATA_ROOT: outRoot,
-        BOOK_INDEX_DRAFT_DIR: draft,
-        BOOK_INDEX_PRODUCTION_DIR: join(tmp, 'no-production'),
+        BOOK_INDEX_PRODUCTION_DIR: draft,
         BOOK_TEXT_DIR: text,
     };
     // 防止外部环境里残留的单项变量把产物引到别处

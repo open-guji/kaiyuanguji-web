@@ -250,8 +250,8 @@ svg .arh { fill: var(--ink-2); }
   <div class="scroll"><table>
     <thead><tr><th>步骤</th><th>做什么</th><th>产物</th></tr></thead>
     <tbody>
-      <tr><td>① 三个数据仓</td><td><code>book-index-draft</code>（草稿）、<code>book-index</code>（正式）、<code>book-text</code>（整理本、全文）。CI 里浅克隆</td><td>约 14.7 万条条目、卷文本</td></tr>
-      <tr><td>② 打包</td><td><code>bundle-data.mjs</code> 合并草稿与正式，输出目录在 <code>nextjs/</code> 之外（<code>public/</code> 里放 14.7 万个文件会让 <code>next start</code> 起不来）</td><td>条目 JSON、搜索分片、总目和阅读索引、<code>latest.json</code></td></tr>
+      <tr><td>① 三个数据仓</td><td><code>book-index</code>（正式）、<code>book-text</code>（整理本、全文）。CI 里浅克隆；草稿仓 <code>book-index-draft</code> 不再参与部署（overview#432）</td><td>正式仓条目、卷文本</td></tr>
+      <tr><td>② 打包</td><td><code>bundle-data.mjs</code> 只读正式仓（缺了报错），输出目录在 <code>nextjs/</code> 之外（<code>public/</code> 里放 14.7 万个文件会让 <code>next start</code> 起不来）</td><td>条目 JSON、搜索分片、总目和阅读索引、<code>latest.json</code></td></tr>
       <tr><td>③ 写数据桶（两套并行）</td><td><b>current 链</b>：增量上传 <code>current/*</code>，全量上传 <code>v/&lt;commit&gt;/search/</code>，最后写 <code>latest.json</code>。<b>h1 链</b>：文件名带内容哈希，<code>h1/entry/&lt;id&gt;.&lt;hash8&gt;.json</code>，加分片清单和版本根清单</td><td>数据桶 <code>data.kaiyuanguji.com</code></td></tr>
       <tr><td>④ 指针</td><td>全部对象上传成功之后才写指针。指针里有三仓的 commit、数据打包日期和 <code>webCommitId</code>（这一版数据对应的网站代码）</td><td><code>latest.json</code>、<code>staging/latest.json</code>、<code>h1/manifest-root.json</code></td></tr>
     </tbody>

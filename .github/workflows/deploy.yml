@@ -54,10 +54,6 @@ on:
         default: code+data
       # 联调用（只影响手动触发、且只对 target=staging 生效）：默认都是 main。
       # 代码版本不在这里选——在「Use workflow from」里选分支，web 取该分支的 HEAD。
-      draft_ref:
-        description: '仅 target=staging：book-index-draft 的分支／tag／commit（默认 main）'
-        type: string
-        default: main
       prod_ref:
         description: '仅 target=staging：book-index 的分支／tag／commit（默认 main）'
         type: string
@@ -75,7 +71,7 @@ on:
         description: '仅 target=staging：演练产物复用——同时构建并存正式站产物（不部署），测试站改用打包、加密、解包后的产物部署'
         type: boolean
         default: false
-  # 每日定时兜底：book-index-draft 的 notify-web webhook 依赖跨仓 PAT
+  # 每日定时兜底：数据仓的 notify-web webhook 依赖跨仓 PAT
   # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
   # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
   # 变化时由 check job 提前跳过，不浪费构建。UTC 20:30 = 北京 04:30。
@@ -120,20 +116,16 @@ jobs:
             exit 0
           fi
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
-          LIVE_DRAFT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('fullCommitId',''))" || echo '')
           LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
           LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
-          HEAD_DRAFT=$(git ls-remote https://github.com/open-guji/book-index-draft.git refs/heads/main | cut -f1)
           HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
           HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1)
-          echo "draft:      live=$LIVE_DRAFT head=$HEAD_DRAFT"
           echo "production: live=$LIVE_PROD head=$HEAD_PROD"
           echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
           # 线上 latest.json 缺字段（旧版产物）或比对不上 → 部署
-          # 三仓皆须比对得上方可跳过。少比一项即：该仓单独有改动时被判「无变化」，
-          # 其更新永远上不了线（2026-08-26 加 book-text 一项）。
-          if [ -n "$HEAD_DRAFT" ] && [ "$LIVE_DRAFT" = "$HEAD_DRAFT" ] \
-             && [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
+          # 两仓皆须比对得上方可跳过。少比一项即：该仓单独有改动时被判「无变化」，
+          # 其更新永远上不了线（2026-08-26 加 book-text 一项）。草稿仓不再参与（overview#432）。
+          if [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
              && [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
             echo "· 数据无变化，跳过部署"
@@ -158,12 +150,10 @@ jobs:
       target: ${{ steps.r.outputs.target }}
       mode: ${{ steps.r.outputs.mode }}
       web_ref: ${{ steps.r.outputs.web_ref }}
-      draft_ref: ${{ steps.r.outputs.draft_ref }}
       prod_ref: ${{ steps.r.outputs.prod_ref }}
       text_ref: ${{ steps.r.outputs.text_ref }}
-      # overview#341：三个数据仓 ref 解析成的完整 commit（解析不了的留空，例如手填的短 SHA）。
+      # overview#341：两个数据仓 ref 解析成的完整 commit（解析不了的留空，例如手填的短 SHA）。
       # build 据此在克隆之前就判断「数据有没有变」，没变就不克隆（见 build 的 Data fast path）。
-      draft_sha: ${{ steps.sha.outputs.draft_sha }}
       prod_sha: ${{ steps.sha.outputs.prod_sha }}
       text_sha: ${{ steps.sha.outputs.text_sha }}
       # overview#341：非空＝正式站直接部署这个 run 存的正式站产物（不重新构建）
@@ -207,7 +197,6 @@ jobs:
         env:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
           # 经 env 传入，不把输入直接拼进脚本
-          IN_DRAFT_REF: ${{ inputs.draft_ref }}
           IN_PROD_REF: ${{ inputs.prod_ref }}
           IN_TEXT_REF: ${{ inputs.text_ref }}
           IN_FROM_RUN: ${{ inputs.from_run }}
@@ -243,7 +232,7 @@ jobs:
             mget() { python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2],''))" "$M" "$1"; }
             M_WEB=$(mget webCommitId)
             [ "$M_WEB" = "$RUN_SHA" ] || { echo "❌ manifest 的 webCommitId（$M_WEB）与 run 的 commit（$RUN_SHA）不一致"; exit 1; }
-            for k in fullCommitId productionCommitId textCommitId; do
+            for k in productionCommitId textCommitId; do
               printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
             done
             echo "mode=promote" >> "$GITHUB_OUTPUT"
@@ -264,7 +253,6 @@ jobs:
               fi
             fi
             echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
-            echo "draft_ref=$(mget fullCommitId)" >> "$GITHUB_OUTPUT"
             echo "prod_ref=$(mget productionCommitId)" >> "$GITHUB_OUTPUT"
             echo "text_ref=$(mget textCommitId)" >> "$GITHUB_OUTPUT"
             echo "artifact_run=$ART" >> "$GITHUB_OUTPUT"
@@ -285,7 +273,6 @@ jobs:
               exit 1
             fi
             echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
-            echo "draft_ref=$(get "$S" fullCommitId)" >> "$GITHUB_OUTPUT"
             echo "prod_ref=$(get "$S" productionCommitId)" >> "$GITHUB_OUTPUT"
             echo "text_ref=$(get "$S" textCommitId)" >> "$GITHUB_OUTPUT"
             echo "· promote(${{ inputs.promote }})：web=$WEB 数据=测试站所记三仓 commit"
@@ -297,7 +284,7 @@ jobs:
           echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           # 数据仓 ref：push／定时没有输入，一律 main；手动触发可指定（联调分支）。
           # 只接受 git ref 常见字符，其余当作 main 之外的非法输入直接报错。
-          for pair in "draft_ref:$IN_DRAFT_REF" "prod_ref:$IN_PROD_REF" "text_ref:$IN_TEXT_REF"; do
+          for pair in "prod_ref:$IN_PROD_REF" "text_ref:$IN_TEXT_REF"; do
             k="${pair%%:*}"; v="${pair#*:}"; v="${v:-main}"
             if ! printf '%s' "$v" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
               echo "❌ $k 含非法字符：$v"; exit 1
@@ -309,13 +296,12 @@ jobs:
             fi
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
-          echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} draft=${IN_DRAFT_REF:-main} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
+          echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
 
       # overview#341：把三个 ref 解析成完整 commit。分支／tag 用 ls-remote；本来就是 40 位 SHA 的原样用；
       # 解析不了（短 SHA、网络失败）就留空——build 照老路克隆，只是用不上「数据没变就跳过」。
       - id: sha
         env:
-          DRAFT_REF: ${{ steps.r.outputs.draft_ref }}
           PROD_REF: ${{ steps.r.outputs.prod_ref }}
           TEXT_REF: ${{ steps.r.outputs.text_ref }}
         run: |
@@ -330,7 +316,7 @@ jobs:
             fi
             printf '%s' "$out" | grep -Eq '^[0-9a-f]{40}$' && echo "$out" || echo ''
           }
-          for pair in "draft_sha:book-index-draft:$DRAFT_REF" "prod_sha:book-index:$PROD_REF" "text_sha:book-text:$TEXT_REF"; do
+          for pair in "prod_sha:book-index:$PROD_REF" "text_sha:book-text:$TEXT_REF"; do
             k="${pair%%:*}"; rest="${pair#*:}"; repo="${rest%%:*}"; ref="${rest#*:}"
             v=$(sha_of "$repo" "$ref")
             echo "$k=$v" >> "$GITHUB_OUTPUT"
@@ -391,14 +377,13 @@ jobs:
       # 任何一条不满足、读不到，都走老路，行为与原来一样。
       - name: Data fast path — decide before cloning (overview#341)
         id: data_pre
-        if: ${{ env.HAS_COS_SECRETS == 'true' && needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ env.HAS_COS_SECRETS == 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
-          DRAFT_COMMIT: ${{ needs.resolve.outputs.draft_sha }}
           PROD_COMMIT: ${{ needs.resolve.outputs.prod_sha }}
           TEXT_COMMIT: ${{ needs.resolve.outputs.text_sha }}
         run: |
@@ -413,7 +398,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
-          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
+          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
 
       - name: Data fast path — write latest.json only
         id: fast_latest
@@ -434,11 +419,9 @@ jobs:
 
       # --- 步骤 1：为 EdgeOne 构建（cos 模式） ---
       #
-      # 必须同时克隆 draft 与 production 两个数据仓：
-      # bundle-data.mjs 会合并二者（production 为已升格的正式条目），
-      # 缺 production 时脚本**静默**只打包 draft，导致所有正式条目
-      # （四库全书、红楼梦等）在站上 404 —— 升格后的 draft 条目是
-      # tombstone，会重定向到 production ID，而该 ID 不在产物里。
+      # 克隆 book-index（正式仓）与 book-text。overview#432 起不再克隆草稿仓 book-index-draft：
+      # 草稿条目不上站。bundle-data.mjs 缺正式仓、或缺其根目录的站点内容文件
+      # （resource*.json／recommended.json／promotions.json）都会**报错退出**，不会静默打出空站。
       - name: Clone index data repos
         if: ${{ env.DATA_FAST != 'true' }}
         run: |
@@ -449,7 +432,6 @@ jobs:
             git -C "$2" checkout -q FETCH_HEAD
           }
           # overview#341：resolve 解析出了完整 commit 就按 commit 取，保证与上面「数据没变」的判断是同一版
-          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_sha || needs.resolve.outputs.draft_ref }}"
           fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
@@ -465,7 +447,6 @@ jobs:
         if: ${{ env.DATA_FAST != 'true' }}
         working-directory: nextjs
         env:
-          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
         run: |
@@ -580,8 +561,7 @@ jobs:
           COS_REGION: ap-shanghai
         run: |
           cd nextjs
-          # 这次实际用来打包的三个数据仓 commit（与 latest.json 里 fullCommitId／productionCommitId／textCommitId 同口径）
-          export DRAFT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index-draft" rev-parse HEAD)"
+          # 这次实际用来打包的数据仓 commit（与 latest.json 里 productionCommitId／textCommitId 同口径；fullCommitId 即 productionCommitId）
           export PROD_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index" rev-parse HEAD)"
           export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
           node scripts/cos-sync-decision.mjs decide
@@ -678,7 +658,6 @@ jobs:
           WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
         run: |
           cd nextjs
-          export DRAFT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index-draft" rev-parse HEAD)"
           export PROD_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-index" rev-parse HEAD)"
           export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
           node scripts/cos-sync-decision.mjs mark
@@ -713,7 +692,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
-          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
+          key: item-sitemaps-v1-${{ needs.resolve.outputs.target }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.data_pre.outputs.fingerprint }}
 
       # W2-3：条目页按需失效接口（/internal/revalidate）的密钥。由 EDGEONE_API_TOKEN
       # 派生（HMAC），不需要另建 secret；构建期写进服务端代码，部署后的失效步骤用同一个值。
@@ -923,7 +902,6 @@ jobs:
         if: ${{ env.DEPLOY_TARGET == 'staging' }}
         env:
           WEB: ${{ needs.resolve.outputs.web_ref }}
-          R_DRAFT: ${{ needs.resolve.outputs.draft_sha }}
           R_PROD: ${{ needs.resolve.outputs.prod_sha }}
           R_TEXT: ${{ needs.resolve.outputs.text_sha }}
         run: |
@@ -934,7 +912,6 @@ jobs:
           import json, sys
           json.dump({
               'webCommitId': '$WEB',
-              'fullCommitId': '$(head_of book-index-draft "$R_DRAFT")',
               'productionCommitId': '$(head_of book-index "$R_PROD")',
               'textCommitId': '$(head_of book-text "$R_TEXT")',
               'runId': '${{ github.run_id }}',
@@ -1153,17 +1130,16 @@ jobs:
 
       - name: Restore item sitemaps (www)
         id: sitemap_cache
-        if: ${{ needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
-          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
+          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
       - name: Clone, bundle and generate item sitemaps (cache miss)
         if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' }}
         env:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
-          BOOK_INDEX_DRAFT_DIR: ${{ github.workspace }}/book-index-draft
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
           SITEMAP_SITE: https://www.kaiyuanguji.com
@@ -1175,7 +1151,6 @@ jobs:
             git -C "$2" checkout -q FETCH_HEAD
           }
           # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
-          fetch_at book-index-draft book-index-draft "${{ needs.resolve.outputs.draft_sha || needs.resolve.outputs.draft_ref }}"
           fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
           cd nextjs
@@ -1184,12 +1159,12 @@ jobs:
           node scripts/gen-sitemaps.mjs
 
       - name: Save item sitemaps cache (www)
-        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.draft_sha != '' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
-          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.draft_sha }}-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
+          key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
       - name: Place item sitemaps
         working-directory: nextjs

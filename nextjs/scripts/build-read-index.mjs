@@ -27,7 +27,7 @@
  * 默认在 classific.json 同一个仓里找。文件没有或读不了时这三块输出空数组（首页整块不显示），**不让构建失败**。
  *
  * 用法：bundle-data.mjs 在总目之后调用 bundleRead()（正常流程）；
- *       node scripts/build-read-index.mjs [draftDir]   单独重建
+ *       node scripts/build-read-index.mjs [bookIndexDir]   单独重建
  */
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { dirname, join, resolve } from 'path';
@@ -524,11 +524,12 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
     const { resolveDataDirs } = await import('./lib/data-dirs.mjs');
     const here = dirname(fileURLToPath(import.meta.url));
-    const draftDir = resolve(process.argv[2] || process.env.BOOK_INDEX_DRAFT_DIR || join(here, '..', '..', 'book-index-draft'));
-    const prodDir = resolve(process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const prodDir = resolve(process.argv[2] || process.env.BOOK_INDEX_PRODUCTION_DIR || join(here, '..', '..', 'book-index'));
+    const { assertProductionDir } = await import('./lib/production-dir.mjs');
+    try { assertProductionDir(prodDir); } catch (e) { console.error(`❌ ${e.message}`); process.exit(1); }
     const textDir = resolve(process.env.BOOK_TEXT_DIR || join(here, '..', '..', 'book-text'));
     const index = { works: {}, books: {} };
-    for (const [dir, label] of [[draftDir, 'draft'], [prodDir, 'official']]) {
+    for (const [dir, label] of [[prodDir, 'official']]) {
         for (const typeKey of ['works', 'books']) {
             const shardDir = join(dir, 'index', typeKey);
             if (!existsSync(shardDir)) continue;
@@ -544,7 +545,7 @@ if (isMain) {
     }
     bundleRead({
         index,
-        rootDirFor: (e) => (e._root === 'official' ? prodDir : draftDir),
+        rootDirFor: () => prodDir,
         textDirFor: () => textDir,
         dataDir: resolveDataDirs().dataDir,
         taxonomyFile: join(prodDir, 'classific.json'),

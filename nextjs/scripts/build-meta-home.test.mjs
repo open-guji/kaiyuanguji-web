@@ -128,7 +128,7 @@ test('bundleMetaHome：各分区按现有数据拼出，策展里不存在或不
     const f = fixture();
     try {
         const logs = [];
-        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, draftDir: f.draft, curationDir: f.cur, log: (s) => logs.push(s) });
+        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, siteDir: f.draft, curationDir: f.cur, log: (s) => logs.push(s) });
         const s = json(join(f.out, 'meta-home/sections.json'));
         assert.deepEqual(s.counts, { works: 95055, books: 20899, collections: 84, entities: 30994 });
         // 书架：按全部作品解析，点名的不存在就略过；对上了著录进度才标条目数
@@ -168,7 +168,7 @@ test('bundleMetaHome：策展文件缺失或坏了，书架／丛编／人物／
     try {
         rmSync(join(f.cur, 'meta-home.json'));
         f.put(f.cur, 'read-home.json', '{坏');
-        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, draftDir: f.draft, curationDir: f.cur, log: () => {} });
+        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, siteDir: f.draft, curationDir: f.cur, log: () => {} });
         const s = json(join(f.out, 'meta-home/sections.json'));
         assert.equal(s.shelf, null);
         assert.deepEqual([s.related_catalogs, s.collection_groups, s.bibliographers, s.lineage], [[], [], [], []]);
@@ -178,7 +178,7 @@ test('bundleMetaHome：策展文件缺失或坏了，书架／丛编／人物／
         // 没有 resource 文件、没有 tree 也不失败
         rmSync(join(f.draft, 'resource.json'));
         rmSync(join(f.out, 'catalog'), { recursive: true });
-        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, draftDir: f.draft, curationDir: null, log: () => {} });
+        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, siteDir: f.draft, curationDir: null, log: () => {} });
         const s2 = json(join(f.out, 'meta-home/sections.json'));
         assert.deepEqual([s2.catalog_progress, s2.bu], [[], []]);
     } finally {
@@ -199,7 +199,7 @@ test('bundleMetaHome：认实交格式——layout: shelf 的组是书架，shum
             { key: 'shumu', label: '书目与考证', layout: 'list', items: [{ id: 'zz', kind: 'Work', title: '直齋書錄解題', text_count: 2 }] },
             { key: 'dangan', label: '档案', layout: 'list', items: [{ id: 'hl', kind: 'Work' }] },
         ] });
-        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, draftDir: f.draft, curationDir: f.cur, log: () => {} });
+        bundleMetaHome({ index: f.index, rootDirFor: () => f.draft, textDirFor: () => f.text, dataDir: f.out, siteDir: f.draft, curationDir: f.cur, log: () => {} });
         const s = json(join(f.out, 'meta-home/sections.json'));
         assert.equal(s.shelf.label, '史志目录');
         assert.deepEqual(s.shelf.items.map((x) => [x.id, x.period_of, x.orig ?? false, x.records ?? null]), [['hz', '漢', true, 621], ['bj', '晉', false, null]]);

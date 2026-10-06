@@ -22,6 +22,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { SITE_CONTENT_FILES } from './lib/production-dir.mjs';
 
 const NEXTJS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -108,6 +109,8 @@ function makeFixture(base) {
     });
     put(text, 'index/texts/2.json', { [IDS.newBook]: [{ key: 'default', kind: 'transcription', label: 'x', chapters_total: 2 }] });
 
+    // 站点内容文件（book-index 根目录；缺了 bundle-data 会报错，overview#432）
+    for (const f of SITE_CONTENT_FILES) put(draft, f, f === 'recommended.json' ? { groups: [] } : {});
     put(draft, 'index/works/0.json', works);
     put(draft, 'index/books/0.json', books);
     git(draft, 'init', '-q');
@@ -117,7 +120,7 @@ function makeFixture(base) {
 }
 
 function env(outRoot, draft, text) {
-    const e = { ...process.env, KYG_DATA_ROOT: outRoot, BOOK_INDEX_DRAFT_DIR: draft, BOOK_INDEX_PRODUCTION_DIR: join(outRoot, '..', 'no-production'), BOOK_TEXT_DIR: text };
+    const e = { ...process.env, KYG_DATA_ROOT: outRoot, BOOK_INDEX_PRODUCTION_DIR: draft, BOOK_TEXT_DIR: text };
     for (const k of ['DATA_OUT_DIR', 'DATA_LATEST_FILE', 'H1_OUT_DIR', 'H1_TEXT_OUT_DIR']) delete e[k];
     return e;
 }

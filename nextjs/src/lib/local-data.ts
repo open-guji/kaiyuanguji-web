@@ -565,10 +565,11 @@ export function getWorkCatalog(id: string) {
 }
 
 // ── Resource progress ──
+// resource*.json、recommended.json 在正式仓 book-index 根目录（overview#432 起，草稿仓不再维护）
 
 export function getResourceProgress() {
     const workspaceRoot = getWorkspaceRoot();
-    const resourceFile = path.join(workspaceRoot, 'book-index-draft', 'resource.json');
+    const resourceFile = path.join(workspaceRoot, 'book-index', 'resource.json');
     if (!fs.existsSync(resourceFile)) return null;
     try {
         return JSON.parse(fs.readFileSync(resourceFile, 'utf-8'));
@@ -579,7 +580,7 @@ export function getResourceProgress() {
 
 export function getSiteProgress() {
     const workspaceRoot = getWorkspaceRoot();
-    const resourceFile = path.join(workspaceRoot, 'book-index-draft', 'resource-site.json');
+    const resourceFile = path.join(workspaceRoot, 'book-index', 'resource-site.json');
     if (!fs.existsSync(resourceFile)) return null;
     try {
         return JSON.parse(fs.readFileSync(resourceFile, 'utf-8'));
@@ -602,7 +603,7 @@ export function getResourceCounts() {
 
 export function getRecommended() {
     const workspaceRoot = getWorkspaceRoot();
-    const file = path.join(workspaceRoot, 'book-index-draft', 'recommended.json');
+    const file = path.join(workspaceRoot, 'book-index', 'recommended.json');
     if (!fs.existsSync(file)) return null;
     try {
         return JSON.parse(fs.readFileSync(file, 'utf-8'));

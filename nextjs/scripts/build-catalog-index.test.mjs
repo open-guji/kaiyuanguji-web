@@ -17,6 +17,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { SITE_CONTENT_FILES } from './lib/production-dir.mjs';
 import {
     CATALOG_PAGE_SIZE,
     UNCLASSIFIED_ID,
@@ -254,6 +255,7 @@ test('bundle-data.mjs 整条流程产出 catalog/', () => {
         writeFileSync(join(draft, workRel), JSON.stringify({
             id: 'aaaaaaaaaaa', title: '史記', type: 'work', classification: cls('史部', '紀傳類'),
         }));
+        for (const f of SITE_CONTENT_FILES) writeFileSync(join(draft, f), f === 'recommended.json' ? '{"groups":[]}' : '{}');
         execFileSync('git', ['init', '-q'], { cwd: draft });
         const dataRoot = join(base, 'out');
         execFileSync(process.execPath, [join(__dirname, 'bundle-data.mjs')], {
@@ -261,8 +263,7 @@ test('bundle-data.mjs 整条流程产出 catalog/', () => {
             env: {
                 ...process.env,
                 KYG_DATA_ROOT: dataRoot,
-                BOOK_INDEX_DRAFT_DIR: draft,
-                BOOK_INDEX_PRODUCTION_DIR: join(base, 'none'),
+                BOOK_INDEX_PRODUCTION_DIR: draft,
                 BOOK_TEXT_DIR: join(base, 'none-text'),
             },
             stdio: 'pipe',

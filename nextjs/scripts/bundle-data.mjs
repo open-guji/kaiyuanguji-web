@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * bundle-data.mjs — 将 book-index-draft 的散落 JSON 文件打包成 web 可消费形态
+ * bundle-data.mjs — 将 book-index（正式仓）的散落 JSON 文件打包成 web 可消费形态
  *
  * Phase 3 起改用扁平单文件结构（替换原 chunks/ 分桶）：
  * - L1: public/data/entry/{id}.json — 每个 Work/Book/Collection/Entity 单独一个文件
@@ -13,15 +13,19 @@
  * - index/texts/{0-f}.json — 各条目 manifest 汇总出的全局清单（滤掉 internal 版本）
  *
  * 用法：
- *   node scripts/bundle-data.mjs                          # 默认 ../book-index-draft
- *   node scripts/bundle-data.mjs /path/to/book-index-draft
- *   BOOK_INDEX_DRAFT_DIR=/path node scripts/bundle-data.mjs
+ *   node scripts/bundle-data.mjs                          # 默认 ../book-index
+ *   node scripts/bundle-data.mjs /path/to/book-index
+ *   BOOK_INDEX_PRODUCTION_DIR=/path node scripts/bundle-data.mjs
+ *
+ * overview#432 起只打包正式仓 book-index，不再读草稿仓 book-index-draft。
+ * 缺正式仓或缺其根目录的站点内容文件（lib/production-dir.mjs）都直接报错退出，不静默。
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { assertProductionDir, assertSiteContentFiles, SITE_CONTENT_FILES } from './lib/production-dir.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
@@ -32,14 +36,10 @@ import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicMa
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DRAFT_DIR = resolve(
-    process.argv[2]
-    || process.env.BOOK_INDEX_DRAFT_DIR
-    || join(__dirname, '..', '..', 'book-index-draft')
-);
-// production 仓（已升格条目所在）。可选；不存在时只打包 draft 数据。
+// 正式仓 book-index：所有条目与站点内容文件的来源。必需——缺了报错（见 main 里的检查）。
 const PRODUCTION_DIR = resolve(
-    process.env.BOOK_INDEX_PRODUCTION_DIR
+    process.argv[2]
+    || process.env.BOOK_INDEX_PRODUCTION_DIR
     || join(__dirname, '..', '..', 'book-index')
 );
 // 文本仓（整理本 / 辑佚 / 全文 / 抓取素材）。2026-08-26 自 book-index 拆出，
@@ -52,7 +52,7 @@ const TEXT_DIR = resolve(
 // 产物目录：默认 public/data，可用 KYG_DATA_ROOT／DATA_OUT_DIR 挪出 public/（见 lib/data-dirs.mjs）
 const { dataDir: OUT_DIR, latestFile: LATEST_FILE } = resolveDataDirs();
 
-const TIYAO_DIR = join(DRAFT_DIR, 'data', 'siku-catalog', 'volumes');
+const TIYAO_DIR = join(PRODUCTION_DIR, 'data', 'siku-catalog', 'volumes');
 const TIYAO_GROUP_SIZE = 10;
 
 // ─── 工具 ───
@@ -155,10 +155,11 @@ const NUM_SHARDS = 16;
 // ─── 内部：合并分片索引（不再写入 index.json，仅供 L1/meta/recommended hydrate 使用）───
 
 /**
- * 加载 draft + production 两个仓的 shard 索引并合并。
- * 每个 entry 上加 `_root` 字段（"draft"/"official"），bundleL1 据此找 detail 文件。
+ * 加载正式仓 book-index 的 shard 索引。
+ * 每个 entry 上加 `_root` 字段（恒为 "official"），bundleL1 据此找 detail 文件。
+ * （overview#432 前还合并草稿仓、`_root` 有 "draft"/"official" 两种；下游 builder 仍按 `_root` 取根目录，故保留该字段。）
  *
- * ⚠️ 必须跳过升格墓碑（draft 侧 `promoted_to`），否则计数翻倍：
+ * ⚠️ 必须跳过升格墓碑（`promoted_to`），否则计数翻倍：
  * 升格会给条目**分配新 ID**，旧 ID 只留一个 stub 墓碑。按 ID dedupe 挡不住
  * 这种情况——墓碑(旧 ID) 与真身(新 ID) 是两个不同的 key，两条都会留下。
  * 2026-09-04 查实：meta.json 的 works/books/collections 恰好是真实值的
@@ -167,16 +168,11 @@ const NUM_SHARDS = 16;
  *
  * 同一个坑 L1 在 2026-08-25 修（indexer/full-reindex.mjs 的 iterAllRoots），
  * L2 随后跟上（build-search-index.mjs 的 loadShardedIndex），**唯独本文件
- * 一直没改** —— 于是首页「N 部作品」的统计数字虚高一倍。三处语义须一致：
- * 两仓都收，只丢墓碑。
+ * 一直没改** —— 于是首页「N 部作品」的统计数字虚高一倍。三处语义须一致：只丢墓碑。
  */
 function loadShardedIndex() {
     const merged = { books: {}, collections: {}, works: {}, entities: {} };
-    // 先 draft，后 production：production 同 ID 会覆盖 draft（理论上不会有冲突）
-    _mergeRoot(merged, DRAFT_DIR, 'draft');
-    if (existsSync(PRODUCTION_DIR)) {
-        _mergeRoot(merged, PRODUCTION_DIR, 'official');
-    }
+    _mergeRoot(merged, PRODUCTION_DIR, 'official');
     return merged;
 }
 
@@ -208,9 +204,9 @@ function _mergeRoot(merged, rootDir, rootLabel) {
     return merged;
 }
 
-/** 按 _root 标签解析回真实根目录 */
-function rootDirFor(entry) {
-    return entry._root === 'official' ? PRODUCTION_DIR : DRAFT_DIR;
+/** 条目所在根目录：只有正式仓 */
+function rootDirFor(_entry) {
+    return PRODUCTION_DIR;
 }
 
 // ─── L1: 扁平单文件 entry/{id}.json ───
@@ -435,27 +431,24 @@ function bundleTextsIndex(index) {
     console.log(`TXT  ${shardCount} index/texts 分片${filtered ? `（${filtered} 片去掉了 internal 版本）` : ''}`);
 }
 
-// ─── 复制独立数据文件（resource.json, recommended.json, promotions.json） ───
+// ─── 复制独立数据文件（resource*.json, recommended.json, promotions.json） ───
+// 都在 book-index 根目录；缺了是数据出错，main 开头已 assertSiteContentFiles，这里不再静默跳过。
 
 function bundleExtraFiles() {
     // resource* 直接复制；promotions.json 一并复制（由 book-index promote 维护，
     // 客户端 BundleStorage 用它做 draft→production redirect）
-    for (const fname of ['resource.json', 'resource-catalog.json', 'resource-collection.json', 'resource-site.json', 'promotions.json']) {
-        const src = join(DRAFT_DIR, fname);
-        if (existsSync(src)) {
-            const data = readFileSync(src, 'utf-8');
-            writeIfChanged(join(OUT_DIR, fname), data);
-            const size = (Buffer.byteLength(data) / 1024).toFixed(0);
-            console.log(`EX  ${fname} copied (${size} KB)`);
-        } else {
-            console.log(`EX  ${fname} not found, skipped`);
-        }
+    for (const fname of SITE_CONTENT_FILES.filter((f) => f !== 'recommended.json')) {
+        const src = join(PRODUCTION_DIR, fname);
+        const data = readFileSync(src, 'utf-8');
+        writeIfChanged(join(OUT_DIR, fname), data);
+        const size = (Buffer.byteLength(data) / 1024).toFixed(0);
+        console.log(`EX  ${fname} copied (${size} KB)`);
     }
 
     // recommended.json: hydrate items 加上 IndexEntry 元数据，让 HomePage
     // 直接渲染，不再为每个 ID 触发一次 transport.getEntry / chunk fetch。
-    const recSrc = join(DRAFT_DIR, 'recommended.json');
-    if (existsSync(recSrc)) {
+    const recSrc = join(PRODUCTION_DIR, 'recommended.json');
+    {
         const rec = readJson(recSrc);
         const index = loadShardedIndex();
         const lookup = new Map();
@@ -490,12 +483,10 @@ function bundleExtraFiles() {
         writeIfChanged(join(OUT_DIR, 'recommended.json'), data);
         const size = (Buffer.byteLength(data) / 1024).toFixed(1);
         console.log(`EX  recommended.json hydrated (${hydrated} items + ${missed} missed, ${size} KB)`);
-    } else {
-        console.log(`EX  recommended.json not found, skipped`);
     }
 }
 
-// ─── 版本信息（记录 book-index-draft 的 commit） ───
+// ─── 版本信息（commitId 记正式仓 book-index 的 commit） ───
 
 function bundleVersion() {
     let commitId = 'unknown';
@@ -507,18 +498,12 @@ function bundleVersion() {
     let textCommitId = 'unknown';
 
     try {
-        commitId = execSync('git rev-parse HEAD', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
-        commitDate = execSync('git log -1 --format=%cI', { cwd: DRAFT_DIR, encoding: 'utf-8' }).trim();
+        commitId = execSync('git rev-parse HEAD', { cwd: PRODUCTION_DIR, encoding: 'utf-8' }).trim();
+        commitDate = execSync('git log -1 --format=%cI', { cwd: PRODUCTION_DIR, encoding: 'utf-8' }).trim();
+        productionCommitId = commitId;
     } catch {
         // CI 中 --depth 1 clone 也能拿到 HEAD，如果失败则留默认值
-        console.warn('  ⚠ Could not read git info from book-index-draft');
-    }
-    if (existsSync(PRODUCTION_DIR)) {
-        try {
-            productionCommitId = execSync('git rev-parse HEAD', { cwd: PRODUCTION_DIR, encoding: 'utf-8' }).trim();
-        } catch {
-            console.warn('  ⚠ Could not read git info from book-index (production)');
-        }
+        console.warn('  ⚠ Could not read git info from book-index (production)');
     }
     if (existsSync(TEXT_DIR)) {
         try {
@@ -547,10 +532,11 @@ function bundleVersion() {
         fullCommitId: commitId,
         commitDate,
         // 定时部署的新旧比对用（deploy.yml check job）：某个仓单独变更时
-        // draft commit 不变，靠这些字段判断是否需要重新部署。
-        // 三个仓都要给全——deploy.yml 的跳过判断会读 textCommitId，
-        // 此前只写了 draft/production 两个，导致该比对恒为空字符串、
-        // 永远走「有变化」分支：不会漏部署，但定时任务每次都白跑一遍构建。
+        // 靠这些字段判断是否需要重新部署。
+        // overview#432 起 commitId／fullCommitId 即正式仓 commit（草稿仓不再参与），
+        // 与 productionCommitId 相同；字段名保留，线上旧前端、cacheKey、同步标记都还读 fullCommitId。
+        // 两个仓都要给全——deploy.yml 的跳过判断会读 textCommitId，
+        // 漏写则该比对恒为空字符串、永远走「有变化」分支：不会漏部署，但定时任务每次都白跑一遍构建。
         productionCommitId,
         textCommitId,
         bundleDate: version.bundleDate,
@@ -571,7 +557,7 @@ function checkIndex() {
 
     // 加载所有已 index 的 ID
     const indexed = new Set();
-    const indexDir = join(DRAFT_DIR, 'index');
+    const indexDir = join(PRODUCTION_DIR, 'index');
 
     const colPath = join(indexDir, 'collections.json');
     if (existsSync(colPath)) {
@@ -598,14 +584,14 @@ function checkIndex() {
             } else if (ITEM_FILE_RE.test(entry)) {
                 const id = entry.split('-')[0];
                 if (!indexed.has(id)) {
-                    missing.push({ id, path: full.replace(DRAFT_DIR, '').replace(/\\/g, '/') });
+                    missing.push({ id, path: full.replace(PRODUCTION_DIR, '').replace(/\\/g, '/') });
                 }
             }
         }
     };
 
     for (const typeDir of ['Work', 'Book', 'Collection', 'Entity']) {
-        const dir = join(DRAFT_DIR, typeDir);
+        const dir = join(PRODUCTION_DIR, typeDir);
         if (existsSync(dir)) walkDir(dir);
     }
 
@@ -614,7 +600,7 @@ function checkIndex() {
         for (const { id, path } of missing) {
             console.error(`   ${id}  ${path}`);
         }
-        console.error('\n   Run: book-index reindex --root <draft-dir>  to fix.\n');
+        console.error('\n   Run: book-index reindex  to fix.\n');
         process.exit(1);
     }
 
@@ -623,13 +609,16 @@ function checkIndex() {
 
 // ─── Main ───
 
-console.log(`\nbundle-data: ${DRAFT_DIR}`);
+console.log(`\nbundle-data: ${PRODUCTION_DIR}`);
 console.log(`  text: ${TEXT_DIR}${existsSync(TEXT_DIR) ? '' : '  ⚠ 不存在——items/ 将为空'}`);
 console.log(`output:      ${OUT_DIR}\n`);
 
-if (!existsSync(DRAFT_DIR)) {
-    console.error(`❌ book-index-draft directory not found: ${DRAFT_DIR}`);
-    console.error('   Set BOOK_INDEX_DRAFT_DIR or pass path as argument');
+// 正式仓与其根目录的站点内容文件都是必需的：缺了直接报错，不静默打出缺条目／缺站点内容的站
+try {
+    assertProductionDir(PRODUCTION_DIR);
+    assertSiteContentFiles(PRODUCTION_DIR);
+} catch (e) {
+    console.error(`❌ ${e.message}`);
     process.exit(1);
 }
 
@@ -641,7 +630,7 @@ bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonom
 // 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
 bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
 // 元数据首页分区 meta-home/（overview#322，见 build-meta-home.mjs）：要用上面写好的 meta.json 与 catalog/tree.json
-bundleMetaHome({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, draftDir: DRAFT_DIR, curationDir: join(PRODUCTION_DIR, 'curation') });
+bundleMetaHome({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, siteDir: PRODUCTION_DIR, curationDir: join(PRODUCTION_DIR, 'curation') });
 bundleL2();
 bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();
