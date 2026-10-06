@@ -14,11 +14,21 @@ export interface DuiduFiles {
     entity: unknown;
 }
 
+/**
+ * 取一份版本目录下的文本 JSON 的方法。cos 数据源（含 h1 哈希寻址）的 storage 上有，
+ * 与 getChapter 走同一套取数；bundle／本地模式的 storage 上没有，退回同域 `/data/items/...`。
+ */
+export interface TextFileStorage {
+    getTextFile?: (id: string, key: string, file: string) => Promise<unknown>;
+}
+
 const cache = new Map<string, Promise<DuiduFiles | null>>();
 
-async function getJson(url: string): Promise<unknown> {
+async function getJson(storage: object | undefined, id: string, key: string, file: string): Promise<unknown> {
     try {
-        const res = await fetch(url);
+        const getTextFile = (storage as TextFileStorage | undefined)?.getTextFile;
+        if (typeof getTextFile === 'function') return (await getTextFile.call(storage, id, key, file)) ?? null;
+        const res = await fetch(`/data/items/${id}/${key}/${file}`);
         return res.ok ? await res.json() : null;
     } catch {
         return null;
@@ -36,6 +46,8 @@ export function loadDuiduFiles(
     id: string,
     ctx: { versionKey: string | null; chapter: Record<string, unknown> | null } | undefined,
     _chapterKey: string,
+    /** 当前数据源的 storage（transport）；不传或没有 getTextFile 就读同域 /data */
+    storage?: object,
 ): Promise<DuiduFiles | null> {
     const ch = ctx?.chapter;
     const key = ctx?.versionKey;
@@ -45,16 +57,15 @@ export function loadDuiduFiles(
     if (!charFile || !cordFile) return Promise.resolve(null);
     const punctFile = fileField(ch, 'punct_file');
     const entityFile = fileField(ch, 'entity_file');
-    const base = `/data/items/${id}/${key}`;
-    const cacheKey = `${base}/${charFile}|${cordFile}|${punctFile ?? ''}|${entityFile ?? ''}`;
+    const cacheKey = `${id}/${key}/${charFile}|${cordFile}|${punctFile ?? ''}|${entityFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
             const [char, cord, punct, entity] = await Promise.all([
-                getJson(`${base}/${charFile}`),
-                getJson(`${base}/${cordFile}`),
-                punctFile ? getJson(`${base}/${punctFile}`) : null,
-                entityFile ? getJson(`${base}/${entityFile}`) : null,
+                getJson(storage, id, key, charFile),
+                getJson(storage, id, key, cordFile),
+                punctFile ? getJson(storage, id, key, punctFile) : null,
+                entityFile ? getJson(storage, id, key, entityFile) : null,
             ]);
             if (!char || !cord) return null;
             return { char, cord, punct, entity };

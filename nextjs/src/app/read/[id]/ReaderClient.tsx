@@ -145,7 +145,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     // 对读（图文对读）：章条目声明了 `char_file`＋`cord_file` 就按声明取 char／cord（再加 `punct_file`、`entity_file`），
     // 两边按格位对上；没有 `cord_file` 就是普通阅读，不发请求（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const files = await loadDuiduFiles(id, ctx, chapterKey);
+        const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
         if (!files) return null;
         const pages = adaptCharCord(files.char, files.cord);
         if (pages.length === 0) return null;
@@ -165,19 +165,19 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
             } catch { /* 样张取不到就全部平铺 */ }
         }
         return { ...base, pages, punctuations: adaptPunctJson(files.punct) } as any;
-    }, [id]);
+    }, [id, transport]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
     const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        return (await loadDuiduFiles(id, ctx, chapterKey))?.entity ?? null;
-    }, [id]);
+        return (await loadDuiduFiles(id, ctx, chapterKey, transport))?.entity ?? null;
+    }, [id, transport]);
 
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
     const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const files = await loadDuiduFiles(id, ctx, chapterKey);
+        const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
         const vol = files ? iiifVolumeOf(files.cord) : null;
         return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
-    }, [id]);
+    }, [id, transport]);
 
     return (
         <div ref={textRef}>
