@@ -10,6 +10,7 @@
 // PH：查不到的草稿 id 查 h1 升格对照表分片，升格了就一跳 308 到正式 id；对照表确定
 //   没有它就 404；查不了（旧 root、h1 故障）才照旧 307 回 /book-index 由客户端查表。/book-index?id= → /item/ 的 308 在 middleware.ssr.ts。
 // 按改动清缓存与 sitemap 归 W2-3。
+import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_LOCAL_PUBLIC_DATA=1）；正式构建不生效
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';

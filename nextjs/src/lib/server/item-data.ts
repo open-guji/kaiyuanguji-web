@@ -128,18 +128,13 @@ class NotFound extends Error {}
 /**
  * 本地联调：设了 KYG_LOCAL_PUBLIC_DATA=1 时，条目与阅读文本先读本机 `nextjs/public/data/<相对路径>`，
  * 读不到再走线上。给本地跑还没上线的新结构文本用，正式构建不设这个变量。
+ *
+ * 读文件的实现在 `local-public-data.ts`（只由 Node 端页面引入、按变量注册到 globalThis）。本文件也被
+ * 中间件（Edge 运行时）引用，不能在这里用 fs／eval，否则 next build 报 Dynamic Code Evaluation。
  */
 function readLocalPublicData(relPath: string): string | null {
-    if (process.env.KYG_LOCAL_PUBLIC_DATA !== '1') return null;
-    try {
-        const req = eval('require');
-        const fs = req('fs');
-        const path = req('path');
-        const file = path.join(process.cwd(), 'public', 'data', ...relPath.split('/'));
-        return fs.existsSync(file) ? (fs.readFileSync(file, 'utf-8') as string) : null;
-    } catch {
-        return null;
-    }
+    const read = (globalThis as { __kygLocalPublicRead?: (p: string) => string | null }).__kygLocalPublicRead;
+    return read ? read(relPath) : null;
 }
 
 export function createItemFetcher(opts: ItemFetcherOptions) {
