@@ -125,6 +125,18 @@ function timeoutSignal(ms: number): { signal: AbortSignal; clear: () => void } {
 /** 读不到（404 或数据里没有）——与网络错／5xx 区分开 */
 class NotFound extends Error {}
 
+/**
+ * 本地联调：设了 KYG_LOCAL_PUBLIC_DATA=1 时，条目与阅读文本先读本机 `nextjs/public/data/<相对路径>`，
+ * 读不到再走线上。给本地跑还没上线的新结构文本用，正式构建不设这个变量。
+ *
+ * 读文件的实现在 `local-public-data.ts`（只由 Node 端页面引入、按变量注册到 globalThis）。本文件也被
+ * 中间件（Edge 运行时）引用，不能在这里用 fs／eval，否则 next build 报 Dynamic Code Evaluation。
+ */
+function readLocalPublicData(relPath: string): string | null {
+    const read = (globalThis as { __kygLocalPublicRead?: (p: string) => string | null }).__kygLocalPublicRead;
+    return read ? read(relPath) : null;
+}
+
 export function createItemFetcher(opts: ItemFetcherOptions) {
     const base = opts.base.replace(/\/$/, '');
     const doFetch: FetchLike = opts.fetch ?? ((url, init) => fetch(url, init));
@@ -301,7 +313,10 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
             }
         }
         const hit = await fromCurrent(id);
-        return hit ? { ...hit, source: 'current' } : null;
+        if (hit) return { ...hit, source: 'current' };
+        const local = readLocalPublicData(`entry/${id}.json`);
+        if (local !== null) return { entry: JSON.parse(local), source: 'current', version: 'local' };
+        return null;
     }
 
     /**
@@ -309,6 +324,10 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 与浏览器端 BundleStorage 同一个地址（带 ?v=<版本键>）。确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentJson<T>(relPath: string): Promise<T | null> {
+        // 本地联调：public/data/ 里有就直接用（KYG_LOCAL_PUBLIC_DATA=1）
+        const localJson = readLocalPublicData(relPath);
+        if (localJson !== null) return JSON.parse(localJson) as T;
+
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         try {
@@ -325,6 +344,9 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 确定没有返回 null；网络错、5xx 抛错。
      */
     async function getCurrentText(relPath: string, maxBytes = Infinity): Promise<string | null> {
+        const localText = readLocalPublicData(relPath);
+        if (localText !== null) return localText.length > maxBytes ? null : localText;
+
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         const url = `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;

@@ -24,6 +24,7 @@
 //   页面里的跳转留作 RSC 导航的兜底。数据发版后由 /internal/revalidate 的 read 开关整体失效。
 // - 首屏数据（WEB2，overview#249）：服务端把 manifest、版本目录与首章正文一起交给 ReaderClient，
 //   浏览器不再走 manifest → 目录 → 正文 这条串行链（preload.ts）。
+import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_LOCAL_PUBLIC_DATA=1）；正式构建不生效
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
