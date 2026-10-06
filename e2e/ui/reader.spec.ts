@@ -39,8 +39,9 @@ test.describe('阅读页', () => {
         // 整理本的 juan 是短形式（004），不是内部文件路径 juan/004.json（overview#267 P2-5）
         await expect(page).toHaveURL(new RegExp(`/read/${C.id}/${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}$`));
         await expect(page.getByText(/加载整理本|加載整理本/)).toBeHidden({ timeout: 30_000 });
-        await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
-            .toBeVisible({ timeout: 30_000 });
+        // 阅读页只展示维基全文版（目录型 default 不列，overview#456）：旧入口落到维基版的同号章，章号保留，不回第一章
+        await expect(page.getByRole('main').getByRole('heading', { name: /卷四|卷4/ }).first()).toBeVisible({ timeout: 30_000 });
+        await expect(page).toHaveURL(new RegExp(`/read/${C.id}/004$`));
     });
 
     test('不带 juan 进来自动选首卷并写回地址；翻卷改地址与标题、不整页刷新', async ({ page }) => {

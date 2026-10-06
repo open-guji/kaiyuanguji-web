@@ -90,4 +90,13 @@ describe('阅读页版本下拉框', () => {
         await waitFor(() => expect(screen.getAllByText(/版权未知/).length).toBeGreaterThan(0));
         expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
     });
+
+    it('目录型 default 被隐藏时，地址里的章号保留（/read/<id>/003 不回第一章）', async () => {
+        manifest = { id: SHIXU, versions: [version('default', '整理本', 'collated', 'CC BY-SA 4.0'), version('wikisource', '維基文庫', 'transcription', 'CC BY-SA 4.0')] };
+        window.history.replaceState(null, '', `/read/${SHIXU}/003`);
+        pathname = `/read/${SHIXU}/003`;
+        render(<ReaderClient id={SHIXU} initial={{ chapter: '003' }} bookTitle="詩序" />);
+        await waitFor(() => expect(screen.getByText(/wikisource-003/)).toBeInTheDocument());
+        expect(window.location.pathname).toBe(`/read/${SHIXU}/003`);
+    });
 });

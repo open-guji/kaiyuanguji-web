@@ -16,7 +16,7 @@ import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
-import { seedTransport, type ReaderSeed } from './reader-seed';
+import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
 
 interface ReaderClientProps {
     id: string;
@@ -84,11 +84,29 @@ function readerTransport<T extends ReturnType<typeof getTransport>>(transport: T
     });
 }
 
+/** 主版本 key：阅读页 manifest 里有 default 就是它，否则（目录型 default 被隐藏，overview#456）是第一份版本 */
+function primaryKeyOf(m: unknown): string | null {
+    const versions = (m as { versions?: { key?: string }[] } | null | undefined)?.versions;
+    if (!Array.isArray(versions) || versions.length === 0) return null;
+    return versions.find((v) => v.key === 'default')?.key ?? versions[0].key ?? null;
+}
+
 function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
     const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
+    // 受控的版本 key 必须是 manifest 里真有的：服务端种子里有 manifest 就同步算出（正常路径）；
+    // 没有（预取超时、失败）先按 default 挂阅读器，浏览器取到 manifest 后若主版本不是 default（目录型 default 被隐藏）再换过去
+    const [primary, setPrimary] = useState<string | null>(() => primaryKeyOf(seed?.calls?.[seedCallKey('getTextManifest', id)]));
+    useEffect(() => {
+        if (primary !== null) return;
+        let cancelled = false;
+        (async () => primaryKeyOf(await (transport as { getTextManifest: (id: string) => Promise<unknown> }).getTextManifest(id)))()
+            .catch(() => null)
+            .then((k) => { if (!cancelled) setPrimary(k ?? 'default'); });
+        return () => { cancelled = true; };
+    }, [id, transport, primary]);
 
     // 浏览器前进／后退：地址变了而状态没变（我们自己 pushState 的不算，那时两者已一致），状态跟着地址走。
     // 首帧不查（服务端已按地址渲染），只在路径之后变了才跟
@@ -199,7 +217,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
             <TextReader
                 id={id}
                 transport={transport}
-                versionKey={sel.key ?? 'default'}
+                versionKey={sel.key ?? primary ?? 'default'}
                 chapter={sel.chapter ?? null}
                 onLocationChange={onLocationChange}
                 onNavigate={onNavigate}
