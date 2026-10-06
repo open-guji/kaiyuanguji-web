@@ -128,7 +128,8 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         const versions = Array.isArray(manifest?.versions) ? manifest.versions : [];
         if (versions.length === 0) { fail(id, '数据', `items/${id}/manifest.json 没有 versions`); return; }
         if (isInternal(manifest) || versions.some(isInternal)) fail(id, '数据', `items/${id}/manifest.json 带 visibility=internal，私有文本进了公开产物`);
-        if (versions[0]?.key !== 'default') fail(id, '数据', `items/${id}/manifest.json 的 versions[0] 不是 default`);
+        // 有 default 就必须排第一；只有原貌（original）等、还没有整理本的书可以没有 default，阅读页按 versions[0] 打开
+        if (versions.some((v) => v?.key === 'default') && versions[0]?.key !== 'default') fail(id, '数据', `items/${id}/manifest.json 的 versions[0] 不是 default`);
         for (const v of versions) {
             if (!isTextKey(v?.key)) { fail(id, '数据', `items/${id}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
             const pagePath = pagePathOf(id, v.key);
