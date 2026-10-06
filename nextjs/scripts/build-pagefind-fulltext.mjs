@@ -20,6 +20,7 @@ import { readFileSync, existsSync, readdirSync, statSync, rmSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
+import { assertProductionDir } from './lib/production-dir.mjs';
 import { collatedChapterJsons, readManifest } from './lib/text-layout.mjs';
 import * as pagefind from 'pagefind';
 import { Converter } from 'opencc-js';
@@ -30,8 +31,14 @@ const OUT_DIR = join(resolveDataDirs().dataDir, 'pagefind-fulltext');
 
 const TEXT_DIR = resolve(process.env.BOOK_TEXT_DIR || join(__dirname, '..', '..', '..', 'book-text'));
 
-if (!existsSync(PRODUCTION_DIR)) {
-    console.error(`❌ book-index（正式仓）not found: ${PRODUCTION_DIR}`);
+try {
+    assertProductionDir(PRODUCTION_DIR);
+} catch (e) {
+    console.error(`❌ ${e.message}`);
+    process.exit(1);
+}
+if (!existsSync(join(PRODUCTION_DIR, 'index', 'works'))) {
+    console.error(`❌ book-index（正式仓）里没有 index/works：${join(PRODUCTION_DIR, 'index', 'works')}`);
     process.exit(1);
 }
 

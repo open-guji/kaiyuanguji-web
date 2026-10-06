@@ -232,7 +232,7 @@ describe('local-data searchAll / searchEntries', () => {
 describe('local-data resource progress / counts / recommended', () => {
     it('getResourceProgress：从 resource.json 读', () => {
         const data = { resources: [{ id: 'wikisource', name: '维基文库' }] };
-        writeJson(path.join(workspace, 'book-index-draft', 'resource.json'), data);
+        writeJson(path.join(workspace, 'book-index', 'resource.json'), data);
         expect(loadModule().getResourceProgress()).toEqual(data);
     });
 
@@ -242,13 +242,13 @@ describe('local-data resource progress / counts / recommended', () => {
 
     it('getSiteProgress：从 resource-site.json 读', () => {
         const data = { sites: [{ name: 'wikisource' }] };
-        writeJson(path.join(workspace, 'book-index-draft', 'resource-site.json'), data);
+        writeJson(path.join(workspace, 'book-index', 'resource-site.json'), data);
         expect(loadModule().getSiteProgress()).toEqual(data);
     });
 
     it('getRecommended：从 recommended.json 读', () => {
         const data = [{ id: 'w1' }];
-        writeJson(path.join(workspace, 'book-index-draft', 'recommended.json'), data);
+        writeJson(path.join(workspace, 'book-index', 'recommended.json'), data);
         expect(loadModule().getRecommended()).toEqual(data);
     });
 
@@ -279,7 +279,7 @@ describe('local-data 损坏文件容错', () => {
     });
 
     it('resource.json 损坏返回 null', () => {
-        const filePath = path.join(workspace, 'book-index-draft', 'resource.json');
+        const filePath = path.join(workspace, 'book-index', 'resource.json');
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, '{bad', 'utf-8');
         expect(loadModule().getResourceProgress()).toBeNull();
