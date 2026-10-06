@@ -107,7 +107,8 @@ export async function requireNewTextData(request: APIRequestContext, id: string,
  * 某本书的某个文本文件（如 `original/003.cord.json`）在数据层上有没有。
  * 线上文本在 COS 的 h1 哈希寻址里（指针 → 根清单 → 分片），站点自己的 /data/items/... 是 404，
  * 所以不能用站点地址探测；h1 指针不存在（旧布局）才退回 current/items/ 下的现行路径。
- * 没有就跳过：这类用例断言的是「这份数据上线后」的行为（overview#421）。
+ * 清单里确实没有才跳过：这类用例断言的是「这份数据上线后」的行为（overview#421）；
+ * 取清单本身失败（非 404 的 HTTP 错、网络错）会抛错让用例变红，不当成「没上线」。
  */
 export async function requireTextFile(request: APIRequestContext, id: string, relPath: string, feature: string): Promise<void> {
     const has = await hasTextFile(request, id, relPath);
@@ -116,20 +117,19 @@ export async function requireTextFile(request: APIRequestContext, id: string, re
 
 async function hasTextFile(request: APIRequestContext, id: string, relPath: string): Promise<boolean> {
     const ptr = await request.get(`${DATA_BASE}/h1/text-manifest-root.json?_=${Math.floor(Date.now() / 60000)}`);
-    if (!ptr.ok()) {
-        const legacy = await request.head(`${DATA_BASE}/current/items/${id}/${relPath}`);
-        return legacy.ok();
-    }
+    // 指针确实不存在（404）才是旧布局，退回现行路径；其余失败（5xx、网络错）抛出，不当成「数据没上线」而跳过
+    if (ptr.status() === 404) return (await request.head(`${DATA_BASE}/current/items/${id}/${relPath}`)).ok();
+    if (!ptr.ok()) throw new Error(`h1/text-manifest-root.json 取不到：HTTP ${ptr.status()}`);
     const root = (await ptr.json()).root as string | undefined;
-    if (!root) return false;
+    if (!root) throw new Error('h1/text-manifest-root.json 里没有 root');
     const rootRes = await request.get(`${DATA_BASE}/h1/text-roots/${root}`);
-    if (!rootRes.ok()) return false;
+    if (!rootRes.ok()) throw new Error(`h1/text-roots/${root} 取不到：HTTP ${rootRes.status()}`);
     const rootDoc = await rootRes.json() as { shardKeyLength: number; shards: Record<string, string> };
     const key = id.slice(-rootDoc.shardKeyLength);
     const shardHash = rootDoc.shards[key];
-    if (!shardHash) return false;
+    if (!shardHash) return false; // 根清单里没有这个分片：这本书确实没有文本
     const shardRes = await request.get(`${DATA_BASE}/h1/text-manifest/${key}.${shardHash}.json`);
-    if (!shardRes.ok()) return false;
+    if (!shardRes.ok()) throw new Error(`h1/text-manifest/${key}.${shardHash}.json 取不到：HTTP ${shardRes.status()}`);
     const shard = await shardRes.json() as Record<string, Record<string, string>>;
     return Boolean(shard[id]?.[relPath]);
 }
