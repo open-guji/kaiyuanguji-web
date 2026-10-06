@@ -46,7 +46,8 @@ type OnLoc = (l: Loc, cause: 'auto' | 'chapter' | 'version') => void;
 const MANIFEST = {
     id: ZHIZHAI,
     versions: [
-        { key: 'default', kind: 'collated', label: '整理本' },
+        // default 取全文型：目录型 default 的过滤另有用例（overview#456）
+        { key: 'default', kind: 'transcription', label: '整理本' },
         { key: 'wikisource', kind: 'transcription', label: '維基文庫' },
     ],
 };

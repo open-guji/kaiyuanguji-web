@@ -16,18 +16,31 @@ const FILES: Record<string, unknown> = {
 const get: GetCurrentJson = async <T,>(rel: string) => (FILES[rel] ?? null) as T | null;
 
 describe('checkReader', () => {
-    it('没给版本和章：主版本第一章，带回 manifest、版本、目录与章名', async () => {
+    it('没给版本和章：主版本第一章，带回 manifest、版本与目录', async () => {
         const r = await checkReader(WORK, {}, get);
         expect(r.status).toBe('found');
-        expect(r.version?.key).toBe('default');
+        expect(r.version?.key).toBe('wikisource');
         expect(r.chapter).toBe('001');
-        expect(r.chapterTitle).toBe('經錄');
-        expect(r.index?.chapters).toHaveLength(2);
-        expect(r.manifest?.versions).toHaveLength(2);
+        expect(r.chapterTitle).toBeUndefined(); // 全文版目录里 001 没有章名
+        expect(r.index?.chapters).toHaveLength(3);
+        expect(r.manifest?.versions).toHaveLength(1);
+    });
+
+    it('有全文版：default（目录型整理本）不在阅读页版本里，主版本是全文版（overview#456）', async () => {
+        const r = await checkReader(WORK, {}, get);
+        expect(r.manifest?.versions.map((v) => v.key)).toEqual(['wikisource']);
+        expect(r.version?.key).toBe('wikisource');
+        expect(r.chapter).toBe('001');
+        expect(r.index?.chapters).toHaveLength(3);
+        // 只有 default 在 manifest 里时，不能因为过滤变成 404
+        const only: GetCurrentJson = async <T,>(rel: string) => (rel.endsWith('manifest.json') ? { versions: [{ key: 'default', kind: 'collated', license: '未知' }] } : FILES[`items/${WORK}/default/index.json`]) as T | null;
+        const o = await checkReader(WORK, {}, only);
+        expect(o.status).toBe('found');
+        expect(o.version?.license).toBe('版权未知');
     });
 
     it('给了章：章名按目录（去首尾空白）；其他版本按 key', async () => {
-        expect((await checkReader(WORK, { chapter: '002' }, get)).chapterTitle).toBe('史錄');
+        expect((await checkReader(WORK, { chapter: '002' }, get)).chapterTitle).toBeUndefined();
         const w = await checkReader(WORK, { key: 'wikisource', chapter: '003' }, get);
         expect(w).toMatchObject({ status: 'found', chapter: '003', chapterTitle: '卷三' });
         expect((await checkReader(WORK, { key: 'wikisource' }, get)).chapter).toBe('001');
@@ -37,6 +50,7 @@ describe('checkReader', () => {
     it('版本或章不存在 → missing（页面真 404）', async () => {
         expect((await checkReader(WORK, { key: 'kanripo' }, get)).status).toBe('missing');
         expect((await checkReader(WORK, { chapter: '009' }, get)).status).toBe('missing');
+        expect((await checkReader(WORK, { key: 'default' }, get)).status).toBe('missing'); // default 已不列在阅读页
         expect((await checkReader(WORK, { key: 'wikisource', chapter: '004' }, get)).status).toBe('missing');
     });
 

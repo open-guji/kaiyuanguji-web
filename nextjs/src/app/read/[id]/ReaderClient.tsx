@@ -9,6 +9,7 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
+import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
 import { loadDuiduFiles } from '@/lib/duidu-data';
 import { SITE_NAME } from '@/lib/constants';
@@ -69,10 +70,24 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
     return meta?.at === at ? meta : null;
 }
 
+/** 浏览器端自己取的 manifest 也按阅读页规则过一遍（服务端种子已过，见 lib/reader-manifest.ts；重复处理无副作用） */
+function readerTransport<T extends ReturnType<typeof getTransport>>(transport: T): T {
+    return new Proxy(transport, {
+        get(target, prop, receiver) {
+            const orig = Reflect.get(target, prop, receiver);
+            if (prop !== 'getTextManifest' || typeof orig !== 'function') return orig;
+            return async (...args: unknown[]) => {
+                const m = await (orig as (...a: unknown[]) => Promise<any>).apply(target, args);
+                return m && Array.isArray(m.versions) ? readerManifest(m) : m;
+            };
+        },
+    });
+}
+
 function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
-    const transport = useMemo(() => seedTransport(getTransport(source), seed?.calls), [source, seed]);
+    const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
 
     // 浏览器前进／后退：地址变了而状态没变（我们自己 pushState 的不算，那时两者已一致），状态跟着地址走。
