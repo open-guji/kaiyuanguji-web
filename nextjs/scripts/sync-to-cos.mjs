@@ -27,6 +27,7 @@
  *   4. state 有但本地不存在 → DELETE current/X（孤儿清理）
  *   5. search shards 始终全量 PUT 到 v/{cacheKey}/search/（再服务端 copy 一份到 v/{commit}/search/ 给旧前端）
  *   6. 最后写 latest.json
+ *   7. 清理旧的 v/<版本键>/ 目录，只留最近 COS_KEEP_VERSIONS 个（失败只警告）
  *
  * state 丢失/损坏的 fallback：从 COS 拉 current/ 的 ETag 重建 state，
  * 跟旧 ListBucket 模式等价（~86s）。一次拉对后续 sync 永久受益。
@@ -39,6 +40,8 @@
  *   COS_PATH_PREFIX     (可选) 桶内根前缀，默认空字符串
  *   DRY_RUN             (可选) 设为 1 只打印不上传
  *   SYNC_REBUILD_STATE  (可选) 设为 1 强制从 COS 列文件重建 state（state 文件可疑时用）
+ *   COS_KEEP_VERSIONS   (可选) 发布成功后清理旧的 v/<版本键>/ 搜索分片，只留最新的这么多个目录（默认 10，
+ *                       本次发布的两个目录另算、一定保留）；设为 off 不清理（overview#410）
  *
  * 用法：
  *   node scripts/sync-to-cos.mjs              # 增量同步
@@ -53,6 +56,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { withCacheKey } from './lib/latest-cache-key.mjs';
 import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
+import { planVersionPrune, DEFAULT_KEEP_VERSIONS } from './lib/v-search-prune.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -86,6 +90,9 @@ const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PATH_PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const DRY_RUN = process.env.DRY_RUN === '1';
 const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';
+const KEEP_RAW = (process.env.COS_KEEP_VERSIONS || '').trim().toLowerCase();
+const KEEP_VERSIONS = KEEP_RAW === 'off' ? null
+    : (/^\d+$/.test(KEEP_RAW) ? Number(KEEP_RAW) : DEFAULT_KEEP_VERSIONS);
 
 // 哪些子目录走 commit 隔离 v/<commit>/ — 主要是 search shards：
 // 倒排索引文件互相关联，必须跟当前 entry snapshot 一致；进入 current/ 会导致
@@ -517,6 +524,84 @@ async function runQueue(items, concurrency, worker, label) {
     return { done, failures, elapsed: (Date.now() - t0) / 1000 };
 }
 
+// ─── 清理旧的 v/<版本键>/ 搜索分片目录（overview#410） ───
+// 每次发布往 v/ 下写两个目录（cacheKey 与 commitId），以前从不删，桶里对象数涨到 139 万，远多于在用的约 33 万。
+// 只在本次发布全部成功、latest.json 已指向新版本之后做；任何一步失败只警告，不影响发布结果。
+
+function cosCall(method, params) {
+    return new Promise((resolveP, rejectP) => {
+        cos[method]({ Bucket: BUCKET, Region: REGION, ...params }, (err, data) => err ? rejectP(err) : resolveP(data));
+    });
+}
+
+const isTruncated = (res) => res.IsTruncated === 'true' || res.IsTruncated === true;
+
+/** v/ 下各版本目录及其最后写入时间（取目录里第一个对象的 LastModified，一次发布里分片是连着写的）。 */
+async function listVersionDirs() {
+    const root = joinKey(PATH_PREFIX, 'v') + '/';
+    const names = [];
+    let marker = '';
+    while (true) {
+        const res = await cosCall('getBucket', { Prefix: root, Delimiter: '/', Marker: marker, MaxKeys: 1000 });
+        const cps = res.CommonPrefixes || [];
+        for (const cp of cps) names.push(cp.Prefix.slice(root.length).replace(/\/$/, ''));
+        if (!isTruncated(res)) break;
+        marker = res.NextMarker || (cps.length ? cps[cps.length - 1].Prefix : '');
+        if (!marker) break;
+    }
+    const dirs = [];
+    await runQueue(names, 16, async (name) => {
+        const res = await cosCall('getBucket', { Prefix: `${root}${name}/`, MaxKeys: 1 });
+        const t = res.Contents?.[0]?.LastModified ? Date.parse(res.Contents[0].LastModified) : null;
+        dirs.push({ name, lastModified: Number.isNaN(t) ? null : t });
+    }, 'list-v');
+    return { root, dirs };
+}
+
+/**
+ * 删掉一个目录（前缀）下的全部对象，每批 1000 个。返回删掉的个数。
+ * 按 Marker 往后翻页（不是每次从头重列），所以某几个删不掉也不会死循环；逐个检查返回里的 Error，
+ * 只统计真正删掉的，有删不掉的最后抛错（由 pruneOldVersions 记成警告，下次发布再试）。
+ */
+async function deletePrefix(prefix) {
+    let deleted = 0;
+    const failed = [];
+    let marker = '';
+    while (true) {
+        const res = await cosCall('getBucket', { Prefix: prefix, Marker: marker, MaxKeys: 1000 });
+        const keys = (res.Contents || []).map(o => ({ Key: o.Key }));
+        if (keys.length > 0) {
+            const del = await cosCall('deleteMultipleObject', { Objects: keys, Quiet: true });
+            const errs = del?.Error ? [].concat(del.Error) : [];
+            for (const e of errs) failed.push(e.Key);
+            deleted += keys.length - errs.length;
+        }
+        if (!isTruncated(res) || keys.length === 0) break;
+        marker = res.NextMarker || keys[keys.length - 1].Key;
+    }
+    if (failed.length > 0) throw new Error(`${prefix} 下 ${failed.length} 个对象没删掉（如 ${failed[0]}）`);
+    return deleted;
+}
+
+async function pruneOldVersions() {
+    if (KEEP_VERSIONS == null) {
+        console.log('\n  COS_KEEP_VERSIONS=off，不清理旧的 v/ 目录');
+        return;
+    }
+    try {
+        const { root, dirs } = await listVersionDirs();
+        const { toDelete, toKeep } = planVersionPrune(dirs, { protect: [cacheKey, shortCommit], keep: KEEP_VERSIONS, now: Date.now() });
+        console.log(`\n  v/ 下 ${dirs.length} 个版本目录：留 ${toKeep.length}（最近 ${KEEP_VERSIONS} 个＋24 小时内的＋本次 2 个），删 ${toDelete.length}`);
+        if (toDelete.length === 0) return;
+        let objects = 0;
+        const r = await runQueue(toDelete, 4, async (name) => { const n = await deletePrefix(`${root}${name}/`); objects += n; }, 'prune-v');
+        console.log(`  ✓ 清掉 ${r.done}/${toDelete.length} 个旧版本目录，共 ${objects} 个对象（${r.elapsed.toFixed(1)}s）`);
+        if (r.failures.length > 0) console.warn(`  ⚠ ${r.failures.length} 个目录没清干净，下次发布会再试`);
+    } catch (e) {
+        console.warn(`  ⚠ 清理旧 v/ 目录失败（不影响本次发布）：${e.message}`);
+    }
+}
+
 async function main() {
 
     // ── Step 1: 加载或重建 state ──
@@ -631,6 +716,9 @@ async function main() {
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
     console.log(`  ✓ latest.json now points to commit ${shortCommit} (cacheKey ${cacheKey})`);
+
+    // ── Step 7: 清理旧的 v/<版本键>/ 目录 ──
+    await pruneOldVersions();
 
     console.log(`\n✅ sync-to-cos complete\n`);
 }

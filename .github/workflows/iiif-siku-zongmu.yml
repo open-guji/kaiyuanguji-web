@@ -18,6 +18,10 @@ on:
         description: '上传到 COS 并从 data.kaiyuanguji.com 取回核对（关掉＝只切片，结果看工件）'
         type: boolean
         default: true
+      force:
+        description: '不看桶里已有的 ETag，图全部重传、线上核对核全部（默认：同内容的图跳过，核对只核新写的加抽样）'
+        type: boolean
+        default: false
       commons:
         description: 'manifest 里挂 Commons 回退源（Commons API 限流时自动不挂）'
         type: boolean
@@ -56,6 +60,7 @@ jobs:
           VOLS: ${{ inputs.vols }}
           UPLOAD: ${{ inputs.upload }}
           COMMONS: ${{ inputs.commons }}
+          FORCE: ${{ inputs.force }}
         run: |
           set -euo pipefail
           if ! [[ "$VOLS" =~ ^(all|[0-9]{1,2}(,[0-9]{1,2})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
@@ -65,6 +70,7 @@ jobs:
             ARGS+=(--upload --verify)
           fi
           [ "$COMMONS" = "true" ] || ARGS+=(--no-commons)
+          [ "$FORCE" = "true" ] && ARGS+=(--force)
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
 
       - name: Upload report and samples
