@@ -67,6 +67,10 @@ on:
         description: '仅 target=production：测试站那次部署的 run id——代码与数据都钉成那次验过的；code+data 且那次存了正式站产物时直接部署产物、不重新构建。空＝按测试站指针（老办法）'
         type: string
         default: ''
+      staging_function_region:
+        description: '仅 target=staging：测试站云函数部署地区试验（overview#345），如 ap-hongkong、ap-tokyo；空＝用仓库变量 STAGING_FUNCTION_REGION，也空＝平台默认（ap-singapore）。正式站不受影响'
+        type: string
+        default: ''
       rehearse_artifact:
         description: '仅 target=staging：演练产物复用——同时构建并存正式站产物（不部署），测试站改用打包、加密、解包后的产物部署'
         type: boolean
@@ -784,6 +788,9 @@ jobs:
           NEXT_PUBLIC_BAIDU_TONGJI_ID: ''
           NEXT_PUBLIC_GA_ID: ''
           NEXT_PUBLIC_BASE_PATH: ''
+          # overview#345：测试站云函数地区试验。手动触发的输入优先，其次仓库变量（试验期间每次 push／定时
+          # 的测试站部署都沿用）；两者都空就不写 edgeone.json，行为与现在完全一样（平台默认 ap-singapore）。
+          STAGING_FUNCTION_REGION: ${{ inputs.staging_function_region || vars.STAGING_FUNCTION_REGION }}
         run: |
           if [ "$NEXT_PUBLIC_DATA_SOURCE" != "cos" ]; then
             echo "❌ 测试站全栈构建只支持 cos 数据源（COS secrets 缺失）：函数按请求从 COS 取条目，没有降级路径"
@@ -793,6 +800,18 @@ jobs:
           rm -rf .next out .edgeone edge-functions
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
+          # overview#345：测试站云函数地区试验。edgeone.json 不入库，只在这一步（仅测试站）临时写出，
+          # 正式站的两处构建（build 的正式站支路、prod-artifact）不写，所以不会带到正式站。
+          # 字段用新写法 cloudFunctions.regions.overseas（旧的 overseasRegions 在 edgeone 1.6.41 里已标弃用）；
+          # 取值限定为该版 CLI 认的海外地区，填错在这里就停下，不让它去撞部署。
+          if [ -n "$STAGING_FUNCTION_REGION" ]; then
+            case "$STAGING_FUNCTION_REGION" in
+              ap-singapore|ap-hongkong|ap-bangkok|ap-jakarta|ap-seoul|ap-tokyo|eu-frankfurt|na-ashburn|na-siliconvalley) ;;
+              *) echo "❌ 测试站函数地区 '$STAGING_FUNCTION_REGION' 不在 edgeone 认的海外地区里"; exit 1 ;;
+            esac
+            printf '{"cloudFunctions":{"regions":{"overseas":["%s"]}}}\n' "$STAGING_FUNCTION_REGION" > edgeone.json
+            echo "· 测试站函数地区试验：$STAGING_FUNCTION_REGION"; cat edgeone.json
+          fi
           # E1：带 kyg-staging 的项目变量构建并查产物（脚本内含与正式站那一步同样的 3 次重试，
           # 只重试构建本身——Google Fonts 偶发抖动）
           python3 ../ops/edgeone-fullstack-build.py -n kyg-staging --forbid-env EDGEONE_API_TOKEN \
