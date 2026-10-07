@@ -39,6 +39,15 @@ function pick(headers: Record<string, string>): Record<string, string> {
     return out;
 }
 
+const BODY_TIMEOUT_MS = 2_000;
+const COLLECT_TIMEOUT_MS = 4_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout>;
+    const t = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(what)), ms); });
+    return Promise.race([p, t]).finally(() => clearTimeout(timer));
+}
+
 function titleOf(html: string): string {
     const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
     return m ? m[1].replace(/\s+/g, ' ').trim() : '(无 title)';
@@ -111,7 +120,8 @@ export function startDiagnostics(page: Page): Diagnostics {
             if (isDoc) {
                 // 服务端直出的 title（水合之前）。被重定向走的响应没有 body，读不到就记空
                 let title = '(读不到 body)';
-                try { title = titleOf(await res.text()); } catch { /* 重定向响应等 */ }
+                // body 迟迟读不完（头来了、体不来）时不能一直等，否则 collect()／attach() 会跟着挂住，反而把原始失败盖住
+                try { title = titleOf(await withTimeout(res.text(), BODY_TIMEOUT_MS, '读 body 超时')); } catch (e) { title = `(读不到 body：${String((e as Error)?.message ?? e).slice(0, 60)})`; }
                 serverTitles.push({ url, status: res.status(), title, headers });
             }
             events.push({
@@ -122,8 +132,18 @@ export function startDiagnostics(page: Page): Diagnostics {
         });
     });
 
+    /** 等已发出的响应处理跑完；收集期间又来的响应也等（pending 不再增长为止），但整体有上限，不让诊断把失败变成挂住 */
+    async function settle() {
+        const deadline = Date.now() + COLLECT_TIMEOUT_MS;
+        let seen = -1;
+        while (pending.length !== seen && Date.now() < deadline) {
+            seen = pending.length;
+            await withTimeout(Promise.allSettled(pending), Math.max(1, deadline - Date.now()), '等响应处理超时').catch(() => undefined);
+        }
+    }
+
     async function collect() {
-        await Promise.allSettled(pending);
+        await settle();
         let observed: unknown[] = [];
         let now: Record<string, unknown> = {};
         try {
@@ -149,8 +169,9 @@ export function startDiagnostics(page: Page): Diagnostics {
         return { events: trimmed, serverTitles, observed, now };
     }
 
-    async function render() {
-        const d = await collect();
+    type Snapshot = Awaited<ReturnType<typeof collect>>;
+
+    function renderOf(d: Snapshot) {
         const lines: string[] = [];
         lines.push('## 失败时页面');
         lines.push(JSON.stringify(d.now, null, 2));
@@ -168,11 +189,14 @@ export function startDiagnostics(page: Page): Diagnostics {
     }
 
     return {
-        render,
+        async render() {
+            return renderOf(await collect());
+        },
         async attach(testInfo) {
             try {
+                // 文本与 JSON 用同一份快照，免得两个文件显示不同的失败状态
                 const d = await collect();
-                await testInfo.attach('diagnostics.txt', { body: await render(), contentType: 'text/plain; charset=utf-8' });
+                await testInfo.attach('diagnostics.txt', { body: renderOf(d), contentType: 'text/plain; charset=utf-8' });
                 await testInfo.attach('diagnostics.json', { body: JSON.stringify(d, null, 2), contentType: 'application/json' });
             } catch (e) {
                 console.warn(`[diagnostics] 附诊断失败：${(e as Error)?.message ?? e}`);
