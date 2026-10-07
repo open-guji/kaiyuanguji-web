@@ -21,6 +21,10 @@
  * 登记带时间戳：超过 ttlMs（默认 10 秒）没更新的登记当作 0（那一路进程死了），免得它占着名额不放。
  * 传输期间每 250 毫秒更新一次（见 h1-sync-core.mjs 的 runQueue）；进程退出时也会撤掉登记。
  *
+ * 协调失效时退回静态：登记写不进去（连续两次）或登记目录读不了，这一路退回静态份额 fallback（默认 total/3，
+ * slotAllocatorFromEnv 优先取 COS_CONCURRENCY——deploy.yml 里各路命令行上的 36／12／32）。否则各路看不见彼此，
+ * 都当自己独占、各开满额，总并发会远超预算；退回静态份额则总数仍是各路静态份额之和（80）。写得进去了就自动恢复协调。
+ *
  * 只在设了 COS_PLAN_DIR 时启用（CI 里由 deploy.yml 设）；没设就是原来的静态并发（本地跑脚本、单测不受影响）。
  */
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, renameSync, rmSync } from 'node:fs';
@@ -92,20 +96,34 @@ export function allocateSlots(pendings, total = DEFAULT_TOTAL, min = DEFAULT_MIN
  * 一路同步的分配器：publish() 登记自己的剩余数，limit() 给出自己此刻的并发份额。
  * @param {{name: string, dir: string, total?: number, min?: number, ttlMs?: number, now?: () => number}} o
  */
-export function createSlotAllocator({ name, dir, total = DEFAULT_TOTAL, min = DEFAULT_MIN, ttlMs = DEFAULT_TTL_MS, now = Date.now }) {
+export function createSlotAllocator({
+    name, dir, total = DEFAULT_TOTAL, min = DEFAULT_MIN, ttlMs = DEFAULT_TTL_MS, now = Date.now,
+    fallback = Math.max(min, Math.floor(total / 3)), warn = console.warn,
+}) {
     mkdirSync(dir, { recursive: true });
     const file = join(dir, `${name}.json`);
     let mine = 0;          // 自己的剩余待处理数
     let mineInflight = 0;  // 自己此刻的在途数
     let declared = 0;      // 自己最近一次算出的份额（写进登记，让别路知道我「被允许」占多少）
     let cache = null;      // { at, others: { name: { pending, inflight, limit } } }
+    let writeFailures = 0; // 连续写登记失败的次数
+    let degraded = false;  // 协调用不了（登记写不进去／读不了）：各路退回静态份额 fallback，免得各自当作独占而超预算
+    const enterDegraded = (why) => {
+        if (!degraded) warn(`  ⚠ 并发协调不可用（${why}），${name} 退回静态并发 ${fallback}（总预算 ${total} 由各路静态份额之和保证）`);
+        degraded = true;
+    };
 
     function write() {
         try {
             const tmp = `${file}.${process.pid}.tmp`;
             writeFileSync(tmp, JSON.stringify({ name, pending: mine, inflight: mineInflight, limit: declared, at: now() }));
             renameSync(tmp, file);
-        } catch { /* 登记失败不影响传输：份额退化为只按自己算 */ }
+            writeFailures = 0;
+            degraded = false; // 写得进去了：恢复协调
+        } catch (e) {
+            // 偶发一次不处理；连续两次写不进去，别路就看不见我的登记，各自会当自己独占——退回静态份额
+            if (++writeFailures >= 2) enterDegraded(`写登记失败：${e.code || e.message}`);
+        }
     }
 
     /** 登记：pending＝剩余待处理数（含在途），inflight＝此刻在途数。 */
@@ -120,7 +138,7 @@ export function createSlotAllocator({ name, dir, total = DEFAULT_TOTAL, min = DE
     function readOthers() {
         const out = {};
         let names = [];
-        try { names = readdirSync(dir); } catch { return out; }
+        try { names = readdirSync(dir); } catch (e) { enterDegraded(`读登记目录失败：${e.code || e.message}`); return out; }
         const t = now();
         for (const f of names) {
             if (!f.endsWith('.json') || f === `${name}.json`) continue;
@@ -147,6 +165,7 @@ export function createSlotAllocator({ name, dir, total = DEFAULT_TOTAL, min = DE
     function limit() {
         const t = now();
         if (!cache || t - cache.at > READ_CACHE_MS) cache = { at: t, others: readOthers() };
+        if (degraded) return Math.max(1, fallback);
         const pendings = { [name]: mine };
         let othersBusy = 0;
         for (const [n, o] of Object.entries(cache.others)) {
@@ -175,11 +194,13 @@ export function slotAllocatorFromEnv(name, env = process.env) {
     if (!dir) return null;
     const total = Number(env.COS_TOTAL_BUDGET);
     const minSlots = Number(env.COS_MIN_SLOTS);
+    const staticShare = Number(env.COS_CONCURRENCY);
     try {
         return createSlotAllocator({
             name, dir,
             total: Number.isInteger(total) && total >= 1 && total <= 500 ? total : DEFAULT_TOTAL,
             min: Number.isInteger(minSlots) && minSlots >= 1 && minSlots <= 50 ? minSlots : DEFAULT_MIN,
+            ...(Number.isInteger(staticShare) && staticShare >= 1 && staticShare <= 500 ? { fallback: staticShare } : {}),
         });
     } catch (e) {
         console.warn(`  ⚠ 并发分配器初始化失败（${e.message}），退回静态并发`);

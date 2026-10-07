@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { allocateSlots, createSlotAllocator, slotAllocatorFromEnv } from './cos-slots.mjs';
@@ -186,6 +186,41 @@ test('分配器：自己的剩余数很小时仍至少 1 个名额；预算可�
     assert.ok(a.limit() >= 1);
     a.publish(1000);
     assert.equal(a.limit(), 10);
+}));
+
+test('分配器：登记写不进去（连续两次）或登记目录读不了时，退回静态份额，不再各自当独占；写得进去后自动恢复协调', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cos-slots-fb-'));
+    try {
+        let t = 1_000_000;
+        const now = () => t;
+        const warns = [];
+        const a = createSlotAllocator({ name: 'a', dir, now, total: 80, fallback: 36, warn: (m) => warns.push(m) });
+        a.publish(100000);
+        assert.equal(a.limit(), 80, '协调正常：独占');
+        rmSync(dir, { recursive: true, force: true });   // 登记目录没了：写、读都失败
+        a.publish(100000);                               // 第 1 次写失败：先不处理
+        t += 300;
+        assert.equal(a.limit(), 36, '读登记目录失败 → 退回静态份额');
+        a.publish(99000);                                // 第 2 次写失败
+        assert.equal(a.limit(), 36);
+        assert.equal(warns.length, 1, '只警告一次');
+        assert.match(warns[0], /并发协调不可用/);
+        mkdirSync(dir, { recursive: true });             // 目录回来了
+        a.publish(98000);
+        t += 300;
+        assert.equal(a.limit(), 80, '写得进去了：恢复协调');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('slotAllocatorFromEnv：退回静态份额取 COS_CONCURRENCY，没有就取总预算的三分之一', () => withDir((dir) => {
+    const a = slotAllocatorFromEnv('x', { COS_PLAN_DIR: dir, COS_CONCURRENCY: '12' });
+    const b = slotAllocatorFromEnv('y', { COS_PLAN_DIR: dir });
+    const rm = () => rmSync(dir, { recursive: true, force: true });
+    a.publish(1000); b.publish(1000);
+    rm();
+    a.publish(1000); a.publish(900); b.publish(1000); b.publish(900);
+    assert.equal(a.limit(), 12);
+    assert.equal(b.limit(), 26, '80/3 向下取整');
 }));
 
 test('slotAllocatorFromEnv：没设 COS_PLAN_DIR 返回 null；设了按环境变量取预算与保底', () => withDir((dir) => {
