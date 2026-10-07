@@ -20,7 +20,7 @@ import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { assertProductionDir } from './lib/production-dir.mjs';
-import * as OpenCC from 'opencc-js';
+import { toSimplified } from './lib/to-simplified.mjs';
 import { LITE_FORMAT, encodeLiteRow } from '../src/lib/search/lite.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -188,7 +188,7 @@ function loadShardedIndex() {
 
 /** 构建搜索专用的繁→简差异表（仅 title/author 与原文不同的条目） */
 function buildSearchSimplified(index) {
-    const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
+    const t2s = toSimplified;
     const out = {};
     for (const groupKey of ['works', 'collections', 'books', 'entities']) {
         const group = index[groupKey];

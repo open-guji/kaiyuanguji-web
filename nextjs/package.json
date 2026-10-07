@@ -23,7 +23,7 @@
     "gray-matter": "^4.0.3",
     "minisearch": "^7.2.0",
     "next": "^16.1.4",
-    "opencc-js": "^1.0.5",
+    "opencc-js": "1.4.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",
