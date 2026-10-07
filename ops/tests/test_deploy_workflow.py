@@ -295,7 +295,13 @@ class CodeOnlyPromote(unittest.TestCase):
     def test_pointer_is_written_only_after_production_deploy_and_before_purge(self):
         n = 'Code-only promote — record webCommitId in latest.json (after deploy)'
         s = _step(self.build, n)
-        self.assertFalse(s.get('continue-on-error'))   # 写不了就让 promote 红，不让指针悄悄落后
+        # 部署已成功：指针写不了不能让 job 变红（会跳过清缓存、预热、verify，告警还说成部署失败）。
+        # 所以 continue-on-error，但要先重试、失败时大声警告（::error:: 和摘要里写明怎么补）
+        self.assertTrue(s.get('continue-on-error'))
+        self.assertIn('for i in 1 2 3', s['run'])
+        self.assertIn('::error::', s['run'])
+        self.assertIn('GITHUB_STEP_SUMMARY', s['run'])
+        self.assertIn('promote=data', s['run'])
         self.assertIn("env.CODE_ONLY == 'true'", s['if'])
         self.assertIn('latest-only', s['run'])
         self.assertIn('needs.resolve.outputs.web_ref', s['env']['WEB_COMMIT_ID'])

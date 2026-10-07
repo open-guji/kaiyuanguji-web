@@ -170,7 +170,7 @@ done
 
 **什么时候回滚**：新版本上线后正式站出现读者可见的回归，且修复不能在 30 分钟内发出。
 
-**自动上正式站（overview#341）**：push 到 main 后，测试站 verify 全绿且正式站产物构建成功，deploy.yml 的 `auto-promote-code` 会自动派 `target=production promote=code from_run=<那次 run>`——**只发代码**：直接部署那次存的正式站产物，数据一个字节都不动（只把线上 `latest.json` 的 `webCommitId` 在部署成功后改成新代码）；那次没有可用的正式站产物就报错，不会退回重新构建。数据上线另走：每晚定时的 `promote=data`，或有人确认后手动选 `promote=code+data`（2026-10-07 之前自动晋升派的是 `code+data`，会把没人确认的数据带上正式站，已改）。正式站发布或验收失败时，`alert-production` 在本仓开一张 `deploy-alert` 告警 issue（已有未关的就续评论），写明 run 与回滚步骤。回滚前先把仓库变量 `AUTO_PROMOTE_CODE` 设成 `false`，否则下一次 push 会把新版再发上去。
+**自动上正式站（overview#341）**：push 到 main 后，测试站 verify 全绿且正式站产物构建成功，deploy.yml 的 `auto-promote-code` 会自动派 `target=production promote=code from_run=<那次 run>`——**只发代码**：直接部署那次存的正式站产物，数据一个字节都不动（只把线上 `latest.json` 的 `webCommitId` 在部署成功后改成新代码；写失败会重试 3 次，仍失败时 job 不变红，但摘要里有 ⚠️——这时**不要发 `promote=data`**，先用同一个 `from_run` 再派一次 `promote=code` 补指针）；那次没有可用的正式站产物就报错，不会退回重新构建。数据上线另走：每晚定时的 `promote=data`，或有人确认后手动选 `promote=code+data`（2026-10-07 之前自动晋升派的是 `code+data`，会把没人确认的数据带上正式站，已改）。正式站发布或验收失败时，`alert-production` 在本仓开一张 `deploy-alert` 告警 issue（已有未关的就续评论），写明 run 与回滚步骤。回滚前先把仓库变量 `AUTO_PROMOTE_CODE` 设成 `false`，否则下一次 push 会把新版再发上去。
 只是测试站坏了不用回滚——测试站本来就是用来坏的。
 
 入口：Actions → **Rollback**。`dry_run` 默认勾着，先跑一遍看计划：
