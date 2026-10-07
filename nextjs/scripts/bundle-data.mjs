@@ -251,10 +251,11 @@ function bundleL1() {
 
             // 详情：build 产物 entry/<id>.json（源＋_ 派生字段）优先，缺则读源档
             const detailPath = join(baseDir, path);
-            const read = readEntryDoc({ id, srcPath: detailPath });
-            if (read) {
-                try {
-                    const detail = read.doc;
+            try {
+                // 读不了／JSON 坏了只跳过这一条（readEntryDoc 抛错在 try 内，与改前读源档同口径）
+                const read = readEntryDoc({ id, srcPath: detailPath });
+                const detail = read?.doc;
+                if (detail) {
                     if (item.has_collated) detail.has_collated = true;
                     if (item.has_text) detail.has_text = true;
                     if (item.has_image) detail.has_image = true;
@@ -276,9 +277,9 @@ function bundleL1() {
                     writeIfChanged(join(entryDir, `${id}.json`), json);
                     totalEntries++;
                     totalBytes += Buffer.byteLength(json);
-                } catch (e) {
-                    console.warn(`  ⚠ Failed to read ${path}: ${e.message}`);
                 }
+            } catch (e) {
+                console.warn(`  ⚠ Failed to read ${path}: ${e.message}`);
             }
 
             // 关联文件（文本 manifest.json＋<key>/、fragments、sources）
