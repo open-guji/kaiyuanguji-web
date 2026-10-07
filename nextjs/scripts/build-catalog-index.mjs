@@ -2,7 +2,7 @@
 /**
  * build-catalog-index.mjs — 古籍总目的构建期分类索引（N4b，overview#219）
  *
- * 从每部 Work 的 `classification`（{ l1, l2, l3, l4, basis, source }）生成：
+ * 从每部 Work 的分类（新：build 产物 `_classifications[]`；回退旧 `classification` {l1,l2,l3,l4,basis,source}，见 lib/derived.mjs）生成：
  *   catalog/tree.json                 CatalogNode[]：经史子集分类树，每个节点带计数（含子孙），
  *                                     「未分類」单独一个节点放在最后
  *   catalog/<nodeId>/<page>.json      CatalogWorkCard[]：该节点（含子孙）下的作品，每页 20 条，
@@ -29,6 +29,7 @@
 
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'fs';
+import { classificationOf, indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -94,7 +95,7 @@ export function toCard(d) {
     }
     const summary = descriptionText(d);
     if (summary) card.summary = truncate(summary, SUMMARY_MAX);
-    const path = classificationPath(d.classification);
+    const path = classificationPath(classificationOf(d));
     if (path.length) card.classification = path;
     return card;
 }
@@ -288,11 +289,11 @@ export function bundleCatalog({ index, rootDirFor, dataDir, taxonomyFile, log = 
     let merged = 0;
     function* works() {
         for (const item of Object.values(index.works ?? {})) {
-            const p = join(rootDirFor(item), item.path);
-            if (!existsSync(p)) continue;
+            // schema-v2：优先读 build 产物 entry/<id>.json（带 _classifications），缺则读源档（lib/derived.mjs）
             let d;
             try {
-                d = JSON.parse(readFileSync(p, 'utf-8'));
+                d = readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path) })?.doc;
+                if (!d) continue;
             } catch (e) {
                 log(`  ⚠ catalog: 读不了 ${item.path}: ${e.message}`);
                 continue;
@@ -302,7 +303,7 @@ export function bundleCatalog({ index, rootDirFor, dataDir, taxonomyFile, log = 
             if (!d.id) d.id = item.id;
             const root = item._root ?? 'official';
             const r = (perRoot[root] ??= { classified: 0, unclassified: 0 });
-            if (classificationPath(d.classification).length) r.classified++; else r.unclassified++;
+            if (classificationPath(classificationOf(d)).length) r.classified++; else r.unclassified++;
             yield d;
         }
     }
@@ -328,7 +329,7 @@ if (isMain) {
     try { assertProductionDir(prodDir); } catch (e) { console.error(`❌ ${e.message}`); process.exit(1); }
     const index = { works: {} };
     for (const [dir, label] of [[prodDir, 'official']]) {
-        const shardDir = join(dir, 'index', 'works');
+        const shardDir = join(indexDirFor(dir), 'works');
         if (!existsSync(shardDir)) continue;
         for (let i = 0; i < 16; i++) {
             const p = join(shardDir, `${i.toString(16)}.json`);
@@ -343,6 +344,6 @@ if (isMain) {
         index,
         rootDirFor: () => prodDir,
         dataDir: resolveDataDirs().dataDir,
-        taxonomyFile: join(prodDir, 'classific.json'),
+        taxonomyFile: taxonomyFileFor(prodDir),
     });
 }
