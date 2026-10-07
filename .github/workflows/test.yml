@@ -43,6 +43,10 @@ jobs:
 
       - name: Data workflow checks (ops/tests/test_data_workflow.py)
         run: python3 -m unittest ops/tests/test_data_workflow.py -v
+
+      # 克隆缓存（ops/clone-cached.sh）：内联副本与正本一致，并用本机假仓真跑一遍（overview#470 P1）
+      - name: Clone cache tests (ops/tests/test_clone_cache.py)
+        run: python3 -m unittest ops/tests/test_clone_cache.py -v
       # 数据包检查（overview#470 P0）：格式契约校验器与整包检查脚本，夹具含线上旧格式与 book-index schema-v2 的样例
       - name: Data package check tests (ops/tests)
         run: node --test ops/tests/data-contract.test.mjs ops/tests/data-package-check.test.mjs

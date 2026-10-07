@@ -138,6 +138,91 @@ class CosH1StateCache(unittest.TestCase):
 
 
 @unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class CloneCacheAndProgress(unittest.TestCase):
+    """overview#470 P1：克隆缓存（restore → clone → save）与长步骤的进度日志。"""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+
+    def test_build_job_cache_steps_order_and_gating(self):
+        steps = self.wf['jobs']['build']['steps']
+        names = [x.get('name', '') for x in steps]
+        for repo in ('book-index', 'book-text'):
+            r, c, sv = f'Restore git cache — {repo}', 'Clone index data repos', f'Save git cache — {repo}'
+            self.assertLess(names.index(r), names.index(c))
+            self.assertLess(names.index(c), names.index(sv))
+            for n in (r, sv):
+                st = steps[names.index(n)]
+                self.assertIn('DATA_FAST', st['if'], n)
+                self.assertTrue(st.get('continue-on-error'), f'{n} 失败不能拦发布')
+        # 保存只在没精确命中时做，键用实际取到的 commit
+        sv = steps[names.index('Save git cache — book-text')]
+        self.assertIn("cache-hit != 'true'", sv['if'])
+        self.assertIn('steps.clone.outputs.text_sha', sv['with']['key'])
+
+    def test_cache_path_is_git_dir_only(self):
+        for st in self.wf['jobs']['build']['steps']:
+            if str(st.get('name', '')).startswith(('Restore git cache', 'Save git cache')):
+                self.assertTrue(st['with']['path'].endswith('/.git'), st['name'])
+
+    def test_prod_artifact_clone_cache_only_on_sitemap_cache_miss(self):
+        steps = self.wf['jobs']['prod-artifact']['steps']
+        names = [x.get('name', '') for x in steps]
+        i = names.index('Clone, bundle and generate item sitemaps (cache miss)')
+        self.assertLess(names.index('Restore git cache — book-text'), i)
+        self.assertGreater(names.index('Save git cache — book-text'), i)
+        self.assertEqual(steps[i].get('id'), 'gen')
+        self.assertIn("sitemap_cache.outputs.cache-hit != 'true'", steps[names.index('Restore git cache — book-text')]['if'])
+
+    def test_heartbeat_uses_progress_script_with_fallback(self):
+        self.assertIn('scripts/sync-heartbeat.mjs', self.raw)
+        self.assertNotIn('current/ pid $P_CUR', self.raw)
+
+    def test_long_steps_print_start_end_and_duration(self):
+        for needle in ('▶ build_derived 开始', '✔ build_derived 用时', '▶ 打包数据开始', '✔ 打包数据用时',
+                       '▶ EdgeOne 全栈构建开始', '✔ EdgeOne 全栈构建用时',
+                       '▶ EdgeOne 部署（测试站）开始', '✔ EdgeOne 部署（测试站）用时',
+                       '▶ EdgeOne 部署（正式站）开始', '✔ EdgeOne 部署（正式站）用时'):
+            self.assertIn(needle, self.raw, needle)
+
+
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class WebPointerStep(unittest.TestCase):
+    """overview#470 P1：代码指针 web.json 在部署成功之后、清缓存之前写，不拦发布，清缓存带上它。"""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.steps = cls.wf['jobs']['build']['steps']
+        cls.names = [s.get('name', '') for s in cls.steps]
+        cls.name = 'Write web pointer web.json (overview#470 P1)'
+
+    def test_after_deploy_before_purge(self):
+        i = self.names.index(self.name)
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (staging, direct upload)'))
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
+        self.assertLess(i, self.names.index('Purge EdgeOne CDN cache'))
+
+    def test_does_not_block_release(self):
+        self.assertTrue(_step(self.wf['jobs']['build'], self.name).get('continue-on-error'))
+
+    def test_uses_resolved_web_ref_and_cos_secrets(self):
+        s = _step(self.wf['jobs']['build'], self.name)
+        self.assertIn('needs.resolve.outputs.web_ref', s['env']['WEB_COMMIT_ID'])
+        for k in ('COS_SECRET_ID', 'COS_SECRET_KEY', 'COS_BUCKET'):
+            self.assertIn(k, s['env'])
+        self.assertIn('write-web-pointer.mjs', s['run'])
+
+    def test_purge_includes_web_json(self):
+        self.assertIn("pfx + 'web.json'", self.raw)
+
+
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
 class SplitDataFlow(unittest.TestCase):
     """overview#470 P1：仓库变量 SPLIT_DATA_FLOW 打开后，代码流程不碰数据。变量不设（默认）时行为必须与拆出之前一致，
     所以这里钉的是「每个数据步骤都被开关挡得住」「两份正式站构建仍一致」「晋升与验收跟着开关走」。"""
@@ -202,7 +287,9 @@ class SplitDataFlow(unittest.TestCase):
     def test_prod_artifact_skips_sitemap_generation_when_split(self):
         steps = self.wf['jobs']['prod-artifact']['steps']
         for n in ('Restore item sitemaps (www)', 'Clone, bundle and generate item sitemaps (cache miss)',
-                  'Save item sitemaps cache (www)', 'Place item sitemaps'):
+                  'Save item sitemaps cache (www)', 'Place item sitemaps',
+                  'Restore git cache — book-index', 'Restore git cache — book-text',
+                  'Save git cache — book-index', 'Save git cache — book-text'):
             self.assertIn("needs.resolve.outputs.split != 'true'", self._by_name(n, steps)['if'], n)
 
     def test_auto_promote_data_off_when_split_and_verify_follows(self):
