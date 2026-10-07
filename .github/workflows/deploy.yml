@@ -48,7 +48,7 @@ on:
         options: [staging, production]
         default: staging
       promote:
-        description: '仅 target=production 有效。code+data = 测试站的代码与数据一起上正式站；data = 正式站代码不动，只换数据'
+        description: '仅 target=production 有效。code+data = 测试站的代码与数据一起上正式站；data = 正式站代码不动，只换数据。数据流程已拆出（仓库变量 SPLIT_DATA_FLOW=true）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
         type: choice
         options: [code+data, data]
         default: code+data
@@ -109,10 +109,18 @@ jobs:
     steps:
       - name: Compare data repo HEADs with deployed latest.json
         id: compare
+        env:
+          SPLIT_DATA_FLOW: ${{ vars.SPLIT_DATA_FLOW }}
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "· 非定时触发，直接部署"
+            exit 0
+          fi
+          # overview#470 P1：SPLIT_DATA_FLOW 打开后，每晚的数据发布归数据流程（data.yml），代码流程的定时部署不再有事可做
+          if [ "$SPLIT_DATA_FLOW" = "true" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "· SPLIT_DATA_FLOW 已打开：定时的数据发布由 data.yml 负责，本流程跳过"
             exit 0
           fi
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
@@ -158,6 +166,9 @@ jobs:
       text_sha: ${{ steps.sha.outputs.text_sha }}
       # overview#341：非空＝正式站直接部署这个 run 存的正式站产物（不重新构建）
       artifact_run: ${{ steps.r.outputs.artifact_run }}
+      # overview#470 P1：'true'＝数据流程已拆出（仓库变量 SPLIT_DATA_FLOW）：代码流程不克隆、不打包、不传数据，
+      # 测试站读正式站数据前缀，sitemap 走路由代理，晋升只发代码。from_run 的晋升取那次 run 的口径（manifest 的 dataSplit）。
+      split: ${{ steps.r.outputs.split }}
     steps:
       # push 部署要让路给定时／手动部署：有非 push 的 deploy run 在排队或在跑就等它跑完再往下走。
       # 只有最新的 push 会在这里等（push 组 cancel-in-progress，新 push 会取消旧的等待者）。
@@ -202,8 +213,11 @@ jobs:
           IN_FROM_RUN: ${{ inputs.from_run }}
           IN_PROMOTE: ${{ inputs.promote }}
           GH_TOKEN: ${{ github.token }}
+          SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
+          # overview#470 P1：数据流程是否已拆出（from_run 的晋升下面按那次 run 的 manifest 改写）
+          SPLIT=false; [ "$SPLIT_VAR" = "true" ] && SPLIT=true
           if [ -z "$EDGEONE_API_TOKEN" ]; then
             echo "❌ EDGEONE_API_TOKEN 未配置：测试站 kyg-staging 与正式站 kyg-ssr-spike 都是 CLI 直传，没有它哪个站都发不了"
             exit 1
@@ -232,9 +246,16 @@ jobs:
             mget() { python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2],''))" "$M" "$1"; }
             M_WEB=$(mget webCommitId)
             [ "$M_WEB" = "$RUN_SHA" ] || { echo "❌ manifest 的 webCommitId（$M_WEB）与 run 的 commit（$RUN_SHA）不一致"; exit 1; }
-            for k in productionCommitId textCommitId; do
-              printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
-            done
+            # overview#470 P1：那次 run 是数据拆出之后跑的（manifest 的 dataSplit），晋升就只发代码，manifest 里没有数据 commit
+            case "$(mget dataSplit)" in True|true) SPLIT=true ;; *) SPLIT=false ;; esac
+            if [ "$SPLIT" != true ]; then
+              for k in productionCommitId textCommitId; do
+                printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
+              done
+            elif [ "$IN_PROMOTE" = data ]; then
+              echo "❌ 数据流程已拆出（run $IN_FROM_RUN 是拆出后跑的）：promote=data 不再支持，数据上线走 data.yml"; exit 1
+            fi
+            echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
             if [ "$IN_PROMOTE" = data ]; then
@@ -257,13 +278,26 @@ jobs:
             echo "text_ref=$(mget textCommitId)" >> "$GITHUB_OUTPUT"
             echo "artifact_run=$ART" >> "$GITHUB_OUTPUT"
             if [ -n "$ART" ]; then HOW='部署那次存的正式站产物'; else HOW='重新构建'; fi
-            echo "· promote($IN_PROMOTE) from run $IN_FROM_RUN：web=$WEB 数据=那次的三仓 commit；$HOW"
+            if [ "$SPLIT" = true ]; then DATA_NOTE='数据不随这次发布（数据流程已拆出）'; else DATA_NOTE='数据=那次的三仓 commit'; fi
+            echo "· promote($IN_PROMOTE) from run $IN_FROM_RUN：web=$WEB $DATA_NOTE；$HOW"
             exit 0
           fi
 
           if [ "$REQ" = "production" ]; then
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
+            echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
+            if [ "$SPLIT" = true ]; then
+              # 数据流程已拆出：只发代码，取测试站代码指针 staging/web.json 记下的 webCommitId；不带数据 commit
+              [ "$IN_PROMOTE" != data ] || { echo "❌ 数据流程已拆出：promote=data 不再支持，数据上线走 data.yml"; exit 1; }
+              WEB=$(curl -sf https://data.kaiyuanguji.com/staging/web.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
+              [ -n "$WEB" ] || { echo "❌ staging/web.json 里没有 webCommitId（需先有一次成功的测试站部署）"; exit 1; }
+              echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
+              echo "prod_ref=" >> "$GITHUB_OUTPUT"
+              echo "text_ref=" >> "$GITHUB_OUTPUT"
+              echo "· promote（只发代码，数据流程已拆出）：web=$WEB"
+              exit 0
+            fi
             S=$(curl -sf https://data.kaiyuanguji.com/staging/latest.json)
             P=$(curl -sf https://data.kaiyuanguji.com/latest.json || echo '{}')
             get() { echo "$1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$2',''))"; }
@@ -281,6 +315,7 @@ jobs:
 
           echo "mode=staging" >> "$GITHUB_OUTPUT"
           echo "target=staging" >> "$GITHUB_OUTPUT"
+          echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
           echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           # 数据仓 ref：push／定时没有输入，一律 main；手动触发可指定（联调分支）。
           # 只接受 git ref 常见字符，其余当作 main 之外的非法输入直接报错。
@@ -296,11 +331,16 @@ jobs:
             fi
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
-          echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
+          if [ "$SPLIT" = true ]; then
+            echo "· 部署到测试站 kyg-staging（web=${{ github.sha }}；数据流程已拆出，不克隆数据仓，prod_ref／text_ref 不起作用）"
+          else
+            echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
+          fi
 
       # overview#341：把三个 ref 解析成完整 commit。分支／tag 用 ls-remote；本来就是 40 位 SHA 的原样用；
       # 解析不了（短 SHA、网络失败）就留空——build 照老路克隆，只是用不上「数据没变就跳过」。
       - id: sha
+        if: ${{ steps.r.outputs.split != 'true' }}
         env:
           PROD_REF: ${{ steps.r.outputs.prod_ref }}
           TEXT_REF: ${{ steps.r.outputs.text_ref }}
@@ -342,6 +382,9 @@ jobs:
       FROM_ARTIFACT: ${{ needs.resolve.outputs.artifact_run != '' }}
       # 演练（仅手动 target=staging）：测试站产物打包、加密、删掉构建目录后再解包部署，走一遍 promote 的那条路
       REHEARSE_ARTIFACT: ${{ needs.resolve.outputs.target == 'staging' && inputs.rehearse_artifact == true }}
+      # overview#470 P1：数据流程已拆出（见 resolve 的 split 输出）。为 'true' 时下面所有数据步骤都跳过（DATA_FAST），
+      # 测试站读正式站数据前缀，sitemap 走路由代理。不设变量（默认）时本任务与拆出之前逐步骤一致。
+      SPLIT_DATA: ${{ needs.resolve.outputs.split }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -365,6 +408,15 @@ jobs:
         working-directory: nextjs
         run: npm test
 
+      # overview#470 P1：数据流程已拆出——代码流程不碰数据。下面所有数据步骤（克隆、build_derived、打包、检查、COS 同步、
+      # 条目失效计算）本来就以 DATA_FAST != 'true' 为条件，这里把它置为 true 就全部跳过；
+      # 「数据没变」快路的判定与写 latest.json 的步骤另行跳过（不再写 latest.json，数据指针只归数据流程）。
+      - name: Split data flow — skip all data steps (overview#470 P1)
+        if: ${{ env.SPLIT_DATA == 'true' }}
+        run: |
+          echo "DATA_FAST=true" >> "$GITHUB_ENV"
+          echo "· SPLIT_DATA_FLOW：本流程不克隆、不打包、不上传数据；数据由 data.yml 负责"
+
       # --- overview#341：数据没变就不克隆、不打包、不同步 ---
       # 只改代码的部署原来照样要克隆三个数据仓（book-text 检出约 5 GB，约 3 分钟）、打包（约 40 秒）——
       # 打包出来和线上那份一模一样，下面的 COS 同步判定也会跳过上传，白花的只是克隆和打包。
@@ -377,7 +429,7 @@ jobs:
       # 任何一条不满足、读不到，都走老路，行为与原来一样。
       - name: Data fast path — decide before cloning (overview#341)
         id: data_pre
-        if: ${{ env.HAS_COS_SECRETS == 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.SPLIT_DATA != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -626,6 +678,7 @@ jobs:
       # CUT2 起正式站也全栈：部署到 kyg-ssr-spike 后据此按改动失效 www 的条目页。
       # 必须在下面的 h1 同步（会翻转指针）之前；数据没变时它就是现行 root，item-changes 算出来是「没变」。
       - name: Record previous h1 root (W2-3)
+        if: ${{ env.SPLIT_DATA != 'true' }}
         run: |
           P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
           R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
@@ -831,7 +884,8 @@ jobs:
       # （测试站 robots.txt 全禁、不列 sitemap）。overview#341：数据没变的快路上用缓存（同一站点、同一份数据、
       # 同一版打包脚本生成的，内容一样）；照常打包时生成后存一份缓存，下次快路用。
       - name: Item sitemaps (W2-3)
-        if: ${{ env.FROM_ARTIFACT != 'true' }}
+        # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（数据前缀 sitemaps/），构建不生成
+        if: ${{ env.FROM_ARTIFACT != 'true' && env.SPLIT_DATA != 'true' }}
         working-directory: nextjs
         env:
           SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
@@ -888,6 +942,8 @@ jobs:
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
           NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
           NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
@@ -939,7 +995,9 @@ jobs:
           KYG_RENDER_MODE: fullstack
           NEXT_PUBLIC_MODE: ''
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com/staging
+          # overview#470 P1：数据流程已拆出时测试站直接读正式站数据前缀（没有自己的数据）
+          NEXT_PUBLIC_COS_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: staging
           NEXT_PUBLIC_SITE_URL: https://staging.kaiyuanguji.com
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
@@ -1024,8 +1082,17 @@ jobs:
           test -f nextjs/.edgeone/edge-functions/config.json && echo "✓ 边缘函数（/api/*）已随全栈产物编译" \
             || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
           # W2-3：sitemap 索引＋分片进了产物，失效接口在云函数路由里
-          test -f $A/sitemap-index.xml && ls $A/sitemaps/*.xml > /dev/null && echo "✓ sitemap 索引＋$(ls $A/sitemaps/*.xml | wc -l) 个分片已进产物" \
-            || { echo "❌ 产物里没有 sitemap-index.xml／sitemaps/"; exit 1; }
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理，产物里没有静态文件，改查路由
+          if [ "$SPLIT_DATA" = true ]; then
+            # 反向断言：测试站（非演练）不读 staging 数据前缀，读正式站的
+            ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ SPLIT 模式：测试站产物里还有 staging 数据前缀"; exit 1; }
+            test ! -e $A/sitemap-index.xml && grep -q '"\^/sitemap-proxy' nextjs/.edgeone/cloud-functions/ssr-node/config.json \
+              && echo "✓ sitemap 走路由代理（产物里无静态文件，云函数有 /sitemap-proxy）" \
+              || { echo "❌ SPLIT 模式：产物里不该有静态 sitemap，且云函数路由里要有 /sitemap-proxy"; exit 1; }
+          else
+            test -f $A/sitemap-index.xml && ls $A/sitemaps/*.xml > /dev/null && echo "✓ sitemap 索引＋$(ls $A/sitemaps/*.xml | wc -l) 个分片已进产物" \
+              || { echo "❌ 产物里没有 sitemap-index.xml／sitemaps/"; exit 1; }
+          fi
           grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json && echo "✓ /internal/revalidate 已由云函数处理" \
             || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 
@@ -1034,7 +1101,7 @@ jobs:
       - name: Verify production artifacts (fullstack)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
         # 判据抽到 ops/check-edgeone-artifact.sh（prod-artifact 任务构建时也用同一份）；部署现成产物时同样再查一遍
-        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" "${{ needs.resolve.outputs.split == 'true' && 'proxy' || 'static' }}"
 
       # 闸：产物文件数异常时直接失败，别让部署静默不生效（2026-09-27 h1 数据混进产物、
       # Pages 静默不发布的教训）。全栈产物里多了云函数（opennext 打包的 node_modules，
@@ -1080,6 +1147,8 @@ jobs:
               'productionCommitId': '$(head_of book-index "$R_PROD")',
               'textCommitId': '$(head_of book-text "$R_TEXT")',
               'runId': '${{ github.run_id }}',
+              # overview#470 P1：数据流程已拆出时 manifest 里没有数据 commit；晋升据此只发代码
+              'dataSplit': ${{ needs.resolve.outputs.split == 'true' && 'True' || 'False' }},
           }, open(sys.argv[1], 'w'), indent=2)
           PY
           cat "$RUNNER_TEMP/manifest/promote-manifest.json"
@@ -1252,7 +1321,7 @@ jobs:
       - name: Warm hot reading pages (staging, overview#322)
         env:
           TARGET: https://staging.kaiyuanguji.com
-          DATA_BASE: https://data.kaiyuanguji.com/staging
+          DATA_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
         # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
         run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
 
@@ -1295,14 +1364,14 @@ jobs:
 
       - name: Restore item sitemaps (www)
         id: sitemap_cache
-        if: ${{ needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ needs.resolve.outputs.split != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
           key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
       - name: Clone, bundle and generate item sitemaps (cache miss)
-        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
         env:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
@@ -1329,7 +1398,7 @@ jobs:
           node scripts/gen-sitemaps.mjs
 
       - name: Save item sitemaps cache (www)
-        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -1337,6 +1406,7 @@ jobs:
           key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
       - name: Place item sitemaps
+        if: ${{ needs.resolve.outputs.split != 'true' }}
         working-directory: nextjs
         run: |
           OUT="$RUNNER_TEMP/item-sitemaps"
@@ -1366,6 +1436,8 @@ jobs:
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
           NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
           NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
@@ -1400,7 +1472,7 @@ jobs:
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
       - name: Verify production artifacts (fullstack)
-        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" "${{ needs.resolve.outputs.split == 'true' && 'proxy' || 'static' }}"
 
       - name: Pack production artifact (encrypted)
         env:
@@ -1439,6 +1511,8 @@ jobs:
       ref: ${{ needs.resolve.outputs.web_ref }}
       # 刚部署完：CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
       wait_cdn: true
+      # overview#470 P1：数据流程已拆出时测试站读正式站数据前缀，验收的 DATA_BASE 跟着指过去
+      data_from_prod: ${{ needs.resolve.outputs.split == 'true' }}
 
   # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
   # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
@@ -1450,7 +1524,8 @@ jobs:
   # （needs.verify.result == 'success' 即原来的 success()）。
   auto-promote:
     needs: [resolve, verify]
-    if: ${{ needs.verify.result == 'success' && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
+    # overview#470 P1：数据流程已拆出时数据上线归 data.yml，这里不再派 promote=data
+    if: ${{ needs.verify.result == 'success' && needs.resolve.outputs.split != 'true' && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     steps:
       - name: Auto-promote data to production

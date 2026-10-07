@@ -6,11 +6,15 @@
 #   ② 正式站口径：无 noindex、无角标、robots 允许收录、不读测试站数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap
 #   ③ 文件数闸：≤ 5000（2026-09-27 h1 数据混进产物、Pages 静默不发布的教训）
 #
-# 用法：ops/check-edgeone-artifact.sh <nextjs 目录> <cos|bundle>
+# 用法：ops/check-edgeone-artifact.sh <nextjs 目录> <cos|bundle> [static|proxy]
+#   第三个参数（默认 static）：条目 sitemap 的方式。static＝产物里带 sitemap-index.xml（现行）；
+#   proxy＝数据流程已拆出（overview#470 P1），sitemap 走路由代理，产物里不该有静态文件、云函数路由里要有 /sitemap-proxy
 set -euo pipefail
 
 N_DIR="${1:?用法：check-edgeone-artifact.sh <nextjs 目录> <cos|bundle>}"
-MODE="${2:?用法：check-edgeone-artifact.sh <nextjs 目录> <cos|bundle>}"
+MODE="${2:?用法：check-edgeone-artifact.sh <nextjs 目录> <cos|bundle> [static|proxy]}"
+SITEMAP="${3:-static}"
+case "$SITEMAP" in static|proxy) ;; *) echo "❌ 第三个参数只能是 static 或 proxy：$SITEMAP"; exit 1 ;; esac
 E="$N_DIR/.edgeone"
 A="$E/assets"
 CF="$E/cloud-functions/ssr-node/config.json"
@@ -28,8 +32,13 @@ grep -qx 'Allow: /' "$A/robots.txt" || { echo "❌ robots.txt 不是正式站口
 grep -q '"\^/item/' "$CF" || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
 grep -q '"\^/internal/revalidate' "$CF" || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 test -f "$E/edge-functions/config.json" || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
-test -f "$A/sitemap-index.xml" || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
-grep -q '<loc>https://www.kaiyuanguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
+if [ "$SITEMAP" = proxy ]; then
+  test ! -e "$A/sitemap-index.xml" || { echo "❌ sitemap 走路由代理，产物里不该有静态 sitemap-index.xml"; exit 1; }
+  grep -q '"\^/sitemap-proxy' "$CF" || { echo "❌ 云函数路由里没有 /sitemap-proxy"; exit 1; }
+else
+  test -f "$A/sitemap-index.xml" || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
+  grep -q '<loc>https://www.kaiyuanguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
+fi
 echo "✓ 正式站产物：无 noindex、无角标、robots 允许收录、读正式数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap"
 
 N=$(find "$E" -type f | wc -l)
