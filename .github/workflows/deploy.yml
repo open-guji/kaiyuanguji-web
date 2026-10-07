@@ -619,6 +619,10 @@ jobs:
       #   current/ 13.3 万个对象 c=48 用了 657 秒（≈203 个/秒）；h1 文本 12.7 万个对象 c=8 用了约 66 分钟（≈32 个/秒）。
       #   h1 条目平时只传增量、很轻，h1 文本在数据大换血（如文本迁移）时才重。三路加起来仍是 80：
       #   current/ 36＋h1 条目 12＋h1 文本 32，同样的全量上传三路都在 15～17 分钟内结束（原来文本那一路拖 66 分钟）。
+      # 2026-10-07（overview#469、#470 P0）：上面的静态分配改成动态——三路共用 COS_TOTAL_BUDGET（80）的名额，按各路「剩余待传数」
+      # 的比例随时分配（scripts/lib/cos-slots.mjs，登记目录 COS_PLAN_DIR；每路至少 4 个，没活的路让出名额）。
+      # 原因：平时只有一路有活，静态切法让另外两路的名额闲着；全量变化（文本迁移、schema-v2）时 h1 条目 14.7 万个对象
+      # 只有 12 个并发，10-07 那次 77 分钟没传完。下面各路命令行里的静态 COS_CONCURRENCY 只在分配器起不来时兜底。
       # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
       # overview#410：sync-to-cos 增量同步靠 nextjs/.next/.sync-state.json（上次成功同步时 current/ 的远端状态：相对路径 → md5）。
       # 它不在 checkout 里，CI 每次都是全新环境，于是每次真同步都要先把 current/ 整个 LIST 一遍（约 330～700 次请求）。
@@ -683,6 +687,9 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
+          # 三路共用并发预算、按待传数动态分配（scripts/lib/cos-slots.mjs）；不设 COS_PLAN_DIR 就是各路静态的 COS_CONCURRENCY
+          COS_PLAN_DIR: ${{ runner.temp }}/cos-plan
+          COS_TOTAL_BUDGET: '80'
           # 数据发布那条夜间路径不信缓存里的 state，从 COS 重新 LIST 重建（三个脚本都认 SYNC_REBUILD_STATE=1）：
           # 定时的测试站部署，以及它自动派的正式站 promote=data（那是单独的 workflow_dispatch，所以要单列）。
           # 只在这次真的要同步时才生效——数据没变的定时 run 在上面的 decide 就跳过了同步，没有东西可重建；
@@ -692,6 +699,7 @@ jobs:
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
+          rm -rf "$COS_PLAN_DIR"
           set +e
           # 各路的用时打在各自日志末尾（并行时看不出谁是长杆，这是下一轮提速要用的数）
           ( s=$SECONDS; COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs; rc=$?; echo "· current/ 一路共用时 $((SECONDS - s)) 秒"; exit $rc ) > "$LOGS/current.log" 2>&1 &

@@ -73,9 +73,10 @@ import {
     planBatches, logPlan, logOrphansPlan,
     requireCosSdk, createCosOps, runUploadBatch, runQueue,
     getOrphansTableFromCos, putOrphansTableToCos,
-    createCosRootsBackend, runRootsRetention, logRootsRetentionPlan, COS_CONCURRENCY,
+    createCosRootsBackend, runRootsRetention, logRootsRetentionPlan, cosSlots, cosSdkParallelLimit, setSlotAllocator,
 } from './lib/h1-sync-core.mjs';
 import { createDryRunRootsBackend } from './lib/h1-roots-dryrun-backend.mjs';
+import { slotAllocatorFromEnv } from './lib/cos-slots.mjs';
 import { createStateGuard, pointerOf } from './lib/state-guard.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -279,11 +280,13 @@ async function main() {
         return;
     }
 
+    // 三路共用并发预算、按待传数动态分配（lib/cos-slots.mjs；没设 COS_PLAN_DIR 就是静态并发）
+    setSlotAllocator(slotAllocatorFromEnv('h1-entry'));
     const COS = requireCosSdk();
     const cos = new COS({
         SecretId: SECRET_ID,
         SecretKey: SECRET_KEY,
-        FileParallelLimit: COS_CONCURRENCY,
+        FileParallelLimit: cosSdkParallelLimit(),
         ChunkParallelLimit: 8,
         Timeout: 60 * 1000,
     });
@@ -346,7 +349,7 @@ async function main() {
 
     if (orphansResult.toDelete.length > 0) {
         console.log(`  删除已满 7 天的 entry 孤儿...`);
-        const r = await runQueue(orphansResult.toDelete, COS_CONCURRENCY, (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-entry-orphan');
+        const r = await runQueue(orphansResult.toDelete, cosSlots(), (rel) => cosOps.deleteOne(`${H1_PREFIX}/${rel}`), 'delete-entry-orphan');
         console.log(`  ✓ 删除 ${r.done}/${orphansResult.toDelete.length} 个已过期 entry 孤儿`);
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 entry 孤儿删除失败。orphans.json 与 state 均不落，重跑整轮即可重试。`);

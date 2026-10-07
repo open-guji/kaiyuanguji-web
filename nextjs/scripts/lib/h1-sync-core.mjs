@@ -124,15 +124,57 @@ export function saveStateFile(path, stateMap, meta = {}) {
 
 // ─── 通用并发队列 ───
 
+// 动态并发（lib/cos-slots.mjs）：三路 COS 同步共用一份名额预算、按待传数分配。只在设了 COS_PLAN_DIR 时启用，
+// 由各同步脚本在 main() 开头 setSlotAllocator(slotAllocatorFromEnv('<路名>'))；没设就是静态并发（COS_CONCURRENCY），与原来一致。
+let _slotAllocator = null;
+export function setSlotAllocator(allocator) {
+    _slotAllocator = allocator || null;
+    // 进程退出（含失败退出）时撤掉登记，免得死掉的一路占着名额直到登记超时
+    if (_slotAllocator) process.once('exit', () => { try { _slotAllocator.release(); } catch { /* ignore */ } });
+}
+
+/** 传给 runQueue 的并发参数：动态模式是「此刻份额」的函数，否则是静态数。 */
+export function cosSlots() {
+    return _slotAllocator ? () => _slotAllocator.limit() : COS_CONCURRENCY;
+}
+
+/** COS SDK 自己的任务队列并发（FileParallelLimit）：动态模式取总预算（实际并发由 runQueue 控制），否则同静态并发。 */
+export function cosSdkParallelLimit() {
+    return _slotAllocator ? _slotAllocator.total : COS_CONCURRENCY;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * concurrency 是数：固定并发（原行为）；是函数：每次取下一个对象前问一下此刻份额，超了就等（动态并发）。
+ * 动态模式下，开始时登记剩余数、之后每 250 毫秒更新剩余数与在途数、结束时登记 0，让别的路能按剩余数重新分配、并且总在途数不超预算。
+ */
 export async function runQueue(items, concurrency, worker, label) {
     const queue = [...items];
+    const dynamic = typeof concurrency === 'function';
+    const allocator = dynamic ? _slotAllocator : null;
     let done = 0;
+    let active = 0;
+    let lastLimit = 0;
     const t0 = Date.now();
     const failures = [];
-    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+    const limitNow = () => {
+        const n = Math.max(1, Math.floor(concurrency()));
+        if (n !== lastLimit) {
+            if (lastLimit !== 0) console.log(`\n  · ${label} 并发份额 ${lastLimit} → ${n}（剩余 ${queue.length + active}）`);
+            lastLimit = n;
+        }
+        return n;
+    };
+    const nWorkers = dynamic ? Math.min(queue.length, allocator ? allocator.total : 80) : Math.min(concurrency, queue.length);
+    if (allocator) allocator.publish(queue.length);
+    const tick = allocator ? setInterval(() => allocator.publish(queue.length + active, active), 250) : null;
+    const workers = Array.from({ length: nWorkers }, async () => {
         while (queue.length > 0) {
+            if (dynamic && active >= limitNow()) { await sleep(200); continue; }
             const item = queue.shift();
             if (!item) return;
+            active++;
             try {
                 await worker(item);
                 done++;
@@ -143,10 +185,17 @@ export async function runQueue(items, concurrency, worker, label) {
             } catch (e) {
                 failures.push({ item, err: e.message });
                 console.error(`\n  ⚠ ${label} failed: ${JSON.stringify(item).slice(0, 80)} — ${e.message}`);
+            } finally {
+                active--;
             }
         }
     });
-    await Promise.all(workers);
+    try {
+        await Promise.all(workers);
+    } finally {
+        if (tick) clearInterval(tick);
+        if (allocator) allocator.publish(0);
+    }
     if (items.length > 0) process.stdout.write('\n');
     return { done, failures, elapsed: (Date.now() - t0) / 1000 };
 }
@@ -392,7 +441,7 @@ export async function runUploadBatch(label, items, uploadOneForFile) {
         return;
     }
     console.log(`  ${label}: 上传 ${items.length} 个...`);
-    const r = await runQueue(items, COS_CONCURRENCY, uploadOneForFile, label);
+    const r = await runQueue(items, cosSlots(), uploadOneForFile, label);
     if (r.failures.length > 0) {
         console.error(`\n❌ ${label} 有 ${r.failures.length}/${items.length} 个失败，不进下一批，state 不落。重跑整轮即可重试。`);
         process.exit(2);
@@ -558,7 +607,7 @@ export async function runRootsRetention(backend, config) {
     const { toDelete: rootsToDelete } = planRootsFileRetention({ liveCommitSet, cosRootFiles });
 
     if (shardsToDelete.length > 0) {
-        const r = await runQueue(shardsToDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
+        const r = await runQueue(shardsToDelete, cosSlots(), (rel) => backend.deleteKey(`${manifestPrefix}${rel}`), 'delete-manifest-shard-retired');
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 manifest 分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
@@ -566,14 +615,14 @@ export async function runRootsRetention(backend, config) {
     }
     for (const p of extraPlans) {
         if (p.toDelete.length === 0) continue;
-        const r = await runQueue(p.toDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${p.prefix}${rel}`), `delete-${p.subdir}-shard-retired`);
+        const r = await runQueue(p.toDelete, cosSlots(), (rel) => backend.deleteKey(`${p.prefix}${rel}`), `delete-${p.subdir}-shard-retired`);
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 ${p.label}分片删除失败（已判定不再被任何在用 root 引用）。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);
         }
     }
     if (rootsToDelete.length > 0) {
-        const r = await runQueue(rootsToDelete, COS_CONCURRENCY, (rel) => backend.deleteKey(`${rootsPrefix}${rel}`), 'delete-root-retired');
+        const r = await runQueue(rootsToDelete, cosSlots(), (rel) => backend.deleteKey(`${rootsPrefix}${rel}`), 'delete-root-retired');
         if (r.failures.length > 0) {
             console.error(`\n❌ ${r.failures.length} 个 roots 文件删除失败。ledger 不落，重跑整轮即可重试（删除幂等）。`);
             process.exit(2);

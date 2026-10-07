@@ -56,6 +56,8 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { withCacheKey } from './lib/latest-cache-key.mjs';
 import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
+import { runQueue, cosSlots, cosSdkParallelLimit, setSlotAllocator } from './lib/h1-sync-core.mjs';
+import { slotAllocatorFromEnv } from './lib/cos-slots.mjs';
 import { planVersionPrune, DEFAULT_KEEP_VERSIONS } from './lib/v-search-prune.mjs';
 import { createCosOps } from './lib/h1-sync-core.mjs';
 import { createStateGuard } from './lib/state-guard.mjs';
@@ -223,10 +225,12 @@ try {
 // 并发上限：默认 80；三次 COS 同步在 deploy.yml 里并行跑时，用 COS_CONCURRENCY 各自调小，
 // 总数不超过串行时的 80（overview#293 第 3 项，避免叠加后撞 COS 限流）
 const CONCURRENCY = cosConcurrency(80);
+// 三路共用并发预算、按待传数动态分配（lib/cos-slots.mjs；没设 COS_PLAN_DIR 就是静态并发 CONCURRENCY）。须在建 COS 客户端之前设
+if (!DRY_RUN) setSlotAllocator(slotAllocatorFromEnv('current'));
 const cos = new COS({
     SecretId: SECRET_ID,
     SecretKey: SECRET_KEY,
-    FileParallelLimit: CONCURRENCY,
+    FileParallelLimit: cosSdkParallelLimit(),
     ChunkParallelLimit: 8,
     Timeout: 60 * 1000,
 });
@@ -516,32 +520,6 @@ async function copyOne(srcKey, destKey, attempt = 1) {
     }
 }
 
-async function runQueue(items, concurrency, worker, label) {
-    const queue = [...items];
-    let done = 0;
-    const t0 = Date.now();
-    const failures = [];
-    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
-        while (queue.length > 0) {
-            const item = queue.shift();
-            if (!item) return;
-            try {
-                await worker(item);
-                done++;
-                if (done % 100 === 0 || done === items.length) {
-                    const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
-                    process.stdout.write(`\r  ${label}: ${done}/${items.length} (${elapsed}s)   `);
-                }
-            } catch (e) {
-                failures.push({ item, err: e.message });
-                console.error(`\n  ⚠ ${label} failed: ${JSON.stringify(item).slice(0,80)} — ${e.message}`);
-            }
-        }
-    });
-    await Promise.all(workers);
-    if (items.length > 0) process.stdout.write('\n');
-    return { done, failures, elapsed: (Date.now() - t0) / 1000 };
-}
 
 // ─── 清理旧的 v/<版本键>/ 搜索分片目录（overview#410） ───
 // 每次发布往 v/ 下写两个目录（cacheKey 与 commitId），以前从不删，桶里对象数涨到 139 万，远多于在用的约 33 万。
@@ -706,7 +684,7 @@ async function main() {
     // ── Step 4a: 上传 shared 增量 ──
     if (sharedToUpload.length > 0) {
         console.log(`  uploading shared...`);
-        const r = await runQueue(sharedToUpload, CONCURRENCY, uploadOne, 'shared-up');
+        const r = await runQueue(sharedToUpload, cosSlots(), uploadOne, 'shared-up');
         console.log(`  ✓ shared uploaded ${r.done}/${sharedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
     }
@@ -714,7 +692,7 @@ async function main() {
     // ── Step 4b: 上传 isolated 全量 ──
     if (isolatedToUpload.length > 0) {
         console.log(`  uploading isolated (search shards)...`);
-        const r = await runQueue(isolatedToUpload, CONCURRENCY, uploadOne, 'isolated-up');
+        const r = await runQueue(isolatedToUpload, cosSlots(), uploadOne, 'isolated-up');
         console.log(`  ✓ isolated uploaded ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
     }
@@ -722,7 +700,7 @@ async function main() {
     // ── Step 4b': search 分片服务端 copy 到旧路径 v/<commitId>/（给旧前端） ──
     if (LEGACY_SEARCH_COPY && isolatedToUpload.length > 0 && allFailures.length === 0) {
         console.log(`  copying isolated → ${legacyVersionPrefix}/ (legacy)...`);
-        const r = await runQueue(isolatedToUpload, CONCURRENCY,
+        const r = await runQueue(isolatedToUpload, cosSlots(),
             (f) => copyOne(keyFor(f.relative), `${legacyVersionPrefix}/${f.relative}`), 'legacy-copy');
         console.log(`  ✓ legacy copied ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
@@ -731,7 +709,7 @@ async function main() {
     // ── Step 4c: 删 orphan ──
     if (orphanKeys.length > 0) {
         console.log(`  deleting orphans...`);
-        const r = await runQueue(orphanKeys, CONCURRENCY,
+        const r = await runQueue(orphanKeys, cosSlots(),
             (rel) => deleteOne(`${currentPrefix}/${rel}`), 'delete');
         console.log(`  ✓ deleted ${r.done}/${orphanKeys.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
