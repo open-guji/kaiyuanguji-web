@@ -5,6 +5,7 @@ prod-artifact 任务（push 时与测试站并行构建、存成工件供 promot
 必须一字不差，否则「测试站验过的那份正式站产物」与「重新构建的正式站」配置不同，问题只会在正式站暴露。
 """
 import os
+import re
 import unittest
 
 try:
@@ -243,12 +244,16 @@ class CodeOnlyPromote(unittest.TestCase):
         self.assertEqual(p['options'], ['code', 'code+data', 'data'])
         self.assertEqual(p['default'], 'code')
 
-    def test_auto_promote_code_dispatches_code_only(self):
+    def test_auto_promote_code_dispatches_exactly_one_code_only_promote(self):
         job = self.wf['jobs']['auto-promote-code']
         run = '\n'.join(s.get('run', '') for s in job['steps'])
-        self.assertIn('-f promote=code ', run)
-        self.assertNotIn('promote=code+data', run)
-        self.assertIn('-f from_run=', run)
+        dispatches = re.findall(r'gh workflow run [^\n]*', run)
+        # 恰好一次派发，且是 promote=code：多一条 promote=data／code+data 的派发，普通 push 就会连带推数据
+        self.assertEqual(len(dispatches), 1, dispatches)
+        d = dispatches[0]
+        self.assertEqual(re.findall(r'-f promote=(\S+)', d), ['code'], d)
+        self.assertEqual(re.findall(r'-f target=(\S+)', d), ['production'], d)
+        self.assertIn('-f from_run=', d)
 
     def test_only_scheduled_data_promote_carries_data(self):
         # 自动派的 workflow_dispatch 里，带数据的只有 auto-promote（promote=data，定时数据发布），代码那条不带
@@ -260,23 +265,43 @@ class CodeOnlyPromote(unittest.TestCase):
         self.assertIn('promote=code 必须填 from_run', run)
         self.assertIn('promote=code 需要 run', run)  # 没产物就报错，不退回重新构建
 
-    def test_code_only_step_leaves_data_alone(self):
+    def test_code_only_env_is_true_only_for_promote_code(self):
+        self.assertEqual(self.build['env']['CODE_ONLY'],
+                         "${{ needs.resolve.outputs.mode == 'promote' && inputs.promote == 'code' }}")
+
+    def test_code_only_step_skips_data_and_does_not_touch_pointer_before_deploy(self):
         s = _step(self.build, 'Code-only promote — leave production data untouched')
         self.assertFalse(s.get('continue-on-error'))
-        self.assertIn('CODE_ONLY', s['if'])
-        self.assertIn('latest-only', s['run'])
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertNotIn("env.CODE_ONLY != 'true'", s['if'])
         self.assertIn('DATA_FAST=true', s['run'])
-        self.assertIn('promote', self.build['env']['CODE_ONLY'])
-        self.assertIn("'code'", self.build['env']['CODE_ONLY'])
+        self.assertIn('FROM_ARTIFACT', s['run'])
+        # 指针要等部署成功之后才改：这一步里不能写 latest.json
+        self.assertNotIn('latest-only', s['run'])
 
-    def test_code_only_runs_before_every_data_step_and_blocks_decide(self):
+    def test_code_only_runs_before_every_data_step_and_each_is_gated_the_right_way(self):
         i = self.names.index('Code-only promote — leave production data untouched')
         for n in ('Restore git cache — book-index', 'Clone index data repos', 'Build derived data (schema-v2)',
                   'Bundle data for EdgeOne', 'Decide COS data sync (skip when data unchanged)',
                   'Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel'):
             self.assertGreater(self.names.index(n), i, n)
-            self.assertIn('DATA_FAST', _step(self.build, n)['if'], n)
-        self.assertIn('CODE_ONLY', _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
+            cond = _step(self.build, n)['if']
+            self.assertIn("env.DATA_FAST != 'true'", cond, n)      # 方向：DATA_FAST 为真时跳过
+            self.assertNotIn("env.DATA_FAST == 'true'", cond, n)
+        decide = _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if']
+        self.assertIn("env.CODE_ONLY != 'true'", decide)
+        self.assertNotIn("env.CODE_ONLY == 'true'", decide)
+
+    def test_pointer_is_written_only_after_production_deploy_and_before_purge(self):
+        n = 'Code-only promote — record webCommitId in latest.json (after deploy)'
+        s = _step(self.build, n)
+        self.assertFalse(s.get('continue-on-error'))   # 写不了就让 promote 红，不让指针悄悄落后
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertIn('latest-only', s['run'])
+        self.assertIn('needs.resolve.outputs.web_ref', s['env']['WEB_COMMIT_ID'])
+        i = self.names.index(n)
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
+        self.assertLess(i, self.names.index('Purge EdgeOne CDN cache'))
 
 
 if __name__ == '__main__':
