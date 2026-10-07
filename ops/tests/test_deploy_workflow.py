@@ -189,5 +189,38 @@ class CloneCacheAndProgress(unittest.TestCase):
             self.assertIn(needle, self.raw, needle)
 
 
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class WebPointerStep(unittest.TestCase):
+    """overview#470 P1：代码指针 web.json 在部署成功之后、清缓存之前写，不拦发布，清缓存带上它。"""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.steps = cls.wf['jobs']['build']['steps']
+        cls.names = [s.get('name', '') for s in cls.steps]
+        cls.name = 'Write web pointer web.json (overview#470 P1)'
+
+    def test_after_deploy_before_purge(self):
+        i = self.names.index(self.name)
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (staging, direct upload)'))
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
+        self.assertLess(i, self.names.index('Purge EdgeOne CDN cache'))
+
+    def test_does_not_block_release(self):
+        self.assertTrue(_step(self.wf['jobs']['build'], self.name).get('continue-on-error'))
+
+    def test_uses_resolved_web_ref_and_cos_secrets(self):
+        s = _step(self.wf['jobs']['build'], self.name)
+        self.assertIn('needs.resolve.outputs.web_ref', s['env']['WEB_COMMIT_ID'])
+        for k in ('COS_SECRET_ID', 'COS_SECRET_KEY', 'COS_BUCKET'):
+            self.assertIn(k, s['env'])
+        self.assertIn('write-web-pointer.mjs', s['run'])
+
+    def test_purge_includes_web_json(self):
+        self.assertIn("pfx + 'web.json'", self.raw)
+
+
 if __name__ == '__main__':
     unittest.main()
