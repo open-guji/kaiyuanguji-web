@@ -25,7 +25,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 const { dataDir: DATA_DIR, h1Dir: H1_DIR } = resolveDataDirs();
 const ENTRY_SRC_DIR = join(DATA_DIR, 'entry');
 const SAMPLE_SIZE = parseInt(process.env.SAMPLE_SIZE || '20', 10);
-const SAMPLE_SEED = process.env.SAMPLE_SEED ? (parseInt(process.env.SAMPLE_SEED, 10) || null) : null;
+const SAMPLE_SEED = Number.isFinite(parseInt(process.env.SAMPLE_SEED, 10)) ? parseInt(process.env.SAMPLE_SEED, 10) : null;
 
 function fail(msg) {
     console.error(`❌ ${msg}`);

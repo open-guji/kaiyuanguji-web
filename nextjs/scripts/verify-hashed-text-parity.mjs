@@ -26,8 +26,8 @@ import { publicKeys, readManifest } from './lib/text-layout.mjs';
 const { dataDir: DATA_DIR, h1TextDir: H1_TEXT_DIR } = resolveDataDirs();
 const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const SAMPLE_SIZE = parseInt(process.env.SAMPLE_SIZE || '20', 10);
-// SAMPLE_SEED（可选）：等距抽样的起点偏移＝种子对步长取余。CI 里每次传不同的种子（run id），覆盖面随部署次数累积；不设＝从 0 起，结果固定
-const SAMPLE_SEED = process.env.SAMPLE_SEED ? (parseInt(process.env.SAMPLE_SEED, 10) || 0) : 0;
+// SAMPLE_SEED（可选）：等距抽样的起点偏移＝种子对候选池大小取余（循环，尾部也能被覆盖）。CI 里每次传不同的种子（run id），覆盖面随部署次数累积；不设＝从 0 起，结果固定
+const SAMPLE_SEED = Number.isFinite(parseInt(process.env.SAMPLE_SEED, 10)) ? parseInt(process.env.SAMPLE_SEED, 10) : null;
 
 function fail(msg) {
     console.error(`❌ ${msg}`);
@@ -105,11 +105,11 @@ function sampleFrom(candidates, total) {
     const picked = [];
     for (const kind of kinds) {
         const pool = candidates[kind];
-        // 简单等距抽样，覆盖面比只取前 N 条更好
-        const step = Math.max(1, Math.floor(pool.length / perKind));
-        const offset = SAMPLE_SEED ? SAMPLE_SEED % step : 0;
-        for (let i = offset; i < pool.length && picked.filter(p => p.kind === kind).length < perKind; i += step) {
-            picked.push({ ...pool[i], kind });
+        // 等距抽样：n 个点均匀铺满整个候选池（含尾部），起点按种子在池内循环偏移（负种子也归一到非负），索引互不重复
+        const n = Math.min(perKind, pool.length);
+        const start = SAMPLE_SEED === null ? 0 : ((SAMPLE_SEED % pool.length) + pool.length) % pool.length;
+        for (let k = 0; k < n; k++) {
+            picked.push({ ...pool[(start + Math.floor((k * pool.length) / n)) % pool.length], kind });
         }
     }
     return picked.slice(0, total);

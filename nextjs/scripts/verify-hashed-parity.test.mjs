@@ -96,6 +96,11 @@ test('text：h1 文本与 items/ 一致时通过；SAMPLE_SEED 改变等距抽�
         const s = pkg.run('verify-hashed-text-parity.mjs', { SAMPLE_SIZE: '8', SAMPLE_SEED: '3' });
         assert.equal(s.status, 0, s.stderr);
         assert.notDeepEqual(sampled(s.stdout), sampled(a.stdout), '种子改变抽样起点');
+        for (const seed of ['0', '-7', '-1000003']) {
+            const r = pkg.run('verify-hashed-text-parity.mjs', { SAMPLE_SIZE: '8', SAMPLE_SEED: seed });
+            assert.equal(r.status, 0, `seed ${seed}: ${r.stderr}`);
+            assert.match(r.stdout, /逐字一致 8\/8/);
+        }
         // 改坏一份：从抽样里取一份 txt，改它的 h1 副本
         const victim = sampled(s.stdout).map((l) => l.split(/\s+/).pop()).find((p) => p.endsWith('.txt'));
         assert.ok(victim, '样本里应有 txt');
