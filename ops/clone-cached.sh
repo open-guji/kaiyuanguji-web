@@ -20,14 +20,14 @@ git_progress() {
 # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
 # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
 clone_cached() {
-  local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb
+  local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache=""
   echo "▶ 克隆 $repo @ ${ref:0:12}"
   if [ -d "$dest/.git" ]; then
     mb=$(du -sm "$dest/.git" | cut -f1)
     if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ]; then
       echo "· 缓存的 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限，丢弃后全量浅拉"; rm -rf "$dest/.git"
     else
-      echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"
+      echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"; had_cache=1
     fi
   else
     echo "· 没有缓存：全量浅拉"
@@ -39,6 +39,14 @@ clone_cached() {
   else
     git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
     git -C "$dest" checkout -q -f FETCH_HEAD
+    # 增量拉完 .git 超过上限：就地重来一次全量浅拉，让随后存进缓存的永远是不大的那份（否则超大的条目会一直被恢复）
+    mb=$(du -sm "$dest/.git" | cut -f1)
+    if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ] && [ -n "${had_cache:-}" ]; then
+      echo "· 增量后 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限：重来一次全量浅拉，避免把超大的缓存存下去"
+      rm -rf "$dest/.git"; git init -q "$dest"
+      git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+      git -C "$dest" checkout -q -f FETCH_HEAD
+    fi
   fi
   echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
 }

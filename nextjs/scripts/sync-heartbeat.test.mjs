@@ -43,11 +43,22 @@ test('summarizePath：速率不足 10 保留一位小数；刚开始（用时 0 
 });
 
 test('summarizePath：队列做完、整路完成、未开始、准备中', () => {
-    assert.equal(summarizePath('current/', '  shared-up: 9/9 (3s)'), 'current/ shared-up 9/9（完成）');
+    assert.equal(summarizePath('current/', '  shared-up: 9/9 (3s)'), 'current/ shared-up 9/9（本队列已做完，整路未结束）');
     assert.equal(summarizePath('h1 条目', '  upload: 3/9 (1s)\n· h1 条目一路共用时 41 秒'), 'h1 条目 完成（用时 41 秒）');
     assert.equal(summarizePath('h1 文本', null), 'h1 文本 未开始');
     assert.equal(summarizePath('h1 文本', '· 打包 1/3\n  LIST 远端 h1/ 中……\n'), 'h1 文本 准备中：LIST 远端 h1/ 中……');
     assert.equal(summarizePath('h1 文本', ''), 'h1 文本 准备中');
+});
+
+test('整路结束标记带 exit：非零是失败，不是完成；没有 exit 的旧格式按成功', () => {
+    assert.equal(summarizePath('h1 条目', '· h1 条目一路共用时 41 秒（exit 0）'), 'h1 条目 完成（用时 41 秒）');
+    assert.equal(summarizePath('h1 条目', '  upload: 3/9 (1s)\n· h1 条目一路共用时 41 秒（exit 1）'), 'h1 条目 失败（exit 1，用时 41 秒）');
+    assert.equal(summarizePath('h1 条目', '· h1 条目一路共用时 41 秒'), 'h1 条目 完成（用时 41 秒）');
+});
+
+test('lastProgress：队列名含中文、空格也能解析', () => {
+    assert.deepEqual(lastProgress('  条目 分片 A: 12/300 (4s)'), { label: '条目 分片 A', done: 12, total: 300, elapsed: 4 });
+    assert.equal(summarizePath('h1 文本', '  文本批次: 100/400 (10s)'), 'h1 文本 文本批次 100/400（25%，10 个/秒，约 30 秒）');
 });
 
 test('formatHeartbeat：一行，带时间和三路', () => {

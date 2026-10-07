@@ -19,7 +19,8 @@ const fmt = (n) => Number(n).toLocaleString('en-US');
 
 /** 日志里最新的一段队列进度；没有返回 null */
 export function lastProgress(text) {
-    const re = /(?:^|[\r\n])[ \t]*([A-Za-z0-9][\w./-]*): (\d+)\/(\d+) \((\d+)s\)/g;
+    // 队列名可能含中文、空格（h1 批次的 label），所以不限字符集，只要「名字: 已完成/总数 (已用秒数s)」
+    const re = /(?:^|[\r\n])[ \t]*([^\s:\r\n][^:\r\n]*?): (\d+)\/(\d+) \((\d+)s\)/g;
     let m;
     let last = null;
     while ((m = re.exec(text)) !== null) last = { label: m[1], done: Number(m[2]), total: Number(m[3]), elapsed: Number(m[4]) };
@@ -35,12 +36,18 @@ export function formatEta(seconds) {
 /** 一路的状态文字 */
 export function summarizePath(title, text) {
     if (text == null) return `${title} 未开始`;
-    const finished = text.match(/一路共用时 (\d+) 秒/);
-    if (finished) return `${title} 完成（用时 ${finished[1]} 秒）`;
+    // 整路结束的标记由 deploy.yml 在各路子 shell 末尾写：「一路共用时 N 秒（exit R）」。带 exit 才分得出成功与失败；
+    // 没有 exit 的旧格式按成功算
+    const finished = text.match(/一路共用时 (\d+) 秒(?:（exit (\d+)）)?/);
+    if (finished) {
+        const rc = finished[2] === undefined ? 0 : Number(finished[2]);
+        return rc === 0 ? `${title} 完成（用时 ${finished[1]} 秒）` : `${title} 失败（exit ${rc}，用时 ${finished[1]} 秒）`;
+    }
     const p = lastProgress(text);
     if (p) {
         const pct = p.total > 0 ? Math.floor((p.done * 100) / p.total) : 100;
-        if (p.done >= p.total) return `${title} ${p.label} ${fmt(p.done)}/${fmt(p.total)}（完成）`;
+        // 只是这一个队列做完了，整路还没结束（后面可能还有别的队列），不说「完成」
+        if (p.done >= p.total) return `${title} ${p.label} ${fmt(p.done)}/${fmt(p.total)}（本队列已做完，整路未结束）`;
         const rate = p.elapsed > 0 ? p.done / p.elapsed : 0;
         const eta = rate > 0 ? formatEta((p.total - p.done) / rate) : '';
         const parts = [`${pct}%`];

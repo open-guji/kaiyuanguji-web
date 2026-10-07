@@ -135,6 +135,29 @@ class CloneCachedBehaviour(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.run_clone(d, 'no-such-branch')
 
+    def test_6_post_fetch_oversize_triggers_reset(self):
+        # 增量前缓存不大、增量后超过上限：就地重来一次全量浅拉，存下去的不会是超大的
+        work = os.path.join(self.tmp, 'big-src')
+        sh(f'git init -q -b main "{work}"')
+        sh('git config user.email t@t; git config user.name t; git config uploadpack.allowAnySHA1InWant true', cwd=work)
+        sh('head -c 3000000 /dev/urandom > a.bin; git add -A; git commit -qm b1', cwd=work)
+        b1 = sh('git rev-parse HEAD', cwd=work).strip()
+        sh('head -c 3000000 /dev/urandom > b.bin; git add -A; git commit -qm b2', cwd=work)
+        b2 = sh('git rev-parse HEAD', cwd=work).strip()
+        sh(f'git clone -q --bare "{work}" "{self.base}/big.git"')
+        sh('git config uploadpack.allowAnySHA1InWant true', cwd=f'{self.base}/big.git')
+        env = {'GIT_BASE_URL': f'file://{self.base}', 'GIT_CACHE_MAX_MB': '5'}
+        d1 = os.path.join(self.tmp, 'big1')
+        sh(f'source "{SCRIPT}"; clone_cached big "{d1}" {b1}', env=env)
+        d2 = os.path.join(self.tmp, 'big2')
+        os.makedirs(d2)
+        shutil.copytree(os.path.join(d1, '.git'), os.path.join(d2, '.git'))
+        out = sh(f'source "{SCRIPT}"; clone_cached big "{d2}" {b2}', env=env)
+        self.assertIn('用缓存的 .git', out)
+        self.assertIn('重来一次全量浅拉', out)
+        self.assertEqual(self.head(d2), b2)
+        self.assertTrue(os.path.isfile(os.path.join(d2, 'b.bin')))
+
 
 if __name__ == '__main__':
     unittest.main()
