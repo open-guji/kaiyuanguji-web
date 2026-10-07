@@ -443,6 +443,21 @@ jobs:
       - name: Set data output root (outside nextjs/)
         run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
 
+      # schema-v2（overview#458）：新 schema 的源档不再存反向／派生字段（Work.books、Entity.works、_classifications…），
+      # 网站打包前在检出的 book-index 上跑 build/build_derived.py，产物写临时目录，
+      # 打包脚本经 BOOK_INDEX_DERIVED_DIR 读（scripts/lib/derived.mjs）。仓里没有该脚本（旧 schema）就跳过，
+      # 打包照旧读源档——双兼容：数据切换那天不用改这里。退出码非 0 = 自校验失败，整个构建失败，不继续打包。
+      - name: Build derived data (schema-v2)
+        if: ${{ env.DATA_FAST != 'true' }}
+        run: |
+          if [ -f book-index/build/build_derived.py ]; then
+            D="$RUNNER_TEMP/book-index-derived"
+            (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+          else
+            echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
+          fi
+
       - name: Bundle data for EdgeOne
         if: ${{ env.DATA_FAST != 'true' }}
         working-directory: nextjs
@@ -1188,6 +1203,11 @@ jobs:
           # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
           fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          # schema-v2（overview#458）：同 build job，旧 schema 的仓没有该脚本就跳过
+          if [ -f book-index/build/build_derived.py ]; then
+            export BOOK_INDEX_DERIVED_DIR="$RUNNER_TEMP/book-index-derived"
+            (cd book-index && python3 build/build_derived.py --out "$BOOK_INDEX_DERIVED_DIR")
+          fi
           cd nextjs
           node scripts/bundle-data.mjs
           rm -rf "$SITEMAP_OUT_DIR"

@@ -17,6 +17,9 @@
  *   node scripts/bundle-data.mjs /path/to/book-index
  *   BOOK_INDEX_PRODUCTION_DIR=/path node scripts/bundle-data.mjs
  *
+ * schema-v2（overview#458）：设了 BOOK_INDEX_DERIVED_DIR（build/build_derived.py 的 --out 目录）就优先读其中的
+ *   entry/<id>.json、index/、classific.json，缺哪样回退源仓；没设则完全按旧路径。见 lib/derived.mjs。
+ *
  * overview#432 起只打包正式仓 book-index，不再读草稿仓 book-index-draft。
  * 缺正式仓或缺其根目录的站点内容文件（lib/production-dir.mjs）都直接报错退出，不静默。
  */
@@ -30,6 +33,7 @@ import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
+import { derivedDir, derivedPath, indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
 import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
@@ -177,7 +181,8 @@ function loadShardedIndex() {
 }
 
 function _mergeRoot(merged, rootDir, rootLabel) {
-    const indexDir = join(rootDir, 'index');
+    // schema-v2：有 build 产物（BOOK_INDEX_DERIVED_DIR）就读产物的 index/，否则读源仓的（lib/derived.mjs）
+    const indexDir = indexDirFor(rootDir);
 
     // collections (single file)
     const colPath = join(indexDir, 'collections.json');
@@ -244,10 +249,12 @@ function bundleL1() {
             const path = item.path; // e.g. "Work/G/Y/L/GYL5215Antw-尚書正義.json"
             const baseDir = rootDirFor(item);
 
+            // 详情：build 产物 entry/<id>.json（源＋_ 派生字段）优先，缺则读源档
             const detailPath = join(baseDir, path);
-            if (existsSync(detailPath)) {
+            const read = readEntryDoc({ id, srcPath: detailPath });
+            if (read) {
                 try {
-                    const detail = readJson(detailPath);
+                    const detail = read.doc;
                     if (item.has_collated) detail.has_collated = true;
                     if (item.has_text) detail.has_text = true;
                     if (item.has_image) detail.has_image = true;
@@ -557,7 +564,7 @@ function checkIndex() {
 
     // 加载所有已 index 的 ID
     const indexed = new Set();
-    const indexDir = join(PRODUCTION_DIR, 'index');
+    const indexDir = indexDirFor(PRODUCTION_DIR);
 
     const colPath = join(indexDir, 'collections.json');
     if (existsSync(colPath)) {
@@ -622,13 +629,17 @@ try {
     process.exit(1);
 }
 
+if (derivedDir()) {
+    // schema-v2：条目详情读 build 产物 entry/<id>.json（缺则回退源档），检索索引读产物 index/
+    console.log(`DER  BOOK_INDEX_DERIVED_DIR=${derivedDir()}（entry ${derivedPath('entry') ? '✓' : '✗ 缺'}，index ${derivedPath('index') ? '✓' : '✗ 缺'}）`);
+}
 checkIndex();
 bundleMeta();
 bundleL1();
 // 古籍总目分类索引 catalog/（N4b，见 build-catalog-index.mjs）
-bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json') });
+bundleCatalog({ index: loadShardedIndex(), rootDirFor, dataDir: OUT_DIR, taxonomyFile: taxonomyFileFor(PRODUCTION_DIR) });
 // 阅读首页可读条目索引 read/（overview#267 第 16 项，见 build-read-index.mjs）：与总目同一套分类树
-bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: join(PRODUCTION_DIR, 'classific.json'), verifyItems: true });
+bundleRead({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, taxonomyFile: taxonomyFileFor(PRODUCTION_DIR), curationFile: join(PRODUCTION_DIR, 'curation', 'read-home.json'), verifyItems: true });
 // 元数据首页分区 meta-home/（overview#322，见 build-meta-home.mjs）：要用上面写好的 meta.json 与 catalog/tree.json
 bundleMetaHome({ index: loadShardedIndex(), rootDirFor, textDirFor: () => TEXT_DIR, dataDir: OUT_DIR, siteDir: PRODUCTION_DIR, curationDir: join(PRODUCTION_DIR, 'curation') });
 bundleL2();
