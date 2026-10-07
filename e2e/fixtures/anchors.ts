@@ -116,6 +116,34 @@ export const ANCHORS = {
     },
 
     /**
+     * 阅读页默认版本是维基全文时，直齋的目录条数：维基文库 22 卷（wikisource/index.json 的 chapters）。
+     * 阅读页只展示全文版、不列目录型整理本（overview#456），所以 /read/<直齋> 的侧栏是这 22 章，不是整理本的 56 章。
+     */
+    collatedReaderChapterCount: 22,
+
+    /**
+     * 整理本的结构化渲染（分类标题、「N 部书」统计、书名标题、「正文」视图）的守门锚点：要一部整理本**仍是阅读页主版本**的书。
+     * 直齋有维基全文版后阅读页只展示全文版（overview#456），整理本的结构化视图在它身上看不到了，所以这几条改锚这部：
+     * d59f2s1j1mv4（明朝题本档案汇编，8 卷、每卷是一串 type=book 的条目），manifest 只有 default／collated 一个版本，章目录是平的（一卷…八卷）。
+     * （选平目录的书：按章名分组的目录，侧栏顶层按钮数不等于章数。）
+     * 数字来自 items/<id>/default/index.json（chapters＝8）与 002.json（「二卷」25 条 book）。
+     * 这部书若被加了全文版，整理本会从阅读页消失，这几条用例会红，届时换一部仍只有整理本的书（book-text 里 manifest 只有 default／collated 的）。
+     */
+    collatedOnly: {
+        id: 'd59f2s1j1mv4',
+        /** default/index.json 的 chapters 条数 */
+        juanFileCount: 8,
+        sampleJuanFile: 'juan/002.json',
+        /** 章标题（繁简两种写法；本书数据本身是简体）；页面上可能有多个同名标题，用例里取第一个 */
+        sampleJuanCategory: '二卷',
+        sampleJuanCategorySimplified: '二卷',
+        /** 该卷 type=book 的 section 数 */
+        sampleJuanBookCount: 25,
+        sampleJuanFirstBook: '兵部尚书张凤翼等为老回回就歼有功员役另叙事题本',
+        sampleJuanFirstBookSimplified: '兵部尚书张凤翼等为老回回就歼有功员役另叙事题本',
+    },
+
+    /**
      * 人物实体：用于验证 Entity 详情页。孔子，已升格到 production。
      *
      * 2026-09-14 换过一次：原值 `1j96hewiuieps` 是**草稿墓碑**
