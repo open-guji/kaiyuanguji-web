@@ -102,23 +102,61 @@ jobs:
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
 
+      # book-text 浅拉要现压 1.75 GB 的包，实测同一个 commit 从 2.6 分变到 23 分：.git 放进 actions/cache 做增量
+      # （逻辑与 deploy.yml 同一份，见 ops/clone-cached.sh 的头注释）
+      - name: Restore git cache — book-index
+        id: gc_index
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.refs.outputs.prod_ref }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.refs.outputs.text_ref }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
       - name: Clone index data repos
+        id: clone
         run: |
-          fetch_at() {
-            git init -q "$2"
-            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
-            git -C "$2" checkout -q FETCH_HEAD
-          }
-          fetch_at book-index book-index "${{ steps.refs.outputs.prod_ref }}"
-          fetch_at book-text book-text "${{ steps.refs.outputs.text_ref }}"
-          echo "· book-index $(git -C book-index rev-parse --short HEAD)  book-text $(git -C book-text rev-parse --short HEAD)"
+          source ops/clone-cached.sh
+          clone_cached book-index book-index "${{ steps.refs.outputs.prod_ref }}"
+          clone_cached book-text book-text "${{ steps.refs.outputs.text_ref }}"
+          echo "index_sha=$(git -C book-index rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "text_sha=$(git -C book-text rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Save git cache — book-index
+        if: ${{ steps.gc_index.outputs.cache-hit != 'true' && steps.clone.outputs.index_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.clone.outputs.index_sha }}
+
+      - name: Save git cache — book-text
+        if: ${{ steps.gc_text.outputs.cache-hit != 'true' && steps.clone.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.clone.outputs.text_sha }}
 
       # schema-v2（overview#458）：同 deploy.yml——旧 schema 的仓没有 build/build_derived.py 就跳过；退出码非 0 = 自校验失败
       - name: Build derived data (schema-v2)
         run: |
           if [ -f book-index/build/build_derived.py ]; then
             D="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
             (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
           else
             echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
@@ -129,7 +167,10 @@ jobs:
         env:
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
-        run: node scripts/bundle-data.mjs
+        run: |
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
+          node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
 
       - name: Verify bundled data (basic gates)
         run: bash ops/data-package-verify.sh book-index

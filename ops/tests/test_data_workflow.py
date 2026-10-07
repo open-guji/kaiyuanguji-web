@@ -97,6 +97,23 @@ class DataWorkflowCheckOnly(unittest.TestCase):
             if 'git ls-remote' in line:
                 self.assertIn('|| true', line)
 
+    def test_clone_uses_cache_and_shared_script(self):
+        names = self.names
+        for repo in ('book-index', 'book-text'):
+            self.assertLess(names.index(f'Restore git cache — {repo}'), names.index('Clone index data repos'))
+            self.assertGreater(names.index(f'Save git cache — {repo}'), names.index('Clone index data repos'))
+            for n in (f'Restore git cache — {repo}', f'Save git cache — {repo}'):
+                self.assertTrue(self._step(n).get('continue-on-error'), n)
+                self.assertTrue(self._step(n)['with']['path'].endswith('/.git'))
+        run = self._step('Clone index data repos')['run']
+        self.assertIn('source ops/clone-cached.sh', run)
+        self.assertEqual(run.count('clone_cached '), 2)
+        self.assertTrue(os.path.isfile(os.path.join(ROOT, 'ops', 'clone-cached.sh')))
+
+    def test_long_steps_print_duration(self):
+        for needle in ('✔ build_derived 用时', '✔ 打包数据用时'):
+            self.assertIn(needle, self.raw)
+
 
 if __name__ == '__main__':
     unittest.main()
