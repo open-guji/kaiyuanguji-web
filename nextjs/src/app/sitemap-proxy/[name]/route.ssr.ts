@@ -15,6 +15,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ nam
     if (!isSitemapName(name)) return new NextResponse('Not Found', { status: 404 });
     const r = await fetchSitemap({ base: defaultItemDataBase(), name, site: SITE_URL });
     if (!r.ok) {
+        // 留一条服务端日志，运维才分得清上游没有这份（404）、超时、还是回了坏内容
+        console.warn(`[sitemap-proxy] ${name} 取不到（${r.status}）：${r.reason}`);
         // 错误不缓存：数据上线的空档里取不到，下一次请求就该重取
         return new NextResponse(r.status === 404 ? 'Not Found' : 'Bad Gateway', {
             status: r.status,

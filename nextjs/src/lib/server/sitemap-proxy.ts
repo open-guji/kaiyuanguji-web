@@ -16,9 +16,11 @@
 export const STORED_SITE = 'https://www.kaiyuanguji.com';
 
 /** 允许代理的名字：索引、四类条目分片、分类节点页分片。别的一律不代理（不能让路径拼出任意数据地址） */
-const NAME_RE = /^(?:sitemap-index|(?:work|book|collection|entity)-\d{3}|nodes-001)$/;
+// 序号至少三位（gen-sitemaps 按 padStart(3) 编号，超过 999 片会是四位以上）
+const NAME_RE = /^(?:sitemap-index|(?:work|book|collection|entity)-\d{3,}|nodes-001)$/;
 
-export const SITEMAP_CACHE_CONTROL = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400';
+// 不带 stale-while-revalidate：数据上线后 sitemap 最迟一小时内换新（边缘 s-maxage），不再多挂一天旧的
+export const SITEMAP_CACHE_CONTROL = 'public, max-age=300, s-maxage=3600';
 
 export function isSitemapName(name: string): boolean {
     return NAME_RE.test(name);
@@ -66,6 +68,9 @@ export async function fetchSitemap(opts: {
         if (!res.ok) return { ok: false, status: 502, reason: `upstream HTTP ${res.status}` };
         const xml = await res.text();
         if (!xml.trimStart().startsWith('<?xml')) return { ok: false, status: 502, reason: 'upstream is not xml' };
+        // 截断或错误页：sitemap 必须以 </urlset>（分片）或 </sitemapindex>（索引）收尾。不做完整 XML 解析——
+        // 边缘运行时没有 DOMParser，分片最大约 5 MB，这一道挡的是「传了一半」和「带声明的错误页」
+        if (!/<\/(?:urlset|sitemapindex)>\s*$/.test(xml)) return { ok: false, status: 502, reason: 'upstream sitemap is truncated or malformed' };
         return { ok: true, xml: rewriteSitemapSite(xml, STORED_SITE, site) };
     } catch (e) {
         return { ok: false, status: 502, reason: e instanceof Error ? e.message : String(e) };

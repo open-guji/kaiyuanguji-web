@@ -21,10 +21,10 @@ function okFetch(body: string, status = 200) {
 
 describe('名字白名单', () => {
   it('索引、四类分片、节点页分片可以', () => {
-    for (const n of ['sitemap-index', 'work-001', 'book-012', 'collection-001', 'entity-003', 'nodes-001']) expect(isSitemapName(n)).toBe(true);
+    for (const n of ['sitemap-index', 'work-001', 'book-012', 'collection-001', 'entity-003', 'nodes-001', 'work-1000']) expect(isSitemapName(n)).toBe(true);
   });
   it('路径拼接、别的前缀、位数不对、带后缀的一律不行', () => {
-    for (const n of ['', '..', 'work-1', 'work-0001', 'other-001', 'work-001.xml', '../latest', 'work-001/x', 'nodes-002', 'sitemap']) expect(isSitemapName(n)).toBe(false);
+    for (const n of ['', '..', 'work-1', 'work-01', 'other-001', 'work-001.xml', '../latest', 'work-001/x', 'nodes-002', 'sitemap']) expect(isSitemapName(n)).toBe(false);
   });
 });
 
@@ -82,6 +82,14 @@ describe('fetchSitemap', () => {
     expect(await fetchSitemap({ base, name: 'work-001', site: STORED_SITE, fetchImpl: boom })).toMatchObject({ ok: false, status: 502, reason: 'network down' });
     const hang = ((_u: string, init?: RequestInit) => new Promise((_, rej) => { init?.signal?.addEventListener('abort', () => rej(new Error('aborted'))); })) as unknown as typeof fetch;
     expect(await fetchSitemap({ base, name: 'work-001', site: STORED_SITE, fetchImpl: hang, timeoutMs: 20 })).toMatchObject({ ok: false, status: 502 });
+  });
+  it('带 xml 声明的错误页／半截的 sitemap（没有以 </urlset> 或 </sitemapindex> 收尾）→ 502', async () => {
+    for (const bad of ['<?xml version="1.0"?><error>oops</error>', XML.slice(0, XML.length - 20), `${XML}garbage`]) {
+      const r = await fetchSitemap({ base, name: 'work-001', site: STORED_SITE, fetchImpl: okFetch(bad) });
+      expect(r).toMatchObject({ ok: false, status: 502 });
+    }
+    const idx = '<?xml version="1.0"?>\n<sitemapindex xmlns="x"><sitemap><loc>https://www.kaiyuanguji.com/sitemap.xml</loc></sitemap></sitemapindex>\n';
+    expect(await fetchSitemap({ base, name: 'sitemap-index', site: STORED_SITE, fetchImpl: okFetch(idx) })).toMatchObject({ ok: true });
   });
   it('上游回的不是 xml（例如 CDN 错误页）→ 502，不当 sitemap 缓存', async () => {
     const r = await fetchSitemap({ base, name: 'work-001', site: STORED_SITE, fetchImpl: okFetch('<html>oops</html>') });
