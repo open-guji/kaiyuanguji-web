@@ -144,11 +144,15 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             const first = firstChapterOf(idx.body);
             if (!first) { fail(id, '数据', `${base}/index.json 的 chapters 为空`); continue; }
             // has_json 的章可以没有 md（只有结构化 json）；其余章 md 必须在
-            if (!first.hasJson) {
+            // 对读章（自校本）真源是 char.json，不产 md／txt：声明了 char_file 就查它
+            if (first.charFile) {
+                const cf = await get(`${cur}/${base}/${first.charFile}?${bust}`, false);
+                if (!cf.ok) fail(id, '数据', `${base}/${first.charFile} → ${why(cf)}`);
+            } else if (!first.hasJson) {
                 const ch = await get(`${cur}/${base}/${chapterTxtFile(first.file)}?${bust}`, false);
                 if (!ch.ok) fail(id, '数据', `${base}/${chapterTxtFile(first.file)} → ${why(ch)}`);
             }
-            if (first.hasJson) {
+            if (first.hasJson && !first.charFile) {
                 const cj = await get(`${cur}/${base}/${first.file.replace(/\.(md|txt)$/, '')}.json?${bust}`, false);
                 if (!cj.ok) fail(id, '数据', `${base}/${first.file.replace(/\.(md|txt)$/, '')}.json → ${why(cj)}`);
             }
