@@ -453,6 +453,22 @@ function bundleExtraFiles() {
         console.log(`EX  ${fname} copied (${size} KB)`);
     }
 
+    // schema-v2（overview#458）：枢纽名称表 _hubs.json（build 产物，{id: {t, title, dyn?}}，约 58 条）放数据根下、与 entry/ 同级，
+    // 读者端（book-index-ui 的 BundleStorage.getHubs）据此显示 `{id, h:1}` 枢纽引用的名称。
+    // 旧 schema（没设 BOOK_INDEX_DERIVED_DIR 或产物里没有该文件）不产出；残留的旧副本一并删掉。
+    {
+        const dest = join(OUT_DIR, '_hubs.json');
+        const src = derivedPath('_hubs.json');
+        if (src) {
+            const data = readFileSync(src, 'utf-8');
+            JSON.parse(data); // 不是合法 JSON 就让构建失败，别把坏文件发出去
+            writeIfChanged(dest, data);
+            console.log(`EX  _hubs.json copied (${(Buffer.byteLength(data) / 1024).toFixed(1)} KB)`);
+        } else if (existsSync(dest)) {
+            unlinkSync(dest);
+        }
+    }
+
     // recommended.json: hydrate items 加上 IndexEntry 元数据，让 HomePage
     // 直接渲染，不再为每个 ID 触发一次 transport.getEntry / chunk fetch。
     const recSrc = join(PRODUCTION_DIR, 'recommended.json');
