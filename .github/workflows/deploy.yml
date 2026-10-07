@@ -422,21 +422,98 @@ jobs:
       # 克隆 book-index（正式仓）与 book-text。overview#432 起不再克隆草稿仓 book-index-draft：
       # 草稿条目不上站。bundle-data.mjs 缺正式仓、或缺其根目录的站点内容文件
       # （resource*.json／recommended.json／promotions.json）都会**报错退出**，不会静默打出空站。
+      # overview#470 P1：book-text 浅拉要现压 1.75 GB 的包（实测 08:15 2.6 分 → 16:27 23 分，同一个 commit，随 GitHub 负载忽快忽慢）。
+      # 把两个仓的 .git 放进 actions/cache（键＝仓名＋commit，取最近一份），之后在已有对象上只拉新增的；同一个 commit 直接复用；
+      # 取不到、或缓存的 .git 超过上限（防只增不减）就退回全量浅拉。缓存只存 .git，工作区文件每次由 checkout 还原。
+      - name: Restore git cache — book-index
+        id: gc_index
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ needs.resolve.outputs.prod_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ needs.resolve.outputs.text_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
       - name: Clone index data repos
+        id: clone
         if: ${{ env.DATA_FAST != 'true' }}
         run: |
-          # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
-          fetch_at() {
-            git init -q "$2"
-            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
-            git -C "$2" checkout -q FETCH_HEAD
+          # --- clone_cached:begin（overview#470 P1。正本是 ops/clone-cached.sh；deploy.yml 的 build、prod-artifact 内联两份同文——build 检出的可能是更早的 web 提交，那一版没有这个文件——ops/tests/test_clone_cache.py 守着）
+          set -o pipefail
+          GIT_BASE_URL="${GIT_BASE_URL:-https://github.com/open-guji}"
+          GIT_CACHE_MAX_MB="${GIT_CACHE_MAX_MB:-4096}"
+          # git 的 --progress 输出带回车、刷得很密：只留每 15 秒一行（和结束那行）
+          git_progress() {
+            local last=-99 line
+            while IFS= read -r line; do
+              [ -n "$line" ] || continue
+              if [ $((SECONDS - last)) -ge 15 ] || [[ "$line" == *", done"* ]]; then echo "    $line"; last=$SECONDS; fi
+            done
           }
+          # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
+          # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
+          clone_cached() {
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb
+            echo "▶ 克隆 $repo @ ${ref:0:12}"
+            if [ -d "$dest/.git" ]; then
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ]; then
+                echo "· 缓存的 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限，丢弃后全量浅拉"; rm -rf "$dest/.git"
+              else
+                echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"
+              fi
+            else
+              echo "· 没有缓存：全量浅拉"
+            fi
+            [ -d "$dest/.git" ] || git init -q "$dest"
+            if printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$' && git -C "$dest" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+              echo "· 缓存里已有这个 commit，不再 fetch"
+              git -C "$dest" checkout -q -f "$ref"
+            else
+              git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              git -C "$dest" checkout -q -f FETCH_HEAD
+            fi
+            echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
+          }
+          # --- clone_cached:end
+          # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
           # overview#341：resolve 解析出了完整 commit 就按 commit 取，保证与上面「数据没变」的判断是同一版
-          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
+          clone_cached book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
           # 构建照样成功——整理本页在站上空白，无人得知。
-          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          clone_cached book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          echo "index_sha=$(git -C book-index rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "text_sha=$(git -C book-text rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Save git cache — book-index
+        if: ${{ env.DATA_FAST != 'true' && steps.gc_index.outputs.cache-hit != 'true' && steps.clone.outputs.index_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.clone.outputs.index_sha }}
+
+      - name: Save git cache — book-text
+        if: ${{ env.DATA_FAST != 'true' && steps.gc_text.outputs.cache-hit != 'true' && steps.clone.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.clone.outputs.text_sha }}
 
       # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
       # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
@@ -452,7 +529,9 @@ jobs:
         run: |
           if [ -f book-index/build/build_derived.py ]; then
             D="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
             (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
           else
             echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
@@ -465,7 +544,9 @@ jobs:
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
         run: |
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
           node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
           # T1：指针里记下这次用的网站代码 commit，promote 时据此取同一版代码
           python3 - <<'PY'
           import json, os
@@ -733,7 +814,9 @@ jobs:
           P_H1=$!
           ( s=$SECONDS; node scripts/bundle-hashed-text.mjs && { echo "· h1 文本打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs; }; rc=$?; echo "· h1 文本一路共用时 $((SECONDS - s)) 秒"; exit $rc ) > "$LOGS/h1-text.log" 2>&1 &
           P_TXT=$!
-          ( while :; do sleep 60; echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC（current/ pid $P_CUR、h1 条目 pid $P_H1、h1 文本 pid $P_TXT）"; done ) &
+          # 心跳：每分钟一行，写各路的已完成／总数／速率／预计剩余（读各路日志里 runQueue 的进度，scripts/sync-heartbeat.mjs；
+          # 部署的是早于它的代码时没有这个文件，退回只打时间）
+          ( while :; do sleep 60; if [ -f scripts/sync-heartbeat.mjs ]; then node scripts/sync-heartbeat.mjs "$LOGS" || true; else echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC"; fi; done ) &
           HB=$!
           wait $P_CUR; R_CUR=$?
           wait $P_H1;  R_H1=$?
@@ -915,9 +998,11 @@ jobs:
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
@@ -960,9 +1045,11 @@ jobs:
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-staging 的项目变量构建并查产物（脚本内含与正式站那一步同样的 3 次重试，
           # 只重试构建本身——Google Fonts 偶发抖动）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-staging --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
@@ -1059,7 +1146,9 @@ jobs:
         # W2：部署上一步 makers build 出的全栈产物（给了目录就不再自动构建）
         working-directory: nextjs
         run: |
+          s=$SECONDS; echo "▶ EdgeOne 部署（测试站）开始 $(date -u +%H:%M:%S) UTC"
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
+          echo "✔ EdgeOne 部署（测试站）用时 $((SECONDS - s)) 秒"
 
       # overview#341：记下这次测试站用的代码与数据（完整 commit），存成工件。正式站 promote 带 from_run=<本 run>
       # 时据此钉死版本，不再读测试站指针「此刻」的值（指针可能已被后来的部署改写）。
@@ -1100,7 +1189,9 @@ jobs:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
         working-directory: nextjs
         run: |
+          s=$SECONDS; echo "▶ EdgeOne 部署（正式站）开始 $(date -u +%H:%M:%S) UTC"
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-ssr-spike -t "$EDGEONE_API_TOKEN"
+          echo "✔ EdgeOne 部署（正式站）用时 $((SECONDS - s)) 秒"
 
       # 发布记录：kyg-ssr-spike 是直传项目，没有 edgeone-release 那样的发布分支可以翻历史，
       # 「上一个正式版本」（ops/rollback-plan.py）改从 release-log 分支读。每次正式发布在该分支
@@ -1301,7 +1392,30 @@ jobs:
           path: ${{ runner.temp }}/item-sitemaps
           key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
+      - name: Restore git cache — book-index
+        id: gc_index
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ needs.resolve.outputs.prod_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ needs.resolve.outputs.text_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
       - name: Clone, bundle and generate item sitemaps (cache miss)
+        id: gen
         if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' }}
         env:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
@@ -1310,23 +1424,79 @@ jobs:
           SITEMAP_SITE: https://www.kaiyuanguji.com
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: |
-          fetch_at() {
-            git init -q "$2"
-            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
-            git -C "$2" checkout -q FETCH_HEAD
+          # overview#470 P1：同 build 任务的克隆缓存
+          # --- clone_cached:begin（overview#470 P1。正本是 ops/clone-cached.sh；deploy.yml 的 build、prod-artifact 内联两份同文——build 检出的可能是更早的 web 提交，那一版没有这个文件——ops/tests/test_clone_cache.py 守着）
+          set -o pipefail
+          GIT_BASE_URL="${GIT_BASE_URL:-https://github.com/open-guji}"
+          GIT_CACHE_MAX_MB="${GIT_CACHE_MAX_MB:-4096}"
+          # git 的 --progress 输出带回车、刷得很密：只留每 15 秒一行（和结束那行）
+          git_progress() {
+            local last=-99 line
+            while IFS= read -r line; do
+              [ -n "$line" ] || continue
+              if [ $((SECONDS - last)) -ge 15 ] || [[ "$line" == *", done"* ]]; then echo "    $line"; last=$SECONDS; fi
+            done
           }
+          # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
+          # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
+          clone_cached() {
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb
+            echo "▶ 克隆 $repo @ ${ref:0:12}"
+            if [ -d "$dest/.git" ]; then
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ]; then
+                echo "· 缓存的 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限，丢弃后全量浅拉"; rm -rf "$dest/.git"
+              else
+                echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"
+              fi
+            else
+              echo "· 没有缓存：全量浅拉"
+            fi
+            [ -d "$dest/.git" ] || git init -q "$dest"
+            if printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$' && git -C "$dest" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+              echo "· 缓存里已有这个 commit，不再 fetch"
+              git -C "$dest" checkout -q -f "$ref"
+            else
+              git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              git -C "$dest" checkout -q -f FETCH_HEAD
+            fi
+            echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
+          }
+          # --- clone_cached:end
           # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
-          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
-          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          clone_cached book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
+          clone_cached book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          echo "index_sha=$(git -C book-index rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "text_sha=$(git -C book-text rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           # schema-v2（overview#458）：同 build job，旧 schema 的仓没有该脚本就跳过
           if [ -f book-index/build/build_derived.py ]; then
             export BOOK_INDEX_DERIVED_DIR="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
             (cd book-index && python3 build/build_derived.py --out "$BOOK_INDEX_DERIVED_DIR")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒"
           fi
           cd nextjs
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
           node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
           rm -rf "$SITEMAP_OUT_DIR"
           node scripts/gen-sitemaps.mjs
+
+      - name: Save git cache — book-index
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && steps.gc_index.outputs.cache-hit != 'true' && steps.gen.outputs.index_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.gen.outputs.index_sha }}
+
+      - name: Save git cache — book-text
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && steps.gc_text.outputs.cache-hit != 'true' && steps.gen.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.gen.outputs.text_sha }}
 
       - name: Save item sitemaps cache (www)
         if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
@@ -1393,9 +1563,11 @@ jobs:
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
