@@ -21,6 +21,7 @@
 | `full-reindex.mjs` | 主程序。流式遍历三仓，建 works / juans / books / collections / entities 五个 index，最后 PATCH settings |
 | `lib/work-fields.mjs` | works 文档里 `classification`（部）、`loss_status`（存佚）的取值逻辑。**full-reindex.mjs 依赖它，同步时要一起带上** |
 | `lib/sort-fields.mjs` | `era_rank`、`title_sort` 排序字段的取值逻辑。同上，**漏了就起不来** |
+| `lib/doc-floor.mjs` | swap 前文档数下限闸的判定（新建的比线上少一半以上不换）。同上，**漏了就起不来** |
 | `reindex-and-purge.sh` | wrapper：读凭证 → 三仓 `git pull`（缺则 clone）→ 跑 full-reindex → 成功才 purge。**不要直接跑** |
 | `reindex-limited.sh` | 平时用这个。`systemd-run --scope` 给上面的 wrapper 加 cgroup 上限，压不垮 Meili 和 sshd。脚本里的缺省值（内存 600M / CPU 50% / 批 200）是给旧 2 GB 机定的，在现在这台上全量要近 40 分钟；夜间 workflow 和手动跑都用下面「跑一次重建」里那组放宽的参数（约 8 分钟） |
 | `purge-edgeone.mjs` | `purge_host api.kaiyuanguji.com`（EdgeOne 国际版凭证，读 `/opt/indexer/.env`） |
@@ -30,7 +31,7 @@
 ## 把仓库里的脚本同步到服务器
 
 这些文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合；
-`full-reindex.mjs` 还 import 了 `lib/work-fields.mjs`、`lib/sort-fields.mjs`（2026-09-30 起），漏了 `lib/` 会在启动时报 `ERR_MODULE_NOT_FOUND`
+`full-reindex.mjs` 还 import 了 `lib/work-fields.mjs`、`lib/sort-fields.mjs`（2026-09-30 起）、`lib/doc-floor.mjs`（2026-10-06 起），漏了 `lib/` 会在启动时报 `ERR_MODULE_NOT_FOUND`
 ——那是在动任何索引之前就报错，线上索引不受影响，补上 `lib/` 重跑即可。
 
 **搜索机在墙内，直连 GitHub 不通**（npm 官方源也慢），所以脚本从一台能连 GitHub 的机器经 SSH 推过去，数据仓经 `gh-proxy.com` 前缀拉（三仓的 origin 都已指向它）。
@@ -92,6 +93,7 @@ sudo bash -c 'set -a; . /etc/meilisearch.env; set +a
 cd /opt/indexer
 sudo env CPU_QUOTA=100% MEM_HIGH=700M MEM_MAX=1G NODE_HEAP=512 BATCH_SIZE=1000 MAX_CONCURRENT=2 ./reindex-limited.sh
 # 参数原样透传：--only works,books,entities（逗号分隔）；--limit 500
+# 注意：--limit 只给本地/测试用的 Meili；对着线上索引带 --limit 会被下限闸挡住（线上不动）。同步后验证能启动用 --dry-run
 ```
 
 全量约 8 分钟，只重建 works 约 5 分钟。swap 式重建，线上全程有数据。中途另开一个 SSH 看 `free -m` 与 `curl -s localhost:7700/health`，都应正常。
@@ -123,7 +125,7 @@ workflow 做三件事：三仓 `git pull`（gh-proxy，失败重试 5 次）→ 
 - **2026-09-27（A4）起是 swap 式重建**：新数据先建到 `<idx>_tmp`，自检（前端形态查询）通过才
   `POST /swap-indexes` 原子换名，线上读到的索引全程有数据，不再有「DELETE 到重建完」之间的空窗。
   自检不通过就删掉 tmp、退出非 0，线上 `<idx>` 原样不动——不会出现"半成品覆盖旧索引"。
-  自检之外还有**文档数下限闸**（`lib/doc-floor.mjs`，overview#122）：线上原来有文档、新建的少了一半以上，同样放弃 swap（10-02 juans 两晚建出 0 条换上去的事故）。线上或新建索引的条数读不到时同样不换。`--limit` 的试跑结果条数少，也会被挡住；确实要大幅缩减（或确实要把试跑结果换上线）时带 `--allow-shrink`（或 `FORCE_SHRINK=1`）。
+  自检之外还有**文档数下限闸**（`lib/doc-floor.mjs`，overview#122）：线上原来有文档、新建的少了一半以上，同样放弃 swap（10-02 juans 两晚建出 0 条换上去的事故）。线上或新建索引的条数读不到时同样不换。通过时日志里每个索引有一行 `📏 [<idx>] 下限闸通过：线上 N 条 → 新 M 条`，没有这行说明脚本不是新版。`--limit` 的试跑结果条数少，也会被挡住；确实要大幅缩减（或确实要把试跑结果换上线）时带 `--allow-shrink`（或 `FORCE_SHRINK=1`）。
   代价：重建期间盘上短暂同时存在新旧两份数据（`<idx>` + `<idx>_tmp`），峰值盘占用比重建前
   高出约一个索引的量（现在整库约 2 GB，盘 60 GB，余量充足）。内存上，重建时 Meili 自己真正吃掉的约 1–1.5 GB，
   机器是 3.6 GB 加 4 GB swap，够用；2026-10-02 之前 swap 只有 2 GB，重建时曾顶满。
