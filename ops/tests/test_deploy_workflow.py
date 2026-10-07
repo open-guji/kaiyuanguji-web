@@ -91,7 +91,7 @@ class CosSyncStateCache(unittest.TestCase):
 class CosH1StateCache(unittest.TestCase):
     """第二轮提速：h1 条目／h1 文本两路同步的 state 也进 actions/cache（同 overview#410 的做法）。
     键必须带目标站和桶名哈希；只在三路都成功（all_ok）后才存，免得把中途失败的旧 state 传给下一次；
-    每日定时那次强制重建 state（SYNC_REBUILD_STATE=1），缓存与桶对不上时最迟隔天自愈。"""
+    夜间数据发布（定时测试站、正式站 promote=data）强制重建 state（SYNC_REBUILD_STATE=1）。"""
 
     PATHS = 'nextjs/.next/.sync-h1-state.json\nnextjs/.next/.sync-h1-text-state.json'
 
@@ -129,8 +129,12 @@ class CosH1StateCache(unittest.TestCase):
 
     def test_scheduled_run_rebuilds_state(self):
         sync = self.steps[self._idx('Sync data to Tencent COS')]
-        self.assertIn("github.event_name == 'schedule'", sync['env']['SYNC_REBUILD_STATE'])
-        self.assertIn("'1'", sync['env']['SYNC_REBUILD_STATE'])
+        e = sync['env']['SYNC_REBUILD_STATE']
+        self.assertIn("github.event_name == 'schedule'", e)
+        self.assertIn("'1'", e)
+        # 自动派的正式站 promote=data 是单独的 dispatch，要单列；code+data 的 promote（push 路径）不重建
+        self.assertIn("inputs.target == 'production'", e)
+        self.assertIn("inputs.promote == 'data'", e)
 
 
 if __name__ == '__main__':

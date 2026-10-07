@@ -637,7 +637,8 @@ jobs:
       # 取不到或不可信就退回 LIST 重建），只多两条保险：
       #   ① 只在三路都成功（all_ok）之后才存——h1 两路失败只警告，若它们中途失败又把「旧 state」存进缓存，
       #      state 与桶对不上，下次会把已被清掉的对象当成还在而跳过上传；
-      #   ② 每日定时那次强制重建（SYNC_REBUILD_STATE=1，见同步步骤），桶被手工改过时最迟隔天自愈。
+      #   ② 夜间数据发布（定时的测试站部署、自动派的正式站 promote=data）强制重建（SYNC_REBUILD_STATE=1，见同步步骤）；
+      #      数据没变的那天不同步、也就不重建，所以桶被手工改过时最迟在下一次数据有变化的夜间发布自愈。
       # 手工动过桶里 h1/（删前缀、重传）之后，把下面三处键里的 v1 改成 v2 立即作废。
       - name: COS h1 state — restore (second-round speedup)
         id: cos_h1_state_restore
@@ -663,9 +664,12 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
-          # 每日定时那次不信缓存里的 state，从 COS 重新 LIST 重建（三个脚本都认 SYNC_REBUILD_STATE=1）：
-          # 桶里的东西被手工改过、缓存与桶悄悄对不上时，最迟隔天自愈；push 与手动触发照用缓存
-          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
+          # 数据发布那条夜间路径不信缓存里的 state，从 COS 重新 LIST 重建（三个脚本都认 SYNC_REBUILD_STATE=1）：
+          # 定时的测试站部署，以及它自动派的正式站 promote=data（那是单独的 workflow_dispatch，所以要单列）。
+          # 只在这次真的要同步时才生效——数据没变的定时 run 在上面的 decide 就跳过了同步，没有东西可重建；
+          # 所以「桶被手工改过」最迟在下一次数据有变化的夜间发布时自愈，不是每天都保证。
+          # push 和 code+data 的 promote（from_run）照用缓存；手工动过桶就改键 v1→v2 立即作废。
+          SYNC_REBUILD_STATE: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.promote == 'data')) && '1' || '' }}
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
