@@ -32,8 +32,10 @@ async function openDuidu(page: Page) {
     // 起始页是第一个有字的页（第 3 页）：先等书影区定下来再往下做，不读开头那一瞬的过渡页号
     await expect(warpPage(page)).toHaveAttribute('data-warp-page', FIRST_TEXT_PAGE, { timeout: 30_000 });
     // 专名线默认关；对读正文的实体标注跟着它走
+    await setReaderSettings(page, true);   // 专名线、标点在右侧「阅读设置」侧栏里（overview#463）
     const toggle = page.getByRole('button', { name: /专名线|專名線/ });
     if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
+    await setReaderSettings(page, false);
     await settled(page);
 }
 
@@ -155,6 +157,7 @@ test.describe('图文对读（vol03）', () => {
     test('「标点」「专名线」按钮带 aria-pressed，点一下状态跟着变', async ({ page, request }) => {
         await requireUiVersion(request, ARIA_PRESSED_UI, '标点按钮 aria-pressed');
         await openDuidu(page);
+        await setReaderSettings(page, true);
         const punct = page.locator('button[title="切换外挂现代断句标点"]');
         await expect(punct).toHaveAttribute('aria-pressed', 'true');
         await punct.click();
@@ -285,6 +288,7 @@ test.describe('图文对读（vol03）', () => {
         await openDuidu(page);
         const punct = page.locator('.guji-text-punct');
         await expect.poll(() => punct.count()).toBeGreaterThan(100);
+        await setReaderSettings(page, true);
         const btn = page.locator('button[title="切换外挂现代断句标点"]');
         await btn.click();
         await expect(punct).toHaveCount(0);
