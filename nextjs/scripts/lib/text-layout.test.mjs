@@ -31,6 +31,7 @@ test('章文件名：新结构 file 不带扩展名，md／txt 换算，容忍�
     assert.equal(chapterTxtFile('001'), '001.txt');
     assert.equal(chapterTxtFile('001.md'), '001.txt');
     assert.deepEqual(firstChapterOf({ chapters: [{ n: 1, file: '001', has_json: true }] }), { file: '001', hasJson: true });
+    assert.deepEqual(firstChapterOf({ chapters: [{ n: 2, file: '002', char_file: '002.char.json' }] }), { file: '002', hasJson: false, charFile: '002.char.json' });
     assert.equal(firstChapterOf({ chapters: [] }), null);
     assert.equal(firstChapterOf({}), null);
 });
