@@ -15,6 +15,7 @@
  * 用法：
  *   node scripts/verify-hashed-text-parity.mjs
  *   SAMPLE_SIZE=40 node scripts/verify-hashed-text-parity.mjs
+ *   SAMPLE_SEED=<整数> SAMPLE_SIZE=200 node scripts/verify-hashed-text-parity.mjs   # 等距抽样的起点按种子偏移（不设＝从 0 起）
  */
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
@@ -25,6 +26,8 @@ import { publicKeys, readManifest } from './lib/text-layout.mjs';
 const { dataDir: DATA_DIR, h1TextDir: H1_TEXT_DIR } = resolveDataDirs();
 const ITEMS_SRC_DIR = join(DATA_DIR, 'items');
 const SAMPLE_SIZE = parseInt(process.env.SAMPLE_SIZE || '20', 10);
+// SAMPLE_SEED（可选）：等距抽样的起点偏移＝种子对步长取余。CI 里每次传不同的种子（run id），覆盖面随部署次数累积；不设＝从 0 起，结果固定
+const SAMPLE_SEED = process.env.SAMPLE_SEED ? (parseInt(process.env.SAMPLE_SEED, 10) || 0) : 0;
 
 function fail(msg) {
     console.error(`❌ ${msg}`);
@@ -104,7 +107,8 @@ function sampleFrom(candidates, total) {
         const pool = candidates[kind];
         // 简单等距抽样，覆盖面比只取前 N 条更好
         const step = Math.max(1, Math.floor(pool.length / perKind));
-        for (let i = 0; i < pool.length && picked.filter(p => p.kind === kind).length < perKind; i += step) {
+        const offset = SAMPLE_SEED ? SAMPLE_SEED % step : 0;
+        for (let i = offset; i < pool.length && picked.filter(p => p.kind === kind).length < perKind; i += step) {
             picked.push({ ...pool[i], kind });
         }
     }

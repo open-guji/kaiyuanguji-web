@@ -714,6 +714,43 @@ jobs:
           export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
           node scripts/cos-sync-decision.mjs mark
 
+      # overview#470 P0：h1 与 current/ 逐字节比对（抽样，**只报告**）。这两个脚本早就有（verify-hashed-parity.mjs／
+      # verify-hashed-text-parity.mjs，A3／A3b 的完成判据），但没有任何 workflow 在跑。用 run id 当种子，每次抽到不同的条目，
+      # 覆盖面随部署次数累积；不一致时只发 ::warning:: 与 job summary，不拦发布（步骤恒退出 0，且 continue-on-error）。
+      # 放在 COS 同步之后：h1 目录由同步步骤里的 bundle-hashed*.mjs 打出；数据没变、同步被跳过时没有 h1 目录，这一步跳过。
+      - name: h1 vs current parity sampling (report-only, overview#470 P0)
+        id: parity
+        if: ${{ steps.cos_sync.outcome == 'success' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        working-directory: nextjs
+        env:
+          SAMPLE_SIZE: '200'
+          SAMPLE_SEED: ${{ github.run_id }}
+        run: |
+          set +e
+          node scripts/verify-hashed-parity.mjs > "$RUNNER_TEMP/parity-entry.log" 2>&1; E1=$?
+          node scripts/verify-hashed-text-parity.mjs > "$RUNNER_TEMP/parity-text.log" 2>&1; E2=$?
+          {
+            echo "## h1 与 current/ 逐字节比对（抽样，只报告，overview#470 P0）"
+            echo
+            for pair in "条目:$E1:parity-entry" "阅读文本:$E2:parity-text"; do
+              name="${pair%%:*}"; rest="${pair#*:}"; rc="${rest%%:*}"; f="${rest##*:}"
+              if [ "$rc" -eq 0 ]; then icon="✅"; else icon="🟡"; fi
+              echo "- $icon **$name**（退出码 $rc）：$(grep -E '逐字一致' "$RUNNER_TEMP/$f.log" | head -1)"
+              if [ "$rc" -ne 0 ]; then
+                echo '  ```'
+                grep -E '不一致|❌|不存在|找不到' "$RUNNER_TEMP/$f.log" | head -20 | sed 's/^/  /'
+                echo '  ```'
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/parity-entry.log" "$RUNNER_TEMP/parity-text.log"
+          # ::warning:: 要打到步骤日志里才成注释，不能写进上面重定向到 summary 的那一块
+          [ "$E1" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::条目比对退出码 $E1，见 job summary（只报告，不拦发布）"
+          [ "$E2" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::阅读文本比对退出码 $E2，见 job summary（只报告，不拦发布）"
+          exit 0
+
       # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布；<loc> 按目标指向 www 或测试站
       # （测试站 robots.txt 全禁、不列 sitemap）。overview#341：数据没变的快路上用缓存（同一站点、同一份数据、
       # 同一版打包脚本生成的，内容一样）；照常打包时生成后存一份缓存，下次快路用。
