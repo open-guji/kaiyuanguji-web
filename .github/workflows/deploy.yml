@@ -552,6 +552,31 @@ jobs:
           fi
           echo "✓ public/data 全量 grep 私有文本标记（book-text-private／仅内部校对使用／不得公开）：0 命中"
 
+      # overview#470 P0：数据包检查，**只报告、不阻断**（continue-on-error；脚本本身在只报告模式下也恒退出 0）。
+      # 在打好的数据包上查格式契约（ops/data-contract.mjs）、条目数下限、与上一次发布相比数量有没有突降，
+      # 结果写进 job summary，统计 JSON 存成工件（30 天）。攒两周数据校准阈值（ops/data-package-check.mjs 的 THRESHOLDS）后再开阻断。
+      # 对比基线＝本目标上一次发布的 latest.json／meta.json（测试站是 staging/ 前缀）；读不到只记一条提示。
+      - name: Data package check (report-only, overview#470 P0)
+        id: dpc
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          node ops/data-package-check.mjs \
+            --baseline "https://data.kaiyuanguji.com${COS_PATH_PREFIX:+/$COS_PATH_PREFIX}" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json "$RUNNER_TEMP/data-package-stats.json"
+
+      - name: Upload data package stats (overview#470 P0)
+        if: ${{ always() && env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-package-stats-${{ needs.resolve.outputs.target }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/data-package-stats.json
+          if-no-files-found: ignore
+          retention-days: 30
+
       # --- COS 数据同步（overview#293 提速：数据没变就不传；没变不了就三路并行）---
       #
       # 原来是串行的五步：同步 current/ → 打包 h1 → 记旧 root → 同步 h1 → 打包 h1 文本 → 同步 h1 文本，约 8 分钟。
