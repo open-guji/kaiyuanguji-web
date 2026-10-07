@@ -11,6 +11,7 @@
  *       unknown ＝ 查不了（网络错等），页面照常渲染，但 canonical 回落到不带章号的地址，不给查不准的地址背书。
  */
 import type { ReaderSel } from '../reader-route';
+import { readerManifest } from '../reader-manifest';
 
 export type ReaderCheck = 'found' | 'missing' | 'unknown';
 
@@ -65,8 +66,10 @@ export async function getManifestOrError(id: string, get: GetCurrentJson): Promi
 }
 
 async function check(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheckResult> {
-    const manifest = await getManifest(id, get);
-    if (!manifest) return { status: 'missing' };
+    const raw = await getManifest(id, get);
+    if (!raw) return { status: 'missing' };
+    // 阅读页只认「读者看得到的」版本（有全文版就不列目录型 default，overview#456）
+    const manifest = readerManifest(raw);
     const version = sel.key
         ? manifest.versions.find((v) => v.key === sel.key)
         : (manifest.versions.find((v) => v.key === 'default') ?? manifest.versions[0]);

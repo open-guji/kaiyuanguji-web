@@ -14,8 +14,12 @@ import { requireNewTextData } from '../fixtures/preconditions';
 
 const WORK = ANCHORS.work.id;
 const C = ANCHORS.collated;
-/** 阅读页地址里的章号是三位短形式（juan/004.json → 004），见 lib/reader-route.ts */
-const JUAN = C.sampleJuanFile.replace(/^juan\/|\.json$/g, '');
+/**
+ * 阅读页只展示维基全文版（目录型 default 不列，overview#456）：直齋的维基卷二含「禮類」（整理本的禮類在 juan/004）。
+ * 阅读页地址里的章号是三位短形式，见 lib/reader-route.ts
+ */
+const JUAN = '002';
+const READER_CATEGORY = new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`);
 
 interface Captured {
     posts: Record<string, unknown>[];
@@ -111,7 +115,7 @@ test.describe('反馈入口（N7）', () => {
         await requireNewTextData(request, C.id, '阅读页反馈（新结构）');
         await page.goto(`${TARGET}/read/${C.id}/${JUAN}`);
         await requireN7(page);
-        await expect(page.getByRole('heading', { name: new RegExp(`${C.sampleJuanCategory}|${C.sampleJuanCategorySimplified}`) }))
+        await expect(page.getByRole('heading', { name: READER_CATEGORY }))
             .toBeVisible({ timeout: 30_000 });
 
         // 选中正文里第一段长文字的前 8 个字（阅读器把自己的样式表插在正文容器里，要跳过 <style>）
@@ -161,9 +165,9 @@ test.describe('反馈入口（N7）', () => {
         const dialog = page.getByRole('dialog', { name: '反馈' });
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole('radio', { name: '内容有误' })).toHaveAttribute('aria-checked', 'true');
-        // 「关于」一行是「书名 · 卷N」：默认版本不写版本名，也不出现「整理本」等类别词（不含条目 id；id 在下面的提交体 resourceId 里断言）
+        // 「关于」一行是「书名 · 版本名 · 第 N 章」：版本名只写来源（維基文庫），不出现「整理本」等类别词（不含条目 id；id 在下面的提交体 resourceId 里断言）
         // 书名按繁简偏好转（overview#337），默认简体
-        await expect(dialog.getByText(new RegExp(`(${C.title}|${C.titleSimplified}) · 卷${Number(JUAN)}`))).toBeVisible();
+        await expect(dialog.getByText(new RegExp(`(${C.title}|${C.titleSimplified}) · (维基文库|維基文庫) · 第 ${Number(JUAN)} 章`))).toBeVisible();
         await expect(dialog.getByText(/整理本/)).toHaveCount(0);
 
         await fillAndSubmit(page, 'e2e：报告错字');
