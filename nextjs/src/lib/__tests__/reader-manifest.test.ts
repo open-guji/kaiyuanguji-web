@@ -19,6 +19,12 @@ describe('readerManifest', () => {
         expect(readerManifest({ versions: [collated, wiki, kanripo] }).versions.map((v) => v.key)).toEqual(['wikisource', 'kanripo']);
     });
 
+    it('default 是全文版、另有 key=collated 的整理本（古文觀止）：整理本也不列，default 仍是主版本', () => {
+        const d = { ...wiki, key: 'default' };
+        const c = { ...collated, key: 'collated' };
+        expect(readerManifest({ versions: [d, c] }).versions.map((v) => v.key)).toEqual(['default']);
+    });
+
     it('只有整理本（没有全文版）：保留 default', () => {
         expect(readerManifest({ versions: [collated] }).versions.map((v) => v.key)).toEqual(['default']);
     });

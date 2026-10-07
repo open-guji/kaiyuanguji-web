@@ -99,4 +99,11 @@ describe('阅读页版本下拉框', () => {
         await waitFor(() => expect(screen.getByText(/wikisource-003/)).toBeInTheDocument());
         expect(window.location.pathname).toBe(`/read/${SHIXU}/003`);
     });
+
+    it('default 是全文版、另有 key=collated 的整理本（古文觀止）：下拉里不列整理本，没有下拉框', async () => {
+        manifest = { id: SHIXU, versions: [version('default', '維基文庫', 'transcription', 'CC BY-SA 4.0'), version('collated', '維基文庫', 'collated', 'CC BY-SA 4.0')] };
+        render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
+        await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
+        expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
+    });
 });
