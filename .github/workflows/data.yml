@@ -1,0 +1,179 @@
+name: Data package check (overview#470 P1)
+# 数据流程（overview#470 设计 §2）的第一步：**只做到「检查」**——克隆数据仓 → build_derived → 打包 → 上传前包检查。
+# 不连 COS 写、不上传、不上线、不动任何指针；与现有 deploy.yml 的数据发布**并行**跑，各自独立。
+#   · 目的：先让新路径在真实数据上每晚跑一遍，攒「打包是否稳定、检查有无误报、用时多少」的数据；
+#     跑稳后（约一周，由网站经理定）再按 SPLIT_DATA_FLOW 切换：代码流程去掉数据，由本流程接管上传／刷新／抽查。
+#   · 上传、刷新、上线后抽查（设计 §2 后半段）不在本文件里，切换前再加；这里没有任何 secrets。
+#   · 检查沿用 deploy.yml 里的三道基础闸（ops/data-package-verify.sh，从 deploy.yml 抽出）＋ P0 的 ops/data-package-check.mjs
+#     （**只报告，不拦**，两周后校准阈值再开阻断）＋ h1 条目与 current/ 逐字节抽样比对（只报告）。
+#   · h1 文本（bundle-hashed-text，每次重写约 3.7 GB）这一路按设计 §5 走独立 job，不在检查阶段做。
+#
+# 触发：每日定时（UTC 21:10，在 deploy.yml 的 20:30 之后；三仓无变化就跳过）＋手动。
+# 并发：publish-data 一组，不取消在跑的（以后上传时只有一个写者）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      prod_ref:
+        description: 'book-index 的分支／tag／commit（默认 main）'
+        type: string
+        default: main
+      text_ref:
+        description: 'book-text 的分支／tag／commit（默认 main）'
+        type: string
+        default: main
+  schedule:
+    - cron: '10 21 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-data
+  cancel-in-progress: false
+
+jobs:
+  # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过（同 deploy.yml 的 check，口径一致）。手动一律跑。
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.compare.outputs.should_run }}
+    steps:
+      - name: Compare data repo HEADs with deployed latest.json
+        id: compare
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "· 非定时触发，直接跑"
+            exit 0
+          fi
+          LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
+          LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
+          LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
+          HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
+          HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1)
+          echo "production: live=$LIVE_PROD head=$HEAD_PROD"
+          echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
+          if [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
+             && [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "· 数据无变化，跳过"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "· 数据有更新（或无法确认），执行检查"
+          fi
+
+  package:
+    runs-on: ubuntu-latest
+    needs: check
+    if: ${{ needs.check.outputs.should_run == 'true' }}
+    timeout-minutes: 45
+    env:
+      IN_PROD_REF: ${{ inputs.prod_ref }}
+      IN_TEXT_REF: ${{ inputs.text_ref }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # S2：数据产物统一输出到 nextjs/ 之外，脚本都从 KYG_DATA_ROOT 读写（同 deploy.yml）
+      - name: Set data output root (outside nextjs/)
+        run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: nextjs
+        run: npm ci
+
+      # 数据仓 ref：定时没有输入，一律 main；手动可指定（联调分支）。校验同 deploy.yml 的 resolve
+      - name: Check data repo refs
+        id: refs
+        run: |
+          for pair in "prod_ref:$IN_PROD_REF" "text_ref:$IN_TEXT_REF"; do
+            k="${pair%%:*}"; v="${pair#*:}"; v="${v:-main}"
+            if ! printf '%s' "$v" | grep -Eq '^[A-Za-z0-9._/-]+$'; then echo "❌ $k 含非法字符：$v"; exit 1; fi
+            if ! git check-ref-format "refs/heads/$v" >/dev/null 2>&1; then echo "❌ $k 不是合法的 git ref 名：$v"; exit 1; fi
+            echo "$k=$v" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Clone index data repos
+        run: |
+          fetch_at() {
+            git init -q "$2"
+            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
+            git -C "$2" checkout -q FETCH_HEAD
+          }
+          fetch_at book-index book-index "${{ steps.refs.outputs.prod_ref }}"
+          fetch_at book-text book-text "${{ steps.refs.outputs.text_ref }}"
+          echo "· book-index $(git -C book-index rev-parse --short HEAD)  book-text $(git -C book-text rev-parse --short HEAD)"
+
+      # schema-v2（overview#458）：同 deploy.yml——旧 schema 的仓没有 build/build_derived.py 就跳过；退出码非 0 = 自校验失败
+      - name: Build derived data (schema-v2)
+        run: |
+          if [ -f book-index/build/build_derived.py ]; then
+            D="$RUNNER_TEMP/book-index-derived"
+            (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+          else
+            echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
+          fi
+
+      - name: Bundle data
+        working-directory: nextjs
+        env:
+          BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
+          BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
+        run: node scripts/bundle-data.mjs
+
+      - name: Verify bundled data (basic gates)
+        run: bash ops/data-package-verify.sh book-index
+
+      # P0 的包检查，只报告（脚本恒退出 0；脚本自身出错才非零，这一步 continue-on-error，只标红不拦）。
+      # 基线＝正式站现行的 latest.json／meta.json。两周后按实测波动校准阈值再开阻断（--enforce）。
+      - name: Data package check (report-only, overview#470)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          node ops/data-package-check.mjs \
+            --baseline "https://data.kaiyuanguji.com" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json "$RUNNER_TEMP/data-package-stats.json"
+
+      - name: Upload data package stats
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-package-stats-${{ github.run_id }}
+          path: ${{ runner.temp }}/data-package-stats.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # h1 条目与 current/ 逐字节抽样比对（只报告）：这里先在本地把 h1 条目打出来再比（不含 h1 文本，见文件头）
+      - name: h1 entry vs current parity sampling (report-only, overview#470)
+        continue-on-error: true
+        timeout-minutes: 15
+        working-directory: nextjs
+        env:
+          SAMPLE_SIZE: '200'
+          SAMPLE_SEED: ${{ github.run_id }}
+        run: |
+          set +e
+          node scripts/bundle-hashed.mjs > "$RUNNER_TEMP/bundle-hashed.log" 2>&1; B=$?
+          if [ "$B" -ne 0 ]; then
+            tail -20 "$RUNNER_TEMP/bundle-hashed.log"
+            echo "::warning title=h1 条目打包失败::bundle-hashed.mjs 退出码 $B（只报告，不拦）"
+            exit 0
+          fi
+          node scripts/verify-hashed-parity.mjs > "$RUNNER_TEMP/parity-entry.log" 2>&1; E1=$?
+          {
+            echo "## h1 条目与 current/ 逐字节比对（抽样，只报告）"
+            echo
+            if [ "$E1" -eq 0 ]; then icon="✅"; else icon="🟡"; fi
+            echo "- $icon 退出码 $E1：$(grep -E '逐字一致' "$RUNNER_TEMP/parity-entry.log" | head -1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/parity-entry.log"
+          [ "$E1" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::条目比对退出码 $E1（只报告，不拦）"
+          exit 0
