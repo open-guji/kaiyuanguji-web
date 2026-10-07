@@ -69,7 +69,7 @@ async function readWebPointer(base, fetchImpl) {
     const j = await res.json();
     const out = {};
     for (const k of ['webCommitId', 'deployedAt', 'runId']) if (typeof j[k] === 'string') out[k] = j[k];
-    return out.webCommitId ? out : null;
+    return /^[0-9a-f]{40}$/.test(out.webCommitId || '') ? out : null;
   } catch {
     return null;
   } finally {
@@ -80,8 +80,8 @@ async function readWebPointer(base, fetchImpl) {
 /** 纯函数，便于测试：info = BUILD_INFO，fetchImpl = fetch */
 export async function buildVersionBody(info, fetchImpl) {
   const base = dataBaseOf(info);
-  const { pointer, error } = await readPointer(base, fetchImpl);
-  const webPointer = await readWebPointer(base, fetchImpl);
+  // 两个指针同时读，超时不会叠加成六秒
+  const [{ pointer, error }, webPointer] = await Promise.all([readPointer(base, fetchImpl), readWebPointer(base, fetchImpl)]);
   const body = {
     web: info && info.web ? info.web : null,
     bimUi: info && info.bimUi ? info.bimUi : null,

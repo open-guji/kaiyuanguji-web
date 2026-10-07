@@ -37,6 +37,7 @@ done
 | `builtAt` | 构建时间 | 构建时写入 |
 | `target` | `production` / `staging`（切站前 kyg-ssr-spike 双跑的构建记为 `ssr-test`） | 构建时写入 |
 | `webMatchesPointer` | `web` 是否等于指针里记的 `webCommitId` | — |
+| `webPointer` | 代码指针 `web.json`（正式站在根、测试站在 `staging/`）：`webCommitId`／`deployedAt`／`runId`；读不到（旧产物、还没写过）是 `null` | 运行时读 COS；部署成功后由 CI 写（overview#470 P1） |
 
 怎么读：
 
@@ -44,6 +45,7 @@ done
 - **`builtAt` 很旧、`web` 不对** → 新版本没发上去：看 Actions 里最近一次 `Deploy to EdgeOne` 哪一步红了。
 - **`webMatchesPointer: false`** 不一定是故障：`promote=data`（只换数据，每天 04:30 自动跑）时代码不动、指针记的是上次 promote 用的代码；
   但如果刚手动 promote 过 `code+data` 还是 false，就是「代码发了、指针没刷新」或反过来——看 §6 CDN。
+- **`webPointer` 与 `dataPointer.webCommitId`**：过渡期两个都有，`webMatchesPointer` 仍只比 `latest.json` 那个（晋升、回滚读的也是它）；`webPointer` 是部署成功后单独写的代码指针，将来数据流程独立后会取代前者。两者不同通常是回滚到了早于 P1 的旧 commit（旧流程只更新 `latest.json`），下一次正常部署会对齐。
 - **接口 404** → 这版产物早于 `/api/version`（2026-09 DBG 之前），改看 `<meta name="bim-ui-version">` 与数据指针的 `webCommitId`。
 - **`dataError`** → 数据 CDN 读不到，本身就是一条线索（§2、§4）。
 - **`note: 构建时未写入版本信息`** → 产物不是 CI 构建的（手工发布／本地 build），版本不可信。

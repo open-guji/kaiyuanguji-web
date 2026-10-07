@@ -137,9 +137,6 @@ class CosH1StateCache(unittest.TestCase):
         self.assertIn("inputs.promote == 'data'", e)
 
 
-if __name__ == '__main__':
-    unittest.main()
-
 
 @unittest.skipIf(yaml is None, 'PyYAML 未安装')
 class WebPointerStep(unittest.TestCase):
@@ -172,3 +169,7 @@ class WebPointerStep(unittest.TestCase):
 
     def test_purge_includes_web_json(self):
         self.assertIn("pfx + 'web.json'", self.raw)
+
+
+if __name__ == '__main__':
+    unittest.main()
