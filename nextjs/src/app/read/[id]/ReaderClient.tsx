@@ -137,7 +137,16 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
         synced.current = true;
     }, [id, sel, bookTitle, meta, convert]);
 
+    const primaryRef = useRef(primary);
+    primaryRef.current = primary;
     const onLocationChange = useCallback((loc: TextLocation, cause: TextLocationCause) => {
+        // 主版本还没算出来（种子缺失、浏览器还在取 manifest）时，阅读器先按 default 挂载；若主版本其实不是 default
+        // （目录型 default 被隐藏），它取到 manifest 后会以 auto 通知「回到主版本第一章」。那不是读者翻的：
+        // 只记下主版本 key，别动 sel，否则地址里的章号被冲掉（/read/<id>/004 变成 001）。
+        if (cause === 'auto' && primaryRef.current === null && loc.isDefault) {
+            setPrimary(loc.key);
+            return;
+        }
         const next: ReaderSel = { key: loc.isDefault ? undefined : loc.key, chapter: loc.chapter ?? undefined };
         // 读者翻章、切版本留历史；阅读器自己纠正位置（auto）与上一条合并
         pushNext.current = cause !== 'auto';
