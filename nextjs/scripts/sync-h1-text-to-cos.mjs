@@ -51,13 +51,14 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { planOrphans, serializeOrphansTable, parseOrphansTable } from './lib/h1-orphans.mjs';
 import {
     walk, md5WithCache, loadHashCache, saveHashCache,
-    loadStateFile, saveStateFile, defaultContentTypeFor,
+    loadStateFile, loadStateMeta, saveStateFile, defaultContentTypeFor,
     planBatches, logPlan, logOrphansPlan,
     requireCosSdk, createCosOps, runUploadBatch, runQueue,
     getOrphansTableFromCos, putOrphansTableToCos,
     createCosRootsBackend, runRootsRetention, logRootsRetentionPlan, COS_CONCURRENCY,
 } from './lib/h1-sync-core.mjs';
 import { createDryRunRootsBackend } from './lib/h1-roots-dryrun-backend.mjs';
+import { createStateGuard, pointerOf } from './lib/state-guard.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -158,7 +159,8 @@ const DRYRUN_ORPHANS_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-dry
 const DRYRUN_ROOTS_STORE_FILE = resolve(__dirname, '..', '.next', '.sync-h1-text-dryrun-roots-store.json');
 
 const loadSyncState = () => loadStateFile(SYNC_STATE_FILE);
-const saveSyncState = (m) => saveStateFile(SYNC_STATE_FILE, m);
+const loadSyncStateMeta = () => loadStateMeta(SYNC_STATE_FILE);
+const saveSyncState = (m, meta) => saveStateFile(SYNC_STATE_FILE, m, meta);
 const loadDryRunState = () => loadStateFile(DRYRUN_STATE_FILE);
 const saveDryRunState = (m) => saveStateFile(DRYRUN_STATE_FILE, m);
 
@@ -258,16 +260,28 @@ async function main() {
     });
     const cosOps = createCosOps({ cos, bucket: BUCKET, region: REGION });
 
+    // state 可信度保护（state-guard.mjs）：同步中途被取消／失败时桶已被改了一部分，缓存里留的是更早的旧 state，
+    // 拿它判断会把「已被换成别的内容」的对象当成没变而跳过。先核对 COS 上的写前标记与现行指针，对不上就丢掉 state、LIST 重建。
+    const guard = createStateGuard({ ops: cosOps, pathPrefix: PATH_PREFIX, name: 'h1-text', pointerKey: POINTER_KEY });
     let stateMap = initialState;
     let plan = initialPlan;
-    if (stateMap.size === 0 || REBUILD_STATE) {
-        console.log(`  ${REBUILD_STATE ? 'SYNC_REBUILD_STATE=1' : 'no local sync-h1-text-state'}, listing COS to rebuild...`);
+    let rebuildReason = REBUILD_STATE ? 'SYNC_REBUILD_STATE=1' : (stateMap.size === 0 ? 'no local sync-h1-text-state' : null);
+    if (!rebuildReason) {
+        const g = await guard.check(loadSyncStateMeta());
+        if (g.trusted) console.log('  state 可信（版本标记与远端指针都对得上），不 LIST');
+        else rebuildReason = `local state 不可信（${g.reason}），丢弃`;
+    }
+    if (rebuildReason) {
+        console.log(`  ${rebuildReason}, listing COS to rebuild...`);
         stateMap = await cosOps.listPrefixEtags(`${H1_PREFIX}/`);
         console.log(`  rebuilt state from cos: ${stateMap.size} keys`);
         plan = planBatches({ batches: BATCHES }, files, stateMap, localMd5);
         console.log(`  重新计划：`);
         logPlan(plan);
     }
+
+    // 动桶之前先写 dirty 标记（失败就中止、什么都不动）；成功收尾后才改 clean
+    const generation = await guard.begin();
 
     // ─── ①②③ 按序：text → text-manifest 分片 → text-roots/<commit>.json（指针留到最后翻转） ───
     const uploadBatchByKey = Object.fromEntries(plan.uploadsByBatch.map(b => [b.key, b]));
@@ -317,8 +331,10 @@ async function main() {
     console.log(`  ✓ text-orphans.json 写回（${orphansResult.newOrphansTable.size} 条）`);
 
     const newState = new Map(files.map(f => [f.relative, localMd5.get(f.relative)]));
-    saveSyncState(newState);
+    const pointer = pointerOf(readFileSync(pointerFiles[0].full, 'utf-8'));
+    saveSyncState(newState, { generation, pointer });
     console.log(`  ✓ sync-h1-text-state saved (${newState.size} keys)`);
+    await guard.finish(generation, pointer);
     console.log(`\n✅ sync-h1-text-to-cos complete\n`);
 }
 
