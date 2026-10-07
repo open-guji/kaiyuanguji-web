@@ -168,6 +168,23 @@ describe('GET /api/version', () => {
     expect(body2.dataError).toMatch(/404/);
   });
 
+  it('代码指针 web.json（overview#470 P1）：读到就转出三个字段；读不到是 null，不算错误', async () => {
+    const WEB = { webCommitId: SHA, deployedAt: '2026-10-07T01:00:00.000Z', runId: '9', secret: 'no' };
+    const f = async (url: string) => {
+      const json = url.includes('/web.json') ? WEB : POINTER;
+      return { ok: true, status: 200, json: async () => json } as unknown as Response;
+    };
+    const body = await v.buildVersionBody(info, f);
+    expect(body.webPointer).toEqual({ webCommitId: SHA, deployedAt: '2026-10-07T01:00:00.000Z', runId: '9' });
+    const g = async (url: string) => (url.includes('/web.json')
+      ? ({ ok: false, status: 404 } as unknown as Response)
+      : ({ ok: true, status: 200, json: async () => POINTER } as unknown as Response));
+    const body2 = await v.buildVersionBody(info, g);
+    expect(body2.webPointer).toBeNull();
+    expect(body2.dataError).toBeUndefined();
+    expect(body2.webMatchesPointer).toBe(true);
+  });
+
   it('仓库里未构建的那份：web=null、target=unknown、带说明', async () => {
     const body = await v.buildVersionBody(null, okFetch(POINTER));
     expect(body).toMatchObject({ web: null, bimUi: null, target: 'unknown', data: '501935e5be70' });

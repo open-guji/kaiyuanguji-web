@@ -19,6 +19,11 @@ SITES = {"production": "https://www.kaiyuanguji.com", "staging": "https://stagin
 POINTERS = {"production": "https://data.kaiyuanguji.com/latest.json",
             "staging": "https://data.kaiyuanguji.com/staging/latest.json",
             "ssr-test": "https://data.kaiyuanguji.com/latest.json"}
+# overview#470 P1：代码指针 web.json（部署成功后写）。过渡期 latest.json 与它都可能是最新的——
+# 回滚到早于 P1 的旧 commit 时旧 deploy.yml 只更新 latest.json，所以两处任一等于目标就算对。
+WEB_POINTERS = {"production": "https://data.kaiyuanguji.com/web.json",
+                "staging": "https://data.kaiyuanguji.com/staging/web.json",
+                "ssr-test": "https://data.kaiyuanguji.com/web.json"}
 
 
 def get_json(url):
@@ -37,8 +42,10 @@ def check_once(site, web, pointer, want_version):
     if pointer:
         _, p = get_json(POINTERS[site])
         got = (p or {}).get("webCommitId")
-        if got != web:
-            problems.append(f"数据指针 webCommitId={got!r}，期望 {web[:12]}")
+        _, w = get_json(WEB_POINTERS[site])
+        got_web = (w or {}).get("webCommitId")
+        if web not in (got, got_web):
+            problems.append(f"数据指针 webCommitId={got!r}、代码指针 web.json={got_web!r}，期望 {web[:12]}")
     if want_version:
         st, v = get_json(f"{SITES[site]}/api/version")
         got = (v or {}).get("web")

@@ -1122,6 +1122,24 @@ jobs:
           git push -q origin "$C:refs/heads/release-log"
           echo "· release-log ← ${C:0:12}（web ${WEB:0:12}）"
 
+      # overview#470 P1：代码指针 web.json（正式站在根、测试站在 staging/），部署成功之后写。
+      # 过渡期两边都写：latest.json 里的 webCommitId 仍由上面打包／快路那几步写，晋升与回滚计划仍读它；
+      # web.json 先落地、被观察一阵，数据流程（data.yml）独立之后才由读者切过来（见 nextjs/scripts/lib/web-pointer.mjs 头注释）。
+      # 不拦发布：写失败只是 web.json 暂时落后，下一次部署会再写。
+      - name: Write web pointer web.json (overview#470 P1)
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          node scripts/write-web-pointer.mjs
+
       # --- 步骤 3：清除 EdgeOne CDN 缓存 ---
       - name: Purge EdgeOne CDN cache
         if: ${{ env.HAS_EDGEONE_SECRETS == 'true' }}
@@ -1168,7 +1186,7 @@ jobs:
           # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
           # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
           pfx = 'https://data.kaiyuanguji.com/' + ('staging/' if staging else '')
-          req_pointer.Targets = [pfx + 'latest.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
+          req_pointer.Targets = [pfx + 'latest.json', pfx + 'web.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
           resp_pointer = client.CreatePurgeTask(req_pointer)
           print('✅ latest.json purged:', resp_pointer.to_json_string())
 
