@@ -10,6 +10,7 @@
  * 选择器策略：不用 data-testid（生产代码里没有，加它要改 book-index-ui 并重新
  * 发包），改用用户可见文本 + ARIA role——更贴近真人视角，且组件重构时不易失效。
  */
+import type { APIRequestContext } from '@playwright/test';
 import { test, expect } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { cmpVersion, fetchUiVersion, requireNewTextData } from '../fixtures/preconditions';
@@ -28,10 +29,9 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 
 test.describe('整理本', () => {
     // 阅读页只认新结构（overview#307）：文本迁移落地前，这组针对阅读页内容的用例整体休眠
-    test.beforeEach(async ({ request }) => {
-        await requireNewTextData(request, C.id, '整理本阅读页（新结构）');
-        await requireNewTextData(request, O.id, '整理本阅读页（新结构）');
-    });
+    test.beforeEach(({ request }) => requireNewTextData(request, C.id, '整理本阅读页（新结构）'));
+    // 用到 O（整理本仍是主版本的那部书）的用例各自再查一次 O 的数据，免得 O 缺数据时把只需要 C 的用例也一并跳过
+    const requireO = (request: APIRequestContext) => requireNewTextData(request, O.id, '整理本阅读页（新结构）');
 
     test('概览页有整理本入口', async ({ page, request }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}`);
@@ -96,7 +96,8 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('侧栏章目录条数与 index.json 的 chapters 条数一致', async ({ page }) => {
+    test('侧栏章目录条数与 index.json 的 chapters 条数一致', async ({ page, request }) => {
+        await requireO(request);
         /*
          * 章数来源是 default/index.json 的 chapters（旧的 juan_files／total_juan 都不再有）。
          * 统一阅读器（TextReader）的目录是 role=navigation「目录」里的一排按钮，每个按钮带 data-rd-toc-key（章文件名 001…）；
@@ -122,14 +123,17 @@ test.describe('整理本', () => {
         const toc = page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key]');
         await expect(toc.first()).toBeVisible({ timeout: 30_000 });
         await expect(toc, '直齋阅读页的目录应是维基全文版的章数，不是整理本的章数').toHaveCount(C_READER_CHAPTERS, { timeout: 30_000 });
-        // 版本下拉里只有全文版（维基、Kanripo），目录型整理本不在里面
+        // 版本下拉里只有全文版，目录型整理本不在里面：按版本 key 判（不看显示文字——整理本的标签也可能不叫「整理本」）。
+        // 直齋的整理本在 manifest 里就是 key=default（kind=collated），全文版是 wikisource、kanripo。
         const options = page.getByRole('combobox', { name: '版本' }).locator('option');
         await expect(options.first()).toBeAttached({ timeout: 30_000 });
-        expect(await options.allTextContents(), '版本下拉里不该有整理本').not.toEqual(expect.arrayContaining([expect.stringMatching(/整理本/)]));
-        expect(await options.count()).toBeGreaterThanOrEqual(1);
+        const keys = await options.evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+        expect(keys, '版本下拉里不该有整理本（key=default）').not.toContain('default');
+        expect(keys, '版本下拉应有维基全文版（key=wikisource）').toContain('wikisource');
     });
 
-    test('目录视图渲染书名标题与正确统计', async ({ page }) => {
+    test('目录视图渲染书名标题与正确统计', async ({ page, request }) => {
+        await requireO(request);
         await page.goto(
             `${TARGET}/book-index?id=${O.id}&tab=collated&juan=${encodeURIComponent(O.sampleJuanFile)}`,
         );
@@ -158,6 +162,7 @@ test.describe('整理本', () => {
     });
 
     test('原文视图有内容且带书名标题', async ({ page, request }) => {
+        await requireO(request);
         await page.goto(
             `${TARGET}/book-index?id=${O.id}&tab=collated&juan=${encodeURIComponent(O.sampleJuanFile)}`,
         );
