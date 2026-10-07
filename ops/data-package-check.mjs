@@ -17,7 +17,8 @@
  *   node ops/data-package-check.mjs [--root <数据根>] [--baseline <数据站根地址，空串＝不对比>]
  *                                   [--summary <markdown 追加到的文件>] [--json <统计写到的文件>] [--enforce]
  *   默认数据根取 KYG_DATA_ROOT（同 nextjs/scripts/lib/data-dirs.mjs），默认基线 https://data.kaiyuanguji.com
- * 退出码：默认（只报告）恒为 0；--enforce 时有 block 级问题退出 1。
+ * 退出码：检查结果（findings）默认不影响退出码（只报告恒 0；--enforce 时有 block 级问题退出 1）；
+ *   脚本自身出错（读写失败等）退出 1，并把失败说明写进 summary——deploy.yml 里这一步是 continue-on-error，所以只是步骤标红、不拦发布。
  */
 import { readFileSync, readdirSync, existsSync, appendFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -53,19 +54,20 @@ export const MIN_ENTRY_FILES = 100_000;
 
 const MAX_EXAMPLES = 5;
 
-/** 按 code 聚合 finding：计数＋最多 5 个例子。 */
+/** 按「级别＋code」聚合 finding：计数＋最多 5 个例子（同一个 code 出现不同级别时分开记，不能把后来的 block 记成先来的 warn）。 */
 export class Findings {
-    constructor() { this.byCode = new Map(); }
+    constructor() { this.byKey = new Map(); }
     add(f) {
-        let e = this.byCode.get(f.code);
-        if (!e) { e = { severity: f.severity, code: f.code, count: 0, examples: [] }; this.byCode.set(f.code, e); }
+        const key = `${f.severity}:${f.code}`;
+        let e = this.byKey.get(key);
+        if (!e) { e = { severity: f.severity, code: f.code, count: 0, examples: [] }; this.byKey.set(key, e); }
         e.count++;
         if (e.examples.length < MAX_EXAMPLES) e.examples.push(f.message);
     }
     addAll(list) { for (const f of list) this.add(f); }
     list() {
         const order = { block: 0, warn: 1, info: 2 };
-        return [...this.byCode.values()].sort((a, b) => order[a.severity] - order[b.severity] || b.count - a.count);
+        return [...this.byKey.values()].sort((a, b) => order[a.severity] - order[b.severity] || b.count - a.count);
     }
     count(severity) { return this.list().filter((e) => e.severity === severity).reduce((n, e) => n + e.count, 0); }
 }
@@ -127,36 +129,54 @@ function countFiles(dir) {
 }
 
 export function scanTexts(dataDir, findings, { sample = 300 } = {}) {
-    const out = { indexShards: 0, indexOwners: 0, indexVersions: 0, itemOwners: 0, itemFiles: 0, manifestsChecked: 0 };
+    const out = { indexShards: 0, indexOwners: 0, indexVersions: 0, itemOwners: 0, itemFiles: 0, itemDirsWithoutManifest: 0, manifestsChecked: 0, danglingIndexOwners: 0 };
+    const itemsDir = join(dataDir, 'items');
+    // items/<id>/ 里有 manifest.json 的才是文本 owner；没有的（只放 fragments／sources 等非文本资源，bundle-data 的 copyItemDir 整目录复制）不是
+    const hasManifest = new Set();
+    let owners = [];
+    if (existsSync(itemsDir)) {
+        const dirs = readdirSync(itemsDir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
+        for (const d of dirs) {
+            if (existsSync(join(itemsDir, d, 'manifest.json'))) { hasManifest.add(d); owners.push(d); } else out.itemDirsWithoutManifest++;
+        }
+        out.itemOwners = owners.length;
+        out.itemFiles = countFiles(itemsDir);
+    } else findings.add({ severity: 'info', code: 'items.missing', message: 'items/ 目录不存在（无阅读文本）' });
+    if (out.itemDirsWithoutManifest > 0) {
+        findings.add({ severity: 'info', code: 'items.no-manifest', message: `items/ 下有 ${out.itemDirsWithoutManifest} 个目录没有 manifest.json（只放非文本资源，不算文本 owner）` });
+    }
+
     const idxDir = join(dataDir, 'index', 'texts');
     if (existsSync(idxDir)) {
         for (const f of readdirSync(idxDir).filter((x) => x.endsWith('.json')).sort()) {
             out.indexShards++;
             try {
-                const r = checkTextIndexShard(JSON.parse(readFileSync(join(idxDir, f), 'utf-8')), f);
+                const shard = JSON.parse(readFileSync(join(idxDir, f), 'utf-8'));
+                const r = checkTextIndexShard(shard, f);
                 findings.addAll(r.findings);
                 out.indexOwners += r.owners;
                 out.indexVersions += r.versions;
+                // 全局清单里登记的 owner 必须有对应的 items/<id>/manifest.json，否则阅读入口点进去没有文本
+                if (existsSync(itemsDir) && shard && typeof shard === 'object' && !Array.isArray(shard)) {
+                    for (const id of Object.keys(shard)) {
+                        if (!hasManifest.has(id)) {
+                            out.danglingIndexOwners++;
+                            findings.add({ severity: 'warn', code: 'texts-index.dangling-owner', message: `index/texts/${f} 登记了 ${id}，但 items/${id}/manifest.json 不存在` });
+                        }
+                    }
+                }
             } catch (e) { findings.add({ severity: 'block', code: 'texts-index.json', message: `index/texts/${f} 不是合法 JSON（${e.message}）` }); }
         }
     } else findings.add({ severity: 'block', code: 'texts-index.missing', message: 'index/texts/ 目录缺失' });
 
-    const itemsDir = join(dataDir, 'items');
-    if (existsSync(itemsDir)) {
-        const owners = readdirSync(itemsDir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
-        out.itemOwners = owners.length;
-        out.itemFiles = countFiles(itemsDir);
-        const step = Math.max(1, Math.floor(owners.length / sample));
-        for (let i = 0; i < owners.length; i += step) {
-            const name = owners[i];
-            const p = join(itemsDir, name, 'manifest.json');
-            out.manifestsChecked++;
-            if (!existsSync(p)) { findings.add({ severity: 'block', code: 'manifest.missing', message: `items/${name}/manifest.json 缺失` }); continue; }
-            try { findings.addAll(checkTextManifest(JSON.parse(readFileSync(p, 'utf-8')), name)); } catch (e) {
-                findings.add({ severity: 'block', code: 'manifest.json', message: `items/${name}/manifest.json 不是合法 JSON（${e.message}）` });
-            }
+    const step = Math.max(1, Math.floor(owners.length / sample));
+    for (let i = 0; i < owners.length; i += step) {
+        const name = owners[i];
+        out.manifestsChecked++;
+        try { findings.addAll(checkTextManifest(JSON.parse(readFileSync(join(itemsDir, name, 'manifest.json'), 'utf-8')), name)); } catch (e) {
+            findings.add({ severity: 'block', code: 'manifest.json', message: `items/${name}/manifest.json 不是合法 JSON（${e.message}）` });
         }
-    } else findings.add({ severity: 'info', code: 'items.missing', message: 'items/ 目录不存在（无阅读文本）' });
+    }
     return out;
 }
 
@@ -403,8 +423,7 @@ function parseArgs(argv) {
     return a;
 }
 
-async function main() {
-    const args = parseArgs(process.argv.slice(2));
+async function main(args) {
     let root = args.root;
     if (!root) {
         const { resolveDataDirs } = await import('../nextjs/scripts/lib/data-dirs.mjs');
@@ -423,5 +442,14 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-    main().catch((e) => { console.error(`数据包检查出错：${e.stack || e.message}`); process.exit(process.argv.includes('--enforce') ? 1 : 0); });
+    const args = parseArgs(process.argv.slice(2));
+    main(args).catch((e) => {
+        // 检查结果（findings）不影响退出码；但脚本自己出错必须看得见：写一段失败说明进 summary、打 ::warning::，退出 1。
+        // deploy.yml 里这一步是 continue-on-error，所以只是步骤标红、不拦发布。
+        const msg = `## 数据包检查：脚本自身出错\n\n\`\`\`\n${e.stack || e.message}\n\`\`\`\n\n本次没有产出检查结果（只报告模式，不拦发布）。\n`;
+        console.error(msg);
+        console.log(`::warning title=数据包检查脚本出错::${String(e.message).split('\n')[0]}`);
+        if (args.summary) { try { appendFileSync(args.summary, msg + '\n'); } catch { /* summary 也写不了就只有日志了 */ } }
+        process.exit(1);
+    });
 }

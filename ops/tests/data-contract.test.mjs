@@ -158,6 +158,8 @@ test('文本索引分片与阅读清单：线上形态通过，缺 key／空列�
     assert.ok(checkTextManifest({ id: 'x', versions: [] }, 'x').some((f) => f.code === 'manifest.versions'));
     assert.ok(checkTextManifest({ id: 'x', versions: [{ chapters_total: 1 }] }, 'x').some((f) => f.code === 'manifest.version-key'));
     assert.ok(checkTextManifest({ id: 'x', versions: [{ key: 'a', chapters_total: '1' }] }, 'x').some((f) => f.code === 'manifest.chapters_total' && f.severity === 'warn'));
+    assert.ok(checkTextManifest({ id: 'x', versions: [{ key: 'a', chapters_total: -3 }] }, 'x').some((f) => f.code === 'manifest.chapters_total' && f.severity === 'warn'), '负数不行');
+    assert.deepEqual(checkTextManifest({ id: 'x', versions: [{ key: 'a', chapters_total: 0 }] }, 'x'), [], '0 可以');
 });
 
 test('meta-home：counts 与 meta 必须一致', () => {

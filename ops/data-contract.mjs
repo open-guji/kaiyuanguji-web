@@ -5,8 +5,9 @@
  * 检查分三类：格式契约（本文件）、数量不突降、私有文本等（见 ops/data-package-check.mjs）。
  *
  * 判定分三级（severity）：
- *   block  必有字段缺失、字段类型变了、出现未知 type、对不上的不变量——强制模式下会阻断上传
- *   warn   字段表里有的字段类型不对、建议字段缺失（如 Book 没有 work_id）、非 `_` 的未知字段（可能是新格式）
+ *   block  必有字段缺失（id／type／名字）、出现未知 type、id 与文件名不符、对不上的不变量——强制模式下会阻断上传
+ *   warn   字段表里有的字段类型不对（entry.field-type）、建议字段缺失（如 Book 没有 work_id）、非 `_` 的未知字段（可能是新格式）、
+ *          索引登记了但没有对应文本目录（P0 先 warn，按实测再定要不要升 block）
  *   info   `_` 起首的未知字段（派生字段，加法兼容）、统计信息
  * 本文件只出 finding，不决定阻不阻断；P0 阶段 data-package-check 只报告（见 overview#470 的验收评论）。
  *
@@ -241,7 +242,7 @@ export function checkTextManifest(m, dirName) {
     if (!Array.isArray(m.versions) || m.versions.length === 0) findings.push(finding('block', 'manifest.versions', `items/${dirName}/manifest.json：versions 为空或不是数组`));
     else for (const v of m.versions) {
         if (v === null || typeof v !== 'object' || typeof v.key !== 'string' || v.key === '') { findings.push(finding('block', 'manifest.version-key', `items/${dirName}/manifest.json：有版本缺 key`)); break; }
-        if (v.chapters_total !== undefined && !Number.isInteger(v.chapters_total)) { findings.push(finding('warn', 'manifest.chapters_total', `items/${dirName}/manifest.json：chapters_total 不是整数`)); break; }
+        if (v.chapters_total !== undefined && !(Number.isInteger(v.chapters_total) && v.chapters_total >= 0)) { findings.push(finding('warn', 'manifest.chapters_total', `items/${dirName}/manifest.json：chapters_total 不是非负整数`)); break; }
     }
     return findings;
 }

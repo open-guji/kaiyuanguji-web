@@ -141,6 +141,57 @@ test('Findings：按 code 聚合、例子最多 5 个、按级别排序', () => 
     assert.deepEqual([f.count('block'), f.count('warn'), f.count('info')], [1, 12, 1]);
 });
 
+test('Findings：同一个 code 先 warn 后 block 时两个级别都保留，不会把后来的 block 记成 warn', () => {
+    const f = new Findings();
+    f.add({ severity: 'warn', code: 'baseline.delta', message: 'works 小幅下降' });
+    f.add({ severity: 'block', code: 'baseline.delta', message: 'hasText 大幅下降' });
+    f.add({ severity: 'warn', code: 'baseline.delta', message: 'books 小幅下降' });
+    assert.deepEqual([f.count('block'), f.count('warn')], [1, 2]);
+    assert.deepEqual(f.list().map((x) => `${x.severity}:${x.code}:${x.count}`), ['block:baseline.delta:1', 'warn:baseline.delta:2']);
+});
+
+test('整包扫描：基线对比里先出 warn 后出 block 时，summary.block 不为 0（--enforce 据此退出 1）', () => {
+    const pkg = makePackage(['old', 'v2']);
+    try {
+        // 小计数（<1000）按绝对值：works 比基线少 1 → warn；hasText 比基线少 7（本包 meta 里是 3）→ block。两条同一个 code、不同级别
+        const baseline = {
+            base: 'https://x', commit: 'abc',
+            counts: { works: pkg.counts.work + 1, books: pkg.counts.book, collections: pkg.counts.collection, entities: pkg.counts.entity, hasText: 10, hasImage: 5 },
+        };
+        const r = runCheck({ root: pkg.root, baseline, absolute: false });
+        const delta = r.findings.filter((f) => f.code === 'baseline.delta');
+        assert.deepEqual(delta.map((f) => f.severity).sort(), ['block', 'warn']);
+        assert.ok(r.summary.block >= 1, JSON.stringify(r.summary));
+    } finally { pkg.cleanup(); }
+});
+
+test('整包扫描：items/ 里只放非文本资源、没有 manifest 的目录不算文本 owner，不报 block（只记 info）', () => {
+    const pkg = makePackage(['old']);
+    try {
+        write(join(pkg.data, 'items', 'asset-only', 'fragments', 'x.json'), { a: 1 });
+        const r = runCheck({ root: pkg.root, absolute: false });
+        assert.equal(r.texts.itemOwners, 1, '只有带 manifest 的算 owner');
+        assert.equal(r.texts.itemDirsWithoutManifest, 1);
+        assert.ok(codeSet(r, 'info').has('items.no-manifest'));
+        assert.ok(!codeSet(r, 'block').has('manifest.missing'));
+        assert.equal(codeSet(r, 'block').size, 0);
+    } finally { pkg.cleanup(); }
+});
+
+test('整包扫描：index/texts 登记了、但没有 items/<id>/manifest.json 的 owner：warn（悬空的阅读入口）', () => {
+    const pkg = makePackage(['old']);
+    try {
+        write(join(pkg.data, 'index', 'texts', '0.json'), {
+            d59f2ho5z08x: [{ key: 'default', kind: 'transcription', chapters_total: 1 }],
+            ghostowner001: [{ key: 'default', kind: 'transcription', chapters_total: 1 }],
+        });
+        const r = runCheck({ root: pkg.root, absolute: false });
+        assert.ok(codeSet(r, 'warn').has('texts-index.dangling-owner'));
+        assert.equal(r.texts.danglingIndexOwners, 1);
+        assert.equal(codeSet(r, 'block').size, 0);
+    } finally { pkg.cleanup(); }
+});
+
 // ─── 数量阈值与基线对比（用 2026-10-07 线上真实计数） ───
 
 const LIVE = { entries: 147007, works: 95039, books: 20894, collections: 84, entities: 30990, hasText: 11513, hasImage: 18791 };
@@ -265,6 +316,18 @@ test('CLI：只报告模式恒退出 0，写 summary 与 json；--enforce 遇 bl
         assert.equal(stats.version, 1);
         const b = run('--enforce');
         assert.equal(b.status, 1);
+    } finally { pkg.cleanup(); }
+});
+
+test('CLI：脚本自身出错（比如 JSON 写不进去）退出 1，并把失败说明写进 summary、打 ::warning::，不是静默成功', () => {
+    const pkg = makePackage(['old']);
+    try {
+        const summary = join(pkg.root, 'summary.md');
+        const r = spawnSync(process.execPath, [SCRIPT, '--root', pkg.root, '--baseline', '', '--summary', summary, '--json', join(pkg.root, 'no', 'such', 'dir', 'stats.json')], { encoding: 'utf-8' });
+        assert.equal(r.status, 1);
+        assert.match(r.stdout, /::warning title=数据包检查脚本出错/);
+        const md = readFileSync(summary, 'utf-8');
+        assert.match(md, /脚本自身出错/);
     } finally { pkg.cleanup(); }
 });
 
