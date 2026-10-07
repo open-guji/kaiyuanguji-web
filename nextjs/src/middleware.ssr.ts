@@ -34,6 +34,7 @@ import { cleanItemSearch } from '@/lib/item-query';
 import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
+import { sitemapNameFromPath } from '@/lib/server/sitemap-proxy';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -210,7 +211,18 @@ async function readerItemRedirect(req: NextRequest, id: string, sel: ReaderSel):
 
 const isReaderPath = (pathname: string) => /^\/item\/[^/]+\/read\/?$/.test(pathname) || /^\/read\/[^/]+(\/[^/]+)*\/?$/.test(pathname);
 
+// overview#470 P1：条目 sitemap 走路由代理（lib/server/sitemap-proxy.ts）。构建时设了 NEXT_PUBLIC_SITEMAP_PROXY=1 才改写；
+// 不设就是 public/ 里的静态文件（现行），这里放过。matcher 必须是字面量，所以路径总是进中间件，由这个开关决定动不动。
+const SITEMAP_PROXY = process.env.NEXT_PUBLIC_SITEMAP_PROXY === '1';
+
+function sitemapRewrite(req: NextRequest): NextResponse {
+    const name = SITEMAP_PROXY ? sitemapNameFromPath(req.nextUrl.pathname) : null;
+    if (!name) return NextResponse.next();
+    return NextResponse.rewrite(new URL(`/sitemap-proxy/${name}`, req.url));
+}
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+    if (req.nextUrl.pathname === '/sitemap-index.xml' || req.nextUrl.pathname.startsWith('/sitemaps/')) return sitemapRewrite(req);
     if (isReaderPath(req.nextUrl.pathname)) return (await readerPathRedirect(req)) ?? NextResponse.next();
     const reader = await readerRedirect(req);
     if (reader) return reader;
@@ -218,5 +230,5 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*'],
+    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name'],
 };
