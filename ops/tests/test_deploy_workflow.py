@@ -313,5 +313,68 @@ class SplitDataFlow(unittest.TestCase):
         self.assertIn('"$SPLIT_DATA_FLOW" = "true"', c['run'])
 
 
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class CodeOnlyPromote(unittest.TestCase):
+    """自动晋升只推代码（promote=code），数据只在手动选 code+data／data 时才推。
+
+    事故（2026-10-07，#284 合并后）：auto-promote-code 派的是 promote=code+data，把 schema-v2 数据也推向正式站（人工取消）。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.build = cls.wf['jobs']['build']
+        cls.names = [s.get('name', '') for s in cls.build['steps']]
+
+    def test_promote_input_has_code_and_defaults_to_it(self):
+        triggers = self.wf.get('on') or self.wf.get(True)  # PyYAML 把裸 on 读成 True
+        p = triggers['workflow_dispatch']['inputs']['promote']
+        self.assertEqual(p['options'], ['code', 'code+data', 'data'])
+        self.assertEqual(p['default'], 'code')
+
+    def test_auto_promote_code_dispatches_code_only(self):
+        job = self.wf['jobs']['auto-promote-code']
+        run = '\n'.join(s.get('run', '') for s in job['steps'])
+        self.assertIn('-f promote=code ', run)
+        self.assertNotIn('promote=code+data', run)
+        self.assertIn('-f from_run=', run)
+
+    def test_only_scheduled_data_promote_carries_data(self):
+        # 自动派的 workflow_dispatch 里，带数据的只有 auto-promote（promote=data，定时数据发布），代码那条不带
+        self.assertEqual(self.raw.count('gh workflow run deploy.yml --ref main -f target=production -f promote=code+data'), 0)
+
+    def test_resolve_requires_from_run_and_artifact_for_code(self):
+        resolve = self.wf['jobs']['resolve']
+        run = '\n'.join(s.get('run', '') for s in resolve['steps'])
+        self.assertIn('promote=code 必须填 from_run', run)
+        self.assertIn('promote=code 需要 run', run)  # 没产物就报错，不退回重新构建
+
+    def test_code_only_step_leaves_data_alone(self):
+        s = _step(self.build, 'Code-only promote — leave production data untouched')
+        self.assertFalse(s.get('continue-on-error'))
+        self.assertIn('CODE_ONLY', s['if'])
+        self.assertIn('latest-only', s['run'])
+        self.assertIn('DATA_FAST=true', s['run'])
+        self.assertIn('promote', self.build['env']['CODE_ONLY'])
+        self.assertIn("'code'", self.build['env']['CODE_ONLY'])
+
+    def test_code_only_runs_before_every_data_step_and_blocks_decide(self):
+        i = self.names.index('Code-only promote — leave production data untouched')
+        for n in ('Restore git cache — book-index', 'Clone index data repos', 'Build derived data (schema-v2)',
+                  'Bundle data for EdgeOne', 'Decide COS data sync (skip when data unchanged)',
+                  'Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel'):
+            self.assertGreater(self.names.index(n), i, n)
+            self.assertIn('DATA_FAST', _step(self.build, n)['if'], n)
+        self.assertIn('CODE_ONLY', _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
+
+    def test_code_only_does_not_write_latest_json_when_split(self):
+        # 数据流程拆出后 latest.json 只归数据流程写：只发代码这一步在开关打开时不能再改它
+        s = _step(self.build, 'Code-only promote — leave production data untouched')
+        self.assertIn("env.SPLIT_DATA != 'true'", s['if'])
+        self.assertIn("env.SPLIT_DATA != 'true'", _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
+
+
 if __name__ == '__main__':
     unittest.main()

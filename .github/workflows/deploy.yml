@@ -48,10 +48,10 @@ on:
         options: [staging, production]
         default: staging
       promote:
-        description: '仅 target=production 有效。code+data = 测试站的代码与数据一起上正式站；data = 正式站代码不动，只换数据。数据流程已拆出（仓库变量 SPLIT_DATA_FLOW=true）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
+        description: '仅 target=production 有效。code = 只发代码（必须填 from_run，数据一个字节都不动，自动晋升用这个）；code+data = 测试站的代码与数据一起上正式站（数据上线要用户本人确认）；data = 正式站代码不动，只换数据。数据流程已拆出（仓库变量 SPLIT_DATA_FLOW=true）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
         type: choice
-        options: [code+data, data]
-        default: code+data
+        options: [code, code+data, data]
+        default: code
       # 联调用（只影响手动触发、且只对 target=staging 生效）：默认都是 main。
       # 代码版本不在这里选——在「Use workflow from」里选分支，web 取该分支的 HEAD。
       prod_ref:
@@ -258,7 +258,18 @@ jobs:
             echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
-            if [ "$IN_PROMOTE" = data ]; then
+            if [ "$IN_PROMOTE" = code ]; then
+              # 只发代码：必须有那次存的正式站产物（sitemap 已烘在里面）。没有就报错，不退回重新构建——
+              # 重新构建要克隆、打包数据，会把数据一起带上去，正是 code 要避开的。
+              WEB="$M_WEB"
+              if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IN_FROM_RUN/artifacts?per_page=100" \
+                   --jq '.artifacts[] | select(.expired | not) | .name' | grep -qx prod-edgeone \
+                 && grep -q $'^prod-artifact\tsuccess$' "$RUNNER_TEMP/src-jobs.tsv"; then
+                ART="$IN_FROM_RUN"
+              else
+                echo "❌ promote=code 需要 run $IN_FROM_RUN 存的正式站产物（prod-edgeone），但没有可用的；要连数据一起发请手动选 code+data"; exit 1
+              fi
+            elif [ "$IN_PROMOTE" = data ]; then
               WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
               [ -n "$WEB" ] || { echo "❌ 正式站 latest.json 没有 webCommitId（首次 promote 请用 code+data）"; exit 1; }
               ART=''
@@ -284,6 +295,9 @@ jobs:
           fi
 
           if [ "$REQ" = "production" ]; then
+            if [ "$IN_PROMOTE" = code ]; then
+              echo "❌ promote=code 必须填 from_run（只发那次验过并存了产物的代码）"; exit 1
+            fi
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
             echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
@@ -380,6 +394,8 @@ jobs:
       COS_PATH_PREFIX: ${{ needs.resolve.outputs.target == 'staging' && 'staging' || '' }}
       # overview#341：正式站直接部署测试站那次 run 存的正式站产物（不重新构建、不重跑单测、不生成 sitemap）
       FROM_ARTIFACT: ${{ needs.resolve.outputs.artifact_run != '' }}
+      # promote=code：只发代码，数据不碰（不克隆、不打包、不同步，只把线上 latest.json 的 webCommitId 改成新代码）
+      CODE_ONLY: ${{ needs.resolve.outputs.mode == 'promote' && inputs.promote == 'code' }}
       # 演练（仅手动 target=staging）：测试站产物打包、加密、删掉构建目录后再解包部署，走一遍 promote 的那条路
       REHEARSE_ARTIFACT: ${{ needs.resolve.outputs.target == 'staging' && inputs.rehearse_artifact == true }}
       # overview#470 P1：数据流程已拆出（见 resolve 的 split 输出）。为 'true' 时下面所有数据步骤都跳过（DATA_FAST），
@@ -429,7 +445,7 @@ jobs:
       # 任何一条不满足、读不到，都走老路，行为与原来一样。
       - name: Data fast path — decide before cloning (overview#341)
         id: data_pre
-        if: ${{ env.HAS_COS_SECRETS == 'true' && env.SPLIT_DATA != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ env.CODE_ONLY != 'true' && env.HAS_COS_SECRETS == 'true' && env.SPLIT_DATA != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -443,6 +459,26 @@ jobs:
           FP=$(node -e "import('./scripts/lib/cos-sync-decision.mjs').then((m) => console.log(m.computeBundleFingerprint(process.env.GITHUB_WORKSPACE)))")
           echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
           node scripts/cos-sync-decision.mjs decide
+
+      # promote=code：数据一个字节都不动。不依赖「数据没变」的判定（打包脚本变了它会走同步），
+      # 直接只改 latest.json 的 webCommitId，并让后面所有数据步骤（克隆、打包、检查、COS 同步、h1、失效）全部跳过。
+      # 失败就整个 promote 失败，不退回照常同步。
+      - name: Code-only promote — leave production data untouched
+        id: code_only
+        # 数据流程已拆出（SPLIT_DATA）时 latest.json 只归数据流程写，上面的 SPLIT 步骤已把 DATA_FAST 置位，这里不再动它
+        if: ${{ env.CODE_ONLY == 'true' && env.SPLIT_DATA != 'true' }}
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          [ "$FROM_ARTIFACT" = true ] || { echo "❌ promote=code 必须部署现成产物"; exit 1; }
+          cd nextjs
+          node scripts/cos-sync-decision.mjs latest-only
+          echo "DATA_FAST=true" >> "$GITHUB_ENV"
+          echo "✅ 只发代码：数据不动（不克隆、不打包、不同步 COS）"
 
       - name: Data fast path — restore item sitemaps
         id: sitemap_cache
@@ -1762,7 +1798,7 @@ jobs:
     if: ${{ github.event_name == 'push' && needs.resolve.outputs.mode == 'staging' && needs.verify.result == 'success' && needs.prod-artifact.result == 'success' && vars.AUTO_PROMOTE_CODE != 'false' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Auto-promote code+data to production (from this run)
+      - name: Auto-promote code only to production (from this run)
         env:
           GH_TOKEN: ${{ github.token }}
           # 这几个任务不 checkout，gh 认不出当前仓，要显式给（否则 failed to run git: not a git repository）
@@ -1777,8 +1813,8 @@ jobs:
             echo "⏭️ main 已有更新的 commit，本次不自动 promote（由更新那次的 run 负责）" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          gh workflow run deploy.yml --ref main -f target=production -f promote=code+data -f from_run="$GITHUB_RUN_ID"
-          echo "🚀 已派正式站 promote：code+data，from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
+          gh workflow run deploy.yml --ref main -f target=production -f promote=code -f from_run="$GITHUB_RUN_ID"
+          echo "🚀 已派正式站 promote：code（只发代码，数据不动），from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
 
   # overview#341：正式站 promote（自动或手动）的发布或验收失败 → 在本仓开一张告警 issue（已有未关的就续一条评论），
   # 写清哪次 run、哪一步、怎么回滚。只告警，不自动回滚：要不要回滚由人看了再定（runbook §8）。
