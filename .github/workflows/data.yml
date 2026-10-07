@@ -50,8 +50,9 @@ jobs:
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
           LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
           LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
-          HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
-          HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1)
+          # 查不到（网络抖动）就留空，下面按「无法确认」处理、照常跑，不让这一步因此失败
+          HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1 || true)
+          HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1 || true)
           echo "production: live=$LIVE_PROD head=$HEAD_PROD"
           echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
           if [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
@@ -72,7 +73,10 @@ jobs:
       IN_PROD_REF: ${{ inputs.prod_ref }}
       IN_TEXT_REF: ${{ inputs.text_ref }}
     steps:
+      # 不把 GITHUB_TOKEN 留在工作区的 git 配置里：下面会跑数据仓里的 build_derived.py（所选 ref 的代码），不该让它读得到令牌
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # S2：数据产物统一输出到 nextjs/ 之外，脚本都从 KYG_DATA_ROOT 读写（同 deploy.yml）
       - name: Set data output root (outside nextjs/)

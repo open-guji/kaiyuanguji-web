@@ -83,6 +83,20 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertIn('git check-ref-format', run)
         self.assertRegex(run, re.escape("^[A-Za-z0-9._/-]+$"))
 
+    def test_checkout_does_not_persist_token(self):
+        # build_derived.py 来自所选 ref 的数据仓，不能让它读到工作区 git 配置里的令牌
+        co = [s for s in self.steps if str(s.get('uses', '')).startswith('actions/checkout')]
+        self.assertTrue(co)
+        for s in co:
+            self.assertIs(s.get('with', {}).get('persist-credentials'), False)
+
+    def test_ls_remote_failure_does_not_fail_check(self):
+        run = self.wf['jobs']['check']['steps'][0]['run']
+        self.assertEqual(run.count('git ls-remote'), 2)
+        for line in run.splitlines():
+            if 'git ls-remote' in line:
+                self.assertIn('|| true', line)
+
 
 if __name__ == '__main__':
     unittest.main()
