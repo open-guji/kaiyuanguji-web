@@ -57,6 +57,8 @@ import { withCacheKey } from './lib/latest-cache-key.mjs';
 import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
 import { planVersionPrune, DEFAULT_KEEP_VERSIONS } from './lib/v-search-prune.mjs';
+import { createCosOps } from './lib/h1-sync-core.mjs';
+import { createStateGuard } from './lib/state-guard.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -419,10 +421,27 @@ function loadSyncState() {
     }
 }
 
-function saveSyncState(stateMap) {
+/** state 文件里附带的版本记录（generation／pointer，见 lib/state-guard.mjs）；没有或读不出为 null。 */
+function loadSyncStateMeta() {
+    try {
+        if (!existsSync(SYNC_STATE_FILE)) return null;
+        const raw = JSON.parse(readFileSync(SYNC_STATE_FILE, 'utf-8'));
+        if (raw?.version !== 2 || !raw?.files) return null;
+        return {
+            generation: typeof raw.generation === 'string' ? raw.generation : null,
+            pointer: typeof raw.pointer === 'string' ? raw.pointer : null,
+        };
+    } catch {
+        return null;
+    }
+}
+
+function saveSyncState(stateMap, meta = {}) {
     try {
         mkdirSync(dirname(SYNC_STATE_FILE), { recursive: true });
         const doc = { version: 2, savedAt: new Date().toISOString(), files: Object.fromEntries(stateMap) };
+        if (meta.generation) doc.generation = meta.generation;
+        if (meta.pointer != null) doc.pointer = meta.pointer;
         writeFileSync(SYNC_STATE_FILE, JSON.stringify(doc), 'utf-8');
     } catch (e) {
         console.warn(`  sync-state save failed (${e.message}), ignored (next sync will rebuild)`);
@@ -605,12 +624,28 @@ async function pruneOldVersions() {
 async function main() {
 
     // ── Step 1: 加载或重建 state ──
+    // state 可信度保护（lib/state-guard.mjs）：上一次同步中途被取消／失败时桶已被改了一部分，缓存里留的是更早的旧 state，
+    // 拿它判断会把「已被换成别的内容」的对象当成没变而跳过（run 37580114922 被取消、37588367536 取回旧 state 的事故）。
+    // 先核对 COS 上的写前标记与现行 latest.json 的 cacheKey，对不上就丢掉 state、从 COS 列出重建。
+    const guard = createStateGuard({
+        ops: createCosOps({ cos, bucket: BUCKET, region: REGION }),
+        pathPrefix: PATH_PREFIX, name: 'current', pointerKey: latestKey,
+    });
     let stateMap = REBUILD_STATE ? null : loadSyncState();
+    if (stateMap) {
+        const g = await guard.check(loadSyncStateMeta());
+        if (g.trusted) {
+            console.log(`  state 可信（版本标记与 latest.json 都对得上）`);
+        } else {
+            console.log(`  local sync-state 不可信（${g.reason}），丢弃`);
+            stateMap = null;
+        }
+    }
     if (!stateMap) {
         if (REBUILD_STATE) {
             console.log(`  SYNC_REBUILD_STATE=1: ignoring local state, listing COS...`);
         } else {
-            console.log(`  no local sync-state, listing COS to rebuild...`);
+            console.log(`  no usable local sync-state, listing COS to rebuild...`);
         }
         const tList = Date.now();
         stateMap = await rebuildStateFromCos();
@@ -663,6 +698,9 @@ async function main() {
     console.log(`    shared:   ${sharedSkipped} skip · ${sharedToUpload.length} upload (${(sharedUploadBytes / 1024 / 1024).toFixed(1)} MB) · ${orphanKeys.length} delete`);
     console.log(`    isolated: ${isolatedToUpload.length} upload (${(isolatedUploadBytes / 1024 / 1024).toFixed(1)} MB) — 全量到 v/${cacheKey}/`);
 
+    // 动桶之前先写 dirty 标记（失败就中止、什么都不动）；latest.json 写完后才改 clean
+    const generation = await guard.begin();
+
     const allFailures = [];
 
     // ── Step 4a: 上传 shared 增量 ──
@@ -709,13 +747,14 @@ async function main() {
     for (const f of sharedFiles) {
         newState.set(f.relative, localMd5.get(f.relative));
     }
-    saveSyncState(newState);
+    saveSyncState(newState, { generation, pointer: cacheKey });
     console.log(`  ✓ sync-state saved (${newState.size} keys)`);
 
     // ── Step 6: latest.json ──
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
     console.log(`  ✓ latest.json now points to commit ${shortCommit} (cacheKey ${cacheKey})`);
+    await guard.finish(generation, cacheKey);
 
     // ── Step 7: 清理旧的 v/<版本键>/ 目录 ──
     await pruneOldVersions();

@@ -87,5 +87,55 @@ class CosSyncStateCache(unittest.TestCase):
         self.assertTrue(restore['key'].startswith(restore['restore-keys'].strip()))
 
 
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class CosH1StateCache(unittest.TestCase):
+    """第二轮提速：h1 条目／h1 文本两路同步的 state 也进 actions/cache（同 overview#410 的做法）。
+    键必须带目标站和桶名哈希；只在三路都成功（all_ok）后才存，免得把中途失败的旧 state 传给下一次；
+    夜间数据发布（定时测试站、正式站 promote=data）强制重建 state（SYNC_REBUILD_STATE=1）。"""
+
+    PATHS = 'nextjs/.next/.sync-h1-state.json\nnextjs/.next/.sync-h1-text-state.json'
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.steps = yaml.safe_load(f)['jobs']['build']['steps']
+        cls.names = [x.get('name', '') for x in cls.steps]
+
+    def _idx(self, prefix):
+        return [i for i, n in enumerate(self.names) if n.startswith(prefix)][0]
+
+    def test_order(self):
+        sync = self._idx('Sync data to Tencent COS')
+        self.assertLess(self._idx('COS h1 state — restore'), sync)
+        self.assertLess(sync, self._idx('COS h1 state — save'))
+
+    def test_keys_and_paths(self):
+        restore = self.steps[self._idx('COS h1 state — restore')]['with']
+        save = self.steps[self._idx('COS h1 state — save')]['with']
+        self.assertEqual(restore['path'].strip(), self.PATHS)
+        self.assertEqual(save['path'].strip(), self.PATHS)
+        for k in (restore['key'], save['key']):
+            self.assertIn('needs.resolve.outputs.target', k)
+            self.assertIn('cos_state_key.outputs.bucket', k)
+            self.assertIn('github.run_attempt', k)
+        self.assertTrue(save['key'].startswith(restore['restore-keys'].strip()))
+        self.assertTrue(restore['key'].startswith(restore['restore-keys'].strip()))
+        # 与 current/ 的缓存分开命名，互不顶替
+        self.assertFalse(restore['restore-keys'].strip().startswith('cos-sync-state-'))
+
+    def test_save_only_when_all_three_ok(self):
+        save = self.steps[self._idx('COS h1 state — save')]
+        self.assertIn("steps.cos_sync.outputs.all_ok == 'true'", save['if'])
+
+    def test_scheduled_run_rebuilds_state(self):
+        sync = self.steps[self._idx('Sync data to Tencent COS')]
+        e = sync['env']['SYNC_REBUILD_STATE']
+        self.assertIn("github.event_name == 'schedule'", e)
+        self.assertIn("'1'", e)
+        # 自动派的正式站 promote=data 是单独的 dispatch，要单列；code+data 的 promote（push 路径）不重建
+        self.assertIn("inputs.target == 'production'", e)
+        self.assertIn("inputs.promote == 'data'", e)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -20,8 +20,9 @@
  *     下方 runRootsRetention（算法在纯函数 h1-roots.mjs）。
  */
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { readFileSync, existsSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'fs';
+import { dirname, join } from 'path';
+import { tmpdir } from 'os';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 import { planOrphans, serializeOrphansTable, parseOrphansTable } from './h1-orphans.mjs';
@@ -94,10 +95,27 @@ export function loadStateFile(path) {
     }
 }
 
-export function saveStateFile(path, stateMap) {
+/** state 文件里附带的版本记录（generation／pointer，见 state-guard.mjs）；没有或读不出为 null。 */
+export function loadStateMeta(path) {
+    try {
+        if (!existsSync(path)) return null;
+        const raw = JSON.parse(readFileSync(path, 'utf-8'));
+        if (raw?.version !== 3 || !raw?.files) return null;
+        return {
+            generation: typeof raw.generation === 'string' ? raw.generation : null,
+            pointer: typeof raw.pointer === 'string' ? raw.pointer : null,
+        };
+    } catch {
+        return null;
+    }
+}
+
+export function saveStateFile(path, stateMap, meta = {}) {
     try {
         mkdirSync(dirname(path), { recursive: true });
         const doc = { version: 3, savedAt: new Date().toISOString(), files: Object.fromEntries(stateMap) };
+        if (meta.generation) doc.generation = meta.generation;
+        if (meta.pointer != null) doc.pointer = meta.pointer;
         writeFileSync(path, JSON.stringify(doc), 'utf-8');
     } catch (e) {
         console.warn(`  state save failed (${path}: ${e.message}), ignored`);
@@ -225,7 +243,13 @@ export function requireCosSdk() {
     }
 }
 
-export function createCosOps({ cos, bucket, region }) {
+/** 可重试的 COS 错误：网络类，以及签名类（重试会重新签名；COS 在上海、runner 在美国，偶发 SignatureDoesNotMatch）。 */
+export function isTransientCosError(e) {
+    return /ECONNRESET|EPIPE|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
+        .test(`${e?.message || ''} ${e?.code || ''}`);
+}
+
+export function createCosOps({ cos, bucket, region, retryBaseMs = 500 }) {
     async function listPrefixEtags(prefix) {
         const map = new Map();
         let marker = '';
@@ -276,9 +300,7 @@ export function createCosOps({ cos, bucket, region }) {
         } catch (e) {
             // 签名类错误也重试（重试会重新签名），同 sync-to-cos.mjs：COS 迁上海后，美国 runner 传大文件偶发
             // SignatureDoesNotMatch「The Signature you specified is invalid」。10-06 测试站部署时，h1 文本里 vol03 的两个大文件就这样失败
-            const transient = /ECONNRESET|EPIPE|ETIMEDOUT|EAI_AGAIN|socket hang up|network|Signature|RequestTimeTooSkewed|expired/i
-                .test(`${e.message || ''} ${e.code || ''}`);
-            if (transient && attempt < 4) {
+            if (isTransientCosError(e) && attempt < 4) {
                 await new Promise(r => setTimeout(r, 500 * 2 ** attempt));
                 return uploadOne(file, key, cacheControl, contentType, attempt + 1);
             }
@@ -315,13 +337,46 @@ export function createCosOps({ cos, bucket, region }) {
         }
     }
 
-    async function putObjectText(key, body, { contentType, cacheControl }) {
-        return new Promise((resolveP, rejectP) => {
-            cos.putObject({
-                Bucket: bucket, Region: region, Key: key,
-                Body: body, ContentType: contentType, CacheControl: cacheControl,
-            }, (err) => err ? rejectP(err) : resolveP());
-        });
+    // 大于 1 MB 的文本（孤儿表可到十几 MB）走分块（需要文件路径，所以先落临时文件），并和 uploadOne 一样对签名类／网络类错误重试：
+    // run 37588367536 里 orphans.json（13.9 万条）单次 PUT 从美国 runner 传上海 COS，报「The Signature you specified is invalid」，
+    // 没有重试，h1 条目那一路 exit 1（同 #252 里大文件的故障，那次只修了 uploadOne，没修这条路径）
+    async function putObjectText(key, body, { contentType, cacheControl }, attempt = 1) {
+        try {
+            const bytes = Buffer.byteLength(body);
+            if (bytes > 1024 * 1024) {
+                const dir = mkdtempSync(join(tmpdir(), 'cos-put-'));
+                const tmp = join(dir, 'body');
+                try {
+                    writeFileSync(tmp, body);
+                    return await new Promise((resolveP, rejectP) => {
+                        cos.uploadFile({
+                            Bucket: bucket, Region: region, Key: key,
+                            FilePath: tmp,
+                            ContentType: contentType,
+                            CacheControl: cacheControl,
+                            SliceSize: 1024 * 1024,
+                            ChunkSize: 1024 * 1024,
+                            ChunkRetryTimes: 4,
+                            onProgress: () => {},
+                        }, (err) => err ? rejectP(err) : resolveP());
+                    });
+                } finally {
+                    rmSync(dir, { recursive: true, force: true });
+                }
+            }
+            return await new Promise((resolveP, rejectP) => {
+                cos.putObject({
+                    Bucket: bucket, Region: region, Key: key,
+                    Body: body, ContentType: contentType, CacheControl: cacheControl,
+                }, (err) => err ? rejectP(err) : resolveP());
+            });
+        } catch (e) {
+            if (isTransientCosError(e) && attempt < 4) {
+                await new Promise(r => setTimeout(r, retryBaseMs * 2 ** attempt));
+                return putObjectText(key, body, { contentType, cacheControl }, attempt + 1);
+            }
+            throw e;
+        }
     }
 
     return { listPrefixEtags, uploadOne, deleteOne, getObjectText, putObjectText };
