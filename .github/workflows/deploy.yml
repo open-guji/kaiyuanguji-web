@@ -443,6 +443,21 @@ jobs:
       - name: Set data output root (outside nextjs/)
         run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
 
+      # schema-v2（overview#458）：新 schema 的源档不再存反向／派生字段（Work.books、Entity.works、_classifications…），
+      # 网站打包前在检出的 book-index 上跑 build/build_derived.py，产物写临时目录，
+      # 打包脚本经 BOOK_INDEX_DERIVED_DIR 读（scripts/lib/derived.mjs）。仓里没有该脚本（旧 schema）就跳过，
+      # 打包照旧读源档——双兼容：数据切换那天不用改这里。退出码非 0 = 自校验失败，整个构建失败，不继续打包。
+      - name: Build derived data (schema-v2)
+        if: ${{ env.DATA_FAST != 'true' }}
+        run: |
+          if [ -f book-index/build/build_derived.py ]; then
+            D="$RUNNER_TEMP/book-index-derived"
+            (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+          else
+            echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
+          fi
+
       - name: Bundle data for EdgeOne
         if: ${{ env.DATA_FAST != 'true' }}
         working-directory: nextjs
@@ -609,7 +624,9 @@ jobs:
       # 它不在 checkout 里，CI 每次都是全新环境，于是每次真同步都要先把 current/ 整个 LIST 一遍（约 330～700 次请求）。
       # 现在存进 actions/cache：键含目标站（测试站写 staging/ 前缀、正式站写根，两份状态不能混）和桶名的哈希（换桶自动作废），
       # 取最近一份（精确键带 run_id 和 run_attempt：重跑老 run 时不会命中它自己当年存的旧状态，而是取最新的）；同步成功后存一份新的。缓存拿不到或取到的状态不可信，都退回 LIST 重建，行为与原来一样。
-      # 要强制作废：把下面三处键里的 v1 改成 v2，或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
+      # 要强制作废：把下面三处键里的版本号加一（如 v2→v3），或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
+      # 2026-10-07 已作废一次（v1→v2）：run 37580114922（prod_ref=schema-v2）在 current/ 同步完、存缓存前被取消，
+      # 下一次 run 取回更早的旧 state，判定条目「没变」而没重传，staging current/ 留着 schema-v2 产物（contract 抓到）。
       - name: COS sync state — cache key (overview#410)
         id: cos_state_key
         if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
@@ -627,9 +644,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
+            cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
 
       # 第二轮提速：h1 条目、h1 文本两路同步各有一份 state（.next/.sync-h1-state.json、.sync-h1-text-state.json，
       # 格式同上：相对路径 → md5）。它们以前不进缓存，每次真同步两路各把 h1/ 整个 LIST 一遍（约 38 万个对象，实测每路 3～3.5 分钟，
@@ -709,7 +726,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: COS h1 state — save (second-round speedup)
         if: ${{ steps.cos_sync.outputs.all_ok == 'true' && steps.cos_state_key.outputs.bucket != '' }}
@@ -1229,6 +1246,11 @@ jobs:
           # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
           fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          # schema-v2（overview#458）：同 build job，旧 schema 的仓没有该脚本就跳过
+          if [ -f book-index/build/build_derived.py ]; then
+            export BOOK_INDEX_DERIVED_DIR="$RUNNER_TEMP/book-index-derived"
+            (cd book-index && python3 build/build_derived.py --out "$BOOK_INDEX_DERIVED_DIR")
+          fi
           cd nextjs
           node scripts/bundle-data.mjs
           rm -rf "$SITEMAP_OUT_DIR"
