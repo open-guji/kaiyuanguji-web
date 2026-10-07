@@ -76,17 +76,18 @@ describe('S0 转换前后长度相等', () => {
 
     it('转换器若改变了长度：退回逐码点转换，仍等长', () => {
         const warn = jest.fn();
-        // 假转换器：把「ab」整词压成「X」（长度变短），单字原样
-        const fn = createToSimplified({ createConverter: () => (t: string) => t.replace(/ab/g, 'X'), variants: {}, warn });
+        // 假转换器：整词「ab」压成「X」（长度变短）；单个字符时 a→A、b→B（可区分的等长转换）
+        const conv = (t: string) => (t === 'a' ? 'A' : t === 'b' ? 'B' : t.replace(/ab/g, 'X'));
+        const fn = createToSimplified({ createConverter: () => conv, variants: {}, warn });
         const out = fn('xaby');
-        expect(out).toBe('xaby');
+        expect(out).toBe('xABy'); // 走了逐码点转换，而不是只返回归一后的原文
         expect(codePointLength(out)).toBe(4);
         expect(warn).toHaveBeenCalledTimes(1);
     });
 
-    it('逐码点仍不等长：只做异体字归一', () => {
-        const fn = createToSimplified({ createConverter: () => (t: string) => t + '!', variants: { 寳: '寶' }, warn: () => {} });
-        expect(fn('寳')).toBe('寶');
+    it('逐码点仍不等长：只做异体字归一（不带上转换器的任何改动）', () => {
+        const fn = createToSimplified({ createConverter: () => (t: string) => t.toUpperCase() + '!', variants: { 寳: '寶' }, warn: () => {} });
+        expect(fn('a寳')).toBe('a寶');
     });
 
     it('转换器建不出来：原样返回，不抛', () => {
@@ -118,7 +119,7 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 
 describe('S0 护栏', () => {
-    const files = [...walk(path.join(REPO, 'nextjs/src')), ...walk(path.join(REPO, 'nextjs/scripts')), ...walk(path.join(REPO, 'indexer'))].filter(
+    const files = [...walk(path.join(REPO, 'nextjs/src')), ...walk(path.join(REPO, 'nextjs/scripts')), ...walk(path.join(REPO, 'indexer')), ...walk(path.join(REPO, 'edge-functions'))].filter(
         (f) => !f.includes('__tests__') && !/\.test\.(m?js|tsx?)$/.test(f),
     );
 
@@ -131,7 +132,7 @@ describe('S0 护栏', () => {
 
     it('只有入口文件自己 new Converter（其余都经 toSimplified）', () => {
         const hits = files.filter((f) => !f.endsWith('to-simplified-core.mjs') && /\bConverter\s*\(\s*\{/.test(fs.readFileSync(f, 'utf-8'))).map((f) => path.relative(REPO, f)).sort();
-        expect(hits).toEqual(['indexer/full-reindex.mjs', 'nextjs/scripts/lib/to-simplified.mjs', 'nextjs/src/lib/server/simplify.ts']);
+        expect(hits).toEqual(['edge-functions/api/search.js', 'indexer/full-reindex.mjs', 'nextjs/scripts/lib/to-simplified.mjs', 'nextjs/src/lib/server/simplify.ts']);
     });
 
     it('opencc-js 钉死同一个精确版本：nextjs、indexer 的 package.json 与已装版本一致', () => {
@@ -141,6 +142,15 @@ describe('S0 护栏', () => {
         expect(idx).toBe(web);
         const installed = JSON.parse(fs.readFileSync(path.join(REPO, 'nextjs/node_modules/opencc-js/package.json'), 'utf-8')).version;
         expect(installed).toBe(web);
+    });
+
+    it('边缘搜索（edge-functions/api/search.js）内嵌的核心与网站的核心逐字相同（去掉 export）', () => {
+        const read = (p: string) => fs.readFileSync(path.join(REPO, p), 'utf-8');
+        const core = read('nextjs/src/lib/to-simplified-core.mjs');
+        const expected = core.slice(core.indexOf('/** 码点数')).replace(/export /g, '').trim();
+        const edge = read('edge-functions/api/search.js');
+        const embedded = edge.slice(edge.indexOf('// BEGIN to-simplified-core') + '// BEGIN to-simplified-core'.length, edge.indexOf('// END to-simplified-core')).trim();
+        expect(embedded).toBe(expected);
     });
 
     it('indexer 里的副本与网站的核心逻辑、异体字表逐字相同', () => {
