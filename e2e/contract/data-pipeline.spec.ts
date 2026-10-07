@@ -69,8 +69,9 @@ test.describe('数据管线契约', () => {
         expect(entry.title).toBe(ANCHORS.work.title);
         expect(entry.type).toBe('work');
         expect(entry.authors?.[0]?.name).toBe(ANCHORS.work.author);
-        expect(entry.books?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minBooks);
-        expect(entry.related_works?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minRelatedWorks);
+        // schema-v2（overview#458）：新数据没有 books／related_works，版本与关联在 _books／_related；新旧都认
+        expect((entry.books ?? entry._books)?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minBooks);
+        expect((entry.related_works ?? entry._related)?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minRelatedWorks);
     });
 
     test('整理本在新结构里：manifest.json（default=整理本）＋ default/index.json 章目录', async ({ request }) => {
