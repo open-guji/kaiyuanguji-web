@@ -71,6 +71,10 @@ on:
         description: '仅 target=staging：演练产物复用——同时构建并存正式站产物（不部署），测试站改用打包、加密、解包后的产物部署'
         type: boolean
         default: false
+      rehearse_split:
+        description: '仅 target=staging：演练数据流程拆出后的代码流程（等价于只对这一次打开 SPLIT_DATA_FLOW，不动仓库变量）——不克隆、不打包、不传数据，测试站读正式站数据。下一次 push 部署会恢复原样；不会自动晋升'
+        type: boolean
+        default: false
   # 每日定时兜底：数据仓的 notify-web webhook 依赖跨仓 PAT
   # （REPO_DISPATCH_TOKEN），换账号后曾长期 Bad credentials 导致数据
   # 5 天没上线（2026-08 事故）。定时任务不依赖任何跨仓凭证，数据没
@@ -214,10 +218,13 @@ jobs:
           IN_PROMOTE: ${{ inputs.promote }}
           GH_TOKEN: ${{ github.token }}
           SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
+          IN_REHEARSE_SPLIT: ${{ inputs.rehearse_split }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
           # overview#470 P1：数据流程是否已拆出（from_run 的晋升下面按那次 run 的 manifest 改写）
           SPLIT=false; [ "$SPLIT_VAR" = "true" ] && SPLIT=true
+          # 演练：手动触发的测试站部署勾 rehearse_split，只对这一次按「已拆出」跑，不用动仓库变量（push／定时／晋升不受影响）
+          if [ "$REQ" = staging ] && [ "$IN_REHEARSE_SPLIT" = true ]; then SPLIT=true; echo "· 演练：按 SPLIT_DATA_FLOW=true 跑这一次测试站部署（仓库变量不动）"; fi
           if [ -z "$EDGEONE_API_TOKEN" ]; then
             echo "❌ EDGEONE_API_TOKEN 未配置：测试站 kyg-staging 与正式站 kyg-ssr-spike 都是 CLI 直传，没有它哪个站都发不了"
             exit 1
