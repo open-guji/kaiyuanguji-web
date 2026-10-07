@@ -83,10 +83,13 @@ export function chapterTxtFile(file) {
     return chapterMdFile(file).replace(/\.md$/, '.txt');
 }
 
-/** `<key>/index.json` 的第一章 → { file, hasJson }；没有章返回 null */
+/** `<key>/index.json` 的第一章 → { file, hasJson[, charFile] }（对读章声明 char_file）；没有章返回 null */
 export function firstChapterOf(indexDoc) {
     const ch = Array.isArray(indexDoc?.chapters) ? indexDoc.chapters.find((c) => typeof c?.file === 'string' && c.file) : null;
-    return ch ? { file: ch.file, hasJson: ch.has_json === true } : null;
+    if (!ch) return null;
+    const first = { file: ch.file, hasJson: ch.has_json === true };
+    if (typeof ch.char_file === 'string' && ch.char_file) first.charFile = ch.char_file;
+    return first;
 }
 
 /**

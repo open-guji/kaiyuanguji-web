@@ -475,7 +475,9 @@ export function verifyReadProbes(probes, dataDir) {
         } else if (p.kind === 'text') {
             need(p.id, `${p.key}/index.json`);
             // 整理本的章可以只有结构化 json、没有 md（has_json 时 md 可缺）；其余章 md 必须在
-            if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
+            // 对读章（自校本）真源是 char.json，不产 md／txt：声明了 char_file 就核对它
+            if (p.first.charFile) need(p.id, `${p.key}/${p.first.charFile}`);
+            else if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
             if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file.replace(/\.(md|txt)$/, '')}.json`);
         }
     }
