@@ -631,6 +631,29 @@ jobs:
           restore-keys: |
             cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
 
+      # 第二轮提速：h1 条目、h1 文本两路同步各有一份 state（.next/.sync-h1-state.json、.sync-h1-text-state.json，
+      # 格式同上：相对路径 → md5）。它们以前不进缓存，每次真同步两路各把 h1/ 整个 LIST 一遍（约 38 万个对象，实测每路 3～3.5 分钟，
+      # 两路并行抢同一个限流），是同步这一步的长杆。做法与上面 current/ 的缓存一致（键含目标站与桶名哈希、取最近一份、
+      # 取不到或不可信就退回 LIST 重建），只多两条保险：
+      #   ① 只在三路都成功（all_ok）之后才存——h1 两路失败只警告，若它们中途失败又把「旧 state」存进缓存，
+      #      state 与桶对不上，下次会把已被清掉的对象当成还在而跳过上传；
+      #   ② 每日定时那次强制重建（SYNC_REBUILD_STATE=1，见同步步骤），桶被手工改过时最迟隔天自愈。
+      # 手工动过桶里 h1/（删前缀、重传）之后，把下面三处键里的 v1 改成 v2 立即作废。
+      - name: COS h1 state — restore (second-round speedup)
+        id: cos_h1_state_restore
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
+
       - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
         id: cos_sync
         if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
@@ -640,15 +663,19 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
+          # 每日定时那次不信缓存里的 state，从 COS 重新 LIST 重建（三个脚本都认 SYNC_REBUILD_STATE=1）：
+          # 桶里的东西被手工改过、缓存与桶悄悄对不上时，最迟隔天自愈；push 与手动触发照用缓存
+          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
           set +e
-          ( COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs ) > "$LOGS/current.log" 2>&1 &
+          # 各路的用时打在各自日志末尾（并行时看不出谁是长杆，这是下一轮提速要用的数）
+          ( s=$SECONDS; COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs; rc=$?; echo "· current/ 一路共用时 $((SECONDS - s)) 秒"; exit $rc ) > "$LOGS/current.log" 2>&1 &
           P_CUR=$!
-          ( node scripts/bundle-hashed.mjs && COS_CONCURRENCY=12 node scripts/sync-h1-to-cos.mjs ) > "$LOGS/h1-entry.log" 2>&1 &
+          ( s=$SECONDS; node scripts/bundle-hashed.mjs && { echo "· h1 条目打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=12 node scripts/sync-h1-to-cos.mjs; }; rc=$?; echo "· h1 条目一路共用时 $((SECONDS - s)) 秒"; exit $rc ) > "$LOGS/h1-entry.log" 2>&1 &
           P_H1=$!
-          ( node scripts/bundle-hashed-text.mjs && COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs ) > "$LOGS/h1-text.log" 2>&1 &
+          ( s=$SECONDS; node scripts/bundle-hashed-text.mjs && { echo "· h1 文本打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs; }; rc=$?; echo "· h1 文本一路共用时 $((SECONDS - s)) 秒"; exit $rc ) > "$LOGS/h1-text.log" 2>&1 &
           P_TXT=$!
           ( while :; do sleep 60; echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC（current/ pid $P_CUR、h1 条目 pid $P_H1、h1 文本 pid $P_TXT）"; done ) &
           HB=$!
@@ -679,6 +706,16 @@ jobs:
         with:
           path: nextjs/.next/.sync-state.json
           key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: COS h1 state — save (second-round speedup)
+        if: ${{ steps.cos_sync.outputs.all_ok == 'true' && steps.cos_state_key.outputs.bucket != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       # 三路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步
       - name: Mark COS sync complete
