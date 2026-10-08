@@ -12,6 +12,7 @@ import type { ItemEntry } from './item-data';
 import { summarizeItem, sentences, lossStatusText } from './item-summary';
 import { isValidItemId } from '../item-id';
 import { toSimplified } from './simplify';
+import { booksOf, collectionsOf, membersOf, worksOf, classificationOf } from './item-relations';
 
 /** meta description 的长度区间（按码点）：短于下限才补站名句，长于上限截断 */
 export const SEO_DESC_MIN = 80;
@@ -41,38 +42,6 @@ function arr(v: unknown): unknown[] {
 
 function obj(v: unknown): Json {
     return v && typeof v === 'object' && !Array.isArray(v) ? (v as Json) : {};
-}
-
-/**
- * schema-v2 双兼容（overview#458）：新字段（build 产物里的 `_` 派生字段）有内容就用新的，没有就回退旧字段。
- * 旧 schema 的条目没有 `_` 字段，走旧路径，行为不变。
- */
-function preferred(e: ItemEntry, newKey: string, oldKey: string): unknown[] {
-    const n = arr((e as Json)[newKey]);
-    return n.length ? n : arr((e as Json)[oldKey]);
-}
-
-/** 本条的版本（Work）：`_books` 优先，回退 `books` */
-function bookList(e: ItemEntry): unknown[] {
-    return preferred(e, '_books', 'books');
-}
-
-/** 丛编成员：`_members`（只含前 20 项，总数看 `_member_count`）优先，回退 `contained_works`＋`books` */
-function memberList(e: ItemEntry): unknown[] {
-    const m = arr((e as Json)._members);
-    return m.length ? m : [...arr(e.contained_works), ...arr(e.books)];
-}
-
-/** 所属丛编：`_collections` 优先，回退 `contained_in` */
-function collectionList(e: ItemEntry): unknown[] {
-    return preferred(e, '_collections', 'contained_in');
-}
-
-/** 分类：`_classifications[]`（优先 zongmu，否则第一个有 l1 的）优先，回退旧 `classification` */
-function classificationOf(e: ItemEntry): Json {
-    const list = arr((e as Json)._classifications).map(obj);
-    const pick = list.find((c) => c.scheme === 'zongmu' && str(c.l1)) ?? list.find((c) => str(c.l1));
-    return pick ?? obj(e.classification);
 }
 
 function len(s: string): number {
@@ -165,7 +134,7 @@ function authorsOf(e: ItemEntry): { names: string[]; line: string } {
 
 /** 人物著录作品：总数，外加按角色的分项（只有一种角色时不列） */
 function worksText(e: ItemEntry): string {
-    const ws = preferred(e, '_works', 'works').map(obj);
+    const ws = worksOf(e).map(obj);
     if (!ws.length) return '';
     const by = new Map<string, number>();
     for (const w of ws) {
@@ -278,7 +247,7 @@ function countText(e: ItemEntry): string {
     ].filter(Boolean) as string[];
     if (parts.length) return parts.join('，');
     const memberCount = (e as Json)._member_count;
-    const members = typeof memberCount === 'number' && memberCount > 0 ? memberCount : memberList(e).length;
+    const members = typeof memberCount === 'number' && memberCount > 0 ? memberCount : membersOf(e).length;
     return members ? `本站收錄其子目 ${members} 種` : '';
 }
 
@@ -382,7 +351,7 @@ export function seoDescription(e: ItemEntry, id: string): string {
                 lossStatusText(e),
                 classificationText(e),
             ];
-            const books = ids(bookList(e)).length;
+            const books = ids(booksOf(e)).length;
             const quote = body.length ? null : indexedQuote(e, known);
             if (quote) body = quote.body;
             tail = [indexedText(e, desc, quote?.source), books ? `本站收錄其版本 ${books} 種` : '', resourcesText(e)];
@@ -502,7 +471,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
     const url = itemUrl(site, id);
     const description = seoDescription(e, id);
     const base = { '@context': 'https://schema.org', '@id': url, name: s.title, url, description };
-    const containedIn = parts(site, ids(collectionList(e)), 'Collection');
+    const containedIn = parts(site, ids(collectionsOf(e)), 'Collection');
     // S4：JSON-LD 的 name／description 保持数据原文；书名（人物则是名字）的简体写法放进 alternateName，
     // 大陆读者搜简体时实体名也对得上。与原名相同（本来就没有繁简差异）或已在别名里的不重复
     const simplifiedName = toSimplified(s.title);
@@ -533,7 +502,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
         }
         case 'collection': {
             ogType = 'website';
-            const members = ids(memberList(e));
+            const members = ids(membersOf(e));
             const zhong = obj(e.count).zhong;
             const memberCount = (e as Json)._member_count;
             if (s.edition) title = `${s.title}（${s.edition}）`;
@@ -575,7 +544,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
                 inLanguage: language(s.title),
                 genre: genre(e),
                 isPartOf: containedIn,
-                workExample: parts(site, ids(bookList(e)), 'Book'),
+                workExample: parts(site, ids(booksOf(e)), 'Book'),
             });
         }
     }
