@@ -123,6 +123,9 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
 
     const pagePathOf = (id, key) => (key === 'default' ? `/read/${id}` : `/read/${id}/${key}`);
 
+    // 阅读页不列的版本（overview#456）：作品有 kind=transcription 全文版时，kind=collated 的整理本阅读页不开（404），数据仍在
+    const hiddenInReader = (versions, v) => v?.kind === 'collated' && versions.some((x) => x?.kind === 'transcription');
+
     // 新结构条目：manifest.versions 逐份核对目录、首章与页面
     async function checkNewCard(id, manifest) {
         const versions = Array.isArray(manifest?.versions) ? manifest.versions : [];
@@ -133,7 +136,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         for (const v of versions) {
             if (!isTextKey(v?.key)) { fail(id, '数据', `items/${id}/manifest.json 有不合法的版本 key：${JSON.stringify(v?.key)}`); continue; }
             const pagePath = pagePathOf(id, v.key);
-            const page = await getPage(`${site}${pagePath}`);
+            const page = hiddenInReader(versions, v) ? { ok: true } : await getPage(`${site}${pagePath}`);
             if (!page.ok) fail(id, '阅读页', `${site}${pagePath} → ${why(page)}${page.retriedFrom ? `（${page.retriedFrom}后重试 ${page.attempts} 次仍失败）` : ''}`);
             const base = `items/${id}/${v.key}`;
             const idx = await json(`${base}/index.json`);
@@ -141,11 +144,15 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             const first = firstChapterOf(idx.body);
             if (!first) { fail(id, '数据', `${base}/index.json 的 chapters 为空`); continue; }
             // has_json 的章可以没有 md（只有结构化 json）；其余章 md 必须在
-            if (!first.hasJson) {
+            // 对读章（自校本）真源是 char.json，不产 md／txt：声明了 char_file 就查它
+            if (first.charFile) {
+                const cf = await get(`${cur}/${base}/${first.charFile}?${bust}`, false);
+                if (!cf.ok) fail(id, '数据', `${base}/${first.charFile} → ${why(cf)}`);
+            } else if (!first.hasJson) {
                 const ch = await get(`${cur}/${base}/${chapterTxtFile(first.file)}?${bust}`, false);
                 if (!ch.ok) fail(id, '数据', `${base}/${chapterTxtFile(first.file)} → ${why(ch)}`);
             }
-            if (first.hasJson) {
+            if (first.hasJson && !first.charFile) {
                 const cj = await get(`${cur}/${base}/${first.file.replace(/\.(md|txt)$/, '')}.json?${bust}`, false);
                 if (!cj.ok) fail(id, '数据', `${base}/${first.file.replace(/\.(md|txt)$/, '')}.json → ${why(cj)}`);
             }
@@ -175,8 +182,9 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     if (warm) {
         const urls = [];
         for (const [id, m] of manifests) {
-            for (const v of Array.isArray(m?.versions) ? m.versions : []) {
-                if (isTextKey(v?.key)) urls.push(`${site}${pagePathOf(id, v.key)}`);
+            const vs = Array.isArray(m?.versions) ? m.versions : [];
+            for (const v of vs) {
+                if (isTextKey(v?.key) && !hiddenInReader(vs, v)) urls.push(`${site}${pagePathOf(id, v.key)}`);
             }
         }
         warmStats = { pages: urls.length, notOk: [], ms: [] };

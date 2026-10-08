@@ -35,7 +35,7 @@ import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { classificationL1, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 
@@ -137,7 +137,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
     if (entry.has_text) completeness += 3;
     if (entry.has_image) completeness += 2;
     if (entry.subtype === 'book' || entry.subtype === 'classic') completeness += 2;
-    completeness += Math.min((detail.books || []).length, 10);
+    completeness += Math.min(editionCount(detail), 10);
 
     return {
         id: entry.id,
@@ -149,7 +149,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         role: entry.role || '',
         subtype: entry.subtype || '',
         // 搜索页 v4 的筛选（overview#291 P1a）：部（一级分类，没有的空串）与存佚
-        classification: classificationL1(detail.classification, entry.classification),
+        classification: classificationL1(derivedClassification(detail), detail.classification, entry.classification),
         loss_status: lossStatusValue(detail.loss_status, entry.loss_status),
         has_collated: !!entry.has_collated,
         has_text: hasTextValue(entry),   // 有转录全文或整理本（「有文本」筛选，overview#322）
@@ -262,6 +262,19 @@ function juanDoc(workId, juanName, clean) {
  * 拼各节 title + content。两种来源都没有就跳过这一章。
  */
 const TEXT_KEY_RE = /^[a-z][a-z0-9-]*$/;
+/**
+ * 条目详情：schema-v2 的 build 产物（BOOK_INDEX_DERIVED_DIR/entry/<id>.json，源＋_ 派生字段）优先，
+ * 缺则读源档 detailPath（草稿库、旧 schema 都走这里）。读不了抛错，由调用方按原样处理。
+ */
+function readDetail(detailPath, id) {
+    const dir = (process.env.BOOK_INDEX_DERIVED_DIR || '').trim();
+    if (dir && id) {
+        const p = join(dir, 'entry', `${id}.json`);
+        if (existsSync(p)) return JSON.parse(readFileSync(p, 'utf-8'));
+    }
+    return JSON.parse(readFileSync(detailPath, 'utf-8'));
+}
+
 function readJsonSafe(path) {
     try { return JSON.parse(readFileSync(path, 'utf-8')); } catch { return null; }
 }
@@ -603,7 +616,7 @@ async function main() {
                 const detailPath = join(rootDir, entry.path || '');
                 if (!existsSync(detailPath)) continue;
                 let detail;
-                try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { continue; }
+                try { detail = readDetail(detailPath, entry.id); } catch { continue; }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
                 if (detail._promoted_to) continue;
                 if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
@@ -686,7 +699,7 @@ async function main() {
                 if (entry.path) {
                     const detailPath = join(rootDir, entry.path);
                     if (existsSync(detailPath)) {
-                        try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { detail = null; }
+                        try { detail = readDetail(detailPath, entry.id); } catch { detail = null; }
                     }
                 }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）

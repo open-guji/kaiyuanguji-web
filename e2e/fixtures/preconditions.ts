@@ -186,17 +186,22 @@ function isTombstone(e: Entry): boolean {
  *   版本 0 && 资源 buckets 0 && mirrors 0 && !indexed_by && !emendated_by
  *   && 关联作品分组 0 && !description.text
  * 这里按条目源字段判断——源字段全空，UI 就没有任何东西可渲染。
+ * schema-v2（overview#458）：新数据把版本／关联／所属丛编放在 _books／_related／_collections，
+ * 旧字段缺失；两套都要看，否则新数据里每部作品都会被误判成「空」。
  */
 export function isEmptyWork(e: Entry): boolean {
     const desc = e.description as { text?: string } | undefined;
     return (
         !isTombstone(e) &&
         len(e.books) === 0 &&
+        len(e._books) === 0 &&
         len(e.resources) === 0 &&
         len(e.indexed_by) === 0 &&
         len(e.emendated_by) === 0 &&
         len(e.related_works) === 0 &&
+        len(e._related) === 0 &&
         len(e.contained_in) === 0 &&
+        len(e._collections) === 0 &&
         !e.collated_edition &&
         !desc?.text
     );
@@ -204,7 +209,7 @@ export function isEmptyWork(e: Entry): boolean {
 
 /** 人物页是否落在「尚未著錄該人物的關聯作品。」分支：只看关联作品 */
 export function isEmptyEntity(e: Entry): boolean {
-    return !isTombstone(e) && len(e.works) === 0;
+    return !isTombstone(e) && len(e.works) === 0 && len(e._works) === 0;
 }
 
 export interface EmptySample {
