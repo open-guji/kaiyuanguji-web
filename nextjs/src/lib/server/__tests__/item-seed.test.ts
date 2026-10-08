@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { INITIAL_DETAIL_MAX_BYTES, seedForItem } from '../item-seed';
 
 describe('seedForItem：条目页内嵌 initialDetail 的体积上限', () => {
