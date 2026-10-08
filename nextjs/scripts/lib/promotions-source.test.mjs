@@ -9,7 +9,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
-    buildPromotionsFileText, hasPromotionsSource, promotionSourceFiles, readPromotionsSource, serializePromotions,
+    buildPromotionShardTexts, buildPromotionsFileText, hasPromotionsSource, promotionSourceFiles, readPromotionsSource, serializePromotions,
 } from './promotions-source.mjs';
 import { buildPromotionShards } from './h1-promotions.mjs';
 
@@ -118,4 +118,24 @@ test('源档（整档或分片）带记录却不是 version 1：抛错，不悄�
         writeFileSync(join(dir, 'promotions.json'), JSON.stringify({ version: 2, promotions: {} }));
         assert.deepEqual(readPromotionsSource(dir).promotions, {});
     });
+});
+
+test('buildPromotionShardTexts：按草稿 id 末 2 位分片，每片同整档形状，并起来等于整表', () => {
+    const shards = buildPromotionShardTexts({ version: 1, promotions: TABLE });
+    assert.deepEqual(Object.keys(shards), ['0m', '5v', 'mt']);
+    assert.equal(shards['mt'], serializePromotions({ version: 1, promotions: { '1evr5e3mct1mt': TABLE['1evr5e3mct1mt'] } }));
+    const merged = {};
+    for (const text of Object.values(shards)) {
+        const f = JSON.parse(text);
+        assert.equal(f.version, 1);
+        Object.assign(merged, f.promotions);
+    }
+    assert.deepEqual(merged, TABLE);
+});
+
+test('buildPromotionShardTexts：键序不影响字节；空表、坏输入不产片', () => {
+    const rev = Object.fromEntries(Object.entries(TABLE).reverse());
+    assert.deepEqual(buildPromotionShardTexts({ version: 1, promotions: rev }), buildPromotionShardTexts({ version: 1, promotions: TABLE }));
+    assert.deepEqual(buildPromotionShardTexts({ version: 1, promotions: {} }), {});
+    assert.deepEqual(buildPromotionShardTexts(null), {});
 });
