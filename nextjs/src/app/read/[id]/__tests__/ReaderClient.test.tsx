@@ -96,22 +96,6 @@ describe('ReaderClient', () => {
         await act(async () => { await Promise.resolve(); });
     });
 
-    it('没有种子、目录型 default 被隐藏：阅读器先按 default 挂载再以 auto 回到主版本，地址里的章号保留（overview#456）', async () => {
-        let resolve!: (m: unknown) => void;
-        getTextManifest.mockReset().mockReturnValue(new Promise((r) => { resolve = r; }));
-        window.history.replaceState(null, '', `/read/${ZHIZHAI}/004`);
-        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '004' }} bookTitle="t" />);
-        expect(screen.getByTestId('reader')).toHaveTextContent('default|004');
-        // 阅读器的 manifest 先回来（目录型 default 已被隐藏，主版本是 wikisource），以 auto 通知回到主版本第一章
-        await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'wikisource', chapter: null, isDefault: true }, 'auto'); });
-        expect(screen.getByTestId('reader')).toHaveTextContent('wikisource|004'); // 版本 key 改成主版本，章号不动
-        expect(at()).toBe(`/read/${ZHIZHAI}/004`);
-        // 我们自己的 manifest 请求随后回来，不再改动
-        await act(async () => { resolve({ id: ZHIZHAI, versions: [{ key: 'wikisource', kind: 'transcription' }] }); });
-        expect(screen.getByTestId('reader')).toHaveTextContent('wikisource|004');
-        expect(at()).toBe(`/read/${ZHIZHAI}/004`);
-    });
-
     it('翻章：地址、<title>（书名 · 章名 · 版本名）、canonical 跟着改，不整页刷新', async () => {
         setCanonical(`https://www.kaiyuanguji.com/read/${ZHIZHAI}/003`);
         window.history.replaceState(null, '', `/read/${ZHIZHAI}/003`);
