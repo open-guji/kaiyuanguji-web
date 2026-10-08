@@ -74,10 +74,10 @@ test('顶层清单读不了（404、网络错误、JSON 坏）：记成失败返
     assert.equal(r.checked, 0);
     assert.ok(r.failures.some((f) => f.id === 'read/tree.json' && /HTTP 404/.test(f.detail)));
     const boom = async () => { throw new Error('ECONNRESET'); };
-    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: boom });
+    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: boom, sleep: async () => {} });
     assert.ok(r.failures.some((f) => f.id === 'read/tree.json' && /ECONNRESET/.test(f.detail)));
     const badJson = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token'); } });
-    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: badJson });
+    r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: badJson, sleep: async () => {} });
     assert.ok(r.failures.some((f) => /Unexpected token/.test(f.detail)));
     // 失败照样能渲染 summary
     assert.match(renderSummary(r, { target: SITE, seed: 1 }), /read\/tree\.json/);
@@ -161,8 +161,8 @@ test('manifest 请求 5xx 记失败，其余卡照常通过', async () => {
         if (new URL(url).pathname.endsWith(`/items/${WORK}/manifest.json`)) return { ok: false, status: 503 };
         return inner(url, init);
     };
-    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flaky, seed: 1 });
-    assert.ok(r.failures.some((f) => f.id === WORK && /manifest\.json → HTTP 503/.test(f.detail)));
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flaky, seed: 1, sleep: async () => {} });
+    assert.ok(r.failures.some((f) => f.id === WORK && /manifest\.json → HTTP 503（503后重试 3 次仍失败）/.test(f.detail)));
     assert.ok(!r.failures.some((f) => f.id === BOOK));
 });
 
@@ -273,4 +273,82 @@ test('新结构：只有原貌 original、没有 default 的书不报 versions[0
     const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, { [`/read/${WORK}/original`]: 'ok' }), seed: 1 });
     const details = r.failures.map((f) => f.detail).join('\n');
     assert.doesNotMatch(details, /versions\[0\]/);
+});
+
+// overview#484：data 域名间歇 525，522／524／525 与 503 同类，数据文件也重试
+function flakyData(statusSeq, headers = {}) {
+    const inner = fakeFetch(baseFiles(), basePages());
+    const left = Object.fromEntries(Object.entries(statusSeq).map(([k, v]) => [k, [...v]]));
+    return async (url, init) => {
+        const path = new URL(url).pathname;
+        const seq = left[path];
+        if (seq && seq.length) {
+            const status = seq.shift();
+            return { ok: status === 200, status, headers: { get: (k) => headers[k.toLowerCase()] ?? null }, json: async () => ({}), text: async () => '' };
+        }
+        return inner(url, init);
+    };
+}
+
+test('数据文件 525 两次后 200：通过，记进 retriedData，退避 2s／5s', async () => {
+    const waits = [];
+    // 前两次 525，第 3 次序列用尽、落回 baseFiles 的真实 200
+    const g = flakyData({ [`/current/items/${WORK}/default/index.json`]: [525, 525] });
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: g, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(waits, [2000, 5000]);
+    assert.equal(r.retriedData.length, 1);
+    assert.match(r.retriedData[0], /default\/index\.json/);
+    assert.match(renderSummary(r, { target: SITE, seed: 1 }), /数据文件.*重试后通过 1 处/);
+});
+
+test('522／524 同样重试；持续 525 重试 3 次仍失败，报告写明次数与 EdgeOne 头', async () => {
+    const waits = [];
+    const path = `/current/items/${WORK}/default/001.txt`;
+    const g = flakyData(
+        { [path]: [525, 525, 525, 525], [`/current/items/${BOOK}/default/001.txt`]: [522, 524] },
+        { 'eo-log-uuid': 'u-123', 'eo-cache-status': 'MISS', date: 'Wed, 08 Oct 2026 04:40:00 GMT' },
+    );
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: g, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.equal(r.failures.length, 1);
+    const f = r.failures[0];
+    assert.equal(f.id, WORK);
+    assert.match(f.detail, /001\.txt → HTTP 525（525后重试 3 次仍失败）/);
+    assert.match(f.detail, /\[EO-LOG-UUID=u-123 Eo-Cache-Status=MISS Date=Wed, 08 Oct 2026 04:40:00 GMT\]/);
+    assert.equal(r.retriedData.length, 1); // BOOK 的 522、524 后通过
+    assert.ok(waits.includes(10000)); // WORK 的 001.txt 走满 2s／5s／10s
+});
+
+test('404 不重试，也不带头信息时失败行保持原样', async () => {
+    const files = baseFiles();
+    delete files[`items/${WORK}/default/001.txt`];
+    const waits = [];
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(files, basePages()), seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(waits, []);
+    assert.ok(r.failures.some((f) => f.detail.endsWith('001.txt → HTTP 404')));
+});
+
+test('JSON 解析失败是永久错误：不重试，立即记失败', async () => {
+    const waits = [];
+    const badJson = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token'); } });
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: badJson, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(waits, []);
+    assert.ok(r.failures.some((f) => /Unexpected token/.test(f.detail)));
+});
+
+test('重试途中拿到过的 EdgeOne 头，最后一次是连接失败也保留在失败行里', async () => {
+    const path = `/current/items/${WORK}/default/001.txt`;
+    const inner = fakeFetch(baseFiles(), basePages());
+    let n = 0;
+    const f = async (url, init) => {
+        if (new URL(url).pathname === path) {
+            n++;
+            if (n === 1) return { ok: false, status: 525, headers: { get: (k) => ({ 'eo-log-uuid': 'u-early' })[k.toLowerCase()] ?? null } };
+            throw new Error('fetch failed');
+        }
+        return inner(url, init);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, warm: false, sleep: async () => {} });
+    assert.equal(r.failures.length, 1);
+    assert.match(r.failures[0].detail, /请求失败：fetch failed（525后重试 3 次仍失败） \[EO-LOG-UUID=u-early\]/);
 });
