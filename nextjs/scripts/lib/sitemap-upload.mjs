@@ -36,6 +36,16 @@ export const CONTENT_TYPE = 'application/xml; charset=utf-8';
 /** 数据前缀里的缓存头；站点路由再给边缘加 s-maxage（一小时） */
 export const CACHE_CONTROL = 'public, max-age=300';
 
+/**
+ * 发布标记：`<前缀>/sitemaps/_meta.json`，记录这一版 sitemap 是用哪两个数据 commit 生成的。**所有分片和索引都传完、回读核对过之后**
+ * 才写——它存在且与当前数据 commit 一致，就说明这版 sitemap 完整发布过；没有或不一致（上次传到一半失败、数据又变了）就该重传。
+ * 名字不在路由代理的白名单里（也不是 .xml），所以不会被对外提供，也不会被清旧分片的逻辑碰到。
+ */
+export function metaKey(prefix) {
+    const p = String(prefix || '').replace(/^\/+|\/+$/g, '');
+    return `${p ? `${p}/` : ''}sitemaps/_meta.json`;
+}
+
 export function sitemapKey(prefix, name) {
     const p = String(prefix || '').replace(/^\/+|\/+$/g, '');
     return `${p ? `${p}/` : ''}sitemaps/${name}.xml`;
@@ -100,9 +110,10 @@ export function checkSitemaps(plan, texts, site = STORED_SITE) {
  *   list(prefix) → [{ key, lastModified(毫秒时间戳) }], del(keys)（有删不掉的要抛错）}
  * 返回 { uploaded, bytes, pruned, warnings }；检查不过或传失败抛错。dryRun 只检查、不动 backend。
  */
-export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now() }) {
+export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now(), meta = null }) {
     // 并发数非正：Array.from 不会起任何 worker，分片一个没传、索引却照传——先拒绝
     if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error(`concurrency 必须是正整数：${concurrency}`);
+    if (meta !== null && (typeof meta !== 'object' || Array.isArray(meta))) throw new Error('meta 必须是对象');
     const plan = planSitemaps(dir);
     const texts = {};
     if (!plan.errors.length) {
@@ -116,22 +127,28 @@ export async function publishSitemaps({ dir, prefix = '', backend, site = STORED
     log(`sitemap：${plan.shards.length} 个分片＋索引，共 ${(bytes / 1048576).toFixed(1)} MB，目标前缀 ${prefix || '（根）'}${dryRun ? '（dry-run，不上传）' : ''}`);
     if (dryRun) return { uploaded: 0, bytes, pruned: 0, warnings: [], planned: total };
 
-    const meta = { contentType: CONTENT_TYPE, cacheControl: CACHE_CONTROL };
+    const putMeta = { contentType: CONTENT_TYPE, cacheControl: CACHE_CONTROL };
     // 分片并发传，全部成功后才传索引
     const queue = [...plan.shards];
     const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
         for (let s = queue.shift(); s; s = queue.shift()) {
-            await withRetry(() => backend.put(sitemapKey(prefix, s.name), Buffer.from(texts[s.name], 'utf-8'), meta), `传 ${s.name}`, log, retryDelayMs);
+            await withRetry(() => backend.put(sitemapKey(prefix, s.name), Buffer.from(texts[s.name], 'utf-8'), putMeta), `传 ${s.name}`, log, retryDelayMs);
         }
     });
     await Promise.all(workers);
     const idxKey = sitemapKey(prefix, 'sitemap-index');
-    await withRetry(() => backend.put(idxKey, Buffer.from(texts['sitemap-index'], 'utf-8'), meta), '传 sitemap-index', log, retryDelayMs);
+    await withRetry(() => backend.put(idxKey, Buffer.from(texts['sitemap-index'], 'utf-8'), putMeta), '传 sitemap-index', log, retryDelayMs);
 
     // 回读索引核对
     const back = await backend.get(idxKey);
     const want = Buffer.byteLength(texts['sitemap-index']);
     if (!back || back.length !== want) throw new Error(`回读 ${idxKey} 不一致：期望 ${want} 字节，读到 ${back ? back.length : '（空）'}`);
+
+    // 发布标记：最后写（上面所有对象都传完、索引回读核对过），写不了就让这次发布失败——标记缺失会导致下一次重传，不会悄悄丢
+    if (meta) {
+        const body = Buffer.from(JSON.stringify({ ...meta, uploadedAt: new Date(now).toISOString(), shards: plan.shards.length }, null, 2) + '\n', 'utf-8');
+        await withRetry(() => backend.put(metaKey(prefix), body, { contentType: 'application/json; charset=utf-8', cacheControl: 'no-store' }), '写发布标记', log, retryDelayMs);
+    }
 
     // 清旧分片（只动合规的名字、且放满 pruneMinAgeMs 的；失败只警告）。
     // 不立刻清：边缘缓存里的旧索引（最长一小时）可能还引用着它们，立刻删会让那一小时里读到 404。
@@ -151,7 +168,7 @@ export async function publishSitemaps({ dir, prefix = '', backend, site = STORED
         warnings.push(`清理旧分片失败（下次再试）：${e && e.message}`);
         log(`::warning::${warnings[warnings.length - 1]}`);
     }
-    return { uploaded: total, bytes, pruned, warnings };
+    return { uploaded: total + (meta ? 1 : 0), bytes, pruned, warnings };
 }
 
 async function withRetry(fn, what, log, delayMs, tries = 3) {

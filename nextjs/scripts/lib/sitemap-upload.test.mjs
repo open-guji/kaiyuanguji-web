@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-    publishSitemaps, planSitemaps, checkSitemaps, sitemapKey, NAME_RE, STORED_SITE, MAX_URLS_PER_SHARD, PRUNE_MIN_AGE_MS,
+    publishSitemaps, planSitemaps, checkSitemaps, sitemapKey, metaKey, NAME_RE, STORED_SITE, MAX_URLS_PER_SHARD, PRUNE_MIN_AGE_MS,
 } from './sitemap-upload.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -204,4 +204,35 @@ test('清理失败（包括 COS 对个别对象报错）只警告，发布本身
     assert.equal(r2.warnings.length, 1);
     assert.match(r2.warnings[0], /AccessDenied/);
     assert.ok(b2.store.has('sitemaps/sitemap-index.xml'));
+});
+
+test('发布标记：全部分片和索引传完后才写 _meta.json，缓存头 no-store，带 commit；不传 meta 就不写', async () => {
+    assert.equal(metaKey('staging'), 'staging/sitemaps/_meta.json');
+    assert.equal(metaKey(''), 'sitemaps/_meta.json');
+    const b = memBackend();
+    const r = await publishSitemaps({ dir: makeDir(), backend: b, meta: { productionCommitId: 'a'.repeat(40) }, ...opts });
+    assert.equal(r.uploaded, 6);
+    assert.equal(b.putCalls.at(-1).key, 'sitemaps/_meta.json');
+    assert.equal(b.putCalls.at(-1).meta.cacheControl, 'no-store');
+    const m = JSON.parse(b.store.get('sitemaps/_meta.json').body.toString());
+    assert.equal(m.productionCommitId, 'a'.repeat(40));
+    assert.equal(m.shards, 4);
+    const b2 = memBackend();
+    await publishSitemaps({ dir: makeDir(), backend: b2, ...opts });
+    assert.ok(!b2.putCalls.some((p) => p.key.endsWith('_meta.json')));
+});
+
+test('发布标记：前面任何一步失败就不写标记；标记不会被清旧逻辑删掉', async () => {
+    const b = memBackend({ 'sitemaps/_meta.json': { body: '{}', lastModified: NOW - 30 * DAY } });
+    const bad = { ...b, async put(k, body, m) { if (k.endsWith('work-001.xml')) throw new Error('boom'); return b.put(k, body, m); } };
+    await assert.rejects(publishSitemaps({ dir: makeDir(), backend: bad, meta: { x: 1 }, ...opts }));
+    assert.equal(b.store.get('sitemaps/_meta.json').body.toString(), '{}');
+    await publishSitemaps({ dir: makeDir(), backend: b, meta: { x: 1 }, ...opts });
+    assert.ok(!b.deleted.includes('sitemaps/_meta.json'));
+});
+
+test('meta 不是对象：拒绝，且一个对象都不传', async () => {
+    const b = memBackend();
+    await assert.rejects(publishSitemaps({ dir: makeDir(), backend: b, meta: [1], ...opts }), /meta/);
+    assert.equal(b.putCalls.length, 0);
 });

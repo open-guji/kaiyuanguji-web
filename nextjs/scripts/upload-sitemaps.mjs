@@ -58,8 +58,12 @@ function cosBackend() {
 
 async function main() {
     if (!DIR) throw new Error('缺环境变量 SITEMAP_OUT_DIR（gen-sitemaps.mjs 的输出目录）');
+    let meta = null;
+    if (process.env.SITEMAP_META) {
+        try { meta = JSON.parse(process.env.SITEMAP_META); } catch (e) { throw new Error(`SITEMAP_META 不是合法 JSON：${e.message}`); }
+    }
     const r = await publishSitemaps({
-        dir: DIR, prefix: PREFIX, dryRun, log: (m) => console.log(m),
+        dir: DIR, prefix: PREFIX, dryRun, meta, log: (m) => console.log(m),
         backend: dryRun ? null : cosBackend(),
     });
     console.log(dryRun

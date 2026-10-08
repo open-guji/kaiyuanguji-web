@@ -150,7 +150,9 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertEqual(g(split='true', prod='schema-v2')['publish'], 'false')           # 联调分支不上正式前缀
         self.assertEqual(g(split='true', text='x', override='true')['publish'], 'true')   # 回滚重发
         self.assertEqual(g(prod='x', override='true')['publish'], 'false')                # 没开关也不是 only_sitemaps：不放行
-        o = g(target='staging', prod='schema-v2'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
+        o = g(target='staging'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
+        o = g(target='staging', prod='schema-v2'); self.assertEqual((o['publish'], o['prefix']), ('false', 'staging'))   # 非 main 的 ref 连 staging 也不发布
+        o = g(target='staging', prod='schema-v2', override='true'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
         o = g(only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', ''))
         self.assertEqual(g(only='true', prod='x')['publish'], 'false')
         o = g(target='staging', only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', 'staging'))
@@ -164,7 +166,9 @@ class DataWorkflowCheckOnly(unittest.TestCase):
             case = (target, only, override, split, prod, text, o)
             if target == 'staging':
                 self.assertEqual(o['prefix'], 'staging', case)
-                self.assertEqual(o['publish'], 'true', case)
+                if o['publish'] == 'true' and (prod != 'main' or text != 'main'):
+                    self.assertEqual(override, 'true', case)
+                self.assertEqual(o['publish'], 'true' if (prod == 'main' and text == 'main') or override == 'true' else 'false', case)
                 continue
             self.assertEqual(o['prefix'], '', case)
             if o['publish'] == 'true':
