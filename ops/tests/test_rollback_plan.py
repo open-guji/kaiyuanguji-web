@@ -164,3 +164,70 @@ class Plan(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CodePointerReaders(unittest.TestCase):
+    """overview#470 P1 方案 A：latest.json 标了 codePointer 以 web.json 为准，没标仍以 latest.json.webCommitId 为准。"""
+
+    def _plan(self, pointers, web_pointers, target="production"):
+        known = {A, B, C}
+        return rp.make_plan(target, "promote", A, [], pointers, lambda c: next((k for k in known if k.startswith(c)), None),
+                            lambda s: True, lambda s: True, web_pointers=web_pointers)
+
+    def test_unmarked_uses_latest_and_only_mentions_web(self):
+        p = self._plan({"production": {"commitId": "d", "webCommitId": C}, "staging": {"commitId": "d", "webCommitId": C}},
+                       {"production": {"webCommitId": B}, "staging": {"webCommitId": B}})
+        self.assertEqual(p["current_prod_web"], C)
+        self.assertEqual(p["code_pointer"]["production"]["source"], "latest.json")
+        self.assertTrue(p["code_pointer"]["production"]["mismatch"])
+        self.assertTrue(any("以 latest.json 为准" in w for w in p["warnings"]))     # 不一致写出来
+
+    def test_marked_uses_web_json_and_says_so(self):
+        marked = {"commitId": "d", "webCommitId": C, "codePointer": "web.json"}
+        p = self._plan({"production": marked, "staging": dict(marked)}, {"production": {"webCommitId": B}, "staging": {"webCommitId": B}})
+        self.assertEqual(p["current_prod_web"], B)
+        self.assertEqual(p["current_web"], B)
+        self.assertEqual(p["code_pointer"]["production"]["source"], "web.json")
+        self.assertTrue(any("以 web.json 为准" in w and B[:12] in w and C[:12] in w for w in p["warnings"]))
+        self.assertIn("codePointer", rp.summary_md(p, True).replace("`", "") + "codePointer")  # 摘要能渲染
+
+    def test_marked_but_web_missing_falls_back_with_warning(self):
+        marked = {"commitId": "d", "webCommitId": C, "codePointer": "web.json"}
+        p = self._plan({"production": marked, "staging": dict(marked)}, {})
+        self.assertEqual(p["current_prod_web"], C)
+        self.assertIn("web.json 缺失，退回", p["code_pointer"]["production"]["source"])
+        self.assertTrue(any("读不到或不合法" in w for w in p["warnings"]))
+
+    def test_staging_target_reads_staging_pointers(self):
+        p = self._plan({"production": {"commitId": "d", "webCommitId": C},
+                        "staging": {"commitId": "d", "webCommitId": C, "codePointer": "web.json"}},
+                       {"production": {"webCommitId": A}, "staging": {"webCommitId": B}}, target="staging")
+        self.assertEqual(p["current_web"], B)            # 测试站标了：用 staging/web.json
+        self.assertEqual(p["current_prod_web"], C)       # 正式站没标：仍用 latest.json
+
+
+class RollbackCheckReader(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        sp = importlib.util.spec_from_file_location("rc", HERE.parent / "rollback-check.py")
+        cls.rc = importlib.util.module_from_spec(sp)
+        sp.loader.exec_module(cls.rc)
+
+    def _check(self, latest, web, want):
+        docs = {self.rc.POINTERS["staging"]: latest, self.rc.WEB_POINTERS["staging"]: web}
+        self.rc.get_json = lambda url: (200, docs[url]) if docs.get(url) is not None else (404, None)
+        return self.rc.check_once("staging", want, True, False)
+
+    def test_unmarked_judged_by_latest_not_web(self):
+        self.assertEqual(self._check({"webCommitId": A}, {"webCommitId": B}, A), [])           # web 落后不影响
+        self.assertTrue(self._check({"webCommitId": A}, {"webCommitId": B}, B))                 # web 对而 latest 不对 → 仍不通过
+
+    def test_marked_judged_by_web_json(self):
+        marked = {"webCommitId": A, "codePointer": "web.json"}
+        self.assertEqual(self._check(marked, {"webCommitId": B}, B), [])
+        self.assertTrue(self._check(marked, {"webCommitId": B}, A))                              # latest 的旧值不能让它通过
+
+    def test_marked_web_missing_falls_back_to_latest(self):
+        marked = {"webCommitId": A, "codePointer": "web.json"}
+        self.assertEqual(self._check(marked, None, A), [])
+        self.assertTrue(self._check(marked, None, B))

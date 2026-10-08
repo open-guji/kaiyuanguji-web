@@ -7,7 +7,7 @@ import {
 } from '../cutover-check.mjs';
 
 const NOW = new Date('2026-09-28T00:00:00Z');
-const WEB = 'abcdef1234567890';
+const WEB = 'abcdef1234567890abcdef1234567890abcdef12';   // 真实的 webCommitId 是 40 位 hex；代码指针的读法（ops/code-pointer.mjs）只认合法 commit
 
 /** 一个「切站成功」的全栈 www；overrides 按 URL 改个别响应 */
 function fakeSite(host, overrides = {}) {
@@ -211,4 +211,28 @@ test('httpGet：不跟跳转，读状态、头、正文', async () => {
         Object.assign(process.env, Object.fromEntries(Object.entries(saved).filter(([, v]) => v !== undefined)));
         srv.close();
     }
+});
+
+test('latest.json：标了 codePointer 时以 web.json 为准（其 UI 版本与页面比），写出两处不一致，不悄悄选一个', async () => {
+    const OLD = '1'.repeat(40);
+    const site = fakeSite('www.kaiyuanguji.com', {
+        'https://data.kaiyuanguji.com/latest.json': { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: OLD, codePointer: 'web.json' }) },
+        'https://data.kaiyuanguji.com/web.json': { status: 200, body: JSON.stringify({ webCommitId: WEB }) },
+    });
+    const r = await run('www.kaiyuanguji.com', site);
+    const latest = r.results.find((x) => x.id === 'latest');
+    assert.equal(latest.status, 'pass');
+    assert.match(latest.detail, /web\.json/);
+    assert.match(latest.detail, /111111111111/);        // latest.json 的旧值也写出来
+    assert.match(latest.detail, new RegExp(WEB.slice(0, 12)));
+});
+
+test('latest.json：标了 codePointer 但 web.json 取不到 → 退回 latest.json 并说明，不当成通过的唯一依据', async () => {
+    const site = fakeSite('www.kaiyuanguji.com', {
+        'https://data.kaiyuanguji.com/latest.json': { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: WEB, codePointer: 'web.json' }) },
+        'https://data.kaiyuanguji.com/web.json': { status: 404, body: 'x' },
+    });
+    const r = await run('www.kaiyuanguji.com', site);
+    const latest = r.results.find((x) => x.id === 'latest');
+    assert.match(latest.detail, /web\.json 缺失，退回/);
 });

@@ -21,7 +21,7 @@ const BUILD_INFO = null;
 const DEFAULT_DATA_BASE = 'https://data.kaiyuanguji.com';
 const POINTER_TIMEOUT_MS = 3000;
 // 数据指针里原样转出的字段（都是公开的 commit／时间，latest.json 本身就公开可读）
-const POINTER_FIELDS = ['commitId', 'fullCommitId', 'productionCommitId', 'textCommitId', 'commitDate', 'bundleDate', 'webCommitId'];
+const POINTER_FIELDS = ['commitId', 'fullCommitId', 'productionCommitId', 'textCommitId', 'commitDate', 'bundleDate', 'webCommitId', 'codePointer'];
 
 const HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
@@ -77,11 +77,26 @@ async function readWebPointer(base, fetchImpl) {
   }
 }
 
+// 「线上是哪一版代码」的读法（overview#470 P1 方案 A）：latest.json 带 codePointer:"web.json" 标记（开关打开后的 data.yml 上传才写）
+// ⇒ 以 web.json 为准，web.json 读不到时退回 latest.json；没有标记 ⇒ 仍以 latest.json.webCommitId 为准。
+// 与 ops/code_pointer.py、ops/code-pointer.mjs、deploy.yml 的内联段是同一套规则（边缘函数不能 import ops/），
+// ops/tests/code-pointer.test.mjs 用同一张用例表对拍，改这里要一起改那几处。
+function resolveCodeCommit(latest, web) {
+  const sha = (d) => (d && typeof d.webCommitId === 'string' && /^[0-9a-f]{40}$/.test(d.webCommitId) ? d.webCommitId : '');
+  const marked = !!latest && latest.codePointer === 'web.json';
+  const lc = sha(latest);
+  const wc = sha(web);
+  if (marked) return wc ? { commit: wc, source: 'web.json' } : { commit: lc, source: 'latest.json（web.json 缺失，退回）' };
+  return { commit: lc, source: 'latest.json' };
+}
+
 /** 纯函数，便于测试：info = BUILD_INFO，fetchImpl = fetch */
 export async function buildVersionBody(info, fetchImpl) {
   const base = dataBaseOf(info);
   // 两个指针同时读，超时不会叠加成六秒
   const [{ pointer, error }, webPointer] = await Promise.all([readPointer(base, fetchImpl), readWebPointer(base, fetchImpl)]);
+  const resolved = resolveCodeCommit(pointer, webPointer);
+  const committed = pointer ? resolved.commit : '';
   const body = {
     web: info && info.web ? info.web : null,
     bimUi: info && info.bimUi ? info.bimUi : null,
@@ -89,11 +104,12 @@ export async function buildVersionBody(info, fetchImpl) {
     builtAt: info && info.builtAt ? info.builtAt : null,
     target: info && info.target ? info.target : 'unknown',
     dataPointer: pointer || null,
-    // 数据指针里记的是「上次发布数据时用的网站代码」；和 web 不一致通常说明
-    // 只发了代码或只发了数据（promote=data），不一定是故障，但排障时要知道
-    webMatchesPointer: pointer && pointer.webCommitId && info && info.web ? pointer.webCommitId === info.web : null,
-    // overview#470 P1：代码指针 web.json（部署成功后写）。过渡期只作参考，webMatchesPointer 仍以 latest.json 为准
+    // 线上代码指针记的是哪一版：latest.json 带 codePointer 标记（数据流程拆出后）时以 web.json 为准，否则以 latest.json 的 webCommitId 为准
+    // （见 resolveCodeCommit）；和 web 不一致通常说明只发了代码或只发了数据（promote=data），不一定是故障，但排障时要知道
+    webMatchesPointer: committed && info && info.web ? committed === info.web : null,
+    // overview#470 P1：代码指针 web.json（部署成功后写）；codeSource 说明上面比对用的是哪个指针
     webPointer: webPointer || null,
+    codeSource: pointer ? resolved.source : null,
     now: new Date().toISOString(),
   };
   if (!info) body.note = '构建时未写入版本信息（本地／旧产物，或构建不在 CI 里）';

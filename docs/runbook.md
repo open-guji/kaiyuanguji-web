@@ -139,6 +139,7 @@ done
 
 要点：
 - **翻开关（`SPLIT_DATA_FLOW`）之前**：先 `target=staging` 把整条流水线演练一遍；再手动 `only_sitemaps=true` 把 sitemap 传到正式前缀的 `sitemaps/`（路由代理要从那里取）；翻开关的那一刻**不能有在跑的 deploy.yml**（它开始时读的是旧值，仍会写数据）。
+- **代码指针的读法（`codePointer` 标记，方案 A）**：开关打开后的 data.yml 上传会在 `latest.json` 里多写 `"codePointer": "web.json"`（演练可勾 `mark_code_pointer`，只对 staging 生效）。读者——回滚计划／核对（`ops/rollback-plan.py`、`rollback-check.py`）、`ops/cutover-check.mjs`、`/api/version` 的 `webMatchesPointer`、deploy.yml 里 `promote=data`／`code+data` 读线上代码是哪一版——统一按这条规则：**有标记 ⇒ 以 `web.json` 为准**（`web.json` 读不到或不合法时退回 `latest.json.webCommitId` 并明说）；**没有标记 ⇒ 仍以 `latest.json.webCommitId` 为准**（开关没翻前的现行行为；也让回滚到 #282 之前的旧 commit 不会读错，因为旧 deploy.yml 只更新 `latest.json`）。两处 commit 不一致时不悄悄选一个：核对输出和 `/api/version` 的 `codeSource` 会写出选了哪个。关开关后下一次 deploy.yml 重写 `latest.json`，标记随之消失，读者自动回到老口径。规则在 `ops/code_pointer.py`、`ops/code-pointer.mjs`、`edge-functions/api/version.js`、deploy.yml 的 `code_commit` 四处各一份，`ops/tests/test_code_pointer.py` 与 `code-pointer.test.mjs` 用同一张用例表（`ops/tests/fixtures/code-pointer-cases.json`）对拍。
 - 打包出来的 `latest.json` 没有 `webCommitId`；上传前从线上现行 `latest.json` 带过来，读它的人（`promote=data`、回滚计划、`/api/version`）切到 `web.json` 之前还在用。开关打开后代码流程不再写 `latest.json`，这个值会停在最后一次代码发布时的版本，所以**读者切到 `web.json` 要在翻开关之前或同时完成**。
 - 开关打开后，定时触发不再按「commit 没变就跳过」：一律跑，由 package 里的同步标记判是否真要传（commit 之外还看打包脚本指纹和上次同步是否完整，所以不会重传，但能补上半途失败的）。
 - sitemap 传完（分片→索引→回读）后最后写 `[前缀/]sitemaps/_meta.json`（记录两个数据 commit）；它不对外提供，也不会被清旧分片动到。

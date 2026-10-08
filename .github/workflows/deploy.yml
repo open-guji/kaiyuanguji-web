@@ -225,6 +225,29 @@ jobs:
           IN_REHEARSE_SPLIT: ${{ inputs.rehearse_split }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
+          # 线上「代码是哪一版」的读法（overview#470 P1 方案 A）：latest.json 带 codePointer:"web.json" 标记（开关打开后的 data.yml 上传才写）
+          # ⇒ 以 web.json 为准，web.json 读不到时退回 latest.json；没有标记 ⇒ 仍以 latest.json.webCommitId 为准。
+          # 与 ops/code_pointer.py 同一套规则（resolve 任务没有检出仓库，所以内联一份；ops/tests/test_code_pointer.py 把这段抽出来用同一张用例表对拍）。
+          # 用法：code_commit ''（正式站）或 code_commit 'staging/'（测试站）；读不到打印空串。
+          code_commit() {
+            KYG_PFX="$1" python3 - <<'PY'
+          import json, os, re, time, urllib.request
+          base = os.environ.get("KYG_DATA_BASE", "https://data.kaiyuanguji.com")
+          pfx = os.environ.get("KYG_PFX", "")
+          def get(name):
+              try:
+                  with urllib.request.urlopen(f"{base}/{pfx}{name}?cb={int(time.time())}", timeout=20) as r:
+                      d = json.loads(r.read().decode())
+                      return d if isinstance(d, dict) else None
+              except Exception:
+                  return None
+          def sha(d):
+              v = d.get("webCommitId") if d else None
+              return v if isinstance(v, str) and re.fullmatch(r"[0-9a-f]{40}", v) else ""
+          latest, web = get("latest.json"), get("web.json")
+          print(sha(web) if latest and latest.get("codePointer") == "web.json" and sha(web) else sha(latest))
+          PY
+          }
           # overview#470 P1：数据流程是否已拆出（from_run 的晋升下面按那次 run 的 manifest 改写）
           SPLIT=false; [ "$SPLIT_VAR" = "true" ] && SPLIT=true
           # 演练：手动触发的测试站部署勾 rehearse_split，只对这一次按「已拆出」跑，不用动仓库变量（push／定时／晋升不受影响）
@@ -281,8 +304,8 @@ jobs:
                 echo "❌ promote=code 需要 run $IN_FROM_RUN 存的正式站产物（prod-edgeone），但没有可用的；要连数据一起发请手动选 code+data"; exit 1
               fi
             elif [ "$IN_PROMOTE" = data ]; then
-              WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
-              [ -n "$WEB" ] || { echo "❌ 正式站 latest.json 没有 webCommitId（首次 promote 请用 code+data）"; exit 1; }
+              WEB=$(code_commit '')
+              [ -n "$WEB" ] || { echo "❌ 正式站指针（latest.json／web.json）里没有 webCommitId（首次 promote 请用 code+data）"; exit 1; }
               ART=''
             else
               WEB="$M_WEB"
@@ -326,7 +349,7 @@ jobs:
             S=$(curl -sf https://data.kaiyuanguji.com/staging/latest.json)
             P=$(curl -sf https://data.kaiyuanguji.com/latest.json || echo '{}')
             get() { echo "$1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$2',''))"; }
-            if [ "${{ inputs.promote }}" = data ]; then WEB=$(get "$P" webCommitId); else WEB=$(get "$S" webCommitId); fi
+            if [ "${{ inputs.promote }}" = data ]; then WEB=$(code_commit ''); else WEB=$(code_commit 'staging/'); fi
             if [ -z "$WEB" ]; then
               echo "❌ 指针里没有 webCommitId（首次 promote 请用 code+data，且需先有一次成功的测试站部署）"
               exit 1

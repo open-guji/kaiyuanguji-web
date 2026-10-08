@@ -1,0 +1,153 @@
+[
+ {
+  "name": "无标记·两处一致",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "web": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": false
+ },
+ {
+  "name": "无标记·不一致→以 latest 为准",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": true
+ },
+ {
+  "name": "无标记·web 缺失",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "web": null,
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": false
+ },
+ {
+  "name": "无标记·latest 没有 webCommitId",
+  "latest": {},
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": false
+ },
+ {
+  "name": "有标记·web 在·一致",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "codePointer": "web.json"
+  },
+  "web": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "web.json",
+  "marked": true,
+  "mismatch": false
+ },
+ {
+  "name": "有标记·web 在·不一致→以 web 为准",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "codePointer": "web.json"
+  },
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "source": "web.json",
+  "marked": true,
+  "mismatch": true
+ },
+ {
+  "name": "有标记·web 缺失→退回 latest",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "codePointer": "web.json"
+  },
+  "web": null,
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json（web.json 缺失，退回）",
+  "marked": true,
+  "mismatch": false
+ },
+ {
+  "name": "有标记·web 不合法→退回 latest",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "codePointer": "web.json"
+  },
+  "web": {
+   "webCommitId": "zzz"
+  },
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json（web.json 缺失，退回）",
+  "marked": true,
+  "mismatch": false
+ },
+ {
+  "name": "有标记·latest 没有 webCommitId·web 在",
+  "latest": {
+   "codePointer": "web.json"
+  },
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "source": "web.json",
+  "marked": true,
+  "mismatch": false
+ },
+ {
+  "name": "标记值不对不算标记",
+  "latest": {
+   "webCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "codePointer": "other"
+  },
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": true
+ },
+ {
+  "name": "latest 读不到（错误对象）",
+  "latest": {
+   "_error": "x"
+  },
+  "web": {
+   "webCommitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "commit": "",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": false
+ },
+ {
+  "name": "两个都没有",
+  "latest": null,
+  "web": null,
+  "commit": "",
+  "source": "latest.json",
+  "marked": false,
+  "mismatch": false
+ }
+]
