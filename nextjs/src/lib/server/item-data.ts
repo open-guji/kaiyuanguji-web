@@ -137,6 +137,12 @@ function readLocalPublicData(relPath: string): string | null {
     return read ? read(relPath) : null;
 }
 
+/** getItem 的取法选项，见 createItemFetcher 里 getItem 的注释 */
+export interface ItemGetOptions {
+    prefer?: 'h1' | 'current';
+    currentOnly?: boolean;
+}
+
 export function createItemFetcher(opts: ItemFetcherOptions) {
     const base = opts.base.replace(/\/$/, '');
     const doFetch: FetchLike = opts.fetch ?? ((url, init) => fetch(url, init));
@@ -280,14 +286,17 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * current/ 确定没有时再问一次 h1（两边由同一次打包发出，不该不一致；h1 也查不了就按没有算）；
      * current/ 出网络错或 5xx 时回到 h1 优先的完整取法。
      */
-    async function getItemCurrentFirst(id: string): Promise<ItemFetchResult | null> {
+    async function getItemCurrentFirst(id: string, currentOnly = false): Promise<ItemFetchResult | null> {
         try {
             const hit = await fromCurrent(id);
             if (hit) return { ...hit, source: 'current' };
         } catch (err) {
+            // currentOnly：调用方只要 current/ 的肯定答案（中间件），出错就抛，不再串 h1 的 4 跳
+            if (currentOnly) throw err;
             console.warn(`[item-data] current/ 取 ${id} 失败，改走 h1：${(err as Error).message}`);
             return getItem(id);
         }
+        if (currentOnly) return null;
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch {
@@ -301,10 +310,15 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * prefer: 'current' —— 只要条目内容（书名、被并、升格）、不在乎 data-ssr-version 是哪条路径的调用方用：
      * 阅读页与中间件（overview#322 B1：h1 是 4 跳串行，冷实例与冷边缘实例上首个请求要等它走完）。
      * 条目页 /item/<id> 仍走 h1 优先：发版后的 item-cache-verify 按 data-ssr-version=h1:<新 root> 判断缓存已换新。
+     *
+     * currentOnly（配合 prefer: 'current'）—— current/ 没有就是没有，不再问 h1；current/ 出错直接抛。
+     * 给只凭「肯定的答案」才行动的调用方用（中间件：被并目标、升格都是正向证据，查不出就放过交给页面）。
+     * 冷边缘上每多一跳都吃 2 秒预算，promoted 草稿 id 在 current/ 与 h1 的条目里本来就都没有，
+     * 原先白走 h1 的 manifest-root → roots → manifest 分片 3 跳才得出「没有」（overview#491）。
      */
-    async function getItem(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+    async function getItem(id: string, opts?: ItemGetOptions): Promise<ItemFetchResult | null> {
         if (!isValidItemId(id)) return null;
-        if (opts?.prefer === 'current') return getItemCurrentFirst(id);
+        if (opts?.prefer === 'current') return getItemCurrentFirst(id, opts.currentOnly === true);
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch (err) {
@@ -374,7 +388,7 @@ function defaultFetcher(): ReturnType<typeof createItemFetcher> {
 }
 
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
-export function getItemServer(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+export function getItemServer(id: string, opts?: ItemGetOptions): Promise<ItemFetchResult | null> {
     return defaultFetcher().getItem(id, opts);
 }
 
