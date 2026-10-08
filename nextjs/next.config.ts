@@ -52,6 +52,8 @@ const { computeBuildInfo, writeBuildInfo } = createRequire(import.meta.url)('./s
 const buildInfo = computeBuildInfo({ cwd: process.cwd(), bimUi: uiVersion });
 
 const nextConfig: NextConfig = {
+  // overview#487 试验：显式开启，对比 EdgeOne 适配器下 Node SSR 响应是否带 Content-Encoding（Next 默认值本来就是 true）
+  compress: true,
   // local mode 需要 API routes、fullstack 要函数渲染，都不能用 static export
   ...(isLocal || isFullstack ? {} : { output: 'export' as const }),
   // 仅 local 模式打包 *.local.ts 文件（如 API routes，与 output: 'export' 不兼容）；
