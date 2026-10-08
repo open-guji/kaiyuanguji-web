@@ -179,8 +179,41 @@ jobs:
       - name: Contract tests
         working-directory: e2e
         run: npm run test:contract
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-contract
+          path: e2e/out/report
+          retention-days: 14
+
+  # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，但不把发版判定为失败。
+  # overview#469 第三轮：原来是 contract 任务的最后一步，串在契约用例后面多占 16～57 秒；
+  # 正式站晋升的验收里 contract 是最长的任务（约 211 秒，ui 冒烟只要 109 秒），所以拆成并行任务能直接缩短晋升。
+  # 不能用任务级 continue-on-error：红的任务在任务列表里仍记为 failure，晋升前的核对（deploy.yml 的
+  # 「verify / * 全绿」）会把整次 run 判为不可晋升。所以和原来一样，用步骤级 continue-on-error——任务本身恒为 success，
+  # 失败只留在步骤日志里。
+  degradable:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+      - name: Wait for CDN propagation
+        env:
+          READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
+        run: |
+          d=$(( READY_AT - $(date +%s) ))
+          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Degradable deps (non-blocking)
-        if: ${{ !cancelled() }}
         working-directory: e2e
         continue-on-error: true
         run: npm run test:degradable
@@ -188,7 +221,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-report-contract
+          name: e2e-report-degradable
           path: e2e/out/report
           retention-days: 14
 
