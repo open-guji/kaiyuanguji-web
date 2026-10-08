@@ -725,6 +725,170 @@ jobs:
           done
           exit $rc
 
+  # h1 文本（overview#470 设计 §5 (b)(c)，PR-D）：生产没有读者，所以单独成任务——不拖住刷新／上线后抽查／告警，失败只警告。
+  # 它读的是 bundle-data.mjs 打出来的整个 items/，所以要在这里按 package 用的同一对 commit 重新克隆＋build_derived＋打包
+  # （缓存命中约 +3～4 分钟，与 refresh／verify-live 并行）。只在「线上 h1 文本指针记的 book-text commit ≠ 这次的」时才做；
+  # 演练勾了 force_sync（只 staging 生效）则一定做。写的前缀与 package 一致（演练＝staging/）。
+  h1-text:
+    needs: package
+    if: ${{ !cancelled() && needs.package.outputs.data_published == 'true' && needs.package.outputs.sitemaps_only != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    # 任务级 continue-on-error：红了不让整个 run 变红（它是不拦的附属任务）；失败会写 ::warning:: 和摘要
+    continue-on-error: true
+    outputs:
+      ran: ${{ steps.decide.outputs.run }}
+    env:
+      NEW_PROD: ${{ needs.package.outputs.new_prod_commit }}
+      NEW_TEXT: ${{ needs.package.outputs.new_text_commit }}
+      PREFIX: ${{ needs.package.outputs.prefix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # 只读：看线上 h1 文本指针记的 book-text commit。取不到（首次、404、坏 JSON）一律当成要做；force_sync 只在 staging 生效
+      - name: Decide (skip when book-text unchanged since the live h1 text pointer)
+        id: decide
+        env:
+          FORCE_SYNC: ${{ inputs.force_sync }}
+          TARGET: ${{ inputs.target || 'production' }}
+        run: |
+          run=true; why=""
+          URL="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}h1/text-manifest-root.json?cb=$(date +%s)"
+          LIVE=$(curl -sf --max-time 30 "$URL" | python3 -c "import json,sys; print((json.load(sys.stdin).get('dataCommit') or {}).get('textCommitId',''))" 2>/dev/null || true)
+          if [ "$FORCE_SYNC" = true ] && [ "$TARGET" = staging ]; then
+            why="force_sync（演练）：不看指针，照做"
+          elif [ -n "$LIVE" ] && [ "$LIVE" = "$NEW_TEXT" ]; then
+            run=false; why="线上 h1 文本指针已是 book-text ${NEW_TEXT:0:12}，没变，跳过"
+          else
+            why="线上 h1 文本指针记的是 '${LIVE:0:12}'，这次 ${NEW_TEXT:0:12}（或读不到指针）：要做"
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          echo "· h1 文本：$why"
+          echo "### h1 文本（单独任务）" >> "$GITHUB_STEP_SUMMARY"; echo "- $why" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set data output root (outside nextjs/)
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        working-directory: nextjs
+        run: npm ci
+
+      - name: Restore git cache — book-index
+        id: gc_index
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ env.NEW_PROD }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ env.NEW_TEXT }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
+      # 克隆 package 用的同一对 commit（不是 ref：package 之后数据仓可能又有新提交，h1 文本要和 current/ 同一版）
+      - name: Clone index data repos (same commits as package)
+        id: clone
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: |
+          source ops/clone-cached.sh
+          clone_cached book-index book-index "$NEW_PROD"
+          clone_cached book-text book-text "$NEW_TEXT"
+
+      - name: Build derived data (schema-v2)
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: |
+          if [ -f book-index/build/build_derived.py ]; then
+            D="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
+            (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
+            echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+          else
+            echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
+          fi
+
+      - name: Bundle data
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        working-directory: nextjs
+        env:
+          BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
+          BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
+        run: |
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
+          node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
+
+      # 同 package：基础闸（含私有文本泄漏检查）——上传的是 items/ 里的文本，泄漏检查要在带密钥的步骤之前
+      - name: Verify bundled data (basic gates)
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: bash ops/data-package-verify.sh book-index
+
+      - name: COS h1 text state — restore
+        id: h1t_state
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-text-state-v1-${{ inputs.target || 'production' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cos-h1-text-state-v1-${{ inputs.target || 'production' }}-
+            cos-h1-state-v1-${{ inputs.target || 'production' }}-
+
+      - name: Sync h1 text to Tencent COS
+        id: sync
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ needs.package.outputs.prefix }}
+          COS_CONCURRENCY: '32'
+          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
+        run: |
+          cd nextjs
+          s=$SECONDS; echo "▶ h1 文本打包开始 $(date -u +%H:%M:%S) UTC"
+          node scripts/bundle-hashed-text.mjs
+          echo "✔ h1 文本打包用时 $((SECONDS - s)) 秒"
+          s=$SECONDS; echo "▶ h1 文本同步开始 $(date -u +%H:%M:%S) UTC"
+          node scripts/sync-h1-text-to-cos.mjs
+          echo "✔ h1 文本同步用时 $((SECONDS - s)) 秒"
+
+      - name: COS h1 text state — save
+        if: ${{ steps.sync.outcome == 'success' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-text-state-v1-${{ inputs.target || 'production' }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Warn when the h1 text sync failed (does not block anything)
+        if: ${{ always() && steps.sync.outcome == 'failure' }}
+        run: |
+          echo "::warning::h1 文本同步失败（不拦发布；h1 文本目前生产无读者）。下次 book-text 变化或手动重跑会再试"
+          echo "- ⚠ h1 文本同步失败（不拦发布）" >> "$GITHUB_STEP_SUMMARY"
+
   # 上线后抽查要用"线上现在跑的代码"对应的 e2e：e2e 必须和被测站点是同一版代码（verify.yml 头注释）。
   # 正式站取 web.json（代码指针），取不到退回 latest.json 里的 webCommitId，再不行用 main。
   live-ref:

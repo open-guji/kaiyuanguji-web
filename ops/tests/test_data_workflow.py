@@ -287,6 +287,80 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertNotIn('force_sync', json.dumps(gate))
         self.assertNotIn('FORCE', json.dumps(gate))
 
+    # ---- h1 文本单独任务（PR-D）----
+    def _h1(self):
+        job = self.wf['jobs']['h1-text']
+        return job, job['steps']
+
+    def _h1_step(self, name):
+        job, steps = self._h1()
+        hits = [x for x in steps if x.get('name') == name]
+        self.assertEqual(len(hits), 1, name)
+        return hits[0]
+
+    def test_h1_text_job_follows_real_publish_and_never_blocks(self):
+        job, _ = self._h1()
+        self.assertEqual(job['needs'], 'package')
+        cond = job['if']
+        self.assertIn("needs.package.outputs.data_published == 'true'", cond)
+        self.assertIn("needs.package.outputs.sitemaps_only != 'true'", cond)
+        self.assertTrue(job.get('continue-on-error'))
+        # 不进告警：生产没有 h1 文本读者，失败只警告
+        alert_needs = self.wf['jobs']['alert-data']['needs']
+        self.assertNotIn('h1-text', alert_needs)
+        self.assertNotIn('h1-text', self.wf['jobs']['verify-live']['needs'])
+        self.assertNotIn('h1-text', self.wf['jobs']['refresh'].get('needs', []))
+
+    def test_h1_text_secrets_only_in_the_one_sync_step_env(self):
+        job, steps = self._h1()
+        self.assertNotIn('secrets.', json.dumps(job.get('env', {})))
+        users = [x['name'] for x in steps if 'secrets.' in json.dumps(x.get('env', {}))]
+        self.assertEqual(users, ['Sync h1 text to Tencent COS'])
+        for x in steps:   # 除了 decide 和 checkout，每一步都受 decide 的结果控制，且没有一步的 run 里直接引用 secrets
+            self.assertNotIn('secrets.', x.get('run', ''), x.get('name'))
+            if x.get('name', '').startswith(('Decide', 'Warn', 'COS h1 text state — save')) or 'uses' in x and x['uses'].startswith('actions/checkout'):
+                continue
+            self.assertIn("steps.decide.outputs.run == 'true'", x.get('if', ''), x.get('name'))
+        sync = self._h1_step('Sync h1 text to Tencent COS')
+        self.assertEqual(sync['env']['COS_PATH_PREFIX'], '${{ needs.package.outputs.prefix }}')
+        # 基础闸（含私有文本泄漏检查）必须排在带密钥的同步之前
+        names = [x.get('name') for x in steps]
+        self.assertLess(names.index('Verify bundled data (basic gates)'), names.index('Sync h1 text to Tencent COS'))
+        self.assertLess(names.index('Bundle data'), names.index('Verify bundled data (basic gates)'))
+
+    def test_h1_text_clones_the_same_commits_as_package_not_refs(self):
+        step = self._h1_step('Clone index data repos (same commits as package)')
+        self.assertIn('"$NEW_PROD"', step['run'])
+        self.assertIn('"$NEW_TEXT"', step['run'])
+        job, _ = self._h1()
+        self.assertEqual(job['env']['NEW_PROD'], '${{ needs.package.outputs.new_prod_commit }}')
+        self.assertEqual(job['env']['NEW_TEXT'], '${{ needs.package.outputs.new_text_commit }}')
+
+    def _run_h1_decide(self, live_text_commit, new_text='aaaa1111', force='', target='production', curl_ok=True, body=None):
+        step = self._h1_step('Decide (skip when book-text unchanged since the live h1 text pointer)')
+        with tempfile.TemporaryDirectory() as d:
+            bindir = os.path.join(d, 'bin'); os.makedirs(bindir)
+            payload = body if body is not None else json.dumps({'version': 2, 'root': 'x.json', 'dataCommit': {'textCommitId': live_text_commit}})
+            with open(os.path.join(bindir, 'curl'), 'w') as fh:
+                fh.write('#!/bin/bash\n' + ('cat <<\'EOF\'\n%s\nEOF\n' % payload if curl_ok else 'exit 22\n'))
+            os.chmod(os.path.join(bindir, 'curl'), 0o755)
+            out = os.path.join(d, 'out'); summ = os.path.join(d, 'summary')
+            open(out, 'w').close(); open(summ, 'w').close()
+            env = dict(os.environ, PATH=bindir + os.pathsep + os.environ['PATH'], GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ,
+                       NEW_TEXT=new_text, PREFIX='staging' if target == 'staging' else '', FORCE_SYNC=force, TARGET=target)
+            r = subprocess.run(['bash', '-e', '-c', step['run']], env=env, capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            with open(out, encoding='utf-8') as fh:
+                return dict(l.split('=', 1) for l in fh.read().splitlines() if '=' in l)['run']
+
+    def test_h1_text_decide_runs_only_when_book_text_changed(self):
+        self.assertEqual(self._run_h1_decide('aaaa1111'), 'false')                       # 指针已是这次的 book-text：跳过
+        self.assertEqual(self._run_h1_decide('bbbb2222'), 'true')                        # book-text 变了：做
+        self.assertEqual(self._run_h1_decide('', curl_ok=False), 'true')                 # 读不到指针（首次／404）：做
+        self.assertEqual(self._run_h1_decide('', body='not json'), 'true')               # 坏 JSON：做
+        self.assertEqual(self._run_h1_decide('aaaa1111', force='true', target='staging'), 'true')    # 演练 force_sync：照做
+        self.assertEqual(self._run_h1_decide('aaaa1111', force='true', target='production'), 'false')  # 正式前缀忽略 force_sync
+
     # ---- 刷新、上线后抽查、告警（PR-C1）----
     def test_followup_jobs_exist_and_only_follow_real_data_publish(self):
         jobs = self.wf['jobs']
