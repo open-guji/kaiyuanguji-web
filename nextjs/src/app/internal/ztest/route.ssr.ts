@@ -18,6 +18,23 @@ export async function GET(req: NextRequest) {
         'X-Probe-Mode': mode,
     };
     const raw = Buffer.from(BODY, 'utf-8');
+    // 试验 3：为什么 plainc（json、有 Content-Length、s-maxage）在 Cache Hit 上会被压，/item/*（html、流式、swr）不会？
+    const CC = 'public, s-maxage=600';
+    if (mode === 'htmlc') { // html + Content-Length + s-maxage
+        return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': CC, 'Content-Length': String(raw.byteLength) } });
+    }
+    if (mode === 'htmlswr') { // html + Content-Length + s-maxage + swr（同 /item/*）
+        return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=31532400', 'Content-Length': String(raw.byteLength) } });
+    }
+    if (mode === 'htmls' || mode === 'jsons') { // 流式（不带 Content-Length，chunked）
+        const chunks: Uint8Array[] = [];
+        for (let i = 0; i < raw.byteLength; i += 8192) chunks.push(raw.subarray(i, i + 8192));
+        const stream = new ReadableStream({ start(c) { for (const ch of chunks) c.enqueue(ch); c.close(); } });
+        const ct = mode === 'htmls' ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8';
+        const h = { ...base, 'Content-Type': ct, 'Cache-Control': CC };
+        delete (h as Record<string, string>)['Content-Length'];
+        return new NextResponse(stream, { status: 200, headers: h });
+    }
     if (mode === 'gzipc') {
         // 带 CDN 缓存头的 gzip：看缓存命中时不同 Accept-Encoding 的客户端各拿到什么
         const z = gzipSync(raw);

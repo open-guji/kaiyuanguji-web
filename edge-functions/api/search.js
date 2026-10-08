@@ -753,6 +753,12 @@ function acceptsGzip(header) {
 }
 
 async function withCompression(request, res) {
+  // 试验 3 的诊断：把压缩路径上发生了什么回在 X-Debug-Compress；?_exp=smax 时给响应加 s-maxage（看边缘缓存命中后网关是否帮着压）
+  const dbg = (v) => { try { res.headers.set('X-Debug-Compress', v); } catch { /* 头只读就算了 */ } };
+  try {
+    if (new URL(request.url).searchParams.get('_exp') === 'smax') res.headers.set('Cache-Control', 'public, s-maxage=300');
+  } catch { /* ignore */ }
+  dbg(`cs=${typeof CompressionStream}`);
   // 在可变的响应头上补 Vary（我们自己 new 出来的 Response，头可写）
   const vary = res.headers.get('Vary');
   if (!vary) res.headers.set('Vary', 'Accept-Encoding');
@@ -760,16 +766,17 @@ async function withCompression(request, res) {
 
   if (res.headers.has('Content-Encoding')) return res;
   // 试验 2：函数收到的 Accept-Encoding 被网关改成 identity/空，看不出客户端接不接受 gzip——先一律压，看网关会不会按客户端头解码
-  if (typeof CompressionStream === 'undefined') return res; // 运行时没有就不压，原样返回
+  if (typeof CompressionStream === 'undefined') { dbg('no-CompressionStream'); return res; } // 运行时没有就不压，原样返回
   try {
     const raw = new Uint8Array(await res.clone().arrayBuffer());
-    if (raw.byteLength < COMPRESS_MIN_BYTES) return res;
+    if (raw.byteLength < COMPRESS_MIN_BYTES) { dbg(`small:${raw.byteLength}`); return res; }
     const gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
     const headers = new Headers(res.headers);
     headers.set('Content-Encoding', 'gzip');
     headers.set('Content-Length', String(gz.byteLength)); // 压后的长度，别带旧的
     return new Response(gz, { status: res.status, headers });
-  } catch {
+  } catch (e) {
+    dbg(`error:${String(e && e.message).slice(0, 80)}`);
     return res; // 压缩出错不能让搜索失败，退回未压缩
   }
 }
