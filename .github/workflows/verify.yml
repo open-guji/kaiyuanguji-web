@@ -42,6 +42,11 @@ on:
         type: boolean
         required: false
         default: false
+      data_from_prod:
+        description: 测试站读的是正式站数据前缀（数据流程已拆出，overview#470 P1）：DATA_BASE 指向正式数据
+        type: boolean
+        required: false
+        default: false
   workflow_dispatch:
     inputs:
       target:
@@ -64,6 +69,11 @@ on:
         type: boolean
         required: false
         default: false
+      data_from_prod:
+        description: 测试站读的是正式站数据前缀（数据流程已拆出，overview#470 P1）
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -71,7 +81,8 @@ permissions:
 env:
   # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
   TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
-  DATA_BASE: ${{ inputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+  # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+  DATA_BASE: ${{ inputs.target == 'staging' && !inputs.data_from_prod && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
   # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
   # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
   # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红

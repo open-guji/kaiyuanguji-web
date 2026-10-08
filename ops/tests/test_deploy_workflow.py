@@ -224,6 +224,97 @@ class WebPointerStep(unittest.TestCase):
 
 
 @unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class SplitDataFlow(unittest.TestCase):
+    """overview#470 P1：仓库变量 SPLIT_DATA_FLOW 打开后，代码流程不碰数据。变量不设（默认）时行为必须与拆出之前一致，
+    所以这里钉的是「每个数据步骤都被开关挡得住」「两份正式站构建仍一致」「晋升与验收跟着开关走」。"""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.build = cls.wf['jobs']['build']['steps']
+        cls.names = [s.get('name', '') for s in cls.build]
+
+    def _by_name(self, name, steps=None):
+        hits = [x for x in (steps or self.build) if x.get('name') == name]
+        self.assertEqual(len(hits), 1, name)
+        return hits[0]
+
+    def test_resolve_exposes_split_and_reads_variable(self):
+        self.assertIn('split', self.wf['jobs']['resolve']['outputs'])
+        r = [x for x in self.wf['jobs']['resolve']['steps'] if x.get('id') == 'r'][0]
+        self.assertIn('vars.SPLIT_DATA_FLOW', r['env']['SPLIT_VAR'])
+        # 三条路径（from_run 晋升、无 from_run 的晋升、测试站）都要输出 split
+        self.assertEqual(r['run'].count('echo "split=$SPLIT" >> "$GITHUB_OUTPUT"'), 3)
+
+    def test_split_step_sets_data_fast_before_any_data_step(self):
+        n = 'Split data flow — skip all data steps (overview#470 P1)'
+        st = self._by_name(n)
+        self.assertIn('SPLIT_DATA', st['if'])
+        self.assertIn('DATA_FAST=true', st['run'])
+        i = self.names.index(n)
+        for first_data in ('Data fast path — decide before cloning (overview#341)', 'Clone index data repos'):
+            self.assertLess(i, self.names.index(first_data))
+
+    def test_every_data_step_is_gated(self):
+        # 这些步骤碰数据（克隆、打包、COS、sitemap 生成、指针）：必须被 DATA_FAST 或 SPLIT_DATA 挡得住
+        data_steps = [
+            'Data fast path — decide before cloning (overview#341)', 'Data fast path — restore item sitemaps',
+            'Data fast path — write latest.json only', 'Clone index data repos', 'Build derived data (schema-v2)',
+            'Bundle data for EdgeOne', 'Verify bundled data', 'Verify production entries bundled',
+            'Verify no private text leaked into public data', 'Decide COS data sync (skip when data unchanged)',
+            'Write latest.json only (data unchanged, skip COS data upload)',
+            'Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel',
+            'Record previous h1 root (W2-3)', 'Item sitemaps (W2-3)', 'Compute changed items (W2-3)',
+        ]
+        for n in data_steps:
+            cond = str(self._by_name(n).get('if', ''))
+            self.assertTrue('DATA_FAST' in cond or 'SPLIT_DATA' in cond or 'data_pre.outputs.skip' in cond, f'{n}: {cond!r}')
+
+    def test_sitemap_proxy_flag_in_all_three_builds(self):
+        for job, name in (('build', 'Build for EdgeOne (production, fullstack → kyg-ssr-spike)'),
+                          ('prod-artifact', 'Build for EdgeOne (production, fullstack → kyg-ssr-spike)'),
+                          ('build', 'Build for EdgeOne (staging, fullstack)')):
+            env = _step(self.wf['jobs'][job], name)['env']
+            self.assertIn('needs.resolve.outputs.split', env['NEXT_PUBLIC_SITEMAP_PROXY'], f'{job}/{name}')
+
+    def test_staging_reads_prod_data_when_split(self):
+        env = _step(self.wf['jobs']['build'], 'Build for EdgeOne (staging, fullstack)')['env']
+        base = env['NEXT_PUBLIC_COS_BASE']
+        self.assertIn("'https://data.kaiyuanguji.com/staging'", base)   # 不拆时仍是 staging 前缀
+        self.assertIn('needs.resolve.outputs.split', base)
+
+    def test_prod_artifact_skips_sitemap_generation_when_split(self):
+        steps = self.wf['jobs']['prod-artifact']['steps']
+        for n in ('Restore item sitemaps (www)', 'Clone, bundle and generate item sitemaps (cache miss)',
+                  'Save item sitemaps cache (www)', 'Place item sitemaps',
+                  'Restore git cache — book-index', 'Restore git cache — book-text',
+                  'Save git cache — book-index', 'Save git cache — book-text'):
+            self.assertIn("needs.resolve.outputs.split != 'true'", self._by_name(n, steps)['if'], n)
+
+    def test_auto_promote_data_off_when_split_and_verify_follows(self):
+        self.assertIn("needs.resolve.outputs.split != 'true'", self.wf['jobs']['auto-promote']['if'])
+        self.assertIn('needs.resolve.outputs.split', self.wf['jobs']['verify']['with']['data_from_prod'])
+
+    def test_check_artifact_script_gets_sitemap_mode(self):
+        for job in ('build', 'prod-artifact'):
+            st = _step(self.wf['jobs'][job], 'Verify production artifacts (fullstack)')
+            self.assertIn('check-edgeone-artifact.sh', st['run'])
+            self.assertIn("needs.resolve.outputs.split == 'true' && 'proxy' || 'static'", st['run'])
+
+    def test_manifest_records_data_split(self):
+        st = self._by_name('Write promote manifest (staging)')
+        self.assertIn("'dataSplit'", st['run'])
+        self.assertIn('needs.resolve.outputs.split', st['run'])
+
+    def test_scheduled_check_skips_when_split(self):
+        c = self.wf['jobs']['check']['steps'][0]
+        self.assertIn('vars.SPLIT_DATA_FLOW', c['env']['SPLIT_DATA_FLOW'])
+        self.assertIn('"$SPLIT_DATA_FLOW" = "true"', c['run'])
+
+
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
 class CodeOnlyPromote(unittest.TestCase):
     """自动晋升只推代码（promote=code），数据只在手动选 code+data／data 时才推。
 
@@ -308,6 +399,13 @@ class CodeOnlyPromote(unittest.TestCase):
         i = self.names.index(n)
         self.assertGreater(i, self.names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
         self.assertLess(i, self.names.index('Purge EdgeOne CDN cache'))
+
+    def test_code_only_does_not_write_latest_json_when_split(self):
+        # 数据流程拆出后 latest.json 只归数据流程写：部署之后写指针的那一步在开关打开时不能再改它
+        s = _step(self.build, 'Code-only promote — record webCommitId in latest.json (after deploy)')
+        self.assertIn("env.SPLIT_DATA != 'true'", s['if'])
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertIn("env.SPLIT_DATA != 'true'", _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
 
 
 if __name__ == '__main__':
