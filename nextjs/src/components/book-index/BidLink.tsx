@@ -6,6 +6,7 @@ import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
 import { useConvert, type IndexEntry, type IndexType } from 'book-index-ui';
 import type { DataSource } from '@/lib/constants';
+import { parseItemId } from '@/lib/item-id';
 
 interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     id: string;
@@ -38,7 +39,12 @@ export default function BidLink({ id, children, className, showIcon = true, ...p
     const [name, setName] = useState<string | null>(null);
     const { convert } = useConvert();
 
+    // 调用方给了标题（非 id 占位）就不必取条目：图标类型由 id 自带的位段判（parseItemId），
+    // 名称用调用方的。周易页这类一屏上千个链接由此省掉上千次 getEntry（overview#458，F4-5 批次 0.2）
+    const hasLabel = !!children && !(typeof children === 'string' && children === id);
+
     useEffect(() => {
+        if (hasLabel) return;
         let isMounted = true;
         fetchEntry(source, id).then(entry => {
             if (isMounted && entry) {
@@ -49,13 +55,15 @@ export default function BidLink({ id, children, className, showIcon = true, ...p
             console.error(`Failed to fetch book info for ID: ${id}`, err);
         });
         return () => { isMounted = false; };
-    }, [id, source]);
+    }, [id, source, hasLabel]);
+
+    const iconType: IndexType | null = type ?? (hasLabel ? (parseItemId(id)?.type ?? null) : null);
 
     const renderIcon = () => {
         if (!showIcon) return null;
         const iconBaseClass = "w-3.5 h-3.5 inline-block mr-1 opacity-70 align-middle";
 
-        switch (type) {
+        switch (iconType) {
             case 'book':
                 return (
                     <svg className={iconBaseClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
