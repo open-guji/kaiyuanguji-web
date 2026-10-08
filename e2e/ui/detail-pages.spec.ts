@@ -32,13 +32,49 @@ const ROWS = '.bim-d-row, .bim-d-zt tbody tr';
 const THREE_COLUMN = '0.10.0';
 
 /**
- * 是不是一次「条目数据」请求：只数数据域（DATA_BASE）下的 entry/、items/、h1/。
+ * 浏览器端查「升格对照表」（草稿 id → 正式 id）的请求：h1 指针、root、按后缀的分片。
+ * web#310 起每个条目 id 解析前先取它所在的一片 `h1/promotions/<后缀>.<hash8>.json`
+ * （旧布局下条目仍读 current/，升格查表走这一套）。它们不是「条目数据」，单独数、单独设上限。
+ */
+function isPromotionLookupRequest(url: string): boolean {
+    if (!url.startsWith(`${DATA_BASE}/`)) return false;
+    return /^\/h1\/(promotions\/|manifest-root\.json|roots\/)/.test(url.slice(DATA_BASE.length));
+}
+
+function isPromotionShardRequest(url: string): boolean {
+    return url.startsWith(`${DATA_BASE}/`) && url.slice(DATA_BASE.length).startsWith('/h1/promotions/');
+}
+
+/**
+ * 是不是一次「条目数据」请求：只数数据域（DATA_BASE）下的 entry/、items/、h1/，
+ * 但升格对照表的查表请求（isPromotionLookupRequest）不算——这条守的是「不对子目逐条 getItem」，
+ * 不是在管升格对照表。
  * 2026-09-27 起条目页地址是 /item/<id>（W2），原先的正则 /\/(entry|item|items)\//
  * 会把页面自己的地址和 app/item/[id] 的 JS chunk 也算进来，离上限只剩 1（网站总管裁决收窄）。
  */
 function isEntryDataRequest(url: string): boolean {
     if (!url.startsWith(`${DATA_BASE}/`)) return false;
+    if (isPromotionLookupRequest(url)) return false;
     return /\/(entry|items|h1)\//.test(url.slice(DATA_BASE.length));
+}
+
+/**
+ * 升格分片请求的上限（web#310）：同一片只取一次（URL 不重复），且不多于条目请求数
+ * （每个条目 id 最多要一片），再加指针＋root 各至多 2 次。别只放宽阈值——重复取同一片
+ * 或每次渲染都重新取，会在这里红。
+ */
+function expectPromotionLookupsBounded(requests: string[], entryRequestCount: number) {
+    const shards = requests.filter(isPromotionShardRequest);
+    expect(
+        new Set(shards).size,
+        `同一片升格分片被重复取了：${shards.join(' | ')}`,
+    ).toBe(shards.length);
+    expect(
+        shards.length,
+        `升格分片请求 ${shards.length} 次，多于条目请求 ${entryRequestCount} 次（每个 id 最多一片）`,
+    ).toBeLessThanOrEqual(Math.max(entryRequestCount, 1));
+    const infra = requests.length - shards.length;
+    expect(infra, `升格查表的指针／root 请求 ${infra} 次，应 ≤ 4`).toBeLessThanOrEqual(4);
 }
 
 async function openDetail(page: Page, id: string) {
@@ -177,8 +213,10 @@ test.describe('详情页版式', () => {
         // schema-v2：成员列表是 _members（只含前 20 项，总数看 _member_count），表至少有 5 行即可。
         // 0.10.3 起为可见的 16 行补取撰人与卷数，再加上级丛编，约 17 次，仍须低于 20。
         const itemRequests: string[] = [];
+        const promotionRequests: string[] = [];
         page.on('request', (r) => {
             if (isEntryDataRequest(r.url())) itemRequests.push(r.url());
+            else if (isPromotionLookupRequest(r.url())) promotionRequests.push(r.url());
         });
 
         await openDetail(page, COLLECTION);
@@ -191,6 +229,7 @@ test.describe('详情页版式', () => {
             itemRequests.length,
             `丛编页发了 ${itemRequests.length} 次条目请求；子目应直接取自条目自带的成员列表`,
         ).toBeLessThan(20);
+        expectPromotionLookupsBounded(promotionRequests, itemRequests.length);
     });
 
     test('反馈入口不重复，但反馈页始终有返回入口', async ({ page }) => {
@@ -281,8 +320,10 @@ test.describe('人物页', () => {
     test('作品表按 cap 渲染，不再一次性挂 300 多个链接', async ({ page }) => {
         // 旧版把 308 部作品全渲染，页面高 9364px、一次 309 个链接、308 次请求
         const itemRequests: string[] = [];
+        const promotionRequests: string[] = [];
         page.on('request', (r) => {
             if (isEntryDataRequest(r.url())) itemRequests.push(r.url());
+            else if (isPromotionLookupRequest(r.url())) promotionRequests.push(r.url());
         });
 
         await openDetail(page, OUYANG);
@@ -296,6 +337,7 @@ test.describe('人物页', () => {
             itemRequests.length,
             `人物页发了 ${itemRequests.length} 次条目请求；只该解析可见行`,
         ).toBeLessThan(40);
+        expectPromotionLookupsBounded(promotionRequests, itemRequests.length);
 
         const height = await page.evaluate(() => document.documentElement.scrollHeight);
         expect(height, '页面高度回到合理量级（旧版 9364px）').toBeLessThan(4000);
