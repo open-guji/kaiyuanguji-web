@@ -360,3 +360,56 @@ describe('mergedTarget／jsonLdScript', () => {
         expect(JSON.parse(out).name).toBe('</script><script>alert(1)</script>');
     });
 });
+
+describe('schema-v2 双兼容（overview#458）：新字段优先，缺则回退旧字段', () => {
+    const base = { id: 'd59f20aowb9c', type: 'work', title: '史記' };
+
+    it('Work：_books 优先于 books；只有旧 books 时照旧', () => {
+        const v2 = buildItemSeo({ ...base, _books: [{ id: '988g3f0wsu', title: '甲本' }, { id: '988g3gl3if', title: '乙本' }] }, 'd59f20aowb9c', SITE);
+        expect(JSON.stringify(v2.jsonLd.workExample)).toContain('988g3f0wsu');
+        expect((v2.jsonLd.workExample as unknown[]).length).toBe(2);
+        expect(v2.description).toContain('本站收錄其版本 2 種');
+        const v1 = buildItemSeo({ ...base, books: ['988g3f0wsu'] }, 'd59f20aowb9c', SITE);
+        expect((v1.jsonLd.workExample as unknown[]).length).toBe(1);
+    });
+
+    it('Work：_classifications 优先（zongmu），缺则回退旧 classification', () => {
+        const v2 = buildItemSeo({
+            ...base,
+            classification: { l1: '舊部', l2: '舊類' },
+            _classifications: [{ scheme: 'zongmu', node: 'zm0190', l1: '史部', l2: '雜史類', l3: '', l4: '' }],
+        }, 'd59f20aowb9c', SITE);
+        expect(v2.jsonLd.genre).toBe('史部·雜史類');
+        expect(v2.description).toContain('屬史部雜史類');
+        const v1 = buildItemSeo({ ...base, classification: { l1: '經部', l2: '易類' } }, 'd59f20aowb9c', SITE);
+        expect(v1.jsonLd.genre).toBe('經部·易類');
+    });
+
+    it('Collection：_members／_member_count 优先；旧 contained_works＋books 回退', () => {
+        const col = { id: '8rlcsybg2hhi', type: 'collection', title: '叢書' };
+        const v2 = buildItemSeo({
+            ...col,
+            _members: [{ id: 'd59f20aowb9c', t: 'work', title: 'a' }, { id: '988g3f0wsu', t: 'book', title: 'b' }],
+            _member_count: 350,
+        }, '8rlcsybg2hhi', SITE);
+        expect(v2.jsonLd.collectionSize).toBe(350);
+        expect((v2.jsonLd.hasPart as unknown[]).length).toBe(2);
+        expect(v2.description).toContain('本站收錄其子目 350 種');
+        const v1 = buildItemSeo({ ...col, contained_works: [{ id: 'd59f20aowb9c' }], books: ['988g3f0wsu'] }, '8rlcsybg2hhi', SITE);
+        expect(v1.jsonLd.collectionSize).toBe(2);
+    });
+
+    it('Entity：_works 优先于 works', () => {
+        const ent = { id: 'hixhd2f8wamg', type: 'entity', primary_name: '司馬遷', dynasty: '西漢' };
+        const v2 = buildItemSeo({ ...ent, _works: [{ work_id: 'd59f20aowb9c', role: '撰', title: '史記' }, { work_id: 'd59f20aowb9d', role: '注', title: 'x' }] }, 'hixhd2f8wamg', SITE);
+        expect(v2.description).toContain('其作品 2 部');
+        const v1 = buildItemSeo({ ...ent, works: [{ work_id: 'd59f20aowb9c', role: '撰' }] }, 'hixhd2f8wamg', SITE);
+        expect(v1.description).toContain('其作品 1 部');
+    });
+
+    it('所属丛编：_collections 优先于 contained_in', () => {
+        const v2 = buildItemSeo({ ...base, _collections: [{ id: '8rlcsybg2hhi', title: '叢書' }], contained_in: [{ id: '8rlcsy6ubh1c' }] }, 'd59f20aowb9c', SITE);
+        expect(JSON.stringify(v2.jsonLd.isPartOf)).toContain('8rlcsybg2hhi');
+        expect(JSON.stringify(v2.jsonLd.isPartOf)).not.toContain('8rlcsy6ubh1c');
+    });
+});

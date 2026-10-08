@@ -30,6 +30,7 @@
  *       node scripts/build-read-index.mjs [bookIndexDir]   单独重建
  */
 import { existsSync, readFileSync, readdirSync } from 'fs';
+import { indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { chapterTxtFile, newStructureReadable, readManifest } from './lib/text-layout.mjs';
@@ -349,6 +350,16 @@ export function buildPeriodLists(cards) {
     return lists;
 }
 
+/** 条目详情：schema-v2 的 build 产物优先、缺则读源档（lib/derived.mjs）；没有或读不了返回 null */
+function readEntryOrNull(item, rootDirFor, log) {
+    try {
+        return readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path) })?.doc ?? null;
+    } catch (e) {
+        log(`  ⚠ read: 读不了 ${item.path}: ${e.message}`);
+        return null;
+    }
+}
+
 function readJsonSafe(p, log, what) {
     try {
         return JSON.parse(readFileSync(p, 'utf-8'));
@@ -379,9 +390,7 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
     function readable(entries, onMerged) {
         const out = [];
         for (const item of Object.values(entries ?? {})) {
-            const p = join(rootDirFor(item), item.path);
-            if (!existsSync(p)) continue;
-            const d = readJsonSafe(p, log, item.path);
+            const d = readEntryOrNull(item, rootDirFor, log);
             if (!d || d.merged_into) { if (d) onMerged(); continue; }
             if (!d.id) d.id = item.id;
             const itemDir = join(textDirFor(item), dirname(item.path), d.id);
@@ -413,8 +422,7 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
         if (workCards.has(wid)) return workCards.get(wid).period ?? null;
         const item = index.works?.[wid];
         if (!item) return null;
-        const p = join(rootDirFor(item), item.path);
-        const d = existsSync(p) ? readJsonSafe(p, log, item.path) : null;
+        const d = readEntryOrNull(item, rootDirFor, log);
         return d ? cardPeriod(toCard(d), d) : null;
     };
     const books = rb.map(({ d, nt }) => {
@@ -475,7 +483,9 @@ export function verifyReadProbes(probes, dataDir) {
         } else if (p.kind === 'text') {
             need(p.id, `${p.key}/index.json`);
             // 整理本的章可以只有结构化 json、没有 md（has_json 时 md 可缺）；其余章 md 必须在
-            if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
+            // 对读章（自校本）真源是 char.json，不产 md／txt：声明了 char_file 就核对它
+            if (p.first.charFile) need(p.id, `${p.key}/${p.first.charFile}`);
+            else if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
             if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file.replace(/\.(md|txt)$/, '')}.json`);
         }
     }
@@ -531,7 +541,7 @@ if (isMain) {
     const index = { works: {}, books: {} };
     for (const [dir, label] of [[prodDir, 'official']]) {
         for (const typeKey of ['works', 'books']) {
-            const shardDir = join(dir, 'index', typeKey);
+            const shardDir = join(indexDirFor(dir), typeKey);
             if (!existsSync(shardDir)) continue;
             for (let i = 0; i < 16; i++) {
                 const p = join(shardDir, `${i.toString(16)}.json`);
@@ -548,6 +558,8 @@ if (isMain) {
         rootDirFor: () => prodDir,
         textDirFor: () => textDir,
         dataDir: resolveDataDirs().dataDir,
-        taxonomyFile: join(prodDir, 'classific.json'),
+        taxonomyFile: taxonomyFileFor(prodDir),
+        // 分类表可能来自 build 产物目录，策展文件仍在源仓
+        curationFile: join(prodDir, 'curation', 'read-home.json'),
     });
 }

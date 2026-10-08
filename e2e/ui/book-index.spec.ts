@@ -4,7 +4,7 @@
  * 除了"页面能打开"，重点验证数据真的渲染出来了——本次多个 bug 的共同特征
  * 就是：HTTP 全 200、无 pageerror、字节数正常，但内容是空的或错的。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { ANCHORS, BOOK_INDEX_TABS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { requireMetaHomeData } from '../fixtures/preconditions';
 
@@ -144,7 +144,7 @@ test.describe('作品详情', () => {
             '作者未渲染',
         ).toBeVisible();
 
-        // 版本区块——史記有 35 个版本，为空说明 books 关联没渲染。
+        // 版本区块——史記有 35 个版本，为空说明版本关联（旧 books／新 _books）没渲染。
         // 0.10.0 三栏版的区块标题是「版本」，之前是「相关版本」
         await expect(
             page.getByText(/相关版本|相關版本/).or(page.getByRole('heading', { name: /^版本$/ })).first(),

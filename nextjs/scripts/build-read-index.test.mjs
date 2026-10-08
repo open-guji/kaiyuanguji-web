@@ -352,6 +352,18 @@ test('bundleRead：重跑不留旧文件（作品不再可读后其页文件被�
     }
 });
 
+test('verifyReadProbes：对读章声明 char_file 时核对 char.json，不要求 txt', () => {
+    const root = mkdtempSync(join(tmpdir(), 'probe-char-'));
+    try {
+        mkdirSync(join(root, 'items', 'w1', 'default'), { recursive: true });
+        writeFileSync(join(root, 'items', 'w1', 'default', 'index.json'), '{}');
+        const probe = { id: 'w1', kind: 'text', key: 'default', first: { file: '002', hasJson: false, charFile: '002.char.json' } };
+        assert.match(verifyReadProbes([probe], root)[0], /default\/002\.char\.json/);
+        writeFileSync(join(root, 'items', 'w1', 'default', '002.char.json'), '{}');
+        assert.deepEqual(verifyReadProbes([probe], root), []);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
 test('verifyReadProbes：新结构整理本首章只有 json（has_json，没有 md）不算缺；没有 has_json 时 md 必须在', () => {
     const root = mkdtempSync(join(tmpdir(), 'read-verify-new-'));
     try {

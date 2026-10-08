@@ -7,7 +7,7 @@
  *   TEXT_DIR=/root/book-text \
  *   MEILI_URL=http://127.0.0.1:7700 \
  *   MEILI_KEY=xxx \
- *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books]
+ *   node full-reindex.mjs [--dry-run] [--limit 1000] [--only works,books] [--allow-shrink]
  *
  * 设计：
  *   - 流式遍历 {draft,production}/index/{books,works,entities}/{0-f}.json
@@ -34,8 +34,9 @@ import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { classificationL1, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
+import { checkDocFloor } from './lib/doc-floor.mjs';
 
 const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
 
@@ -73,6 +74,9 @@ const limitArg = args.indexOf('--limit');
 const limit = limitArg >= 0 ? parseInt(args[limitArg + 1]) : null;
 const onlyArg = args.indexOf('--only');
 const only = onlyArg >= 0 ? args[onlyArg + 1].split(',') : null;
+// swap 前的文档数下限闸（lib/doc-floor.mjs）：新建的比线上少一半以上就不换。确实要大幅缩减时带 --allow-shrink
+// （或 FORCE_SHRINK=1）；--limit 的试跑结果也只有这样才会换上线（否则被闸挡住，线上不动）
+const ALLOW_SHRINK = args.includes('--allow-shrink') || process.env.FORCE_SHRINK === '1';
 
 // ─── 工具 ───
 
@@ -128,7 +132,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
     if (entry.has_text) completeness += 3;
     if (entry.has_image) completeness += 2;
     if (entry.subtype === 'book' || entry.subtype === 'classic') completeness += 2;
-    completeness += Math.min((detail.books || []).length, 10);
+    completeness += Math.min(editionCount(detail), 10);
 
     return {
         id: entry.id,
@@ -140,7 +144,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         role: entry.role || '',
         subtype: entry.subtype || '',
         // 搜索页 v4 的筛选（overview#291 P1a）：部（一级分类，没有的空串）与存佚
-        classification: classificationL1(detail.classification, entry.classification),
+        classification: classificationL1(derivedClassification(detail), detail.classification, entry.classification),
         loss_status: lossStatusValue(detail.loss_status, entry.loss_status),
         has_collated: !!entry.has_collated,
         has_text: hasTextValue(entry),   // 有转录全文或整理本（「有文本」筛选，overview#322）
@@ -253,6 +257,19 @@ function juanDoc(workId, juanName, clean) {
  * 拼各节 title + content。两种来源都没有就跳过这一章。
  */
 const TEXT_KEY_RE = /^[a-z][a-z0-9-]*$/;
+/**
+ * 条目详情：schema-v2 的 build 产物（BOOK_INDEX_DERIVED_DIR/entry/<id>.json，源＋_ 派生字段）优先，
+ * 缺则读源档 detailPath（草稿库、旧 schema 都走这里）。读不了抛错，由调用方按原样处理。
+ */
+function readDetail(detailPath, id) {
+    const dir = (process.env.BOOK_INDEX_DERIVED_DIR || '').trim();
+    if (dir && id) {
+        const p = join(dir, 'entry', `${id}.json`);
+        if (existsSync(p)) return JSON.parse(readFileSync(p, 'utf-8'));
+    }
+    return JSON.parse(readFileSync(detailPath, 'utf-8'));
+}
+
 function readJsonSafe(path) {
     try { return JSON.parse(readFileSync(path, 'utf-8')); } catch { return null; }
 }
@@ -381,6 +398,27 @@ async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
     return tmp;
 }
 
+/** 索引条数：{state:'ok',docs} 读到了；{state:'absent'} 明确 404（没建过）；{state:'unreadable',error} 其它情况一律读不到。 */
+async function docCount(indexUid) {
+    try {
+        const st = await meiliRequest('GET', `/indexes/${indexUid}/stats`);
+        if (typeof st.numberOfDocuments !== 'number') return { state: 'unreadable', error: 'stats 里没有 numberOfDocuments' };
+        return { state: 'ok', docs: st.numberOfDocuments };
+    } catch (e) {
+        if (/: 404 /.test(e.message)) return { state: 'absent' };
+        return { state: 'unreadable', error: e.message };
+    }
+}
+
+/** 自检没过：删 tmp、线上原封不动，返回 false。 */
+async function discardTmp(indexUid, tmp, failures) {
+    console.error(`❌ [${indexUid}] 自检未通过，放弃本次更新：`);
+    for (const f of failures) console.error(`   · ${f}`);
+    console.error(`   已删除 ${tmp}，线上 ${indexUid} 保持不变（未 swap）`);
+    await meiliRequest('DELETE', `/indexes/${tmp}`).catch(() => {});
+    return false;
+}
+
 /**
  * 自检通过则原子 swap（tmp → 正式名），线上无空窗；不通过则删 tmp、退出非 0、
  * 保留旧索引不动。selfTestFn 收 tmp 的 indexUid，返回 { ok, failures }。
@@ -388,13 +426,20 @@ async function createFreshTmpIndex(indexUid, primaryKey = 'id') {
 async function swapOrDiscard(indexUid, selfTestFn) {
     const tmp = tmpIndexUid(indexUid);
     const { ok, failures } = await selfTestFn(tmp);
-    if (!ok) {
-        console.error(`❌ [${indexUid}] 自检未通过，放弃本次更新：`);
-        for (const f of failures) console.error(`   · ${f}`);
-        console.error(`   已删除 ${tmp}，线上 ${indexUid} 保持不变（未 swap）`);
-        await meiliRequest('DELETE', `/indexes/${tmp}`).catch(() => {});
-        return false;
+    // 文档数下限闸（overview#122）：新建的比线上少一半以上，多半是脚本读不到数据，别把空的换上去。
+    // 线上或 tmp 的条数读不到（接口出错、没有数值）时也不换：没有可靠的基线就不放行。只有线上索引明确 404（还没建过）才算「线上没有」。
+    if (ok && !ALLOW_SHRINK) {
+        const live = await docCount(indexUid);
+        const fresh = await docCount(tmp);
+        if (live.state === 'unreadable') failures.push(`文档数下限：读不到线上 ${indexUid} 的条数（${live.error}），无法确认新索引没有缩水`);
+        else if (fresh.state !== 'ok') failures.push(`文档数下限：读不到新建的 ${tmp} 的条数（${fresh.error || '索引不存在'}）`);
+        else {
+            const floor = checkDocFloor(live.state === 'ok' ? live.docs : null, fresh.docs);
+            if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
+        }
+        if (failures.length > 0) return await discardTmp(indexUid, tmp, failures);
     }
+    if (!ok) return await discardTmp(indexUid, tmp, failures);
     await ensureIndexExists(indexUid); // 首次跑：正式名还不存在，先占一个空的才有得 swap
     const swapTask = await meiliRequest('POST', '/swap-indexes', [{ indexes: [indexUid, tmp] }]);
     await waitForTask(swapTask.taskUid);
@@ -566,7 +611,7 @@ async function main() {
                 const detailPath = join(rootDir, entry.path || '');
                 if (!existsSync(detailPath)) continue;
                 let detail;
-                try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { continue; }
+                try { detail = readDetail(detailPath, entry.id); } catch { continue; }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
                 if (detail._promoted_to) continue;
                 if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
@@ -649,7 +694,7 @@ async function main() {
                 if (entry.path) {
                     const detailPath = join(rootDir, entry.path);
                     if (existsSync(detailPath)) {
-                        try { detail = JSON.parse(readFileSync(detailPath, 'utf-8')); } catch { detail = null; }
+                        try { detail = readDetail(detailPath, entry.id); } catch { detail = null; }
                     }
                 }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）

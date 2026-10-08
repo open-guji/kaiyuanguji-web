@@ -80,6 +80,7 @@ test.skip(sample === null, '候选池全部已被整理，空状态无从验证'
 | `version.ts` | 解析 `latest.json`，拼带版本号的 data URL（含 cache-buster） |
 | `preconditions.ts` | 版本门禁 `requireUiVersion`、空样本挑选 `pickEmptySample` |
 | `site-profile.ts` | 被测站形态：全栈/静态、noindex、canonical 源站 |
+| `test.ts` / `net-retry.ts` | **用例一律从 `../fixtures/test` 导入 `test`/`expect`**：page.goto/reload、request 的各方法遇到 ERR_CONNECTION_RESET／ECONNRESET／ETIMEDOUT 等连接类错误自动重试 3 次（退避 1/2/4s）；GET/HEAD 遇 429/522/552 也重试。断言失败、404/500 等站点自己的回答不重试。`NET_RETRY=0` 关闭；重试在报告里有 `net-retry` 注解。自测：`npm run test:selftest`（本机假服务，不碰线上，PR 的 test.yml 跑）。 |
 
 ## 跳过 vs 失败
 

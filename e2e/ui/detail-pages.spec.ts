@@ -6,9 +6,9 @@
  *   · 文档流滚动（旧版是固定高度 + 内部滚动，滚动条出现在页面中央）
  *   · 版本表按 cap 渲染，展开后给全量
  *   · 书目收录展开后能看到提要正文
- *   · 丛编子目表直接来自 contained_works，不对 books[] 逐条发请求
+ *   · 丛编子目表直接来自条目里的成员列表（旧 contained_works／新 _members），不对 books[] 逐条发请求
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import { ANCHORS, DATA_BASE, EMPTY_STATE_POOL, TARGET } from '../fixtures/anchors';
 import {
     isEmptyEntity, isEmptyWork, pickEmptySample, requireUiVersion,
@@ -171,9 +171,10 @@ test.describe('详情页版式', () => {
         await expect(page.getByText('343').first()).toBeVisible();
     });
 
-    test('丛编页：子目表来自 contained_works，不对 books 逐条发请求', async ({ page }) => {
+    test('丛编页：子目表来自条目自带成员列表（contained_works 或 _members），不对 books 逐条发请求', async ({ page }) => {
         // 武英殿有 144 条子目。旧版对 books[] 逐条 getItem 只为拿标题，
         // 一个页面 144 次请求；contained_works 自带标题与册次。
+        // schema-v2：成员列表是 _members（只含前 20 项，总数看 _member_count），表至少有 5 行即可。
         // 0.10.3 起为可见的 16 行补取撰人与卷数，再加上级丛编，约 17 次，仍须低于 20。
         const itemRequests: string[] = [];
         page.on('request', (r) => {
@@ -188,7 +189,7 @@ test.describe('详情页版式', () => {
 
         expect(
             itemRequests.length,
-            `丛编页发了 ${itemRequests.length} 次条目请求；子目应直接取自 contained_works`,
+            `丛编页发了 ${itemRequests.length} 次条目请求；子目应直接取自条目自带的成员列表`,
         ).toBeLessThan(20);
     });
 

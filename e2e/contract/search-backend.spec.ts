@@ -7,7 +7,7 @@
  * L1 的探活在 degradable/search-l1.spec.ts —— 那是可降级依赖，单独一个
  * project，失败不挡部署。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { DATA_BASE } from '../fixtures/anchors';
 import { fetchLatest, versionKey } from '../fixtures/version';
 

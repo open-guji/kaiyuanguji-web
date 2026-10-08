@@ -10,12 +10,16 @@
  * 选择器策略：不用 data-testid（生产代码里没有，加它要改 book-index-ui 并重新
  * 发包），改用用户可见文本 + ARIA role——更贴近真人视角，且组件重构时不易失效。
  */
-import { test, expect } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { cmpVersion, fetchUiVersion, requireNewTextData } from '../fixtures/preconditions';
 import { readButton } from '../fixtures/detail';
 
 const C = ANCHORS.collated;
+/** 整理本仍是阅读页主版本的书（直齋有维基全文版后阅读页只展示维基版，见 anchors.ts 的 collatedOnly，overview#456） */
+const O = ANCHORS.collatedOnly;
+const C_READER_CHAPTERS = ANCHORS.collatedReaderChapterCount;
 
 /** 页面同时支持繁简切换，断言时两种写法都接受 */
 function eitherScript(traditional: string, simplified: string): RegExp {
@@ -26,6 +30,8 @@ function eitherScript(traditional: string, simplified: string): RegExp {
 test.describe('整理本', () => {
     // 阅读页只认新结构（overview#307）：文本迁移落地前，这组针对阅读页内容的用例整体休眠
     test.beforeEach(({ request }) => requireNewTextData(request, C.id, '整理本阅读页（新结构）'));
+    // 用到 O（整理本仍是主版本的那部书）的用例各自再查一次 O 的数据，免得 O 缺数据时把只需要 C 的用例也一并跳过
+    const requireO = (request: APIRequestContext) => requireNewTextData(request, O.id, '整理本阅读页（新结构）');
 
     test('概览页有整理本入口', async ({ page, request }) => {
         await page.goto(`${TARGET}/book-index?id=${C.id}`);
@@ -90,13 +96,15 @@ test.describe('整理本', () => {
         ).toBeVisible({ timeout: 30_000 });
     });
 
-    test('侧栏章目录条数与 index.json 的 chapters 条数一致', async ({ page }) => {
+    test('侧栏章目录条数与 index.json 的 chapters 条数一致', async ({ page, request }) => {
+        await requireO(request);
         /*
          * 章数来源是 default/index.json 的 chapters（旧的 juan_files／total_juan 都不再有）。
          * 统一阅读器（TextReader）的目录是 role=navigation「目录」里的一排按钮，每个按钮带 data-rd-toc-key（章文件名 001…）；
          * 不按按钮文字找——文字是章名（「卷1　易類」「第三回」），随整理变；按 key 数才是「有几章」。
+         * 锚点用整理本仍是主版本的书（O）；直齋有维基全文版，阅读页只展示它（下一条用例）。
          */
-        await page.goto(`${TARGET}/read/${C.id}`);
+        await page.goto(`${TARGET}/read/${O.id}`);
 
         const toc = page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key]');
         // 先等第一章出现再数：目录随 index.json 异步到达
@@ -105,41 +113,58 @@ test.describe('整理本', () => {
         await expect(
             toc,
             '目录条数与 chapters 条数不符——章数来源又被改回不可信字段了？',
-        ).toHaveCount(C.juanFileCount, { timeout: 30_000 });
+        ).toHaveCount(O.juanFileCount, { timeout: 30_000 });
         await expect(toc.first(), '章的 key 是三位编号').toHaveAttribute('data-rd-toc-key', '001');
     });
 
-    test('目录视图渲染书名标题与正确统计', async ({ page }) => {
+    test('有全文版的作品，阅读页只展示全文版：直齋侧栏是维基全文的章数，不是整理本的 56 章（overview#456）', async ({ page }) => {
+        await page.goto(`${TARGET}/read/${C.id}`);
+
+        const toc = page.getByRole('navigation', { name: '目录' }).locator('[data-rd-toc-key]');
+        await expect(toc.first()).toBeVisible({ timeout: 30_000 });
+        await expect(toc, '直齋阅读页的目录应是维基全文版的章数，不是整理本的章数').toHaveCount(C_READER_CHAPTERS, { timeout: 30_000 });
+        // 版本下拉里只有全文版，目录型整理本不在里面：按版本 key 判（不看显示文字——整理本的标签也可能不叫「整理本」）。
+        // 直齋的整理本在 manifest 里就是 key=default（kind=collated），全文版是 wikisource、kanripo。
+        const options = page.getByRole('combobox', { name: '版本' }).locator('option');
+        await expect(options.first()).toBeAttached({ timeout: 30_000 });
+        const keys = await options.evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+        expect(keys, '版本下拉里不该有整理本（key=default）').not.toContain('default');
+        expect(keys, '版本下拉应有维基全文版（key=wikisource）').toContain('wikisource');
+    });
+
+    test('目录视图渲染书名标题与正确统计', async ({ page, request }) => {
+        await requireO(request);
         await page.goto(
-            `${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`,
+            `${TARGET}/book-index?id=${O.id}&tab=collated&juan=${encodeURIComponent(O.sampleJuanFile)}`,
         );
 
-        // 分类标题
+        // 分类标题（章标题与 tally 小节同名，页面上不止一个，取第一个）
         await expect(
             page.getByRole('heading', {
-                name: eitherScript(C.sampleJuanCategory, C.sampleJuanCategorySimplified),
-            }),
+                name: eitherScript(O.sampleJuanCategory, O.sampleJuanCategorySimplified),
+            }).first(),
         ).toBeVisible({ timeout: 30_000 });
 
         // 统计：修复前恒为"0 部书"（type 是英文 'book'，代码却比对中文 '书'）
         // 阅读页 v3（0.25.0）起卷头与右栏都出现「N 部书」字样，取第一处：仍要求页面上显示 N 部书。
         await expect(
-            page.getByText(new RegExp(`${C.sampleJuanBookCount}\\s*部[书書]`)).first(),
-            `书目统计不对：期望 ${C.sampleJuanBookCount} 部书。显示 0 = section.type 映射失效`,
+            page.getByText(new RegExp(`${O.sampleJuanBookCount}\\s*部[书書]`)).first(),
+            `书目统计不对：期望 ${O.sampleJuanBookCount} 部书。显示 0 = section.type 映射失效`,
         ).toBeVisible();
 
         // 书名标题：修复前只渲染 content，标题完全不可见（用户："没有书的索引"）
         await expect(
             page.getByText(
-                eitherScript(C.sampleJuanFirstBook, C.sampleJuanFirstBookSimplified),
+                eitherScript(O.sampleJuanFirstBook, O.sampleJuanFirstBookSimplified),
             ).first(),
             '首条书目标题未渲染——退化成了 OtherSection 兜底（只显示 content）',
         ).toBeVisible();
     });
 
     test('原文视图有内容且带书名标题', async ({ page, request }) => {
+        await requireO(request);
         await page.goto(
-            `${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`,
+            `${TARGET}/book-index?id=${O.id}&tab=collated&juan=${encodeURIComponent(O.sampleJuanFile)}`,
         );
         // N5b（0.10.0 新阅读器）：「原文」视图改名「正文」
         const live = await fetchUiVersion(request);
@@ -149,7 +174,7 @@ test.describe('整理本', () => {
         // 修复前 RawTextView 的分组循环一条都匹配不上，groups 为空 → 整页空白
         await expect(
             page.getByText(
-                eitherScript(C.sampleJuanFirstBook, C.sampleJuanFirstBookSimplified),
+                eitherScript(O.sampleJuanFirstBook, O.sampleJuanFirstBookSimplified),
             ).first(),
             '原文视图空白或无书名标题——RawTextView 分组逻辑未匹配到 section',
         ).toBeVisible({ timeout: 15_000 });

@@ -5,7 +5,7 @@
  * （由 book-index.spec.ts 守）。所以每条先探一次代理，不通就跳过，不因 L1 故障拦发版；
  * 代理通而下拉不出，才是页面回归。（degradable 那一层在 CI 里不开浏览器，放不了这里的用例。）
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 
 test.beforeEach(async ({ request }) => {

@@ -20,7 +20,8 @@
   python3 ops/iiif/siku_zongmu_iiif.py --vols 02,03 --out /tmp/iiif               # 只切片＋生成 manifest
   python3 ops/iiif/siku_zongmu_iiif.py --vols 03 --leaves 10,105 --out /tmp/iiif  # 本地试几页
   … --upload    上传（要 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET，COS_REGION 默认 ap-shanghai）
-  … --verify    上传后从 data.kaiyuanguji.com 逐个取回核对
+  … --verify    上传后从 data.kaiyuanguji.com 取回核对（新写的全核，跳过的抽样 2%，至少 20 个）
+  … --force     桶里已有同内容的图也重传，核对核全部（改了压法、裁剪框时用）
 只依赖 Pillow；COS 签名用标准库实现（cos-python-sdk 的 crcmod 在部分环境装不上）。
 """
 import argparse
@@ -461,6 +462,29 @@ class Cos:
         raise last
 
 
+    def etag(self, key, tries=3):
+        """HEAD 取对象 ETag（单段上传时就是内容 MD5）；对象不存在返回 None。"""
+        path, last = '/' + key, None
+        for i in range(tries):
+            headers = {'Host': self.host}
+            headers['Authorization'] = cos_authorization(self.sid, self.skey, 'HEAD', path, {'Host': self.host})
+            req = urllib.request.Request(f'https://{self.host}{urllib.parse.quote(path, safe="/,")}',
+                                         method='HEAD', headers=headers)
+            try:
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    return r.headers.get('ETag', '').strip('"').lower() or None
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return None
+                last = e
+                if not (e.code >= 500 or e.code in (408, 429)):
+                    raise
+            except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError) as e:
+                last = e
+            time.sleep(0.5 * 2 ** i)
+        raise last
+
+
 def walk_files(root):
     for d, _, fs in os.walk(root):
         for f in fs:
@@ -468,23 +492,33 @@ def walk_files(root):
             yield full, os.path.relpath(full, root).replace(os.sep, '/')
 
 
-def upload_tree(root, workers=16):
+def upload_tree(root, workers=16, force=False):
     """分三批传：图和 info.json → 各册 manifest → 书级 Collection。前一批有失败就抛出，后一批不传，
-    线上不会出现指向缺图的 manifest、指向缺 manifest 的 Collection。"""
+    线上不会出现指向缺图的 manifest、指向缺 manifest 的 Collection。
+
+    图和 info.json 先 HEAD 一下，桶里 ETag（＝内容 MD5）与本地一致就跳过：重跑某册不再把几千个文件重传。
+    manifest 和 Collection 小而且会变，每次都传。force=True 不看 ETag，全部重传。
+    返回里的 uploaded 是真正写过的 key，供 verify_online 只核对这些。"""
     cos = Cos()
     files = list(walk_files(root))
     coll = [f for f in files if f[1] == collection_key()]
     mans = [f for f in files if f[1].endswith('/manifest.json') and f not in coll]
     early = [f for f in files if f not in coll and f not in mans]
+    early_keys = {k for _, k in early}
+    uploaded, skipped = [], []
 
     def put(item):
         full, key = item
         with open(full, 'rb') as fh:
             body = fh.read()
+        if not force and key in early_keys and cos.etag(key) == hashlib.md5(body).hexdigest():
+            skipped.append(key)
+            return 0
         if key.endswith('.webp'):
             cos.put(key, body, 'image/webp', IMAGE_CACHE)
         else:
             cos.put(key, body, 'application/json; charset=utf-8', JSON_CACHE)
+        uploaded.append(key)
         return len(body)
 
     t0, total = time.perf_counter(), 0
@@ -492,14 +526,32 @@ def upload_tree(root, workers=16):
         with cf.ThreadPoolExecutor(workers) as ex:
             for n in ex.map(put, batch):
                 total += n
-    return {'files': len(files), 'bytes': total, 'seconds': round(time.perf_counter() - t0, 1)}
+    return {'files': len(files), 'uploaded': len(uploaded), 'skipped': len(skipped), 'bytes': total,
+            'seconds': round(time.perf_counter() - t0, 1), 'uploaded_keys': sorted(uploaded)}
 
 
 # ─── 线上核对 ───
 
-def verify_online(root, workers=16):
-    """逐个从 data.kaiyuanguji.com 取回本次生成的每个文件，比对字节。"""
-    files = list(walk_files(root))
+SKIP_SAMPLE_RATE = 0.02  # 跳过的文件（上次已核对过）再随机抽这么多重新核对，抽不到 20 个就取 20 个
+
+
+def pick_verify_files(files, uploaded_keys, rnd=None):
+    """要核对的文件：本次真正写过的全部，加上 manifest／Collection，再从跳过的里面抽样。
+    uploaded_keys 为 None（没做上传，或 --force）时核对全部。"""
+    if uploaded_keys is None:
+        return list(files)
+    rnd = rnd or random.Random()  # 每次运行抽不一样的，多跑几次就把跳过的文件轮流核对到
+    up = set(uploaded_keys)
+    must = [f for f in files if f[1] in up or f[1].endswith('manifest.json')]
+    rest = [f for f in files if f not in must]
+    n = min(len(rest), max(20, int(len(rest) * SKIP_SAMPLE_RATE)))
+    return must + rnd.sample(rest, n)
+
+
+def verify_online(root, workers=16, uploaded_keys=None):
+    """从 data.kaiyuanguji.com 取回本次生成的文件，比对字节。
+    给了 uploaded_keys 就只核对新写的加抽样（经 EdgeOne 把全册约 2.8 GB 拉一遍不划算）。"""
+    files = pick_verify_files(list(walk_files(root)), uploaded_keys)
     bad = []
 
     def check(item):
@@ -551,6 +603,7 @@ def main(argv=None):
     ap.add_argument('--no-commons', action='store_true', help='不查 Commons、不挂 Commons 回退')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
+    ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
     a = ap.parse_args(argv)
 
@@ -597,10 +650,11 @@ def main(argv=None):
 
     report['samples'] = sample_sheet(out, report)
     if a.upload:
-        report['upload'] = upload_tree(out)
+        report['upload'] = upload_tree(out, force=a.force)
+        up_keys = report['upload'].pop('uploaded_keys')
         print('上传：' + json.dumps(report['upload'], ensure_ascii=False), flush=True)
     if a.verify:
-        report['verify'] = verify_online(out)
+        report['verify'] = verify_online(out, uploaded_keys=None if (a.force or not a.upload) else up_keys)
         v = report['verify']
         print(f'核对：{v["checked"]} 个文件，{len(v["bad"])} 个不对', flush=True)
         for key, why in v['bad'][:50]:
@@ -630,10 +684,10 @@ def markdown_summary(report):
                      f"{st['wall_s']} | {st['commons'] or '—'} |")
     if 'upload' in report:
         u = report['upload']
-        lines += ['', f"上传：{u['files']} 个文件，{u['bytes'] / 1e6:.1f} MB，{u['seconds']} s"]
+        lines += ['', f"上传：{u['files']} 个文件，新写 {u['uploaded']}、跳过已存在 {u['skipped']}，{u['bytes'] / 1e6:.1f} MB，{u['seconds']} s"]
     if 'verify' in report:
         v = report['verify']
-        lines += ['', f"线上核对：{v['checked']} 个文件，{len(v['bad'])} 个不对（{v['seconds']} s）"]
+        lines += ['', f"线上核对：{v['checked']} 个文件（新写的全核，跳过的抽样），{len(v['bad'])} 个不对（{v['seconds']} s）"]
         lines += [f'- ✗ `{k}`：{why}' for k, why in v['bad'][:30]]
     lines += ['', '抽看 20 页（阅读档在工件 samples/）：' + '、'.join(report.get('samples', [])), '']
     return '\n'.join(lines)

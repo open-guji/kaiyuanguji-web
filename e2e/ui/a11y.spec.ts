@@ -10,7 +10,7 @@
  *
  * 失败时消息里列出规则 id、影响级别、命中节点的选择器，方便直接定位。
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';

@@ -26,7 +26,8 @@ const ZHIZHAI = 'd59f2htm01du';
 const MANIFEST = {
     id: ZHIZHAI,
     versions: [
-        { key: 'default', kind: 'collated', label: '整理本', source: 'collated' },
+        // default 取全文型：阅读页对「目录型 default ＋ 全文版」的过滤另有用例（lib/__tests__/reader-manifest.test.ts、ReaderVersions.test.tsx，overview#456）
+        { key: 'default', kind: 'transcription', label: '整理本', source: 'collated' },
         { key: 'wikisource', kind: 'transcription', label: '維基文庫', source: 'wikisource' },
         // 带版本名（edition_label，overview#307）
         { key: 'kanripo', kind: 'transcription', label: 'Kanripo', source: 'kanripo', edition_label: '四部叢刊本' },

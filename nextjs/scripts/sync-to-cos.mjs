@@ -27,6 +27,7 @@
  *   4. state 有但本地不存在 → DELETE current/X（孤儿清理）
  *   5. search shards 始终全量 PUT 到 v/{cacheKey}/search/（再服务端 copy 一份到 v/{commit}/search/ 给旧前端）
  *   6. 最后写 latest.json
+ *   7. 清理旧的 v/<版本键>/ 目录，只留最近 COS_KEEP_VERSIONS 个（失败只警告）
  *
  * state 丢失/损坏的 fallback：从 COS 拉 current/ 的 ETag 重建 state，
  * 跟旧 ListBucket 模式等价（~86s）。一次拉对后续 sync 永久受益。
@@ -39,6 +40,8 @@
  *   COS_PATH_PREFIX     (可选) 桶内根前缀，默认空字符串
  *   DRY_RUN             (可选) 设为 1 只打印不上传
  *   SYNC_REBUILD_STATE  (可选) 设为 1 强制从 COS 列文件重建 state（state 文件可疑时用）
+ *   COS_KEEP_VERSIONS   (可选) 发布成功后清理旧的 v/<版本键>/ 搜索分片，只留最新的这么多个目录（默认 10，
+ *                       本次发布的两个目录另算、一定保留）；设为 off 不清理（overview#410）
  *
  * 用法：
  *   node scripts/sync-to-cos.mjs              # 增量同步
@@ -53,6 +56,11 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { withCacheKey } from './lib/latest-cache-key.mjs';
 import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
+import { runQueue, cosSlots, cosSdkParallelLimit, setSlotAllocator } from './lib/h1-sync-core.mjs';
+import { slotAllocatorFromEnv } from './lib/cos-slots.mjs';
+import { planVersionPrune, DEFAULT_KEEP_VERSIONS } from './lib/v-search-prune.mjs';
+import { createCosOps } from './lib/h1-sync-core.mjs';
+import { createStateGuard } from './lib/state-guard.mjs';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
 
@@ -86,6 +94,9 @@ const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PATH_PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const DRY_RUN = process.env.DRY_RUN === '1';
 const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';
+const KEEP_RAW = (process.env.COS_KEEP_VERSIONS || '').trim().toLowerCase();
+const KEEP_VERSIONS = KEEP_RAW === 'off' ? null
+    : (/^\d+$/.test(KEEP_RAW) ? Number(KEEP_RAW) : DEFAULT_KEEP_VERSIONS);
 
 // 哪些子目录走 commit 隔离 v/<commit>/ — 主要是 search shards：
 // 倒排索引文件互相关联，必须跟当前 entry snapshot 一致；进入 current/ 会导致
@@ -214,10 +225,12 @@ try {
 // 并发上限：默认 80；三次 COS 同步在 deploy.yml 里并行跑时，用 COS_CONCURRENCY 各自调小，
 // 总数不超过串行时的 80（overview#293 第 3 项，避免叠加后撞 COS 限流）
 const CONCURRENCY = cosConcurrency(80);
+// 三路共用并发预算、按待传数动态分配（lib/cos-slots.mjs；没设 COS_PLAN_DIR 就是静态并发 CONCURRENCY）。须在建 COS 客户端之前设
+if (!DRY_RUN) setSlotAllocator(slotAllocatorFromEnv('current'));
 const cos = new COS({
     SecretId: SECRET_ID,
     SecretKey: SECRET_KEY,
-    FileParallelLimit: CONCURRENCY,
+    FileParallelLimit: cosSdkParallelLimit(),
     ChunkParallelLimit: 8,
     Timeout: 60 * 1000,
 });
@@ -412,10 +425,27 @@ function loadSyncState() {
     }
 }
 
-function saveSyncState(stateMap) {
+/** state 文件里附带的版本记录（generation／pointer，见 lib/state-guard.mjs）；没有或读不出为 null。 */
+function loadSyncStateMeta() {
+    try {
+        if (!existsSync(SYNC_STATE_FILE)) return null;
+        const raw = JSON.parse(readFileSync(SYNC_STATE_FILE, 'utf-8'));
+        if (raw?.version !== 2 || !raw?.files) return null;
+        return {
+            generation: typeof raw.generation === 'string' ? raw.generation : null,
+            pointer: typeof raw.pointer === 'string' ? raw.pointer : null,
+        };
+    } catch {
+        return null;
+    }
+}
+
+function saveSyncState(stateMap, meta = {}) {
     try {
         mkdirSync(dirname(SYNC_STATE_FILE), { recursive: true });
         const doc = { version: 2, savedAt: new Date().toISOString(), files: Object.fromEntries(stateMap) };
+        if (meta.generation) doc.generation = meta.generation;
+        if (meta.pointer != null) doc.pointer = meta.pointer;
         writeFileSync(SYNC_STATE_FILE, JSON.stringify(doc), 'utf-8');
     } catch (e) {
         console.warn(`  sync-state save failed (${e.message}), ignored (next sync will rebuild)`);
@@ -490,42 +520,110 @@ async function copyOne(srcKey, destKey, attempt = 1) {
     }
 }
 
-async function runQueue(items, concurrency, worker, label) {
-    const queue = [...items];
-    let done = 0;
-    const t0 = Date.now();
-    const failures = [];
-    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
-        while (queue.length > 0) {
-            const item = queue.shift();
-            if (!item) return;
-            try {
-                await worker(item);
-                done++;
-                if (done % 100 === 0 || done === items.length) {
-                    const elapsed = ((Date.now() - t0) / 1000).toFixed(0);
-                    process.stdout.write(`\r  ${label}: ${done}/${items.length} (${elapsed}s)   `);
-                }
-            } catch (e) {
-                failures.push({ item, err: e.message });
-                console.error(`\n  ⚠ ${label} failed: ${JSON.stringify(item).slice(0,80)} — ${e.message}`);
-            }
-        }
+
+// ─── 清理旧的 v/<版本键>/ 搜索分片目录（overview#410） ───
+// 每次发布往 v/ 下写两个目录（cacheKey 与 commitId），以前从不删，桶里对象数涨到 139 万，远多于在用的约 33 万。
+// 只在本次发布全部成功、latest.json 已指向新版本之后做；任何一步失败只警告，不影响发布结果。
+
+function cosCall(method, params) {
+    return new Promise((resolveP, rejectP) => {
+        cos[method]({ Bucket: BUCKET, Region: REGION, ...params }, (err, data) => err ? rejectP(err) : resolveP(data));
     });
-    await Promise.all(workers);
-    if (items.length > 0) process.stdout.write('\n');
-    return { done, failures, elapsed: (Date.now() - t0) / 1000 };
+}
+
+const isTruncated = (res) => res.IsTruncated === 'true' || res.IsTruncated === true;
+
+/** v/ 下各版本目录及其最后写入时间（取目录里第一个对象的 LastModified，一次发布里分片是连着写的）。 */
+async function listVersionDirs() {
+    const root = joinKey(PATH_PREFIX, 'v') + '/';
+    const names = [];
+    let marker = '';
+    while (true) {
+        const res = await cosCall('getBucket', { Prefix: root, Delimiter: '/', Marker: marker, MaxKeys: 1000 });
+        const cps = res.CommonPrefixes || [];
+        for (const cp of cps) names.push(cp.Prefix.slice(root.length).replace(/\/$/, ''));
+        if (!isTruncated(res)) break;
+        marker = res.NextMarker || (cps.length ? cps[cps.length - 1].Prefix : '');
+        if (!marker) break;
+    }
+    const dirs = [];
+    await runQueue(names, 16, async (name) => {
+        const res = await cosCall('getBucket', { Prefix: `${root}${name}/`, MaxKeys: 1 });
+        const t = res.Contents?.[0]?.LastModified ? Date.parse(res.Contents[0].LastModified) : null;
+        dirs.push({ name, lastModified: Number.isNaN(t) ? null : t });
+    }, 'list-v');
+    return { root, dirs };
+}
+
+/**
+ * 删掉一个目录（前缀）下的全部对象，每批 1000 个。返回删掉的个数。
+ * 按 Marker 往后翻页（不是每次从头重列），所以某几个删不掉也不会死循环；逐个检查返回里的 Error，
+ * 只统计真正删掉的，有删不掉的最后抛错（由 pruneOldVersions 记成警告，下次发布再试）。
+ */
+async function deletePrefix(prefix) {
+    let deleted = 0;
+    const failed = [];
+    let marker = '';
+    while (true) {
+        const res = await cosCall('getBucket', { Prefix: prefix, Marker: marker, MaxKeys: 1000 });
+        const keys = (res.Contents || []).map(o => ({ Key: o.Key }));
+        if (keys.length > 0) {
+            const del = await cosCall('deleteMultipleObject', { Objects: keys, Quiet: true });
+            const errs = del?.Error ? [].concat(del.Error) : [];
+            for (const e of errs) failed.push(e.Key);
+            deleted += keys.length - errs.length;
+        }
+        if (!isTruncated(res) || keys.length === 0) break;
+        marker = res.NextMarker || keys[keys.length - 1].Key;
+    }
+    if (failed.length > 0) throw new Error(`${prefix} 下 ${failed.length} 个对象没删掉（如 ${failed[0]}）`);
+    return deleted;
+}
+
+async function pruneOldVersions() {
+    if (KEEP_VERSIONS == null) {
+        console.log('\n  COS_KEEP_VERSIONS=off，不清理旧的 v/ 目录');
+        return;
+    }
+    try {
+        const { root, dirs } = await listVersionDirs();
+        const { toDelete, toKeep } = planVersionPrune(dirs, { protect: [cacheKey, shortCommit], keep: KEEP_VERSIONS, now: Date.now() });
+        console.log(`\n  v/ 下 ${dirs.length} 个版本目录：留 ${toKeep.length}（最近 ${KEEP_VERSIONS} 个＋24 小时内的＋本次 2 个），删 ${toDelete.length}`);
+        if (toDelete.length === 0) return;
+        let objects = 0;
+        const r = await runQueue(toDelete, 4, async (name) => { const n = await deletePrefix(`${root}${name}/`); objects += n; }, 'prune-v');
+        console.log(`  ✓ 清掉 ${r.done}/${toDelete.length} 个旧版本目录，共 ${objects} 个对象（${r.elapsed.toFixed(1)}s）`);
+        if (r.failures.length > 0) console.warn(`  ⚠ ${r.failures.length} 个目录没清干净，下次发布会再试`);
+    } catch (e) {
+        console.warn(`  ⚠ 清理旧 v/ 目录失败（不影响本次发布）：${e.message}`);
+    }
 }
 
 async function main() {
 
     // ── Step 1: 加载或重建 state ──
+    // state 可信度保护（lib/state-guard.mjs）：上一次同步中途被取消／失败时桶已被改了一部分，缓存里留的是更早的旧 state，
+    // 拿它判断会把「已被换成别的内容」的对象当成没变而跳过（run 37580114922 被取消、37588367536 取回旧 state 的事故）。
+    // 先核对 COS 上的写前标记与现行 latest.json 的 cacheKey，对不上就丢掉 state、从 COS 列出重建。
+    const guard = createStateGuard({
+        ops: createCosOps({ cos, bucket: BUCKET, region: REGION }),
+        pathPrefix: PATH_PREFIX, name: 'current', pointerKey: latestKey,
+    });
     let stateMap = REBUILD_STATE ? null : loadSyncState();
+    if (stateMap) {
+        const g = await guard.check(loadSyncStateMeta());
+        if (g.trusted) {
+            console.log(`  state 可信（版本标记与 latest.json 都对得上）`);
+        } else {
+            console.log(`  local sync-state 不可信（${g.reason}），丢弃`);
+            stateMap = null;
+        }
+    }
     if (!stateMap) {
         if (REBUILD_STATE) {
             console.log(`  SYNC_REBUILD_STATE=1: ignoring local state, listing COS...`);
         } else {
-            console.log(`  no local sync-state, listing COS to rebuild...`);
+            console.log(`  no usable local sync-state, listing COS to rebuild...`);
         }
         const tList = Date.now();
         stateMap = await rebuildStateFromCos();
@@ -578,12 +676,15 @@ async function main() {
     console.log(`    shared:   ${sharedSkipped} skip · ${sharedToUpload.length} upload (${(sharedUploadBytes / 1024 / 1024).toFixed(1)} MB) · ${orphanKeys.length} delete`);
     console.log(`    isolated: ${isolatedToUpload.length} upload (${(isolatedUploadBytes / 1024 / 1024).toFixed(1)} MB) — 全量到 v/${cacheKey}/`);
 
+    // 动桶之前先写 dirty 标记（失败就中止、什么都不动）；latest.json 写完后才改 clean
+    const generation = await guard.begin();
+
     const allFailures = [];
 
     // ── Step 4a: 上传 shared 增量 ──
     if (sharedToUpload.length > 0) {
         console.log(`  uploading shared...`);
-        const r = await runQueue(sharedToUpload, CONCURRENCY, uploadOne, 'shared-up');
+        const r = await runQueue(sharedToUpload, cosSlots(), uploadOne, 'shared-up');
         console.log(`  ✓ shared uploaded ${r.done}/${sharedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
     }
@@ -591,7 +692,7 @@ async function main() {
     // ── Step 4b: 上传 isolated 全量 ──
     if (isolatedToUpload.length > 0) {
         console.log(`  uploading isolated (search shards)...`);
-        const r = await runQueue(isolatedToUpload, CONCURRENCY, uploadOne, 'isolated-up');
+        const r = await runQueue(isolatedToUpload, cosSlots(), uploadOne, 'isolated-up');
         console.log(`  ✓ isolated uploaded ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
     }
@@ -599,7 +700,7 @@ async function main() {
     // ── Step 4b': search 分片服务端 copy 到旧路径 v/<commitId>/（给旧前端） ──
     if (LEGACY_SEARCH_COPY && isolatedToUpload.length > 0 && allFailures.length === 0) {
         console.log(`  copying isolated → ${legacyVersionPrefix}/ (legacy)...`);
-        const r = await runQueue(isolatedToUpload, CONCURRENCY,
+        const r = await runQueue(isolatedToUpload, cosSlots(),
             (f) => copyOne(keyFor(f.relative), `${legacyVersionPrefix}/${f.relative}`), 'legacy-copy');
         console.log(`  ✓ legacy copied ${r.done}/${isolatedToUpload.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
@@ -608,7 +709,7 @@ async function main() {
     // ── Step 4c: 删 orphan ──
     if (orphanKeys.length > 0) {
         console.log(`  deleting orphans...`);
-        const r = await runQueue(orphanKeys, CONCURRENCY,
+        const r = await runQueue(orphanKeys, cosSlots(),
             (rel) => deleteOne(`${currentPrefix}/${rel}`), 'delete');
         console.log(`  ✓ deleted ${r.done}/${orphanKeys.length} in ${r.elapsed.toFixed(1)}s`);
         allFailures.push(...r.failures);
@@ -624,13 +725,17 @@ async function main() {
     for (const f of sharedFiles) {
         newState.set(f.relative, localMd5.get(f.relative));
     }
-    saveSyncState(newState);
+    saveSyncState(newState, { generation, pointer: cacheKey });
     console.log(`  ✓ sync-state saved (${newState.size} keys)`);
 
     // ── Step 6: latest.json ──
     console.log(`\n  writing latest.json → cos://${BUCKET}/${latestKey}`);
     await uploadLatest();
     console.log(`  ✓ latest.json now points to commit ${shortCommit} (cacheKey ${cacheKey})`);
+    await guard.finish(generation, cacheKey);
+
+    // ── Step 7: 清理旧的 v/<版本键>/ 目录 ──
+    await pruneOldVersions();
 
     console.log(`\n✅ sync-to-cos complete\n`);
 }

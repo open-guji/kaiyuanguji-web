@@ -4,7 +4,7 @@
  * 见 playwright.config.ts 的 project 划分：这个文件跑在 `degradable` 下，
  * CI 里单独一步、失败不挡发版。L2 兜底与 UI 层仍是硬门禁。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { MEILI_BASE, MEILI_KEY, SEARCH_QUERIES, ANCHORS, MEILI_INDEX_SETTINGS } from '../fixtures/anchors';
 
 /**

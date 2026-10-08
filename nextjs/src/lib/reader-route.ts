@@ -2,7 +2,7 @@
  * 阅读页 /read/<id> 的地址约定（overview#307 E 块，规格 overview 项目进展/古籍索引网站/设计/阅读文本.md §六）。
  * 路径式 URL，只认新结构（manifest＋<key>/）：
  *
- *   /read/<id>                   主版本（default）第一章
+ *   /read/<id>                   主版本第一章（主版本＝阅读页 manifest 的 default；作品另有全文版而 default 是目录型时，default 不列出，主版本是第一份全文版，见 lib/reader-manifest.ts）
  *   /read/<id>/<章>              主版本某章，章用三位编号（如 /read/d59ezkx8dt6o/003）
  *   /read/<id>/<key>             其他版本第一章
  *   /read/<id>/<key>/<章>        其他版本某章（如 /read/d59ezkx8dt6o/wikisource-2/003）
@@ -17,7 +17,7 @@
  */
 import { parseItemId } from './item-id';
 
-/** 版本选择：key 缺省＝主版本（default）；chapter 缺省＝第一章 */
+/** 版本选择：key 缺省＝主版本（见上，通常是 default）；chapter 缺省＝第一章 */
 export interface ReaderSel {
     key?: string;
     chapter?: string;

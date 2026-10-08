@@ -5,7 +5,7 @@
  * "用户能搜到东西"，不区分走的哪层——分层健康由 contract/search-backend
  * 负责。这样即便 L1 故障，只要降级正常工作，UI 用例仍应通过。
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test';
 import { SEARCH_QUERIES, TARGET } from '../fixtures/anchors';
 import { requireUiVersion } from '../fixtures/preconditions';
 

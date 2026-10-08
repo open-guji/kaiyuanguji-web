@@ -60,7 +60,8 @@ NEXT_PUBLIC_MODE= NEXT_PUBLIC_DATA_SOURCE=bundle npm run build   # 验证生产�
 
 **push 到 `main` 先发测试站**（`staging.kaiyuanguji.com`），`deploy.yml` 全自动：单测 → 克隆三个数据仓 → `bundle-data.mjs` 打包 →
 写数据桶（测试站用 `staging/` 前缀）→ 全栈构建 → 部署 kyg-staging → 清缓存 → 部署后 e2e（verify）。
-**正式站只由 promote 上**：Actions 里手动触发 `target=production`，`promote=code+data` 或 `data`；构建用测试站记下的 commit，部署到 kyg-ssr-spike（www）。
+**正式站只由 promote 上**：Actions 里手动触发 `target=production`，`promote` 选 `code`（默认，只发代码，必须填 `from_run`，数据不动）、`code+data`（代码与数据一起，数据上线需要用户确认）或 `data`；构建用测试站记下的 commit，部署到 kyg-ssr-spike（www）。
+push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`promote=code`），不会带数据。
 出问题用 Actions 里的 Rollback。细节见 [docs/architecture.html](docs/architecture.html) 第八节和 [docs/runbook.md](docs/runbook.md)。
 
 - **发布顺序**：先 `npm publish` UI 包 → 再把依赖 bump 与 e2e 改动**同一批**推 main。反了 verify 必红。
