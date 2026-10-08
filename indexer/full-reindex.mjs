@@ -436,6 +436,7 @@ async function swapOrDiscard(indexUid, selfTestFn) {
         else {
             const floor = checkDocFloor(live.state === 'ok' ? live.docs : null, fresh.docs);
             if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
+            else console.log(`📏 [${indexUid}] 下限闸通过：线上 ${live.state === 'ok' ? live.docs : '（无）'} 条 → 新 ${fresh.docs} 条`);
         }
         if (failures.length > 0) return await discardTmp(indexUid, tmp, failures);
     }
