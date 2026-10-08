@@ -497,17 +497,20 @@ jobs:
           export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
           node scripts/cos-sync-decision.mjs mark
 
-      # 线上还没有 sitemaps/ 时（例如从没传过）强制传一次：数据没变会在 decide 跳过同步，但路由代理需要这些对象
-      - name: Check whether sitemaps already exist
+      # 线上这版 sitemap 是否用当前两个数据 commit 完整发布过（读 _meta.json＋索引）。没有／对不上（从没传过、上次传到一半失败、
+      # 数据又变了）就强制重传：数据没变会在 decide 跳过同步，但路由代理需要这些对象；只看索引存在会把「旧索引＋缺分片」当成好的
+      - name: Check whether this sitemap version was fully published
         id: sm_present
         if: ${{ steps.gate.outputs.publish == 'true' }}
+        working-directory: nextjs
         env:
-          PREFIX: ${{ steps.gate.outputs.prefix }}
-        run: |
-          P="${PREFIX:+$PREFIX/}"
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://data.kaiyuanguji.com/${P}sitemaps/sitemap-index.xml?t=$(date +%s)" || echo 000)
-          echo "· ${P}sitemaps/sitemap-index.xml → HTTP $code"
-          if [ "$code" = 200 ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+          SITEMAP_META: '{"productionCommitId":"${{ steps.clone.outputs.index_sha }}","textCommitId":"${{ steps.clone.outputs.text_sha }}"}'
+        run: node scripts/upload-sitemaps.mjs --check-meta
 
       # 条目 sitemap：数据有变（同步没被跳过）、只传 sitemap、或线上还没有时才生成并上传。<loc> 一律写正式站地址，
       # 路由代理读的时候再换成本站（见 src/lib/server/sitemap-proxy.ts）。数据同步失败时不到这里（默认的成功条件）。
