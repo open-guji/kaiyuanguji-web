@@ -38,7 +38,13 @@ const THREE_COLUMN = '0.10.0';
  */
 function isPromotionLookupRequest(url: string): boolean {
     if (!url.startsWith(`${DATA_BASE}/`)) return false;
-    return /^\/h1\/(promotions\/|manifest-root\.json|roots\/)/.test(url.slice(DATA_BASE.length));
+    return isPromotionFullTableRequest(url)
+        || /^\/h1\/(promotions\/|manifest-root\.json|roots\/)/.test(url.slice(DATA_BASE.length));
+}
+
+/** 整张 promotions.json（兜底路径 ensurePromotions；集部升格放量后约 14 MB）。正常页面一次都不该有。 */
+function isPromotionFullTableRequest(url: string): boolean {
+    return url.startsWith(`${DATA_BASE}/`) && /\/promotions\.json(\?|$)/.test(url.slice(DATA_BASE.length));
 }
 
 function isPromotionShardRequest(url: string): boolean {
@@ -60,7 +66,7 @@ function isEntryDataRequest(url: string): boolean {
 
 /**
  * 升格分片请求的上限（web#310）：同一片只取一次（URL 不重复），且不多于条目请求数
- * （每个条目 id 最多要一片），再加指针＋root 各至多 2 次。别只放宽阈值——重复取同一片
+ * （每个条目 id 最多要一片），再加指针＋root 各至多 2 次，整张 promotions.json 一次都不该下载。别只放宽阈值——重复取同一片
  * 或每次渲染都重新取，会在这里红。
  */
 function expectPromotionLookupsBounded(requests: string[], entryRequestCount: number) {
@@ -73,6 +79,11 @@ function expectPromotionLookupsBounded(requests: string[], entryRequestCount: nu
         shards.length,
         `升格分片请求 ${shards.length} 次，多于条目请求 ${entryRequestCount} 次（每个 id 最多一片）`,
     ).toBeLessThanOrEqual(Math.max(entryRequestCount, 1));
+    const fullTable = requests.filter(isPromotionFullTableRequest);
+    expect(
+        fullTable.length,
+        `下载了整张 promotions.json（h1 查表失败后的兜底）：${fullTable.join(' | ')}`,
+    ).toBe(0);
     const infra = requests.length - shards.length;
     expect(infra, `升格查表的指针／root 请求 ${infra} 次，应 ≤ 4`).toBeLessThanOrEqual(4);
 }
