@@ -237,6 +237,169 @@ class DataWorkflowCheckOnly(unittest.TestCase):
                 if only == 'true':
                     self.assertEqual(o['sitemaps_only'], 'true', case)
 
+    # ---- 刷新、上线后抽查、告警（PR-C1）----
+    def test_followup_jobs_exist_and_only_follow_real_data_publish(self):
+        jobs = self.wf['jobs']
+        for j in ('refresh', 'live-ref', 'verify-live', 'alert-data'):
+            self.assertIn(j, jobs)
+        for j in ('refresh', 'live-ref', 'verify-live'):
+            self.assertIn("needs.package.outputs.data_published == 'true'", str(jobs[j]['if']), j)
+        # current/ 同步没成功（跳过、失败、没放行）时 data_published 必须是 false
+        self.assertEqual(self.wf['jobs']['package']['outputs']['data_published'], "${{ steps.cos_sync.outcome == 'success' }}")
+
+    def test_only_check_and_alert_jobs_may_write_issues(self):
+        self.assertEqual(self.wf['permissions'], {'contents': 'read'})
+        for name, job in self.wf['jobs'].items():
+            perms = job.get('permissions') or {}
+            if name in ('check', 'alert-data'):
+                self.assertEqual(perms, {'contents': 'read', 'issues': 'write'}, name)
+            else:
+                self.assertNotIn('issues', perms, name)
+
+    def test_refresh_job_runs_no_data_repo_code_and_scopes_secrets(self):
+        steps = self.wf['jobs']['refresh']['steps']
+        text = str(steps)
+        self.assertNotIn('clone_cached', text)
+        self.assertNotIn('build_derived', text)
+        self.assertNotIn('bundle-data', text)
+        self.assertNotIn('secrets.', str(self.wf['jobs']['refresh'].get('env', {})))
+        for st in steps:
+            self.assertNotIn('secrets.', st.get('run', ''))
+        # 页面失效与核对、清缓存都不拦（失效没生效最坏是 s-maxage 自然过期）
+        for st in steps:
+            if st.get('name', '').startswith(('Purge data pointers', 'Revalidate changed')):
+                self.assertTrue(st.get('continue-on-error'), st['name'])
+        purge = [st for st in steps if st.get('name', '').startswith('Purge data pointers')][0]
+        self.assertIn('ops/purge-urls.py', purge['run'])
+        self.assertNotIn('purge_host', purge['run'])   # 不清整站
+
+    def test_verify_live_reuses_verify_workflow_with_read_links(self):
+        v = self.wf['jobs']['verify-live']
+        self.assertEqual(v['uses'], './.github/workflows/verify.yml')
+        w = v['with']
+        self.assertIs(w['read_links'], True)
+        self.assertIs(w['wait_cdn'], True)
+        self.assertEqual(w['target'], "${{ needs.package.outputs.prefix == 'staging' && 'staging' || 'production' }}")
+        self.assertEqual(w['ref'], '${{ needs.live-ref.outputs.ref }}')
+        self.assertIn('!cancelled()', v['if'])      # refresh 红了也要抽查
+
+    def test_alert_only_for_production_prefix_failures(self):
+        c = self.wf['jobs']['alert-data']['if']
+        for needle in ("needs.package.outputs.publish == 'true'", "needs.package.outputs.prefix == ''",
+                       "needs.package.outputs.sitemaps_only != 'true'", "needs.package.result == 'failure'",
+                       "needs.verify-live.result == 'failure'"):
+            self.assertIn(needle, c)
+
+    def test_freshness_alarm_only_after_switch_and_scheduled(self):
+        st = [x for x in self.wf['jobs']['check']['steps'] if x.get('name', '').startswith('Data freshness alarm')][0]
+        self.assertIn("github.event_name == 'schedule'", st['if'])
+        self.assertIn("vars.SPLIT_DATA_FLOW == 'true'", st['if'])
+        self.assertTrue(st.get('continue-on-error'))
+        self.assertEqual(st['env']['LAG_HOURS'], '36')
+        self.assertIn('data-alert', st['run'])
+
+    def test_refresh_and_live_ref_still_run_when_package_fails_after_data_synced(self):
+        # current/ 同步成功之后 package 里 sitemap 等步骤红了，数据已经换上线：缓存照样要清、抽查照样要跑
+        for j in ('refresh', 'live-ref'):
+            c = self.wf['jobs'][j]['if']
+            self.assertIn('!cancelled()', c, j)
+            self.assertIn("needs.package.outputs.data_published == 'true'", c, j)
+        self.assertIn('!cancelled()', self.wf['jobs']['verify-live']['if'])
+
+    def test_refresh_reports_its_own_failures_to_the_alert(self):
+        r = self.wf['jobs']['refresh']
+        ok = r['outputs']['ok']
+        for sid in ('purge', 'changes', 'reval'):
+            self.assertIn(f"steps.{sid}.outcome != 'failure'", ok)
+            self.assertTrue([x for x in r['steps'] if x.get('id') == sid], sid)
+        self.assertIn("needs.refresh.outputs.ok == 'false'", self.wf['jobs']['alert-data']['if'])
+
+    def test_control_ids_travel_with_the_item_changes_artifact(self):
+        compute = [x for x in self.steps if x.get('id') == 'item_changes'][0]
+        self.assertIn('control-ids.txt', compute['run'])
+        up = [x for x in self.steps if x.get('name') == 'Upload item changes'][0]
+        self.assertTrue(up['with']['path'].endswith('/item-artifact'))      # 目录：改动集和对照页候选一起带
+        reval = [x for x in self.wf['jobs']['refresh']['steps'] if x.get('id') == 'reval'][0]
+        self.assertIn('ITEM_CONTROL_IDS', reval['run'])
+        self.assertIn('control-ids.txt', reval['run'])
+
+    def _run_step(self, step, env, gh_script):
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'bin'))
+            log = os.path.join(d, 'gh.log')
+            shim = os.path.join(d, 'bin', 'gh')
+            with open(shim, 'w', encoding='utf-8') as fh:
+                fh.write(gh_script.replace('LOG', log))
+            os.chmod(shim, 0o755)
+            summ = os.path.join(d, 'summary'); open(summ, 'w').close()
+            e = dict(os.environ, PATH=os.path.join(d, 'bin') + ':' + os.environ['PATH'], GITHUB_STEP_SUMMARY=summ,
+                     GITHUB_SERVER_URL='https://github.com', GITHUB_REPOSITORY='o/r', GITHUB_RUN_ID='1', **env)
+            r = subprocess.run(['bash', '-e', '-c', step['run']], env=e, capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            logged = ''
+            if os.path.exists(log):
+                with open(log, encoding='utf-8') as fh:
+                    logged = fh.read()
+            return r.stdout, logged
+
+    GH_SHIM = '''#!/bin/bash
+case "$*" in
+  "api repos/open-guji/"*"/commits/"*) echo "2020-01-01T00:00:00Z" ;;
+  "label create"*) ;;
+  "issue list"*) echo "" ;;
+  "issue create"*|"issue comment"*) echo "$@" >> LOG ;;
+  *) echo "unexpected gh $*" >&2; exit 9 ;;
+esac
+'''
+
+    def test_freshness_alarm_skips_when_live_pointer_unavailable(self):
+        st = [x for x in self.wf['jobs']['check']['steps'] if x.get('name', '').startswith('Data freshness alarm')][0]
+        base = dict(GH_TOKEN='x', GH_REPO='r', LAG_HOURS='36', HEAD_PROD='b' * 40, HEAD_TEXT='d' * 40)
+        # 线上指针取不到（空）或不是完整 commit：不拿 HEAD 的年龄当落后的证据，不开 issue
+        for live in ('', 'garbage', 'a' * 12):
+            out, log = self._run_step(st, dict(base, LIVE_PROD=live, LIVE_TEXT=live), self.GH_SHIM)
+            self.assertEqual(log, '', live)
+        # 线上是有效 commit、且 HEAD 的提交早已过了 36 小时：开 issue
+        out, log = self._run_step(st, dict(base, LIVE_PROD='a' * 40, LIVE_TEXT='c' * 40), self.GH_SHIM)
+        self.assertIn('issue create', log)
+
+    def _alert(self, **env):
+        st = self.wf['jobs']['alert-data']['steps'][0]
+        base = dict(GH_TOKEN='x', GH_REPO='r', PACKAGE='success', PUBLISHED='true', REFRESH_OK='true', VERIFY='success',
+                    OLD_PROD='o' * 40, OLD_TEXT='p' * 40, NEW_PROD='n' * 40, NEW_TEXT='m' * 40)
+        base.update(env)
+        return self._run_step(st, base, self.GH_SHIM)[1]
+
+    def test_alert_wording_follows_whether_data_was_actually_published(self):
+        # 上传失败、数据没换：线上还是上一版
+        t = self._alert(PACKAGE='failure', PUBLISHED='false')
+        self.assertIn('数据发布失败', t); self.assertIn('还是上一版', t)
+        # current/ 同步成功之后 package 才红（sitemap 等）：数据已经是新的，不能说"还是上一版"
+        t = self._alert(PACKAGE='failure', PUBLISHED='true')
+        self.assertIn('数据已换上线', t); self.assertNotIn('还是上一版', t); self.assertNotIn('这次没发上去', t)
+        # 抽查失败
+        self.assertIn('上线后抽查失败', self._alert(VERIFY='failure'))
+        # 只有刷新失败：数据本身没问题
+        t = self._alert(REFRESH_OK='false')
+        self.assertIn('缓存刷新没完全生效', t); self.assertIn('数据本身没问题', t); self.assertNotIn('发布失败', t)
+        # 几件事同时发生：都列出来
+        t = self._alert(PACKAGE='failure', PUBLISHED='true', VERIFY='failure', REFRESH_OK='false')
+        for w in ('数据已换上线', '上线后抽查失败', '缓存刷新没完全生效'):
+            self.assertIn(w, t)
+        # 任何一种都带回滚做法和新旧 commit
+        for w in ('allow_ref_override', 'o' * 40, 'n' * 40):
+            self.assertIn(w, t)
+
+    def test_verify_workflow_has_read_links_input(self):
+        with open(os.path.join(ROOT, '.github', 'workflows', 'verify.yml'), encoding='utf-8') as f:
+            wf = yaml.safe_load(f)
+        on = wf.get('on') or wf.get(True)
+        for trig in ('workflow_call', 'workflow_dispatch'):
+            self.assertIn('read_links', on[trig]['inputs'], trig)
+            self.assertIs(on[trig]['inputs']['read_links']['default'], False, trig)
+        self.assertEqual(wf['jobs']['read-links']['if'],
+                         "${{ inputs.target == 'staging' || inputs.full_suite || inputs.read_links }}")
+
     def test_read_only_permissions(self):
         self.assertEqual(self.wf['permissions'], {'contents': 'read'})
 

@@ -8,12 +8,12 @@
  *  2. 未改动页：取一个不在改动集里的热门页，连取两次，第二次须 CDN 命中（EO-Cache-Status 含 hit）。
  * 结果写进 $GITHUB_STEP_SUMMARY（有的话）。
  *
- * 环境变量：ITEM_SITE、ITEM_CHANGES_OUT、ITEM_VERIFY_TIMEOUT_S（默认 300）
+ * 环境变量：ITEM_SITE、ITEM_CHANGES_OUT、ITEM_VERIFY_TIMEOUT_S（默认 300）、ITEM_CONTROL_IDS（可选，逗号分隔的对照页候选）
  */
 import { join } from 'node:path';
 import { appendFileSync } from 'node:fs';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
-import { SITE, readChanges, getItemPage, hotItemIds } from './lib/item-http.mjs';
+import { SITE, readChanges, getItemPage, controlItemIds } from './lib/item-http.mjs';
 
 const TIMEOUT_S = Number(process.env.ITEM_VERIFY_TIMEOUT_S || 300);
 const { root, dataDir } = resolveDataDirs();
@@ -46,8 +46,11 @@ if (!sample.length) {
     }
 }
 
-const control = hotItemIds(dataDir, 200).find((id) => !touched.has(id));
-if (control) {
+const control = controlItemIds(dataDir, 200).find((id) => !touched.has(id));
+if (!control) {
+    // 没有对照页候选就明说：不能让「没检查」看起来像「检查过了」
+    lines.push('- ⚠ 没有可用的对照页（本地没有打包产物、也没给 ITEM_CONTROL_IDS），跳过「未改动页 CDN 仍命中」');
+} else {
     const a = await getItemPage(control);
     const b = await getItemPage(control);
     const hit = /hit/i.test(b.cache);
