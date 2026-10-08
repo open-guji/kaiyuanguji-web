@@ -546,7 +546,7 @@ jobs:
           # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
           # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
           clone_cached() {
-            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache=""
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache="" neg=""
             echo "▶ 克隆 $repo @ ${ref:0:12}"
             if [ -d "$dest/.git" ]; then
               mb=$(du -sm "$dest/.git" | cut -f1)
@@ -563,7 +563,11 @@ jobs:
               echo "· 缓存里已有这个 commit，不再 fetch"
               git -C "$dest" checkout -q -f "$ref"
             else
-              git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              # 浅拉（--depth 1）默认不拿本地已有的对象去和服务端对账，缓存再大也会把整棵树重传一遍（2026-10-07 实测 book-text：
+              # 缓存是上一个 commit，仍收 218048 个对象、1.75 GiB、229 秒，和全量浅拉一样）。显式给对账起点 --negotiation-tip=HEAD，
+              # 服务端才只发新增的（同一对 commit 的 book-index 实测 203915 个对象／106 MiB／26 秒 → 70252 个／12.7 MiB／6 秒）。
+              if [ -n "$had_cache" ] && git -C "$dest" rev-parse -q --verify HEAD >/dev/null 2>&1; then neg="--negotiation-tip=HEAD"; fi
+              git -C "$dest" fetch --depth 1 $neg --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
               git -C "$dest" checkout -q -f FETCH_HEAD
               # 增量拉完 .git 超过上限：就地重来一次全量浅拉，让随后存进缓存的永远是不大的那份（否则超大的条目会一直被恢复）
               mb=$(du -sm "$dest/.git" | cut -f1)
@@ -1592,7 +1596,7 @@ jobs:
           # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
           # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
           clone_cached() {
-            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache=""
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache="" neg=""
             echo "▶ 克隆 $repo @ ${ref:0:12}"
             if [ -d "$dest/.git" ]; then
               mb=$(du -sm "$dest/.git" | cut -f1)
@@ -1609,7 +1613,11 @@ jobs:
               echo "· 缓存里已有这个 commit，不再 fetch"
               git -C "$dest" checkout -q -f "$ref"
             else
-              git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              # 浅拉（--depth 1）默认不拿本地已有的对象去和服务端对账，缓存再大也会把整棵树重传一遍（2026-10-07 实测 book-text：
+              # 缓存是上一个 commit，仍收 218048 个对象、1.75 GiB、229 秒，和全量浅拉一样）。显式给对账起点 --negotiation-tip=HEAD，
+              # 服务端才只发新增的（同一对 commit 的 book-index 实测 203915 个对象／106 MiB／26 秒 → 70252 个／12.7 MiB／6 秒）。
+              if [ -n "$had_cache" ] && git -C "$dest" rev-parse -q --verify HEAD >/dev/null 2>&1; then neg="--negotiation-tip=HEAD"; fi
+              git -C "$dest" fetch --depth 1 $neg --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
               git -C "$dest" checkout -q -f FETCH_HEAD
               # 增量拉完 .git 超过上限：就地重来一次全量浅拉，让随后存进缓存的永远是不大的那份（否则超大的条目会一直被恢复）
               mb=$(du -sm "$dest/.git" | cut -f1)
