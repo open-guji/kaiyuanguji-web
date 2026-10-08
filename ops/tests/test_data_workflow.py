@@ -361,6 +361,46 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertEqual(self._run_h1_decide('aaaa1111', force='true', target='staging'), 'true')    # 演练 force_sync：照做
         self.assertEqual(self._run_h1_decide('aaaa1111', force='true', target='production'), 'false')  # 正式前缀忽略 force_sync
 
+    # ---- codePointer 标记（overview#470 P1 方案 A）----
+    def _run_carry_mark(self, prefix, target, split='', mark_input='', live=None):
+        step = self._step('Carry over webCommitId from live latest.json')
+        W = 'c' * 40
+        live = live if live is not None else {'commitId': 'x', 'webCommitId': W}
+        with tempfile.TemporaryDirectory() as d:
+            root = os.path.join(d, 'kyg'); os.makedirs(root)
+            json.dump({'commitId': 'new', 'cacheKey': 'k'}, open(os.path.join(root, 'latest.json'), 'w'))
+            bindir = os.path.join(d, 'bin'); os.makedirs(bindir)
+            with open(os.path.join(bindir, 'curl'), 'w') as fh:
+                fh.write('#!/bin/bash\nwhile [ $# -gt 0 ]; do [ "$1" = -o ] && OUT="$2"; shift; done\n'
+                         'cat > "$OUT" <<\'EOF\'\n%s\nEOF\necho 200\n' % json.dumps(live))
+            os.chmod(os.path.join(bindir, 'curl'), 0o755)
+            out = os.path.join(d, 'out'); summ = os.path.join(d, 'summary')
+            open(out, 'w').close(); open(summ, 'w').close()
+            env = dict(os.environ, PATH=bindir + os.pathsep + os.environ['PATH'], KYG_DATA_ROOT=root, RUNNER_TEMP=d,
+                       GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ, PREFIX=prefix, TARGET=target, SPLIT_VAR=split, MARK_INPUT=mark_input)
+            r = subprocess.run(['bash', '-e', '-c', step['run']], env=env, capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            return json.load(open(os.path.join(root, 'latest.json'))), W
+
+    def test_code_pointer_marker_only_when_data_flow_is_the_writer(self):
+        # 正式前缀：只有开关打开的上传带标记（mark_code_pointer 对它无效）
+        d, W = self._run_carry_mark('', 'production', split='true');                      self.assertEqual(d.get('codePointer'), 'web.json'); self.assertEqual(d['webCommitId'], W)
+        d, _ = self._run_carry_mark('', 'production', split='');                          self.assertNotIn('codePointer', d)
+        d, _ = self._run_carry_mark('', 'production', split='false', mark_input='true');  self.assertNotIn('codePointer', d)
+        # staging 演练：默认不带，勾 mark_code_pointer 才带
+        d, _ = self._run_carry_mark('staging', 'staging');                                self.assertNotIn('codePointer', d)
+        d, W = self._run_carry_mark('staging', 'staging', mark_input='true');             self.assertEqual(d.get('codePointer'), 'web.json'); self.assertEqual(d['webCommitId'], W)
+        # 开关即使打开，staging 演练也不因此自动带（只看 mark_code_pointer）
+        d, _ = self._run_carry_mark('staging', 'staging', split='true');                  self.assertNotIn('codePointer', d)
+        # 不碰其它字段；线上没有 webCommitId 时也能加标记
+        d, _ = self._run_carry_mark('', 'production', split='true', live={'commitId': 'x'})
+        self.assertEqual(d.get('codePointer'), 'web.json'); self.assertNotIn('webCommitId', d); self.assertEqual((d['commitId'], d['cacheKey']), ('new', 'k'))
+
+    def test_mark_code_pointer_input_exists_boolean_default_false(self):
+        inp = self.wf.get('on', self.wf.get(True))['workflow_dispatch']['inputs']['mark_code_pointer']
+        self.assertEqual(inp['type'], 'boolean')
+        self.assertFalse(inp['default'])
+
     # ---- 刷新、上线后抽查、告警（PR-C1）----
     def test_followup_jobs_exist_and_only_follow_real_data_publish(self):
         jobs = self.wf['jobs']
