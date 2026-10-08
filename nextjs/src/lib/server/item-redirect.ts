@@ -70,7 +70,7 @@ function headerSafe(text: string, max = 80): string {
  * 取数顺序（overview#491）：草稿 id 的升格对照表与条目查询**同时**发出，不再先后串行——
  * 已升格的草稿 id 在 current/ 与 h1 里都没有条目，原先要白走完条目这一串才轮到对照表，
  * 冷边缘上串行 6 跳超出预算，被静默放过，页面在 ISR 缓存未命中时出双 Location。
- * 条目只问 current/（currentOnly）：中间件只凭肯定的答案跳，查不出就放过。
+ * 草稿 id 的条目只问 current/（currentOnly）：中间件只凭肯定的答案跳，查不出就放过；正式 id 保留 h1 兜底。
  * 对照表在非草稿 id 上不查，条目命中时的结果不用（resolveItemRedirect 只在查不到条目时才看它）。
  */
 export async function lookupItemRedirectTraced(
@@ -95,7 +95,9 @@ export async function lookupItemRedirectTraced(
 
     const work = (async (): Promise<TracedRedirect> => {
         try {
-            const hit = await deps.getItem(id, { prefer: 'current', currentOnly: true });
+            // 只有草稿 id 才只问 current/：它的升格对照表已并行在查，条目查不到时白走 h1 三跳没有意义；
+            // 正式 id（被并条目）保留 h1 兜底，防发布中途 current/ 与 h1 暂时不一致时漏跳（页面兜底会出双 Location）
+            const hit = await deps.getItem(id, isDraft ? { prefer: 'current', currentOnly: true } : { prefer: 'current' });
             entry = hit ? 'hit' : 'miss';
             const redirect = await resolveItemRedirect(id, hit, (i) => promotion ?? deps.resolvePromotion(i));
             if (redirect) {

@@ -118,10 +118,15 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false, retries: 0 }));
     });
 
-    it("取条目只走 current/（overview#322 B1、#491：边缘上不再串 h1 的 4 跳）", async () => {
+    it("取条目先走 current/（overview#322 B1）；草稿 id 只问 current/（#491：边缘上不再白串 h1 的 3 跳）", async () => {
         mockGetItem.mockResolvedValue(hit({ title: '史記' }));
         await run(`/item/${MERGED}`);
-        expect(mockGetItem).toHaveBeenCalledWith(MERGED, { prefer: 'current', currentOnly: true });
+        expect(mockGetItem).toHaveBeenCalledWith(MERGED, { prefer: 'current' });
+        mockGetItem.mockClear();
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'absent' });
+        await run('/item/1j96hewiuieps');
+        expect(mockGetItem).toHaveBeenCalledWith('1j96hewiuieps', { prefer: 'current', currentOnly: true });
     });
 
     it('已升格的草稿 id：308 只有一个 Location，响应头 x-kyg-item-redirect 说明是升格跳转（overview#491）', async () => {

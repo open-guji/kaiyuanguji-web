@@ -116,6 +116,12 @@ describe('lookupItemRedirectTraced（overview#491：升格对照表与条目并�
         expect(d.resolvePromotion).not.toHaveBeenCalled();
     });
 
+    it('正式 id 的条目保留 h1 兜底（不传 currentOnly），防发布中途 current/ 与 h1 不一致时漏跳被并条目', async () => {
+        const d = deps({ getItem: jest.fn(async () => hit({ merged_into: TARGET })) });
+        await lookupItemRedirectTraced(OFFICIAL, d, 1000);
+        expect(d.getItem).toHaveBeenCalledWith(OFFICIAL, { prefer: 'current' });
+    });
+
     it('查不到的正式 id：放行 pass:not-found，不查对照表', async () => {
         const d = deps();
         expect(await lookupItemRedirectTraced(OFFICIAL, d, 1000)).toEqual({ redirect: null, reason: 'pass:not-found' });
