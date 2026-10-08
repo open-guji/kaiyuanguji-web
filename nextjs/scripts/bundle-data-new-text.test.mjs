@@ -48,6 +48,16 @@ const put = (root, rel, data) => {
 const ver = (key, kind, extra = {}) => ({ key, kind, label: key, source: key, source_name: key, license: null, quality: null, chapters_total: 1, ...extra });
 const idx = (hasJson = false, ...stems) => ({ chapters: (stems.length ? stems : ['001']).map((f, i) => ({ n: i + 1, file: f, title: `卷${i + 1}`, has_json: hasJson })) });
 
+/** 升格对照表：bim 写盘格式（key 字典序、indent 2、档尾换行） */
+const PROMOTIONS = {
+    version: 1,
+    promotions: {
+        '11sjkim94800m': { production_id: '98xh6qrdvl', type: 'book', promoted_at: '2026-10-08T06:58:38Z' },
+        '11sjkima9435v': { production_id: '98xglqqm87', type: 'book', promoted_at: '2026-10-08T06:18:16Z' },
+        '1evr5e3mct1mt': { production_id: 'd59df01avcw0', type: 'work', promoted_at: '2026-10-07T01:02:03Z' },
+    },
+};
+
 const IDS = { oldWork: 'aaaaaaaaaaa', oldBook: 'bbbbbbbbbbb', newWork: 'ccccccccccc', privWork: 'ddddddddddd', emptyWork: 'eeeeeeeeeee', newBook: 'fffffffffff' };
 
 function makeFixture(base) {
@@ -110,7 +120,7 @@ function makeFixture(base) {
     put(text, 'index/texts/2.json', { [IDS.newBook]: [{ key: 'default', kind: 'transcription', label: 'x', chapters_total: 2 }] });
 
     // 站点内容文件（book-index 根目录；缺了 bundle-data 会报错，overview#432）
-    for (const f of SITE_CONTENT_FILES) put(draft, f, f === 'recommended.json' ? { groups: [] } : {});
+    for (const f of SITE_CONTENT_FILES) put(draft, f, f === 'recommended.json' ? { groups: [] } : f === 'promotions.json' ? PROMOTIONS : {});
     put(draft, 'index/works/0.json', works);
     put(draft, 'index/books/0.json', books);
     git(draft, 'init', '-q');
@@ -283,6 +293,55 @@ try {
             (text) => unlinkSync(join(text, 'Work', 'c', IDS.newWork, 'default', '001.json')),
             (go) => assert.throws(go, (err) => /阅读卡片对应的数据文件在产物里缺失/.test(stderrOf(err)) && new RegExp(`${IDS.newWork}: items/${IDS.newWork}/default/001\\.json`).test(stderrOf(err))),
         );
+    });
+
+    // bim#139：promotions.json 可能已切成 promotions/<草稿id末2位>.json 分片（overview#458）。同一份对照表，两种形状打出的产物字节相同。
+    test('promotions：整档形与分片形打出的 current/promotions.json 逐字节相同，且就是 bim 写盘格式', () => {
+        const wholeOut = rd(join(data, 'promotions.json'));
+        assert.equal(wholeOut, JSON.stringify(PROMOTIONS, null, 2) + '\n');
+
+        const t = mkdtempSync(join(tmpdir(), 'new-text-shard-'));
+        try {
+            const f = makeFixture(t);
+            unlinkSync(join(f.draft, 'promotions.json'));
+            const byShard = {};
+            for (const [k, rec] of Object.entries(PROMOTIONS.promotions)) (byShard[k.slice(-2)] ??= {})[k] = rec;
+            for (const [key, recs] of Object.entries(byShard)) {
+                put(f.draft, `promotions/${key}.json`, JSON.stringify({ version: 1, promotions: recs }, null, 2) + '\n');
+            }
+            const out = join(t, 'kyg-data');
+            run('bundle-data.mjs', env(out, f.draft, f.text));
+            assert.equal(rd(join(out, 'data', 'promotions.json')), wholeOut);
+        } finally {
+            rmSync(t, { recursive: true, force: true });
+        }
+    });
+
+    test('promotions：整档、分片同时存在取并集，同键分片优先；两种形状都没有 → bundle-data 失败', () => {
+        const t = mkdtempSync(join(tmpdir(), 'new-text-both-'));
+        try {
+            const f = makeFixture(t);
+            // 分片里把 11sjkim94800m 改指别处，并多一条整档里没有的
+            put(f.draft, 'promotions/0m.json', { version: 1, promotions: { '11sjkim94800m': { production_id: 'zzzzzzzzzz', type: 'book', promoted_at: 'x' } } });
+            put(f.draft, 'promotions/zz.json', { version: 1, promotions: { '2aaaaaaaaaazz': { production_id: 'yyyyyyyyyy', type: 'work', promoted_at: 'y' } } });
+            const out = join(t, 'kyg-data');
+            run('bundle-data.mjs', env(out, f.draft, f.text));
+            const merged = readJ(join(out, 'data', 'promotions.json')).promotions;
+            assert.equal(merged['11sjkim94800m'].production_id, 'zzzzzzzzzz');
+            assert.equal(merged['2aaaaaaaaaazz'].production_id, 'yyyyyyyyyy');
+            assert.equal(merged['1evr5e3mct1mt'].production_id, 'd59df01avcw0');
+            assert.deepEqual(Object.keys(merged), [...Object.keys(merged)].sort());
+        } finally {
+            rmSync(t, { recursive: true, force: true });
+        }
+        const t2 = mkdtempSync(join(tmpdir(), 'new-text-none-'));
+        try {
+            const f = makeFixture(t2);
+            unlinkSync(join(f.draft, 'promotions.json'));
+            assert.throws(() => run('bundle-data.mjs', env(join(t2, 'kyg-data'), f.draft, f.text)), (err) => /promotions\.json/.test(String(err.stderr)));
+        } finally {
+            rmSync(t2, { recursive: true, force: true });
+        }
     });
 } finally {
     rmSync(tmp, { recursive: true, force: true });

@@ -29,6 +29,7 @@ import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { assertProductionDir, assertSiteContentFiles, SITE_CONTENT_FILES } from './lib/production-dir.mjs';
+import { buildPromotionsFileText, PROMOTIONS_FILENAME } from './lib/promotions-source.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
@@ -446,8 +447,10 @@ function bundleExtraFiles() {
     // resource* 直接复制；promotions.json 一并复制（由 book-index promote 维护，
     // 客户端 BundleStorage 用它做 draft→production redirect）
     for (const fname of SITE_CONTENT_FILES.filter((f) => f !== 'recommended.json')) {
-        const src = join(PRODUCTION_DIR, fname);
-        const data = readFileSync(src, 'utf-8');
+        // promotions.json 源档可能是整档，也可能是 promotions/<末2位>.json 分片（bim#139）：合流后统一写成整档，产物形状不变
+        const data = fname === PROMOTIONS_FILENAME
+            ? buildPromotionsFileText(PRODUCTION_DIR)
+            : readFileSync(join(PRODUCTION_DIR, fname), 'utf-8');
         writeIfChanged(join(OUT_DIR, fname), data);
         const size = (Buffer.byteLength(data) / 1024).toFixed(0);
         console.log(`EX  ${fname} copied (${size} KB)`);

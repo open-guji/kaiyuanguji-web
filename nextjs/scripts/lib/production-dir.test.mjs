@@ -42,6 +42,15 @@ test('assertSiteContentFiles：缺文件 → 抛错并列出缺哪几个', () =>
     });
 });
 
+test('assertSiteContentFiles：promotions.json 换成 promotions/ 分片目录（bim#139）→ 也通过；两者都没有 → 报缺并提示分片目录', () => {
+    withTmp((base) => {
+        for (const f of SITE_CONTENT_FILES.filter((x) => x !== 'promotions.json')) writeFileSync(join(base, f), '{}');
+        assert.throws(() => assertSiteContentFiles(base), (e) => /promotions\.json/.test(e.message) && /promotions\/ 分片目录/.test(e.message));
+        mkdirSync(join(base, 'promotions'));
+        assertSiteContentFiles(base);
+    });
+});
+
 test('assertSiteContentFiles：齐全 → 通过', () => {
     withTmp((base) => {
         for (const f of SITE_CONTENT_FILES) writeFileSync(join(base, f), '{}');
