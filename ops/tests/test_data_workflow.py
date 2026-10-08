@@ -186,6 +186,18 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertEqual(c['group'], 'publish-data')
         self.assertFalse(c['cancel-in-progress'])
 
+    def test_scheduled_check_always_runs_once_switch_on(self):
+        run = self.wf['jobs']['check']['steps'][0]['run']
+        def go(split):
+            with tempfile.TemporaryDirectory() as d:
+                out = os.path.join(d, 'out'); open(out, 'w').close()
+                env = dict(os.environ, SPLIT_VAR=split, GITHUB_OUTPUT=out)
+                # 把 ${{ github.event_name }} 换成 schedule；开关打开时必须在碰网络之前就决定
+                r = subprocess.run(['bash', '-e', '-c', run.replace('${{ github.event_name }}', 'schedule')], env=env, capture_output=True, text=True, timeout=20)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                return open(out, encoding='utf-8').read().strip()
+        self.assertEqual(go('true'), 'should_run=true')
+
     def test_triggers_schedule_and_manual(self):
         on = self.wf.get('on', self.wf.get(True))
         self.assertIn('schedule', on)

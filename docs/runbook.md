@@ -133,13 +133,15 @@ done
 |---|---|
 | 定时／手动默认（`target=production`），仓库变量 `SPLIT_DATA_FLOW` 没设 | 只检查，不上传（现在 deploy.yml 仍是正式前缀的写者） |
 | 同上但 `SPLIT_DATA_FLOW=true`，`prod_ref`／`text_ref` 都是 main | 上传到正式前缀：current/、h1 条目、条目 sitemap |
-| `target=staging`（演练） | 整条流水线写 `staging/` 前缀，不碰正式前缀，不看开关；refs 不限 |
+| `target=staging`（演练），refs 都是 main | 整条流水线写 `staging/` 前缀，不碰正式前缀，不看开关；和 deploy.yml 的测试站构建共用一把锁，不会同时写 |
 | `only_sitemaps=true` | 只生成并上传条目 sitemap 到 `[前缀/]sitemaps/`（新目录，不动已有对象），不看开关 |
-| `prod_ref`／`text_ref` 不是 main 的正式前缀上传 | 只检查；回滚重发上一版数据要勾 `allow_ref_override`（且需要开关或 `only_sitemaps`） |
+| `prod_ref`／`text_ref` 不是 main（**含 staging**） | 只检查；回滚重发上一版数据、用新格式分支演练都要勾 `allow_ref_override`（正式前缀另外还需要开关或 `only_sitemaps`）。原因：上传步骤带 COS 密钥，同 job 里跑的是所选 ref 的 `build_derived.py`，只给可信分支 |
 
 要点：
 - **翻开关（`SPLIT_DATA_FLOW`）之前**：先 `target=staging` 把整条流水线演练一遍；再手动 `only_sitemaps=true` 把 sitemap 传到正式前缀的 `sitemaps/`（路由代理要从那里取）；翻开关的那一刻**不能有在跑的 deploy.yml**（它开始时读的是旧值，仍会写数据）。
 - 打包出来的 `latest.json` 没有 `webCommitId`；上传前从线上现行 `latest.json` 带过来，读它的人（`promote=data`、回滚计划、`/api/version`）切到 `web.json` 之前还在用。开关打开后代码流程不再写 `latest.json`，这个值会停在最后一次代码发布时的版本，所以**读者切到 `web.json` 要在翻开关之前或同时完成**。
+- 开关打开后，定时触发不再按「commit 没变就跳过」：一律跑，由 package 里的同步标记判是否真要传（commit 之外还看打包脚本指纹和上次同步是否完整，所以不会重传，但能补上半途失败的）。
+- sitemap 传完（分片→索引→回读）后最后写 `[前缀/]sitemaps/_meta.json`（记录两个数据 commit）；它不对外提供，也不会被清旧分片动到。
 - 上传的 state 缓存键与 deploy.yml 的正式站键相同，第一次接管时继承 deploy.yml 最后一次的 state。
 - h1 文本、刷新（条目失效）、上线后抽查、落后告警在后续 PR 里加；在那之前翻开关会少这些（所以现在不翻）。
 

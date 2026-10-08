@@ -65,10 +65,19 @@ jobs:
     steps:
       - name: Compare data repo HEADs with deployed latest.json
         id: compare
+        env:
+          SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "· 非定时触发，直接跑"
+            exit 0
+          fi
+          # 开关打开后，「该不该同步」由 package 里的 Decide COS data sync 判（三仓 commit＋打包脚本指纹＋上次同步是否完整），
+          # 这里只比 commit 会漏掉：打包脚本改了、上次同步半途失败、sitemap 没传完。多跑一趟的代价只是克隆＋打包，不重传
+          if [ "$SPLIT_VAR" = true ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "· 数据流水线已打开：定时一律跑，是否同步由 package 内的同步标记判定"
             exit 0
           fi
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
