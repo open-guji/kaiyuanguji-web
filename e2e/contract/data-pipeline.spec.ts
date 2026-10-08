@@ -69,8 +69,10 @@ test.describe('数据管线契约', () => {
         expect(entry.title).toBe(ANCHORS.work.title);
         expect(entry.type).toBe('work');
         expect(entry.authors?.[0]?.name).toBe(ANCHORS.work.author);
-        expect(entry.books?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minBooks);
-        expect(entry.related_works?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minRelatedWorks);
+        // schema-v2（overview#458）：新数据没有 books，版本在 _books；新旧都认
+        expect((entry.books ?? entry._books)?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minBooks);
+        // 关联：schema-v2 源档的 related_works 只留规范方向（史記只剩 7 条），双向全集在 _related，有就以它为准（与 book-index-ui 的 adaptEntry 一致）
+        expect((entry._related ?? entry.related_works)?.length ?? 0).toBeGreaterThanOrEqual(ANCHORS.work.minRelatedWorks);
     });
 
     test('整理本在新结构里：manifest.json（default=整理本）＋ default/index.json 章目录', async ({ request }) => {

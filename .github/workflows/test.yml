@@ -1,9 +1,9 @@
 name: Tests
 
 # 触发：
-#  - PR 提交：跑全套（单测、静态导出 smoke、全栈 e2e）
-#  - 手动 workflow_dispatch
-#  - 每日 02:00 UTC（10:00 北京时间）跑 perf 回归
+#  - PR 提交：只跑单测（快）。静态导出 smoke、全栈 e2e 这类重测试不再挂 PR——
+#    它们与暂存部署后的 verify（ui／contract／read-links）重叠，放到发布前的 staging 上做（2026-10-07 用户定）
+#  - 手动 workflow_dispatch、每日 02:00 UTC（10:00 北京时间）：跑全套（单测、smoke、全栈 e2e、perf 回归）
 #
 # 不挂 push trigger：push 到 main 由 deploy.yml 负责（它自带 npm test），
 # 这里再挂一次只会重复跑单测 + 拖一遍重的 smoke。
@@ -40,6 +40,19 @@ jobs:
       # deploy.yml 里两份正式站构建（build／prod-artifact）必须一致（overview#341）
       - name: Deploy workflow checks (ops/tests/test_deploy_workflow.py)
         run: python3 -m unittest ops/tests/test_deploy_workflow.py -v
+
+      - name: Data workflow checks (ops/tests/test_data_workflow.py)
+        run: python3 -m unittest ops/tests/test_data_workflow.py -v
+
+      # 克隆缓存（ops/clone-cached.sh）：内联副本与正本一致，并用本机假仓真跑一遍（overview#470 P1）
+      - name: Clone cache tests (ops/tests/test_clone_cache.py)
+        run: python3 -m unittest ops/tests/test_clone_cache.py -v
+      # 数据流程刷新阶段清 CDN 缓存的脚本：只允许数据域名下的地址（overview#470 P1）
+      - name: Purge URLs tests (ops/tests/test_purge_urls.py)
+        run: python3 -m unittest ops/tests/test_purge_urls.py -v
+      # 数据包检查（overview#470 P0）：格式契约校验器与整包检查脚本，夹具含线上旧格式与 book-index schema-v2 的样例
+      - name: Data package check tests (ops/tests)
+        run: node --test ops/tests/data-contract.test.mjs ops/tests/data-package-check.test.mjs
       # 夜间性能门槛的判定逻辑（perf/gate.ts）：纯函数，PR 上就跑，不碰线上
       - name: Install (perf)
         working-directory: perf
@@ -50,8 +63,9 @@ jobs:
 
   smoke:
     name: Browser smoke (build + serve + Playwright)
+    # 不挂 PR：build 是否挂由 push 后的 staging 部署构建兜底
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    # nightly schedule + 手动触发跑；PR 也跑，确保 build 流程不挂
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -109,6 +123,7 @@ jobs:
   # 浏览器镜像版本＝e2e 锁定的 @playwright/test 版本（Fullstack 跑在 Playwright 官方镜像里，见下）
   pw-image:
     name: Playwright image version
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.pw.outputs.version }}
@@ -131,6 +146,8 @@ jobs:
     # 这里全栈构建＋next start，跑 e2e 的 reader.spec、feedback.spec 与 contract/fullstack.spec。
     # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
     name: Fullstack (build + next start + e2e reader/feedback/contract)
+    # 不挂 PR：同类 e2e 在 staging 部署后的 verify 里跑（WEB2 的初衷是不要等部署后才发现，现在 staging 在 push 后自动跑，够早）
+    if: github.event_name != 'pull_request'
     needs: pw-image
     runs-on: ubuntu-latest
     # 正常约 6 分钟。10-01 两次被 12 分钟上限掐掉：都是「Install Chromium for Playwright」里 apt 源

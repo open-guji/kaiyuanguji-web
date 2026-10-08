@@ -1,5 +1,5 @@
 /**
- * 图文对读 /read/96mid1ogzk/original/002（overview#389 A7）：点字高亮书影、滚动翻页、悬停专名出摘要卡并跳条目。
+ * 图文对读 /read/96mid1ogzk/002（overview#389 A7）：点字高亮书影、滚动翻页、悬停专名出摘要卡并跳条目。
  *
  * 只在全栈站跑；前端须 >= 对读版 book-index-ui。
  * 数据（新结构文本，章条目声明 char_file／cord_file，对应 002.char.json、002.cord.json 等）没上线时整组跳过。
@@ -8,10 +8,10 @@
 import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { requireNewTextData, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
+import { requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
 
 const BOOK = '96mid1ogzk';
-const PATH = `${TARGET}/read/${BOOK}/original/002`;
+const PATH = `${TARGET}/read/${BOOK}/002`;
 /** 带书影翻页／缩放（overview#425）的 book-index-ui 版本；bim 实际发版号定了以后核对这里 */
 const MIN_UI = '0.45.0';
 
@@ -21,8 +21,8 @@ const warpPage = (page: Page) => page.locator('[data-warp-page]').first();
 async function openDuidu(page: Page) {
     await page.goto(PATH);
     await expect(page.locator('[data-char-id]').first()).toBeVisible({ timeout: 60_000 });
-    // 专名线默认关；对读正文的实体标注跟着它走
-    await setReaderSettings(page, true);   // 专名线在右侧「阅读设置」侧栏里（overview#463）
+    // 专名线在章节有专名数据时默认开（ui 0.47.2），没按下才点，免得点成关；对读正文的实体标注跟着它走
+    await setReaderSettings(page, true);   // 专名线、标点在右侧「阅读设置」侧栏里（overview#463）
     const toggle = page.getByRole('button', { name: /专名线|專名線/ });
     if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
     await setReaderSettings(page, false);
@@ -33,11 +33,8 @@ test.describe('图文对读', () => {
     test.beforeEach(async ({ request }) => {
         await requireUiVersion(request, MIN_UI, '图文对读');
         await requireNewTextData(request, BOOK, '图文对读（新结构文本）');
-        // 对读与否看章条目有没有 cord_file 声明（char／cord 新格式，pages.json 已作废）
-        const idx = await request.get(`${TARGET}/data/items/${BOOK}/original/index.json`);
-        const chapters = idx.ok() ? ((await idx.json()).chapters ?? []) : [];
-        const ch = chapters.find((c: { file?: string; char_file?: string }) => c.file === '002');
-        test.skip(!ch?.cord_file, `${TARGET} 上还没有 ${BOOK} 的对读数据（002 章条目没有 cord_file）`);
+        // 对读与否看数据层上有没有这章的 cord（线上文本在 h1 哈希寻址里，不能读站内 /data/items/...）
+        await requireTextFile(request, BOOK, 'default/002.cord.json', '图文对读（002 的 cord）');
     });
 
     test('点字：书影上出现高亮框，书影页＝该字所在页', async ({ page }) => {

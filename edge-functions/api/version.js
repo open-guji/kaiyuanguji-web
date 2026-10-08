@@ -56,10 +56,32 @@ async function readPointer(base, fetchImpl) {
   }
 }
 
+// 代码指针 web.json：{ webCommitId, deployedAt, runId }；读不到（旧站点、还没写过）返回 null，不算错误
+async function readWebPointer(base, fetchImpl) {
+  const url = `${base}/web.json?cb=${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+  let timer;
+  try {
+    const res = await Promise.race([
+      fetchImpl(url, { cache: 'no-store' }),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), POINTER_TIMEOUT_MS); }),
+    ]);
+    if (!res || !res.ok) return null;
+    const j = await res.json();
+    const out = {};
+    for (const k of ['webCommitId', 'deployedAt', 'runId']) if (typeof j[k] === 'string') out[k] = j[k];
+    return /^[0-9a-f]{40}$/.test(out.webCommitId || '') ? out : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** 纯函数，便于测试：info = BUILD_INFO，fetchImpl = fetch */
 export async function buildVersionBody(info, fetchImpl) {
   const base = dataBaseOf(info);
-  const { pointer, error } = await readPointer(base, fetchImpl);
+  // 两个指针同时读，超时不会叠加成六秒
+  const [{ pointer, error }, webPointer] = await Promise.all([readPointer(base, fetchImpl), readWebPointer(base, fetchImpl)]);
   const body = {
     web: info && info.web ? info.web : null,
     bimUi: info && info.bimUi ? info.bimUi : null,
@@ -70,6 +92,8 @@ export async function buildVersionBody(info, fetchImpl) {
     // 数据指针里记的是「上次发布数据时用的网站代码」；和 web 不一致通常说明
     // 只发了代码或只发了数据（promote=data），不一定是故障，但排障时要知道
     webMatchesPointer: pointer && pointer.webCommitId && info && info.web ? pointer.webCommitId === info.web : null,
+    // overview#470 P1：代码指针 web.json（部署成功后写）。过渡期只作参考，webMatchesPointer 仍以 latest.json 为准
+    webPointer: webPointer || null,
     now: new Date().toISOString(),
   };
   if (!info) body.note = '构建时未写入版本信息（本地／旧产物，或构建不在 CI 里）';

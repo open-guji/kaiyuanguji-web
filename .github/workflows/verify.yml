@@ -11,7 +11,7 @@ name: Verify deployed site
 # overview#341 起拆成并行任务（原来一个任务串行跑约 15–19 分钟，装浏览器就占 6 分钟）：
 #   prep      定浏览器镜像版本（取 e2e/package-lock.json 里 @playwright/test 的版本）、定 UI 分片、记 CDN 就绪时刻
 #   contract  契约层＋可降级依赖（纯 HTTP，不开浏览器，不用容器）
-#   read-links 阅读首页卡片抽查（纯 HTTP；只在测试站跑）
+#   read-links 阅读首页卡片抽查（纯 HTTP；测试站总是跑，正式站勾 read_links 或 full_suite 才跑——数据上线后的抽查勾 read_links）
 #   ui        浏览器用例，跑在 Playwright 官方镜像里（浏览器与系统依赖都在镜像里，不再 apt 装）；
 #             测试站全套、按用例切 2 片并行；正式站只跑冒烟（首页／条目页、阅读页、搜索），
 #             手动跑时勾 full_suite 可让正式站也跑全套
@@ -42,6 +42,16 @@ on:
         type: boolean
         required: false
         default: false
+      data_from_prod:
+        description: 测试站读的是正式站数据前缀（数据流程已拆出，overview#470 P1）：DATA_BASE 指向正式数据
+        type: boolean
+        required: false
+        default: false
+      read_links:
+        description: 正式站也跑阅读首页卡片抽查（read-links，纯 HTTP；测试站总是跑）。数据上线后的抽查用它（overview#470 P1）
+        type: boolean
+        required: false
+        default: false
   workflow_dispatch:
     inputs:
       target:
@@ -64,6 +74,16 @@ on:
         type: boolean
         required: false
         default: false
+      data_from_prod:
+        description: 测试站读的是正式站数据前缀（数据流程已拆出，overview#470 P1）
+        type: boolean
+        required: false
+        default: false
+      read_links:
+        description: 正式站也跑阅读首页卡片抽查（read-links；测试站总是跑）
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -71,7 +91,8 @@ permissions:
 env:
   # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
   TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
-  DATA_BASE: ${{ inputs.target == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+  # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+  DATA_BASE: ${{ inputs.target == 'staging' && !inputs.data_from_prod && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
   # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
   # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
   # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
@@ -158,11 +179,6 @@ jobs:
       - name: Contract tests
         working-directory: e2e
         run: npm run test:contract
-      - name: Degradable deps (non-blocking)
-        if: ${{ !cancelled() }}
-        working-directory: e2e
-        continue-on-error: true
-        run: npm run test:degradable
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
@@ -171,12 +187,50 @@ jobs:
           path: e2e/out/report
           retention-days: 14
 
+  # 可降级依赖（目前只有搜索 L1）：仍然跑、仍然在日志里可见，但不把发版判定为失败。
+  # overview#469 第三轮：原来是 contract 任务的最后一步，串在契约用例后面多占 16～57 秒；
+  # 正式站晋升的验收里 contract 是最长的任务（约 211 秒，ui 冒烟只要 109 秒），所以拆成并行任务能直接缩短晋升。
+  # 不能用任务级 continue-on-error：红的任务在任务列表里仍记为 failure，晋升前的核对（deploy.yml 的
+  # 「verify / * 全绿」）会把整次 run 判为不可晋升。所以和原来一样，用步骤级 continue-on-error——任务本身恒为 success，
+  # 失败只留在步骤日志里。
+  degradable:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install e2e deps
+        working-directory: e2e
+        run: npm ci || npm install
+      - name: Wait for CDN propagation
+        env:
+          READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
+        run: |
+          d=$(( READY_AT - $(date +%s) ))
+          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+      - name: Degradable deps (non-blocking)
+        working-directory: e2e
+        continue-on-error: true
+        run: npm run test:degradable
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-degradable
+          path: e2e/out/report
+          retention-days: 14
+
   # 阅读首页的卡片点进去真能读（overview#306）：每个一级节点抽 20 张＋精选清单全部，
   # 页面 200、数据目录与首章／首卷都 200。只发 GET，无依赖。约 3 分钟，只在测试站跑
   # （正式站上的是同一版代码、同一份数据）。
   read-links:
     needs: prep
-    if: ${{ inputs.target == 'staging' || inputs.full_suite }}
+    if: ${{ inputs.target == 'staging' || inputs.full_suite || inputs.read_links }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

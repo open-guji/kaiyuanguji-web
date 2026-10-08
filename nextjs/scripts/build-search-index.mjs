@@ -16,6 +16,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { indexDirFor } from './lib/derived.mjs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
@@ -123,7 +124,8 @@ function buildIndexForType(index, searchS, groupKey, typeLabel) {
  */
 function loadRoot(rootDir, rootLabel, merged) {
     if (!existsSync(rootDir)) return;
-    const indexDir = join(rootDir, 'index');
+    // schema-v2：有 build 产物（BOOK_INDEX_DERIVED_DIR）就读产物的 index/，否则读源仓的
+    const indexDir = indexDirFor(rootDir);
     if (!existsSync(indexDir)) return;
     for (const sub of ['books', 'works', 'entities']) {
         const subDir = join(indexDir, sub);

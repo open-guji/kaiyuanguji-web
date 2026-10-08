@@ -538,6 +538,27 @@ export function createCosStorage(): IndexStorage {
         return `${baseUrl}/${path}?v=${commit}`;
     }
 
+    // 枢纽名称表 _hubs.json（schema-v2 的 build 产物，数据根下、与 entry/ 同级；overview#458）：
+    // 条目里被引用太多次的丛编／志书／人物，卡片只写 {id, h:1}，名称到这里查。
+    // 旧 schema 的包里没有这个文件：404／网络错／JSON 坏一律返回 null，读者端把枢纽引用显示成 ID，不抛错。
+    // 模块生命周期内只取一次（成功或失败都缓存，免得没有该文件的旧包每个枢纽引用都 404 一次）。
+    let hubsPromise: Promise<Record<string, { t?: string; title?: string; dyn?: string }> | null> | null = null;
+    function getHubsFromCos(): Promise<Record<string, { t?: string; title?: string; dyn?: string }> | null> {
+        if (!hubsPromise) {
+            hubsPromise = (async () => {
+                try {
+                    const res = await fetch(await withCacheBust('_hubs.json'), { cache: 'no-cache' });
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    return data && typeof data === 'object' && !Array.isArray(data) ? data : null;
+                } catch {
+                    return null;
+                }
+            })();
+        }
+        return hubsPromise;
+    }
+
     // promotions.json 一次性加载、模块生命周期共享。Map 为空 → 没有任何已升级。
     let promotionsPromise: Promise<Map<string, string>> | null = null;
     function ensurePromotions(): Promise<Map<string, string>> {
@@ -675,6 +696,8 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
+            // 枢纽名称表（book-index-ui 新增的可选方法 getHubs；旧版 UI 不调用，无影响）
+            if (prop === 'getHubs') return () => getHubsFromCos();
             // 对读数据文件（char／cord／punct／entity）：BundleStorage 没有这个方法，两种布局都在外层接走
             if (prop === 'getTextFile') return (id: string, key: string, file: string) => (DATA_LAYOUT === 'hashed' ? getTextFileH1(id, key, file) : getTextFileLegacy(id, key, file));
             // 阅读文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；

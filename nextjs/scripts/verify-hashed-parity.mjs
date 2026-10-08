@@ -15,6 +15,7 @@
  * 用法：
  *   node scripts/verify-hashed-parity.mjs
  *   SAMPLE_SIZE=40 node scripts/verify-hashed-parity.mjs
+ *   SAMPLE_SEED=<整数> SAMPLE_SIZE=200 node scripts/verify-hashed-parity.mjs   # 每个类型里按种子随机抽（不设＝每类取前 N 个）
  */
 
 import { readFileSync, readdirSync, existsSync } from 'fs';
@@ -24,6 +25,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 const { dataDir: DATA_DIR, h1Dir: H1_DIR } = resolveDataDirs();
 const ENTRY_SRC_DIR = join(DATA_DIR, 'entry');
 const SAMPLE_SIZE = parseInt(process.env.SAMPLE_SIZE || '20', 10);
+const SAMPLE_SEED = Number.isFinite(parseInt(process.env.SAMPLE_SEED, 10)) ? parseInt(process.env.SAMPLE_SEED, 10) : null;
 
 function fail(msg) {
     console.error(`❌ ${msg}`);
@@ -65,14 +67,39 @@ async function classify(ids) {
     return buckets;
 }
 
-function sampleFrom(buckets, total) {
+// SAMPLE_SEED（可选）：设了就在每个类型里按种子随机抽，而不是永远取前 N 个——CI 里每次传不同的种子（run id），
+// 覆盖面随部署次数累积；不设就是原来的「每类取前 N 个」，结果固定。
+function mulberry32(seed) {
+    let a = seed >>> 0;
+    return () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+function pickFromPool(pool, n, seed, salt) {
+    if (seed === null) return pool.slice(0, n);
+    const rnd = mulberry32(seed * 31 + salt);
+    const idx = pool.map((_, i) => i);
+    const k = Math.min(n, pool.length);
+    for (let i = 0; i < k; i++) {                       // 部分 Fisher–Yates
+        const j = i + Math.floor(rnd() * (idx.length - i));
+        [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx.slice(0, k).sort((a, b) => a - b).map((i) => pool[i]);
+}
+
+function sampleFrom(buckets, total, seed = null) {
     const types = Object.keys(buckets);
     const perType = Math.ceil(total / types.length);
     const picked = [];
-    for (const t of types) {
-        for (const id of buckets[t].slice(0, perType)) picked.push({ id, type: t });
-        if (picked.length >= total) break;
-    }
+    types.forEach((t, ti) => {
+        if (picked.length >= total) return;
+        for (const id of pickFromPool(buckets[t], perType, seed, ti + 1)) picked.push({ id, type: t });
+    });
     return picked.slice(0, total);
 }
 
@@ -84,7 +111,7 @@ async function main() {
         console.log(`  分桶 ${t}: ${ids.length} 条候选`);
     }
 
-    const samples = sampleFrom(buckets, SAMPLE_SIZE);
+    const samples = sampleFrom(buckets, SAMPLE_SIZE, SAMPLE_SEED);
     if (samples.length === 0) fail('抽不到任何样本，检查 book-index-ui 的 extractType 与 id 是否匹配');
 
     let matched = 0;

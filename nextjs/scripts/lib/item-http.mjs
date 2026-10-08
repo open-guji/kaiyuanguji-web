@@ -61,6 +61,15 @@ export function hotItemIds(dataDir, limit) {
     return picked;
 }
 
+/**
+ * 缓存实测用的对照页候选：环境变量 ITEM_CONTROL_IDS（逗号分隔，数据流程的 refresh 任务用——它没有本地打包产物，
+ * 候选由 package 任务在有产物的地方挑好、随工件带过来）优先；没设就读本地产物（部署流程里）。
+ */
+export function controlItemIds(dataDir, limit, env = process.env) {
+    const given = String(env.ITEM_CONTROL_IDS || '').split(',').map((x) => x.trim()).filter(Boolean);
+    return given.length ? given.slice(0, limit) : hotItemIds(dataDir, limit);
+}
+
 export function percentile(values, p) {
     if (!values.length) return 0;
     const s = [...values].sort((a, b) => a - b);

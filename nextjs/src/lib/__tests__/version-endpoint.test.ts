@@ -168,6 +168,49 @@ describe('GET /api/version', () => {
     expect(body2.dataError).toMatch(/404/);
   });
 
+  it('代码指针 web.json（overview#470 P1）：读到就转出三个字段；读不到是 null，不算错误', async () => {
+    const WEB = { webCommitId: SHA, deployedAt: '2026-10-07T01:00:00.000Z', runId: '9', secret: 'no' };
+    const f = async (url: string) => {
+      const json = url.includes('/web.json') ? WEB : POINTER;
+      return { ok: true, status: 200, json: async () => json } as unknown as Response;
+    };
+    const body = await v.buildVersionBody(info, f);
+    expect(body.webPointer).toEqual({ webCommitId: SHA, deployedAt: '2026-10-07T01:00:00.000Z', runId: '9' });
+    const g = async (url: string) => (url.includes('/web.json')
+      ? ({ ok: false, status: 404 } as unknown as Response)
+      : ({ ok: true, status: 200, json: async () => POINTER } as unknown as Response));
+    const body2 = await v.buildVersionBody(info, g);
+    expect(body2.webPointer).toBeNull();
+    expect(body2.dataError).toBeUndefined();
+    expect(body2.webMatchesPointer).toBe(true);
+  });
+
+  it('web.json 里的 webCommitId 不是 40 位小写 commit：当作没有（null）', async () => {
+    for (const bad of ['abc', 'A'.repeat(40), `${SHA}0`, 'not-a-sha']) {
+      const f = async (url: string) => ({ ok: true, status: 200, json: async () => (url.includes('/web.json') ? { webCommitId: bad } : POINTER) } as unknown as Response);
+      const body = await v.buildVersionBody(info, f);
+      expect(body.webPointer).toBeNull();
+    }
+  });
+
+  it('两个指针同时发出，不是读完一个再读下一个（超时不叠加）', async () => {
+    const started: string[] = [];
+    const f = (url: string) => {
+      started.push(url.includes('/web.json') ? 'web' : 'latest');
+      return new Promise<Response>(() => { /* 一直不返回，模拟卡住 */ });
+    };
+    jest.useFakeTimers();
+    try {
+      const p = v.buildVersionBody(info, f);
+      await Promise.resolve();
+      expect(started.sort()).toEqual(['latest', 'web']);
+      jest.advanceTimersByTime(3100);
+      const body = await p;
+      expect(body.webPointer).toBeNull();
+      expect(body.dataError).toMatch(/timeout/);
+    } finally { jest.useRealTimers(); }
+  });
+
   it('仓库里未构建的那份：web=null、target=unknown、带说明', async () => {
     const body = await v.buildVersionBody(null, okFetch(POINTER));
     expect(body).toMatchObject({ web: null, bimUi: null, target: 'unknown', data: '501935e5be70' });

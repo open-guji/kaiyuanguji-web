@@ -144,7 +144,7 @@ test.describe('作品详情', () => {
             '作者未渲染',
         ).toBeVisible();
 
-        // 版本区块——史記有 35 个版本，为空说明 books 关联没渲染。
+        // 版本区块——史記有 35 个版本，为空说明版本关联（旧 books／新 _books）没渲染。
         // 0.10.0 三栏版的区块标题是「版本」，之前是「相关版本」
         await expect(
             page.getByText(/相关版本|相關版本/).or(page.getByRole('heading', { name: /^版本$/ })).first(),

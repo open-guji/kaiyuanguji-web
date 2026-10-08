@@ -12,6 +12,7 @@ import type { ItemEntry } from './item-data';
 import { summarizeItem, sentences, lossStatusText } from './item-summary';
 import { isValidItemId } from '../item-id';
 import { toSimplified } from './simplify';
+import { booksOf, collectionsOf, membersOf, worksOf, classificationOf } from './item-relations';
 
 /** meta description 的长度区间（按码点）：短于下限才补站名句，长于上限截断 */
 export const SEO_DESC_MIN = 80;
@@ -133,7 +134,7 @@ function authorsOf(e: ItemEntry): { names: string[]; line: string } {
 
 /** 人物著录作品：总数，外加按角色的分项（只有一种角色时不列） */
 function worksText(e: ItemEntry): string {
-    const ws = arr(e.works).map(obj);
+    const ws = worksOf(e).map(obj);
     if (!ws.length) return '';
     const by = new Map<string, number>();
     for (const w of ws) {
@@ -145,7 +146,7 @@ function worksText(e: ItemEntry): string {
 }
 
 function classificationText(e: ItemEntry): string {
-    const c = obj(e.classification);
+    const c = classificationOf(e);
     const parts = [str(c.l1), str(c.l2), str(c.l3)].filter(Boolean);
     return parts.length ? `屬${parts.join('')}` : '';
 }
@@ -245,7 +246,8 @@ function countText(e: ItemEntry): string {
         n('ce') && `${n('ce')} 冊`,
     ].filter(Boolean) as string[];
     if (parts.length) return parts.join('，');
-    const members = arr(e.contained_works).length + arr(e.books).length;
+    const memberCount = (e as Json)._member_count;
+    const members = typeof memberCount === 'number' && memberCount > 0 ? memberCount : membersOf(e).length;
     return members ? `本站收錄其子目 ${members} 種` : '';
 }
 
@@ -349,7 +351,7 @@ export function seoDescription(e: ItemEntry, id: string): string {
                 lossStatusText(e),
                 classificationText(e),
             ];
-            const books = ids(e.books).length;
+            const books = ids(booksOf(e)).length;
             const quote = body.length ? null : indexedQuote(e, known);
             if (quote) body = quote.body;
             tail = [indexedText(e, desc, quote?.source), books ? `本站收錄其版本 ${books} 種` : '', resourcesText(e)];
@@ -426,7 +428,7 @@ function language(...texts: string[]): string | undefined {
 }
 
 function genre(e: ItemEntry): string | undefined {
-    const c = obj(e.classification);
+    const c = classificationOf(e);
     const parts = [str(c.l1), str(c.l2), str(c.l3)].filter(Boolean);
     return parts.length ? parts.join('·') : str(e.section) || undefined;
 }
@@ -469,7 +471,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
     const url = itemUrl(site, id);
     const description = seoDescription(e, id);
     const base = { '@context': 'https://schema.org', '@id': url, name: s.title, url, description };
-    const containedIn = parts(site, ids(e.contained_in), 'Collection');
+    const containedIn = parts(site, ids(collectionsOf(e)), 'Collection');
     // S4：JSON-LD 的 name／description 保持数据原文；书名（人物则是名字）的简体写法放进 alternateName，
     // 大陆读者搜简体时实体名也对得上。与原名相同（本来就没有繁简差异）或已在别名里的不重复
     const simplifiedName = toSimplified(s.title);
@@ -500,8 +502,9 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
         }
         case 'collection': {
             ogType = 'website';
-            const members = [...ids(e.contained_works), ...ids(e.books)];
+            const members = ids(membersOf(e));
             const zhong = obj(e.count).zhong;
+            const memberCount = (e as Json)._member_count;
             if (s.edition) title = `${s.title}（${s.edition}）`;
             jsonLd = compact({
                 ...base,
@@ -510,7 +513,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
                 author: persons(e, site),
                 publisher: publisher(e),
                 datePublished: pubYear(e),
-                collectionSize: typeof zhong === 'number' && zhong > 0 ? zhong : members.length,
+                collectionSize: typeof zhong === 'number' && zhong > 0 ? zhong : typeof memberCount === 'number' && memberCount > 0 ? memberCount : members.length,
                 isPartOf: containedIn,
                 hasPart: parts(site, members),
             });
@@ -541,7 +544,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
                 inLanguage: language(s.title),
                 genre: genre(e),
                 isPartOf: containedIn,
-                workExample: parts(site, ids(e.books), 'Book'),
+                workExample: parts(site, ids(booksOf(e)), 'Book'),
             });
         }
     }
