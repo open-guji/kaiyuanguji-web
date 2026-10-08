@@ -226,6 +226,28 @@ describe("createItemFetcher.getItem(id, { prefer: 'current' })（overview#322 B1
     });
 });
 
+describe("createItemFetcher.getItem(id, { prefer: 'current', currentOnly: true })（overview#491）", () => {
+    const opts = { prefer: 'current', currentOnly: true } as const;
+
+    it('current/ 有 → 照旧 2 跳', async () => {
+        const { f, calls } = make({ ...h1Routes(), ...currentRoutes });
+        expect(await f.getItem(ID, opts)).toMatchObject({ source: 'current' });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('current/ 确定没有 → null，不再问 h1（h1 里有也不问）', async () => {
+        const { f, calls } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' } });
+        expect(await f.getItem(ID, opts)).toBeNull();
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('current/ 出网络错 → 抛错，不串 h1', async () => {
+        const { f, calls } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' }, [`${BASE}/current/entry/${ID}.json`]: 'THROW' });
+        await expect(f.getItem(ID, opts)).rejects.toThrow();
+        expect(calls.some((u) => u.includes('/h1/'))).toBe(false);
+    });
+});
+
 describe('网络错与 5xx 原地重试一次（overview#322：冷渲染时的临时故障不让整页 500）', () => {
     /** 第 n 次请求某个 URL 时的行为：'THROW' | 状态码 | 数据 */
     function flaky(plan: Record<string, unknown[]>) {

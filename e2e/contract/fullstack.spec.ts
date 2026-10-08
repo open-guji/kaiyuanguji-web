@@ -280,6 +280,27 @@ test.describe('新架构：跳转与 404', () => {
         test.skip(checked === 0, '草稿候选都还活着，或读不到 h1 升格对照表（站点会 307 兜底）');
     });
 
+    // overview#491：已升格旧 id 在 CDN 缓存未命中时，中间件超时被静默放过，页面抛 permanentRedirect 把 Location 写两遍（逗号拼成一个头），
+    // 跟随后 404。上面那条只看状态码和 Location，命中缓存的副本是对的就会放过；这里再要求跳转是中间件出的
+    // （响应头 x-kyg-item-redirect: redirect:promoted），并像浏览器地址栏输入那样带 sec-fetch-dest: document。
+    test('旧草稿 id 整页请求：Location 只有一个值，且由中间件出（x-kyg-item-redirect）', async ({ request }) => {
+        const v = await fetchLatest(request);
+        let checked = 0;
+        for (const id of DRAFT_POOL) {
+            if (await getEntry(request, id, v.commitId)) continue;
+            const p = await lookupPromotion(request, id);
+            if (p.status !== 'promoted') continue;
+            const res = await request.get(`${TARGET}/item/${id}`, { ...noFollow, headers: { 'sec-fetch-dest': 'document' } });
+            const why = res.headers()['x-kyg-item-redirect'] ?? '(无此头：中间件没出结果或不是本构建)';
+            expect(res.status(), `${id} 应 308；中间件原因：${why}`).toBe(308);
+            expect(locationTargets(res), `Location 应是单个正式 id，实际「${res.headers()['location'] ?? ''}」；中间件原因：${why}`)
+                .toEqual([`/item/${p.to}`]);
+            expect(res.headers()['x-kyg-item-redirect'], `跳转应由中间件出，实际原因：${why}`).toBe('redirect:promoted');
+            checked++;
+        }
+        test.skip(checked === 0, '草稿候选都还活着，或读不到 h1 升格对照表');
+    });
+
     test('不存在的 id 真 404，且带 noindex', async ({ request }) => {
         const res = await request.get(`${TARGET}/item/${MISSING_ID}`, noFollow);
         expect(res.status()).toBe(404);

@@ -29,6 +29,7 @@ async function run(path: string, headers: Record<string, string> = {}) {
         status: res.status,
         location: res.headers.get('location'),
         all: res.headers.get('location')?.split(',') ?? [],
+        reason: res.headers.get('x-kyg-item-redirect'),
     };
 }
 
@@ -117,10 +118,29 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         expect(mockCreateItemFetcher).toHaveBeenCalledWith(expect.objectContaining({ forceCache: false, retries: 0 }));
     });
 
-    it("取条目走 prefer: 'current'（overview#322 B1：边缘上少发 h1 的 4 跳）", async () => {
+    it("取条目只走 current/（overview#322 B1、#491：边缘上不再串 h1 的 4 跳）", async () => {
         mockGetItem.mockResolvedValue(hit({ title: '史記' }));
         await run(`/item/${MERGED}`);
-        expect(mockGetItem).toHaveBeenCalledWith(MERGED, { prefer: 'current' });
+        expect(mockGetItem).toHaveBeenCalledWith(MERGED, { prefer: 'current', currentOnly: true });
+    });
+
+    it('已升格的草稿 id：308 只有一个 Location，响应头 x-kyg-item-redirect 说明是升格跳转（overview#491）', async () => {
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'promoted', to: 'hixhd2h9bk4b' });
+        const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+        expect({ status: r.status, all: r.all, reason: r.reason }).toEqual({
+            status: 308,
+            all: ['https://staging.kaiyuanguji.com/item/hixhd2h9bk4b'],
+            reason: 'redirect:promoted',
+        });
+    });
+
+    it('没跳的 /item 响应也带原因头（取条目抛错 → pass:error）', async () => {
+        mockGetItem.mockRejectedValue(new Error('latest.json HTTP 503'));
+        mockResolvePromotion.mockResolvedValue({ status: 'absent' });
+        const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+        expect(r.location).toBeNull();
+        expect(r.reason).toBe('pass:error:latest.json HTTP 503');
     });
 
     it('跳转判断超过时限 → 放过交给页面，不挂着等', async () => {
