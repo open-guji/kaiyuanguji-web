@@ -738,3 +738,100 @@ describe('locale（首页检索候选跟繁简走，overview#342）', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函数自己压 gzip）', () => {
+  /** 上游回很多命中，让响应体超过 1 KB 的压缩门槛 */
+  function stubBigUpstream() {
+    stubUpstream(async (init) => {
+      const parsed = JSON.parse(String(init.body));
+      return new Response(JSON.stringify({
+        results: parsed.queries.map((q: { indexUid: string }) => ({
+          indexUid: q.indexUid,
+          hits: Array.from({ length: 30 }, (_, i) => ({
+            id: `${q.indexUid}-${i}`, type: 'work', is_draft: false, title: `史記${i}`, author: '司馬遷', dynasty: '西漢',
+          })),
+          estimatedTotalHits: 300,
+        })),
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
+  }
+  const get = (q: string, headers: Record<string, string> = {}) =>
+    fn.onRequestGet(ctx(`https://www.example.com/api/search?q=${encodeURIComponent(q)}&limit=30`, { headers }));
+  async function gunzip(res: Response): Promise<string> {
+    const stream = new Response(res.body).body!.pipeThrough(new DecompressionStream('gzip'));
+    return new Response(stream).text();
+  }
+
+  test('接受 gzip 且响应体够大：gzip 压缩，带 Content-Encoding／Vary，Content-Length 是压后的长度，解开与未压缩一致', async () => {
+    stubBigUpstream();
+    const q = uq();
+    const plain = await get(q);
+    const plainText = await plain.text();
+    expect(plain.headers.get('Content-Encoding')).toBeNull();
+    expect(Buffer.byteLength(plainText)).toBeGreaterThan(1024);
+
+    const res = await get(q, { 'Accept-Encoding': 'gzip, br' });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Encoding')).toBe('gzip');
+    expect(res.headers.get('Vary')).toMatch(/Accept-Encoding/i);
+    expect(res.headers.get('Content-Type')).toMatch(/application\/json/);
+    expect(res.headers.get('X-Search-Cache')).toBe('HIT'); // 其余响应头原样保留
+    const clone = res.clone();
+    const raw = new Uint8Array(await clone.arrayBuffer());
+    expect(Number(res.headers.get('Content-Length'))).toBe(raw.byteLength);
+    expect(raw.byteLength).toBeLessThan(Buffer.byteLength(plainText) / 2);
+    expect(await gunzip(res)).toBe(plainText);
+  });
+
+  test('没带 Accept-Encoding、只接受 br、gzip;q=0：不压，但都带 Vary: Accept-Encoding（缓存按编码分别存）', async () => {
+    stubBigUpstream();
+    const q = uq();
+    for (const h of [{}, { 'Accept-Encoding': 'br' }, { 'Accept-Encoding': 'gzip;q=0, br' }, { 'Accept-Encoding': 'identity' }]) {
+      const res = await get(q, h);
+      expect(res.headers.get('Content-Encoding')).toBeNull();
+      expect(res.headers.get('Vary')).toMatch(/Accept-Encoding/i);
+      expect(JSON.parse(await res.text()).results).toHaveLength(4);
+    }
+  });
+
+  test('Accept-Encoding: *;q=1 算接受；响应体不到 1 KB 不压', async () => {
+    stubBigUpstream();
+    const star = await get(uq(), { 'Accept-Encoding': '*' });
+    expect(star.headers.get('Content-Encoding')).toBe('gzip');
+
+    stubUpstream();
+    const small = await get(uq(), { 'Accept-Encoding': 'gzip' });
+    expect(small.headers.get('Content-Encoding')).toBeNull();
+    expect(small.headers.get('Vary')).toMatch(/Accept-Encoding/i);
+  });
+
+  test('错误响应（400）也带 Vary；POST 同样压缩', async () => {
+    stubBigUpstream();
+    const bad = await fn.onRequestGet(ctx('https://www.example.com/api/search?q=x&index=nope', { headers: { 'Accept-Encoding': 'gzip' } }));
+    expect(bad.status).toBe(400);
+    expect(bad.headers.get('Vary')).toMatch(/Accept-Encoding/i);
+
+    const q = uq();
+    const res = await fn.onRequestPost(ctx('https://www.example.com/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept-Encoding': 'gzip' },
+      body: JSON.stringify({ queries: [{ indexUid: 'works', q, limit: 30 }] }),
+    }));
+    expect(res.headers.get('Content-Encoding')).toBe('gzip');
+    expect(JSON.parse(await gunzip(res)).results).toHaveLength(1);
+  });
+
+  test('运行时没有 CompressionStream：原样返回未压缩（不让搜索失败）', async () => {
+    stubBigUpstream();
+    const saved = g.CompressionStream;
+    delete g.CompressionStream;
+    try {
+      const res = await get(uq(), { 'Accept-Encoding': 'gzip' });
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Content-Encoding')).toBeNull();
+      expect(JSON.parse(await res.text()).results).toHaveLength(4);
+    } finally {
+      g.CompressionStream = saved;
+    }
+  });
+});
