@@ -18,6 +18,14 @@ export async function GET(req: NextRequest) {
         'X-Probe-Mode': mode,
     };
     const raw = Buffer.from(BODY, 'utf-8');
+    if (mode === 'gzipc') {
+        // 带 CDN 缓存头的 gzip：看缓存命中时不同 Accept-Encoding 的客户端各拿到什么
+        const z = gzipSync(raw);
+        return new NextResponse(z, { status: 200, headers: { ...base, 'Cache-Control': 'public, s-maxage=600', 'Content-Encoding': 'gzip', 'Content-Length': String(z.byteLength) } });
+    }
+    if (mode === 'plainc') {
+        return new NextResponse(raw, { status: 200, headers: { ...base, 'Cache-Control': 'public, s-maxage=600', 'Content-Length': String(raw.byteLength) } });
+    }
     if (mode === 'gzip') {
         const z = gzipSync(raw);
         return new NextResponse(z, { status: 200, headers: { ...base, 'Content-Encoding': 'gzip', 'Content-Length': String(z.byteLength) } });

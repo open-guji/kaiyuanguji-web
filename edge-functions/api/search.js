@@ -759,7 +759,7 @@ async function withCompression(request, res) {
   else if (!/accept-encoding/i.test(vary)) res.headers.set('Vary', `${vary}, Accept-Encoding`);
 
   if (res.headers.has('Content-Encoding')) return res;
-  if (!acceptsGzip(request.headers.get('Accept-Encoding'))) return res;
+  // 试验 2：函数收到的 Accept-Encoding 被网关改成 identity/空，看不出客户端接不接受 gzip——先一律压，看网关会不会按客户端头解码
   if (typeof CompressionStream === 'undefined') return res; // 运行时没有就不压，原样返回
   try {
     const raw = new Uint8Array(await res.clone().arrayBuffer());
