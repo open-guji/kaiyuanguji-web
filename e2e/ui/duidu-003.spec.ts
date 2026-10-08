@@ -1,5 +1,5 @@
 /**
- * 图文对读 /read/96mid1ogzk/original/003（四庫總目 vol03，overview#421）：点字高亮书影、滚动翻页、悬停专名出摘要卡并跳条目。
+ * 图文对读 /read/96mid1ogzk/003（四庫總目 vol03，overview#421）：点字高亮书影、滚动翻页、悬停专名出摘要卡并跳条目。
  *
  * 只在全栈站跑；前端须 >= 对读版 book-index-ui。
  * 数据（新结构文本，章条目声明 char_file／cord_file，对应 003.char.json、003.cord.json 等）没上线时整组跳过。
@@ -11,7 +11,7 @@ import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireTextFile, requireUiVersion } from '../fixtures/preconditions';
 
 const BOOK = '96mid1ogzk';
-const PATH = `${TARGET}/read/${BOOK}/original/003`;
+const PATH = `${TARGET}/read/${BOOK}/003`;
 /** 带书影翻页／缩放（overview#425）的 book-index-ui 版本；bim 实际发版号定了以后核对这里 */
 const MIN_UI = '0.45.0';
 /** 003 起始页：第 1、2 页（书脊签、封面签条）无字，对读正文与书影从第 3 页起 */
@@ -31,7 +31,7 @@ async function openDuidu(page: Page) {
     await expect(page.locator('[data-char-id]').first()).toBeVisible({ timeout: 60_000 });
     // 起始页是第一个有字的页（第 3 页）：先等书影区定下来再往下做，不读开头那一瞬的过渡页号
     await expect(warpPage(page)).toHaveAttribute('data-warp-page', FIRST_TEXT_PAGE, { timeout: 30_000 });
-    // 专名线默认关；对读正文的实体标注跟着它走
+    // 专名线在章节有专名数据时默认开（ui 0.47.2），没按下才点，免得点成关；对读正文的实体标注跟着它走
     const toggle = page.getByRole('button', { name: /专名线|專名線/ });
     if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
     await settled(page);
@@ -71,7 +71,7 @@ test.describe('图文对读（vol03）', () => {
         await requireUiVersion(request, MIN_UI, '图文对读');
         await requireNewTextData(request, BOOK, '图文对读（新结构文本）');
         // 对读与否看数据层上有没有这章的 cord（线上文本在 h1 哈希寻址里，不能读站内 /data/items/...）
-        await requireTextFile(request, BOOK, 'original/003.cord.json', '图文对读（003 的 cord）');
+        await requireTextFile(request, BOOK, 'default/003.cord.json', '图文对读（003 的 cord）');
     });
 
     test('点字：书影上出现高亮框，书影页＝该字所在页', async ({ page }) => {
