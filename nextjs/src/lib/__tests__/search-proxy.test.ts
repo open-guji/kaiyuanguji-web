@@ -739,7 +739,7 @@ describe('locale（首页检索候选跟繁简走，overview#342）', () => {
     });
 });
 
-describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函数自己压 gzip）', () => {
+describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函数自己压 gzip；函数看到的 Accept-Encoding 恒为 identity，故一律压）', () => {
   /** 上游回很多命中，让响应体超过 1 KB 的压缩门槛 */
   function stubBigUpstream() {
     stubUpstream(async (init) => {
@@ -762,45 +762,31 @@ describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函�
     return new Response(stream).text();
   }
 
-  test('接受 gzip 且响应体够大：gzip 压缩，带 Content-Encoding／Vary，Content-Length 是压后的长度，解开与未压缩一致', async () => {
+  test('响应体够大：一律 gzip 压缩（不看请求的 Accept-Encoding），带 Content-Encoding／Vary，Content-Length 是压后的长度，解开与原文一致', async () => {
     stubBigUpstream();
     const q = uq();
-    const plain = await get(q);
-    const plainText = await plain.text();
-    expect(plain.headers.get('Content-Encoding')).toBeNull();
-    expect(Buffer.byteLength(plainText)).toBeGreaterThan(1024);
-
-    const res = await get(q, { 'Accept-Encoding': 'gzip, br' });
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Encoding')).toBe('gzip');
-    expect(res.headers.get('Vary')).toMatch(/Accept-Encoding/i);
-    expect(res.headers.get('Content-Type')).toMatch(/application\/json/);
-    expect(res.headers.get('X-Search-Cache')).toBe('HIT'); // 其余响应头原样保留
-    const clone = res.clone();
-    const raw = new Uint8Array(await clone.arrayBuffer());
-    expect(Number(res.headers.get('Content-Length'))).toBe(raw.byteLength);
-    expect(raw.byteLength).toBeLessThan(Buffer.byteLength(plainText) / 2);
-    expect(await gunzip(res)).toBe(plainText);
-  });
-
-  test('没带 Accept-Encoding、只接受 br、gzip;q=0：不压，但都带 Vary: Accept-Encoding（缓存按编码分别存）', async () => {
-    stubBigUpstream();
-    const q = uq();
-    for (const h of [{}, { 'Accept-Encoding': 'br' }, { 'Accept-Encoding': 'gzip;q=0, br' }, { 'Accept-Encoding': 'identity' }]) {
+    for (const h of [{}, { 'Accept-Encoding': 'identity' }, { 'Accept-Encoding': 'gzip, br' }]) {
       const res = await get(q, h);
-      expect(res.headers.get('Content-Encoding')).toBeNull();
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Content-Encoding')).toBe('gzip');
       expect(res.headers.get('Vary')).toMatch(/Accept-Encoding/i);
-      expect(JSON.parse(await res.text()).results).toHaveLength(4);
+      expect(res.headers.get('Content-Type')).toMatch(/application\/json/);
+      const raw = new Uint8Array(await res.clone().arrayBuffer());
+      expect(Number(res.headers.get('Content-Length'))).toBe(raw.byteLength);
+      const text = await gunzip(res);
+      expect(Buffer.byteLength(text)).toBeGreaterThan(1024);
+      expect(raw.byteLength).toBeLessThan(Buffer.byteLength(text) / 2);
+      expect(JSON.parse(text).results).toHaveLength(4);
     }
   });
 
-  test('Accept-Encoding: *;q=1 算接受；响应体不到 1 KB 不压', async () => {
+  test('其余响应头原样保留；响应体不到 1 KB 不压但带 Vary', async () => {
     stubBigUpstream();
-    const star = await get(uq(), { 'Accept-Encoding': '*' });
-    expect(star.headers.get('Content-Encoding')).toBe('gzip');
+    const big = await get(uq());
+    expect(big.headers.get('X-Search-Cache')).toBeTruthy();
 
     stubUpstream();
-    const small = await get(uq(), { 'Accept-Encoding': 'gzip' });
+    const small = await get(uq());
     expect(small.headers.get('Content-Encoding')).toBeNull();
     expect(small.headers.get('Vary')).toMatch(/Accept-Encoding/i);
   });
