@@ -18,6 +18,7 @@ import { getItemServer, getPromotionServer, type ItemEntry } from '@/lib/server/
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
 import { buildItemSeo, jsonLdScript, type ItemSeo } from '@/lib/server/item-seo';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
+import { seedForItem } from '@/lib/server/item-seed';
 import ItemDetailClient from './ItemDetailClient';
 import ItemSummaryView from './ItemSummaryView';
 import { simplifyMetadata } from '@/lib/server/simplify';
@@ -95,14 +96,15 @@ export default async function ItemPage({ params }: Props) {
     const s = await load(id);
     if (!s) notFound();
     // 摘要只留那几个字段：s 里还带着 seo（JSON-LD 等），不该进 RSC 载荷。
-    // 条目本身作 initialDetail 交给详情组件当首屏种子，客户端不再重取主条目（overview#458 批次 0.1）
+    // 条目本身作 initialDetail 交给详情组件当首屏种子，客户端不再重取主条目（overview#458 批次 0.1）；
+    // 条目太大（>48 KB）就不内嵌、回退客户端取数，原因与阈值见 item-seed.ts
     const { seo: _seo, entry, source, version, ...summary } = s; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(s.seo.jsonLd) }} />
             <ItemDetailClient
                 id={id}
-                initialDetail={entry}
+                initialDetail={seedForItem(entry)}
                 fallback={<ItemSummaryView s={summary} source={source} version={version} />}
             />
         </>
