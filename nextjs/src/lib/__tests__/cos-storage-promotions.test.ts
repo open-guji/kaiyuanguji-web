@@ -90,6 +90,15 @@ describe('cos-storage：升格对照表按 PH 分片取', () => {
         expect(calls.filter(u => u.includes('/h1/promotions/')).length).toBe(1);
     });
 
+    it('同一片并发取（Promise.all）也只发一次请求，指针与 root 也各一次', async () => {
+        const calls = mockFetch();
+        const storage = (await fresh()).createCosStorage();
+        await Promise.all([storage.getItem(DRAFT), storage.getItem(DRAFT_SAME_SHARD), storage.getEntry(DRAFT)]);
+        expect(calls.filter(u => u.includes('/h1/promotions/')).length).toBe(1);
+        expect(calls.filter(u => u.endsWith('/h1/manifest-root.json')).length).toBe(1);
+        expect(calls.filter(u => u.includes('/h1/roots/')).length).toBe(1);
+    });
+
     it('后缀在 root 里没有升格：不取分片、不下整表，id 原样', async () => {
         const calls = mockFetch();
         const item = await (await fresh()).createCosStorage().getItem(OTHER);
