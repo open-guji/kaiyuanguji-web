@@ -21,7 +21,7 @@
  * 不是督促数据整理；前提不在了就没有可断言的东西，为此挡住部署是错的。
  * 跳过会带着原因出现在 Playwright 报告里，覆盖真的掉了看得见。
  */
-import { test, type APIRequestContext } from '@playwright/test';
+import { test, type APIRequestContext, type Page } from '@playwright/test';
 import { DATA_BASE, TARGET } from './anchors';
 import { dataUrl, fetchLatest, type DataVersion } from './version';
 import { describeFailure, getWithEdgeRetry } from './edge-retry';
@@ -249,4 +249,14 @@ export async function pickEmptySample(
         if (isEmpty(entry)) return { id, entry };
     }
     return null;
+}
+
+/**
+ * 阅读器右侧「阅读设置」侧栏（overview#463，book-index-ui 新版）：专名线、标点等开关收在里面，默认收起。
+ * 旧版 UI 没有这个键、开关直接在顶栏，此时什么也不做，所以新旧版都能跑。
+ */
+export async function setReaderSettings(page: Page, open: boolean): Promise<void> {
+    const btn = page.getByRole('button', { name: /^(阅读设置|閱讀設置)$/ });
+    if (await btn.count() === 0) return;
+    if ((await btn.getAttribute('aria-expanded')) !== String(open)) await btn.click();
 }
