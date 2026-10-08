@@ -86,7 +86,7 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
         global.fetch = originalFetch;
     });
 
-    it('不设置 NEXT_PUBLIC_DATA_LAYOUT：走现行 current/ 路径，一次不碰 h1/', async () => {
+    it('不设置 NEXT_PUBLIC_DATA_LAYOUT：条目走现行 current/ 路径，不碰 h1/entry 与 h1/manifest（升格对照表另行按 PH 分片取，见 cos-storage-promotions.test.ts）', async () => {
         const detail = { id: WORK_ID, title: '尚書正義', author: '孔穎達' };
         const calls: string[] = [];
         global.fetch = jest.fn().mockImplementation(async (url: string) => {
@@ -103,7 +103,7 @@ describe('cos-storage：h1 哈希寻址路径（开关）', () => {
 
         expect(item).toMatchObject({ id: WORK_ID, title: '尚書正義' });
         expect(calls.some(u => u.includes('/current/entry/'))).toBe(true);
-        expect(calls.some(u => u.includes('/h1/'))).toBe(false);
+        expect(calls.some(u => u.includes('/h1/entry/') || u.includes('/h1/manifest/'))).toBe(false);
     });
 
     it("NEXT_PUBLIC_DATA_LAYOUT 设成非 'hashed' 的值（如历史遗留的 'legacy'）：仍走现行路径", async () => {
