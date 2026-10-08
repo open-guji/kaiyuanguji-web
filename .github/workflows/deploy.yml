@@ -461,22 +461,14 @@ jobs:
           node scripts/cos-sync-decision.mjs decide
 
       # promote=code：数据一个字节都不动。不依赖「数据没变」的判定（打包脚本变了它会走同步），
-      # 直接只改 latest.json 的 webCommitId，并让后面所有数据步骤（克隆、打包、检查、COS 同步、h1、失效）全部跳过。
-      # 失败就整个 promote 失败，不退回照常同步。
+      # 让后面所有数据步骤（克隆、打包、检查、COS 同步、h1、失效）全部跳过。
+      # latest.json 的 webCommitId 要等产物检查和 EdgeOne 部署成功之后才改（见后面的 "Code-only promote — record webCommitId"），
+      # 不然检查或部署失败时，线上还是旧代码，指针却已经指向没发出去的版本。
       - name: Code-only promote — leave production data untouched
         id: code_only
-        # 数据流程已拆出（SPLIT_DATA）时 latest.json 只归数据流程写，上面的 SPLIT 步骤已把 DATA_FAST 置位，这里不再动它
-        if: ${{ env.CODE_ONLY == 'true' && env.SPLIT_DATA != 'true' }}
-        env:
-          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
-          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
-          COS_BUCKET: ${{ secrets.COS_BUCKET }}
-          COS_REGION: ap-shanghai
-          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        if: ${{ env.CODE_ONLY == 'true' }}
         run: |
           [ "$FROM_ARTIFACT" = true ] || { echo "❌ promote=code 必须部署现成产物"; exit 1; }
-          cd nextjs
-          node scripts/cos-sync-decision.mjs latest-only
           echo "DATA_FAST=true" >> "$GITHUB_ENV"
           echo "✅ 只发代码：数据不动（不克隆、不打包、不同步 COS）"
 
@@ -1343,6 +1335,35 @@ jobs:
         run: |
           cd nextjs
           node scripts/write-web-pointer.mjs
+
+      # promote=code：部署成功之后才把线上 latest.json 的 webCommitId 改成新代码（其余字段沿用线上）。
+      # 不 continue-on-error：改不了就让这次 promote 红，别让指针悄悄落后（之后的 promote=data 按它重建代码）。
+      - name: Code-only promote — record webCommitId in latest.json (after deploy)
+        id: code_only_pointer
+        # 数据流程已拆出（SPLIT_DATA）时 latest.json 只归数据流程写，这里不再动它
+        if: ${{ env.CODE_ONLY == 'true' && env.SPLIT_DATA != 'true' }}
+        # 这时新代码已经部署成功：指针写不了不能再把整个 job 标红（那会跳过清缓存、预热和 verify，告警还会说成"部署失败"）。
+        # 所以先重试几次，仍失败就大声警告（错误标注＋摘要里写明怎么补），continue-on-error 让后面的步骤照常跑。
+        continue-on-error: true
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          for i in 1 2 3; do
+            if node scripts/cos-sync-decision.mjs latest-only; then exit 0; fi
+            echo "· 第 $i 次写 latest.json 失败，$((i * 10)) 秒后重试"; sleep $((i * 10))
+          done
+          echo "::error::新代码已部署，但线上 latest.json 的 webCommitId 没改成功（指针仍是上一版）"
+          {
+            echo "### ⚠️ 代码已发布，但 latest.json 的 webCommitId 没更新"
+            echo "指针还停在上一版：**在补上之前不要发 \`promote=data\`**（它会按指针重建旧代码）。"
+            echo "补法：用同一个 \`from_run\` 再派一次 \`promote=code\`（同一份产物，幂等，会重写指针）。"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       # --- 步骤 3：清除 EdgeOne CDN 缓存 ---
       - name: Purge EdgeOne CDN cache
