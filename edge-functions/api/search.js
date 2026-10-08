@@ -767,16 +767,33 @@ async function withCompression(request, res) {
   if (res.headers.has('Content-Encoding')) return res;
   // 试验 2：函数收到的 Accept-Encoding 被网关改成 identity/空，看不出客户端接不接受 gzip——先一律压，看网关会不会按客户端头解码
   if (typeof CompressionStream === 'undefined') { dbg('no-CompressionStream'); return res; } // 运行时没有就不压，原样返回
+  const variant = (() => { try { return new URL(request.url).searchParams.get('_cv') || 'a'; } catch { return 'a'; } })();
+  let step = 'start';
   try {
+    step = 'read';
     const raw = new Uint8Array(await res.clone().arrayBuffer());
     if (raw.byteLength < COMPRESS_MIN_BYTES) { dbg(`small:${raw.byteLength}`); return res; }
-    const gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    step = `gzip-${variant}`;
+    let gz;
+    if (variant === 'b') { // 手动 writer/reader，不经 Blob
+      const cs = new CompressionStream('gzip');
+      const w = cs.writable.getWriter();
+      w.write(raw);
+      w.close();
+      gz = await new Response(cs.readable).arrayBuffer();
+    } else if (variant === 'c') { // 用 Response(body).body 作为源流
+      gz = await new Response(new Response(raw).body.pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    } else { // a：Blob.stream()
+      gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    }
+    step = 'respond';
     const headers = new Headers(res.headers);
     headers.set('Content-Encoding', 'gzip');
     headers.set('Content-Length', String(gz.byteLength)); // 压后的长度，别带旧的
+    headers.set('X-Debug-Compress', `ok:${variant}:${raw.byteLength}->${gz.byteLength}`);
     return new Response(gz, { status: res.status, headers });
   } catch (e) {
-    dbg(`error:${String(e && e.message).slice(0, 80)}`);
+    dbg(`error@${step}:${String(e && e.message).slice(0, 80)}`);
     return res; // 压缩出错不能让搜索失败，退回未压缩
   }
 }

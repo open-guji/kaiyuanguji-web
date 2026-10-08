@@ -26,6 +26,12 @@ export async function GET(req: NextRequest) {
     if (mode === 'htmlswr') { // html + Content-Length + s-maxage + swr（同 /item/*）
         return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=31532400', 'Content-Length': String(raw.byteLength) } });
     }
+    if (mode === 'htmldur') { // 同 /item/*：s-maxage + swr + durable
+        return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=31532400, durable', 'Content-Length': String(raw.byteLength) } });
+    }
+    if (mode === 'htmldur2') { // s-maxage + durable，无 swr
+        return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, s-maxage=600, durable', 'Content-Length': String(raw.byteLength) } });
+    }
     if (mode === 'htmls' || mode === 'jsons') { // 流式（不带 Content-Length，chunked）
         const chunks: Uint8Array[] = [];
         for (let i = 0; i < raw.byteLength; i += 8192) chunks.push(raw.subarray(i, i + 8192));
