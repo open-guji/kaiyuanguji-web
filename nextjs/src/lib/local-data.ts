@@ -9,6 +9,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { toSimplified } from './server/simplify';
 
 // ── Types ──
 
@@ -51,19 +52,9 @@ const NUM_SHARDS = 16;
 
 // ── T2S converter ──
 
-let t2sConverter: ((text: string) => string) | null | false = null;
-
+// 繁→简统一走全站唯一入口（overview#448 S0）
 async function ensureT2S(): Promise<((text: string) => string) | null> {
-    if (t2sConverter === false) return null;
-    if (t2sConverter) return t2sConverter;
-    try {
-        const OpenCC = await (Function('return import("opencc-js")')() as Promise<any>);
-        t2sConverter = OpenCC.Converter({ from: 't', to: 'cn' }) as (text: string) => string;
-        return t2sConverter as (text: string) => string;
-    } catch {
-        t2sConverter = false;
-        return null;
-    }
+    return toSimplified;
 }
 
 // ── Workspace root ──
