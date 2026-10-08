@@ -765,9 +765,10 @@ describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函�
   test('接受 gzip 且响应体够大：gzip 压缩，带 Content-Encoding／Vary，Content-Length 是压后的长度，解开与未压缩一致', async () => {
     stubBigUpstream();
     const q = uq();
+    // 试验 2：函数拿不到真实的 Accept-Encoding（网关改成 identity），所以不看请求头，一律压
     const plain = await get(q);
-    const plainText = await plain.text();
-    expect(plain.headers.get('Content-Encoding')).toBeNull();
+    expect(plain.headers.get('Content-Encoding')).toBe('gzip');
+    const plainText = await gunzip(plain);
     expect(Buffer.byteLength(plainText)).toBeGreaterThan(1024);
 
     const res = await get(q, { 'Accept-Encoding': 'gzip, br' });
@@ -788,9 +789,9 @@ describe('响应压缩（overview#487：函数出的响应 EdgeOne 不压，函�
     const q = uq();
     for (const h of [{}, { 'Accept-Encoding': 'br' }, { 'Accept-Encoding': 'gzip;q=0, br' }, { 'Accept-Encoding': 'identity' }]) {
       const res = await get(q, h);
-      expect(res.headers.get('Content-Encoding')).toBeNull();
+      expect(res.headers.get('Content-Encoding')).toBe('gzip');
       expect(res.headers.get('Vary')).toMatch(/Accept-Encoding/i);
-      expect(JSON.parse(await res.text()).results).toHaveLength(4);
+      expect(JSON.parse(await gunzip(res)).results).toHaveLength(4);
     }
   });
 
