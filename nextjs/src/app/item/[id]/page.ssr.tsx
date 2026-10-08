@@ -14,7 +14,7 @@ import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_L
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { getItemServer, getPromotionServer } from '@/lib/server/item-data';
+import { getItemServer, getPromotionServer, type ItemEntry } from '@/lib/server/item-data';
 import { summarizeItem, type ItemSummary } from '@/lib/server/item-summary';
 import { buildItemSeo, jsonLdScript, type ItemSeo } from '@/lib/server/item-seo';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
@@ -36,7 +36,7 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 
 type Props = { params: Promise<{ id: string }> };
 
-type Loaded = ItemSummary & { source: 'h1' | 'current'; version: string; seo: ItemSeo };
+type Loaded = ItemSummary & { source: 'h1' | 'current'; version: string; seo: ItemSeo; entry: ItemEntry };
 
 /**
  * 取条目并处理跳转。generateMetadata 与页面各调一次，取数有进程内缓存，不会重复回源。
@@ -49,7 +49,7 @@ async function load(id: string): Promise<Loaded | null> {
     const r = await resolveItemRedirect(id, hit, getPromotionServer);
     if (r) (r.permanent ? permanentRedirect : redirect)(r.to);
     if (!hit) return null;
-    return { ...summarizeItem(hit.entry, id), source: hit.source, version: hit.version, seo: buildItemSeo(hit.entry, id, SITE_URL) };
+    return { ...summarizeItem(hit.entry, id), source: hit.source, version: hit.version, seo: buildItemSeo(hit.entry, id, SITE_URL), entry: hit.entry };
 }
 
 async function buildMetadata({ params }: Props): Promise<Metadata> {
@@ -94,13 +94,15 @@ export default async function ItemPage({ params }: Props) {
     const { id } = await params;
     const s = await load(id);
     if (!s) notFound();
-    // 只把摘要那几个字段交给客户端组件：s 里还带着 seo（JSON-LD 等），不该进 RSC 载荷
-    const { seo: _seo, source, version, ...summary } = s; // eslint-disable-line @typescript-eslint/no-unused-vars
+    // 摘要只留那几个字段：s 里还带着 seo（JSON-LD 等），不该进 RSC 载荷。
+    // 条目本身作 initialDetail 交给详情组件当首屏种子，客户端不再重取主条目（overview#458 批次 0.1）
+    const { seo: _seo, entry, source, version, ...summary } = s; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(s.seo.jsonLd) }} />
             <ItemDetailClient
                 id={id}
+                initialDetail={entry}
                 fallback={<ItemSummaryView s={summary} source={source} version={version} />}
             />
         </>

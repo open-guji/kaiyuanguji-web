@@ -9,6 +9,7 @@ jest.mock('book-index-ui', () => ({
         return <div>{props.railTop as React.ReactNode}</div>;
     },
 }));
+const mockGetEntry = jest.fn(() => Promise.resolve(null));
 jest.mock('next/navigation', () => ({
     useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
     useSearchParams: () => new URLSearchParams(),
@@ -17,7 +18,7 @@ jest.mock('@/components/layout/LayoutWrapper', () => ({
     __esModule: true,
     default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock('@/lib/transport', () => ({ getTransport: () => ({}) }));
+jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getEntry: mockGetEntry }) }));
 jest.mock('../CitationBar', () => ({ __esModule: true, default: () => null }));
 jest.mock('../DigitalizationView', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
@@ -76,5 +77,26 @@ describe('BookDetailContent 接三栏组件', () => {
 
     it('页内顶部不放繁简与 GitHub 图标：繁简在全站顶栏（9-30 反馈，overview#322）', () => {
         expect(captured.props!.hideHeaderControls).toBe(true);
+    });
+});
+
+describe('BookDetailContent：服务端种子（overview#458 批次 0.1）', () => {
+    beforeEach(() => { captured.props = undefined; mockGetEntry.mockClear(); });
+
+    it('没传种子：不给 initialDetail，照旧客户端探测升格重定向（取一次条目）', () => {
+        render(<BookDetailContent id="d59f20aowb9c" />);
+        expect(captured.props!.initialDetail).toBeUndefined();
+        expect(mockGetEntry).toHaveBeenCalledTimes(1);
+    });
+
+    it('传了种子：原样交给 BookDetailLayout，且不再为主条目发 getEntry', () => {
+        render(<BookDetailContent id="d59f20aowb9c" initialDetail={{ id: 'd59f20aowb9c', type: 'work', title: '史記' }} />);
+        expect(captured.props!.initialDetail).toMatchObject({ id: 'd59f20aowb9c', title: '史記' });
+        expect(mockGetEntry).not.toHaveBeenCalled();
+    });
+
+    it('Entity 种子：primary_name 同步成 title，与 getItem 一致', () => {
+        render(<BookDetailContent id="e1" initialDetail={{ id: 'e1', type: 'entity', primary_name: '司馬遷' }} />);
+        expect((captured.props!.initialDetail as { title?: string }).title).toBe('司馬遷');
     });
 });

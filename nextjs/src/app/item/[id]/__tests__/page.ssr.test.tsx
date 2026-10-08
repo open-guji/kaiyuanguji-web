@@ -62,6 +62,14 @@ describe('条目页 generateMetadata（S4）', () => {
         expect(ld.alternateName).toContain('史记');
     });
 
+    it('服务端取到的条目作为 initialDetail 交给客户端，seo 不进载荷（overview#458 0.1）', async () => {
+        const { default: ItemPage } = await import('../page.ssr');
+        const el = (await ItemPage({ params: Promise.resolve({ id: ID }) })) as ReactElement<{ children: ReactElement[] }>;
+        const client = el.props.children[1] as ReactElement<Record<string, unknown>>;
+        expect(client.props.initialDetail).toBe(ENTRY);
+        expect(client.props.seo).toBeUndefined();
+    });
+
     it('查不到的条目 → 未找到 + noindex（不受影响）', async () => {
         mockGetItem.mockResolvedValue(null);
         const m = await meta();
