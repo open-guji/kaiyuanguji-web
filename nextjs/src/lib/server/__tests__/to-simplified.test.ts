@@ -46,6 +46,12 @@ describe('S1 快照', () => {
         }
     });
 
+    it('「徵」：人名／词语随 opencc-js@1.0.5 转，宫商角徵羽的音名保持原字', () => {
+        expect(toSimplified('魏徵')).toBe('魏征');
+        expect(toSimplified('徵求')).toBe('征求');
+        expect(toSimplified('宮商角徵羽')).toBe('宫商角徵羽');
+    });
+
     it('整句：异体字归一＋t2cn＋标点', () => {
         const s = '凡例云：其㫖縂在風月寳鑑，後漢書於是乎著録；髮、麵、裡皆有之。';
         expect(toSimplified(s)).toMatchSnapshot();
@@ -135,10 +141,10 @@ describe('S0 护栏', () => {
         expect(hits).toEqual(['edge-functions/api/search.js', 'indexer/full-reindex.mjs', 'nextjs/scripts/lib/to-simplified.mjs', 'nextjs/src/lib/server/simplify.ts']);
     });
 
-    it('opencc-js 钉死同一个精确版本：nextjs、indexer 的 package.json 与已装版本一致', () => {
+    it('opencc-js 钉死同一个精确版本 1.0.5：nextjs、indexer 的 package.json 与已装版本一致', () => {
         const web = JSON.parse(fs.readFileSync(path.join(REPO, 'nextjs/package.json'), 'utf-8')).dependencies['opencc-js'];
         const idx = JSON.parse(fs.readFileSync(path.join(REPO, 'indexer/package.json'), 'utf-8')).dependencies['opencc-js'];
-        expect(web).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(web).toBe('1.0.5');
         expect(idx).toBe(web);
         const installed = JSON.parse(fs.readFileSync(path.join(REPO, 'nextjs/node_modules/opencc-js/package.json'), 'utf-8')).version;
         expect(installed).toBe(web);
