@@ -23,7 +23,7 @@ import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { assertProductionDir } from './lib/production-dir.mjs';
 import { collatedChapterJsons, readManifest } from './lib/text-layout.mjs';
 import * as pagefind from 'pagefind';
-import { Converter } from 'opencc-js';
+import { toSimplified } from './lib/to-simplified.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PRODUCTION_DIR = resolve(process.argv[2] || process.env.BOOK_INDEX_PRODUCTION_DIR || join(__dirname, '..', '..', '..', 'book-index'));
@@ -47,7 +47,7 @@ console.log(`output:                  ${OUT_DIR}\n`);
 
 if (existsSync(OUT_DIR)) rmSync(OUT_DIR, { recursive: true });
 
-const t2s = Converter({ from: 't', to: 'cn' });
+const t2s = toSimplified;
 
 function readJson(path) {
     return JSON.parse(readFileSync(path, 'utf-8'));

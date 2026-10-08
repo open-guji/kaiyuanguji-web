@@ -24,7 +24,7 @@
 //   空串值表示「该字段为空」（如 classification = "" ＝ 未分類），代理改写成 Meili 的 IS EMPTY（`= ""` 在 Meili 里筛不到空值）。
 //   sort：只认 era:asc|desc（按年代）、title:asc|desc（按书名），只对 works／books／entities；见 SORT_MAP。
 // locale（overview#342）：`locale=zh-Hans`（POST 体里同名字段）时，命中的显示字段（DISPLAY_FIELDS：书名、作者、朝代等）
-//   在这里转简体，与 nextjs/src/lib/server/simplify.ts 同一套 opencc t2cn 字表——首页检索候选不引 opencc，靠它跟繁简偏好走。
+//   在这里转简体，与 nextjs/src/lib/server/simplify.ts 同一套逻辑（内嵌核心，含转换前后等长的保证）——首页检索候选不引 opencc，靠它跟繁简偏好走。
 //   不传或 zh-Hant 原样返回（结果页 L1 不传，行为不变）；其他值一律 400。缓存键带 locale。
 // 返回：{ results: [{ indexUid, hits, estimatedTotalHits, limit, offset }] }
 //   hits 只含卡片渲染要的字段；works/books 的 _formatted 只留 description_search（简介命中片段）。
@@ -108,35 +108,82 @@ const LOCALES = ['zh-Hans', 'zh-Hant'];
 /** 转简体的显示字段；classification、loss_status 等是筛选取值，不动 */
 const DISPLAY_FIELDS = ['title', 'primary_name', 'author', 'dynasty', 'era', 'role', 'edition'];
 
-/** 异体字按码位换成正字（「㫖」→「旨」）；t2cn 不认这些字 */
-function normalizeVariants(text) {
-  let out = '';
-  let changed = false;
-  for (const ch of text) {
-    const to = VARIANT_CHARS[ch];
-    if (to !== undefined) changed = true;
-    out += to ?? ch;
-  }
-  return changed ? out : text;
+// ─── 繁→简：全站唯一逻辑的内嵌副本（overview#448 S0） ───
+// 边缘函数随全栈产物编译，不能 import nextjs/src，所以把 nextjs/src/lib/to-simplified-core.mjs 逐字内嵌在下面两个标记之间
+// （去掉 export 关键字）。单测 to-simplified.test.ts 比对两份，改核心必须同步改这里。
+// BEGIN to-simplified-core
+/** 码点数（不是 UTF-16 长度；扩展区字占两个 UTF-16 单元） */
+function codePointLength(text) {
+    let n = 0;
+    for (const _ of text) n++;
+    return n;
 }
 
-// 与 nextjs/src/lib/server/simplify.ts 同口径：先异体字归一，再 Converter({ from: 't', to: 'cn' })；isolate 内只建一次，建不成就原样返回
-let t2cn;
-function toSimplified(text) {
-  if (t2cn === undefined) {
-    try {
-      t2cn = Converter({ from: 't', to: 'cn' });
-    } catch {
-      t2cn = null;
-    }
-  }
-  if (!t2cn || !text) return text;
-  try {
-    return t2cn(normalizeVariants(text));
-  } catch {
-    return text;
-  }
+/** 转换前后码点数相等的断言：不等就抛错（测试与脚本里用；运行时的退路在 createToSimplified 里） */
+function assertSameLength(before, after) {
+    const a = codePointLength(before);
+    const b = codePointLength(after);
+    if (a !== b) throw new Error(`繁简转换改变了长度：${a} → ${b}（${JSON.stringify(before.slice(0, 40))}）`);
+    return after;
 }
+
+/** 异体字 → 正字（按码位，含扩展区字）；没有异体字时原样返回 */
+function normalizeVariants(text, variants) {
+    let out = '';
+    let changed = false;
+    for (const ch of text) {
+        const to = variants[ch];
+        if (to !== undefined) changed = true;
+        out += to ?? ch;
+    }
+    return changed ? out : text;
+}
+
+/**
+ * @param {{ createConverter: () => (text: string) => string, variants: Readonly<Record<string, string>>, warn?: (msg: string) => void }} deps
+ * @returns {(text: string) => string}  繁体（或简繁混排）→ 简体；转换器建不出来就原样返回
+ */
+function createToSimplified({ createConverter, variants, warn = console.warn }) {
+    let convert; // undefined 还没建；null 建失败
+    const get = () => {
+        if (convert !== undefined) return convert;
+        try {
+            convert = createConverter();
+        } catch (err) {
+            warn(`[to-simplified] 建繁简转换器失败，原样返回：${err.message}`);
+            convert = null;
+        }
+        return convert;
+    };
+    let warned = false;
+
+    return function toSimplified(text) {
+        if (!text) return text;
+        const c = get();
+        if (!c) return text;
+        try {
+            const normalized = normalizeVariants(text, variants);
+            const out = c(normalized);
+            if (codePointLength(out) === codePointLength(normalized)) return out;
+            if (!warned) {
+                warned = true;
+                warn('[to-simplified] opencc 转换改变了长度，退回逐码点转换（简体下标须等于原文下标）');
+            }
+            let perChar = '';
+            for (const ch of normalized) perChar += c(ch);
+            return codePointLength(perChar) === codePointLength(normalized) ? perChar : normalized;
+        } catch {
+            return text;
+        }
+    };
+}
+// END to-simplified-core
+
+// isolate 内只建一次；建不成就原样返回（见核心）
+const toSimplified = createToSimplified({
+  createConverter: () => Converter({ from: 't', to: 'cn' }),
+  variants: VARIANT_CHARS,
+});
 
 /** 要转简体时返回 'zh-Hans'，否则 null（原样）：zh-Hant 与不传等价，共用同一份缓存；只认 LOCALES 里的值 */
 function parseLocale(raw) {

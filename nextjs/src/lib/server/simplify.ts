@@ -13,46 +13,24 @@
 import type { Metadata } from 'next';
 import { Converter } from 'opencc-js/t2cn';
 import VARIANT_CHARS from 'book-index-ui/variant-chars.json';
+import { createToSimplified, normalizeVariants as normalizeVariantsWith } from '../to-simplified-core.mjs';
 
 const VARIANTS: Readonly<Record<string, string>> = VARIANT_CHARS;
 
 /** 异体字 → 正字（按码位，含扩展区字）；没有异体字时原样返回 */
 export function normalizeVariants(text: string): string {
-    let out = '';
-    let changed = false;
-    for (const ch of text) {
-        const to = VARIANTS[ch];
-        if (to !== undefined) changed = true;
-        out += to ?? ch;
-    }
-    return changed ? out : text;
+    return normalizeVariantsWith(text, VARIANTS);
 }
 
-type Convert = (text: string) => string;
-let converter: Convert | null | undefined;
-
-function get(): Convert | null {
-    if (converter !== undefined) return converter;
-    try {
-        converter = Converter({ from: 't', to: 'cn' });
-    } catch (err) {
-        console.warn(`[simplify] 建繁简转换器失败，meta 退回原文：${(err as Error).message}`);
-        converter = null;
-    }
-    return converter;
-}
-
-/** 繁体（或简繁混排）→ 简体；转不了就原样返回 */
-export function toSimplified(text: string): string {
-    if (!text) return text;
-    const c = get();
-    if (!c) return text;
-    try {
-        return c(normalizeVariants(text));
-    } catch {
-        return text;
-    }
-}
+/**
+ * 繁体（或简繁混排）→ 简体；转不了就原样返回。全站唯一入口（overview#448 S0）：
+ * 逻辑在 lib/to-simplified-core.mjs（含转换前后等长的保证），这里只注入 opencc-js 与异体字表。
+ */
+export const toSimplified: (text: string) => string = createToSimplified({
+    createConverter: () => Converter({ from: 't', to: 'cn' }),
+    variants: VARIANTS,
+    warn: (msg) => console.warn(msg),
+});
 
 function simplifyTextFields<T>(o: T): T {
     if (!o || typeof o !== 'object') return o;
