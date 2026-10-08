@@ -308,6 +308,19 @@ class SplitDataFlow(unittest.TestCase):
         self.assertIn("'dataSplit'", st['run'])
         self.assertIn('needs.resolve.outputs.split', st['run'])
 
+    def test_rehearse_split_input_only_affects_staging_dispatch(self):
+        # 演练：手动测试站部署勾 rehearse_split，只对这一次按「已拆出」跑，不动仓库变量；晋升、push、定时不受影响
+        triggers = self.wf.get('on') or self.wf.get(True)
+        inp = triggers['workflow_dispatch']['inputs']['rehearse_split']
+        self.assertEqual(inp['type'], 'boolean')
+        self.assertIs(inp['default'], False)
+        r = [x for x in self.wf['jobs']['resolve']['steps'] if x.get('id') == 'r'][0]
+        self.assertIn('inputs.rehearse_split', r['env']['IN_REHEARSE_SPLIT'])
+        self.assertIn('[ "$REQ" = staging ] && [ "$IN_REHEARSE_SPLIT" = true ]; then SPLIT=true', r['run'])
+        # 自动晋升（push）和数据晋升（定时／repository_dispatch）都不会因为演练而被派
+        self.assertIn("github.event_name == 'push'", self.wf['jobs']['auto-promote-code']['if'])
+        self.assertNotIn('workflow_dispatch', self.wf['jobs']['auto-promote']['if'])
+
     def test_scheduled_check_skips_when_split(self):
         c = self.wf['jobs']['check']['steps'][0]
         self.assertIn('vars.SPLIT_DATA_FLOW', c['env']['SPLIT_DATA_FLOW'])
