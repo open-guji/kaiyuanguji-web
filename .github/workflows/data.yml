@@ -42,6 +42,10 @@ on:
         description: '只生成并上传条目 sitemap 到 [前缀/]sitemaps/（新目录，不动已有对象，不看 SPLIT_DATA_FLOW）；其余上传步骤全部跳过'
         type: boolean
         default: false
+      force_sync:
+        description: '演练专用（只在 target=staging 时生效）：即使数据与脚本都没变，也强制走数据同步，让 refresh／verify-live／告警路径真跑一遍。target=production 时忽略（日志里会写一行说明）'
+        type: boolean
+        default: false
       allow_ref_override:
         description: '允许 prod_ref／text_ref 不是 main 时仍上传（回滚＝重发上一版数据、用新格式分支演练）。默认不允许：别的 ref 只做检查。勾上＝所选 ref 的代码会在带密钥的 job 里跑，只给可信分支用'
         type: boolean
@@ -445,11 +449,24 @@ jobs:
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
           COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+          FORCE_SYNC: ${{ inputs.force_sync }}
+          TARGET: ${{ inputs.target || 'production' }}
         run: |
           cd nextjs
           export PROD_COMMIT="${{ steps.clone.outputs.index_sha }}"
           export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
           node scripts/cos-sync-decision.mjs decide
+          # force_sync：只对手动演练（target=staging）生效。同一个输出名后写的覆盖先写的，所以这里把 skip 改回 false，
+          # 后面所有"skip != true"的步骤（同步、写标记、sitemap、refresh／verify-live）就都会跑；target=production 一律忽略。
+          if [ "$FORCE_SYNC" = true ]; then
+            if [ "$TARGET" = staging ]; then
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              echo "· force_sync：演练强制走数据同步（decide 的结果被覆盖为不跳过）"
+              echo "- force_sync=\`true\`：演练强制走数据同步" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "· force_sync 只对 target=staging 生效，target=$TARGET 下已忽略"
+            fi
+          fi
 
       - name: COS sync state — cache key
         id: cos_state_key

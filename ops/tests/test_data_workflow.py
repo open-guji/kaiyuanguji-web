@@ -237,6 +237,56 @@ class DataWorkflowCheckOnly(unittest.TestCase):
                 if only == 'true':
                     self.assertEqual(o['sitemaps_only'], 'true', case)
 
+    # ---- force_sync：演练专用，只对 target=staging 生效 ----
+    def _run_decide(self, force, target, decide_skip='true'):
+        """把 Decide 步骤的 run 抽出来跑：node 换成假的（只写 skip=<decide_skip>），看最终输出里的 skip 与日志"""
+        step = self._step('Decide COS data sync (skip when data unchanged)')
+        run = re.sub(r'\$\{\{[^}]*\}\}', 'sha', step['run'])
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'nextjs'))
+            bindir = os.path.join(d, 'bin'); os.makedirs(bindir)
+            fake = os.path.join(bindir, 'node')
+            with open(fake, 'w') as fh:
+                fh.write('#!/bin/bash\necho "skip=%s" >> "$GITHUB_OUTPUT"\n' % decide_skip)
+            os.chmod(fake, 0o755)
+            out = os.path.join(d, 'out'); summ = os.path.join(d, 'summary')
+            open(out, 'w').close(); open(summ, 'w').close()
+            env = dict(os.environ, PATH=bindir + os.pathsep + os.environ['PATH'], GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ,
+                       FORCE_SYNC=force, TARGET=target)
+            r = subprocess.run(['bash', '-e', '-c', run], cwd=d, env=env, capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            with open(out, encoding='utf-8') as fh:
+                kv = [l.split('=', 1) for l in fh.read().splitlines() if '=' in l]
+            return dict(kv), r.stdout   # 同一个键后写的覆盖先写的，和 GitHub 的处理一致
+
+    def test_force_sync_input_exists_boolean_default_false(self):
+        inp = self.wf.get('on', self.wf.get(True))['workflow_dispatch']['inputs']['force_sync']
+        self.assertEqual(inp['type'], 'boolean')
+        self.assertFalse(inp['default'])
+
+    def test_force_sync_only_overrides_skip_on_staging(self):
+        for force, target, decide_skip, want in [
+            ('true', 'staging', 'true', 'false'),       # 演练强制同步：把 skip 改回 false
+            ('true', 'staging', 'false', 'false'),
+            ('false', 'staging', 'true', 'true'),       # 没勾：照 decide
+            ('', 'staging', 'true', 'true'),            # 定时等没有这个输入
+            ('true', 'production', 'true', 'true'),     # 正式前缀一律忽略
+            ('true', 'production', 'false', 'false'),
+            ('false', 'production', 'true', 'true'),
+        ]:
+            kv, log = self._run_decide(force, target, decide_skip)
+            self.assertEqual(kv['skip'], want, (force, target, decide_skip))
+            if force == 'true' and target == 'production':
+                self.assertIn('只对 target=staging 生效', log)
+            if force == 'true' and target == 'staging':
+                self.assertIn('force_sync', log)
+
+    def test_force_sync_does_not_touch_the_gate(self):
+        # 发布闸不看 force_sync：它只能让"已放行的 staging 演练"多跑同步，不能让任何东西多获得写权限
+        gate = self._step('Publish gate')
+        self.assertNotIn('force_sync', json.dumps(gate))
+        self.assertNotIn('FORCE', json.dumps(gate))
+
     # ---- 刷新、上线后抽查、告警（PR-C1）----
     def test_followup_jobs_exist_and_only_follow_real_data_publish(self):
         jobs = self.wf['jobs']
