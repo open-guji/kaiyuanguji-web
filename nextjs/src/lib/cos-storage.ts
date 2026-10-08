@@ -667,7 +667,11 @@ export function createCosStorage(): IndexStorage {
             shard = (async () => {
                 try {
                     const res = await fetch(await withCacheBust(`promotions/${key}.json`), { cache: 'force-cache' });
-                    return res.ok ? buildPromotionMap(await res.json()) : null;
+                    if (!res.ok) return null;
+                    // 打包只会产出非空的合法片：版本不对、形状坏了、空表一律当「这片不可用」，退回整档，
+                    // 不能把它当成「没有升格」（buildPromotionMap 对坏输入返回空表，会让重定向静默失效）
+                    const map = buildPromotionMap(await res.json());
+                    return map.size > 0 ? map : null;
                 } catch {
                     return null;
                 }

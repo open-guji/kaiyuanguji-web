@@ -40,7 +40,7 @@ interface Opts {
     shardStatus?: number;
     wholeFile?: Record<string, { production_id: string }>;
     /** current/promotions/<末2位>.json：缺省＝没有这个目录（404，旧数据包）；'ok'＝有；数字＝返回该状态码 */
-    currentShard?: 'ok' | number;
+    currentShard?: 'ok' | 'malformed' | 'empty' | number;
 }
 
 function mockFetch(opts: Opts = {}) {
@@ -64,7 +64,9 @@ function mockFetch(opts: Opts = {}) {
             if (opts.currentShard === 'ok') {
                 return jsonResponse({ version: 1, promotions: { [DRAFT]: { production_id: PROD }, [DRAFT_SAME_SHARD]: { production_id: PROD } } });
             }
-            return jsonResponse({}, false, opts.currentShard ?? 404);
+            if (opts.currentShard === 'malformed') return jsonResponse({ version: 2, promotions: { [DRAFT]: { production_id: PROD } } });
+            if (opts.currentShard === 'empty') return jsonResponse({ version: 1, promotions: {} });
+            return jsonResponse({}, false, (opts.currentShard as number | undefined) ?? 404);
         }
         if (url.includes('/promotions.json')) {
             return jsonResponse({ version: 1, promotions: opts.wholeFile ?? { [DRAFT]: { production_id: PROD } } });
@@ -158,6 +160,12 @@ describe('cos-storage：升格对照表按 PH 分片取', () => {
 
     it.each([404, 500])('current 分片 HTTP %i：退回整张 promotions.json', async (status) => {
         const calls = mockFetch({ pointerStatus: 503, currentShard: status });
+        const item = await (await fresh()).createCosStorage().getItem(DRAFT);
+        expect(item).toMatchObject({ id: PROD, redirected_from: DRAFT });
+        expect(calls.some(u => u.includes('/promotions.json'))).toBe(true);
+    });
+    it.each(['malformed', 'empty'] as const)('current 分片内容不可用（%s）：不当作「没有升格」，退回整档', async (shape) => {
+        const calls = mockFetch({ pointerStatus: 503, currentShard: shape });
         const item = await (await fresh()).createCosStorage().getItem(DRAFT);
         expect(item).toMatchObject({ id: PROD, redirected_from: DRAFT });
         expect(calls.some(u => u.includes('/promotions.json'))).toBe(true);
