@@ -11,7 +11,7 @@ name: Verify deployed site
 # overview#341 起拆成并行任务（原来一个任务串行跑约 15–19 分钟，装浏览器就占 6 分钟）：
 #   prep      定浏览器镜像版本（取 e2e/package-lock.json 里 @playwright/test 的版本）、定 UI 分片、记 CDN 就绪时刻
 #   contract  契约层＋可降级依赖（纯 HTTP，不开浏览器，不用容器）
-#   read-links 阅读首页卡片抽查（纯 HTTP；只在测试站跑）
+#   read-links 阅读首页卡片抽查（纯 HTTP；测试站总是跑，正式站勾 read_links 或 full_suite 才跑——数据上线后的抽查勾 read_links）
 #   ui        浏览器用例，跑在 Playwright 官方镜像里（浏览器与系统依赖都在镜像里，不再 apt 装）；
 #             测试站全套、按用例切 2 片并行；正式站只跑冒烟（首页／条目页、阅读页、搜索），
 #             手动跑时勾 full_suite 可让正式站也跑全套
@@ -47,6 +47,11 @@ on:
         type: boolean
         required: false
         default: false
+      read_links:
+        description: 正式站也跑阅读首页卡片抽查（read-links，纯 HTTP；测试站总是跑）。数据上线后的抽查用它（overview#470 P1）
+        type: boolean
+        required: false
+        default: false
   workflow_dispatch:
     inputs:
       target:
@@ -71,6 +76,11 @@ on:
         default: false
       data_from_prod:
         description: 测试站读的是正式站数据前缀（数据流程已拆出，overview#470 P1）
+        type: boolean
+        required: false
+        default: false
+      read_links:
+        description: 正式站也跑阅读首页卡片抽查（read-links；测试站总是跑）
         type: boolean
         required: false
         default: false
@@ -187,7 +197,7 @@ jobs:
   # （正式站上的是同一版代码、同一份数据）。
   read-links:
     needs: prep
-    if: ${{ inputs.target == 'staging' || inputs.full_suite }}
+    if: ${{ inputs.target == 'staging' || inputs.full_suite || inputs.read_links }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

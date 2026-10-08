@@ -141,7 +141,12 @@ done
 - **翻开关（`SPLIT_DATA_FLOW`）之前**：先 `target=staging` 把整条流水线演练一遍；再手动 `only_sitemaps=true` 把 sitemap 传到正式前缀的 `sitemaps/`（路由代理要从那里取）；翻开关的那一刻**不能有在跑的 deploy.yml**（它开始时读的是旧值，仍会写数据）。
 - 打包出来的 `latest.json` 没有 `webCommitId`；上传前从线上现行 `latest.json` 带过来，读它的人（`promote=data`、回滚计划、`/api/version`）切到 `web.json` 之前还在用。开关打开后代码流程不再写 `latest.json`，这个值会停在最后一次代码发布时的版本，所以**读者切到 `web.json` 要在翻开关之前或同时完成**。
 - 上传的 state 缓存键与 deploy.yml 的正式站键相同，第一次接管时继承 deploy.yml 最后一次的 state。
-- h1 文本、刷新（条目失效）、上线后抽查、落后告警在后续 PR 里加；在那之前翻开关会少这些（所以现在不翻）。
+- 上传成功（current/ 同步成功）之后还有三个任务，都在 data.yml 里：
+  - `refresh`：清数据指针的 CDN 缓存（`latest.json`、h1 两个根、`sitemaps/sitemap-index.xml`，只清这几个地址，不清整站；脚本 `ops/purge-urls.py` 只认数据域名）；条目页按改动失效并核对（正式前缀对 www 和 staging 各一次）。都不拦：失效没生效最坏是条目页按 s-maxage 一小时自然过期。
+  - `verify-live`：上线后抽查，复用 `verify.yml`（`target=production`，contract＋UI 冒烟＋`read_links`；e2e 取线上现在跑的代码 commit，读 `web.json`）。演练（`staging/` 前缀）验测试站。
+  - `alert-data`：正式前缀的上传失败，或抽查没过，开（或续）一张 `data-alert` issue，写明新旧数据 commit 和**回滚做法**：Run workflow，`target=production`，`prod_ref`／`text_ref` 填发布前线上的两个 commit，勾 `allow_ref_override`（约 10 分钟；第一期不自动回滚）。
+  - 落后告警：定时的 `check` 里，开关打开之后，数据仓 main 的 HEAD 与线上对不上、且那个提交已过 36 小时，开（或续）`data-alert` issue——定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败。
+- h1 文本（单独任务）还没加；在那之前翻开关会少它（生产无读者），也是现在不翻的原因之一。
 
 ## 5. 登录 503（/api/auth/*）
 

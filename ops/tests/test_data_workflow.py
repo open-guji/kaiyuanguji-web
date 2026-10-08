@@ -174,6 +174,77 @@ class DataWorkflowCheckOnly(unittest.TestCase):
                 if only == 'true':
                     self.assertEqual(o['sitemaps_only'], 'true', case)
 
+    # ---- 刷新、上线后抽查、告警（PR-C1）----
+    def test_followup_jobs_exist_and_only_follow_real_data_publish(self):
+        jobs = self.wf['jobs']
+        for j in ('refresh', 'live-ref', 'verify-live', 'alert-data'):
+            self.assertIn(j, jobs)
+        for j in ('refresh', 'live-ref', 'verify-live'):
+            self.assertIn("needs.package.outputs.data_published == 'true'", str(jobs[j]['if']), j)
+        # current/ 同步没成功（跳过、失败、没放行）时 data_published 必须是 false
+        self.assertEqual(self.wf['jobs']['package']['outputs']['data_published'], "${{ steps.cos_sync.outcome == 'success' }}")
+
+    def test_only_check_and_alert_jobs_may_write_issues(self):
+        self.assertEqual(self.wf['permissions'], {'contents': 'read'})
+        for name, job in self.wf['jobs'].items():
+            perms = job.get('permissions') or {}
+            if name in ('check', 'alert-data'):
+                self.assertEqual(perms, {'contents': 'read', 'issues': 'write'}, name)
+            else:
+                self.assertNotIn('issues', perms, name)
+
+    def test_refresh_job_runs_no_data_repo_code_and_scopes_secrets(self):
+        steps = self.wf['jobs']['refresh']['steps']
+        text = str(steps)
+        self.assertNotIn('clone_cached', text)
+        self.assertNotIn('build_derived', text)
+        self.assertNotIn('bundle-data', text)
+        self.assertNotIn('secrets.', str(self.wf['jobs']['refresh'].get('env', {})))
+        for st in steps:
+            self.assertNotIn('secrets.', st.get('run', ''))
+        # 页面失效与核对、清缓存都不拦（失效没生效最坏是 s-maxage 自然过期）
+        for st in steps:
+            if st.get('name', '').startswith(('Purge data pointers', 'Revalidate changed')):
+                self.assertTrue(st.get('continue-on-error'), st['name'])
+        purge = [st for st in steps if st.get('name', '').startswith('Purge data pointers')][0]
+        self.assertIn('ops/purge-urls.py', purge['run'])
+        self.assertNotIn('purge_host', purge['run'])   # 不清整站
+
+    def test_verify_live_reuses_verify_workflow_with_read_links(self):
+        v = self.wf['jobs']['verify-live']
+        self.assertEqual(v['uses'], './.github/workflows/verify.yml')
+        w = v['with']
+        self.assertIs(w['read_links'], True)
+        self.assertIs(w['wait_cdn'], True)
+        self.assertEqual(w['target'], "${{ needs.package.outputs.prefix == 'staging' && 'staging' || 'production' }}")
+        self.assertEqual(w['ref'], '${{ needs.live-ref.outputs.ref }}')
+        self.assertIn('!cancelled()', v['if'])      # refresh 红了也要抽查
+
+    def test_alert_only_for_production_prefix_failures(self):
+        c = self.wf['jobs']['alert-data']['if']
+        for needle in ("needs.package.outputs.publish == 'true'", "needs.package.outputs.prefix == ''",
+                       "needs.package.outputs.sitemaps_only != 'true'", "needs.package.result == 'failure'",
+                       "needs.verify-live.result == 'failure'"):
+            self.assertIn(needle, c)
+
+    def test_freshness_alarm_only_after_switch_and_scheduled(self):
+        st = [x for x in self.wf['jobs']['check']['steps'] if x.get('name', '').startswith('Data freshness alarm')][0]
+        self.assertIn("github.event_name == 'schedule'", st['if'])
+        self.assertIn("vars.SPLIT_DATA_FLOW == 'true'", st['if'])
+        self.assertTrue(st.get('continue-on-error'))
+        self.assertEqual(st['env']['LAG_HOURS'], '36')
+        self.assertIn('data-alert', st['run'])
+
+    def test_verify_workflow_has_read_links_input(self):
+        with open(os.path.join(ROOT, '.github', 'workflows', 'verify.yml'), encoding='utf-8') as f:
+            wf = yaml.safe_load(f)
+        on = wf.get('on') or wf.get(True)
+        for trig in ('workflow_call', 'workflow_dispatch'):
+            self.assertIn('read_links', on[trig]['inputs'], trig)
+            self.assertIs(on[trig]['inputs']['read_links']['default'], False, trig)
+        self.assertEqual(wf['jobs']['read-links']['if'],
+                         "${{ inputs.target == 'staging' || inputs.full_suite || inputs.read_links }}")
+
     def test_read_only_permissions(self):
         self.assertEqual(self.wf['permissions'], {'contents': 'read'})
 

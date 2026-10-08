@@ -57,6 +57,10 @@ jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过（同 deploy.yml 的 check，口径一致）。手动一律跑。
   check:
     runs-on: ubuntu-latest
+    # issues: write 只给落后告警那一步开 issue 用
+    permissions:
+      contents: read
+      issues: write
     outputs:
       should_run: ${{ steps.compare.outputs.should_run }}
     steps:
@@ -76,6 +80,7 @@ jobs:
           HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1 || true)
           echo "production: live=$LIVE_PROD head=$HEAD_PROD"
           echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
+          { echo "live_prod=$LIVE_PROD"; echo "head_prod=$HEAD_PROD"; echo "live_text=$LIVE_TEXT"; echo "head_text=$HEAD_TEXT"; } >> "$GITHUB_OUTPUT"
           if [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
              && [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
@@ -84,6 +89,41 @@ jobs:
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "· 数据有更新（或无法确认），执行检查"
           fi
+
+      # 落后告警（只在开关打开之后、只在定时跑里）：定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败；
+      # 数据仓 main 的 HEAD 与线上对不上、且那个提交已经过了 36 小时，就开一张（或续一条）data-alert issue。
+      # 开关没打开时 deploy.yml 才是写者，这里不管。取不到提交时间就不告警（宁可漏一晚，不误报）。
+      - name: Data freshness alarm (36 h, after SPLIT_DATA_FLOW only)
+        if: ${{ github.event_name == 'schedule' && vars.SPLIT_DATA_FLOW == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          LIVE_PROD: ${{ steps.compare.outputs.live_prod }}
+          HEAD_PROD: ${{ steps.compare.outputs.head_prod }}
+          LIVE_TEXT: ${{ steps.compare.outputs.live_text }}
+          HEAD_TEXT: ${{ steps.compare.outputs.head_text }}
+          LAG_HOURS: '36'
+        run: |
+          now=$(date +%s); late=""
+          check() {   # check <仓> <live> <head>
+            local repo="$1" live="$2" head="$3" d t h
+            [ -n "$head" ] && [ "$live" != "$head" ] || return 0
+            d=$(gh api "repos/open-guji/$repo/commits/$head" --jq .commit.committer.date 2>/dev/null) || { echo "· $repo：取不到 ${head:0:12} 的提交时间，跳过"; return 0; }
+            t=$(date -d "$d" +%s 2>/dev/null) || return 0
+            h=$(( (now - t) / 3600 ))
+            echo "· $repo：HEAD ${head:0:12}（${h} 小时前）线上 ${live:0:12}"
+            if [ "$h" -ge "$LAG_HOURS" ]; then late="$late\n- $repo：HEAD \`${head:0:12}\` 已提交 ${h} 小时，线上还是 \`${live:0:12}\`"; fi
+          }
+          check book-index "$LIVE_PROD" "$HEAD_PROD"
+          check book-text "$LIVE_TEXT" "$HEAD_TEXT"
+          [ -n "$late" ] || { echo "· 没有落后超过 ${LAG_HOURS} 小时的数据"; exit 0; }
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          BODY=$(printf '数据落后超过 %s 小时（数据流程每晚定时发布，这几天没发上去）：%b\n\n- 本次定时检查：%s\n- 排查：看最近几次 `data.yml` 的 run（`package` 任务红在哪一步）；手动补发：Actions → Data package check and publish → Run workflow（`target=production`）。\n- 补发成功后线上会追上，关本 issue。' "$LAG_HOURS" "$late" "$RUN_URL")
+          gh label create data-alert --color B60205 --description '数据流程告警（data.yml）' 2>/dev/null || true
+          N=$(gh issue list --label data-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')
+          if [ -n "$N" ]; then gh issue comment "$N" --body "$BODY"; echo "已在告警 issue #$N 续报" >> "$GITHUB_STEP_SUMMARY"
+          else gh issue create --label data-alert --title "数据落后告警：$(date -u +%m-%d\ %H:%MZ)" --body "$BODY"; echo "已开告警 issue" >> "$GITHUB_STEP_SUMMARY"; fi
 
   package:
     runs-on: ubuntu-latest
@@ -94,6 +134,16 @@ jobs:
     env:
       IN_PROD_REF: ${{ inputs.prod_ref }}
       IN_TEXT_REF: ${{ inputs.text_ref }}
+    outputs:
+      publish: ${{ steps.gate.outputs.publish }}
+      sitemaps_only: ${{ steps.gate.outputs.sitemaps_only }}
+      prefix: ${{ steps.gate.outputs.prefix }}
+      # current/ 同步成功＝数据真的换了（跳过、失败、没放行都是 false）：刷新和上线后抽查只看它
+      data_published: ${{ steps.cos_sync.outcome == 'success' }}
+      old_prod_commit: ${{ steps.old_commits.outputs.prod }}
+      old_text_commit: ${{ steps.old_commits.outputs.text }}
+      new_prod_commit: ${{ steps.clone.outputs.index_sha }}
+      new_text_commit: ${{ steps.clone.outputs.text_sha }}
     steps:
       # 不把 GITHUB_TOKEN 留在工作区的 git 配置里：下面会跑数据仓里的 build_derived.py（所选 ref 的代码），不该让它读得到令牌
       - uses: actions/checkout@v4
@@ -333,6 +383,20 @@ jobs:
           echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
           echo "· 发布前 h1 root：${R:-（无）}"
 
+      # 发布前线上的数据 commit：告警里写"回滚＝用这两个 commit 重发"（data.yml 的 prod_ref／text_ref＋allow_ref_override）
+      - name: Record previous published commits
+        id: old_commits
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
+        env:
+          PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: |
+          P="${PREFIX:+$PREFIX/}"
+          J=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/${P}latest.json?t=$(date +%s)" || echo '{}')
+          g() { echo "$J" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$1',''))" 2>/dev/null || true; }
+          echo "prod=$(g productionCommitId)" >> "$GITHUB_OUTPUT"
+          echo "text=$(g textCommitId)" >> "$GITHUB_OUTPUT"
+          echo "· 发布前线上数据：book-index=$(g productionCommitId | cut -c1-12) book-text=$(g textCommitId | cut -c1-12)"
+
       - name: Decide COS data sync (skip when data unchanged)
         id: cos_decide
         if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
@@ -460,6 +524,27 @@ jobs:
           export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
           node scripts/cos-sync-decision.mjs mark
 
+      # 刷新阶段要的"哪些条目变了"：在这里算（本地有刚打出来的 h1 根和分片，旧 root 在上面记过），交给 refresh 任务。
+      # 不拦：算不出来 refresh 里就没有要失效的条目，最坏是条目页按 s-maxage（1 小时）自然过期。
+      - name: Compute changed items
+        id: item_changes
+        if: ${{ steps.cos_sync.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          ITEM_DATA_BASE: https://data.kaiyuanguji.com${{ steps.gate.outputs.prefix && format('/{0}', steps.gate.outputs.prefix) || '' }}
+          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-changes.json
+        run: node scripts/item-changes.mjs
+
+      - name: Upload item changes
+        if: ${{ steps.item_changes.outcome == 'success' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: item-changes
+          path: ${{ runner.temp }}/item-changes.json
+          retention-days: 3
+
       # 线上还没有 sitemaps/ 时（例如从没传过）强制传一次：数据没变会在 decide 跳过同步，但路由代理需要这些对象
       - name: Check whether sitemaps already exist
         id: sm_present
@@ -484,6 +569,7 @@ jobs:
         run: node scripts/gen-sitemaps.mjs
 
       - name: Upload item sitemaps
+        id: sm_up
         if: ${{ steps.sm_gen.outcome == 'success' }}
         working-directory: nextjs
         env:
@@ -494,3 +580,141 @@ jobs:
           COS_REGION: ap-shanghai
           COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
         run: node scripts/upload-sitemaps.mjs
+
+  # ---------------------------------------------------------------------------------------------------------
+  # 刷新（设计 §5）：数据真的换了（current/ 同步成功）才跑。三类事，都不拦（失效没生效最坏是条目页按 s-maxage 一小时自然过期）：
+  #   ① 清数据指针的 CDN 缓存（latest.json、h1 根、sitemaps 索引）——只清这几个数据地址，不清整站；
+  #   ② 条目页按改动失效（item-revalidate）：正式前缀对 www 和 staging 各一次（拆出后测试站读同一份数据），演练只对 staging 站；
+  #   ③ 失效结果核对（item-cache-verify）。
+  # 密钥只在 step 级 env；这个任务不跑任何数据仓代码。
+  # ---------------------------------------------------------------------------------------------------------
+  refresh:
+    needs: package
+    if: ${{ needs.package.outputs.data_published == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Purge data pointers on the CDN
+        continue-on-error: true
+        env:
+          PREFIX: ${{ needs.package.outputs.prefix }}
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+        run: |
+          python3 -m pip install --user tencentcloud-sdk-python-teo -q
+          P="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}"
+          # h1 版本指针也要清（实测节点把 h1/manifest-root.json 缓存了约 18.7 小时，源站 max-age 被无视）；sitemaps 索引同理
+          python3 ops/purge-urls.py "${P}latest.json" "${P}h1/manifest-root.json" "${P}h1/text-manifest-root.json" "${P}sitemaps/sitemap-index.xml"
+
+      - name: Download item changes
+        id: changes
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: item-changes
+          path: ${{ runner.temp }}/item-changes
+
+      # 页面失效用的密钥由 EDGEONE_API_TOKEN 派生，与两个站构建时烘进去的是同一个（deploy.yml 的 Derive revalidate secret）
+      - name: Revalidate changed item pages and check the refresh
+        if: ${{ steps.changes.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          PREFIX: ${{ needs.package.outputs.prefix }}
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-changes/item-changes.json
+        run: |
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          export KYG_REVALIDATE_SECRET="$S"
+          if [ -z "$PREFIX" ]; then SITES="https://www.kaiyuanguji.com https://staging.kaiyuanguji.com"; else SITES="https://staging.kaiyuanguji.com"; fi
+          rc=0
+          for site in $SITES; do
+            echo "::group::条目页失效 · $site"
+            ITEM_SITE="$site" node scripts/item-revalidate.mjs && ITEM_SITE="$site" node scripts/item-cache-verify.mjs || { echo "::warning::$site 的条目页失效／核对没通过（不拦，按 s-maxage 自然过期）"; rc=1; }
+            echo "::endgroup::"
+          done
+          exit $rc
+
+  # 上线后抽查要用"线上现在跑的代码"对应的 e2e：e2e 必须和被测站点是同一版代码（verify.yml 头注释）。
+  # 正式站取 web.json（代码指针），取不到退回 latest.json 里的 webCommitId，再不行用 main。
+  live-ref:
+    needs: package
+    if: ${{ needs.package.outputs.data_published == 'true' && needs.package.outputs.sitemaps_only != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      ref: ${{ steps.r.outputs.ref }}
+    steps:
+      - id: r
+        env:
+          PREFIX: ${{ needs.package.outputs.prefix }}
+        run: |
+          P="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}"
+          pick() { curl -sf --max-time 30 "$1?t=$(date +%s)" | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || true; }
+          REF=$(pick "${P}web.json")
+          printf '%s' "$REF" | grep -Eq '^[0-9a-f]{40}$' || REF=$(pick "${P}latest.json")
+          printf '%s' "$REF" | grep -Eq '^[0-9a-f]{40}$' || { echo "· 取不到线上代码 commit，e2e 用 main"; REF=main; }
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "· 上线后抽查用的 e2e ref：$REF"
+
+  # 上线后抽查（设计 §2）：复用 verify.yml——contract＋UI 冒烟＋read-links（数据相关，约 4～6 分钟，设计原稿定的）。
+  # 正式前缀验正式站；演练（staging/ 前缀）验测试站、数据基址取 staging/ 前缀。第一期失败只告警、不自动回滚。
+  verify-live:
+    needs: [package, refresh, live-ref]
+    if: ${{ !cancelled() && needs.package.outputs.data_published == 'true' && needs.live-ref.result == 'success' }}
+    uses: ./.github/workflows/verify.yml
+    with:
+      target: ${{ needs.package.outputs.prefix == 'staging' && 'staging' || 'production' }}
+      ref: ${{ needs.live-ref.outputs.ref }}
+      wait_cdn: true
+      read_links: true
+
+  # 告警：正式前缀的数据发布失败（上传红了）或上线后抽查没过，开一张（或续一条）data-alert issue。
+  # 只告警，不自动回滚：回滚＝用发布前的数据 commit 再发一次（allow_ref_override），约 10 分钟。
+  # 演练（staging/ 前缀）和只传 sitemap 的手动 run 不告警，看 run 本身即可。
+  alert-data:
+    needs: [package, refresh, verify-live]
+    if: ${{ !cancelled() && needs.package.outputs.publish == 'true' && needs.package.outputs.prefix == '' && needs.package.outputs.sitemaps_only != 'true' && (needs.package.result == 'failure' || needs.verify-live.result == 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Open or update data alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PACKAGE: ${{ needs.package.result }}
+          VERIFY: ${{ needs.verify-live.result }}
+          OLD_PROD: ${{ needs.package.outputs.old_prod_commit }}
+          OLD_TEXT: ${{ needs.package.outputs.old_text_commit }}
+          NEW_PROD: ${{ needs.package.outputs.new_prod_commit }}
+          NEW_TEXT: ${{ needs.package.outputs.new_text_commit }}
+        run: |
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ "$PACKAGE" = failure ]; then
+            WHAT="**数据发布失败**（package：$PACKAGE）——线上数据多半还是上一版（current/ 同步没成功就不会换指针），读者不受影响，但这次没发上去。"
+          else
+            WHAT="**数据已发布、但上线后抽查失败**（verify-live：$VERIFY）——新数据已在线上，请尽快看是不是读者可见的回归。"
+          fi
+          BODY=$(printf '正式站数据发布出错：%s\n\n- run：%s\n- 新数据：book-index `%s`，book-text `%s`\n- 发布前线上：book-index `%s`，book-text `%s`\n\n**回滚**（重发发布前的数据，约 10 分钟）：Actions → Data package check and publish → Run workflow：`target=production`，`prod_ref`、`text_ref` 填上面"发布前线上"的两个 commit，勾 `allow_ref_override`。（仓库变量 `SPLIT_DATA_FLOW` 须是 true。）\n\n修好、线上恢复后关本 issue。' \
+            "$WHAT" "$RUN_URL" "${NEW_PROD:0:40}" "${NEW_TEXT:0:40}" "${OLD_PROD:-（取不到）}" "${OLD_TEXT:-（取不到）}")
+          gh label create data-alert --color B60205 --description '数据流程告警（data.yml）' 2>/dev/null || true
+          N=$(gh issue list --label data-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')
+          if [ -n "$N" ]; then
+            gh issue comment "$N" --body "$BODY"
+            echo "已在告警 issue #$N 续报" >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh issue create --label data-alert --title "数据发布告警：$(date -u +%m-%d\ %H:%MZ)" --body "$BODY"
+            echo "已开告警 issue" >> "$GITHUB_STEP_SUMMARY"
+          fi
