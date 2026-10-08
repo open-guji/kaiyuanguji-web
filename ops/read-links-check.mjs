@@ -57,12 +57,12 @@ export function percentile(values, p) {
 
 /**
  * @param {{ target: string, dataBase: string, fetchImpl?: typeof fetch, perNode?: number, pageSize?: number, seed?: number, concurrency?: number,
- *   retryDelaysMs?: number[], warm?: boolean, warmConcurrency?: number, warmTimeoutMs?: number, sleep?: (ms: number) => Promise<void> }} o
+ *   retryDelaysMs?: number[], topRetryDelaysMs?: number[], warm?: boolean, warmConcurrency?: number, warmTimeoutMs?: number, sleep?: (ms: number) => Promise<void> }} o
  * @returns {Promise<{ checked: number, pagesChecked: number, failures: { id: string, what: string, detail: string }[], retried: string[], retriedData: string[],
  *   warm: { pages: number, notOk: { url: string, status: number }[], ms: number[] } | null }>}
  */
 export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perNode = 20, pageSize = 20, seed = Date.now() % 2 ** 31, concurrency = 6,
-    retryDelaysMs = [2000, 5000, 10000], warm = true, warmConcurrency = 6, warmTimeoutMs = 60_000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
+    retryDelaysMs = [2000, 5000, 10000], topRetryDelaysMs = [2000, 5000, 10000, 15000, 30000], warm = true, warmConcurrency = 6, warmTimeoutMs = 60_000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
     const cur = `${dataBase.replace(/\/$/, '')}/current`;
     const site = target.replace(/\/$/, '');
     const rand = mulberry32(seed);
@@ -94,13 +94,13 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     const retriedData = [];
     let pagesChecked = 0;
     const transient = (r) => !r.permanent && (r.status === 0 || EDGE_TRANSIENT.has(r.status));
-    async function getRetrying(url, asJson, into) {
+    async function getRetrying(url, asJson, into, delays = retryDelaysMs) {
         const first = await get(url, asJson);
         let r = first;
         let attempts = 0;
         let hdr = first.hdr; // 重试途中拿到过的 EdgeOne 头留着，最后一次没带头（如连接失败）也不丢
-        while (transient(r) && attempts < retryDelaysMs.length) {
-            await sleep(retryDelaysMs[attempts++]);
+        while (transient(r) && attempts < delays.length) {
+            await sleep(delays[attempts++]);
             r = await get(url, asJson);
             hdr = r.hdr || hdr;
         }
@@ -110,13 +110,16 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     }
     const getPage = (url) => { pagesChecked++; return getRetrying(url, false, retried); };
     const getData = (url, asJson) => getRetrying(url, asJson, retriedData);
-    const json = async (rel) => getData(`${cur}/${rel}?${bust}`, true);
+    // 顶层清单（read/tree.json、read/featured.json）读不到整次抽检就是 0 张卡，所以退避窗口比单个页面长得多（总共约 62 秒）：
+    // 10-08 staging 第 4 次演练里 runner 到数据域名有一阵连接失败，3 次短退避（17 秒）扛不过去，重跑一次就绿了
+    const json = async (rel, delays) => getRetrying(`${cur}/${rel}?${bust}`, true, retriedData, delays);
+    const topJson = (rel) => json(rel, topRetryDelaysMs);
 
     const failures = [];
     const fail = (id, what, detail) => failures.push({ id, what, detail });
 
-    const tree = await json('read/tree.json');
-    const featured = await json('read/featured.json');
+    const tree = await topJson('read/tree.json');
+    const featured = await topJson('read/featured.json');
     // 顶层清单读不了：记成失败返回（调用方照常渲染、写 summary 再退出），不抛
     if (!tree.ok || !Array.isArray(tree.body)) fail('read/tree.json', '数据', tree.ok ? '不是数组' : `read/tree.json → ${why(tree)}`);
     if (!featured.ok || typeof featured.body !== 'object' || !featured.body) fail('read/featured.json', '数据', featured.ok ? '不是对象' : `read/featured.json → ${why(featured)}`);
