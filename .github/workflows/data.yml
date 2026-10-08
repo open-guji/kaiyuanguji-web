@@ -109,6 +109,8 @@ jobs:
           check() {   # check <仓> <live> <head>
             local repo="$1" live="$2" head="$3" d t h
             [ -n "$head" ] && [ "$live" != "$head" ] || return 0
+            # 线上指针取不到或不是完整 commit（网络抖动、latest.json 暂时不可读）：不知道线上是什么，就不拿 HEAD 的年龄当落后的证据
+            printf '%s' "$live" | grep -Eq '^[0-9a-f]{40}$' || { echo "· $repo：取不到有效的线上 commit（'${live:0:12}'），跳过落后判断"; return 0; }
             d=$(gh api "repos/open-guji/$repo/commits/$head" --jq .commit.committer.date 2>/dev/null) || { echo "· $repo：取不到 ${head:0:12} 的提交时间，跳过"; return 0; }
             t=$(date -d "$d" +%s 2>/dev/null) || return 0
             h=$(( (now - t) / 3600 ))
@@ -533,8 +535,19 @@ jobs:
         working-directory: nextjs
         env:
           ITEM_DATA_BASE: https://data.kaiyuanguji.com${{ steps.gate.outputs.prefix && format('/{0}', steps.gate.outputs.prefix) || '' }}
-          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-changes.json
-        run: node scripts/item-changes.mjs
+          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-artifact/item-changes.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/item-artifact"
+          node scripts/item-changes.mjs
+          # 缓存实测要一个"没改动的热门条目"做对照页；refresh 任务没有本地打包产物，就在这里（有产物）挑好、随工件带过去。
+          # 挑不出来（空文件）refresh 里会在摘要里明说"没检查"，不会悄悄跳过。
+          node --input-type=module -e "
+            import { resolveDataDirs } from './scripts/lib/data-dirs.mjs';
+            import { hotItemIds } from './scripts/lib/item-http.mjs';
+            import { writeFileSync } from 'node:fs';
+            writeFileSync(process.env.RUNNER_TEMP + '/item-artifact/control-ids.txt', hotItemIds(resolveDataDirs().dataDir, 200).join(',') + '\n');
+          "
+          echo "· 对照页候选 $(tr ',' '\n' < "$RUNNER_TEMP/item-artifact/control-ids.txt" | grep -c .) 个"
 
       - name: Upload item changes
         if: ${{ steps.item_changes.outcome == 'success' }}
@@ -542,7 +555,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: item-changes
-          path: ${{ runner.temp }}/item-changes.json
+          path: ${{ runner.temp }}/item-artifact
           retention-days: 3
 
       # 线上还没有 sitemaps/ 时（例如从没传过）强制传一次：数据没变会在 decide 跳过同步，但路由代理需要这些对象
@@ -590,9 +603,14 @@ jobs:
   # ---------------------------------------------------------------------------------------------------------
   refresh:
     needs: package
-    if: ${{ needs.package.outputs.data_published == 'true' }}
+    # !cancelled()：current/ 同步成功之后 package 里还有 sitemap 生成／上传等步骤，它们红了 package 任务就是失败，
+    # 但数据已经换上线了——缓存照样得清、条目页照样得失效，不能因为 package 红就跳过
+    if: ${{ !cancelled() && needs.package.outputs.data_published == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # 各步骤 continue-on-error（不拦），但结果要报出去：alert-data 看 ok，false 就告警（清缓存或失效没生效读者会看到旧页）
+    outputs:
+      ok: ${{ steps.purge.outcome != 'failure' && steps.changes.outcome != 'failure' && steps.reval.outcome != 'failure' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -603,6 +621,7 @@ jobs:
           node-version: '20'
 
       - name: Purge data pointers on the CDN
+        id: purge
         continue-on-error: true
         env:
           PREFIX: ${{ needs.package.outputs.prefix }}
@@ -621,21 +640,24 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: item-changes
-          path: ${{ runner.temp }}/item-changes
+          path: ${{ runner.temp }}/item-artifact
 
       # 页面失效用的密钥由 EDGEONE_API_TOKEN 派生，与两个站构建时烘进去的是同一个（deploy.yml 的 Derive revalidate secret）
       - name: Revalidate changed item pages and check the refresh
+        id: reval
         if: ${{ steps.changes.outcome == 'success' }}
         continue-on-error: true
         working-directory: nextjs
         env:
           PREFIX: ${{ needs.package.outputs.prefix }}
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
-          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-changes/item-changes.json
+          ITEM_CHANGES_OUT: ${{ runner.temp }}/item-artifact/item-changes.json
         run: |
           S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
           echo "::add-mask::$S"
           export KYG_REVALIDATE_SECRET="$S"
+          # 未改动页的 CDN 命中检查要一个对照页；这里没有本地打包产物，候选由 package 任务随工件带来
+          export ITEM_CONTROL_IDS="$(cat "$RUNNER_TEMP/item-artifact/control-ids.txt" 2>/dev/null || true)"
           if [ -z "$PREFIX" ]; then SITES="https://www.kaiyuanguji.com https://staging.kaiyuanguji.com"; else SITES="https://staging.kaiyuanguji.com"; fi
           rc=0
           for site in $SITES; do
@@ -649,7 +671,8 @@ jobs:
   # 正式站取 web.json（代码指针），取不到退回 latest.json 里的 webCommitId，再不行用 main。
   live-ref:
     needs: package
-    if: ${{ needs.package.outputs.data_published == 'true' && needs.package.outputs.sitemaps_only != 'true' }}
+    # !cancelled()：同上，package 在同步之后红了（sitemap 等）也要抽查
+    if: ${{ !cancelled() && needs.package.outputs.data_published == 'true' && needs.package.outputs.sitemaps_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -684,7 +707,7 @@ jobs:
   # 演练（staging/ 前缀）和只传 sitemap 的手动 run 不告警，看 run 本身即可。
   alert-data:
     needs: [package, refresh, verify-live]
-    if: ${{ !cancelled() && needs.package.outputs.publish == 'true' && needs.package.outputs.prefix == '' && needs.package.outputs.sitemaps_only != 'true' && (needs.package.result == 'failure' || needs.verify-live.result == 'failure') }}
+    if: ${{ !cancelled() && needs.package.outputs.publish == 'true' && needs.package.outputs.prefix == '' && needs.package.outputs.sitemaps_only != 'true' && (needs.package.result == 'failure' || needs.verify-live.result == 'failure' || needs.refresh.outputs.ok == 'false') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -695,6 +718,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           PACKAGE: ${{ needs.package.result }}
+          PUBLISHED: ${{ needs.package.outputs.data_published }}
+          REFRESH_OK: ${{ needs.refresh.outputs.ok }}
           VERIFY: ${{ needs.verify-live.result }}
           OLD_PROD: ${{ needs.package.outputs.old_prod_commit }}
           OLD_TEXT: ${{ needs.package.outputs.old_text_commit }}
@@ -702,10 +727,20 @@ jobs:
           NEW_TEXT: ${{ needs.package.outputs.new_text_commit }}
         run: |
           RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          if [ "$PACKAGE" = failure ]; then
-            WHAT="**数据发布失败**（package：$PACKAGE）——线上数据多半还是上一版（current/ 同步没成功就不会换指针），读者不受影响，但这次没发上去。"
-          else
-            WHAT="**数据已发布、但上线后抽查失败**（verify-live：$VERIFY）——新数据已在线上，请尽快看是不是读者可见的回归。"
+          # 说法要跟着"数据到底有没有换上线"走（published＝current/ 同步成功）：同步成功之后 package 里还有 sitemap 等步骤，
+          # 它们红了数据也已经是新的了，不能说成"线上还是上一版"
+          WHAT=""
+          add() { WHAT="${WHAT:+$WHAT；}$1"; }
+          if [ "$PACKAGE" = failure ] && [ "$PUBLISHED" != true ]; then
+            add "**数据发布失败**（package：$PACKAGE）——线上数据多半还是上一版（current/ 同步没成功就不会换指针），读者不受影响，但这次没发上去"
+          elif [ "$PACKAGE" = failure ]; then
+            add "**数据已换上线，但之后的步骤失败了**（package：$PACKAGE，多半是 sitemap 生成／上传，看 run 里哪一步红）——新数据已经是线上的，读者看到的是新版"
+          fi
+          if [ "$VERIFY" = failure ]; then
+            add "**数据已发布、但上线后抽查失败**（verify-live：$VERIFY）——新数据已在线上，请尽快看是不是读者可见的回归"
+          fi
+          if [ "$REFRESH_OK" = false ]; then
+            add "**缓存刷新没完全生效**（refresh：清数据指针缓存或条目页失效／核对没通过，看 run 里 refresh 任务）——数据本身没问题，但读者可能还看到旧指针／旧条目页，条目页最迟一小时（s-maxage）自然过期，h1 指针的节点缓存可能更久"
           fi
           BODY=$(printf '正式站数据发布出错：%s\n\n- run：%s\n- 新数据：book-index `%s`，book-text `%s`\n- 发布前线上：book-index `%s`，book-text `%s`\n\n**回滚**（重发发布前的数据，约 10 分钟）：Actions → Data package check and publish → Run workflow：`target=production`，`prod_ref`、`text_ref` 填上面"发布前线上"的两个 commit，勾 `allow_ref_override`。（仓库变量 `SPLIT_DATA_FLOW` 须是 true。）\n\n修好、线上恢复后关本 issue。' \
             "$WHAT" "$RUN_URL" "${NEW_PROD:0:40}" "${NEW_TEXT:0:40}" "${OLD_PROD:-（取不到）}" "${OLD_TEXT:-（取不到）}")

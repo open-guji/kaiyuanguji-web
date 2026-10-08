@@ -144,7 +144,7 @@ done
 - 上传成功（current/ 同步成功）之后还有三个任务，都在 data.yml 里：
   - `refresh`：清数据指针的 CDN 缓存（`latest.json`、h1 两个根、`sitemaps/sitemap-index.xml`，只清这几个地址，不清整站；脚本 `ops/purge-urls.py` 只认数据域名）；条目页按改动失效并核对（正式前缀对 www 和 staging 各一次）。都不拦：失效没生效最坏是条目页按 s-maxage 一小时自然过期。
   - `verify-live`：上线后抽查，复用 `verify.yml`（`target=production`，contract＋UI 冒烟＋`read_links`；e2e 取线上现在跑的代码 commit，读 `web.json`）。演练（`staging/` 前缀）验测试站。
-  - `alert-data`：正式前缀的上传失败，或抽查没过，开（或续）一张 `data-alert` issue，写明新旧数据 commit 和**回滚做法**：Run workflow，`target=production`，`prod_ref`／`text_ref` 填发布前线上的两个 commit，勾 `allow_ref_override`（约 10 分钟；第一期不自动回滚）。
+  - `alert-data`：正式前缀的上传失败、上传成功后 package 里后续步骤（sitemap 等）失败、抽查没过、或 `refresh` 里清缓存／条目页失效没通过，开（或续）一张 `data-alert` issue（正文按"数据到底有没有换上线"分别说明），写明新旧数据 commit 和**回滚做法**：Run workflow，`target=production`，`prod_ref`／`text_ref` 填发布前线上的两个 commit，勾 `allow_ref_override`（约 10 分钟；第一期不自动回滚）。
   - 落后告警：定时的 `check` 里，开关打开之后，数据仓 main 的 HEAD 与线上对不上、且那个提交已过 36 小时，开（或续）`data-alert` issue——定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败。
 - h1 文本（单独任务）还没加；在那之前翻开关会少它（生产无读者），也是现在不翻的原因之一。
 
