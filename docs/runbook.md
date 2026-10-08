@@ -37,13 +37,15 @@ done
 | `builtAt` | 构建时间 | 构建时写入 |
 | `target` | `production` / `staging`（切站前 kyg-ssr-spike 双跑的构建记为 `ssr-test`） | 构建时写入 |
 | `webMatchesPointer` | `web` 是否等于指针里记的 `webCommitId` | — |
+| `webPointer` | 代码指针 `web.json`（正式站在根、测试站在 `staging/`）：`webCommitId`／`deployedAt`／`runId`；读不到（旧产物、还没写过）是 `null` | 运行时读 COS；部署成功后由 CI 写（overview#470 P1） |
 
 怎么读：
 
 - **`web` 是不是你以为的那版？** 对照 `git log origin/main`。正式站只有 promote 才会变（push 到 main 只发测试站）。
 - **`builtAt` 很旧、`web` 不对** → 新版本没发上去：看 Actions 里最近一次 `Deploy to EdgeOne` 哪一步红了。
 - **`webMatchesPointer: false`** 不一定是故障：`promote=data`（只换数据，每天 04:30 自动跑）时代码不动、指针记的是上次 promote 用的代码；
-  但如果刚手动 promote 过 `code+data` 还是 false，就是「代码发了、指针没刷新」或反过来——看 §6 CDN。
+  但如果刚手动 promote 过 `code` 或 `code+data` 还是 false，就是「代码发了、指针没刷新」或反过来——看 §6 CDN。
+- **`webPointer` 与 `dataPointer.webCommitId`**：过渡期两个都有，`webMatchesPointer` 仍只比 `latest.json` 那个（晋升、回滚读的也是它）；`webPointer` 是部署成功后单独写的代码指针，将来数据流程独立后会取代前者。两者不同通常是回滚到了早于 P1 的旧 commit（旧流程只更新 `latest.json`），下一次正常部署会对齐。
 - **接口 404** → 这版产物早于 `/api/version`（2026-09 DBG 之前），改看 `<meta name="bim-ui-version">` 与数据指针的 `webCommitId`。
 - **`dataError`** → 数据 CDN 读不到，本身就是一条线索（§2、§4）。
 - **`note: 构建时未写入版本信息`** → 产物不是 CI 构建的（手工发布／本地 build），版本不可信。
@@ -168,7 +170,7 @@ done
 
 **什么时候回滚**：新版本上线后正式站出现读者可见的回归，且修复不能在 30 分钟内发出。
 
-**自动上正式站（overview#341）**：push 到 main 后，测试站 verify 全绿且正式站产物构建成功，deploy.yml 的 `auto-promote-code` 会自动派 `target=production promote=code+data from_run=<那次 run>`。正式站发布或验收失败时，`alert-production` 在本仓开一张 `deploy-alert` 告警 issue（已有未关的就续评论），写明 run 与回滚步骤。回滚前先把仓库变量 `AUTO_PROMOTE_CODE` 设成 `false`，否则下一次 push 会把新版再发上去。
+**自动上正式站（overview#341）**：push 到 main 后，测试站 verify 全绿且正式站产物构建成功，deploy.yml 的 `auto-promote-code` 会自动派 `target=production promote=code from_run=<那次 run>`——**只发代码**：直接部署那次存的正式站产物，数据一个字节都不动（只把线上 `latest.json` 的 `webCommitId` 在部署成功后改成新代码；写失败会重试 3 次，仍失败时 job 不变红，但摘要里有 ⚠️——这时**不要发 `promote=data`**，先用同一个 `from_run` 再派一次 `promote=code` 补指针）；那次没有可用的正式站产物就报错，不会退回重新构建。数据上线另走：每晚定时的 `promote=data`，或有人确认后手动选 `promote=code+data`（2026-10-07 之前自动晋升派的是 `code+data`，会把没人确认的数据带上正式站，已改）。正式站发布或验收失败时，`alert-production` 在本仓开一张 `deploy-alert` 告警 issue（已有未关的就续评论），写明 run 与回滚步骤。回滚前先把仓库变量 `AUTO_PROMOTE_CODE` 设成 `false`，否则下一次 push 会把新版再发上去。
 只是测试站坏了不用回滚——测试站本来就是用来坏的。
 
 入口：Actions → **Rollback**。`dry_run` 默认勾着，先跑一遍看计划：
@@ -214,11 +216,12 @@ done
 dispatch 前再核一次测试站指针，`stage=check` 再核正式站指针，不一致会红——看到红了先看正式站 `/api/version` 实际是哪版。
 根治方案见 PR「DBG」描述里的「promote 安全方案」（`verifiedWebCommitId`）。
 overview#341 起手动 promote 可以填 `from_run`（测试站那次部署的 run 编号）：代码与数据都钉成那次验过的，不读指针「此刻」的值；
-那次是 push 触发的（存了正式站产物 `prod-edgeone`，工件留 3 天）且 `promote=code+data` 时，直接部署那份产物、不重新构建。
+那次是 push 触发的（存了正式站产物 `prod-edgeone`，工件留 3 天）且 `promote=code` 或 `code+data` 时，直接部署那份产物、不重新构建
+（`promote=code` 必须填 `from_run` 且必须有这份产物，没有就报错，不退回重新构建；`promote` 输入默认就是 `code`）。
 resolve 会先核对那次的验收任务全绿，不绿就拒绝。
 
 **演练或回滚后测试站指针停在旧 commit**：`staging/latest.json` 的 `webCommitId` 会一直是回滚目标，直到下一次 push 到 main（或手动 `target=staging`）重建测试站。
-这段时间里**别手动 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
+这段时间里**别手动发不带 `from_run` 的 `promote=code+data`**——它读的正是这个指针，会把旧代码（或演练用的版本）当成「测试站验过的」发上正式站。
 
 **目标早于 E1 或 deploy.yml 与 main 不同**：promote 路的测试站按目标 commit 自己的 deploy.yml 重建，正式站按 main 的 deploy.yml 构建，两次不是同一套流程；
 早于 E1（没有 `ops/edgeone-fullstack-build.py`）时：测试站演练只出警告（重建后 `/api/auth/*` 会 503）；**正式站回滚直接报错**——正式站构建检出目标 commit、调用它自己的构建脚本，

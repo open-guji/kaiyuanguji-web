@@ -48,10 +48,10 @@ on:
         options: [staging, production]
         default: staging
       promote:
-        description: '仅 target=production 有效。code+data = 测试站的代码与数据一起上正式站；data = 正式站代码不动，只换数据'
+        description: '仅 target=production 有效。code = 只发代码（必须填 from_run，数据一个字节都不动，自动晋升用这个）；code+data = 测试站的代码与数据一起上正式站（数据上线要用户本人确认）；data = 正式站代码不动，只换数据。数据流程已拆出（仓库变量 SPLIT_DATA_FLOW=true）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
         type: choice
-        options: [code+data, data]
-        default: code+data
+        options: [code, code+data, data]
+        default: code
       # 联调用（只影响手动触发、且只对 target=staging 生效）：默认都是 main。
       # 代码版本不在这里选——在「Use workflow from」里选分支，web 取该分支的 HEAD。
       prod_ref:
@@ -69,6 +69,10 @@ on:
         default: ''
       rehearse_artifact:
         description: '仅 target=staging：演练产物复用——同时构建并存正式站产物（不部署），测试站改用打包、加密、解包后的产物部署'
+        type: boolean
+        default: false
+      rehearse_split:
+        description: '仅 target=staging：演练数据流程拆出后的代码流程（等价于只对这一次打开 SPLIT_DATA_FLOW，不动仓库变量）——不克隆、不打包、不传数据，测试站读正式站数据。下一次 push 部署会恢复原样；不会自动晋升'
         type: boolean
         default: false
   # 每日定时兜底：数据仓的 notify-web webhook 依赖跨仓 PAT
@@ -109,10 +113,18 @@ jobs:
     steps:
       - name: Compare data repo HEADs with deployed latest.json
         id: compare
+        env:
+          SPLIT_DATA_FLOW: ${{ vars.SPLIT_DATA_FLOW }}
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "· 非定时触发，直接部署"
+            exit 0
+          fi
+          # overview#470 P1：SPLIT_DATA_FLOW 打开后，每晚的数据发布归数据流程（data.yml），代码流程的定时部署不再有事可做
+          if [ "$SPLIT_DATA_FLOW" = "true" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "· SPLIT_DATA_FLOW 已打开：定时的数据发布由 data.yml 负责，本流程跳过"
             exit 0
           fi
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
@@ -158,6 +170,9 @@ jobs:
       text_sha: ${{ steps.sha.outputs.text_sha }}
       # overview#341：非空＝正式站直接部署这个 run 存的正式站产物（不重新构建）
       artifact_run: ${{ steps.r.outputs.artifact_run }}
+      # overview#470 P1：'true'＝数据流程已拆出（仓库变量 SPLIT_DATA_FLOW）：代码流程不克隆、不打包、不传数据，
+      # 测试站读正式站数据前缀，sitemap 走路由代理，晋升只发代码。from_run 的晋升取那次 run 的口径（manifest 的 dataSplit）。
+      split: ${{ steps.r.outputs.split }}
     steps:
       # push 部署要让路给定时／手动部署：有非 push 的 deploy run 在排队或在跑就等它跑完再往下走。
       # 只有最新的 push 会在这里等（push 组 cancel-in-progress，新 push 会取消旧的等待者）。
@@ -202,8 +217,14 @@ jobs:
           IN_FROM_RUN: ${{ inputs.from_run }}
           IN_PROMOTE: ${{ inputs.promote }}
           GH_TOKEN: ${{ github.token }}
+          SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
+          IN_REHEARSE_SPLIT: ${{ inputs.rehearse_split }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"
+          # overview#470 P1：数据流程是否已拆出（from_run 的晋升下面按那次 run 的 manifest 改写）
+          SPLIT=false; [ "$SPLIT_VAR" = "true" ] && SPLIT=true
+          # 演练：手动触发的测试站部署勾 rehearse_split，只对这一次按「已拆出」跑，不用动仓库变量（push／定时／晋升不受影响）
+          if [ "$REQ" = staging ] && [ "$IN_REHEARSE_SPLIT" = true ]; then SPLIT=true; echo "· 演练：按 SPLIT_DATA_FLOW=true 跑这一次测试站部署（仓库变量不动）"; fi
           if [ -z "$EDGEONE_API_TOKEN" ]; then
             echo "❌ EDGEONE_API_TOKEN 未配置：测试站 kyg-staging 与正式站 kyg-ssr-spike 都是 CLI 直传，没有它哪个站都发不了"
             exit 1
@@ -232,12 +253,30 @@ jobs:
             mget() { python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2],''))" "$M" "$1"; }
             M_WEB=$(mget webCommitId)
             [ "$M_WEB" = "$RUN_SHA" ] || { echo "❌ manifest 的 webCommitId（$M_WEB）与 run 的 commit（$RUN_SHA）不一致"; exit 1; }
-            for k in productionCommitId textCommitId; do
-              printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
-            done
+            # overview#470 P1：那次 run 是数据拆出之后跑的（manifest 的 dataSplit），晋升就只发代码，manifest 里没有数据 commit
+            case "$(mget dataSplit)" in True|true) SPLIT=true ;; *) SPLIT=false ;; esac
+            if [ "$SPLIT" != true ]; then
+              for k in productionCommitId textCommitId; do
+                printf '%s' "$(mget $k)" | grep -Eq '^[0-9a-f]{40}$' || { echo "❌ manifest 的 $k 不是完整 commit：$(mget $k)"; exit 1; }
+              done
+            elif [ "$IN_PROMOTE" = data ]; then
+              echo "❌ 数据流程已拆出（run $IN_FROM_RUN 是拆出后跑的）：promote=data 不再支持，数据上线走 data.yml"; exit 1
+            fi
+            echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
-            if [ "$IN_PROMOTE" = data ]; then
+            if [ "$IN_PROMOTE" = code ]; then
+              # 只发代码：必须有那次存的正式站产物（sitemap 已烘在里面）。没有就报错，不退回重新构建——
+              # 重新构建要克隆、打包数据，会把数据一起带上去，正是 code 要避开的。
+              WEB="$M_WEB"
+              if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IN_FROM_RUN/artifacts?per_page=100" \
+                   --jq '.artifacts[] | select(.expired | not) | .name' | grep -qx prod-edgeone \
+                 && grep -q $'^prod-artifact\tsuccess$' "$RUNNER_TEMP/src-jobs.tsv"; then
+                ART="$IN_FROM_RUN"
+              else
+                echo "❌ promote=code 需要 run $IN_FROM_RUN 存的正式站产物（prod-edgeone），但没有可用的；要连数据一起发请手动选 code+data"; exit 1
+              fi
+            elif [ "$IN_PROMOTE" = data ]; then
               WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
               [ -n "$WEB" ] || { echo "❌ 正式站 latest.json 没有 webCommitId（首次 promote 请用 code+data）"; exit 1; }
               ART=''
@@ -257,13 +296,29 @@ jobs:
             echo "text_ref=$(mget textCommitId)" >> "$GITHUB_OUTPUT"
             echo "artifact_run=$ART" >> "$GITHUB_OUTPUT"
             if [ -n "$ART" ]; then HOW='部署那次存的正式站产物'; else HOW='重新构建'; fi
-            echo "· promote($IN_PROMOTE) from run $IN_FROM_RUN：web=$WEB 数据=那次的三仓 commit；$HOW"
+            if [ "$SPLIT" = true ]; then DATA_NOTE='数据不随这次发布（数据流程已拆出）'; else DATA_NOTE='数据=那次的三仓 commit'; fi
+            echo "· promote($IN_PROMOTE) from run $IN_FROM_RUN：web=$WEB $DATA_NOTE；$HOW"
             exit 0
           fi
 
           if [ "$REQ" = "production" ]; then
+            if [ "$IN_PROMOTE" = code ]; then
+              echo "❌ promote=code 必须填 from_run（只发那次验过并存了产物的代码）"; exit 1
+            fi
             echo "mode=promote" >> "$GITHUB_OUTPUT"
             echo "target=production" >> "$GITHUB_OUTPUT"
+            echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
+            if [ "$SPLIT" = true ]; then
+              # 数据流程已拆出：只发代码，取测试站代码指针 staging/web.json 记下的 webCommitId；不带数据 commit
+              [ "$IN_PROMOTE" != data ] || { echo "❌ 数据流程已拆出：promote=data 不再支持，数据上线走 data.yml"; exit 1; }
+              WEB=$(curl -sf https://data.kaiyuanguji.com/staging/web.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
+              [ -n "$WEB" ] || { echo "❌ staging/web.json 里没有 webCommitId（需先有一次成功的测试站部署）"; exit 1; }
+              echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
+              echo "prod_ref=" >> "$GITHUB_OUTPUT"
+              echo "text_ref=" >> "$GITHUB_OUTPUT"
+              echo "· promote（只发代码，数据流程已拆出）：web=$WEB"
+              exit 0
+            fi
             S=$(curl -sf https://data.kaiyuanguji.com/staging/latest.json)
             P=$(curl -sf https://data.kaiyuanguji.com/latest.json || echo '{}')
             get() { echo "$1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$2',''))"; }
@@ -281,6 +336,7 @@ jobs:
 
           echo "mode=staging" >> "$GITHUB_OUTPUT"
           echo "target=staging" >> "$GITHUB_OUTPUT"
+          echo "split=$SPLIT" >> "$GITHUB_OUTPUT"
           echo "web_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           # 数据仓 ref：push／定时没有输入，一律 main；手动触发可指定（联调分支）。
           # 只接受 git ref 常见字符，其余当作 main 之外的非法输入直接报错。
@@ -296,11 +352,16 @@ jobs:
             fi
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
-          echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
+          if [ "$SPLIT" = true ]; then
+            echo "· 部署到测试站 kyg-staging（web=${{ github.sha }}；数据流程已拆出，不克隆数据仓，prod_ref／text_ref 不起作用）"
+          else
+            echo "· 部署到测试站 kyg-staging（web=${{ github.sha }} prod=${IN_PROD_REF:-main} text=${IN_TEXT_REF:-main}）"
+          fi
 
       # overview#341：把三个 ref 解析成完整 commit。分支／tag 用 ls-remote；本来就是 40 位 SHA 的原样用；
       # 解析不了（短 SHA、网络失败）就留空——build 照老路克隆，只是用不上「数据没变就跳过」。
       - id: sha
+        if: ${{ steps.r.outputs.split != 'true' }}
         env:
           PROD_REF: ${{ steps.r.outputs.prod_ref }}
           TEXT_REF: ${{ steps.r.outputs.text_ref }}
@@ -340,8 +401,13 @@ jobs:
       COS_PATH_PREFIX: ${{ needs.resolve.outputs.target == 'staging' && 'staging' || '' }}
       # overview#341：正式站直接部署测试站那次 run 存的正式站产物（不重新构建、不重跑单测、不生成 sitemap）
       FROM_ARTIFACT: ${{ needs.resolve.outputs.artifact_run != '' }}
+      # promote=code：只发代码，数据不碰（不克隆、不打包、不同步，只把线上 latest.json 的 webCommitId 改成新代码）
+      CODE_ONLY: ${{ needs.resolve.outputs.mode == 'promote' && inputs.promote == 'code' }}
       # 演练（仅手动 target=staging）：测试站产物打包、加密、删掉构建目录后再解包部署，走一遍 promote 的那条路
       REHEARSE_ARTIFACT: ${{ needs.resolve.outputs.target == 'staging' && inputs.rehearse_artifact == true }}
+      # overview#470 P1：数据流程已拆出（见 resolve 的 split 输出）。为 'true' 时下面所有数据步骤都跳过（DATA_FAST），
+      # 测试站读正式站数据前缀，sitemap 走路由代理。不设变量（默认）时本任务与拆出之前逐步骤一致。
+      SPLIT_DATA: ${{ needs.resolve.outputs.split }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -365,6 +431,15 @@ jobs:
         working-directory: nextjs
         run: npm test
 
+      # overview#470 P1：数据流程已拆出——代码流程不碰数据。下面所有数据步骤（克隆、build_derived、打包、检查、COS 同步、
+      # 条目失效计算）本来就以 DATA_FAST != 'true' 为条件，这里把它置为 true 就全部跳过；
+      # 「数据没变」快路的判定与写 latest.json 的步骤另行跳过（不再写 latest.json，数据指针只归数据流程）。
+      - name: Split data flow — skip all data steps (overview#470 P1)
+        if: ${{ env.SPLIT_DATA == 'true' }}
+        run: |
+          echo "DATA_FAST=true" >> "$GITHUB_ENV"
+          echo "· SPLIT_DATA_FLOW：本流程不克隆、不打包、不上传数据；数据由 data.yml 负责"
+
       # --- overview#341：数据没变就不克隆、不打包、不同步 ---
       # 只改代码的部署原来照样要克隆三个数据仓（book-text 检出约 5 GB，约 3 分钟）、打包（约 40 秒）——
       # 打包出来和线上那份一模一样，下面的 COS 同步判定也会跳过上传，白花的只是克隆和打包。
@@ -377,7 +452,7 @@ jobs:
       # 任何一条不满足、读不到，都走老路，行为与原来一样。
       - name: Data fast path — decide before cloning (overview#341)
         id: data_pre
-        if: ${{ env.HAS_COS_SECRETS == 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ env.CODE_ONLY != 'true' && env.HAS_COS_SECRETS == 'true' && env.SPLIT_DATA != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         env:
           HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
@@ -391,6 +466,18 @@ jobs:
           FP=$(node -e "import('./scripts/lib/cos-sync-decision.mjs').then((m) => console.log(m.computeBundleFingerprint(process.env.GITHUB_WORKSPACE)))")
           echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
           node scripts/cos-sync-decision.mjs decide
+
+      # promote=code：数据一个字节都不动。不依赖「数据没变」的判定（打包脚本变了它会走同步），
+      # 让后面所有数据步骤（克隆、打包、检查、COS 同步、h1、失效）全部跳过。
+      # latest.json 的 webCommitId 要等产物检查和 EdgeOne 部署成功之后才改（见后面的 "Code-only promote — record webCommitId"），
+      # 不然检查或部署失败时，线上还是旧代码，指针却已经指向没发出去的版本。
+      - name: Code-only promote — leave production data untouched
+        id: code_only
+        if: ${{ env.CODE_ONLY == 'true' }}
+        run: |
+          [ "$FROM_ARTIFACT" = true ] || { echo "❌ promote=code 必须部署现成产物"; exit 1; }
+          echo "DATA_FAST=true" >> "$GITHUB_ENV"
+          echo "✅ 只发代码：数据不动（不克隆、不打包、不同步 COS）"
 
       - name: Data fast path — restore item sitemaps
         id: sitemap_cache
@@ -422,26 +509,132 @@ jobs:
       # 克隆 book-index（正式仓）与 book-text。overview#432 起不再克隆草稿仓 book-index-draft：
       # 草稿条目不上站。bundle-data.mjs 缺正式仓、或缺其根目录的站点内容文件
       # （resource*.json／recommended.json／promotions.json）都会**报错退出**，不会静默打出空站。
+      # overview#470 P1：book-text 浅拉要现压 1.75 GB 的包（实测 08:15 2.6 分 → 16:27 23 分，同一个 commit，随 GitHub 负载忽快忽慢）。
+      # 把两个仓的 .git 放进 actions/cache（键＝仓名＋commit，取最近一份），之后在已有对象上只拉新增的；同一个 commit 直接复用；
+      # 取不到、或缓存的 .git 超过上限（防只增不减）就退回全量浅拉。缓存只存 .git，工作区文件每次由 checkout 还原。
+      - name: Restore git cache — book-index
+        id: gc_index
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ needs.resolve.outputs.prod_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ needs.resolve.outputs.text_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
       - name: Clone index data repos
+        id: clone
         if: ${{ env.DATA_FAST != 'true' }}
         run: |
-          # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
-          fetch_at() {
-            git init -q "$2"
-            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
-            git -C "$2" checkout -q FETCH_HEAD
+          # --- clone_cached:begin（overview#470 P1。正本是 ops/clone-cached.sh；deploy.yml 的 build、prod-artifact 内联两份同文——build 检出的可能是更早的 web 提交，那一版没有这个文件——ops/tests/test_clone_cache.py 守着）
+          set -o pipefail
+          GIT_BASE_URL="${GIT_BASE_URL:-https://github.com/open-guji}"
+          GIT_CACHE_MAX_MB="${GIT_CACHE_MAX_MB:-4096}"
+          # git 的 --progress 输出带回车、刷得很密：只留每 15 秒一行（和结束那行）
+          git_progress() {
+            local last=-99 line
+            while IFS= read -r line; do
+              [ -n "$line" ] || continue
+              if [ $((SECONDS - last)) -ge 15 ] || [[ "$line" == *", done"* ]]; then echo "    $line"; last=$SECONDS; fi
+            done
           }
+          # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
+          # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
+          clone_cached() {
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache="" neg=""
+            echo "▶ 克隆 $repo @ ${ref:0:12}"
+            if [ -d "$dest/.git" ]; then
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ]; then
+                echo "· 缓存的 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限，丢弃后全量浅拉"; rm -rf "$dest/.git"
+              else
+                echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"; had_cache=1
+              fi
+            else
+              echo "· 没有缓存：全量浅拉"
+            fi
+            [ -d "$dest/.git" ] || git init -q "$dest"
+            if printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$' && git -C "$dest" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+              echo "· 缓存里已有这个 commit，不再 fetch"
+              git -C "$dest" checkout -q -f "$ref"
+            else
+              # 浅拉（--depth 1）默认不拿本地已有的对象去和服务端对账，缓存再大也会把整棵树重传一遍（2026-10-07 实测 book-text：
+              # 缓存是上一个 commit，仍收 218048 个对象、1.75 GiB、229 秒，和全量浅拉一样）。显式给对账起点 --negotiation-tip=HEAD，
+              # 服务端才只发新增的（同一对 commit 的 book-index 实测 203915 个对象／106 MiB／26 秒 → 70252 个／12.7 MiB／6 秒）。
+              if [ -n "$had_cache" ] && git -C "$dest" rev-parse -q --verify HEAD >/dev/null 2>&1; then neg="--negotiation-tip=HEAD"; fi
+              git -C "$dest" fetch --depth 1 $neg --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              git -C "$dest" checkout -q -f FETCH_HEAD
+              # 增量拉完 .git 超过上限：就地重来一次全量浅拉，让随后存进缓存的永远是不大的那份（否则超大的条目会一直被恢复）
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ] && [ -n "${had_cache:-}" ]; then
+                echo "· 增量后 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限：重来一次全量浅拉，避免把超大的缓存存下去"
+                rm -rf "$dest/.git"; git init -q "$dest"
+                git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+                git -C "$dest" checkout -q -f FETCH_HEAD
+              fi
+            fi
+            echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
+          }
+          # --- clone_cached:end
+          # T1：按 resolve 给的 ref 取（staging=main；promote=测试站钉下的 commit）
           # overview#341：resolve 解析出了完整 commit 就按 commit 取，保证与上面「数据没变」的判断是同一版
-          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
+          clone_cached book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
           # 文本仓（2026-08-26 自 book-index 拆出）：整理本／辑佚／全文／抓取素材。
           # 不 clone 则 items/ 全空，而 bundle-data 的 existsSync 为假只是静默跳过，
           # 构建照样成功——整理本页在站上空白，无人得知。
-          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          clone_cached book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          echo "index_sha=$(git -C book-index rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "text_sha=$(git -C book-text rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Save git cache — book-index
+        if: ${{ env.DATA_FAST != 'true' && steps.gc_index.outputs.cache-hit != 'true' && steps.clone.outputs.index_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.clone.outputs.index_sha }}
+
+      - name: Save git cache — book-text
+        if: ${{ env.DATA_FAST != 'true' && steps.gc_text.outputs.cache-hit != 'true' && steps.clone.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.clone.outputs.text_sha }}
 
       # S2：数据产物统一输出到 nextjs/ 之外（全栈 SSR 前提；也从源头杜绝数据混进 Pages 产物）。
       # 后续所有步骤与脚本（scripts/lib/data-dirs.mjs）都从 KYG_DATA_ROOT 读写。
       - name: Set data output root (outside nextjs/)
         run: echo "KYG_DATA_ROOT=$RUNNER_TEMP/kyg-data" >> "$GITHUB_ENV"
+
+      # schema-v2（overview#458）：新 schema 的源档不再存反向／派生字段（Work.books、Entity.works、_classifications…），
+      # 网站打包前在检出的 book-index 上跑 build/build_derived.py，产物写临时目录，
+      # 打包脚本经 BOOK_INDEX_DERIVED_DIR 读（scripts/lib/derived.mjs）。仓里没有该脚本（旧 schema）就跳过，
+      # 打包照旧读源档——双兼容：数据切换那天不用改这里。退出码非 0 = 自校验失败，整个构建失败，不继续打包。
+      - name: Build derived data (schema-v2)
+        if: ${{ env.DATA_FAST != 'true' }}
+        run: |
+          if [ -f book-index/build/build_derived.py ]; then
+            D="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
+            (cd book-index && python3 build/build_derived.py --out "$D")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
+            echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+          else
+            echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
+          fi
 
       - name: Bundle data for EdgeOne
         if: ${{ env.DATA_FAST != 'true' }}
@@ -450,7 +643,9 @@ jobs:
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
         run: |
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
           node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
           # T1：指针里记下这次用的网站代码 commit，promote 时据此取同一版代码
           python3 - <<'PY'
           import json, os
@@ -537,6 +732,31 @@ jobs:
           fi
           echo "✓ public/data 全量 grep 私有文本标记（book-text-private／仅内部校对使用／不得公开）：0 命中"
 
+      # overview#470 P0：数据包检查，**只报告、不阻断**（continue-on-error；脚本本身在只报告模式下也恒退出 0）。
+      # 在打好的数据包上查格式契约（ops/data-contract.mjs）、条目数下限、与上一次发布相比数量有没有突降，
+      # 结果写进 job summary，统计 JSON 存成工件（30 天）。攒两周数据校准阈值（ops/data-package-check.mjs 的 THRESHOLDS）后再开阻断。
+      # 对比基线＝本目标上一次发布的 latest.json／meta.json（测试站是 staging/ 前缀）；读不到只记一条提示。
+      - name: Data package check (report-only, overview#470 P0)
+        id: dpc
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          node ops/data-package-check.mjs \
+            --baseline "https://data.kaiyuanguji.com${COS_PATH_PREFIX:+/$COS_PATH_PREFIX}" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json "$RUNNER_TEMP/data-package-stats.json"
+
+      - name: Upload data package stats (overview#470 P0)
+        if: ${{ always() && env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-package-stats-${{ needs.resolve.outputs.target }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/data-package-stats.json
+          if-no-files-found: ignore
+          retention-days: 30
+
       # --- COS 数据同步（overview#293 提速：数据没变就不传；没变不了就三路并行）---
       #
       # 原来是串行的五步：同步 current/ → 打包 h1 → 记旧 root → 同步 h1 → 打包 h1 文本 → 同步 h1 文本，约 8 分钟。
@@ -586,6 +806,7 @@ jobs:
       # CUT2 起正式站也全栈：部署到 kyg-ssr-spike 后据此按改动失效 www 的条目页。
       # 必须在下面的 h1 同步（会翻转指针）之前；数据没变时它就是现行 root，item-changes 算出来是「没变」。
       - name: Record previous h1 root (W2-3)
+        if: ${{ env.SPLIT_DATA != 'true' }}
         run: |
           P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
           R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
@@ -604,12 +825,18 @@ jobs:
       #   current/ 13.3 万个对象 c=48 用了 657 秒（≈203 个/秒）；h1 文本 12.7 万个对象 c=8 用了约 66 分钟（≈32 个/秒）。
       #   h1 条目平时只传增量、很轻，h1 文本在数据大换血（如文本迁移）时才重。三路加起来仍是 80：
       #   current/ 36＋h1 条目 12＋h1 文本 32，同样的全量上传三路都在 15～17 分钟内结束（原来文本那一路拖 66 分钟）。
+      # 2026-10-07（overview#469、#470 P0）：上面的静态分配改成动态——三路共用 COS_TOTAL_BUDGET（80）的名额，按各路「剩余待传数」
+      # 的比例随时分配（scripts/lib/cos-slots.mjs，登记目录 COS_PLAN_DIR；每路至少 4 个，没活的路让出名额）。
+      # 原因：平时只有一路有活，静态切法让另外两路的名额闲着；全量变化（文本迁移、schema-v2）时 h1 条目 14.7 万个对象
+      # 只有 12 个并发，10-07 那次 77 分钟没传完。下面各路命令行里的静态 COS_CONCURRENCY 只在分配器起不来时兜底。
       # 各路日志先落文件、结束后按组打印（并行时混在一起没法读）；期间每分钟打一行心跳。
       # overview#410：sync-to-cos 增量同步靠 nextjs/.next/.sync-state.json（上次成功同步时 current/ 的远端状态：相对路径 → md5）。
       # 它不在 checkout 里，CI 每次都是全新环境，于是每次真同步都要先把 current/ 整个 LIST 一遍（约 330～700 次请求）。
       # 现在存进 actions/cache：键含目标站（测试站写 staging/ 前缀、正式站写根，两份状态不能混）和桶名的哈希（换桶自动作废），
       # 取最近一份（精确键带 run_id 和 run_attempt：重跑老 run 时不会命中它自己当年存的旧状态，而是取最新的）；同步成功后存一份新的。缓存拿不到或取到的状态不可信，都退回 LIST 重建，行为与原来一样。
-      # 要强制作废：把下面三处键里的 v1 改成 v2，或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
+      # 要强制作废：把下面三处键里的版本号加一（如 v2→v3），或在仓库 Actions → Caches 里删掉 cos-sync-state-*。
+      # 2026-10-07 已作废一次（v1→v2）：run 37580114922（prod_ref=schema-v2）在 current/ 同步完、存缓存前被取消，
+      # 下一次 run 取回更早的旧 state，判定条目「没变」而没重传，staging current/ 留着 schema-v2 产物（contract 抓到）。
       - name: COS sync state — cache key (overview#410)
         id: cos_state_key
         if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
@@ -627,9 +854,35 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
+            cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
+
+      # 第二轮提速：h1 条目、h1 文本两路同步各有一份 state（.next/.sync-h1-state.json、.sync-h1-text-state.json，
+      # 格式同上：相对路径 → md5）。它们以前不进缓存，每次真同步两路各把 h1/ 整个 LIST 一遍（约 38 万个对象，实测每路 3～3.5 分钟，
+      # 两路并行抢同一个限流），是同步这一步的长杆。做法与上面 current/ 的缓存一致（键含目标站与桶名哈希、取最近一份、
+      # 取不到或不可信就退回 LIST 重建），另有三层保险：
+      #   ⓪ **state 可信度保护（三路都有，scripts/lib/state-guard.mjs）**：动桶之前先往 COS 写 dirty 标记，全部成功后才改 clean，
+      #      state 里记着对应的版本；用缓存前先读标记与现行指针，对不上（取消、半截失败、别的写入者）就丢掉 state、LIST 重建。
+      #      这一层才是「取消／中途失败」的根本修复，不再靠改键（10-07 run 37580114922 被取消后 37588367536 取回旧 state 的事故）。
+      #   ① 只在三路都成功（all_ok）之后才存缓存——多一道，哪怕标记逻辑有漏也不把失败那轮的 state 传下去；
+      #   ② 夜间数据发布（定时的测试站部署、自动派的正式站 promote=data）强制重建（SYNC_REBUILD_STATE=1，见同步步骤）；
+      #      数据没变的那天不同步、也就不重建，所以桶被手工改过时最迟在下一次数据有变化的夜间发布自愈。
+      # 手工动过桶里 h1/（删前缀、重传）之后，把下面三处键里的 v1 改成 v2 立即作废。
+      - name: COS h1 state — restore (second-round speedup)
+        id: cos_h1_state_restore
+        if: ${{ env.HAS_COS_SECRETS == 'true' && env.DATA_FAST != 'true' && (steps.cos_decide.outputs.skip != 'true' || steps.cos_latest_only.outcome == 'failure') }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-
 
       - name: Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel
         id: cos_sync
@@ -640,17 +893,30 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
+          # 三路共用并发预算、按待传数动态分配（scripts/lib/cos-slots.mjs）；不设 COS_PLAN_DIR 就是各路静态的 COS_CONCURRENCY
+          COS_PLAN_DIR: ${{ runner.temp }}/cos-plan
+          COS_TOTAL_BUDGET: '80'
+          # 数据发布那条夜间路径不信缓存里的 state，从 COS 重新 LIST 重建（三个脚本都认 SYNC_REBUILD_STATE=1）：
+          # 定时的测试站部署，以及它自动派的正式站 promote=data（那是单独的 workflow_dispatch，所以要单列）。
+          # 只在这次真的要同步时才生效——数据没变的定时 run 在上面的 decide 就跳过了同步，没有东西可重建；
+          # 所以「桶被手工改过」最迟在下一次数据有变化的夜间发布时自愈，不是每天都保证。
+          # push 和 code+data 的 promote（from_run）照用缓存；手工动过桶就改键 v1→v2 立即作废。
+          SYNC_REBUILD_STATE: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.promote == 'data')) && '1' || '' }}
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
+          rm -rf "$COS_PLAN_DIR"
           set +e
-          ( COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs ) > "$LOGS/current.log" 2>&1 &
+          # 各路的用时打在各自日志末尾（并行时看不出谁是长杆，这是下一轮提速要用的数）
+          ( s=$SECONDS; COS_CONCURRENCY=36 node scripts/sync-to-cos.mjs; rc=$?; echo "· current/ 一路共用时 $((SECONDS - s)) 秒（exit $rc）"; exit $rc ) > "$LOGS/current.log" 2>&1 &
           P_CUR=$!
-          ( node scripts/bundle-hashed.mjs && COS_CONCURRENCY=12 node scripts/sync-h1-to-cos.mjs ) > "$LOGS/h1-entry.log" 2>&1 &
+          ( s=$SECONDS; node scripts/bundle-hashed.mjs && { echo "· h1 条目打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=12 node scripts/sync-h1-to-cos.mjs; }; rc=$?; echo "· h1 条目一路共用时 $((SECONDS - s)) 秒（exit $rc）"; exit $rc ) > "$LOGS/h1-entry.log" 2>&1 &
           P_H1=$!
-          ( node scripts/bundle-hashed-text.mjs && COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs ) > "$LOGS/h1-text.log" 2>&1 &
+          ( s=$SECONDS; node scripts/bundle-hashed-text.mjs && { echo "· h1 文本打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=32 node scripts/sync-h1-text-to-cos.mjs; }; rc=$?; echo "· h1 文本一路共用时 $((SECONDS - s)) 秒（exit $rc）"; exit $rc ) > "$LOGS/h1-text.log" 2>&1 &
           P_TXT=$!
-          ( while :; do sleep 60; echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC（current/ pid $P_CUR、h1 条目 pid $P_H1、h1 文本 pid $P_TXT）"; done ) &
+          # 心跳：每分钟一行，写各路的已完成／总数／速率／预计剩余（读各路日志里 runQueue 的进度，scripts/sync-heartbeat.mjs；
+          # 部署的是早于它的代码时没有这个文件，退回只打时间）
+          ( while :; do sleep 60; if [ -f scripts/sync-heartbeat.mjs ]; then node scripts/sync-heartbeat.mjs "$LOGS" || true; else echo "· COS 同步进行中 $(date -u +%H:%M:%S) UTC"; fi; done ) &
           HB=$!
           wait $P_CUR; R_CUR=$?
           wait $P_H1;  R_H1=$?
@@ -678,7 +944,17 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: nextjs/.next/.sync-state.json
-          key: cos-sync-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: cos-sync-state-v2-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: COS h1 state — save (second-round speedup)
+        if: ${{ steps.cos_sync.outputs.all_ok == 'true' && steps.cos_state_key.outputs.bucket != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ needs.resolve.outputs.target }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       # 三路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步
       - name: Mark COS sync complete
@@ -697,11 +973,49 @@ jobs:
           export TEXT_COMMIT="$(git -C "$GITHUB_WORKSPACE/book-text" rev-parse HEAD)"
           node scripts/cos-sync-decision.mjs mark
 
+      # overview#470 P0：h1 与 current/ 逐字节比对（抽样，**只报告**）。这两个脚本早就有（verify-hashed-parity.mjs／
+      # verify-hashed-text-parity.mjs，A3／A3b 的完成判据），但没有任何 workflow 在跑。用 run id 当种子，每次抽到不同的条目，
+      # 覆盖面随部署次数累积；不一致时只发 ::warning:: 与 job summary，不拦发布（步骤恒退出 0，且 continue-on-error）。
+      # 放在 COS 同步之后：h1 目录由同步步骤里的 bundle-hashed*.mjs 打出；数据没变、同步被跳过时没有 h1 目录，这一步跳过。
+      - name: h1 vs current parity sampling (report-only, overview#470 P0)
+        id: parity
+        if: ${{ steps.cos_sync.outcome == 'success' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        working-directory: nextjs
+        env:
+          SAMPLE_SIZE: '200'
+          SAMPLE_SEED: ${{ github.run_id }}
+        run: |
+          set +e
+          node scripts/verify-hashed-parity.mjs > "$RUNNER_TEMP/parity-entry.log" 2>&1; E1=$?
+          node scripts/verify-hashed-text-parity.mjs > "$RUNNER_TEMP/parity-text.log" 2>&1; E2=$?
+          {
+            echo "## h1 与 current/ 逐字节比对（抽样，只报告，overview#470 P0）"
+            echo
+            for pair in "条目:$E1:parity-entry" "阅读文本:$E2:parity-text"; do
+              name="${pair%%:*}"; rest="${pair#*:}"; rc="${rest%%:*}"; f="${rest##*:}"
+              if [ "$rc" -eq 0 ]; then icon="✅"; else icon="🟡"; fi
+              echo "- $icon **$name**（退出码 $rc）：$(grep -E '逐字一致' "$RUNNER_TEMP/$f.log" | head -1)"
+              if [ "$rc" -ne 0 ]; then
+                echo '  ```'
+                grep -E '不一致|❌|不存在|找不到' "$RUNNER_TEMP/$f.log" | head -20 | sed 's/^/  /'
+                echo '  ```'
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/parity-entry.log" "$RUNNER_TEMP/parity-text.log"
+          # ::warning:: 要打到步骤日志里才成注释，不能写进上面重定向到 summary 的那一块
+          [ "$E1" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::条目比对退出码 $E1，见 job summary（只报告，不拦发布）"
+          [ "$E2" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::阅读文本比对退出码 $E2，见 job summary（只报告，不拦发布）"
+          exit 0
+
       # W2-3（31 卡 §A.7）：条目 sitemap 分片，写进 nextjs/public/ 随全栈产物发布；<loc> 按目标指向 www 或测试站
       # （测试站 robots.txt 全禁、不列 sitemap）。overview#341：数据没变的快路上用缓存（同一站点、同一份数据、
       # 同一版打包脚本生成的，内容一样）；照常打包时生成后存一份缓存，下次快路用。
       - name: Item sitemaps (W2-3)
-        if: ${{ env.FROM_ARTIFACT != 'true' }}
+        # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（数据前缀 sitemaps/），构建不生成
+        if: ${{ env.FROM_ARTIFACT != 'true' && env.SPLIT_DATA != 'true' }}
         working-directory: nextjs
         env:
           SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
@@ -758,6 +1072,8 @@ jobs:
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
           NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
           NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
@@ -785,9 +1101,11 @@ jobs:
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
@@ -809,7 +1127,9 @@ jobs:
           KYG_RENDER_MODE: fullstack
           NEXT_PUBLIC_MODE: ''
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com/staging
+          # overview#470 P1：数据流程已拆出时测试站直接读正式站数据前缀（没有自己的数据）
+          NEXT_PUBLIC_COS_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: staging
           NEXT_PUBLIC_SITE_URL: https://staging.kaiyuanguji.com
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
@@ -830,9 +1150,11 @@ jobs:
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-staging 的项目变量构建并查产物（脚本内含与正式站那一步同样的 3 次重试，
           # 只重试构建本身——Google Fonts 偶发抖动）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-staging --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
@@ -894,8 +1216,17 @@ jobs:
           test -f nextjs/.edgeone/edge-functions/config.json && echo "✓ 边缘函数（/api/*）已随全栈产物编译" \
             || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
           # W2-3：sitemap 索引＋分片进了产物，失效接口在云函数路由里
-          test -f $A/sitemap-index.xml && ls $A/sitemaps/*.xml > /dev/null && echo "✓ sitemap 索引＋$(ls $A/sitemaps/*.xml | wc -l) 个分片已进产物" \
-            || { echo "❌ 产物里没有 sitemap-index.xml／sitemaps/"; exit 1; }
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理，产物里没有静态文件，改查路由
+          if [ "$SPLIT_DATA" = true ]; then
+            # 反向断言：测试站（非演练）不读 staging 数据前缀，读正式站的
+            ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ SPLIT 模式：测试站产物里还有 staging 数据前缀"; exit 1; }
+            test ! -e $A/sitemap-index.xml && grep -q '"\^/sitemap-proxy' nextjs/.edgeone/cloud-functions/ssr-node/config.json \
+              && echo "✓ sitemap 走路由代理（产物里无静态文件，云函数有 /sitemap-proxy）" \
+              || { echo "❌ SPLIT 模式：产物里不该有静态 sitemap，且云函数路由里要有 /sitemap-proxy"; exit 1; }
+          else
+            test -f $A/sitemap-index.xml && ls $A/sitemaps/*.xml > /dev/null && echo "✓ sitemap 索引＋$(ls $A/sitemaps/*.xml | wc -l) 个分片已进产物" \
+              || { echo "❌ 产物里没有 sitemap-index.xml／sitemaps/"; exit 1; }
+          fi
           grep -q '"\^/internal/revalidate' nextjs/.edgeone/cloud-functions/ssr-node/config.json && echo "✓ /internal/revalidate 已由云函数处理" \
             || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 
@@ -904,7 +1235,7 @@ jobs:
       - name: Verify production artifacts (fullstack)
         if: ${{ env.DEPLOY_TARGET == 'production' }}
         # 判据抽到 ops/check-edgeone-artifact.sh（prod-artifact 任务构建时也用同一份）；部署现成产物时同样再查一遍
-        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" "${{ needs.resolve.outputs.split == 'true' && 'proxy' || 'static' }}"
 
       # 闸：产物文件数异常时直接失败，别让部署静默不生效（2026-09-27 h1 数据混进产物、
       # Pages 静默不发布的教训）。全栈产物里多了云函数（opennext 打包的 node_modules，
@@ -929,7 +1260,9 @@ jobs:
         # W2：部署上一步 makers build 出的全栈产物（给了目录就不再自动构建）
         working-directory: nextjs
         run: |
+          s=$SECONDS; echo "▶ EdgeOne 部署（测试站）开始 $(date -u +%H:%M:%S) UTC"
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-staging -t "$EDGEONE_API_TOKEN"
+          echo "✔ EdgeOne 部署（测试站）用时 $((SECONDS - s)) 秒"
 
       # overview#341：记下这次测试站用的代码与数据（完整 commit），存成工件。正式站 promote 带 from_run=<本 run>
       # 时据此钉死版本，不再读测试站指针「此刻」的值（指针可能已被后来的部署改写）。
@@ -950,6 +1283,8 @@ jobs:
               'productionCommitId': '$(head_of book-index "$R_PROD")',
               'textCommitId': '$(head_of book-text "$R_TEXT")',
               'runId': '${{ github.run_id }}',
+              # overview#470 P1：数据流程已拆出时 manifest 里没有数据 commit；晋升据此只发代码
+              'dataSplit': ${{ needs.resolve.outputs.split == 'true' && 'True' || 'False' }},
           }, open(sys.argv[1], 'w'), indent=2)
           PY
           cat "$RUNNER_TEMP/manifest/promote-manifest.json"
@@ -970,7 +1305,9 @@ jobs:
           EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
         working-directory: nextjs
         run: |
+          s=$SECONDS; echo "▶ EdgeOne 部署（正式站）开始 $(date -u +%H:%M:%S) UTC"
           npx -y edgeone@1.6.41 makers deploy .edgeone -n kyg-ssr-spike -t "$EDGEONE_API_TOKEN"
+          echo "✔ EdgeOne 部署（正式站）用时 $((SECONDS - s)) 秒"
 
       # 发布记录：kyg-ssr-spike 是直传项目，没有 edgeone-release 那样的发布分支可以翻历史，
       # 「上一个正式版本」（ops/rollback-plan.py）改从 release-log 分支读。每次正式发布在该分支
@@ -991,6 +1328,53 @@ jobs:
           C=$(git commit-tree "$EMPTY" $PARENT -m "Released to kyg-ssr-spike from @ ${{ github.repository }}@$WEB 🚀 (promote=${PROMOTE:-?}, run ${{ github.run_id }})")
           git push -q origin "$C:refs/heads/release-log"
           echo "· release-log ← ${C:0:12}（web ${WEB:0:12}）"
+
+      # overview#470 P1：代码指针 web.json（正式站在根、测试站在 staging/），部署成功之后写。
+      # 过渡期两边都写：latest.json 里的 webCommitId 仍由上面打包／快路那几步写，晋升与回滚计划仍读它；
+      # web.json 先落地、被观察一阵，数据流程（data.yml）独立之后才由读者切过来（见 nextjs/scripts/lib/web-pointer.mjs 头注释）。
+      # 不拦发布：写失败只是 web.json 暂时落后，下一次部署会再写。
+      - name: Write web pointer web.json (overview#470 P1)
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        continue-on-error: true
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          node scripts/write-web-pointer.mjs
+
+      # promote=code：部署成功之后才把线上 latest.json 的 webCommitId 改成新代码（其余字段沿用线上）。
+      # 不 continue-on-error：改不了就让这次 promote 红，别让指针悄悄落后（之后的 promote=data 按它重建代码）。
+      - name: Code-only promote — record webCommitId in latest.json (after deploy)
+        id: code_only_pointer
+        # 数据流程已拆出（SPLIT_DATA）时 latest.json 只归数据流程写，这里不再动它
+        if: ${{ env.CODE_ONLY == 'true' && env.SPLIT_DATA != 'true' }}
+        # 这时新代码已经部署成功：指针写不了不能再把整个 job 标红（那会跳过清缓存、预热和 verify，告警还会说成"部署失败"）。
+        # 所以先重试几次，仍失败就大声警告（错误标注＋摘要里写明怎么补），continue-on-error 让后面的步骤照常跑。
+        continue-on-error: true
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          WEB_COMMIT_ID: ${{ needs.resolve.outputs.web_ref }}
+        run: |
+          cd nextjs
+          for i in 1 2 3; do
+            if node scripts/cos-sync-decision.mjs latest-only; then exit 0; fi
+            echo "· 第 $i 次写 latest.json 失败，$((i * 10)) 秒后重试"; sleep $((i * 10))
+          done
+          echo "::error::新代码已部署，但线上 latest.json 的 webCommitId 没改成功（指针仍是上一版）"
+          {
+            echo "### ⚠️ 代码已发布，但 latest.json 的 webCommitId 没更新"
+            echo "指针还停在上一版：**在补上之前不要发 \`promote=data\`**（它会按指针重建旧代码）。"
+            echo "补法：用同一个 \`from_run\` 再派一次 \`promote=code\`（同一份产物，幂等，会重写指针）。"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       # --- 步骤 3：清除 EdgeOne CDN 缓存 ---
       - name: Purge EdgeOne CDN cache
@@ -1038,7 +1422,7 @@ jobs:
           # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
           # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
           pfx = 'https://data.kaiyuanguji.com/' + ('staging/' if staging else '')
-          req_pointer.Targets = [pfx + 'latest.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
+          req_pointer.Targets = [pfx + 'latest.json', pfx + 'web.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
           resp_pointer = client.CreatePurgeTask(req_pointer)
           print('✅ latest.json purged:', resp_pointer.to_json_string())
 
@@ -1122,7 +1506,7 @@ jobs:
       - name: Warm hot reading pages (staging, overview#322)
         env:
           TARGET: https://staging.kaiyuanguji.com
-          DATA_BASE: https://data.kaiyuanguji.com/staging
+          DATA_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
         # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
         run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
 
@@ -1165,14 +1549,37 @@ jobs:
 
       - name: Restore item sitemaps (www)
         id: sitemap_cache
-        if: ${{ needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ needs.resolve.outputs.split != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/item-sitemaps
           key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
+      - name: Restore git cache — book-index
+        id: gc_index
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ needs.resolve.outputs.prod_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-index-
+
+      - name: Restore git cache — book-text
+        id: gc_text
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ needs.resolve.outputs.text_sha || github.run_id }}
+          restore-keys: |
+            git-cache-v1-book-text-
+
       - name: Clone, bundle and generate item sitemaps (cache miss)
-        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' }}
+        id: gen
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' }}
         env:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
@@ -1180,21 +1587,94 @@ jobs:
           SITEMAP_SITE: https://www.kaiyuanguji.com
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: |
-          fetch_at() {
-            git init -q "$2"
-            git -C "$2" fetch -q --depth 1 "https://github.com/open-guji/$1.git" "$3"
-            git -C "$2" checkout -q FETCH_HEAD
+          # overview#470 P1：同 build 任务的克隆缓存
+          # --- clone_cached:begin（overview#470 P1。正本是 ops/clone-cached.sh；deploy.yml 的 build、prod-artifact 内联两份同文——build 检出的可能是更早的 web 提交，那一版没有这个文件——ops/tests/test_clone_cache.py 守着）
+          set -o pipefail
+          GIT_BASE_URL="${GIT_BASE_URL:-https://github.com/open-guji}"
+          GIT_CACHE_MAX_MB="${GIT_CACHE_MAX_MB:-4096}"
+          # git 的 --progress 输出带回车、刷得很密：只留每 15 秒一行（和结束那行）
+          git_progress() {
+            local last=-99 line
+            while IFS= read -r line; do
+              [ -n "$line" ] || continue
+              if [ $((SECONDS - last)) -ge 15 ] || [[ "$line" == *", done"* ]]; then echo "    $line"; last=$SECONDS; fi
+            done
           }
+          # clone_cached <仓名> <目录> <ref>：目录里若有从 actions/cache 取回的 .git，就在已有对象上只拉新增的；没有（或太大）就全量浅拉。
+          # 同一个 commit 缓存里已经有的，不再 fetch。每个仓打印开始、结束、用时和 .git 大小。
+          clone_cached() {
+            local repo="$1" dest="$2" ref="$3" t0=$SECONDS mb had_cache="" neg=""
+            echo "▶ 克隆 $repo @ ${ref:0:12}"
+            if [ -d "$dest/.git" ]; then
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ]; then
+                echo "· 缓存的 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限，丢弃后全量浅拉"; rm -rf "$dest/.git"
+              else
+                echo "· 用缓存的 .git（${mb} MB）：只拉新增对象"; had_cache=1
+              fi
+            else
+              echo "· 没有缓存：全量浅拉"
+            fi
+            [ -d "$dest/.git" ] || git init -q "$dest"
+            if printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$' && git -C "$dest" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+              echo "· 缓存里已有这个 commit，不再 fetch"
+              git -C "$dest" checkout -q -f "$ref"
+            else
+              # 浅拉（--depth 1）默认不拿本地已有的对象去和服务端对账，缓存再大也会把整棵树重传一遍（2026-10-07 实测 book-text：
+              # 缓存是上一个 commit，仍收 218048 个对象、1.75 GiB、229 秒，和全量浅拉一样）。显式给对账起点 --negotiation-tip=HEAD，
+              # 服务端才只发新增的（同一对 commit 的 book-index 实测 203915 个对象／106 MiB／26 秒 → 70252 个／12.7 MiB／6 秒）。
+              if [ -n "$had_cache" ] && git -C "$dest" rev-parse -q --verify HEAD >/dev/null 2>&1; then neg="--negotiation-tip=HEAD"; fi
+              git -C "$dest" fetch --depth 1 $neg --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+              git -C "$dest" checkout -q -f FETCH_HEAD
+              # 增量拉完 .git 超过上限：就地重来一次全量浅拉，让随后存进缓存的永远是不大的那份（否则超大的条目会一直被恢复）
+              mb=$(du -sm "$dest/.git" | cut -f1)
+              if [ "$mb" -gt "$GIT_CACHE_MAX_MB" ] && [ -n "${had_cache:-}" ]; then
+                echo "· 增量后 .git 已 ${mb} MB，超过 ${GIT_CACHE_MAX_MB} MB 上限：重来一次全量浅拉，避免把超大的缓存存下去"
+                rm -rf "$dest/.git"; git init -q "$dest"
+                git -C "$dest" fetch --depth 1 --progress "$GIT_BASE_URL/$repo.git" "$ref" 2>&1 | tr '\r' '\n' | git_progress
+                git -C "$dest" checkout -q -f FETCH_HEAD
+              fi
+            fi
+            echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
+          }
+          # --- clone_cached:end
           # 与 build 取同一版（resolve 解析出的完整 commit；解析不了时同 build 退回 ref）
-          fetch_at book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
-          fetch_at book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          clone_cached book-index book-index "${{ needs.resolve.outputs.prod_sha || needs.resolve.outputs.prod_ref }}"
+          clone_cached book-text book-text "${{ needs.resolve.outputs.text_sha || needs.resolve.outputs.text_ref }}"
+          echo "index_sha=$(git -C book-index rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "text_sha=$(git -C book-text rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          # schema-v2（overview#458）：同 build job，旧 schema 的仓没有该脚本就跳过
+          if [ -f book-index/build/build_derived.py ]; then
+            export BOOK_INDEX_DERIVED_DIR="$RUNNER_TEMP/book-index-derived"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
+            (cd book-index && python3 build/build_derived.py --out "$BOOK_INDEX_DERIVED_DIR")
+            echo "✔ build_derived 用时 $((SECONDS - s)) 秒"
+          fi
           cd nextjs
+          s=$SECONDS; echo "▶ 打包数据开始 $(date -u +%H:%M:%S) UTC"
           node scripts/bundle-data.mjs
+          echo "✔ 打包数据用时 $((SECONDS - s)) 秒"
           rm -rf "$SITEMAP_OUT_DIR"
           node scripts/gen-sitemaps.mjs
 
+      - name: Save git cache — book-index
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && steps.gc_index.outputs.cache-hit != 'true' && steps.gen.outputs.index_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-index/.git
+          key: git-cache-v1-book-index-${{ steps.gen.outputs.index_sha }}
+
+      - name: Save git cache — book-text
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && steps.gc_text.outputs.cache-hit != 'true' && steps.gen.outputs.text_sha != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: book-text/.git
+          key: git-cache-v1-book-text-${{ steps.gen.outputs.text_sha }}
+
       - name: Save item sitemaps cache (www)
-        if: ${{ steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
+        if: ${{ needs.resolve.outputs.split != 'true' && steps.sitemap_cache.outputs.cache-hit != 'true' && needs.resolve.outputs.prod_sha != '' && needs.resolve.outputs.text_sha != '' }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -1202,6 +1682,7 @@ jobs:
           key: item-sitemaps-v1-production-${{ needs.resolve.outputs.prod_sha }}-${{ needs.resolve.outputs.text_sha }}-${{ steps.fp.outputs.fingerprint }}
 
       - name: Place item sitemaps
+        if: ${{ needs.resolve.outputs.split != 'true' }}
         working-directory: nextjs
         run: |
           OUT="$RUNNER_TEMP/item-sitemaps"
@@ -1231,6 +1712,8 @@ jobs:
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
           NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
+          NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
           NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
@@ -1258,14 +1741,16 @@ jobs:
           # 边缘函数（/api/*、/oauth/*）随全栈产物一起编译：CLI 只认项目根下的 edge-functions/
           cp -r ../edge-functions ./edge-functions
           # E1：带 kyg-ssr-spike 的项目变量构建并查产物（脚本内含 3 次重试，只重试构建本身）
+          s=$SECONDS; echo "▶ EdgeOne 全栈构建开始 $(date -u +%H:%M:%S) UTC"
           python3 ../ops/edgeone-fullstack-build.py -n kyg-ssr-spike --forbid-env EDGEONE_API_TOKEN \
             --require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN \
             -- npx -y edgeone@1.6.41 makers build
+          echo "✔ EdgeOne 全栈构建用时 $((SECONDS - s)) 秒"
           du -sh .edgeone | xargs echo "EdgeOne (fullstack) bundle size:"
           find .edgeone -type f | wc -l | xargs echo "EdgeOne (fullstack) file count:"
 
       - name: Verify production artifacts (fullstack)
-        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}"
+        run: bash ops/check-edgeone-artifact.sh nextjs "${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}" "${{ needs.resolve.outputs.split == 'true' && 'proxy' || 'static' }}"
 
       - name: Pack production artifact (encrypted)
         env:
@@ -1304,6 +1789,8 @@ jobs:
       ref: ${{ needs.resolve.outputs.web_ref }}
       # 刚部署完：CDN purge 在边缘节点传播需要时间，直接跑会拿到旧产物
       wait_cdn: true
+      # overview#470 P1：数据流程已拆出时测试站读正式站数据前缀，验收的 DATA_BASE 跟着指过去
+      data_from_prod: ${{ needs.resolve.outputs.split == 'true' }}
 
   # T1：数据自动上正式站——用户批的是「数据自动推正式站」，默认开；
   # 仓库变量 AUTO_PROMOTE_DATA 只有显式设成 'false' 才关（不用配这个变量
@@ -1315,7 +1802,8 @@ jobs:
   # （needs.verify.result == 'success' 即原来的 success()）。
   auto-promote:
     needs: [resolve, verify]
-    if: ${{ needs.verify.result == 'success' && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
+    # overview#470 P1：数据流程已拆出时数据上线归 data.yml，这里不再派 promote=data
+    if: ${{ needs.verify.result == 'success' && needs.resolve.outputs.split != 'true' && needs.resolve.outputs.mode == 'staging' && vars.AUTO_PROMOTE_DATA != 'false' && (github.event_name == 'repository_dispatch' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     steps:
       - name: Auto-promote data to production
@@ -1346,7 +1834,7 @@ jobs:
     if: ${{ github.event_name == 'push' && needs.resolve.outputs.mode == 'staging' && needs.verify.result == 'success' && needs.prod-artifact.result == 'success' && vars.AUTO_PROMOTE_CODE != 'false' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Auto-promote code+data to production (from this run)
+      - name: Auto-promote code only to production (from this run)
         env:
           GH_TOKEN: ${{ github.token }}
           # 这几个任务不 checkout，gh 认不出当前仓，要显式给（否则 failed to run git: not a git repository）
@@ -1361,8 +1849,8 @@ jobs:
             echo "⏭️ main 已有更新的 commit，本次不自动 promote（由更新那次的 run 负责）" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          gh workflow run deploy.yml --ref main -f target=production -f promote=code+data -f from_run="$GITHUB_RUN_ID"
-          echo "🚀 已派正式站 promote：code+data，from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
+          gh workflow run deploy.yml --ref main -f target=production -f promote=code -f from_run="$GITHUB_RUN_ID"
+          echo "🚀 已派正式站 promote：code（只发代码，数据不动），from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
 
   # overview#341：正式站 promote（自动或手动）的发布或验收失败 → 在本仓开一张告警 issue（已有未关的就续一条评论），
   # 写清哪次 run、哪一步、怎么回滚。只告警，不自动回滚：要不要回滚由人看了再定（runbook §8）。

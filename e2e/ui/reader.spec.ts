@@ -9,6 +9,7 @@ import { test, expect, type Page } from '../fixtures/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions';
+import { startDiagnostics } from '../fixtures/diagnostics';
 
 const C = ANCHORS.collated;
 
@@ -34,14 +35,22 @@ test.describe('阅读页', () => {
         await requireNewTextData(request, C.id, '阅读页（新结构）');
     });
 
-    test('旧入口保留卷号 308 到新地址，正文渲染出来', async ({ page }) => {
-        await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`);
-        // 整理本的 juan 是短形式（004），不是内部文件路径 juan/004.json（overview#267 P2-5）
-        await expect(page).toHaveURL(new RegExp(`/read/${C.id}/${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}$`));
-        await expect(page.getByText(/加载整理本|加載整理本/)).toBeHidden({ timeout: 30_000 });
-        // 阅读页只展示维基全文版（目录型 default 不列，overview#456）：旧入口落到维基版的同号章，章号保留，不回第一章
-        await expect(page.getByRole('main').getByRole('heading', { name: /卷四|卷4/ }).first()).toBeVisible({ timeout: 30_000 });
-        await expect(page).toHaveURL(new RegExp(`/read/${C.id}/004$`));
+    test('旧入口保留卷号 308 到新地址，正文渲染出来', async ({ page }, testInfo) => {
+        // overview#475：CI 里偶发「URL 是 /004、服务端 title 是卷四，水合后页面却变回卷一」，只靠最终截图看不出哪一步变的。
+        // 失败时把地址／标题／h1 的变化时间线、服务端直出的 title 与缓存头、请求时间线附到报告（fixtures/diagnostics.ts）；通过时不附。
+        const diag = startDiagnostics(page);
+        try {
+            await page.goto(`${TARGET}/book-index?id=${C.id}&tab=collated&juan=${encodeURIComponent(C.sampleJuanFile)}`);
+            // 整理本的 juan 是短形式（004），不是内部文件路径 juan/004.json（overview#267 P2-5）
+            await expect(page).toHaveURL(new RegExp(`/read/${C.id}/${C.sampleJuanFile.replace(/^juan\/|\.json$/g, '')}$`));
+            await expect(page.getByText(/加载整理本|加載整理本/)).toBeHidden({ timeout: 30_000 });
+            // 阅读页只展示维基全文版（目录型 default 不列，overview#456）：旧入口落到维基版的同号章，章号保留，不回第一章
+            await expect(page.getByRole('main').getByRole('heading', { name: /卷四|卷4/ }).first()).toBeVisible({ timeout: 30_000 });
+            await expect(page).toHaveURL(new RegExp(`/read/${C.id}/004$`));
+        } catch (e) {
+            await diag.attach(testInfo);
+            throw e;
+        }
     });
 
     test('不带 juan 进来自动选首卷并写回地址；翻卷改地址与标题、不整页刷新', async ({ page }) => {

@@ -34,6 +34,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { toCard } from './build-catalog-index.mjs';
+import { indexDirFor, readEntryDoc } from './lib/derived.mjs';
 import { readCuration, summarizeBu } from './build-read-index.mjs';
 
 export const LOSS_KEYS = ['extant', 'partially_extant', 'lost'];
@@ -41,6 +42,15 @@ export const LOSS_KEYS = ['extant', 'partially_extant', 'lost'];
 function readJsonOrNull(p) {
     try {
         return JSON.parse(readFileSync(p, 'utf-8'));
+    } catch {
+        return null;
+    }
+}
+
+/** 条目详情：schema-v2 的 build 产物优先、缺则读源档（lib/derived.mjs）；没有或读不了返回 null */
+function readEntryOrNull(entry, rootDirFor) {
+    try {
+        return readEntryDoc({ id: entry.id, srcPath: join(rootDirFor(entry), entry.path) })?.doc ?? null;
     } catch {
         return null;
     }
@@ -240,14 +250,14 @@ export function bundleMetaHome({ index, rootDirFor, textDirFor, dataDir, siteDir
     const workDetail = (id) => {
         if (detailCache.has(id)) return detailCache.get(id);
         const item = works[id];
-        const d = item ? readJsonOrNull(join(rootDirFor(item), item.path)) : null;
+        const d = item ? readEntryOrNull(item, rootDirFor) : null;
         detailCache.set(id, d);
         return d;
     };
     // 存佚要逐部读详情（详情优先，与 indexer 同口径）
     const loss = { extant: 0, partially_extant: 0, lost: 0, unknown: 0 };
     for (const [id, entry] of Object.entries(works)) {
-        const d = readJsonOrNull(join(rootDirFor(entry), entry.path));
+        const d = readEntryOrNull(entry, rootDirFor);
         if (d?.merged_into) continue;
         loss[lossKey(d, entry)]++;
     }
@@ -293,13 +303,13 @@ if (isMain) {
     const textDir = resolve(process.env.BOOK_TEXT_DIR || join(here, '..', '..', 'book-text'));
     const index = { works: {}, books: {}, collections: {}, entities: {} };
     for (const [dir, label] of [[prodDir, 'official']]) {
-        const colPath = join(dir, 'index', 'collections.json');
+        const colPath = join(indexDirFor(dir), 'collections.json');
         if (existsSync(colPath)) {
             for (const [id, e] of Object.entries(JSON.parse(readFileSync(colPath, 'utf-8')))) if (!e?.promoted_to) index.collections[id] = { ...e, _root: label };
         }
         for (const typeKey of ['works', 'books', 'entities']) {
             for (let i = 0; i < 16; i++) {
-                const p = join(dir, 'index', typeKey, `${i.toString(16)}.json`);
+                const p = join(indexDirFor(dir), typeKey, `${i.toString(16)}.json`);
                 if (!existsSync(p)) continue;
                 for (const [id, e] of Object.entries(JSON.parse(readFileSync(p, 'utf-8')))) {
                     if (e?.promoted_to) continue;
