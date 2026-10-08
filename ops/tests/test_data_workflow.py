@@ -4,6 +4,7 @@
 「只报告」的步骤、密钥的范围、发布闸的放行条件都钉住，免得以后改着改着悄悄变成会往正式前缀写的流程。
 """
 import itertools
+import json
 import os
 import re
 import subprocess
@@ -98,12 +99,20 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertLess(n.index('Sync data to Tencent COS — current/ + h1 entry, in parallel'), n.index('Upload item sitemaps'))
 
     def test_state_cache_keys_match_deploy(self):
+        # 整条表达式（含 target、bucket、run_id、attempt）逐字等于 deploy.yml 的，只把 target 的来源换成本流程的 inputs.target；
+        # restore-keys 同理——第一次接管时才能继承 deploy.yml 最后一次的 state，两边也不会各写各的键
         with open(os.path.join(ROOT, '.github', 'workflows', 'deploy.yml'), encoding='utf-8') as f:
             deploy = f.read()
-        for step, prefix in (('COS sync state — restore', 'cos-sync-state-v2-'), ('COS h1 state — restore', 'cos-h1-state-v1-')):
-            key = self._step(step)['with']['key']
-            self.assertTrue(key.startswith(prefix), key)
-            self.assertIn(prefix, deploy)    # 同名同版本号：第一次接管时继承 deploy.yml 的 state
+        mine = "${{ inputs.target || 'production' }}"
+        theirs = '${{ needs.resolve.outputs.target }}'
+        for step in ('COS sync state — restore', 'COS h1 state — restore', 'COS sync state — save', 'COS h1 state — save'):
+            w = self._step(step)['with']
+            for field in ('key', 'restore-keys'):
+                if field not in w:
+                    continue
+                for line in [l.strip() for l in w[field].splitlines() if l.strip()]:
+                    self.assertIn(line.replace(mine, theirs), deploy, (step, field, line))
+            self.assertIn(mine, w['key'])
 
     def test_sync_uses_gate_prefix_and_two_routes_only(self):
         s = self._step('Sync data to Tencent COS — current/ + h1 entry, in parallel')
@@ -113,10 +122,47 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertNotIn('bundle-hashed-text', s['run'])      # h1 文本是单独任务（设计 §5）
         self.assertIn('R_CUR" -ne 0', s['run'])                # current/ 失败整步失败
 
+    def _run_carry(self, code, body, prefix=''):
+        run = self._step('Carry over webCommitId from live latest.json')['run']
+        with tempfile.TemporaryDirectory() as d:
+            bindir = os.path.join(d, 'bin'); os.mkdir(bindir)
+            root = os.path.join(d, 'root'); os.mkdir(root)
+            with open(os.path.join(root, 'latest.json'), 'w') as f:
+                f.write('{"productionCommitId": "p"}')
+            with open(os.path.join(d, 'resp'), 'w') as f:
+                f.write(body)
+            # 假 curl：把预设响应写进 -o 指定的文件，在 stdout 打印状态码
+            with open(os.path.join(bindir, 'curl'), 'w') as f:
+                f.write('#!/bin/bash\nwhile [ $# -gt 0 ]; do [ "$1" = -o ] && { cp "%s" "$2"; }; shift; done\nprintf %%s "%s"\n' % (os.path.join(d, 'resp'), code))
+            os.chmod(os.path.join(bindir, 'curl'), 0o755)
+            out = os.path.join(d, 'out'); open(out, 'w').close()
+            env = dict(os.environ, PATH=bindir + os.pathsep + os.environ['PATH'], PREFIX=prefix, RUNNER_TEMP=d,
+                       KYG_DATA_ROOT=root, GITHUB_OUTPUT=out)
+            r = subprocess.run(['bash', '-e', '-c', run], env=env, capture_output=True, text=True, timeout=30)
+            with open(os.path.join(root, 'latest.json')) as f:
+                latest = f.read()
+            with open(out) as f:
+                outputs = dict(l.split('=', 1) for l in f.read().splitlines() if '=' in l)
+            return r.returncode, json.loads(latest), outputs
+
     def test_carry_over_keeps_web_commit_id(self):
         s = self._step('Carry over webCommitId from live latest.json')
-        self.assertIn("d['webCommitId']", s['run'])
         self.assertIn("steps.gate.outputs.sitemaps_only != 'true'", s['if'])
+        w = 'a1' * 20
+        rc, latest, out = self._run_carry('200', json.dumps({'webCommitId': w, 'productionCommitId': 'old'}))
+        self.assertEqual((rc, latest.get('webCommitId'), out.get('web_commit')), (0, w, w))
+        self.assertEqual(latest['productionCommitId'], 'p')                       # 只带 webCommitId，其它字段用新打包的
+        rc, latest, out = self._run_carry('200', json.dumps({'productionCommitId': 'old'}))   # 老指针没有该字段
+        self.assertEqual((rc, 'webCommitId' in latest, out.get('web_commit')), (0, False, ''))
+        rc, latest, out = self._run_carry('404', '')                              # 首次发布
+        self.assertEqual((rc, 'webCommitId' in latest, out.get('web_commit')), (0, False, ''))
+
+    def test_carry_over_refuses_to_publish_when_live_pointer_unreadable(self):
+        for code, body in (('500', ''), ('000', ''), ('403', 'x'), ('200', 'not json'), ('200', '[1]'),
+                           ('200', json.dumps({'webCommitId': 'short'}))):
+            rc, latest, out = self._run_carry(code, body)
+            self.assertNotEqual(rc, 0, (code, body))
+            self.assertNotIn('webCommitId', latest, (code, body))
 
     def test_marker_only_after_full_success_and_gets_web_commit(self):
         s = self._step('Mark COS sync complete')
@@ -125,10 +171,23 @@ class DataWorkflowCheckOnly(unittest.TestCase):
 
     def test_sitemap_steps_condition(self):
         g = self._step('Generate item sitemaps')['if']
-        self.assertIn("steps.gate.outputs.sitemaps_only == 'true'", g)    # 只传 sitemap 时一定生成
-        self.assertIn("steps.cos_decide.outputs.skip != 'true'", g)       # 数据有变时生成
-        self.assertIn("steps.sm_present.outputs.present != 'true'", g)    # 线上还没有时生成
+        expr = re.sub(r'^\$\{\{\s*|\s*\}\}$', '', g)
+        def ev(publish, only, skip, present):
+            vals = {'steps.gate.outputs.publish': publish, 'steps.gate.outputs.sitemaps_only': only,
+                    'steps.cos_decide.outputs.skip': skip, 'steps.sm_present.outputs.present': present}
+            py = expr
+            for k, v in vals.items():
+                py = py.replace(k, repr(v))
+            return eval(py.replace('&&', ' and ').replace('||', ' or '), {})   # noqa: S307 — 受控的测试输入
+        for publish, only, skip, present in itertools.product(('true', 'false'), ('true', 'false'), ('true', 'false', ''), ('true', 'false', '')):
+            want = publish == 'true' and (only == 'true' or skip != 'true' or present != 'true')
+            self.assertEqual(ev(publish, only, skip, present), want, (publish, only, skip, present))
         self.assertEqual(self._step('Generate item sitemaps')['env']['SITEMAP_SITE'], 'https://www.kaiyuanguji.com')
+        # 「完整发布过」的判断带两个 commit，COS 密钥只在这一步的 step 级 env
+        p = self._step('Check whether this sitemap version was fully published')
+        self.assertIn('steps.clone.outputs.index_sha', p['env']['SITEMAP_META'])
+        self.assertIn('steps.clone.outputs.text_sha', p['env']['SITEMAP_META'])
+        self.assertIn('--check-meta', p['run'])
 
     # ---- 发布闸的行为：把 run 脚本抽出来，枚举所有输入组合 ----
     def _run_gate(self, target='production', only='false', override='false', split='', prod='main', text='main'):
@@ -150,7 +209,9 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertEqual(g(split='true', prod='schema-v2')['publish'], 'false')           # 联调分支不上正式前缀
         self.assertEqual(g(split='true', text='x', override='true')['publish'], 'true')   # 回滚重发
         self.assertEqual(g(prod='x', override='true')['publish'], 'false')                # 没开关也不是 only_sitemaps：不放行
-        o = g(target='staging', prod='schema-v2'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
+        o = g(target='staging'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
+        o = g(target='staging', prod='schema-v2'); self.assertEqual((o['publish'], o['prefix']), ('false', 'staging'))   # 非 main 的 ref 连 staging 也不发布
+        o = g(target='staging', prod='schema-v2', override='true'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
         o = g(only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', ''))
         self.assertEqual(g(only='true', prod='x')['publish'], 'false')
         o = g(target='staging', only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', 'staging'))
@@ -164,7 +225,9 @@ class DataWorkflowCheckOnly(unittest.TestCase):
             case = (target, only, override, split, prod, text, o)
             if target == 'staging':
                 self.assertEqual(o['prefix'], 'staging', case)
-                self.assertEqual(o['publish'], 'true', case)
+                if o['publish'] == 'true' and (prod != 'main' or text != 'main'):
+                    self.assertEqual(override, 'true', case)
+                self.assertEqual(o['publish'], 'true' if (prod == 'main' and text == 'main') or override == 'true' else 'false', case)
                 continue
             self.assertEqual(o['prefix'], '', case)
             if o['publish'] == 'true':
@@ -344,6 +407,19 @@ esac
         c = self.wf['concurrency']
         self.assertEqual(c['group'], 'publish-data')
         self.assertFalse(c['cancel-in-progress'])
+
+    def test_scheduled_check_always_runs_once_switch_on(self):
+        run = self.wf['jobs']['check']['steps'][0]['run']
+        def go(split):
+            with tempfile.TemporaryDirectory() as d:
+                out = os.path.join(d, 'out'); open(out, 'w').close()
+                env = dict(os.environ, SPLIT_VAR=split, GITHUB_OUTPUT=out)
+                # 把 ${{ github.event_name }} 换成 schedule；开关打开时必须在碰网络之前就决定
+                r = subprocess.run(['bash', '-e', '-c', run.replace('${{ github.event_name }}', 'schedule')], env=env, capture_output=True, text=True, timeout=20)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                with open(out, encoding='utf-8') as fh:
+                    return fh.read().strip()
+        self.assertEqual(go('true'), 'should_run=true')
 
     def test_triggers_schedule_and_manual(self):
         on = self.wf.get('on', self.wf.get(True))

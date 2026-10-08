@@ -10,7 +10,8 @@
  * 只写 `<前缀>/sitemaps/*.xml`（并清掉该目录下已不在这一版里的旧分片），不碰别的对象。失败 exit 1。
  */
 import { createRequire } from 'node:module';
-import { publishSitemaps } from './lib/sitemap-upload.mjs';
+import { appendFileSync } from 'node:fs';
+import { publishSitemaps, metaKey, sitemapKey } from './lib/sitemap-upload.mjs';
 
 const require = createRequire(import.meta.url);
 const dryRun = process.argv.includes('--dry-run');
@@ -58,8 +59,12 @@ function cosBackend() {
 
 async function main() {
     if (!DIR) throw new Error('缺环境变量 SITEMAP_OUT_DIR（gen-sitemaps.mjs 的输出目录）');
+    let meta = null;
+    if (process.env.SITEMAP_META) {
+        try { meta = JSON.parse(process.env.SITEMAP_META); } catch (e) { throw new Error(`SITEMAP_META 不是合法 JSON：${e.message}`); }
+    }
     const r = await publishSitemaps({
-        dir: DIR, prefix: PREFIX, dryRun, log: (m) => console.log(m),
+        dir: DIR, prefix: PREFIX, dryRun, meta, log: (m) => console.log(m),
         backend: dryRun ? null : cosBackend(),
     });
     console.log(dryRun
@@ -67,7 +72,24 @@ async function main() {
         : `✓ sitemap 已上传：${r.uploaded} 个对象，${(r.bytes / 1048576).toFixed(1)} MB，清理旧分片 ${r.pruned} 个`);
 }
 
-main().catch((e) => {
+/** --check-meta：线上这版 sitemap 是不是用当前这两个数据 commit 完整发布过（_meta.json 在、索引在、commit 一致）。写 present=true|false，永远 exit 0 */
+async function checkMeta() {
+    let present = false;
+    try {
+        const want = JSON.parse(process.env.SITEMAP_META || '{}');
+        const b = cosBackend();
+        const raw = await b.get(metaKey(PREFIX));
+        const index = await b.get(sitemapKey(PREFIX, 'sitemap-index'));
+        const got = raw ? JSON.parse(raw.toString('utf-8')) : null;
+        present = !!(got && index && want.productionCommitId && got.productionCommitId === want.productionCommitId && got.textCommitId === want.textCommitId);
+        console.log(`· 发布标记 ${raw ? '存在' : '不存在'}，索引 ${index ? '存在' : '不存在'}，commit ${present ? '一致' : '不一致'} → present=${present}`);
+    } catch (e) {
+        console.log(`· 读发布标记失败（按没有处理，重新生成上传）：${e && e.message}`);
+    }
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `present=${present}\n`);
+}
+
+(process.argv.includes('--check-meta') ? checkMeta() : main()).catch((e) => {
     console.error(`❌ ${e && e.message}`);
     process.exit(1);
 });
