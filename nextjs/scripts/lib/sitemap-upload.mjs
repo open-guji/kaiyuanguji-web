@@ -23,6 +23,15 @@ export const STORED_SITE = 'https://www.kaiyuanguji.com';
 /** 路由代理允许的名字；与 sitemap-proxy.ts 的 NAME_RE 相同（单测比对源文件） */
 export const NAME_RE = /^(?:sitemap-index|(?:work|book|collection|entity)-\d{3,}|nodes-001)$/;
 
+/** sitemap 协议上限：每片最多 50,000 个地址、未压缩最大 50 MB */
+export const MAX_URLS_PER_SHARD = 50_000;
+export const MAX_SHARD_BYTES = 50 * 1024 * 1024;
+/**
+ * 旧分片至少放多久才清：站点路由给边缘缓存 s-maxage 一小时，缓存里的旧索引最迟一小时后失效；
+ * 留一天，免得清掉缓存里的旧索引还在引用的分片（读到 404）
+ */
+export const PRUNE_MIN_AGE_MS = 24 * 3600 * 1000;
+
 export const CONTENT_TYPE = 'application/xml; charset=utf-8';
 /** 数据前缀里的缓存头；站点路由再给边缘加 s-maxage（一小时） */
 export const CACHE_CONTROL = 'public, max-age=300';
@@ -61,6 +70,11 @@ export function checkSitemaps(plan, texts, site = STORED_SITE) {
         const want = name === 'sitemap-index' ? 'sitemapindex' : 'urlset';
         if (!xml.trimStart().startsWith('<?xml')) errors.push(`${name}：不是 XML`);
         if (!new RegExp(`</${want}>\\s*$`).test(xml)) errors.push(`${name}：没有以 </${want}> 收尾（截断或不是 sitemap）`);
+        if (name !== 'sitemap-index') {
+            const n = (xml.match(/<loc>/g) || []).length;
+            if (n > MAX_URLS_PER_SHARD) errors.push(`${name}：${n} 个地址，超过 sitemap 协议的 ${MAX_URLS_PER_SHARD} 上限（SITEMAP_PER_SHARD 设大了？）`);
+            if (Buffer.byteLength(xml) > MAX_SHARD_BYTES) errors.push(`${name}：${Buffer.byteLength(xml)} 字节，超过 sitemap 协议的 50 MB 上限`);
+        }
         for (const m of xml.matchAll(/<loc>([^<]*)<\/loc>/g)) {
             if (!m[1].startsWith(`${base}/`)) { errors.push(`${name}：<loc> 不是正式站地址（${m[1].slice(0, 80)}）`); break; }
         }
@@ -82,10 +96,13 @@ export function checkSitemaps(plan, texts, site = STORED_SITE) {
 }
 
 /**
- * 传。backend: { put(key, body, { contentType, cacheControl }), get(key) → Buffer|null, list(prefix) → string[], del(keys) }
+ * 传。backend: { put(key, body, { contentType, cacheControl }), get(key) → Buffer|null,
+ *   list(prefix) → [{ key, lastModified(毫秒时间戳) }], del(keys)（有删不掉的要抛错）}
  * 返回 { uploaded, bytes, pruned, warnings }；检查不过或传失败抛错。dryRun 只检查、不动 backend。
  */
-export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000 }) {
+export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now() }) {
+    // 并发数非正：Array.from 不会起任何 worker，分片一个没传、索引却照传——先拒绝
+    if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error(`concurrency 必须是正整数：${concurrency}`);
     const plan = planSitemaps(dir);
     const texts = {};
     if (!plan.errors.length) {
@@ -116,13 +133,19 @@ export async function publishSitemaps({ dir, prefix = '', backend, site = STORED
     const want = Buffer.byteLength(texts['sitemap-index']);
     if (!back || back.length !== want) throw new Error(`回读 ${idxKey} 不一致：期望 ${want} 字节，读到 ${back ? back.length : '（空）'}`);
 
-    // 清旧分片（只动合规的名字；失败只警告）
+    // 清旧分片（只动合规的名字、且放满 pruneMinAgeMs 的；失败只警告）。
+    // 不立刻清：边缘缓存里的旧索引（最长一小时）可能还引用着它们，立刻删会让那一小时里读到 404。
+    // 同名分片被新版覆盖是有意的（路由代理按固定名字取）：新旧两版短时间混在一起，对 sitemap 只是地址集略有出入，无害；
+    // 并发的两次发布由 workflow 的 publish-data 并发组挡住。
     const warnings = [];
     let pruned = 0;
     try {
         const keep = new Set([...plan.shards.map((s) => sitemapKey(prefix, s.name)), idxKey]);
         const dirPrefix = sitemapKey(prefix, 'x').slice(0, -'x.xml'.length);
-        const stale = (await backend.list(dirPrefix)).filter((k) => !keep.has(k) && NAME_RE.test(k.slice(dirPrefix.length).replace(/\.xml$/, '')) && k.endsWith('.xml'));
+        const stale = (await backend.list(dirPrefix))
+            .filter(({ key: k, lastModified }) => !keep.has(k) && k.endsWith('.xml') && NAME_RE.test(k.slice(dirPrefix.length).replace(/\.xml$/, ''))
+                && Number.isFinite(lastModified) && now - lastModified >= pruneMinAgeMs)
+            .map(({ key }) => key);
         if (stale.length) { await backend.del(stale); pruned = stale.length; log(`清理旧分片 ${stale.length} 个：${stale.slice(0, 5).join(', ')}${stale.length > 5 ? ' …' : ''}`); }
     } catch (e) {
         warnings.push(`清理旧分片失败（下次再试）：${e && e.message}`);

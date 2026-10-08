@@ -39,14 +39,18 @@ function cosBackend() {
             let Marker = '';
             for (;;) {
                 const d = await call(cos.getBucket, { Prefix, Marker, MaxKeys: 1000 });
-                for (const c of d.Contents || []) keys.push(c.Key);
+                for (const c of d.Contents || []) keys.push({ key: c.Key, lastModified: Date.parse(c.LastModified) });
                 if (d.IsTruncated !== 'true' && d.IsTruncated !== true) return keys;
-                Marker = d.NextMarker || keys[keys.length - 1];
+                Marker = d.NextMarker || keys[keys.length - 1].key;
             }
         },
         async del(keys) {
             for (let i = 0; i < keys.length; i += 1000) {
-                await call(cos.deleteMultipleObject, { Objects: keys.slice(i, i + 1000).map((Key) => ({ Key })) });
+                const d = await call(cos.deleteMultipleObject, { Objects: keys.slice(i, i + 1000).map((Key) => ({ Key })) });
+                // 批量删除整体成功时，单个对象仍可能删失败，错误在响应的 Error 里
+                if (d && Array.isArray(d.Error) && d.Error.length) {
+                    throw new Error(`${d.Error.length} 个对象没删掉：${d.Error.slice(0, 3).map((e) => `${e.Key}(${e.Code})`).join(', ')}`);
+                }
             }
         },
     };
