@@ -70,6 +70,16 @@ describe('条目页 generateMetadata（S4）', () => {
         expect(client.props.seo).toBeUndefined();
     });
 
+    it('条目超过 48 KB 就不内嵌 initialDetail，客户端照旧取数（overview#458）', async () => {
+        const big = { ...ENTRY, description: { text: '史'.repeat(20_000) } }; // 汉字 3 字节，约 60 KB
+        mockGetItem.mockResolvedValue({ entry: big, source: 'h1', version: 'h1:r' });
+        const { default: ItemPage } = await import('../page.ssr');
+        const el = (await ItemPage({ params: Promise.resolve({ id: ID }) })) as ReactElement<{ children: ReactElement[] }>;
+        const client = el.props.children[1] as ReactElement<Record<string, unknown>>;
+        expect(client.props.initialDetail).toBeUndefined();
+        expect(client.props.id).toBe(ID);
+    });
+
     it('查不到的条目 → 未找到 + noindex（不受影响）', async () => {
         mockGetItem.mockResolvedValue(null);
         const m = await meta();
