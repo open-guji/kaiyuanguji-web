@@ -103,3 +103,19 @@ test('分片目录里的非 .json 文件（.tmp 等）不读', () => {
         assert.equal(Object.keys(readPromotionsSource(dir).promotions).length, 4);
     });
 });
+
+test('源档（整档或分片）带记录却不是 version 1：抛错，不悄悄标成 1 放行；没有记录的不看版本', () => {
+    withTmp((dir) => {
+        mkdirSync(join(dir, 'promotions'));
+        writeFileSync(join(dir, 'promotions', '0m.json'), JSON.stringify({ version: 2, promotions: { '11sjkim94800m': REC('x') } }));
+        assert.throws(() => readPromotionsSource(dir), (e) => /版本不是 1/.test(e.message) && /0m\.json/.test(e.message));
+    });
+    withTmp((dir) => {
+        writeFileSync(join(dir, 'promotions.json'), JSON.stringify({ promotions: { '11sjkim94800m': REC('x') } })); // 缺 version
+        assert.throws(() => readPromotionsSource(dir), /版本不是 1/);
+    });
+    withTmp((dir) => {
+        writeFileSync(join(dir, 'promotions.json'), JSON.stringify({ version: 2, promotions: {} }));
+        assert.deepEqual(readPromotionsSource(dir).promotions, {});
+    });
+});

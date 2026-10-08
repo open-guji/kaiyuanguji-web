@@ -55,7 +55,13 @@ function readOne(path) {
         throw new Error(`升格对照表源档读不了：${path}（${e.message}）`);
     }
     const p = data && typeof data === 'object' ? data.promotions : undefined;
-    return p && typeof p === 'object' && !Array.isArray(p) ? p : {};
+    const rows = p && typeof p === 'object' && !Array.isArray(p) ? p : {};
+    // 下游读者（src/lib/promotions.ts、lib/h1-promotions.mjs）只认 version 1，别的版本整表丢弃。
+    // 我们合流后会把产物标成 version 1，所以遇到别的版本又带着记录要在这里拦下，不能悄悄放行（bim 读档不看版本）。
+    if (Object.keys(rows).length > 0 && data.version !== PROMOTIONS_VERSION) {
+        throw new Error(`升格对照表源档版本不是 ${PROMOTIONS_VERSION}（${String(data.version)}）：${path}`);
+    }
+    return rows;
 }
 
 /**
