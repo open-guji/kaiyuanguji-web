@@ -78,7 +78,8 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             if (!res.ok) return { ok: false, status: res.status, hdr: edgeHeaders(res) };
             return { ok: true, status: res.status, body: asJson ? await res.json() : undefined };
         } catch (e) {
-            return { ok: false, status: 0, error: e.message };
+            // JSON 解析失败是永久错误（响应已到），不是传输失败，标 permanent 不重试
+            return { ok: false, status: 0, error: e.message, permanent: e instanceof SyntaxError };
         }
     }
     const why = (r) => (r.status ? `HTTP ${r.status}` : `请求失败：${r.error}`)
@@ -92,18 +93,20 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     const retried = [];
     const retriedData = [];
     let pagesChecked = 0;
-    const transient = (r) => r.status === 0 || EDGE_TRANSIENT.has(r.status);
+    const transient = (r) => !r.permanent && (r.status === 0 || EDGE_TRANSIENT.has(r.status));
     async function getRetrying(url, asJson, into) {
         const first = await get(url, asJson);
         let r = first;
         let attempts = 0;
+        let hdr = first.hdr; // 重试途中拿到过的 EdgeOne 头留着，最后一次没带头（如连接失败）也不丢
         while (transient(r) && attempts < retryDelaysMs.length) {
             await sleep(retryDelaysMs[attempts++]);
             r = await get(url, asJson);
+            hdr = r.hdr || hdr;
         }
         if (attempts === 0) return r;
         if (r.ok) { into.push(url); return r; }
-        return { ...r, retriedFrom: first.status === 0 ? '连接失败' : String(first.status), attempts };
+        return { ...r, hdr, retriedFrom: first.status === 0 ? '连接失败' : String(first.status), attempts };
     }
     const getPage = (url) => { pagesChecked++; return getRetrying(url, false, retried); };
     const getData = (url, asJson) => getRetrying(url, asJson, retriedData);

@@ -118,13 +118,19 @@ export async function requireTextFile(request: APIRequestContext, id: string, re
 
 async function hasTextFile(request: APIRequestContext, id: string, relPath: string): Promise<boolean> {
     // 503／522／524／525 是边缘瞬时错误（overview#484），退避 2s／5s／10s 重试；仍失败才抛，信息里带 EO-LOG-UUID 等头
-    const get = async (url: string) => {
-        const { res, retries, firstStatus } = await getWithEdgeRetry(() => request.get(url));
-        return { res, why: describeFailure(res, retries, firstStatus) };
+    const get = async (url: string, method: 'get' | 'head' = 'get') => {
+        const { res, retries, firstStatus, hdr } = await getWithEdgeRetry(() => request[method](url));
+        return { res, why: describeFailure(res, retries, firstStatus, hdr) };
     };
     const { res: ptr, why: ptrWhy } = await get(`${DATA_BASE}/h1/text-manifest-root.json?_=${Math.floor(Date.now() / 60000)}`);
     // 指针确实不存在（404）才是旧布局，退回现行路径；其余失败（5xx、网络错）抛出，不当成「数据没上线」而跳过
-    if (ptr.status() === 404) return (await request.head(`${DATA_BASE}/current/items/${id}/${relPath}`)).ok();
+    if (ptr.status() === 404) {
+        // 退回现行路径的 HEAD 也走重试；只有 200 算有、404 算没有，其余（含重试后仍是 5xx）抛出，不当成「没有」而跳过
+        const { res: head, why: headWhy } = await get(`${DATA_BASE}/current/items/${id}/${relPath}`, 'head');
+        if (head.ok()) return true;
+        if (head.status() === 404) return false;
+        throw new Error(`current/items/${id}/${relPath} 取不到：${headWhy}`);
+    }
     if (!ptr.ok()) throw new Error(`h1/text-manifest-root.json 取不到：${ptrWhy}`);
     const root = (await ptr.json()).root as string | undefined;
     if (!root) throw new Error('h1/text-manifest-root.json 里没有 root');

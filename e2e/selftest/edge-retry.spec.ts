@@ -47,3 +47,12 @@ test('404、500 不重试；没有头信息时说明保持简洁', async () => {
     }
     expect(edgeHeaders(res(525, { date: 'x' }))).toBe('Date=x');
 });
+
+test('重试途中拿到过的 EdgeOne 头，最后一次没带头也保留', async () => {
+    let i = 0;
+    const { res: r, retries, firstStatus, hdr } = await getWithEdgeRetry(
+        async () => (i++ === 0 ? res(525, { 'eo-log-uuid': 'u-early' }) : res(525)),
+        { sleep: async () => {} },
+    );
+    expect(describeFailure(r, retries, firstStatus, hdr)).toBe('HTTP 525（525后重试 3 次仍失败） [EO-LOG-UUID=u-early]');
+});

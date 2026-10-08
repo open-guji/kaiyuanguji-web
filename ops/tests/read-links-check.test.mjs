@@ -327,3 +327,28 @@ test('404 不重试，也不带头信息时失败行保持原样', async () => {
     assert.deepEqual(waits, []);
     assert.ok(r.failures.some((f) => f.detail.endsWith('001.txt → HTTP 404')));
 });
+
+test('JSON 解析失败是永久错误：不重试，立即记失败', async () => {
+    const waits = [];
+    const badJson = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token'); } });
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: badJson, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(waits, []);
+    assert.ok(r.failures.some((f) => /Unexpected token/.test(f.detail)));
+});
+
+test('重试途中拿到过的 EdgeOne 头，最后一次是连接失败也保留在失败行里', async () => {
+    const path = `/current/items/${WORK}/default/001.txt`;
+    const inner = fakeFetch(baseFiles(), basePages());
+    let n = 0;
+    const f = async (url, init) => {
+        if (new URL(url).pathname === path) {
+            n++;
+            if (n === 1) return { ok: false, status: 525, headers: { get: (k) => ({ 'eo-log-uuid': 'u-early' })[k.toLowerCase()] ?? null } };
+            throw new Error('fetch failed');
+        }
+        return inner(url, init);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, warm: false, sleep: async () => {} });
+    assert.equal(r.failures.length, 1);
+    assert.match(r.failures[0].detail, /请求失败：fetch failed（525后重试 3 次仍失败） \[EO-LOG-UUID=u-early\]/);
+});

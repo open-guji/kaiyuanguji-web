@@ -24,9 +24,8 @@ export function edgeHeaders(res: ResponseLike): string {
         .join(' ');
 }
 
-/** 失败说明：`HTTP 525（525后重试 3 次仍失败）[EO-LOG-UUID=…]` */
-export function describeFailure(res: ResponseLike, retries: number, firstStatus: number): string {
-    const hdr = edgeHeaders(res);
+/** 失败说明：`HTTP 525（525后重试 3 次仍失败）[EO-LOG-UUID=…]`；hdr 是各次尝试里最后一次带头的那份（见 getWithEdgeRetry） */
+export function describeFailure(res: ResponseLike, retries: number, firstStatus: number, hdr = edgeHeaders(res)): string {
     return `HTTP ${res.status()}${retries ? `（${firstStatus}后重试 ${retries} 次仍失败）` : ''}${hdr ? ` [${hdr}]` : ''}`;
 }
 
@@ -37,13 +36,15 @@ export function describeFailure(res: ResponseLike, retries: number, firstStatus:
 export async function getWithEdgeRetry<T extends ResponseLike>(
     fn: () => Promise<T>,
     { delaysMs = EDGE_RETRY_DELAYS_MS, sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms)) }: { delaysMs?: number[]; sleep?: (ms: number) => Promise<void> } = {},
-): Promise<{ res: T; retries: number; firstStatus: number }> {
+): Promise<{ res: T; retries: number; firstStatus: number; hdr: string }> {
     let res = await fn();
     const firstStatus = res.status();
     let retries = 0;
+    let hdr = edgeHeaders(res); // 重试途中拿到过的 EdgeOne 头留着，最后一次没带头也不丢
     while (EDGE_RETRY_STATUS.has(res.status()) && retries < delaysMs.length) {
         await sleep(delaysMs[retries++]);
         res = await fn();
+        hdr = edgeHeaders(res) || hdr;
     }
-    return { res, retries, firstStatus };
+    return { res, retries, firstStatus, hdr };
 }
