@@ -18,6 +18,7 @@ const dryRun = process.argv.includes('--dry-run');
 const DIR = process.env.SITEMAP_OUT_DIR;
 const { COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET } = process.env;
 const REGION = process.env.COS_REGION || 'ap-shanghai';
+const MULTIPART_THRESHOLD = 1024 * 1024;
 const PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 
 function cosBackend() {
@@ -28,7 +29,14 @@ function cosBackend() {
     const cos = new COS({ SecretId: COS_SECRET_ID, SecretKey: COS_SECRET_KEY, Timeout: 60 * 1000 });
     const call = (fn, args) => new Promise((ok, ng) => fn.call(cos, { Bucket: COS_BUCKET, Region: REGION, ...args }, (e, d) => (e ? ng(e) : ok(d))));
     return {
-        put: (Key, Body, { contentType, cacheControl }) => call(cos.putObject, { Key, Body, ContentType: contentType, CacheControl: cacheControl }),
+        // 超过 1 MB 走分块（每块各自签名、各自重试）：美国 runner 往上海 COS 单 PUT 上 MB 级对象会被对端断开
+        // （EPIPE 让整个进程崩）或报「签名无效」——2026-10-08 staging 演练里 2~3 MB 的分片就是这样失败的，sync-to-cos.mjs 同理
+        put: (Key, Body, { contentType, cacheControl }) => (Body.length > MULTIPART_THRESHOLD
+            ? call(cos.uploadFile, {
+                Key, Body, ContentType: contentType, CacheControl: cacheControl,
+                SliceSize: MULTIPART_THRESHOLD, ChunkSize: MULTIPART_THRESHOLD, ChunkRetryTimes: 4, onProgress: () => {},
+            })
+            : call(cos.putObject, { Key, Body, ContentType: contentType, CacheControl: cacheControl })),
         async get(Key) {
             try { return (await call(cos.getObject, { Key })).Body; } catch (e) {
                 if (e && (e.statusCode === 404 || e.code === 'NoSuchKey')) return null;
