@@ -352,3 +352,55 @@ test('重试途中拿到过的 EdgeOne 头，最后一次是连接失败也保�
     assert.equal(r.failures.length, 1);
     assert.match(r.failures[0].detail, /请求失败：fetch failed（525后重试 3 次仍失败） \[EO-LOG-UUID=u-early\]/);
 });
+
+// ---- 顶层清单的长退避窗口（overview#470 第 4 次演练：runner 到数据域名瞬断，17 秒的短退避扛不过去）----
+function failFirstN(inner, n, match) {
+    const left = new Map();
+    return async (url, init) => {
+        if (match(url)) {
+            const k = new URL(url).pathname;
+            const c = left.get(k) ?? n;
+            if (c > 0) { left.set(k, c - 1); throw new TypeError('fetch failed'); }
+        }
+        return inner(url, init);
+    };
+}
+const isTop = (url) => /\/read\/(tree|featured)\.json/.test(url);
+
+test('顶层清单连接失败 5 次后第 6 次才通：不记失败，进 retriedData，退避窗口总共约 62 秒', async () => {
+    const waits = [];
+    const f = failFirstN(fakeFetch(baseFiles(), basePages()), 5, isTop);
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(r.failures, []);
+    assert.equal(r.checked, 2);
+    assert.ok(r.retriedData.some((u) => /read\/tree\.json/.test(u)) && r.retriedData.some((u) => /read\/featured\.json/.test(u)));
+    // 两个清单各自退避 2、5、10、15、30 秒
+    assert.deepEqual(waits.slice(0, 5), [2000, 5000, 10000, 15000, 30000]);
+    assert.equal(waits.slice(0, 5).reduce((a, b) => a + b, 0), 62000);
+});
+
+test('顶层清单一直连不上：退避 5 次后记失败，失败行写明重试次数', async () => {
+    const waits = [];
+    const f = failFirstN(fakeFetch(baseFiles(), basePages()), 99, isTop);
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: f, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.equal(r.checked, 0);
+    assert.ok(r.failures.some((x) => x.id === 'read/tree.json' && /连接失败后重试 5 次仍失败/.test(x.detail)));
+    assert.ok(r.failures.some((x) => x.id === 'read/featured.json' && /连接失败后重试 5 次仍失败/.test(x.detail)));
+    assert.deepEqual(waits, [2000, 5000, 10000, 15000, 30000, 2000, 5000, 10000, 15000, 30000]);
+});
+
+test('长窗口只给顶层清单：阅读页和卡片 manifest 仍是 3 次短退避；404 仍不重试', async () => {
+    const waits = [];
+    const files = baseFiles();
+    const pageFlaky = async (url, init) => {
+        if (new URL(url).pathname === `/read/${WORK}`) throw new TypeError('fetch failed');
+        return fakeFetch(files, basePages())(url, init);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: pageFlaky, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.ok(r.failures.some((x) => x.id === WORK && /重试 3 次仍失败/.test(x.detail)));
+    assert.deepEqual(waits, [2000, 5000, 10000]);
+    const w2 = [];
+    const r2 = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch({}, {}), sleep: async (ms) => { w2.push(ms); } });
+    assert.ok(r2.failures.some((x) => /HTTP 404/.test(x.detail)));
+    assert.deepEqual(w2, []);
+});
