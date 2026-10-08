@@ -1,15 +1,23 @@
-name: Data package check (overview#470 P1)
-# 数据流程（overview#470 设计 §2）的第一步：**只做到「检查」**——克隆数据仓 → build_derived → 打包 → 上传前包检查。
-# 不连 COS 写、不上传、不上线、不动任何指针；与现有 deploy.yml 的数据发布**并行**跑，各自独立。
-#   · 目的：先让新路径在真实数据上每晚跑一遍，攒「打包是否稳定、检查有无误报、用时多少」的数据；
-#     跑稳后（约一周，由网站经理定）再按 SPLIT_DATA_FLOW 切换：代码流程去掉数据，由本流程接管上传／刷新／抽查。
-#   · 上传、刷新、上线后抽查（设计 §2 后半段）不在本文件里，切换前再加；这里没有任何 secrets。
+name: Data package check and publish (overview#470 P1)
+# 数据流程（overview#470 设计 §2）：克隆数据仓 → build_derived → 打包 → 上传前包检查 →（受闸控制）上传到数据前缀。
+#   · **默认只检查**：不连 COS 写、不上传、不动任何指针。与现有 deploy.yml 的数据发布并行跑，各自独立。
+#     只有「发布闸」（Publish gate 一步，逻辑见那一步的注释）放行时，后面的上传步骤才会跑：
+#       - 正式前缀：仓库变量 SPLIT_DATA_FLOW=true（那时 deploy.yml 不再写数据，本流程是唯一写者），且 prod_ref／text_ref 都是 main；
+#       - 演练：手动 target=staging，整条流水线写 staging/ 前缀，不碰正式前缀，不看开关；
+#       - 只传 sitemap：手动 only_sitemaps=true，只往 [前缀/]sitemaps/ 这个新目录写，不看开关（翻开关前把 sitemap 先放上去）。
+#   · COS 密钥只出现在上传步骤的 step 级 env 里，不进 job 级 env：同一个 job 里会跑数据仓里的 build_derived.py（所选 ref 的代码），
+#     它读不到密钥（ops/tests/test_data_workflow.py 守着）。
 #   · 检查沿用 deploy.yml 里的三道基础闸（ops/data-package-verify.sh，从 deploy.yml 抽出）＋ P0 的 ops/data-package-check.mjs
 #     （**只报告，不拦**，两周后校准阈值再开阻断）＋ h1 条目与 current/ 逐字节抽样比对（只报告）。
-#   · h1 文本（bundle-hashed-text，每次重写约 3.7 GB）这一路按设计 §5 走独立 job，不在检查阶段做。
+#   · 上传沿用 deploy.yml 同一套命令：decide（数据没变就跳过）→ current/ 与 h1 条目并行同步（动态并发、state 缓存、写前标记）→ 写同步标记；
+#     之后生成并上传条目 sitemap（scripts/upload-sitemaps.mjs，路由代理从 sitemaps/ 取）。state 缓存键与 deploy.yml 的正式站键相同，
+#     所以第一次接管时继承 deploy.yml 最后一次的 state。
+#   · latest.json 里的 webCommitId：打包出来的 latest.json 没有这个字段（原来由 deploy.yml 注入）。读它的人（promote=data、
+#     回滚计划、/api/version）切到 web.json 之前还在用，所以上传前从线上现行 latest.json 带过来，不让数据发布把它抹掉。
+#   · 刷新（失效）、上线后抽查、告警、h1 文本（每次重写约 3.7 GB，按设计 §5 走独立任务）在后续 PR 里加。
 #
 # 触发：每日定时（UTC 21:10，在 deploy.yml 的 20:30 之后；三仓无变化就跳过）＋手动。
-# 并发：publish-data 一组，不取消在跑的（以后上传时只有一个写者）。
+# 并发：publish-data 一组，不取消在跑的（上传时只有一个写者）。
 
 on:
   workflow_dispatch:
@@ -22,6 +30,19 @@ on:
         description: 'book-text 的分支／tag／commit（默认 main）'
         type: string
         default: main
+      target:
+        description: 'production = 正式前缀（只有仓库变量 SPLIT_DATA_FLOW=true 时才上传，否则只做检查）；staging = 演练：整条流水线写 staging/ 前缀，不碰正式前缀，不看开关'
+        type: choice
+        options: [production, staging]
+        default: production
+      only_sitemaps:
+        description: '只生成并上传条目 sitemap 到 [前缀/]sitemaps/（新目录，不动已有对象，不看 SPLIT_DATA_FLOW）；其余上传步骤全部跳过'
+        type: boolean
+        default: false
+      allow_ref_override:
+        description: '上传到正式前缀时允许 prod_ref／text_ref 不是 main（回滚＝重发上一版数据用）。默认不允许：联调分支只做检查'
+        type: boolean
+        default: false
   schedule:
     - cron: '10 21 * * *'
 
@@ -68,7 +89,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: check
     if: ${{ needs.check.outputs.should_run == 'true' }}
-    timeout-minutes: 45
+    # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时
+    timeout-minutes: 120
     env:
       IN_PROD_REF: ${{ inputs.prod_ref }}
       IN_TEXT_REF: ${{ inputs.text_ref }}
@@ -101,6 +123,46 @@ jobs:
             if ! git check-ref-format "refs/heads/$v" >/dev/null 2>&1; then echo "❌ $k 不是合法的 git ref 名：$v"; exit 1; fi
             echo "$k=$v" >> "$GITHUB_OUTPUT"
           done
+
+      # 发布闸：后面所有会写 COS 的步骤都只看这一步的输出。逻辑从上到下，第一条命中的生效：
+      #   ① target=staging（手动演练）        → 放行，写 staging/ 前缀（refs 不限，演练就是为了试联调分支）
+      #   ② 目标是正式前缀但 refs 不是 main    → 不放行（除非勾了 allow_ref_override：回滚重发上一版数据）
+      #   ③ only_sitemaps（手动）              → 放行，只写 sitemaps/ 新目录，不看开关
+      #   ④ 仓库变量 SPLIT_DATA_FLOW=true      → 放行，上传到正式前缀（此时 deploy.yml 不再写数据，本流程是唯一写者）
+      #   ⑤ 其它                               → 只做检查，不上传（deploy.yml 仍是正式前缀的写者；定时跑也走这一条）
+      # 输出：publish、sitemaps_only（只传 sitemap）、prefix（空＝正式站根，staging＝演练前缀）、why（写进摘要）。
+      - name: Publish gate
+        id: gate
+        env:
+          TARGET: ${{ inputs.target || 'production' }}
+          ONLY_SITEMAPS: ${{ inputs.only_sitemaps }}
+          ALLOW_OVERRIDE: ${{ inputs.allow_ref_override }}
+          SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
+          PROD_REF: ${{ steps.refs.outputs.prod_ref }}
+          TEXT_REF: ${{ steps.refs.outputs.text_ref }}
+        run: |
+          publish=false; sitemaps_only=false; prefix=''; why=''
+          [ "$ONLY_SITEMAPS" = true ] && sitemaps_only=true
+          if [ "$TARGET" = staging ]; then
+            publish=true; prefix=staging; why="演练：写 staging/ 前缀，不碰正式前缀"
+          elif [ "$PROD_REF" != main ] || [ "$TEXT_REF" != main ]; then
+            if [ "$ALLOW_OVERRIDE" = true ] && { [ "$sitemaps_only" = true ] || [ "$SPLIT_VAR" = true ]; }; then
+              publish=true; why="allow_ref_override：用 ${PROD_REF}／${TEXT_REF} 上传到正式前缀（回滚重发）"
+            else
+              why="prod_ref／text_ref 不是 main（${PROD_REF}／${TEXT_REF}），正式前缀只接受 main；只做检查（回滚重发请勾 allow_ref_override，且需要开关或 only_sitemaps）"
+            fi
+          elif [ "$sitemaps_only" = true ]; then
+            publish=true; why="only_sitemaps：只往正式前缀的 sitemaps/ 新目录写，不看 SPLIT_DATA_FLOW"
+          elif [ "$SPLIT_VAR" = true ]; then
+            publish=true; why="SPLIT_DATA_FLOW 已打开：上传到正式前缀"
+          else
+            why="SPLIT_DATA_FLOW 未打开：只做检查，不上传（deploy.yml 仍是正式前缀的写者）"
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "sitemaps_only=$sitemaps_only" >> "$GITHUB_OUTPUT"
+          echo "prefix=$prefix" >> "$GITHUB_OUTPUT"
+          echo "· 发布闸：publish=$publish sitemaps_only=$sitemaps_only prefix='${prefix:-（正式站根）}' — $why"
+          { echo "### 发布闸"; echo "- publish=\`$publish\`　sitemaps_only=\`$sitemaps_only\`　前缀=\`${prefix:-（根）}\`"; echo "- $why"; } >> "$GITHUB_STEP_SUMMARY"
 
       # book-text 浅拉要现压 1.75 GB 的包，实测同一个 commit 从 2.6 分变到 23 分：.git 放进 actions/cache 做增量
       # （逻辑与 deploy.yml 同一份，见 ops/clone-cached.sh 的头注释）
@@ -222,3 +284,213 @@ jobs:
           cat "$RUNNER_TEMP/parity-entry.log"
           [ "$E1" -eq 0 ] || echo "::warning title=h1 与 current/ 抽样不一致::条目比对退出码 $E1（只报告，不拦）"
           exit 0
+
+      # =====================================================================================================
+      # 上传（overview#470 P1，设计 §2）。下面每一步都只在「发布闸」放行时才跑；COS 密钥只在 step 级 env 里。
+      # 命令与 deploy.yml 的同名步骤一致（decide／state 缓存／动态并发／写前标记／同步标记），改一边要改另一边的话在注释里写明。
+      # =====================================================================================================
+
+      # latest.json 里的 webCommitId 带过来：打包出来的 latest.json 没有这个字段（原来由 deploy.yml 在打包后注入）。
+      # promote=data、回滚计划、/api/version 切到 web.json 之前还在读它；数据流程上传 latest.json 时若不带，就把它抹掉了。
+      # 取不到（首次／线上没有）就不动。同时把「线上现行的 web commit」输出给后面写同步标记用。
+      - name: Carry over webCommitId from live latest.json
+        id: carry
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
+        env:
+          PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: |
+          P="${PREFIX:+$PREFIX/}"
+          W=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/${P}latest.json?t=$(date +%s)" \
+              | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || true)
+          if printf '%s' "$W" | grep -Eq '^[0-9a-f]{40}$'; then
+            python3 - "$W" <<'PY'
+          import json, os, sys
+          p = os.path.join(os.environ['KYG_DATA_ROOT'], 'latest.json')
+          with open(p) as f:
+              d = json.load(f)
+          d['webCommitId'] = sys.argv[1]
+          with open(p, 'w') as f:
+              json.dump(d, f)
+          PY
+            echo "· 带过来线上现行 webCommitId=${W:0:12}"
+            echo "web_commit=$W" >> "$GITHUB_OUTPUT"
+          else
+            echo "· 线上 ${P}latest.json 里没有可用的 webCommitId（首次？），latest.json 保持不带该字段"
+            echo "web_commit=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # W2-3：h1 指针翻转之前记下旧 root，刷新阶段据此算「哪些条目变了」（item-changes.mjs）。取不到就留空，按全部新增处理。
+      - name: Record previous h1 root
+        id: old_root
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
+        env:
+          PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: |
+          P="${PREFIX:+$PREFIX/}"
+          R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin).get('root',''))" 2>/dev/null || true)
+          echo "old_h1_root=$R" >> "$GITHUB_OUTPUT"
+          echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
+          echo "· 发布前 h1 root：${R:-（无）}"
+
+      - name: Decide COS data sync (skip when data unchanged)
+        id: cos_decide
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: |
+          cd nextjs
+          export PROD_COMMIT="${{ steps.clone.outputs.index_sha }}"
+          export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
+          node scripts/cos-sync-decision.mjs decide
+
+      - name: COS sync state — cache key
+        id: cos_state_key
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.cos_decide.outputs.skip != 'true' }}
+        env:
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+        run: echo "bucket=$(printf '%s' "$COS_BUCKET" | sha256sum | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
+      # 键与 deploy.yml 的同名缓存相同（target 取 production／staging），第一次接管时继承 deploy.yml 最后一次的 state；
+      # 取不到或不可信（state-guard 的写前标记对不上）就退回 LIST 重建。要作废：键里的版本号加一（两个文件一起改）
+      - name: COS sync state — restore
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.cos_decide.outputs.skip != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: nextjs/.next/.sync-state.json
+          key: cos-sync-state-v2-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cos-sync-state-v2-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-
+
+      - name: COS h1 state — restore
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.cos_decide.outputs.skip != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cos-h1-state-v1-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-
+
+      # current/ 与 h1 条目两路并行（h1 文本按设计 §5 是单独任务，不在这里）。current/ 失败整步失败（数据没上线）；
+      # h1 条目失败只警告（前端默认不读 h1/），但不写同步标记，下次不会把没传全的当成已同步。
+      # 并发：两路共用 COS_TOTAL_BUDGET（80），按各路待传数动态分配（scripts/lib/cos-slots.mjs，登记目录 COS_PLAN_DIR）。
+      # 定时的夜间发布从 COS 重新 LIST 重建 state（SYNC_REBUILD_STATE=1，同 deploy.yml 的定时路径）。
+      - name: Sync data to Tencent COS — current/ + h1 entry, in parallel
+        id: cos_sync
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.cos_decide.outputs.skip != 'true' }}
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+          COS_PLAN_DIR: ${{ runner.temp }}/cos-plan
+          COS_TOTAL_BUDGET: '80'
+          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
+        run: |
+          cd nextjs
+          LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
+          rm -rf "$COS_PLAN_DIR"
+          set +e
+          ( s=$SECONDS; COS_CONCURRENCY=48 node scripts/sync-to-cos.mjs; rc=$?; echo "· current/ 一路共用时 $((SECONDS - s)) 秒（exit $rc）"; exit $rc ) > "$LOGS/current.log" 2>&1 &
+          P_CUR=$!
+          ( s=$SECONDS; node scripts/bundle-hashed.mjs && { echo "· h1 条目打包用时 $((SECONDS - s)) 秒"; COS_CONCURRENCY=32 node scripts/sync-h1-to-cos.mjs; }; rc=$?; echo "· h1 条目一路共用时 $((SECONDS - s)) 秒（exit $rc）"; exit $rc ) > "$LOGS/h1-entry.log" 2>&1 &
+          P_H1=$!
+          ( while :; do sleep 60; node scripts/sync-heartbeat.mjs "$LOGS" || true; done ) &
+          HB=$!
+          wait $P_CUR; R_CUR=$?
+          wait $P_H1;  R_H1=$?
+          kill $HB 2>/dev/null
+          for pair in "current/:current:$R_CUR" "h1 条目:h1-entry:$R_H1"; do
+            title="${pair%%:*}"; rest="${pair#*:}"; f="${rest%%:*}"; rc="${rest##*:}"
+            echo "::group::COS 同步 · $title（exit $rc）"
+            tr '\r' '\n' < "$LOGS/$f.log" | awk 'BEGIN{last=""} { if ($0 ~ /^  [a-z0-9-]+: [0-9]+\/[0-9]+ \(/) { last=$0; next } if (last != "") { print last; last="" } print } END{ if (last != "") print last }'
+            echo "::endgroup::"
+          done
+          if [ "$R_CUR" -ne 0 ]; then
+            echo "❌ current/ 同步失败（exit $R_CUR）——数据没有上线，整步失败"
+            exit 1
+          fi
+          ALL_OK=true
+          if [ "$R_H1" -ne 0 ]; then echo "::warning::h1 条目同步失败（exit $R_H1），只警告，不拦发布（前端默认不读 h1/）"; ALL_OK=false; fi
+          echo "all_ok=$ALL_OK" >> "$GITHUB_OUTPUT"
+
+      # 同步成功（current/ 那一路成功就会写新的 state）后把它存回缓存；失败或跳过时不存，免得把半截状态传给下一次
+      - name: COS sync state — save
+        if: ${{ steps.cos_sync.outcome == 'success' && steps.cos_state_key.outputs.bucket != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: nextjs/.next/.sync-state.json
+          key: cos-sync-state-v2-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: COS h1 state — save
+        if: ${{ steps.cos_sync.outputs.all_ok == 'true' && steps.cos_state_key.outputs.bucket != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            nextjs/.next/.sync-h1-state.json
+            nextjs/.next/.sync-h1-text-state.json
+          key: cos-h1-state-v1-${{ inputs.target || 'production' }}-${{ steps.cos_state_key.outputs.bucket }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # 两路都成功才写标记：下次三仓 commit 与打包脚本都没变时，据此跳过整段同步。
+      # 注意：h1 文本这一路还不在本流程里（后续 PR 加单独任务），标记目前不覆盖它——h1 文本生产无读者，见设计 §5。
+      - name: Mark COS sync complete
+        if: ${{ steps.cos_sync.outputs.all_ok == 'true' }}
+        continue-on-error: true
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+          WEB_COMMIT_ID: ${{ steps.carry.outputs.web_commit }}
+        run: |
+          cd nextjs
+          export PROD_COMMIT="${{ steps.clone.outputs.index_sha }}"
+          export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
+          node scripts/cos-sync-decision.mjs mark
+
+      # 线上还没有 sitemaps/ 时（例如从没传过）强制传一次：数据没变会在 decide 跳过同步，但路由代理需要这些对象
+      - name: Check whether sitemaps already exist
+        id: sm_present
+        if: ${{ steps.gate.outputs.publish == 'true' }}
+        env:
+          PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: |
+          P="${PREFIX:+$PREFIX/}"
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://data.kaiyuanguji.com/${P}sitemaps/sitemap-index.xml?t=$(date +%s)" || echo 000)
+          echo "· ${P}sitemaps/sitemap-index.xml → HTTP $code"
+          if [ "$code" = 200 ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+
+      # 条目 sitemap：数据有变（同步没被跳过）、只传 sitemap、或线上还没有时才生成并上传。<loc> 一律写正式站地址，
+      # 路由代理读的时候再换成本站（见 src/lib/server/sitemap-proxy.ts）。数据同步失败时不到这里（默认的成功条件）。
+      - name: Generate item sitemaps
+        id: sm_gen
+        if: ${{ steps.gate.outputs.publish == 'true' && (steps.gate.outputs.sitemaps_only == 'true' || steps.cos_decide.outputs.skip != 'true' || steps.sm_present.outputs.present != 'true') }}
+        working-directory: nextjs
+        env:
+          SITEMAP_SITE: https://www.kaiyuanguji.com
+          SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
+        run: node scripts/gen-sitemaps.mjs
+
+      - name: Upload item sitemaps
+        if: ${{ steps.sm_gen.outcome == 'success' }}
+        working-directory: nextjs
+        env:
+          SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+        run: node scripts/upload-sitemaps.mjs
