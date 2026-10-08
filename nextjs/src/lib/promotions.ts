@@ -8,6 +8,9 @@
  * 升级流程文档见：项目进展/古籍索引网站/整体设计/2026-05-Draft到Production升级流程.md
  */
 
+/** current/promotions/<草稿id末2位>.json 的后缀长度（与打包脚本 scripts/lib/promotions-source.mjs 一致） */
+export const PROMOTION_SHARD_KEY_LENGTH = 2;
+
 export interface PromotionRecord {
     production_id: string;
     type: string;

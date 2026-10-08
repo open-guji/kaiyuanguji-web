@@ -28,7 +28,7 @@ import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage } from 'book-index-ui/storage';
 import { extractType } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
-import { buildPromotionMap } from './promotions';
+import { buildPromotionMap, PROMOTION_SHARD_KEY_LENGTH } from './promotions';
 import { reportError, setRelease } from './error-report';
 import { dataVersionKey, type LatestPointer } from './data-version';
 
@@ -657,10 +657,34 @@ export function createCosStorage(): IndexStorage {
         return cached as Promise<Record<string, unknown> | null>;
     }
 
-    /** 草稿 id → 正式 id。先查 h1 的 PH 分片（只取一片）；h1 答不了才退回整张 promotions.json。 */
+    // current/promotions/<草稿id末2位>.json：数据包里按后缀拆开的升格表（每片形状同整档，几 KB）。
+    // h1 答不了时先取这一片；片取不到（旧数据包没有该目录、后缀下没有升格、网络）才退回整张表。
+    const promotionShardCache = new Map<string, Promise<Map<string, string> | null>>();
+    function lookupPromotionShard(id: string): Promise<Map<string, string> | null> {
+        const key = id.slice(-PROMOTION_SHARD_KEY_LENGTH);
+        let shard = promotionShardCache.get(key);
+        if (!shard) {
+            shard = (async () => {
+                try {
+                    const res = await fetch(await withCacheBust(`promotions/${key}.json`), { cache: 'force-cache' });
+                    return res.ok ? buildPromotionMap(await res.json()) : null;
+                } catch {
+                    return null;
+                }
+            })();
+            promotionShardCache.set(key, shard);
+        }
+        return shard;
+    }
+
+    /** 草稿 id → 正式 id。先查 h1 的 PH 分片；h1 答不了查 current/ 的分片；都答不了才退回整张 promotions.json。 */
     async function resolveCanonicalId(id: string): Promise<string> {
         const hit = await lookupPromotionH1(id);
         if (hit) return hit.promoted ?? id;
+        if (id.length >= PROMOTION_SHARD_KEY_LENGTH) {
+            const shard = await lookupPromotionShard(id);
+            if (shard) return shard.get(id) ?? id;
+        }
         return (await ensurePromotions()).get(id) ?? id;
     }
 

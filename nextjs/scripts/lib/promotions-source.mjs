@@ -89,3 +89,27 @@ export function serializePromotions(table) {
 export function buildPromotionsFileText(dir) {
     return serializePromotions(readPromotionsSource(dir));
 }
+
+/** 产物分片的后缀长度：草稿 id 末 2 位，与 bim 源档分片、h1 的 PH 分片同一套规则 */
+export const PROMOTION_SHARD_KEY_LENGTH = 2;
+
+/**
+ * 把整档表按草稿 id 末 2 位拆成产物分片 current/promotions/<后缀>.json（overview#451 分片第 3 步）。
+ * 每片形状同整档（`{ version: 1, promotions: {...} }`），客户端的 buildPromotionMap 原样可用；
+ * 返回 { 后缀: 文件文本 }，key 字典序、文本格式同 serializePromotions，所以同一张表打出的字节相同。
+ * 短于后缀长度的 id 不是合法草稿 id，整档里照旧有，分片里不放。
+ */
+export function buildPromotionShardTexts(table) {
+    const buckets = {};
+    const rows = table && typeof table === 'object' && table.promotions && typeof table.promotions === 'object'
+        ? table.promotions : {};
+    for (const id of Object.keys(rows).sort()) {
+        if (id.length < PROMOTION_SHARD_KEY_LENGTH) continue;
+        (buckets[id.slice(-PROMOTION_SHARD_KEY_LENGTH)] ??= {})[id] = rows[id];
+    }
+    const out = {};
+    for (const key of Object.keys(buckets).sort()) {
+        out[key] = serializePromotions({ version: PROMOTIONS_VERSION, promotions: buckets[key] });
+    }
+    return out;
+}

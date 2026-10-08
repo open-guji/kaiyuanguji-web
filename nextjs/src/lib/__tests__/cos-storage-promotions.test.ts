@@ -14,6 +14,7 @@ const COS_BASE = 'https://data.example.com';
 const DRAFT = '1evr5e3mct1mt'; // 末 2 位 'mt'
 const DRAFT_SAME_SHARD = '1evr5e3mcx9mt';
 const PROD = 'd59df01avcw0';
+const NOT_PROMOTED = '1evr5e3mcq0mt'; // 末 2 位与 DRAFT 同为 'mt'，但没有升格
 const OTHER = 'd59f20aowb9c'; // 末 2 位 '9c'，root 里没有这个后缀的升格
 const ROOT_KEY = 'root1';
 const SHARD_HASH = 'abcd1234';
@@ -38,6 +39,8 @@ interface Opts {
     pointerStatus?: number;
     shardStatus?: number;
     wholeFile?: Record<string, { production_id: string }>;
+    /** current/promotions/<末2位>.json：缺省＝没有这个目录（404，旧数据包）；'ok'＝有；数字＝返回该状态码 */
+    currentShard?: 'ok' | number;
 }
 
 function mockFetch(opts: Opts = {}) {
@@ -57,10 +60,17 @@ function mockFetch(opts: Opts = {}) {
         if (url.endsWith(`/h1/promotions/mt.${SHARD_HASH}.json`)) {
             return opts.shardStatus ? jsonResponse({}, false, opts.shardStatus) : jsonResponse({ [DRAFT]: PROD, [DRAFT_SAME_SHARD]: PROD });
         }
+        if (url.includes('/current/promotions/mt.json')) {
+            if (opts.currentShard === 'ok') {
+                return jsonResponse({ version: 1, promotions: { [DRAFT]: { production_id: PROD }, [DRAFT_SAME_SHARD]: { production_id: PROD } } });
+            }
+            return jsonResponse({}, false, opts.currentShard ?? 404);
+        }
         if (url.includes('/promotions.json')) {
             return jsonResponse({ version: 1, promotions: opts.wholeFile ?? { [DRAFT]: { production_id: PROD } } });
         }
         if (url.includes(`/current/entry/${PROD}.json`)) return jsonResponse({ id: PROD, title: '正式条目' });
+        if (url.includes(`/current/entry/${NOT_PROMOTED}.json`)) return jsonResponse({ id: NOT_PROMOTED, title: '未升格草稿' });
         if (url.includes(`/current/entry/${OTHER}.json`)) return jsonResponse({ id: OTHER, title: '普通条目' });
         throw new Error(`unexpected fetch: ${url}`);
     }) as unknown as typeof fetch;
@@ -126,6 +136,30 @@ describe('cos-storage：升格对照表按 PH 分片取', () => {
         const calls = mockFetch({ shardStatus: 500 });
         const item = await (await fresh()).createCosStorage().getItem(DRAFT);
         expect(item).toMatchObject({ id: PROD });
+        expect(calls.some(u => u.includes('/promotions.json'))).toBe(true);
+    });
+    it('h1 答不了、数据包有 current/promotions/ 分片：只取这一片，不下整张表', async () => {
+        const calls = mockFetch({ pointerStatus: 503, currentShard: 'ok' });
+        const storage = (await fresh()).createCosStorage();
+        const item = await storage.getItem(DRAFT);
+        expect(item).toMatchObject({ id: PROD, redirected_from: DRAFT });
+        await storage.getItem(DRAFT_SAME_SHARD);
+        expect(calls.filter(u => u.includes('/current/promotions/mt.json')).length).toBe(1);
+        expect(calls.some(u => u.includes('/promotions.json'))).toBe(false);
+    });
+
+    it('current 分片里没有这个 id：原样返回，不下整张表', async () => {
+        const calls = mockFetch({ pointerStatus: 503, currentShard: 'ok' });
+        const item = await (await fresh()).createCosStorage().getItem(NOT_PROMOTED);
+        expect(item).toMatchObject({ id: NOT_PROMOTED });
+        expect(calls.some(u => u.includes('/current/promotions/mt.json'))).toBe(true);
+        expect(calls.some(u => u.includes('/promotions.json'))).toBe(false);
+    });
+
+    it.each([404, 500])('current 分片 HTTP %i：退回整张 promotions.json', async (status) => {
+        const calls = mockFetch({ pointerStatus: 503, currentShard: status });
+        const item = await (await fresh()).createCosStorage().getItem(DRAFT);
+        expect(item).toMatchObject({ id: PROD, redirected_from: DRAFT });
         expect(calls.some(u => u.includes('/promotions.json'))).toBe(true);
     });
 });
