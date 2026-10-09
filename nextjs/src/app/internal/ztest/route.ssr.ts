@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
             'Content-Type': 'text/html; charset=utf-8',
             'Cache-Control': `${pub ? 'public, ' : ''}s-maxage=600, stale-while-revalidate=31532400, durable`,
         };
+        if (q.get('ctag') === '1') h['Cache-Tag'] = '/layout,/item/layout,/item/[id]/layout,/item/[id]/page,/item/probe';
+        if (q.get('pre') === '1') { h['X-Nextjs-Prerender'] = '1'; h['X-Nextjs-Stale-Time'] = '300'; h['X-Powered-By'] = 'Next.js'; }
         if (etag === 'strong') h['Etag'] = '"c1lw58ewiyk2l"';
         if (etag === 'weak') h['Etag'] = 'W/"c1lw58ewiyk2l"';
         if (!stream) h['Content-Length'] = String(raw.byteLength);
