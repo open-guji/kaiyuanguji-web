@@ -30,7 +30,7 @@ import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { lookupItemRedirectTraced } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
-import { cleanItemSearch } from '@/lib/item-query';
+import { bookIndexFallbackPath, cleanItemSearch } from '@/lib/item-query';
 import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
@@ -96,8 +96,10 @@ async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     }
     // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
     let res: NextResponse;
-    if (r) res = NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
-    else if (tempFallback) res = NextResponse.redirect(new URL(`/book-index?id=${id}`, req.url), 307);
+    // 回 /book-index 的 307（对照表查不了、预算内没定论）带上白名单里的详情状态参数，外部链接带的视图不丢
+    const fallback = () => NextResponse.redirect(new URL(bookIndexFallbackPath(id, req.nextUrl.searchParams), req.url), 307);
+    if (r) res = r.permanent ? NextResponse.redirect(new URL(r.to, req.url), 308) : fallback();
+    else if (tempFallback) res = fallback();
     else res = itemQueryRedirect(req);
     // 307 是「现在还不知道」的临时答案，不能进 CDN
     if (res.status === 307) noStore(res);
@@ -211,7 +213,9 @@ async function readerItemRedirect(req: NextRequest, id: string, sel: ReaderSel):
         return null;
     }
     const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
-    return NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
+    const res = NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
+    if (!r.permanent) noStore(res);
+    return res;
 }
 
 const isReaderPath = (pathname: string) => /^\/item\/[^/]+\/read\/?$/.test(pathname) || /^\/read\/[^/]+(\/[^/]+)*\/?$/.test(pathname);

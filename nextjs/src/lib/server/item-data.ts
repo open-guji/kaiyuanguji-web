@@ -278,10 +278,12 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
         const rows = shard?.promotions;
         // 打包只产出非空的合法片：版本不对、形状坏、空表都当「这条路径答不了」
-        if (shard?.version !== 1 || !rows || typeof rows !== 'object' || Object.keys(rows).length === 0) return null;
-        const to = (rows as Record<string, { production_id?: unknown }>)[id]?.production_id;
-        if (typeof to === 'string' && to !== id && isValidItemId(to)) return { status: 'promoted', to };
-        return { status: 'absent' };
+        if (shard?.version !== 1 || !rows || typeof rows !== 'object' || Array.isArray(rows) || Object.keys(rows).length === 0) return null;
+        const row = (rows as Record<string, unknown>)[id];
+        if (row === undefined) return { status: 'absent' };
+        const to = row && typeof row === 'object' ? (row as { production_id?: unknown }).production_id : undefined;
+        if (typeof to !== 'string') return null;   // 这个 id 的记录本身坏了：让 h1 来判，不当成「没升格」
+        return to !== id && isValidItemId(to) ? { status: 'promoted', to } : { status: 'absent' };
     }
 
     /** 查升格对照表：先 current/promotions 分片，答不了再走 h1（指针 → root.promotionShards → 分片）。只读当前指针指向的那一版 */

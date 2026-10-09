@@ -196,6 +196,25 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         expect(r.status).toBe(307);
         expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps']);
         expect(r.cacheControl).toBe('no-store');
+        expect(r.edgeCache).toBe('no-store');
+    });
+
+    it('回 /book-index 的 307 保留白名单里的详情状态参数，去掉白名单外的（utm 等）', async () => {
+        mockGetItem.mockRejectedValue(new Error('latest.json HTTP 503'));
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        const r = await run('/item/1j96hewiuieps?tab=lineage&utm_source=x&page=2', { 'sec-fetch-dest': 'document' });
+        expect(r.status).toBe(307);
+        expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps&tab=lineage&page=2']);
+    });
+
+    it('对照表查不了（promo-unknown）的 307 同样带白名单参数并且不缓存', async () => {
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        const r = await run('/item/1j96hewiuieps?mode=graph', { 'sec-fetch-dest': 'document' });
+        expect(r.status).toBe(307);
+        expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps&mode=graph']);
+        expect(r.edgeCache).toBe('no-store');
+        expect(r.reason).toBe('redirect:promo-unknown');
     });
 
     it('永久 308（升格、被并）不加 no-store', async () => {
@@ -204,6 +223,7 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
         expect(r.status).toBe(308);
         expect(r.cacheControl).toBeNull();
+        expect(r.edgeCache).toBeNull();
     });
 
     it('不合法的 id 不查数据', async () => {
@@ -405,6 +425,15 @@ describe('middleware.ssr：阅读页地址（overview#267／#307）', () => {
         mockGetItem.mockClear();
         expect((await run(`/read/${ZHIZHAI}`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
         expect(mockGetItem).not.toHaveBeenCalled();
+    });
+
+    it('阅读页的草稿 id 对照表查不了：307 到 /book-index，且不进 CDN（overview#491）', async () => {
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        const r = await run('/read/11sjo49td25mt/wikisource/003', { 'sec-fetch-dest': 'document' });
+        expect(r.status).toBe(307);
+        expect(r.cacheControl).toBe('no-store');
+        expect(r.edgeCache).toBe('no-store');
     });
 
     it('阅读页的条目取数出错：放过交给页面', async () => {

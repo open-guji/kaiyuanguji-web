@@ -432,7 +432,7 @@ describe('createItemFetcher.resolvePromotion：先走 current/promotions 分片�
         const { f, calls } = make(routes());
         expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
         expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, SHARD]);
-        expect(calls[1]).toContain('?v=');
+        expect(calls[1]).toBe(`${SHARD}?v=abc123`);   // 与 latest.json 的版本键一致
     });
 
     it('分片合法但没有这个 id → absent（确定没有升格），不碰 h1', async () => {
@@ -459,9 +459,21 @@ describe('createItemFetcher.resolvePromotion：先走 current/promotions 分片�
         expect(calls.some((u) => u.includes('/h1/promotions/'))).toBe(true);
     });
 
-    it('latest.json 取不到：改走 h1', async () => {
-        const { f } = make(routes({ [`${BASE}/latest.json`]: 'THROW' }));
+    it('latest.json 取不到：改走 h1（没有读 current 分片）', async () => {
+        const { f, calls } = make(routes({ [`${BASE}/latest.json`]: 'THROW' }));
         expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.some((u) => u.split('?')[0] === SHARD)).toBe(false);
+        expect(calls.some((u) => u.includes('/h1/promotions/nk.pnk00000.json'))).toBe(true);
+    });
+
+    it.each([
+        ['这个 id 的记录坏了（没有 production_id）', { [SHARD]: shardOf({ [DRAFT]: { type: 'work' } }) }],
+        ['这个 id 的记录不是对象', { [SHARD]: shardOf({ [DRAFT]: 'oops' }) }],
+        ['promotions 是数组', { [SHARD]: shardOf([] as never) }],
+    ] as [string, Routes][])('%s：让 h1 来判，不当成没升格', async (_name, extra) => {
+        const { f, calls } = make(routes(extra));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.some((u) => u.includes('/h1/promotions/'))).toBe(true);
     });
 
     it('与条目查询共用 latest.json 指针：并行时只取一次', async () => {
