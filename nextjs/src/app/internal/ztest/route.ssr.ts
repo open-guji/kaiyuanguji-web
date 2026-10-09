@@ -20,6 +20,24 @@ export async function GET(req: NextRequest) {
     const raw = Buffer.from(BODY, 'utf-8');
     // 试验 3：为什么 plainc（json、有 Content-Length、s-maxage）在 Cache Hit 上会被压，/item/*（html、流式、swr）不会？
     const CC = 'public, s-maxage=600';
+    if (mode === 'gen') { // 试验 5：按参数拼 /item/* 的响应头，单测 Etag／public／流式（?etag=strong|weak|none&pub=0|1&stream=0|1）
+        const q = new URL(req.url).searchParams;
+        const etag = q.get('etag') || 'none';
+        const pub = q.get('pub') === '1';
+        const stream = q.get('stream') !== '0';
+        const h: Record<string, string> = {
+            ...base,
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': `${pub ? 'public, ' : ''}s-maxage=600, stale-while-revalidate=31532400, durable`,
+        };
+        if (etag === 'strong') h['Etag'] = '"c1lw58ewiyk2l"';
+        if (etag === 'weak') h['Etag'] = 'W/"c1lw58ewiyk2l"';
+        if (!stream) h['Content-Length'] = String(raw.byteLength);
+        if (!stream) return new NextResponse(raw, { status: 200, headers: h });
+        const chunks: Uint8Array[] = [];
+        for (let i = 0; i < raw.byteLength; i += 8192) chunks.push(raw.subarray(i, i + 8192));
+        return new NextResponse(new ReadableStream({ start(c) { for (const ch of chunks) c.enqueue(ch); c.close(); } }), { status: 200, headers: h });
+    }
     if (mode === 'htmlc') { // html + Content-Length + s-maxage
         return new NextResponse(raw, { status: 200, headers: { ...base, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': CC, 'Content-Length': String(raw.byteLength) } });
     }
