@@ -34,7 +34,7 @@ grep -q '"\^/internal/revalidate' "$CF" || { echo "❌ 云函数路由里没有 
 test -f "$E/edge-functions/config.json" || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
 if [ "$SITEMAP" = proxy ]; then
   test ! -e "$A/sitemap-index.xml" || { echo "❌ sitemap 走路由代理，产物里不该有静态 sitemap-index.xml"; exit 1; }
-  grep -q '"\^/sitemap-proxy' "$CF" || { echo "❌ 云函数路由里没有 /sitemap-proxy"; exit 1; }
+  grep -Eq '"\^/sitemap(\\\\)?-proxy/' "$CF" || { echo "❌ 云函数路由里没有 /sitemap-proxy"; exit 1; }
 else
   test -f "$A/sitemap-index.xml" || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
   grep -q '<loc>https://www.kaiyuanguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }

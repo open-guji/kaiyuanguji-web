@@ -1262,7 +1262,7 @@ jobs:
           if [ "$SPLIT_DATA" = true ]; then
             # 反向断言：测试站（非演练）不读 staging 数据前缀，读正式站的
             ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ SPLIT 模式：测试站产物里还有 staging 数据前缀"; exit 1; }
-            test ! -e $A/sitemap-index.xml && grep -q '"\^/sitemap-proxy' nextjs/.edgeone/cloud-functions/ssr-node/config.json \
+            test ! -e $A/sitemap-index.xml && grep -Eq '"\^/sitemap(\\\\)?-proxy/' nextjs/.edgeone/cloud-functions/ssr-node/config.json \
               && echo "✓ sitemap 走路由代理（产物里无静态文件，云函数有 /sitemap-proxy）" \
               || { echo "❌ SPLIT 模式：产物里不该有静态 sitemap，且云函数路由里要有 /sitemap-proxy"; exit 1; }
           else
