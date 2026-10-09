@@ -48,7 +48,7 @@ on:
         options: [staging, production]
         default: staging
       promote:
-        description: '仅 target=production 有效。code = 只发代码（必须填 from_run，数据一个字节都不动，自动晋升用这个）；code+data = 测试站的代码与数据一起上正式站（数据上线要用户本人确认）；data = 正式站代码不动，只换数据。数据流程已拆出（仓库变量 SPLIT_DATA_FLOW=true）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
+        description: '仅 target=production 有效。code = 只发代码（必须填 from_run，数据一个字节都不动，自动晋升用这个）；code+data = 测试站的代码与数据一起上正式站（数据上线要用户本人确认）；data = 正式站代码不动，只换数据。数据流程已拆出（写死，overview#490）后只发代码：code+data 当作只发代码，data 不再支持（数据上线走 data.yml）'
         type: choice
         options: [code, code+data, data]
         default: code
@@ -76,7 +76,7 @@ on:
         type: boolean
         default: false
       rehearse_split:
-        description: '仅 target=staging：演练数据流程拆出后的代码流程（等价于只对这一次打开 SPLIT_DATA_FLOW，不动仓库变量）——不克隆、不打包、不传数据，测试站读正式站数据。下一次 push 部署会恢复原样；不会自动晋升'
+        description: '仅 target=staging：演练数据流程拆出后的代码流程（数据流程已拆出，此开关现与默认等价）——不克隆、不打包、不传数据，测试站读正式站数据。下一次 push 部署会恢复原样；不会自动晋升'
         type: boolean
         default: false
   # 每日定时兜底：数据仓的 notify-web webhook 依赖跨仓 PAT
@@ -118,17 +118,17 @@ jobs:
       - name: Compare data repo HEADs with deployed latest.json
         id: compare
         env:
-          SPLIT_DATA_FLOW: ${{ vars.SPLIT_DATA_FLOW }}
+          SPLIT_DATA_FLOW: 'true'
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "· 非定时触发，直接部署"
             exit 0
           fi
-          # overview#470 P1：SPLIT_DATA_FLOW 打开后，每晚的数据发布归数据流程（data.yml），代码流程的定时部署不再有事可做
+          # overview#470 P1：数据流程已拆出（写死，不再看仓库变量），每晚的数据发布归数据流程（data.yml），代码流程的定时部署不再有事可做
           if [ "$SPLIT_DATA_FLOW" = "true" ]; then
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
-            echo "· SPLIT_DATA_FLOW 已打开：定时的数据发布由 data.yml 负责，本流程跳过"
+            echo "· 数据流程已拆出：定时的数据发布由 data.yml 负责，本流程跳过"
             exit 0
           fi
           LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
@@ -174,7 +174,7 @@ jobs:
       text_sha: ${{ steps.sha.outputs.text_sha }}
       # overview#341：非空＝正式站直接部署这个 run 存的正式站产物（不重新构建）
       artifact_run: ${{ steps.r.outputs.artifact_run }}
-      # overview#470 P1：'true'＝数据流程已拆出（仓库变量 SPLIT_DATA_FLOW）：代码流程不克隆、不打包、不传数据，
+      # overview#470 P1：'true'＝数据流程已拆出（写死 true）：代码流程不克隆、不打包、不传数据，
       # 测试站读正式站数据前缀，sitemap 走路由代理，晋升只发代码。from_run 的晋升取那次 run 的口径（manifest 的 dataSplit）。
       split: ${{ steps.r.outputs.split }}
     steps:
@@ -221,7 +221,7 @@ jobs:
           IN_FROM_RUN: ${{ inputs.from_run }}
           IN_PROMOTE: ${{ inputs.promote }}
           GH_TOKEN: ${{ github.token }}
-          SPLIT_VAR: ${{ vars.SPLIT_DATA_FLOW }}
+          SPLIT_VAR: 'true'
           IN_REHEARSE_SPLIT: ${{ inputs.rehearse_split }}
         run: |
           REQ="${{ inputs.target || 'staging' }}"

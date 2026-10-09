@@ -457,7 +457,7 @@ class DataWorkflowCheckOnly(unittest.TestCase):
     def test_freshness_alarm_only_after_switch_and_scheduled(self):
         st = [x for x in self.wf['jobs']['check']['steps'] if x.get('name', '').startswith('Data freshness alarm')][0]
         self.assertIn("github.event_name == 'schedule'", st['if'])
-        self.assertIn("vars.SPLIT_DATA_FLOW == 'true'", st['if'])
+        self.assertNotIn('vars.', st['if'])  # overview#490：不再看仓库变量
         self.assertTrue(st.get('continue-on-error'))
         self.assertEqual(st['env']['LAG_HOURS'], '36')
         self.assertIn('data-alert', st['run'])
