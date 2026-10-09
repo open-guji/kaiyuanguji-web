@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { gzipSync } from 'node:zlib';
 import {
     runCutoverCheck, renderMarkdown, parseArgs, uiVersionFromLock, metaContent, robotsVerdict, httpGet, ITEMS,
 } from '../cutover-check.mjs';
@@ -207,6 +208,47 @@ test('httpGet：不跟跳转，读状态、头、正文', async () => {
         assert.equal(b.status, 200);
         assert.match(b.body, /kyg-cutover-check/);
         assert.equal(b.cert, null);
+    } finally {
+        Object.assign(process.env, Object.fromEntries(Object.entries(saved).filter(([, v]) => v !== undefined)));
+        srv.close();
+    }
+});
+
+test('httpGet：Content-Encoding: gzip 的正文解开成明文', async () => {
+    const xml = '<?xml version="1.0"?><sitemapindex><sitemap><loc>https://www.kaiyuanguji.com/sitemaps/work-001.xml</loc></sitemap></sitemapindex>';
+    const gz = gzipSync(Buffer.from(xml, 'utf8'));
+    const srv = http.createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'application/xml; charset=utf-8', 'content-encoding': 'gzip' });
+        res.end(gz);
+    });
+    await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+    const saved = { HTTPS_PROXY: process.env.HTTPS_PROXY, https_proxy: process.env.https_proxy };
+    delete process.env.HTTPS_PROXY; delete process.env.https_proxy;
+    try {
+        const { port } = srv.address();
+        const r = await httpGet(`http://127.0.0.1:${port}/sitemap-index.xml`);
+        assert.equal(r.status, 200);
+        assert.equal(r.body, xml);
+    } finally {
+        Object.assign(process.env, Object.fromEntries(Object.entries(saved).filter(([, v]) => v !== undefined)));
+        srv.close();
+    }
+});
+
+test('httpGet：无 Content-Encoding 的明文正文不变', async () => {
+    const xml = '<?xml version="1.0"?><urlset></urlset>';
+    const srv = http.createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'application/xml; charset=utf-8' });
+        res.end(xml);
+    });
+    await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+    const saved = { HTTPS_PROXY: process.env.HTTPS_PROXY, https_proxy: process.env.https_proxy };
+    delete process.env.HTTPS_PROXY; delete process.env.https_proxy;
+    try {
+        const { port } = srv.address();
+        const r = await httpGet(`http://127.0.0.1:${port}/sitemap-index.xml`);
+        assert.equal(r.status, 200);
+        assert.equal(r.body, xml);
     } finally {
         Object.assign(process.env, Object.fromEntries(Object.entries(saved).filter(([, v]) => v !== undefined)));
         srv.close();
