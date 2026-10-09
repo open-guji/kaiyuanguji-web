@@ -244,7 +244,7 @@ class SplitDataFlow(unittest.TestCase):
     def test_resolve_exposes_split_and_reads_variable(self):
         self.assertIn('split', self.wf['jobs']['resolve']['outputs'])
         r = [x for x in self.wf['jobs']['resolve']['steps'] if x.get('id') == 'r'][0]
-        self.assertIn('vars.SPLIT_DATA_FLOW', r['env']['SPLIT_VAR'])
+        self.assertEqual(r['env']['SPLIT_VAR'], 'true')  # overview#490：写死，不再读仓库变量
         # 三条路径（from_run 晋升、无 from_run 的晋升、测试站）都要输出 split
         self.assertEqual(r['run'].count('echo "split=$SPLIT" >> "$GITHUB_OUTPUT"'), 3)
 
@@ -323,7 +323,7 @@ class SplitDataFlow(unittest.TestCase):
 
     def test_scheduled_check_skips_when_split(self):
         c = self.wf['jobs']['check']['steps'][0]
-        self.assertIn('vars.SPLIT_DATA_FLOW', c['env']['SPLIT_DATA_FLOW'])
+        self.assertEqual(c['env']['SPLIT_DATA_FLOW'], 'true')  # overview#490：写死，不再读仓库变量
         self.assertIn('"$SPLIT_DATA_FLOW" = "true"', c['run'])
 
 
