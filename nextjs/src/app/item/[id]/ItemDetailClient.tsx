@@ -16,12 +16,12 @@ import BookDetailContent from '@/components/book-index/BookDetailContent';
  * 条目页（站内点进、直开、搜索引擎来的）从不写，元数据首页的「最近浏览」永远是空的。
  * 走到这里的 id 都是查到了的正式 id（查不到 404、被并／升格在服务端已跳走）。
  */
-export default function ItemDetailClient({ id, fallback }: { id: string; fallback: React.ReactNode }) {
+export default function ItemDetailClient({ id, fallback, initialDetail }: { id: string; fallback: React.ReactNode; initialDetail?: Record<string, unknown> }) {
     useEffect(() => { saveRecentId(id); }, [id]);
     return (
         <BimLocaleProvider>
             <Suspense fallback={fallback}>
-                <BookDetailContent id={id} />
+                <BookDetailContent id={id} initialDetail={initialDetail} />
             </Suspense>
         </BimLocaleProvider>
     );

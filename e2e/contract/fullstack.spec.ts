@@ -20,7 +20,7 @@
 import { test, expect, type APIRequestContext, type APIResponse } from '../fixtures/test';
 import { ANCHORS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { dataUrl, fetchLatest } from '../fixtures/version';
+import { dataUrl, fetchLatest, versionKey } from '../fixtures/version';
 import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions';
 
 /* ------------------------------------------------------------------ *
@@ -278,6 +278,47 @@ test.describe('新架构：跳转与 404', () => {
             checked++;
         }
         test.skip(checked === 0, '草稿候选都还活着，或读不到 h1 升格对照表（站点会 307 兜底）');
+    });
+
+    // overview#491：已升格旧 id 在 CDN 缓存未命中时，中间件超时被静默放过，页面抛 permanentRedirect 把 Location 写两遍（逗号拼成一个头），
+    // 跟随后 404。上面那条只看状态码和 Location，命中缓存的副本是对的就会放过；这里再要求跳转是中间件出的
+    // （响应头 x-kyg-item-redirect: redirect:promoted），并像浏览器地址栏输入那样带 sec-fetch-dest: document。
+    test('旧草稿 id 整页请求：Location 只有一个值，且由中间件出（x-kyg-item-redirect）', async ({ request }) => {
+        // 上一版用 DRAFT_POOL：那两个 id 根本不在升格表里（页面 404、pass:promo-absent），用例每次都落到 checked===0 被跳过，
+        // 什么也没测到（web#319 部署 run 37867007041 的日志里是 `-` 而不是 ✓）。改为从数据包的 current/promotions/<后缀>.json 分片里
+        // 现取已升格的旧 id，这样池子不会过期；旧数据包没有这些分片才跳过（分片是 web#318 起才有的）。
+        const v = await fetchLatest(request);
+        const picked: Array<{ id: string; to: string }> = [];
+        let shardsFound = 0;
+        for (const key of ['mt', '0m', '5v', 'a3', 'nk', '9c']) {
+            const res = await request.get(dataUrl(`current/promotions/${key}.json`, versionKey(v)));
+            // 404 = 这个后缀没有已升格的 id（或旧数据包没有分片）；别的错误是数据服务出问题，不能当"没分片"悄悄跳过
+            if (res.status() === 404) continue;
+            expect(res.ok(), `promotions/${key}.json 应 200 或 404，实际 ${res.status()}`).toBe(true);
+            const file = (await res.json()) as { version?: number; promotions?: Record<string, { production_id?: string }> };
+            expect(file.version, `promotions/${key}.json 格式不对：version`).toBe(1);
+            expect(typeof file.promotions, `promotions/${key}.json 格式不对：promotions`).toBe('object');
+            shardsFound++;
+            for (const [id, rec] of Object.entries(file.promotions ?? {})) {
+                if (picked.length >= 6) break;
+                if (!rec?.production_id || rec.production_id === id) continue;
+                // 先剔掉草稿条目还活着的（页面会正常 200，不是本条要测的），再算入上限，免得 6 个名额被活条目占满
+                if (await getEntry(request, id, v.commitId)) continue;
+                picked.push({ id, to: rec.production_id });
+            }
+            if (picked.length >= 6) break;
+        }
+        // 这几个后缀一片都没有 → 旧数据包（web#318 之前）或还没有升格数据，才跳过
+        test.skip(shardsFound === 0, '数据包里没有 current/promotions/ 分片（web#318 之前的数据包，或还没有任何升格）');
+        expect(picked.length, '读到了升格分片，却没挑出任何"已升格且草稿条目已撤"的旧 id，没法测跳转').toBeGreaterThan(0);
+        for (const { id, to } of picked) {
+            const res = await request.get(`${TARGET}/item/${id}`, { ...noFollow, headers: { 'sec-fetch-dest': 'document' } });
+            const why = res.headers()['x-kyg-item-redirect'] ?? '(无此头：中间件没出结果或不是本构建)';
+            expect(res.status(), `${id} 应 308；中间件原因：${why}`).toBe(308);
+            expect(locationTargets(res), `Location 应是单个正式 id，实际「${res.headers()['location'] ?? ''}」；中间件原因：${why}`)
+                .toEqual([`/item/${to}`]);
+            expect(res.headers()['x-kyg-item-redirect'], `跳转应由中间件出，实际原因：${why}`).toBe('redirect:promoted');
+        }
     });
 
     test('不存在的 id 真 404，且带 noindex', async ({ request }) => {

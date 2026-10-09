@@ -32,9 +32,14 @@ import sys
 import time
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import code_pointer  # noqa: E402
+
 DATA = "https://data.kaiyuanguji.com"
 SITES = {"production": "https://www.kaiyuanguji.com", "staging": "https://staging.kaiyuanguji.com"}
 POINTERS = {"production": f"{DATA}/latest.json", "staging": f"{DATA}/staging/latest.json"}
+# 代码指针 web.json：latest.json 带 codePointer 标记（开关打开后）时它才是「线上是哪一版代码」的依据，见 ops/code_pointer.py
+WEB_POINTERS = {"production": f"{DATA}/web.json", "staging": f"{DATA}/staging/web.json"}
 # 两种发布记录：CUT2 起 release-log 上的「Released to kyg-ssr-spike」，之前 edgeone-release 上的「Deploying to edgeone-release」
 RELEASE_RE = re.compile(r"(?:Released to kyg-ssr-spike|Deploying to edgeone-release) from @ [\w.-]+/[\w.-]+@([0-9a-f]{40})")
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
@@ -131,7 +136,7 @@ FAST_PATH = "要更快止血：EdgeOne 控制台 kyg-ssr-spike 回退到上一�
 
 
 def make_plan(target, method, web_commit, releases, pointers, resolve_commit, supports_promote, has_version,
-              skew=None, stage="start"):
+              skew=None, stage="start", web_pointers=None):
     """纯逻辑：给定历史与指针，产出计划（dict）。errors 非空 ＝ 不能执行。
 
     stage 只对 promote 路有意义（start → promote → check 分段手动触发，见 rollback.yml 顶部注释）。"""
@@ -151,8 +156,14 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         errors.append("stage=promote 只用于 target=production（测试站演练走 start → check）")
     prod_ptr = pointers.get("production") or {}
     stg_ptr = pointers.get("staging") or {}
-    current_prod = releases[0][1] if releases else (prod_ptr.get("webCommitId") or "")
-    current = current_prod if target == "production" else (stg_ptr.get("webCommitId") or "")
+    web_pointers = web_pointers or {}
+    # 各站「线上是哪一版代码」按 ops/code_pointer.py 的口径读：标了 codePointer 以 web.json 为准，否则以 latest.json.webCommitId 为准
+    code_res = {k: code_pointer.resolve(pointers.get(k), web_pointers.get(k)) for k in ("production", "staging")}
+    for k, r in code_res.items():
+        for n in r["notes"]:
+            warnings.append(f"{k}：{n}")
+    current_prod = releases[0][1] if releases else (code_res["production"]["commit"] or "")
+    current = current_prod if target == "production" else (code_res["staging"]["commit"] or "")
 
     if web_commit:
         if not SHA_RE.match(web_commit):
@@ -193,7 +204,7 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
             warnings.append(f"{resolved[:12]} 的 deploy.yml 与 main 不同：测试站按目标的旧流程重建并 verify，正式站却按 main 的流程构建，"
                             "测试站验过的不完全等于正式站要发的（根治需 deploy.yml 加 web_ref 输入，见 PR 描述）")
     if resolved and not has_version(resolved):
-        warnings.append(f"{resolved[:12]} 早于 /api/version，回滚后该接口会 404；改以数据指针 webCommitId 核对")
+        warnings.append(f"{resolved[:12]} 早于 /api/version，回滚后该接口会 404；改以代码指针（latest.json 的 webCommitId，标了 codePointer 时是 web.json）核对")
     if target == "production" and resolved and release_sha is None and method == "promote":
         warnings.append(f"{resolved[:12]} 没正式发布过——确认这是你要的版本")
     if method == "promote" and target == "production":
@@ -216,7 +227,7 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         steps.append(f"它绿了之后，再跑 Rollback：web_commit={short} stage=check")
     else:
         site = "www" if target == "production" else "测试站"
-        steps.append(f"核对{site}数据指针 webCommitId ＝ {short}、{site} /api/version（若有），最多等 5 分钟")
+        steps.append(f"核对{site}代码指针 ＝ {short}（latest.json 标了 codePointer 时看 web.json，否则看 latest.json 的 webCommitId）、{site} /api/version（若有），最多等 5 分钟")
 
     return {
         "target": target,
@@ -228,8 +239,10 @@ def make_plan(target, method, web_commit, releases, pointers, resolve_commit, su
         "chosen_by": chosen_by,
         "release_sha": release_sha or "",
         "has_version_endpoint": bool(resolved and has_version(resolved)),
-        "data_pointer": {k: {f: v.get(f) for f in ("commitId", "productionCommitId", "textCommitId", "webCommitId", "bundleDate")}
+        "data_pointer": {k: {f: v.get(f) for f in ("commitId", "productionCommitId", "textCommitId", "webCommitId", "bundleDate", "codePointer")}
                          for k, v in pointers.items()},
+        "code_pointer": {k: {"commit": r["commit"], "source": r["source"], "marked": r["marked"], "mismatch": r["mismatch"]}
+                         for k, r in code_res.items()},
         "steps": steps,
         "warnings": warnings,
         "errors": errors,
@@ -251,6 +264,8 @@ def summary_md(plan, dry_run):
     ]
     for k, p in plan["data_pointer"].items():
         lines.append(f"| {k} 数据指针 | commit `{s(p.get('commitId'))}` · web `{s(p.get('webCommitId'))}` · {p.get('bundleDate') or '—'} |")
+    for k, c in (plan.get("code_pointer") or {}).items():
+        lines.append(f"| {k} 代码指针（生效） | `{s(c['commit'])}`（来自 {c['source']}{'，两处不一致' if c['mismatch'] else ''}） |")
     lines += ["", "**将执行：**", ""] + [f"{i}. {t}" for i, t in enumerate(plan["steps"], 1)]
     if plan["warnings"]:
         lines += ["", "**注意：**", ""] + [f"- ⚠️ {w}" for w in plan["warnings"]]
@@ -276,13 +291,14 @@ def main():
     legacy = git("log", a.legacy_release_ref, "--format=%H%x09%s", "-n", "300", check=False) or ""
     releases = merged_releases(log, legacy)
     pointers = {k: fetch_json(u) for k, u in POINTERS.items()}
+    web_pointers = {k: fetch_json(u) for k, u in WEB_POINTERS.items()}
 
     def resolve_commit(c):
         return git("rev-parse", "--verify", "--quiet", f"{c}^{{commit}}", check=False)
 
     plan = make_plan(a.target, a.method, a.web_commit.strip(), releases, pointers,
                      resolve_commit, deploy_supports_promote, has_version_endpoint,
-                     skew=lambda sha: pipeline_skew(sha, a.main_ref), stage=a.stage)
+                     skew=lambda sha: pipeline_skew(sha, a.main_ref), stage=a.stage, web_pointers=web_pointers)
     md = summary_md(plan, a.dry_run)
     print(md)
     print(json.dumps(plan, ensure_ascii=False, indent=1))

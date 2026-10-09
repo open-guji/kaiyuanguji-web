@@ -26,6 +26,11 @@ import { useSiteT } from '@/i18n/use-site-t';
 
 interface BookDetailContentProps {
     id: string;
+    /**
+     * 服务端（/item/[id]）已取好的条目 JSON，作为详情首屏种子，主条目不再重取。
+     * 服务端已处理过升格／被并跳转，所以带了种子就不再跑下面的客户端重定向探测。
+     */
+    initialDetail?: Record<string, unknown>;
 }
 
 /** 详情数据 + 网站特有字段 */
@@ -58,7 +63,7 @@ function resolveFeedbackUrl(): string {
     return '/api/feedback';
 }
 
-export default function BookDetailContent({ id }: BookDetailContentProps) {
+export default function BookDetailContent({ id, initialDetail }: BookDetailContentProps) {
     const { source } = useSource();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -71,11 +76,12 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
     //     同时把原 draft id 写到 ?redirected_from=...，给 banner 用。
     //   - 用户在 banner 上点「返回草稿」会跳到 ?id=<draft>&no_redirect=true，
     //     此时跳过自动 redirect，让用户看 tombstone 内容。
+    const seeded = !!initialDetail;
     const noRedirect = searchParams.get('no_redirect') === 'true';
     const redirectedFrom = searchParams.get('redirected_from');
 
     useEffect(() => {
-        if (noRedirect) return;
+        if (noRedirect || seeded) return;
         let cancelled = false;
         if (!transport.getEntry) return;
         transport.getEntry(id).then((entry) => {
@@ -89,7 +95,15 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             }
         }).catch(() => { /* 静默：详情正常加载会自己报错 */ });
         return () => { cancelled = true; };
-    }, [id, transport, router, searchParams, noRedirect]);
+    }, [id, transport, router, searchParams, noRedirect, seeded]);
+
+    // 与 cos-storage 的 getItem 同一处理：Entity 的 primary_name 同步成 title
+    const seedDetail = useMemo(() => {
+        if (!initialDetail) return undefined;
+        const d = { ...initialDetail };
+        if (d.type === 'entity' && !d.title && d.primary_name) d.title = d.primary_name;
+        return d as unknown as IndexDetailData;
+    }, [initialDetail]);
 
     const handleReturnToDraft = useCallback(() => {
         if (!redirectedFrom) return;
@@ -242,6 +256,7 @@ export default function BookDetailContent({ id }: BookDetailContentProps) {
             <BookDetailLayout
                 id={id}
                 transport={transport}
+                initialDetail={seedDetail}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 activeJuan={activeJuan}

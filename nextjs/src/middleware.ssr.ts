@@ -28,12 +28,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
-import { resolveItemRedirect } from '@/lib/server/item-redirect';
+import { lookupItemRedirectTraced } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
-import { cleanItemSearch } from '@/lib/item-query';
+import { bookIndexFallbackPath, cleanItemSearch } from '@/lib/item-query';
 import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
+import { sitemapNameFromPath } from '@/lib/server/sitemap-proxy';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -64,29 +65,22 @@ function fetcher() {
 }
 
 /**
- * 被并／升格跳转的判断（overview#322「首次打开报错、刷新就好」）：
- * - 取条目先走 current/（latest.json → current/entry，2 跳；原先 h1 指针 → 根清单 → 分片 → 条目 4 跳串行）。
+ * 被并／升格跳转的判断（overview#322「首次打开报错、刷新就好」，overview#491）：
+ * - 取条目只走 current/（latest.json → current/entry，2 跳）；草稿 id 的升格对照表与它并行查。
  *   10-02 正式站实测：冷 id 的整页请求 2% 被边缘直接断开（无响应头），中间件不取数的同批请求 0 断，
  *   冷边缘实例上串着发的子请求越少越好。
  * - 整段判断限时 REDIRECT_BUDGET_MS，到时放行交给页面（页面里同一套跳转兜底），不让整页请求挂在边缘上等子请求。
+ *   2s 时测试站抽样仍有 6/10、正式站 3/10 的旧 id 整页请求在预算内没出结果（诊断头 pass:budget(2000ms,entry=miss,promo=pending)，
+ *   对照表 3 跳串行没返回）；升格查表改走 current/promotions 分片（深度 2）之后放宽到 3s，仍留足余量不让请求挂在边缘上。
+ * - 每个 /item 响应都带 x-kyg-item-redirect 头说明跳或不跳的原因（见 lookupItemRedirectTraced）。
+ * - 草稿 id 在预算内没有定论（pass:budget／pass:error）时不再放给页面：页面在 ISR 缓存未命中时抛 permanentRedirect 会把 Location
+ *   写两遍，并被 CDN 缓存（s-maxage 3600、durable）；这里改出一个不缓存的 307 到 /book-index?id=<id>，由客户端查升格表
+ *   （与对照表查不了时的 307 是同一条路）。正式 id（被并条目）没有这条退路（/book-index?id=<正式 id> 会 308 回来），仍交给页面。
  */
-const REDIRECT_BUDGET_MS = 2_000;
+const REDIRECT_BUDGET_MS = 3_000;
+const REASON_HEADER = 'x-kyg-item-redirect';
 
-async function lookupItemRedirect(id: string) {
-    const f = fetcher();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const budget = new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(`超过 ${REDIRECT_BUDGET_MS}ms`)), REDIRECT_BUDGET_MS);
-    });
-    try {
-        return await Promise.race([
-            (async () => resolveItemRedirect(id, await f.getItem(id, { prefer: 'current' }), f.resolvePromotion))(),
-            budget,
-        ]);
-    } finally {
-        clearTimeout(timer);
-    }
-}
+const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS);
 
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     // RSC 导航与预取：页面的跳转编码在 RSC 负载里，不受 Location 重复影响，不必多查一次
@@ -94,14 +88,28 @@ async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     if (dest && dest !== 'document') return NextResponse.next();
     const id = req.nextUrl.pathname.slice('/item/'.length);
     if (!isValidItemId(id)) return NextResponse.next();
-    try {
-        const r = await lookupItemRedirect(id);
-        // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
-        if (r) return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
-    } catch (err) {
-        console.warn(`[middleware] /item/${id} 跳转判断失败，交给页面：${(err as Error).message}`);
+    const { redirect: r, reason } = await lookupItemRedirect(id);
+    const undecided = !r && (reason.startsWith('pass:budget') || reason.startsWith('pass:error'));
+    const tempFallback = undecided && parseItemId(id)?.status === 'draft';
+    if (undecided) {
+        console.warn(`[middleware] /item/${id} 跳转判断没出结果，${tempFallback ? '临时 307 交给客户端查表' : '交给页面'}：${reason}`);
     }
-    return itemQueryRedirect(req);
+    // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
+    let res: NextResponse;
+    // 回 /book-index 的 307（对照表查不了、预算内没定论）带上白名单里的详情状态参数，外部链接带的视图不丢
+    const fallback = () => NextResponse.redirect(new URL(bookIndexFallbackPath(id, req.nextUrl.searchParams), req.url), 307);
+    if (r) res = r.permanent ? NextResponse.redirect(new URL(r.to, req.url), 308) : fallback();
+    else if (tempFallback) res = fallback();
+    else res = itemQueryRedirect(req);
+    // 307 是「现在还不知道」的临时答案，不能进 CDN
+    if (res.status === 307) noStore(res);
+    res.headers.set(REASON_HEADER, tempFallback ? `${reason};fallback:307` : reason);
+    return res;
+}
+
+function noStore(res: NextResponse): void {
+    res.headers.set('Cache-Control', 'no-store');
+    res.headers.set('Eo-Cdn-Cache-Control', 'no-store');
 }
 
 /**
@@ -197,20 +205,33 @@ async function readerPathRedirect(req: NextRequest): Promise<NextResponse | null
 async function readerItemRedirect(req: NextRequest, id: string, sel: ReaderSel): Promise<NextResponse | null> {
     const dest = req.headers.get('sec-fetch-dest');
     if (dest && dest !== 'document') return null;
-    try {
-        const r = await lookupItemRedirect(id);
-        if (!r) return null;
-        const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
-        return NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
-    } catch (err) {
-        console.warn(`[middleware] /read/${id} 跳转判断失败，交给页面：${(err as Error).message}`);
+    const { redirect: r, reason } = await lookupItemRedirect(id);
+    if (!r) {
+        if (reason.startsWith('pass:budget') || reason.startsWith('pass:error')) {
+            console.warn(`[middleware] /read/${id} 跳转判断没出结果，交给页面：${reason}`);
+        }
         return null;
     }
+    const target = r.to.match(/^\/item\/([0-9a-z]+)$/)?.[1];
+    const res = NextResponse.redirect(new URL(target ? readerPath(target, sel) : r.to, req.url), r.permanent ? 308 : 307);
+    if (!r.permanent) noStore(res);
+    return res;
 }
 
 const isReaderPath = (pathname: string) => /^\/item\/[^/]+\/read\/?$/.test(pathname) || /^\/read\/[^/]+(\/[^/]+)*\/?$/.test(pathname);
 
+// overview#470 P1：条目 sitemap 走路由代理（lib/server/sitemap-proxy.ts）。构建时设了 NEXT_PUBLIC_SITEMAP_PROXY=1 才改写；
+// 不设就是 public/ 里的静态文件（现行），这里放过。matcher 必须是字面量，所以路径总是进中间件，由这个开关决定动不动。
+const SITEMAP_PROXY = process.env.NEXT_PUBLIC_SITEMAP_PROXY === '1';
+
+function sitemapRewrite(req: NextRequest): NextResponse {
+    const name = SITEMAP_PROXY ? sitemapNameFromPath(req.nextUrl.pathname) : null;
+    if (!name) return NextResponse.next();
+    return NextResponse.rewrite(new URL(`/sitemap-proxy/${name}`, req.url));
+}
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+    if (req.nextUrl.pathname === '/sitemap-index.xml' || req.nextUrl.pathname.startsWith('/sitemaps/')) return sitemapRewrite(req);
     if (isReaderPath(req.nextUrl.pathname)) return (await readerPathRedirect(req)) ?? NextResponse.next();
     const reader = await readerRedirect(req);
     if (reader) return reader;
@@ -218,5 +239,5 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*'],
+    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name'],
 };

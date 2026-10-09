@@ -1,0 +1,182 @@
+/**
+ * 条目 sitemap 上传到数据前缀（overview#470 P1，设计 §1「sitemap」；路由代理见 src/lib/server/sitemap-proxy.ts）。
+ *
+ * gen-sitemaps.mjs 把 sitemap 写成：
+ *   <dir>/sitemap-index.xml          索引
+ *   <dir>/sitemaps/<名>.xml           work／book／collection／entity 分片与 nodes-001
+ * 这里把它们传到 `<前缀>/sitemaps/<名>.xml`（索引传到 `<前缀>/sitemaps/sitemap-index.xml`），站点的路由代理从这里取。
+ *
+ * 纯逻辑，COS 访问由调用方注入（backend），单测用内存后端。要点：
+ *   · 先传分片、**索引最后传**——索引一换，读到的就是完整的一版，不会出现"索引列了还没传上去的分片"；
+ *   · 传之前检查：名字必须在路由代理的白名单里（不在白名单的传上去也没人读，说明生成端出了问题）；
+ *     索引里列的每个分片文件都在；所有 <loc> 都是正式站地址（数据前缀里只存一份、读的时候再换成本站）；
+ *     每个文件以 </urlset> 或 </sitemapindex> 收尾（挡截断）；
+ *   · 传完回读索引核对字节数；
+ *   · 最后清掉前缀下已经不在这一版里的旧分片（只动名字合规的 .xml；清理失败只警告）。
+ */
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** 数据前缀里存的 sitemap 用的站点地址；与 sitemap-proxy.ts 的 STORED_SITE 相同（单测比对） */
+export const STORED_SITE = 'https://www.kaiyuanguji.com';
+
+/** 路由代理允许的名字；与 sitemap-proxy.ts 的 NAME_RE 相同（单测比对源文件） */
+export const NAME_RE = /^(?:sitemap-index|(?:work|book|collection|entity)-\d{3,}|nodes-001)$/;
+
+/** sitemap 协议上限：每片最多 50,000 个地址、未压缩最大 50 MB */
+export const MAX_URLS_PER_SHARD = 50_000;
+export const MAX_SHARD_BYTES = 50 * 1024 * 1024;
+/**
+ * 旧分片至少放多久才清：站点路由给边缘缓存 s-maxage 一小时，缓存里的旧索引最迟一小时后失效；
+ * 留一天，免得清掉缓存里的旧索引还在引用的分片（读到 404）
+ */
+export const PRUNE_MIN_AGE_MS = 24 * 3600 * 1000;
+
+export const CONTENT_TYPE = 'application/xml; charset=utf-8';
+/** 数据前缀里的缓存头；站点路由再给边缘加 s-maxage（一小时） */
+export const CACHE_CONTROL = 'public, max-age=300';
+
+/**
+ * 发布标记：`<前缀>/sitemaps/_meta.json`，记录这一版 sitemap 是用哪两个数据 commit 生成的。**所有分片和索引都传完、回读核对过之后**
+ * 才写——它存在且与当前数据 commit 一致，就说明这版 sitemap 完整发布过；没有或不一致（上次传到一半失败、数据又变了）就该重传。
+ * 名字不在路由代理的白名单里（也不是 .xml），所以不会被对外提供，也不会被清旧分片的逻辑碰到。
+ */
+export function metaKey(prefix) {
+    const p = String(prefix || '').replace(/^\/+|\/+$/g, '');
+    return `${p ? `${p}/` : ''}sitemaps/_meta.json`;
+}
+
+export function sitemapKey(prefix, name) {
+    const p = String(prefix || '').replace(/^\/+|\/+$/g, '');
+    return `${p ? `${p}/` : ''}sitemaps/${name}.xml`;
+}
+
+/** 看目录，返回 { shards: [{name, file}], index: {name, file}, errors: [] }，不碰网络 */
+export function planSitemaps(dir) {
+    const errors = [];
+    const shards = [];
+    const shardDir = join(dir, 'sitemaps');
+    if (existsSync(shardDir)) {
+        for (const f of readdirSync(shardDir).sort()) {
+            if (!f.endsWith('.xml')) continue;
+            const name = f.slice(0, -4);
+            if (!NAME_RE.test(name) || name === 'sitemap-index') { errors.push(`分片名不在路由代理的白名单里：sitemaps/${f}`); continue; }
+            shards.push({ name, file: join(shardDir, f) });
+        }
+    } else {
+        errors.push(`没有 ${shardDir}`);
+    }
+    const indexFile = join(dir, 'sitemap-index.xml');
+    if (!existsSync(indexFile)) errors.push(`没有 ${indexFile}`);
+    if (!shards.length) errors.push('没有任何分片');
+    return { shards, index: { name: 'sitemap-index', file: indexFile }, errors };
+}
+
+/** 检查内容；返回错误列表（空＝通过）。texts: { [name]: xml } 含 'sitemap-index' */
+export function checkSitemaps(plan, texts, site = STORED_SITE) {
+    const errors = [];
+    const base = site.replace(/\/$/, '');
+    for (const [name, xml] of Object.entries(texts)) {
+        const want = name === 'sitemap-index' ? 'sitemapindex' : 'urlset';
+        if (!xml.trimStart().startsWith('<?xml')) errors.push(`${name}：不是 XML`);
+        if (!new RegExp(`</${want}>\\s*$`).test(xml)) errors.push(`${name}：没有以 </${want}> 收尾（截断或不是 sitemap）`);
+        if (name !== 'sitemap-index') {
+            const n = (xml.match(/<loc>/g) || []).length;
+            if (n > MAX_URLS_PER_SHARD) errors.push(`${name}：${n} 个地址，超过 sitemap 协议的 ${MAX_URLS_PER_SHARD} 上限（SITEMAP_PER_SHARD 设大了？）`);
+            if (Buffer.byteLength(xml) > MAX_SHARD_BYTES) errors.push(`${name}：${Buffer.byteLength(xml)} 字节，超过 sitemap 协议的 50 MB 上限`);
+        }
+        for (const m of xml.matchAll(/<loc>([^<]*)<\/loc>/g)) {
+            if (!m[1].startsWith(`${base}/`)) { errors.push(`${name}：<loc> 不是正式站地址（${m[1].slice(0, 80)}）`); break; }
+        }
+    }
+    const idx = texts['sitemap-index'];
+    if (idx) {
+        const have = new Set(plan.shards.map((s) => s.name));
+        const listed = [...idx.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1].slice(base.length + 1));
+        for (const p of listed) {
+            const m = p.match(/^sitemaps\/([^/]+)\.xml$/);
+            if (p === 'sitemap.xml') continue;               // 静态页那一片由站点自己出，不走代理
+            if (!m) { errors.push(`sitemap-index：不认识的地址 ${p}`); continue; }
+            if (!have.has(m[1])) errors.push(`sitemap-index 列了 ${p}，但目录里没有这个分片`);
+        }
+        const listedNames = new Set(listed.map((p) => (p.match(/^sitemaps\/([^/]+)\.xml$/) || [])[1]).filter(Boolean));
+        for (const s of plan.shards) if (!listedNames.has(s.name)) errors.push(`分片 ${s.name} 不在索引里（传上去也没人引用）`);
+    }
+    return errors;
+}
+
+/**
+ * 传。backend: { put(key, body, { contentType, cacheControl }), get(key) → Buffer|null,
+ *   list(prefix) → [{ key, lastModified(毫秒时间戳) }], del(keys)（有删不掉的要抛错）}
+ * 返回 { uploaded, bytes, pruned, warnings }；检查不过或传失败抛错。dryRun 只检查、不动 backend。
+ */
+export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now(), meta = null }) {
+    // 并发数非正：Array.from 不会起任何 worker，分片一个没传、索引却照传——先拒绝
+    if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error(`concurrency 必须是正整数：${concurrency}`);
+    if (meta !== null && (typeof meta !== 'object' || Array.isArray(meta))) throw new Error('meta 必须是对象');
+    const plan = planSitemaps(dir);
+    const texts = {};
+    if (!plan.errors.length) {
+        for (const s of plan.shards) texts[s.name] = readFileSync(s.file, 'utf-8');
+        texts[plan.index.name] = readFileSync(plan.index.file, 'utf-8');
+    }
+    const errors = [...plan.errors, ...(plan.errors.length ? [] : checkSitemaps(plan, texts, site))];
+    if (errors.length) throw new Error(`sitemap 检查没过：\n  - ${errors.join('\n  - ')}`);
+    const total = plan.shards.length + 1;
+    const bytes = Object.values(texts).reduce((n, t) => n + Buffer.byteLength(t), 0);
+    log(`sitemap：${plan.shards.length} 个分片＋索引，共 ${(bytes / 1048576).toFixed(1)} MB，目标前缀 ${prefix || '（根）'}${dryRun ? '（dry-run，不上传）' : ''}`);
+    if (dryRun) return { uploaded: 0, bytes, pruned: 0, warnings: [], planned: total };
+
+    const putMeta = { contentType: CONTENT_TYPE, cacheControl: CACHE_CONTROL };
+    // 分片并发传，全部成功后才传索引
+    const queue = [...plan.shards];
+    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+        for (let s = queue.shift(); s; s = queue.shift()) {
+            await withRetry(() => backend.put(sitemapKey(prefix, s.name), Buffer.from(texts[s.name], 'utf-8'), putMeta), `传 ${s.name}`, log, retryDelayMs);
+        }
+    });
+    await Promise.all(workers);
+    const idxKey = sitemapKey(prefix, 'sitemap-index');
+    await withRetry(() => backend.put(idxKey, Buffer.from(texts['sitemap-index'], 'utf-8'), putMeta), '传 sitemap-index', log, retryDelayMs);
+
+    // 回读索引核对
+    const back = await backend.get(idxKey);
+    const want = Buffer.byteLength(texts['sitemap-index']);
+    if (!back || back.length !== want) throw new Error(`回读 ${idxKey} 不一致：期望 ${want} 字节，读到 ${back ? back.length : '（空）'}`);
+
+    // 发布标记：最后写（上面所有对象都传完、索引回读核对过），写不了就让这次发布失败——标记缺失会导致下一次重传，不会悄悄丢
+    if (meta) {
+        const body = Buffer.from(JSON.stringify({ ...meta, uploadedAt: new Date(now).toISOString(), shards: plan.shards.length }, null, 2) + '\n', 'utf-8');
+        await withRetry(() => backend.put(metaKey(prefix), body, { contentType: 'application/json; charset=utf-8', cacheControl: 'no-store' }), '写发布标记', log, retryDelayMs);
+    }
+
+    // 清旧分片（只动合规的名字、且放满 pruneMinAgeMs 的；失败只警告）。
+    // 不立刻清：边缘缓存里的旧索引（最长一小时）可能还引用着它们，立刻删会让那一小时里读到 404。
+    // 同名分片被新版覆盖是有意的（路由代理按固定名字取）：新旧两版短时间混在一起，对 sitemap 只是地址集略有出入，无害；
+    // 并发的两次发布由 workflow 的 publish-data 并发组挡住。
+    const warnings = [];
+    let pruned = 0;
+    try {
+        const keep = new Set([...plan.shards.map((s) => sitemapKey(prefix, s.name)), idxKey]);
+        const dirPrefix = sitemapKey(prefix, 'x').slice(0, -'x.xml'.length);
+        const stale = (await backend.list(dirPrefix))
+            .filter(({ key: k, lastModified }) => !keep.has(k) && k.endsWith('.xml') && NAME_RE.test(k.slice(dirPrefix.length).replace(/\.xml$/, ''))
+                && Number.isFinite(lastModified) && now - lastModified >= pruneMinAgeMs)
+            .map(({ key }) => key);
+        if (stale.length) { await backend.del(stale); pruned = stale.length; log(`清理旧分片 ${stale.length} 个：${stale.slice(0, 5).join(', ')}${stale.length > 5 ? ' …' : ''}`); }
+    } catch (e) {
+        warnings.push(`清理旧分片失败（下次再试）：${e && e.message}`);
+        log(`::warning::${warnings[warnings.length - 1]}`);
+    }
+    return { uploaded: total + (meta ? 1 : 0), bytes, pruned, warnings };
+}
+
+async function withRetry(fn, what, log, delayMs, tries = 3) {
+    for (let i = 1; ; i++) {
+        try { return await fn(); } catch (e) {
+            if (i >= tries) throw new Error(`${what}失败（重试 ${tries} 次）：${e && e.message}`);
+            log(`· ${what}失败（${e && e.message}），${(i * delayMs) / 1000} 秒后重试`);
+            await new Promise((r) => setTimeout(r, i * delayMs));
+        }
+    }
+}

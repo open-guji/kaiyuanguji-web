@@ -8,8 +8,13 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { hasPromotionsSource, PROMOTIONS_DIRNAME, PROMOTIONS_FILENAME } from './promotions-source.mjs';
 
-/** book-index 根目录里网站要原样带上的站点内容文件 */
+/**
+ * book-index 根目录里网站要带上的站点内容文件。
+ * 其中 promotions.json 有两种源形状（整档，或 bim#139 的 promotions/<末2位>.json 分片，见 promotions-source.mjs）：
+ * 产物里仍是一份整档，但源档在不在由 hasPromotionsSource 判，不是这里的 existsSync。
+ */
 export const SITE_CONTENT_FILES = [
     'resource.json',
     'resource-catalog.json',
@@ -31,7 +36,8 @@ export function assertProductionDir(dir) {
 
 /** 站点内容文件有缺就抛错，列出缺哪几个 */
 export function assertSiteContentFiles(dir) {
-    const missing = SITE_CONTENT_FILES.filter((f) => !existsSync(join(dir, f)));
+    const missing = SITE_CONTENT_FILES.filter((f) => (f === PROMOTIONS_FILENAME ? !hasPromotionsSource(dir) : !existsSync(join(dir, f))))
+        .map((f) => (f === PROMOTIONS_FILENAME ? `${f}（或 ${PROMOTIONS_DIRNAME}/ 分片目录）` : f));
     if (missing.length > 0) {
         throw new Error(`book-index（正式仓）根目录缺站点内容文件：${missing.join('、')}（${dir}）`);
     }

@@ -21,9 +21,10 @@
  * 不是督促数据整理；前提不在了就没有可断言的东西，为此挡住部署是错的。
  * 跳过会带着原因出现在 Playwright 报告里，覆盖真的掉了看得见。
  */
-import { test, type APIRequestContext } from '@playwright/test';
+import { test, type APIRequestContext, type Page } from '@playwright/test';
 import { DATA_BASE, TARGET } from './anchors';
 import { dataUrl, fetchLatest, type DataVersion } from './version';
+import { describeFailure, getWithEdgeRetry } from './edge-retry';
 
 /* ------------------------------------------------------------------ *
  * 前端版本
@@ -116,20 +117,31 @@ export async function requireTextFile(request: APIRequestContext, id: string, re
 }
 
 async function hasTextFile(request: APIRequestContext, id: string, relPath: string): Promise<boolean> {
-    const ptr = await request.get(`${DATA_BASE}/h1/text-manifest-root.json?_=${Math.floor(Date.now() / 60000)}`);
+    // 503／522／524／525 是边缘瞬时错误（overview#484），退避 2s／5s／10s 重试；仍失败才抛，信息里带 EO-LOG-UUID 等头
+    const get = async (url: string, method: 'get' | 'head' = 'get') => {
+        const { res, retries, firstStatus, hdr } = await getWithEdgeRetry(() => request[method](url));
+        return { res, why: describeFailure(res, retries, firstStatus, hdr) };
+    };
+    const { res: ptr, why: ptrWhy } = await get(`${DATA_BASE}/h1/text-manifest-root.json?_=${Math.floor(Date.now() / 60000)}`);
     // 指针确实不存在（404）才是旧布局，退回现行路径；其余失败（5xx、网络错）抛出，不当成「数据没上线」而跳过
-    if (ptr.status() === 404) return (await request.head(`${DATA_BASE}/current/items/${id}/${relPath}`)).ok();
-    if (!ptr.ok()) throw new Error(`h1/text-manifest-root.json 取不到：HTTP ${ptr.status()}`);
+    if (ptr.status() === 404) {
+        // 退回现行路径的 HEAD 也走重试；只有 200 算有、404 算没有，其余（含重试后仍是 5xx）抛出，不当成「没有」而跳过
+        const { res: head, why: headWhy } = await get(`${DATA_BASE}/current/items/${id}/${relPath}`, 'head');
+        if (head.ok()) return true;
+        if (head.status() === 404) return false;
+        throw new Error(`current/items/${id}/${relPath} 取不到：${headWhy}`);
+    }
+    if (!ptr.ok()) throw new Error(`h1/text-manifest-root.json 取不到：${ptrWhy}`);
     const root = (await ptr.json()).root as string | undefined;
     if (!root) throw new Error('h1/text-manifest-root.json 里没有 root');
-    const rootRes = await request.get(`${DATA_BASE}/h1/text-roots/${root}`);
-    if (!rootRes.ok()) throw new Error(`h1/text-roots/${root} 取不到：HTTP ${rootRes.status()}`);
+    const { res: rootRes, why: rootWhy } = await get(`${DATA_BASE}/h1/text-roots/${root}`);
+    if (!rootRes.ok()) throw new Error(`h1/text-roots/${root} 取不到：${rootWhy}`);
     const rootDoc = await rootRes.json() as { shardKeyLength: number; shards: Record<string, string> };
     const key = id.slice(-rootDoc.shardKeyLength);
     const shardHash = rootDoc.shards[key];
     if (!shardHash) return false; // 根清单里没有这个分片：这本书确实没有文本
-    const shardRes = await request.get(`${DATA_BASE}/h1/text-manifest/${key}.${shardHash}.json`);
-    if (!shardRes.ok()) throw new Error(`h1/text-manifest/${key}.${shardHash}.json 取不到：HTTP ${shardRes.status()}`);
+    const { res: shardRes, why: shardWhy } = await get(`${DATA_BASE}/h1/text-manifest/${key}.${shardHash}.json`);
+    if (!shardRes.ok()) throw new Error(`h1/text-manifest/${key}.${shardHash}.json 取不到：${shardWhy}`);
     const shard = await shardRes.json() as Record<string, Record<string, string>>;
     return Boolean(shard[id]?.[relPath]);
 }
@@ -237,4 +249,14 @@ export async function pickEmptySample(
         if (isEmpty(entry)) return { id, entry };
     }
     return null;
+}
+
+/**
+ * 阅读器右侧「阅读设置」侧栏（overview#463，book-index-ui 新版）：专名线、标点等开关收在里面，默认收起。
+ * 旧版 UI 没有这个键、开关直接在顶栏，此时什么也不做，所以新旧版都能跑。
+ */
+export async function setReaderSettings(page: Page, open: boolean): Promise<void> {
+    const btn = page.getByRole('button', { name: /^(阅读设置|閱讀設置)$/ });
+    if (await btn.count() === 0) return;
+    if ((await btn.getAttribute('aria-expanded')) !== String(open)) await btn.click();
 }

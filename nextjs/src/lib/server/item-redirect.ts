@@ -42,3 +42,78 @@ export async function resolveItemRedirect(
     if (p.status === 'unknown') return { to: `/book-index?id=${id}`, permanent: false };
     return null;
 }
+
+/** lookupItemRedirectTraced 用到的取数能力（createItemFetcher 的返回值满足它） */
+export interface ItemRedirectDeps {
+    getItem(id: string, opts?: { prefer?: 'current'; currentOnly?: boolean }): Promise<ItemFetchResult | null>;
+    resolvePromotion(id: string): Promise<PromotionLookup>;
+}
+
+export interface TracedRedirect {
+    redirect: ItemRedirect | null;
+    /**
+     * 为什么跳／为什么没跳，写进响应头 x-kyg-item-redirect 给线上排查用（FX1c 当年要靠临时诊断头才查出根因）。
+     * redirect:merged | redirect:promoted | redirect:promo-unknown（307）；
+     * pass:entry-ok | pass:not-found | pass:promo-absent | pass:budget(...) | pass:error:<摘要>。
+     */
+    reason: string;
+}
+
+/** 响应头值只留可见 ASCII，限长 */
+function headerSafe(text: string, max = 80): string {
+    return text.replace(/[^\x20-\x7e]+/g, '?').slice(0, max);
+}
+
+/**
+ * 中间件的跳转判断：整段限时 budgetMs，到时放行交给页面（页面里同一套跳转兜底）。
+ *
+ * 取数顺序（overview#491）：草稿 id 的升格对照表与条目查询**同时**发出，不再先后串行——
+ * 已升格的草稿 id 在 current/ 与 h1 里都没有条目，原先要白走完条目这一串才轮到对照表，
+ * 冷边缘上串行 6 跳超出预算，被静默放过，页面在 ISR 缓存未命中时出双 Location。
+ * 草稿 id 的条目只问 current/（currentOnly）：中间件只凭肯定的答案跳，查不出就放过；正式 id 保留 h1 兜底。
+ * 对照表在非草稿 id 上不查，条目命中时的结果不用（resolveItemRedirect 只在查不到条目时才看它）。
+ */
+export async function lookupItemRedirectTraced(
+    id: string,
+    deps: ItemRedirectDeps,
+    budgetMs: number,
+): Promise<TracedRedirect> {
+    const isDraft = parseItemId(id)?.status === 'draft';
+    let promo: PromotionLookup | undefined;
+    let entry: 'pending' | 'hit' | 'miss' = 'pending';
+
+    // resolvePromotion 自己吞掉错误（返回 unknown），不会 reject
+    const promotion = isDraft ? deps.resolvePromotion(id) : null;
+    promotion?.then((p) => { promo = p; }, () => {});
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const budget = new Promise<TracedRedirect>((resolve) => {
+        timer = setTimeout(() => {
+            resolve({ redirect: null, reason: `pass:budget(${budgetMs}ms,entry=${entry},promo=${promo?.status ?? 'pending'})` });
+        }, budgetMs);
+    });
+
+    const work = (async (): Promise<TracedRedirect> => {
+        try {
+            // 只有草稿 id 才只问 current/：它的升格对照表已并行在查，条目查不到时白走 h1 三跳没有意义；
+            // 正式 id（被并条目）保留 h1 兜底，防发布中途 current/ 与 h1 暂时不一致时漏跳（页面兜底会出双 Location）
+            const hit = await deps.getItem(id, isDraft ? { prefer: 'current', currentOnly: true } : { prefer: 'current' });
+            entry = hit ? 'hit' : 'miss';
+            const redirect = await resolveItemRedirect(id, hit, (i) => promotion ?? deps.resolvePromotion(i));
+            if (redirect) {
+                if (!redirect.permanent) return { redirect, reason: 'redirect:promo-unknown' };
+                return { redirect, reason: hit ? 'redirect:merged' : 'redirect:promoted' };
+            }
+            if (hit) return { redirect, reason: 'pass:entry-ok' };
+            return { redirect, reason: isDraft ? `pass:promo-${promo?.status ?? 'none'}` : 'pass:not-found' };
+        } catch (err) {
+            return { redirect: null, reason: `pass:error:${headerSafe((err as Error).message)}` };
+        }
+    })();
+
+    try {
+        return await Promise.race([work, budget]);
+    } finally {
+        clearTimeout(timer);
+    }
+}

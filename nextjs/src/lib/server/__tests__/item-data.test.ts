@@ -226,6 +226,28 @@ describe("createItemFetcher.getItem(id, { prefer: 'current' })（overview#322 B1
     });
 });
 
+describe("createItemFetcher.getItem(id, { prefer: 'current', currentOnly: true })（overview#491）", () => {
+    const opts = { prefer: 'current', currentOnly: true } as const;
+
+    it('current/ 有 → 照旧 2 跳', async () => {
+        const { f, calls } = make({ ...h1Routes(), ...currentRoutes });
+        expect(await f.getItem(ID, opts)).toMatchObject({ source: 'current' });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('current/ 确定没有 → null，不再问 h1（h1 里有也不问）', async () => {
+        const { f, calls } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' } });
+        expect(await f.getItem(ID, opts)).toBeNull();
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, `${BASE}/current/entry/${ID}.json`]);
+    });
+
+    it('current/ 出网络错 → 抛错，不串 h1', async () => {
+        const { f, calls } = make({ ...h1Routes(), [`${BASE}/latest.json`]: { commitId: 'abc123' }, [`${BASE}/current/entry/${ID}.json`]: 'THROW' });
+        await expect(f.getItem(ID, opts)).rejects.toThrow();
+        expect(calls.some((u) => u.includes('/h1/'))).toBe(false);
+    });
+});
+
 describe('网络错与 5xx 原地重试一次（overview#322：冷渲染时的临时故障不让整页 500）', () => {
     /** 第 n 次请求某个 URL 时的行为：'THROW' | 状态码 | 数据 */
     function flaky(plan: Record<string, unknown[]>) {
@@ -312,6 +334,7 @@ describe('createItemFetcher.resolvePromotion（PH）', () => {
     const PROD = '96kzii6z28';
     function promoRoutes(extra: Routes = {}): Routes {
         return {
+            [`${BASE}/latest.json`]: { commitId: 'abc123' },   // current/promotions/ 分片不在 → 404 → 走 h1
             [`${BASE}/h1/manifest-root.json`]: { version: 2, root: 'r1.json' },
             [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: {}, promotionShards: { nk: 'pnk00000' } },
             [`${BASE}/h1/promotions/nk.pnk00000.json`]: { [DRAFT]: PROD, '22pcgxhot4bnk': '22pcgxhot4bnk' },
@@ -319,10 +342,12 @@ describe('createItemFetcher.resolvePromotion（PH）', () => {
         };
     }
 
-    it('命中：指针 → root.promotionShards → 分片，返回正式 id', async () => {
+    it('命中（current/ 没有分片时）：指针 → root.promotionShards → 分片，返回正式 id', async () => {
         const { f, calls } = make(promoRoutes());
         expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
         expect(calls.map((u) => u.split('?')[0])).toEqual([
+            `${BASE}/latest.json`,
+            `${BASE}/current/promotions/nk.json`,
             `${BASE}/h1/manifest-root.json`,
             `${BASE}/h1/roots/r1.json`,
             `${BASE}/h1/promotions/nk.pnk00000.json`,
@@ -337,7 +362,8 @@ describe('createItemFetcher.resolvePromotion（PH）', () => {
     it('root 里没有这个后缀的分片 → absent，不再多发请求', async () => {
         const { f, calls } = make(promoRoutes());
         expect(await f.resolvePromotion('11pcgxhot4zz')).toEqual({ status: 'absent' });
-        expect(calls).toHaveLength(2);
+        expect(calls.filter((u) => u.includes('/h1/'))).toHaveLength(2);
+        expect(calls.some((u) => u.includes('/h1/promotions/'))).toBe(false);
     });
 
     it('空对照表（promotionShards 为 {}）→ absent', async () => {
@@ -381,7 +407,81 @@ describe('createItemFetcher.resolvePromotion（PH）', () => {
         await f.getItem(ID);
         const before = calls.length;
         expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
-        expect(calls.slice(before).map((u) => u.split('?')[0])).toEqual([`${BASE}/h1/promotions/nk.pnk00000.json`]);
+        expect(calls.slice(before).map((u) => u.split('?')[0]).filter((u) => u.includes('/h1/'))).toEqual([`${BASE}/h1/promotions/nk.pnk00000.json`]);
+    });
+});
+
+describe('createItemFetcher.resolvePromotion：先走 current/promotions 分片（overview#491）', () => {
+    const DRAFT = '11pcgxhot4bnk';   // 后缀 'nk'
+    const PROD = '96kzii6z28';
+    const SHARD = `${BASE}/current/promotions/nk.json`;
+    const shardOf = (promotions: Record<string, unknown>, version = 1) => ({ version, promotions });
+    const rec = (to: string) => ({ production_id: to, type: 'work', promoted_at: 't' });
+    function routes(extra: Routes = {}): Routes {
+        return {
+            [`${BASE}/latest.json`]: { commitId: 'abc123' },
+            [SHARD]: shardOf({ [DRAFT]: rec(PROD) }),
+            [`${BASE}/h1/manifest-root.json`]: { version: 2, root: 'r1.json' },
+            [`${BASE}/h1/roots/r1.json`]: { shardKeyLength: 2, shards: {}, promotionShards: { nk: 'pnk00000' } },
+            [`${BASE}/h1/promotions/nk.pnk00000.json`]: { [DRAFT]: PROD },
+            ...extra,
+        };
+    }
+
+    it('命中：latest.json → 一个分片，共 2 跳，不碰 h1', async () => {
+        const { f, calls } = make(routes());
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.map((u) => u.split('?')[0])).toEqual([`${BASE}/latest.json`, SHARD]);
+        expect(calls[1]).toBe(`${SHARD}?v=abc123`);   // 与 latest.json 的版本键一致
+    });
+
+    it('分片合法但没有这个 id → absent（确定没有升格），不碰 h1', async () => {
+        const { f, calls } = make(routes());
+        expect(await f.resolvePromotion('22pcgxhot4bnk')).toEqual({ status: 'absent' });
+        expect(calls.some((u) => u.includes('/h1/'))).toBe(false);
+    });
+
+    it('指向自己的记录不算升格', async () => {
+        const { f } = make(routes({ [SHARD]: shardOf({ [DRAFT]: rec(DRAFT) }) }));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'absent' });
+    });
+
+    it.each([
+        ['分片 404（旧数据包）', { [SHARD]: 404 }],
+        ['分片版本不对', { [SHARD]: shardOf({ [DRAFT]: rec('wrong99') }, 2) }],
+        ['分片为空', { [SHARD]: shardOf({}) }],
+        ['分片形状坏', { [SHARD]: 'oops' }],
+        ['分片网络错', { [SHARD]: 'THROW' }],
+        ['分片 5xx', { [SHARD]: 503 }],
+    ] as [string, Routes][])('%s：改走 h1，答案照旧', async (_name, extra) => {
+        const { f, calls } = make(routes(extra));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.some((u) => u.includes('/h1/promotions/'))).toBe(true);
+    });
+
+    it('latest.json 取不到：改走 h1（没有读 current 分片）', async () => {
+        const { f, calls } = make(routes({ [`${BASE}/latest.json`]: 'THROW' }));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.some((u) => u.split('?')[0] === SHARD)).toBe(false);
+        expect(calls.some((u) => u.includes('/h1/promotions/nk.pnk00000.json'))).toBe(true);
+    });
+
+    it.each([
+        ['这个 id 的记录坏了（没有 production_id）', { [SHARD]: shardOf({ [DRAFT]: { type: 'work' } }) }],
+        ['这个 id 的记录不是对象', { [SHARD]: shardOf({ [DRAFT]: 'oops' }) }],
+        ['promotions 是数组', { [SHARD]: shardOf([] as never) }],
+    ] as [string, Routes][])('%s：让 h1 来判，不当成没升格', async (_name, extra) => {
+        const { f, calls } = make(routes(extra));
+        expect(await f.resolvePromotion(DRAFT)).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.some((u) => u.includes('/h1/promotions/'))).toBe(true);
+    });
+
+    it('与条目查询共用 latest.json 指针：并行时只取一次', async () => {
+        const { f, calls } = make({ ...routes(), [`${BASE}/current/entry/${DRAFT}.json`]: 404 });
+        const [item, promo] = await Promise.all([f.getItem(DRAFT, { prefer: 'current', currentOnly: true }), f.resolvePromotion(DRAFT)]);
+        expect(item).toBeNull();
+        expect(promo).toEqual({ status: 'promoted', to: PROD });
+        expect(calls.filter((u) => u.split('?')[0] === `${BASE}/latest.json`)).toHaveLength(1);
     });
 });
 

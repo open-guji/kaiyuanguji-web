@@ -25,6 +25,7 @@
 
 import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
+import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
 
 export { isValidItemId };
 
@@ -135,6 +136,12 @@ class NotFound extends Error {}
 function readLocalPublicData(relPath: string): string | null {
     const read = (globalThis as { __kygLocalPublicRead?: (p: string) => string | null }).__kygLocalPublicRead;
     return read ? read(relPath) : null;
+}
+
+/** getItem 的取法选项，见 createItemFetcher 里 getItem 的注释 */
+export interface ItemGetOptions {
+    prefer?: 'h1' | 'current';
+    currentOnly?: boolean;
 }
 
 export function createItemFetcher(opts: ItemFetcherOptions) {
@@ -252,9 +259,44 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
     }
 
-    /** 查升格对照表：指针 → root.promotionShards → 分片。只读当前指针指向的那一版 */
+    /**
+     * 查升格对照表的首选路径（overview#491）：latest.json 指针 → current/promotions/<后缀>.json?v=<版本键>（web#318 起数据包里有）。
+     * 指针与条目查询共用同一次 getPointer，所以与条目并行时只多 1 个小文件（每片几 KB），深度 2；h1 那条是指针 → root → 分片，深度 3。
+     * 返回 null＝这条路径答不了（旧数据包没有该目录、分片坏了或为空），调用方改走 h1；抛错（网络、5xx）同样由调用方改走 h1。
+     * 合法分片里没有这个 id 就是确定没有升格（absent），与 h1 分片同一语义。
+     */
+    async function resolvePromotionCurrent(id: string): Promise<PromotionLookup | null> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        const v = key ? `?v=${key}` : '';
+        let shard: { version?: unknown; promotions?: unknown };
+        try {
+            shard = await getImmutable(`${base}/current/promotions/${id.slice(-PROMOTION_SHARD_KEY_LENGTH)}.json${v}`);
+        } catch (err) {
+            if (err instanceof NotFound) return null;
+            throw err;
+        }
+        const rows = shard?.promotions;
+        // 打包只产出非空的合法片：版本不对、形状坏、空表都当「这条路径答不了」
+        if (shard?.version !== 1 || !rows || typeof rows !== 'object' || Array.isArray(rows) || Object.keys(rows).length === 0) return null;
+        const row = (rows as Record<string, unknown>)[id];
+        if (row === undefined) return { status: 'absent' };
+        const to = row && typeof row === 'object' ? (row as { production_id?: unknown }).production_id : undefined;
+        if (typeof to !== 'string') return null;   // 这个 id 的记录本身坏了：让 h1 来判，不当成「没升格」
+        return to !== id && isValidItemId(to) ? { status: 'promoted', to } : { status: 'absent' };
+    }
+
+    /** 查升格对照表：先 current/promotions 分片，答不了再走 h1（指针 → root.promotionShards → 分片）。只读当前指针指向的那一版 */
     async function resolvePromotion(id: string): Promise<PromotionLookup> {
         if (!isValidItemId(id)) return { status: 'absent' };
+        if (id.length >= PROMOTION_SHARD_KEY_LENGTH) {
+            try {
+                const cur = await resolvePromotionCurrent(id);
+                if (cur) return cur;
+            } catch (err) {
+                console.warn(`[item-data] current/promotions 查 ${id} 失败，改走 h1：${(err as Error).message}`);
+            }
+        }
         try {
             const pointer = await getPointer<H1Pointer>('h1/manifest-root.json');
             if (!pointer.root) return { status: 'unknown' };
@@ -280,14 +322,17 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * current/ 确定没有时再问一次 h1（两边由同一次打包发出，不该不一致；h1 也查不了就按没有算）；
      * current/ 出网络错或 5xx 时回到 h1 优先的完整取法。
      */
-    async function getItemCurrentFirst(id: string): Promise<ItemFetchResult | null> {
+    async function getItemCurrentFirst(id: string, currentOnly = false): Promise<ItemFetchResult | null> {
         try {
             const hit = await fromCurrent(id);
             if (hit) return { ...hit, source: 'current' };
         } catch (err) {
+            // currentOnly：调用方只要 current/ 的肯定答案（中间件），出错就抛，不再串 h1 的 4 跳
+            if (currentOnly) throw err;
             console.warn(`[item-data] current/ 取 ${id} 失败，改走 h1：${(err as Error).message}`);
             return getItem(id);
         }
+        if (currentOnly) return null;
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch {
@@ -301,10 +346,15 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * prefer: 'current' —— 只要条目内容（书名、被并、升格）、不在乎 data-ssr-version 是哪条路径的调用方用：
      * 阅读页与中间件（overview#322 B1：h1 是 4 跳串行，冷实例与冷边缘实例上首个请求要等它走完）。
      * 条目页 /item/<id> 仍走 h1 优先：发版后的 item-cache-verify 按 data-ssr-version=h1:<新 root> 判断缓存已换新。
+     *
+     * currentOnly（配合 prefer: 'current'）—— current/ 没有就是没有，不再问 h1；current/ 出错直接抛。
+     * 给只凭「肯定的答案」才行动的调用方用（中间件：被并目标、升格都是正向证据，查不出就放过交给页面）。
+     * 冷边缘上每多一跳都吃 2 秒预算，promoted 草稿 id 在 current/ 与 h1 的条目里本来就都没有，
+     * 原先白走 h1 的 manifest-root → roots → manifest 分片 3 跳才得出「没有」（overview#491）。
      */
-    async function getItem(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+    async function getItem(id: string, opts?: ItemGetOptions): Promise<ItemFetchResult | null> {
         if (!isValidItemId(id)) return null;
-        if (opts?.prefer === 'current') return getItemCurrentFirst(id);
+        if (opts?.prefer === 'current') return getItemCurrentFirst(id, opts.currentOnly === true);
         try {
             return { ...(await fromH1(id)), source: 'h1' };
         } catch (err) {
@@ -374,7 +424,7 @@ function defaultFetcher(): ReturnType<typeof createItemFetcher> {
 }
 
 /** 进程内共享的一个取数实例（缓存跨请求复用） */
-export function getItemServer(id: string, opts?: { prefer?: 'h1' | 'current' }): Promise<ItemFetchResult | null> {
+export function getItemServer(id: string, opts?: ItemGetOptions): Promise<ItemFetchResult | null> {
     return defaultFetcher().getItem(id, opts);
 }
 

@@ -29,6 +29,9 @@ import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { assertProductionDir, assertSiteContentFiles, SITE_CONTENT_FILES } from './lib/production-dir.mjs';
+import {
+    buildPromotionShardTexts, PROMOTIONS_DIRNAME, PROMOTIONS_FILENAME, readPromotionsSource, serializePromotions,
+} from './lib/promotions-source.mjs';
 import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
@@ -442,12 +445,33 @@ function bundleTextsIndex(index) {
 // ─── 复制独立数据文件（resource*.json, recommended.json, promotions.json） ───
 // 都在 book-index 根目录；缺了是数据出错，main 开头已 assertSiteContentFiles，这里不再静默跳过。
 
+// 整档 promotions.json 之外再输出 promotions/<草稿id末2位>.json（每片约 4 MB / 1296 片，几 KB）：
+// 客户端按 id 只取自己那一片，取不到（旧站点包、网络）再退回整档，整档保留一个客户端发版周期。
+function bundlePromotionShards(table) {
+    const dir = join(OUT_DIR, PROMOTIONS_DIRNAME);
+    mkdirSync(dir, { recursive: true });
+    const shards = buildPromotionShardTexts(table);
+    for (const [key, text] of Object.entries(shards)) writeIfChanged(join(dir, `${key}.json`), text);
+    // 升格表里已经没有的后缀：删掉旧片，免得 COS 上留着过期映射
+    for (const name of readdirSync(dir)) {
+        if (name.endsWith('.json') && !(name.slice(0, -5) in shards)) unlinkSync(join(dir, name));
+    }
+    console.log(`EX  ${PROMOTIONS_DIRNAME}/ ${Object.keys(shards).length} 片`);
+}
+
 function bundleExtraFiles() {
     // resource* 直接复制；promotions.json 一并复制（由 book-index promote 维护，
     // 客户端 BundleStorage 用它做 draft→production redirect）
     for (const fname of SITE_CONTENT_FILES.filter((f) => f !== 'recommended.json')) {
-        const src = join(PRODUCTION_DIR, fname);
-        const data = readFileSync(src, 'utf-8');
+        // promotions.json 源档可能是整档，也可能是 promotions/<末2位>.json 分片（bim#139）：合流后统一写成整档，产物形状不变
+        let data;
+        if (fname === PROMOTIONS_FILENAME) {
+            const table = readPromotionsSource(PRODUCTION_DIR);
+            data = serializePromotions(table);
+            bundlePromotionShards(table);
+        } else {
+            data = readFileSync(join(PRODUCTION_DIR, fname), 'utf-8');
+        }
         writeIfChanged(join(OUT_DIR, fname), data);
         const size = (Buffer.byteLength(data) / 1024).toFixed(0);
         console.log(`EX  ${fname} copied (${size} KB)`);

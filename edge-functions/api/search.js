@@ -24,7 +24,7 @@
 //   空串值表示「该字段为空」（如 classification = "" ＝ 未分類），代理改写成 Meili 的 IS EMPTY（`= ""` 在 Meili 里筛不到空值）。
 //   sort：只认 era:asc|desc（按年代）、title:asc|desc（按书名），只对 works／books／entities；见 SORT_MAP。
 // locale（overview#342）：`locale=zh-Hans`（POST 体里同名字段）时，命中的显示字段（DISPLAY_FIELDS：书名、作者、朝代等）
-//   在这里转简体，与 nextjs/src/lib/server/simplify.ts 同一套 opencc t2cn 字表——首页检索候选不引 opencc，靠它跟繁简偏好走。
+//   在这里转简体，与 nextjs/src/lib/server/simplify.ts 同一套逻辑（内嵌核心，含转换前后等长的保证）——首页检索候选不引 opencc，靠它跟繁简偏好走。
 //   不传或 zh-Hant 原样返回（结果页 L1 不传，行为不变）；其他值一律 400。缓存键带 locale。
 // 返回：{ results: [{ indexUid, hits, estimatedTotalHits, limit, offset }] }
 //   hits 只含卡片渲染要的字段；works/books 的 _formatted 只留 description_search（简介命中片段）。
@@ -108,35 +108,82 @@ const LOCALES = ['zh-Hans', 'zh-Hant'];
 /** 转简体的显示字段；classification、loss_status 等是筛选取值，不动 */
 const DISPLAY_FIELDS = ['title', 'primary_name', 'author', 'dynasty', 'era', 'role', 'edition'];
 
-/** 异体字按码位换成正字（「㫖」→「旨」）；t2cn 不认这些字 */
-function normalizeVariants(text) {
-  let out = '';
-  let changed = false;
-  for (const ch of text) {
-    const to = VARIANT_CHARS[ch];
-    if (to !== undefined) changed = true;
-    out += to ?? ch;
-  }
-  return changed ? out : text;
+// ─── 繁→简：全站唯一逻辑的内嵌副本（overview#448 S0） ───
+// 边缘函数随全栈产物编译，不能 import nextjs/src，所以把 nextjs/src/lib/to-simplified-core.mjs 逐字内嵌在下面两个标记之间
+// （去掉 export 关键字）。单测 to-simplified.test.ts 比对两份，改核心必须同步改这里。
+// BEGIN to-simplified-core
+/** 码点数（不是 UTF-16 长度；扩展区字占两个 UTF-16 单元） */
+function codePointLength(text) {
+    let n = 0;
+    for (const _ of text) n++;
+    return n;
 }
 
-// 与 nextjs/src/lib/server/simplify.ts 同口径：先异体字归一，再 Converter({ from: 't', to: 'cn' })；isolate 内只建一次，建不成就原样返回
-let t2cn;
-function toSimplified(text) {
-  if (t2cn === undefined) {
-    try {
-      t2cn = Converter({ from: 't', to: 'cn' });
-    } catch {
-      t2cn = null;
-    }
-  }
-  if (!t2cn || !text) return text;
-  try {
-    return t2cn(normalizeVariants(text));
-  } catch {
-    return text;
-  }
+/** 转换前后码点数相等的断言：不等就抛错（测试与脚本里用；运行时的退路在 createToSimplified 里） */
+function assertSameLength(before, after) {
+    const a = codePointLength(before);
+    const b = codePointLength(after);
+    if (a !== b) throw new Error(`繁简转换改变了长度：${a} → ${b}（${JSON.stringify(before.slice(0, 40))}）`);
+    return after;
 }
+
+/** 异体字 → 正字（按码位，含扩展区字）；没有异体字时原样返回 */
+function normalizeVariants(text, variants) {
+    let out = '';
+    let changed = false;
+    for (const ch of text) {
+        const to = variants[ch];
+        if (to !== undefined) changed = true;
+        out += to ?? ch;
+    }
+    return changed ? out : text;
+}
+
+/**
+ * @param {{ createConverter: () => (text: string) => string, variants: Readonly<Record<string, string>>, warn?: (msg: string) => void }} deps
+ * @returns {(text: string) => string}  繁体（或简繁混排）→ 简体；转换器建不出来就原样返回
+ */
+function createToSimplified({ createConverter, variants, warn = console.warn }) {
+    let convert; // undefined 还没建；null 建失败
+    const get = () => {
+        if (convert !== undefined) return convert;
+        try {
+            convert = createConverter();
+        } catch (err) {
+            warn(`[to-simplified] 建繁简转换器失败，原样返回：${err.message}`);
+            convert = null;
+        }
+        return convert;
+    };
+    let warned = false;
+
+    return function toSimplified(text) {
+        if (!text) return text;
+        const c = get();
+        if (!c) return text;
+        try {
+            const normalized = normalizeVariants(text, variants);
+            const out = c(normalized);
+            if (codePointLength(out) === codePointLength(normalized)) return out;
+            if (!warned) {
+                warned = true;
+                warn('[to-simplified] opencc 转换改变了长度，退回逐码点转换（简体下标须等于原文下标）');
+            }
+            let perChar = '';
+            for (const ch of normalized) perChar += c(ch);
+            return codePointLength(perChar) === codePointLength(normalized) ? perChar : normalized;
+        } catch {
+            return text;
+        }
+    };
+}
+// END to-simplified-core
+
+// isolate 内只建一次；建不成就原样返回（见核心）
+const toSimplified = createToSimplified({
+  createConverter: () => Converter({ from: 't', to: 'cn' }),
+  variants: VARIANT_CHARS,
+});
 
 /** 要转简体时返回 'zh-Hans'，否则 null（原样）：zh-Hant 与不传等价，共用同一份缓存；只认 LOCALES 里的值 */
 function parseLocale(raw) {
@@ -620,7 +667,7 @@ function loadOnce(context, queries, locale, key, timing) {
   return p;
 }
 
-// 只导出 onRequest* 两个处理函数（与本目录其余函数一致）；单测经它们走全链路、mock 全局 fetch
+// 只导出 onRequest* 两个处理函数（与本目录其余函数一致）；单测经它们走全链路、mock 全局 fetch。响应压缩见文件末尾 withCompression
 async function handleSearch(context) {
   const { request } = context;
   const timing = serverTiming();
@@ -684,10 +731,49 @@ async function handleSearch(context) {
   return json(200, loaded.body, okHeaders('MISS'));
 }
 
+// ─── 响应压缩（overview#487） ───
+// EdgeOne 站点设置里的 Gzip／Brotli 对静态产物和数据域生效，对函数（边缘函数、Node SSR）出的响应不生效
+// （2026-10-08 实测：同样带 Accept-Encoding，函数响应没有 Content-Encoding）。搜索结果 JSON 一次几十 KB、压缩率 80% 以上，
+// 所以在函数出口自己压。
+// 函数收到的 Accept-Encoding 恒为 identity（网关改写，实测），看不出客户端接不接受 gzip，所以响应体够大就一律压 gzip；
+// 网关会按真实客户端头转码：gzip 客户端透传、br 客户端转 br、不认压缩的客户端解成明文（staging 实测三种都对）。
+// 一律加 Vary: Accept-Encoding，缓存按编码分别存。
+const COMPRESS_MIN_BYTES = 1024;
+
+/** gzip 压缩。边缘运行时不接受 Blob.stream()／Response(body).body 作为管道源（抛 Param's Type Invalid，staging 实测），要用 CompressionStream 自己的 writer。 */
+async function gzipBytes(raw) {
+  const cs = new CompressionStream('gzip');
+  const writer = cs.writable.getWriter();
+  writer.write(raw);
+  writer.close();
+  return new Response(cs.readable).arrayBuffer();
+}
+
+async function withCompression(res) {
+  // 在可变的响应头上补 Vary（我们自己 new 出来的 Response，头可写）
+  const vary = res.headers.get('Vary');
+  if (!vary) res.headers.set('Vary', 'Accept-Encoding');
+  else if (!/accept-encoding/i.test(vary)) res.headers.set('Vary', `${vary}, Accept-Encoding`);
+
+  if (res.headers.has('Content-Encoding')) return res;
+  if (typeof CompressionStream === 'undefined') return res; // 运行时没有就不压，原样返回
+  try {
+    const raw = new Uint8Array(await res.clone().arrayBuffer());
+    if (raw.byteLength < COMPRESS_MIN_BYTES) return res;
+    const gz = await gzipBytes(raw);
+    const headers = new Headers(res.headers);
+    headers.set('Content-Encoding', 'gzip');
+    headers.set('Content-Length', String(gz.byteLength)); // 压后的长度，别带旧的
+    return new Response(gz, { status: res.status, headers });
+  } catch {
+    return res; // 压缩出错不能让搜索失败，退回未压缩
+  }
+}
+
 export async function onRequestGet(context) {
-  return handleSearch(context);
+  return withCompression(await handleSearch(context));
 }
 
 export async function onRequestPost(context) {
-  return handleSearch(context);
+  return withCompression(await handleSearch(context));
 }

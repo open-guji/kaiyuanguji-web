@@ -22,6 +22,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { resolveCodeCommit } from './code-pointer.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -372,9 +373,14 @@ export async function runCutoverCheck({
             try { j = JSON.parse(r.res.body); } catch { detail = `不是 JSON：${short(r.res.body)}`; }
             if (j && !j.commitId) detail = '缺 commitId';
             else if (j) {
-                const web = String(j.webCommitId ?? '');
+                // 线上是哪一版代码：latest.json 标了 codePointer 就以 web.json 为准，否则以 latest.json.webCommitId 为准（ops/code-pointer.mjs）
+                let webDoc = null;
+                const rw = await fetchSafe(`${dataBase}/web.json?_=${now().getTime()}`);
+                if (!rw.err && rw.res.status === 200) { try { webDoc = JSON.parse(rw.res.body); } catch { webDoc = null; } }
+                const rc = resolveCodeCommit(j, webDoc);
+                const web = rc.commit;
                 releasedUi = web ? uiAtCommit(web) : null;
-                const head = `数据 ${j.commitId}，代码 ${web ? web.slice(0, 12) : '（无 webCommitId）'}`;
+                const head = `数据 ${j.commitId}，代码 ${web ? web.slice(0, 12) : '（无 webCommitId）'}（${rc.source}）${rc.notes.length ? `；${rc.notes.join('；')}` : ''}`;
                 if (!web) { status = 'fail'; detail = `${head}：正式站还没 promote 过`; }
                 else if (releasedUi == null) { status = 'skip'; detail = `${head}：本地取不到该 commit 的 package-lock（浅克隆？），没比 UI 版本`; }
                 else if (pageUi == null) { status = 'skip'; detail = `${head}：页面没取到 bim-ui-version`; }

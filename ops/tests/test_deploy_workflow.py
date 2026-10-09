@@ -5,6 +5,7 @@ prod-artifact 任务（push 时与测试站并行构建、存成工件供 promot
 必须一字不差，否则「测试站验过的那份正式站产物」与「重新构建的正式站」配置不同，问题只会在正式站暴露。
 """
 import os
+import re
 import unittest
 
 try:
@@ -220,6 +221,204 @@ class WebPointerStep(unittest.TestCase):
 
     def test_purge_includes_web_json(self):
         self.assertIn("pfx + 'web.json'", self.raw)
+
+
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class SplitDataFlow(unittest.TestCase):
+    """overview#470 P1：仓库变量 SPLIT_DATA_FLOW 打开后，代码流程不碰数据。变量不设（默认）时行为必须与拆出之前一致，
+    所以这里钉的是「每个数据步骤都被开关挡得住」「两份正式站构建仍一致」「晋升与验收跟着开关走」。"""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.build = cls.wf['jobs']['build']['steps']
+        cls.names = [s.get('name', '') for s in cls.build]
+
+    def _by_name(self, name, steps=None):
+        hits = [x for x in (steps or self.build) if x.get('name') == name]
+        self.assertEqual(len(hits), 1, name)
+        return hits[0]
+
+    def test_resolve_exposes_split_and_reads_variable(self):
+        self.assertIn('split', self.wf['jobs']['resolve']['outputs'])
+        r = [x for x in self.wf['jobs']['resolve']['steps'] if x.get('id') == 'r'][0]
+        self.assertEqual(r['env']['SPLIT_VAR'], 'true')  # overview#490：写死，不再读仓库变量
+        # 三条路径（from_run 晋升、无 from_run 的晋升、测试站）都要输出 split
+        self.assertEqual(r['run'].count('echo "split=$SPLIT" >> "$GITHUB_OUTPUT"'), 3)
+
+    def test_split_step_sets_data_fast_before_any_data_step(self):
+        n = 'Split data flow — skip all data steps (overview#470 P1)'
+        st = self._by_name(n)
+        self.assertIn('SPLIT_DATA', st['if'])
+        self.assertIn('DATA_FAST=true', st['run'])
+        i = self.names.index(n)
+        for first_data in ('Data fast path — decide before cloning (overview#341)', 'Clone index data repos'):
+            self.assertLess(i, self.names.index(first_data))
+
+    def test_every_data_step_is_gated(self):
+        # 这些步骤碰数据（克隆、打包、COS、sitemap 生成、指针）：必须被 DATA_FAST 或 SPLIT_DATA 挡得住
+        data_steps = [
+            'Data fast path — decide before cloning (overview#341)', 'Data fast path — restore item sitemaps',
+            'Data fast path — write latest.json only', 'Clone index data repos', 'Build derived data (schema-v2)',
+            'Bundle data for EdgeOne', 'Verify bundled data', 'Verify production entries bundled',
+            'Verify no private text leaked into public data', 'Decide COS data sync (skip when data unchanged)',
+            'Write latest.json only (data unchanged, skip COS data upload)',
+            'Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel',
+            'Record previous h1 root (W2-3)', 'Item sitemaps (W2-3)', 'Compute changed items (W2-3)',
+        ]
+        for n in data_steps:
+            cond = str(self._by_name(n).get('if', ''))
+            self.assertTrue('DATA_FAST' in cond or 'SPLIT_DATA' in cond or 'data_pre.outputs.skip' in cond, f'{n}: {cond!r}')
+
+    def test_sitemap_proxy_flag_in_all_three_builds(self):
+        for job, name in (('build', 'Build for EdgeOne (production, fullstack → kyg-ssr-spike)'),
+                          ('prod-artifact', 'Build for EdgeOne (production, fullstack → kyg-ssr-spike)'),
+                          ('build', 'Build for EdgeOne (staging, fullstack)')):
+            env = _step(self.wf['jobs'][job], name)['env']
+            self.assertIn('needs.resolve.outputs.split', env['NEXT_PUBLIC_SITEMAP_PROXY'], f'{job}/{name}')
+
+    def test_staging_reads_prod_data_when_split(self):
+        env = _step(self.wf['jobs']['build'], 'Build for EdgeOne (staging, fullstack)')['env']
+        base = env['NEXT_PUBLIC_COS_BASE']
+        self.assertIn("'https://data.kaiyuanguji.com/staging'", base)   # 不拆时仍是 staging 前缀
+        self.assertIn('needs.resolve.outputs.split', base)
+
+    def test_prod_artifact_skips_sitemap_generation_when_split(self):
+        steps = self.wf['jobs']['prod-artifact']['steps']
+        for n in ('Restore item sitemaps (www)', 'Clone, bundle and generate item sitemaps (cache miss)',
+                  'Save item sitemaps cache (www)', 'Place item sitemaps',
+                  'Restore git cache — book-index', 'Restore git cache — book-text',
+                  'Save git cache — book-index', 'Save git cache — book-text'):
+            self.assertIn("needs.resolve.outputs.split != 'true'", self._by_name(n, steps)['if'], n)
+
+    def test_auto_promote_data_off_when_split_and_verify_follows(self):
+        self.assertIn("needs.resolve.outputs.split != 'true'", self.wf['jobs']['auto-promote']['if'])
+        self.assertIn('needs.resolve.outputs.split', self.wf['jobs']['verify']['with']['data_from_prod'])
+
+    def test_check_artifact_script_gets_sitemap_mode(self):
+        for job in ('build', 'prod-artifact'):
+            st = _step(self.wf['jobs'][job], 'Verify production artifacts (fullstack)')
+            self.assertIn('check-edgeone-artifact.sh', st['run'])
+            self.assertIn("needs.resolve.outputs.split == 'true' && 'proxy' || 'static'", st['run'])
+
+    def test_manifest_records_data_split(self):
+        st = self._by_name('Write promote manifest (staging)')
+        self.assertIn("'dataSplit'", st['run'])
+        self.assertIn('needs.resolve.outputs.split', st['run'])
+
+    def test_rehearse_split_input_only_affects_staging_dispatch(self):
+        # 演练：手动测试站部署勾 rehearse_split，只对这一次按「已拆出」跑，不动仓库变量；晋升、push、定时不受影响
+        triggers = self.wf.get('on') or self.wf.get(True)
+        inp = triggers['workflow_dispatch']['inputs']['rehearse_split']
+        self.assertEqual(inp['type'], 'boolean')
+        self.assertIs(inp['default'], False)
+        r = [x for x in self.wf['jobs']['resolve']['steps'] if x.get('id') == 'r'][0]
+        self.assertIn('inputs.rehearse_split', r['env']['IN_REHEARSE_SPLIT'])
+        self.assertIn('[ "$REQ" = staging ] && [ "$IN_REHEARSE_SPLIT" = true ]; then SPLIT=true', r['run'])
+        # 自动晋升（push）和数据晋升（定时／repository_dispatch）都不会因为演练而被派
+        self.assertIn("github.event_name == 'push'", self.wf['jobs']['auto-promote-code']['if'])
+        self.assertNotIn('workflow_dispatch', self.wf['jobs']['auto-promote']['if'])
+
+    def test_scheduled_check_skips_when_split(self):
+        c = self.wf['jobs']['check']['steps'][0]
+        self.assertEqual(c['env']['SPLIT_DATA_FLOW'], 'true')  # overview#490：写死，不再读仓库变量
+        self.assertIn('"$SPLIT_DATA_FLOW" = "true"', c['run'])
+
+
+@unittest.skipIf(yaml is None, 'PyYAML 未安装')
+class CodeOnlyPromote(unittest.TestCase):
+    """自动晋升只推代码（promote=code），数据只在手动选 code+data／data 时才推。
+
+    事故（2026-10-07，#284 合并后）：auto-promote-code 派的是 promote=code+data，把 schema-v2 数据也推向正式站（人工取消）。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEPLOY, encoding='utf-8') as f:
+            cls.raw = f.read()
+        cls.wf = yaml.safe_load(cls.raw)
+        cls.build = cls.wf['jobs']['build']
+        cls.names = [s.get('name', '') for s in cls.build['steps']]
+
+    def test_promote_input_has_code_and_defaults_to_it(self):
+        triggers = self.wf.get('on') or self.wf.get(True)  # PyYAML 把裸 on 读成 True
+        p = triggers['workflow_dispatch']['inputs']['promote']
+        self.assertEqual(p['options'], ['code', 'code+data', 'data'])
+        self.assertEqual(p['default'], 'code')
+
+    def test_auto_promote_code_dispatches_exactly_one_code_only_promote(self):
+        job = self.wf['jobs']['auto-promote-code']
+        run = '\n'.join(s.get('run', '') for s in job['steps'])
+        dispatches = re.findall(r'gh workflow run [^\n]*', run)
+        # 恰好一次派发，且是 promote=code：多一条 promote=data／code+data 的派发，普通 push 就会连带推数据
+        self.assertEqual(len(dispatches), 1, dispatches)
+        d = dispatches[0]
+        self.assertEqual(re.findall(r'-f promote=(\S+)', d), ['code'], d)
+        self.assertEqual(re.findall(r'-f target=(\S+)', d), ['production'], d)
+        self.assertIn('-f from_run=', d)
+
+    def test_only_scheduled_data_promote_carries_data(self):
+        # 自动派的 workflow_dispatch 里，带数据的只有 auto-promote（promote=data，定时数据发布），代码那条不带
+        self.assertEqual(self.raw.count('gh workflow run deploy.yml --ref main -f target=production -f promote=code+data'), 0)
+
+    def test_resolve_requires_from_run_and_artifact_for_code(self):
+        resolve = self.wf['jobs']['resolve']
+        run = '\n'.join(s.get('run', '') for s in resolve['steps'])
+        self.assertIn('promote=code 必须填 from_run', run)
+        self.assertIn('promote=code 需要 run', run)  # 没产物就报错，不退回重新构建
+
+    def test_code_only_env_is_true_only_for_promote_code(self):
+        self.assertEqual(self.build['env']['CODE_ONLY'],
+                         "${{ needs.resolve.outputs.mode == 'promote' && inputs.promote == 'code' }}")
+
+    def test_code_only_step_skips_data_and_does_not_touch_pointer_before_deploy(self):
+        s = _step(self.build, 'Code-only promote — leave production data untouched')
+        self.assertFalse(s.get('continue-on-error'))
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertNotIn("env.CODE_ONLY != 'true'", s['if'])
+        self.assertIn('DATA_FAST=true', s['run'])
+        self.assertIn('FROM_ARTIFACT', s['run'])
+        # 指针要等部署成功之后才改：这一步里不能写 latest.json
+        self.assertNotIn('latest-only', s['run'])
+
+    def test_code_only_runs_before_every_data_step_and_each_is_gated_the_right_way(self):
+        i = self.names.index('Code-only promote — leave production data untouched')
+        for n in ('Restore git cache — book-index', 'Clone index data repos', 'Build derived data (schema-v2)',
+                  'Bundle data for EdgeOne', 'Decide COS data sync (skip when data unchanged)',
+                  'Sync data to Tencent COS — current/ + h1 entry + h1 text, in parallel'):
+            self.assertGreater(self.names.index(n), i, n)
+            cond = _step(self.build, n)['if']
+            self.assertIn("env.DATA_FAST != 'true'", cond, n)      # 方向：DATA_FAST 为真时跳过
+            self.assertNotIn("env.DATA_FAST == 'true'", cond, n)
+        decide = _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if']
+        self.assertIn("env.CODE_ONLY != 'true'", decide)
+        self.assertNotIn("env.CODE_ONLY == 'true'", decide)
+
+    def test_pointer_is_written_only_after_production_deploy_and_before_purge(self):
+        n = 'Code-only promote — record webCommitId in latest.json (after deploy)'
+        s = _step(self.build, n)
+        # 部署已成功：指针写不了不能让 job 变红（会跳过清缓存、预热、verify，告警还说成部署失败）。
+        # 所以 continue-on-error，但要先重试、失败时大声警告（::error:: 和摘要里写明怎么补）
+        self.assertTrue(s.get('continue-on-error'))
+        self.assertIn('for i in 1 2 3', s['run'])
+        self.assertIn('::error::', s['run'])
+        self.assertIn('GITHUB_STEP_SUMMARY', s['run'])
+        self.assertIn('promote=data', s['run'])
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertIn('latest-only', s['run'])
+        self.assertIn('needs.resolve.outputs.web_ref', s['env']['WEB_COMMIT_ID'])
+        i = self.names.index(n)
+        self.assertGreater(i, self.names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
+        self.assertLess(i, self.names.index('Purge EdgeOne CDN cache'))
+
+    def test_code_only_does_not_write_latest_json_when_split(self):
+        # 数据流程拆出后 latest.json 只归数据流程写：部署之后写指针的那一步在开关打开时不能再改它
+        s = _step(self.build, 'Code-only promote — record webCommitId in latest.json (after deploy)')
+        self.assertIn("env.SPLIT_DATA != 'true'", s['if'])
+        self.assertIn("env.CODE_ONLY == 'true'", s['if'])
+        self.assertIn("env.SPLIT_DATA != 'true'", _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
 
 
 if __name__ == '__main__':

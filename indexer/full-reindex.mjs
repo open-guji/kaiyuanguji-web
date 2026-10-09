@@ -33,12 +33,17 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
+import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 
-const t2s = OpenCC.Converter({ from: 't', to: 'cn' });
+// 繁→简统一走 lib/to-simplified-core.mjs（与网站同一份逻辑的逐字副本，单测比对；overview#448 S0）
+const t2s = createToSimplified({
+    createConverter: () => OpenCC.Converter({ from: 't', to: 'cn' }),
+    variants: JSON.parse(readFileSync(new URL('./lib/variant-chars.json', import.meta.url), 'utf-8')),
+});
 
 const DRAFT_DIR = process.env.DRAFT_DIR;
 const PRODUCTION_DIR = process.env.PRODUCTION_DIR;
@@ -436,6 +441,7 @@ async function swapOrDiscard(indexUid, selfTestFn) {
         else {
             const floor = checkDocFloor(live.state === 'ok' ? live.docs : null, fresh.docs);
             if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
+            else console.log(`📏 [${indexUid}] 下限闸通过：线上 ${live.state === 'ok' ? live.docs : '（无）'} 条 → 新 ${fresh.docs} 条`);
         }
         if (failures.length > 0) return await discardTmp(indexUid, tmp, failures);
     }

@@ -28,7 +28,7 @@ import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage } from 'book-index-ui/storage';
 import { extractType } from 'book-index-ui';
 import type { IndexEntry } from 'book-index-ui';
-import { buildPromotionMap } from './promotions';
+import { buildPromotionMap, PROMOTION_SHARD_KEY_LENGTH } from './promotions';
 import { reportError, setRelease } from './error-report';
 import { dataVersionKey, type LatestPointer } from './data-version';
 
@@ -136,6 +136,8 @@ interface H1ManifestRoot {
 
 interface H1RootDoc {
     version: number;
+    /** 升格对照表（PH）分片：分片后缀 → hash8。较早的 root 没有这个字段 */
+    promotionShards?: Record<string, string>;
     shardKeyLength: number;
     shardSpace: number;
     shardCount: number;
@@ -222,11 +224,46 @@ async function resolveH1EntryHash(id: string): Promise<string | null> {
 // 内容变了 URL 也会变，不存在「缓存了旧内容」这回事）。
 const _h1EntryCache = new Map<string, Promise<Record<string, unknown> | null>>();
 
-// promotions.json（draft→production 重定向表）不在 h1 范围内——A3 第一期只做
-// entry 本身，promotions 仍从现行 current/ 读（见 createCosStorage 里的
-// ensurePromotions，两条路径共用同一份）。这不是遗漏：那份表很小、改动频率低，
-// 不是 R4「改一条目冲全站缓存」这个痛点要解的对象，留给条目全部按哈希寻址后
-// 视情况再一并处理。
+// ─── 升格对照表（PH）：按需取一片，不整表下载（overview#458 批次 0.3）───
+//
+// 集部升格放量后 promotions.json 会涨到约 10 万条、14 MB，读者打开第一个条目前不能先下它。
+// 服务端（lib/server/item-data.ts 的 resolvePromotion）早就读 root.promotionShards → h1/promotions/<后缀>.<hash8>.json；
+// 浏览器这里走同一套：指针 → root → 本 id 所在的一片（内容 { 草稿id: 正式id }，内容寻址、可长缓存）。
+// 与 entry 本身用哪种布局（DATA_LAYOUT）无关——旧布局下也走这里，只是 entry 仍读 current/。
+// 返回 null＝这一版 h1 回答不了（指针／root／分片取不到，或 root 没有 promotionShards），调用方退回整张表。
+const _h1PromotionShardCache = new Map<string, Promise<Record<string, string>>>();
+
+async function lookupPromotionH1(id: string): Promise<{ promoted: string | null } | null> {
+    try {
+        const root = await resolveH1RootDoc();
+        const shards = root.promotionShards;
+        if (!shards || typeof shards !== 'object') return null;
+        const shardKey = h1ShardKeyFor(id, root.shardKeyLength);
+        const shardHash = shards[shardKey];
+        if (!shardHash) return { promoted: null }; // 这个后缀下没有任何升格
+        const cacheKey = `${shardKey}.${shardHash}`;
+        let shardPromise = _h1PromotionShardCache.get(cacheKey);
+        if (!shardPromise) {
+            shardPromise = fetch(`${getH1BaseUrl()}/promotions/${cacheKey}.json`, { cache: 'force-cache' })
+                .then(r => {
+                    if (!r.ok) throw new Error(`promotions/${cacheKey}.json HTTP ${r.status}`);
+                    return r.json() as Promise<Record<string, string>>;
+                })
+                .catch(err => {
+                    _h1PromotionShardCache.delete(cacheKey);
+                    throw err;
+                });
+            _h1PromotionShardCache.set(cacheKey, shardPromise);
+        }
+        const to = (await shardPromise)[id];
+        return { promoted: typeof to === 'string' && to !== id ? to : null };
+    } catch {
+        return null;
+    }
+}
+
+// promotions.json（draft→production 重定向表）整张仍在 current/，作为兜底（见 createCosStorage 里的
+// ensurePromotions）；正常路径已改读上面的 PH 分片（lookupPromotionH1）。
 /** 单次尝试：拿 hash 直接拼 URL 去取，不重试、不上报，调用方决定怎么处理结果。 */
 function fetchH1EntryOnce(canonicalId: string, hash: string): Promise<Response> {
     const url = `${getH1BaseUrl()}/entry/${encodeURIComponent(canonicalId)}.${hash}.json`;
@@ -620,14 +657,48 @@ export function createCosStorage(): IndexStorage {
         return cached as Promise<Record<string, unknown> | null>;
     }
 
+    // current/promotions/<草稿id末2位>.json：数据包里按后缀拆开的升格表（每片形状同整档，几 KB）。
+    // h1 答不了时先取这一片；片取不到（旧数据包没有该目录、后缀下没有升格、网络）才退回整张表。
+    const promotionShardCache = new Map<string, Promise<Map<string, string> | null>>();
+    function lookupPromotionShard(id: string): Promise<Map<string, string> | null> {
+        const key = id.slice(-PROMOTION_SHARD_KEY_LENGTH);
+        let shard = promotionShardCache.get(key);
+        if (!shard) {
+            shard = (async () => {
+                try {
+                    const res = await fetch(await withCacheBust(`promotions/${key}.json`), { cache: 'force-cache' });
+                    if (!res.ok) return null;
+                    // 打包只会产出非空的合法片：版本不对、形状坏了、空表一律当「这片不可用」，退回整档，
+                    // 不能把它当成「没有升格」（buildPromotionMap 对坏输入返回空表，会让重定向静默失效）
+                    const map = buildPromotionMap(await res.json());
+                    return map.size > 0 ? map : null;
+                } catch {
+                    return null;
+                }
+            })();
+            promotionShardCache.set(key, shard);
+        }
+        return shard;
+    }
+
+    /** 草稿 id → 正式 id。先查 h1 的 PH 分片；h1 答不了查 current/ 的分片；都答不了才退回整张 promotions.json。 */
+    async function resolveCanonicalId(id: string): Promise<string> {
+        const hit = await lookupPromotionH1(id);
+        if (hit) return hit.promoted ?? id;
+        if (id.length >= PROMOTION_SHARD_KEY_LENGTH) {
+            const shard = await lookupPromotionShard(id);
+            if (shard) return shard.get(id) ?? id;
+        }
+        return (await ensurePromotions()).get(id) ?? id;
+    }
+
     /** 走 promotions 重定向 + 拉原始 detail；getItem 直接返回，getEntry 转 IndexEntry */
     async function resolveDetail(id: string): Promise<{
         canonicalId: string;
         redirectedFrom: string | undefined;
         detail: Record<string, unknown> | null;
     }> {
-        const promotions = await ensurePromotions();
-        const canonicalId = promotions.get(id) ?? id;
+        const canonicalId = await resolveCanonicalId(id);
         const redirectedFrom = canonicalId !== id ? id : undefined;
         const detail = await fetchRawDetail(canonicalId);
         return { canonicalId, redirectedFrom, detail };
