@@ -70,9 +70,14 @@ function fetcher() {
  *   10-02 正式站实测：冷 id 的整页请求 2% 被边缘直接断开（无响应头），中间件不取数的同批请求 0 断，
  *   冷边缘实例上串着发的子请求越少越好。
  * - 整段判断限时 REDIRECT_BUDGET_MS，到时放行交给页面（页面里同一套跳转兜底），不让整页请求挂在边缘上等子请求。
+ *   2s 时测试站抽样仍有 6/10、正式站 3/10 的旧 id 整页请求在预算内没出结果（诊断头 pass:budget(2000ms,entry=miss,promo=pending)，
+ *   对照表 3 跳串行没返回）；升格查表改走 current/promotions 分片（深度 2）之后放宽到 3s，仍留足余量不让请求挂在边缘上。
  * - 每个 /item 响应都带 x-kyg-item-redirect 头说明跳或不跳的原因（见 lookupItemRedirectTraced）。
+ * - 草稿 id 在预算内没有定论（pass:budget／pass:error）时不再放给页面：页面在 ISR 缓存未命中时抛 permanentRedirect 会把 Location
+ *   写两遍，并被 CDN 缓存（s-maxage 3600、durable）；这里改出一个不缓存的 307 到 /book-index?id=<id>，由客户端查升格表
+ *   （与对照表查不了时的 307 是同一条路）。正式 id（被并条目）没有这条退路（/book-index?id=<正式 id> 会 308 回来），仍交给页面。
  */
-const REDIRECT_BUDGET_MS = 2_000;
+const REDIRECT_BUDGET_MS = 3_000;
 const REASON_HEADER = 'x-kyg-item-redirect';
 
 const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS);
@@ -84,13 +89,25 @@ async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     const id = req.nextUrl.pathname.slice('/item/'.length);
     if (!isValidItemId(id)) return NextResponse.next();
     const { redirect: r, reason } = await lookupItemRedirect(id);
-    if (reason.startsWith('pass:budget') || reason.startsWith('pass:error')) {
-        console.warn(`[middleware] /item/${id} 跳转判断没出结果，交给页面：${reason}`);
+    const undecided = !r && (reason.startsWith('pass:budget') || reason.startsWith('pass:error'));
+    const tempFallback = undecided && parseItemId(id)?.status === 'draft';
+    if (undecided) {
+        console.warn(`[middleware] /item/${id} 跳转判断没出结果，${tempFallback ? '临时 307 交给客户端查表' : '交给页面'}：${reason}`);
     }
     // 被并／升格的跳转目标本身就是干净地址，一步到位，不会再多跳一次去查询串
-    const res = r ? NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307) : itemQueryRedirect(req);
-    res.headers.set(REASON_HEADER, reason);
+    let res: NextResponse;
+    if (r) res = NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 308 : 307);
+    else if (tempFallback) res = NextResponse.redirect(new URL(`/book-index?id=${id}`, req.url), 307);
+    else res = itemQueryRedirect(req);
+    // 307 是「现在还不知道」的临时答案，不能进 CDN
+    if (res.status === 307) noStore(res);
+    res.headers.set(REASON_HEADER, tempFallback ? `${reason};fallback:307` : reason);
     return res;
+}
+
+function noStore(res: NextResponse): void {
+    res.headers.set('Cache-Control', 'no-store');
+    res.headers.set('Eo-Cdn-Cache-Control', 'no-store');
 }
 
 /**

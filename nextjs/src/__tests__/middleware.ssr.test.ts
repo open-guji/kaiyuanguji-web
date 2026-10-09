@@ -30,6 +30,8 @@ async function run(path: string, headers: Record<string, string> = {}) {
         location: res.headers.get('location'),
         all: res.headers.get('location')?.split(',') ?? [],
         reason: res.headers.get('x-kyg-item-redirect'),
+        cacheControl: res.headers.get('cache-control'),
+        edgeCache: res.headers.get('eo-cdn-cache-control'),
     };
 }
 
@@ -140,26 +142,68 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         });
     });
 
-    it('没跳的 /item 响应也带原因头（取条目抛错 → pass:error）', async () => {
+    it('没跳的 /item 响应也带原因头（正式 id 取条目抛错 → pass:error，交给页面）', async () => {
         mockGetItem.mockRejectedValue(new Error('latest.json HTTP 503'));
-        mockResolvePromotion.mockResolvedValue({ status: 'absent' });
-        const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+        const r = await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'document' });
         expect(r.location).toBeNull();
         expect(r.reason).toBe('pass:error:latest.json HTTP 503');
     });
 
-    it('跳转判断超过时限 → 放过交给页面，不挂着等', async () => {
+    it('正式 id 的跳转判断超过时限（3s）→ 放过交给页面，不挂着等', async () => {
         jest.useFakeTimers();
         try {
             mockGetItem.mockImplementation(() => new Promise(() => {}));
             const pending = run(`/item/${MERGED}`);
-            await jest.advanceTimersByTimeAsync(2_000);
+            await jest.advanceTimersByTimeAsync(2_999);
+            let done = false;
+            void pending.then(() => { done = true; });
+            await jest.advanceTimersByTimeAsync(0);
+            expect(done).toBe(false);
+            await jest.advanceTimersByTimeAsync(1);
             const r = await pending;
             expect(r.location).toBeNull();
             expect(r.status).toBe(200);
+            expect(r.reason).toMatch(/^pass:budget\(3000ms/);
         } finally {
             jest.useRealTimers();
         }
+    });
+
+    it('草稿 id 超时没有定论 → 不放给页面（会出双 Location 并被 CDN 缓存），改出不缓存的 307 到 /book-index?id=', async () => {
+        jest.useFakeTimers();
+        try {
+            mockGetItem.mockImplementation(() => new Promise(() => {}));
+            mockResolvePromotion.mockImplementation(() => new Promise(() => {}));
+            const pending = run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+            await jest.advanceTimersByTimeAsync(3_000);
+            const r = await pending;
+            expect(r.status).toBe(307);
+            expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps']);
+            expect(r.cacheControl).toBe('no-store');
+            expect(r.edgeCache).toBe('no-store');
+            expect(r.reason).toBe('pass:budget(3000ms,entry=pending,promo=pending);fallback:307');
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    it('草稿 id 取条目出错、对照表也没答 → 同样临时 307', async () => {
+        mockGetItem.mockRejectedValue(new Error('latest.json HTTP 503'));
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+        // 取条目抛错 → pass:error → 草稿 id 的临时 307（对照表 unknown 时页面兜底同样是 307 回 /book-index）
+        expect(r.reason).toBe('pass:error:latest.json HTTP 503;fallback:307');
+        expect(r.status).toBe(307);
+        expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps']);
+        expect(r.cacheControl).toBe('no-store');
+    });
+
+    it('永久 308（升格、被并）不加 no-store', async () => {
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'promoted', to: 'hixhd2h9bk4b' });
+        const r = await run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
+        expect(r.status).toBe(308);
+        expect(r.cacheControl).toBeNull();
     });
 
     it('不合法的 id 不查数据', async () => {

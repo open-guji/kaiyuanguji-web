@@ -25,6 +25,7 @@
 
 import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
+import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
 
 export { isValidItemId };
 
@@ -258,9 +259,42 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
     }
 
-    /** 查升格对照表：指针 → root.promotionShards → 分片。只读当前指针指向的那一版 */
+    /**
+     * 查升格对照表的首选路径（overview#491）：latest.json 指针 → current/promotions/<后缀>.json?v=<版本键>（web#318 起数据包里有）。
+     * 指针与条目查询共用同一次 getPointer，所以与条目并行时只多 1 个小文件（每片几 KB），深度 2；h1 那条是指针 → root → 分片，深度 3。
+     * 返回 null＝这条路径答不了（旧数据包没有该目录、分片坏了或为空），调用方改走 h1；抛错（网络、5xx）同样由调用方改走 h1。
+     * 合法分片里没有这个 id 就是确定没有升格（absent），与 h1 分片同一语义。
+     */
+    async function resolvePromotionCurrent(id: string): Promise<PromotionLookup | null> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        const v = key ? `?v=${key}` : '';
+        let shard: { version?: unknown; promotions?: unknown };
+        try {
+            shard = await getImmutable(`${base}/current/promotions/${id.slice(-PROMOTION_SHARD_KEY_LENGTH)}.json${v}`);
+        } catch (err) {
+            if (err instanceof NotFound) return null;
+            throw err;
+        }
+        const rows = shard?.promotions;
+        // 打包只产出非空的合法片：版本不对、形状坏、空表都当「这条路径答不了」
+        if (shard?.version !== 1 || !rows || typeof rows !== 'object' || Object.keys(rows).length === 0) return null;
+        const to = (rows as Record<string, { production_id?: unknown }>)[id]?.production_id;
+        if (typeof to === 'string' && to !== id && isValidItemId(to)) return { status: 'promoted', to };
+        return { status: 'absent' };
+    }
+
+    /** 查升格对照表：先 current/promotions 分片，答不了再走 h1（指针 → root.promotionShards → 分片）。只读当前指针指向的那一版 */
     async function resolvePromotion(id: string): Promise<PromotionLookup> {
         if (!isValidItemId(id)) return { status: 'absent' };
+        if (id.length >= PROMOTION_SHARD_KEY_LENGTH) {
+            try {
+                const cur = await resolvePromotionCurrent(id);
+                if (cur) return cur;
+            } catch (err) {
+                console.warn(`[item-data] current/promotions 查 ${id} 失败，改走 h1：${(err as Error).message}`);
+            }
+        }
         try {
             const pointer = await getPointer<H1Pointer>('h1/manifest-root.json');
             if (!pointer.root) return { status: 'unknown' };
