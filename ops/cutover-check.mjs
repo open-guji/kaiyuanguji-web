@@ -19,6 +19,7 @@ import http from 'node:http';
 import tls from 'node:tls';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { resolveCodeCommit } from './code-pointer.mjs';
@@ -81,8 +82,20 @@ function connectSocket(host, port, timeoutMs) {
 }
 
 /**
+ * 正文转文本。Content-Encoding: gzip 时先解开（网关按客户端头转码，线上可能原样透传 gzip）；
+ * 解不开或别的编码一律按原样转字符串，不抛错。
+ */
+function bodyText(buf, contentEncoding) {
+    if (String(contentEncoding ?? '').trim().toLowerCase() === 'gzip') {
+        try { return gunzipSync(buf).toString('utf8'); } catch { /* 不是合法 gzip：退回原样 */ }
+    }
+    return buf.toString('utf8');
+}
+
+/**
  * GET 一个 URL，不跟跳转。返回 { status, headers, body, cert }；
  * cert 只在 https 时有：{ validTo: Date, subject, altNames }。
+ * body 是文本；gzip 编码的正文会先解开。
  */
 export async function httpGet(url, { headers = {}, timeoutMs = TIMEOUT_MS } = {}) {
     const u = new URL(url);
@@ -128,7 +141,7 @@ export async function httpGet(url, { headers = {}, timeoutMs = TIMEOUT_MS } = {}
             res.on('end', () => resolve({
                 status: res.statusCode,
                 headers: res.headers,
-                body: Buffer.concat(chunks).toString('utf8'),
+                body: bodyText(Buffer.concat(chunks), res.headers['content-encoding']),
                 cert,
             }));
             res.on('error', reject);
