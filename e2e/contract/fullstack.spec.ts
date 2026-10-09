@@ -20,7 +20,7 @@
 import { test, expect, type APIRequestContext, type APIResponse } from '../fixtures/test';
 import { ANCHORS, DATA_BASE, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { dataUrl, fetchLatest } from '../fixtures/version';
+import { dataUrl, fetchLatest, versionKey } from '../fixtures/version';
 import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions';
 
 /* ------------------------------------------------------------------ *
@@ -284,21 +284,33 @@ test.describe('新架构：跳转与 404', () => {
     // 跟随后 404。上面那条只看状态码和 Location，命中缓存的副本是对的就会放过；这里再要求跳转是中间件出的
     // （响应头 x-kyg-item-redirect: redirect:promoted），并像浏览器地址栏输入那样带 sec-fetch-dest: document。
     test('旧草稿 id 整页请求：Location 只有一个值，且由中间件出（x-kyg-item-redirect）', async ({ request }) => {
+        // 上一版用 DRAFT_POOL：那两个 id 根本不在升格表里（页面 404、pass:promo-absent），用例每次都落到 checked===0 被跳过，
+        // 什么也没测到（web#319 部署 run 37867007041 的日志里是 `-` 而不是 ✓）。改为从数据包的 current/promotions/<后缀>.json 分片里
+        // 现取已升格的旧 id，这样池子不会过期；旧数据包没有这些分片才跳过（分片是 web#318 起才有的）。
         const v = await fetchLatest(request);
-        let checked = 0;
-        for (const id of DRAFT_POOL) {
+        const picked: Array<{ id: string; to: string }> = [];
+        for (const key of ['mt', '0m', '5v', 'a3', 'nk', '9c']) {
+            const res = await request.get(dataUrl(`current/promotions/${key}.json`, versionKey(v)));
+            if (!res.ok()) continue;
+            const file = (await res.json()) as { version?: number; promotions?: Record<string, { production_id?: string }> };
+            if (file.version !== 1 || !file.promotions) continue;
+            for (const [id, rec] of Object.entries(file.promotions)) {
+                if (rec?.production_id && rec.production_id !== id) picked.push({ id, to: rec.production_id });
+                if (picked.length >= 6) break;
+            }
+            if (picked.length >= 6) break;
+        }
+        test.skip(picked.length === 0, '数据包里还没有 current/promotions/ 分片，或这几片是空的（web#318 之前的数据包）');
+        for (const { id, to } of picked) {
+            // 草稿条目若还活着，页面会正常 200——那不是本条要测的
             if (await getEntry(request, id, v.commitId)) continue;
-            const p = await lookupPromotion(request, id);
-            if (p.status !== 'promoted') continue;
             const res = await request.get(`${TARGET}/item/${id}`, { ...noFollow, headers: { 'sec-fetch-dest': 'document' } });
             const why = res.headers()['x-kyg-item-redirect'] ?? '(无此头：中间件没出结果或不是本构建)';
             expect(res.status(), `${id} 应 308；中间件原因：${why}`).toBe(308);
             expect(locationTargets(res), `Location 应是单个正式 id，实际「${res.headers()['location'] ?? ''}」；中间件原因：${why}`)
-                .toEqual([`/item/${p.to}`]);
+                .toEqual([`/item/${to}`]);
             expect(res.headers()['x-kyg-item-redirect'], `跳转应由中间件出，实际原因：${why}`).toBe('redirect:promoted');
-            checked++;
         }
-        test.skip(checked === 0, '草稿候选都还活着，或读不到 h1 升格对照表');
     });
 
     test('不存在的 id 真 404，且带 noindex', async ({ request }) => {
