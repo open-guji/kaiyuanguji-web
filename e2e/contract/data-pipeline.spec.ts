@@ -60,6 +60,37 @@ test.describe('数据管线契约', () => {
         expect(st.book, `subtypeStats.book=${st.book} 明显偏小`).toBeGreaterThan(50_000);
     });
 
+    test('meta.json 计数接近上下限预警（只标注，不失败）', async ({ request }) => {
+        // 10-08 books 实测 60,985，越过原上限 60k，契约红了（web#327/#329 才修）。
+        // 真红之前先提前看到「快到顶了」：ratio ≥ 90% 或接近下限（≤ 下限的 110%）只打标注，
+        // 上下限的硬断言仍由上一条用例负责，COUNT_RANGES 的数值也不在这里动。
+        const v = await fetchLatest(request);
+        const res = await request.get(dataUrl('current/meta.json', v.commitId));
+        if (!res.ok()) {
+            test.info().annotations.push({ type: 'warning', description: `meta.json 取不到（${res.status()}），预警未执行` });
+            return;
+        }
+
+        const meta = await res.json();
+        for (const [key, range] of Object.entries(COUNT_RANGES)) {
+            const actual = Number(meta[key]);
+            if (!actual) continue;
+            const ratio = actual / range.max;
+            if (ratio >= 0.9) {
+                test.info().annotations.push({
+                    type: 'warning',
+                    description: `meta.${key}=${actual} 已达上限 ${range.max} 的 ${(ratio * 100).toFixed(0)}%，该调区间了`,
+                });
+            }
+            if (actual <= range.min * 1.1) {
+                test.info().annotations.push({
+                    type: 'warning',
+                    description: `meta.${key}=${actual} 快到下限 ${range.min}（≤ 下限的 110%），该看看是不是在缩水`,
+                });
+            }
+        }
+    });
+
     test('production 条目可取（史記）', async ({ request }) => {
         const v = await fetchLatest(request);
         const res = await request.get(dataUrl(`current/entry/${ANCHORS.work.id}.json`, v.commitId));
