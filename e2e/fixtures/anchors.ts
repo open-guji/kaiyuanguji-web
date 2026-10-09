@@ -61,10 +61,13 @@ export const MEILI_KEY =
  *
  * 新下界按本表 ~±40% 的约定取：31,116 × 0.6 ≈ 18.7k，取整 20_000。
  * Entity 清账仍有余量待办（A3 33／B 3／C 36 待人裁），还会再掉一些，20k 容得下。
+ *
+ * 10-08 数据发布后 books 实测 60,985，越过原上限 60k（数据包基础闸门绿，批 12/13 新增书目所致），按真实增长处理；
+ * 上限按 ~±40% 约定上调到 100k。
  */
 export const COUNT_RANGES = {
     works: { min: 60_000, max: 200_000 },
-    books: { min: 12_000, max: 60_000 },
+    books: { min: 12_000, max: 100_000 },
     collections: { min: 40, max: 500 },
     entities: { min: 20_000, max: 200_000 },
 } as const;
