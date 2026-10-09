@@ -289,21 +289,29 @@ test.describe('新架构：跳转与 404', () => {
         // 现取已升格的旧 id，这样池子不会过期；旧数据包没有这些分片才跳过（分片是 web#318 起才有的）。
         const v = await fetchLatest(request);
         const picked: Array<{ id: string; to: string }> = [];
+        let shardsFound = 0;
         for (const key of ['mt', '0m', '5v', 'a3', 'nk', '9c']) {
             const res = await request.get(dataUrl(`current/promotions/${key}.json`, versionKey(v)));
-            if (!res.ok()) continue;
+            // 404 = 这个后缀没有已升格的 id（或旧数据包没有分片）；别的错误是数据服务出问题，不能当"没分片"悄悄跳过
+            if (res.status() === 404) continue;
+            expect(res.ok(), `promotions/${key}.json 应 200 或 404，实际 ${res.status()}`).toBe(true);
             const file = (await res.json()) as { version?: number; promotions?: Record<string, { production_id?: string }> };
-            if (file.version !== 1 || !file.promotions) continue;
-            for (const [id, rec] of Object.entries(file.promotions)) {
-                if (rec?.production_id && rec.production_id !== id) picked.push({ id, to: rec.production_id });
+            expect(file.version, `promotions/${key}.json 格式不对：version`).toBe(1);
+            expect(typeof file.promotions, `promotions/${key}.json 格式不对：promotions`).toBe('object');
+            shardsFound++;
+            for (const [id, rec] of Object.entries(file.promotions ?? {})) {
                 if (picked.length >= 6) break;
+                if (!rec?.production_id || rec.production_id === id) continue;
+                // 先剔掉草稿条目还活着的（页面会正常 200，不是本条要测的），再算入上限，免得 6 个名额被活条目占满
+                if (await getEntry(request, id, v.commitId)) continue;
+                picked.push({ id, to: rec.production_id });
             }
             if (picked.length >= 6) break;
         }
-        test.skip(picked.length === 0, '数据包里还没有 current/promotions/ 分片，或这几片是空的（web#318 之前的数据包）');
+        // 这几个后缀一片都没有 → 旧数据包（web#318 之前）或还没有升格数据，才跳过
+        test.skip(shardsFound === 0, '数据包里没有 current/promotions/ 分片（web#318 之前的数据包，或还没有任何升格）');
+        expect(picked.length, '读到了升格分片，却没挑出任何"已升格且草稿条目已撤"的旧 id，没法测跳转').toBeGreaterThan(0);
         for (const { id, to } of picked) {
-            // 草稿条目若还活着，页面会正常 200——那不是本条要测的
-            if (await getEntry(request, id, v.commitId)) continue;
             const res = await request.get(`${TARGET}/item/${id}`, { ...noFollow, headers: { 'sec-fetch-dest': 'document' } });
             const why = res.headers()['x-kyg-item-redirect'] ?? '(无此头：中间件没出结果或不是本构建)';
             expect(res.status(), `${id} 应 308；中间件原因：${why}`).toBe(308);
