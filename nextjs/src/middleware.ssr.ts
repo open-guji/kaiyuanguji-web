@@ -222,6 +222,7 @@ function sitemapRewrite(req: NextRequest): NextResponse {
 }
 
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+    if (req.nextUrl.pathname.startsWith('/internal/zmw/')) return NextResponse.next(); // 试验 7 探针（overview#487）：只过中间件、什么都不做
     if (req.nextUrl.pathname === '/sitemap-index.xml' || req.nextUrl.pathname.startsWith('/sitemaps/')) return sitemapRewrite(req);
     if (isReaderPath(req.nextUrl.pathname)) return (await readerPathRedirect(req)) ?? NextResponse.next();
     const reader = await readerRedirect(req);
@@ -230,5 +231,5 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name'],
+    matcher: ['/internal/zmw/:id', '/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name'],
 };
