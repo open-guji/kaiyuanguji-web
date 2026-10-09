@@ -667,7 +667,7 @@ function loadOnce(context, queries, locale, key, timing) {
   return p;
 }
 
-// 只导出 onRequest* 两个处理函数（与本目录其余函数一致）；单测经它们走全链路、mock 全局 fetch
+// 只导出 onRequest* 两个处理函数（与本目录其余函数一致）；单测经它们走全链路、mock 全局 fetch。响应压缩见文件末尾 withCompression
 async function handleSearch(context) {
   const { request } = context;
   const timing = serverTiming();
@@ -731,10 +731,49 @@ async function handleSearch(context) {
   return json(200, loaded.body, okHeaders('MISS'));
 }
 
+// ─── 响应压缩（overview#487） ───
+// EdgeOne 站点设置里的 Gzip／Brotli 对静态产物和数据域生效，对函数（边缘函数、Node SSR）出的响应不生效
+// （2026-10-08 实测：同样带 Accept-Encoding，函数响应没有 Content-Encoding）。搜索结果 JSON 一次几十 KB、压缩率 80% 以上，
+// 所以在函数出口自己压。
+// 函数收到的 Accept-Encoding 恒为 identity（网关改写，实测），看不出客户端接不接受 gzip，所以响应体够大就一律压 gzip；
+// 网关会按真实客户端头转码：gzip 客户端透传、br 客户端转 br、不认压缩的客户端解成明文（staging 实测三种都对）。
+// 一律加 Vary: Accept-Encoding，缓存按编码分别存。
+const COMPRESS_MIN_BYTES = 1024;
+
+/** gzip 压缩。边缘运行时不接受 Blob.stream()／Response(body).body 作为管道源（抛 Param's Type Invalid，staging 实测），要用 CompressionStream 自己的 writer。 */
+async function gzipBytes(raw) {
+  const cs = new CompressionStream('gzip');
+  const writer = cs.writable.getWriter();
+  writer.write(raw);
+  writer.close();
+  return new Response(cs.readable).arrayBuffer();
+}
+
+async function withCompression(res) {
+  // 在可变的响应头上补 Vary（我们自己 new 出来的 Response，头可写）
+  const vary = res.headers.get('Vary');
+  if (!vary) res.headers.set('Vary', 'Accept-Encoding');
+  else if (!/accept-encoding/i.test(vary)) res.headers.set('Vary', `${vary}, Accept-Encoding`);
+
+  if (res.headers.has('Content-Encoding')) return res;
+  if (typeof CompressionStream === 'undefined') return res; // 运行时没有就不压，原样返回
+  try {
+    const raw = new Uint8Array(await res.clone().arrayBuffer());
+    if (raw.byteLength < COMPRESS_MIN_BYTES) return res;
+    const gz = await gzipBytes(raw);
+    const headers = new Headers(res.headers);
+    headers.set('Content-Encoding', 'gzip');
+    headers.set('Content-Length', String(gz.byteLength)); // 压后的长度，别带旧的
+    return new Response(gz, { status: res.status, headers });
+  } catch {
+    return res; // 压缩出错不能让搜索失败，退回未压缩
+  }
+}
+
 export async function onRequestGet(context) {
-  return handleSearch(context);
+  return withCompression(await handleSearch(context));
 }
 
 export async function onRequestPost(context) {
-  return handleSearch(context);
+  return withCompression(await handleSearch(context));
 }
