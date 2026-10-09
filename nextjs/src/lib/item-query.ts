@@ -28,3 +28,15 @@ export function cleanItemSearch(params: URLSearchParams): string | null {
     const s = keep.toString();
     return s ? `?${s}` : '';
 }
+
+/**
+ * 条目页退到 /book-index 由客户端查升格表时的地址：`id` 加上白名单里的参数（tab／page／mode 等详情状态原样带过去，
+ * 外部链接带的视图不丢），白名单之外的参数去掉。
+ */
+export function bookIndexFallbackPath(id: string, params: URLSearchParams): string {
+    const q = new URLSearchParams({ id });
+    params.forEach((value, key) => {
+        if (ITEM_QUERY_WHITELIST.includes(key)) q.append(key, value);
+    });
+    return `/book-index?${q.toString()}`;
+}
