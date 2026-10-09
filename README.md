@@ -21,7 +21,7 @@
 | `indexer/` | 跑在上海服务器上的 Meilisearch 索引器（`full-reindex.mjs`、`reindex-limited.sh`），**不在 CI 里跑** |
 | `edge-functions/` | EdgeOne Pages 边缘函数：`api/feedback.js`（用户反馈）、`api/track-error.js`（前端错误自收） |
 | `ops/` | 全栈构建包装、清缓存、回滚计划、数据巡检、服务器救援等脚本 |
-| `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml`· `shanghai-cvm-rescue.yml` |
+| `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml` |
 
 索引页的 React 组件**不在本仓**，在 npm 包 `book-index-ui`（源码 `open-guji/book-index-manager` 的 `ui/`）。
 本仓 `nextjs/src/app/book-index/page.tsx` 只做数据源与搜索的装配。

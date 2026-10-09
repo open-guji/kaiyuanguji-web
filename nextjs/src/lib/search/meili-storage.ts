@@ -30,7 +30,7 @@ import type { SearchFilters } from 'book-index-ui';
 export interface MeiliConfig {
     /** 代理地址（同站 '/api/search'）。给了就走代理，忽略 baseUrl/apiKey */
     proxyUrl?: string;
-    /** 直连模式的 API base, e.g. 'https://api.kaiyuanguji.com' or 'http://122.51.91.177:7700' */
+    /** 直连模式的 API base, e.g. 'https://api.kaiyuanguji.com' */
     baseUrl?: string;
     /** Read-only key（不要用 master key）。可空 — 此时不发 Authorization 头 */
     apiKey?: string;
