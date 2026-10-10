@@ -38,6 +38,7 @@ import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
+import { isPromotedTombstone } from './lib/tombstone.mjs';
 
 // 繁→简统一走 lib/to-simplified-core.mjs（与网站同一份逻辑的逐字副本，单测比对；overview#448 S0）
 const t2s = createToSimplified({
@@ -619,7 +620,7 @@ async function main() {
                 let detail;
                 try { detail = readDetail(detailPath, entry.id); } catch { continue; }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
-                if (detail._promoted_to) continue;
+                if (isPromotedTombstone(detail)) continue; // 产物墓碑字段是 promoted_to，旧的是 _promoted_to，两个都认
                 if (doWorks) yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) };
                 // 不再看 has_collated 标记（它来自数据仓、会滞后）：有没有整理本版本以文本仓的 manifest.json 为准
                 if (doJuans) {
@@ -704,7 +705,7 @@ async function main() {
                     }
                 }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）
-                if (detail?._promoted_to) continue;
+                if (isPromotedTombstone(detail)) continue;
                 yield buildBookDoc(entry, detail, isDraft);
             }
         }

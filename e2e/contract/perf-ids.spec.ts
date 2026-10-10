@@ -58,8 +58,10 @@ test.describe('测试锚点 ID 契约', () => {
                 continue;
             }
             const entry = await res.json();
-            if (entry._promoted_to) {
-                dead.push(`${id}（${where}）是草稿墓碑，已升格为 ${entry._promoted_to}`);
+            // 墓碑字段：schema-v2 产物是 promoted_to（无下划线），旧产物是 _promoted_to，两个都认
+            const promotedTo = entry.promoted_to || entry._promoted_to;
+            if (promotedTo) {
+                dead.push(`${id}（${where}）是草稿墓碑，已升格为 ${promotedTo}`);
             }
         }
 
@@ -82,7 +84,8 @@ test.describe('测试锚点 ID 契约', () => {
             const res = await request.get(dataUrl(`current/entry/${a.id}.json`, v.commitId));
             expect(res.ok(), `${a.name} ${a.id} 取不到（HTTP ${res.status()}）`).toBeTruthy();
             const entry = await res.json();
-            expect(entry._promoted_to, `${a.name} ${a.id} 是墓碑，应换成 ${entry._promoted_to}`).toBeFalsy();
+            const promotedTo = entry.promoted_to || entry._promoted_to; // 新旧墓碑字段都认
+            expect(promotedTo, `${a.name} ${a.id} 是墓碑，应换成 ${promotedTo}`).toBeFalsy();
         }
     });
 });
