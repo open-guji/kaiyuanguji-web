@@ -300,7 +300,9 @@ jobs:
           if [ -f book-index/build/build_derived.py ]; then
             D="$RUNNER_TEMP/book-index-derived"
             s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
-            (cd book-index && python3 build/build_derived.py --out "$D")
+            # overview#506 C：_has_text／_has_collated 从 book-text 的 index/texts 推（脚本支持且目录在才传）
+            TI=""; if [ -d "$GITHUB_WORKSPACE/book-text/index/texts" ] && grep -q -- "--text-index" book-index/build/build_derived.py; then TI="--text-index $GITHUB_WORKSPACE/book-text/index/texts"; fi
+            (cd book-index && python3 build/build_derived.py --out "$D" $TI)
             echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
           else
@@ -843,7 +845,9 @@ jobs:
           if [ -f book-index/build/build_derived.py ]; then
             D="$RUNNER_TEMP/book-index-derived"
             s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
-            (cd book-index && python3 build/build_derived.py --out "$D")
+            # overview#506 C：_has_text／_has_collated 从 book-text 的 index/texts 推（脚本支持且目录在才传）
+            TI=""; if [ -d "$GITHUB_WORKSPACE/book-text/index/texts" ] && grep -q -- "--text-index" book-index/build/build_derived.py; then TI="--text-index $GITHUB_WORKSPACE/book-text/index/texts"; fi
+            (cd book-index && python3 build/build_derived.py --out "$D" $TI)
             echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
           else
