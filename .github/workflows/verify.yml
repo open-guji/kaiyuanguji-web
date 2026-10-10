@@ -25,7 +25,7 @@ on:
   workflow_call:
     inputs:
       target:
-        description: 被测站点：staging（staging.kaiyuanguji.com）或 production（www.kaiyuanguji.com）
+        description: 被测站点：staging（staging.kaiyuanguji.com）或 production（www.openguji.com）
         type: string
         required: true
       ref:
@@ -90,7 +90,7 @@ permissions:
 
 env:
   # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
-  TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+  TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
   # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
   DATA_BASE: ${{ inputs.target == 'staging' && !inputs.data_from_prod && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
   # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，

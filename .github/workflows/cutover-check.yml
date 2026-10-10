@@ -14,7 +14,7 @@ on:
       domain:
         description: '要查的域名（演练填 ssr-test.kaiyuanguji.com）'
         type: string
-        default: www.kaiyuanguji.com
+        default: www.openguji.com
 
 permissions:
   contents: read

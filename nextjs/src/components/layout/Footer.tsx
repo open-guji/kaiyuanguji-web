@@ -2,6 +2,8 @@
 
 // 只被 LayoutWrapper（客户端组件）引用，本来就在客户端边界内；标 'use client' 才能用 useSiteT 取 alt 等属性文字
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { icpForHost } from '@/lib/site-hosts';
 import { useSiteT } from '@/i18n/use-site-t';
 import type { SiteMessageKey } from '@/i18n/translate';
 
@@ -29,6 +31,9 @@ const groups: { src: string; altKey: SiteMessageKey; lineKeys: SiteMessageKey[] 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const t = useSiteT();
+  // 备案号按访问的域名显示（overview#275）：首帧按规范域名 openguji.com，挂载后按实际主机改
+  const [icp, setIcp] = useState(() => icpForHost(null));
+  useEffect(() => { setIcp(icpForHost(window.location.hostname)); }, []);
 
   return (
     <footer className="og-footer">
@@ -55,7 +60,7 @@ export default function Footer() {
               <Link href="/privacy">{t('footer.privacy')}</Link>
               <Link href="/beta">{t('footer.beta')}</Link>
               <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-                冀ICP备2026013455号
+                {icp}
               </a>
             </div>
           </div>

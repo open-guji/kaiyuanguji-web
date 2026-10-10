@@ -462,3 +462,31 @@ describe('middleware.ssr：阅读页地址（overview#267／#307）', () => {
         }
     });
 });
+
+describe('middleware.ssr：旧域名 → 新域名 301（overview#275）', () => {
+    async function runOn(host: string, path: string, method = 'GET') {
+        const { middleware } = await import('../middleware.ssr');
+        const res = await middleware(new NextRequest(`https://${host}${path}`, { method, headers: { host } }));
+        return { status: res.status, location: res.headers.get('location') };
+    }
+    it('旧域名任意页面 → 301 新域名同一路径，查询串保留，带横幅片段', async () => {
+        expect(await runOn('www.kaiyuanguji.com', '/item/d59f20aowb9c?tab=lineage')).toEqual({
+            status: 301,
+            location: 'https://www.openguji.com/item/d59f20aowb9c?tab=lineage#from-kaiyuanguji',
+        });
+        expect((await runOn('www.kaiyuanguji.com', '/')).status).toBe(301);
+        expect((await runOn('kaiyuanguji.com', '/robots.txt')).location).toBe('https://www.openguji.com/robots.txt#from-kaiyuanguji');
+    });
+    it('新域名裸域 → 301 www，不带片段', async () => {
+        expect(await runOn('openguji.com', '/about')).toEqual({ status: 301, location: 'https://www.openguji.com/about' });
+    });
+    it('旧域名的接口与登录不跳；非 GET 不跳', async () => {
+        expect((await runOn('www.kaiyuanguji.com', '/api/feedback')).status).toBe(200);
+        expect((await runOn('www.kaiyuanguji.com', '/oauth/token', 'POST')).status).toBe(200);
+        expect((await runOn('www.kaiyuanguji.com', '/about', 'POST')).status).toBe(200);
+    });
+    it('规范主机与测试站的普通页面放过，且条目／阅读处理的范围没变（首页带 ?id= 不被当成 /book-index）', async () => {
+        expect((await runOn('www.openguji.com', '/about')).status).toBe(200);
+        expect((await runOn('staging.kaiyuanguji.com', '/?id=d59f20aowb9c')).status).toBe(200);
+    });
+});

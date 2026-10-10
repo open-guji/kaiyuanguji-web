@@ -293,7 +293,7 @@ jobs:
         id: gate
         continue-on-error: true
         working-directory: perf
-        run: npx tsx gate.ts --target=https://www.kaiyuanguji.com
+        run: npx tsx gate.ts --target=https://www.openguji.com
       - name: Gate summary
         if: always()
         run: '[ -f perf/out/gate.md ] && cat perf/out/gate.md >> "$GITHUB_STEP_SUMMARY" || true'

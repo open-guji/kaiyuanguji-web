@@ -44,5 +44,5 @@ export const SITE = {
     canonicalOrigin: (process.env.CANONICAL_ORIGIN
         ?? (isStaging || host === 'localhost' || host === '127.0.0.1'
             ? new URL(TARGET).origin
-            : 'https://www.kaiyuanguji.com')).replace(/\/$/, ''),
+            : 'https://www.openguji.com')).replace(/\/$/, ''),
 } as const;

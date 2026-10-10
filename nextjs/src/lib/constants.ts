@@ -8,7 +8,7 @@ export const DATA_MODE: DataMode =
   (process.env.NEXT_PUBLIC_MODE as DataMode) || 'remote';
 export const isLocalMode = DATA_MODE === 'local';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.kaiyuanguji.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.openguji.com";
 
 // 测试站（T1）：deploy.yml 构建测试站时注入 'staging'，正式站不设（为空）。
 // 驱动 robots 全禁、页面角标、metadata noindex；不驱动数据源／统计（各自独立环境变量）。

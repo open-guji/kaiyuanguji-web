@@ -35,6 +35,7 @@ import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } 
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
 import { sitemapNameFromPath } from '@/lib/server/sitemap-proxy';
+import { canonicalRedirectTarget } from '@/lib/site-hosts';
 
 /** 请求是否来自本站页面（站内点击、预取）或不是整页导航 */
 function isInSite(req: NextRequest): boolean {
@@ -230,7 +231,21 @@ function sitemapRewrite(req: NextRequest): NextResponse {
     return NextResponse.rewrite(new URL(`/sitemap-proxy/${name}`, req.url));
 }
 
+const isHandledPath = (pathname: string) =>
+    pathname === '/book-index' || pathname === '/sitemap-index.xml' ||
+    pathname.startsWith('/item/') || pathname.startsWith('/read/') || pathname.startsWith('/sitemaps/');
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+    // 主域名迁移（overview#275）：旧域名与新域名裸域的页面请求 301 到 www.openguji.com 的同一路径，必须最先判断
+    const canonical = canonicalRedirectTarget({
+        host: req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host,
+        method: req.method,
+        pathname: req.nextUrl.pathname,
+        search: req.nextUrl.search,
+    });
+    if (canonical) return NextResponse.redirect(canonical, 301);
+    // matcher 末项为域名跳转放宽到了所有页面路径；下面的条目／阅读／sitemap 处理仍只管原来的那几类路径，别的直接放过
+    if (!isHandledPath(req.nextUrl.pathname)) return NextResponse.next();
     if (req.nextUrl.pathname === '/sitemap-index.xml' || req.nextUrl.pathname.startsWith('/sitemaps/')) return sitemapRewrite(req);
     if (isReaderPath(req.nextUrl.pathname)) return (await readerPathRedirect(req)) ?? NextResponse.next();
     const reader = await readerRedirect(req);
@@ -239,5 +254,10 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: ['/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name'],
+    // 末项是「除接口、登录、Next 静态资源外的所有路径」，给域名跳转用（canonicalRedirectTarget 按主机判断，其它主机放过）；
+    // 前面各项是原来的条目／阅读／sitemap 路径，保留是为了它们仍各自命中、顺序不变。
+    matcher: [
+        '/book-index', '/item/:id', '/item/:id/read', '/read/:id/:path*', '/sitemap-index.xml', '/sitemaps/:name',
+        '/((?!api/|oauth/|\\.well-known/|_next/).*)',
+    ],
 };
