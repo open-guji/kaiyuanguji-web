@@ -16,7 +16,7 @@ const links: { labelKey: SiteMessageKey; href: string }[] = [
 ];
 
 // 右边两张群二维码，各配一行说明；QQ 那张再加一行群号。
-// 微信群二维码 7 天过期，过期后换 public/images/wechat-group-qr.png。
+// 微信群二维码 7 天过期（当前这张有效期至 10-16），过期后换 public/images/wechat-group-qr.png。
 const QQ_GROUP = '111362573';
 const groups: { src: string; altKey: SiteMessageKey; lineKeys: SiteMessageKey[] }[] = [
   { src: '/images/wechat-group-qr.png', altKey: 'footer.wechatAlt', lineKeys: ['footer.wechatScan'] },

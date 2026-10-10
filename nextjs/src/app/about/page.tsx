@@ -37,7 +37,7 @@ const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
 const LICENSES = ['bookIndex', 'bookText', 'thirdParty', 'code'] as const;
 
 // N6（overview#259）：只放用户给定的联系方式。没有公众号。
-// 微信群二维码 7 天过期，过期后换 public/images/wechat-group-qr.png。
+// 微信群二维码 7 天过期（当前这张有效期至 10-16），过期后换 public/images/wechat-group-qr.png。
 const CONTACT_EMAIL = 'sheldonli.dev@gmail.com';
 const QQ_GROUP = '111362573';
 
