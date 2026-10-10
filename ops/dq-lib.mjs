@@ -27,7 +27,9 @@ import { chapterTxtFile, isInternal, isTextKey } from '../nextjs/scripts/lib/tex
 export const DEFAULT_BASE = 'https://data.kaiyuanguji.com';
 export const MAX_CONCURRENCY = 8;
 export const VALID_TYPES = ['work', 'book', 'collection', 'entity'];
-export const REF_FIELDS = ['work_id', 'books', 'related_works', 'contained_in'];
+// 后四个是 schema-v2 build 产物里的派生字段（`_books`／`_members`／`_related`／`_collections`，元素都带 id），
+// 此前引用巡检看不到它们（盲点）。旧字段保留不动：旧形与新形并存期间两边都查。
+export const REF_FIELDS = ['work_id', 'books', 'related_works', 'contained_in', '_books', '_members', '_related', '_collections'];
 export const FINDING_KINDS = {
     packaging: '网站打包问题',
     data: '数据仓问题',
