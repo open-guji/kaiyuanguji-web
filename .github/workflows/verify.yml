@@ -159,7 +159,7 @@ jobs:
   contract:
     needs: prep
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -177,6 +177,7 @@ jobs:
           d=$(( READY_AT - $(date +%s) ))
           if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Contract tests
+        timeout-minutes: 8
         working-directory: e2e
         run: npm run test:contract
       - name: Upload report
@@ -214,6 +215,7 @@ jobs:
           d=$(( READY_AT - $(date +%s) ))
           if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Degradable deps (non-blocking)
+        timeout-minutes: 8
         working-directory: e2e
         continue-on-error: true
         run: npm run test:degradable
@@ -247,6 +249,7 @@ jobs:
           d=$(( READY_AT - $(date +%s) ))
           if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
       - name: Read links check
+        timeout-minutes: 8
         run: |
           node --test ops/tests/read-links-check.test.mjs
           node ops/read-links-check.mjs
@@ -258,7 +261,7 @@ jobs:
     needs: prep
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 18
     container:
       image: mcr.microsoft.com/playwright:v${{ needs.prep.outputs.pw_version }}-noble
       options: --user 1001
@@ -281,6 +284,7 @@ jobs:
       # --fully-parallel：按用例而不是按文件分给 worker、切片。a11y.spec 一个文件 64 条、约 8 分钟，
       # 按文件分时整片都压在一个 worker 上，是原来 UI 一步 8 分钟的大头。各用例之间没有 serial／beforeAll 依赖。
       - name: UI tests
+        timeout-minutes: 14
         working-directory: e2e
         env:
           ARGS: ${{ matrix.args }}
