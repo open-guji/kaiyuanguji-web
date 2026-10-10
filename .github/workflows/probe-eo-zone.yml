@@ -39,17 +39,12 @@ jobs:
                   return json.loads(getattr(c, name)(r).to_json_string())
               except Exception as e:
                   return {'ERROR': str(e)[:300]}
-          z = os.environ['EDGEONE_ZONE_ID']
-          r = call('DescribeL7AccRules', ZoneId=z)
-          print('TotalCount', r.get('TotalCount'))
-          def acts(br, ind):
-              for b in br or []:
-                  print(ind + 'IF ' + str(b.get('Condition')))
-                  for x in b.get('Actions') or []:
-                      ps = {k: v for k, v in x.items() if k != 'Name' and v}
-                      print(ind + '  -> ' + x.get('Name') + ' ' + json.dumps(red(ps), ensure_ascii=False)[:300])
-                  for sr in b.get('SubRules') or []:
-                      acts(sr.get('Branches'), ind + '    ')
-          for x in r.get('Rules') or []:
-              print('--- [%s] %s (prio %s)' % (x.get('Status'), x.get('RuleName'), x.get('RulePriority')))
-              acts(x.get('Branches'), '  ')
+          req = urllib.request.Request('https://pages-api.edgeone.ai/v1', data=json.dumps({'Action': 'DescribePagesProjects', 'PageNumber': 1, 'PageSize': 50}).encode(), method='POST', headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + os.environ['EDGEONE_API_TOKEN']})
+          data = json.load(urllib.request.urlopen(req, timeout=30))
+          resp = (data.get('Data') or {}).get('Response') or data
+          for pr in resp.get('Projects') or []:
+              if pr.get('Name') == 'kyg-ssr-spike':
+                  print(json.dumps(red(pr.get('CustomDomains')), ensure_ascii=False, indent=1))
+          for d in ('www.openguji.com', 'openguji.com'):
+              r = call('DescribeAccelerationDomains', ZoneId='zone-3l07bqnx3ems', Limit=50, Filters=[{'Name': 'domain-name', 'Values': [d]}])
+              print(d, json.dumps(red(r), ensure_ascii=False)[:1500])
