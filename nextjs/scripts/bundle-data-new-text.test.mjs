@@ -90,6 +90,8 @@ function makeFixture(base) {
     put(nw, 'default/index.json', idx(true));
     put(nw, 'default/001.md', '# 整理本\n');
     put(nw, 'default/001.json', { sections: [{ title: '一', content: '道可道' }] });
+    put(nw, 'default/003.norm.json', { schema: 'guji-norm/0.2', book_id: 'x', volume: 3, table: null, items: [] }); // 异体字归一表（norm_file，overview#540）：版本目录下，应公开
+    put(nw, 'default/003.decision.json', { note: '决策记录（现状：版本目录下的 *.json 照拷）' });
     put(nw, 'wikisource/index.json', idx());
     put(nw, 'wikisource/001.md', '# 维基\n');
     put(nw, 'fragments/f.json', { x: 1 }); // 非文本资产照旧公开
@@ -228,6 +230,12 @@ try {
             assert.ok(!/(^|\/)extra\//.test(f.replace(/\\/g, '/')), `${f} 在 extra/ 下`);
             if (/\.(txt|json)$/.test(f)) assert.ok(!rd(join(data, f)).includes('手编源'), `${f} 含手编源内容`);
         }
+    });
+
+    test('版本目录下的 NNN.norm.json 公开（原样拷，不改名）；NNN.decision.json 现状也照拷（如实记录，打包逻辑未改）', () => {
+        const d = join(data, 'items', IDS.newWork, 'default');
+        assert.equal(rd(join(d, '003.norm.json')), rd(join(text, 'Work', 'c', IDS.newWork, 'default', '003.norm.json')));
+        assert.ok(existsSync(join(d, '003.decision.json')), 'decision 现状：会被拷出（非 internal 版本）');
     });
 
     test('没有 internal 的新结构 manifest.json 原样拷字节', () => {

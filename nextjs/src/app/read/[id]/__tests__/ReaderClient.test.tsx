@@ -20,7 +20,12 @@ const getTextIndex = jest.fn();
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getTextManifest, getTextIndex, getChapter: jest.fn() }) }));
 
 const last: { reader?: Record<string, unknown> } = {};
+// 对读数据适配：记下第三参数（norm）；pages 非空才不会被当成「没有对读」
+const mockAdaptCharCord = jest.fn((..._a: unknown[]) => [{ page: 3 }]);
 jest.mock('book-index-ui', () => ({
+    adaptCharCord: (...a: unknown[]) => mockAdaptCharCord(...a),
+    adaptPunctJson: () => [],
+    iiifVolumeOf: () => null,
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）
     useConvert: () => ({ convert: (s: string) => s }),
@@ -247,4 +252,34 @@ describe('ReaderClient：历史记录', () => {
         await act(async () => { await Promise.resolve(); });
         expect(screen.getAllByTestId('reader')[0]).toHaveTextContent('default|003');
     });
+
+    // overview#540：norm（规范层）读
+    describe('resolveWarpData：norm_file', () => {
+        type ResolveWarp = (key: string, ctx: unknown) => Promise<Record<string, unknown> | null>;
+        const CHAR = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json' };
+        const run = async (id: string, chapter: Record<string, unknown>) => {
+            global.fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => ({ url }) })) as unknown as typeof fetch;
+            render(<ReaderClient id={id} initial={{ chapter: '003' }} bookTitle="t" />);
+            await act(async () => { await Promise.resolve(); });
+            return (last.reader!.resolveWarpData as ResolveWarp)('003', { versionKey: 'original', chapter });
+        };
+        beforeEach(() => { mockAdaptCharCord.mockClear(); });
+
+        it('章条目声明了 norm_file：取回的 norm 作为 adaptCharCord 的第三参数，数据带 hasNorm=true', async () => {
+            const r = await run('book-nm1', { ...CHAR, norm_file: '003.norm.json' });
+            expect(mockAdaptCharCord).toHaveBeenCalledTimes(1);
+            const [char, cord, norm] = mockAdaptCharCord.mock.calls[0];
+            expect(char).toEqual({ url: '/data/items/book-nm1/original/003.char.json' });
+            expect(cord).toEqual({ url: '/data/items/book-nm1/original/003.cord.json' });
+            expect(norm).toEqual({ url: '/data/items/book-nm1/original/003.norm.json' });
+            expect(r?.hasNorm).toBe(true);
+        });
+
+        it('没声明 norm_file（外来文本）：第三参数为 null，hasNorm=false——阅读器的「原字」档据此置灰', async () => {
+            const r = await run('book-nm2', CHAR);
+            expect(mockAdaptCharCord.mock.calls[0][2]).toBeNull();
+            expect(r?.hasNorm).toBe(false);
+        });
+    });
+
 });
