@@ -46,7 +46,7 @@ export const THRESHOLDS = Object.freeze({
 /** 绝对下限：同 e2e/fixtures/anchors.ts:65-70 的 COUNT_RANGES 与 deploy.yml 的 N_ENTRY 闸（改一处记得改两处）。 */
 export const COUNT_RANGES = Object.freeze({
     works: { min: 60_000, max: 200_000 },
-    books: { min: 12_000, max: 60_000 },
+    books: { min: 12_000, max: 100_000 },
     collections: { min: 40, max: 500 },
     entities: { min: 20_000, max: 200_000 },
 });

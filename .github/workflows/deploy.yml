@@ -661,6 +661,8 @@ jobs:
             (cd book-index && python3 build/build_derived.py --out "$D" $TI)
             echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
+            # 05 overview#506 E：旧字段回退已清零（data.yml 38049993918：命中 74 万、回退 0），从此有回退就让打包失败
+            echo "STRICT_DERIVED=1" >> "$GITHUB_ENV"
           else
             echo "book-index 没有 build/build_derived.py：旧 schema，打包读源档"
           fi
