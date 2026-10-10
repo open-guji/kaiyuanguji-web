@@ -58,6 +58,8 @@ const PROMOTIONS = {
     },
 };
 
+/** 演示数据（decision，15 条）的标记：不得出现在任何公开产物里（守卫：打包只认已知目录，decision 不进产物） */
+const DECISION_MARKER = 'DECISION_DEMO_MARKER_7f3a';
 const IDS = { oldWork: 'aaaaaaaaaaa', oldBook: 'bbbbbbbbbbb', newWork: 'ccccccccccc', privWork: 'ddddddddddd', emptyWork: 'eeeeeeeeeee', newBook: 'fffffffffff' };
 
 function makeFixture(base) {
@@ -126,6 +128,11 @@ function makeFixture(base) {
 
     // 站点内容文件（book-index 根目录；缺了 bundle-data 会报错，overview#432）
     for (const f of SITE_CONTENT_FILES) put(draft, f, f === 'recommended.json' ? { groups: [] } : f === 'promotions.json' ? PROMOTIONS : {});
+    // 演示数据 decision：正式仓根目录与文本仓里各放一份带标记的文件，产物里必须一处都搜不到
+    put(draft, 'decision/demo-1.json', { id: 'decision-demo-1', title: DECISION_MARKER });
+    put(text, 'decision/demo/manifest.json', { versions: [ver('default', 'transcription')] });
+    put(text, 'decision/demo/default/index.json', idx());
+    put(text, 'decision/demo/default/001.md', `# ${DECISION_MARKER}\n`);
     put(draft, 'index/works/0.json', works);
     put(draft, 'index/books/0.json', books);
     git(draft, 'init', '-q');
@@ -152,6 +159,12 @@ try {
     const data = join(outRoot, 'data');
     let log = '';
     test('bundle-data.mjs 能跑完（含构建期核对）', () => { log = run('bundle-data.mjs', e); });
+
+    test('演示数据 decision 不进公开产物：没有 decision 目录，产物里任何文件都搜不到演示标记', () => {
+        assert.ok(!existsSync(join(data, 'decision')));
+        const hits = walkFiles(outRoot).filter((f) => rd(join(outRoot, f)).includes(DECISION_MARKER));
+        assert.deepEqual(hits, []);
+    });
 
     test('没有 manifest.json 的旧目录：原样拷成普通目录，条目 JSON 没有 text_*／旧阅读标记', () => {
         assert.ok(existsSync(join(data, 'items', IDS.oldWork, 'collated_edition', 'juan', '001.json')));
