@@ -184,11 +184,11 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // 对读（图文对读）：章条目声明了 `char_file`＋`cord_file` 就按声明取 char／cord（再加 `punct_file`、`entity_file`），
-    // 两边按格位对上；没有 `cord_file` 就是普通阅读，不发请求（见 lib/duidu-data.ts）。
+    // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`）；
+    // 有 `cord_file` 才有像素框，两边按格位对上做对读版面；没有 cord 就不做对读版面、不画书影格线（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
-        if (!files) return null;
+        if (!files?.cord) return null;
         const pages = adaptCharCord(files.char, files.cord);
         if (pages.length === 0) return null;
         const vol = iiifVolumeOf(files.cord);
@@ -217,7 +217,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
     const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
-        const vol = files ? iiifVolumeOf(files.cord) : null;
+        const vol = files?.cord ? iiifVolumeOf(files.cord) : null;
         return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
     }, [id, transport]);
 

@@ -36,7 +36,7 @@ describe('checkReader', () => {
         const only: GetCurrentJson = async <T,>(rel: string) => (rel.endsWith('manifest.json') ? { versions: [{ key: 'default', kind: 'collated', license: '未知' }] } : FILES[`items/${WORK}/default/index.json`]) as T | null;
         const o = await checkReader(WORK, {}, only);
         expect(o.status).toBe('found');
-        expect(o.version?.license).toBe('版权未知');
+        expect(o.version?.license).toBe('未知');
     });
 
     it('给了章：章名按目录（去首尾空白）；其他版本按 key', async () => {
