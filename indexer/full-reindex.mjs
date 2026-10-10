@@ -221,6 +221,11 @@ function buildCollectionDoc(entry, isDraft = true) {
     };
 }
 
+function yearOf(v) {
+    const n = typeof v === 'number' ? v : typeof v === 'string' && /^-?\d+$/.test(v.trim()) ? Number(v) : NaN;
+    return Number.isFinite(n) ? n : null;
+}
+
 function buildEntityDoc(entry, isDraft = true) {
     const name = entry.primary_name || entry.title || '';
     return {
@@ -230,8 +235,9 @@ function buildEntityDoc(entry, isDraft = true) {
         subtype: entry.subtype || 'people',
         primary_name: name,
         dynasty: entry.dynasty || '',
-        birth_year: entry.birth_year ?? null,
-        death_year: entry.death_year ?? null,
+        // schema-v2：生卒年的真源是 dates.birth／dates.death（源记录本体的 birth_year／death_year 已删，旧数据仍兼容）
+        birth_year: yearOf(entry.dates?.birth) ?? yearOf(entry.birth_year),
+        death_year: yearOf(entry.dates?.death) ?? yearOf(entry.death_year),
         cbdb_id: entry.cbdb_id ?? null,
         completeness: entry.cbdb_id ? 1 : 0,
         title_chars: Array.from(name).length,
