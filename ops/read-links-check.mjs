@@ -27,8 +27,23 @@ import { pathToFileURL } from 'node:url';
 import { mulberry32 } from './dq-lib.mjs';
 import { chapterTxtFile, firstChapterOf, isInternal, isTextKey } from '../nextjs/scripts/lib/text-layout.mjs';
 
-/** 边缘瞬时错误：503 回源超时页、522 连接回源超时、524 回源读超时、525 边缘与源站 TLS 握手失败（overview#484）；都按可重试处理 */
-export const EDGE_TRANSIENT = new Set([503, 522, 524, 525]);
+/**
+ * 边缘瞬时错误：503 回源超时页、522 连接回源超时、524 回源读超时、525 边缘与源站 TLS 握手失败（overview#484）；
+ * 429 边缘限流（10-10 同一个站同时有几路 verify，预热 106 个请求回 429、正式抽检 11 处失败，overview#524）；都按可重试处理
+ */
+export const EDGE_TRANSIENT = new Set([429, 503, 522, 524, 525]);
+
+/** 单次等待上限：服务器给的 Retry-After 再大也不等过这么久，免得一个页面拖住整个 job */
+export const RETRY_AFTER_CAP_MS = 30_000;
+
+/** Retry-After（秒数；日期格式不认）→ 毫秒，缺失或不合法返回 0，超过上限按上限 */
+export function retryAfterMs(res) {
+    const h = res?.headers;
+    if (!h || typeof h.get !== 'function') return 0;
+    const sec = Number(h.get('retry-after'));
+    if (!Number.isFinite(sec) || sec <= 0) return 0;
+    return Math.min(sec * 1000, RETRY_AFTER_CAP_MS);
+}
 
 /** 非 200 响应里 EdgeOne 排障用的头，拼成 `EO-LOG-UUID=… Eo-Cache-Status=… Date=…`；没有的头不写 */
 export function edgeHeaders(res) {
@@ -75,7 +90,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             const init = { headers: { 'cache-control': 'no-cache' } };
             if (timeoutMs) init.signal = AbortSignal.timeout(timeoutMs);
             const res = await fetchImpl(url, init);
-            if (!res.ok) return { ok: false, status: res.status, hdr: edgeHeaders(res) };
+            if (!res.ok) return { ok: false, status: res.status, hdr: edgeHeaders(res), retryAfterMs: retryAfterMs(res) };
             return { ok: true, status: res.status, body: asJson ? await res.json() : undefined };
         } catch (e) {
             // JSON 解析失败是永久错误（响应已到），不是传输失败，标 permanent 不重试
@@ -100,7 +115,8 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         let attempts = 0;
         let hdr = first.hdr; // 重试途中拿到过的 EdgeOne 头留着，最后一次没带头（如连接失败）也不丢
         while (transient(r) && attempts < delays.length) {
-            await sleep(delays[attempts++]);
+            // 429 带 Retry-After 时至少等那么久（有上限），再叫退避表里的下一档
+            await sleep(Math.max(delays[attempts++], r.retryAfterMs ?? 0));
             r = await get(url, asJson);
             hdr = r.hdr || hdr;
         }
@@ -243,11 +259,11 @@ export function renderSummary({ checked, pagesChecked = 0, failures, retried = [
     }
     const { ratio, warn } = retryWarning({ pagesChecked, retried }, warnRatio);
     if (retried.length) {
-        lines.push('', `阅读页 503／522／524／525／连接失败、重试后通过 ${retried.length} 处，占抽检阅读页 ${pct(ratio)}（不记失败；说明首次渲染仍超回源时限，overview#322）：`);
+        lines.push('', `阅读页 429／503／522／524／525／连接失败、重试后通过 ${retried.length} 处，占抽检阅读页 ${pct(ratio)}（不记失败；说明首次渲染仍超回源时限，overview#322）：`);
         for (const u of retried.slice(0, 20)) lines.push(`- ${u}`);
     }
     if (retriedData.length) {
-        lines.push('', `数据文件 503／522／524／525／连接失败、重试后通过 ${retriedData.length} 处（不记失败）：`);
+        lines.push('', `数据文件 429／503／522／524／525／连接失败、重试后通过 ${retriedData.length} 处（不记失败）：`);
         for (const u of retriedData.slice(0, 20)) lines.push(`- ${u}`);
     }
     if (warn) lines.push('', `⚠️ 重试后通过的占比 ${pct(ratio)} 超过 ${pct(warnRatio)}：只告警，不拦发布。阅读页冷启动明显变慢了，请看 overview#322。`);
