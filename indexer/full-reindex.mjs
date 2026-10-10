@@ -294,15 +294,17 @@ function buildJuanDocs(workEntry) {
     const manifest = readJsonSafe(join(itemDir, 'manifest.json'));
     if (!manifest || manifest.visibility === 'internal' || !Array.isArray(manifest.versions)) return [];
     const docs = [];
+    let badChapters = 0;
     for (const v of manifest.versions) {
         if (v?.kind !== 'collated' || v.visibility === 'internal' || typeof v.key !== 'string' || !TEXT_KEY_RE.test(v.key)) continue;
         const keyDir = join(itemDir, v.key);
         const chapters = readJsonSafe(join(keyDir, 'index.json'))?.chapters;
         if (!Array.isArray(chapters)) continue;
         for (const c of chapters) {
-            // 容忍 file 带扩展名：book-text 现状 0 例，但这里若改严，带扩展名的章会被下面的 stem 校验静默跳过（搜索少文档、无报错），故保留
-            const stem = typeof c?.file === 'string' ? c.file.replace(/\.(md|txt|json)$/, '') : '';
-            if (!stem || !/^[0-9A-Za-z_-]+$/.test(stem)) continue;
+            // 严格按索引给的文件名读：file 就是不带扩展名的章号（如 001），读 <file>.md／<file>.json，不再剥扩展名。
+            // 2026-10-10 全量核对 book-text（HEAD，16 万余章）：无一章带扩展名，故无需容忍；不合规的章计数告警，不静默跳过。
+            const stem = typeof c?.file === 'string' ? c.file : '';
+            if (!stem || !/^[0-9A-Za-z_-]+$/.test(stem)) { badChapters++; continue; }
             const name = c.title || stem;
             let clean = '';
             try {
@@ -319,6 +321,7 @@ function buildJuanDocs(workEntry) {
             docs.push(juanDoc(workId, name, clean));
         }
     }
+    if (badChapters) console.warn(`⚠️  juans: ${workId} 有 ${badChapters} 章的 file 不合规（须为不带扩展名的章号，如 001），已跳过`);
     return docs;
 }
 
