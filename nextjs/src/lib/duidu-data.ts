@@ -3,7 +3,8 @@
  * 网站只按声明取，不写死书 id、不猜文件名：
  *   - `char_file`（必有）：每格的字（guji-char，文本真源）；
  *   - `cord_file`（可选）：每格的像素框（guji-cord）——**有它才有对读**（书影格线、对读版面）；没有它只加载 char（及 punct／entity），cord 为 null 往下传；
- *   - `punct_file`：标点；`entity_file`：专名实体。
+ *   - `punct_file`：标点；`entity_file`：专名实体；
+ *   - `norm_file`（可选）：异体字归一表（overview#540）。未声明或取不到都当没有，不影响整章。
  * `pages_file`、`has_warp` 随 pages.json 作废。四个文件在同一章里按格位 key（`页:列:格[子列]`）对上。
  */
 
@@ -13,6 +14,8 @@ export interface DuiduFiles {
     cord: unknown | null;
     punct: unknown;
     entity: unknown;
+    /** 没有声明 `norm_file`（或取不到）时为 null：下游照旧走全局异体字表 */
+    norm: unknown;
 }
 
 /**
@@ -61,19 +64,22 @@ export function loadDuiduFiles(
     if (!charFile) return Promise.resolve(null);
     const punctFile = fileField(ch, 'punct_file');
     const entityFile = fileField(ch, 'entity_file');
-    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${punctFile ?? ''}|${entityFile ?? ''}`;
+    const normFile = fileField(ch, 'norm_file');
+    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${punctFile ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
-            const [char, cord, punct, entity] = await Promise.all([
+            const [char, cord, punct, entity, norm] = await Promise.all([
                 getJson(storage, id, key, charFile),
                 cordFile ? getJson(storage, id, key, cordFile) : null,
                 punctFile ? getJson(storage, id, key, punctFile) : null,
                 entityFile ? getJson(storage, id, key, entityFile) : null,
+                normFile ? getJson(storage, id, key, normFile) : null,
             ]);
             // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null
             if (!char || (cordFile && !cord)) return null;
-            return { char, cord, punct, entity };
+            // norm 是可选层：取不到当没有（null），不让整章返回 null
+            return { char, cord, punct, entity, norm: norm ?? null };
         })();
         cache.set(cacheKey, p);
         p.then(v => { if (!v) cache.delete(cacheKey); });

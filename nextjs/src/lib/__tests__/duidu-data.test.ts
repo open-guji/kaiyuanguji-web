@@ -17,7 +17,7 @@ describe('loadDuiduFiles', () => {
         global.fetch = fetchMock as unknown as typeof fetch;
         const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => ({ file }));
         const r = await loadDuiduFiles('book-s1', { versionKey: 'original', chapter }, '003', { getTextFile });
-        expect(r).toEqual({ char: { file: '003.char.json' }, cord: { file: '003.cord.json' }, punct: { file: '003.punct.json' }, entity: { file: '003.entity.json' } });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: { file: '003.cord.json' }, punct: { file: '003.punct.json' }, entity: { file: '003.entity.json' }, norm: null });
         expect(getTextFile.mock.calls.map(c => c.join('/')).sort()).toEqual([
             'book-s1/original/003.char.json', 'book-s1/original/003.cord.json', 'book-s1/original/003.entity.json', 'book-s1/original/003.punct.json',
         ]);
@@ -52,7 +52,7 @@ describe('loadDuiduFiles', () => {
         const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
         const charOnly = { file: '003', char_file: '003.char.json', punct_file: '003.punct.json' };
         const r = await loadDuiduFiles('book-s6', { versionKey: 'original', chapter: charOnly }, '003', { getTextFile });
-        expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: { file: '003.punct.json' }, entity: null });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: { file: '003.punct.json' }, entity: null, norm: null });
         expect(getTextFile.mock.calls.map(c => c.join('/')).sort()).toEqual(['book-s6/original/003.char.json', 'book-s6/original/003.punct.json']);
     });
 
@@ -60,7 +60,31 @@ describe('loadDuiduFiles', () => {
         const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
         const both = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json' };
         const r = await loadDuiduFiles('book-s7', { versionKey: 'original', chapter: both }, '003', { getTextFile });
-        expect(r).toEqual({ char: { file: '003.char.json' }, cord: { file: '003.cord.json' }, punct: null, entity: null });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: { file: '003.cord.json' }, punct: null, entity: null, norm: null });
+    });
+
+    it('声明了 norm_file：norm 为取回的对象；未声明为 null', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
+        const withNorm = { file: '003', char_file: '003.char.json', norm_file: '003.norm.json' };
+        const r = await loadDuiduFiles('book-n1', { versionKey: 'original', chapter: withNorm }, '003', { getTextFile });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: null, entity: null, norm: { file: '003.norm.json' } });
+        const r2 = await loadDuiduFiles('book-n2', { versionKey: 'original', chapter }, '003', { getTextFile });
+        expect(r2?.norm).toBeNull();
+    });
+
+    it('norm_file 取不到：norm 为 null，整章不返回 null（norm 是可选层）', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('norm') ? null : { file }));
+        const withNorm = { file: '003', char_file: '003.char.json', norm_file: '003.norm.json' };
+        const r = await loadDuiduFiles('book-n3', { versionKey: 'original', chapter: withNorm }, '003', { getTextFile });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: null, entity: null, norm: null });
+    });
+
+    it('norm_file 写成带路径被 fileField 拒绝：norm 为 null，不发该请求', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
+        const bad = { file: '003', char_file: '003.char.json', norm_file: '../x.json' };
+        const r = await loadDuiduFiles('book-n4', { versionKey: 'original', chapter: bad }, '003', { getTextFile });
+        expect(r?.norm).toBeNull();
+        expect(getTextFile.mock.calls.map(c => c.join('/'))).toEqual(['book-n4/original/003.char.json']);
     });
 
     it('char_file 与 cord_file 都没有：返回 null，不发请求', async () => {
