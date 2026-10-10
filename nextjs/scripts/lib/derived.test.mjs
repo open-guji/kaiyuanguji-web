@@ -48,13 +48,13 @@ try {
     assert.equal(derivedPath('nope.json', der), null);
     assert.equal(derivedPath('classific.json', null), null);
 
-    // 分类：新字段优先（zongmu），回退旧字段，都没有 null
+    // 分类：只读 _classifications（优先 zongmu），旧 classification 不再读，都没有 null
     assert.deepEqual(
         classificationOf({ classification: { l1: '舊' }, _classifications: [{ scheme: 'other', l1: '乙', l2: '' }, { scheme: 'zongmu', l1: '史部', l2: '雜史類', l3: '', l4: '', source: '總目' }] }),
         { l1: '史部', l2: '雜史類', l3: '', l4: '', source: '總目' },
     );
     assert.deepEqual(classificationOf({ _classifications: [{ scheme: 'x', l1: '丙', l2: '丁' }] }), { l1: '丙', l2: '丁', l3: '', l4: '' });
-    assert.deepEqual(classificationOf({ classification: { l1: '經部', l2: '易類' } }), { l1: '經部', l2: '易類' });
+    assert.equal(classificationOf({ classification: { l1: '經部', l2: '易類' } }), null);
     assert.equal(classificationOf({ _classifications: [] }), null);
     assert.equal(classificationOf({}), null);
     // 命中数闸：只数设了产物目录的读；回退>0 默认只警告，STRICT_DERIVED=1 才失败

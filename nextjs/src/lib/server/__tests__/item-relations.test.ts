@@ -41,23 +41,23 @@ describe('item-relations：契约样例（新格式）', () => {
     });
 });
 
-describe('item-relations：旧格式回退', () => {
+describe('item-relations：旧字段不再读（回退已删，overview#522）', () => {
     const old = {
         books: ['988g3f0wsu'], contained_works: [{ id: 'd59f20aowb9c' }], contained_in: [{ id: '8rlcsy6ubh1c' }],
         works: [{ work_id: 'd59f20aowb9c' }], classification: { l1: '史部', l2: '正史類' },
     } as unknown as ItemEntry;
-    it('没有 _ 字段时读旧字段', () => {
-        expect(booksOf(old)).toEqual(['988g3f0wsu']);
-        expect(membersOf(old)).toEqual([{ id: 'd59f20aowb9c' }, '988g3f0wsu']);
-        expect(collectionsOf(old)).toEqual([{ id: '8rlcsy6ubh1c' }]);
-        expect(worksOf(old)).toHaveLength(1);
-        expect(classificationOf(old)).toMatchObject({ l1: '史部' });
+    it('只有旧字段时全部给空', () => {
+        expect(booksOf(old)).toEqual([]);
+        expect(membersOf(old)).toEqual([]);
+        expect(collectionsOf(old)).toEqual([]);
+        expect(worksOf(old)).toEqual([]);
+        expect(classificationOf(old)).toEqual({});
     });
-    it('新旧并存时新字段优先；新字段为空数组时回退', () => {
+    it('新旧并存时只认新字段', () => {
         const both = { ...old, _books: [{ id: 'x' }], _classifications: [{ scheme: 'zongmu', l1: '經部' }] } as unknown as ItemEntry;
         expect(booksOf(both)).toEqual([{ id: 'x' }]);
         expect(classificationOf(both).l1).toBe('經部');
-        expect(booksOf({ ...old, _books: [] } as unknown as ItemEntry)).toEqual(['988g3f0wsu']);
+        expect(booksOf({ ...old, _books: [] } as unknown as ItemEntry)).toEqual([]);
     });
     it('什么都没有时给空', () => {
         const none = {} as ItemEntry;
