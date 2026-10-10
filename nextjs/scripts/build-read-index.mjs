@@ -29,7 +29,7 @@
  * 用法：bundle-data.mjs 在总目之后调用 bundleRead()（正常流程）；
  *       node scripts/build-read-index.mjs [bookIndexDir]   单独重建
  */
-import { existsSync, readFileSync, readdirSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -490,42 +490,6 @@ export function verifyReadProbes(probes, dataDir) {
         }
     }
     return missing;
-}
-
-// ─── 过渡：bundle-data.mjs 的旧标记（has_site_fulltext／has_full_text）还在用，#307 §十 清理时随调用方一起删 ───
-
-function readJsonOrNull(p) {
-    try {
-        return JSON.parse(readFileSync(p, 'utf-8'));
-    } catch {
-        return null;
-    }
-}
-
-/** @deprecated 旧结构。Work 全文：index/full_text 分片里该 Work 的条目，返回阅读页会选的那一个，没有返回 null */
-export function workFullTextPick(list) {
-    const ok = (Array.isArray(list) ? list : []).filter((v) => v && v.owner_type !== 'Book' && typeof v.key === 'string' && v.total_chapters > 0);
-    return ok.find((v) => v.primary) ?? ok[0] ?? null;
-}
-
-/** @deprecated 旧结构。Book 全文：full_text/index.json 有非空 chapters。返回首章文件名，不可读返回 null */
-export function bookFirstChapter(itemDir) {
-    const idx = readJsonOrNull(join(itemDir, 'full_text', 'index.json'));
-    const ch = Array.isArray(idx?.chapters) ? idx.chapters.find((c) => typeof c?.file === 'string' && c.file) : null;
-    return ch ? ch.file : null;
-}
-
-/** @deprecated 旧结构。读 book-text/index/full_text/*.json 合并成 { workId: entry[] } */
-export function loadWorkFullTextLists(textDir) {
-    const all = new Map();
-    const dir = join(textDir, 'index', 'full_text');
-    if (!existsSync(dir)) return all;
-    for (const f of readdirSync(dir)) {
-        if (!f.endsWith('.json')) continue;
-        const data = readJsonOrNull(join(dir, f));
-        if (data && typeof data === 'object') for (const [id, list] of Object.entries(data)) all.set(id, list);
-    }
-    return all;
 }
 
 // ─── 单独运行 ───
