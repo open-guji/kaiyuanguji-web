@@ -150,7 +150,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         role: entry.role || '',
         subtype: entry.subtype || '',
         // 搜索页 v4 的筛选（overview#291 P1a）：部（一级分类，没有的空串）与存佚
-        classification: classificationL1(derivedClassification(detail), detail.classification, entry.classification),
+        classification: classificationL1(derivedClassification(detail), entry.classification),
         loss_status: lossStatusValue(detail.loss_status, entry.loss_status),
         has_collated: !!entry.has_collated,
         has_text: hasTextValue(entry),   // 有转录全文或整理本（「有文本」筛选，overview#322）

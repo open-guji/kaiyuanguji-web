@@ -36,6 +36,8 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const cls = (l1, l2 = '', l3 = '', l4 = '') => ({ l1, l2, l3, l4, basis: 'S', source: '千頃堂書目' });
+/** 条目里的分类字段：build 产物的 `_classifications[]` 单项（旧 `classification` 回退已删，overview#522） */
+const clsN = (l1, l2 = '', l3 = '', l4 = '') => ({ scheme: 'zongmu', ...cls(l1, l2, l3, l4) });
 
 test('classificationPath：取 l1 起连续非空的几级', () => {
     assert.deepEqual(classificationPath(cls('史部', '紀傳類')), ['史部', '紀傳類']);
@@ -58,7 +60,7 @@ test('toCard：契约字段，提要截断，第一作者借作品朝代', () =>
         id: 'w1', title: '史記', juan_count: 130, dynasty: '西漢',
         authors: [{ name: '司馬遷', role: '撰', entity_id: 'x' }, { name: '裴駰', role: '集解' }],
         description: { text: long, sources: [] },
-        classification: cls('史部', '紀傳類'),
+        _classifications: [clsN('史部', '紀傳類')],
         indexed_by: [{ source: 'x' }],
     });
     assert.deepEqual(Object.keys(c).sort(), ['authors', 'classification', 'id', 'juan', 'summary', 'title']);
@@ -96,13 +98,13 @@ test('titleSortKey：去掉开头的标点与括注，按书名本身排', () =>
 
 test('buildCatalog：计数含子孙，经史子集顺序，分类表次序，未分類最后', () => {
     const works = [
-        { id: 'a', title: '甲', classification: cls('集部', '別集類') },
-        { id: 'b', title: '乙', classification: cls('史部', '紀傳類') },
-        { id: 'c', title: '丙', classification: cls('史部', '地理類') },
-        { id: 'd', title: '丁', classification: cls('史部') },
-        { id: 'e', title: '戊', classification: cls('史部', '地理類', '都會郡縣之屬') },
+        { id: 'a', title: '甲', _classifications: [clsN('集部', '別集類')] },
+        { id: 'b', title: '乙', _classifications: [clsN('史部', '紀傳類')] },
+        { id: 'c', title: '丙', _classifications: [clsN('史部', '地理類')] },
+        { id: 'd', title: '丁', _classifications: [clsN('史部')] },
+        { id: 'e', title: '戊', _classifications: [clsN('史部', '地理類', '都會郡縣之屬')] },
         { id: 'f', title: '己' },
-        { id: 'g', title: '庚', classification: cls('經部', '易類') },
+        { id: 'g', title: '庚', _classifications: [clsN('經部', '易類')] },
     ];
     const rank = taxonomyRank([
         { cata_l1: '史部', cata_l2: '紀傳類' },
@@ -144,16 +146,16 @@ test('buildCatalog：《中国古籍总目》词表（overview#292）——五�
         { cata_l1: '叢書部', cata_l2: '彙編類' },
     ]);
     const works = [
-        { id: 'a', title: '甲', classification: cls('史部', '未分類') },
-        { id: 'b', title: '乙', classification: cls('史部', '紀傳類') },
-        { id: 'c', title: '丙', classification: cls('史部', '詔令奏議類', '奏議之屬') },
-        { id: 'd', title: '丁', classification: cls('史部', '詔令奏議類', '未分類') },
-        { id: 'e', title: '戊', classification: cls('史部', '詔令奏議類', '詔令之屬') },
-        { id: 'f', title: '己', classification: cls('經部', '總類', '石經之屬') },
-        { id: 'g', title: '庚', classification: cls('子部', '總類') },
-        { id: 'h', title: '辛', classification: cls('集部', '未分類') },
-        { id: 'i', title: '壬', classification: cls('集部', '詩文評類') },
-        { id: 'j', title: '癸', classification: cls('子部', '小說類', '文言之屬') },
+        { id: 'a', title: '甲', _classifications: [clsN('史部', '未分類')] },
+        { id: 'b', title: '乙', _classifications: [clsN('史部', '紀傳類')] },
+        { id: 'c', title: '丙', _classifications: [clsN('史部', '詔令奏議類', '奏議之屬')] },
+        { id: 'd', title: '丁', _classifications: [clsN('史部', '詔令奏議類', '未分類')] },
+        { id: 'e', title: '戊', _classifications: [clsN('史部', '詔令奏議類', '詔令之屬')] },
+        { id: 'f', title: '己', _classifications: [clsN('經部', '總類', '石經之屬')] },
+        { id: 'g', title: '庚', _classifications: [clsN('子部', '總類')] },
+        { id: 'h', title: '辛', _classifications: [clsN('集部', '未分類')] },
+        { id: 'i', title: '壬', _classifications: [clsN('集部', '詩文評類')] },
+        { id: 'j', title: '癸', _classifications: [clsN('子部', '小說類', '文言之屬')] },
         { id: 'k', title: '無' },
     ];
     const { tree } = buildCatalog(works, { rank });
@@ -177,9 +179,9 @@ test('buildCatalog：《中国古籍总目》词表（overview#292）——五�
 
 test('buildCatalog：叢書部有作品时排在集部之后（分类表缺部时退回内置次序）', () => {
     const works = [
-        { id: 'a', title: '甲', classification: cls('叢書部', '彙編類') },
-        { id: 'b', title: '乙', classification: cls('集部', '別集類') },
-        { id: 'c', title: '丙', classification: cls('經部', '易類') },
+        { id: 'a', title: '甲', _classifications: [clsN('叢書部', '彙編類')] },
+        { id: 'b', title: '乙', _classifications: [clsN('集部', '別集類')] },
+        { id: 'c', title: '丙', _classifications: [clsN('經部', '易類')] },
     ];
     assert.deepEqual(buildCatalog(works).tree.map((n) => n.label), ['經部', '集部', '叢書部']);
 });
@@ -188,7 +190,7 @@ test('writeCatalog：每页 20 条，内容不变不改写，旧文件清掉', (
     const dir = mkdtempSync(join(tmpdir(), 'cat-'));
     try {
         const works = Array.from({ length: 45 }, (_, i) => ({
-            id: `w${String(i).padStart(2, '0')}`, title: `書${i}`, classification: cls('經部', '易類'),
+            id: `w${String(i).padStart(2, '0')}`, title: `書${i}`, _classifications: [clsN('經部', '易類')],
         }));
         const built = buildCatalog(works);
         const w = writeCatalog(dir, built);
@@ -204,7 +206,7 @@ test('writeCatalog：每页 20 条，内容不变不改写，旧文件清掉', (
         assert.deepEqual(JSON.parse(readFileSync(join(dir, 'catalog', 'tree.json'), 'utf-8')), built.tree);
 
         // 第二版：少了一半，且没有易類（改成史部）
-        const next = buildCatalog(works.slice(0, 10).map((x) => ({ ...x, classification: cls('史部') })));
+        const next = buildCatalog(works.slice(0, 10).map((x) => ({ ...x, _classifications: [clsN('史部')] })));
         const w2 = writeCatalog(dir, next);
         assert.equal(w2.files, 2);
         assert.equal(w2.removed, 6);
@@ -222,7 +224,7 @@ test('bundleCatalog：读详情，跳过被并条目与缺文件', () => {
             mkdirSync(dirname(join(root, rel)), { recursive: true });
             writeFileSync(join(root, rel), JSON.stringify(obj));
         };
-        put('Work/a.json', { id: 'a', title: '甲', classification: cls('子部', '雜家類') });
+        put('Work/a.json', { id: 'a', title: '甲', _classifications: [clsN('子部', '雜家類')] });
         put('Work/b.json', { id: 'b', title: '乙', merged_into: 'a' });
         put('Work/c.json', { id: 'c', title: '丙' });
         const index = {
@@ -253,7 +255,7 @@ test('bundle-data.mjs 整条流程产出 catalog/', () => {
         writeFileSync(join(draft, 'index', 'works', '0.json'),
             JSON.stringify({ aaaaaaaaaaa: { id: 'aaaaaaaaaaa', title: '史記', type: 'work', path: workRel } }));
         writeFileSync(join(draft, workRel), JSON.stringify({
-            id: 'aaaaaaaaaaa', title: '史記', type: 'work', classification: cls('史部', '紀傳類'),
+            id: 'aaaaaaaaaaa', title: '史記', type: 'work', _classifications: [clsN('史部', '紀傳類')],
         }));
         for (const f of SITE_CONTENT_FILES) writeFileSync(join(draft, f), f === 'recommended.json' ? '{"groups":[]}' : '{}');
         execFileSync('git', ['init', '-q'], { cwd: draft });

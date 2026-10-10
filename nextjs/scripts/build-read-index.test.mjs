@@ -24,6 +24,8 @@ import {
 const here = dirname(fileURLToPath(import.meta.url));
 const SAMPLE = join(here, 'fixtures', 'read-home.sample.json');
 const cls = (l1, l2 = '') => ({ l1, l2, l3: '', l4: '', basis: 'S', source: 'x' });
+/** 条目里的分类字段：build 产物的 `_classifications[]` 单项（旧 `classification` 回退已删，overview#522） */
+const clsN = (l1, l2 = '') => ({ scheme: 'zongmu', ...cls(l1, l2) });
 const json = (p) => JSON.parse(readFileSync(p, 'utf-8'));
 
 test('periodOf：朝代名归 9 段，前缀、简体、后缀都认；外国与空返回 null', () => {
@@ -51,7 +53,7 @@ test('periodOf：朝代名归 9 段，前缀、简体、后缀都认；外国与
 });
 
 test('toReadCard：没有提要，整理本带标记，带年代段／子类／文本数／work_id', () => {
-    const c = toReadCard({ id: 'w1', title: '易', description: '很长的提要', juan_count: 2, dynasty: '西漢', classification: cls('經部', '易類'), authors: [{ name: '甲' }] }, { collated: true, textCount: 3 });
+    const c = toReadCard({ id: 'w1', title: '易', description: '很长的提要', juan_count: 2, dynasty: '西漢', _classifications: [clsN('經部', '易類')], authors: [{ name: '甲' }] }, { collated: true, textCount: 3 });
     assert.deepEqual(c, {
         id: 'w1', title: '易', juan: 2, authors: [{ name: '甲', dynasty: '西漢' }], collated: true,
         classification: ['經部', '易類'], period: 'qinhan', text_count: 3,
@@ -213,17 +215,17 @@ function fixture() {
         if (versions) texts('Book', id, versions);
     };
     const T = [{ key: 'default', kind: 'transcription' }];
-    add('wc', { classification: cls('史部', '正史類'), dynasty: '東漢' }, [{ key: 'default', kind: 'collated' }, { key: 'wikisource', kind: 'transcription' }]);
-    add('wt', { classification: cls('史部', '正史類') }, T);
-    add('wn', { classification: cls('史部', '正史類'), has_text: true }); // 只有外部资源标记、站内无正文：不可读（overview#306）
+    add('wc', { _classifications: [clsN('史部', '正史類')], dynasty: '東漢' }, [{ key: 'default', kind: 'collated' }, { key: 'wikisource', kind: 'transcription' }]);
+    add('wt', { _classifications: [clsN('史部', '正史類')] }, T);
+    add('wn', { _classifications: [clsN('史部', '正史類')], has_text: true }); // 只有外部资源标记、站内无正文：不可读（overview#306）
     add('wu', {}, T); // 未分類
-    add('wm', { classification: cls('經部'), merged_into: 'wc' }, T); // 被并
-    add('wd', { classification: cls('經部') }, T);
-    add('wz', { classification: cls('經部') }, [{ key: 'default', kind: 'transcription', chapters: [] }]); // 目录空：不可读
-    add('wi', { classification: cls('經部') }, [{ key: 'default', kind: 'transcription', visibility: 'internal' }]); // 只有私有版本：不可读
+    add('wm', { _classifications: [clsN('經部')], merged_into: 'wc' }, T); // 被并
+    add('wd', { _classifications: [clsN('經部')] }, T);
+    add('wz', { _classifications: [clsN('經部')] }, [{ key: 'default', kind: 'transcription', chapters: [] }]); // 目录空：不可读
+    add('wi', { _classifications: [clsN('經部')] }, [{ key: 'default', kind: 'transcription', visibility: 'internal' }]); // 只有私有版本：不可读
     add('wr', { title: '紅樓夢', authors: [{ name: '曹雪芹' }], dynasty: '清' }); // 自身无文本，但有可读 Book
     add('sp', { subtype: 'poem', authors: [{ name: '李白', dynasty: '唐' }] }, T);
-    for (let i = 0; i < 25; i++) add(`p${String(i).padStart(2, '0')}`, { classification: cls('子部', '儒家類'), dynasty: '宋' }, T);
+    for (let i = 0; i < 25; i++) add(`p${String(i).padStart(2, '0')}`, { _classifications: [clsN('子部', '儒家類')], dynasty: '宋' }, T);
     addBook('bt', { has_text: true }); // 只有外部资源标记：不可读
     addBook('bf', { work_id: 'wc' }, T);
     addBook('be', {}, [{ key: 'default', kind: 'transcription', chapters: [] }]); // 目录空：不可读

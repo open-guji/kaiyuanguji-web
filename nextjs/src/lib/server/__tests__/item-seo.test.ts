@@ -17,7 +17,7 @@ const WORK = {
     measure_info: '一百三十篇',
     description: { text: '今存。' },
     ai_note: '內部備註，不得外露',
-    books: ['988g3f0wsu', 'bad..id'],
+    _books: ['988g3f0wsu', 'bad..id'],
 };
 
 describe('parseItemId', () => {
@@ -56,9 +56,9 @@ describe('seoDescription：作品', () => {
     it('没有简介：引第一条书目著录原文并标出处；列著录书目、版本数、相關資源', () => {
         const d = seoDescription({
             type: 'work', title: '洞序', authors: [{ name: '應奉', role: '撰', dynasty: '東漢' }], loss_status: 'lost',
-            classification: { l1: '子部', l2: '雜家類' },
+            _classifications: [{ scheme: 'zongmu', l1: '子部', l2: '雜家類', l3: '', l4: '' }],
             indexed_by: [{ source: '後漢藝文志', summary: '應奉洞序九卷。隋書經籍志：梁有洞序九卷。' }, { source: '補後漢書藝文志' }],
-            books: ['988g3f0wsu'], resources: [{ name: '維基文庫' }],
+            _books: ['988g3f0wsu'], resources: [{ name: '維基文庫' }],
         }, 'x');
         expect(d).toBe('《洞序》，（東漢）應奉撰。已佚。屬子部雜家類。《後漢藝文志》著錄：應奉洞序九卷。隋書經籍志：梁有洞序九卷。又見著錄於《補後漢書藝文志》。本站收錄其版本 1 種。相關資源：維基文庫。');
     });
@@ -123,7 +123,7 @@ describe('seoDescription：丛编', () => {
     it('没有 count 时用成员数；出版年是「推算」或只有朝代名的不出', () => {
         const d = seoDescription({
             type: 'collection', title: '叢', publication_info: { year: '清初（推算）' },
-            contained_works: [{ id: 'd59f2abcdefg' }], books: ['988g3f0wsu'],
+            _members: [{ id: 'd59f2abcdefg' }, { id: '988g3f0wsu' }],
         }, 'x');
         expect(d).toBe('《叢》。本站收錄其子目 2 種。開源古籍索引叢編條目。');
         expect(seoDescription({ type: 'collection', title: '正始石經', publication_info: { year: '曹魏正始年間' } }, 'x'))
@@ -158,7 +158,7 @@ describe('seoDescription：人物', () => {
             type: 'entity', primary_name: '何秋濤', dynasty: '清', native_place: '光澤',
             alt_names: [{ name: '一燈精舍', type: '號' }, { name: '巨源', type: '字' }, { name: '海槎', type: '別名' }, { name: '何秋濤', type: '著錄形' }],
             dates: { birth: 1824, death: 1862 },
-            works: [{ role: '撰' }, { role: '撰' }, { role: '注' }],
+            _works: [{ role: '撰' }, { role: '撰' }, { role: '注' }],
         }, 'x');
         expect(d).toBe('何秋濤，字巨源，號一燈精舍，又名海槎，（清）光澤人，1824—1862。本站著錄其作品 3 部（撰 2、注 1）。開源古籍索引人物條目。');
     });
@@ -198,7 +198,7 @@ describe('buildItemSeo', () => {
     it('作品：单篇 → CreativeWork；部类进 genre；收入丛编进 isPartOf', () => {
         const s = buildItemSeo({
             type: 'work', subtype: 'poem', title: '冉冉孤生竹',
-            classification: { l1: '集部', l2: '別集類' }, contained_in: [{ id: '8rlcsybg2hin' }],
+            _classifications: [{ scheme: 'zongmu', l1: '集部', l2: '別集類', l3: '', l4: '' }], _collections: [{ id: '8rlcsybg2hin' }],
         }, 'd59f2abcdefg', SITE);
         expect(s.jsonLd).toMatchObject({
             '@type': 'CreativeWork', genre: '集部·別集類',
@@ -210,7 +210,7 @@ describe('buildItemSeo', () => {
     it('版本 → Book：title 带版本名，exampleOfWork／isPartOf 指页面，成书年只收确定的单一年份', () => {
         const s = buildItemSeo({
             id: '988g3gl3if', type: 'book', title: '九經字樣', edition: '薈要本', section: '經部',
-            work_id: 'd59f28kmwt1i', contained_in: [{ id: '8rlcsybg2hhl' }],
+            work_id: 'd59f28kmwt1i', _collections: [{ id: '8rlcsybg2hhl' }],
             dating: { era: '清', year: 1740, certainty: 'inferred' },
         }, '988g3gl3if', SITE);
         expect(s.title).toBe('九經字樣（薈要本）');
@@ -235,7 +235,7 @@ describe('buildItemSeo', () => {
     it('丛编 → Collection：hasPart 最多 100 个；collectionSize 取 count.zhong，否则成员数；出版社与出版年', () => {
         const many = Array.from({ length: 150 }, (_, i) => ({ id: `d59f2${String(i).padStart(7, '0')}` }));
         const s = buildItemSeo({
-            type: 'collection', title: '叢', contained_works: many,
+            type: 'collection', title: '叢', _members: many,
             publication_info: { publisher: '中華書局', year: '2014' },
         }, '8rlcsybg2hhi', SITE);
         expect(s.ogType).toBe('website');
@@ -361,19 +361,19 @@ describe('mergedTarget／jsonLdScript', () => {
     });
 });
 
-describe('schema-v2 双兼容（overview#458）：新字段优先，缺则回退旧字段', () => {
+describe('schema-v2 派生字段（overview#458）：只读 `_` 字段，旧字段不再回退（overview#522）', () => {
     const base = { id: 'd59f20aowb9c', type: 'work', title: '史記' };
 
-    it('Work：_books 优先于 books；只有旧 books 时照旧', () => {
+    it('Work：读 _books；只有旧 books 时不读', () => {
         const v2 = buildItemSeo({ ...base, _books: [{ id: '988g3f0wsu', title: '甲本' }, { id: '988g3gl3if', title: '乙本' }] }, 'd59f20aowb9c', SITE);
         expect(JSON.stringify(v2.jsonLd.workExample)).toContain('988g3f0wsu');
         expect((v2.jsonLd.workExample as unknown[]).length).toBe(2);
         expect(v2.description).toContain('本站收錄其版本 2 種');
         const v1 = buildItemSeo({ ...base, books: ['988g3f0wsu'] }, 'd59f20aowb9c', SITE);
-        expect((v1.jsonLd.workExample as unknown[]).length).toBe(1);
+        expect(v1.jsonLd.workExample).toBeUndefined();
     });
 
-    it('Work：_classifications 优先（zongmu），缺则回退旧 classification', () => {
+    it('Work：_classifications 优先 zongmu；只有旧 classification 时不读', () => {
         const v2 = buildItemSeo({
             ...base,
             classification: { l1: '舊部', l2: '舊類' },
@@ -382,10 +382,10 @@ describe('schema-v2 双兼容（overview#458）：新字段优先，缺则回退
         expect(v2.jsonLd.genre).toBe('史部·雜史類');
         expect(v2.description).toContain('屬史部雜史類');
         const v1 = buildItemSeo({ ...base, classification: { l1: '經部', l2: '易類' } }, 'd59f20aowb9c', SITE);
-        expect(v1.jsonLd.genre).toBe('經部·易類');
+        expect(v1.jsonLd.genre).toBeUndefined();
     });
 
-    it('Collection：_members／_member_count 优先；旧 contained_works＋books 回退', () => {
+    it('Collection：_members／_member_count；只有旧 contained_works＋books 时不读', () => {
         const col = { id: '8rlcsybg2hhi', type: 'collection', title: '叢書' };
         const v2 = buildItemSeo({
             ...col,
@@ -396,18 +396,18 @@ describe('schema-v2 双兼容（overview#458）：新字段优先，缺则回退
         expect((v2.jsonLd.hasPart as unknown[]).length).toBe(2);
         expect(v2.description).toContain('本站收錄其子目 350 種');
         const v1 = buildItemSeo({ ...col, contained_works: [{ id: 'd59f20aowb9c' }], books: ['988g3f0wsu'] }, '8rlcsybg2hhi', SITE);
-        expect(v1.jsonLd.collectionSize).toBe(2);
+        expect(v1.jsonLd.collectionSize).toBeUndefined();
     });
 
-    it('Entity：_works 优先于 works', () => {
+    it('Entity：读 _works；只有旧 works 时不读', () => {
         const ent = { id: 'hixhd2f8wamg', type: 'entity', primary_name: '司馬遷', dynasty: '西漢' };
         const v2 = buildItemSeo({ ...ent, _works: [{ work_id: 'd59f20aowb9c', role: '撰', title: '史記' }, { work_id: 'd59f20aowb9d', role: '注', title: 'x' }] }, 'hixhd2f8wamg', SITE);
         expect(v2.description).toContain('其作品 2 部');
         const v1 = buildItemSeo({ ...ent, works: [{ work_id: 'd59f20aowb9c', role: '撰' }] }, 'hixhd2f8wamg', SITE);
-        expect(v1.description).toContain('其作品 1 部');
+        expect(v1.description).not.toContain('其作品');
     });
 
-    it('所属丛编：_collections 优先于 contained_in', () => {
+    it('所属丛编：读 _collections，不读 contained_in', () => {
         const v2 = buildItemSeo({ ...base, _collections: [{ id: '8rlcsybg2hhi', title: '叢書' }], contained_in: [{ id: '8rlcsy6ubh1c' }] }, 'd59f20aowb9c', SITE);
         expect(JSON.stringify(v2.jsonLd.isPartOf)).toContain('8rlcsybg2hhi');
         expect(JSON.stringify(v2.jsonLd.isPartOf)).not.toContain('8rlcsy6ubh1c');

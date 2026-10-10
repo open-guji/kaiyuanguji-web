@@ -126,7 +126,7 @@ export function taxonomyFileFor(prodDir, dir = derivedDir()) {
 
 /**
  * 条目的分类，统一成旧形状 `{ l1, l2, l3, l4, source }`，或 null：
- * 新字段 `_classifications[]`（有多个分类法时优先 zongmu，否则取第一个有 l1 的）优先，没有就回退旧 `classification`。
+ * 取 `_classifications[]`（有多个分类法时优先 zongmu，否则取第一个有 l1 的）；没有返回 null（旧 `classification` 回退已删）。
  */
 export function classificationOf(d) {
     const list = Array.isArray(d?._classifications) ? d._classifications.filter((c) => c && typeof c === 'object') : [];
@@ -137,6 +137,5 @@ export function classificationOf(d) {
         if (pick.source) out.source = pick.source;
         return out;
     }
-    const old = d?.classification;
-    return old && typeof old === 'object' ? old : null;
+    return null;
 }
