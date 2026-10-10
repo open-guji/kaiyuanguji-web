@@ -47,3 +47,13 @@ export function canonicalRedirectTarget(opts: {
     const hash = LEGACY_HOSTS.has(host) ? MOVED_HASH : '';
     return `https://${CANONICAL_HOST}${opts.pathname}${opts.search}${hash}`;
 }
+
+/** 备案号：openguji.com 是同一主体下的第 2 个网站（-2）；kaiyuanguji.com 仍用原号（测试站 staging.kaiyuanguji.com 也属旧域名） */
+export const ICP_OPENGUJI = '冀ICP备2026013455号-2';
+export const ICP_KAIYUANGUJI = '冀ICP备2026013455号';
+
+/** 按访问的主机取备案号；拿不到主机（服务端首帧）按规范域名 openguji.com */
+export function icpForHost(host: string | null | undefined): string {
+    const h = normalizeHost(host);
+    return h === 'kaiyuanguji.com' || h.endsWith('.kaiyuanguji.com') ? ICP_KAIYUANGUJI : ICP_OPENGUJI;
+}

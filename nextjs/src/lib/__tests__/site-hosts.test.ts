@@ -32,3 +32,12 @@ describe('canonicalRedirectTarget（主域名迁移 overview#275）', () => {
         expect(go('www.kaiyuanguji.com', '/apix')).not.toBeNull();
     });
 });
+
+describe('icpForHost（页脚备案号按域名）', () => {
+    it('openguji.com 及未知主机 → -2；kaiyuanguji.com 各主机 → 原号', async () => {
+        const { icpForHost, ICP_OPENGUJI, ICP_KAIYUANGUJI } = await import('../site-hosts');
+        expect(ICP_OPENGUJI).toBe('冀ICP备2026013455号-2');
+        for (const h of ['www.openguji.com', 'openguji.com', null, 'localhost']) expect(icpForHost(h)).toBe(ICP_OPENGUJI);
+        for (const h of ['www.kaiyuanguji.com', 'kaiyuanguji.com', 'staging.kaiyuanguji.com']) expect(icpForHost(h)).toBe(ICP_KAIYUANGUJI);
+    });
+});
