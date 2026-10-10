@@ -79,6 +79,21 @@ describe('loadDuiduFiles', () => {
         expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: null, entity: null, norm: null });
     });
 
+    it('norm_file 暂时取不到：不缓存，下次恢复后能取到（且留日志）', async () => {
+        let normOk = false;
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('norm') && !normOk ? null : { file }));
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const ch = { file: '003', char_file: '003.char.json', norm_file: '003.norm.json' };
+        const r1 = await loadDuiduFiles('book-s-retry', { versionKey: 'original', chapter: ch }, '003', { getTextFile });
+        await Promise.resolve();
+        expect(r1?.norm).toBeNull();
+        expect(warn).toHaveBeenCalledTimes(1);
+        normOk = true;
+        const r2 = await loadDuiduFiles('book-s-retry', { versionKey: 'original', chapter: ch }, '003', { getTextFile });
+        expect(r2?.norm).toEqual({ file: '003.norm.json' });
+        warn.mockRestore();
+    });
+
     it('norm_file 写成带路径被 fileField 拒绝：norm 为 null，不发该请求', async () => {
         const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
         const bad = { file: '003', char_file: '003.char.json', norm_file: '../x.json' };
