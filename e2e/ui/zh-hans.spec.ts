@@ -95,13 +95,15 @@ test.describe('简体模式：异体字归一（overview#350）', () => {
         expect((await main.innerText()).match(new RegExp(VARIANTS, 'g')) ?? [], '简体模式残留异体字').toEqual([]);
     });
 
-    test('脂评凡例：繁体下照原文显示异体字（归一只在简体模式做）', async ({ page, request }) => {
+    test('脂评凡例：繁体下默认「通行」字形——异体字归一为通行繁体（0.54.0 起；要看底本原字须该文本有规范层并手选「原字」）', async ({ page, request }) => {
         test.skip(!SITE.fullstack, `${SITE.host} 是静态站，没有 ${PATH}`);
-        await requireUiVersion(request, '0.37.0', '异体字归一');
+        await requireUiVersion(request, '0.54.0', '繁体站点默认通行字形');
         await setLocale(page, 'zh-Hant');
         await page.goto(`${TARGET}${PATH}`, { waitUntil: 'load' });
         await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
-        await expect(page.getByRole('main')).toContainText(VARIANTS, { timeout: 30_000 });
+        const main = page.getByRole('main');
+        await expect(main).toContainText(/寶鑑|旨|總/, { timeout: 30_000 });
+        expect((await main.innerText()).match(new RegExp(VARIANTS, 'g')) ?? [], '繁体默认应为通行字形，不应残留异体字').toEqual([]);
     });
 });
 
