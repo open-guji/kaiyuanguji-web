@@ -9,6 +9,8 @@
  *
  * t2cn 之前先做异体字归一（overview#350）：「㫖」「縂」「寳」这类异体字 t2cn 不认，会原样留在简体里。
  * 归一表与组件库 LocaleProvider 用的是同一份（book-index-ui/variant-chars.json），不另存副本。
+ * 注意（overview#514）：组件库 0.50.0 起在 variant-chars.json 之外还有手工补漏表 VARIANT_SUPPLEMENT（𠮓→變 等），
+ * 它目前没有从包里公开导出，这里还没引；服务端 meta 里这几个稀见异体字会比页面正文少转一步。待组件库导出后补引。
  */
 import type { Metadata } from 'next';
 import { Converter } from 'opencc-js/t2cn';
