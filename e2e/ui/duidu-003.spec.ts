@@ -281,7 +281,8 @@ test.describe('图文对读（vol03）', () => {
         await openDuidu(page);
         const para = () => page.locator('[data-char-id="4:1:5"]').evaluate((e) => e.textContent);
         expect(await para()).toBe('时');
-        await page.getByRole('button', { name: /切換為繁體/ }).click();
+        // 顶栏快捷的字形三态「原｜繁｜简」（ui ≥ 0.52.1 取代原来的繁／简单键）
+        await page.getByRole('group', { name: /^字形$/ }).getByRole('button', { name: /^通行繁[體体]$/ }).click();
         await expect.poll(para).toBe('時');
         await expect(page.locator('[data-char-id="4:1:5"]')).toHaveCount(1);
     });
