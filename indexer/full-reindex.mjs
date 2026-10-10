@@ -39,6 +39,7 @@ import { classificationL1, derivedClassification, editionCount, hasTextValue, lo
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
+import { CHAR_FILE_RE, charJsonText } from './lib/char-text.mjs';
 
 // 繁→简统一走 lib/to-simplified-core.mjs（与网站同一份逻辑的逐字副本，单测比对；overview#448 S0）
 const t2s = createToSimplified({
@@ -285,18 +286,22 @@ function readDetail(detailPath, id) {
 function readJsonSafe(path) {
     try { return JSON.parse(readFileSync(path, 'utf-8')); } catch { return null; }
 }
-function buildJuanDocs(workEntry) {
+/**
+ * @param workEntry 条目（Work 或 Book）：用 id、path 找 book-text 目录
+ * @param opts.workId 写进 juans 文档 work_id 的值，缺省＝条目 id（Book 传它所属的 work_id）
+ * @param opts.kinds 收哪些版本类型；Work 默认 ['collated']，Book 传 ['self_collated']（overview#525）
+ */
+function buildJuanDocs(workEntry, { workId = workEntry.id, kinds = ['collated'] } = {}) {
     if (!TEXT_DIR) return [];
-    const workId = workEntry.id;
     const relPath = workEntry.path || '';
     if (!relPath) return [];
-    const itemDir = join(TEXT_DIR, dirname(relPath), workId);
+    const itemDir = join(TEXT_DIR, dirname(relPath), workEntry.id);
     const manifest = readJsonSafe(join(itemDir, 'manifest.json'));
     if (!manifest || manifest.visibility === 'internal' || !Array.isArray(manifest.versions)) return [];
     const docs = [];
     let badChapters = 0;
     for (const v of manifest.versions) {
-        if (v?.kind !== 'collated' || v.visibility === 'internal' || typeof v.key !== 'string' || !TEXT_KEY_RE.test(v.key)) continue;
+        if (!kinds.includes(v?.kind) || v.visibility === 'internal' || typeof v.key !== 'string' || !TEXT_KEY_RE.test(v.key)) continue;
         const keyDir = join(itemDir, v.key);
         const chapters = readJsonSafe(join(keyDir, 'index.json'))?.chapters;
         if (!Array.isArray(chapters)) continue;
@@ -307,6 +312,14 @@ function buildJuanDocs(workEntry) {
             if (!stem || !/^[0-9A-Za-z_-]+$/.test(stem)) { badChapters++; continue; }
             const name = c.title || stem;
             let clean = '';
+            if (v.kind === 'self_collated') {
+                // 自校文本（original）main 上只有 char.json 真源，没有 md／json：取原字拼章正文（不套 norm）
+                const cf = typeof c?.char_file === 'string' ? c.char_file : '';
+                if (CHAR_FILE_RE.test(cf)) clean = charJsonText(readJsonSafe(join(keyDir, cf))).replace(/\s+/g, ' ').trim();
+                if (!clean) continue;
+                docs.push(juanDoc(workId, name, clean));
+                continue;
+            }
             try {
                 const mdPath = join(keyDir, `${stem}.md`);
                 if (existsSync(mdPath)) clean = readFileSync(mdPath, 'utf-8').replace(MD_RE, ' ').replace(/\s+/g, ' ').trim();
@@ -641,11 +654,32 @@ async function main() {
             }
         }
 
+        // 自校文本（self_collated）挂在 Book 上：只扫 has_text 的 Book（几十条量级），按其所属 work_id 出 juans 文档
+        async function* selfCollatedJuans() {
+            if (!doJuans) return;
+            let n = 0;
+            for (const { entry, rootDir } of iterAllRoots('books')) {
+                if (limit && n >= limit) break;
+                if (!entry.has_text) continue;
+                n++;
+                const detailPath = join(rootDir, entry.path || '');
+                let detail = null;
+                try { detail = existsSync(detailPath) ? readDetail(detailPath, entry.id) : null; } catch { detail = null; }
+                if (isPromotedTombstone(detail)) continue;
+                const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
+                for (const j of buildJuanDocs(entry, { workId, kinds: ['self_collated'] })) yield { kind: 'juan', doc: j };
+            }
+        }
+        async function* allDocs() {
+            yield* combined();
+            yield* selfCollatedJuans();
+        }
+
         // 拆两个流推
         let worksBuf = [], juansBuf = [], worksTotal = 0, juansTotal = 0;
         const worksPending = [], juansPending = [];
         const t0 = Date.now();
-        for await (const { kind, doc } of combined()) {
+        for await (const { kind, doc } of allDocs()) {
             if (kind === 'work') {
                 worksBuf.push(doc);
                 if (worksBuf.length >= BATCH_SIZE) {
