@@ -1,0 +1,68 @@
+name: probe eo zone (temporary, read-only)
+# 临时只读探针（overview#275）：列 EdgeOne 账号下的站点、kaiyuanguji.com 站点的加速域名与规则引擎、Pages 项目的域名字段。
+# 只打印域名、规则条件与缓存动作；源站地址、请求头值、任何带 key/token/secret 的参数一律打码。用完删分支。
+on:
+  push:
+    branches: [probe/eo-zone]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        shell: python3 {0}
+        run: |
+          import json, os, re, urllib.request
+          from tencentcloud.common import credential
+          from tencentcloud.teo.v20220901 import teo_client, models
+          SECRETISH = re.compile(r'(key|token|secret|password|auth|sign)', re.I)
+          def red(o, k=''):
+              if isinstance(o, dict):
+                  return {kk: red(v, kk) for kk, v in o.items()}
+              if isinstance(o, list):
+                  return [red(v, k) for v in o]
+              if isinstance(o, str) and (SECRETISH.search(k) or k in ('Origin', 'OriginAddress', 'BackupOrigin', 'PrivateParameters', 'Value') and re.match(r'^\d+\.\d+\.\d+\.\d+', o)):
+                  return '***'
+              return o
+          c = teo_client.TeoClient(credential.Credential(os.environ['TENCENT_SECRET_ID'], os.environ['TENCENT_SECRET_KEY']), '')
+          def call(name, **kw):
+              r = getattr(models, name + 'Request')()
+              r.from_json_string(json.dumps(kw))
+              try:
+                  return json.loads(getattr(c, name)(r).to_json_string())
+              except Exception as e:
+                  return {'ERROR': str(e)[:300]}
+          z = os.environ['EDGEONE_ZONE_ID']
+          print('## zones')
+          zs = call('DescribeZones', Limit=50)
+          for x in zs.get('Zones', []) or [zs]:
+              print(json.dumps({k: x.get(k) for k in ('ZoneId', 'ZoneName', 'Type', 'Area', 'Status', 'ActiveStatus', 'PlanId', 'NameServers', 'OriginalNameServers')} if 'ZoneName' in x else x, ensure_ascii=False))
+              if x.get('ZoneId') == z:
+                  print('  ^ 这是 EDGEONE_ZONE_ID')
+          print('## plans'); p = call('DescribePlans', Limit=20)
+          for x in p.get('Plans', []) or [p]:
+              print(json.dumps({k: x.get(k) for k in ('PlanId', 'PlanType', 'Area', 'Status', 'BindZoneNumber', 'MaxZoneNumber', 'BindZones')} if 'PlanId' in x else x, ensure_ascii=False))
+          print('## acceleration domains of EDGEONE_ZONE_ID')
+          d = call('DescribeAccelerationDomains', ZoneId=z, Limit=200)
+          for x in d.get('AccelerationDomains', []) or [d]:
+              o = x.get('OriginDetail') or {}
+              print(json.dumps({'DomainName': x.get('DomainName'), 'Status': x.get('DomainStatus'), 'OriginType': o.get('OriginType'), 'Cname': x.get('Cname'), 'Ipv6': x.get('IPv6Status')} if 'DomainName' in x else x, ensure_ascii=False))
+          print('## rules engine (DescribeL7AccRules)')
+          print(json.dumps(red(call('DescribeL7AccRules', ZoneId=z)), ensure_ascii=False, indent=1)[:20000])
+          print('## legacy rules (DescribeRules)')
+          print(json.dumps(red(call('DescribeRules', ZoneId=z)), ensure_ascii=False, indent=1)[:12000])
+          print('## zone-level L7 settings (DescribeL7AccSetting)')
+          print(json.dumps(red(call('DescribeL7AccSetting', ZoneId=z)), ensure_ascii=False, indent=1)[:8000])
+          print('## pages projects (domain-ish fields only)')
+          req = urllib.request.Request('https://pages-api.edgeone.ai/v1', data=json.dumps({'Action': 'DescribePagesProjects', 'PageNumber': 1, 'PageSize': 50}).encode(), method='POST', headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + os.environ['EDGEONE_API_TOKEN']})
+          data = json.load(urllib.request.urlopen(req, timeout=30))
+          resp = (data.get('Data') or {}).get('Response') or data
+          for pr in resp.get('Projects') or []:
+              print(json.dumps({k: v for k, v in pr.items() if re.search(r'(Name|Domain|Area|Zone|Region|Status|Type)', k) and not SECRETISH.search(k)}, ensure_ascii=False)[:3000])
