@@ -34,7 +34,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { toCard } from './build-catalog-index.mjs';
-import { indexDirFor, readEntryDoc } from './lib/derived.mjs';
+import { indexDirFor, readEntryDoc, reportEntryReads } from './lib/derived.mjs';
 import { readCuration, summarizeBu } from './build-read-index.mjs';
 
 export const LOSS_KEYS = ['extant', 'partially_extant', 'lost'];
@@ -50,7 +50,7 @@ function readJsonOrNull(p) {
 /** 条目详情：schema-v2 的 build 产物优先、缺则读源档（lib/derived.mjs）；没有或读不了返回 null */
 function readEntryOrNull(entry, rootDirFor) {
     try {
-        return readEntryDoc({ id: entry.id, srcPath: join(rootDirFor(entry), entry.path) })?.doc ?? null;
+        return readEntryDoc({ id: entry.id, srcPath: join(rootDirFor(entry), entry.path), stat: 'meta-home' })?.doc ?? null;
     } catch {
         return null;
     }
@@ -326,4 +326,5 @@ if (isMain) {
         siteDir: prodDir,
         curationDir: join(prodDir, 'curation'),
     });
+    if (reportEntryReads().fail) process.exit(1);
 }

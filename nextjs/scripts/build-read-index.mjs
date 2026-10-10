@@ -30,7 +30,7 @@
  *       node scripts/build-read-index.mjs [bookIndexDir]   单独重建
  */
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
+import { indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { chapterTxtFile, newStructureReadable, readManifest } from './lib/text-layout.mjs';
@@ -353,7 +353,7 @@ export function buildPeriodLists(cards) {
 /** 条目详情：schema-v2 的 build 产物优先、缺则读源档（lib/derived.mjs）；没有或读不了返回 null */
 function readEntryOrNull(item, rootDirFor, log) {
     try {
-        return readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path) })?.doc ?? null;
+        return readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path), stat: 'read' })?.doc ?? null;
     } catch (e) {
         log(`  ⚠ read: 读不了 ${item.path}: ${e.message}`);
         return null;
@@ -562,4 +562,5 @@ if (isMain) {
         // 分类表可能来自 build 产物目录，策展文件仍在源仓
         curationFile: join(prodDir, 'curation', 'read-home.json'),
     });
+    if (reportEntryReads().fail) process.exit(1);
 }
