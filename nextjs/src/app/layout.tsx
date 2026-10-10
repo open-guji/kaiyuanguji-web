@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  // 站长平台归属验证（overview#275／#290）：百度搜索资源平台 HTML 标签验证，只是一条公开的 meta，不是凭证
+  verification: {
+    other: { "baidu-site-verification": "codeva-vDYWNW13nd" },
+  },
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
