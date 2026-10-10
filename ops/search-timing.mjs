@@ -10,7 +10,7 @@
  *   meili                    ＝ Meili 自报处理耗时
  *
  * 只发 GET，无依赖、无 secret。CLI：
- *   node ops/search-timing.mjs [--target https://www.kaiyuanguji.com] [--rounds 5]
+ *   node ops/search-timing.mjs [--target https://www.openguji.com] [--rounds 5]
  */
 import { pathToFileURL } from 'node:url';
 
@@ -55,7 +55,7 @@ async function main() {
         const i = args.indexOf(`--${name}`);
         return i >= 0 ? args[i + 1] : def;
     };
-    const target = arg('target', process.env.TARGET || 'https://www.kaiyuanguji.com').replace(/\/$/, '');
+    const target = arg('target', process.env.TARGET || 'https://www.openguji.com').replace(/\/$/, '');
     const rounds = Number(arg('rounds', '5'));
 
     const rows = [];

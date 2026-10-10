@@ -9,7 +9,7 @@ if [ -z "$TOKEN" ] && [ -f "/root/.config/kaiyuanguji/error_view_token" ]; then
 fi
 if [ -z "$TOKEN" ]; then echo "缺少 ERROR_VIEW_TOKEN"; exit 1; fi
 EXEC=0; [ "${1:-}" = "--execute" ] && EXEC=1
-API="https://www.kaiyuanguji.com/api/track-error"
+API="https://www.openguji.com/api/track-error"
 # 取全量
 TMP=$(mktemp)
 node --input-type=module - "$TOKEN" "$TMP" <<'JS'
@@ -18,7 +18,7 @@ const token=process.argv[2], tmp=process.argv[3];
 let cursor=""; let all=[];
 while(true){
   // 接口不再认 ?token=（SEC overview#134 M1），token 走 Authorization 头
-  const url=`https://www.kaiyuanguji.com/api/track-error?limit=200${cursor?`&cursor=${encodeURIComponent(cursor)}`:""}`;
+  const url=`https://www.openguji.com/api/track-error?limit=200${cursor?`&cursor=${encodeURIComponent(cursor)}`:""}`;
   const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}}); const j=await r.json();
   if(!j.success){console.error(j);process.exit(1)}
   all.push(...j.items);
@@ -40,4 +40,4 @@ COUNT=$(echo "$IDS" | grep -c . || true)
 echo "target $COUNT ids (e2e nonexistent000 + perf aTNo)"
 if [ "$COUNT" -eq 0 ]; then echo "无待标"; exit 0; fi
 if [ $EXEC -eq 0 ]; then echo "dry-run，--execute 才真写"; echo "$IDS" | head -n 5; exit 0; fi
-echo "$IDS" | xargs -P 10 -I {} bash -c 'curl -s -X POST "https://www.kaiyuanguji.com/api/track-error" -H "Content-Type: application/json" -d "{\"action\":\"update\",\"id\":\"{}\",\"state\":\"resolved\",\"token\":\"'"$TOKEN"'\"}" | grep -q success.*true && echo "ok {}" || echo "fail {}"'
+echo "$IDS" | xargs -P 10 -I {} bash -c 'curl -s -X POST "https://www.openguji.com/api/track-error" -H "Content-Type: application/json" -d "{\"action\":\"update\",\"id\":\"{}\",\"state\":\"resolved\",\"token\":\"'"$TOKEN"'\"}" | grep -q success.*true && echo "ok {}" || echo "fail {}"'

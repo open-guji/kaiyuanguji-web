@@ -27,7 +27,7 @@ import { pathToFileURL } from 'node:url';
 // 要 Node ≥22（默认按语法认出 ESM）才能这样引；工作流里固定用 Node 22。
 import { desensitizeText } from '../edge-functions/api/feedback.js';
 
-export const DEFAULT_BASE = 'https://www.kaiyuanguji.com';
+export const DEFAULT_BASE = 'https://www.openguji.com';
 const ID_RE = /^fb_\d+_[a-z0-9]+$/;
 const SNIPPET_LEN = 40;
 

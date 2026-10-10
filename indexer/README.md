@@ -173,7 +173,7 @@ curl -s -X POST -H "Authorization: Bearer $KEY" -H 'Content-Type: application/js
   -d '{"q":"","limit":0,"filter":"is_draft = false","facets":["classification","loss_status"]}'
 
 # 3. 朝代＋部类组合（经代理）：结果与预期一致
-curl -s 'https://www.kaiyuanguji.com/api/search?q=%E5%8F%B2&index=works&filter=dynasty%20IN%20%5B%22%E5%94%90%22%5D%20AND%20classification%20%3D%20%22%E5%8F%B2%E9%83%A8%22'
+curl -s 'https://www.openguji.com/api/search?q=%E5%8F%B2&index=works&filter=dynasty%20IN%20%5B%22%E5%94%90%22%5D%20AND%20classification%20%3D%20%22%E5%8F%B2%E9%83%A8%22'
 
 # 4. 搜索质量不退步：基线 通过 59 / 失败 0 / known-issue 5 / 共 64（2026-09-30 重建前）
 node nextjs/scripts/test-search-quality.mjs
