@@ -10,7 +10,7 @@
 
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
-  'https://kaiyuanguji.com',
+  'https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com',
   'https://open-guji.github.io',
   'http://localhost:3000',
   'http://localhost:5173',
