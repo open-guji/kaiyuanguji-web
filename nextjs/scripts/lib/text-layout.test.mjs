@@ -33,12 +33,11 @@ test('isTextKey：default 与 [a-z0-9-] 字母开头的非保留字', () => {
     for (const k of ['manifest', 'fragments', 'sources', 'extra', '001', '3d', 'Wiki', 'a_b', '', 'a/b', '..', undefined, 5]) assert.equal(isTextKey(k), false, String(k));
 });
 
-test('章文件名：新结构 file 不带扩展名，md／txt 换算，容忍带扩展名的', () => {
+test('章文件名：新结构 file 不带扩展名，md／txt 换算；不再容忍带扩展名的（带了得到明显错误的名字，由构建期核对报出）', () => {
     assert.equal(chapterMdFile('001'), '001.md');
-    assert.equal(chapterMdFile('001.md'), '001.md');
-    assert.equal(chapterMdFile('001.txt'), '001.md');
     assert.equal(chapterTxtFile('001'), '001.txt');
-    assert.equal(chapterTxtFile('001.md'), '001.txt');
+    assert.equal(chapterMdFile('001.md'), '001.md.md');
+    assert.equal(chapterTxtFile('001.md'), '001.md.txt');
     assert.deepEqual(firstChapterOf({ chapters: [{ n: 1, file: '001', has_json: true }] }), { file: '001', hasJson: true });
     assert.deepEqual(firstChapterOf({ chapters: [{ n: 2, file: '002', char_file: '002.char.json' }] }), { file: '002', hasJson: false, charFile: '002.char.json' });
     assert.equal(firstChapterOf({ chapters: [] }), null);

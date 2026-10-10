@@ -89,9 +89,12 @@ export function publicManifest(manifest) {
     return pub.length === manifest.versions.length && !isInternal(manifest) ? manifest : { ...manifest, versions: pub };
 }
 
-/** 章文件名：新结构 index 里 file 不带扩展名（'001'），容忍带 .md／.txt 的；返回 .md 形式 */
+/**
+ * 章文件名：新结构 index 里 file 不带扩展名（'001'，guji-format 规格；book-text 全部 11,385 份 index.json 实测 0 个带扩展名），
+ * 返回源仓里的 .md 文件名。不再容忍带扩展名的写法：带了会得到 '001.md.md'，构建期核对（verifyReadProbes）会失败而不是静默放过。
+ */
 export function chapterMdFile(file) {
-    return /\.(md|txt)$/.test(file) ? file.replace(/\.txt$/, '.md') : `${file}.md`;
+    return `${file}.md`;
 }
 
 /** 打包产物里的章文件名（md 改 txt） */
@@ -169,7 +172,7 @@ export function collatedChapterJsons(itemDir) {
         const idx = readJsonOrNull(join(itemDir, v.key, 'index.json'));
         for (const c of Array.isArray(idx?.chapters) ? idx.chapters : []) {
             if (typeof c?.file !== 'string' || !c.file || c.has_json !== true) continue;
-            const stem = c.file.replace(/\.(md|txt|json)$/, '');
+            const stem = c.file; // file 不带扩展名（同 chapterMdFile）
             const jsonPath = join(itemDir, v.key, `${stem}.json`);
             if (existsSync(jsonPath)) out.push({ key: v.key, stem, jsonPath });
         }

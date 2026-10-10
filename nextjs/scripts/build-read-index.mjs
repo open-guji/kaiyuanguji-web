@@ -486,7 +486,7 @@ export function verifyReadProbes(probes, dataDir) {
             // 对读章（自校本）真源是 char.json，不产 md／txt：声明了 char_file 就核对它
             if (p.first.charFile) need(p.id, `${p.key}/${p.first.charFile}`);
             else if (!p.first.hasJson) need(p.id, `${p.key}/${chapterTxtFile(p.first.file)}`);
-            if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file.replace(/\.(md|txt)$/, '')}.json`);
+            if (p.first.hasJson) need(p.id, `${p.key}/${p.first.file}.json`);
         }
     }
     return missing;

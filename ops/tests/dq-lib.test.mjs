@@ -89,7 +89,7 @@ test('extractRefs：schema-v2 派生字段 _books／_members／_related／_colle
 });
 
 test('registeredTextFiles：<key>/index.json，file 不带扩展名，has_json 的章登记 .json（md 可缺，不登记）', () => {
-    const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003.md' }, { n: 4 }] });
+    const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003' }, { n: 4 }] });
     assert.equal(r.format, 'texts.chapters');
     assert.deepEqual(r.registered, ['default/001.json', 'default/002.txt', 'default/003.txt']);
     assert.deepEqual(r.optional, ['default/001.txt']); // has_json 的章 md 可缺

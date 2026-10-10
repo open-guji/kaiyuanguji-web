@@ -294,6 +294,7 @@ function buildJuanDocs(workEntry) {
         const chapters = readJsonSafe(join(keyDir, 'index.json'))?.chapters;
         if (!Array.isArray(chapters)) continue;
         for (const c of chapters) {
+            // 容忍 file 带扩展名：book-text 现状 0 例，但这里若改严，带扩展名的章会被下面的 stem 校验静默跳过（搜索少文档、无报错），故保留
             const stem = typeof c?.file === 'string' ? c.file.replace(/\.(md|txt|json)$/, '') : '';
             if (!stem || !/^[0-9A-Za-z_-]+$/.test(stem)) continue;
             const name = c.title || stem;
