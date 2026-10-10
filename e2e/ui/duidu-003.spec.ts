@@ -304,7 +304,7 @@ test.describe('图文对读（vol03）', () => {
             const cs = getComputedStyle(e);
             return `${cs.textDecorationLine}/${cs.textDecorationStyle}`;
         });
-        await expect.poll(() => style('person')).toBe('underline/solid');
+        await expect.poll(() => style('people')).toBe('underline/solid');
         await expect.poll(() => style('place')).toBe('underline/double');
         await expect.poll(() => style('work')).toBe('underline/wavy');
     });
