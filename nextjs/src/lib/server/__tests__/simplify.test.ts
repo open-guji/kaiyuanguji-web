@@ -5,6 +5,11 @@ import VARIANT_CHARS from 'book-index-ui/variant-chars.json';
 import { normalizeVariants, simplifyMetadata, toSimplified } from '../simplify';
 
 describe('normalizeVariants／toSimplified', () => {
+    it('补漏表 VARIANT_SUPPLEMENT 也生效（组件库 0.51.0 起公开导出，overview#514）：𠮓 → 變 → 变', () => {
+        expect(normalizeVariants('𠮓化')).toBe('變化');
+        expect(toSimplified('𠮓化')).toBe('变化');
+    });
+
     it('㫖、縂、寳 转成 旨、总、宝（脂评凡例里用户报的字）', () => {
         expect(toSimplified('其㫖縂在風月寳鑑')).toBe('其旨总在风月宝鉴');
     });

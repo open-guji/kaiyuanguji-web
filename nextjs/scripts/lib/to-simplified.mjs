@@ -5,10 +5,12 @@
 import { createRequire } from 'module';
 import { readFileSync } from 'fs';
 import { Converter } from 'opencc-js';
+import { VARIANT_SUPPLEMENT } from 'book-index-ui/variant-supplement';
 import { createToSimplified } from '../../src/lib/to-simplified-core.mjs';
 
 const require = createRequire(import.meta.url);
-const variants = JSON.parse(readFileSync(require.resolve('book-index-ui/variant-chars.json'), 'utf-8'));
+// 与组件库 normalizeVariants 同口径：variant-chars.json 优先，查不到再用补漏表（0.51.0 起公开导出）
+const variants = { ...VARIANT_SUPPLEMENT, ...JSON.parse(readFileSync(require.resolve('book-index-ui/variant-chars.json'), 'utf-8')) };
 
 export const toSimplified = createToSimplified({
     createConverter: () => Converter({ from: 't', to: 'cn' }),
