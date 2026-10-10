@@ -2,7 +2,7 @@
  * 主要页面一键截图 + 图集。
  *
  *   TARGET=https://staging.kaiyuanguji.com npm run shots
- *   COMPARE=https://www.kaiyuanguji.com  可选，同一页再截一张对照，图集里并排
+ *   COMPARE=https://www.openguji.com  可选，同一页再截一张对照，图集里并排
  *
  * 输出 e2e/out/shots/<页面名>-<宽度>[-cmp].jpg 与 index.html。
  * 只发 GET，不点任何按钮。单页失败不中断，图集里标红。

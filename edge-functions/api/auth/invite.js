@@ -163,7 +163,7 @@ export async function onRequestPost(context) {
     };
     await kv.put(`invite:${hash}`, JSON.stringify(record));
 
-    const link = `https://www.kaiyuanguji.com/join?c=${code}`;
+    const link = `https://www.openguji.com/join?c=${code}`;
     return new Response(JSON.stringify({ success: true, code, link, email, role, expires: record.expires }), { status: 200, headers });
   } catch (e) {
     console.error('invite error', e);

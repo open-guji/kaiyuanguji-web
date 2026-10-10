@@ -47,7 +47,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-workspace 同名目录、F1 样张同一个 id）
 PUBLIC_BASE = 'https://data.kaiyuanguji.com'
 KEY_PREFIX = 'iiif'
-UA = 'kaiyuanguji-iiif/0.1 (https://www.kaiyuanguji.com; open-guji)'
+UA = 'kaiyuanguji-iiif/0.1 (https://www.openguji.com; open-guji)'
 
 THUMB_W, READ_W, ZOOM_MAX_W_GRAY = 300, 1200, 2400
 COMMONS_W, IA_W = 1280, 1200
