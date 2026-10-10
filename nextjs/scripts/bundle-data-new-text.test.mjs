@@ -92,8 +92,13 @@ function makeFixture(base) {
     put(nw, 'wikisource/001.md', '# 维基\n');
     put(nw, 'fragments/f.json', { x: 1 }); // 非文本资产照旧公开
     put(nw, 'lineage_graph.json', { nodes: [] });
-    put(nw, 'extra/index.json', idx()); // manifest 没列的文本版本目录：不公开
-    put(nw, 'extra/001.md', '# 未登记\n');
+    put(nw, 'unlisted/index.json', idx()); // manifest 没列的文本版本目录：不公开
+    put(nw, 'unlisted/001.md', '# 未登记\n');
+    // extra/ 是手编源／工作档：default/extra、其它版本目录下的 extra、顶层 extra 都不公开
+    put(nw, 'default/extra/source/1册.md', '# 手编源\n');
+    put(nw, 'default/extra/notes.json', { x: 1 });
+    put(nw, 'wikisource/extra/draft.md', '# 维基工作档\n');
+    put(nw, 'extra/note.md', '# 顶层 extra\n');
     put(nw, 'shidian/index.json', idx());
     put(nw, 'shidian/001.md', '# 私有識典\n');
     // 新结构 Work：顶层 internal，整条目文本都不公开
@@ -195,7 +200,21 @@ try {
         const d = join(data, 'items', IDS.newWork);
         assert.ok(existsSync(join(d, 'fragments', 'f.json')));
         assert.ok(existsSync(join(d, 'lineage_graph.json')));
-        assert.ok(!existsSync(join(d, 'extra')), '未登记的 extra/ 不应公开');
+        assert.ok(!existsSync(join(d, 'unlisted')), '未登记的版本目录不应公开');
+    });
+
+    test('extra/ 手编源不进公开产物：default/extra、其它版本目录下的 extra、顶层 extra 都不拷；版本的正式章照常', () => {
+        const d = join(data, 'items', IDS.newWork);
+        assert.ok(!existsSync(join(d, 'default', 'extra')), 'default/extra/ 不应公开');
+        assert.ok(!existsSync(join(d, 'wikisource', 'extra')), 'wikisource/extra/ 不应公开');
+        assert.ok(!existsSync(join(d, 'extra')), '顶层 extra/ 不应公开');
+        assert.ok(existsSync(join(d, 'default', '001.txt')));
+        assert.ok(existsSync(join(d, 'wikisource', '001.txt')));
+        // 整个公开产物里没有手编源内容
+        for (const f of walkFiles(data)) {
+            assert.ok(!/(^|\/)extra\//.test(f.replace(/\\/g, '/')), `${f} 在 extra/ 下`);
+            if (/\.(txt|json)$/.test(f)) assert.ok(!rd(join(data, f)).includes('手编源'), `${f} 含手编源内容`);
+        }
     });
 
     test('没有 internal 的新结构 manifest.json 原样拷字节', () => {
@@ -258,6 +277,32 @@ try {
             );
         } finally {
             rmSync(tmp3, { recursive: true, force: true });
+        }
+    });
+
+    test('derived 命中数闸：设了 BOOK_INDEX_DERIVED_DIR 且有回退时默认只警告并打印汇总；STRICT_DERIVED=1 才失败；没设产物目录不判闸', () => {
+        const t = mkdtempSync(join(tmpdir(), 'new-text-derived-'));
+        try {
+            const f = makeFixture(t);
+            const der = join(t, 'derived');
+            // 产物里只有 newBook 一条：其余条目读 entry 时全部回退源档
+            put(der, `entry/${IDS.newBook}.json`, { id: IDS.newBook, title: '產物版', type: 'book' });
+            const e = { ...env(join(t, 'kyg-data'), f.draft, f.text), BOOK_INDEX_DERIVED_DIR: der };
+            delete e.STRICT_DERIVED;
+            const warnRun = execFileSync('node', [join(NEXTJS_DIR, 'scripts', 'bundle-data.mjs')], { cwd: NEXTJS_DIR, env: e, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf-8' });
+            assert.match(warnRun, /DER\s+条目读取：命中产物 \d+，回退源档 [1-9]\d*/);
+            assert.match(warnRun, /entry: 命中产物 1，回退源档/);
+            // 默认不失败（上面没抛错）；严格模式才失败
+            assert.throws(
+                () => run('bundle-data.mjs', { ...e, STRICT_DERIVED: '1' }),
+                (err) => /STRICT_DERIVED=1：有条目回退读源档/.test(String(err.stderr)),
+            );
+            // 没设产物目录：不判闸，STRICT_DERIVED=1 也能跑完
+            const e2 = { ...env(join(t, 'kyg-data2'), f.draft, f.text), STRICT_DERIVED: '1' };
+            delete e2.BOOK_INDEX_DERIVED_DIR;
+            run('bundle-data.mjs', e2);
+        } finally {
+            rmSync(t, { recursive: true, force: true });
         }
     });
 

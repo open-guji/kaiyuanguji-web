@@ -471,7 +471,7 @@ function isSafeTextSegment(s: string): boolean {
 
 /** 版本 key：default，或 [a-z0-9-] 字母开头的非保留字 */
 function isTextVersionKey(k: string): boolean {
-    return k === 'default' || (/^[a-z][a-z0-9-]*$/.test(k) && !['manifest', 'fragments', 'sources'].includes(k));
+    return k === 'default' || (/^[a-z][a-z0-9-]*$/.test(k) && !['manifest', 'fragments', 'sources', 'extra'].includes(k));
 }
 
 async function getTextManifestH1(id: string): Promise<Record<string, unknown> | null> {
