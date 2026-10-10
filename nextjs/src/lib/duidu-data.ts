@@ -2,14 +2,15 @@
  * 图文对读的数据文件（overview#425）：章在 `items/<id>/<版本 key>/index.json` 里的条目用 `*_file` 字段声明有哪些层，
  * 网站只按声明取，不写死书 id、不猜文件名：
  *   - `char_file`（必有）：每格的字（guji-char，文本真源）；
- *   - `cord_file`：每格的像素框（guji-cord）——**有它才有对读**，没有就是普通阅读，不发请求；
+ *   - `cord_file`（可选）：每格的像素框（guji-cord）——**有它才有对读**（书影格线、对读版面）；没有它只加载 char（及 punct／entity），cord 为 null 往下传；
  *   - `punct_file`：标点；`entity_file`：专名实体。
  * `pages_file`、`has_warp` 随 pages.json 作废。四个文件在同一章里按格位 key（`页:列:格[子列]`）对上。
  */
 
 export interface DuiduFiles {
     char: unknown;
-    cord: unknown;
+    /** 没有声明 `cord_file` 时为 null：下游不画书影格线、不做对读版面 */
+    cord: unknown | null;
     punct: unknown;
     entity: unknown;
 }
@@ -41,7 +42,10 @@ const fileField = (ch: Record<string, unknown>, k: string): string | null => {
     return typeof v === 'string' && /^[\w.-]+$/.test(v) ? v : null;
 };
 
-/** 取本章的对读数据；本章没有声明 `char_file`＋`cord_file`、或这两个取不到返回 null（不缓存失败） */
+/**
+ * 取本章的对读数据。本章没有声明 `char_file`、或声明了 char／（已声明的）cord 取不到返回 null（不缓存失败）；
+ * `cord_file` 未声明则 cord 为 null（只加载 char 及 punct／entity），不再因此整章返回 null。
+ */
 export function loadDuiduFiles(
     id: string,
     ctx: { versionKey: string | null; chapter: Record<string, unknown> | null } | undefined,
@@ -54,20 +58,21 @@ export function loadDuiduFiles(
     if (!ch || !key) return Promise.resolve(null);
     const charFile = fileField(ch, 'char_file');
     const cordFile = fileField(ch, 'cord_file');
-    if (!charFile || !cordFile) return Promise.resolve(null);
+    if (!charFile) return Promise.resolve(null);
     const punctFile = fileField(ch, 'punct_file');
     const entityFile = fileField(ch, 'entity_file');
-    const cacheKey = `${id}/${key}/${charFile}|${cordFile}|${punctFile ?? ''}|${entityFile ?? ''}`;
+    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${punctFile ?? ''}|${entityFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
             const [char, cord, punct, entity] = await Promise.all([
                 getJson(storage, id, key, charFile),
-                getJson(storage, id, key, cordFile),
+                cordFile ? getJson(storage, id, key, cordFile) : null,
                 punctFile ? getJson(storage, id, key, punctFile) : null,
                 entityFile ? getJson(storage, id, key, entityFile) : null,
             ]);
-            if (!char || !cord) return null;
+            // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null
+            if (!char || (cordFile && !cord)) return null;
             return { char, cord, punct, entity };
         })();
         cache.set(cacheKey, p);

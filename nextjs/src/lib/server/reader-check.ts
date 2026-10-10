@@ -17,7 +17,11 @@ export type ReaderCheck = 'found' | 'missing' | 'unknown';
 
 export interface ManifestVersion {
     key: string;
-    kind?: string;
+    /**
+     * 版本类型：transcription＝全文版；collated＝整理本（有全文版时阅读页隐藏）；
+     * self_collated＝本站独立整理（原件，阅读页照常列出）；其他值照原样保留。
+     */
+    kind?: 'transcription' | 'collated' | 'self_collated' | (string & {});
     label?: string;
     source?: string;
     source_name?: string;

@@ -38,14 +38,35 @@ describe('loadDuiduFiles', () => {
         ]);
     });
 
-    it('char 或 cord 取不到 → null（不缓存失败）；没有 cord_file → 不发请求', async () => {
+    it('char 或（已声明的）cord 取不到 → null（不缓存失败）', async () => {
         const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('cord') ? null : { file }));
         expect(await loadDuiduFiles('book-s3', { versionKey: 'original', chapter }, '003', { getTextFile })).toBeNull();
         const calls = getTextFile.mock.calls.length;
         expect(await loadDuiduFiles('book-s3', { versionKey: 'original', chapter }, '003', { getTextFile })).toBeNull();
         expect(getTextFile.mock.calls.length).toBeGreaterThan(calls); // 失败没被缓存，第二次又去取了
+        const charNull = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('char') ? null : { file }));
+        expect(await loadDuiduFiles('book-s5', { versionKey: 'original', chapter }, '003', { getTextFile: charNull })).toBeNull();
+    });
+
+    it('只有 char_file（没有 cord_file）：只加载 char（及声明了的 punct／entity），cord 为 null，不抛错', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
+        const charOnly = { file: '003', char_file: '003.char.json', punct_file: '003.punct.json' };
+        const r = await loadDuiduFiles('book-s6', { versionKey: 'original', chapter: charOnly }, '003', { getTextFile });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: null, punct: { file: '003.punct.json' }, entity: null });
+        expect(getTextFile.mock.calls.map(c => c.join('/')).sort()).toEqual(['book-s6/original/003.char.json', 'book-s6/original/003.punct.json']);
+    });
+
+    it('char_file＋cord_file 都有：两者都加载，cord 不为 null', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
+        const both = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json' };
+        const r = await loadDuiduFiles('book-s7', { versionKey: 'original', chapter: both }, '003', { getTextFile });
+        expect(r).toEqual({ char: { file: '003.char.json' }, cord: { file: '003.cord.json' }, punct: null, entity: null });
+    });
+
+    it('char_file 与 cord_file 都没有：返回 null，不发请求', async () => {
         const none = jest.fn();
-        expect(await loadDuiduFiles('book-s4', { versionKey: 'original', chapter: { file: '003', char_file: '003.char.json' } }, '003', { getTextFile: none })).toBeNull();
+        expect(await loadDuiduFiles('book-s4', { versionKey: 'original', chapter: { file: '003' } }, '003', { getTextFile: none })).toBeNull();
+        expect(await loadDuiduFiles('book-s4', { versionKey: 'original', chapter: { file: '003', cord_file: '003.cord.json' } }, '003', { getTextFile: none })).toBeNull();
         expect(none).not.toHaveBeenCalled();
     });
 });

@@ -84,10 +84,11 @@ describe('阅读页版本下拉框', () => {
         expect(Array.from(select.querySelectorAll('option')).map((o) => o.textContent)).toEqual(['维基文库', 'Kanripo']);
     });
 
-    it('只有整理本且 license=未知：保留 default，标签显示「版权未知」', async () => {
+    it('只有整理本且 license=未知：保留 default，license 原样显示「未知」（不改写）', async () => {
         manifest = { id: SHIXU, versions: [version('default', '网络', 'collated', '未知')] };
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
-        await waitFor(() => expect(screen.getAllByText(/版权未知/).length).toBeGreaterThan(0));
+        await waitFor(() => expect(screen.getAllByText(/未知/).length).toBeGreaterThan(0));
+        expect(screen.queryAllByText(/版权未知/)).toHaveLength(0);
         expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
     });
 

@@ -1,5 +1,6 @@
 /**
- * overview#456：阅读页的版本清单规则——有全文版就不列目录型 default；license「未知」显示「版权未知」。
+ * overview#456：阅读页的版本清单规则——有全文版就不列目录型 default；license 原样显示（「未知」不改写）；
+ * self_collated（本站独立整理，原件）不受「有全文版就隐藏整理本」影响。
  */
 import { describe, it, expect } from '@jest/globals';
 import { readerManifest } from '../reader-manifest';
@@ -35,13 +36,21 @@ describe('readerManifest', () => {
         expect(readerManifest({ versions: [d, k] }).versions.map((v) => v.key)).toEqual(['default', 'kanripo']);
     });
 
-    it('license「未知」→「版权未知」；source_name 与别的 license 原样', () => {
+    it('license「未知」原样保留（不再改写成「版权未知」）；source_name 与别的 license 原样', () => {
         const m = readerManifest({ versions: [{ ...collated, source_name: '网络', license: '未知' }] });
-        expect(m.versions[0]).toMatchObject({ source_name: '网络', license: '版权未知' });
+        expect(m.versions[0]).toMatchObject({ source_name: '网络', license: '未知' });
         const z = readerManifest({ versions: [{ ...collated, source_name: '知乎网友整理', license: 'CC0 1.0' }] });
         expect(z.versions[0]).toMatchObject({ source_name: '知乎网友整理', license: 'CC0 1.0' });
         const only = readerManifest({ versions: [{ key: 'default', kind: 'collated', source_name: '网络', license: ' 未知 ' }, { key: 'x', license: null }] });
-        expect(only.versions.map((v) => v.license)).toEqual(['版权未知', null]);
+        expect(only.versions.map((v) => v.license)).toEqual([' 未知 ', null]);
+    });
+
+    it('self_collated（本站独立整理，原件）：有全文版也不隐藏，顺序不变', () => {
+        const own = { key: 'self', kind: 'self_collated', label: '本站整理', source_name: '开鉴古籍', license: 'CC BY-SA 4.0' };
+        expect(readerManifest({ versions: [collated, wiki, own] }).versions.map((v) => v.key)).toEqual(['wikisource', 'self']);
+        expect(readerManifest({ versions: [own, collated, wiki] }).versions.map((v) => v.key)).toEqual(['self', 'wikisource']);
+        // 只有 self_collated 与整理本、没有全文版：两者都保留
+        expect(readerManifest({ versions: [collated, own] }).versions.map((v) => v.key)).toEqual(['default', 'self']);
     });
 
     it('不改入参', () => {
