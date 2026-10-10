@@ -380,6 +380,8 @@ test('verifyReadProbes：新结构整理本首章只有 json（has_json，没有
         assert.match(bad[0], /default\/001\.txt/);
         // has_json 但 json 也没有：照样报缺
         assert.match(verifyReadProbes([{ id: 'w1', kind: 'text', key: 'default', first: { file: '002', hasJson: true } }], root)[0], /default\/002\.json/);
+        // file 带扩展名（规格不允许，数据 0 例）不再被悄悄容忍：报缺而不是放过
+        assert.match(verifyReadProbes([{ id: 'w1', kind: 'text', key: 'default', first: { file: '001.md', hasJson: true } }], root)[0], /default\/001\.md\.json/);
         // manifest 缺
         assert.match(verifyReadProbes([{ id: 'w2', kind: 'manifest' }], root)[0], /w2: items\/w2\/manifest\.json/);
     } finally {

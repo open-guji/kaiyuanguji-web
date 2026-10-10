@@ -36,8 +36,8 @@ import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
-import { derivedDir, derivedPath, indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
-import { filterTextsShard, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
+import { derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
+import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 
 // ─── 配置 ───
 
@@ -127,6 +127,7 @@ function copyDirRecursive(src, dest, skip = null, rel = '') {
  *   manifest 顶层 visibility:internal → 整个条目目录都不拷；
  *   某个 version 标 internal → 不拷它的目录，公开版 manifest.json 里也去掉这一项（没去掉任何版本则原样拷字节）；
  *   manifest 没列的文本版本目录（顶层目录里直接有 index.json、名字像版本 key）→ 不拷；
+ *   extra/（顶层或任何版本目录下，如 default/extra/source/）是手编源／工作档 → 不拷；
  *   manifest.json 存在但不合法 → 抛错，构建失败。
  * 返回 { internalSkipped: 被挡在外面的版本数 }，供日志。
  */
@@ -148,7 +149,8 @@ function copyItemDir(itemDir, destDir) {
     for (const name of readdirSync(itemDir)) {
         if (!listed.has(name) && isTextKey(name) && existsSync(join(itemDir, name, 'index.json'))) blocked.add(name);
     }
-    copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]));
+    // extra/ 是手编源／工作档（default/extra/source/…），任何版本目录下的都不进公开产物
+    copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]) || isExtraPath(rel, listed));
     if (pub) {
         const dest = join(destDir, 'manifest.json');
         if (pub === manifest) writeIfChanged(dest, readFileSync(join(itemDir, 'manifest.json')));
@@ -256,7 +258,7 @@ function bundleL1() {
             const detailPath = join(baseDir, path);
             try {
                 // 读不了／JSON 坏了只跳过这一条（readEntryDoc 抛错在 try 内，与改前读源档同口径）
-                const read = readEntryDoc({ id, srcPath: detailPath });
+                const read = readEntryDoc({ id, srcPath: detailPath, stat: 'entry' });
                 const detail = read?.doc;
                 if (detail) {
                     if (item.has_collated) detail.has_collated = true;
@@ -687,6 +689,12 @@ bundleL2();
 bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();
 bundleVersion();
+
+// derived 命中数闸：设了 BOOK_INDEX_DERIVED_DIR 时汇总「读产物／回退源档」；回退>0 默认只警告，STRICT_DERIVED=1 才失败
+if (reportEntryReads().fail) {
+    console.error('❌ STRICT_DERIVED=1：有条目回退读源档，产物 entry/ 不全');
+    process.exit(1);
+}
 
 // 清理旧的 L0 / search_s / chunks 产物（避免上线后部署目录残留导致客户端误下载）
 for (const stale of ['index.json', 'search_s.json']) {

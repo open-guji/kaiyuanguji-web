@@ -17,8 +17,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** 非主版本的 key 不能用的保留字（规格 §二）；default 是主版本专用 */
-export const RESERVED_KEYS = new Set(['default', 'manifest', 'fragments', 'sources']);
+/**
+ * 非主版本的 key 不能用的保留字（规格 §二）；default 是主版本专用。
+ * extra：版本目录下的手编源／工作档（如 default/extra/source/<N>册.md），不是读者可见的文本，不能当版本 key，也不进公开产物。
+ */
+export const RESERVED_KEYS = new Set(['default', 'manifest', 'fragments', 'sources', 'extra']);
 const KEY_RE = /^[a-z][a-z0-9-]*$/;
 
 /** 合法的版本 key：主版本固定 default；其余 [a-z0-9-]、字母开头、非保留字 */
@@ -26,6 +29,19 @@ export function isTextKey(key) {
     if (typeof key !== 'string') return false;
     if (key === 'default') return true;
     return KEY_RE.test(key) && !RESERVED_KEYS.has(key);
+}
+
+/**
+ * 条目目录内的相对路径（'/' 分隔）是不是 `extra` 工作档，不得进公开产物：
+ * 顶层 `extra/**`（不是版本目录，也不是登记的版本），或 `<版本 key>/extra/**`（任何版本目录下的 extra/，含 default/extra/）。
+ * versionKeys：manifest 里登记的版本 key 集合（Set 或数组）；第二段是 extra 但第一段不是版本目录的（如 fragments/extra）不归本规则管。
+ */
+export function isExtraPath(rel, versionKeys = []) {
+    if (typeof rel !== 'string') return false;
+    const parts = rel.split('/');
+    if (parts[0] === 'extra') return true;
+    const keys = versionKeys instanceof Set ? versionKeys : new Set(versionKeys);
+    return parts.length > 1 && parts[1] === 'extra' && keys.has(parts[0]);
 }
 
 function readJsonOrNull(p) {
@@ -73,9 +89,12 @@ export function publicManifest(manifest) {
     return pub.length === manifest.versions.length && !isInternal(manifest) ? manifest : { ...manifest, versions: pub };
 }
 
-/** 章文件名：新结构 index 里 file 不带扩展名（'001'），容忍带 .md／.txt 的；返回 .md 形式 */
+/**
+ * 章文件名：新结构 index 里 file 不带扩展名（'001'，guji-format 规格；book-text 全部 11,385 份 index.json 实测 0 个带扩展名），
+ * 返回源仓里的 .md 文件名。不再容忍带扩展名的写法：带了会得到 '001.md.md'，构建期核对（verifyReadProbes）会失败而不是静默放过。
+ */
 export function chapterMdFile(file) {
-    return /\.(md|txt)$/.test(file) ? file.replace(/\.txt$/, '.md') : `${file}.md`;
+    return `${file}.md`;
 }
 
 /** 打包产物里的章文件名（md 改 txt） */
@@ -153,7 +172,7 @@ export function collatedChapterJsons(itemDir) {
         const idx = readJsonOrNull(join(itemDir, v.key, 'index.json'));
         for (const c of Array.isArray(idx?.chapters) ? idx.chapters : []) {
             if (typeof c?.file !== 'string' || !c.file || c.has_json !== true) continue;
-            const stem = c.file.replace(/\.(md|txt|json)$/, '');
+            const stem = c.file; // file 不带扩展名（同 chapterMdFile）
             const jsonPath = join(itemDir, v.key, `${stem}.json`);
             if (existsSync(jsonPath)) out.push({ key: v.key, stem, jsonPath });
         }

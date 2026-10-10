@@ -24,7 +24,7 @@ export interface ReaderSel {
 }
 
 /** 非主版本的 key 不能用的保留字（规格 §二）；default 是主版本专用 */
-const RESERVED_KEYS = ['default', 'manifest', 'fragments', 'sources'];
+const RESERVED_KEYS = ['default', 'manifest', 'fragments', 'sources', 'extra'];
 
 /** 合法的版本 key：主版本固定 default；其余 [a-z0-9-]、字母开头、非保留字 */
 export function isTextKey(key: string): boolean {

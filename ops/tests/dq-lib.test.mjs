@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    decodeId, insertHash, hash8, sample, extractRefs, registeredTextFiles, isTextIndexPath, newStructureKey,
+    decodeId, REF_FIELDS, insertHash, hash8, sample, extractRefs, registeredTextFiles, isTextIndexPath, newStructureKey,
     createHttp, pool, runDq, renderMarkdown, hasFailures, MAX_CONCURRENCY,
 } from '../dq-lib.mjs';
 
@@ -67,8 +67,29 @@ test('extractRefs：字符串、{id}、{work_id} 三种形状，认不出的单�
     assert.deepEqual(extractRefs({ work_id: '' }), []);
 });
 
+test('extractRefs：schema-v2 派生字段 _books／_members／_related／_collections 也抽（元素是带 id 的对象）', () => {
+    const refs = extractRefs({
+        _books: [{ id: 'b1', title: 'x' }],
+        _members: [{ id: 'm1', t: 'work' }, { id: 'm2', t: 'book' }],
+        _related: [{ id: 'r1', relation: 'part_of', direction: 'out' }, 7],
+        _collections: [{ id: 'c1', h: 1 }],
+        _works: [{ work_id: 'w9' }], // 不在巡检字段表里，仍被忽略
+    });
+    assert.deepEqual(refs, [
+        { field: '_books', id: 'b1' },
+        { field: '_members', id: 'm1' },
+        { field: '_members', id: 'm2' },
+        { field: '_related', id: 'r1' },
+        { field: '_related', bad: 7 },
+        { field: '_collections', id: 'c1' },
+    ]);
+    // 旧字段仍在表里、顺序在前；空数组不产出
+    assert.deepEqual(REF_FIELDS.slice(0, 4), ['work_id', 'books', 'related_works', 'contained_in']);
+    assert.deepEqual(extractRefs({ _books: [], _members: [], _related: [], _collections: [] }), []);
+});
+
 test('registeredTextFiles：<key>/index.json，file 不带扩展名，has_json 的章登记 .json（md 可缺，不登记）', () => {
-    const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003.md' }, { n: 4 }] });
+    const r = registeredTextFiles('default/index.json', { chapters: [{ n: 1, file: '001', has_json: true }, { n: 2, file: '002' }, { file: '003' }, { n: 4 }] });
     assert.equal(r.format, 'texts.chapters');
     assert.deepEqual(r.registered, ['default/001.json', 'default/002.txt', 'default/003.txt']);
     assert.deepEqual(r.optional, ['default/001.txt']); // has_json 的章 md 可缺

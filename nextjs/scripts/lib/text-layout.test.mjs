@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
-    collatedChapterJsons, chapterMdFile, chapterTxtFile, filterTextsShard, firstChapterOf, isTextKey, newStructureReadable, publicKeys, publicManifest, publicVersions, readManifest,
+    collatedChapterJsons, chapterMdFile, isExtraPath, chapterTxtFile, filterTextsShard, firstChapterOf, isTextKey, newStructureReadable, publicKeys, publicManifest, publicVersions, readManifest,
 } from './text-layout.mjs';
 
 function item(files) {
@@ -19,17 +19,25 @@ function item(files) {
 const ver = (key, extra = {}) => ({ key, kind: 'transcription', label: key, source: key, ...extra });
 const idx = (...files) => ({ chapters: files.map((f, i) => ({ n: i + 1, file: f, title: `卷${i + 1}`, has_json: false })) });
 
-test('isTextKey：default 与 [a-z0-9-] 字母开头的非保留字', () => {
-    for (const k of ['default', 'collated', 'wikisource', 'wikisource-2', 'open-guji', 'shidian']) assert.equal(isTextKey(k), true, k);
-    for (const k of ['manifest', 'fragments', 'sources', '001', '3d', 'Wiki', 'a_b', '', 'a/b', '..', undefined, 5]) assert.equal(isTextKey(k), false, String(k));
+test('isExtraPath：顶层 extra/、已登记版本目录下的 extra/ 是工作档；其它路径不算', () => {
+    const keys = new Set(['default', 'wikisource']);
+    for (const p of ['extra/a.md', 'extra', 'default/extra/source/1册.md', 'wikisource/extra/x.json', 'default/extra']) assert.equal(isExtraPath(p, keys), true, p);
+    for (const p of ['default/001.md', 'default/index.json', 'manifest.json', 'fragments/extra/a.json', 'default/sub/extra/a.md', 'default/extra.md', 'default/extras/a.md', 'unlisted/extra/a.md']) assert.equal(isExtraPath(p, keys), false, p);
+    assert.equal(isExtraPath('default/extra/a.md', ['default']), true); // 数组也行
+    assert.equal(isExtraPath('default/extra/a.md'), false); // 没给版本集：只认顶层
+    assert.equal(isExtraPath(undefined, keys), false);
 });
 
-test('章文件名：新结构 file 不带扩展名，md／txt 换算，容忍带扩展名的', () => {
+test('isTextKey：default 与 [a-z0-9-] 字母开头的非保留字', () => {
+    for (const k of ['default', 'collated', 'wikisource', 'wikisource-2', 'open-guji', 'shidian']) assert.equal(isTextKey(k), true, k);
+    for (const k of ['manifest', 'fragments', 'sources', 'extra', '001', '3d', 'Wiki', 'a_b', '', 'a/b', '..', undefined, 5]) assert.equal(isTextKey(k), false, String(k));
+});
+
+test('章文件名：新结构 file 不带扩展名，md／txt 换算；不再容忍带扩展名的（带了得到明显错误的名字，由构建期核对报出）', () => {
     assert.equal(chapterMdFile('001'), '001.md');
-    assert.equal(chapterMdFile('001.md'), '001.md');
-    assert.equal(chapterMdFile('001.txt'), '001.md');
     assert.equal(chapterTxtFile('001'), '001.txt');
-    assert.equal(chapterTxtFile('001.md'), '001.txt');
+    assert.equal(chapterMdFile('001.md'), '001.md.md');
+    assert.equal(chapterTxtFile('001.md'), '001.md.txt');
     assert.deepEqual(firstChapterOf({ chapters: [{ n: 1, file: '001', has_json: true }] }), { file: '001', hasJson: true });
     assert.deepEqual(firstChapterOf({ chapters: [{ n: 2, file: '002', char_file: '002.char.json' }] }), { file: '002', hasJson: false, charFile: '002.char.json' });
     assert.equal(firstChapterOf({ chapters: [] }), null);

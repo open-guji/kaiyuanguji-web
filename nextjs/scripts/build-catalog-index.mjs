@@ -29,7 +29,7 @@
 
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'fs';
-import { classificationOf, indexDirFor, readEntryDoc, taxonomyFileFor } from './lib/derived.mjs';
+import { classificationOf, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -292,7 +292,7 @@ export function bundleCatalog({ index, rootDirFor, dataDir, taxonomyFile, log = 
             // schema-v2：优先读 build 产物 entry/<id>.json（带 _classifications），缺则读源档（lib/derived.mjs）
             let d;
             try {
-                d = readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path) })?.doc;
+                d = readEntryDoc({ id: item.id, srcPath: join(rootDirFor(item), item.path), stat: 'catalog' })?.doc;
                 if (!d) continue;
             } catch (e) {
                 log(`  ⚠ catalog: 读不了 ${item.path}: ${e.message}`);
@@ -346,4 +346,5 @@ if (isMain) {
         dataDir: resolveDataDirs().dataDir,
         taxonomyFile: taxonomyFileFor(prodDir),
     });
+    if (reportEntryReads().fail) process.exit(1);
 }
