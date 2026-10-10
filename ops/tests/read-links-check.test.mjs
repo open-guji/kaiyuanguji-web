@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkReadLinks, percentile, pickSome, renderSummary, retryWarning } from '../read-links-check.mjs';
+import { checkReadLinks, percentile, pickSome, renderSummary, retryAfterMs, retryWarning, EDGE_TRANSIENT } from '../read-links-check.mjs';
 import { mulberry32 } from '../dq-lib.mjs';
 
 const DATA = 'https://data.test';
@@ -403,4 +403,39 @@ test('长窗口只给顶层清单：阅读页和卡片 manifest 仍是 3 次短�
     const r2 = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch({}, {}), sleep: async (ms) => { w2.push(ms); } });
     assert.ok(r2.failures.some((x) => /HTTP 404/.test(x.detail)));
     assert.deepEqual(w2, []);
+});
+
+test('429 边缘限流按可重试处理：退避后 200 不记失败，记进 retried', async () => {
+    assert.equal(EDGE_TRANSIENT.has(429), true);
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [429, 429] }), seed: 1, ...NO_WAIT });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.retried, [`${SITE}/read/${WORK}`]);
+});
+
+test('429 持续：重试 3 次仍失败才记失败，并写明 429', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: flakyPages(basePages(), { [`/read/${WORK}`]: [429, 429, 429, 429] }), seed: 1, ...NO_WAIT });
+    assert.equal(r.failures.length, 1);
+    assert.match(r.failures[0].detail, /HTTP 429（429后重试 3 次仍失败）/);
+});
+
+test('Retry-After：按秒数换算，缺失／非数字／负数为 0，超过 30 秒封顶；退避取两者较大值', async () => {
+    const h = (v) => ({ headers: { get: (k) => (k.toLowerCase() === 'retry-after' ? v : null) } });
+    assert.equal(retryAfterMs(h('7')), 7000);
+    assert.equal(retryAfterMs(h('600')), 30000);
+    assert.equal(retryAfterMs(h('Wed, 21 Oct 2026 07:28:00 GMT')), 0);
+    assert.equal(retryAfterMs(h('-3')), 0);
+    assert.equal(retryAfterMs(h(null)), 0);
+    assert.equal(retryAfterMs({}), 0);
+
+    const waits = [];
+    const seq = { [`/read/${WORK}`]: [429] };
+    const inner = fakeFetch(baseFiles(), basePages());
+    const fetchImpl = async (url) => {
+        const left = seq[new URL(url).pathname];
+        if (left && left.length) { left.shift(); return { ok: false, status: 429, ...h('9') }; }
+        return inner(url);
+    };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl, seed: 1, warm: false, sleep: async (ms) => { waits.push(ms); } });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(waits, [9000]); // 退避表第一档是 2000，Retry-After 9 秒更大
 });
