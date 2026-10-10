@@ -8,7 +8,7 @@
 import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
+import { ensureProperNamesFull, requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
 
 const BOOK = '96mid1ogzk';
 const PATH = `${TARGET}/read/${BOOK}/002`;
@@ -23,8 +23,7 @@ async function openDuidu(page: Page) {
     await expect(page.locator('[data-char-id]').first()).toBeVisible({ timeout: 60_000 });
     // 专名线在章节有专名数据时默认开（ui 0.47.2），没按下才点，免得点成关；对读正文的实体标注跟着它走
     await setReaderSettings(page, true);   // 专名线、标点在右侧「阅读设置」侧栏里（overview#463）
-    const toggle = page.getByRole('button', { name: /专名线|專名線/ });
-    if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
+    await ensureProperNamesFull(page);
     await setReaderSettings(page, false);
 }
 
