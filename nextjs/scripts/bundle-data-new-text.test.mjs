@@ -90,7 +90,7 @@ function makeFixture(base) {
     put(nw, 'default/index.json', idx(true));
     put(nw, 'default/001.md', '# 整理本\n');
     put(nw, 'default/001.json', { sections: [{ title: '一', content: '道可道' }] });
-    put(nw, 'default/003.norm.json', { entries: [] }); // 异体字归一表（norm_file，overview#540）：版本目录下，应公开
+    put(nw, 'default/003.norm.json', { schema: 'guji-norm/0.2', book_id: 'x', volume: 3, table: null, items: [] }); // 异体字归一表（norm_file，overview#540）：版本目录下，应公开
     put(nw, 'default/003.decision.json', { note: '决策记录（现状：版本目录下的 *.json 照拷）' });
     put(nw, 'wikisource/index.json', idx());
     put(nw, 'wikisource/001.md', '# 维基\n');

@@ -184,12 +184,13 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`）；
+    // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`、`norm_file`）；
     // 有 `cord_file` 才有像素框，两边按格位对上做对读版面；没有 cord 就不做对读版面、不画书影格线（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
         if (!files?.cord) return null;
-        const pages = adaptCharCord(files.char, files.cord);
+        // 规范层（norm.json）：人审过的「异体→通行字」，按格位 key 挂到字上；没声明或取不到时 files.norm 为 null＝与改前一致
+        const pages = adaptCharCord(files.char, files.cord, files.norm);
         if (pages.length === 0) return null;
         const vol = iiifVolumeOf(files.cord);
         // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
@@ -206,7 +207,8 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 }
             } catch { /* 样张取不到就全部平铺 */ }
         }
-        return { ...base, pages, punctuations: adaptPunctJson(files.punct) } as any;
+        // hasNorm：章条目声明了 norm_file 且取到了（哪怕是空表）＝自校文本，阅读器的「原字」档可选；外来文本没有，置灰（overview#540）
+        return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null } as any;
     }, [id, transport]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画

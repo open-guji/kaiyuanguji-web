@@ -5,7 +5,7 @@
  *   - `cord_file`（可选）：每格的像素框（guji-cord）——**有它才有对读**（书影格线、对读版面）；没有它只加载 char（及 punct／entity），cord 为 null 往下传；
  *   - `punct_file`：标点；`entity_file`：专名实体；
  *   - `norm_file`（可选）：异体字归一表（overview#540）。未声明或取不到都当没有，不影响整章。
- * `pages_file`、`has_warp` 随 pages.json 作废。四个文件在同一章里按格位 key（`页:列:格[子列]`）对上。
+ * `pages_file`、`has_warp` 随 pages.json 作废。这些文件在同一章里按格位 key（`页:列:格[子列]`）对上。
  */
 
 export interface DuiduFiles {
