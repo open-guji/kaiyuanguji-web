@@ -260,3 +260,18 @@ export async function setReaderSettings(page: Page, open: boolean): Promise<void
     if (await btn.count() === 0) return;
     if ((await btn.getAttribute('aria-expanded')) !== String(open)) await btn.click();
 }
+
+/**
+ * 把「专名线」开到完整档（需先打开阅读设置侧栏）。ui ≥ 0.50.0 是「不显示／精简／完整」三档分段控件，
+ * 更早是单个带 aria-pressed 的按钮；两种都认。已经是完整档（或按钮已按下）就不点。
+ */
+export async function ensureProperNamesFull(page: Page): Promise<void> {
+    const group = page.getByRole('group', { name: /^(专名线|專名線)$/ });
+    if (await group.count()) {
+        const full = group.getByRole('button', { name: /^完整$/ });
+        if ((await full.getAttribute('aria-pressed')) !== 'true') await full.click();
+        return;
+    }
+    const toggle = page.getByRole('button', { name: /专名线|專名線/ });
+    if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
+}

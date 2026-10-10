@@ -8,7 +8,7 @@
 import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
-import { requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
+import { ensureProperNamesFull, requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
 
 const BOOK = '96mid1ogzk';
 const PATH = `${TARGET}/read/${BOOK}/003`;
@@ -33,8 +33,7 @@ async function openDuidu(page: Page) {
     await expect(warpPage(page)).toHaveAttribute('data-warp-page', FIRST_TEXT_PAGE, { timeout: 30_000 });
     // 专名线在章节有专名数据时默认开（ui 0.47.2），没按下才点，免得点成关；对读正文的实体标注跟着它走
     await setReaderSettings(page, true);   // 专名线、标点在右侧「阅读设置」侧栏里（overview#463）
-    const toggle = page.getByRole('button', { name: /专名线|專名線/ });
-    if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
+    await ensureProperNamesFull(page);
     await setReaderSettings(page, false);
     await settled(page);
 }
@@ -165,11 +164,14 @@ test.describe('图文对读（vol03）', () => {
         await expect(page.locator('.guji-text-punct')).toHaveCount(0);
         await punct.click();
         await expect(punct).toHaveAttribute('aria-pressed', 'true');
-        // 专名线：openDuidu 已经打开
-        const names = page.getByRole('button', { name: /专名线|專名線/ });
-        await expect(names).toHaveAttribute('aria-pressed', 'true');
-        await names.click();
-        await expect(names).toHaveAttribute('aria-pressed', 'false');
+        // 专名线：openDuidu 已经打开到「完整」档（ui ≥ 0.50.0 三档：不显示／精简／完整）
+        const names = page.getByRole('group', { name: /^(专名线|專名線)$/ });
+        const full = names.getByRole('button', { name: /^完整$/ });
+        const off = names.getByRole('button', { name: /^(不显示|不顯示)$/ });
+        await expect(full).toHaveAttribute('aria-pressed', 'true');
+        await off.click();
+        await expect(off).toHaveAttribute('aria-pressed', 'true');
+        await expect(full).toHaveAttribute('aria-pressed', 'false');
     });
 
     test('空白页（第 58 页）：从有字页翻过去只显示书影，正文不动；再翻到第 59 页正文滚过去', async ({ page, request }) => {
@@ -311,6 +313,10 @@ test.describe('图文对读（vol03）', () => {
         // 标点 pos=before 的修复（bim PR #124）发版后才有；版本号以实际发版为准
         await requireUiVersion(request, FIX_POS_UI, '标点 pos=before');
         await openDuidu(page);
+        // ui ≥ 0.50.0 书名默认用波浪线、隐去《》；这里要看《》的位置，先切到「书名号」
+        await setReaderSettings(page, true);
+        await page.getByRole('group', { name: /^(书名样式|書名樣式)$/ }).getByRole('button', { name: /^(书名号|書名號)$/ }).click();
+        await setReaderSettings(page, false);
         // 4:1:17 彖 的标点：《 pos=before、》 pos=after（003.punct.json）
         const para = await page.locator('[data-char-id="4:1:17"]').evaluate((e) => e.closest('p')!.textContent ?? '');
         expect(para).toContain('孔子《彖》、《象》传');
