@@ -3,7 +3,7 @@
  * 另外单独量「条目页缓存命中首字节」。超标退出码 1，并写 out/gate.json、out/gate.md
  * （CI 里再据此开单，见 .github/workflows/test.yml 的 perf-prod）。
  *
- * 用法：tsx gate.ts [--target=https://www.kaiyuanguji.com] [--out=out] [--thresholds=thresholds.json]
+ * 用法：tsx gate.ts [--target=https://www.openguji.com] [--out=out] [--thresholds=thresholds.json]
  *
  * 首字节：GET 同一个干净条目地址若干次（Node fetch，取到响应头的时刻），只统计响应头
  * `EO-Cache-Status: Cache Hit` 的样本，取中位数。命中样本不足（缓存没热起来、被别的层挡了）不算超标，
@@ -126,7 +126,7 @@ export function renderMarkdown(target: string, r: GateResult): string {
 async function main() {
     const here = dirname(fileURLToPath(import.meta.url));
     const arg = (name: string, dflt: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) ?? dflt;
-    const target = arg('target', 'https://www.kaiyuanguji.com');
+    const target = arg('target', 'https://www.openguji.com');
     const outDir = resolve(arg('out', resolve(here, 'out')));
     const thresholds: Thresholds = JSON.parse(await readFile(resolve(arg('thresholds', resolve(here, 'thresholds.json'))), 'utf-8'));
     const report = JSON.parse(await readFile(resolve(outDir, 'latest.json'), 'utf-8')) as { runs: RunLite[] };

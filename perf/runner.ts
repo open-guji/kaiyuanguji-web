@@ -29,7 +29,7 @@ interface CliOptions {
 function parseArgs(argv: string[]): CliOptions {
     const args = argv.slice(2);
     const opts: CliOptions = {
-        target: 'https://www.kaiyuanguji.com',
+        target: 'https://www.openguji.com',
         out: resolve(__dirname, 'out'),
         headed: false,
         execPath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
@@ -61,7 +61,7 @@ function printHelp() {
     console.log(`Usage: tsx runner.ts [options]
 
 Options:
-  --target <url>         Base URL (default: https://www.kaiyuanguji.com)
+  --target <url>         Base URL (default: https://www.openguji.com)
   --scenarios <ids>      Comma-separated scenario IDs/prefixes (default: all)
   --profiles <names>     Comma-separated profile names (default: all)
   --out <dir>            Output dir for report.md / report.json

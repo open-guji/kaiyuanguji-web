@@ -7,6 +7,7 @@ import ErrorMonitor from "@/components/common/ErrorMonitor";
 import NavRetryWorker from "@/components/common/NavRetryWorker";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
+import MovedBanner from "@/components/layout/MovedBanner";
 import { DEFAULT_THEME, DEFAULT_LAYOUT, THEME_COLOR, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -83,6 +84,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <MovedBanner />
         <StagingBadge />
         <ErrorMonitor />
         <NavRetryWorker />

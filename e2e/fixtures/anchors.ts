@@ -18,7 +18,7 @@
  */
 
 /** 被测站点，默认线上；本地验证传 TARGET=http://localhost:3000 */
-export const TARGET = process.env.TARGET ?? 'https://www.kaiyuanguji.com';
+export const TARGET = process.env.TARGET ?? 'https://www.openguji.com';
 
 /** 数据源 COS（经 EdgeOne 反代） */
 export const DATA_BASE = process.env.DATA_BASE ?? 'https://data.kaiyuanguji.com';

@@ -16,6 +16,7 @@ on:
           - https://ssr-test.kaiyuanguji.com
           - https://staging.kaiyuanguji.com
           - https://www.kaiyuanguji.com
+          - https://www.openguji.com
       project:
         description: 跑哪一层（contract / ui / degradable / all）
         required: true

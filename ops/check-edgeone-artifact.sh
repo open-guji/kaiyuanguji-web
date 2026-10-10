@@ -37,7 +37,7 @@ if [ "$SITEMAP" = proxy ]; then
   grep -Eq '"\^/sitemap(\\\\)?-proxy/' "$CF" || { echo "❌ 云函数路由里没有 /sitemap-proxy"; exit 1; }
 else
   test -f "$A/sitemap-index.xml" || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
-  grep -q '<loc>https://www.kaiyuanguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
+  grep -q '<loc>https://www.openguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
 fi
 echo "✓ 正式站产物：无 noindex、无角标、robots 允许收录、读正式数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap"
 

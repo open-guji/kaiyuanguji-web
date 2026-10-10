@@ -1045,7 +1045,7 @@ jobs:
         if: ${{ env.FROM_ARTIFACT != 'true' && env.SPLIT_DATA != 'true' }}
         working-directory: nextjs
         env:
-          SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+          SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
         run: |
           OUT="$RUNNER_TEMP/item-sitemaps"
           if [ "$DATA_FAST" != true ]; then
@@ -1102,7 +1102,7 @@ jobs:
           # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
           NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
-          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_URL: https://www.openguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
@@ -1506,7 +1506,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
         run: node scripts/item-revalidate.mjs
 
       - name: Verify item cache refresh (W2-3)
@@ -1514,7 +1514,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.kaiyuanguji.com' }}
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
         run: node scripts/item-cache-verify.mjs
 
       # overview#322 方案 A：正式站部署、清缓存后预热热门阅读页（featured 全部＋各节点第 1 页），
@@ -1525,7 +1525,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 8
         env:
-          TARGET: https://www.kaiyuanguji.com
+          TARGET: https://www.openguji.com
           DATA_BASE: https://data.kaiyuanguji.com
         # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
         run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
@@ -1757,7 +1757,7 @@ jobs:
           # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
           NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
-          NEXT_PUBLIC_SITE_URL: https://www.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_URL: https://www.openguji.com
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
           NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
