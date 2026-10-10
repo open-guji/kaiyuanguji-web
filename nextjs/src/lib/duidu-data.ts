@@ -82,7 +82,14 @@ export function loadDuiduFiles(
             return { char, cord, punct, entity, norm: norm ?? null };
         })();
         cache.set(cacheKey, p);
-        p.then(v => { if (!v) cache.delete(cacheKey); });
+        // 失败不缓存；声明了 norm_file 却没取到也不缓存（可能是暂时失败，下次再取），并留一条日志
+        p.then(v => {
+            if (!v) cache.delete(cacheKey);
+            else if (normFile && v.norm == null) {
+                cache.delete(cacheKey);
+                console.warn(`[duidu-data] 声明了 norm_file 但取不到：${id}/${key}/${normFile}（本次当没有规范层，下次重试）`);
+            }
+        });
     }
     return p;
 }
