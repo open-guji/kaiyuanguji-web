@@ -40,29 +40,16 @@ jobs:
               except Exception as e:
                   return {'ERROR': str(e)[:300]}
           z = os.environ['EDGEONE_ZONE_ID']
-          print('## zones')
-          zs = call('DescribeZones', Limit=50)
-          for x in zs.get('Zones', []) or [zs]:
-              print(json.dumps({k: x.get(k) for k in ('ZoneId', 'ZoneName', 'Type', 'Area', 'Status', 'ActiveStatus', 'PlanId', 'NameServers', 'OriginalNameServers')} if 'ZoneName' in x else x, ensure_ascii=False))
-              if x.get('ZoneId') == z:
-                  print('  ^ 这是 EDGEONE_ZONE_ID')
-          print('## plans'); p = call('DescribePlans', Limit=20)
-          for x in p.get('Plans', []) or [p]:
-              print(json.dumps({k: x.get(k) for k in ('PlanId', 'PlanType', 'Area', 'Status', 'BindZoneNumber', 'MaxZoneNumber', 'BindZones')} if 'PlanId' in x else x, ensure_ascii=False))
-          print('## acceleration domains of EDGEONE_ZONE_ID')
-          d = call('DescribeAccelerationDomains', ZoneId=z, Limit=200)
-          for x in d.get('AccelerationDomains', []) or [d]:
-              o = x.get('OriginDetail') or {}
-              print(json.dumps({'DomainName': x.get('DomainName'), 'Status': x.get('DomainStatus'), 'OriginType': o.get('OriginType'), 'Cname': x.get('Cname'), 'Ipv6': x.get('IPv6Status')} if 'DomainName' in x else x, ensure_ascii=False))
-          print('## rules engine (DescribeL7AccRules)')
-          print(json.dumps(red(call('DescribeL7AccRules', ZoneId=z)), ensure_ascii=False, indent=1)[:20000])
-          print('## legacy rules (DescribeRules)')
-          print(json.dumps(red(call('DescribeRules', ZoneId=z)), ensure_ascii=False, indent=1)[:12000])
-          print('## zone-level L7 settings (DescribeL7AccSetting)')
-          print(json.dumps(red(call('DescribeL7AccSetting', ZoneId=z)), ensure_ascii=False, indent=1)[:8000])
-          print('## pages projects (domain-ish fields only)')
-          req = urllib.request.Request('https://pages-api.edgeone.ai/v1', data=json.dumps({'Action': 'DescribePagesProjects', 'PageNumber': 1, 'PageSize': 50}).encode(), method='POST', headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + os.environ['EDGEONE_API_TOKEN']})
-          data = json.load(urllib.request.urlopen(req, timeout=30))
-          resp = (data.get('Data') or {}).get('Response') or data
-          for pr in resp.get('Projects') or []:
-              print(json.dumps({k: v for k, v in pr.items() if re.search(r'(Name|Domain|Area|Zone|Region|Status|Type)', k) and not SECRETISH.search(k)}, ensure_ascii=False)[:3000])
+          r = call('DescribeL7AccRules', ZoneId=z)
+          print('TotalCount', r.get('TotalCount'))
+          def acts(br, ind):
+              for b in br or []:
+                  print(ind + 'IF ' + str(b.get('Condition')))
+                  for x in b.get('Actions') or []:
+                      ps = {k: v for k, v in x.items() if k != 'Name' and v}
+                      print(ind + '  -> ' + x.get('Name') + ' ' + json.dumps(red(ps), ensure_ascii=False)[:300])
+                  for sr in b.get('SubRules') or []:
+                      acts(sr.get('Branches'), ind + '    ')
+          for x in r.get('Rules') or []:
+              print('--- [%s] %s (prio %s)' % (x.get('Status'), x.get('RuleName'), x.get('RulePriority')))
+              acts(x.get('Branches'), '  ')
