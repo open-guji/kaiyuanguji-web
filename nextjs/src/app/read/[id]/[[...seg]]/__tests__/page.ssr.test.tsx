@@ -12,6 +12,7 @@ const mockGetItem = jest.fn(async (id: string, _opts?: unknown): Promise<unknown
 jest.mock('@/lib/server/item-data', () => ({
     getItemServer: (id: string, opts?: unknown) => mockGetItem(id, opts),
     getPromotionServer: async () => ({ status: 'absent' }),
+    getLatestServer: async () => ({ version: 'test' }),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
 }));
@@ -203,6 +204,12 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         const t = timingOf(tree);
         for (const name of ['item', 'check', 'redirect', 'preload', 'total']) expect(t).toMatch(new RegExp(`(^|, )${name};dur=\\d+`));
         expect(t).toMatch(/inst;desc="req=\d+ up=\d+s"$/);
-        expect(logs.some((l) => l.startsWith(`[reader-timing] /read/${ZHIZHAI}/002 item;dur=`))).toBe(true);
+        // 日志第一段不一定是 item：各段按完成先后记，latest.json 那一跳通常最先完成
+        expect(logs.some((l) => l.startsWith(`[reader-timing] /read/${ZHIZHAI}/002 `) && /(^| |, )item;dur=\d+/.test(l))).toBe(true);
+    });
+
+    it('overview#345 PR①：再细分到每一跳——latest.json、manifest、目录 index、首章 txt 各记一段', async () => {
+        const t = timingOf(await pageTree(['002']));
+        for (const name of ['latest', 'h:manifest', 'h:index', 'h:chapter-txt']) expect(t).toMatch(new RegExp(`(^|, )${name};dur=\\d+`));
     });
 });

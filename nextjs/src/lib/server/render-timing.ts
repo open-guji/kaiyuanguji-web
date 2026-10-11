@@ -46,3 +46,23 @@ export function serverTimingValue(t: RenderTiming, now: number = Date.now()): st
     parts.push(`inst;desc="req=${t.reqNo} up=${Math.round(t.uptimeMs / 1000)}s"`);
     return parts.join(', ');
 }
+
+/**
+ * 一次 current/ 取数在计时里的名字（overview#345 PR①：看冷实例上每一跳各花多久）：
+ * `…/manifest.json`→`h:manifest`、`…/index.json`→`h:index`、章 `…/NNN.json`→`h:chapter-json`、`…/NNN.txt`→`h:chapter-txt`，其他→`h:other`。
+ * 只用于命名，不参与任何取数判断。
+ */
+export function hopName(relPath: string): string {
+    const base = relPath.split('?')[0].split('/').pop() ?? '';
+    if (base === 'manifest.json') return 'h:manifest';
+    if (base === 'index.json') return 'h:index';
+    if (base.endsWith('.json')) return 'h:chapter-json';
+    if (base.endsWith('.txt')) return 'h:chapter-txt';
+    return 'h:other';
+}
+
+/** 给 current/ 取数函数套一层计时：结果与抛错原样透传，只多记一段 `h:…`（并行的几跳耗时会重叠，各记各的）。类型原样保留（含泛型）。 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function withHopTiming<F extends (relPath: string, ...rest: any[]) => Promise<any>>(t: RenderTiming, get: F): F {
+    return ((relPath: string, ...rest: unknown[]) => timed(t, hopName(relPath), get(relPath, ...rest))) as F;
+}
