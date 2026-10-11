@@ -28,7 +28,7 @@ import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_L
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getPromotionServer } from '@/lib/server/item-data';
+import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
 import { checkReader, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
@@ -39,7 +39,7 @@ import { preloadReader } from '../preload';
 import type { ReaderSeed } from '../reader-seed';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
-import { startRenderTiming, serverTimingValue, timed, type RenderTiming } from '@/lib/server/render-timing';
+import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
 
 // ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
 // 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
@@ -75,10 +75,12 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
 
     // overview#322 方案 D：分段计时（只记录，见 lib/server/render-timing.ts）
     const timing = startRenderTiming();
+    // overview#345 PR①：单独量 latest.json 这一跳（与下面各取数共用同一份进程内缓存的请求，不多发请求；只记录）
+    timed(timing, 'latest', getLatestServer()).catch(() => { /* 失败由各取数自己处理 */ });
     const [hit, checked] = await Promise.all([
         // 只要书名与跳转信息：先走 current/（与 checkReader 共用 latest.json，冷实例上少 3 跳，overview#322 B1）
         timed(timing, 'item', getItemServer(id, { prefer: 'current' })),
-        timed(timing, 'check', checkReader(id, sel, getCurrentJsonServer)),
+        timed(timing, 'check', checkReader(id, sel, withHopTiming(timing, getCurrentJsonServer))),
     ]);
     const r = await timed(timing, 'redirect', resolveItemRedirect(id, hit, getPromotionServer));
     if (r) {
@@ -104,7 +106,7 @@ async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const budget = new Promise<ReaderSeed>((resolve) => { timer = setTimeout(() => resolve({}), PRELOAD_BUDGET_MS); });
     try {
-        return await Promise.race([preloadReader(id, s.checked, getCurrentJsonServer, getCurrentTextServer), budget]);
+        return await Promise.race([preloadReader(id, s.checked, withHopTiming(s.timing, getCurrentJsonServer), withHopTiming(s.timing, getCurrentTextServer)), budget]);
     } finally {
         clearTimeout(timer);
     }

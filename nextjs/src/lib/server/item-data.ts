@@ -408,7 +408,10 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         });
     }
 
-    return { getItem, resolvePromotion, getCurrentJson, getCurrentText };
+    /** latest.json 指针（进程内缓存，与 getCurrentJson 内部取的是同一份）：给阅读页计时单独量这一跳 */
+    const getLatest = () => getPointer<LatestPointer>('latest.json');
+
+    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getLatest };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -431,6 +434,11 @@ export function getItemServer(id: string, opts?: ItemGetOptions): Promise<ItemFe
 /** current/ 下的数据文件（同一个取数实例，latest.json 指针缓存共用） */
 export function getCurrentJsonServer<T>(relPath: string): Promise<T | null> {
     return defaultFetcher().getCurrentJson<T>(relPath);
+}
+
+/** latest.json 指针（同一个取数实例；阅读页首次渲染计时用，overview#345） */
+export function getLatestServer(): Promise<unknown> {
+    return defaultFetcher().getLatest();
 }
 
 /** current/ 下的文本文件（同一个取数实例） */
