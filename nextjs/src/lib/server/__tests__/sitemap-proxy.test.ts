@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, jest } from '@jest/globals';
 import {
-  STORED_SITE, isSitemapName, sitemapNameFromPath, sitemapUpstreamUrl, rewriteSitemapSite, fetchSitemap,
+  STORED_SITE, LEGACY_STORED_SITE, isSitemapName, sitemapNameFromPath, sitemapUpstreamUrl, rewriteSitemapSite, fetchSitemap,
 } from '../sitemap-proxy';
 
 const XML = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${STORED_SITE}/item/abc123</loc></url>\n<url><loc>${STORED_SITE}/item/def456</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>\n`;
@@ -49,7 +49,7 @@ describe('地址与改写', () => {
   it('rewriteSitemapSite：只换 <loc> 开头的站点，其余内容不动；相同站点原样返回', () => {
     const out = rewriteSitemapSite(XML, STORED_SITE, 'https://staging.kaiyuanguji.com/');
     expect(out).toContain('<loc>https://staging.kaiyuanguji.com/item/abc123</loc>');
-    expect(out).not.toContain('https://www.kaiyuanguji.com');
+    expect(out).not.toContain('https://www.openguji.com');
     expect(out).toContain('<lastmod>2026-10-01</lastmod>');
     expect(rewriteSitemapSite(XML, STORED_SITE, STORED_SITE)).toBe(XML);
   });
@@ -63,6 +63,15 @@ describe('地址与改写', () => {
 
 describe('fetchSitemap', () => {
   const base = 'https://data.example.com';
+  it('库里还是旧主域名的 sitemap（重生成前）同样换成本站，不露旧域名', async () => {
+    const legacyXml = XML.split(STORED_SITE).join(LEGACY_STORED_SITE);
+    const r = await fetchSitemap({ base, name: 'work-001', site: 'https://www.openguji.com', fetchImpl: okFetch(legacyXml) });
+    expect(r).toEqual({ ok: true, xml: XML });
+    const s = await fetchSitemap({ base, name: 'work-001', site: 'https://staging.kaiyuanguji.com', fetchImpl: okFetch(legacyXml) });
+    expect(s.ok && s.xml).toContain('<loc>https://staging.kaiyuanguji.com/item/abc123</loc>');
+    expect(s.ok && s.xml).not.toContain(LEGACY_STORED_SITE);
+    expect(s.ok && s.xml).not.toContain(STORED_SITE);
+  });
   it('取回并换成本站地址；请求的是数据前缀 sitemaps/ 下的那一份', async () => {
     const f = okFetch(XML);
     const r = await fetchSitemap({ base, name: 'work-001', site: 'https://staging.kaiyuanguji.com', fetchImpl: f });

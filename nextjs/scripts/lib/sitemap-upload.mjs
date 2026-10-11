@@ -18,7 +18,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** 数据前缀里存的 sitemap 用的站点地址；与 sitemap-proxy.ts 的 STORED_SITE 相同（单测比对） */
-export const STORED_SITE = 'https://www.kaiyuanguji.com';
+export const STORED_SITE = 'https://www.openguji.com';
 
 /** 路由代理允许的名字；与 sitemap-proxy.ts 的 NAME_RE 相同（单测比对源文件） */
 export const NAME_RE = /^(?:sitemap-index|(?:work|book|collection|entity)-\d{3,}|nodes-001)$/;

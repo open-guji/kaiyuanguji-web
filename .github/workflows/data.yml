@@ -661,7 +661,7 @@ jobs:
         if: ${{ steps.gate.outputs.publish == 'true' && (steps.gate.outputs.sitemaps_only == 'true' || steps.cos_decide.outputs.skip != 'true' || steps.sm_present.outputs.present != 'true') }}
         working-directory: nextjs
         env:
-          SITEMAP_SITE: https://www.kaiyuanguji.com
+          SITEMAP_SITE: https://www.openguji.com
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: node scripts/gen-sitemaps.mjs
 
@@ -743,7 +743,7 @@ jobs:
           export KYG_REVALIDATE_SECRET="$S"
           # 未改动页的 CDN 命中检查要一个对照页；这里没有本地打包产物，候选由 package 任务随工件带来
           export ITEM_CONTROL_IDS="$(cat "$RUNNER_TEMP/item-artifact/control-ids.txt" 2>/dev/null || true)"
-          if [ -z "$PREFIX" ]; then SITES="https://www.kaiyuanguji.com https://staging.kaiyuanguji.com"; else SITES="https://staging.kaiyuanguji.com"; fi
+          if [ -z "$PREFIX" ]; then SITES="https://www.openguji.com https://staging.kaiyuanguji.com"; else SITES="https://staging.kaiyuanguji.com"; fi
           rc=0
           for site in $SITES; do
             echo "::group::条目页失效 · $site"
