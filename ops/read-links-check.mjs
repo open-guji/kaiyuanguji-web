@@ -82,6 +82,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     const site = target.replace(/\/$/, '');
     const rand = mulberry32(seed);
     const bust = `t=${Date.now()}`;
+    const tStart = Date.now(); // 分段计时起点（只用于日志，不改判定）
 
     // 网络错误、JSON 解析失败都不抛出，记成 { ok: false }（status 0），由调用方记为失败
     // 非 200 时把 EdgeOne 的 EO-LOG-UUID／Eo-Cache-Status／Date 带上，失败行里留给人去 EdgeOne 日志按 UUID 查（overview#484）
@@ -214,9 +215,11 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
         if (!manifest.ok) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
         manifests.set(id, manifest.body);
     }, (id, e) => fail(id, '请求', e.message));
+    const manifestMs = Date.now() - tStart;
 
     // ② 预热：这次要查的阅读页低并发 GET 一遍，不计成败（新部署后首次渲染慢，overview#322），记首次状态与耗时
     let warmStats = null;
+    const tWarm = Date.now();
     if (warm) {
         const urls = [];
         for (const [id, m] of manifests) {
@@ -232,11 +235,15 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
             warmStats.ms.push(Date.now() - t0);
             if (!r.ok) warmStats.notOk.push({ url, status: r.status });
         });
+        warmStats.wallMs = Date.now() - tWarm;
     }
 
     // ③ 正式抽检
+    const tSample = Date.now();
+    const pagesBefore = pagesChecked;
     await pool([...manifests.keys()], concurrency, (id) => checkNewCard(id, manifests.get(id)), (id, e) => fail(id, '请求', e.message));
-    return { checked: cards.size, pagesChecked, failures, retried, retriedData, warm: warmStats };
+    const timing = { manifestMs, warmMs: warmStats ? warmStats.wallMs : null, sampledMs: Date.now() - tSample, sampledPages: pagesChecked - pagesBefore };
+    return { checked: cards.size, pagesChecked, failures, retried, retriedData, warm: warmStats, timing };
 }
 
 /** 重试后通过的阅读页占比是否超过告警线（只告警，不拦发布） */
@@ -248,7 +255,7 @@ export function retryWarning({ pagesChecked = 0, retried = [] }, warnRatio = 0.2
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
 const sec = (ms) => `${(ms / 1000).toFixed(1)} s`;
 
-export function renderSummary({ checked, pagesChecked = 0, failures, retried = [], retriedData = [], warm = null }, { target, seed, warnRatio = 0.2 }) {
+export function renderSummary({ checked, pagesChecked = 0, failures, retried = [], retriedData = [], warm = null, timing = null }, { target, seed, warnRatio = 0.2 }) {
     const lines = [`## 阅读链接抽检（${target}）`, '', `抽检 ${checked} 张卡、${pagesChecked} 个阅读页，失败 ${failures.length} 处（seed=${seed}）。`];
     if (warm) {
         lines.push('', `预热：${warm.pages} 个阅读页，首次请求非 200 的 ${warm.notOk.length} 个（${pct(warm.pages ? warm.notOk.length / warm.pages : 0)}）；`
@@ -256,6 +263,11 @@ export function renderSummary({ checked, pagesChecked = 0, failures, retried = [
         const byStatus = {};
         for (const n of warm.notOk) byStatus[n.status || '连接失败'] = (byStatus[n.status || '连接失败'] ?? 0) + 1;
         if (warm.notOk.length) lines.push(`预热非 200 按状态：${Object.entries(byStatus).map(([k, v]) => `${k}×${v}`).join('、')}`);
+    }
+    if (timing) {
+        // 分段计时：只为判断预热值不值得做（overview#469），不影响判定
+        lines.push('', `分段计时：取清单 ${timing.manifestMs} ms；预热 ${timing.warmMs === null ? '未开' : `${timing.warmMs} ms（${warm?.pages ?? 0} 页）`}；`
+            + `正式抽检 ${timing.sampledMs} ms（${timing.sampledPages} 页）。`);
     }
     const { ratio, warn } = retryWarning({ pagesChecked, retried }, warnRatio);
     if (retried.length) {

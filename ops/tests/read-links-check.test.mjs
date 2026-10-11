@@ -241,6 +241,19 @@ test('预热：先把要查的阅读页 GET 一遍、不计成败；冷启动的
     assert.match(md, /503×1/);
 });
 
+test('分段计时：清单、预热、正式抽检各自的毫秒数；正式抽检页数只数抽检阶段的阅读页', async () => {
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(baseFiles(), basePages()), seed: 1, sleep: async () => {} });
+    assert.equal(typeof r.timing.manifestMs, 'number');
+    assert.equal(typeof r.timing.warmMs, 'number');
+    assert.equal(typeof r.timing.sampledMs, 'number');
+    assert.equal(r.timing.sampledPages, r.pagesChecked);
+    const md = renderSummary(r, { target: SITE, seed: 1 });
+    assert.match(md, /分段计时：取清单 \d+ ms；预热 \d+ ms（2 页）；正式抽检 \d+ ms（2 页）。/);
+    const off = await checkReadLinks({ target: SITE, dataBase: DATA, fetchImpl: fakeFetch(baseFiles(), basePages()), seed: 1, warm: false, sleep: async () => {} });
+    assert.equal(off.timing.warmMs, null);
+    assert.match(renderSummary(off, { target: SITE, seed: 1 }), /预热 未开；/);
+});
+
 test('预热不包括 manifest 读不了的卡，也不包括不合法的版本 key', async () => {
     const files = newStructureFiles();
     files[`items/${WORK}/manifest.json`] = { id: WORK, versions: [{ key: 'default' }, { key: 'manifest' }] };
