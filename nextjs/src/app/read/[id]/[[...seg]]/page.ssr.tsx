@@ -35,11 +35,12 @@ import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
 import ReaderClient from '../ReaderClient';
-import { preloadReader } from '../preload';
+import { preloadReader, SEED_TEXT_MAX } from '../preload';
 import type { ReaderSeed } from '../reader-seed';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
 import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
+import { withSpeculation, type SpeculativeGetter } from '@/lib/server/speculative-get';
 
 // ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
 // 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
@@ -55,7 +56,8 @@ type Props = {
     params: Promise<{ id: string; seg?: string[] }>;
 };
 
-type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming };
+type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
+type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers };
 
 /** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取 */
 const PRELOAD_BUDGET_MS = 1500;
@@ -77,10 +79,20 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     const timing = startRenderTiming();
     // overview#345 PR①：单独量 latest.json 这一跳（与下面各取数共用同一份进程内缓存的请求，不多发请求；只记录）
     timed(timing, 'latest', getLatestServer()).catch(() => { /* 失败由各取数自己处理 */ });
+    // overview#345 PR②：投机预取——在拿到 manifest 之前先把 index 与首章正文发出去，与 manifest 并行（见 speculative-get.ts）。
+    // 猜的是「没写版本 ＝ default、没写章 ＝ 001」；猜错只是预取白发，checkReader／preloadReader 仍按 manifest 校验后的版本与章去取，结果不变。
+    const fetchers: Fetchers = {
+        json: withSpeculation(withHopTiming(timing, getCurrentJsonServer)),
+        text: withSpeculation(withHopTiming(timing, getCurrentTextServer)),
+    };
+    const guessKey = sel.key ?? 'default';
+    const guessChapter = sel.chapter ?? '001';
+    fetchers.json.prefetch(`items/${id}/${guessKey}/index.json`);
+    fetchers.text.prefetch(`items/${id}/${guessKey}/${guessChapter}.txt`, SEED_TEXT_MAX);
     const [hit, checked] = await Promise.all([
         // 只要书名与跳转信息：先走 current/（与 checkReader 共用 latest.json，冷实例上少 3 跳，overview#322 B1）
         timed(timing, 'item', getItemServer(id, { prefer: 'current' })),
-        timed(timing, 'check', checkReader(id, sel, withHopTiming(timing, getCurrentJsonServer))),
+        timed(timing, 'check', checkReader(id, sel, fetchers.json.get)),
     ]);
     const r = await timed(timing, 'redirect', resolveItemRedirect(id, hit, getPromotionServer));
     if (r) {
@@ -90,7 +102,7 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     if (!hit) return null;
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
-    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing };
+    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers };
 }
 
 /**
@@ -106,7 +118,7 @@ async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const budget = new Promise<ReaderSeed>((resolve) => { timer = setTimeout(() => resolve({}), PRELOAD_BUDGET_MS); });
     try {
-        return await Promise.race([preloadReader(id, s.checked, withHopTiming(s.timing, getCurrentJsonServer), withHopTiming(s.timing, getCurrentTextServer)), budget]);
+        return await Promise.race([preloadReader(id, s.checked, s.fetchers.json.get, s.fetchers.text.get), budget]);
     } finally {
         clearTimeout(timer);
     }
