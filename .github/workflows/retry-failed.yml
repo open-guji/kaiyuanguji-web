@@ -1,0 +1,88 @@
+name: Retry failed deploy run once
+
+# overview#524 第 3 项（Eden，规矩二）：部署／晋升 run 因「瞬时红」失败时，自动只重跑失败的 job 一次；
+# 重跑后仍红才算真红（deploy.yml 的 alert-production 照旧开告警，不再重试）。
+#
+# 为什么是单独的 workflow、不是 deploy.yml 里的一个 job：
+#   GitHub 不让重跑一个还没结束的 run，而 job 本身就在这次 run 里；workflow_run 在整次 run 结束后才触发。
+#
+# 只重试两类失败（其余一律不碰，免得把真问题吃掉或在不明状态下再部署一次）：
+#   ① 失败的 job 全是 `verify / *`（发布后验收：站点冷启动超时、边缘限流、CI 网络抖动都落在这里）；
+#   ② 失败的步骤是 `Deploy to EdgeOne …`（EdgeOne 平台偶发 "Deployment failed"，10-10 run 38084172465，
+#      同一产物重派即过，见 overview#529）。
+# 不跳过、不隔离用例：重跑的是同一套 job、同一份用例。重跑成功时在未关的 deploy-alert issue 里留一条评论，说明是第二次尝试才绿，
+# 月底按这类评论汇总「靠重试才绿」的次数（避免重试把真问题吃掉）。
+#
+# 手动试运行：Actions → Retry failed deploy run once → Run workflow，填 run_id，dry_run 默认 true，只打印决定、不重跑。
+#
+# 回退：删除本文件即可，deploy.yml 不依赖它。
+
+on:
+  workflow_run:
+    workflows: ["Deploy to EdgeOne"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: '要判断的 deploy.yml run id'
+        type: string
+        required: true
+      dry_run:
+        description: '只打印决定，不重跑'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: write   # gh run rerun --failed
+  issues: write    # 重跑成功后在 deploy-alert issue 留言
+
+jobs:
+  decide:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      EVENT: ${{ github.event_name }}
+      RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - name: Decide and rerun
+        run: |
+          set -euo pipefail
+          RUN=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID")
+          CONCLUSION=$(jq -r .conclusion <<<"$RUN")
+          ATTEMPT=$(jq -r .run_attempt <<<"$RUN")
+          NAME=$(jq -r .display_title <<<"$RUN")
+          URL=$(jq -r .html_url <<<"$RUN")
+          echo "· run $RUN_ID（$NAME）结论=$CONCLUSION 第 $ATTEMPT 次尝试"
+
+          if [ "$CONCLUSION" = success ] && [ "$ATTEMPT" -ge 2 ]; then
+            # 第二次尝试才绿：在未关的 deploy-alert issue 留言，说明靠重试才过
+            N=$(gh issue list --label deploy-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')
+            MSG="自动重跑一次后通过（第 $ATTEMPT 次尝试才绿）：$URL。这次属于「瞬时红、靠重试才绿」，请按需核对根因后关闭本 issue。"
+            if [ -n "$N" ] && [ "$DRY_RUN" != true ]; then gh issue comment "$N" --body "$MSG"; echo "· 已在 #$N 留言"; else echo "· $MSG（无未关 issue 或试运行，不留言）"; fi
+            exit 0
+          fi
+          if [ "$CONCLUSION" != failure ]; then echo "· 不是 failure，不处理"; exit 0; fi
+          if [ "$ATTEMPT" -ge 2 ]; then echo "· 已是第 $ATTEMPT 次尝试仍红：真红，不再重试（告警由 deploy.yml 的 alert-production 负责）"; exit 0; fi
+
+          # 失败的 job 及其失败的步骤
+          JOBS=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/jobs?per_page=100&filter=latest" \
+            --jq '[.jobs[] | select(.conclusion=="failure" or .conclusion=="timed_out") | {name, steps: [.steps[] | select(.conclusion=="failure" or .conclusion=="timed_out") | .name]}]')
+          echo "· 失败的 job：$(jq -c . <<<"$JOBS")"
+          COUNT=$(jq 'length' <<<"$JOBS")
+          [ "$COUNT" -gt 0 ] || { echo "· 找不到失败的 job，不重试"; exit 0; }
+
+          # 白名单：每个失败 job 要么是 verify / *，要么失败步骤全是 Deploy to EdgeOne …
+          OK=$(jq '[.[] | ((.name | startswith("verify / ")) or ((.steps | length) > 0 and (.steps | all(startswith("Deploy to EdgeOne")))))] | all' <<<"$JOBS")
+          if [ "$OK" != true ]; then
+            echo "· 失败不在可重试范围（只重试 verify / * 与 Deploy to EdgeOne 步骤），不重试，交给告警与人"
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" = true ]; then echo "· 【试运行】会执行：gh run rerun $RUN_ID --failed"; exit 0; fi
+          gh run rerun "$RUN_ID" --failed
+          echo "· 已对 run $RUN_ID 重跑失败的 job（仅这一次）"
+          echo "🔁 已自动重跑 run $RUN_ID 的失败 job 一次：$URL" >> "$GITHUB_STEP_SUMMARY"
