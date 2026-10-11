@@ -6,6 +6,7 @@
  * overview#322：页面是 ISR、不读查询串（旧查询串的换算只在中间件），条目与 manifest 两条取数链并行。
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { seedCallKey } from '../../reader-seed';
 
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
 const mockGetItem = jest.fn(async (id: string, _opts?: unknown): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
@@ -212,4 +213,72 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         const t = timingOf(await pageTree(['002']));
         for (const name of ['latest', 'h:manifest', 'h:index', 'h:chapter-txt']) expect(t).toMatch(new RegExp(`(^|, )${name};dur=\\d+`));
     });
+
+    describe('overview#345 PR②：投机预取（index 与首章先发，与 manifest 并行）', () => {
+        const HID = 'd59f2zzzspec';
+        const HIDDEN_MANIFEST = {
+            id: HID,
+            versions: [
+                // 目录型 default 在有全文版时被阅读页隐藏 → 主版本是 wikisource，猜 default 会猜错
+                { key: 'default', kind: 'collated', label: '整理本' },
+                { key: 'wikisource', kind: 'transcription', label: '維基文庫', source_name: '維基文庫' },
+            ],
+        };
+        const withFiles = (extra: Record<string, unknown>) => {
+            mockGetCurrentJson.mockImplementation(async (rel) => ({ ...FILES, ...extra })[rel] ?? null);
+        };
+        const callsOf = () => mockGetCurrentJson.mock.calls.map((c) => c[0]);
+
+        it('没写版本也没写章：index 在 manifest 回来之前就已发出，且每个地址只取一次', async () => {
+            let indexSeenWhenManifestResolved = false;
+            mockGetCurrentJson.mockImplementation(async (rel) => {
+                if (rel === `items/${ZHIZHAI}/manifest.json`) {
+                    await new Promise((r) => setTimeout(r, 15));
+                    indexSeenWhenManifestResolved = callsOf().includes(`items/${ZHIZHAI}/default/index.json`);
+                }
+                return FILES[rel] ?? null;
+            });
+            const el = (await page([])) as { props: { initial: { key?: string; chapter: string } } };
+            expect(indexSeenWhenManifestResolved).toBe(true);
+            expect(el.props.initial).toEqual({ key: undefined, chapter: '001' });
+            expect(callsOf().filter((r) => r === `items/${ZHIZHAI}/default/index.json`)).toHaveLength(1);
+            expect(callsOf().filter((r) => r === `items/${ZHIZHAI}/manifest.json`)).toHaveLength(1);
+        });
+
+        it('主版本不是 default（猜错）：预取被忽略，按 manifest 取 wikisource 的 index 与章，渲染结果与没预取时一致', async () => {
+            withFiles({
+                [`items/${HID}/manifest.json`]: HIDDEN_MANIFEST,
+                [`items/${HID}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '目录型' }] },
+                [`items/${HID}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '序' }, { n: 2, file: '002', title: '卷二' }] },
+            });
+            const el = (await page([], HID)) as { props: { initial: { key?: string; chapter: string }; seed: { calls?: Record<string, unknown> } } };
+            expect(el.props.initial).toEqual({ key: undefined, chapter: '001' });
+            // 猜的 default/index.json 发了（白发），真正用的是 wikisource 的
+            expect(callsOf()).toContain(`items/${HID}/default/index.json`);
+            expect(callsOf()).toContain(`items/${HID}/wikisource/index.json`);
+            const idx = el.props.seed.calls?.[seedCallKey('getTextIndex', HID, 'wikisource')] as { chapters: { title: string }[] } | undefined;
+            expect(idx?.chapters.map((c) => c.title)).toEqual(['序', '卷二']);
+            expect(Object.keys(el.props.seed.calls ?? {}).some((k) => k.includes('default'))).toBe(false);
+            const m = await meta([], HID);
+            expect(m.alternates?.canonical).toBe(`/read/${HID}/001`);
+        });
+
+        it('预取失败：照常取一次，页面不受影响（与没预取时一样）', async () => {
+            let failedOnce = false;
+            mockGetCurrentJson.mockImplementation(async (rel) => {
+                if (rel === `items/${ZHIZHAI}/default/index.json` && !failedOnce) { failedOnce = true; throw new Error('HTTP 502'); }
+                return FILES[rel] ?? null;
+            });
+            const el = (await page([])) as { props: { initial: { key?: string; chapter: string } } };
+            expect(failedOnce).toBe(true);
+            expect(el.props.initial).toEqual({ key: undefined, chapter: '001' });
+            expect(callsOf().filter((r) => r === `items/${ZHIZHAI}/default/index.json`)).toHaveLength(2);
+        });
+
+        it('预取的版本不存在（乱填 key）：仍是真 404，不因预取多出任何副作用', async () => {
+            await expect(page(['nonesuch'])).rejects.toThrow('NEXT_NOT_FOUND');
+            expect(callsOf()).toContain(`items/${ZHIZHAI}/nonesuch/index.json`);
+        });
+    });
 });
+
