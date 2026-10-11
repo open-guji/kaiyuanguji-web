@@ -54,7 +54,7 @@
  * 共用。
  *
  * 环境变量：COS_SECRET_ID / COS_SECRET_KEY / COS_BUCKET / COS_REGION（默认
- * ap-singapore）／COS_PATH_PREFIX／DRY_RUN／SYNC_REBUILD_STATE／
+ * ap-shanghai）／COS_PATH_PREFIX／DRY_RUN／SYNC_REBUILD_STATE／
  * H1_ROOTS_KEEP（默认 5）／H1_STAGING_POINTER_KEY（可选，完整 COS key）。
  *
  * 用法：
@@ -101,7 +101,7 @@ const { h1Dir: DATA_DIR } = resolveDataDirs();
 const SECRET_ID = process.env.COS_SECRET_ID;
 const SECRET_KEY = process.env.COS_SECRET_KEY;
 const BUCKET = process.env.COS_BUCKET;
-const REGION = process.env.COS_REGION || 'ap-singapore';
+const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PATH_PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const DRY_RUN = process.env.DRY_RUN === '1';
 const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';

@@ -33,7 +33,7 @@
  * 这里不重复）。这里只提供「哪些文件归哪一批、缓存策略、状态文件放哪」这些配置。
  *
  * 环境变量：与 sync-h1-to-cos.mjs 相同的 COS_SECRET_ID / COS_SECRET_KEY /
- * COS_BUCKET / COS_REGION（默认 ap-singapore）／COS_PATH_PREFIX／DRY_RUN／
+ * COS_BUCKET / COS_REGION（默认 ap-shanghai）／COS_PATH_PREFIX／DRY_RUN／
  * SYNC_REBUILD_STATE／H1_ROOTS_KEEP（默认 5）／H1_TEXT_STAGING_POINTER_KEY
  * （可选，完整 COS key，指向 text 侧自己的测试站指针——单独一个变量名，
  * 不与 entry 侧的 H1_STAGING_POINTER_KEY 混用：两条 sync 各自的指针文件不同
@@ -83,7 +83,7 @@ const { h1TextDir: DATA_DIR } = resolveDataDirs();
 const SECRET_ID = process.env.COS_SECRET_ID;
 const SECRET_KEY = process.env.COS_SECRET_KEY;
 const BUCKET = process.env.COS_BUCKET;
-const REGION = process.env.COS_REGION || 'ap-singapore';
+const REGION = process.env.COS_REGION || 'ap-shanghai';
 const PATH_PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const DRY_RUN = process.env.DRY_RUN === '1';
 const REBUILD_STATE = process.env.SYNC_REBUILD_STATE === '1';

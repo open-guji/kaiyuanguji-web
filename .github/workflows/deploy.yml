@@ -1630,7 +1630,7 @@ jobs:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
-          SITEMAP_SITE: https://www.kaiyuanguji.com
+          SITEMAP_SITE: https://www.openguji.com
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: |
           # overview#470 P1：同 build 任务的克隆缓存
