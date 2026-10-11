@@ -299,14 +299,15 @@ test.describe('图文对读（vol03）', () => {
         await expect.poll(() => punct.count()).toBeGreaterThan(100);
     });
 
-    test('专名线：人名单线、地名双线、书名波浪线', async ({ page }) => {
+    test('专名线：人名、地名单线，书名波浪线（0.54.1 起地名不再双线，overview#503）', async ({ page, request }) => {
+        await requireUiVersion(request, '0.54.1', '地名单线');
         await openDuidu(page);
         const style = (cls: string) => page.locator(`.bim-et-${cls}`).first().evaluate((e) => {
             const cs = getComputedStyle(e);
             return `${cs.textDecorationLine}/${cs.textDecorationStyle}`;
         });
         await expect.poll(() => style('people')).toBe('underline/solid');
-        await expect.poll(() => style('place')).toBe('underline/double');
+        await expect.poll(() => style('place')).toBe('underline/solid');
         await expect.poll(() => style('work')).toBe('underline/wavy');
     });
 
