@@ -72,8 +72,8 @@ export function classificationCoverageProblem(hitsByBu) {
  * @returns {string|null}
  */
 export const BU_RATIO_MAX_DROP = 0.05;
-// 绝对下限先取保守的 50%（Eden 说应 >80%，但真实产物里四部占比还没量过，量出来再抬；Eric 审）
-export const BU_RATIO_ABS_MIN = 0.5;
+// 绝对下限 60%：Eden 实测真实产物里带四部的占非草稿 Work 的 69.3%（overview#557，Mason 定）
+export const BU_RATIO_ABS_MIN = 0.6;
 export function classificationRatioProblem(liveRatio, newRatio) {
     const pct = (x) => `${(x * 100).toFixed(1)}%`;
     if (!Number.isFinite(newRatio)) return '新建 works 的部类非空比例算不出来';
@@ -103,14 +103,23 @@ export function derivedInputProblem({ schemaV2, derivedDir, dirExists, derivedCo
 /**
  * 版本数覆盖闸（Eden/Mason，overview#557）：editionCount 只进复合字段 completeness，Meili 里查不到，
  * 所以建文档时就地统计「非草稿 works 里 _edition_count 是数字的」与「>0 的」。
- * 派生产物每个 Work 都带 `_edition_count`，读不到产物时全是缺——有数字的比例低于 95% 就拒；>0 的比例只打印不闸（真实分布没量过）。
+ * 两条硬线：① 有数字的比例 <95%（派生产物每个 Work 都带，读不到产物时全缺）；
+ * ② >0 的比例 <30%（Eden 实测真实产物 41.0%，Mason 定下限 30%）。
  * @param {{ total: number, present: number, positive: number }} c
  * @returns {string|null}
  */
 export const EDITION_PRESENT_MIN = 0.95;
+export const EDITION_POSITIVE_MIN = 0.3;
 export function editionCoverageProblem(c) {
     if (!c || !(c.total > 0)) return null;
-    const r = c.present / c.total;
-    return r >= EDITION_PRESENT_MIN ? null
-        : `非草稿 works ${c.total} 条里只有 ${c.present} 条带 _edition_count（${(r * 100).toFixed(1)}%，下限 ${EDITION_PRESENT_MIN * 100}%）——产物没读到，completeness 排序加权会塌成 0`;
+    const pct = (x) => `${(x * 100).toFixed(1)}%`;
+    const present = c.present / c.total;
+    if (present < EDITION_PRESENT_MIN) {
+        return `非草稿 works ${c.total} 条里只有 ${c.present} 条带 _edition_count（${pct(present)}，下限 ${pct(EDITION_PRESENT_MIN)}）——产物没读到，completeness 排序加权会塌成 0`;
+    }
+    const positive = c.positive / c.total;
+    if (positive < EDITION_POSITIVE_MIN) {
+        return `非草稿 works ${c.total} 条里 _edition_count>0 的只有 ${c.positive} 条（${pct(positive)}，下限 ${pct(EDITION_POSITIVE_MIN)}）——版本数多半没读对`;
+    }
+    return null;
 }

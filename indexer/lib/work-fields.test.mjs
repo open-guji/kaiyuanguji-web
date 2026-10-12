@@ -32,9 +32,9 @@ test('部类非空比例：有基线看掉幅（>5pp 拒），绝对下限始终
     assert.match(classificationRatioProblem(0.9, 0.8), /低于门槛/);
     assert.match(classificationRatioProblem(0.9, 0), /低于门槛/);
     assert.equal(classificationRatioProblem(null, 0.85), null);
-    assert.match(classificationRatioProblem(null, 0.3), /下限/);
+    assert.match(classificationRatioProblem(null, 0.5), /下限/);
     assert.match(classificationRatioProblem(0.0, 0.0), /低于门槛/);   // 线上基线坏了也不放过
-    assert.equal(classificationRatioProblem(0.0, 0.6), null);
+    assert.equal(classificationRatioProblem(0.0, 0.65), null);
     assert.match(classificationRatioProblem(null, NaN), /算不出/);
 });
 
@@ -48,9 +48,11 @@ test('产物准入：schema-v2 缺目录／缺 SOURCE_COMMIT／commit 不一致�
     assert.match(derivedInputProblem({ ...ok, derivedCommit: 'zzz999zzz999zzz' }), /不一致/);
 });
 
-test('版本数覆盖闸：带 _edition_count 的比例 <95% 拒；无 works 不拦', () => {
-    assert.equal(editionCoverageProblem({ total: 100, present: 100, positive: 0 }), null);
-    assert.equal(editionCoverageProblem({ total: 100, present: 95, positive: 10 }), null);
+test('版本数覆盖闸：带 _edition_count <95% 拒；>0 比例 <30% 拒；无 works 不拦', () => {
+    assert.equal(editionCoverageProblem({ total: 100, present: 100, positive: 41 }), null);
+    assert.equal(editionCoverageProblem({ total: 100, present: 95, positive: 30 }), null);
     assert.match(editionCoverageProblem({ total: 100, present: 0, positive: 0 }), /0\.0%/);
+    assert.match(editionCoverageProblem({ total: 100, present: 100, positive: 29 }), /_edition_count>0/);
+    assert.match(editionCoverageProblem({ total: 100, present: 100, positive: 0 }), /下限 30\.0%/);
     assert.equal(editionCoverageProblem({ total: 0, present: 0, positive: 0 }), null);
 });
