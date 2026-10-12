@@ -55,3 +55,4 @@ clone_cached() {
   echo "✔ $repo 用时 $((SECONDS - t0)) 秒，.git $(du -sh "$dest/.git" | cut -f1)，commit $(git -C "$dest" rev-parse --short=12 HEAD)"
 }
 # --- clone_cached:end
+# (overview#555 实测用的 ops-only 空改动，可忽略)
