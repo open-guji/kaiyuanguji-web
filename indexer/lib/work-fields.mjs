@@ -63,3 +63,37 @@ export function classificationCoverageProblem(hitsByBu) {
     if (empty.length === 0) return null;
     return `新建的 works 里 ${empty.join('、')} 查到 0 条——部类字段没读到（多半 indexer 读不到 build 产物的 _classifications，搜索页所有部类筛选会恒为 0 条）`;
 }
+
+/**
+ * 部类非空比例闸（Eden 补充）：与线上现索引的同字段非空比例比，掉超过 5 个百分点就拒绝；
+ * 线上读不到／还没有（无基线）时用绝对下限 80%。比例＝带四部之一的 works / 非草稿 works 总数。
+ * @param {number|null} liveRatio  线上比例；无基线传 null
+ * @param {number} newRatio        新建 tmp 的比例
+ * @returns {string|null}
+ */
+export const BU_RATIO_MAX_DROP = 0.05;
+export const BU_RATIO_ABS_MIN = 0.8;
+export function classificationRatioProblem(liveRatio, newRatio) {
+    const pct = (x) => `${(x * 100).toFixed(1)}%`;
+    if (!Number.isFinite(newRatio)) return '新建 works 的部类非空比例算不出来';
+    if (Number.isFinite(liveRatio)) {
+        if (newRatio < liveRatio - BU_RATIO_MAX_DROP) return `部类非空比例 ${pct(newRatio)}，线上 ${pct(liveRatio)}，掉了超过 ${BU_RATIO_MAX_DROP * 100} 个百分点`;
+        return null;
+    }
+    return newRatio >= BU_RATIO_ABS_MIN ? null : `无线上基线，部类非空比例 ${pct(newRatio)} 低于下限 ${pct(BU_RATIO_ABS_MIN)}`;
+}
+
+/**
+ * 产物（BOOK_INDEX_DERIVED_DIR）准入：源仓是 schema-v2（有 build/build_derived.py）时，没有产物目录、
+ * 或产物里记的 book-index sha（<dir>/SOURCE_COMMIT）与源仓 HEAD 不一致，都不许建——宁可不建，也别建出空部类。
+ * @returns {string|null} 问题；null＝可以建
+ */
+export function derivedInputProblem({ schemaV2, derivedDir, dirExists, derivedCommit, sourceCommit }) {
+    if (!schemaV2) return null;
+    if (!derivedDir) return '源仓是 schema-v2，但没设 BOOK_INDEX_DERIVED_DIR——读不到 _classifications，部类会全空';
+    if (!dirExists) return `BOOK_INDEX_DERIVED_DIR=${derivedDir} 不存在`;
+    if (!derivedCommit) return `${derivedDir}/SOURCE_COMMIT 缺失，无法确认产物与源仓同一 commit`;
+    if (!sourceCommit) return '读不到源仓 HEAD，无法核对产物 commit';
+    if (derivedCommit !== sourceCommit) return `产物对应 commit ${derivedCommit.slice(0, 12)}，源仓 HEAD 是 ${sourceCommit.slice(0, 12)}，不一致`;
+    return null;
+}

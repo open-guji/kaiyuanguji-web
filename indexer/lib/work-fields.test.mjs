@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classificationCoverageProblem, classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
+import { classificationRatioProblem, derivedInputProblem, classificationCoverageProblem, classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
 
 test('分类：build 产物 _classifications 优先（zongmu），再回退分片行；详情里的旧 classification 不再读', () => {
     const detail = { classification: { l1: '舊部' }, _classifications: [{ scheme: 'x', l1: '乙部' }, { scheme: 'zongmu', l1: '史部' }] };
@@ -24,4 +24,24 @@ test('部类覆盖闸：四部都有命中才放行；任何一部 0 条／缺�
     assert.match(classificationCoverageProblem({ 經部: 10, 史部: 5, 子部: 0, 集部: 1 }), /子部/);
     assert.match(classificationCoverageProblem({ 經部: 10, 史部: 5, 子部: 3 }), /集部/);
     assert.match(classificationCoverageProblem(undefined), /經部/);
+});
+
+test('部类非空比例：有基线看掉幅（>5pp 拒），无基线看绝对下限 80%', () => {
+    assert.equal(classificationRatioProblem(0.9, 0.88), null);
+    assert.equal(classificationRatioProblem(0.9, 0.97), null);
+    assert.match(classificationRatioProblem(0.9, 0.8), /掉了超过/);
+    assert.match(classificationRatioProblem(0.9, 0), /掉了超过/);
+    assert.equal(classificationRatioProblem(null, 0.85), null);
+    assert.match(classificationRatioProblem(null, 0.5), /下限/);
+    assert.match(classificationRatioProblem(null, NaN), /算不出/);
+});
+
+test('产物准入：schema-v2 缺目录／缺 SOURCE_COMMIT／commit 不一致都拒；旧 schema 不管', () => {
+    const ok = { schemaV2: true, derivedDir: '/d', dirExists: true, derivedCommit: 'abc123abc123abc', sourceCommit: 'abc123abc123abc' };
+    assert.equal(derivedInputProblem(ok), null);
+    assert.equal(derivedInputProblem({ ...ok, schemaV2: false, derivedDir: '' }), null);
+    assert.match(derivedInputProblem({ ...ok, derivedDir: '' }), /没设/);
+    assert.match(derivedInputProblem({ ...ok, dirExists: false }), /不存在/);
+    assert.match(derivedInputProblem({ ...ok, derivedCommit: '' }), /SOURCE_COMMIT/);
+    assert.match(derivedInputProblem({ ...ok, derivedCommit: 'zzz999zzz999zzz' }), /不一致/);
 });

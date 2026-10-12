@@ -30,12 +30,13 @@
  */
 
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { FOUR_BU, classificationCoverageProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { FOUR_BU, classificationCoverageProblem, classificationRatioProblem, derivedInputProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
@@ -877,6 +878,16 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
             }
             const problem = classificationCoverageProblem(hitsByBu);
             if (problem) failures.push(problem);
+            const ratioOf = async (uid) => {
+                const q = async (flt) => (await meiliRequest('GET', `/indexes/${uid}/search?q=&limit=0&filter=${encodeURIComponent(flt)}`)).estimatedTotalHits;
+                const total = await q('is_draft = false');
+                const withBu = await q(`is_draft = false AND classification IN [${FOUR_BU.map((b) => `"${b}"`).join(', ')}]`);
+                return total > 0 ? withBu / total : NaN;
+            };
+            let liveRatio = null;
+            try { const r = await ratioOf('works'); liveRatio = Number.isFinite(r) ? r : null; } catch { /* 无基线 */ }
+            const ratioProblem = classificationRatioProblem(liveRatio, await ratioOf(testUid));
+            if (ratioProblem) failures.push(ratioProblem);
         } catch (e) {
             failures.push(`部类覆盖检查失败 — ${e.message}`);
         }
@@ -885,4 +896,21 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
     return { ok: failures.length === 0, failures };
 }
 
+// 产物准入（overview#345）：schema-v2 源仓必须带同 commit 的 derive 产物，否则部类全空。退出码 5。
+function assertDerivedInput() {
+    if (!PRODUCTION_DIR || !existsSync(PRODUCTION_DIR)) return;
+    const dir = (process.env.BOOK_INDEX_DERIVED_DIR || '').trim();
+    let derivedCommit = '', sourceCommit = '';
+    try { derivedCommit = readFileSync(join(dir, 'SOURCE_COMMIT'), 'utf-8').trim(); } catch { /* 缺失由判定函数报 */ }
+    try { sourceCommit = execFileSync('git', ['-C', PRODUCTION_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf-8' }).trim(); } catch { /* 同上 */ }
+    const problem = derivedInputProblem({
+        schemaV2: existsSync(join(PRODUCTION_DIR, 'build', 'build_derived.py')),
+        derivedDir: dir, dirExists: !!dir && existsSync(dir), derivedCommit, sourceCommit,
+    });
+    if (problem && process.env.ALLOW_NO_DERIVED !== '1') {
+        console.error(`❌ 产物准入失败：${problem}\n   不建索引（线上保持不变）。确需跳过带 ALLOW_NO_DERIVED=1。`);
+        process.exit(5);
+    }
+}
+assertDerivedInput();
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });
