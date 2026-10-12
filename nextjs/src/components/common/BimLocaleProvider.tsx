@@ -1,6 +1,7 @@
 'use client';
 
-import { LocaleProvider } from 'book-index-ui';
+import { BidUrlProvider, LocaleProvider } from 'book-index-ui';
+import { entryHref } from '@/lib/item-id';
 import { useSiteLocale } from '@/lib/site-locale';
 
 /**
@@ -11,7 +12,10 @@ export default function BimLocaleProvider({ children }: { children: React.ReactN
   const [locale, setLocale] = useSiteLocale();
   return (
     <LocaleProvider locale={locale} onLocaleChange={setLocale}>
-      {children}
+      {/* 组件库里的条目链接一律 /item/<id>（overview#577）；组件库默认值也已改，这里是不依赖版本的保险 */}
+      <BidUrlProvider buildUrl={entryHref}>
+        {children}
+      </BidUrlProvider>
     </LocaleProvider>
   );
 }

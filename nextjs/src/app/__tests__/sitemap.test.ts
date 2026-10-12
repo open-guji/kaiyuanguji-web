@@ -39,11 +39,11 @@ describe('app/sitemap.ts', () => {
         expect(mockGetAllEntries).not.toHaveBeenCalled();
     });
 
-    it('静态导出（不设开关）：行为不变，仍列旧详情地址', async () => {
+    it('静态导出（不设开关）：行为不变，条目地址同样是 /item/<id>', async () => {
         delete process.env.KYG_RENDER_MODE;
         const u = await urls();
-        expect(u.filter((x) => x.includes('/book-index?id='))).toHaveLength(2);
-        expect(u.some((x) => x.endsWith('/book-index?id=d59f20aowb9c'))).toBe(true);
+        expect(u.filter((x) => x.includes('/item/'))).toHaveLength(2);
+        expect(u.some((x) => x.endsWith('/item/d59f20aowb9c'))).toBe(true);
         // /read 只在全栈构建里有，静态导出的 sitemap 不列
         expect(u.some((x) => x.endsWith('/read'))).toBe(false);
         expect(u.some((x) => x.endsWith('/catalog'))).toBe(false);

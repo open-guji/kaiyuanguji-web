@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
         const allEntries = await transport.getAllEntries();
         bookRoutes = allEntries.map((entry) => ({
-            url: `${SITE_URL}/book-index?id=${entry.id}`,
+            url: `${SITE_URL}/item/${entry.id}`,
             lastModified,
             changeFrequency: 'monthly' as const,
             priority: 0.6,

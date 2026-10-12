@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
@@ -21,6 +21,8 @@ import RailSearch from './RailSearch';
 import { readerPath } from '@/lib/reader-route';
 import { legacyChapter } from '@/lib/legacy-reader';
 import { buildSourceLinks } from '@/lib/repo-source';
+import { detailUrl } from '@/lib/item-query';
+import { entryHref } from '@/lib/item-id';
 import type { DigitalAssets } from '@/types';
 import { useSiteT } from '@/i18n/use-site-t';
 
@@ -67,6 +69,7 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
     const { source } = useSource();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const t = useSiteT();
 
     const transport = useMemo(() => getTransport(source), [source]);
@@ -89,13 +92,12 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
             const entryRedirectedFrom = (entry as { redirected_from?: string }).redirected_from;
             if (entryRedirectedFrom && entry.id && entry.id !== id) {
                 const params = new URLSearchParams(searchParams.toString());
-                params.set('id', entry.id);
                 params.set('redirected_from', id);  // 当前 id 就是被升级的 draft id
-                router.replace(`/book-index?${params.toString()}`, { scroll: false });
+                router.replace(detailUrl(pathname, entry.id, params), { scroll: false });
             }
         }).catch(() => { /* 静默：详情正常加载会自己报错 */ });
         return () => { cancelled = true; };
-    }, [id, transport, router, searchParams, noRedirect, seeded]);
+    }, [id, transport, router, pathname, searchParams, noRedirect, seeded]);
 
     // 与 cos-storage 的 getItem 同一处理：Entity 的 primary_name 同步成 title
     const seedDetail = useMemo(() => {
@@ -124,11 +126,10 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
     const updateParams = useCallback((updater: (params: URLSearchParams) => void, replace = false) => {
         const params = new URLSearchParams(searchParams.toString());
         updater(params);
-        params.set('id', id);
-        const url = `/book-index?${params.toString()}`;
+        const url = detailUrl(pathname, id, params);
         if (replace) router.replace(url, { scroll: false });
         else router.push(url, { scroll: false });
-    }, [router, searchParams, id]);
+    }, [router, pathname, searchParams, id]);
 
     const handleTabChange = useCallback((tab: string) => {
         updateParams((p) => {
@@ -175,7 +176,7 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
 
     const handleNavigate = useCallback((targetId: string) => {
         if (typeof window !== 'undefined') {
-            window.location.href = `/book-index?id=${targetId}`;
+            window.location.href = entryHref(targetId);
         }
     }, []);
 

@@ -10,9 +10,13 @@ jest.mock('book-index-ui', () => ({
     },
 }));
 const mockGetEntry = jest.fn(() => Promise.resolve(null));
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+let mockPathname = '/item/d59f20aowb9c';
 jest.mock('next/navigation', () => ({
-    useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+    useRouter: () => ({ push: mockPush, replace: mockReplace }),
     useSearchParams: () => new URLSearchParams(),
+    usePathname: () => mockPathname,
 }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({
     __esModule: true,
@@ -27,6 +31,24 @@ import BookDetailContent from '../BookDetailContent';
 import { readerPath } from '@/lib/reader-route';
 
 type ReadLink = (ctx: Partial<ReadLinkContext>) => string | null;
+
+describe('BookDetailContent 地址栏（overview#577：条目页内操作不跳出 /item/<id>）', () => {
+    beforeEach(() => { mockPush.mockClear(); mockReplace.mockClear(); });
+    afterEach(() => { mockPathname = '/item/d59f20aowb9c'; });
+
+    it('在 /item/<id> 上切 tab：push 的是 /item/<id>?tab=…，不是 /book-index?id=', () => {
+        render(<BookDetailContent id="d59f20aowb9c" />);
+        (captured.props!.onTabChange as (t: string) => void)('lineage');
+        expect(mockPush).toHaveBeenCalledWith('/item/d59f20aowb9c?tab=lineage', { scroll: false });
+    });
+
+    it('在 /book-index（草稿兜底页）上切 tab：保持旧写法', () => {
+        mockPathname = '/book-index';
+        render(<BookDetailContent id="d59f20aowb9c" />);
+        (captured.props!.onTabChange as (t: string) => void)('lineage');
+        expect(mockPush).toHaveBeenCalledWith('/book-index?tab=lineage&id=d59f20aowb9c', { scroll: false });
+    });
+});
 
 describe('BookDetailContent 接三栏组件', () => {
     beforeEach(() => {
