@@ -103,7 +103,13 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         const m = await meta(['002']);
         expect(m.alternates?.canonical).toBe(`/read/${ZHIZHAI}/002`);
         expect(m.title).toBe('直斋书录解题 · 史录');
-        expect(m.description).toBe('直斋书录解题史录，在线阅读。');
+        // overview#581：description 取首章正文开头（首屏数据里的 md），不再是所有章都一样的模板句
+        expect(m.description).toBe('直斋书录解题史录：卷二正文');
+    });
+
+    it('取不到本章正文（首屏数据没有 md）：description 回落模板句，不留半截', async () => {
+        const m = await meta(['001']);
+        expect(m.description).toBe('直斋书录解题经录，在线阅读。');
     });
 
     it('默认版本就是维基文库转录：title、description 都不写版本名', async () => {

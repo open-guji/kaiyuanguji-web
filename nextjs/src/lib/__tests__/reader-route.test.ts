@@ -116,3 +116,14 @@ describe('readerTitle', () => {
         expect(chapterFallbackLabel('序')).toBe('序');
     });
 });
+
+describe('readerTitle：章名＝书名不重复（overview#581）', () => {
+    it('单篇作品章名与书名相同，只写一次', () => {
+        expect(readerTitle('洪範傳', '001', '洪範傳')).toBe('洪範傳');
+        expect(readerTitle('洪範傳', '001', ' 洪範 傳 ', '維基文庫')).toBe('洪範傳 · 維基文庫');
+    });
+    it('章名不同照旧；没有章名走「卷N」', () => {
+        expect(readerTitle('洪範傳', '001', '卷一')).toBe('洪範傳 · 卷一');
+        expect(readerTitle('洪範傳', '001')).toBe('洪範傳 · 卷1');
+    });
+});
