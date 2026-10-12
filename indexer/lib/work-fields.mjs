@@ -97,3 +97,18 @@ export function derivedInputProblem({ schemaV2, derivedDir, dirExists, derivedCo
     if (derivedCommit !== sourceCommit) return `产物对应 commit ${derivedCommit.slice(0, 12)}，源仓 HEAD 是 ${sourceCommit.slice(0, 12)}，不一致`;
     return null;
 }
+
+/**
+ * 版本数覆盖闸（Eden/Mason，overview#557）：editionCount 只进复合字段 completeness，Meili 里查不到，
+ * 所以建文档时就地统计「非草稿 works 里 _edition_count 是数字的」与「>0 的」。
+ * 派生产物每个 Work 都带 `_edition_count`，读不到产物时全是缺——有数字的比例低于 95% 就拒；>0 的比例只打印不闸（真实分布没量过）。
+ * @param {{ total: number, present: number, positive: number }} c
+ * @returns {string|null}
+ */
+export const EDITION_PRESENT_MIN = 0.95;
+export function editionCoverageProblem(c) {
+    if (!c || !(c.total > 0)) return null;
+    const r = c.present / c.total;
+    return r >= EDITION_PRESENT_MIN ? null
+        : `非草稿 works ${c.total} 条里只有 ${c.present} 条带 _edition_count（${(r * 100).toFixed(1)}%，下限 ${EDITION_PRESENT_MIN * 100}%）——产物没读到，completeness 排序加权会塌成 0`;
+}

@@ -36,7 +36,7 @@ import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { FOUR_BU, classificationCoverageProblem, classificationRatioProblem, derivedInputProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { FOUR_BU, classificationCoverageProblem, classificationRatioProblem, editionCoverageProblem, derivedInputProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
@@ -120,7 +120,12 @@ function titlesToStrings(raw) {
 
 // ─── doc builders ───
 
+const EDITION_STATS = { total: 0, present: 0, positive: 0 };
 function buildWorkDoc(entry, detail, isDraft = true) {
+    if (!isDraft) {
+        EDITION_STATS.total++;
+        if (typeof detail?._edition_count === 'number') { EDITION_STATS.present++; if (detail._edition_count > 0) EDITION_STATS.positive++; }
+    }
     const desc = detail.description ?? {};
     const descText = typeof desc === 'string' ? desc : (desc.text || '');
     const indexedBy = Array.isArray(detail.indexed_by) ? detail.indexed_by : [];
@@ -722,7 +727,13 @@ async function main() {
             if (doWorks) {
                 console.log('  configuring works (tmp)...');
                 await configureSettings(worksIdx, SETTINGS.works);
-                swapResults.works = await swapOrDiscard('works', (tmp) => checkIndexHealth(tmp, 'works'));
+                swapResults.works = await swapOrDiscard('works', async (tmp) => {
+                    const h = await checkIndexHealth(tmp, 'works');
+                    console.log(`📚 版本数覆盖：非草稿 works ${EDITION_STATS.total}，带 _edition_count ${EDITION_STATS.present}，>0 的 ${EDITION_STATS.positive}`);
+                    const p = limit ? null : editionCoverageProblem(EDITION_STATS);   // --limit 试跑不闸
+                    if (p) h.failures.push(p);
+                    return { ok: h.failures.length === 0, failures: h.failures };
+                });
             }
             if (doJuans) {
                 console.log('  configuring juans (tmp)...');

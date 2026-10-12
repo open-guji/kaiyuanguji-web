@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classificationRatioProblem, derivedInputProblem, classificationCoverageProblem, classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
+import { editionCoverageProblem, classificationRatioProblem, derivedInputProblem, classificationCoverageProblem, classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
 
 test('分类：build 产物 _classifications 优先（zongmu），再回退分片行；详情里的旧 classification 不再读', () => {
     const detail = { classification: { l1: '舊部' }, _classifications: [{ scheme: 'x', l1: '乙部' }, { scheme: 'zongmu', l1: '史部' }] };
@@ -44,4 +44,11 @@ test('产物准入：schema-v2 缺目录／缺 SOURCE_COMMIT／commit 不一致�
     assert.match(derivedInputProblem({ ...ok, dirExists: false }), /不存在/);
     assert.match(derivedInputProblem({ ...ok, derivedCommit: '' }), /SOURCE_COMMIT/);
     assert.match(derivedInputProblem({ ...ok, derivedCommit: 'zzz999zzz999zzz' }), /不一致/);
+});
+
+test('版本数覆盖闸：带 _edition_count 的比例 <95% 拒；无 works 不拦', () => {
+    assert.equal(editionCoverageProblem({ total: 100, present: 100, positive: 0 }), null);
+    assert.equal(editionCoverageProblem({ total: 100, present: 95, positive: 10 }), null);
+    assert.match(editionCoverageProblem({ total: 100, present: 0, positive: 0 }), /0\.0%/);
+    assert.equal(editionCoverageProblem({ total: 0, present: 0, positive: 0 }), null);
 });
