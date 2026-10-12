@@ -452,3 +452,70 @@ test('Retry-After：按秒数换算，缺失／非数字／负数为 0，超过 
     assert.deepEqual(r.failures, []);
     assert.deepEqual(waits, [9000]); // 退避表第一档是 2000，Retry-After 9 秒更大
 });
+
+// ---------- overview#469：取清单阶段（节点页、manifest）并发取，抽样仍由 seed 决定 ----------
+
+function manyNodesFixture() {
+    const files = { 'read/featured.json': { collated: [], books: [] }, 'read/tree.json': [] };
+    const pages = {};
+    let k = 0;
+    for (const node of ['n1', 'n2', 'n3']) {
+        files['read/tree.json'].push({ id: node, label: node, count: 40 }); // 40 条 / 每页 20 = 2 页
+        for (const n of [1, 2]) {
+            const list = [];
+            for (let j = 0; j < 4; j++) {
+                const id = `d59f1iofm8${String(k++).padStart(2, '0')}`;
+                list.push({ id, title: id });
+                files[`items/${id}/manifest.json`] = { id, versions: [{ key: 'default', kind: 'transcription' }] };
+                files[`items/${id}/default/index.json`] = { chapters: [{ n: 1, file: '001', has_json: false }] };
+                files[`items/${id}/default/001.txt`] = '正文';
+                pages[`/read/${id}`] = 'ok';
+            }
+            files[`read/${node}/${n}.json`] = list;
+        }
+    }
+    return { files, pages };
+}
+
+/** 数据域名上的请求有延迟、记录同时在途的最大数；延迟由 delayOf(url) 定，用来打乱完成顺序 */
+function slowDataFetch(files, pages, delayOf, stats) {
+    const inner = fakeFetch(files, pages);
+    let inflight = 0;
+    return async (url) => {
+        const isData = new URL(url).origin === new URL(DATA).origin;
+        if (!isData) return inner(url);
+        inflight++;
+        stats.max = Math.max(stats.max, inflight);
+        try {
+            await new Promise((r) => setTimeout(r, delayOf(url)));
+            return await inner(url);
+        } finally { inflight--; }
+    };
+}
+
+test('取清单：节点页与 manifest 在数据域名上并发取，在途数不超过 dataConcurrency', async () => {
+    const { files, pages } = manyNodesFixture();
+    const stats = { max: 0 };
+    const r = await checkReadLinks({ target: SITE, dataBase: DATA, perNode: 4, seed: 7, concurrency: 2, dataConcurrency: 5, warm: false,
+        fetchImpl: slowDataFetch(files, pages, () => 5, stats), sleep: async () => {} });
+    assert.deepEqual(r.failures, []);
+    // 正式抽检阶段的并发是 concurrency=2；在途数超过 2 只能来自取清单阶段的 dataConcurrency
+    assert.ok(stats.max > 2, `取清单应并发，实测最大在途 ${stats.max}`);
+    assert.ok(stats.max <= 5, `不得超过 dataConcurrency=5，实测 ${stats.max}`);
+});
+
+test('取清单：同一 seed 抽到同一批卡，与数据请求谁先返回无关', async () => {
+    const { files, pages } = manyNodesFixture();
+    const visited = async (delayOf) => {
+        const seen = new Set();
+        const base = slowDataFetch(files, pages, delayOf, { max: 0 });
+        const fetchImpl = async (url) => { if (new URL(url).origin === new URL(SITE).origin) seen.add(new URL(url).pathname); return base(url); };
+        const r = await checkReadLinks({ target: SITE, dataBase: DATA, perNode: 4, seed: 11, dataConcurrency: 6, warm: false, fetchImpl, sleep: async () => {} });
+        assert.deepEqual(r.failures, []);
+        return [...seen].sort();
+    };
+    const a = await visited((u) => 1 + (u.length % 7));
+    const b = await visited((u) => 1 + ((u.charCodeAt(u.length - 6) * 13) % 9));
+    assert.ok(a.length >= 6);
+    assert.deepEqual(a, b);
+});
