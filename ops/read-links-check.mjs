@@ -71,12 +71,12 @@ export function percentile(values, p) {
 }
 
 /**
- * @param {{ target: string, dataBase: string, fetchImpl?: typeof fetch, perNode?: number, pageSize?: number, seed?: number, concurrency?: number,
+ * @param {{ target: string, dataBase: string, fetchImpl?: typeof fetch, perNode?: number, pageSize?: number, seed?: number, concurrency?: number, dataConcurrency?: number,
  *   retryDelaysMs?: number[], topRetryDelaysMs?: number[], warm?: boolean, warmConcurrency?: number, warmTimeoutMs?: number, sleep?: (ms: number) => Promise<void> }} o
  * @returns {Promise<{ checked: number, pagesChecked: number, failures: { id: string, what: string, detail: string }[], retried: string[], retriedData: string[],
  *   warm: { pages: number, notOk: { url: string, status: number }[], ms: number[] } | null }>}
  */
-export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perNode = 20, pageSize = 20, seed = Date.now() % 2 ** 31, concurrency = 6,
+export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perNode = 20, pageSize = 20, seed = Date.now() % 2 ** 31, concurrency = 6, dataConcurrency = 16,
     retryDelaysMs = [2000, 5000, 10000], topRetryDelaysMs = [2000, 5000, 10000, 15000, 30000], warm = true, warmConcurrency = 6, warmTimeoutMs = 60_000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
     const cur = `${dataBase.replace(/\/$/, '')}/current`;
     const site = target.replace(/\/$/, '');
@@ -147,18 +147,25 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
     const add = (c) => { if (c?.id) cards.add(c.id); };
     for (const c of featured.body.collated ?? []) add(c);
     for (const c of featured.body.books ?? []) add(c);
+    // 阶段 A：每个节点共 ceil(count / 每页条数) 页：随机挑至多 perNode 个不同的页，每页抽几张，凑够 perNode 张；
+    // 页数多时也只拉这几页，不一次拉几百页。按节点顺序先把所有要拉的页定下来（rand 的消耗顺序固定）
+    const listPages = [];
     for (const node of tree.body) {
-        // 节点共 ceil(count / 每页条数) 页：随机挑至多 perNode 个不同的页，每页抽几张，凑够 perNode 张；
-        // 页数多时也只拉这几页，不一次拉几百页
         const pageCount = Math.max(1, Math.ceil((Number(node.count) || 0) / pageSize));
         const pages = pickSome(Array.from({ length: pageCount }, (_, i) => i + 1), perNode, rand);
         const perPage = Math.ceil(perNode / pages.length);
-        for (const n of pages) {
-            const page = await json(`read/${node.id}/${n}.json`);
-            if (!page.ok || !Array.isArray(page.body)) { fail(`read/${node.id}/${n}.json`, '数据', page.ok ? '不是数组' : `→ ${why(page)}`); continue; }
-            for (const c of pickSome(page.body, perPage, rand)) add(c);
-        }
+        for (const n of pages) listPages.push({ rel: `read/${node.id}/${n}.json`, perPage });
     }
+    // 阶段 B：这些页都是数据域名上的小 JSON，并发取（overview#469：此前逐页串行 await，占取清单的大头）；结果按位置存，与完成先后无关
+    const listed = new Array(listPages.length);
+    await pool(listPages.map((_, i) => i), dataConcurrency, async (i) => { listed[i] = await json(listPages[i].rel); },
+        (i, e) => { listed[i] = { ok: false, status: 0, error: e.message }; });
+    // 阶段 C：按固定顺序从每页里抽卡（rand 在这里继续消耗，同一 seed 抽到的卡不随网络快慢变）
+    listPages.forEach(({ rel, perPage }, i) => {
+        const page = listed[i];
+        if (!page.ok || !Array.isArray(page.body)) { fail(rel, '数据', page.ok ? '不是数组' : `→ ${why(page)}`); return; }
+        for (const c of pickSome(page.body, perPage, rand)) add(c);
+    });
 
     const pagePathOf = (id, key) => (key === 'default' ? `/read/${id}` : `/read/${id}/${key}`);
 
@@ -210,7 +217,7 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
 
     // ① 先取每张卡的 manifest（阅读首页的卡片必须有；404 / 5xx / 网络错误 / JSON 坏都记失败），据此算出要查的阅读页
     const manifests = new Map();
-    await pool(cards, concurrency, async (id) => {
+    await pool(cards, dataConcurrency, async (id) => {
         const manifest = await json(`items/${id}/manifest.json`);
         if (!manifest.ok) { fail(id, '数据', `items/${id}/manifest.json → ${why(manifest)}`); return; }
         manifests.set(id, manifest.body);
