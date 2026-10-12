@@ -40,6 +40,8 @@ export function parseReadSeed(raw: unknown, id: string): ReadSeed | null {
     if (!p || typeof p.key !== 'string' || !m.versions.some((v) => v.key === p.key)) return null;
     const idx = p.index;
     if (!idx || typeof idx !== 'object' || !Array.isArray(idx.chapters) || idx.chapters.length === 0) return null;
+    // 每一章都得是带字符串 file 的对象：checkReader 会按 file 找章，混进 null／缺 file 的条目会让它抛错（unknown）而不是回退
+    if (!idx.chapters.every((c) => !!c && typeof c === 'object' && typeof c.file === 'string')) return null;
     return { v: READ_SEED_VERSION, manifest: m, primary: { key: p.key, index: idx } };
 }
 

@@ -30,6 +30,9 @@ describe('read-seed（overview#345 方案 B）', () => {
         ['主版本不在 manifest 里', seed({ primary: { key: 'nonesuch', index: INDEX } })],
         ['主版本 index 没有 chapters', seed({ primary: { key: 'default', index: {} } })],
         ['主版本 index 章为空', seed({ primary: { key: 'default', index: { chapters: [] } } })],
+        ['章里有 null', seed({ primary: { key: 'default', index: { chapters: [{ file: '001' }, null] } } })],
+        ['章缺 file', seed({ primary: { key: 'default', index: { chapters: [{ n: 1, title: '序' }] } } })],
+        ['章的 file 不是字符串', seed({ primary: { key: 'default', index: { chapters: [{ file: 1 }] } } })],
     ])('parseReadSeed：%s → null', (_n, raw) => {
         expect(parseReadSeed(raw, ID)).toBeNull();
     });

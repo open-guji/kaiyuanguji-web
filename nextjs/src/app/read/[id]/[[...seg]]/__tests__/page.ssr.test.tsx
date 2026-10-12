@@ -340,6 +340,7 @@ describe('阅读页 page.ssr（路径式地址）', () => {
             ['manifest.id 对不上', (id: string) => seedFor(id, { manifest: { ...(FILES[`items/${id}/manifest.json`] as object), id: 'other' } })],
             ['主版本 key 不在 manifest 里', (id: string) => seedFor(id, { primary: { key: 'nonesuch', index: FILES[`items/${id}/default/index.json`] } })],
             ['主版本 index 没有章', (id: string) => seedFor(id, { primary: { key: 'default', index: { chapters: [] } } })],
+            ['主版本 index 的章里混了 null（Sourcery）', (id: string) => seedFor(id, { primary: { key: 'default', index: { chapters: [{ file: '001' }, null] } } })],
         ])('seed 不可用（%s）：回退成原来的取数，渲染逐字一致', async (_name, bad) => {
             const want = await baseline([]);
             mockGetCurrentJson.mockClear();
