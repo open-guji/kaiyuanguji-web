@@ -1892,10 +1892,20 @@ jobs:
           # main 已经有更新的 commit：那次 push 的 run 会自己验、自己 promote，这里不抢先把旧版发上去。
           # （push 组 cancel-in-progress 一般已把本 run 取消；这一道防的是新 push 落在本 run verify 刚结束之后。）
           HEAD=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha 2>/dev/null || echo '')
+          # overview#555：只有后面那些 commit 里**有会触发部署的文件**，才算“有人接手”；
+          # 后面全是 CI／文档／测试类 commit（push 的 paths 过滤会让它们不起 deploy run）时，没人会替本 run promote，必须自己发。
           if [ -n "$HEAD" ] && [ "$HEAD" != "$RUN_SHA" ]; then
-            echo "⏭️ main 已前进到 $HEAD（本 run 是 $RUN_SHA），交给那次 push 的 run 去 promote，这里跳过。"
-            echo "⏭️ main 已有更新的 commit，本次不自动 promote（由更新那次的 run 负责）" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+            FILES=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RUN_SHA...$HEAD" --paginate --jq '.files[].filename' 2>/dev/null || echo '__compare_failed__')
+            # 与本文件顶部 on.push.paths 保持一致（改一处要改两处）；.github/workflows/deploy.yml 本身算触发
+            TRIGGER=$(printf '%s\n' "$FILES" | grep -vE '^$' | grep -vE '(\.md$|^docs/|^e2e/|^ops/|^indexer/|^perf/|^\.claude/|__tests__/|\.test\.(ts|tsx|mjs)$)' | grep -vE '^\.github/' || true)
+            if printf '%s\n' "$FILES" | grep -qx '.github/workflows/deploy.yml'; then TRIGGER="${TRIGGER} deploy.yml"; fi
+            if printf '%s' "$FILES" | grep -q '__compare_failed__'; then TRIGGER="__compare_failed__"; fi
+            if [ -n "$(printf '%s' "$TRIGGER" | tr -d '[:space:]')" ]; then
+              echo "⏭️ main 已前进到 $HEAD（本 run 是 $RUN_SHA），后面有会触发部署的改动，交给那次 push 的 run 去 promote，这里跳过。"
+              echo "⏭️ main 已有更新的部署类 commit，本次不自动 promote（由更新那次的 run 负责）" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "main 已前进到 $HEAD，但之后只有不触发部署的改动（CI／文档／测试），本 run 照常 promote。"
           fi
           gh workflow run deploy.yml --ref main -f target=production -f promote=code -f from_run="$GITHUB_RUN_ID"
           echo "🚀 已派正式站 promote：code（只发代码，数据不动），from_run=$GITHUB_RUN_ID（commit $RUN_SHA）" >> "$GITHUB_STEP_SUMMARY"
