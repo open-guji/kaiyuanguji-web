@@ -679,7 +679,8 @@ export async function runDqSafe(opts = {}) {
         return await runDq({ ...opts, onReport: (r) => { partial = r; } });
     } catch (e) {
         const msg = String(e?.message ?? e);
-        const report = partial ?? {
+        // 并行池里其他 worker 抛错后可能还在改共享报告：返回前定格快照
+        const report = partial ? structuredClone(partial) : {
             base: opts.base ?? DEFAULT_BASE, h1: `${opts.base ?? DEFAULT_BASE}/${opts.h1Prefix ?? 'h1'}`,
             seed: opts.seed ?? 1, entryRate: opts.entryRate ?? 0.02, textRate: opts.textRate ?? 0.05,
             concurrency: opts.concurrency ?? MAX_CONCURRENCY, findings: [], phases: {},
@@ -688,6 +689,7 @@ export async function runDqSafe(opts = {}) {
         report.findings.push({ kind: 'fetch', code: 'run-aborted', message: `巡检中途异常退出，下面是已完成部分的结果：${msg}` });
         report.aborted = msg;
         report.finishedAt = new Date().toISOString();
+        report.durationMs = report.startedAt ? Date.now() - Date.parse(report.startedAt) : 0;
         return report;
     }
 }

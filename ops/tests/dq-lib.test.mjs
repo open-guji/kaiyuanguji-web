@@ -166,14 +166,16 @@ test('createHttp：响应头到了、body 半路被重置（terminated）也重�
 });
 
 test('createHttp：body 每次都被重置 → 重试用尽，返回 status 0，不抛', async () => {
+    let calls = 0;
     const http = createHttp({
-        fetchImpl: async () => ({ status: 200, ok: true, headers: new Headers(), arrayBuffer: async () => { throw new TypeError('terminated'); } }),
+        fetchImpl: async () => { calls++; return { status: 200, ok: true, headers: new Headers(), arrayBuffer: async () => { throw new TypeError('terminated'); } }; },
         sleepImpl: noSleep, maxAttempts: 3,
     });
     const r = await http.request('https://x/');
     assert.equal(r.status, 0);
     assert.equal(r.ok, false);
     assert.match(r.error, /terminated/);
+    assert.equal(calls, 3, '应当正好重试到 maxAttempts 次，不能第一次失败就停');
     assert.equal(http.stats.failures, 1);
 });
 
