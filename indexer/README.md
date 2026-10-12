@@ -178,3 +178,15 @@ curl -s 'https://www.openguji.com/api/search?q=%E5%8F%B2&index=works&filter=dyna
 # 4. 搜索质量不退步：基线 通过 59 / 失败 0 / known-issue 5 / 共 64（2026-09-30 重建前）
 node nextjs/scripts/test-search-quality.mjs
 ```
+
+
+## derive 产物（部类、版本数的来源；overview#345）
+
+原始仓里没有 `classification`／`_edition_count`，它们只在 `book-index/build/build_derived.py` 的产物里（`entry/<id>.json` 的 `_classifications`、`_edition_count`）。
+full-reindex 启动时（源仓有 `build/build_derived.py` 即 schema-v2）要求：
+
+- 设 `BOOK_INDEX_DERIVED_DIR` 指向产物目录；
+- 产物目录里有 `SOURCE_COMMIT`（生成产物时 book-index 的 `git rev-parse HEAD`），与搜索机上源仓 HEAD 一致；
+
+任一不满足，退出码 5，不建索引（线上不变）。`ALLOW_NO_DERIVED=1` 可跳过（仅限明知部类会空的试验）。
+swap 前另有两道闸：works 四部各自要有命中；部类非空比例与线上现索引比掉不得超过 5 个百分点（门槛 = max(线上−5pp, 绝对下限 50%)）。

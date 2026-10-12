@@ -30,12 +30,13 @@
  */
 
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, dirname, basename, extname } from 'node:path';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { FOUR_BU, classificationCoverageProblem, classificationRatioProblem, editionCoverageProblem, derivedInputProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
@@ -119,7 +120,12 @@ function titlesToStrings(raw) {
 
 // ─── doc builders ───
 
+const EDITION_STATS = { total: 0, present: 0, positive: 0 };
 function buildWorkDoc(entry, detail, isDraft = true) {
+    if (!isDraft) {
+        EDITION_STATS.total++;
+        if (typeof detail?._edition_count === 'number') { EDITION_STATS.present++; if (detail._edition_count > 0) EDITION_STATS.positive++; }
+    }
     const desc = detail.description ?? {};
     const descText = typeof desc === 'string' ? desc : (desc.text || '');
     const indexedBy = Array.isArray(detail.indexed_by) ? detail.indexed_by : [];
@@ -628,6 +634,7 @@ async function main() {
     // works + juans 同 loop
     if (indices.includes('works') || indices.includes('juans')) {
         const doWorks = indices.includes('works');
+        if (doWorks) assertDerivedInput();   // 只在要建 works 时查产物（--only juans/books 不需要，Eric 审）
         const doJuans = indices.includes('juans');
         const worksIdx = tmpIndexUid('works');
         const juansIdx = tmpIndexUid('juans');
@@ -721,7 +728,13 @@ async function main() {
             if (doWorks) {
                 console.log('  configuring works (tmp)...');
                 await configureSettings(worksIdx, SETTINGS.works);
-                swapResults.works = await swapOrDiscard('works', (tmp) => checkIndexHealth(tmp, 'works'));
+                swapResults.works = await swapOrDiscard('works', async (tmp) => {
+                    const h = await checkIndexHealth(tmp, 'works');
+                    console.log(`📚 版本数覆盖：非草稿 works ${EDITION_STATS.total}，带 _edition_count ${EDITION_STATS.present}，>0 的 ${EDITION_STATS.positive}`);
+                    const p = limit ? null : editionCoverageProblem(EDITION_STATS);   // --limit 试跑不闸
+                    if (p) h.failures.push(p);
+                    return { ok: h.failures.length === 0, failures: h.failures };
+                });
             }
             if (doJuans) {
                 console.log('  configuring juans (tmp)...');
@@ -864,9 +877,51 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
         } catch (e) {
             failures.push(`带 classification／loss_status 的过滤失败 — ${e.message}（搜索页 v4 的部类、存佚筛选会报错）`);
         }
+
+        // 部类覆盖闸（overview#345）：过滤能跑通不等于字段有值——四部各查一次，任何一部 0 条就是没读到部类
+        try {
+            const hitsByBu = {};
+            for (const bu of FOUR_BU) {
+                const r = await meiliRequest(
+                    'GET',
+                    `/indexes/${testUid}/search?q=&limit=1&filter=${encodeURIComponent(`is_draft = false AND classification = "${bu}"`)}`,
+                );
+                hitsByBu[bu] = r.estimatedTotalHits;
+            }
+            const problem = classificationCoverageProblem(hitsByBu);
+            if (problem) failures.push(problem);
+            const ratioOf = async (uid) => {
+                const q = async (flt) => (await meiliRequest('GET', `/indexes/${uid}/search?q=&limit=1&filter=${encodeURIComponent(flt)}`)).estimatedTotalHits;
+                const total = await q('is_draft = false');
+                const withBu = await q(`is_draft = false AND classification IN [${FOUR_BU.map((b) => `"${b}"`).join(', ')}]`);
+                return total > 0 ? withBu / total : NaN;
+            };
+            let liveRatio = null;
+            try { const r = await ratioOf('works'); liveRatio = Number.isFinite(r) ? r : null; } catch { /* 无基线 */ }
+            const ratioProblem = classificationRatioProblem(liveRatio, await ratioOf(testUid));
+            if (ratioProblem) failures.push(ratioProblem);
+        } catch (e) {
+            failures.push(`部类覆盖检查失败 — ${e.message}`);
+        }
     }
 
     return { ok: failures.length === 0, failures };
 }
 
+// 产物准入（overview#345）：schema-v2 源仓必须带同 commit 的 derive 产物，否则部类全空。退出码 5。
+function assertDerivedInput() {
+    if (!PRODUCTION_DIR || !existsSync(PRODUCTION_DIR)) return;
+    const dir = (process.env.BOOK_INDEX_DERIVED_DIR || '').trim();
+    let derivedCommit = '', sourceCommit = '';
+    try { derivedCommit = readFileSync(join(dir, 'SOURCE_COMMIT'), 'utf-8').trim(); } catch { /* 缺失由判定函数报 */ }
+    try { sourceCommit = execFileSync('git', ['-C', PRODUCTION_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf-8' }).trim(); } catch { /* 同上 */ }
+    const problem = derivedInputProblem({
+        schemaV2: existsSync(join(PRODUCTION_DIR, 'build', 'build_derived.py')),
+        derivedDir: dir, dirExists: !!dir && existsSync(dir), derivedCommit, sourceCommit,
+    });
+    if (problem && process.env.ALLOW_NO_DERIVED !== '1') {
+        console.error(`❌ 产物准入失败：${problem}\n   不建索引（线上保持不变）。确需跳过带 ALLOW_NO_DERIVED=1。`);
+        process.exit(5);
+    }
+}
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });

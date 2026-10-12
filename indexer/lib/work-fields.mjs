@@ -48,3 +48,69 @@ export function lossStatusValue(...values) {
 export function hasTextValue(entry) {
     return !!(entry && (entry.has_text || entry.has_collated));
 }
+
+/**
+ * swap 前的部类覆盖闸（overview#345，10-11 事故）：搜索机读原始仓，原始 Work 里没有 `classification`，
+ * 部类只来自 build 产物的 `_classifications`；indexer 一旦读不到它，works 全部 classification 都是空串，
+ * 但「带 classification 的过滤能跑通」那道检查（0 条也算过）发现不了——搜索页所有部类筛选恒为 0 条。
+ * 四部是总目的一级分类，任何正常数据里每一部都该有大量 works；带 is_draft=false 查到 0 条就是没读到。
+ * @param {Record<string, number|undefined>} hitsByBu  四部各自的 estimatedTotalHits
+ * @returns {string|null} 有问题返回原因；没问题 null
+ */
+export const FOUR_BU = ['經部', '史部', '子部', '集部'];
+export function classificationCoverageProblem(hitsByBu) {
+    const empty = FOUR_BU.filter((bu) => !(Number(hitsByBu?.[bu]) > 0));
+    if (empty.length === 0) return null;
+    return `新建的 works 里 ${empty.join('、')} 查到 0 条——部类字段没读到（多半 indexer 读不到 build 产物的 _classifications，搜索页所有部类筛选会恒为 0 条）`;
+}
+
+/**
+ * 部类非空比例闸（Eden 补充）：与线上现索引的同字段非空比例比，掉超过 5 个百分点就拒绝；
+ * 同时始终套绝对下限（线上基线坏了也不会放过）。比例＝带四部之一的 works / 非草稿 works 总数。
+ * @param {number|null} liveRatio  线上比例；无基线传 null
+ * @param {number} newRatio        新建 tmp 的比例
+ * @returns {string|null}
+ */
+export const BU_RATIO_MAX_DROP = 0.05;
+// 绝对下限先取保守的 50%（Eden 说应 >80%，但真实产物里四部占比还没量过，量出来再抬；Eric 审）
+export const BU_RATIO_ABS_MIN = 0.5;
+export function classificationRatioProblem(liveRatio, newRatio) {
+    const pct = (x) => `${(x * 100).toFixed(1)}%`;
+    if (!Number.isFinite(newRatio)) return '新建 works 的部类非空比例算不出来';
+    // 线上基线本身坏了（低于绝对下限，如今晚事故的 ≈0%）时「掉幅<5pp」恒真，所以下限始终生效：门槛 = max(线上-5pp, 绝对下限)
+    const floor = Math.max(Number.isFinite(liveRatio) ? liveRatio - BU_RATIO_MAX_DROP : 0, BU_RATIO_ABS_MIN);
+    if (newRatio >= floor) return null;
+    return Number.isFinite(liveRatio)
+        ? `部类非空比例 ${pct(newRatio)}，低于门槛 ${pct(floor)}（线上 ${pct(liveRatio)} 掉 ${BU_RATIO_MAX_DROP * 100}pp 与绝对下限 ${pct(BU_RATIO_ABS_MIN)} 取大）`
+        : `无线上基线，部类非空比例 ${pct(newRatio)} 低于下限 ${pct(BU_RATIO_ABS_MIN)}`;
+}
+
+/**
+ * 产物（BOOK_INDEX_DERIVED_DIR）准入：源仓是 schema-v2（有 build/build_derived.py）时，没有产物目录、
+ * 或产物里记的 book-index sha（<dir>/SOURCE_COMMIT）与源仓 HEAD 不一致，都不许建——宁可不建，也别建出空部类。
+ * @returns {string|null} 问题；null＝可以建
+ */
+export function derivedInputProblem({ schemaV2, derivedDir, dirExists, derivedCommit, sourceCommit }) {
+    if (!schemaV2) return null;
+    if (!derivedDir) return '源仓是 schema-v2，但没设 BOOK_INDEX_DERIVED_DIR——读不到 _classifications，部类会全空';
+    if (!dirExists) return `BOOK_INDEX_DERIVED_DIR=${derivedDir} 不存在`;
+    if (!derivedCommit) return `${derivedDir}/SOURCE_COMMIT 缺失，无法确认产物与源仓同一 commit`;
+    if (!sourceCommit) return '读不到源仓 HEAD，无法核对产物 commit';
+    if (derivedCommit !== sourceCommit) return `产物对应 commit ${derivedCommit.slice(0, 12)}，源仓 HEAD 是 ${sourceCommit.slice(0, 12)}，不一致`;
+    return null;
+}
+
+/**
+ * 版本数覆盖闸（Eden/Mason，overview#557）：editionCount 只进复合字段 completeness，Meili 里查不到，
+ * 所以建文档时就地统计「非草稿 works 里 _edition_count 是数字的」与「>0 的」。
+ * 派生产物每个 Work 都带 `_edition_count`，读不到产物时全是缺——有数字的比例低于 95% 就拒；>0 的比例只打印不闸（真实分布没量过）。
+ * @param {{ total: number, present: number, positive: number }} c
+ * @returns {string|null}
+ */
+export const EDITION_PRESENT_MIN = 0.95;
+export function editionCoverageProblem(c) {
+    if (!c || !(c.total > 0)) return null;
+    const r = c.present / c.total;
+    return r >= EDITION_PRESENT_MIN ? null
+        : `非草稿 works ${c.total} 条里只有 ${c.present} 条带 _edition_count（${(r * 100).toFixed(1)}%，下限 ${EDITION_PRESENT_MIN * 100}%）——产物没读到，completeness 排序加权会塌成 0`;
+}
