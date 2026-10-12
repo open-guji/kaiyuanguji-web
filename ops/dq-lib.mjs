@@ -237,7 +237,20 @@ export function createHttp({ fetchImpl = fetch, maxAttempts = 5, baseDelayMs = 1
                 }
                 continue;
             }
-            const body = method === 'HEAD' ? null : Buffer.from(await res.arrayBuffer());
+            // 响应头到了、body 半路被重置（undici「terminated」／ECONNRESET）也算网络错误，照样重试
+            let body = null;
+            if (method !== 'HEAD') {
+                try {
+                    body = Buffer.from(await res.arrayBuffer());
+                } catch (e) {
+                    last = { status: 0, ok: false, body: null, error: `读取响应体失败：${String(e?.message ?? e)}` };
+                    if (attempt < maxAttempts) {
+                        stats.retries++;
+                        await sleepImpl(backoff(attempt));
+                    }
+                    continue;
+                }
+            }
             return { status: res.status, ok: res.ok, body };
         }
         stats.failures++;
@@ -331,6 +344,8 @@ export async function runDq(opts = {}) {
         startedAt: new Date(t0).toISOString(),
         latest: null, pointers: {}, counts: {}, entries: {}, refs: {}, text: {}, findings, phases, http: http.stats,
     };
+    // 让调用方（runDqSafe）拿到半成品报告：中途抛错时还能把已完成阶段的结果写出来
+    opts.onReport?.(report);
 
     // ── 0. 指针 ──
     let tp = Date.now();
@@ -654,8 +669,34 @@ export function summarizeFindings(findings) {
  */
 export const KNOWN_ISSUE_CODES = new Set(['current-cdn-stale', 'current-version-cdn-stale']);
 
+/**
+ * runDq 的兜底包装：中途抛错（不该发生，但一旦发生不能让 job 静默或不出报告）时，
+ * 写出已跑完阶段的部分报告，记一条 run-aborted，并标 aborted 让 job 变红。
+ */
+export async function runDqSafe(opts = {}) {
+    let partial = null;
+    try {
+        return await runDq({ ...opts, onReport: (r) => { partial = r; } });
+    } catch (e) {
+        const msg = String(e?.message ?? e);
+        // 并行池里其他 worker 抛错后可能还在改共享报告：返回前定格快照
+        const report = partial ? structuredClone(partial) : {
+            base: opts.base ?? DEFAULT_BASE, h1: `${opts.base ?? DEFAULT_BASE}/${opts.h1Prefix ?? 'h1'}`,
+            seed: opts.seed ?? 1, entryRate: opts.entryRate ?? 0.02, textRate: opts.textRate ?? 0.05,
+            concurrency: opts.concurrency ?? MAX_CONCURRENCY, findings: [], phases: {},
+            http: { requests: 0, retries: 0, throttled: 0, failures: 0 },
+        };
+        report.findings.push({ kind: 'fetch', code: 'run-aborted', message: `巡检中途异常退出，下面是已完成部分的结果：${msg}` });
+        report.aborted = msg;
+        report.finishedAt = new Date().toISOString();
+        report.durationMs = report.startedAt ? Date.now() - Date.parse(report.startedAt) : 0;
+        return report;
+    }
+}
+
 export function hasFailures(report, failOn = 'packaging') {
     if (failOn === 'none') return false;
+    if (report.aborted) return true;
     const reqs = report.http?.requests ?? 0;
     if (reqs > 0 && (report.http.failures ?? 0) / reqs > FETCH_FAIL_RATIO) return true;
     return report.findings.some((f) => !KNOWN_ISSUE_CODES.has(f.code)

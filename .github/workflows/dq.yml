@@ -9,8 +9,8 @@ name: Data quality (DQ)
 # 报告写进 job summary，并作为 artifact（dq-report.md/json）留 30 天。
 # 退出码：默认只有「网站打包问题」让 job 变红；「数据仓问题」只进报告（fail_on=any 可改）。
 #
-# 抓取客气：并发 ≤ 8、带重试、429 共享退避。2% 抽样约一万五千个请求，十来分钟；
-# 撞上部署（指针先后翻转）时最多再等 10 分钟。
+# 抓取客气：并发 ≤ 8、带重试、429 共享退避。2% 抽样约一万五千个请求，实测约 43 分钟；
+# 撞上部署（指针先后翻转）时最多再等 10 分钟，重试退避另加时间，所以 job 超时给到 75 分钟。
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
   dq:
     name: 数据巡检
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       # 自托管 runner 共用工作目录，不用 sparse-checkout（会弄残后续 job 的工作树，overview#184）
       - uses: actions/checkout@v4
