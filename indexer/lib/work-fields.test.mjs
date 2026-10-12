@@ -26,13 +26,15 @@ test('部类覆盖闸：四部都有命中才放行；任何一部 0 条／缺�
     assert.match(classificationCoverageProblem(undefined), /經部/);
 });
 
-test('部类非空比例：有基线看掉幅（>5pp 拒），无基线看绝对下限 80%', () => {
+test('部类非空比例：有基线看掉幅（>5pp 拒），绝对下限始终生效', () => {
     assert.equal(classificationRatioProblem(0.9, 0.88), null);
     assert.equal(classificationRatioProblem(0.9, 0.97), null);
-    assert.match(classificationRatioProblem(0.9, 0.8), /掉了超过/);
-    assert.match(classificationRatioProblem(0.9, 0), /掉了超过/);
+    assert.match(classificationRatioProblem(0.9, 0.8), /低于门槛/);
+    assert.match(classificationRatioProblem(0.9, 0), /低于门槛/);
     assert.equal(classificationRatioProblem(null, 0.85), null);
-    assert.match(classificationRatioProblem(null, 0.5), /下限/);
+    assert.match(classificationRatioProblem(null, 0.3), /下限/);
+    assert.match(classificationRatioProblem(0.0, 0.0), /低于门槛/);   // 线上基线坏了也不放过
+    assert.equal(classificationRatioProblem(0.0, 0.6), null);
     assert.match(classificationRatioProblem(null, NaN), /算不出/);
 });
 

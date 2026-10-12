@@ -66,21 +66,23 @@ export function classificationCoverageProblem(hitsByBu) {
 
 /**
  * 部类非空比例闸（Eden 补充）：与线上现索引的同字段非空比例比，掉超过 5 个百分点就拒绝；
- * 线上读不到／还没有（无基线）时用绝对下限 80%。比例＝带四部之一的 works / 非草稿 works 总数。
+ * 同时始终套绝对下限（线上基线坏了也不会放过）。比例＝带四部之一的 works / 非草稿 works 总数。
  * @param {number|null} liveRatio  线上比例；无基线传 null
  * @param {number} newRatio        新建 tmp 的比例
  * @returns {string|null}
  */
 export const BU_RATIO_MAX_DROP = 0.05;
-export const BU_RATIO_ABS_MIN = 0.8;
+// 绝对下限先取保守的 50%（Eden 说应 >80%，但真实产物里四部占比还没量过，量出来再抬；Eric 审）
+export const BU_RATIO_ABS_MIN = 0.5;
 export function classificationRatioProblem(liveRatio, newRatio) {
     const pct = (x) => `${(x * 100).toFixed(1)}%`;
     if (!Number.isFinite(newRatio)) return '新建 works 的部类非空比例算不出来';
-    if (Number.isFinite(liveRatio)) {
-        if (newRatio < liveRatio - BU_RATIO_MAX_DROP) return `部类非空比例 ${pct(newRatio)}，线上 ${pct(liveRatio)}，掉了超过 ${BU_RATIO_MAX_DROP * 100} 个百分点`;
-        return null;
-    }
-    return newRatio >= BU_RATIO_ABS_MIN ? null : `无线上基线，部类非空比例 ${pct(newRatio)} 低于下限 ${pct(BU_RATIO_ABS_MIN)}`;
+    // 线上基线本身坏了（低于绝对下限，如今晚事故的 ≈0%）时「掉幅<5pp」恒真，所以下限始终生效：门槛 = max(线上-5pp, 绝对下限)
+    const floor = Math.max(Number.isFinite(liveRatio) ? liveRatio - BU_RATIO_MAX_DROP : 0, BU_RATIO_ABS_MIN);
+    if (newRatio >= floor) return null;
+    return Number.isFinite(liveRatio)
+        ? `部类非空比例 ${pct(newRatio)}，低于门槛 ${pct(floor)}（线上 ${pct(liveRatio)} 掉 ${BU_RATIO_MAX_DROP * 100}pp 与绝对下限 ${pct(BU_RATIO_ABS_MIN)} 取大）`
+        : `无线上基线，部类非空比例 ${pct(newRatio)} 低于下限 ${pct(BU_RATIO_ABS_MIN)}`;
 }
 
 /**

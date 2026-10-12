@@ -634,6 +634,7 @@ async function main() {
     // works + juans 同 loop
     if (indices.includes('works') || indices.includes('juans')) {
         const doWorks = indices.includes('works');
+        if (doWorks) assertDerivedInput();   // 只在要建 works 时查产物（--only juans/books 不需要，Eric 审）
         const doJuans = indices.includes('juans');
         const worksIdx = tmpIndexUid('works');
         const juansIdx = tmpIndexUid('juans');
@@ -883,14 +884,14 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
             for (const bu of FOUR_BU) {
                 const r = await meiliRequest(
                     'GET',
-                    `/indexes/${testUid}/search?q=&limit=0&filter=${encodeURIComponent(`is_draft = false AND classification = "${bu}"`)}`,
+                    `/indexes/${testUid}/search?q=&limit=1&filter=${encodeURIComponent(`is_draft = false AND classification = "${bu}"`)}`,
                 );
                 hitsByBu[bu] = r.estimatedTotalHits;
             }
             const problem = classificationCoverageProblem(hitsByBu);
             if (problem) failures.push(problem);
             const ratioOf = async (uid) => {
-                const q = async (flt) => (await meiliRequest('GET', `/indexes/${uid}/search?q=&limit=0&filter=${encodeURIComponent(flt)}`)).estimatedTotalHits;
+                const q = async (flt) => (await meiliRequest('GET', `/indexes/${uid}/search?q=&limit=1&filter=${encodeURIComponent(flt)}`)).estimatedTotalHits;
                 const total = await q('is_draft = false');
                 const withBu = await q(`is_draft = false AND classification IN [${FOUR_BU.map((b) => `"${b}"`).join(', ')}]`);
                 return total > 0 ? withBu / total : NaN;
@@ -923,5 +924,4 @@ function assertDerivedInput() {
         process.exit(5);
     }
 }
-assertDerivedInput();
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });
