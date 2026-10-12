@@ -118,7 +118,10 @@ export function readerVersionName(v?: { key?: string; label?: string; source_nam
  * chapterTitle 是目录里的章名（如红楼梦的「第三回」），没有就用「卷N」；版本名用 readerVersionName（默认版本不写、非默认只写来源）。
  */
 export function readerTitle(bookTitle: string, chapter: string | undefined, chapterTitle?: string, versionLabel?: string): string {
-    return [bookTitle, chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel?.trim() ?? '']
+    // 单篇作品常见章名＝书名：不重复拼（overview#581：「洪范传 · 洪范传」），章名仍是书名时只写一次
+    const label = chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : '');
+    const sameAsBook = !!label && label.replace(/\s+/g, '') === bookTitle.replace(/\s+/g, '');
+    return [bookTitle, sameAsBook ? '' : label, versionLabel?.trim() ?? '']
         .filter(Boolean)
         .join(' · ');
 }

@@ -36,7 +36,8 @@ import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
 import ReaderClient from '../ReaderClient';
 import { preloadReader, SEED_TEXT_MAX } from '../preload';
-import type { ReaderSeed } from '../reader-seed';
+import { seedCallKey, type ReaderSeed } from '../reader-seed';
+import { leadText } from '@/lib/reader-lead';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
 import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
@@ -122,7 +123,15 @@ function load(id: string, seg: string[] | undefined): Promise<Loaded | null> {
     return loadByKey(id, JSON.stringify(seg ?? null));
 }
 
-async function preload(id: string, s: Loaded): Promise<ReaderSeed> {
+/** generateMetadata 与页面本体共用同一份首屏数据（description 取正文开头，overview#581）：按 Loaded 对象记住，只取一次 */
+const seedOf = new WeakMap<Loaded, Promise<ReaderSeed>>();
+function preload(id: string, s: Loaded): Promise<ReaderSeed> {
+    let p = seedOf.get(s);
+    if (!p) { p = preloadUncached(id, s); seedOf.set(s, p); }
+    return p;
+}
+
+async function preloadUncached(id: string, s: Loaded): Promise<ReaderSeed> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const budget = new Promise<ReaderSeed>((resolve) => { timer = setTimeout(() => resolve({}), PRELOAD_BUDGET_MS); });
     try {
@@ -148,7 +157,15 @@ async function buildMetadata({ params }: Props): Promise<Metadata> {
     const versionLabel = readerVersionName(s.checked.version);
     const title = readerTitle(s.title, chapter, s.checked.chapterTitle, versionLabel);
     const what = [s.checked.chapterTitle ?? (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel].filter(Boolean).join('');
-    const description = getSiteT('zh-Hans')('seo.readOnline', { what: `${s.title}${what}` });
+    const fallback = getSiteT('zh-Hans')('seo.readOnline', { what: `${s.title}${what}` });
+    // description 取首章正文开头（已在首屏数据里，不新增请求）；取不到（预算超时、过大、无正文）就用模板句
+    let lead = '';
+    if (s.checked.status === 'found' && s.checked.version && chapter) {
+        const seed = await preload(id, s);
+        const got = seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, chapter)] as { md?: string } | undefined;
+        lead = leadText(got?.md);
+    }
+    const description = lead ? `${s.title}${what}：${lead}` : fallback;
     const { canonical } = s;
     return {
         title,
