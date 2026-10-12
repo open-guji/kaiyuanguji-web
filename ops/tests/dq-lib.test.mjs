@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     decodeId, REF_FIELDS, insertHash, hash8, sample, extractRefs, registeredTextFiles, isTextIndexPath, newStructureKey,
-    createHttp, pool, runDq, renderMarkdown, hasFailures, MAX_CONCURRENCY,
+    createHttp, pool, runDq, runDqSafe, renderMarkdown, hasFailures, MAX_CONCURRENCY,
 } from '../dq-lib.mjs';
 
 // ─── 纯函数 ───
@@ -144,6 +144,52 @@ test('createHttp：5xx 和网络错误重试，404 不重试', async () => {
     assert.equal(r3.ok, false);
     assert.equal(h3.stats.failures, 1);
     assert.equal(h3.stats.requests, 3);
+});
+
+test('createHttp：响应头到了、body 半路被重置（terminated）也重试，不让异常逃出去', async () => {
+    let calls = 0;
+    const fetchImpl = async () => {
+        calls++;
+        return {
+            status: 200, ok: true, headers: new Headers(),
+            arrayBuffer: async () => {
+                if (calls === 1) throw new TypeError('terminated');
+                return new TextEncoder().encode('{"a":2}').buffer;
+            },
+        };
+    };
+    const http = createHttp({ fetchImpl, sleepImpl: noSleep });
+    const r = await http.getJson('https://x/a.json');
+    assert.deepEqual(r.json, { a: 2 });
+    assert.equal(calls, 2);
+    assert.equal(http.stats.retries, 1);
+});
+
+test('createHttp：body 每次都被重置 → 重试用尽，返回 status 0，不抛', async () => {
+    const http = createHttp({
+        fetchImpl: async () => ({ status: 200, ok: true, headers: new Headers(), arrayBuffer: async () => { throw new TypeError('terminated'); } }),
+        sleepImpl: noSleep, maxAttempts: 3,
+    });
+    const r = await http.request('https://x/');
+    assert.equal(r.status, 0);
+    assert.equal(r.ok, false);
+    assert.match(r.error, /terminated/);
+    assert.equal(http.stats.failures, 1);
+});
+
+test('runDqSafe：中途抛错 → 写出已完成阶段的部分报告，记 run-aborted，job 变红', async () => {
+    const site = buildSite();
+    const r = await runDqSafe({
+        base: site.base, fetchImpl: site.fetchImpl, sleepImpl: noSleep, entryRate: 1, textRate: 1, pointerRetryMs: 0, seed: 1,
+        // manifest 阶段一结束就炸，模拟巡检中途的未预期异常
+        log: (m) => { if (m.startsWith('manifest')) throw new Error('boom'); },
+    });
+    assert.equal(r.aborted, 'boom');
+    assert.equal(r.counts.total, 4, '炸之前已完成的 manifest 计数要保留');
+    assert.ok(r.findings.some((f) => f.code === 'run-aborted' && f.kind === 'fetch'));
+    assert.match(renderMarkdown(r), /run-aborted/);
+    assert.equal(hasFailures(r), true);
+    assert.equal(hasFailures(r, 'none'), false);
 });
 
 test('pool：同时在飞不超过 8，哪怕要求更多', async () => {

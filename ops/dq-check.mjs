@@ -26,7 +26,7 @@
 
 import { writeFileSync, appendFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { runDq, renderMarkdown, hasFailures, DEFAULT_BASE, MAX_CONCURRENCY } from './dq-lib.mjs';
+import { runDqSafe, renderMarkdown, hasFailures, DEFAULT_BASE, MAX_CONCURRENCY } from './dq-lib.mjs';
 
 const { values: a } = parseArgs({
     options: {
@@ -65,7 +65,8 @@ if (!['packaging', 'any', 'none'].includes(failOn)) {
     process.exit(2);
 }
 
-const report = await runDq({
+// runDqSafe：中途异常也出部分报告（artifact 不会空），job 变红
+const report = await runDqSafe({
     base: opt('base') ?? DEFAULT_BASE,
     h1Prefix: opt('h1-prefix') ?? 'h1',
     entryRate: num('entry-rate', 0.02, { min: 0, max: 1 }),
