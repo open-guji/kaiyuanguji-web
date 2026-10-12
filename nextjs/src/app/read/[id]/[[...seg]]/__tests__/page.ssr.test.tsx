@@ -384,6 +384,21 @@ describe('阅读页 page.ssr（路径式地址）', () => {
             expect(calls()).toContain(`items/${ZHIZHAI}/wikisource/index.json`);
         });
 
+        it('地址指定了 seed 不带的版本：该版本的 index 与 seed 并行预取（不等 manifest 回来再发，Sourcery）', async () => {
+            let manifestResolvedAfterIndexCall = false;
+            mockGetLatest.mockImplementation(async () => ({ readSeed: 1 }));
+            mockGetCurrentJson.mockImplementation(async (rel) => {
+                if (rel === SEED_PATH) { await new Promise((r) => setTimeout(r, 10)); return seedFor(ZHIZHAI); }
+                return FILES[rel] ?? null;
+            });
+            await page(['wikisource']);
+            const order = calls();
+            manifestResolvedAfterIndexCall = order.indexOf(`items/${ZHIZHAI}/wikisource/index.json`) !== -1;
+            expect(manifestResolvedAfterIndexCall).toBe(true);
+            // 预取在 seed 返回后立即发出，且只发一次（check 消费的就是这个预取）
+            expect(order.filter((r) => r === `items/${ZHIZHAI}/wikisource/index.json`)).toHaveLength(1);
+        });
+
         it('seed 命中时乱填版本 key 仍是真 404', async () => {
             withSeed(seedFor(ZHIZHAI));
             await expect(page(['nonesuch'])).rejects.toThrow('NEXT_NOT_FOUND');

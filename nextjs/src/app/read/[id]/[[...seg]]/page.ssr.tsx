@@ -93,8 +93,8 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     const guessKey = sel.key ?? 'default';
     const guessChapter = sel.chapter ?? '001';
     const prefetchIndex = () => fetchers.json.prefetch(`items/${id}/${guessKey}/index.json`);
-    // 有 seed 时 index 来自 seed，不预取（省一个请求）；seed 取不到时才补发，保住 #371 的并发读法
-    if (seedP) void seedP.then((s) => { if (!s) prefetchIndex(); });
+    // 有 seed 时主版本的 index 来自 seed，不预取（省一个请求）；seed 取不到、或地址指定了 seed 不带的别的版本时才补发，保住 #371 的并发读法
+    if (seedP) void seedP.then((s) => { if (!s || (sel.key && s.primary.key !== sel.key)) prefetchIndex(); });
     else prefetchIndex();
     fetchers.text.prefetch(`items/${id}/${guessKey}/${guessChapter}.txt`, SEED_TEXT_MAX);
     const [hit, checked] = await Promise.all([
