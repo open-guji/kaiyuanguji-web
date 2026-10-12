@@ -138,7 +138,7 @@ describe('S0 护栏', () => {
 
     it('只有入口文件自己 new Converter（其余都经 toSimplified）', () => {
         const hits = files.filter((f) => !f.endsWith('to-simplified-core.mjs') && /\bConverter\s*\(\s*\{/.test(fs.readFileSync(f, 'utf-8'))).map((f) => path.relative(REPO, f)).sort();
-        expect(hits).toEqual(['edge-functions/api/search.js', 'indexer/full-reindex.mjs', 'nextjs/scripts/lib/to-simplified.mjs', 'nextjs/src/lib/server/simplify.ts']);
+        expect(hits).toEqual(['edge-functions/api/search.js', 'indexer/lib/doc-builders.mjs', 'nextjs/scripts/lib/to-simplified.mjs', 'nextjs/src/lib/server/simplify.ts']);
     });
 
     it('opencc-js 钉死同一个精确版本 1.0.5：nextjs、indexer 的 package.json 与已装版本一致', () => {
