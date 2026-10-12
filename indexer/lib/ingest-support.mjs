@@ -1,7 +1,7 @@
 /**
  * ingest 的纯逻辑部分（锁、manifest 校验、state.json 原子写），便于单测。overview#561 一期。
  */
-import { closeSync, createReadStream, existsSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync, copyFileSync } from 'node:fs';
+import { statSync, closeSync, createReadStream, existsSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync, copyFileSync } from 'node:fs';
 import { createGunzip } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { createInterface } from 'node:readline';
@@ -26,9 +26,19 @@ export function acquireLock(lockPath, info = {}) {
             return { release: () => { try { unlinkSync(lockPath); } catch { /* 已被清 */ } } };
         } catch (e) {
             if (e.code !== 'EEXIST') throw e;
-            let holder = null;
-            try { holder = JSON.parse(readFileSync(lockPath, 'utf-8')); } catch { /* 写入中或损坏 */ }
-            if (holder?.pid && holder.host === hostname() && !pidAlive(holder.pid)) { try { unlinkSync(lockPath); } catch { /* 竞争 */ } continue; }
+            let raw = null, holder = null;
+            try { raw = readFileSync(lockPath, 'utf-8'); holder = JSON.parse(raw); } catch { /* 写入中或损坏 */ }
+            let stale = false;
+            if (holder?.pid && holder.host === hostname() && !pidAlive(holder.pid)) stale = true;
+            // 建了文件但没写完内容就崩了：空／损坏的锁文件超过 60 秒视为陈旧（正常写入是毫秒级）
+            else if (!holder) { try { stale = Date.now() - statSync(lockPath).mtimeMs > 60_000; } catch { /* 已被清 */ } }
+            if (stale) {
+                // 接管前再读一次：内容变了（别人刚接管并建了新锁）就不删，避免误删对方的活锁
+                let again = null;
+                try { again = readFileSync(lockPath, 'utf-8'); } catch { /* 已无 */ }
+                if (again === raw) { try { unlinkSync(lockPath); } catch { /* 竞争 */ } }
+                continue;
+            }
             return { busy: holder ?? { unknown: true } };
         }
     }
@@ -58,7 +68,10 @@ export function manifestProblems(m, { allowPartial = false, requireIndexes = IND
     if (m.schema !== 1) p.push(`manifest.schema=${m.schema}，本 ingest 只认 1`);
     if (m.partial && !allowPartial) p.push('manifest.partial=true（--limit/--only 的试跑产物），拒绝入库');
     if (!m.indexerVersion) p.push('缺 indexerVersion');
-    for (const k of ['draft', 'prod', 'text', 'derived']) if (!m.commits?.[k]) p.push(`commits.${k} 缺失`);
+    // draft／prod／derived 必须有；text 只在要入 juans 时必须（没配 TEXT_DIR 的产物没有 juans）
+    const need = ['draft', 'prod', 'derived'];
+    if (requireIndexes.includes('juans')) need.push('text');
+    for (const k of need) if (!m.commits?.[k]) p.push(`commits.${k} 缺失`);
     for (const i of requireIndexes) {
         if (typeof m.counts?.[i] !== 'number') p.push(`counts.${i} 缺失`);
         if (!/^[0-9a-f]{64}$/.test(m.sha256?.[i] || '')) p.push(`sha256.${i} 缺失或格式不对`);

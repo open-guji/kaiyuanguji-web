@@ -162,7 +162,8 @@ async function discardTmp(indexUid, tmp, failures) {
  * 自检通过则原子 swap（tmp → 正式名），线上无空窗；不通过则删 tmp、退出非 0、
  * 保留旧索引不动。selfTestFn 收 tmp 的 indexUid，返回 { ok, failures }。
  */
-async function swapOrDiscard(indexUid, selfTestFn) {
+/** 自检＋文档数下限闸，不 swap、不删 tmp。返回 { ok, failures }。 */
+async function verifyTmp(indexUid, selfTestFn) {
     const tmp = tmpIndexUid(indexUid);
     const { ok, failures } = await selfTestFn(tmp);
     // 文档数下限闸（overview#122）：新建的比线上少一半以上，多半是脚本读不到数据，别把空的换上去。
@@ -177,17 +178,28 @@ async function swapOrDiscard(indexUid, selfTestFn) {
             if (!floor.ok) failures.push(`文档数下限：${floor.reason}`);
             else console.log(`📏 [${indexUid}] 下限闸通过：线上 ${live.state === 'ok' ? live.docs : '（无）'} 条 → 新 ${fresh.docs} 条`);
         }
-        if (failures.length > 0) return await discardTmp(indexUid, tmp, failures);
     }
-    if (!ok) return await discardTmp(indexUid, tmp, failures);
+    return { ok: ok && failures.length === 0, failures };
+}
+
+/** 把已验过的 tmp 换上位并删旧。 */
+async function swapTmp(indexUid) {
+    const tmp = tmpIndexUid(indexUid);
     await ensureIndexExists(indexUid); // 首次跑：正式名还不存在，先占一个空的才有得 swap
     const swapTask = await meiliRequest('POST', '/swap-indexes', [{ indexes: [indexUid, tmp] }]);
     await waitForTask(swapTask.taskUid);
     // swap 后 tmp 名下是旧数据（或首次跑时的空占位），删掉腾地方
     const delTask = await meiliRequest('DELETE', `/indexes/${tmp}`);
     await waitForTask(delTask.taskUid).catch(() => {});
-    console.log(`✅ [${indexUid}] 自检通过，已 swap 生效，旧索引已删`);
+    console.log(`✅ [${indexUid}] 已 swap 生效，旧索引已删`);
     return true;
+}
+
+async function swapOrDiscard(indexUid, selfTestFn) {
+    const tmp = tmpIndexUid(indexUid);
+    const { ok, failures } = await verifyTmp(indexUid, selfTestFn);
+    if (!ok) return await discardTmp(indexUid, tmp, failures);
+    return await swapTmp(indexUid);
 }
 
 const iterAllRoots = (typeDir) => iterAllRootsIn(ROOTS, typeDir);
@@ -286,5 +298,5 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
     return { ok: failures.length === 0, failures };
 }
 
-    return { meiliRequest, waitForTask, pushBatch, configureSettings, tmpIndexUid, indexExists, ensureIndexExists, createFreshTmpIndex, docCount, swapOrDiscard, checkIndexHealth };
+    return { meiliRequest, waitForTask, pushBatch, configureSettings, tmpIndexUid, indexExists, ensureIndexExists, createFreshTmpIndex, docCount, swapOrDiscard, verifyTmp, swapTmp, discardTmp, checkIndexHealth };
 }

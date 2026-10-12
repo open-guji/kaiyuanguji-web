@@ -5,7 +5,8 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
+import { insideRoot } from './shards.mjs';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './to-simplified-core.mjs';
@@ -228,7 +229,8 @@ function buildJuanDocs(textDir, workEntry, { workId = workEntry.id, kinds = ['co
     if (!textDir) return [];
     const relPath = workEntry.path || '';
     if (!relPath) return [];
-    const itemDir = join(textDir, dirname(relPath), workEntry.id);
+    const itemDir = resolve(textDir, dirname(relPath), workEntry.id);
+    if (!insideRoot(textDir, itemDir)) return [];
     const manifest = readJsonSafe(join(itemDir, 'manifest.json'));
     if (!manifest || manifest.visibility === 'internal' || !Array.isArray(manifest.versions)) return [];
     const docs = [];

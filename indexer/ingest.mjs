@@ -6,7 +6,7 @@
  *        [--lock /opt/indexer/.lock] [--allow-shrink] [--allow-partial] [--only works,books]
  *
  * 流程：取锁 → 校验 manifest（结构＋每个文件 sha256／行数） → 每个索引建 <idx>_tmp 推满 →
- *       settings → 自检＋文档数下限闸（lib/meili-ops 的 swapOrDiscard，与 full-reindex 同口径）→ swap →
+ *       settings → 自检＋文档数下限闸（lib/meili-ops 的 verifyTmp，与 full-reindex 同口径）→ 全部通过后一起 swap →
  *       全部成功后才原子写 state.json。任何一环失败：线上索引原封不动、state 不动。
  * 退出码：0 成功；1 失败（含自检未过）；6 锁被占；8 manifest／文件校验不过。
  */
@@ -24,8 +24,10 @@ const lockPath = arg('--lock', '/opt/indexer/.lock');
 const allowPartial = a.includes('--allow-partial');
 const allowShrink = a.includes('--allow-shrink') || process.env.FORCE_SHRINK === '1';
 const only = arg('--only') ? arg('--only').split(',') : null;
+const allowOlder = a.includes('--allow-older');
 const BATCH = { works: 1000, juans: 500, books: 2000, collections: 2000, entities: 2000 };
-const MAX_CONCURRENT = Number(process.env.MAX_CONCURRENT) || 3;
+const MAX_CONCURRENT = Math.max(1, Math.floor(Number(process.env.MAX_CONCURRENT)) || 3);
+if (only && only.some((i) => !INDEXES.includes(i))) { console.error(`--only 含未知索引：${only.filter((i) => !INDEXES.includes(i)).join(',')}（可选 ${INDEXES.join(',')}）`); process.exit(1); }
 
 if (!docsRoot || !process.env.MEILI_KEY) { console.error('需要 --docs <dir> 与 MEILI_KEY 环境变量'); process.exit(1); }
 const ops = createMeiliOps({ url: process.env.MEILI_URL || 'http://127.0.0.1:7700', key: process.env.MEILI_KEY, allowShrink });
@@ -50,13 +52,19 @@ async function main() {
     if (!existsSync(manifestPath)) bad([`${manifestPath} 不存在（render-docs 未完成？manifest 最后落盘）`]);
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     const indexes = INDEXES.filter((i) => !only || only.includes(i));
+    if (!indexes.length) bad(['--only 没有选中任何索引']);
     const problems = manifestProblems(manifest, { allowPartial, requireIndexes: indexes });
     for (const i of indexes) if (!existsSync(join(docsRoot, 'docs', `${i}.jsonl.gz`))) problems.push(`docs/${i}.jsonl.gz 不存在`);
     if (problems.length) bad(problems);
+    // 旧产物不得覆盖新数据：manifest 比上次入库的还早就拒绝（--allow-older 显式放行，如回滚）
+    const prevState = readState(statePath);
+    if (!allowOlder && prevState?.manifestCreatedAtEpoch && manifest.createdAtEpoch && manifest.createdAtEpoch < prevState.manifestCreatedAtEpoch) {
+        bad([`manifest.createdAt ${manifest.createdAt} 早于上次入库的 ${prevState.manifestCreatedAt}（旧产物会覆盖新数据；确需回退加 --allow-older）`]);
+    }
     console.log(`manifest OK：indexerVersion=${manifest.indexerVersion} commits=${JSON.stringify(manifest.commits)} counts=${JSON.stringify(manifest.counts)}`);
 
     // 逐索引：建 tmp → 推满（边推边校验 sha256／行数，不一致则整个放弃）→ settings → 自检＋swap
-    const swapped = {};
+    const verified = {};
     for (const idx of indexes) {
         const file = join(docsRoot, 'docs', `${idx}.jsonl.gz`);
         const tmp = await ops.createFreshTmpIndex(idx);
@@ -80,7 +88,7 @@ async function main() {
         }
         console.log(`  [${idx}] 推完 ${pushed} 条，用 ${((Date.now() - t0) / 1000).toFixed(1)}s`);
         await ops.configureSettings(tmp, SETTINGS[idx]);
-        swapped[idx] = await ops.swapOrDiscard(idx, async (t) => {
+        verified[idx] = await ops.verifyTmp(idx, async (t) => {
             const h = await ops.checkIndexHealth(t, idx, { checkHits: idx !== 'juans' });
             if (idx === 'works') {
                 const e = manifest.editionStats;
@@ -92,13 +100,17 @@ async function main() {
         });
     }
 
-    const failed = Object.entries(swapped).filter(([, ok]) => !ok).map(([i]) => i);
+    // 两段式：所有索引都建好并验过，才一起 swap；任何一个没过，全部 tmp 丢弃，线上整体保持旧一代
+    const failed = Object.entries(verified).filter(([, v]) => !v.ok);
     if (failed.length) {
-        console.error(`\n❌ 以下索引自检未通过、未 swap，线上仍是旧数据：${failed.join(', ')}；state.json 未更新`);
+        for (const [i, v] of failed) { console.error(`❌ [${i}] 自检未通过：`); for (const f of v.failures) console.error(`   · ${f}`); }
+        for (const i of indexes) await ops.meiliRequest('DELETE', `/indexes/${ops.tmpIndexUid(i)}`).catch(() => {});
+        console.error(`\n❌ 以下索引自检未通过：${failed.map(([i]) => i).join(', ')}；所有 tmp 已删，线上仍是同一代旧数据，state.json 未更新`);
         process.exit(1);
     }
+    for (const idx of indexes) await ops.swapTmp(idx);
 
-    if (only) { console.log('\n（--only 部分入库，不更新 state.json）'); return; }
+    if (only || manifest.partial) { console.log('\n（--only／partial 部分入库，不更新 state.json）'); return; }
     const stats = await ops.meiliRequest('GET', '/stats');
     const counts = Object.fromEntries(INDEXES.map((i) => [i, stats.indexes?.[i]?.numberOfDocuments ?? null]));
     writeState(statePath, {
@@ -106,6 +118,8 @@ async function main() {
         mode: 'full',
         updatedAt: new Date().toLocaleString('sv-SE', { timeZone: 'America/Los_Angeles' }) + ' (America/Los_Angeles)',
         indexerVersion: manifest.indexerVersion,
+        manifestCreatedAt: manifest.createdAt ?? null,
+        manifestCreatedAtEpoch: manifest.createdAtEpoch ?? null,
         commits: manifest.commits,
         counts,
         previous: readState(statePath)?.commits ?? null,

@@ -3,7 +3,13 @@
  * 纯文件读取，roots 由参数给：[{ dir, isDraft }]，draft 在前、production 在后。
  */
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
+
+/** p（绝对路径）是否在 rootDir 之内（防分片里的 ../ 越界读）。 */
+export function insideRoot(rootDir, p) {
+    const r = resolve(rootDir);
+    return p === r || p.startsWith(r + sep);
+}
 
 export function* iterIndexShards(rootDir, typeDir) {
     const shardDir = join(rootDir, 'index', typeDir);

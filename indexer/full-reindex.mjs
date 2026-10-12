@@ -36,6 +36,7 @@ import { editionCoverageProblem, derivedInputProblem } from './lib/work-fields.m
 import { createMeiliOps, SETTINGS } from './lib/meili-ops.mjs';
 import { iterAllRoots as iterAllRootsIn } from './lib/shards.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
+import { EXIT, acquireLock } from './lib/ingest-support.mjs';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs as buildJuanDocsIn, readDetail as readDetailIn, addEditionStats } from './lib/doc-builders.mjs';
 
 const EDITION_STATS = { total: 0, present: 0, positive: 0 };
@@ -351,6 +352,20 @@ function assertDerivedInput() {
     if (problem && process.env.ALLOW_NO_DERIVED !== '1') {
         console.error(`❌ 产物准入失败：${problem}\n   不建索引（线上保持不变）。确需跳过带 ALLOW_NO_DERIVED=1。`);
         process.exit(5);
+    }
+}
+// 与 ingest.mjs 共用同一把锁（overview#561）：搜索机上 full-reindex 与 ingest 不得并发。
+// 锁路径 INDEXER_LOCK，默认 /opt/indexer/.lock（目录不存在＝非搜索机环境，不加锁）。
+{
+    const lockPath = process.env.INDEXER_LOCK || '/opt/indexer/.lock';
+    if (process.env.INDEXER_LOCK || existsSync(dirname(lockPath))) {
+        const lock = acquireLock(lockPath, { run: process.env.GITHUB_RUN_ID || null, task: 'full-reindex' });
+        if (lock.busy) {
+            console.error(`🔒 锁被占，退出（码 ${EXIT.LOCK_BUSY}）。持有者：${JSON.stringify(lock.busy)}`);
+            process.exit(EXIT.LOCK_BUSY);
+        }
+        process.on('exit', () => lock.release());
+        for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(130));
     }
 }
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });

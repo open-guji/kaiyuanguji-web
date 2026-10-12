@@ -15,20 +15,22 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync, 
 import { createGzip } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs, readDetail, addEditionStats } from './lib/doc-builders.mjs';
-import { iterAllRoots } from './lib/shards.mjs';
+import { iterAllRoots, insideRoot } from './lib/shards.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
 import { derivedInputProblem } from './lib/work-fields.mjs';
 
 const LIB = new URL('./lib/', import.meta.url);
 // 影响文档内容的代码与数据：任一变动 → indexerVersion 变 → ingest 必须走全量（design §四）
-const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs'];
+const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs'];
+const SELF = new URL('./render-docs.mjs', import.meta.url);
 
 export function indexerVersion() {
     const h = createHash('sha256');
     for (const f of VERSION_FILES) h.update(f).update(readFileSync(new URL(f, LIB)));
+    h.update('render-docs.mjs').update(readFileSync(SELF));
     h.update(readFileSync(new URL('./package-lock.json', import.meta.url)));
     return h.digest('hex').slice(0, 16);
 }
@@ -73,7 +75,8 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
     const editionStats = { total: 0, present: 0, positive: 0 };
     const iter = (t) => iterAllRoots(roots, t);
     const safeDetail = (rootDir, entry) => {
-        const p = join(rootDir, entry.path || '');
+        const p = resolve(rootDir, entry.path || '');
+        if (!insideRoot(rootDir, p)) { console.warn(`⚠️  路径越出数据根目录，跳过：${entry.id} ${entry.path}`); return undefined; }
         if (!existsSync(p)) return undefined;
         try { return readDetail(p, entry.id, derivedDir); } catch { return undefined; }
     };
@@ -129,6 +132,7 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
     }
     const manifest = {
         schema: 1,
+        createdAtEpoch: Date.now(),
         createdAt: new Date().toLocaleString('sv-SE', { timeZone: 'America/Los_Angeles' }) + ' (America/Los_Angeles)',
         indexerVersion: indexerVersion(),
         commits: { draft: gitHead(draftDir), prod: gitHead(prodDir), text: gitHead(textDir), derived: derivedCommit(derivedDir) },
@@ -150,8 +154,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const draftDir = process.env.DRAFT_DIR, prodDir = process.env.PRODUCTION_DIR;
     const textDir = process.env.TEXT_DIR, derivedDir = (process.env.BOOK_INDEX_DERIVED_DIR || '').trim();
     const outDir = arg('--out');
+    const limit = arg('--limit') ? parseInt(arg('--limit')) : null;
+    if (limit !== null && !(limit > 0)) { console.error('--limit 必须是正整数'); process.exit(1); }
+    const only = arg('--only') ? arg('--only').split(',') : null;
+    if (only && only.some((i) => !['works', 'juans', 'books', 'collections', 'entities'].includes(i))) { console.error(`--only 含未知索引：${only.join(',')}`); process.exit(1); }
     if (!draftDir || !outDir) { console.error('需要 DRAFT_DIR 环境变量与 --out <dir>'); process.exit(1); }
-    if (prodDir && existsSync(prodDir)) {   // 产物准入（overview#345）：与 full-reindex 同判法
+    const needsDerived = !only || only.some((i) => i === 'works' || i === 'juans');
+    if (needsDerived && prodDir && existsSync(prodDir)) {   // 产物准入（overview#345）：与 full-reindex 同判法
         const problem = derivedInputProblem({
             schemaV2: existsSync(join(prodDir, 'build', 'build_derived.py')),
             derivedDir, dirExists: !!derivedDir && existsSync(derivedDir),
@@ -159,8 +168,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         });
         if (problem && process.env.ALLOW_NO_DERIVED !== '1') { console.error(`❌ 产物准入失败：${problem}`); process.exit(5); }
     }
-    const limit = arg('--limit') ? parseInt(arg('--limit')) : null;
-    const only = arg('--only') ? arg('--only').split(',') : null;
     const m = await renderDocs({ draftDir, prodDir, textDir, derivedDir, outDir, limit, only });
     console.log(`✅ render-docs 完成：${JSON.stringify(m.counts)}  indexerVersion=${m.indexerVersion}`);
 }

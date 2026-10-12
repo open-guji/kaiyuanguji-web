@@ -39,3 +39,27 @@ test('state 原子写留 .prev', () => {
     assert.equal(readState(`${p}.prev`).n, 1);
     assert.equal(existsSync(`${p}.tmp`), false);
 });
+
+test('锁：空的锁文件超过 60 秒视为陈旧并接管；新建的空锁仍算被占', async () => {
+    const { utimesSync } = await import('node:fs');
+    const p = join(mkdtempSync(join(tmpdir(), 'lk-')), '.lock');
+    writeFileSync(p, '');
+    assert.ok(acquireLock(p).busy);
+    const old = new Date(Date.now() - 120_000);
+    utimesSync(p, old, old);
+    const l = acquireLock(p); assert.ok(l.release); l.release();
+});
+
+test('manifest：没有 text commit 时，只入非 juans 索引仍通过', () => {
+    const m = good(); m.commits.text = null;
+    assert.deepEqual(manifestProblems(m, { requireIndexes: ['works', 'books'] }), []);
+    assert.ok(manifestProblems(m).some((x) => x.includes('commits.text')));
+});
+
+test('insideRoot：../ 越界被拒', async () => {
+    const { insideRoot } = await import('./shards.mjs');
+    const { resolve } = await import('node:path');
+    assert.ok(insideRoot('/a/b', resolve('/a/b', 'x/y.json')));
+    assert.ok(!insideRoot('/a/b', resolve('/a/b', '../c/y.json')));
+    assert.ok(!insideRoot('/a/b', resolve('/a/bc/y.json')));
+});
