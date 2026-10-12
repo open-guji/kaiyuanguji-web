@@ -199,9 +199,9 @@ test.describe('详情页版式', () => {
         const crumb = page.locator('.bim-d-main a').filter({ hasText: /^作品$/ });
         await expect(crumb).toHaveCount(1);
         const href = await crumb.getAttribute('href');
-        expect(href, `面包屑「作品」的 href 是 ${href}，应指向所属作品`).toMatch(/id=\w+/);
+        expect(href, `面包屑「作品」的 href 是 ${href}，应指向所属作品`).toMatch(/^\/item\/\w+/);
         await crumb.click();
-        await expect(page).toHaveURL(/id=\w+/, { timeout: 30_000 });
+        await expect(page).toHaveURL(/\/item\/\w+/, { timeout: 30_000 });
         expect(page.url(), '点击后应离开版本页').not.toContain(BOOK);
     });
 
