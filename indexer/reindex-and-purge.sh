@@ -13,7 +13,13 @@
 # 改用同目录的 ./reindex-limited.sh，它用 systemd-run 上 cgroup 硬限制。
 
 set -e
+set -o pipefail
 cd "$(dirname "$0")"
+
+# 退出码约定（overview#556）：0＝全好；3＝重建完成、但有仓没拉到最新（用的是陈旧本地 checkout）；
+# 4＝重建日志缺「下限闸通过」（自检环节没跑或被绕过）；其余非 0＝重建或 purge 本身失败。
+# 非 0 时 reindex-search.yml 会开卡／续评论告警，不再让 job 显示 success 把问题吞掉。
+STALE_REPOS=""
 
 # 1) Meili 凭证（MASTER_KEY 等） —— 在 /etc/meilisearch.env，chmod 600
 if [ -f /etc/meilisearch.env ]; then
@@ -55,6 +61,7 @@ pull_or_warn() {
         return 0
     fi
     echo "⚠️  [$(ts)] git pull $dir 失败——继续用本地 checkout 重建（数据可能陈旧！）" >&2
+    STALE_REPOS="$STALE_REPOS $(basename "$dir")"
     return 0
 }
 
@@ -87,11 +94,37 @@ fi
 git -C "$TEXT_DIR" log -1 --format='  HEAD: %h %ci %s'
 
 echo "[$(ts)] === full-reindex.mjs 开始 ==="
-node full-reindex.mjs "$@"
+REINDEX_LOG="$(mktemp /tmp/reindex-log.XXXXXX)"
+trap 'rm -f "$REINDEX_LOG"' EXIT
+node full-reindex.mjs "$@" 2>&1 | tee "$REINDEX_LOG"
 echo "[$(ts)] === full-reindex.mjs 完成 ==="
+
+# 兜底（overview#556）：每个 swap 生效的索引前面都该有一行「📏 下限闸通过」。
+# 缺了＝闸没跑（脚本过期、被 --allow-shrink 绕过等）；09-27 起脚本过期 10 天没人发现，就是靠这行缺失才看得出来。
+# --allow-shrink 是人明确要求缩减，那次不查。
+GATE_MISSING=0
+case " $* " in
+    *" --allow-shrink "*) ;;
+    *)
+        SWAPPED=$(grep -c "已 swap 生效" "$REINDEX_LOG" || true)
+        GATED=$(grep -c "下限闸通过" "$REINDEX_LOG" || true)
+        if [ "$SWAPPED" -gt 0 ] && [ "$GATED" -lt "$SWAPPED" ]; then
+            GATE_MISSING=1
+            echo "❌ [$(ts)] 日志里「下限闸通过」只有 $GATED 行，但有 $SWAPPED 个索引 swap 生效：下限闸没有对每个索引都跑" >&2
+        fi
+        ;;
+esac
 
 echo "[$(ts)] === purge-edgeone.mjs 开始 ==="
 node purge-edgeone.mjs
 echo "[$(ts)] === purge-edgeone.mjs 完成 ==="
 
+if [ "$GATE_MISSING" = 1 ]; then
+    echo "[$(ts)] ❌ 重建完成但下限闸行缺失，按失败处理（退出码 4）" >&2
+    exit 4
+fi
+if [ -n "$STALE_REPOS" ]; then
+    echo "[$(ts)] ⚠️ 重建完成，但这些仓没拉到最新、用的是本地陈旧 checkout：$STALE_REPOS（退出码 3）" >&2
+    exit 3
+fi
 echo "[$(ts)] ✅ all done"
