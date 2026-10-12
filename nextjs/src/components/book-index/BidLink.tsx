@@ -6,7 +6,7 @@ import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
 import { useConvert, type IndexEntry, type IndexType } from 'book-index-ui';
 import type { DataSource } from '@/lib/constants';
-import { parseItemId } from '@/lib/item-id';
+import { entryHref, parseItemId } from '@/lib/item-id';
 
 interface BidLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     id: string;
@@ -94,7 +94,7 @@ export default function BidLink({ id, children, className, showIcon = true, ...p
 
     return (
         <Link
-            href={`/book-index?id=${id}`}
+            href={entryHref(id)}
             className={`inline-flex items-center text-vermilion hover:underline font-medium decoration-dotted underline-offset-4 ${className || ''}`}
             {...props}
         >

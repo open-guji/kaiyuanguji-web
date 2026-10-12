@@ -40,3 +40,19 @@ export function bookIndexFallbackPath(id: string, params: URLSearchParams): stri
     });
     return `/book-index?${q.toString()}`;
 }
+
+/**
+ * 详情页内改状态（tab／page／juan／mode 等）后要写进地址栏的路径（overview#577）。
+ * 当前在 `/item/<id>` 下就留在 `/item/<id>?…`（`id` 在路径里，不再进查询串）；
+ * 否则（草稿 id 兜底页 `/book-index?id=`）保持旧写法，那条链路不动。
+ */
+export function detailUrl(pathname: string | null | undefined, id: string, params: URLSearchParams): string {
+    const q = new URLSearchParams(params.toString());
+    if (pathname && pathname.startsWith('/item/')) {
+        q.delete('id');
+        const s = q.toString();
+        return `/item/${encodeURIComponent(id)}${s ? `?${s}` : ''}`;
+    }
+    q.set('id', id);
+    return `/book-index?${q.toString()}`;
+}

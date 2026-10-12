@@ -143,7 +143,7 @@ function BookIndexContent() {
   // 检索结果
   return (
     <LayoutWrapper>
-      {/* 条目链接一律是 /item/<id>（真 <a href>：新标签页、复制链接都对）；组件库默认是 /book-index?id= */}
+      {/* 条目链接一律是 /item/<id>（真 <a href>：新标签页、复制链接都对）；组件库默认现也是 /item/<id> */}
       <BidUrlProvider buildUrl={entryHref}>
       <div className={`${styles.page} ${styles.withQuery}`}>
         <SearchDegradedNotice />
