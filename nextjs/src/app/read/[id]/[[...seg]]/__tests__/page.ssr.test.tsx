@@ -9,11 +9,12 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { seedCallKey } from '../../reader-seed';
 
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
+const mockGetLatest = jest.fn(async (): Promise<unknown> => ({ version: 'test' }));
 const mockGetItem = jest.fn(async (id: string, _opts?: unknown): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
 jest.mock('@/lib/server/item-data', () => ({
     getItemServer: (id: string, opts?: unknown) => mockGetItem(id, opts),
     getPromotionServer: async () => ({ status: 'absent' }),
-    getLatestServer: async () => ({ version: 'test' }),
+    getLatestServer: () => mockGetLatest(),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
 }));
@@ -70,6 +71,8 @@ function timingOf(tree: El): string {
 }
 
 beforeEach(() => {
+    mockGetLatest.mockReset();
+    mockGetLatest.mockImplementation(async () => ({ version: 'test' }));
     mockGetCurrentJson.mockReset();
     mockGetCurrentJson.mockImplementation(async (rel) => FILES[rel] ?? null);
 });
@@ -278,6 +281,111 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         it('预取的版本不存在（乱填 key）：仍是真 404，不因预取多出任何副作用', async () => {
             await expect(page(['nonesuch'])).rejects.toThrow('NEXT_NOT_FOUND');
             expect(callsOf()).toContain(`items/${ZHIZHAI}/nonesuch/index.json`);
+        });
+    });
+
+    describe('overview#345 方案 B：read-seed.json（latest.readSeed===1 才启用，失败一律回退）', () => {
+        const seedFor = (id: string, over: Record<string, unknown> = {}) => ({
+            v: 1,
+            manifest: FILES[`items/${id}/manifest.json`],
+            primary: { key: 'default', index: FILES[`items/${id}/default/index.json`] },
+            ...over,
+        });
+        const SEED_PATH = `items/${ZHIZHAI}/read-seed.json`;
+        const calls = () => mockGetCurrentJson.mock.calls.map((c) => c[0]);
+        const withSeed = (seed: unknown | Error | null, latest: unknown = { version: 'test', readSeed: 1 }) => {
+            mockGetLatest.mockImplementation(async () => latest);
+            mockGetCurrentJson.mockImplementation(async (rel) => {
+                if (rel === SEED_PATH) { if (seed instanceof Error) throw seed; return seed; }
+                return FILES[rel] ?? null;
+            });
+        };
+        /** 页面渲染结果里与读者可见内容相关的部分：首屏 initial、seed 种子 */
+        const rendered = async (seg: string[]) => {
+            const el = (await page(seg)) as { props: { initial: unknown; seed: unknown; bookTitle: unknown } };
+            return { initial: el.props.initial, seed: el.props.seed, bookTitle: el.props.bookTitle, meta: await meta(seg) };
+        };
+        const baseline = async (seg: string[]) => {
+            mockGetLatest.mockImplementation(async () => ({ version: 'test' }));
+            mockGetCurrentJson.mockImplementation(async (rel) => FILES[rel] ?? null);
+            return rendered(seg);
+        };
+
+        it('seed 命中：manifest 与主版本 index 不再单独请求，渲染结果与没有 seed 时完全一致', async () => {
+            const want = await baseline([]);
+            mockGetCurrentJson.mockClear();
+            withSeed(seedFor(ZHIZHAI));
+            const got = await rendered([]);
+            expect(got).toEqual(want);
+            expect(calls().filter((r) => r === SEED_PATH).length).toBeGreaterThanOrEqual(1);
+            expect(calls()).not.toContain(`items/${ZHIZHAI}/manifest.json`);
+            expect(calls()).not.toContain(`items/${ZHIZHAI}/default/index.json`);
+        });
+
+        it('开关没开（latest 没有 readSeed／不是 1）：不请求 seed，读法与 #371 一致', async () => {
+            for (const latest of [{ version: 'test' }, { readSeed: 0 }, { readSeed: '1' }, { readSeed: 2 }, null]) {
+                mockGetCurrentJson.mockClear();
+                withSeed(seedFor(ZHIZHAI), latest);
+                await page([]);
+                expect(calls()).not.toContain(SEED_PATH);
+                expect(calls()).toContain(`items/${ZHIZHAI}/manifest.json`);
+            }
+        });
+
+        it.each([
+            ['404（没有这个条目的 seed）', null],
+            ['取数抛错', new Error('HTTP 503')],
+            ['不是对象', 'oops'],
+            ['v 不认识', (id: string) => seedFor(id, { v: 2 })],
+            ['manifest.id 对不上', (id: string) => seedFor(id, { manifest: { ...(FILES[`items/${id}/manifest.json`] as object), id: 'other' } })],
+            ['主版本 key 不在 manifest 里', (id: string) => seedFor(id, { primary: { key: 'nonesuch', index: FILES[`items/${id}/default/index.json`] } })],
+            ['主版本 index 没有章', (id: string) => seedFor(id, { primary: { key: 'default', index: { chapters: [] } } })],
+        ])('seed 不可用（%s）：回退成原来的取数，渲染逐字一致', async (_name, bad) => {
+            const want = await baseline([]);
+            mockGetCurrentJson.mockClear();
+            withSeed(typeof bad === 'function' ? (bad as (id: string) => unknown)(ZHIZHAI) : bad);
+            const got = await rendered([]);
+            expect(got).toEqual(want);
+            expect(calls()).toContain(`items/${ZHIZHAI}/manifest.json`);
+            expect(calls()).toContain(`items/${ZHIZHAI}/default/index.json`);
+        });
+
+        it('seed 里的主版本与网站按 manifest 算出的主版本不一致：index 回退去取，结果与没有 seed 时一致', async () => {
+            const HID = 'd59f2zzzspec';
+            const manifest = { id: HID, versions: [{ key: 'default', kind: 'collated', label: '整理本' }, { key: 'wikisource', kind: 'transcription', label: '維基文庫', source_name: '維基文庫' }] };
+            const files = {
+                ...FILES,
+                [`items/${HID}/manifest.json`]: manifest,
+                [`items/${HID}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '目录型' }] },
+                [`items/${HID}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '序' }] },
+            };
+            mockGetCurrentJson.mockImplementation(async (rel) => (files as Record<string, unknown>)[rel] ?? null);
+            const want = (await page([], HID)) as { props: { seed: unknown } };
+            mockGetCurrentJson.mockClear();
+            // seed 把 default 当主版本（与网站规则不一致：有 transcription 版时目录型 default 被隐藏，主版本是 wikisource）
+            mockGetLatest.mockImplementation(async () => ({ readSeed: 1 }));
+            mockGetCurrentJson.mockImplementation(async (rel) => {
+                if (rel === `items/${HID}/read-seed.json`) return { v: 1, manifest, primary: { key: 'default', index: files[`items/${HID}/default/index.json`] } };
+                return (files as Record<string, unknown>)[rel] ?? null;
+            });
+            const got = (await page([], HID)) as { props: { seed: unknown } };
+            expect(got.props.seed).toEqual(want.props.seed);
+            expect(mockGetCurrentJson.mock.calls.map((c) => c[0])).toContain(`items/${HID}/wikisource/index.json`);
+        });
+
+        it('地址指定了别的版本（/read/<id>/wikisource）：manifest 取自 seed，该版本的 index 照旧去取，结果一致', async () => {
+            const want = await baseline(['wikisource']);
+            mockGetCurrentJson.mockClear();
+            withSeed(seedFor(ZHIZHAI));
+            const got = await rendered(['wikisource']);
+            expect(got).toEqual(want);
+            expect(calls()).not.toContain(`items/${ZHIZHAI}/manifest.json`);
+            expect(calls()).toContain(`items/${ZHIZHAI}/wikisource/index.json`);
+        });
+
+        it('seed 命中时乱填版本 key 仍是真 404', async () => {
+            withSeed(seedFor(ZHIZHAI));
+            await expect(page(['nonesuch'])).rejects.toThrow('NEXT_NOT_FOUND');
         });
     });
 });

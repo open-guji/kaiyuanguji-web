@@ -41,6 +41,7 @@ import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
 import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
 import { withSpeculation, type SpeculativeGetter } from '@/lib/server/speculative-get';
+import { isReadSeedEnabled, loadReadSeed, withReadSeed } from '@/lib/server/read-seed';
 
 // ISR（与条目页同一套，overview#322）：CDN 按 s-maxage 缓存 1 小时，构建时一条都不预渲染。
 // 有了 generateStaticParams 页面就是 SSG／ISR：此后页面里一读 searchParams 就抛 DYNAMIC_SERVER_USAGE、全 500，
@@ -77,17 +78,24 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
 
     // overview#322 方案 D：分段计时（只记录，见 lib/server/render-timing.ts）
     const timing = startRenderTiming();
-    // overview#345 PR①：单独量 latest.json 这一跳（与下面各取数共用同一份进程内缓存的请求，不多发请求；只记录）
-    timed(timing, 'latest', getLatestServer()).catch(() => { /* 失败由各取数自己处理 */ });
+    // overview#345 PR①：单独量 latest.json 这一跳（与下面各取数共用同一份进程内缓存的请求，不多发请求；只记录）。
+    // 这一跳本来就在所有取数前面（getCurrentJson 内部先 await latest.json），这里提前等它不增加延迟；失败当作没开 seed。
+    const latest = await timed(timing, 'latest', getLatestServer()).catch(() => null);
+    // overview#345 方案 B：latest.json 里 readSeed===1 时，manifest 与主版本 index 取自一个 read-seed.json（见 read-seed.ts），否则照旧。
+    const baseJson = withHopTiming(timing, getCurrentJsonServer);
+    const seedP = isReadSeedEnabled(latest) ? loadReadSeed(id, baseJson) : null;
     // overview#345 PR②：投机预取——在拿到 manifest 之前先把 index 与首章正文发出去，与 manifest 并行（见 speculative-get.ts）。
     // 猜的是「没写版本 ＝ default、没写章 ＝ 001」；猜错只是预取白发，checkReader／preloadReader 仍按 manifest 校验后的版本与章去取，结果不变。
     const fetchers: Fetchers = {
-        json: withSpeculation(withHopTiming(timing, getCurrentJsonServer)),
+        json: withSpeculation(seedP ? withReadSeed(id, baseJson, seedP) : baseJson),
         text: withSpeculation(withHopTiming(timing, getCurrentTextServer)),
     };
     const guessKey = sel.key ?? 'default';
     const guessChapter = sel.chapter ?? '001';
-    fetchers.json.prefetch(`items/${id}/${guessKey}/index.json`);
+    const prefetchIndex = () => fetchers.json.prefetch(`items/${id}/${guessKey}/index.json`);
+    // 有 seed 时 index 来自 seed，不预取（省一个请求）；seed 取不到时才补发，保住 #371 的并发读法
+    if (seedP) void seedP.then((s) => { if (!s) prefetchIndex(); });
+    else prefetchIndex();
     fetchers.text.prefetch(`items/${id}/${guessKey}/${guessChapter}.txt`, SEED_TEXT_MAX);
     const [hit, checked] = await Promise.all([
         // 只要书名与跳转信息：先走 current/（与 checkReader 共用 latest.json，冷实例上少 3 跳，overview#322 B1）

@@ -54,6 +54,7 @@ export function serverTimingValue(t: RenderTiming, now: number = Date.now()): st
  */
 export function hopName(relPath: string): string {
     const base = relPath.split('?')[0].split('/').pop() ?? '';
+    if (base === 'read-seed.json') return 'h:seed';
     if (base === 'manifest.json') return 'h:manifest';
     if (base === 'index.json') return 'h:index';
     if (base.endsWith('.json')) return 'h:chapter-json';
