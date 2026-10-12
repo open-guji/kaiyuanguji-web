@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
+import { classificationCoverageProblem, classificationL1, derivedClassification, editionCount } from './work-fields.mjs';
 
 test('分类：build 产物 _classifications 优先（zongmu），再回退分片行；详情里的旧 classification 不再读', () => {
     const detail = { classification: { l1: '舊部' }, _classifications: [{ scheme: 'x', l1: '乙部' }, { scheme: 'zongmu', l1: '史部' }] };
@@ -16,4 +16,12 @@ test('版本数：只读 _edition_count（含 0）；旧 books 数组不再数',
     assert.equal(editionCount({ books: ['a', 'b'] }), 0);
     assert.equal(editionCount({}), 0);
     assert.equal(editionCount(null), 0);
+});
+
+test('部类覆盖闸：四部都有命中才放行；任何一部 0 条／缺值都报，并点名', () => {
+    assert.equal(classificationCoverageProblem({ 經部: 900, 史部: 12000, 子部: 3000, 集部: 80000 }), null);
+    assert.match(classificationCoverageProblem({ 經部: 0, 史部: 0, 子部: 0, 集部: 0 }), /經部、史部、子部、集部/);
+    assert.match(classificationCoverageProblem({ 經部: 10, 史部: 5, 子部: 0, 集部: 1 }), /子部/);
+    assert.match(classificationCoverageProblem({ 經部: 10, 史部: 5, 子部: 3 }), /集部/);
+    assert.match(classificationCoverageProblem(undefined), /經部/);
 });

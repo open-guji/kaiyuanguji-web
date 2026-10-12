@@ -35,7 +35,7 @@ import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './lib/to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
-import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
+import { FOUR_BU, classificationCoverageProblem, classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './lib/work-fields.mjs';
 import { eraRank, sortTitle } from './lib/sort-fields.mjs';
 import { checkDocFloor } from './lib/doc-floor.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
@@ -863,6 +863,22 @@ async function checkIndexHealth(testUid, settingsKey, { checkHits = true } = {})
             );
         } catch (e) {
             failures.push(`带 classification／loss_status 的过滤失败 — ${e.message}（搜索页 v4 的部类、存佚筛选会报错）`);
+        }
+
+        // 部类覆盖闸（overview#345）：过滤能跑通不等于字段有值——四部各查一次，任何一部 0 条就是没读到部类
+        try {
+            const hitsByBu = {};
+            for (const bu of FOUR_BU) {
+                const r = await meiliRequest(
+                    'GET',
+                    `/indexes/${testUid}/search?q=&limit=0&filter=${encodeURIComponent(`is_draft = false AND classification = "${bu}"`)}`,
+                );
+                hitsByBu[bu] = r.estimatedTotalHits;
+            }
+            const problem = classificationCoverageProblem(hitsByBu);
+            if (problem) failures.push(problem);
+        } catch (e) {
+            failures.push(`部类覆盖检查失败 — ${e.message}`);
         }
     }
 

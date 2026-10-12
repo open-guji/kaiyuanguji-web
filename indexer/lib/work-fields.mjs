@@ -48,3 +48,18 @@ export function lossStatusValue(...values) {
 export function hasTextValue(entry) {
     return !!(entry && (entry.has_text || entry.has_collated));
 }
+
+/**
+ * swap 前的部类覆盖闸（overview#345，10-11 事故）：搜索机读原始仓，原始 Work 里没有 `classification`，
+ * 部类只来自 build 产物的 `_classifications`；indexer 一旦读不到它，works 全部 classification 都是空串，
+ * 但「带 classification 的过滤能跑通」那道检查（0 条也算过）发现不了——搜索页所有部类筛选恒为 0 条。
+ * 四部是总目的一级分类，任何正常数据里每一部都该有大量 works；带 is_draft=false 查到 0 条就是没读到。
+ * @param {Record<string, number|undefined>} hitsByBu  四部各自的 estimatedTotalHits
+ * @returns {string|null} 有问题返回原因；没问题 null
+ */
+export const FOUR_BU = ['經部', '史部', '子部', '集部'];
+export function classificationCoverageProblem(hitsByBu) {
+    const empty = FOUR_BU.filter((bu) => !(Number(hitsByBu?.[bu]) > 0));
+    if (empty.length === 0) return null;
+    return `新建的 works 里 ${empty.join('、')} 查到 0 条——部类字段没读到（多半 indexer 读不到 build 产物的 _classifications，搜索页所有部类筛选会恒为 0 条）`;
+}
