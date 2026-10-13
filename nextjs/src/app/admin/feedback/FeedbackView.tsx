@@ -30,12 +30,19 @@ interface FeedbackRecord {
   assignee?: string;
   claimedAt?: string;
   routedIssue?: string;
+  subtype?: string;
+  resolvedRef?: string;
 }
 
 type Patch = {
   status?: string; reply?: string; visibility?: 'public' | 'hidden'; test?: boolean;
   type?: string; duplicateOf?: string; category?: string; assignee?: string;
+  resolvedRef?: string;
 };
+
+// 与 edge-functions/api/feedback.js 的 RE_RESOLVED_REF 一致：`owner/repo@sha`（7～40 位十六进制）或 `owner/repo#n`
+const RE_RESOLVED_REF = /^[\w.-]+\/[\w.-]+(?:@[0-9a-f]{7,40}|#\d+)$/;
+const SUBTYPE_LABEL: Record<string, string> = { char: '错字', punct: '标点', name: '专名', version: '版本不对' };
 
 // 与 edge-functions/api/feedback.js 的 ALLOWED_TYPES／ALLOWED_STATUSES 保持一致
 const TYPE_OPTIONS: { value: string; label: string }[] = [
@@ -79,6 +86,11 @@ export default function FeedbackView() {
   const [dupPickerFor, setDupPickerFor] = useState('');
   const [dupTarget, setDupTarget] = useState('');
   const [savingId, setSavingId] = useState('');
+  // 「标记已改」面板（G4）：哪条在填、已改还是不采纳、回复与处理凭据草稿
+  const [doneFor, setDoneFor] = useState('');
+  const [doneMode, setDoneMode] = useState<'resolved' | 'wontfix'>('resolved');
+  const [doneReply, setDoneReply] = useState('');
+  const [doneRef, setDoneRef] = useState('');
 
   async function load() {
     setLoading(true);
@@ -97,7 +109,7 @@ export default function FeedbackView() {
   }
   useEffect(() => { load(); }, []);
 
-  async function update(id: string, patch: Patch) {
+  async function update(id: string, patch: Patch): Promise<boolean> {
     setSavingId(id);
     try {
       const res = await fetch('/api/feedback', {
@@ -107,7 +119,7 @@ export default function FeedbackView() {
         body: JSON.stringify({ action: 'update', id, ...patch }),
       });
       const data = await res.json();
-      if (!data.success) { alert(data.error || '操作失败'); return; }
+      if (!data.success) { alert(data.error || '操作失败'); return false; }
       setItems((prev) => prev.map((it) => {
         if (it.id !== id) return it;
         const next = { ...it, ...patch };
@@ -122,11 +134,36 @@ export default function FeedbackView() {
         setDrafts((d) => { const n = { ...d }; delete n[id]; return n; });
       }
       if (patch.duplicateOf !== undefined) { setDupPickerFor(''); setDupTarget(''); }
+      return true;
     } catch {
       alert('网络错误');
+      return false;
     } finally {
       setSavingId('');
     }
+  }
+
+  function openDone(it: FeedbackRecord) {
+    setDoneFor(it.id);
+    setDoneMode('resolved');
+    setDoneReply(it.reply || '');
+    setDoneRef(it.resolvedRef || '');
+  }
+
+  /** 缺回复、已改缺处理凭据、凭据格式不对时返回错误文案；通过返回 '' */
+  function doneError(): string {
+    if (!doneReply.trim()) return doneMode === 'wontfix' ? '不采纳须写理由（会公开显示）' : '请写一句给读者看的回复（会公开显示）';
+    const ref = doneRef.trim();
+    if (doneMode === 'resolved' && !ref) return '请填处理凭据：owner/repo@提交号 或 owner/repo#编号';
+    if (ref && !RE_RESOLVED_REF.test(ref)) return '处理凭据格式应为 owner/repo@提交号（7～40 位十六进制）或 owner/repo#编号';
+    return '';
+  }
+
+  async function submitDone(id: string) {
+    if (doneError()) return;
+    const ref = doneRef.trim();
+    const ok = await update(id, { status: doneMode, reply: doneReply.trim(), ...(ref ? { resolvedRef: ref } : {}) });
+    if (ok) setDoneFor('');
   }
 
   const real = useMemo(() => items.filter((i) => !i.test), [items]);
@@ -322,6 +359,15 @@ export default function FeedbackView() {
                         <span className="bg-gray-100 text-gray-600 rounded px-2 text-xs font-mono">重复于 {it.duplicateOf}</span>
                       )}
                       <span className="ml-auto text-gray-400">{fmtTime(it.createdAt)}</span>
+                      {!isContact && it.status !== 'resolved' && it.status !== 'wontfix' && it.status !== 'duplicate' && (
+                        <button
+                          onClick={() => openDone(it)}
+                          disabled={busy}
+                          className="border rounded px-2.5 py-0.5 text-xs text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
+                        >
+                          标记已改
+                        </button>
+                      )}
                       {!isContact && (
                         <button
                           onClick={() => update(it.id, { visibility: hidden ? 'public' : 'hidden' })}
@@ -353,6 +399,47 @@ export default function FeedbackView() {
                       </div>
                     )}
 
+                    {doneFor === it.id && (
+                      <div className="mb-2 space-y-1.5 bg-gray-50 border rounded p-2 text-xs" data-testid="mark-done">
+                        <div className="flex items-center gap-3">
+                          <label className="inline-flex items-center gap-1">
+                            <input type="radio" name={`done-${it.id}`} checked={doneMode === 'resolved'} onChange={() => setDoneMode('resolved')} />
+                            已改
+                          </label>
+                          <label className="inline-flex items-center gap-1">
+                            <input type="radio" name={`done-${it.id}`} checked={doneMode === 'wontfix'} onChange={() => setDoneMode('wontfix')} />
+                            不采纳
+                          </label>
+                        </div>
+                        <textarea
+                          aria-label="给读者的回复"
+                          className="w-full border rounded p-2 text-sm"
+                          rows={2}
+                          placeholder={doneMode === 'wontfix' ? '不采纳的理由（会公开显示）' : '给读者看的一句话，如“已更正，下次发布生效”（会公开显示）'}
+                          value={doneReply}
+                          onChange={(e) => setDoneReply(e.target.value)}
+                        />
+                        <input
+                          aria-label="处理凭据"
+                          className="w-full border rounded px-2 py-1 font-mono"
+                          placeholder={doneMode === 'resolved' ? 'open-guji/book-text@abc1234 或 open-guji-core/overview#605（内部可见，不公开）' : '处理凭据（可选，内部可见）'}
+                          value={doneRef}
+                          onChange={(e) => setDoneRef(e.target.value)}
+                        />
+                        {doneError() && (doneReply || doneRef) && <p className="text-red-700">{doneError()}</p>}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => submitDone(it.id)}
+                            disabled={busy || !!doneError()}
+                            className="bg-black text-white rounded px-3 py-1 disabled:opacity-50"
+                          >
+                            确定
+                          </button>
+                          <button onClick={() => setDoneFor('')} className="text-gray-500">取消</button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="whitespace-pre-wrap break-words mb-1.5">{it.content}</div>
                     <div className="text-gray-500 break-all">
                       {it.pageUrl && (
@@ -363,6 +450,8 @@ export default function FeedbackView() {
                             : <span>{it.pageUrl}（外部地址，不渲染为链接）</span>}
                         </div>
                       )}
+                      {it.subtype && it.subtype !== 'unspecified' && SUBTYPE_LABEL[it.subtype] && <div>问题类型：{SUBTYPE_LABEL[it.subtype]}</div>}
+                      {it.resolvedRef && <div>处理凭据（仅站方可见）：<span className="font-mono text-gray-800">{it.resolvedRef}</span></div>}
                       {it.resourceId && <div>条目：<span className="font-mono">{it.resourceId}</span></div>}
                       {it.contact && <div>联系方式（仅站方可见）：<span className="font-mono text-gray-800">{it.contact}</span></div>}
                     </div>

@@ -189,3 +189,58 @@ describe('管理页顶部 SLA 统计（#605 步 7）', () => {
         await waitFor(() => expect(screen.getByTestId('sla-stats')).toHaveTextContent('超 24h 未认领 1'));
     });
 });
+
+describe('标记已改（G4）', () => {
+    const card = () => screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+    const posted = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const calls = ((global as any).fetch as jest.Mock).mock.calls.filter((c) => c[1]?.method === 'POST');
+        return calls.map((c) => JSON.parse(String(c[1].body)));
+    };
+    async function open() {
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        fireEvent.click(within(card()).getByRole('button', { name: '标记已改' }));
+        return within(screen.getByTestId('mark-done'));
+    }
+
+    it('缺回复或缺处理凭据时「确定」不可点；填对格式后一次回写 status／reply／resolvedRef', async () => {
+        const panel = await open();
+        const ok = panel.getByRole('button', { name: '确定' });
+        expect(ok).toBeDisabled();
+        fireEvent.change(panel.getByLabelText('给读者的回复'), { target: { value: '已更正' } });
+        expect(ok).toBeDisabled(); // 已改必须有凭据
+        fireEvent.change(panel.getByLabelText('处理凭据'), { target: { value: 'not a ref' } });
+        expect(ok).toBeDisabled();
+        expect(panel.getByText(/处理凭据格式应为/)).toBeInTheDocument();
+        fireEvent.change(panel.getByLabelText('处理凭据'), { target: { value: 'open-guji/book-text@abc1234' } });
+        expect(ok).toBeEnabled();
+        fireEvent.click(ok);
+        await waitFor(() => expect(posted()).toHaveLength(1));
+        expect(posted()[0]).toMatchObject({ action: 'update', id: 'fb_1_a', status: 'resolved', reply: '已更正', resolvedRef: 'open-guji/book-text@abc1234' });
+        await waitFor(() => expect(screen.queryByTestId('mark-done')).not.toBeInTheDocument());
+        expect(screen.getByText('open-guji/book-text@abc1234')).toBeInTheDocument();
+    });
+
+    it('不采纳：理由必填，凭据可不填，回写 status=wontfix 且不带 resolvedRef', async () => {
+        const panel = await open();
+        fireEvent.click(panel.getByRole('radio', { name: '不采纳' }));
+        const ok = panel.getByRole('button', { name: '确定' });
+        expect(ok).toBeDisabled();
+        fireEvent.change(panel.getByLabelText('给读者的回复'), { target: { value: '原书如此，不是错字' } });
+        expect(ok).toBeEnabled();
+        fireEvent.click(ok);
+        await waitFor(() => expect(posted()).toHaveLength(1));
+        expect(posted()[0]).toMatchObject({ status: 'wontfix', reply: '原书如此，不是错字' });
+        expect(posted()[0]).not.toHaveProperty('resolvedRef');
+    });
+
+    it('取消不发请求；已结的条目没有「标记已改」；contact 没有', async () => {
+        const panel = await open();
+        fireEvent.click(panel.getByRole('button', { name: '取消' }));
+        expect(screen.queryByTestId('mark-done')).not.toBeInTheDocument();
+        expect(posted()).toHaveLength(0);
+        fireEvent.click(screen.getByText(/联系我们/));
+        expect(screen.queryByRole('button', { name: '标记已改' })).not.toBeInTheDocument();
+    });
+});
