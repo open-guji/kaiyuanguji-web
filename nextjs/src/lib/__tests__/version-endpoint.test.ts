@@ -204,11 +204,103 @@ describe('GET /api/version', () => {
       const p = v.buildVersionBody(info, f);
       await Promise.resolve();
       expect(started.sort()).toEqual(['latest', 'web']);
-      jest.advanceTimersByTime(3100);
+      // 8 秒超时＋重试一次：两轮都卡住才算失败
+      await jest.advanceTimersByTimeAsync(8100);
+      await jest.advanceTimersByTimeAsync(8100);
       const body = await p;
       expect(body.webPointer).toBeNull();
       expect(body.dataError).toMatch(/timeout/);
+      expect(started.filter((x) => x === 'web')).toHaveLength(2);
     } finally { jest.useRealTimers(); }
+  });
+
+  describe('web.json 读取失败 vs 确实不存在（overview#607）', () => {
+    const MARKED = { ...POINTER, codePointer: 'web.json' };
+    const OTHER = 'b'.repeat(40);
+    const res = (json: unknown) => ({ ok: true, status: 200, json: async () => json } as unknown as Response);
+    const code = (status: number) => ({ ok: false, status } as unknown as Response);
+
+    it('成功：codeSource=web.json，比对 web.json', async () => {
+      const f = async (url: string) => res(url.includes('/web.json') ? { webCommitId: SHA } : MARKED);
+      const body = await v.buildVersionBody(info, f);
+      expect(body.codeSource).toBe('web.json');
+      expect(body.webMatchesPointer).toBe(true);
+      expect(body.webPointerError).toBeUndefined();
+    });
+
+    it('404（确实不存在）：走原来的「缺失，退回」latest.json 比对', async () => {
+      const f = async (url: string) => (url.includes('/web.json') ? code(404) : res({ ...MARKED, webCommitId: SHA }));
+      const calls: string[] = [];
+      const body = await v.buildVersionBody(info, async (u: string) => { calls.push(u); return f(u); });
+      expect(body.codeSource).toBe('latest.json（web.json 缺失，退回）');
+      expect(body.webMatchesPointer).toBe(true);
+      expect(body.webPointerError).toBeUndefined();
+      expect(calls.filter((u) => u.includes('/web.json'))).toHaveLength(1); // 404 不重试
+    });
+
+    it('超时：codeSource 写读取失败（超时），webMatchesPointer=null，不退回比对出 false', async () => {
+      jest.useFakeTimers();
+      try {
+        const f = (url: string) => (url.includes('/web.json')
+          ? new Promise<Response>(() => { /* 卡住 */ })
+          : Promise.resolve(res({ ...MARKED, webCommitId: OTHER })));
+        const p = v.buildVersionBody(info, f);
+        await jest.advanceTimersByTimeAsync(8100);
+        await jest.advanceTimersByTimeAsync(8100);
+        const body = await p;
+        expect(body.codeSource).toBe('web.json 读取失败（超时）');
+        expect(body.webMatchesPointer).toBeNull();
+        expect(body.webPointer).toBeNull();
+        expect(body.webPointerError).toBe('web.json 读取失败（超时）');
+        expect(body.dataError).toBeUndefined();
+      } finally { jest.useRealTimers(); }
+    });
+
+    it('5xx 先失败后成功：重试一次就读到，不报失败', async () => {
+      let n = 0;
+      const f = async (url: string) => {
+        if (!url.includes('/web.json')) return res(MARKED);
+        n += 1;
+        return n === 1 ? code(503) : res({ webCommitId: SHA });
+      };
+      const body = await v.buildVersionBody(info, f);
+      expect(n).toBe(2);
+      expect(body.codeSource).toBe('web.json');
+      expect(body.webMatchesPointer).toBe(true);
+    });
+
+    it('5xx 两次都失败：读取失败（HTTP 503），webMatchesPointer=null', async () => {
+      const f = async (url: string) => (url.includes('/web.json') ? code(503) : res(MARKED));
+      const body = await v.buildVersionBody(info, f);
+      expect(body.codeSource).toBe('web.json 读取失败（HTTP 503）');
+      expect(body.webMatchesPointer).toBeNull();
+    });
+
+    it('没标 codePointer 时 web.json 失败不影响比对，只多一个 webPointerError', async () => {
+      const f = async (url: string) => (url.includes('/web.json') ? code(500) : res(POINTER));
+      const body = await v.buildVersionBody(info, f);
+      expect(body.codeSource).toBe('latest.json');
+      expect(body.webMatchesPointer).toBe(true);
+      expect(body.webPointerError).toBe('web.json 读取失败（HTTP 500）');
+    });
+
+    it('latest.json 同样重试一次：先超时后成功', async () => {
+      jest.useFakeTimers();
+      try {
+        let n = 0;
+        const f = (url: string) => {
+          if (url.includes('/web.json')) return Promise.resolve(code(404));
+          n += 1;
+          return n === 1 ? new Promise<Response>(() => { /* 第一次卡住 */ }) : Promise.resolve(res(POINTER));
+        };
+        const p = v.buildVersionBody(info, f);
+        await jest.advanceTimersByTimeAsync(8100);
+        const body = await p;
+        expect(n).toBe(2);
+        expect(body.data).toBe('501935e5be70');
+        expect(body.dataError).toBeUndefined();
+      } finally { jest.useRealTimers(); }
+    });
   });
 
   it('仓库里未构建的那份：web=null、target=unknown、带说明', async () => {

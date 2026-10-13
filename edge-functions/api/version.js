@@ -19,7 +19,9 @@ const BUILD_INFO = null;
 // __BUILD_INFO_END__
 
 const DEFAULT_DATA_BASE = 'https://data.kaiyuanguji.com';
-const POINTER_TIMEOUT_MS = 3000;
+// COS 偶尔慢，3 秒会把「慢」报成「缺」；放宽到 8 秒，失败（超时／网络错／非 404 的非 2xx）重试一次（overview#607）
+const POINTER_TIMEOUT_MS = 8000;
+const POINTER_ATTEMPTS = 2;
 // 数据指针里原样转出的字段（都是公开的 commit／时间，latest.json 本身就公开可读）
 const POINTER_FIELDS = ['commitId', 'fullCommitId', 'productionCommitId', 'textCommitId', 'commitDate', 'bundleDate', 'webCommitId', 'codePointer'];
 
@@ -36,45 +38,56 @@ function dataBaseOf(info) {
   return /^https:\/\/data\.kaiyuanguji\.com(\/staging)?$/.test(b) ? b : DEFAULT_DATA_BASE;
 }
 
-async function readPointer(base, fetchImpl) {
-  const url = `${base}/latest.json?cb=${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+// 读一个指针 JSON，一次尝试：{ ok, json } | { status } | { error }；status 是服务器明确回的非 2xx（404 就是「确实不存在」）
+async function tryReadJson(url, fetchImpl) {
   let timer;
   try {
     const res = await Promise.race([
       fetchImpl(url, { cache: 'no-store' }),
       new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), POINTER_TIMEOUT_MS); }),
     ]);
-    if (!res || !res.ok) return { error: `latest.json HTTP ${res ? res.status : '?'}` };
-    const j = await res.json();
-    const out = {};
-    for (const k of POINTER_FIELDS) if (typeof j[k] === 'string') out[k] = j[k];
-    return { pointer: out };
+    if (!res || !res.ok) return { status: res ? res.status : 0 };
+    return { json: await res.json() };
   } catch (e) {
-    return { error: `latest.json 读取失败：${e && e.message ? e.message : e}` };
+    return { error: e && e.message ? e.message : String(e) };
   } finally {
     clearTimeout(timer);
   }
 }
 
-// 代码指针 web.json：{ webCommitId, deployedAt, runId }；读不到（旧站点、还没写过）返回 null，不算错误
-async function readWebPointer(base, fetchImpl) {
-  const url = `${base}/web.json?cb=${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-  let timer;
-  try {
-    const res = await Promise.race([
-      fetchImpl(url, { cache: 'no-store' }),
-      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), POINTER_TIMEOUT_MS); }),
-    ]);
-    if (!res || !res.ok) return null;
-    const j = await res.json();
-    const out = {};
-    for (const k of ['webCommitId', 'deployedAt', 'runId']) if (typeof j[k] === 'string') out[k] = j[k];
-    return /^[0-9a-f]{40}$/.test(out.webCommitId || '') ? out : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+// 失败重试一次再下结论；404 是明确的「不存在」，不重试
+async function readJsonWithRetry(base, name, fetchImpl) {
+  let last;
+  for (let n = 0; n < POINTER_ATTEMPTS; n += 1) {
+    // 每次换一个 cache-buster，别让重试撞上同一个坏缓存
+    const url = `${base}/${name}?cb=${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+    last = await tryReadJson(url, fetchImpl);
+    if (last.json !== undefined || last.status === 404) return last;
   }
+  return last;
+}
+
+async function readPointer(base, fetchImpl) {
+  const r = await readJsonWithRetry(base, 'latest.json', fetchImpl);
+  if (r.error) return { error: `latest.json 读取失败：${r.error}` };
+  if (r.status !== undefined) return { error: `latest.json HTTP ${r.status || '?'}` };
+  const out = {};
+  for (const k of POINTER_FIELDS) if (typeof r.json[k] === 'string') out[k] = r.json[k];
+  return { pointer: out };
+}
+
+// 代码指针 web.json：{ webCommitId, deployedAt, runId }
+//   { pointer }  读到了（内容不合格式的当没有，pointer = null）
+//   { pointer: null }  确实不存在（404，旧站点、还没写过），不算错误
+//   { failed }  读失败（超时／网络错／5xx 等）——和「不存在」分开，别因为 COS 慢就退回 latest.json 比出假的 false
+async function readWebPointer(base, fetchImpl) {
+  const r = await readJsonWithRetry(base, 'web.json', fetchImpl);
+  if (r.error) return { failed: r.error === 'timeout' ? '超时' : r.error };
+  if (r.status === 404) return { pointer: null };
+  if (r.status !== undefined) return { failed: `HTTP ${r.status || '?'}` };
+  const out = {};
+  for (const k of ['webCommitId', 'deployedAt', 'runId']) if (typeof r.json[k] === 'string') out[k] = r.json[k];
+  return { pointer: /^[0-9a-f]{40}$/.test(out.webCommitId || '') ? out : null };
 }
 
 // 「线上是哪一版代码」的读法（overview#470 P1 方案 A）：latest.json 带 codePointer:"web.json" 标记（开关打开后的 data.yml 上传才写）
@@ -93,10 +106,12 @@ function resolveCodeCommit(latest, web) {
 /** 纯函数，便于测试：info = BUILD_INFO，fetchImpl = fetch */
 export async function buildVersionBody(info, fetchImpl) {
   const base = dataBaseOf(info);
-  // 两个指针同时读，超时不会叠加成六秒
-  const [{ pointer, error }, webPointer] = await Promise.all([readPointer(base, fetchImpl), readWebPointer(base, fetchImpl)]);
+  // 两个指针同时读，超时不会叠加
+  const [{ pointer, error }, { pointer: webPointer, failed: webFailed }] = await Promise.all([readPointer(base, fetchImpl), readWebPointer(base, fetchImpl)]);
   const resolved = resolveCodeCommit(pointer, webPointer);
-  const committed = pointer ? resolved.commit : '';
+  // 标了 web.json 为准却读失败（不是 404）：不退回 latest.json 比对，webMatchesPointer 给 null，codeSource 说清楚
+  const webReadFailed = !!(pointer && webFailed && pointer.codePointer === 'web.json');
+  const committed = pointer && !webReadFailed ? resolved.commit : '';
   const body = {
     web: info && info.web ? info.web : null,
     bimUi: info && info.bimUi ? info.bimUi : null,
@@ -109,11 +124,12 @@ export async function buildVersionBody(info, fetchImpl) {
     webMatchesPointer: committed && info && info.web ? committed === info.web : null,
     // overview#470 P1：代码指针 web.json（部署成功后写）；codeSource 说明上面比对用的是哪个指针
     webPointer: webPointer || null,
-    codeSource: pointer ? resolved.source : null,
+    codeSource: pointer ? (webReadFailed ? `web.json 读取失败（${webFailed}）` : resolved.source) : null,
     now: new Date().toISOString(),
   };
   if (!info) body.note = '构建时未写入版本信息（本地／旧产物，或构建不在 CI 里）';
   if (error) body.dataError = error;
+  if (webFailed) body.webPointerError = `web.json 读取失败（${webFailed}）`;
   return body;
 }
 
