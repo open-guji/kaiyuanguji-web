@@ -35,7 +35,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import { editionCoverageProblem, derivedInputProblem } from './lib/work-fields.mjs';
 import { createMeiliOps, SETTINGS } from './lib/meili-ops.mjs';
 import { iterAllRoots as iterAllRootsIn } from './lib/shards.mjs';
-import { isPromotedTombstone } from './lib/tombstone.mjs';
+import { isTombstone } from './lib/tombstone.mjs';
 import { EXIT, acquireLock } from './lib/ingest-support.mjs';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs as buildJuanDocsIn, readDetail as readDetailIn, addEditionStats } from './lib/doc-builders.mjs';
 
@@ -172,7 +172,7 @@ async function main() {
                 let detail;
                 try { detail = readDetail(detailPath, entry.id); } catch { continue; }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
-                if (isPromotedTombstone(detail)) continue; // 产物墓碑字段是 promoted_to，旧的是 _promoted_to，两个都认
+                if (isTombstone(detail)) continue; // 升格墓碑字段是 promoted_to，旧的是 _promoted_to，两个都认；并条墓碑是 merged_into
                 if (doWorks) { addEditionStats(EDITION_STATS, detail, isDraft); yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) }; }
                 // 不再看 has_collated 标记（它来自数据仓、会滞后）：有没有整理本版本以文本仓的 manifest.json 为准
                 if (doJuans) {
@@ -194,7 +194,7 @@ async function main() {
                 const detailPath = join(rootDir, entry.path || '');
                 let detail = null;
                 try { detail = existsSync(detailPath) ? readDetail(detailPath, entry.id) : null; } catch { detail = null; }
-                if (isPromotedTombstone(detail)) continue;
+                if (isTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(entry, { workId, kinds: ['self_collated'] })) yield { kind: 'juan', doc: j };
             }
@@ -284,7 +284,7 @@ async function main() {
                     }
                 }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）
-                if (isPromotedTombstone(detail)) continue;
+                if (isTombstone(detail)) continue;
                 yield buildBookDoc(entry, detail, isDraft);
             }
         }
