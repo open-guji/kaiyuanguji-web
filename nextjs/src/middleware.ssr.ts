@@ -30,7 +30,7 @@ import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { lookupItemRedirectTraced } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
-import { bookIndexFallbackPath, cleanItemSearch } from '@/lib/item-query';
+import { bookIndexFallbackPath, cleanItemSearch, ITEM_QUERY_WHITELIST } from '@/lib/item-query';
 import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { legacyReaderTarget, parseLegacyReaderParams, parseLegacyTab, type LegacyReaderRef } from '@/lib/legacy-reader';
 import { getManifest } from '@/lib/server/reader-check';
@@ -128,13 +128,18 @@ function itemQueryRedirect(req: NextRequest): NextResponse {
 function bookIndexRedirect(req: NextRequest): NextResponse {
     if (isInSite(req)) return NextResponse.next();
     const params = req.nextUrl.searchParams;
-    const keys = Array.from(params.keys());
-    if (keys.length !== 1 || keys[0] !== 'id') return NextResponse.next();
     const id = params.get('id') ?? '';
     if (parseItemId(id)?.status !== 'official') return NextResponse.next();
+    // 只有 id 以外的参数全是详情状态白名单（tab／juan／page 等）时才带过去；有 q 等别的参数说明是列表页用法，放过
+    const rest = new URLSearchParams();
+    for (const [k, v] of params) {
+        if (k === 'id') continue;
+        if (!ITEM_QUERY_WHITELIST.includes(k)) return NextResponse.next();
+        rest.append(k, v);
+    }
     const url = req.nextUrl.clone();
     url.pathname = `/item/${id}`;
-    url.search = '';
+    url.search = rest.toString();
     return NextResponse.redirect(url, 308);
 }
 

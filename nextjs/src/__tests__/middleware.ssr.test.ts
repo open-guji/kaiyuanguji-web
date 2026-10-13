@@ -43,9 +43,13 @@ describe('middleware.ssr：/book-index', () => {
             location: 'https://staging.kaiyuanguji.com/item/d59f20aowb9c',
         });
     });
+    it('带详情状态参数的旧链接（tab／juan／page）→ 308 /item/<id>?同参数', async () => {
+        expect((await run('/book-index?id=d59f20aowb9c&tab=lineage')).location).toBe('https://staging.kaiyuanguji.com/item/d59f20aowb9c?tab=lineage');
+        expect((await run('/book-index?id=d59f20aowb9c&tab=info&page=3')).location).toBe('https://staging.kaiyuanguji.com/item/d59f20aowb9c?tab=info&page=3');
+    });
     it.each([
         '/book-index',
-        '/book-index?id=d59f20aowb9c&tab=lineage', // 详情组件自己的 URL 同步，改写会丢 tab
+        '/book-index?id=d59f20aowb9c&q=史記', // 带列表参数：不是详情链接，放过
         '/book-index?id=1evgpgqsis9hc', // 草稿 id：交给客户端查升格表
         '/book-index?id=1evgpgqsis9hc&redirected_from=x',
         '/book-index?id=bad..id',
@@ -333,12 +337,13 @@ describe('middleware.ssr：旧阅读入口 → 新路径式地址（N5b；overvi
         mockGetCurrentJson.mockRejectedValue(new Error('HTTP 502'));
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
         const r = await run(`/book-index?id=${ZHIZHAI}&tab=collated`);
-        expect(r.location).toBeNull();
+        expect(r.location).toBe(`${SITE}/item/${ZHIZHAI}?tab=collated`); // 阅读换算失败，仍只做 /book-index → /item 这一步，余下交给条目页
         warn.mockRestore();
     });
 
     it('条目类型没有阅读页（人物）、别的 tab、升格横幅往返：不动', async () => {
-        for (const path of ['/book-index?id=hixhd2h9bk4b&tab=fulltext', `/item/${ZHIZHAI}?tab=lineage`, `/item/${ZHIZHAI}?tab=fulltext&redirected_from=x`]) {
+        expect((await run('/book-index?id=hixhd2h9bk4b&tab=fulltext')).location).toBe(`${SITE}/item/hixhd2h9bk4b?tab=fulltext`); // 只做 /book-index → /item
+        for (const path of [`/item/${ZHIZHAI}?tab=lineage`, `/item/${ZHIZHAI}?tab=fulltext&redirected_from=x`]) {
             expect((await run(path)).status).toBe(200);
         }
         expect(mockGetCurrentJson).not.toHaveBeenCalled();
