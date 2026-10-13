@@ -1,5 +1,5 @@
 /**
- * 校对层数据（overview#594 D 块 D1.1）：CV 导出的 `proof.json`（`guji-proof/0.1`）→ 阅读器按格位 key 取用的只读视图。
+ * 校对层数据（overview#605 D 块 D1.1）：CV 导出的 `proof.json`（`guji-proof/0.1`）→ 阅读器按格位 key 取用的只读视图。
  *
  * 约定（Mila 在 #594 对表，Ella 写入 D 块设计 §二）：
  *   - 格位坐标用 `a`＝`页:列:格[a|b]`，与阅读器字 id（`cell.a`）同一坐标；**不用 `id`**（字框稳定 id，与坐标无关）；
