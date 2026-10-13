@@ -170,6 +170,23 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         expect(Object.values(calls)).toEqual([MANIFEST, FILES[`items/${ZHIZHAI}/default/index.json`], { md: '卷二正文', json: { title: '史錄', sections: [] } }]);
     });
 
+    it('服务端直出首章正文与上下章真链接（overview#581 方案 A 第 3 项）：lead 里是本章 md 的段落，不含别的章', async () => {
+        const el = (await page(['002'])) as { props: { lead?: { paragraphs: string[]; truncated: boolean; selfHref: string; prev?: { href: string; label: string }; next?: unknown; itemHref: string } } };
+        expect(el.props.lead).toMatchObject({
+            paragraphs: ['卷二正文'],
+            truncated: false,
+            selfHref: `/read/${ZHIZHAI}/002`,
+            prev: { href: `/read/${ZHIZHAI}/001`, label: '經錄' },
+            itemHref: `/item/${ZHIZHAI}`,
+        });
+        expect(el.props.lead?.next).toBeUndefined(); // 最后一章没有下一章
+    });
+
+    it('本章没有正文（首屏数据没有 md）：不出 lead，回落到现状', async () => {
+        const el = (await page(['001'])) as { props: { lead?: unknown } };
+        expect(el.props.lead).toBeUndefined();
+    });
+
     it('没给章号：落实到第一章交给阅读器；其他版本带 key', async () => {
         const a = (await page([])) as { props: { initial: unknown } };
         expect(a.props.initial).toEqual({ key: undefined, chapter: '001' });
