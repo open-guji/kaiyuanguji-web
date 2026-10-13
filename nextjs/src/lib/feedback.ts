@@ -1,7 +1,7 @@
 /**
  * 反馈（N7，overview#260）：提交体的拼装与提交。纯函数，弹窗、测试共用。
  *
- * 后端 edge-functions/api/feedback.js 不改，只收 type／content／contact／pageUrl／resourceId。
+ * 后端 edge-functions/api/feedback.js 收 type／content／contact／pageUrl／resourceId，另可选 subtype（G1）。
  * 页面上下文按用户定的方案塞进这几个现成字段：
  *   - 条目 id → resourceId（只认合法条目 id，其余给空）；
  *   - 章号 → pageUrl（阅读页地址本来就带章号 /read/<id>/<章>，提交时取当前地址即可）；
@@ -33,6 +33,15 @@ export const FEEDBACK_TYPES: FeedbackTypeOption[] = (['bug', 'resource', 'sugges
 });
 
 /** 与后端的上限一致：正文 2000、联系方式 200 */
+/** 「内容有误」里读者可选的问题类型（后端 SUBTYPES 去掉 unspecified；不选＝unspecified，不上送）。G2 */
+export type FeedbackSubtype = 'char' | 'punct' | 'name' | 'version';
+export const FEEDBACK_SUBTYPES: { value: FeedbackSubtype; labelKey: SiteMessageKey }[] = [
+    { value: 'char', labelKey: 'feedback.subtypes.char' },
+    { value: 'punct', labelKey: 'feedback.subtypes.punct' },
+    { value: 'name', labelKey: 'feedback.subtypes.name' },
+    { value: 'version', labelKey: 'feedback.subtypes.version' },
+];
+
 export const CONTENT_MAX = 2000;
 export const CONTACT_MAX = 200;
 /** 带进正文的选中文字最多这么多字，超出截断加「…」 */
@@ -93,6 +102,7 @@ export interface FeedbackInput {
     contact?: string;
     context?: FeedbackContext | null;
     pageUrl: string;
+    subtype?: FeedbackSubtype;
 }
 
 export interface FeedbackBody {
@@ -101,6 +111,7 @@ export interface FeedbackBody {
     contact?: string;
     pageUrl: string;
     resourceId: string;
+    subtype?: FeedbackSubtype;
 }
 
 /** 锚点只认阅读器条目锚点 `rd-e-N`，其余丢掉；换掉地址里原有的 # 部分 */
@@ -109,7 +120,7 @@ function withAnchor(pageUrl: string, anchor: string | undefined): string {
     return `${pageUrl.split('#')[0]}#${anchor}`;
 }
 
-export function buildFeedbackBody({ type, text, contact, context, pageUrl }: FeedbackInput): FeedbackBody {
+export function buildFeedbackBody({ type, text, contact, context, pageUrl, subtype }: FeedbackInput): FeedbackBody {
     const body: FeedbackBody = {
         type,
         content: quotePrefix(context?.quote) + text.trim(),
@@ -118,6 +129,7 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl }: Fee
     };
     const c = contact?.trim().slice(0, CONTACT_MAX);
     if (c) body.contact = c;
+    if (subtype) body.subtype = subtype;
     return body;
 }
 

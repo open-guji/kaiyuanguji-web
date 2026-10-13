@@ -267,3 +267,54 @@ describe('SelectionReport（阅读页选字「报错」）', () => {
         await waitFor(() => expect(screen.getByRole('button', { name: '已复制' })).toBeInTheDocument());
     });
 });
+
+describe('FeedbackDialog：可选「问题类型」（G2）', () => {
+    const CTX = { resourceId: WORK, label: '史记 · 整理本 · 卷1', quote: '高堂生所传' };
+
+    it('选字提交的「内容有误」里出现问题类型，默认都不选', () => {
+        render(<FeedbackDialog initialContext={CTX} initialType="bug" onClose={() => {}} />);
+        const group = screen.getByRole('group', { name: '问题类型（选填）' });
+        const btns = within(group).getAllByRole('button');
+        expect(btns.map((b) => b.textContent)).toEqual(['错字', '标点', '专名', '版本不对']);
+        btns.forEach((b) => expect(b).toHaveAttribute('aria-pressed', 'false'));
+    });
+
+    it('没有选中文字，或类型不是「内容有误」时不出现', () => {
+        const { rerender } = render(<FeedbackDialog initialContext={null} initialType="bug" onClose={() => {}} />);
+        expect(screen.queryByRole('group', { name: '问题类型（选填）' })).not.toBeInTheDocument();
+        rerender(<FeedbackDialog initialContext={CTX} initialType="suggestion" onClose={() => {}} />);
+        expect(screen.queryByRole('group', { name: '问题类型（选填）' })).not.toBeInTheDocument();
+    });
+
+    it('不选＝提交体里没有 subtype', async () => {
+        const fetchImpl = okFetch();
+        render(<FeedbackDialog initialContext={CTX} initialType="bug" onClose={() => {}} fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        fireEvent.change(screen.getByRole('textbox', { name: '反馈内容' }), { target: { value: '应作某' } });
+        await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交' })); });
+        expect(sentBody(fetchImpl)).not.toHaveProperty('subtype');
+    });
+
+    it('选后提交体带 subtype；再点一次取消', async () => {
+        const fetchImpl = okFetch();
+        render(<FeedbackDialog initialContext={CTX} initialType="bug" onClose={() => {}} fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        const btn = screen.getByRole('button', { name: '专名' });
+        fireEvent.click(btn);
+        expect(btn).toHaveAttribute('aria-pressed', 'true');
+        fireEvent.click(btn);
+        expect(btn).toHaveAttribute('aria-pressed', 'false');
+        fireEvent.click(btn);
+        fireEvent.change(screen.getByRole('textbox', { name: '反馈内容' }), { target: { value: '人名不对' } });
+        await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交' })); });
+        expect(sentBody(fetchImpl).subtype).toBe('name');
+    });
+
+    it('选了又切到别的类型，提交体不带 subtype', async () => {
+        const fetchImpl = okFetch();
+        render(<FeedbackDialog initialContext={CTX} initialType="bug" onClose={() => {}} fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        fireEvent.click(screen.getByRole('button', { name: '错字' }));
+        fireEvent.click(screen.getByRole('radio', { name: '功能建议' }));
+        fireEvent.change(screen.getByRole('textbox', { name: '反馈内容' }), { target: { value: '建议' } });
+        await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交' })); });
+        expect(sentBody(fetchImpl)).not.toHaveProperty('subtype');
+    });
+});
