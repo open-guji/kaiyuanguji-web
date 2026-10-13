@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import {
     CONTACT_MAX,
+    FEEDBACK_SUBTYPES,
     FEEDBACK_TYPES,
     buildFeedbackBody,
     clampQuote,
@@ -12,6 +13,7 @@ import {
     rememberMine,
     type FeedbackContext,
     type FeedbackKind,
+    type FeedbackSubtype,
 } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 
@@ -39,6 +41,7 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
     const [context, setContext] = useState<FeedbackContext | null>(initialContext);
     const [text, setText] = useState('');
     const [contact, setContact] = useState('');
+    const [subtype, setSubtype] = useState<FeedbackSubtype | undefined>(undefined);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
     const [error, setError] = useState('');
     const panelRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,8 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
     const budget = contentBudget(context?.quote);
     const option = FEEDBACK_TYPES.find((t) => t.value === type) ?? FEEDBACK_TYPES[0];
     const isPrivate = type === 'contact';
+    // 「问题类型」只在阅读页选字提交的「内容有误」里出现；不选＝不上送（后端读作 unspecified）
+    const showSubtype = type === 'bug' && !!quote;
 
     // 锁滚动；焦点进弹窗，关闭时还回去
     useEffect(() => {
@@ -100,7 +105,7 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
         setError('');
         try {
             const newId = await submitFeedback(
-                buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href }),
+                buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href, subtype: showSubtype ? subtype : undefined }),
                 fetchImpl,
                 t,
             );
@@ -159,6 +164,22 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                                 </div>
                                 {context.label && <div>{context.label}</div>}
                                 {quote && <q className="og-fb-quote">{quote}</q>}
+                            </div>
+                        )}
+
+                        {showSubtype && (
+                            <div className="og-fb-subtypes" role="group" aria-label={t('feedback.dialog.subtypeGroup')}>
+                                <span className="og-fb-subtypes-label">{t('feedback.dialog.subtypeGroup')}</span>
+                                {FEEDBACK_SUBTYPES.map((o) => (
+                                    <button
+                                        key={o.value}
+                                        type="button"
+                                        aria-pressed={subtype === o.value}
+                                        onClick={() => setSubtype(subtype === o.value ? undefined : o.value)}
+                                    >
+                                        {t(o.labelKey)}
+                                    </button>
+                                ))}
                             </div>
                         )}
 

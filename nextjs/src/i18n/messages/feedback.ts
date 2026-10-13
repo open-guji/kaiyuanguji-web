@@ -15,6 +15,12 @@ export const feedback = defineMessages({
         suggestion: '希望網站增加或改進什麼？',
         contact: '想參與整理、校對或合作？簡單介紹一下自己（這類留言不公開）',
     },
+    subtypes: {
+        char: '錯字',
+        punct: '標點',
+        name: '專名',
+        version: '版本不對',
+    },
     status: {
         pending: '待處理',
         in_progress: '處理中',
@@ -69,6 +75,8 @@ export const feedback = defineMessages({
         listLink: '反饋列表',
         progressAfter: '裡看到。',
         typeGroup: '反饋類型',
+        /** 問題類型（G2）：選填 */
+        subtypeGroup: '問題類型（選填）',
         about: '關於',
         detach: '不帶上',
         contentLabel: '反饋內容',
@@ -100,6 +108,12 @@ export const feedback = defineMessages({
         resource: '哪里有这部书的影印本、文本或其他资料？请附上链接或出处',
         suggestion: '希望网站增加或改进什么？',
         contact: '想参与整理、校对或合作？简单介绍一下自己（这类留言不公开）',
+    },
+    subtypes: {
+        char: '错字',
+        punct: '标点',
+        name: '专名',
+        version: '版本不对',
     },
     status: {
         pending: '待处理',
@@ -152,6 +166,7 @@ export const feedback = defineMessages({
         listLink: '反馈列表',
         progressAfter: '里看到。',
         typeGroup: '反馈类型',
+        subtypeGroup: '问题类型（选填）',
         about: '关于',
         detach: '不带上',
         contentLabel: '反馈内容',

@@ -2530,6 +2530,33 @@
     border-radius: 2px;
     background: var(--color-zhu);
   }
+  .og-fb-subtypes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-bottom: 10px;
+    font-size: var(--fs-sm);
+  }
+  .og-fb-subtypes-label {
+    color: var(--color-ink-2);
+    margin-right: 4px;
+  }
+  .og-fb-subtypes button {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--color-tint-2);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-ink-2);
+    font: inherit;
+    cursor: pointer;
+  }
+  .og-fb-subtypes button[aria-pressed="true"] {
+    border-color: var(--color-zhu);
+    color: var(--color-ink);
+    font-weight: var(--fw-bold);
+  }
   .og-fb-context {
     margin-bottom: 10px;
     padding: 10px 12px;
