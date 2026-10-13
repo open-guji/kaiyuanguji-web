@@ -1,7 +1,7 @@
 /**
  * /feedback 列表页（N7）：「写反馈」打开弹窗，按类型筛选。数据是 mock 的示意数据。
  */
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import FeedbackPageContent from '../FeedbackPageContent';
 import { FeedbackProvider } from '@/components/feedback/FeedbackProvider';
 
@@ -103,5 +103,47 @@ describe('相关条目已失效（overview#359 P2-10）', () => {
         expect(screen.getByText('丙：已结')).toBeInTheDocument();
         expect(screen.getByText('丁：未知块')).toBeInTheDocument();
         expect([...container.querySelectorAll('.og-fb-claimed')].map((e) => e.textContent)).toEqual(['文本已认领']);
+    });
+
+    it('提交完刷新列表时带 fresh=1 绕过边缘缓存；首次加载不带', async () => {
+        jest.useFakeTimers();
+        try {
+            renderPage();
+            await screen.findByText('（示例）希望能调行距');
+            const urls = () => (global.fetch as jest.Mock).mock.calls.map((c) => String(c[0]));
+            expect(urls().every((u) => !u.includes('fresh=1'))).toBe(true);
+            fireEvent.click(screen.getByRole('button', { name: '写反馈' }));
+            fireEvent.change(screen.getByRole('textbox', { name: '反馈内容' }), { target: { value: '新的一条' } });
+            (global.fetch as jest.Mock).mockImplementation(async (u: string, init?: RequestInit) =>
+                init?.method === 'POST'
+                    ? { ok: true, json: async () => ({ success: true, id: 'fb_9_new' }) }
+                    : { json: async () => ({ success: true, items: ITEMS }) });
+            await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交' })); });
+            await act(async () => { jest.advanceTimersByTime(600); });
+            expect(urls().some((u) => u.includes('fresh=1'))).toBe(true);
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    describe('「我的反馈」本机高亮（G5）', () => {
+        afterEach(() => { window.localStorage.clear(); jest.restoreAllMocks(); });
+
+        it('本机记过的 id 显示「我的」，别人的不显示', async () => {
+            window.localStorage.setItem('guji.feedback.mine', JSON.stringify(['fb_2']));
+            renderPage();
+            const li = (await screen.findByText('（示例）希望能调行距')).closest('li') as HTMLElement;
+            expect(within(li).getByText('我的')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('checkbox', { name: '显示已处理' }));
+            const other = screen.getByText('（示例）作者朝代写错了').closest('li') as HTMLElement;
+            expect(within(other).queryByText('我的')).not.toBeInTheDocument();
+        });
+
+        it('localStorage 读取抛错时页面照常渲染，只是不高亮', async () => {
+            jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
+            renderPage();
+            expect(await screen.findByText('（示例）希望能调行距')).toBeInTheDocument();
+            expect(screen.queryByText('我的')).not.toBeInTheDocument();
+        });
     });
 });
