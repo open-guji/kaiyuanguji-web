@@ -17,6 +17,7 @@ import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitR
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
+import ReaderLead, { type ReaderLeadData } from './ReaderLead';
 
 interface ReaderClientProps {
     id: string;
@@ -26,6 +27,8 @@ interface ReaderClientProps {
     bookTitle: string;
     /** 服务端取好的首屏数据（manifest、版本目录、首章正文），见 reader-seed.ts；缺省则全由浏览器取 */
     seed?: ReaderSeed;
+    /** 服务端直出的首章正文＋上下章链接（给爬虫看的同一章正文），阅读器内容出来后卸载；见 ReaderLead.tsx */
+    lead?: ReaderLeadData;
 }
 
 /**
@@ -91,7 +94,7 @@ function primaryKeyOf(m: unknown): string | null {
     return versions.find((v) => v.key === 'default')?.key ?? versions[0].key ?? null;
 }
 
-function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
+function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
     const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
@@ -240,6 +243,7 @@ function Reader({ id, initial, bookTitle, seed }: ReaderClientProps) {
                 resolveEntities={resolveEntities}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
+            {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <SelectionReport containerRef={textRef} context={feedbackContext} />
         </div>
     );

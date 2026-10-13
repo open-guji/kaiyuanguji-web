@@ -37,7 +37,8 @@ import { chapterFallbackLabel, dedupeChapterLabel, parseReaderSegments, readerPa
 import ReaderClient from '../ReaderClient';
 import { preloadReader, SEED_TEXT_MAX } from '../preload';
 import { seedCallKey, type ReaderSeed } from '../reader-seed';
-import { leadText } from '@/lib/reader-lead';
+import { leadParagraphs, leadText } from '@/lib/reader-lead';
+import type { ReaderLeadData } from '../ReaderLead';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { getSiteT } from '@/i18n/translate';
 import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
@@ -61,8 +62,9 @@ type Props = {
 type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
 type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers };
 
-/** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取 */
-const PRELOAD_BUDGET_MS = 1500;
+/** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取。
+ *  页面是 ISR，超时那次的空壳会被缓存 1 小时（overview#581 实测），所以预算放宽到 4s：冷页首访多等几秒，换爬虫拿到完整页 */
+const PRELOAD_BUDGET_MS = 4000;
 
 /**
  * 返回 null ＝ 真 404。被并条目、草稿升格照条目页一样跳，但落到目标的阅读页。
@@ -180,6 +182,31 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     return simplifyMetadata(await buildMetadata(props));
 }
 
+/** 服务端直出的首章正文＋上下章真链接（overview#581 方案 A 第 3 项）；没有首章正文（预算超时、过大、无正文）就不出 */
+function buildLead(id: string, s: Loaded, seed: ReaderSeed): ReaderLeadData | undefined {
+    const { checked } = s;
+    if (checked.status !== 'found' || !checked.version || !checked.chapter || !checked.index) return undefined;
+    const got = seed.calls?.[seedCallKey('getChapter', id, checked.version.key, checked.chapter)] as { md?: string } | undefined;
+    const { paragraphs, truncated } = leadParagraphs(got?.md);
+    if (paragraphs.length === 0) return undefined;
+    const chapters = checked.index.chapters;
+    const at = chapters.findIndex((c) => c.file === checked.chapter);
+    const link = (i: number) => {
+        const c = chapters[i];
+        if (!c) return undefined;
+        return { href: readerPath(id, { key: s.sel.key, chapter: c.file }), label: dedupeChapterLabel(s.title, c.title?.trim() || chapterFallbackLabel(c.file)) || chapterFallbackLabel(c.file) };
+    };
+    return {
+        paragraphs,
+        truncated,
+        selfHref: s.canonical,
+        prev: at > 0 ? link(at - 1) : undefined,
+        next: at >= 0 ? link(at + 1) : undefined,
+        itemHref: `/item/${id}`,
+        itemLabel: `${s.title}·书目详情`,
+    };
+}
+
 export default async function ReaderPage({ params }: Props) {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
@@ -192,7 +219,7 @@ export default async function ReaderPage({ params }: Props) {
     console.log(`[reader-timing] /read/${id}${seg?.length ? `/${seg.join('/')}` : ''} ${timing}`);
     return (
         <>
-            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} />
+            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed)} />
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
             <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
         </>
