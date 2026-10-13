@@ -269,3 +269,5 @@ export const config = {
         '/((?!api/|oauth/|\\.well-known/|_next/).*)',
     ],
 };
+
+// overview#592 验证 A：只改注释，应触发 pr-fullstack-gated
