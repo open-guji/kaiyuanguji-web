@@ -1,7 +1,7 @@
 /**
  * 校对层数据（overview#605 D 块 D1.1）：CV 导出的 `proof.json`（`guji-proof/0.1`）→ 阅读器按格位 key 取用的只读视图。
  *
- * 约定（Mila 在 #594 对表，Ella 写入 D 块设计 §二）：
+ * 约定（Mila 在 #605 对表，Ella 写入 D 块设计 §二）：
  *   - 格位坐标用 `a`＝`页:列:格[a|b]`，与阅读器字 id（`cell.a`）同一坐标；**不用 `id`**（字框稳定 id，与坐标无关）；
  *   - `review` 现为 `pending|auto|human` 三值，未知值一律按 `pending`（偏安全，不把没人看过的当成已校）；
  *   - `method` 是开集（`human`、`cv:<通道>`、`cv:occluded_default`…），原样保留，**不做枚举分支**；
@@ -81,7 +81,7 @@ export function proofPage(layer: ProofLayer, page: number): ProofCell[] {
     return out;
 }
 
-/** 是否「存疑」：没有人看过且不是缺字——公开页默认只展示这一类（Morgan，#594） */
+/** 是否「存疑」：没有人看过且不是缺字——公开页默认只展示这一类（Morgan，#605） */
 export const isDoubtful = (cell: ProofCell): boolean => cell.review === 'pending' && cell.c !== '□';
 
 /** 被遮挡缺字，单独标为「缺字」，不算识别存疑 */

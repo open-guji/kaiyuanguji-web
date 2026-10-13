@@ -1,6 +1,6 @@
 import { parseProof, proofPage, isDoubtful, isMissingChar, isHumanChecked, loadProofLayer } from '../proof';
 
-// 形状照 Mila 在 #594 给的样张（guji-proof/0.1）：每格 id/a/c/method/review/channel/cand
+// 形状照 Mila 在 #605 给的样张（guji-proof/0.1）：每格 id/a/c/method/review/channel/cand
 const MOCK = {
     schema: 'guji-proof/0.1',
     cells: [
