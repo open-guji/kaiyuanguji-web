@@ -28,7 +28,7 @@ import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_L
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { getCurrentJsonServer, getCurrentTextServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
+import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
 import { checkReader, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
@@ -183,11 +183,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 /** 服务端直出的首章正文＋上下章真链接（overview#581 方案 A 第 3 项）；没有首章正文（预算超时、过大、无正文）就不出 */
-function buildLead(id: string, s: Loaded, seed: ReaderSeed): ReaderLeadData | undefined {
+function buildLead(id: string, s: Loaded, seed: ReaderSeed, head?: { text: string; truncated: boolean } | null): ReaderLeadData | undefined {
     const { checked } = s;
     if (checked.status !== 'found' || !checked.version || !checked.chapter || !checked.index) return undefined;
     const got = seed.calls?.[seedCallKey('getChapter', id, checked.version.key, checked.chapter)] as { md?: string } | undefined;
-    const { paragraphs, truncated } = leadParagraphs(got?.md);
+    const lead = leadParagraphs(got?.md ?? head?.text);
+    const paragraphs = lead.paragraphs;
+    // 只有章首片段时，片段之后一定还有正文：无论片段里能切出几段都要给「继续阅读」
+    const truncated = lead.truncated || (got?.md === undefined && head?.truncated === true);
     if (paragraphs.length === 0) return undefined;
     const chapters = checked.index.chapters;
     const at = chapters.findIndex((c) => c.file === checked.chapter);
@@ -207,19 +210,34 @@ function buildLead(id: string, s: Loaded, seed: ReaderSeed): ReaderLeadData | un
     };
 }
 
+/**
+ * 大章书（章 >256KB，不进种子）的首屏 lead：另取 `.txt` 的前 16KB（Range，overview#586）。
+ * 与首屏数据并行发出（不知道哪些章会超限，也不为此串在种子后面多等一轮）；种子里有正文时结果直接丢弃。
+ * 失败（超时、源站不认 Range）得 null，页面与改前一致。
+ */
+function startLeadHead(id: string, s: Loaded): Promise<{ text: string; truncated: boolean } | null> {
+    const { checked } = s;
+    if (checked.status !== 'found' || !checked.version || !checked.chapter) return Promise.resolve(null);
+    return getCurrentTextHeadServer(`items/${id}/${checked.version.key}/${checked.chapter}.txt`).catch(() => null);
+}
+
 export default async function ReaderPage({ params }: Props) {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
     const s = await load(id, seg);
     if (!s) notFound();
+    const headP = startLeadHead(id, s);
     const seed = await timed(s.timing, 'preload', preload(id, s));
+    const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
+        && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
+    const head = hasSeedMd ? null : await timed(s.timing, 'leadHead', headP);
     // 首帧照服务端落实的版本与章渲染，与服务端 HTML 一致；查不准（unknown）时按地址里给的
     const initial = { key: s.sel.key, chapter: s.checked.chapter ?? s.sel.chapter };
     const timing = serverTimingValue(s.timing);
     console.log(`[reader-timing] /read/${id}${seg?.length ? `/${seg.join('/')}` : ''} ${timing}`);
     return (
         <>
-            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed)} />
+            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
             <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
         </>
