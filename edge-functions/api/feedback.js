@@ -38,6 +38,8 @@
 // type 白名单：bug｜resource｜suggestion｜contact｜other（contact＝想参与/联系我们，永远不公开）
 // status 白名单：pending｜in_progress｜resolved｜wontfix｜duplicate（duplicate 时应带 duplicateOf）
 
+import { classifyFeedback, legacyCategory, CATEGORIES, ASSIGNEES } from './feedback-classify.js';
+
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
   'https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com',
@@ -364,6 +366,8 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
     status: 'pending',
     reply: '',
   };
+  // 分块 A：入口分类（只写 category，不写 assignee——认领是站方的动作）
+  record.category = classifyFeedback({ type, pageUrl, content: record.content });
   if (contact) record.contact = contact;
   if (test) record.test = true;
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
@@ -416,7 +420,10 @@ function desensitizeText(text) {
  * content/reply 做脱敏（见 desensitizeText）。
  */
 function toPublic(rec) {
-  const { contact, updatedBy, ...rest } = rec; // eslint-disable-line no-unused-vars
+  // routedIssue 是内部转办的 issue 号，不公开
+  const { contact, updatedBy, routedIssue, ...rest } = rec; // eslint-disable-line no-unused-vars
+  // 旧记录没有 category：读时按 type 推，不回写
+  if (!rest.category) rest.category = legacyCategory(rest.type);
   if (typeof rest.content === 'string') rest.content = desensitizeText(rest.content);
   if (typeof rest.reply === 'string') rest.reply = desensitizeText(rest.reply);
   return rest;
@@ -543,10 +550,22 @@ async function githubGet(ghToken, limit) {
   return { items, cursor: '', hasMore: false };
 }
 
+// --- 分块 A：分流字段校验 ---
+const RE_ROUTED_ISSUE = /^[\w.-]+\/[\w.-]+#\d+$/;
+
+/** 返回错误文案；合法（含全部未传）返回 ''。assignee／routedIssue 传空串或 null 表示清除。 */
+function validateTriage({ category, assignee, routedIssue }) {
+  if (category !== undefined && !CATEGORIES.includes(category)) return '无效的分类';
+  if (assignee !== undefined && assignee !== null && assignee !== '' && !ASSIGNEES.includes(assignee)) return '无效的认领块';
+  if (routedIssue !== undefined && routedIssue !== null && routedIssue !== ''
+    && !(typeof routedIssue === 'string' && RE_ROUTED_ISSUE.test(routedIssue))) return '无效的转办 issue 号';
+  return '';
+}
+
 // --- KV PATCH ---
 
 /**
- * @param {{status?, reply?, visibility?, test?, type?, duplicateOf?, updatedBy?}} patch
+ * @param {{status?, reply?, visibility?, test?, type?, duplicateOf?, category?, assignee?, routedIssue?, updatedBy?}} patch
  *   调用方已按 ALLOWED_STATUSES／ALLOWED_TYPES／['public','hidden'] 校验过合法值。
  */
 async function kvPatch(kv, id, patch) {
@@ -558,6 +577,21 @@ async function kvPatch(kv, id, patch) {
   if (patch.test !== undefined) record.test = patch.test === true;
   if (patch.type) record.type = patch.type;
   if (patch.duplicateOf) record.duplicateOf = patch.duplicateOf;
+  if (patch.category) record.category = patch.category;
+  if (patch.routedIssue !== undefined) {
+    if (patch.routedIssue) record.routedIssue = patch.routedIssue; else delete record.routedIssue;
+  }
+  // assignee：'' 或 null 表示取消认领。claimedAt 只在「首次出现非空 assignee」时由服务端写，
+  // 之后换人不改；取消认领则清掉
+  if (patch.assignee !== undefined) {
+    if (patch.assignee) {
+      record.assignee = patch.assignee;
+      if (!record.claimedAt) record.claimedAt = new Date().toISOString();
+    } else {
+      delete record.assignee;
+      delete record.claimedAt;
+    }
+  }
   // contact 类型永远不公开：改成 contact 类型时顺手把 visibility 拨回 hidden
   // （公开读的真正拦截点是 isPubliclyVisible 的 type 判断，这里只是让 admin 显示一致）
   if (record.type === 'contact') record.visibility = 'hidden';
@@ -589,7 +623,7 @@ export async function onRequestPost(context) {
           status: auth.status, headers,
         });
       }
-      const { id, status, reply, visibility, test, type, duplicateOf } = body;
+      const { id, status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue } = body;
       if (!id || !id.startsWith('fb_')) {
         return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
           status: 400, headers,
@@ -620,6 +654,12 @@ export async function onRequestPost(context) {
           status: 400, headers,
         });
       }
+      const triageErr = validateTriage({ category, assignee, routedIssue });
+      if (triageErr) {
+        return new Response(JSON.stringify({ success: false, error: triageErr }), {
+          status: 400, headers,
+        });
+      }
       const kv = getKV(context);
       if (!kv) {
         return new Response(JSON.stringify({ success: false, error: 'KV 未绑定' }), {
@@ -634,7 +674,7 @@ export async function onRequestPost(context) {
           });
         }
       }
-      const updated = await kvPatch(kv, id, { status, reply, visibility, test, type, duplicateOf, updatedBy });
+      const updated = await kvPatch(kv, id, { status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue, updatedBy });
       if (!updated) {
         return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
           status: 404, headers,
@@ -1008,9 +1048,15 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const { status, reply } = await context.request.json();
+    const { status, reply, category, assignee, routedIssue } = await context.request.json();
     if (status && !ALLOWED_STATUSES.includes(status)) {
       return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
+        status: 400, headers,
+      });
+    }
+    const triageErr = validateTriage({ category, assignee, routedIssue });
+    if (triageErr) {
+      return new Response(JSON.stringify({ success: false, error: triageErr }), {
         status: 400, headers,
       });
     }
@@ -1022,7 +1068,7 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const updated = await kvPatch(kv, id, { status, reply, updatedBy: 'token' });
+    const updated = await kvPatch(kv, id, { status, reply, category, assignee, routedIssue, updatedBy: 'token' });
     if (!updated) {
       return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
         status: 404, headers,

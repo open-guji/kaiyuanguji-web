@@ -138,3 +138,54 @@ describe('pageUrl 域名过滤（第二批 §一·10）', () => {
         expect(within(foreignCard as HTMLElement).getByText(/evil\.example/)).toBeInTheDocument();
     });
 });
+
+describe('分流：认领块／分类（#605 步 3）', () => {
+    it('选认领块 → POST update 带 assignee；界面以后端返回的 claimedAt 为准显示', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (global as any).fetch = jest.fn(async (url: string, init?: RequestInit) => {
+            if (init?.method === 'POST') {
+                const body = JSON.parse(String(init.body));
+                return { ok: true, json: async () => ({ success: true, item: { ...body, claimedAt: '2026-10-13T10:00:00.000Z' } }) };
+            }
+            return { ok: true, json: async () => ({ success: true, items: ITEMS, hasMore: false, cursor: '' }) };
+        });
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        const card = screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+        fireEvent.change(within(card).getByLabelText('认领块'), { target: { value: 'web' } });
+        await waitFor(() => expect(within(card).getByText(/网站 于 .* 认领/)).toBeInTheDocument());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const post = (global as any).fetch.mock.calls.find((c: any[]) => c[1]?.method === 'POST');
+        expect(JSON.parse(post[1].body)).toMatchObject({ action: 'update', id: 'fb_1_a', assignee: 'web' });
+    });
+
+    it('超 24h 未认领的显示徽章；旧记录分类下拉按 type 推（bug→网站）', async () => {
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        const card = screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+        expect(within(card).getByText('超 24h 未认领')).toBeInTheDocument();
+        expect((within(card).getByLabelText('分类') as HTMLSelectElement).value).toBe('site');
+    });
+
+    it('认领后徽章消失', async () => {
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        const card = screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+        fireEvent.change(within(card).getByLabelText('认领块'), { target: { value: 'web' } });
+        await waitFor(() => expect(within(card).queryByText('超 24h 未认领')).not.toBeInTheDocument());
+    });
+});
+
+describe('管理页顶部 SLA 统计（#605 步 7）', () => {
+    it('显示近 30 天已认领、超 24h 未认领、中位数；认领一条后数字更新', async () => {
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        const box = screen.getByTestId('sla-stats');
+        // ITEMS 里两条 2026-09 的 bug／resource 都超 24h 未认领；contact 不计
+        expect(box).toHaveTextContent('超 24h 未认领 2');
+        expect(box).toHaveTextContent('认领耗时中位数 —');
+        const card = screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+        fireEvent.change(within(card).getByLabelText('认领块'), { target: { value: 'web' } });
+        await waitFor(() => expect(screen.getByTestId('sla-stats')).toHaveTextContent('超 24h 未认领 1'));
+    });
+});

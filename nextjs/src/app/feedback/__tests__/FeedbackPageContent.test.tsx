@@ -88,4 +88,20 @@ describe('相关条目已失效（overview#359 P2-10）', () => {
         expect(screen.queryByRole('link', { name: /相关条目/ })).not.toBeInTheDocument();
         expect(getEntry.mock.calls.filter(([id]) => id === '1evimvfwvwr9c')).toHaveLength(1);
     });
+
+    it('已认领的未结反馈回显「X已认领」；未认领、已结、未知块名都不显示（#605 步 4）', async () => {
+        const claimed = [
+            { id: 'fb_a', type: 'bug', content: '甲：已认领', createdAt: '2026-09-22T01:00:00Z', status: 'pending', assignee: 'text', claimedAt: '2026-09-22T02:00:00Z', category: 'typo' },
+            { id: 'fb_b', type: 'bug', content: '乙：未认领', createdAt: '2026-09-22T01:00:00Z', status: 'pending', category: 'site' },
+            { id: 'fb_c', type: 'bug', content: '丙：已结', createdAt: '2026-09-22T01:00:00Z', status: 'resolved', assignee: 'web' },
+            { id: 'fb_d', type: 'bug', content: '丁：未知块', createdAt: '2026-09-22T01:00:00Z', status: 'pending', assignee: 'zzz' },
+        ];
+        global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: true, items: claimed }) }) as never;
+        const { container } = renderPage();
+        await screen.findByText('甲：已认领');
+        fireEvent.click(screen.getByRole('checkbox', { name: '显示已处理' }));
+        expect(screen.getByText('丙：已结')).toBeInTheDocument();
+        expect(screen.getByText('丁：未知块')).toBeInTheDocument();
+        expect([...container.querySelectorAll('.og-fb-claimed')].map((e) => e.textContent)).toEqual(['文本已认领']);
+    });
 });

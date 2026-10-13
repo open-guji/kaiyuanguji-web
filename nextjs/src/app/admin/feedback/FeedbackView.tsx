@@ -7,6 +7,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../fetchAll';
 import { isSameSiteUrl } from '../../../lib/pageUrl';
+import {
+  ASSIGNEE_LABEL, ASSIGNEE_OPTIONS, CATEGORY_OPTIONS, categoryOf, fmtDuration, isClaimOverdue, slaStats,
+} from '../../../lib/feedbackTriage';
 
 interface FeedbackRecord {
   id: string;
@@ -23,11 +26,15 @@ interface FeedbackRecord {
   test?: boolean;
   contact?: string;
   duplicateOf?: string;
+  category?: string;
+  assignee?: string;
+  claimedAt?: string;
+  routedIssue?: string;
 }
 
 type Patch = {
   status?: string; reply?: string; visibility?: 'public' | 'hidden'; test?: boolean;
-  type?: string; duplicateOf?: string;
+  type?: string; duplicateOf?: string; category?: string; assignee?: string;
 };
 
 // 与 edge-functions/api/feedback.js 的 ALLOWED_TYPES／ALLOWED_STATUSES 保持一致
@@ -63,6 +70,8 @@ export default function FeedbackView() {
   const [tab, setTab] = useState<'feedback' | 'contact'>('feedback');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [assigneeFilter, setAssigneeFilter] = useState('all');
   const [visibilityFilter, setVisibilityFilter] = useState('all');
   const [testFilter, setTestFilter] = useState<'hide' | 'show' | 'only'>('hide');
 
@@ -99,7 +108,16 @@ export default function FeedbackView() {
       });
       const data = await res.json();
       if (!data.success) { alert(data.error || '操作失败'); return; }
-      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+      setItems((prev) => prev.map((it) => {
+        if (it.id !== id) return it;
+        const next = { ...it, ...patch };
+        // claimedAt 由服务端写：以返回的记录为准（清空认领时两者都没有）
+        if (patch.assignee !== undefined) {
+          next.assignee = data.item?.assignee || undefined;
+          next.claimedAt = data.item?.claimedAt || undefined;
+        }
+        return next;
+      }));
       if (patch.reply !== undefined) {
         setDrafts((d) => { const n = { ...d }; delete n[id]; return n; });
       }
@@ -123,6 +141,10 @@ export default function FeedbackView() {
     return base.filter((i) => {
       if (statusFilter !== 'all' && i.status !== statusFilter) return false;
       if (tab === 'feedback' && typeFilter !== 'all' && i.type !== typeFilter) return false;
+      if (categoryFilter !== 'all' && categoryOf(i) !== categoryFilter) return false;
+      if (assigneeFilter === 'none' && i.assignee) return false;
+      if (assigneeFilter === 'overdue' && !isClaimOverdue(i)) return false;
+      if (assigneeFilter !== 'all' && assigneeFilter !== 'none' && assigneeFilter !== 'overdue' && i.assignee !== assigneeFilter) return false;
       if (visibilityFilter !== 'all') {
         const hidden = i.visibility === 'hidden';
         if (visibilityFilter === 'hidden' && !hidden) return false;
@@ -132,7 +154,9 @@ export default function FeedbackView() {
       if (testFilter === 'only' && !i.test) return false;
       return true;
     });
-  }, [tab, contactItems, mainItems, statusFilter, typeFilter, visibilityFilter, testFilter]);
+  }, [tab, contactItems, mainItems, statusFilter, typeFilter, categoryFilter, assigneeFilter, visibilityFilter, testFilter]);
+  const sla = useMemo(() => slaStats(items), [items]);
+  const overdueCount = sla.overdue;
 
   return (
     <div className="space-y-4">
@@ -157,6 +181,12 @@ export default function FeedbackView() {
               记录过多，只取到了前 {items.length} 条（最旧的一批），更新的记录没有显示。
             </div>
           )}
+
+          <div className="bg-white rounded border p-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-600" data-testid="sla-stats">
+            <span>近 30 天已认领 <b className="text-black">{sla.claimed30}</b></span>
+            <span>超 24h 未认领 <b className={sla.overdue ? 'text-red-700' : 'text-black'}>{sla.overdue}</b></span>
+            <span>认领耗时中位数 <b className="text-black">{fmtDuration(sla.medianClaimMs)}</b></span>
+          </div>
 
           <div className="flex gap-2 border-b text-sm">
             <button
@@ -192,6 +222,22 @@ export default function FeedbackView() {
                 </select>
               </label>
             )}
+            <label className="inline-flex items-center gap-1">
+              分类
+              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="border rounded px-1 py-0.5">
+                <option value="all">全部</option>
+                {CATEGORY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </label>
+            <label className="inline-flex items-center gap-1">
+              认领
+              <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)} className="border rounded px-1 py-0.5">
+                <option value="all">全部</option>
+                <option value="none">未认领</option>
+                <option value="overdue">超时未认领（{overdueCount}）</option>
+                {ASSIGNEE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </label>
             <label className="inline-flex items-center gap-1">
               是否公开
               <select value={visibilityFilter} onChange={(e) => setVisibilityFilter(e.target.value)} className="border rounded px-1 py-0.5">
@@ -246,6 +292,29 @@ export default function FeedbackView() {
                         {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         {!STATUS_LABEL[it.status] && <option value={it.status}>{it.status}（未知）</option>}
                       </select>
+                      <select
+                        value={categoryOf(it)}
+                        disabled={busy}
+                        onChange={(e) => update(it.id, { category: e.target.value })}
+                        aria-label="分类"
+                        className="border rounded px-1.5 py-0.5 text-xs bg-white"
+                      >
+                        {CATEGORY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <select
+                        value={it.assignee || ''}
+                        disabled={busy}
+                        onChange={(e) => update(it.id, { assignee: e.target.value })}
+                        aria-label="认领块"
+                        className="border rounded px-1.5 py-0.5 text-xs bg-white"
+                      >
+                        <option value="">未认领</option>
+                        {ASSIGNEE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      {isClaimOverdue(it) && <span className="bg-red-100 text-red-800 rounded px-2 text-xs">超 24h 未认领</span>}
+                      {it.assignee && it.claimedAt && (
+                        <span className="text-gray-400 text-xs" title={it.claimedAt}>{ASSIGNEE_LABEL[it.assignee] || it.assignee} 于 {fmtTime(it.claimedAt)} 认领</span>
+                      )}
                       {hidden && <span className="bg-gray-200 text-gray-700 rounded px-2 text-xs">已隐藏 · 不公开</span>}
                       {isContact && <span className="bg-purple-100 text-purple-800 rounded px-2 text-xs">想参与/联系 · 从不公开</span>}
                       {it.test && <span className="bg-amber-100 text-amber-800 rounded px-2 text-xs">测试</span>}

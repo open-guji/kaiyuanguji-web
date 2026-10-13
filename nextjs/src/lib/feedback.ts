@@ -74,9 +74,12 @@ export function clampQuote(text: string | null | undefined): string {
     return s.length > QUOTE_MAX ? `${s.slice(0, QUOTE_MAX)}…` : s;
 }
 
+/** 与 edge-functions/api/feedback-classify.js 的 QUOTE_MARK 必须一致（feedback-classify.test.ts 对表） */
+export const QUOTE_MARK = '【原文】';
+
 function quotePrefix(quote: string | undefined): string {
     const q = clampQuote(quote);
-    return q ? `【原文】${q}\n\n` : '';
+    return q ? `${QUOTE_MARK}${q}\n\n` : '';
 }
 
 /** 读者正文还能写多少字（选中文字占掉的要扣掉，否则拼起来超过后端上限会被 400） */
