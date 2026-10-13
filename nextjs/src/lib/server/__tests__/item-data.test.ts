@@ -600,3 +600,59 @@ describe('getCurrentText（WEB2：阅读页首卷正文）', () => {
         await expect(f.getCurrentText('a.txt')).rejects.toThrow('HTTP 502');
     });
 });
+
+describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
+    const REL = `items/${ID}/default/001.txt`;
+    const body = new TextEncoder().encode('# 標題\n\n第一段正文。\n\n第二段正文。\n\n第三段未完');
+
+    function head(handler: (url: string, init?: RequestInit) => unknown) {
+        const calls: Array<{ url: string; init?: RequestInit }> = [];
+        const fn = jest.fn(async (url: string, init?: RequestInit) => {
+            calls.push({ url, init });
+            if (url.includes('latest.json')) return { ok: true, status: 200, json: async () => ({ commitId: 'abc123' }) } as Response;
+            return handler(url, init) as Response;
+        });
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 });
+        return { f, calls };
+    }
+
+    it('206：带 Range 头、地址与整文件分开，按 content-range 判断被截断，收到完整段落', async () => {
+        const { f, calls } = head(() => ({
+            status: 206, ok: true,
+            headers: new Headers({ 'content-range': `bytes 0-${body.length - 1}/1161886` }),
+            arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength),
+        }));
+        const r = await f.getCurrentTextHead(REL, 1024);
+        expect(r).toEqual({ text: '# 標題\n\n第一段正文。\n\n第二段正文。', truncated: true });
+        const c = calls.find((x) => x.url.includes('001.txt'))!;
+        expect((c.init?.headers as Record<string, string>).Range).toBe('bytes=0-1023');
+        expect(c.url).toContain('h=1024');
+    });
+
+    it('源站不认 Range 返回 200 整文件：丢弃响应体、不读进内存', async () => {
+        let read = false;
+        let cancelled = false;
+        const { f } = head(() => ({
+            status: 200, ok: true,
+            body: { cancel: async () => { cancelled = true; } },
+            arrayBuffer: async () => { read = true; return new ArrayBuffer(0); },
+        }));
+        expect(await f.getCurrentTextHead(REL)).toBeNull();
+        expect(read).toBe(false);
+        expect(cancelled).toBe(true);
+    });
+
+    it('超时（请求被中止）与网络错：返回 null，不抛', async () => {
+        const slow = head((_u, init) => new Promise((_res, rej) => {
+            init?.signal?.addEventListener('abort', () => rej(Object.assign(new Error('aborted'), { name: 'TimeoutError' })));
+        }));
+        expect(await slow.f.getCurrentTextHead(REL, 1024, 30)).toBeNull();
+        const down = head(() => { throw new Error('network down'); });
+        expect(await down.f.getCurrentTextHead(REL)).toBeNull();
+    });
+
+    it('404：返回 null', async () => {
+        const { f } = head(() => ({ status: 404, ok: false, body: null }));
+        expect(await f.getCurrentTextHead(REL)).toBeNull();
+    });
+});

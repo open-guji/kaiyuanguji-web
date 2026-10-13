@@ -26,6 +26,7 @@
 import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
 import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
+import { decodeChapterHead } from '../reader-head';
 
 export { isValidItemId };
 
@@ -408,10 +409,48 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         });
     }
 
+    /**
+     * 取 current/ 下文本文件的开头 headBytes 字节（overview#586：大章书首屏 lead）。用 Range 请求，COS 回 206。
+     * 任何读不到都返回 null、不抛错、不重试：短超时（headTimeoutMs）；源站不认 Range 返回 200（整文件）时立刻丢弃响应体，不读进内存。
+     * 地址多带一个 `h=<字节数>`，与整文件的缓存条目分开（避免 206 的片段被当成整文件命中）。
+     */
+    async function getCurrentTextHead(relPath: string, headBytes = 16 * 1024, headTimeoutMs = 1500): Promise<{ text: string; truncated: boolean } | null> {
+        const localText = readLocalPublicData(relPath);
+        if (localText !== null) {
+            const bytes = new TextEncoder().encode(localText);
+            return bytes.length <= headBytes
+                ? { text: localText, truncated: false }
+                : { text: decodeChapterHead(bytes.subarray(0, headBytes), true), truncated: true };
+        }
+        const timeout = timeoutSignal(headTimeoutMs);
+        try {
+            const latest = await getPointer<LatestPointer>('latest.json');
+            const key = dataVersionKey(latest);
+            const url = `${base}/current/${relPath}?${key ? `v=${key}&` : ''}h=${headBytes}`;
+            const init: RequestInit = { signal: timeout.signal, headers: { Range: `bytes=0-${headBytes - 1}` } };
+            if (forceCache) init.cache = 'force-cache';
+            const res = await doFetch(url, init);
+            if (res.status !== 206) {
+                // 200＝源站无视 Range 返回了整文件；404/403/5xx 同样当没有
+                try { await res.body?.cancel(); } catch { /* 忽略 */ }
+                return null;
+            }
+            const bytes = new Uint8Array(await res.arrayBuffer());
+            if (bytes.length > headBytes) return null;
+            const total = Number(/\/(\d+)\s*$/.exec(res.headers?.get?.('content-range') ?? '')?.[1]);
+            const truncated = Number.isFinite(total) ? total > bytes.length : bytes.length >= headBytes;
+            return { text: decodeChapterHead(bytes, truncated), truncated };
+        } catch {
+            return null;
+        } finally {
+            timeout.clear();
+        }
+    }
+
     /** latest.json 指针（进程内缓存，与 getCurrentJson 内部取的是同一份）：给阅读页计时单独量这一跳 */
     const getLatest = () => getPointer<LatestPointer>('latest.json');
 
-    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getLatest };
+    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getCurrentTextHead, getLatest };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -444,6 +483,11 @@ export function getLatestServer(): Promise<unknown> {
 /** current/ 下的文本文件（同一个取数实例） */
 export function getCurrentTextServer(relPath: string, maxBytes?: number): Promise<string | null> {
     return defaultFetcher().getCurrentText(relPath, maxBytes);
+}
+
+/** current/ 下文本文件的开头一段（Range，失败返回 null；同一个取数实例） */
+export function getCurrentTextHeadServer(relPath: string, headBytes?: number): Promise<{ text: string; truncated: boolean } | null> {
+    return defaultFetcher().getCurrentTextHead(relPath, headBytes);
 }
 
 /** 草稿 id 查升格对照表（同一个取数实例，指针与 root 缓存共用） */

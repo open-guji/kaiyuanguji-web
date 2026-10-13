@@ -11,7 +11,9 @@ import { seedCallKey } from '../../reader-seed';
 const mockGetCurrentJson = jest.fn<(rel: string) => Promise<unknown>>();
 const mockGetLatest = jest.fn(async (): Promise<unknown> => ({ version: 'test' }));
 const mockGetItem = jest.fn(async (id: string, _opts?: unknown): Promise<unknown> => ({ entry: { id, type: id === 'hixhd2h9bk4b' ? 'entity' : 'work', title: '直齋書錄解題' }, source: 'h1', version: 'h1:r' }));
+const mockHead = jest.fn(async (_rel: string): Promise<{ text: string; truncated: boolean } | null> => null);
 jest.mock('@/lib/server/item-data', () => ({
+    getCurrentTextHeadServer: (rel: string) => mockHead(rel),
     getItemServer: (id: string, opts?: unknown) => mockGetItem(id, opts),
     getPromotionServer: async () => ({ status: 'absent' }),
     getLatestServer: () => mockGetLatest(),
@@ -185,6 +187,21 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     it('本章没有正文（首屏数据没有 md）：不出 lead，回落到现状', async () => {
         const el = (await page(['001'])) as { props: { lead?: unknown } };
         expect(el.props.lead).toBeUndefined();
+    });
+
+    it('大章（种子没有正文）：另取章首片段做 lead，被截断时给「继续阅读」（overview#586）', async () => {
+        mockHead.mockResolvedValueOnce({ text: '章首第一段。\n\n章首第二段。', truncated: true });
+        const el = (await page(['001'])) as { props: { lead?: { paragraphs: string[]; truncated: boolean } } };
+        expect(mockHead).toHaveBeenCalledWith(`items/${ZHIZHAI}/default/001.txt`);
+        expect(el.props.lead?.paragraphs).toEqual(['章首第一段。', '章首第二段。']);
+        expect(el.props.lead?.truncated).toBe(true);
+    });
+
+    it('种子已有正文：章首片段的结果不用（lead 取种子里的正文）', async () => {
+        mockHead.mockResolvedValueOnce({ text: '不该出现的片段', truncated: true });
+        const el = (await page(['002'])) as { props: { lead?: { paragraphs: string[]; truncated: boolean } } };
+        expect(el.props.lead?.paragraphs).toEqual(['卷二正文']);
+        expect(el.props.lead?.truncated).toBe(false);
     });
 
     it('没给章号：落实到第一章交给阅读器；其他版本带 key', async () => {
