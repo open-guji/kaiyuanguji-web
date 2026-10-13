@@ -38,7 +38,7 @@
 // type 白名单：bug｜resource｜suggestion｜contact｜other（contact＝想参与/联系我们，永远不公开）
 // status 白名单：pending｜in_progress｜resolved｜wontfix｜duplicate（duplicate 时应带 duplicateOf）
 
-import { classifyFeedback, legacyCategory, CATEGORIES, ASSIGNEES } from './feedback-classify.js';
+import { classifyFeedback, legacyCategory, CATEGORIES, ASSIGNEES, SUBTYPES } from './feedback-classify.js';
 
 const ALLOWED_ORIGINS = [
   'https://www.kaiyuanguji.com',
@@ -354,7 +354,7 @@ async function checkRateLimit(kv, request) {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype) {
   const id = generateId();
   const record = {
     id,
@@ -368,6 +368,7 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test) {
   };
   // 分块 A：入口分类（只写 category，不写 assignee——认领是站方的动作）
   record.category = classifyFeedback({ type, pageUrl, content: record.content });
+  if (subtype) record.subtype = subtype; // 已在入口校验过；不传则不写，读时按 unspecified
   if (contact) record.contact = contact;
   if (test) record.test = true;
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
@@ -420,8 +421,10 @@ function desensitizeText(text) {
  * content/reply 做脱敏（见 desensitizeText）。
  */
 function toPublic(rec) {
-  // routedIssue 是内部转办的 issue 号，不公开
-  const { contact, updatedBy, routedIssue, ...rest } = rec; // eslint-disable-line no-unused-vars
+  // routedIssue 是内部转办的 issue 号、resolvedRef 是内部处理凭据（commit／issue），都不公开
+  const { contact, updatedBy, routedIssue, resolvedRef, ...rest } = rec; // eslint-disable-line no-unused-vars
+  // 旧记录没有 subtype：读时按 unspecified，不回写
+  if (!rest.subtype) rest.subtype = 'unspecified';
   // 旧记录没有 category：读时按 type 推，不回写
   if (!rest.category) rest.category = legacyCategory(rest.type);
   if (typeof rest.content === 'string') rest.content = desensitizeText(rest.content);
@@ -552,20 +555,25 @@ async function githubGet(ghToken, limit) {
 
 // --- 分块 A：分流字段校验 ---
 const RE_ROUTED_ISSUE = /^[\w.-]+\/[\w.-]+#\d+$/;
+// resolvedRef：`owner/repo@sha`（7～40 位十六进制）或 `owner/repo#n`
+const RE_RESOLVED_REF = /^[\w.-]+\/[\w.-]+(?:@[0-9a-f]{7,40}|#\d+)$/;
 
 /** 返回错误文案；合法（含全部未传）返回 ''。assignee／routedIssue 传空串或 null 表示清除。 */
-function validateTriage({ category, assignee, routedIssue }) {
+function validateTriage({ category, assignee, routedIssue, subtype, resolvedRef }) {
   if (category !== undefined && !CATEGORIES.includes(category)) return '无效的分类';
   if (assignee !== undefined && assignee !== null && assignee !== '' && !ASSIGNEES.includes(assignee)) return '无效的认领块';
   if (routedIssue !== undefined && routedIssue !== null && routedIssue !== ''
     && !(typeof routedIssue === 'string' && RE_ROUTED_ISSUE.test(routedIssue))) return '无效的转办 issue 号';
+  if (subtype !== undefined && !SUBTYPES.includes(subtype)) return '无效的子类';
+  if (resolvedRef !== undefined && resolvedRef !== null && resolvedRef !== ''
+    && !(typeof resolvedRef === 'string' && RE_RESOLVED_REF.test(resolvedRef))) return '无效的处理凭据';
   return '';
 }
 
 // --- KV PATCH ---
 
 /**
- * @param {{status?, reply?, visibility?, test?, type?, duplicateOf?, category?, assignee?, routedIssue?, updatedBy?}} patch
+ * @param {{status?, reply?, visibility?, test?, type?, duplicateOf?, category?, assignee?, routedIssue?, subtype?, resolvedRef?, updatedBy?}} patch
  *   调用方已按 ALLOWED_STATUSES／ALLOWED_TYPES／['public','hidden'] 校验过合法值。
  */
 async function kvPatch(kv, id, patch) {
@@ -580,6 +588,10 @@ async function kvPatch(kv, id, patch) {
   if (patch.category) record.category = patch.category;
   if (patch.routedIssue !== undefined) {
     if (patch.routedIssue) record.routedIssue = patch.routedIssue; else delete record.routedIssue;
+  }
+  if (patch.subtype) record.subtype = patch.subtype;
+  if (patch.resolvedRef !== undefined) {
+    if (patch.resolvedRef) record.resolvedRef = patch.resolvedRef; else delete record.resolvedRef;
   }
   // assignee：'' 或 null 表示取消认领。claimedAt 只在「首次出现非空 assignee」时由服务端写，
   // 之后换人不改；取消认领则清掉
@@ -623,7 +635,7 @@ export async function onRequestPost(context) {
           status: auth.status, headers,
         });
       }
-      const { id, status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue } = body;
+      const { id, status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue, subtype, resolvedRef } = body;
       if (!id || !id.startsWith('fb_')) {
         return new Response(JSON.stringify({ success: false, error: '无效的反馈 ID' }), {
           status: 400, headers,
@@ -654,7 +666,7 @@ export async function onRequestPost(context) {
           status: 400, headers,
         });
       }
-      const triageErr = validateTriage({ category, assignee, routedIssue });
+      const triageErr = validateTriage({ category, assignee, routedIssue, subtype, resolvedRef });
       if (triageErr) {
         return new Response(JSON.stringify({ success: false, error: triageErr }), {
           status: 400, headers,
@@ -674,7 +686,7 @@ export async function onRequestPost(context) {
           });
         }
       }
-      const updated = await kvPatch(kv, id, { status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue, updatedBy });
+      const updated = await kvPatch(kv, id, { status, reply, visibility, test, type, duplicateOf, category, assignee, routedIssue, subtype, resolvedRef, updatedBy });
       if (!updated) {
         return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
           status: 404, headers,
@@ -703,6 +715,13 @@ export async function onRequestPost(context) {
 
     if (!ALLOWED_TYPES.includes(type)) {
       return new Response(JSON.stringify({ success: false, error: '无效的反馈类型' }), {
+        status: 400, headers,
+      });
+    }
+    // 子类：可选，只在提交时校验取值；null／缺省＝不选
+    const subtype = body.subtype == null ? undefined : body.subtype;
+    if (subtype !== undefined && (typeof subtype !== 'string' || !SUBTYPES.includes(subtype))) {
+      return new Response(JSON.stringify({ success: false, error: '无效的子类' }), {
         status: 400, headers,
       });
     }
@@ -743,7 +762,7 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test);
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype);
       // G-23 第二批 §一·8：新反馈推送，不阻塞提交响应，失败不影响提交结果
       const notifyPromise = notifyNewFeedback(context, { type, content, test });
       if (context && typeof context.waitUntil === 'function') {
@@ -1048,13 +1067,13 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const { status, reply, category, assignee, routedIssue } = await context.request.json();
+    const { status, reply, category, assignee, routedIssue, subtype, resolvedRef } = await context.request.json();
     if (status && !ALLOWED_STATUSES.includes(status)) {
       return new Response(JSON.stringify({ success: false, error: '无效的状态值' }), {
         status: 400, headers,
       });
     }
-    const triageErr = validateTriage({ category, assignee, routedIssue });
+    const triageErr = validateTriage({ category, assignee, routedIssue, subtype, resolvedRef });
     if (triageErr) {
       return new Response(JSON.stringify({ success: false, error: triageErr }), {
         status: 400, headers,
@@ -1068,7 +1087,7 @@ export async function onRequestPatch(context) {
       });
     }
 
-    const updated = await kvPatch(kv, id, { status, reply, category, assignee, routedIssue, updatedBy: 'token' });
+    const updated = await kvPatch(kv, id, { status, reply, category, assignee, routedIssue, subtype, resolvedRef, updatedBy: 'token' });
     if (!updated) {
       return new Response(JSON.stringify({ success: false, error: '反馈不存在' }), {
         status: 404, headers,

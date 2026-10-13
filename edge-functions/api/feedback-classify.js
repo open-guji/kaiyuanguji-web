@@ -3,6 +3,9 @@
 // 正文关键词只纠偏（改成 join），不做主判。分类只是建议块，认领（assignee）必须是人动手。
 
 export const CATEGORIES = ['typo', 'entry', 'site', 'join', 'other'];
+/** typo 的子类（用户在阅读页反馈框可选；不选＝unspecified）。总设计-反馈侧-Elsie.md §四 */
+export const SUBTYPES = ['char', 'punct', 'name', 'version', 'unspecified'];
+
 /** 认领人：块名，不记个人，避免公开页暴露人名；owner＝要用户亲自回 */
 export const ASSIGNEES = ['catalog', 'web', 'text', 'cv', 'collate', 'layout', 'owner'];
 
