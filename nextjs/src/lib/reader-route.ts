@@ -117,11 +117,15 @@ export function readerVersionName(v?: { key?: string; label?: string; source_nam
  * 阅读页 <title>：「书名 · 章名 · 版本名」。
  * chapterTitle 是目录里的章名（如红楼梦的「第三回」），没有就用「卷N」；版本名用 readerVersionName（默认版本不写、非默认只写来源）。
  */
+/** 章名＝书名（忽略空白）时视为没有章名：单篇作品常见，标题与 description 都不重复拼（overview#581） */
+export function dedupeChapterLabel(bookTitle: string, label: string): string {
+    const l = label.trim();
+    return l && l.replace(/\s+/g, '') === bookTitle.replace(/\s+/g, '') ? '' : l;
+}
+
 export function readerTitle(bookTitle: string, chapter: string | undefined, chapterTitle?: string, versionLabel?: string): string {
-    // 单篇作品常见章名＝书名：不重复拼（overview#581：「洪范传 · 洪范传」），章名仍是书名时只写一次
-    const label = chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : '');
-    const sameAsBook = !!label && label.replace(/\s+/g, '') === bookTitle.replace(/\s+/g, '');
-    return [bookTitle, sameAsBook ? '' : label, versionLabel?.trim() ?? '']
+    const label = dedupeChapterLabel(bookTitle, chapterTitle?.trim() || (chapter ? chapterFallbackLabel(chapter) : ''));
+    return [bookTitle, label, versionLabel?.trim() ?? '']
         .filter(Boolean)
         .join(' · ');
 }

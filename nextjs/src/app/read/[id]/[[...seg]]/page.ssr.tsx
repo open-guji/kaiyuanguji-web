@@ -33,7 +33,7 @@ import { checkReader, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
-import { chapterFallbackLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
+import { chapterFallbackLabel, dedupeChapterLabel, parseReaderSegments, readerPath, readerTitle, readerVersionName, type ReaderSel } from '@/lib/reader-route';
 import ReaderClient from '../ReaderClient';
 import { preloadReader, SEED_TEXT_MAX } from '../preload';
 import { seedCallKey, type ReaderSeed } from '../reader-seed';
@@ -156,7 +156,7 @@ async function buildMetadata({ params }: Props): Promise<Metadata> {
     const chapter = s.checked.chapter;
     const versionLabel = readerVersionName(s.checked.version);
     const title = readerTitle(s.title, chapter, s.checked.chapterTitle, versionLabel);
-    const what = [s.checked.chapterTitle ?? (chapter ? chapterFallbackLabel(chapter) : ''), versionLabel].filter(Boolean).join('');
+    const what = [dedupeChapterLabel(s.title, s.checked.chapterTitle ?? (chapter ? chapterFallbackLabel(chapter) : '')), versionLabel].filter(Boolean).join('');
     const fallback = getSiteT('zh-Hans')('seo.readOnline', { what: `${s.title}${what}` });
     // description 取首章正文开头（已在首屏数据里，不新增请求）；取不到（预算超时、过大、无正文）就用模板句
     let lead = '';
