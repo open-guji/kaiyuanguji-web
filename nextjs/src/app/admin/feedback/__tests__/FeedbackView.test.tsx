@@ -235,6 +235,24 @@ describe('标记已改（G4）', () => {
         expect(posted()[0]).not.toHaveProperty('resolvedRef');
     });
 
+    it('已解决／不采纳／重复的条目没有「标记已改」，也不计入待处理', async () => {
+        const settled = ['resolved', 'wontfix', 'duplicate'].map((status, i) => ({
+            id: `fb_9${i}_s`, type: 'bug', content: `已结${status}`, pageUrl: '', createdAt: '2026-09-23T00:00:00.000Z', status, reply: '',
+        }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ success: true, items: [...ITEMS, ...settled], hasMore: false, cursor: '' }) }));
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        // 只有 fb_1_a、fb_2_b 两条待处理的非 contact 反馈（contact 在另一页签）→ 只有 2 个按钮
+        expect(screen.getAllByRole('button', { name: '标记已改' })).toHaveLength(2);
+        for (const s of settled) {
+            const c = screen.getByText(s.content).closest('div.bg-white') as HTMLElement;
+            expect(within(c).queryByRole('button', { name: '标记已改' })).not.toBeInTheDocument();
+        }
+        // 顶部统计：待处理 3（fb_1_a、fb_2_b、contact fb_3_c），已结的 3 条不算
+        expect(screen.getByText(/待处理 3 ·/)).toBeInTheDocument();
+    });
+
     it('取消不发请求；已结的条目没有「标记已改」；contact 没有', async () => {
         const panel = await open();
         fireEvent.click(panel.getByRole('button', { name: '取消' }));

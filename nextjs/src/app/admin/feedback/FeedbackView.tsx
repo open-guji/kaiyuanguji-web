@@ -42,6 +42,8 @@ type Patch = {
 
 // 与 edge-functions/api/feedback.js 的 RE_RESOLVED_REF 一致：`owner/repo@sha`（7～40 位十六进制）或 `owner/repo#n`
 const RE_RESOLVED_REF = /^[\w.-]+\/[\w.-]+(?:@[0-9a-f]{7,40}|#\d+)$/;
+// 已结的状态：不算「待处理」，也不再提供「标记已改」
+const CLOSED_STATUSES = new Set(['resolved', 'wontfix', 'duplicate']);
 const SUBTYPE_LABEL: Record<string, string> = { char: '错字', punct: '标点', name: '专名', version: '版本不对' };
 
 // 与 edge-functions/api/feedback.js 的 ALLOWED_TYPES／ALLOWED_STATUSES 保持一致
@@ -169,7 +171,7 @@ export default function FeedbackView() {
   const real = useMemo(() => items.filter((i) => !i.test), [items]);
   const contactItems = useMemo(() => items.filter((i) => i.type === 'contact'), [items]);
   const mainItems = useMemo(() => items.filter((i) => i.type !== 'contact'), [items]);
-  const pendingCount = useMemo(() => real.filter((i) => i.status !== 'resolved').length, [real]);
+  const pendingCount = useMemo(() => real.filter((i) => !CLOSED_STATUSES.has(i.status)).length, [real]);
   const testCount = items.length - real.length;
   const hiddenCount = useMemo(() => items.filter((i) => i.visibility === 'hidden').length, [items]);
 
@@ -359,7 +361,7 @@ export default function FeedbackView() {
                         <span className="bg-gray-100 text-gray-600 rounded px-2 text-xs font-mono">重复于 {it.duplicateOf}</span>
                       )}
                       <span className="ml-auto text-gray-400">{fmtTime(it.createdAt)}</span>
-                      {!isContact && it.status !== 'resolved' && it.status !== 'wontfix' && it.status !== 'duplicate' && (
+                      {!isContact && !CLOSED_STATUSES.has(it.status) && (
                         <button
                           onClick={() => openDone(it)}
                           disabled={busy}
