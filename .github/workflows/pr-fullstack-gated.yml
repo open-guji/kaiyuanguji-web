@@ -1,0 +1,112 @@
+name: PR fullstack (middleware gated)
+
+# 只在改动命中 middleware 的 PR 上跑全栈（build + next start + contract／e2e）。overview#592，Mason 2026-10-13 定。
+#  - 路径：nextjs/src/middleware*.ts。edge-functions/** 本次不纳入：next start 测不到 EdgeOne 边缘函数，S2 另议。
+#  - 不设为 required check（Mason 定）：只作参考，全栈在 PR 上稳定跑满一周、误报率看过后再提。
+#
+# 来源：test.yml 的 pw-image 与 fullstack 两个 job，步骤原样复制，只去掉 if: github.event_name != 'pull_request'。
+# 改一处要同步另一处（test.yml 那两个 job 仍按 2026-10-07 的定，不在 PR 上跑）。合并成可复用 workflow 留到稳定后再说。
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nextjs/src/middleware*.ts'
+
+jobs:
+  pw-image:
+    name: Playwright image version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.pw.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: e2e/package-lock.json
+          sparse-checkout-cone-mode: false
+      - id: pw
+        run: |
+          V=$(node -p "require('./e2e/package-lock.json').packages['node_modules/@playwright/test'].version")
+          if ! printf '%s' "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "❌ 从 e2e/package-lock.json 读不出 @playwright/test 版本：$V"; exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+  fullstack:
+    # 全栈构建＋next start，跑 e2e 的 reader.spec、feedback.spec、read-home.spec、a11y.spec 与 contract/fullstack.spec。
+    # 只读：数据取正式数据桶的公开地址（只发 GET），不接 KV、不提交反馈、不部署。
+    # 正常约 6 分钟，超时上限 20 分钟；在 Playwright 官方镜像里跑，浏览器与系统依赖都在镜像里（overview#341）。
+    name: Fullstack (build + next start + e2e reader/feedback/contract)
+    needs: pw-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.pw-image.outputs.version }}-noble
+      options: --user 1001
+    env:
+      KYG_RENDER_MODE: fullstack
+      NEXT_PUBLIC_MODE: ''
+      NEXT_PUBLIC_DATA_SOURCE: cos
+      NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+      NEXT_PUBLIC_SITE_ENV: ''
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_PATH: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (nextjs)
+        working-directory: nextjs
+        run: npm ci
+      - name: Install (e2e)
+        working-directory: e2e
+        run: npm ci
+      - name: Build (fullstack)
+        working-directory: nextjs
+        run: npm run build
+      - name: Start (next start)
+        working-directory: nextjs
+        # next start 也读 next.config：KYG_RENDER_MODE 必须同样是 fullstack，否则按静态导出拒绝启动
+        run: |
+          npx next start -p 3000 > "$RUNNER_TEMP/next-start.log" 2>&1 &
+          # 镜像里不一定有 curl，用 node 探活
+          for i in $(seq 1 60); do
+            node -e "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && exit 0
+            sleep 1
+          done
+          echo "❌ next start 60 秒内没起来"; cat "$RUNNER_TEMP/next-start.log"; exit 1
+      - name: e2e contract (fullstack.spec)
+        working-directory: e2e
+        env:
+          TARGET: http://localhost:3000
+          SITE_ARCH: fullstack
+          EXPECT_NOINDEX: '0'
+        # 排除两条只有部署产物才有的：sitemap 分片（deploy 里 gen-sitemaps 生成）、
+        # /api/feedback（EdgeOne 边缘函数，next start 没有）。它们仍由 deploy 的 verify 守着。
+        run: npx playwright test --project=contract contract/fullstack.spec.ts --grep-invert "新架构：sitemap|/api/feedback"
+      # e2e/fixtures/test.ts 的网络重试自测（overview#345）：打本机假服务，不碰线上
+      - name: e2e net-retry selftest
+        if: ${{ !cancelled() }}
+        working-directory: e2e
+        run: npx playwright test --project=selftest
+      - name: e2e ui (reader.spec, feedback.spec, read-home.spec, a11y.spec)
+        if: ${{ !cancelled() }}
+        working-directory: e2e
+        env:
+          TARGET: http://localhost:3000
+          SITE_ARCH: fullstack
+        # feedback.spec 把 /api/feedback 全部拦在浏览器里 mock，不会提交到任何站点
+        run: npx playwright test --project=ui ui/reader.spec.ts ui/feedback.spec.ts ui/read-home.spec.ts ui/a11y.spec.ts
+      - name: Upload e2e report and server log on failure
+        if: failure()
+        run: mkdir -p e2e/out && cp "$RUNNER_TEMP/next-start.log" e2e/out/ || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fullstack-e2e-output
+          path: |
+            e2e/out/
+            e2e/test-results/
+          retention-days: 7
