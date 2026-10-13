@@ -234,9 +234,20 @@ test.describe('新架构：跳转与 404', () => {
         expect(locationTargets(res)).toEqual([`/item/${id}`]);
     });
 
-    test('/book-index 带其它参数时不改写（详情组件自己的 URL 同步）', async ({ request }) => {
-        const res = await request.get(`${TARGET}/book-index?id=${ANCHORS.work.id}&tab=books`, noFollow);
-        expect(res.status(), '带 tab 参数被中间件改写了，会丢详情页状态').toBe(200);
+    test('/book-index 带白名单参数（tab/juan…）：308 到 /item/<id> 且参数原样带上（web#389）', async ({ request }) => {
+        const id = ANCHORS.work.id;
+        const res = await request.get(`${TARGET}/book-index?id=${id}&tab=books&juan=2`, noFollow);
+        expect(res.status()).toBe(308);
+        const loc = res.headers()['location'] ?? '';
+        const u = new URL(loc, TARGET);
+        expect(u.pathname).toBe(`/item/${id}`);
+        expect(u.searchParams.get('tab')).toBe('books');
+        expect(u.searchParams.get('juan')).toBe('2');
+    });
+
+    test('/book-index 带非白名单参数时不改写（详情组件自己的 URL 同步）', async ({ request }) => {
+        const res = await request.get(`${TARGET}/book-index?id=${ANCHORS.work.id}&q=史記`, noFollow);
+        expect(res.status(), '带非白名单参数被中间件改写了，会丢详情页状态').toBe(200);
     });
 
     test('被合并的条目 308 到合并目标', async ({ request }) => {

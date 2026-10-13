@@ -131,12 +131,15 @@ function bookIndexRedirect(req: NextRequest): NextResponse {
     const id = params.get('id') ?? '';
     if (parseItemId(id)?.status !== 'official') return NextResponse.next();
     // 只有 id 以外的参数全是详情状态白名单（tab／juan／page 等）时才带过去；有 q 等别的参数说明是列表页用法，放过
+    // 用 forEach：边缘运行时对 URLSearchParams 的 for…of（entries 迭代器）抛错，staging 上 /book-index 整个 545
     const rest = new URLSearchParams();
-    for (const [k, v] of params) {
-        if (k === 'id') continue;
-        if (!ITEM_QUERY_WHITELIST.includes(k)) return NextResponse.next();
-        rest.append(k, v);
-    }
+    let foreign = false;
+    params.forEach((v, k) => {
+        if (k === 'id') return;
+        if (ITEM_QUERY_WHITELIST.includes(k)) rest.append(k, v);
+        else foreign = true;
+    });
+    if (foreign) return NextResponse.next();
     const url = req.nextUrl.clone();
     url.pathname = `/item/${id}`;
     url.search = rest.toString();
