@@ -104,4 +104,25 @@ describe('相关条目已失效（overview#359 P2-10）', () => {
         expect(screen.getByText('丁：未知块')).toBeInTheDocument();
         expect([...container.querySelectorAll('.og-fb-claimed')].map((e) => e.textContent)).toEqual(['文本已认领']);
     });
+
+    describe('「我的反馈」本机高亮（G5）', () => {
+        afterEach(() => { window.localStorage.clear(); jest.restoreAllMocks(); });
+
+        it('本机记过的 id 显示「我的」，别人的不显示', async () => {
+            window.localStorage.setItem('guji.feedback.mine', JSON.stringify(['fb_2']));
+            renderPage();
+            const li = (await screen.findByText('（示例）希望能调行距')).closest('li') as HTMLElement;
+            expect(within(li).getByText('我的')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('checkbox', { name: '显示已处理' }));
+            const other = screen.getByText('（示例）作者朝代写错了').closest('li') as HTMLElement;
+            expect(within(other).queryByText('我的')).not.toBeInTheDocument();
+        });
+
+        it('localStorage 读取抛错时页面照常渲染，只是不高亮', async () => {
+            jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
+            renderPage();
+            expect(await screen.findByText('（示例）希望能调行距')).toBeInTheDocument();
+            expect(screen.queryByText('我的')).not.toBeInTheDocument();
+        });
+    });
 });

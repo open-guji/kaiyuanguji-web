@@ -7,7 +7,7 @@ import { useFeedback } from '@/components/feedback/FeedbackProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import type { DataSource } from '@/lib/constants';
-import { FEEDBACK_API, FEEDBACK_TYPES, normalizeResourceId } from '@/lib/feedback';
+import { FEEDBACK_API, FEEDBACK_TYPES, normalizeResourceId, readMine } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import type { SiteMessageKey } from '@/i18n/translate';
 
@@ -100,6 +100,8 @@ export default function FeedbackPageContent() {
     const [error, setError] = useState<{ text?: string; key?: SiteMessageKey } | null>(null);
     const [filter, setFilter] = useState('');
     const [showDone, setShowDone] = useState(false);
+    // 本机提交过的反馈 id（挂载后再读，避免 SSR 与客户端首屏不一致）
+    const [mine, setMine] = useState<Set<string>>(new Set());
 
     const load = useCallback(() => {
         setLoading(true);
@@ -120,6 +122,8 @@ export default function FeedbackPageContent() {
     useEffect(() => {
         load();
     }, [load]);
+    const reloadMine = useCallback(() => setMine(new Set(readMine())), []);
+    useEffect(() => { reloadMine(); }, [reloadMine]);
 
     const shown = useMemo(
         () => items.filter((i) => (!filter || i.type === filter) && (showDone || !DONE_STATUSES.has(i.status))),
@@ -137,7 +141,7 @@ export default function FeedbackPageContent() {
                     type="button"
                     className="og-fb-submit"
                     aria-haspopup="dialog"
-                    onClick={() => open({ context: null, onSubmitted: () => { setTimeout(load, 500); } })}
+                    onClick={() => open({ context: null, onSubmitted: () => { reloadMine(); setTimeout(load, 500); } })}
                 >
                     {t('feedback.page.write')}
                 </button>
@@ -168,9 +172,10 @@ export default function FeedbackPageContent() {
                     {shown.map((item) => {
                         const rid = normalizeResourceId(item.resourceId);
                         return (
-                            <li key={item.id}>
+                            <li key={item.id} data-mine={mine.has(item.id) ? 'true' : undefined}>
                                 <div className="og-fb-meta">
                                     <span className="og-fb-meta-type">{TYPE_LABEL_KEY[item.type] ? t(TYPE_LABEL_KEY[item.type]) : item.type}</span>
+                                    {mine.has(item.id) && <> · <span className="og-fb-mine">{t('feedback.page.mine')}</span></>}
                                     {rid && <> · <RelatedLink id={rid} /></>}
                                     {formatDate(item.createdAt) && <> · {formatDate(item.createdAt)}</>}
                                     {' · '}
