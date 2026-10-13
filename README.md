@@ -78,3 +78,5 @@ push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`prom
 
 - 路线图与各板块说明：站内 [/roadmap](https://www.kaiyuanguji.com/roadmap)、[/typesetting](https://www.kaiyuanguji.com/typesetting)、[/extraction](https://www.kaiyuanguji.com/extraction)、[/toolkit](https://www.kaiyuanguji.com/toolkit)、[/storage](https://www.kaiyuanguji.com/storage)、[/intelligence](https://www.kaiyuanguji.com/intelligence)
 - 项目组：https://github.com/open-guji · 问题反馈：[issues](https://github.com/open-guji/kaiyuanguji-web/issues)
+
+<!-- overview#592 验证 B：只改本行，不应触发 pr-fullstack-gated -->
