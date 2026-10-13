@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from '@jest/globals';
 import {
-    chapterFallbackLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, readerVersionName, splitReaderPathname,
+    chapterFallbackLabel, dedupeChapterLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, readerVersionName, splitReaderPathname,
 } from '../reader-route';
 
 const WORK = 'd59f2htm01du'; // 直齋書錄解題（Work）
@@ -125,5 +125,14 @@ describe('readerTitle：章名＝书名不重复（overview#581）', () => {
     it('章名不同照旧；没有章名走「卷N」', () => {
         expect(readerTitle('洪範傳', '001', '卷一')).toBe('洪範傳 · 卷一');
         expect(readerTitle('洪範傳', '001')).toBe('洪範傳 · 卷1');
+    });
+});
+
+describe('dedupeChapterLabel（description 与 title 共用，overview#581）', () => {
+    it('章名＝书名（忽略空白）返回空串，否则原样', () => {
+        expect(dedupeChapterLabel('洪範傳', '洪範傳')).toBe('');
+        expect(dedupeChapterLabel('洪範傳', ' 洪範 傳 ')).toBe('');
+        expect(dedupeChapterLabel('洪範傳', '卷一')).toBe('卷一');
+        expect(dedupeChapterLabel('洪範傳', '')).toBe('');
     });
 });
