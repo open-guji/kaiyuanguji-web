@@ -103,9 +103,10 @@ export default function FeedbackPageContent() {
     // 本机提交过的反馈 id（挂载后再读，避免 SSR 与客户端首屏不一致）
     const [mine, setMine] = useState<Set<string>>(new Set());
 
-    const load = useCallback(() => {
+    // fresh：刚提交完刷新时绕过边缘缓存（其它 isolate 的缓存最长 30 秒内看不到新条目，「我的」也就标不上）
+    const load = useCallback((fresh = false) => {
         setLoading(true);
-        return fetch(`${FEEDBACK_API}?limit=50`)
+        return fetch(`${FEEDBACK_API}?limit=50${fresh ? '&fresh=1' : ''}`)
             .then((res) => res.json())
             .then((data) => {
                 if (data.success) {
@@ -141,7 +142,7 @@ export default function FeedbackPageContent() {
                     type="button"
                     className="og-fb-submit"
                     aria-haspopup="dialog"
-                    onClick={() => open({ context: null, onSubmitted: () => { reloadMine(); setTimeout(load, 500); } })}
+                    onClick={() => open({ context: null, onSubmitted: () => { reloadMine(); setTimeout(() => load(true), 500); } })}
                 >
                     {t('feedback.page.write')}
                 </button>
