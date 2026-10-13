@@ -280,9 +280,11 @@ describe('FeedbackDialog：可选「问题类型」（G2）', () => {
     });
 
     it('没有选中文字，或类型不是「内容有误」时不出现', () => {
-        const { rerender } = render(<FeedbackDialog initialContext={null} initialType="bug" onClose={() => {}} />);
+        // initialContext／initialType 只用来初始化 state，rerender 不会更新，所以每种情形单独挂载
+        const first = render(<FeedbackDialog initialContext={null} initialType="bug" onClose={() => {}} />);
         expect(screen.queryByRole('group', { name: '问题类型（选填）' })).not.toBeInTheDocument();
-        rerender(<FeedbackDialog initialContext={CTX} initialType="suggestion" onClose={() => {}} />);
+        first.unmount();
+        render(<FeedbackDialog initialContext={CTX} initialType="suggestion" onClose={() => {}} />);
         expect(screen.queryByRole('group', { name: '问题类型（选填）' })).not.toBeInTheDocument();
     });
 
