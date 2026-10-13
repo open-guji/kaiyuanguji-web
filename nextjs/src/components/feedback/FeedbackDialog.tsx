@@ -10,6 +10,7 @@ import {
     clampQuote,
     contentBudget,
     submitFeedback,
+    rememberMine,
     type FeedbackContext,
     type FeedbackKind,
     type FeedbackSubtype,
@@ -103,11 +104,12 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
         setStatus('submitting');
         setError('');
         try {
-            await submitFeedback(
+            const newId = await submitFeedback(
                 buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href, subtype: showSubtype ? subtype : undefined }),
                 fetchImpl,
                 t,
             );
+            rememberMine(newId);
             setStatus('done');
             onSubmitted?.();
         } catch (err) {

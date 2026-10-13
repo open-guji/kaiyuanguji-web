@@ -137,7 +137,7 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl, subty
 export const FEEDBACK_API = '/api/feedback';
 
 /** 出错时抛的 Error.message 给读者看：网络错与兜底文案走字典（t），后端给的 error 原样 */
-export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch = fetch, t: SiteT = HANS_T): Promise<void> {
+export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch = fetch, t: SiteT = HANS_T): Promise<string | undefined> {
     let res: Response;
     try {
         res = await fetchImpl(FEEDBACK_API, {
@@ -151,6 +151,41 @@ export async function submitFeedback(body: FeedbackBody, fetchImpl: typeof fetch
     if (!res.ok) {
         const err = await res.json().catch(() => null) as { error?: string } | null;
         throw new Error(err?.error || t('feedback.submitFailed'));
+    }
+    // 后端回 { success, id }；取不到 id 不算失败（「我的反馈」高亮只是锦上添花）
+    const ok = await res.json().catch(() => null) as { id?: unknown } | null;
+    return typeof ok?.id === 'string' && ok.id.startsWith('fb_') ? ok.id : undefined;
+}
+
+/** 「我的反馈」：只在本机 localStorage 记自己提交过的反馈 id（不登录、不记联系方式）。存取失败一律静默。 */
+export const MINE_KEY = 'guji.feedback.mine';
+const MINE_MAX = 100;
+
+function mineStorage(): Storage | null {
+    try {
+        return typeof window === 'undefined' ? null : window.localStorage;
+    } catch {
+        return null;
+    }
+}
+
+export function readMine(storage: Storage | null = mineStorage()): string[] {
+    try {
+        const v = JSON.parse(storage?.getItem(MINE_KEY) ?? '[]') as unknown;
+        return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.startsWith('fb_')) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function rememberMine(id: string | undefined, storage: Storage | null = mineStorage()): void {
+    if (!id || !id.startsWith('fb_')) return;
+    try {
+        const ids = readMine(storage).filter((x) => x !== id);
+        ids.push(id);
+        storage?.setItem(MINE_KEY, JSON.stringify(ids.slice(-MINE_MAX)));
+    } catch {
+        /* 隐私模式／配额满：高亮不可用而已 */
     }
 }
 

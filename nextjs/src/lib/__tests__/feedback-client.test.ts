@@ -12,6 +12,9 @@ import {
     normalizeResourceId,
     readerFeedbackLabel,
     submitFeedback,
+    readMine,
+    rememberMine,
+    MINE_KEY,
 } from '../feedback';
 
 const WORK = 'd59f20aowb9c'; // 史記（作品），12 位
@@ -127,6 +130,13 @@ describe('submitFeedback', () => {
         await expect(submitFeedback(body, fetchImpl as unknown as typeof fetch)).rejects.toThrow('提交太频繁，请稍后再试');
     });
 
+    it('成功时返回后端给的 fb_ id；取不到 id 不算失败', async () => {
+        const withId = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true, id: 'fb_1_ab' }) });
+        expect(await submitFeedback(body, withId as unknown as typeof fetch)).toBe('fb_1_ab');
+        const noId = jest.fn().mockResolvedValue({ ok: true, json: async () => { throw new Error('bad json'); } });
+        expect(await submitFeedback(body, noId as unknown as typeof fetch)).toBeUndefined();
+    });
+
     it('断网时给通用文案', async () => {
         const fetchImpl = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'));
         await expect(submitFeedback(body, fetchImpl as unknown as typeof fetch)).rejects.toThrow('网络错误，请稍后重试');
@@ -150,5 +160,34 @@ describe('阅读页位置锚点（v4 P2，overview#299）', () => {
             expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor }, pageUrl: url }).pageUrl).toBe(url);
         }
         expect(buildFeedbackBody({ type: 'bug', text: 'x', context: { ...ctx, anchor: 'rd-e-12' }, pageUrl: url }).pageUrl).toBe(`${url}#rd-e-12`);
+    });
+});
+
+describe('我的反馈（本机 localStorage）', () => {
+    const mem = () => {
+        const m = new Map<string, string>();
+        return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); } } as unknown as Storage;
+    };
+    it('记下 fb_ id，重复的只留一份，非 fb_ 的忽略', () => {
+        const st = mem();
+        rememberMine('fb_1', st); rememberMine('fb_2', st); rememberMine('fb_1', st);
+        rememberMine('xx', st); rememberMine(undefined, st);
+        expect(readMine(st)).toEqual(['fb_2', 'fb_1']);
+    });
+    it('最多留 100 条，丢最旧的', () => {
+        const st = mem();
+        for (let i = 0; i < 105; i++) rememberMine(`fb_${i}`, st);
+        const ids = readMine(st);
+        expect(ids).toHaveLength(100);
+        expect(ids[0]).toBe('fb_5');
+    });
+    it('存取抛错或数据损坏时静默：读到空、写不抛', () => {
+        const broken = { getItem: () => { throw new Error('x'); }, setItem: () => { throw new Error('x'); } } as unknown as Storage;
+        expect(readMine(broken)).toEqual([]);
+        expect(() => rememberMine('fb_1', broken)).not.toThrow();
+        expect(readMine(null)).toEqual([]);
+        expect(() => rememberMine('fb_1', null)).not.toThrow();
+        const bad = mem(); bad.setItem(MINE_KEY, '{not json');
+        expect(readMine(bad)).toEqual([]);
     });
 });

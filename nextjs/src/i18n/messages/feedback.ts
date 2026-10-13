@@ -54,6 +54,8 @@ export const feedback = defineMessages({
         reply: '站方回覆：{reply}',
         /** 认领回显（#605）：哪个块已接手 */
         claimed: '{block}已認領',
+        /** 「我的反馈」高亮（G5）：本机提交过的 */
+        mine: '我的',
         blocks: {
             catalog: '目錄',
             web: '網站',
@@ -144,6 +146,7 @@ export const feedback = defineMessages({
         relatedGone: '相关条目已失效',
         reply: '站方回复：{reply}',
         claimed: '{block}已认领',
+        mine: '我的',
         blocks: {
             catalog: '目录',
             web: '网站',
