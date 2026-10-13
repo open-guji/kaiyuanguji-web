@@ -18,6 +18,8 @@ import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
 import ReaderLead, { type ReaderLeadData } from './ReaderLead';
+import ReaderProof, { useProofPref } from './ReaderProof';
+import { emptyProofLayer, loadProofLayer, type ProofLayer } from '@/lib/proof';
 
 interface ReaderClientProps {
     id: string;
@@ -187,9 +189,26 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
 
+    // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时下面一切都不动，DOM 与现状一致。
+    // 只在开着时才取 proof_file；章上下文（含 proof_file 声明）在 resolveWarpData 里顺手记下
+    const proof = useProofPref();
+    const proofOnRef = useRef(false);
+    proofOnRef.current = proof.on === true;
+    const proofCtx = useRef<{ ctx: ReaderResolveContext | undefined; key: string } | null>(null);
+    const [proofLayer, setProofLayer] = useState<ProofLayer>(() => emptyProofLayer());
+    const fetchProof = useCallback((ctx: ReaderResolveContext | undefined) => {
+        loadProofLayer(id, ctx, transport as { getTextFile?: (id: string, key: string, file: string) => Promise<unknown> }).then(setProofLayer);
+    }, [id, transport]);
+    useEffect(() => {
+        if (proof.on === true && proofCtx.current) fetchProof(proofCtx.current.ctx);
+        if (proof.on !== true) setProofLayer(prev => (prev.cells.size === 0 ? prev : emptyProofLayer()));
+    }, [proof.on, fetchProof]);
+
     // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`、`norm_file`）；
     // 有 `cord_file` 才有像素框，两边按格位对上做对读版面；没有 cord 就不做对读版面、不画书影格线（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
+        proofCtx.current = { ctx, key: chapterKey };
+        if (proofOnRef.current) fetchProof(ctx);
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
         if (!files?.cord) return null;
         // 规范层（norm.json）：人审过的「异体→通行字」，按格位 key 挂到字上；没声明或取不到时 files.norm 为 null＝与改前一致
@@ -212,7 +231,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         }
         // hasNorm：章条目声明了 norm_file 且取到了（哪怕是空表）＝自校文本，阅读器的「原字」档可选；外来文本没有，置灰（overview#540）
         return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null } as any;
-    }, [id, transport]);
+    }, [id, transport, fetchProof]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
     const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
@@ -245,6 +264,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
             />
             {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <SelectionReport containerRef={textRef} context={feedbackContext} />
+            {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
     );
 }
