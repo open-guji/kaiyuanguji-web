@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../fetchAll';
 import { isSameSiteUrl } from '../../../lib/pageUrl';
 import {
-  ASSIGNEE_LABEL, ASSIGNEE_OPTIONS, CATEGORY_OPTIONS, categoryOf, isClaimOverdue,
+  ASSIGNEE_LABEL, ASSIGNEE_OPTIONS, CATEGORY_OPTIONS, categoryOf, fmtDuration, isClaimOverdue, slaStats,
 } from '../../../lib/feedbackTriage';
 
 interface FeedbackRecord {
@@ -155,7 +155,8 @@ export default function FeedbackView() {
       return true;
     });
   }, [tab, contactItems, mainItems, statusFilter, typeFilter, categoryFilter, assigneeFilter, visibilityFilter, testFilter]);
-  const overdueCount = useMemo(() => items.filter((i) => isClaimOverdue(i)).length, [items]);
+  const sla = useMemo(() => slaStats(items), [items]);
+  const overdueCount = sla.overdue;
 
   return (
     <div className="space-y-4">
@@ -180,6 +181,12 @@ export default function FeedbackView() {
               记录过多，只取到了前 {items.length} 条（最旧的一批），更新的记录没有显示。
             </div>
           )}
+
+          <div className="bg-white rounded border p-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-600" data-testid="sla-stats">
+            <span>近 30 天已认领 <b className="text-black">{sla.claimed30}</b></span>
+            <span>超 24h 未认领 <b className={sla.overdue ? 'text-red-700' : 'text-black'}>{sla.overdue}</b></span>
+            <span>认领耗时中位数 <b className="text-black">{fmtDuration(sla.medianClaimMs)}</b></span>
+          </div>
 
           <div className="flex gap-2 border-b text-sm">
             <button

@@ -175,3 +175,17 @@ describe('分流：认领块／分类（#605 步 3）', () => {
         await waitFor(() => expect(within(card).queryByText('超 24h 未认领')).not.toBeInTheDocument());
     });
 });
+
+describe('管理页顶部 SLA 统计（#605 步 7）', () => {
+    it('显示近 30 天已认领、超 24h 未认领、中位数；认领一条后数字更新', async () => {
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText('首页搜索点不动')).toBeInTheDocument());
+        const box = screen.getByTestId('sla-stats');
+        // ITEMS 里两条 2026-09 的 bug／resource 都超 24h 未认领；contact 不计
+        expect(box).toHaveTextContent('超 24h 未认领 2');
+        expect(box).toHaveTextContent('认领耗时中位数 —');
+        const card = screen.getByText('首页搜索点不动').closest('div.bg-white') as HTMLElement;
+        fireEvent.change(within(card).getByLabelText('认领块'), { target: { value: 'web' } });
+        await waitFor(() => expect(screen.getByTestId('sla-stats')).toHaveTextContent('超 24h 未认领 1'));
+    });
+});

@@ -47,3 +47,42 @@ export function isClaimOverdue(
     const t = new Date(rec.createdAt).getTime();
     return Number.isFinite(t) && now - t > CLAIM_SLA_MS;
 }
+
+const DAY_MS = 24 * 3600 * 1000;
+
+export interface SlaStats {
+    /** 近 30 天内被认领的条数（按 claimedAt） */
+    claimed30: number;
+    /** 当前超 24h 未认领 */
+    overdue: number;
+    /** 近 30 天认领耗时（claimedAt − createdAt）的中位数，毫秒；没有样本为 null */
+    medianClaimMs: number | null;
+}
+
+export function slaStats(
+    items: { category?: string; type: string; status: string; assignee?: string; createdAt: string; claimedAt?: string; test?: boolean }[],
+    now: number = Date.now(),
+): SlaStats {
+    const real = items.filter((i) => !i.test);
+    const waits: number[] = [];
+    for (const i of real) {
+        if (!i.assignee || !i.claimedAt) continue;
+        const c = new Date(i.claimedAt).getTime();
+        const s = new Date(i.createdAt).getTime();
+        if (!Number.isFinite(c) || !Number.isFinite(s) || now - c > 30 * DAY_MS) continue;
+        waits.push(Math.max(0, c - s));
+    }
+    waits.sort((a, b) => a - b);
+    const n = waits.length;
+    const medianClaimMs = n === 0 ? null : n % 2 ? waits[(n - 1) / 2] : (waits[n / 2 - 1] + waits[n / 2]) / 2;
+    return { claimed30: n, overdue: real.filter((i) => isClaimOverdue(i, now)).length, medianClaimMs };
+}
+
+/** 毫秒 → 「x 小时 y 分钟」；不足 1 分钟写「不到 1 分钟」；null 写「—」 */
+export function fmtDuration(ms: number | null): string {
+    if (ms === null) return '—';
+    const m = Math.round(ms / 60000);
+    if (m < 1) return '不到 1 分钟';
+    const h = Math.floor(m / 60);
+    return h ? `${h} 小时 ${m % 60} 分钟` : `${m} 分钟`;
+}
