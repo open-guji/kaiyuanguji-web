@@ -159,3 +159,57 @@ describe('公开读透出', () => {
         expect(stored('fb_1_old').category).toBeUndefined();
     });
 });
+
+describe('G1：subtype／resolvedRef', () => {
+    let id: string;
+    beforeEach(async () => {
+        await fn.onRequestPost(post({ type: 'bug', content: '错字', pageUrl: 'https://www.openguji.com/read/abc' }));
+        id = fbKeys()[0];
+    });
+
+    it('提交可带合法 subtype；非法 subtype 400 且不落库；不带则不写', async () => {
+        store.clear();
+        const ok = await fn.onRequestPost(post({ type: 'bug', content: 'a', subtype: 'punct' }));
+        expect(ok.status).toBe(200);
+        expect(stored(fbKeys()[0]).subtype).toBe('punct');
+        store.clear();
+        const bad = await fn.onRequestPost(post({ type: 'bug', content: 'a', subtype: 'nope' }));
+        expect(bad.status).toBe(400);
+        expect(fbKeys()).toHaveLength(0);
+        await fn.onRequestPost(post({ type: 'bug', content: 'b' }));
+        expect(stored(fbKeys()[0]).subtype).toBeUndefined();
+    });
+
+    it('PATCH／update 非法 subtype、非法 resolvedRef 一律 400 且不落库', async () => {
+        for (const extra of [{ subtype: 'x' }, { resolvedRef: 'abc' }, { resolvedRef: 'a/b@zzzzzzz' }, { resolvedRef: 'a/b#x' }, { resolvedRef: 'a/b@abc12' }]) {
+            expect((await update(id, extra)).status).toBe(400);
+            expect((await fn.onRequestPatch(patch(id, extra))).status).toBe(400);
+        }
+        expect(stored(id).subtype).toBeUndefined();
+        expect(stored(id).resolvedRef).toBeUndefined();
+    });
+
+    it('合法 subtype／resolvedRef 落库，resolvedRef 空串清除', async () => {
+        await update(id, { subtype: 'name', resolvedRef: 'open-guji/book-text@abc1234' });
+        expect(stored(id).subtype).toBe('name');
+        expect(stored(id).resolvedRef).toBe('open-guji/book-text@abc1234');
+        await fn.onRequestPatch(patch(id, { resolvedRef: 'open-guji-core/overview#605' }));
+        expect(stored(id).resolvedRef).toBe('open-guji-core/overview#605');
+        await update(id, { resolvedRef: '' });
+        expect(stored(id).resolvedRef).toBeUndefined();
+    });
+
+    it('公开读含 subtype、不含 resolvedRef；管理读原样；旧记录缺 subtype 读作 unspecified 且不回写', async () => {
+        await update(id, { subtype: 'version', resolvedRef: 'open-guji-core/overview#605' });
+        store.set('fb_1_old', JSON.stringify({ id: 'fb_1_old', type: 'bug', content: '旧', pageUrl: '', resourceId: '', createdAt: '2026-10-01T00:00:00.000Z', status: 'pending', reply: '' }));
+        const pub = (await json(await fn.onRequestGet(list()))).items;
+        const mine = pub.find((i: { id: string }) => i.id === id);
+        const old = pub.find((i: { id: string }) => i.id === 'fb_1_old');
+        expect(mine.subtype).toBe('version');
+        expect(mine).not.toHaveProperty('resolvedRef');
+        expect(old.subtype).toBe('unspecified');
+        expect(stored('fb_1_old').subtype).toBeUndefined();
+        const full = (await json(await fn.onRequestGet(list(true)))).items.find((i: { id: string }) => i.id === id);
+        expect(full.resolvedRef).toBe('open-guji-core/overview#605');
+    });
+});
