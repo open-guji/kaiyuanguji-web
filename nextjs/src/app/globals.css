@@ -2760,6 +2760,11 @@
     line-height: 1.75;
     white-space: pre-wrap;
   }
+  .og-fb-claimed {
+    margin: 0 0 4px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+  }
   .og-fb-reply {
     margin: 8px 0 0;
     padding-left: 12px;

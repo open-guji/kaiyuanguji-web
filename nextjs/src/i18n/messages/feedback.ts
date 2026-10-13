@@ -46,6 +46,17 @@ export const feedback = defineMessages({
         related: '相關條目',
         relatedGone: '相關條目已失效',
         reply: '站方回覆：{reply}',
+        /** 认领回显（#605）：哪个块已接手 */
+        claimed: '{block}已認領',
+        blocks: {
+            catalog: '目錄',
+            web: '網站',
+            text: '文本',
+            cv: 'CV',
+            collate: '整理',
+            layout: '排版',
+            owner: '站長',
+        },
     },
     dialog: {
         title: '反饋',
@@ -118,6 +129,16 @@ export const feedback = defineMessages({
         related: '相关条目',
         relatedGone: '相关条目已失效',
         reply: '站方回复：{reply}',
+        claimed: '{block}已认领',
+        blocks: {
+            catalog: '目录',
+            web: '网站',
+            text: '文本',
+            cv: 'CV',
+            collate: '整理',
+            layout: '排版',
+            owner: '站长',
+        },
     },
     dialog: {
         title: '反馈',

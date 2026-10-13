@@ -24,6 +24,20 @@ const STATUS_LABEL_KEY: Record<string, SiteMessageKey> = {
     duplicate: 'feedback.status.duplicate',
 };
 
+/** 认领块 → 文案 key（后端 ASSIGNEES，见 feedbackTriage.ts 对表测试） */
+const BLOCK_LABEL_KEY: Record<string, SiteMessageKey> = {
+    catalog: 'feedback.page.blocks.catalog',
+    web: 'feedback.page.blocks.web',
+    text: 'feedback.page.blocks.text',
+    cv: 'feedback.page.blocks.cv',
+    collate: 'feedback.page.blocks.collate',
+    layout: 'feedback.page.blocks.layout',
+    owner: 'feedback.page.blocks.owner',
+};
+
+/** 公开读新增字段（后端只透出 category／assignee／claimedAt，不含 routedIssue） */
+type PublicTriage = { assignee?: string; claimedAt?: string };
+
 /** 「已处理」一类：已结的状态。待处理、处理中都算还没处理完，默认列出（用户 10-01 反馈，overview#337 C1） */
 const DONE_STATUSES = new Set(['resolved', 'wontfix', 'duplicate']);
 
@@ -164,6 +178,14 @@ export default function FeedbackPageContent() {
                                         {STATUS_LABEL_KEY[item.status] ? t(STATUS_LABEL_KEY[item.status]) : item.status}
                                     </span>
                                 </div>
+                                {(() => {
+                                    const a = (item as typeof item & PublicTriage).assignee;
+                                    // 已结的不再提「已认领」；未知块名（后端新加了块而前端没跟上）不显示，免得露英文代号
+                                    if (!a || DONE_STATUSES.has(item.status) || !BLOCK_LABEL_KEY[a]) return null;
+                                    return (
+                                        <p className="og-fb-claimed">{t('feedback.page.claimed', { block: t(BLOCK_LABEL_KEY[a]) })}</p>
+                                    );
+                                })()}
                                 <p className="og-fb-body">{item.content}</p>
                                 {item.reply && <p className="og-fb-reply">{t('feedback.page.reply', { reply: item.reply })}</p>}
                             </li>
