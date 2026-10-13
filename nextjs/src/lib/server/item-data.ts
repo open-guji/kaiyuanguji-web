@@ -431,8 +431,9 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
             if (forceCache) init.cache = 'force-cache';
             const res = await doFetch(url, init);
             if (res.status !== 206) {
-                // 200＝源站无视 Range 返回了整文件；404/403/5xx 同样当没有
+                // 200＝源站无视 Range 返回了整文件；404/403/5xx 同样当没有。404/403 是「章没有正文」，不算故障；其余记一行，运维能分清是功能坏了还是没正文
                 try { await res.body?.cancel(); } catch { /* 忽略 */ }
+                if (res.status !== 404 && res.status !== 403) console.warn(`[item-data] 章首片段 ${relPath} 没取到：HTTP ${res.status}（期望 206）`);
                 return null;
             }
             const bytes = new Uint8Array(await res.arrayBuffer());
@@ -440,7 +441,8 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
             const total = Number(/\/(\d+)\s*$/.exec(res.headers?.get?.('content-range') ?? '')?.[1]);
             const truncated = Number.isFinite(total) ? total > bytes.length : bytes.length >= headBytes;
             return { text: decodeChapterHead(bytes, truncated), truncated };
-        } catch {
+        } catch (err) {
+            console.warn(`[item-data] 章首片段 ${relPath} 没取到：${(err as Error)?.name ?? 'Error'}`);
             return null;
         } finally {
             timeout.clear();

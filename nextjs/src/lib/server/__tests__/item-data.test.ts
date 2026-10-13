@@ -640,6 +640,7 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         expect(await f.getCurrentTextHead(REL)).toBeNull();
         expect(read).toBe(false);
         expect(cancelled).toBe(true);
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('HTTP 200'));
     });
 
     it('超时（请求被中止）与网络错：返回 null，不抛', async () => {
@@ -649,10 +650,12 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         expect(await slow.f.getCurrentTextHead(REL, 1024, 30)).toBeNull();
         const down = head(() => { throw new Error('network down'); });
         expect(await down.f.getCurrentTextHead(REL)).toBeNull();
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('没取到'));
     });
 
     it('404：返回 null', async () => {
         const { f } = head(() => ({ status: 404, ok: false, body: null }));
         expect(await f.getCurrentTextHead(REL)).toBeNull();
+        expect(console.warn).not.toHaveBeenCalled(); // 章没有正文不算故障
     });
 });

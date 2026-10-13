@@ -190,16 +190,20 @@ describe('阅读页 page.ssr（路径式地址）', () => {
     });
 
     it('大章（种子没有正文）：另取章首片段做 lead，被截断时给「继续阅读」（overview#586）', async () => {
+        mockHead.mockClear();
         mockHead.mockResolvedValueOnce({ text: '章首第一段。\n\n章首第二段。', truncated: true });
         const el = (await page(['001'])) as { props: { lead?: { paragraphs: string[]; truncated: boolean } } };
+        expect(mockHead).toHaveBeenCalledTimes(1);
         expect(mockHead).toHaveBeenCalledWith(`items/${ZHIZHAI}/default/001.txt`);
         expect(el.props.lead?.paragraphs).toEqual(['章首第一段。', '章首第二段。']);
         expect(el.props.lead?.truncated).toBe(true);
     });
 
     it('种子已有正文：章首片段的结果不用（lead 取种子里的正文）', async () => {
+        mockHead.mockClear();
         mockHead.mockResolvedValueOnce({ text: '不该出现的片段', truncated: true });
         const el = (await page(['002'])) as { props: { lead?: { paragraphs: string[]; truncated: boolean } } };
+        expect(mockHead).toHaveBeenCalledWith(`items/${ZHIZHAI}/default/002.txt`); // 并行发出，结果被丢弃
         expect(el.props.lead?.paragraphs).toEqual(['卷二正文']);
         expect(el.props.lead?.truncated).toBe(false);
     });
