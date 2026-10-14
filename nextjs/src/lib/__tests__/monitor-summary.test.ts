@@ -108,6 +108,24 @@ describe('GET /api/track-error?summary=1', () => {
         expect(b.top[1].count).toBe(2);
     });
 
+    it('GUJI-198：只按时间前缀列最近 24 小时，不翻 30 天里的全部 err_ 键', async () => {
+        g.ERROR_VIEW_TOKEN = 'right';
+        for (let d = 3; d <= 29; d += 1) {
+            for (let i = 0; i < 3; i += 1) errKv.store.set(`err_${NOW - d * 24 * 60 * MIN - i}_zzzzzz`, JSON.stringify({ kind: 'js', message: 'ancient' }));
+        }
+        const prefixes: string[] = [];
+        const orig = errKv.list.bind(errKv);
+        errKv.list = async (opts: { prefix?: string } = {}) => { prefixes.push(opts.prefix || ''); return orig(opts); };
+        const res = await te.onRequestGet(get('https://x/api/track-error?summary=1&window=1h', 'right'));
+        errKv.list = orig;
+        const b = await json(res);
+        expect(b.count).toBe(5);
+        expect(b.count24h).toBe(12);
+        expect(b.partial).toBe(false);
+        expect(prefixes.length).toBeLessThanOrEqual(2);
+        expect(prefixes.every((p) => /^err_\d{5}$/.test(p))).toBe(true);
+    });
+
     it('不再认 ?token=（M1：查询串会进访问日志），只认 Authorization: Bearer', async () => {
         g.ERROR_VIEW_TOKEN = 'right';
         const res = await te.onRequestGet({ request: new Request('https://x/api/track-error?summary=1&token=right') });

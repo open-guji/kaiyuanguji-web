@@ -355,6 +355,7 @@ export async function onRequestGet(context) {
  * 摘要只取 kind + message 前 120 字，message 里若混进邮箱／长数字串一并打码。
  */
 const SUMMARY_MAX_GET = 200;
+const SUMMARY_LIST_BUDGET_MS = 12000;
 async function summaryResponse(context, url, headers) {
   const auth = checkViewAuth(bearerToken(context.request), context);
   if (!auth.ok) {
@@ -368,16 +369,33 @@ async function summaryResponse(context, url, headers) {
   const windowHours = Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
   const now = Date.now();
 
-  const names = [];
-  let cursor = '';
-  for (let i = 0; i < 100; i += 1) {
-    const opts = { prefix: 'err_', limit: 256 };
-    if (cursor) opts.cursor = cursor;
-    const r = await kv.list(opts);
-    for (const k of r.keys || []) names.push(k.key);
-    if (r.complete || !r.cursor) break;
-    cursor = r.cursor;
-  }
+  // GUJI-198：key 是 err_<13 位毫秒>_…，不能再 list 全部 err_ 键（30 天 TTL 内错误一多，
+  // 要串行翻几十上百页，正式站实测超过监控的 20 秒）。汇总只看最近 24 小时，
+  // 所以只列「毫秒前 5 位」（10^8 毫秒≈27.8 小时一档）覆盖这段时间的至多 2 档前缀，档间并行。
+  // 另有总用时预算：超了就返回已读到的并标 partial，不让监控等到超时。
+  const BUCKET_MS = 100000000;
+  const firstBucket = Math.floor((now - 24 * 3600000) / BUCKET_MS);
+  const lastBucket = Math.floor(now / BUCKET_MS);
+  const deadline = Date.now() + SUMMARY_LIST_BUDGET_MS;
+  let partial = false;
+  const listBucket = async (b) => {
+    const out = [];
+    let cursor = '';
+    for (let i = 0; i < 100; i += 1) {
+      if (Date.now() > deadline) { partial = true; break; }
+      const opts = { prefix: `err_${b}`, limit: 256 };
+      if (cursor) opts.cursor = cursor;
+      const r = await kv.list(opts);
+      for (const k of r.keys || []) out.push(k.key);
+      if (r.complete || !r.cursor) return out;
+      cursor = r.cursor;
+    }
+    partial = true;
+    return out;
+  };
+  const buckets = [];
+  for (let b = firstBucket; b <= lastBucket; b += 1) buckets.push(b);
+  const names = (await Promise.all(buckets.map(listBucket))).flat();
 
   const inWindow = [];
   let count24h = 0;
@@ -412,6 +430,7 @@ async function summaryResponse(context, url, headers) {
     count24h,
     avgPerHour24h: Math.round((count24h / 24) * 100) / 100,
     sampled: sample.length,
+    partial,
     top,
     now: new Date(now).toISOString(),
   }), { status: 200, headers: { ...headers, 'Cache-Control': 'no-store' } });
