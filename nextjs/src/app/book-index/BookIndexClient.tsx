@@ -8,6 +8,7 @@ import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import type { IndexEntry, ResultTab, SearchFilters } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport, getSearchBaseUrl } from '@/lib/transport';
+import FulltextTab from '@/components/fulltext/FulltextTab';
 import { getSearchClient } from '@/lib/search/client';
 import { usePrefetchSearch } from '@/lib/search/use-prefetch-search';
 import { isSearchDegraded, subscribeSearchDegraded } from '@/lib/search/meili-storage';
@@ -163,6 +164,8 @@ function BookIndexContent() {
           initialQuery={searchQuery}
           onQueryChange={handleQueryChange}
         />
+        {/* 全文搜索面板（GUJI-163 / F6，方案 A：网站侧独立面板，不改组件库）。构建期开关 NEXT_PUBLIC_FULLTEXT_TAB 默认关，关时渲染为空 */}
+        <FulltextTab q={searchQuery} />
       </div>
       </BidUrlProvider>
     </LayoutWrapper>
