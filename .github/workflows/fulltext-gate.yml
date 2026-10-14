@@ -1,0 +1,51 @@
+name: Fulltext gate (F8 门槛 B)
+
+# 全文搜索（F6 前端）的 PR 门槛：只在改动命中全文相关文件的 PR 上跑 fulltext 测试子集。
+# 来源：网站全文搜索 F8 分块设计（overview 仓 项目进展/网站全文搜索/计划/分块-F8-Eiko.md 第二节门槛 B）。
+#  - 不改 test.yml：unit job 的触发与内容一律不动（F8 步 3 验收③）。
+#  - 不设为 required check（分支保护归 Mason 定）：只作参考，稳定一段时间后再提。
+#  - 不进发布：deploy／data／verify 一概不挂（不改 deploy.yml）。
+#  - 门槛 A（Python，service/tests）在 overview 仓，本文件不管。
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nextjs/src/**/fulltext/**'
+      - 'nextjs/src/**/*fulltext*'
+      - '.github/workflows/fulltext-gate.yml'
+
+jobs:
+  fulltext-frontend:
+    name: Fulltext frontend (Jest fulltext 子集 + 覆盖率门槛)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (nextjs)
+        working-directory: nextjs
+        run: npm ci
+      # 必过用例按名字在测试里（offsets 的码点往返、夹注边界、开关默认关、503/has_more 等），被删会让用例数下降，
+      # 下面的覆盖率与 skip 检查不替代它们；用例数由人工 review 守着。
+      - name: Jest fulltext subset + coverage thresholds
+        working-directory: nextjs
+        # 门槛（按文件，不影响全局）：码点偏移纯函数 ≥90% 行覆盖；分组／分页组件 ≥70% 行覆盖
+        run: |
+          npx jest fulltext --coverage \
+            --collectCoverageFrom='src/lib/fulltext/**/*.ts' \
+            --collectCoverageFrom='src/components/fulltext/**/*.tsx' \
+            --coverageThreshold='{"./src/lib/fulltext/fulltext-offsets.ts":{"lines":90},"./src/components/fulltext/FulltextResults.tsx":{"lines":70}}'
+      # 全文相关测试不许被 skip／todo／only／xfail 掉：命中即红（只查 fulltext 文件，不管全仓）
+      - name: 禁止 skip／xfail（fulltext 测试）
+        run: |
+          FILES=$(find nextjs/src \( -iname '*fulltext*' -o -path '*/fulltext/*' \) -type f \( -name '*.ts' -o -name '*.tsx' \))
+          if [ -z "$FILES" ]; then echo "❌ 没找到任何 fulltext 测试文件，门槛无效"; exit 1; fi
+          HITS=$(grep -nE '\b(it|test|describe)\.(skip|todo|only)\(|\bx(it|test|describe)\(|xfail' $FILES || true)
+          if [ -n "$HITS" ]; then
+            echo "❌ fulltext 测试里出现 skip／todo／only／xfail："
+            echo "$HITS"
+            exit 1
+          fi
+          echo "✅ 未发现 skip／todo／only／xfail"
