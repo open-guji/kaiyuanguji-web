@@ -180,14 +180,15 @@ jobs:
           # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
           # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
           # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
           # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
-          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
-          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"'); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
           ok=0
           while [ "$(date +%s)" -lt "$READY_AT" ]; do
             q="_cdnprobe=$RANDOM$RANDOM"
-            a=$(fp "$TARGET/"); b=$(fp "$TARGET/?$q")
-            c=$(lv "$DATA_BASE/latest.json"); e=$(lv "$DATA_BASE/latest.json?$q")
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
             if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
             echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
             [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
@@ -235,14 +236,15 @@ jobs:
           # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
           # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
           # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
           # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
-          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
-          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"'); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
           ok=0
           while [ "$(date +%s)" -lt "$READY_AT" ]; do
             q="_cdnprobe=$RANDOM$RANDOM"
-            a=$(fp "$TARGET/"); b=$(fp "$TARGET/?$q")
-            c=$(lv "$DATA_BASE/latest.json"); e=$(lv "$DATA_BASE/latest.json?$q")
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
             if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
             echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
             [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
@@ -286,14 +288,15 @@ jobs:
           # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
           # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
           # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
           # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
-          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
-          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"'); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
           ok=0
           while [ "$(date +%s)" -lt "$READY_AT" ]; do
             q="_cdnprobe=$RANDOM$RANDOM"
-            a=$(fp "$TARGET/"); b=$(fp "$TARGET/?$q")
-            c=$(lv "$DATA_BASE/latest.json"); e=$(lv "$DATA_BASE/latest.json?$q")
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
             if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
             echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
             [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
@@ -336,14 +339,15 @@ jobs:
           # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
           # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
           # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
           # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
-          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
-          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"'); [ -n "$x" ] && printf '%s' "$x" | md5sum | cut -c1-12; }
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
           ok=0
           while [ "$(date +%s)" -lt "$READY_AT" ]; do
             q="_cdnprobe=$RANDOM$RANDOM"
-            a=$(fp "$TARGET/"); b=$(fp "$TARGET/?$q")
-            c=$(lv "$DATA_BASE/latest.json"); e=$(lv "$DATA_BASE/latest.json?$q")
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
             if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
             echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
             [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
