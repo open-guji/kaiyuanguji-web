@@ -19,7 +19,7 @@ name: Data package check and publish (overview#470 P1)
 #     回滚计划、/api/version）切到 web.json 之前还在用，所以上传前从线上现行 latest.json 带过来，不让数据发布把它抹掉。
 #   · 刷新（失效）、上线后抽查、告警、h1 文本（每次重写约 3.7 GB，按设计 §5 走独立任务）在后续 PR 里加。
 #
-# 触发：每日定时（UTC 21:10，在 deploy.yml 的 20:30 之后；三仓无变化就跳过）＋手动。
+# 触发：每日定时（UTC 21:43，在 deploy.yml 的 20:30 之后；三仓无变化就跳过）＋手动。
 # 并发：publish-data 一组，不取消在跑的（上传时只有一个写者）。
 
 on:
@@ -55,7 +55,7 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: '10 21 * * *'
+    - cron: '43 21 * * *'
 
 permissions:
   contents: read
