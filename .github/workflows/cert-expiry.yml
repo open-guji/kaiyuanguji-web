@@ -1,0 +1,42 @@
+name: Cert expiry
+
+# GUJI-145：HTTPS 证书到期只读检查。只在手动触发时跑，不挂 schedule（GitHub schedule 近日不稳，见 GUJI-143），
+# 不接 monitor，不用任何 secret 或仓库变量，不碰 EdgeOne／DNS。
+# 目的：在 Actions 上（出口不经云端沙箱网关）取一次权威值，和沙箱里的运行结果对照。
+# 剩余天数低于阈值或已过期时 job 红（退出码 1）；有域名没取到证书时退出码 3，job 也红。
+# 本地也能跑同一条：node ops/cert-expiry.mjs [域名…] [--days N] [--json]
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '阈值（剩余天数低于它就报）'
+        type: string
+        default: '21'
+      hosts:
+        description: '要查的域名，空格分隔；留空查默认清单（见 ops/cert-expiry.mjs）'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: 证书到期检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run cert expiry check
+        env:
+          DAYS: ${{ inputs.days }}
+          HOSTS: ${{ inputs.hosts }}
+        run: |
+          set -o pipefail
+          # 输入只经 env 进 shell（不内插进脚本）；HOSTS 按空白拆成参数，不经 eval
+          # shellcheck disable=SC2086
+          node ops/cert-expiry.mjs --days "$DAYS" $HOSTS | tee -a "$GITHUB_STEP_SUMMARY"
