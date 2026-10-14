@@ -421,7 +421,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
      * 任何读不到都返回 null、不抛错、不重试：短超时（headTimeoutMs）；源站不认 Range 返回 200（整文件）时立刻丢弃响应体，不读进内存。
      * 地址多带一个 `h=<字节数>`，与整文件的缓存条目分开（避免 206 的片段被当成整文件命中）。
      */
-    async function getCurrentTextHead(relPath: string, headBytes = 16 * 1024, headTimeoutMs = 1500): Promise<{ text: string; truncated: boolean } | null> {
+    async function getCurrentTextHead(relPath: string, headBytes = 16 * 1024, headTimeoutMs = 3000): Promise<{ text: string; truncated: boolean } | null> {
         const localText = readLocalPublicData(relPath);
         if (localText !== null) {
             const bytes = new TextEncoder().encode(localText);

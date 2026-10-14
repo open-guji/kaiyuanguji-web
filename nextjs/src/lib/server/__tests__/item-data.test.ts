@@ -671,6 +671,29 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('没取到'));
     });
 
+    it('默认超时 3 秒：2.9 秒时还没中止，3.1 秒时中止并返回 null（overview#608：COS 偶发首字节 >1.5 秒）', async () => {
+        // 原生 AbortSignal.timeout 不受假定时器控制：删掉它，走兜底的 AbortController + setTimeout 分支（同上面的写法）
+        const orig = AbortSignal.timeout;
+        // @ts-expect-error 模拟不支持的运行时
+        delete AbortSignal.timeout;
+        jest.useFakeTimers();
+        try {
+            let aborted = false;
+            const slow = head((_u, init) => new Promise((_res, rej) => {
+                init?.signal?.addEventListener('abort', () => { aborted = true; rej(Object.assign(new Error('aborted'), { name: 'TimeoutError' })); });
+            }));
+            const p = slow.f.getCurrentTextHead(REL);
+            await jest.advanceTimersByTimeAsync(2900);
+            expect(aborted).toBe(false);
+            await jest.advanceTimersByTimeAsync(200);
+            expect(aborted).toBe(true);
+            expect(await p).toBeNull();
+        } finally {
+            jest.useRealTimers();
+            AbortSignal.timeout = orig;
+        }
+    });
+
     it('404：返回 null', async () => {
         const { f } = head(() => ({ status: 404, ok: false, body: null }));
         expect(await f.getCurrentTextHead(REL)).toBeNull();
