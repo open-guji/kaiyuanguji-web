@@ -36,7 +36,9 @@ export function hitHref(entry: string, hit: FulltextHit, q: string): string {
     const base = readerPath(entry, { chapter: hit.chapter });
     const first = hit.matches[0];
     if (!first) return base;
-    return `${base}?ft=${encodeURIComponent(`${hit.chapter}:${first[0]}-${first[1]}`)}&ftq=${encodeURIComponent(q)}`;
+    // ftq 优先用 snippet 里首个 <mark> 的原文（书里实际的字形；用户可能输简体、书是繁体），没有才用查询词
+    const marked = /<mark>([^<]{1,100})<\/mark>/.exec(hit.snippet)?.[1];
+    return `${base}?ft=${encodeURIComponent(`${hit.chapter}:${first[0]}-${first[1]}`)}&ftq=${encodeURIComponent(marked ?? q)}`;
 }
 
 interface Props {

@@ -12,6 +12,8 @@ export const bookIndex = defineMessages({
     searchDegraded: '搜索服務暫時不可用，當前為簡易搜索（僅按書名、作者匹配），結果可能不全。',
     fulltext: {
         tab: '全文',
+        locateHint: '全文搜索：“{q}”',
+        locateDismiss: '關閉',
         searching: '搜索中…',
         noResult: '沒有找到包含“{q}”的正文。',
         total: '共 {n} 處命中',
@@ -68,6 +70,8 @@ export const bookIndex = defineMessages({
     searchDegraded: '搜索服务暂时不可用，当前为简易搜索（仅按书名、作者匹配），结果可能不全。',
     fulltext: {
         tab: '全文',
+        locateHint: '全文搜索：“{q}”',
+        locateDismiss: '关闭',
         searching: '搜索中…',
         noResult: '没有找到包含“{q}”的正文。',
         total: '共 {n} 处命中',
