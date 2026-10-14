@@ -127,7 +127,7 @@ done
 
 ### 数据流程 data.yml（overview#470 P1，拆分进行中）
 
-`data.yml`（Actions → Data package check and publish）默认**只检查**，每晚 UTC 21:10 跑，不写任何东西。它能不能上传由第一步 **Publish gate** 决定，规则写在那一步的注释里，摘要里也会列出本次的结论：
+`data.yml`（Actions → Data package check and publish）默认**只检查**，每晚 UTC 21:43 跑，不写任何东西。它能不能上传由第一步 **Publish gate** 决定，规则写在那一步的注释里，摘要里也会列出本次的结论：
 
 | 怎么跑 | 结果 |
 |---|---|

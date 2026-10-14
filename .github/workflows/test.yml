@@ -50,6 +50,9 @@ jobs:
       # 数据流程刷新阶段清 CDN 缓存的脚本：只允许数据域名下的地址（overview#470 P1）
       - name: Purge URLs tests (ops/tests/test_purge_urls.py)
         run: python3 -m unittest ops/tests/test_purge_urls.py -v
+
+      - name: Schedule watchdog tests (ops/tests/test_schedule_watchdog.py)
+        run: python3 -m unittest ops/tests/test_schedule_watchdog.py -v
       # 数据包检查（overview#470 P0）：格式契约校验器与整包检查脚本，夹具含线上旧格式与 book-index schema-v2 的样例
       - name: Data package check tests (ops/tests)
         run: node --test ops/tests/data-contract.test.mjs ops/tests/data-package-check.test.mjs
