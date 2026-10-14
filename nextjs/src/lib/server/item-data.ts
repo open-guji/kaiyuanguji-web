@@ -404,6 +404,13 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         return fetchRead(url, async (res) => {
             if (res.status === 404 || res.status === 403) return null;
             if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
+            // 大章（>maxBytes 字）别白下整文件：UTF-8 每字符至多 3 字节，Content-Length > 3×maxBytes 则字数必然超限，
+            // 直接丢弃响应体，不占带宽（否则会和同时发出的章首 Range 请求抢，把它拖过超时，overview#608）
+            const declared = Number(res.headers?.get?.('content-length'));
+            if (Number.isFinite(maxBytes) && Number.isFinite(declared) && declared > maxBytes * 3) {
+                try { await res.body?.cancel(); } catch { /* 忽略 */ }
+                return null;
+            }
             const text = await res.text();
             return text.length > maxBytes ? null : text;
         });

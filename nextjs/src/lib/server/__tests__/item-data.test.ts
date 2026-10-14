@@ -594,6 +594,24 @@ describe('getCurrentText（WEB2：阅读页首卷正文）', () => {
         await expect(f.getCurrentText('items/x/full_text/001.txt', 1)).resolves.toBeNull();
     });
 
+    it('Content-Length 明显超限（>3×上限）就不读响应体，直接 null；没有该头或没超则照旧', async () => {
+        const cancel = jest.fn(async () => undefined);
+        const text = jest.fn(async () => '正文');
+        const mk = (len?: string) => jest.fn(async (url: string) => {
+            if (url.startsWith(`${BASE}/latest.json`)) return { ok: true, status: 200, json: async () => ({ commitId: 'c1', cacheKey: 'k1' }) } as Response;
+            return { ok: true, status: 200, headers: new Headers(len ? { 'content-length': len } : {}), body: { cancel }, text } as unknown as Response;
+        });
+        // 上限 100 字：300 字节以内可能没超限（纯汉字 3 字节），超过 300 字节必然超限
+        const big = createItemFetcher({ base: BASE, fetch: mk('301') });
+        await expect(big.getCurrentText('big.txt', 100)).resolves.toBeNull();
+        expect(cancel).toHaveBeenCalledTimes(1);
+        expect(text).not.toHaveBeenCalled();
+        const edge = createItemFetcher({ base: BASE, fetch: mk('300') });
+        await expect(edge.getCurrentText('edge.txt', 100)).resolves.toBe('正文');
+        const noHeader = createItemFetcher({ base: BASE, fetch: mk() });
+        await expect(noHeader.getCurrentText('none.txt', 100)).resolves.toBe('正文');
+    });
+
     it('5xx 抛错，不当成没有', async () => {
         const { fn } = textFetch({ [`${BASE}/current/a.txt`]: 502 });
         const f = createItemFetcher({ base: BASE, fetch: fn });
