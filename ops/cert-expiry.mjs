@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // GUJI-145：HTTPS 证书到期只读检查。对每个域名做一次 TLS 握手，取证书的颁发者、到期日，输出剩余天数；
-// 任一域名剩余天数低于阈值（默认 21）或已过期，退出码非零。
+// 任一域名剩余天数低于阈值（默认 30）或已过期，退出码非零。
 //
 //   node ops/cert-expiry.mjs                          # 查默认域名清单
 //   node ops/cert-expiry.mjs www.openguji.com ...     # 只查指定域名
@@ -41,7 +41,7 @@ export const DEFAULT_HOSTS = [
     'ssr-test.kaiyuanguji.com',
 ];
 
-export const DEFAULT_MIN_DAYS = 21;
+export const DEFAULT_MIN_DAYS = 30;
 const TIMEOUT_MS = 15_000;
 const DAY_MS = 86_400_000;
 

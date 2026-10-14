@@ -13,27 +13,27 @@ const LE = { O: "Let's Encrypt", CN: 'R11' };
 const cert = (days, extra = {}) => ({ validFrom: at(-60), validTo: at(days), issuer: LE, subjectCN: 'x', selfSigned: false, ...extra });
 
 test('daysLeft：向下取整，过期为负', () => {
-    assert.equal(daysLeft(at(21), NOW), 21);
+    assert.equal(daysLeft(at(30), NOW), 30);
     assert.equal(daysLeft(new Date(NOW.getTime() + 20.9 * 86_400_000), NOW), 20);
     assert.equal(daysLeft(at(-1), NOW), -1);
 });
 
-test('evaluate：阈值边界（21 天过，20 天报）', () => {
-    assert.equal(evaluate('a', cert(21), null, 21, NOW).status, 'ok');
-    assert.equal(evaluate('a', cert(20), null, 21, NOW).status, 'expiring');
-    assert.equal(evaluate('a', cert(0), null, 21, NOW).status, 'expiring');
-    assert.equal(evaluate('a', cert(-1), null, 21, NOW).status, 'expired');
+test('evaluate：阈值边界（30 天过，29 天报）', () => {
+    assert.equal(evaluate('a', cert(30), null, 30, NOW).status, 'ok');
+    assert.equal(evaluate('a', cert(29), null, 30, NOW).status, 'expiring');
+    assert.equal(evaluate('a', cert(0), null, 30, NOW).status, 'expiring');
+    assert.equal(evaluate('a', cert(-1), null, 30, NOW).status, 'expired');
 });
 
 test('evaluate：握手失败或没证书 → error', () => {
-    assert.equal(evaluate('a', null, new Error('ENOTFOUND'), 21, NOW).status, 'error');
-    assert.equal(evaluate('a', null, null, 21, NOW).status, 'error');
+    assert.equal(evaluate('a', null, new Error('ENOTFOUND'), 30, NOW).status, 'error');
+    assert.equal(evaluate('a', null, null, 30, NOW).status, 'error');
 });
 
 test('evaluate：自签名或非公共 CA 标疑似中转，公共 CA 不标', () => {
-    assert.equal(evaluate('a', cert(90), null, 21, NOW).suspectedIntercept, false);
-    assert.equal(evaluate('a', cert(90, { issuer: { O: 'Some Egress Gateway', CN: 'gw-ca' } }), null, 21, NOW).suspectedIntercept, true);
-    assert.equal(evaluate('a', cert(90, { selfSigned: true }), null, 21, NOW).suspectedIntercept, true);
+    assert.equal(evaluate('a', cert(90), null, 30, NOW).suspectedIntercept, false);
+    assert.equal(evaluate('a', cert(90, { issuer: { O: 'Some Egress Gateway', CN: 'gw-ca' } }), null, 30, NOW).suspectedIntercept, true);
+    assert.equal(evaluate('a', cert(90, { selfSigned: true }), null, 30, NOW).suspectedIntercept, true);
 });
 
 test('issuerLabel／looksPublicCa', () => {
