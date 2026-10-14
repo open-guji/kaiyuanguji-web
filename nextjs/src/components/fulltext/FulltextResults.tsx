@@ -2,6 +2,8 @@
 
 import type { FulltextError, FulltextHit, FulltextResponse } from '@/lib/fulltext/fulltext-client';
 import { readerPath } from '@/lib/reader-route';
+import { useSiteT } from '@/i18n/use-site-t';
+import type { SiteT } from '@/i18n/translate';
 
 /**
  * 全文搜索结果列表（GUJI-163 / F6 步 3）。纯展示：数据由 FulltextTab 取，这里不发请求。
@@ -10,15 +12,15 @@ import { readerPath } from '@/lib/reader-route';
  * 书名、章标签、查询词等其余字段一律文本节点。
  */
 
-export function errorMessage(e: FulltextError): string {
+export function errorMessage(e: FulltextError, t: SiteT): string {
     switch (e.kind) {
-        case 'bad_query': return '请换个关键词再试（至少一个汉字，不要太长）。';
-        case 'rate_limited': return e.retryAfterSec != null ? `搜索太频繁，请 ${e.retryAfterSec} 秒后再试。` : '搜索太频繁，请稍后再试。';
-        case 'timeout': return '全文搜索超时，请稍后再试。';
-        case 'offline': return '网络不通，无法使用全文搜索。';
+        case 'bad_query': return t('bookIndex.fulltext.errBadQuery');
+        case 'rate_limited': return e.retryAfterSec != null ? t('bookIndex.fulltext.errRateLimitedIn', { n: e.retryAfterSec }) : t('bookIndex.fulltext.errRateLimited');
+        case 'timeout': return t('bookIndex.fulltext.errTimeout');
+        case 'offline': return t('bookIndex.fulltext.errOffline');
         case 'unavailable':
         case 'bad_response':
-        default: return '全文搜索暂不可用。';
+        default: return t('bookIndex.fulltext.errUnavailable');
     }
 }
 
@@ -45,17 +47,18 @@ interface Props {
 }
 
 export default function FulltextResults({ data, error, loading, onLoadMore }: Props) {
-    if (error) return <p role="alert">{errorMessage(error)}</p>;
-    if (!data) return loading ? <p aria-busy="true">搜索中…</p> : null;
-    if (data.groups.length === 0) return <p>没有找到包含“{data.q}”的正文。</p>;
+    const t = useSiteT();
+    if (error) return <p role="alert">{errorMessage(error, t)}</p>;
+    if (!data) return loading ? <p aria-busy="true">{t('bookIndex.fulltext.searching')}</p> : null;
+    if (data.groups.length === 0) return <p>{t('bookIndex.fulltext.noResult', { q: data.q })}</p>;
 
     return (
         <div>
-            <p>共 {data.total_hits} 处命中{data.total_books_capped ? '（书目数已截断）' : ''}</p>
-            {(data.capped || data.truncated) && <p>结果已截断，请加长关键词缩小范围。</p>}
+            <p>{t('bookIndex.fulltext.total', { n: data.total_hits })}{data.total_books_capped ? t('bookIndex.fulltext.booksCapped') : ''}</p>
+            {(data.capped || data.truncated) && <p>{t('bookIndex.fulltext.capped')}</p>}
             {data.groups.map((g) => (
                 <section key={g.entry}>
-                    <h3>{g.title} <small>{g.hit_count} 处</small></h3>
+                    <h3>{g.title} <small>{t('bookIndex.fulltext.hitCount', { n: g.hit_count })}</small></h3>
                     <ul>
                         {g.hits.map((h, i) => (
                             <li key={`${h.chapter}-${h.passage[0]}-${i}`}>
@@ -70,7 +73,7 @@ export default function FulltextResults({ data, error, loading, onLoadMore }: Pr
                 </section>
             ))}
             {data.has_more && (
-                <button type="button" onClick={onLoadMore} disabled={loading}>加载更多</button>
+                <button type="button" onClick={onLoadMore} disabled={loading}>{t('bookIndex.fulltext.loadMore')}</button>
             )}
         </div>
     );

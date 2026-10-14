@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchFulltext } from '@/lib/fulltext/fulltext-client';
 import type { FulltextError, FulltextResponse } from '@/lib/fulltext/fulltext-client';
 import FulltextResults from './FulltextResults';
+import { useSiteT } from '@/i18n/use-site-t';
 
 /**
  * 构建期开关：NEXT_PUBLIC_FULLTEXT_TAB=1 才渲染「全文」tab，默认关。
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function FulltextTab({ q, fetchImpl }: Props) {
+    const t = useSiteT();
     const enabled = isFulltextEnabled();
     const [data, setData] = useState<FulltextResponse | null>(null);
     const [error, setError] = useState<FulltextError | null>(null);
@@ -46,7 +48,7 @@ export default function FulltextTab({ q, fetchImpl }: Props) {
     if (!enabled) return null;
     return (
         <div>
-            <div role="tablist"><button role="tab" aria-selected="true" type="button">全文</button></div>
+            <div role="tablist"><button role="tab" aria-selected="true" type="button">{t('bookIndex.fulltext.tab')}</button></div>
             <div role="tabpanel">
                 <FulltextResults data={data} error={error} loading={loading} onLoadMore={() => void run(data?.groups.length ?? 0)} />
             </div>
