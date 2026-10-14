@@ -104,6 +104,25 @@ describe('lookupItemRedirectTraced（overview#491：升格对照表与条目并�
         expect(r.reason).toBe('pass:budget(20ms,entry=pending,promo=pending+grace40ms)');
     });
 
+    it('边缘运行时 clearTimeout(undefined) 会抛错（staging 545）：从未建过 grace 定时器的路径不能碰它（去掉守卫会红）', async () => {
+        const real = global.clearTimeout;
+        const strict = ((h?: ReturnType<typeof setTimeout>) => {
+            if (h === undefined) throw new TypeError('clearTimeout(undefined)');
+            return real(h);
+        }) as typeof clearTimeout;
+        global.clearTimeout = strict;
+        try {
+            // 预算内出结果：grace 定时器从未建立
+            const fast = deps({ getItem: jest.fn(async () => hit({ merged_into: TARGET })) });
+            expect((await lookupItemRedirectTraced(OFFICIAL, fast, 1000, 200)).reason).toBe('redirect:merged');
+            // 草稿 id 超预算：同样不建 grace 定时器
+            const slow = deps({ getItem: jest.fn(async () => { await sleep(80); return null; }), resolvePromotion: jest.fn(() => new Promise<PromotionLookup>(() => {})) });
+            expect((await lookupItemRedirectTraced(DRAFT, slow, 20, 500)).redirect).toBeNull();
+        } finally {
+            global.clearTimeout = real;
+        }
+    });
+
     it('草稿 id 不吃 grace：预算到了立即放行（它有 307 退路）', async () => {
         const d = deps({ getItem: jest.fn(async () => { await sleep(80); return null; }), resolvePromotion: jest.fn(() => new Promise<PromotionLookup>(() => {})) });
         const t = Date.now();

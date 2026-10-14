@@ -127,6 +127,7 @@ export async function lookupItemRedirectTraced(
         return await Promise.race([work, grace]);
     } finally {
         clearTimeout(timer);
-        clearTimeout(graceTimer);
+        // 边缘运行时对 clearTimeout(undefined) 会抛错（545，GUJI-146），必须守卫
+        if (graceTimer !== undefined) clearTimeout(graceTimer);
     }
 }
