@@ -55,6 +55,14 @@ class Judge(unittest.TestCase):
                 sw.parse_cron(bad)
 
 
+class Fetch(unittest.TestCase):
+    def test_rejects_odd_repo_or_workflow(self):
+        for repo, wf in (('-x/y', 'a.yml'), ('o/r/../x', 'a.yml'), ('o/r', '../a.yml'), ('o/r', 'a.yml?x=1'),
+                         ('o r/x', 'a.yml'), ('o/r', 'a.sh'), ('o', 'a.yml'), ('o/r', '')):
+            with self.assertRaises(ValueError, msg=(repo, wf)):
+                sw.fetch_schedule_runs(repo, wf, 'false')
+
+
 class Cli(unittest.TestCase):
     def run_cli(self, gh_body, *extra):
         d = tempfile.mkdtemp()

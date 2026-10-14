@@ -41,10 +41,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Unit tests
         run: python3 -m unittest ops/tests/test_schedule_watchdog.py -v
+      # PR 上只跑单测：不把带 actions: read 的令牌交给 PR 里的代码（Sourcery 指出的 fork／私有数据风险）
       - name: Check schedules
         id: check
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

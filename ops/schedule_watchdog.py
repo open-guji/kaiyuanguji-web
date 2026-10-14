@@ -14,6 +14,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -53,7 +54,15 @@ def parse_ts(s):
     return dt.datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=dt.timezone.utc)
 
 
+REPO_RE = re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
+WORKFLOW_RE = re.compile(r'^[A-Za-z0-9_.-]+\.ya?ml$')
+
+
 def fetch_schedule_runs(repo, workflow, gh):
+    # --watch 来自 workflow 文件里写死的参数，不是外部输入；仍只放行 owner/repo 和 xxx.yml 的样子，
+    # 免得有人改参数时把别的东西拼进 gh api 的路径（subprocess 本身是参数列表，不经 shell）
+    if not REPO_RE.match(repo) or not WORKFLOW_RE.match(workflow) or repo.startswith('-') or '..' in repo + workflow:
+        raise ValueError(f'repo／workflow 写法不合规：{repo!r} {workflow!r}')
     out = subprocess.run(
         [gh, 'api', f'repos/{repo}/actions/workflows/{workflow}/runs?event=schedule&per_page=5',
          '--jq', '[.workflow_runs[].created_at]'],
