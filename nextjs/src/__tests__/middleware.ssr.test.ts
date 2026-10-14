@@ -47,6 +47,24 @@ describe('middleware.ssr：/book-index', () => {
         expect((await run('/book-index?id=d59f20aowb9c&tab=lineage')).location).toBe('https://staging.kaiyuanguji.com/item/d59f20aowb9c?tab=lineage');
         expect((await run('/book-index?id=d59f20aowb9c&tab=info&page=3')).location).toBe('https://staging.kaiyuanguji.com/item/d59f20aowb9c?tab=info&page=3');
     });
+    it('边缘运行时 URLSearchParams 的 for…of 会抛错（staging 545 回归，#392）：白名单参数改写仍须 308，不得抛出', async () => {
+        // 把 URLSearchParams 的迭代器换成抛错，模拟边缘运行时；改回 for…of 写法时这里会变红
+        const original = URLSearchParams.prototype[Symbol.iterator];
+        Object.defineProperty(URLSearchParams.prototype, Symbol.iterator, {
+            configurable: true,
+            writable: true,
+            value: () => { throw new TypeError('URLSearchParams iterator unavailable'); },
+        });
+        try {
+            const r = await run('/book-index?id=d59f20aowb9c&tab=lineage');
+            expect({ status: r.status, location: r.location }).toEqual({
+                status: 308,
+                location: 'https://staging.kaiyuanguji.com/item/d59f20aowb9c?tab=lineage',
+            });
+        } finally {
+            Object.defineProperty(URLSearchParams.prototype, Symbol.iterator, { configurable: true, writable: true, value: original });
+        }
+    });
     it.each([
         '/book-index',
         '/book-index?id=d59f20aowb9c&q=史記', // 带列表参数：不是详情链接，放过
