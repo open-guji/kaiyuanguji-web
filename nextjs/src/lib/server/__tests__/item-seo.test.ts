@@ -163,9 +163,9 @@ describe('seoDescription：人物', () => {
         expect(d).toBe('何秋濤，字巨源，號一燈精舍，又名海槎，（清）光澤人，1824—1862。本站著錄其作品 3 部（撰 2、注 1）。開源古籍索引人物條目。');
     });
     it('缺籍贯、缺卒年、有简介', () => {
-        expect(seoDescription({ type: 'entity', primary_name: '趙學敏', dynasty: '清', birth_year: 1719, description: { text: '清醫家' } }, 'x'))
+        expect(seoDescription({ type: 'entity', primary_name: '趙學敏', dynasty: '清', dates: { birth: 1719 }, description: { text: '清醫家' } }, 'x'))
             .toBe('趙學敏，清人，生於1719年。清醫家。開源古籍索引人物條目。');
-        expect(seoDescription({ type: 'entity', primary_name: '司馬遷', death_year: -86 }, 'x')).toBe('司馬遷，卒於前86年。開源古籍索引人物條目。');
+        expect(seoDescription({ type: 'entity', primary_name: '司馬遷', dates: { death: -86 } }, 'x')).toBe('司馬遷，卒於前86年。開源古籍索引人物條目。');
     });
     it('只有名字：不编造', () => {
         expect(seoDescription({ type: 'entity', primary_name: '某' }, 'x')).toBe('某。開源古籍索引人物條目。');
@@ -254,7 +254,7 @@ describe('buildItemSeo', () => {
     it('人物 → Person：生卒年有才出（dates 兜底），公元前年份写成 ISO 扩展年', () => {
         const s = buildItemSeo({
             type: 'entity', primary_name: '司馬遷', dynasty: '西漢',
-            alt_names: [{ name: '子長', type: '字' }], birth_year: -145,
+            alt_names: [{ name: '子長', type: '字' }], dates: { birth: -145 },
         }, 'hixhd2h9bhma', SITE);
         expect(s.title).toBe('司馬遷（西漢）');
         expect(s.ogType).toBe('profile');
@@ -278,8 +278,17 @@ describe('buildItemSeo', () => {
         expect(p.jsonLd.alternateName).toEqual(['巨源', '海槎', '何秋涛']); // 末尾是名字的简体写法（S4）
     });
 
+    it('旧字段 birth_year／death_year 不再被读（B5）：有 dates 取 dates，无 dates 为空', () => {
+        const withDates = buildItemSeo({ type: 'entity', primary_name: '某甲', birth_year: 1000, death_year: 1100, dates: { birth: 1200, death: 1260 } }, 'hixhd2h9bhma', SITE);
+        expect(withDates.jsonLd).toMatchObject({ birthDate: '1200', deathDate: '1260' });
+        const noDates = buildItemSeo({ type: 'entity', primary_name: '某乙', birth_year: 1000, death_year: 1100 }, 'hixhd2h9bhma', SITE);
+        expect(noDates.jsonLd).not.toHaveProperty('birthDate');
+        expect(noDates.jsonLd).not.toHaveProperty('deathDate');
+        expect(seoDescription({ type: 'entity', primary_name: '某乙', birth_year: 1000 }, 'x')).not.toContain('1000');
+    });
+
     it('人物：subtype=collective → Organization，不出生卒', () => {
-        const s = buildItemSeo({ type: 'entity', subtype: 'collective', primary_name: '某整理小組', birth_year: 1970 }, 'hixhd2h9bhma', SITE);
+        const s = buildItemSeo({ type: 'entity', subtype: 'collective', primary_name: '某整理小組', dates: { birth: 1970 } }, 'hixhd2h9bhma', SITE);
         expect(s.jsonLd['@type']).toBe('Organization');
         expect(s.jsonLd).not.toHaveProperty('birthDate');
     });

@@ -57,6 +57,12 @@ ts() { date -Iseconds; }
 # 经 SSH 直推到服务器仓（见 README「数据仓怎么更新」）。
 pull_or_warn() {
     local dir="$1"
+    # SKIP_PULL=1：数据仓已由调用方（overview 的 reindex-search.yml 的 pull job）拉好并据此算了 derived，
+    # 这里再 pull 会让仓库 HEAD 越过 derived 的 commit，被产物准入闸拒绝（B 侧合并频繁时必撞）。
+    if [ "${SKIP_PULL:-0}" = 1 ]; then
+        echo "  SKIP_PULL=1：不再 pull $dir，用现有 checkout"
+        return 0
+    fi
     if git -C "$dir" pull --ff-only; then
         return 0
     fi

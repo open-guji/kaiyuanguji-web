@@ -1,0 +1,77 @@
+name: Schedule watchdog
+
+# 定时任务"该跑未跑"看门狗（overview GUJI-143）。
+# GitHub 的 schedule 事件常比 cron 晚 3–5 小时，偶尔整晚丢掉；data.yml 自 10-07 起一次定时都没触发过，
+# 而它自己的 36 小时落后告警也挂在 schedule 下，定时丢了告警一起丢。
+# 这里用别的触发源盯：每小时 schedule ＋ 别的 workflow 跑完时的 workflow_run（任一触发源活着就够），
+# 对每条被盯的 workflow 看"最近一个 cron 时刻之后有没有 schedule run"，超过宽限（6 小时）还没有就开 issue（标签 schedule-alert）。
+# 恢复了自动关。检出延迟 ≤ 触发源的间隔，达不到 1 小时级；1 小时级要靠搜索机的外部触发／看门狗（GUJI-143 方案 4，需令牌，待批）。
+# 改被盯 workflow 的 cron 时，要同步改下面的 --watch 参数。
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_run:
+    workflows: ['Monitor (private half)', 'Deploy to EdgeOne']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只出报告，不开／评／关 issue'
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - '.github/workflows/schedule-watchdog.yml'
+      - 'ops/schedule_watchdog.py'
+      - 'ops/tests/test_schedule_watchdog.py'
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: schedule-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Unit tests
+        run: python3 -m unittest ops/tests/test_schedule_watchdog.py -v
+      # PR 上只跑单测：不把带 actions: read 的令牌交给 PR 里的代码（Sourcery 指出的 fork／私有数据风险）
+      - name: Check schedules
+        id: check
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I ops/schedule_watchdog.py --out "$RUNNER_TEMP/watch.json" \
+            --watch 'open-guji/kaiyuanguji-web:deploy.yml:30 20 * * *:6' \
+            --watch 'open-guji/kaiyuanguji-web:data.yml:43 21 * * *:6' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Open / close alerts
+        if: ${{ github.event_name != 'pull_request' && inputs.dry_run != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create schedule-alert --color B60205 --description '定时任务该跑未跑' 2>/dev/null || true
+          jq -c '.[] | select(.status == "overdue" or .status == "ok")' "$RUNNER_TEMP/watch.json" | while read -r row; do
+            key=$(jq -r .key <<<"$row"); status=$(jq -r .status <<<"$row")
+            title="定时漏跑：$key"
+            num=$(gh issue list --label schedule-alert --state open --json number,title \
+                  --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+            if [ "$status" = overdue ]; then
+              [ -n "$num" ] && { echo "· $key 已有未关告警 #$num"; continue; }
+              body="$(jq -r '"`\(.key)` 应在 \(.slot)（UTC）触发，宽限 6 小时后仍没有 schedule run。最近一次 schedule run：\(.latest // "从未有过")。\n\n手动补跑：Actions → 选该 workflow → Run workflow。根因与方案见 overview GUJI-143。"' <<<"$row")"
+              gh issue create --title "$title" --label schedule-alert --body "$body"
+            elif [ -n "$num" ]; then
+              gh issue close "$num" --comment "$key 的 schedule run 已恢复（$(jq -r .latest <<<"$row")），自动关闭。"
+            fi
+          done

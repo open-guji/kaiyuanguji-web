@@ -594,6 +594,24 @@ describe('getCurrentText（WEB2：阅读页首卷正文）', () => {
         await expect(f.getCurrentText('items/x/full_text/001.txt', 1)).resolves.toBeNull();
     });
 
+    it('Content-Length 明显超限（>3×上限）就不读响应体，直接 null；没有该头或没超则照旧', async () => {
+        const cancel = jest.fn(async () => undefined);
+        const text = jest.fn(async () => '正文');
+        const mk = (len?: string) => jest.fn(async (url: string) => {
+            if (url.startsWith(`${BASE}/latest.json`)) return { ok: true, status: 200, json: async () => ({ commitId: 'c1', cacheKey: 'k1' }) } as Response;
+            return { ok: true, status: 200, headers: new Headers(len ? { 'content-length': len } : {}), body: { cancel }, text } as unknown as Response;
+        });
+        // 上限 100 字：300 字节以内可能没超限（纯汉字 3 字节），超过 300 字节必然超限
+        const big = createItemFetcher({ base: BASE, fetch: mk('301') });
+        await expect(big.getCurrentText('big.txt', 100)).resolves.toBeNull();
+        expect(cancel).toHaveBeenCalledTimes(1);
+        expect(text).not.toHaveBeenCalled();
+        const edge = createItemFetcher({ base: BASE, fetch: mk('300') });
+        await expect(edge.getCurrentText('edge.txt', 100)).resolves.toBe('正文');
+        const noHeader = createItemFetcher({ base: BASE, fetch: mk() });
+        await expect(noHeader.getCurrentText('none.txt', 100)).resolves.toBe('正文');
+    });
+
     it('5xx 抛错，不当成没有', async () => {
         const { fn } = textFetch({ [`${BASE}/current/a.txt`]: 502 });
         const f = createItemFetcher({ base: BASE, fetch: fn });
@@ -651,6 +669,29 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         const down = head(() => { throw new Error('network down'); });
         expect(await down.f.getCurrentTextHead(REL)).toBeNull();
         expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('没取到'));
+    });
+
+    it('默认超时 3 秒：2.9 秒时还没中止，3.1 秒时中止并返回 null（overview#608：COS 偶发首字节 >1.5 秒）', async () => {
+        // 原生 AbortSignal.timeout 不受假定时器控制：删掉它，走兜底的 AbortController + setTimeout 分支（同上面的写法）
+        const orig = AbortSignal.timeout;
+        // @ts-expect-error 模拟不支持的运行时
+        delete AbortSignal.timeout;
+        jest.useFakeTimers();
+        try {
+            let aborted = false;
+            const slow = head((_u, init) => new Promise((_res, rej) => {
+                init?.signal?.addEventListener('abort', () => { aborted = true; rej(Object.assign(new Error('aborted'), { name: 'TimeoutError' })); });
+            }));
+            const p = slow.f.getCurrentTextHead(REL);
+            await jest.advanceTimersByTimeAsync(2900);
+            expect(aborted).toBe(false);
+            await jest.advanceTimersByTimeAsync(200);
+            expect(aborted).toBe(true);
+            expect(await p).toBeNull();
+        } finally {
+            jest.useRealTimers();
+            AbortSignal.timeout = orig;
+        }
     });
 
     it('404：返回 null', async () => {
