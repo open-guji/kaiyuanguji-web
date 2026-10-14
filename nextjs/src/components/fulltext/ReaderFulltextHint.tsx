@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
-import { findQueryNode, parseFtParams, type FtParams } from '@/lib/fulltext/fulltext-locate';
+import { findAnchor, parseFtParams, type FtParams } from '@/lib/fulltext/fulltext-locate';
 import { useSiteT } from '@/i18n/use-site-t';
 
 /**
@@ -36,7 +36,7 @@ export default function ReaderFulltextHint({ hostRef, chapter, search }: Props) 
         let done = false;
         const tryLocate = () => {
             if (done) return;
-            const el = findQueryNode(host, ft.q);
+            const el = findAnchor(host, ft.start, ft.q);
             if (!el) return;
             done = true;
             el.scrollIntoView?.({ block: 'center', behavior: 'auto' });

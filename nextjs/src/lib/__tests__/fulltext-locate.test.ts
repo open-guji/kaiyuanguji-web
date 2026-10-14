@@ -1,7 +1,7 @@
 /**
  * GUJI-163 F6 步 4：阅读页 ?ft=／?ftq= 解析与按文本定位。
  */
-import { parseFtParams, findQueryNode } from '../fulltext/fulltext-locate';
+import { parseFtParams, findQueryNode, findAnchor } from '../fulltext/fulltext-locate';
 
 describe('parseFtParams', () => {
     it('正常：ft=<章>:<起>-<止> ＋ ftq', () => {
@@ -36,5 +36,20 @@ describe('findQueryNode', () => {
         document.body.innerHTML = '<div id="h"><p>無關</p></div>';
         expect(findQueryNode(document.getElementById('h')!, '學而')).toBeNull();
         expect(findQueryNode(document.getElementById('h')!, '')).toBeNull();
+    });
+});
+
+describe('findAnchor', () => {
+    it('有 data-ft-cp：取离起点最近的锚点', () => {
+        document.body.innerHTML = '<div id="h"><mark data-ft-cp="10">甲</mark><mark data-ft-cp="130">乙</mark><mark data-ft-cp="900">丙</mark></div>';
+        expect(findAnchor(document.getElementById('h')!, 128, '乙')?.textContent).toBe('乙');
+    });
+    it('无锚点：退回按文本找', () => {
+        document.body.innerHTML = '<div id="h"><p>無關</p><p>學而</p></div>';
+        expect(findAnchor(document.getElementById('h')!, 5, '學而')?.textContent).toBe('學而');
+    });
+    it('data-ft-cp 不是整数：忽略', () => {
+        document.body.innerHTML = '<div id="h"><mark data-ft-cp="x">甲</mark><p>學而</p></div>';
+        expect(findAnchor(document.getElementById('h')!, 5, '學而')?.tagName).toBe('P');
     });
 });
