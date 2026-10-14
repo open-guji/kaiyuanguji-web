@@ -1,12 +1,13 @@
-"""ops/schedule_watchdog.py：定时"该跑未跑"判断（GUJI-143）。不联网：gh 用假的脚本顶替。"""
+"""ops/schedule_watchdog.py：定时"该跑未跑"判断（GUJI-143）。不联网：GitHub API 用本地假服务顶替。"""
 import datetime as dt
+import http.server
 import importlib.util
 import json
 import os
-import stat
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -60,34 +61,61 @@ class Fetch(unittest.TestCase):
         for repo, wf in (('-x/y', 'a.yml'), ('o/r/../x', 'a.yml'), ('o/r', '../a.yml'), ('o/r', 'a.yml?x=1'),
                          ('o r/x', 'a.yml'), ('o/r', 'a.sh'), ('o', 'a.yml'), ('o/r', '')):
             with self.assertRaises(ValueError, msg=(repo, wf)):
-                sw.fetch_schedule_runs(repo, wf, 'false')
+                sw.fetch_schedule_runs(repo, wf, 'tok', api='http://127.0.0.1:1')
 
 
 class Cli(unittest.TestCase):
-    def run_cli(self, gh_body, *extra):
-        d = tempfile.mkdtemp()
-        gh = os.path.join(d, 'fakegh')
-        with open(gh, 'w') as f:
-            f.write('#!/bin/sh\n' + gh_body + '\n')
-        os.chmod(gh, os.stat(gh).st_mode | stat.S_IEXEC)
-        out = os.path.join(d, 'out.json')
-        env = dict(os.environ, GH_BIN=gh)
-        p = subprocess.run([sys.executable, '-I', SCRIPT, '--now', '2026-10-14T05:00:00Z', '--out', out, *extra],
-                           capture_output=True, text=True, env=env)
+    """起一个本地假的 GitHub API，GITHUB_API_URL 指过去，不联网。"""
+
+    def run_cli(self, handler_status, handler_body, *extra):
+        seen = {}
+
+        class H(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                seen['path'] = self.path
+                seen['auth'] = self.headers.get('Authorization')
+                data = json.dumps(handler_body).encode()
+                self.send_response(handler_status)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+            def log_message(self, *a):
+                pass
+
+        srv = http.server.HTTPServer(('127.0.0.1', 0), H)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            d = tempfile.mkdtemp()
+            out = os.path.join(d, 'out.json')
+            env = dict(os.environ, GITHUB_API_URL=f'http://127.0.0.1:{srv.server_port}', GH_TOKEN='secret-tok')
+            p = subprocess.run([sys.executable, '-I', SCRIPT, '--now', '2026-10-14T05:00:00Z', '--out', out, *extra],
+                               capture_output=True, text=True, env=env)
+        finally:
+            srv.shutdown()
         data = None
         if os.path.exists(out):
             with open(out) as f:
                 data = json.load(f)
-        return p, data
+        return p, data, seen
 
-    def test_overdue_listed_and_exit_zero(self):
-        p, data = self.run_cli('echo \'["2026-10-11T23:33:21Z"]\'', '--watch', 'o/r:a.yml:0 20 * * *:6')
+    def test_overdue_listed_exit_zero_and_request_shape(self):
+        body = {'workflow_runs': [{'created_at': '2026-10-11T23:33:21Z'}]}
+        p, data, seen = self.run_cli(200, body, '--watch', 'o/r:a.yml:0 20 * * *:6')
         self.assertEqual(p.returncode, 0, p.stderr)
         self.assertEqual([(r['key'], r['status']) for r in data], [('o/r/a.yml', 'overdue')])
-        self.assertIn('overdue', p.stdout)
+        self.assertEqual(seen['path'], '/repos/o/r/actions/workflows/a.yml/runs?event=schedule&per_page=5')
+        self.assertEqual(seen['auth'], 'Bearer secret-tok')
+        self.assertNotIn('secret-tok', p.stdout + p.stderr)
 
-    def test_gh_failure_is_unknown_not_ok(self):
-        p, data = self.run_cli('echo boom >&2; exit 1', '--watch', 'o/r:a.yml:0 20 * * *:6')
+    def test_ok_when_run_after_slot(self):
+        body = {'workflow_runs': [{'created_at': '2026-10-14T01:10:00Z'}]}
+        p, data, _ = self.run_cli(200, body, '--watch', 'o/r:a.yml:0 20 * * *:6')
+        self.assertEqual(data[0]['status'], 'ok')
+
+    def test_api_failure_is_unknown_not_ok(self):
+        p, data, _ = self.run_cli(500, {'message': 'boom'}, '--watch', 'o/r:a.yml:0 20 * * *:6')
         self.assertEqual(p.returncode, 2)
         self.assertEqual(data[0]['status'], 'unknown')
 

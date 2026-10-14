@@ -7,7 +7,7 @@ workflow 里挂在 schedule 下的告警（如 data.yml 的 36 小时落后告�
 每条被盯的 workflow 只看"最近一个 cron 时刻之后有没有 schedule run 出现"，
 超过宽限（默认 6 小时，覆盖常见的 3–5 小时延迟）还没有就算漏跑。
 
-只读：用 gh api 读 run 列表，不写任何东西；开／关 issue 由 workflow 的下一步做。
+只读：用 GitHub REST API（令牌取环境变量 GH_TOKEN）读 run 列表，不写任何东西；开／关 issue 由 workflow 的下一步做。
 输出：每条一行状态；--out 写 JSON（[{"key":..., "status": "ok|pending|overdue", ...}]）。
 """
 import argparse
@@ -15,8 +15,9 @@ import datetime as dt
 import json
 import os
 import re
-import subprocess
 import sys
+import urllib.error
+import urllib.request
 
 
 def parse_cron(expr):
@@ -58,18 +59,24 @@ REPO_RE = re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
 WORKFLOW_RE = re.compile(r'^[A-Za-z0-9_.-]+\.ya?ml$')
 
 
-def fetch_schedule_runs(repo, workflow, gh):
-    # --watch 来自 workflow 文件里写死的参数，不是外部输入；仍只放行 owner/repo 和 xxx.yml 的样子，
-    # 免得有人改参数时把别的东西拼进 gh api 的路径（subprocess 本身是参数列表，不经 shell）
+def fetch_schedule_runs(repo, workflow, token, api=None):
+    # 走 REST API（urllib），不起子进程。参数来自 workflow 文件里写死的 --watch；
+    # 仍只放行 owner/repo 和 xxx.yml 的写法，免得改参数时把别的东西拼进 URL 路径
     if not REPO_RE.match(repo) or not WORKFLOW_RE.match(workflow) or repo.startswith('-') or '..' in repo + workflow:
         raise ValueError(f'repo／workflow 写法不合规：{repo!r} {workflow!r}')
-    out = subprocess.run(
-        [gh, 'api', f'repos/{repo}/actions/workflows/{workflow}/runs?event=schedule&per_page=5',
-         '--jq', '[.workflow_runs[].created_at]'],
-        capture_output=True, text=True)
-    if out.returncode != 0:
-        raise RuntimeError(f'gh api 失败（{repo} {workflow}）：{out.stderr.strip()[:200]}')
-    return [parse_ts(t) for t in json.loads(out.stdout or '[]')]
+    api = (api or os.environ.get('GITHUB_API_URL') or 'https://api.github.com').rstrip('/')
+    req = urllib.request.Request(
+        f'{api}/repos/{repo}/actions/workflows/{workflow}/runs?event=schedule&per_page=5',
+        headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json',
+                 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'schedule-watchdog'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            body = json.load(r)
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        if isinstance(e, urllib.error.HTTPError):
+            e.close()
+        raise RuntimeError(f'读 run 列表失败（{repo} {workflow}）：{str(e)[:200]}')
+    return [parse_ts(x['created_at']) for x in body.get('workflow_runs', [])]
 
 
 def main(argv=None):
@@ -79,14 +86,14 @@ def main(argv=None):
     ap.add_argument('--out', default='')
     ap.add_argument('--now', default='', help='测试用，UTC，格式 2026-10-14T05:00:00Z')
     args = ap.parse_args(argv)
-    gh = os.environ.get('GH_BIN', 'gh')
+    token = os.environ.get('GH_TOKEN', '')
     now = parse_ts(args.now) if args.now else dt.datetime.now(dt.timezone.utc)
     results, failed = [], False
     for w in args.watch:
         repo, workflow, cron, grace = w.split(':', 3)
         key = f'{repo}/{workflow}'
         try:
-            runs = fetch_schedule_runs(repo, workflow, gh)
+            runs = fetch_schedule_runs(repo, workflow, token)
             status, slot, latest = judge(now, cron, float(grace), runs)
         except Exception as e:  # 读不到就如实报，不当成 ok，也不当成漏跑
             print(f'? {key}：读不到（{e}）')
