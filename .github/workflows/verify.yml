@@ -143,9 +143,9 @@ jobs:
           WAIT_CDN: ${{ inputs.wait_cdn }}
           FULL: ${{ inputs.full_suite }}
         run: |
-          # 测试站（或显式要完整套件）：全套 UI 按用例（--fully-parallel）切 2 片；正式站：冒烟一片
+          # 测试站（或显式要完整套件）：全套 UI 按用例（--fully-parallel）切 3 片（2 片时最慢那片 ≈ 290 秒、是发版关键路径；见 overview GUJI-469）；正式站：冒烟一片
           if [ "$IN_TARGET" = staging ] || [ "$FULL" = true ]; then
-            echo 'ui_matrix={"include":[{"name":"ui 1/2","args":"--shard=1/2"},{"name":"ui 2/2","args":"--shard=2/2"}]}' >> "$GITHUB_OUTPUT"
+            echo 'ui_matrix={"include":[{"name":"ui 1/3","args":"--shard=1/3"},{"name":"ui 2/3","args":"--shard=2/3"},{"name":"ui 3/3","args":"--shard=3/3"}]}' >> "$GITHUB_OUTPUT"
           else
             echo 'ui_matrix={"include":[{"name":"ui smoke","args":"ui/book-index.spec.ts ui/reader.spec.ts ui/search.spec.ts"}]}' >> "$GITHUB_OUTPUT"
           fi
