@@ -41,6 +41,10 @@ jobs:
       - name: Deploy workflow checks (ops/tests/test_deploy_workflow.py)
         run: python3 -m unittest ops/tests/test_deploy_workflow.py -v
 
+      # auto-promote-code 守卫：真跑抽出来的脚本（假 gh）＋守卫正则与 on.push.paths 对拍（overview#555／GUJI-214）
+      - name: Promote guard tests (ops/tests/test_promote_guard.py)
+        run: python3 -m unittest ops/tests/test_promote_guard.py -v
+
       - name: Data workflow checks (ops/tests/test_data_workflow.py)
         run: python3 -m unittest ops/tests/test_data_workflow.py -v
 
