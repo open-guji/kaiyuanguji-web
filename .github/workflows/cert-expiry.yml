@@ -12,7 +12,7 @@ on:
       days:
         description: '阈值（剩余天数低于它就报）'
         type: string
-        default: '21'
+        default: '30'
       hosts:
         description: '要查的域名，空格分隔；留空查默认清单（见 ops/cert-expiry.mjs）'
         type: string
