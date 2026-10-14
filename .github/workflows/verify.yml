@@ -16,7 +16,8 @@ name: Verify deployed site
 #             测试站全套、按用例切 2 片并行；正式站只跑冒烟（首页／条目页、阅读页、搜索），
 #             手动跑时勾 full_suite 可让正式站也跑全套
 # 完整套件只在测试站跑——正式站上的是测试站验过的同一版代码，正式站这一遍只确认「上去了、没坏」。
-# 等 CDN 的 60 秒不再单独占一段：prep 记下就绪时刻，各任务装完依赖后只补等剩下的部分。
+# 等 CDN 的 60 秒不再单独占一段：prep 记下就绪时刻（上限），各任务装完依赖后探测 CDN 是否已与源站一致，一致就提前结束、
+# 到上限仍不一致照旧放行（overview GUJI-469 方案 B；探测脚本在四个任务里各一份，改时四处同改）。
 #
 # ref 的选法：e2e 必须和被测站点是同一版代码——站点部署的是哪个 commit，就填哪个（测试站部署的 commit
 # 记在 staging/latest.json 的 webCommitId）。只改了 e2e、想用新 e2e 测现有站点时填 main（或那个 PR 的分支）。
@@ -175,7 +176,25 @@ jobs:
           READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
         run: |
           d=$(( READY_AT - $(date +%s) ))
-          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+          if [ "$d" -le 0 ]; then echo "· 无需再等"; exit 0; fi
+          # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
+          # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
+          # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
+          # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          ok=0
+          while [ "$(date +%s)" -lt "$READY_AT" ]; do
+            q="_cdnprobe=$RANDOM$RANDOM"
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
+            if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
+            echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
+            [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
+            sleep 5
+          done
+          echo "· 60 秒内未连续一致，按原行为放行（后面的用例自行判定）"
       - name: Contract tests
         timeout-minutes: 8
         working-directory: e2e
@@ -213,7 +232,25 @@ jobs:
           READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
         run: |
           d=$(( READY_AT - $(date +%s) ))
-          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+          if [ "$d" -le 0 ]; then echo "· 无需再等"; exit 0; fi
+          # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
+          # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
+          # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
+          # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          ok=0
+          while [ "$(date +%s)" -lt "$READY_AT" ]; do
+            q="_cdnprobe=$RANDOM$RANDOM"
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
+            if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
+            echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
+            [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
+            sleep 5
+          done
+          echo "· 60 秒内未连续一致，按原行为放行（后面的用例自行判定）"
       - name: Degradable deps (non-blocking)
         timeout-minutes: 8
         working-directory: e2e
@@ -247,7 +284,25 @@ jobs:
           READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
         run: |
           d=$(( READY_AT - $(date +%s) ))
-          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+          if [ "$d" -le 0 ]; then echo "· 无需再等"; exit 0; fi
+          # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
+          # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
+          # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
+          # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          ok=0
+          while [ "$(date +%s)" -lt "$READY_AT" ]; do
+            q="_cdnprobe=$RANDOM$RANDOM"
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
+            if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
+            echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
+            [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
+            sleep 5
+          done
+          echo "· 60 秒内未连续一致，按原行为放行（后面的用例自行判定）"
       - name: Read links check
         timeout-minutes: 8
         run: |
@@ -280,7 +335,25 @@ jobs:
           READY_AT: ${{ needs.prep.outputs.cdn_ready_at }}
         run: |
           d=$(( READY_AT - $(date +%s) ))
-          if [ "$d" -gt 0 ]; then echo "· 等 CDN 传播，还剩 ${d} 秒"; sleep "$d"; else echo "· 无需再等"; fi
+          if [ "$d" -le 0 ]; then echo "· 无需再等"; exit 0; fi
+          # 探测代替固定 sleep（overview GUJI-469 方案 B）：CDN 视图（原样 URL）与源站视图（带随机 query 必 MISS）
+          # 对「首页引用的 js 块清单」和「latest.json 的 cacheKey／commitId」两项都一致，且连续 3 次（间隔 5 秒），就算传播完。
+          # 上限不变：到 READY_AT（=部署后 60 秒）仍没一致，照旧放行，由后面的用例自己判——探测失败不多挡晋升。
+          # run 默认是 bash -e：取不到时函数必须返回 0、赋值带 || 兜底，否则整步会红。
+          # 取不到（非 2xx／没匹配）就输出空串，空串不算一致
+          fp() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | grep -o '/_next/static/[^"]*\.js' | sort -u) || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          lv() { x=$(curl -fsS -m 15 "$1" 2>/dev/null | tr -d ' \n' | grep -o '"\(cacheKey\|commitId\)":"[^"]*"') || x=""; if [ -n "$x" ]; then printf '%s' "$x" | md5sum | cut -c1-12; fi; return 0; }
+          ok=0
+          while [ "$(date +%s)" -lt "$READY_AT" ]; do
+            q="_cdnprobe=$RANDOM$RANDOM"
+            a=$(fp "$TARGET/") || a=""; b=$(fp "$TARGET/?$q") || b=""
+            c=$(lv "$DATA_BASE/latest.json") || c=""; e=$(lv "$DATA_BASE/latest.json?$q") || e=""
+            if [ -n "$a" ] && [ "$a" = "$b" ] && [ -n "$c" ] && [ "$c" = "$e" ]; then ok=$((ok+1)); else ok=0; fi
+            echo "· CDN 探测：首页 $a/$b，latest $c/$e，连续一致 $ok/3"
+            [ "$ok" -ge 3 ] && { echo "· CDN 已一致，提前结束等待（还剩 $(( READY_AT - $(date +%s) )) 秒）"; exit 0; }
+            sleep 5
+          done
+          echo "· 60 秒内未连续一致，按原行为放行（后面的用例自行判定）"
       # --fully-parallel：按用例而不是按文件分给 worker、切片。a11y.spec 一个文件 64 条、约 8 分钟，
       # 按文件分时整片都压在一个 worker 上，是原来 UI 一步 8 分钟的大头。各用例之间没有 serial／beforeAll 依赖。
       - name: UI tests
