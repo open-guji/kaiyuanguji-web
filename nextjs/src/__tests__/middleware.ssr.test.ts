@@ -176,7 +176,7 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
     it('正式 id 3s 预算后、追加等待内查到被并 → 仍是单 Location 的 308（GUJI-146；去掉追加等待这条会红）', async () => {
         jest.useFakeTimers();
         try {
-            mockGetItem.mockImplementation(() => new Promise((res) => setTimeout(() => res({ entry: { merged_into: TARGET } }), 5_000)));
+            mockGetItem.mockImplementation(() => new Promise((res) => setTimeout(() => res(hit({ merged_into: TARGET })), 5_000)));
             const pending = run(`/item/${MERGED}`);
             await jest.advanceTimersByTimeAsync(5_000);
             const r = await pending;
