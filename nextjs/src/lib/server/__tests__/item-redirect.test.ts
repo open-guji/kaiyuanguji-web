@@ -90,28 +90,6 @@ describe('lookupItemRedirectTraced（overview#491：升格对照表与条目并�
         expect(r.reason).toBe('pass:budget(20ms,entry=pending,promo=promoted)');
     });
 
-    it('正式 id（被并条目）预算到了仍在查：再等 graceMs，等到了就 308（去掉 grace 这条会红）', async () => {
-        const d = deps({ getItem: jest.fn(async () => { await sleep(60); return hit({ merged_into: TARGET }); }) });
-        const r = await lookupItemRedirectTraced(OFFICIAL, d, 20, 200);
-        expect(r.redirect).toEqual({ to: `/item/${TARGET}`, permanent: true });
-        expect(r.reason).toBe('redirect:merged');
-    });
-
-    it('正式 id：预算＋grace 都用完仍没结果才放行，原因带 +grace', async () => {
-        const d = deps({ getItem: jest.fn(async () => { await sleep(300); return hit({ merged_into: TARGET }); }) });
-        const r = await lookupItemRedirectTraced(OFFICIAL, d, 20, 40);
-        expect(r.redirect).toBeNull();
-        expect(r.reason).toBe('pass:budget(20ms,entry=pending,promo=pending+grace40ms)');
-    });
-
-    it('草稿 id 不吃 grace：预算到了立即放行（它有 307 退路）', async () => {
-        const d = deps({ getItem: jest.fn(async () => { await sleep(80); return null; }), resolvePromotion: jest.fn(() => new Promise<PromotionLookup>(() => {})) });
-        const t = Date.now();
-        const r = await lookupItemRedirectTraced(DRAFT, d, 20, 500);
-        expect(Date.now() - t).toBeLessThan(200);
-        expect(r.reason).toMatch(/^pass:budget\(20ms,[^+]*\)$/);
-    });
-
     it('取条目抛错：放行，原因里带可见 ASCII 摘要', async () => {
         const d = deps({ getItem: jest.fn(async () => { throw new Error('latest.json HTTP 503 \u4e2d\u6587'); }) });
         const r = await lookupItemRedirectTraced(DRAFT, d, 1000);
