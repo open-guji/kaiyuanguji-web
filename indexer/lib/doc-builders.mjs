@@ -169,9 +169,9 @@ function buildEntityDoc(entry, isDraft = true) {
         subtype: entry.subtype || 'people',
         primary_name: name,
         dynasty: entry.dynasty || '',
-        // schema-v2：生卒年的真源是 dates.birth／dates.death（源记录本体的 birth_year／death_year 已删，旧数据仍兼容）
-        birth_year: yearOf(entry.dates?.birth) ?? yearOf(entry.birth_year),
-        death_year: yearOf(entry.dates?.death) ?? yearOf(entry.death_year),
+        // schema-v2：生卒年的真源是 dates.birth／dates.death（源记录本体的 birth_year／death_year 已删，不再兼容旧写法）
+        birth_year: yearOf(entry.dates?.birth),
+        death_year: yearOf(entry.dates?.death),
         cbdb_id: entry.cbdb_id ?? null,
         completeness: entry.cbdb_id ? 1 : 0,
         title_chars: Array.from(name).length,

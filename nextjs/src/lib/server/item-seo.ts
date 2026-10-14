@@ -195,8 +195,8 @@ function yearText(v: unknown): string {
 
 function lifeText(e: ItemEntry): string {
     const d = obj(e.dates);
-    const b = yearText(e.birth_year ?? d.birth);
-    const x = yearText(e.death_year ?? d.death);
+    const b = yearText(d.birth);
+    const x = yearText(d.death);
     if (b && x) return `${b}—${x}`;
     if (b) return `生於${b}年`;
     if (x) return `卒於${x}年`;
@@ -529,8 +529,8 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
                 ...base,
                 '@type': org ? 'Organization' : 'Person',
                 alternateName: withSimplified(entityAliases(e, s.title)),
-                birthDate: org ? undefined : year(e.birth_year ?? d.birth),
-                deathDate: org ? undefined : year(e.death_year ?? d.death),
+                birthDate: org ? undefined : year(d.birth),
+                deathDate: org ? undefined : year(d.death),
             });
             break;
         }
