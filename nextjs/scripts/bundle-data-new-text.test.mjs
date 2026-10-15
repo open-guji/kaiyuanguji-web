@@ -23,6 +23,8 @@ import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { SITE_CONTENT_FILES } from './lib/production-dir.mjs';
+// B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
+process.env.ALLOW_SOURCE_FALLBACK = '1';
 
 const NEXTJS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -301,27 +303,31 @@ try {
         }
     });
 
-    test('derived 命中数闸：设了 BOOK_INDEX_DERIVED_DIR 且有回退时默认只警告并打印汇总；STRICT_DERIVED=1 才失败；没设产物目录不判闸', () => {
+    test('derived 命中数闸（B5-3.2）：默认严格——产物缺条目、没设产物目录都失败；ALLOW_SOURCE_FALLBACK=1 只警告', () => {
         const t = mkdtempSync(join(tmpdir(), 'new-text-derived-'));
         try {
             const f = makeFixture(t);
             const der = join(t, 'derived');
-            // 产物里只有 newBook 一条：其余条目读 entry 时全部回退源档
+            // 产物里只有 newBook 一条：其余条目在产物里缺
             put(der, `entry/${IDS.newBook}.json`, { id: IDS.newBook, title: '產物版', type: 'book' });
             const e = { ...env(join(t, 'kyg-data'), f.draft, f.text), BOOK_INDEX_DERIVED_DIR: der };
-            delete e.STRICT_DERIVED;
-            const warnRun = execFileSync('node', [join(NEXTJS_DIR, 'scripts', 'bundle-data.mjs')], { cwd: NEXTJS_DIR, env: e, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf-8' });
+            delete e.ALLOW_SOURCE_FALLBACK;
+            assert.throws(
+                () => run('bundle-data.mjs', e),
+                (err) => /产物里缺/.test(String(err.stderr)) && /DER\s+条目读取/.test(String(err.stdout)),
+            );
+            // 本地开发开关：回退源档，只警告，跑得完
+            const warnRun = execFileSync('node', [join(NEXTJS_DIR, 'scripts', 'bundle-data.mjs')], { cwd: NEXTJS_DIR, env: { ...e, ALLOW_SOURCE_FALLBACK: '1' }, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf-8' });
             assert.match(warnRun, /DER\s+条目读取：命中产物 \d+，回退源档 [1-9]\d*/);
             assert.match(warnRun, /entry: 命中产物 1，回退源档/);
-            // 默认不失败（上面没抛错）；严格模式才失败
-            assert.throws(
-                () => run('bundle-data.mjs', { ...e, STRICT_DERIVED: '1' }),
-                (err) => /STRICT_DERIVED=1：有条目回退读源档/.test(String(err.stderr)),
-            );
-            // 没设产物目录：不判闸，STRICT_DERIVED=1 也能跑完
+            // 没设产物目录：直接失败，信息写明缺什么（STRICT_DERIVED 有没有都一样）
             const e2 = { ...env(join(t, 'kyg-data2'), f.draft, f.text), STRICT_DERIVED: '1' };
             delete e2.BOOK_INDEX_DERIVED_DIR;
-            run('bundle-data.mjs', e2);
+            delete e2.ALLOW_SOURCE_FALLBACK;
+            assert.throws(
+                () => run('bundle-data.mjs', e2),
+                (err) => /缺 BOOK_INDEX_DERIVED_DIR/.test(String(err.stderr)),
+            );
         } finally {
             rmSync(t, { recursive: true, force: true });
         }

@@ -29,7 +29,7 @@
 
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'fs';
-import { classificationOf, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
+import { assertDerivedDir, classificationOf, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -282,6 +282,7 @@ export function writeCatalog(dataDir, built, opts = {}) {
  * @param {{ index: { works: Record<string, any> }, rootDirFor: (e: any) => string, dataDir: string, taxonomyFile?: string, log?: (s: string) => void }} args
  */
 export function bundleCatalog({ index, rootDirFor, dataDir, taxonomyFile, log = console.log }) {
+    assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（readEntryDoc 的抛错会被逐条 try 吞掉）
     const rank = taxonomyFile && existsSync(taxonomyFile)
         ? taxonomyRank(JSON.parse(readFileSync(taxonomyFile, 'utf-8')))
         : new Map();
