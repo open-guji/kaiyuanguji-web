@@ -13,6 +13,7 @@
 import { parseItemId } from '../item-id';
 import type { ItemFetchResult, PromotionLookup } from './item-data';
 import { mergedTarget } from './item-seo';
+import type { RedirectTable } from './redirect-table';
 
 export interface ItemRedirect {
     /** 站内路径 */
@@ -47,13 +48,15 @@ export async function resolveItemRedirect(
 export interface ItemRedirectDeps {
     getItem(id: string, opts?: { prefer?: 'current'; currentOnly?: boolean }): Promise<ItemFetchResult | null>;
     resolvePromotion(id: string): Promise<PromotionLookup>;
+    /** 旧→新 ID 全表（GUJI-355）；命中直接 308 到终点，不命中走下面的实时查询。未提供＝不用表 */
+    table?: RedirectTable;
 }
 
 export interface TracedRedirect {
     redirect: ItemRedirect | null;
     /**
      * 为什么跳／为什么没跳，写进响应头 x-kyg-item-redirect 给线上排查用（FX1c 当年要靠临时诊断头才查出根因）。
-     * redirect:merged | redirect:promoted | redirect:promo-unknown（307）；
+     * redirect:table（全表命中）| redirect:merged | redirect:promoted | redirect:promo-unknown（307）；
      * pass:entry-ok | pass:not-found | pass:promo-absent | pass:budget(...) | pass:error:<摘要>。
      */
     reason: string;
@@ -83,6 +86,9 @@ export async function lookupItemRedirectTraced(
     budgetMs: number,
     graceMs = 0,
 ): Promise<TracedRedirect> {
+    const fromTable = deps.table?.lookup(id);
+    if (fromTable) return { redirect: { to: `/item/${fromTable}`, permanent: true }, reason: 'redirect:table' };
+
     const isDraft = parseItemId(id)?.status === 'draft';
     let promo: PromotionLookup | undefined;
     let entry: 'pending' | 'hit' | 'miss' = 'pending';
