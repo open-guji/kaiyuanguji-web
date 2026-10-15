@@ -57,6 +57,13 @@ try {
     assert.equal(classificationOf({ classification: { l1: '經部', l2: '易類' } }), null);
     assert.equal(classificationOf({ _classifications: [] }), null);
     assert.equal(classificationOf({}), null);
+    // 黄金向量：与 src/lib/server/item-relations.ts 的 classificationOf 共用同一份（B5-3.1），两边都要过
+    const vectors = JSON.parse(readFileSync(new URL('../../src/lib/server/__tests__/fixtures/classification-vectors.json', import.meta.url), 'utf-8'));
+    for (const v of vectors) {
+        const got = classificationOf(v.entry);
+        if (v.expect === null) assert.equal(got, null, v.name);
+        else assert.deepEqual({ l1: got.l1, l2: got.l2, l3: got.l3, l4: got.l4 }, v.expect, v.name);
+    }
     // 命中数闸：只数设了产物目录的读；回退>0 默认只警告，STRICT_DERIVED=1 才失败
     resetEntryReadStats();
     readEntryDoc({ id: 'a', srcPath: join(prod, 'Work', 'a.json'), dir: null, stat: 'x' }); // 旧路径不计
