@@ -129,6 +129,17 @@ test('scanEntries：数据根里没有 entry/ 目录：block，不抛错', () =>
     assert.ok(f.list().some((x) => x.code === 'entry.dir-missing' && x.severity === 'block'));
 });
 
+test('scanEntries：标志只数派生条目的 _has_*，无下划线的 has_* 旧写法不计（B5 V4）', () => {
+    const d = mkdtempSync(join(tmpdir(), 'dpc-'));
+    try {
+        const put = (id, o) => writeFileSync(join(d, `${id}.json`), JSON.stringify({ id, type: 'work', ...o }));
+        put('a', { _has_text: true, _has_image: true, _has_collated: true });
+        put('b', { has_text: true, has_image: true, has_collated: true });
+        const r = scanEntries(d, new Findings());
+        assert.deepEqual([r.stats.hasText, r.stats.hasImage, r.stats.hasCollated], [1, 1, 1]);
+    } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
 test('Findings：按 code 聚合、例子最多 5 个、按级别排序', () => {
     const f = new Findings();
     for (let i = 0; i < 12; i++) f.add({ severity: 'warn', code: 'a', message: `m${i}` });
