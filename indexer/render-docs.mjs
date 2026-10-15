@@ -19,12 +19,13 @@ import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs, readDetail, addEditionStats } from './lib/doc-builders.mjs';
 import { iterAllRoots, insideRoot } from './lib/shards.mjs';
+import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
 import { derivedInputProblem } from './lib/work-fields.mjs';
 
 const LIB = new URL('./lib/', import.meta.url);
 // 影响文档内容的代码与数据：任一变动 → indexerVersion 变 → ingest 必须走全量（design §四）
-const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs'];
+const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'derived-core.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs'];
 const SELF = new URL('./render-docs.mjs', import.meta.url);
 
 export function indexerVersion() {
@@ -74,11 +75,12 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
     for (const i of ['works', 'juans', 'books', 'collections', 'entities']) if (want(i)) sinks[i] = openSink(join(docsDir, `${i}.jsonl.gz.tmp`));
     const editionStats = { total: 0, present: 0, positive: 0 };
     const iter = (t) => iterAllRoots(roots, t);
-    const safeDetail = (rootDir, entry) => {
+    const readStats = createReadStats();
+    const safeDetail = (rootDir, entry, isDraft = false) => {
         const p = resolve(rootDir, entry.path || '');
         if (!insideRoot(rootDir, p)) { console.warn(`⚠️  路径越出数据根目录，跳过：${entry.id} ${entry.path}`); return undefined; }
         if (!existsSync(p)) return undefined;
-        try { return readDetail(p, entry.id, derivedDir); } catch { return undefined; }
+        try { return readDetail(p, entry.id, derivedDir, { isDraft, stats: readStats }); } catch { return undefined; }
     };
 
     if (want('works') || want('juans')) {
@@ -86,18 +88,18 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         for (const { entry, rootDir, isDraft } of iter('works')) {
             if (limit && n >= limit) break;
             n++;
-            const detail = safeDetail(rootDir, entry);
+            const detail = safeDetail(rootDir, entry, isDraft);
             if (!detail || isPromotedTombstone(detail)) continue;
             if (sinks.works) { addEditionStats(editionStats, detail, isDraft); await sinks.works.write(buildWorkDoc(entry, detail, isDraft)); }
             if (sinks.juans) for (const j of buildJuanDocs(textDir, entry)) await sinks.juans.write(j);
         }
         if (sinks.juans) {   // 自校文本挂在 Book 上，按所属 work_id 出 juans
             let m = 0;
-            for (const { entry, rootDir } of iter('books')) {
+            for (const { entry, rootDir, isDraft } of iter('books')) {
                 if (limit && m >= limit) break;
                 if (!entry.has_text) continue;
                 m++;
-                const detail = safeDetail(rootDir, entry) ?? null;
+                const detail = safeDetail(rootDir, entry, isDraft) ?? null;
                 if (isPromotedTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(textDir, entry, { workId, kinds: ['self_collated'] })) await sinks.juans.write(j);
@@ -109,7 +111,7 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         for (const { entry, rootDir, isDraft } of iter('books')) {
             if (limit && n >= limit) break;
             n++;
-            const detail = entry.path ? (safeDetail(rootDir, entry) ?? null) : null;
+            const detail = entry.path ? (safeDetail(rootDir, entry, isDraft) ?? null) : null;
             if (isPromotedTombstone(detail)) continue;
             await sinks.books.write(buildBookDoc(entry, detail, isDraft));
         }
@@ -124,6 +126,9 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         }
     }
 
+    // 生产库缺 derived 产物＝产物不全：不落 manifest（.tmp 留着，ingest 认 manifest 才算完整），与准入闸同一开关
+    const readProblem = process.env.ALLOW_NO_DERIVED === '1' ? null : readStatsProblem(readStats);
+    if (readProblem) throw new Error(readProblem);
     const counts = {}, sha256 = {};
     for (const [i, s] of Object.entries(sinks)) {
         const r = await s.close();
@@ -136,7 +141,7 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         createdAt: new Date().toLocaleString('sv-SE', { timeZone: 'America/Los_Angeles' }) + ' (America/Los_Angeles)',
         indexerVersion: indexerVersion(),
         commits: { draft: gitHead(draftDir), prod: gitHead(prodDir), text: gitHead(textDir), derived: derivedCommit(derivedDir) },
-        counts, sha256, editionStats,
+        counts, sha256, editionStats, derivedRead: readStats,
         partial: !!(limit || only),
     };
     writeFileSync(join(outDir, 'manifest.json.tmp'), JSON.stringify(manifest, null, 2) + '\n');

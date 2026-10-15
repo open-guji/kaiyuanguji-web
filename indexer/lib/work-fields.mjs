@@ -20,18 +20,10 @@ export function classificationL1(...sources) {
 }
 
 /**
- * schema-v2（overview#458）：build 产物里的 `_classifications[]`（优先 zongmu，否则第一个有 l1 的），
- * 取成与旧 `classification` 同形的 { l1 }；没有返回 null。给 classificationL1 做第一来源（第二来源只剩分片行）。
+ * schema-v2（overview#458）：分类／版本数取自 build 产物（`_classifications[]`、`_edition_count`），
+ * 取法在 derived-core.mjs（与打包侧共用）。保留原导出名给 classificationL1／doc-builders 用。
  */
-export function derivedClassification(detail) {
-    const list = Array.isArray(detail?._classifications) ? detail._classifications.filter((c) => c && typeof c === 'object') : [];
-    return list.find((c) => c.scheme === 'zongmu' && c.l1) ?? list.find((c) => c.l1) ?? null;
-}
-
-/** 版本数（排序加权用）：build 产物的 `_edition_count`；没有给 0 */
-export function editionCount(detail) {
-    return typeof detail?._edition_count === 'number' ? detail._edition_count : 0;
-}
+export { classificationOf as derivedClassification, editionCountOf as editionCount } from './derived-core.mjs';
 
 export function lossStatusValue(...values) {
     for (const v of values) {

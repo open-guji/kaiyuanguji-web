@@ -37,11 +37,13 @@ import { createMeiliOps, SETTINGS } from './lib/meili-ops.mjs';
 import { iterAllRoots as iterAllRootsIn } from './lib/shards.mjs';
 import { isTombstone } from './lib/tombstone.mjs';
 import { EXIT, acquireLock } from './lib/ingest-support.mjs';
+import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs as buildJuanDocsIn, readDetail as readDetailIn, addEditionStats } from './lib/doc-builders.mjs';
 
 const EDITION_STATS = { total: 0, present: 0, positive: 0 };
 const DERIVED_DIR = () => process.env.BOOK_INDEX_DERIVED_DIR || '';
-const readDetail = (p, id) => readDetailIn(p, id, DERIVED_DIR());
+const READ_STATS = createReadStats();
+const readDetail = (p, id, isDraft = false) => readDetailIn(p, id, DERIVED_DIR(), { isDraft, stats: READ_STATS });
 const buildJuanDocs = (entry, opts) => buildJuanDocsIn(TEXT_DIR, entry, opts);
 
 
@@ -170,7 +172,7 @@ async function main() {
                 const detailPath = join(rootDir, entry.path || '');
                 if (!existsSync(detailPath)) continue;
                 let detail;
-                try { detail = readDetail(detailPath, entry.id); } catch { continue; }
+                try { detail = readDetail(detailPath, entry.id, isDraft); } catch { continue; }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑
                 if (isTombstone(detail)) continue; // 升格墓碑字段是 promoted_to，旧的是 _promoted_to，两个都认；并条墓碑是 merged_into
                 if (doWorks) { addEditionStats(EDITION_STATS, detail, isDraft); yield { kind: 'work', doc: buildWorkDoc(entry, detail, isDraft) }; }
@@ -187,13 +189,13 @@ async function main() {
         async function* selfCollatedJuans() {
             if (!doJuans) return;
             let n = 0;
-            for (const { entry, rootDir } of iterAllRoots('books')) {
+            for (const { entry, rootDir, isDraft } of iterAllRoots('books')) {
                 if (limit && n >= limit) break;
                 if (!entry.has_text) continue;
                 n++;
                 const detailPath = join(rootDir, entry.path || '');
                 let detail = null;
-                try { detail = existsSync(detailPath) ? readDetail(detailPath, entry.id) : null; } catch { detail = null; }
+                try { detail = existsSync(detailPath) ? readDetail(detailPath, entry.id, isDraft) : null; } catch { detail = null; }
                 if (isTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(entry, { workId, kinds: ['self_collated'] })) yield { kind: 'juan', doc: j };
@@ -255,6 +257,9 @@ async function main() {
                     console.log(`📚 版本数覆盖：非草稿 works ${EDITION_STATS.total}，带 _edition_count ${EDITION_STATS.present}，>0 的 ${EDITION_STATS.positive}（硬线：有数字 ≥95%，>0 ≥30%）`);
                     const p = limit ? null : editionCoverageProblem(EDITION_STATS);   // --limit 试跑不闸
                     if (p) h.failures.push(p);
+                    console.log(`📦 derived 读取：产物 ${READ_STATS.hit}，草稿读源档 ${READ_STATS.draftSource}，生产缺产物 ${READ_STATS.missing}`);
+                    const rp = process.env.ALLOW_NO_DERIVED === '1' ? null : readStatsProblem(READ_STATS);   // 与准入闸同一开关
+                    if (rp) h.failures.push(rp);
                     return { ok: h.failures.length === 0, failures: h.failures };
                 });
             }
@@ -280,7 +285,7 @@ async function main() {
                 if (entry.path) {
                     const detailPath = join(rootDir, entry.path);
                     if (existsSync(detailPath)) {
-                        try { detail = readDetail(detailPath, entry.id); } catch { detail = null; }
+                        try { detail = readDetail(detailPath, entry.id, isDraft); } catch { detail = null; }
                     }
                 }
                 // 双保险：shard 没标 promoted_to、但 detail 已 stub 化的漏网墓碑（同 works）
@@ -314,7 +319,7 @@ async function main() {
                     const detailPath = join(rootDir, entry.path);
                     if (existsSync(detailPath)) {
                         let detail = null;
-                        try { detail = readDetail(detailPath, entry.id); } catch { detail = null; }
+                        try { detail = readDetail(detailPath, entry.id, isDraft); } catch { detail = null; }
                         if (isTombstone(detail)) { tomb++; continue; }
                     }
                 }
