@@ -65,3 +65,19 @@ describe('item-relations：旧字段不再读（回退已删，overview#522）',
         expect(classificationOf(none)).toEqual({});
     });
 });
+
+describe('classificationOf：与 scripts/lib/derived.mjs 共用黄金向量（B5-3.1）', () => {
+    const vectors = JSON.parse(readFileSync(join(__dirname, 'fixtures', 'classification-vectors.json'), 'utf-8')) as {
+        name: string; entry: unknown; expect: { l1: string; l2: string; l3: string; l4: string } | null;
+    }[];
+    for (const v of vectors) {
+        it(v.name, () => {
+            const got = classificationOf(v.entry as ItemEntry) as Record<string, unknown>;
+            if (v.expect === null) {
+                expect(got.l1).toBeUndefined();
+            } else {
+                for (const k of ['l1', 'l2', 'l3', 'l4'] as const) expect((got[k] ?? '') as string).toBe(v.expect[k]);
+            }
+        });
+    }
+});
