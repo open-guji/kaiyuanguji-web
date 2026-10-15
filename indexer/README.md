@@ -20,6 +20,7 @@
 |---|---|
 | `full-reindex.mjs` | 主程序。流式遍历三仓，建 works / juans / books / collections / entities 五个 index，最后 PATCH settings |
 | `lib/work-fields.mjs` | works 文档里 `classification`（部）、`loss_status`（存佚）的取值逻辑。**full-reindex.mjs 依赖它，同步时要一起带上** |
+| `lib/derived-core.mjs` | derived 产物取数核心（分类、版本数、读条目＋「产物／草稿读源档／生产缺产物」计数与判闸，B5-3.3）。**doc-builders／work-fields 依赖它，同步时要一起带上**；打包侧 `nextjs/scripts/lib/derived.mjs` 也从这里 re-export |
 | `lib/sort-fields.mjs` | `era_rank`、`title_sort` 排序字段的取值逻辑。同上，**漏了就起不来** |
 | `lib/doc-floor.mjs` | swap 前文档数下限闸的判定（新建的比线上少一半以上不换）。同上，**漏了就起不来** |
 | `reindex-and-purge.sh` | wrapper：读凭证 → 三仓 `git pull`（缺则 clone）→ 跑 full-reindex → 成功才 purge。**不要直接跑** |
@@ -31,7 +32,7 @@
 ## 把仓库里的脚本同步到服务器
 
 这些文件一起同步，别只同步一个——它们之间靠环境变量约定（`PRODUCTION_DIR`、`TEXT_DIR`）配合；
-`full-reindex.mjs` 还 import 了 `lib/work-fields.mjs`、`lib/sort-fields.mjs`（2026-09-30 起）、`lib/doc-floor.mjs`（2026-10-06 起），漏了 `lib/` 会在启动时报 `ERR_MODULE_NOT_FOUND`
+`full-reindex.mjs` 还 import 了 `lib/work-fields.mjs`、`lib/sort-fields.mjs`（2026-09-30 起）、`lib/doc-floor.mjs`（2026-10-06 起）、`lib/derived-core.mjs`（B5-3.3 起），漏了 `lib/` 会在启动时报 `ERR_MODULE_NOT_FOUND`
 ——那是在动任何索引之前就报错，线上索引不受影响，补上 `lib/` 重跑即可。
 
 **搜索机在墙内，直连 GitHub 不通**（npm 官方源也慢），所以脚本从一台能连 GitHub 的机器经 SSH 推过去，数据仓经 `gh-proxy.com` 前缀拉（三仓的 origin 都已指向它）。
