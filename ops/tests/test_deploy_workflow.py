@@ -420,6 +420,16 @@ class CodeOnlyPromote(unittest.TestCase):
         self.assertIn("env.CODE_ONLY == 'true'", s['if'])
         self.assertIn("env.SPLIT_DATA != 'true'", _step(self.build, 'Data fast path — decide before cloning (overview#341)')['if'])
 
+    def test_read_revalidate_not_gated_by_data_fast(self):
+        # 阅读页 ISR 输出取决于代码：每次代码发布都要整体失效，不能像条目失效那样被 DATA_FAST 跳过
+        s = _step(self.build, 'Revalidate reading pages (read:true)')
+        self.assertNotIn('DATA_FAST', str(s.get('if', '')))
+        self.assertTrue(s.get('continue-on-error'))
+        self.assertIn('read', s['run'])
+        names = [x.get('name') for x in self.build['steps']]
+        self.assertGreater(names.index(s['name']), names.index('Derive revalidate secret (W2-3)'))
+        self.assertGreater(names.index(s['name']), names.index('Deploy to EdgeOne (production, kyg-ssr-spike)'))
+
 
 if __name__ == '__main__':
     unittest.main()
