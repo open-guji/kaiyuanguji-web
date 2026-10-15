@@ -31,7 +31,7 @@ import { requireNewTextData, requireUiVersion } from '../fixtures/preconditions'
 // 与 <title>（overview#337：服务端直出一律简体）都用它。各处都严格比对，不是「繁简任一」。
 const ITEM_SAMPLES = [
     { kind: 'Work', id: ANCHORS.work.id, title: '史記', h1Title: '史记', ldType: 'Book' },
-    { kind: 'Book', id: '988fbiuha8', title: '御定佩文韻府', h1Title: '御定佩文韵府', ldType: 'Book' },
+    { kind: 'Book', id: '988g05yx35', title: '御定佩文韻府', h1Title: '御定佩文韵府', ldType: 'Book' },
     { kind: 'Collection', id: '8rlcsybg2hhf', title: '武英殿聚珍版叢書', h1Title: '武英殿聚珍版丛书', ldType: 'Collection' },
     { kind: 'Entity', id: ANCHORS.entity.id, title: '孔子', h1Title: '孔子', ldType: 'Person' },
 ] as const;
