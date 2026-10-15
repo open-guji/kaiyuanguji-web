@@ -14,6 +14,7 @@ import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './work-fields.mjs';
 import { eraRank, sortTitle } from './sort-fields.mjs';
 import { CHAR_FILE_RE, charJsonText } from './char-text.mjs';
+import { readDetailDoc } from './derived-core.mjs';
 
 const t2s = createToSimplified({
     createConverter: () => OpenCC.Converter({ from: 't', to: 'cn' }),
@@ -204,16 +205,11 @@ function juanDoc(workId, juanName, clean) {
  */
 const TEXT_KEY_RE = /^[a-z][a-z0-9-]*$/;
 /**
- * 条目详情：schema-v2 的 build 产物（BOOK_INDEX_DERIVED_DIR/entry/<id>.json，源＋_ 派生字段）优先，
- * 缺则读源档 detailPath（草稿库、旧 schema 都走这里）。读不了抛错，由调用方按原样处理。
+ * 条目详情：schema-v2 的 build 产物优先；生产库缺产物抛错并计 missing、草稿库读源档（规则见 derived-core.mjs readDetailDoc）。
+ * opts：{ isDraft, stats }。读不了抛错，由调用方按原样处理。
  */
-function readDetail(detailPath, id, derivedDir = '') {
-    const dir = (derivedDir || '').trim();
-    if (dir && id) {
-        const p = join(dir, 'entry', `${id}.json`);
-        if (existsSync(p)) return JSON.parse(readFileSync(p, 'utf-8'));
-    }
-    return JSON.parse(readFileSync(detailPath, 'utf-8'));
+function readDetail(detailPath, id, derivedDir = '', opts = {}) {
+    return readDetailDoc(detailPath, id, derivedDir, opts);
 }
 
 function readJsonSafe(path) {
