@@ -18,7 +18,7 @@ import { readButton } from '../fixtures/detail';
 /** 史記：35 个版本、9 条著录、90 条关联 */
 const WORK = ANCHORS.work.id;
 /** 御定佩文韻府：薈要本，23 册 */
-const BOOK = '988fbiuha8';
+const BOOK = '988g05yx35';
 /** 武英殿聚珍版叢書：144 条子目 */
 const COLLECTION = '8rlcsybg2hhf';
 
