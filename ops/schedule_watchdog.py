@@ -39,8 +39,11 @@ def last_slot(now, minute, hour):
     return slot
 
 
-def judge(now, cron, grace_hours, run_times):
-    """run_times：该 workflow 的 schedule run 创建时间（datetime，UTC）。返回 (status, slot, latest)。"""
+def judge(now, cron, grace_hours, run_times, gaps=()):
+    """run_times：该 workflow 的 schedule run 创建时间（datetime，UTC）；gaps：窗口内 run_number 断档（列表可能漏列）。
+    返回 (status, slot, latest)。
+    overdue 但 run_number 有断档 → suspect（列表漏列过 run，见 GUJI-143 更正：同一查询先后返回 0 条和 7 条），
+    不开单；断档一直不补，等到 2 倍宽限再按 overdue 处理，免得漏列掩盖真漏跑。"""
     minute, hour = parse_cron(cron)
     slot = last_slot(now, minute, hour)
     latest = max(run_times) if run_times else None
@@ -48,6 +51,8 @@ def judge(now, cron, grace_hours, run_times):
         return 'ok', slot, latest
     if now < slot + dt.timedelta(hours=grace_hours):
         return 'pending', slot, latest
+    if gaps and now < slot + dt.timedelta(hours=2 * grace_hours):
+        return 'suspect', slot, latest
     return 'overdue', slot, latest
 
 
@@ -59,24 +64,47 @@ REPO_RE = re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
 WORKFLOW_RE = re.compile(r'^[A-Za-z0-9_.-]+\.ya?ml$')
 
 
-def fetch_schedule_runs(repo, workflow, token, api=None):
-    # 走 REST API（urllib），不起子进程。参数来自 workflow 文件里写死的 --watch；
-    # 仍只放行 owner/repo 和 xxx.yml 的写法，免得改参数时把别的东西拼进 URL 路径
-    if not REPO_RE.match(repo) or not WORKFLOW_RE.match(workflow) or repo.startswith('-') or '..' in repo + workflow:
-        raise ValueError(f'repo／workflow 写法不合规：{repo!r} {workflow!r}')
-    api = (api or os.environ.get('GITHUB_API_URL') or 'https://api.github.com').rstrip('/')
+def _get_json(url, token, what):
     req = urllib.request.Request(
-        f'{api}/repos/{repo}/actions/workflows/{workflow}/runs?event=schedule&per_page=5',
-        headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json',
-                 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'schedule-watchdog'})
+        url, headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'schedule-watchdog'})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            body = json.load(r)
+            return json.load(r)
     except (urllib.error.URLError, OSError, ValueError) as e:
         if isinstance(e, urllib.error.HTTPError):
             e.close()
-        raise RuntimeError(f'读 run 列表失败（{repo} {workflow}）：{str(e)[:200]}')
+        raise RuntimeError(f'读 run 列表失败（{what}）：{str(e)[:200]}')
+
+
+def _check_names(repo, workflow):
+    # --watch 来自 workflow 文件里写死的参数；仍只放行 owner/repo 和 xxx.yml 的写法，免得拼进 URL 路径
+    if not REPO_RE.match(repo) or not WORKFLOW_RE.match(workflow) or repo.startswith('-') or '..' in repo + workflow:
+        raise ValueError(f'repo／workflow 写法不合规：{repo!r} {workflow!r}')
+
+
+def _api(api):
+    return (api or os.environ.get('GITHUB_API_URL') or 'https://api.github.com').rstrip('/')
+
+
+def fetch_schedule_runs(repo, workflow, token, api=None):
+    # 走 REST API（urllib），不起子进程
+    _check_names(repo, workflow)
+    body = _get_json(f'{_api(api)}/repos/{repo}/actions/workflows/{workflow}/runs?event=schedule&per_page=5',
+                     token, f'{repo} {workflow}')
     return [parse_ts(x['created_at']) for x in body.get('workflow_runs', [])]
+
+
+def fetch_run_gaps(repo, workflow, token, since, api=None):
+    """不带 event 过滤取最近 100 个 run，返回 since 之后 run_number 的断档（缺的号）。
+    run_number 在同一 workflow 内连续递增，缺号＝列表漏列（或 run 被删，窗口很短时可忽略）。"""
+    _check_names(repo, workflow)
+    body = _get_json(f'{_api(api)}/repos/{repo}/actions/workflows/{workflow}/runs?per_page=100',
+                     token, f'{repo} {workflow} 完整性自检')
+    nums = sorted(x['run_number'] for x in body.get('workflow_runs', []) if parse_ts(x['created_at']) >= since)
+    if len(nums) < 2:
+        return []
+    return sorted(set(range(nums[0], nums[-1] + 1)) - set(nums))
 
 
 def main(argv=None):
@@ -94,16 +122,19 @@ def main(argv=None):
         key = f'{repo}/{workflow}'
         try:
             runs = fetch_schedule_runs(repo, workflow, token)
-            status, slot, latest = judge(now, cron, float(grace), runs)
+            minute, hour = parse_cron(cron)
+            gaps = fetch_run_gaps(repo, workflow, token, last_slot(now, minute, hour) - dt.timedelta(days=1))
+            status, slot, latest = judge(now, cron, float(grace), runs, gaps)
         except Exception as e:  # 读不到就如实报，不当成 ok，也不当成漏跑
             print(f'? {key}：读不到（{e}）')
             results.append({'key': key, 'status': 'unknown', 'error': str(e)})
             failed = True
             continue
         late = latest.strftime('%m-%d %H:%M') if latest else '从未有过'
-        print(f'{status:8} {key}  应在 {slot:%m-%d %H:%M}（UTC）  最近一次 schedule run：{late}')
+        extra = f'  run_number 断档 {gaps}（列表可能漏列）' if gaps else ''
+        print(f'{status:8} {key}  应在 {slot:%m-%d %H:%M}（UTC）  最近一次 schedule run：{late}{extra}')
         results.append({'key': key, 'workflow': workflow, 'repo': repo, 'cron': cron,
-                        'status': status, 'slot': slot.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                        'status': status, 'gaps': gaps, 'slot': slot.strftime('%Y-%m-%dT%H:%M:%SZ'),
                         'latest': latest.strftime('%Y-%m-%dT%H:%M:%SZ') if latest else None})
     if args.out:
         with open(args.out, 'w') as f:
