@@ -1522,6 +1522,26 @@ jobs:
           ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
         run: node scripts/item-cache-verify.mjs
 
+      # 阅读页（ISR）的输出取决于代码：每次代码发布都要整体失效一次。上面的条目失效步骤受 DATA_FAST 管
+      # （数据流程拆出后，代码发布一律跳过它），#440 上线后 /read 的旧 404 被 CDN 留了一小时即因此。
+      # 这一步不看 DATA_FAST，只 POST {read:true}；密钥用上面 Derive revalidate secret 写进环境的那个。不拦发布。
+      - name: Revalidate reading pages (read:true)
+        id: read_revalidate
+        continue-on-error: true
+        env:
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
+        run: |
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o /tmp/read-reval.json -w '%{http_code}' -X POST "$ITEM_SITE/internal/revalidate" \
+              -H 'content-type: application/json' -H "x-kyg-revalidate: $KYG_REVALIDATE_SECRET" \
+              -d '{"read":true}' --max-time 60 || echo 000)
+            if [ "$code" = 200 ]; then echo "✓ 已整体失效阅读页 $(cat /tmp/read-reval.json)"; exit 0; fi
+            echo "· 第 $attempt 次 HTTP $code：$(head -c 200 /tmp/read-reval.json 2>/dev/null)"
+            sleep $((attempt * 3))
+          done
+          echo "::warning::$ITEM_SITE 的阅读页失效没成功（不拦，按 s-maxage 自然过期）"
+          exit 1
+
       # overview#322 方案 A：正式站部署、清缓存后预热热门阅读页（featured 全部＋各节点第 1 页），
       # 让新实例热起来、把这批页写进 ISR 缓存，读者和随后的冒烟 verify 都不撞冷启动。结果不计成败。
       # 测试站那一支在单独的 warm-staging 任务里，与 verify 并行（与它等 CDN 的时间重叠）。
