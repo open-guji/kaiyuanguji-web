@@ -28,13 +28,13 @@ export const ENTRY_TYPES = ['work', 'book', 'collection', 'entity'];
  */
 export const ENTRY_FIELD_TYPES = Object.freeze({
     // 源字段与旧格式汇总字段
-    additional_titles: 'array', additional_works: 'array', ai_note: 'string', ai_note2: 'string',
-    ai_note_fix: 'string', ai_note_periodfix: 'string', aliases: 'array', alt_names: 'array', appendix: 'array',
+    additional_titles: 'array', additional_works: 'array', ai_note: 'string', 
+    alt_names: 'array', appendix: 'array',
     attached_texts: 'array', authenticity: 'string', authenticity_basis: 'string', authors: 'array',
-    base_edition: 'array', birth_year: 'number', books: 'array', classification: 'object',
-    collection_scale: 'object', collections: 'array', contained_in: 'array', contained_works: 'array',
+    base_edition: 'array', classification: 'object',
+    collection_scale: 'object', contained_in: 'array', 
     contains: 'array', count: 'object', current_location: 'object', dates: 'object', dating: 'object',
-    death_year: 'number', description: 'object', dynasty: 'string', dynasty_basis: 'string', edition: 'string',
+    description: 'object', dynasty: 'string', dynasty_basis: 'string', edition: 'string',
     edition_type: 'string', editors: 'array', emendated_by: 'array', external_ids: 'object', has_collated: 'boolean',
     has_digitalization: 'boolean', has_full_text: 'boolean', has_image: 'boolean', has_text: 'boolean',
     holder: 'string', id: 'string', indexed_by: 'array', juan_count: 'object', lineage: 'object',
@@ -50,7 +50,7 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     sources: 'array', subtype: 'string', text_count: 'number', text_kinds: 'array', title: 'string',
     title_basis: 'string', title_emendation: 'object', title_or_office: 'string', total_volumes: 'number',
     total_works: 'number', type: 'string', updated_at: 'string', version_graph: 'object', volume_count: 'object',
-    work_id: 'string', works: 'array', zhsy_id: 'string',
+    work_id: 'string', zhsy_id: 'string',
     // `_` 起首：打包时加的标志，以及 schema-v2 的派生字段（加法兼容）
     _authors: 'array', _books: 'array', _catalogs: 'array', _classifications: 'array', _collections: 'array',
     _edition_count: 'number', _has_collated: 'boolean', _has_image: 'boolean', _has_text: 'boolean',
@@ -67,6 +67,18 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     _related_total: 'number',
     _children: 'array',
 });
+
+/**
+ * 已退役的源档旧键（B5-5，GUJI-299）：对齐 book-index `scripts/legacy-scan.py` 的 LEGACY_KEYS。
+ * 现行打包产物（build_derived + bundle-data，实测 260,662 个 entry/ 文件）里 0 个条目带这些键；
+ * 再出现就是旧读者／旧数据回流，报 warn（entry.retired-field），不再按「已核实字段」判类型，也不混进「未知字段」清单。
+ * 不在此列、仍待定的 legacy-scan 键：has_text／has_image（entry/ 里仍有 42k 个条目带，见 PR 说明）、
+ * `_has_text`／`_has_collated`（派生标志，现行）、_has_full_text／cbdb_*／_promoted_to 等本表原本就没收的键。
+ */
+export const RETIRED_ENTRY_FIELDS = Object.freeze([
+    'birth_year', 'death_year', 'books', 'works', 'contained_works', 'collections',
+    'aliases', 'ai_note_fix', 'ai_note2', 'ai_note_periodfix',
+]);
 
 const NAME_FIELD = { work: 'title', book: 'title', collection: 'title', entity: 'primary_name' };
 
@@ -110,6 +122,10 @@ export function checkEntryDoc(doc, file) {
     }
 
     for (const [key, val] of Object.entries(doc)) {
+        if (RETIRED_ENTRY_FIELDS.includes(key)) {
+            findings.push(finding('warn', 'entry.retired-field', `${file}：已退役的旧键 ${key}（legacy-scan 键表）`, { file, field: key }));
+            continue;
+        }
         const want = ENTRY_FIELD_TYPES[key];
         if (want === undefined) { unknownFields.push(key); continue; }
         if (val === null || want === 'any') continue; // null＝没填；'any'＝类型不固定

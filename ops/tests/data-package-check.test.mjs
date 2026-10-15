@@ -61,7 +61,8 @@ for (const dirs of [['old'], ['v2'], ['old', 'v2']]) {
         try {
             const r = runCheck({ root: pkg.root, absolute: false });
             assert.deepEqual([...codeSet(r, 'block')], [], JSON.stringify(r.findings.filter((f) => f.severity === 'block')));
-            assert.deepEqual([...codeSet(r, 'warn')].filter((c) => c !== 'entry.unknown-field'), [], JSON.stringify(r.findings.filter((f) => f.severity === 'warn')));
+            assert.deepEqual([...codeSet(r, 'warn')].filter((c) => c !== 'entry.unknown-field' && c !== 'entry.retired-field'), [], JSON.stringify(r.findings.filter((f) => f.severity === 'warn')));
+            // 夹具是历史样本（带 birth_year／books 等已退役键）；现行产物 0 个，见 data-contract.test.mjs 与 PR 的预跑记录
             assert.equal(r.counts.entryFiles, readdirSync(join(pkg.data, 'entry')).length);
             assert.equal(r.counts.byType.work + r.counts.byType.book + r.counts.byType.collection + r.counts.byType.entity, r.counts.entryFiles);
             assert.equal(r.texts.itemOwners, 1);
