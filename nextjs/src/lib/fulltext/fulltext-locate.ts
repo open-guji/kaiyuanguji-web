@@ -48,3 +48,19 @@ export function findQueryNode(root: HTMLElement, q: string): HTMLElement | null 
     for (let i = 0; i < starts.length; i += 1) if (starts[i] <= idx) lo = i;
     return nodes[lo].parentElement;
 }
+
+/**
+ * 优先用阅读器钩子输出的锚点 `[data-ft-cp]`（命中段起点的 md 码点，GUJI-141 契约）：取离 `start` 最近的一个；
+ * 没有锚点（钩子未带 ctx、或在 GujiTextViewer 里）再退回按文本找。
+ */
+export function findAnchor(root: HTMLElement, start: number, q: string): HTMLElement | null {
+    let best: HTMLElement | null = null;
+    let bestD = Infinity;
+    root.querySelectorAll<HTMLElement>('[data-ft-cp]').forEach((el) => {
+        const cp = Number(el.dataset.ftCp);
+        if (!Number.isInteger(cp)) return;
+        const d = Math.abs(cp - start);
+        if (d < bestD) { best = el; bestD = d; }
+    });
+    return best ?? findQueryNode(root, q);
+}
