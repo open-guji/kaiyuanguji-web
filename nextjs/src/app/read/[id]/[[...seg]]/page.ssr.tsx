@@ -111,6 +111,11 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
         (r.permanent ? permanentRedirect : redirect)(target ? readerPath(target, sel) : r.to);
     }
     if (!hit) return null;
+    // GUJI-358：检索的「有文本」也算外链文本资源（识典／维基文库链接），站内 book-text 却可能没收；条目存在、只是站内没有文本时，
+    // 临时（302）送到详情页看外链，不给 404。条目不存在、人物等没有阅读页的类型、版本／章乱填仍是真 404。
+    if (checked.status === 'missing' && checked.reason === 'no-manifest' && (hit.entry.type === 'work' || hit.entry.type === 'book')) {
+        redirect(`/item/${id}`);
+    }
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
     return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers };
