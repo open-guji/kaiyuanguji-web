@@ -249,6 +249,8 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     return (
         <>
         <div ref={textRef}>
+            {/* lead 放在阅读器前面：水合前它独占首屏，阅读器壳挂在它下面，不会把它推走；摘掉时阅读器本来在首屏外，只是长出正文，不记位移（GUJI-181） */}
+            {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <TextReader
                 id={id}
                 transport={transport}
@@ -264,7 +266,6 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 resolveEntities={resolveEntities}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
-            {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <SelectionReport containerRef={textRef} context={feedbackContext} />
             {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
