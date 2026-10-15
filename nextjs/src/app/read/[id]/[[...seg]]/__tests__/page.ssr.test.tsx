@@ -151,14 +151,26 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         await expect(page(seg)).rejects.toThrow('NEXT_NOT_FOUND');
     });
 
-    it('条目没有站内文本（没有 manifest）：work／book 临时跳详情页（GUJI-358）；人物等没有阅读页的类型仍是真 404', async () => {
+    it('条目没有站内文本（没有 manifest）：work／book 渲染 200 提示页，不调 redirect（ISR 里抛 redirect 会双 Location，GUJI-358）；人物等类型仍是真 404', async () => {
         mockGetCurrentJson.mockResolvedValue(null);
-        await expect(page([])).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
-        await expect(page(['wikisource', '002'])).rejects.toThrow(`REDIRECT /item/${ZHIZHAI}`);
+        const html = (t: El) => JSON.stringify((t.type as (p: unknown) => unknown)(t.props)); // 展开提示页组件
+        const tree = await pageTree([]);
+        expect(html(tree)).toContain(`/item/${ZHIZHAI}`);
+        expect(html(tree)).toContain('refresh');
+        expect(html(await pageTree(['wikisource', '002']))).toContain(`/item/${ZHIZHAI}`);
         await expect(page([], 'hixhd2h9bk4b')).rejects.toThrow('NEXT_NOT_FOUND');
         // book 类（988… 文淵閣本等只挂外链文本的）同样
         mockGetItem.mockResolvedValueOnce({ entry: { id: '988g0h7gnn', type: 'book', title: '易林' }, source: 'h1', version: 'h1:r' });
-        await expect(page([], '988g0h7gnn')).rejects.toThrow('REDIRECT /item/988g0h7gnn');
+        expect(html(await pageTree([], '988g0h7gnn'))).toContain('/item/988g0h7gnn');
+    });
+
+    it('无站内文本页：metadata 为 noindex、canonical 指详情页；页面与 metadata 都不产生 redirect（一次请求不会抛出 redirect）', async () => {
+        mockGetCurrentJson.mockResolvedValue(null);
+        const m = await meta([]);
+        expect(m.robots).toMatchObject({ index: false });
+        expect(m.alternates?.canonical).toBe(`/item/${ZHIZHAI}`);
+        mockGetCurrentJson.mockResolvedValue(null);
+        await expect(pageTree([])).resolves.toBeTruthy(); // 没有 REDIRECT 抛出
     });
 
     it('条目不存在：真 404（不跳详情页）；有 manifest 但版本／章乱填：仍真 404（GUJI-358 不放宽）', async () => {

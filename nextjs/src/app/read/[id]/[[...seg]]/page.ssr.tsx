@@ -60,7 +60,11 @@ type Props = {
 };
 
 type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
-type Loaded = { sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers };
+type Loaded = {
+    sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers;
+    /** GUJI-358：条目存在、站内没有文本（只有外链文本资源）：页面不出阅读器，指向详情页 */
+    noSiteText?: true;
+};
 
 /** 首屏数据最多等这么久：manifest 与目录多半已在进程内缓存，慢的只会是正文；等不到就交给浏览器取。
  *  页面是 ISR，超时那次的空壳会被缓存 1 小时（overview#581 实测），所以预算放宽到 4s：冷页首访多等几秒，换爬虫拿到完整页 */
@@ -111,10 +115,12 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
         (r.permanent ? permanentRedirect : redirect)(target ? readerPath(target, sel) : r.to);
     }
     if (!hit) return null;
-    // GUJI-358：检索的「有文本」也算外链文本资源（识典／维基文库链接），站内 book-text 却可能没收；条目存在、只是站内没有文本时，
-    // 临时（302）送到详情页看外链，不给 404。条目不存在、人物等没有阅读页的类型、版本／章乱填仍是真 404。
+    // GUJI-358：检索的「有文本」也算外链文本资源（识典／维基文库链接），站内 book-text 却可能没收。条目存在、只是站内没有文本时不给 404，
+    // 也不在这里 redirect()：本页是 ISR，在 ISR 渲染里抛 redirect 会让首次（MISS）响应带两个 Location，CDN 合并成「a, a」，终点 404
+    // （Next 16.1.4 本地复现）。改成渲染一个 200 的提示页（noindex，带指向详情页的链接与 meta refresh）。
+    // 条目不存在、人物等没有阅读页的类型、版本／章乱填仍是真 404。
     if (checked.status === 'missing' && checked.reason === 'no-manifest' && (hit.entry.type === 'work' || hit.entry.type === 'book')) {
-        redirect(`/item/${id}`);
+        return { sel, title: summarizeItem(hit.entry, id).title, canonical: `/item/${id}`, checked, timing, fetchers, noSiteText: true };
     }
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
@@ -160,6 +166,7 @@ async function buildMetadata({ params }: Props): Promise<Metadata> {
     redirectLegacyMarkdown(id, seg);
     const s = await load(id, seg);
     if (!s) return { title: getSiteT('zh-Hans')('seo.notFound'), robots: { index: false, follow: false } };
+    if (s.noSiteText) return { title: s.title, robots: { index: false, follow: true }, alternates: { canonical: s.canonical } };
     const chapter = s.checked.chapter;
     const versionLabel = readerVersionName(s.checked.version);
     const title = readerTitle(s.title, chapter, s.checked.chapterTitle, versionLabel);
@@ -226,11 +233,25 @@ function startLeadHead(id: string, s: Loaded): Promise<{ text: string; truncated
     return getCurrentTextHeadServer(`items/${id}/${checked.version.key}/${checked.chapter}.txt`).catch(() => null);
 }
 
+/** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */
+function NoSiteText({ id, title }: { id: string; title: string }) {
+    const to = `/item/${id}`;
+    return (
+        <main style={{ maxWidth: 640, margin: '0 auto', padding: '48px 16px' }}>
+            <meta httpEquiv="refresh" content={`0;url=${to}`} />
+            <h1>{title}</h1>
+            <p>本站暂无这部书的站内文本。</p>
+            <p><a href={to}>前往详情页</a>，查看外站文本与影像资源。</p>
+        </main>
+    );
+}
+
 export default async function ReaderPage({ params }: Props) {
     const { id, seg } = await params;
     redirectLegacyMarkdown(id, seg);
     const s = await load(id, seg);
     if (!s) notFound();
+    if (s.noSiteText) return <NoSiteText id={id} title={s.title} />;
     const headP = startLeadHead(id, s);
     const seed = await timed(s.timing, 'preload', preload(id, s));
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
