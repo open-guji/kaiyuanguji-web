@@ -43,7 +43,7 @@ export async function getItemPage(id, { timeoutMs = 30_000 } = {}) {
 
 /**
  * 预热用的「热门」条目：访问量数据（24 卡）还没有汇总前，按 26 卡的约定先用
- * 「有整理本或有影像」的作品代替。读 bundle 产物 data/entry/*.json。
+ * 「有整理本或有影像」的作品代替。读 bundle 产物 data/entry/*.json（派生条目，只带 `_has_*`）。
  */
 export function hotItemIds(dataDir, limit) {
     const dir = join(dataDir, 'entry');
@@ -55,7 +55,7 @@ export function hotItemIds(dataDir, limit) {
         try {
             const e = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
             if (e.merged_into) continue;
-            if (e.type === 'work' && (e.has_text || e._has_text || e.has_image || e._has_image)) picked.push(e.id);
+            if (e.type === 'work' && (e._has_text || e._has_image)) picked.push(e.id);
         } catch { /* 坏文件跳过 */ }
     }
     return picked;

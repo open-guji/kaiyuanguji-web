@@ -100,9 +100,10 @@ export function scanEntries(entryDir, findings) {
         if (r.type && stats.byType[r.type] !== undefined) stats.byType[r.type]++; else stats.noType++;
         if (doc && typeof doc === 'object') {
             if (doc.merged_into) stats.merged++;
-            if (doc.has_text === true || doc._has_text === true) stats.hasText++;
-            if (doc.has_image === true || doc._has_image === true) stats.hasImage++;
-            if (doc.has_collated === true || doc._has_collated === true) stats.hasCollated++;
+            // 派生条目只带 `_has_*`（build_derived 现行产出；源档的 has_* 已退役，不再兜底读）
+            if (doc._has_text === true) stats.hasText++;
+            if (doc._has_image === true) stats.hasImage++;
+            if (doc._has_collated === true) stats.hasCollated++;
         }
         for (const k of r.unknownFields) {
             const m = k.startsWith('_') ? unknownDerived : unknownTop;
