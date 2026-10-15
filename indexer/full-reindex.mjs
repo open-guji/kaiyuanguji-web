@@ -305,11 +305,22 @@ async function main() {
         const idxTmp = tmpIndexUid(name);
         function* iter() {
             let n = 0;
-            for (const { entry, isDraft } of iterAllRoots(name)) {
+            let tomb = 0;
+            for (const { entry, rootDir, isDraft } of iterAllRoots(name)) {
                 if (limit && n >= limit) break;
                 n++;
+                // shard 条目不带 merged_into（derived.md〈八〉），并条墓碑只能读 detail 判（同 works／books）
+                if (entry.path) {
+                    const detailPath = join(rootDir, entry.path);
+                    if (existsSync(detailPath)) {
+                        let detail = null;
+                        try { detail = readDetail(detailPath, entry.id); } catch { detail = null; }
+                        if (isTombstone(detail)) { tomb++; continue; }
+                    }
+                }
                 yield builder(entry, isDraft);
             }
+            if (tomb) console.log(`  [${name}] 读 detail 跳过 ${tomb} 个墓碑`);
         }
         await pushInBatches(idxTmp, iter(), { batchSize: 2000 });
         if (!dryRun) {
