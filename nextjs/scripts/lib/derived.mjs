@@ -13,8 +13,6 @@
 import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 
-const LEVELS = ['l1', 'l2', 'l3', 'l4'];
-
 /** 本地开发开关：ALLOW_SOURCE_FALLBACK=1 才允许读源档（CI／搜索机不设） */
 export function sourceFallbackAllowed(env = process.env) {
     return /^(1|true|yes)$/i.test((env.ALLOW_SOURCE_FALLBACK ?? '').trim());
@@ -153,18 +151,5 @@ export function taxonomyFileFor(prodDir, dir = derivedDir()) {
     return derivedPath('classific.json', dir) ?? join(prodDir, 'classific.json');
 }
 
-/**
- * 条目的分类，统一成旧形状 `{ l1, l2, l3, l4, source }`，或 null：
- * 取 `_classifications[]`（有多个分类法时优先 zongmu，否则取第一个有 l1 的）；没有返回 null（旧 `classification` 回退已删）。
- */
-export function classificationOf(d) {
-    const list = Array.isArray(d?._classifications) ? d._classifications.filter((c) => c && typeof c === 'object') : [];
-    const pick = list.find((c) => c.scheme === 'zongmu' && c.l1) ?? list.find((c) => c.l1);
-    if (pick) {
-        const out = {};
-        for (const k of LEVELS) out[k] = typeof pick[k] === 'string' ? pick[k] : '';
-        if (pick.source) out.source = pick.source;
-        return out;
-    }
-    return null;
-}
+/** 条目分类的取法与索引器共用一份（B5-3.3）：定义在 indexer/lib/derived-core.mjs（搜索机只同步 indexer/）。 */
+export { classificationOf } from '../../../indexer/lib/derived-core.mjs';
