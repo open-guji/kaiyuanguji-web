@@ -8,9 +8,11 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'nod
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
-    classificationOf, derivedDir, derivedPath, entryReadStatsSnapshot, indexDirFor, readEntryDoc, reportEntryReads,
+    assertDerivedDir, classificationOf, derivedDir, derivedPath, entryReadStatsSnapshot, indexDirFor, readEntryDoc, reportEntryReads,
     resetEntryReadStats, summarizeEntryReads, taxonomyFileFor,
 } from './derived.mjs';
+// B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
+process.env.ALLOW_SOURCE_FALLBACK = '1';
 
 const tmp = mkdtempSync(join(tmpdir(), 'derived-'));
 try {
@@ -73,22 +75,38 @@ try {
     const logs = [];
     const warns = [];
     const io = { log: (s) => logs.push(s), warn: (s) => warns.push(s) };
-    const r1 = reportEntryReads({ env: { BOOK_INDEX_DERIVED_DIR: der, GITHUB_STEP_SUMMARY: sumFile }, ...io });
+    // 本地开发开关（ALLOW_SOURCE_FALLBACK=1）：回退只警告、不失败
+    const lenient = { BOOK_INDEX_DERIVED_DIR: der, ALLOW_SOURCE_FALLBACK: '1', GITHUB_STEP_SUMMARY: sumFile };
+    const r1 = reportEntryReads({ env: lenient, ...io });
     assert.equal(r1.enabled, true);
     assert.equal(r1.fallback, 1);
-    assert.equal(r1.fail, false); // 默认不失败
-    assert.equal(warns.length, 1);
+    assert.equal(r1.fail, false);
+    assert.equal(warns.length, 2); // 回退 1 条＋缺条目 1 条各一句
     assert.ok(logs[0].includes('命中产物 2，回退源档 1'));
     assert.ok(readFileSync(sumFile, 'utf-8').includes('回退源档 1'));
-    assert.equal(reportEntryReads({ env: { BOOK_INDEX_DERIVED_DIR: der, STRICT_DERIVED: '1' }, ...io }).fail, true);
-    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der, STRICT_DERIVED: '0' }).fail, false);
-    // 回退数为 0：strict 也不失败
-    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der, STRICT_DERIVED: '1' }, { entry: { hit: 5, fallback: 0, missing: 0 } }).fail, false);
-    // 没设产物目录：strict 也不判闸
-    const r0 = summarizeEntryReads({ STRICT_DERIVED: '1' }, { entry: { hit: 0, fallback: 9, missing: 0 } });
+    // 严格（默认，STRICT_DERIVED 有没有都一样）：回退>0 失败；缺条目>0 失败；干净才过
+    assert.equal(reportEntryReads({ env: { BOOK_INDEX_DERIVED_DIR: der }, ...io }).fail, true);
+    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der, STRICT_DERIVED: '0' }).fail, true);
+    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der }, { entry: { hit: 5, fallback: 0, missing: 0 } }).fail, false);
+    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der }, { entry: { hit: 5, fallback: 0, missing: 1 } }).fail, true);
+    assert.equal(summarizeEntryReads({ BOOK_INDEX_DERIVED_DIR: der, ALLOW_SOURCE_FALLBACK: '1' }, { entry: { hit: 5, fallback: 0, missing: 1 } }).fail, false);
+    // 没设产物目录：严格模式失败（以前不判闸）；ALLOW_SOURCE_FALLBACK=1 才放行
+    const r0 = summarizeEntryReads({}, { entry: { hit: 0, fallback: 9, missing: 0 } });
     assert.equal(r0.enabled, false);
-    assert.equal(r0.fail, false);
-    assert.equal(r0.warnings.length, 0);
+    assert.equal(r0.fail, true);
+    assert.equal(summarizeEntryReads({ ALLOW_SOURCE_FALLBACK: '1' }, { entry: { hit: 0, fallback: 9, missing: 0 } }).fail, false);
+    assert.equal(reportEntryReads({ env: {}, stats: {}, ...io }).fail, true); // 一条都没读也失败：没设目录就是没设
+    // 严格读：没设目录 → 抛错（写明缺什么）；缺条目 → null 且不回退源档
+    delete process.env.ALLOW_SOURCE_FALLBACK;
+    assert.throws(() => readEntryDoc({ id: 'a', srcPath: join(prod, 'Work', 'a.json'), dir: null }), /BOOK_INDEX_DERIVED_DIR/);
+    assert.throws(() => assertDerivedDir({}), /ALLOW_SOURCE_FALLBACK=1/);
+    assert.doesNotThrow(() => assertDerivedDir({ ALLOW_SOURCE_FALLBACK: '1' }));
+    assert.doesNotThrow(() => assertDerivedDir({ BOOK_INDEX_DERIVED_DIR: der }));
+    resetEntryReadStats();
+    assert.equal(readEntryDoc({ id: 'b', srcPath: join(prod, 'Work', 'b.json'), dir: der }), null); // 源档有也不读
+    assert.deepEqual(entryReadStatsSnapshot(), { entry: { hit: 0, fallback: 0, missing: 1 } });
+    assert.equal(readEntryDoc({ id: 'a', srcPath: join(prod, 'Work', 'a.json'), dir: der }).derived, true);
+    process.env.ALLOW_SOURCE_FALLBACK = '1';
     resetEntryReadStats();
     console.log('derived.test.mjs ✓');
 } finally {

@@ -36,8 +36,10 @@ import { execSync } from 'child_process';
 import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
-import { derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
+import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
+
+assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（B5-3.2；本地开发设 ALLOW_SOURCE_FALLBACK=1）
 
 // ─── 配置 ───
 
@@ -690,9 +692,9 @@ bundleTextsIndex(loadShardedIndex());
 bundleExtraFiles();
 bundleVersion();
 
-// derived 命中数闸：设了 BOOK_INDEX_DERIVED_DIR 时汇总「读产物／回退源档」；回退>0 默认只警告，STRICT_DERIVED=1 才失败
+// derived 命中数闸（B5-3.2）：默认严格——没设产物目录、回退源档、缺条目都失败；ALLOW_SOURCE_FALLBACK=1（本地）只警告
 if (reportEntryReads().fail) {
-    console.error('❌ STRICT_DERIVED=1：有条目回退读源档，产物 entry/ 不全');
+    console.error('❌ derived 闸：没设 BOOK_INDEX_DERIVED_DIR、或有条目产物里缺（回退源档/找不到），见上方 DER 汇总');
     process.exit(1);
 }
 

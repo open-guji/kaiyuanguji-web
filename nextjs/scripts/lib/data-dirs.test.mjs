@@ -22,6 +22,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolveDataDirs, DEFAULT_DATA_ROOT } from './data-dirs.mjs';
 import { SITE_CONTENT_FILES } from './production-dir.mjs';
+// B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
+process.env.ALLOW_SOURCE_FALLBACK = '1';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const NEXTJS_DIR = resolve(__dirname, '..', '..');

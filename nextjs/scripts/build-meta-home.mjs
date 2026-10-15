@@ -34,7 +34,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { toCard } from './build-catalog-index.mjs';
-import { indexDirFor, readEntryDoc, reportEntryReads } from './lib/derived.mjs';
+import { assertDerivedDir, indexDirFor, readEntryDoc, reportEntryReads } from './lib/derived.mjs';
 import { readCuration, summarizeBu } from './build-read-index.mjs';
 
 export const LOSS_KEYS = ['extant', 'partially_extant', 'lost'];
@@ -245,6 +245,7 @@ export function buildMetaSections({ index, workDetail, lineageOf, loss, meta, tr
  * dataDir 下要先有 meta.json 与 catalog/tree.json（bundleMeta、bundleCatalog 写的）。
  */
 export function bundleMetaHome({ index, rootDirFor, textDirFor, dataDir, siteDir, curationDir, log = console.log }) {
+    assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（readEntryDoc 的抛错会被逐条 try 吞掉）
     const works = index.works ?? {};
     const detailCache = new Map();
     const workDetail = (id) => {
