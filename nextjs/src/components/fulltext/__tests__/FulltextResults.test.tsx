@@ -1,0 +1,111 @@
+/**
+ * GUJI-163 F6 步 3：全文搜索结果列表。夹具即 F1 sample_response.json，不接生产搜索服务。
+ */
+import { render, screen, fireEvent } from '@testing-library/react';
+import sample from '@/lib/fulltext/__fixtures__/sample_response.json';
+import type { FulltextResponse, FulltextError } from '@/lib/fulltext/fulltext-client';
+import FulltextResults from '../FulltextResults';
+import FulltextTab, { isFulltextEnabled } from '../FulltextTab';
+
+const data = sample as unknown as FulltextResponse;
+
+describe('FulltextResults', () => {
+    it('按书分组渲染：书名、命中数、章标签（label 缺省用章号）', () => {
+        render(<FulltextResults data={data} />);
+        expect(screen.getByText('論語集解')).toBeTruthy();
+        expect(screen.getByText('示例書名')).toBeTruthy();
+        expect(screen.getByText('學而第一')).toBeTruthy();
+        expect(screen.getByText('020')).toBeTruthy(); // label 为 null
+    });
+
+    it('snippet 里的 <mark> 渲染成高亮，命中文本在 mark 内', () => {
+        const { container } = render(<FulltextResults data={data} />);
+        const marks = container.querySelectorAll('mark');
+        expect(marks.length).toBe(3);
+        expect(marks[0].textContent).toBe('學而時習之');
+    });
+
+    it('snippet 里混进别的标签：转义成文本，DOM 里没有该元素（XSS）', () => {
+        const evil: FulltextResponse = {
+            ...data,
+            groups: [{
+                ...data.groups[0],
+                title: '<img src=x onerror=alert(1)>',
+                hits: [{ ...data.groups[0].hits[0], label: '<b>章</b>', snippet: '<img src=x onerror=alert(1)><mark>甲</mark><script>1</script>' }],
+            }],
+        };
+        const { container } = render(<FulltextResults data={evil} />);
+        expect(container.querySelector('img')).toBeNull();
+        expect(container.querySelector('script')).toBeNull();
+        expect(container.querySelector('b')).toBeNull();
+        expect(container.querySelectorAll('mark').length).toBe(1);
+        expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
+    });
+
+    it('命中链接带章与首个命中区间（码点偏移）和 ftq 文本', () => {
+        render(<FulltextResults data={data} />);
+        const links = screen.getAllByRole('link');
+        expect(links[0].getAttribute('href')).toBe(
+            `/read/d59df01avcw0/001?ft=${encodeURIComponent('001:3-8')}&ftq=${encodeURIComponent('學而時習之')}`,
+        );
+    });
+
+    it('has_more 时有「加载更多」，点了回调；没有则不显示', () => {
+        const onMore = jest.fn();
+        const { rerender } = render(<FulltextResults data={{ ...data, has_more: true }} onLoadMore={onMore} />);
+        fireEvent.click(screen.getByRole('button', { name: '加载更多' }));
+        expect(onMore).toHaveBeenCalledTimes(1);
+        rerender(<FulltextResults data={{ ...data, has_more: false }} onLoadMore={onMore} />);
+        expect(screen.queryByRole('button', { name: '加载更多' })).toBeNull();
+    });
+
+    it('capped／truncated 时提示结果不完整', () => {
+        render(<FulltextResults data={{ ...data, capped: true }} />);
+        expect(screen.getByText(/结果已截断/)).toBeTruthy();
+    });
+
+    it('无命中：显示“没有找到”', () => {
+        render(<FulltextResults data={{ ...data, groups: [], total_hits: 0 }} />);
+        expect(screen.getByText(/没有找到/)).toBeTruthy();
+    });
+
+    it.each<[FulltextError, RegExp]>([
+        [{ ok: false, kind: 'unavailable', status: 503 }, /暂不可用/],
+        [{ ok: false, kind: 'rate_limited', status: 429, retryAfterSec: 7 }, /7 秒/],
+        [{ ok: false, kind: 'rate_limited', status: 429, retryAfterSec: null }, /稍后/],
+        [{ ok: false, kind: 'timeout' }, /超时/],
+        [{ ok: false, kind: 'offline' }, /网络/],
+        [{ ok: false, kind: 'bad_query', status: 400 }, /关键词/],
+        [{ ok: false, kind: 'bad_response' }, /暂不可用/],
+    ])('错误 %j 映射成中文提示', (error, re) => {
+        render(<FulltextResults error={error} />);
+        expect(screen.getByRole('alert').textContent).toMatch(re);
+    });
+});
+
+describe('FulltextTab 开关', () => {
+    const OLD = process.env.NEXT_PUBLIC_FULLTEXT_TAB;
+    afterEach(() => { process.env.NEXT_PUBLIC_FULLTEXT_TAB = OLD; });
+
+    it('构建期开关关（默认）：DOM 中不含 tab', () => {
+        delete process.env.NEXT_PUBLIC_FULLTEXT_TAB;
+        expect(isFulltextEnabled()).toBe(false);
+        const { container } = render(<FulltextTab q="學而" />);
+        expect(container.innerHTML).toBe('');
+    });
+
+    it('开关开＋服务 503：tab 在、显示暂不可用', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = jest.fn().mockResolvedValue({ ok: false, status: 503, headers: new Headers(), json: async () => ({}) });
+        render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        expect(screen.getByRole('tab', { name: '全文' })).toBeTruthy();
+        expect((await screen.findByRole('alert')).textContent).toMatch(/暂不可用/);
+    });
+
+    it('开关开＋夹具：渲染分组与命中', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = jest.fn().mockResolvedValue({ ok: true, status: 200, headers: new Headers(), json: async () => sample });
+        render(<FulltextTab q="學而時習之" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        expect(await screen.findByText('論語集解')).toBeTruthy();
+    });
+});

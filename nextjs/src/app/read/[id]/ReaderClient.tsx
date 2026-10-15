@@ -18,6 +18,7 @@ import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
 import ReaderLead, { type ReaderLeadData } from './ReaderLead';
+import ReaderFulltextHint from '@/components/fulltext/ReaderFulltextHint';
 import ReaderProof, { useProofPref } from './ReaderProof';
 import { emptyProofLayer, loadProofLayer, type ProofLayer } from '@/lib/proof';
 
@@ -246,6 +247,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     }, [id, transport]);
 
     return (
+        <>
         <div ref={textRef}>
             <TextReader
                 id={id}
@@ -266,6 +268,9 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
             <SelectionReport containerRef={textRef} context={feedbackContext} />
             {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
+        {/* 全文搜索定位（GUJI-163 / F6 步 4）：只在地址带 ?ft= 时工作；放在 textRef 之外，提示文字不被当成命中 */}
+        <ReaderFulltextHint hostRef={textRef} chapter={sel.chapter} />
+        </>
     );
 }
 

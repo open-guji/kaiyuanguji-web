@@ -79,9 +79,12 @@ function fetcher() {
  *   （与对照表查不了时的 307 是同一条路）。正式 id（被并条目）没有这条退路（/book-index?id=<正式 id> 会 308 回来），仍交给页面。
  */
 const REDIRECT_BUDGET_MS = 3_000;
+// 正式 id 预算超时后的追加等待（GUJI-146）：被并条目没有 307 退路，放给页面就是双 Location 并被 CDN 缓存；
+// 页面自己的取数限时 8 秒，这里总共最多等 3+4=7 秒，比页面短。
+const REDIRECT_GRACE_MS = 4_000;
 const REASON_HEADER = 'x-kyg-item-redirect';
 
-const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS);
+const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS, REDIRECT_GRACE_MS);
 
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     // RSC 导航与预取：页面的跳转编码在 RSC 负载里，不受 Location 重复影响，不必多查一次
