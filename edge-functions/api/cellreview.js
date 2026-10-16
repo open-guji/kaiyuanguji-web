@@ -1,0 +1,184 @@
+// 精校页意见端点（GUJI-551，设计 team/整理/设计/文本整理三阶段流程.md §6.2）
+//
+//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 六档之一）。同格同来源重复提交覆盖旧票。
+//   GET   **只开管理读**（管理 token 或成员 cookie）——按 rev 前缀导出全部票，供每日导入脚本用。
+//         公开读一律 401，不返回任何内容。
+//
+// 沿用 feedback.js：CORS、FEEDBACK_KV 绑定、管理员 token／成员 cookie、按 IP 限速（sha256，不存明文 IP）。
+// 不新建 KV：key 前缀 `cr:`（feedback.js 只扫 `fb_`，互不干扰）。
+//
+// key：`cr:<rev>:<book>:<a>:<voter>`
+//   - rev 在最前，导出时按 `cr:<rev>:` 前缀列，**不全库 list**（EdgeOne KV list 一轮 1.5～3.5 秒）；
+//   - 比任务书的 `cr:<rev>:<a>:<voter>` 多了 book：rev（如 vol01-r1）只在一本书内唯一，
+//     不同书的同名 rev、同坐标 a 会互相覆盖；
+//   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
+// 值只存 voter，不存 aid、不存 IP。
+//
+// choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut（char 可选）｜jiazhu｜main。
+// 只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
+
+import {
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
+} from './feedback.js';
+
+export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
+const NOTE_MAX = 500;
+const SHOWN_MAX = 8;
+const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
+
+const RE_BOOK = /^[0-9a-z]{4,24}$/;
+const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
+const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
+const RE_CELL = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/; // 与 lib/proof.ts 的 CELL_KEY 同一坐标
+const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
+
+// 一个人校一页要点几十格，比反馈的 10 条／10 分钟宽得多；仍是按 IP 的固定窗口
+const RATE_LIMIT_MAX = 120;
+const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
+const RATE_LIMIT_PREFIX = 'ratelimit:cr:';
+
+const json = (headers, status, body) => new Response(JSON.stringify(body), { status, headers });
+
+/** 恰好一个字（按码点；Ext B 等 BMP 外的字算一个）。组合序列不放行 */
+function isSingleChar(v) {
+  return typeof v === 'string' && [...v].length === 1 && !/[\u0000-\u001f\s]/.test(v);
+}
+
+/** 校验并规整一条意见；失败返回 { error } */
+export function validateReview(body) {
+  if (!body || typeof body !== 'object') return { error: '请求体须为 JSON 对象' };
+  const { book, vol, a, rev, choice } = body;
+  if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book 无效' };
+  if (typeof vol !== 'string' || !RE_VOL.test(vol)) return { error: 'vol 无效' };
+  if (typeof a !== 'string' || !RE_CELL.test(a)) return { error: 'a（格位坐标）无效' };
+  if (typeof rev !== 'string' || !RE_REV.test(rev)) return { error: 'rev 必填且须为合法版本号' };
+  if (typeof choice !== 'string' || !CHOICES.includes(choice)) return { error: 'choice 无效' };
+  if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
+
+  let char;
+  if (choice === 'char') {
+    if (!isSingleChar(body.char)) return { error: 'choice=char 时 char 必填且恰好一个字' };
+    char = body.char;
+  } else if (choice === 'cut' && body.char !== undefined && body.char !== null && body.char !== '') {
+    if (!isSingleChar(body.char)) return { error: 'char 须恰好一个字' };
+    char = body.char;
+  } else if (body.char !== undefined && body.char !== null && body.char !== '') {
+    return { error: `choice=${choice} 不应带 char` };
+  }
+
+  let note = '';
+  if (body.note !== undefined && body.note !== null) {
+    if (typeof body.note !== 'string') return { error: 'note 须为字符串' };
+    if ([...body.note].length > NOTE_MAX) return { error: `note 不能超过 ${NOTE_MAX} 字` };
+    note = body.note.trim();
+  }
+  let shown = '';
+  if (body.shown !== undefined && body.shown !== null) {
+    if (typeof body.shown !== 'string' || [...body.shown].length > SHOWN_MAX) return { error: 'shown 无效' };
+    shown = body.shown;
+  }
+  return { value: { book, vol, a, rev, choice, ...(char ? { char } : {}), note, shown, aid: body.aid } };
+}
+
+async function checkRateLimit(kv, request) {
+  if (!kv) return { ok: true };
+  const ip = getClientIp(request);
+  if (!ip) return { ok: true }; // 取不到 IP 不限速（同 feedback.js：不把取不到 IP 的人挤进同一个名额）
+  const nowS = Math.floor(Date.now() / 1000);
+  try {
+    const key = RATE_LIMIT_PREFIX + (await sha256Hex(ip));
+    const cur = (await kv.get(key, 'json')) || {};
+    let start = Number(cur.start) || 0;
+    let count = Number(cur.count) || 0;
+    if (!start || nowS - start >= RATE_LIMIT_WINDOW_SECONDS) { start = nowS; count = 0; }
+    if (count >= RATE_LIMIT_MAX) {
+      return { ok: false, retryAfter: Math.max(1, start + RATE_LIMIT_WINDOW_SECONDS - nowS) };
+    }
+    await kv.put(key, JSON.stringify({ start, count: count + 1 }), { expirationTtl: RATE_LIMIT_WINDOW_SECONDS * 2 });
+    return { ok: true };
+  } catch (e) {
+    console.error('精校限速计数失败（放行）:', e);
+    return { ok: true };
+  }
+}
+
+export async function onRequestPost(context) {
+  const headers = getCorsHeaders(context.request);
+  try {
+    let body;
+    try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
+    const v = validateReview(body);
+    if (v.error) return json(headers, 400, { success: false, error: v.error });
+    const kv = getKV(context);
+    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
+
+    const limited = await checkRateLimit(kv, context.request);
+    if (!limited.ok) {
+      return new Response(JSON.stringify({ success: false, error: '提交太频繁，请稍后再试' }), {
+        status: 429, headers: { ...headers, 'Retry-After': String(limited.retryAfter) },
+      });
+    }
+
+    const { aid, ...rest } = v.value;
+    const ip = getClientIp(context.request) || '';
+    const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
+    const key = `cr:${rest.rev}:${rest.book}:${rest.a}:${voter}`;
+    const record = { v: 1, ...rest, voter, ts: Date.now() };
+    await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
+    return json(headers, 200, { success: true });
+  } catch (e) {
+    console.error('Cellreview POST error:', e);
+    return json(headers, 500, { success: false, error: '服务器错误' });
+  }
+}
+
+/** 管理读：?rev=<rev>[&book=<book>][&limit=<=500>][&cursor=<上页返回的 cursor>] */
+export async function onRequestGet(context) {
+  const headers = getCorsHeaders(context.request);
+  try {
+    let authed = checkAdminAuth(bearerToken(context.request), context);
+    if (!authed.ok && authed.status === 401) {
+      const member = await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']);
+      if (member) authed = { ok: true };
+    }
+    if (!authed.ok) return json(headers, authed.status, { success: false, error: authed.error });
+
+    const url = new URL(context.request.url);
+    const rev = url.searchParams.get('rev') || '';
+    if (!RE_REV.test(rev)) return json(headers, 400, { success: false, error: 'rev 必填' });
+    const book = url.searchParams.get('book') || '';
+    if (book && !RE_BOOK.test(book)) return json(headers, 400, { success: false, error: 'book 无效' });
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), 500);
+    const cursor = url.searchParams.get('cursor') || '';
+    const kv = getKV(context);
+    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
+
+    // 只按 rev（可再加 book）前缀列，一页一页来，调用方带 cursor 翻页
+    const prefix = `cr:${rev}:${book ? `${book}:` : ''}`;
+    const opts = { prefix, limit };
+    if (cursor) opts.cursor = cursor;
+    const r = await kv.list(opts);
+    const names = (r.keys || []).map((k) => k.key);
+    const vals = await Promise.all(names.map((k) => kv.get(k, 'json').catch(() => null)));
+    const items = vals.filter(Boolean);
+    const done = !!r.complete || !r.cursor;
+    return json(headers, 200, { success: true, rev, items, cursor: done ? '' : r.cursor, hasMore: !done });
+  } catch (e) {
+    console.error('Cellreview GET error:', e);
+    return json(headers, 500, { success: false, error: '服务器错误' });
+  }
+}
+
+export function onRequestOptions(context) {
+  const origin = context.request.headers.get('origin') || '';
+  const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
