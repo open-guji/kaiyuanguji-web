@@ -70,6 +70,24 @@ test('构建时间戳与耗时（version.json 的 bundleDate、search/meta.json 
     } finally { for (const x of [a, later, otherCommit]) rmSync(x, { recursive: true }); }
 });
 
+test('GUJI-230：read-seed.json 不进摘要（增、删、改都不变）；同名的别的文件仍进', () => {
+    const seed = (body) => ({ 'current/items/12/read-seed.json': body });
+    const base = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":1}' });
+    const withSeed = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":1}', ...seed('{"v":1}') });
+    const seedChanged = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":1}', ...seed('{"v":2,"x":1}') });
+    const seedOnly = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":1}', 'current/items/9/read-seed.json': '{}' });
+    const lookalike = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":1}', 'current/items/12/read-seed.json.bak': '{"v":1}' });
+    const manifestChanged = makeDir({ ...FILES, 'current/items/12/manifest.json': '{"m":2}', ...seed('{"v":1}') });
+    try {
+        const d = computeDataContentDigest(base);
+        assert.equal(computeDataContentDigest(withSeed), d, '新增种子不变');
+        assert.equal(computeDataContentDigest(seedChanged), d, '改种子不变');
+        assert.equal(computeDataContentDigest(seedOnly), d, '只多一个种子（别的条目）不变');
+        assert.notEqual(computeDataContentDigest(lookalike), d, '文件名不是 read-seed.json 的仍进摘要');
+        assert.notEqual(computeDataContentDigest(manifestChanged), d, '派生源 manifest 改了仍变');
+    } finally { for (const x of [base, withSeed, seedChanged, seedOnly, lookalike, manifestChanged]) rmSync(x, { recursive: true }); }
+});
+
 test('时间戳文件解析不了：按原字节算，不抛错', () => {
     const a = makeDir({ ...FILES, 'version.json': 'not json' });
     try {
