@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
+import { COS_BASE } from '@/lib/cos-storage';
 import {
     BookDetailLayout,
     type ExtraTab,
@@ -282,6 +283,8 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
                 /* 「数字化」在三栏版里出现在左栏「更多」 */
                 extraTabs={extraTabs}
                 feedbackApiUrl={resolveFeedbackUrl}
+                /* 印影图资源根（GUJI-544）：与数据同域同前缀，staging 构建的 COS_BASE 带 /staging，自然落到 staging/asset/；本地模式无 COS_BASE 则不出图 */
+                assetBase={COS_BASE ? `${COS_BASE}/asset/` : undefined}
                 footerExtra={
                     <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
                 }
