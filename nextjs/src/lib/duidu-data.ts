@@ -28,7 +28,7 @@ export interface TextFileStorage {
 
 const cache = new Map<string, Promise<DuiduFiles | null>>();
 
-async function getJson(storage: object | undefined, id: string, key: string, file: string): Promise<unknown> {
+export async function getJson(storage: object | undefined, id: string, key: string, file: string): Promise<unknown> {
     try {
         const getTextFile = (storage as TextFileStorage | undefined)?.getTextFile;
         if (typeof getTextFile === 'function') return (await getTextFile.call(storage, id, key, file)) ?? null;
