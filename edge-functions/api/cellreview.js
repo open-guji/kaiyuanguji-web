@@ -25,6 +25,8 @@ export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
 const NOTE_MAX = 500;
 const SHOWN_MAX = 8;
 const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
+const LIST_MAX = 256; // 与 feedback.js 的 kv.list 同一页大小
+const GET_BATCH = 20; // 取值分批，免得一次并发过多子请求
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -41,7 +43,8 @@ const json = (headers, status, body) => new Response(JSON.stringify(body), { sta
 
 /** 恰好一个字（按码点；Ext B 等 BMP 外的字算一个）。组合序列不放行 */
 function isSingleChar(v) {
-  return typeof v === 'string' && [...v].length === 1 && !/[\u0000-\u001f\s]/.test(v);
+  // 排除控制符（Cc）、格式符（Cf，含零宽）、各类空白分隔符（Z）；不限定汉字——古籍里有私用区造字
+  return typeof v === 'string' && [...v].length === 1 && !/[\p{Cc}\p{Cf}\p{Z}]/u.test(v);
 }
 
 /** 校验并规整一条意见；失败返回 { error } */
@@ -123,7 +126,9 @@ export async function onRequestPost(context) {
     const ip = getClientIp(context.request) || '';
     const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
     const key = `cr:${rest.rev}:${rest.book}:${rest.a}:${voter}`;
-    const record = { v: 1, ...rest, voter, ts: Date.now() };
+    // iph＝IP 的哈希（截断）：同一 IP 换 aid 也能在统计时识别出来再去重，防刷票；不存 IP 明文
+    const iph = ip ? (await sha256Hex(ip)).slice(0, 16) : '';
+    const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
     await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
     return json(headers, 200, { success: true });
   } catch (e) {
@@ -134,7 +139,7 @@ export async function onRequestPost(context) {
 
 /** 管理读：?rev=<rev>[&book=<book>][&limit=<=500>][&cursor=<上页返回的 cursor>] */
 export async function onRequestGet(context) {
-  const headers = getCorsHeaders(context.request);
+  const headers = { ...getCorsHeaders(context.request), 'Cache-Control': 'no-store' };
   try {
     let authed = checkAdminAuth(bearerToken(context.request), context);
     if (!authed.ok && authed.status === 401) {
@@ -148,7 +153,7 @@ export async function onRequestGet(context) {
     if (!RE_REV.test(rev)) return json(headers, 400, { success: false, error: 'rev 必填' });
     const book = url.searchParams.get('book') || '';
     if (book && !RE_BOOK.test(book)) return json(headers, 400, { success: false, error: 'book 无效' });
-    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), 500);
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
@@ -159,8 +164,11 @@ export async function onRequestGet(context) {
     if (cursor) opts.cursor = cursor;
     const r = await kv.list(opts);
     const names = (r.keys || []).map((k) => k.key);
-    const vals = await Promise.all(names.map((k) => kv.get(k, 'json').catch(() => null)));
-    const items = vals.filter(Boolean);
+    const items = [];
+    for (let i = 0; i < names.length; i += GET_BATCH) {
+      const vals = await Promise.all(names.slice(i, i + GET_BATCH).map((k) => kv.get(k, 'json').catch(() => null)));
+      for (const v of vals) if (v) items.push(v);
+    }
     const done = !!r.complete || !r.cursor;
     return json(headers, 200, { success: true, rev, items, cursor: done ? '' : r.cursor, hasMore: !done });
   } catch (e) {

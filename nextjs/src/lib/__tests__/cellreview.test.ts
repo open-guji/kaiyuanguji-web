@@ -103,6 +103,23 @@ describe('POST 校验', () => {
         expect(crKeys()).toHaveLength(0);
     });
 
+    it('零宽字符、控制符、全角空格不算字', async () => {
+        for (const ch of ['\u200b', '\u200d', '\ufeff', '\u007f', '\u0085', '\u3000']) {
+            const res = await fn.onRequestPost(post({ ...base, choice: 'char', char: ch }));
+            expect(res.status).toBe(400);
+        }
+    });
+
+    it('记录带 IP 哈希 iph（不是明文）：同 IP 换 aid 可事后去重', async () => {
+        await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        await fn.onRequestPost(post({ ...base, aid: 'aid_another_0001', choice: 'none' }));
+        const recs = crKeys().map((k) => JSON.parse(store.get(k)!));
+        expect(recs).toHaveLength(2);
+        expect(recs[0].iph).toMatch(/^[0-9a-f]{16}$/);
+        expect(recs[0].iph).toBe(recs[1].iph);
+        expect(recs[0].voter).not.toBe(recs[1].voter);
+    });
+
     it('BMP 外的单字（𠮷）算一个字', async () => {
         const res = await fn.onRequestPost(post({ ...base, choice: 'char', char: '𠮷' }));
         expect(res.status).toBe(200);
@@ -166,10 +183,16 @@ describe('GET 只开管理读', () => {
     it('管理读按 rev 前缀导出，只列该 rev，且 list 带的是 cr:<rev>: 前缀（不全库扫）', async () => {
         const res = await fn.onRequestGet(get(`rev=${REV}`, ADMIN));
         expect(res.status).toBe(200);
+        expect(res.headers.get('Cache-Control')).toBe('no-store');
         const body = await json(res);
         expect(body.items.map((i: { a: string }) => i.a).sort()).toEqual(['12:3:7', '12:3:8']);
         expect(body.hasMore).toBe(false);
         expect(listCalls.every((c) => c.prefix === `cr:${REV}:`)).toBe(true);
+    });
+
+    it('limit 超过 256 按 256 收（与 feedback.js 的 list 页大小一致）', async () => {
+        await fn.onRequestGet(get(`rev=${REV}&limit=500`, ADMIN));
+        expect(listCalls[listCalls.length - 1].limit).toBe(256);
     });
 
     it('缺 rev 400；limit 翻页靠 cursor', async () => {
