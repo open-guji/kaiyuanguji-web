@@ -97,3 +97,24 @@ describe('submitReview', () => {
         expect(await submitReview(draft, 'a', (async () => { throw new Error('x'); }) as unknown as typeof fetch)).toMatch(/网络/);
     });
 });
+
+describe('真实 guji-cord 形状（96mid1ogzk vol02 第 3 页节选）', () => {
+    const real = {
+        $schema: 'https://open-guji.org/schema/cord/v0.1.json', book_id: '96mid1ogzk', volume: 2,
+        pages: [
+            { page: 1, image: { width: 957, height: 1359 }, canvas: { id: 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/canvas/02/0001', seq: '0001', width: 957, height: 1359 }, cells: [] },
+            { page: 3, image: { width: 2345, height: 3122 }, canvas: { id: 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/canvas/02/0003', seq: '0003', width: 2345, height: 3122 },
+              cells: [{ a: '3:1:1', box: [1862, 332, 163, 128], id: 'gdgzygfc5gy' }, { a: '3:1:2', box: [1858, 451, 163, 131], id: 'gmzn45qh7xw' }],
+              marks: [{ kind: 'blank', slot: 3, col: 1, box: [1, 2, 3, 4] }] },
+        ],
+    };
+    it('取到 xywh 框、四位 seq 字符串与 canvas 宽', () => {
+        const c = parseCord(real);
+        expect(c.boxes.get('3:1:2')).toEqual([1858, 451, 163, 131]);
+        expect(c.pages.get(3)).toEqual({ seq: '0003', width: 2345 });
+        expect(resolveCrop({ a: '3:1:1' }, c)).toEqual({ box: [1862, 332, 163, 128], seq: '0003', canvasWidth: 2345 });
+    });
+    it('marks 里的非字格不当作字格', () => {
+        expect(parseCord(real).boxes.size).toBe(2);
+    });
+});
