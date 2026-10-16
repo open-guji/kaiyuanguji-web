@@ -329,6 +329,18 @@ test.describe('新架构：跳转与 404', () => {
             expect(locationTargets(res), `Location 应是单个正式 id，实际「${res.headers()['location'] ?? ''}」；中间件原因：${why}`)
                 .toEqual([`/item/${to}`]);
             expect(res.headers()['x-kyg-item-redirect'], `跳转应由中间件出，实际原因：${why}`).toBe('redirect:promoted');
+
+            // GUJI-540：站内点击旧 id 链接是 RSC 导航（rsc: 1、sec-fetch-dest: empty、带 _rsc）。以前中间件放过它，
+            // 页面在 ISR 未命中时把 Location 写两遍（「/item/新id, /item/新id」）→ 浏览器 404。同样要求单个 Location、由中间件出。
+            const rsc = await request.get(`${TARGET}/item/${id}?_rsc=g540`, {
+                ...noFollow,
+                headers: { rsc: '1', 'sec-fetch-dest': 'empty', 'next-url': '/read' },
+            });
+            const rscWhy = rsc.headers()['x-kyg-item-redirect'] ?? '(无此头：中间件没出结果)';
+            expect(rsc.status(), `RSC 请求 ${id} 应 308；中间件原因：${rscWhy}`).toBe(308);
+            expect(locationTargets(rsc), `RSC 请求 Location 应是单个正式 id，实际「${rsc.headers()['location'] ?? ''}」`)
+                .toEqual([`/item/${to}`]);
+            expect(rsc.headers()['x-kyg-item-redirect'], `RSC 跳转应由中间件出，实际：${rscWhy}`).toMatch(/^redirect:promoted/);
         }
     });
 
