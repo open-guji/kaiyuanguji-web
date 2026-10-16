@@ -1122,3 +1122,6 @@ export function onRequestOptions(context) {
 
 // 导出给离线核对脚本用（例如拿线上公开数据跑一遍看会改动哪些条目），不供边缘运行时使用
 export { desensitizeText };
+
+// 供 /api/cellreview（GUJI-551）沿用同一套 CORS、管理鉴权、KV 绑定、取 IP，不在那边再抄一份
+export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex };
