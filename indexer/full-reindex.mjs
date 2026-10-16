@@ -195,7 +195,8 @@ async function main() {
                 n++;
                 const detailPath = join(rootDir, entry.path || '');
                 let detail = null;
-                try { detail = existsSync(detailPath) ? readDetail(detailPath, entry.id, isDraft) : null; } catch { detail = null; }
+                // Book 没有 derived 产物（产物只覆盖 Work）：直接读源档、不进 READ_STATS，否则每个 has_text 的 Book 都被记成「生产缺产物」把 works 自检打挂（GUJI-535）
+                try { detail = existsSync(detailPath) ? readDetailIn(detailPath, entry.id, '', { isDraft }) : null; } catch { detail = null; }
                 if (isTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(entry, { workId, kinds: ['self_collated'] })) yield { kind: 'juan', doc: j };
