@@ -151,10 +151,35 @@ describe('阅读页 page.ssr（路径式地址）', () => {
         await expect(page(seg)).rejects.toThrow('NEXT_NOT_FOUND');
     });
 
-    it('条目没有文本（没有 manifest）：真 404；人物等没有阅读页的类型也是', async () => {
+    it('条目没有站内文本（没有 manifest）：work／book 渲染 200 提示页，不调 redirect（ISR 里抛 redirect 会双 Location，GUJI-358）；人物等类型仍是真 404', async () => {
         mockGetCurrentJson.mockResolvedValue(null);
-        await expect(page([])).rejects.toThrow('NEXT_NOT_FOUND');
+        const html = (t: El) => JSON.stringify((t.type as (p: unknown) => unknown)(t.props)); // 展开提示页组件
+        const tree = await pageTree([]);
+        expect(html(tree)).toContain(`/item/${ZHIZHAI}`);
+        expect(html(tree)).toContain('refresh');
+        expect(html(await pageTree(['wikisource', '002']))).toContain(`/item/${ZHIZHAI}`);
         await expect(page([], 'hixhd2h9bk4b')).rejects.toThrow('NEXT_NOT_FOUND');
+        // book 类（988… 文淵閣本等只挂外链文本的）同样
+        mockGetItem.mockResolvedValueOnce({ entry: { id: '988g0h7gnn', type: 'book', title: '易林' }, source: 'h1', version: 'h1:r' });
+        expect(html(await pageTree([], '988g0h7gnn'))).toContain('/item/988g0h7gnn');
+    });
+
+    it('无站内文本页：metadata 为 noindex、canonical 指详情页；页面与 metadata 都不产生 redirect（一次请求不会抛出 redirect）', async () => {
+        mockGetCurrentJson.mockResolvedValue(null);
+        const m = await meta([]);
+        expect(m.robots).toMatchObject({ index: false });
+        expect(m.alternates?.canonical).toBe(`/item/${ZHIZHAI}`);
+        mockGetCurrentJson.mockResolvedValue(null);
+        await expect(pageTree([])).resolves.toBeTruthy(); // 没有 REDIRECT 抛出
+    });
+
+    it('条目不存在：真 404（不跳详情页）；有 manifest 但版本／章乱填：仍真 404（GUJI-358 不放宽）', async () => {
+        mockGetItem.mockResolvedValueOnce(null);
+        mockGetCurrentJson.mockResolvedValue(null);
+        await expect(page([], 'd59fzzzzzzzz')).rejects.toThrow('NEXT_NOT_FOUND');
+        mockGetCurrentJson.mockImplementation(async (rel) => FILES[rel] ?? null);
+        await expect(page(['wikisource', '999'])).rejects.toThrow('NEXT_NOT_FOUND');
+        await expect(page(['nosuchkey'])).rejects.toThrow('NEXT_NOT_FOUND');
     });
 
     it('查不了（网络错）：照常渲染，canonical 回落到不带章号的地址', async () => {

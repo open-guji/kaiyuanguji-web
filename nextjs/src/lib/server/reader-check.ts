@@ -36,6 +36,8 @@ export interface TextIndexDoc { chapters: TextChapterMeta[] }
 
 export interface ReaderCheckResult {
     status: ReaderCheck;
+    /** missing 的原因：no-manifest＝条目在站内没有任何文本（可能只有外链文本资源，GUJI-358）；其余（版本／章不存在）不写 */
+    reason?: 'no-manifest';
     manifest?: Manifest;
     version?: ManifestVersion;
     index?: TextIndexDoc;
@@ -71,7 +73,7 @@ export async function getManifestOrError(id: string, get: GetCurrentJson): Promi
 
 async function check(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<ReaderCheckResult> {
     const raw = await getManifest(id, get);
-    if (!raw) return { status: 'missing' };
+    if (!raw) return { status: 'missing', reason: 'no-manifest' };
     // 阅读页只认「读者看得到的」版本（有全文版就不列目录型 default，overview#456）
     const manifest = readerManifest(raw);
     const version = sel.key

@@ -23,15 +23,20 @@ test('ITEM_CONTROL_IDS 优先：逗号分隔、去空白与空项、按 limit �
 
 test('没设（或全是空）就退回读本地产物里"有整理本或有影像"的作品', () => {
     const d = dataDirWith([
-        { id: 'w1', type: 'work', has_text: true },
+        { id: 'w1', type: 'work', _has_text: true },
         { id: 'w2', type: 'work' },                        // 没文本没影像：不选
-        { id: 'b1', type: 'book', has_text: true },        // 不是作品：不选
-        { id: 'w3', type: 'work', has_image: true },
-        { id: 'w4', type: 'work', has_text: true, merged_into: 'w1' },   // 被并：不选
+        { id: 'b1', type: 'book', _has_text: true },        // 不是作品：不选
+        { id: 'w3', type: 'work', _has_image: true },
+        { id: 'w4', type: 'work', _has_text: true, merged_into: 'w1' },   // 被并：不选
     ]);
     assert.deepEqual(hotItemIds(d, 10), ['w1', 'w3']);
     assert.deepEqual(controlItemIds(d, 10, {}), ['w1', 'w3']);
     assert.deepEqual(controlItemIds(d, 10, { ITEM_CONTROL_IDS: ' , ' }), ['w1', 'w3']);
+});
+
+test('旧写法 has_text／has_image（无下划线）不再被认：派生条目只带 _has_*', () => {
+    const d = dataDirWith([{ id: 'w1', type: 'work', has_text: true }, { id: 'w2', type: 'work', has_image: true }]);
+    assert.deepEqual(hotItemIds(d, 10), []);
 });
 
 test('既没给环境变量、本地也没有产物：返回空（调用方要明说"没检查"）', () => {

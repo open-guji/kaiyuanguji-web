@@ -13,6 +13,7 @@
 import { parseItemId } from '../item-id';
 import type { ItemFetchResult, PromotionLookup } from './item-data';
 import { mergedTarget } from './item-seo';
+import type { RedirectTable } from './redirect-table';
 
 export interface ItemRedirect {
     /** 站内路径 */
@@ -47,13 +48,15 @@ export async function resolveItemRedirect(
 export interface ItemRedirectDeps {
     getItem(id: string, opts?: { prefer?: 'current'; currentOnly?: boolean }): Promise<ItemFetchResult | null>;
     resolvePromotion(id: string): Promise<PromotionLookup>;
+    /** 旧→新 ID 全表（GUJI-355）；命中直接 308 到终点，不命中走下面的实时查询。未提供＝不用表 */
+    table?: RedirectTable;
 }
 
 export interface TracedRedirect {
     redirect: ItemRedirect | null;
     /**
      * 为什么跳／为什么没跳，写进响应头 x-kyg-item-redirect 给线上排查用（FX1c 当年要靠临时诊断头才查出根因）。
-     * redirect:merged | redirect:promoted | redirect:promo-unknown（307）；
+     * redirect:table（全表命中）| redirect:merged | redirect:promoted | redirect:promo-unknown（307）；
      * pass:entry-ok | pass:not-found | pass:promo-absent | pass:budget(...) | pass:error:<摘要>。
      */
     reason: string;
@@ -72,12 +75,20 @@ function headerSafe(text: string, max = 80): string {
  * 冷边缘上串行 6 跳超出预算，被静默放过，页面在 ISR 缓存未命中时出双 Location。
  * 草稿 id 的条目只问 current/（currentOnly）：中间件只凭肯定的答案跳，查不出就放过；正式 id 保留 h1 兜底。
  * 对照表在非草稿 id 上不查，条目命中时的结果不用（resolveItemRedirect 只在查不到条目时才看它）。
+ *
+ * graceMs（GUJI-146 双 Location 查因）：正式 id（被并条目）预算到了仍没定论时，不能像草稿 id 那样出临时 307 兜底，
+ * 放给页面就会在 ISR 缓存未命中时写两遍 Location 并被 CDN 缓存 1 小时。所以正式 id 再多等 graceMs
+ * （同一批子请求继续跑，不重发），等到了就照常 308；仍没结果才放行。草稿 id 不受影响（它有 307 退路）。
  */
 export async function lookupItemRedirectTraced(
     id: string,
     deps: ItemRedirectDeps,
     budgetMs: number,
+    graceMs = 0,
 ): Promise<TracedRedirect> {
+    const fromTable = deps.table?.lookup(id);
+    if (fromTable) return { redirect: { to: `/item/${fromTable}`, permanent: true }, reason: 'redirect:table' };
+
     const isDraft = parseItemId(id)?.status === 'draft';
     let promo: PromotionLookup | undefined;
     let entry: 'pending' | 'hit' | 'miss' = 'pending';
@@ -111,9 +122,18 @@ export async function lookupItemRedirectTraced(
         }
     })();
 
+    let graceTimer: ReturnType<typeof setTimeout> | undefined;
     try {
-        return await Promise.race([work, budget]);
+        const first = await Promise.race([work, budget]);
+        if (isDraft || graceMs <= 0 || !first.reason.startsWith('pass:budget')) return first;
+        // 预算到了、work 仍在跑：正式 id 再等一段，还是没结果就用预算超时的结论
+        const grace = new Promise<TracedRedirect>((resolve) => {
+            graceTimer = setTimeout(() => resolve({ ...first, reason: first.reason.replace(/\)$/, `+grace${graceMs}ms)`) }), graceMs);
+        });
+        return await Promise.race([work, grace]);
     } finally {
         clearTimeout(timer);
+        // 边缘运行时对 clearTimeout(undefined) 会抛错（545，GUJI-146），必须守卫
+        if (graceTimer !== undefined) clearTimeout(graceTimer);
     }
 }
