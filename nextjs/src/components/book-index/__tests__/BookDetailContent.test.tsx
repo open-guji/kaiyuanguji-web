@@ -23,6 +23,7 @@ jest.mock('@/components/layout/LayoutWrapper', () => ({
     default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getEntry: mockGetEntry }) }));
+jest.mock('@/lib/cos-storage', () => ({ COS_BASE: 'https://data.example.test/staging' }));
 jest.mock('../CitationBar', () => ({ __esModule: true, default: () => null }));
 jest.mock('../DigitalizationView', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
@@ -120,5 +121,12 @@ describe('BookDetailContent：服务端种子（overview#458 批次 0.1）', () 
     it('Entity 种子：primary_name 同步成 title，与 getItem 一致', () => {
         render(<BookDetailContent id="e1" initialDetail={{ id: 'e1', type: 'entity', primary_name: '司馬遷' }} />);
         expect((captured.props!.initialDetail as { title?: string }).title).toBe('司馬遷');
+    });
+});
+
+describe('BookDetailContent：印影图资源根（GUJI-544）', () => {
+    it('assetBase = COS_BASE + /asset/（staging 构建的前缀自然带上）', () => {
+        render(<BookDetailContent id="e1" initialDetail={{ id: 'e1', type: 'entity', primary_name: '某印' }} />);
+        expect(captured.props!.assetBase).toBe('https://data.example.test/staging/asset/');
     });
 });
