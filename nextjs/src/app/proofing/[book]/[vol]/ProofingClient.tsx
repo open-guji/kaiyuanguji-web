@@ -32,12 +32,15 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
             img.src = url;
         });
         imageCache.set(url, p);
+        p.then(img => { if (!img) imageCache.delete(url); }); // 失败不缓存，下次再试
     }
     return p;
 }
 
 /** 只负责把原叶图的一块画出来，不读回像素 */
 function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number } }) {
+    const [bx, by, bw, bh] = crop.box;
+    const cw = crop.canvasWidth;
     const ref = useRef<HTMLCanvasElement>(null);
     const [failed, setFailed] = useState(false);
     useEffect(() => {
@@ -46,14 +49,14 @@ function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, nu
             const cv = ref.current;
             if (cancelled || !cv) return;
             if (!img) return setFailed(true);
-            const [sx, sy, sw, sh] = cropRect({ ...crop, seq: '' }, img.naturalWidth, img.naturalHeight);
+            const [sx, sy, sw, sh] = cropRect({ box: [bx, by, bw, bh], seq: '', canvasWidth: cw }, img.naturalWidth, img.naturalHeight);
             const scale = Math.min(2, 160 / Math.max(sw, sh));
             cv.width = Math.max(1, Math.round(sw * scale));
             cv.height = Math.max(1, Math.round(sh * scale));
             cv.getContext('2d')?.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
         });
         return () => { cancelled = true; };
-    }, [src, crop]);
+    }, [src, bx, by, bw, bh, cw]);
     if (failed) return <div style={{ color: '#999', fontSize: 12 }}>原图加载失败</div>;
     return <canvas ref={ref} aria-label="原叶裁图" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
 }

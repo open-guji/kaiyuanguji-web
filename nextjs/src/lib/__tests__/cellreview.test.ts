@@ -110,14 +110,25 @@ describe('POST 校验', () => {
         }
     });
 
-    it('记录带 IP 哈希 iph（不是明文）：同 IP 换 aid 可事后去重', async () => {
-        await fn.onRequestPost(post({ ...base, choice: 'none' }));
-        await fn.onRequestPost(post({ ...base, aid: 'aid_another_0001', choice: 'none' }));
-        const recs = crKeys().map((k) => JSON.parse(store.get(k)!));
-        expect(recs).toHaveLength(2);
-        expect(recs[0].iph).toMatch(/^[0-9a-f]{16}$/);
-        expect(recs[0].iph).toBe(recs[1].iph);
-        expect(recs[0].voter).not.toBe(recs[1].voter);
+    it('配了 CELLREVIEW_IP_KEY：记录带 iph（HMAC，不是明文／裸 sha256）：同 IP 换 aid 可事后去重', async () => {
+        g.CELLREVIEW_IP_KEY = 'k1';
+        try {
+            await fn.onRequestPost(post({ ...base, choice: 'none' }));
+            await fn.onRequestPost(post({ ...base, aid: 'aid_another_0001', choice: 'none' }));
+            const recs = crKeys().map((k) => JSON.parse(store.get(k)!));
+            expect(recs).toHaveLength(2);
+            expect(recs[0].iph).toMatch(/^[0-9a-f]{16}$/);
+            expect(recs[0].iph).toBe(recs[1].iph);
+            expect(recs[0].voter).not.toBe(recs[1].voter);
+            const { createHash } = await import('crypto');
+            expect(recs[0].iph).not.toBe(createHash('sha256').update('1.2.3.4').digest('hex').slice(0, 16));
+        } finally { delete g.CELLREVIEW_IP_KEY; }
+    });
+
+    it('没配 CELLREVIEW_IP_KEY：不存 iph，提交照常', async () => {
+        const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        expect(res.status).toBe(200);
+        expect('iph' in JSON.parse(store.get(crKeys()[0])!)).toBe(false);
     });
 
     it('BMP 外的单字（𠮷）算一个字', async () => {

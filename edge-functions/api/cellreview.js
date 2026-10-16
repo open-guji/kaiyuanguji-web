@@ -105,6 +105,20 @@ async function checkRateLimit(kv, request) {
   }
 }
 
+function ipKey(context) {
+  if (context && context.env && context.env.CELLREVIEW_IP_KEY) return String(context.env.CELLREVIEW_IP_KEY);
+  return (typeof CELLREVIEW_IP_KEY !== 'undefined' && CELLREVIEW_IP_KEY) ? String(CELLREVIEW_IP_KEY) : '';
+}
+
+async function ipHash(context, ip) {
+  const key = ipKey(context);
+  if (!key) return '';
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(ip)));
+  return Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+
 export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
   try {
@@ -126,8 +140,9 @@ export async function onRequestPost(context) {
     const ip = getClientIp(context.request) || '';
     const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
     const key = `cr:${rest.rev}:${rest.book}:${rest.a}:${voter}`;
-    // iph＝IP 的哈希（截断）：同一 IP 换 aid 也能在统计时识别出来再去重，防刷票；不存 IP 明文
-    const iph = ip ? (await sha256Hex(ip)).slice(0, 16) : '';
+    // iph＝HMAC-SHA256(CELLREVIEW_IP_KEY, ip) 截断：同一 IP 换 aid 也能在统计时识别出来再去重，防刷票；
+    // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。
+    const iph = ip ? await ipHash(context, ip) : '';
     const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
     await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
     return json(headers, 200, { success: true });
