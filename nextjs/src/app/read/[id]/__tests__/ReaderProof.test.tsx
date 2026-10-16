@@ -12,7 +12,7 @@ import { parseProof } from '@/lib/proof';
 const LAYER = parseProof({
     cells: [
         { a: '1:1:1', c: '洪', method: 'ocr', review: 'pending', cand: ['鴻'] },
-        { a: '1:1:2', c: '範', method: 'ocr', review: 'auto' },
+        { a: '1:1:2', method: 'cv:glyph', review: 'auto', cand: { lib: '範', ocr: '範', rare: '笵' } },
         { a: '1:1:3', c: '□', method: 'ocr', review: 'pending' },
         { a: '1:1:4', c: '書', method: 'manual', review: 'human' },
         { a: '-1', c: 'x', method: 'ocr', review: 'pending' },
@@ -73,6 +73,9 @@ describe('ReaderProof', () => {
         expect(tip.textContent).toContain('1:1:1');
         expect(tip.textContent).toContain('ocr');
         expect(tip.textContent).toContain('鴻');
+        await hover('1:1:2');
+        expect(el.querySelector('[data-proof-tip]')!.textContent).toContain('範（lib、ocr）');
+        expect(el.querySelector('[data-proof-tip]')!.textContent).toContain('笵（rare）');
         await hover('1:1:5');
         expect(el.querySelector('[data-proof-tip]')).toBeNull();
         await hover('1:1:3');
