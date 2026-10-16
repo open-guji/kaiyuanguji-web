@@ -9,6 +9,7 @@
  *   - 原叶图：IIIF 放大档（原宽无损 WebP），地址见 lib/facsimile.ts；页序取 cord `pages[].canvas.seq`。
  * 本模块只读、不抛：缺失、坏 JSON、字段未知都返回空/null，页面照常。
  */
+import { adaptCharCord } from 'book-index-ui';
 import { parseProof, type ProofCandidate } from '@/lib/proof';
 
 export type Box = [number, number, number, number];
@@ -38,14 +39,19 @@ const asObject = (v: unknown): Record<string, unknown> | null => (v && typeof v 
 export function parsePending(raw: unknown): PendingData {
     const o = asObject(raw);
     const rev = typeof o?.rev === 'string' && RE_REV.test(o.rev) ? o.rev : null;
-    const list = Array.isArray(raw) ? raw : o?.cells;
+    const rawList = Array.isArray(raw) ? raw : o?.cells;
+    // 规范（book-text#148）格号键叫 `cell`；mock 与旧样张叫 `a`，两种都收
+    const list = (Array.isArray(rawList) ? rawList : []).map(item => {
+        const it = asObject(item);
+        return it && typeof it.a !== 'string' && typeof it.cell === 'string' ? { ...it, a: it.cell } : item;
+    });
     const boxes = new Map<string, Box>();
-    for (const item of Array.isArray(list) ? list : []) {
+    for (const item of list) {
         const it = asObject(item);
         if (it && typeof it.a === 'string' && isBox(it.box)) boxes.set(it.a, it.box);
     }
     const cells: PendingCell[] = [];
-    for (const cell of parseProof(raw).cells.values()) {
+    for (const cell of parseProof(list).cells.values()) {
         if (cell.review === 'human') continue;
         const box = boxes.get(cell.a);
         cells.push({ a: cell.a, ...(cell.c ? { c: cell.c } : {}), ...(cell.cand ? { cand: cell.cand } : {}), ...(box ? { box } : {}) });
@@ -115,24 +121,36 @@ export function cropRect(crop: CellCrop, natW: number, natH: number, pad = 0.35)
 
 const asRecord = (v: unknown): Record<string, unknown> | null => asObject(v);
 
-/** 版本：声明了 `proofing: true` 的优先，其次 key 为 `original`。字段名未最终定（Mavis P0-1），只在这一处读 */
-export function pickProofingVersion(manifest: unknown): string | null {
-    const versions = asRecord(manifest)?.versions;
-    const list = (Array.isArray(versions) ? versions : []).map(asRecord).filter((v): v is Record<string, unknown> => !!v && typeof v.key === 'string');
-    const flagged = list.find(v => v.proofing === true);
-    if (flagged) return flagged.key as string;
-    return list.find(v => v.key === 'original')?.key as string | undefined ?? null;
-}
+/** 章条目是否开着精校：只认 `chapters[].proofing === true`（book-text#148，不从版本号推）。阅读页横幅也走这里 */
+export const isProofingChapter = (ch: unknown): boolean => asRecord(ch)?.proofing === true;
 
-/** 章：声明了 `pending_file` 的里，按 vol／key／id／文件名主干对上 `vol`；只有一个时就是它 */
+/** 章：`proofing: true` 且声明了 `pending_file` 的里，按 vol／key／id／文件名主干对上 `vol`；只有一个时就是它 */
 export function pickProofingChapter(index: unknown, vol: string): Record<string, unknown> | null {
     const chapters = asRecord(index)?.chapters;
     const cands = (Array.isArray(chapters) ? chapters : [])
         .map(asRecord)
-        .filter((c): c is Record<string, unknown> => !!c && typeof c.pending_file === 'string');
+        .filter((c): c is Record<string, unknown> => !!c && isProofingChapter(c) && typeof c.pending_file === 'string');
     const stem = (v: unknown) => (typeof v === 'string' ? v.replace(/\.[^.]+$/, '') : '');
     const hit = cands.find(c => c.vol === vol || c.key === vol || c.id === vol || stem(c.file) === vol || stem(c.pending_file) === vol);
     return hit ?? (cands.length === 1 ? cands[0] : null);
+}
+
+/** 版本顺序：original 在前，其余照 manifest 的顺序 */
+export function versionKeys(manifest: unknown): string[] {
+    const versions = asRecord(manifest)?.versions;
+    const keys = (Array.isArray(versions) ? versions : []).map(asRecord).flatMap(v => (v && typeof v.key === 'string' ? [v.key] : []));
+    return [...keys.filter(k => k === 'original'), ...keys.filter(k => k !== 'original')];
+}
+
+/** 字 id（页:列:格）→ 机器读字，取自 char_file（经 adaptCharCord）。坏数据返回空表，不抛 */
+export function charMapOf(charRaw: unknown, cordRaw: unknown): Map<string, string> {
+    const out = new Map<string, string>();
+    try {
+        for (const pg of adaptCharCord(charRaw, cordRaw)) {
+            for (const col of pg.columns) for (const ch of col.chars) if (ch.id && ch.char) out.set(ch.id, ch.char);
+        }
+    } catch { /* 当没有 */ }
+    return out;
 }
 
 export interface ProofingDeps {
@@ -142,26 +160,37 @@ export interface ProofingDeps {
 }
 
 export type ProofingLoad =
-    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; cordRaw: unknown; versionKey: string }
+    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string }
     | { status: 'none' | 'error' };
 
 const SAFE_FILE = /^[\w.-]+$/;
 
-/** 取待审单与（若有）cord。没有该册、没声明、取不到都不抛，回 status */
+/** 取待审单与（若有）cord、char。没有该册、没声明、取不到都不抛，回 status */
 export async function loadProofing(deps: ProofingDeps, book: string, vol: string): Promise<ProofingLoad> {
     try {
-        const versionKey = pickProofingVersion(await deps.getManifest(book));
-        if (!versionKey) return { status: 'none' };
-        const chapter = pickProofingChapter(await deps.getIndex(book, versionKey), vol);
-        const pendingFile = chapter?.pending_file;
-        if (!chapter || typeof pendingFile !== 'string' || !SAFE_FILE.test(pendingFile)) return { status: 'none' };
-        const cordFile = typeof chapter.cord_file === 'string' && SAFE_FILE.test(chapter.cord_file) ? chapter.cord_file : null;
-        const [pendingRaw, cordRaw] = await Promise.all([
-            deps.getFile(book, versionKey, pendingFile),
-            cordFile ? deps.getFile(book, versionKey, cordFile).catch(() => null) : null,
-        ]);
-        if (!pendingRaw) return { status: 'error' };
-        return { status: 'ok', pending: parsePending(pendingRaw), cord: cordRaw ? parseCord(cordRaw) : null, cordRaw: cordRaw ?? null, versionKey };
+        const manifest = await deps.getManifest(book);
+        for (const versionKey of versionKeys(manifest)) {
+            const chapter = pickProofingChapter(await deps.getIndex(book, versionKey), vol);
+            const pendingFile = chapter?.pending_file;
+            if (!chapter || typeof pendingFile !== 'string' || !SAFE_FILE.test(pendingFile)) continue;
+            const named = (k: string) => (typeof chapter[k] === 'string' && SAFE_FILE.test(chapter[k] as string) ? (chapter[k] as string) : null);
+            const cordFile = named('cord_file');
+            const charFile = named('char_file');
+            const [pendingRaw, cordRaw, charRaw] = await Promise.all([
+                deps.getFile(book, versionKey, pendingFile),
+                cordFile ? deps.getFile(book, versionKey, cordFile).catch(() => null) : null,
+                charFile ? deps.getFile(book, versionKey, charFile).catch(() => null) : null,
+            ]);
+            if (!pendingRaw) return { status: 'error' };
+            const pending = parsePending(pendingRaw);
+            // 规范的 pending 先不带 c／cand：机器读字从 char_file 补
+            if (charRaw && pending.cells.some(c => !c.c)) {
+                const chars = charMapOf(charRaw, null);
+                pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) ? c : { ...c, c: chars.get(c.a) }));
+            }
+            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey };
+        }
+        return { status: 'none' };
     } catch {
         return { status: 'error' };
     }

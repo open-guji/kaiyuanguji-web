@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import {
-    parsePending, parseCord, resolveCrop, cropRect, pickProofingVersion, pickProofingChapter, loadProofing, submitReview,
+    parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
 } from '../proofing';
 
 const pending = {
@@ -32,6 +32,25 @@ describe('parsePending', () => {
     });
 });
 
+describe('规范形（book-text#148）：cells 键为 cell、无 c／cand／box', () => {
+    it('cell 与 a 都收，rev 原样', () => {
+        const r = parsePending({ schema: 'guji-pending/0.1', rev: '001-r1', cv_version: null, cv_commit: 'abc', cells: [{ cell: '3:1:2', review: 'pending' }, { a: '3:1:3', review: 'pending' }] });
+        expect(r.rev).toBe('001-r1');
+        expect(r.cells.map(c => c.a)).toEqual(['3:1:2', '3:1:3']);
+    });
+    it('机器读字从 char_file 补', async () => {
+        const char = { version: '1.0.0', book_id: 'b', volume: 1, pages: [{ page: 3, columns: [{ col: 1, cells: [{ a: '3:1:1', c: '欽' }, { a: '3:1:2', c: '定' }] }] }] };
+        const idx = { chapters: [{ vol: '001', proofing: true, pending_file: '001.pending.json', char_file: '001.char.json', cord_file: '001.cord.json' }] };
+        const r = await loadProofing({
+            getManifest: async () => ({ versions: [{ key: 'original' }] }),
+            getIndex: async () => idx,
+            getFile: async (_i, _k, f) => (f.includes('pending') ? { rev: '001-r1', cells: [{ cell: '3:1:2', review: 'pending' }] } : f.includes('char') ? char : { pages: [{ page: 3, canvas: { seq: '0003', width: 100 }, cells: [] }] }),
+        }, 'b', '001');
+        expect(r.status).toBe('ok');
+        if (r.status === 'ok') expect(r.pending.cells[0].c).toBe('定');
+    });
+});
+
 describe('cord / 裁剪', () => {
     it('按 a 查框与页序；pending 的 box 优先', () => {
         const c = parseCord(cord);
@@ -55,8 +74,8 @@ describe('cord / 裁剪', () => {
 });
 
 describe('loadProofing', () => {
-    const manifest = { versions: [{ key: 'original', proofing: true }] };
-    const index = { chapters: [{ file: 'vol01.json', vol: 'vol01', pending_file: 'vol01.pending.json', cord_file: 'vol01.cord.json' }] };
+    const manifest = { versions: [{ key: 'default' }, { key: 'original' }] };
+    const index = { chapters: [{ file: 'vol01.json', vol: 'vol01', proofing: true, pending_file: 'vol01.pending.json', cord_file: 'vol01.cord.json' }] };
     const deps = (over: Record<string, unknown> = {}) => ({
         getManifest: async () => manifest,
         getIndex: async () => index,
@@ -64,10 +83,12 @@ describe('loadProofing', () => {
         ...over,
     });
     it('版本与章的挑选', () => {
-        expect(pickProofingVersion(manifest)).toBe('original');
-        expect(pickProofingVersion({ versions: [{ key: 'a' }] })).toBeNull();
+        expect(versionKeys(manifest)).toEqual(['original', 'default']);
+        expect(versionKeys(null)).toEqual([]);
         expect(pickProofingChapter(index, 'vol01')).not.toBeNull();
-        expect(pickProofingChapter({ chapters: [{ pending_file: 'a.json', vol: 'x' }, { pending_file: 'b.json', vol: 'y' }] }, 'z')).toBeNull();
+        expect(pickProofingChapter({ chapters: [{ proofing: true, pending_file: 'a.json', vol: 'x' }, { proofing: true, pending_file: 'b.json', vol: 'y' }] }, 'z')).toBeNull();
+        // 没有 proofing: true 就不算
+        expect(pickProofingChapter({ chapters: [{ pending_file: 'a.json', vol: 'vol01' }] }, 'vol01')).toBeNull();
     });
     it('正常取到', async () => {
         const r = await loadProofing(deps(), 'b1', 'vol01');
@@ -79,7 +100,7 @@ describe('loadProofing', () => {
         expect((await loadProofing(deps({ getIndex: async () => { throw new Error('x'); } }), 'b1', 'vol01')).status).toBe('error');
     });
     it('文件名带路径不请求', async () => {
-        const bad = { chapters: [{ vol: 'vol01', pending_file: '../x.json' }] };
+        const bad = { chapters: [{ vol: 'vol01', proofing: true, pending_file: '../x.json' }] };
         expect((await loadProofing(deps({ getIndex: async () => bad }), 'b1', 'vol01')).status).toBe('none');
     });
 });
