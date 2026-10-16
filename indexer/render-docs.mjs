@@ -99,7 +99,10 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
                 if (limit && m >= limit) break;
                 if (!entry.has_text) continue;
                 m++;
-                const detail = safeDetail(rootDir, entry, isDraft) ?? null;
+                // Book 无 derived 产物：读源档、不计 readStats（GUJI-535）
+                const bp = resolve(rootDir, entry.path || '');
+                let detail = null;
+                if (insideRoot(rootDir, bp) && existsSync(bp)) { try { detail = readDetail(bp, entry.id, '', { isDraft }); } catch { detail = null; } }
                 if (isPromotedTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(textDir, entry, { workId, kinds: ['self_collated'] })) await sinks.juans.write(j);
