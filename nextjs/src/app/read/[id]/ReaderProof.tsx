@@ -153,7 +153,7 @@ function ProofBubble({ cell, x, y }: { cell: ProofCell; x: number; y: number }) 
             <div>识别字：{cell.c ?? '—'}</div>
             <div>格位：{cell.a}</div>
             <div>方式：{cell.method || '—'}</div>
-            {cell.cand && cell.cand.length > 0 && <div>候选：{cell.cand.join(' ')}</div>}
+            {cell.cand && cell.cand.length > 0 && <div>候选：{cell.cand.map(x => (x.src?.length ? `${x.c}（${x.src.join('、')}）` : x.c)).join(' ')}</div>}
         </div>
     );
 }

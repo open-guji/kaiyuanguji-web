@@ -12,6 +12,11 @@
 
 export type ProofReview = 'pending' | 'auto' | 'human';
 
+export interface ProofCandidate {
+    c: string;
+    src?: string[];
+}
+
 export interface ProofCell {
     /** 格位坐标 `页:列:格[a|b]` */
     a: string;
@@ -20,8 +25,8 @@ export interface ProofCell {
     /** 识别方式，开集，原样显示 */
     method: string;
     review: ProofReview;
-    /** 候选字 */
-    cand?: string[];
+    /** 候选字；同一个字被多个来源给出时合并，`src` 为来源键（CV 导出的 lib／ocr／rare／ref 等，开集；旧数组形无来源） */
+    cand?: ProofCandidate[];
     channel?: string;
 }
 
@@ -40,6 +45,24 @@ export function emptyProofLayer(): ProofLayer {
     return { cells: new Map(), pages: new Map() };
 }
 
+/**
+ * `cand` 两种形：CV 导出是对象 `{lib,ocr,rare,ref}`（来源键→字，键开集，原样保留；GUJI-543 定以此为准）；
+ * 旧样张是字符串数组（无来源）。同字合并来源，顺序按首次出现。
+ */
+function parseCand(v: unknown): ProofCandidate[] | undefined {
+    const out: ProofCandidate[] = [];
+    const add = (c: unknown, src?: string) => {
+        if (typeof c !== 'string' || !c) return;
+        const hit = out.find(x => x.c === c);
+        if (hit) {
+            if (src && !(hit.src ?? []).includes(src)) hit.src = [...(hit.src ?? []), src];
+        } else out.push(src ? { c, src: [src] } : { c });
+    };
+    if (Array.isArray(v)) for (const x of v) add(x);
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v as Record<string, unknown>)) add(x, k);
+    return out.length ? out : undefined;
+}
+
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 
 /** 把未知输入规整成 ProofLayer；整体形状不对返回空层，单条不合格的跳过。同一 `a` 重复时后者覆盖前者 */
@@ -53,11 +76,11 @@ export function parseProof(raw: unknown): ProofLayer {
         const a = str(o.a);
         if (!a || !CELL_KEY.test(a)) continue;
         const review = typeof o.review === 'string' && REVIEWS.includes(o.review) ? (o.review as ProofReview) : 'pending';
-        const cand = Array.isArray(o.cand) ? o.cand.filter((x): x is string => typeof x === 'string' && x !== '') : undefined;
+        const cand = parseCand(o.cand);
         const cell: ProofCell = { a, method: str(o.method) ?? '', review };
         const c = str(o.c);
         if (c) cell.c = c;
-        if (cand && cand.length) cell.cand = cand;
+        if (cand) cell.cand = cand;
         const channel = str(o.channel);
         if (channel) cell.channel = channel;
         if (!layer.cells.has(a)) {

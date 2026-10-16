@@ -25,7 +25,14 @@ describe('parseProof', () => {
     it('未知 review 一律按 pending（偏安全）；method 原样保留不做枚举', () => {
         const l = parseProof(MOCK);
         expect(l.cells.get('2:1:1')).toMatchObject({ review: 'pending', method: 'cv:new_channel' });
-        expect(l.cells.get('1:1:1')).toMatchObject({ review: 'auto', method: 'cv:glyph', channel: 'iron', cand: ['洪', '烘'] });
+        expect(l.cells.get('1:1:1')).toMatchObject({ review: 'auto', method: 'cv:glyph', channel: 'iron', cand: [{ c: '洪' }, { c: '烘' }] });
+    });
+    it('cand 读 CV 导出的对象形：保留来源键，同字合并来源，不要求有 c', () => {
+        const l = parseProof({ cells: [{ a: '1:1:1', cand: { lib: '洪', ocr: '洪', rare: '烘', ref: '' } }, { a: '1:1:2', cand: { x_new: '浩' } }] });
+        expect(l.cells.get('1:1:1')?.cand).toEqual([{ c: '洪', src: ['lib', 'ocr'] }, { c: '烘', src: ['rare'] }]);
+        expect(l.cells.get('1:1:1')?.c).toBeUndefined();
+        expect(l.cells.get('1:1:2')?.cand).toEqual([{ c: '浩', src: ['x_new'] }]);
+        expect(parseProof({ cells: [{ a: '1:1:3', cand: {} }, { a: '1:1:4', cand: 'x' }] }).cells.get('1:1:3')).toEqual({ a: '1:1:3', method: '', review: 'pending' });
     });
     it('缺字段不抛：method 缺则为空串，cand 缺则无该字段', () => {
         const l = parseProof({ cells: [{ a: '3:1:1' }] });
