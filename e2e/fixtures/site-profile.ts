@@ -18,7 +18,7 @@
 import { TARGET } from './anchors';
 
 /** 已知的全栈站。切域名后把 www 加进来（或 deploy.yml 的 verify 传 SITE_ARCH=fullstack） */
-const FULLSTACK_HOSTS = ['staging.kaiyuanguji.com', 'ssr-test.kaiyuanguji.com', 'localhost', '127.0.0.1'];
+const FULLSTACK_HOSTS = ['staging.kaiyuanguji.com', 'ssr-test.kaiyuanguji.com', 'www.kaiyuanguji.com', 'localhost', '127.0.0.1'];
 
 const host = new URL(TARGET).hostname;
 const isStaging = host.startsWith('staging.');
