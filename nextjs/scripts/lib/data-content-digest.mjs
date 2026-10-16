@@ -17,6 +17,12 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * 读页冷启动种子（current/items/<id>/read-seed.json，#345 方案 B）不进摘要：它由 manifest 与 index 派生，
+ * 那两份已在摘要里；种子只是加速用的副本，改它不该让 CDN 键换一次，也不该让同样的数据因为种子没生成而换键。
+ */
+const READ_SEED_RE = /^current\/items\/[^/]+\/read-seed\.json$/;
+
 /** 目录下所有文件的相对路径（正斜杠），已排序。迭代遍历（不递归）：current/ 有十几万个文件。 */
 function listFiles(root) {
     const out = [];
@@ -28,7 +34,7 @@ function listFiles(root) {
             const childRel = rel ? `${rel}/${name}` : name;
             const st = statSync(join(root, childRel));
             if (st.isDirectory()) stack.push(childRel);
-            else out.push(childRel);
+            else if (!READ_SEED_RE.test(childRel)) out.push(childRel);
         }
     }
     return out.sort();
