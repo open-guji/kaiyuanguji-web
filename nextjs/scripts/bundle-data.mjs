@@ -38,6 +38,7 @@ import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
 import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
+import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 
 assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（B5-3.2；本地开发设 ALLOW_SOURCE_FALLBACK=1）
 
@@ -231,12 +232,16 @@ function rootDirFor(_entry) {
 // 这几个 index-only 标记，bundleL1 从 index 里读取后并入 entry 文件，保证 getEntry
 // 一次请求拿到完整渲染所需数据，不再触发额外 ensureLoaded 拉 index.json。
 
+// overview#345 方案 B：全部 read-seed.json 生成无抛错后才置 true，bundleVersion 据此在 latest.json 写 readSeed:1
+let readSeedReady = false;
+
 function bundleL1() {
     const index = loadShardedIndex();
     let totalEntries = 0;
     let totalBytes = 0;
     let itemFileCount = 0;
     let internalSkipped = 0; // 新结构里标 internal、没进公开产物的版本数
+    const seedStats = { ok: 0, skip: {} }; // read-seed.json：生成了几个，跳过的按原因计数（skip 不是错误，照旧读法）
     const entryDir = join(OUT_DIR, 'entry');
     const itemsDir = join(OUT_DIR, 'items');
     const legacyChunksDir = join(OUT_DIR, 'chunks');
@@ -297,9 +302,18 @@ function bundleL1() {
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 internalSkipped += copyItemDir(itemDir, join(itemsDir, id)).internalSkipped;
                 itemFileCount++;
+                // 首屏种子（overview#345 方案 B）：buildReadSeed 只读源目录；不合法的 manifest 在上面 copyItemDir 已抛错
+                const seed = buildReadSeed(itemDir);
+                if (seed.status === 'ok') {
+                    writeIfChanged(join(itemsDir, id, 'read-seed.json'), seed.text);
+                    seedStats.ok++;
+                } else {
+                    seedStats.skip[seed.reason] = (seedStats.skip[seed.reason] ?? 0) + 1;
+                }
             }
         }
     }
+    readSeedReady = true;
 
     console.log(`L1  ${totalEntries} entry/*.json files (${(totalBytes / 1024 / 1024).toFixed(1)} MB)`);
     if (itemFileCount > 0) {
@@ -308,6 +322,7 @@ function bundleL1() {
     if (internalSkipped > 0) {
         console.log(`    items: ${internalSkipped} 份 visibility=internal 的文本版本未进公开产物`);
     }
+    console.log(`    read-seed: ${seedStats.ok} 个生成，跳过 ${JSON.stringify(seedStats.skip)}`);
 }
 
 // ─── L2: 提要按卷组打包 ───
@@ -592,6 +607,8 @@ function bundleVersion() {
         productionCommitId,
         textCommitId,
         bundleDate: version.bundleDate,
+        // 首屏种子开关：只在 bundleL1 的 seed 循环全部跑完（无抛错）后才写，见 lib/read-seed.mjs、src/lib/server/read-seed.ts
+        ...(readSeedReady ? { readSeed: READ_SEED_VERSION } : {}),
     };
     writeJson(LATEST_FILE, latest);
 
