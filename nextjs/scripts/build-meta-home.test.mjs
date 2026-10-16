@@ -14,6 +14,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'nod
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { bundleMetaHome, hasLineage, lossKey, readMetaCuration } from './build-meta-home.mjs';
+// B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
+process.env.ALLOW_SOURCE_FALLBACK = '1';
 
 const json = (p) => JSON.parse(readFileSync(p, 'utf-8'));
 

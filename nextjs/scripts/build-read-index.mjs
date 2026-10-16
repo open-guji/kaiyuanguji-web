@@ -30,7 +30,7 @@
  *       node scripts/build-read-index.mjs [bookIndexDir]   单独重建
  */
 import { existsSync, readFileSync } from 'fs';
-import { indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
+import { assertDerivedDir, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { chapterTxtFile, newStructureReadable, readManifest } from './lib/text-layout.mjs';
@@ -379,6 +379,7 @@ function readJsonSafe(p, log, what) {
  * verifyItems：true 时构建后逐卡核对 dataDir/items/ 下的 manifest 与各版本首章文件，缺则抛错（bundle-data 开）。
  */
 export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFile, curationFile, verifyItems = false, log = console.log }) {
+    assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（readEntryDoc 的抛错会被逐条 try 吞掉）
     const rank = taxonomyFile && existsSync(taxonomyFile)
         ? taxonomyRank(JSON.parse(readFileSync(taxonomyFile, 'utf-8')))
         : new Map();

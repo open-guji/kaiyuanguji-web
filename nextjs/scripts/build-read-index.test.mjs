@@ -20,6 +20,8 @@ import {
     READ_PAGE_SIZE, READ_PERIODS, buildSections, bundleRead, compareReadCards, comparePeriodCards, periodOf, readCuration,
     toReadCard, verifyReadProbes,
 } from './build-read-index.mjs';
+// B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
+process.env.ALLOW_SOURCE_FALLBACK = '1';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SAMPLE = join(here, 'fixtures', 'read-home.sample.json');

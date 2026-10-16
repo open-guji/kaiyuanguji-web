@@ -61,7 +61,8 @@ for (const dirs of [['old'], ['v2'], ['old', 'v2']]) {
         try {
             const r = runCheck({ root: pkg.root, absolute: false });
             assert.deepEqual([...codeSet(r, 'block')], [], JSON.stringify(r.findings.filter((f) => f.severity === 'block')));
-            assert.deepEqual([...codeSet(r, 'warn')].filter((c) => c !== 'entry.unknown-field'), [], JSON.stringify(r.findings.filter((f) => f.severity === 'warn')));
+            assert.deepEqual([...codeSet(r, 'warn')].filter((c) => c !== 'entry.unknown-field' && c !== 'entry.retired-field'), [], JSON.stringify(r.findings.filter((f) => f.severity === 'warn')));
+            // 夹具是历史样本（带 birth_year／books 等已退役键）；现行产物 0 个，见 data-contract.test.mjs 与 PR 的预跑记录
             assert.equal(r.counts.entryFiles, readdirSync(join(pkg.data, 'entry')).length);
             assert.equal(r.counts.byType.work + r.counts.byType.book + r.counts.byType.collection + r.counts.byType.entity, r.counts.entryFiles);
             assert.equal(r.texts.itemOwners, 1);
@@ -127,6 +128,17 @@ test('scanEntries：数据根里没有 entry/ 目录：block，不抛错', () =>
     const r = scanEntries(join(tmpdir(), 'definitely-not-here'), f);
     assert.equal(r.stats.files, 0);
     assert.ok(f.list().some((x) => x.code === 'entry.dir-missing' && x.severity === 'block'));
+});
+
+test('scanEntries：标志只数派生条目的 _has_*，无下划线的 has_* 旧写法不计（B5 V4）', () => {
+    const d = mkdtempSync(join(tmpdir(), 'dpc-'));
+    try {
+        const put = (id, o) => writeFileSync(join(d, `${id}.json`), JSON.stringify({ id, type: 'work', ...o }));
+        put('a', { _has_text: true, _has_image: true, _has_collated: true });
+        put('b', { has_text: true, has_image: true, has_collated: true });
+        const r = scanEntries(d, new Findings());
+        assert.deepEqual([r.stats.hasText, r.stats.hasImage, r.stats.hasCollated], [1, 1, 1]);
+    } finally { rmSync(d, { recursive: true, force: true }); }
 });
 
 test('Findings：按 code 聚合、例子最多 5 个、按级别排序', () => {

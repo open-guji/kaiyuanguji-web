@@ -6,6 +6,8 @@ name: Schedule watchdog
 # 这里用别的触发源盯：每小时 schedule ＋ 别的 workflow 跑完时的 workflow_run（任一触发源活着就够），
 # 对每条被盯的 workflow 看"最近一个 cron 时刻之后有没有 schedule run"，超过宽限（6 小时）还没有就开 issue（标签 schedule-alert）。
 # 恢复了自动关。检出延迟 ≤ 触发源的间隔，达不到 1 小时级；1 小时级要靠搜索机的外部触发／看门狗（GUJI-143 方案 4，需令牌，待批）。
+# run 列表接口曾漏列过 run（GUJI-143 更正）：脚本再不带 event 过滤取一次，run_number 有断档就判 suspect，
+# 不开单也不关单，到 2 倍宽限才按漏跑处理。
 # 改被盯 workflow 的 cron 时，要同步改下面的 --watch 参数。
 
 on:

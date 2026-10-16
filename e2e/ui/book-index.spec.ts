@@ -207,13 +207,20 @@ test.describe('数据版本标识', () => {
         // 2026-09-02：版本条读 current/version.json（immutable 长缓存），
         // 显示的 commit 落后 9 天。这既误导排查，也是版本号分裂的信号。
         // 10-01 起版本号并进元数据首页「数据与授权」：「当前数据版本：<短 commit> · <日期>」（overview#322）
-        const latestRes = await request.get(`${DATA_BASE}/latest.json?_=${Date.now()}`);
-        const latest = await latestRes.json();
-        const shortId = String(latest.commitId).slice(0, 7);
+        //
+        // SPLIT_DATA_FLOW 下 staging 站的 NEXT_PUBLIC_COS_BASE 指向正式数据域（deploy.yml），页面读的是正式指针；
+        // 而 data.yml 的 verify 的 DATA_BASE 是 .../staging。staging 数据新于正式时两者必然不同（10-15 run 38773282958 红在这），
+        // 所以 DATA_BASE 带 /staging 时，页面显示 staging 或正式指针任一个的 commit 都算一致。
+        const ids: string[] = [];
+        for (const base of DATA_BASE.endsWith('/staging') ? [DATA_BASE, DATA_BASE.slice(0, -'/staging'.length)] : [DATA_BASE]) {
+            const latestRes = await request.get(`${base}/latest.json?_=${Date.now()}`);
+            ids.push(String((await latestRes.json()).commitId).slice(0, 7));
+        }
+        const shortId = ids.join('|');
 
         await page.goto(`${TARGET}/book-index`);
         await expect(
-            page.getByText(new RegExp(`数据版本[:：]\\s*${shortId}`)),
+            page.getByText(new RegExp(`数据版本[:：]\\s*(${shortId})`)),
             `页面版本号与 latest.json 不符（应含 ${shortId}）——CDN 缓存或读错了源`,
         ).toBeVisible({ timeout: 30_000 });
     });

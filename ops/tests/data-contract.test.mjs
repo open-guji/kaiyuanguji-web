@@ -10,7 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
     checkEntryDoc, checkMeta, checkVersion, checkLatest, checkTree, checkTextIndexShard, checkTextManifest, checkMetaHome,
-    ENTRY_TYPES, ENTRY_FIELD_TYPES, jsType,
+    ENTRY_TYPES, ENTRY_FIELD_TYPES, RETIRED_ENTRY_FIELDS, jsType,
 } from '../data-contract.mjs';
 
 const FX = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'data-contract');
@@ -98,6 +98,24 @@ test('null 视为「没填」不判类型（线上旧数据里 period／dynasty�
     assert.equal(ENTRY_FIELD_TYPES.merged_from, 'any');
     // 线上全量旧数据里出现过的字段都在表里（没有「未知字段」）——抽样夹具里的字段全部已知
     for (const [file, doc] of entries('old')) assert.deepEqual(checkEntryDoc(doc, file).unknownFields, [], file);
+});
+
+test('已退役旧键（legacy-scan 键表）：出现就报 entry.retired-field，且不算未知字段、不判类型', () => {
+    const base = load('old/entry/0phe8c4i1i.json');
+    for (const k of RETIRED_ENTRY_FIELDS) {
+        const r = checkEntryDoc({ ...base, [k]: 'x' }, '0phe8c4i1i.json');
+        assert.ok(r.findings.some((f) => f.code === 'entry.retired-field' && f.field === k), k);
+        assert.ok(!r.unknownFields.includes(k), k);
+        assert.ok(!(k in ENTRY_FIELD_TYPES), k);
+    }
+    assert.equal(RETIRED_ENTRY_FIELDS.length, 10);
+});
+
+test('已退役键清单不含现行字段：派生标志 _has_*、has_text／has_image（线上 entry/ 仍有）仍在字段表里、不报退役', () => {
+    const base = load('old/entry/0phe8c4i1i.json');
+    const r = checkEntryDoc({ ...base, has_text: true, has_image: false, _has_text: true, _has_collated: false }, '0phe8c4i1i.json');
+    assert.deepEqual(r.findings.filter((f) => f.code === 'entry.retired-field'), []);
+    for (const k of ['has_text', 'has_image', '_has_text', '_has_image', '_has_collated']) assert.ok(k in ENTRY_FIELD_TYPES, k);
 });
 
 test('未知字段分两类上报：非 `_` 的、`_` 起首的', () => {
