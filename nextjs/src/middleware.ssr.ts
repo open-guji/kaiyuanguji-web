@@ -87,12 +87,19 @@ const REASON_HEADER = 'x-kyg-item-redirect';
 const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS, REDIRECT_GRACE_MS);
 
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
-    // RSC 导航与预取：页面的跳转编码在 RSC 负载里，不受 Location 重复影响，不必多查一次
     const dest = req.headers.get('sec-fetch-dest');
-    if (dest && dest !== 'document') return NextResponse.next();
     const id = req.nextUrl.pathname.slice('/item/'.length);
     if (!isValidItemId(id)) return NextResponse.next();
     const { redirect: r, reason } = await lookupItemRedirect(id);
+    if (dest && dest !== 'document') {
+        // GUJI-540：RSC 导航与预取（站内点击旧 id 链接）不能放给页面——页面在 ISR 未命中时抛 redirect，
+        // 正式站实测 Location 被写两遍并拼成「/item/新id, /item/新id」→ 浏览器 404。
+        // 有定论的永久跳转由这里出单个 Location；其余（不跳、没定论）仍放行，不做 307 兜底以免打断导航。
+        if (!r?.permanent) return NextResponse.next();
+        const res = NextResponse.redirect(new URL(r.to, req.url), 308);
+        res.headers.set(REASON_HEADER, `${reason};rsc`);
+        return res;
+    }
     const undecided = !r && (reason.startsWith('pass:budget') || reason.startsWith('pass:error'));
     const tempFallback = undecided && parseItemId(id)?.status === 'draft';
     if (undecided) {

@@ -130,10 +130,29 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
         expect(r.status).toBe(200);
     });
 
-    it('RSC 导航与预取（sec-fetch-dest 不是 document）不查数据、直接放过', async () => {
+    // GUJI-540：站内点击旧 id 链接是 RSC 导航，页面在 ISR 未命中时会把 Location 写两遍 → 404，所以中间件对有定论的永久跳转也要出单个 308
+    it('RSC 导航与预取：被并／已升格 → 单个 308（带 rsc 标记）', async () => {
+        const rsc = { 'sec-fetch-dest': 'empty', rsc: '1' };
         mockGetItem.mockResolvedValue(hit({ merged_into: TARGET }));
-        expect((await run(`/item/${MERGED}`, { 'sec-fetch-dest': 'empty' })).location).toBeNull();
-        expect(mockGetItem).not.toHaveBeenCalled();
+        const m = await run(`/item/${MERGED}?_rsc=abc`, rsc);
+        expect(m.status).toBe(308);
+        expect(m.all).toEqual([`https://staging.kaiyuanguji.com/item/${TARGET}`]);
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'promoted', to: 'hixhd2h9bk4b' });
+        const p = await run(`/item/${DRAFT}?_rsc=abc`, rsc);
+        expect(p).toMatchObject({ status: 308, all: ['https://staging.kaiyuanguji.com/item/hixhd2h9bk4b'] });
+        expect(p.reason).toMatch(/^redirect:promoted.*;rsc$/);
+    });
+
+    it('RSC 导航与预取：不跳／没定论／对照表查不了 → 放过，不出 307 兜底', async () => {
+        const rsc = { 'sec-fetch-dest': 'empty', rsc: '1' };
+        mockGetItem.mockResolvedValue(hit({ title: '史記' }));
+        expect((await run(`/item/${MERGED}`, rsc)).location).toBeNull();
+        mockGetItem.mockResolvedValue(null);
+        mockResolvePromotion.mockResolvedValue({ status: 'unknown' });
+        const r = await run(`/item/${DRAFT}`, rsc);
+        expect(r.status).toBe(200);
+        expect(r.location).toBeNull();
     });
 
     it('建取数实例时传 forceCache: false（边缘运行时不认 force-cache）', async () => {
