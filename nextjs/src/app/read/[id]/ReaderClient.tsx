@@ -253,8 +253,8 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
 
     return (
         <>
+        <ProofingNotice id={id} vol={meta?.proofVol} />
         <div ref={textRef}>
-            <ProofingNotice id={id} vol={meta?.proofVol} />
             <TextReader
                 id={id}
                 transport={transport}
