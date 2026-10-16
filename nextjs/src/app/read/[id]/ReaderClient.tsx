@@ -9,6 +9,8 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
+import { isProofingChapter } from '@/lib/proofing';
+import ProofingNotice from './ProofingNotice';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
 import { loadDuiduFiles } from '@/lib/duidu-data';
@@ -59,7 +61,7 @@ const sameSel = (a: ReaderSel, b: ReaderSel) => (a.key ?? '') === (b.key ?? '') 
 /** 版本名与章名（<title>、反馈上下文用）：取 manifest 与版本目录，服务端给了种子就不发请求；取不到就没有 */
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
-    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string } | null>(null);
+    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string } | null>(null);
     const at = `${id}|${sel.key ?? ''}|${sel.chapter ?? ''}`;
     useEffect(() => {
         let cancelled = false;
@@ -67,9 +69,12 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const manifest = await api.getManifest(id);
             const version = manifest?.versions.find((v) => v.key === (sel.key ?? 'default')) ?? manifest?.versions[0];
             if (!version) return;
-            const index = sel.chapter ? await api.getIndex(id, version.key) : null;
-            const title = index?.chapters.find((c) => c.file === sel.chapter)?.title?.trim();
-            if (!cancelled) setMeta({ at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined });
+            const index = await api.getIndex(id, version.key);
+            const chapter = index?.chapters.find((c) => (sel.chapter ? c.file === sel.chapter : true));
+            const title = sel.chapter ? chapter?.title?.trim() : undefined;
+            // 本册开着校对：精校页入口（只读章条目上的 proofing，见 lib/proofing.ts）
+            const proofVol = isProofingChapter(chapter) && chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
+            if (!cancelled) setMeta({ at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, proofVol });
         })().catch(() => {});
         return () => { cancelled = true; };
     }, [api, id, sel.key, sel.chapter, at]);
@@ -249,6 +254,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     return (
         <>
         <div ref={textRef}>
+            <ProofingNotice id={id} vol={meta?.proofVol} />
             <TextReader
                 id={id}
                 transport={transport}
