@@ -1,0 +1,70 @@
+name: asset-sync
+
+# GUJI-544：把图仓 open-guji/book-index-asset（印影图，公开）增量同步到 COS 的 asset/ 前缀。
+# 与数据发布（data.yml）完全分开：不进 current/、不进数据包、不动 latest.json／?v=。
+# 图只增不改名 → 全部 1 年 immutable，平时不用刷新；内容变了（误覆盖）会 WARN，用 edgeone-purge-urls 刷。孤儿只报告，不删。
+# COS 密钥只出现在上传步骤的 step 级 env 里。target=staging 写 staging/asset/ 前缀演练，不碰正式前缀。
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'production = asset/；staging = 演练，写 staging/asset/'
+        type: choice
+        options: [production, staging]
+        default: staging
+      dry_run:
+        description: '只算计划，不上传'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-sync-${{ inputs.target || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # 定时触发会直接写正式 asset/，跳过 staging 演练：演练通过后把仓库变量 ASSET_SYNC_SCHEDULE 设为 1 才放行定时（手动触发不受限）
+    if: ${{ github.event_name != 'schedule' || vars.ASSET_SYNC_SCHEDULE == '1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout asset repo (public)
+        uses: actions/checkout@v4
+        with:
+          repository: open-guji/book-index-asset
+          path: book-index-asset
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: nextjs
+        run: npm ci
+
+      - name: Unit test (plan)
+        working-directory: nextjs
+        run: node --test scripts/lib/asset-sync-plan.test.mjs
+
+      - name: Sync to COS asset/
+        working-directory: nextjs
+        env:
+          ASSET_ROOT: ${{ github.workspace }}/book-index-asset
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ inputs.target == 'staging' && 'staging' || '' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node scripts/sync-asset-to-cos.mjs
