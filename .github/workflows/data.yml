@@ -1009,9 +1009,10 @@ jobs:
             echo "已开告警 issue" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # GUJI-557：校对精灵图同步（夹具版）。非阻塞：continue-on-error，不在 verify-live／alert-data／refresh 的 needs 里，
-  # 红了也不改变本次 run 的结论、不触发 data-alert。不用任何 secret、不连 COS（只算上传计划）；真实源（Release proof-<书>-<册>-<n>）
-  # 与真上传另开卡接入，接入时只换 sync-proof-sprites.mjs 里的"取资源"函数与上传一步。规格：ai-team 仓 team/网站/GUJI-557-sprites-同步job规格.md
+  # GUJI-557：校对精灵图同步。非阻塞：continue-on-error，不在 verify-live／alert-data／refresh 的 needs 里，
+  # 红了也不改变本次 run 的结论、不触发 data-alert。不用任何 secret、不连 COS（只算上传计划；真上传另走现有 COS 同步，上线前先 staging 演练）。
+  # 指针：book-text main 的 proof/<书>/<册>/sprites.pointer.json（稀疏拉，只取 proof/）；资产：open-guji-dataset 的公开 Release（匿名下载）。
+  # 没有指针＝正常跳过。规格：ai-team 仓 team/网站/GUJI-557-sprites-同步job规格.md
   sprites:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -1023,8 +1024,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Sync proof sprites (fixture, dry-run)
+      - name: Fetch sprites pointers from book-text (sparse)
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/open-guji/book-text.git "$RUNNER_TEMP/book-text-pointers"
+          git -C "$RUNNER_TEMP/book-text-pointers" sparse-checkout set proof
+          echo "· book-text $(git -C "$RUNNER_TEMP/book-text-pointers" rev-parse --short HEAD)；指针 $(find "$RUNNER_TEMP/book-text-pointers/proof" -name sprites.pointer.json 2>/dev/null | wc -l) 个"
+      - name: Sync proof sprites (release source, dry-run)
         working-directory: nextjs
         env:
-          SPRITES_SOURCE_DIR: scripts/fixtures/sprites
+          SPRITES_RELEASE_REPO: open-guji/open-guji-dataset
+          SPRITES_POINTER_ROOT: ${{ runner.temp }}/book-text-pointers
         run: node scripts/sync-proof-sprites.mjs

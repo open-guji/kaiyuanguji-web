@@ -1,0 +1,29 @@
+{
+ "schema": "guji-proof-assets/0.1",
+ "book": "demo",
+ "volume": 1,
+ "rev": "001-r1",
+ "files": [
+  {
+   "name": "p0001.webp",
+   "bytes": 34,
+   "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+   "w": 1,
+   "h": 1
+  },
+  {
+   "name": "p0002.webp",
+   "bytes": 34,
+   "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+   "w": 1,
+   "h": 1
+  },
+  {
+   "name": "p0003.webp",
+   "bytes": 34,
+   "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+   "w": 1,
+   "h": 1
+  }
+ ]
+}
