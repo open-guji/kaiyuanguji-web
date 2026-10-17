@@ -26,6 +26,7 @@ export function checkPointer(p) {
     if (!p || typeof p !== 'object') return ['指针不是对象'];
     if (typeof p.tag !== 'string' || !/^[A-Za-z0-9._-]+$/.test(p.tag) || /^\.+$/.test(p.tag)) errs.push('tag 缺失、含非法字符或为纯点号');
     if (typeof p.manifest_sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(p.manifest_sha256)) errs.push('manifest_sha256 不是 64 位小写十六进制');
+    if (typeof p.rev !== 'string' || !p.rev) errs.push('rev 缺失');
     return errs;
 }
 
@@ -51,7 +52,7 @@ export async function verifyVolume(pointer, src, where = {}) {
     if (m.schema !== MANIFEST_SCHEMA) problems.push(`清单 schema ${m.schema} ≠ ${MANIFEST_SCHEMA}`);
     if (where.book !== undefined && m.book !== where.book) problems.push(`清单 book ${m.book} ≠ 指针所在目录 ${where.book}`);
     if (where.vol !== undefined && !(Number.isInteger(m.volume) && m.volume === Number(where.vol))) problems.push(`清单 volume ${m.volume} ≠ 指针所在目录 ${where.vol}`);
-    if (pointer.rev !== undefined && m.rev !== pointer.rev) problems.push(`清单 rev ${m.rev} ≠ 指针 rev ${pointer.rev}`);
+    if (m.rev !== pointer.rev) problems.push(`清单 rev ${m.rev} ≠ 指针 rev ${pointer.rev}`);
     if (!Array.isArray(m.files)) { problems.push('清单 files 不是数组'); return bad(); }
     if (m.total !== undefined && m.total !== m.files.length) problems.push(`文件数 ${m.files.length} ≠ total ${m.total}`);
     if (!m.files.length) problems.push('清单没有文件');

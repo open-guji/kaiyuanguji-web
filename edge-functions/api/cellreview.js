@@ -42,7 +42,7 @@ const RATE_LIMIT_PREFIX = 'ratelimit:cr:';
 const json = (headers, status, body) => new Response(JSON.stringify(body), { status, headers });
 
 /** 恰好一个字（按码点；Ext B 等 BMP 外的字算一个）。组合序列不放行 */
-function isSingleChar(v) {
+export function isSingleChar(v) {
   // 排除控制符（Cc）、格式符（Cf，含零宽）、各类空白分隔符（Z）；不限定汉字——古籍里有私用区造字
   return typeof v === 'string' && [...v].length === 1 && !/[\p{Cc}\p{Cf}\p{Z}]/u.test(v);
 }
@@ -83,18 +83,19 @@ export function validateReview(body) {
   return { value: { book, vol, a, rev, choice, ...(char ? { char } : {}), note, shown, aid: body.aid } };
 }
 
-async function checkRateLimit(kv, request) {
+/** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
+export async function checkRateLimit(kv, request, { max = RATE_LIMIT_MAX, prefix = RATE_LIMIT_PREFIX } = {}) {
   if (!kv) return { ok: true };
   const ip = getClientIp(request);
   if (!ip) return { ok: true }; // 取不到 IP 不限速（同 feedback.js：不把取不到 IP 的人挤进同一个名额）
   const nowS = Math.floor(Date.now() / 1000);
   try {
-    const key = RATE_LIMIT_PREFIX + (await sha256Hex(ip));
+    const key = prefix + (await sha256Hex(ip));
     const cur = (await kv.get(key, 'json')) || {};
     let start = Number(cur.start) || 0;
     let count = Number(cur.count) || 0;
     if (!start || nowS - start >= RATE_LIMIT_WINDOW_SECONDS) { start = nowS; count = 0; }
-    if (count >= RATE_LIMIT_MAX) {
+    if (count >= max) {
       return { ok: false, retryAfter: Math.max(1, start + RATE_LIMIT_WINDOW_SECONDS - nowS) };
     }
     await kv.put(key, JSON.stringify({ start, count: count + 1 }), { expirationTtl: RATE_LIMIT_WINDOW_SECONDS * 2 });

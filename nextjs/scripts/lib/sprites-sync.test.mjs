@@ -55,7 +55,8 @@ test('指针校验与路径解析', () => {
     assert.deepEqual(parsePointerPath('proof/b1/v01/sprites.pointer.json'), { book: 'b1', vol: 'v01' });
     assert.equal(parsePointerPath('proof/b1/v01/pending.json'), null);
     assert.ok(checkPointer({ tag: 't', manifest_sha256: 'xx' }).length);
-    assert.deepEqual(checkPointer({ tag: 't', manifest_sha256: 'a'.repeat(64) }), []);
+    assert.deepEqual(checkPointer({ tag: 't', manifest_sha256: 'a'.repeat(64), rev: 'r1' }), []);
+    assert.ok(checkPointer({ tag: 't', manifest_sha256: 'a'.repeat(64) }).length);
 });
 
 test('上传计划：state 里 sha 相同的跳过，前缀可空', () => {

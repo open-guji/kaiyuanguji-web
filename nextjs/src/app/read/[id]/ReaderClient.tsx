@@ -11,6 +11,8 @@ import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { isProofingChapter } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
+import CharFixEntry from '@/components/CharFixEntry';
+import { collectChars, collectEntities, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
 import { loadDuiduFiles } from '@/lib/duidu-data';
@@ -194,6 +196,9 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         });
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
+    // 「改字」入口用的本章上下文（GUJI-561）：对读数据与专名取到时顺手记；key＝章，换章后旧的不沿用
+    const charfix = useRef<{ key: string; ctx: CharFixCtx | null; entities: CharFixCtx['entities'] }>({ key: '', ctx: null, entities: [] });
+    const getCharfixCtx = useCallback(() => charfix.current.ctx, []);
 
     // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时下面一切都不动，DOM 与现状一致。
     // 只在开着时才取 proof_file；章上下文（含 proof_file 声明）在 resolveWarpData 里顺手记下
@@ -220,6 +225,19 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         // 规范层（norm.json）：人审过的「异体→通行字」，按格位 key 挂到字上；没声明或取不到时 files.norm 为 null＝与改前一致
         const pages = adaptCharCord(files.char, files.cord, files.norm);
         if (pages.length === 0) return null;
+        const chapterFile = ctx?.chapter?.file;
+        const textVersion = ctx?.chapter?.text_version ?? (files.char as { version?: unknown } | null)?.version;
+        charfix.current = {
+            key: chapterKey,
+            entities: charfix.current.key === chapterKey ? charfix.current.entities : [],
+            ctx: {
+                book: id,
+                volume: String(chapterFile ?? chapterKey),
+                textVersion: String(textVersion ?? ''),
+                chars: collectChars(pages),
+                entities: charfix.current.key === chapterKey ? charfix.current.entities : [],
+            },
+        };
         const vol = iiifVolumeOf(files.cord);
         // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
         let base: Record<string, any> = { page_id: '', title: '', image_size: [0, 0], total_warped_w: 0, columns: [] };
@@ -241,7 +259,11 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
     const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        return (await loadDuiduFiles(id, ctx, chapterKey, transport))?.entity ?? null;
+        const entity = (await loadDuiduFiles(id, ctx, chapterKey, transport))?.entity ?? null;
+        const entities = collectEntities(entity);
+        if (charfix.current.key === chapterKey && charfix.current.ctx) charfix.current = { ...charfix.current, entities, ctx: { ...charfix.current.ctx, entities } };
+        else charfix.current = { key: chapterKey, ctx: null, entities };
+        return entity;
     }, [id, transport]);
 
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
@@ -272,6 +294,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
             />
             {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <SelectionReport containerRef={textRef} context={feedbackContext} />
+            <CharFixEntry containerRef={textRef} getCtx={getCharfixCtx} />
             {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
         {/* 全文搜索定位（GUJI-163 / F6 步 4）：只在地址带 ?ft= 时工作；放在 textRef 之外，提示文字不被当成命中 */}
