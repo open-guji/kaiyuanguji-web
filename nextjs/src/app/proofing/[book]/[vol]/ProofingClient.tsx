@@ -86,8 +86,6 @@ interface CellRowProps {
     onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string) => Promise<string | null>;
 }
 
-const cls = (...xs: (string | false | undefined)[]) => xs.filter(Boolean).join(' ');
-
 function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
     const tip = [cd.src?.length ? `来源：${cd.src.join('、')}` : '', cd.score !== undefined ? `库分数 ${cd.score.toFixed(4)}` : ''].filter(Boolean).join('；');
     return (
