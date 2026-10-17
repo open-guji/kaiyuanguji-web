@@ -91,4 +91,21 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.getAllByRole('button', { name: '图上没有字' })[1].getAttribute('aria-pressed')).toBe('true');
         expect(fetchSpy).not.toHaveBeenCalled();
     });
+
+    const ex = { 曰: [{ s: 'ex-001.webp', x: 0, y: 0, w: 96, h: 96 }, { s: 'ex-001.webp', x: 96, y: 0, w: 96, h: 96 }], 日: [{ s: 'ex-001.webp', x: 192, y: 0, w: 96, h: 96 }] };
+
+    it('ex 有就显示同字例子（每个候选字一行）', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '曰', ex }]));
+        render(<ProofingClient book="b3" vol="vol01" />);
+        const box = await screen.findByTestId('examples');
+        expect(box.querySelectorAll('[role=img]')).toHaveLength(3);
+    });
+
+    it('ex 的图没传上去（404）就整块不显示，不留空白框；没有 ex 也不渲染', async () => {
+        failUrls = /ex-001/;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '曰', ex }, { a: '1:1:2', c: '日' }]));
+        render(<ProofingClient book="b4" vol="vol01" />);
+        await screen.findAllByText(/机器读作/);
+        await waitFor(() => expect(screen.queryByTestId('examples')).toBeNull());
+    });
 });

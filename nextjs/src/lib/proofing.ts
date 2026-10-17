@@ -110,6 +110,7 @@ export function parseExtras(raw: unknown): PendingExtras {
 /** `why` 机器码 → 中文。码表在 cv `review/doubts.py`，这里只映射已确认的；未知码原样显示 */
 const WHY_LABELS: Record<string, string> = {
     none: '无具体疑点，仍需人看',
+    near_form: '形近字，易混',
 };
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
 
