@@ -29,6 +29,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isValidItemId, parseItemId } from '@/lib/item-id';
 import { createItemFetcher, defaultItemDataBase } from '@/lib/server/item-data';
 import { lookupItemRedirectTraced } from '@/lib/server/item-redirect';
+import { ITEM_REDIRECT_TABLE } from '@/lib/server/redirect-table-data';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
 import { bookIndexFallbackPath, cleanItemSearch, ITEM_QUERY_WHITELIST } from '@/lib/item-query';
 import { parseReaderSegments, readerPath, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
@@ -84,7 +85,7 @@ const REDIRECT_BUDGET_MS = 3_000;
 const REDIRECT_GRACE_MS = 4_000;
 const REASON_HEADER = 'x-kyg-item-redirect';
 
-const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS, REDIRECT_GRACE_MS);
+const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, { ...fetcher(), table: ITEM_REDIRECT_TABLE }, REDIRECT_BUDGET_MS, REDIRECT_GRACE_MS);
 
 async function itemRedirect(req: NextRequest): Promise<NextResponse> {
     const dest = req.headers.get('sec-fetch-dest');
