@@ -608,6 +608,32 @@ jobs:
           export TEXT_COMMIT="${{ steps.clone.outputs.text_sha }}"
           node scripts/cos-sync-decision.mjs mark
 
+      # GUJI-557：校对精灵图（proof/）真上传。独立于上面的数据同步：数据没变也跑，失败只警告（continue-on-error，脚本也以 0 退出），不影响发布结论。
+      # 现阶段只放行 staging 前缀（演练）：确认 staging 上 HEAD 核对无误后，把下面两步条件里的 prefix == 'staging' 去掉即开正式前缀（另开 PR）。
+      # 指针取自 book-text main（稀疏拉 proof/），资产取自 open-guji-dataset 公开 Release，逐册校验 sha256 后才传；COS 密钥沿用现有那三个，只在 step 级 env。
+      - name: Fetch sprites pointers from book-text (sparse)
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.gate.outputs.prefix == 'staging' }}
+        continue-on-error: true
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/open-guji/book-text.git "$RUNNER_TEMP/book-text-pointers"
+          git -C "$RUNNER_TEMP/book-text-pointers" sparse-checkout set proof
+          echo "· book-text $(git -C "$RUNNER_TEMP/book-text-pointers" rev-parse --short HEAD)；指针 $(find "$RUNNER_TEMP/book-text-pointers/proof" -name sprites.pointer.json 2>/dev/null | wc -l) 个"
+
+      - name: Sync proof sprites to Tencent COS (staging only for now)
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.gate.outputs.prefix == 'staging' }}
+        continue-on-error: true
+        working-directory: nextjs
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
+          SPRITES_UPLOAD: '1'
+          SPRITES_RELEASE_REPO: open-guji/open-guji-dataset
+          SPRITES_POINTER_ROOT: ${{ runner.temp }}/book-text-pointers
+        run: node scripts/sync-proof-sprites.mjs
+
       # 刷新阶段要的"哪些条目变了"：在这里算（本地有刚打出来的 h1 根和分片，旧 root 在上面记过），交给 refresh 任务。
       # 不拦：算不出来 refresh 里就没有要失效的条目，最坏是条目页按 s-maxage（1 小时）自然过期。
       - name: Compute changed items
