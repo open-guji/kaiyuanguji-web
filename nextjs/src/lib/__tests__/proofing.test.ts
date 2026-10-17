@@ -97,7 +97,10 @@ describe('loadProofing', () => {
     it('没声明、取不到、抛错都不抛', async () => {
         expect((await loadProofing(deps({ getManifest: async () => null }), 'b1', 'vol01')).status).toBe('none');
         expect((await loadProofing(deps({ getFile: async () => null }), 'b1', 'vol01')).status).toBe('error');
-        expect((await loadProofing(deps({ getIndex: async () => { throw new Error('x'); } }), 'b1', 'vol01')).status).toBe('error');
+        expect((await loadProofing(deps({ getIndex: async () => { throw new Error('x'); } }), 'b1', 'vol01')).status).toBe('none');
+        // 第一个版本目录抛错，第二个版本照样能取到
+        let n = 0;
+        expect((await loadProofing(deps({ getIndex: async () => { if (n++ === 0) throw new Error('x'); return index; } }), 'b1', 'vol01')).status).toBe('ok');
     });
     it('文件名带路径不请求', async () => {
         const bad = { chapters: [{ vol: 'vol01', proofing: true, pending_file: '../x.json' }] };

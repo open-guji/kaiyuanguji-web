@@ -170,7 +170,9 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
     try {
         const manifest = await deps.getManifest(book);
         for (const versionKey of versionKeys(manifest)) {
-            const chapter = pickProofingChapter(await deps.getIndex(book, versionKey), vol);
+            // 某一版本的目录取不到不挡其他版本
+            const index = await deps.getIndex(book, versionKey).catch(() => null);
+            const chapter = pickProofingChapter(index, vol);
             const pendingFile = chapter?.pending_file;
             if (!chapter || typeof pendingFile !== 'string' || !SAFE_FILE.test(pendingFile)) continue;
             const named = (k: string) => (typeof chapter[k] === 'string' && SAFE_FILE.test(chapter[k] as string) ? (chapter[k] as string) : null);
