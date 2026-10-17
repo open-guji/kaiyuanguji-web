@@ -50,7 +50,7 @@ describe('精校页显示（GUJI-557）', () => {
     });
 
     it('雪碧图加载失败回退原叶裁图，不报错', async () => {
-        failUrls = /staging\/proof/;
+        failUrls = /\/proof\//;
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己', img: img(0) }]));
         render(<ProofingClient book="b2" vol="vol01" />); // 换书：图片按地址缓存，别用前一例已成功的地址
         await waitFor(() => expect(loadFacsimile).toHaveBeenCalledTimes(1));

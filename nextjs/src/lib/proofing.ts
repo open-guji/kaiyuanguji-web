@@ -133,8 +133,8 @@ export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: str
     return null;
 }
 
-/** 雪碧图地址：与 pending_file 同目录。正式前缀切换前先走 staging，可用环境变量改 */
-export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/staging/proof';
+/** 雪碧图地址：与 pending_file 同目录。默认正式前缀；联调其他前缀用环境变量改（产物里不得写死 staging 前缀，构建闸会拒） */
+export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/proof';
 export function spriteUrl(book: string, pendingFile: string | null, s: string, base = PROOF_SPRITE_BASE): string | null {
     const dir = pendingFile ? pendingFile.replace(/\.pending\.json$/, '').replace(/\.[^.]+$/, '') : '';
     return dir && /^[\w.-]+$/.test(dir) && /^[\w-]+$/.test(book) && SPRITE_FILE.test(s) ? `${base}/${book}/${dir}/${s}` : null;
