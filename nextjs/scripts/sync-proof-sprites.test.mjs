@@ -24,13 +24,13 @@ test('① 没有指针：成功并跳过', () => {
 test('② 好夹具：计划上传 3 个文件，不报警', () => {
     const r = run(FIX, { COS_PATH_PREFIX: 'staging' });
     assert.equal(r.status, 0);
-    assert.match(r.stdout, /PUT staging\/proof\/demo\/vol01\/sprites\/p1\.webp/);
+    assert.match(r.stdout, /PUT staging\/proof\/demo\/vol01\/p0001\.webp/);
     assert.match(r.stdout, /待传 3/); assert.doesNotMatch(r.stdout, /::warning::/);
 });
 
 test('③ 改坏一个文件：该册不上传、有 warning、退出码仍为 0', () => {
     const d = tmp(); cpSync(FIX, d, { recursive: true });
-    appendFileSync(join(d, 'releases', 'proof-demo-vol01-1', 'sprites', 'p2.webp'), 'x');
+    appendFileSync(join(d, 'releases', 'proof-demo-vol01-1', 'p0002.webp'), 'x');
     const r = run(d);
     assert.equal(r.status, 0);
     assert.match(r.stdout, /::warning::sprites demo\/vol01 校验未过/);

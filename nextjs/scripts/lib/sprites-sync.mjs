@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 export const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 
 const POINTER_PATH_RE = /^proof\/([^/]+)\/([^/]+)\/sprites\.pointer\.json$/;
-const SAFE_REL_RE = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9._/-]+$/;
+const FLAT_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.webp$/;   // 资产名是扁平文件名（Eliot 定）：不含目录，COS 目录取自指针所在目录
 
 /** 从指针文件的相对路径取 {book, vol}；不是指针路径返回 null */
 export function parsePointerPath(rel) {
@@ -49,7 +49,7 @@ export async function verifyVolume(pointer, src) {
     const files = [];
     const seen = new Set();
     for (const f of m.files) {
-        if (typeof f?.path !== 'string' || !SAFE_REL_RE.test(f.path) || !f.path.endsWith('.webp')) { problems.push(`路径不合约定：${f?.path}`); continue; }
+        if (typeof f?.path !== 'string' || !FLAT_NAME_RE.test(f.path)) { problems.push(`路径不合约定：${f?.path}`); continue; }
         if (seen.has(f.path)) { problems.push(`重复路径：${f.path}`); continue; }
         seen.add(f.path);
         let buf;

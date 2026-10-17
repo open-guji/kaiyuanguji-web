@@ -3,7 +3,7 @@
  * sync-proof-sprites.mjs — 校对精灵图同步（GUJI-557，夹具版）
  *
  * 读 SPRITES_SOURCE_DIR 下的指针 book-text/proof/<书>/<册>/sprites.pointer.json，逐册校验后（见 lib/sprites-sync.mjs）
- * 计划上传到 [前缀/]proof/<书>/<册>/<manifest 里的 path>。**本版只做演练：不连 COS、不用密钥**；
+ * 计划上传到 [前缀/]proof/<书>/<册>/<文件名>（目录取自指针所在目录，清单 path 是扁平文件名）。**本版只做演练：不连 COS、不用密钥**；
  * 真实源（open-guji-dataset Release proof-<书>-<册>-<n>）接入时只需换下面的 localSource（取 manifest／取文件两个函数）与上传一步。
  *
  * 某册校验不过：该册不传，打 ::warning:: 并写进 run 摘要；脚本仍以 0 退出（这是非阻塞任务，不让整次 run 变红）。
