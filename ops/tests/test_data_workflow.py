@@ -132,6 +132,20 @@ class DataWorkflowCheckOnly(unittest.TestCase):
             needs = [needs] if isinstance(needs, str) else needs
             self.assertNotIn('sprites', needs, j)
 
+    def test_sprites_cos_write_is_gated_staging_only_and_non_blocking(self):
+        steps = self.wf['jobs']['package']['steps']
+        mine = [st for st in steps if 'sync-proof-sprites' in st.get('run', '') or 'sprites pointers' in st.get('name', '')]
+        self.assertEqual(len(mine), 2)
+        for st in mine:
+            cond = st['if']
+            self.assertIn("steps.gate.outputs.publish == 'true'", cond)
+            self.assertIn("steps.gate.outputs.sitemaps_only != 'true'", cond)
+            self.assertIn("steps.gate.outputs.prefix == 'staging'", cond)   # 正式前缀等 staging 演练过后另开 PR
+            self.assertTrue(st.get('continue-on-error'), st['name'])
+        up = [st for st in mine if 'sync-proof-sprites' in st.get('run', '')][0]
+        self.assertEqual(set(k for k in up['env'] if k.startswith('COS_')),
+                         {'COS_SECRET_ID', 'COS_SECRET_KEY', 'COS_BUCKET', 'COS_REGION', 'COS_PATH_PREFIX'})   # 不引入新 secret
+
     def _run_carry(self, code, body, prefix=''):
         run = self._step('Carry over webCommitId from live latest.json')['run']
         with tempfile.TemporaryDirectory() as d:
