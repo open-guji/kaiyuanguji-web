@@ -63,11 +63,13 @@ export interface CordIndex {
     boxes: Map<string, Box>;
     /** 页序 → IIIF 页序与 canvas 宽（坐标系的宽，用来换算原图缩放） */
     pages: Map<number, { seq: string; width: number }>;
+    /** IIIF 册目录（canvas id `…/iiif/<书>/canvas/<册>/<页序>` 里的册，如 '01'）；URL 上的 vol01 不是它，取不到就是 null */
+    iiifVol: string | null;
 }
 
 /** cord.json（guji-cord）→ 格位到框、页到 IIIF 页序。坏数据不抛 */
 export function parseCord(raw: unknown): CordIndex {
-    const out: CordIndex = { boxes: new Map(), pages: new Map() };
+    const out: CordIndex = { boxes: new Map(), pages: new Map(), iiifVol: null };
     const pages = asObject(raw)?.pages;
     for (const p of Array.isArray(pages) ? pages : []) {
         const po = asObject(p);
@@ -75,6 +77,9 @@ export function parseCord(raw: unknown): CordIndex {
         const page = Number(po.page);
         const canvas = asObject(po.canvas);
         const seq = canvas?.seq;
+        if (out.iiifVol === null && typeof canvas?.id === 'string') {
+            out.iiifVol = /\/iiif\/[^/]+\/canvas\/([^/]+)\/[^/]+$/.exec(canvas.id)?.[1] ?? null;
+        }
         if (Number.isInteger(page) && (typeof seq === 'string' || typeof seq === 'number') && String(seq) !== '') {
             const width = Number(canvas?.width ?? asObject(po.image)?.width);
             out.pages.set(page, { seq: String(seq), width: Number.isFinite(width) && width > 0 ? width : 0 });

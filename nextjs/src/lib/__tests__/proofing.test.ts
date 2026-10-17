@@ -141,4 +141,10 @@ describe('真实 guji-cord 形状（96mid1ogzk vol02 第 3 页节选）', () => 
     it('marks 里的非字格不当作字格', () => {
         expect(parseCord(real).boxes.size).toBe(2);
     });
+
+    it('parseCord 从 canvas id 取 IIIF 册目录（01，不是 URL 的 vol01）', () => {
+        const c = parseCord({ pages: [{ page: 1, canvas: { id: 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/canvas/01/0001', seq: '0001', width: 957 }, cells: [] }] });
+        expect(c.iiifVol).toBe('01');
+        expect(parseCord({ pages: [] }).iiifVol).toBeNull();
+    });
 });
