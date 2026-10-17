@@ -111,6 +111,11 @@ export function parseExtras(raw: unknown): PendingExtras {
 const WHY_LABELS: Record<string, string> = {
     none: '无具体疑点，仍需人看',
     near_form: '形近字，易混',
+    ctx_garble_shape: '字块不像库里任何刻例（相似度低于 0.90）',
+    replace_align: '整理本对位来自改字段，可能错开一两格',
+    context_vs_ref: '上下文字与整理本对位字不同',
+    iron_ex_missing: '缺别册刻例原图，不敢放行',
+    context_blank_cell: '字块几乎空白',
 };
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
 

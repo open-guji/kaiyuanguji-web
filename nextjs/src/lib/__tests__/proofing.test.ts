@@ -189,6 +189,7 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
 
     it('why：已知码映射中文，未知码原样', () => {
         expect(whyLabel('none')).not.toBe('none');
+        for (const code of ['near_form', 'ctx_garble_shape', 'replace_align', 'context_vs_ref', 'iron_ex_missing', 'context_blank_cell']) expect(whyLabel(code)).not.toBe(code);
         expect(whyLabel('some_future_code')).toBe('some_future_code');
     });
 
