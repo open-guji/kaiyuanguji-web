@@ -143,7 +143,7 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
             setDone(res.pending.rev ? readDone(res.pending.rev) : {});
             setState('ok');
             // 书影页：失败不影响看字和提交
-            const facs = await loadFacsimile(book, vol).catch(() => null);
+            const facs = await loadFacsimile(book, res.cord?.iiifVol ?? vol).catch(() => null);
             if (cancelled || !facs) return;
             setImages(new Map(facs.flatMap(f => (f.seq ? [[f.seq, f.hiresUrl ?? f.url] as [string, string]] : []))));
         })().catch(() => { if (!cancelled) setState('error'); });
