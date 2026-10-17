@@ -60,3 +60,15 @@ describe('lookupItemRedirectTraced + 全表', () => {
         expect((await lookupItemRedirectTraced(E, deps(), 50)).reason).toBe('pass:not-found');
     });
 });
+
+describe('打包进中间件的全表（redirect-table.data.json）', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const data = require('../redirect-table.data.json') as { version: number; redirects: Record<string, string> };
+    it('每一行都被读表接受：非自指、id 合法、终点不在表里（已折叠，一跳到位）', () => {
+        const table = parseRedirectTable(data);
+        const rows = Object.entries(data.redirects);
+        expect(rows.length).toBeGreaterThan(1000);
+        expect(table.size).toBe(rows.length);
+        for (const [from, to] of rows) expect(table.lookup(from)).toBe(to);
+    });
+});
