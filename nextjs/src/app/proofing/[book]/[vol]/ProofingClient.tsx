@@ -111,18 +111,29 @@ function Evidence({ cell }: { cell: PendingCell }) {
 }
 
 function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: string) => string | null }) {
+    const [bad, setBad] = useState<Set<string>>(new Set());
     const entries = Object.entries(cell.ex ?? {});
-    if (!entries.length) return null;
+    const urlKey = [...new Set(entries.flatMap(([, list]) => list.map(sp => spriteBase(sp.s)).filter((u): u is string => !!u)))].join('\n');
+    useEffect(() => {
+        let cancelled = false;
+        // 例子图没传到桶（或加载失败）就不显示，不留空白框
+        (urlKey ? urlKey.split('\n') : []).forEach(u => loadImage(u).then(img => { if (!cancelled && !img) setBad(prev => (prev.has(u) ? prev : new Set(prev).add(u))); }));
+        return () => { cancelled = true; };
+    }, [urlKey]);
+    const shown = entries
+        .map(([ch, list]) => [ch, list.filter(sp => { const u = spriteBase(sp.s); return !!u && !bad.has(u); })] as const)
+        .filter(([, list]) => list.length > 0);
+    if (!shown.length) return null;
     return (
-        <div style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
+        <div data-testid="examples" style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
             同字例子
-            {entries.map(([ch, list]) => (
-                <div key={ch} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            {shown.map(([ch, list]) => (
+                <div key={ch} style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                     <b style={{ fontSize: 18 }}>{ch}</b>
-                    {list.map((sp, i) => {
-                        const url = spriteBase(sp.s);
-                        return url ? <div key={i} role="img" aria-label={`「${ch}」例 ${i + 1}`} style={{ width: sp.w, height: sp.h, zoom: 0.5, background: `#fff url(${url}) -${sp.x}px -${sp.y}px no-repeat` }} /> : null;
-                    })}
+                    {list.map((sp, i) => (
+                        <div key={i} role="img" aria-label={`「${ch}」例 ${i + 1}`}
+                            style={{ width: sp.w, height: sp.h, zoom: 0.5, border: '1px solid #ddd', background: `#fff url(${spriteBase(sp.s)}) -${sp.x}px -${sp.y}px no-repeat` }} />
+                    ))}
                 </div>
             ))}
         </div>
