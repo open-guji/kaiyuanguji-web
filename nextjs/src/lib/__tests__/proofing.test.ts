@@ -3,6 +3,7 @@
  */
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
+    parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
 } from '../proofing';
 
 const pending = {
@@ -146,5 +147,71 @@ describe('真实 guji-cord 形状（96mid1ogzk vol02 第 3 页节选）', () => 
         const c = parseCord({ pages: [{ page: 1, canvas: { id: 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/canvas/01/0001', seq: '0001', width: 957 }, cells: [] }] });
         expect(c.iiifVol).toBe('01');
         expect(parseCord({ pages: [] }).iiifVol).toBeNull();
+    });
+});
+
+describe('guji-proof/0.2 新字段（GUJI-557）', () => {
+    it('0.1 数据一个新字段都没有，照旧可用', () => {
+        const r = parsePending(pending);
+        expect(r.cells[0]).toEqual({ a: '3:1:2', c: '天', cand: [{ c: '夭', src: ['lib'] }, { c: '天', src: ['ocr'] }] });
+        expect(r.cells[0].img).toBeUndefined();
+        expect(preselect(r.cells[0])).toBeNull();
+    });
+
+    it('全字段解析；类型不对的键各自丢弃，不连累其他键', () => {
+        const e = parseExtras({
+            why: ['a_code', 3, ''], cls: 'replace_align', lib_top: [{ c: '己', s: 0.91 }, { c: 5, s: 1 }, { c: '已' }],
+            lib: { verdict: 'ok', cov: 0.9, wmax: 'x' }, ctx: { c: '巳', margin: 0.2, src: 'm' }, ref: { c: '己', op: 'coord' },
+            ocr: [{ c: '己', src: 'a' }, { src: 'b' }], stale: { c: '已', state: 'stale' }, occ: { c: '印', ref_blank: true },
+            img: { s: 'p0009.webp', x: 0, y: 96, w: 96, h: 96 }, ex: { 己: [{ s: 'ex-1.webp', x: 0, y: 0, w: 96, h: 96 }, { bad: 1 }], 已: [] },
+        });
+        expect(e.why).toEqual(['a_code']);
+        expect(e.libTop).toEqual([{ c: '己', s: 0.91 }]);
+        expect(e.lib).toEqual({ verdict: 'ok', cov: 0.9 });
+        expect(e.ocr).toEqual([{ c: '己', src: 'a' }]);
+        expect(e.occ).toEqual({ c: '印', refBlank: true });
+        expect(e.img).toEqual({ s: 'p0009.webp', x: 0, y: 96, w: 96, h: 96 });
+        expect(Object.keys(e.ex ?? {})).toEqual(['己']);
+    });
+
+    it('img 非法（越界负数、文件名带路径）当没有，由页面回退原叶裁图', () => {
+        expect(parseExtras({ img: { s: '../x.webp', x: 0, y: 0, w: 96, h: 96 } }).img).toBeUndefined();
+        expect(parseExtras({ img: { s: 'p1.webp', x: -1, y: 0, w: 96, h: 96 } }).img).toBeUndefined();
+        expect(parseExtras({ img: { s: 'p1.webp', x: 0, y: 0, w: 0, h: 96 } }).img).toBeUndefined();
+        expect(parseExtras('x')).toEqual({});
+    });
+
+    it('parsePending 带出 0.2 字段（规范键 cell）', () => {
+        const r = parsePending({ rev: 'r2', cells: [{ cell: '9:7:17', review: 'pending', img: { s: 'p0009.webp', x: 0, y: 0, w: 96, h: 96 }, why: ['none'] }] });
+        expect(r.cells[0].img?.s).toBe('p0009.webp');
+        expect(r.cells[0].why).toEqual(['none']);
+    });
+
+    it('why：已知码映射中文，未知码原样', () => {
+        expect(whyLabel('none')).not.toBe('none');
+        expect(whyLabel('some_future_code')).toBe('some_future_code');
+    });
+
+    it('候选取 cand 与 lib_top 前 3 的并集、最多显示 3 个并带库分数，多的进「更多」', () => {
+        const { top, more } = shownCandidates({
+            a: '1:1:1', cand: [{ c: '己' }, { c: '已' }],
+            libTop: [{ c: '已', s: 0.9 }, { c: '巳', s: 0.8 }, { c: '以', s: 0.7 }, { c: '目', s: 0.6 }],
+        });
+        expect(top.map(x => x.c)).toEqual(['己', '已', '巳']);
+        expect(top[1].score).toBe(0.9);
+        expect(more.map(x => x.c)).toEqual(['以']);
+    });
+
+    it('预勾：stale 预选其字，occ 预选「非字」，stale 优先；都只是预选', () => {
+        expect(preselect({ a: 'x', stale: { c: '已' } })).toEqual({ choice: 'char', char: '已' });
+        expect(preselect({ a: 'x', occ: { refBlank: true } })).toEqual({ choice: 'none' });
+        expect(preselect({ a: 'x', stale: { c: '已' }, occ: {} })).toEqual({ choice: 'char', char: '已' });
+        expect(preselect({ a: 'x' })).toBeNull();
+    });
+
+    it('雪碧图地址＝前缀/书/pending 同目录/文件名；不合规返回 null', () => {
+        expect(spriteUrl('b1', '001.pending.json', 'p0009.webp', 'https://h/proof')).toBe('https://h/proof/b1/001/p0009.webp');
+        expect(spriteUrl('b1', null, 'p1.webp', 'https://h/proof')).toBeNull();
+        expect(spriteUrl('b1', '001.pending.json', '../p1.webp', 'https://h/proof')).toBeNull();
     });
 });

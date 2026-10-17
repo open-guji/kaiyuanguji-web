@@ -14,7 +14,25 @@ import { parseProof, type ProofCandidate } from '@/lib/proof';
 
 export type Box = [number, number, number, number];
 
-export interface PendingCell {
+/** 雪碧图里的一块：`s` 是同目录文件名，x,y,w,h 是它在雪碧图里的像素框 */
+export interface SpriteRef { s: string; x: number; y: number; w: number; h: number }
+
+/** guji-proof/0.2 新增字段，全部可选；0.1 的 pending.json 一个都没有 */
+export interface PendingExtras {
+    why?: string[];
+    cls?: string;
+    libTop?: { c: string; s: number }[];
+    lib?: { verdict?: string; cov?: number; wmax?: number };
+    ctx?: { c: string; margin?: number; src?: string };
+    ref?: { c: string; op?: string };
+    ocr?: { c: string; src?: string }[];
+    stale?: { c: string; ts?: string; state?: string };
+    occ?: { c?: string; refBlank?: boolean };
+    img?: SpriteRef;
+    ex?: Record<string, SpriteRef[]>;
+}
+
+export interface PendingCell extends PendingExtras {
     a: string;
     /** 机器当前读的字 */
     c?: string;
@@ -26,6 +44,100 @@ export interface PendingData {
     /** 提交时必须原样带回；缺失／非法时为 null（页面不放提交） */
     rev: string | null;
     cells: PendingCell[];
+}
+
+const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
+const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+const SPRITE_FILE = /^[\w.-]+$/;
+
+export function parseSprite(v: unknown): SpriteRef | null {
+    const o = asObject(v);
+    if (!o || typeof o.s !== 'string' || !SPRITE_FILE.test(o.s)) return null;
+    const [x, y, w, h] = [o.x, o.y, o.w, o.h].map(num);
+    if (x === undefined || y === undefined || w === undefined || h === undefined || x < 0 || y < 0 || w <= 0 || h <= 0) return null;
+    return { s: o.s, x, y, w, h };
+}
+
+/** 单格的 0.2 新字段。每个键独立容错：类型不对就当没有，不影响其他键 */
+export function parseExtras(raw: unknown): PendingExtras {
+    const it = asObject(raw);
+    const out: PendingExtras = {};
+    if (!it) return out;
+    if (Array.isArray(it.why)) {
+        const why = it.why.filter((x): x is string => typeof x === 'string' && x !== '');
+        if (why.length) out.why = why;
+    }
+    if (str(it.cls)) out.cls = str(it.cls);
+    if (Array.isArray(it.lib_top)) {
+        const libTop = it.lib_top.slice(0, 5).flatMap(x => {
+            const o = asObject(x);
+            const s = num(o?.s);
+            return o && typeof o.c === 'string' && o.c && s !== undefined ? [{ c: o.c, s }] : [];
+        });
+        if (libTop.length) out.libTop = libTop;
+    }
+    const lib = asObject(it.lib);
+    if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
+    const ctx = asObject(it.ctx);
+    if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}) };
+    const ref = asObject(it.ref);
+    if (ref && str(ref.c)) out.ref = { c: ref.c as string, ...(str(ref.op) ? { op: str(ref.op) } : {}) };
+    if (Array.isArray(it.ocr)) {
+        const ocr = it.ocr.flatMap(x => {
+            const o = asObject(x);
+            return o && str(o.c) ? [{ c: o.c as string, ...(str(o.src) ? { src: str(o.src) } : {}) }] : [];
+        });
+        if (ocr.length) out.ocr = ocr;
+    }
+    const stale = asObject(it.stale);
+    if (stale && str(stale.c)) out.stale = { c: stale.c as string, ...(str(stale.ts) ? { ts: str(stale.ts) } : {}), ...(str(stale.state) ? { state: str(stale.state) } : {}) };
+    const occ = asObject(it.occ);
+    if (occ) out.occ = { ...(str(occ.c) ? { c: str(occ.c) } : {}), ...(typeof occ.ref_blank === 'boolean' ? { refBlank: occ.ref_blank } : {}) };
+    const img = parseSprite(it.img);
+    if (img) out.img = img;
+    const exRaw = asObject(it.ex);
+    if (exRaw) {
+        const ex: Record<string, SpriteRef[]> = {};
+        for (const [k, v] of Object.entries(exRaw)) {
+            const list = (Array.isArray(v) ? v : []).slice(0, 5).map(parseSprite).filter((x): x is SpriteRef => !!x);
+            if (list.length) ex[k] = list;
+        }
+        if (Object.keys(ex).length) out.ex = ex;
+    }
+    return out;
+}
+
+/** `why` 机器码 → 中文。码表在 cv `review/doubts.py`，这里只映射已确认的；未知码原样显示 */
+const WHY_LABELS: Record<string, string> = {
+    none: '无具体疑点，仍需人看',
+};
+export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
+
+/** 要显示的候选：`cand` 与 `lib_top` 前 3 的并集（cand 在前），带库分数；超过 limit 的放「更多」 */
+export interface ShownCand { c: string; src?: string[]; score?: number }
+export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[]; more: ShownCand[] } {
+    const score = new Map((cell.libTop ?? []).map(x => [x.c, x.s]));
+    const all: ShownCand[] = [];
+    const add = (c: string, src?: string[]) => {
+        if (!all.some(x => x.c === c)) all.push({ c, ...(src ? { src } : {}), ...(score.has(c) ? { score: score.get(c) } : {}) });
+    };
+    for (const cd of cell.cand ?? []) add(cd.c, cd.src);
+    for (const x of (cell.libTop ?? []).slice(0, 3)) add(x.c);
+    return { top: all.slice(0, limit), more: all.slice(limit) };
+}
+
+/** 预勾：`stale` 有就预勾它的字（`c`）；`occ` 有就预选「非字」。都只是预选，仍须人确认才提交 */
+export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: string } | null {
+    if (cell.stale?.c) return { choice: 'char', char: cell.stale.c };
+    if (cell.occ) return { choice: 'none' };
+    return null;
+}
+
+/** 雪碧图地址：与 pending_file 同目录。正式前缀切换前先走 staging，可用环境变量改 */
+export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/staging/proof';
+export function spriteUrl(book: string, pendingFile: string | null, s: string, base = PROOF_SPRITE_BASE): string | null {
+    const dir = pendingFile ? pendingFile.replace(/\.pending\.json$/, '').replace(/\.[^.]+$/, '') : '';
+    return dir && /^[\w.-]+$/.test(dir) && /^[\w-]+$/.test(book) && SPRITE_FILE.test(s) ? `${base}/${book}/${dir}/${s}` : null;
 }
 
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
@@ -46,15 +158,17 @@ export function parsePending(raw: unknown): PendingData {
         return it && typeof it.a !== 'string' && typeof it.cell === 'string' ? { ...it, a: it.cell } : item;
     });
     const boxes = new Map<string, Box>();
+    const extras = new Map<string, unknown>();
     for (const item of list) {
         const it = asObject(item);
         if (it && typeof it.a === 'string' && isBox(it.box)) boxes.set(it.a, it.box);
+        if (it && typeof it.a === 'string') extras.set(it.a, it);
     }
     const cells: PendingCell[] = [];
     for (const cell of parseProof(list).cells.values()) {
         if (cell.review === 'human') continue;
         const box = boxes.get(cell.a);
-        cells.push({ a: cell.a, ...(cell.c ? { c: cell.c } : {}), ...(cell.cand ? { cand: cell.cand } : {}), ...(box ? { box } : {}) });
+        cells.push({ a: cell.a, ...(cell.c ? { c: cell.c } : {}), ...(cell.cand ? { cand: cell.cand } : {}), ...(box ? { box } : {}), ...parseExtras(extras.get(cell.a)) });
     }
     return { rev, cells };
 }
@@ -165,7 +279,7 @@ export interface ProofingDeps {
 }
 
 export type ProofingLoad =
-    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string }
+    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string; pendingFile: string }
     | { status: 'none' | 'error' };
 
 const SAFE_FILE = /^[\w.-]+$/;
@@ -195,7 +309,7 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
                 const chars = charMapOf(charRaw, null);
                 pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) ? c : { ...c, c: chars.get(c.a) }));
             }
-            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey };
+            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile };
         }
         return { status: 'none' };
     } catch {
