@@ -1,0 +1,33 @@
+{
+  "total": 3,
+  "book": "demo",
+  "rev": "001-r1",
+  "cv_commit": "0000000",
+  "generated": "2026-10-17",
+  "files": [
+    {
+      "path": "p0001.webp",
+      "bytes": 34,
+      "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+      "w": 1,
+      "h": 1,
+      "cells": 1
+    },
+    {
+      "path": "p0002.webp",
+      "bytes": 34,
+      "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+      "w": 1,
+      "h": 1,
+      "cells": 2
+    },
+    {
+      "path": "p0003.webp",
+      "bytes": 34,
+      "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+      "w": 1,
+      "h": 1,
+      "cells": 3
+    }
+  ]
+}
