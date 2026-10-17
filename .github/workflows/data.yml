@@ -609,18 +609,18 @@ jobs:
           node scripts/cos-sync-decision.mjs mark
 
       # GUJI-557：校对精灵图（proof/）真上传。独立于上面的数据同步：数据没变也跑，失败只警告（continue-on-error，脚本也以 0 退出），不影响发布结论。
-      # 现阶段只放行 staging 前缀（演练）：确认 staging 上 HEAD 核对无误后，把下面两步条件里的 prefix == 'staging' 去掉即开正式前缀（另开 PR）。
+      # 跟随发布闸的前缀：staging 演练写 staging/，正式发布写正式前缀（staging 演练 12 张 webp 全 GET 200、字节与 assets.json 一致后开放）。
       # 指针取自 book-text main（稀疏拉 proof/），资产取自 open-guji-dataset 公开 Release，逐册校验 sha256 后才传；COS 密钥沿用现有那三个，只在 step 级 env。
       - name: Fetch sprites pointers from book-text (sparse)
-        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.gate.outputs.prefix == 'staging' }}
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
         continue-on-error: true
         run: |
           git clone -q --depth 1 --filter=blob:none --sparse https://github.com/open-guji/book-text.git "$RUNNER_TEMP/book-text-pointers"
           git -C "$RUNNER_TEMP/book-text-pointers" sparse-checkout set proof
           echo "· book-text $(git -C "$RUNNER_TEMP/book-text-pointers" rev-parse --short HEAD)；指针 $(find "$RUNNER_TEMP/book-text-pointers/proof" -name sprites.pointer.json 2>/dev/null | wc -l) 个"
 
-      - name: Sync proof sprites to Tencent COS (staging only for now)
-        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' && steps.gate.outputs.prefix == 'staging' }}
+      - name: Sync proof sprites to Tencent COS
+        if: ${{ steps.gate.outputs.publish == 'true' && steps.gate.outputs.sitemaps_only != 'true' }}
         continue-on-error: true
         working-directory: nextjs
         env:
