@@ -25,7 +25,7 @@ function Host({ withCtx = true, fetchImpl }: { withCtx?: boolean; fetchImpl?: ty
 }
 
 describe('CharFixEntry', () => {
-    it('点对读字：底部浮出「第 4 頁 3 列 8 格「於」［改字］」；点标点或非法格位不出', () => {
+    it('点对读字：字旁浮出「第 4 頁 3 列 8 格「於」［改字］」；点标点或非法格位不出', () => {
         render(<Host />);
         fireEvent.click(document.getElementById('punct')!);
         expect(screen.queryByRole('toolbar')).toBeNull();
@@ -35,6 +35,21 @@ describe('CharFixEntry', () => {
         expect(screen.getByRole('toolbar').textContent).toContain('第 4 頁 3 列 8 格「於」');
         fireEvent.click(screen.getByLabelText('關閉'));
         expect(screen.queryByRole('toolbar')).toBeNull();
+    });
+
+    it('浮条锚在字旁（fixed 定位），不是视口底部；滚动后收起，弹窗开着时不收', () => {
+        render(<Host />);
+        fireEvent.click(screen.getByText('於'));
+        const bar = screen.getByRole('toolbar');
+        expect(bar.style.left).not.toBe('');
+        expect(bar.style.top).not.toBe('');
+        expect(bar.style.bottom).toBe('');
+        fireEvent.scroll(window);
+        expect(screen.queryByRole('toolbar')).toBeNull();
+        fireEvent.click(screen.getByText('於'));
+        fireEvent.click(screen.getByText('改字'));
+        fireEvent.scroll(window);
+        expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
     it('纯 .txt 章（没有改字上下文）不出入口', () => {

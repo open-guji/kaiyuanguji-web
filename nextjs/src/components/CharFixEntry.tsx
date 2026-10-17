@@ -13,13 +13,15 @@ interface Props {
 }
 
 /**
- * 阅读页「改字」入口（GUJI-561）。点一个对读章里的字，视口底部浮出一条「第 4 页 3 列 8 格「於」［改字］」，
- * 不盖正文，手机宽度也点得到；点「改字」弹出建议字＋依据的小弹窗。纯 .txt 章没有 data-char-id，自然没有入口。
+ * 阅读页「改字」入口（GUJI-561）。点一个对读章里的字，字旁边浮出一条「第 4 页 3 列 8 格「於」［改字］」（锚在字上，不占视口底部，
+ * 盖不到书影翻页等控件；手机宽度也点得到）；点「改字」弹出建议字＋依据的小弹窗。纯 .txt 章没有 data-char-id，自然没有入口。
  * 选区拖选时不弹（那是「复制／报错」浮条的事）。
  */
 export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props) {
-    const [cell, setCell] = useState<string | null>(null);
+    const [at, setAt] = useState<{ cell: string; left: number; top: number; below: boolean } | null>(null);
     const [open, setOpen] = useState(false);
+    const openRef = useRef(false);
+    openRef.current = open;
 
     useEffect(() => {
         const root = containerRef.current;
@@ -28,23 +30,47 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
             const sel = window.getSelection();
             if (sel && !sel.isCollapsed) return;
             const id = getCtx() ? cellIdOf(e.target) : null;
-            setCell(prev => (id && id !== prev ? id : id ? prev : null));
+            const el = id ? (e.target as Element).closest('[data-char-id]') : null;
+            if (!id || !el) return setAt(null);
+            const rect = el.getBoundingClientRect();
+            // 同选字浮条：桌面浮在字上方，触屏放字下方（免得和系统选字菜单打架）；锚在字旁边，不占视口底部，盖不到书影翻页等控件
+            const below = (window.matchMedia?.('(pointer: coarse)').matches ?? false) || rect.top < 56; // 字在视口最上沿时上方放不下，也放下方
+            setAt({
+                cell: id,
+                left: Math.min(Math.max(rect.left + rect.width / 2, 110), window.innerWidth - 110),
+                top: below ? rect.bottom + 8 : rect.top - 8,
+                below,
+            });
         };
+        // fixed 定位：滚动、缩放后位置就不对了，先收起
+        const hide = () => { if (!openRef.current) setAt(null); }; // 弹窗开着时不收（弹窗要用 at 里的格位）
         root.addEventListener('click', onClick);
-        return () => root.removeEventListener('click', onClick);
+        window.addEventListener('scroll', hide, true);
+        window.addEventListener('resize', hide);
+        return () => {
+            root.removeEventListener('click', onClick);
+            window.removeEventListener('scroll', hide, true);
+            window.removeEventListener('resize', hide);
+        };
     }, [containerRef, getCtx]);
 
     const ctx = getCtx();
-    if (!cell || !ctx) return null;
+    if (!at || !ctx) return null;
+    const cell = at.cell;
     const [page, col, slot] = cell.replace(/[ab]$/, '').split(':');
     const orig = ctx.chars.get(cell) ?? '';
 
     return (
         <>
-            <div className="og-cf-bar" role="toolbar" aria-label="改字">
+            <div
+                className={at.below ? 'og-cf-bar og-cf-bar--below' : 'og-cf-bar'}
+                style={{ left: at.left, top: at.top }}
+                role="toolbar"
+                aria-label="改字"
+            >
                 <span className="og-cf-where">第 {page} 頁 {col} 列 {slot} 格{orig && <>「{orig}」</>}</span>
                 <button type="button" className="og-cf-go" onClick={() => setOpen(true)}>改字</button>
-                <button type="button" className="og-cf-x" onClick={() => setCell(null)} aria-label="關閉">×</button>
+                <button type="button" className="og-cf-x" onClick={() => setAt(null)} aria-label="關閉">×</button>
             </div>
             {open && <CharFixDialog ctx={ctx} cell={cell} orig={orig} fetchImpl={fetchImpl} onClose={() => setOpen(false)} />}
         </>

@@ -2895,12 +2895,10 @@
   border-bottom: var(--bim-fr-hd-bd);
 }
 
-/* 阅读页「改字」入口（GUJI-561）：视口底部一条，不盖正文，手机宽度也点得到 */
+/* 阅读页「改字」入口（GUJI-561）：锚在被点的字旁边（桌面在字上方，触屏在字下方），不占视口底部，手机宽度也点得到 */
 .og-cf-bar {
   position: fixed;
-  left: 50%;
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  transform: translate(-50%, -100%);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -2912,6 +2910,9 @@
   color: rgba(255, 255, 255, 0.78);
   box-shadow: var(--shadow-soft);
   font-size: var(--fs-sm);
+}
+.og-cf-bar--below {
+  transform: translate(-50%, 0);
 }
 .og-cf-where {
   overflow: hidden;
