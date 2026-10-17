@@ -122,6 +122,16 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertNotIn('bundle-hashed-text', s['run'])      # h1 文本是单独任务（设计 §5）
         self.assertIn('R_CUR" -ne 0', s['run'])                # current/ 失败整步失败
 
+    def test_sprites_job_is_non_blocking_and_secretless(self):
+        job = self.wf['jobs']['sprites']
+        self.assertTrue(job.get('continue-on-error'))
+        self.assertNotIn('secrets.', str(job))
+        self.assertNotIn('COS_', str(job))                      # 夹具版只算计划，不碰 COS
+        for j in ('verify-live', 'alert-data', 'refresh', 'h1-text'):
+            needs = self.wf['jobs'][j].get('needs', [])
+            needs = [needs] if isinstance(needs, str) else needs
+            self.assertNotIn('sprites', needs, j)
+
     def _run_carry(self, code, body, prefix=''):
         run = self._step('Carry over webCommitId from live latest.json')['run']
         with tempfile.TemporaryDirectory() as d:

@@ -1008,3 +1008,23 @@ jobs:
             gh issue create --label data-alert --title "数据发布告警：$(date -u +%m-%d\ %H:%MZ)" --body "$BODY"
             echo "已开告警 issue" >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  # GUJI-557：校对精灵图同步（夹具版）。非阻塞：continue-on-error，不在 verify-live／alert-data／refresh 的 needs 里，
+  # 红了也不改变本次 run 的结论、不触发 data-alert。不用任何 secret、不连 COS（只算上传计划）；真实源（Release proof-<书>-<册>-<n>）
+  # 与真上传另开卡接入，接入时只换 sync-proof-sprites.mjs 里的"取资源"函数与上传一步。规格：ai-team 仓 team/网站/GUJI-557-sprites-同步job规格.md
+  sprites:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Sync proof sprites (fixture, dry-run)
+        working-directory: nextjs
+        env:
+          SPRITES_SOURCE_DIR: scripts/fixtures/sprites
+        run: node scripts/sync-proof-sprites.mjs
