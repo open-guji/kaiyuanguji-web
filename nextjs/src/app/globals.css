@@ -2894,3 +2894,45 @@
   padding: var(--bim-fr-hd-pad);
   border-bottom: var(--bim-fr-hd-bd);
 }
+
+/* 阅读页「改字」入口（GUJI-561）：视口底部一条，不盖正文，手机宽度也点得到 */
+.og-cf-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 24px);
+  padding: 4px 4px 4px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-soft);
+  font-size: var(--fs-sm);
+}
+.og-cf-where {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.og-cf-bar button {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  cursor: pointer;
+}
+.og-cf-bar .og-cf-go {
+  color: #fff;
+  font-weight: var(--fw-medium);
+}
+.og-cf-bar button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
