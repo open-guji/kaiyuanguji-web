@@ -170,7 +170,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             </div>
             {(why.length > 0 || cell.cls) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 13, color: '#a60' }}>
-                    待审原因：{why.length ? why.join('、') : cell.cls}
+                    待审原因：{why.length ? why.join('、') : cell.why?.includes('none') ? whyLabel('none') : cell.cls}
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>

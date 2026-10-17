@@ -81,6 +81,14 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.getByText('以')).toBeTruthy();
     });
 
+    it("why 只有 none 时显示『无具体疑点，仍需人看』，不回退显示 cls 原值", async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '2:1:1', c: '天', why: ['none'], cls: 'other', cand: [{ c: '夭' }] }]));
+        render(<ProofingClient book="b1" vol="vol01" />);
+        const t = (await screen.findByTestId('why')).textContent;
+        expect(t).toContain('无具体疑点，仍需人看');
+        expect(t).not.toContain('other');
+    });
+
     it('stale 预选其字、occ 预选「图上没有字」，都不自动提交', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
