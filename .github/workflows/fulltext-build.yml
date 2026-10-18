@@ -4,6 +4,8 @@ name: Fulltext build（全文索引全量建包）
 # 只手动触发；不挂 schedule／push（夜间增量是 GUJI-617 的事）。
 # 只有全量（only 为空）才会上传；指定书单时只建包、verify、留 artifact，供排查用。
 # COS 复用本仓 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET（用户 2026-10-18 定）。
+# 美国 runner 传上海桶约 1 MB/s，4 GB 级的包要 1 小时以上：上传失败时把包留成 artifact（3 天），
+# 再跑一次填 from_run＝那次的 run ID，就跳过建包直接续传（COS 上已传的分块会复用）。
 
 on:
   workflow_dispatch:
@@ -20,9 +22,18 @@ on:
         description: 'COS 前缀（演练可用 staging/fulltext）'
         required: false
         default: 'fulltext'
+      from_run:
+        description: '不建包，取这次 run 留下的包直接传（上传失败后续传用；填 run ID）'
+        required: false
+        default: ''
+      accelerate:
+        description: '走 COS 全球加速域名（桶须已开通，按流量计费）'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read   # from_run 跨 run 取 artifact
 
 concurrency:
   group: fulltext-build
@@ -34,6 +45,7 @@ jobs:
     timeout-minutes: 240
     steps:
       - name: 腾盘（删 runner 预装的 dotnet／android／ghc／CodeQL）
+        if: ${{ inputs.from_run == '' }}
         run: |
           df -h / | tail -1
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
@@ -44,13 +56,16 @@ jobs:
           sparse-checkout: fulltext
 
       - uses: actions/setup-python@v5
+        if: ${{ inputs.from_run == '' }}
         with:
           python-version: '3.12'
 
       - name: 安装依赖
+        if: ${{ inputs.from_run == '' }}
         run: pip install -q -r fulltext/requirements.txt
 
       - name: 稀疏检出 book-text（default/、manifest.json、/index/；不取图片）
+        if: ${{ inputs.from_run == '' }}
         run: |
           set -e
           git init -q "$RUNNER_TEMP/bt"; cd "$RUNNER_TEMP/bt"
@@ -61,11 +76,13 @@ jobs:
           echo "book-text=$(git rev-parse HEAD) 已检出 $(du -sm . | cut -f1) MB"
 
       - name: book-index 只取树（书名在文件名里，不下 blob）
+        if: ${{ inputs.from_run == '' }}
         run: |
           git clone -q --depth 1 --filter=blob:none --no-checkout https://github.com/open-guji/book-index.git "$RUNNER_TEMP/bi"
           echo "book-index=$(git -C "$RUNNER_TEMP/bi" rev-parse HEAD)"
 
       - name: 建包
+        if: ${{ inputs.from_run == '' }}
         working-directory: fulltext
         env:
           ONLY: ${{ inputs.only }}
@@ -88,6 +105,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: verify
+        if: ${{ inputs.from_run == '' }}
         working-directory: fulltext
         run: |
           set -eo pipefail
@@ -95,7 +113,25 @@ jobs:
           python build/verify_pack.py "$PACK" --text-root "$RUNNER_TEMP/bt" | tail -20 | tee -a "$GITHUB_STEP_SUMMARY"
           echo "PACK=$PACK" >> "$GITHUB_ENV"
 
+      - name: 取上次留下的包（from_run）
+        if: ${{ inputs.from_run != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: fulltext-pack-full
+          path: ${{ runner.temp }}/out
+          run-id: ${{ inputs.from_run }}
+          github-token: ${{ github.token }}
+
+      - name: 定位包
+        if: ${{ inputs.from_run != '' }}
+        run: |
+          PACK=$(ls "$RUNNER_TEMP"/out/fulltext-*.tar.gz | head -1)
+          test -s "$PACK" && test -s "$RUNNER_TEMP/out/manifest.json"
+          echo "PACK=$PACK" >> "$GITHUB_ENV"
+          ls -l "$RUNNER_TEMP/out"
+
       - name: 传 COS
+        id: upload
         if: ${{ inputs.only == '' && inputs.upload }}
         working-directory: fulltext/build
         env:
@@ -103,6 +139,7 @@ jobs:
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
+          COS_ACCELERATE: ${{ inputs.accelerate && '1' || '' }}
           PREFIX: ${{ inputs.prefix }}
         run: |
           set -eo pipefail
@@ -110,6 +147,17 @@ jobs:
           node upload_cos.mjs --pack "$PACK" --manifest "$RUNNER_TEMP/out/manifest.json" --prefix "$PREFIX" --keep 2 \
             | tee "$RUNNER_TEMP/upload.log"
           { echo "### COS"; echo '```'; tail -1 "$RUNNER_TEMP/upload.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传失败时留包（供 from_run 续传）
+        if: ${{ failure() && steps.upload.outcome == 'failure' && inputs.from_run == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: fulltext-pack-full
+          path: |
+            ${{ runner.temp }}/out/fulltext-*.tar.gz
+            ${{ runner.temp }}/out/manifest.json
+          retention-days: 3
+          compression-level: 0
 
       - name: 留 artifact（只建部分书时）
         if: ${{ inputs.only != '' }}
