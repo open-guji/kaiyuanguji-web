@@ -4,9 +4,9 @@
 
 ```
 common.py, charmap.json   切段、字流、繁简异体归一（建包与服务共用）
-build/                    build_pack.py 全量建包；update_books.py 增量；verify_pack.py 校验包；make_smoke.py 生成冒烟金标
+build/                    build_pack.py 全量建包；update_books.py 增量；verify_pack.py 校验包；upload_cos.mjs 传 COS；make_smoke.py 生成冒烟金标
 service/                  检索服务（run.py 入口，app.py 查询路径，source_tantivy.py 读索引，ranking.py 书序）
-deploy/                   搜索机脚本：install.sh、rotate.sh、rollback.sh、systemd 单元、env 模板
+deploy/                   搜索机脚本：install.sh、rotate.sh、rollback.sh、systemd 单元、env 模板；上海机操作清单 deploy/README.md
 eval/                     评测：inproc.py（进程内召回＋延迟）、eval_recall.py／eval_latency.py（经 HTTP）、queries.json（244 条冻结查询）、books42.txt
 contract/                 接口样例与冒烟查询
 ```

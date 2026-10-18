@@ -4,6 +4,7 @@
   manifest_check.py validate MANIFEST [--current MANIFEST] [--text-dir DIR]
   manifest_check.py field MANIFEST NAME
   manifest_check.py verify-files MANIFEST RELEASE_DIR
+  manifest_check.py latest-urls LATEST_JSON LATEST_URL   打印「stamp 包URL manifestURL」（一行，空格分隔）
 
 validate 的问题逐行打印到 stdout，有问题退出码 1。
 manifest 字段见 fulltext/docs/design.md；rotate 依赖：schemaVersion、stamp、createdAtEpoch、bookTextCommit、
@@ -86,6 +87,23 @@ def verify_files(m, root):
     return bad
 
 
+def latest_urls(latest, url):
+    """latest.json（build/upload_cos.mjs 写的）里 pack／manifest 是桶内完整 key，前缀＝pack 去掉最后两段；
+    桶根 URL＝latest 的 URL 去掉「<前缀>/latest.json」。"""
+    pack, man, stamp = latest['pack'], latest['manifest'], latest['stamp']
+    prefix = '/'.join(pack.split('/')[:-2])
+    tail = f'{prefix}/latest.json'
+    if not url.split('?')[0].endswith(tail):
+        raise ValueError(f'URL 不以 {tail} 结尾')
+    root = url.split('?')[0][:-len(tail)]
+    for k in (pack, man):
+        if k.startswith('/') or '..' in k.split('/') or not k.startswith(prefix + '/'):
+            raise ValueError(f'key 不安全：{k}')
+    if not re.fullmatch(r'\d{8}-\d{4}', str(stamp)):
+        raise ValueError(f'stamp 不对：{stamp!r}')
+    return stamp, root + pack, root + man
+
+
 def main(argv):
     if len(argv) < 3:
         print(__doc__)
@@ -110,6 +128,13 @@ def main(argv):
         return 1 if ps else 0
     if cmd == 'field':
         print(m.get(argv[3], ''))
+        return 0
+    if cmd == 'latest-urls':
+        try:
+            print(' '.join(latest_urls(m, argv[3])))
+        except (KeyError, ValueError, IndexError) as e:
+            print(f'latest.json 不合格：{e}', file=sys.stderr)
+            return 1
         return 0
     if cmd == 'verify-files':
         bad = verify_files(m, argv[3])

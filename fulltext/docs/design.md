@@ -96,8 +96,9 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 
 - 目录：`/opt/fulltext/{app,bin,releases/<stamp>,current→,previous→}`；服务读 `current/index`。
 - `install.sh --app-src <本仓 fulltext/>`：装用户、脚本、systemd 单元，把 `common.py`、`charmap.json`、`service/` 同步到 `/opt/fulltext/app/`。
-- `rotate.sh`：manifest 校验 → 磁盘闸 → 临时实例自检 → 原子切 `current` → reload → 健康检查，失败自动切回 `previous`。与 Meili 夜间重建共用锁 `/opt/indexer/.lock`。
-- 配置：`/etc/fulltext.env`（模板 `deploy/fulltext.env.example`，无机密）。v2 起不需要 `FT_TEXT_ROOT`。
+- `rotate.sh --latest <COS 上 fulltext/latest.json 的 URL>`：读指针 → 流式下载解压 → manifest 与逐文件 sha256 校验 → 磁盘闸 → 临时实例自检 → 原子切 `current` → reload → 健康检查，失败自动切回 `previous`；已是最新则直接退出 0。与 Meili 夜间重建共用锁 `/opt/indexer/.lock`。上海机操作清单见 `deploy/README.md`。
+- 建包与上传：`.github/workflows/fulltext-build.yml`（手动触发）全量建包 → verify → `build/upload_cos.mjs` 传 `fulltext/<stamp>/` 并最后翻转 `fulltext/latest.json`，只留最新 2 个包；线上指针更新时拒绝覆盖。
+- 配置：`/etc/fulltext.env`（模板 `deploy/fulltext.env.example`，无机密）。v2 起不需要 `FT_TEXT_ROOT`。Python 用 venv 时在其中加 `FT_PYTHON=/opt/fulltext/venv/bin/python`。
 - 资源：systemd `MemoryHigh=800M`、`Nice=10`、IO idle；启动预热只预读倒排／位置／快字段，不预读原文存储块。
 - 搜索机上不跑建包（2 核 3.6 GB 不够），只收包。
 
@@ -136,7 +137,7 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 |---|---|---|
 | GUJI-612 | 本设计 | 本 PR |
 | GUJI-613 | 迁仓＋新查询路径＋42 部回归 | 本 PR |
-| GUJI-614 | 全量建包进 GitHub Actions，传 COS | 待做 |
+| GUJI-614 | 全量建包进 GitHub Actions，传 COS | PR 已开，待首跑 |
 | GUJI-615 | 上海机部署与实测（Owen） | 待做 |
 | GUJI-616 | 边缘函数 /api/fulltext、限流、开关、前端 staging | 待做 |
 | GUJI-617 | 上线、夜间增量、监控 | 待做 |

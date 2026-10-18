@@ -100,6 +100,21 @@ eq "退出码 0" "$(run rotate.sh --tar "$W/p.tgz" --manifest "$W/src/manifest.j
 eq "current 指向新版" "$(cur)" 20261003-0000
 teardown
 
+echo "--latest 模式：读指针取包（file:// 模拟 COS）"
+setup
+mkdir -p "$W/cos/fulltext/20261003-0000"
+python3 "$T/mkpack.py" "$W/src" 20261003-0000 3000
+tar -czf "$W/cos/fulltext/20261003-0000/fulltext-20261003-0000.tar.gz" -C "$W/src" .
+cp "$W/src/manifest.json" "$W/cos/fulltext/20261003-0000/manifest.json"
+printf '{"stamp":"20261003-0000","pack":"fulltext/20261003-0000/fulltext-20261003-0000.tar.gz","manifest":"fulltext/20261003-0000/manifest.json"}' > "$W/cos/fulltext/latest.json"
+eq "退出码 0" "$(run rotate.sh --latest "file://$W/cos/fulltext/latest.json")" 0
+eq "current 指向新版" "$(cur)" 20261003-0000
+eq "再跑一次：已是最新，退出 0" "$(run rotate.sh --latest "file://$W/cos/fulltext/latest.json")" 0
+grep -q "已是最新" "$W/out" && ok "提示已是最新" || bad "没提示已是最新"
+printf '{"stamp":"20261004-0000","pack":"../etc/passwd","manifest":"fulltext/x"}' > "$W/cos/fulltext/latest.json"
+eq "坏指针 → 8" "$(run rotate.sh --latest "file://$W/cos/fulltext/latest.json")" 8
+teardown
+
 echo "只留 current+previous：第三版上线后最老的被删"
 setup
 for s in 2 3; do
