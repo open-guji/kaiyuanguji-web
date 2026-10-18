@@ -11,6 +11,7 @@ jest.mock('@/lib/transport', () => ({ getTransport: () => ({}) }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 jest.mock('@/lib/duidu-data', () => ({ getJson: async () => null }));
 jest.mock('@/lib/facsimile', () => ({ loadFacsimile: (...a: unknown[]) => loadFacsimile(...a) }));
+jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
 jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a) }));
 
 import ProofingClient from '../ProofingClient';
@@ -195,5 +196,25 @@ describe('精校页显示（GUJI-557）', () => {
         // 给公众看的字里不出现英文码和缩写
         const card = screen.getAllByTestId('cell-card')[0].textContent ?? '';
         expect(card).not.toMatch(/[A-Za-z]{2,}/);
+    });
+});
+
+describe('精校页页头与说明', () => {
+    it('页头有返回阅读（指回这一章）、书名、作者与章名；说明里有进度', async () => {
+        loadProofing.mockResolvedValue({ ...ok([{ a: '9:1:1', c: '甲', why: [] }]), chapterTitle: '卷首' });
+        render(<ProofingClient book="b1" vol="001" info={{ title: '某書', author: '（清）某人撰' }} />);
+        await waitFor(() => expect(screen.getByTestId('proofing-progress')).toBeTruthy());
+        const header = screen.getByTestId('proofing-header');
+        expect(screen.getByRole('link', { name: /返回阅读/ })).toHaveAttribute('href', '/read/b1/001');
+        expect(header).toHaveTextContent('某書');
+        expect(header).toHaveTextContent('（清）某人撰 · 卷首');
+        expect(screen.getByTestId('proofing-progress')).toHaveTextContent('0 / 1 个字');
+        expect(document.body.textContent).not.toMatch(/b1 \/ 001/);
+    });
+    it('取不到待校对的字时仍有页头和返回阅读', async () => {
+        loadProofing.mockResolvedValue({ status: 'none' });
+        render(<ProofingClient book="b1" vol="002" info={null} />);
+        await waitFor(() => expect(screen.getByText('这一章暂时没有待校对的字。')).toBeTruthy());
+        expect(screen.getByRole('link', { name: /返回阅读/ })).toHaveAttribute('href', '/read/b1/002');
     });
 });

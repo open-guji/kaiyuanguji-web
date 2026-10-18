@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { createTextApi } from 'book-index-ui';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import { readerPath } from '@/lib/reader-route';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
 import { getJson } from '@/lib/duidu-data';
@@ -392,7 +395,80 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
 const doneLabel = (choice: ReviewChoice, char?: string) =>
     choice === 'char' ? `「${char}」` : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
 
-export default function ProofingClient({ book, vol }: { book: string; vol: string }) {
+/** 页头用的书名与作者（服务端从条目 JSON 取，见 page.ssr.tsx）；取不到为 null */
+export interface ProofingBookInfo { title: string; author?: string }
+
+/** 页头：与阅读页一样先是「返回阅读」，再是书名、作者、章名，一眼看出是哪本书的哪一章 */
+function ProofingHeader({ book, vol, info, chapterTitle, versionKey }: { book: string; vol: string; info: ProofingBookInfo | null; chapterTitle?: string; versionKey?: string }) {
+    const back = readerPath(book, { key: versionKey, chapter: /^\d{3}$/.test(vol) ? vol : undefined });
+    const sub = [info?.author, chapterTitle].filter(Boolean).join(' · ');
+    return (
+        <header data-testid="proofing-header" style={{ borderBottom: '1px solid var(--color-tint-2)' }}>
+            <div className="mx-auto max-w-[1400px] px-4 pb-4 pt-3">
+                <Link href={back} className={`inline-flex items-center gap-1 no-underline ${BTN_CLASS}`} style={{ ...btnStyle('small'), color: 'var(--color-ink)' }}>
+                    <span aria-hidden="true">‹</span> 返回阅读
+                </Link>
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h1 className="m-0 text-[26px] font-semibold leading-tight" style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
+                        {info?.title ?? '校对'}
+                    </h1>
+                    <span className="rounded px-2 py-0.5 text-[13px] font-medium" style={{ backgroundColor: 'var(--color-zhu)', color: '#fff' }}>校对中</span>
+                </div>
+                {sub && <p className="m-0 mt-1 text-[15px]" style={{ color: 'var(--color-ink-2)' }}>{sub}</p>}
+            </div>
+        </header>
+    );
+}
+
+/** 开头说明：一句请求、三步怎么做、进度；末尾一行小字说明意见怎么用 */
+function ProofingIntro({ total, done }: { total: number; done: number }) {
+    const pctDone = total > 0 ? Math.round((done / total) * 100) : 0;
+    const steps = ['点一张卡片，整页图上会用红框标出这个字', '看看前后文和机器的判断', '选出您看到的字，或告诉我们看不清'];
+    return (
+        <section data-testid="proofing-intro" className="mb-6 rounded-lg p-4 sm:p-5" style={{ backgroundColor: 'var(--color-raise)', border: '1px solid var(--color-tint-2)' }}>
+            <div className="sm:flex sm:items-start sm:gap-8">
+                <div className="min-w-0 flex-1">
+                    <h2 className="m-0 text-[19px] font-semibold" style={{ color: 'var(--color-ink)' }}>请帮我们认几个字</h2>
+                    <p className="m-0 mt-1.5 text-[15px] leading-relaxed" style={{ color: 'var(--color-ink-2)' }}>
+                        这一章的文字是机器从书影上识出来的，下面这些字机器拿不准。请对照原图，告诉我们您看到的是什么字。
+                    </p>
+                    <ol className="m-0 mt-3 flex list-none flex-col gap-2 p-0 text-[14px] sm:flex-row sm:flex-wrap sm:gap-x-5">
+                        {steps.map((t, i) => (
+                            <li key={i} className="flex items-center gap-2" style={{ color: 'var(--color-ink)' }}>
+                                <span aria-hidden="true" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
+                                    style={{ backgroundColor: 'var(--color-zhu-tint)', color: 'var(--color-zhu)', border: '1px solid var(--color-zhu)' }}>{i + 1}</span>
+                                {t}
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+                {total > 0 && (
+                    <div data-testid="proofing-progress" className="mt-4 shrink-0 sm:mt-0 sm:w-44">
+                        <div className="text-[13px]" style={{ color: 'var(--color-ink-3)' }}>您已回应</div>
+                        <div className="text-[22px] font-semibold" style={{ color: 'var(--color-ink)' }}>
+                            {done} <span className="text-[15px] font-normal" style={{ color: 'var(--color-ink-2)' }}>/ {total} 个字</span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: 'var(--color-tint-2)' }}
+                            role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label="回应进度">
+                            <div className="h-full rounded-full" style={{ width: `${pctDone}%`, backgroundColor: '#2a7' }} />
+                        </div>
+                    </div>
+                )}
+            </div>
+            <p className="m-0 mt-4 text-[13px]" style={{ color: 'var(--color-ink-3)' }}>不用登录，意见匿名收集，供整理时参考。</p>
+        </section>
+    );
+}
+
+export default function ProofingClient(props: { book: string; vol: string; info?: ProofingBookInfo | null }) {
+    return (
+        <LayoutWrapper hideFooter>
+            <Proofing {...props} />
+        </LayoutWrapper>
+    );
+}
+
+function Proofing({ book, vol, info = null }: { book: string; vol: string; info?: ProofingBookInfo | null }) {
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
     const [state, setState] = useState<'loading' | 'none' | 'error' | 'ok'>('loading');
@@ -407,6 +483,8 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
     const [page, setPage] = useState(0);
     const [sel, setSel] = useState<string | null>(null);
     const [panelOpen, setPanelOpen] = useState(true);
+    const [chapterTitle, setChapterTitle] = useState<string | undefined>(undefined);
+    const [versionKey, setVersionKey] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
@@ -424,6 +502,8 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
             setCord(res.cord);
             setOrder(res.order ?? []);
             setPendingFile(res.pendingFile);
+            setChapterTitle(res.chapterTitle);
+            setVersionKey(res.versionKey);
             setDone(res.pending.rev ? readDone(res.pending.rev) : {});
             setState('ok');
         })().catch(() => { if (!cancelled) setState('error'); });
@@ -489,20 +569,23 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
         setTimeout(() => document.getElementById(`cell-${a}`)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 0);
     }, [cells]);
 
-    if (state === 'loading') return <main style={{ padding: 24 }}>加载中…</main>;
-    if (state === 'none') return <main style={{ padding: 24 }}>这一册暂时没有待校对的字。</main>;
-    if (state === 'error') return <main style={{ padding: 24 }}>待校对数据暂时取不到，请稍后再试。</main>;
+    const header = <ProofingHeader book={book} vol={vol} info={info} chapterTitle={chapterTitle} versionKey={versionKey} />;
+    const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
+    if (state === 'loading') return note('加载中…');
+    if (state === 'none') return note('这一章暂时没有待校对的字。');
+    if (state === 'error') return note('待校对的字暂时取不到，请稍后再试。');
 
     const doneCount = cells.filter(c => done[c.a]).length;
     const panelPage = selCrop ? images.get(selCrop.seq) ?? null : null;
     return (
-        <main className="mx-auto max-w-[1400px] px-4 py-6">
-            <h1 style={{ fontSize: 22 }}>精校：{book} / {vol}</h1>
-            <p style={{ color: '#666' }}>请对照原图，告诉我们每格是什么字。左边是这一格所在的整页，红框是正在审的字；卡片上有前后文和机器的判断。共 {cells.length} 格待审，你已回应 {doneCount} 格。意见匿名收集，仅供校勘参考。</p>
-            {cells.length === 0 && <p>这一册的待审格已清空，谢谢！</p>}
+        <>
+        {header}
+        <div className="mx-auto max-w-[1400px] px-4 py-6">
+            <ProofingIntro total={cells.length} done={doneCount} />
+            {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">
-                    <aside className="sticky top-0 z-10 mb-4 bg-[var(--color-paper)] py-2 [--proof-page-h:38vh] lg:top-20 lg:[--proof-page-h:calc(100vh-9rem)] lg:mb-0 lg:w-[46%] lg:shrink-0 lg:py-0">
+                    <aside className="sticky top-[var(--nav-h)] z-10 mb-4 bg-[var(--color-paper)] py-2 [--proof-page-h:38vh] lg:top-[calc(var(--nav-h)+1rem)] lg:[--proof-page-h:calc(100vh-var(--nav-h)-6rem)] lg:mb-0 lg:w-[46%] lg:shrink-0 lg:py-0">
                         <button type="button" className={`lg:hidden ${BTN_CLASS}`} onClick={() => setPanelOpen(v => !v)} aria-expanded={panelOpen} style={{ ...btnStyle('small'), marginBottom: 4 }}>
                             {panelOpen ? '收起整页' : '显示整页'}
                         </button>
@@ -529,6 +612,7 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
                     </div>
                 </div>
             )}
-        </main>
+        </div>
+        </>
     );
 }
