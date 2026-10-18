@@ -5,7 +5,8 @@
  * 用法：node upload_cos.mjs --pack <fulltext-STAMP.tar.gz> --manifest <manifest.json> [--prefix fulltext] [--keep 2] [--dry-run]
  * 环境变量：COS_SECRET_ID、COS_SECRET_KEY、COS_BUCKET、COS_REGION（默认 ap-shanghai）。凭据只从环境读，不打印。
  *   COS_ACCELERATE=1 走全球加速域名（桶要先在控制台开通全球加速，按流量另计费）。
- *   COS_PART_MB（默认 16）、COS_PARALLEL（默认 12）：分块大小与并发。
+ *   COS_PART_MB（默认 4）、COS_PARALLEL（默认 8）：分块大小与并发。实测 16 MB×12 时单块太慢，COS 反复回 UserNetworkTooSlow（总速 0.03 MB/s）；
+ *   SDK 默认的 4 MB×8 约 0.9 MB/s。块要小，单个请求才能在 COS 的慢速判定前传完。
  *
  * 大包自己分块上传（不用 SDK 的 uploadFile）：美国 runner 传上海桶约 1 MB/s，单块慢了 COS 会回 UserNetworkTooSlow，
  * SDK 整体重试会白传。这里每块单独重试；中途失败重跑时，按 ListParts 续传（块号、大小、MD5 都对上的跳过）。
@@ -32,7 +33,7 @@ export class Fail extends Error {
 
 export function parseArgs(argv) {
     const a = { prefix: 'fulltext', keep: 2, dryRun: false,
-                partMB: Number(process.env.COS_PART_MB || 16), parallel: Number(process.env.COS_PARALLEL || 12) };
+                partMB: Number(process.env.COS_PART_MB || 4), parallel: Number(process.env.COS_PARALLEL || 8) };
     for (let i = 0; i < argv.length; i++) {
         const k = argv[i];
         if (k === '--pack') a.pack = argv[++i];
@@ -143,7 +144,7 @@ const unq = s => String(s || '').replace(/"/g, '').toLowerCase();
  * opts: partSize、parallel、partTries（每块最多试几次）、extra（Init 时的 ContentType/CacheControl）、log、sleep。
  */
 export async function uploadLarge(client, key, path, size, opts = {}) {
-    const { partSize = 16 * 2 ** 20, parallel = 12, partTries = 10, extra = {}, log = console.log,
+    const { partSize = 4 * 2 ** 20, parallel = 8, partTries = 20, extra = {}, log = console.log,
             sleep = ms => new Promise(r => setTimeout(r, ms)), now = () => Date.now() } = opts;
     const n = Math.max(1, Math.ceil(size / partSize));
     if (n > 10000) throw new Fail(2, `分块数 ${n} 超过 COS 上限 10000，调大 COS_PART_MB`);

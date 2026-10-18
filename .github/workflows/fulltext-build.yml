@@ -30,6 +30,14 @@ on:
         description: '走 COS 全球加速域名（桶须已开通，按流量计费）'
         type: boolean
         default: false
+      part_mb:
+        description: '分块大小 MB（块大了单个请求慢，COS 会回 UserNetworkTooSlow）'
+        required: false
+        default: '4'
+      parallel:
+        description: '并发块数'
+        required: false
+        default: '8'
 
 permissions:
   contents: read
@@ -140,6 +148,8 @@ jobs:
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
           COS_ACCELERATE: ${{ inputs.accelerate && '1' || '' }}
+          COS_PART_MB: ${{ inputs.part_mb }}
+          COS_PARALLEL: ${{ inputs.parallel }}
           PREFIX: ${{ inputs.prefix }}
         run: |
           set -eo pipefail
