@@ -10,7 +10,7 @@
 //
 // key：
 //   改字  `cf:<book>:<volume>:<text_version>:<cell_id>:<voter>`
-//   专名  `ce:<book>:<volume>:<entity_id>:<voter>`
+//   专名  `ce:<book>:<volume>:<entity_id>:<voter>`（必填 entity_id／volume／chapter／anchor.start／anchor.end，GUJI-592）
 //   书在最前，导出按 `cf:<book>:`（可再接 volume、text_version）前缀列，不全库 list。
 // voter＝sha256(aid|ip) 前 16 位，与精校同一规则；值只存 voter，不存 aid、不存 IP。
 
@@ -54,18 +54,22 @@ function optText(v, max, name) {
   return { value: v.trim() };
 }
 
+const missing = (v) => v === undefined || v === null || v === '';
+
 function checkAnchorCell(c) {
   return typeof c === 'string' && RE_CELL.test(c);
 }
 
-/** 校验并规整一条记录；失败返回 { error }。kind 缺省 char */
+/** 校验并规整一条记录；失败返回 { error, field? }。kind 缺省 char */
 export function validateFix(body) {
   if (!body || typeof body !== 'object') return { error: '请求体须为 JSON 对象' };
   const kind = body.kind === undefined ? 'char' : body.kind;
   if (kind !== 'char' && kind !== 'entity') return { error: 'kind 无效' };
   const { book_id: book, volume } = body;
-  if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book_id 无效' };
-  if (typeof volume !== 'string' || !RE_VOL.test(volume)) return { error: 'volume 无效' };
+  if (missing(book)) return { error: '缺 book_id', field: 'book_id' };
+  if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book_id 无效', field: 'book_id' };
+  if (missing(volume)) return { error: '缺 volume', field: 'volume' };
+  if (typeof volume !== 'string' || !RE_VOL.test(volume)) return { error: 'volume 无效', field: 'volume' };
   if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
 
   if (kind === 'char') {
@@ -97,13 +101,22 @@ export function validateFix(body) {
     };
   }
 
-  // kind=entity：对某个专名的意见。anchor／text／entity_version 供 id 对不上时回找；target 是 book-index 的链接目标，另一栏
-  const { entity_id: eid, entity_version: ev, anchor } = body;
-  if (typeof eid !== 'string' || !RE_ENTITY.test(eid)) return { error: 'entity_id 无效' };
-  if (typeof ev !== 'string' || !RE_VERSION.test(ev)) return { error: 'entity_version 无效' };
-  if (!anchor || typeof anchor !== 'object' || !checkAnchorCell(anchor.start) || !checkAnchorCell(anchor.end)) {
-    return { error: 'anchor 须含合法的 start／end 格位' };
+  // kind=entity：对某个专名的意见。anchor／text／entity_version 供 id 对不上时回找；target 是 book-index 的链接目标，另一栏。
+  // GUJI-592：必填 entity_id（册内 id，e01384 形）＋册（volume，上面已核）＋章（chapter：阅读页的章号，即 index.json 章条目的 file；现有数据一章一册，与 volume 同值，但分开存免得将来一册多章时对不上）＋锚点格号（anchor.start／end），
+  // 缺哪项、哪项不合法都直说是哪项（并在 field 里给出字段名），前端与下游据此对得上
+  const { entity_id: eid, entity_version: ev, chapter, anchor } = body;
+  if (missing(eid)) return { error: '缺 entity_id', field: 'entity_id' };
+  if (typeof eid !== 'string' || !RE_ENTITY.test(eid)) return { error: 'entity_id 无效（须为册内 id，如 e01384）', field: 'entity_id' };
+  if (missing(chapter)) return { error: '缺 chapter', field: 'chapter' };
+  if (typeof chapter !== 'string' || !RE_VOL.test(chapter)) return { error: 'chapter 无效', field: 'chapter' };
+  if (missing(anchor)) return { error: '缺 anchor', field: 'anchor' };
+  if (typeof anchor !== 'object' || Array.isArray(anchor)) return { error: 'anchor 须为 {start, end}', field: 'anchor' };
+  for (const k of ['start', 'end']) {
+    if (missing(anchor[k])) return { error: `缺 anchor.${k}`, field: `anchor.${k}` };
+    if (!checkAnchorCell(anchor[k])) return { error: `anchor.${k} 不是合法格位（如 4:3:8a）`, field: `anchor.${k}` };
   }
+  if (missing(ev)) return { error: '缺 entity_version', field: 'entity_version' };
+  if (typeof ev !== 'string' || !RE_VERSION.test(ev)) return { error: 'entity_version 无效', field: 'entity_version' };
   if (typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > TEXT_MAX) return { error: 'text 无效' };
   const note = optText(body.note, NOTE_MAX, 'note');
   if (note.error) return { error: note.error };
@@ -116,7 +129,7 @@ export function validateFix(body) {
   }
   return {
     value: {
-      kind, book_id: book, volume, entity_id: eid, entity_version: ev,
+      kind, book_id: book, volume, chapter, entity_id: eid, entity_version: ev,
       anchor: { start: anchor.start, end: anchor.end }, text: body.text.trim(), note: note.value,
       ...(target ? { target } : {}), aid: body.aid,
     },
@@ -129,7 +142,7 @@ export async function onRequestPost(context) {
     let body;
     try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
     const v = validateFix(body);
-    if (v.error) return json(headers, 400, { success: false, error: v.error });
+    if (v.error) return json(headers, 400, { success: false, error: v.error, ...(v.field ? { field: v.field } : {}) });
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 

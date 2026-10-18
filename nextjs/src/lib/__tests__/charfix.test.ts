@@ -25,7 +25,7 @@ const kv = {
 
 const fix = { book_id: 'd59f2870u874', volume: '002', text_version: '1.0.0', cell_id: '4:3:8a', old_char: '於', new_char: '于', basis: '宋本作于', aid: 'aid_abcdefgh1234' };
 const ent = {
-    kind: 'entity', book_id: 'd59f2870u874', volume: '002', entity_id: 'e01384', entity_version: '1.8.12',
+    kind: 'entity', book_id: 'd59f2870u874', volume: '002', chapter: '002', entity_id: 'e01384', entity_version: '1.8.12',
     anchor: { start: '4:3:8', end: '4:3:9' }, text: '紀昀', note: '應作紀曉嵐', aid: 'aid_abcdefgh1234',
 };
 
@@ -133,7 +133,7 @@ describe('专名意见 POST（kind=entity）', () => {
         const keys = keysOf('ce:');
         expect(keys[0]).toMatch(/^ce:d59f2870u874:002:e01384:[0-9a-f]{16}$/);
         expect(JSON.parse(store.get(keys[0])!)).toMatchObject({
-            kind: 'entity', entity_id: 'e01384', entity_version: '1.8.12', anchor: { start: '4:3:8', end: '4:3:9' },
+            kind: 'entity', volume: '002', chapter: '002', entity_id: 'e01384', entity_version: '1.8.12', anchor: { start: '4:3:8', end: '4:3:9' },
             text: '紀昀', note: '應作紀曉嵐', target: { entity_id: 'hixhd3a1b2c' },
         });
         // 同来源再提覆盖
@@ -141,8 +141,8 @@ describe('专名意见 POST（kind=entity）', () => {
         expect(keysOf('ce:')).toHaveLength(1);
     });
 
-    it('缺 entity_id／anchor／text／note／entity_version 或格式不对 400', async () => {
-        for (const k of ['entity_id', 'entity_version', 'anchor', 'text', 'note']) {
+    it('缺 entity_id／chapter／anchor／text／note／entity_version 或格式不对 400', async () => {
+        for (const k of ['entity_id', 'chapter', 'entity_version', 'anchor', 'text', 'note']) {
             const b = { ...ent } as Record<string, unknown>;
             delete b[k];
             expect((await fn.onRequestPost(post(b))).status).toBe(400);
@@ -150,6 +150,50 @@ describe('专名意见 POST（kind=entity）', () => {
         expect((await fn.onRequestPost(post({ ...ent, entity_id: 'hixhd3a1b2c' }))).status).toBe(400);
         expect((await fn.onRequestPost(post({ ...ent, anchor: { start: 'x', end: '4:3:9' } }))).status).toBe(400);
         expect((await fn.onRequestPost(post({ ...ent, target: { entity_id: 'e01384!' } }))).status).toBe(400);
+    });
+
+    it('GUJI-592：缺 entity_id／volume／chapter／anchor.start／anchor.end 任一项 400，并指明缺哪项；一条也不写', async () => {
+        const cases: Array<[string, (b: Record<string, unknown>) => void, RegExp]> = [
+            ['entity_id', (b) => { delete b.entity_id; }, /entity_id/],
+            ['entity_id', (b) => { b.entity_id = ''; }, /entity_id/],
+            ['volume', (b) => { delete b.volume; }, /缺 volume/],
+            ['chapter', (b) => { delete b.chapter; }, /chapter/],
+            ['chapter', (b) => { b.chapter = ''; }, /chapter/],
+            ['anchor', (b) => { delete b.anchor; }, /anchor/],
+            ['anchor.start', (b) => { b.anchor = { end: '4:3:9' }; }, /anchor\.start/],
+            ['anchor.end', (b) => { b.anchor = { start: '4:3:8' }; }, /anchor\.end/],
+            ['anchor.end', (b) => { b.anchor = { start: '4:3:8', end: '' }; }, /anchor\.end/],
+        ];
+        for (const [field, mutate, msg] of cases) {
+            const b = JSON.parse(JSON.stringify(ent)) as Record<string, unknown>;
+            mutate(b);
+            const res = await fn.onRequestPost(post(b));
+            expect(res.status).toBe(400);
+            const out = await json(res);
+            expect(out.success).toBe(false);
+            expect(out.error).toMatch(msg);
+            expect(out.field).toBe(field);
+        }
+        expect(keysOf('ce:')).toHaveLength(0);
+    });
+
+    it('GUJI-592：格式不对也指明是哪项——entity_id 须为册内 e\\d+（不收 hixhd… 正式 id）、锚点须为格位', async () => {
+        const bad: Array<[Record<string, unknown>, string]> = [
+            [{ entity_id: 'hixhd2h9bne6' }, 'entity_id'],
+            [{ entity_id: 'E01384' }, 'entity_id'],
+            [{ chapter: '../002' }, 'chapter'],
+            [{ chapter: 2 }, 'chapter'],
+            [{ anchor: ['4:3:8', '4:3:9'] }, 'anchor'],
+            [{ anchor: { start: '4:3', end: '4:3:9' } }, 'anchor.start'],
+            [{ anchor: { start: '4:3:8', end: '4:3:9c' } }, 'anchor.end'],
+        ];
+        for (const [patch, field] of bad) {
+            const out = await json(await fn.onRequestPost(post({ ...ent, ...patch })));
+            expect(out.field).toBe(field);
+        }
+        // 夹注格位（带 a／b）收
+        expect((await fn.onRequestPost(post({ ...ent, anchor: { start: '4:3:8a', end: '4:3:9a' } }))).status).toBe(200);
+        expect(JSON.parse(store.get(keysOf('ce:')[0])!).chapter).toBe('002');
     });
 });
 
