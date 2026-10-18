@@ -34,19 +34,19 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('精校页显示（GUJI-557）', () => {
-    it('每格都有雪碧图：显示雪碧图，不取书影（manifest／原叶图一个都不请求）', async () => {
+    it('每格都有雪碧图：卡片显示雪碧图（书影只给左栏整页用）', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己', img: img(0) }, { a: '9:7:18', c: '已', img: img(96) }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         await waitFor(() => expect(screen.getAllByTestId('sprite-crop')).toHaveLength(2));
-        expect(loadFacsimile).not.toHaveBeenCalled();
     });
 
-    it('没有 img 的格回退原叶裁图：这时才取书影', async () => {
+    it('没有 img 的格回退原叶裁图', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己' }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         await waitFor(() => expect(loadFacsimile).toHaveBeenCalledTimes(1));
         expect(screen.queryByTestId('sprite-crop')).toBeNull();
         expect(screen.getByText('（无裁图，仅供看字）')).toBeTruthy();
+        expect(screen.queryByTestId('context')).toBeNull(); // 没有 char_file 就没有上下文行
     });
 
     it('雪碧图加载失败回退原叶裁图，不报错', async () => {
@@ -115,5 +115,83 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b4" vol="vol01" />);
         await screen.findAllByText(/机器读作/);
         await waitFor(() => expect(screen.queryByTestId('examples')).toBeNull());
+    });
+
+    // 左栏整页＋上下文（用户 10-18 反馈）
+    const cord = {
+        boxes: new Map([['9:1:2', [100, 200, 50, 60]], ['9:2:1', [40, 200, 50, 60]], ['10:1:1', [100, 100, 50, 60]]]),
+        pages: new Map([[9, { seq: '0009', width: 1000, height: 1500 }], [10, { seq: '0010', width: 1000, height: 1500 }]]),
+        iiifVol: '01',
+    };
+    const order = [
+        { a: '9:1:1', c: '甲' }, { a: '9:1:2', c: '乙' }, { a: '9:1:3', c: '丙' }, { a: '9:2:1', c: '丁' }, { a: '10:1:1', c: '戊' },
+    ];
+    const facs = [
+        { seq: '0009', url: 'https://x/0009/full/1200,/0/default.webp', hiresUrl: 'https://x/0009/full/1000,/0/default.webp', width: 1000, height: 1500 },
+        { seq: '0010', url: 'https://x/0010/full/1200,/0/default.webp', hiresUrl: 'https://x/0010/full/1000,/0/default.webp', width: 1000, height: 1500 },
+    ];
+    const full = () => ({
+        status: 'ok', cord, order, versionKey: 'default', pendingFile: '001.pending.json',
+        pending: { rev: 'r1', cells: [
+            { a: '9:1:2', c: '乙', img: img(0), why: ['near_form'], cls: 'near_form', libTop: [{ c: '乙', s: 0.99 }, { c: '己', s: 0.98 }], lib: { verdict: 'unsure', cov: 0.99, wmax: 10.8 }, ctx: { c: '', margin: 0.18, src: 'prior' } },
+            { a: '9:2:1', c: '丁', img: img(96) },
+            { a: '10:1:1', c: '戊', img: img(192) },
+        ] },
+    });
+
+    it('左栏显示第一张卡所在整页，红框框住它；同页其他待审格虚线框', async () => {
+        loadProofing.mockResolvedValue(full());
+        loadFacsimile.mockResolvedValue(facs);
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const panel = await screen.findByTestId('page-panel');
+        expect(panel.textContent).toContain('第 9 葉');
+        await waitFor(() => expect(panel.querySelector('img')?.getAttribute('src')).toBe(facs[0].url));
+        const boxes = screen.getAllByTestId('page-box');
+        expect(boxes).toHaveLength(2); // 第 10 葉那格不画在这页上
+        const on = boxes.find(b => b.dataset.selected)!;
+        expect(on.getAttribute('aria-label')).toContain('第 9 葉 第 1 列第 2 字');
+        expect(on.style.left).toBe(`${((100 - 50 * 0.12) / 1000) * 100}%`);
+    });
+
+    it('点另一张卡：左栏换页、红框跟过去', async () => {
+        loadProofing.mockResolvedValue(full());
+        loadFacsimile.mockResolvedValue(facs);
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const cards = await screen.findAllByTestId('cell-card');
+        fireEvent.click(cards[2]);
+        const panel = screen.getByTestId('page-panel');
+        expect(panel.textContent).toContain('第 10 葉');
+        expect(cards[2].dataset.selected).toBe('1');
+        await waitFor(() => expect(panel.querySelector('img')?.getAttribute('src')).toBe(facs[1].url));
+    });
+
+    it('点整页上的虚线框：选中那张卡', async () => {
+        loadProofing.mockResolvedValue(full());
+        loadFacsimile.mockResolvedValue(facs);
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const other = (await screen.findAllByTestId('page-box')).find(b => !b.dataset.selected)!;
+        fireEvent.click(other);
+        expect(screen.getAllByTestId('cell-card')[1].dataset.selected).toBe('1');
+    });
+
+    it('卡片上有前后文：本位红框、别的待审格标色', async () => {
+        loadProofing.mockResolvedValue(full());
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const ctx = (await screen.findAllByTestId('context'))[0];
+        expect(ctx.textContent).toContain('甲乙丙丁戊');
+        expect(ctx.querySelector('[data-testid=ctx-at]')?.textContent).toBe('乙');
+        expect(ctx.querySelector('[title="格 9:2:1 也在待审"]')?.textContent).toBe('丁');
+    });
+
+    it('第五、六步依据：摘要一行可见，细节可展开', async () => {
+        loadProofing.mockResolvedValue(full());
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const ev = (await screen.findAllByTestId('evidence'))[0];
+        expect(ev.textContent).toContain('字形库：拿不准');
+        expect(ev.textContent).toContain('上下文：没定出字');
+        expect(ev.textContent).toContain('来源 prior（上下文没定出字，只按先验）');
+        expect(ev.textContent).toContain('机器判读细节');
+        expect(ev.textContent).toContain('最大墨差 wmax 10.8');
+        expect(ev.textContent).toContain('形近字');
     });
 });

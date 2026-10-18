@@ -4,6 +4,7 @@
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
+    readingOrder, contextAround, positionIndex, pageColOf, classLabel, libVerdictLabel, ctxSrcLabel,
 } from '../proofing';
 
 const pending = {
@@ -56,7 +57,7 @@ describe('cord / 裁剪', () => {
     it('按 a 查框与页序；pending 的 box 优先', () => {
         const c = parseCord(cord);
         const [x, y] = parsePending(pending).cells;
-        expect(resolveCrop(x, c)).toEqual({ box: [100, 200, 50, 60], seq: '0003', canvasWidth: 1000 });
+        expect(resolveCrop(x, c)).toEqual({ box: [100, 200, 50, 60], seq: '0003', canvasWidth: 1000, canvasHeight: 1500 });
         expect(resolveCrop(y, c)?.box).toEqual([10, 20, 30, 40]);
         expect(resolveCrop(x, null)).toBeNull();
         expect(resolveCrop({ a: '9:1:1' }, c)).toBeNull();
@@ -136,8 +137,8 @@ describe('真实 guji-cord 形状（96mid1ogzk vol02 第 3 页节选）', () => 
     it('取到 xywh 框、四位 seq 字符串与 canvas 宽', () => {
         const c = parseCord(real);
         expect(c.boxes.get('3:1:2')).toEqual([1858, 451, 163, 131]);
-        expect(c.pages.get(3)).toEqual({ seq: '0003', width: 2345 });
-        expect(resolveCrop({ a: '3:1:1' }, c)).toEqual({ box: [1862, 332, 163, 128], seq: '0003', canvasWidth: 2345 });
+        expect(c.pages.get(3)).toEqual({ seq: '0003', width: 2345, height: 3122 });
+        expect(resolveCrop({ a: '3:1:1' }, c)).toEqual({ box: [1862, 332, 163, 128], seq: '0003', canvasWidth: 2345, canvasHeight: 3122 });
     });
     it('marks 里的非字格不当作字格', () => {
         expect(parseCord(real).boxes.size).toBe(2);
@@ -214,5 +215,54 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(spriteUrl('b1', '001.pending.json', 'p0009.webp', 'https://h/proof')).toBe('https://h/proof/b1/001/p0009.webp');
         expect(spriteUrl('b1', null, 'p1.webp', 'https://h/proof')).toBeNull();
         expect(spriteUrl('b1', '001.pending.json', '../p1.webp', 'https://h/proof')).toBeNull();
+    });
+});
+
+describe('上下文（char_file 阅读顺序）', () => {
+    // 文件里页、列故意乱序：阅读顺序按页升序、列升序（右→左），列内照文件顺序
+    const charRaw = { pages: [
+        { page: 10, columns: [{ col: 1, cells: [{ a: '10:1:1', c: '丙' }] }] },
+        { page: 9, columns: [
+            { col: 2, cells: [{ a: '9:2:1', c: '乙' }, { a: '9:2:2a', c: '小' }, { a: '9:2:2b', c: '注' }] },
+            { col: 1, cells: [{ a: '9:1:1', c: '甲' }, { a: 'bad', c: '×' }, { a: '9:1:2' }] },
+        ] },
+        null,
+    ] };
+    const order = readingOrder(charRaw);
+    it('跨列跨页排好，坏格号跳过，缺字记空串', () => {
+        expect(order.map(s => s.a)).toEqual(['9:1:1', '9:1:2', '9:2:1', '9:2:2a', '9:2:2b', '10:1:1']);
+        expect(order[1].c).toBe('');
+    });
+    it('前后各取 n 个，跨列、跨页补；不在顺序里返回 null', () => {
+        const pos = positionIndex(order);
+        const ctx = contextAround(order, pos, '9:2:1', 2)!;
+        expect(ctx.before.map(s => s.c)).toEqual(['甲', '']);
+        expect(ctx.after.map(s => s.c)).toEqual(['小', '注']);
+        expect(contextAround(order, pos, '10:1:1', 3)!.after).toEqual([]);
+        expect(contextAround(order, pos, '1:1:1')).toBeNull();
+    });
+    it('坏数据不抛', () => {
+        expect(readingOrder(null)).toEqual([]);
+        expect(readingOrder({ pages: 'x' })).toEqual([]);
+    });
+    it('pageColOf 认夹注半格', () => {
+        expect(pageColOf('90:1:3a')).toEqual([90, 1]);
+        expect(pageColOf('x')).toBeNull();
+    });
+});
+
+describe('机器判读标签', () => {
+    it('类别带细项，未知类别原样', () => {
+        expect(classLabel('replace_align', 'manual').name).toBe('对齐改字层·人工');
+        expect(classLabel('lib_miss').hint).toContain('字形库');
+        expect(classLabel('future')).toEqual({ name: 'future' });
+    });
+    it('第五步判定、第六步来源', () => {
+        expect(libVerdictLabel('unsure')).toContain('拿不准');
+        expect(ctxSrcLabel('prior')).toContain('先验');
+        expect(ctxSrcLabel('x')).toBe('x');
+    });
+    it('cls_sub 读进 clsSub', () => {
+        expect(parseExtras({ cls: 'replace_align', cls_sub: 'manual' }).clsSub).toBe('manual');
     });
 });

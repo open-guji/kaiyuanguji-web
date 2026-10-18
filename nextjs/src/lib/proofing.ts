@@ -21,6 +21,8 @@ export interface SpriteRef { s: string; x: number; y: number; w: number; h: numb
 export interface PendingExtras {
     why?: string[];
     cls?: string;
+    /** 类别细项（目前只有对齐改字层：grid / tail / manual） */
+    clsSub?: string;
     libTop?: { c: string; s: number }[];
     lib?: { verdict?: string; cov?: number; wmax?: number };
     ctx?: { c: string; margin?: number; src?: string };
@@ -68,6 +70,7 @@ export function parseExtras(raw: unknown): PendingExtras {
         if (why.length) out.why = why;
     }
     if (str(it.cls)) out.cls = str(it.cls);
+    if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
     if (Array.isArray(it.lib_top)) {
         const libTop = it.lib_top.slice(0, 5).flatMap(x => {
             const o = asObject(x);
@@ -107,17 +110,74 @@ export function parseExtras(raw: unknown): PendingExtras {
     return out;
 }
 
-/** `why` 机器码 → 中文。码表在 cv `review/doubts.py`，这里只映射已确认的；未知码原样显示 */
+/** `why` 机器码 → 中文。码表正本在 cv（`review/cards.py`、控制台 `doubt.ts` 的 DOUBT_NAMES），这里照抄成读者能懂的话；未知码原样显示 */
 const WHY_LABELS: Record<string, string> = {
     none: '无具体疑点，仍需人看',
     near_form: '形近字，易混',
+    solo_confusable: '只有字形一条证据，且最像的字有形近字',
     ctx_garble_shape: '字块不像库里任何刻例（墨形分低，最相似者 cov 低于 0.90）',
     replace_align: '对齐改字层（整理本字与载体字不同）',
+    replace_form: '库里的字形与整理本的字字面不同',
+    variant_indirect: '库里的字与整理本的字只经第三个字间接算异体',
+    ref_lib_variant: '库里的字是整理本字的异体',
+    channel_off: '本书关掉的放行通道判的字',
+    form_open: '整理本定得了是哪个字，定不了本书刻的是哪个形',
     context_vs_ref: '上下文判的字≠整理本字',
+    context_verdict: '上下文判定在常规范围外',
+    iron_vs_ref: '字形铁证≠整理本字',
     iron_ex_missing: '铁证缺对照刻例图（缓存缺）',
     context_blank_cell: '空白字块',
+    ji_yi_si_review: '己／已／巳刻法不分，要按文意定',
+    signal_conflict: '几路证据互相冲突',
+    weak_single: '只有一路证据且分数弱',
+    degraded_crop: '字块图残缺',
+    db_inconsistent: '与字形库不一致',
+    approx_exemplar: '库里配上的刻例只是近似字',
+    occluded: '印章或污损遮挡',
 };
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
+
+/** 卡片类别（cv `review/cards.py::REVIEW_CLASSES`）：一张卡只归一类 → [名称, 说明] */
+const CLASS_LABELS: Record<string, [string, string]> = {
+    occluded: ['印章遮挡', '印章或污损遮挡，默认用整理本的字'],
+    ji_yi_si: ['己已巳', '己／已／巳刻法不分，按上下文文意三选一'],
+    form_open: ['义定形未定', '整理本定得了是哪个字，定不了本书刻哪个形'],
+    ref_conflict: ['与整理本冲突', '上下文或字形铁证与整理本对位字不同'],
+    near_form: ['形近字', '形近字族的成员，要对着上下文细看'],
+    lib_miss: ['库里没有', '字形库里没有像它的刻例，多半是生僻字或切坏了'],
+    variant: ['异体／通道', '异体、换字取形一类，要看本书刻的到底是哪个'],
+    replace_align: ['对齐改字层', '整理本这一位来自改字段，位置可能错开一两格'],
+    other: ['其余', '只是分数不够：字形库拿不准、上下文领先不多'],
+};
+const CLASS_SUB_LABELS: Record<string, string> = { grid: '网格', tail: '列尾', manual: '人工' };
+export function classLabel(cls: string, sub?: string): { name: string; hint?: string } {
+    const hit = CLASS_LABELS[cls];
+    const name = (hit?.[0] ?? cls) + (sub ? `·${CLASS_SUB_LABELS[sub] ?? sub}` : '');
+    return hit ? { name, hint: hit[1] } : { name };
+}
+
+/** 第五步（字形库比对）的判定 */
+const LIB_VERDICT_LABELS: Record<string, string> = {
+    same: '与库里刻例一致',
+    unsure: '拿不准（与库里几个字都像）',
+    diff: '不像库里任何刻例',
+};
+export const libVerdictLabel = (v: string): string => LIB_VERDICT_LABELS[v] ?? v;
+
+/** 第六步（上下文判定）的来源 */
+const CTX_SRC_LABELS: Record<string, string> = {
+    context: '按上下文定出',
+    prior: '上下文没定出字，只按先验',
+    db_same: '上下文同意字形库',
+};
+export const ctxSrcLabel = (v: string): string => CTX_SRC_LABELS[v] ?? v;
+
+/** 整理本对位方式 */
+const REF_OP_LABELS: Record<string, string> = {
+    coord: '按坐标对位',
+    replace: '来自改字段，位置可能错开',
+};
+export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? v;
 
 /** 要显示的候选：`cand` 与 `lib_top` 前 3 的并集（cand 在前），带库分数；超过 limit 的放「更多」 */
 export interface ShownCand { c: string; src?: string[]; score?: number }
@@ -181,8 +241,8 @@ export function parsePending(raw: unknown): PendingData {
 
 export interface CordIndex {
     boxes: Map<string, Box>;
-    /** 页序 → IIIF 页序与 canvas 宽（坐标系的宽，用来换算原图缩放） */
-    pages: Map<number, { seq: string; width: number }>;
+    /** 页序 → IIIF 页序与 canvas 宽高（坐标系的宽高，用来换算原图缩放、在整页上画框） */
+    pages: Map<number, { seq: string; width: number; height: number }>;
     /** IIIF 册目录（canvas id `…/iiif/<书>/canvas/<册>/<页序>` 里的册，如 '01'）；URL 上的 vol01 不是它，取不到就是 null */
     iiifVol: string | null;
 }
@@ -202,7 +262,9 @@ export function parseCord(raw: unknown): CordIndex {
         }
         if (Number.isInteger(page) && (typeof seq === 'string' || typeof seq === 'number') && String(seq) !== '') {
             const width = Number(canvas?.width ?? asObject(po.image)?.width);
-            out.pages.set(page, { seq: String(seq), width: Number.isFinite(width) && width > 0 ? width : 0 });
+            const height = Number(canvas?.height ?? asObject(po.image)?.height);
+            const pos = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
+            out.pages.set(page, { seq: String(seq), width: pos(width), height: pos(height) });
         }
         for (const c of Array.isArray(po.cells) ? po.cells : []) {
             const co = asObject(c);
@@ -218,6 +280,8 @@ export interface CellCrop {
     seq: string;
     /** box 所在坐标系的页宽（canvas 宽）；0＝不知道，按原图宽与 canvas 同比例 */
     canvasWidth: number;
+    /** canvas 高；0＝不知道（整页画框时按图的宽高比推） */
+    canvasHeight?: number;
 }
 
 /** 这一格能不能裁图：pending 的 box 优先，其次 cord；页序只能来自 cord，缺了就不裁 */
@@ -226,7 +290,7 @@ export function resolveCrop(cell: PendingCell, cord: CordIndex | null): CellCrop
     const box = cell.box ?? cord.boxes.get(cell.a);
     const page = cord.pages.get(Number(cell.a.split(':')[0]));
     if (!box || !page) return null;
-    return { box, seq: page.seq, canvasWidth: page.width };
+    return { box, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height };
 }
 
 /** 裁剪源矩形（原图像素）。natW 是实际加载到的原叶图宽；四周留 pad 比例的边，夹在图内 */
@@ -278,6 +342,54 @@ export function charMapOf(charRaw: unknown, cordRaw: unknown): Map<string, strin
     return out;
 }
 
+// ---- 上下文 ----
+
+/** char_file 里没定字的格写的占位符 */
+export const LACUNA = '□';
+
+/** 一个字位：格号与这一格现在的字（char_file 里的字；待审格就是机器读的字） */
+export interface ReadSlot { a: string; c: string }
+
+/** 格号「页:列:格[a|b]」→ [页, 列]；不合式返回 null */
+export function pageColOf(a: string): [number, number] | null {
+    const m = /^(\d+):(\d+):\d+[a-z]?$/.exec(a);
+    return m ? [Number(m[1]), Number(m[2])] : null;
+}
+
+/** char_file → 全册阅读顺序（页升序、列升序即从右到左、列内照文件顺序）。坏数据返回空表，不抛 */
+export function readingOrder(charRaw: unknown): ReadSlot[] {
+    const out: ReadSlot[] = [];
+    const pages = asObject(charRaw)?.pages;
+    const list = (Array.isArray(pages) ? pages : []).map(asObject).filter((p): p is Record<string, unknown> => !!p);
+    const sorted = [...list].sort((x, y) => (Number(x.page) || 0) - (Number(y.page) || 0));
+    for (const p of sorted) {
+        const cols = (Array.isArray(p.columns) ? p.columns : []).map(asObject).filter((c): c is Record<string, unknown> => !!c);
+        for (const col of [...cols].sort((x, y) => (Number(x.col) || 0) - (Number(y.col) || 0))) {
+            for (const cell of Array.isArray(col.cells) ? col.cells : []) {
+                const co = asObject(cell);
+                if (co && typeof co.a === 'string' && pageColOf(co.a)) out.push({ a: co.a, c: typeof co.c === 'string' ? co.c : '' });
+            }
+        }
+    }
+    return out;
+}
+
+export interface CellContext {
+    before: ReadSlot[];
+    after: ReadSlot[];
+}
+
+/** 本位前后各 n 个字，跨列、跨页补够（同控制台审阅卡的口径）。本位不在阅读顺序里返回 null */
+export function contextAround(order: ReadSlot[], pos: Map<string, number>, a: string, n = 10): CellContext | null {
+    const i = pos.get(a);
+    if (i === undefined) return null;
+    return { before: order.slice(Math.max(0, i - n), i), after: order.slice(i + 1, i + 1 + n) };
+}
+
+export function positionIndex(order: ReadSlot[]): Map<string, number> {
+    return new Map(order.map((s, i) => [s.a, i]));
+}
+
 export interface ProofingDeps {
     getManifest: (id: string) => Promise<unknown>;
     getIndex: (id: string, key: string) => Promise<unknown>;
@@ -285,7 +397,7 @@ export interface ProofingDeps {
 }
 
 export type ProofingLoad =
-    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string; pendingFile: string }
+    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string; pendingFile: string; order: ReadSlot[] }
     | { status: 'none' | 'error' };
 
 const SAFE_FILE = /^[\w.-]+$/;
@@ -313,9 +425,10 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
             // 规范的 pending 先不带 c／cand：机器读字从 char_file 补
             if (charRaw && pending.cells.some(c => !c.c)) {
                 const chars = charMapOf(charRaw, null);
-                pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) ? c : { ...c, c: chars.get(c.a) }));
+                // 缺字占位「□」（lacuna）不算机器读到的字
+                pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) || chars.get(c.a) === LACUNA ? c : { ...c, c: chars.get(c.a) }));
             }
-            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile };
+            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [] };
         }
         return { status: 'none' };
     } catch {
