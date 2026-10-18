@@ -1,0 +1,81 @@
+import { defineMessages } from './define';
+
+/** 阅读页「改字」与「专名有误」（GUJI-561／GUJI-590）：components/CharFixEntry、lib/charfix 的提交提示 */
+export const charfix = defineMessages({
+    bar: {
+        label: '改字',
+        where: '第 {page} 頁 {col} 列 {slot} 格',
+        fix: '改字',
+        entity: '專名有誤',
+        close: '關閉',
+        /** 本章既没有 text_version 也取不到 char.json 的 version：改字记录对不上版本，不收 */
+        noVersion: '本章缺文本版本，暫不能改字',
+    },
+    dialog: {
+        title: '改字',
+        close: '關閉',
+        done: '已收到，謝謝。我們核對後會在整理本中更正。',
+        cell: '格位 {cell}',
+        now: '，現作「{char}」',
+        newLabel: '建議字',
+        newPlaceholder: '應作哪個字？造字可寫 {{⿰虫斤}}',
+        basisLabel: '依據',
+        basisPlaceholder: '依據（選填）：他本作什麼、書影第幾頁、或截圖鏈接',
+        same: '建議字與原字相同',
+        notOne: '請填一個字，或用 {{組字式}}',
+        note: '只提出建議，不會直接改動正文；匿名提交。',
+        submit: '提交',
+        submitting: '提交中…',
+    },
+    entity: {
+        title: '專名有誤',
+        pick: '哪個專名',
+        which: '「{text}」（第 {page} 頁 {col} 列 {slot} 格起）',
+        noteLabel: '哪裡有誤',
+        notePlaceholder: '哪裡不對？如：不是人名、斷錯了、應連下字、所指另有其人',
+        done: '已收到，謝謝。我們核對後會更正專名標注。',
+    },
+    error: {
+        rate: '提交太頻繁，請稍後再試',
+        failed: '提交失敗（{status}）',
+        network: '網絡出錯，請稍後再試',
+    },
+}, {
+    bar: {
+        label: '改字',
+        where: '第 {page} 页 {col} 列 {slot} 格',
+        fix: '改字',
+        entity: '专名有误',
+        close: '关闭',
+        noVersion: '本章缺文本版本，暂不能改字',
+    },
+    dialog: {
+        title: '改字',
+        close: '关闭',
+        done: '已收到，谢谢。我们核对后会在整理本中更正。',
+        cell: '格位 {cell}',
+        now: '，现作「{char}」',
+        newLabel: '建议字',
+        newPlaceholder: '应作哪个字？造字可写 {{⿰虫斤}}',
+        basisLabel: '依据',
+        basisPlaceholder: '依据（选填）：他本作什么、书影第几页、或截图链接',
+        same: '建议字与原字相同',
+        notOne: '请填一个字，或用 {{组字式}}',
+        note: '只提出建议，不会直接改动正文；匿名提交。',
+        submit: '提交',
+        submitting: '提交中…',
+    },
+    entity: {
+        title: '专名有误',
+        pick: '哪个专名',
+        which: '「{text}」（第 {page} 页 {col} 列 {slot} 格起）',
+        noteLabel: '哪里有误',
+        notePlaceholder: '哪里不对？如：不是人名、断错了、应连下字、所指另有其人',
+        done: '已收到，谢谢。我们核对后会更正专名标注。',
+    },
+    error: {
+        rate: '提交太频繁，请稍后再试',
+        failed: '提交失败（{status}）',
+        network: '网络出错，请稍后再试',
+    },
+});

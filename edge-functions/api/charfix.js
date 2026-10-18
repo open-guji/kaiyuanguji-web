@@ -23,6 +23,10 @@ const BASIS_MAX = 500;
 const NOTE_MAX = 500;
 const TEXT_MAX = 200; // 专名原文
 const TTL_SECONDS = 180 * 24 * 60 * 60; // 180 天：处理侧每日导入，留足余量
+// EdgeOne Pages KV 平台口径（GUJI-590 核对 https://pages.edgeone.ai/document/kv-storage ）：list 每页最多 256（＝LIST_MAX），
+// 带返回的 cursor 翻到 complete 为止；最终一致，边缘节点缓存最长 60 秒（同来源覆盖、限速计数跨节点可能晚到，够用）；
+// key ≤512 B、value ≤25 MB、每账户 1 GB。文档写 key「仅支持数字、字母及下划线」，而本端点与 cellreview／feedback 的 key 都带 `:`／`.`，
+// 文档也没提 expirationTtl——两点以 staging 实测为准，见 GUJI-590。
 const LIST_MAX = 256;
 const GET_BATCH = 20;
 const ENTITY_IDS_MAX = 8;

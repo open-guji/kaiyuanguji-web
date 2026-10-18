@@ -12,7 +12,7 @@ import { getTransport } from '@/lib/transport';
 import { isProofingChapter } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import CharFixEntry from '@/components/CharFixEntry';
-import { collectChars, collectEntities, type CharFixCtx } from '@/lib/charfix';
+import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
 import { loadDuiduFiles } from '@/lib/duidu-data';
@@ -103,6 +103,10 @@ function primaryKeyOf(m: unknown): string | null {
     if (!Array.isArray(versions) || versions.length === 0) return null;
     return versions.find((v) => v.key === 'default')?.key ?? versions[0].key ?? null;
 }
+
+/** 「改字」上下文里的专名层（GUJI-590）；本章还没取到／没有时是 NO_ENT */
+type CharfixEnt = Pick<CharFixCtx, 'entities' | 'entityVersion'>;
+const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 
 function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     const router = useRouter();
@@ -196,8 +200,9 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         });
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
-    // 「改字」入口用的本章上下文（GUJI-561）：对读数据与专名取到时顺手记；key＝章，换章后旧的不沿用
-    const charfix = useRef<{ key: string; ctx: CharFixCtx | null; entities: CharFixCtx['entities'] }>({ key: '', ctx: null, entities: [] });
+    // 「改字」入口用的本章上下文（GUJI-561）：对读数据与专名取到时顺手记；key＝章，换章后旧的不沿用。
+    // 两路（对读、专名）先后不定：专名先到就先存在 ent 里，对读到了再并进 ctx
+    const charfix = useRef<{ key: string; ctx: CharFixCtx | null; ent: CharfixEnt }>({ key: '', ctx: null, ent: NO_ENT });
     const getCharfixCtx = useCallback(() => charfix.current.ctx, []);
 
     // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时下面一切都不动，DOM 与现状一致。
@@ -226,16 +231,21 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         const pages = adaptCharCord(files.char, files.cord, files.norm);
         if (pages.length === 0) return null;
         const chapterFile = ctx?.chapter?.file;
-        const textVersion = ctx?.chapter?.text_version ?? (files.char as { version?: unknown } | null)?.version;
+        // 文本版本：章条目的 text_version，缺则 char.json 的 version；两处都没有（或不合口径）就是空串——不猜，改字入口照出但不收（浮条里说明）
+        const textVersion = [ctx?.chapter?.text_version, (files.char as { version?: unknown } | null)?.version]
+            .map((v) => (v === undefined || v === null ? '' : String(v)))
+            .find((v) => VERSION_RE.test(v)) ?? '';
+        const ent = charfix.current.key === chapterKey ? charfix.current.ent : NO_ENT;
         charfix.current = {
             key: chapterKey,
-            entities: charfix.current.key === chapterKey ? charfix.current.entities : [],
+            ent,
             ctx: {
                 book: id,
                 volume: String(chapterFile ?? chapterKey),
-                textVersion: String(textVersion ?? ''),
+                chapter: String(chapterKey),
+                textVersion,
                 chars: collectChars(pages),
-                entities: charfix.current.key === chapterKey ? charfix.current.entities : [],
+                ...ent,
             },
         };
         const vol = iiifVolumeOf(files.cord);
@@ -260,9 +270,14 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
     const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const entity = (await loadDuiduFiles(id, ctx, chapterKey, transport))?.entity ?? null;
-        const entities = collectEntities(entity);
-        if (charfix.current.key === chapterKey && charfix.current.ctx) charfix.current = { ...charfix.current, entities, ctx: { ...charfix.current.ctx, entities } };
-        else charfix.current = { key: chapterKey, ctx: null, entities };
+        const declared = ctx?.chapter?.entity_version;
+        const ent = {
+            entities: collectEntities(entity),
+            // 专名层版本：章条目的 entity_version，缺则 entity.json 的 version；都没有就不出「专名有误」
+            entityVersion: typeof declared === 'string' && VERSION_RE.test(declared) ? declared : entityFileVersion(entity),
+        };
+        if (charfix.current.key === chapterKey && charfix.current.ctx) charfix.current = { ...charfix.current, ent, ctx: { ...charfix.current.ctx, ...ent } };
+        else charfix.current = { key: chapterKey, ctx: null, ent };
         return entity;
     }, [id, transport]);
 
