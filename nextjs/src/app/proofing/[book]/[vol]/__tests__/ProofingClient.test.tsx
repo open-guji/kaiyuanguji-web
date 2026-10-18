@@ -45,7 +45,7 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b1" vol="vol01" />);
         await waitFor(() => expect(loadFacsimile).toHaveBeenCalledTimes(1));
         expect(screen.queryByTestId('sprite-crop')).toBeNull();
-        expect(screen.getByText('（无裁图，仅供看字）')).toBeTruthy();
+        expect(screen.getByText('（没有这一格的图）')).toBeTruthy();
         expect(screen.queryByTestId('context')).toBeNull(); // 没有 char_file 就没有上下文行
     });
 
@@ -75,17 +75,17 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b1" vol="vol01" />);
         expect((await screen.findByTestId('why')).textContent).toContain('future_code');
         expect(screen.getByText(/整理本作「已」/)).toBeTruthy();
-        expect(screen.getByText('0.70')).toBeTruthy();
+        expect(screen.getByText('像 70%')).toBeTruthy();
         expect(screen.queryByText('以')).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: /更多/ }));
+        fireEvent.click(screen.getByRole('button', { name: /^还有 \d+ 个$/ }));
         expect(screen.getByText('以')).toBeTruthy();
     });
 
-    it("why 只有 none 时显示『无具体疑点，仍需人看』，不回退显示 cls 原值", async () => {
+    it("why 只有 none 时显示『机器没把握，需要人看一眼』，不回退显示 cls 原值", async () => {
         loadProofing.mockResolvedValue(ok([{ a: '2:1:1', c: '天', why: ['none'], cls: 'other', cand: [{ c: '夭' }] }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         const t = (await screen.findByTestId('why')).textContent;
-        expect(t).toContain('无具体疑点，仍需人看');
+        expect(t).toContain('机器没把握，需要人看一眼');
         expect(t).not.toContain('other');
     });
 
@@ -94,8 +94,8 @@ describe('精校页显示（GUJI-557）', () => {
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '己', stale: { c: '已' } }, { a: '1:1:2', c: '日', occ: { refBlank: true } }]));
         render(<ProofingClient book="b1" vol="vol01" />);
-        await screen.findByText(/预选「已」/);
-        expect(screen.getByText(/预选「图上没有字」/)).toBeTruthy();
+        await screen.findByText(/以前有人判为「已」/);
+        expect(screen.getByText(/先替你选了「图上没有字」/)).toBeTruthy();
         expect(screen.getAllByRole('button', { name: '图上没有字' })[1].getAttribute('aria-pressed')).toBe('true');
         expect(fetchSpy).not.toHaveBeenCalled();
     });
@@ -183,15 +183,17 @@ describe('精校页显示（GUJI-557）', () => {
         expect(ctx.querySelector('[title="格 9:2:1 也在待审"]')?.textContent).toBe('丁');
     });
 
-    it('第五、六步依据：摘要一行可见，细节可展开', async () => {
+    it('机器判断：两句大白话常显，细节可展开，不出现英文码', async () => {
         loadProofing.mockResolvedValue(full());
         render(<ProofingClient book="b5" vol="vol01" />);
         const ev = (await screen.findAllByTestId('evidence'))[0];
-        expect(ev.textContent).toContain('字形库：拿不准');
-        expect(ev.textContent).toContain('上下文：没定出字');
-        expect(ev.textContent).toContain('来源 prior（上下文没定出字，只按先验）');
-        expect(ev.textContent).toContain('机器判读细节');
-        expect(ev.textContent).toContain('最大墨差 wmax 10.8');
+        expect(ev.textContent).toContain('比字形：和本书别处的「乙」「己」都很像，分不出是哪个');
+        expect(ev.textContent).toContain('看前后文：看不出是哪个字');
+        expect(ev.textContent).toContain('更多机器判断');
+        expect(ev.textContent).toContain('「乙」99%');
         expect(ev.textContent).toContain('形近字');
+        // 给公众看的字里不出现英文码和缩写
+        const card = screen.getAllByTestId('cell-card')[0].textContent ?? '';
+        expect(card).not.toMatch(/[A-Za-z]{2,}/);
     });
 });

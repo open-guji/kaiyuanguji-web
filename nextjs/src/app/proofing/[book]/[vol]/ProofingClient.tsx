@@ -7,7 +7,7 @@ import { useSource } from '@/components/common/SourceContext';
 import { getJson } from '@/lib/duidu-data';
 import { loadFacsimile } from '@/lib/facsimile';
 import {
-    LACUNA, classLabel, contextAround, cropRect, ctxSrcLabel, getAid, libVerdictLabel, loadProofing, pageColOf, positionIndex, preselect, readDone,
+    LACUNA, classLabel, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
 } from '@/lib/proofing';
@@ -24,6 +24,21 @@ const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string }[] 
     { choice: 'cut', label: '切分错了' },
     { choice: 'jiazhu', label: '这是夹注小字' },
 ];
+
+/** 按钮外观：都有边框和底色，一眼看得出能点；选中的绿框绿底 */
+type BtnKind = 'cand' | 'act' | 'primary' | 'small';
+function btnStyle(kind: BtnKind, on = false, disabled = false): React.CSSProperties {
+    const base: React.CSSProperties = {
+        border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff', color: '#333', cursor: disabled ? 'default' : 'pointer',
+        padding: '4px 12px', fontSize: 15, lineHeight: 1.4, boxShadow: '0 1px 0 rgba(0,0,0,0.06)', opacity: disabled ? 0.45 : 1,
+    };
+    if (kind === 'cand') Object.assign(base, { fontSize: 26, padding: '2px 12px', minWidth: 60, background: '#fffdf7' });
+    if (kind === 'primary') Object.assign(base, { background: '#7a3b1d', borderColor: '#7a3b1d', color: '#fff' });
+    if (kind === 'small') Object.assign(base, { fontSize: 13, padding: '1px 8px' });
+    if (on) Object.assign(base, { border: '2px solid #2a7', background: '#e6f5ec', color: '#1b6b44' });
+    return base;
+}
+const BTN_CLASS = 'hover:brightness-95 active:brightness-90 disabled:hover:brightness-100';
 
 const imageCache = new Map<string, Promise<HTMLImageElement | null>>();
 function loadImage(url: string): Promise<HTMLImageElement | null> {
@@ -94,62 +109,57 @@ interface CellRowProps {
     onSelect: (a: string) => void;
 }
 
+// 向下取整：0.997 写 99%，不写成 100% 让人以为机器很有把握
+const pct = (n: number) => `${Math.floor(n * 100)}%`;
+
 function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
-    const tip = [cd.src?.length ? `来源：${cd.src.join('、')}` : '', cd.score !== undefined ? `库分数 ${cd.score.toFixed(4)}` : ''].filter(Boolean).join('；');
+    const tip = cd.score !== undefined ? `和本书别处的「${cd.c}」字形相似 ${pct(cd.score)}` : `选「${cd.c}」`;
     return (
-        <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={tip || undefined}
-            style={{ fontSize: 22, padding: '2px 10px', ...(picked ? { outline: '2px solid #2a7' } : {}) }}>
-            {cd.c}{cd.score !== undefined && <small style={{ fontSize: 11, color: '#888', marginLeft: 4 }}>{cd.score.toFixed(2)}</small>}
+        <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
+            style={btnStyle('cand', picked, busy)}>
+            {cd.c}{cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
     );
 }
 
-const f4 = (n: number) => n.toFixed(4);
+/** 字形比对一句话：拿本书别处已认定的字来比 */
+function shapeSentence(cell: PendingCell): string | null {
+    const top = cell.libTop ?? [];
+    const v = cell.lib?.verdict;
+    if (!top.length && !v) return null;
+    const [a, b] = top;
+    if (v === 'same' && a) return `和本书别处的「${a.c}」写法一致`;
+    if (v === 'diff') return a ? `和本书别处已认出的字都不太像，最接近「${a.c}」` : '和本书别处已认出的字都不太像';
+    if (a && b && b.s >= a.s - 0.05) return `和本书别处的「${a.c}」「${b.c}」都很像，分不出是哪个`;
+    return a ? `最像本书别处的「${a.c}」，但把握不大` : null;
+}
 
-/** 第五步（字形库比对）、第六步（上下文判定）和整理本对位：先给一行摘要，细数放在可展开的「机器判读细节」里 */
+/** 机器怎么看这一格：两句话常显，其余收在「更多机器判断」里。全用大白话，不出现术语、缩写和英文 */
 function Evidence({ cell }: { cell: PendingCell }) {
-    const top = cell.libTop?.[0];
     const summary: React.ReactNode[] = [];
-    if (cell.lib?.verdict || top) {
-        summary.push(<div key="lib"><b>字形库</b>：{cell.lib?.verdict ? libVerdictLabel(cell.lib.verdict) : '—'}{top ? `，最像「${top.c}」（相似度 ${top.s.toFixed(2)}）` : ''}</div>);
-    }
-    if (cell.ctx) {
-        summary.push(<div key="ctx"><b>上下文</b>：{cell.ctx.c ? `读作「${cell.ctx.c}」${cell.ctx.src ? `（${ctxSrcLabel(cell.ctx.src)}）` : ''}` : '没定出字'}</div>);
-    }
-    if (cell.ocr?.length) summary.push(<div key="ocr"><b>OCR</b>：{cell.ocr.map(o => `「${o.c}」`).join('')}</div>);
+    const shape = shapeSentence(cell);
+    if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
+    if (cell.ctx) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${cell.ctx.c}」` : '看不出是哪个字'}</div>);
+    if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${o.c}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.cls) {
-        const k = classLabel(cell.cls, cell.clsSub);
-        rows.push(['类别', <>{k.name}{k.hint ? <span style={{ color: '#888' }}>　{k.hint}</span> : null}</>]);
+        const k = classLabel(cell.cls);
+        rows.push(['属于哪一类', <>{k.name}{k.hint ? <span style={{ color: '#888' }}>：{k.hint}</span> : null}</>]);
     }
-    if (cell.why?.length) rows.push(['待审原因码', cell.why.map(w => `${w}（${whyLabel(w)}）`).join('、')]);
-    if (cell.libTop?.length) rows.push(['第五步 字形库前几名', cell.libTop.map(x => `${x.c} ${f4(x.s)}`).join('　')]);
-    if (cell.lib) {
-        const parts = [
-            cell.lib.verdict ? `判定 ${cell.lib.verdict}（${libVerdictLabel(cell.lib.verdict)}）` : '',
-            cell.lib.cov !== undefined ? `相似度 cov ${f4(cell.lib.cov)}` : '',
-            cell.lib.wmax !== undefined ? `最大墨差 wmax ${cell.lib.wmax}` : '',
-        ].filter(Boolean);
-        if (parts.length) rows.push(['第五步 字形库判定', parts.join('，')]);
+    if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${x.c}」${pct(x.s)}`).join('　')]);
+    if (cell.ref) {
+        const how = cell.ref.op ? refOpLabel(cell.ref.op) : '';
+        rows.push(['整理本', `这里作「${cell.ref.c}」${how ? `（${how}）` : ''}`]);
     }
-    if (cell.ctx) {
-        rows.push(['第六步 上下文判定', [
-            cell.ctx.c ? `读作「${cell.ctx.c}」` : '没定出字',
-            cell.ctx.margin !== undefined ? `领先幅度 margin ${f4(cell.ctx.margin)}` : '',
-            cell.ctx.src ? `来源 ${cell.ctx.src}（${ctxSrcLabel(cell.ctx.src)}）` : '',
-        ].filter(Boolean).join('，')]);
-    }
-    if (cell.ref) rows.push(['整理本对位', `「${cell.ref.c}」${cell.ref.op ? `，${cell.ref.op}（${refOpLabel(cell.ref.op)}）` : ''}`]);
-    if (cell.ocr?.length) rows.push(['OCR', cell.ocr.map(o => `${o.c}${o.src ? `（${o.src}）` : ''}`).join('　')]);
-    if (cell.stale) rows.push(['旧裁决', `「${cell.stale.c}」${cell.stale.ts ? `，${cell.stale.ts.slice(0, 10)}` : ''}${cell.stale.state ? `，${cell.stale.state === 'withdrawn' ? '已撤下' : '已失效'}` : ''}`]);
-    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '印章或污损遮挡，整理本此位为空' : `印章或污损遮挡${cell.occ.c ? `，整理本作「${cell.occ.c}」` : ''}`]);
+    if (cell.stale) rows.push(['以前的判断', `${cell.stale.ts ? `${cell.stale.ts.slice(0, 10)} ` : ''}判为「${cell.stale.c}」，${cell.stale.state === 'withdrawn' ? '后来发现判错了位置，已撤回' : '后来切字有变动，需要重新确认'}`]);
+    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，整理本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，整理本作「${cell.occ.c}」` : ''}`]);
     if (!summary.length && !rows.length) return null;
     return (
-        <div data-testid="evidence" style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
+        <div data-testid="evidence" style={{ marginTop: 8, fontSize: 13, color: '#555', lineHeight: 1.7 }}>
             {summary}
             {rows.length > 0 && (
-                <details style={{ marginTop: 4 }}>
-                    <summary style={{ cursor: 'pointer' }}>机器判读细节</summary>
+                <details style={{ marginTop: 2 }}>
+                    <summary style={{ cursor: 'pointer', color: '#7a3b1d' }}>更多机器判断</summary>
                     <table style={{ borderCollapse: 'collapse', marginTop: 4 }}>
                         <tbody>
                             {rows.map(([k, v]) => (
@@ -210,7 +220,7 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
     if (!shown.length) return null;
     return (
         <div data-testid="examples" style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
-            同字例子
+            本书别处这几个字的样子
             {shown.map(([ch, list]) => (
                 <div key={ch} style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                     <b style={{ fontSize: 18 }}>{ch}</b>
@@ -247,7 +257,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             style={{ border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 {spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
-                    : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（无裁图，仅供看字）</div>}
+                    : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
                     <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}　{cell.c ? '机器读作' : '机器没定出字'}</div>
                     <div style={{ fontSize: 40, lineHeight: 1.2 }}>{cell.c || '？'}</div>
@@ -257,37 +267,41 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
             {(why.length > 0 || cell.cls) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 13, color: '#a60' }}>
-                    待审原因：{why.length ? why.join('、') : cell.why?.includes('none') ? whyLabel('none') : cell.cls}
+                    为什么要人看：{why.length ? why.join('；') : whyLabel('none')}
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={cd.c === preCand} onPick={c => go('char', c)} />)}
-                {showMore && more.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={cd.c === preCand} onPick={c => go('char', c)} />)}
+                {top.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c)} />)}
+                {showMore && more.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c)} />)}
                 {more.length > 0 && (
-                    <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore}>{showMore ? '收起' : `更多（${more.length}）`}</button>
+                    <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} onClick={() => go('char', cell.c)} style={{ fontSize: 22, padding: '2px 10px' }}>{cell.c}</button>
+                    <button type="button" disabled={busy} onClick={() => go('char', cell.c)} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}>{cell.c}</button>
                 )}
-                <input value={custom} onChange={e => setCustom(e.target.value)} placeholder="另写一字" aria-label="另写一字" style={{ width: 72 }} />
-                <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom)}>提交此字</button>
+                <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
+                    <input value={custom} onChange={e => setCustom(e.target.value)} placeholder="都不对？写一个字" aria-label="另写一字"
+                        style={{ width: 150, fontSize: 15, padding: '5px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
+                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom)} className={BTN_CLASS}
+                        style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
+                </span>
             </div>
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>
-                    预选「{preCand}」（上次的裁决已失效，请对图确认）
-                    <button type="button" disabled={busy} onClick={() => go('char', preCand)} style={{ marginLeft: 8 }}>确认「{preCand}」</button>
+                    以前有人判为「{preCand}」，后来切字有变动，请看图再确认
+                    <button type="button" disabled={busy} onClick={() => go('char', preCand)} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{preCand}」</button>
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} onClick={() => go(o.choice)}
-                        style={preNone && o.choice === 'none' ? { outline: '2px solid #2a7' } : undefined}>{o.label}</button>
+                    <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} onClick={() => go(o.choice)} className={BTN_CLASS}
+                        style={btnStyle('act', (preNone && o.choice === 'none') || done === o.label, busy)}>{o.label}</button>
                 ))}
             </div>
-            {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>预选「图上没有字」（印章或污损遮挡），点一下按钮确认。</div>}
+            {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
-            {done && <div style={{ marginTop: 6, color: '#2a7' }}>已提交：{done}（可再点改）</div>}
+            {done && <div style={{ marginTop: 6, color: '#2a7' }}>已提交：{done}。想改的话再点别的就行。</div>}
             {err && <div role="alert" style={{ marginTop: 6, color: '#c33' }}>{err}</div>}
         </li>
     );
@@ -345,9 +359,8 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
                 {sel && <span>红框：{cellPlace(sel.a)}</span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                     {ZOOMS.map(z => (
-                        <button key={z} type="button" aria-pressed={zoom === z} onClick={() => setZoom(z)}
-                            style={{ padding: '0 8px', border: '1px solid #ccc', borderRadius: 4, background: zoom === z ? '#eee' : '#fff' }}>
-                            {z === 1 ? '整页' : `${z}×`}
+                        <button key={z} type="button" aria-pressed={zoom === z} onClick={() => setZoom(z)} className={BTN_CLASS} style={btnStyle('small', zoom === z)}>
+                            {z === 1 ? '整页' : `放大 ${z} 倍`}
                         </button>
                     ))}
                 </span>
@@ -485,12 +498,12 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
     return (
         <main className="mx-auto max-w-[1400px] px-4 py-6">
             <h1 style={{ fontSize: 22 }}>精校：{book} / {vol}</h1>
-            <p style={{ color: '#666' }}>请对照原图，告诉我们每格是什么字。左边是这一格所在的整页，红框是正在审的字；卡片上有前后文和机器的判读依据。共 {cells.length} 格待审，你已回应 {doneCount} 格。意见匿名收集，仅供校勘参考。</p>
+            <p style={{ color: '#666' }}>请对照原图，告诉我们每格是什么字。左边是这一格所在的整页，红框是正在审的字；卡片上有前后文和机器的判断。共 {cells.length} 格待审，你已回应 {doneCount} 格。意见匿名收集，仅供校勘参考。</p>
             {cells.length === 0 && <p>这一册的待审格已清空，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">
                     <aside className="sticky top-0 z-10 mb-4 bg-[var(--color-paper)] py-2 [--proof-page-h:38vh] lg:top-20 lg:[--proof-page-h:calc(100vh-9rem)] lg:mb-0 lg:w-[46%] lg:shrink-0 lg:py-0">
-                        <button type="button" className="lg:hidden" onClick={() => setPanelOpen(v => !v)} aria-expanded={panelOpen} style={{ fontSize: 13, marginBottom: 4 }}>
+                        <button type="button" className={`lg:hidden ${BTN_CLASS}`} onClick={() => setPanelOpen(v => !v)} aria-expanded={panelOpen} style={{ ...btnStyle('small'), marginBottom: 4 }}>
                             {panelOpen ? '收起整页' : '显示整页'}
                         </button>
                         <div className={panelOpen ? '' : 'hidden lg:block'}>
@@ -508,9 +521,9 @@ export default function ProofingClient({ book, vol }: { book: string; vol: strin
                         </ul>
                         {pages > 1 && (
                             <nav style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                <button type="button" disabled={cur === 0} onClick={() => setPage(cur - 1)}>上一页</button>
+                                <button type="button" disabled={cur === 0} onClick={() => setPage(cur - 1)} className={BTN_CLASS} style={btnStyle('act', false, cur === 0)}>上一页</button>
                                 <span>{cur + 1} / {pages}</span>
-                                <button type="button" disabled={cur >= pages - 1} onClick={() => setPage(cur + 1)}>下一页</button>
+                                <button type="button" disabled={cur >= pages - 1} onClick={() => setPage(cur + 1)} className={BTN_CLASS} style={btnStyle('act', false, cur >= pages - 1)}>下一页</button>
                             </nav>
                         )}
                     </div>

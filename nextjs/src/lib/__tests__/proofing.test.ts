@@ -4,7 +4,7 @@
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
-    readingOrder, contextAround, positionIndex, pageColOf, classLabel, libVerdictLabel, ctxSrcLabel,
+    readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
 } from '../proofing';
 
 const pending = {
@@ -252,15 +252,20 @@ describe('上下文（char_file 阅读顺序）', () => {
 });
 
 describe('机器判读标签', () => {
-    it('类别带细项，未知类别原样', () => {
-        expect(classLabel('replace_align', 'manual').name).toBe('对齐改字层·人工');
-        expect(classLabel('lib_miss').hint).toContain('字形库');
+    it('类别用大白话，未知类别原样', () => {
+        expect(classLabel('replace_align').name).toBe('整理本改过字');
+        expect(classLabel('lib_miss').hint).toContain('生僻字');
         expect(classLabel('future')).toEqual({ name: 'future' });
     });
-    it('第五步判定、第六步来源', () => {
-        expect(libVerdictLabel('unsure')).toContain('拿不准');
-        expect(ctxSrcLabel('prior')).toContain('先验');
-        expect(ctxSrcLabel('x')).toBe('x');
+    it('原因码全是中文，不含英文和术语', () => {
+        for (const code of ['none', 'near_form', 'ctx_garble_shape', 'replace_align', 'iron_ex_missing', 'context_vs_ref']) {
+            expect(whyLabel(code)).not.toMatch(/[A-Za-z]/);
+            expect(whyLabel(code)).not.toMatch(/铁证|载体|墨形|cov/);
+        }
+    });
+    it('整理本对位方式：未知的不显示原码', () => {
+        expect(refOpLabel('replace')).toContain('改过字');
+        expect(refOpLabel('coord')).toBe('');
     });
     it('cls_sub 读进 clsSub', () => {
         expect(parseExtras({ cls: 'replace_align', cls_sub: 'manual' }).clsSub).toBe('manual');

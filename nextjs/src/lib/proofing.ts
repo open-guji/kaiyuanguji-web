@@ -110,74 +110,55 @@ export function parseExtras(raw: unknown): PendingExtras {
     return out;
 }
 
-/** `why` 机器码 → 中文。码表正本在 cv（`review/cards.py`、控制台 `doubt.ts` 的 DOUBT_NAMES），这里照抄成读者能懂的话；未知码原样显示 */
+/** `why` 机器码 → 给读者看的大白话（码表正本在 cv `review/cards.py`、控制台 `doubt.ts`）。不写术语、缩写、英文；未知码原样显示 */
 const WHY_LABELS: Record<string, string> = {
-    none: '无具体疑点，仍需人看',
-    near_form: '形近字，易混',
-    solo_confusable: '只有字形一条证据，且最像的字有形近字',
-    ctx_garble_shape: '字块不像库里任何刻例（墨形分低，最相似者 cov 低于 0.90）',
-    replace_align: '对齐改字层（整理本字与载体字不同）',
-    replace_form: '库里的字形与整理本的字字面不同',
-    variant_indirect: '库里的字与整理本的字只经第三个字间接算异体',
-    ref_lib_variant: '库里的字是整理本字的异体',
-    channel_off: '本书关掉的放行通道判的字',
-    form_open: '整理本定得了是哪个字，定不了本书刻的是哪个形',
-    context_vs_ref: '上下文判的字≠整理本字',
-    context_verdict: '上下文判定在常规范围外',
-    iron_vs_ref: '字形铁证≠整理本字',
-    iron_ex_missing: '铁证缺对照刻例图（缓存缺）',
-    context_blank_cell: '空白字块',
-    ji_yi_si_review: '己／已／巳刻法不分，要按文意定',
-    signal_conflict: '几路证据互相冲突',
-    weak_single: '只有一路证据且分数弱',
-    degraded_crop: '字块图残缺',
-    db_inconsistent: '与字形库不一致',
-    approx_exemplar: '库里配上的刻例只是近似字',
-    occluded: '印章或污损遮挡',
+    none: '机器没把握，需要人看一眼',
+    near_form: '有长得很像的字，容易认错',
+    solo_confusable: '只能靠字形判断，而它有长得很像的字',
+    ctx_garble_shape: '字形和本书别处的字都不太像',
+    replace_align: '整理本这一段改过字，和刻本可能对不上',
+    replace_form: '本书刻的写法和整理本用的字不一样',
+    variant_indirect: '可能是异体字，要确认本书刻的是哪个',
+    ref_lib_variant: '可能是整理本用字的异体',
+    channel_off: '这类情况本书不让机器自动定字',
+    form_open: '知道是哪个字，但不确定本书刻的是哪种写法',
+    context_vs_ref: '从前后文推断的字和整理本不一样',
+    context_verdict: '从前后文推断的结果不寻常',
+    iron_vs_ref: '字形很确定，但和整理本不一样',
+    iron_ex_missing: '缺少可对照的字样图',
+    context_blank_cell: '这一格可能是空白',
+    ji_yi_si_review: '己、已、巳刻得一样，要看文意',
+    signal_conflict: '几种判断互相矛盾',
+    weak_single: '只有一种判断，而且把握不大',
+    degraded_crop: '这一格的图不完整',
+    db_inconsistent: '和本书别处的认定不一致',
+    approx_exemplar: '本书别处对应的字只是近似写法',
+    occluded: '被印章或污渍遮住',
 };
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
 
-/** 卡片类别（cv `review/cards.py::REVIEW_CLASSES`）：一张卡只归一类 → [名称, 说明] */
+/** 卡片类别（cv `review/cards.py::REVIEW_CLASSES`）→ [名称, 说明]，都用大白话 */
 const CLASS_LABELS: Record<string, [string, string]> = {
-    occluded: ['印章遮挡', '印章或污损遮挡，默认用整理本的字'],
-    ji_yi_si: ['己已巳', '己／已／巳刻法不分，按上下文文意三选一'],
-    form_open: ['义定形未定', '整理本定得了是哪个字，定不了本书刻哪个形'],
-    ref_conflict: ['与整理本冲突', '上下文或字形铁证与整理本对位字不同'],
-    near_form: ['形近字', '形近字族的成员，要对着上下文细看'],
-    lib_miss: ['库里没有', '字形库里没有像它的刻例，多半是生僻字或切坏了'],
-    variant: ['异体／通道', '异体、换字取形一类，要看本书刻的到底是哪个'],
-    replace_align: ['对齐改字层', '整理本这一位来自改字段，位置可能错开一两格'],
-    other: ['其余', '只是分数不够：字形库拿不准、上下文领先不多'],
+    occluded: ['有遮挡', '被印章或污渍遮住，一般按整理本的字'],
+    ji_yi_si: ['己已巳', '己、已、巳三个字刻得一样，要按文意选'],
+    form_open: ['写法待定', '知道是哪个字，但不确定本书刻的是哪种写法'],
+    ref_conflict: ['和整理本不一致', '机器的判断和整理本这里的字不一样'],
+    near_form: ['形近字', '有长得很像的字，要结合前后文看'],
+    lib_miss: ['少见的字', '本书别处没出现过像它的字，可能是生僻字，也可能是切字切坏了'],
+    variant: ['异体字', '可能是异体字，要确认本书刻的是哪个'],
+    replace_align: ['整理本改过字', '整理本这一段改过字，位置可能差一两格'],
+    other: ['把握不足', '机器的几种判断都不够有把握'],
 };
-const CLASS_SUB_LABELS: Record<string, string> = { grid: '网格', tail: '列尾', manual: '人工' };
-export function classLabel(cls: string, sub?: string): { name: string; hint?: string } {
+export function classLabel(cls: string): { name: string; hint?: string } {
     const hit = CLASS_LABELS[cls];
-    const name = (hit?.[0] ?? cls) + (sub ? `·${CLASS_SUB_LABELS[sub] ?? sub}` : '');
-    return hit ? { name, hint: hit[1] } : { name };
+    return hit ? { name: hit[0], hint: hit[1] } : { name: cls };
 }
-
-/** 第五步（字形库比对）的判定 */
-const LIB_VERDICT_LABELS: Record<string, string> = {
-    same: '与库里刻例一致',
-    unsure: '拿不准（与库里几个字都像）',
-    diff: '不像库里任何刻例',
-};
-export const libVerdictLabel = (v: string): string => LIB_VERDICT_LABELS[v] ?? v;
-
-/** 第六步（上下文判定）的来源 */
-const CTX_SRC_LABELS: Record<string, string> = {
-    context: '按上下文定出',
-    prior: '上下文没定出字，只按先验',
-    db_same: '上下文同意字形库',
-};
-export const ctxSrcLabel = (v: string): string => CTX_SRC_LABELS[v] ?? v;
 
 /** 整理本对位方式 */
 const REF_OP_LABELS: Record<string, string> = {
-    coord: '按坐标对位',
-    replace: '来自改字段，位置可能错开',
+    replace: '整理本这一段改过字，位置可能差一两格',
 };
-export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? v;
+export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
 
 /** 要显示的候选：`cand` 与 `lib_top` 前 3 的并集（cand 在前），带库分数；超过 limit 的放「更多」 */
 export interface ShownCand { c: string; src?: string[]; score?: number }
