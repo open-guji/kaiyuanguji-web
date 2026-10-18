@@ -1,8 +1,8 @@
 #!/bin/bash
 # 幂等安装（搜索机上以 root 跑）：建用户与目录、装脚本与 systemd 单元、建 env 模板（不含机密）。
-# 用法：install.sh [--app-src <service 源码目录>]
-#   --app-src 给了就把 F4 的 service/ 同步到 /opt/fulltext/app/service；不给则不动 app。
-# 不会：启动服务、写任何凭据、动网关／防火墙／EdgeOne（对外路由是 F5 步 4，另批）。
+# 用法：install.sh [--app-src <kaiyuanguji-web 仓的 fulltext/ 目录>]
+#   --app-src 给了就把 common.py、charmap.json、service/ 同步到 /opt/fulltext/app/；不给则不动 app。
+# 不会：启动服务、写任何凭据、动网关／防火墙／EdgeOne。
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="${FT_ROOT:-/opt/fulltext}"
@@ -22,9 +22,11 @@ for f in lib.sh rotate.sh rollback.sh manifest_check.py; do
     run install -m 0755 "$HERE/$f" "$ROOT/bin/$f"
 done
 if [ -n "$APP_SRC" ]; then
-    [ -d "$APP_SRC" ] || { echo "找不到 $APP_SRC" >&2; exit 2; }
+    [ -f "$APP_SRC/common.py" ] && [ -d "$APP_SRC/service" ] || { echo "$APP_SRC 不是 fulltext/ 目录（缺 common.py 或 service/）" >&2; exit 2; }
     run mkdir -p "$ROOT/app/service"
-    run cp -a "$APP_SRC"/. "$ROOT/app/service/"
+    run install -m 0644 "$APP_SRC/common.py" "$APP_SRC/charmap.json" "$ROOT/app/"
+    run cp -a "$APP_SRC/service"/. "$ROOT/app/service/"
+    run rm -rf "$ROOT/app/service/tests"
 fi
 run install -m 0644 "$HERE/fulltext.service" "$UNIT_DIR/fulltext.service"
 if [ ! -e "$ENV_FILE" ]; then

@@ -1,14 +1,14 @@
 """F2 步 3：索引包校验。
 用法: verify_pack.py <fulltext-*.tar.gz> [--text-root DIR] [--smoke contract/smoke_queries.json] [--sample 20]
 检查：①manifest 每个文件 sha256＋字节数；②打开索引跑 smoke 查询，命中段数＝金标；
-③抽 N 段（固定种子），按 start/end 回 default/*.md 原文，经 stream() 取 orig 前缀做 orig 短语查询，须能命中该段；
+③抽 N 段（固定种子）：存储的原文须与 default/*.md 的 [start,end) 逐字相同，且该段 norm 前缀的短语查询须能命中该段；
 ④（给了 --text-root）样本书每章 len(orig)==len(norm) 且 norm[i]==charmap(orig[i])，并输出 char.json 与 stream() 差异数（备查）。
 ②③④中缺 --text-root 的项会跳过并明说。退出码：0 通过；2 参数错；4 校验失败。"""
 import argparse,glob,hashlib,json,os,random,sys,tarfile,tempfile,zlib
 HERE=os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0,os.path.dirname(HERE))
 import tantivy
-from common import CMAP,stream,query_stream
+from common import CMAP,stream,query_stream,locate
 FAILS=[]
 def fail(msg): FAILS.append(msg); print('FAIL',msg)
 def sha256_file(p):
@@ -17,10 +17,15 @@ def sha256_file(p):
         for b in iter(lambda:f.read(1<<20),b''): h.update(b)
     return h.hexdigest()
 def toks(s): return ' '.join(s[i:i+2] for i in range(len(s)-1))
-def phrase(field,qs):
-    """与 server.build_query 同口径：单字走 field1，其余双字短语。"""
-    if len(qs)==1: return f'{field}1:{qs}',field+'1'
-    t=toks(qs); return (f'{field}:"{t}"' if len(qs)>2 else f'{field}:{t}'),field
+def norm_query(ix,qs,entry=None):
+    """与 service/source_tantivy._query 同口径：单字走 norm1，两字一个双字 term，更长走双字短语。"""
+    sch=ix.schema
+    if len(qs)==1: q=tantivy.Query.term_query(sch,'norm1',qs)
+    else:
+        g=[qs[i:i+2] for i in range(len(qs)-1)]
+        q=tantivy.Query.term_query(sch,'norm',g[0]) if len(g)==1 else tantivy.Query.phrase_query(sch,'norm',g,0)
+    if entry: q=tantivy.Query.boolean_query([(tantivy.Occur.Must,q),(tantivy.Occur.Must,tantivy.Query.term_query(sch,'entry',entry))])
+    return q
 def book_dir(root,eid):
     c=[p for top in('Work','Book') for p in glob.glob(f'{root}/{top}/*/*/*/{eid}')]
     return c[0] if c else None
@@ -33,42 +38,41 @@ def check_files(root,m):
     print(f"files: {len(m['files'])} 个已核")
 def open_index(root):
     return tantivy.Index.open(os.path.join(root,'index'))
-def count(ix,entry,field,qs):
-    q,df=phrase(field,qs)
-    query=tantivy.Query.boolean_query([(tantivy.Occur.Must,ix.parse_query(q,[df])),
-                                       (tantivy.Occur.Must,ix.parse_query(f'entry:{entry}',['entry']))])
-    return ix.searcher().search(query,1,count=True).count
+def count(ix,entry,field,q):
+    """norm：索引计数；orig：按 norm 召回后在存储原文上逐段筛原字（与服务 exact 模式同口径）。"""
+    qo,qn=query_stream(q); se=ix.searcher(); query=norm_query(ix,qn,entry)
+    if field=='norm': return se.search(query,1,count=True).count
+    n=se.search(query,1,count=True).count
+    hits=se.search(query,max(n,1)).hits
+    return sum(1 for _,a in hits if locate(se.doc(a)['text'][0].decode('utf-8'),qo,'orig'))
 def check_smoke(ix,m,path):
     qs=json.load(open(path,encoding='utf-8')); ran=0
     for s in qs:
         if s['entry'] not in m['perBook']: print(f"smoke {s['id']}: 书 {s['entry']} 不在包内，跳过"); continue
-        _,qn=query_stream(s['q']); qq=qn if s['field']=='norm' else query_stream(s['q'])[0]
-        got=count(ix,s['entry'],s['field'],qq); ran+=1
+        got=count(ix,s['entry'],s['field'],s['q']); ran+=1
         (print if got==s['expect'] else fail)(f"smoke {s['id']} {s['q']}: 得 {got} 金标 {s['expect']}")
     if ran==0: fail('smoke 一条都没跑（包内无金标涉及的书）')
 def check_sample(ix,m,root,n):
-    docs=ix.searcher(); rng=random.Random(20261012)
+    se=ix.searcher(); rng=random.Random(20261012)
     books=sorted(m['perBook']); picked=[]
     for _ in range(n*5):
         if len(picked)>=n: break
         e=rng.choice(books)
-        r=docs.search(ix.parse_query(f'entry:{e}',['entry']),200)
+        r=se.search(tantivy.Query.term_query(ix.schema,'entry',e),200)
         if not r.hits: continue
-        d=docs.doc(rng.choice(r.hits)[1])
-        picked.append((e,d['chapter'][0],d['start'][0],d['end'][0]))
+        d=se.doc(rng.choice(r.hits)[1])
+        picked.append((e,d['chapter'][0],d['start'][0],d['end'][0],d['text'][0].decode('utf-8')))
     ok=0
-    for e,ch,s,en in picked:
+    for e,ch,s,en,text in picked:
         d=book_dir(root,e); p=f'{d}/default/{ch}.md' if d else None
         if not p or not os.path.exists(p): fail(f'抽样回原文：{e}/{ch} 找不到'); continue
-        md=open(p,encoding='utf-8').read(); o,_,_=stream(md[s:en])
-        if not o: fail(f'抽样 {e}/{ch}[{s}:{en}] 回原文后字流为空'); continue
-        pre=''.join(o[:8])
-        if len(pre)<2: ok+=1; continue
-        q,df=phrase('orig',pre)
-        query=tantivy.Query.boolean_query([(tantivy.Occur.Must,ix.parse_query(q,[df])),(tantivy.Occur.Must,ix.parse_query(f'entry:{e}',['entry']))])
-        hits=docs.search(query,2000).hits
-        if any(docs.doc(h[1])['chapter'][0]==ch and docs.doc(h[1])['start'][0]==s for h in hits): ok+=1
-        else: fail(f'抽样 {e}/{ch}[{s}:{en}] orig 前缀「{pre}」未命中该段')
+        md=open(p,encoding='utf-8').read()
+        if md[s:en]!=text: fail(f'抽样 {e}/{ch}[{s}:{en}] 存储原文与 md 不一致'); continue
+        _,nn,_=stream(text); pre=''.join(nn[:8])
+        if not pre: fail(f'抽样 {e}/{ch}[{s}:{en}] 字流为空'); continue
+        hits=se.search(norm_query(ix,pre,e),5000).hits
+        if any(se.doc(h[1])['chapter'][0]==ch and se.doc(h[1])['start'][0]==s for h in hits): ok+=1
+        else: fail(f'抽样 {e}/{ch}[{s}:{en}] norm 前缀「{pre}」未命中该段')
     print(f'sample: {ok}/{len(picked)} 段回原文一致')
 def check_streams(m,root):
     chapters=bad=0; cj=[]
@@ -107,6 +111,7 @@ def main():
         mp=os.path.join(tmp,'manifest.json')
         if not os.path.isfile(mp): print('ERROR[4] 包内无 manifest.json',file=sys.stderr); sys.exit(4)
         m=json.load(open(mp,encoding='utf-8'))
+        if m.get('schemaVersion')!=2: print(f"ERROR[4] schemaVersion={m.get('schemaVersion')}，不是 v2 包",file=sys.stderr); sys.exit(4)
         check_files(tmp,m)
         if not FAILS:
             ix=open_index(tmp)

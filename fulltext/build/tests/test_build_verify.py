@@ -84,3 +84,13 @@ def test_stream_norm_is_charmap_of_orig():
 def test_build_exit3_when_no_index(tmp_path):
     r=run(os.path.join(BUILD,'build_pack.py'),'--text-root',tmp_path,'--out',tmp_path/'o')
     assert r.returncode==3
+def test_titles_from_book_index_dir_and_fallback(tmp_path,capsys):
+    sys.path.insert(0,BUILD); import build_pack as bp
+    (tmp_path/'Work'/'a'/'a'/'a').mkdir(parents=True)
+    (tmp_path/'Work'/'a'/'a'/'a'/f'{EID}-測試書名.json').write_text('{}')
+    (tmp_path/'Book'/'b').mkdir(parents=True)
+    (tmp_path/'Book'/'b'/'notes.json').write_text('{}')          # 不合 ID-书名 格式的忽略
+    m=bp.titles_from_book_index(str(tmp_path))
+    assert m=={EID:'測試書名'}
+    t=bp.book_titles([EID,'bbbbbbbbbbbb'],{EID:'維基文庫','bbbbbbbbbbbb':'維基文庫'},m)
+    assert t=={EID:'測試書名','bbbbbbbbbbbb':'維基文庫'} and 'WARN' in capsys.readouterr().err

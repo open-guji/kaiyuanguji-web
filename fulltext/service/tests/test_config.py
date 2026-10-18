@@ -1,12 +1,14 @@
 import config
 
 
-def test_defaults_match_f4():
+def test_defaults():
     c = config.load({})
-    assert (c.host, c.port, c.candidates) == ('127.0.0.1', 8765, 400)
+    assert (c.host, c.port, c.exact_scan) == ('127.0.0.1', 8765, 3000)
     assert (c.max_concurrent, c.queue_max, c.timeout_s) == (4, 8, 3.0)
 
 
-def test_env_overrides_and_zero_candidates_means_uncapped():
-    c = config.load({'FT_CANDIDATES': '0', 'FT_PORT': '9000', 'FT_TIMEOUT_S': '1.5'})
-    assert c.candidates == 0 and c.port == 9000 and c.timeout_s == 1.5
+def test_env_overrides():
+    c = config.load({'FT_EXACT_SCAN': '100', 'FT_PORT': '9000', 'FT_TIMEOUT_S': '1.5',
+                     'FT_TITLES': '/x/titles.json', 'FT_BOOST': '/x/boost.json'})
+    assert (c.exact_scan, c.port, c.timeout_s) == (100, 9000, 1.5)
+    assert (c.titles, c.boost) == ('/x/titles.json', '/x/boost.json')

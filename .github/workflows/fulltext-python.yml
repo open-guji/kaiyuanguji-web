@@ -1,0 +1,33 @@
+name: Fulltext service (Python)
+
+# 全文搜索后端（fulltext/：建包、检索服务、部署脚本）的 PR 检查。设计见 fulltext/docs/design.md。
+# 只作参考检查，不进发布流程（deploy／data／verify 不挂）。
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'fulltext/**'
+      - '.github/workflows/fulltext-python.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'fulltext/**'
+
+jobs:
+  pytest:
+    name: pytest（建包、检索、评测）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        working-directory: fulltext
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: pytest
+        working-directory: fulltext
+        run: python -m pytest -q
+      - name: 部署脚本单测（假目录、假服务）
+        run: bash fulltext/deploy/tests/test_deploy.sh

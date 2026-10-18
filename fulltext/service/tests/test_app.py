@@ -9,16 +9,21 @@ import pytest
 import app
 from fakes import SAMPLE, FakeSource
 
-# F1 响应字段表（分块-F1-Eden.md §二）。步 1 的字段集合断言以此为准；
-# contract/sample_response.json 由 Eitan 步 3 产出后，再改为与其比对。
+# F1 响应字段表（docs/design.md「接口」一节；样例 contract/sample_response.json）。
 F1_TOP = {'q', 'mode', 'normalized', 'truncated', 'total_books', 'total_books_capped',
           'has_more', 'total_hits', 'capped', 'groups', 'took_ms'}
 F1_GROUP = {'entry', 'title', 'hit_count', 'hits'}
 F1_HIT = {'chapter', 'label', 'matches', 'snippet'}
 
 
-def svc(books=SAMPLE, candidates=400):
-    return app.Service(FakeSource(books), candidates)
+_SRC = {}
+
+
+def svc(books=SAMPLE, exact_scan=3000):
+    key = id(books)
+    if key not in _SRC:
+        _SRC[key] = (books, FakeSource(books))   # 留住 books，免得 id 被复用
+    return app.Service(_SRC[key][1], exact_scan)
 
 
 def test_grouped_response_fields_match_f1():
@@ -35,7 +40,7 @@ def test_matches_are_chapter_codepoint_offsets():
     st, body = svc().handle('/api/fulltext', {'q': '學而時習之'})
     g = body['groups'][0]
     h = g['hits'][0]
-    text = SAMPLE['B1']['chapters'][0][2]
+    text = FakeSource(SAMPLE).text[('B1', '001')]
     a, b = h['matches'][0]
     assert text[a:b] == '學而時習之'
     assert h['label'] == '學而第一'
@@ -53,7 +58,7 @@ def test_book_grouping_counts_and_order():
     st, body = svc().handle('/api/fulltext', {'q': '學而'})
     assert body['total_books'] == 1          # B2 无「學而」
     assert body['groups'][0]['entry'] == 'B1'
-    assert body['groups'][0]['hit_count'] == 2
+    assert body['groups'][0]['hit_count'] == 3   # 章标题「學而第一」一段 + 正文两段
     assert body['has_more'] is False
     assert body['total_books_capped'] is False
 
@@ -61,7 +66,7 @@ def test_book_grouping_counts_and_order():
 def test_per_book_limits_hits_but_not_count():
     st, body = svc().handle('/api/fulltext', {'q': '學而', 'per_book': '1'})
     g = body['groups'][0]
-    assert g['hit_count'] == 2 and len(g['hits']) == 1
+    assert g['hit_count'] == 3 and len(g['hits']) == 1
 
 
 def test_paging_by_book():
@@ -99,10 +104,36 @@ def test_fuzzy_matches_simplified_query_against_traditional_text():
     assert body['total_books'] == 1
 
 
-def test_candidate_cap_sets_capped_flags():
-    st, body = svc(candidates=1).handle('/api/fulltext', {'q': '學而'})
-    assert body['total_books_capped'] is True
-    assert body['capped'] is True
+def test_fuzzy_counts_are_exact_not_capped():
+    st, body = svc().handle('/api/fulltext', {'q': '而'})
+    assert body['total_books_capped'] is False and body['capped'] is False
+    assert body['total_hits'] == sum(g['hit_count'] for g in body['groups'])
+
+
+def test_exact_scan_cap_sets_capped_flags():
+    st, body = svc(exact_scan=1).handle('/api/fulltext', {'q': '而', 'mode': 'exact'})
+    assert body['total_books_capped'] is True and body['capped'] is True
+
+
+def test_exact_mode_filters_variant_chars_on_stored_text():
+    # 「為」与「为」归一相同：fuzzy 两种写法都中；exact 只认原字
+    st, body = svc().handle('/api/fulltext', {'q': '为政'})
+    assert body['total_books'] == 1
+    st, body = svc().handle('/api/fulltext', {'q': '為政', 'mode': 'exact'})
+    assert body['total_books'] == 1 and body['groups'][0]['hits'][0]['snippet'].count('<mark>為政</mark>') == 1
+    st, body = svc().handle('/api/fulltext', {'q': '为政', 'mode': 'exact'})
+    assert body['total_books'] == 0
+
+
+def test_exact_flat_mode_returns_entry_and_title():
+    st, body = svc().handle('/api/fulltext', {'q': '學而', 'mode': 'exact', 'group': 'none'})
+    assert body['total_hits'] == 3 and {'entry', 'title'} <= set(body['hits'][0])
+
+
+def test_hits_within_book_follow_text_order():
+    st, body = svc().handle('/api/fulltext', {'q': '學', 'per_book': '20'})
+    hits = body['groups'][0]['hits']
+    assert [(h['chapter'], h['passage'][0]) for h in hits] == sorted((h['chapter'], h['passage'][0]) for h in hits)
 
 
 def test_long_query_truncated_flag():
@@ -177,6 +208,6 @@ def test_group_hits_do_not_expose_ranking_internals():
 
 
 def test_boost_changes_book_order_through_service():
-    s = app.Service(FakeSource(SAMPLE), 400, boost={'B2': 10.0})
+    s = app.Service(FakeSource(SAMPLE), boost={'B2': 10.0})
     st, body = s.handle('/api/fulltext', {'q': '而'})
     assert body['groups'][0]['entry'] == 'B2'

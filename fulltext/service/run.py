@@ -1,4 +1,4 @@
-"""启动检索服务：python3 service/run.py（环境变量见 config.py；FT_INDEX_DIR、FT_TEXT_ROOT、FT_TITLES 必填）。"""
+"""启动检索服务：python3 service/run.py（环境变量见 config.py；FT_INDEX_DIR、FT_TITLES 必填）。"""
 import json
 import os
 import sys
@@ -22,16 +22,20 @@ def load_warm_terms(path):
 def main():
     t_start = time.monotonic()
     cfg = config.load()
-    titles = json.load(open(os.environ['FT_TITLES'], encoding='utf-8'))
-    source = TantivySource(cfg.index_dir, cfg.text_root, titles, cfg.lru_bytes)
+    with open(cfg.titles, encoding='utf-8') as f:
+        titles = json.load(f)
     boost = {}
-    service = app.Service(source, cfg.candidates or None, boost=boost,
+    if cfg.boost and os.path.isfile(cfg.boost):
+        with open(cfg.boost, encoding='utf-8') as f:
+            boost = json.load(f)
+    source = TantivySource(cfg.index_dir, titles)
+    service = app.Service(source, cfg.exact_scan, boost=boost,
                           max_concurrent=cfg.max_concurrent, queue_max=cfg.queue_max,
                           timeout_s=cfg.timeout_s)
     # 先开端口、就绪前一律 503 warming；预热完成后才 ready。
     service.ready = not cfg.warm
     threading.Thread(target=app.serve, args=(service, cfg.host, cfg.port), daemon=True).start()
-    print(f'serving {cfg.host}:{cfg.port} candidates={cfg.candidates or "all"} warm={cfg.warm}', flush=True)
+    print(f'serving {cfg.host}:{cfg.port} exact_scan={cfg.exact_scan} warm={cfg.warm}', flush=True)
     if cfg.warm:
         terms_path = cfg.warm_terms or os.path.join(HERE, 'warm_terms.txt')
         nbytes, t_prefetch = source.prefetch_index()

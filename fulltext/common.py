@@ -34,6 +34,13 @@ def stream(raw):
         elif k==2: o.append(v);n.append(v);off.append(i)
         i+=1
     return o,n,off
+_DROP=re.compile('[^'+HAN.pattern[1:-1]+'□〇0-9A-Za-z\x00]+')   # 与 HAN 同一组码段，取反
+def orig_text(raw):
+    """''.join(stream(raw)[0]) 的快速版（正则在 C 里跑，约快一个数量级），exact 模式逐段筛原字用。
+    组字式先换成 \x00 占位、删掉其余不可检索字符，再把占位换回 PH；原文自带 \x00 时退回 stream()。"""
+    if '\x00' in raw: return ''.join(stream(raw)[0])
+    t=_DROP.sub('',ZI.sub('\x00',raw))
+    return t.lower().replace('\x00',PH)
 def query_stream(q):
     o,n,_=stream(q); return ''.join(o),''.join(n)
 TARGET=600; MAXLEN=1200

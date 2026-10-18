@@ -1,17 +1,22 @@
-"""F2 步 1：索引构建产品化（原型 build_full.py combo 拆出）。
+"""建全文索引包（v2，设计见 fulltext/docs/design.md）。
 产出索引包 fulltext-<stamp>.tar.gz（index/、titles.json、boost.json、chapters.json、manifest.json）。
+v2 索引：norm 双字带位置＋norm1 单字频次（不再建 orig／orig1）；每段原文存进索引（text，只存不索引），
+服务端不再读 book-text；entry 为快字段（按书聚合计数），ord＝书内段序（快字段，书内按原文顺序取段），
+long＝所在章 ≥30 字（短章降权）。
 chapters.json＝{书ID:{章:原始字节sha256}}，登记在 manifest.files，manifest.chapterSha256File 指向它（可选，旧包没有）。
-用法: build_pack.py [--text-root DIR] --out DIR [--only ENTRY ...] [--prev-books N] [--need-gb G]
+用法: build_pack.py [--text-root DIR] [--book-index DIR] --out DIR [--only ENTRY ...] [--prev-books N] [--need-gb G]
 退出码: 0 成功；2 参数错；3 book-text 不可用；4 校验失败；5 磁盘不足。
 原文来源：default/<章>.md 字流（方案 a）；char.json 只登记覆盖率（charChapters／charCoverage），
 fallbackChapters＝无 char.json 的章数，不参与切段。"""
-import argparse,datetime,glob,hashlib,json,os,resource,shutil,subprocess,sys,tarfile,time
+import argparse,datetime,glob,hashlib,json,os,re,resource,shutil,subprocess,sys,tarfile,time
 from multiprocessing import Pool
 from zoneinfo import ZoneInfo
 HERE=os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0,os.path.dirname(HERE))  # common.py 在上一级
 import tantivy
 from common import passages,stream
+SCHEMA_VERSION=2
+SHORT_CHAPTER=30   # 章总长（码点）小于此为短章，排序降权；与 service/ranking.py 同值
 CHARMAP=os.path.join(os.path.dirname(HERE),'charmap.json')
 CHARMAP_ENTRIES=4820
 def die(code,msg):
@@ -30,16 +35,51 @@ def book_dirs(root):
         for d in glob.glob(f'{root}/{top}/*/*/*/*'):
             loc[os.path.basename(d)]=d
     return loc
+TITLE_FILE=re.compile(r'^([0-9A-Za-z]{12})-(.+)\.json$')
+def titles_from_book_index(book_index):
+    """书名表 {书ID: 书名}，取自 book-index 的文件名 `<ID>-<书名>.json`（Work／Book／Collection）。
+    是 git 检出时用 ls-tree，只读树不下 blob（blobless 克隆即可）；否则遍历目录。没给目录返回空表。"""
+    if not book_index: return {}
+    names=[]
+    r=subprocess.run(['git','-C',book_index,'ls-tree','-r','-z','--name-only','HEAD','--','Work','Book','Collection'],
+                     capture_output=True,text=True)
+    if r.returncode==0: names=[os.path.basename(p) for p in r.stdout.split('\0') if p]
+    else:
+        for top in ('Work','Book','Collection'):
+            for _,_,fs in os.walk(os.path.join(book_index,top)): names+=fs
+    out={}
+    for n in names:
+        m=TITLE_FILE.match(n)
+        if m: out[m.group(1)]=m.group(2)
+    return out
+def book_titles(ids,labels,title_map):
+    """包里的 titles.json：优先 book-index 书名；查不到的退回 book-text 版本名并告警。"""
+    miss=[e for e in ids if e not in title_map]
+    if title_map and miss: print(f'WARN: {len(miss)} 部书在 book-index 里查不到书名，用版本名代替：{miss[:5]}',file=sys.stderr)
+    if not title_map: print('WARN: 未给 --book-index，titles.json 只有版本名（如「維基文庫」），不能上线',file=sys.stderr)
+    return {e:title_map.get(e) or labels[e] for e in ids}
 def entries_from_index(root):
     labels={}
     for f in glob.glob(f'{root}/index/texts/*.json'):
         for eid,vs in json.load(open(f)).items():
             labels[eid]=vs[0]['label']
     return labels
+def chapter_docs(eid,chapter,md,ord0=0):
+    """一章 → 索引文档列表（v2 字段）。ord 从 ord0 起连续编号（书内段序）。nchar 只用于统计，写入前弹出。"""
+    long_=int(len(md)>=SHORT_CHAPTER); out=[]
+    for s,e,h in passages(md):
+        raw=md[s:e]
+        o,n,_=stream(raw)
+        if not o: continue
+        r=dict(norm=toks(''.join(n),2),norm1=' '.join(n),entry=eid,chapter=chapter,start=s,end=e,
+               ord=ord0+len(out),long=long_,text=raw.encode('utf-8'),nchar=len(o))
+        if h: r['label']=h
+        out.append(r)
+    return out
 # 子进程：全局只读，由 fork 继承
 LOC={}
 def work(eid):
-    d=LOC.get(eid); res=[]; chapters=0; withchar=0; shas={}; crs=[]
+    d=LOC.get(eid); res=[]; chapters=0; withchar=0; shas={}; crs=[]; ordn=0
     if not d or not os.path.isdir(d+'/default'): return eid,res,chapters,withchar,shas,crs
     for f in sorted(os.listdir(d+'/default')):
         if not f.endswith('.md'): continue
@@ -50,33 +90,34 @@ def work(eid):
         if b'\r' in raw: crs.append(f[:-3])
         shas[f[:-3]]=hashlib.sha256(raw).hexdigest()   # 原始字节 sha256，供下游核对章是否被改
         md=raw.decode('utf-8').replace('\r\n','\n').replace('\r','\n')
-        for s,e,h in passages(md):
-            o,n,_=stream(md[s:e])
-            if not o: continue
-            res.append(dict(norm=toks(''.join(n),2),orig=toks(''.join(o),2),norm1=' '.join(n),orig1=' '.join(o),
-                            entry=eid,label='',chapter=f[:-3],start=s,end=e,nchar=len(o)))
+        docs=chapter_docs(eid,f[:-3],md,ordn)
+        res+=docs; ordn+=len(docs)
     return eid,res,chapters,withchar,shas,crs
-REQUIRED={'stamp':str,'createdAtEpoch':int,'bookTextCommit':(str,type(None)),'charmapSha256':str,'charmapEntries':int,
+REQUIRED={'schemaVersion':int,'stamp':str,'createdAtEpoch':int,'bookTextCommit':(str,type(None)),'charmapSha256':str,'charmapEntries':int,
           'indexerVersion':str,'books':int,'passages':int,'chapters':int,'charChapters':int,'fallbackChapters':int,
           'originalSource':str,'charCoverage':float,'indexBytes':int,'files':dict,'perBook':dict,'build':dict}
 def check_manifest(m):
     bad=[k for k,t in REQUIRED.items() if k not in m or not isinstance(m[k],t)]
     if bad: die(4,f'manifest 字段缺失或类型错：{bad}')
+    if m['schemaVersion']!=SCHEMA_VERSION: die(4,f'schemaVersion {m["schemaVersion"]} ≠ {SCHEMA_VERSION}')
 def build_schema():
+    """v2 字段。整数一律 i64（tantivy.Document 把 Python int 当 i64，用 unsigned 会在写入时报类型错）。"""
     sb=tantivy.SchemaBuilder()
-    opt=dict(stored=False,tokenizer_name='whitespace',index_option='position')
-    sb.add_text_field('norm',**opt); sb.add_text_field('orig',**opt)
-    o1=dict(stored=False,tokenizer_name='whitespace',index_option='freq')
-    sb.add_text_field('norm1',**o1); sb.add_text_field('orig1',**o1)
-    sb.add_text_field('entry',stored=True,tokenizer_name='raw')
-    sb.add_text_field('label',stored=True,tokenizer_name='raw')
+    sb.add_text_field('norm',stored=False,tokenizer_name='whitespace',index_option='position')
+    sb.add_text_field('norm1',stored=False,tokenizer_name='whitespace',index_option='freq')
+    sb.add_text_field('entry',stored=True,tokenizer_name='raw',index_option='basic',fast=True)
+    sb.add_text_field('label',stored=True,tokenizer_name='raw',index_option='basic')
     sb.add_text_field('chapter',stored=True,tokenizer_name='raw',index_option='basic')
-    sb.add_integer_field('start',stored=True); sb.add_integer_field('end',stored=True)
+    sb.add_integer_field('start',stored=True,indexed=False); sb.add_integer_field('end',stored=True,indexed=False)
+    sb.add_integer_field('ord',stored=False,indexed=False,fast=True)
+    sb.add_integer_field('long',stored=True,indexed=False,fast=True)
+    sb.add_bytes_field('text',stored=True,indexed=False)
     return sb.build()
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument('--text-root',default=os.environ.get('BOOK_TEXT',os.path.join(HERE,'..','..','..','..','book-text')))
+    ap.add_argument('--text-root',default=os.environ.get('BOOK_TEXT',os.path.join(HERE,'..','..','..','book-text')))
     ap.add_argument('--out',required=True)
+    ap.add_argument('--book-index',default=os.environ.get('BOOK_INDEX'),help='book-index 检出（可 blobless），取书名')
     ap.add_argument('--only',nargs='+',default=None)
     ap.add_argument('--prev-books',type=int,default=None)
     ap.add_argument('--need-gb',type=float,default=None)
@@ -115,7 +156,7 @@ def main():
             cr_found+=[f'{eid}/{c}' for c in crs]
             if res: books_ok+=1
             for r in res:
-                nc+=r.pop('nchar'); r['label']=labels[eid]; w.add_document(tantivy.Document(**r)); np+=1
+                nc+=r.pop('nchar'); w.add_document(tantivy.Document(**r)); np+=1
             per_book[eid]=len(res)
     t1=time.time(); w.commit(); w.wait_merging_threads()
     # ⑤ 校验
@@ -131,7 +172,7 @@ def main():
         rel=os.path.relpath(d,root)
         r=subprocess.run(['git','-C',root,'log','-1','--format=%H','--',rel],capture_output=True,text=True)
         return r.stdout.strip() or None
-    titles={e:labels[e] for e in per_book if per_book[e]>0}
+    titles=book_titles([e for e in sorted(per_book) if per_book[e]>0],labels,titles_from_book_index(a.book_index))
     with open(os.path.join(a.out,'titles.json'),'w',encoding='utf-8') as f: json.dump(titles,f,ensure_ascii=False)
     with open(os.path.join(a.out,'boost.json'),'w',encoding='utf-8') as f: json.dump({},f)
     with open(os.path.join(a.out,'chapters.json'),'w',encoding='utf-8') as f: json.dump(chap_sha,f,ensure_ascii=False,separators=(',',':'),sort_keys=True)
@@ -145,7 +186,7 @@ def main():
     # 原文来源：现行为 default/<章>.md 字流（Eden 2026-10-12 定方案 a）；char.json 仅登记覆盖率，不参与切段
     coverage=nchar/nchap if nchap else 0.0
     if coverage<0.8: print(f'WARN: char.json 覆盖率 {coverage:.2%} < 80%，按设计需报卡',file=sys.stderr)
-    manifest=dict(stamp=stamp,createdAtEpoch=int(time.time()),
+    manifest=dict(schemaVersion=SCHEMA_VERSION,stamp=stamp,createdAtEpoch=int(time.time()),
         bookTextCommit=commit,charmapSha256=sha256_file(CHARMAP),charmapEntries=len(cmap),
         indexerVersion=indexer.hexdigest(),
         books=books_ok,passages=np,chapters=nchap,charChapters=nchar,fallbackChapters=nchap-nchar,

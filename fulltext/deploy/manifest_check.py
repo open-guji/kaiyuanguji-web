@@ -6,7 +6,7 @@
   manifest_check.py verify-files MANIFEST RELEASE_DIR
 
 validate 的问题逐行打印到 stdout，有问题退出码 1。
-F2 manifest 字段见 分块-F2-Eden.md §二；rotate 依赖：stamp、createdAtEpoch、bookTextCommit、
+manifest 字段见 fulltext/docs/design.md；rotate 依赖：schemaVersion、stamp、createdAtEpoch、bookTextCommit、
 indexBytes、books、passages、files{bytes,sha256}。
 """
 import hashlib
@@ -26,6 +26,8 @@ def problems(m, cur=None, text_dir=None):
     p = []
     if not isinstance(m, dict):
         return ['manifest 不是对象']
+    if m.get('schemaVersion') != 2:
+        p.append(f"schemaVersion={m.get('schemaVersion')!r}，服务只认 v2 包（存原文、无 orig 字段），旧包需重建")
     if not re.fullmatch(r'\d{8}-\d{4}', str(m.get('stamp', ''))):
         p.append(f"stamp 缺失或格式不对：{m.get('stamp')!r}（应为 YYYYMMDD-HHMM）")
     if not isinstance(m.get('createdAtEpoch'), int) or m['createdAtEpoch'] <= 0:

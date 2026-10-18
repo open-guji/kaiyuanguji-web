@@ -1,20 +1,12 @@
-"""/api/fulltext 延迟压测（F7 步 3）：冷／热两档 × 并发数，输出分位数、超时数、错误数（分类型）。
+"""/api/fulltext 延迟压测（HTTP）：冷／热两档 × 并发数，输出分位数、超时数、错误数（分类型）。
 
-用法（每个并发档单独起一次服务，冷档才有意义；--candidates 只记录、不改服务）：
-  python3 eval/eval_latency.py --base http://127.0.0.1:8765 \
-      --queries results/queries244.json --concurrency 4 --passes 2 \
-      --group book --candidates 400 --label SAMPLE17-c4 --out results/latency_SAMPLE17_c4.json
-
-【全量包到手后的运行命令】（当前仅为样本，全量结果须另起文件名，不得沿用 SAMPLE 标记）：
-  # 1. 起 service，指向全量包（路径按全量包实际位置替换）
-  FT_INDEX_DIR=<全量包>/index FT_TITLES=<全量包>/titles.json \
-  FT_TEXT_ROOT=<book-text 根> FT_PORT=8765 FT_CANDIDATES=400 python3 service/run.py &
-  # 2. 查询集用 F7 的 queries.json（244 条），并发 1/4/8 各跑一次，每次重启服务
-  python3 eval/eval_latency.py --queries <F7-评测>/queries.json --concurrency 1 --passes 2 \
-      --group book --candidates 400 --label FULL-c1 --out results/latency_FULL_c1.json
-  # 3. 同时采资源（需要服务 PID，或设 FT_PID）
-  FT_PID=<pid> bash eval/eval_resources.sh results/resources_FULL_c4.csv 120 8765
-  # 重建期档（Meili 重建窗口）需 Owen 配合，本脚本不负责触发重建。
+用法（每个并发档单独起一次服务，冷档才有意义）：
+  # 1. 起服务，指向索引包
+  FT_INDEX_DIR=<包>/index FT_TITLES=<包>/titles.json FT_PORT=8765 python3 service/run.py &
+  # 2. 查询集用 eval/queries.json（244 条），并发 1/4/8 各跑一次，每次重启服务
+  python3 eval/eval_latency.py --base http://127.0.0.1:8765 --queries eval/queries.json \
+      --concurrency 4 --passes 2 --group book --label FULL-c4 --out results/latency_FULL_c4.json
+  只比查询路径、不要 HTTP 时用 eval/inproc.py。
 
 口径：
   - 冷（首次）：本次进程里每条查询的第一遍（每条一次）。这是服务进程 LRU 冷，不是 OS 页缓存冷；
@@ -23,7 +15,7 @@
   - 超时：服务端 HTTP 504 与客户端超时分别计入 timeouts；客户端超时默认 = FT_TIMEOUT_S + 2 s（--timeout 可覆盖）。
   - 错误：其它非 200 的 HTTP 码或网络／IO 异常，按类型计入 error_types。
   - group 默认 book（验收口径，limit=10）；group=none 仅用于召回／评测模式。输出里记录 group、limit、
-    candidates，避免两种口径混着比。
+    exact_scan，避免两种口径混着比。
   - 并发：线程池，每个请求单独计时（perf_counter，毫秒）。
 
 退出码：0 完成（不判过不过，判定在报告里做）；3 服务不可达。
@@ -170,15 +162,15 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--base', default='http://127.0.0.1:8765')
     ap.add_argument('--queries', required=True, help='JSON 列表，每项至少含 q，可选 mode（默认 fuzzy）')
-    ap.add_argument('--concurrency', type=int, default=1, help='并发数（默认 1；F7 分档跑 1、4、8）')
+    ap.add_argument('--concurrency', type=int, default=1, help='并发数（默认 1；验收分档跑 1、4、8）')
     ap.add_argument('--passes', type=int, default=8, help='热序列重复遍数（每遍 = 查询条数）')
     ap.add_argument('--group', choices=['book', 'none'], default='book',
                     help='分组口径（默认 book＝验收口径；none 仅用于召回／评测模式）')
     ap.add_argument('--limit', type=int, default=10, help='返回条数（默认 10）')
     ap.add_argument('--timeout', type=float, default=TIMEOUT_S,
                     help=f'客户端超时秒数（默认 FT_TIMEOUT_S+2 = {TIMEOUT_S:g}）')
-    ap.add_argument('--candidates', default=os.environ.get('FT_CANDIDATES', 'unknown'),
-                    help='服务端 FT_CANDIDATES，仅记录到结果（默认取环境变量）；不修改服务配置')
+    ap.add_argument('--exact-scan', dest='exact_scan', default=os.environ.get('FT_EXACT_SCAN', 'unknown'),
+                    help='服务端 FT_EXACT_SCAN，仅记录到结果（默认取环境变量）；不修改服务配置')
     ap.add_argument('--label', default='', help='结果标记，如 sample17-20261014')
     ap.add_argument('--os-cache', choices=OS_CACHE_CHOICES, default='unknown',
                     help='OS 页缓存状态（操作者声明）：drop_caches／换冷副本后起服务填 cold；未清则 warm')
@@ -205,7 +197,7 @@ def main(argv=None):
         'passes': args.passes,
         'group': args.group,
         'limit': args.limit,
-        'candidates': args.candidates,
+        'exact_scan': args.exact_scan,
         'timeout_s': args.timeout,
         'discard_warmup': DISCARD_WARMUP,
         'wall_s': round(time.time() - t0, 2),

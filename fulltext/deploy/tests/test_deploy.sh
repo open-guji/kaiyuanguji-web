@@ -56,6 +56,13 @@ python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000 --no
 eq "退出码 8" "$(run rotate.sh 20261002-0000)" 8
 teardown
 
+echo "旧版 v1 包（schemaVersion≠2）→ 8"
+setup
+python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000 --v1
+eq "退出码 8" "$(run rotate.sh 20261002-0000)" 8
+eq "current 未动" "$(cur)" 20261001-0000
+teardown
+
 echo "文件 sha256 不符 → 8"
 setup
 python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000 --bad-sha

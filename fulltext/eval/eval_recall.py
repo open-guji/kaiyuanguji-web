@@ -7,7 +7,7 @@
 --text-root 可以是扁平布局 <root>/<entry>/default/*.md，也可以是嵌套布局
 <root>/<top>/<c1>/<c2>/<c3>/<entry>/default/*.md（c1..c3 取 ID 尾三字符，同 storage.shard_dirs）。
 
-服务侧要求：FT_CANDIDATES=0（不截断候选）、FT_TIMEOUT_S 调大（默认 3 秒，高频词会 504）。
+服务侧要求：FT_TIMEOUT_S 调大（默认 3 秒，全集翻页时高频词可能 504）。只比查询路径时用 eval/inproc.py（进程内，快）。
 kind=common 的查询只翻第一页：比 total_hits（封顶 10000）与第一页命中是否属于暴力全集，
 不做全量翻页（高频词全翻页要数十分钟）。这类条目在报告 common_checked 里计数。
 

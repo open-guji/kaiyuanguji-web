@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""造假 release：mkpack.py DIR STAMP EPOCH [--bad-index] [--flaky] [--bad-sha] [--no-commit]"""
+"""造假 release：mkpack.py DIR STAMP EPOCH [--bad-index] [--flaky] [--bad-sha] [--no-commit] [--v1]"""
 import hashlib
 import json
 import os
@@ -13,7 +13,7 @@ if '--bad-index' not in flags:
     files['index/OK'] = b'1'
 if '--flaky' in flags:
     files['index/FLAKY'] = b'1'
-m = {'stamp': stamp, 'createdAtEpoch': epoch, 'bookTextCommit': 'a' * 40, 'books': 1, 'passages': 10,
+m = {'schemaVersion': 1 if '--v1' in flags else 2, 'stamp': stamp, 'createdAtEpoch': epoch, 'bookTextCommit': 'a' * 40, 'books': 1, 'passages': 10,
      'indexBytes': sum(len(v) for v in files.values()), 'files': {}}
 for n, data in files.items():
     with open(os.path.join(d, n), 'wb') as f:

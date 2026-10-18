@@ -1,5 +1,5 @@
 """F3：增量更新——步 1 变更集计算；步 2 整本替换写入＋校验＋失败回滚。
-用法: update_books.py --current DIR --text-root DIR [--out DIR] [--limit 200]
+用法: update_books.py --current DIR --text-root DIR [--book-index DIR] [--out DIR] [--limit 200]
   不给 --out：只打印变更集 JSON（步 1）。给 --out：硬链接复制 --current 到 --out（须同分区），
   对 changed+removed 先按 entry 删旧段，再对 changed+added 用 build_pack 同一套切段重写，写新 manifest，校验；
   任何异常或校验失败 → 删除 --out、退出 8，--current 一字节不动（硬链接的段文件 tantivy 从不原地改写）。
@@ -82,18 +82,18 @@ def apply_update(current,root,out,ch,m):
         if crs: raise RuntimeError(f'{eid} 含 \\r 的章：{crs[:5]}（偏移基线假设无 \\r）')
         if eid not in labels: raise RuntimeError(f'{eid} 不在 index/texts')
         for r in res:
-            r.pop('nchar'); r['label']=labels[eid]; w.add_document(tantivy.Document(**r))
+            r.pop('nchar'); w.add_document(tantivy.Document(**r))
         per[eid]=dict(passages=len(res),commit=None)
     w.commit(); w.wait_merging_threads()
     if os.environ.get('FT_FAIL_AT')=='after_commit': raise RuntimeError('注入故障：提交之后')
     return idx,per
-def finish(current,root,out,ch,m,idx,per,new_commits,t0):
+def finish(current,root,out,ch,m,idx,per,new_commits,t0,book_index=None):
     import build_pack as bp
     for eid in ch['changed']+ch['added']:
         if per[eid]['passages']==0: per.pop(eid)   # 无正文＝不入索引（与全量一致）
         else: per[eid]['commit']=new_commits[eid]
     labels=bp.entries_from_index(root)
-    titles={e:labels[e] for e in per}
+    titles=bp.book_titles(sorted(per),labels,bp.titles_from_book_index(book_index))
     with open(os.path.join(out,'titles.json'),'w',encoding='utf-8') as f: json.dump(titles,f,ensure_ascii=False)
     shutil.copy2(os.path.join(current,'boost.json'),os.path.join(out,'boost.json'))
     # 章数从磁盘数（便宜）
@@ -144,11 +144,13 @@ def main():
     ap.add_argument('--text-root',required=True)
     ap.add_argument('--out',default=None,help='新索引目录（不存在）；不给则只打印变更集')
     ap.add_argument('--limit',type=int,default=LIMIT)
+    ap.add_argument('--book-index',default=os.environ.get('BOOK_INDEX'),help='book-index 检出（可 blobless），取书名')
     a=ap.parse_args()
     mp=os.path.join(a.current,'manifest.json')
     if not os.path.isfile(mp): die(3,f'{mp} 不存在')
     m=json.load(open(mp,encoding='utf-8'))
     if 'perBook' not in m: die(3,'manifest 缺 perBook')
+    if m.get('schemaVersion')!=2: die(3,f'当前索引 schemaVersion={m.get("schemaVersion")}，不是 v2，只能做全量')
     new=current_commits(os.path.abspath(a.text_root),m['perBook'],m.get('bookTextCommit'))
     try: ch=compute_changes(m['perBook'],new,a.limit)
     except TooMany as e: die(7,str(e))
@@ -161,7 +163,7 @@ def main():
     t0=time.time(); root=os.path.abspath(a.text_root)
     try:
         idx,per=apply_update(a.current,root,a.out,ch,m)
-        nm=finish(a.current,root,a.out,ch,m,idx,per,new,t0)
+        nm=finish(a.current,root,a.out,ch,m,idx,per,new,t0,a.book_index)
     except BaseException as e:
         shutil.rmtree(a.out,ignore_errors=True)
         die(8,f'增量失败，已丢弃新目录，旧索引未动：{type(e).__name__}: {e}')

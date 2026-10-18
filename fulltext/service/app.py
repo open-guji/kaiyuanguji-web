@@ -1,11 +1,15 @@
-"""F1 检索接口 /api/fulltext：参数校验 → 候选段 → 回映命中 → 组装响应。
+"""检索接口 /api/fulltext（契约 F1，见 fulltext/docs/design.md）：参数校验 → 检索 → 组装响应。
 
-步 1：骨架，候选来源经 Source 接口注入，本文件不依赖 Tantivy。
-步 2：排序在 ranking.py；本文件调用 group_and_rank。
-步 3：全局并发闸（gate.py）、超时（504）、索引不可用（503）、运维接口 /healthz 与 /admin/reload（仅本机）。
+v2 查询路径：
+- fuzzy：命中段＝norm 层 phrase 命中（计数是准的）。group=book 时先按书聚合（entry 快字段），
+  排好书序后只为当前页的书各取前 per_book 段（存储里带原文），只在这些段上定位、出摘要。
+- exact：先按 norm 召回，再在存储原文上按原字逐段筛；扫描上限 exact_scan 段，超出时 capped=true。
+不读 book-text、不读章 md。
 
-Source 接口：book_title(entry)、chapter_text(entry, chapter)、candidates(needle, field, entry, k)；
-可选：reload() -> stamp（清章缓存、重开索引）。索引打不开时 candidates/reload 抛 IndexUnavailable。
+Source 接口（见 source_tantivy.TantivySource 与 tests/fakes.FakeSource）：
+book_title(entry)、count(needle, entry)、book_counts(needle, entry) -> (buckets, capped)、
+passages(needle, entry, limit, offset, in_order) -> (段列表, 总数)；可选 reload() -> stamp。
+索引打不开时抛 IndexUnavailable。
 """
 import concurrent.futures
 import html
@@ -16,15 +20,16 @@ from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from common import locate, query_stream
+from common import locate, orig_text, query_stream
 from gate import Gate
-from ranking import group_and_rank
+from ranking import rank_books
 
 MAX_Q = 60                 # 超长截断并回 truncated:true
 TOTAL_HITS_CAP = 10000     # total_hits 封顶
+EXACT_SCAN = 3000          # exact 模式最多扫的候选段数（超出 capped=true）
 SNIPPET_PAD = 40           # 命中前后各取的字数
 ENTRY_RE = re.compile(r'[0-9A-Za-z]{1,32}')
-PROBE = ('学', 'norm')     # /healthz 样本查询（归一后的字与字段）
+PROBE = '学'               # /healthz 样本查询（归一后的字）
 LOOPBACK = ('127.0.0.1', '::1')
 
 
@@ -104,59 +109,82 @@ def snippet(raw, spans):
     return ''.join(parts).replace('\n', ' ')
 
 
-def run_query(p, source, candidates, boost=None):
-    """source：候选与正文来源（见 FakeSource）。candidates：候选段上限，None = 不截断。
-    boost：{entry: 倍数}，排序用，缺省空。"""
+def _hit(d, needle, field, title=None):
+    """段 → 响应里的一条命中；原文里定位不到（exact 模式下原字不符）返回 None。"""
+    raw = d['text']
+    spans = locate(raw, needle, field)
+    if not spans:
+        return None
+    h = {
+        'chapter': d['chapter'],
+        'label': d.get('label'),
+        'passage': [d['start'], d['end']],
+        'matches': [[d['start'] + x, d['start'] + y] for x, y in spans],
+        'snippet': snippet(raw, spans),
+    }
+    if title is not None:
+        h = {'entry': d['entry'], 'title': title, **h}
+    return h
+
+
+def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
+    """exact_scan：exact 模式最多扫的 norm 候选段数。boost：{entry: 倍数}，缺省空。"""
     t0 = time.perf_counter()
     qo, qn = query_stream(p.q)
-    field, needle = ('norm', qn) if p.mode == 'fuzzy' else ('orig', qo)
-    if not needle:
+    if not qn:
         raise BadQuery('q 全是不可检索字符（标点、空白）')
+    exact = p.mode == 'exact'
+    needle, field = (qo, 'orig') if exact else (qn, 'norm')
+    body = {'q': p.q, 'mode': p.mode, 'normalized': needle, 'truncated': p.truncated}
 
-    segs = source.candidates(needle, field, p.entry, candidates)
-    t1 = time.perf_counter()
-
-    hits = []
-    for s in segs:
-        text = source.chapter_text(s['entry'], s['chapter'])
-        raw = text[s['start']:s['end']]
-        spans = locate(raw, needle, field)
-        if not spans:
-            continue
-        hits.append({
-            'entry': s['entry'],
-            'title': source.book_title(s['entry']),
-            'chapter': s['chapter'],
-            'label': s.get('label'),
-            'passage': [s['start'], s['end']],
-            'matches': [[s['start'] + a, s['start'] + b] for a, b in spans],
-            'snippet': snippet(raw, spans),
-            'score': s.get('score', 1.0),          # 候选分（BM25）；无则 1.0
-            'chapter_len': len(text),              # 短章降权用
-            'start': s['start'],
-        })
-    t2 = time.perf_counter()
-
-    cands_truncated = candidates is not None and len(segs) >= candidates
-    body = {
-        'q': p.q,
-        'mode': p.mode,
-        'normalized': needle,
-        'truncated': p.truncated,
-        'total_hits': min(len(hits), TOTAL_HITS_CAP),
-        'capped': len(hits) > TOTAL_HITS_CAP or cands_truncated,
-    }
-    if p.group == 'book':
-        groups, total_books = group_by_book(hits, p.offset, p.limit, p.per_book, boost)
-        body.update({
-            'total_books': total_books,
-            'total_books_capped': cands_truncated,
-            'has_more': p.offset + p.limit < total_books,
-            'groups': groups,
-        })
+    if not exact:
+        if p.group == 'book':
+            buckets, books_capped = source.book_counts(qn, p.entry)
+            t1 = time.perf_counter()
+            ranked = rank_books(buckets, boost)
+            total = sum(b['count'] for b in buckets)
+            groups = []
+            for b in ranked[p.offset:p.offset + p.limit]:
+                segs, _ = source.passages(qn, b['entry'], p.per_book, 0, True)
+                hits = [h for h in (_hit(d, qn, 'norm') for d in segs) if h]
+                groups.append({'entry': b['entry'], 'title': source.book_title(b['entry']),
+                               'hit_count': b['count'], 'hits': hits})
+            body.update(_totals(total, False), total_books=len(ranked), total_books_capped=books_capped,
+                        has_more=p.offset + p.limit < len(ranked), groups=groups)
+        else:
+            segs, total = source.passages(qn, p.entry, p.limit, p.offset, False)
+            t1 = time.perf_counter()
+            hits = [h for h in (_hit(d, qn, 'norm', source.book_title(d['entry'])) for d in segs) if h]
+            body.update(_totals(total, False), has_more=p.offset + p.limit < total, hits=hits)
     else:
-        page = [{k: h[k] for k in FLAT} for h in hits[p.offset:p.offset + p.limit]]
-        body.update({'has_more': p.offset + p.limit < len(hits), 'hits': page})
+        segs, n_cand = source.passages(qn, p.entry, exact_scan, 0, True)
+        t1 = time.perf_counter()
+        scan_capped = n_cand > exact_scan
+        by_book, order = {}, []
+        for d in segs:
+            if qo not in orig_text(d['text']):   # 与 locate(..., 'orig') 同判定，快约 6 倍
+                continue
+            e = d['entry']
+            if e not in by_book:
+                by_book[e] = {'entry': e, 'count': 0, 'long': False, 'segs': []}
+                order.append(e)
+            g = by_book[e]
+            g['count'] += 1
+            g['long'] = g['long'] or d['long']
+            g['segs'].append(d)
+        total = sum(g['count'] for g in by_book.values())
+        if p.group == 'book':
+            ranked = rank_books([by_book[e] for e in order], boost)
+            groups = [{'entry': g['entry'], 'title': source.book_title(g['entry']), 'hit_count': g['count'],
+                       'hits': [_hit(d, qo, 'orig') for d in g['segs'][:p.per_book]]}
+                      for g in ranked[p.offset:p.offset + p.limit]]
+            body.update(_totals(total, scan_capped), total_books=len(ranked), total_books_capped=scan_capped,
+                        has_more=p.offset + p.limit < len(ranked), groups=groups)
+        else:
+            flat = [d for e in order for d in by_book[e]['segs']]
+            hits = [_hit(d, qo, 'orig', source.book_title(d['entry'])) for d in flat[p.offset:p.offset + p.limit]]
+            body.update(_totals(total, scan_capped), has_more=p.offset + p.limit < total, hits=hits)
+    t2 = time.perf_counter()
     body['took_ms'] = {
         'search': round((t1 - t0) * 1000, 1),
         'locate': round((t2 - t1) * 1000, 1),
@@ -165,23 +193,8 @@ def run_query(p, source, candidates, boost=None):
     return body
 
 
-KEEP = ('chapter', 'label', 'passage', 'matches', 'snippet')
-FLAT = ('entry', 'title') + KEEP
-
-
-def group_by_book(hits, offset, limit, per_book, boost=None):
-    """排序分组后按书分页；每书只回前 per_book 条，hit_count 为全部命中段数。"""
-    ranked = group_and_rank(hits, boost)
-    groups = []
-    for g in ranked[offset:offset + limit]:
-        first = g['hits'][0]
-        groups.append({
-            'entry': g['entry'],
-            'title': first['title'],
-            'hit_count': g['hit_count'],
-            'hits': [{k: h[k] for k in KEEP} for h in g['hits'][:per_book]],
-        })
-    return groups, len(ranked)
+def _totals(total, capped):
+    return {'total_hits': min(total, TOTAL_HITS_CAP), 'capped': capped or total > TOTAL_HITS_CAP}
 
 
 class Service:
@@ -193,9 +206,9 @@ class Service:
     保证同时在跑的查询数始终 ≤ max_concurrent。
     """
 
-    def __init__(self, source, candidates, boost=None, max_concurrent=4, queue_max=8, timeout_s=3.0):
+    def __init__(self, source, exact_scan=EXACT_SCAN, boost=None, max_concurrent=4, queue_max=8, timeout_s=3.0):
         self.source = source
-        self.candidates = candidates
+        self.exact_scan = exact_scan
         self.boost = boost or {}
         self.timeout_s = timeout_s
         self.gate = Gate(max_concurrent, queue_max)
@@ -203,12 +216,12 @@ class Service:
         self.ready = True          # 启动预热期间为 False（见 run.py），就绪前不接检索请求
 
     def warm(self, terms):
-        """启动预热：对每个词跑一遍 run_query，把候选章读进章 LRU、索引页读进 OS 缓存。
+        """启动预热：对每个词跑一遍 run_query，把相关索引页读进 OS 缓存。
         不走闸门与超时（启动时没有并发）；单词失败只跳过，不挡就绪。返回 (成功词数, 失败词数)。"""
         ok = failed = 0
         for t in terms:
             try:
-                run_query(parse_params({'q': t}), self.source, self.candidates, self.boost)
+                run_query(parse_params({'q': t}), self.source, self.exact_scan, self.boost)
                 ok += 1
             except (BadQuery, OSError, IndexUnavailable):
                 failed += 1
@@ -237,7 +250,7 @@ class Service:
 
     def _run(self, p):
         try:
-            return run_query(p, self.source, self.candidates, self.boost)
+            return run_query(p, self.source, self.exact_scan, self.boost)
         finally:
             self.gate.release()
 
@@ -246,7 +259,7 @@ class Service:
         if not self.ready:
             return 503, {'status': 'warming'}
         try:
-            ok = bool(self.source.candidates(PROBE[0], PROBE[1], None, 1))
+            ok = self.source.count(PROBE) > 0
         except IndexUnavailable:
             ok = False
         if ok:
@@ -254,7 +267,7 @@ class Service:
         return 503, {'status': 'unavailable'}
 
     def reload(self):
-        """重开索引目录、清空章 LRU（由 Source.reload 实现），返回新 manifest stamp。"""
+        """重开索引目录（由 Source.reload 实现），返回新 manifest stamp。"""
         reopen = getattr(self.source, 'reload', None)
         if reopen is None:
             return 200, {'status': 'reloaded', 'stamp': None}

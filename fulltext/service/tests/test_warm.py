@@ -6,7 +6,7 @@ from fakes import SAMPLE, FakeSource
 
 
 def svc():
-    return app.Service(FakeSource(SAMPLE), 400)
+    return app.Service(FakeSource(SAMPLE))
 
 
 def test_not_ready_gates_handle_and_health_with_503_warming():
@@ -35,9 +35,10 @@ def test_warm_skips_unsearchable_terms_without_raising():
     assert (ok, failed) == (2, 1)  # 标点词抛 BadQuery 计失败；无命中词不算失败
 
 
-def test_prefetch_index_reads_every_file_and_reports_bytes(tmp_path):
+def test_prefetch_skips_doc_store_and_reports_bytes(tmp_path):
     from source_tantivy import TantivySource
-    (tmp_path / 'a.bin').write_bytes(b'x' * 1000)
+    (tmp_path / 'a.idx').write_bytes(b'x' * 1000)
+    (tmp_path / 'a.store').write_bytes(b'z' * 5000)     # 原文存储块不预读
     (tmp_path / 'sub').mkdir()
     (tmp_path / 'sub' / 'b.bin').write_bytes(b'y' * 10)
     src = TantivySource.__new__(TantivySource)

@@ -1,4 +1,4 @@
-"""分块-F4 步 3：并发闸、超时、索引不可用、/healthz、/admin/reload、章 LRU 按字节。"""
+"""运维面：并发闸、超时、索引不可用、/healthz、/admin/reload。"""
 import json
 import threading
 import time
@@ -8,13 +8,12 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 
 import app
-from cache import ByteLRU
 from fakes import SAMPLE, FakeSource
 from gate import Gate
 
 
 class SlowSource(FakeSource):
-    """candidates 睡 delay 秒，并记录同时在跑的最大数。"""
+    """按书聚合时睡 delay 秒，并记录同时在跑的最大数。"""
 
     def __init__(self, books, delay):
         super().__init__(books)
@@ -23,38 +22,35 @@ class SlowSource(FakeSource):
         self.running = 0
         self.max_seen = 0
 
-    def candidates(self, needle, field, entry, k):
+    def book_counts(self, needle, entry=None):
         with self.lock:
             self.running += 1
             self.max_seen = max(self.max_seen, self.running)
         try:
             time.sleep(self.delay)
-            return super().candidates(needle, field, entry, k)
+            return super().book_counts(needle, entry)
         finally:
             with self.lock:
                 self.running -= 1
 
 
 class DeadSource(FakeSource):
-    def candidates(self, needle, field, entry, k):
+    def _dead(self, *a, **k):
         raise app.IndexUnavailable('no index')
+
+    book_counts = passages = count = _dead
 
 
 class ReloadableSource(FakeSource):
-    """模拟章缓存挂在 source 上、reload 清空缓存并换 stamp。"""
+    """reload 换 stamp 并计数。"""
 
     def __init__(self, books):
         super().__init__(books)
-        self.cache = ByteLRU(1 << 20)
         self.stamp = 'v1'
         self.reloads = 0
 
-    def chapter_text(self, entry, chapter):
-        return self.cache.get_or_load((entry, chapter), lambda k: super(ReloadableSource, self).chapter_text(*k))
-
     def reload(self):
         self.reloads += 1
-        self.cache.clear()
         self.stamp = f'v{self.reloads + 1}'
         return self.stamp
 
@@ -63,7 +59,7 @@ class ReloadableSource(FakeSource):
 
 def test_concurrency_never_exceeds_four_and_overflow_is_busy():
     src = SlowSource(SAMPLE, delay=0.2)
-    svc = app.Service(src, 400, max_concurrent=4, queue_max=8, timeout_s=5.0)
+    svc = app.Service(src, max_concurrent=4, queue_max=8, timeout_s=5.0)
     results = []
     lock = threading.Lock()
 
@@ -116,14 +112,14 @@ def test_release_wakes_a_queued_waiter():
 # ---- 超时 ----
 
 def test_slow_query_returns_504():
-    svc = app.Service(SlowSource(SAMPLE, delay=0.5), 400, timeout_s=0.1)
+    svc = app.Service(SlowSource(SAMPLE, delay=0.5), timeout_s=0.1)
     st, body = svc.handle('/api/fulltext', {'q': '學'})
     assert st == 504 and body['error'] == 'timeout'
 
 
 def test_slot_is_held_until_worker_really_finishes():
     src = SlowSource(SAMPLE, delay=0.4)
-    svc = app.Service(src, 400, max_concurrent=1, queue_max=0, timeout_s=0.1)
+    svc = app.Service(src, max_concurrent=1, queue_max=0, timeout_s=0.1)
     st, _ = svc.handle('/api/fulltext', {'q': '學'})
     assert st == 504
     # 超时的查询仍在跑，闸位未释放 → 新请求直接 busy
@@ -138,47 +134,44 @@ def test_slot_is_held_until_worker_really_finishes():
 # ---- 索引不可用 ----
 
 def test_index_unavailable_returns_503():
-    st, body = app.Service(DeadSource(SAMPLE), 400).handle('/api/fulltext', {'q': '學'})
+    st, body = app.Service(DeadSource(SAMPLE)).handle('/api/fulltext', {'q': '學'})
     assert st == 503 and body['error'] == 'index_unavailable'
 
 
 def test_bad_query_still_400_before_index_is_touched():
-    st, body = app.Service(DeadSource(SAMPLE), 400).handle('/api/fulltext', {'q': ''})
+    st, body = app.Service(DeadSource(SAMPLE)).handle('/api/fulltext', {'q': ''})
     assert st == 400 and body['error'] == 'bad_query'
 
 
 # ---- /healthz ----
 
 def test_healthz_ok_when_probe_hits():
-    st, body = app.Service(FakeSource(SAMPLE), 400).health()
+    st, body = app.Service(FakeSource(SAMPLE)).health()
     assert st == 200 and body['status'] == 'ok'
 
 
 def test_healthz_503_when_index_cannot_open():
-    st, body = app.Service(DeadSource(SAMPLE), 400).health()
+    st, body = app.Service(DeadSource(SAMPLE)).health()
     assert st == 503 and body['status'] == 'unavailable'
 
 
 def test_healthz_503_when_probe_has_no_hits():
-    st, _ = app.Service(FakeSource({}), 400).health()
+    st, _ = app.Service(FakeSource({})).health()
     assert st == 503
 
 
-# ---- /admin/reload 与章 LRU ----
+# ---- /admin/reload ----
 
-def test_reload_clears_chapter_cache_and_returns_new_stamp():
+def test_reload_reopens_and_returns_new_stamp():
     src = ReloadableSource(SAMPLE)
-    svc = app.Service(src, 400)
-    svc.handle('/api/fulltext', {'q': '學'})          # 填充缓存
-    assert len(src.cache) > 0
+    svc = app.Service(src)
     st, body = svc.reload()
     assert st == 200 and body['stamp'] == 'v2'
-    assert len(src.cache) == 0
     assert src.reloads == 1
 
 
 def test_reload_without_source_support_is_noop_200():
-    st, body = app.Service(FakeSource(SAMPLE), 400).reload()
+    st, body = app.Service(FakeSource(SAMPLE)).reload()
     assert st == 200 and body['stamp'] is None
 
 
@@ -187,42 +180,8 @@ def test_reload_index_unavailable_returns_503():
         def reload(self):
             raise app.IndexUnavailable('manifest missing')
 
-    st, body = app.Service(BrokenReload(SAMPLE), 400).reload()
+    st, body = app.Service(BrokenReload(SAMPLE)).reload()
     assert st == 503 and body['error'] == 'index_unavailable'
-
-
-def test_byte_lru_bounds_by_utf8_bytes_and_evicts_oldest():
-    c = ByteLRU(max_bytes=9)                 # 3 个汉字 = 9 字节
-    c.put('a', '學學學')
-    assert c.size == 9
-    c.put('b', '學')                          # 挤掉最久未用的 a
-    assert c.get('a') is None and c.get('b') == '學'
-    assert c.size == 3
-
-
-def test_byte_lru_get_refreshes_recency():
-    c = ByteLRU(max_bytes=12)                # 两个「學學」刚好放下
-    c.put('a', '學學')
-    c.put('b', '學學')
-    c.get('a')                               # a 变新
-    c.put('c', '學學')                        # 应挤掉 b
-    assert c.get('b') is None and c.get('a') == '學學'
-
-
-def test_byte_lru_skips_oversize_value_and_drops_old_copy():
-    c = ByteLRU(max_bytes=3)
-    c.put('a', '學')
-    c.put('a', '學學')                        # 超限：不入缓存，旧值也要去掉
-    assert c.get('a') is None and c.size == 0
-
-
-def test_byte_lru_get_or_load_loads_once():
-    c = ByteLRU(max_bytes=100)
-    calls = []
-    loader = lambda k: calls.append(k) or 'text'
-    assert c.get_or_load('k', loader) == 'text'
-    assert c.get_or_load('k', loader) == 'text'
-    assert calls == ['k']
 
 
 # ---- HTTP 层 ----
@@ -252,7 +211,7 @@ def _post(url):
 
 def test_http_healthz_and_reload_round_trip():
     src = ReloadableSource(SAMPLE)
-    server, base = _serve(app.Service(src, 400))
+    server, base = _serve(app.Service(src))
     try:
         assert _get(base + '/healthz')[0] == 200
         st, body = _post(base + '/admin/reload')
@@ -263,7 +222,7 @@ def test_http_healthz_and_reload_round_trip():
 
 
 def test_http_busy_and_timeout_status_codes():
-    svc = app.Service(SlowSource(SAMPLE, delay=0.3), 400, max_concurrent=1, queue_max=0, timeout_s=0.1)
+    svc = app.Service(SlowSource(SAMPLE, delay=0.3), max_concurrent=1, queue_max=0, timeout_s=0.1)
     server, base = _serve(svc)
     try:
         q = '/api/fulltext?' + urllib.parse.urlencode({'q': '學'})
