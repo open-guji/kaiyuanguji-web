@@ -43,6 +43,18 @@ printf '{"pid":999999,"host":"%s","startedAt":"x","task":"old"}' "$(hostname)" >
 eq "退出码 0" "$(run rotate.sh 20261002-0000)" 0
 teardown
 
+echo "没拿锁的旧版 Meili 重建进程在跑 → 退出 6，锁文件不留"
+setup
+python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000
+( exec -a "node /opt/indexer/full-reindex.mjs" sleep 30 ) & FAKE=$!
+sleep 0.3
+eq "退出码 6" "$(run rotate.sh 20261002-0000)" 6
+eq "current 未动" "$(cur)" 20261001-0000
+[ -e "$INDEXER_LOCK" ] && bad "锁未释放" || ok "锁已释放"
+kill $FAKE 2>/dev/null; wait $FAKE 2>/dev/null
+eq "进程走后退出码 0" "$(run rotate.sh 20261002-0000)" 0
+teardown
+
 echo "manifest 过期（createdAtEpoch 早于当前）→ 8"
 setup
 python3 "$T/mkpack.py" "$FT_ROOT/releases/20260901-0000" 20260901-0000 500

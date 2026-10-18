@@ -33,6 +33,13 @@ lock_acquire() {
                 "$$" "$host" "$(date -u +%FT%TZ)" "$task" > "$FT_LOCK" ) 2>/dev/null; then
             FT_LOCK_HELD=1
             trap lock_release EXIT
+            # 双保险：机上若还是不拿锁的旧版 Meili 脚本，也认进程名避开（GUJI-615）。
+            # 只认以 node 开头的命令行，免得 grep／ssh 命令里恰好带这个文件名也被当成重建
+            if [ -z "${FT_SKIP_PROC_CHECK:-}" ] && pgrep -f '^([^ ]*/)?node[^ ]* .*(full-reindex|indexer/ingest)\.mjs' >/dev/null 2>&1; then
+                log "锁拿到了，但 Meili 重建／ingest 进程在跑（旧版脚本不拿锁），按锁忙处理"
+                lock_release
+                return 1
+            fi
             return 0
         fi
         local raw; raw="$(cat "$FT_LOCK" 2>/dev/null || true)"
