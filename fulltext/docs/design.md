@@ -137,7 +137,7 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 |---|---|---|
 | GUJI-612 | 本设计 | 本 PR |
 | GUJI-613 | 迁仓＋新查询路径＋42 部回归 | 本 PR |
-| GUJI-614 | 全量建包进 GitHub Actions，传 COS | PR 已开，待首跑 |
+| GUJI-614 | 全量建包进 GitHub Actions，传 COS | 首跑（10-17 21:21）建包 20 分、verify 14 分通过，包 4.25 GiB；传 COS 约 1 MB/s，78 分后 UserNetworkTooSlow 失败 → 改为逐块重试＋续传、失败留包可 from_run 重传 |
 | GUJI-615 | 上海机部署与实测（Owen） | 待做 |
 | GUJI-616 | 边缘函数 /api/fulltext、限流、开关、前端 staging | 待做 |
 | GUJI-617 | 上线、夜间增量、监控 | 待做 |

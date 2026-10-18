@@ -4,7 +4,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { checkManifest, parseArgs, run, stampsToPrune, wrapClient } from '../upload_cos.mjs';
+import { createHash } from 'node:crypto';
+import { checkManifest, isTransient, parseArgs, run, stampsToPrune, uploadLarge, wrapClient } from '../upload_cos.mjs';
 
 const M = { schemaVersion: 2, stamp: '20261018-0100', createdAtEpoch: 2000, bookTextCommit: 'a'.repeat(40),
             books: 1, passages: 10, indexBytes: 100 };
@@ -24,7 +25,13 @@ function fakeClient(objects = {}) {
     return {
         store, calls,
         getJson: async k => (k in store ? JSON.parse(store[k]) : null),
-        uploadFile: async (k, path) => { calls.push(['upload', k]); store[k] = 'x'.repeat(1234); },
+        mpFind: async k => null,
+        mpInit: async k => { calls.push(['upload', k]); return 'U1'; },
+        mpParts: async () => [],
+        mpPut: async (k, u, i, buf) => { (store.__parts ||= {})[i] = buf; return `"${i}"`; },
+        mpComplete: async (k, u, parts) => {
+            store[k] = Buffer.concat(parts.map(p => store.__parts[p.PartNumber])).toString('latin1'); delete store.__parts;
+        },
         head: async k => ({ headers: { 'content-length': String(store[k].length) } }),
         putJson: async (k, o) => { calls.push(['put', k]); store[k] = JSON.stringify(o); },
         list: async p => Object.keys(store).filter(k => k.startsWith(p)),
@@ -104,4 +111,78 @@ test('wrapClient：网络错误重试，404 不重试', async () => {
     await c.putJson('k', {}, 'no-cache');
     assert.equal(n, 3);
     assert.equal(await c.getJson('k'), null);
+});
+
+const md5 = b => createHash('md5').update(b).digest('hex');
+
+function bigFile(size) {
+    const d = mkdtempSync(join(tmpdir(), 'ftbig-'));
+    const p = join(d, 'pack'); const buf = Buffer.alloc(size);
+    for (let i = 0; i < size; i++) buf[i] = (i * 31 + 7) & 255;
+    writeFileSync(p, buf);
+    return { p, buf };
+}
+
+function mpClient({ failTimes = {}, existing = null, err = { message: 'User network is too slow.', code: 'UserNetworkTooSlow' } } = {}) {
+    const parts = {}; const tries = {}; const log = { put: [], completed: null, inited: 0 };
+    return {
+        parts, tries, log,
+        mpFind: async () => existing?.uploadId ?? null,
+        mpInit: async () => { log.inited++; return 'NEW'; },
+        mpParts: async () => existing?.parts ?? [],
+        mpPut: async (k, u, i, buf) => {
+            tries[i] = (tries[i] || 0) + 1;
+            if (tries[i] <= (failTimes[i] || 0)) throw err;
+            log.put.push(i); parts[i] = Buffer.from(buf); return `"${md5(buf)}"`;
+        },
+        mpComplete: async (k, u, ps) => { log.completed = { u, ps }; },
+    };
+}
+
+test('uploadLarge：单块 UserNetworkTooSlow 只重传该块，最后按序合并', async () => {
+    const { p, buf } = bigFile(10 * 1024 + 5);
+    const c = mpClient({ failTimes: { 3: 2 } });
+    await uploadLarge(c, 'k', p, buf.length, { partSize: 1024, parallel: 3, log: quiet, sleep: async () => {} });
+    assert.equal(c.tries[3], 3);
+    assert.equal(c.log.completed.ps.length, 11);
+    assert.deepEqual(c.log.completed.ps.map(x => x.PartNumber), [...Array(11).keys()].map(i => i + 1));
+    assert.ok(Buffer.concat(c.log.completed.ps.map(x => c.parts[x.PartNumber])).equals(buf));
+});
+
+test('uploadLarge：续传只补缺的块，MD5 不符的重传', async () => {
+    const { p, buf } = bigFile(4096);
+    const part = i => buf.subarray((i - 1) * 1024, i * 1024);
+    const existing = { uploadId: 'OLD', parts: [
+        { PartNumber: 1, ETag: `"${md5(part(1))}"`, Size: 1024 },
+        { PartNumber: 2, ETag: '"deadbeef"', Size: 1024 },
+        { PartNumber: 4, ETag: `"${md5(part(4))}"`, Size: 1024 } ] };
+    const c = mpClient({ existing });
+    await uploadLarge(c, 'k', p, buf.length, { partSize: 1024, parallel: 2, log: quiet, sleep: async () => {} });
+    assert.equal(c.log.inited, 0);
+    assert.deepEqual(c.log.put.sort(), [2, 3]);
+    assert.equal(c.log.completed.u, 'OLD');
+    assert.equal(c.log.completed.ps.length, 4);
+});
+
+test('uploadLarge：非网络错误立刻失败（退出码 6），不合并', async () => {
+    const { p, buf } = bigFile(3000);
+    const c = mpClient({ failTimes: { 2: 99 }, err: { statusCode: 403, message: 'AccessDenied' } });
+    await assert.rejects(uploadLarge(c, 'k', p, buf.length, { partSize: 1024, log: quiet, sleep: async () => {} }), e => e.code === 6);
+    assert.equal(c.tries[2], 1);
+    assert.equal(c.log.completed, null);
+});
+
+test('uploadLarge：一块一直慢，试满 partTries 次后失败', async () => {
+    const { p, buf } = bigFile(2048);
+    const c = mpClient({ failTimes: { 1: 99 } });
+    await assert.rejects(uploadLarge(c, 'k', p, buf.length, { partSize: 1024, partTries: 4, log: quiet, sleep: async () => {} }),
+                         e => e.code === 6 && /第 1 块/.test(e.message));
+    assert.equal(c.tries[1], 4);
+});
+
+test('isTransient 认得 UserNetworkTooSlow、5xx，不认 403', () => {
+    assert.ok(isTransient({ message: 'User network is too slow.' }));
+    assert.ok(isTransient({ error: { Code: 'UserNetworkTooSlow' } }));
+    assert.ok(isTransient({ statusCode: 503 }));
+    assert.ok(!isTransient({ statusCode: 403, message: 'AccessDenied' }));
 });
