@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { checkManifest, isTransient, parseArgs, run, stampsToPrune, uploadLarge, wrapClient } from '../upload_cos.mjs';
+import { checkManifest, isTransient, onStray, parseArgs, run, stampsToPrune, uploadLarge, wrapClient } from '../upload_cos.mjs';
 
 const M = { schemaVersion: 2, stamp: '20261018-0100', createdAtEpoch: 2000, bookTextCommit: 'a'.repeat(40),
             books: 1, passages: 10, indexBytes: 100 };
@@ -185,4 +185,10 @@ test('isTransient 认得 UserNetworkTooSlow、5xx，不认 403', () => {
     assert.ok(isTransient({ error: { Code: 'UserNetworkTooSlow' } }));
     assert.ok(isTransient({ statusCode: 503 }));
     assert.ok(!isTransient({ statusCode: 403, message: 'AccessDenied' }));
+});
+
+test('onStray 只吞游离的 socket 错误', () => {
+    assert.ok(onStray({ code: 'EPIPE', message: 'write EPIPE' }, quiet));
+    assert.ok(onStray({ code: 'ECONNRESET' }, quiet));
+    assert.ok(!onStray(new TypeError('x is undefined'), quiet));
 });

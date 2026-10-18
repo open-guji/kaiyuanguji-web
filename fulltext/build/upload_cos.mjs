@@ -245,7 +245,22 @@ export async function run(a, client, log = console.log) {
     return latest;
 }
 
+// SDK 在请求被 COS 掐断后偶尔还会在已废弃的 TLS socket 上抛 EPIPE/ECONNRESET（无人监听 → 进程崩）。
+// 这类错误对应的请求已经以失败回调过、会被重试，忽略即可；别的未捕获错误照常退出 6。
+export function onStray(e, log = console.error) {
+    if (/EPIPE|ECONNRESET|ETIMEDOUT|socket hang up/i.test(`${e?.code || ''} ${e?.message || ''}`)) {
+        log(`忽略游离的 socket 错误：${e?.code || e?.message}`);
+        return true;
+    }
+    return false;
+}
+
 async function main() {
+    process.on('uncaughtException', e => {
+        if (onStray(e)) return;
+        console.error(`ERROR[6] 未捕获：${e?.stack || e}`);
+        process.exit(6);
+    });
     let a;
     try {
         a = parseArgs(process.argv.slice(2));
