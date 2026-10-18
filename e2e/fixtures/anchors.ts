@@ -65,11 +65,12 @@ export const MEILI_KEY =
  * 10-08 数据发布后 books 实测 60,985，越过原上限 60k（数据包基础闸门绿，批 12/13 新增书目所致），按真实增长处理；
  * 上限按 ~±40% 约定上调到 100k。
  * 10-18 总目全量晋升（数万 Work／Book 陆续上线）前，works／books 上限统一抬到 400k。
+ * 10-18 叢書批次晋升后 collections 实测 613（book-index 92c4736），上限 500 → 2000。
  */
 export const COUNT_RANGES = {
     works: { min: 60_000, max: 400_000 },
     books: { min: 12_000, max: 400_000 },
-    collections: { min: 40, max: 500 },
+    collections: { min: 40, max: 2_000 },
     entities: { min: 20_000, max: 200_000 },
 } as const;
 
