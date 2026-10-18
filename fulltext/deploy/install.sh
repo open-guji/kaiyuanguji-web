@@ -23,11 +23,17 @@ for f in lib.sh rotate.sh rollback.sh manifest_check.py; do
 done
 if [ -n "$APP_SRC" ]; then
     [ -f "$APP_SRC/common.py" ] && [ -d "$APP_SRC/service" ] || { echo "$APP_SRC 不是 fulltext/ 目录（缺 common.py 或 service/）" >&2; exit 2; }
+    # 整目录换新（旧版留下的文件不残留）；不带源机属主（cp -a 会把 ubuntu:ubuntu 775 带过来）
+    run rm -rf "$ROOT/app/service"
     run mkdir -p "$ROOT/app/service"
     run install -m 0644 "$APP_SRC/common.py" "$APP_SRC/charmap.json" "$ROOT/app/"
-    run cp -a "$APP_SRC/service"/. "$ROOT/app/service/"
+    run cp -R --no-preserve=mode,ownership "$APP_SRC/service"/. "$ROOT/app/service/"
     run rm -rf "$ROOT/app/service/tests"
+    run find "$ROOT/app" -name __pycache__ -type d -prune -exec rm -rf {} +
 fi
+# 代码归 root、服务用户只读（服务以 fulltext 跑，unit 里另有 ReadOnlyPaths）
+run chown -R root:root "$ROOT/app"
+run chmod -R u=rwX,go=rX "$ROOT/app"
 run install -m 0644 "$HERE/fulltext.service" "$UNIT_DIR/fulltext.service"
 if [ ! -e "$ENV_FILE" ]; then
     run install -m 0600 "$HERE/fulltext.env.example" "$ENV_FILE"
