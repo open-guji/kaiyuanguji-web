@@ -1,0 +1,42 @@
+[
+ {
+  "id": "bigram",
+  "entry": "d59f2hq1e9ky",
+  "field": "norm",
+  "q": "太極",
+  "note": "两字，繁体查询经归一",
+  "expect": 106
+ },
+ {
+  "id": "variant",
+  "entry": "d59f2hq1e9ky",
+  "field": "norm",
+  "q": "天地万物之理",
+  "note": "简体查询命中繁体原文（norm 层）",
+  "expect": 11
+ },
+ {
+  "id": "single",
+  "entry": "d59f2hq1e9ky",
+  "field": "norm",
+  "q": "理",
+  "note": "单字，走 norm1",
+  "expect": 2068
+ },
+ {
+  "id": "orig_exact",
+  "entry": "d59f2hq1e9ky",
+  "field": "orig",
+  "q": "天地萬物之理",
+  "note": "原字层精确匹配",
+  "expect": 11
+ },
+ {
+  "id": "zero",
+  "entry": "d59f2hq1e9ky",
+  "field": "norm",
+  "q": "龘龘龘",
+  "note": "无命中",
+  "expect": 0
+ }
+]

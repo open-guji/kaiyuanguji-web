@@ -1,0 +1,27 @@
+[Unit]
+Description=开鉴古籍全文检索服务（F4，Tantivy）
+After=network.target
+
+[Service]
+Type=simple
+User=fulltext
+Group=fulltext
+EnvironmentFile=/etc/fulltext.env
+WorkingDirectory=/opt/fulltext/app
+ExecStart=/opt/fulltext/bin/run-service.sh
+# 轮换时换了 current 符号链接，通知服务重开索引目录、清章缓存（reload 失败由 rotate.sh 改 restart）
+ExecReload=/usr/bin/curl -fsS -X POST http://127.0.0.1:8765/admin/reload
+Restart=on-failure
+RestartSec=3
+# 与 Meili 共机：内存软上限、低 CPU／IO 优先级（不设 MemoryMax，避免被 OOM 直接杀）
+MemoryHigh=800M
+Nice=10
+IOSchedulingClass=idle
+# 基本加固
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+ReadOnlyPaths=/opt/fulltext
+
+[Install]
+WantedBy=multi-user.target
