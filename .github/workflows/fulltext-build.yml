@@ -1,0 +1,121 @@
+name: Fulltext build（全文索引全量建包）
+
+# 全文搜索 v2 全量建包 → verify → 传 COS（设计见 fulltext/docs/design.md，Jira GUJI-614）。
+# 只手动触发；不挂 schedule／push（夜间增量是 GUJI-617 的事）。
+# 只有全量（only 为空）才会上传；指定书单时只建包、verify、留 artifact，供排查用。
+# COS 复用本仓 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET（用户 2026-10-18 定）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: '只构建这些书 ID（逗号分隔；留空＝全量）'
+        required: false
+        default: ''
+      upload:
+        description: '全量建完后传 COS 并翻转 latest.json'
+        type: boolean
+        default: true
+      prefix:
+        description: 'COS 前缀（演练可用 staging/fulltext）'
+        required: false
+        default: 'fulltext'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fulltext-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: 腾盘（删 runner 预装的 dotnet／android／ghc／CodeQL）
+        run: |
+          df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h / | tail -1
+
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: fulltext
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖
+        run: pip install -q -r fulltext/requirements.txt
+
+      - name: 稀疏检出 book-text（default/、manifest.json、/index/；不取图片）
+        run: |
+          set -e
+          git init -q "$RUNNER_TEMP/bt"; cd "$RUNNER_TEMP/bt"
+          git remote add origin https://github.com/open-guji/book-text.git
+          printf '%s\n' '/*/*/*/*/*/default/' '/*/*/*/*/*/manifest.json' '/index/' | git sparse-checkout set --no-cone --stdin
+          git fetch -q --depth 1 --filter=blob:none origin main
+          git checkout -q FETCH_HEAD
+          echo "book-text=$(git rev-parse HEAD) 已检出 $(du -sm . | cut -f1) MB"
+
+      - name: book-index 只取树（书名在文件名里，不下 blob）
+        run: |
+          git clone -q --depth 1 --filter=blob:none --no-checkout https://github.com/open-guji/book-index.git "$RUNNER_TEMP/bi"
+          echo "book-index=$(git -C "$RUNNER_TEMP/bi" rev-parse HEAD)"
+
+      - name: 建包
+        working-directory: fulltext
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          set -eo pipefail
+          mkdir -p "$RUNNER_TEMP/out"
+          ARGS=(); [ -n "$ONLY" ] && ARGS=(--only $(echo "$ONLY" | tr ',' ' '))
+          ( peak=0; while sleep 5; do u=$(df -BM --output=used "$RUNNER_TEMP" | tail -1 | tr -dc 0-9); [ "$u" -gt "$peak" ] && peak=$u && echo "$peak" > "$RUNNER_TEMP/diskpeak"; done ) &
+          SAMPLER=$!
+          /usr/bin/time -v -o "$RUNNER_TEMP/time.txt" python build/build_pack.py --text-root "$RUNNER_TEMP/bt" \
+            --book-index "$RUNNER_TEMP/bi" --out "$RUNNER_TEMP/out" "${ARGS[@]}" 2>&1 | tee "$RUNNER_TEMP/build.log"
+          kill $SAMPLER || true
+          if grep -q 'WARN: .*查不到书名' "$RUNNER_TEMP/build.log"; then echo "::warning::有书在 book-index 里查不到书名，见日志"; fi
+          {
+            echo "### 建包"
+            grep -E 'Elapsed|Maximum resident' "$RUNNER_TEMP/time.txt" | sed 's/^[[:space:]]*/- /'
+            echo "- 盘占用峰值（整盘 used）：$(cat "$RUNNER_TEMP/diskpeak" 2>/dev/null || echo ?) MB"
+            grep -E '^books=' "$RUNNER_TEMP/build.log" | sed 's/^/- /'
+            ls -l "$RUNNER_TEMP/out" | sed 's/^/    /'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: verify
+        working-directory: fulltext
+        run: |
+          set -eo pipefail
+          PACK=$(ls "$RUNNER_TEMP"/out/fulltext-*.tar.gz | head -1)
+          python build/verify_pack.py "$PACK" --text-root "$RUNNER_TEMP/bt" | tail -20 | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "PACK=$PACK" >> "$GITHUB_ENV"
+
+      - name: 传 COS
+        if: ${{ inputs.only == '' && inputs.upload }}
+        working-directory: fulltext/build
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          PREFIX: ${{ inputs.prefix }}
+        run: |
+          set -eo pipefail
+          npm install --no-save --no-package-lock --silent cos-nodejs-sdk-v5@2.15.4
+          node upload_cos.mjs --pack "$PACK" --manifest "$RUNNER_TEMP/out/manifest.json" --prefix "$PREFIX" --keep 2 \
+            | tee "$RUNNER_TEMP/upload.log"
+          { echo "### COS"; echo '```'; tail -1 "$RUNNER_TEMP/upload.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 留 artifact（只建部分书时）
+        if: ${{ inputs.only != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: fulltext-pack
+          path: ${{ runner.temp }}/out/fulltext-*.tar.gz
+          retention-days: 1
+          compression-level: 0

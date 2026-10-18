@@ -3,6 +3,8 @@
 #
 # 用法：
 #   rotate.sh <stamp>                          release 已在 $FT_ROOT/releases/<stamp>（rsync 到位）
+#   rotate.sh --latest <…/fulltext/latest.json 的 URL>
+#                                              读 COS 上的指针，取最新包（已是 current 则什么都不做，退出 0）
 #   rotate.sh --tar <包文件或URL> --manifest <manifest.json>
 #                                              流式解压（不落盘 gz，峰值少一个包的大小）；
 #                                              磁盘闸用 manifest 的 indexBytes，所以要先给 manifest
@@ -19,20 +21,35 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/lib.sh"
 
-STAMP="" TAR="" MANIFEST_SRC="" VERIFY=1
+STAMP="" TAR="" MANIFEST_SRC="" VERIFY=1 LATEST=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --tar) TAR="${2:-}"; shift 2 ;;
         --manifest) MANIFEST_SRC="${2:-}"; shift 2 ;;
+        --latest) LATEST="${2:-}"; shift 2 ;;
         --no-verify-files) VERIFY=0; shift ;;
         -*) die $EXIT_ARGS "未知选项 $1" ;;
         *) STAMP="$1"; shift ;;
     esac
 done
+if [ -n "$LATEST" ]; then
+    [ -z "$TAR$MANIFEST_SRC$STAMP" ] || die $EXIT_ARGS "--latest 不能和 --tar／--manifest／stamp 同用"
+    LJ="$(mktemp)"; mkdir -p "$FT_ROOT/releases"; LM="$FT_ROOT/releases/.latest-manifest.json"
+    "$FT_CURL" -fsS "$LATEST" -o "$LJ" || die $EXIT_ARGS "取不到 $LATEST"
+    read -r L_STAMP TAR L_MAN < <(python3 "$HERE/manifest_check.py" latest-urls "$LJ" "$LATEST") \
+        || { rm -f "$LJ"; die $EXIT_MANIFEST_BAD "latest.json 不合格"; }
+    rm -f "$LJ"
+    if [ -L "$FT_ROOT/current" ] && [ "$(basename "$(readlink -f "$FT_ROOT/current")")" = "$L_STAMP" ]; then
+        log "current 已是最新 $L_STAMP，不轮换"; exit 0
+    fi
+    "$FT_CURL" -fsS "$L_MAN" -o "$LM" || die $EXIT_ARGS "取不到 manifest $L_MAN"
+    MANIFEST_SRC="$LM"
+    log "latest → $L_STAMP"
+fi
 if [ -n "$TAR" ]; then
     [ -n "$MANIFEST_SRC" ] || die $EXIT_ARGS "--tar 必须同时给 --manifest"
 else
-    [ -n "$STAMP" ] || die $EXIT_ARGS "用法：rotate.sh <stamp> | --tar <包> --manifest <manifest.json>"
+    [ -n "$STAMP" ] || die $EXIT_ARGS "用法：rotate.sh <stamp> | --latest <latest.json URL> | --tar <包> --manifest <manifest.json>"
 fi
 MARGIN_GB="${FT_MARGIN_GB:-5}"
 SELF_PORT="${FT_SELFCHECK_PORT:-18765}"
@@ -84,7 +101,7 @@ if [ -n "$TAR" ]; then
     PART="$REL/.$STAMP.partial"; rm -rf "$PART"; mkdir -p "$PART"
     log "流式解压 → $PART"
     case "$TAR" in
-        http://*|https://*) "$FT_CURL" -fsS "$TAR" | tar -xz -C "$PART" ;;
+        http://*|https://*|file://*) "$FT_CURL" -fsS "$TAR" | tar -xz -C "$PART" ;;
         *) tar -xzf "$TAR" -C "$PART" ;;
     esac
     # 包内文件可能带顶层目录 fulltext-<stamp>/，拍平
