@@ -2934,6 +2934,12 @@
   color: #fff;
   font-weight: var(--fw-medium);
 }
+/* 本章缺文本版本，改字不收（GUJI-590）：一行说明代替按钮 */
+.og-cf-bar .og-cf-off {
+  padding: 0 8px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
 .og-cf-bar button:hover {
   background: rgba(255, 255, 255, 0.12);
 }

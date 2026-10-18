@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, type RefObject } from 'react';
-import { BASIS_MAX, cellIdOf, isNewChar, submitCharFix, type CharFixCtx } from '@/lib/charfix';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import {
+    BASIS_MAX, NOTE_MAX, canFixChar, cellIdOf, isNewChar, reportableEntitiesAt, submitCharFix, submitEntityFix,
+    type CharFixCtx, type CharFixEntity,
+} from '@/lib/charfix';
+import { useSiteT } from '@/i18n/use-site-t';
+import type { SiteT } from '@/i18n/translate';
 
 interface Props {
     /** 阅读器正文所在的外框：只认这里面的字 */
@@ -12,16 +17,38 @@ interface Props {
     fetchImpl?: typeof fetch;
 }
 
+/** 浮条离视口边的最小距离 */
+const EDGE = 8;
+
+interface At {
+    cell: string;
+    left: number;
+    top: number;
+    below: boolean;
+    /** 被点字的上沿：浮条在下方放不下时翻到上方用 */
+    charTop: number;
+}
+
+/** 「第 4 页 3 列 8 格」：格位去掉夹注 a／b 后缀 */
+function whereOf(t: SiteT, cell: string) {
+    const [page, col, slot] = cell.replace(/[ab]$/, '').split(':');
+    return t('charfix.bar.where', { page, col, slot });
+}
+
 /**
  * 阅读页「改字」入口（GUJI-561）。点一个对读章里的字，字旁边浮出一条「第 4 页 3 列 8 格「於」［改字］」（锚在字上，不占视口底部，
  * 盖不到书影翻页等控件；手机宽度也点得到）；点「改字」弹出建议字＋依据的小弹窗。纯 .txt 章没有 data-char-id，自然没有入口。
+ * 字落在某个专名的 anchor 区间里时，浮条再多一个「专名有误」（GUJI-590），提交 kind=entity 记录。
+ * 本章缺文本版本时不收改字，浮条里写明（专名意见不受影响）。
  * 选区拖选时不弹（那是「复制／报错」浮条的事）。
  */
 export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props) {
-    const [at, setAt] = useState<{ cell: string; left: number; top: number; below: boolean } | null>(null);
-    const [open, setOpen] = useState(false);
+    const t = useSiteT();
+    const [at, setAt] = useState<At | null>(null);
+    const [open, setOpen] = useState<'char' | 'entity' | null>(null);
     const openRef = useRef(false);
-    openRef.current = open;
+    openRef.current = open !== null;
+    const barRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const root = containerRef.current;
@@ -37,9 +64,10 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
             const below = (window.matchMedia?.('(pointer: coarse)').matches ?? false) || rect.top < 56; // 字在视口最上沿时上方放不下，也放下方
             setAt({
                 cell: id,
-                left: Math.min(Math.max(rect.left + rect.width / 2, 110), window.innerWidth - 110),
-                top: below ? rect.bottom + 8 : rect.top - 8,
+                left: rect.left + rect.width / 2,
+                top: below ? rect.bottom + EDGE : rect.top - EDGE,
                 below,
+                charTop: rect.top,
             });
         };
         // fixed 定位：滚动、缩放后位置就不对了，先收起
@@ -54,104 +82,203 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
         };
     }, [containerRef, getCtx]);
 
+    // 画出来以后按浮条实际尺寸夹进视口（GUJI-590）：触屏上字贴视口底时，下方放不下就翻到字上方，上方也放不下就贴底；
+    // 左右同理（浮条宽度随文案、按钮多少而变，不再按固定半宽估）。挪过一次后再量就在视口内，不会来回跳
+    useLayoutEffect(() => {
+        const el = barRef.current;
+        if (!at || !el) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width && !r.height) return; // 没有布局（测试环境、隐藏）就不动
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        let { left, top, below } = at;
+        if (r.left < EDGE) left += EDGE - r.left;
+        else if (r.right > vw - EDGE) left -= r.right - (vw - EDGE);
+        if (below && r.bottom > vh - EDGE) {
+            if (at.charTop - EDGE - r.height >= EDGE) { below = false; top = at.charTop - EDGE; }
+            else top -= r.bottom - (vh - EDGE);
+        } else if (!below && r.top < EDGE) {
+            top += EDGE - r.top;
+        }
+        if (left !== at.left || top !== at.top || below !== at.below) setAt({ ...at, left, top, below });
+    }, [at]);
+
     const ctx = getCtx();
     if (!at || !ctx) return null;
     const cell = at.cell;
-    const [page, col, slot] = cell.replace(/[ab]$/, '').split(':');
     const orig = ctx.chars.get(cell) ?? '';
+    const fixable = canFixChar(ctx);
+    const ents = reportableEntitiesAt(cell, ctx);
 
     return (
         <>
             <div
+                ref={barRef}
                 className={at.below ? 'og-cf-bar og-cf-bar--below' : 'og-cf-bar'}
                 style={{ left: at.left, top: at.top }}
                 role="toolbar"
-                aria-label="改字"
+                aria-label={t('charfix.bar.label')}
             >
-                <span className="og-cf-where">第 {page} 頁 {col} 列 {slot} 格{orig && <>「{orig}」</>}</span>
-                <button type="button" className="og-cf-go" onClick={() => setOpen(true)}>改字</button>
-                <button type="button" className="og-cf-x" onClick={() => setAt(null)} aria-label="關閉">×</button>
+                <span className="og-cf-where">{whereOf(t, cell)}{orig && <>「{orig}」</>}</span>
+                {fixable
+                    ? <button type="button" className="og-cf-go" onClick={() => setOpen('char')}>{t('charfix.bar.fix')}</button>
+                    : <span className="og-cf-off">{t('charfix.bar.noVersion')}</span>}
+                {ents.length > 0 && <button type="button" className="og-cf-go" onClick={() => setOpen('entity')}>{t('charfix.bar.entity')}</button>}
+                <button type="button" className="og-cf-x" onClick={() => setAt(null)} aria-label={t('charfix.bar.close')}>×</button>
             </div>
-            {open && <CharFixDialog ctx={ctx} cell={cell} orig={orig} fetchImpl={fetchImpl} onClose={() => setOpen(false)} />}
+            {open === 'char' && fixable && <CharFixDialog t={t} ctx={ctx} cell={cell} orig={orig} fetchImpl={fetchImpl} onClose={() => setOpen(null)} />}
+            {open === 'entity' && ents.length > 0 && <EntityFixDialog t={t} ctx={ctx} entities={ents} fetchImpl={fetchImpl} onClose={() => setOpen(null)} />}
         </>
     );
 }
 
-function CharFixDialog({ ctx, cell, orig, fetchImpl, onClose }: { ctx: CharFixCtx; cell: string; orig: string; fetchImpl?: typeof fetch; onClose: () => void }) {
-    const [newChar, setNewChar] = useState('');
-    const [basis, setBasis] = useState('');
+/** 两个弹窗共用：Esc 关、提交中／已收到、错误文案 */
+function useDialog(onClose: () => void) {
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
     const [error, setError] = useState('');
-    const inputRef = useRef<HTMLInputElement>(null);
-    const titleId = useId();
-
     useEffect(() => {
-        inputRef.current?.focus();
         const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
-
-    const nc = newChar.trim();
-    const valid = isNewChar(nc) && nc !== orig;
-    const submit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!valid || status !== 'idle') return;
+    const run = async (send: () => Promise<string | null>) => {
+        if (status !== 'idle') return;
         setStatus('submitting');
         setError('');
-        const err = await submitCharFix(ctx, { cell, newChar: nc, basis: basis.trim() }, fetchImpl);
+        const err = await send();
         if (err) { setError(err); setStatus('idle'); } else setStatus('done');
     };
+    return { status, error, run };
+}
 
+function DialogFrame({ t, title, titleId, onClose, done, children }: { t: SiteT; title: string; titleId: string; onClose: () => void; done: string | null; children: React.ReactNode }) {
     return (
         <div className="og-fb-mask" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
             <div className="og-fb-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
                 <div className="og-fb-head">
-                    <h2 id={titleId}>改字</h2>
-                    <button type="button" className="og-fb-close" onClick={onClose} aria-label="關閉">×</button>
+                    <h2 id={titleId}>{title}</h2>
+                    <button type="button" className="og-fb-close" onClick={onClose} aria-label={t('charfix.dialog.close')}>×</button>
                 </div>
-                {status === 'done' ? (
+                {done !== null ? (
                     <div className="og-fb-done" role="status">
-                        <p>已收到，謝謝。我們核對後會在整理本中更正。</p>
-                        <button type="button" className="og-fb-submit" onClick={onClose}>關閉</button>
+                        <p>{done}</p>
+                        <button type="button" className="og-fb-submit" onClick={onClose}>{t('charfix.dialog.close')}</button>
                     </div>
-                ) : (
-                    <form onSubmit={submit} noValidate>
-                        <div className="og-fb-context">
-                            <div>格位 {cell}{orig && <>，現作「{orig}」</>}</div>
-                        </div>
-                        <label className="og-fb-sr" htmlFor={`${titleId}-new`}>建議字</label>
-                        <input
-                            id={`${titleId}-new`}
-                            ref={inputRef}
-                            className="og-fb-field og-fb-contact"
-                            value={newChar}
-                            onChange={e => setNewChar(e.target.value)}
-                            placeholder="應作哪個字？造字可寫 {{⿰虫斤}}"
-                            maxLength={34}
-                            autoComplete="off"
-                        />
-                        <label className="og-fb-sr" htmlFor={`${titleId}-basis`}>依據</label>
-                        <textarea
-                            id={`${titleId}-basis`}
-                            className="og-fb-field og-fb-text"
-                            value={basis}
-                            onChange={e => setBasis(e.target.value)}
-                            placeholder="依據（選填）：他本作什麼、書影第幾頁、或截圖鏈接"
-                            maxLength={BASIS_MAX}
-                            rows={3}
-                        />
-                        {nc && !valid && <p className="og-fb-error" role="alert">{nc === orig ? '建議字與原字相同' : '請填一個字，或用 {{組字式}}'}</p>}
-                        {error && <p className="og-fb-error" role="alert">{error}</p>}
-                        <div className="og-fb-foot">
-                            <p className="og-fb-note">只提出建議，不會直接改動正文；匿名提交。</p>
-                            <button type="submit" className="og-fb-submit" disabled={!valid || status !== 'idle'}>
-                                {status === 'submitting' ? '提交中…' : '提交'}
-                            </button>
-                        </div>
-                    </form>
-                )}
+                ) : children}
             </div>
         </div>
+    );
+}
+
+function CharFixDialog({ t, ctx, cell, orig, fetchImpl, onClose }: { t: SiteT; ctx: CharFixCtx; cell: string; orig: string; fetchImpl?: typeof fetch; onClose: () => void }) {
+    const [newChar, setNewChar] = useState('');
+    const [basis, setBasis] = useState('');
+    const { status, error, run } = useDialog(onClose);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const titleId = useId();
+    useEffect(() => { inputRef.current?.focus(); }, []);
+
+    const nc = newChar.trim();
+    const valid = isNewChar(nc) && nc !== orig;
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (valid) run(() => submitCharFix(ctx, { cell, newChar: nc, basis: basis.trim() }, fetchImpl, t));
+    };
+
+    return (
+        <DialogFrame t={t} title={t('charfix.dialog.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.dialog.done') : null}>
+            <form onSubmit={submit} noValidate>
+                <div className="og-fb-context">
+                    <div>{t('charfix.dialog.cell', { cell })}{orig && t('charfix.dialog.now', { char: orig })}</div>
+                </div>
+                <label className="og-fb-sr" htmlFor={`${titleId}-new`}>{t('charfix.dialog.newLabel')}</label>
+                <input
+                    id={`${titleId}-new`}
+                    ref={inputRef}
+                    className="og-fb-field og-fb-contact"
+                    value={newChar}
+                    onChange={e => setNewChar(e.target.value)}
+                    placeholder={t('charfix.dialog.newPlaceholder')}
+                    maxLength={34}
+                    autoComplete="off"
+                />
+                <label className="og-fb-sr" htmlFor={`${titleId}-basis`}>{t('charfix.dialog.basisLabel')}</label>
+                <textarea
+                    id={`${titleId}-basis`}
+                    className="og-fb-field og-fb-text"
+                    value={basis}
+                    onChange={e => setBasis(e.target.value)}
+                    placeholder={t('charfix.dialog.basisPlaceholder')}
+                    maxLength={BASIS_MAX}
+                    rows={3}
+                />
+                {nc && !valid && <p className="og-fb-error" role="alert">{nc === orig ? t('charfix.dialog.same') : t('charfix.dialog.notOne')}</p>}
+                {error && <p className="og-fb-error" role="alert">{error}</p>}
+                <div className="og-fb-foot">
+                    <p className="og-fb-note">{t('charfix.dialog.note')}</p>
+                    <button type="submit" className="og-fb-submit" disabled={!valid || status !== 'idle'}>
+                        {status === 'submitting' ? t('charfix.dialog.submitting') : t('charfix.dialog.submit')}
+                    </button>
+                </div>
+            </form>
+        </DialogFrame>
+    );
+}
+
+/** 「专名有误」：选哪个专名（一格落在几个专名里时）＋说明哪里有误（接口要求 note 必填） */
+function EntityFixDialog({ t, ctx, entities, fetchImpl, onClose }: { t: SiteT; ctx: CharFixCtx; entities: CharFixEntity[]; fetchImpl?: typeof fetch; onClose: () => void }) {
+    const [pick, setPick] = useState(0);
+    const [note, setNote] = useState('');
+    const { status, error, run } = useDialog(onClose);
+    const noteRef = useRef<HTMLTextAreaElement>(null);
+    const titleId = useId();
+    useEffect(() => { noteRef.current?.focus(); }, []);
+
+    const entity = entities[Math.min(pick, entities.length - 1)];
+    const n = note.trim();
+    const label = (e: CharFixEntity) => {
+        const [page, col, slot] = e.start.replace(/[ab]$/, '').split(':');
+        return t('charfix.entity.which', { text: e.text, page, col, slot });
+    };
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (n) run(() => submitEntityFix(ctx, { entity, note: n }, fetchImpl, t));
+    };
+
+    return (
+        <DialogFrame t={t} title={t('charfix.entity.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.entity.done') : null}>
+            <form onSubmit={submit} noValidate>
+                <div className="og-fb-context">
+                    {entities.length === 1 ? (
+                        <div>{label(entity)}</div>
+                    ) : (
+                        <>
+                            <label className="og-fb-sr" htmlFor={`${titleId}-pick`}>{t('charfix.entity.pick')}</label>
+                            <select id={`${titleId}-pick`} className="og-fb-field" value={pick} onChange={e => setPick(Number(e.target.value))}>
+                                {entities.map((e, i) => <option key={e.id} value={i}>{label(e)}</option>)}
+                            </select>
+                        </>
+                    )}
+                </div>
+                <label className="og-fb-sr" htmlFor={`${titleId}-note`}>{t('charfix.entity.noteLabel')}</label>
+                <textarea
+                    id={`${titleId}-note`}
+                    ref={noteRef}
+                    className="og-fb-field og-fb-text"
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                    placeholder={t('charfix.entity.notePlaceholder')}
+                    maxLength={NOTE_MAX}
+                    rows={3}
+                />
+                {error && <p className="og-fb-error" role="alert">{error}</p>}
+                <div className="og-fb-foot">
+                    <p className="og-fb-note">{t('charfix.dialog.note')}</p>
+                    <button type="submit" className="og-fb-submit" disabled={!n || status !== 'idle'}>
+                        {status === 'submitting' ? t('charfix.dialog.submitting') : t('charfix.dialog.submit')}
+                    </button>
+                </div>
+            </form>
+        </DialogFrame>
     );
 }

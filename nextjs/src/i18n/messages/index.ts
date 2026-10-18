@@ -12,6 +12,7 @@ import { feedback } from './feedback';
 import { readHome } from './read-home';
 import { bookIndex } from './book-index';
 import { seo } from './seo';
+import { charfix } from './charfix';
 
 export const NAMESPACES = {
     nav,
@@ -24,6 +25,7 @@ export const NAMESPACES = {
     readHome,
     bookIndex,
     seo,
+    charfix,
 } satisfies Record<string, MessageSet<unknown>>;
 
 export type SiteMessages = { [K in keyof typeof NAMESPACES]: (typeof NAMESPACES)[K]['zh-Hant'] };

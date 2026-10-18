@@ -4,10 +4,16 @@
  * old_char 一律取 char.json 里该格的原字（不取 DOM 文字：阅读页有繁简切换，DOM 里的字可能是转换后的）。
  */
 import { getAid } from '@/lib/proofing';
+import { getSiteT, type SiteT } from '@/i18n/translate';
 
 export const CHARFIX_API = '/api/charfix';
 
 export const CELL_RE = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/;
+/** 与接口同口径的版本号（text_version／entity_version）；对不上就当没有 */
+export const VERSION_RE = /^[A-Za-z0-9._-]{1,16}$/;
+const ENTITY_ID_RE = /^e\d{1,8}$/;
+const TEXT_MAX = 200;
+export const NOTE_MAX = 500;
 // 与 edge-functions/api/charfix.js 同口径：单字（含扩展区）或 {{组字式}}
 const COMPOSED_RE = /^\{\{[^{}\s\p{Cc}\p{Cf}]{1,30}\}\}$/u;
 
@@ -21,17 +27,33 @@ export function isNewChar(v: unknown): v is string {
     return typeof v === 'string' && (isSingleChar(v) || COMPOSED_RE.test(v));
 }
 
+/** 一个专名：册内 id（entity.json 的 entities[].id，e01384 形）、anchor 起止格位、原文 */
+export interface CharFixEntity {
+    id: string;
+    start: string;
+    end: string;
+    /** entity.json 的 text；缺了为空串（那条不出「专名有误」入口：接口要 text 回找） */
+    text: string;
+}
+
 /** 本章的改字上下文：阅读器取对读数据时顺手记下 */
 export interface CharFixCtx {
     book: string;
     /** 册（章条目的 file，如 `002`） */
     volume: string;
-    /** 读者看到的文本版本（章条目的 text_version，缺则 char.json 的 version） */
+    /** 章（阅读器的章 key，即章条目的 file）。现有数据一章一册，与 volume 同值；专名意见必填（GUJI-592） */
+    chapter: string;
+    /**
+     * 读者看到的文本版本（章条目的 text_version，缺则 char.json 的 version）。两处都没有时为空串：
+     * 改字记录要按版本落键、下游按版本核，猜一个版本会把意见挂错，所以此时不收改字（浮条里说明），专名意见照收（它只认 entity_version）
+     */
     textVersion: string;
     /** 格位 → char.json 里的原字 */
     chars: Map<string, string>;
-    /** 本章专名的 anchor 区间，用来给改字附 entity_ids */
-    entities: { id: string; start: string; end: string }[];
+    /** 本章专名的 anchor 区间，用来给改字附 entity_ids、出「专名有误」入口 */
+    entities: CharFixEntity[];
+    /** 专名层版本（章条目的 entity_version，缺则 entity.json 的 version）；空串＝本章没有可用的专名层，不出「专名有误」 */
+    entityVersion: string;
 }
 
 const asObj = (v: unknown): Record<string, unknown> | null => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
@@ -50,18 +72,24 @@ export function collectChars(pages: unknown): Map<string, string> {
     return out;
 }
 
-/** entity.json（`entities[]` 或直接数组）→ id 与 anchor 起止；缺 anchor 的丢弃 */
-export function collectEntities(raw: unknown): CharFixCtx['entities'] {
+/** entity.json（`entities[]` 或直接数组）→ id、anchor 起止与原文；缺 anchor 的丢弃 */
+export function collectEntities(raw: unknown): CharFixEntity[] {
     const list = Array.isArray(raw) ? raw : asObj(raw)?.entities;
-    const out: CharFixCtx['entities'] = [];
+    const out: CharFixEntity[] = [];
     for (const e of Array.isArray(list) ? list : []) {
         const o = asObj(e);
         const a = asObj(o?.anchor);
         if (typeof o?.id === 'string' && typeof a?.start === 'string' && typeof a?.end === 'string' && CELL_RE.test(a.start) && CELL_RE.test(a.end)) {
-            out.push({ id: o.id, start: a.start, end: a.end });
+            out.push({ id: o.id, start: a.start, end: a.end, text: typeof o.text === 'string' ? o.text.trim() : '' });
         }
     }
     return out;
+}
+
+/** entity.json 自带的 version（章条目没写 entity_version 时兜底）；不合法为空串 */
+export function entityFileVersion(raw: unknown): string {
+    const v = asObj(raw)?.version;
+    return typeof v === 'string' && VERSION_RE.test(v) ? v : '';
 }
 
 function parseCell(a: string): { k: [number, number, number]; sub: string } | null {
@@ -76,19 +104,32 @@ const cmp = (x: number[], y: number[]) => { for (let i = 0; i < 3; i++) if (x[i]
  * 这一格落在哪些专名的 anchor 区间里。按（页，列，格序）比；起止同为夹注 a／b 行时，该格也须在同一行。
  * 算不出（格位不合法）就空——规格：算不出就空。
  */
-export function entityIdsAt(cell: string, entities: CharFixCtx['entities']): string[] {
+export function entitiesAt(cell: string, entities: CharFixEntity[]): CharFixEntity[] {
     const c = parseCell(cell);
     if (!c) return [];
-    const ids: string[] = [];
+    const hit: CharFixEntity[] = [];
     for (const e of entities) {
         const s = parseCell(e.start);
         const t = parseCell(e.end);
         if (!s || !t || cmp(c.k, s.k) < 0 || cmp(c.k, t.k) > 0) continue;
         if (s.sub && s.sub === t.sub && c.sub !== s.sub) continue;
-        ids.push(e.id);
+        hit.push(e);
     }
-    return ids;
+    return hit;
 }
+
+export function entityIdsAt(cell: string, entities: CharFixEntity[]): string[] {
+    return entitiesAt(cell, entities).map((e) => e.id);
+}
+
+/** 「专名有误」能提交的专名：本章有专名层版本，且该条 id、原文都合接口口径 */
+export function reportableEntitiesAt(cell: string, ctx: CharFixCtx): CharFixEntity[] {
+    if (!VERSION_RE.test(ctx.entityVersion)) return [];
+    return entitiesAt(cell, ctx.entities).filter((e) => ENTITY_ID_RE.test(e.id) && e.text && Array.from(e.text).length <= TEXT_MAX);
+}
+
+/** 本章能不能收改字：要有合口径的 text_version */
+export const canFixChar = (ctx: CharFixCtx) => VERSION_RE.test(ctx.textVersion);
 
 /** 点击处最近的字 span 的格位；不在对读字上、或格位不合法就是 null */
 export function cellIdOf(target: EventTarget | null): string | null {
@@ -103,10 +144,25 @@ export interface CharFixDraft {
     basis: string;
 }
 
+const HANT = getSiteT('zh-Hant');
+
+async function post(body: Record<string, unknown>, fetchImpl: typeof fetch, t: SiteT): Promise<string | null> {
+    try {
+        const res = await fetchImpl(CHARFIX_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        let out: { success?: boolean; error?: string } | null = null;
+        try { out = await res.json(); } catch { /* 非 JSON：按状态码给文案 */ }
+        if (res.ok && out?.success !== false) return null;
+        if (res.status === 429) return t('charfix.error.rate');
+        return out?.error || t('charfix.error.failed', { status: res.status });
+    } catch {
+        return t('charfix.error.network');
+    }
+}
+
 /** 提交一条改字；失败返回错误文案，成功返回 null。不抛 */
-export async function submitCharFix(ctx: CharFixCtx, d: CharFixDraft, fetchImpl: typeof fetch = fetch): Promise<string | null> {
+export async function submitCharFix(ctx: CharFixCtx, d: CharFixDraft, fetchImpl: typeof fetch = fetch, t: SiteT = HANT): Promise<string | null> {
     const oldChar = ctx.chars.get(d.cell);
-    const body = {
+    return post({
         kind: 'char',
         book_id: ctx.book,
         volume: ctx.volume,
@@ -117,15 +173,21 @@ export async function submitCharFix(ctx: CharFixCtx, d: CharFixDraft, fetchImpl:
         ...(d.basis ? { basis: d.basis } : {}),
         entity_ids: entityIdsAt(d.cell, ctx.entities),
         aid: getAid(),
-    };
-    try {
-        const res = await fetchImpl(CHARFIX_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        let out: { success?: boolean; error?: string } | null = null;
-        try { out = await res.json(); } catch { /* 非 JSON：按状态码给文案 */ }
-        if (res.ok && out?.success !== false) return null;
-        if (res.status === 429) return '提交太頻繁，請稍後再試';
-        return out?.error || `提交失敗（${res.status}）`;
-    } catch {
-        return '網絡出錯，請稍後再試';
-    }
+    }, fetchImpl, t);
+}
+
+/** 提交一条专名意见（kind=entity；必填 entity_id＋册／章／锚点格号，见 GUJI-592）。失败返回错误文案，成功返回 null。不抛 */
+export async function submitEntityFix(ctx: CharFixCtx, d: { entity: CharFixEntity; note: string }, fetchImpl: typeof fetch = fetch, t: SiteT = HANT): Promise<string | null> {
+    return post({
+        kind: 'entity',
+        book_id: ctx.book,
+        volume: ctx.volume,
+        chapter: ctx.chapter,
+        entity_id: d.entity.id,
+        entity_version: ctx.entityVersion,
+        anchor: { start: d.entity.start, end: d.entity.end },
+        text: d.entity.text,
+        note: d.note,
+        aid: getAid(),
+    }, fetchImpl, t);
 }
