@@ -30,4 +30,6 @@ jobs:
         working-directory: fulltext
         run: python -m pytest -q
       - name: 部署脚本单测（假目录、假服务）
-        run: bash fulltext/deploy/tests/test_deploy.sh
+        run: |
+          bash fulltext/deploy/tests/test_deploy.sh
+          bash fulltext/deploy/tests/test_run_service.sh
