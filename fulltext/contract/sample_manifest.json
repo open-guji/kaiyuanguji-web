@@ -1,0 +1,177 @@
+{
+ "stamp": "20261013-0305",
+ "createdAtEpoch": 1791885932,
+ "bookTextCommit": "74980f38af4a3845a0c113ed70d575aecb121577",
+ "charmapSha256": "241dfaaa459e60aad220f3041d46f0686dee87c50214577e90d4a1708eb2522e",
+ "charmapEntries": 4820,
+ "indexerVersion": "683f96c9629b9f6e13f86ef0b5d7598c5f3ca93ff0b7828ce610515490b5b927",
+ "books": 17,
+ "passages": 75212,
+ "chapters": 2338,
+ "charChapters": 0,
+ "fallbackChapters": 2338,
+ "originalSource": "default-md",
+ "charCoverage": 0.0,
+ "indexBytes": 305139961,
+ "files": {
+  "boost.json": {
+   "bytes": 2,
+   "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.fast": {
+   "bytes": 146,
+   "sha256": "ca4cbfed20b53c7eb9768d8316cbd9a16047112912c14a018e4947cc37822205"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.fieldnorm": {
+   "bytes": 164492,
+   "sha256": "f1de2799847ea14c3e301d3a58034752233a8800b397121833309fad9521d944"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.idx": {
+   "bytes": 44537800,
+   "sha256": "2d44b32c488f908f0dc10ce6abfe2356192edf6758f47370ee85acd6608e30c9"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.pos": {
+   "bytes": 29535095,
+   "sha256": "1a6961461c0988e5b95ec770ce7f4f7d79d77b1b30c05eeae8ce4df73d565d4e"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.store": {
+   "bytes": 431840,
+   "sha256": "a822e5a0d625c388ea0a5af60e49ff25c822206f175c944c0dd9a9e34935e9a2"
+  },
+  "index/1b8f163c73c94b488eca474eb6ca13ef.term": {
+   "bytes": 24484270,
+   "sha256": "a8506cdf15a8f14ecea6b1c653c883d8dad9fc412a3d97ca25727c1377719dc7"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.fast": {
+   "bytes": 146,
+   "sha256": "bca500a01f09d709fd9e311c99bdd05ac46b73e751f8aa115da47c38250654e7"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.fieldnorm": {
+   "bytes": 183511,
+   "sha256": "b2bd80488792aa4cd58ffd47f1b931e979b50cc4869368507e9fadc7182e1320"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.idx": {
+   "bytes": 46089749,
+   "sha256": "05a1991a1dd9da721376811e71b5c9f13cbc50161d0e93c6dc98b50d3876ed43"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.pos": {
+   "bytes": 29956994,
+   "sha256": "bb3f0465c39927c342d8124985aaba5ffb9b7a579e43e2ede47758ac21a00d3a"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.store": {
+   "bytes": 478329,
+   "sha256": "e8928f07b89298f859d61f90427b0c2cfe73decf0523b0b784474dff17c84842"
+  },
+  "index/8402b9608ad24c1c95f224c4e360205c.term": {
+   "bytes": 24872672,
+   "sha256": "238f04f682944f67e2e6abf28806d4125de640163c201f9dbc77357fa5541b28"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.fast": {
+   "bytes": 145,
+   "sha256": "1954d3dd6a7b8a2bd73aa4e5ef620ef888ba8ef6a74c20a8f6c5a356400fb307"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.fieldnorm": {
+   "bytes": 178940,
+   "sha256": "6d783715574aa6d20af2da87a746ea89dc70324513ed2ac852b421efde54dff5"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.idx": {
+   "bytes": 47547789,
+   "sha256": "6e7b97ddd690882f7942b5959a750ccb1f12f11065188ee91255f7cc03b4b498"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.pos": {
+   "bytes": 30884560,
+   "sha256": "17eb02d0883ba1607d68b7e998660b895bb2af95861aed343442243532214d2e"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.store": {
+   "bytes": 465392,
+   "sha256": "9d307b42e9a80d1f41526eebe0843e0d64a79804ae63d9732e4d4494a23399c5"
+  },
+  "index/db6515071fc24df2b8732cb235e5918f.term": {
+   "bytes": 25325405,
+   "sha256": "9a6c2e6ba4c6877669713f33957fa909df2e0dbb032da62e8cd2c9b5645e89cd"
+  },
+  "index/meta.json": {
+   "bytes": 2686,
+   "sha256": "295e70d3dcbe5664dd26416945e3f7a95fc9ff7dfb369eae1bcfba61081b4fc1"
+  },
+  "titles.json": {
+   "bytes": 511,
+   "sha256": "74c0ff9f357d3b7c3842a7ad968d9f04fa1e94eea6434cc5a463068e0b8aea92"
+  }
+ },
+ "perBook": {
+  "d59f2nfhf8cg": {
+   "passages": 13455,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2hq1e9ky": {
+   "passages": 4092,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2nje79qa": {
+   "passages": 9669,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2mel8d1d": {
+   "passages": 18833,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59df01avcw0": {
+   "passages": 1118,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2mp0flz6": {
+   "passages": 1771,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2hqqohky": {
+   "passages": 15351,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f284rdaf7": {
+   "passages": 1220,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f20aowb9c": {
+   "passages": 2559,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2htm01du": {
+   "passages": 381,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2mel8d1c": {
+   "passages": 585,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2nkkcav7": {
+   "passages": 826,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2hr9pypt": {
+   "passages": 96,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2gp8bvnm": {
+   "passages": 101,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59ezkx8dt6o": {
+   "passages": 169,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2gpdboci": {
+   "passages": 97,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  },
+  "d59f2nke3k75": {
+   "passages": 4889,
+   "commit": "74980f38af4a3845a0c113ed70d575aecb121577"
+  }
+ },
+ "build": {
+  "seconds": 47,
+  "peakRssMB": 1898,
+  "peakDiskGB": 0.305
+ }
+}

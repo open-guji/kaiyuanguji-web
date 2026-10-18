@@ -1,0 +1,8013 @@
+[
+ {
+  "id": "Q001",
+  "q": "孔子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 2889,
+   "books": 30,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 751,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 639,
+     "chapters": [
+      "018",
+      "030",
+      "031"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 544,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q002",
+  "q": "孟子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 1635,
+   "books": 31,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 651,
+     "chapters": [
+      "004",
+      "005",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 636,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 89,
+     "chapters": [
+      "003",
+      "018",
+      "034"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q003",
+  "q": "老子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 717,
+   "books": 31,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 175,
+     "chapters": [
+      "037",
+      "054",
+      "058"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 97,
+     "chapters": [
+      "001",
+      "005",
+      "007"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 85,
+     "chapters": [
+      "001",
+      "003",
+      "006"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q004",
+  "q": "莊子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 403,
+   "books": 29,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 77,
+     "chapters": [
+      "067",
+      "068",
+      "207"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 76,
+     "chapters": [
+      "003",
+      "004",
+      "013"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 60,
+     "chapters": [
+      "003",
+      "009",
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q005",
+  "q": "荀子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 87,
+   "books": 12,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 36,
+     "chapters": [
+      "004",
+      "005",
+      "010"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 19,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2hr9pypt",
+     "title": "漢藝文志考證",
+     "passages": 11,
+     "chapters": [
+      "002",
+      "004",
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q006",
+  "q": "墨子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 204,
+   "books": 20,
+   "top": [
+    {
+     "entry": "d59ezahzvx8g",
+     "title": "墨子",
+     "passages": 86,
+     "chapters": [
+      "003",
+      "004",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 22,
+     "chapters": [
+      "025",
+      "1012",
+      "257"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 17,
+     "chapters": [
+      "014",
+      "018",
+      "019"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q007",
+  "q": "孫子",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 332,
+   "books": 28,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 90,
+     "chapters": [
+      "022",
+      "052",
+      "145"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 54,
+     "chapters": [
+      "009",
+      "014",
+      "015"
+     ]
+    },
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 28,
+     "chapters": [
+      "006",
+      "008",
+      "013"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q008",
+  "q": "司馬遷",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 235,
+   "books": 18,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 56,
+     "chapters": [
+      "014",
+      "017",
+      "084"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 50,
+     "chapters": [
+      "001",
+      "003",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 46,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q009",
+  "q": "司馬光",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 61,
+   "books": 10,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 28,
+     "chapters": [
+      "002",
+      "003",
+      "011"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 19,
+     "chapters": [
+      "001",
+      "004",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 5,
+     "chapters": [
+      "002",
+      "429",
+      "635"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q010",
+  "q": "班固",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 360,
+   "books": 19,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 92,
+     "chapters": [
+      "026",
+      "054",
+      "164"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 82,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 72,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q011",
+  "q": "曹操",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 147,
+   "books": 10,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 54,
+     "chapters": [
+      "018",
+      "085",
+      "114"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 41,
+     "chapters": [
+      "001",
+      "006",
+      "007"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 30,
+     "chapters": [
+      "001",
+      "003",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q012",
+  "q": "劉備",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 231,
+   "books": 7,
+   "top": [
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 132,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 88,
+     "chapters": [
+      "017",
+      "018",
+      "020"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 5,
+     "chapters": [
+      "003",
+      "042",
+      "044"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q013",
+  "q": "諸葛亮",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 386,
+   "books": 13,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 224,
+     "chapters": [
+      "019",
+      "048",
+      "059"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 114,
+     "chapters": [
+      "003",
+      "006",
+      "009"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 26,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q014",
+  "q": "孫權",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 376,
+   "books": 8,
+   "top": [
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 184,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 140,
+     "chapters": [
+      "017",
+      "018",
+      "019"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 39,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q015",
+  "q": "關羽",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 162,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 93,
+     "chapters": [
+      "001",
+      "003",
+      "009"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 62,
+     "chapters": [
+      "164",
+      "198",
+      "219"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 4,
+     "chapters": [
+      "044",
+      "052",
+      "136"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q016",
+  "q": "張飛",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 82,
+   "books": 9,
+   "top": [
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 40,
+     "chapters": [
+      "001",
+      "003",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 34,
+     "chapters": [
+      "134",
+      "177",
+      "193"
+     ]
+    },
+    {
+     "entry": "d59f2nksrpj4",
+     "title": "水滸傳",
+     "passages": 2,
+     "chapters": [
+      "015",
+      "050"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q017",
+  "q": "趙雲",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 56,
+   "books": 8,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 23,
+     "chapters": [
+      "198",
+      "219",
+      "323"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 15,
+     "chapters": [
+      "023",
+      "032",
+      "033"
+     ]
+    },
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 11,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q018",
+  "q": "司馬懿",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 44,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 23,
+     "chapters": [
+      "085",
+      "136",
+      "139"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 14,
+     "chapters": [
+      "002",
+      "003",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 5,
+     "chapters": [
+      "004",
+      "014",
+      "018"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q019",
+  "q": "周瑜",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 111,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 68,
+     "chapters": [
+      "198",
+      "205",
+      "211"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 40,
+     "chapters": [
+      "009",
+      "017",
+      "018"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "136"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q020",
+  "q": "呂布",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 141,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 76,
+     "chapters": [
+      "018",
+      "056",
+      "057"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 56,
+     "chapters": [
+      "001",
+      "003",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 8,
+     "chapters": [
+      "003",
+      "010",
+      "030"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q021",
+  "q": "項羽",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 314,
+   "books": 10,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 110,
+     "chapters": [
+      "018",
+      "026",
+      "029"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 84,
+     "chapters": [
+      "006",
+      "007",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 67,
+     "chapters": [
+      "001",
+      "008",
+      "009"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q022",
+  "q": "劉邦",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 11,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 9,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 1,
+     "chapters": [
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q023",
+  "q": "韓信",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 281,
+   "books": 17,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 137,
+     "chapters": [
+      "018",
+      "029",
+      "048"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 53,
+     "chapters": [
+      "009",
+      "010",
+      "021"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 53,
+     "chapters": [
+      "007",
+      "008",
+      "016"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q024",
+  "q": "張良",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 175,
+   "books": 16,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 71,
+     "chapters": [
+      "018",
+      "026",
+      "034"
+     ]
+    },
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 25,
+     "chapters": [
+      "002",
+      "003",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 22,
+     "chapters": [
+      "009",
+      "010",
+      "054"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q025",
+  "q": "蕭何",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 232,
+   "books": 13,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 132,
+     "chapters": [
+      "018",
+      "021",
+      "026"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 27,
+     "chapters": [
+      "007",
+      "008",
+      "011"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 23,
+     "chapters": [
+      "009",
+      "010",
+      "012"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q026",
+  "q": "漢武帝",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 133,
+   "books": 17,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 58,
+     "chapters": [
+      "025",
+      "032",
+      "049"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 22,
+     "chapters": [
+      "006",
+      "008",
+      "009"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 14,
+     "chapters": [
+      "003",
+      "004",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q027",
+  "q": "秦始皇",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 197,
+   "books": 13,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 108,
+     "chapters": [
+      "015",
+      "018",
+      "034"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 28,
+     "chapters": [
+      "001",
+      "007",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 17,
+     "chapters": [
+      "005",
+      "006",
+      "009"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q028",
+  "q": "唐太宗",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 109,
+   "books": 9,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 56,
+     "chapters": [
+      "023",
+      "032",
+      "044"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 21,
+     "chapters": [
+      "001",
+      "019",
+      "025"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 14,
+     "chapters": [
+      "002",
+      "003",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q029",
+  "q": "武則天",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 7,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2,
+     "chapters": [
+      "573",
+      "582"
+     ]
+    },
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 2,
+     "chapters": [
+      "005",
+      "023"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "042"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q030",
+  "q": "李白",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 34,
+   "books": 11,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 9,
+     "chapters": [
+      "083",
+      "528",
+      "568"
+     ]
+    },
+    {
+     "entry": "d59f2njzqmtd",
+     "title": "西遊記",
+     "passages": 6,
+     "chapters": [
+      "028",
+      "077",
+      "080"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 4,
+     "chapters": [
+      "063",
+      "136",
+      "139"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q031",
+  "q": "杜甫",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 32,
+   "books": 9,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 10,
+     "chapters": [
+      "027",
+      "083",
+      "496"
+     ]
+    },
+    {
+     "entry": "d59f2q7zj6yp",
+     "title": "夢溪筆談",
+     "passages": 7,
+     "chapters": [
+      "015",
+      "016",
+      "023"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 5,
+     "chapters": [
+      "048",
+      "049",
+      "052"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q032",
+  "q": "白居易",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 32,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 23,
+     "chapters": [
+      "015",
+      "062",
+      "480"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 3,
+     "chapters": [
+      "006",
+      "020",
+      "027"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 3,
+     "chapters": [
+      "046",
+      "049",
+      "056"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q033",
+  "q": "韓愈",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 99,
+   "books": 11,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 36,
+     "chapters": [
+      "119",
+      "151",
+      "192"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 24,
+     "chapters": [
+      "002",
+      "004",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 11,
+     "chapters": [
+      "012",
+      "020",
+      "051"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q034",
+  "q": "柳宗元",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 37,
+   "books": 7,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 14,
+     "chapters": [
+      "006",
+      "011",
+      "012"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 9,
+     "chapters": [
+      "014",
+      "018",
+      "021"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 6,
+     "chapters": [
+      "168",
+      "496",
+      "821"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q035",
+  "q": "蘇軾",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 31,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 17,
+     "chapters": [
+      "002",
+      "003",
+      "010"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 11,
+     "chapters": [
+      "001",
+      "002",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "041"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q036",
+  "q": "蘇轍",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 18,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 10,
+     "chapters": [
+      "002",
+      "003",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 8,
+     "chapters": [
+      "003",
+      "005",
+      "007"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q037",
+  "q": "王安石",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 86,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 56,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 18,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 10,
+     "chapters": [
+      "045",
+      "078",
+      "087"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q038",
+  "q": "歐陽脩",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 55,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 33,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 14,
+     "chapters": [
+      "003",
+      "011",
+      "012"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 4,
+     "chapters": [
+      "009",
+      "030",
+      "037"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q039",
+  "q": "朱熹",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 50,
+   "books": 6,
+   "top": [
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 24,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 20,
+     "chapters": [
+      "002",
+      "003",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 2,
+     "chapters": [
+      "004",
+      "029"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q040",
+  "q": "陸九淵",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "人名",
+  "source": "handwritten",
+  "note": "手写人名，写入前已在语料里核到命中",
+  "corpus42": {
+   "passages": 5,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 3,
+     "chapters": [
+      "002",
+      "011",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 2,
+     "chapters": [
+      "027",
+      "051"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q041",
+  "q": "學而時習之",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 33,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 29,
+     "chapters": [
+      "008",
+      "011",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "015",
+      "017"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q042",
+  "q": "不亦說乎",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 12,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 10,
+     "chapters": [
+      "011",
+      "020",
+      "031"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "015"
+     ]
+    },
+    {
+     "entry": "d59f2ng7n668",
+     "title": "傳習錄",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q043",
+  "q": "有朋自遠方來",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 15,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 13,
+     "chapters": [
+      "014",
+      "019",
+      "020"
+     ]
+    },
+    {
+     "entry": "d59f2gpdboci",
+     "title": "參同契分章注",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q044",
+  "q": "人不知而不慍",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 10,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 8,
+     "chapters": [
+      "020",
+      "022",
+      "050"
+     ]
+    },
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "084"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q045",
+  "q": "溫故而知新",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 14,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 10,
+     "chapters": [
+      "009",
+      "014",
+      "024"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 3,
+     "chapters": [
+      "002",
+      "010",
+      "011"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "621"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q046",
+  "q": "三人行必有我師",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "030"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "023"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q047",
+  "q": "己所不欲勿施於人",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 21,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 17,
+     "chapters": [
+      "006",
+      "016",
+      "027"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 3,
+     "chapters": [
+      "004",
+      "007",
+      "009"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "810"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q048",
+  "q": "知之為知之不知為不知",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 4,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "024"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "011"
+     ]
+    },
+    {
+     "entry": "d59f28jau9du",
+     "title": "史通",
+     "passages": 1,
+     "chapters": [
+      "008"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q049",
+  "q": "君子喻於義小人喻於利",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 6,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 4,
+     "chapters": [
+      "027",
+      "078",
+      "119"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 2,
+     "chapters": [
+      "003",
+      "008"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q050",
+  "q": "朝聞道夕死可矣",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 9,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 5,
+     "chapters": [
+      "259",
+      "815",
+      "886"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "026"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "023"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q051",
+  "q": "歲寒然後知松柏之後凋",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 5,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "868"
+     ]
+    },
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "051"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 1,
+     "chapters": [
+      "063"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q052",
+  "q": "逝者如斯夫不舍晝夜",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 3,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 2,
+     "chapters": [
+      "036"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "006"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q053",
+  "q": "道可道非常道",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 10,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2gp8bvnm",
+     "title": "文子纘義",
+     "passages": 5,
+     "chapters": [
+      "001",
+      "002",
+      "010"
+     ]
+    },
+    {
+     "entry": "d59f206t1zwg",
+     "title": "淮南子",
+     "passages": 2,
+     "chapters": [
+      "009",
+      "013"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "125"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q054",
+  "q": "名可名非常名",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 10,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2gp8bvnm",
+     "title": "文子纘義",
+     "passages": 5,
+     "chapters": [
+      "001",
+      "002",
+      "010"
+     ]
+    },
+    {
+     "entry": "d59f206t1zwg",
+     "title": "淮南子",
+     "passages": 2,
+     "chapters": [
+      "009",
+      "013"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "125"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q055",
+  "q": "上善若水",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 8,
+   "books": 5,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 2,
+     "chapters": [
+      "004",
+      "255"
+     ]
+    },
+    {
+     "entry": "d59f2gpdboci",
+     "title": "參同契分章注",
+     "passages": 2,
+     "chapters": [
+      "001"
+     ]
+    },
+    {
+     "entry": "d59f2ghyr0g0",
+     "title": "道德經全解",
+     "passages": 2,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q056",
+  "q": "天下難事必作於易",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezkx8dt6o",
+     "title": "道德經",
+     "passages": 1,
+     "chapters": [
+      "063"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q057",
+  "q": "千里之行始於足下",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59ezkx8dt6o",
+     "title": "道德經",
+     "passages": 1,
+     "chapters": [
+      "064"
+     ]
+    },
+    {
+     "entry": "d59f2ghyr0g0",
+     "title": "道德經全解",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q058",
+  "q": "知人者智自知者明",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 5,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2,
+     "chapters": [
+      "081",
+      "481"
+     ]
+    },
+    {
+     "entry": "d59ezkx8dt6o",
+     "title": "道德經",
+     "passages": 1,
+     "chapters": [
+      "033"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 1,
+     "chapters": [
+      "035"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q059",
+  "q": "大器晚成",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 8,
+   "books": 6,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2,
+     "chapters": [
+      "112",
+      "901"
+     ]
+    },
+    {
+     "entry": "d59f2ghyr0g0",
+     "title": "道德經全解",
+     "passages": 2,
+     "chapters": [
+      "003"
+     ]
+    },
+    {
+     "entry": "d59ezkx8dt6o",
+     "title": "道德經",
+     "passages": 1,
+     "chapters": [
+      "041"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q060",
+  "q": "禍兮福之所倚福兮禍之所伏",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59ezkx8dt6o",
+     "title": "道德經",
+     "passages": 1,
+     "chapters": [
+      "058"
+     ]
+    },
+    {
+     "entry": "d59ezkwuylts",
+     "title": "呂氏春秋",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q061",
+  "q": "子非魚安知魚之樂",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f286tcj5u",
+     "title": "世說新語",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    },
+    {
+     "entry": "d59ezaj2wl4w",
+     "title": "莊子",
+     "passages": 1,
+     "chapters": [
+      "017"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q062",
+  "q": "北冥有魚其名為鯤",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezaj2wl4w",
+     "title": "莊子",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q063",
+  "q": "庖丁解牛",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 8,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 8,
+     "chapters": [
+      "010",
+      "018",
+      "020"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q064",
+  "q": "朝三暮四",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "332"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q065",
+  "q": "相濡以沫",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezaj2wl4w",
+     "title": "莊子",
+     "passages": 2,
+     "chapters": [
+      "006",
+      "014"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q066",
+  "q": "逍遙遊",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 6,
+   "books": 6,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "018"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "007"
+     ]
+    },
+    {
+     "entry": "d59f286tcj5u",
+     "title": "世說新語",
+     "passages": 1,
+     "chapters": [
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q067",
+  "q": "兵者詭道也",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 3,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "418"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "016"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 1,
+     "chapters": [
+      "026"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q068",
+  "q": "兵貴神速",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 4,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3,
+     "chapters": [
+      "380",
+      "703",
+      "737"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 1,
+     "chapters": [
+      "014"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q069",
+  "q": "性本善",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 9,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 7,
+     "chapters": [
+      "004",
+      "008",
+      "047"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "007"
+     ]
+    },
+    {
+     "entry": "d59ezahp9urk",
+     "title": "荀子",
+     "passages": 1,
+     "chapters": [
+      "024"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q070",
+  "q": "人之初",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 8,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 5,
+     "chapters": [
+      "018",
+      "022",
+      "094"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "002",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2nkkcav7",
+     "title": "容春堂集",
+     "passages": 1,
+     "chapters": [
+      "019"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q071",
+  "q": "惻隱之心",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 80,
+   "books": 6,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 67,
+     "chapters": [
+      "004",
+      "005",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4,
+     "chapters": [
+      "108",
+      "560",
+      "692"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 3,
+     "chapters": [
+      "014",
+      "018"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q072",
+  "q": "舍生取義",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 11,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 5,
+     "chapters": [
+      "058",
+      "059",
+      "073"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4,
+     "chapters": [
+      "152",
+      "634",
+      "763"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "007"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q073",
+  "q": "天時不如地利",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 12,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 9,
+     "chapters": [
+      "159",
+      "190",
+      "414"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "054"
+     ]
+    },
+    {
+     "entry": "d59f2nksrpj4",
+     "title": "水滸傳",
+     "passages": 1,
+     "chapters": [
+      "120"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q074",
+  "q": "勞心者治人勞力者治於人",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "060"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q075",
+  "q": "學不可以已",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezahp9urk",
+     "title": "荀子",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q076",
+  "q": "蓬生麻中不扶而直",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezahp9urk",
+     "title": "荀子",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q077",
+  "q": "既來之則安之",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 2,
+     "chapters": [
+      "009"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q078",
+  "q": "一日不見如三秋",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezak9zc3k",
+     "title": "詩經",
+     "passages": 1,
+     "chapters": [
+      "072"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q079",
+  "q": "桃之夭夭灼灼其華",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f284rdaf4",
+     "title": "論語集解義疏",
+     "passages": 1,
+     "chapters": [
+      "005"
+     ]
+    },
+    {
+     "entry": "d59ezak9zc3k",
+     "title": "詩經",
+     "passages": 1,
+     "chapters": [
+      "006"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q080",
+  "q": "關關雎鳩",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "引文",
+  "source": "handwritten",
+  "note": "手写名句（去标点），写入前已核到命中",
+  "corpus42": {
+   "passages": 9,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 7,
+     "chapters": [
+      "035",
+      "080",
+      "081"
+     ]
+    },
+    {
+     "entry": "d59f2gpdboci",
+     "title": "參同契分章注",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    },
+    {
+     "entry": "d59ezak9zc3k",
+     "title": "詩經",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q081",
+  "q": "傳習錄",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 6,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 3,
+     "chapters": [
+      "003",
+      "011",
+      "028"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "016"
+     ]
+    },
+    {
+     "entry": "d59f2ng7n668",
+     "title": "傳習錄",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q082",
+  "q": "武職選簿",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 5,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 5,
+     "chapters": [
+      "001",
+      "008",
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q083",
+  "q": "莊子",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 403,
+   "books": 29,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 77,
+     "chapters": [
+      "067",
+      "068",
+      "207"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 76,
+     "chapters": [
+      "003",
+      "004",
+      "013"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 60,
+     "chapters": [
+      "003",
+      "009",
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q084",
+  "q": "經義考",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 413,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 296,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 116,
+     "chapters": [
+      "002",
+      "003",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q085",
+  "q": "楚辭",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 86,
+   "books": 17,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 25,
+     "chapters": [
+      "009",
+      "010",
+      "011"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 12,
+     "chapters": [
+      "054",
+      "255",
+      "264"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 10,
+     "chapters": [
+      "025",
+      "066",
+      "067"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q086",
+  "q": "冊府元龜",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 2130,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2033,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 51,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 45,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q087",
+  "q": "道德經",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 47,
+   "books": 10,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 19,
+     "chapters": [
+      "018",
+      "022"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 15,
+     "chapters": [
+      "054",
+      "067",
+      "068"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 4,
+     "chapters": [
+      "001",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q088",
+  "q": "世說新語",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 16,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 11,
+     "chapters": [
+      "001",
+      "009",
+      "017"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 3,
+     "chapters": [
+      "005",
+      "012"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 1,
+     "chapters": [
+      "035"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q089",
+  "q": "詩經",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 197,
+   "books": 12,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 174,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 6,
+     "chapters": [
+      "001",
+      "029",
+      "032"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4,
+     "chapters": [
+      "319",
+      "615",
+      "784"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q090",
+  "q": "隋書經籍志考證",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 7,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 7,
+     "chapters": [
+      "001",
+      "002",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q091",
+  "q": "三國志",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 84,
+   "books": 10,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 54,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 11,
+     "chapters": [
+      "054",
+      "1016",
+      "572"
+     ]
+    },
+    {
+     "entry": "d59f28jau9du",
+     "title": "史通",
+     "passages": 6,
+     "chapters": [
+      "009",
+      "010",
+      "011"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q092",
+  "q": "朱子語類",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 8,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 4,
+     "chapters": [
+      "003",
+      "007",
+      "012"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 3,
+     "chapters": [
+      "001",
+      "011",
+      "032"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "034"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q093",
+  "q": "水滸傳",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nksrpj4",
+     "title": "水滸傳",
+     "passages": 2,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q094",
+  "q": "紅樓夢",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 6,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 6,
+     "chapters": [
+      "001",
+      "005",
+      "025"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q095",
+  "q": "千字文",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 24,
+   "books": 9,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 10,
+     "chapters": [
+      "001",
+      "003",
+      "007"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4,
+     "chapters": [
+      "285",
+      "623",
+      "735"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "002",
+      "023"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q096",
+  "q": "茶經",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 8,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2nkkcav7",
+     "title": "容春堂集",
+     "passages": 3,
+     "chapters": [
+      "039",
+      "041"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 2,
+     "chapters": [
+      "009",
+      "036"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 2,
+     "chapters": [
+      "045"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q097",
+  "q": "文心雕龍",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 142,
+   "books": 7,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 133,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3,
+     "chapters": [
+      "856",
+      "871",
+      "917"
+     ]
+    },
+    {
+     "entry": "d59f2hr9pypt",
+     "title": "漢藝文志考證",
+     "passages": 2,
+     "chapters": [
+      "004",
+      "011"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q098",
+  "q": "漢藝文志考證",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 4,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 3,
+     "chapters": [
+      "015",
+      "026"
+     ]
+    },
+    {
+     "entry": "d59f2hr9pypt",
+     "title": "漢藝文志考證",
+     "passages": 1,
+     "chapters": [
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q099",
+  "q": "參同契分章注",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2gpdboci",
+     "title": "參同契分章注",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q100",
+  "q": "千頃堂書目",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "本批书的书名（正文内有出现）",
+  "corpus42": {
+   "passages": 34,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 34,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q101",
+  "q": "詩經惜陰錄",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q102",
+  "q": "下江南曹彬誓衆",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q103",
+  "q": "成帝詔草",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "039"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q104",
+  "q": "農丈人文集",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q105",
+  "q": "富春人物志",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q106",
+  "q": "御纂周易折中",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q107",
+  "q": "緝雅堂詩話",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q108",
+  "q": "詩傳纂疏",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 3,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q109",
+  "q": "鶴山詩文",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "023"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q110",
+  "q": "蒙古源流",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q111",
+  "q": "針方",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 4,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 2,
+     "chapters": [
+      "001"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "876"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "079"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q112",
+  "q": "老泉集",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q113",
+  "q": "四六狐白",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q114",
+  "q": "晉詩選雅",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q115",
+  "q": "考聲",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 4,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3,
+     "chapters": [
+      "586",
+      "587",
+      "928"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "017"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q116",
+  "q": "識小錄",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q117",
+  "q": "天一閣碑目",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q118",
+  "q": "晉宋先朝起居注",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "006"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q119",
+  "q": "尾聲集偶存",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q120",
+  "q": "了一歌",
+  "mode": "fuzzy",
+  "kind": "title",
+  "type": "书名",
+  "source": "book_title",
+  "note": "书库随机书名（语料内命中数照实记，可能为 0；全库真值待 F7 步 2）",
+  "corpus42": {
+   "passages": 0,
+   "books": 0,
+   "top": []
+  }
+ },
+ {
+  "id": "Q121",
+  "q": "百戶",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 8399,
+   "books": 18,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 7571,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 589,
+     "chapters": [
+      "014",
+      "019",
+      "020"
+     ]
+    },
+    {
+     "entry": "d59f282rkphc",
+     "title": "三國志",
+     "passages": 110,
+     "chapters": [
+      "001",
+      "002",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q122",
+  "q": "同知",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 1650,
+   "books": 16,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1450,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 67,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 45,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q123",
+  "q": "前衛",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 1324,
+   "books": 7,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1311,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 5,
+     "chapters": [
+      "091",
+      "403",
+      "567"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 3,
+     "chapters": [
+      "028",
+      "047"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q124",
+  "q": "去滓",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 5147,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 5066,
+     "chapters": [
+      "003",
+      "004",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 66,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f286x3doi",
+     "title": "齊民要術",
+     "passages": 13,
+     "chapters": [
+      "004",
+      "006",
+      "009"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q125",
+  "q": "尚書",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 7193,
+   "books": 31,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4320,
+     "chapters": [
+      "002",
+      "014",
+      "015"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1208,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 610,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q126",
+  "q": "總旗",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 3695,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 3694,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "469"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q127",
+  "q": "二年",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 11365,
+   "books": 28,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 5329,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4142,
+     "chapters": [
+      "001",
+      "003",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 357,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q128",
+  "q": "十九",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 6122,
+   "books": 36,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 2897,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1025,
+     "chapters": [
+      "001",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 508,
+     "chapters": [
+      "001",
+      "014",
+      "015"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q129",
+  "q": "右為",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 6297,
+   "books": 15,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 6205,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 35,
+     "chapters": [
+      "046",
+      "1013",
+      "117"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 18,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q130",
+  "q": "一錢",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 4647,
+   "books": 18,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 3892,
+     "chapters": [
+      "005",
+      "006",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 670,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 36,
+     "chapters": [
+      "057",
+      "076",
+      "079"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q131",
+  "q": "桐子",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 4316,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 3914,
+     "chapters": [
+      "003",
+      "005",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 401,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2njg2ozn",
+     "title": "徐霞客遊記",
+     "passages": 1,
+     "chapters": [
+      "040"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q132",
+  "q": "兩右",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 5835,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 5832,
+     "chapters": [
+      "003",
+      "004",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 3,
+     "chapters": [
+      "001",
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q133",
+  "q": "二十",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 18851,
+   "books": 39,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 6212,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3604,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 3301,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q134",
+  "q": "載前",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 3458,
+   "books": 9,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 3438,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 5,
+     "chapters": [
+      "009",
+      "010",
+      "024"
+     ]
+    },
+    {
+     "entry": "d59f2nkkcav7",
+     "title": "容春堂集",
+     "passages": 5,
+     "chapters": [
+      "008",
+      "033",
+      "039"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q135",
+  "q": "為末",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 6940,
+   "books": 15,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 6143,
+     "chapters": [
+      "003",
+      "014",
+      "015"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 758,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 11,
+     "chapters": [
+      "014",
+      "197",
+      "213"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q136",
+  "q": "襲百",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 3346,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 3343,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3,
+     "chapters": [
+      "288",
+      "451",
+      "751"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q137",
+  "q": "成化",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 5003,
+   "books": 15,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 4711,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 89,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2nkkcav7",
+     "title": "容春堂集",
+     "passages": 85,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q138",
+  "q": "二月",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 9555,
+   "books": 31,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 5989,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2585,
+     "chapters": [
+      "003",
+      "014",
+      "015"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 136,
+     "chapters": [
+      "001",
+      "002",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q139",
+  "q": "分去",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 3968,
+   "books": 12,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 3861,
+     "chapters": [
+      "003",
+      "006",
+      "013"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 71,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 12,
+     "chapters": [
+      "006",
+      "016",
+      "018"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q140",
+  "q": "附子",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 4012,
+   "books": 11,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 3522,
+     "chapters": [
+      "003",
+      "005",
+      "006"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 467,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 8,
+     "chapters": [
+      "167",
+      "669",
+      "890"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q141",
+  "q": "年十",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 10002,
+   "books": 27,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 6707,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2505,
+     "chapters": [
+      "002",
+      "003",
+      "014"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 148,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q142",
+  "q": "如何",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 3609,
+   "books": 32,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1885,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2nksrpj4",
+     "title": "水滸傳",
+     "passages": 529,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2njzqmtd",
+     "title": "西遊記",
+     "passages": 306,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q143",
+  "q": "人參",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 4798,
+   "books": 23,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 4065,
+     "chapters": [
+      "003",
+      "004",
+      "005"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 624,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 35,
+     "chapters": [
+      "032",
+      "088",
+      "1010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q144",
+  "q": "者也",
+  "mode": "fuzzy",
+  "kind": "common",
+  "type": "高频词",
+  "source": "corpus_extract",
+  "note": "语料内高频双字（抽样统计）",
+  "corpus42": {
+   "passages": 4581,
+   "books": 39,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1383,
+     "chapters": [
+      "014",
+      "017",
+      "018"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 587,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    },
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 275,
+     "chapters": [
+      "001",
+      "002",
+      "005"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q145",
+  "q": "二宮定磉敕",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q146",
+  "q": "十枚㣲炞芎",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "333"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q147",
+  "q": "櫎等十",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "016"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q148",
+  "q": "曰胡钠永和",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "035"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q149",
+  "q": "帚以晐姓",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "753"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q150",
+  "q": "萧悫",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 5,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 3,
+     "chapters": [
+      "207",
+      "624",
+      "856"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "050"
+     ]
+    },
+    {
+     "entry": "d59f286vj6yq",
+     "title": "顏氏家訓",
+     "passages": 1,
+     "chapters": [
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q151",
+  "q": "渀瀁廣",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "512"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q152",
+  "q": "以略仢",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "362"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q153",
+  "q": "宏等以䚹",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "585"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q154",
+  "q": "一樓𣏺",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字（含扩展B区及以上，JS 端 UTF-16 对照）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezahzvx8g",
+     "title": "墨子",
+     "passages": 1,
+     "chapters": [
+      "043"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q155",
+  "q": "從辵此",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q156",
+  "q": "鷽林",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "025"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q157",
+  "q": "去黑皮竹筎",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "025"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q158",
+  "q": "而鏗鍧",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "474"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q159",
+  "q": "偄緩不",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f28jau9du",
+     "title": "史通",
+     "passages": 1,
+     "chapters": [
+      "009"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q160",
+  "q": "戶路鏎嫡",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "022"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q161",
+  "q": "王使伯犕",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 1,
+     "chapters": [
+      "044"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q162",
+  "q": "王𠬤年十",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字（含扩展B区及以上，JS 端 UTF-16 对照）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "012"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q163",
+  "q": "澩嵺駔儈",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mpqcb2a",
+     "title": "儒林外史",
+     "passages": 1,
+     "chapters": [
+      "056"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q164",
+  "q": "揇藥從瘨腫",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "306"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q165",
+  "q": "分如腚前",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "416"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q166",
+  "q": "鵽𪅆",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字（含扩展B区及以上，JS 端 UTF-16 对照）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f1iky4tmo",
+     "title": "山海經",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q167",
+  "q": "斗薥黍",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "508"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q168",
+  "q": "柔韧",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 6,
+   "books": 4,
+   "top": [
+    {
+     "entry": "d59f286x3doi",
+     "title": "齊民要術",
+     "passages": 3,
+     "chapters": [
+      "005",
+      "006",
+      "008"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q169",
+  "q": "㭒滿",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2,
+     "chapters": [
+      "039",
+      "695"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q170",
+  "q": "睕等衆各萬",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "711"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q171",
+  "q": "個碴",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "060"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q172",
+  "q": "不花三豓麻",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "010"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q173",
+  "q": "越若脱蹝然",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 3,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "894"
+     ]
+    },
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 1,
+     "chapters": [
+      "046"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 1,
+     "chapters": [
+      "044"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q174",
+  "q": "聚茼蒿",
+  "mode": "fuzzy",
+  "kind": "rare",
+  "type": "生僻字",
+  "source": "corpus_extract",
+  "note": "含语料频次≤2 的字",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "256"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q175",
+  "q": "里身必发黄宜",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=裏身必發黄宜",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "129"
+     ]
+    }
+   ]
+  },
+  "source_text": "裏身必發黄宜"
+ },
+ {
+  "id": "Q176",
+  "q": "败则死",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=敗則死",
+  "corpus42": {
+   "passages": 5,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 4,
+     "chapters": [
+      "457",
+      "460",
+      "780"
+     ]
+    },
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "121"
+     ]
+    }
+   ]
+  },
+  "source_text": "敗則死"
+ },
+ {
+  "id": "Q177",
+  "q": "且如读书",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=且如讀書",
+  "corpus42": {
+   "passages": 13,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 12,
+     "chapters": [
+      "008",
+      "017",
+      "020"
+     ]
+    },
+    {
+     "entry": "d59f2ng7n668",
+     "title": "傳習錄",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "source_text": "且如讀書"
+ },
+ {
+  "id": "Q178",
+  "q": "姜附只汤",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=姜附子汤",
+  "corpus42": {
+   "passages": 18,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 9,
+     "chapters": [
+      "003",
+      "027",
+      "092"
+     ]
+    },
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 9,
+     "chapters": [
+      "001",
+      "002"
+     ]
+    }
+   ]
+  },
+  "source_text": "姜附子汤"
+ },
+ {
+  "id": "Q179",
+  "q": "四里迺于潜境",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=四里乃於潛境",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2njg2ozn",
+     "title": "徐霞客遊記",
+     "passages": 1,
+     "chapters": [
+      "018"
+     ]
+    }
+   ]
+  },
+  "source_text": "四里乃於潛境"
+ },
+ {
+  "id": "Q180",
+  "q": "过暖香坞来",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=過暖香塢來",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "074"
+     ]
+    }
+   ]
+  },
+  "source_text": "過暖香塢來"
+ },
+ {
+  "id": "Q181",
+  "q": "达诗经",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=達詩經",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 2,
+     "chapters": [
+      "004"
+     ]
+    }
+   ]
+  },
+  "source_text": "達詩經"
+ },
+ {
+  "id": "Q182",
+  "q": "正名赜隐旨要",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=正名賾隱㫖要",
+  "corpus42": {
+   "passages": 3,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 3,
+     "chapters": [
+      "011"
+     ]
+    }
+   ]
+  },
+  "source_text": "正名賾隱㫖要"
+ },
+ {
+  "id": "Q183",
+  "q": "王之泽未",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=王之澤未",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "081"
+     ]
+    }
+   ]
+  },
+  "source_text": "王之澤未"
+ },
+ {
+  "id": "Q184",
+  "q": "寿嫡长男四",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=壽嫡長男四",
+  "corpus42": {
+   "passages": 4,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 4,
+     "chapters": [
+      "001",
+      "009",
+      "011"
+     ]
+    }
+   ]
+  },
+  "source_text": "壽嫡長男四"
+ },
+ {
+  "id": "Q185",
+  "q": "注论语",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=注論語",
+  "corpus42": {
+   "passages": 57,
+   "books": 8,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 18,
+     "chapters": [
+      "003",
+      "004",
+      "012"
+     ]
+    },
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 18,
+     "chapters": [
+      "003",
+      "018",
+      "029"
+     ]
+    },
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 13,
+     "chapters": [
+      "1016",
+      "207",
+      "604"
+     ]
+    }
+   ]
+  },
+  "source_text": "注論語"
+ },
+ {
+  "id": "Q186",
+  "q": "方等元帝长",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=方等元帝長",
+  "corpus42": {
+   "passages": 2,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 2,
+     "chapters": [
+      "285",
+      "291"
+     ]
+    }
+   ]
+  },
+  "source_text": "方等元帝長"
+ },
+ {
+  "id": "Q187",
+  "q": "高死亦",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=髙死亦",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "897"
+     ]
+    }
+   ]
+  },
+  "source_text": "髙死亦"
+ },
+ {
+  "id": "Q188",
+  "q": "户王钦",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=戶王欽",
+  "corpus42": {
+   "passages": 31,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 31,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  },
+  "source_text": "戶王欽"
+ },
+ {
+  "id": "Q189",
+  "q": "户钟应",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=戶鍾應",
+  "corpus42": {
+   "passages": 6,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 6,
+     "chapters": [
+      "004",
+      "011"
+     ]
+    }
+   ]
+  },
+  "source_text": "戶鍾應"
+ },
+ {
+  "id": "Q190",
+  "q": "觉将昨晚的",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=覺將昨晚的",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59df01avcw0",
+     "title": "紅樓夢",
+     "passages": 1,
+     "chapters": [
+      "028"
+     ]
+    }
+   ]
+  },
+  "source_text": "覺將昨晚的"
+ },
+ {
+  "id": "Q191",
+  "q": "本人袭职",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=本人襲職",
+  "corpus42": {
+   "passages": 331,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 331,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  },
+  "source_text": "本人襲職"
+ },
+ {
+  "id": "Q192",
+  "q": "卷未见",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=卷未見",
+  "corpus42": {
+   "passages": 1022,
+   "books": 3,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1014,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 7,
+     "chapters": [
+      "004",
+      "005",
+      "035"
+     ]
+    },
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "004"
+     ]
+    }
+   ]
+  },
+  "source_text": "卷未見"
+ },
+ {
+  "id": "Q193",
+  "q": "锥饣葵菜",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=锥食葵菜",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "source_text": "锥食葵菜"
+ },
+ {
+  "id": "Q194",
+  "q": "水各一盏共煎",
+  "mode": "fuzzy",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "原文含异体字，用归一后通行字查询（fuzzy 应命中该处）；原文=水各一盞共煎",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "144"
+     ]
+    }
+   ]
+  },
+  "source_text": "水各一盞共煎"
+ },
+ {
+  "id": "Q195",
+  "q": "雄舊選",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 287,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 287,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q196",
+  "q": "府元龜卷四",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 220,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 220,
+     "chapters": [
+      "017",
+      "054",
+      "055"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q197",
+  "q": "十三卷佚",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 30,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 30,
+     "chapters": [
+      "002",
+      "003",
+      "004"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q198",
+  "q": "一員潘貴",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "008"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q199",
+  "q": "易義類",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 5,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 4,
+     "chapters": [
+      "002"
+     ]
+    },
+    {
+     "entry": "d59f2htm01du",
+     "title": "直齋書錄解題",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q200",
+  "q": "陳統撰毛",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "030"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q201",
+  "q": "試百戶郭",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 28,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 28,
+     "chapters": [
+      "001",
+      "002",
+      "003"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q202",
+  "q": "二七日熟美釅",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f286x3doi",
+     "title": "齊民要術",
+     "passages": 1,
+     "chapters": [
+      "011"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q203",
+  "q": "載三輩下二輩",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 6,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 6,
+     "chapters": [
+      "001",
+      "002"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q204",
+  "q": "瑛庶長男伊父",
+  "mode": "exact",
+  "kind": "variant",
+  "type": "异体字",
+  "source": "corpus_extract",
+  "note": "exact 模式用原字查询（只应命中字形相同处）",
+  "corpus42": {
+   "passages": 3,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 3,
+     "chapters": [
+      "005",
+      "009",
+      "012"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": "Q205",
+  "q": "代立即藏其先武帝璽嬰齊其入宿衛",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 2,
+   "books": 2,
+   "top": [
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 1,
+     "chapters": [
+      "115"
+     ]
+    },
+    {
+     "entry": "d59f20aowb9c",
+     "title": "史記",
+     "passages": 1,
+     "chapters": [
+      "113"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f20aowb9c",
+   "chapter": "113",
+   "passage_start": 1271
+  }
+ },
+ {
+  "id": "Q206",
+  "q": "之议予故有阴阳之辨阳炼之法备新缸数只采取童",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 21 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nke3k75",
+   "chapter": "003",
+   "passage_start": 446464
+  }
+ },
+ {
+  "id": "Q207",
+  "q": "于春禁当风肝病者平旦慧爽也下晡甚金旺然也",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 20 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nke3k75",
+   "chapter": "001",
+   "passage_start": 63715
+  }
+ },
+ {
+  "id": "Q208",
+  "q": "則急刺之量人强弱消息不意若校尖刺以布物裹之勿令傷亦須誦呪",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 28 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "268"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "268",
+   "passage_start": 12646
+  }
+ },
+ {
+  "id": "Q209",
+  "q": "百戶二十三年遇例實授欽系嫡長男替職弘治八年李欽寶坻",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 25 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "005"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "005",
+   "passage_start": 247057
+  }
+ },
+ {
+  "id": "Q210",
+  "q": "年選充總旗四年剿捕長州夏奇大崗山等",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 17 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "009"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "009",
+   "passage_start": 310508
+  }
+ },
+ {
+  "id": "Q211",
+  "q": "帝時為侍中屯騎校尉永和元年詔無忌與議郎黄景校定中書",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 25 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mp0flz6",
+     "title": "隋書經籍志考證",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2mp0flz6",
+   "chapter": "003",
+   "passage_start": 8994
+  }
+ },
+ {
+  "id": "Q212",
+  "q": "香各半兩右為細末入研藥匀如常法用少許用刷牙蘸",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 22 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "069"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "069",
+   "passage_start": 6469
+  }
+ },
+ {
+  "id": "Q213",
+  "q": "萬除刺史得將孫坑卓瓌劉儒張鄰等賞有差十二月以寜國",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 24 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "231"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "231",
+   "passage_start": 7856
+  }
+ },
+ {
+  "id": "Q214",
+  "q": "常服之牛蒡子炒为末每服一钱水煎服",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 16 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nke3k75",
+   "chapter": "003",
+   "passage_start": 272290
+  }
+ },
+ {
+  "id": "Q215",
+  "q": "正千戶成化二十三年遇例實授本人照例革襲署正",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 21 字（去标点字流）",
+  "corpus42": {
+   "passages": 3,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 3,
+     "chapters": [
+      "002",
+      "017"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "017",
+   "passage_start": 71556
+  }
+ },
+ {
+  "id": "Q216",
+  "q": "汾沮洳言采其莫彼其之子美無度美無度殊異乎公路",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 22 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59ezak9zc3k",
+     "title": "詩經",
+     "passages": 1,
+     "chapters": [
+      "108"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59ezak9zc3k",
+   "chapter": "108",
+   "passage_start": 58
+  }
+ },
+ {
+  "id": "Q217",
+  "q": "姚景和年二十九歲山後人系通州衛",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "004"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "004",
+   "passage_start": 250368
+  }
+ },
+ {
+  "id": "Q218",
+  "q": "a穆氏元休洪範外傳新唐志十卷佚封演曰開元中有唐頻上啓典一百三",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 30 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2mel8d1d",
+   "chapter": "003",
+   "passage_start": 138562
+  }
+ },
+ {
+  "id": "Q219",
+  "q": "臛生薑二合右先用生薑汁和麵并山",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "256"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "256",
+   "passage_start": 17186
+  }
+ },
+ {
+  "id": "Q220",
+  "q": "林右衛後所故副千戶魏育元嫡長男查伊父原",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 19 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "010"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "010",
+   "passage_start": 148409
+  }
+ },
+ {
+  "id": "Q221",
+  "q": "以亡者堯之末年四凶在朝而不去八",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "545"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "545",
+   "passage_start": 1944
+  }
+ },
+ {
+  "id": "Q222",
+  "q": "處便縱饒有道理寧有幾何如看此兩段須先識取聖人功用之大氣象規模",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 30 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "064"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hq1e9ky",
+   "chapter": "064",
+   "passage_start": 20128
+  }
+ },
+ {
+  "id": "Q223",
+  "q": "無定沉濇弱□微五種隂脉形状舉按全無力者宜先緩而",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 23 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "145"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "145",
+   "passage_start": 8488
+  }
+ },
+ {
+  "id": "Q224",
+  "q": "丹一服翌日令割去死黑肉割后始痛",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nke3k75",
+     "title": "古今醫統",
+     "passages": 1,
+     "chapters": [
+      "003"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nke3k75",
+   "chapter": "003",
+   "passage_start": 51174
+  }
+ },
+ {
+  "id": "Q225",
+  "q": "疎非聰明者必無慮但恐寖成亂階耳勞役不止百姓思亂欲以微諷帝意",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 29 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "331"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "331",
+   "passage_start": 9778
+  }
+ },
+ {
+  "id": "Q226",
+  "q": "人吏部考功司郎中又濟南百咏一卷尹嘉賔焚餘詩集一卷字",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 25 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1c",
+     "title": "千頃堂書目",
+     "passages": 1,
+     "chapters": [
+      "026"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2mel8d1c",
+   "chapter": "026",
+   "passage_start": 2983
+  }
+ },
+ {
+  "id": "Q227",
+  "q": "帶地方竊見盗賊縱横大肆威虐運道廢阨莫甚於此然在我之政弊而",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 28 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nkkcav7",
+     "title": "容春堂集",
+     "passages": 1,
+     "chapters": [
+      "044"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nkkcav7",
+   "chapter": "044",
+   "passage_start": 7791
+  }
+ },
+ {
+  "id": "Q228",
+  "q": "講明道義或論古今人物而別其是非或應接事物",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 20 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "117"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hq1e9ky",
+   "chapter": "117",
+   "passage_start": 9757
+  }
+ },
+ {
+  "id": "Q229",
+  "q": "西都䕶府三年正月立龜兹王布失畢之子白素稽為龜兹王",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 24 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "1008"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "1008",
+   "passage_start": 4507
+  }
+ },
+ {
+  "id": "Q230",
+  "q": "戶十四年年老爵十五年仍替清浪衛中所試百戶",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 20 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "015"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "015",
+   "passage_start": 58858
+  }
+ },
+ {
+  "id": "Q231",
+  "q": "了菩薩這一去到那花果山前分皂白水簾洞口辨",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 20 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2njzqmtd",
+     "title": "西遊記",
+     "passages": 1,
+     "chapters": [
+      "057"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2njzqmtd",
+   "chapter": "057",
+   "passage_start": 6663
+  }
+ },
+ {
+  "id": "Q232",
+  "q": "内不得食熱物出聖惠方治瘧徃來寒熱",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 16 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "200"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "200",
+   "passage_start": 18346
+  }
+ },
+ {
+  "id": "Q233",
+  "q": "城外稅駕於香山寺日才午候飯乃入城復出南門抵南山游",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 24 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2njg2ozn",
+     "title": "徐霞客遊記",
+     "passages": 1,
+     "chapters": [
+      "024"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2njg2ozn",
+   "chapter": "024",
+   "passage_start": 17342
+  }
+ },
+ {
+  "id": "Q234",
+  "q": "彖之曰王假之尚大也勿憂宜日中宜照天",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 17 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2mel8d1d",
+   "chapter": "002",
+   "passage_start": 258655
+  }
+ },
+ {
+  "id": "Q235",
+  "q": "煎至七分去滓食後温服治傷寒上焦",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "139"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "139",
+   "passage_start": 2364
+  }
+ },
+ {
+  "id": "Q236",
+  "q": "河鼓星纪以比会合晷影前却而比乾龙皇上览视而比顿悟而明了关键",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 29 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2gpdboci",
+     "title": "參同契分章注",
+     "passages": 1,
+     "chapters": [
+      "002"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2gpdboci",
+   "chapter": "002",
+   "passage_start": 1739
+  }
+ },
+ {
+  "id": "Q237",
+  "q": "與繚同繚曰秦王為人蜂準徐廣曰蜂",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 15 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f284rdaf7",
+     "title": "史記集解",
+     "passages": 1,
+     "chapters": [
+      "008"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f284rdaf7",
+   "chapter": "008",
+   "passage_start": 1398
+  }
+ },
+ {
+  "id": "Q238",
+  "q": "肢體冷痛夫風冷失聲者由風冷之氣客于㑹",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 18 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nje79qa",
+     "title": "普濟方",
+     "passages": 1,
+     "chapters": [
+      "104"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nje79qa",
+   "chapter": "104",
+   "passage_start": 9
+  }
+ },
+ {
+  "id": "Q239",
+  "q": "納庚辛今乃反此者卦必自下生先初爻",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 16 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2q7zj6yp",
+     "title": "夢溪筆談",
+     "passages": 1,
+     "chapters": [
+      "007"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2q7zj6yp",
+   "chapter": "007",
+   "passage_start": 8433
+  }
+ },
+ {
+  "id": "Q240",
+  "q": "爲陽陽主生物形用未著字音常輕重濁爲隂隂主成",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 21 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2mel8d1d",
+     "title": "經義考",
+     "passages": 1,
+     "chapters": [
+      "016"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2mel8d1d",
+   "chapter": "016",
+   "passage_start": 18658
+  }
+ },
+ {
+  "id": "Q241",
+  "q": "刑衣服畧與高麗百濟同毎正月旦相賀王設宴㑹班賚羣官其日",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 26 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "976"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "976",
+   "passage_start": 4593
+  }
+ },
+ {
+  "id": "Q242",
+  "q": "同知升本衛指揮使二輩李端舊選簿查有宣德",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 19 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2nfhf8cg",
+     "title": "武職選簿",
+     "passages": 1,
+     "chapters": [
+      "001"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2nfhf8cg",
+   "chapter": "001",
+   "passage_start": 393823
+  }
+ },
+ {
+  "id": "Q243",
+  "q": "幽閉莫啟昔周公旦父文兄武九命作伯以尹華夏猶揮沐吐餐垂",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 26 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hqqohky",
+     "title": "冊府元龜",
+     "passages": 1,
+     "chapters": [
+      "917"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hqqohky",
+   "chapter": "917",
+   "passage_start": 7279
+  }
+ },
+ {
+  "id": "Q244",
+  "q": "不是分別得分明如何得胸次恁地瞭然天下只是",
+  "mode": "fuzzy",
+  "kind": "phrase",
+  "type": "长句",
+  "source": "corpus_extract",
+  "note": "正文连续 20 字（去标点字流）",
+  "corpus42": {
+   "passages": 1,
+   "books": 1,
+   "top": [
+    {
+     "entry": "d59f2hq1e9ky",
+     "title": "朱子語類",
+     "passages": 1,
+     "chapters": [
+      "030"
+     ]
+    }
+   ]
+  },
+  "origin": {
+   "entry": "d59f2hq1e9ky",
+   "chapter": "030",
+   "passage_start": 5395
+  }
+ }
+]

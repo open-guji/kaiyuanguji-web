@@ -1,0 +1,49 @@
+{
+  "q": "學而時習之",
+  "mode": "fuzzy",
+  "normalized": "学而时习之",
+  "truncated": false,
+  "total_books": 2,
+  "total_books_capped": false,
+  "has_more": false,
+  "total_hits": 3,
+  "capped": false,
+  "groups": [
+    {
+      "entry": "d59df01avcw0",
+      "title": "論語集解",
+      "hit_count": 2,
+      "hits": [
+        {
+          "chapter": "001",
+          "label": "學而第一",
+          "passage": [0, 38],
+          "matches": [[3, 8]],
+          "snippet": "子曰：<mark>學而時習之</mark>，不亦說乎？"
+        },
+        {
+          "chapter": "020",
+          "label": null,
+          "passage": [112, 160],
+          "matches": [[130, 135]],
+          "snippet": "故曰<mark>學而時習之</mark>者，言不廢也。"
+        }
+      ]
+    },
+    {
+      "entry": "d59df01bxyz1",
+      "title": "示例書名",
+      "hit_count": 1,
+      "hits": [
+        {
+          "chapter": "003",
+          "label": "示例章",
+          "passage": [0, 20],
+          "matches": [[4, 9]],
+          "snippet": "夫子嘗言<mark>學而時習之</mark>，其義在是。"
+        }
+      ]
+    }
+  ],
+  "took_ms": { "search": 18.2, "locate": 4.1, "total": 23.0 }
+}
