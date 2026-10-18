@@ -1,4 +1,6 @@
 name: Data package check and publish (overview#470 P1)
+# 显示名带上流程，方便在 Actions 列表里分辨；定时一律是 text
+run-name: ${{ format('Data publish ({0}{1})', inputs.flow || 'text', inputs.target == 'staging' && ', staging' || '') }}
 # 数据流程（overview#470 设计 §2）：克隆数据仓 → build_derived → 打包 → 上传前包检查 →（受闸控制）上传到数据前缀。
 #   · **默认只检查**：不连 COS 写、不上传、不动任何指针。与现有 deploy.yml 的数据发布并行跑，各自独立。
 #     只有「发布闸」（Publish gate 一步，逻辑见那一步的注释）放行时，后面的上传步骤才会跑：
@@ -19,18 +21,31 @@ name: Data package check and publish (overview#470 P1)
 #     回滚计划、/api/version）切到 web.json 之前还在用，所以上传前从线上现行 latest.json 带过来，不让数据发布把它抹掉。
 #   · 刷新（失效）、上线后抽查、告警、h1 文本（每次重写约 3.7 GB，按设计 §5 走独立任务）在后续 PR 里加。
 #
-# 触发：每日定时（UTC 21:43，在 deploy.yml 的 20:30 之后；三仓无变化就跳过）＋手动。
-# 并发：publish-data 一组，不取消在跑的（上传时只有一个写者）。
+# 两条流程（2026-10-18 用户定：index 与 text 拆开、独立发布；产物路径、COS 前缀沿用原样）：
+#   · flow=text ：book-text 取 main，book-index **钉在线上 latest.json 记的 productionCommitId**——只推进文本。自动：
+#                 每小时一次轻检查（book-text HEAD 与线上 textCommitId 一样、或有别的数据 run 在跑就几秒结束），
+#                 每天 UTC 21:43 照旧完整跑一趟兜底（打包脚本改了、上次同步半途失败、sitemap 没传完）。
+#   · flow=index：book-index 取 main（或手填），book-text **钉在线上 textCommitId**——只推进索引。只手动（近期改动大）。
+#   · flow=both ：两个仓都按输入，即拆分之前的做法，只手动。
+#   钉住的一边就是线上正在用的那一版，打包产物里它那部分不变，增量同步只传真正变了的对象。
+#   钉住的 commit 来自线上指针（只有本流程在发布闸下写），所以发布闸把它当作和 main 同等可信。
+# 并发：每条流程一个 workflow 级组（publish-data-text／-index／-both），互相不会把对方排队的 run 顶掉；
+#   真正写正式前缀的 package 任务共用一把锁 publish-data-writer，任何时刻只有一个写者。不取消在跑的。
 
 on:
   workflow_dispatch:
     inputs:
+      flow:
+        description: 'index = 只发 book-index（book-text 钉在线上版本）；text = 只发 book-text（book-index 钉在线上版本）；both = 两个仓都按下面的 ref（拆分前的做法）'
+        type: choice
+        options: [index, text, both]
+        default: index
       prod_ref:
-        description: 'book-index 的分支／tag／commit（默认 main）'
+        description: 'book-index 的分支／tag／commit（默认 main）；flow=text 时忽略（钉在线上版本）'
         type: string
         default: main
       text_ref:
-        description: 'book-text 的分支／tag／commit（默认 main）'
+        description: 'book-text 的分支／tag／commit（默认 main）；flow=index 时忽略（钉在线上版本）'
         type: string
         default: main
       target:
@@ -54,64 +69,81 @@ on:
         description: '允许 prod_ref／text_ref 不是 main 时仍上传（回滚＝重发上一版数据、用新格式分支演练）。默认不允许：别的 ref 只做检查。勾上＝所选 ref 的代码会在带密钥的 job 里跑，只给可信分支用'
         type: boolean
         default: false
+  # 定时都是 flow=text。整点后 17 分：轻检查（没变化几秒结束）；UTC 21:43：每天一次完整跑（见 check 任务）
   schedule:
+    - cron: '17 * * * *'
     - cron: '43 21 * * *'
 
 permissions:
   contents: read
 
 concurrency:
-  group: publish-data
+  group: publish-data-${{ inputs.flow || 'text' }}
   cancel-in-progress: false
 
 jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过（同 deploy.yml 的 check，口径一致）。手动一律跑。
   check:
     runs-on: ubuntu-latest
-    # issues: write 只给落后告警那一步开 issue 用
+    # issues: write 只给落后告警那一步开 issue 用；actions: read 给轻检查看有没有别的数据 run 在跑
     permissions:
       contents: read
       issues: write
+      actions: read
     outputs:
       should_run: ${{ steps.compare.outputs.should_run }}
     steps:
+      # 手动一律跑。定时（都是 flow=text）先看有没有别的数据 run 在跑或排队：有就让路（下个小时再来），
+      # 免得在 package 的写锁前排队——GitHub 同一把锁只留一个排队项，后来的会顶掉先排队的手动 index 发布。查不了就当没有。
+      # 然后分两种：
+      #   · UTC 21:43 那一条（以及取不到是哪条的）：一律跑——「该不该同步」由 package 里的 Decide COS data sync 判
+      #     （两仓 commit＋打包脚本指纹＋上次同步是否完整），这里只比 commit 会漏掉打包脚本改了、上次同步半途失败、sitemap 没传完；
+      #   · 每小时那一条（轻检查）：book-text main 的 HEAD 与线上 textCommitId 一样就跳过。查不到就当有变化、照跑。
+      # 轻检查把线上与 HEAD 的 commit 交给落后告警（每日完整跑不碰网络、直接放行，告警只在轻检查里有数据）。
       - name: Compare data repo HEADs with deployed latest.json
         id: compare
         env:
-          SPLIT_VAR: 'true'
+          SCHEDULE: ${{ github.event.schedule }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "· 非定时触发，直接跑"
             exit 0
           fi
-          # 开关打开后，「该不该同步」由 package 里的 Decide COS data sync 判（三仓 commit＋打包脚本指纹＋上次同步是否完整），
-          # 这里只比 commit 会漏掉：打包脚本改了、上次同步半途失败、sitemap 没传完。多跑一趟的代价只是克隆＋打包，不重传
-          if [ "$SPLIT_VAR" = true ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "· 数据流水线已打开：定时一律跑，是否同步由 package 内的同步标记判定"
+          BUSY=$(gh run list --workflow data.yml --limit 20 --json databaseId,status \
+                   --jq "[.[] | select(.databaseId != $RUN_ID and (.status == \"in_progress\" or .status == \"queued\" or .status == \"waiting\" or .status == \"pending\"))] | length" 2>/dev/null || echo 0)
+          if [ "${BUSY:-0}" -gt 0 ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "· 有 $BUSY 个数据 run 在跑或排队：这次定时让路（不在写锁前排队、不顶掉手动发布），下个小时再来"
             exit 0
           fi
-          LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
-          LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
-          LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
+          if [ "$SCHEDULE" != "17 * * * *" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "· 每日完整跑：定时一律跑，是否同步由 package 内的同步标记判定"
+            exit 0
+          fi
+          LIVE=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/latest.json?cb=$(date +%s)" || echo '{}')
+          LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" 2>/dev/null || echo '')
+          LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" 2>/dev/null || echo '')
           # 查不到（网络抖动）就留空，下面按「无法确认」处理、照常跑，不让这一步因此失败
           HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1 || true)
           HEAD_TEXT=$(git ls-remote https://github.com/open-guji/book-text.git refs/heads/main | cut -f1 || true)
-          echo "production: live=$LIVE_PROD head=$HEAD_PROD"
+          echo "book-index: live=$LIVE_PROD head=$HEAD_PROD（flow=text 不发它）"
           echo "book-text:  live=$LIVE_TEXT head=$HEAD_TEXT"
           { echo "live_prod=$LIVE_PROD"; echo "head_prod=$HEAD_PROD"; echo "live_text=$LIVE_TEXT"; echo "head_text=$HEAD_TEXT"; } >> "$GITHUB_OUTPUT"
-          if [ -n "$HEAD_PROD" ] && [ "$LIVE_PROD" = "$HEAD_PROD" ] \
-             && [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
+          if [ -n "$HEAD_TEXT" ] && [ "$LIVE_TEXT" = "$HEAD_TEXT" ]; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "· 数据无变化，跳过"
-          else
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "· 数据有更新（或无法确认），执行检查"
+            echo "· book-text 没变，跳过"
+            exit 0
           fi
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "· book-text 有更新（或无法确认），发布文本"
 
-      # 落后告警（只在开关打开之后、只在定时跑里）：定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败；
-      # 数据仓 main 的 HEAD 与线上对不上、且那个提交已经过了 36 小时，就开一张（或续一条）data-alert issue。
+      # 落后告警（只在定时跑里）：定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着失败；
+      # book-text main 的 HEAD 与线上对不上、且那个提交已经过了 6 小时（文本每小时自动发），就开一张（或续一条）data-alert issue。
       # 数据流程已拆出（2026-10-08 起写死，不再看仓库变量），deploy.yml 不写数据，这里是唯一写者。取不到提交时间就不告警（宁可漏一晚，不误报）。
       - name: Data freshness alarm (36 h)
         if: ${{ github.event_name == 'schedule' }}
@@ -123,7 +155,7 @@ jobs:
           HEAD_PROD: ${{ steps.compare.outputs.head_prod }}
           LIVE_TEXT: ${{ steps.compare.outputs.live_text }}
           HEAD_TEXT: ${{ steps.compare.outputs.head_text }}
-          LAG_HOURS: '36'
+          LAG_HOURS: '6'
         run: |
           now=$(date +%s); late=""
           check() {   # check <仓> <live> <head>
@@ -137,11 +169,11 @@ jobs:
             echo "· $repo：HEAD ${head:0:12}（${h} 小时前）线上 ${live:0:12}"
             if [ "$h" -ge "$LAG_HOURS" ]; then late="$late\n- $repo：HEAD \`${head:0:12}\` 已提交 ${h} 小时，线上还是 \`${live:0:12}\`"; fi
           }
-          check book-index "$LIVE_PROD" "$HEAD_PROD"
+          # 只看 book-text：book-index 改成手动发布（flow=index），落后是常态，不告警
           check book-text "$LIVE_TEXT" "$HEAD_TEXT"
           [ -n "$late" ] || { echo "· 没有落后超过 ${LAG_HOURS} 小时的数据"; exit 0; }
           RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          BODY=$(printf '数据落后超过 %s 小时（数据流程每晚定时发布，这几天没发上去）：%b\n\n- 本次定时检查：%s\n- 排查：看最近几次 `data.yml` 的 run（`package` 任务红在哪一步）；手动补发：Actions → Data package check and publish → Run workflow（`target=production`）。\n- 补发成功后线上会追上，关本 issue。' "$LAG_HOURS" "$late" "$RUN_URL")
+          BODY=$(printf '文本数据落后超过 %s 小时（book-text 每小时自动发布，这段时间都没发上去）：%b\n\n- 本次定时检查：%s\n- 排查：看最近几次 `data.yml` 的 run（`package` 任务红在哪一步）；手动补发：Actions → Data package check and publish → Run workflow（`flow=text`、`target=production`）。\n- 补发成功后线上会追上，关本 issue。' "$LAG_HOURS" "$late" "$RUN_URL")
           gh label create data-alert --color B60205 --description '数据流程告警（data.yml）' 2>/dev/null || true
           N=$(gh issue list --label data-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')
           if [ -n "$N" ]; then gh issue comment "$N" --body "$BODY"; echo "已在告警 issue #$N 续报" >> "$GITHUB_STEP_SUMMARY"
@@ -154,10 +186,11 @@ jobs:
     # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时
     timeout-minutes: 120
     # 演练写的 staging/ 前缀，deploy.yml 的测试站构建也写（拆出之前）：两边用同一把锁（deploy.yml 的 build 任务那把），
-    # 不会交错写同一批对象和指针。正式前缀每个 run 一个独一无二的组，等于不加锁——它由 workflow 级的 publish-data 排队，
-    # 正式前缀的单写者靠开关（翻开关的步骤见 runbook）。
+    # 不会交错写同一批对象和指针。
+    # 正式前缀：index／text／both 三条流程各在自己的 workflow 级组里排队，写正式前缀的 package 共用 publish-data-writer 这把锁，
+    # 任何时刻只有一个写者（轻检查遇到别的数据 run 在跑会让路，不在这把锁前排队，所以不会顶掉手动的 index 发布）。
     concurrency:
-      group: ${{ inputs.target == 'staging' && 'deploy-edgeone-build-staging' || format('data-package-{0}', github.run_id) }}
+      group: ${{ inputs.target == 'staging' && 'deploy-edgeone-build-staging' || 'publish-data-writer' }}
       cancel-in-progress: false
     env:
       IN_PROD_REF: ${{ inputs.prod_ref }}
@@ -191,11 +224,44 @@ jobs:
         working-directory: nextjs
         run: npm ci
 
-      # 数据仓 ref：定时没有输入，一律 main；手动可指定（联调分支）。校验同 deploy.yml 的 resolve
+      # 按流程定两个仓各用哪一版：flow=text 把 book-index 钉在线上（目标前缀的）latest.json 记的 productionCommitId，
+      # flow=index 把 book-text 钉在线上 textCommitId，flow=both 都按输入。定时没有输入，一律 text。
+      # 钉不住（读不到线上指针、字段不是完整 commit）就停：不能拿 main 顶替，那等于把另一个仓也一起发了。
+      - name: Resolve flow refs
+        id: flow
+        env:
+          FLOW: ${{ inputs.flow || 'text' }}
+          PREFIX: ${{ inputs.target == 'staging' && 'staging' || '' }}
+        run: |
+          prod="${IN_PROD_REF:-main}"; text="${IN_TEXT_REF:-main}"; pinned=none; field=""
+          case "$FLOW" in
+            text)  field=productionCommitId; pinned=prod ;;
+            index) field=textCommitId; pinned=text ;;
+            both)  ;;
+            *) echo "::error::未知的 flow：$FLOW"; exit 1 ;;
+          esac
+          if [ -n "$field" ]; then
+            P="${PREFIX:+$PREFIX/}"
+            SHA=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/${P}latest.json?cb=$(date +%s)" \
+                    | python3 -c "import json,sys; print(json.load(sys.stdin).get(sys.argv[1],''))" "$field" 2>/dev/null || true)
+            if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+              echo "::error::flow=$FLOW 要把另一个仓钉在线上版本，但读不到线上 ${P}latest.json 的 $field（'${SHA:0:12}'），停止"
+              exit 1
+            fi
+            if [ "$pinned" = prod ]; then prod="$SHA"; else text="$SHA"; fi
+          fi
+          { echo "prod_ref=$prod"; echo "text_ref=$text"; echo "pinned=$pinned"; } >> "$GITHUB_OUTPUT"
+          echo "· flow=$FLOW：book-index @ ${prod:0:12}$([ "$pinned" = prod ] && echo '（钉在线上）')，book-text @ ${text:0:12}$([ "$pinned" = text ] && echo '（钉在线上）')"
+          { echo "### 流程"; echo "- flow=\`$FLOW\`　book-index=\`${prod:0:12}\`　book-text=\`${text:0:12}\`　钉住=\`$pinned\`"; } >> "$GITHUB_STEP_SUMMARY"
+
+      # 数据仓 ref：来自上一步（定时一律 main＋钉住的一边；手动可指定联调分支）。校验同 deploy.yml 的 resolve
       - name: Check data repo refs
         id: refs
+        env:
+          FLOW_PROD_REF: ${{ steps.flow.outputs.prod_ref }}
+          FLOW_TEXT_REF: ${{ steps.flow.outputs.text_ref }}
         run: |
-          for pair in "prod_ref:$IN_PROD_REF" "text_ref:$IN_TEXT_REF"; do
+          for pair in "prod_ref:$FLOW_PROD_REF" "text_ref:$FLOW_TEXT_REF"; do
             k="${pair%%:*}"; v="${pair#*:}"; v="${v:-main}"
             if ! printf '%s' "$v" | grep -Eq '^[A-Za-z0-9._/-]+$'; then echo "❌ $k 含非法字符：$v"; exit 1; fi
             if ! git check-ref-format "refs/heads/$v" >/dev/null 2>&1; then echo "❌ $k 不是合法的 git ref 名：$v"; exit 1; fi
@@ -221,12 +287,14 @@ jobs:
           SPLIT_VAR: 'true'
           PROD_REF: ${{ steps.refs.outputs.prod_ref }}
           TEXT_REF: ${{ steps.refs.outputs.text_ref }}
+          PINNED: ${{ steps.flow.outputs.pinned }}
         run: |
           publish=false; sitemaps_only=false; prefix=''; why=''
           [ "$ONLY_SITEMAPS" = true ] && sitemaps_only=true
           [ "$TARGET" = staging ] && prefix=staging
+          # 钉在线上版本的那一边（PINNED=prod|text）当作 main：它就是线上正在用的 commit，只有本流程在发布闸下写过
           refs_main=true
-          { [ "$PROD_REF" = main ] && [ "$TEXT_REF" = main ]; } || refs_main=false
+          { { [ "$PROD_REF" = main ] || [ "$PINNED" = prod ]; } && { [ "$TEXT_REF" = main ] || [ "$PINNED" = text ]; }; } || refs_main=false
           if [ "$refs_main" != true ] && [ "$ALLOW_OVERRIDE" != true ]; then
             why="prod_ref／text_ref 不是 main（${PROD_REF}／${TEXT_REF}）：带密钥的上传只跑 main 上的代码，只做检查（确需用别的 ref 请勾 allow_ref_override）"
           elif [ "$TARGET" = staging ]; then
@@ -1023,7 +1091,7 @@ jobs:
           if [ "$REFRESH_OK" = false ]; then
             add "**缓存刷新没完全生效**（refresh：清数据指针缓存或条目页失效／核对没通过，看 run 里 refresh 任务）——数据本身没问题，但读者可能还看到旧指针／旧条目页，条目页最迟一小时（s-maxage）自然过期，h1 指针的节点缓存可能更久"
           fi
-          BODY=$(printf '正式站数据发布出错：%s\n\n- run：%s\n- 新数据：book-index `%s`，book-text `%s`\n- 发布前线上：book-index `%s`，book-text `%s`\n\n**回滚**（重发发布前的数据，约 10 分钟）：Actions → Data package check and publish → Run workflow：`target=production`，`prod_ref`、`text_ref` 填上面"发布前线上"的两个 commit，勾 `allow_ref_override`。\n\n修好、线上恢复后关本 issue。' \
+          BODY=$(printf '正式站数据发布出错：%s\n\n- run：%s\n- 新数据：book-index `%s`，book-text `%s`\n- 发布前线上：book-index `%s`，book-text `%s`\n\n**回滚**（重发发布前的数据，约 10 分钟）：Actions → Data package check and publish → Run workflow：`flow=both`、`target=production`，`prod_ref`、`text_ref` 填上面"发布前线上"的两个 commit，勾 `allow_ref_override`。\n\n修好、线上恢复后关本 issue。' \
             "$WHAT" "$RUN_URL" "${NEW_PROD:0:40}" "${NEW_TEXT:0:40}" "${OLD_PROD:-（取不到）}" "${OLD_TEXT:-（取不到）}")
           gh label create data-alert --color B60205 --description '数据流程告警（data.yml）' 2>/dev/null || true
           N=$(gh issue list --label data-alert --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || echo '')

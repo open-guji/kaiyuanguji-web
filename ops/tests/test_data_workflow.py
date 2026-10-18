@@ -439,7 +439,9 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertEqual(self.wf['permissions'], {'contents': 'read'})
         for name, job in self.wf['jobs'].items():
             perms = job.get('permissions') or {}
-            if name in ('check', 'alert-data'):
+            if name == 'check':
+                self.assertEqual(perms, {'contents': 'read', 'issues': 'write', 'actions': 'read'}, name)
+            elif name == 'alert-data':
                 self.assertEqual(perms, {'contents': 'read', 'issues': 'write'}, name)
             else:
                 self.assertNotIn('issues', perms, name)
@@ -483,7 +485,8 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertIn("github.event_name == 'schedule'", st['if'])
         self.assertNotIn('vars.', st['if'])  # overview#490：不再看仓库变量
         self.assertTrue(st.get('continue-on-error'))
-        self.assertEqual(st['env']['LAG_HOURS'], '36')
+        self.assertEqual(st['env']['LAG_HOURS'], '6')
+        self.assertNotIn('check book-index', st['run'])   # book-index 改手动发布，不告警
         self.assertIn('data-alert', st['run'])
 
     def test_refresh_and_live_ref_still_run_when_package_fails_after_data_synced(self):
@@ -593,21 +596,116 @@ esac
 
     def test_concurrency_publish_data_not_cancelling(self):
         c = self.wf['concurrency']
-        self.assertEqual(c['group'], 'publish-data')
+        # 每条流程一个组（不互相顶掉排队的 run）；写正式前缀的 package 共用一把写锁
+        self.assertEqual(c['group'], "publish-data-${{ inputs.flow || 'text' }}")
         self.assertFalse(c['cancel-in-progress'])
+        pc = self.wf['jobs']['package']['concurrency']
+        self.assertIn("'publish-data-writer'", pc['group'])
+        self.assertIn("'deploy-edgeone-build-staging'", pc['group'])
+        self.assertFalse(pc['cancel-in-progress'])
 
     def test_scheduled_check_always_runs_once_switch_on(self):
         run = self.wf['jobs']['check']['steps'][0]['run']
         def go(split):
             with tempfile.TemporaryDirectory() as d:
                 out = os.path.join(d, 'out'); open(out, 'w').close()
-                env = dict(os.environ, SPLIT_VAR=split, GITHUB_OUTPUT=out)
+                b = os.path.join(d, 'bin'); os.makedirs(b)
+                with open(os.path.join(b, 'gh'), 'w') as fh:
+                    fh.write('#!/bin/bash\necho 0\n')   # 没有别的数据 run
+                os.chmod(os.path.join(b, 'gh'), 0o755)
+                env = dict(os.environ, PATH=b + os.pathsep + os.environ['PATH'], SPLIT_VAR=split, GITHUB_OUTPUT=out, RUN_ID='1')
                 # 把 ${{ github.event_name }} 换成 schedule；开关打开时必须在碰网络之前就决定
                 r = subprocess.run(['bash', '-e', '-c', run.replace('${{ github.event_name }}', 'schedule')], env=env, capture_output=True, text=True, timeout=20)
                 self.assertEqual(r.returncode, 0, r.stderr)
                 with open(out, encoding='utf-8') as fh:
                     return fh.read().strip()
         self.assertEqual(go('true'), 'should_run=true')
+
+    # ---- 两条流程（index／text 拆开）----
+    def _run_hourly(self, live_text, head_text, busy):
+        """每小时轻检查：curl／git／gh 换成假的"""
+        run = self.wf['jobs']['check']['steps'][0]['run'].replace('${{ github.event_name }}', 'schedule')
+        with tempfile.TemporaryDirectory() as d:
+            b = os.path.join(d, 'bin'); os.makedirs(b)
+            shims = {
+                'curl': '#!/bin/bash\necho \'{"productionCommitId":"%s","textCommitId":"%s"}\'\n' % ('a' * 40, live_text),
+                'git': '#!/bin/bash\ncase "$*" in *book-index*) echo "%s\trefs/heads/main";; *) echo "%s\trefs/heads/main";; esac\n' % ('b' * 40, head_text),
+                'gh': '#!/bin/bash\necho %s\n' % busy,
+            }
+            for n, body in shims.items():
+                with open(os.path.join(b, n), 'w') as fh:
+                    fh.write(body)
+                os.chmod(os.path.join(b, n), 0o755)
+            out = os.path.join(d, 'out'); open(out, 'w').close()
+            env = dict(os.environ, PATH=b + os.pathsep + os.environ['PATH'], GITHUB_OUTPUT=out, SCHEDULE='17 * * * *', RUN_ID='1')
+            r = subprocess.run(['bash', '-e', '-c', run], env=env, capture_output=True, text=True, timeout=20)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            with open(out, encoding='utf-8') as fh:
+                return dict(l.split('=', 1) for l in fh.read().splitlines() if '=' in l)
+
+    def test_hourly_check_only_runs_when_book_text_moved_and_nothing_else_running(self):
+        self.assertEqual(self._run_hourly('c' * 40, 'c' * 40, 0)['should_run'], 'false')   # 文本没变
+        self.assertEqual(self._run_hourly('c' * 40, 'd' * 40, 1)['should_run'], 'false')   # 有别的数据 run：让路
+        o = self._run_hourly('c' * 40, 'd' * 40, 0)
+        self.assertEqual(o['should_run'], 'true')
+        self.assertEqual((o['live_text'], o['head_text']), ('c' * 40, 'd' * 40))          # 交给落后告警
+        self.assertEqual(self._run_hourly('', 'd' * 40, 0)['should_run'], 'true')          # 读不到线上：照跑
+
+    def test_schedules_are_hourly_light_check_and_daily_full_run(self):
+        on = self.wf.get('on', self.wf.get(True))
+        self.assertEqual([c['cron'] for c in on['schedule']], ['17 * * * *', '43 21 * * *'])
+        self.assertIn('"17 * * * *"', self.wf['jobs']['check']['steps'][0]['run'])
+
+    def test_flow_input_defaults_to_index_and_schedule_means_text(self):
+        inp = self.wf.get('on', self.wf.get(True))['workflow_dispatch']['inputs']['flow']
+        self.assertEqual((inp['type'], inp['options'], inp['default']), ('choice', ['index', 'text', 'both'], 'index'))
+        self.assertEqual(self._step('Resolve flow refs')['env']['FLOW'], "${{ inputs.flow || 'text' }}")
+
+    def _run_flow(self, flow, latest, prod='main', text='main'):
+        step = self._step('Resolve flow refs')
+        with tempfile.TemporaryDirectory() as d:
+            b = os.path.join(d, 'bin'); os.makedirs(b)
+            with open(os.path.join(b, 'curl'), 'w') as fh:
+                fh.write("#!/bin/bash\necho '%s'\n" % latest if latest is not None else '#!/bin/bash\nexit 22\n')
+            os.chmod(os.path.join(b, 'curl'), 0o755)
+            out = os.path.join(d, 'out'); summ = os.path.join(d, 'summ')
+            open(out, 'w').close(); open(summ, 'w').close()
+            env = dict(os.environ, PATH=b + os.pathsep + os.environ['PATH'], GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ,
+                       FLOW=flow, PREFIX='', IN_PROD_REF=prod, IN_TEXT_REF=text)
+            r = subprocess.run(['bash', '-e', '-c', step['run']], env=env, capture_output=True, text=True)
+            if r.returncode:
+                return None
+            with open(out, encoding='utf-8') as fh:
+                return dict(l.split('=', 1) for l in fh.read().splitlines() if '=' in l)
+
+    def test_flow_pins_the_other_repo_to_the_live_commit(self):
+        latest = json.dumps({'productionCommitId': 'a' * 40, 'textCommitId': 'c' * 40})
+        self.assertEqual(self._run_flow('text', latest, prod='ignored'), {'prod_ref': 'a' * 40, 'text_ref': 'main', 'pinned': 'prod'})
+        self.assertEqual(self._run_flow('index', latest, text='ignored'), {'prod_ref': 'main', 'text_ref': 'c' * 40, 'pinned': 'text'})
+        self.assertEqual(self._run_flow('both', latest, prod='x', text='y'), {'prod_ref': 'x', 'text_ref': 'y', 'pinned': 'none'})
+        # 钉不住就停，绝不拿 main 顶替
+        self.assertIsNone(self._run_flow('text', None))
+        self.assertIsNone(self._run_flow('index', json.dumps({'textCommitId': 'abc'})))
+        self.assertIsNone(self._run_flow('nope', latest))
+
+    def test_gate_treats_only_the_pinned_side_as_main(self):
+        def g(prod, text, pinned, target='production'):
+            run = self._step('Publish gate')['run']
+            with tempfile.TemporaryDirectory() as d:
+                out = os.path.join(d, 'out'); summ = os.path.join(d, 'summary')
+                open(out, 'w').close(); open(summ, 'w').close()
+                env = dict(os.environ, TARGET=target, ONLY_SITEMAPS='false', ALLOW_OVERRIDE='false', SPLIT_VAR='true',
+                           PROD_REF=prod, TEXT_REF=text, PINNED=pinned, GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ)
+                r = subprocess.run(['bash', '-e', '-c', run], env=env, capture_output=True, text=True)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                with open(out, encoding='utf-8') as fh:
+                    return dict(l.split('=', 1) for l in fh.read().splitlines() if '=' in l)['publish']
+        self.assertEqual(g('a' * 40, 'main', 'prod'), 'true')
+        self.assertEqual(g('main', 'c' * 40, 'text'), 'true')
+        self.assertEqual(g('a' * 40, 'main', 'text'), 'false')     # 钉的是 text，prod 不是 main：不放行
+        self.assertEqual(g('a' * 40, 'y', 'prod'), 'false')        # 另一边也不是 main：不放行
+        self.assertEqual(g('a' * 40, 'main', 'none'), 'false')
+        self.assertEqual(g('a' * 40, 'main', 'prod', 'staging'), 'true')
 
     def test_triggers_schedule_and_manual(self):
         on = self.wf.get('on', self.wf.get(True))

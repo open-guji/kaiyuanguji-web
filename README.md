@@ -65,7 +65,10 @@ push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`prom
 出问题用 Actions 里的 Rollback。细节见 [docs/architecture.html](docs/architecture.html) 第八节和 [docs/runbook.md](docs/runbook.md)。
 
 - **发布顺序**：先 `npm publish` UI 包 → 再把依赖 bump 与 e2e 改动**同一批**推 main。反了 verify 必红。
-- **只发数据**：数据仓 push 后不会立即触发；等每天北京 04:30 定时，或 `gh workflow run deploy.yml`。测试站 verify 绿之后自动 `promote=data` 到正式站。
+- **发数据**（`data.yml`，index 与 text 两条流程独立发布，每条只推进自己的仓、另一个仓钉在线上版本）：
+  - **book-text**：自动。每小时检查一次，book-text main 有新提交就发；每天 UTC 21:43 另有一次完整跑兜底。手动：`gh workflow run data.yml -f flow=text`。
+  - **book-index**：手动。`gh workflow run data.yml -f flow=index`。
+  - 两个仓一起按指定 ref 发（回滚用）：`flow=both`，ref 不是 main 时勾 `allow_ref_override`。
 - **发布后验证**：`curl -s "https://data.kaiyuanguji.com/latest.json?cb=$RANDOM$RANDOM"` 看 commit（必须带随机串，EdgeOne 会给旧副本）；线上是哪一版看 `/api/version`。
 - 完整流程与 Secrets 清单见 overview 仓「项目进展/古籍索引网站/网站交接手册.html」。
 
