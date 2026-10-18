@@ -151,11 +151,27 @@ jobs:
           COS_PART_MB: ${{ inputs.part_mb }}
           COS_PARALLEL: ${{ inputs.parallel }}
           PREFIX: ${{ inputs.prefix }}
+          # job 上限 240 分：要建包时建包＋verify 约 40 分，剩下的给上传，再留 10 分给失败留包
+          UPLOAD_MINUTES: ${{ inputs.from_run != '' && '220' || '175' }}
         run: |
           set -eo pipefail
           npm install --no-save --no-package-lock --silent cos-nodejs-sdk-v5@2.15.4
-          node upload_cos.mjs --pack "$PACK" --manifest "$RUNNER_TEMP/out/manifest.json" --prefix "$PREFIX" --keep 2 \
-            | tee "$RUNNER_TEMP/upload.log"
+          # 跨太平洋常掉线：失败（退出码 6）就在同一个 job 里续传重来，已传的块复用；
+          # 到点仍未传完就退出 6（失败留包），之后用 from_run 再续。
+          DEADLINE=$(( $(date +%s) + UPLOAD_MINUTES * 60 )); rc=0
+          for round in $(seq 1 50); do
+            echo "== 第 $round 轮 =="
+            set +e
+            timeout $(( DEADLINE - $(date +%s) )) node upload_cos.mjs --pack "$PACK" --manifest "$RUNNER_TEMP/out/manifest.json" --prefix "$PREFIX" --keep 2 \
+              | tee -a "$RUNNER_TEMP/upload.log"
+            rc=${PIPESTATUS[0]}; set -e
+            [ "$rc" -eq 0 ] && break
+            [ "$rc" -eq 124 ] && { echo "到时限仍未传完，之后用 from_run 续传"; exit 6; }
+            [ "$rc" -eq 6 ] || [ "$rc" -eq 1 ] || exit "$rc"
+            [ "$(date +%s)" -lt "$DEADLINE" ] || { echo "到时限仍未传完，之后用 from_run 续传"; exit 6; }
+            sleep 30
+          done
+          [ "$rc" -eq 0 ] || exit "$rc"
           { echo "### COS"; echo '```'; tail -1 "$RUNNER_TEMP/upload.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 上传失败时留包（供 from_run 续传）
