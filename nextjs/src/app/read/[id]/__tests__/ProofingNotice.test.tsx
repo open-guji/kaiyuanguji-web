@@ -12,8 +12,8 @@ describe('ProofingNotice（本书正在校对）', () => {
     it('有 vol 时显示并指向精校页', async () => {
         render(<ProofingNotice id="b1" vol="001" />);
         await act(async () => {});
-        expect(screen.getByTestId('proofing-notice')).toHaveTextContent('本书正在校对');
-        expect(screen.getByRole('link', { name: '进入校对页' })).toHaveAttribute('href', '/proofing/b1/001');
+        expect(screen.getByTestId('proofing-notice')).toHaveTextContent('这一章正在校对');
+        expect(screen.getByRole('link', { name: '参与校对 →' })).toHaveAttribute('href', '/proofing/b1/001');
     });
     it('点 × 后同标签页不再出现', async () => {
         const first = render(<ProofingNotice id="b1" vol="001" />);

@@ -378,7 +378,7 @@ export interface ProofingDeps {
 }
 
 export type ProofingLoad =
-    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string; pendingFile: string; order: ReadSlot[] }
+    | { status: 'ok'; pending: PendingData; cord: CordIndex | null; versionKey: string; pendingFile: string; order: ReadSlot[]; chapterTitle?: string }
     | { status: 'none' | 'error' };
 
 const SAFE_FILE = /^[\w.-]+$/;
@@ -409,7 +409,8 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
                 // 缺字占位「□」（lacuna）不算机器读到的字
                 pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) || chars.get(c.a) === LACUNA ? c : { ...c, c: chars.get(c.a) }));
             }
-            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [] };
+            const chapterTitle = typeof chapter.title === 'string' && chapter.title.trim() ? chapter.title.trim() : undefined;
+            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [], chapterTitle };
         }
         return { status: 'none' };
     } catch {
