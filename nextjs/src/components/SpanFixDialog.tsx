@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { NOTE_MAX, SPAN_SUBS, SPAN_TEXT_MAX, submitSpanFix, type CharFixCtx, type SpanSel, type SpanSub } from '@/lib/charfix';
 import { DialogFrame, useDialog } from '@/components/CharFixEntry';
 import type { SiteT } from '@/i18n/translate';
+import { fixesPageHref } from '@/lib/fixes';
 
 interface Props {
     t: SiteT;
@@ -38,7 +39,7 @@ export default function SpanFixDialog({ t, ctx, span, onClose, fetchImpl }: Prop
     };
 
     return (
-        <DialogFrame t={t} title={t('charfix.span.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.span.done') : null}>
+        <DialogFrame t={t} title={t('charfix.span.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.span.done') : null} doneLink={fixesPageHref(ctx.book, ctx.volume)}>
             <form onSubmit={submit} noValidate>
                 <div className="og-fb-context">
                     <div>{t('charfix.span.where', { page, col, slot, count: span.count })}</div>
