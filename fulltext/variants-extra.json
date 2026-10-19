@@ -1,0 +1,4 @@
+{
+  "_说明": "全站异体字表（indexer/lib/variant-chars.json）之外、全文检索另需归一的异体：异体→正字，一字对一字。语义测试发现缺口时补这里，再跑 build/gen_charmap.py。",
+  "䇿": "策"
+}

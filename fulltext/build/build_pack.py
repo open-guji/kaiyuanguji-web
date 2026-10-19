@@ -18,7 +18,7 @@ from common import passages,stream
 SCHEMA_VERSION=2
 SHORT_CHAPTER=30   # 章总长（码点）小于此为短章，排序降权；与 service/ranking.py 同值
 CHARMAP=os.path.join(os.path.dirname(HERE),'charmap.json')
-CHARMAP_ENTRIES=4820
+CHARMAP_ENTRIES=5255   # build/gen_charmap.py 生成（繁简＋全站异体表＋variants-extra.json）
 def die(code,msg):
     print(f'ERROR[{code}] {msg}',file=sys.stderr); sys.exit(code)
 def sha256_file(p):
@@ -176,8 +176,10 @@ def main():
     with open(os.path.join(a.out,'titles.json'),'w',encoding='utf-8') as f: json.dump(titles,f,ensure_ascii=False)
     with open(os.path.join(a.out,'boost.json'),'w',encoding='utf-8') as f: json.dump({},f)
     with open(os.path.join(a.out,'chapters.json'),'w',encoding='utf-8') as f: json.dump(chap_sha,f,ensure_ascii=False,separators=(',',':'),sort_keys=True)
+    # 归一表随包走：服务按包里这份归一查询，换表与换索引同一步生效（GUJI-243）
+    shutil.copy2(CHARMAP,os.path.join(a.out,'charmap.json'))
     files={}
-    for p in sorted(glob.glob(os.path.join(out_idx,'**','*'),recursive=True)+[os.path.join(a.out,'titles.json'),os.path.join(a.out,'boost.json'),os.path.join(a.out,'chapters.json')]):
+    for p in sorted(glob.glob(os.path.join(out_idx,'**','*'),recursive=True)+[os.path.join(a.out,n) for n in ('titles.json','boost.json','chapters.json','charmap.json')]):
         if os.path.isfile(p):
             rel=os.path.relpath(p,a.out); files[rel]=dict(bytes=os.path.getsize(p),sha256=sha256_file(p))
     index_bytes=sum(v['bytes'] for k,v in files.items() if k.startswith('index'))
@@ -200,7 +202,7 @@ def main():
     with open(manifest_path,'w',encoding='utf-8') as f: json.dump(manifest,f,ensure_ascii=False,indent=1)
     tar=os.path.join(a.out,f'fulltext-{stamp}.tar.gz')
     with tarfile.open(tar,'w:gz') as t:
-        for name in ('index','titles.json','boost.json','chapters.json','manifest.json'): t.add(os.path.join(a.out,name),arcname=name)
+        for name in ('index','titles.json','boost.json','chapters.json','charmap.json','manifest.json'): t.add(os.path.join(a.out,name),arcname=name)
     print(f'books={books_ok} passages={np} chars={nc} chapters={nchap} commit={commit} stamp={stamp}')
     print(f'build: 读+切+加 {t1-t0:.0f}s, commit+merge {time.time()-t1:.0f}s, 总 {time.time()-t0:.0f}s, peakRSS {manifest["build"]["peakRssMB"]}MB')
     print(f'pack: {tar}')

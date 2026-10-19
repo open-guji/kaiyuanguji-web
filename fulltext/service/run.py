@@ -34,8 +34,9 @@ def main():
                           timeout_s=cfg.timeout_s)
     # 先开端口、就绪前一律 503 warming；预热完成后才 ready。
     service.ready = not cfg.warm
-    threading.Thread(target=app.serve, args=(service, cfg.host, cfg.port), daemon=True).start()
-    print(f'serving {cfg.host}:{cfg.port} exact_scan={cfg.exact_scan} warm={cfg.warm}', flush=True)
+    threading.Thread(target=app.serve, args=(service, cfg.host, cfg.port, cfg.edge_token), daemon=True).start()
+    print(f'serving {cfg.host}:{cfg.port} exact_scan={cfg.exact_scan} warm={cfg.warm} '
+          f'edge_token={"set" if cfg.edge_token else "none"}', flush=True)
     if cfg.warm:
         terms_path = cfg.warm_terms or os.path.join(HERE, 'warm_terms.txt')
         nbytes, t_prefetch = source.prefetch_index()

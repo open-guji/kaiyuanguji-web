@@ -211,3 +211,90 @@ def test_boost_changes_book_order_through_service():
     s = app.Service(FakeSource(SAMPLE), boost={'B2': 10.0})
     st, body = s.handle('/api/fulltext', {'q': '而'})
     assert body['groups'][0]['entry'] == 'B2'
+
+
+def _lan_ip():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except OSError:
+        ip = None
+    finally:
+        s.close()
+    return None if not ip or ip.startswith('127.') else ip
+
+
+def _remote_get(port, ip, path, token=None):
+    req = urllib.request.Request(f'http://{ip}:{port}{path}')
+    if token is not None:
+        req.add_header('X-FT-Token', token)
+    try:
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+
+
+@pytest.mark.parametrize('token', ['', 's3cret'])
+def test_remote_requests_need_edge_token(token):
+    """非本机来源：只有 /api/fulltext 且带对令牌才放行；/healthz、/admin/reload 一律 404（GUJI-616）。"""
+    ip = _lan_ip()
+    if ip is None:
+        pytest.skip('没有非回环地址')
+    server = ThreadingHTTPServer(('0.0.0.0', 0), app.make_handler(svc(), token))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        q = '/api/fulltext?' + urllib.parse.urlencode({'q': '學而'})
+        assert _remote_get(port, ip, q) == 404
+        assert _remote_get(port, ip, q, 'wrong') == 404
+        assert _remote_get(port, ip, q, token) == (200 if token else 404)
+        assert _remote_get(port, ip, '/healthz', token) == 404
+        req = urllib.request.Request(f'http://{ip}:{port}/admin/reload', method='POST')
+        with pytest.raises(urllib.error.HTTPError) as ei:
+            urllib.request.urlopen(req, timeout=5)
+        assert ei.value.code == 404
+        # 本机来源不受令牌影响
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}/healthz', timeout=5) as r:
+            assert r.status == 200
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}{q}', timeout=5) as r:
+            assert r.status == 200
+    finally:
+        server.shutdown()
+
+
+@pytest.mark.parametrize('q', ['學而時時習之', '學而習之', '學而時學之', '学而时习之乎'])
+def test_near_mode_tolerates_one_char(q):
+    """差一字（多一字／少一字／错一字）：fuzzy 查不到，near 能查到《論語》那句（GUJI-243）。"""
+    st, fz = svc().handle('/api/fulltext', {'q': q})
+    assert st == 200 and fz['total_hits'] == 0
+    st, nr = svc().handle('/api/fulltext', {'q': q, 'mode': 'near'})
+    assert st == 200 and nr['total_hits'] >= 1
+    g = nr['groups'][0]
+    assert g['entry'] == 'B1' and g['exact_count'] == 0
+    assert '<mark>' in g['hits'][0]['snippet']
+
+
+def test_near_mode_puts_exact_first_and_short_queries_fall_back():
+    st, nr = svc().handle('/api/fulltext', {'q': '學而時習之', 'mode': 'near'})
+    assert nr['groups'][0]['exact_count'] == 1
+    st, a = svc().handle('/api/fulltext', {'q': '學而', 'mode': 'near'})
+    st, b = svc().handle('/api/fulltext', {'q': '學而'})
+    assert (a['total_hits'], a['total_books']) == (b['total_hits'], b['total_books'])
+
+
+def test_pack_charmap_is_used(tmp_path, monkeypatch):
+    """包里带 charmap.json 时按它归一查询（GUJI-243：换表与换索引同一步生效）。"""
+    import common
+    import source_tantivy
+    saved = common.CMAP
+    try:
+        (tmp_path / 'charmap.json').write_text('{"甲": "乙"}', encoding='utf-8')
+        src = object.__new__(source_tantivy.TantivySource)
+        src.index_dir = str(tmp_path / 'index')
+        src._load_charmap()
+        assert common.query_stream('甲乙')[1] == '乙乙'
+    finally:
+        common.set_charmap(saved)

@@ -12,3 +12,8 @@ def test_env_overrides():
                      'FT_TITLES': '/x/titles.json', 'FT_BOOST': '/x/boost.json'})
     assert (c.exact_scan, c.port, c.timeout_s) == (100, 9000, 1.5)
     assert (c.titles, c.boost) == ('/x/titles.json', '/x/boost.json')
+
+
+def test_edge_token_from_env():
+    assert config.load({}).edge_token == ''
+    assert config.load({'FT_EDGE_TOKEN': 'x'}).edge_token == 'x'

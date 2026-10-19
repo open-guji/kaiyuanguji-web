@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Config:
-    host: str = '127.0.0.1'        # 只监听本机；公网经 EdgeOne 反代，F5 白名单只放 /api/fulltext
+    host: str = '127.0.0.1'        # 默认只监听本机；对公网开放时设 0.0.0.0 并配 edge_token
     port: int = 8765
     index_dir: str = ''            # 索引目录（build_pack 产出的 index/）
     titles: str = ''               # titles.json（书 ID → 书名）
@@ -16,6 +16,7 @@ class Config:
     timeout_s: float = 3.0         # 不再等待的时限；Tantivy 查询无法中断（步 3）
     warm: bool = True              # 启动预热：预读索引 + 高频词（FT_WARM=0 关闭）
     warm_terms: str = ''           # 预热词表，空 = service/warm_terms.txt
+    edge_token: str = ''           # 非本机来源须带 X-FT-Token 等于它（EdgeOne 边缘函数）；空＝非本机一律 404
 
 
 def load(env=None) -> Config:
@@ -33,4 +34,5 @@ def load(env=None) -> Config:
         timeout_s=float(e.get('FT_TIMEOUT_S', d.timeout_s)),
         warm=e.get('FT_WARM', '1' if d.warm else '0') not in ('0', '', 'false', 'off'),
         warm_terms=e.get('FT_WARM_TERMS', d.warm_terms),
+        edge_token=e.get('FT_EDGE_TOKEN', d.edge_token),
     )

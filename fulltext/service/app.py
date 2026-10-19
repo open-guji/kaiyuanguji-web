@@ -12,6 +12,7 @@ passages(needle, entry, limit, offset, in_order) -> (段列表, 总数)；可选
 索引打不开时抛 IndexUnavailable。
 """
 import concurrent.futures
+import hmac
 import html
 import json
 import re
@@ -20,13 +21,14 @@ from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from common import locate, orig_text, query_stream
+from common import locate, locate_re, near_regex, norm_text, orig_text, query_stream
 from gate import Gate
 from ranking import rank_books
 
 MAX_Q = 60                 # 超长截断并回 truncated:true
 TOTAL_HITS_CAP = 10000     # total_hits 封顶
-EXACT_SCAN = 3000          # exact 模式最多扫的候选段数（超出 capped=true）
+EXACT_SCAN = 3000          # exact／near 模式最多扫的候选段数（超出 capped=true）
+NEAR_MIN = 4               # near（差一字）只对 ≥4 字的查询放宽；更短的按 fuzzy 查
 SNIPPET_PAD = 40           # 命中前后各取的字数
 ENTRY_RE = re.compile(r'[0-9A-Za-z]{1,32}')
 PROBE = '学'               # /healthz 样本查询（归一后的字）
@@ -74,8 +76,8 @@ def parse_params(p):
     if not q.strip():
         raise BadQuery('q 不能为空')
     mode = p.get('mode', 'fuzzy')
-    if mode not in ('fuzzy', 'exact'):
-        raise BadQuery('mode 取值只能是 fuzzy 或 exact')
+    if mode not in ('fuzzy', 'exact', 'near'):
+        raise BadQuery('mode 取值只能是 fuzzy、exact 或 near')
     group = p.get('group', 'book')
     if group not in ('book', 'none'):
         raise BadQuery('group 取值只能是 book 或 none')
@@ -110,9 +112,10 @@ def snippet(raw, spans):
 
 
 def _hit(d, needle, field, title=None):
-    """段 → 响应里的一条命中；原文里定位不到（exact 模式下原字不符）返回 None。"""
+    """段 → 响应里的一条命中；原文里定位不到（exact 模式下原字不符）返回 None。
+    field='near' 时 needle 是 near_regex 编好的正则。"""
     raw = d['text']
-    spans = locate(raw, needle, field)
+    spans = locate_re(raw, needle) if field == 'near' else locate(raw, needle, field)
     if not spans:
         return None
     h = {
@@ -134,9 +137,12 @@ def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
     if not qn:
         raise BadQuery('q 全是不可检索字符（标点、空白）')
     exact = p.mode == 'exact'
+    near = p.mode == 'near' and len(qn) >= NEAR_MIN
     needle, field = (qo, 'orig') if exact else (qn, 'norm')
     body = {'q': p.q, 'mode': p.mode, 'normalized': needle, 'truncated': p.truncated}
 
+    if near:
+        return _run_near(p, source, qn, body, t0, exact_scan, boost)
     if not exact:
         if p.group == 'book':
             buckets, books_capped = source.book_counts(qn, p.entry)
@@ -190,6 +196,48 @@ def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
         'locate': round((t2 - t1) * 1000, 1),
         'total': round((t2 - t0) * 1000, 1),
     }
+    return body
+
+
+def _run_near(p, source, qn, body, t0, scan, boost):
+    """near（差一字）：按差一字召回候选、按书内顺序最多扫 scan 段，在归一原文上用正则核，再分组。
+    完全命中原串的书排在前面；扫不完时 capped=true（与 exact 同口径）。"""
+    rx = near_regex(qn)
+    segs, n_cand = source.passages(qn, p.entry, scan, 0, True, near=True)
+    t1 = time.perf_counter()
+    by_book, order = {}, []
+    for d in segs:
+        t = norm_text(d['text'])
+        if not rx.search(t):
+            continue
+        e = d['entry']
+        if e not in by_book:
+            by_book[e] = {'entry': e, 'count': 0, 'exact': 0, 'long': False, 'segs': []}
+            order.append(e)
+        g = by_book[e]
+        g['count'] += 1
+        g['exact'] += qn in t
+        g['long'] = g['long'] or d['long']
+        g['segs'].append(d)
+    capped = n_cand > scan
+    total = sum(g['count'] for g in by_book.values())
+    if p.group == 'book':
+        ranked = rank_books([by_book[e] for e in order], boost)
+        ranked.sort(key=lambda g: g['exact'] == 0)        # 稳定排序：有原串的书在前，各自保持书分顺序
+        groups = [{'entry': g['entry'], 'title': source.book_title(g['entry']), 'hit_count': g['count'],
+                   'exact_count': g['exact'],
+                   'hits': [h for h in (_hit(d, rx, 'near') for d in g['segs'][:p.per_book]) if h]}
+                  for g in ranked[p.offset:p.offset + p.limit]]
+        body.update(_totals(total, capped), total_books=len(ranked), total_books_capped=capped,
+                    has_more=p.offset + p.limit < len(ranked), groups=groups)
+    else:
+        flat = [d for e in order for d in by_book[e]['segs']]
+        hits = [h for h in (_hit(d, rx, 'near', source.book_title(d['entry']))
+                            for d in flat[p.offset:p.offset + p.limit]) if h]
+        body.update(_totals(total, capped), has_more=p.offset + p.limit < total, hits=hits)
+    t2 = time.perf_counter()
+    body['took_ms'] = {'search': round((t1 - t0) * 1000, 1), 'locate': round((t2 - t1) * 1000, 1),
+                       'total': round((t2 - t0) * 1000, 1)}
     return body
 
 
@@ -278,7 +326,15 @@ class Service:
         return 200, {'status': 'reloaded', 'stamp': stamp}
 
 
-def make_handler(service):
+def make_handler(service, edge_token=''):
+    """edge_token：非本机来源必须带请求头 X-FT-Token 等于它才能查 /api/fulltext（EdgeOne 边缘函数带）。
+    没配令牌时非本机来源一律 404；/healthz、/admin/* 对非本机来源一律 404（GUJI-616 收口要求）。"""
+    def remote_allowed(handler):
+        if handler.client_address[0] in LOOPBACK:
+            return True
+        got = handler.headers.get('X-FT-Token', '')
+        return bool(edge_token) and hmac.compare_digest(got.encode(), edge_token.encode())
+
     class Handler(BaseHTTPRequestHandler):
         def _send(self, status, obj):
             body = json.dumps(obj, ensure_ascii=False).encode('utf-8')
@@ -290,6 +346,9 @@ def make_handler(service):
 
         def do_GET(self):
             u = urlparse(self.path)
+            local = self.client_address[0] in LOOPBACK
+            if not local and (u.path != '/api/fulltext' or not remote_allowed(self)):
+                return self._send(404, {'error': 'not_found', 'message': u.path})
             if u.path == '/healthz':
                 return self._send(*service.health())
             query = {k: v[0] for k, v in parse_qs(u.query, keep_blank_values=True).items()}
@@ -299,9 +358,9 @@ def make_handler(service):
             u = urlparse(self.path)
             if u.path != '/admin/reload':
                 return self._send(404, {'error': 'not_found', 'message': u.path})
-            # 运维接口只对本机开放（服务即使误绑到公网地址，也拒绝非本机来源）
+            # 运维接口只对本机开放：非本机来源当作不存在
             if self.client_address[0] not in LOOPBACK:
-                return self._send(403, {'error': 'forbidden', 'message': '仅限本机'})
+                return self._send(404, {'error': 'not_found', 'message': u.path})
             self._send(*service.reload())
 
         def log_message(self, *args):
@@ -310,5 +369,5 @@ def make_handler(service):
     return Handler
 
 
-def serve(service, host, port):
-    ThreadingHTTPServer((host, port), make_handler(service)).serve_forever()
+def serve(service, host, port, edge_token=''):
+    ThreadingHTTPServer((host, port), make_handler(service, edge_token)).serve_forever()

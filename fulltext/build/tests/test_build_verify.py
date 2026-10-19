@@ -36,13 +36,14 @@ def smoke(tmp_path):
     return p
 def test_manifest_fields(fx):
     _,out,_=fx; m=json.load(open(out/'manifest.json'))
-    assert m['books']==1 and m['passages']==sum(len(passages(t)) for t in (TEXT1,TEXT2)) and m['charmapEntries']==4820
+    assert m['books']==1 and m['passages']==sum(len(passages(t)) for t in (TEXT1,TEXT2)) and m['charmapEntries']==5255
     assert m['perBook'][EID]['passages']==m['passages'] and m['fallbackChapters']==2 and m['charCoverage']==0.0
     assert all(len(v['sha256'])==64 for v in m['files'].values())
 def test_chapter_sha256(fx):
     import hashlib
     root,out,pack=fx; m=json.load(open(out/'manifest.json'))
     assert m['chapterSha256File']=='chapters.json' and 'chapters.json' in m['files']
+    assert 'charmap.json' in m['files']   # 归一表随包走
     c=json.load(open(out/'chapters.json'))
     assert c=={EID:{'001':hashlib.sha256(TEXT1.encode()).hexdigest(),'002':hashlib.sha256(TEXT2.encode()).hexdigest()}}
     with tarfile.open(pack) as t: assert 'chapters.json' in t.getnames()

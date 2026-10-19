@@ -9,6 +9,7 @@
 
 - **模糊（fuzzy，默认）**：繁简、异体按 `charmap.json` 归一后匹配（查"学而"能中"學而"）。
 - **精确（exact）**：只认原字。
+- **差一字（near）**：在模糊的基础上，查询串与原文差一个字（原文多一字、少一字或错一字）也算命中，给记不全原句的人用；≥4 字才放宽。
 - 不做分词、不做相关度花样：古籍检索要的是"有没有、在哪里、有多少"。
 
 ## 二、为什么改（v1 → v2）
@@ -46,7 +47,8 @@ book-text（GitHub）
 
 - 章 md 按行切段，约 600 个可检索字一段，超长行在句号处断开，硬上限 1,200 字；`#` 标题行单独成段，并作为其后各段的 `label`。
 - 可检索字：汉字、`□`、`〇`、ASCII 字母数字（小写）。组字式／阙文（`:zi[…]`、`[[…]]`、`[甲*乙]`、`{…}`、`[4E00]`）整体算一个占位字 `〓`。标点、空白不进字流，所以查询可以跨标点。
-- 归一：`charmap.json` 一字对一字（4,820 条），orig 与 norm 字流等长、下标对齐。
+- 归一：`charmap.json` 一字对一字（5,255 条），orig 与 norm 字流等长、下标对齐。由 `build/gen_charmap.py` 生成：原有繁→简表（4,820 条）并上全站异体字表 `indexer/lib/variant-chars.json`（Meili 书名搜索在用，753 对）和 `variants-extra.json`（语义测试发现的缺口），按等价类合并，每类映射到一个代表字（优先异体表正字的简体）。2026-10-19 语义测试发现异体表 753 对里有 440 对全文不认（淸／清、靑／青、徳／德、歳／歲等），因此合并。
+- **归一表随包走**：建包把 `charmap.json` 放进包里（manifest 的 `charmapSha256` 记它），服务打开索引时按包里这份归一查询（`source_tantivy._load_charmap`），换表与换索引在同一次 rotate 里生效；旧包没有这份文件时沿用代码自带的。增量更新（`update_books.py`）发现代码里的表与当前索引的不同，拒绝增量、改做全量（退出 7）。
 - 偏移：一律是**章 md 内的 Unicode 码点下标**（前端按码点切）。
 
 ### 字段（`build/build_pack.py: build_schema()`）
@@ -80,17 +82,20 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 
 **exact**：按 norm 召回、按 `ord` 顺序最多扫 `FT_EXACT_SCAN`（默认 3,000）段，在存储原文上筛原字（`orig_text()`，与 `stream()` 等价的正则快速版，有逐字对拍测试），再分组。候选超过上限时 `capped=true`、`total_books_capped=true`。常用字的精确查询总会撞上限，所以耗时受上限约束、不随库变大。
 
+**near（差一字）**：查询归一后 ≥4 字才放宽，否则按 fuzzy。召回＝"少一字"的各个串，加上中间多一字／错一字时左右两半按位置拼的 phrase（tantivy phrase 支持给每个词元指定位置），取并集；一边只剩一个字时那边没有双字词元，只按另一边召回。候选按书内顺序最多扫 `FT_EXACT_SCAN` 段，在归一原文（`norm_text()`，`orig_text` 再 `str.translate`）上用 `near_regex()` 核，计数与 exact 同口径（扫不完 `capped=true`）。完全命中原串的书排前面；每组多给 `exact_count`。颠倒（两字互换）是编辑距离 2，不算。
+
 **排序**（`service/ranking.py`）：书分 = boost × 章长系数（有命中在 ≥30 字的章为 1.0，否则 0.3）+ 0.1 × log(1 + 命中段数)；同分按命中段数、再按 entry。书内按原文顺序。
 
 ## 六、接口（契约 F1，前端已按此实现）
 
-`GET /api/fulltext?q=&mode=fuzzy|exact&group=book|none&limit=1..50(10)&offset=0..&per_book=1..20(3)&entry=`
+`GET /api/fulltext?q=&mode=fuzzy|exact|near&group=book|none&limit=1..50(10)&offset=0..&per_book=1..20(3)&entry=`
 
 - `q` 超过 60 字截断并回 `truncated:true`；`entry` 只许字母数字。
 - 响应（`group=book`）：`q, mode, normalized, truncated, total_hits(封顶 10000), capped, total_books, total_books_capped, has_more, groups[{entry, title, hit_count, hits[{chapter, label, passage[s,e], matches[[s,e]…], snippet}]}], took_ms`。`group=none` 时为 `hits[{entry, title, chapter, label, passage, matches, snippet}]`。样例：`contract/sample_response.json`。
 - `snippet`：命中前后各 40 字，命中处 `<mark>`，其余 HTML 转义，前端可直接 innerHTML。
 - 错误：400 `bad_query`；503 `busy`（并发闸满）／`warming`（预热中）／`index_unavailable`；504 `timeout`（3 秒）。
 - 运维：`GET /healthz`；`POST /admin/reload`（只认本机来源）重开索引目录，返回新 stamp。
+- **来源限制**（GUJI-616）：服务对公网开放（`FT_HOST=0.0.0.0`）时，非本机来源必须带请求头 `X-FT-Token` 等于机上 `FT_EDGE_TOKEN`（EdgeOne 边缘函数带，值配在 EdgeOne 项目变量 `FULLTEXT_TOKEN`）才能查 `/api/fulltext`，否则 404；没配令牌时非本机来源一律 404；`/healthz`、`/admin/*` 对非本机来源一律 404。令牌只填在机器和 EdgeOne 上，不进仓。
 
 ## 七、运行与部署（`deploy/`）
 
@@ -101,6 +106,12 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 - 配置：`/etc/fulltext.env`（模板 `deploy/fulltext.env.example`，无机密）。v2 起不需要 `FT_TEXT_ROOT`。Python 用 venv 时在其中加 `FT_PYTHON=/opt/fulltext/venv/bin/python`。
 - 资源：systemd `MemoryHigh=800M`、`Nice=10`、IO idle；启动预热只预读倒排／位置／快字段，不预读原文存储块。
 - 搜索机上不跑建包（2 核 3.6 GB 不够），只收包。
+
+## 七·五、网站接入与全局开关（GUJI-616）
+
+- 浏览器 → EdgeOne 边缘函数 `edge-functions/api/fulltext.js` → 搜索机 `FULLTEXT_ORIGIN`（带 `X-FT-Token: FULLTEXT_TOKEN`）。函数做参数白名单、按 IP 限流（30／分、600／时）、结果缓存 10 分钟，不把源站地址和令牌回给浏览器。
+- **全局开关**：COS 公开文件 `fulltext/switch.json`（`{enabled, reason, updatedAt, by}`），用 GitHub Actions「Fulltext switch」一键写（state=on/off），不用重新构建发布，约 1 分钟全站生效。关时：`/api/fulltext?op=status` 回 `enabled:false`，前端「全文」tab 隐藏；搜索回 503 `disabled`，不再打搜索机。开关文件读失败沿用上次的值，从没读到过当关。EdgeOne 变量 `FULLTEXT_ENABLED=0` 是更硬的关（要重新部署才生效），只作兜底。前端构建期变量 `NEXT_PUBLIC_FULLTEXT_TAB=1` 仍是总闸。
+- 搜索机侧：`FT_HOST=0.0.0.0`＋`FT_EDGE_TOKEN`（见第六节"来源限制"），安全组只开服务端口。
 
 ## 八、增量更新（`build/update_books.py`）
 

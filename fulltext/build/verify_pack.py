@@ -8,7 +8,8 @@ import argparse,glob,hashlib,json,os,random,sys,tarfile,tempfile,zlib
 HERE=os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0,os.path.dirname(HERE))
 import tantivy
-from common import CMAP,stream,query_stream,locate
+import common
+from common import stream,query_stream,locate
 FAILS=[]
 def fail(msg): FAILS.append(msg); print('FAIL',msg)
 def sha256_file(p):
@@ -83,7 +84,7 @@ def check_streams(m,root):
             chapters+=1; o,n,_=stream(open(p,encoding='utf-8').read())
             if len(o)!=len(n): bad+=1; fail(f'{e}/{os.path.basename(p)} len(orig)!=len(norm)'); continue
             for i,(a,b) in enumerate(zip(o,n)):
-                if b!=CMAP.get(a,a): bad+=1; fail(f'{e}/{os.path.basename(p)}[{i}] norm {b!r}≠charmap({a!r})'); break
+                if b!=common.CMAP.get(a,a): bad+=1; fail(f'{e}/{os.path.basename(p)}[{i}] norm {b!r}≠charmap({a!r})'); break
     print(f'streams: {chapters} 章，{bad} 章有差异')
     # char.json 备查（不作门槛）：与同章 md 的 stream() 比对；无 md 的章只报长度
     for cp in sorted(glob.glob(f'{root}/*/*/*/*/*/default/*.char.json')):
@@ -113,6 +114,10 @@ def main():
         m=json.load(open(mp,encoding='utf-8'))
         if m.get('schemaVersion')!=2: print(f"ERROR[4] schemaVersion={m.get('schemaVersion')}，不是 v2 包",file=sys.stderr); sys.exit(4)
         check_files(tmp,m)
+        cp=os.path.join(tmp,'charmap.json')
+        if os.path.isfile(cp):   # 包自带归一表：按它核（与服务一致）
+            if sha256_file(cp)!=m.get('charmapSha256'): fail('包内 charmap.json 与 manifest.charmapSha256 不符')
+            common.set_charmap(json.load(open(cp,encoding='utf-8')))
         if not FAILS:
             ix=open_index(tmp)
             if os.path.isfile(a.smoke): check_smoke(ix,m,a.smoke)
