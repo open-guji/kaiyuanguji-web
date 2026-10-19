@@ -8,7 +8,7 @@
  *
  * 环境变量：
  *   PARTS=opinions|publish|all（默认 all）
- *   GUJI_DATA_URL（默认 https://data.open-guji.com）、GUJI_DATA_TOKEN（web 角色令牌，必填）
+ *   GUJI_DATA_URL（默认 https://data.open-guji.com）、GUJI_DATA_TOKEN（web 角色令牌，必填；Action 里用网站管理令牌 FEEDBACK_ADMIN_TOKEN）
  *   PROOF_WS（中心库工作区 id，逗号分隔，默认 siku-zongmu）
  *   opinions：SITE_BASE（默认 https://www.kaiyuanguji.com）、FEEDBACK_ADMIN_TOKEN
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
@@ -28,7 +28,7 @@ const PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const PROOF_PREFIX = [PREFIX, 'proof'].filter(Boolean).join('/') + '/';
 
 if (!['opinions', 'publish', 'all'].includes(PARTS)) { console.error('❌ PARTS 只能是 opinions／publish／all'); process.exit(1); }
-if (!DATA_TOKEN) { console.error('❌ 缺 GUJI_DATA_TOKEN（中心库 web 令牌，仓库 secret GUJI_DATA_TOKEN_WEB）'); process.exit(1); }
+if (!DATA_TOKEN) { console.error('❌ 缺 GUJI_DATA_TOKEN（中心库 web 角色令牌；Action 里就是 FEEDBACK_ADMIN_TOKEN）'); process.exit(1); }
 const doOpinions = PARTS !== 'publish';
 const doPublish = PARTS !== 'opinions';
 if (doOpinions && !ADMIN) { console.error('❌ 缺 FEEDBACK_ADMIN_TOKEN'); process.exit(1); }

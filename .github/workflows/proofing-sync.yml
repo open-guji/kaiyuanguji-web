@@ -4,7 +4,8 @@ name: proofing-sync
 #   opinions：中心库待审单的 (书, rev) → 本站 /api/cellreview 管理读 → 中心库 feedback/lists/web/<书>/<rev>.jsonl
 #   publish ：中心库待审单 → COS proof/index.json、proof/<书>/<章>.pending.json（网站精校页、阅读页提示读这里）
 # 两步各自只拿自己要的密钥；COS 密钥只在 publish 步骤的 step 级 env。雪碧图仍由 sync-proof-sprites（GUJI-557）发。
-# 定时跑要仓库变量 PROOFING_SYNC_SCHEDULE=1（secret GUJI_DATA_TOKEN_WEB 配好、staging 演练过之后再开）。
+# 中心库用的就是网站管理令牌 FEEDBACK_ADMIN_TOKEN（用户 10-19 定复用，Worker TOKENS_WEB_JSON 里登记为 web 角色），不另设 secret。
+# 定时跑要仓库变量 PROOFING_SYNC_SCHEDULE=1（staging 演练过之后再开）。
 # 与 data.yml 互不依赖：本任务失败不影响每日发布。日志与摘要只有计数（公开仓）。
 
 on:
@@ -61,7 +62,7 @@ jobs:
         working-directory: nextjs
         env:
           PARTS: opinions
-          GUJI_DATA_TOKEN: ${{ secrets.GUJI_DATA_TOKEN_WEB }}
+          GUJI_DATA_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }} # 同一把网站管理令牌，中心库里登记为 web 角色
           FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: node scripts/proofing-sync.mjs
       - name: Pending lists → COS
@@ -69,7 +70,7 @@ jobs:
         working-directory: nextjs
         env:
           PARTS: publish
-          GUJI_DATA_TOKEN: ${{ secrets.GUJI_DATA_TOKEN_WEB }}
+          GUJI_DATA_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }} # 同一把网站管理令牌，中心库里登记为 web 角色
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
