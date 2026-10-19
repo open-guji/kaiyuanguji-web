@@ -4,12 +4,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFeedback } from './FeedbackProvider';
 import type { FeedbackContext } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
+import { canFixChar, spanOfRange, type CharFixCtx, type SpanSel } from '@/lib/charfix';
+import SpanFixDialog from '@/components/SpanFixDialog';
 
 interface SelectionReportProps {
     /** 只认这个容器里的选区（阅读器正文所在的外框） */
     containerRef: React.RefObject<HTMLElement | null>;
     /** 本页上下文（书名、卷），「报错」时与选中的文字一起带进弹窗 */
     context: FeedbackContext;
+    /**
+     * 本章改字上下文（与「改字」入口同一个）：对读章且有文本版本时，「報錯」改开「這段有問題」弹窗，
+     * 首末格位与原字自动带上（kind=span）；返回 null 或选区里没有对读字时照旧开通用反馈弹窗
+     */
+    getCtx?: () => CharFixCtx | null;
+    /** 测试注入；默认全局 fetch */
+    fetchImpl?: typeof fetch;
 }
 
 interface Anchor {
@@ -30,11 +39,12 @@ function inField(node: Node | null): boolean {
  * 桌面浮在选区上方；触屏（pointer: coarse）放到选区下方，免得和系统的选字菜单打架。
  * 用 fixed 定位，滚动或缩放时先收起，停下来后选区还在就重新量位置再弹。
  */
-export default function SelectionReport({ containerRef, context }: SelectionReportProps) {
+export default function SelectionReport({ containerRef, context, getCtx, fetchImpl }: SelectionReportProps) {
     const { open } = useFeedback();
     const t = useSiteT();
     const [anchor, setAnchor] = useState<Anchor | null>(null);
     const [copied, setCopied] = useState(false);
+    const [spanFix, setSpanFix] = useState<{ ctx: CharFixCtx; span: SpanSel } | null>(null);
 
     const measure = useCallback(() => {
         const sel = window.getSelection();
@@ -82,6 +92,7 @@ export default function SelectionReport({ containerRef, context }: SelectionRepo
         };
     }, [measure]);
 
+    if (spanFix) return <SpanFixDialog t={t} ctx={spanFix.ctx} span={spanFix.span} fetchImpl={fetchImpl} onClose={() => setSpanFix(null)} />;
     if (!anchor) return null;
 
     const copy = async () => {
@@ -95,8 +106,13 @@ export default function SelectionReport({ containerRef, context }: SelectionRepo
 
     const report = () => {
         const quote = anchor.text;
+        const ctx = getCtx?.() ?? null;
+        const sel = window.getSelection();
+        const root = containerRef.current;
+        const span = ctx && canFixChar(ctx) && sel && sel.rangeCount > 0 && root ? spanOfRange(sel.getRangeAt(0), root, ctx.chars) : null;
         setAnchor(null);
-        open({ context: { ...context, quote }, type: 'bug' });
+        if (ctx && span) setSpanFix({ ctx, span });
+        else open({ context: { ...context, quote }, type: 'bug' });
     };
 
     return (

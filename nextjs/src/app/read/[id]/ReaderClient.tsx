@@ -361,7 +361,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
             {lead && <ReaderLead data={lead} hostRef={textRef} />}
-            <SelectionReport containerRef={textRef} context={feedbackContext} />
+            <SelectionReport containerRef={textRef} context={feedbackContext} getCtx={getCharfixCtx} />
             <CharFixEntry containerRef={textRef} getCtx={getCharfixCtx} />
             {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
