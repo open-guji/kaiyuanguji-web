@@ -134,6 +134,7 @@ const WHY_LABELS: Record<string, string> = {
     db_inconsistent: '和本书别处的认定不一致',
     approx_exemplar: '本书别处对应的字只是近似写法',
     occluded: '被印章或污渍遮住',
+    seg_defect: '这一格切坏了，机器认不出字，请看书影直接写出来',
 };
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
 
@@ -148,6 +149,7 @@ const CLASS_LABELS: Record<string, [string, string]> = {
     variant: ['异体字', '可能是异体字，要确认本书刻的是哪个'],
     replace_align: ['整理本改过字', '整理本这一段改过字，位置可能差一两格'],
     other: ['把握不足', '机器的几种判断都不够有把握'],
+    seg_defect: ['切坏格', '这一格切得不完整，机器认不出字；请看书影，把字直接写进框里'],
 };
 export function classLabel(cls: string): { name: string; hint?: string } {
     const hit = CLASS_LABELS[cls];
