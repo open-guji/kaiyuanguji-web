@@ -8,7 +8,7 @@ import { getSiteT, type SiteT } from '@/i18n/translate';
 
 export const CHARFIX_API = '/api/charfix';
 
-export const CELL_RE = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/;
+export const CELL_RE = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/; // 含抬头字的 -1 格
 /** 与接口同口径的版本号（text_version／entity_version）；对不上就当没有 */
 export const VERSION_RE = /^[A-Za-z0-9._-]{1,16}$/;
 const ENTITY_ID_RE = /^e\d{1,8}$/;

@@ -11,6 +11,7 @@
 import {
     PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut,
 } from './proofing-sync-plan.mjs';
+import { FIX_KINDS, fixesSnapshotPath, fixesPublicKey, mergeFixes, buildPublicFixes } from './fixes-sync.mjs';
 
 export const SHORT_CACHE = 'public, max-age=300';
 
@@ -100,8 +101,60 @@ export async function publishPendings({ cos, entries, proofPrefix, dryRun = fals
     return { put: ordered.map((o) => o.key), same: plan.same.map((o) => o.key), failed };
 }
 
+/**
+ * opinions 段之二：读者改字／一段有问题／专名意见（/api/charfix）→ 中心库 feedback/lists/web/<书>/fixes.jsonl（GUJI-597）。
+ * @param kv {listFixes(book, kind) → items[]}
+ */
+export async function syncFixes({ worker, kv, ws, books, dryRun = false }) {
+    const rows = [];
+    const problems = [];
+    for (const book of books) {
+        try {
+            const items = [];
+            for (const kind of FIX_KINDS) items.push(...(await kv.listFixes(book, kind)));
+            const path = fixesSnapshotPath(book);
+            const old = await worker.getFile(ws, path);
+            const m = mergeFixes(old?.text ?? '', items, book);
+            const changed = m.text !== (old?.text ?? '') && m.total > 0;
+            if (changed && !dryRun) await worker.putFile(ws, path, m.text, old?.sha256 ?? null);
+            rows.push({ book, kv: items.length, total: m.total, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
+        } catch (e) {
+            problems.push(`${book} 意见：${e?.message || e}`);
+        }
+    }
+    return { rows, problems };
+}
+
+/**
+ * publish 段之二：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（公开清单，整册反馈页读它）。中心库没有快照的书跳过。
+ */
+export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun = false }) {
+    const objects = [];
+    const failed = [];
+    for (const book of books) {
+        try {
+            const got = await worker.getFile(ws, fixesSnapshotPath(book));
+            if (got) objects.push({ key: fixesPublicKey(book), body: buildPublicFixes(got.text, book) });
+        } catch (e) {
+            failed.push(`${book} 意见清单：${e?.message || e}`);
+        }
+    }
+    const remote = cos ? await cos.listPrefixEtags(`${proofPrefix}fixes/`) : new Map();
+    const plan = planCosPut(objects, remote);
+    if (!dryRun && cos) {
+        for (const o of plan.put) {
+            try {
+                await cos.putObjectText(proofPrefix + o.key, o.body, { contentType: 'application/json; charset=utf-8', cacheControl: SHORT_CACHE });
+            } catch (e) {
+                failed.push(`${o.key}：${e?.message || e}`);
+            }
+        }
+    }
+    return { put: plan.put.map((o) => o.key), same: plan.same.map((o) => o.key), failed };
+}
+
 /** run 摘要（markdown），只有计数 */
-export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish }) {
+export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish }) {
     const L = [];
     L.push(`### proofing-sync（工作区 ${ws.join('、')}${dryRun ? '，演练：不写' : ''}）`);
     L.push(`待审单 ${entries.length} 章，待审格合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
@@ -115,6 +168,15 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
         L.push('', `#### 待审单 → COS \`${proofPrefix}\``, `上传 ${publish.put.length} · 相同跳过 ${publish.same.length} · 失败 ${publish.failed.length}`);
         for (const k of publish.put) L.push(`- ${k}`);
         for (const p of publish.failed) L.push(`- ❌ ${p}`);
+    }
+    if (fixes) {
+        L.push('', '#### 改字与段落意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改动 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');
+        for (const r of fixes.rows) L.push(`| ${r.book} | ${r.kv} | ${r.total} | ${r.added} | ${r.updated} | ${r.kept} | ${r.written ? '是' : r.changed ? '演练' : '无变化'} |`);
+        for (const p of fixes.problems) L.push(`- ❌ ${p}`);
+    }
+    if (fixesPublish) {
+        L.push('', `#### 意见清单 → COS \`${proofPrefix}fixes/\``, `上传 ${fixesPublish.put.length} · 相同跳过 ${fixesPublish.same.length} · 失败 ${fixesPublish.failed.length}`);
+        for (const p of fixesPublish.failed) L.push(`- ❌ ${p}`);
     }
     return L.join('\n') + '\n';
 }

@@ -6,6 +6,7 @@ import {
     type CharFixCtx, type CharFixEntity,
 } from '@/lib/charfix';
 import { useSiteT } from '@/i18n/use-site-t';
+import { fixesPageHref } from '@/lib/fixes';
 import type { SiteT } from '@/i18n/translate';
 
 interface Props {
@@ -151,7 +152,7 @@ export function useDialog(onClose: () => void) {
     return { status, error, run };
 }
 
-export function DialogFrame({ t, title, titleId, onClose, done, children }: { t: SiteT; title: string; titleId: string; onClose: () => void; done: string | null; children: React.ReactNode }) {
+export function DialogFrame({ t, title, titleId, onClose, done, doneLink, children }: { t: SiteT; title: string; titleId: string; onClose: () => void; done: string | null; doneLink?: string; children: React.ReactNode }) {
     return (
         <div className="og-fb-mask" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
             <div className="og-fb-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
@@ -162,6 +163,7 @@ export function DialogFrame({ t, title, titleId, onClose, done, children }: { t:
                 {done !== null ? (
                     <div className="og-fb-done" role="status">
                         <p>{done}</p>
+                        {doneLink && <p><a href={doneLink}>{t('charfix.list.seeAll')}</a></p>}
                         <button type="button" className="og-fb-submit" onClick={onClose}>{t('charfix.dialog.close')}</button>
                     </div>
                 ) : children}
@@ -186,7 +188,7 @@ function CharFixDialog({ t, ctx, cell, orig, fetchImpl, onClose }: { t: SiteT; c
     };
 
     return (
-        <DialogFrame t={t} title={t('charfix.dialog.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.dialog.done') : null}>
+        <DialogFrame t={t} title={t('charfix.dialog.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.dialog.done') : null} doneLink={fixesPageHref(ctx.book, ctx.volume)}>
             <form onSubmit={submit} noValidate>
                 <div className="og-fb-context">
                     <div>{t('charfix.dialog.cell', { cell })}{orig && t('charfix.dialog.now', { char: orig })}</div>
@@ -246,7 +248,7 @@ function EntityFixDialog({ t, ctx, entities, fetchImpl, onClose }: { t: SiteT; c
     };
 
     return (
-        <DialogFrame t={t} title={t('charfix.entity.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.entity.done') : null}>
+        <DialogFrame t={t} title={t('charfix.entity.title')} titleId={titleId} onClose={onClose} done={status === 'done' ? t('charfix.entity.done') : null} doneLink={fixesPageHref(ctx.book, ctx.volume)}>
             <form onSubmit={submit} noValidate>
                 <div className="og-fb-context">
                     {entities.length === 1 ? (

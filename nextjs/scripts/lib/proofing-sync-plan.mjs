@@ -75,8 +75,8 @@ function cmpVote(x, y) {
 
 /** 坐标 页:列:格[ab] 按数值排，同格 a 在 b 前 */
 export function cellOrder(a, b) {
-    const pa = String(a).match(/^(\d+):(\d+):(\d+)([ab]?)$/);
-    const pb = String(b).match(/^(\d+):(\d+):(\d+)([ab]?)$/);
+    const pa = String(a).match(/^(\d+):(\d+):(-?\d+)([ab]?)$/);
+    const pb = String(b).match(/^(\d+):(\d+):(-?\d+)([ab]?)$/);
     if (!pa || !pb) return a < b ? -1 : a > b ? 1 : 0;
     for (let i = 1; i <= 3; i++) {
         const d = Number(pa[i]) - Number(pb[i]);
