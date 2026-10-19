@@ -6,13 +6,14 @@ import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/re
 
 const loadProofing = jest.fn();
 const loadFacsimile = jest.fn();
+const loadProofIndex = jest.fn();
 jest.mock('book-index-ui', () => ({ createTextApi: () => ({}), adaptCharCord: () => [] }));
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({}) }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
 jest.mock('@/lib/duidu-data', () => ({ getJson: async () => null }));
 jest.mock('@/lib/facsimile', () => ({ loadFacsimile: (...a: unknown[]) => loadFacsimile(...a) }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
-jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a) }));
+jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a), loadProofIndex: () => loadProofIndex() }));
 
 import ProofingClient from '../ProofingClient';
 
@@ -24,6 +25,7 @@ let failUrls: RegExp | null = null;
 beforeEach(() => {
     loadProofing.mockReset();
     loadFacsimile.mockReset().mockResolvedValue([]);
+    loadProofIndex.mockReset().mockResolvedValue(null);
     failUrls = null;
     Object.defineProperty(global.Image.prototype, 'src', {
         configurable: true,
@@ -35,6 +37,20 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('精校页显示（GUJI-557）', () => {
+    it('0 格且总表没列这一章：说名单还没发布，不说已校完', async () => {
+        loadProofing.mockResolvedValue(ok([]));
+        render(<ProofingClient book="b1" vol="005" />);
+        await screen.findByText('这一章的待校对名单还没有发布，请稍后再来。');
+        expect(screen.queryByText('这一章的字都已校完，谢谢！')).toBeNull();
+    });
+
+    it('0 格且总表列了这一章（n=0）：才说已校完', async () => {
+        loadProofIndex.mockResolvedValue({ b1: { '001': { rev: 'r1', n: 0 } } });
+        loadProofing.mockResolvedValue(ok([]));
+        render(<ProofingClient book="b1" vol="001" />);
+        await screen.findByText('这一章的字都已校完，谢谢！');
+    });
+
     it('每格都有雪碧图：卡片显示雪碧图（书影只给左栏整页用）', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己', img: img(0) }, { a: '9:7:18', c: '已', img: img(96) }]));
         render(<ProofingClient book="b1" vol="vol01" />);

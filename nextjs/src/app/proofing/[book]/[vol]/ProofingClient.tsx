@@ -13,6 +13,7 @@ import {
     LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
+    loadProofIndex, proofState,
 } from '@/lib/proofing';
 
 /** 书影一页：阅读档、原图档地址与像素宽高 */
@@ -474,7 +475,7 @@ export default function ProofingClient(props: { book: string; vol: string; info?
 function Proofing({ book, vol, info = null }: { book: string; vol: string; info?: ProofingBookInfo | null }) {
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
-    const [state, setState] = useState<'loading' | 'none' | 'error' | 'ok'>('loading');
+    const [state, setState] = useState<'loading' | 'none' | 'error' | 'unpublished' | 'ok'>('loading');
     const [rev, setRev] = useState<string | null>(null);
     const [cells, setCells] = useState<PendingCell[]>([]);
     const [clsFilter, setClsFilter] = useState<string | null>(null);
@@ -501,6 +502,12 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             );
             if (cancelled) return;
             if (res.status !== 'ok') return setState(res.status);
+            // 0 格只在总表明确列了这一章（n=0）时才算「已校完」；总表没列＝待审单还没发布，别骗人
+            if (res.pending.cells.length === 0 && proofState(await loadProofIndex(), book, vol) === 'unknown') {
+                if (!cancelled) setState('unpublished');
+                return;
+            }
+            if (cancelled) return;
             setRev(res.pending.rev);
             setCells(res.pending.cells);
             setCord(res.cord);
@@ -588,6 +595,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
     if (state === 'loading') return note('加载中…');
     if (state === 'none') return note('这一章暂时没有待校对的字。');
+    if (state === 'unpublished') return note('这一章的待校对名单还没有发布，请稍后再来。');
     if (state === 'error') return note('待校对的字暂时取不到，请稍后再试。');
 
     const doneCount = cells.filter(c => done[c.a]).length;
