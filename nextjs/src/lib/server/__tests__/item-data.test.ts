@@ -493,7 +493,7 @@ describe('summarizeItem', () => {
             description: { text: '今存。' },
             juan_count: { number: 130 },
         }, ID);
-        expect(s).toMatchObject({ title: '史記', authorLine: '（西漢）司馬遷撰、（南朝宋）裴駰集解', measure: '130卷', description: '今存。' });
+        expect(s).toMatchObject({ title: '史記', authorLine: '（西漢）司馬遷撰、（南朝宋）裴駰集解', measure: '一百三十卷', description: '今存。' });
     });
 
     it('measure_info 优先于 juan_count；description 可为字符串', () => {
