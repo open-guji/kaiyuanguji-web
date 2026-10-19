@@ -8,6 +8,11 @@ ZI=re.compile(r':zi\[[^\]]*\]|\[\[[^\]]*\]\]|\[[^\[\]\s]{1,12}[*/][^\[\]\s]{1,12
 PH='〓'
 def norm_char(c): return CMAP.get(c,c)
 _CLS={}
+_NT=None
+def set_charmap(m):
+    """换归一表（服务按索引包自带的 charmap.json 换，保证查询与建索引同一张表）。"""
+    global CMAP,_NT
+    CMAP=m; _CLS.clear(); _NT=None
 def _char_class(c):
     """单字分类：(0,None) 跳过；(1,norm) 汉字／□／〇，orig＝c；(2,lower) ASCII 字母数字。与字符上下文无关，故可按字记忆。"""
     r=_CLS.get(c)
@@ -41,6 +46,25 @@ def orig_text(raw):
     if '\x00' in raw: return ''.join(stream(raw)[0])
     t=_DROP.sub('',ZI.sub('\x00',raw))
     return t.lower().replace('\x00',PH)
+def norm_text(raw):
+    """''.join(stream(raw)[1]) 的快速版：orig_text 再按归一表逐字替换（str.translate，在 C 里跑）。"""
+    global _NT
+    if _NT is None: _NT=str.maketrans(CMAP)
+    return orig_text(raw).translate(_NT)
+def near_regex(qn):
+    """差一字（编辑距离 1）的匹配式：原串、少一字、中间多一字、中间错一字。返回编译好的正则。
+    边上多一字／错一字对"子串"匹配没有意义（等于少一字后的串），所以只在中间放通配。"""
+    n=len(qn); E=re.escape
+    alts=[E(qn)]
+    alts+=[E(qn[:k])+'.'+E(qn[k:]) for k in range(1,n)]           # 原文比查询多一字
+    alts+=[E(qn[:i])+'.'+E(qn[i+1:]) for i in range(1,n-1)]       # 错一字
+    alts+=[E(qn[:i]+qn[i+1:]) for i in range(n)]                  # 原文比查询少一字
+    seen=[];[seen.append(a) for a in alts if a not in seen]
+    return re.compile('|'.join(seen))
+def locate_re(raw,rx):
+    """在一段 raw 里找正则（作用在 norm 字流上）的全部出现，返回 [(raw_start,raw_end)]。"""
+    o,n,off=stream(raw); s=''.join(n)
+    return [(off[m.start()],off[m.end()-1]+1) for m in rx.finditer(s) if m.end()>m.start()]
 def query_stream(q):
     o,n,_=stream(q); return ''.join(o),''.join(n)
 TARGET=600; MAXLEN=1200

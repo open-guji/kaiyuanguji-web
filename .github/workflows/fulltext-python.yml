@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'fulltext/**'
+      - 'indexer/lib/variant-chars.json'
       - '.github/workflows/fulltext-python.yml'
   push:
     branches: [main]
@@ -29,6 +30,9 @@ jobs:
       - name: pytest
         working-directory: fulltext
         run: python -m pytest -q
+      - name: 归一表是最新（异体表改了要重跑 gen_charmap.py）
+        working-directory: fulltext
+        run: python build/gen_charmap.py --check
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

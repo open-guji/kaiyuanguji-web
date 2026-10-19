@@ -13,6 +13,8 @@ import time
 
 import tantivy
 
+import common
+
 from app import IndexUnavailable
 
 BIG_LIMIT = 10000          # 超过这个 limit 先计数再取
@@ -42,6 +44,20 @@ class TantivySource:
         if missing:
             raise IndexUnavailable(f'索引不是 v2 格式，缺字段 {missing}（需用新 build_pack 重建）')
         self.index, self.searcher = index, searcher
+        self._load_charmap()
+
+    def _load_charmap(self):
+        """包里带 charmap.json 就按它归一查询（建索引用的就是这张表）；旧包没有则沿用代码自带的。"""
+        p = os.path.join(os.path.dirname(self.index_dir.rstrip('/')), 'charmap.json')
+        if not os.path.isfile(p):
+            return
+        try:
+            with open(p, encoding='utf-8') as f:
+                m = json.load(f)
+        except (OSError, ValueError) as e:
+            raise IndexUnavailable(f'包里的 charmap.json 读不了：{e}')
+        if m != common.CMAP:
+            common.set_charmap(m)
 
     def prefetch_index(self):
         """启动预热：倒排、位置、快字段文件预读进 OS 缓存（posix_fadvise WILLNEED）；原文存储块不预读。
@@ -93,6 +109,38 @@ class TantivySource:
             ])
         return q
 
+    def _near_query(self, needle, entry=None):
+        """差一字召回（near 模式）：少一字的各个串，加上中间多一字／错一字时左右两半按位置拼的 phrase，取并集。
+        一边只剩一个字时那边没有双字词元，只按另一边召回（宽一些，app 层再用正则核）。"""
+        sch = self.index.schema
+        n = len(needle)
+        shapes = set()
+        for i in range(n):                                   # 少一字
+            shapes.add(tuple(enumerate(_bigrams(needle[:i] + needle[i + 1:]))))
+        for k in range(1, n):                                # 多一字：右半往后挪一位
+            shapes.add(tuple(list(enumerate(_bigrams(needle[:k])))
+                             + [(k + 1 + j, g) for j, g in enumerate(_bigrams(needle[k:]))]))
+        for i in range(1, n - 1):                            # 错一字：右半位置不变，中间空一位
+            shapes.add(tuple(list(enumerate(_bigrams(needle[:i])))
+                             + [(i + 1 + j, g) for j, g in enumerate(_bigrams(needle[i + 1:]))]))
+        subs = []
+        for toks in shapes:
+            if not toks:
+                continue
+            if len(toks) == 1:
+                subs.append((tantivy.Occur.Should, tantivy.Query.term_query(sch, 'norm', toks[0][1])))
+            else:
+                base = toks[0][0]
+                subs.append((tantivy.Occur.Should, tantivy.Query.phrase_query(
+                    sch, 'norm', [(p - base, g) for p, g in toks], 0)))
+        q = tantivy.Query.boolean_query(subs)
+        if entry:
+            q = tantivy.Query.boolean_query([
+                (tantivy.Occur.Must, q),
+                (tantivy.Occur.Must, tantivy.Query.term_query(sch, 'entry', entry)),
+            ])
+        return q
+
     def count(self, needle, entry=None):
         return self.searcher.search(self._query(needle, entry), 1, count=True).count
 
@@ -106,10 +154,10 @@ class TantivySource:
                for b in buckets]
         return out, len(buckets) >= MAX_BOOKS
 
-    def passages(self, needle, entry=None, limit=10, offset=0, in_order=True):
+    def passages(self, needle, entry=None, limit=10, offset=0, in_order=True, near=False):
         """命中段（含原文）。in_order：按 ord 升序（同一部书内即原文顺序）；否则按相关度。
-        返回 (段列表, 命中总数)。"""
-        q = self._query(needle, entry)
+        near：按差一字召回（候选，app 层再核）。返回 (段列表, 命中总数)。"""
+        q = self._near_query(needle, entry) if near else self._query(needle, entry)
         if limit > BIG_LIMIT:   # Tantivy 按 limit 预分配结果堆，超大 limit（评测取全集）先数一遍
             limit = max(1, min(limit, self.searcher.search(q, 1, count=True).count))
         if in_order:

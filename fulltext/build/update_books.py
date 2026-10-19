@@ -96,6 +96,7 @@ def finish(current,root,out,ch,m,idx,per,new_commits,t0,book_index=None):
     titles=bp.book_titles(sorted(per),labels,bp.titles_from_book_index(book_index))
     with open(os.path.join(out,'titles.json'),'w',encoding='utf-8') as f: json.dump(titles,f,ensure_ascii=False)
     shutil.copy2(os.path.join(current,'boost.json'),os.path.join(out,'boost.json'))
+    shutil.copy2(bp.CHARMAP,os.path.join(out,'charmap.json'))   # main 已核过与当前索引同一张表
     # 章数从磁盘数（便宜）
     loc=bp.LOC; nchap=nchar=0
     for e in per:
@@ -105,7 +106,7 @@ def finish(current,root,out,ch,m,idx,per,new_commits,t0,book_index=None):
                 nchap+=1; nchar+=os.path.exists(f'{d}/default/{f[:-3]}.char.json')
     files={}
     old_files=m['files']
-    for p in sorted(glob.glob(os.path.join(out,'index','**','*'),recursive=True)+[os.path.join(out,'titles.json'),os.path.join(out,'boost.json')]):
+    for p in sorted(glob.glob(os.path.join(out,'index','**','*'),recursive=True)+[os.path.join(out,n) for n in ('titles.json','boost.json','charmap.json')]):
         if not os.path.isfile(p): continue
         rel=os.path.relpath(p,out); old=os.path.join(current,rel)
         if rel in old_files and os.path.exists(old) and os.path.samefile(old,p):
@@ -151,6 +152,9 @@ def main():
     m=json.load(open(mp,encoding='utf-8'))
     if 'perBook' not in m: die(3,'manifest 缺 perBook')
     if m.get('schemaVersion')!=2: die(3,f'当前索引 schemaVersion={m.get("schemaVersion")}，不是 v2，只能做全量')
+    import build_pack as bp
+    if m.get('charmapSha256')!=bp.sha256_file(bp.CHARMAP):
+        die(7,'charmap.json 与当前索引建包时不同（归一表换了），改做全量')
     new=current_commits(os.path.abspath(a.text_root),m['perBook'],m.get('bookTextCommit'))
     try: ch=compute_changes(m['perBook'],new,a.limit)
     except TooMany as e: die(7,str(e))
