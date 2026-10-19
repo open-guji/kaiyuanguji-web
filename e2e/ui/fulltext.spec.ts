@@ -5,10 +5,12 @@
  * 所以搜索索引没上线（GUJI-142）时也能跑。只验前端：全文 tab、结果渲染与转义、点命中跳阅读页、
  * 阅读页 `?ft=` 定位提示、错误/空结果文案。
  *
+ * 运行时开关 `/api/fulltext?op=status` 也拦成 enabled:true（真实开关文件关着时不影响这组前端验收）。
  * 构建期开关 NEXT_PUBLIC_FULLTEXT_TAB 没开（默认）时，页面上没有「全文」tab，整组自动跳过，
  * 不会让没开开关的站点红。开开关前后各跑一次：关＝全部 skipped，开＝全部应绿。
  */
 import { test, expect, type Page } from '../fixtures/test';
+import type { Route } from '@playwright/test';
 import { ANCHORS, TARGET } from '../fixtures/anchors';
 import { SITE } from '../fixtures/site-profile';
 
@@ -45,9 +47,18 @@ function body(over: Record<string, unknown> = {}) {
     };
 }
 
+/** 运行时开关（GET /api/fulltext?op=status）一律回开；返回 true 表示这次请求已答 */
+function answerStatus(route: Route): boolean {
+    if (new URL(route.request().url()).searchParams.get('op') !== 'status') return false;
+    void route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ enabled: true }) });
+    return true;
+}
+
 async function mockFulltext(page: Page, status: number, json: unknown, headers: Record<string, string> = {}) {
-    await page.route('**/api/fulltext*', (route) =>
-        route.fulfill({ status, contentType: 'application/json', headers, body: JSON.stringify(json) }));
+    await page.route('**/api/fulltext*', (route) => {
+        if (answerStatus(route)) return;
+        return route.fulfill({ status, contentType: 'application/json', headers, body: JSON.stringify(json) });
+    });
 }
 
 test.describe('全文搜索前端（mock）', () => {
@@ -88,6 +99,7 @@ test.describe('全文搜索前端（mock）', () => {
     test('has_more 时「加载更多」再取一次，偏移为已加载的组数', async ({ page }) => {
         const offsets: string[] = [];
         await page.route('**/api/fulltext*', (route) => {
+            if (answerStatus(route)) return;
             const u = new URL(route.request().url());
             offsets.push(u.searchParams.get('offset') ?? '');
             const more = offsets.length === 1;

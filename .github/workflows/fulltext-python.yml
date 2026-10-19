@@ -32,8 +32,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: 上传脚本单测（假 COS）
-        run: node --test fulltext/build/tests/upload_cos.test.mjs
+      - name: 上传／开关脚本单测（假 COS）
+        run: node --test fulltext/build/tests/upload_cos.test.mjs fulltext/build/tests/switch_cos.test.mjs
       - name: 部署脚本单测（假目录、假服务）
         run: |
           bash fulltext/deploy/tests/test_deploy.sh

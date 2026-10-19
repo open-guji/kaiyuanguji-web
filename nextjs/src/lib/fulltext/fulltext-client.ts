@@ -4,9 +4,12 @@
  * - `matches` 是章内 Unicode 码点偏移（见 fulltext-offsets.ts）；`passage` 是该段在章内的 [起,止) 码点区间。
  * - `snippet` 是响应里唯一可作 innerHTML 的字段（只含 `<mark>`）；`q`、`label`、`title` 一律当文本节点。
  * - 错误不抛给调用方：返回判别联合 `{ ok:false, kind }`，界面按 kind 降级。
+ * - 运行时开关：`fetchFulltextStatus()` 查 `/api/fulltext?op=status`（边缘函数读 COS 上的开关文件）；
+ *   搜索时边缘函数回 503 `{error:'disabled'}` 映射成 kind `disabled`，界面据此立刻隐藏入口。
  */
 
-export type FulltextMode = 'exact' | 'fuzzy';
+/** near＝差一字（多一字、少一字、错一字都算，≥4 字才放宽）；前端暂不提供入口 */
+export type FulltextMode = 'exact' | 'fuzzy' | 'near';
 export type CodepointRange = [number, number];
 
 export interface FulltextHit {
@@ -21,6 +24,8 @@ export interface FulltextGroup {
     entry: string;
     title: string;
     hit_count: number;
+    /** 仅 mode=near：该书完全命中原串的段数 */
+    exact_count?: number;
     hits: FulltextHit[];
 }
 
@@ -52,6 +57,7 @@ export type FulltextError =
     | { ok: false; kind: 'bad_query'; status: 400 }
     | { ok: false; kind: 'rate_limited'; status: 429; retryAfterSec: number | null }
     | { ok: false; kind: 'unavailable'; status: 503 }
+    | { ok: false; kind: 'disabled'; status: 503 }
     | { ok: false; kind: 'timeout'; status?: 504 }
     | { ok: false; kind: 'offline' }
     | { ok: false; kind: 'bad_response'; status?: number };
@@ -107,7 +113,13 @@ export async function fetchFulltext(
             const ra = raw ? Number(raw) : NaN;
             return { ok: false, kind: 'rate_limited', status: 429, retryAfterSec: Number.isFinite(ra) && ra >= 0 ? ra : null };
         }
-        if (res.status === 503) return { ok: false, kind: 'unavailable', status: 503 };
+        if (res.status === 503) {
+            // 全局开关关了（边缘函数回 {error:'disabled'}）与服务忙／预热中（busy／warming…）分开
+            let err: unknown;
+            try { err = await res.json(); } catch { err = null; }
+            const disabled = !!err && typeof err === 'object' && (err as { error?: unknown }).error === 'disabled';
+            return disabled ? { ok: false, kind: 'disabled', status: 503 } : { ok: false, kind: 'unavailable', status: 503 };
+        }
         if (res.status === 504) return { ok: false, kind: 'timeout', status: 504 };
         if (!res.ok) return { ok: false, kind: 'bad_response', status: res.status };
         let json: unknown;
@@ -117,6 +129,40 @@ export async function fetchFulltext(
         if (timedOut) return { ok: false, kind: 'timeout' };
         if (opts.signal?.aborted) return { ok: false, kind: 'offline' };
         return { ok: false, kind: 'offline' };
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+export interface FulltextStatus {
+    enabled: boolean;
+    reason?: string;
+}
+
+export const FULLTEXT_STATUS_TIMEOUT_MS = 5000;
+
+/**
+ * 运行时开关：`GET /api/fulltext?op=status` → `{ enabled, reason? }`。
+ * 任何失败（网络错、超时、非 200、形状不对）都当关：宁可不显示入口，也别挂着坏的。
+ */
+export async function fetchFulltextStatus(
+    opts: { fetchImpl?: typeof fetch; timeoutMs?: number; base?: string } = {},
+): Promise<FulltextStatus> {
+    const f = opts.fetchImpl ?? (typeof fetch === 'function' ? fetch : undefined);
+    if (!f) return { enabled: false };
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? FULLTEXT_STATUS_TIMEOUT_MS);
+    try {
+        const res = await f(`${opts.base ?? FULLTEXT_ENDPOINT}?op=status`, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+        if (!res.ok) return { enabled: false };
+        const j: unknown = await res.json();
+        if (!j || typeof j !== 'object' || (j as { enabled?: unknown }).enabled !== true) {
+            const reason = j && typeof j === 'object' && typeof (j as { reason?: unknown }).reason === 'string' ? (j as { reason: string }).reason : undefined;
+            return reason ? { enabled: false, reason } : { enabled: false };
+        }
+        return { enabled: true };
+    } catch {
+        return { enabled: false };
     } finally {
         clearTimeout(timer);
     }

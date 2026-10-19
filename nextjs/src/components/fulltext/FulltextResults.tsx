@@ -19,6 +19,7 @@ export function errorMessage(e: FulltextError, t: SiteT): string {
         case 'timeout': return t('bookIndex.fulltext.errTimeout');
         case 'offline': return t('bookIndex.fulltext.errOffline');
         case 'unavailable':
+        case 'disabled': // FulltextTab 收到它会直接隐藏，这里只是兜底
         case 'bad_response':
         default: return t('bookIndex.fulltext.errUnavailable');
     }

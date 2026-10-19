@@ -1,7 +1,7 @@
 /**
  * GUJI-163 F6 步 3：全文搜索结果列表。夹具即 F1 sample_response.json，不接生产搜索服务。
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import sample from '@/lib/fulltext/__fixtures__/sample_response.json';
 import type { FulltextResponse, FulltextError } from '@/lib/fulltext/fulltext-client';
 import FulltextResults from '../FulltextResults';
@@ -94,18 +94,58 @@ describe('FulltextTab 开关', () => {
         expect(container.innerHTML).toBe('');
     });
 
+    /** 按地址分流的假 fetch：op=status 回 status，其余回 search */
+    const route = (status: unknown, search: () => unknown) => jest.fn(async (url: string) =>
+        (String(url).includes('op=status') ? status : search()));
+    const res = (st: number, body?: unknown) => ({ ok: st >= 200 && st < 300, status: st, headers: new Headers(), json: async () => body ?? {} });
+
+    it('构建期开关关：不查 status、不发请求', () => {
+        delete process.env.NEXT_PUBLIC_FULLTEXT_TAB;
+        const fetchImpl = jest.fn();
+        render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
     it('开关开＋服务 503：tab 在、显示暂不可用', async () => {
         process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
-        const fetchImpl = jest.fn().mockResolvedValue({ ok: false, status: 503, headers: new Headers(), json: async () => ({}) });
+        const fetchImpl = route(res(200, { enabled: true }), () => res(503, { error: 'busy' }));
         render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
-        expect(screen.getByRole('tab', { name: '全文' })).toBeTruthy();
+        expect(await screen.findByRole('tab', { name: '全文' })).toBeTruthy();
         expect((await screen.findByRole('alert')).textContent).toMatch(/暂不可用/);
     });
 
     it('开关开＋夹具：渲染分组与命中', async () => {
         process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
-        const fetchImpl = jest.fn().mockResolvedValue({ ok: true, status: 200, headers: new Headers(), json: async () => sample });
+        const fetchImpl = route(res(200, { enabled: true }), () => res(200, sample));
         render(<FulltextTab q="學而時習之" fetchImpl={fetchImpl as unknown as typeof fetch} />);
         expect(await screen.findByText('論語集解')).toBeTruthy();
+    });
+
+    it('运行时开关关（status enabled:false）：不显示 tab、不发搜索请求', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = route(res(200, { enabled: false, reason: '维护' }), () => res(200, sample));
+        const { container } = render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        await waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(1));
+        await act(async () => { await Promise.resolve(); });
+        expect(container.innerHTML).toBe('');
+        expect(String(fetchImpl.mock.calls[0][0])).toContain('op=status');
+    });
+
+    it('查 status 失败：不显示 tab', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = jest.fn(async () => { throw new TypeError('Failed to fetch'); });
+        const { container } = render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        await waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(1));
+        await act(async () => { await Promise.resolve(); });
+        expect(container.innerHTML).toBe('');
+    });
+
+    it('搜索回 503 disabled（开关刚关）：tab 立刻隐藏', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = route(res(200, { enabled: true }), () => res(503, { error: 'disabled' }));
+        const { container } = render(<FulltextTab q="學而" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        await waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(container.innerHTML).toBe(''));
+        expect(screen.queryByRole('alert')).toBeNull();
     });
 });
