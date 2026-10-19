@@ -115,9 +115,11 @@ def main():
         if m.get('schemaVersion')!=2: print(f"ERROR[4] schemaVersion={m.get('schemaVersion')}，不是 v2 包",file=sys.stderr); sys.exit(4)
         check_files(tmp,m)
         cp=os.path.join(tmp,'charmap.json')
-        if os.path.isfile(cp):   # 包自带归一表：按它核（与服务一致）
+        if not FAILS and os.path.isfile(cp):   # 包自带归一表：按它核（与服务一致）
             if sha256_file(cp)!=m.get('charmapSha256'): fail('包内 charmap.json 与 manifest.charmapSha256 不符')
-            common.set_charmap(json.load(open(cp,encoding='utf-8')))
+            else:
+                try: common.set_charmap(json.load(open(cp,encoding='utf-8')))
+                except (OSError,ValueError) as ex: fail(f'包内 charmap.json 读不了：{ex}')
         if not FAILS:
             ix=open_index(tmp)
             if os.path.isfile(a.smoke): check_smoke(ix,m,a.smoke)
