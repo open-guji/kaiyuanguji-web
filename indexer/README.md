@@ -25,6 +25,9 @@
 | `lib/doc-floor.mjs` | swap 前文档数下限闸的判定（新建的比线上少一半以上不换）。同上，**漏了就起不来** |
 | `reindex-and-purge.sh` | wrapper：读凭证 → 三仓 `git pull`（缺则 clone）→ 跑 full-reindex → 成功才 purge。**不要直接跑** |
 | `reindex-limited.sh` | 平时用这个。`systemd-run --scope` 给上面的 wrapper 加 cgroup 上限，压不垮 Meili 和 sshd。脚本里的缺省值（内存 600M / CPU 50% / 批 200）是给旧 2 GB 机定的，在现在这台上全量要近 40 分钟；夜间 workflow 和手动跑都用下面「跑一次重建」里那组放宽的参数（约 8 分钟） |
+| `render-docs.mjs` | runner 上把三仓渲染成 Meili 文档（`docs/*.jsonl.gz`）、每个索引的 `{id → 文档哈希}`（`hashes/*.json.gz`）和 `manifest.json`（overview#561） |
+| `diff-docs.mjs` | runner 上拿这一代和线上那一代的哈希比出差量（只含新增／改动的文档和要删的 id）。见下面「增量更新」 |
+| `ingest.mjs` | 搜索机入库：`--docs` 全量（建 tmp、自检、swap）／`--incremental` 增量（线上直接 upsert／delete）／`--adopt` 只认领一代当基线 |
 | `purge-edgeone.mjs` | `purge_host api.kaiyuanguji.com`（EdgeOne 国际版凭证，读 `/opt/indexer/.env`） |
 
 凭证：Meili master key 在 `/etc/meilisearch.env`（`MASTER_KEY`）；EdgeOne 子账号在 `/opt/indexer/.env`（`TENCENT_SECRET_ID/KEY`、`EDGEONE_ZONE_ID`、可选 `EDGEONE_ENDPOINT`、`PURGE_HOST`）。两者都 `chmod 600`，都不进仓库。
@@ -110,6 +113,30 @@ import sys,json; d=json.load(sys.stdin); print('lastUpdate', d['lastUpdate'])
 
 期望：`lastUpdate` 是刚才；2026-10-02 的实数是 `works` 95,055、`books` 20,899、`entities` 30,994、`collections` 84、**`juans` 1,812**。
 **五个都要看，不能只看脚本报 success**：swap 前的自检对 juans 不查命中数。10-02 起 swap 前另有文档数下限闸（见下），新建的比线上少一半以上不换；但这条闸只防「大幅变少」，仍要核对各索引数量。
+
+## 草稿不入搜索（2026-10-19 用户定）
+
+`render-docs.mjs` 与 `full-reindex.mjs` 只遍历正式库 `PRODUCTION_DIR`；`DRAFT_DIR` 仍可传（render 只记它的 commit），但不再进任何索引。
+前端每条搜索都带 `is_draft = false`，草稿文档本来就搜不出来，只占 Meili 内存。
+
+## 增量更新（overview#561 二期）
+
+日常不再整库重建（works 已 27 万条，3.6G 的机器上全量要两三个小时、期间搜索要好几秒）：
+
+1. **runner** 每次照常全量渲染（`render-docs.mjs`，不占搜索机），产物里带每条文档的哈希；
+2. **runner** 拿搜索机 `state.json` 里记的 `renderRunId`，下载那一代的哈希（同名 artifact），`diff-docs.mjs` 比出差量；
+   不按 git diff 推算受影响的条目——分类表、版本数这类连带推不全，直接比渲染结果，变了的一条不漏；
+3. **搜索机** `ingest.mjs --incremental` 在线上索引上先删后 upsert，每批 task 等到 succeeded，再自检
+   （线上条数＝差量算出的条数、前端形态查询、部类／版本数闸），全过才把 `state.json` 推进到这一代。
+
+不走增量、要全量的情况（`diff-docs.mjs` 退出码 7，原因码写进 `GITHUB_OUTPUT fallback=`）：没有基线（`BASE_HASHES_MISSING`）、
+文档口径变了（`INDEXER_VERSION_CHANGED`，`indexerVersion` 是 doc-builders 等文件的哈希）、某个索引一次要变超过 30%（`CHANGE_RATIO_HIGH`）。
+
+失败时 `state.json` 不推进，下一次仍以旧基线算差量，重跑会收敛（upsert 按主键覆盖、删不存在的 id 无害）。
+线上条数和基线对不上说明有漂移，自检会报出来，这时走一次全量。
+
+**第一次**（还没有带 `renderRunId` 的 state）：旧路径 `full-reindex.mjs` 刚建完时，在 runner 上用**同样几个 commit** 跑一次
+`render-docs.mjs`，再在搜索机上 `ingest.mjs --adopt <那份产物>` 认领它当基线（不碰 Meili）。之后就能增量了。
 
 ## 定时
 

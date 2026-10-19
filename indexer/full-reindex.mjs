@@ -54,14 +54,13 @@ const PRODUCTION_DIR = process.env.PRODUCTION_DIR;
 const TEXT_DIR = process.env.TEXT_DIR;
 const MEILI_URL = process.env.MEILI_URL || 'http://127.0.0.1:7700';
 const MEILI_KEY = process.env.MEILI_KEY;
-if (!DRAFT_DIR || !MEILI_KEY) {
-    console.error('需要设置 DRAFT_DIR 和 MEILI_KEY 环境变量');
+if (!MEILI_KEY) {
+    console.error('需要设置 MEILI_KEY 环境变量');
     process.exit(1);
 }
 
-// 数据根：draft 在前、production 在后。ID 不冲突（snowflake status 位区分），
-// 且已升格的 draft 条目是墓碑、会被 iterAllRoots 跳过，所以顺序遍历即等价于合并。
-const ROOTS = [{ dir: DRAFT_DIR, isDraft: true }];
+// 草稿一律不入搜索（2026-10-19 用户定）：DRAFT_DIR 不再遍历（wrapper 仍会传它，忽略即可），与 render-docs 同口径
+const ROOTS = [];
 if (PRODUCTION_DIR && existsSync(PRODUCTION_DIR)) {
     ROOTS.push({ dir: PRODUCTION_DIR, isDraft: false });
 } else {
@@ -133,7 +132,7 @@ async function pushInBatches(indexUid, iterable, { batchSize = BATCH_SIZE, maxCo
 // ─── main ───
 
 async function main() {
-    console.log(`DRAFT: ${DRAFT_DIR}`);
+    console.log(`DRAFT: ${DRAFT_DIR || '-'}（不入索引）`);
     console.log(`PROD:  ${PRODUCTION_DIR || '(未设置！)'}`);
     console.log(`TEXT:  ${TEXT_DIR || '(未设置！juans 将为空)'}`);
     console.log(`MEILI: ${MEILI_URL}`);
