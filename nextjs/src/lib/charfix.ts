@@ -93,8 +93,9 @@ export function entityFileVersion(raw: unknown): string {
 }
 
 function parseCell(a: string): { k: [number, number, number]; sub: string } | null {
-    if (!CELL_RE.test(a)) return null;
-    const m = /^(\d+):(\d+):(\d+)([ab]?)$/.exec(a)!;
+    // 与 CELL_RE 同口径：抬头字的格序是 -1（GUJI-597 放宽了 CELL_RE，这里原先没跟上，点抬头字或碰到起于抬头字的专名就抛错、整个阅读器白屏）
+    const m = CELL_RE.test(a) ? /^(\d+):(\d+):(-?\d+)([ab]?)$/.exec(a) : null;
+    if (!m) return null;
     return { k: [Number(m[1]), Number(m[2]), Number(m[3])], sub: m[4] };
 }
 
