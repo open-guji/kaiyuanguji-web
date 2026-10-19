@@ -44,13 +44,13 @@ jest.mock('book-index-ui', () => ({
     }),
 }));
 
-import ReaderClient from '../ReaderClient';
+import ReaderClient, { anchorFromHash } from '../ReaderClient';
 import { seedCallKey, type ReaderSeed } from '../reader-seed';
 
 const ZHIZHAI = 'd59f2htm01du'; // Work
 const BOOK = '988fbiuha8'; // Book
 
-type Loc = { key: string; chapter: string | null; isDefault: boolean };
+type Loc = { key: string; chapter: string | null; isDefault: boolean; anchor?: string };
 type OnLoc = (l: Loc, cause: 'auto' | 'chapter' | 'version') => void;
 
 const MANIFEST = {
@@ -208,6 +208,41 @@ describe('ReaderClient：历史记录', () => {
         // 再回报同一章不重复推
         await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'default', chapter: '003', isDefault: true }, 'chapter'); });
         expect(pushState).toHaveBeenCalledTimes(2);
+    });
+
+    it('章内标题（GUJI-240）：地址 #页:列:格 交给阅读器；点目录标题时地址带上它，换章去掉', async () => {
+        window.history.replaceState(null, '', `/read/${BOOK}/002#39:1:1`);
+        pathname = `/read/${BOOK}/002`;
+        const pushState = jest.spyOn(window.history, 'pushState');
+        render(<ReaderClient id={BOOK} initial={{ chapter: '002' }} bookTitle="t" />);
+        await act(async () => { await Promise.resolve(); });
+        expect(last.reader!.anchor).toBe('39:1:1');
+        expect(window.location.hash).toBe('#39:1:1');   // 首帧不把 hash 冲掉
+        expect(pushState).not.toHaveBeenCalled();
+
+        // 目录点了本册另一个标题：同一章，地址换 hash，留一条历史
+        await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'default', chapter: '002', isDefault: true, anchor: '77:1:1' }, 'chapter'); });
+        expect(pushState).toHaveBeenLastCalledWith(null, '', `/read/${BOOK}/002#77:1:1`);
+
+        // 换章（不带标题）：hash 去掉
+        await act(async () => { (last.reader!.onLocationChange as OnLoc)({ key: 'default', chapter: '003', isDefault: true }, 'chapter'); });
+        expect(window.location.pathname + window.location.hash).toBe(`/read/${BOOK}/003`);
+
+        // 读者手改地址的 hash：阅读器跟着滚过去
+        await act(async () => {
+            window.history.replaceState(null, '', `/read/${BOOK}/003#3:3:2`);
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        });
+        expect(last.reader!.anchor).toBe('3:3:2');
+    });
+
+    it('anchorFromHash：只认格位', () => {
+        expect(anchorFromHash('#39:4:18b')).toBe('39:4:18b');
+        expect(anchorFromHash('#3:1:-1')).toBe('3:1:-1');
+        expect(anchorFromHash('#39%3A1%3A1')).toBe('39:1:1');
+        expect(anchorFromHash('')).toBeNull();
+        expect(anchorFromHash('#top')).toBeNull();
+        expect(anchorFromHash('#%E0%A4%A')).toBeNull();
     });
 
     it('浏览器返回（地址变了）：状态与阅读器跟着回到上一章，且不再多推一条', async () => {
