@@ -1,0 +1,220 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+    parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath,
+} from './proofing-sync-plan.mjs';
+import { collectPendings, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
+
+const BOOK = '96mid1ogzk';
+const pending = (rev, n) => JSON.stringify({ rev, cv_version: '0.2.0', cells: Array.from({ length: n }, (_, i) => ({ a: `1:1:${i}` })) });
+const vote = (a, voter, extra = {}) => ({ v: 1, book: BOOK, vol: 'vol01', a, rev: '001-r2', choice: 'char', char: '於', note: '', shown: '于', voter, ts: 1, ...extra });
+
+test('parsePendingPath：只认 proofing/<书>/<章>.pending.json', () => {
+    assert.deepEqual(parsePendingPath(`feedback/lists/proofing/${BOOK}/001.pending.json`), { book: BOOK, chap: '001' });
+    assert.equal(parsePendingPath(`feedback/lists/proofing/${BOOK}/001.json`), null);
+    assert.equal(parsePendingPath(`feedback/lists/proofing/${BOOK}/x/001.pending.json`), null);
+    assert.equal(parsePendingPath(`feedback/lists/web/${BOOK}/001.pending.json`), null);
+    assert.equal(parsePendingPath(`feedback/lists/proofing/BAD!/001.pending.json`), null);
+});
+
+test('readPending：要 rev 与 cells', () => {
+    assert.deepEqual(readPending(pending('001-r2', 3)), { rev: '001-r2', n: 3 });
+    assert.ok(readPending('{').error);
+    assert.ok(readPending('{"cells":[]}').error);
+    assert.ok(readPending('{"rev":"x"}').error);
+});
+
+test('buildProofIndex：键排序、无时间戳，同输入同字节', () => {
+    const a = buildProofIndex([{ book: 'b2', chap: '002', rev: 'r', n: 1 }, { book: 'b1', chap: '003', rev: 's', n: 0 }, { book: 'b1', chap: '001', rev: 't', n: 2 }]);
+    const b = buildProofIndex([{ book: 'b1', chap: '001', rev: 't', n: 2 }, { book: 'b2', chap: '002', rev: 'r', n: 1 }, { book: 'b1', chap: '003', rev: 's', n: 0 }]);
+    assert.equal(a, b);
+    assert.deepEqual(JSON.parse(a), { books: { b1: { '001': { rev: 't', n: 2 }, '003': { rev: 's', n: 0 } }, b2: { '002': { rev: 'r', n: 1 } } } });
+    assert.deepEqual(Object.keys(JSON.parse(a).books), ['b1', 'b2']);
+});
+
+test('cellOrder：按页列格数值排，a 在 b 前', () => {
+    const xs = ['10:1:1', '2:1:1', '2:1:1b', '2:1:1a', '2:10:1', '2:2:1'];
+    assert.deepEqual([...xs].sort(cellOrder), ['2:1:1', '2:1:1a', '2:1:1b', '2:2:1', '2:10:1', '10:1:1']);
+});
+
+test('mergeSnapshot：新票加入、重投覆盖、KV 过期的旧票保留、别的书和 rev 丢掉、排序稳定', () => {
+    const g = { book: BOOK, rev: '001-r2' };
+    const first = mergeSnapshot('', [vote('3:1:1', 'bb'), vote('3:1:1', 'aa'), vote('1:2:3', 'cc'), vote('1:1:1', 'dd', { rev: '001-r1' })], g);
+    assert.equal(first.total, 3);
+    assert.equal(first.added, 3);
+    assert.equal(first.dropped, 1);
+    const lines = first.text.trim().split('\n').map((l) => JSON.parse(l));
+    assert.deepEqual(lines.map((r) => `${r.a}/${r.voter}`), ['1:2:3/cc', '3:1:1/aa', '3:1:1/bb']);
+    assert.ok(first.text.endsWith('\n'));
+
+    // 同样的 KV 再跑一次：字节不变
+    assert.equal(mergeSnapshot(first.text, [vote('3:1:1', 'bb'), vote('3:1:1', 'aa'), vote('1:2:3', 'cc')], g).text, first.text);
+    // KV 键序不同也一样
+    const shuffled = { ts: 1, voter: 'cc', shown: '于', note: '', char: '於', choice: 'char', rev: '001-r2', a: '1:2:3', vol: 'vol01', book: BOOK, v: 1 };
+    assert.equal(mergeSnapshot(first.text, [shuffled, vote('3:1:1', 'bb'), vote('3:1:1', 'aa')], g).text, first.text);
+
+    // 一张改票，一张过期（KV 没了）
+    const second = mergeSnapshot(first.text, [vote('3:1:1', 'aa', { choice: 'none', char: undefined, ts: 2 })], g);
+    assert.equal(second.total, 3);
+    assert.equal(second.updated, 1);
+    assert.equal(second.kept, 2);
+    const aa = second.text.split('\n').filter(Boolean).map((l) => JSON.parse(l)).find((r) => r.voter === 'aa');
+    assert.equal(aa.choice, 'none');
+    assert.equal('char' in aa, false);
+});
+
+test('mergeSnapshot：空 KV、空旧快照 → 空文本', () => {
+    const m = mergeSnapshot('', [], { book: BOOK, rev: '001-r2' });
+    assert.equal(m.text, '');
+    assert.equal(m.total, 0);
+});
+
+test('webSnapshotPath 拒绝坏 rev', () => {
+    assert.equal(webSnapshotPath(BOOK, '001-r2'), `feedback/lists/web/${BOOK}/001-r2.jsonl`);
+    assert.throws(() => webSnapshotPath(BOOK, '../x'));
+});
+
+test('planCosPut：md5 等于 ETag 的跳过', () => {
+    const objs = [{ key: 'a', body: 'x' }, { key: 'b', body: 'y' }];
+    const p = planCosPut(objs, new Map([['a', md5Hex('x')], ['b', md5Hex('old')]]));
+    assert.deepEqual(p.put.map((o) => o.key), ['b']);
+    assert.deepEqual(p.same.map((o) => o.key), ['a']);
+});
+
+// ── 流程：假 Worker／KV／COS ──
+
+function fakeWorker(files) {
+    const store = new Map(Object.entries(files)); // `${ws}|${path}` → text
+    const puts = [];
+    const sha = (t) => `sha:${md5Hex(t)}`;
+    return {
+        store, puts,
+        async listFiles(ws, prefix) {
+            const out = [...store.keys()].filter((k) => k.startsWith(`${ws}|${prefix}`)).sort().map((k) => ({ src_path: k.split('|')[1] }));
+            return { files: out, truncated: false };
+        },
+        async getFile(ws, path) {
+            const t = store.get(`${ws}|${path}`);
+            return t === undefined ? null : { text: t, sha256: sha(t) };
+        },
+        async putFile(ws, path, text, baseSha) {
+            const cur = store.get(`${ws}|${path}`);
+            if ((cur === undefined ? null : sha(cur)) !== baseSha) throw new Error('stale_base');
+            puts.push({ ws, path, text });
+            store.set(`${ws}|${path}`, text);
+            return { changed: true };
+        },
+    };
+}
+
+function fakeKv(items) {
+    const calls = [];
+    return { calls, async listVotes(rev, book) { calls.push(`${book}/${rev}`); return items.filter((r) => r.rev === rev && r.book === book); } };
+}
+
+function fakeCos(initial = {}) {
+    const objects = new Map(Object.entries(initial));
+    const puts = [];
+    return {
+        objects, puts,
+        async listPrefixEtags(prefix) {
+            const m = new Map();
+            for (const [k, v] of objects) if (k.startsWith(prefix)) m.set(k.slice(prefix.length), md5Hex(v));
+            return m;
+        },
+        async putObjectText(key, body, opts) { puts.push({ key, opts }); objects.set(key, body); },
+    };
+}
+
+const WS = 'siku-zongmu';
+const baseFiles = () => ({
+    [`${WS}|feedback/lists/proofing/${BOOK}/001.pending.json`]: pending('001-r2', 2),
+    [`${WS}|feedback/lists/proofing/${BOOK}/003.pending.json`]: pending('003-r1', 0),
+    [`${WS}|feedback/lists/proofing/${BOOK}/README.md`]: 'x',
+    [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: '{bad',
+});
+
+test('collectPendings：收齐、坏文件记问题、非待审单略过', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries, problems } = await collectPendings(w, [WS]);
+    assert.deepEqual(entries.map((e) => `${e.chap}:${e.rev}:${e.n}`), ['001:001-r2:2', '003:003-r1:0']);
+    assert.equal(problems.length, 1);
+    assert.match(problems[0], /004\.pending\.json/);
+});
+
+test('collectPendings：同一章出现在两个工作区，用前者', async () => {
+    const w = fakeWorker({ ...baseFiles(), [`other|feedback/lists/proofing/${BOOK}/001.pending.json`]: pending('001-r9', 5) });
+    const { entries, problems } = await collectPendings(w, [WS, 'other']);
+    assert.equal(entries.find((e) => e.chap === '001').rev, '001-r2');
+    assert.ok(problems.some((p) => /同时在工作区/.test(p)));
+});
+
+test('syncOpinions：写快照、第二次 0 写入、演练不写、没票不建文件', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries } = await collectPendings(w, [WS]);
+    const kv = fakeKv([vote('1:1:1', 'aa'), vote('1:1:0', 'bb')]);
+
+    const dry = await syncOpinions({ worker: w, kv, entries, dryRun: true });
+    assert.equal(w.puts.length, 0);
+    assert.equal(dry.rows.find((r) => r.rev === '001-r2').changed, true);
+
+    const r1 = await syncOpinions({ worker: w, kv, entries });
+    assert.deepEqual(kv.calls.slice(-2).sort(), [`${BOOK}/001-r2`, `${BOOK}/003-r1`]);
+    assert.equal(w.puts.length, 1); // 003-r1 没票，不建文件
+    assert.equal(w.puts[0].path, `feedback/lists/web/${BOOK}/001-r2.jsonl`);
+    assert.equal(w.puts[0].text.split('\n').filter(Boolean).length, 2);
+    assert.equal(r1.problems.length, 0);
+
+    await syncOpinions({ worker: w, kv, entries });
+    assert.equal(w.puts.length, 1);
+});
+
+test('syncOpinions：一组失败不影响别的组，记进 problems', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries } = await collectPendings(w, [WS]);
+    const kv = { async listVotes(rev) { if (rev === '003-r1') throw new Error('HTTP 500'); return [vote('1:1:1', 'aa')]; } };
+    const r = await syncOpinions({ worker: w, kv, entries });
+    assert.equal(r.problems.length, 1);
+    assert.equal(w.puts.length, 1);
+});
+
+test('publishPendings：传单子与 index（index 最后、短缓存），第二次全跳过', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries } = await collectPendings(w, [WS]);
+    const cos = fakeCos();
+    const r1 = await publishPendings({ cos, entries, proofPrefix: 'staging/proof/' });
+    assert.deepEqual(cos.puts.map((p) => p.key), [`staging/proof/${BOOK}/001.pending.json`, `staging/proof/${BOOK}/003.pending.json`, 'staging/proof/index.json']);
+    assert.equal(cos.puts[0].opts.cacheControl, 'public, max-age=300');
+    assert.deepEqual(JSON.parse(cos.objects.get('staging/proof/index.json')), { books: { [BOOK]: { '001': { rev: '001-r2', n: 2 }, '003': { rev: '003-r1', n: 0 } } } });
+    assert.equal(cos.objects.get(`staging/proof/${BOOK}/001.pending.json`), pending('001-r2', 2));
+    assert.equal(r1.failed.length, 0);
+
+    const r2 = await publishPendings({ cos, entries, proofPrefix: 'staging/proof/' });
+    assert.equal(r2.put.length, 0);
+    assert.equal(cos.puts.length, 3);
+});
+
+test('publishPendings：演练不传；单子传失败就不换 index', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries } = await collectPendings(w, [WS]);
+    const dryCos = fakeCos();
+    const d = await publishPendings({ cos: dryCos, entries, proofPrefix: 'proof/', dryRun: true });
+    assert.equal(dryCos.puts.length, 0);
+    assert.equal(d.put.length, 3);
+
+    const cos = fakeCos();
+    cos.putObjectText = async (key) => { if (key.endsWith('001.pending.json')) throw new Error('boom'); cos.puts.push({ key }); };
+    const r = await publishPendings({ cos, entries, proofPrefix: 'proof/' });
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/003.pending.json`]);
+    assert.equal(r.failed.length, 2);
+});
+
+test('summarize：只出计数，不出票的内容', async () => {
+    const w = fakeWorker(baseFiles());
+    const { entries, problems } = await collectPendings(w, [WS]);
+    const opinions = await syncOpinions({ worker: w, kv: fakeKv([vote('1:1:1', 'aa', { note: '秘密备注' })]), entries });
+    const publish = await publishPendings({ cos: fakeCos(), entries, proofPrefix: 'proof/' });
+    const md = summarize({ ws: [WS], proofPrefix: 'proof/', dryRun: false, entries, collectProblems: problems, opinions, publish });
+    assert.match(md, /待审单 2 章，待审格合计 2/);
+    assert.doesNotMatch(md, /秘密备注|於|aa/);
+});
