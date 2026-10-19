@@ -18,9 +18,10 @@ MemoryHigh=800M
 Nice=10
 IOSchedulingClass=idle
 # 读盘硬上限（GUJI-615 实测：云盘调度器不认 idle 优先级，全文把盘读满、Meili 慢了约 10 倍）。
+# 10-19 第二轮：30M／600 时九成查询超时（索引走 mmap，缺页是 4 KB 随机读，卡在 IOPS 上），放宽到 60M／2000。
 # cgroup io.max 与调度器无关；写成路径时 systemd 自动换成它所在的块设备。宁可全文慢（3–5 秒可接受），不抢 Meili。
-IOReadBandwidthMax=/opt/fulltext 30M
-IOReadIOPSMax=/opt/fulltext 600
+IOReadBandwidthMax=/opt/fulltext 60M
+IOReadIOPSMax=/opt/fulltext 2000
 # 基本加固
 NoNewPrivileges=true
 ProtectSystem=full

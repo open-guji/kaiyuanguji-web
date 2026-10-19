@@ -166,7 +166,7 @@ fi
 
 echo "sandbox_props 抄自 unit 的身份与沙箱设置"
 props="$(. "$D/lib.sh"; sandbox_props "$D/fulltext.service")"
-for k in User=fulltext ReadOnlyPaths=/opt/fulltext ReadWritePaths=/opt/fulltext/releases ProtectSystem=full NoNewPrivileges=true MemoryHigh=800M "IOReadBandwidthMax=/opt/fulltext 30M"; do
+for k in User=fulltext ReadOnlyPaths=/opt/fulltext ReadWritePaths=/opt/fulltext/releases ProtectSystem=full NoNewPrivileges=true MemoryHigh=800M "IOReadBandwidthMax=/opt/fulltext 60M"; do
     printf '%s\n' "$props" | grep -qx "$k" && ok "有 $k" || bad "缺 $k"
 done
 printf '%s\n' "$props" | grep -qE '^(EnvironmentFile|ExecStart|ExecReload)=' && bad "不该抄 EnvironmentFile／Exec*" || ok "不抄 EnvironmentFile／Exec*"
