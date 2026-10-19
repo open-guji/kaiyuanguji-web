@@ -146,4 +146,4 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 
 - 精确模式对超高频字只扫前 3,000 个候选段（按书内顺序），计数与书单标 `capped`。
 - `total_hits` 封顶 10,000（契约要求），超出标 `capped`。
-- 服务以只读方式打开索引；上海机上 `ReadOnlyPaths=/opt/fulltext` 下能否正常打开，在 GUJI-615 实测确认。
+- 服务以只读方式读索引，但 tantivy 打开索引时要在索引目录里建／锁 `.tantivy-meta.lock`（GUJI-615 第 4 步实测：只读目录下报 `Failed to acquire Lockfile: PermissionDenied`）。所以 rotate.sh 解压后把 release 改成 root 所有、所有人可读，只把 `index/` 目录本身和其中的 `.tantivy-*.lock` 交给 fulltext 用户；unit 加 `ReadWritePaths=/opt/fulltext/releases` 放行沙箱。自检临时实例用 systemd-run、照抄 unit 的用户与沙箱设置跑（无 systemd 时用 runuser），这类权限问题在切换前就能拦下（退出 10）。

@@ -16,7 +16,8 @@
 # 环境变量（单测或特殊机器用）：FT_ROOT、INDEXER_LOCK、FT_SYSTEMCTL、FT_CURL、FT_UNIT、FT_PORT、
 #   FT_SELFCHECK_PORT(默认 18765)、FT_START_CMD(自检用的临时实例命令；缺省用 $FT_ROOT/bin/run-service.sh)、
 #   FT_MARGIN_GB(默认 5)、FT_AVAIL_KB(覆盖 df，测试用)、FT_TEXT_DIR(校验 bookTextCommit 用)、
-#   FT_SELFCHECK_Q(默认 太極)、FT_HEALTH_WAIT(默认 30 秒)
+#   FT_SELFCHECK_Q(默认 太極)、FT_HEALTH_WAIT(默认 30 秒)、FT_SELFCHECK_MODE(auto|systemd|runuser|direct)、
+#   FT_UNIT_FILE(默认 /etc/systemd/system/$FT_UNIT)、FT_SERVICE_USER(默认 fulltext)、FT_ENV_FILE
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/lib.sh"
@@ -101,8 +102,8 @@ if [ -n "$TAR" ]; then
     PART="$REL/.$STAMP.partial"; rm -rf "$PART"; mkdir -p "$PART"
     log "流式解压 → $PART"
     case "$TAR" in
-        http://*|https://*|file://*) "$FT_CURL" -fsS "$TAR" | tar -xz -C "$PART" ;;
-        *) tar -xzf "$TAR" -C "$PART" ;;
+        http://*|https://*|file://*) "$FT_CURL" -fsS "$TAR" | tar -xz --no-same-owner --no-same-permissions -C "$PART" ;;
+        *) tar -xzf "$TAR" --no-same-owner --no-same-permissions -C "$PART" ;;
     esac
     # 包内文件可能带顶层目录 fulltext-<stamp>/，拍平
     if [ ! -f "$PART/manifest.json" ]; then
@@ -116,6 +117,7 @@ else
     prune_old "$STAMP"
 fi
 DIR="$REL/$STAMP"
+fix_release_perms "$DIR" || die $EXIT_ARGS "改不了 $DIR 的属主／权限"
 
 # ---- 校验 manifest 与文件（两种模式都做；tar 模式再核一次包内的那份）----
 ARGS=(validate "$DIR/manifest.json"); [ -n "$CUR_MANIFEST" ] && [ "$(readlink -f "$FT_ROOT/current")" != "$(readlink -f "$DIR")" ] && ARGS+=(--current "$CUR_MANIFEST"); [ -n "${FT_TEXT_DIR:-}" ] && ARGS+=(--text-dir "$FT_TEXT_DIR")
@@ -127,16 +129,42 @@ if [ "$VERIFY" = 1 ]; then
 fi
 
 # ---- 新版自检：临时实例（另一端口、不动 current）----
+# 自检实例要和正式服务一样以服务用户、同样的沙箱跑，才测得出权限问题（GUJI-615）：
+#   systemd：systemd-run 临时单元，属性抄自已装的 unit；runuser：只换用户；direct：原样（单测用）
 START="${FT_START_CMD:-$FT_ROOT/bin/run-service.sh}"
-SELF_LOG="$(mktemp)"
-FT_PORT="$SELF_PORT" FT_INDEX_DIR="$DIR/index" FT_RELEASE_DIR="$DIR" $START >"$SELF_LOG" 2>&1 &
-SELF_PID=$!
+UNIT_FILE="${FT_UNIT_FILE:-/etc/systemd/system/$FT_UNIT}"
+MODE="${FT_SELFCHECK_MODE:-auto}"
+if [ "$MODE" = auto ]; then
+    if [ -n "${FT_START_CMD:-}" ] || [ "$(id -u)" != 0 ]; then MODE=direct
+    elif command -v systemd-run >/dev/null 2>&1 && [ -d /run/systemd/system ] && [ -f "$UNIT_FILE" ]; then MODE=systemd
+    elif id "$FT_SERVICE_USER" >/dev/null 2>&1; then MODE=runuser
+    else MODE=direct; fi
+fi
+SELF_ENV=()
+while IFS= read -r kv; do [ -n "$kv" ] && SELF_ENV+=("$kv"); done < <(env_file_vars "${FT_ENV_FILE:-/etc/fulltext.env}")
+SELF_ENV+=("FT_PORT=$SELF_PORT" "FT_INDEX_DIR=$DIR/index" "FT_RELEASE_DIR=$DIR")
+SELF_LOG="$(mktemp)"; SELF_UNIT="fulltext-selfcheck-$$"; SELF_PID=""
+log "新版自检（$MODE）"
+case "$MODE" in
+    systemd)
+        PROPS=(); while IFS= read -r p; do PROPS+=(-p "$p"); done < <(sandbox_props "$UNIT_FILE")
+        SETENV=(); for kv in "${SELF_ENV[@]}"; do SETENV+=("--setenv=$kv"); done
+        systemd-run --quiet --collect --unit="$SELF_UNIT" "${PROPS[@]}" "${SETENV[@]}" "$START" >"$SELF_LOG" 2>&1 \
+            || { log "systemd-run 起不来："; cat "$SELF_LOG" >&2; rm -f "$SELF_LOG"; exit $EXIT_SELFCHECK; } ;;
+    runuser) runuser -u "$FT_SERVICE_USER" -- env "${SELF_ENV[@]}" $START >"$SELF_LOG" 2>&1 & SELF_PID=$! ;;
+    *) env "${SELF_ENV[@]}" $START >"$SELF_LOG" 2>&1 & SELF_PID=$! ;;
+esac
 selfcheck_ok=0
 if wait_healthy "$SELF_PORT" "${FT_HEALTH_WAIT:-30}"; then
     resp="$("$FT_CURL" -s --get --data-urlencode "q=${FT_SELFCHECK_Q:-太極}" "http://127.0.0.1:$SELF_PORT/api/fulltext" 2>/dev/null)"
     python3 -c 'import json,sys; d=json.loads(sys.argv[1]); sys.exit(0 if d.get("total_hits",0)>0 else 1)' "$resp" 2>/dev/null && selfcheck_ok=1
 fi
-kill "$SELF_PID" 2>/dev/null; wait "$SELF_PID" 2>/dev/null
+if [ "$MODE" = systemd ]; then
+    journalctl -u "$SELF_UNIT" -n 20 --no-pager -o cat >"$SELF_LOG" 2>&1 || true
+    systemctl stop "$SELF_UNIT" 2>/dev/null || true
+else
+    kill "$SELF_PID" 2>/dev/null; wait "$SELF_PID" 2>/dev/null
+fi
 if [ "$selfcheck_ok" != 1 ]; then
     log "新版自检失败（临时实例 /healthz 或样本查询无命中），current 未动。服务日志尾部："
     tail -n 20 "$SELF_LOG" >&2; rm -f "$SELF_LOG"

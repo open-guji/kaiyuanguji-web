@@ -82,3 +82,31 @@ wait_healthy() {
     done
     return 1
 }
+
+# release 目录权限（GUJI-615）：包里带着打包机的属主和 600 之类的权限，服务用户读不了。
+# 一律改成 root 所有、所有人可读；只有 index/ 目录本身（和里面的 .tantivy-*.lock）归服务用户，
+# 因为 tantivy 打开索引时要在索引目录里建／锁 .tantivy-meta.lock（unit 里配了 ReadWritePaths）。
+# 不是 root 时什么都不做（单测、手工演练）。
+FT_SERVICE_USER="${FT_SERVICE_USER:-fulltext}"
+fix_release_perms() {
+    local dir="$1"
+    [ "$(id -u)" = 0 ] && [ -z "${FT_SKIP_PERMS:-}" ] || return 0
+    chown -R root:root "$dir" && chmod -R u=rwX,go=rX "$dir" || return 1
+    if id "$FT_SERVICE_USER" >/dev/null 2>&1 && [ -d "$dir/index" ]; then
+        chown "$FT_SERVICE_USER" "$dir/index" || return 1
+        find "$dir/index" -maxdepth 1 -name '.tantivy-*.lock' -exec chown "$FT_SERVICE_USER" {} + || return 1
+    fi
+}
+
+# 从 unit 文件 [Service] 段抽出身份与沙箱设置，给自检的 systemd-run 临时实例用，
+# 这样自检和正式服务的权限环境一致。不抽 EnvironmentFile（它会盖过 --setenv 的自检端口），
+# env 由 rotate.sh 以 root 读好再逐个传。每行一个 KEY=VALUE。
+sandbox_props() {
+    awk '
+        /^\[/ { sec = $0; next }
+        sec == "[Service]" && /^(User|Group|WorkingDirectory|MemoryHigh|Nice|IOSchedulingClass|NoNewPrivileges|ProtectSystem|ProtectHome|PrivateTmp|ReadOnlyPaths|ReadWritePaths)=/ { print }
+    ' "$1"
+}
+
+# 读 env 文件里的 FT_* 变量，每行一个 KEY=VALUE（rotate.sh 以 root 读，服务用户读不了 600 的文件）
+env_file_vars() { [ -r "$1" ] && grep -E '^FT_[A-Z0-9_]+=' "$1" || true; }

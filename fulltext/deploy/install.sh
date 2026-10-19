@@ -41,7 +41,8 @@ else
     echo "已有 $ENV_FILE，保持不动"
 fi
 run chown -R root:root "$ROOT/bin"
-run chown fulltext:fulltext "$ROOT/releases"
+# release 归 root；rotate.sh 只把各版 index/ 目录交给 fulltext（tantivy 要建锁文件）
+run chown root:root "$ROOT/releases"
 if [ "$DRY" != 1 ] && command -v systemctl >/dev/null; then
     systemctl daemon-reload
     echo "单元已装；首个 release 就位并 rotate 之后再 systemctl enable --now fulltext"

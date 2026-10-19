@@ -22,6 +22,9 @@ NoNewPrivileges=true
 ProtectSystem=full
 PrivateTmp=true
 ReadOnlyPaths=/opt/fulltext
+# tantivy 打开索引要在索引目录里建 .tantivy-meta.lock；目录权限由 rotate.sh 设成只有 index/ 归 fulltext，
+# 其余文件仍是 root 只读，这里只是让沙箱放行
+ReadWritePaths=/opt/fulltext/releases
 
 [Install]
 WantedBy=multi-user.target
