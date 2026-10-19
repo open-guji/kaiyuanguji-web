@@ -81,9 +81,11 @@ ssh search 'systemctl show fulltext -p MemoryCurrent -p MemoryPeak; free -m; sys
 | 判据 | 目标 |
 |---|---|
 | 244 条，并发 1，冷启动后第一遍 p95 | ≤ 5 s（504 ≤ 5%） |
-| Meili 搜索延迟 | 和全文停着时相比 p95 不超过 1.5 倍；无 OOM、无重启 |
+| Meili 搜索延迟 | 测试期任意 15 次滑窗 p95 ≤ 200 ms（10-19 改：基线 84 ms，1.5 倍线太紧，138 ms 用户感觉不到）；无 OOM、无重启 |
 | 服务内存 | 常驻 ≤ 800 MB（`MemoryHigh`） |
 | Meili 夜间重建窗口内 | 全文可以慢或 503，Meili 重建时长不明显变长 |
+
+每轮另记 `systemctl show fulltext -p IOReadBytes -p IOReadOperations`（测前测后各一次），看卡在带宽还是 IOPS 上。
 
 **停的条件**：Meili 延迟超过判据、可用内存 < 400 MB、或 Meili 不通，立刻 `sudo systemctl stop fulltext`，并在网站上关全文（Actions「Fulltext switch」选 off）。
 
