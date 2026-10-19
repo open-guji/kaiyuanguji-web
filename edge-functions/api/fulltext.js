@@ -60,7 +60,7 @@ const MAX_PER_BOOK = 20;
 const ENTRY_RE = /^[0-9A-Za-z]{1,32}$/;
 const MODES = ['fuzzy', 'exact', 'near'];
 
-const UPSTREAM_TIMEOUT_MS = 5000;
+const UPSTREAM_TIMEOUT_MS = 8000; // 上游服务自己 6 秒超时（与 Meili 共机、要读盘），浏览器等 10 秒
 const SWITCH_TIMEOUT_MS = 2000;
 const SWITCH_TTL_SECONDS = 30;
 const SWITCH_RETRY_SECONDS = 10;

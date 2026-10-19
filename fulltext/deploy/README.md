@@ -74,12 +74,18 @@ ssh search 'cd /tmp/fulltext && python3 eval/eval_latency.py --base http://127.0
 ssh search 'systemctl show fulltext -p MemoryCurrent -p MemoryPeak; free -m; systemctl show meilisearch -p MemoryCurrent'
 ```
 
+**与 Meili 共机的低流量判据**（10-19 改；原先的"热 p95 ≤ 150 ms、并发 4"要求索引整个常驻内存，3.6 GB 的搜索机做不到）。
+测前先确认 `/etc/fulltext.env` 已按模板改成 `FT_WARM=0`、`FT_MAX_CONCURRENT=1`、`FT_QUEUE_MAX=4`、`FT_TIMEOUT_S=6.0`，unit 里有 `IOReadBandwidthMax`（`install.sh` 重装一次即可）；
+只跑并发 1，**不跑并发 4**；同时每分钟测一次 Meili 搜索延迟，和服务停着时比。
+
 | 判据 | 目标 |
 |---|---|
-| 244 条，并发 1，热 p95 | ≤ 150 ms |
-| 并发 4，p95／错误 | ≤ 500 ms；无 5xx 以外的错误，504 ≤ 1% |
-| 服务内存 | 常驻 ≤ 800 MB（`MemoryHigh`），Meili 无 OOM、无重启 |
-| Meili 夜间重建窗口内 | 全文检索仍可用（可退化，不能 503 成片） |
+| 244 条，并发 1，冷启动后第一遍 p95 | ≤ 5 s（504 ≤ 5%） |
+| Meili 搜索延迟 | 和全文停着时相比 p95 不超过 1.5 倍；无 OOM、无重启 |
+| 服务内存 | 常驻 ≤ 800 MB（`MemoryHigh`） |
+| Meili 夜间重建窗口内 | 全文可以慢或 503，Meili 重建时长不明显变长 |
+
+**停的条件**：Meili 延迟超过判据、可用内存 < 400 MB、或 Meili 不通，立刻 `sudo systemctl stop fulltext`，并在网站上关全文（Actions「Fulltext switch」选 off）。
 
 达不到判据的，按规划第 4 条「另开机器要再问用户」，先在卡上报数字，不自行加机器。
 

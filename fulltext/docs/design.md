@@ -104,7 +104,7 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 - `rotate.sh --latest <COS 上 fulltext/latest.json 的 URL>`：读指针 → 流式下载解压 → manifest 与逐文件 sha256 校验 → 磁盘闸 → 临时实例自检 → 原子切 `current` → reload → 健康检查，失败自动切回 `previous`；已是最新则直接退出 0。与 Meili 夜间重建共用锁 `/opt/indexer/.lock`。上海机操作清单见 `deploy/README.md`。
 - 建包与上传：`.github/workflows/fulltext-build.yml`（手动触发）全量建包 → verify → `build/upload_cos.mjs` 传 `fulltext/<stamp>/` 并最后翻转 `fulltext/latest.json`，只留最新 2 个包；线上指针更新时拒绝覆盖。
 - 配置：`/etc/fulltext.env`（模板 `deploy/fulltext.env.example`，无机密）。v2 起不需要 `FT_TEXT_ROOT`。Python 用 venv 时在其中加 `FT_PYTHON=/opt/fulltext/venv/bin/python`。
-- 资源：systemd `MemoryHigh=800M`、`Nice=10`、IO idle；启动预热只预读倒排／位置／快字段，不预读原文存储块。
+- 资源：systemd `MemoryHigh=800M`、`Nice=10`、IO idle，另加读盘硬上限 `IOReadBandwidthMax=30M`、`IOReadIOPSMax=600`（云盘调度器不认 idle 优先级）。与 Meili 共机时 `FT_WARM=0`、一次一条查询、服务超时 6 秒（见下节「上海机实测」）；换独立大内存机器再开预热（预读倒排／位置／快字段，不预读原文存储块）。
 - 搜索机上不跑建包（2 核 3.6 GB 不够），只收包。
 
 ## 七·五、网站接入与全局开关（GUJI-616）
@@ -141,6 +141,9 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 | 进程峰值 RSS | 1.4 GB（大部分是 mmap 的索引文件页，可回收） |
 
 合成数据词表比真实数据小，倒排更紧凑，数字偏乐观；上线判据（p95、并发、内存、与 Meili 共机）以上海机全量实测为准（GUJI-615）。上海机 systemd 设了 `MemoryHigh=800M`，mmap 的文件页也算进 cgroup，超了会被回收而变慢，实测时重点看。
+
+**上海机实测（GUJI-615，10-19）与修正**：上面的估算只看了进程内存，没把"查询时要常驻缓存的索引文件"和机器总内存比。真实全量索引 5.69 GB，其中查询要读的倒排 2.12＋位置 1.20＋词典 0.35 ≈ 3.7 GB，比搜索机整机 3.6 GB 还大；压测机是 15 GB 内存的云端容器，整个索引都在缓存里，所以数字好看。搜索机上 4 路并发压测：热 p95 约 2.6 s、大量超时，Meili 被挤出缓存、慢了约 10 倍，已停服务。
+修正（用户 10-19：用户很少，3–5 秒可接受，先不花钱）：与 Meili 共机时按低流量配置跑——读盘硬上限（全文只会自己慢，不抢 Meili 的盘）、不预热、并发 1、超时 6 秒（边缘函数 8 秒、浏览器 10 秒）。判据改为"串行查询 p95 ≤ 5 s、Meili 延迟不受影响"，见 `deploy/README.md` §5。不达标再另开机器（要先问用户）。
 
 ## 十、阶段
 
