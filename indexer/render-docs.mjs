@@ -21,7 +21,7 @@ import { once } from 'node:events';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs, readDetail, addEditionStats } from './lib/doc-builders.mjs';
 import { iterAllRoots, insideRoot } from './lib/shards.mjs';
 import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
-import { isPromotedTombstone } from './lib/tombstone.mjs';
+import { isTombstone } from './lib/tombstone.mjs';
 import { derivedInputProblem } from './lib/work-fields.mjs';
 import { docHash, writeJsonGz } from './lib/doc-diff.mjs';
 
@@ -83,12 +83,17 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
     for (const i of ['works', 'juans', 'books', 'collections', 'entities']) if (want(i)) sinks[i] = openSink(join(docsDir, `${i}.jsonl.gz.tmp`));
     const editionStats = { total: 0, present: 0, positive: 0 };
     const iter = (t) => iterAllRoots(roots, t);
+    // 口径与 full-reindex.mjs 逐条对齐（增量的基线是旧路径建的线上索引，渲染结果必须和它一致，否则条数自检对不上）：
+    //   · 墓碑一律用 isTombstone（升格 promoted_to＋并条 merged_into），collections／entities 也读 detail 判并条墓碑；
+    //   · derived 缺产物的计数只看 works（full-reindex 在 works 自检时判闸，books／collections／entities 读不到产物时
+    //     detail 记 null、照样出文档）——它们另用一个不判闸的计数器。
     const readStats = createReadStats();
-    const safeDetail = (rootDir, entry, isDraft = false) => {
+    const otherStats = createReadStats();
+    const safeDetail = (rootDir, entry, isDraft = false, stats = readStats) => {
         const p = resolve(rootDir, entry.path || '');
         if (!insideRoot(rootDir, p)) { console.warn(`⚠️  路径越出数据根目录，跳过：${entry.id} ${entry.path}`); return undefined; }
         if (!existsSync(p)) return undefined;
-        try { return readDetail(p, entry.id, derivedDir, { isDraft, stats: readStats }); } catch { return undefined; }
+        try { return readDetail(p, entry.id, derivedDir, { isDraft, stats }); } catch { return undefined; }
     };
 
     if (want('works') || want('juans')) {
@@ -97,7 +102,7 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
             if (limit && n >= limit) break;
             n++;
             const detail = safeDetail(rootDir, entry, isDraft);
-            if (!detail || isPromotedTombstone(detail)) continue;
+            if (!detail || isTombstone(detail)) continue;
             if (sinks.works) { addEditionStats(editionStats, detail, isDraft); await sinks.works.write(buildWorkDoc(entry, detail, isDraft)); }
             if (sinks.juans) for (const j of buildJuanDocs(textDir, entry)) await sinks.juans.write(j);
         }
@@ -111,7 +116,7 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
                 const bp = resolve(rootDir, entry.path || '');
                 let detail = null;
                 if (insideRoot(rootDir, bp) && existsSync(bp)) { try { detail = readDetail(bp, entry.id, '', { isDraft }); } catch { detail = null; } }
-                if (isPromotedTombstone(detail)) continue;
+                if (isTombstone(detail)) continue;
                 const workId = (detail && typeof detail.work_id === 'string' && detail.work_id) || entry.work_id || entry.id;
                 for (const j of buildJuanDocs(textDir, entry, { workId, kinds: ['self_collated'] })) await sinks.juans.write(j);
             }
@@ -122,19 +127,23 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         for (const { entry, rootDir, isDraft } of iter('books')) {
             if (limit && n >= limit) break;
             n++;
-            const detail = entry.path ? (safeDetail(rootDir, entry, isDraft) ?? null) : null;
-            if (isPromotedTombstone(detail)) continue;
+            const detail = entry.path ? (safeDetail(rootDir, entry, isDraft, otherStats) ?? null) : null;
+            if (isTombstone(detail)) continue;
             await sinks.books.write(buildBookDoc(entry, detail, isDraft));
         }
     }
     for (const [name, builder] of [['collections', buildCollectionDoc], ['entities', buildEntityDoc]]) {
         if (!sinks[name]) continue;
         let n = 0;
-        for (const { entry, isDraft } of iter(name)) {
+        let tomb = 0;
+        for (const { entry, rootDir, isDraft } of iter(name)) {
             if (limit && n >= limit) break;
             n++;
+            // shard 条目不带 merged_into（derived.md〈八〉），并条墓碑只能读 detail 判（同 full-reindex）
+            if (entry.path && isTombstone(safeDetail(rootDir, entry, isDraft, otherStats) ?? null)) { tomb++; continue; }
             await sinks[name].write(builder(entry, isDraft));
         }
+        if (tomb) console.log(`  [${name}] 读 detail 跳过 ${tomb} 个墓碑`);
     }
 
     // 生产库缺 derived 产物＝产物不全：不落 manifest（.tmp 留着，ingest 认 manifest 才算完整），与准入闸同一开关
