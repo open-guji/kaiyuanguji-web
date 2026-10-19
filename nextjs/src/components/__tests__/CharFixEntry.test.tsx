@@ -235,6 +235,13 @@ describe('lib/charfix', () => {
         expect(entityIdsAt('oops', es)).toEqual([]);
     });
 
+    it('entityIdsAt：抬头字格序 -1（点抬头字、专名起于抬头字）不抛错，排在同列第 1 格之前', () => {
+        const es = [{ id: 'e1', start: '3:1:-1', end: '3:1:3', text: '' }, { id: 'e2', start: '3:1:1', end: '3:1:2', text: '' }];
+        expect(entityIdsAt('3:1:-1', es)).toEqual(['e1']);
+        expect(entityIdsAt('3:1:2', es)).toEqual(['e1', 'e2']);
+        expect(entityIdsAt('3:1:4', es)).toEqual([]);
+    });
+
     it('collectChars／collectEntities：容忍坏数据', () => {
         const pages = [{ columns: [{ chars: [{ id: '1:1:1', char: '天' }, { id: 3 }, null] }] }, null];
         expect([...collectChars(pages)]).toEqual([['1:1:1', '天']]);
