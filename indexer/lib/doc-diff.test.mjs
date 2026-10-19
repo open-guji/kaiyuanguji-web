@@ -26,7 +26,7 @@ test('两代哈希比对：新增、改动、删除、不变', () => {
     assert.equal(changeRatio(diffHashes({}, {}), 0), 0);
 });
 
-const goodDelta = () => ({ schema: 1, mode: 'incremental', indexerVersion: 'v1', renderRunId: '20', base: { renderRunId: '10' },
+const goodDelta = () => ({ schema: 1, mode: 'incremental', indexerVersion: 'v1', renderRunId: '20', base: { renderRunId: '10', indexerVersion: 'v1' },
     expectedCounts: { works: 3 }, upserts: { works: 1 }, deletes: { works: 0 }, sha256: { works: 'a'.repeat(64) } });
 
 test('差量只能打到它的基线那一代上', () => {
@@ -35,6 +35,8 @@ test('差量只能打到它的基线那一代上', () => {
     assert.ok(deltaProblems(goodDelta(), null).some((s) => s.startsWith(FALLBACK.STATE_MISSING)));
     assert.ok(deltaProblems(goodDelta(), { indexerVersion: 'v1' }).some((s) => s.includes('renderRunId')), '旧版全量写的 state 没有 renderRunId');
     assert.ok(deltaProblems(goodDelta(), { renderRunId: '10', indexerVersion: 'v0' }).some((s) => s.startsWith(FALLBACK.VERSION)));
+    const changed = goodDelta(); changed.indexerVersion = 'v2';
+    assert.deepEqual(deltaProblems(changed, { renderRunId: '10', indexerVersion: 'v1' }), [], '这一代口径变了（--allow-version-change）但基线与线上一致：可以打');
     const noSha = goodDelta(); delete noSha.sha256.works;
     assert.ok(deltaProblems(noSha, { renderRunId: '10' }).some((s) => s.includes('sha256.works')));
     const noUp = goodDelta(); noUp.upserts.works = 0; delete noUp.sha256.works;

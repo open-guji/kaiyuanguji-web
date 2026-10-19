@@ -68,8 +68,10 @@ export function deltaProblems(delta, state, { indexes } = {}) {
         else if (String(delta.base?.renderRunId) !== String(state.renderRunId)) {
             p.push(`差量的基线是 run ${delta.base?.renderRunId}，线上这一代是 run ${state.renderRunId}：基线对不上，不能打`);
         }
-        if (state.indexerVersion && delta.indexerVersion !== state.indexerVersion) {
-            p.push(`${FALLBACK.VERSION}：差量 indexerVersion=${delta.indexerVersion}，线上 ${state.indexerVersion}`);
+        // 差量是拿「基线那一代」的哈希比出来的，要核对的是基线的口径与线上记的一致；
+        // 这一代本身的口径可以变（diff-docs --allow-version-change，例如 10-19 草稿出索引），变了的文档都在差量里
+        if (state.indexerVersion && delta.base?.indexerVersion !== state.indexerVersion) {
+            p.push(`${FALLBACK.VERSION}：差量的基线口径 indexerVersion=${delta.base?.indexerVersion}，线上 ${state.indexerVersion}`);
         }
     }
     if (!delta.renderRunId) p.push('delta manifest 缺 renderRunId');
