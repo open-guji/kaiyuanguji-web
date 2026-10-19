@@ -14,6 +14,7 @@ import {
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
+    ALT_SHOW, type AltCand,
 } from '@/lib/proofing';
 
 /** 书影一页：阅读档、原图档地址与像素宽高 */
@@ -238,6 +239,53 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
     );
 }
 
+/**
+ * 相似字（以字找字）：近似字的异体族按这格字图排好的前几名，带字体字形图（扩展区字不靠读者电脑的字体）。
+ * 缺省展开 ALT_SHOW 个，其余点「再看」。点一个就提交，和候选按钮一样。数据在出待审单时算好，这里只显示。
+ */
+function AltGrid({ alt, spriteBase, busy, done, onPick }: {
+    alt: AltCand[]; spriteBase: (s: string) => string | null; busy: boolean; done?: string; onPick: (c: string) => void;
+}) {
+    const [all, setAll] = useState(false);
+    const [bad, setBad] = useState<Set<string>>(new Set());
+    const urlKey = [...new Set(alt.map(a => (a.g ? spriteBase(a.g.s) : null)).filter((u): u is string => !!u))].join('\n');
+    useEffect(() => {
+        let cancelled = false;
+        // 字形图没传到桶（或加载失败）就只显示字，不留空白框
+        (urlKey ? urlKey.split('\n') : []).forEach(u => loadImage(u).then(img => { if (!cancelled && !img) setBad(prev => (prev.has(u) ? prev : new Set(prev).add(u))); }));
+        return () => { cancelled = true; };
+    }, [urlKey]);
+    const shown = all ? alt : alt.slice(0, ALT_SHOW);
+    return (
+        <div data-testid="alt-grid" style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>相似字（按和这格字图的相像程度排，点一个就提交）</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {shown.map(a => {
+                    const u = a.g ? spriteBase(a.g.s) : null;
+                    const img = a.g && u && !bad.has(u) ? a.g : null;
+                    const picked = done === `「${a.c}」`;
+                    const tip = [a.p && a.p !== a.c ? `从「${a.p}」查到` : '', a.s !== undefined ? `像 ${pct(a.s)}` : ''].filter(Boolean).join('，') || `选「${a.c}」`;
+                    return (
+                        <button key={a.c} type="button" disabled={busy} aria-pressed={picked} aria-label={`选「${a.c}」`} title={tip}
+                            onClick={() => onPick(a.c)} className={BTN_CLASS}
+                            style={{ ...btnStyle('cand', picked, busy), display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: 4, minWidth: 56 }}>
+                            {img
+                                ? <span role="img" aria-hidden style={{ width: img.w, height: img.h, zoom: 0.5, background: `#fff url(${u}) -${img.x}px -${img.y}px no-repeat` }} />
+                                : <span style={{ fontSize: 28, lineHeight: '48px' }}>{a.c}</span>}
+                            <span style={{ fontSize: 13 }}>{a.c}</span>
+                        </button>
+                    );
+                })}
+                {alt.length > ALT_SHOW && (
+                    <button type="button" onClick={() => setAll(v => !v)} aria-expanded={all} className={BTN_CLASS} style={btnStyle('small')}>
+                        {all ? '收起' : `再看 ${alt.length - ALT_SHOW} 个`}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
     const [custom, setCustom] = useState('');
     const [busy, setBusy] = useState(false);
@@ -293,6 +341,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
                 </span>
             </div>
+            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={c => go('char', c)} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>
                     以前有人判为「{preCand}」，后来切字有变动，请看图再确认
