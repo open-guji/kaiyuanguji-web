@@ -343,3 +343,24 @@ describe('本章校对提示：COS 总表优先', () => {
         expect(screen.queryByTestId('proofing-notice')).toBeNull();
     });
 });
+
+describe('书名栏的文本版本号', () => {
+    const idx = { chapters: [{ n: 1, file: '001', title: '卷首', text_version: '0.1.4', punct_version: '0.1.1', entity_version: '0.1.1' }] };
+    const show = async (isOriginal: boolean) => {
+        getTextManifest.mockReset().mockResolvedValue({ id: ZHIZHAI, versions: [{ key: 'default', kind: 'self_collated', label: '自校本', is_original: isOriginal }] });
+        getTextIndex.mockReset().mockResolvedValue(idx);
+        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
+        await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
+    };
+    beforeEach(() => { mockProofIndex.mockReset().mockResolvedValue(null); });
+
+    it('本项目自做的版本：书名后显示文本版本号', async () => {
+        await show(true);
+        render(<>{last.reader?.subtitle as React.ReactNode}</>);
+        expect(screen.getByTestId('text-version').textContent).toBe('文本 v0.1.4');
+    });
+    it('外来版本：不出版本号，书名栏照旧', async () => {
+        await show(false);
+        expect(last.reader?.subtitle).toBeUndefined();
+    });
+});

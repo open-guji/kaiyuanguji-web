@@ -11,6 +11,7 @@ import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { isProofingChapter, loadProofIndex, parsePending, proofState } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
+import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
@@ -82,7 +83,7 @@ async function proofVolOf(id: string, versionKey: string, chapter: { file?: stri
 
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
-    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string } | null>(null);
+    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; versions?: TextVersions } | null>(null);
     const at = `${id}|${sel.key ?? ''}|${sel.chapter ?? ''}`;
     useEffect(() => {
         let cancelled = false;
@@ -93,7 +94,9 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const index = await api.getIndex(id, version.key);
             const chapter = index?.chapters.find((c) => (sel.chapter ? c.file === sel.chapter : true));
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
-            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined };
+            // 版本号只有本项目自做的 original 版本记（文本／标点／专名三线），别的来源不出
+            const versions = (version as { is_original?: boolean }).is_original ? textVersionsOf(chapter) : undefined;
+            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, versions };
             // 版本名、章名先给（标题、反馈标签用），校对提示另取，不让它们等网络
             if (!cancelled) setMeta(base);
             const proofVol = await proofVolOf(id, version.key, chapter, transport);
@@ -321,6 +324,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 onLocationChange={onLocationChange}
                 onNavigate={onNavigate}
                 title={bookTitle}
+                subtitle={meta?.versions ? <TextVersionChip versions={meta.versions} /> : undefined}
                 backHref="/read"
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}
