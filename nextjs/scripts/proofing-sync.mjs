@@ -4,6 +4,8 @@
  *
  *   opinions：中心库待审单的 (书, rev) → 网站 /api/cellreview 管理读 → 中心库 feedback/lists/web/<书>/<rev>.jsonl
  *             另：/api/charfix 管理读（改字、一段有问题、专名意见）→ 中心库 feedback/lists/web/<书>/fixes.jsonl（GUJI-597）
+ *                 /api/thread 管理读（同意／有不同看法、回复）→ 中心库 feedback/lists/web/<书>/threads.jsonl
+ *             站方要撤下的条目写进中心库 feedback/lists/web/<书>/hidden.txt（一行一个 id），公开清单不出
  *   publish ：中心库待审单 → COS [前缀/]proof/index.json、proof/<书>/<章>.pending.json
  *             另：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（整册反馈页读的公开清单）
  * 流程与纯函数在 lib/proofing-sync-run.mjs、lib/proofing-sync-plan.mjs（有单测）。
@@ -80,6 +82,19 @@ const kv = {
             const p = new URLSearchParams({ rev, book, limit: '256' });
             if (cursor) p.set('cursor', cursor);
             const r = await call(`${SITE}/api/cellreview?${p}`, { headers: { Authorization: `Bearer ${ADMIN}` } });
+            items.push(...(r.items || []));
+            if (!r.hasMore || !r.cursor) return items;
+            cursor = r.cursor;
+        }
+        throw new Error('KV 翻页超过 1000 页');
+    },
+    async listThreads(book, kind) {
+        const items = [];
+        let cursor = '';
+        for (let page = 0; page < 1000; page++) {
+            const p = new URLSearchParams({ book, kind, limit: '256' });
+            if (cursor) p.set('cursor', cursor);
+            const r = await call(`${SITE}/api/thread?${p}`, { headers: { Authorization: `Bearer ${ADMIN}` } });
             items.push(...(r.items || []));
             if (!r.hasMore || !r.cursor) return items;
             cursor = r.cursor;

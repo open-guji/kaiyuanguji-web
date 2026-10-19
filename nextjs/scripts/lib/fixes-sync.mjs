@@ -10,11 +10,28 @@ import { cellOrder } from './proofing-sync-plan.mjs';
 import { desensitizeText } from '../../../edge-functions/api/feedback.js';
 
 export const FIX_KINDS = ['char', 'span', 'entity'];
+/** /api/thread 管理读的两类：表态（同意／有不同看法）、回复 */
+export const THREAD_KINDS = ['vote', 'reply'];
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 
 export function fixesSnapshotPath(book) {
     if (!RE_BOOK.test(book)) throw new Error(`book 无效：${book}`);
     return `feedback/lists/web/${book}/fixes.jsonl`;
+}
+
+export function threadsSnapshotPath(book) {
+    if (!RE_BOOK.test(book)) throw new Error(`book 无效：${book}`);
+    return `feedback/lists/web/${book}/threads.jsonl`;
+}
+
+/** 站方隐藏单：一行一个 id（fixId 或 threadId），# 起为注释。公开清单里不出这些条目 */
+export function hiddenListPath(book) {
+    if (!RE_BOOK.test(book)) throw new Error(`book 无效：${book}`);
+    return `feedback/lists/web/${book}/hidden.txt`;
+}
+
+export function parseHidden(text) {
+    return new Set((text || '').split('\n').map((l) => l.replace(/#.*/, '').trim()).filter(Boolean));
 }
 
 export function fixesPublicKey(book) {
@@ -29,6 +46,21 @@ export function fixId(r) {
     if (r.kind === 'span' && typeof r.start === 'string' && typeof r.end === 'string') return `cs|${r.volume}|${r.text_version}|${r.start}-${r.end}|${r.sub}|${r.voter}`;
     if (r.kind === 'entity' && typeof r.entity_id === 'string') return `ce|${r.volume}|${r.entity_id}|${r.voter}`;
     return null;
+}
+
+/** 讨论一条的身份：表态同来源同处覆盖；回复按时间追加 */
+export function threadId(r) {
+    if (!r || typeof r !== 'object' || typeof r.voter !== 'string' || typeof r.volume !== 'string' || typeof r.target !== 'string') return null;
+    if (r.stance === 'agree' || r.stance === 'disagree') return `tv|${r.volume}|${r.target}|${r.voter}`;
+    if (r.stance === 'reply' && typeof r.ts === 'number') return `tm|${r.volume}|${r.target}|${r.ts}|${r.voter}`;
+    return null;
+}
+
+/** 一处意见的 target（与 /api/thread、网站 lib/fixes 同口径） */
+export function targetOf(r) {
+    const sub = r.kind === 'span' ? (r.sub ?? '') : '';
+    const end = r.kind === 'char' ? '' : (r.kind === 'span' ? r.end : r.anchor?.end) ?? '';
+    return `${r.kind}~${fixAt(r)}~${end}~${sub}`;
 }
 
 /** 键排序后序列化（同内容 → 同字节，KV 键序不同也一样） */
@@ -67,17 +99,17 @@ function parseLines(text) {
  * 合成新快照：旧快照 ∪ KV，同 fixId 以 KV 为准。只收本书、身份认得出的记录。
  * @returns {{text, total, added, updated, kept, dropped}}
  */
-export function mergeFixes(oldText, kvItems, book) {
+export function mergeFixes(oldText, kvItems, book, idOf = fixId) {
     const byId = new Map();
     for (const r of parseLines(oldText).records) {
-        const id = r?.book_id === book ? fixId(r) : null;
+        const id = r?.book_id === book ? idOf(r) : null;
         if (id) byId.set(id, canon(r));
     }
     const oldIds = new Set(byId.keys());
     const seen = new Set();
     let added = 0, updated = 0, dropped = 0;
     for (const raw of kvItems || []) {
-        const id = raw?.book_id === book ? fixId(raw) : null;
+        const id = raw?.book_id === book ? idOf(raw) : null;
         if (!id) { dropped++; continue; }
         seen.add(id);
         const rec = canon(raw);
@@ -87,7 +119,7 @@ export function mergeFixes(oldText, kvItems, book) {
         byId.set(id, rec);
     }
     const kept = [...oldIds].filter((k) => !seen.has(k)).length;
-    const all = [...byId.values()].sort(cmpFix);
+    const all = idOf === fixId ? [...byId.values()].sort(cmpFix) : [...byId.entries()].sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0)).map((e) => e[1]);
     const text = all.map((r) => JSON.stringify(r)).join('\n') + (all.length ? '\n' : '');
     return { text, total: all.length, added, updated, kept, dropped };
 }
@@ -104,10 +136,25 @@ export function toPublicFix(r) {
     return o;
 }
 
-/** 快照原文 → 公开清单 JSON 原文：{book, volumes: {<册>: [条目，按格位排]}}；不带生成时间（内容不变则字节不变，按 md5 跳过上传） */
-export function buildPublicFixes(snapshotText, book) {
-    const recs = parseLines(snapshotText).records.filter((r) => r?.book_id === book && fixId(r)).sort(cmpFix);
+/**
+ * 快照原文 → 公开清单 JSON 原文：{book, volumes: {<册>: [条目，按格位排]}, threads: {<册>: {<target>: {agree, disagree, replies}}}}。
+ * 不带生成时间（内容不变则字节不变，按 md5 跳过上传）。hidden 里的意见、回复不出；表态只出计数。
+ */
+export function buildPublicFixes(snapshotText, book, threadsText = '', hidden = new Set()) {
+    const recs = parseLines(snapshotText).records.filter((r) => r?.book_id === book && fixId(r) && !hidden.has(fixId(r))).sort(cmpFix);
     const volumes = {};
     for (const r of recs) (volumes[r.volume] ||= []).push(toPublicFix(r));
-    return JSON.stringify({ book, volumes }, null, 1) + '\n';
+    const threads = {};
+    const th = parseLines(threadsText).records
+        .filter((r) => r?.book_id === book && threadId(r) && !hidden.has(threadId(r)))
+        .sort((x, y) => (x.ts ?? 0) - (y.ts ?? 0) || (threadId(x) < threadId(y) ? -1 : 1));
+    for (const r of th) {
+        const t = ((threads[r.volume] ||= {})[r.target] ||= { agree: 0, disagree: 0, replies: [] });
+        if (r.stance === 'agree') t.agree++;
+        else if (r.stance === 'disagree') t.disagree++;
+        else t.replies.push({ name: clean(r.name) ?? '', text: clean(r.text) ?? '', ts: r.ts });
+    }
+    const out = { book, volumes };
+    if (Object.keys(threads).length) out.threads = threads;
+    return JSON.stringify(out, null, 1) + '\n';
 }

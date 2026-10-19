@@ -112,3 +112,55 @@ test('publishFixes：有快照的书出公开清单，md5 相同跳过；没快�
     const md = summarize({ ws: ['siku-zongmu'], proofPrefix: 'proof/', dryRun: false, entries: [], collectProblems: [], fixes: { rows: [], problems: [] }, fixesPublish: r });
     assert.match(md, /意见清单 → COS/);
 });
+
+import { threadId, targetOf, parseHidden, threadsSnapshotPath } from './fixes-sync.mjs';
+
+const vote = (target, voter, stance = 'agree', extra = {}) => ({ v: 1, book_id: BOOK, volume: '002', target, stance, voter, ts: 5, ...extra });
+const reply = (target, voter, ts, text, extra = {}) => ({ v: 1, book_id: BOOK, volume: '002', target, stance: 'reply', name: '甲', text, voter, ts, ...extra });
+const T = 'span~3:1:5~3:1:6~missing';
+
+test('讨论：threadId、targetOf 与网站同口径；hidden.txt 解析', () => {
+    assert.equal(threadId(vote(T, 'aa')), `tv|002|${T}|aa`);
+    assert.equal(threadId(reply(T, 'aa', 7, 'x')), `tm|002|${T}|7|aa`);
+    assert.equal(threadId({ ...vote(T, 'aa'), stance: 'x' }), null);
+    assert.equal(targetOf(span('3:1:5', '3:1:6', 'bb')), T);
+    assert.equal(targetOf(char('3:2:1', 'aa')), 'char~3:2:1~~');
+    assert.equal(targetOf(ent('e1', 'aa')), 'entity~5:1:3~5:1:4~');
+    assert.deepEqual([...parseHidden('# 注释\ntm|002|x|1|aa\n\n  cf|002|1.0.1|3:2:1|aa  # 广告\n')], ['tm|002|x|1|aa', 'cf|002|1.0.1|3:2:1|aa']);
+    assert.equal(threadsSnapshotPath(BOOK), `feedback/lists/web/${BOOK}/threads.jsonl`);
+});
+
+test('公开清单带讨论：表态只出计数（同来源改态覆盖），回复按时间、脱敏；hidden 的意见与回复不出', () => {
+    const fx = mergeFixes('', [span('3:1:5', '3:1:6', 'bb'), char('3:2:1', 'aa')], BOOK).text;
+    let th = mergeFixes('', [vote(T, 'aa'), vote(T, 'bb'), vote(T, 'cc', 'disagree'), reply(T, 'aa', 9, '后一条'), reply(T, 'bb', 8, '电话 13812345678')], BOOK, threadId).text;
+    th = mergeFixes(th, [vote(T, 'bb', 'disagree')], BOOK, threadId).text; // bb 改态
+    const hidden = parseHidden(`tm|002|${T}|9|aa\ncf|002|1.0.1|3:2:1|aa`);
+    const j = JSON.parse(buildPublicFixes(fx, BOOK, th, hidden));
+    assert.equal(j.volumes['002'].length, 1);
+    const t = j.threads['002'][T];
+    assert.equal(t.agree, 1);
+    assert.equal(t.disagree, 2);
+    assert.equal(t.replies.length, 1);
+    assert.equal(t.replies[0].name, '甲');
+    assert.ok(!t.replies[0].text.includes('13812345678'));
+    assert.ok(!JSON.stringify(j).includes('"voter"'));
+    // 没有讨论时不出 threads 键（与旧清单同形）
+    assert.equal(JSON.parse(buildPublicFixes(fx, BOOK)).threads, undefined);
+});
+
+test('syncFixes：有 listThreads 时另存 threads.jsonl；publishFixes 读 threads 与 hidden', async () => {
+    const worker = fakeWorker();
+    const kv = {
+        async listFixes(book, kind) { return kind === 'span' ? [span('3:1:5', '3:1:6', 'bb')] : []; },
+        async listThreads(book, kind) { return kind === 'vote' ? [vote(T, 'aa')] : [reply(T, 'aa', 9, '同意')]; },
+    };
+    const r = await syncFixes({ worker, kv, ws: 'w', books: [BOOK] });
+    assert.deepEqual(worker.puts.map((p) => p.path), [`feedback/lists/web/${BOOK}/fixes.jsonl`, `feedback/lists/web/${BOOK}/threads.jsonl`]);
+    assert.equal(r.rows.length, 2);
+    worker.files[`w/feedback/lists/web/${BOOK}/hidden.txt`] = '';
+    const put = [];
+    const cos = { async listPrefixEtags() { return new Map(); }, async putObjectText(key, body) { put.push(JSON.parse(body)); } };
+    await publishFixes({ worker, cos, ws: 'w', books: [BOOK], proofPrefix: 'proof/' });
+    assert.equal(put[0].threads['002'][T].agree, 1);
+    assert.equal(put[0].threads['002'][T].replies[0].text, '同意');
+});
