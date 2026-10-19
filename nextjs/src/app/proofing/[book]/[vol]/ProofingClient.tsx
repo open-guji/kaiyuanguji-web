@@ -10,7 +10,7 @@ import { useSource } from '@/components/common/SourceContext';
 import { getJson } from '@/lib/duidu-data';
 import { loadFacsimile } from '@/lib/facsimile';
 import {
-    LACUNA, classLabel, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
+    LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
 } from '@/lib/proofing';
@@ -492,7 +492,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const api = createTextApi(transport);
         (async () => {
             const res = await loadProofing(
-                { getManifest: id => api.getManifest(id), getIndex: (id, key) => api.getIndex(id, key), getFile: (id, key, file) => getJson(transport, id, key, file) },
+                { getManifest: id => api.getManifest(id), getIndex: (id, key) => api.getIndex(id, key), getFile: (id, key, file) => getJson(transport, id, key, file), getCosPending: (b, v) => loadCosPending(b, v) },
                 book, vol,
             );
             if (cancelled) return;
