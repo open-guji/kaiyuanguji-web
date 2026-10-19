@@ -15,6 +15,9 @@ jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ sour
 // 全站繁简偏好：阅读页要包在跟全站走的 BimLocaleProvider 里（overview#322），这里用带标记的桩
 jest.mock('@/components/common/BimLocaleProvider', () => ({ children }: { children: React.ReactNode }) => <div data-testid="bim-locale">{children}</div>);
 
+const mockGetJson = jest.fn();
+jest.mock('@/lib/duidu-data', () => ({ ...jest.requireActual('@/lib/duidu-data'), getJson: (...a: unknown[]) => mockGetJson(...a) }));
+
 const getTextManifest = jest.fn();
 const getTextIndex = jest.fn();
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getTextManifest, getTextIndex, getChapter: jest.fn() }) }));
@@ -282,4 +285,31 @@ describe('ReaderClient：历史记录', () => {
         });
     });
 
+});
+
+describe('本章校对提示', () => {
+    const proofIndex = { chapters: [{ n: 1, file: '001', title: '卷首', proofing: true, pending_file: '001.pending.json' }] };
+    const show = async () => {
+        getTextIndex.mockReset().mockResolvedValue(proofIndex);
+        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
+        await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
+    };
+    beforeEach(() => { sessionStorage.clear(); mockGetJson.mockReset(); });
+
+    it('还有待审的字：显示提示', async () => {
+        mockGetJson.mockResolvedValue({ rev: 'r1', cells: [{ a: '9:1:1' }] });
+        await show();
+        expect(screen.getByTestId('proofing-notice')).toBeTruthy();
+        expect(mockGetJson).toHaveBeenCalledWith(expect.anything(), ZHIZHAI, 'default', '001.pending.json');
+    });
+    it('待审单已清空：不再请读者去校对', async () => {
+        mockGetJson.mockResolvedValue({ rev: 'r1', cells: [] });
+        await show();
+        expect(screen.queryByTestId('proofing-notice')).toBeNull();
+    });
+    it('待审单取不到：照旧显示', async () => {
+        mockGetJson.mockRejectedValue(new Error('net'));
+        await show();
+        expect(screen.getByTestId('proofing-notice')).toBeTruthy();
+    });
 });
