@@ -199,6 +199,33 @@ describe('精校页显示（GUJI-557）', () => {
     });
 });
 
+describe('切坏格一类（GUJI-624）', () => {
+    it('有两类以上时出类别筛选；点「切坏格」只留切坏格，点「全部」回来', async () => {
+        loadProofing.mockResolvedValue(ok([
+            { a: '9:7:17', c: '己', cls: 'near_form' },
+            { a: '89:7:2', c: '', cls: 'seg_defect', why: ['seg_defect'] },
+            { a: '89:7:3', c: '', cls: 'seg_defect', why: ['seg_defect'] },
+        ]));
+        render(<ProofingClient book="b1" vol="vol01" />);
+        const bar = await screen.findByTestId('class-filter');
+        expect(bar.textContent).toContain('全部 3');
+        expect(bar.textContent).toContain('切坏格 2');
+        fireEvent.click(screen.getByRole('button', { name: '切坏格 2' }));
+        await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(2));
+        expect(screen.getAllByPlaceholderText('看书影，写出这个字')).toHaveLength(2);
+        fireEvent.click(screen.getByRole('button', { name: '全部 3' }));
+        await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(3));
+    });
+
+    it('只有一类时不出筛选条', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己', cls: 'near_form' }]));
+        render(<ProofingClient book="b1" vol="vol01" />);
+        await screen.findByTestId('cell-card');
+        expect(screen.queryByTestId('class-filter')).toBeNull();
+        expect(screen.getByPlaceholderText('都不对？写一个字')).toBeTruthy();
+    });
+});
+
 describe('精校页页头与说明', () => {
     it('页头有返回阅读（指回这一章）、书名、作者与章名；说明里有进度', async () => {
         loadProofing.mockResolvedValue({ ...ok([{ a: '9:1:1', c: '甲', why: [] }]), chapterTitle: '卷首' });

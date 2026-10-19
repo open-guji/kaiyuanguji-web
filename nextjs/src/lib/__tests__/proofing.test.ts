@@ -257,6 +257,8 @@ describe('机器判读标签', () => {
         expect(classLabel('replace_align').name).toBe('整理本改过字');
         expect(classLabel('lib_miss').hint).toContain('生僻字');
         expect(classLabel('future')).toEqual({ name: 'future' });
+        expect(classLabel('seg_defect').name).toBe('切坏格');
+        expect(whyLabel('seg_defect')).toContain('书影');
     });
     it('原因码全是中文，不含英文和术语', () => {
         for (const code of ['none', 'near_form', 'ctx_garble_shape', 'replace_align', 'iron_ex_missing', 'context_vs_ref']) {

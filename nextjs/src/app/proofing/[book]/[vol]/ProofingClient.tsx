@@ -254,12 +254,15 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
     const why = cell.why?.filter(w => w !== 'none').map(whyLabel) ?? [];
     const preNone = pre?.choice === 'none';
+    // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
+    const segDefect = cell.cls === 'seg_defect';
     return (
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
             style={{ border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                {spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
+                {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
+                    : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
                     : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
                     <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}　{cell.c ? '机器读作' : '机器没定出字'}</div>
@@ -283,7 +286,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     <button type="button" disabled={busy} onClick={() => go('char', cell.c)} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}>{cell.c}</button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
-                    <input value={custom} onChange={e => setCustom(e.target.value)} placeholder="都不对？写一个字" aria-label="另写一字"
+                    <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
                         style={{ width: 150, fontSize: 15, padding: '5px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
                     <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom)} className={BTN_CLASS}
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
@@ -474,6 +477,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [state, setState] = useState<'loading' | 'none' | 'error' | 'ok'>('loading');
     const [rev, setRev] = useState<string | null>(null);
     const [cells, setCells] = useState<PendingCell[]>([]);
+    const [clsFilter, setClsFilter] = useState<string | null>(null);
     const [cord, setCord] = useState<CordIndex | null>(null);
     const [order, setOrder] = useState<ReadSlot[]>([]);
     const [images, setImages] = useState<Map<string, FacsPage>>(new Map());
@@ -544,9 +548,16 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         return null;
     }, [book, vol, rev]);
 
-    const pages = Math.max(1, Math.ceil(cells.length / PAGE_SIZE));
+    // 按类筛（GUJI-624「切坏格」一类）：单子里有两类以上才显示
+    const classCounts = useMemo(() => {
+        const m = new Map<string, number>();
+        for (const c of cells) m.set(c.cls ?? 'other', (m.get(c.cls ?? 'other') ?? 0) + 1);
+        return [...m.entries()];
+    }, [cells]);
+    const shown = useMemo(() => (clsFilter ? cells.filter(c => (c.cls ?? 'other') === clsFilter) : cells), [cells, clsFilter]);
+    const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
-    const slice = useMemo(() => cells.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [cells, cur]);
+    const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
     const selected = sel && slice.some(c => c.a === sel) ? sel : slice[0]?.a ?? null;
     const selCell = selected ? cells.find(c => c.a === selected) ?? null : null;
     const selCrop = selCell ? resolveCrop(selCell, cord) : null;
@@ -562,12 +573,16 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
 
     // 在整页上点了别的待审格：翻到它所在的那一页卡片并滚过去
     const selectFromPage = useCallback((a: string) => {
-        const idx = cells.findIndex(c => c.a === a);
-        if (idx < 0) return;
+        let idx = shown.findIndex(c => c.a === a);
+        if (idx < 0) {                       // 点到筛掉的那类：回到全部
+            idx = cells.findIndex(c => c.a === a);
+            if (idx < 0) return;
+            setClsFilter(null);
+        }
         setPage(Math.floor(idx / PAGE_SIZE));
         setSel(a);
         setTimeout(() => document.getElementById(`cell-${a}`)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 0);
-    }, [cells]);
+    }, [cells, shown]);
 
     const header = <ProofingHeader book={book} vol={vol} info={info} chapterTitle={chapterTitle} versionKey={versionKey} />;
     const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
@@ -595,6 +610,15 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                         </div>
                     </aside>
                     <div className="min-w-0 lg:flex-1">
+                        {classCounts.length > 1 && (
+                            <div data-testid="class-filter" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                                <button type="button" aria-pressed={!clsFilter} onClick={() => { setClsFilter(null); setPage(0); }} className={BTN_CLASS} style={btnStyle('small', !clsFilter)}>全部 {cells.length}</button>
+                                {classCounts.map(([k, n]) => (
+                                    <button key={k} type="button" aria-pressed={clsFilter === k} onClick={() => { setClsFilter(k); setPage(0); }} className={BTN_CLASS}
+                                        style={btnStyle('small', clsFilter === k)}>{classLabel(k).name} {n}</button>
+                                ))}
+                            </div>
+                        )}
                         <ul style={{ padding: 0 }}>
                             {slice.map(cell => {
                                 const crop = resolveCrop(cell, cord);
