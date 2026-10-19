@@ -11,6 +11,7 @@
  */
 import { adaptCharCord } from 'book-index-ui';
 import { parseProof, type ProofCandidate } from '@/lib/proof';
+import { getAid } from '@/lib/aid';
 
 export type Box = [number, number, number, number];
 
@@ -533,30 +534,10 @@ export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: t
 
 // ---- 本地记录（localStorage，读写都包 try/catch，没有也能用）----
 
-const AID_KEY = 'kyg-cr-aid';
 const DONE_KEY = (rev: string) => `kyg-cr-done:${rev}`;
 
-function newAid(): string {
-    try {
-        const u = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : '';
-        if (u) return u.replace(/-/g, '');
-    } catch { /* 落到下面 */ }
-    return Array.from({ length: 24 }, () => Math.floor(Math.random() * 36).toString(36)).join('');
-}
-
-/** 客户端随机 id：只用来让同一人对同一格的重复提交覆盖旧票；存不了就每次页面加载换一个 */
-let memoryAid: string | null = null;
-export function getAid(): string {
-    try {
-        const cur = localStorage.getItem(AID_KEY);
-        if (cur && /^[A-Za-z0-9_-]{8,64}$/.test(cur)) return cur;
-        const fresh = newAid();
-        localStorage.setItem(AID_KEY, fresh);
-        return fresh;
-    } catch {
-        return (memoryAid ??= newAid());
-    }
-}
+// 客户端随机 id 挪到 lib/aid.ts（整册意见页也用，不必拖上本文件的 book-index-ui）
+export { getAid };
 
 export type DoneMap = Record<string, string>;
 

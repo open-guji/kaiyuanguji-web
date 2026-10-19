@@ -23,6 +23,9 @@ const LIST = {
         ],
         '003': [{ kind: 'char', at: '100:7:-1', new: '世', who: 'dddddd' }],
     },
+    threads: {
+        '002': { 'span~3:1:5~3:1:6~missing': { agree: 3, disagree: 1, replies: [{ name: '甲', text: '原书确有「書」', ts: Date.UTC(2026, 9, 19) }] } },
+    },
 };
 
 const okFetch = (body: unknown, status = 200) => jest.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body });
@@ -67,6 +70,38 @@ describe('TextFixesContent', () => {
         expect(screen.getAllByTestId('fix-group')).toHaveLength(1);
         fireEvent.click(screen.getByRole('tab', { name: '全部' }));
         expect(screen.getAllByTestId('fix-group')).toHaveLength(3);
+    });
+
+    it('讨论：显示计数与回复；表态、回复提交到 /api/thread，回复先在本页显示「待汇总」', async () => {
+        const listFetch = okFetch(LIST);
+        const postFetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true }) });
+        const fetchImpl = jest.fn((url: string, init?: RequestInit) => (init?.method === 'POST' ? postFetch(url, init) : listFetch(url)));
+        await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });
+        const row = within(screen.getAllByTestId('fix-group')[0]);
+        expect(row.getByText('同意 3 · 有不同看法 1')).toBeInTheDocument();
+        expect(row.getByText('原书确有「書」')).toBeInTheDocument();
+        // 别处没有讨论：计数为 0
+        expect(within(screen.getAllByTestId('fix-group')[2]).getByText('同意 0 · 有不同看法 0')).toBeInTheDocument();
+
+        await act(async () => { fireEvent.click(row.getByRole('button', { name: '同意' })); });
+        expect(postFetch.mock.calls[0][0]).toBe('/api/thread');
+        expect(JSON.parse(postFetch.mock.calls[0][1].body)).toMatchObject({ book_id: '96mid1ogzk', volume: '002', target: 'span~3:1:5~3:1:6~missing', stance: 'agree' });
+        expect(row.getByRole('status')).toHaveTextContent('已记下');
+        expect(row.getByRole('button', { name: '同意' })).toHaveAttribute('aria-pressed', 'true');
+
+        fireEvent.click(row.getByRole('button', { name: '回复' }));
+        const submit = row.getByRole('button', { name: '发表' });
+        expect(submit).toBeDisabled();
+        fireEvent.change(row.getByLabelText('称呼'), { target: { value: '乙' } });
+        fireEvent.change(row.getByLabelText('回复内容'), { target: { value: '书影第 3 页可证' } });
+        await act(async () => { fireEvent.click(submit); });
+        expect(JSON.parse(postFetch.mock.calls[1][1].body)).toMatchObject({ stance: 'reply', name: '乙', text: '书影第 3 页可证', target: 'span~3:1:5~3:1:6~missing' });
+        expect(row.getByText('书影第 3 页可证')).toBeInTheDocument();
+        expect(row.getByText('待汇总')).toBeInTheDocument();
+        // 专名一处的 target
+        const entRow = within(screen.getAllByTestId('fix-group')[1]);
+        await act(async () => { fireEvent.click(entRow.getByRole('button', { name: '有不同看法' })); });
+        expect(JSON.parse(postFetch.mock.calls[2][1].body).target).toBe('entity~4:4:5~4:4:6~');
     });
 
     it('清单 404＝还没有意见；取不到＝提示稍后再试；地址缺参数直说', async () => {

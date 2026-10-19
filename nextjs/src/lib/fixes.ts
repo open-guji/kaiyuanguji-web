@@ -3,6 +3,8 @@
  * 清单由每日 proofing-sync 从中心库发布（KV → 中心库 → COS），网站不直接读 KV，所以当天新提的意见次日才出现。
  * 形状见 nextjs/scripts/lib/fixes-sync.mjs 的 toPublicFix。
  */
+import { getAid } from '@/lib/aid';
+
 // 不引 lib/proofing、lib/charfix：它们带着 book-index-ui，这页只是个列表，别拖大。下面几个常量与它们同口径
 const PROOF_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/proof'; // ＝lib/proofing PROOF_BASE
 const CELL_RE = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/; // ＝lib/charfix CELL_RE（含抬头字的 -1 格）
@@ -45,6 +47,32 @@ export interface FixGroup {
     people: number;
     /** 最近一条的时间 */
     latest: number;
+    /** 讨论用的 target：`<kind>~<首格>~<末格>~<类别>`（与 /api/thread、proofing-sync 同口径） */
+    target: string;
+}
+
+export interface FixThread {
+    agree: number;
+    disagree: number;
+    replies: { name: string; text: string; ts?: number }[];
+}
+
+export const EMPTY_THREAD: FixThread = { agree: 0, disagree: 0, replies: [] };
+
+/** 公开清单里本册的讨论：target → {同意数、有不同看法数、回复} */
+export function parsePublicThreads(raw: unknown, vol: string): Map<string, FixThread> {
+    const out = new Map<string, FixThread>();
+    const t = asObj(asObj(asObj(raw)?.threads)?.[vol]);
+    if (!t) return out;
+    const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0);
+    for (const [target, v] of Object.entries(t)) {
+        const o = asObj(v);
+        if (!o) continue;
+        const replies = Array.isArray(o.replies) ? o.replies.map(asObj).filter((r): r is Record<string, unknown> => !!r && typeof r.text === 'string' && !!r.text)
+            .map((r) => ({ name: typeof r.name === 'string' ? r.name : '', text: r.text as string, ...(typeof r.ts === 'number' ? { ts: r.ts } : {}) })) : [];
+        out.set(target, { agree: n(o.agree), disagree: n(o.disagree), replies });
+    }
+    return out;
 }
 
 const asObj = (v: unknown): Record<string, unknown> | null => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
@@ -95,7 +123,9 @@ export function groupFixes(fixes: PublicFix[]): FixGroup[] {
         const key = `${f.kind}|${f.at}|${f.end ?? ''}|${f.sub ?? ''}`;
         let g = map.get(key);
         if (!g) {
-            g = { key, kind: f.kind, at: f.at, ...(f.end ? { end: f.end } : {}), ...(f.sub ? { sub: f.sub } : {}), old: f.old, items: [], people: 0, latest: 0 };
+            const end = f.kind === 'char' ? '' : f.end ?? '';
+            const target = `${f.kind}~${f.at}~${end}~${f.kind === 'span' ? f.sub ?? '' : ''}`;
+            g = { key, kind: f.kind, at: f.at, ...(f.end ? { end: f.end } : {}), ...(f.sub ? { sub: f.sub } : {}), old: f.old, items: [], people: 0, latest: 0, target };
             map.set(key, g);
         }
         g.items.push(f);
@@ -129,4 +159,35 @@ export async function loadPublicFixes(book: string, fetchImpl: typeof fetch = fe
 /** 整册意见页地址（静态页，参数走查询串） */
 export function fixesPageHref(book: string, vol: string): string {
     return `/feedback/text?book=${encodeURIComponent(book)}&vol=${encodeURIComponent(vol)}`;
+}
+
+export const THREAD_API = '/api/thread';
+export const REPLY_MAX = 500;
+export const NAME_MAX = 20;
+export type Stance = 'agree' | 'disagree' | 'reply';
+
+/** 对一处意见表态或回复；失败返回错误文案（接口给的，或按状态码），成功 null。不抛 */
+export async function submitThread(
+    d: { book: string; volume: string; target: string; stance: Stance; name?: string; text?: string },
+    msgs: { rate: string; failed: (status: number) => string; network: string },
+    fetchImpl: typeof fetch = fetch,
+): Promise<string | null> {
+    try {
+        const res = await fetchImpl(THREAD_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                book_id: d.book, volume: d.volume, target: d.target, stance: d.stance,
+                ...(d.stance === 'reply' ? { name: d.name, text: d.text } : {}),
+                aid: getAid(),
+            }),
+        });
+        let out: { success?: boolean; error?: string } | null = null;
+        try { out = await res.json(); } catch { /* 非 JSON */ }
+        if (res.ok && out?.success !== false) return null;
+        if (res.status === 429) return msgs.rate;
+        return out?.error || msgs.failed(res.status);
+    } catch {
+        return msgs.network;
+    }
 }

@@ -11,7 +11,9 @@
 import {
     PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut,
 } from './proofing-sync-plan.mjs';
-import { FIX_KINDS, fixesSnapshotPath, fixesPublicKey, mergeFixes, buildPublicFixes } from './fixes-sync.mjs';
+import {
+    FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
+} from './fixes-sync.mjs';
 
 export const SHORT_CACHE = 'public, max-age=300';
 
@@ -121,6 +123,20 @@ export async function syncFixes({ worker, kv, ws, books, dryRun = false }) {
         } catch (e) {
             problems.push(`${book} 意见：${e?.message || e}`);
         }
+        // 讨论（表态、回复，/api/thread）另存 threads.jsonl；KV 没有该接口（旧部署）时 listThreads 抛错，记问题不中断
+        if (!kv.listThreads) continue;
+        try {
+            const items = [];
+            for (const kind of THREAD_KINDS) items.push(...(await kv.listThreads(book, kind)));
+            const path = threadsSnapshotPath(book);
+            const old = await worker.getFile(ws, path);
+            const m = mergeFixes(old?.text ?? '', items, book, threadId);
+            const changed = m.text !== (old?.text ?? '') && m.total > 0;
+            if (changed && !dryRun) await worker.putFile(ws, path, m.text, old?.sha256 ?? null);
+            rows.push({ book: `${book}（讨论）`, kv: items.length, total: m.total, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
+        } catch (e) {
+            problems.push(`${book} 讨论：${e?.message || e}`);
+        }
     }
     return { rows, problems };
 }
@@ -134,7 +150,10 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
     for (const book of books) {
         try {
             const got = await worker.getFile(ws, fixesSnapshotPath(book));
-            if (got) objects.push({ key: fixesPublicKey(book), body: buildPublicFixes(got.text, book) });
+            if (!got) continue;
+            const threads = await worker.getFile(ws, threadsSnapshotPath(book));
+            const hidden = await worker.getFile(ws, hiddenListPath(book));
+            objects.push({ key: fixesPublicKey(book), body: buildPublicFixes(got.text, book, threads?.text ?? '', parseHidden(hidden?.text)) });
         } catch (e) {
             failed.push(`${book} 意见清单：${e?.message || e}`);
         }
