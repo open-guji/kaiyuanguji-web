@@ -137,6 +137,40 @@ done
 eq "current" "$(cur)" 20261003-0000
 teardown
 
+if [ "$(id -u)" = 0 ]; then
+echo "包带打包机属主和 600 权限、自检以服务用户跑（runuser）→ 修好权限后通过（GUJI-615）"
+setup
+chmod 755 "$W"
+python3 "$T/mkpack.py" "$W/src" 20261002-0000 2000
+chmod 600 "$W/src/manifest.json" "$W/src/index/OK"; chmod 700 "$W/src/index"
+tar -czf "$W/p.tgz" --owner=1234 --group=1234 -C "$W/src" .
+eq "退出码 0" "$(FT_SELFCHECK_MODE=runuser FT_SERVICE_USER=nobody run rotate.sh --tar "$W/p.tgz" --manifest "$W/src/manifest.json")" 0
+grep -q "新版自检（runuser）" "$W/out" && ok "自检走 runuser" || bad "自检没走 runuser"
+eq "index/ 归服务用户" "$(stat -c %U "$FT_ROOT/releases/20261002-0000/index")" nobody
+eq "索引文件归 root、可读" "$(stat -c '%U %a' "$FT_ROOT/releases/20261002-0000/index/OK")" "root 644"
+eq "manifest 可读" "$(stat -c %a "$FT_ROOT/releases/20261002-0000/manifest.json")" 644
+eq "锁文件归服务用户" "$(stat -c %U "$FT_ROOT/releases/20261002-0000/index/.tantivy-meta.lock")" nobody
+teardown
+
+echo "对照：不修权限（非 root 包、index/ 不给服务用户）→ 自检失败 10，current 不动"
+setup
+chmod 755 "$W"
+python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000
+chmod 600 "$FT_ROOT/releases/20261002-0000/index/OK"
+eq "退出码 10" "$(FT_SELFCHECK_MODE=runuser FT_SERVICE_USER=nobody FT_SKIP_PERMS=1 run rotate.sh 20261002-0000)" 10
+eq "current 未动" "$(cur)" 20261001-0000
+teardown
+else
+echo "（非 root，跳过权限与 runuser 用例）"
+fi
+
+echo "sandbox_props 抄自 unit 的身份与沙箱设置"
+props="$(. "$D/lib.sh"; sandbox_props "$D/fulltext.service")"
+for k in User=fulltext ReadOnlyPaths=/opt/fulltext ReadWritePaths=/opt/fulltext/releases ProtectSystem=full NoNewPrivileges=true MemoryHigh=800M; do
+    printf '%s\n' "$props" | grep -qx "$k" && ok "有 $k" || bad "缺 $k"
+done
+printf '%s\n' "$props" | grep -qE '^(EnvironmentFile|ExecStart|ExecReload)=' && bad "不该抄 EnvironmentFile／Exec*" || ok "不抄 EnvironmentFile／Exec*"
+
 echo "rollback.sh"
 setup
 python3 "$T/mkpack.py" "$FT_ROOT/releases/20261002-0000" 20261002-0000 2000
