@@ -189,6 +189,68 @@ export function spriteUrl(book: string, pendingFile: string | null, s: string, b
 
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 
+// ---- COS 上的待审单（中心库每日发布，ai-team `team/整理/设计/待审单与公众意见走中心库.md`）----
+//   proof/index.json            {books: {<书>: {<章>: {rev, n}}}}   n＝待审格数
+//   proof/<书>/<章>.pending.json  与 book-text 的 NNN.pending.json 同格式
+// 发布前（index.json 取不到）一切照旧走 book-text。
+
+export const PROOF_BASE = PROOF_SPRITE_BASE;
+
+export interface ProofIndexEntry { rev: string; n: number }
+export type ProofIndex = Record<string, Record<string, ProofIndexEntry>>;
+
+export function parseProofIndex(raw: unknown): ProofIndex | null {
+    const books = asRecord(asRecord(raw)?.books);
+    if (!books) return null;
+    const out: ProofIndex = {};
+    for (const [book, chaps] of Object.entries(books)) {
+        const c = asRecord(chaps);
+        if (!c) continue;
+        for (const [chap, e] of Object.entries(c)) {
+            const r = asRecord(e);
+            if (!r || typeof r.n !== 'number' || !Number.isFinite(r.n)) continue;
+            (out[book] ??= {})[chap] = { rev: typeof r.rev === 'string' ? r.rev : '', n: r.n };
+        }
+    }
+    return out;
+}
+
+let proofIndexP: Promise<ProofIndex | null> | null = null;
+
+/** 取 COS 上的待审单总表（同一页面只取一次）；取不到给 null */
+export function loadProofIndex(fetchImpl: typeof fetch = fetch, base = PROOF_BASE): Promise<ProofIndex | null> {
+    proofIndexP ??= (async () => {
+        try {
+            const res = await fetchImpl(`${base}/index.json`);
+            return res.ok ? parseProofIndex(await res.json()) : null;
+        } catch {
+            return null;
+        }
+    })();
+    return proofIndexP;
+}
+
+/** 测试用：清掉缓存 */
+export function resetProofIndexCache(): void { proofIndexP = null; }
+
+/** 某章在总表里的状态：open＝还有待审格；done＝在表里、0 格；unknown＝总表取不到或没列这一章（退回 book-text 的判断） */
+export function proofState(index: ProofIndex | null, book: string, chap: string): 'open' | 'done' | 'unknown' {
+    const e = index?.[book]?.[chap];
+    if (!e) return 'unknown';
+    return e.n > 0 ? 'open' : 'done';
+}
+
+/** 取 COS 上的一章待审单；没有给 null */
+export async function loadCosPending(book: string, vol: string, fetchImpl: typeof fetch = fetch, base = PROOF_BASE): Promise<unknown> {
+    if (!/^[\w-]+$/.test(book) || !SAFE_FILE.test(vol)) return null;
+    try {
+        const res = await fetchImpl(`${base}/${book}/${vol}.pending.json`);
+        return res.ok ? await res.json() : null;
+    } catch {
+        return null;
+    }
+}
+
 const isBox = (v: unknown): v is Box =>
     Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n)) && v[2] > 0 && v[3] > 0;
 
@@ -305,6 +367,13 @@ export function pickProofingChapter(index: unknown, vol: string): Record<string,
     return hit ?? (cands.length === 1 ? cands[0] : null);
 }
 
+/** 文件名去扩展名后等于 vol 的章（不看 proofing 标记）：COS 上有待审单时用 */
+export function pickChapterByStem(index: unknown, vol: string): Record<string, unknown> | null {
+    const chapters = asRecord(index)?.chapters;
+    const stem = (v: unknown) => (typeof v === 'string' ? v.replace(/\.[^.]+$/, '') : '');
+    return (Array.isArray(chapters) ? chapters : []).map(asRecord).find((c): c is Record<string, unknown> => !!c && stem(c.file) === vol) ?? null;
+}
+
 /** 版本顺序：original 在前，其余照 manifest 的顺序 */
 export function versionKeys(manifest: unknown): string[] {
     const versions = asRecord(manifest)?.versions;
@@ -375,6 +444,8 @@ export interface ProofingDeps {
     getManifest: (id: string) => Promise<unknown>;
     getIndex: (id: string, key: string) => Promise<unknown>;
     getFile: (id: string, key: string, file: string) => Promise<unknown>;
+    /** 中心库发到 COS 的待审单（`proof/<书>/<章>.pending.json`）；取不到给 null，退回 book-text 的 pending_file */
+    getCosPending?: (book: string, vol: string) => Promise<unknown>;
 }
 
 export type ProofingLoad =
@@ -386,18 +457,20 @@ const SAFE_FILE = /^[\w.-]+$/;
 /** 取待审单与（若有）cord、char。没有该册、没声明、取不到都不抛，回 status */
 export async function loadProofing(deps: ProofingDeps, book: string, vol: string): Promise<ProofingLoad> {
     try {
-        const manifest = await deps.getManifest(book);
+        // 待审单先读 COS（中心库每日发布）；没有再按 book-text 章条目的 pending_file 找（过渡期）
+        const cosRaw = deps.getCosPending && SAFE_FILE.test(vol) ? await deps.getCosPending(book, vol).catch(() => null) : null;
+        const manifest = await deps.getManifest(book).catch(() => (cosRaw ? null : Promise.reject(new Error('manifest'))));
         for (const versionKey of versionKeys(manifest)) {
             // 某一版本的目录取不到不挡其他版本
             const index = await deps.getIndex(book, versionKey).catch(() => null);
-            const chapter = pickProofingChapter(index, vol);
-            const pendingFile = chapter?.pending_file;
+            const chapter = cosRaw ? pickChapterByStem(index, vol) : pickProofingChapter(index, vol);
+            const pendingFile = cosRaw ? `${vol}.pending.json` : chapter?.pending_file;
             if (!chapter || typeof pendingFile !== 'string' || !SAFE_FILE.test(pendingFile)) continue;
             const named = (k: string) => (typeof chapter[k] === 'string' && SAFE_FILE.test(chapter[k] as string) ? (chapter[k] as string) : null);
             const cordFile = named('cord_file');
             const charFile = named('char_file');
             const [pendingRaw, cordRaw, charRaw] = await Promise.all([
-                deps.getFile(book, versionKey, pendingFile),
+                cosRaw ?? deps.getFile(book, versionKey, pendingFile),
                 cordFile ? deps.getFile(book, versionKey, cordFile).catch(() => null) : null,
                 charFile ? deps.getFile(book, versionKey, charFile).catch(() => null) : null,
             ]);
@@ -412,6 +485,8 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
             const chapterTitle = typeof chapter.title === 'string' && chapter.title.trim() ? chapter.title.trim() : undefined;
             return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [], chapterTitle };
         }
+        // COS 上有待审单、文本目录里却找不到这一章：照样给待审单，只是没有整页框和前后文
+        if (cosRaw) return { status: 'ok', pending: parsePending(cosRaw), cord: null, versionKey: 'default', pendingFile: `${vol}.pending.json`, order: [] };
         return { status: 'none' };
     } catch {
         return { status: 'error' };

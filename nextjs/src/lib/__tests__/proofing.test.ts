@@ -5,6 +5,7 @@ import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
+    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem,
 } from '../proofing';
 
 const pending = {
@@ -269,5 +270,62 @@ describe('机器判读标签', () => {
     });
     it('cls_sub 读进 clsSub', () => {
         expect(parseExtras({ cls: 'replace_align', cls_sub: 'manual' }).clsSub).toBe('manual');
+    });
+});
+
+describe('COS 上的待审单（中心库发布）', () => {
+    const res = (status: number, body?: unknown) => ({ ok: status >= 200 && status < 300, status, json: async () => body }) as unknown as Response;
+    beforeEach(() => resetProofIndexCache());
+
+    it('总表解析与各章状态', () => {
+        const idx = parseProofIndex({ books: { b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 }, bad: { n: 'x' } } } });
+        expect(idx).toEqual({ b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 } } });
+        expect(proofState(idx, 'b1', '001')).toBe('open');
+        expect(proofState(idx, 'b1', '002')).toBe('done');
+        expect(proofState(idx, 'b1', '003')).toBe('unknown');
+        expect(proofState(null, 'b1', '001')).toBe('unknown');
+        expect(parseProofIndex({})).toBeNull();
+    });
+    it('总表只取一次；取不到给 null', async () => {
+        const f = jest.fn(async () => res(200, { books: { b1: { '001': { rev: 'r', n: 1 } } } }));
+        await loadProofIndex(f as unknown as typeof fetch, 'https://x/proof');
+        await loadProofIndex(f as unknown as typeof fetch, 'https://x/proof');
+        expect(f).toHaveBeenCalledTimes(1);
+        expect(f).toHaveBeenCalledWith('https://x/proof/index.json');
+        resetProofIndexCache();
+        expect(await loadProofIndex((async () => res(404)) as unknown as typeof fetch)).toBeNull();
+        resetProofIndexCache();
+        expect(await loadProofIndex((async () => { throw new Error('net'); }) as unknown as typeof fetch)).toBeNull();
+    });
+    it('取一章待审单：地址按书与章拼；坏参数不发请求', async () => {
+        const f = jest.fn(async () => res(200, { rev: 'r', cells: [] }));
+        expect(await loadCosPending('b1', '001', f as unknown as typeof fetch, 'https://x/proof')).toEqual({ rev: 'r', cells: [] });
+        expect(f).toHaveBeenCalledWith('https://x/proof/b1/001.pending.json');
+        expect(await loadCosPending('b/1', '001', f as unknown as typeof fetch)).toBeNull();
+        expect(f).toHaveBeenCalledTimes(1);
+        expect(await loadCosPending('b1', '001', (async () => res(404)) as unknown as typeof fetch)).toBeNull();
+    });
+    it('loadProofing：COS 有待审单就用它，章按文件名找（不看 proofing 标记）', async () => {
+        const index = { chapters: [{ file: '001', title: '卷首', cord_file: '001.cord.json' }] };
+        const getFile = jest.fn(async () => cord);
+        const r = await loadProofing({
+            getManifest: async () => ({ versions: [{ key: 'default' }] }), getIndex: async () => index, getFile,
+            getCosPending: async () => pending,
+        }, 'b1', '001');
+        expect(r.status).toBe('ok');
+        if (r.status !== 'ok') return;
+        expect(r.pendingFile).toBe('001.pending.json');
+        expect(r.chapterTitle).toBe('卷首');
+        expect(r.pending.rev).toBe('r1');
+        expect(getFile.mock.calls.map(c => (c as unknown[])[2])).toEqual(['001.cord.json']);
+        expect(pickChapterByStem(index, '002')).toBeNull();
+    });
+    it('loadProofing：COS 没有就退回 book-text；COS 有而目录里没这章也给待审单', async () => {
+        const index = { chapters: [{ file: 'vol01.json', vol: 'vol01', proofing: true, pending_file: 'vol01.pending.json' }] };
+        const base = { getManifest: async () => ({ versions: [{ key: 'default' }] }), getIndex: async () => index, getFile: async () => pending };
+        const r1 = await loadProofing({ ...base, getCosPending: async () => null }, 'b1', 'vol01');
+        expect(r1.status === 'ok' && r1.pendingFile).toBe('vol01.pending.json');
+        const r2 = await loadProofing({ ...base, getManifest: async () => { throw new Error('x'); }, getCosPending: async () => pending }, 'b1', '009');
+        expect(r2.status === 'ok' && r2.cord).toBeNull();
     });
 });

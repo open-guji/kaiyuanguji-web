@@ -16,6 +16,8 @@ jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ sour
 jest.mock('@/components/common/BimLocaleProvider', () => ({ children }: { children: React.ReactNode }) => <div data-testid="bim-locale">{children}</div>);
 
 const mockGetJson = jest.fn();
+const mockProofIndex = jest.fn(async (): Promise<unknown> => null);
+jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofIndex: () => mockProofIndex() }));
 jest.mock('@/lib/duidu-data', () => ({ ...jest.requireActual('@/lib/duidu-data'), getJson: (...a: unknown[]) => mockGetJson(...a) }));
 
 const getTextManifest = jest.fn();
@@ -294,7 +296,7 @@ describe('本章校对提示', () => {
         render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
         await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
     };
-    beforeEach(() => { sessionStorage.clear(); mockGetJson.mockReset(); });
+    beforeEach(() => { sessionStorage.clear(); mockGetJson.mockReset(); mockProofIndex.mockReset().mockResolvedValue(null); });
 
     it('还有待审的字：显示提示', async () => {
         mockGetJson.mockResolvedValue({ rev: 'r1', cells: [{ a: '9:1:1' }] });
@@ -311,5 +313,33 @@ describe('本章校对提示', () => {
         mockGetJson.mockRejectedValue(new Error('net'));
         await show();
         expect(screen.getByTestId('proofing-notice')).toBeTruthy();
+    });
+});
+
+describe('本章校对提示：COS 总表优先', () => {
+    const plainIndex = { chapters: [{ n: 1, file: '001', title: '卷首' }] };
+    const flagged = { chapters: [{ n: 1, file: '001', title: '卷首', proofing: true, pending_file: '001.pending.json' }] };
+    const show = async (index: unknown) => {
+        getTextIndex.mockReset().mockResolvedValue(index);
+        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
+        await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
+    };
+    beforeEach(() => { sessionStorage.clear(); mockGetJson.mockReset().mockResolvedValue({ rev: 'r', cells: [{ a: '1:1:1' }] }); });
+
+    it('总表说这章还有待审：没有 proofing 标记也显示', async () => {
+        mockProofIndex.mockReset().mockResolvedValue({ [ZHIZHAI]: { '001': { rev: 'r', n: 3 } } });
+        await show(plainIndex);
+        expect(screen.getByTestId('proofing-notice')).toBeTruthy();
+        expect(mockGetJson).not.toHaveBeenCalled();
+    });
+    it('总表说这章 0 格：有 proofing 标记也不显示', async () => {
+        mockProofIndex.mockReset().mockResolvedValue({ [ZHIZHAI]: { '001': { rev: 'r', n: 0 } } });
+        await show(flagged);
+        expect(screen.queryByTestId('proofing-notice')).toBeNull();
+    });
+    it('总表没列这章：按 book-text 判断', async () => {
+        mockProofIndex.mockReset().mockResolvedValue({ other: { '001': { rev: 'r', n: 3 } } });
+        await show(plainIndex);
+        expect(screen.queryByTestId('proofing-notice')).toBeNull();
     });
 });

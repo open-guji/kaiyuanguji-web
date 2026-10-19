@@ -9,7 +9,7 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
-import { isProofingChapter, parsePending } from '@/lib/proofing';
+import { isProofingChapter, loadProofIndex, parsePending, proofState } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
@@ -61,6 +61,25 @@ function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: b
 const sameSel = (a: ReaderSel, b: ReaderSel) => (a.key ?? '') === (b.key ?? '') && (a.chapter ?? '') === (b.chapter ?? '');
 
 /** 版本名与章名（<title>、反馈上下文用）：取 manifest 与版本目录，服务端给了种子就不发请求；取不到就没有 */
+/**
+ * 这一章要不要请读者去校对（返回章号，不要则 undefined）。
+ * 先看 COS 上的待审单总表（中心库每日发布）：列了这一章就以它为准；
+ * 没列时退回 book-text：章条目 proofing: true，且待审单没清空（取不到待审单时照旧显示）。
+ */
+async function proofVolOf(id: string, versionKey: string, chapter: { file?: string } | undefined, transport: ReturnType<typeof getTransport>): Promise<string | undefined> {
+    const stem = chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
+    if (!stem) return undefined;
+    const state = proofState(await loadProofIndex(), id, stem);
+    if (state !== 'unknown') return state === 'open' ? stem : undefined;
+    if (!isProofingChapter(chapter)) return undefined;
+    const pendingFile = (chapter as { pending_file?: unknown }).pending_file;
+    if (typeof pendingFile === 'string') {
+        const raw = await getJson(transport, id, versionKey, pendingFile).catch(() => null);
+        if (raw && parsePending(raw).cells.length === 0) return undefined;
+    }
+    return stem;
+}
+
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
     const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string } | null>(null);
@@ -74,15 +93,11 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const index = await api.getIndex(id, version.key);
             const chapter = index?.chapters.find((c) => (sel.chapter ? c.file === sel.chapter : true));
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
-            // 本册开着校对：精校页入口（只读章条目上的 proofing，见 lib/proofing.ts）
-            let proofVol = isProofingChapter(chapter) && chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
-            // 待审单已清空（字都校完了）就不再请读者去校对；取不到待审单时照旧显示
-            const pendingFile = (chapter as { pending_file?: unknown } | undefined)?.pending_file;
-            if (proofVol && typeof pendingFile === 'string') {
-                const raw = await getJson(transport, id, version.key, pendingFile).catch(() => null);
-                if (raw && parsePending(raw).cells.length === 0) proofVol = undefined;
-            }
-            if (!cancelled) setMeta({ at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, proofVol });
+            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined };
+            // 版本名、章名先给（标题、反馈标签用），校对提示另取，不让它们等网络
+            if (!cancelled) setMeta(base);
+            const proofVol = await proofVolOf(id, version.key, chapter, transport);
+            if (!cancelled && proofVol) setMeta({ ...base, proofVol });
         })().catch(() => {});
         return () => { cancelled = true; };
     }, [api, transport, id, sel.key, sel.chapter, at]);
