@@ -27,6 +27,13 @@ export const bookIndex = defineMessages({
         errTimeout: '全文搜索超時，請稍後再試。',
         errOffline: '網絡不通，無法使用全文搜索。',
         errUnavailable: '全文搜索暫不可用。',
+        modeLabel: '匹配方式',
+        mode: { fuzzy: '模糊', exact: '精確', near: '差一字' },
+        modeHint: {
+            fuzzy: '繁簡、異體字視為同一字（查「学而」也能找到「學而」）',
+            exact: '只認原字，不做繁簡異體歸一',
+            near: '原文比查詢多一字、少一字或錯一字也算命中（四字以上才放寬），完全一致的排在前面',
+        },
     },
     detail: {
         redirectedBefore: '已自動跳轉到正式版本（原草稿 ',
@@ -85,6 +92,13 @@ export const bookIndex = defineMessages({
         errTimeout: '全文搜索超时，请稍后再试。',
         errOffline: '网络不通，无法使用全文搜索。',
         errUnavailable: '全文搜索暂不可用。',
+        modeLabel: '匹配方式',
+        mode: { fuzzy: '模糊', exact: '精确', near: '差一字' },
+        modeHint: {
+            fuzzy: '繁简、异体字视为同一字（查“学而”也能找到“學而”）',
+            exact: '只认原字，不做繁简异体归一',
+            near: '原文比查询多一字、少一字或错一字也算命中（四字以上才放宽），完全一致的排在前面',
+        },
     },
     detail: {
         redirectedBefore: '已自动跳转到正式版本（原草稿 ',
