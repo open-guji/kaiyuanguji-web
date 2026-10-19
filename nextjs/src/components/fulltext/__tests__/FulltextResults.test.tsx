@@ -148,4 +148,17 @@ describe('FulltextTab 开关', () => {
         await waitFor(() => expect(container.innerHTML).toBe(''));
         expect(screen.queryByRole('alert')).toBeNull();
     });
+
+    it('匹配方式：默认模糊；切到差一字后带 mode=near 重新搜索', async () => {
+        process.env.NEXT_PUBLIC_FULLTEXT_TAB = '1';
+        const fetchImpl = route(res(200, { enabled: true }), () => res(200, sample));
+        render(<FulltextTab q="學而時時習之" fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        expect(await screen.findByText('論語集解')).toBeTruthy();
+        const fuzzy = screen.getByRole('radio', { name: '模糊' }) as HTMLInputElement;
+        expect(fuzzy.checked).toBe(true);
+        expect(String(fetchImpl.mock.calls[1][0])).toContain('mode=fuzzy');
+        fireEvent.click(screen.getByRole('radio', { name: '差一字' }));
+        await waitFor(() => expect(fetchImpl.mock.calls.some((c) => String(c[0]).includes('mode=near'))).toBe(true));
+        expect(screen.getByRole('radio', { name: '精确' })).toBeTruthy();
+    });
 });
