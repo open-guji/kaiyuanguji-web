@@ -164,7 +164,7 @@ function BookIndexContent() {
           initialQuery={searchQuery}
           onQueryChange={handleQueryChange}
         />
-        {/* 全文搜索面板（GUJI-163 / F6，方案 A：网站侧独立面板，不改组件库）。构建期开关 NEXT_PUBLIC_FULLTEXT_TAB 默认关，关时渲染为空 */}
+        {/* 全文搜索面板（GUJI-163 / F6，方案 A：网站侧独立面板，不改组件库）。构建期开关 NEXT_PUBLIC_FULLTEXT_TAB 默认关，关时渲染为空；开着时再看运行时开关（/api/fulltext?op=status） */}
         <FulltextTab q={searchQuery} />
       </div>
       </BidUrlProvider>

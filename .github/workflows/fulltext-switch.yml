@@ -1,0 +1,80 @@
+name: Fulltext switch（全文搜索全局开关）
+
+# 一键开／关全文搜索：写 COS 上的公开开关文件 fulltext/switch.json，不用重新构建发布。
+# 读它的是边缘函数 edge-functions/api/fulltext.js（isolate 缓存约 30 秒，status 接口浏览器缓存 30 秒），
+# 所以切换后约 1 分钟内全站生效：关＝前端「全文」tab 隐藏、/api/fulltext 搜索回 503 disabled、不再打搜索机。
+# 环境变量 FULLTEXT_ENABLED=0 是更硬的关（压过开关文件），但要重新部署才生效，只作兜底。
+# 脚本 fulltext/build/switch_cos.mjs；写完从公开地址读回核对，结果写进 job summary。
+# COS 复用本仓 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET；机密只放在写入那一步的 env 里。
+
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: 'on＝开、off＝关'
+        type: choice
+        # 加引号：YAML 1.1 里裸 on/off 会被读成布尔
+        options: ['off', 'on']
+        default: 'off'
+      reason:
+        description: '原因（会写进开关文件、公开可读；关时 status 接口会带出来）'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fulltext-switch
+  cancel-in-progress: false
+
+jobs:
+  switch:
+    name: 全文搜索 → ${{ inputs.state }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 装 COS SDK
+        working-directory: fulltext/build
+        run: npm install --no-save --no-package-lock --silent cos-nodejs-sdk-v5@2.15.4
+
+      - name: 写开关文件并读回核对
+        id: write
+        working-directory: fulltext/build
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          # 输入经 env 传，不直接拼进 shell，防注入
+          STATE: ${{ inputs.state }}
+          REASON: ${{ inputs.reason }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -eo pipefail
+          node switch_cos.mjs --state "$STATE" --reason "$REASON" --by "$ACTOR" | tee "$RUNNER_TEMP/switch.log"
+
+      - name: 写 job summary
+        if: ${{ always() }}
+        env:
+          STATE: ${{ inputs.state }}
+          OUTCOME: ${{ steps.write.outcome }}
+        run: |
+          {
+            echo "### 全文搜索开关 → \`$STATE\`"
+            if [ "$OUTCOME" = success ] && [ -s "$RUNNER_TEMP/switch.log" ]; then
+              echo '读回的开关文件：'
+              echo '```json'
+              tail -1 "$RUNNER_TEMP/switch.log"
+              echo '```'
+              echo '边缘函数约 30 秒内读到新值；浏览器侧 status 再缓存 30 秒。'
+            else
+              echo "写入或读回失败（$OUTCOME），开关文件可能没变或没核对上，看上一步日志。"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
