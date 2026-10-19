@@ -104,7 +104,7 @@ fix_release_perms() {
 sandbox_props() {
     awk '
         /^\[/ { sec = $0; next }
-        sec == "[Service]" && /^(User|Group|WorkingDirectory|MemoryHigh|Nice|IOSchedulingClass|NoNewPrivileges|ProtectSystem|ProtectHome|PrivateTmp|ReadOnlyPaths|ReadWritePaths)=/ { print }
+        sec == "[Service]" && /^(User|Group|WorkingDirectory|MemoryHigh|Nice|IOSchedulingClass|IOReadBandwidthMax|IOReadIOPSMax|NoNewPrivileges|ProtectSystem|ProtectHome|PrivateTmp|ReadOnlyPaths|ReadWritePaths)=/ { print }
     ' "$1"
 }
 

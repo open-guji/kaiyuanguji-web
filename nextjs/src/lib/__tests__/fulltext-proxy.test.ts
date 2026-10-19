@@ -297,7 +297,7 @@ describe('上游', () => {
     expect(text).not.toContain('10.9.8.7');
   });
 
-  test('超时（5 秒）→ 504 timeout', async () => {
+  test('超时（8 秒）→ 504 timeout', async () => {
     jest.useFakeTimers({ doNotFake: ['performance', 'queueMicrotask', 'nextTick', 'setImmediate', 'Date'] });
     upstreamImpl = (url) => new Promise((_, reject) => {
       void url;
@@ -306,7 +306,7 @@ describe('上游', () => {
       sig.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
     });
     const p = search();
-    await jest.advanceTimersByTimeAsync(5001);
+    await jest.advanceTimersByTimeAsync(8001);
     const res = await p;
     expect(res.status).toBe(504);
     expect(await body(res)).toEqual({ error: 'timeout' });
