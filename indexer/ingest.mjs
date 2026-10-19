@@ -17,7 +17,7 @@
  *       全部成功后才原子写 state.json。任何一环失败：线上索引原封不动、state 不动。
  * 退出码：0 成功；1 失败（含自检未过）；6 锁被占；8 manifest／文件校验不过（增量：基线对不上也是 8）。
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { createMeiliOps, SETTINGS } from './lib/meili-ops.mjs';
 import { editionCoverageProblem } from './lib/work-fields.mjs';
@@ -175,35 +175,52 @@ async function mainIncremental() {
     if (problems.length) bad(problems);
     console.log(`差量 OK：基线 run ${delta.base.renderRunId} → run ${delta.renderRunId}；upsert ${JSON.stringify(delta.upserts)} delete ${JSON.stringify(delta.deletes)}`);
 
+    // 断点续打：同一份差量（renderRunId 相同）重跑时，跳过上次已确认 succeeded 的批次。首次补齐十几万条时，
+    // 中途超时／断线后在 Actions 里重跑 apply 就从断点接着打，不从头来。state 推进后进度文件即删。
+    const progressPath = `${statePath}.progress.json`;
+    let progress = null;
+    try { progress = JSON.parse(readFileSync(progressPath, 'utf-8')); } catch { /* 没有 */ }
+    if (!progress || progress.renderRunId !== delta.renderRunId) progress = { renderRunId: delta.renderRunId, done: {} };
+    else console.log(`↻ 接着上次的进度打：${JSON.stringify(progress.done)}`);
+    const saveProgress = () => writeFileSync(progressPath, JSON.stringify(progress) + '\n');
+    const doneOf = (idx) => (progress.done[idx] ??= { deleteBatches: 0, upsertBatches: 0 });
+
     const t0 = Date.now();
     for (const idx of indexes) {
+        const pg = doneOf(idx);
         // 先删后加：同一代里删和加的 id 不重叠，顺序其实无关；先删让条数中途只会往下走，自检口径更直观
         const ids = JSON.parse(readFileSync(join(deltaRoot, 'deletes', `${idx}.json`), 'utf-8'));
         if (ids.length !== delta.deletes[idx]) bad([`${idx}: deletes 文件 ${ids.length} 条，manifest 记 ${delta.deletes[idx]} 条`]);
-        for (let k = 0; k < ids.length; k += 1000) {
+        for (let b = pg.deleteBatches, k = b * 1000; k < ids.length; b++, k += 1000) {
             const r = await ops.meiliRequest('POST', `/indexes/${idx}/documents/delete-batch`, ids.slice(k, k + 1000));
             await ops.waitForTask(r.taskUid, 1_800_000);
+            pg.deleteBatches = b + 1; saveProgress();
         }
-        let pushed = 0;
+        let pushed = 0, skipped = 0;
         if (delta.upserts[idx] > 0) {
             const pending = [];
+            let batchNo = 0;
+            // Meili 按入队顺序处理 task；FIFO 等到哪一批，就确认到哪一批
+            const confirmOldest = async () => { await pending.shift(); pg.upsertBatches++; saveProgress(); };
             const r = await readJsonlGz(join(deltaRoot, 'docs', `${idx}.jsonl.gz`), {
                 batchSize: BATCH[idx],
                 onBatch: async (docs) => {
+                    if (batchNo++ < pg.upsertBatches) { skipped += docs.length; return; }   // 上次已确认
                     const uid = await ops.pushBatch(idx, docs);
-                    if (uid != null) pending.push(ops.waitForTask(uid, 1_800_000));
+                    pending.push(uid != null ? ops.waitForTask(uid, 1_800_000) : Promise.resolve());
                     pushed += docs.length;
-                    while (pending.length >= MAX_CONCURRENT) await pending.shift();
+                    while (pending.length >= MAX_CONCURRENT) await confirmOldest();
+                    if (pushed % 20000 < docs.length) console.log(`  [${idx}] upsert ${pushed + skipped}／${delta.upserts[idx]}（${((Date.now() - t0) / 1000).toFixed(0)}s）`);
                 },
             });
-            await Promise.all(pending);
+            while (pending.length) await confirmOldest();
             if (r.sha256 !== delta.sha256[idx] || r.count !== delta.upserts[idx]) {
                 // 已经打进去的 upsert 是幂等的，state 不推进，下次以旧基线重算会再打一遍，不会丢
                 console.error(`❌ ${idx}: 差量文件校验不过（sha256 ${r.sha256 === delta.sha256[idx] ? '一致' : '不一致'}，行数 ${r.count} vs ${delta.upserts[idx]}），state 不推进`);
                 process.exit(EXIT.MANIFEST_BAD);
             }
         }
-        console.log(`  [${idx}] 删 ${ids.length}，upsert ${pushed}`);
+        console.log(`  [${idx}] 删 ${ids.length}，upsert ${pushed}${skipped ? `（另有 ${skipped} 条上次已打，跳过）` : ''}`);
     }
 
     // 自检：在线上索引上跑（没有 tmp），口径同全量
@@ -239,6 +256,7 @@ async function mainIncremental() {
         counts,
         previous: state?.commits ?? null,
     });
+    try { unlinkSync(progressPath); } catch { /* 没有 */ }
     console.log(`\n✅ 增量完成（${((Date.now() - t0) / 1000).toFixed(1)}s），state.json 已推进到 run ${delta.renderRunId}`);
 }
 

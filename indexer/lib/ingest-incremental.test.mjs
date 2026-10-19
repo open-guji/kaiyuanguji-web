@@ -19,6 +19,7 @@ const INGEST = fileURLToPath(new URL('../ingest.mjs', import.meta.url));
 function fakeMeili(initial) {
     const idx = Object.fromEntries(Object.entries(initial).map(([k, docs]) => [k, new Map(docs.map((d) => [d.id, d]))]));
     const calls = [];
+    const state = { posts: 0, failPostAt: 0 };
     let task = 0;
     const server = createServer(async (req, res) => {
         let body = '';
@@ -33,6 +34,7 @@ function fakeMeili(initial) {
             return send({ taskUid: ++task });
         }
         if ((m = url.pathname.match(/^\/indexes\/(\w+)\/documents$/)) && req.method === 'POST') {
+            if (++state.posts === state.failPostAt) return send({ message: 'boom' }, 500);
             idx[m[1]] ??= new Map();
             for (const d of JSON.parse(body)) idx[m[1]].set(d.id, d);
             return send({ taskUid: ++task });
@@ -42,7 +44,7 @@ function fakeMeili(initial) {
         if ((m = url.pathname.match(/^\/indexes\/(\w+)\/search$/))) return send({ estimatedTotalHits: idx[m[1]]?.size ?? 0, hits: [] });
         send({ message: `unhandled ${req.method} ${url.pathname}` }, 500);
     });
-    return { server, idx, calls };
+    return { server, idx, calls, state };
 }
 
 function run(args, env) {
@@ -133,5 +135,34 @@ test('没有 state（从没认领／全量过）：拒绝增量', async () => {
         assert.equal(r.code, 8, r.out);
         assert.match(r.out, /STATE_MISSING_OR_CORRUPT/);
         assert.equal(meili.idx.works.size, 3, '线上没动');
+    } finally { meili.server.close(); }
+});
+
+test('断点续打：中途失败后重跑同一份差量，跳过已确认的批次', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'inc-'));
+    const base = [w('a', 1)];
+    const next = [w('a', 1), ...Array.from({ length: 2500 }, (_, k) => w(`n${k}`, k))];   // 3 批（每批 1000）
+    await fakeRender(join(root, 'base'), '10', base);
+    await fakeRender(join(root, 'new'), '20', next);
+    await diffDocs({ newDir: join(root, 'new'), baseDir: join(root, 'base'), outDir: join(root, 'delta'), maxRatio: 1e9 });
+    const meili = fakeMeili({ works: base, juans: [], books: [], collections: [], entities: [] });
+    await new Promise((r) => meili.server.listen(0, '127.0.0.1', r));
+    const env = { MEILI_URL: `http://127.0.0.1:${meili.server.address().port}`, MEILI_KEY: 'k', MAX_CONCURRENT: '1' };
+    const common = ['--state', join(root, 'state.json'), '--lock', join(root, '.lock')];
+    try {
+        await run(['--adopt', join(root, 'base'), ...common], env);
+        meili.state.failPostAt = 2;   // 第 2 批 upsert 失败
+        let r = await run(['--incremental', join(root, 'delta'), ...common], env);
+        assert.notEqual(r.code, 0, r.out);
+        const pg = JSON.parse(readFileSync(join(root, 'state.json.progress.json'), 'utf-8'));
+        assert.equal(pg.done.works.upsertBatches, 1, '第 1 批已确认');
+        meili.state.failPostAt = 0; meili.state.posts = 0;
+        r = await run(['--incremental', join(root, 'delta'), ...common], env);
+        assert.equal(r.code, 0, r.out);
+        assert.match(r.out, /另有 1000 条上次已打，跳过/);
+        assert.equal(meili.state.posts, 2, '只补打剩下的 2 批');
+        assert.equal(meili.idx.works.size, 2501);
+        assert.ok(!existsSync(join(root, 'state.json.progress.json')), '成功后进度文件已删');
+        assert.equal(JSON.parse(readFileSync(join(root, 'state.json'), 'utf-8')).renderRunId, '20');
     } finally { meili.server.close(); }
 });
