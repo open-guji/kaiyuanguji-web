@@ -114,6 +114,11 @@ import sys,json; d=json.load(sys.stdin); print('lastUpdate', d['lastUpdate'])
 期望：`lastUpdate` 是刚才；2026-10-02 的实数是 `works` 95,055、`books` 20,899、`entities` 30,994、`collections` 84、**`juans` 1,812**。
 **五个都要看，不能只看脚本报 success**：swap 前的自检对 juans 不查命中数。10-02 起 swap 前另有文档数下限闸（见下），新建的比线上少一半以上不换；但这条闸只防「大幅变少」，仍要核对各索引数量。
 
+## 草稿不入搜索（2026-10-19 用户定）
+
+`render-docs.mjs` 与 `full-reindex.mjs` 只遍历正式库 `PRODUCTION_DIR`；`DRAFT_DIR` 仍可传（render 只记它的 commit），但不再进任何索引。
+前端每条搜索都带 `is_draft = false`，草稿文档本来就搜不出来，只占 Meili 内存。
+
 ## 增量更新（overview#561 二期）
 
 日常不再整库重建（works 已 27 万条，3.6G 的机器上全量要两三个小时、期间搜索要好几秒）：

@@ -68,8 +68,8 @@ export function manifestProblems(m, { allowPartial = false, requireIndexes = IND
     if (m.schema !== 1) p.push(`manifest.schema=${m.schema}，本 ingest 只认 1`);
     if (m.partial && !allowPartial) p.push('manifest.partial=true（--limit/--only 的试跑产物），拒绝入库');
     if (!m.indexerVersion) p.push('缺 indexerVersion');
-    // draft／prod／derived 必须有；text 只在要入 juans 时必须（没配 TEXT_DIR 的产物没有 juans）
-    const need = ['draft', 'prod', 'derived'];
+    // prod／derived 必须有（草稿 10-19 起不入搜索，commits.draft 可空）；text 只在要入 juans 时必须
+    const need = ['prod', 'derived'];
     if (requireIndexes.includes('juans')) need.push('text');
     for (const k of need) if (!m.commits?.[k]) p.push(`commits.${k} 缺失`);
     for (const i of requireIndexes) {

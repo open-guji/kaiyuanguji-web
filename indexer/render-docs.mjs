@@ -3,7 +3,7 @@
  * 搜索机不再持有数据仓，只拉本脚本的产物，由 ingest.mjs 入库。
  *
  * 用法：
- *   DRAFT_DIR=… PRODUCTION_DIR=… TEXT_DIR=… BOOK_INDEX_DERIVED_DIR=… \
+ *   PRODUCTION_DIR=… TEXT_DIR=… BOOK_INDEX_DERIVED_DIR=… [DRAFT_DIR=…（只记 commit，不入索引）] \
  *   node render-docs.mjs --out <dir> [--limit N] [--only works,juans,books,collections,entities]
  *
  * 输出 <out>/docs/<index>.jsonl.gz、<out>/hashes/<index>.json.gz（{id → 文档哈希}，增量比对用，二期）与 <out>/manifest.json：
@@ -69,9 +69,9 @@ function openSink(path) {
 }
 
 export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDir, limit = null, only = null }) {
-    const roots = [{ dir: draftDir, isDraft: true }];
-    if (prodDir && existsSync(prodDir)) roots.push({ dir: prodDir, isDraft: false });
-    else console.warn('⚠️  PRODUCTION_DIR 未设置或不存在 —— 已升格条目将缺席！');
+    // 草稿一律不入搜索（2026-10-19 用户定）：只遍历正式库。前端每条搜索本来就带 is_draft = false，草稿文档只占内存不出结果
+    if (!prodDir || !existsSync(prodDir)) throw new Error('PRODUCTION_DIR 未设置或不存在');
+    const roots = [{ dir: prodDir, isDraft: false }];
     if (!textDir || !existsSync(textDir)) console.warn('⚠️  TEXT_DIR 未设置或不存在 —— juans 将为空！');
 
     const want = (i) => !only || only.includes(i);
@@ -185,7 +185,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (limit !== null && !(limit > 0)) { console.error('--limit 必须是正整数'); process.exit(1); }
     const only = arg('--only') ? arg('--only').split(',') : null;
     if (only && only.some((i) => !['works', 'juans', 'books', 'collections', 'entities'].includes(i))) { console.error(`--only 含未知索引：${only.join(',')}`); process.exit(1); }
-    if (!draftDir || !outDir) { console.error('需要 DRAFT_DIR 环境变量与 --out <dir>'); process.exit(1); }
+    if (!prodDir || !outDir) { console.error('需要 PRODUCTION_DIR 环境变量与 --out <dir>'); process.exit(1); }
     const needsDerived = !only || only.some((i) => i === 'works' || i === 'juans');
     if (needsDerived && prodDir && existsSync(prodDir)) {   // 产物准入（overview#345）：与 full-reindex 同判法
         const problem = derivedInputProblem({

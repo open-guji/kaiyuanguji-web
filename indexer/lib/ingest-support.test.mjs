@@ -27,6 +27,8 @@ test('manifest 校验', () => {
     assert.ok(manifestProblems({ ...good(), partial: true }).some((s) => s.includes('partial')));
     const m = good(); m.commits.text = null;
     assert.ok(manifestProblems(m).some((s) => s.includes('commits.text')));
+    const nd = good(); nd.commits.draft = null;
+    assert.deepEqual(manifestProblems(nd), [], '草稿 10-19 起不入搜索，commits.draft 可空');
     const m2 = good(); delete m2.sha256.works;
     assert.ok(manifestProblems(m2).some((s) => s.includes('sha256.works')));
     assert.ok(manifestProblems({ ...good(), schema: 2 }).length);
