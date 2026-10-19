@@ -9,13 +9,13 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
-import { isProofingChapter } from '@/lib/proofing';
+import { isProofingChapter, parsePending } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
-import { loadDuiduFiles } from '@/lib/duidu-data';
+import { getJson, loadDuiduFiles } from '@/lib/duidu-data';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
@@ -75,11 +75,17 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const chapter = index?.chapters.find((c) => (sel.chapter ? c.file === sel.chapter : true));
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
             // 本册开着校对：精校页入口（只读章条目上的 proofing，见 lib/proofing.ts）
-            const proofVol = isProofingChapter(chapter) && chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
+            let proofVol = isProofingChapter(chapter) && chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
+            // 待审单已清空（字都校完了）就不再请读者去校对；取不到待审单时照旧显示
+            const pendingFile = (chapter as { pending_file?: unknown } | undefined)?.pending_file;
+            if (proofVol && typeof pendingFile === 'string') {
+                const raw = await getJson(transport, id, version.key, pendingFile).catch(() => null);
+                if (raw && parsePending(raw).cells.length === 0) proofVol = undefined;
+            }
             if (!cancelled) setMeta({ at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, proofVol });
         })().catch(() => {});
         return () => { cancelled = true; };
-    }, [api, id, sel.key, sel.chapter, at]);
+    }, [api, transport, id, sel.key, sel.chapter, at]);
     return meta?.at === at ? meta : null;
 }
 
