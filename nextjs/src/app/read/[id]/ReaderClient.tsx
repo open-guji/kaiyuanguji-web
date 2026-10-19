@@ -48,15 +48,24 @@ interface ReaderClientProps {
  *   - 首帧：服务端给的地址与规范写法可能只差一截（短地址补成带章号的全形），不该多出一条；
  *   - 阅读器自己纠正位置（cause=auto：地址没带章号、章号无效，组件回落到第一章）：这不是读者翻的，与上一条合并。
  */
-function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean }) {
+function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean; hash?: string | null }) {
     const href = readerPath(id, sel);
-    if (window.location.pathname !== href) {
-        if (opts.push) window.history.pushState(window.history.state, '', href);
-        else window.history.replaceState(window.history.state, '', href);
+    // 章内标题位置（GUJI-240）写在 #页:列:格；canonical 不带它
+    const full = opts.hash ? `${href}#${opts.hash}` : href;
+    if (window.location.pathname + window.location.hash !== full) {
+        if (opts.push) window.history.pushState(window.history.state, '', full);
+        else window.history.replaceState(window.history.state, '', full);
     }
     document.title = `${title} - ${SITE_NAME}`;
     const canonical = opts.updateCanonical ? document.querySelector<HTMLLinkElement>('link[rel="canonical"]') : null;
     if (canonical) canonical.href = new URL(href, canonical.href).href;
+}
+
+/** 地址的 hash → 章内格位（`页:列:格[子列]`）；不是格位的（站内其他用途的 #）不认 */
+export function anchorFromHash(raw: string): string | null {
+    let h = raw.replace(/^#/, '');
+    try { h = decodeURIComponent(h); } catch { return null; }
+    return /^\d+:\d+:-?\d+[ab]?$/.test(h) ? h : null;
 }
 
 const sameSel = (a: ReaderSel, b: ReaderSel) => (a.key ?? '') === (b.key ?? '') && (a.chapter ?? '') === (b.chapter ?? '');
@@ -164,6 +173,21 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
 
     const meta = useTextMeta(id, sel, transport);
 
+    // 章内标题（GUJI-240）：地址的 #页:列:格 交给阅读器滚过去；读者在目录点标题，地址跟着改。
+    // 首帧从地址读（服务端看不到 hash），之后只跟 hashchange（手改地址、点站内 # 链接）
+    const [urlAnchor, setUrlAnchor] = useState<string | null>(null);
+    const [hash, setHash] = useState<string | null>(null);
+    useEffect(() => {
+        const read = () => {
+            const a = anchorFromHash(window.location.hash);
+            setUrlAnchor(a);
+            setHash(a);
+        };
+        read();
+        window.addEventListener('hashchange', read);
+        return () => window.removeEventListener('hashchange', read);
+    }, []);
+
     // 首帧的 canonical 以服务端为准（章号查不准时它会回落到不带章号的地址），之后翻章再跟着改。
     const synced = useRef(false);
     const pushNext = useRef(false);
@@ -173,10 +197,11 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         syncLocation(id, sel, convert(readerTitle(bookTitle, sel.chapter, meta?.chapterTitle, meta?.versionLabel)), {
             push: synced.current && pushNext.current,
             updateCanonical: synced.current,
+            hash,
         });
         pushNext.current = false;
         synced.current = true;
-    }, [id, sel, bookTitle, meta, convert]);
+    }, [id, sel, bookTitle, meta, convert, hash]);
 
     const primaryRef = useRef(primary);
     primaryRef.current = primary;
@@ -192,6 +217,8 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         // 读者翻章、切版本留历史；阅读器自己纠正位置（auto）与上一条合并
         pushNext.current = cause !== 'auto';
         setSel((prev) => (sameSel(prev, next) ? prev : next));
+        // 点了章内标题：地址带上它；读者换章、换版本：去掉旧的；阅读器自己纠正位置不动
+        if (cause !== 'auto') setHash(loc.anchor ?? null);
     }, []);
     const onNavigate = useCallback((target: string) => router.push(`/item/${target}`), [router]);
 
@@ -322,6 +349,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 versionKey={sel.key ?? primary ?? 'default'}
                 chapter={sel.chapter ?? null}
                 onLocationChange={onLocationChange}
+                anchor={urlAnchor}
                 onNavigate={onNavigate}
                 title={bookTitle}
                 subtitle={meta?.versions ? <TextVersionChip versions={meta.versions} /> : undefined}
