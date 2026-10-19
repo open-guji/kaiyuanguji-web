@@ -135,8 +135,11 @@ test.describe('图文对读', () => {
         await link.locator('[data-char-id]').first().click();
         await expect(page).toHaveURL(PATH);
         await expect(warpPage(page)).toBeVisible();
-        // Ctrl 点击进条目页
+        // Ctrl 点击：条目页在新标签页打开，阅读页不动
+        const popup = page.context().waitForEvent('page');
         await link.locator('[data-char-id]').first().click({ modifiers: ['Control'] });
-        await expect(page).toHaveURL(new RegExp(`${href}$`), { timeout: 15_000 });
+        const np = await popup;
+        await expect.poll(() => np.url(), { timeout: 15_000 }).toMatch(new RegExp(`${href}$`));
+        await expect(page).toHaveURL(PATH);
     });
 });
