@@ -47,12 +47,43 @@ export function authorLine(e: ItemEntry): string {
         .join('、');
 }
 
+const CN_DIGITS = '〇一二三四五六七八九';
+const CN_UNITS = ['', '十', '百', '千'];
+
+function belowWan(n: number, leading: boolean): string {
+    const s = String(n);
+    let out = '';
+    let zero = false;
+    for (let i = 0; i < s.length; i++) {
+        const d = Number(s[i]);
+        const u = s.length - 1 - i;
+        if (d === 0) { zero = true; continue; }
+        if (zero && out) out += '〇';
+        zero = false;
+        out += (leading && d === 1 && u === 1 && i === 0) ? CN_UNITS[u] : CN_DIGITS[d] + CN_UNITS[u];
+    }
+    return out;
+}
+
+/** 卷数转汉字：130→一百三十，22877→二萬二千八百七十七（与 book-index-ui numberToChinese 同口径） */
+export function juanToChinese(n: number): string {
+    if (!Number.isInteger(n) || n <= 0) return '';
+    if (n >= 100000000) return String(n);
+    if (n < 10000) return belowWan(n, true);
+    const rest = n % 10000;
+    return belowWan(Math.floor(n / 10000), true) + '萬'
+        + (rest > 0 ? (rest < 1000 ? '〇' : '') + belowWan(rest, false) : '');
+}
+
 function measureLine(e: ItemEntry): string {
     const info = str(e.measure_info);
     if (info) return info;
     const j = e.juan_count;
-    const n = typeof j === 'number' ? j : (j && typeof j === 'object' ? (j as { number?: unknown }).number : undefined);
-    return typeof n === 'number' && n > 0 ? `${n}卷` : '';
+    const obj = j && typeof j === 'object' ? (j as { number?: unknown; unit?: unknown }) : undefined;
+    const n = typeof j === 'number' ? j : obj?.number;
+    if (typeof n !== 'number' || n <= 0) return '';
+    // 单位以 juan_count.unit 为准（《羋子》「十八篇」曾被显示成「十八卷」）；缺时沿用「卷」
+    return juanToChinese(n) + (str(obj?.unit) || '卷');
 }
 
 export function summarizeItem(e: ItemEntry, id: string): ItemSummary {
