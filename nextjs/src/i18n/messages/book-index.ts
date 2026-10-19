@@ -30,7 +30,7 @@ export const bookIndex = defineMessages({
         modeLabel: '匹配方式',
         mode: { fuzzy: '模糊', exact: '精確', near: '差一字' },
         modeHint: {
-            fuzzy: '繁簡、異體字視為同一字（查「学而」也能找到「學而」）',
+            fuzzy: '繁簡、異體字視為同一字（查簡體也能找到繁體原文）',
             exact: '只認原字，不做繁簡異體歸一',
             near: '原文比查詢多一字、少一字或錯一字也算命中（四字以上才放寬），完全一致的排在前面',
         },
@@ -95,7 +95,7 @@ export const bookIndex = defineMessages({
         modeLabel: '匹配方式',
         mode: { fuzzy: '模糊', exact: '精确', near: '差一字' },
         modeHint: {
-            fuzzy: '繁简、异体字视为同一字（查“学而”也能找到“學而”）',
+            fuzzy: '繁简、异体字视为同一字（查简体也能找到繁体原文）',
             exact: '只认原字，不做繁简异体归一',
             near: '原文比查询多一字、少一字或错一字也算命中（四字以上才放宽），完全一致的排在前面',
         },
