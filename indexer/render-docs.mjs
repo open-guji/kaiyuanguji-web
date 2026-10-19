@@ -6,9 +6,10 @@
  *   DRAFT_DIR=… PRODUCTION_DIR=… TEXT_DIR=… BOOK_INDEX_DERIVED_DIR=… \
  *   node render-docs.mjs --out <dir> [--limit N] [--only works,juans,books,collections,entities]
  *
- * 输出 <out>/docs/<index>.jsonl.gz 与 <out>/manifest.json：
- *   { schema:1, createdAt, indexerVersion, commits:{draft,prod,text,derived},
+ * 输出 <out>/docs/<index>.jsonl.gz、<out>/hashes/<index>.json.gz（{id → 文档哈希}，增量比对用，二期）与 <out>/manifest.json：
+ *   { schema:1, createdAt, indexerVersion, renderRunId, commits:{draft,prod,text,derived},
  *     counts:{idx:n}, sha256:{idx:hex}, editionStats:{total,present,positive}, partial:bool }
+ *   renderRunId＝GITHUB_RUN_ID：下一次增量靠它找到这一代的哈希（diff-docs.mjs）。
  * 退出码：1 参数／环境错误；5 派生产物缺失或与源仓 commit 不符（同 full-reindex）。
  */
 import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
@@ -22,10 +23,11 @@ import { iterAllRoots, insideRoot } from './lib/shards.mjs';
 import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
 import { isPromotedTombstone } from './lib/tombstone.mjs';
 import { derivedInputProblem } from './lib/work-fields.mjs';
+import { docHash, writeJsonGz } from './lib/doc-diff.mjs';
 
 const LIB = new URL('./lib/', import.meta.url);
 // 影响文档内容的代码与数据：任一变动 → indexerVersion 变 → ingest 必须走全量（design §四）
-const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'derived-core.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs'];
+const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'derived-core.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs', 'doc-diff.mjs'];
 const SELF = new URL('./render-docs.mjs', import.meta.url);
 
 export function indexerVersion() {
@@ -49,9 +51,13 @@ function openSink(path) {
     gz.on('data', (c) => hash.update(c));
     gz.pipe(out);
     let n = 0;
+    const hashes = new Map();
     return {
+        hashes,
         async write(doc) {
             n++;
+            // 与 meili-ops pushBatch 同一条 id 规则：Meili 不收的 id 不进哈希表，否则差量会一直想 upsert 它
+            if (doc && typeof doc.id === 'string' && /^[A-Za-z0-9_-]+$/.test(doc.id)) hashes.set(doc.id, docHash(doc));
             if (!gz.write(JSON.stringify(doc) + '\n')) await once(gz, 'drain');
         },
         async close() {
@@ -70,7 +76,9 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
 
     const want = (i) => !only || only.includes(i);
     const docsDir = join(outDir, 'docs');
+    const hashesDir = join(outDir, 'hashes');
     mkdirSync(docsDir, { recursive: true });
+    mkdirSync(hashesDir, { recursive: true });
     const sinks = {};
     for (const i of ['works', 'juans', 'books', 'collections', 'entities']) if (want(i)) sinks[i] = openSink(join(docsDir, `${i}.jsonl.gz.tmp`));
     const editionStats = { total: 0, present: 0, positive: 0 };
@@ -137,12 +145,14 @@ export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDi
         const r = await s.close();
         counts[i] = r.count; sha256[i] = r.sha256;
         renameSync(join(docsDir, `${i}.jsonl.gz.tmp`), join(docsDir, `${i}.jsonl.gz`));
+        await writeJsonGz(join(hashesDir, `${i}.json.gz`), Object.fromEntries(s.hashes));
     }
     const manifest = {
         schema: 1,
         createdAtEpoch: Date.now(),
         createdAt: new Date().toLocaleString('sv-SE', { timeZone: 'America/Los_Angeles' }) + ' (America/Los_Angeles)',
         indexerVersion: indexerVersion(),
+        renderRunId: process.env.GITHUB_RUN_ID || null,
         commits: { draft: gitHead(draftDir), prod: gitHead(prodDir), text: gitHead(textDir), derived: derivedCommit(derivedDir) },
         counts, sha256, editionStats, derivedRead: readStats,
         partial: !!(limit || only),
