@@ -59,8 +59,9 @@ test.describe('图文对读', () => {
         const before = Number(await warpPage(page).getAttribute('data-warp-page'));
         await page.getByTestId('facsimile-next').click();
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(before + 1));
-        // 该页的正文段落顶边在视口上部（页首已被滚到参考线上方不远处），而不是只改了书影
-        await expect.poll(async () => page.locator(`[data-page-section="${before + 1}"]`).evaluate((el) => {
+        // 该页首字在视口上部（页首已被滚到参考线上方不远处），而不是只改了书影。
+        // 看首字不看页 section：分叶线关（ui 0.59.0 起默认）时该页首段并进上一页，section 顶边在并走的段落之后
+        await expect.poll(async () => page.locator(`[data-char-id^="${before + 1}:"]`).first().evaluate((el) => {
             const top = el.getBoundingClientRect().top;
             return top >= -2 && top <= 200;
         }), { timeout: 10_000 }).toBe(true);

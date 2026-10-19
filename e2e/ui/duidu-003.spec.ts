@@ -98,8 +98,9 @@ test.describe('图文对读（vol03）', () => {
         const before = Number(await warpPage(page).getAttribute('data-warp-page'));
         await page.getByTestId('facsimile-next').click();
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(before + 1));
-        // 该页的正文段落顶边在视口上部（页首已被滚到参考线上方不远处），而不是只改了书影
-        await expect.poll(async () => page.locator(`[data-page-section="${before + 1}"]`).evaluate((el) => {
+        // 该页首字在视口上部（页首已被滚到参考线上方不远处），而不是只改了书影。
+        // 看首字不看页 section：分叶线关（ui 0.59.0 起默认）时该页首段并进上一页，section 顶边在并走的段落之后
+        await expect.poll(async () => page.locator(`[data-char-id^="${before + 1}:"]`).first().evaluate((el) => {
             const top = el.getBoundingClientRect().top;
             return top >= -2 && top <= 200;
         }), { timeout: 10_000 }).toBe(true);
@@ -193,7 +194,7 @@ test.describe('图文对读（vol03）', () => {
         expect(Math.abs((await page.evaluate(() => Math.round(window.scrollY))) - y0)).toBeLessThanOrEqual(2);
         await page.getByTestId('facsimile-next').click();
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', '59');
-        await expect.poll(() => page.locator('[data-page-section="59"]').evaluate((el) => Math.round(el.getBoundingClientRect().top)), { timeout: 10_000 }).toBeLessThan(300);
+        await expect.poll(() => page.locator('[data-char-id^="59:"]').first().evaluate((el) => Math.round(el.getBoundingClientRect().top)), { timeout: 10_000 }).toBeLessThan(300);
     });
 
     test('滚轮缩放后：拖动不选字，点字框仍能定位正文；双击复位', async ({ page }) => {
@@ -306,6 +307,10 @@ test.describe('图文对读（vol03）', () => {
             const cs = getComputedStyle(e);
             return `${cs.textDecorationLine}/${cs.textDecorationStyle}`;
         });
+        // ui 0.59.0 起书名默认用书名号、不画线；这里看波浪线，先切到「波浪线」（已是波浪线时点了不变）
+        await setReaderSettings(page, true);
+        await page.getByRole('group', { name: /^(书名样式|書名樣式)$/ }).getByRole('button', { name: /^(波浪线|波浪線)$/ }).click();
+        await setReaderSettings(page, false);
         await expect.poll(() => style('people')).toBe('underline/solid');
         await expect.poll(() => style('place')).toBe('underline/solid');
         await expect.poll(() => style('work')).toBe('underline/wavy');
@@ -315,7 +320,7 @@ test.describe('图文对读（vol03）', () => {
         // 标点 pos=before 的修复（bim PR #124）发版后才有；版本号以实际发版为准
         await requireUiVersion(request, FIX_POS_UI, '标点 pos=before');
         await openDuidu(page);
-        // ui ≥ 0.50.0 书名默认用波浪线、隐去《》；这里要看《》的位置，先切到「书名号」
+        // ui 0.50.0–0.58.x 书名默认用波浪线、隐去《》（0.59.0 起默认书名号）；这里要看《》的位置，确保在「书名号」
         await setReaderSettings(page, true);
         await page.getByRole('group', { name: /^(书名样式|書名樣式)$/ }).getByRole('button', { name: /^(书名号|書名號)$/ }).click();
         await setReaderSettings(page, false);
