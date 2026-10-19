@@ -1,6 +1,7 @@
 // 阅读页「改字」与专名意见端点（GUJI-561，规格 ai-team 仓 team/网站/GUJI-561-charfix-接口规格.md）
 //
-//   POST  公开 —— 读者对对读章的某一格提出改字（kind=char，缺省），或对某个专名提意见（kind=entity）。
+//   POST  公开 —— 读者对对读章的某一格提出改字（kind=char，缺省），或对某个专名提意见（kind=entity），
+//         或拖选一段字报问题（kind=span：错字、缺字、多字、次序、标点、分段、标题、小注、专名、其他；GUJI-597 反馈设计）。
 //         同来源对同一格（同一专名）再提会覆盖前一条。
 //   GET   **只开管理读**（管理 token 或成员 cookie），按前缀导出；公开读一律 401。
 //
@@ -11,6 +12,7 @@
 // key：
 //   改字  `cf:<book>:<volume>:<text_version>:<cell_id>:<voter>`
 //   专名  `ce:<book>:<volume>:<entity_id>:<voter>`（必填 entity_id／volume／chapter／anchor.start／anchor.end，GUJI-592）
+//   一段  `cs:<book>:<volume>:<text_version>:<start>-<end>:<sub>:<voter>`（start／end 是选区首末字的格位，同一格时相等）
 //   书在最前，导出按 `cf:<book>:`（可再接 volume、text_version）前缀列，不全库 list。
 // voter＝sha256(aid|ip) 前 16 位，与精校同一规则；值只存 voter，不存 aid、不存 IP。
 
@@ -30,6 +32,9 @@ const TTL_SECONDS = 180 * 24 * 60 * 60; // 180 天：处理侧每日导入，留
 const LIST_MAX = 256;
 const GET_BATCH = 20;
 const ENTITY_IDS_MAX = 8;
+const SPAN_TEXT_MAX = 64; // 选中的原文、建议的改法
+/** kind=span 的问题类别：错字 缺字 多字 次序 标点 分段 标题 小注（双行夹注） 专名 其他 */
+export const SPAN_SUBS = ['wrong', 'missing', 'extra', 'order', 'punct', 'para', 'heading', 'note', 'entity', 'other'];
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -68,7 +73,7 @@ function checkAnchorCell(c) {
 export function validateFix(body) {
   if (!body || typeof body !== 'object') return { error: '请求体须为 JSON 对象' };
   const kind = body.kind === undefined ? 'char' : body.kind;
-  if (kind !== 'char' && kind !== 'entity') return { error: 'kind 无效' };
+  if (kind !== 'char' && kind !== 'entity' && kind !== 'span') return { error: 'kind 无效' };
   const { book_id: book, volume } = body;
   if (missing(book)) return { error: '缺 book_id', field: 'book_id' };
   if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book_id 无效', field: 'book_id' };
@@ -101,6 +106,29 @@ export function validateFix(body) {
       value: {
         kind, book_id: book, volume, text_version: tv, cell_id: cell, old_char: old, new_char: newChar,
         basis: basis.value, entity_ids: entityIds, aid: body.aid,
+      },
+    };
+  }
+
+  if (kind === 'span') {
+    // 拖选一段报问题：首末格位＋类别＋（可选）建议改法＋说明。建议改法与说明至少有一样，不然无从核
+    const { text_version: tv, start, end, sub } = body;
+    if (typeof tv !== 'string' || !RE_VERSION.test(tv)) return { error: 'text_version 无效', field: 'text_version' };
+    if (!checkAnchorCell(start)) return { error: 'start 不是合法格位（如 4:3:8a）', field: 'start' };
+    if (!checkAnchorCell(end)) return { error: 'end 不是合法格位（如 4:3:8a）', field: 'end' };
+    if (!SPAN_SUBS.includes(sub)) return { error: 'sub 无效', field: 'sub' };
+    const oldText = optText(body.old_text, SPAN_TEXT_MAX, 'old_text');
+    if (oldText.error) return { error: oldText.error, field: 'old_text' };
+    const newText = optText(body.new_text, SPAN_TEXT_MAX, 'new_text');
+    if (newText.error) return { error: newText.error, field: 'new_text' };
+    const note = optText(body.note, NOTE_MAX, 'note');
+    if (note.error) return { error: note.error, field: 'note' };
+    if (!newText.value && !note.value) return { error: '建议改法与说明至少填一项', field: 'note' };
+    if (newText.value && newText.value === oldText.value) return { error: '建议改法与原文相同', field: 'new_text' };
+    return {
+      value: {
+        kind, book_id: book, volume, text_version: tv, start, end, sub,
+        old_text: oldText.value, new_text: newText.value, note: note.value, aid: body.aid,
       },
     };
   }
@@ -162,7 +190,9 @@ export async function onRequestPost(context) {
     const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
     const key = rest.kind === 'char'
       ? `cf:${rest.book_id}:${rest.volume}:${rest.text_version}:${rest.cell_id}:${voter}`
-      : `ce:${rest.book_id}:${rest.volume}:${rest.entity_id}:${voter}`;
+      : rest.kind === 'span'
+        ? `cs:${rest.book_id}:${rest.volume}:${rest.text_version}:${rest.start}-${rest.end}:${rest.sub}:${voter}`
+        : `ce:${rest.book_id}:${rest.volume}:${rest.entity_id}:${voter}`;
     await kv.put(key, JSON.stringify({ v: 1, ...rest, voter, ts: Date.now() }), { expirationTtl: TTL_SECONDS });
     return json(headers, 200, { success: true });
   } catch (e) {
@@ -171,7 +201,9 @@ export async function onRequestPost(context) {
   }
 }
 
-/** 管理读：?book=<book>[&kind=char|entity][&volume=<册>[&text_version=<版>]][&limit=<=256>][&cursor=] */
+const KIND_PREFIX = { char: 'cf', entity: 'ce', span: 'cs' };
+
+/** 管理读：?book=<book>[&kind=char|entity|span][&volume=<册>[&text_version=<版>]][&limit=<=256>][&cursor=] */
 export async function onRequestGet(context) {
   const headers = { ...getCorsHeaders(context.request), 'Cache-Control': 'no-store' };
   try {
@@ -186,17 +218,17 @@ export async function onRequestGet(context) {
     const book = url.searchParams.get('book') || '';
     if (!RE_BOOK.test(book)) return json(headers, 400, { success: false, error: 'book 必填' });
     const kind = url.searchParams.get('kind') || 'char';
-    if (kind !== 'char' && kind !== 'entity') return json(headers, 400, { success: false, error: 'kind 无效' });
+    if (!Object.prototype.hasOwnProperty.call(KIND_PREFIX, kind)) return json(headers, 400, { success: false, error: 'kind 无效' });
     const volume = url.searchParams.get('volume') || '';
     if (volume && !RE_VOL.test(volume)) return json(headers, 400, { success: false, error: 'volume 无效' });
     const tv = url.searchParams.get('text_version') || '';
-    if (tv && (kind !== 'char' || !volume || !RE_VERSION.test(tv))) return json(headers, 400, { success: false, error: 'text_version 只能与 volume 一起用于 kind=char' });
+    if (tv && (kind === 'entity' || !volume || !RE_VERSION.test(tv))) return json(headers, 400, { success: false, error: 'text_version 只能与 volume 一起用于 kind=char／span' });
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 
-    const prefix = `${kind === 'char' ? 'cf' : 'ce'}:${book}:${volume ? `${volume}:` : ''}${tv ? `${tv}:` : ''}`;
+    const prefix = `${KIND_PREFIX[kind]}:${book}:${volume ? `${volume}:` : ''}${tv ? `${tv}:` : ''}`;
     const opts = { prefix, limit };
     if (cursor) opts.cursor = cursor;
     const r = await kv.list(opts);

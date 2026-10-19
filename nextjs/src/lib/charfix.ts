@@ -191,3 +191,61 @@ export async function submitEntityFix(ctx: CharFixCtx, d: { entity: CharFixEntit
         aid: getAid(),
     }, fetchImpl, t);
 }
+
+/** 拖选一段报问题（kind=span）：类别与接口 SPAN_SUBS 同序。错字 缺字 多字 次序 标点 分段 标题 小注 专名 其他 */
+export const SPAN_SUBS = ['wrong', 'missing', 'extra', 'order', 'punct', 'para', 'heading', 'note', 'entity', 'other'] as const;
+export type SpanSub = (typeof SPAN_SUBS)[number];
+export const SPAN_TEXT_MAX = 64;
+
+/** 选区落在的对读字：首末格位与这段原字（按 char.json，不取 DOM 文字）。选区里没有对读字就是 null */
+export interface SpanSel {
+    start: string;
+    end: string;
+    /** 选区里的原字，按读序连起来；超过 SPAN_TEXT_MAX 截断 */
+    text: string;
+    /** 选区覆盖的字数 */
+    count: number;
+}
+
+/**
+ * 选区 → 首末格位。只认 root 里带 data-char-id 的字 span，按文档序取第一个与最后一个；
+ * 同一格位出现多次（对读版面左右两栏）只算一次。
+ */
+export function spanOfRange(range: Range, root: HTMLElement, chars: Map<string, string>): SpanSel | null {
+    const ids: string[] = [];
+    const seen = new Set<string>();
+    for (const el of Array.from(root.querySelectorAll('[data-char-id]'))) {
+        if (!range.intersectsNode(el)) continue;
+        const id = el.getAttribute('data-char-id');
+        if (!id || !CELL_RE.test(id) || seen.has(id)) continue;
+        seen.add(id);
+        ids.push(id);
+    }
+    if (ids.length === 0) return null;
+    const text = Array.from(ids.map((id) => chars.get(id) ?? '').join('')).slice(0, SPAN_TEXT_MAX).join('');
+    return { start: ids[0], end: ids[ids.length - 1], text, count: ids.length };
+}
+
+export interface SpanFixDraft {
+    span: SpanSel;
+    sub: SpanSub;
+    newText: string;
+    note: string;
+}
+
+/** 提交一条「这段有问题」（kind=span）。失败返回错误文案，成功返回 null。不抛 */
+export async function submitSpanFix(ctx: CharFixCtx, d: SpanFixDraft, fetchImpl: typeof fetch = fetch, t: SiteT = HANT): Promise<string | null> {
+    return post({
+        kind: 'span',
+        book_id: ctx.book,
+        volume: ctx.volume,
+        text_version: ctx.textVersion,
+        start: d.span.start,
+        end: d.span.end,
+        sub: d.sub,
+        ...(d.span.text ? { old_text: d.span.text } : {}),
+        ...(d.newText ? { new_text: d.newText } : {}),
+        ...(d.note ? { note: d.note } : {}),
+        aid: getAid(),
+    }, fetchImpl, t);
+}

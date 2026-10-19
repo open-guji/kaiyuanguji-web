@@ -235,6 +235,59 @@ describe('GET 管理读', () => {
     });
 });
 
+describe('一段有问题 POST／GET（kind=span）', () => {
+    const span = {
+        kind: 'span', book_id: 'd59f2870u874', volume: '002', text_version: '1.0.1', start: '4:3:8', end: '4:3:10a', sub: 'missing',
+        old_text: '全總目', new_text: '全書總目', note: '漏「書」字', aid: 'aid_abcdefgh1234',
+    };
+
+    it('写入 cs:<book>:<volume>:<text_version>:<start>-<end>:<sub>:<voter>，值不含 aid 与 IP', async () => {
+        const res = await fn.onRequestPost(post(span));
+        expect(res.status).toBe(200);
+        const keys = keysOf('cs:');
+        expect(keys).toHaveLength(1);
+        expect(keys[0]).toMatch(/^cs:d59f2870u874:002:1\.0\.1:4:3:8-4:3:10a:missing:[0-9a-f]{16}$/);
+        const rec = JSON.parse(store.get(keys[0])!);
+        expect(rec).toMatchObject({ v: 1, kind: 'span', start: '4:3:8', end: '4:3:10a', sub: 'missing', old_text: '全總目', new_text: '全書總目', note: '漏「書」字' });
+        expect(JSON.stringify(rec)).not.toContain('aid_abcdefgh1234');
+        // 同来源同段同类覆盖；换类新增
+        await fn.onRequestPost(post({ ...span, note: '改了' }));
+        expect(keysOf('cs:')).toHaveLength(1);
+        await fn.onRequestPost(post({ ...span, sub: 'punct', new_text: '' }));
+        expect(keysOf('cs:')).toHaveLength(2);
+    });
+
+    it('应作与说明至少一项；应作不能等于原文；类别、格位、版本不合法都 400，并给出 field', async () => {
+        const bad = async (b: Record<string, unknown>, field?: string) => {
+            const res = await fn.onRequestPost(post(b));
+            expect(res.status).toBe(400);
+            if (field) expect((await json(res)).field).toBe(field);
+        };
+        await bad({ ...span, new_text: '', note: '' }, 'note');
+        await bad({ ...span, new_text: '全總目' }, 'new_text');
+        await bad({ ...span, sub: 'x' }, 'sub');
+        await bad({ ...span, sub: '__proto__' }, 'sub');
+        await bad({ ...span, start: '4:3' }, 'start');
+        await bad({ ...span, end: '4:3:8c' }, 'end');
+        await bad({ ...span, text_version: '' }, 'text_version');
+        await bad({ ...span, new_text: 'x'.repeat(65) }, 'new_text');
+        await bad({ ...span, note: 'x'.repeat(501) }, 'note');
+        expect(keysOf('cs:')).toHaveLength(0);
+        // 只填说明、不填应作可以
+        expect((await fn.onRequestPost(post({ ...span, new_text: undefined }))).status).toBe(200);
+    });
+
+    it('管理读 kind=span 按 cs: 前缀列，可带 volume／text_version；kind=__proto__ 拒', async () => {
+        await fn.onRequestPost(post(span));
+        await fn.onRequestPost(post(fix));
+        const r = await json(await fn.onRequestGet(get('book=d59f2870u874&kind=span&volume=002&text_version=1.0.1', ADMIN)));
+        expect(r.items).toHaveLength(1);
+        expect(listCalls[listCalls.length - 1].prefix).toBe('cs:d59f2870u874:002:1.0.1:');
+        expect((await fn.onRequestGet(get('book=d59f2870u874&kind=__proto__', ADMIN))).status).toBe(400);
+        expect((await fn.onRequestGet(get('book=d59f2870u874&kind=entity&volume=002&text_version=1.0.1', ADMIN))).status).toBe(400);
+    });
+});
+
 describe('isNewChar', () => {
     it('导出供前端同口径校验', () => {
         expect(fn.isNewChar('于')).toBe(true);

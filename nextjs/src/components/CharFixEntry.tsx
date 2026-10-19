@@ -133,7 +133,7 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
 }
 
 /** 两个弹窗共用：Esc 关、提交中／已收到、错误文案 */
-function useDialog(onClose: () => void) {
+export function useDialog(onClose: () => void) {
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
     const [error, setError] = useState('');
     useEffect(() => {
@@ -151,7 +151,7 @@ function useDialog(onClose: () => void) {
     return { status, error, run };
 }
 
-function DialogFrame({ t, title, titleId, onClose, done, children }: { t: SiteT; title: string; titleId: string; onClose: () => void; done: string | null; children: React.ReactNode }) {
+export function DialogFrame({ t, title, titleId, onClose, done, children }: { t: SiteT; title: string; titleId: string; onClose: () => void; done: string | null; children: React.ReactNode }) {
     return (
         <div className="og-fb-mask" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
             <div className="og-fb-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
