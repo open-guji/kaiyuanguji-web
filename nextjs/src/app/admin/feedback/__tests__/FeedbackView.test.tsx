@@ -262,3 +262,20 @@ describe('标记已改（G4）', () => {
         expect(screen.queryByRole('button', { name: '标记已改' })).not.toBeInTheDocument();
     });
 });
+
+describe('截断提示（M11·B1）', () => {
+    it('翻页到上限仍有下一页：提示「只取到了最新的 N 条，更早的没有显示」（后端从新到旧取）', async () => {
+        let n = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (global as any).fetch = jest.fn(async () => {
+            n += 1;
+            const item = { ...ITEMS[0], id: `fb_${n}_t`, content: `第${n}页` };
+            return { ok: true, json: async () => ({ success: true, items: [item], hasMore: true, cursor: `c${n}` }) };
+        });
+        render(<FeedbackView />);
+        await waitFor(() => expect(screen.getByText(/记录过多/)).toBeInTheDocument());
+        const note = screen.getByText(/记录过多/);
+        expect(note).toHaveTextContent(`只取到了最新的 ${n} 条，更早的记录没有显示`);
+        expect(note.textContent).not.toMatch(/最旧/);
+    });
+});

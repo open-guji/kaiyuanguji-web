@@ -2715,6 +2715,11 @@
     color: var(--color-ink-2);
     font-size: var(--fs-base);
   }
+  /* 通往整册文字意见页（/feedback/text）的一行小字入口 */
+  .og-fb-page-head p.og-fb-text-entry {
+    margin-top: 6px;
+    font-size: var(--fs-sm);
+  }
   /* 类型页签在左、「显示已处理」勾选框在右（overview#337 C1）；窄屏放不下就折到下一行 */
   .og-fb-filter {
     display: flex;
