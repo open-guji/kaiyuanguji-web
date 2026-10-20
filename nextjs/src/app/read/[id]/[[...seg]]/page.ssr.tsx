@@ -243,17 +243,23 @@ function startLeadHead(id: string, s: Loaded): Promise<{ text: string; truncated
  * 地址与浏览器端 cos-storage 的 getTextFileLegacy 逐字一致（current/ ＋ ?v=<版本键>）；h1 哈希寻址布局地址不同，不做。
  * 页面被 CDN 缓存期间数据换了版本，preload 的地址会对不上（白下一份），一小时内自愈，可接受。
  */
-async function duiduPreloadUrls(id: string, s: Loaded): Promise<string[]> {
+/** cord 只有书影栏的字框用，书影栏在窄屏（≤859px）收起：只在宽屏 preload（GUJI-700） */
+const WIDE_MEDIA = '(min-width: 860px)';
+
+async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; media?: string }[]> {
     if (process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed') return [];
     const { checked } = s;
     if (checked.status !== 'found' || !checked.version || !checked.chapter) return [];
     const meta = checked.index?.chapters.find((c) => c.file === checked.chapter) as (Record<string, unknown> & { file: string }) | undefined;
     if (!isDuiduChapterMeta(meta)) return [];
     const files = ['char_file', 'punct_file', 'cord_file', 'entity_file', 'norm_file']
-        .map((k) => meta![k])
-        .filter((f): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f));
-    const urls = await Promise.all(files.map((f) => getCurrentUrlServer(`items/${id}/${checked.version!.key}/${f}`).catch(() => null)));
-    return urls.filter((u): u is string => !!u);
+        .map((k) => ({ k, f: meta![k] }))
+        .filter((x): x is { k: string; f: string } => typeof x.f === 'string' && /^[\w.-]+$/.test(x.f));
+    const urls = await Promise.all(files.map(async ({ k, f }) => {
+        const href = await getCurrentUrlServer(`items/${id}/${checked.version!.key}/${f}`).catch(() => null);
+        return href ? { href, ...(k === 'cord_file' ? { media: WIDE_MEDIA } : {}) } : null;
+    }));
+    return urls.filter((u): u is { href: string; media?: string } => !!u);
 }
 
 /** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */
@@ -277,7 +283,7 @@ export default async function ReaderPage({ params }: Props) {
     if (s.noSiteText) return <NoSiteText id={id} title={s.title} />;
     const headP = startLeadHead(id, s);
     // React 19 把 <link rel="preload"> 提到 <head>
-    const preloads = await duiduPreloadUrls(id, s).catch(() => [] as string[]);
+    const preloads = await duiduPreloadUrls(id, s).catch(() => [] as { href: string; media?: string }[]);
     const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion } : {}) };
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
@@ -289,7 +295,7 @@ export default async function ReaderPage({ params }: Props) {
     return (
         <>
             <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
-            {preloads.map((href) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} />)}
+            {preloads.map(({ href, media }) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} media={media} />)}
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
             <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
         </>

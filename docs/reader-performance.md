@@ -92,11 +92,37 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 - 注意：网址带 `#页:列:格`、全文搜索 `?ft=` 定位、`ReaderLead` 卸载判据、`SelectionReport`／`CharFixEntry`、浏览器 Ctrl+F 都依赖 DOM 完整——锚点所在页要先渲染，全部批次完成前 Ctrl+F 可能找不全（可接受，几秒内补齐）。
 - **验收**：a 档最长任务 ≤ 200ms、b 档 ≤ 800ms、c 档 ≤ 1.2s；正文进入视口 b 档 ≤ 12s；上述依赖 DOM 的功能 e2e 全绿。
 
-### P1-2 数据：正文不等 cord，格式收紧（book-index-ui＋网站＋数据流水线）
-- 正文模式只等 char＋punct；cord 等书影要显示时再取（或按页拆）；entity 后到再补专名线。
-- cord／punct／entity 改紧凑列式格式（需改 guji-format 规范与 CV 产出，跨领域，先出设计）。
-- JSON 解析与 `adaptCharCord` 移到 Web Worker。
-- **验收**：b 档正文进入视口再降 ≥ 3s；手机档不下 cord。
+### P1-2 数据：正文不等 cord、阅读器专用派生文件（GUJI-700；book-index-ui＋网站＋网站数据打包）
+- **手机不取 cord**：手机端书影栏收起（读书影走底部抽屉里的普通图片，不用字框），cord（772K／解压 3.2MB，最大的单个文件）对它没用。
+  阅读页按视口取：窄屏只取 char／punct／entity／norm，cord 的 preload 也带 `media`；视口跨过断点（转横屏）再补取。
+- **阅读器专用派生文件**（设计，见下；不改 CV 产出与 guji-format 规范，由网站数据打包生成）。
+- Worker 解析：派生文件落地后再评估。结构化克隆回主线程的开销与 JSON 解析同量级，先瘦身收益更确定。
+- **验收**：手机档不下 cord；派生文件落地后样本章对读数据解压 ≤ 2MB、首帧 JSON 解析 ≤ 30ms（桌面）。
+
+#### 设计：阅读器专用派生文件（2026-10-20 草案）
+
+**问题**：网站直接读 CV 产出的真源文件，大量字段阅读器用不到（样本章 002 实测）：
+
+| 文件 | 解压 | 阅读器用不到的 | 占比 |
+|---|---|---|---|
+| cord | 3.25MB | 每页 `producers`／`marks`／`regions`／`columns`（0.75MB）、每格 `id`（0.58MB）、格位键 `a`（0.43MB，可由 char 读序对齐） | ~55% |
+| punct | 1.44MB | `source`（0.21MB）、`char_offset`（0.14MB）、对象键名重复 | ~40% |
+| entity | 1.51MB | `target.href`、`span`、`source`、`target.status`（非 matched 时才有意义）、键名重复 | ~50% |
+| char | 1.46MB | 每格 `{"a":…,"c":…}` 的键名与格位键（列内格号多数连续） | ~60% |
+
+**做法**：网站数据打包（把 book-text 文本同步到 COS 的那一步）按章额外生成两个派生文件，写进版本目录，并在同步上去的 `index.json` 章条目里加声明：
+- `NNN.reader.json`（`reader_file`）：char＋punct＋entity＋norm 合成一份——
+  - 字：每列 `c` 为字数组，格号连续时不带格位键，只在不连续／有子列（夹注 a/b）时带；`lane`／`lacuna`／`guess`／`zi`、列的 `raised`／`lead_blank`／`kind`、页 `label` 稀疏携带；
+  - 标点：`[格位键, mark, kind?, pos?, label?, toc?]` 数组（`kind=point`、`pos=after` 缺省不写）；
+  - 专名：`{id, t: 类型, a: [起, 止], x: 原文, e: 条目 id, n: 规范名, g: 分组}`，非 matched 不带 `e`；
+  - 来源：`src` 记各真源文件的版本号与 sha256，可追溯、可校验。
+- `NNN.reader-cord.json`（`reader_cord_file`）：每页 `{page, seq, w, h, b}`，`b` 为按 char 读序排列的扁平整数框 `[x, y, w, h, …]`（缺框写 -1），不带格位键。
+
+**网站读法**：章条目有 `reader_file` 就只取它（＋宽屏时 `reader_cord_file`）；没有就照旧取真源五个文件——先上读法与回退，再随下一次数据发布生成派生文件，任何一步都不会读不到。
+
+**预期**（样本章）：对读数据解压 7.6MB → 约 1.5MB（br 传输约 1.2MB → 约 0.35MB），请求 5 个 → 2 个，首帧 JSON 解析约 85ms → 约 20ms。
+
+**待定**：派生脚本归网站数据打包（`nextjs/scripts/`）；生成逻辑需与 book-index-ui 的 `adaptCharCord`／`adaptPunctJson`／`adaptEntityJson` 同口径，用同一组样本章做往返一致性测试（派生 → 还原 → 与真源适配结果逐字段相等）。
 
 ### P1-3 字体
 - 生僻字字体自托管，按字细切（上百个小片）或服务端按章生成子集；加 preconnect。涉及 COS 上传与费用，先估成本再做。

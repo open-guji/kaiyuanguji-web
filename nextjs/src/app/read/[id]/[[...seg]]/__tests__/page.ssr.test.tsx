@@ -65,6 +65,8 @@ describe('对读章 preload（GUJI-631）', () => {
             'https://data.test/current/items/96mid1ogzk/default/002.cord.json?v=k1',
         ]);
         expect(links.every((l) => l.rel === 'preload' && l.as === 'fetch' && l.crossOrigin === 'anonymous')).toBe(true);
+        // cord 只在宽屏 preload（窄屏书影栏收起、不取 cord，GUJI-700）
+        expect(links.map((l) => l.media)).toEqual([undefined, undefined, '(min-width: 860px)']);
         expect(mockHead).not.toHaveBeenCalled();
     });
 
