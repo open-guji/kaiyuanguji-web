@@ -3,7 +3,7 @@
  */
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
+    parseExtras, whyLabel, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
 } from '../proofing';
@@ -219,6 +219,38 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(top.map(x => x.c)).toEqual(['己', '已', '巳']);
         expect(top[1].score).toBe(0.9);
         expect(more.map(x => x.c)).toEqual(['以']);
+    });
+
+    it('整理本字排第一、带来源，同字合并（GUJI-683）', () => {
+        const { top } = shownCandidates({
+            a: '1:1:1', ref: { c: '臼' }, cand: [{ c: '曰', src: ['lib'] }, { c: '臼', src: ['ocr'] }],
+            libTop: [{ c: '曰', s: 0.9 }, { c: '日', s: 0.8 }],
+        });
+        expect(top.map(x => x.c)).toEqual(['臼', '曰', '日']);
+        expect(top[0].src).toEqual(['ref', 'ocr']);
+        expect(top[1].score).toBe(0.9);
+        // ref 不是单个字（脏数据）就不当候选
+        expect(shownCandidates({ a: 'x', ref: { c: '臼曰' }, libTop: [{ c: '曰', s: 0.9 }] }).top.map(x => x.c)).toEqual(['曰']);
+    });
+
+    it('「看前后文」只是字形库首选的回声、或原因说上下文不可信时不显示；「看不出」照显示', () => {
+        const libTop = [{ c: '曰', s: 0.9 }];
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '曰' }, libTop })).toBe(false);
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '臼' }, libTop })).toBe(true);
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '臼' }, libTop, why: ['ctx_garble_shape'] })).toBe(false);
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '' }, libTop })).toBe(true);
+        expect(ctxWorthShowing({ a: 'x', libTop })).toBe(false);
+    });
+
+    it('阅读页横幅：总表列了按 n；取到总表却没列就不请；取不到总表才看 book-text 的待审单（GUJI-683）', () => {
+        const idx = { b1: { '001': { rev: 'r', n: 3 }, '002': { rev: 'r', n: 0 } } };
+        const ch = { file: '004.char.json', proofing: true };
+        expect(proofInvite(idx, 'b1', '001', ch)).toBe('yes');
+        expect(proofInvite(idx, 'b1', '002', ch)).toBe('no');
+        expect(proofInvite(idx, 'b1', '004', ch)).toBe('no');
+        expect(proofInvite(null, 'b1', '004', ch)).toBe('no');
+        expect(proofInvite(null, 'b1', '004', { ...ch, pending_file: '004.pending.json' })).toEqual({ pendingFile: '004.pending.json' });
+        expect(proofInvite(null, 'b1', '004', { file: '004.char.json', pending_file: '004.pending.json' })).toBe('no');
     });
 
     it('预勾：stale 预选其字，occ 预选「非字」，stale 优先；都只是预选', () => {
