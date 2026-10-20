@@ -103,6 +103,24 @@ describe('POST 校验', () => {
         expect(crKeys()).toHaveLength(0);
     });
 
+    it('选字来源 pick_src／pick_rank／pivot：合法的原样存；非法 400；非选字档带了不存；不带照常收', async () => {
+        const ok = await fn.onRequestPost(post({ ...base, choice: 'char', char: '弊', pick_src: 'alt', pick_rank: 3, pivot: '𡚁' }));
+        expect(ok.status).toBe(200);
+        const rec = JSON.parse(store.get(crKeys()[0])!);
+        expect(rec).toMatchObject({ choice: 'char', char: '弊', pick_src: 'alt', pick_rank: 3, pivot: '𡚁' });
+        for (const bad of [{ pick_src: 'zitools' }, { pick_src: 'alt', pick_rank: 0 }, { pick_src: 'alt', pick_rank: 1.5 }, { pick_src: 'alt', pick_rank: 100 }, { pick_src: 'alt', pivot: '弊病' }]) {
+            const res = await fn.onRequestPost(post({ ...base, a: '2:2:2', choice: 'char', char: '于', ...bad }));
+            expect(res.status).toBe(400);
+        }
+        await fn.onRequestPost(post({ ...base, a: '3:3:3', choice: 'none', pick_src: 'cand', pick_rank: 1 }));
+        const none = JSON.parse(store.get(crKeys().find((k) => k.includes(':3:3:3:'))!)!);
+        expect(none.pick_src).toBeUndefined();
+        expect(none.pick_rank).toBeUndefined();
+        await fn.onRequestPost(post({ ...base, a: '4:4:4', choice: 'char', char: '于' }));
+        const plain = JSON.parse(store.get(crKeys().find((k) => k.includes(':4:4:4:'))!)!);
+        expect(plain.pick_src).toBeUndefined();
+    });
+
     it('零宽字符、控制符、全角空格不算字', async () => {
         for (const ch of ['\u200b', '\u200d', '\ufeff', '\u007f', '\u0085', '\u3000']) {
             const res = await fn.onRequestPost(post({ ...base, choice: 'char', char: ch }));

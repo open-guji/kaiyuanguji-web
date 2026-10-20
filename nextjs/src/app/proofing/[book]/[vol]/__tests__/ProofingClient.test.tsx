@@ -151,7 +151,30 @@ describe('精校页显示（GUJI-557）', () => {
         expect(grid.querySelectorAll('button[aria-label^="选「"]')).toHaveLength(14);
         fireEvent.click(screen.getByRole('button', { name: `选「${alt[2].c}」` }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
-        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c });
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
+    });
+
+    it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」不带', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '未', cand: [{ c: '己' }, { c: '已' }] }]));
+        render(<ProofingClient book="b9" vol="vol01" />);
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        fireEvent.click(await screen.findByRole('button', { name: '已' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ char: '已', pick_src: 'cand', pick_rank: 2 });
+        fireEvent.click(screen.getByRole('button', { name: '未' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+        expect(body(1)).toMatchObject({ char: '未', pick_src: 'machine' });
+        expect(body(1).pick_rank).toBeUndefined();
+        fireEvent.change(screen.getByLabelText('另写一字'), { target: { value: '末' } });
+        fireEvent.click(screen.getByRole('button', { name: '提交这个字' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
+        expect(body(2)).toMatchObject({ char: '末', pick_src: 'custom' });
+        fireEvent.click(screen.getByRole('button', { name: '图上没有字' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(4));
+        expect(body(3).choice).toBe('none');
+        expect(body(3).pick_src).toBeUndefined();
     });
 
     it('相似字的字形图没传上去就只显示字；没有 alt 不渲染', async () => {

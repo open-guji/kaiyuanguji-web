@@ -527,6 +527,30 @@ export const CELLREVIEW_API = '/api/cellreview';
 
 export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu';
 
+/**
+ * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：
+ * cand 候选按钮、alt 相似字、machine 机器读字按钮、custom 自己写、preselect 确认预勾。
+ * 只用来量「相似字有没有用」，不影响落裁决。
+ */
+export type PickSrc = 'cand' | 'alt' | 'machine' | 'custom' | 'preselect';
+export interface Pick {
+    src: PickSrc;
+    /** 在那一排里排第几（从 1 起）；custom／preselect 没有 */
+    rank?: number;
+    /** 相似字从哪个近似字查来（alt 的 `p`） */
+    pivot?: string;
+}
+
+/** Pick → 提交字段（与控制台 confirm payload 同名：pick_src／pick_rank／pivot） */
+export function pickFields(pick?: Pick): { pick_src?: PickSrc; pick_rank?: number; pivot?: string } {
+    if (!pick) return {};
+    return {
+        pick_src: pick.src,
+        ...(pick.rank !== undefined && Number.isInteger(pick.rank) && pick.rank > 0 ? { pick_rank: pick.rank } : {}),
+        ...(pick.pivot && [...pick.pivot].length === 1 ? { pivot: pick.pivot } : {}),
+    };
+}
+
 export interface ReviewDraft {
     book: string;
     vol: string;
@@ -537,6 +561,10 @@ export interface ReviewDraft {
     note?: string;
     /** 提交时页面显示的机器读字 */
     shown?: string;
+    /** 选字从哪儿点来（见 Pick）；只有选字（char）才带 */
+    pick_src?: PickSrc;
+    pick_rank?: number;
+    pivot?: string;
 }
 
 /** 提交一条意见；失败返回错误文案，成功返回 null。不抛 */
