@@ -31,7 +31,15 @@ export interface ManifestVersion {
     license?: string | null;
 }
 export interface Manifest { id?: string; versions: ManifestVersion[] }
-export interface TextChapterMeta { n?: number; file: string; title?: string; has_json?: boolean }
+export interface TextChapterMeta { n?: number; file: string; title?: string; has_json?: boolean; char_file?: string; cord_file?: string }
+
+/**
+ * 对读章：同时声明了逐字文本与像素框（char_file＋cord_file），正文由对读数据排出，版本目录下没有 .txt
+ * （与 book-index-ui 的 isDuiduChapter 同一判据）。首屏预取与章首片段都不去取这个必然 404 的文件（GUJI-631）。
+ */
+export function isDuiduChapterMeta(c: TextChapterMeta | null | undefined): boolean {
+    return !!c && !c.has_json && typeof c.char_file === 'string' && !!c.char_file && typeof c.cord_file === 'string' && !!c.cord_file;
+}
 export interface TextIndexDoc { chapters: TextChapterMeta[] }
 
 export interface ReaderCheckResult {

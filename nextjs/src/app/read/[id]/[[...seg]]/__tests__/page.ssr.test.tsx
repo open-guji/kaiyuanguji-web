@@ -19,6 +19,7 @@ jest.mock('@/lib/server/item-data', () => ({
     getLatestServer: () => mockGetLatest(),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
+    getCurrentUrlServer: async (rel: string) => `https://data.test/current/${rel}?v=k1`,
 }));
 jest.mock('next/navigation', () => ({
     notFound: () => { throw new Error('NEXT_NOT_FOUND'); },
@@ -47,7 +48,32 @@ const FILES: Record<string, unknown> = {
     'items/d59f2evysmww/default/index.json': { chapters: [{ n: 1, file: '001', title: '伊尹' }] },
     [`items/${ZHIZHAI}/wikisource/index.json`]: { chapters: [{ n: 1, file: '001', title: '' }, { n: 2, file: '002', title: '卷二' }] },
     [`items/${ZHIZHAI}/kanripo/index.json`]: { chapters: [{ n: 1, file: '001', title: '卷一' }] },
+    // 对读章（char＋cord）：GUJI-631 preload
+    'items/96mid1ogzk/manifest.json': { id: '96mid1ogzk', versions: [{ key: 'default', kind: 'self_collated', label: '自校本' }] },
+    'items/96mid1ogzk/default/index.json': { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '../x.json' }] },
 };
+
+describe('对读章 preload（GUJI-631）', () => {
+    it('char／punct／cord 在页面里出 <link rel=preload as=fetch>，地址与浏览器端一致；不合规的文件名不出；不取 .txt', async () => {
+        mockHead.mockClear();
+        const tree = await pageTree(['002'], '96mid1ogzk');
+        const kids = ([] as El[]).concat(tree.props.children).flat() as El[];
+        const links = kids.filter((k) => k?.type === 'link').map((k) => k.props);
+        expect(links.map((l) => l.href)).toEqual([
+            'https://data.test/current/items/96mid1ogzk/default/002.char.json?v=k1',
+            'https://data.test/current/items/96mid1ogzk/default/002.punct.json?v=k1',
+            'https://data.test/current/items/96mid1ogzk/default/002.cord.json?v=k1',
+        ]);
+        expect(links.every((l) => l.rel === 'preload' && l.as === 'fetch' && l.crossOrigin === 'anonymous')).toBe(true);
+        expect(mockHead).not.toHaveBeenCalled();
+    });
+
+    it('非对读章不出 preload', async () => {
+        const tree = await pageTree(['002']);
+        const kids = ([] as El[]).concat(tree.props.children).flat() as El[];
+        expect(kids.filter((k) => k?.type === 'link')).toHaveLength(0);
+    });
+});
 
 async function meta(seg: string[] | undefined, id = ZHIZHAI) {
     const { generateMetadata } = await import('../page.ssr');

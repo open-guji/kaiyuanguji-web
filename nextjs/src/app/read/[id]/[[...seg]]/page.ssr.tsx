@@ -28,8 +28,8 @@ import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_L
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
-import { checkReader, type ReaderCheckResult } from '@/lib/server/reader-check';
+import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getCurrentUrlServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
+import { checkReader, isDuiduChapterMeta, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
@@ -230,7 +230,27 @@ function buildLead(id: string, s: Loaded, seed: ReaderSeed, head?: { text: strin
 function startLeadHead(id: string, s: Loaded): Promise<{ text: string; truncated: boolean } | null> {
     const { checked } = s;
     if (checked.status !== 'found' || !checked.version || !checked.chapter) return Promise.resolve(null);
+    if (isDuiduChapterMeta(checked.index?.chapters.find((c) => c.file === checked.chapter))) return Promise.resolve(null);
     return getCurrentTextHeadServer(`items/${id}/${checked.version.key}/${checked.chapter}.txt`).catch(() => null);
+}
+
+/**
+ * 对读章的数据文件（char／punct／cord／entity／norm）在 <head> 里 preload（GUJI-631）：
+ * 原先要等 JS 下完、阅读器挂上才发这几个请求（慢网下 JS 要 5 秒以上），preload 让它们与 JS 并行下载。
+ * 地址与浏览器端 cos-storage 的 getTextFileLegacy 逐字一致（current/ ＋ ?v=<版本键>）；h1 哈希寻址布局地址不同，不做。
+ * 页面被 CDN 缓存期间数据换了版本，preload 的地址会对不上（白下一份），一小时内自愈，可接受。
+ */
+async function duiduPreloadUrls(id: string, s: Loaded): Promise<string[]> {
+    if (process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed') return [];
+    const { checked } = s;
+    if (checked.status !== 'found' || !checked.version || !checked.chapter) return [];
+    const meta = checked.index?.chapters.find((c) => c.file === checked.chapter) as (Record<string, unknown> & { file: string }) | undefined;
+    if (!isDuiduChapterMeta(meta)) return [];
+    const files = ['char_file', 'punct_file', 'cord_file', 'entity_file', 'norm_file']
+        .map((k) => meta![k])
+        .filter((f): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f));
+    const urls = await Promise.all(files.map((f) => getCurrentUrlServer(`items/${id}/${checked.version!.key}/${f}`).catch(() => null)));
+    return urls.filter((u): u is string => !!u);
 }
 
 /** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */
@@ -253,6 +273,8 @@ export default async function ReaderPage({ params }: Props) {
     if (!s) notFound();
     if (s.noSiteText) return <NoSiteText id={id} title={s.title} />;
     const headP = startLeadHead(id, s);
+    // React 19 把 <link rel="preload"> 提到 <head>
+    const preloads = await duiduPreloadUrls(id, s).catch(() => [] as string[]);
     const seed = await timed(s.timing, 'preload', preload(id, s));
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
@@ -264,6 +286,7 @@ export default async function ReaderPage({ params }: Props) {
     return (
         <>
             <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
+            {preloads.map((href) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} />)}
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
             <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
         </>

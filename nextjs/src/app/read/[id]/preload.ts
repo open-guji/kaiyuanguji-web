@@ -5,7 +5,7 @@
  * 这里直接用，只多取首章正文（与章 json）一次。任何一步取不到就少放一项，不抛错：
  * 首屏数据只是提速，缺了阅读器会自己去取。
  */
-import type { ReaderCheckResult } from '@/lib/server/reader-check';
+import { isDuiduChapterMeta, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { seedCallKey, type ReaderSeed } from './reader-seed';
 
 export type GetCurrentText = (relPath: string, maxBytes?: number) => Promise<string | null>;
@@ -34,8 +34,10 @@ export async function preloadReader(id: string, checked: ReaderCheckResult, getJ
         [seedCallKey('getTextManifest', id)]: checked.manifest,
         [seedCallKey('getTextIndex', id, key)]: checked.index,
     };
+    const meta = checked.index.chapters.find((c) => c.file === chapter);
+    // 对读章没有 .txt：不取（原先每次都等一个 404，约 0.3s）
+    if (isDuiduChapterMeta(meta)) return { calls };
     try {
-        const meta = checked.index.chapters.find((c) => c.file === chapter);
         const base = `items/${id}/${key}/${chapter}`;
         const [md, json] = await Promise.all([
             orNull(getText(`${base}.txt`, SEED_TEXT_MAX)),

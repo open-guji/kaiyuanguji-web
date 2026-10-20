@@ -284,6 +284,12 @@ describe('网络错与 5xx 原地重试一次（overview#322：冷渲染时的�
         expect(bad.calls.filter((u) => u.includes('manifest.json'))).toHaveLength(3);
     });
 
+    it('currentUrl：浏览器端同一个地址（current/ ＋ ?v=<版本键>，cacheKey 优先），给阅读页 preload 用（GUJI-631）', async () => {
+        const { fn } = flaky({ [`${BASE}/latest.json`]: [{ commitId: 'c0ffee', cacheKey: 'k123' }] });
+        const f = createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 });
+        expect(await f.currentUrl('items/x/default/002.char.json')).toBe(`${BASE}/current/items/x/default/002.char.json?v=k123`);
+    });
+
     it('404 不重试（确定没有）；retries: 0（中间件）不重试', async () => {
         const nf = flaky({ [`${BASE}/latest.json`]: [{ commitId: 'c' }] });
         const f = createItemFetcher({ base: BASE, fetch: nf.fn as never, retryDelayMs: 0 });

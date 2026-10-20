@@ -29,6 +29,22 @@ function store(json: Record<string, unknown>, text: Record<string, string> = {})
 }
 
 describe('preloadReader', () => {
+    it('对读章（声明了 char_file＋cord_file）：不取 .txt（必然 404），只给 manifest 与目录（GUJI-631）', async () => {
+        const index = { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json' }] };
+        const { getJson, getText } = store({});
+        const seed = await preloadReader(ID, found({ index, chapter: '002' }), getJson, getText);
+        expect(getText).not.toHaveBeenCalled();
+        expect(seed.calls![seedCallKey('getChapter', ID, 'default', '002')]).toBeUndefined();
+        expect(seed.calls![seedCallKey('getTextIndex', ID, 'default')]).toBe(index);
+    });
+
+    it('只有 char_file 没有 cord_file 的章仍取 .txt（没有对读版面时靠它显示正文）', async () => {
+        const index = { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json' }] };
+        const { getJson, getText } = store({}, { [`items/${ID}/default/002.txt`]: '正文' });
+        const seed = await preloadReader(ID, found({ index, chapter: '002' }), getJson, getText);
+        expect(seed.calls![seedCallKey('getChapter', ID, 'default', '002')]).toEqual({ md: '正文', json: null });
+    });
+
     it('有章 json 的章：manifest、目录、{ md, json } 三项', async () => {
         const { getJson, getText } = store({ [`items/${ID}/default/001.json`]: { title: '經錄', sections: [] } }, { [`items/${ID}/default/001.txt`]: '經錄正文' });
         const seed = await preloadReader(ID, found(), getJson, getText);
