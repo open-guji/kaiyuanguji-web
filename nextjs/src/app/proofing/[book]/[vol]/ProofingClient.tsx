@@ -26,12 +26,21 @@ const BOOK_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 // 「jiazhu」下游写的是「小注被当成正文切了」的切分缺陷（web_opinions.py），所以按钮照这个意思写，
 // 别让读者在真正的夹注格上点它表示「对，这是夹注」（GUJI-683，调研 A C1）
-const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; title: string }[] = [
-    { choice: 'none', label: '图上没有字', title: '这一格是空白、污点、框线或印章，不是字' },
-    { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了' },
-    { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字' },
-    { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了' },
+const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; title: string; key: string }[] = [
+    { choice: 'none', label: '图上没有字', title: '这一格是空白、污点、框线或印章，不是字（快捷键 n）', key: 'n' },
+    { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了（快捷键 u）', key: 'u' },
+    { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以先写在「另写一字」框里（快捷键 c）', key: 'c' },
+    { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了（快捷键 z）', key: 'z' },
 ];
+
+/**
+ * 快捷键（与控制台定字卡同一套，调研 A D1）：1–9 选当前卡的第几个候选，n／u／c／z 四档，j／k 下一张／上一张。
+ * 输入框里打字时不触发。按键落到「当前选中的卡」上带 data-hotkey 的按钮，等于点它。
+ */
+export function hotkeyTarget(key: string): string | null {
+    if (/^[1-9]$/.test(key)) return key;
+    return OTHER_CHOICES.some(o => o.key === key) ? key : null;
+}
 
 /** 按钮外观：都有边框和底色，一眼看得出能点；选中的绿框绿底 */
 type BtnKind = 'cand' | 'act' | 'primary' | 'small';
@@ -120,12 +129,12 @@ interface CellRowProps {
 // 向下取整：0.997 写 99%，不写成 100% 让人以为机器很有把握
 const pct = (n: number) => `${Math.floor(n * 100)}%`;
 
-function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
+function CandButton({ cd, busy, picked, onPick, hotkey }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void; hotkey?: string }) {
     const fromRef = cd.src?.includes('ref');
     const tip = [fromRef ? `整理本这里作「${cd.c}」` : '', cd.score !== undefined ? `和本书别处的「${cd.c}」字形相似 ${pct(cd.score)}` : ''].filter(Boolean).join('；') || `选「${cd.c}」`;
     return (
-        <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
-            style={btnStyle('cand', picked, busy)}>
+        <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={hotkey ? `${tip}（快捷键 ${hotkey}）` : tip} className={BTN_CLASS}
+            data-hotkey={hotkey} style={btnStyle('cand', picked, busy)}>
             {cd.c}
             {fromRef && <small data-testid="cand-ref" style={{ fontSize: 11, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>整理本</small>}
             {cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
@@ -237,7 +246,7 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
                     <b style={{ fontSize: 18 }}>{ch}</b>
                     {list.map((sp, i) => (
                         <div key={i} role="img" aria-label={`「${ch}」例 ${i + 1}`}
-                            style={{ width: sp.w, height: sp.h, zoom: 0.5, border: '1px solid #ddd', background: `#fff url(${spriteBase(sp.s)}) -${sp.x}px -${sp.y}px no-repeat` }} />
+                            style={{ width: sp.w, height: sp.h, border: '1px solid #ddd', background: `#fff url(${spriteBase(sp.s)}) -${sp.x}px -${sp.y}px no-repeat` }} />
                     ))}
                 </div>
             ))}
@@ -335,8 +344,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: i + 1 })} />)}
-                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: top.length + i + 1 })} />)}
+                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: i + 1 })} />)}
+                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: top.length + i + 1 })} />)}
                 {more.length > 0 && (
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
@@ -359,7 +368,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} onClick={() => go(o.choice)} className={BTN_CLASS}
+                    <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} data-hotkey={o.key}
+                        // 切分错了也能同时给字：「另写一字」框里有一个字就一起带上（控制台同口径，调研 A C2）
+                        onClick={() => go(o.choice, o.choice === 'cut' && [...custom].length === 1 ? custom : undefined)} className={BTN_CLASS}
                         title={o.title} style={btnStyle('act', (preNone && o.choice === 'none') || done === o.label, busy)}>{o.label}</button>
                 ))}
             </div>
@@ -532,6 +543,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [done, setDone] = useState<DoneMap>({});
     const [page, setPage] = useState(0);
     const [sel, setSel] = useState<string | null>(null);
+    const [onlyOpen, setOnlyOpen] = useState(false);
     const [panelOpen, setPanelOpen] = useState(true);
     const [chapterTitle, setChapterTitle] = useState<string | undefined>(undefined);
     const [versionKey, setVersionKey] = useState<string | undefined>(undefined);
@@ -598,6 +610,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             writeDone(rev, next);
             return next;
         });
+        setAdvanceFrom(cell.a);          // 回应完自动跳到下一张没回应的（调研 A D1）
         return null;
     }, [book, vol, rev]);
 
@@ -607,7 +620,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         for (const c of cells) m.set(c.cls ?? 'other', (m.get(c.cls ?? 'other') ?? 0) + 1);
         return [...m.entries()];
     }, [cells]);
-    const shown = useMemo(() => (clsFilter ? cells.filter(c => (c.cls ?? 'other') === clsFilter) : cells), [cells, clsFilter]);
+    // 「只看未回应」：已回应的格在本次翻看中先不显示（回应过的格不会因此消失，关掉就回来）
+    const shown = useMemo(() => cells.filter(c => (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !done[c.a])),
+        [cells, clsFilter, onlyOpen, done]);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
     const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
@@ -623,6 +638,46 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             return cr ? [{ a: c.a, box: cr.box }] : [];
         });
     }, [cells, cord, selPageNo]);
+
+    const goTo = useCallback((a: string) => {
+        const idx = shown.findIndex(c => c.a === a);
+        if (idx < 0) return;
+        setPage(Math.floor(idx / PAGE_SIZE));
+        setSel(a);
+        setTimeout(() => document.getElementById(`cell-${a}`)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 0);
+    }, [shown]);
+
+    // 回应后跳到下一张还没回应的卡；后面都回应过了就留在原地
+    const [advanceFrom, setAdvanceFrom] = useState<string | null>(null);
+    useEffect(() => {
+        if (!advanceFrom) return;
+        setAdvanceFrom(null);
+        const all = cells.filter(c => !clsFilter || (c.cls ?? 'other') === clsFilter);
+        const i = all.findIndex(c => c.a === advanceFrom);
+        const next = all.slice(i + 1).find(c => !done[c.a]);
+        if (next && shown.some(c => c.a === next.a)) goTo(next.a);
+    }, [advanceFrom, cells, clsFilter, done, shown, goTo]);
+
+    // 快捷键：输入框里不触发；1–9／n／u／c／z 点当前卡上对应的按钮，j／k 换卡
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (e.ctrlKey || e.metaKey || e.altKey || (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable))) return;
+            if (!selected) return;
+            if (e.key === 'j' || e.key === 'k') {
+                const i = shown.findIndex(c => c.a === selected);
+                const nb = shown[i + (e.key === 'j' ? 1 : -1)];
+                if (nb) { e.preventDefault(); goTo(nb.a); }
+                return;
+            }
+            const hk = hotkeyTarget(e.key);
+            if (!hk) return;
+            const btn = document.getElementById(`cell-${selected}`)?.querySelector<HTMLButtonElement>(`button[data-hotkey="${hk}"]`);
+            if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [selected, shown, goTo]);
 
     // 在整页上点了别的待审格：翻到它所在的那一页卡片并滚过去
     const selectFromPage = useCallback((a: string) => {
@@ -664,6 +719,13 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                         </div>
                     </aside>
                     <div className="min-w-0 lg:flex-1">
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#666' }}>
+                            <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); setPage(0); }} data-testid="only-open" />
+                                只看还没回应的
+                            </label>
+                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，j／k 下一张／上一张</span>
+                        </div>
                         {classCounts.length > 1 && (
                             <div data-testid="class-filter" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                                 <button type="button" aria-pressed={!clsFilter} onClick={() => { setClsFilter(null); setPage(0); }} className={BTN_CLASS} style={btnStyle('small', !clsFilter)}>全部 {cells.length}</button>
