@@ -85,21 +85,23 @@ export function loadDuiduFiles(
     const cordFile = opts?.cord === false ? null : declaredCord;
     const cordSkipped = !!declaredCord && !cordFile;
     if (!charFile) return Promise.resolve(null);
-    // 阅读器瘦身副本（`reader_cord_file`／`reader_punct_file`，数据打包时生成）：有就先取它，取不到回落原文件
+    // 阅读器瘦身副本（`reader_*_file`，数据打包时生成）：有就先取它，取不到回落原文件
+    const readerChar = fileField(ch, 'reader_char_file');
     const readerCord = cordFile ? fileField(ch, 'reader_cord_file') : null;
     const punctFile = fileField(ch, 'punct_file');
     const readerPunct = punctFile ? fileField(ch, 'reader_punct_file') : null;
     const entityFile = fileField(ch, 'entity_file');
+    const readerEntity = entityFile ? fileField(ch, 'reader_entity_file') : null;
     const normFile = fileField(ch, 'norm_file');
-    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
+    const cacheKey = `${id}/${key}/${charFile}|${readerChar ?? ''}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${readerEntity ?? ''}|${normFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
             const [char, cord, punct, entity, norm] = await Promise.all([
-                getJson(storage, id, key, charFile),
+                getPreferred(storage, id, key, readerChar, charFile),
                 cordFile ? getPreferred(storage, id, key, readerCord, cordFile) : null,
                 punctFile ? getPreferred(storage, id, key, readerPunct, punctFile) : null,
-                entityFile ? getJson(storage, id, key, entityFile) : null,
+                entityFile ? getPreferred(storage, id, key, readerEntity, entityFile) : null,
                 normFile ? getJson(storage, id, key, normFile) : null,
             ]);
             // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null

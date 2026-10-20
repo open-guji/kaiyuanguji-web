@@ -10,8 +10,8 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { adaptCharCord, adaptPunctJson, iiifVolumeOf } from 'book-index-ui';
-import { buildItemReaderFiles, READER_CORD_SUFFIX, READER_PUNCT_SUFFIX, slimCord, slimPunct } from './reader-files.mjs';
+import { adaptCharCord, adaptEntityJson, adaptPunctJson, iiifVolumeOf } from 'book-index-ui';
+import { buildItemReaderFiles, READER_CHAR_SUFFIX, READER_CORD_SUFFIX, READER_ENTITY_SUFFIX, READER_PUNCT_SUFFIX, slimChar, slimCord, slimEntity, slimPunct } from './reader-files.mjs';
 
 const canvas = (n) => ({ id: `https://data.test/iiif/bk/canvas/02/${n}`, seq: n, width: 1000, height: 1400 });
 const CHAR = {
@@ -40,6 +40,31 @@ const PUNCT = {
     ],
 };
 
+const ENTITY = {
+    version: '1.10.0', text_version: '1.0.1', book_id: 'bk', volume: 2, metadata: { creator: 'x' }, stats: { total_entities: 3 },
+    entities: [
+        { id: 'e1', type: 'people', text: '王弼', anchor: { start: '3:1:1', end: '3:1:2' }, span: { start_offset: 0, end_offset: 2 },
+          target: { status: 'matched', entity_id: 'hixhd2h9bne6', canonical_name: '王弼', href: 'book-index://Entity/hixhd2h9bne6' }, source: '补标:N8' },
+        { id: 'e2', type: 'works', text: '庫', anchor: { start: '4:1:1b', end: '4:1:1b' }, span: { start_offset: 3, end_offset: 4 },
+          target: { status: 'matched', href: 'book-index://Entity/abcdefgh1234' }, source: 'glm', group: 'g1' },
+        { id: 'e3', type: 'places', text: '四', anchor: { start: '4:1:1a', end: '4:1:1a' }, span: { start_offset: 2, end_offset: 3 },
+          target: { status: 'new_candidate', confidence: 0.4, note: 'n' }, source: 'glm' },
+    ],
+};
+
+test('entity 副本：adaptEntityJson 结果相同；source／metadata／stats 去掉，有 entity_id 时去掉 href，顶层 version 留着', () => {
+    const slim = slimEntity(ENTITY);
+    assert.deepEqual(adaptEntityJson(slim), adaptEntityJson(ENTITY));
+    assert.deepEqual(Object.keys(slim).sort(), ['book_id', 'entities', 'text_version', 'version', 'volume']);
+    assert.ok(!JSON.stringify(slim).includes('source'));
+    assert.equal(slim.entities[0].target.href, undefined);
+    assert.equal(slim.entities[1].target.href, 'book-index://Entity/abcdefgh1234'); // 没有 entity_id 时靠 href 兜底
+});
+
+test('char 副本：内容与原文件相同', () => {
+    assert.deepEqual(slimChar(CHAR), CHAR);
+});
+
 test('cord 副本：adaptCharCord 与 iiifVolumeOf 结果与原文件相同，用不到的字段都去掉', () => {
     const slim = slimCord(CORD);
     assert.deepEqual(adaptCharCord(CHAR, slim), adaptCharCord(CHAR, CORD));
@@ -62,18 +87,26 @@ test('打包：对读章写副本并记进 index.json，非对读章不动；源
     const dir = join(item, 'default');
     mkdirSync(dir);
     writeFileSync(join(dir, 'index.json'), JSON.stringify({ chapters: [
-        { file: '002', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json' },
+        { file: '002', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '002.entity.json' },
         { file: '003', title: '非对读' },
         { file: '004', char_file: '004.char.json', cord_file: '004.cord.json', reader_cord_file: '004.cord.reader.json', reader_punct_file: 'x' },
     ] }));
     writeFileSync(join(dir, '002.cord.json'), JSON.stringify(CORD));
     writeFileSync(join(dir, '002.punct.json'), JSON.stringify(PUNCT));
+    writeFileSync(join(dir, '002.entity.json'), JSON.stringify(ENTITY, null, 2));
+    writeFileSync(join(dir, '002.char.json'), JSON.stringify(CHAR, null, 2));
+    writeFileSync(join(dir, `007${READER_ENTITY_SUFFIX}`), 'stale');
     writeFileSync(join(dir, `004${READER_CORD_SUFFIX}`), 'stale'); // 004 的 cord 取不到
     writeFileSync(join(dir, `009${READER_PUNCT_SUFFIX}`), 'stale');
-    assert.equal(buildItemReaderFiles(item), 2);
+    assert.equal(buildItemReaderFiles(item), 4);
     const idx = JSON.parse(readFileSync(join(dir, 'index.json'), 'utf-8'));
     assert.equal(idx.chapters[0].reader_cord_file, '002.cord.reader.json');
     assert.equal(idx.chapters[0].reader_punct_file, '002.punct.reader.json');
+    assert.equal(idx.chapters[0].reader_entity_file, '002.entity.reader.json');
+    assert.equal(idx.chapters[0].reader_char_file, '002.char.reader.json');
+    assert.equal(readFileSync(join(dir, `002${READER_CHAR_SUFFIX}`), 'utf-8'), JSON.stringify(CHAR)); // 不带缩进
+    assert.deepEqual(JSON.parse(readFileSync(join(dir, `002${READER_ENTITY_SUFFIX}`), 'utf-8')), slimEntity(ENTITY));
+    assert.equal(existsSync(join(dir, `007${READER_ENTITY_SUFFIX}`)), false);
     assert.deepEqual(idx.chapters[1], { file: '003', title: '非对读' });
     assert.equal(idx.chapters[2].reader_cord_file, undefined);
     assert.equal(idx.chapters[2].reader_punct_file, undefined);
@@ -98,4 +131,8 @@ test('真样本章（设 READER_FILES_SAMPLE_DIR 才跑）：读法结果逐字�
     assert.deepEqual(adaptCharCord(char, slimCord(cord)), adaptCharCord(char, cord));
     assert.deepEqual(iiifVolumeOf(slimCord(cord)), iiifVolumeOf(cord));
     assert.deepEqual(adaptPunctJson(slimPunct(punct)), adaptPunctJson(punct));
+    if (existsSync(join(d, '002.entity.json'))) {
+        const entity = read('002.entity.json');
+        assert.deepEqual(adaptEntityJson(slimEntity(entity)), adaptEntityJson(entity));
+    }
 });

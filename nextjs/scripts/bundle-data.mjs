@@ -316,7 +316,7 @@ function bundleL1() {
             }
         }
     }
-    if (readerFiles > 0) console.log(`    reader-files: ${readerFiles} 份对读章瘦身副本（cord／punct）`);
+    if (readerFiles > 0) console.log(`    reader-files: ${readerFiles} 份对读章瘦身副本（cord／punct／entity／char）`);
     if (fontJobs.length > 0) {
         const n = applyFontResults(fontJobs, runFontJobs(fontJobs, fontCtx));
         console.log(`    chapter-fonts: ${fontJobs.length} 个对读章，${n} 个生成生僻字子集`);
