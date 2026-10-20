@@ -134,6 +134,36 @@ describe('精校页显示（GUJI-557）', () => {
         await waitFor(() => expect(screen.queryByTestId('examples')).toBeNull());
     });
 
+    // 相似字（以字找字，用户 10-19）：出待审单时算好，页面只显示；缺省展开 10 个
+    const alt = Array.from({ length: 14 }, (_, i) => ({
+        c: String.fromCodePoint(0x5f0a + i), s: 0.9 - i * 0.01, p: '弊', src: 'v', g: { s: 'alt-001.webp', x: i * 96, y: 0, w: 96, h: 96 },
+    }));
+
+    it('alt 有就显示相似字：缺省 10 个带字形图，「再看 4 个」展开全部；点一个就提交', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', alt }]));
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const grid = await screen.findByTestId('alt-grid');
+        expect(grid.querySelectorAll('button[aria-label^="选「"]')).toHaveLength(10);
+        expect(grid.querySelector('[role=img]')?.getAttribute('style')).toContain('alt-001.webp');
+        fireEvent.click(screen.getByRole('button', { name: '再看 4 个' }));
+        expect(grid.querySelectorAll('button[aria-label^="选「"]')).toHaveLength(14);
+        fireEvent.click(screen.getByRole('button', { name: `选「${alt[2].c}」` }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c });
+    });
+
+    it('相似字的字形图没传上去就只显示字；没有 alt 不渲染', async () => {
+        failUrls = /alt-001/;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', alt: alt.slice(0, 3) }, { a: '1:1:2', c: '日' }]));
+        render(<ProofingClient book="b6" vol="vol01" />);
+        const grid = await screen.findByTestId('alt-grid');
+        await waitFor(() => expect(grid.querySelector('[role=img]')).toBeNull());
+        expect(grid.textContent).toContain(alt[0].c);
+        expect(screen.getAllByTestId('alt-grid')).toHaveLength(1);
+    });
+
     // 左栏整页＋上下文（用户 10-18 反馈）
     const cord = {
         boxes: new Map([['9:1:2', [100, 200, 50, 60]], ['9:2:1', [40, 200, 50, 60]], ['10:1:1', [100, 100, 50, 60]]]),

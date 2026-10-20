@@ -18,6 +18,16 @@ export type Box = [number, number, number, number];
 /** 雪碧图里的一块：`s` 是同目录文件名，x,y,w,h 是它在雪碧图里的像素框 */
 export interface SpriteRef { s: string; x: number; y: number; w: number; h: number }
 
+/**
+ * 相似字（以字找字）：cv `guji audit alt` 出待审单时算好——近似字（整理本字、上下文字、库前几名…）的异体族
+ * （本仓异体表＋部件檢索＋字统网）按这格字块图的相似度排好。`s` 相似度，`p` 从哪个近似字查来，
+ * `src` 哪几家（v/rt/zi/near/piv），`g` 字体字形图（ai-team `alt_build.py`）。页面只显示，不现算。
+ */
+export interface AltCand { c: string; s?: number; p?: string; src?: string; g?: SpriteRef }
+/** 相似字缺省展开几个（用户 2026-10-19 定）；pending 里最多带 ALT_MAX 个 */
+export const ALT_SHOW = 10;
+export const ALT_MAX = 30;
+
 /** guji-proof/0.2 新增字段，全部可选；0.1 的 pending.json 一个都没有 */
 export interface PendingExtras {
     why?: string[];
@@ -33,6 +43,7 @@ export interface PendingExtras {
     occ?: { c?: string; refBlank?: boolean };
     img?: SpriteRef;
     ex?: Record<string, SpriteRef[]>;
+    alt?: AltCand[];
 }
 
 export interface PendingCell extends PendingExtras {
@@ -107,6 +118,20 @@ export function parseExtras(raw: unknown): PendingExtras {
             if (list.length) ex[k] = list;
         }
         if (Object.keys(ex).length) out.ex = ex;
+    }
+    if (Array.isArray(it.alt)) {
+        const seen = new Set<string>();
+        const alt = it.alt.flatMap((x): AltCand[] => {
+            const o = asObject(x);
+            const c = str(o?.c);
+            // 只收一个码点的字，重复的只留第一个
+            if (!o || !c || [...c].length !== 1 || seen.has(c)) return [];
+            seen.add(c);
+            const g = parseSprite(o.g);
+            return [{ c, ...(num(o.s) !== undefined ? { s: num(o.s) } : {}), ...(str(o.p) ? { p: str(o.p) } : {}),
+                ...(str(o.src) ? { src: str(o.src) } : {}), ...(g ? { g } : {}) }];
+        }).slice(0, ALT_MAX);
+        if (alt.length) out.alt = alt;
     }
     return out;
 }

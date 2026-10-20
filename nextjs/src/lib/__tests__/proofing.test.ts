@@ -5,7 +5,7 @@ import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, whyLabel, shownCandidates, preselect, spriteUrl,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem,
+    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -174,6 +174,22 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(e.occ).toEqual({ c: '印', refBlank: true });
         expect(e.img).toEqual({ s: 'p0009.webp', x: 0, y: 96, w: 96, h: 96 });
         expect(Object.keys(e.ex ?? {})).toEqual(['己']);
+    });
+
+    it('alt（相似字）：逐项容错、去重、最多 30 个；g 非法就只留字', () => {
+        const items = [
+            { c: '𡚁', s: 0.91, p: '弊', src: 'v,zi', g: { s: 'alt-001.webp', x: 0, y: 0, w: 96, h: 96 } },
+            { c: '弊', s: 0.88, p: '弊', src: 'piv', g: { s: '../x.webp', x: 0, y: 0, w: 96, h: 96 } },
+            { c: '𡚁', s: 0.5 }, { c: '两字' }, { s: 1 }, 'x',
+            ...Array.from({ length: 40 }, (_, i) => ({ c: String.fromCodePoint(0x4e00 + i) })),
+        ];
+        const alt = parseExtras({ alt: items }).alt ?? [];
+        expect(alt[0]).toEqual({ c: '𡚁', s: 0.91, p: '弊', src: 'v,zi', g: { s: 'alt-001.webp', x: 0, y: 0, w: 96, h: 96 } });
+        expect(alt[1]).toEqual({ c: '弊', s: 0.88, p: '弊', src: 'piv' });
+        expect(alt.filter(a => a.c === '𡚁')).toHaveLength(1);
+        expect(alt).toHaveLength(ALT_MAX);
+        expect(parseExtras({ alt: 'x' }).alt).toBeUndefined();
+        expect(parseExtras({ alt: [] }).alt).toBeUndefined();
     });
 
     it('img 非法（越界负数、文件名带路径）当没有，由页面回退原叶裁图', () => {
