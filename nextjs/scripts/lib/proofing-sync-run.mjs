@@ -13,6 +13,7 @@ import {
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
+    statusListPath, parseStatusRows, planStatusWrites,
 } from './fixes-sync.mjs';
 
 export const SHORT_CACHE = 'public, max-age=300';
@@ -142,6 +143,53 @@ export async function syncFixes({ worker, kv, ws, books, dryRun = false }) {
 }
 
 /**
+ * opinions 段之三（M11 B2，GUJI-714）：意见处理结论回写网站。
+ * 中心库 feedback/lists/web/<书>/status.jsonl（cv `guji opinions publish-status` 写）→ 与 KV 现状（/api/fixes 实时读）比 →
+ * 不同的才 POST /api/fixes（state／version／reason；reply 只在 KV 与快照里都还没有同样文字的整理组回复时才发）。
+ * 要放在 syncFixes 之前：刚发的整理组回复当次就能被 threads.jsonl 快照收进去。
+ * @param site {liveFixes(book, volume) → /api/fixes 回包, postFixes(body) → 回包}
+ */
+export async function syncStatus({ worker, site, ws, books, dryRun = false }) {
+    const rows = [];
+    const problems = [];
+    const planned = [];
+    for (const book of books) {
+        try {
+            const got = await worker.getFile(ws, statusListPath(book));
+            if (!got) continue;
+            const parsed = parseStatusRows(got.text, book);
+            const live = {};
+            for (const vol of [...new Set(parsed.rows.map((r) => r.volume))]) {
+                try {
+                    const j = await site.liveFixes(book, vol);
+                    if (!j || j.success === false) throw new Error(j?.error || '读不到');
+                    live[vol] = j.threads?.[vol] || {};
+                } catch (e) {
+                    problems.push(`${book}/${vol} 状态：读 /api/fixes 失败，本册不回写（${e?.message || e}）`);
+                }
+            }
+            const threads = await worker.getFile(ws, threadsSnapshotPath(book));
+            const plan = planStatusWrites(parsed.rows, live, threads?.text ?? '', book);
+            let posted = 0;
+            for (const p of plan.posts) {
+                planned.push({ book, volume: p.body.volume, target: p.body.target, from: p.from, to: p.state ? p.body.state : null, reply: p.reply });
+                if (dryRun) continue;
+                try {
+                    await site.postFixes(p.body);
+                    posted++;
+                } catch (e) {
+                    problems.push(`${book}/${p.body.volume} ${p.body.target} 回写：${e?.message || e}`);
+                }
+            }
+            rows.push({ book, total: parsed.rows.length, bad: parsed.bad, post: plan.posts.length, posted, same: plan.same, skipped: plan.skipped });
+        } catch (e) {
+            problems.push(`${book} 状态：${e?.message || e}`);
+        }
+    }
+    return { rows, planned, problems };
+}
+
+/**
  * publish 段之二：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（公开清单，整册反馈页读它）。中心库没有快照的书跳过。
  */
 export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun = false }) {
@@ -153,7 +201,8 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
             if (!got) continue;
             const threads = await worker.getFile(ws, threadsSnapshotPath(book));
             const hidden = await worker.getFile(ws, hiddenListPath(book));
-            objects.push({ key: fixesPublicKey(book), body: buildPublicFixes(got.text, book, threads?.text ?? '', parseHidden(hidden?.text)) });
+            const status = await worker.getFile(ws, statusListPath(book));
+            objects.push({ key: fixesPublicKey(book), body: buildPublicFixes(got.text, book, threads?.text ?? '', parseHidden(hidden?.text), status?.text ?? '') });
         } catch (e) {
             failed.push(`${book} 意见清单：${e?.message || e}`);
         }
@@ -173,7 +222,7 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
 }
 
 /** run 摘要（markdown），只有计数 */
-export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish }) {
+export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish, status }) {
     const L = [];
     L.push(`### proofing-sync（工作区 ${ws.join('、')}${dryRun ? '，演练：不写' : ''}）`);
     L.push(`待审单 ${entries.length} 章，待审格合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
@@ -192,6 +241,12 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
         L.push('', '#### 改字与段落意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改动 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');
         for (const r of fixes.rows) L.push(`| ${r.book} | ${r.kv} | ${r.total} | ${r.added} | ${r.updated} | ${r.kept} | ${r.written ? '是' : r.changed ? '演练' : '无变化'} |`);
         for (const p of fixes.problems) L.push(`- ❌ ${p}`);
+    }
+    if (status) {
+        L.push('', '#### 意见处理结论 → 网站（/api/fixes）', '| 书 | 结论行 | 不合规 | 要回写 | 已回写 | 已一致 | 册没读到 |', '|---|---|---|---|---|---|---|');
+        for (const r of status.rows) L.push(`| ${r.book} | ${r.total} | ${r.bad} | ${r.post} | ${dryRun ? '演练' : r.posted} | ${r.same} | ${r.skipped} |`);
+        for (const p of status.planned) L.push(`- ${p.book}/${p.volume} \`${p.target}\`：${p.to ? `${p.from} → ${p.to}` : '状态不变'}${p.reply ? '，加整理组回复' : ''}`);
+        for (const p of status.problems) L.push(`- ❌ ${p}`);
     }
     if (fixesPublish) {
         L.push('', `#### 意见清单 → COS \`${proofPrefix}fixes/\``, `上传 ${fixesPublish.put.length} · 相同跳过 ${fixesPublish.same.length} · 失败 ${fixesPublish.failed.length}`);

@@ -171,3 +171,97 @@ test('buildPublicFixes：整理组回复的 team 标记带到公开清单', () =
     const out = JSON.parse(buildPublicFixes('', BOOK, th));
     assert.equal(out.threads['002']['span~3:1:5~3:1:6~missing'].replies[0].team, true);
 });
+
+// ---------------- 状态回写（M11 B2，GUJI-714）----------------
+
+import { statusListPath, parseStatusRows, planStatusWrites, publicStatus } from './fixes-sync.mjs';
+import { syncStatus } from './proofing-sync-run.mjs';
+
+const ST = 'span~3:1:9~3:1:9~missing';
+const srow = (extra = {}) => ({ v: 1, book: BOOK, volume: '002', target: ST, state: 'adopted', reply: '感谢指正，已采纳，待随下一版文本更新。', opinions: ['op_span_29a02d06d6'], ts: '2026-10-20T18:52:50Z', ...extra });
+const lines = (...rows) => rows.map((r) => JSON.stringify(r)).join('\n') + '\n';
+
+test('status.jsonl：路径、按 /api/fixes 的口径校验（别的书、坏 target、坏 state、缺 state 都不收）', () => {
+    assert.equal(statusListPath(BOOK), `feedback/lists/web/${BOOK}/status.jsonl`);
+    assert.throws(() => statusListPath('../x'));
+    const text = lines(srow(), srow({ book: 'other1' }), srow({ target: 'x~1' }), srow({ state: 'done' }), srow({ state: undefined }), srow({ target: 'char~4:1:2~~', state: 'adopted', version: '1.0.2' })) + 'not json\n';
+    const { rows, bad } = parseStatusRows(text, BOOK);
+    assert.equal(rows.length, 2);
+    assert.equal(bad, 5);
+    assert.deepEqual(rows.map((r) => [r.target, r.state, r.version]), [[ST, 'adopted', ''], ['char~4:1:2~~', 'adopted', '1.0.2']]);
+    assert.deepEqual(publicStatus({ state: 'rejected', reason: '电话 13812345678', ts: '2026-10-20T00:00:00Z' }).ts, Date.parse('2026-10-20T00:00:00Z'));
+    assert.ok(!publicStatus({ state: 'rejected', reason: '电话 13812345678' }).reason.includes('13812345678'));
+});
+
+test('planStatusWrites：状态不同才写；同样文字的整理组回复（KV 或快照里有）不再发；册没读到不盲写', () => {
+    const { rows } = parseStatusRows(lines(srow(), srow({ target: 'char~4:1:2~~', state: 'rejected', reason: '图上清楚是甲', reply: undefined }), srow({ volume: '003' })), BOOK);
+    // KV 里什么都没有：第一条要写状态＋回复，第二条只写状态，003 册没读到跳过
+    let p = planStatusWrites(rows, { '002': {} }, '', BOOK);
+    assert.equal(p.skipped, 1);
+    assert.deepEqual(p.posts.map((x) => x.body), [
+        { book_id: BOOK, volume: '002', target: ST, state: 'adopted', reply: '感谢指正，已采纳，待随下一版文本更新。' },
+        { book_id: BOOK, volume: '002', target: 'char~4:1:2~~', state: 'rejected', reason: '图上清楚是甲' },
+    ]);
+    assert.equal(p.posts[0].from, 'open');
+    // KV 已一致：不写
+    const live = { '002': {
+        [ST]: { agree: 1, disagree: 0, replies: [{ name: '整理组', text: '感谢指正，已采纳，待随下一版文本更新。', team: true, ts: 1 }], status: { state: 'adopted', ts: 1 } },
+        'char~4:1:2~~': { agree: 0, disagree: 0, replies: [], status: { state: 'rejected', reason: '图上清楚是甲', ts: 1 } },
+    } };
+    p = planStatusWrites(rows, live, '', BOOK);
+    assert.equal(p.posts.length, 0);
+    assert.equal(p.same, 2);
+    // 状态一样、回复在 KV 里过期了但快照里有：不再发
+    const live2 = { '002': { ...live['002'], [ST]: { ...live['002'][ST], replies: [] } } };
+    const snap = JSON.stringify({ book_id: BOOK, volume: '002', target: ST, stance: 'reply', name: '整理组', text: '感谢指正，已采纳，待随下一版文本更新。', team: true, voter: 'team', ts: 1 });
+    assert.equal(planStatusWrites(rows, live2, snap, BOOK).posts.length, 0);
+    // 读者自己写了同样的话不算整理组回复：照发回复，但状态不动
+    const live3 = { '002': { ...live['002'], [ST]: { ...live['002'][ST], replies: [{ name: '甲', text: '感谢指正，已采纳，待随下一版文本更新。', ts: 1 }] } } };
+    p = planStatusWrites(rows, live3, '', BOOK);
+    assert.deepEqual(p.posts.map((x) => [x.state, x.reply, Object.keys(x.body).sort().join(',')]), [[false, true, 'book_id,reply,target,volume']]);
+    // 进了文本：版本变了要重写状态
+    const { rows: r2 } = parseStatusRows(lines(srow({ version: '1.0.2', reply: undefined })), BOOK);
+    p = planStatusWrites(r2, live, '', BOOK);
+    assert.deepEqual(p.posts[0].body, { book_id: BOOK, volume: '002', target: ST, state: 'adopted', version: '1.0.2' });
+});
+
+test('syncStatus：读中心库 status.jsonl 与 /api/fixes 现状，演练只列不写；正式写 POST；读不到的册记问题', async () => {
+    const worker = fakeWorker({ [`w/feedback/lists/web/${BOOK}/status.jsonl`]: lines(srow(), srow({ volume: '003' })) });
+    const posted = [];
+    const site = {
+        async liveFixes(book, volume) {
+            if (volume === '003') throw new Error('HTTP 500');
+            return { success: true, book, volumes: { [volume]: [] }, threads: { [volume]: { [ST]: { agree: 1, disagree: 0, replies: [] } } } };
+        },
+        async postFixes(body) { posted.push(body); return { success: true }; },
+    };
+    const dry = await syncStatus({ worker, site, ws: 'w', books: [BOOK, 'none1'], dryRun: true });
+    assert.equal(posted.length, 0);
+    assert.deepEqual(dry.planned, [{ book: BOOK, volume: '002', target: ST, from: 'open', to: 'adopted', reply: true }]);
+    assert.equal(dry.problems.length, 1);
+    assert.match(dry.problems[0], /003/);
+    const md = summarize({ ws: ['w'], proofPrefix: 'proof/', dryRun: true, entries: [], collectProblems: [], status: dry });
+    assert.match(md, /意见处理结论 → 网站/);
+    assert.match(md, /open → adopted，加整理组回复/);
+    const real = await syncStatus({ worker, site, ws: 'w', books: [BOOK] });
+    assert.equal(real.rows[0].posted, 1);
+    assert.equal(posted[0].state, 'adopted');
+    assert.equal(posted[0].book_id, BOOK);
+    assert.equal(worker.puts.length, 0); // 不写中心库
+});
+
+test('公开清单并进状态（与 /api/fixes 同形）：open 不出、没有意见的处也带上、ts 转毫秒', async () => {
+    const fx = mergeFixes('', [span('3:1:5', '3:1:6', 'bb')], BOOK).text;
+    const status = lines(srow({ target: T, version: '1.0.2', reason: undefined }), srow({ target: 'char~4:1:2~~', state: 'open' }));
+    const j = JSON.parse(buildPublicFixes(fx, BOOK, '', new Set(), status));
+    assert.deepEqual(j.threads['002'][T], { agree: 0, disagree: 0, replies: [], status: { state: 'adopted', version: '1.0.2', ts: Date.parse('2026-10-20T18:52:50Z') } });
+    assert.equal(j.threads['002']['char~4:1:2~~'], undefined);
+    // publishFixes 读中心库 status.jsonl
+    const worker = fakeWorker({ [`w/feedback/lists/web/${BOOK}/fixes.jsonl`]: fx, [`w/feedback/lists/web/${BOOK}/status.jsonl`]: status });
+    const put = [];
+    const cos = { async listPrefixEtags() { return new Map(); }, async putObjectText(key, body) { put.push(JSON.parse(body)); } };
+    await publishFixes({ worker, cos, ws: 'w', books: [BOOK], proofPrefix: 'proof/' });
+    assert.equal(put[0].threads['002'][T].status.state, 'adopted');
+    // 没有 status.jsonl 时与旧清单逐字节相同
+    assert.equal(buildPublicFixes(fx, BOOK, '', new Set(), ''), buildPublicFixes(fx, BOOK));
+});
