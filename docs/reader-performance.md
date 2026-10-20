@@ -141,7 +141,7 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 - 留哪些字段以 ui 的读法为准：cord 留 `page`、`canvas{id,seq,width,height}`、`image{width,height}`、`cells[].a/box`；punct 去掉 `source`、`char_offset` 与顶层 `metadata`、`stats`。
 - 读法：`loadDuiduFiles` 先取副本，取不到回落原文件；页面 preload 也改为预取副本。
 - 往返一致性：单测用 book-index-ui 的 `adaptCharCord`／`iiifVolumeOf`／`adaptPunctJson`，比较副本与原文件的读法结果；样本章真数据（设 `READER_FILES_SAMPLE_DIR`）逐字段相同。
-- 收益（样本章，宽屏）：对读数据 br 传输 822KB → 403KB，解压 7.66MB → 3.37MB（JSON 解析量减半以上）。窄屏本来就不取 cord，只省 punct 那一份。
+- 收益（样本章，宽屏）：对读数据 br 传输 822KB → 430KB，解压 7.66MB → 4.84MB（按上表只瘦 cord、punct；本条原写 403KB／3.37MB，误把不做的 entity、char 也算成了瘦身后）。窄屏本来就不取 cord，只省 punct 那一份。上表 br 是本地最高压缩级别；线上 CDN 的 br 级别较低，实测见第四节复测。
 
 ### P1-3 字体：对读章生僻字子集（GUJI-701）
 - **问题**：扩展区汉字兜底是花园明朝（`globals.css` 的 HANAMIN 段，jsDelivr 上按 unicode-range 分的片，每片约 200KB）。
@@ -213,6 +213,29 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 桌面档的「正文进入视口」主要卡在网络：测试机经美国代理下 JS 要 5 秒以上；对读数据 preload 在 3.4s 前就下完了。
 剩下一个串行环节：浏览器拿到 JS 后先取 `latest.json`（no-store，约 1s）拿版本号，才用上预取好的数据——可由服务端把版本号随页面交给浏览器省掉。
 字体（17 个文件、3.6MB）不再挤在首屏加载里（分批渲染后，生僻字所在的页渲染到了才触发对应子集），但读者往下读仍会全部下载，见 P1-3。
+
+### 线上复测（2026-10-20 19:20 UTC，数据发布 data.yml run 39475107562 之后：P1-2 瘦身副本、P1-3 子集字体上线）
+
+同一探针（`perf/reader-probe.mjs`），每档跑两轮，取第二轮（CDN 已预热；第一轮桌面档正文入视口 11.2s，同样卡在 HTML/JS 下载）。
+页面 HTML 已带 `kyg-chapter-font`（35 个码位）与三条 preload：`002.font.woff2`、`002.cord.reader.json`、`002.punct.reader.json`；原 `.cord.json`／`.punct.json` 不再请求，jsDelivr 花园明朝分片请求为 0。
+
+| 指标 | 桌面 上一轮→本轮 | 慢 4G＋CPU4x 上一轮→本轮 | 手机＋CPU6x 上一轮→本轮 |
+|---|---|---|---|
+| 字体（整次访问，含滚动） | 17 个、3.6MB → 1 个、11KB | 同左 | 同左 |
+| 对读 cord＋punct（线上 br） | 873KB → 342KB（cord 790K→292K，punct 83K→50K） | 同左 | punct 83K → 50K（窄屏不取 cord） |
+| 对读数据合计（再加 char 181K、entity 129K） | 1.18MB → 0.65MB | 同左 | 0.39MB → 0.36MB |
+| 首屏加载窗口内传输 | 2.0MB → 1.58MB | 同左 | 1.8MB → 1.06MB |
+| 整次访问传输（含滚动 8 屏） | 约 6MB → 2.5MB | — | — |
+| 正文进入视口 | 8.6s → 7.8s | 10.7s → 10.3s | 12.7s → 8.6s |
+| 最长任务 | 0.14s → 0.11s | 0.49s → 0.59s | 0.76s → 0.68s |
+| 长任务总时长 | 0.38s → 0.22s | 2.5s → 2.4s | 5.0s → 5.4s |
+| 滚动 FPS（>50ms 帧） | 53–55（0–2）→ 59.3（0） | 23.9（34）→ 28.4（28） | 30.1（18）→ 42.3（8） |
+| 点字最慢 | 112ms → 168ms | 616ms → 552ms | 704ms → 544ms |
+
+- 验收：字体传输 ≤ 300KB 达标（11KB）。瘦身副本按设计生效：页面只取 `.cord.reader.json`／`.punct.reader.json`，cord＋punct 线上传输少 61%，与本地估算（628KB → 236KB，少 62%）一致；线上绝对值偏大是 CDN 的 br 压缩级别低于本地估算用的最高级别（未瘦身的原文件同样偏大：cord 573K 估算／790K 线上）。
+- P1-2 原定的「解压 ≤ 2MB、首帧 JSON 解析 ≤ 30ms」是紧凑格式方案的验收，改做同结构副本后不再适用（宽屏解压约 4.8MB）；要再压就是做 entity 瘦身或紧凑格式，归 P2 评估。
+- 主线程指标在单轮噪声范围内持平（慢网、手机档最长任务仍 0.5–0.7s）；「正文进入视口」仍主要卡在网络（测试机经美国代理，HTML 首字节 1.4–2.2s）。
+- 首屏仍取 `char.json`（br 182K）与 `entity.json`（br 129K，解压 1.5MB），是剩下最大的两份 JSON，可作 P2 候选。
 
 ## 五、进度
 
