@@ -216,6 +216,44 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: '臼', note: '看上面一横', pick_src: 'cand', pick_rank: 1 });
     });
 
+    it('GUJI-689：快捷键选候选／四档、j 换卡；回应后自动跳到下一张没回应的；只看未回应；切分错了带上框里的字', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([
+            { a: '1:1:1', c: '己', cand: [{ c: '己' }, { c: '已' }] },
+            { a: '1:1:2', c: '日', cand: [{ c: '曰' }] },
+            { a: '1:1:3', c: '人', cand: [{ c: '入' }] },
+        ]));
+        render(<ProofingClient book="b11" vol="vol01" />);
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        const sel = () => screen.getAllByTestId('cell-card').find(el => el.getAttribute('data-selected') === '1')?.id;
+        await screen.findAllByTestId('cell-card');
+        expect(screen.getByTestId('hotkey-hint').textContent).toContain('1–9');
+        expect(sel()).toBe('cell-1:1:1');
+        fireEvent.keyDown(document, { key: '2' });                    // 第 2 个候选「已」
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ a: '1:1:1', char: '已', pick_src: 'cand', pick_rank: 2 });
+        await waitFor(() => expect(sel()).toBe('cell-1:1:2'));        // 自动跳到下一张
+        fireEvent.keyDown(document, { key: 'j' });
+        expect(sel()).toBe('cell-1:1:3');
+        fireEvent.keyDown(document, { key: 'k' });
+        expect(sel()).toBe('cell-1:1:2');
+        fireEvent.keyDown(document, { key: 'n' });                    // 图上没有字
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+        expect(body(1)).toMatchObject({ a: '1:1:2', choice: 'none' });
+        // 输入框里打字不触发快捷键；切分错了带上框里的一个字
+        const input = screen.getAllByLabelText('另写一字')[2];
+        fireEvent.keyDown(input, { key: 'n' });
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        fireEvent.change(input, { target: { value: '入' } });
+        fireEvent.click(screen.getAllByRole('button', { name: '切分错了' })[2]);
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
+        expect(body(2)).toMatchObject({ a: '1:1:3', choice: 'cut', char: '入' });
+        // 只看未回应：三张都回应过了 → 一张不剩
+        fireEvent.click(screen.getByTestId('only-open'));
+        await waitFor(() => expect(screen.queryAllByTestId('cell-card')).toHaveLength(0));
+    });
+
     it('相似字的字形图没传上去就只显示字；没有 alt 不渲染', async () => {
         failUrls = /alt-001/;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', alt: alt.slice(0, 3) }, { a: '1:1:2', c: '日' }]));
