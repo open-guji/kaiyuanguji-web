@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   icons: {
-    icon: "/images/open-guji-logo.png",
-    apple: "/images/open-guji-logo.png",
+    icon: "/images/favicon-32.png",
+    apple: "/images/apple-touch-icon-180.png",
   },
   keywords: ["古籍", "数字化", "开源", "传统文化", "古籍数字化"],
   authors: [{ name: SITE_NAME }],
