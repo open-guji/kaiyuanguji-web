@@ -287,4 +287,18 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [2] });
         expect(calls).toEqual([`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=seedkey123`]);
     });
+
+    it('getTextFileUrl（GUJI-701 换章补子集字体）：现行布局给出与取数同一个地址；h1 布局与不合规的文件名给 null、不发请求', async () => {
+        type UrlApi = { getTextFileUrl: (id: string, key: string, file: string) => Promise<string | null> };
+        global.fetch = jest.fn() as unknown as typeof fetch;
+        const legacy = await freshCosStorage({ layout: undefined });
+        legacy.seedTextFileVersion('seedkey123');
+        const s1 = legacy.createCosStorage() as unknown as UrlApi;
+        expect(await s1.getTextFileUrl(BOOK_ID, 'original', '003.font.woff2')).toBe(`${COS_BASE}/current/items/${BOOK_ID}/original/003.font.woff2?v=seedkey123`);
+        expect(await s1.getTextFileUrl(BOOK_ID, 'original', '../x.woff2')).toBeNull();
+        const hashed = await freshCosStorage({ layout: 'hashed' });
+        const s2 = hashed.createCosStorage() as unknown as UrlApi;
+        expect(await s2.getTextFileUrl(BOOK_ID, 'original', '003.font.woff2')).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
 });

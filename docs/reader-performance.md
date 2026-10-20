@@ -156,7 +156,7 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
   - 可复现：Merger 会把 `head` 的时间戳写成当前时间，改回源分片的值；fontTools／brotli 版本锁死。三处打包（data.yml 的 package 与 h1 文本两个 job、deploy.yml）共用 `ops/setup-chapter-fonts.sh`（venv 安装，ubuntu-latest 拒绝 `pip --user`），并设 `KYG_CHAPTER_FONTS=required`：缺依赖就让打包失败，不静默地有的有字体、有的没有。本地缺依赖只警告、不生成。
   - 上传：`.woff2` 的 Content-Type 设为 `font/woff2`；data.kaiyuanguji.com 已返回 `access-control-allow-origin: *`（跨域字体要求）。存储与流量费用可忽略（每个对读章约 10KB，而且读者省下了 3.6MB 的 jsDelivr 流量）。
 - **页面**（`page.ssr.tsx`）：对读章有合规的 `font_file`／`font_range` 就出 `<link rel=preload as=font>` ＋ `<style id="kyg-chapter-font">`。h1 哈希寻址布局不出（与对读数据 preload 一致）。
-  只管首屏这一章：站内换章不经服务端渲染，新章的生僻字照旧走分片（以后要做的话，可由 ReaderClient 换章时注入）。
+  站内换章不经服务端渲染：阅读器取新章对读数据时调 `lib/chapter-font.ts` 的 `ensureChapterFont`，在 body 末尾补一条新章的 `@font-face`（同一地址不重复加；h1 哈希布局给不出地址就不加，照旧走分片）。
 - **验证**：本地用 COS 上样本章的真实 index／char／norm 跑生成，再拦截页面 HTML 注入同样的 style，字体请求从 15 个分片降到 1 个（11KB）。
 - **验收**：样本章字体传输 ≤ 300KB（上线后在线上复测）。
 
