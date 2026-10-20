@@ -20,6 +20,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ANCHORS, DATA_BASE } from '../fixtures/anchors';
 import { fetchLatest, dataUrl } from '../fixtures/version';
+import { DATA_ORIGIN, LEGACY_DATA_ORIGIN } from '../../config/hosts.mjs';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -92,6 +93,7 @@ test.describe('测试锚点 ID 契约', () => {
 
 test.describe('数据源', () => {
     test('DATA_BASE 指向线上数据桶', () => {
-        expect(DATA_BASE).toContain('kaiyuanguji.com');
+        // 新旧两个数据域名回源同一个桶，都算线上
+        expect([DATA_ORIGIN, LEGACY_DATA_ORIGIN].some((o) => DATA_BASE.startsWith(o)), DATA_BASE).toBeTruthy();
     });
 });
