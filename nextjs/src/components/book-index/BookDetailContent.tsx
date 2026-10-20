@@ -6,6 +6,7 @@ import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { getTransport } from '@/lib/transport';
 import { isLocalMode } from '@/lib/constants';
 import { COS_BASE } from '@/lib/cos-storage';
+import { CANONICAL_HOST } from '@/lib/site-hosts';
 import {
     BookDetailLayout,
     type ExtraTab,
@@ -58,10 +59,13 @@ function enrichDigitalAssets(id: string, entry: IndexEntry, detail: DetailWithAs
     };
 }
 
-/** localhost 下走云端 feedback API（开发联调用），否则同源。 */
+/**
+ * localhost 下走正式站 feedback API（开发联调用），否则同源。
+ * 用规范域名：旧域名 www.kaiyuanguji.com 的 /api/* 在国内一律 404（GUJI-706）。
+ */
 function resolveFeedbackUrl(): string {
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-        return 'https://www.kaiyuanguji.com/api/feedback';
+        return `https://${CANONICAL_HOST}/api/feedback`;
     }
     return '/api/feedback';
 }

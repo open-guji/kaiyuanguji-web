@@ -7,7 +7,7 @@
 
 | 站 | 地址 | 托管方式 | 数据指针 |
 |---|---|---|---|
-| 正式站 | https://www.kaiyuanguji.com | 全栈，CLI 直传 `kyg-ssr-spike`（2026-09-28 切站，CUT2 起 deploy 直接发这里） | `https://data.kaiyuanguji.com/latest.json` |
+| 正式站 | https://www.openguji.com（旧域名 www.kaiyuanguji.com 的页面 301 到这里；旧域名的 `/api/*` 在国内一律 404，接口一律用新域名） | 全栈，CLI 直传 `kyg-ssr-spike`（2026-09-28 切站，CUT2 起 deploy 直接发这里） | `https://data.kaiyuanguji.com/latest.json` |
 | 测试站 | https://staging.kaiyuanguji.com | 全栈，CLI 直传 `kyg-staging` | `https://data.kaiyuanguji.com/staging/latest.json` |
 
 `ssr-test.kaiyuanguji.com` 也挂在 `kyg-ssr-spike` 上，与 www 是同一份部署。旧静态项目 `kaiyuanguji`（原 www，推 `edgeone-release` 分支发布）
@@ -21,8 +21,8 @@
 ## 0. 第一步永远是：线上现在是哪一版
 
 ```bash
-for s in www staging; do
-  echo "== $s"; curl -s "https://$s.kaiyuanguji.com/api/version" | python3 -m json.tool
+for s in https://www.openguji.com https://staging.kaiyuanguji.com; do
+  echo "== $s"; curl -s "$s/api/version" | python3 -m json.tool
 done
 ```
 
@@ -153,7 +153,7 @@ done
 
 ## 5. 登录 503（/api/auth/*）
 
-503 都带原因，直接看：`curl -s https://www.kaiyuanguji.com/api/auth/me`（换成对应站）。
+503 都带原因，直接看：`curl -s https://www.openguji.com/api/auth/me`（换成对应站）。
 
 | 回包 error | 原因 | 处理 |
 |---|---|---|
@@ -169,7 +169,7 @@ done
 
 | 看什么 | 怎么判断 |
 |---|---|
-| `curl -sI https://www.kaiyuanguji.com/ \| grep -i -E 'etag\|last-modified\|age'` | 与 `/api/version` 的 `builtAt`、Actions 里最近一次正式发布的时间对比 |
+| `curl -sI https://www.openguji.com/ \| grep -i -E 'etag\|last-modified\|age'` | 与 `/api/version` 的 `builtAt`、Actions 里最近一次正式发布的时间对比 |
 | 指针带／不带随机串各读一次 | 不一致 → 节点缓存了旧指针 |
 | h1 指针 `h1/manifest-root.json` | 曾被节点缓存 18.7 小时（源站 max-age 被无视） |
 
@@ -231,7 +231,7 @@ done
    - 那次运行绿了 → `stage=promote`，`web_commit` 填摘要里那个 commit；
    - promote 那次运行绿了 → `stage=check`，同一个 `web_commit`。
    为什么分段：runner 是自托管的，各 job 共用一台机器；一个 job 占着 runner 等 deploy.yml，deploy.yml 就排不上（死锁）。所以每段只发起、不等待。
-4. 跑完看摘要里的链接与核对结果；自己再 `curl https://www.kaiyuanguji.com/api/version` 看一眼。
+4. 跑完看摘要里的链接与核对结果；自己再 `curl https://www.openguji.com/api/version` 看一眼。
 5. 在 main 上修（revert 或 fix），正常发版；回滚期间改过 `AUTO_PROMOTE_DATA` 的记得改回。
 
 **数据坏了**：本 workflow 不回退数据（deploy.yml 暂不支持指定数据 commit）。数据仓是 git——在数据仓 `git revert` 那次坏提交并 push，

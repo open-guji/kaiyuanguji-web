@@ -217,7 +217,7 @@ export default function FeedbackView() {
         <>
           {truncated && (
             <div className="rounded border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
-              记录过多，只取到了前 {items.length} 条（最旧的一批），更新的记录没有显示。
+              记录过多，只取到了最新的 {items.length} 条，更早的记录没有显示。
             </div>
           )}
 

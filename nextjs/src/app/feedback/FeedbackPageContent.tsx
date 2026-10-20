@@ -8,6 +8,7 @@ import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import type { DataSource } from '@/lib/constants';
 import { FEEDBACK_API, FEEDBACK_TYPES, normalizeResourceId, readMine } from '@/lib/feedback';
+import { fixesPageHref } from '@/lib/fixes';
 import { useSiteT } from '@/i18n/use-site-t';
 import type { SiteMessageKey } from '@/i18n/translate';
 
@@ -37,6 +38,10 @@ const BLOCK_LABEL_KEY: Record<string, SiteMessageKey> = {
 
 /** 公开读新增字段（后端只透出 category／assignee／claimedAt，不含 routedIssue） */
 type PublicTriage = { assignee?: string; claimedAt?: string };
+
+/** 整册文字意见页的入口（M11·B1）：/feedback/text 没有书号、册号就只报「地址缺书号或册号」，所以先指到对读最全的四库总目第一册 */
+const TEXT_FIXES_BOOK = '96mid1ogzk';
+const TEXT_FIXES_VOL = '001';
 
 /** 「已处理」一类：已结的状态。待处理、处理中都算还没处理完，默认列出（用户 10-01 反馈，overview#337 C1） */
 const DONE_STATUSES = new Set(['resolved', 'wontfix', 'duplicate']);
@@ -137,6 +142,10 @@ export default function FeedbackPageContent() {
                 <div>
                     <h1>{t('feedback.page.title')}</h1>
                     <p>{t('feedback.page.intro')}</p>
+                    <p className="og-fb-text-entry">
+                        {t('feedback.page.textEntry')}
+                        <Link href={fixesPageHref(TEXT_FIXES_BOOK, TEXT_FIXES_VOL)}>{t('feedback.page.textEntryLink')}</Link>
+                    </p>
                 </div>
                 <button
                     type="button"

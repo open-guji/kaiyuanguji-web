@@ -99,3 +99,13 @@ test('没有 manifest.json、或全部版本都内部：skip，不生成', () =>
         assert.deepEqual(buildReadSeed(allInternal), { status: 'skip', reason: 'not-public' });
     } finally { rmSync(none, { recursive: true }); rmSync(allInternal, { recursive: true }); }
 });
+
+test('indexDir：manifest 读源目录、index 读产物目录（带打包时写回的对读章子集字段，GUJI-701）', () => {
+    const src = makeItem({ 'manifest.json': MANIFEST, 'default/index.json': INDEX });
+    const out = makeItem({ 'default/index.json': { chapters: [{ n: 1, file: '001', title: '卷一', font_file: '001.font.woff2', font_range: 'U+348B' }] } });
+    try {
+        const seed = JSON.parse(buildReadSeed(src, { indexDir: out }).text);
+        assert.equal(seed.primary.index.chapters[0].font_file, '001.font.woff2');
+        assert.equal(JSON.stringify(seed.manifest), JSON.stringify(MANIFEST));
+    } finally { rmSync(src, { recursive: true }); rmSync(out, { recursive: true }); }
+});

@@ -19,7 +19,7 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import code_pointer  # noqa: E402
 
-SITES = {"production": "https://www.kaiyuanguji.com", "staging": "https://staging.kaiyuanguji.com",
+SITES = {"production": "https://www.openguji.com", "staging": "https://staging.kaiyuanguji.com",
          "ssr-test": "https://ssr-test.kaiyuanguji.com"}
 POINTERS = {"production": "https://data.kaiyuanguji.com/latest.json",
             "staging": "https://data.kaiyuanguji.com/staging/latest.json",

@@ -44,9 +44,10 @@ function readJsonFile(p) {
 
 /**
  * 为一个条目目录生成 seed。
+ * indexDir：版本 index.json 从哪个目录读（缺省同 itemDir）；bundle-data 传产物目录，带上打包时写回的字段（对读章子集字体，GUJI-701）。
  * 返回 { status: 'ok', key, text }（text 为写入 read-seed.json 的字符串，已是确定性的 JSON）或 { status: 'skip', reason }。
  */
-export function buildReadSeed(itemDir) {
+export function buildReadSeed(itemDir, { indexDir = itemDir } = {}) {
     const manifest = readManifest(itemDir); // 不合法会抛错
     if (!manifest) return { status: 'skip', reason: 'no-manifest' };
     const pub = publicManifest(manifest);
@@ -54,7 +55,7 @@ export function buildReadSeed(itemDir) {
     const primary = primaryVersionOf(pub);
     if (!primary) return { status: 'skip', reason: 'no-primary' };
 
-    const indexPath = join(itemDir, primary.key, 'index.json');
+    const indexPath = join(indexDir, primary.key, 'index.json');
     if (!existsSync(indexPath)) return { status: 'skip', reason: 'no-index' };
     if (statSync(indexPath).size > SEED_MAX_BYTES) return { status: 'skip', reason: 'index-too-large' };
     const index = readJsonFile(indexPath);

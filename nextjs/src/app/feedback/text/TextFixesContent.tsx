@@ -26,7 +26,10 @@ const NAME_KEY = 'kyg-th-name';
 const readName = () => { try { return localStorage.getItem(NAME_KEY) ?? ''; } catch { return ''; } };
 const saveName = (n: string) => { try { localStorage.setItem(NAME_KEY, n); } catch { /* 存不了就算了 */ } };
 
-/** 一处意见下的讨论：同意／有不同看法（匿名、一人一票可改）与回复（留称呼）。新提交的次日汇总后才进清单，这里先在本页显示 */
+/**
+ * 一处意见下的讨论：同意／有不同看法（匿名、一人一票可改）与回复（留称呼）。
+ * 本页先读 /api/fixes（实时读 KV），刚提交的表态与回复刷新即可见；本页不重新拉清单，刚发的回复先标「刚刚」显示在本地。
+ */
 function Thread({ t, th, book, vol, target, fetchImpl }: { t: SiteT; th: FixThread; book: string; vol: string; target: string; fetchImpl?: typeof fetch }) {
     const [stance, setStance] = useState<Stance | null>(null);
     const [open, setOpen] = useState(false);
