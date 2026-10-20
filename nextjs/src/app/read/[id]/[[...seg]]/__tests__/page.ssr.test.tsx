@@ -39,6 +39,11 @@ const MANIFEST = {
         { key: 'kanripo', kind: 'transcription', label: 'Kanripo', source: 'kanripo', edition_label: '四部叢刊本' },
     ],
 };
+// 对读章（char＋cord）：GUJI-631 preload；font_file／font_range：GUJI-701 生僻字子集（003 的 range 不合规）
+const DUIDU_INDEX = { chapters: [
+    { n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '../x.json', font_file: '002.font.woff2', font_range: 'U+348B,U+20201-20203' },
+    { n: 3, file: '003', title: '書類', char_file: '003.char.json', font_file: '003.font.woff2', font_range: 'U+348B;}body{color:red' },
+] };
 const FILES: Record<string, unknown> = {
     [`items/${ZHIZHAI}/manifest.json`]: MANIFEST,
     [`items/${ZHIZHAI}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '經錄', has_json: true }, { n: 2, file: '002', title: '史錄', has_json: true }] },
@@ -50,10 +55,7 @@ const FILES: Record<string, unknown> = {
     [`items/${ZHIZHAI}/kanripo/index.json`]: { chapters: [{ n: 1, file: '001', title: '卷一' }] },
     // 对读章（char＋cord）：GUJI-631 preload
     'items/96mid1ogzk/manifest.json': { id: '96mid1ogzk', versions: [{ key: 'default', kind: 'self_collated', label: '自校本' }] },
-    'items/96mid1ogzk/default/index.json': { chapters: [
-        { n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '../x.json', font_file: '002.font.woff2', font_range: 'U+348B,U+20201-20203' },
-        { n: 3, file: '003', title: '書類', char_file: '003.char.json', font_file: '003.font.woff2', font_range: 'U+348B;}body{color:red' },
-    ] },
+    'items/96mid1ogzk/default/index.json': DUIDU_INDEX,
 };
 
 describe('对读章 preload（GUJI-631）', () => {
@@ -86,6 +88,19 @@ describe('对读章 preload（GUJI-631）', () => {
 
         const bad = ([] as El[]).concat((await pageTree(['003'], '96mid1ogzk')).props.children).flat() as El[];
         expect(bad.some((k) => k?.type === 'style' || (k?.type === 'link' && k.props.as === 'font'))).toBe(false);
+    });
+
+    it('有阅读器瘦身副本（GUJI-700）：cord／punct preload 副本地址，cord 仍只在宽屏', async () => {
+        FILES['items/96mid1ogzk/default/index.json'] = { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', reader_cord_file: '002.cord.reader.json', reader_punct_file: '002.punct.reader.json' }] };
+        try {
+            const kids = ([] as El[]).concat((await pageTree(['002'], '96mid1ogzk')).props.children).flat() as El[];
+            const links = kids.filter((k) => k?.type === 'link' && k.props.as === 'fetch').map((k) => k.props);
+            expect(links.map((l) => [l.href.replace('https://data.test/current/items/96mid1ogzk/default/', ''), l.media])).toEqual([
+                ['002.char.json?v=k1', undefined], ['002.punct.reader.json?v=k1', undefined], ['002.cord.reader.json?v=k1', '(min-width: 860px)'],
+            ]);
+        } finally {
+            FILES['items/96mid1ogzk/default/index.json'] = DUIDU_INDEX;
+        }
     });
 
     it('非对读章不出 preload', async () => {

@@ -259,9 +259,12 @@ async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; 
     const d = duiduMeta(s);
     if (!d) return [];
     const { meta } = d;
+    const ok = (f: unknown): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f);
+    // 有阅读器瘦身副本（reader_cord_file／reader_punct_file，GUJI-700）就 preload 副本——浏览器先取的是它（lib/duidu-data.ts）
+    const pick = (k: string) => (k === 'cord_file' || k === 'punct_file') && ok(meta[k]) && ok(meta[`reader_${k}`]) ? meta[`reader_${k}`] : meta[k];
     const files = ['char_file', 'punct_file', 'cord_file', 'entity_file', 'norm_file']
-        .map((k) => ({ k, f: meta![k] }))
-        .filter((x): x is { k: string; f: string } => typeof x.f === 'string' && /^[\w.-]+$/.test(x.f));
+        .map((k) => ({ k, f: pick(k) }))
+        .filter((x): x is { k: string; f: string } => ok(x.f));
     const urls = await Promise.all(files.map(async ({ k, f }) => {
         const href = await getCurrentUrlServer(`items/${id}/${d.key}/${f}`).catch(() => null);
         return href ? { href, ...(k === 'cord_file' ? { media: WIDE_MEDIA } : {}) } : null;

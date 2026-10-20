@@ -5,6 +5,8 @@
  *
  * CDN 取不到（公网抖动、被墙）时整组跳过，不拦发版——这类用例红了不等于线上回归。
  * 读到的是 vol03（含 𠮓、𫎇 等扩展 B 字；简体显示还有繁简转出来的 𪩘、𫄥、𫐖，在扩展 C、D）。
+ * 对读章打包时会生成本章的生僻字子集（<章>.font.woff2，GUJI-701），页面先从子集取，子集里有的字就不再请求分片：
+ * 对读页上「分片」与「子集」哪种请求都算数，字形可见才是要守的。
  */
 import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
@@ -55,17 +57,19 @@ test.describe('花园明朝兜底字体（公共 CDN）', () => {
         expect(urls.every((u) => u.includes('/hanamin@0.0.5/HanaMinB.CJK-Unified-Ideographs-Extension-B-01.woff2'))).toBe(true);
     });
 
-    test('vol03 对读页：只请求扩展区分片；繁体生僻字与简体转出的扩展区字都可见', async ({ page, request }) => {
+    test('vol03 对读页：字体只来自扩展区分片或本章子集；繁体生僻字与简体转出的扩展区字都可见', async ({ page, request }) => {
         await requireNewTextData(request, BOOK, '花园明朝（vol03）');
         await requireTextFile(request, BOOK, 'original/003.cord.json', '花园明朝（vol03）');
         const urls = watchHanamin(page);
+        const subset: string[] = [];
+        page.on('request', (r) => { if (/\/items\/96mid1ogzk\/[^/]+\/003\.font\.woff2(\?|$)/.test(r.url())) subset.push(r.url()); });
         await page.goto(`${TARGET}/read/${BOOK}/original/003`);
         // 第 109 页「六十四卦，𠮓某卦自某卦而来」：𠮓（扩展 B）后面的字不能被带成空白
         const ch = page.locator('[data-char-id="109:7:19"]');
         await ch.scrollIntoViewIfNeeded();
         await expect(ch).toBeVisible({ timeout: 60_000 });
-        await expect.poll(() => urls.length, { timeout: 30_000 }).toBeGreaterThan(0);
-        // 请求的全是扩展区分片，一个都不许是拉丁、常用汉字等其它区块
+        await expect.poll(() => urls.length + subset.length, { timeout: 30_000 }).toBeGreaterThan(0);
+        // 请求的分片全是扩展区的，一个都不许是拉丁、常用汉字等其它区块
         for (const u of urls) expect(u, u).toMatch(EXT_CHUNK);
         const loaded = await page.evaluate(async () => {
             await document.fonts.ready;

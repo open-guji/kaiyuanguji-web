@@ -124,6 +124,25 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 
 **待定**：派生脚本归网站数据打包（`nextjs/scripts/`）；生成逻辑需与 book-index-ui 的 `adaptCharCord`／`adaptPunctJson`／`adaptEntityJson` 同口径，用同一组样本章做往返一致性测试（派生 → 还原 → 与真源适配结果逐字段相等）。
 
+#### 实施（2026-10-20）：改为「同结构瘦身副本」，不做紧凑格式
+
+上面的紧凑格式（合并文件、键名数组化、省格位键）要在 web 端写解码器。量过之后发现，**只删阅读器不读的字段、结构不变**，就能拿到大部分收益：
+
+| 文件 | br 传输 原→瘦 | 解压 原→瘦 | 做不做 |
+|---|---|---|---|
+| cord | 573KB → 202KB | 3.25MB → 1.28MB | 做 |
+| punct | 55KB → 34KB | 1.44MB → 0.59MB | 做 |
+| entity | 84KB → 62KB | 1.51MB → 0.63MB | 不做：ui 的 `span` 偏移在用，能删的只剩 source 等 |
+| char | 110KB → 105KB | 1.46MB → 0.86MB（只去缩进） | 不做 |
+
+- 副本是原 schema 的合法子集，web 与 ui 的读法都不用改，没有解码器。
+- 打包（`scripts/lib/reader-files.mjs`，挂在 bundle-data 拷完条目之后，纯 Node，无额外依赖）给对读章写 `<章>.cord.reader.json`、`<章>.punct.reader.json`，产物 index.json 章条目记 `reader_cord_file`、`reader_punct_file`。
+- 原文件和 `cord_file`／`punct_file` 一律不动：校对页等照旧读原文件。
+- 留哪些字段以 ui 的读法为准：cord 留 `page`、`canvas{id,seq,width,height}`、`image{width,height}`、`cells[].a/box`；punct 去掉 `source`、`char_offset` 与顶层 `metadata`、`stats`。
+- 读法：`loadDuiduFiles` 先取副本，取不到回落原文件；页面 preload 也改为预取副本。
+- 往返一致性：单测用 book-index-ui 的 `adaptCharCord`／`iiifVolumeOf`／`adaptPunctJson`，比较副本与原文件的读法结果；样本章真数据（设 `READER_FILES_SAMPLE_DIR`）逐字段相同。
+- 收益（样本章，宽屏）：对读数据 br 传输 822KB → 403KB，解压 7.66MB → 3.37MB（JSON 解析量减半以上）。窄屏本来就不取 cord，只省 punct 那一份。
+
 ### P1-3 字体：对读章生僻字子集（GUJI-701）
 - **问题**：扩展区汉字兜底是花园明朝（`globals.css` 的 HANAMIN 段，jsDelivr 上按 unicode-range 分的片，每片约 200KB）。
   样本章 31 个生僻字散在 19 片里，读者往下读要下约 3.6MB（实测 15 个请求）。

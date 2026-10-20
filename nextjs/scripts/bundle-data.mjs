@@ -40,6 +40,7 @@ import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, r
 import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
+import { buildItemReaderFiles } from './lib/reader-files.mjs';
 
 // 对读章生僻字子集（GUJI-701）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
 const fontCtx = await chapterFontContext();
@@ -246,6 +247,7 @@ function bundleL1() {
     let itemFileCount = 0;
     let internalSkipped = 0; // 新结构里标 internal、没进公开产物的版本数
     const seedStats = { ok: 0, skip: {} }; // read-seed.json：生成了几个，跳过的按原因计数（skip 不是错误，照旧读法）
+    let readerFiles = 0; // 对读章阅读器瘦身副本（GUJI-700）：写了几份
     const fontJobs = []; // 对读章生僻字子集（GUJI-701）：各条目攒齐后一次生成（分片只解压一次）
     const seedTargets = []; // [源目录, 条目 id]：子集写回产物 index.json 之后再生成首屏种子
     const entryDir = join(OUT_DIR, 'entry');
@@ -308,11 +310,13 @@ function bundleL1() {
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 internalSkipped += copyItemDir(itemDir, join(itemsDir, id)).internalSkipped;
                 itemFileCount++;
+                readerFiles += buildItemReaderFiles(join(itemsDir, id));
                 if (!fontCtx.skip) fontJobs.push(...collectFontJobs(join(itemsDir, id), fontCtx));
                 seedTargets.push([itemDir, id]);
             }
         }
     }
+    if (readerFiles > 0) console.log(`    reader-files: ${readerFiles} 份对读章瘦身副本（cord／punct）`);
     if (fontJobs.length > 0) {
         const n = applyFontResults(fontJobs, runFontJobs(fontJobs, fontCtx));
         console.log(`    chapter-fonts: ${fontJobs.length} 个对读章，${n} 个生成生僻字子集`);

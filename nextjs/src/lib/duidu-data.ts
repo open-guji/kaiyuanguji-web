@@ -55,6 +55,15 @@ const fileField = (ch: Record<string, unknown>, k: string): string | null => {
     return typeof v === 'string' && /^[\w.-]+$/.test(v) ? v : null;
 };
 
+/** 先取阅读器瘦身副本（打包时生成，GUJI-700），取不到再取原文件：副本是原文件的同结构子集，读法相同 */
+async function getPreferred(storage: object | undefined, id: string, key: string, slim: string | null, original: string | null): Promise<unknown> {
+    if (slim) {
+        const v = await getJson(storage, id, key, slim);
+        if (v != null) return v;
+    }
+    return original ? getJson(storage, id, key, original) : null;
+}
+
 /**
  * 取本章的对读数据。本章没有声明 `char_file`、或声明了 char／（已声明的）cord 取不到返回 null（不缓存失败）；
  * `cord_file` 未声明则 cord 为 null（只加载 char 及 punct／entity），不再因此整章返回 null。
@@ -76,17 +85,20 @@ export function loadDuiduFiles(
     const cordFile = opts?.cord === false ? null : declaredCord;
     const cordSkipped = !!declaredCord && !cordFile;
     if (!charFile) return Promise.resolve(null);
+    // 阅读器瘦身副本（`reader_cord_file`／`reader_punct_file`，数据打包时生成）：有就先取它，取不到回落原文件
+    const readerCord = cordFile ? fileField(ch, 'reader_cord_file') : null;
     const punctFile = fileField(ch, 'punct_file');
+    const readerPunct = punctFile ? fileField(ch, 'reader_punct_file') : null;
     const entityFile = fileField(ch, 'entity_file');
     const normFile = fileField(ch, 'norm_file');
-    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${punctFile ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
+    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
             const [char, cord, punct, entity, norm] = await Promise.all([
                 getJson(storage, id, key, charFile),
-                cordFile ? getJson(storage, id, key, cordFile) : null,
-                punctFile ? getJson(storage, id, key, punctFile) : null,
+                cordFile ? getPreferred(storage, id, key, readerCord, cordFile) : null,
+                punctFile ? getPreferred(storage, id, key, readerPunct, punctFile) : null,
                 entityFile ? getJson(storage, id, key, entityFile) : null,
                 normFile ? getJson(storage, id, key, normFile) : null,
             ]);
