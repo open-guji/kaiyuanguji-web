@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import { createTextApi } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
 import { readerPath } from '@/lib/reader-route';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
@@ -449,28 +450,12 @@ const doneLabel = (choice: ReviewChoice, char?: string) =>
     choice === 'char' ? `「${char}」` : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
 
 /** 页头用的书名与作者（服务端从条目 JSON 取，见 page.ssr.tsx）；取不到为 null */
-export interface ProofingBookInfo { title: string; author?: string }
+export type ProofingBookInfo = ProofBookInfo;
 
-/** 页头：与阅读页一样先是「返回阅读」，再是书名、作者、章名，一眼看出是哪本书的哪一章 */
+/** 页头：与阅读页一样先是「返回阅读」，再是书名、作者、章名（与 v1.x 的反馈页共用 ProofHeader） */
 function ProofingHeader({ book, vol, info, chapterTitle, versionKey }: { book: string; vol: string; info: ProofingBookInfo | null; chapterTitle?: string; versionKey?: string }) {
     const back = readerPath(book, { key: versionKey, chapter: /^\d{3}$/.test(vol) ? vol : undefined });
-    const sub = [info?.author, chapterTitle].filter(Boolean).join(' · ');
-    return (
-        <header data-testid="proofing-header" style={{ borderBottom: '1px solid var(--color-tint-2)' }}>
-            <div className="mx-auto max-w-[1400px] px-4 pb-4 pt-3">
-                <Link href={back} className={`inline-flex items-center gap-1 no-underline ${BTN_CLASS}`} style={{ ...btnStyle('small'), color: 'var(--color-ink)' }}>
-                    <span aria-hidden="true">‹</span> 返回阅读
-                </Link>
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <h1 className="m-0 text-[26px] font-semibold leading-tight" style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-                        {info?.title ?? '校对'}
-                    </h1>
-                    <span className="rounded px-2 py-0.5 text-[13px] font-medium" style={{ backgroundColor: 'var(--color-zhu)', color: '#fff' }}>校对中</span>
-                </div>
-                {sub && <p className="m-0 mt-1 text-[15px]" style={{ color: 'var(--color-ink-2)' }}>{sub}</p>}
-            </div>
-        </header>
-    );
+    return <ProofHeader back={back} info={info} sub={chapterTitle} badge="校对中" />;
 }
 
 /** 开头说明：一句请求、三步怎么做、进度；末尾一行小字说明意见怎么用 */

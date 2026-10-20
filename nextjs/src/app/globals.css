@@ -2621,6 +2621,10 @@
   .og-fb-contact {
     margin-top: 10px;
   }
+  /* 弹窗里相邻的输入框、文本框之间留间隔（label 是视觉隐藏的） */
+  .og-fb-field + .og-fb-sr + .og-fb-field {
+    margin-top: 10px;
+  }
   .og-fb-error {
     margin: 10px 0 0;
     color: var(--color-zhu);
@@ -2950,10 +2954,6 @@
   margin: 0 auto;
   padding: 24px 16px 48px;
 }
-.og-fx-page h1 {
-  font-size: 1.5rem;
-  margin-bottom: 8px;
-}
 .og-fx-intro,
 .og-fx-count {
   color: var(--color-ink-2);
@@ -2992,10 +2992,27 @@
   align-items: baseline;
 }
 .og-fx-where {
-  color: var(--color-zhu);
+  color: var(--color-ink-3);
+  font-size: 0.85rem;
 }
 .og-fx-kind {
   font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: var(--color-zhu-tint);
+  color: var(--color-zhu);
+  font-size: 0.85rem;
+}
+.og-fx-old {
+  font-size: 1.05rem;
+}
+.og-fx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 6px;
+  color: var(--color-ink-3);
+  font-size: 0.8rem;
 }
 .og-fx-people,
 .og-fx-tv,
@@ -3008,6 +3025,7 @@
 }
 .og-fx-new {
   font-weight: 600;
+  font-size: 1.05rem;
 }
 .og-fx-notes {
   margin: 6px 0 0;

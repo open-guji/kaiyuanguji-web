@@ -1,10 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
+import { useSource } from '@/components/common/SourceContext';
+import { getTransport } from '@/lib/transport';
+import { readerPath } from '@/lib/reader-route';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    EMPTY_THREAD, NAME_MAX, REPLY_MAX, groupFixes, isFixBook, isFixVol, loadPublicFixes, parsePublicFixes, parsePublicThreads, submitThread,
+    EMPTY_THREAD, NAME_MAX, REPLY_MAX, groupFixes, isFixBook, isFixVol, loadFixes, parsePublicFixes, parsePublicThreads, submitThread,
     type FixGroup, type FixKind, type FixThread, type Stance,
 } from '@/lib/fixes';
 import { useSiteT } from '@/i18n/use-site-t';
@@ -90,22 +93,27 @@ function GroupRow({ t, g, book, vol, th, fetchImpl }: { t: SiteT; g: FixGroup; b
     return (
         <li className="og-fx-row" data-testid="fix-group">
             <div className="og-fx-head">
+                <span className="og-fx-kind">{label}</span>
                 <a className="og-fx-where" href={`/read/${book}/${vol}#${g.at}`}>
                     {where(t, g.at)}{g.end && g.end !== g.at ? ` ${where(t, g.end, 'charfix.list.toEnd')}` : ''}
                 </a>
-                <span className="og-fx-kind">{label}</span>
-                <span className="og-fx-people">{t('charfix.list.people', { n: g.people })}</span>
             </div>
-            <div className="og-fx-body">
-                {g.old && <span>{g.kind === 'entity' ? t('charfix.list.entity', { text: g.old }) : t('charfix.list.now', { text: g.old })}</span>}
-                {suggestions.map((s) => <span key={s} className="og-fx-new">{t('charfix.list.suggest', { text: s })}</span>)}
-                {versions.length > 0 && <span className="og-fx-tv">{t('charfix.list.version', { tv: versions.join('、') })}</span>}
-            </div>
+            {(g.old || suggestions.length > 0) && (
+                <div className="og-fx-body">
+                    {g.old && <span className="og-fx-old">{g.kind === 'entity' ? t('charfix.list.entity', { text: g.old }) : t('charfix.list.now', { text: g.old })}</span>}
+                    {suggestions.map((s) => <span key={s} className="og-fx-new">{t('charfix.list.suggest', { text: s })}</span>)}
+                </div>
+            )}
             {g.items.some((x) => x.note) && (
                 <ul className="og-fx-notes">
-                    {g.items.filter((x) => x.note).map((x, i) => <li key={i}><span className="og-fx-date">{day(x.ts)}</span> {x.note}</li>)}
+                    {g.items.filter((x) => x.note).map((x, i) => <li key={i}>{x.note}</li>)}
                 </ul>
             )}
+            <div className="og-fx-meta">
+                <span>{t('charfix.list.people', { n: g.people })}</span>
+                {versions.length > 0 && <span>{t('charfix.list.version', { tv: versions.join('、') })}</span>}
+                {g.latest > 0 && <span>{day(g.latest)}</span>}
+            </div>
             <Thread t={t} th={th} book={book} vol={vol} target={g.target} fetchImpl={fetchImpl} />
         </li>
     );
@@ -119,14 +127,27 @@ export default function TextFixesContent({ fetchImpl }: { fetchImpl?: typeof fet
     const ok = isFixBook(book) && isFixVol(vol);
     const [raw, setRaw] = useState<unknown | null | undefined>(undefined);
     const [kind, setKind] = useState<FixKind | ''>('');
+    const { source } = useSource();
+    const [info, setInfo] = useState<ProofBookInfo | null>(null);
+
+    useEffect(() => {
+        if (!isFixBook(book)) return;
+        let live = true;
+        const get = getTransport(source).getEntry;
+        if (!get) return;
+        Promise.resolve(getTransport(source).getEntry(book)).then((e) => {
+            if (live && e?.title) setInfo({ title: e.title });
+        }).catch(() => { /* 取不到书名就只显示状态标 */ });
+        return () => { live = false; };
+    }, [book, source]);
 
     useEffect(() => {
         if (!ok) return;
         let live = true;
         setRaw(undefined);
-        loadPublicFixes(book, fetchImpl).then((r) => { if (live) setRaw(r); });
+        loadFixes(book, vol, fetchImpl).then((r) => { if (live) setRaw(r); });
         return () => { live = false; };
-    }, [book, ok, fetchImpl]);
+    }, [book, vol, ok, fetchImpl]);
 
     const groups = useMemo(() => (raw ? groupFixes(parsePublicFixes(raw, vol)) : []), [raw, vol]);
     const threads = useMemo(() => parsePublicThreads(raw, vol), [raw, vol]);
@@ -134,33 +155,34 @@ export default function TextFixesContent({ fetchImpl }: { fetchImpl?: typeof fet
     const total = groups.reduce((s, g) => s + g.items.length, 0);
 
     return (
-        <div className="og-fx-page">
-            <h1>{ok ? t('charfix.list.heading', { vol }) : t('charfix.list.title')}</h1>
-            <p className="og-fx-intro">{t('charfix.list.intro')}</p>
-            {!ok ? <p role="alert">{t('charfix.list.badParams')}</p> : (
-                <>
-                    <p><Link href={`/read/${book}/${vol}`}>{t('charfix.list.back')}</Link></p>
-                    {raw === undefined && <p>{t('charfix.list.loading')}</p>}
-                    {raw === null && <p role="alert">{t('charfix.list.failed')}</p>}
-                    {raw && groups.length === 0 && <p>{t('charfix.list.empty')}</p>}
-                    {groups.length > 0 && (
-                        <>
-                            <p className="og-fx-count">{t('charfix.list.count', { n: groups.length, m: total })}</p>
-                            <div className="og-fx-tabs" role="tablist">
-                                {(['', ...KINDS] as const).map((k) => (
-                                    <button key={k || 'all'} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}>
-                                        {k ? t(`charfix.list.kinds.${k}`) : t('charfix.list.all')}
-                                    </button>
-                                ))}
-                            </div>
-                            <ol className="og-fx-list">
-                                {shown.map((g) => <GroupRow key={g.key} t={t} g={g} book={book} vol={vol} th={threads.get(g.target) ?? EMPTY_THREAD} fetchImpl={fetchImpl} />)}
-                            </ol>
-                        </>
-                    )}
-                </>
-            )}
-        </div>
+        <>
+            <ProofHeader back={ok ? readerPath(book, { chapter: /^\d{3}$/.test(vol) ? vol : undefined }) : '/'} info={info}
+                sub={ok ? t('charfix.list.volume', { vol }) : undefined} badge={t('charfix.list.badge')} />
+            <div className="og-fx-page">
+                {!ok ? <p role="alert">{t('charfix.list.badParams')}</p> : (
+                    <>
+                        <p className="og-fx-intro">{t('charfix.list.intro')}</p>
+                        {raw === undefined && <p>{t('charfix.list.loading')}</p>}
+                        {raw === null && <p role="alert">{t('charfix.list.failed')}</p>}
+                        {raw && groups.length === 0 && <p>{t('charfix.list.empty')}</p>}
+                        {groups.length > 0 && (
+                            <>
+                                <p className="og-fx-count">{t('charfix.list.count', { n: groups.length, m: total })}</p>
+                                <div className="og-fx-tabs" role="tablist">
+                                    {(['', ...KINDS] as const).map((k) => (
+                                        <button key={k || 'all'} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}>
+                                            {k ? t(`charfix.list.kinds.${k}`) : t('charfix.list.all')}
+                                        </button>
+                                    ))}
+                                </div>
+                                <ol className="og-fx-list">
+                                    {shown.map((g) => <GroupRow key={g.key} t={t} g={g} book={book} vol={vol} th={threads.get(g.target) ?? EMPTY_THREAD} fetchImpl={fetchImpl} />)}
+                                </ol>
+                            </>
+                        )}
+                    </>
+                )}
+            </div>
+        </>
     );
 }
-
