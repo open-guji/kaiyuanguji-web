@@ -9,7 +9,7 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
-import { isProofingChapter, loadProofIndex, parsePending, proofState } from '@/lib/proofing';
+import { loadProofIndex, parsePending, proofInvite } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import CharFixEntry from '@/components/CharFixEntry';
@@ -73,20 +73,17 @@ const sameSel = (a: ReaderSel, b: ReaderSel) => (a.key ?? '') === (b.key ?? '') 
 /** 版本名与章名（<title>、反馈上下文用）：取 manifest 与版本目录，服务端给了种子就不发请求；取不到就没有 */
 /**
  * 这一章要不要请读者去校对（返回章号，不要则 undefined）。
- * 先看 COS 上的待审单总表（中心库每日发布）：列了这一章就以它为准；
- * 没列时退回 book-text：章条目 proofing: true，且待审单没清空（取不到待审单时照旧显示）。
+ * 先看 COS 上的待审单总表（中心库每日发布）：列了这一章就以它为准，取到了总表却没列这一章就不请；
+ * 只有总表取不到时才退回 book-text：章条目 proofing: true、声明了待审单且没清空。
  */
 async function proofVolOf(id: string, versionKey: string, chapter: { file?: string } | undefined, transport: ReturnType<typeof getTransport>): Promise<string | undefined> {
     const stem = chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
     if (!stem) return undefined;
-    const state = proofState(await loadProofIndex(), id, stem);
-    if (state !== 'unknown') return state === 'open' ? stem : undefined;
-    if (!isProofingChapter(chapter)) return undefined;
-    const pendingFile = (chapter as { pending_file?: unknown }).pending_file;
-    if (typeof pendingFile === 'string') {
-        const raw = await getJson(transport, id, versionKey, pendingFile).catch(() => null);
-        if (raw && parsePending(raw).cells.length === 0) return undefined;
-    }
+    const invite = proofInvite(await loadProofIndex(), id, stem, chapter);
+    if (invite === 'yes') return stem;
+    if (invite === 'no') return undefined;
+    const raw = await getJson(transport, id, versionKey, invite.pendingFile).catch(() => null);
+    if (raw && parsePending(raw).cells.length === 0) return undefined;
     return stem;
 }
 
