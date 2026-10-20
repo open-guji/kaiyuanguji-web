@@ -569,15 +569,21 @@ export function createCosStorage(): IndexStorage {
         return resolving;
     }
 
-    // 现行（非 hashed）布局下取版本目录里的文本 JSON：与 inner.getChapter 同一个地址、同一个版本号
-    async function getTextFileLegacy(id: string, key: string, file: string): Promise<Record<string, unknown> | null> {
+    // 现行（非 hashed）布局下版本目录里文件的地址：与 inner.getChapter 同一个地址、同一个版本号
+    async function textFileUrlLegacy(id: string, key: string, file: string): Promise<string | null> {
         if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isTextFileName(file)) return null;
+        // 有服务端给的版本键就不等 latest.json；地址与 getCosDataBaseUrl()（current/）一致
+        const seeded = seededTextVersion();
+        return seeded
+            ? `${COS_BASE}/current/items/${id}/${key}/${file}?v=${seeded}`
+            : `${(await ensureInner()).baseUrl}/items/${id}/${key}/${file}?v=${await resolveCosVersion()}`;
+    }
+
+    // 现行（非 hashed）布局下取版本目录里的文本 JSON
+    async function getTextFileLegacy(id: string, key: string, file: string): Promise<Record<string, unknown> | null> {
         try {
-            // 有服务端给的版本键就不等 latest.json；地址与 getCosDataBaseUrl()（current/）一致
-            const seeded = seededTextVersion();
-            const url = seeded
-                ? `${COS_BASE}/current/items/${id}/${key}/${file}?v=${seeded}`
-                : `${(await ensureInner()).baseUrl}/items/${id}/${key}/${file}?v=${await resolveCosVersion()}`;
+            const url = await textFileUrlLegacy(id, key, file);
+            if (!url) return null;
             const res = await fetch(url, { cache: 'no-cache' });
             return res.ok ? await res.json() : null;
         } catch {
@@ -792,6 +798,8 @@ export function createCosStorage(): IndexStorage {
             if (prop === 'getHubs') return () => getHubsFromCos();
             // 对读数据文件（char／cord／punct／entity）：BundleStorage 没有这个方法，两种布局都在外层接走
             if (prop === 'getTextFile') return (id: string, key: string, file: string) => (DATA_LAYOUT === 'hashed' ? getTextFileH1(id, key, file) : getTextFileLegacy(id, key, file));
+            // 版本目录下文件的地址（站内换章时注入对读章子集字体用，GUJI-701）；h1 哈希寻址布局不给（返回 null，照旧走分片）
+            if (prop === 'getTextFileUrl') return (id: string, key: string, file: string) => (DATA_LAYOUT === 'hashed' ? Promise.resolve(null) : textFileUrlLegacy(id, key, file).catch(() => null));
             // 阅读文本：开关打开时整条走 h1 路径（见上方 H1 系列函数）；
             // 默认（未设置或非 'hashed'）不特殊处理这些方法名，走下面的
             // 通用分支委托给 inner（book-index-ui 的 BundleStorage），

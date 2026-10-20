@@ -41,6 +41,7 @@ import { seedCallKey, type ReaderSeed } from '../reader-seed';
 import { leadParagraphs, leadText } from '@/lib/reader-lead';
 import type { ReaderLeadData } from '../ReaderLead';
 import { simplifyMetadata } from '@/lib/server/simplify';
+import { chapterFontCss, chapterFontMeta, isCssSafeUrl } from '@/lib/chapter-font';
 import { getSiteT } from '@/i18n/translate';
 import { startRenderTiming, serverTimingValue, timed, withHopTiming, type RenderTiming } from '@/lib/server/render-timing';
 import { withSpeculation, type SpeculativeGetter } from '@/lib/server/speculative-get';
@@ -276,26 +277,14 @@ async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; 
  * 对读章的生僻字子集（GUJI-701）：打包时给对读章生成了 <章>.font.woff2（约 10KB），章条目记 font_file／font_range。
  * 页面里追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：同字族 unicode-range 重叠时后定义的先查，
  * 这些字就从子集取，不再去下 globals.css 里花园明朝的大分片（这一章原先 19 片、3.6MB）；子集取不到时照旧回落分片。
- * 只管首屏这一章：站内换章不重渲染服务端，新章的生僻字照旧走分片。
+ * 这里只出首屏这一章；站内换章不经服务端，由阅读器取新章数据时补（lib/chapter-font.ts 的 ensureChapterFont）。
  */
-const FONT_RANGE_RE = /^U\+[0-9A-F]{4,6}(?:-[0-9A-F]{4,6})?(?:,U\+[0-9A-F]{4,6}(?:-[0-9A-F]{4,6})?)*$/;
-
 async function chapterFont(id: string, s: Loaded): Promise<{ href: string; range: string } | null> {
     const d = duiduMeta(s);
-    const file = d?.meta.font_file;
-    const range = d?.meta.font_range;
-    if (typeof file !== 'string' || !/^[\w.-]+\.woff2$/.test(file)) return null;
-    if (typeof range !== 'string' || range.length > 50_000 || !FONT_RANGE_RE.test(range)) return null;
-    const href = await getCurrentUrlServer(`items/${id}/${d!.key}/${file}`).catch(() => null);
-    // 地址要原样放进 CSS 的 url("…")：带引号、括号、反斜杠、空白的不用
-    if (!href || /["'()\\\s]/.test(href)) return null;
-    return { href, range };
-}
-
-function chapterFontCss({ href, range }: { href: string; range: string }): string {
-    return ['HanaMinA', 'HanaMinB']
-        .map((f) => `@font-face{font-family:"${f}";font-style:normal;font-weight:400;font-display:swap;src:url("${href}") format("woff2");unicode-range:${range}}`)
-        .join('');
+    const meta = chapterFontMeta(d?.meta);
+    if (!d || !meta) return null;
+    const href = await getCurrentUrlServer(`items/${id}/${d.key}/${meta.file}`).catch(() => null);
+    return isCssSafeUrl(href) ? { href, range: meta.range } : null;
 }
 
 /** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */

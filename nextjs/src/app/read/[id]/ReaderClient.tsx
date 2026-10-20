@@ -18,6 +18,7 @@ import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type Char
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
 import { getJson, loadDuiduFiles, volumeFromChar } from '@/lib/duidu-data';
+import { ensureChapterFont } from '@/lib/chapter-font';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
@@ -298,6 +299,8 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         proofCtx.current = { ctx, key: chapterKey };
         if (proofOnRef.current) fetchProof(ctx);
+        // 站内换章：补上这一章的生僻字子集字体（首屏那章服务端已出，同一地址不重复加，GUJI-701）
+        if (ctx?.versionKey) void ensureChapterFont(transport, id, ctx.versionKey, ctx.chapter);
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
         // 没有 cord：未声明（没有对读）或取不到 → 不做对读版面；窄屏故意没取 → 照常排正文，只是没有字框
         if (!files || (!files.cord && !files.cordSkipped)) return null;
