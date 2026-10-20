@@ -629,9 +629,9 @@ test.describe('新架构：sitemap', () => {
         }));
         const total = counts.reduce((a, b) => a + b, 0);
         test.info().annotations.push({ type: 'sitemap', description: `${shards.length} 个条目分片，共 ${total} 条` });
-        // gen-sitemaps.mjs 的闸是 ≥10 万；2026-09-28 staging 实测 146,670
+        // gen-sitemaps.mjs 的闸是 ≥10 万；2026-09-28 staging 实测 146,670；2026-10-20 正式数据 428,140（作品 20.3 万、书 18.6 万、实体 3.8 万），上限放到 80 万
         expect(total, '条目 sitemap 总数不在合理区间').toBeGreaterThanOrEqual(100_000);
-        expect(total).toBeLessThanOrEqual(400_000);
+        expect(total, '条目 sitemap 总数不在合理区间').toBeLessThanOrEqual(800_000);
 
         // 总目与阅读首页的分类节点页（overview#280 S3，#242）
         expect(paths, '索引里没有分类节点页分片').toContain('/sitemaps/nodes-001.xml');
