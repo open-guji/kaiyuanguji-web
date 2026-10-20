@@ -1,0 +1,284 @@
+{
+ "HanaMin 0.0.5(网站现用)": {
+  "n_files": 217,
+  "blocks": {
+   "basic": 20971,
+   "A": 6582,
+   "B": 42711,
+   "C": 4149,
+   "D": 222,
+   "E": 5762,
+   "F": 7473,
+   "I": 0,
+   "G": 0,
+   "H": 0,
+   "J": 0,
+   "cmp": 472,
+   "cmpS": 542,
+   "pua": 1402,
+   "spua": 0,
+   "ids": 12
+  },
+  "meta": [
+   [
+    "HanaMinA Regular",
+    "2017-09-04; (gw1796612)",
+    "None"
+   ],
+   [
+    "HanaMinB Regular",
+    "2017-09-04; (gw1796547)",
+    "None"
+   ]
+  ]
+ },
+ "I.Ming 8.10": {
+  "n_files": 1,
+  "blocks": {
+   "basic": 20673,
+   "A": 6010,
+   "B": 26990,
+   "C": 468,
+   "D": 137,
+   "E": 665,
+   "F": 1660,
+   "I": 1,
+   "G": 51,
+   "H": 12,
+   "J": 0,
+   "cmp": 104,
+   "cmpS": 7,
+   "pua": 5,
+   "spua": 0,
+   "ids": 16
+  },
+  "meta": [
+   [
+    "I.Ming",
+    "Version 8.100; Apr 20, 2024",
+    "IPA Open Font License v1.0"
+   ]
+  ]
+ },
+ "Jigmo 20230816(cv仓)": {
+  "n_files": 3,
+  "blocks": {
+   "basic": 20992,
+   "A": 6592,
+   "B": 42720,
+   "C": 4154,
+   "D": 222,
+   "E": 5762,
+   "F": 7473,
+   "I": 622,
+   "G": 4939,
+   "H": 4192,
+   "J": 0,
+   "cmp": 472,
+   "cmpS": 542,
+   "pua": 0,
+   "spua": 9633,
+   "ids": 16
+  },
+  "meta": [
+   [
+    "Jigmo Regular",
+    "2023-08-16",
+    "None"
+   ],
+   [
+    "Jigmo2 Regular",
+    "2023-08-16",
+    "None"
+   ],
+   [
+    "Jigmo3 Regular",
+    "2023-08-16",
+    "None"
+   ]
+  ]
+ },
+ "Jigmo 2025.9.12": {
+  "n_files": 3,
+  "blocks": {
+   "basic": 20992,
+   "A": 6592,
+   "B": 42720,
+   "C": 4160,
+   "D": 222,
+   "E": 5774,
+   "F": 7473,
+   "I": 622,
+   "G": 4939,
+   "H": 4192,
+   "J": 4298,
+   "cmp": 472,
+   "cmpS": 542,
+   "pua": 0,
+   "spua": 9444,
+   "ids": 16
+  },
+  "meta": [
+   [
+    "Jigmo Regular",
+    "2025-09-12",
+    "None"
+   ],
+   [
+    "Jigmo2 Regular",
+    "2025-09-12",
+    "None"
+   ],
+   [
+    "Jigmo3 Regular",
+    "2025-09-12",
+    "None"
+   ]
+  ]
+ },
+ "BabelStone Han": {
+  "n_files": 1,
+  "blocks": {
+   "basic": 20992,
+   "A": 4593,
+   "B": 14025,
+   "C": 2197,
+   "D": 222,
+   "E": 3346,
+   "F": 2975,
+   "I": 0,
+   "G": 3019,
+   "H": 2266,
+   "J": 0,
+   "cmp": 472,
+   "cmpS": 542,
+   "pua": 4700,
+   "spua": 0,
+   "ids": 12
+  },
+  "meta": [
+   [
+    "BabelStone Han",
+    "Version 15.0.4; November 11, 2022",
+    "ARPHIC PUBLIC LICENSE\n\nCopyright (C) 1999 Arphic Technology "
+   ]
+  ]
+ },
+ "Plangothic 遍黑体": {
+  "n_files": 740,
+  "blocks": {
+   "basic": 1163,
+   "A": 71,
+   "B": 42720,
+   "C": 4160,
+   "D": 223,
+   "E": 5774,
+   "F": 7473,
+   "I": 622,
+   "G": 4939,
+   "H": 4192,
+   "J": 4298,
+   "cmp": 472,
+   "cmpS": 542,
+   "pua": 1513,
+   "spua": 72,
+   "ids": 16
+  },
+  "meta": [
+   [
+    "Plangothic P1",
+    "None",
+    "None"
+   ],
+   [
+    "Plangothic P2",
+    "None",
+    "None"
+   ]
+  ]
+ },
+ "思源宋体 SC 2.003": {
+  "n_files": 1,
+  "blocks": {
+   "basic": 20992,
+   "A": 6592,
+   "B": 2057,
+   "C": 46,
+   "D": 33,
+   "E": 108,
+   "F": 4,
+   "I": 0,
+   "G": 3,
+   "H": 0,
+   "J": 0,
+   "cmp": 366,
+   "cmpS": 55,
+   "pua": 0,
+   "spua": 0,
+   "ids": 12
+  },
+  "meta": [
+   [
+    "Source Han Serif SC",
+    "Version 2.003;hotconv 1.1.1;makeotfexe 2.6.0",
+    "This Font Software is licensed under the SIL Open Font Licen"
+   ]
+  ]
+ },
+ "全字库正宋体": {
+  "n_files": 1,
+  "blocks": {
+   "basic": 20904,
+   "A": 6582,
+   "B": 0,
+   "C": 0,
+   "D": 0,
+   "E": 0,
+   "F": 0,
+   "I": 0,
+   "G": 0,
+   "H": 0,
+   "J": 0,
+   "cmp": 302,
+   "cmpS": 0,
+   "pua": 236,
+   "spua": 0,
+   "ids": 0
+  },
+  "meta": [
+   [
+    "TW-Sung-98_1",
+    "Version 1.00",
+    "None"
+   ]
+  ]
+ },
+ "Unifont 15.0.01": {
+  "n_files": 1,
+  "blocks": {
+   "basic": 20992,
+   "A": 6592,
+   "B": 0,
+   "C": 0,
+   "D": 0,
+   "E": 0,
+   "F": 0,
+   "I": 0,
+   "G": 0,
+   "H": 0,
+   "J": 0,
+   "cmp": 512,
+   "cmpS": 0,
+   "pua": 0,
+   "spua": 0,
+   "ids": 16
+  },
+  "meta": [
+   [
+    "Unifont",
+    "Version 15.0.01",
+    "Dual license: SIL Open Font License version 1.1, and GNU GPL"
+   ]
+  ]
+ }
+}
