@@ -42,7 +42,7 @@ import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
 import { buildItemReaderFiles } from './lib/reader-files.mjs';
 
-// 对读章生僻字子集（GUJI-701）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
+// 章生僻字子集（GUJI-701／GUJI-721）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
 const fontCtx = await chapterFontContext();
 
 assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（B5-3.2；本地开发设 ALLOW_SOURCE_FALLBACK=1）
@@ -318,8 +318,9 @@ function bundleL1() {
     }
     if (readerFiles > 0) console.log(`    reader-files: ${readerFiles} 份对读章瘦身副本（cord／punct／entity／char）`);
     if (fontJobs.length > 0) {
+        const s = Date.now();
         const n = applyFontResults(fontJobs, runFontJobs(fontJobs, fontCtx));
-        console.log(`    chapter-fonts: ${fontJobs.length} 个对读章，${n} 个生成生僻字子集`);
+        console.log(`    chapter-fonts: ${fontJobs.length} 章，${n} 章生成生僻字子集（Jigmo），用时 ${((Date.now() - s) / 1000).toFixed(0)} 秒`);
     } else if (fontCtx.skip) {
         console.warn(`    ⚠ chapter-fonts 跳过：${fontCtx.skip}（阅读页照旧取花园明朝分片）`);
     }

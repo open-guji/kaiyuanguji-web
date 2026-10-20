@@ -274,17 +274,25 @@ async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; 
 }
 
 /**
- * 对读章的生僻字子集（GUJI-701）：打包时给对读章生成了 <章>.font.woff2（约 10KB），章条目记 font_file／font_range。
- * 页面里追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：同字族 unicode-range 重叠时后定义的先查，
- * 这些字就从子集取，不再去下 globals.css 里花园明朝的大分片（这一章原先 19 片、3.6MB）；子集取不到时照旧回落分片。
- * 这里只出首屏这一章；站内换章不经服务端，由阅读器取新章数据时补（lib/chapter-font.ts 的 ensureChapterFont）。
+ * 章的生僻字子集（GUJI-701／GUJI-721）：打包时给有生僻字的章生成了 <章>.font.woff2（中位约 5KB），章条目记 font_file／font_range，
+ * 生僻字多的章另有 font_parts。页面里每块追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：
+ * 同字族 unicode-range 重叠时后定义的先查，这些字就从子集取，不再去下 globals.css 里花园明朝的大分片；子集取不到时照旧回落分片。
+ * 只 preload 第一块（后面的块读到才下）。这里只出首屏这一章；站内换章不经服务端，由阅读器取新章数据时补（lib/chapter-font.ts 的 ensureChapterFont）。
  */
-async function chapterFont(id: string, s: Loaded): Promise<{ href: string; range: string } | null> {
-    const d = duiduMeta(s);
-    const meta = chapterFontMeta(d?.meta);
-    if (!d || !meta) return null;
-    const href = await getCurrentUrlServer(`items/${id}/${d.key}/${meta.file}`).catch(() => null);
-    return isCssSafeUrl(href) ? { href, range: meta.range } : null;
+async function chapterFont(id: string, s: Loaded): Promise<{ href: string; range: string }[] | null> {
+    if (process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed') return null;
+    const { checked } = s;
+    if (checked.status !== 'found' || !checked.version || !checked.chapter) return null;
+    const chapter = checked.index?.chapters.find((c) => c.file === checked.chapter) as Record<string, unknown> | undefined;
+    const meta = chapterFontMeta(chapter);
+    if (!meta) return null;
+    const key = checked.version.key;
+    const parts = await Promise.all(meta.map(async ({ file, range }) => {
+        const href = await getCurrentUrlServer(`items/${id}/${key}/${file}`).catch(() => null);
+        return isCssSafeUrl(href) ? { href, range } : null;
+    }));
+    const ok = parts.filter((p): p is { href: string; range: string } => !!p);
+    return ok.length ? ok : null;
 }
 
 /** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */
@@ -324,7 +332,7 @@ export default async function ReaderPage({ params }: Props) {
         <>
             <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
             {preloads.map(({ href, media }) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} media={media} />)}
-            {font && <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font.href} />}
+            {font && <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font[0].href} />}
             {/* 不带 precedence 的 <style> 留在 body 里，排在 globals.css 之后＝后定义（GUJI-701） */}
             {font && <style id="kyg-chapter-font" dangerouslySetInnerHTML={{ __html: chapterFontCss(font) }} />}
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
