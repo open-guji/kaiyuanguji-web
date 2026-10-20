@@ -89,6 +89,7 @@ export function rareCodepoints(text, ranges, variants = [(s) => s]) {
 
 /** 条目输出目录下的文本版本目录（含 index.json 的直接子目录） */
 function versionDirs(itemOutDir) {
+    if (!existsSync(itemOutDir)) return []; // 整个条目 internal：copyItemDir 不建输出目录
     return readdirSync(itemOutDir)
         .map((n) => join(itemOutDir, n))
         .filter((d) => statSync(d).isDirectory() && existsSync(join(d, 'index.json')));
