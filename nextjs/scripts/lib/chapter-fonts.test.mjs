@@ -76,6 +76,10 @@ test('任务只收对读章；写回 font_file／font_range，没字的章去掉
     assert.equal(existsSync(join(dir, `009${FONT_SUFFIX}`)), false);
 });
 
+test('条目输出目录不存在（整个条目 internal，没拷）：没有任务，不抛错', () => {
+    assert.deepEqual(collectFontJobs(join(tmpdir(), 'cf-nonexistent-dir'), { ranges: hanaminRanges(CSS), variants: [(s) => s] }), []);
+});
+
 test('没有改动时不重写 index.json（保留源仓的排版字节）', () => {
     const { item, dir } = fixture();
     const raw = '{"chapters":[{"file":"002","title":"乙","char_file":"001.char.json"}]}';
