@@ -17,14 +17,16 @@
  *   3. 精确   —— 只用于长期稳定的经典条目（史記的作者不会变成别人）
  */
 
+import { API_ORIGIN, DATA_ORIGIN, SITE_ORIGIN } from '../../config/hosts.mjs';
+
 /** 被测站点，默认线上；本地验证传 TARGET=http://localhost:3000 */
-export const TARGET = process.env.TARGET ?? 'https://www.openguji.com';
+export const TARGET = process.env.TARGET ?? SITE_ORIGIN;
 
 /** 数据源 COS（经 EdgeOne 反代） */
-export const DATA_BASE = process.env.DATA_BASE ?? 'https://data.kaiyuanguji.com';
+export const DATA_BASE = process.env.DATA_BASE ?? DATA_ORIGIN;
 
 /** 搜索 L1（Meilisearch，上海）。公开只读 key，非机密。 */
-export const MEILI_BASE = process.env.MEILI_BASE ?? 'https://api.kaiyuanguji.com';
+export const MEILI_BASE = process.env.MEILI_BASE ?? API_ORIGIN;
 export const MEILI_KEY =
     process.env.MEILI_KEY ??
     '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465';

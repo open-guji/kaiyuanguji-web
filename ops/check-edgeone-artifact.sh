@@ -18,6 +18,10 @@ case "$SITEMAP" in static|proxy) ;; *) echo "❌ 第三个参数只能是 static
 E="$N_DIR/.edgeone"
 A="$E/assets"
 CF="$E/cloud-functions/ssr-node/config.json"
+# 域名取自 config/hosts.json（唯一来源）
+HOSTS_JSON="$(dirname "$0")/../config/hosts.json"
+DATA_ORIGIN=$(node -p "require(process.argv[1]).data" "$(realpath "$HOSTS_JSON")")
+SITE_ORIGIN=$(node -p "require(process.argv[1]).site" "$(realpath "$HOSTS_JSON")")
 
 if grep -r "\"$MODE\"" "$A/_next/static/chunks/" > /dev/null 2>&1; then
   echo "✓ EdgeOne build confirmed using $MODE mode"
@@ -28,7 +32,7 @@ fi
 ! grep -q 'noindex' "$A/index.html" || { echo "❌ 正式站产物含 noindex meta，混入了测试站构建"; exit 1; }
 ! grep -q 'staging-badge' "$A/index.html" || { echo "❌ 正式站产物含测试站角标"; exit 1; }
 grep -qx 'Allow: /' "$A/robots.txt" || { echo "❌ robots.txt 不是正式站口径："; cat "$A/robots.txt"; exit 1; }
-! grep -rq 'data.kaiyuanguji.com/staging' "$A/_next/static/chunks/" || { echo "❌ 正式站产物读的是测试站数据"; exit 1; }
+! grep -rqF "${DATA_ORIGIN#https://}/staging" "$A/_next/static/chunks/" || { echo "❌ 正式站产物读的是测试站数据"; exit 1; }
 grep -q '"\^/item/' "$CF" || { echo "❌ 云函数路由里没有 /item/[id]"; exit 1; }
 grep -q '"\^/internal/revalidate' "$CF" || { echo "❌ 云函数路由里没有 /internal/revalidate"; exit 1; }
 test -f "$E/edge-functions/config.json" || { echo "❌ 全栈产物里没有 edge-functions"; exit 1; }
@@ -37,7 +41,7 @@ if [ "$SITEMAP" = proxy ]; then
   grep -Eq '"\^/sitemap(\\\\)?-proxy/' "$CF" || { echo "❌ 云函数路由里没有 /sitemap-proxy"; exit 1; }
 else
   test -f "$A/sitemap-index.xml" || { echo "❌ 产物里没有 sitemap-index.xml"; exit 1; }
-  grep -q '<loc>https://www.openguji.com/' "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
+  grep -qF "<loc>$SITE_ORIGIN/" "$A/sitemap-index.xml" || { echo "❌ sitemap 索引里的地址不是 www"; exit 1; }
 fi
 echo "✓ 正式站产物：无 noindex、无角标、robots 允许收录、读正式数据、条目页与失效接口在云函数、带 edge-functions 与 sitemap"
 

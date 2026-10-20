@@ -3,8 +3,9 @@
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { STAGING_ORIGIN } from '../../../config/hosts.mjs';
 
-export const SITE = (process.env.ITEM_SITE || 'https://staging.kaiyuanguji.com').replace(/\/$/, '');
+export const SITE = (process.env.ITEM_SITE || STAGING_ORIGIN).replace(/\/$/, '');
 
 /** 读 item-changes.mjs 的输出 */
 export function readChanges(path) {

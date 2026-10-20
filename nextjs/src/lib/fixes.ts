@@ -4,9 +4,10 @@
  * 两边形状相同，见 nextjs/scripts/lib/fixes-sync.mjs 的 toPublicFix。
  */
 import { getAid } from '@/lib/aid';
+import { DATA_ORIGIN } from '@/lib/hosts';
 
 // 不引 lib/proofing、lib/charfix：它们带着 book-index-ui，这页只是个列表，别拖大。下面几个常量与它们同口径
-const PROOF_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/proof'; // ＝lib/proofing PROOF_BASE
+const PROOF_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || `${DATA_ORIGIN}/proof`; // ＝lib/proofing PROOF_BASE
 const CELL_RE = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/; // ＝lib/charfix CELL_RE（含抬头字的 -1 格）
 /** ＝lib/charfix SPAN_SUBS（接口 edge-functions/api/charfix.js 同序） */
 export const SPAN_SUBS = ['wrong', 'missing', 'extra', 'order', 'punct', 'para', 'heading', 'note', 'entity', 'other'] as const;

@@ -62,7 +62,7 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
     } else if (source === 'bundle') {
         s = new BundleStorage({ basePath: '/data' }) as ReadonlyStorage;
     } else if (source === 'cos') {
-        // COS 模式：所有数据请求走 https://data.kaiyuanguji.com/v/{commit}/...
+        // COS 模式：所有数据请求走 ${DATA_ORIGIN}/v/{commit}/...
         // 版本号在浏览器首次请求时从 /latest.json 拉一次，模块级 promise 缓存。
         s = createCosStorage() as ReadonlyStorage;
     } else {

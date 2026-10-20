@@ -14,6 +14,7 @@ import {
     waitForLcp,
 } from './collector.ts';
 import { renderMarkdown, renderJson, type ScenarioRun, type RunReport } from './report.ts';
+import { SITE_ORIGIN } from '../config/hosts.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +30,7 @@ interface CliOptions {
 function parseArgs(argv: string[]): CliOptions {
     const args = argv.slice(2);
     const opts: CliOptions = {
-        target: 'https://www.openguji.com',
+        target: SITE_ORIGIN,
         out: resolve(__dirname, 'out'),
         headed: false,
         execPath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
@@ -61,7 +62,7 @@ function printHelp() {
     console.log(`Usage: tsx runner.ts [options]
 
 Options:
-  --target <url>         Base URL (default: https://www.openguji.com)
+  --target <url>         Base URL (default: production site)
   --scenarios <ids>      Comma-separated scenario IDs/prefixes (default: all)
   --profiles <names>     Comma-separated profile names (default: all)
   --out <dir>            Output dir for report.md / report.json

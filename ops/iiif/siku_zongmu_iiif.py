@@ -8,7 +8,7 @@
 - 三档（方案 §1.3「黑白专用」，按源图模式分流）：
     1-bit：缩略 300 px WebP q75 有损；阅读 1200 px 先量化成 4 级灰再 WebP 无损；放大＝原图 1-bit WebP 无损（与原图逐像素一致）
     其它：缩略 300 px、阅读 1200 px、放大 ≤2400 px，一律 WebP q75（29 卡的做法）
-- 路径（#357）：canvas id  https://data.kaiyuanguji.com/iiif/<bookId>/canvas/<册2位>/<页序>
+- 路径（#357）：canvas id  <数据域名>/iiif/<bookId>/canvas/<册2位>/<页序>
                 图        iiif/<bookId>/<册>/<页序>/full/<宽>,/0/default.webp（level 0 静态，另有 info.json）
                 册 manifest iiif/<bookId>/<册>/manifest.json；书级 Collection iiif/<bookId>/manifest.json
   页序＝IA leaf 号补零 4 位；合扫拆页按整理总管的裁剪框表（siku-zongmu-splits.json，overview 73d3b4be）
@@ -20,7 +20,7 @@
   python3 ops/iiif/siku_zongmu_iiif.py --vols 02,03 --out /tmp/iiif               # 只切片＋生成 manifest
   python3 ops/iiif/siku_zongmu_iiif.py --vols 03 --leaves 10,105 --out /tmp/iiif  # 本地试几页
   … --upload    上传（要 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET，COS_REGION 默认 ap-shanghai）
-  … --verify    上传后从 data.kaiyuanguji.com 取回核对（新写的全核，跳过的抽样 2%，至少 20 个）
+  … --verify    上传后从数据域名取回核对（新写的全核，跳过的抽样 2%，至少 20 个）
   … --force     桶里已有同内容的图也重传，核对核全部（改了压法、裁剪框时用）
 只依赖 Pillow；COS 签名用标准库实现（cos-python-sdk 的 crcmod 在部分环境装不上）。
 """
@@ -45,9 +45,12 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-workspace 同名目录、F1 样张同一个 id）
-PUBLIC_BASE = 'https://data.kaiyuanguji.com'
+sys.path.insert(0, os.path.dirname(HERE))
+import hosts  # noqa: E402
+
+PUBLIC_BASE = hosts.DATA_ORIGIN
 KEY_PREFIX = 'iiif'
-UA = 'kaiyuanguji-iiif/0.1 (https://www.openguji.com; open-guji)'
+UA = f'kaiyuanguji-iiif/0.1 ({hosts.SITE_ORIGIN}; open-guji)'
 
 THUMB_W, READ_W, ZOOM_MAX_W_GRAY = 300, 1200, 2400
 COMMONS_W, IA_W = 1280, 1200
@@ -549,7 +552,7 @@ def pick_verify_files(files, uploaded_keys, rnd=None):
 
 
 def verify_online(root, workers=16, uploaded_keys=None):
-    """从 data.kaiyuanguji.com 取回本次生成的文件，比对字节。
+    """从数据域名取回本次生成的文件，比对字节。
     给了 uploaded_keys 就只核对新写的加抽样（经 EdgeOne 把全册约 2.8 GB 拉一遍不划算）。"""
     files = pick_verify_files(list(walk_files(root)), uploaded_keys)
     bad = []

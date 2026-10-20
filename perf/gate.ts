@@ -3,7 +3,7 @@
  * 另外单独量「条目页缓存命中首字节」。超标退出码 1，并写 out/gate.json、out/gate.md
  * （CI 里再据此开单，见 .github/workflows/test.yml 的 perf-prod）。
  *
- * 用法：tsx gate.ts [--target=https://www.openguji.com] [--out=out] [--thresholds=thresholds.json]
+ * 用法：tsx gate.ts [--target=<站点，默认正式站>] [--out=out] [--thresholds=thresholds.json]
  *
  * 阅读页（GUJI-628 防退化）：先由 reader-probe.mjs 跑出 out/reader/<档>-r1.json（a＝桌面不节流、c＝手机＋CPU6x），
  * 这里按 thresholds.json 的 reader 段判「正文进入视口」「最长任务」与「禁止的请求」（如手机档取 cord）。
@@ -16,6 +16,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SITE_ORIGIN } from '../config/hosts.mjs';
 
 export interface ReaderLimit {
     /** 探针档的文件名前缀（reader-probe.mjs 的 prof.name），如 a-fast、c-mobile-cpu6 */
@@ -176,7 +177,7 @@ export function renderMarkdown(target: string, r: GateResult): string {
 async function main() {
     const here = dirname(fileURLToPath(import.meta.url));
     const arg = (name: string, dflt: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) ?? dflt;
-    const target = arg('target', 'https://www.openguji.com');
+    const target = arg('target', SITE_ORIGIN);
     const outDir = resolve(arg('out', resolve(here, 'out')));
     const thresholds: Thresholds = JSON.parse(await readFile(resolve(arg('thresholds', resolve(here, 'thresholds.json'))), 'utf-8'));
     const report = JSON.parse(await readFile(resolve(outDir, 'latest.json'), 'utf-8')) as { runs: RunLite[] };

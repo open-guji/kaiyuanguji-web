@@ -14,11 +14,13 @@
 // 公开、无鉴权：只回版本号与公开 CDN 上的数据指针，不含任何密钥、内网地址、访客信息。
 // no-store：排障时要的是「此刻」的版本，绝不能被 CDN 缓存成旧答案。
 
+import { DATA_ORIGIN, DATA_STAGING_ORIGIN } from './hosts.js';
+
 // __BUILD_INFO_START__
 const BUILD_INFO = null;
 // __BUILD_INFO_END__
 
-const DEFAULT_DATA_BASE = 'https://data.kaiyuanguji.com';
+const DEFAULT_DATA_BASE = DATA_ORIGIN;
 // COS 偶尔慢，3 秒会把「慢」报成「缺」；放宽到 8 秒，失败（超时／网络错／非 404 的非 2xx）重试一次（overview#607）
 const POINTER_TIMEOUT_MS = 8000;
 const POINTER_ATTEMPTS = 2;
@@ -35,7 +37,7 @@ const HEADERS = {
 function dataBaseOf(info) {
   const b = info && typeof info.dataBase === 'string' ? info.dataBase : '';
   // 只认自家数据域名（根或 staging/），别的一律回默认——这个地址会被服务端 fetch
-  return /^https:\/\/data\.kaiyuanguji\.com(\/staging)?$/.test(b) ? b : DEFAULT_DATA_BASE;
+  return b === DATA_ORIGIN || b === DATA_STAGING_ORIGIN ? b : DEFAULT_DATA_BASE;
 }
 
 // 读一个指针 JSON，一次尝试：{ ok, json } | { status } | { error }；status 是服务器明确回的非 2xx（404 就是「确实不存在」）

@@ -1,7 +1,7 @@
 /**
  * dq-lib.mjs — 正式数据巡检（DQ 道）的纯函数与编排逻辑
  *
- * 只读巡检 data.kaiyuanguji.com 上的 current/ 与 h1/：
+ * 只读巡检数据域名（config/hosts.json 的 data）上的 current/ 与 h1/：
  *   latest.json ─┬─ current/{version,meta,promotions}.json（?v=<cacheKey，缺则 commitId> cache-bust，与前端同法）
  *                └─ h1/manifest-root.json → roots/<key>.json → 1,296 个 manifest 分片 → entry/<id>.<hash8>.json
  *                   h1/text-manifest-root.json → text-roots/<key>.json → text-manifest 分片 → text/<owner>/…
@@ -23,8 +23,9 @@
 
 import { createHash } from 'node:crypto';
 import { chapterTxtFile, isInternal, isTextKey } from '../nextjs/scripts/lib/text-layout.mjs';
+import { DATA_ORIGIN } from '../config/hosts.mjs';
 
-export const DEFAULT_BASE = 'https://data.kaiyuanguji.com';
+export const DEFAULT_BASE = DATA_ORIGIN;
 export const MAX_CONCURRENCY = 8;
 export const VALID_TYPES = ['work', 'book', 'collection', 'entity'];
 // 后四个是 schema-v2 build 产物里的派生字段（`_books`／`_members`／`_related`／`_collections`，元素都带 id），

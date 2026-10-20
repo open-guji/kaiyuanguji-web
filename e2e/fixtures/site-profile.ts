@@ -16,9 +16,10 @@
  *   SITE_ARCH=fullstack|static    EXPECT_NOINDEX=1|0    CANONICAL_ORIGIN=https://…
  */
 import { TARGET } from './anchors';
+import { LEGACY_SITE_ORIGIN, SITE_ORIGIN, SSR_TEST_ORIGIN, STAGING_ORIGIN, hostOf } from '../../config/hosts.mjs';
 
 /** 已知的全栈站。切域名后把 www 加进来（或 deploy.yml 的 verify 传 SITE_ARCH=fullstack） */
-const FULLSTACK_HOSTS = ['staging.kaiyuanguji.com', 'ssr-test.kaiyuanguji.com', 'www.kaiyuanguji.com', 'www.openguji.com', 'localhost', '127.0.0.1'];
+const FULLSTACK_HOSTS = [...[STAGING_ORIGIN, SSR_TEST_ORIGIN, LEGACY_SITE_ORIGIN, SITE_ORIGIN].map(hostOf), 'localhost', '127.0.0.1'];
 
 const host = new URL(TARGET).hostname;
 const isStaging = host.startsWith('staging.');
@@ -44,5 +45,5 @@ export const SITE = {
     canonicalOrigin: (process.env.CANONICAL_ORIGIN
         ?? (isStaging || host === 'localhost' || host === '127.0.0.1'
             ? new URL(TARGET).origin
-            : 'https://www.openguji.com')).replace(/\/$/, ''),
+            : SITE_ORIGIN)).replace(/\/$/, ''),
 } as const;

@@ -5,6 +5,7 @@
 本仓库是开源古籍项目官网的源码。Next.js 16（App Router）全栈部署在腾讯云 EdgeOne Pages：静态页 + `/item/<id>` 云函数服务端渲染 + 边缘函数；
 索引数据不在站点里，由 CI 打包后走独立 CDN `data.kaiyuanguji.com`（新加坡 COS）；
 搜索走 Meilisearch（L1，上海）+ 浏览器内 MiniSearch 分片（L2 兜底）。
+所有域名（站点、数据、搜索 API、测试站……）只写在 [`config/hosts.json`](config/hosts.json)，改完跑 `node ops/sync-hosts.mjs`；不要在代码里写死域名（见 [docs/data-domain-migration.md](docs/data-domain-migration.md)）。
 
 **想弄清整体是怎么设计的**：[docs/architecture.html](docs/architecture.html)（自包含网页，下载后用浏览器打开；页面、数据、缓存、搜索、发布回滚、测试监控、SEO 都在里面）。出问题先看 [docs/runbook.md](docs/runbook.md)。
 

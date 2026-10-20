@@ -26,8 +26,9 @@ import { pathToFileURL } from 'node:url';
 // 直接复用线上同一份脱敏规则，不另抄一份免得两边漂移。feedback.js 是 ESM 写法但仓库没有 "type": "module"，
 // 要 Node ≥22（默认按语法认出 ESM）才能这样引；工作流里固定用 Node 22。
 import { desensitizeText } from '../edge-functions/api/feedback.js';
+import { SITE_ORIGIN } from '../config/hosts.mjs';
 
-export const DEFAULT_BASE = 'https://www.openguji.com';
+export const DEFAULT_BASE = SITE_ORIGIN;
 const ID_RE = /^fb_\d+_[a-z0-9]+$/;
 const SNIPPET_LEN = 40;
 

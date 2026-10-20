@@ -1,10 +1,10 @@
 // POST /api/auth/invite — 管理员生成邀请链接（需 admin cookie，或 AUTH_ADMIN_TOKEN 走 Authorization: Bearer／body.token）
 // body: { email?: string | null, role: string }
 // 返回: { success:true, code, link, email, role, expires }
+import { SITE_ORIGIN, SITE_ORIGINS } from '../hosts.js';
 
 const ALLOWED_ORIGINS = [
-  'https://www.kaiyuanguji.com',
-  'https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com',
+  ...SITE_ORIGINS,
   'https://open-guji.github.io',
   'http://localhost:3000',
   'http://localhost:5173',
@@ -163,7 +163,7 @@ export async function onRequestPost(context) {
     };
     await kv.put(`invite:${hash}`, JSON.stringify(record));
 
-    const link = `https://www.openguji.com/join?c=${code}`;
+    const link = `${SITE_ORIGIN}/join?c=${code}`;
     return new Response(JSON.stringify({ success: true, code, link, email, role, expires: record.expires }), { status: 200, headers });
   } catch (e) {
     console.error('invite error', e);

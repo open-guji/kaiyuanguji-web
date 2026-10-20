@@ -1,19 +1,15 @@
 name: EdgeOne purge URLs
 
 # 手动按 URL 清 EdgeOne 缓存（purge_url，只清列出的文件，不清整站）。
-# 默认值：四个 h1 版本指针（09-27 实测节点缓存了约 18.7 小时旧版）。
+# 留空：四个 h1 版本指针（09-27 实测节点缓存了约 18.7 小时旧版），由 ops/edgeone-purge-urls.py 按 config/hosts.json 拼。
 
 on:
   workflow_dispatch:
     inputs:
       urls:
-        description: 完整 URL，空格分隔
-        required: true
-        default: >-
-          https://data.kaiyuanguji.com/h1/manifest-root.json
-          https://data.kaiyuanguji.com/h1/text-manifest-root.json
-          https://data.kaiyuanguji.com/staging/h1/manifest-root.json
-          https://data.kaiyuanguji.com/staging/h1/text-manifest-root.json
+        description: 完整 URL，空格分隔；留空＝四个 h1 版本指针（正式与 staging/，数据域名见 config/hosts.json）
+        required: false
+        default: ''
 
 permissions:
   contents: read

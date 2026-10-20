@@ -1,5 +1,6 @@
 // POST /api/auth/logout — 清 cookie
-const ALLOWED_ORIGINS = ['https://www.kaiyuanguji.com','https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com','https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
+import { SITE_ORIGINS } from '../hosts.js';
+const ALLOWED_ORIGINS = [...SITE_ORIGINS,'https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
 function getCorsHeaders(request){ const origin=request.headers.get('origin')||''; const corsOrigin=ALLOWED_ORIGINS.includes(origin)?origin:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':corsOrigin,'Content-Type':'application/json'}; }
 export async function onRequestPost(context){
   const headers=getCorsHeaders(context.request);

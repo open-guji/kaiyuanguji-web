@@ -11,7 +11,7 @@
  */
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const bi = require('../../../scripts/lib/build-info.cjs');
@@ -121,6 +121,8 @@ describe('injectBuildInfo / writeBuildInfo', () => {
     const dir = mkdtempSync(join(tmpdir(), 'bi-'));
     const f = join(dir, 'version.js');
     writeFileSync(f, bi.injectBuildInfo(readFileSync(REPO_VERSION_JS, 'utf-8'), info));
+    // version.js 从同目录的 hosts.js 取数据域名
+    copyFileSync(join(dirname(REPO_VERSION_JS), 'hosts.js'), join(dir, 'hosts.js'));
     const realFetch = globalThis.fetch;
     const fake = okFetch(POINTER);
     globalThis.fetch = fake as unknown as typeof fetch;
