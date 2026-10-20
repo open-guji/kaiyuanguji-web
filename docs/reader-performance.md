@@ -164,6 +164,9 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 - EdgeOne 开 HTML 压缩；书影 `max-age` 延长（地址带版本时可 immutable）；站标只留一种格式。
 
 ### P2 结构性重构（视复测结果再定）
+- **P2-A entity／char 副本**（2026-10-20）：沿用 P1-2 的同结构副本，打包再写 `<章>.entity.reader.json`（去 source、metadata、stats，有 entity_id 时去 target.href）
+  与 `<章>.char.reader.json`（字段全留，只去缩进），章条目记 `reader_entity_file`／`reader_char_file`，阅读页优先取、取不到回落。
+  样本章解压 entity 1.51→0.78MB、char 1.46→0.86MB，宽屏对读数据合计约 4.8→3.5MB；br 传输各省约 15%。真样本往返一致性测试通过。
 - 一段一个文本节点＋偏移表，点字用 `caretPositionFromPoint` 反查，高亮用 CSS Custom Highlight API：DOM 从 4.4 万降到几千。或按页虚拟化。
 - 两条路都要改造 Ctrl+F、跨页划选、全文定位、改字与报错浮条，风险最大。
 
