@@ -81,6 +81,20 @@ concurrency:
   group: publish-data-${{ inputs.flow || 'text' }}
   cancel-in-progress: false
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过（同 deploy.yml 的 check，口径一致）。手动一律跑。
   check:
@@ -125,7 +139,7 @@ jobs:
             echo "· 每日完整跑：定时一律跑，是否同步由 package 内的同步标记判定"
             exit 0
           fi
-          LIVE=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/latest.json?cb=$(date +%s)" || echo '{}')
+          LIVE=$(curl -sf --max-time 30 "$HOST_DATA/latest.json?cb=$(date +%s)" || echo '{}')
           LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" 2>/dev/null || echo '')
           LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" 2>/dev/null || echo '')
           # 查不到（网络抖动）就留空，下面按「无法确认」处理、照常跑，不让这一步因此失败
@@ -242,7 +256,7 @@ jobs:
           esac
           if [ -n "$field" ]; then
             P="${PREFIX:+$PREFIX/}"
-            SHA=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/${P}latest.json?cb=$(date +%s)" \
+            SHA=$(curl -sf --max-time 30 "$HOST_DATA/${P}latest.json?cb=$(date +%s)" \
                     | python3 -c "import json,sys; print(json.load(sys.stdin).get(sys.argv[1],''))" "$field" 2>/dev/null || true)
             if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
               echo "::error::flow=$FLOW 要把另一个仓钉在线上版本，但读不到线上 ${P}latest.json 的 $field（'${SHA:0:12}'），停止"
@@ -428,7 +442,7 @@ jobs:
         timeout-minutes: 10
         run: |
           node ops/data-package-check.mjs \
-            --baseline "https://data.kaiyuanguji.com" \
+            --baseline "$HOST_DATA" \
             --summary "$GITHUB_STEP_SUMMARY" \
             --json "$RUNNER_TEMP/data-package-stats.json"
 
@@ -487,7 +501,7 @@ jobs:
           MARK_INPUT: ${{ inputs.mark_code_pointer }}
         run: |
           P="${PREFIX:+$PREFIX/}"
-          URL="https://data.kaiyuanguji.com/${P}latest.json?t=$(date +%s)"
+          URL="$HOST_DATA/${P}latest.json?t=$(date +%s)"
           BODY="$RUNNER_TEMP/live-latest.json"
           CODE=$(curl -s -o "$BODY" -w '%{http_code}' --max-time 30 "$URL" || echo 000)
           case "$CODE" in
@@ -544,7 +558,7 @@ jobs:
           PREFIX: ${{ steps.gate.outputs.prefix }}
         run: |
           P="${PREFIX:+$PREFIX/}"
-          R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
+          R=$(curl -sf "$HOST_DATA/${P}h1/manifest-root.json?t=$(date +%s)" \
             | python3 -c "import json,sys; print(json.load(sys.stdin).get('root',''))" 2>/dev/null || true)
           echo "old_h1_root=$R" >> "$GITHUB_OUTPUT"
           echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
@@ -558,7 +572,7 @@ jobs:
           PREFIX: ${{ steps.gate.outputs.prefix }}
         run: |
           P="${PREFIX:+$PREFIX/}"
-          J=$(curl -sf --max-time 30 "https://data.kaiyuanguji.com/${P}latest.json?t=$(date +%s)" || echo '{}')
+          J=$(curl -sf --max-time 30 "$HOST_DATA/${P}latest.json?t=$(date +%s)" || echo '{}')
           g() { echo "$J" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$1',''))" 2>/dev/null || true; }
           echo "prod=$(g productionCommitId)" >> "$GITHUB_OUTPUT"
           echo "text=$(g textCommitId)" >> "$GITHUB_OUTPUT"
@@ -738,7 +752,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_DATA_BASE: https://data.kaiyuanguji.com${{ steps.gate.outputs.prefix && format('/{0}', steps.gate.outputs.prefix) || '' }}
+          ITEM_DATA_BASE: ${{ env.HOST_DATA }}${{ steps.gate.outputs.prefix && format('/{0}', steps.gate.outputs.prefix) || '' }}
           ITEM_CHANGES_OUT: ${{ runner.temp }}/item-artifact/item-changes.json
         run: |
           mkdir -p "$RUNNER_TEMP/item-artifact"
@@ -784,7 +798,7 @@ jobs:
         if: ${{ steps.gate.outputs.publish == 'true' && (steps.gate.outputs.sitemaps_only == 'true' || steps.cos_decide.outputs.skip != 'true' || steps.sm_present.outputs.present != 'true') }}
         working-directory: nextjs
         env:
-          SITEMAP_SITE: https://www.openguji.com
+          SITEMAP_SITE: ${{ env.HOST_SITE }}
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: node scripts/gen-sitemaps.mjs
 
@@ -836,9 +850,11 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
         run: |
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
-          P="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}"
+          # 只给新域名的地址；ops/purge-urls.py 会把同一路径在旧数据域名下的也一起清
+          P="$HOST_DATA/${PREFIX:+$PREFIX/}"
           # h1 版本指针也要清（实测节点把 h1/manifest-root.json 缓存了约 18.7 小时，源站 max-age 被无视）；sitemaps 索引同理
           python3 ops/purge-urls.py "${P}latest.json" "${P}h1/manifest-root.json" "${P}h1/text-manifest-root.json" "${P}sitemaps/sitemap-index.xml"
 
@@ -866,7 +882,7 @@ jobs:
           export KYG_REVALIDATE_SECRET="$S"
           # 未改动页的 CDN 命中检查要一个对照页；这里没有本地打包产物，候选由 package 任务随工件带来
           export ITEM_CONTROL_IDS="$(cat "$RUNNER_TEMP/item-artifact/control-ids.txt" 2>/dev/null || true)"
-          if [ -z "$PREFIX" ]; then SITES="https://www.openguji.com https://staging.kaiyuanguji.com"; else SITES="https://staging.kaiyuanguji.com"; fi
+          if [ -z "$PREFIX" ]; then SITES="$HOST_SITE $HOST_STAGING"; else SITES="$HOST_STAGING"; fi
           rc=0
           for site in $SITES; do
             echo "::group::条目页失效 · $site"
@@ -905,7 +921,7 @@ jobs:
           TARGET: ${{ inputs.target || 'production' }}
         run: |
           run=true; why=""
-          URL="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}h1/text-manifest-root.json?cb=$(date +%s)"
+          URL="$HOST_DATA/${PREFIX:+$PREFIX/}h1/text-manifest-root.json?cb=$(date +%s)"
           LIVE=$(curl -sf --max-time 30 "$URL" | python3 -c "import json,sys; print((json.load(sys.stdin).get('dataCommit') or {}).get('textCommitId',''))" 2>/dev/null || true)
           if [ "$FORCE_SYNC" = true ] && [ "$TARGET" = staging ]; then
             why="force_sync（演练）：不看指针，照做"
@@ -1075,7 +1091,7 @@ jobs:
         env:
           PREFIX: ${{ needs.package.outputs.prefix }}
         run: |
-          P="https://data.kaiyuanguji.com/${PREFIX:+$PREFIX/}"
+          P="$HOST_DATA/${PREFIX:+$PREFIX/}"
           pick() { curl -sf --max-time 30 "$1?t=$(date +%s)" | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || true; }
           REF=$(pick "${P}web.json")
           printf '%s' "$REF" | grep -Eq '^[0-9a-f]{40}$' || REF=$(pick "${P}latest.json")

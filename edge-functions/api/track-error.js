@@ -7,10 +7,10 @@
 //   - 环境变量  ERROR_VIEW_TOKEN  —— 读侧与管理侧鉴权（错误日志含 stack/IP，不公开）
 //     **没配这个变量，读接口与 update 一律拒绝（503）**，见下面 checkViewAuth 的注释。
 //     只有 POST 上报是公开的——那是前端必须能匿名调的。
+import { SITE_ORIGINS } from './hosts.js';
 
 const ALLOWED_ORIGINS = [
-  'https://www.kaiyuanguji.com',
-  'https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com',
+  ...SITE_ORIGINS,
   'https://open-guji.github.io',
   'http://localhost:3000',
   'http://localhost:5173',

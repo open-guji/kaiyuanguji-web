@@ -97,7 +97,7 @@ export default function MobileDrawer({ isOpen, onClose, returnFocusRef }: Mobile
       >
         <div className="og-drawer-head">
           <Link href="/" onClick={onClose} className="og-brand">
-            <Image src="/images/open-guji-logo.webp" alt={t('nav.logoAlt')} width={26} height={26} />
+            <Image src="/images/logo-52.webp" alt={t('nav.logoAlt')} width={26} height={26} />
             <span>{t('nav.brand')}</span>
           </Link>
           <button type="button" onClick={onClose} className="og-burger og-burger--close" aria-label={t('nav.closeMenu')}>

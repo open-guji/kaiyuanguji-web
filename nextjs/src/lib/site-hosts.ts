@@ -6,15 +6,16 @@
  * 新站据此在页面最上方显示一条窄横幅（components/layout/MovedBanner）。
  * 用 # 片段而不是查询参数：片段不会发给服务器，不污染 CDN 缓存键，也不会被条目页的「只留白名单参数」308 剥掉。
  */
+import { LEGACY_APEX_ORIGIN, LEGACY_SITE_ORIGIN, SITE_APEX_ORIGIN, SITE_ORIGIN, hostOf } from './hosts';
 
 /** 新的规范主机 */
-export const CANONICAL_HOST = 'www.openguji.com';
+export const CANONICAL_HOST = hostOf(SITE_ORIGIN);
 
 /** 要 301 到规范主机的主机：旧域名的 www、裸域，以及新域名的裸域 */
-const REDIRECT_HOSTS = new Set(['www.kaiyuanguji.com', 'kaiyuanguji.com', 'openguji.com']);
+const REDIRECT_HOSTS = new Set([hostOf(LEGACY_SITE_ORIGIN), hostOf(LEGACY_APEX_ORIGIN), hostOf(SITE_APEX_ORIGIN)]);
 
 /** 旧域名主机（只有它们跳转后才带横幅片段；新域名裸域跳到 www 不带） */
-const LEGACY_HOSTS = new Set(['www.kaiyuanguji.com', 'kaiyuanguji.com']);
+const LEGACY_HOSTS = new Set([hostOf(LEGACY_SITE_ORIGIN), hostOf(LEGACY_APEX_ORIGIN)]);
 
 /** 跳转后附在地址上的片段，横幅据此显示 */
 export const MOVED_HASH = '#from-kaiyuanguji';
@@ -55,5 +56,6 @@ export const ICP_KAIYUANGUJI = '冀ICP备2026013455号';
 /** 按访问的主机取备案号；拿不到主机（服务端首帧）按规范域名 openguji.com */
 export function icpForHost(host: string | null | undefined): string {
     const h = normalizeHost(host);
-    return h === 'kaiyuanguji.com' || h.endsWith('.kaiyuanguji.com') ? ICP_KAIYUANGUJI : ICP_OPENGUJI;
+    const legacyApex = hostOf(LEGACY_APEX_ORIGIN);
+    return h === legacyApex || h.endsWith(`.${legacyApex}`) ? ICP_KAIYUANGUJI : ICP_OPENGUJI;
 }

@@ -16,6 +16,7 @@
 //   8. 成员被停用后再走一遍 → access_denied（403）
 
 import assert from 'node:assert/strict';
+import { OAUTH_ISSUER } from '../../config/hosts.mjs';
 
 class MockKV {
   m = new Map();
@@ -99,12 +100,12 @@ function authorizeUrl(extra = {}) {
     code_challenge_method: 'S256',
     ...extra,
   });
-  return `https://www.kaiyuanguji.com/oauth/authorize?${p.toString()}`;
+  return `${OAUTH_ISSUER}/oauth/authorize?${p.toString()}`;
 }
 
 function tokenReq(code, verifier, kv, extra = {}) {
   return token.onRequestPost({
-    request: new Request('https://www.kaiyuanguji.com/oauth/token', {
+    request: new Request(`${OAUTH_ISSUER}/oauth/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -190,7 +191,7 @@ await kv.put(`member:${EMAIL}`, JSON.stringify({ role: 'reviewer', joinedAt: now
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${h}.${p}`));
   assert.equal(b64url(new Uint8Array(sig)), s, 'id_token signature mismatch');
   const claims = JSON.parse(b64urlDecode(p).toString('utf8'));
-  assert.equal(claims.iss, 'https://www.kaiyuanguji.com');
+  assert.equal(claims.iss, OAUTH_ISSUER);
   assert.equal(claims.sub, EMAIL);
   assert.equal(claims.email, EMAIL);
   assert.equal(claims.role, 'reviewer');

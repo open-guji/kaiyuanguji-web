@@ -14,6 +14,20 @@ on:
   schedule:
     - cron: '0 2 * * *'
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   unit:
     name: Jest unit tests
@@ -57,6 +71,9 @@ jobs:
 
       - name: Schedule watchdog tests (ops/tests/test_schedule_watchdog.py)
         run: python3 -m unittest ops/tests/test_schedule_watchdog.py -v
+      # 域名只写在 config/hosts.json：生成物同步、别处没有写死（docs/data-domain-migration.md）
+      - name: Hosts tests (ops/tests/hosts.test.mjs)
+        run: node --test ops/tests/hosts.test.mjs
       # 数据包检查（overview#470 P0）：格式契约校验器与整包检查脚本，夹具含线上旧格式与 book-index schema-v2 的样例
       - name: Data package check tests (ops/tests)
         run: node --test ops/tests/data-contract.test.mjs ops/tests/data-package-check.test.mjs
@@ -169,12 +186,14 @@ jobs:
       KYG_RENDER_MODE: fullstack
       NEXT_PUBLIC_MODE: ''
       NEXT_PUBLIC_DATA_SOURCE: cos
-      NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
       NEXT_PUBLIC_SITE_ENV: ''
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NEXT_PUBLIC_BASE_PATH: ''
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
+      # 任务级 env 里用不了 env 上下文（GitHub 的限制），数据根在第一步写进 GITHUB_ENV（值来自 config/hosts.json，见顶部 HOST_*）
+      - name: Data origin
+        run: echo "NEXT_PUBLIC_COS_BASE=$HOST_DATA" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -310,7 +329,7 @@ jobs:
         id: gate
         continue-on-error: true
         working-directory: perf
-        run: npx tsx gate.ts --target=https://www.openguji.com
+        run: npx tsx gate.ts --target=$HOST_SITE
       - name: Gate summary
         if: always()
         run: '[ -f perf/out/gate.md ] && cat perf/out/gate.md >> "$GITHUB_STEP_SUMMARY" || true'

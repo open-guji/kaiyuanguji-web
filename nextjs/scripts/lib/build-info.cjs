@@ -14,6 +14,8 @@
 const { execFileSync } = require('node:child_process');
 const { existsSync, readFileSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
+// 域名的唯一来源（见 ops/sync-hosts.mjs）
+const HOSTS = require('../../../config/hosts.json');
 
 const MARK_START = '// __BUILD_INFO_START__';
 const MARK_END = '// __BUILD_INFO_END__';
@@ -50,13 +52,14 @@ function computeBuildInfo(opts = {}) {
     ? env.KYG_WEB_COMMIT
     : (gitHead(opts.cwd || process.cwd()) || (/^[0-9a-f]{40}$/.test(env.GITHUB_SHA || '') ? env.GITHUB_SHA : ''));
   // 数据指针在 COS 上：staging 读 staging/ 前缀。只放公开 CDN 地址，/api/version 运行时去读
-  const cosBase = String(env.NEXT_PUBLIC_COS_BASE || 'https://data.kaiyuanguji.com').replace(/\/+$/, '');
+  const cosBase = String(env.NEXT_PUBLIC_COS_BASE || HOSTS.data).replace(/\/+$/, '');
   return {
     web,
     bimUi: opts.bimUi || '',
     builtAt: (opts.now || new Date()).toISOString(),
     target: resolveTarget(env),
-    dataBase: /^https:\/\/data\.kaiyuanguji\.com(\/staging)?$/.test(cosBase) ? cosBase : 'https://data.kaiyuanguji.com',
+    // 新旧两个数据域名回源同一个桶，都认；别的一律回默认
+    dataBase: [HOSTS.data, HOSTS.legacyData].some((o) => cosBase === o || cosBase === `${o}/staging`) ? cosBase : HOSTS.data,
   };
 }
 

@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import {
     publishSitemaps, planSitemaps, checkSitemaps, sitemapKey, metaKey, NAME_RE, STORED_SITE, MAX_URLS_PER_SHARD, PRUNE_MIN_AGE_MS,
 } from './sitemap-upload.mjs';
+import { SITE_ORIGIN } from '../../../config/hosts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = STORED_SITE;
@@ -51,7 +52,9 @@ test('NAME_RE 与路由代理的白名单正则、STORED_SITE 与路由代理的
     const m = ts.match(/const NAME_RE = (\/.*\/);/);
     assert.ok(m, '没找到路由代理里的 NAME_RE');
     assert.equal(NAME_RE.toString(), m[1]);
-    assert.ok(ts.includes(`export const STORED_SITE = '${STORED_SITE}';`));
+    // 两边都取 config/hosts.json 的正式站（路由代理经生成的 lib/hosts.ts）
+    assert.ok(ts.includes('export const STORED_SITE = SITE_ORIGIN;'));
+    assert.equal(STORED_SITE, SITE_ORIGIN);
 });
 
 test('sitemapKey：前缀可空、可带斜杠', () => {

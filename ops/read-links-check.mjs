@@ -19,7 +19,7 @@
  *   阅读首页列出的卡片都必须有 manifest.json（没有就是数据缺失，记失败）。
  *
  * 只发 GET，无依赖、无 secret。CLI：
- *   node ops/read-links-check.mjs --target https://www.openguji.com --data https://data.kaiyuanguji.com [--per-node 20] [--seed 1]
+ *   node ops/read-links-check.mjs --target <站点> --data <数据根> [--per-node 20] [--seed 1]
  * 环境变量 TARGET／DATA_BASE 同名（verify.yml 已设）。有失败退出码 1，并在 GitHub Actions 里写 job summary。
  */
 import { appendFileSync } from 'node:fs';
@@ -304,7 +304,7 @@ if (isMain) {
         console.error('缺 --target／TARGET 或 --data／DATA_BASE');
         process.exit(2);
     }
-    // DATA_BASE 形如 https://data.kaiyuanguji.com 或 …/staging；current/ 在其下
+    // DATA_BASE 形如 <数据域名> 或 …/staging；current/ 在其下
     const seed = a.seed ? Number(a.seed) : Date.now() % 2 ** 31;
     let res;
     try {

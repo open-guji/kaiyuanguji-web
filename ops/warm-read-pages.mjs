@@ -13,7 +13,7 @@
  * 按「本实例第几个请求」分冷热（req≤3 算冷实例），各段 p50／p90 一并写进 summary——部署刚完成时的冷启动实测就从这里来。
  *
  * 只发 GET，无依赖、无 secret。CLI：
- *   node ops/warm-read-pages.mjs --target https://staging.kaiyuanguji.com --data https://data.kaiyuanguji.com/staging [--concurrency 6] [--timeout 60000]
+ *   node ops/warm-read-pages.mjs --target <测试站> --data <数据域名>/staging [--concurrency 6] [--timeout 60000]
  * 环境变量 TARGET／DATA_BASE 同名。
  */
 import { appendFileSync } from 'node:fs';

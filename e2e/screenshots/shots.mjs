@@ -1,8 +1,8 @@
 /**
  * 主要页面一键截图 + 图集。
  *
- *   TARGET=https://staging.kaiyuanguji.com npm run shots
- *   COMPARE=https://www.openguji.com  可选，同一页再截一张对照，图集里并排
+ *   TARGET=<站点，默认测试站> npm run shots
+ *   COMPARE=<对照站点>  可选，同一页再截一张对照，图集里并排
  *
  * 输出 e2e/out/shots/<页面名>-<宽度>[-cmp].jpg 与 index.html。
  * 只发 GET，不点任何按钮。单页失败不中断，图集里标红。
@@ -12,10 +12,11 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PAGES } from './pages.ts';
+import { STAGING_ORIGIN } from '../../config/hosts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = process.env.OUT_DIR ?? join(here, '..', 'out', 'shots');
-const TARGET = (process.env.TARGET ?? 'https://staging.kaiyuanguji.com').replace(/\/$/, '');
+const TARGET = (process.env.TARGET ?? STAGING_ORIGIN).replace(/\/$/, '');
 const COMPARE = process.env.COMPARE ? process.env.COMPARE.replace(/\/$/, '') : '';
 const VIEWPORTS = [
     { key: '1440', width: 1440, height: 900 },

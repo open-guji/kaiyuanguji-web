@@ -42,6 +42,17 @@ describe('loadDuiduFiles', () => {
         expect(getTextFile.mock.calls.map(c => c[2]).sort()).toEqual(['003.char.json', '003.cord.reader.json', '003.entity.json', '003.punct.reader.json']);
     });
 
+    it('char／entity 也有副本（reader_char_file／reader_entity_file，P2-A）：先取副本，取不到回落原文件', async () => {
+        const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => ({ file }));
+        const ch = { ...chapter, reader_char_file: '003.char.reader.json', reader_entity_file: '003.entity.reader.json' };
+        const r = await loadDuiduFiles('book-rf4', { versionKey: 'original', chapter: ch }, '003', { getTextFile });
+        expect(r).toMatchObject({ char: { file: '003.char.reader.json' }, entity: { file: '003.entity.reader.json' } });
+        expect(getTextFile.mock.calls.map(c => c[2])).not.toContain('003.char.json');
+        const miss = jest.fn(async (_id: string, _key: string, file: string) => (file.includes('.reader.') ? null : { file }));
+        const r2 = await loadDuiduFiles('book-rf5', { versionKey: 'original', chapter: ch }, '003', { getTextFile: miss });
+        expect(r2).toMatchObject({ char: { file: '003.char.json' }, entity: { file: '003.entity.json' } });
+    });
+
     it('副本取不到：回落原文件；窄屏不取 cord 时副本也不取；带路径的副本名不认', async () => {
         const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => (file.includes('.reader.') ? null : { file }));
         const ch = { ...chapter, reader_cord_file: '003.cord.reader.json', reader_punct_file: '../x.json' };

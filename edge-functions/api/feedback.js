@@ -39,10 +39,10 @@
 // status 白名单：pending｜in_progress｜resolved｜wontfix｜duplicate（duplicate 时应带 duplicateOf）
 
 import { classifyFeedback, legacyCategory, CATEGORIES, ASSIGNEES, SUBTYPES } from './feedback-classify.js';
+import { SITE_ORIGINS } from './hosts.js';
 
 const ALLOWED_ORIGINS = [
-  'https://www.kaiyuanguji.com',
-  'https://kaiyuanguji.com','https://www.openguji.com','https://openguji.com',
+  ...SITE_ORIGINS,
   'https://open-guji.github.io',
   'http://localhost:3000',
   'http://localhost:5173',

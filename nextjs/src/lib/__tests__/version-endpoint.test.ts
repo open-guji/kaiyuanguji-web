@@ -11,7 +11,10 @@
  */
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { DATA_ORIGIN, LEGACY_DATA_ORIGIN } from '@/lib/hosts';
+
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const bi = require('../../../scripts/lib/build-info.cjs');
@@ -58,7 +61,7 @@ describe('computeBuildInfo', () => {
   it('web 取 git HEAD（本仓就是 git 仓）', () => {
     const info = bi.computeBuildInfo({ env: {}, bimUi: '0.9.8', now: new Date('2026-09-28T00:00:00Z') });
     expect(info.web).toMatch(/^[0-9a-f]{40}$/);
-    expect(info).toMatchObject({ bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'production', dataBase: 'https://data.kaiyuanguji.com' });
+    expect(info).toMatchObject({ bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'production', dataBase: DATA_ORIGIN });
   });
   it('不在 git 仓里时退到 GITHUB_SHA', () => {
     const dir = mkdtempSync(join(tmpdir(), 'bi-'));
@@ -66,15 +69,18 @@ describe('computeBuildInfo', () => {
     expect(info.web).toBe(SHA);
   });
   it('测试站读 staging/ 数据指针；非自家域名一律回默认', () => {
-    expect(bi.computeBuildInfo({ env: { NEXT_PUBLIC_COS_BASE: 'https://data.kaiyuanguji.com/staging/' } }).dataBase)
-      .toBe('https://data.kaiyuanguji.com/staging');
+    expect(bi.computeBuildInfo({ env: { NEXT_PUBLIC_COS_BASE: `${DATA_ORIGIN}/staging/` } }).dataBase)
+      .toBe(`${DATA_ORIGIN}/staging`);
     expect(bi.computeBuildInfo({ env: { NEXT_PUBLIC_COS_BASE: 'http://10.0.0.1/x' } }).dataBase)
-      .toBe('https://data.kaiyuanguji.com');
+      .toBe(DATA_ORIGIN);
+    // 旧数据域名（同一个桶）也认
+    expect(bi.computeBuildInfo({ env: { NEXT_PUBLIC_COS_BASE: `${LEGACY_DATA_ORIGIN}/staging` } }).dataBase)
+      .toBe(`${LEGACY_DATA_ORIGIN}/staging`);
   });
 });
 
 describe('injectBuildInfo / writeBuildInfo', () => {
-  const info = { web: SHA, bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'staging', dataBase: 'https://data.kaiyuanguji.com/staging' };
+  const info = { web: SHA, bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'staging', dataBase: `${DATA_ORIGIN}/staging` };
 
   it('仓库里的 version.js 有标记区，且默认是 null', () => {
     const src = readFileSync(REPO_VERSION_JS, 'utf-8');
@@ -121,6 +127,8 @@ describe('injectBuildInfo / writeBuildInfo', () => {
     const dir = mkdtempSync(join(tmpdir(), 'bi-'));
     const f = join(dir, 'version.js');
     writeFileSync(f, bi.injectBuildInfo(readFileSync(REPO_VERSION_JS, 'utf-8'), info));
+    // version.js 从同目录的 hosts.js 取数据域名
+    copyFileSync(join(dirname(REPO_VERSION_JS), 'hosts.js'), join(dir, 'hosts.js'));
     const realFetch = globalThis.fetch;
     const fake = okFetch(POINTER);
     globalThis.fetch = fake as unknown as typeof fetch;
@@ -129,7 +137,7 @@ describe('injectBuildInfo / writeBuildInfo', () => {
       const res: Response = await mod.onRequestGet();
       const j = await res.json();
       expect(j).toMatchObject({ web: SHA, bimUi: '0.9.8', data: '501935e5be70', builtAt: info.builtAt, target: 'staging' });
-      expect(fake.calls[0]).toMatch(/^https:\/\/data\.kaiyuanguji\.com\/staging\/latest\.json\?cb=/);
+      expect(fake.calls[0]).toMatch(new RegExp(`^${esc(DATA_ORIGIN)}/staging/latest\\.json\\?cb=`));
     } finally {
       globalThis.fetch = realFetch;
     }
@@ -143,20 +151,20 @@ describe('GET /api/version', () => {
     v = await import('../../../../edge-functions/api/version.js');
   });
 
-  const info = { web: SHA, bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'production', dataBase: 'https://data.kaiyuanguji.com' };
+  const info = { web: SHA, bimUi: '0.9.8', builtAt: '2026-09-28T00:00:00.000Z', target: 'production', dataBase: DATA_ORIGIN };
 
   it('回 web／bimUi／data／builtAt／target，数据指针只转出白名单字段', async () => {
     const f = okFetch(POINTER);
     const body = await v.buildVersionBody(info, f);
     expect(body).toMatchObject({ web: SHA, bimUi: '0.9.8', data: '501935e5be70', builtAt: info.builtAt, target: 'production', webMatchesPointer: true });
     expect(body.dataPointer.somethingElse).toBeUndefined();
-    expect(f.calls[0]).toMatch(/^https:\/\/data\.kaiyuanguji\.com\/latest\.json\?cb=/);
+    expect(f.calls[0]).toMatch(new RegExp(`^${esc(DATA_ORIGIN)}/latest\\.json\\?cb=`));
   });
 
   it('dataBase 被篡改成别的地址也只读自家数据域名', async () => {
     const f = okFetch(POINTER);
     await v.buildVersionBody({ ...info, dataBase: 'http://169.254.169.254' }, f);
-    expect(f.calls[0]).toMatch(/^https:\/\/data\.kaiyuanguji\.com\/latest\.json/);
+    expect(f.calls[0]).toMatch(new RegExp(`^${esc(DATA_ORIGIN)}/latest\\.json`));
   });
 
   it('数据指针读不到：data=null＋dataError，接口本身不挂', async () => {

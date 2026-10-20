@@ -1,5 +1,5 @@
 /**
- * 书影：从 IIIF manifest 取一册的各页影像（COS，data.kaiyuanguji.com；overview#388／#389）。
+ * 书影：从 IIIF manifest 取一册的各页影像（COS，数据域名 DATA_ORIGIN；overview#388／#389）。
  *
  * 地址：<base>/iiif/<bookId>/<册>/manifest.json；canvas 的 body 是 Choice，第一项是本站图（阅读档 1200 宽，
  * 来自 Commons／IA 的在后面）；原图宽度那一档（放大档，透视矫正要用）地址同形，只把 `/full/<宽>,/` 换成原图宽。
@@ -12,8 +12,9 @@
  * TODO（本卡不做）：图挂了换 Commons／IA 的前端回退链（canvas body Choice 的后几项）。
  */
 import type { ReaderPageImage } from 'book-index-ui';
+import { DATA_ORIGIN } from './hosts';
 
-export const FACSIMILE_BASE = process.env.NEXT_PUBLIC_FACSIMILE_BASE || 'https://data.kaiyuanguji.com/iiif';
+export const FACSIMILE_BASE = process.env.NEXT_PUBLIC_FACSIMILE_BASE || `${DATA_ORIGIN}/iiif`;
 
 interface IiifCanvas {
     id: string;

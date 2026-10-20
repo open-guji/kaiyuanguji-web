@@ -10,9 +10,10 @@
  *   meili                    ＝ Meili 自报处理耗时
  *
  * 只发 GET，无依赖、无 secret。CLI：
- *   node ops/search-timing.mjs [--target https://www.openguji.com] [--rounds 5]
+ *   node ops/search-timing.mjs [--target <站点，默认正式站>] [--rounds 5]
  */
 import { pathToFileURL } from 'node:url';
+import { SITE_ORIGIN } from '../config/hosts.mjs';
 
 const HOT = ['史記', '論語', '杜甫', '四庫全書', '说文解字'];
 const COLD = ['詩', '禮', '易', '春秋', '左傳'];
@@ -55,7 +56,7 @@ async function main() {
         const i = args.indexOf(`--${name}`);
         return i >= 0 ? args[i + 1] : def;
     };
-    const target = arg('target', process.env.TARGET || 'https://www.openguji.com').replace(/\/$/, '');
+    const target = arg('target', process.env.TARGET || SITE_ORIGIN).replace(/\/$/, '');
     const rounds = Number(arg('rounds', '5'));
 
     const rows = [];

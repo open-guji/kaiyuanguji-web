@@ -20,26 +20,17 @@
 import tls from 'node:tls';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { HOSTS, hostOf } from '../config/hosts.mjs';
 
 /**
- * 默认域名清单，全部来自仓库内实际引用（不是猜的）：
- *  - www.openguji.com：规范主机（nextjs/src/lib/site-hosts.ts CANONICAL_HOST）
- *  - openguji.com：新域名裸域，301 到 www（同上 REDIRECT_HOSTS）
- *  - www.kaiyuanguji.com / kaiyuanguji.com：旧域名，301 到新域名（同上；cutover-check 会访问裸域）
- *  - staging.kaiyuanguji.com / data.kaiyuanguji.com / api.kaiyuanguji.com：预发、数据（COS）、搜索 API
- *  - ssr-test.kaiyuanguji.com：切站演练域名（.github/workflows/cutover-check.yml、e2e-remote.yml）
- * data.openguji.com 之类在仓库里没有引用，不查；真有再加参数。
+ * 默认域名清单：config/hosts.json 里的全部主机（去重；oauthIssuer 与旧 www 是同一个）。
+ * 那里加了新域名（例如数据迁到 data.openguji.com），这里自动跟着查。
  */
-export const DEFAULT_HOSTS = [
-    'www.openguji.com',
-    'openguji.com',
-    'www.kaiyuanguji.com',
-    'kaiyuanguji.com',
-    'staging.kaiyuanguji.com',
-    'data.kaiyuanguji.com',
-    'api.kaiyuanguji.com',
-    'ssr-test.kaiyuanguji.com',
-];
+export const DEFAULT_HOSTS = [...new Set(
+    ['site', 'siteApex', 'legacySite', 'legacyApex', 'staging', 'data', 'api', 'ssrTest', ...Object.keys(HOSTS)]
+        .filter((k) => k in HOSTS && !k.startsWith('$'))
+        .map((k) => hostOf(HOSTS[k])),
+)];
 
 export const DEFAULT_MIN_DAYS = 30;
 const TIMEOUT_MS = 15_000;

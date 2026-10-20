@@ -4,6 +4,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import TextFixesContent from '../TextFixesContent';
 import { groupFixes, parsePublicFixes, cellCompare, fixesPageHref } from '@/lib/fixes';
+import { DATA_ORIGIN } from '@/lib/hosts';
 
 let search = 'book=96mid1ogzk&vol=002';
 jest.mock('next/navigation', () => ({
@@ -32,7 +33,7 @@ const LIST = {
 };
 
 const okFetch = (body: unknown, status = 200) => jest.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body });
-const COS_URL = 'https://data.kaiyuanguji.com/proof/fixes/96mid1ogzk.json';
+const COS_URL = `${DATA_ORIGIN}/proof/fixes/96mid1ogzk.json`;
 /** 实时接口（/api/fixes）与 COS 兜底清单分开答 */
 const routed = (live: unknown | null, cos: unknown = LIST, cosStatus = 200) => jest.fn(async (url: string) => {
     if (String(url).startsWith('/api/fixes')) return live === null ? { ok: false, status: 404, json: async () => null } : { ok: true, status: 200, json: async () => ({ success: true, ...(live as object) }) };

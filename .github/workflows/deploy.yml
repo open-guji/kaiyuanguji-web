@@ -105,6 +105,20 @@ concurrency:
   group: deploy-edgeone-${{ github.event_name == 'push' && 'push' || inputs.target || 'staging' }}
   cancel-in-progress: ${{ github.event_name == 'push' }}
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   # 定时触发时先比对数据仓 HEAD 与线上（正式站）latest.json，没变化就跳过整个构建。
   # push / dispatch / 手动触发一律直接部署。
@@ -131,7 +145,7 @@ jobs:
             echo "· 数据流程已拆出：定时的数据发布由 data.yml 负责，本流程跳过"
             exit 0
           fi
-          LIVE=$(curl -sf --max-time 30 https://data.kaiyuanguji.com/latest.json || echo '{}')
+          LIVE=$(curl -sf --max-time 30 $HOST_DATA/latest.json || echo '{}')
           LIVE_PROD=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" || echo '')
           LIVE_TEXT=$(echo "$LIVE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('textCommitId',''))" || echo '')
           HEAD_PROD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
@@ -232,7 +246,7 @@ jobs:
           code_commit() {
             KYG_PFX="$1" python3 - <<'PY'
           import json, os, re, time, urllib.request
-          base = os.environ.get("KYG_DATA_BASE", "https://data.kaiyuanguji.com")
+          base = os.environ.get("KYG_DATA_BASE") or os.environ["HOST_DATA"]
           pfx = os.environ.get("KYG_PFX", "")
           def get(name):
               try:
@@ -338,7 +352,7 @@ jobs:
             if [ "$SPLIT" = true ]; then
               # 数据流程已拆出：只发代码，取测试站代码指针 staging/web.json 记下的 webCommitId；不带数据 commit
               [ "$IN_PROMOTE" != data ] || { echo "❌ 数据流程已拆出：promote=data 不再支持，数据上线走 data.yml"; exit 1; }
-              WEB=$(curl -sf https://data.kaiyuanguji.com/staging/web.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
+              WEB=$(curl -sf $HOST_DATA/staging/web.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" || true)
               [ -n "$WEB" ] || { echo "❌ staging/web.json 里没有 webCommitId（需先有一次成功的测试站部署）"; exit 1; }
               echo "web_ref=$WEB" >> "$GITHUB_OUTPUT"
               echo "prod_ref=" >> "$GITHUB_OUTPUT"
@@ -346,8 +360,8 @@ jobs:
               echo "· promote（只发代码，数据流程已拆出）：web=$WEB"
               exit 0
             fi
-            S=$(curl -sf https://data.kaiyuanguji.com/staging/latest.json)
-            P=$(curl -sf https://data.kaiyuanguji.com/latest.json || echo '{}')
+            S=$(curl -sf $HOST_DATA/staging/latest.json)
+            P=$(curl -sf $HOST_DATA/latest.json || echo '{}')
             get() { echo "$1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('$2',''))"; }
             if [ "${{ inputs.promote }}" = data ]; then WEB=$(code_commit ''); else WEB=$(code_commit 'staging/'); fi
             if [ -z "$WEB" ]; then
@@ -791,7 +805,7 @@ jobs:
         timeout-minutes: 10
         run: |
           node ops/data-package-check.mjs \
-            --baseline "https://data.kaiyuanguji.com${COS_PATH_PREFIX:+/$COS_PATH_PREFIX}" \
+            --baseline "$HOST_DATA${COS_PATH_PREFIX:+/$COS_PATH_PREFIX}" \
             --summary "$GITHUB_STEP_SUMMARY" \
             --json "$RUNNER_TEMP/data-package-stats.json"
 
@@ -857,7 +871,7 @@ jobs:
         if: ${{ env.SPLIT_DATA != 'true' }}
         run: |
           P="${COS_PATH_PREFIX:+$COS_PATH_PREFIX/}"
-          R=$(curl -sf "https://data.kaiyuanguji.com/${P}h1/manifest-root.json?t=$(date +%s)" \
+          R=$(curl -sf "$HOST_DATA/${P}h1/manifest-root.json?t=$(date +%s)" \
             | python3 -c "import json,sys; print(json.load(sys.stdin).get('root',''))" 2>/dev/null || true)
           echo "OLD_H1_ROOT=$R" >> "$GITHUB_ENV"
           echo "· 发布前 ${DEPLOY_TARGET} h1 root：${R:-（无）}"
@@ -1066,7 +1080,7 @@ jobs:
         if: ${{ env.FROM_ARTIFACT != 'true' && env.SPLIT_DATA != 'true' }}
         working-directory: nextjs
         env:
-          SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
+          SITEMAP_SITE: ${{ needs.resolve.outputs.target == 'staging' && env.HOST_STAGING || env.HOST_SITE }}
         run: |
           OUT="$RUNNER_TEMP/item-sitemaps"
           if [ "$DATA_FAST" != true ]; then
@@ -1119,14 +1133,14 @@ jobs:
           NEXT_PUBLIC_MODE: ''
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_COS_BASE: ${{ env.HOST_DATA }}
           # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
           NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
-          NEXT_PUBLIC_SITE_URL: https://www.openguji.com
+          NEXT_PUBLIC_SITE_URL: ${{ env.HOST_SITE }}
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
-          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          NEXT_PUBLIC_MEILI_URL: ${{ env.HOST_API }}
           # 兜底值是「公开只读搜索 key」（本来就随 JS 发给每个浏览器，非机密；
           # 绝不能在这里放 master key）。secret 缺失曾导致构建时 key 为空、
           # 线上搜索全 401（2026-08 事故）。轮换 key 后请同步更新这里和 secret。
@@ -1176,11 +1190,11 @@ jobs:
           NEXT_PUBLIC_MODE: ''
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
           # overview#470 P1：数据流程已拆出时测试站直接读正式站数据前缀（没有自己的数据）
-          NEXT_PUBLIC_COS_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
+          NEXT_PUBLIC_COS_BASE: ${{ needs.resolve.outputs.split == 'true' && env.HOST_DATA || format('{0}/staging', env.HOST_DATA) }}
           NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: staging
-          NEXT_PUBLIC_SITE_URL: https://staging.kaiyuanguji.com
-          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          NEXT_PUBLIC_SITE_URL: ${{ env.HOST_STAGING }}
+          NEXT_PUBLIC_MEILI_URL: ${{ env.HOST_API }}
           # 兜底值同正式站那一步：公开只读搜索 key，非机密
           NEXT_PUBLIC_MEILI_KEY: ${{ secrets.MEILI_SEARCH_KEY || '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465' }}
           # 测试站不上报统计
@@ -1282,7 +1296,7 @@ jobs:
           # overview#470 P1：数据流程已拆出时 sitemap 走路由代理，产物里没有静态文件，改查路由
           if [ "$SPLIT_DATA" = true ]; then
             # 反向断言：测试站（非演练）不读 staging 数据前缀，读正式站的
-            ! grep -rq 'data.kaiyuanguji.com/staging' $A/_next/static/chunks/ || { echo "❌ SPLIT 模式：测试站产物里还有 staging 数据前缀"; exit 1; }
+            ! grep -rqF "${HOST_DATA#https://}/staging" $A/_next/static/chunks/ || { echo "❌ SPLIT 模式：测试站产物里还有 staging 数据前缀"; exit 1; }
             test ! -e $A/sitemap-index.xml && grep -Eq '"\^/sitemap(\\\\)?-proxy/' nextjs/.edgeone/cloud-functions/ssr-node/config.json \
               && echo "✓ sitemap 走路由代理（产物里无静态文件，云函数有 /sitemap-proxy）" \
               || { echo "❌ SPLIT 模式：产物里不该有静态 sitemap，且云函数路由里要有 /sitemap-proxy"; exit 1; }
@@ -1447,6 +1461,7 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
         run: |
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
           python3 -c "
@@ -1468,8 +1483,8 @@ jobs:
           # 半角双引号——曾因写入 FailedList 这个词的 JSON 字面量形式（半角双引号
           # 包住）导致 shell 提前截断整段字符串，后半段 Python 代码整体消失不执行，
           # 且 step 仍然 exit 0（截断后剩下的部分恰好是合法的空程序，不报错）。
-          # data.kaiyuanguji.com/latest.json 单独 purge_url（新版本指针，让浏览器
-          # 拉到新 commit）；不 purge_host data.kaiyuanguji.com 整站——那 318MB
+          # 数据域名的 latest.json 单独 purge_url（新版本指针，让浏览器
+          # 拉到新 commit）；不 purge_host 数据域名整站——那 318MB
           # 缓存白丢，回源费贵。
           # CUT2：www 已换绑到全栈项目 kyg-ssr-spike，同测试站一样是 Pages 自定义域名，
           # purge_host kaiyuanguji.com 清不到 www 的页面（只清裸域那条 301）；www 的静态页随新部署
@@ -1479,15 +1494,25 @@ jobs:
           # 待网站总管核实（31 卡 §B.8.6），本步骤先按同一逻辑发出，不影响正式站。
           staging = os.environ.get('DEPLOY_TARGET') == 'staging'
 
-          req_pointer = models.CreatePurgeTaskRequest()
-          req_pointer.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          req_pointer.Type = 'purge_url'
           # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
           # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
-          pfx = 'https://data.kaiyuanguji.com/' + ('staging/' if staging else '')
-          req_pointer.Targets = [pfx + 'latest.json', pfx + 'web.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
-          resp_pointer = client.CreatePurgeTask(req_pointer)
-          print('✅ latest.json purged:', resp_pointer.to_json_string())
+          # 新旧两个数据域名回源同一个桶、各有节点缓存，分属两个站点：旧域名用 EDGEONE_ZONE_ID，
+          # 新域名用 EDGEONE_DATA_ZONE_ID（没配就跳过，新域名的指针规则本就是节点不缓存）。同 ops/purge-urls.py
+          sub = 'staging/' if staging else ''
+          names = ['latest.json', 'web.json', 'h1/manifest-root.json', 'h1/text-manifest-root.json']
+          zones = [(os.environ['EDGEONE_ZONE_ID'], '$HOST_LEGACY_DATA/')]
+          if '$HOST_DATA' != '$HOST_LEGACY_DATA':
+              if os.environ.get('EDGEONE_DATA_ZONE_ID'):
+                  zones.append((os.environ['EDGEONE_DATA_ZONE_ID'], '$HOST_DATA/'))
+              else:
+                  print('⚠️ 没配 EDGEONE_DATA_ZONE_ID，跳过新数据域名的指针')
+          for zone, base in zones:
+              req_pointer = models.CreatePurgeTaskRequest()
+              req_pointer.ZoneId = zone
+              req_pointer.Type = 'purge_url'
+              req_pointer.Targets = [base + sub + n for n in names]
+              resp_pointer = client.CreatePurgeTask(req_pointer)
+              print('✅ latest.json purged:', base, resp_pointer.to_json_string())
 
           # 测试站不清整站：staging.kaiyuanguji.com 是 Pages 项目自定义域名，不是本 zone 的
           # 加速域名，purge_host 返回 DomainNotFound（09-27 首跑实测）；CLI 直接上传后
@@ -1498,7 +1523,7 @@ jobs:
               req_site = models.CreatePurgeTaskRequest()
               req_site.ZoneId = os.environ['EDGEONE_ZONE_ID']
               req_site.Type = 'purge_host'
-              req_site.Targets = ['kaiyuanguji.com']
+              req_site.Targets = ['${HOST_LEGACY_APEX#https://}']
               resp_site = client.CreatePurgeTask(req_site)
               print('✅ EdgeOne cache purged:', resp_site.to_json_string())
           "
@@ -1518,7 +1543,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_DATA_BASE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+          ITEM_DATA_BASE: ${{ env.DEPLOY_TARGET == 'staging' && format('{0}/staging', env.HOST_DATA) || env.HOST_DATA }}
         run: node scripts/item-changes.mjs
 
       - name: Revalidate changed item pages (W2-3)
@@ -1527,7 +1552,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && env.HOST_STAGING || env.HOST_SITE }}
         run: node scripts/item-revalidate.mjs
 
       - name: Verify item cache refresh (W2-3)
@@ -1535,7 +1560,7 @@ jobs:
         continue-on-error: true
         working-directory: nextjs
         env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && env.HOST_STAGING || env.HOST_SITE }}
         run: node scripts/item-cache-verify.mjs
 
       # 阅读页（ISR）的输出取决于代码：每次代码发布都要整体失效一次。上面的条目失效步骤受 DATA_FAST 管
@@ -1545,7 +1570,7 @@ jobs:
         id: read_revalidate
         continue-on-error: true
         env:
-          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
+          ITEM_SITE: ${{ env.DEPLOY_TARGET == 'staging' && env.HOST_STAGING || env.HOST_SITE }}
         run: |
           for attempt in 1 2 3; do
             code=$(curl -sS -o /tmp/read-reval.json -w '%{http_code}' -X POST "$ITEM_SITE/internal/revalidate" \
@@ -1566,8 +1591,8 @@ jobs:
         continue-on-error: true
         timeout-minutes: 8
         env:
-          TARGET: https://www.openguji.com
-          DATA_BASE: https://data.kaiyuanguji.com
+          TARGET: ${{ env.HOST_SITE }}
+          DATA_BASE: ${{ env.HOST_DATA }}
         # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
         run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
 
@@ -1588,8 +1613,8 @@ jobs:
           node-version: '20'
       - name: Warm hot reading pages (staging, overview#322)
         env:
-          TARGET: https://staging.kaiyuanguji.com
-          DATA_BASE: ${{ needs.resolve.outputs.split == 'true' && 'https://data.kaiyuanguji.com' || 'https://data.kaiyuanguji.com/staging' }}
+          TARGET: ${{ env.HOST_STAGING }}
+          DATA_BASE: ${{ needs.resolve.outputs.split == 'true' && env.HOST_DATA || format('{0}/staging', env.HOST_DATA) }}
         # 部署的是早于本脚本的代码（promote=data、回滚）时没有它，跳过
         run: '[ -f ops/warm-read-pages.mjs ] && node ops/warm-read-pages.mjs || echo "· 这一版代码没有 ops/warm-read-pages.mjs，跳过预热"'
 
@@ -1667,7 +1692,7 @@ jobs:
           KYG_DATA_ROOT: ${{ runner.temp }}/kyg-data
           BOOK_INDEX_PRODUCTION_DIR: ${{ github.workspace }}/book-index
           BOOK_TEXT_DIR: ${{ github.workspace }}/book-text
-          SITEMAP_SITE: https://www.openguji.com
+          SITEMAP_SITE: ${{ env.HOST_SITE }}
           SITEMAP_OUT_DIR: ${{ runner.temp }}/item-sitemaps
         run: |
           # overview#470 P1：同 build 任务的克隆缓存
@@ -1799,14 +1824,14 @@ jobs:
           NEXT_PUBLIC_MODE: ''
           # 数据源 = cos：浏览器与云函数都从 data.kaiyuanguji.com 拉，靠 latest.json 解析版本
           NEXT_PUBLIC_DATA_SOURCE: ${{ secrets.COS_SECRET_ID != '' && 'cos' || 'bundle' }}
-          NEXT_PUBLIC_COS_BASE: https://data.kaiyuanguji.com
+          NEXT_PUBLIC_COS_BASE: ${{ env.HOST_DATA }}
           # overview#470 P1：数据流程已拆出时 sitemap 走路由代理（构建时开关；build 与 prod-artifact 两份必须一致）
           NEXT_PUBLIC_SITEMAP_PROXY: ${{ needs.resolve.outputs.split == 'true' && '1' || '' }}
           NEXT_PUBLIC_SITE_ENV: ''
-          NEXT_PUBLIC_SITE_URL: https://www.openguji.com
+          NEXT_PUBLIC_SITE_URL: ${{ env.HOST_SITE }}
           # Hybrid 搜索：L1 = Meilisearch on 上海云（EdgeOne 反代）
           # L1 失败时自动 fallback 到 worker 索引（L2，COS 或 /data/search）
-          NEXT_PUBLIC_MEILI_URL: https://api.kaiyuanguji.com
+          NEXT_PUBLIC_MEILI_URL: ${{ env.HOST_API }}
           # 兜底值是「公开只读搜索 key」（本来就随 JS 发给每个浏览器，非机密；
           # 绝不能在这里放 master key）。secret 缺失曾导致构建时 key 为空、
           # 线上搜索全 401（2026-08 事故）。轮换 key 后请同步更新这里和 secret。
@@ -1905,7 +1930,7 @@ jobs:
           # 一次才会有）。缺失时是「正式站还没做过第一次 promote」，不是故障，
           # 打一行警告跳过即可，不能让 workflow 报红；手动 promote 仍按 resolve
           # job 现在的逻辑报错（那边是人在等结果，缺字段就该让人知道）。
-          WEB=$(curl -sf https://data.kaiyuanguji.com/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || echo '')
+          WEB=$(curl -sf $HOST_DATA/latest.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('webCommitId',''))" 2>/dev/null || echo '')
           if [ -z "$WEB" ]; then
             echo "⚠️ 正式站 latest.json 还没有 webCommitId（尚未做过一次 promote=code+data），自动 promote 跳过。请先手动 workflow_dispatch target=production promote=code+data 一次。"
             exit 0

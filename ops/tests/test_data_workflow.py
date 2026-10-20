@@ -206,7 +206,7 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         for publish, only, skip, present in itertools.product(('true', 'false'), ('true', 'false'), ('true', 'false', ''), ('true', 'false', '')):
             want = publish == 'true' and (only == 'true' or skip != 'true' or present != 'true')
             self.assertEqual(ev(publish, only, skip, present), want, (publish, only, skip, present))
-        self.assertEqual(self._step('Generate item sitemaps')['env']['SITEMAP_SITE'], 'https://www.openguji.com')
+        self.assertEqual(self._step('Generate item sitemaps')['env']['SITEMAP_SITE'], '${{ env.HOST_SITE }}')
         # 「完整发布过」的判断带两个 commit，COS 密钥只在这一步的 step 级 env
         p = self._step('Check whether this sitemap version was fully published')
         self.assertIn('steps.clone.outputs.index_sha', p['env']['SITEMAP_META'])

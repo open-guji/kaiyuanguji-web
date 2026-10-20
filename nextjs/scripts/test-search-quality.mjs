@@ -15,11 +15,13 @@
  *   - topNHasId / topNHasTitleContains           — 前 N 名包含
  *
  * 用法：
- *   node scripts/test-search-quality.mjs              # 默认连生产 https://api.kaiyuanguji.com
+ *   node scripts/test-search-quality.mjs              # 默认连生产搜索 API（config/hosts.json 的 api）
  *   node scripts/test-search-quality.mjs --url=...    # 切目标
  *   node scripts/test-search-quality.mjs -v           # verbose（打印每条 case 的前 N 名）
  *   node scripts/test-search-quality.mjs --tag=拼音    # 只跑某 tag
  */
+
+import { API_ORIGIN } from '../../config/hosts.mjs';
 
 const args = process.argv.slice(2);
 const flag = (k) => args.includes(k);
@@ -28,7 +30,7 @@ const opt = (k, def) => {
     return a ? a.split('=').slice(1).join('=') : def;
 };
 
-const BASE_URL = opt('--url', 'https://api.kaiyuanguji.com').replace(/\/$/, '');
+const BASE_URL = opt('--url', API_ORIGIN).replace(/\/$/, '');
 const API_KEY = opt('--key', '1b0b438f7eadd34e1a6b53c76d63bd3614822d3ec9856251c9340a78456c5465');
 const VERBOSE = flag('-v') || flag('--verbose');
 const FILTER_TAG = opt('--tag', null);

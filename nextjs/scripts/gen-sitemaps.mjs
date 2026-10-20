@@ -25,9 +25,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { nodePagePaths } from './lib/sitemap-nodes.mjs';
+import { SITE_ORIGIN } from '../../config/hosts.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SITE = (process.env.SITEMAP_SITE || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.openguji.com').replace(/\/$/, '');
+const SITE = (process.env.SITEMAP_SITE || process.env.NEXT_PUBLIC_SITE_URL || SITE_ORIGIN).replace(/\/$/, '');
 const OUT = process.env.SITEMAP_OUT_DIR || join(__dirname, '..', 'public');
 const PER = Number(process.env.SITEMAP_PER_SHARD || 50000);
 const MIN = Number(process.env.SITEMAP_MIN_URLS || 100000);

@@ -23,12 +23,13 @@ import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { resolveCodeCommit } from './code-pointer.mjs';
+import { DATA_ORIGIN, LEGACY_APEX_ORIGIN, LEGACY_SITE_ORIGIN, hostOf } from '../config/hosts.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export const DEFAULT_HOST = 'www.kaiyuanguji.com';
-export const DEFAULT_APEX = 'kaiyuanguji.com';
-export const DEFAULT_DATA_BASE = 'https://data.kaiyuanguji.com';
+export const DEFAULT_HOST = hostOf(LEGACY_SITE_ORIGIN);
+export const DEFAULT_APEX = hostOf(LEGACY_APEX_ORIGIN);
+export const DEFAULT_DATA_BASE = DATA_ORIGIN;
 
 /**
  * 条目页锚点：都已升格到 production，同 e2e/fixtures/anchors.ts（work／collated／entity 三类各一）。
@@ -508,7 +509,7 @@ async function main() {
         process.exit(2);
     }
     if (opts.help) {
-        console.log('用法：node ops/cutover-check.mjs [域名，默认 www.kaiyuanguji.com] [--json] [--apex 裸域|--no-apex] [--expect-ui 版本] [--data-base URL]');
+        console.log(`用法：node ops/cutover-check.mjs [域名，默认 ${DEFAULT_HOST}] [--json] [--apex 裸域|--no-apex] [--expect-ui 版本] [--data-base URL]`);
         return;
     }
     const report = await runCutoverCheck(opts);

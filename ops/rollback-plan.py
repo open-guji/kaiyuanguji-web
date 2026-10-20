@@ -34,9 +34,10 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import code_pointer  # noqa: E402
+from hosts import DATA_ORIGIN, SITE_ORIGIN, STAGING_ORIGIN  # noqa: E402
 
-DATA = "https://data.kaiyuanguji.com"
-SITES = {"production": "https://www.openguji.com", "staging": "https://staging.kaiyuanguji.com"}
+DATA = DATA_ORIGIN
+SITES = {"production": SITE_ORIGIN, "staging": STAGING_ORIGIN}
 POINTERS = {"production": f"{DATA}/latest.json", "staging": f"{DATA}/staging/latest.json"}
 # 代码指针 web.json：latest.json 带 codePointer 标记（开关打开后）时它才是「线上是哪一版代码」的依据，见 ops/code_pointer.py
 WEB_POINTERS = {"production": f"{DATA}/web.json", "staging": f"{DATA}/staging/web.json"}

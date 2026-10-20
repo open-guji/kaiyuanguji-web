@@ -15,20 +15,21 @@
  *   PARTS=opinions|publish|all（默认 all）
  *   GUJI_DATA_URL（默认 https://data.open-guji.com）、GUJI_DATA_TOKEN（web 角色令牌，必填；Action 里用网站管理令牌 FEEDBACK_ADMIN_TOKEN）
  *   PROOF_WS（中心库工作区 id，逗号分隔，默认 siku-zongmu）
- *   opinions：SITE_BASE（默认 https://www.openguji.com；旧域名 www.kaiyuanguji.com 的 /api/* 在国内 404，GUJI-706）、FEEDBACK_ADMIN_TOKEN
+ *   opinions：SITE_BASE（默认正式站 SITE_ORIGIN；旧域名 www.kaiyuanguji.com 的 /api/* 在国内 404，GUJI-706）、FEEDBACK_ADMIN_TOKEN
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
 import { appendFileSync } from 'node:fs';
 import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
+import { SITE_ORIGIN } from '../../config/hosts.mjs';
 
 const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
 const DATA_TOKEN = process.env.GUJI_DATA_TOKEN || '';
 const WS = (process.env.PROOF_WS || 'siku-zongmu').split(',').map((s) => s.trim()).filter(Boolean);
 const FIX_BOOKS = (process.env.FIX_BOOKS || '96mid1ogzk').split(',').map((s) => s.trim()).filter(Boolean);
-const SITE = (process.env.SITE_BASE || 'https://www.openguji.com').replace(/\/+$/, '');
+const SITE = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const ADMIN = process.env.FEEDBACK_ADMIN_TOKEN || '';
 const DRY_RUN = process.env.DRY_RUN === '1';
 const PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');

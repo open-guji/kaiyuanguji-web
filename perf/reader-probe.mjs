@@ -3,8 +3,9 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import { SITE_ORIGIN } from '../config/hosts.mjs';
 
-const URL_ = process.env.URL_ || 'https://www.openguji.com/read/96mid1ogzk/002';
+const URL_ = process.env.URL_ || `${SITE_ORIGIN}/read/96mid1ogzk/002`;
 const OUT = path.resolve(path.dirname(new URL(import.meta.url).pathname), 'out', 'reader');
 fs.mkdirSync(OUT, { recursive: true });
 
