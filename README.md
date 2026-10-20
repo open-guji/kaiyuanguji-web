@@ -3,7 +3,7 @@
 > 让科技赋予古籍数字生命 — https://www.kaiyuanguji.com
 
 本仓库是开源古籍项目官网的源码。Next.js 16（App Router）全栈部署在腾讯云 EdgeOne Pages：静态页 + `/item/<id>` 云函数服务端渲染 + 边缘函数；
-索引数据不在站点里，由 CI 打包后走独立 CDN `data.kaiyuanguji.com`（新加坡 COS）；
+索引数据不在站点里，由 CI 打包后走独立 CDN `data.openguji.com`（新加坡 COS；旧域名 data.kaiyuanguji.com 回源同一个桶，继续可用）；
 搜索走 Meilisearch（L1，上海）+ 浏览器内 MiniSearch 分片（L2 兜底）。
 所有域名（站点、数据、搜索 API、测试站……）只写在 [`config/hosts.json`](config/hosts.json)，改完跑 `node ops/sync-hosts.mjs`；不要在代码里写死域名（见 [docs/data-domain-migration.md](docs/data-domain-migration.md)）。
 
@@ -70,7 +70,7 @@ push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`prom
   - **book-text**：自动。每小时检查一次，book-text main 有新提交就发；每天 UTC 21:43 另有一次完整跑兜底。手动：`gh workflow run data.yml -f flow=text`。
   - **book-index**：手动。`gh workflow run data.yml -f flow=index`。
   - 两个仓一起按指定 ref 发（回滚用）：`flow=both`，ref 不是 main 时勾 `allow_ref_override`。
-- **发布后验证**：`curl -s "https://data.kaiyuanguji.com/latest.json?cb=$RANDOM$RANDOM"` 看 commit（必须带随机串，EdgeOne 会给旧副本）；线上是哪一版看 `/api/version`。
+- **发布后验证**：`curl -s "https://data.openguji.com/latest.json?cb=$RANDOM$RANDOM"` 看 commit（必须带随机串，EdgeOne 会给旧副本）；线上是哪一版看 `/api/version`。
 - 完整流程与 Secrets 清单见 overview 仓「项目进展/古籍索引网站/网站交接手册.html」。
 
 ## 数据源模式

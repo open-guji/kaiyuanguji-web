@@ -107,7 +107,8 @@ concurrency:
 
 env:
   # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
-  HOST_DATA: https://data.kaiyuanguji.com
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
   HOST_API: https://api.kaiyuanguji.com
   HOST_SITE: https://www.openguji.com
   HOST_SITE_APEX: https://openguji.com
@@ -1449,6 +1450,7 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
         run: |
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
           python3 -c "
@@ -1481,15 +1483,25 @@ jobs:
           # 待网站总管核实（31 卡 §B.8.6），本步骤先按同一逻辑发出，不影响正式站。
           staging = os.environ.get('DEPLOY_TARGET') == 'staging'
 
-          req_pointer = models.CreatePurgeTaskRequest()
-          req_pointer.ZoneId = os.environ['EDGEONE_ZONE_ID']
-          req_pointer.Type = 'purge_url'
           # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
           # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
-          pfx = '$HOST_DATA/' + ('staging/' if staging else '')
-          req_pointer.Targets = [pfx + 'latest.json', pfx + 'web.json', pfx + 'h1/manifest-root.json', pfx + 'h1/text-manifest-root.json']
-          resp_pointer = client.CreatePurgeTask(req_pointer)
-          print('✅ latest.json purged:', resp_pointer.to_json_string())
+          # 新旧两个数据域名回源同一个桶、各有节点缓存，分属两个站点：旧域名用 EDGEONE_ZONE_ID，
+          # 新域名用 EDGEONE_DATA_ZONE_ID（没配就跳过，新域名的指针规则本就是节点不缓存）。同 ops/purge-urls.py
+          sub = 'staging/' if staging else ''
+          names = ['latest.json', 'web.json', 'h1/manifest-root.json', 'h1/text-manifest-root.json']
+          zones = [(os.environ['EDGEONE_ZONE_ID'], '$HOST_LEGACY_DATA/')]
+          if '$HOST_DATA' != '$HOST_LEGACY_DATA':
+              if os.environ.get('EDGEONE_DATA_ZONE_ID'):
+                  zones.append((os.environ['EDGEONE_DATA_ZONE_ID'], '$HOST_DATA/'))
+              else:
+                  print('⚠️ 没配 EDGEONE_DATA_ZONE_ID，跳过新数据域名的指针')
+          for zone, base in zones:
+              req_pointer = models.CreatePurgeTaskRequest()
+              req_pointer.ZoneId = zone
+              req_pointer.Type = 'purge_url'
+              req_pointer.Targets = [base + sub + n for n in names]
+              resp_pointer = client.CreatePurgeTask(req_pointer)
+              print('✅ latest.json purged:', base, resp_pointer.to_json_string())
 
           # 测试站不清整站：staging.kaiyuanguji.com 是 Pages 项目自定义域名，不是本 zone 的
           # 加速域名，purge_host 返回 DomainNotFound（09-27 首跑实测）；CLI 直接上传后

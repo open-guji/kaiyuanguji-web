@@ -9,7 +9,11 @@ import unittest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SCRIPT = os.path.join(ROOT, 'ops', 'purge-urls.py')
-D = 'https://data.kaiyuanguji.com/'
+sys.path.insert(0, os.path.join(ROOT, 'ops'))
+import hosts  # noqa: E402
+
+D = hosts.DATA_ORIGIN + '/'
+L = hosts.LEGACY_DATA_ORIGIN + '/'
 
 spec = importlib.util.spec_from_file_location('purge_urls', SCRIPT)
 mod = importlib.util.module_from_spec(spec)
@@ -17,7 +21,7 @@ spec.loader.exec_module(mod)
 
 
 def cli(*args, env=None):
-    e = {k: v for k, v in os.environ.items() if not k.startswith('TENCENT') and k != 'EDGEONE_ZONE_ID'}
+    e = {k: v for k, v in os.environ.items() if not k.startswith('TENCENT') and k not in ('EDGEONE_ZONE_ID', 'EDGEONE_DATA_ZONE_ID')}
     e.update(env or {})
     return subprocess.run([sys.executable, '-I', SCRIPT, *args], capture_output=True, text=True, env=e)
 
@@ -26,10 +30,22 @@ class PurgeUrls(unittest.TestCase):
     def test_accepts_data_host_urls(self):
         self.assertEqual(mod.check_urls([D + 'latest.json', D + 'staging/h1/manifest-root.json']), [])
 
+    def test_accepts_legacy_data_host_urls(self):
+        self.assertEqual(mod.check_urls([L + 'latest.json']), [])
+
     def test_rejects_other_hosts_pages_and_whole_site(self):
-        for bad in ('https://www.kaiyuanguji.com/item/abc', 'https://kaiyuanguji.com/', 'http://data.kaiyuanguji.com/latest.json',
-                    'https://data.kaiyuanguji.com.evil.com/x', 'https://data.kaiyuanguji.com', 'data.kaiyuanguji.com/latest.json'):
-            self.assertTrue(mod.check_urls([bad]), bad)
+        for o in (D, L):
+            host = o[len('https://'):-1]
+            for bad in ('https://www.kaiyuanguji.com/item/abc', 'https://kaiyuanguji.com/', f'http://{host}/latest.json',
+                        f'https://{host}.evil.com/x', f'https://{host}', f'{host}/latest.json'):
+                self.assertTrue(mod.check_urls([bad]), bad)
+
+    def test_plan_mirrors_each_path_to_both_data_hosts(self):
+        groups = mod.plan([D + 'latest.json', L + 'h1/manifest-root.json', L + 'latest.json'])
+        by_env = {env: (required, urls) for env, required, urls in groups}
+        self.assertEqual(by_env['EDGEONE_ZONE_ID'], (True, [L + 'latest.json', L + 'h1/manifest-root.json']))
+        if D != L:
+            self.assertEqual(by_env['EDGEONE_DATA_ZONE_ID'], (False, [D + 'latest.json', D + 'h1/manifest-root.json']))
 
     def test_rejects_wildcards_whitespace_empty_and_too_many(self):
         self.assertTrue(mod.check_urls([D + '*']))

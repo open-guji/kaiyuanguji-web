@@ -21,6 +21,7 @@ const HOSTS = JSON.parse(readFileSync(join(ROOT, 'config/hosts.json'), 'utf-8'))
 /** hosts.json 的键 → 代码里的常量名、工作流里的变量名 */
 export const KEYS = [
     ['data', 'DATA_ORIGIN', 'HOST_DATA'],
+    ['legacyData', 'LEGACY_DATA_ORIGIN', 'HOST_LEGACY_DATA'],
     ['api', 'API_ORIGIN', 'HOST_API'],
     ['site', 'SITE_ORIGIN', 'HOST_SITE'],
     ['siteApex', 'SITE_APEX_ORIGIN', 'HOST_SITE_APEX'],

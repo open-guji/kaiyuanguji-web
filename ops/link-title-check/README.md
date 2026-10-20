@@ -18,7 +18,7 @@ python3 ops/link-title-check/check.py --base https://staging.kaiyuanguji.com \
   status, title, ok, reason, attempts, retried_ok）。
 - 有不符退出码 1，全对 0。
 - `--meta-home` 只跑元数据首页模式（见下），`--data` 指定数据站
- （默认 `https://data.kaiyuanguji.com`）。
+ （默认 `https://data.openguji.com`）。
 
 ## 判定规则
 

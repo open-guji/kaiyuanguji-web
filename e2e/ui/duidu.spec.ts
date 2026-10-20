@@ -3,10 +3,11 @@
  *
  * 只在全栈站跑；前端须 >= 对读版 book-index-ui。
  * 数据（新结构文本，章条目声明 char_file／cord_file，对应 002.char.json、002.cord.json 等）没上线时整组跳过。
- * 书影来自 data.kaiyuanguji.com 的 IIIF（overview#388），页序见 cord 每页的 canvas（overview#425）。
+ * 书影来自数据域名（新旧两个都算，manifest 里的图片地址仍是旧数据域名）的 IIIF（overview#388），页序见 cord 每页的 canvas（overview#425）。
  */
 import { test, expect, type Page } from '../fixtures/test';
 import { TARGET } from '../fixtures/anchors';
+import { DATA_ORIGIN, LEGACY_DATA_ORIGIN, hostOf } from '../../config/hosts.mjs';
 import { SITE } from '../fixtures/site-profile';
 import { ensureProperNamesFull, requireNewTextData, requireTextFile, requireUiVersion, setReaderSettings } from '../fixtures/preconditions';
 
@@ -116,11 +117,11 @@ test.describe('图文对读', () => {
         await expect(box).toHaveAttribute('data-zoom', '1.00');
     });
 
-    test('书影来自 data.kaiyuanguji.com，不读站内 /facsimiles/', async ({ page }) => {
+    test('书影来自数据域名，不读站内 /facsimiles/', async ({ page }) => {
         const imgs: string[] = [];
         page.on('request', (r) => { if (r.resourceType() === 'image') imgs.push(r.url()); });
         await openDuidu(page);
-        await expect.poll(() => imgs.some((u) => u.includes('data.kaiyuanguji.com/iiif/'))).toBe(true);
+        await expect.poll(() => imgs.some((u) => [DATA_ORIGIN, LEGACY_DATA_ORIGIN].some((o) => u.includes(`${hostOf(o)}/iiif/`)))).toBe(true);
         expect(imgs.filter((u) => u.includes('/facsimiles/'))).toEqual([]);
     });
 

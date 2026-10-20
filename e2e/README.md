@@ -15,7 +15,7 @@ npm run report            # 看上一次的 HTML 报告
 TARGET=http://localhost:3000 npm run test:ui   # 打本地
 
 # 新架构（全栈）两站，只读：
-TARGET=https://staging.kaiyuanguji.com DATA_BASE=https://data.kaiyuanguji.com/staging npm run test:contract
+TARGET=https://staging.kaiyuanguji.com DATA_BASE=https://data.openguji.com/staging npm run test:contract
 TARGET=https://ssr-test.kaiyuanguji.com npm run test:contract
 ```
 

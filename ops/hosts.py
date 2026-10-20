@@ -10,6 +10,8 @@ with open(_PATH, encoding='utf-8') as _f:
     HOSTS = json.load(_f)
 
 DATA_ORIGIN = HOSTS['data']
+# 旧数据域名：仍可用（同一个 COS 桶），清缓存时两个域名都清
+LEGACY_DATA_ORIGIN = HOSTS['legacyData']
 API_ORIGIN = HOSTS['api']
 SITE_ORIGIN = HOSTS['site']
 SITE_APEX_ORIGIN = HOSTS['siteApex']

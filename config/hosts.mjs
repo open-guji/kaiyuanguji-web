@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs';
 export const HOSTS = JSON.parse(readFileSync(new URL('./hosts.json', import.meta.url), 'utf-8'));
 
 export const DATA_ORIGIN = HOSTS.data;
+/** 旧数据域名：仍可用（同一个 COS 桶），清缓存时两个域名都清 */
+export const LEGACY_DATA_ORIGIN = HOSTS.legacyData;
 export const API_ORIGIN = HOSTS.api;
 export const SITE_ORIGIN = HOSTS.site;
 export const SITE_APEX_ORIGIN = HOSTS.siteApex;
