@@ -120,6 +120,21 @@ describe('TextFixesContent', () => {
         expect(JSON.parse(postFetch.mock.calls[2][1].body).target).toBe('entity~4:4:5~4:4:6~');
     });
 
+    it('整理组的处理结果：状态标（带版本、理由）与带「整理组」标的回复', async () => {
+        const live = { ...LIST, threads: { '002': { 'span~3:1:5~3:1:6~missing': {
+            agree: 0, disagree: 0,
+            status: { state: 'adopted', version: '1.0.2', reason: '对过原书图' },
+            replies: [{ name: '整理组', text: '已补「書」', team: true }, { name: '甲', text: '赞成' }],
+        } } } };
+        await act(async () => { render(<TextFixesContent fetchImpl={routed(live) as unknown as typeof fetch} />); });
+        const row = within(screen.getAllByTestId('fix-group')[0]);
+        expect(row.getByTestId('fix-status')).toHaveTextContent('已采纳');
+        expect(row.getByTestId('fix-status')).toHaveTextContent('已进文本 1.0.2');
+        expect(row.getByTestId('fix-status')).toHaveTextContent('对过原书图');
+        expect(row.getAllByText('整理组')).toHaveLength(2); // 回复署名＋标
+        expect(within(screen.getAllByTestId('fix-group')[1]).queryByTestId('fix-status')).toBeNull();
+    });
+
     it('实时接口取不到时退回 COS 每日清单', async () => {
         const fetchImpl = routed(null);
         await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });

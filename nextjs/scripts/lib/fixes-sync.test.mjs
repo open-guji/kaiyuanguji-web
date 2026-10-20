@@ -164,3 +164,10 @@ test('syncFixes：有 listThreads 时另存 threads.jsonl；publishFixes 读 thr
     assert.equal(put[0].threads['002'][T].agree, 1);
     assert.equal(put[0].threads['002'][T].replies[0].text, '同意');
 });
+
+test('buildPublicFixes：整理组回复的 team 标记带到公开清单', () => {
+    const th = [{ book_id: BOOK, volume: '002', target: 'span~3:1:5~3:1:6~missing', stance: 'reply', name: '整理组', text: '已补', team: true, voter: 'team', ts: 5 }]
+        .map((r) => JSON.stringify(r)).join('\n');
+    const out = JSON.parse(buildPublicFixes('', BOOK, th));
+    assert.equal(out.threads['002']['span~3:1:5~3:1:6~missing'].replies[0].team, true);
+});
