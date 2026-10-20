@@ -37,6 +37,14 @@ test('cellOrder：按页列格数值排，a 在 b 前', () => {
     assert.deepEqual([...xs].sort(cellOrder), ['2:1:1', '2:1:1a', '2:1:1b', '2:2:1', '2:10:1', '10:1:1']);
 });
 
+test('mergeSnapshot：选字来源 pick_src／pick_rank／pivot 进快照，排在 shown 之后；旧票没有就不出现', () => {
+    const g = { book: BOOK, rev: '001-r2' };
+    const r = mergeSnapshot('', [vote('1:1:1', 'aa', { pick_src: 'alt', pick_rank: 2, pivot: '弊' }), vote('1:1:2', 'bb')], g);
+    const [x, y] = r.text.trim().split('\n');
+    assert.deepEqual(Object.keys(JSON.parse(x)).slice(-6), ['shown', 'pick_src', 'pick_rank', 'pivot', 'voter', 'ts']);
+    assert.ok(!y.includes('pick_'));
+});
+
 test('mergeSnapshot：新票加入、重投覆盖、KV 过期的旧票保留、别的书和 rev 丢掉、排序稳定', () => {
     const g = { book: BOOK, rev: '001-r2' };
     const first = mergeSnapshot('', [vote('3:1:1', 'bb'), vote('3:1:1', 'aa'), vote('1:2:3', 'cc'), vote('1:1:1', 'dd', { rev: '001-r1' })], g);

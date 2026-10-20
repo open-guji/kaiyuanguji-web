@@ -22,6 +22,9 @@ import {
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
+// 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾
+export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect'];
+const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
 const SHOWN_MAX = 8;
 const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
@@ -80,7 +83,21 @@ export function validateReview(body) {
     if (typeof body.shown !== 'string' || [...body.shown].length > SHOWN_MAX) return { error: 'shown 无效' };
     shown = body.shown;
   }
-  return { value: { book, vol, a, rev, choice, ...(char ? { char } : {}), note, shown, aid: body.aid } };
+  // pick_src／pick_rank／pivot 都可选；只跟着选字（char）走，别的档带了就忽略（旧页面不带，照常收）
+  const pick = {};
+  if (choice === 'char' && body.pick_src !== undefined && body.pick_src !== null) {
+    if (!PICK_SRCS.includes(body.pick_src)) return { error: 'pick_src 无效' };
+    pick.pick_src = body.pick_src;
+    if (body.pick_rank !== undefined && body.pick_rank !== null) {
+      if (!Number.isInteger(body.pick_rank) || body.pick_rank < 1 || body.pick_rank > PICK_RANK_MAX) return { error: 'pick_rank 无效' };
+      pick.pick_rank = body.pick_rank;
+    }
+    if (body.pivot !== undefined && body.pivot !== null && body.pivot !== '') {
+      if (!isSingleChar(body.pivot)) return { error: 'pivot 须恰好一个字' };
+      pick.pivot = body.pivot;
+    }
+  }
+  return { value: { book, vol, a, rev, choice, ...(char ? { char } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */

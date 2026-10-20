@@ -15,7 +15,7 @@ import {
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
-    ALT_SHOW, type AltCand,
+    ALT_SHOW, type AltCand, pickFields, type Pick,
 } from '@/lib/proofing';
 
 /** 书影一页：阅读档、原图档地址与像素宽高 */
@@ -108,7 +108,7 @@ interface CellRowProps {
     imageUrl: string | null;
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
-    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string) => Promise<string | null>;
+    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
     selected: boolean;
@@ -245,7 +245,7 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
  * 缺省展开 ALT_SHOW 个，其余点「再看」。点一个就提交，和候选按钮一样。数据在出待审单时算好，这里只显示。
  */
 function AltGrid({ alt, spriteBase, busy, done, onPick }: {
-    alt: AltCand[]; spriteBase: (s: string) => string | null; busy: boolean; done?: string; onPick: (c: string) => void;
+    alt: AltCand[]; spriteBase: (s: string) => string | null; busy: boolean; done?: string; onPick: (c: string, pick: Pick) => void;
 }) {
     const [all, setAll] = useState(false);
     const [bad, setBad] = useState<Set<string>>(new Set());
@@ -261,14 +261,14 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
         <div data-testid="alt-grid" style={{ marginTop: 8 }}>
             <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>相似字（按和这格字图的相像程度排，点一个就提交）</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {shown.map(a => {
+                {shown.map((a, i) => {
                     const u = a.g ? spriteBase(a.g.s) : null;
                     const img = a.g && u && !bad.has(u) ? a.g : null;
                     const picked = done === `「${a.c}」`;
                     const tip = [a.p && a.p !== a.c ? `从「${a.p}」查到` : '', a.s !== undefined ? `像 ${pct(a.s)}` : ''].filter(Boolean).join('，') || `选「${a.c}」`;
                     return (
                         <button key={a.c} type="button" disabled={busy} aria-pressed={picked} aria-label={`选「${a.c}」`} title={tip}
-                            onClick={() => onPick(a.c)} className={BTN_CLASS}
+                            onClick={() => onPick(a.c, { src: 'alt', rank: i + 1, ...(a.p ? { pivot: a.p } : {}) })} className={BTN_CLASS}
                             style={{ ...btnStyle('cand', picked, busy), display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: 4, minWidth: 56 }}>
                             {img
                                 ? <span role="img" aria-hidden style={{ width: img.w, height: img.h, zoom: 0.5, background: `#fff url(${u}) -${img.x}px -${img.y}px no-repeat` }} />
@@ -293,10 +293,10 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
     const pre = useMemo(() => preselect(cell), [cell]);
-    const go = async (choice: ReviewChoice, char?: string) => {
+    const go = async (choice: ReviewChoice, char?: string, pick?: Pick) => {
         setBusy(true);
         setErr(null);
-        const e = await onSubmit(cell, choice, char);
+        const e = await onSubmit(cell, choice, char, pick);
         setBusy(false);
         if (e) setErr(e);
     };
@@ -327,26 +327,26 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c)} />)}
-                {showMore && more.map(cd => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c)} />)}
+                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: i + 1 })} />)}
+                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: top.length + i + 1 })} />)}
                 {more.length > 0 && (
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} onClick={() => go('char', cell.c)} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}>{cell.c}</button>
+                    <button type="button" disabled={busy} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}>{cell.c}</button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
                         style={{ width: 150, fontSize: 15, padding: '5px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
-                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom)} className={BTN_CLASS}
+                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom, { src: 'custom' })} className={BTN_CLASS}
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
                 </span>
             </div>
-            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={c => go('char', c)} />}
+            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={(c, pick) => go('char', c, pick)} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>
                     以前有人判为「{preCand}」，后来切字有变动，请看图再确认
-                    <button type="button" disabled={busy} onClick={() => go('char', preCand)} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{preCand}」</button>
+                    <button type="button" disabled={busy} onClick={() => go('char', preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{preCand}」</button>
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -577,9 +577,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const pos = useMemo(() => positionIndex(order), [order]);
     const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string) => {
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
-        const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}) }, getAid());
+        const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}),
+            ...(choice === 'char' ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
             const next = { ...prev, [cell.a]: doneLabel(choice, char) };

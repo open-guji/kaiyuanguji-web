@@ -61,7 +61,8 @@ export function buildProofIndex(entries) {
 }
 
 /** 一条意见规整成固定键序（同内容 → 同字节） */
-const RECORD_KEYS = ['v', 'book', 'vol', 'a', 'rev', 'choice', 'char', 'note', 'shown', 'voter', 'iph', 'ts'];
+// pick_src／pick_rank／pivot：选的字从哪儿点来（相似字效果的量数，人审找字 §5.3）；旧票没有，快照字节不变
+const RECORD_KEYS = ['v', 'book', 'vol', 'a', 'rev', 'choice', 'char', 'note', 'shown', 'pick_src', 'pick_rank', 'pivot', 'voter', 'iph', 'ts'];
 export function normalizeRecord(r) {
     const out = {};
     for (const k of RECORD_KEYS) if (r[k] !== undefined && r[k] !== null && !(k === 'char' && r[k] === '')) out[k] = r[k];
