@@ -30,6 +30,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getCurrentUrlServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
 import { checkReader, isDuiduChapterMeta, type ReaderCheckResult } from '@/lib/server/reader-check';
+import { dataVersionKey, type LatestPointer } from '@/lib/data-version';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
@@ -62,6 +63,8 @@ type Props = {
 type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
 type Loaded = {
     sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers;
+    /** 渲染时的数据版本键（latest.json 的 cacheKey／commitId）：随首屏数据交给浏览器，取对读数据不必先等 latest.json（GUJI-699） */
+    dataVersion?: string;
     /** GUJI-358：条目存在、站内没有文本（只有外链文本资源）：页面不出阅读器，指向详情页 */
     noSiteText?: true;
 };
@@ -124,7 +127,7 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     }
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
-    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers };
+    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers, dataVersion: dataVersionKey(latest as LatestPointer | null) };
 }
 
 /**
@@ -275,7 +278,7 @@ export default async function ReaderPage({ params }: Props) {
     const headP = startLeadHead(id, s);
     // React 19 把 <link rel="preload"> 提到 <head>
     const preloads = await duiduPreloadUrls(id, s).catch(() => [] as string[]);
-    const seed = await timed(s.timing, 'preload', preload(id, s));
+    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion } : {}) };
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
     const head = hasSeedMd ? null : await timed(s.timing, 'leadHead', headP);

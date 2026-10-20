@@ -271,4 +271,20 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         expect(calls.some(u => u.includes('/h1/'))).toBe(false);
         expect(await storage.getTextFile(BOOK_ID, 'original', '003.missing.json')).toBeNull();
     });
+
+    it('阅读页给了服务端的版本键（GUJI-699）：直接取 current/…?v=<那个键>，不先请求 latest.json；不合规的键不认', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'latestcommit999' });
+            if (url.includes(`/items/${BOOK_ID}/original/003.cord.json`)) return jsonResponse({ pages: [2] });
+            return jsonResponse({}, false, 404);
+        }) as unknown as typeof fetch;
+        const { createCosStorage, seedTextFileVersion } = await freshCosStorage({ layout: undefined });
+        seedTextFileVersion('bad key/../x');
+        seedTextFileVersion('seedkey123');
+        const storage = createCosStorage() as unknown as TextFileApi;
+        expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [2] });
+        expect(calls).toEqual([`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=seedkey123`]);
+    });
 });

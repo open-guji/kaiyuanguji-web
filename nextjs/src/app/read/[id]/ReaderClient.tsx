@@ -9,6 +9,7 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
+import { seedTextFileVersion } from '@/lib/cos-storage';
 import { isProofingChapter, loadProofIndex, parsePending, proofState } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
@@ -147,6 +148,8 @@ const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
+    // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
+    if (typeof window !== 'undefined') seedTextFileVersion(seed?.dataVersion);
     const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
     // 受控的版本 key 必须是 manifest 里真有的：服务端种子里有 manifest 就同步算出（正常路径）；
