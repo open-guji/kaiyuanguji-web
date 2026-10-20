@@ -459,7 +459,14 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
     /** latest.json 指针（进程内缓存，与 getCurrentJson 内部取的是同一份）：给阅读页计时单独量这一跳 */
     const getLatest = () => getPointer<LatestPointer>('latest.json');
 
-    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getCurrentTextHead, getLatest };
+    /** current/ 下一个文件的浏览器端地址（与 cos-storage 的 getTextFileLegacy 逐字一致，带 ?v=<版本键>），给 preload 用 */
+    async function currentUrl(relPath: string): Promise<string> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        return `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;
+    }
+
+    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getCurrentTextHead, getLatest, currentUrl };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -487,6 +494,11 @@ export function getCurrentJsonServer<T>(relPath: string): Promise<T | null> {
 /** latest.json 指针（同一个取数实例；阅读页首次渲染计时用，overview#345） */
 export function getLatestServer(): Promise<unknown> {
     return defaultFetcher().getLatest();
+}
+
+/** current/ 下一个文件的浏览器端地址（同一个取数实例、同一个版本键） */
+export function getCurrentUrlServer(relPath: string): Promise<string> {
+    return defaultFetcher().currentUrl(relPath);
 }
 
 /** current/ 下的文本文件（同一个取数实例） */

@@ -103,7 +103,7 @@ let curBrowser = null;
 async function runOnce() {
   const browser = curBrowser = await chromium.launch({
     ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), headless: true,
-    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
+    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY, bypass: '<-loopback>,localhost,127.0.0.1' } } : {}),
     args: [...(process.env.EXTRA_ARGS ? process.env.EXTRA_ARGS.split(' ') : []), '--disable-background-networking', '--disable-component-update', '--no-default-browser-check', '--enable-unsafe-swiftshader'],
   });
   const ctxOpts = { viewport: prof.viewport };
