@@ -39,6 +39,11 @@ const MANIFEST = {
         { key: 'kanripo', kind: 'transcription', label: 'Kanripo', source: 'kanripo', edition_label: '四部叢刊本' },
     ],
 };
+// 对读章（char＋cord）：GUJI-631 preload；font_file／font_range：GUJI-701 生僻字子集（003 的 range 不合规）
+const DUIDU_INDEX = { chapters: [
+    { n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '../x.json', font_file: '002.font.woff2', font_range: 'U+348B,U+20201-20203' },
+    { n: 3, file: '003', title: '書類', char_file: '003.char.json', font_file: '003.font.woff2', font_range: 'U+348B;}body{color:red' },
+] };
 const FILES: Record<string, unknown> = {
     [`items/${ZHIZHAI}/manifest.json`]: MANIFEST,
     [`items/${ZHIZHAI}/default/index.json`]: { chapters: [{ n: 1, file: '001', title: '經錄', has_json: true }, { n: 2, file: '002', title: '史錄', has_json: true }] },
@@ -50,7 +55,7 @@ const FILES: Record<string, unknown> = {
     [`items/${ZHIZHAI}/kanripo/index.json`]: { chapters: [{ n: 1, file: '001', title: '卷一' }] },
     // 对读章（char＋cord）：GUJI-631 preload
     'items/96mid1ogzk/manifest.json': { id: '96mid1ogzk', versions: [{ key: 'default', kind: 'self_collated', label: '自校本' }] },
-    'items/96mid1ogzk/default/index.json': { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', entity_file: '../x.json' }] },
+    'items/96mid1ogzk/default/index.json': DUIDU_INDEX,
 };
 
 describe('对读章 preload（GUJI-631）', () => {
@@ -58,14 +63,44 @@ describe('对读章 preload（GUJI-631）', () => {
         mockHead.mockClear();
         const tree = await pageTree(['002'], '96mid1ogzk');
         const kids = ([] as El[]).concat(tree.props.children).flat() as El[];
-        const links = kids.filter((k) => k?.type === 'link').map((k) => k.props);
+        const links = kids.filter((k) => k?.type === 'link' && k.props.as === 'fetch').map((k) => k.props);
         expect(links.map((l) => l.href)).toEqual([
             'https://data.test/current/items/96mid1ogzk/default/002.char.json?v=k1',
             'https://data.test/current/items/96mid1ogzk/default/002.punct.json?v=k1',
             'https://data.test/current/items/96mid1ogzk/default/002.cord.json?v=k1',
         ]);
         expect(links.every((l) => l.rel === 'preload' && l.as === 'fetch' && l.crossOrigin === 'anonymous')).toBe(true);
+        // cord 只在宽屏 preload（窄屏书影栏收起、不取 cord，GUJI-700）
+        expect(links.map((l) => l.media)).toEqual([undefined, undefined, '(min-width: 860px)']);
         expect(mockHead).not.toHaveBeenCalled();
+    });
+
+    it('对读章生僻字子集（GUJI-701）：字体 preload ＋ 两条同字族 @font-face 排在 body 里；font_range 不合规就不出', async () => {
+        const tree = await pageTree(['002'], '96mid1ogzk');
+        const kids = ([] as El[]).concat(tree.props.children).flat() as El[];
+        const font = kids.find((k) => k?.type === 'link' && k.props.as === 'font')!.props;
+        expect(font).toMatchObject({ rel: 'preload', type: 'font/woff2', crossOrigin: 'anonymous', href: 'https://data.test/current/items/96mid1ogzk/default/002.font.woff2?v=k1' });
+        const css = kids.find((k) => k?.type === 'style')!.props.dangerouslySetInnerHTML.__html as string;
+        expect(css.match(/@font-face/g)).toHaveLength(2);
+        expect(css).toContain('font-family:"HanaMinA"');
+        expect(css).toContain('font-family:"HanaMinB"');
+        expect(css).toContain('src:url("https://data.test/current/items/96mid1ogzk/default/002.font.woff2?v=k1") format("woff2");unicode-range:U+348B,U+20201-20203}');
+
+        const bad = ([] as El[]).concat((await pageTree(['003'], '96mid1ogzk')).props.children).flat() as El[];
+        expect(bad.some((k) => k?.type === 'style' || (k?.type === 'link' && k.props.as === 'font'))).toBe(false);
+    });
+
+    it('有阅读器瘦身副本（GUJI-700）：cord／punct preload 副本地址，cord 仍只在宽屏', async () => {
+        FILES['items/96mid1ogzk/default/index.json'] = { chapters: [{ n: 2, file: '002', title: '易類', char_file: '002.char.json', cord_file: '002.cord.json', punct_file: '002.punct.json', reader_cord_file: '002.cord.reader.json', reader_punct_file: '002.punct.reader.json' }] };
+        try {
+            const kids = ([] as El[]).concat((await pageTree(['002'], '96mid1ogzk')).props.children).flat() as El[];
+            const links = kids.filter((k) => k?.type === 'link' && k.props.as === 'fetch').map((k) => k.props);
+            expect(links.map((l) => [l.href.replace('https://data.test/current/items/96mid1ogzk/default/', ''), l.media])).toEqual([
+                ['002.char.json?v=k1', undefined], ['002.punct.reader.json?v=k1', undefined], ['002.cord.reader.json?v=k1', '(min-width: 860px)'],
+            ]);
+        } finally {
+            FILES['items/96mid1ogzk/default/index.json'] = DUIDU_INDEX;
+        }
     });
 
     it('非对读章不出 preload', async () => {

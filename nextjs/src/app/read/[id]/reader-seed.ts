@@ -13,6 +13,11 @@ import type { IndexStorage } from 'book-index-ui/storage';
 export interface ReaderSeed {
     /** transport 调用 → 结果，键见 seedCallKey */
     calls?: Record<string, unknown>;
+    /**
+     * 服务端渲染时的数据版本键（与 head 里对读数据 preload 的 `?v=` 同一个）。浏览器取对读数据直接用它，
+     * 不先等 latest.json（no-store，一来一回约 1s）——preload 的数据早已下完，却要等这一跳才用上（GUJI-699）
+     */
+    dataVersion?: string;
 }
 
 /** transport 方法名＋参数 → 种子键 */

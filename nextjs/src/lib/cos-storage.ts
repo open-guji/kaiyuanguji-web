@@ -45,6 +45,24 @@ const DATA_LAYOUT: 'legacy' | 'hashed' =
 let _versionPromise: Promise<string> | null = null;
 
 /**
+ * 阅读页服务端随首屏数据给的版本键（GUJI-699）：取对读数据文件（char／cord／punct／entity／norm）时直接用，
+ * 不先等 latest.json。只管这几个文件，其余取数照旧读不缓存的 latest.json。
+ * 与页面里的首屏数据（manifest、目录）、head 里的 preload 同一份版本，读到的是一致的一套；
+ * 页面被 CDN 缓存期间数据换了版本，读的是那一版的不可变文件，仍自洽。超过 SEEDED_VERSION_TTL_MS 就不再用（长时间停留后翻章按最新版本取）。
+ */
+let _seededTextVersion: { key: string; at: number } | null = null;
+const SEEDED_VERSION_TTL_MS = 30 * 60 * 1000;
+
+export function seedTextFileVersion(key: string | undefined | null): void {
+    if (typeof key === 'string' && /^[\w.-]+$/.test(key) && _seededTextVersion?.key !== key) _seededTextVersion = { key, at: Date.now() };
+}
+
+function seededTextVersion(): string | null {
+    if (!_seededTextVersion || Date.now() - _seededTextVersion.at > SEEDED_VERSION_TTL_MS) return null;
+    return _seededTextVersion.key;
+}
+
+/**
  * 解析 COS 上当前发布的版本键（cacheKey，缺则回退 commitId）。
  * 模块级 memoization：单次页面生命周期只 fetch 一次 latest.json。
  */
@@ -555,9 +573,12 @@ export function createCosStorage(): IndexStorage {
     async function getTextFileLegacy(id: string, key: string, file: string): Promise<Record<string, unknown> | null> {
         if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isTextFileName(file)) return null;
         try {
-            const { baseUrl } = await ensureInner();
-            const commit = await resolveCosVersion();
-            const res = await fetch(`${baseUrl}/items/${id}/${key}/${file}?v=${commit}`, { cache: 'no-cache' });
+            // 有服务端给的版本键就不等 latest.json；地址与 getCosDataBaseUrl()（current/）一致
+            const seeded = seededTextVersion();
+            const url = seeded
+                ? `${COS_BASE}/current/items/${id}/${key}/${file}?v=${seeded}`
+                : `${(await ensureInner()).baseUrl}/items/${id}/${key}/${file}?v=${await resolveCosVersion()}`;
+            const res = await fetch(url, { cache: 'no-cache' });
             return res.ok ? await res.json() : null;
         } catch {
             return null;

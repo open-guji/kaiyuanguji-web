@@ -16,6 +16,16 @@ export interface DuiduFiles {
     entity: unknown;
     /** 没有声明 `norm_file`（或取不到）时为 null：下游照旧走全局异体字表 */
     norm: unknown;
+    /** 声明了 `cord_file` 但这次没取（窄屏不显示书影栏，GUJI-700）：cord 为 null，正文照常排，只是没有字框 */
+    cordSkipped?: boolean;
+}
+
+/** 册号（IIIF 路径里的 `<册>`）：cord 的 canvas id 取不到时（窄屏没取 cord）按 char 的 book_id＋volume 推，册号两位补零 */
+export function volumeFromChar(char: unknown): { bookId: string; vol: string } | null {
+    const c = char as { book_id?: unknown; volume?: unknown } | null;
+    const bookId = typeof c?.book_id === 'string' && /^[0-9a-z]+$/.test(c.book_id) ? c.book_id : null;
+    const v = typeof c?.volume === 'number' && Number.isInteger(c.volume) && c.volume > 0 ? c.volume : null;
+    return bookId && v ? { bookId, vol: String(v).padStart(2, '0') } : null;
 }
 
 /**
@@ -45,6 +55,15 @@ const fileField = (ch: Record<string, unknown>, k: string): string | null => {
     return typeof v === 'string' && /^[\w.-]+$/.test(v) ? v : null;
 };
 
+/** 先取阅读器瘦身副本（打包时生成，GUJI-700），取不到再取原文件：副本是原文件的同结构子集，读法相同 */
+async function getPreferred(storage: object | undefined, id: string, key: string, slim: string | null, original: string | null): Promise<unknown> {
+    if (slim) {
+        const v = await getJson(storage, id, key, slim);
+        if (v != null) return v;
+    }
+    return original ? getJson(storage, id, key, original) : null;
+}
+
 /**
  * 取本章的对读数据。本章没有声明 `char_file`、或声明了 char／（已声明的）cord 取不到返回 null（不缓存失败）；
  * `cord_file` 未声明则 cord 为 null（只加载 char 及 punct／entity），不再因此整章返回 null。
@@ -55,31 +74,38 @@ export function loadDuiduFiles(
     _chapterKey: string,
     /** 当前数据源的 storage（transport）；不传或没有 getTextFile 就读同域 /data */
     storage?: object,
+    /** `cord: false`＝不取像素框（窄屏不显示书影栏，cord 是最大的文件，GUJI-700）；缺省取 */
+    opts?: { cord?: boolean },
 ): Promise<DuiduFiles | null> {
     const ch = ctx?.chapter;
     const key = ctx?.versionKey;
     if (!ch || !key) return Promise.resolve(null);
     const charFile = fileField(ch, 'char_file');
-    const cordFile = fileField(ch, 'cord_file');
+    const declaredCord = fileField(ch, 'cord_file');
+    const cordFile = opts?.cord === false ? null : declaredCord;
+    const cordSkipped = !!declaredCord && !cordFile;
     if (!charFile) return Promise.resolve(null);
+    // 阅读器瘦身副本（`reader_cord_file`／`reader_punct_file`，数据打包时生成）：有就先取它，取不到回落原文件
+    const readerCord = cordFile ? fileField(ch, 'reader_cord_file') : null;
     const punctFile = fileField(ch, 'punct_file');
+    const readerPunct = punctFile ? fileField(ch, 'reader_punct_file') : null;
     const entityFile = fileField(ch, 'entity_file');
     const normFile = fileField(ch, 'norm_file');
-    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${punctFile ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
+    const cacheKey = `${id}/${key}/${charFile}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${normFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
             const [char, cord, punct, entity, norm] = await Promise.all([
                 getJson(storage, id, key, charFile),
-                cordFile ? getJson(storage, id, key, cordFile) : null,
-                punctFile ? getJson(storage, id, key, punctFile) : null,
+                cordFile ? getPreferred(storage, id, key, readerCord, cordFile) : null,
+                punctFile ? getPreferred(storage, id, key, readerPunct, punctFile) : null,
                 entityFile ? getJson(storage, id, key, entityFile) : null,
                 normFile ? getJson(storage, id, key, normFile) : null,
             ]);
             // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null
             if (!char || (cordFile && !cord)) return null;
             // norm 是可选层：取不到当没有（null），不让整章返回 null
-            return { char, cord, punct, entity, norm: norm ?? null };
+            return { char, cord, punct, entity, norm: norm ?? null, ...(cordSkipped ? { cordSkipped: true } : {}) };
         })();
         cache.set(cacheKey, p);
         // 失败不缓存；声明了 norm_file 却没取到也不缓存（可能是暂时失败，下次再取），并留一条日志

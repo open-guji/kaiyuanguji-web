@@ -92,15 +92,73 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 - 注意：网址带 `#页:列:格`、全文搜索 `?ft=` 定位、`ReaderLead` 卸载判据、`SelectionReport`／`CharFixEntry`、浏览器 Ctrl+F 都依赖 DOM 完整——锚点所在页要先渲染，全部批次完成前 Ctrl+F 可能找不全（可接受，几秒内补齐）。
 - **验收**：a 档最长任务 ≤ 200ms、b 档 ≤ 800ms、c 档 ≤ 1.2s；正文进入视口 b 档 ≤ 12s；上述依赖 DOM 的功能 e2e 全绿。
 
-### P1-2 数据：正文不等 cord，格式收紧（book-index-ui＋网站＋数据流水线）
-- 正文模式只等 char＋punct；cord 等书影要显示时再取（或按页拆）；entity 后到再补专名线。
-- cord／punct／entity 改紧凑列式格式（需改 guji-format 规范与 CV 产出，跨领域，先出设计）。
-- JSON 解析与 `adaptCharCord` 移到 Web Worker。
-- **验收**：b 档正文进入视口再降 ≥ 3s；手机档不下 cord。
+### P1-2 数据：正文不等 cord、阅读器专用派生文件（GUJI-700；book-index-ui＋网站＋网站数据打包）
+- **手机不取 cord**：手机端书影栏收起（读书影走底部抽屉里的普通图片，不用字框），cord（772K／解压 3.2MB，最大的单个文件）对它没用。
+  阅读页按视口取：窄屏只取 char／punct／entity／norm，cord 的 preload 也带 `media`；视口跨过断点（转横屏）再补取。
+- **阅读器专用派生文件**（设计，见下；不改 CV 产出与 guji-format 规范，由网站数据打包生成）。
+- Worker 解析：派生文件落地后再评估。结构化克隆回主线程的开销与 JSON 解析同量级，先瘦身收益更确定。
+- **验收**：手机档不下 cord；派生文件落地后样本章对读数据解压 ≤ 2MB、首帧 JSON 解析 ≤ 30ms（桌面）。
 
-### P1-3 字体
-- 生僻字字体自托管，按字细切（上百个小片）或服务端按章生成子集；加 preconnect。涉及 COS 上传与费用，先估成本再做。
-- **验收**：样本章字体传输 ≤ 300KB。
+#### 设计：阅读器专用派生文件（2026-10-20 草案）
+
+**问题**：网站直接读 CV 产出的真源文件，大量字段阅读器用不到（样本章 002 实测）：
+
+| 文件 | 解压 | 阅读器用不到的 | 占比 |
+|---|---|---|---|
+| cord | 3.25MB | 每页 `producers`／`marks`／`regions`／`columns`（0.75MB）、每格 `id`（0.58MB）、格位键 `a`（0.43MB，可由 char 读序对齐） | ~55% |
+| punct | 1.44MB | `source`（0.21MB）、`char_offset`（0.14MB）、对象键名重复 | ~40% |
+| entity | 1.51MB | `target.href`、`span`、`source`、`target.status`（非 matched 时才有意义）、键名重复 | ~50% |
+| char | 1.46MB | 每格 `{"a":…,"c":…}` 的键名与格位键（列内格号多数连续） | ~60% |
+
+**做法**：网站数据打包（把 book-text 文本同步到 COS 的那一步）按章额外生成两个派生文件，写进版本目录，并在同步上去的 `index.json` 章条目里加声明：
+- `NNN.reader.json`（`reader_file`）：char＋punct＋entity＋norm 合成一份——
+  - 字：每列 `c` 为字数组，格号连续时不带格位键，只在不连续／有子列（夹注 a/b）时带；`lane`／`lacuna`／`guess`／`zi`、列的 `raised`／`lead_blank`／`kind`、页 `label` 稀疏携带；
+  - 标点：`[格位键, mark, kind?, pos?, label?, toc?]` 数组（`kind=point`、`pos=after` 缺省不写）；
+  - 专名：`{id, t: 类型, a: [起, 止], x: 原文, e: 条目 id, n: 规范名, g: 分组}`，非 matched 不带 `e`；
+  - 来源：`src` 记各真源文件的版本号与 sha256，可追溯、可校验。
+- `NNN.reader-cord.json`（`reader_cord_file`）：每页 `{page, seq, w, h, b}`，`b` 为按 char 读序排列的扁平整数框 `[x, y, w, h, …]`（缺框写 -1），不带格位键。
+
+**网站读法**：章条目有 `reader_file` 就只取它（＋宽屏时 `reader_cord_file`）；没有就照旧取真源五个文件——先上读法与回退，再随下一次数据发布生成派生文件，任何一步都不会读不到。
+
+**预期**（样本章）：对读数据解压 7.6MB → 约 1.5MB（br 传输约 1.2MB → 约 0.35MB），请求 5 个 → 2 个，首帧 JSON 解析约 85ms → 约 20ms。
+
+**待定**：派生脚本归网站数据打包（`nextjs/scripts/`）；生成逻辑需与 book-index-ui 的 `adaptCharCord`／`adaptPunctJson`／`adaptEntityJson` 同口径，用同一组样本章做往返一致性测试（派生 → 还原 → 与真源适配结果逐字段相等）。
+
+#### 实施（2026-10-20）：改为「同结构瘦身副本」，不做紧凑格式
+
+上面的紧凑格式（合并文件、键名数组化、省格位键）要在 web 端写解码器。量过之后发现，**只删阅读器不读的字段、结构不变**，就能拿到大部分收益：
+
+| 文件 | br 传输 原→瘦 | 解压 原→瘦 | 做不做 |
+|---|---|---|---|
+| cord | 573KB → 202KB | 3.25MB → 1.28MB | 做 |
+| punct | 55KB → 34KB | 1.44MB → 0.59MB | 做 |
+| entity | 84KB → 62KB | 1.51MB → 0.63MB | 不做：ui 的 `span` 偏移在用，能删的只剩 source 等 |
+| char | 110KB → 105KB | 1.46MB → 0.86MB（只去缩进） | 不做 |
+
+- 副本是原 schema 的合法子集，web 与 ui 的读法都不用改，没有解码器。
+- 打包（`scripts/lib/reader-files.mjs`，挂在 bundle-data 拷完条目之后，纯 Node，无额外依赖）给对读章写 `<章>.cord.reader.json`、`<章>.punct.reader.json`，产物 index.json 章条目记 `reader_cord_file`、`reader_punct_file`。
+- 原文件和 `cord_file`／`punct_file` 一律不动：校对页等照旧读原文件。
+- 留哪些字段以 ui 的读法为准：cord 留 `page`、`canvas{id,seq,width,height}`、`image{width,height}`、`cells[].a/box`；punct 去掉 `source`、`char_offset` 与顶层 `metadata`、`stats`。
+- 读法：`loadDuiduFiles` 先取副本，取不到回落原文件；页面 preload 也改为预取副本。
+- 往返一致性：单测用 book-index-ui 的 `adaptCharCord`／`iiifVolumeOf`／`adaptPunctJson`，比较副本与原文件的读法结果；样本章真数据（设 `READER_FILES_SAMPLE_DIR`）逐字段相同。
+- 收益（样本章，宽屏）：对读数据 br 传输 822KB → 403KB，解压 7.66MB → 3.37MB（JSON 解析量减半以上）。窄屏本来就不取 cord，只省 punct 那一份。
+
+### P1-3 字体：对读章生僻字子集（GUJI-701）
+- **问题**：扩展区汉字兜底是花园明朝（`globals.css` 的 HANAMIN 段，jsDelivr 上按 unicode-range 分的片，每片约 200KB）。
+  样本章 31 个生僻字散在 19 片里，读者往下读要下约 3.6MB（实测 15 个请求）。
+- **机制**：CSS 规定同字族多条 `@font-face` 的 unicode-range 重叠时，**后定义的先查**。服务端渲染时在 body 里追加两条
+  `@font-face`（`HanaMinA`、`HanaMinB` 各一条，同一个 src，只下一次），unicode-range 恰是本章的生僻字，
+  这些字就从子集取，大分片根本不会被请求。字体栈不用改；子集取不到时照旧回落分片。
+- **生成**（`nextjs/scripts/lib/chapter-fonts.mjs` ＋ `scripts/chapter-fonts.py`，挂在 bundle-data 拷完条目目录之后）：
+  - 范围：只做对读章（章条目有 `char_file`）。全站 8791 个条目、约 19 万个文本文件，每次发布都给全部章节做繁简转换加子集太慢；对读章少，且是功能最全、最重的页面。
+  - 收字：char 原字 ∪ norm 规范字 ∪ 全书目录（章名与各级标题），再加上它们经网站统一的繁→简入口（`scripts/lib/to-simplified.mjs`：异体归一＋opencc t2cn）转出的字。网站默认简体，鉷→𫟹、巘→𪩘、驎→𬴊 这类转换结果本身就落在扩展 C～E 区，不收的话照样会去下分片（实测漏掉了 3 片）。只收落在 HANAMIN 段 unicode-range 里、且分片里确有字形的码位。
+  - 产物：`<章>.font.woff2` 放在版本目录（样本章 35 字、11KB）；产物 `index.json` 的章条目写 `font_file`、`font_range`。首屏种子 read-seed 改为读产物的 index.json，带上这两个字段。
+  - 可复现：Merger 会把 `head` 的时间戳写成当前时间，改回源分片的值；fontTools／brotli 版本锁死。三处打包（data.yml 的 package 与 h1 文本两个 job、deploy.yml）共用 `ops/setup-chapter-fonts.sh`（venv 安装，ubuntu-latest 拒绝 `pip --user`），并设 `KYG_CHAPTER_FONTS=required`：缺依赖就让打包失败，不静默地有的有字体、有的没有。本地缺依赖只警告、不生成。
+  - 上传：`.woff2` 的 Content-Type 设为 `font/woff2`；data.kaiyuanguji.com 已返回 `access-control-allow-origin: *`（跨域字体要求）。存储与流量费用可忽略（每个对读章约 10KB，而且读者省下了 3.6MB 的 jsDelivr 流量）。
+- **页面**（`page.ssr.tsx`）：对读章有合规的 `font_file`／`font_range` 就出 `<link rel=preload as=font>` ＋ `<style id="kyg-chapter-font">`。h1 哈希寻址布局不出（与对读数据 preload 一致）。
+  只管首屏这一章：站内换章不经服务端渲染，新章的生僻字照旧走分片（以后要做的话，可由 ReaderClient 换章时注入）。
+- **验证**：本地用 COS 上样本章的真实 index／char／norm 跑生成，再拦截页面 HTML 注入同样的 style，字体请求从 15 个分片降到 1 个（11KB）。
+- **验收**：样本章字体传输 ≤ 300KB（上线后在线上复测）。
 
 ### P1-4 平台配置（要先请示用户）
 - EdgeOne 开 HTML 压缩；书影 `max-age` 延长（地址带版本时可 immutable）；站标只留一种格式。
@@ -159,7 +217,14 @@ DOM：全页 44,659 个元素，正文区 44,101（一字一 span 30,478、标�
 ## 五、进度
 
 Jira：总卡 GUJI-628（标签 `项目-阅读页性能`，挂「日常运维与优化（非里程碑）」GUJI-332）。
-子卡：P0-1 GUJI-629、P0-2 GUJI-630、P0-3 GUJI-631、P1-1 GUJI-632；P1-2～P1-4 做到时再开。
+子卡：P0-1 GUJI-629、P0-2 GUJI-630、P0-3 GUJI-631、P1-1 GUJI-632；不等 latest.json GUJI-699、P1-2 GUJI-700、P1-3 GUJI-701、小屏书影栏被横幅裁 GUJI-702。
+
+2026-10-20 第二轮（ui 0.61.2，book-index-manager#231；网站 kaiyuanguji-web#535）：
+- GUJI-699：服务端把数据版本键随首屏数据给浏览器，对读文件不再先串行等 `latest.json`。
+- GUJI-700：窄屏既不取也不 preload cord。中途发现回退：没有 cord 时，隐藏的书影画布按 0 尺寸画字框，坐标全是 NaN，手机上点一个字卡 3.3 秒。
+  ui 0.61.2 改为没坐标时回落普通书影。修好后本地移动档（6× CPU）对比 0.61.1：正文入视口 10.2→5.1s，滚动 29→37fps，控制台报错 4317→0。
+- GUJI-702：书影栏高度扣掉「比吸顶位置低多少」，有横幅时翻页按钮不再落到视口外。
+- GUJI-701：对读章生僻字子集，见 P1-3。
 PR：book-index-manager#229（ui 0.61.0）、#230（ui 0.61.1 首帧）；kaiyuanguji-web#525（本文、探针、P0-3、升 0.61.0）、#527（升 0.61.1）。
 2026-10-20 已发 npm 0.61.0／0.61.1，网站合并后按 deploy.yml 测试站 verify → 自动上正式站。
 顺带：#524 起 verify 红在 `duidu-003 无字页翻页`，是章首新横幅把翻页按钮推出 720 高视口、click 自带滚动被误判，#526 修测试（横幅让小屏首屏书影栏底部被裁约 45px，另行处理）。

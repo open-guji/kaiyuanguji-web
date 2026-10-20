@@ -146,4 +146,12 @@ describe('相关条目已失效（overview#359 P2-10）', () => {
             expect(screen.queryByText('我的')).not.toBeInTheDocument();
         });
     });
+
+    it('页头有通往整册文字意见页 /feedback/text 的入口，带书号与册号（M11·B1）', async () => {
+        renderPage();
+        await screen.findByText('（示例）希望能调行距');
+        const link = screen.getByRole('link', { name: '看《四库全书总目》第一册的读者意见 →' });
+        expect(link).toHaveAttribute('href', '/feedback/text?book=96mid1ogzk&vol=001');
+        expect(screen.getByText(/对整理本正文的改字、段落、专名意见/)).toBeInTheDocument();
+    });
 });

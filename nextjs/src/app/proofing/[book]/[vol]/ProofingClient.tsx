@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
-    refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
+    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabel, writeDone,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -25,11 +25,13 @@ interface FacsPage { url: string; hires: string; width: number; height: number }
 const PAGE_SIZE = 20;
 const BOOK_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
-const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string }[] = [
-    { choice: 'none', label: '图上没有字' },
-    { choice: 'unsure', label: '看不清' },
-    { choice: 'cut', label: '切分错了' },
-    { choice: 'jiazhu', label: '这是夹注小字' },
+// 「jiazhu」下游写的是「小注被当成正文切了」的切分缺陷（web_opinions.py），所以按钮照这个意思写，
+// 别让读者在真正的夹注格上点它表示「对，这是夹注」（GUJI-683，调研 A C1）
+const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; title: string }[] = [
+    { choice: 'none', label: '图上没有字', title: '这一格是空白、污点、框线或印章，不是字' },
+    { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了' },
+    { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字' },
+    { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了' },
 ];
 
 /** 按钮外观：都有边框和底色，一眼看得出能点；选中的绿框绿底 */
@@ -109,7 +111,7 @@ interface CellRowProps {
     imageUrl: string | null;
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
-    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick) => Promise<string | null>;
+    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
     selected: boolean;
@@ -128,11 +130,14 @@ function Zi({ c }: { c: string }) {
 const zis = (s: string) => [...s].map(shownZi).join('');
 
 function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
-    const tip = cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : `选「${shownZi(cd.c)}」`;
+    const fromRef = cd.src?.includes('ref');
+    const tip = [fromRef ? `整理本这里作「${shownZi(cd.c)}」` : '', cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : ''].filter(Boolean).join('；') || `选「${shownZi(cd.c)}」`;
     return (
         <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? undefined : `选「${cd.c}」`} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
             style={btnStyle('cand', picked, busy)}>
-            <Zi c={cd.c} />{cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
+            <Zi c={cd.c} />
+            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 11, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>整理本</small>}
+            {cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
     );
 }
@@ -154,7 +159,7 @@ function Evidence({ cell }: { cell: PendingCell }) {
     const summary: React.ReactNode[] = [];
     const shape = shapeSentence(cell);
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
-    if (cell.ctx) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
+    if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.cls) {
@@ -298,6 +303,7 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
 
 function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
     const [custom, setCustom] = useState('');
+    const [note, setNote] = useState('');
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
@@ -305,7 +311,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const go = async (choice: ReviewChoice, char?: string, pick?: Pick) => {
         setBusy(true);
         setErr(null);
-        const e = await onSubmit(cell, choice, char, pick);
+        const e = await onSubmit(cell, choice, char, pick, note.trim() || undefined);
         setBusy(false);
         if (e) setErr(e);
     };
@@ -324,8 +330,10 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
                     : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
-                    <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}　{cell.c ? '机器读作' : '机器没定出字'}</div>
-                    <div style={{ fontSize: 40, lineHeight: 1.2 }}>{cell.c ? <Zi c={cell.c} /> : '？'}</div>
+                    <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}</div>
+                    {/* 机器没定出字时不放大「？」，免得和下面「比字形：最像 X」打架（GUJI-683） */}
+                    {cell.c ? <div style={{ fontSize: 40, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
+                        : <div data-testid="no-machine-char" style={{ fontSize: 14, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
                     {cell.ref && <div style={{ fontSize: 13, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
                 </div>
             </div>
@@ -361,9 +369,12 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
                     <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} onClick={() => go(o.choice)} className={BTN_CLASS}
-                        style={btnStyle('act', (preNone && o.choice === 'none') || done === o.label, busy)}>{o.label}</button>
+                        title={o.title} style={btnStyle('act', (preNone && o.choice === 'none') || done === o.label, busy)}>{o.label}</button>
                 ))}
             </div>
+            <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
+                placeholder="备注（可不填）：比如「是臼不是曰，看上面」，先写再点上面的按钮"
+                style={{ marginTop: 8, width: '100%', maxWidth: 520, boxSizing: 'border-box', fontSize: 14, padding: '5px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
             {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
@@ -586,10 +597,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const pos = useMemo(() => positionIndex(order), [order]);
     const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick) => {
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
         const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(choice === 'char' ? pickFields(pick) : {}) }, getAid());
+            ...(note ? { note } : {}), ...(choice === 'char' ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
             const next = { ...prev, [cell.a]: doneLabel(choice, char) };

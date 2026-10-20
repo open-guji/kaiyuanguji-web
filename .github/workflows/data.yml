@@ -380,6 +380,10 @@ jobs:
             exit 1
           fi
 
+      # 对读章生僻字子集字体（GUJI-701）：bundle-data 要 fontTools＋hanamin；三处打包共用同一脚本、同一版本，产物逐字节一致
+      - name: Setup chapter-font tools
+        run: bash ops/setup-chapter-fonts.sh
+
       - name: Bundle data
         working-directory: nextjs
         env:
@@ -953,6 +957,11 @@ jobs:
             echo "::error::book-index 没有 build/build_derived.py：打包不再回退读源档（B5-3.2，GUJI-299），必须有 schema-v2 产物"
             exit 1
           fi
+
+      # 对读章生僻字子集字体（GUJI-701）：bundle-data 要 fontTools＋hanamin；三处打包共用同一脚本、同一版本，产物逐字节一致
+      - name: Setup chapter-font tools
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: bash ops/setup-chapter-fonts.sh
 
       - name: Bundle data
         if: ${{ steps.decide.outputs.run == 'true' }}

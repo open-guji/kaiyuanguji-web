@@ -9,14 +9,15 @@ import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
-import { isProofingChapter, loadProofIndex, parsePending, proofState } from '@/lib/proofing';
+import { seedTextFileVersion } from '@/lib/cos-storage';
+import { loadProofIndex, parsePending, proofInvite } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
-import { getJson, loadDuiduFiles } from '@/lib/duidu-data';
+import { getJson, loadDuiduFiles, volumeFromChar } from '@/lib/duidu-data';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
@@ -73,20 +74,17 @@ const sameSel = (a: ReaderSel, b: ReaderSel) => (a.key ?? '') === (b.key ?? '') 
 /** 版本名与章名（<title>、反馈上下文用）：取 manifest 与版本目录，服务端给了种子就不发请求；取不到就没有 */
 /**
  * 这一章要不要请读者去校对（返回章号，不要则 undefined）。
- * 先看 COS 上的待审单总表（中心库每日发布）：列了这一章就以它为准；
- * 没列时退回 book-text：章条目 proofing: true，且待审单没清空（取不到待审单时照旧显示）。
+ * 先看 COS 上的待审单总表（中心库每日发布）：列了这一章就以它为准，取到了总表却没列这一章就不请；
+ * 只有总表取不到时才退回 book-text：章条目 proofing: true、声明了待审单且没清空。
  */
 async function proofVolOf(id: string, versionKey: string, chapter: { file?: string } | undefined, transport: ReturnType<typeof getTransport>): Promise<string | undefined> {
     const stem = chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
     if (!stem) return undefined;
-    const state = proofState(await loadProofIndex(), id, stem);
-    if (state !== 'unknown') return state === 'open' ? stem : undefined;
-    if (!isProofingChapter(chapter)) return undefined;
-    const pendingFile = (chapter as { pending_file?: unknown }).pending_file;
-    if (typeof pendingFile === 'string') {
-        const raw = await getJson(transport, id, versionKey, pendingFile).catch(() => null);
-        if (raw && parsePending(raw).cells.length === 0) return undefined;
-    }
+    const invite = proofInvite(await loadProofIndex(), id, stem, chapter);
+    if (invite === 'yes') return stem;
+    if (invite === 'no') return undefined;
+    const raw = await getJson(transport, id, versionKey, invite.pendingFile).catch(() => null);
+    if (raw && parsePending(raw).cells.length === 0) return undefined;
     return stem;
 }
 
@@ -140,6 +138,21 @@ function primaryKeyOf(m: unknown): string | null {
     return versions.find((v) => v.key === 'default')?.key ?? versions[0].key ?? null;
 }
 
+const WIDE_QUERY = '(min-width: 860px)';
+/** 视口是否到了显示书影栏的宽度；服务端与不支持 matchMedia 的环境按宽屏（照旧取 cord） */
+function useWideViewport(): boolean {
+    const [wide, setWide] = useState(() => (typeof window === 'undefined' || !window.matchMedia ? true : window.matchMedia(WIDE_QUERY).matches));
+    useEffect(() => {
+        if (!window.matchMedia) return;
+        const mq = window.matchMedia(WIDE_QUERY);
+        const on = () => setWide(mq.matches);
+        on();
+        mq.addEventListener?.('change', on);
+        return () => mq.removeEventListener?.('change', on);
+    }, []);
+    return wide;
+}
+
 /** 「改字」上下文里的专名层（GUJI-590）；本章还没取到／没有时是 NO_ENT */
 type CharfixEnt = Pick<CharFixCtx, 'entities' | 'entityVersion'>;
 const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
@@ -147,6 +160,8 @@ const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
+    // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
+    if (typeof window !== 'undefined') seedTextFileVersion(seed?.dataVersion);
     const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
     // 受控的版本 key 必须是 manifest 里真有的：服务端种子里有 manifest 就同步算出（正常路径）；
@@ -274,15 +289,20 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         if (proof.on !== true) setProofLayer(prev => (prev.cells.size === 0 ? prev : emptyProofLayer()));
     }, [proof.on, fetchProof]);
 
+    // 宽屏才显示书影栏（book-index-ui 阅读器 ≤859px 收起）：窄屏不取 cord（最大的对读文件，只有书影字框用，GUJI-700）。
+    // 视口跨过断点（转横屏、拉宽窗口）时三个 resolve 换身份，阅读器按新宽度重取
+    const wide = useWideViewport();
+
     // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`、`norm_file`）；
     // 有 `cord_file` 才有像素框，两边按格位对上做对读版面；没有 cord 就不做对读版面、不画书影格线（见 lib/duidu-data.ts）。
     const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         proofCtx.current = { ctx, key: chapterKey };
         if (proofOnRef.current) fetchProof(ctx);
-        const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
-        if (!files?.cord) return null;
+        const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
+        // 没有 cord：未声明（没有对读）或取不到 → 不做对读版面；窄屏故意没取 → 照常排正文，只是没有字框
+        if (!files || (!files.cord && !files.cordSkipped)) return null;
         // 规范层（norm.json）：人审过的「异体→通行字」，按格位 key 挂到字上；没声明或取不到时 files.norm 为 null＝与改前一致
-        const pages = adaptCharCord(files.char, files.cord, files.norm);
+        const pages = adaptCharCord(files.char, files.cord ?? undefined, files.norm);
         if (pages.length === 0) return null;
         const chapterFile = ctx?.chapter?.file;
         // 文本版本：章条目的 text_version，缺则 char.json 的 version；两处都没有（或不合口径）就是空串——不猜，改字入口照出但不收（浮条里说明）
@@ -302,7 +322,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 ...ent,
             },
         };
-        const vol = iiifVolumeOf(files.cord);
+        const vol = files.cord ? iiifVolumeOf(files.cord) : null;
         // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
         let base: Record<string, any> = { page_id: '', title: '', image_size: [0, 0], total_warped_w: 0, columns: [] };
         if (id === '96mid1ogzk' && vol?.vol === '02' && pages.some(p => p.page === 10)) {
@@ -319,11 +339,11 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         }
         // hasNorm：章条目声明了 norm_file 且取到了（哪怕是空表）＝自校文本，阅读器的「原字」档可选；外来文本没有，置灰（overview#540）
         return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null } as any;
-    }, [id, transport, fetchProof]);
+    }, [id, transport, fetchProof, wide]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
     const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const entity = (await loadDuiduFiles(id, ctx, chapterKey, transport))?.entity ?? null;
+        const entity = (await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide }))?.entity ?? null;
         const declared = ctx?.chapter?.entity_version;
         const ent = {
             entities: collectEntities(entity),
@@ -333,14 +353,14 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
         if (charfix.current.key === chapterKey && charfix.current.ctx) charfix.current = { ...charfix.current, ent, ctx: { ...charfix.current.ctx, ...ent } };
         else charfix.current = { key: chapterKey, ctx: null, ent };
         return entity;
-    }, [id, transport]);
+    }, [id, transport, wide]);
 
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
     const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const files = await loadDuiduFiles(id, ctx, chapterKey, transport);
-        const vol = files?.cord ? iiifVolumeOf(files.cord) : null;
+        const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
+        const vol = files?.cord ? iiifVolumeOf(files.cord) : files?.cordSkipped ? volumeFromChar(files.char) : null;
         return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
-    }, [id, transport]);
+    }, [id, transport, wide]);
 
     return (
         <>

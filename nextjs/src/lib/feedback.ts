@@ -133,7 +133,10 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl, subty
     return body;
 }
 
-/** 反馈只走同源接口。本地开发时这里是 404，不会像旧组件那样直连正式站（正式站与测试站共用 KV） */
+/**
+ * 反馈只走同源接口。本地开发时这里是 404，不会像旧组件那样直连正式站
+ * （正式站与测试站各一套独立 KV，见 docs/architecture.html 第七节；本地直连正式站就是往正式 KV 写测试数据）
+ */
 export const FEEDBACK_API = '/api/feedback';
 
 /** 出错时抛的 Error.message 给读者看：网络错与兜底文案走字典（t），后端给的 error 原样 */

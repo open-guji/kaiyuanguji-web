@@ -206,7 +206,10 @@ function ext(name) {
 }
 
 export function defaultContentTypeFor(relative) {
-    return ext(relative) === 'json' ? 'application/json; charset=utf-8' : 'application/octet-stream';
+    const e = ext(relative);
+    if (e === 'json') return 'application/json; charset=utf-8';
+    if (e === 'woff2') return 'font/woff2'; // 对读章生僻字子集（GUJI-701）
+    return 'application/octet-stream';
 }
 
 /**

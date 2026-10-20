@@ -3,7 +3,7 @@
  * storage 上有 getTextFile（cos 数据源）就走它，不拼同域 /data 路径；没有（bundle／本地）退回 /data/items/...。
  */
 import { jest } from '@jest/globals';
-import { loadDuiduFiles } from '../duidu-data';
+import { loadDuiduFiles, volumeFromChar } from '../duidu-data';
 
 const chapter = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json', punct_file: '003.punct.json', entity_file: '003.entity.json' };
 
@@ -22,6 +22,43 @@ describe('loadDuiduFiles', () => {
             'book-s1/original/003.char.json', 'book-s1/original/003.cord.json', 'book-s1/original/003.entity.json', 'book-s1/original/003.punct.json',
         ]);
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('cord: false（窄屏，GUJI-700）：不取 cord，cord 为 null 并标 cordSkipped；与取 cord 的结果分开缓存', async () => {
+        const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => ({ file }));
+        const r = await loadDuiduFiles('book-cv1', { versionKey: 'original', chapter }, '003', { getTextFile }, { cord: false });
+        expect(r).toMatchObject({ char: { file: '003.char.json' }, cord: null, cordSkipped: true });
+        expect(getTextFile.mock.calls.map(c => c[2])).not.toContain('003.cord.json');
+        const wide = await loadDuiduFiles('book-cv1', { versionKey: 'original', chapter }, '003', { getTextFile });
+        expect(wide).toMatchObject({ cord: { file: '003.cord.json' } });
+        expect(wide?.cordSkipped).toBeUndefined();
+    });
+
+    it('有阅读器瘦身副本（reader_cord_file／reader_punct_file，GUJI-700）：先取副本，不取原文件', async () => {
+        const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => ({ file }));
+        const ch = { ...chapter, reader_cord_file: '003.cord.reader.json', reader_punct_file: '003.punct.reader.json' };
+        const r = await loadDuiduFiles('book-rf1', { versionKey: 'original', chapter: ch }, '003', { getTextFile });
+        expect(r).toMatchObject({ cord: { file: '003.cord.reader.json' }, punct: { file: '003.punct.reader.json' } });
+        expect(getTextFile.mock.calls.map(c => c[2]).sort()).toEqual(['003.char.json', '003.cord.reader.json', '003.entity.json', '003.punct.reader.json']);
+    });
+
+    it('副本取不到：回落原文件；窄屏不取 cord 时副本也不取；带路径的副本名不认', async () => {
+        const getTextFile = jest.fn(async (_id: string, _key: string, file: string) => (file.includes('.reader.') ? null : { file }));
+        const ch = { ...chapter, reader_cord_file: '003.cord.reader.json', reader_punct_file: '../x.json' };
+        const r = await loadDuiduFiles('book-rf2', { versionKey: 'original', chapter: ch }, '003', { getTextFile });
+        expect(r).toMatchObject({ cord: { file: '003.cord.json' }, punct: { file: '003.punct.json' } });
+        expect(getTextFile.mock.calls.map(c => c[2])).not.toContain('../x.json');
+        getTextFile.mockClear();
+        await loadDuiduFiles('book-rf3', { versionKey: 'original', chapter: ch }, '003', { getTextFile }, { cord: false });
+        expect(getTextFile.mock.calls.map(c => c[2]).filter(f => f.includes('cord'))).toEqual([]);
+    });
+
+    it('volumeFromChar：book_id＋volume → IIIF 册号（两位补零）；字段不合规返回 null', () => {
+        expect(volumeFromChar({ book_id: '96mid1ogzk', volume: 2 })).toEqual({ bookId: '96mid1ogzk', vol: '02' });
+        expect(volumeFromChar({ book_id: '96mid1ogzk', volume: 12 })).toEqual({ bookId: '96mid1ogzk', vol: '12' });
+        expect(volumeFromChar({ book_id: '../x', volume: 2 })).toBeNull();
+        expect(volumeFromChar({ book_id: '96mid1ogzk' })).toBeNull();
+        expect(volumeFromChar(null)).toBeNull();
     });
 
     it('storage 没有 getTextFile（bundle／本地）：读同域 /data/items/<id>/<版本>/<文件>', async () => {

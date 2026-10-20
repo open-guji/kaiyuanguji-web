@@ -30,6 +30,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getCurrentUrlServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
 import { checkReader, isDuiduChapterMeta, type ReaderCheckResult } from '@/lib/server/reader-check';
+import { dataVersionKey, type LatestPointer } from '@/lib/data-version';
 import { summarizeItem } from '@/lib/server/item-summary';
 import { resolveItemRedirect } from '@/lib/server/item-redirect';
 import { legacyMarkdownName, markdownPagePath } from '@/lib/markdown-pages';
@@ -62,6 +63,8 @@ type Props = {
 type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
 type Loaded = {
     sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers;
+    /** 渲染时的数据版本键（latest.json 的 cacheKey／commitId）：随首屏数据交给浏览器，取对读数据不必先等 latest.json（GUJI-699） */
+    dataVersion?: string;
     /** GUJI-358：条目存在、站内没有文本（只有外链文本资源）：页面不出阅读器，指向详情页 */
     noSiteText?: true;
 };
@@ -124,7 +127,7 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     }
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
-    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers };
+    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers, dataVersion: dataVersionKey(latest as LatestPointer | null) };
 }
 
 /**
@@ -240,17 +243,59 @@ function startLeadHead(id: string, s: Loaded): Promise<{ text: string; truncated
  * 地址与浏览器端 cos-storage 的 getTextFileLegacy 逐字一致（current/ ＋ ?v=<版本键>）；h1 哈希寻址布局地址不同，不做。
  * 页面被 CDN 缓存期间数据换了版本，preload 的地址会对不上（白下一份），一小时内自愈，可接受。
  */
-async function duiduPreloadUrls(id: string, s: Loaded): Promise<string[]> {
-    if (process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed') return [];
+/** cord 只有书影栏的字框用，书影栏在窄屏（≤859px）收起：只在宽屏 preload（GUJI-700） */
+const WIDE_MEDIA = '(min-width: 860px)';
+
+/** 当前章的章条目（对读章才返回；h1 哈希寻址布局地址不同，不做） */
+function duiduMeta(s: Loaded): { key: string; meta: Record<string, unknown> & { file: string } } | null {
+    if (process.env.NEXT_PUBLIC_DATA_LAYOUT === 'hashed') return null;
     const { checked } = s;
-    if (checked.status !== 'found' || !checked.version || !checked.chapter) return [];
+    if (checked.status !== 'found' || !checked.version || !checked.chapter) return null;
     const meta = checked.index?.chapters.find((c) => c.file === checked.chapter) as (Record<string, unknown> & { file: string }) | undefined;
-    if (!isDuiduChapterMeta(meta)) return [];
+    return isDuiduChapterMeta(meta) ? { key: checked.version.key, meta: meta! } : null;
+}
+
+async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; media?: string }[]> {
+    const d = duiduMeta(s);
+    if (!d) return [];
+    const { meta } = d;
+    const ok = (f: unknown): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f);
+    // 有阅读器瘦身副本（reader_cord_file／reader_punct_file，GUJI-700）就 preload 副本——浏览器先取的是它（lib/duidu-data.ts）
+    const pick = (k: string) => (k === 'cord_file' || k === 'punct_file') && ok(meta[k]) && ok(meta[`reader_${k}`]) ? meta[`reader_${k}`] : meta[k];
     const files = ['char_file', 'punct_file', 'cord_file', 'entity_file', 'norm_file']
-        .map((k) => meta![k])
-        .filter((f): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f));
-    const urls = await Promise.all(files.map((f) => getCurrentUrlServer(`items/${id}/${checked.version!.key}/${f}`).catch(() => null)));
-    return urls.filter((u): u is string => !!u);
+        .map((k) => ({ k, f: pick(k) }))
+        .filter((x): x is { k: string; f: string } => ok(x.f));
+    const urls = await Promise.all(files.map(async ({ k, f }) => {
+        const href = await getCurrentUrlServer(`items/${id}/${d.key}/${f}`).catch(() => null);
+        return href ? { href, ...(k === 'cord_file' ? { media: WIDE_MEDIA } : {}) } : null;
+    }));
+    return urls.filter((u): u is { href: string; media?: string } => !!u);
+}
+
+/**
+ * 对读章的生僻字子集（GUJI-701）：打包时给对读章生成了 <章>.font.woff2（约 10KB），章条目记 font_file／font_range。
+ * 页面里追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：同字族 unicode-range 重叠时后定义的先查，
+ * 这些字就从子集取，不再去下 globals.css 里花园明朝的大分片（这一章原先 19 片、3.6MB）；子集取不到时照旧回落分片。
+ * 只管首屏这一章：站内换章不重渲染服务端，新章的生僻字照旧走分片。
+ */
+const FONT_RANGE_RE = /^U\+[0-9A-F]{4,6}(?:-[0-9A-F]{4,6})?(?:,U\+[0-9A-F]{4,6}(?:-[0-9A-F]{4,6})?)*$/;
+
+async function chapterFont(id: string, s: Loaded): Promise<{ href: string; range: string } | null> {
+    const d = duiduMeta(s);
+    const file = d?.meta.font_file;
+    const range = d?.meta.font_range;
+    if (typeof file !== 'string' || !/^[\w.-]+\.woff2$/.test(file)) return null;
+    if (typeof range !== 'string' || range.length > 50_000 || !FONT_RANGE_RE.test(range)) return null;
+    const href = await getCurrentUrlServer(`items/${id}/${d!.key}/${file}`).catch(() => null);
+    // 地址要原样放进 CSS 的 url("…")：带引号、括号、反斜杠、空白的不用
+    if (!href || /["'()\\\s]/.test(href)) return null;
+    return { href, range };
+}
+
+function chapterFontCss({ href, range }: { href: string; range: string }): string {
+    return ['HanaMinA', 'HanaMinB']
+        .map((f) => `@font-face{font-family:"${f}";font-style:normal;font-weight:400;font-display:swap;src:url("${href}") format("woff2");unicode-range:${range}}`)
+        .join('');
 }
 
 /** 站内没有文本的条目（GUJI-358）：提示＋指向详情页；meta refresh 让浏览器自动过去，爬虫与脚本看到的是 200 的 noindex 页 */
@@ -274,8 +319,11 @@ export default async function ReaderPage({ params }: Props) {
     if (s.noSiteText) return <NoSiteText id={id} title={s.title} />;
     const headP = startLeadHead(id, s);
     // React 19 把 <link rel="preload"> 提到 <head>
-    const preloads = await duiduPreloadUrls(id, s).catch(() => [] as string[]);
-    const seed = await timed(s.timing, 'preload', preload(id, s));
+    const [preloads, font] = await Promise.all([
+        duiduPreloadUrls(id, s).catch(() => [] as { href: string; media?: string }[]),
+        chapterFont(id, s).catch(() => null),
+    ]);
+    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion } : {}) };
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
     const head = hasSeedMd ? null : await timed(s.timing, 'leadHead', headP);
@@ -286,7 +334,10 @@ export default async function ReaderPage({ params }: Props) {
     return (
         <>
             <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
-            {preloads.map((href) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} />)}
+            {preloads.map(({ href, media }) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} media={media} />)}
+            {font && <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font.href} />}
+            {/* 不带 precedence 的 <style> 留在 body 里，排在 globals.css 之后＝后定义（GUJI-701） */}
+            {font && <style id="kyg-chapter-font" dangerouslySetInnerHTML={{ __html: chapterFontCss(font) }} />}
             {/* overview#322 方案 D：首次渲染的分段计时（Server-Timing 语法），不渲染、不参与交互 */}
             <script type="application/json" id="kyg-render-timing" dangerouslySetInnerHTML={{ __html: JSON.stringify(timing) }} />
         </>

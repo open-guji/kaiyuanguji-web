@@ -88,7 +88,7 @@ describe('TextFixesContent', () => {
         expect(screen.getAllByTestId('fix-group')).toHaveLength(3);
     });
 
-    it('讨论：显示计数与回复；表态、回复提交到 /api/thread，回复先在本页显示「待汇总」', async () => {
+    it('讨论：显示计数与回复；表态、回复提交到 /api/thread，回复先在本页标「刚刚」显示（/api/fixes 是实时读，不再说「待汇总」）', async () => {
         const listFetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ success: true, ...LIST }) }));
         const postFetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true }) });
         const fetchImpl = jest.fn((url: string, init?: RequestInit) => (init?.method === 'POST' ? postFetch(url, init) : listFetch(url)));
@@ -102,7 +102,8 @@ describe('TextFixesContent', () => {
         await act(async () => { fireEvent.click(row.getByRole('button', { name: '同意' })); });
         expect(postFetch.mock.calls[0][0]).toBe('/api/thread');
         expect(JSON.parse(postFetch.mock.calls[0][1].body)).toMatchObject({ book_id: '96mid1ogzk', volume: '002', target: 'span~3:1:5~3:1:6~missing', stance: 'agree' });
-        expect(row.getByRole('status')).toHaveTextContent('已记下');
+        expect(row.getByRole('status')).toHaveTextContent('已记下您的看法，刷新本页即可看到计数。');
+        expect(row.getByRole('status').textContent).not.toMatch(/次日|汇总/);
         expect(row.getByRole('button', { name: '同意' })).toHaveAttribute('aria-pressed', 'true');
 
         fireEvent.click(row.getByRole('button', { name: '回复' }));
@@ -113,7 +114,8 @@ describe('TextFixesContent', () => {
         await act(async () => { fireEvent.click(submit); });
         expect(JSON.parse(postFetch.mock.calls[1][1].body)).toMatchObject({ stance: 'reply', name: '乙', text: '书影第 3 页可证', target: 'span~3:1:5~3:1:6~missing' });
         expect(row.getByText('书影第 3 页可证')).toBeInTheDocument();
-        expect(row.getByText('待汇总')).toBeInTheDocument();
+        expect(row.getByText('刚刚')).toBeInTheDocument();
+        expect(row.queryByText('待汇总')).not.toBeInTheDocument();
         // 专名一处的 target
         const entRow = within(screen.getAllByTestId('fix-group')[1]);
         await act(async () => { fireEvent.click(entRow.getByRole('button', { name: '有不同看法' })); });

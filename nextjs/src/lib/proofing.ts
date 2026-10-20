@@ -188,17 +188,38 @@ const REF_OP_LABELS: Record<string, string> = {
 };
 export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
 
-/** 要显示的候选：`cand` 与 `lib_top` 前 3 的并集（cand 在前），带库分数；超过 limit 的放「更多」 */
+/**
+ * 要显示的候选：整理本字（`ref`）排第一（同控制台 candidates.ts，用户 09-06 定），然后 `cand`、`lib_top` 前 3；
+ * 同一个字只出一次、来源合并；带库分数；超过 limit 的放「更多」（GUJI-683）。
+ */
 export interface ShownCand { c: string; src?: string[]; score?: number }
 export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[]; more: ShownCand[] } {
     const score = new Map((cell.libTop ?? []).map(x => [x.c, x.s]));
     const all: ShownCand[] = [];
     const add = (c: string, src?: string[]) => {
-        if (!all.some(x => x.c === c)) all.push({ c, ...(src ? { src } : {}), ...(score.has(c) ? { score: score.get(c) } : {}) });
+        const hit = all.find(x => x.c === c);
+        if (hit) {
+            for (const k of src ?? []) if (!(hit.src ?? []).includes(k)) hit.src = [...(hit.src ?? []), k];
+            return;
+        }
+        all.push({ c, ...(src ? { src: [...src] } : {}), ...(score.has(c) ? { score: score.get(c) } : {}) });
     };
+    if (cell.ref?.c && [...cell.ref.c].length === 1) add(cell.ref.c, ['ref']);
     for (const cd of cell.cand ?? []) add(cd.c, cd.src);
     for (const x of (cell.libTop ?? []).slice(0, 3)) add(x.c);
     return { top: all.slice(0, limit), more: all.slice(limit) };
+}
+
+/**
+ * 「看前后文」值不值得给读者看：上下文模型的字就是字形库首选（只是回声），或送审原因说上下文不可信
+ * （`ctx_garble_*`），都不显示——vol01 001-r2 有字的 38 格全是回声（GUJI-683，调研 A B4）。
+ * 上下文给了「看不出」（没有字）照旧显示。
+ */
+export function ctxWorthShowing(cell: PendingCell): boolean {
+    if (!cell.ctx) return false;
+    if (!cell.ctx.c) return true;
+    if (cell.why?.some(w => w.startsWith('ctx_garble'))) return false;
+    return cell.ctx.c !== cell.libTop?.[0]?.c;
 }
 
 /** 预勾：`stale` 有就预勾它的字（`c`）；`occ` 有就预选「非字」。都只是预选，仍须人确认才提交 */
@@ -266,6 +287,21 @@ export function proofState(index: ProofIndex | null, book: string, chap: string)
     const e = index?.[book]?.[chap];
     if (!e) return 'unknown';
     return e.n > 0 ? 'open' : 'done';
+}
+
+/**
+ * 阅读页要不要请读者去校对这一章（GUJI-683）：
+ * - COS 总表列了这一章：n>0 请（yes），n=0 不请（no）；
+ * - 总表取到了却没列这一章：这一章没有发待审单（如只标了 proofing、单子还没发），不请——点进去会是空页；
+ * - 总表取不到：退回 book-text，章条目 `proofing: true` 且声明了 `pending_file` 时，交给调用方去取待审单看清没清空。
+ */
+export function proofInvite(index: ProofIndex | null, book: string, stem: string, chapter: unknown): 'yes' | 'no' | { pendingFile: string } {
+    const state = proofState(index, book, stem);
+    if (state !== 'unknown') return state === 'open' ? 'yes' : 'no';
+    if (index) return 'no';
+    if (!isProofingChapter(chapter)) return 'no';
+    const pendingFile = asRecord(chapter)?.pending_file;
+    return typeof pendingFile === 'string' ? { pendingFile } : 'no';
 }
 
 /** 取 COS 上的一章待审单；没有给 null */

@@ -31,8 +31,8 @@ on:
       base:
         description: '目标站'
         type: choice
-        options: [https://www.kaiyuanguji.com, https://staging.kaiyuanguji.com]
-        default: https://www.kaiyuanguji.com
+        options: [https://www.openguji.com, https://staging.kaiyuanguji.com]
+        default: https://www.openguji.com
 
 permissions:
   contents: read

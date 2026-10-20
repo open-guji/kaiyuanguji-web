@@ -198,6 +198,24 @@ describe('精校页显示（GUJI-557）', () => {
         expect(body(3).pick_src).toBeUndefined();
     });
 
+    it('GUJI-683：整理本字是第一个候选并标「整理本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '9:7:17', ref: { c: '臼' }, libTop: [{ c: '曰', s: 0.9 }], ctx: { c: '曰' } }]));
+        render(<ProofingClient book="b10" vol="vol01" />);
+        const card = (await screen.findAllByTestId('cell-card'))[0];
+        const refBtn = await screen.findByRole('button', { name: /^臼/ });
+        expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toBe('整理本');
+        expect(card.querySelector('[data-testid=no-machine-char]')).toBeTruthy();
+        expect(card.textContent).not.toContain('看前后文');              // 上下文字＝库首选，只是回声
+        expect(screen.queryByRole('button', { name: '这是夹注小字' })).toBeNull();
+        expect(screen.getByRole('button', { name: '小注被当成正文切了' })).toBeTruthy();
+        fireEvent.change(screen.getByLabelText('备注'), { target: { value: '  看上面一横  ' } });
+        fireEvent.click(refBtn);
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: '臼', note: '看上面一横', pick_src: 'cand', pick_rank: 1 });
+    });
+
     it('相似字的字形图没传上去就只显示字；没有 alt 不渲染', async () => {
         failUrls = /alt-001/;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', alt: alt.slice(0, 3) }, { a: '1:1:2', c: '日' }]));
