@@ -250,6 +250,7 @@ function contentTypeFor(relative) {
         case 'jpeg': return 'image/jpeg';
         case 'svg':  return 'image/svg+xml';
         case 'webp': return 'image/webp';
+        case 'woff2': return 'font/woff2'; // 对读章生僻字子集（GUJI-701）
         default:     return 'application/octet-stream';
     }
 }

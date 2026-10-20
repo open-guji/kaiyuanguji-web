@@ -16,6 +16,16 @@ export interface DuiduFiles {
     entity: unknown;
     /** 没有声明 `norm_file`（或取不到）时为 null：下游照旧走全局异体字表 */
     norm: unknown;
+    /** 声明了 `cord_file` 但这次没取（窄屏不显示书影栏，GUJI-700）：cord 为 null，正文照常排，只是没有字框 */
+    cordSkipped?: boolean;
+}
+
+/** 册号（IIIF 路径里的 `<册>`）：cord 的 canvas id 取不到时（窄屏没取 cord）按 char 的 book_id＋volume 推，册号两位补零 */
+export function volumeFromChar(char: unknown): { bookId: string; vol: string } | null {
+    const c = char as { book_id?: unknown; volume?: unknown } | null;
+    const bookId = typeof c?.book_id === 'string' && /^[0-9a-z]+$/.test(c.book_id) ? c.book_id : null;
+    const v = typeof c?.volume === 'number' && Number.isInteger(c.volume) && c.volume > 0 ? c.volume : null;
+    return bookId && v ? { bookId, vol: String(v).padStart(2, '0') } : null;
 }
 
 /**
@@ -55,12 +65,16 @@ export function loadDuiduFiles(
     _chapterKey: string,
     /** 当前数据源的 storage（transport）；不传或没有 getTextFile 就读同域 /data */
     storage?: object,
+    /** `cord: false`＝不取像素框（窄屏不显示书影栏，cord 是最大的文件，GUJI-700）；缺省取 */
+    opts?: { cord?: boolean },
 ): Promise<DuiduFiles | null> {
     const ch = ctx?.chapter;
     const key = ctx?.versionKey;
     if (!ch || !key) return Promise.resolve(null);
     const charFile = fileField(ch, 'char_file');
-    const cordFile = fileField(ch, 'cord_file');
+    const declaredCord = fileField(ch, 'cord_file');
+    const cordFile = opts?.cord === false ? null : declaredCord;
+    const cordSkipped = !!declaredCord && !cordFile;
     if (!charFile) return Promise.resolve(null);
     const punctFile = fileField(ch, 'punct_file');
     const entityFile = fileField(ch, 'entity_file');
@@ -79,7 +93,7 @@ export function loadDuiduFiles(
             // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null
             if (!char || (cordFile && !cord)) return null;
             // norm 是可选层：取不到当没有（null），不让整章返回 null
-            return { char, cord, punct, entity, norm: norm ?? null };
+            return { char, cord, punct, entity, norm: norm ?? null, ...(cordSkipped ? { cordSkipped: true } : {}) };
         })();
         cache.set(cacheKey, p);
         // 失败不缓存；声明了 norm_file 却没取到也不缓存（可能是暂时失败，下次再取），并留一条日志
