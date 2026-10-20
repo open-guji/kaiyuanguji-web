@@ -158,7 +158,7 @@ describe('精校页显示（GUJI-557）', () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         const g = '\u{30EDD}';                                  // 扩 G
-        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: g, ref: { c: g }, alt: [{ c: g, s: 0.9, p: '弊' }, { c: '弊', s: 0.8 }] }]));
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: g, ref: { c: g }, cand: [{ c: g }], alt: [{ c: g, s: 0.9, p: '弊' }, { c: '弊', s: 0.8 }] }]));
         render(<ProofingClient book="b10" vol="vol01" />);
         const grid = await screen.findByTestId('alt-grid');
         expect(grid.textContent).toContain('U+30EDD');
@@ -167,7 +167,10 @@ describe('精校页显示（GUJI-557）', () => {
         const cps = screen.getAllByTestId('zi-cp');
         expect(cps.length).toBeGreaterThanOrEqual(3);
         expect(cps[0].getAttribute('title')).toBe(g);
-        fireEvent.click(screen.getByRole('button', { name: `选「${g}」` }));
+        // 候选按钮、相似字按钮的无障碍名称都是原字（读屏不念码位）
+        const named = screen.getAllByRole('button', { name: `选「${g}」` });
+        expect(named.length).toBe(2);
+        fireEvent.click(named[1]);
         await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: g, pick_src: 'alt', pick_rank: 1 });
     });

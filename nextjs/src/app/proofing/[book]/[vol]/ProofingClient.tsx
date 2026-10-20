@@ -130,7 +130,7 @@ const zis = (s: string) => [...s].map(shownZi).join('');
 function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
     const tip = cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : `选「${shownZi(cd.c)}」`;
     return (
-        <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
+        <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? undefined : `选「${cd.c}」`} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
             style={btnStyle('cand', picked, busy)}>
             <Zi c={cd.c} />{cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
@@ -342,7 +342,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}><Zi c={cell.c} /></button>
+                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}><Zi c={cell.c} /></button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
