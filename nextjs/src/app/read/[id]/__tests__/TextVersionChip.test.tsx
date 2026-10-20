@@ -18,6 +18,11 @@ describe('textVersionsOf', () => {
         expect(textVersionsOf({ text_version: '1.0.0', punct_version: 'x' })).toEqual({ text: '1.0.0', punct: undefined, entity: undefined });
         expect(textVersionsOf(undefined)).toBeUndefined();
     });
+    it('1.x 仍 proofing: true 记为补校中；0.x 的 proofing 不算', () => {
+        expect(textVersionsOf({ text_version: '1.0.1', proofing: true })?.reproofing).toBe(true);
+        expect(textVersionsOf({ text_version: '0.2.2', proofing: true })?.reproofing).toBeUndefined();
+        expect(textVersionsOf({ text_version: '1.0.1' })?.reproofing).toBeUndefined();
+    });
 });
 
 describe('TextVersionChip', () => {
@@ -45,5 +50,12 @@ describe('TextVersionChip', () => {
         render(<p><TextVersionChip versions={{ text: '1.0.0' }} /></p>);
         fireEvent.click(screen.getByTestId('text-version'));
         expect(screen.getByTestId('text-version-pop').textContent).toContain('可用');
+    });
+    it('补校中：按钮上标出，浮层照实说明', () => {
+        render(<p><TextVersionChip versions={{ text: '1.0.1', reproofing: true }} /></p>);
+        const btn = screen.getByTestId('text-version');
+        expect(btn.textContent).toBe('文本 v1.0.1 · 补校中');
+        fireEvent.click(btn);
+        expect(screen.getByTestId('text-version-pop').textContent).toContain('按早期标准定为可用，按现行标准还在补校');
     });
 });

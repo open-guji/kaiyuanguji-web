@@ -10,17 +10,21 @@ export interface TextVersions {
     punct?: string;
     /** 专名线（entity_version），没有为 undefined */
     entity?: string;
+    /** 文本已到 1.x 而章条目仍 proofing: true：早期按旧标准定的 1.0，正在补校（book-text docs/VERSIONING.md，四庫册2、3） */
+    reproofing?: boolean;
 }
 
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /** 章条目里的三条版本线；文本线不合口径就整体不出（只有本项目自做的 original 版本记版本号） */
 export function textVersionsOf(chapter: unknown): TextVersions | undefined {
-    const c = (chapter ?? {}) as { text_version?: unknown; punct_version?: unknown; entity_version?: unknown };
+    const c = (chapter ?? {}) as { text_version?: unknown; punct_version?: unknown; entity_version?: unknown; proofing?: unknown };
     const ok = (v: unknown) => (typeof v === 'string' && VERSION_RE.test(v) ? v : undefined);
     const text = ok(c.text_version);
     if (!text) return undefined;
-    return { text, punct: ok(c.punct_version), entity: ok(c.entity_version) };
+    const out: TextVersions = { text, punct: ok(c.punct_version), entity: ok(c.entity_version) };
+    if (c.proofing === true && Number(text.split('.')[0]) >= 1) out.reproofing = true;
+    return out;
 }
 
 /** 主版本号＝质量等级（book-text docs/VERSIONING.md） */
@@ -110,7 +114,7 @@ export default function TextVersionChip({ versions }: { versions: TextVersions }
                     whiteSpace: 'nowrap',
                 }}
             >
-                {convert(`文本 v${versions.text}`)}
+                {convert(versions.reproofing ? `文本 v${versions.text} · 补校中` : `文本 v${versions.text}`)}
             </button>
             {open && pos && (
                 <span
@@ -134,7 +138,9 @@ export default function TextVersionChip({ versions }: { versions: TextVersions }
                         </span>
                     ))}
                     <span style={{ display: 'block', marginTop: 8, fontSize: 12, color: 'var(--color-ink-3, #888)' }}>
-                        {convert(`本章文本${gradeOf(versions.text)}。三项各自记版本，改字、改标点、改专名分别升号。`)}
+                        {convert(versions.reproofing
+                            ? `本章文本按早期标准定为${gradeOf(versions.text)}，按现行标准还在补校，个别字可能有误。三项各自记版本，改字、改标点、改专名分别升号。`
+                            : `本章文本${gradeOf(versions.text)}。三项各自记版本，改字、改标点、改专名分别升号。`)}
                     </span>
                 </span>
             )}
