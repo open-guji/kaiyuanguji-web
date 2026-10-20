@@ -58,7 +58,8 @@ function computeBuildInfo(opts = {}) {
     bimUi: opts.bimUi || '',
     builtAt: (opts.now || new Date()).toISOString(),
     target: resolveTarget(env),
-    dataBase: cosBase === HOSTS.data || cosBase === `${HOSTS.data}/staging` ? cosBase : HOSTS.data,
+    // 新旧两个数据域名回源同一个桶，都认；别的一律回默认
+    dataBase: [HOSTS.data, HOSTS.legacyData].some((o) => cosBase === o || cosBase === `${o}/staging`) ? cosBase : HOSTS.data,
   };
 }
 

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { gzipSync } from 'node:zlib';
+import { DATA_ORIGIN } from '../../config/hosts.mjs';
 import {
     runCutoverCheck, renderMarkdown, parseArgs, uiVersionFromLock, metaContent, robotsVerdict, httpGet, ITEMS,
 } from '../cutover-check.mjs';
@@ -21,7 +22,7 @@ function fakeSite(host, overrides = {}) {
         [`https://${host}/api/auth/me`]: { status: 401, body: '{"success":false}' },
         [`https://${host}/api/version`]: { status: 404, body: '<html>' },
         [`https://${host}/sitemap-index.xml`]: { status: 200, body: '<sitemapindex><sitemap><loc>https://www.kaiyuanguji.com/sitemaps/work-001.xml</loc></sitemap></sitemapindex>' },
-        'https://data.kaiyuanguji.com/latest.json': { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: WEB }) },
+        [`${DATA_ORIGIN}/latest.json`]: { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: WEB }) },
         [`http://${host}/`]: { status: 301, headers: { location: `https://${host}/` } },
         'https://kaiyuanguji.com/': { status: 301, headers: { location: 'https://www.kaiyuanguji.com/' } },
     };
@@ -61,7 +62,8 @@ test('全程只读：只发 GET 到目标域名、裸域与数据指针', async 
     const site = fakeSite('www.kaiyuanguji.com');
     await run('www.kaiyuanguji.com', site);
     for (const c of site.calls) {
-        assert.match(c.url, /^https?:\/\/(www\.kaiyuanguji\.com|kaiyuanguji\.com|data\.kaiyuanguji\.com)\//);
+        const ok = /^https?:\/\/(www\.kaiyuanguji\.com|kaiyuanguji\.com)\//.test(c.url) || c.url.startsWith(`${DATA_ORIGIN}/`);
+        assert.ok(ok, c.url);
         assert.equal(c.opts?.method, undefined);
     }
     // book-index 按站外整页导航的样子发，否则中间件放过、不 308
@@ -258,8 +260,8 @@ test('httpGet：无 Content-Encoding 的明文正文不变', async () => {
 test('latest.json：标了 codePointer 时以 web.json 为准（其 UI 版本与页面比），写出两处不一致，不悄悄选一个', async () => {
     const OLD = '1'.repeat(40);
     const site = fakeSite('www.kaiyuanguji.com', {
-        'https://data.kaiyuanguji.com/latest.json': { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: OLD, codePointer: 'web.json' }) },
-        'https://data.kaiyuanguji.com/web.json': { status: 200, body: JSON.stringify({ webCommitId: WEB }) },
+        [`${DATA_ORIGIN}/latest.json`]: { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: OLD, codePointer: 'web.json' }) },
+        [`${DATA_ORIGIN}/web.json`]: { status: 200, body: JSON.stringify({ webCommitId: WEB }) },
     });
     const r = await run('www.kaiyuanguji.com', site);
     const latest = r.results.find((x) => x.id === 'latest');
@@ -271,8 +273,8 @@ test('latest.json：标了 codePointer 时以 web.json 为准（其 UI 版本与
 
 test('latest.json：标了 codePointer 但 web.json 取不到 → 退回 latest.json 并说明，不当成通过的唯一依据', async () => {
     const site = fakeSite('www.kaiyuanguji.com', {
-        'https://data.kaiyuanguji.com/latest.json': { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: WEB, codePointer: 'web.json' }) },
-        'https://data.kaiyuanguji.com/web.json': { status: 404, body: 'x' },
+        [`${DATA_ORIGIN}/latest.json`]: { status: 200, body: JSON.stringify({ commitId: '501935e5be70', webCommitId: WEB, codePointer: 'web.json' }) },
+        [`${DATA_ORIGIN}/web.json`]: { status: 404, body: 'x' },
     });
     const r = await run('www.kaiyuanguji.com', site);
     const latest = r.results.find((x) => x.id === 'latest');

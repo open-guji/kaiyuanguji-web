@@ -83,7 +83,8 @@ concurrency:
 
 env:
   # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
-  HOST_DATA: https://data.kaiyuanguji.com
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
   HOST_API: https://api.kaiyuanguji.com
   HOST_SITE: https://www.openguji.com
   HOST_SITE_APEX: https://openguji.com
@@ -825,8 +826,10 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
         run: |
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
+          # 只给新域名的地址；ops/purge-urls.py 会把同一路径在旧数据域名下的也一起清
           P="$HOST_DATA/${PREFIX:+$PREFIX/}"
           # h1 版本指针也要清（实测节点把 h1/manifest-root.json 缓存了约 18.7 小时，源站 max-age 被无视）；sitemaps 索引同理
           python3 ops/purge-urls.py "${P}latest.json" "${P}h1/manifest-root.json" "${P}h1/text-manifest-root.json" "${P}sitemaps/sitemap-index.xml"

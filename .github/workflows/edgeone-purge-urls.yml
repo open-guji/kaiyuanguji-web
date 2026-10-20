@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       urls:
-        description: 完整 URL，空格分隔；留空＝四个 h1 版本指针（正式与 staging/，数据域名见 config/hosts.json）
+        description: 完整 URL，空格分隔；留空＝新旧数据域名下的 h1 版本指针（正式与 staging/，域名见 config/hosts.json）
         required: false
         default: ''
 
@@ -26,5 +26,6 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
           URLS: ${{ inputs.urls }}
         run: python3 ops/edgeone-purge-urls.py

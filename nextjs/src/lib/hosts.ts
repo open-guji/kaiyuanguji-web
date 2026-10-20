@@ -1,6 +1,7 @@
 // 由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
 
-export const DATA_ORIGIN = 'https://data.kaiyuanguji.com';
+export const DATA_ORIGIN = 'https://data.openguji.com';
+export const LEGACY_DATA_ORIGIN = 'https://data.kaiyuanguji.com';
 export const API_ORIGIN = 'https://api.kaiyuanguji.com';
 export const SITE_ORIGIN = 'https://www.openguji.com';
 export const SITE_APEX_ORIGIN = 'https://openguji.com';

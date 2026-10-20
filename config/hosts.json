@@ -1,6 +1,7 @@
 {
   "$comment": "全站域名、子域名、接口地址的唯一来源。改这里后跑 node ops/sync-hosts.mjs 同步生成物（见 docs/data-domain-migration.md）。值一律是 origin：https://主机，不带结尾斜杠。",
-  "data": "https://data.kaiyuanguji.com",
+  "data": "https://data.openguji.com",
+  "legacyData": "https://data.kaiyuanguji.com",
   "api": "https://api.kaiyuanguji.com",
   "site": "https://www.openguji.com",
   "siteApex": "https://openguji.com",

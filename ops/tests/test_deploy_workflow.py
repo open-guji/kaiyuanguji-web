@@ -220,7 +220,7 @@ class WebPointerStep(unittest.TestCase):
         self.assertIn('write-web-pointer.mjs', s['run'])
 
     def test_purge_includes_web_json(self):
-        self.assertIn("pfx + 'web.json'", self.raw)
+        self.assertIn("names = ['latest.json', 'web.json'", self.raw)
 
 
 @unittest.skipIf(yaml is None, 'PyYAML 未安装')

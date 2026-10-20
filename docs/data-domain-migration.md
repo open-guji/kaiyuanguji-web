@@ -3,7 +3,13 @@
 2026-10-20 起草。目标：网站、脚本、CI 读数据改走 `data.openguji.com`；旧域名 `data.kaiyuanguji.com` 继续可用（不下线）。
 同时把所有域名、子域名、API 地址收进一个配置文件，以后再迁只改一处。
 
-## 现状（2026-10-20 实测）
+## 进度
+
+- 2026-10-20 PR①（#550）：域名集中到 `config/hosts.json`，值不变，已上线。
+- 2026-10-20 Sheldon 在 EdgeOne 新建 openguji.com 站点（CNAME 接入，DNS 不搬），加 data 加速域名，回源同一个 COS 桶；证书、版本指针缓存规则、跨域响应头均照旧域名配好，实测与旧域名一致。
+- 2026-10-20 PR②：`config/hosts.json` 的 data 改为 `https://data.openguji.com`，新增 `legacyData`（旧域名）。清缓存同时清新旧两个域名（新域名用密钥 `EDGEONE_DATA_ZONE_ID`，没配就跳过并警告）；证书巡检自动带上两个域名；IIIF 生成脚本的 id 仍用旧数据域名。
+
+## 切换前的现状（2026-10-20 实测）
 
 - `data.kaiyuanguji.com`：EdgeOne 加速（kaiyuanguji.com 站点）→ 新加坡 COS 桶。COS 回 `Access-Control-Allow-Origin: *`；`latest.json` 回 `max-age=30`。
 - `data.openguji.com`：**尚未解析**。

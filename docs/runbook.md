@@ -7,13 +7,13 @@
 
 | 站 | 地址 | 托管方式 | 数据指针 |
 |---|---|---|---|
-| 正式站 | https://www.openguji.com（旧域名 www.kaiyuanguji.com 的页面 301 到这里；旧域名的 `/api/*` 在国内一律 404，接口一律用新域名） | 全栈，CLI 直传 `kyg-ssr-spike`（2026-09-28 切站，CUT2 起 deploy 直接发这里） | `https://data.kaiyuanguji.com/latest.json` |
-| 测试站 | https://staging.kaiyuanguji.com | 全栈，CLI 直传 `kyg-staging` | `https://data.kaiyuanguji.com/staging/latest.json` |
+| 正式站 | https://www.openguji.com（旧域名 www.kaiyuanguji.com 的页面 301 到这里；旧域名的 `/api/*` 在国内一律 404，接口一律用新域名） | 全栈，CLI 直传 `kyg-ssr-spike`（2026-09-28 切站，CUT2 起 deploy 直接发这里） | `https://data.openguji.com/latest.json` |
+| 测试站 | https://staging.kaiyuanguji.com | 全栈，CLI 直传 `kyg-staging` | `https://data.openguji.com/staging/latest.json` |
 
 `ssr-test.kaiyuanguji.com` 也挂在 `kyg-ssr-spike` 上，与 www 是同一份部署。旧静态项目 `kaiyuanguji`（原 www，推 `edgeone-release` 分支发布）
 切站后不再发布，保留到 2026-10-26 前后作回滚目标（`docs/cutover.md`「切站后的发布与回滚」）。
 
-> 读数据指针**必须带随机串**：`curl -s "https://data.kaiyuanguji.com/latest.json?cb=$RANDOM$RANDOM"`。
+> 读数据指针**必须带随机串**：`curl -s "https://data.openguji.com/latest.json?cb=$RANDOM$RANDOM"`。
 > 不带会拿到 EdgeOne 节点上的旧副本，看到的「线上版本」是错的。
 
 ---
@@ -81,7 +81,7 @@ done
 | 看什么 | 怎么判断 |
 |---|---|
 | /admin/errors 筛 `fetch` + HTTP 404 | 消息 `entry 不存在 (404)`，`资源` 列是条目 ID |
-| `curl -sI "https://data.kaiyuanguji.com/current/entry/<ID>.json"` | 404 → 数据里真没有这个条目；200 → 前端或缓存问题 |
+| `curl -sI "https://data.openguji.com/current/entry/<ID>.json"` | 404 → 数据里真没有这个条目；200 → 前端或缓存问题 |
 | 数据指针 `productionCommitId` | 正式条目（丛编等）来自 book-index 仓，打包时没带上会整批 404 |
 
 处理：
@@ -99,7 +99,7 @@ done
 |---|---|
 | `curl -s https://api.kaiyuanguji.com/health` | 非 `{"status":"available"}` → L1 挂了，读者会退到 L2（慢但能用） |
 | deploy 的「Degradable deps」步骤／`e2e/degradable/search-l1.spec.ts` | 只 L1 红不拦发布，日志里写了哪个索引、哪项 settings 不对 |
-| L2 也没结果 | `curl -s -o /dev/null -w "%{http_code}" "https://data.kaiyuanguji.com/v/<data 短 commit>/search/meta.json"`——404 说明 search 分片没传上去（sync-to-cos 半途失败）；`<data 短 commit>` 即 `/api/version` 的 `data` |
+| L2 也没结果 | `curl -s -o /dev/null -w "%{http_code}" "https://data.openguji.com/v/<data 短 commit>/search/meta.json"`——404 说明 search 分片没传上去（sync-to-cos 半途失败）；`<data 短 commit>` 即 `/api/version` 的 `data` |
 | 搜索 401 | 构建时 `NEXT_PUBLIC_MEILI_KEY` 为空（2026-08 事故），看 deploy 日志 |
 
 处理：
@@ -176,7 +176,7 @@ done
 处理：
 
 - 按 URL 清：Actions → **EdgeOne purge URLs**（默认清四个 h1 指针；可填任意完整 https URL，空格分隔）。例如清正式站数据指针：
-  `https://data.kaiyuanguji.com/latest.json`。
+  `https://data.openguji.com/latest.json`。
 - 整站：www 和测试站一样是 Pages 项目的自定义域名，不在 zone 的加速域名里，`purge_host kaiyuanguji.com` 只清得到裸域那条 301，清不到 www 的页面。
   两站都是 CLI 直传，重发一次就是新版本；条目页走按需失效（deploy 里 W2-3 那几步，正式站打 www）。
 
