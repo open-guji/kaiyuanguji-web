@@ -39,6 +39,10 @@ import { bundleMetaHome } from './build-meta-home.mjs';
 import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
+import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
+
+// 对读章生僻字子集（GUJI-701）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
+const fontCtx = await chapterFontContext();
 
 assertDerivedDir(); // 严格模式：没设 BOOK_INDEX_DERIVED_DIR 立刻失败（B5-3.2；本地开发设 ALLOW_SOURCE_FALLBACK=1）
 
@@ -242,6 +246,8 @@ function bundleL1() {
     let itemFileCount = 0;
     let internalSkipped = 0; // 新结构里标 internal、没进公开产物的版本数
     const seedStats = { ok: 0, skip: {} }; // read-seed.json：生成了几个，跳过的按原因计数（skip 不是错误，照旧读法）
+    const fontJobs = []; // 对读章生僻字子集（GUJI-701）：各条目攒齐后一次生成（分片只解压一次）
+    const seedTargets = []; // [源目录, 条目 id]：子集写回产物 index.json 之后再生成首屏种子
     const entryDir = join(OUT_DIR, 'entry');
     const itemsDir = join(OUT_DIR, 'items');
     const legacyChunksDir = join(OUT_DIR, 'chunks');
@@ -302,15 +308,26 @@ function bundleL1() {
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 internalSkipped += copyItemDir(itemDir, join(itemsDir, id)).internalSkipped;
                 itemFileCount++;
-                // 首屏种子（overview#345 方案 B）：buildReadSeed 只读源目录；不合法的 manifest 在上面 copyItemDir 已抛错
-                const seed = buildReadSeed(itemDir);
-                if (seed.status === 'ok') {
-                    writeIfChanged(join(itemsDir, id, 'read-seed.json'), seed.text);
-                    seedStats.ok++;
-                } else {
-                    seedStats.skip[seed.reason] = (seedStats.skip[seed.reason] ?? 0) + 1;
-                }
+                if (!fontCtx.skip) fontJobs.push(...collectFontJobs(join(itemsDir, id), fontCtx));
+                seedTargets.push([itemDir, id]);
             }
+        }
+    }
+    if (fontJobs.length > 0) {
+        const n = applyFontResults(fontJobs, runFontJobs(fontJobs, fontCtx));
+        console.log(`    chapter-fonts: ${fontJobs.length} 个对读章，${n} 个生成生僻字子集`);
+    } else if (fontCtx.skip) {
+        console.warn(`    ⚠ chapter-fonts 跳过：${fontCtx.skip}（阅读页照旧取花园明朝分片）`);
+    }
+    // 首屏种子（overview#345 方案 B）：manifest 读源目录（不合法的在上面 copyItemDir 已抛错），
+    // index.json 读产物（带上面写回的 font_file／font_range）
+    for (const [itemDir, id] of seedTargets) {
+        const seed = buildReadSeed(itemDir, { indexDir: join(itemsDir, id) });
+        if (seed.status === 'ok') {
+            writeIfChanged(join(itemsDir, id, 'read-seed.json'), seed.text);
+            seedStats.ok++;
+        } else {
+            seedStats.skip[seed.reason] = (seedStats.skip[seed.reason] ?? 0) + 1;
         }
     }
     readSeedReady = true;

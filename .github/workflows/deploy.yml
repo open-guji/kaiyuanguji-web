@@ -668,6 +668,11 @@ jobs:
             exit 1
           fi
 
+      # 对读章生僻字子集字体（GUJI-701）：bundle-data 要 fontTools＋hanamin；三处打包共用同一脚本、同一版本，产物逐字节一致
+      - name: Setup chapter-font tools
+        if: ${{ env.DATA_FAST != 'true' }}
+        run: bash ops/setup-chapter-fonts.sh
+
       - name: Bundle data for EdgeOne
         if: ${{ env.DATA_FAST != 'true' }}
         working-directory: nextjs
