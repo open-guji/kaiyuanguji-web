@@ -295,6 +295,16 @@ jobs:
       - name: Run perf vs prod
         working-directory: perf
         run: npm run perf -- --profiles=fast
+      # 阅读页探针（GUJI-628 防退化）：桌面不节流（a）与手机＋CPU6x（c）各一次，结果在 out/reader/，由下面的门槛判。
+      # 探针自己失败不拦在这里：门槛读不到结果会记为超标
+      - name: Reader probe (a, c)
+        continue-on-error: true
+        working-directory: perf
+        run: |
+          URL_=$(node -e "console.log(require('./thresholds.json').reader.url)")
+          export URL_
+          timeout 600 node reader-probe.mjs a
+          timeout 600 node reader-probe.mjs c
       # 门槛（overview#280 T2）：perf/thresholds.json。超标时先把报告上传、开单，最后让本 job 变红
       - name: Perf gate (thresholds.json)
         id: gate

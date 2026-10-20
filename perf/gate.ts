@@ -5,6 +5,10 @@
  *
  * 用法：tsx gate.ts [--target=https://www.openguji.com] [--out=out] [--thresholds=thresholds.json]
  *
+ * 阅读页（GUJI-628 防退化）：先由 reader-probe.mjs 跑出 out/reader/<档>-r1.json（a＝桌面不节流、c＝手机＋CPU6x），
+ * 这里按 thresholds.json 的 reader 段判「正文进入视口」「最长任务」与「禁止的请求」（如手机档取 cord）。
+ * 探针结果缺失或没量到正文算超标：门槛失效比慢更糟。
+ *
  * 首字节：GET 同一个干净条目地址若干次（Node fetch，取到响应头的时刻），只统计响应头
  * `EO-Cache-Status: Cache Hit` 的样本，取中位数。命中样本不足（缓存没热起来、被别的层挡了）不算超标，
  * 报「样本不足」为警告：门槛判的是命中路径的速度，不是命中率。
@@ -13,9 +17,26 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+export interface ReaderLimit {
+    /** 探针档的文件名前缀（reader-probe.mjs 的 prof.name），如 a-fast、c-mobile-cpu6 */
+    probe: string;
+    charInViewMs: number;
+    maxLongTaskMs: number;
+    /** 这些正则命中任何一个请求地址就算超标 */
+    forbidRequests?: string[];
+}
+
 export interface Thresholds {
     lcpMs: Record<string, number>;
     itemTtfb: { path: string; samples: number; minHits: number; medianMs: number };
+    reader?: { url: string; limits: ReaderLimit[] };
+}
+
+/** reader-probe.mjs 结果里门槛用得到的字段 */
+export interface ReaderProbeLite {
+    timing: { charInView: number | null };
+    longTasksLoad: { top: { d: number }[] };
+    requests: { url: string }[];
 }
 
 export interface RunLite {
@@ -26,7 +47,7 @@ export interface RunLite {
 }
 
 export interface Breach {
-    kind: 'lcp' | 'ttfb' | 'run-error';
+    kind: 'lcp' | 'ttfb' | 'run-error' | 'reader';
     subject: string;
     actual: number | null;
     limit: number | null;
@@ -39,6 +60,7 @@ export interface GateResult {
     warnings: string[];
     lcp: { scenarioId: string; lcpMs: number | null; limitMs: number }[];
     ttfb: { hits: number; samples: number; medianMs: number | null; limitMs: number; values: number[] } | null;
+    reader?: { probe: string; charInViewMs: number | null; maxLongTaskMs: number | null; limit: ReaderLimit }[];
 }
 
 export function median(xs: number[]): number | null {
@@ -70,6 +92,29 @@ export function judgeLcp(runs: RunLite[], t: Thresholds): Pick<GateResult, 'brea
         }
     }
     return { breaches, warnings, lcp };
+}
+
+/** 阅读页判定：每档一个探针结果（null＝没跑出来） */
+export function judgeReader(results: Record<string, ReaderProbeLite | null>, limits: ReaderLimit[]): { breaches: Breach[]; rows: NonNullable<GateResult['reader']> } {
+    const breaches: Breach[] = [];
+    const rows: NonNullable<GateResult['reader']> = [];
+    for (const limit of limits) {
+        const r = results[limit.probe] ?? null;
+        const inView = r?.timing?.charInView ?? null;
+        const maxLt = r ? Math.max(0, ...(r.longTasksLoad?.top ?? []).map((t) => t.d)) : null;
+        rows.push({ probe: limit.probe, charInViewMs: inView, maxLongTaskMs: maxLt, limit });
+        const sub = `reader:${limit.probe}`;
+        if (!r) { breaches.push({ kind: 'run-error', subject: sub, actual: null, limit: null, message: `阅读页 ${limit.probe}：没有探针结果（reader-probe.mjs 没跑成？）` }); continue; }
+        if (inView == null) breaches.push({ kind: 'run-error', subject: sub, actual: null, limit: limit.charInViewMs, message: `阅读页 ${limit.probe}：没量到正文进入视口` });
+        else if (inView > limit.charInViewMs) breaches.push({ kind: 'reader', subject: sub, actual: inView, limit: limit.charInViewMs, message: `阅读页 ${limit.probe}：正文进入视口 ${Math.round(inView)}ms 超过 ${limit.charInViewMs}ms` });
+        if (maxLt != null && maxLt > limit.maxLongTaskMs) breaches.push({ kind: 'reader', subject: sub, actual: maxLt, limit: limit.maxLongTaskMs, message: `阅读页 ${limit.probe}：最长任务 ${Math.round(maxLt)}ms 超过 ${limit.maxLongTaskMs}ms` });
+        for (const pat of limit.forbidRequests ?? []) {
+            const re = new RegExp(pat);
+            const hit = (r.requests ?? []).find((q) => re.test(q.url));
+            if (hit) breaches.push({ kind: 'reader', subject: sub, actual: null, limit: null, message: `阅读页 ${limit.probe}：不该有的请求 ${hit.url}（规则 /${pat}/）` });
+        }
+    }
+    return { breaches, rows };
 }
 
 export interface TtfbSample {
@@ -118,6 +163,11 @@ export function renderMarkdown(target: string, r: GateResult): string {
     if (r.ttfb) {
         L.push('', `条目页缓存命中首字节：${r.ttfb.hits}/${r.ttfb.samples} 次命中，中位数 ${r.ttfb.medianMs == null ? '—' : `${r.ttfb.medianMs} ms`}（门槛 ${r.ttfb.limitMs} ms）；样本 ${r.ttfb.values.join('/') || '—'}`);
     }
+    if (r.reader?.length) {
+        L.push('', '| 阅读页档 | 正文进入视口 | 门槛 | 最长任务 | 门槛 |', '|---|---|---|---|---|');
+        const ms = (v: number | null) => (v == null ? '—' : `${Math.round(v)} ms`);
+        for (const x of r.reader) L.push(`| \`${x.probe}\` | ${ms(x.charInViewMs)} | ${x.limit.charInViewMs} ms | ${ms(x.maxLongTaskMs)} | ${x.limit.maxLongTaskMs} ms |`);
+    }
     if (r.breaches.length) L.push('', '## 超标', '', ...r.breaches.map((b) => `- ${b.message}`));
     if (r.warnings.length) L.push('', '## 警告', '', ...r.warnings.map((w) => `- ${w}`));
     return L.join('\n') + '\n';
@@ -144,7 +194,18 @@ async function main() {
         breaches.push({ kind: 'ttfb', subject: thresholds.itemTtfb.path, actual: null, limit: thresholds.itemTtfb.medianMs, message: `首字节探测失败：${e?.message ?? e}` });
     }
 
-    const result: GateResult = { ok: breaches.length === 0, breaches, warnings, lcp: lcp.lcp, ttfb: ttfbInfo };
+    let readerRows: GateResult['reader'];
+    if (thresholds.reader) {
+        const results: Record<string, ReaderProbeLite | null> = {};
+        for (const l of thresholds.reader.limits) {
+            results[l.probe] = await readFile(resolve(outDir, 'reader', `${l.probe}-r1.json`), 'utf-8').then((t) => JSON.parse(t) as ReaderProbeLite).catch(() => null);
+        }
+        const j = judgeReader(results, thresholds.reader.limits);
+        breaches.push(...j.breaches);
+        readerRows = j.rows;
+    }
+
+    const result: GateResult = { ok: breaches.length === 0, breaches, warnings, lcp: lcp.lcp, ttfb: ttfbInfo, ...(readerRows ? { reader: readerRows } : {}) };
     await mkdir(outDir, { recursive: true });
     await writeFile(resolve(outDir, 'gate.json'), JSON.stringify(result, null, 2));
     const md = renderMarkdown(target, result);
