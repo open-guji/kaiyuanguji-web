@@ -28,7 +28,7 @@ const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
 const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
 const CELL = String.raw`\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?`;
 const SUBS = 'wrong|missing|extra|order|punct|para|heading|note|entity|other';
-const RE_TARGET = new RegExp(String.raw`^(char|span|entity)~${CELL}~(${CELL})?~(${SUBS})?$`);
+export const RE_TARGET = new RegExp(String.raw`^(char|span|entity)~${CELL}~(${CELL})?~(${SUBS})?$`);
 export const STANCES = ['agree', 'disagree', 'reply'];
 
 const RATE_OPTS = { max: 30, prefix: 'ratelimit:th:' };

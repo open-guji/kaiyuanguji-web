@@ -3006,6 +3006,31 @@
 .og-fx-old {
   font-size: 1.05rem;
 }
+.og-fx-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+.og-fx-status b {
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: var(--color-tint);
+}
+.og-fx-status-adopted b {
+  background: var(--color-zhu-tint);
+  color: var(--color-zhu);
+}
+.og-fx-teamtag {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--color-zhu);
+  color: #fff;
+  font-size: 0.75rem;
+}
 .og-fx-meta {
   display: flex;
   flex-wrap: wrap;

@@ -92,7 +92,7 @@ async function proofVolOf(id: string, versionKey: string, chapter: { file?: stri
 
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
-    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; versions?: TextVersions } | null>(null);
+    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; feedbackVol?: string; versions?: TextVersions } | null>(null);
     const at = `${id}|${sel.key ?? ''}|${sel.chapter ?? ''}`;
     useEffect(() => {
         let cancelled = false;
@@ -109,7 +109,10 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             // 版本名、章名先给（标题、反馈标签用），校对提示另取，不让它们等网络
             if (!cancelled) setMeta(base);
             const proofVol = await proofVolOf(id, version.key, chapter, transport);
-            if (!cancelled && proofVol) setMeta({ ...base, proofVol });
+            if (!cancelled && proofVol) return setMeta({ ...base, proofVol });
+            // 不在校对、文本已到 1.x（章条目 text_version 主版本 ≥1）：问题去反馈页
+            const stem = chapter?.file ? chapter.file.replace(/\.[^.]+$/, '') : undefined;
+            if (!cancelled && stem && versions && Number(versions.text.split('.')[0]) >= 1) setMeta({ ...base, feedbackVol: stem });
         })().catch(() => {});
         return () => { cancelled = true; };
     }, [api, transport, id, sel.key, sel.chapter, at]);
@@ -341,7 +344,7 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
 
     return (
         <>
-        <ProofingNotice id={id} vol={meta?.proofVol} />
+        <ProofingNotice id={id} vol={meta?.proofVol} feedbackVol={meta?.feedbackVol} />
         <div ref={textRef}>
             <TextReader
                 id={id}

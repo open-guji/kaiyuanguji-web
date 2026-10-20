@@ -65,7 +65,7 @@ function Thread({ t, th, book, vol, target, fetchImpl }: { t: SiteT; th: FixThre
             {stance && <p className="og-fx-ok" role="status">{t('charfix.list.thread.voted')}</p>}
             {(th.replies.length > 0 || mine.length > 0) && (
                 <ul className="og-fx-replies">
-                    {th.replies.map((r, i) => <li key={i}><b>{r.name}</b> <span className="og-fx-date">{day(r.ts)}</span> {r.text}</li>)}
+                    {th.replies.map((r, i) => <li key={i} className={r.team ? 'og-fx-team' : undefined}><b>{r.name}</b>{r.team && <span className="og-fx-teamtag">{t('charfix.list.team')}</span>} <span className="og-fx-date">{day(r.ts)}</span> {r.text}</li>)}
                     {mine.map((r, i) => <li key={`m${i}`}><b>{r.name}</b> <span className="og-fx-date">{t('charfix.list.thread.pending')}</span> {r.text}</li>)}
                 </ul>
             )}
@@ -98,6 +98,13 @@ function GroupRow({ t, g, book, vol, th, fetchImpl }: { t: SiteT; g: FixGroup; b
                     {where(t, g.at)}{g.end && g.end !== g.at ? ` ${where(t, g.end, 'charfix.list.toEnd')}` : ''}
                 </a>
             </div>
+            {th.status && (
+                <p className={`og-fx-status og-fx-status-${th.status.state}`} data-testid="fix-status">
+                    <b>{t(`charfix.list.state.${th.status.state}`)}</b>
+                    {th.status.version && <span>{t('charfix.list.stateVersion', { v: th.status.version })}</span>}
+                    {th.status.reason && <span>{th.status.reason}</span>}
+                </p>
+            )}
             {(g.old || suggestions.length > 0) && (
                 <div className="og-fx-body">
                     {g.old && <span className="og-fx-old">{g.kind === 'entity' ? t('charfix.list.entity', { text: g.old }) : t('charfix.list.now', { text: g.old })}</span>}

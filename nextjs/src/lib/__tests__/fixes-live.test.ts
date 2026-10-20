@@ -14,6 +14,7 @@ const kv = {
         return { keys: all.slice(0, opts.limit || 256).map((key) => ({ key })), complete: true, cursor: '' };
     },
 };
+const postReq = (body: unknown, headers: Record<string, string> = {}) => ({ request: new Request('https://x/api/fixes', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) }) });
 const get = (qs: string) => ({ request: new Request(`https://x/api/fixes?${qs}`) });
 const put = (k: string, v: unknown) => store.set(k, JSON.stringify(v));
 const V = 'a1b2c3d4e5f60718';
@@ -26,7 +27,8 @@ beforeAll(async () => {
     fn = await import('../../../../edge-functions/api/fixes.js');
     sync = await import('../../../scripts/lib/fixes-sync.mjs');
 });
-beforeEach(() => store.clear());
+beforeEach(() => { store.clear(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 
 const span = { v: 1, kind: 'span', book_id: '96mid1ogzk', volume: '002', text_version: '1.0.1', start: '3:1:9', end: '3:1:9', sub: 'missing', old_text: '卷', new_text: '卷一', note: '联系 test@example.com', voter: V, ts: 1000 };
 const char = { v: 1, kind: 'char', book_id: '96mid1ogzk', volume: '002', text_version: '1.0.1', cell_id: '2:3:4', old_char: '巡', new_char: '輅', basis: '原书如此', voter: V, ts: 500 };
@@ -80,5 +82,37 @@ describe('GET /api/fixes', () => {
         for (const qs of ['volume=002', 'book=96mid1ogzk', 'book=BAD!&volume=002', 'book=96mid1ogzk&volume=a/b']) {
             expect((await fn.onRequestGet(get(qs))).status).toBe(400);
         }
+    });
+});
+
+describe('POST /api/fixes（整理组回写）', () => {
+    const T = 'span~3:1:9~3:1:9~missing';
+    const auth = { Authorization: 'Bearer right' };
+    const base = { book_id: '96mid1ogzk', volume: '002', target: T };
+
+    it('没有管理凭据一律拒；格式不对 400', async () => {
+        expect((await fn.onRequestPost(postReq({ ...base, state: 'adopted' }))).status).toBe(401);
+        expect((await fn.onRequestPost(postReq({ ...base, state: 'adopted' }, { Authorization: 'Bearer wrong' }))).status).toBeGreaterThanOrEqual(401);
+        for (const b of [{ ...base, state: 'bogus' }, { ...base }, { ...base, target: 'x', state: 'adopted' }, { ...base, state: 'adopted', version: 'a b' }]) {
+            expect((await fn.onRequestPost(postReq(b, auth))).status).toBe(400);
+        }
+        expect(store.size).toBe(0);
+    });
+
+    it('状态与整理组回复写进去，公开读马上看到；撤回后状态消失', async () => {
+        put(`cs:96mid1ogzk:002:1.0.1:3:1:9-3:1:9:missing:${V}`, span);
+        const r = await fn.onRequestPost(postReq({ ...base, state: 'adopted', version: '1.0.2', reason: '对过原书图', reply: '已补「一」，见 1.0.2' }, auth));
+        expect(r.status).toBe(200);
+        let th = JSON.parse(await (await fn.onRequestGet(get('book=96mid1ogzk&volume=002'))).text()).threads['002'][T];
+        expect(th.status).toMatchObject({ state: 'adopted', version: '1.0.2', reason: '对过原书图' });
+        expect(th.replies).toEqual([expect.objectContaining({ name: '整理组', text: '已补「一」，见 1.0.2', team: true })]);
+        await fn.onRequestPost(postReq({ ...base, state: 'open' }, auth));
+        th = JSON.parse(await (await fn.onRequestGet(get('book=96mid1ogzk&volume=002'))).text()).threads['002'][T];
+        expect(th.status).toBeUndefined();
+    });
+
+    it('只回复不改状态也行', async () => {
+        expect((await fn.onRequestPost(postReq({ ...base, reply: '正在核对' }, auth))).status).toBe(200);
+        expect([...store.keys()].filter((k) => k.startsWith('fs:'))).toHaveLength(0);
     });
 });
