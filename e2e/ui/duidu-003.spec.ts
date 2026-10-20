@@ -133,6 +133,9 @@ test.describe('图文对读（vol03）', () => {
         const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
         // 第 3 页起有字；往前翻就是第 2 页（封面签条）、第 1 页（书脊签）
         await expect(prev).toBeEnabled();
+        // 先把翻页按钮滚进视口再记起点：章首有「已校定／正在校对」横幅时，720 高的视口里按钮在下沿之外，
+        // click() 会先自己滚过去（#524 起 385px），那不是翻页引起的滚动
+        await prev.scrollIntoViewIfNeeded();
         const y0 = await scrollY();
         await prev.click();
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', '2');
