@@ -668,7 +668,18 @@ jobs:
             exit 1
           fi
 
-      # 对读章生僻字子集字体（GUJI-701）：bundle-data 要 fontTools＋hanamin；三处打包共用同一脚本、同一版本，产物逐字节一致
+      # 子集按「工具版本＋码位」缓存（chapter-fonts.py）：全站约 12 万章现裁要十来分钟，命中缓存只裁新出现的码位组合
+      - name: Restore chapter-font cache
+        if: ${{ env.DATA_FAST != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/zi-font-cache
+          key: zi-font-cache-v1-${{ hashFiles('ops/setup-chapter-fonts.sh', 'nextjs/scripts/chapter-fonts.py') }}-
+          restore-keys: |
+            zi-font-cache-v1-${{ hashFiles('ops/setup-chapter-fonts.sh', 'nextjs/scripts/chapter-fonts.py') }}-
+
+      # 章生僻字子集字体（GUJI-701／GUJI-721）：bundle-data 要 hb-subset／fontTools＋Jigmo；三处打包共用同一脚本、同一版本，产物逐字节一致
       - name: Setup chapter-font tools
         if: ${{ env.DATA_FAST != 'true' }}
         run: bash ops/setup-chapter-fonts.sh
