@@ -2,7 +2,7 @@
 //
 //   POST  公开 —— 对整册读者意见页上的「一处意见」表态（agree｜disagree，同来源同处覆盖），或回复一条（reply，留称呼）。
 //   GET   **只开管理读**（管理 token 或成员 cookie），按书（可再接册）前缀导出，供每日 proofing-sync 并进中心库、发公开清单。
-//         公开读一律 401：讨论内容随整册意见清单每日发到 COS，网站不直接读 KV。
+//         本接口的公开读一律 401；公开实时读走 /api/fixes（直读 KV），讨论内容另随整册意见清单每日发到 COS 作兜底。
 //
 // 「一处意见」用 target 指：`<kind>~<首格>~<末格>~<类别>`（kind＝char｜span｜entity；末格、类别可空），
 // 与公开清单 proof/fixes/<书>.json 的并组口径一致（见 nextjs/src/lib/fixes.ts groupFixes）。

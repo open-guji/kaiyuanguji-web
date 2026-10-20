@@ -41,6 +41,9 @@ export const feedback = defineMessages({
     page: {
         title: '用戶反饋',
         intro: '大家提的問題和處理進展',
+        /** 通往整册文字意见页（M11·B1）：/feedback/text 要书号与册号，先给有对读章的《四库全书总目》第一册 */
+        textEntry: '對整理本正文的改字、段落、專名意見，在閱讀頁選中文字提交，按冊列在「讀者意見」頁。',
+        textEntryLink: '看《四庫全書總目》第一冊的讀者意見 →',
         write: '寫反饋',
         filterLabel: '按類型篩選',
         /** 页签右边的勾选框（overview#337 C1） */
@@ -135,6 +138,8 @@ export const feedback = defineMessages({
     page: {
         title: '用户反馈',
         intro: '大家提的问题和处理进展',
+        textEntry: '对整理本正文的改字、段落、专名意见，在阅读页选中文字提交，按册列在「读者意见」页。',
+        textEntryLink: '看《四库全书总目》第一册的读者意见 →',
         write: '写反馈',
         filterLabel: '按类型筛选',
         showDone: '显示已处理',

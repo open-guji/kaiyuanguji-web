@@ -708,7 +708,7 @@ export async function onRequestPost(context) {
     }
     // 联系方式：选填，只给站方看（公开读剔除）。只做长度与去空白，不校验格式——读者可能留微信号
     const contact = typeof body.contact === 'string' ? body.contact.trim().slice(0, 200) : '';
-    // 测试数据：本地开发（Origin 是 localhost，FeedbackTab 等在 localhost 下直连生产）或探针显式带 test:true。
+    // 测试数据：本地开发（Origin 是 localhost，条目页 BookDetailContent 的反馈表单在 localhost 下直连正式站）或探针显式带 test:true。
     // 照常落库（便于排查），但公开读看不到（G-23 A3）
     const origin = context.request.headers.get('origin') || '';
     const test = body.test === true || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
