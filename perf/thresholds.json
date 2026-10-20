@@ -9,5 +9,24 @@
     "samples": 8,
     "minHits": 3,
     "medianMs": 1000
+  },
+  "_说明_reader": "阅读页（GUJI-628 防退化，2026-10-20）：reader-probe.mjs 跑 a（桌面不节流）与 c（手机 390 宽＋CPU6x）两档，样本 96mid1ogzk/002。主要卡最长任务：改前桌面 1500／手机 10434 ms，0.61.2 上线后线上桌面 135～259、手机 755～804 ms，门槛取约 2 倍余量。正文进入视口受网络影响大（同环境 6.5～12.5s 都见过），只设宽松上限防灾难性回退。手机书影栏收起，不许取 cord（原文件或瘦身副本）。",
+  "reader": {
+    "url": "https://www.openguji.com/read/96mid1ogzk/002",
+    "limits": [
+      {
+        "probe": "a-fast",
+        "charInViewMs": 20000,
+        "maxLongTaskMs": 500
+      },
+      {
+        "probe": "c-mobile-cpu6",
+        "charInViewMs": 25000,
+        "maxLongTaskMs": 2000,
+        "forbidRequests": [
+          "\\.cord(\\.reader)?\\.json"
+        ]
+      }
+    ]
   }
 }

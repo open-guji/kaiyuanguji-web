@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { judgeLcp, judgeTtfb, median, renderMarkdown, type RunLite, type Thresholds } from './gate.ts';
+import { judgeLcp, judgeReader, judgeTtfb, median, renderMarkdown, type ReaderLimit, type ReaderProbeLite, type RunLite, type Thresholds } from './gate.ts';
 
 const T: Thresholds = { lcpMs: { 'A1-home': 6000, 'I1-item-page': 10000 }, itemTtfb: { path: '/item/x', samples: 5, minHits: 3, medianMs: 3000 } };
 const run = (scenarioId: string, lcp: number | null, errors: string[] = [], profileName = 'fast'): RunLite => ({ scenarioId, profileName, timing: { lcp }, errors });
@@ -50,4 +50,30 @@ test('renderMarkdown：未通过时列出超标项', () => {
     assert.match(md, /未通过/);
     assert.match(md, /A1-home：LCP 7000ms/);
     assert.match(md, /w1/);
+});
+
+const RL: ReaderLimit[] = [
+    { probe: 'a-fast', charInViewMs: 20000, maxLongTaskMs: 400 },
+    { probe: 'c-mobile-cpu6', charInViewMs: 25000, maxLongTaskMs: 2000, forbidRequests: ['\\.cord(\\.reader)?\\.json'] },
+];
+const probe = (inView: number | null, lts: number[], urls: string[] = []): ReaderProbeLite => ({ timing: { charInView: inView }, longTasksLoad: { top: lts.map((d) => ({ d })) }, requests: urls.map((url) => ({ url })) });
+
+test('judgeReader：都在门槛内 → 无超标；行里记下实测值', () => {
+    const r = judgeReader({ 'a-fast': probe(7000, [140, 90]), 'c-mobile-cpu6': probe(10800, [800], ['https://d/x/002.char.json?v=1']) }, RL);
+    assert.deepEqual(r.breaches, []);
+    assert.deepEqual(r.rows.map((x) => [x.probe, x.charInViewMs, x.maxLongTaskMs]), [['a-fast', 7000, 140], ['c-mobile-cpu6', 10800, 800]]);
+});
+
+test('judgeReader：最长任务、正文进入视口超标；手机档取了 cord（原文件或瘦身副本）；没跑出来、没量到正文都算超标', () => {
+    const r = judgeReader({ 'a-fast': probe(21000, [1500]), 'c-mobile-cpu6': probe(9000, [500], ['https://d/x/002.cord.reader.json?v=1']) }, RL);
+    assert.deepEqual(r.breaches.map((b) => b.kind), ['reader', 'reader', 'reader']);
+    assert.match(r.breaches[2].message, /不该有的请求.*cord\.reader\.json/);
+    const missing = judgeReader({ 'a-fast': probe(null, []), 'c-mobile-cpu6': null }, RL);
+    assert.deepEqual(missing.breaches.map((b) => b.kind), ['run-error', 'run-error']);
+});
+
+test('renderMarkdown：有阅读页结果时出阅读页表', () => {
+    const rows = judgeReader({ 'a-fast': probe(7000, [140]), 'c-mobile-cpu6': probe(10800, [800]) }, RL).rows;
+    const md = renderMarkdown('https://x', { ok: true, breaches: [], warnings: [], lcp: [], ttfb: null, reader: rows });
+    assert.match(md, /\| `c-mobile-cpu6` \| 10800 ms \| 25000 ms \| 800 ms \| 2000 ms \|/);
 });
