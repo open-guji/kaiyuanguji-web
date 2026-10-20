@@ -10,6 +10,7 @@ import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
 import { getJson } from '@/lib/duidu-data';
 import { loadFacsimile } from '@/lib/facsimile';
+import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
     refOpLabel, resolveCrop, shownCandidates, spriteUrl, submitReview, whyLabel, writeDone,
@@ -118,12 +119,20 @@ interface CellRowProps {
 // 向下取整：0.997 写 99%，不写成 100% 让人以为机器很有把握
 const pct = (n: number) => `${Math.floor(n * 100)}%`;
 
+/** 一个字：本站字体显示不出来（扩 G 以后、私用区等）就显示码位 U+XXXXX，悬停看原字（lib/zi-display） */
+function Zi({ c }: { c: string }) {
+    if (canShow(c)) return <>{c}</>;
+    return <span data-testid="zi-cp" title={c} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.55em', letterSpacing: 0 }}>{cpLabel(c)}</span>;
+}
+/** 一串字里显示不出来的逐个换成码位（拼进句子、提示里用） */
+const zis = (s: string) => [...s].map(shownZi).join('');
+
 function CandButton({ cd, busy, picked, onPick }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void }) {
-    const tip = cd.score !== undefined ? `和本书别处的「${cd.c}」字形相似 ${pct(cd.score)}` : `选「${cd.c}」`;
+    const tip = cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : `选「${shownZi(cd.c)}」`;
     return (
         <button type="button" disabled={busy} aria-pressed={picked} onClick={() => onPick(cd.c)} title={tip} className={BTN_CLASS}
             style={btnStyle('cand', picked, busy)}>
-            {cd.c}{cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
+            <Zi c={cd.c} />{cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
     );
 }
@@ -134,10 +143,10 @@ function shapeSentence(cell: PendingCell): string | null {
     const v = cell.lib?.verdict;
     if (!top.length && !v) return null;
     const [a, b] = top;
-    if (v === 'same' && a) return `和本书别处的「${a.c}」写法一致`;
-    if (v === 'diff') return a ? `和本书别处已认出的字都不太像，最接近「${a.c}」` : '和本书别处已认出的字都不太像';
-    if (a && b && b.s >= a.s - 0.05) return `和本书别处的「${a.c}」「${b.c}」都很像，分不出是哪个`;
-    return a ? `最像本书别处的「${a.c}」，但把握不大` : null;
+    if (v === 'same' && a) return `和本书别处的「${shownZi(a.c)}」写法一致`;
+    if (v === 'diff') return a ? `和本书别处已认出的字都不太像，最接近「${shownZi(a.c)}」` : '和本书别处已认出的字都不太像';
+    if (a && b && b.s >= a.s - 0.05) return `和本书别处的「${shownZi(a.c)}」「${shownZi(b.c)}」都很像，分不出是哪个`;
+    return a ? `最像本书别处的「${shownZi(a.c)}」，但把握不大` : null;
 }
 
 /** 机器怎么看这一格：两句话常显，其余收在「更多机器判断」里。全用大白话，不出现术语、缩写和英文 */
@@ -145,20 +154,20 @@ function Evidence({ cell }: { cell: PendingCell }) {
     const summary: React.ReactNode[] = [];
     const shape = shapeSentence(cell);
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
-    if (cell.ctx) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${cell.ctx.c}」` : '看不出是哪个字'}</div>);
-    if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${o.c}」`).join('')}</div>);
+    if (cell.ctx) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
+    if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.cls) {
         const k = classLabel(cell.cls);
         rows.push(['属于哪一类', <>{k.name}{k.hint ? <span style={{ color: '#888' }}>：{k.hint}</span> : null}</>]);
     }
-    if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${x.c}」${pct(x.s)}`).join('　')]);
+    if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${zis(x.c)}」${pct(x.s)}`).join('　')]);
     if (cell.ref) {
         const how = cell.ref.op ? refOpLabel(cell.ref.op) : '';
-        rows.push(['整理本', `这里作「${cell.ref.c}」${how ? `（${how}）` : ''}`]);
+        rows.push(['整理本', `这里作「${zis(cell.ref.c)}」${how ? `（${how}）` : ''}`]);
     }
-    if (cell.stale) rows.push(['以前的判断', `${cell.stale.ts ? `${cell.stale.ts.slice(0, 10)} ` : ''}判为「${cell.stale.c}」，${cell.stale.state === 'withdrawn' ? '后来发现判错了位置，已撤回' : '后来切字有变动，需要重新确认'}`]);
-    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，整理本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，整理本作「${cell.occ.c}」` : ''}`]);
+    if (cell.stale) rows.push(['以前的判断', `${cell.stale.ts ? `${cell.stale.ts.slice(0, 10)} ` : ''}判为「${zis(cell.stale.c)}」，${cell.stale.state === 'withdrawn' ? '后来发现判错了位置，已撤回' : '后来切字有变动，需要重新确认'}`]);
+    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，整理本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，整理本作「${zis(cell.occ.c)}」` : ''}`]);
     if (!summary.length && !rows.length) return null;
     return (
         <div data-testid="evidence" style={{ marginTop: 8, fontSize: 13, color: '#555', lineHeight: 1.7 }}>
@@ -192,11 +201,11 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
         if (prev !== null && key !== prev) pieces.push(<span key={`sep-${slot.a}`} aria-hidden style={{ display: 'inline-block', width: 1, height: '1em', background: '#ccc', margin: '0 4px', verticalAlign: 'middle' }} />);
         prev = key;
         if (isAt) {
-            pieces.push(<mark key={slot.a} data-testid="ctx-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{slot.c && slot.c !== LACUNA ? slot.c : '？'}</mark>);
+            pieces.push(<mark key={slot.a} data-testid="ctx-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{slot.c && slot.c !== LACUNA ? <Zi c={slot.c} /> : '？'}</mark>);
         } else if (pendingSet.has(slot.a)) {
-            pieces.push(<span key={slot.a} title={`格 ${slot.a} 也在待审`} style={{ color: '#c70' }}>{slot.c && slot.c !== LACUNA ? slot.c : '？'}</span>);
+            pieces.push(<span key={slot.a} title={`格 ${slot.a} 也在待审`} style={{ color: '#c70' }}>{slot.c && slot.c !== LACUNA ? <Zi c={slot.c} /> : '？'}</span>);
         } else {
-            pieces.push(<span key={slot.a} title={`格 ${slot.a}`}>{slot.c || '□'}</span>);
+            pieces.push(<span key={slot.a} title={`格 ${slot.a}`}>{slot.c ? <Zi c={slot.c} /> : '□'}</span>);
         }
     };
     ctx.before.forEach(s => push(s, false));
@@ -265,15 +274,15 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
                     const u = a.g ? spriteBase(a.g.s) : null;
                     const img = a.g && u && !bad.has(u) ? a.g : null;
                     const picked = done === `「${a.c}」`;
-                    const tip = [a.p && a.p !== a.c ? `从「${a.p}」查到` : '', a.s !== undefined ? `像 ${pct(a.s)}` : ''].filter(Boolean).join('，') || `选「${a.c}」`;
+                    const tip = [a.p && a.p !== a.c ? `从「${shownZi(a.p)}」查到` : '', a.s !== undefined ? `像 ${pct(a.s)}` : '', canShow(a.c) ? '' : cpLabel(a.c)].filter(Boolean).join('，') || `选「${a.c}」`;
                     return (
                         <button key={a.c} type="button" disabled={busy} aria-pressed={picked} aria-label={`选「${a.c}」`} title={tip}
                             onClick={() => onPick(a.c, { src: 'alt', rank: i + 1, ...(a.p ? { pivot: a.p } : {}) })} className={BTN_CLASS}
                             style={{ ...btnStyle('cand', picked, busy), display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: 4, minWidth: 56 }}>
                             {img
                                 ? <span role="img" aria-hidden style={{ width: img.w, height: img.h, zoom: 0.5, background: `#fff url(${u}) -${img.x}px -${img.y}px no-repeat` }} />
-                                : <span style={{ fontSize: 28, lineHeight: '48px' }}>{a.c}</span>}
-                            <span style={{ fontSize: 13 }}>{a.c}</span>
+                                : <span style={{ fontSize: 28, lineHeight: '48px' }}><Zi c={a.c} /></span>}
+                            <span style={{ fontSize: 13 }}><Zi c={a.c} /></span>
                         </button>
                     );
                 })}
@@ -316,8 +325,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
                     <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}　{cell.c ? '机器读作' : '机器没定出字'}</div>
-                    <div style={{ fontSize: 40, lineHeight: 1.2 }}>{cell.c || '？'}</div>
-                    {cell.ref && <div style={{ fontSize: 13, color: '#666' }}>整理本作「{cell.ref.c}」</div>}
+                    <div style={{ fontSize: 40, lineHeight: 1.2 }}>{cell.c ? <Zi c={cell.c} /> : '？'}</div>
+                    {cell.ref && <div style={{ fontSize: 13, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
                 </div>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
@@ -333,7 +342,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}>{cell.c}</button>
+                    <button type="button" disabled={busy} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}><Zi c={cell.c} /></button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
@@ -345,8 +354,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={(c, pick) => go('char', c, pick)} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>
-                    以前有人判为「{preCand}」，后来切字有变动，请看图再确认
-                    <button type="button" disabled={busy} onClick={() => go('char', preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{preCand}」</button>
+                    以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
+                    <button type="button" disabled={busy} onClick={() => go('char', preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -358,7 +367,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
-            {done && <div style={{ marginTop: 6, color: '#2a7' }}>已提交：{done}。想改的话再点别的就行。</div>}
+            {done && <div style={{ marginTop: 6, color: '#2a7' }}>已提交：{zis(done)}。想改的话再点别的就行。</div>}
             {err && <div role="alert" style={{ marginTop: 6, color: '#c33' }}>{err}</div>}
         </li>
     );

@@ -154,6 +154,24 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
+    it('本站字体显示不出来的字（扩 G 等）显示码位，悬停是原字；提交的仍是原字', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        const g = '\u{30EDD}';                                  // 扩 G
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: g, ref: { c: g }, alt: [{ c: g, s: 0.9, p: '弊' }, { c: '弊', s: 0.8 }] }]));
+        render(<ProofingClient book="b10" vol="vol01" />);
+        const grid = await screen.findByTestId('alt-grid');
+        expect(grid.textContent).toContain('U+30EDD');
+        expect(grid.textContent).not.toContain(g);
+        expect(screen.getByText(/整理本作「U\+30EDD」/)).toBeTruthy();
+        const cps = screen.getAllByTestId('zi-cp');
+        expect(cps.length).toBeGreaterThanOrEqual(3);
+        expect(cps[0].getAttribute('title')).toBe(g);
+        fireEvent.click(screen.getByRole('button', { name: `选「${g}」` }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: g, pick_src: 'alt', pick_rank: 1 });
+    });
+
     it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」不带', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
