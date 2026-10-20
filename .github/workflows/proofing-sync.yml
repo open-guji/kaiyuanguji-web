@@ -5,6 +5,8 @@ name: proofing-sync
 #   publish ：中心库待审单 → COS proof/index.json、proof/<书>/<章>.pending.json（网站精校页、阅读页提示读这里）
 # 另（GUJI-597）：opinions 步顺带把 /api/charfix 的改字、一段有问题、专名意见并进中心库 feedback/lists/web/<书>/fixes.jsonl，
 #   publish 步把它发成公开清单 proof/fixes/<书>.json（整册读者意见页 /feedback/text 读）。收哪几部书见 FIX_BOOKS。
+# 另（M11 B2，GUJI-714）：opinions 步读中心库 feedback/lists/web/<书>/status.jsonl（cv `guji opinions publish-status` 写的处理结论），
+#   与 KV 现状比，不同的才 POST /api/fixes（状态＋整理组回复）；publish 步把状态并进公开清单。
 # 两步各自只拿自己要的密钥；COS 密钥只在 publish 步骤的 step 级 env。雪碧图仍由 sync-proof-sprites（GUJI-557）发。
 # 中心库用的就是网站管理令牌 FEEDBACK_ADMIN_TOKEN（用户 10-19 定复用，Worker TOKENS_WEB_JSON 里登记为 web 角色），不另设 secret。
 # 10-19 staging 真跑通过（11 票进中心库、staging/proof/ 可读）后直接开定时，不再要仓库变量。

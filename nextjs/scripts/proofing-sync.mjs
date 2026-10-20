@@ -6,6 +6,7 @@
  *             另：/api/charfix 管理读（改字、一段有问题、专名意见）→ 中心库 feedback/lists/web/<书>/fixes.jsonl（GUJI-597）
  *                 /api/thread 管理读（同意／有不同看法、回复）→ 中心库 feedback/lists/web/<书>/threads.jsonl
  *             站方要撤下的条目写进中心库 feedback/lists/web/<书>/hidden.txt（一行一个 id），公开清单不出
+ *             状态回写（M11 B2）：中心库 feedback/lists/web/<书>/status.jsonl（cv 意见池的处理结论）→ 与 KV 现状比 → POST /api/fixes
  *   publish ：中心库待审单 → COS [前缀/]proof/index.json、proof/<书>/<章>.pending.json
  *             另：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（整册反馈页读的公开清单）
  * 流程与纯函数在 lib/proofing-sync-run.mjs、lib/proofing-sync-plan.mjs（有单测）。
@@ -20,7 +21,7 @@
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
 import { appendFileSync } from 'node:fs';
-import { collectPendings, syncOpinions, publishPendings, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
+import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
 
 const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
@@ -39,9 +40,9 @@ const doOpinions = PARTS !== 'publish';
 const doPublish = PARTS !== 'opinions';
 if (doOpinions && !ADMIN) { console.error('❌ 缺 FEEDBACK_ADMIN_TOKEN'); process.exit(1); }
 
-async function call(url, init = {}, { allow404 = false } = {}) {
+async function call(url, init = {}, { allow404 = false, tries = 3 } = {}) {
     let err;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < tries; i++) {
         try {
             const res = await fetch(url, { ...init, signal: AbortSignal.timeout(60_000) });
             if (allow404 && res.status === 404) return null;
@@ -116,6 +117,13 @@ const kv = {
     },
 };
 
+const site = {
+    liveFixes: (book, volume) => call(`${SITE}/api/fixes?${new URLSearchParams({ book, volume })}`),
+    postFixes: (body) => call(`${SITE}/api/fixes`, {
+        method: 'POST', headers: { Authorization: `Bearer ${ADMIN}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }, { tries: 1 }), // POST 不重试：服务端已写成但回包丢了时，重试会多出一条整理组回复；没写成的次日再比、再发
+};
+
 let cosOps = null;
 if (doPublish) {
     const haveKeys = !!(process.env.COS_SECRET_ID && process.env.COS_SECRET_KEY && process.env.COS_BUCKET);
@@ -141,13 +149,14 @@ const { entries, problems } = collected;
 console.log(`· 待审单 ${entries.length} 章（工作区 ${WS.join('、')}）`);
 const opinions = doOpinions ? await syncOpinions({ worker, kv, entries, dryRun: DRY_RUN }) : null;
 const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
+const status = doOpinions ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixes = doOpinions ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixesPublish = doPublish ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
 
-const md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish });
+const md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });
 console.log(md);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
 for (const p of problems) console.log(`::warning::${p}`);
-const errors = [...(opinions?.problems || []), ...(publish?.failed || []), ...(fixes?.problems || []), ...(fixesPublish?.failed || [])];
+const errors = [...(opinions?.problems || []), ...(publish?.failed || []), ...(status?.problems || []), ...(fixes?.problems || []), ...(fixesPublish?.failed || [])];
 for (const e of errors) console.log(`::error::${e}`);
 process.exit(errors.length ? 1 : 0);
