@@ -1,6 +1,7 @@
 /**
  * 应用常量
  */
+import { SITE_ORIGIN } from './hosts';
 
 // 数据模式: local = 本地文件+本地库, remote = npm+GitHub 远程
 export type DataMode = 'local' | 'remote';
@@ -8,7 +9,7 @@ export const DATA_MODE: DataMode =
   (process.env.NEXT_PUBLIC_MODE as DataMode) || 'remote';
 export const isLocalMode = DATA_MODE === 'local';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.openguji.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_ORIGIN;
 
 // 测试站（T1）：deploy.yml 构建测试站时注入 'staging'，正式站不设（为空）。
 // 驱动 robots 全禁、页面角标、metadata noindex；不驱动数据源／统计（各自独立环境变量）。
@@ -40,7 +41,7 @@ export const GITEE_BOOK_INDEX = `${GITEE_BASE}/${GITEE_ORG}/book-index/raw/main/
 // - github: jsdelivr CDN 拉 GitHub 散文件（海外/灾备）
 // - gitee:  gitee.com raw 拉散文件（备用）
 // - bundle: 同站 /data/ 目录加载预打包 chunk（EdgeOne Pages 部署模式）
-// - cos:    单独的 data CDN（data.kaiyuanguji.com → 新加坡 COS），靠 latest.json 版本指针
+// - cos:    单独的 data CDN（DATA_ORIGIN，见 config/hosts.json → 新加坡 COS），靠 latest.json 版本指针
 // - local:  本地 Next API
 export type DataSource = 'github' | 'gitee' | 'bundle' | 'cos' | 'local';
 export const DATA_SOURCE: DataSource =

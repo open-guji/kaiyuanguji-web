@@ -2,7 +2,7 @@
 /**
  * dq-check.mjs — 正式数据巡检（DQ 道）命令行入口。逻辑在 dq-lib.mjs。
  *
- * 只读：只对 data.kaiyuanguji.com 发 GET／HEAD，不碰 COS 写、不碰数据仓。
+ * 只读：只对数据域名发 GET／HEAD，不碰 COS 写、不碰数据仓。
  *
  * 用法（仓库根目录，Node ≥ 20，无依赖）：
  *   node ops/dq-check.mjs
@@ -11,7 +11,7 @@
  *   node ops/dq-check.mjs --out dq-report                 # 写 dq-report.md 与 dq-report.json
  *
  * 选项（也可用同名大写环境变量，如 DQ_ENTRY_RATE）：
- *   --base          站点根，默认 https://data.kaiyuanguji.com
+ *   --base          站点根，默认数据域名（config/hosts.json 的 data）
  *   --h1-prefix     h1 子路径，默认 h1
  *   --entry-rate    条目抽样率，默认 0.02
  *   --text-rate     全文／整理本 owner 抽样率，默认 0.05

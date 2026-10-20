@@ -2,10 +2,12 @@
  * Phase 2 烟雾测试：直接调用 cos-storage 接口，验证整条链路在 Node 下也工作。
  *
  * 运行：
- *   NEXT_PUBLIC_COS_BASE=https://data.kaiyuanguji.com npx tsx scripts/smoke-cos-source.mts
+ *   npx tsx scripts/smoke-cos-source.mts
  */
 
-process.env.NEXT_PUBLIC_COS_BASE ??= 'https://data.kaiyuanguji.com';
+import { DATA_ORIGIN } from '../../config/hosts.mjs';
+
+process.env.NEXT_PUBLIC_COS_BASE ??= DATA_ORIGIN;
 process.env.NEXT_PUBLIC_DATA_SOURCE ??= 'cos';
 
 const { resolveCosVersion, getCosDataBaseUrl, getCosSearchBaseUrl, createCosStorage } =

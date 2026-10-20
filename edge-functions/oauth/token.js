@@ -30,6 +30,7 @@
 // 客户端拿这串 64 位十六进制文本当 HS256 密钥验签（配置时算一次交给对方，例如
 //   printf '%s' "kyg-oauth-id-token:collate" | openssl dgst -sha256 -hmac "$OAUTH_ID_TOKEN_SECRET"
 // 取输出的十六进制部分）。这样 A 客户端手里的密钥伪造不了发给 B 的 id_token；aud 仍照旧填。
+import { OAUTH_ISSUER } from '../api/hosts.js';
 
 function getEnvVar(context, name) {
   if (context && context.env && context.env[name] !== undefined && context.env[name] !== null) {
@@ -208,7 +209,7 @@ export async function onRequestPost(context) {
 
   const now = Math.floor(Date.now() / 1000);
   const idToken = await signJWT({
-    iss: 'https://www.kaiyuanguji.com',
+    iss: OAUTH_ISSUER,
     sub: email,
     email,
     role: member.role,

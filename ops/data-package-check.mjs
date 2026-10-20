@@ -16,7 +16,7 @@
  * 用法：
  *   node ops/data-package-check.mjs [--root <数据根>] [--baseline <数据站根地址，空串＝不对比>]
  *                                   [--summary <markdown 追加到的文件>] [--json <统计写到的文件>] [--enforce]
- *   默认数据根取 KYG_DATA_ROOT（同 nextjs/scripts/lib/data-dirs.mjs），默认基线 https://data.kaiyuanguji.com
+ *   默认数据根取 KYG_DATA_ROOT（同 nextjs/scripts/lib/data-dirs.mjs），默认基线为数据域名（config/hosts.json 的 data）
  * 退出码：检查结果（findings）默认不影响退出码（只报告恒 0；--enforce 时有 block 级问题退出 1）；
  *   脚本自身出错（读写失败等）退出 1，并把失败说明写进 summary——deploy.yml 里这一步是 continue-on-error，所以只是步骤标红、不拦发布。
  */
@@ -27,8 +27,9 @@ import {
     checkEntryDoc, checkMeta, checkVersion, checkLatest, checkTree, checkTextIndexShard,
     checkTextManifest, checkMetaHome, ENTRY_TYPES,
 } from './data-contract.mjs';
+import { DATA_ORIGIN } from '../config/hosts.mjs';
 
-export const DEFAULT_BASELINE = 'https://data.kaiyuanguji.com';
+export const DEFAULT_BASELINE = DATA_ORIGIN;
 
 /**
  * 数量阈值（建议值，推断，需用户拍板；P0 只报告，按两周实测波动校准）。

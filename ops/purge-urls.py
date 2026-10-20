@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """清 EdgeOne CDN 缓存里的几个数据地址（purge_url），给数据流程（data.yml）的刷新阶段用（overview#470 P1）。
 
-只允许 https://data.kaiyuanguji.com/ 下的地址——这个脚本是给「数据指针」用的，不清页面、不清整站
+只允许数据域名（config/hosts.json 的 data）下的地址——这个脚本是给「数据指针」用的，不清页面、不清整站
 （整站 purge 会把 300 多 MB 的数据缓存白丢，回源费贵；页面靠 Next 的按需失效，见 scripts/item-revalidate.mjs）。
 
 用法：python3 ops/purge-urls.py [--dry-run] <url> [<url> ...]
@@ -12,7 +12,10 @@ import json
 import os
 import sys
 
-DATA_ORIGIN = 'https://data.kaiyuanguji.com/'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hosts  # noqa: E402
+
+DATA_ORIGIN = hosts.DATA_ORIGIN + '/'
 MAX_URLS = 20
 
 

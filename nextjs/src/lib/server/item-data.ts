@@ -27,6 +27,7 @@ import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
 import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
 import { decodeChapterHead } from '../reader-head';
+import { DATA_ORIGIN } from '../hosts';
 
 export { isValidItemId };
 
@@ -46,7 +47,7 @@ export interface ItemFetchResult {
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
 export interface ItemFetcherOptions {
-    /** 数据根，如 https://data.kaiyuanguji.com 或其 /staging 前缀 */
+    /** 数据根，如 DATA_ORIGIN 或其 /staging 前缀 */
     base: string;
     fetch?: FetchLike;
     now?: () => number;
@@ -471,7 +472,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
 export function defaultItemDataBase(): string {
-    return (process.env.NEXT_PUBLIC_COS_BASE || 'https://data.kaiyuanguji.com').replace(/\/$/, '');
+    return (process.env.NEXT_PUBLIC_COS_BASE || DATA_ORIGIN).replace(/\/$/, '');
 }
 
 let _default: ReturnType<typeof createItemFetcher> | null = null;

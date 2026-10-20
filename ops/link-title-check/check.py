@@ -18,6 +18,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections import OrderedDict
+from pathlib import Path
+
+HOSTS = json.loads((Path(__file__).resolve().parents[2] / 'config' / 'hosts.json').read_text(encoding='utf-8'))
 from html.parser import HTMLParser
 
 try:
@@ -515,14 +518,14 @@ def run_meta_check(base, data, fetch=fetch_page, concurrency=4, timeout=20,
 
 def main(argv=None, fetch=fetch_page, sleep=time.sleep):
     parser = argparse.ArgumentParser(description="核对阅读首页站内链接的书名与目标页 title")
-    parser.add_argument("--base", default="https://staging.kaiyuanguji.com")
+    parser.add_argument("--base", default=HOSTS["staging"])
     parser.add_argument("--pages", nargs="*", default=["/read"])
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--timeout", type=int, default=20)
     parser.add_argument("--out", default=None)
     parser.add_argument("--meta-home", action="store_true",
                         help="只跑元数据首页模式（读数据文件，不抽 /read HTML）")
-    parser.add_argument("--data", default="https://data.kaiyuanguji.com")
+    parser.add_argument("--data", default=HOSTS["data"])
     args = parser.parse_args(argv)
 
     try:

@@ -15,7 +15,7 @@ on:
         default: '02,03'
         type: string
       upload:
-        description: '上传到 COS 并从 data.kaiyuanguji.com 取回核对（关掉＝只切片，结果看工件）'
+        description: '上传到 COS 并从数据域名取回核对（关掉＝只切片，结果看工件）'
         type: boolean
         default: true
       force:

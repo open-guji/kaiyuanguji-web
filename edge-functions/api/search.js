@@ -46,8 +46,9 @@
 import { Converter } from 'opencc-js/t2cn';
 // 异体字 → 正字（overview#350）：与组件库、nextjs/src/lib/server/simplify.ts 同一张表，t2cn 之前先归一
 import VARIANT_CHARS from 'book-index-ui/variant-chars';
+import { API_ORIGIN } from './hosts.js';
 
-const DEFAULT_MEILI_URL = 'https://api.kaiyuanguji.com';
+const DEFAULT_MEILI_URL = API_ORIGIN;
 
 const ALLOWED_INDEXES = ['works', 'books', 'collections', 'entities'];
 const MAX_LIMIT = 50;

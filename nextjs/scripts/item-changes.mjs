@@ -12,7 +12,7 @@
  * 下游：item-revalidate.mjs（失效这些页）。（原来还有 item-prewarm.mjs 预热这些页，overview#293 起已删，不再预热。）
  *
  * 环境变量：
- *   ITEM_DATA_BASE  数据根（测试站 https://data.kaiyuanguji.com/staging）
+ *   ITEM_DATA_BASE  数据根（默认 config/hosts.json 的 data；测试站加 /staging）
  *   OLD_H1_ROOT     旧 root 文件名（如 87af1c4e4e2e5193.json）；空＝首次发布，全部算新增
  *   NEW_H1_ROOT     可选，新 root 文件名；不给就用本地 data-h1/roots/ 里唯一那个
  */
@@ -20,8 +20,9 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { changedShardKeys, diffShard, mergeDiffs } from './lib/item-changes.mjs';
+import { DATA_ORIGIN } from '../../config/hosts.mjs';
 
-const BASE = (process.env.ITEM_DATA_BASE || 'https://data.kaiyuanguji.com').replace(/\/$/, '');
+const BASE = (process.env.ITEM_DATA_BASE || DATA_ORIGIN).replace(/\/$/, '');
 const { root: dataRoot, h1Dir } = resolveDataDirs();
 const OUT = process.env.ITEM_CHANGES_OUT || join(dataRoot, 'item-changes.json');
 const OLD_ROOT = (process.env.OLD_H1_ROOT || '').trim();

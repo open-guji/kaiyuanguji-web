@@ -35,14 +35,31 @@ concurrency:
   group: e2e-remote-${{ inputs.target }}
   cancel-in-progress: false
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       TARGET: ${{ inputs.target }}
-      DATA_BASE: ${{ inputs.target == 'https://staging.kaiyuanguji.com' && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
     steps:
+      # 数据根：测试站读 staging/ 前缀（域名取自 config/hosts.json → 顶部 HOST_*；任务级 env 里用不了 env 上下文）
+      - name: Data base
+        run: |
+          if [ "$TARGET" = "$HOST_STAGING" ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          echo "DATA_BASE=$D" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}

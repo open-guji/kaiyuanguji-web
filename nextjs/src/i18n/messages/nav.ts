@@ -1,4 +1,5 @@
 import { defineMessages } from './define';
+import { SITE_ORIGIN, hostOf } from '@/lib/hosts';
 
 /** 全站外壳：顶栏、手机抽屉、繁简切换、外观面板、跳到正文、测试站角标 */
 export const nav = defineMessages({
@@ -13,7 +14,7 @@ export const nav = defineMessages({
     feedback: '反饋',
     skipToMain: '跳到正文',
     staging: '測試站',
-    moved: '本站已遷至新域名 www.openguji.com，請更新書籤、以後從新地址訪問。',
+    moved: `本站已遷至新域名 ${hostOf(SITE_ORIGIN)}，請更新書籤、以後從新地址訪問。`,
     movedClose: '關閉提示',
     links: {
         home: '首頁',
@@ -68,7 +69,7 @@ export const nav = defineMessages({
     feedback: '反馈',
     skipToMain: '跳到正文',
     staging: '测试站',
-    moved: '本站已迁至新域名 www.openguji.com，请更新书签、以后从新地址访问。',
+    moved: `本站已迁至新域名 ${hostOf(SITE_ORIGIN)}，请更新书签、以后从新地址访问。`,
     movedClose: '关闭提示',
     links: {
         home: '首页',

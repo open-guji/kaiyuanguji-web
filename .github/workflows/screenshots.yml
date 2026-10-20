@@ -9,12 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 被测站点
-        required: true
-        default: https://staging.kaiyuanguji.com
+        description: 被测站点（留空＝测试站，域名见 config/hosts.json）
+        required: false
+        default: ''
         type: string
       compare:
-        description: 可选，对照站点（如 https://www.kaiyuanguji.com），图集里并排放
+        description: 可选，对照站点（完整地址，如正式站），图集里并排放
         required: false
         default: ''
         type: string
@@ -29,6 +29,19 @@ concurrency:
   group: screenshots
   cancel-in-progress: false
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   shots:
     # workflow_run 只在部署成功后跑
@@ -36,9 +49,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      TARGET: ${{ inputs.target || 'https://staging.kaiyuanguji.com' }}
+      # 不填（workflow_run 触发）＝测试站，见下面第一步
+      TARGET: ${{ inputs.target }}
       COMPARE: ${{ inputs.compare || '' }}
     steps:
+      - name: Default target
+        if: env.TARGET == ''
+        run: echo "TARGET=$HOST_STAGING" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}

@@ -282,7 +282,7 @@ class SplitDataFlow(unittest.TestCase):
     def test_staging_reads_prod_data_when_split(self):
         env = _step(self.wf['jobs']['build'], 'Build for EdgeOne (staging, fullstack)')['env']
         base = env['NEXT_PUBLIC_COS_BASE']
-        self.assertIn("'https://data.kaiyuanguji.com/staging'", base)   # 不拆时仍是 staging 前缀
+        self.assertIn("format('{0}/staging', env.HOST_DATA)", base)   # 不拆时仍是 staging 前缀
         self.assertIn('needs.resolve.outputs.split', base)
 
     def test_prod_artifact_skips_sitemap_generation_when_split(self):

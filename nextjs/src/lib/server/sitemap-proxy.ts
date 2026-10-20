@@ -12,14 +12,16 @@
  * 不设就是现行的「public/ 里的静态文件」，行为不变。
  */
 
+import { LEGACY_SITE_ORIGIN, SITE_ORIGIN } from '../hosts';
+
 /** 数据前缀里存的 sitemap 用的站点地址（数据流程只生成这一份；2026-10-11 起是新主域名） */
-export const STORED_SITE = 'https://www.openguji.com';
+export const STORED_SITE = SITE_ORIGIN;
 
 /**
  * 旧主域名：2026-10-11 之前数据流程生成的 sitemap 存的是它。读的时候同样换成本站，
  * 这样「代码先上线、sitemap 后重生成」或反过来都不会露出旧域名；旧对象全部重生成后可删。
  */
-export const LEGACY_STORED_SITE = 'https://www.kaiyuanguji.com';
+export const LEGACY_STORED_SITE = LEGACY_SITE_ORIGIN;
 
 /** 允许代理的名字：索引、四类条目分片、分类节点页分片。别的一律不代理（不能让路径拼出任意数据地址） */
 // 序号至少三位（gen-sitemaps 按 padStart(3) 编号，超过 999 片会是四位以上）

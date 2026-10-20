@@ -12,6 +12,7 @@
 import { adaptCharCord } from 'book-index-ui';
 import { parseProof, type ProofCandidate } from '@/lib/proof';
 import { getAid } from '@/lib/aid';
+import { DATA_ORIGIN } from '@/lib/hosts';
 
 export type Box = [number, number, number, number];
 
@@ -230,7 +231,7 @@ export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: str
 }
 
 /** 雪碧图地址：与 pending_file 同目录。默认正式前缀；联调其他前缀用环境变量改（产物里不得写死 staging 前缀，构建闸会拒） */
-export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || 'https://data.kaiyuanguji.com/proof';
+export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || `${DATA_ORIGIN}/proof`;
 export function spriteUrl(book: string, pendingFile: string | null, s: string, base = PROOF_SPRITE_BASE): string | null {
     const dir = pendingFile ? pendingFile.replace(/\.pending\.json$/, '').replace(/\.[^.]+$/, '') : '';
     return dir && /^[\w.-]+$/.test(dir) && /^[\w-]+$/.test(book) && SPRITE_FILE.test(s) ? `${base}/${book}/${dir}/${s}` : null;

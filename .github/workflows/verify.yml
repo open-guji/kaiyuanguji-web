@@ -90,10 +90,19 @@ permissions:
   contents: read
 
 env:
-  # e2e 已支持这两个变量（e2e/fixtures/anchors.ts）
-  TARGET: ${{ inputs.target == 'staging' && 'https://staging.kaiyuanguji.com' || 'https://www.openguji.com' }}
-  # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
-  DATA_BASE: ${{ inputs.target == 'staging' && !inputs.data_from_prod && 'https://data.kaiyuanguji.com/staging' || 'https://data.kaiyuanguji.com' }}
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.kaiyuanguji.com
+  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+  # e2e 用的 TARGET／DATA_BASE（e2e/fixtures/anchors.ts）由各任务第一步按 inputs 与上面的 HOST_* 写进 GITHUB_ENV：
+  # 顶层 env 里不能引用 env 上下文（GitHub 的限制）。
   # CUT2：两站都是全栈。www 不在 e2e/fixtures/site-profile.ts 的 FULLSTACK_HOSTS 里，
   # 不显式声明的话全栈用例（/item/ SSR、308、sitemap 分片）会按静态站跳过，
   # 且「静态站声明仍然成立」那条闸会因 /item/<id> 能打开而报红
@@ -108,6 +117,16 @@ jobs:
       ui_matrix: ${{ steps.plan.outputs.ui_matrix }}
       cdn_ready_at: ${{ steps.plan.outputs.cdn_ready_at }}
     steps:
+      # TARGET／DATA_BASE：被测站点与数据根（域名取自 config/hosts.json → 顶部 HOST_*）。
+      # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+      - name: Target & data base
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          FROM_PROD: ${{ inputs.data_from_prod }}
+        run: |
+          if [ "$IN_TARGET" = staging ]; then T="$HOST_STAGING"; else T="$HOST_SITE"; fi
+          if [ "$IN_TARGET" = staging ] && [ "$FROM_PROD" != true ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          { echo "TARGET=$T"; echo "DATA_BASE=$D"; } >> "$GITHUB_ENV"
       - name: Check inputs
         env:
           IN_TARGET: ${{ inputs.target }}
@@ -162,6 +181,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
+      # TARGET／DATA_BASE：被测站点与数据根（域名取自 config/hosts.json → 顶部 HOST_*）。
+      # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+      - name: Target & data base
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          FROM_PROD: ${{ inputs.data_from_prod }}
+        run: |
+          if [ "$IN_TARGET" = staging ]; then T="$HOST_STAGING"; else T="$HOST_SITE"; fi
+          if [ "$IN_TARGET" = staging ] && [ "$FROM_PROD" != true ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          { echo "TARGET=$T"; echo "DATA_BASE=$D"; } >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
@@ -218,6 +247,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # TARGET／DATA_BASE：被测站点与数据根（域名取自 config/hosts.json → 顶部 HOST_*）。
+      # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+      - name: Target & data base
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          FROM_PROD: ${{ inputs.data_from_prod }}
+        run: |
+          if [ "$IN_TARGET" = staging ]; then T="$HOST_STAGING"; else T="$HOST_SITE"; fi
+          if [ "$IN_TARGET" = staging ] && [ "$FROM_PROD" != true ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          { echo "TARGET=$T"; echo "DATA_BASE=$D"; } >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
@@ -273,6 +312,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # TARGET／DATA_BASE：被测站点与数据根（域名取自 config/hosts.json → 顶部 HOST_*）。
+      # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+      - name: Target & data base
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          FROM_PROD: ${{ inputs.data_from_prod }}
+        run: |
+          if [ "$IN_TARGET" = staging ]; then T="$HOST_STAGING"; else T="$HOST_SITE"; fi
+          if [ "$IN_TARGET" = staging ] && [ "$FROM_PROD" != true ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          { echo "TARGET=$T"; echo "DATA_BASE=$D"; } >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
@@ -324,6 +373,16 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prep.outputs.ui_matrix) }}
     steps:
+      # TARGET／DATA_BASE：被测站点与数据根（域名取自 config/hosts.json → 顶部 HOST_*）。
+      # overview#470 P1：数据流程已拆出（data_from_prod）后测试站没有自己的数据前缀，读正式数据
+      - name: Target & data base
+        env:
+          IN_TARGET: ${{ inputs.target }}
+          FROM_PROD: ${{ inputs.data_from_prod }}
+        run: |
+          if [ "$IN_TARGET" = staging ]; then T="$HOST_STAGING"; else T="$HOST_SITE"; fi
+          if [ "$IN_TARGET" = staging ] && [ "$FROM_PROD" != true ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          { echo "TARGET=$T"; echo "DATA_BASE=$D"; } >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
