@@ -9,6 +9,9 @@ let search = 'book=96mid1ogzk&vol=002';
 jest.mock('next/navigation', () => ({
     useSearchParams: () => new URLSearchParams(search),
 }));
+jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
+const getEntry = jest.fn();
+jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getEntry: (id: string) => getEntry(id) }) }));
 
 const LIST = {
     book: '96mid1ogzk',
@@ -29,6 +32,12 @@ const LIST = {
 };
 
 const okFetch = (body: unknown, status = 200) => jest.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body });
+const COS_URL = 'https://data.kaiyuanguji.com/proof/fixes/96mid1ogzk.json';
+/** 实时接口（/api/fixes）与 COS 兜底清单分开答 */
+const routed = (live: unknown | null, cos: unknown = LIST, cosStatus = 200) => jest.fn(async (url: string) => {
+    if (String(url).startsWith('/api/fixes')) return live === null ? { ok: false, status: 404, json: async () => null } : { ok: true, status: 200, json: async () => ({ success: true, ...(live as object) }) };
+    return { ok: cosStatus < 400, status: cosStatus, json: async () => cos };
+});
 
 describe('lib/fixes', () => {
     it('解析：丢掉形状不对的；按处并组、数人数；按格位排（含抬头字 -1 格）', () => {
@@ -47,13 +56,20 @@ describe('lib/fixes', () => {
 });
 
 describe('TextFixesContent', () => {
-    beforeEach(() => { search = 'book=96mid1ogzk&vol=002'; });
+    beforeEach(() => { search = 'book=96mid1ogzk&vol=002'; getEntry.mockReset().mockResolvedValue({ title: '四庫全書總目' }); });
 
     it('列出本册各处意见：位置链到阅读页该格，类别、原文、建议、人数、说明；可按类别筛', async () => {
-        const fetchImpl = okFetch(LIST);
+        const fetchImpl = routed(LIST);
         await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });
-        expect(fetchImpl.mock.calls[0][0]).toBe('https://data.kaiyuanguji.com/proof/fixes/96mid1ogzk.json');
-        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('第 002 册');
+        // 直读 KV：刚提的马上看到；有了实时结果就不用 COS 清单
+        expect(fetchImpl.mock.calls[0][0]).toBe('/api/fixes?book=96mid1ogzk&volume=002');
+        expect(fetchImpl).toHaveBeenCalledTimes(1);
+        // 页头与校对页同一个：返回阅读、书名、状态标、第几册
+        const header = screen.getByTestId('proofing-header');
+        expect(within(header).getByRole('link', { name: /返回阅读/ })).toHaveAttribute('href', '/read/96mid1ogzk/002');
+        expect(within(header).getByRole('heading', { level: 1 })).toHaveTextContent('四庫全書總目');
+        expect(header).toHaveTextContent('读者反馈');
+        expect(header).toHaveTextContent('第 002 册');
         expect(screen.getByText('共 3 处、4 条意见')).toBeInTheDocument();
         const rows = screen.getAllByTestId('fix-group');
         expect(rows).toHaveLength(3);
@@ -73,7 +89,7 @@ describe('TextFixesContent', () => {
     });
 
     it('讨论：显示计数与回复；表态、回复提交到 /api/thread，回复先在本页显示「待汇总」', async () => {
-        const listFetch = okFetch(LIST);
+        const listFetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ success: true, ...LIST }) }));
         const postFetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true }) });
         const fetchImpl = jest.fn((url: string, init?: RequestInit) => (init?.method === 'POST' ? postFetch(url, init) : listFetch(url)));
         await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });
@@ -104,19 +120,33 @@ describe('TextFixesContent', () => {
         expect(JSON.parse(postFetch.mock.calls[2][1].body).target).toBe('entity~4:4:5~4:4:6~');
     });
 
-    it('清单 404＝还没有意见；取不到＝提示稍后再试；地址缺参数直说', async () => {
-        await act(async () => { render(<TextFixesContent fetchImpl={okFetch(null, 404) as unknown as typeof fetch} />); });
+    it('实时接口取不到时退回 COS 每日清单', async () => {
+        const fetchImpl = routed(null);
+        await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });
+        expect(fetchImpl.mock.calls.map((c) => c[0])).toEqual(['/api/fixes?book=96mid1ogzk&volume=002', COS_URL]);
+        expect(screen.getAllByTestId('fix-group')).toHaveLength(3);
+    });
+
+    it('实时与清单都没有＝还没有意见（清单 404）；都取不到＝提示稍后再试', async () => {
+        await act(async () => { render(<TextFixesContent fetchImpl={routed(null, null, 404) as unknown as typeof fetch} />); });
         expect(screen.getByText('这一册还没有读者意见。')).toBeInTheDocument();
     });
 
     it('取失败', async () => {
-        await act(async () => { render(<TextFixesContent fetchImpl={okFetch(null, 500) as unknown as typeof fetch} />); });
+        await act(async () => { render(<TextFixesContent fetchImpl={routed(null, null, 500) as unknown as typeof fetch} />); });
         expect(screen.getByRole('alert')).toHaveTextContent('暂时取不到');
+    });
+
+    it('取不到书名时页头只有状态标，页面照常', async () => {
+        getEntry.mockRejectedValue(new Error('x'));
+        await act(async () => { render(<TextFixesContent fetchImpl={routed(LIST) as unknown as typeof fetch} />); });
+        expect(within(screen.getByTestId('proofing-header')).getByRole('heading', { level: 1 })).toHaveTextContent('读者反馈');
+        expect(screen.getAllByTestId('fix-group')).toHaveLength(3);
     });
 
     it('缺参数', async () => {
         search = 'book=96mid1ogzk';
-        const fetchImpl = okFetch(LIST);
+        const fetchImpl = routed(LIST);
         await act(async () => { render(<TextFixesContent fetchImpl={fetchImpl as unknown as typeof fetch} />); });
         expect(screen.getByRole('alert')).toHaveTextContent('地址缺书号或册号');
         expect(fetchImpl).not.toHaveBeenCalled();

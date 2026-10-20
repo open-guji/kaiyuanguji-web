@@ -1,7 +1,7 @@
 /**
- * 整册读者意见（GUJI-597 反馈设计第四节）：读 COS 上的公开清单 proof/fixes/<书>.json。
- * 清单由每日 proofing-sync 从中心库发布（KV → 中心库 → COS），网站不直接读 KV，所以当天新提的意见次日才出现。
- * 形状见 nextjs/scripts/lib/fixes-sync.mjs 的 toPublicFix。
+ * 整册读者意见（GUJI-597 反馈设计第四节）：先读 /api/fixes（边缘函数直读 KV，刚提的马上看到），
+ * 取不到再退回 COS 上的公开清单 proof/fixes/<书>.json（每日 proofing-sync 从中心库发布，当天新提的次日才有）。
+ * 两边形状相同，见 nextjs/scripts/lib/fixes-sync.mjs 的 toPublicFix。
  */
 import { getAid } from '@/lib/aid';
 
@@ -154,6 +154,26 @@ export async function loadPublicFixes(book: string, fetchImpl: typeof fetch = fe
     } catch {
         return null;
     }
+}
+
+export const FIXES_API = '/api/fixes';
+
+/** 实时清单：/api/fixes 直读 KV。取不到（静态环境没有这个函数、网络错）给 null */
+export async function loadLiveFixes(book: string, vol: string, fetchImpl: typeof fetch = fetch): Promise<unknown | null> {
+    if (!RE_BOOK.test(book) || !RE_VOL.test(vol)) return null;
+    try {
+        const res = await fetchImpl(`${FIXES_API}?book=${encodeURIComponent(book)}&volume=${encodeURIComponent(vol)}`, { cache: 'no-store' });
+        if (!res.ok) return null;
+        const body = await res.json();
+        return asObj(body)?.success === true && asObj(asObj(body)?.volumes) ? body : null;
+    } catch {
+        return null;
+    }
+}
+
+/** 先实时、后兜底；两边都没取到才是 null */
+export async function loadFixes(book: string, vol: string, fetchImpl: typeof fetch = fetch): Promise<unknown | null> {
+    return (await loadLiveFixes(book, vol, fetchImpl)) ?? (await loadPublicFixes(book, fetchImpl));
 }
 
 /** 整册意见页地址（静态页，参数走查询串） */

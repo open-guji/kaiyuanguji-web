@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function TextFixesPage() {
     return (
-        <LayoutWrapper>
+        <LayoutWrapper hideFooter>
             <Suspense fallback={null}>
                 <TextFixesContent />
             </Suspense>

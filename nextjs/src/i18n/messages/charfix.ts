@@ -63,8 +63,10 @@ export const charfix = defineMessages({
     list: {
         title: '讀者意見',
         heading: '第 {vol} 冊 · 讀者意見',
-        intro: '讀者在閱讀頁提出的改字、段落與專名意見，每天彙總一次（當天提的次日可見）。我們核對後在整理本中更正，版本號隨之更新。',
+        intro: '讀者在閱讀頁提出的改字、段落與專名意見，提交後立即可見。我們核對後在整理本中更正，版本號隨之更新。',
         back: '回到閱讀頁',
+        badge: '讀者反饋',
+        volume: '第 {vol} 冊 · 讀者意見',
         loading: '讀取中…',
         failed: '暫時取不到意見清單，請稍後再試。',
         badParams: '地址缺書號或冊號。',
@@ -163,8 +165,10 @@ export const charfix = defineMessages({
     list: {
         title: '读者意见',
         heading: '第 {vol} 册 · 读者意见',
-        intro: '读者在阅读页提出的改字、段落与专名意见，每天汇总一次（当天提的次日可见）。我们核对后在整理本中更正，版本号随之更新。',
+        intro: '读者在阅读页提出的改字、段落与专名意见，提交后立即可见。我们核对后在整理本中更正，版本号随之更新。',
         back: '回到阅读页',
+        badge: '读者反馈',
+        volume: '第 {vol} 册 · 读者意见',
         loading: '读取中…',
         failed: '暂时取不到意见清单，请稍后再试。',
         badParams: '地址缺书号或册号。',
