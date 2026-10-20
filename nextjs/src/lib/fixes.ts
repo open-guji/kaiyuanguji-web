@@ -51,10 +51,15 @@ export interface FixGroup {
     target: string;
 }
 
+/** 整理组对一处意见的处理结果：已采纳（可带进了哪一版）、未采纳（可带理由）、讨论中 */
+export type FixState = 'adopted' | 'rejected' | 'discussing';
+export const FIX_STATES: readonly FixState[] = ['adopted', 'rejected', 'discussing'];
+
 export interface FixThread {
     agree: number;
     disagree: number;
-    replies: { name: string; text: string; ts?: number }[];
+    replies: { name: string; text: string; ts?: number; team?: boolean }[];
+    status?: { state: FixState; version?: string; reason?: string; ts?: number };
 }
 
 export const EMPTY_THREAD: FixThread = { agree: 0, disagree: 0, replies: [] };
@@ -69,8 +74,11 @@ export function parsePublicThreads(raw: unknown, vol: string): Map<string, FixTh
         const o = asObj(v);
         if (!o) continue;
         const replies = Array.isArray(o.replies) ? o.replies.map(asObj).filter((r): r is Record<string, unknown> => !!r && typeof r.text === 'string' && !!r.text)
-            .map((r) => ({ name: typeof r.name === 'string' ? r.name : '', text: r.text as string, ...(typeof r.ts === 'number' ? { ts: r.ts } : {}) })) : [];
-        out.set(target, { agree: n(o.agree), disagree: n(o.disagree), replies });
+            .map((r) => ({ name: typeof r.name === 'string' ? r.name : '', text: r.text as string, ...(typeof r.ts === 'number' ? { ts: r.ts } : {}), ...(r.team === true ? { team: true } : {}) })) : [];
+        const st = asObj(o.status);
+        const state = FIX_STATES.find((x) => x === st?.state);
+        const status = st && state ? { state, ...(str(st.version) ? { version: str(st.version) } : {}), ...(str(st.reason) ? { reason: str(st.reason) } : {}), ...(typeof st.ts === 'number' ? { ts: st.ts } : {}) } : undefined;
+        out.set(target, { agree: n(o.agree), disagree: n(o.disagree), replies, ...(status ? { status } : {}) });
     }
     return out;
 }

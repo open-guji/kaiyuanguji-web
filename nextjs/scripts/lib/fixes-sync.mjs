@@ -152,7 +152,7 @@ export function buildPublicFixes(snapshotText, book, threadsText = '', hidden = 
         const t = ((threads[r.volume] ||= {})[r.target] ||= { agree: 0, disagree: 0, replies: [] });
         if (r.stance === 'agree') t.agree++;
         else if (r.stance === 'disagree') t.disagree++;
-        else t.replies.push({ name: clean(r.name) ?? '', text: clean(r.text) ?? '', ts: r.ts });
+        else t.replies.push({ name: clean(r.name) ?? '', text: clean(r.text) ?? '', ts: r.ts, ...(r.team === true ? { team: true } : {}) });
     }
     const out = { book, volumes };
     if (Object.keys(threads).length) out.threads = threads;
