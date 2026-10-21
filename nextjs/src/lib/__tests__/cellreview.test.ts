@@ -69,6 +69,15 @@ describe('POST 校验', () => {
         expect(JSON.stringify(rec)).not.toContain('1.2.3.4');
     });
 
+    it('章号存三位：vol01／1／001 都存 001，别的章名原样（人裁事件规范 §9 O-4）', async () => {
+        for (const [vol, want] of [['vol01', '001'], ['1', '001'], ['001', '001'], ['VOL12', '012'], ['juan-a', 'juan-a']]) {
+            store.clear();
+            const res = await fn.onRequestPost(post({ ...base, vol, choice: 'none' }));
+            expect(res.status).toBe(200);
+            expect(JSON.parse(store.get(crKeys()[0])!).vol).toBe(want);
+        }
+    });
+
     it('六档里除 char 外都不必带 char；none／unsure／jiazhu／main 带 char 被拒', async () => {
         for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main']) {
             const ok = await fn.onRequestPost(post({ ...base, a: `1:1:${choice.length}`, choice }));
