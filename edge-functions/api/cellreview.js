@@ -22,8 +22,8 @@ import {
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
-// 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾
-export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect'];
+// 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
+export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
 const SHOWN_MAX = 8;

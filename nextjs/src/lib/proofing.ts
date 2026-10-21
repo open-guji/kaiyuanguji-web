@@ -137,33 +137,54 @@ export function parseExtras(raw: unknown): PendingExtras {
     return out;
 }
 
-/** `why` 机器码 → 给读者看的大白话（码表正本在 cv `review/cards.py`、控制台 `doubt.ts`）。不写术语、缩写、英文；未知码原样显示 */
+/**
+ * `why` 机器码 → 卡片「原因：」后的短语（码表正本在 cv `review/cards.py`、控制台 `doubt.ts`）。
+ * 要短、全中文，不出现术语、缩写、英文；没登记的码不露原码，显示「其他疑点」（用户 2026-10-20）。
+ */
 const WHY_LABELS: Record<string, string> = {
-    none: '机器没把握，需要人看一眼',
-    near_form: '有长得很像的字，容易认错',
-    solo_confusable: '只能靠字形判断，而它有长得很像的字',
-    ctx_garble_shape: '字形和本书别处的字都不太像',
-    replace_align: '整理本这一段改过字，和刻本可能对不上',
-    replace_form: '本书刻的写法和整理本用的字不一样',
-    variant_indirect: '可能是异体字，要确认本书刻的是哪个',
+    none: '机器没把握',
+    near_form: '有形近字',
+    solo_confusable: '只凭字形，又有形近字',
+    ctx_garble_shape: '和本书别处字形都不像',
+    replace_align: '整理本此段改过字',
+    replace_form: '刻本写法与整理本不同',
+    variant_indirect: '可能是异体字',
     ref_lib_variant: '可能是整理本用字的异体',
-    channel_off: '这类情况本书不让机器自动定字',
-    form_open: '知道是哪个字，但不确定本书刻的是哪种写法',
-    context_vs_ref: '从前后文推断的字和整理本不一样',
-    context_verdict: '从前后文推断的结果不寻常',
-    iron_vs_ref: '字形很确定，但和整理本不一样',
-    iron_ex_missing: '缺少可对照的字样图',
-    context_blank_cell: '这一格可能是空白',
-    ji_yi_si_review: '己、已、巳刻得一样，要看文意',
+    channel_off: '本书不让机器自动定',
+    form_open: '字已知，写法待定',
+    context_vs_ref: '前后文推断与整理本不同',
+    context_verdict: '前后文推断不寻常',
+    context_narrow_col: '前后文推断把握不大',
+    context_narrow_slice: '前后文推断把握不大',
+    context_single_stroke: '笔画太少，难以推断',
+    solo_ctx_veto: '前后文不支持字形判断',
+    iron_vs_ref: '字形确定，但与整理本不同',
+    iron_confusable_ref: '与整理本用字形近',
+    iron_ex_missing: '缺少对照字样',
+    iron_scale: '字的大小异常',
+    context_blank_cell: '可能是空白',
+    ji_yi_si_review: '己已巳难分',
     signal_conflict: '几种判断互相矛盾',
-    weak_single: '只有一种判断，而且把握不大',
-    degraded_crop: '这一格的图不完整',
-    db_inconsistent: '和本书别处的认定不一致',
-    approx_exemplar: '本书别处对应的字只是近似写法',
+    weak_single: '只有一种判断，把握不大',
+    degraded_crop: '字图不完整',
+    db_inconsistent: '与本书别处认定不一致',
+    approx_exemplar: '对照字样只是近似写法',
     occluded: '被印章或污渍遮住',
-    seg_defect: '这一格切坏了，机器认不出字，请看书影直接写出来',
+    seal_region: '在印章范围内',
+    nonchar: '可能不是字',
+    glyph_timeout: '字形比对没做完',
+    rule_interpolated: '位置是推算出来的',
+    lost_patch: '字图缺了一块',
+    vision_flag: '看图复核认为字可能错了',
+    seg_defect: '切坏了，请看书影直接写',
 };
-export const whyLabel = (code: string): string => WHY_LABELS[code] ?? code;
+export const UNKNOWN_WHY = '其他疑点';
+export const whyLabel = (code: string): string => WHY_LABELS[code] ?? UNKNOWN_WHY;
+/** 一格的原因短语：去掉 none（有别的码时）、同义的合并 */
+export function whyLabels(codes: string[] | undefined): string[] {
+    const real = (codes ?? []).filter(w => w !== 'none');
+    return [...new Set((real.length ? real : ['none']).map(whyLabel))];
+}
 
 /** 卡片类别（cv `review/cards.py::REVIEW_CLASSES`）→ [名称, 说明]，都用大白话 */
 const CLASS_LABELS: Record<string, [string, string]> = {
@@ -414,6 +435,28 @@ export function cropRect(crop: CellCrop, natW: number, natH: number, pad = 0.35)
     return [x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0)];
 }
 
+/** 这一格本身在 cropRect 裁出的图里的位置（裁图像素，未缩放）：卡片在带四周的裁图上框出实际识别范围 */
+export function boxInCrop(crop: CellCrop, natW: number, natH: number, pad = 0.35): [number, number, number, number] {
+    const k = crop.canvasWidth > 0 ? natW / crop.canvasWidth : 1;
+    const [x, y, w, h] = crop.box.map(n => n * k) as Box;
+    const [sx, sy] = cropRect(crop, natW, natH, pad);
+    return [x - sx, y - sy, w, h];
+}
+
+/**
+ * 特殊符号（用户 2026-10-20）：刻本上的圈、方框、三角这类图形字符，候选里没有、键盘也难打，
+ * 卡片上常备一排点选。「□」是真刻的方框（照录为真字，与阙文分开，见 cv doc/formats/F2_handoff.md #3）。
+ */
+export const SYMBOLS: { c: string; name: string }[] = [
+    { c: '○', name: '圆圈' },
+    { c: '□', name: '方框' },
+    { c: '◎', name: '双圈' },
+    { c: '●', name: '实心圆' },
+    { c: '■', name: '实心方框' },
+    { c: '△', name: '三角' },
+    { c: '▲', name: '实心三角' },
+];
+
 // ---- 找到该册的待审章 ----
 
 const asRecord = (v: unknown): Record<string, unknown> | null => asObject(v);
@@ -566,13 +609,13 @@ export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu';
 
 /**
  * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：
- * cand 候选按钮、alt 相似字、machine 机器读字按钮、custom 自己写、preselect 确认预勾。
+ * cand 候选按钮、alt 相似字、machine 机器读字按钮、custom 自己写、preselect 确认预勾、symbol 特殊符号。
  * 只用来量「相似字有没有用」，不影响落裁决。
  */
-export type PickSrc = 'cand' | 'alt' | 'machine' | 'custom' | 'preselect';
+export type PickSrc = 'cand' | 'alt' | 'machine' | 'custom' | 'preselect' | 'symbol';
 export interface Pick {
     src: PickSrc;
-    /** 在那一排里排第几（从 1 起）；custom／preselect 没有 */
+    /** 在那一排里排第几（从 1 起）；custom／preselect／symbol 没有 */
     rank?: number;
     /** 相似字从哪个近似字查来（alt 的 `p`） */
     pivot?: string;

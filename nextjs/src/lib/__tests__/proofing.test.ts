@@ -3,7 +3,7 @@
  */
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, whyLabel, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
+    parseExtras, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
 } from '../proofing';
@@ -67,6 +67,14 @@ describe('cord / 裁剪', () => {
         expect(() => parseCord({ pages: [null, { page: 'x' }, { page: 1, cells: 3 }] })).not.toThrow();
         expect(() => parseCord(null)).not.toThrow();
     });
+    it('boxInCrop 给出这一格在带四周的裁图里的位置', () => {
+        const c = { box: [100, 200, 50, 60] as [number, number, number, number], seq: '1', canvasWidth: 1000 };
+        expect(boxInCrop(c, 1000, 1500)).toEqual([17.5, 21, 50, 60]);
+        expect(boxInCrop(c, 2000, 3000, 0)).toEqual([0, 0, 100, 120]);
+        // 贴边时裁图被夹住，框跟着挪
+        expect(boxInCrop({ ...c, box: [0, 0, 50, 60] }, 1000, 1500)).toEqual([0, 0, 50, 60]);
+    });
+
     it('cropRect 按实际图宽换算并夹在图内', () => {
         const [x, y, w, h] = cropRect({ box: [100, 200, 50, 60], seq: '1', canvasWidth: 1000 }, 2000, 3000, 0);
         expect([x, y, w, h]).toEqual([200, 400, 100, 120]);
@@ -205,10 +213,14 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(r.cells[0].why).toEqual(['none']);
     });
 
-    it('why：已知码映射中文，未知码原样', () => {
+    it('why：已知码映射中文短语，未知码显示「其他疑点」不露原码', () => {
         expect(whyLabel('none')).not.toBe('none');
         for (const code of ['near_form', 'ctx_garble_shape', 'replace_align', 'context_vs_ref', 'iron_ex_missing', 'context_blank_cell']) expect(whyLabel(code)).not.toBe(code);
-        expect(whyLabel('some_future_code')).toBe('some_future_code');
+        expect(whyLabel('some_future_code')).toBe('其他疑点');
+        expect(whyLabel('vision_flag')).not.toMatch(/[A-Za-z]/);
+        expect(whyLabels(['none', 'ctx_garble_shape', 'vision_flag'])).toEqual(['和本书别处字形都不像', '看图复核认为字可能错了']);
+        expect(whyLabels(['none'])).toEqual(['机器没把握']);
+        expect(whyLabels(['context_narrow_col', 'context_narrow_slice'])).toHaveLength(1);
     });
 
     it('候选取 cand 与 lib_top 前 3 的并集、最多显示 3 个并带库分数，多的进「更多」', () => {
@@ -309,7 +321,7 @@ describe('机器判读标签', () => {
         expect(whyLabel('seg_defect')).toContain('书影');
     });
     it('原因码全是中文，不含英文和术语', () => {
-        for (const code of ['none', 'near_form', 'ctx_garble_shape', 'replace_align', 'iron_ex_missing', 'context_vs_ref']) {
+        for (const code of ['none', 'near_form', 'ctx_garble_shape', 'replace_align', 'iron_ex_missing', 'context_vs_ref', 'vision_flag', 'nonchar', 'unknown_x']) {
             expect(whyLabel(code)).not.toMatch(/[A-Za-z]/);
             expect(whyLabel(code)).not.toMatch(/铁证|载体|墨形|cov/);
         }
