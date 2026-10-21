@@ -84,13 +84,15 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.queryByTestId('preselect')).toBeNull();
     });
 
-    it('why：已知码中文、未知码原样；ref 显示「整理本作 X」；候选带分数，多的在「更多」里', async () => {
+    it('why：「原因：」加短语，未知码不露英文；ref 显示「整理本作 X」；候选带分数，多的在「更多」里', async () => {
         loadProofing.mockResolvedValue(ok([{
             a: '1:1:1', c: '己', why: ['none', 'future_code'], ref: { c: '已' }, cand: [{ c: '己' }, { c: '已' }],
             libTop: [{ c: '巳', s: 0.7 }, { c: '以', s: 0.6 }, { c: '目', s: 0.5 }, { c: '日', s: 0.4 }],
         }]));
         render(<ProofingClient book="b1" vol="vol01" />);
-        expect((await screen.findByTestId('why')).textContent).toContain('future_code');
+        const why = (await screen.findByTestId('why')).textContent ?? '';
+        expect(why).toBe('原因：其他疑点');
+        expect(why).not.toMatch(/[A-Za-z]/);
         expect(screen.getByText(/整理本作「已」/)).toBeTruthy();
         expect(screen.getByText('像 70%')).toBeTruthy();
         expect(screen.queryByText('以')).toBeNull();
@@ -98,11 +100,11 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.getByText('以')).toBeTruthy();
     });
 
-    it("why 只有 none 时显示『机器没把握，需要人看一眼』，不回退显示 cls 原值", async () => {
+    it("why 只有 none 时显示『原因：机器没把握』，不回退显示 cls 原值", async () => {
         loadProofing.mockResolvedValue(ok([{ a: '2:1:1', c: '天', why: ['none'], cls: 'other', cand: [{ c: '夭' }] }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         const t = (await screen.findByTestId('why')).textContent;
-        expect(t).toContain('机器没把握，需要人看一眼');
+        expect(t).toBe('原因：机器没把握');
         expect(t).not.toContain('other');
     });
 
@@ -173,6 +175,24 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.click(named[1]);
         await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: g, pick_src: 'alt', pick_rank: 1 });
+    });
+
+    it('特殊符号（圆圈、方框…）常备一排，点了按字提交，来源记 symbol；提交后右上角出「已提交」徽标，不再有长句', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        localStorage.clear();                                   // 别的用例在同一 rev 下记过「已提交」
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '', cand: [{ c: '口' }] }]));
+        render(<ProofingClient book="b11" vol="vol01" />);
+        const row = await screen.findByTestId('symbols');
+        expect(row.textContent).toContain('○');
+        expect(row.textContent).toContain('□');
+        expect(screen.queryByTestId('done-badge')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: '选「○」（圆圈）' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: '○', pick_src: 'symbol' });
+        expect((await screen.findByTestId('done-badge')).textContent).toBe('已提交');
+        expect(screen.getByRole('button', { name: '选「○」（圆圈）' }).getAttribute('aria-pressed')).toBe('true');
+        expect(screen.queryByText(/想改的话/)).toBeNull();
     });
 
     it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」不带', async () => {

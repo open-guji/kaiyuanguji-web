@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
-    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabel, writeDone,
+    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop, SYMBOLS,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -48,11 +48,11 @@ type BtnKind = 'cand' | 'act' | 'primary' | 'small';
 function btnStyle(kind: BtnKind, on = false, disabled = false): React.CSSProperties {
     const base: React.CSSProperties = {
         border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff', color: '#333', cursor: disabled ? 'default' : 'pointer',
-        padding: '4px 12px', fontSize: 15, lineHeight: 1.4, boxShadow: '0 1px 0 rgba(0,0,0,0.06)', opacity: disabled ? 0.45 : 1,
+        padding: '3px 10px', fontSize: 14, lineHeight: 1.4, boxShadow: '0 1px 0 rgba(0,0,0,0.06)', opacity: disabled ? 0.45 : 1,
     };
-    if (kind === 'cand') Object.assign(base, { fontSize: 26, padding: '2px 12px', minWidth: 60, background: '#fffdf7' });
+    if (kind === 'cand') Object.assign(base, { fontSize: 22, padding: '2px 10px', minWidth: 52, background: '#fffdf7' });
     if (kind === 'primary') Object.assign(base, { background: '#7a3b1d', borderColor: '#7a3b1d', color: '#fff' });
-    if (kind === 'small') Object.assign(base, { fontSize: 13, padding: '1px 8px' });
+    if (kind === 'small') Object.assign(base, { fontSize: 12, padding: '1px 8px' });
     if (on) Object.assign(base, { border: '2px solid #2a7', background: '#e6f5ec', color: '#1b6b44' });
     return base;
 }
@@ -74,7 +74,7 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     return p;
 }
 
-/** 只负责把原叶图的一块画出来，不读回像素 */
+/** 只负责把原叶图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
 function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number } }) {
     const [bx, by, bw, bh] = crop.box;
     const cw = crop.canvasWidth;
@@ -86,16 +86,23 @@ function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, nu
             const cv = ref.current;
             if (cancelled || !cv) return;
             if (!img) return setFailed(true);
-            const [sx, sy, sw, sh] = cropRect({ box: [bx, by, bw, bh], seq: '', canvasWidth: cw }, img.naturalWidth, img.naturalHeight);
+            const c = { box: [bx, by, bw, bh] as [number, number, number, number], seq: '', canvasWidth: cw };
+            const [sx, sy, sw, sh] = cropRect(c, img.naturalWidth, img.naturalHeight);
             const scale = Math.min(2, 160 / Math.max(sw, sh));
             cv.width = Math.max(1, Math.round(sw * scale));
             cv.height = Math.max(1, Math.round(sh * scale));
-            cv.getContext('2d')?.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+            const g = cv.getContext('2d');
+            if (!g) return;
+            g.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+            const [ix, iy, iw, ih] = boxInCrop(c, img.naturalWidth, img.naturalHeight).map(n => n * scale);
+            g.strokeStyle = 'rgba(221,51,51,0.9)';
+            g.lineWidth = 2;
+            g.strokeRect(ix - 1, iy - 1, iw + 2, ih + 2);
         });
         return () => { cancelled = true; };
     }, [src, bx, by, bw, bh, cw]);
     if (failed) return <div style={{ color: '#999', fontSize: 12 }}>原图加载失败</div>;
-    return <canvas ref={ref} aria-label="原叶裁图" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
+    return <canvas ref={ref} aria-label="原叶裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
 }
 
 /** 雪碧图里的一块（GUJI-557）。加载失败通知上层，由上层回退到原叶 IIIF 裁图 */
@@ -145,8 +152,8 @@ function CandButton({ cd, busy, picked, onPick, hotkey }: { cd: ShownCand; busy:
         <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? undefined : `选「${cd.c}」`} onClick={() => onPick(cd.c)}
             title={hotkey ? `${tip}（快捷键 ${hotkey}）` : tip} className={BTN_CLASS} data-hotkey={hotkey} style={btnStyle('cand', picked, busy)}>
             <Zi c={cd.c} />
-            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 11, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>整理本</small>}
-            {cd.score !== undefined && <small style={{ fontSize: 11, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
+            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 10, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>整理本</small>}
+            {cd.score !== undefined && <small style={{ fontSize: 10, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
     );
 }
@@ -184,7 +191,7 @@ function Evidence({ cell }: { cell: PendingCell }) {
     if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，整理本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，整理本作「${zis(cell.occ.c)}」` : ''}`]);
     if (!summary.length && !rows.length) return null;
     return (
-        <div data-testid="evidence" style={{ marginTop: 8, fontSize: 13, color: '#555', lineHeight: 1.7 }}>
+        <div data-testid="evidence" style={{ marginTop: 8, fontSize: 12, color: '#555', lineHeight: 1.7 }}>
             {summary}
             {rows.length > 0 && (
                 <details style={{ marginTop: 2 }}>
@@ -226,7 +233,7 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
     push({ a: at, c: atChar ?? '' }, true);
     ctx.after.forEach(s => push(s, false));
     return (
-        <div data-testid="context" style={{ marginTop: 8, fontSize: 20, letterSpacing: 2, lineHeight: 1.6 }}>
+        <div data-testid="context" style={{ marginTop: 8, fontSize: 18, letterSpacing: 2, lineHeight: 1.6 }}>
             <span style={{ fontSize: 12, color: '#888', letterSpacing: 0, marginRight: 8 }}>上下文</span>
             {pieces}
         </div>
@@ -248,11 +255,11 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
         .filter(([, list]) => list.length > 0);
     if (!shown.length) return null;
     return (
-        <div data-testid="examples" style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
+        <div data-testid="examples" style={{ marginTop: 8, fontSize: 12, color: '#555' }}>
             本书别处这几个字的样子
             {shown.map(([ch, list]) => (
                 <div key={ch} style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <b style={{ fontSize: 18 }}>{ch}</b>
+                    <b style={{ fontSize: 16 }}>{ch}</b>
                     {list.map((sp, i) => (
                         <div key={i} role="img" aria-label={`「${ch}」例 ${i + 1}`}
                             style={{ width: sp.w, height: sp.h, border: '1px solid #ddd', background: `#fff url(${spriteBase(sp.s)}) -${sp.x}px -${sp.y}px no-repeat` }} />
@@ -282,7 +289,7 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
     const shown = all ? alt : alt.slice(0, ALT_SHOW);
     return (
         <div data-testid="alt-grid" style={{ marginTop: 8 }}>
-            <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>相似字（按和这格字图的相像程度排，点一个就提交）</div>
+            <div style={{ fontSize: 12, color: '#555', marginBottom: 4 }}>相似字（按和这格字图的相像程度排，点一个就提交）</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {shown.map((a, i) => {
                     const u = a.g ? spriteBase(a.g.s) : null;
@@ -292,11 +299,11 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
                     return (
                         <button key={a.c} type="button" disabled={busy} aria-pressed={picked} aria-label={`选「${a.c}」`} title={tip}
                             onClick={() => onPick(a.c, { src: 'alt', rank: i + 1, ...(a.p ? { pivot: a.p } : {}) })} className={BTN_CLASS}
-                            style={{ ...btnStyle('cand', picked, busy), display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: 4, minWidth: 56 }}>
+                            style={{ ...btnStyle('cand', picked, busy), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 4, minWidth: 48, minHeight: 48 }}>
+                            {/* 只出一个字：有字体字形图（扩展区字不靠读者电脑的字体）就用图，没有才用文字；不再在下面重复一个小字 */}
                             {img
-                                ? <span role="img" aria-hidden style={{ width: img.w, height: img.h, zoom: 0.5, background: `#fff url(${u}) -${img.x}px -${img.y}px no-repeat` }} />
-                                : <span style={{ fontSize: 28, lineHeight: '48px' }}><Zi c={a.c} /></span>}
-                            <span style={{ fontSize: 13 }}><Zi c={a.c} /></span>
+                                ? <span role="img" aria-hidden style={{ width: img.w, height: img.h, zoom: 0.42, background: `#fff url(${u}) -${img.x}px -${img.y}px no-repeat` }} />
+                                : <span style={{ fontSize: 24, lineHeight: '40px' }}><Zi c={a.c} /></span>}
                         </button>
                     );
                 })}
@@ -326,31 +333,32 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     };
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
-    const why = cell.why?.filter(w => w !== 'none').map(whyLabel) ?? [];
+    const why = whyLabels(cell.why);
     const preNone = pre?.choice === 'none';
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
     const segDefect = cell.cls === 'seg_defect';
     return (
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
-            style={{ border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
+            style={{ position: 'relative', border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
+            {/* 提交过：右上角一个徽标就够，选了哪个看高亮的按钮（用户 2026-10-20） */}
+            {done && <span data-testid="done-badge" title={`已提交：${zis(done)}，想改再点别的`}
+                style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, lineHeight: 1.5, padding: '0 8px', borderRadius: 10, background: '#e6f5ec', color: '#1b6b44', border: '1px solid #2a7' }}>已提交</span>}
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
                     : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
                     : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
-                    <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}</div>
+                    <div style={{ fontSize: 12, color: '#666', paddingRight: 56 }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}</div>
                     {/* 机器没定出字时不放大「？」，免得和下面「比字形：最像 X」打架（GUJI-683） */}
-                    {cell.c ? <div style={{ fontSize: 40, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
-                        : <div data-testid="no-machine-char" style={{ fontSize: 14, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
-                    {cell.ref && <div style={{ fontSize: 13, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
+                    {cell.c ? <div style={{ fontSize: 34, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
+                        : <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
+                    {cell.ref && <div style={{ fontSize: 12, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
                 </div>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
-            {(why.length > 0 || cell.cls) && (
-                <div data-testid="why" style={{ marginTop: 6, fontSize: 13, color: '#a60' }}>
-                    为什么要人看：{why.length ? why.join('；') : whyLabel('none')}
-                </div>
+            {(cell.why?.some(w => w !== 'none') || !!cell.cls) && (
+                <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: i + 1 })} />)}
@@ -363,14 +371,22 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
-                        style={{ width: 150, fontSize: 15, padding: '5px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
+                        style={{ width: 140, fontSize: 14, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
                     <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom, { src: 'custom' })} className={BTN_CLASS}
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
                 </span>
             </div>
+            <div data-testid="symbols" style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: '#555' }}>特殊符号</span>
+                {SYMBOLS.map(sy => (
+                    <button key={sy.c} type="button" disabled={busy} aria-pressed={done === `「${sy.c}」`} aria-label={`选「${sy.c}」（${sy.name}）`} title={`${sy.name}：刻本上就是这个图形`}
+                        onClick={() => go('char', sy.c, { src: 'symbol' })} className={BTN_CLASS}
+                        style={{ ...btnStyle('cand', done === `「${sy.c}」`, busy), fontSize: 18, minWidth: 36, padding: '0 6px' }}>{sy.c}</button>
+                ))}
+            </div>
             {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={(c, pick) => go('char', c, pick)} />}
             {preCand && !done && (
-                <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>
+                <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
                     以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
                     <button type="button" disabled={busy} onClick={() => go('char', preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
                 </div>
@@ -385,11 +401,10 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             </div>
             <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
                 placeholder="备注（可不填）：比如「是臼不是曰，看上面」，先写再点上面的按钮"
-                style={{ marginTop: 8, width: '100%', maxWidth: 520, boxSizing: 'border-box', fontSize: 14, padding: '5px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
-            {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 13 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
+                style={{ marginTop: 8, width: '100%', maxWidth: 520, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
+            {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
-            {done && <div style={{ marginTop: 6, color: '#2a7' }}>已提交：{zis(done)}。想改的话再点别的就行。</div>}
             {err && <div role="alert" style={{ marginTop: 6, color: '#c33' }}>{err}</div>}
         </li>
     );
