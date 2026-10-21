@@ -27,7 +27,7 @@ import { HOSTS, hostOf } from '../config/hosts.mjs';
  * 那里加了新域名（例如数据迁到 data.openguji.com），这里自动跟着查。
  */
 export const DEFAULT_HOSTS = [...new Set(
-    ['site', 'siteApex', 'legacySite', 'legacyApex', 'staging', 'data', 'api', 'ssrTest', ...Object.keys(HOSTS)]
+    ['site', 'siteApex', 'legacySite', 'legacyApex', 'staging', 'data', 'api', ...Object.keys(HOSTS)]
         .filter((k) => k in HOSTS && !k.startsWith('$'))
         .map((k) => hostOf(HOSTS[k])),
 )];

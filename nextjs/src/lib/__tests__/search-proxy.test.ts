@@ -13,6 +13,7 @@
  *  5) 上游挂／超时 → 503 + code，前端据此退回 L2；有旧结果时先给旧的
  *  6) Server-Timing：parse／cache／upstream／meili／total（overview#353）
  */
+import { API_ORIGIN } from '@/lib/hosts';
 
 const g = globalThis as unknown as Record<string, unknown>;
 
@@ -205,7 +206,7 @@ describe('配置与机密', () => {
   test('什么都没配：用默认地址、不带 Authorization', async () => {
     stubUpstream();
     await fn.onRequestGet(ctx(`https://x/api/search?q=${encodeURIComponent(uq())}`, undefined, {}));
-    expect(calls[0].url).toBe('https://api.kaiyuanguji.com/multi-search');
+    expect(calls[0].url).toBe(`${API_ORIGIN}/multi-search`);
     expect(calls[0].init.headers.Authorization).toBeUndefined();
   });
 });

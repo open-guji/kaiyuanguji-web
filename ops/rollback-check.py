@@ -18,19 +18,16 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import code_pointer  # noqa: E402
-from hosts import DATA_ORIGIN, DATA_STAGING_ORIGIN, SITE_ORIGIN, SSR_TEST_ORIGIN, STAGING_ORIGIN  # noqa: E402
+from hosts import DATA_ORIGIN, DATA_STAGING_ORIGIN, SITE_ORIGIN, STAGING_ORIGIN  # noqa: E402
 
-SITES = {"production": SITE_ORIGIN, "staging": STAGING_ORIGIN,
-         "ssr-test": SSR_TEST_ORIGIN}
+SITES = {"production": SITE_ORIGIN, "staging": STAGING_ORIGIN}
 POINTERS = {"production": f"{DATA_ORIGIN}/latest.json",
-            "staging": f"{DATA_STAGING_ORIGIN}/latest.json",
-            "ssr-test": f"{DATA_ORIGIN}/latest.json"}
+            "staging": f"{DATA_STAGING_ORIGIN}/latest.json"}
 # overview#470 P1：代码指针 web.json（部署成功后写）。是否以它为准由 latest.json 的 codePointer 标记决定（ops/code_pointer.py）：
 # 没有标记时仍只看 latest.json——回滚到早于 #282 的旧 commit 时旧 deploy.yml 只更新 latest.json，web.json 会落后，
 # 若让它也能「通过」，会出现核对绿了、晋升却读到另一个 commit。
 WEB_POINTERS = {"production": f"{DATA_ORIGIN}/web.json",
-                "staging": f"{DATA_STAGING_ORIGIN}/web.json",
-                "ssr-test": f"{DATA_ORIGIN}/web.json"}
+                "staging": f"{DATA_STAGING_ORIGIN}/web.json"}
 
 
 def get_json(url):
