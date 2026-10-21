@@ -443,20 +443,6 @@ export function boxInCrop(crop: CellCrop, natW: number, natH: number, pad = 0.35
     return [x - sx, y - sy, w, h];
 }
 
-/**
- * 特殊符号（用户 2026-10-20）：刻本上的圈、方框、三角这类图形字符，候选里没有、键盘也难打，
- * 卡片上常备一排点选。「□」是真刻的方框（照录为真字，与阙文分开，见 cv doc/formats/F2_handoff.md #3）。
- */
-export const SYMBOLS: { c: string; name: string }[] = [
-    { c: '○', name: '圆圈' },
-    { c: '□', name: '方框' },
-    { c: '◎', name: '双圈' },
-    { c: '●', name: '实心圆' },
-    { c: '■', name: '实心方框' },
-    { c: '△', name: '三角' },
-    { c: '▲', name: '实心三角' },
-];
-
 // ---- 找到该册的待审章 ----
 
 const asRecord = (v: unknown): Record<string, unknown> | null => asObject(v);
@@ -609,10 +595,11 @@ export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu';
 
 /**
  * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：
- * cand 候选按钮、alt 相似字、machine 机器读字按钮、custom 自己写、preselect 确认预勾、symbol 特殊符号。
+ * cand 候选按钮、alt 相似字、machine 机器读字按钮、custom 自己写、preselect 确认预勾。
+ * （symbol 是 10-20 版每卡常驻的特殊符号行留下的旧值，端点照收；10-21 撤掉了那一行，特殊符号改由 cv 作为候选给出。）
  * 只用来量「相似字有没有用」，不影响落裁决。
  */
-export type PickSrc = 'cand' | 'alt' | 'machine' | 'custom' | 'preselect' | 'symbol';
+export type PickSrc = 'cand' | 'alt' | 'machine' | 'custom' | 'preselect';
 export interface Pick {
     src: PickSrc;
     /** 在那一排里排第几（从 1 起）；custom／preselect／symbol 没有 */
@@ -641,7 +628,7 @@ export interface ReviewDraft {
     note?: string;
     /** 提交时页面显示的机器读字 */
     shown?: string;
-    /** 选字从哪儿点来（见 Pick）；只有选字（char）才带 */
+    /** 字从哪儿点来（见 Pick）；带了字（char）才带 */
     pick_src?: PickSrc;
     pick_rank?: number;
     pivot?: string;
