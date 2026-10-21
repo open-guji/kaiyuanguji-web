@@ -33,6 +33,14 @@ const GET_BATCH = 20; // 取值分批，免得一次并发过多子请求
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
+// 章号一律存三位（`001`）：`vol01`、`1` 同一章，下游（cv `opinions.ingest.vol3`、人裁事件规范 §9 O-4）按三位认
+const RE_VOL_NUM = /^(?:vol)?0*(\d{1,3})$/i;
+
+/** `vol01`／`1`／`001` → `001`；不是纯章号的（别的书的章名）原样 */
+export function normalizeVol(vol) {
+  const m = RE_VOL_NUM.exec(vol);
+  return m ? m[1].padStart(3, '0') : vol;
+}
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 const RE_CELL = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/; // 与 lib/proof.ts 的 CELL_KEY 同一坐标
 const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
@@ -97,7 +105,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol, a, rev, choice, ...(char ? { char } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
