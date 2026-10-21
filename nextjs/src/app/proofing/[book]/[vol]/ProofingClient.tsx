@@ -130,7 +130,7 @@ interface CellRowProps {
 // 向下取整：0.997 写 99%，不写成 100% 让人以为机器很有把握
 const pct = (n: number) => `${Math.floor(n * 100)}%`;
 
-/** 一个字：本站字体显示不出来（扩 G 以后、私用区等）就显示码位 U+XXXXX，悬停看原字（lib/zi-display） */
+/** 一个字：本站字体显示不出来（私用区、Unicode 18 以后的新字等）就显示码位 U+XXXXX，悬停看原字（lib/zi-display） */
 function Zi({ c }: { c: string }) {
     if (canShow(c)) return <>{c}</>;
     return <span data-testid="zi-cp" title={c} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.55em', letterSpacing: 0 }}>{cpLabel(c)}</span>;

@@ -75,29 +75,28 @@ describe('对读章 preload（GUJI-631）', () => {
         expect(mockHead).not.toHaveBeenCalled();
     });
 
-    it('章生僻字子集（GUJI-701）：字体 preload ＋ 两条同字族 @font-face 排在 body 里；font_range 不合规就不出', async () => {
+    it('章生僻字子集（GUJI-701）：字体 preload ＋ 一条 KygZi 的 @font-face 排在 body 里；font_range 不合规就不出', async () => {
         const tree = await pageTree(['002'], '96mid1ogzk');
         const kids = ([] as El[]).concat(tree.props.children).flat() as El[];
         const font = kids.find((k) => k?.type === 'link' && k.props.as === 'font')!.props;
         expect(font).toMatchObject({ rel: 'preload', type: 'font/woff2', crossOrigin: 'anonymous', href: 'https://data.test/current/items/96mid1ogzk/default/002.font.woff2?v=k1' });
         const css = kids.find((k) => k?.type === 'style')!.props.dangerouslySetInnerHTML.__html as string;
-        expect(css.match(/@font-face/g)).toHaveLength(2);
-        expect(css).toContain('font-family:"HanaMinA"');
-        expect(css).toContain('font-family:"HanaMinB"');
+        expect(css.match(/@font-face/g)).toHaveLength(1);
+        expect(css).toContain('font-family:"KygZi"');
         expect(css).toContain('src:url("https://data.test/current/items/96mid1ogzk/default/002.font.woff2?v=k1") format("woff2");unicode-range:U+348B,U+20201-20203}');
 
         const bad = ([] as El[]).concat((await pageTree(['003'], '96mid1ogzk')).props.children).flat() as El[];
         expect(bad.some((k) => k?.type === 'style' || (k?.type === 'link' && k.props.as === 'font'))).toBe(false);
     });
 
-    it('不是对读章的普通章也出子集（GUJI-721）；切块的只 preload 第一块，每块各两条 @font-face', async () => {
+    it('不是对读章的普通章也出子集（GUJI-721）；切块的只 preload 第一块，每块一条 @font-face', async () => {
         FILES['items/96mid1ogzk/default/index.json'] = { chapters: [{ n: 4, file: '004', title: '詩類', font_file: '004.font.woff2', font_range: 'U+323B0', font_parts: [{ file: '004.font-2.woff2', range: 'U+20000-200FF' }] }] };
         try {
             const kids = ([] as El[]).concat((await pageTree(['004'], '96mid1ogzk')).props.children).flat() as El[];
             const fonts = kids.filter((k) => k?.type === 'link' && k.props.as === 'font').map((k) => k.props.href);
             expect(fonts).toEqual(['https://data.test/current/items/96mid1ogzk/default/004.font.woff2?v=k1']);
             const css = kids.find((k) => k?.type === 'style')!.props.dangerouslySetInnerHTML.__html as string;
-            expect(css.match(/@font-face/g)).toHaveLength(4);
+            expect(css.match(/@font-face/g)).toHaveLength(2);
             expect(css).toContain('004.font-2.woff2?v=k1") format("woff2");unicode-range:U+20000-200FF}');
         } finally {
             FILES['items/96mid1ogzk/default/index.json'] = DUIDU_INDEX;

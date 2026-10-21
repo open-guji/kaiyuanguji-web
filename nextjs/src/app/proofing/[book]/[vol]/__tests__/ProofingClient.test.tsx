@@ -154,16 +154,16 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
-    it('本站字体显示不出来的字（扩 G 等）显示码位，悬停是原字；提交的仍是原字', async () => {
+    it('本站字体显示不出来的字（私用区、Jigmo 缺的 U+2B81E 等）显示码位，悬停是原字；提交的仍是原字', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
-        const g = '\u{30EDD}';                                  // 扩 G
+        const g = '\u{2B81E}';                                  // 扩 D 里 Jigmo 唯一缺的字
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: g, ref: { c: g }, cand: [{ c: g }], alt: [{ c: g, s: 0.9, p: '弊' }, { c: '弊', s: 0.8 }] }]));
         render(<ProofingClient book="b10" vol="vol01" />);
         const grid = await screen.findByTestId('alt-grid');
-        expect(grid.textContent).toContain('U+30EDD');
+        expect(grid.textContent).toContain('U+2B81E');
         expect(grid.textContent).not.toContain(g);
-        expect(screen.getByText(/整理本作「U\+30EDD」/)).toBeTruthy();
+        expect(screen.getByText(/整理本作「U\+2B81E」/)).toBeTruthy();
         const cps = screen.getAllByTestId('zi-cp');
         expect(cps.length).toBeGreaterThanOrEqual(3);
         expect(cps[0].getAttribute('title')).toBe(g);

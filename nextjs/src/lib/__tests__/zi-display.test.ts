@@ -1,17 +1,17 @@
 /**
  * @jest-environment node
  *
- * 显示不出来的字改显示码位（lib/zi-display）：区段表与 globals.css 的字体 unicode-range 对账，免得加了字体忘了改表。
+ * 显示不出来的字改显示码位（lib/zi-display）：区段表与 zi-fonts.css 的字体 unicode-range 对账，免得改了字体忘了重生成表。
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SHOWABLE_RANGES, canShow, cpLabel, shownZi } from '../zi-display';
 
-/** globals.css 里所有 @font-face 的 unicode-range（只取 U+3400 以上的汉字段），合并相邻段 */
+/** zi-fonts.css、globals.css 里所有 @font-face 的 unicode-range（只取 U+3400 以上的汉字段）＋基本区（系统字体），合并相邻段 */
 function cssRanges(): [number, number][] {
-    const css = readFileSync(join(__dirname, '../../app/globals.css'), 'utf-8');
-    const out: [number, number][] = [];
-    for (const m of css.matchAll(/unicode-range:\s*([^;]+);/g)) {
+    const css = ['zi-fonts.css', 'globals.css'].map((f) => readFileSync(join(__dirname, '../../app', f), 'utf-8')).join('\n');
+    const out: [number, number][] = [[0x4e00, 0x9fff]];
+    for (const m of css.matchAll(/unicode-range:\s*([^;}]+)[;}]/g)) {
         for (const part of m[1].split(',')) {
             const [a, b] = part.trim().replace(/^U\+/i, '').split('-');
             const lo = parseInt(a, 16);
@@ -30,18 +30,14 @@ function cssRanges(): [number, number][] {
 }
 
 describe('zi-display', () => {
-    it('区段表＝globals.css 字体声明的区段＋基本区（系统字体）', () => {
-        const expected = [...cssRanges(), [0x4e00, 0x9fff] as [number, number]].sort((x, y) => x[0] - y[0]);
-        expect(SHOWABLE_RANGES.map(r => [...r])).toEqual(expected);
+    it('区段表＝字体声明的区段＋基本区（系统字体）', () => {
+        expect(SHOWABLE_RANGES.map(r => [...r])).toEqual(cssRanges());
     });
 
-    it('能显示的照常显示；扩 G／H／I、扩 A 与扩 B 新补的尾巴、私用区显示码位', () => {
-        for (const c of ['之', '㐀', '𠀀', '𪜀', '𫝀', '𬺰', '豈', '□', 'a', '，']) expect(shownZi(c)).toBe(c);
-        expect(shownZi('\u{30000}')).toBe('U+30000');     // 扩 G
-        expect(shownZi('\u{31350}')).toBe('U+31350');     // 扩 H
-        expect(shownZi('\u{2EBF0}')).toBe('U+2EBF0');     // 扩 I
-        expect(shownZi('䶶')).toBe('U+4DB6');         // 扩 A Unicode 13 补的，花园明朝没有
-        expect(shownZi('\u{2A6D7}')).toBe('U+2A6D7');     // 扩 B 尾巴
+    it('能显示的照常显示（含扩 G–J、扩 A／B 新补的尾巴）；Jigmo 缺的、私用区显示码位', () => {
+        for (const c of ['之', '㐀', '䶶', '𠀀', '\u{2A6D7}', '𪜀', '𫝀', '𬺰', '\u{2EBF0}', '\u{30000}', '\u{31350}', '\u{323B0}', '豈', '□', 'a', '，']) expect(shownZi(c)).toBe(c);
+        expect(shownZi('\u{2B81E}')).toBe('U+2B81E');     // 扩 D 唯一 Jigmo 没有的
+        expect(shownZi('\u{33480}')).toBe('U+33480');     // 扩 J 之后（Unicode 18 起）
         expect(shownZi('')).toBe('U+E000');         // 私用区
         expect(canShow('之乎')).toBe(true);               // 不是单个码点：不管
         expect(cpLabel('之')).toBe('U+4E4B');

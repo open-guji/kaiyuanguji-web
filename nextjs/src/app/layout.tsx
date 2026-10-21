@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
+import "./zi-fonts.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
 import { SourceProvider } from "@/components/common/SourceContext";
 import ErrorMonitor from "@/components/common/ErrorMonitor";

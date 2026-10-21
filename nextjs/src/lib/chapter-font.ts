@@ -3,8 +3,8 @@
  *
  * 数据打包给每个有生僻字的章生成 <章>.font.woff2（中位约 5KB），章条目记 `font_file`、`font_range`；
  * 生僻字超过 256 个的章切块，第 2 块起记在 `font_parts: [{ file, range }]`（scripts/lib/chapter-fonts.mjs）。
- * 页面每块追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：同字族 unicode-range 重叠时后定义的先查，
- * 这些字就从子集取，不再去下 globals.css 里花园明朝的大分片；子集取不到时照旧回落分片。扩 G–J 花园明朝没有，只有子集里有。
+ * 页面每块追加一条字族 "KygZi" 的 @font-face（与 zi-fonts.css 的静态分片同字族，同一地址只下一次）：同字族 unicode-range 重叠时
+ * 后定义的先查，这些字就从子集取，不再去下按码位切的分片；子集取不到时照旧回落分片。
  * 首屏那一章由服务端渲染直接出（page.ssr.tsx）；站内换章不经服务端，由阅读器在取新章数据时调 ensureChapterFont 补上。
  */
 
@@ -32,9 +32,12 @@ export function isCssSafeUrl(href: string | null | undefined): href is string {
     return !!href && !/["'()\\\s]/.test(href);
 }
 
+/** 与 scripts/lib/zi-fonts.mjs 的 ZI_FAMILY、globals.css 字体栈最前的那个名字一致 */
+export const ZI_FAMILY = 'KygZi';
+
 export function chapterFontCss(parts: { href: string; range: string } | { href: string; range: string }[]): string {
-    return (Array.isArray(parts) ? parts : [parts]).flatMap(({ href, range }) => ['HanaMinA', 'HanaMinB']
-        .map((f) => `@font-face{font-family:"${f}";font-style:normal;font-weight:400;font-display:swap;src:url("${href}") format("woff2");unicode-range:${range}}`))
+    return (Array.isArray(parts) ? parts : [parts])
+        .map(({ href, range }) => `@font-face{font-family:"${ZI_FAMILY}";font-style:normal;font-weight:400;font-display:swap;src:url("${href}") format("woff2");unicode-range:${range}}`)
         .join('');
 }
 

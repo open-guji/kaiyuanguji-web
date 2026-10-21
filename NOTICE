@@ -1,11 +1,11 @@
 开源古籍网站（kaiyuanguji-web）第三方声明
 
-一、花园明朝（Hanazono Mincho：HanaMinA、HanaMinB）——扩展区生僻字兜底字体
-  - 版权：Copyright 2008–2017 GlyphWiki Project（上游：https://glyphwiki.org/hanazono/，版本 2017-09-04）。
-  - 授权：Hanazono Font License 与 SIL Open Font License 1.1 双授权（保留字体名：Hanazono Font、HanaMinA、HanaMinB、
-    花園フォント、花園明朝A、花園明朝B）。全文见上游压缩包里的 LICENSE.txt（https://glyphwiki.org/hanazono/hanazono-20170904.zip）。
-  - 提供方式：我们不托管、不修改这套字体。网站的 CSS（nextjs/src/app/globals.css 的 HANAMIN 块）直接引用公共 CDN 上 npm 包
-    hanamin@0.0.5（https://github.com/VdustR/hanamin，ViPro 把花园明朝按 Unicode 区块切成 woff2 分片，包本身 MIT 授权）的分片：
-    https://cdn.jsdelivr.net/npm/hanamin@0.0.5/ ，备源 https://unpkg.com/hanamin@0.0.5/ 。
-  - 用法：只声明扩展 A、B–F、兼容表意文字（及补充）的分片，带 unicode-range；只在页面里出现了系统字体没有的扩展区字时，
-    读者的浏览器才从 CDN 下载对应的那几片。
+一、Jigmo（字雲）2025-09-12 版——扩展区生僻字字体
+  - 作者：上地宏一（Koichi Kamichi）；上游：https://kamichikoichi.github.io/jigmo/ ，压缩包 Jigmo-20250912.zip
+    （SHA-256 5744c7386d129475d87607ca66d043c8793c65448adeaedc921b6931890e5d0b），字形源自 GlyphWiki。
+  - 授权：CC0 1.0（公有领域奉献），子集、改格式、托管均不受限制。
+  - 提供方式：构建时从三档 TTF（Jigmo、Jigmo2、Jigmo3）裁出子集，托管在本站数据域名，不经第三方 CDN：
+    · 静态分片：非基本区（扩 A、扩 B–J、兼容区、基本区末尾）按码位每 256 字一块，CSS 见 nextjs/src/app/zi-fonts.css
+      （scripts/zi-fonts.mjs 生成），带 unicode-range，页面出现某块的字才下载那一块；
+    · 章子集：阅读页每章用到的生僻字另裁一份（scripts/chapter-fonts.py），正文的字从这里取。
+  - 2026-10 前用的花园明朝（Hanazono Mincho，经 jsDelivr／unpkg 上的 npm 包 hanamin@0.0.5）已撤下（GUJI-721）。
