@@ -7,7 +7,7 @@
 
 - 2026-10-20 PR①（#550）：域名集中到 `config/hosts.json`，值不变，已上线。
 - 2026-10-20 Sheldon 在 EdgeOne 新建 openguji.com 站点（CNAME 接入，DNS 不搬），加 data 加速域名，回源同一个 COS 桶；证书、版本指针缓存规则、跨域响应头均照旧域名配好，实测与旧域名一致。
-- 2026-10-20 PR②：`config/hosts.json` 的 data 改为 `https://data.openguji.com`，新增 `legacyData`（旧域名）。清缓存同时清新旧两个域名（新域名用密钥 `EDGEONE_DATA_ZONE_ID`，没配就跳过并警告）；证书巡检自动带上两个域名；IIIF 生成脚本的 id 仍用旧数据域名。
+- 2026-10-20 PR②（#553，另 #555、#556 补测试）：`config/hosts.json` 的 data 改为 `https://data.openguji.com`，新增 `legacyData`（旧域名）。清缓存同时清新旧两个域名（新域名用密钥 `EDGEONE_DATA_ZONE_ID`，没配就跳过并警告）；证书巡检自动带上两个域名；IIIF 生成脚本的 id 仍用旧数据域名。 当晚正式站上线（2e20e81）。
 
 ## 切换前的现状（2026-10-20 实测）
 
@@ -72,12 +72,14 @@
 - 回退：把 `config/hosts.json` 改回去即可。
 - 同时改 `open-guji-monitor` 的默认数据根，并把 `data.openguji.com` 加进它的证书巡检。
 
-## 第 4 步：数据里的绝对地址（待 Sheldon 定）
+## 第 4 步：旧数据域名彻底退役（2026-10-21 Sheldon 定：全部切新域名，旧域名只做跳转）
 
-- 书影 manifest 里的**图片地址**：不重新生成的话，书影图继续走旧域名（能用，但流量和缓存分在两个域名上）。
-  重新生成（`iiif-siku-zongmu.yml`，`PUBLIC_BASE` 已改为读配置）后图片走新域名。
-- **canvas id**（manifest 与 cord 里）：IIIF 里它是标识符，不是下载地址；网站只按路径取页序。建议**保持不变**，免得改 book-text 的 1817 处数据。
-- 建议：切换稳定后重新生成 manifest 的图片地址，canvas id 不动。
+- 书影：`ops/iiif/siku_zongmu_iiif.py` 的 `PUBLIC_BASE` 改为新数据域名，重跑 `iiif-siku-zongmu.yml`（线上已有的 01–35 册），
+  manifest、Collection、canvas id、图片地址都换成新域名。
+- book-text：cord 里 1820 处 canvas id 同步换（book-text#208）。网站只按路径取页序，两边先后顺序不影响阅读页。
+- 旧域名：EdgeOne 的 kaiyuanguji.com 站点给 `data.kaiyuanguji.com` 配 301 跳转到 `https://data.openguji.com`，保留路径和查询串；
+  跳转响应也要带跨域头（旧浏览器缓存的页面会跨域 fetch 旧地址）。
+- 跳转生效后：清缓存、证书巡检不再需要旧域名；`config/hosts.json` 的 `legacyData` 留着，供监控核对跳转。
 
 ## 不在本次范围
 

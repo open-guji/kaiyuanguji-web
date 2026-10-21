@@ -48,9 +48,9 @@ BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-worksp
 sys.path.insert(0, os.path.dirname(HERE))
 import hosts  # noqa: E402
 
-# manifest／canvas 的 id 是 IIIF 标识符，book-text 的 cord 里存着同一批 canvas id：数据域名迁移后仍沿用旧数据域名，
-# 重跑也不改变已发布的 id（网站只按路径取页序，与主机无关；见 docs/data-domain-migration.md 第 4 步）
-PUBLIC_BASE = hosts.LEGACY_DATA_ORIGIN
+# manifest／canvas 的 id 是 IIIF 标识符，book-text 的 cord 里存着同一批 canvas id，换数据域名时两边一起换
+# （2026-10-21 起用新数据域名，旧域名跳转；网站只按路径取页序，与主机无关；见 docs/data-domain-migration.md 第 4 步）
+PUBLIC_BASE = hosts.DATA_ORIGIN
 KEY_PREFIX = 'iiif'
 UA = f'kaiyuanguji-iiif/0.1 ({hosts.SITE_ORIGIN}; open-guji)'
 
