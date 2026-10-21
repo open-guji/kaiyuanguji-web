@@ -28,10 +28,10 @@ describe('chapter-font', () => {
         expect(chapterFontMeta({ file: '002', font_parts: parts })).toBeNull();
     });
 
-    it('CSS：HanaMinA、HanaMinB 两条同地址的 @font-face', () => {
+    it('CSS：一块一条 KygZi 的 @font-face', () => {
         const css = chapterFontCss({ href: URL_, range: 'U+348B' });
-        expect(css.match(/@font-face/g)).toHaveLength(2);
-        expect(css).toContain('font-family:"HanaMinB"');
+        expect(css.match(/@font-face/g)).toHaveLength(1);
+        expect(css).toContain('font-family:"KygZi"');
         expect(css).toContain(`src:url("${URL_}") format("woff2");unicode-range:U+348B}`);
     });
 

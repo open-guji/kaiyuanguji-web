@@ -2,32 +2,31 @@
  * 汉字能不能在本站显示：能显示就照常显示字，显示不出来（会变成方框「豆腐块」）的就改显示码位 U+XXXXX。
  *
  * 判据是**字体栈声明覆盖的区段**，不是在浏览器里探测（没有可靠的 API）：
- *   - 基本区 U+4E00–9FFF 由系统字体兜底；
- *   - 其余照 `app/globals.css` 里花园明朝（HanaMinA／HanaMinB）的 `unicode-range`。
- *     注意花园明朝是 2017 年的字库：扩 A 只到 U+4DB5，扩 B–F 各区也缺 Unicode 13 以后补进的尾巴；
- *     扩 G、H、I、J 完全没有。
- * 改了 globals.css 的字体区段就同步改 `SHOWABLE_RANGES`（`__tests__/zi-display.test.ts` 会对账）。
- * 长远的字体方案见仓库 `docs/扩展区与未收字显示-需求.md`。
+ *   - 基本区 U+4E00–9FFF 由系统字体兜底（末尾 U+9FA6–9FFF 另有网络字体）；
+ *   - 其余照 `app/zi-fonts.css` 各块的 `unicode-range`（Jigmo 2025.9.12 实有字形的码位，GUJI-721），表在 `zi-coverage.generated.ts`，
+ *     两者都由 `scripts/zi-fonts.mjs gen` 生成，`__tests__/zi-display.test.ts` 对账。
+ *     Jigmo 覆盖到 Unicode 17（扩 J），只缺扩 D 的 U+2B81E；私用区、Unicode 18 以后新增的字显示码位。
+ * 长远的字体方案见仓库 `docs/扩展区与未收字显示-设计.md`。
  */
+import { ZI_FONT_RANGES } from './zi-coverage.generated';
 
-/** 本站字体能显示的汉字码位区段（闭区间），按起点排好 */
-export const SHOWABLE_RANGES: ReadonlyArray<readonly [number, number]> = [
-    [0x3400, 0x4db5],     // 扩 A（HanaMinA）
-    [0x4e00, 0x9fff],     // 基本区（系统字体）
-    [0xf900, 0xfa6d],     // 兼容表意文字（HanaMinA）
-    [0xfa70, 0xfad9],
-    [0x20000, 0x2a6d6],   // 扩 B（HanaMinB）
-    [0x2a700, 0x2b734],   // 扩 C
-    [0x2b740, 0x2b81d],   // 扩 D
-    [0x2b820, 0x2cea1],   // 扩 E
-    [0x2ceb0, 0x2ebe0],   // 扩 F
-    [0x2f800, 0x2fa1d],   // 兼容表意文字补充（HanaMinA）
-];
+const BASIC: readonly [number, number] = [0x4e00, 0x9fff];
+
+/** 本站字体能显示的汉字码位区段（闭区间），按起点排好、相邻的已合并 */
+export const SHOWABLE_RANGES: ReadonlyArray<readonly [number, number]> = (() => {
+    const out: [number, number][] = [];
+    for (const r of [...ZI_FONT_RANGES, BASIC].sort((x, y) => x[0] - y[0])) {
+        const last = out[out.length - 1];
+        if (last && r[0] <= last[1] + 1) last[1] = Math.max(last[1], r[1]);
+        else out.push([r[0], r[1]]);
+    }
+    return out;
+})();
 
 /** 汉字（含各扩展区、兼容区）与私用区的码位段：落在这里、又不在 SHOWABLE_RANGES 里的，就是显示不出来的 */
 const HAN_OR_PUA: ReadonlyArray<readonly [number, number]> = [
     [0x3400, 0x4dbf], [0x4e00, 0x9fff], [0xe000, 0xf8ff], [0xf900, 0xfaff],
-    [0x20000, 0x2fa1f], [0x30000, 0x3347f], [0xf0000, 0x10ffff],
+    [0x20000, 0x2ffff], [0x30000, 0x3ffff], [0xf0000, 0x10ffff],   // 第 2、3 平面整个算汉字：以后新增的扩展区先显示码位
 ];
 
 const inRanges = (o: number, rs: ReadonlyArray<readonly [number, number]>) => rs.some(([a, b]) => o >= a && o <= b);

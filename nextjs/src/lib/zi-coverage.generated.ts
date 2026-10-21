@@ -1,0 +1,15 @@
+// 由 scripts/zi-fonts.mjs gen 生成，勿手改：src/app/zi-fonts.css 各块 unicode-range 的并集（Jigmo 20250912 非基本区实有字形的码位）。
+export const ZI_FONT_RANGES: ReadonlyArray<readonly [number, number]> = [
+    [0x3400, 0x4dbf],
+    [0x9fa6, 0x9fff],
+    [0xf900, 0xfa6d],
+    [0xfa70, 0xfad9],
+    [0x20000, 0x2a6df],
+    [0x2a700, 0x2b81d],
+    [0x2b820, 0x2cead],
+    [0x2ceb0, 0x2ebe0],
+    [0x2ebf0, 0x2ee5d],
+    [0x2f800, 0x2fa1d],
+    [0x30000, 0x3134a],
+    [0x31350, 0x33479],
+];

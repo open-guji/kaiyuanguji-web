@@ -275,8 +275,8 @@ async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; 
 
 /**
  * 章的生僻字子集（GUJI-701／GUJI-721）：打包时给有生僻字的章生成了 <章>.font.woff2（中位约 5KB），章条目记 font_file／font_range，
- * 生僻字多的章另有 font_parts。页面里每块追加同字族的 @font-face（HanaMinA、HanaMinB 各一条，同一地址只下一次）：
- * 同字族 unicode-range 重叠时后定义的先查，这些字就从子集取，不再去下 globals.css 里花园明朝的大分片；子集取不到时照旧回落分片。
+ * 生僻字多的章另有 font_parts。页面里每块追加一条与静态分片（zi-fonts.css）同字族的 @font-face：
+ * 同字族 unicode-range 重叠时后定义的先查，这些字就从子集取，不再去下按码位切的分片；子集取不到时照旧回落分片。
  * 只 preload 第一块（后面的块读到才下）。这里只出首屏这一章；站内换章不经服务端，由阅读器取新章数据时补（lib/chapter-font.ts 的 ensureChapterFont）。
  */
 async function chapterFont(id: string, s: Loaded): Promise<{ href: string; range: string }[] | null> {

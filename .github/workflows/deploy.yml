@@ -1328,6 +1328,20 @@ jobs:
             exit 1
           fi
 
+      # 扩展区生僻字静态分片（GUJI-721 第 2 步）：zi-fonts.css 引用的块要先在数据域名上，再上线引用它的代码。
+      # COS 上都有就只 LIST 一次（几秒）；缺了才装字体工具、现裁（约 30 秒）、与入库 CSS 对账、传缺的块。
+      # 测试站也传到正式路径：CSS 写死正式数据域名，块名带内容哈希、只增不改。
+      - name: Sync zi fallback fonts to COS
+        if: ${{ env.HAS_COS_SECRETS == 'true' }}
+        working-directory: nextjs
+        env:
+          HAS_COS_SECRETS: ${{ secrets.COS_SECRET_ID != '' }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+        run: node scripts/zi-fonts.mjs sync
+
       # --- 步骤 2：部署 ---
       # 测试站：直接上传型项目 kyg-staging（CLI）。正式站见下一步（kyg-ssr-spike，同一条路）
       - name: Deploy to EdgeOne (staging, direct upload)
