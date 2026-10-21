@@ -66,16 +66,16 @@ class SikuIiif(unittest.TestCase):
         meta = {'ia': '06061302.cn', 'leaves': 107, 'juan': '卷四~卷五'}
         commons = {'name': 'X.djvu', 'url': 'https://upload.wikimedia.org/wikipedia/commons/8/86/X.djvu', 'pagecount': 107}
         man = m.build_manifest(3, meta, canv, commons)
-        self.assertEqual(man['id'], 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/03/manifest.json')
+        self.assertEqual(man['id'], f'{m.hosts.DATA_ORIGIN}/iiif/96mid1ogzk/03/manifest.json')
         split, plain = man['items']
-        self.assertEqual(split['id'], 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/canvas/03/0105a')
+        self.assertEqual(split['id'], f'{m.hosts.DATA_ORIGIN}/iiif/96mid1ogzk/canvas/03/0105a')
         self.assertEqual(split['source']['selector']['value'], 'xywh=2096,0,2102,2913')
         body = split['items'][0]['items'][0]['body']['items']
         self.assertEqual([b['label']['zh'][0] for b in body], ['本站', 'Internet Archive'])  # 拆页不挂 Commons
         self.assertIn('/2096,0,2102,2913/1200,/0/default.jpg', body[1]['id'])
         body = plain['items'][0]['items'][0]['body']['items']
         self.assertEqual([b['label']['zh'][0] for b in body], ['本站', '维基共享资源', 'Internet Archive'])
-        self.assertEqual(body[0]['id'], 'https://data.kaiyuanguji.com/iiif/96mid1ogzk/03/0106/full/1200,/0/default.webp')
+        self.assertEqual(body[0]['id'], f'{m.hosts.DATA_ORIGIN}/iiif/96mid1ogzk/03/0106/full/1200,/0/default.webp')
         self.assertEqual(body[1]['id'],
                          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/X.djvu/page106-1280px-X.djvu.jpg')
 
