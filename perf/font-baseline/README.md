@@ -29,3 +29,5 @@ export FONTS_DIR=$PWD/fonts CV_FONTS=../open-guji-cv/fonts BOOK_TEXT=../book-tex
 | `chap.py` | default 版本每章的非基本区码位集合 | `chap.pkl` |
 | `jigmo_chunks.py` | Jigmo 2025 按 256 码位切 woff2，量每块大小 | `jigmo_chunks.json`（4 核约 5 分钟） |
 | `dl.py` | 每章阅读页按 unicode-range 要拉几块、多少 KB：花园明朝现状／文津宋体 npm 分块／Jigmo 自切分块 | `dl.json` |
+| `vol04.py` | vol04 待审单相似字：照 `proofing.ts` 取 `alt`、照 `zi-display.ts` 判显示不出（参数：`004.pending.json` 路径） | `vol04_zi.json` |
+| `vol04_font.py` | 上面那些字：Jigmo 2025／文津宋体缺字、整单与逐卡子集大小、Jigmo 256／128 码位块与文津 npm 块要拉多少 | `vol04_font.json`（4 核约 3 分钟） |
