@@ -6,11 +6,15 @@ def _sum_series(resp, metric):
     """从 DescribeTimingL7AnalysisData 响应里把某指标按天累加成 [(time, value)]。取不到返回 None。"""
     if not resp:
         return None
+    # 多站点时 Data 可能按站点各一项：同一时间点相加
+    acc, found = {}, False
     for d in resp.get("Data") or []:
         for tv in d.get("TypeValue") or []:
             if tv.get("MetricName") == metric:
-                return [(p.get("Timestamp"), p.get("Value") or 0) for p in (tv.get("Detail") or [])]
-    return None
+                found = True
+                for p in tv.get("Detail") or []:
+                    acc[p.get("Timestamp")] = acc.get(p.get("Timestamp"), 0) + (p.get("Value") or 0)
+    return sorted(acc.items(), key=lambda kv: kv[0] or 0) if found else None
 
 
 def _billing_total(resp):

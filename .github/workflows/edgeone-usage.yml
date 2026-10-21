@@ -38,6 +38,7 @@ jobs:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
           EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
           OUT_MD: ${{ runner.temp }}/usage.md
           OUT_BREACH: ${{ runner.temp }}/breach.txt
         run: python3 ops/edgeone_usage.py

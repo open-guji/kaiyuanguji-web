@@ -4,13 +4,11 @@
 只允许数据域名（config/hosts.json 的 data 与 legacyData）下的地址——这个脚本是给「数据指针」用的，不清页面、不清整站
 （整站 purge 会把 300 多 MB 的数据缓存白丢，回源费贵；页面靠 Next 的按需失效，见 scripts/item-revalidate.mjs）。
 
-新旧两个数据域名回源同一个 COS 桶，各有各的节点缓存：给其中一个域名下的地址，另一个域名下的同一路径也一起清。
-两个域名在 EdgeOne 的不同站点（zone）下：
-  旧域名（legacyData，旧站点）用 EDGEONE_ZONE_ID，必须有；
-  新域名（data，新站点）用 EDGEONE_DATA_ZONE_ID，没配就跳过并警告（新域名的版本指针在规则引擎里本就配了节点不缓存）。
+数据域名在 EdgeOne 新站点下，用 EDGEONE_DATA_ZONE_ID。旧数据域名（legacyData）已整体 301 到新域名，
+给旧域名下的地址也收，换成新域名下的同一路径去清。
 
 用法：python3 ops/purge-urls.py [--dry-run] <url> [<url> ...]
-环境变量：TENCENT_SECRET_ID／TENCENT_SECRET_KEY／EDGEONE_ZONE_ID／EDGEONE_DATA_ZONE_ID（--dry-run 时不需要）
+环境变量：TENCENT_SECRET_ID／TENCENT_SECRET_KEY／EDGEONE_DATA_ZONE_ID（--dry-run 时不需要）
 退出码：0 成功；1 地址不合规／调用失败；2 用法不对。
 """
 import json
@@ -22,11 +20,8 @@ import hosts  # noqa: E402
 
 DATA_ORIGIN = hosts.DATA_ORIGIN + '/'
 LEGACY_DATA_ORIGIN = hosts.LEGACY_DATA_ORIGIN + '/'
-# (数据根, 站点 ID 的环境变量名, 是否必须)
-ZONES = [(LEGACY_DATA_ORIGIN, 'EDGEONE_ZONE_ID', True)]
-if DATA_ORIGIN != LEGACY_DATA_ORIGIN:
-    ZONES.append((DATA_ORIGIN, 'EDGEONE_DATA_ZONE_ID', False))
-ORIGINS = [o for o, _, _ in ZONES]
+ZONE_ENV = 'EDGEONE_DATA_ZONE_ID'
+ORIGINS = list(dict.fromkeys([DATA_ORIGIN, LEGACY_DATA_ORIGIN]))
 MAX_URLS = 20
 
 
@@ -46,14 +41,14 @@ def check_urls(urls):
 
 
 def plan(urls):
-    """每个地址换到每个数据域名下 → [(站点 ID 环境变量名, 是否必须, [地址…])]，按 ZONES 的顺序、去重"""
+    """每个地址换到新数据域名下、去重 → [地址…]"""
     paths = []
     for u in urls:
         o = next(o for o in ORIGINS if u.startswith(o))
         p = u[len(o):]
         if p not in paths:
             paths.append(p)
-    return [(env, required, [o + p for p in paths]) for o, env, required in ZONES]
+    return [DATA_ORIGIN + p for p in paths]
 
 
 def purge(zone_id, urls):
@@ -83,28 +78,22 @@ def main(argv):
         for e in errors:
             print(f'❌ {e}', file=sys.stderr)
         return 2 if not args else 1
-    groups = plan(args)
+    urls = plan(args)
     if dry:
         print('dry-run，将清：')
-        for env, _, urls in groups:
-            for u in urls:
-                print(f'  [{env}] {u}')
+        for u in urls:
+            print(f'  {u}')
         return 0
-    for k in ('TENCENT_SECRET_ID', 'TENCENT_SECRET_KEY', 'EDGEONE_ZONE_ID'):
+    for k in ('TENCENT_SECRET_ID', 'TENCENT_SECRET_KEY', ZONE_ENV):
         if not os.environ.get(k):
             print(f'❌ 缺环境变量 {k}', file=sys.stderr)
             return 1
-    for env, required, urls in groups:
-        zone = os.environ.get(env)
-        if not zone:
-            print(f'⚠️ 没配 {env}，跳过 {len(urls)} 个地址（{urls[0]} 等）', file=sys.stderr)
-            continue
-        try:
-            body = purge(zone, urls)
-        except Exception as e:  # noqa: BLE001 — 任何失败都要带着信息退出非零
-            print(f'❌ purge 失败（{env}）：{e}', file=sys.stderr)
-            return 1
-        print(f'✅ 已清 {len(urls)} 个地址（{env}）：{json.dumps(body, ensure_ascii=False)[:300]}')
+    try:
+        body = purge(os.environ[ZONE_ENV], urls)
+    except Exception as e:  # noqa: BLE001 — 任何失败都要带着信息退出非零
+        print(f'❌ purge 失败：{e}', file=sys.stderr)
+        return 1
+    print(f'✅ 已清 {len(urls)} 个地址：{json.dumps(body, ensure_ascii=False)[:300]}')
     return 0
 
 

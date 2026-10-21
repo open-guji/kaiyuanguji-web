@@ -40,12 +40,9 @@ class PurgeUrls(unittest.TestCase):
                         f'https://{host}.evil.com/x', f'https://{host}', f'{host}/latest.json'):
                 self.assertTrue(mod.check_urls([bad]), bad)
 
-    def test_plan_mirrors_each_path_to_both_data_hosts(self):
-        groups = mod.plan([D + 'latest.json', L + 'h1/manifest-root.json', L + 'latest.json'])
-        by_env = {env: (required, urls) for env, required, urls in groups}
-        self.assertEqual(by_env['EDGEONE_ZONE_ID'], (True, [L + 'latest.json', L + 'h1/manifest-root.json']))
-        if D != L:
-            self.assertEqual(by_env['EDGEONE_DATA_ZONE_ID'], (False, [D + 'latest.json', D + 'h1/manifest-root.json']))
+    def test_plan_maps_legacy_urls_to_data_host_and_dedups(self):
+        self.assertEqual(mod.plan([D + 'latest.json', L + 'h1/manifest-root.json', L + 'latest.json']),
+                         [D + 'latest.json', D + 'h1/manifest-root.json'])
 
     def test_rejects_wildcards_whitespace_empty_and_too_many(self):
         self.assertTrue(mod.check_urls([D + '*']))
