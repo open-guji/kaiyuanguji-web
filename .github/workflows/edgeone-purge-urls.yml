@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       urls:
-        description: 完整 URL，空格分隔；留空＝新旧数据域名下的 h1 版本指针（正式与 staging/，域名见 config/hosts.json）
+        description: 完整 URL，空格分隔；留空＝数据域名下的 h1 版本指针（正式与 staging/，域名见 config/hosts.json）
         required: false
         default: ''
 

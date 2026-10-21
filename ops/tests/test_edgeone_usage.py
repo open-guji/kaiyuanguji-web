@@ -35,6 +35,13 @@ class EvaluateTests(unittest.TestCase):
         self.assertEqual(len(r["breaches"]), 1)  # 只看 purge_url
         self.assertIn("600/1000", r["breaches"][0])
 
+    def test_l7_two_zones_summed(self):
+        a, b = l7([10, 20], [1e9, 2e9]), l7([1, 2], [0, 1e9])
+        r = evaluate({"quota": None, "l7_days": {"Data": a["Data"] + b["Data"]}, "billing": {}}, TH, NOW)
+        rows = {k: v for k, v, _ in r["rows"]}
+        self.assertEqual(rows["近 7 天 L7 请求数"], "33")
+        self.assertEqual(rows["近 7 天 L7 响应流量"], "4.00 GB")
+
     def test_purge_quota_fine(self):
         q = {"PurgeQuota": [{"Type": "purge_url", "Daily": 1000, "DailyAvailable": 990}]}
         self.assertEqual(evaluate({"quota": q, "l7_days": None, "billing": {}}, TH, NOW)["breaches"], [])

@@ -34,6 +34,8 @@ def main():
     from tencentcloud.teo.v20220901 import models, teo_client
 
     zone = os.environ["EDGEONE_ZONE_ID"]
+    # 数据域名迁到新站点（EDGEONE_DATA_ZONE_ID）后流量与计费在两个站点：L7 与计费两个站点一起算，清缓存额度看旧站点
+    zones = [zone] + ([os.environ["EDGEONE_DATA_ZONE_ID"]] if os.environ.get("EDGEONE_DATA_ZONE_ID") else [])
     cred = credential.Credential(os.environ["TENCENT_SECRET_ID"], os.environ["TENCENT_SECRET_KEY"])
     client = teo_client.TeoClient(cred, "")
     now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).replace(microsecond=0)
@@ -55,7 +57,7 @@ def main():
         r.StartTime = fmt(now - dt.timedelta(days=7))
         r.EndTime = fmt(now)
         r.MetricNames = ["l7Flow_request", "l7Flow_outFlux"]
-        r.ZoneIds = [zone]
+        r.ZoneIds = zones
         r.Interval = "day"
         return json.loads(client.DescribeTimingL7AnalysisData(r).to_json_string())
 
@@ -71,7 +73,7 @@ def main():
                 r = models.DescribeBillingDataRequest()
                 r.StartTime = fmt(month_start)
                 r.EndTime = fmt(now)
-                r.ZoneIds = [zone]
+                r.ZoneIds = zones
                 r.MetricName = metric
                 r.Interval = interval
                 return json.loads(client.DescribeBillingData(r).to_json_string())

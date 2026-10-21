@@ -1510,16 +1510,10 @@ jobs:
 
           # 09-27：h1 版本指针也要清——实测节点把 h1/manifest-root.json 缓存了约 18.7 小时
           # （源站 max-age=120 被无视）；另在控制台规则引擎给它们配节点不缓存
-          # 新旧两个数据域名回源同一个桶、各有节点缓存，分属两个站点：旧域名用 EDGEONE_ZONE_ID，
-          # 新域名用 EDGEONE_DATA_ZONE_ID（没配就跳过，新域名的指针规则本就是节点不缓存）。同 ops/purge-urls.py
+          # 数据域名在新站点（EDGEONE_DATA_ZONE_ID）；旧数据域名已整体 301 到新域名，不用再清。同 ops/purge-urls.py
           sub = 'staging/' if staging else ''
           names = ['latest.json', 'web.json', 'h1/manifest-root.json', 'h1/text-manifest-root.json']
-          zones = [(os.environ['EDGEONE_ZONE_ID'], '$HOST_LEGACY_DATA/')]
-          if '$HOST_DATA' != '$HOST_LEGACY_DATA':
-              if os.environ.get('EDGEONE_DATA_ZONE_ID'):
-                  zones.append((os.environ['EDGEONE_DATA_ZONE_ID'], '$HOST_DATA/'))
-              else:
-                  print('⚠️ 没配 EDGEONE_DATA_ZONE_ID，跳过新数据域名的指针')
+          zones = [(os.environ['EDGEONE_DATA_ZONE_ID'], '$HOST_DATA/')]
           for zone, base in zones:
               req_pointer = models.CreatePurgeTaskRequest()
               req_pointer.ZoneId = zone

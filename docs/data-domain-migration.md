@@ -7,6 +7,7 @@
 
 - 2026-10-20 PR①（#550）：域名集中到 `config/hosts.json`，值不变，已上线。
 - 2026-10-20 Sheldon 在 EdgeOne 新建 openguji.com 站点（CNAME 接入，DNS 不搬），加 data 加速域名，回源同一个 COS 桶；证书、版本指针缓存规则、跨域响应头均照旧域名配好，实测与旧域名一致。
+- 2026-10-21：书影 manifest 换新域名（#557）、book-text cord 换新域名（book-text#208）、旧数据域名 301 到新域名。
 - 2026-10-20 PR②（#553，另 #555、#556 补测试）：`config/hosts.json` 的 data 改为 `https://data.openguji.com`，新增 `legacyData`（旧域名）。清缓存同时清新旧两个域名（新域名用密钥 `EDGEONE_DATA_ZONE_ID`，没配就跳过并警告）；证书巡检自动带上两个域名；IIIF 生成脚本的 id 仍用旧数据域名。 当晚正式站上线（2e20e81）。
 
 ## 切换前的现状（2026-10-20 实测）
@@ -79,7 +80,9 @@
 - book-text：cord 里 1820 处 canvas id 同步换（book-text#208）。网站只按路径取页序，两边先后顺序不影响阅读页。
 - 旧域名：EdgeOne 的 kaiyuanguji.com 站点给 `data.kaiyuanguji.com` 配 301 跳转到 `https://data.openguji.com`，保留路径和查询串；
   跳转响应也要带跨域头（旧浏览器缓存的页面会跨域 fetch 旧地址）。
-- 跳转生效后：清缓存、证书巡检不再需要旧域名；`config/hosts.json` 的 `legacyData` 留着，供监控核对跳转。
+- 2026-10-21 跳转已配（Sheldon），实测：路径、查询串保留，http 也跳到 https，301 响应带 `Access-Control-Allow-Origin: *`，浏览器跨域 fetch 旧地址能跟到新地址。
+- 跳转生效后：清缓存只清新域名（`EDGEONE_DATA_ZONE_ID`，旧地址照收、换成新域名同路径）；用量日检把两个站点的流量和计费合起来算；
+  证书巡检仍查旧域名（跳转也要证书）；`config/hosts.json` 的 `legacyData` 留着。
 
 ## 不在本次范围
 
