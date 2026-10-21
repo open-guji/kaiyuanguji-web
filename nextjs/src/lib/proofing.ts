@@ -455,7 +455,6 @@ export const SYMBOLS: { c: string; name: string }[] = [
     { c: '■', name: '实心方框' },
     { c: '△', name: '三角' },
     { c: '▲', name: '实心三角' },
-    { c: '〇', name: '数字零' },
 ];
 
 // ---- 找到该册的待审章 ----

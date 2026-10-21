@@ -393,10 +393,10 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={preNone && o.choice === 'none'} data-hotkey={o.key}
+                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? done === o.label : preNone && o.choice === 'none'} data-hotkey={o.key}
                         // 切分错了也能同时给字：「另写一字」框里有一个字就一起带上（控制台同口径，调研 A C2）
                         onClick={() => go(o.choice, o.choice === 'cut' && [...custom].length === 1 ? custom : undefined)} className={BTN_CLASS}
-                        title={o.title} style={btnStyle('act', (preNone && o.choice === 'none') || done === o.label, busy)}>{o.label}</button>
+                        title={o.title} style={btnStyle('act', done ? done === o.label : preNone && o.choice === 'none', busy)}>{o.label}</button>
                 ))}
             </div>
             <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
