@@ -70,6 +70,7 @@ jobs:
           FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: node scripts/proofing-sync.mjs
       - name: Pending lists → COS
+        id: publish
         if: ${{ !cancelled() && steps.tests.outcome == 'success' && (github.event_name == 'schedule' || inputs.parts != 'opinions') }}
         working-directory: nextjs
         env:
@@ -80,4 +81,18 @@ jobs:
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
           COS_PATH_PREFIX: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'staging') && 'staging' || '' }}
+          PURGE_URLS_OUT: ${{ runner.temp }}/proof-purge.txt
         run: node scripts/proofing-sync.mjs
+      # 数据域名的 EdgeOne 节点不认源站 max-age=300（10-21 实测旧待审单缓存了 14 小时），传了什么就按地址清什么
+      - name: Purge uploaded proof files on the CDN
+        if: ${{ !cancelled() && steps.publish.outcome != 'skipped' }}
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
+          LIST: ${{ runner.temp }}/proof-purge.txt
+        run: |
+          if [ ! -s "$LIST" ]; then echo '· 没有新传的文件，不清'; exit 0; fi
+          python3 -m pip install --user tencentcloud-sdk-python-teo -q
+          # purge-urls.py 一次最多 20 个地址
+          xargs -n 20 python3 ops/purge-urls.py < "$LIST"

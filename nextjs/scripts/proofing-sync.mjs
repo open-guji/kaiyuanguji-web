@@ -20,9 +20,9 @@
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, writeFileSync } from 'node:fs';
 import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
-import { SITE_ORIGIN } from '../../config/hosts.mjs';
+import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 
 const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
@@ -157,6 +157,11 @@ const fixesPublish = doPublish ? await publishFixes({ worker, cos: cosOps, ws: W
 const md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });
 console.log(md);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
+// 这次传了的文件逐行写成完整地址，给工作流下一步清 CDN 用：数据域名的节点不认源站 max-age=300（10-21 实测旧单缓存了 14 小时）
+if (process.env.PURGE_URLS_OUT) {
+    const keys = DRY_RUN ? [] : [...(publish?.put || []), ...(fixesPublish?.put || [])];
+    writeFileSync(process.env.PURGE_URLS_OUT, keys.map((k) => `${DATA_ORIGIN}/${PROOF_PREFIX}${k}\n`).join(''));
+}
 for (const p of problems) console.log(`::warning::${p}`);
 const errors = [...(opinions?.problems || []), ...(publish?.failed || []), ...(status?.problems || []), ...(fixes?.problems || []), ...(fixesPublish?.failed || [])];
 for (const e of errors) console.log(`::error::${e}`);
