@@ -8,7 +8,7 @@
  *   EDGEONE_ZONE_ID       EdgeOne 控制台 → 站点列表 → ID 列
  *   EDGEONE_ENDPOINT      可选，默认 teo.intl.tencentcloudapi.com（国际版）
  *                         国内腾讯云请改为 teo.tencentcloudapi.com
- *   PURGE_HOST            可选，默认 api.kaiyuanguji.com
+ *   PURGE_HOST            可选，默认 api.openguji.com
  *
  * 注意：上海云主机（国内腾讯云账号）和 EdgeOne 国际版（kaiyuanguji.com 加速）
  * 是两个独立账号体系，凭证不通用。purge 用的是 EdgeOne 国际版那套。
@@ -46,7 +46,7 @@ function readEnv() {
     const secretId = process.env.TENCENT_SECRET_ID;
     const secretKey = process.env.TENCENT_SECRET_KEY;
     const zoneId = process.env.EDGEONE_ZONE_ID;
-    const host = process.env.PURGE_HOST || 'api.kaiyuanguji.com';
+    const host = process.env.PURGE_HOST || 'api.openguji.com';
     const endpoint = process.env.EDGEONE_ENDPOINT || 'teo.intl.tencentcloudapi.com';
     const missing = [];
     if (!secretId) missing.push('TENCENT_SECRET_ID');

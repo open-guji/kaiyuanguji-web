@@ -93,11 +93,11 @@ done
 
 ## 3. 搜索全挂
 
-搜索两层：L1 = Meilisearch（上海，`https://api.kaiyuanguji.com`），L2 = 浏览器内 MiniSearch 分片（COS `v/<commit>/search/`）兜底。
+搜索两层：L1 = Meilisearch（上海，`https://api.openguji.com`；旧 `api.kaiyuanguji.com` 308 跳到它），L2 = 浏览器内 MiniSearch 分片（COS `v/<commit>/search/`）兜底。
 
 | 看什么 | 怎么判断 |
 |---|---|
-| `curl -s https://api.kaiyuanguji.com/health` | 非 `{"status":"available"}` → L1 挂了，读者会退到 L2（慢但能用） |
+| `curl -s https://api.openguji.com/health` | 非 `{"status":"available"}` → L1 挂了，读者会退到 L2（慢但能用） |
 | deploy 的「Degradable deps」步骤／`e2e/degradable/search-l1.spec.ts` | 只 L1 红不拦发布，日志里写了哪个索引、哪项 settings 不对 |
 | L2 也没结果 | `curl -s -o /dev/null -w "%{http_code}" "https://data.openguji.com/v/<data 短 commit>/search/meta.json"`——404 说明 search 分片没传上去（sync-to-cos 半途失败）；`<data 短 commit>` 即 `/api/version` 的 `data` |
 | 搜索 401 | 构建时 `NEXT_PUBLIC_MEILI_KEY` 为空（2026-08 事故），看 deploy 日志 |

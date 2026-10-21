@@ -17,11 +17,11 @@ env:
   # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
   HOST_DATA: https://data.openguji.com
   HOST_LEGACY_DATA: https://data.kaiyuanguji.com
-  HOST_API: https://api.kaiyuanguji.com
+  HOST_API: https://api.openguji.com
+  HOST_LEGACY_API: https://api.kaiyuanguji.com
   HOST_SITE: https://www.openguji.com
   HOST_SITE_APEX: https://openguji.com
-  HOST_STAGING: https://staging.kaiyuanguji.com
-  HOST_SSR_TEST: https://ssr-test.kaiyuanguji.com
+  HOST_STAGING: https://staging.openguji.com
   HOST_LEGACY_SITE: https://www.kaiyuanguji.com
   HOST_LEGACY_APEX: https://kaiyuanguji.com
   HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com

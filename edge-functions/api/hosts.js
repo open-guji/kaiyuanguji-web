@@ -2,11 +2,11 @@
 
 export const DATA_ORIGIN = 'https://data.openguji.com';
 export const LEGACY_DATA_ORIGIN = 'https://data.kaiyuanguji.com';
-export const API_ORIGIN = 'https://api.kaiyuanguji.com';
+export const API_ORIGIN = 'https://api.openguji.com';
+export const LEGACY_API_ORIGIN = 'https://api.kaiyuanguji.com';
 export const SITE_ORIGIN = 'https://www.openguji.com';
 export const SITE_APEX_ORIGIN = 'https://openguji.com';
-export const STAGING_ORIGIN = 'https://staging.kaiyuanguji.com';
-export const SSR_TEST_ORIGIN = 'https://ssr-test.kaiyuanguji.com';
+export const STAGING_ORIGIN = 'https://staging.openguji.com';
 export const LEGACY_SITE_ORIGIN = 'https://www.kaiyuanguji.com';
 export const LEGACY_APEX_ORIGIN = 'https://kaiyuanguji.com';
 export const OAUTH_ISSUER = 'https://www.kaiyuanguji.com';

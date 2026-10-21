@@ -1,7 +1,7 @@
 /**
  * 主域名迁移（overview#275）：kaiyuanguji.com → openguji.com。
  *
- * 读者看得见的域名只有 www／裸域／staging；data.、api. 仍留在 kaiyuanguji.com（后台跨域调用，读者看不见）。
+ * 读者看得见的域名只有 www／裸域；data.、api.、staging. 也已迁到 openguji.com（2026-10-21），旧的 data.、api. 跳到新域名。
  * 旧域名的页面请求一律 301 到新域名的同一路径（保留查询串），并在地址后加 MOVED_HASH，
  * 新站据此在页面最上方显示一条窄横幅（components/layout/MovedBanner）。
  * 用 # 片段而不是查询参数：片段不会发给服务器，不污染 CDN 缓存键，也不会被条目页的「只留白名单参数」308 剥掉。
@@ -49,7 +49,7 @@ export function canonicalRedirectTarget(opts: {
     return `https://${CANONICAL_HOST}${opts.pathname}${opts.search}${hash}`;
 }
 
-/** 备案号：openguji.com 是同一主体下的第 2 个网站（-2）；kaiyuanguji.com 仍用原号（测试站 staging.kaiyuanguji.com 也属旧域名） */
+/** 备案号：openguji.com 是同一主体下的第 2 个网站（-2）；kaiyuanguji.com 仍用原号 */
 export const ICP_OPENGUJI = '冀ICP备2026013455号-2';
 export const ICP_KAIYUANGUJI = '冀ICP备2026013455号';
 

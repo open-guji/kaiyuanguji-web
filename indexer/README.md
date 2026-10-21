@@ -1,7 +1,7 @@
 # kyg-indexer — Meilisearch 索引器（跑在上海搜索机）
 
 把 book-index-draft + book-index（元数据）与 book-text（整理本正文）全量推到同机的 Meilisearch（`:7700`），
-重建成功后 purge EdgeOne 上 `api.kaiyuanguji.com` 的边缘缓存。**网站部署不会更新这个索引**，它是独立的一条链路。
+重建成功后 purge EdgeOne 上 `api.openguji.com` 的边缘缓存。**网站部署不会更新这个索引**，它是独立的一条链路。
 
 服务器（2026-09-27 起）：`ubuntu@124.223.58.113`（腾讯云轻量 · 上海，2 vCPU / 3.6 GB / swap 4 GB / 60 GB 盘，Ubuntu 26.04）。
 用 `ubuntu` 用户登录、免密 `sudo`，**root 不能直接登录**；美国机上的 SSH 别名是 `search`。
@@ -9,7 +9,7 @@
 - Meili v1.12.8 是 **systemd 服务 `meilisearch`**（不是 docker）：二进制 `/usr/local/bin/meilisearch`，以 `meilisearch` 用户运行，
   数据 `/var/lib/meilisearch/data/data.ms`，dump 在 `/var/lib/meilisearch/data/dumps/`，监听 `0.0.0.0:7700`，带 `--max-indexing-memory 1GiB`。
   看状态 `systemctl status meilisearch`，看日志 `sudo journalctl -u meilisearch`。**没有 watchdog**（旧机那个「探不通就重启」的脚本没装）。
-- EdgeOne 的 `api.kaiyuanguji.com` **直接回源到 7700**（HTTP），机上没有 nginx、没有证书。
+- EdgeOne 的 `api.openguji.com`（openguji.com 站点；旧 `api.kaiyuanguji.com` 在 kaiyuanguji.com 站点上 308 跳过来） **直接回源到 7700**（HTTP），机上没有 nginx、没有证书。
 - 索引脚本在 `/opt/indexer/`（属 root），数据仓在 `/root/book-index`、`/root/book-index-draft`、`/root/book-text`（属 root）。所以下面的命令都带 `sudo`。
 - 采集器 srvmon（`~/srvmon/`，用户级服务）每 15 秒记一次内存、负载和 Meili 健康，保留 48 小时。
 - 旧机 `122.51.91.177`（2 GB、docker、watchdog）2026-10-02 已停服、到期释放，别再登它。
@@ -28,7 +28,7 @@
 | `render-docs.mjs` | runner 上把三仓渲染成 Meili 文档（`docs/*.jsonl.gz`）、每个索引的 `{id → 文档哈希}`（`hashes/*.json.gz`）和 `manifest.json`（overview#561） |
 | `diff-docs.mjs` | runner 上拿这一代和线上那一代的哈希比出差量（只含新增／改动的文档和要删的 id）。见下面「增量更新」 |
 | `ingest.mjs` | 搜索机入库：`--docs` 全量（建 tmp、自检、swap）／`--incremental` 增量（线上直接 upsert／delete）／`--adopt` 只认领一代当基线 |
-| `purge-edgeone.mjs` | `purge_host api.kaiyuanguji.com`（EdgeOne 国际版凭证，读 `/opt/indexer/.env`） |
+| `purge-edgeone.mjs` | `purge_host api.openguji.com`（EdgeOne 国际版凭证，读 `/opt/indexer/.env`） |
 
 凭证：Meili master key 在 `/etc/meilisearch.env`（`MASTER_KEY`）；EdgeOne 子账号在 `/opt/indexer/.env`（`TENCENT_SECRET_ID/KEY`、`EDGEONE_ZONE_ID`、可选 `EDGEONE_ENDPOINT`、`PURGE_HOST`）。两者都 `chmod 600`，都不进仓库。
 
@@ -161,8 +161,8 @@ workflow 做三件事：三仓 `git pull`（gh-proxy，失败重试 5 次）→ 
 - 前端用的是公开只读 key，401/403 会立即熔断转 L2；轮换 key 要同时改 GitHub secret `MEILI_SEARCH_KEY` 与 `deploy.yml` 里的兜底值。
 - 前端 `filter=is_draft = false` 依赖每个 doc 的 `is_draft` 字段，改 doc 结构时别丢它。
 - 遇到 522 先分清是哪一种：
-  - **成段、所有请求都 522**：先确认源站地址还对不对。在 EdgeOne 控制台：站点 `kaiyuanguji.com` → 域名服务 → 域名管理 → `api.kaiyuanguji.com` → 源站地址，
-    应为 `124.223.58.113`、HTTP、回源端口 7700（**没有叫 api.kaiyuanguji.com 的站点，也没有用源站组**）。再登机器看 `systemctl status meilisearch`。
+  - **成段、所有请求都 522**：先确认源站地址还对不对。在 EdgeOne 控制台：站点 `openguji.com` → 域名服务 → 域名管理 → `api.openguji.com` → 源站地址，
+    应为 `124.223.58.113`、HTTP、回源端口 7700（**没有叫 api.openguji.com 的站点，也没有用源站组**）。再登机器看 `systemctl status meilisearch`。
   - **零星、同一时刻有的请求成功有的 522**：多半是境外边缘节点跨境回源丢包（境外探针每天会碰到几次，每次几分钟），
     源站本身是好的；国内节点回源不跨境，不受影响（overview#353）。
 
@@ -197,7 +197,7 @@ set -a; . <(sudo cat /etc/meilisearch.env); set +a
 curl -s -H "Authorization: Bearer $MASTER_KEY" localhost:7700/indexes/works/settings | python3 -c "import sys,json; print(json.load(sys.stdin)['filterableAttributes'])"
 
 # 2. 分布：与总目树的一级节点数量对得上（经/史/子/集 加 空串≈未分類）
-curl -s -X POST -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' https://api.kaiyuanguji.com/indexes/works/search \
+curl -s -X POST -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' https://api.openguji.com/indexes/works/search \
   -d '{"q":"","limit":0,"filter":"is_draft = false","facets":["classification","loss_status"]}'
 
 # 3. 朝代＋部类组合（经代理）：结果与预期一致
