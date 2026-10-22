@@ -177,6 +177,7 @@ const WHY_LABELS: Record<string, string> = {
     lost_patch: '字图缺了一块',
     vision_flag: '看图复核认为字可能错了',
     seg_defect: '切坏了，请看书影直接写',
+    symbol: '可能是符号',
 };
 export const UNKNOWN_WHY = '其他疑点';
 export const whyLabel = (code: string): string => WHY_LABELS[code] ?? UNKNOWN_WHY;
