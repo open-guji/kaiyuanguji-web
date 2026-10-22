@@ -319,6 +319,7 @@ describe('机器判读标签', () => {
         expect(classLabel('future')).toEqual({ name: 'future' });
         expect(classLabel('seg_defect').name).toBe('切坏格');
         expect(whyLabel('seg_defect')).toContain('书影');
+        expect(whyLabel('symbol')).toBe('可能是符号');
     });
     it('原因码全是中文，不含英文和术语', () => {
         for (const code of ['none', 'near_form', 'ctx_garble_shape', 'replace_align', 'iron_ex_missing', 'context_vs_ref', 'vision_flag', 'nonchar', 'unknown_x']) {
