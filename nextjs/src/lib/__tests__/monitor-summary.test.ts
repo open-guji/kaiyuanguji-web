@@ -126,6 +126,37 @@ describe('GET /api/track-error?summary=1', () => {
         expect(prefixes.every((p) => /^err_\d{5}$/.test(p))).toBe(true);
     });
 
+    it('GUJI-198 用时预算：列键超过 12 秒就停下并标 partial=true，不让监控干等', async () => {
+        g.ERROR_VIEW_TOKEN = 'right';
+        const realNow = Date.now;
+        // 第 1 次是 now、第 2 次是 deadline 起点，之后的读都已过 12 秒预算
+        let calls = 0;
+        Date.now = () => { calls += 1; return calls <= 2 ? NOW : NOW + 13000; };
+        try {
+            const res = await te.onRequestGet(get('https://x/api/track-error?summary=1&window=1h', 'right'));
+            expect(res.status).toBe(200);
+            expect((await json(res)).partial).toBe(true);
+        } finally {
+            Date.now = realNow;
+        }
+    });
+
+    it('GUJI-198 翻页上限：某个前缀一直 complete=false 时最多翻 100 页，返回 partial=true', async () => {
+        g.ERROR_VIEW_TOKEN = 'right';
+        const orig = errKv.list.bind(errKv);
+        let pages = 0;
+        errKv.list = async () => { pages += 1; return { keys: [], complete: false, cursor: `c${pages}` }; };
+        try {
+            const res = await te.onRequestGet(get('https://x/api/track-error?summary=1&window=1h', 'right'));
+            const b = await json(res);
+            expect(res.status).toBe(200);
+            expect(b.partial).toBe(true);
+            expect(pages).toBeLessThanOrEqual(2 * 100);
+        } finally {
+            errKv.list = orig;
+        }
+    });
+
     it('不再认 ?token=（M1：查询串会进访问日志），只认 Authorization: Bearer', async () => {
         g.ERROR_VIEW_TOKEN = 'right';
         const res = await te.onRequestGet({ request: new Request('https://x/api/track-error?summary=1&token=right') });
