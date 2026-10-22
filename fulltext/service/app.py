@@ -29,6 +29,8 @@ MAX_Q = 60                 # 超长截断并回 truncated:true
 TOTAL_HITS_CAP = 10000     # total_hits 封顶
 EXACT_SCAN = 3000          # exact／near 模式最多扫的候选段数（超出 capped=true）
 NEAR_MIN = 4               # near（差一字）只对 ≥4 字的查询放宽；更短的按 fuzzy 查
+NEAR_BATCH = 2048          # near 每批取的候选段数（先核验再计数，不再先截候选）
+NEAR_BUDGET_S = 2.5        # near 核验的时间预算；Service 按自己的超时改小／放大
 SNIPPET_PAD = 40           # 命中前后各取的字数
 ENTRY_RE = re.compile(r'[0-9A-Za-z]{1,32}')
 PROBE = '学'               # /healthz 样本查询（归一后的字）
@@ -130,8 +132,9 @@ def _hit(d, needle, field, title=None):
     return h
 
 
-def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
-    """exact_scan：exact 模式最多扫的 norm 候选段数。boost：{entry: 倍数}，缺省空。"""
+def run_query(p, source, exact_scan=EXACT_SCAN, boost=None, near_budget_s=NEAR_BUDGET_S):
+    """exact_scan：exact 模式最多扫的 norm 候选段数；near 模式最多计的有效命中段数。
+    boost：{entry: 倍数}，缺省空。near_budget_s：near 核验的时间预算（秒）。"""
     t0 = time.perf_counter()
     qo, qn = query_stream(p.q)
     if not qn:
@@ -142,7 +145,7 @@ def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
     body = {'q': p.q, 'mode': p.mode, 'normalized': needle, 'truncated': p.truncated}
 
     if near:
-        return _run_near(p, source, qn, body, t0, exact_scan, boost)
+        return _run_near(p, source, qn, body, t0, exact_scan, boost, near_budget_s)
     if not exact:
         if p.group == 'book':
             buckets, books_capped = source.book_counts(qn, p.entry)
@@ -199,39 +202,59 @@ def run_query(p, source, exact_scan=EXACT_SCAN, boost=None):
     return body
 
 
-def _run_near(p, source, qn, body, t0, scan, boost):
-    """near（差一字）：按差一字召回候选、按书内顺序最多扫 scan 段，在归一原文上用正则核，再分组。
-    完全命中原串的书排在前面；扫不完时 capped=true（与 exact 同口径）。"""
+def _run_near(p, source, qn, body, t0, scan, boost, budget_s=NEAR_BUDGET_S):
+    """near（差一字）：按差一字召回候选，按书内顺序每批取 NEAR_BATCH 段，在归一原文上用正则核，再分组。
+    先核验、再对有效命中套 scan 上限（ai-team PR #37 的修正：旧版先截 3000 个候选，后面的真命中会丢，
+    如「學而習之」全库 2508 段只返回 466 段）。有效命中到 scan、或超出时间预算时停下，capped=true。
+    只留展示要用的段（分组时每书 per_book 段，平铺时前 offset+limit 段），不累积全部候选原文。
+    完全命中原串的书排在前面。"""
     rx = near_regex(qn)
-    segs, n_cand = source.passages(qn, p.entry, scan, 0, True, near=True)
+    keep_flat = p.offset + p.limit
+    by_book, order, flat = {}, [], []
+    total, offset, capped = 0, 0, False
+    deadline = t0 + budget_s
+    while True:
+        segs, n_cand = source.passages(qn, p.entry, NEAR_BATCH, offset, True, near=True)
+        offset += len(segs)
+        for d in segs:
+            t = norm_text(d['text'])
+            if not rx.search(t):
+                continue
+            total += 1
+            e = d['entry']
+            if e not in by_book:
+                by_book[e] = {'entry': e, 'count': 0, 'exact': 0, 'long': False, 'segs': []}
+                order.append(e)
+            g = by_book[e]
+            g['count'] += 1
+            g['exact'] += qn in t
+            g['long'] = g['long'] or d['long']
+            if p.group == 'book':
+                if len(g['segs']) < p.per_book:
+                    g['segs'].append(d)
+            elif len(flat) < keep_flat:
+                flat.append(d)
+            if total >= scan:
+                break
+        if total >= scan:
+            capped = offset < n_cand
+            break
+        if not segs or offset >= n_cand:
+            break
+        if time.perf_counter() > deadline:
+            capped = True
+            break
     t1 = time.perf_counter()
-    by_book, order = {}, []
-    for d in segs:
-        t = norm_text(d['text'])
-        if not rx.search(t):
-            continue
-        e = d['entry']
-        if e not in by_book:
-            by_book[e] = {'entry': e, 'count': 0, 'exact': 0, 'long': False, 'segs': []}
-            order.append(e)
-        g = by_book[e]
-        g['count'] += 1
-        g['exact'] += qn in t
-        g['long'] = g['long'] or d['long']
-        g['segs'].append(d)
-    capped = n_cand > scan
-    total = sum(g['count'] for g in by_book.values())
     if p.group == 'book':
         ranked = rank_books([by_book[e] for e in order], boost)
         ranked.sort(key=lambda g: g['exact'] == 0)        # 稳定排序：有原串的书在前，各自保持书分顺序
         groups = [{'entry': g['entry'], 'title': source.book_title(g['entry']), 'hit_count': g['count'],
                    'exact_count': g['exact'],
-                   'hits': [h for h in (_hit(d, rx, 'near') for d in g['segs'][:p.per_book]) if h]}
+                   'hits': [h for h in (_hit(d, rx, 'near') for d in g['segs']) if h]}
                   for g in ranked[p.offset:p.offset + p.limit]]
         body.update(_totals(total, capped), total_books=len(ranked), total_books_capped=capped,
                     has_more=p.offset + p.limit < len(ranked), groups=groups)
     else:
-        flat = [d for e in order for d in by_book[e]['segs']]
         hits = [h for h in (_hit(d, rx, 'near', source.book_title(d['entry']))
                             for d in flat[p.offset:p.offset + p.limit]) if h]
         body.update(_totals(total, capped), has_more=p.offset + p.limit < total, hits=hits)
@@ -298,7 +321,8 @@ class Service:
 
     def _run(self, p):
         try:
-            return run_query(p, self.source, self.exact_scan, self.boost)
+            # near 分批核验要在服务超时前收手（留 20% 给分组与片段），超出就 capped，不拿 504 丢掉已核的结果
+            return run_query(p, self.source, self.exact_scan, self.boost, max(0.5, self.timeout_s * 0.8))
         finally:
             self.gate.release()
 

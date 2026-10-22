@@ -298,3 +298,27 @@ def test_pack_charmap_is_used(tmp_path, monkeypatch):
         assert common.query_stream('甲乙')[1] == '乙乙'
     finally:
         common.set_charmap(saved)
+
+
+MANY = {'M': {'title': '多', 'chapters': [(f'{i:03d}', None, f'甲{i}乙學而習之丙\n') for i in range(1, 8)]}}
+
+
+def test_near_verifies_in_batches_then_caps_valid_hits(monkeypatch):
+    """near 先核验再计数（ai-team PR #37）：分批取候选，命中数不受单批大小限制；
+    有效命中到 exact_scan 才停并标 capped。"""
+    monkeypatch.setattr(app, 'NEAR_BATCH', 2)
+    st, b = svc(MANY).handle('/api/fulltext', {'q': '學而時習之', 'mode': 'near'})
+    assert st == 200 and b['total_hits'] == 7 and not b['capped']
+    assert b['groups'][0]['hit_count'] == 7 and len(b['groups'][0]['hits']) == app.parse_params({'q': 'x'}).per_book   # 只留 per_book 段
+    st, b = svc(MANY, exact_scan=3).handle('/api/fulltext', {'q': '學而時習之', 'mode': 'near'})
+    assert b['total_hits'] == 3 and b['capped']
+
+
+def test_near_flat_paging_and_time_budget(monkeypatch):
+    monkeypatch.setattr(app, 'NEAR_BATCH', 2)
+    st, b = svc(MANY).handle('/api/fulltext', {'q': '學而時習之', 'mode': 'near', 'group': 'none',
+                                               'limit': 2, 'offset': 4})
+    assert b['total_hits'] == 7 and len(b['hits']) == 2 and b['has_more']
+    p = app.parse_params({'q': '學而時習之', 'mode': 'near'})
+    r = app.run_query(p, svc(MANY).source, near_budget_s=0)   # 预算用完：首批后就停，标 capped
+    assert r['total_hits'] == 2 and r['capped']

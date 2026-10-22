@@ -82,7 +82,7 @@ manifest 必有 `schemaVersion=2`、`stamp`、`createdAtEpoch`、`bookTextCommit
 
 **exact**：按 norm 召回、按 `ord` 顺序最多扫 `FT_EXACT_SCAN`（默认 3,000）段，在存储原文上筛原字（`orig_text()`，与 `stream()` 等价的正则快速版，有逐字对拍测试），再分组。候选超过上限时 `capped=true`、`total_books_capped=true`。常用字的精确查询总会撞上限，所以耗时受上限约束、不随库变大。
 
-**near（差一字）**：查询归一后 ≥4 字才放宽，否则按 fuzzy。召回＝"少一字"的各个串，加上中间多一字／错一字时左右两半按位置拼的 phrase（tantivy phrase 支持给每个词元指定位置），取并集；一边只剩一个字时那边没有双字词元，只按另一边召回。候选按书内顺序最多扫 `FT_EXACT_SCAN` 段，在归一原文（`norm_text()`，`orig_text` 再 `str.translate`）上用 `near_regex()` 核，计数与 exact 同口径（扫不完 `capped=true`）。完全命中原串的书排前面；每组多给 `exact_count`。颠倒（两字互换）是编辑距离 2，不算。
+**near（差一字）**：查询归一后 ≥4 字才放宽，否则按 fuzzy。召回＝"少一字"的各个串，加上中间多一字／错一字时左右两半按位置拼的 phrase（tantivy phrase 支持给每个词元指定位置），取并集；一边只剩一个字时那边没有双字词元，只按另一边召回。候选按书内顺序每批取 2048 段，在归一原文（`norm_text()`，`orig_text` 再 `str.translate`）上用 `near_regex()` 核；**先核验、再对有效命中套 `FT_EXACT_SCAN` 上限**，有效命中到上限或超出时间预算（服务超时的 80%）才停，停下时 `capped=true`。只留展示要用的段，不累积全部候选。（10-22 按 ai-team PR #37 修正：旧版先截 3000 个候选再核，后面的真命中会丢，「學而習之」全库 2508 段只返回 466 段。）完全命中原串的书排前面；每组多给 `exact_count`。颠倒（两字互换）是编辑距离 2，不算。
 
 **排序**（`service/ranking.py`）：书分 = boost × 章长系数（有命中在 ≥30 字的章为 1.0，否则 0.3）+ 0.1 × log(1 + 命中段数)；同分按命中段数、再按 entry。书内按原文顺序。
 
