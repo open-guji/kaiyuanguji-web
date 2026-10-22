@@ -8,6 +8,7 @@
  *             站方要撤下的条目写进中心库 feedback/lists/web/<书>/hidden.txt（一行一个 id），公开清单不出
  *             状态回写（M11 B2）：中心库 feedback/lists/web/<书>/status.jsonl（cv 意见池的处理结论）→ 与 KV 现状比 → POST /api/fixes
  *   publish ：中心库待审单 → COS [前缀/]proof/index.json、proof/<书>/<章>.pending.json
+ *             待审单带 sprites[]（GUJI-675）的，先把 R2 里的雪碧图经 Worker 签名链接取回，传到 proof/<书>/<章>/<name>
  *             另：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（整册反馈页读的公开清单）
  * 流程与纯函数在 lib/proofing-sync-run.mjs、lib/proofing-sync-plan.mjs（有单测）。
  *
@@ -20,7 +21,9 @@
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
 import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 
@@ -74,6 +77,25 @@ const worker = {
     putFile: (ws, path, text, baseSha) => call(`${DATA_URL}/v1/files?${q({ ws, src_path: path })}`, {
         method: 'PUT', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify({ text, base_sha: baseSha }),
     }),
+};
+
+/** R2 里按 sha256 存的雪碧图：先向 Worker 要签名链接（web 角色令牌），再直取。取不到抛错，由 publishPendings 记失败 */
+const blobs = {
+    async get(sha256) {
+        const sig = await call(`${DATA_URL}/v1/assets/sign`, {
+            method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bucket: 'main', op: 'get', sha256, ext: 'webp' }),
+        });
+        let err;
+        for (let i = 0; i < 3; i++) {
+            try {
+                const res = await fetch(sig.url, { signal: AbortSignal.timeout(60_000) });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return Buffer.from(await res.arrayBuffer());
+            } catch (e) { err = e; await new Promise((r) => setTimeout(r, 1000 * (i + 1))); }
+        }
+        throw err;
+    },
 };
 
 const kv = {
@@ -134,6 +156,15 @@ if (doPublish) {
         const COS = requireCosSdk();
         const cos = new COS({ SecretId: process.env.COS_SECRET_ID, SecretKey: process.env.COS_SECRET_KEY, Timeout: 60 * 1000 });
         cosOps = createCosOps({ cos, bucket: process.env.COS_BUCKET, region: process.env.COS_REGION || 'ap-shanghai' });
+        // 二进制（雪碧图）：落临时文件，走 uploadOne（带签名类错误的重试，超 1 MB 自动分块）
+        cosOps.putObjectBuffer = async (key, buf, { contentType, cacheControl }) => {
+            const dir = mkdtempSync(join(tmpdir(), 'proof-sprite-'));
+            try {
+                const full = join(dir, 'blob');
+                writeFileSync(full, buf);
+                await cosOps.uploadOne({ full }, key, cacheControl, contentType);
+            } finally { rmSync(dir, { recursive: true, force: true }); }
+        };
     } else {
         console.log('· DRY_RUN 且没有 COS 密钥：按「COS 上全空」估计划');
     }
@@ -149,7 +180,7 @@ try {
 const { entries, problems } = collected;
 console.log(`· 待审单 ${entries.length} 章（工作区 ${WS.join('、')}）`);
 const opinions = doOpinions ? await syncOpinions({ worker, kv, entries, dryRun: DRY_RUN }) : null;
-const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
+const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs }) : null;
 const status = doOpinions ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixes = doOpinions ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixesPublish = doPublish ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;

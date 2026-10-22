@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import {
     parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath,
@@ -18,7 +19,7 @@ test('parsePendingPath：只认 proofing/<书>/<章>.pending.json', () => {
 });
 
 test('readPending：要 rev 与 cells', () => {
-    assert.deepEqual(readPending(pending('001-r2', 3)), { rev: '001-r2', n: 3 });
+    assert.deepEqual(readPending(pending('001-r2', 3)), { rev: '001-r2', n: 3, sprites: [] });
     assert.ok(readPending('{').error);
     assert.ok(readPending('{"cells":[]}').error);
     assert.ok(readPending('{"rev":"x"}').error);
@@ -131,6 +132,7 @@ function fakeCos(initial = {}) {
             return m;
         },
         async putObjectText(key, body, opts) { puts.push({ key, opts }); objects.set(key, body); },
+        async putObjectBuffer(key, buf, opts) { puts.push({ key, opts }); objects.set(key, buf); },
     };
 }
 
@@ -225,4 +227,79 @@ test('summarize：只出计数，不出票的内容', async () => {
     const md = summarize({ ws: [WS], proofPrefix: 'proof/', dryRun: false, entries, collectProblems: problems, opinions, publish });
     assert.match(md, /待审单 2 章，待审格合计 2/);
     assert.doesNotMatch(md, /秘密备注|於|aa/);
+});
+
+
+// ── GUJI-675：待审单带 sprites[] ──
+
+const sha256 = (b) => createHash('sha256').update(b).digest('hex');
+const SPR = Buffer.from('fake-webp-bytes');
+const spriteMeta = (buf, name = 'p0003.aaaaaaaa.webp') => ({ name, sha256: sha256(buf), md5: md5Hex(buf), bytes: buf.length });
+const pendingWithSprites = (rev, sprites) => JSON.stringify({ rev, cells: [{ a: '1:1:1' }], sprites });
+const fakeBlobs = (map) => ({ calls: [], async get(sha) { this.calls.push(sha); if (!map.has(sha)) throw new Error('HTTP 404'); return map.get(sha); } });
+
+test('readPending：sprites[] 可选，不合规的整张单子拒收', () => {
+    assert.deepEqual(readPending(pending('001-r2', 1)).sprites, []);
+    const m = spriteMeta(SPR);
+    assert.deepEqual(readPending(pendingWithSprites('004-r6', [m])).sprites, [m]);
+    assert.ok(readPending(pendingWithSprites('004-r6', [{ ...m, name: '../x.webp' }])).error);
+    assert.ok(readPending(pendingWithSprites('004-r6', [{ ...m, sha256: 'zz' }])).error);
+    assert.ok(readPending(pendingWithSprites('004-r6', [m, m])).error);
+    assert.ok(readPending(JSON.stringify({ rev: 'r', cells: [], sprites: 'x' })).error);
+});
+
+test('publishPendings：先传图、再传单子、最后 index；图的 key 在 <书>/<章>/ 下、长缓存；第二次全跳过', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({ [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: pendingWithSprites('004-r6', [m]) });
+    const { entries } = await collectPendings(w, [WS]);
+    const cos = fakeCos();
+    const blobs = fakeBlobs(new Map([[m.sha256, SPR]]));
+    const r1 = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs });
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/004/${m.name}`, `proof/${BOOK}/004.pending.json`, 'proof/index.json']);
+    assert.equal(cos.puts[0].opts.contentType, 'image/webp');
+    assert.match(cos.puts[0].opts.cacheControl, /immutable/);
+    assert.deepEqual(cos.objects.get(`proof/${BOOK}/004/${m.name}`), SPR);
+    assert.deepEqual(r1.spritesPut, [`${BOOK}/004/${m.name}`]);
+    assert.equal(r1.failed.length, 0);
+
+    const r2 = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs });
+    assert.equal(blobs.calls.length, 1);                      // 第二次不再取图
+    assert.equal(cos.puts.length, 3);
+    assert.deepEqual(r2.spritesSame, [`${BOOK}/004/${m.name}`]);
+    assert.equal(r2.put.length, 0);
+});
+
+test('publishPendings：图取不到 → 这一章的单子不传、index 不换，别的章照传', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({
+        [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: pendingWithSprites('004-r6', [m]),
+        [`${WS}|feedback/lists/proofing/${BOOK}/005.pending.json`]: pending('005-r1', 1),
+    });
+    const { entries } = await collectPendings(w, [WS]);
+    const cos = fakeCos();
+    const r = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs: fakeBlobs(new Map()) });
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/005.pending.json`]);
+    assert.ok(r.failed.some((f) => f.includes(`${BOOK}/004/${m.name}`) && /404/.test(f)));
+    assert.ok(r.failed.some((f) => /004\.pending\.json.*单子本次不传/.test(f)));
+    assert.ok(r.failed.some((f) => /index\.json.*本次不换/.test(f)));
+});
+
+test('publishPendings：取回的图与登记的 sha256 不符 → 拒传', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({ [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: pendingWithSprites('004-r6', [m]) });
+    const { entries } = await collectPendings(w, [WS]);
+    const cos = fakeCos();
+    const r = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs: fakeBlobs(new Map([[m.sha256, Buffer.from('tampered')]])) });
+    assert.equal(cos.puts.length, 0);
+    assert.ok(r.failed.some((f) => /不符/.test(f)));
+});
+
+test('publishPendings：演练不取图、不传，但报出要传哪些图', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({ [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: pendingWithSprites('004-r6', [m]) });
+    const { entries } = await collectPendings(w, [WS]);
+    const blobs = fakeBlobs(new Map());
+    const r = await publishPendings({ cos: fakeCos(), entries, proofPrefix: 'proof/', dryRun: true, blobs });
+    assert.equal(blobs.calls.length, 0);
+    assert.deepEqual(r.spritesPut, [`${BOOK}/004/${m.name}`]);
 });
