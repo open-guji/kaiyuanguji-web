@@ -78,17 +78,19 @@ describe('POST 校验', () => {
         }
     });
 
-    it('六档里除 char 外都不必带 char；none／unsure／jiazhu／main 带 char 被拒', async () => {
+    it('六档里除 char 外都不必带 char；也都能同时带一个字（用户 10-21：切分错了也先给字），带的字须恰好一个', async () => {
         for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main']) {
             const ok = await fn.onRequestPost(post({ ...base, a: `1:1:${choice.length}`, choice }));
             expect(ok.status).toBe(200);
         }
-        for (const choice of ['none', 'unsure', 'jiazhu', 'main']) {
-            const bad = await fn.onRequestPost(post({ ...base, choice, char: '于' }));
+        for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main']) {
+            const withChar = await fn.onRequestPost(post({ ...base, a: `2:1:${choice.length}`, choice, char: '于', pick_src: 'cand', pick_rank: 2 }));
+            expect(withChar.status).toBe(200);
+            const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(`:2:1:${choice.length}:`))!)!);
+            expect(rec).toMatchObject({ choice, char: '于', pick_src: 'cand', pick_rank: 2 });
+            const bad = await fn.onRequestPost(post({ ...base, a: '3:1:1', choice, char: '于之' }));
             expect(bad.status).toBe(400);
         }
-        const cut = await fn.onRequestPost(post({ ...base, a: '9:9:9', choice: 'cut', char: '于' }));
-        expect(cut.status).toBe(200);
     });
 
     it('非法 choice（含 damaged）、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
@@ -112,7 +114,7 @@ describe('POST 校验', () => {
         expect(crKeys()).toHaveLength(0);
     });
 
-    it('选字来源 pick_src／pick_rank／pivot：合法的原样存；非法 400；非选字档带了不存；不带照常收', async () => {
+    it('选字来源 pick_src／pick_rank／pivot：合法的原样存；非法 400；没带字的档带了不存；不带照常收', async () => {
         const ok = await fn.onRequestPost(post({ ...base, choice: 'char', char: '弊', pick_src: 'alt', pick_rank: 3, pivot: '𡚁' }));
         expect(ok.status).toBe(200);
         const rec = JSON.parse(store.get(crKeys()[0])!);

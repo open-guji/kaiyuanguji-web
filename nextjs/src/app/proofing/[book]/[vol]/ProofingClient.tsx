@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
-    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop, SYMBOLS,
+    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -127,7 +127,8 @@ interface CellRowProps {
     imageUrl: string | null;
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
-    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string) => Promise<string | null>;
+    /** advance：提交后自动跳下一张（选字才跳；点下面四项不跳，好接着给字） */
+    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
     selected: boolean;
@@ -274,8 +275,8 @@ function Examples({ cell, spriteBase }: { cell: PendingCell; spriteBase: (s: str
  * 相似字（以字找字）：近似字的异体族按这格字图排好的前几名，带字体字形图（扩展区字不靠读者电脑的字体）。
  * 缺省展开 ALT_SHOW 个，其余点「再看」。点一个就提交，和候选按钮一样。数据在出待审单时算好，这里只显示。
  */
-function AltGrid({ alt, spriteBase, busy, done, onPick }: {
-    alt: AltCand[]; spriteBase: (s: string) => string | null; busy: boolean; done?: string; onPick: (c: string, pick: Pick) => void;
+function AltGrid({ alt, spriteBase, busy, picked: pickedChar, onPick }: {
+    alt: AltCand[]; spriteBase: (s: string) => string | null; busy: boolean; picked?: string; onPick: (c: string, pick: Pick) => void;
 }) {
     const [all, setAll] = useState(false);
     const [bad, setBad] = useState<Set<string>>(new Set());
@@ -294,7 +295,7 @@ function AltGrid({ alt, spriteBase, busy, done, onPick }: {
                 {shown.map((a, i) => {
                     const u = a.g ? spriteBase(a.g.s) : null;
                     const img = a.g && u && !bad.has(u) ? a.g : null;
-                    const picked = done === `「${a.c}」`;
+                    const picked = pickedChar === a.c;
                     const tip = [a.p && a.p !== a.c ? `从「${shownZi(a.p)}」查到` : '', a.s !== undefined ? `像 ${pct(a.s)}` : '', canShow(a.c) ? '' : cpLabel(a.c)].filter(Boolean).join('，') || `选「${a.c}」`;
                     return (
                         <button key={a.c} type="button" disabled={busy} aria-pressed={picked} aria-label={`选「${a.c}」`} title={tip}
@@ -323,13 +324,31 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
+    const [sentNote, setSentNote] = useState<string | null>(null);
+    const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
-    const go = async (choice: ReviewChoice, char?: string, pick?: Pick) => {
+    // 已提交的回应＝一个字（可无）＋下面四项之一（可无）＋备注，三样互不冲突（用户 2026-10-21）：
+    // 切分错了也能先把字给上，格子先过、切分另修；每次点击把三样合起来重新提交一票（同格同人覆盖旧票）
+    const { char: doneChar, flag: doneFlag } = parseDone(done);
+    const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false) => {
         setBusy(true);
         setErr(null);
-        const e = await onSubmit(cell, choice, char, pick, note.trim() || undefined);
+        const n = note.trim();
+        const e = await onSubmit(cell, choice, char, pick, n || undefined, advance);
         setBusy(false);
         if (e) setErr(e);
+        else setSentNote(n);
+    };
+    /** 选一个字：带上已选的那一项（如「切分错了」），选完跳下一张 */
+    const pickChar = (c: string, pick?: Pick) => {
+        lastPick.current = pick;
+        return go(doneFlag ?? 'char', c, pick, true);
+    };
+    /** 点下面四项之一：带上已选的字（没选过就带「另写一字」框里的字）；再点一次已选的项就取消它、只留字 */
+    const toggleFlag = (f: Exclude<ReviewChoice, 'char'>) => {
+        if (doneFlag === f) return doneChar ? go('char', doneChar, lastPick.current) : undefined;
+        const c = doneChar ?? ([...custom].length === 1 ? custom : undefined);
+        return go(f, c, c === doneChar ? lastPick.current : c ? { src: 'custom' } : undefined);
     };
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
@@ -361,47 +380,46 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: i + 1 })} />)}
-                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={done ? done === `「${cd.c}」` : cd.c === preCand} onPick={c => go('char', c, { src: 'cand', rank: top.length + i + 1 })} />)}
+                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={done ? doneChar === cd.c : cd.c === preCand} onPick={c => pickChar(c, { src: 'cand', rank: i + 1 })} />)}
+                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={done ? doneChar === cd.c : cd.c === preCand} onPick={c => pickChar(c, { src: 'cand', rank: top.length + i + 1 })} />)}
                 {more.length > 0 && (
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => go('char', cell.c, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', done === `「${cell.c}」`, busy)}><Zi c={cell.c} /></button>
+                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', doneChar === cell.c, busy)}><Zi c={cell.c} /></button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
                         style={{ width: 140, fontSize: 14, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
-                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => go('char', custom, { src: 'custom' })} className={BTN_CLASS}
+                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => pickChar(custom, { src: 'custom' })} className={BTN_CLASS}
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
                 </span>
             </div>
-            <div data-testid="symbols" style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: '#555' }}>特殊符号</span>
-                {SYMBOLS.map(sy => (
-                    <button key={sy.c} type="button" disabled={busy} aria-pressed={done === `「${sy.c}」`} aria-label={`选「${sy.c}」（${sy.name}）`} title={`${sy.name}：刻本上就是这个图形`}
-                        onClick={() => go('char', sy.c, { src: 'symbol' })} className={BTN_CLASS}
-                        style={{ ...btnStyle('cand', done === `「${sy.c}」`, busy), fontSize: 18, minWidth: 36, padding: '0 6px' }}>{sy.c}</button>
-                ))}
-            </div>
-            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} done={done} onPick={(c, pick) => go('char', c, pick)} />}
+            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={doneChar} onPick={pickChar} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
                     以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
-                    <button type="button" disabled={busy} onClick={() => go('char', preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
+                    <button type="button" disabled={busy} onClick={() => pickChar(preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? done === o.label : preNone && o.choice === 'none'} data-hotkey={o.key}
-                        // 切分错了也能同时给字：「另写一字」框里有一个字就一起带上（控制台同口径，调研 A C2）
-                        onClick={() => go(o.choice, o.choice === 'cut' && [...custom].length === 1 ? custom : undefined)} className={BTN_CLASS}
-                        title={o.title} style={btnStyle('act', done ? done === o.label : preNone && o.choice === 'none', busy)}>{o.label}</button>
+                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? doneFlag === o.choice : preNone && o.choice === 'none'} data-hotkey={o.key}
+                        // 四项都能和字一起交：已选的字带上，没选过就带「另写一字」框里的字（用户 10-21）
+                        onClick={() => toggleFlag(o.choice)} className={BTN_CLASS}
+                        title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : preNone && o.choice === 'none', busy)}>{o.label}</button>
                 ))}
             </div>
-            <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
-                placeholder="备注（可不填）：比如「是臼不是曰，看上面」，先写再点上面的按钮"
-                style={{ marginTop: 8, width: '100%', maxWidth: 520, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
+            <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
+                    placeholder="备注（可不填）：比如「是臼不是曰，看上面」，随选项一起交，交过也能改"
+                    style={{ flex: '1 1 320px', maxWidth: 520, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
+                {/* 交过之后改备注：照原来的字和选项再交一次（用户 10-21：备注永远可以填、可以交） */}
+                {done && note.trim() !== (sentNote ?? '') && (
+                    <button type="button" disabled={busy} onClick={() => go(doneFlag ?? 'char', doneChar, doneChar ? lastPick.current : undefined)} className={BTN_CLASS}
+                        style={btnStyle('small', false, busy)}>{sentNote === null ? '提交备注' : '更新备注'}</button>
+                )}
+            </div>
             {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
@@ -492,8 +510,20 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     );
 }
 
-const doneLabel = (choice: ReviewChoice, char?: string) =>
-    choice === 'char' ? `「${char}」` : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
+/** 已提交的记法（存 localStorage）：「字」、项名、或「字」＋项名（字和四项可以同时交，用户 10-21） */
+const doneLabel = (choice: ReviewChoice, char?: string) => {
+    const flag = choice === 'char' ? '' : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
+    return char ? `「${char}」${flag ? `＋${flag}` : ''}` : flag;
+};
+
+/** doneLabel 反解：字、四项之一（旧记录只有其中一样，照样认） */
+function parseDone(done?: string): { char?: string; flag?: Exclude<ReviewChoice, 'char'> } {
+    if (!done) return {};
+    const m = /^「(.)」(?:＋(.+))?$/u.exec(done);
+    const label = m ? m[2] : done;
+    const flag = label ? OTHER_CHOICES.find(o => o.label === label || o.choice === label)?.choice : undefined;
+    return { ...(m ? { char: m[1] } : {}), ...(flag ? { flag } : {}) };
+}
 
 /** 页头用的书名与作者（服务端从条目 JSON 取，见 page.ssr.tsx）；取不到为 null */
 export type ProofingBookInfo = ProofBookInfo;
@@ -624,17 +654,17 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const pos = useMemo(() => positionIndex(order), [order]);
     const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string) => {
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
         const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(note ? { note } : {}), ...(choice === 'char' ? pickFields(pick) : {}) }, getAid());
+            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
             const next = { ...prev, [cell.a]: doneLabel(choice, char) };
             writeDone(rev, next);
             return next;
         });
-        setAdvanceFrom(cell.a);          // 回应完自动跳到下一张没回应的（调研 A D1）
+        if (advance) setAdvanceFrom(cell.a);          // 选了字自动跳到下一张没回应的（调研 A D1）；点四项不跳，好接着给字
         return null;
     }, [book, vol, rev]);
 

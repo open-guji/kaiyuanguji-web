@@ -177,25 +177,52 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ char: g, pick_src: 'alt', pick_rank: 1 });
     });
 
-    it('特殊符号（圆圈、方框…）常备一排，点了按字提交，来源记 symbol；提交后右上角出「已提交」徽标，不再有长句', async () => {
+    it('不再每卡常驻特殊符号；cv 给的候选里有符号才出现；字和下面四项可以同时交，备注交过也能改（用户 10-21）', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         localStorage.clear();                                   // 别的用例在同一 rev 下记过「已提交」
-        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '', cand: [{ c: '口' }] }]));
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '', cand: [{ c: '口' }, { c: '○' }] }, { a: '1:1:2', c: '日', cand: [{ c: '曰' }] }]));
         render(<ProofingClient book="b11" vol="vol01" />);
-        const row = await screen.findByTestId('symbols');
-        expect(row.textContent).toContain('○');
-        expect(row.textContent).toContain('□');
-        expect(screen.queryByTestId('done-badge')).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: '选「○」（圆圈）' }));
+        await screen.findAllByTestId('cell-card');
+        expect(screen.queryByTestId('symbols')).toBeNull();
+        expect(screen.queryAllByRole('button', { name: /^□/ })).toHaveLength(0);
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        // 先点「切分错了」：不跳卡，接着给字
+        fireEvent.click(screen.getAllByRole('button', { name: '切分错了' })[0]);
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
-        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: '○', pick_src: 'symbol' });
+        expect(body(0)).toMatchObject({ a: '1:1:1', choice: 'cut' });
+        expect(body(0).char).toBeUndefined();
         expect((await screen.findByTestId('done-badge')).textContent).toBe('已提交');
-        expect(screen.getByRole('button', { name: '选「○」（圆圈）' }).getAttribute('aria-pressed')).toBe('true');
-        expect(screen.queryByText(/想改的话/)).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: '○' }));          // 候选里的符号照常点
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+        expect(body(1)).toMatchObject({ a: '1:1:1', choice: 'cut', char: '○', pick_src: 'cand', pick_rank: 2 });
+        const card = screen.getAllByTestId('cell-card')[0];
+        await waitFor(() => expect([...card.querySelectorAll('button[aria-pressed="true"]')].map(b => b.textContent)).toEqual(['○', '切分错了']));
+        expect(screen.getAllByRole('button', { name: '切分错了' })[0].getAttribute('aria-pressed')).toBe('true');
+        // 换成「小注被当成正文切了」：字还带着
+        fireEvent.click(screen.getAllByRole('button', { name: '小注被当成正文切了' })[0]);
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
+        expect(body(2)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○' });
+        // 交过之后改备注：照原来的字和项再交
+        fireEvent.change(screen.getAllByLabelText('备注')[0], { target: { value: '是圈不是口' } });
+        fireEvent.click(screen.getByRole('button', { name: '更新备注' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(4));
+        expect(body(3)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○', note: '是圈不是口' });
+        expect(screen.queryByRole('button', { name: '更新备注' })).toBeNull();
+        // 再点一次已选的项＝取消，只留字
+        fireEvent.click(screen.getAllByRole('button', { name: '小注被当成正文切了' })[0]);
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(5));
+        expect(body(4)).toMatchObject({ a: '1:1:1', choice: 'char', char: '○', note: '是圈不是口' });
+        // 先选字再点「图上没有字」也带字
+        fireEvent.click(screen.getByRole('button', { name: '曰' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6));
+        fireEvent.click(screen.getAllByRole('button', { name: '图上没有字' })[1]);
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(7));
+        expect(body(6)).toMatchObject({ a: '1:1:2', choice: 'none', char: '曰', pick_src: 'cand', pick_rank: 1 });
+        localStorage.clear();                                   // 别让后面的用例以为这两格回应过
     });
 
-    it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」不带', async () => {
+    it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」带上已选的字和来源', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '未', cand: [{ c: '己' }, { c: '已' }] }]));
@@ -214,8 +241,7 @@ describe('精校页显示（GUJI-557）', () => {
         expect(body(2)).toMatchObject({ char: '末', pick_src: 'custom' });
         fireEvent.click(screen.getByRole('button', { name: '图上没有字' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(4));
-        expect(body(3).choice).toBe('none');
-        expect(body(3).pick_src).toBeUndefined();
+        expect(body(3)).toMatchObject({ choice: 'none', char: '末', pick_src: 'custom' });
     });
 
     it('GUJI-683：整理本字是第一个候选并标「整理本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {

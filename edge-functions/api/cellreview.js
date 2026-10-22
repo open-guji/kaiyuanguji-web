@@ -14,8 +14,9 @@
 //   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
 // 值只存 voter，不存 aid、不存 IP。
 //
-// choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut（char 可选）｜jiazhu｜main。
-// 只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
+// choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main，后五档 char 可选。
+// 后五档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
+// 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
@@ -73,11 +74,9 @@ export function validateReview(body) {
   if (choice === 'char') {
     if (!isSingleChar(body.char)) return { error: 'choice=char 时 char 必填且恰好一个字' };
     char = body.char;
-  } else if (choice === 'cut' && body.char !== undefined && body.char !== null && body.char !== '') {
+  } else if (body.char !== undefined && body.char !== null && body.char !== '') {
     if (!isSingleChar(body.char)) return { error: 'char 须恰好一个字' };
     char = body.char;
-  } else if (body.char !== undefined && body.char !== null && body.char !== '') {
-    return { error: `choice=${choice} 不应带 char` };
   }
 
   let note = '';
@@ -91,9 +90,9 @@ export function validateReview(body) {
     if (typeof body.shown !== 'string' || [...body.shown].length > SHOWN_MAX) return { error: 'shown 无效' };
     shown = body.shown;
   }
-  // pick_src／pick_rank／pivot 都可选；只跟着选字（char）走，别的档带了就忽略（旧页面不带，照常收）
+  // pick_src／pick_rank／pivot 都可选；只跟着字（char）走，没带字的档带了就忽略（旧页面不带，照常收）
   const pick = {};
-  if (choice === 'char' && body.pick_src !== undefined && body.pick_src !== null) {
+  if (char && body.pick_src !== undefined && body.pick_src !== null) {
     if (!PICK_SRCS.includes(body.pick_src)) return { error: 'pick_src 无效' };
     pick.pick_src = body.pick_src;
     if (body.pick_rank !== undefined && body.pick_rank !== null) {
