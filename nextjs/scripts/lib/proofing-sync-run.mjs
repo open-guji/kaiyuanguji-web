@@ -4,19 +4,24 @@
  * 两段，可分开跑（workflow 里分两步，各自只拿自己要的密钥）：
  *   opinions：中心库所有待审单的 (书, rev) → 网站 KV 管理读 /api/cellreview → 并进中心库 feedback/lists/web/<书>/<rev>.jsonl
  *   publish ：中心库所有待审单 → COS [前缀/]proof/index.json 与 proof/<书>/<章>.pending.json（md5 相同的跳过）
- * 雪碧图仍由 sync-proof-sprites.mjs（GUJI-557）发，不在这里。
+ * 待审单带 `sprites[]` 的（GUJI-675，cv 写；图真源在 R2），publish 先把图传到 COS proof/<书>/<章>/<name>，再传单子，最后换 index。
+ * 老路（GUJI-557：book-text 指针＋GitHub Release）仍由 sync-proof-sprites.mjs 发，不在这里。
  *
  * 日志与 run 摘要只出计数（公开仓），不出票的内容。
  */
+import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut,
+    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
     statusListPath, parseStatusRows, planStatusWrites,
 } from './fixes-sync.mjs';
 
+const sha256Hex = (b) => createHash('sha256').update(b).digest('hex');
 export const SHORT_CACHE = 'public, max-age=300';
+/** 雪碧图文件名带内容哈希，内容变了名字就变 */
+export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 /**
  * 读出各工作区里全部待审单。
@@ -40,7 +45,7 @@ export async function collectPendings(worker, wsList) {
             const k = `${id.book}/${id.chap}`;
             if (seen.has(k)) { problems.push(`${k} 同时在工作区 ${seen.get(k)} 与 ${ws}，用前者`); continue; }
             seen.set(k, ws);
-            entries.push({ ws, ...id, rev: p.rev, n: p.n, text: got.text });
+            entries.push({ ws, ...id, rev: p.rev, n: p.n, sprites: p.sprites, text: got.text });
         }
     }
     return { entries, problems };
@@ -76,24 +81,45 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
 }
 
 /**
- * publish 段：index.json＋各章待审单原文，按 md5 跳过与 COS 相同的。
- * @param cos {listPrefixEtags(prefix) → Map, putObjectText(key, body, {contentType, cacheControl})}
+ * publish 段：雪碧图 → 各章待审单原文 → index.json，按 md5 跳过与 COS 相同的。
+ * @param cos {listPrefixEtags(prefix) → Map, putObjectText(key, body, {contentType, cacheControl}), putObjectBuffer(key, buf, {contentType, cacheControl})}
+ * @param blobs {get(sha256) → Buffer}  从 R2 取图（经 Worker 签名链接）；演练时不调用
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
-export async function publishPendings({ cos, entries, proofPrefix, dryRun = false }) {
+export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null }) {
     const objects = [
         { key: 'index.json', body: buildProofIndex(entries) },
         ...entries.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
     ];
     const remote = cos ? await cos.listPrefixEtags(proofPrefix) : new Map();
     const plan = planCosPut(objects, remote);
-    // index.json 最后传：网站先看 index 再取待审单，先传单子、后换 index，中途不会指向还没传的文件
-    const ordered = [...plan.put.filter((o) => o.key !== 'index.json'), ...plan.put.filter((o) => o.key === 'index.json')];
+    // 图：文件名带内容哈希，COS 上有同名且 md5 相同的就跳过
+    const sprites = entries.flatMap((e) => (e.sprites || []).map((s) => ({ ...s, chap: `${e.book}/${e.chap}`, key: `${e.book}/${e.chap}/${s.name}` })));
+    const spritePut = sprites.filter((s) => remote.get(s.key) !== s.md5);
+    const spriteSame = sprites.filter((s) => remote.get(s.key) === s.md5);
     const failed = [];
+    const badChaps = new Set();
+    if (!dryRun && cos) {
+        for (const sp of spritePut) {
+            try {
+                if (!blobs) throw new Error('没有取图的来源（blobs）');
+                const buf = await blobs.get(sp.sha256);
+                if (buf.length !== sp.bytes || sha256Hex(buf) !== sp.sha256 || md5Hex(buf) !== sp.md5) throw new Error('从 R2 取回的图与单子里登记的 sha256／md5／字节数不符');
+                await cos.putObjectBuffer(proofPrefix + sp.key, buf, { contentType: 'image/webp', cacheControl: IMMUTABLE_CACHE });
+            } catch (e) {
+                failed.push(`${sp.key}：${e?.message || e}`);
+                badChaps.add(sp.chap);
+            }
+        }
+    }
+    // index.json 最后传：网站先看 index 再取待审单，先传图和单子、后换 index，中途不会指向还没传的文件
+    const ordered = [...plan.put.filter((o) => o.key !== 'index.json'), ...plan.put.filter((o) => o.key === 'index.json')];
     if (!dryRun && cos) {
         for (const o of ordered) {
             // 有待审单没传上去就不换 index，免得 index 的 rev 与 COS 上的单子对不上
             if (o.key === 'index.json' && failed.length) { failed.push('index.json：前面有失败，本次不换'); break; }
+            // 这一章有图没传上，单子也不传：单子里的图地址会指向不存在的文件
+            if (badChaps.has(o.key.replace(/\.pending\.json$/, ''))) { failed.push(`${o.key}：这一章有图没传上，单子本次不传`); continue; }
             try {
                 await cos.putObjectText(proofPrefix + o.key, o.body, { contentType: 'application/json; charset=utf-8', cacheControl: SHORT_CACHE });
             } catch (e) {
@@ -101,7 +127,10 @@ export async function publishPendings({ cos, entries, proofPrefix, dryRun = fals
             }
         }
     }
-    return { put: ordered.map((o) => o.key), same: plan.same.map((o) => o.key), failed };
+    return {
+        put: ordered.map((o) => o.key), same: plan.same.map((o) => o.key), failed,
+        spritesPut: spritePut.map((s) => s.key), spritesSame: spriteSame.map((s) => s.key),
+    };
 }
 
 /**
@@ -233,7 +262,8 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
         for (const p of opinions.problems) L.push(`- ❌ ${p}`);
     }
     if (publish) {
-        L.push('', `#### 待审单 → COS \`${proofPrefix}\``, `上传 ${publish.put.length} · 相同跳过 ${publish.same.length} · 失败 ${publish.failed.length}`);
+        L.push('', `#### 待审单 → COS \`${proofPrefix}\``, `上传 ${publish.put.length} · 相同跳过 ${publish.same.length} · 失败 ${publish.failed.length}`
+            + (publish.spritesPut.length + publish.spritesSame.length ? ` · 雪碧图 上传 ${publish.spritesPut.length}／已有 ${publish.spritesSame.length}` : ''));
         for (const k of publish.put) L.push(`- ${k}`);
         for (const p of publish.failed) L.push(`- ❌ ${p}`);
     }

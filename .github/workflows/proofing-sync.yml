@@ -3,6 +3,7 @@ name: proofing-sync
 # 待审单与公众意见的每日同步（ai-team `team/整理/设计/待审单与公众意见走中心库.md` 块 C）。
 #   opinions：中心库待审单的 (书, rev) → 本站 /api/cellreview 管理读 → 中心库 feedback/lists/web/<书>/<rev>.jsonl
 #   publish ：中心库待审单 → COS proof/index.json、proof/<书>/<章>.pending.json（网站精校页、阅读页提示读这里）
+#             待审单带 sprites[]（GUJI-675，cv 写）的，先把 R2 里的雪碧图取回，传到 COS proof/<书>/<章>/<文件名>，再传单子、最后换 index
 # 另（GUJI-597）：opinions 步顺带把 /api/charfix 的改字、一段有问题、专名意见并进中心库 feedback/lists/web/<书>/fixes.jsonl，
 #   publish 步把它发成公开清单 proof/fixes/<书>.json（整册读者意见页 /feedback/text 读）。收哪几部书见 FIX_BOOKS。
 # 另（M11 B2，GUJI-714）：opinions 步读中心库 feedback/lists/web/<书>/status.jsonl（cv `guji opinions publish-status` 写的处理结论），

@@ -34,9 +34,14 @@ export function webSnapshotPath(book, rev) {
     return `${WEB_PREFIX}${book}/${rev}.jsonl`;
 }
 
+const RE_SPRITE_NAME = /^[\w.-]{1,96}\.webp$/;
+const RE_SHA256 = /^[0-9a-f]{64}$/;
+const RE_MD5 = /^[0-9a-f]{32}$/;
+
 /**
  * 解析一份待审单原文。要 rev（字符串）与 cells（数组）；不合格返回 {error}。
- * @returns {{rev: string, n: number} | {error: string}}
+ * 顶层 `sprites`（GUJI-675，cv 写）可选：[{name, sha256, md5, bytes}]，图真源在 R2，发布时随单子一起传到 COS 的 proof/<书>/<章>/<name>。
+ * @returns {{rev: string, n: number, sprites: {name:string, sha256:string, md5:string, bytes:number}[]} | {error: string}}
  */
 export function readPending(text) {
     let doc;
@@ -44,7 +49,19 @@ export function readPending(text) {
     if (!doc || typeof doc !== 'object') return { error: '顶层不是对象' };
     if (typeof doc.rev !== 'string' || !RE_REV.test(doc.rev)) return { error: 'rev 缺失或不合法' };
     if (!Array.isArray(doc.cells)) return { error: 'cells 不是数组' };
-    return { rev: doc.rev, n: doc.cells.length };
+    let sprites = [];
+    if (doc.sprites !== undefined) {
+        if (!Array.isArray(doc.sprites)) return { error: 'sprites 不是数组' };
+        const names = new Set();
+        for (const x of doc.sprites) {
+            if (!x || typeof x.name !== 'string' || !RE_SPRITE_NAME.test(x.name) || !RE_SHA256.test(x.sha256 || '') || !RE_MD5.test(x.md5 || '')
+                || !Number.isInteger(x.bytes) || x.bytes <= 0) return { error: `sprites 里有不合规的项：${JSON.stringify(x)?.slice(0, 80)}` };
+            if (names.has(x.name)) return { error: `sprites 里 ${x.name} 重复` };
+            names.add(x.name);
+        }
+        sprites = doc.sprites.map((x) => ({ name: x.name, sha256: x.sha256, md5: x.md5, bytes: x.bytes }));
+    }
+    return { rev: doc.rev, n: doc.cells.length, sprites };
 }
 
 /**
