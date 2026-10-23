@@ -1,0 +1,15 @@
+name: probe — Commons vs IA（一次性，A20）
+on:
+  push:
+    branches: [claude/commons-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq djvulibre-bin >/dev/null
+      - run: python3 -m pip install -q pillow numpy
+      - run: python3 ops/probe/commons_vs_ia.py
