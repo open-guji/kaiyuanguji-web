@@ -26,6 +26,11 @@ on:
         description: 'manifest 里挂 Commons 回退源（Commons API 限流时自动不挂）'
         type: boolean
         default: true
+      source:
+        description: '源图：ia＝自己下 IA tif、按裁剪框表拆页（旧法）；pages＝读 cv 页表与页图（拆页、换页都已做好，与管线同一份图）'
+        type: choice
+        options: [ia, pages]
+        default: ia
 
 permissions:
   contents: read
@@ -66,6 +71,7 @@ jobs:
           UPLOAD: ${{ inputs.upload }}
           COMMONS: ${{ inputs.commons }}
           FORCE: ${{ inputs.force }}
+          SOURCE: ${{ inputs.source }}
         run: |
           set -euo pipefail
           if ! [[ "$VOLS" =~ ^(all|[0-9]{1,2}(,[0-9]{1,2})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
@@ -76,6 +82,7 @@ jobs:
           fi
           [ "$COMMONS" = "true" ] || ARGS+=(--no-commons)
           [ "$FORCE" = "true" ] && ARGS+=(--force)
+          ARGS+=(--source "$SOURCE")
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
 
       - name: Upload report and samples
