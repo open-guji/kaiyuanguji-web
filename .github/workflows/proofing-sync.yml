@@ -61,7 +61,7 @@ jobs:
       - name: Unit tests (proofing-sync)
         id: tests
         working-directory: nextjs
-        run: node --test scripts/lib/proofing-sync.test.mjs scripts/lib/fixes-sync.test.mjs
+        run: node --test scripts/lib/proofing-sync.test.mjs scripts/lib/fixes-sync.test.mjs scripts/lib/proofing-smoke.test.mjs
       - name: Opinions → central DB
         if: github.event_name == 'schedule' || inputs.parts != 'publish'
         working-directory: nextjs
@@ -97,3 +97,12 @@ jobs:
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
           # purge-urls.py 一次最多 20 个地址
           xargs -n 20 python3 ops/purge-urls.py < "$LIST"
+      # 读者侧冒烟（GUJI-730 P0-2，发布标准 G3c）：每张在线单 rev 与 index 一致、引用的图都登记在 sprites[] 里且取得到。
+      # 只读，红了这次 run 就红（watchdog／通知照常看得到）；不影响前面已发布的东西。
+      - name: Reader-side smoke
+        if: ${{ !cancelled() && steps.publish.outcome == 'success' }}
+        working-directory: nextjs
+        env:
+          PROOF_BASE: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'staging') && 'https://data.openguji.com/staging' || 'https://data.openguji.com' }}
+        # 刚清完 CDN，边缘节点可能还在回旧 index：不过就隔 90 秒再看一次
+        run: node scripts/proofing-smoke.mjs || { sleep 90; node scripts/proofing-smoke.mjs; }
