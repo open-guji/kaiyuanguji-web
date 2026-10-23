@@ -201,6 +201,48 @@ class SikuIiif(unittest.TestCase):
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))
 
 
+    def test_page_table_bilevel_tiers_match_tif(self):
+        """cv 页图是 RGB PNG：还原 1-bit 后三档与从 1-bit 原图直切逐字节相同。"""
+        import io
+        src = self._bw_page()
+        b = io.BytesIO()
+        src.convert('RGB').save(b, 'PNG')
+        page = m.restore_bilevel(Image.open(io.BytesIO(b.getvalue())))
+        self.assertEqual(page.mode, '1')
+        self.assertEqual([t[3] for t in m.encode_tiers(page)], [t[3] for t in m.encode_tiers(src)])
+        gray = Image.new('RGB', (20, 20), (128, 128, 128))
+        self.assertEqual(m.restore_bilevel(gray).mode, 'RGB')  # 有灰阶的照旧按彩图切
+
+    def test_plan_from_pages(self):
+        table = {'pages': [
+            {'seq': '0104', 'page': 104, 'sha256': 'a' * 64, 'ops': []},
+            *[{'seq': f'0105{x}', 'page': 105 + i, 'sha256': str(i) * 64, 'ops': [{'crop': [i, 0, 10, 10]}]}
+              for i, x in enumerate('abcd')],
+            {'seq': '0106', 'page': 109, 'sha256': 'b' * 64, 'ops': [{'manual': '转正'}]}]}
+        plan = m.plan_from_pages(table)
+        self.assertEqual([c['seq'] for c in plan], ['0104', '0105a', '0105b', '0105c', '0105d', '0106'])
+        self.assertEqual([c['leaf'] for c in plan], [104, 105, 105, 105, 105, 106])
+        self.assertEqual([c['pos'] for c in plan], [None, '右上', '左上', '右下', '左下', None])
+        self.assertEqual(plan[2]['xywh'], [1, 0, 10, 10])
+        self.assertIsNone(plan[5]['xywh'])
+
+    def test_load_page_table_probes_latest(self):
+        import json
+        import urllib.error
+        tables = {1: {'schema': 'guji-pages/1', 'rev': 1, 'pages': []},
+                  2: {'schema': 'guji-pages/1', 'rev': 2, 'pages': []}}
+
+        def get(url, **kw):
+            rev = int(url.rsplit('/r', 1)[1][:3])
+            self.assertIn('/pack/source/pages/96mid1ogzk/21/', url)
+            if rev not in tables:
+                raise urllib.error.HTTPError(url, 404, 'nf', {}, None)
+            return json.dumps(tables[rev]).encode(), {}
+        self.assertEqual(m.load_page_table(21, get=get)['rev'], 2)
+        tables.clear()
+        self.assertIsNone(m.load_page_table(21, get=get))
+
+
 @unittest.skipIf(m is None, 'Pillow 未安装')
 class CordSplitsCheck(unittest.TestCase):
     def test_check_volume(self):

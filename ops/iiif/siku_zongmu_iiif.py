@@ -16,8 +16,16 @@
 - canvas body 用 Choice：本站 → Commons thumb（1280 px）→ IA IIIF（1200 px）。拆页 canvas 没有 Commons
   （thumb 不能裁），Commons 当前版本页数与 IA 叶数不等时（#125 换了拆页版）整册不挂 Commons。
 
+- 源图两种取法（`--source`）：
+    ia    （缺省，旧法）本脚本自己下 IA `_tif.zip`、按裁剪框表拆合扫页；
+    pages （2026-10-23 起推荐）读 cv 的页表：R2 `pack/source/pages/<bookId>/<册>/r<NNN>.json`（公开地址，取最新版），
+          页图按 sha 取 `blob.open-guji.com/sha256/<2>/<sha>.png`。拆页、转正、人工换页都已在页表里做好，管线与书影同一份图；
+          本脚本不再拆页。设计见 open-guji-cv `doc/design/古籍图片全流程-源件页图管线与IIIF.md`。
+    页图是 RGB PNG；内容只有纯黑纯白时还原成 1-bit 再切，三档与从 tif 直切逐字节相同。
+
 用法：
   python3 ops/iiif/siku_zongmu_iiif.py --vols 02,03 --out /tmp/iiif               # 只切片＋生成 manifest
+  python3 ops/iiif/siku_zongmu_iiif.py --vols 21 --source pages --out /tmp/iiif   # 从 cv 页表出图
   python3 ops/iiif/siku_zongmu_iiif.py --vols 03 --leaves 10,105 --out /tmp/iiif  # 本地试几页
   … --upload    上传（要 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET，COS_REGION 默认 ap-shanghai）
   … --verify    上传后从数据域名取回核对（新写的全核，跳过的抽样 2%，至少 20 个）
@@ -41,7 +49,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-workspace 同名目录、F1 样张同一个 id）
@@ -53,6 +61,9 @@ import hosts  # noqa: E402
 PUBLIC_BASE = hosts.DATA_ORIGIN
 KEY_PREFIX = 'iiif'
 UA = f'kaiyuanguji-iiif/0.1 ({hosts.SITE_ORIGIN}; open-guji)'
+
+# cv 页表与页图（R2 正式桶，公开地址按键取、不能列目录）
+PAGES_BASE = os.environ.get('GUJI_PAGES_BASE', 'https://blob.open-guji.com')
 
 THUMB_W, READ_W, ZOOM_MAX_W_GRAY = 300, 1200, 2400
 COMMONS_W, IA_W = 1280, 1200
@@ -160,6 +171,91 @@ def fetch_tif_zip(ia_id, cache_dir):
     return path
 
 
+SPLIT4_POS = {'a': '右上', 'b': '左上', 'c': '右下', 'd': '左下'}
+
+
+def page_table_url(vol, rev):
+    return f'{PAGES_BASE}/pack/source/pages/{BOOK_ID}/{vol_dir(vol)}/r{rev:03d}.json'
+
+
+def load_page_table(vol, get=None):
+    """该册最新一版页表（公开地址不能列目录，从 r001 往上探到 404 为止）。没有页表返回 None。"""
+    get = get or http_get
+    table = None
+    rev = 1
+    while True:
+        try:
+            body, _ = get(page_table_url(vol, rev), timeout=60, tries=3)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return table
+            raise
+        t = json.loads(body)
+        if t.get('schema') != 'guji-pages/1' or t.get('rev') != rev:
+            raise RuntimeError(f'vol{vol:02d} 页表 r{rev:03d} 格式不对')
+        table = t
+        rev += 1
+
+
+def plan_from_pages(table):
+    """页表 → canvas 表。页序就是 canvas 的 seq；拆页（ops 里有 crop）记 xywh，只用来判断挂不挂 Commons。"""
+    parts = {}
+    for p in table['pages']:
+        parts.setdefault(p['seq'][:4], []).append(p['seq'])
+    out = []
+    for p in table['pages']:
+        crop = next((op['crop'] for op in p.get('ops', []) if 'crop' in op), None)
+        pos = p.get('pos')
+        if pos is None and crop and len(parts[p['seq'][:4]]) == 4:
+            pos = SPLIT4_POS.get(p['seq'][4:])          # 一叶拆四：a–d 依次右上、左上、右下、左下（同裁剪框表）
+        out.append({'seq': p['seq'], 'leaf': int(p['seq'][:4]), 'xywh': crop, 'orig_size': None, 'pos': pos,
+                    'sha256': p['sha256']})
+    return out
+
+
+def page_path(cache_dir, sha):
+    return os.path.join(cache_dir, 'pages', sha[:2], f'{sha}.png')
+
+
+def fetch_pages(canvases, cache_dir, workers=16, get=None):
+    """页图按 sha 下进缓存（已有跳过），核 sha。"""
+    get = get or http_get
+
+    def one(c):
+        sha = c['sha256']
+        p = page_path(cache_dir, sha)
+        if os.path.exists(p):
+            return
+        body, _ = get(f'{PAGES_BASE}/sha256/{sha[:2]}/{sha}.png', timeout=120)
+        if hashlib.sha256(body).hexdigest() != sha:
+            raise RuntimeError(f'页图 {sha} 下载内容 sha 不符')
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p + '.part', 'wb') as f:
+            f.write(body)
+        os.replace(p + '.part', p)
+
+    with cf.ThreadPoolExecutor(workers) as ex:
+        list(ex.map(one, canvases))
+
+
+def restore_bilevel(im):
+    """页图是 RGB PNG（cv 管线的口径）。三通道相同、只有 0 和 255 时还原成 1-bit，按黑白专用分档切；
+    别的（彩图、灰阶）原样返回，切法与从源图直切相同。"""
+    if im.mode == '1':
+        return im
+    gray = im
+    if im.mode == 'RGB':
+        r, g, b = im.split()
+        if ImageChops.difference(r, g).getbbox() or ImageChops.difference(g, b).getbbox():
+            return im
+        gray = r
+    if gray.mode == 'L':
+        colors = gray.getcolors(256) or []
+        if colors and all(v in (0, 255) for _, v in colors):
+            return gray.convert('1', dither=Image.Dither.NONE)
+    return im
+
+
 def leaf_name(ia_id, leaf):
     return f'{ia_id}_tif/{ia_id}_{leaf:04d}.tif'
 
@@ -219,20 +315,27 @@ def info_json(vol, seq, w, h, tiers):
 
 
 def _slice_one(args):
-    """进程池里跑：切一个 canvas 的三档并写盘，返回该 canvas 的记录。"""
-    vol, ia, zpath, c, out_dir = args
-    with zipfile.ZipFile(zpath) as z:
-        src = Image.open(io.BytesIO(z.read(leaf_name(ia, c['leaf']))))
-        src.load()
-    if c['xywh']:
-        x, y, w, h = c['xywh']
-        if list(src.size) != list(c['orig_size']):
-            raise RuntimeError(f'vol{vol:02d} {c["seq"]} 原图 {src.size} ≠ 裁剪框表记的 {c["orig_size"]}（IA 换过图？）')
-        if x + w > src.size[0] or y + h > src.size[1]:
-            raise RuntimeError(f'vol{vol:02d} {c["seq"]} 裁剪框 {c["xywh"]} 超出原图 {src.size}')
-        im = src.crop((x, y, x + w, y + h))
-    else:
+    """进程池里跑：切一个 canvas 的三档并写盘，返回该 canvas 的记录。第 6 项给了就是书 id（别的书借本脚本切，见 pages_iiif.py）。"""
+    global BOOK_ID
+    vol, ia, zpath, c, out_dir, *book = args
+    if book:
+        BOOK_ID = book[0]
+    if c.get('sha256'):                       # --source pages：页图已拆好、处理好，直接切
+        src = restore_bilevel(Image.open(page_path(zpath, c['sha256'])))
         im = src
+    else:
+        with zipfile.ZipFile(zpath) as z:
+            src = Image.open(io.BytesIO(z.read(leaf_name(ia, c['leaf']))))
+            src.load()
+        if c['xywh']:
+            x, y, w, h = c['xywh']
+            if list(src.size) != list(c['orig_size']):
+                raise RuntimeError(f'vol{vol:02d} {c["seq"]} 原图 {src.size} ≠ 裁剪框表记的 {c["orig_size"]}（IA 换过图？）')
+            if x + w > src.size[0] or y + h > src.size[1]:
+                raise RuntimeError(f'vol{vol:02d} {c["seq"]} 裁剪框 {c["xywh"]} 超出原图 {src.size}')
+            im = src.crop((x, y, x + w, y + h))
+        else:
+            im = src
     t0 = time.perf_counter()
     tiers = encode_tiers(im)
     dt = time.perf_counter() - t0
@@ -248,20 +351,27 @@ def _slice_one(args):
             'tiers': [(n, tw, th, len(d)) for n, tw, th, d in tiers]}
 
 
-def slice_volume(vol, meta, splits, out_dir, cache_dir, leaves=None, jobs=None):
-    """切一册，写到 out_dir/<key>；返回 {canvases:[…], stats:{…}}。"""
+def slice_volume(vol, meta, splits, out_dir, cache_dir, leaves=None, jobs=None, table=None):
+    """切一册，写到 out_dir/<key>；返回 {canvases:[…], stats:{…}}。给了 `table`（cv 页表）就从页图切，书 id 取页表的。"""
     ia = meta['ia']
-    zpath = fetch_tif_zip(ia, cache_dir)
-    plan = plan_canvases(vol, meta['leaves'], splits)
-    if leaves:
-        plan = [c for c in plan if c['leaf'] in leaves]
-    with zipfile.ZipFile(zpath) as z:
-        names = set(z.namelist())
-    missing = [leaf_name(ia, c['leaf']) for c in plan if leaf_name(ia, c['leaf']) not in names]
-    if missing:
-        raise SystemExit(f'❌ {ia} 缺 {len(missing)} 张：{missing[:3]}（zip 里 {len(names)} 项）')
+    if table is not None:
+        plan = plan_from_pages(table)
+        if leaves:
+            plan = [c for c in plan if c['leaf'] in leaves]
+        fetch_pages(plan, cache_dir)
+        zpath = cache_dir                     # _slice_one 用它找页图缓存
+    else:
+        zpath = fetch_tif_zip(ia, cache_dir)
+        plan = plan_canvases(vol, meta['leaves'], splits)
+        if leaves:
+            plan = [c for c in plan if c['leaf'] in leaves]
+        with zipfile.ZipFile(zpath) as z:
+            names = set(z.namelist())
+        missing = [leaf_name(ia, c['leaf']) for c in plan if leaf_name(ia, c['leaf']) not in names]
+        if missing:
+            raise SystemExit(f'❌ {ia} 缺 {len(missing)} 张：{missing[:3]}（zip 里 {len(names)} 项）')
     with cf.ProcessPoolExecutor(jobs or os.cpu_count()) as ex:
-        canvases = list(ex.map(_slice_one, [(vol, ia, zpath, c, out_dir) for c in plan], chunksize=4))
+        canvases = list(ex.map(_slice_one, [(vol, ia, zpath, c, out_dir, BOOK_ID) for c in plan], chunksize=4))
     sizes = {name: [t[3] for c in canvases for t in c['tiers'] if t[0] == name] for name in ('thumb', 'read', 'zoom')}
     t_enc = [c.pop('encode_s') for c in canvases]
     n = len(canvases)
@@ -610,6 +720,8 @@ def main(argv=None):
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
+    ap.add_argument('--source', choices=['ia', 'pages'], default='ia',
+                    help='源图：ia＝自己下 IA tif 并按裁剪框表拆页（旧法）；pages＝读 cv 页表与页图（推荐）')
     a = ap.parse_args(argv)
 
     vols_meta = load_volumes()
@@ -631,7 +743,15 @@ def main(argv=None):
         meta = vols_meta[v]
         t0 = time.perf_counter()
         print(f'vol{v:02d} {meta["ia"]}（{meta["leaves"]} 叶，{meta["juan"]}）…', flush=True)
-        r = slice_volume(v, meta, splits, out, cache, leaves, a.jobs)
+        table = None
+        if a.source == 'pages':
+            table = load_page_table(v)
+            if table is None:
+                raise SystemExit(f'❌ vol{v:02d} 还没有 cv 页表（guji source ia／register 先登记）')
+            print(f'  页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
+        r = slice_volume(v, meta, splits, out, cache, leaves, a.jobs, table=table)
+        if table is not None:
+            r['stats']['page_table'] = f'r{table["rev"]:03d}'
         r['stats']['wall_s'] = round(time.perf_counter() - t0, 1)
         commons = None if a.no_commons else usable_commons(v, meta, commons_file(meta['ia']))
         man = build_manifest(v, meta, r['canvases'], commons)
