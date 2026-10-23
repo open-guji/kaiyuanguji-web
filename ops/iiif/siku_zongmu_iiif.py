@@ -315,8 +315,11 @@ def info_json(vol, seq, w, h, tiers):
 
 
 def _slice_one(args):
-    """进程池里跑：切一个 canvas 的三档并写盘，返回该 canvas 的记录。"""
-    vol, ia, zpath, c, out_dir = args
+    """进程池里跑：切一个 canvas 的三档并写盘，返回该 canvas 的记录。第 6 项给了就是书 id（别的书借本脚本切，见 pages_iiif.py）。"""
+    global BOOK_ID
+    vol, ia, zpath, c, out_dir, *book = args
+    if book:
+        BOOK_ID = book[0]
     if c.get('sha256'):                       # --source pages：页图已拆好、处理好，直接切
         src = restore_bilevel(Image.open(page_path(zpath, c['sha256'])))
         im = src
@@ -349,7 +352,7 @@ def _slice_one(args):
 
 
 def slice_volume(vol, meta, splits, out_dir, cache_dir, leaves=None, jobs=None, table=None):
-    """切一册，写到 out_dir/<key>；返回 {canvases:[…], stats:{…}}。给了 `table`（cv 页表）就从页图切。"""
+    """切一册，写到 out_dir/<key>；返回 {canvases:[…], stats:{…}}。给了 `table`（cv 页表）就从页图切，书 id 取页表的。"""
     ia = meta['ia']
     if table is not None:
         plan = plan_from_pages(table)
@@ -368,7 +371,7 @@ def slice_volume(vol, meta, splits, out_dir, cache_dir, leaves=None, jobs=None, 
         if missing:
             raise SystemExit(f'❌ {ia} 缺 {len(missing)} 张：{missing[:3]}（zip 里 {len(names)} 项）')
     with cf.ProcessPoolExecutor(jobs or os.cpu_count()) as ex:
-        canvases = list(ex.map(_slice_one, [(vol, ia, zpath, c, out_dir) for c in plan], chunksize=4))
+        canvases = list(ex.map(_slice_one, [(vol, ia, zpath, c, out_dir, BOOK_ID) for c in plan], chunksize=4))
     sizes = {name: [t[3] for c in canvases for t in c['tiers'] if t[0] == name] for name in ('thumb', 'read', 'zoom')}
     t_enc = [c.pop('encode_s') for c in canvases]
     n = len(canvases)

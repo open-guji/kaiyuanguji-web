@@ -1,0 +1,39 @@
+{
+ "988g7gsqhd": {
+  "title": "北行日錄（知不足齋叢書本）",
+  "source": "中國國家圖書館藏（地800/584），經 Wikimedia Commons 公開",
+  "homepage": "https://commons.wikimedia.org/wiki/File:NLC403-312001066864-15647_%E5%8C%97%E8%A1%8C%E6%97%A5%E9%8C%84_%E5%8D%B7%E4%B8%80.pdf",
+  "vols": {
+   "01": {
+    "juan": "卷上～卷下",
+    "source": "中國國家圖書館藏（NLC403-312001066864-15647／15646），經 Wikimedia Commons 公開；一頁為一整版（筒子頁）"
+   }
+  }
+ },
+ "995ejelvk0": {
+  "title": "欽定全唐文（嘉慶揚州刻本內府本）",
+  "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu）",
+  "vols": {
+   "06": {
+    "juan": "卷一～卷二",
+    "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu），CADAL01022804"
+   },
+   "07": {
+    "juan": "卷三～卷四",
+    "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu），CADAL01022805"
+   },
+   "08": {
+    "juan": "卷五～卷六",
+    "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu），CADAL01022806"
+   },
+   "09": {
+    "juan": "卷七～卷八",
+    "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu），CADAL01022807"
+   },
+   "10": {
+    "juan": "卷九～卷十",
+    "source": "清華大學圖書館藏、CADAL 掃描（Wikimedia Commons 轉存 DjVu），CADAL01022808"
+   }
+  }
+ }
+}
