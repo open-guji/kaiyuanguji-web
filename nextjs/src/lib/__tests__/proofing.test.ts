@@ -129,7 +129,25 @@ describe('submitReview', () => {
     it('429／错误体／网络错给文案，不抛', async () => {
         expect(await submitReview(draft, 'a', (async () => new Response('{}', { status: 429 })) as unknown as typeof fetch)).toMatch(/频繁/);
         expect(await submitReview(draft, 'a', (async () => new Response('{"error":"bad"}', { status: 400 })) as unknown as typeof fetch)).toBe('bad');
-        expect(await submitReview(draft, 'a', (async () => { throw new Error('x'); }) as unknown as typeof fetch)).toMatch(/网络/);
+        expect(await submitReview(draft, 'a', (async () => { throw new Error('x'); }) as unknown as typeof fetch, 0)).toMatch(/网络/);
+    });
+    it('500 或断网自动重试一次：第二次成功就算成功；400／429 不重试', async () => {
+        const f500 = jest.fn()
+            .mockResolvedValueOnce(new Response('{"success":false,"error":"服务器错误"}', { status: 500 }))
+            .mockResolvedValueOnce(new Response('{"success":true}', { status: 200 }));
+        expect(await submitReview(draft, 'a', f500 as unknown as typeof fetch, 0)).toBeNull();
+        expect(f500).toHaveBeenCalledTimes(2);
+        const fNet = jest.fn().mockRejectedValueOnce(new Error('reset')).mockResolvedValueOnce(new Response('{"success":true}', { status: 200 }));
+        expect(await submitReview(draft, 'a', fNet as unknown as typeof fetch, 0)).toBeNull();
+        const fBad = jest.fn(async () => new Response('{"error":"bad"}', { status: 400 }));
+        expect(await submitReview(draft, 'a', fBad as unknown as typeof fetch, 0)).toBe('bad');
+        expect(fBad).toHaveBeenCalledTimes(1);
+        const f429 = jest.fn(async () => new Response('{}', { status: 429 }));
+        await submitReview(draft, 'a', f429 as unknown as typeof fetch, 0);
+        expect(f429).toHaveBeenCalledTimes(1);
+        const f500x2 = jest.fn(async () => new Response('{"error":"服务器错误"}', { status: 500 }));
+        expect(await submitReview(draft, 'a', f500x2 as unknown as typeof fetch, 0)).toBe('服务器错误');
+        expect(f500x2).toHaveBeenCalledTimes(2);
     });
 });
 

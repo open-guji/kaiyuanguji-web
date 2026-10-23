@@ -130,6 +130,29 @@ export async function checkRateLimit(kv, request, { max = RATE_LIMIT_MAX, prefix
   }
 }
 
+// 精校提交的限速改放函数内存（每个实例各数各的，尽力而为）：提交只剩存票一次 KV 写。
+// 原先每票先读再写一个按 IP 的计数键，KV 写慢时（线上 10-23 实测每票多 1–3 秒）同一人连点反复写同一键。
+// charfix／thread 仍用上面 KV 版的 checkRateLimit，不动。
+const memHits = new Map(); // ipHash → { start, count }
+const MEM_HITS_MAX = 5000;
+export function memRateLimit(request, { max = RATE_LIMIT_MAX, nowS = Math.floor(Date.now() / 1000) } = {}) {
+  const ip = getClientIp(request);
+  if (!ip) return { ok: true }; // 同上：取不到 IP 不限速
+  let cur = memHits.get(ip);
+  if (!cur || nowS - cur.start >= RATE_LIMIT_WINDOW_SECONDS) {
+    if (memHits.size >= MEM_HITS_MAX) {
+      for (const [k, v] of memHits) if (nowS - v.start >= RATE_LIMIT_WINDOW_SECONDS) memHits.delete(k);
+      if (memHits.size >= MEM_HITS_MAX) memHits.clear();
+    }
+    cur = { start: nowS, count: 0 };
+    memHits.set(ip, cur);
+  }
+  if (cur.count >= max) return { ok: false, retryAfter: Math.max(1, cur.start + RATE_LIMIT_WINDOW_SECONDS - nowS) };
+  cur.count += 1;
+  return { ok: true };
+}
+export function resetMemRateLimit() { memHits.clear(); }
+
 function ipKey(context) {
   if (context && context.env && context.env.CELLREVIEW_IP_KEY) return String(context.env.CELLREVIEW_IP_KEY);
   return (typeof CELLREVIEW_IP_KEY !== 'undefined' && CELLREVIEW_IP_KEY) ? String(CELLREVIEW_IP_KEY) : '';
@@ -154,7 +177,7 @@ export async function onRequestPost(context) {
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 
-    const limited = await checkRateLimit(kv, context.request);
+    const limited = memRateLimit(context.request);
     if (!limited.ok) {
       return new Response(JSON.stringify({ success: false, error: '提交太频繁，请稍后再试' }), {
         status: 429, headers: { ...headers, 'Retry-After': String(limited.retryAfter) },
@@ -173,7 +196,8 @@ export async function onRequestPost(context) {
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Cellreview POST error:', e);
-    return json(headers, 500, { success: false, error: '服务器错误' });
+    // detail 临时带上原始报错，便于定位线上间歇 500（2026-10-23）；查清后撤掉
+    return json(headers, 500, { success: false, error: '服务器错误', detail: String((e && e.message) || e).slice(0, 200) });
   }
 }
 

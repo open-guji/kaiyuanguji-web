@@ -53,7 +53,7 @@ beforeAll(async () => {
     g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/cellreview.js');
 });
-beforeEach(() => { store.clear(); listCalls.length = 0; g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+beforeEach(() => { fn.resetMemRateLimit(); store.clear(); listCalls.length = 0; g.FEEDBACK_ADMIN_TOKEN = 'right'; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 
 describe('POST 校验', () => {
@@ -261,11 +261,26 @@ describe('限速', () => {
         expect(noIp.status).toBe(200);
     });
 
-    it('限速计数的 key 不以 cr: 开头（不污染管理读）', async () => {
-        await fn.onRequestPost(post({ ...base, choice: 'none' }));
-        const rl = [...store.keys()].filter((k) => k.startsWith('ratelimit:cr:'));
-        expect(rl).toHaveLength(1);
-        expect(rl[0]).not.toContain('1.2.3.4');
+    it('提交只写存票一次 KV，限速计数不进 KV', async () => {
+        const puts: string[] = [];
+        const orig = kv.put;
+        kv.put = async (k: string, v: string, o?: unknown) => { puts.push(k); return orig(k, v, o as never); };
+        try {
+            await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        } finally { kv.put = orig; }
+        expect(puts).toHaveLength(1);
+        expect(puts[0].startsWith('cr:')).toBe(true);
+        expect([...store.keys()].filter((k) => k.startsWith('ratelimit:cr:'))).toHaveLength(0);
+    });
+
+    it('KV 写失败回 500 并带 detail', async () => {
+        const orig = kv.put;
+        kv.put = async () => { throw new Error('kv down'); };
+        try {
+            const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
+            expect(res.status).toBe(500);
+            expect((await json(res)).detail).toContain('kv down');
+        } finally { kv.put = orig; }
     });
 });
 

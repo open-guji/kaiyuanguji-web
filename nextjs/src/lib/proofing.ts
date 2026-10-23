@@ -635,21 +635,30 @@ export interface ReviewDraft {
 }
 
 /** 提交一条意见；失败返回错误文案，成功返回 null。不抛 */
-export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: typeof fetch = fetch): Promise<string | null> {
-    try {
-        const res = await fetchImpl(CELLREVIEW_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...draft, aid }),
-        });
-        let body: { success?: boolean; error?: string } | null = null;
-        try { body = await res.json(); } catch { /* 非 JSON：按状态码给文案 */ }
-        if (res.ok && body?.success !== false) return null;
-        if (res.status === 429) return '提交太频繁，请稍后再试';
-        return body?.error || `提交失败（${res.status}）`;
-    } catch {
-        return '网络出错，请稍后再试';
+export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: typeof fetch = fetch, retryDelayMs = 1500): Promise<string | null> {
+    const once = async (): Promise<{ err: string | null; retry: boolean }> => {
+        try {
+            const res = await fetchImpl(CELLREVIEW_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...draft, aid }),
+            });
+            let body: { success?: boolean; error?: string } | null = null;
+            try { body = await res.json(); } catch { /* 非 JSON：按状态码给文案 */ }
+            if (res.ok && body?.success !== false) return { err: null, retry: false };
+            if (res.status === 429) return { err: '提交太频繁，请稍后再试', retry: false };
+            return { err: body?.error || `提交失败（${res.status}）`, retry: res.status >= 500 };
+        } catch {
+            return { err: '网络出错，请稍后再试', retry: true };
+        }
+    };
+    // 服务端 5xx／断网自动再试一次（隔 1.5 秒，别立刻重打同一个 KV 键）：同格同人覆盖旧票，重发不会多出一票
+    let r = await once();
+    if (r.retry) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+        r = await once();
     }
+    return r.err;
 }
 
 // ---- 本地记录（localStorage，读写都包 try/catch，没有也能用）----
