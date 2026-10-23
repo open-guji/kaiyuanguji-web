@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   check:
@@ -20,4 +21,30 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python3 ops/iiif/check_cord_vs_splits.py --live
+      - name: Check
+        id: check
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python3 ops/iiif/check_cord_vs_splits.py --live 2>&1 | tee "$RUNNER_TEMP/out.txt"
+      # 红了开 issue（标签 proofing-alert，同 proofing-health.yml），恢复了自动关（GUJI-730 P2-5）
+      - name: Open / close alert
+        if: ${{ github.event_name != 'workflow_dispatch' || steps.check.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.check.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create proofing-alert --color B60205 --description '精校页读者侧检查不过' 2>/dev/null || true
+          title="精校页检查不过：IIIF 书影与 cord"
+          num=$(gh issue list --label proofing-alert --state open --json number,title \
+                --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+          if [ "$OUTCOME" = failure ]; then
+            [ -n "$num" ] && { echo "· 已有未关告警 #$num"; exit 1; }
+            body="$(printf '%s\n\n```\n%s\n```\n\n有册要按 cord 重跑 iiif-siku-zongmu 并清 CDN（#572）。' "$RUN_URL" "$(tail -n 40 "$RUNNER_TEMP/out.txt")")"
+            gh issue create --title "$title" --label proofing-alert --body "$body"
+            exit 1
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "已恢复（$RUN_URL），自动关闭。"
+          fi

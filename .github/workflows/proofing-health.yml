@@ -1,0 +1,56 @@
+name: Proofing health
+
+# 精校页读者侧健康（GUJI-730 P2-4）：每小时看一次线上待审单与引用图（nextjs/scripts/proofing-smoke.mjs）。
+# 红了开 issue（标签 proofing-alert），恢复了自动关。IIIF 书影与 cord 的每日核对在 iiif-cord-check.yml，同一个标签。
+# 只读：不写中心库、不传 COS；令牌只用 github.token 开关 issue。
+
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: proofing-health
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check
+        id: check
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ( cd nextjs && node scripts/proofing-smoke.mjs ) 2>&1 | tee "$RUNNER_TEMP/out.txt"
+      - name: Open / close alert
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          KEY: 待审单与引用图
+          OUTCOME: ${{ steps.check.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create proofing-alert --color B60205 --description '精校页读者侧检查不过' 2>/dev/null || true
+          title="精校页检查不过：$KEY"
+          num=$(gh issue list --label proofing-alert --state open --json number,title \
+                --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+          if [ "$OUTCOME" = failure ]; then
+            [ -n "$num" ] && { echo "· 已有未关告警 #$num"; exit 1; }
+            body="$(printf '%s\n\n```\n%s\n```\n\n缺图用 open-guji-cv `scripts/zhengli/republish.py add-sprites` 补；rev 不一致多半是 proofing-sync 的 publish 没跑完。GUJI-730。' "$RUN_URL" "$(tail -n 40 "$RUNNER_TEMP/out.txt")")"
+            gh issue create --title "$title" --label proofing-alert --body "$body"
+            exit 1
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "已恢复（$RUN_URL），自动关闭。"
+          fi
