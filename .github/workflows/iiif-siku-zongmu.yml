@@ -51,6 +51,11 @@ jobs:
       - name: Unit tests
         run: python3 -m unittest ops/tests/test_siku_iiif.py -v
 
+      - name: Cord ↔ 裁剪框表核对（拆页框与 book-text 不一致就停，免得切出与 cord 对不上的书影）
+        env:
+          VOLS: ${{ inputs.vols }}
+        run: python3 ops/iiif/check_cord_vs_splits.py --vols "$VOLS"
+
       - name: Slice → manifest → upload → verify
         env:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
