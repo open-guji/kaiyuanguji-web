@@ -1,0 +1,23 @@
+name: IIIF cord check — 四庫總目
+
+# 四庫總目拆页：book-text cord（真源）↔ 裁剪框表 ↔ 线上书影 manifest 三方核对（脚本 ops/iiif/check_cord_vs_splits.py）。
+# cord 重切改了拆页框而书影没跟着重出，精校页红框会错位（#572）。每天一次，红了就是有册要重跑 iiif-siku-zongmu。
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 15 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python3 ops/iiif/check_cord_vs_splits.py --live

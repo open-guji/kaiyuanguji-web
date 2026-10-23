@@ -201,5 +201,19 @@ class SikuIiif(unittest.TestCase):
         self.assertIsNone(m.usable_commons(3, meta, {'name': 'X', 'url': 'u', 'pagecount': 110}))
 
 
+@unittest.skipIf(m is None, 'Pillow 未安装')
+class CordSplitsCheck(unittest.TestCase):
+    def test_check_volume(self):
+        import check_cord_vs_splits as c
+        sel = {'source': {'width': 4181, 'height': 5866, 'selector': {'value': 'xywh=2161,2935,2020,2931'}}}
+        cord = {'pages': [{'page': 218, 'canvas': {'seq': '0216c', 'width': 2020, 'height': 2931, **sel}}]}
+        good = [{'vol': 'vol04', 'canvas_seq': '0216c', 'xywh': [2161, 2935, 2020, 2931], 'orig_size': [4181, 5866]}]
+        self.assertEqual(c.check_volume('04', cord, good), [])
+        stale = [dict(good[0], xywh=[1670, 2935, 2510, 2931])]
+        self.assertEqual(len(c.check_volume('04', cord, stale)), 1)
+        live = {'items': [{'id': 'x/canvas/04/0216c', 'width': 2510, 'height': 2931}]}
+        self.assertEqual(len(c.check_volume('04', cord, good, live)), 1)
+
+
 if __name__ == '__main__':
     unittest.main()
