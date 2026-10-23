@@ -56,7 +56,8 @@ jobs:
         run: |
           python3 -I ops/schedule_watchdog.py --out "$RUNNER_TEMP/watch.json" \
             --watch 'open-guji/kaiyuanguji-web:deploy.yml:30 20 * * *:6' \
-            --watch 'open-guji/kaiyuanguji-web:data.yml:43 21 * * *:6' | tee -a "$GITHUB_STEP_SUMMARY"
+            --watch 'open-guji/kaiyuanguji-web:data.yml:43 21 * * *:6' \
+            --watch 'open-guji/kaiyuanguji-web:proofing-sync.yml:23 21 * * *:6' | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Open / close alerts
         if: ${{ github.event_name != 'pull_request' && inputs.dry_run != true }}
         env:
