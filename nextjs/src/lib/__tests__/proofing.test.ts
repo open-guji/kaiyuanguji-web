@@ -265,9 +265,9 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(proofInvite(null, 'b1', '004', { file: '004.char.json', pending_file: '004.pending.json' })).toBe('no');
     });
 
-    it('预勾：stale 预选其字，occ 预选「非字」，stale 优先；都只是预选', () => {
+    it('预勾：只有 stale 预选其字；occ 不预选', () => {
         expect(preselect({ a: 'x', stale: { c: '已' } })).toEqual({ choice: 'char', char: '已' });
-        expect(preselect({ a: 'x', occ: { refBlank: true } })).toEqual({ choice: 'none' });
+        expect(preselect({ a: 'x', occ: { refBlank: true } })).toBeNull();
         expect(preselect({ a: 'x', stale: { c: '已' }, occ: {} })).toEqual({ choice: 'char', char: '已' });
         expect(preselect({ a: 'x' })).toBeNull();
     });

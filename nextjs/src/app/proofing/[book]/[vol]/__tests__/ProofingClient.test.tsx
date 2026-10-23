@@ -108,14 +108,14 @@ describe('精校页显示（GUJI-557）', () => {
         expect(t).not.toContain('other');
     });
 
-    it('stale 预选其字、occ 预选「图上没有字」，都不自动提交', async () => {
+    it('stale 预选其字，不自动提交；occ 不预选「图上没有字」', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '己', stale: { c: '已' } }, { a: '1:1:2', c: '日', occ: { refBlank: true } }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         await screen.findByText(/以前有人判为「已」/);
-        expect(screen.getByText(/先替你选了「图上没有字」/)).toBeTruthy();
-        expect(screen.getAllByRole('button', { name: '图上没有字' })[1].getAttribute('aria-pressed')).toBe('true');
+        expect(screen.queryByText(/先替你选了「图上没有字」/)).toBeNull();
+        for (const b of screen.getAllByRole('button', { name: '图上没有字' })) expect(b.getAttribute('aria-pressed')).toBe('false');
         expect(fetchSpy).not.toHaveBeenCalled();
     });
 

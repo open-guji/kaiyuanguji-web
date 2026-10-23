@@ -353,7 +353,6 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
     const why = whyLabels(cell.why);
-    const preNone = pre?.choice === 'none';
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
     const segDefect = cell.cls === 'seg_defect';
     return (
@@ -404,10 +403,10 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? doneFlag === o.choice : preNone && o.choice === 'none'} data-hotkey={o.key}
+                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? doneFlag === o.choice : false} data-hotkey={o.key}
                         // 四项都能和字一起交：已选的字带上，没选过就带「另写一字」框里的字（用户 10-21）
                         onClick={() => toggleFlag(o.choice)} className={BTN_CLASS}
-                        title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : preNone && o.choice === 'none', busy)}>{o.label}</button>
+                        title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : false, busy)}>{o.label}</button>
                 ))}
             </div>
             <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -420,7 +419,6 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                         style={btnStyle('small', false, busy)}>{sentNote === null ? '提交备注' : '更新备注'}</button>
                 )}
             </div>
-            {preNone && !done && <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>这一格被印章或污渍遮住，先替你选了「图上没有字」，没问题就点一下确认。</div>}
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
             {err && <div role="alert" style={{ marginTop: 6, color: '#c33' }}>{err}</div>}
