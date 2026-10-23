@@ -103,6 +103,6 @@ jobs:
         if: ${{ !cancelled() && steps.publish.outcome == 'success' }}
         working-directory: nextjs
         env:
-          PROOF_BASE: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'staging') && 'https://data.openguji.com/staging' || 'https://data.openguji.com' }}
+          PROOF_STAGING: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'staging') && '1' || '' }}
         # 刚清完 CDN，边缘节点可能还在回旧 index：不过就隔 90 秒再看一次
         run: node scripts/proofing-smoke.mjs || { sleep 90; node scripts/proofing-smoke.mjs; }

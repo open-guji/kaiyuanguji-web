@@ -26,7 +26,7 @@ export function unregistered(doc) {
 }
 
 /**
- * @param base  数据域名根，如 https://data.openguji.com（staging 再加 /staging）
+ * @param base  数据域名根（config/hosts.json 的 data；staging 再加 /staging）
  * @param fetchFn  (url, {method, range}) → {ok, status, json()}；range=true 时只取首字节
  * @returns {{lists: number, images: number, problems: string[]}}
  */

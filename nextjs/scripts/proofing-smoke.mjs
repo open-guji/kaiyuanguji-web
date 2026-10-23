@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
  * 精校页读者侧冒烟（GUJI-730 P0-2）：proofing-sync 发布之后跑，也可单独跑。
- *   PROOF_BASE   数据域名根，缺省 https://data.openguji.com（staging 演练传 https://data.openguji.com/staging）
+ *   PROOF_STAGING=1  看 staging 前缀（演练）；数据域名取 config/hosts.json
  * 有问题退出码 1；只出计数和文件名（公开仓）。
  */
 import { appendFileSync } from 'node:fs';
+import { DATA_ORIGIN } from '../../config/hosts.mjs';
 import { runProofingSmoke } from './lib/proofing-smoke.mjs';
 
-const base = (process.env.PROOF_BASE || 'https://data.openguji.com').replace(/\/$/, '');
+const base = DATA_ORIGIN.replace(/\/$/, '') + (process.env.PROOF_STAGING === '1' ? '/staging' : '');
 const fetchFn = async (url, { method, range }) => {
     const r = await fetch(url, { method, headers: { 'User-Agent': 'kaiyuanguji-web/proofing-smoke', ...(range ? { Range: 'bytes=0-0' } : {}) } });
     if (range) await r.arrayBuffer().catch(() => null);   // 读完放掉连接
