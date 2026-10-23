@@ -19,7 +19,7 @@ import { fetchMetaHome, formatDataVersion } from './meta-home-data';
 import { useSiteT } from '@/i18n/use-site-t';
 import SearchSuggest from '@/components/common/SearchSuggest';
 
-/** 数据仓库（CC0）。只提 book-index，不提 draft（9-30 反馈） */
+/** 数据仓库（CC BY-SA 4.0）。只提 book-index，不提 draft（9-30 反馈） */
 export const META_HOME_REPO_URL = 'https://github.com/open-guji/book-index';
 
 const EMPTY: MetaHomeSections = {

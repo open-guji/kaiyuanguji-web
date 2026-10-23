@@ -57,6 +57,7 @@ export default function Footer() {
 
             <div className="og-footer-bottom">
               <span>{t('footer.copyright', { year: currentYear })}</span>
+              <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">{t('footer.license')}</a>
               <Link href="/privacy">{t('footer.privacy')}</Link>
               <Link href="/beta">{t('footer.beta')}</Link>
               <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">

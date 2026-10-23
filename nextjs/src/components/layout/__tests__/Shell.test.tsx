@@ -203,6 +203,7 @@ describe('Footer', () => {
         expect(screen.getByRole('link', { name: '内测说明' })).toHaveAttribute('href', '/beta');
         const text = container.textContent ?? '';
         expect(text).not.toMatch(/开放协议|CC0|Apache-2\.0/);
+        expect(screen.getByRole('link', { name: /CC BY-SA 4\.0/ })).toHaveAttribute('href', 'https://creativecommons.org/licenses/by-sa/4.0/deed.zh-hans');
         expect(container.querySelector('.og-footer-brand')).toBeNull();
     });
 

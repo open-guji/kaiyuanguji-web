@@ -16,20 +16,22 @@ export const about = defineMessages({
     lead1: '知識屬於全人類。只有開源，才能使絕學繼於往世。本站主要收錄已進入公有領域的中國古籍及其他文字載體，亦包括少數民族語言文字和海外所載。項目範圍包括古籍編目，影印資源蒐集，文本化，構建知識圖譜等等。',
     lead2: '開源古籍是一個開放的，非盈利的團體。歡迎任何人以任何方式加入和貢獻，唯一的要求就是所有成果必須開源發布。',
     license: {
+        attributionBefore: '署名要求：使用本站數據與文本時，請註明「開源古籍（kaiyuanguji.com）」及所用文本的原始來源，附上許可鏈接，並註明是否作了修改；衍生作品須以相同的 ',
+        attributionAfter: ' 許可共享。',
         bookIndex: {
             what: '古籍目錄索引（book-index）',
             note: '作品、版本、叢編、人物條目，只存元數據',
-            license: 'CC0 1.0 Universal，公有領域，可自由複製、改編、再發布，無需署名',
+            license: 'CC BY-SA 4.0，可自由複製、改編、再發布，但須署名並以相同方式共享',
         },
         bookText: {
             what: '古籍文本（book-text）',
             note: '本站整理的古籍文本與輯佚',
-            license: 'CC0 1.0 Universal，公有領域，可自由複製、改編、再發布，無需署名',
+            license: 'CC BY-SA 4.0，可自由複製、改編、再發布，但須署名並以相同方式共享',
         },
         thirdParty: {
             what: '轉錄自第三方的文本',
             note: '維基文庫、Kanripo 等',
-            license: '沿用來源許可，不適用 CC0：維基文庫為 CC BY-SA 4.0，Kanripo 為 CC BY-SA。每部文本的閱讀頁頂部標有來源名稱、原始鏈接和許可，轉載時請按對應許可署名，並以相同許可發布',
+            license: '沿用來源許可，不改按本站許可：維基文庫為 CC BY-SA 4.0，Kanripo 為 CC BY-SA。每部文本的閱讀頁頂部標有來源名稱、原始鏈接和許可，轉載時請按對應許可署名，並以相同許可發布',
         },
         code: {
             what: '代碼',
@@ -76,20 +78,22 @@ export const about = defineMessages({
     lead1: '知识属于全人类。只有开源，才能使绝学继于往世。本站主要收录已进入公有领域的中国古籍及其他文字载体，亦包括少数民族语言文字和海外所载。项目范围包括古籍编目，影印资源搜集，文本化，构建知识图谱等等。',
     lead2: '开源古籍是一个开放的，非盈利的团体。欢迎任何人以任何方式加入和贡献，唯一的要求就是所有成果必须开源发布。',
     license: {
+        attributionBefore: '署名要求：使用本站数据与文本时，请注明“开源古籍（kaiyuanguji.com）”及所用文本的原始来源，附上许可链接，并注明是否作了修改；衍生作品须以相同的 ',
+        attributionAfter: ' 许可共享。',
         bookIndex: {
             what: '古籍目录索引（book-index）',
             note: '作品、版本、丛编、人物条目，只存元数据',
-            license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
+            license: 'CC BY-SA 4.0，可自由复制、改编、再发布，但须署名并以相同方式共享',
         },
         bookText: {
             what: '古籍文本（book-text）',
             note: '本站整理的古籍文本与辑佚',
-            license: 'CC0 1.0 Universal，公有领域，可自由复制、改编、再发布，无需署名',
+            license: 'CC BY-SA 4.0，可自由复制、改编、再发布，但须署名并以相同方式共享',
         },
         thirdParty: {
             what: '转录自第三方的文本',
             note: '维基文库、Kanripo 等',
-            license: '沿用来源许可，不适用 CC0：维基文库为 CC BY-SA 4.0，Kanripo 为 CC BY-SA。每部文本的阅读页顶部标有来源名称、原始链接和许可，转载时请按对应许可署名，并以相同许可发布',
+            license: '沿用来源许可，不改按本站许可：维基文库为 CC BY-SA 4.0，Kanripo 为 CC BY-SA。每部文本的阅读页顶部标有来源名称、原始链接和许可，转载时请按对应许可署名，并以相同许可发布',
         },
         code: {
             what: '代码',
