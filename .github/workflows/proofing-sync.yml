@@ -35,6 +35,7 @@ on:
 
 permissions:
   contents: read
+  issues: write   # 「该重出单」提醒 issue（GUJI-688）
 
 concurrency:
   group: proofing-sync
@@ -63,13 +64,37 @@ jobs:
         working-directory: nextjs
         run: node --test scripts/lib/proofing-sync.test.mjs scripts/lib/fixes-sync.test.mjs scripts/lib/proofing-smoke.test.mjs
       - name: Opinions → central DB
+        id: opinions
         if: github.event_name == 'schedule' || inputs.parts != 'publish'
         working-directory: nextjs
         env:
           PARTS: opinions
+          REISSUE_OUT: ${{ runner.temp }}/reissue.tsv
           GUJI_DATA_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }} # 同一把网站管理令牌，中心库里登记为 web 角色
           FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: node scripts/proofing-sync.mjs
+      # 线上单已有 ≥ 20% 的格投过票 → 开提醒 issue「该重出单」（GUJI-688）；rev 换了、不再超线的自动关
+      - name: Reissue reminder
+        if: ${{ !cancelled() && steps.opinions.outcome != 'skipped' && (github.event_name == 'schedule' || inputs.target == 'production') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          LIST: ${{ runner.temp }}/reissue.tsv
+        run: |
+          [ -f "$LIST" ] || { echo '· opinions 没出提醒清单，不动 issue'; exit 0; }
+          gh label create proofing-reissue --color FBCA04 --description '线上待审单已投格达两成，该落票重出单' 2>/dev/null || true
+          want=$(cut -f1 "$LIST")
+          gh issue list --label proofing-reissue --state open --json number,title --jq '.[] | "\(.number)\t\(.title)"' | while IFS=$'\t' read -r num title; do
+            key=${title#该落票重出单：}
+            grep -qxF "$key" <<<"$want" || gh issue close "$num" --comment "已不在提醒清单里（rev 已换或投票数回落），自动关闭。"
+          done
+          while IFS=$'\t' read -r key voted n pct; do
+            [ -n "$key" ] || continue
+            title="该落票重出单：$key"
+            num=$(gh issue list --label proofing-reissue --state open --json number,title --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+            [ -n "$num" ] && { echo "· 已有 #$num：$key"; continue; }
+            gh issue create --title "$title" --label proofing-reissue --body "线上待审单 $key 已有 $voted／$n 格（$pct%）投过票。用 open-guji-cv \`scripts/zhengli/proof_cycle.py plan\` 出计划、\`apply\` 落票并重出单。GUJI-688。"
+          done < "$LIST"
       - name: Pending lists → COS
         id: publish
         if: ${{ !cancelled() && steps.tests.outcome == 'success' && (github.event_name == 'schedule' || inputs.parts != 'opinions') }}

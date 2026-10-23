@@ -19,12 +19,14 @@
  *   opinions：SITE_BASE（默认正式站 SITE_ORIGIN；旧域名 www.kaiyuanguji.com 的 /api/* 在国内 404，GUJI-706）、FEEDBACK_ADMIN_TOKEN
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
+ *   REISSUE_OUT：opinions 段把「已投票格 ≥ 20%、该落票重出单」的 (书, rev) 逐行写进这个文件（工作流据此开提醒 issue，GUJI-688）
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
 import { appendFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
+import { reissueHints } from './lib/proofing-sync-plan.mjs';
 import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 
 const PARTS = process.env.PARTS || 'all';
@@ -185,7 +187,13 @@ const status = doOpinions ? await syncStatus({ worker, site, ws: WS[0], books: F
 const fixes = doOpinions ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixesPublish = doPublish ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
 
-const md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });
+const reissue = opinions ? reissueHints(opinions.rows, entries) : [];
+let md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });
+if (reissue.length) {
+    md += ['', '#### 该落票、重出单了（线上单已有 ≥ 20% 的格投过票）', ...reissue.map((h) => `- ${h.book}／${h.rev}：${h.voted}／${h.n} 格（${h.pct}%）`), ''].join('\n');
+    for (const h of reissue) console.log(`::notice::${h.book}/${h.rev} 已投 ${h.voted}/${h.n} 格（${h.pct}%），该落票重出单`);
+}
+if (process.env.REISSUE_OUT && opinions) writeFileSync(process.env.REISSUE_OUT, reissue.map((h) => `${h.book}/${h.rev}\t${h.voted}\t${h.n}\t${h.pct}\n`).join(''));
 console.log(md);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
 // 这次传了的文件逐行写成完整地址，给工作流下一步清 CDN 用：数据域名的节点不认源站 max-age=300（10-21 实测旧单缓存了 14 小时）

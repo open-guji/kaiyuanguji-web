@@ -2,7 +2,7 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import {
-    parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath,
+    parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath, reissueHints,
 } from './proofing-sync-plan.mjs';
 import { collectPendings, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
 
@@ -302,4 +302,15 @@ test('publishPendings：演练不取图、不传，但报出要传哪些图', as
     const r = await publishPendings({ cos: fakeCos(), entries, proofPrefix: 'proof/', dryRun: true, blobs });
     assert.equal(blobs.calls.length, 0);
     assert.deepEqual(r.spritesPut, [`${BOOK}/004/${m.name}`]);
+});
+
+test('reissueHints：快照里投过票的格占线上单 ≥ 20% 才提醒重出单（GUJI-688）', () => {
+    const g = { book: BOOK, rev: '001-r2' };
+    const m = mergeSnapshot('', [vote('1:1:1', 'aa'), vote('1:1:1', 'bb'), vote('1:1:2', 'aa')], g);
+    assert.equal(m.cells, 2);
+    const entries = [{ book: BOOK, rev: '001-r2', n: 10 }, { book: BOOK, rev: '002-r1', n: 10 }];
+    const rows = [{ ...g, cells: m.cells }, { book: BOOK, rev: '002-r1', cells: 1 }];
+    assert.deepEqual(reissueHints(rows, entries), [{ book: BOOK, rev: '001-r2', voted: 2, n: 10, pct: 20 }]);
+    assert.deepEqual(reissueHints(rows, entries, 0.5), []);
+    assert.deepEqual(reissueHints([{ book: BOOK, rev: 'x', cells: 3 }], entries), []); // 没有对应线上单的不提醒
 });
