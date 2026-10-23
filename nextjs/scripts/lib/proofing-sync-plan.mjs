@@ -143,7 +143,18 @@ export function mergeSnapshot(oldText, kvItems, { book, rev }) {
     const kept = [...oldKeys].filter((k) => !seen.has(k)).length;
     const all = [...byKey.values()].sort(cmpVote);
     const text = all.map((r) => JSON.stringify(r)).join('\n') + (all.length ? '\n' : '');
-    return { text, total: all.length, added, updated, kept, dropped };
+    return { text, total: all.length, cells: new Set(all.map((r) => r.a)).size, added, updated, kept, dropped };
+}
+
+/** 线上单里已有人投票的格占比 ≥ threshold 的 (书, rev)：该落票、重出单了（GUJI-688，GUJI-730 P2-6）。
+ *  rows 是 syncOpinions 的结果（带 cells＝快照里投过票的格数）；n 按 (书, rev) 合计各章待审格。 */
+export function reissueHints(rows, entries, threshold = 0.2) {
+    const n = new Map();
+    for (const e of entries) n.set(`${e.book}\u0000${e.rev}`, (n.get(`${e.book}\u0000${e.rev}`) || 0) + (e.n || 0));
+    return rows
+        .map((r) => ({ book: r.book, rev: r.rev, voted: r.cells || 0, n: n.get(`${r.book}\u0000${r.rev}`) || 0 }))
+        .filter((h) => h.n > 0 && h.voted / h.n >= threshold)
+        .map((h) => ({ ...h, pct: Math.round((100 * h.voted) / h.n) }));
 }
 
 export const md5Hex = (s) => createHash('md5').update(s).digest('hex');

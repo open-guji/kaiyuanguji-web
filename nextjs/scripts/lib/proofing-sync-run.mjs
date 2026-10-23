@@ -72,7 +72,7 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
             const m = mergeSnapshot(old?.text ?? '', items, g);
             const changed = m.text !== (old?.text ?? '') && m.total > 0;
             if (changed && !dryRun) await worker.putFile(g.ws, path, m.text, old?.sha256 ?? null);
-            rows.push({ ...g, kv: items.length, total: m.total, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
+            rows.push({ ...g, kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
         } catch (e) {
             problems.push(`${g.book}/${g.rev}：${e?.message || e}`);
         }
