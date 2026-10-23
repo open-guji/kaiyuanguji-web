@@ -245,10 +245,9 @@ export function ctxWorthShowing(cell: PendingCell): boolean {
     return cell.ctx.c !== cell.libTop?.[0]?.c;
 }
 
-/** 预勾：`stale` 有就预勾它的字（`c`）；`occ` 有就预选「非字」。都只是预选，仍须人确认才提交 */
+/** 预勾：`stale` 有就预勾它的字（`c`）。只是预选，仍须人确认才提交；遮挡（`occ`）不预选「图上没有字」，被遮的格子图上常常有字（用户 2026-10-22） */
 export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: string } | null {
     if (cell.stale?.c) return { choice: 'char', char: cell.stale.c };
-    if (cell.occ) return { choice: 'none' };
     return null;
 }
 
