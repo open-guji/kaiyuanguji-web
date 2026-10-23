@@ -38,12 +38,14 @@ describe('关于页（N6）', () => {
         ]);
     });
 
-    it('数据来源与授权：book-index 与 book-text 都是 CC0，第三方全文沿用来源许可，代码 Apache-2.0；不提 book-index-draft（9-30 反馈）', () => {
+    it('数据来源与授权：book-index 与 book-text 都是 CC BY-SA 4.0，第三方全文沿用来源许可，代码 Apache-2.0；不提 book-index-draft（9-30 反馈）', () => {
         const { container } = render(<AboutPage />);
         const lic = document.getElementById('license')!;
         const rows = within(lic).getAllByRole('row').map((r) => r.textContent ?? '');
-        expect(rows.find((r) => r.includes('book-index）'))).toMatch(/CC0 1\.0 Universal/);
-        expect(rows.find((r) => r.includes('book-text'))).toMatch(/CC0 1\.0 Universal/);
+        expect(rows.find((r) => r.includes('book-index）'))).toMatch(/CC BY-SA 4\.0/);
+        expect(rows.find((r) => r.includes('book-text'))).toMatch(/CC BY-SA 4\.0/);
+        expect(lic.querySelector('a[href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh-hans"]')).not.toBeNull();
+        expect(lic.textContent).not.toMatch(/CC0/);
         expect(rows.find((r) => r.includes('转录自第三方'))).toMatch(/CC BY-SA 4\.0，Kanripo 为 CC BY-SA/);
         expect(rows.find((r) => r.startsWith('代码'))).toMatch(/Apache License 2\.0/);
         expect(container.textContent).not.toContain('book-index-draft');

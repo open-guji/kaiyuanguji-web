@@ -53,9 +53,9 @@ export const home = defineMessages({
     },
     open: {
         label: '開放',
-        textBadge: '許可：CC0',
+        textBadge: '許可：CC BY-SA 4.0',
         textTitle: '文本開放',
-        textSub: '古籍文本以 CC0 公有領域發布，可自由複製、改編、再發布，無需署名。',
+        textSub: '古籍文本與元數據以 CC BY-SA 4.0 發布，可自由複製、改編、再發布，但須註明出處，並以相同方式共享。',
         // 「…詳見」＋〔關於我們〕＋「的『數據來源與授權』。」
         textNoteBefore: '轉錄自維基文庫、Kanripo 的文本沿用來源許可（CC BY-SA），每部文本的閱讀頁頂部標有來源與許可，詳見',
         textNoteLink: '關於我們',
@@ -123,9 +123,9 @@ export const home = defineMessages({
     },
     open: {
         label: '开放',
-        textBadge: '许可：CC0',
+        textBadge: '许可：CC BY-SA 4.0',
         textTitle: '文本开放',
-        textSub: '古籍文本以 CC0 公有领域发布，可自由复制、改编、再发布，无需署名。',
+        textSub: '古籍文本与元数据以 CC BY-SA 4.0 发布，可自由复制、改编、再发布，但须注明出处，并以相同方式共享。',
         textNoteBefore: '转录自维基文库、Kanripo 的文本沿用来源许可（CC BY-SA），每部文本的阅读页顶部标有来源与许可，详见',
         textNoteLink: '关于我们',
         textNoteAfter: '的「数据来源与授权」。',

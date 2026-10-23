@@ -29,9 +29,9 @@ test.describe('首页', () => {
         await expect(page).toHaveURL(/\/book-index\?q=/);
     });
 
-    test('写明 CC0', async ({ page }) => {
+    test('写明 CC BY-SA 4.0', async ({ page }) => {
         await page.goto(TARGET);
-        await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
+        await expect(page.getByText(/CC BY-SA 4\.0 发布/).first()).toBeVisible();
     });
 
     // 用户意见（overview#267）：搜索框下面只有三个例子，史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页（09-30 用户重申）
@@ -80,7 +80,7 @@ test.describe('古籍索引页', () => {
         await expect(form.getByRole('combobox', { name: '检索古籍元数据' })).toBeVisible({ timeout: 30_000 });
         await expect(page.getByRole('complementary', { name: '最近浏览' })).toBeVisible();
         await expect(page.getByRole('heading', { level: 2, name: '数据与授权' })).toBeVisible();
-        await expect(page.getByText(/CC0 公有领域/).first()).toBeVisible();
+        await expect(page.getByText(/CC BY-SA 4\.0 发布/).first()).toBeVisible();
         await expect(page.getByRole('tab')).toHaveCount(0);
         await expect(page.getByRole('heading', { name: /古籍资源索引|古籍資源索引/ })).toHaveCount(0);
         expect(errors, `页面 JS 报错：${errors.join('; ')}`).toEqual([]);

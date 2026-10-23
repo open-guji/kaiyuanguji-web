@@ -13,6 +13,7 @@ export const footer = defineMessages({
     qqScan: 'QQ 掃碼進群',
     qqNumber: '群號 {qq}',
     copyright: '© {year} 開源古籍項目組',
+    license: '內容以 CC BY-SA 4.0 授權',
     privacy: '隱私說明',
     beta: '內測說明',
 }, {
@@ -27,6 +28,7 @@ export const footer = defineMessages({
     qqScan: 'QQ 扫码进群',
     qqNumber: '群号 {qq}',
     copyright: '© {year} 开源古籍项目组',
+    license: '内容以 CC BY-SA 4.0 授权',
     privacy: '隐私说明',
     beta: '内测说明',
 });

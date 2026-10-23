@@ -120,10 +120,10 @@ describe('首页（N1）', () => {
         }
     });
 
-    it('写明 CC0；二维码只在页脚，正文里没有（N6）', () => {
+    it('写明 CC BY-SA 4.0；二维码只在页脚，正文里没有（N6）', () => {
         render(<HomePage />);
         const main = screen.getByRole('main');
-        expect(within(main).getByText(/CC0 公有领域/)).toBeInTheDocument();
+        expect(within(main).getByText(/CC BY-SA 4\.0 发布/)).toBeInTheDocument();
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
         expect(within(screen.getByRole('contentinfo')).getAllByRole('img', { name: /二维码/ })).toHaveLength(2);
     });
@@ -135,7 +135,7 @@ describe('首页（N1）', () => {
         expect(document.querySelectorAll('.home-feature:not(.is-live)')).toHaveLength(HOME_FEATURES.length - 2);
         expect(within(live[0] as HTMLElement).getByRole('link', { name: /进入古籍总目/ }).getAttribute('href')).toBe('/catalog');
         expect(document.querySelectorAll('.home-feature:not(.is-live) a')).toHaveLength(0);
-        expect(screen.getByLabelText('许可：CC0').textContent).toBe('CC0');
+        expect(screen.getByLabelText('许可：CC BY-SA 4.0').textContent).toBe('CC BY-SA 4.0');
         expect(screen.getByLabelText('许可：Apache-2.0').textContent).toBe('Apache-2.0');
         expect(screen.getByRole('search')).toBeInTheDocument();
     });
