@@ -263,19 +263,21 @@ export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: str
  * 快速确认（用户 2026-10-24）：机器把握较大的格按类排成小图网格，一格一图一字，读者成批确认；
  * 拿不准的勾「存疑」，挪到下面逐格细看。每类一个入口，以后加类只在这里加一条。
  * 只收整理本有一个字的格；复审格（prior）、切坏格不收；以前判过别的字（stale 与整理本不同）也不收。
+ * 用户 10-24 收紧：要靠文意区别的形近字（日曰、人入八、己已巳…）和要按刻形定码位的异体字（卷巻、跋䟦…）都不进快速确认，
+ * 留给逐格细看和 cv 字组流程；「整理本与字形一致」一类撤掉（剩下的几乎全是这些字）。
  */
 export interface QuickGroup { key: string; name: string; hint: string }
 export const QUICK_GROUPS: QuickGroup[] = [
     { key: 'occluded', name: '有遮挡', hint: '被印章或污渍遮住，下面的小字是整理本的字' },
-    { key: 'agree', name: '整理本与字形一致', hint: '整理本的字和本书别处最像的字是同一个' },
 ];
+/** cv 字组登记表（open_guji_cv/groups registry，dev a2e9f8f）全部成员字：形近要文意定、异体要按刻形定，都不快速确认 */
+export const GROUP_CHARS = new Set([...'㑹㕘㫖㸃䜟䟦一二于人俞傅傳入內八内冊册出刊刋删別刪别十千卜即卷卽卿厯參叅叙各名吕呂命問啓啟圓圖土士大太子宋尙尚山岀己已巳巻干彖彙彚彛彜彝彞徴徵心必愼慎戊戌戍扺抵敎敘教既旣日旨晚晩曰曾會木未末本朱歴淄淸清湽為爲玉王由甲申目禽絕絶而自舍葢蒙蓋衛衞說説論諭識變讖象跋遺還間隸靑青面顚顛點𠮓𢑱𢑴𧰼𨜊𨽾𫎇']);
 export function quickPick(cell: PendingCell): { group: string; char: string } | null {
     const r = cell.ref?.c;
     if (!r || [...r].length !== 1 || cell.prior || cell.cls === 'seg_defect') return null;
     if (cell.stale?.c && cell.stale.c !== r) return null;
+    if (GROUP_CHARS.has(r)) return null;
     if (cell.cls === 'occluded') return cell.occ?.refBlank ? null : { group: 'occluded', char: r };
-    // 己已巳刻得一样，字形比对分不出，「一致」不说明什么
-    if (cell.cls !== 'ji_yi_si' && cell.libTop?.[0]?.c === r) return { group: 'agree', char: r };
     return null;
 }
 

@@ -531,14 +531,14 @@ describe('精校页：是图形，不是字（char v0.3 图片格，GUJI-742）'
 describe('快速确认（用户 10-24）', () => {
     const occ = (a: string, r: string, x = 0) => ({ a, c: r, cls: 'occluded', why: ['occluded'], ref: { c: r }, occ: { c: r }, img: img(x) });
 
-    it('quickPick：遮挡有整理本、整理本与字形首选一致才收；己已巳、复审、整理本无字、以前判过别的字不收', () => {
+    it('quickPick：只收遮挡且整理本有字；字组里的字（形近靠文意、异体按刻形）、复审、整理本无字、以前判过别的字、非遮挡都不收', () => {
         const { quickPick } = jest.requireActual('@/lib/proofing');
         expect(quickPick(occ('1:1:1', '欽'))).toEqual({ group: 'occluded', char: '欽' });
+        expect(quickPick(occ('1:1:1', '曰'))).toBeNull();      // 日曰要靠文意
+        expect(quickPick(occ('1:1:1', '巻'))).toBeNull();      // 卷巻按刻形定码位
         expect(quickPick({ a: '1', cls: 'occluded', ref: { c: '欽' }, occ: { refBlank: true } })).toBeNull();
         expect(quickPick({ a: '1', cls: 'occluded' })).toBeNull();
-        expect(quickPick({ a: '1', cls: 'other', ref: { c: '天' }, libTop: [{ c: '天', s: 0.9 }] })).toEqual({ group: 'agree', char: '天' });
-        expect(quickPick({ a: '1', cls: 'other', ref: { c: '天' }, libTop: [{ c: '夭', s: 0.9 }] })).toBeNull();
-        expect(quickPick({ a: '1', cls: 'ji_yi_si', ref: { c: '己' }, libTop: [{ c: '己', s: 0.9 }] })).toBeNull();
+        expect(quickPick({ a: '1', cls: 'other', ref: { c: '天' }, libTop: [{ c: '天', s: 0.9 }] })).toBeNull();
         expect(quickPick({ ...occ('1', '欽'), prior: { c: '歆' } })).toBeNull();
         expect(quickPick({ ...occ('1', '欽'), stale: { c: '歆' } })).toBeNull();
     });
@@ -565,18 +565,17 @@ describe('快速确认（用户 10-24）', () => {
         expect(JSON.parse(localStorage.getItem('kyg-cr-defer:r1') ?? '[]')).toEqual(['3:1:2']);
     });
 
-    it('两类都有时出分类按钮；提交失败时停下并报出已交几格', async () => {
+    it('只有一类时不出分类按钮；提交失败时停下并报出已交几格', async () => {
         const fetchSpy = jest.fn()
             .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) })
             .mockResolvedValue({ ok: false, status: 429, json: async () => ({ success: false }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
-        loadProofing.mockResolvedValue(ok([occ('3:1:1', '欽'), occ('3:1:2', '定', 96), { a: '3:2:1', c: '天', cls: 'other', ref: { c: '天' }, libTop: [{ c: '天', s: 0.9 }], img: img(192) }]));
+        loadProofing.mockResolvedValue(ok([occ('3:1:1', '欽'), occ('3:1:2', '定', 96), occ('3:1:3', '四', 192)]));
         render(<ProofingClient book="b1" vol="vol01" />);
-        const groups = await screen.findByTestId('quick-groups');
-        expect(groups.textContent).toContain('有遮挡 2');
-        expect(groups.textContent).toContain('整理本与字形一致 1');
+        await screen.findByTestId('quick-review');
+        expect(screen.queryByTestId('quick-groups')).toBeNull();
         fireEvent.click(screen.getByTestId('quick-confirm'));
         expect((await screen.findByRole('alert')).textContent).toMatch(/^已确认 1 格，后面的没交上：提交太频繁/);
-        expect(screen.getAllByTestId('quick-tile')).toHaveLength(1);     // 没交上的还在网格里
+        expect(screen.getAllByTestId('quick-tile')).toHaveLength(2);     // 没交上的还在网格里
     });
 });
