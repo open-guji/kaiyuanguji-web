@@ -599,7 +599,8 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
 
 export const CELLREVIEW_API = '/api/cellreview';
 
-export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu';
+/** figure：这一格是图形、不是字（GUJI-737），不带字，备注当图形说明 */
+export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu' | 'figure';
 
 /**
  * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：

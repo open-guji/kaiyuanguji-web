@@ -15,7 +15,7 @@ jest.mock('@/lib/facsimile', () => ({ loadFacsimile: (...a: unknown[]) => loadFa
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
 jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a), loadProofIndex: () => loadProofIndex() }));
 
-import ProofingClient from '../ProofingClient';
+import ProofingClient, { hotkeyTarget } from '../ProofingClient';
 
 const img = (x: number) => ({ s: 'p0009.webp', x, y: 0, w: 96, h: 96 });
 const ok = (cells: unknown[]) => ({ status: 'ok', pending: { rev: 'r1', cells }, cord: null, versionKey: 'default', pendingFile: '001.pending.json' });
@@ -221,6 +221,35 @@ describe('精校页显示（GUJI-557）', () => {
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(7));
         expect(body(6)).toMatchObject({ a: '1:1:2', choice: 'none', char: '曰', pick_src: 'cand', pick_rank: 1 });
         localStorage.clear();                                   // 别让后面的用例以为这两格回应过
+    });
+
+    it('「是图形，不是字」（GUJI-737）：先填说明再交，只交 figure＋说明不带字；之后选字改回 char', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        localStorage.clear();
+        loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '', cand: [{ c: '○' }] }]));
+        render(<ProofingClient book="b12" vol="vol05" />);
+        await screen.findAllByTestId('cell-card');
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        expect(screen.queryByTestId('figure-panel')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: '是图形，不是字' }));
+        expect(fetchSpy).not.toHaveBeenCalled();                 // 先展开说明框，不直接交
+        fireEvent.change(screen.getByLabelText('图形说明'), { target: { value: '左半圈连一实点' } });
+        fireEvent.click(screen.getByRole('button', { name: '确定是图形' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ a: '148:2:14', choice: 'figure', note: '左半圈连一实点' });
+        expect(body(0).char).toBeUndefined();
+        expect(screen.queryByTestId('figure-panel')).toBeNull();
+        await waitFor(() => expect(screen.getByRole('button', { name: '是图形，不是字' }).getAttribute('aria-pressed')).toBe('true'));
+        // 改主意：选一个字，交的是 char，不带 figure
+        fireEvent.click(screen.getByRole('button', { name: '○' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+        expect(body(1)).toMatchObject({ a: '148:2:14', choice: 'char', char: '○' });
+        localStorage.clear();
+    });
+
+    it('快捷键 g 落到「是图形」按钮', () => {
+        expect(hotkeyTarget('g')).toBe('g');
     });
 
     it('提交带上选字来源：候选按钮第几个、机器读字、自己写；「图上没有字」带上已选的字和来源', async () => {

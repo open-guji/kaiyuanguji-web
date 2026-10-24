@@ -1,6 +1,6 @@
 // 精校页意见端点（GUJI-551，设计 team/整理/设计/文本整理三阶段流程.md §6.2）
 //
-//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 六档之一）。同格同来源重复提交覆盖旧票。
+//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 七档之一）。同格同来源重复提交覆盖旧票。
 //   GET   **只开管理读**（管理 token 或成员 cookie）——按 rev 前缀导出全部票，供每日导入脚本用。
 //         公开读一律 401，不返回任何内容。
 //
@@ -17,12 +17,14 @@
 // choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main，后五档 char 可选。
 // 后五档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
+// figure（GUJI-737／742，10-24）：这一格是图形，不是字（Unicode 没有、也不是汉字）。不许带字；note 是图形说明（阅读器悬停、
+// 复制〔图：说明〕用它，可空）。下游 cv `guji cellvotes` 映射成人裁 confirm v=figure，见 cv doc/design/图片格与插图-处理流程.md。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
 } from './feedback.js';
 
-export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
+export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure'];
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
@@ -74,6 +76,8 @@ export function validateReview(body) {
   if (choice === 'char') {
     if (!isSingleChar(body.char)) return { error: 'choice=char 时 char 必填且恰好一个字' };
     char = body.char;
+  } else if (choice === 'figure') {
+    if (body.char !== undefined && body.char !== null && body.char !== '') return { error: 'choice=figure（是图形）时不带字' };
   } else if (body.char !== undefined && body.char !== null && body.char !== '') {
     if (!isSingleChar(body.char)) return { error: 'char 须恰好一个字' };
     char = body.char;

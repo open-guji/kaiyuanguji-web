@@ -27,20 +27,27 @@ const BOOK_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 // 「jiazhu」下游写的是「小注被当成正文切了」的切分缺陷（web_opinions.py），所以按钮照这个意思写，
 // 别让读者在真正的夹注格上点它表示「对，这是夹注」（GUJI-683，调研 A C1）
-const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; title: string; key: string }[] = [
+const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char' | 'figure'>; label: string; title: string; key: string }[] = [
     { choice: 'none', label: '图上没有字', title: '这一格是空白、污点、框线或印章，不是字（快捷键 n）', key: 'n' },
     { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了（快捷键 u）', key: 'u' },
     { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以先写在「另写一字」框里（快捷键 c）', key: 'c' },
     { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了（快捷键 z）', key: 'z' },
 ];
+// 「是图形」（GUJI-737）：这一格是图形，Unicode 没有、也不是汉字（例：圖作▢形）。不和字一起交；点了先写一句图形说明
+// （阅读器悬停、复制〔图：说明〕用它，可不填）再交。下游 cv 映射成人裁 confirm v=figure（cv doc/design/图片格与插图-处理流程.md）
+const FIGURE = {
+    choice: 'figure' as const, label: '是图形，不是字', key: 'g',
+    title: '这一格是一个图形，Unicode 里没有、也不是汉字；有码位的符号（○●△等）请直接选字，认不出的字请选「看不清」（快捷键 g）',
+};
+const FLAG_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; key: string }[] = [...OTHER_CHOICES, FIGURE];
 
 /**
- * 快捷键（与控制台定字卡同一套，调研 A D1）：1–9 选当前卡的第几个候选，n／u／c／z 四档，j／k 下一张／上一张。
+ * 快捷键（与控制台定字卡同一套，调研 A D1）：1–9 选当前卡的第几个候选，n／u／c／z 四档，g 是图形，j／k 下一张／上一张。
  * 输入框里打字时不触发。按键落到「当前选中的卡」上带 data-hotkey 的按钮，等于点它。
  */
 export function hotkeyTarget(key: string): string | null {
     if (/^[1-9]$/.test(key)) return key;
-    return OTHER_CHOICES.some(o => o.key === key) ? key : null;
+    return FLAG_CHOICES.some(o => o.key === key) ? key : null;
 }
 
 /** 按钮外观：都有边框和底色，一眼看得出能点；选中的绿框绿底 */
@@ -325,15 +332,17 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
     const [sentNote, setSentNote] = useState<string | null>(null);
+    const [figOpen, setFigOpen] = useState(false);
+    const [figDesc, setFigDesc] = useState('');
     const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
     // 已提交的回应＝一个字（可无）＋下面四项之一（可无）＋备注，三样互不冲突（用户 2026-10-21）：
     // 切分错了也能先把字给上，格子先过、切分另修；每次点击把三样合起来重新提交一票（同格同人覆盖旧票）
     const { char: doneChar, flag: doneFlag } = parseDone(done);
-    const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false) => {
+    const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false, noteOverride?: string) => {
         setBusy(true);
         setErr(null);
-        const n = note.trim();
+        const n = (noteOverride ?? note).trim();
         const e = await onSubmit(cell, choice, char, pick, n || undefined, advance);
         setBusy(false);
         if (e) setErr(e);
@@ -342,13 +351,21 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     /** 选一个字：带上已选的那一项（如「切分错了」），选完跳下一张 */
     const pickChar = (c: string, pick?: Pick) => {
         lastPick.current = pick;
-        return go(doneFlag ?? 'char', c, pick, true);
+        return go(doneFlag && doneFlag !== 'figure' ? doneFlag : 'char', c, pick, true);
     };
     /** 点下面四项之一：带上已选的字（没选过就带「另写一字」框里的字）；再点一次已选的项就取消它、只留字 */
-    const toggleFlag = (f: Exclude<ReviewChoice, 'char'>) => {
+    const toggleFlag = (f: Exclude<ReviewChoice, 'char' | 'figure'>) => {
         if (doneFlag === f) return doneChar ? go('char', doneChar, lastPick.current) : undefined;
         const c = doneChar ?? ([...custom].length === 1 ? custom : undefined);
         return go(f, c, c === doneChar ? lastPick.current : c ? { src: 'custom' } : undefined);
+    };
+    /** 「是图形」：先展开说明框（交过的再点＝改说明）；确定后只交 figure＋说明，不带字 */
+    const openFigure = () => { setFigDesc(doneFlag === 'figure' ? note : ''); setFigOpen(true); };
+    const submitFigure = async () => {
+        const d = figDesc.trim();
+        setNote(d);
+        setFigOpen(false);
+        await go('figure', undefined, undefined, true, d);
     };
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
@@ -411,7 +428,20 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                         onClick={() => toggleFlag(o.choice)} className={BTN_CLASS}
                         title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : false, busy)}>{o.label}</button>
                 ))}
+                <button type="button" disabled={busy} aria-pressed={done ? doneFlag === 'figure' : false} aria-expanded={figOpen} data-hotkey={FIGURE.key}
+                    onClick={openFigure} className={BTN_CLASS} title={FIGURE.title} style={btnStyle('act', done ? doneFlag === 'figure' : false, busy)}>{FIGURE.label}</button>
             </div>
+            {figOpen && (
+                <div data-testid="figure-panel" style={{ marginTop: 8, padding: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', background: '#f7f3ea', border: '1px solid #e2d8c3', borderRadius: 6 }}>
+                    <span style={{ fontSize: 13, color: '#555' }}>只用于不是字的图形。用一句话说说它的样子（可不填）：</span>
+                    <input value={figDesc} onChange={e => setFigDesc(e.target.value.slice(0, 100))} maxLength={100} aria-label="图形说明" autoFocus
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void submitFigure(); } else if (e.key === 'Escape') setFigOpen(false); }}
+                        placeholder="比如：左半圈连一实点"
+                        style={{ flex: '1 1 220px', maxWidth: 320, fontSize: 13, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
+                    <button type="button" disabled={busy} onClick={() => void submitFigure()} className={BTN_CLASS} style={btnStyle('primary', false, busy)}>确定是图形</button>
+                    <button type="button" onClick={() => setFigOpen(false)} className={BTN_CLASS} style={btnStyle('small')}>取消</button>
+                </div>
+            )}
             <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                 <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
                     placeholder="备注（可不填）：比如「是臼不是曰，看上面」，随选项一起交，交过也能改"
@@ -513,7 +543,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
 
 /** 已提交的记法（存 localStorage）：「字」、项名、或「字」＋项名（字和四项可以同时交，用户 10-21） */
 const doneLabel = (choice: ReviewChoice, char?: string) => {
-    const flag = choice === 'char' ? '' : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
+    const flag = choice === 'char' ? '' : FLAG_CHOICES.find(o => o.choice === choice)?.label ?? choice;
     return char ? `「${char}」${flag ? `＋${flag}` : ''}` : flag;
 };
 
@@ -522,7 +552,7 @@ function parseDone(done?: string): { char?: string; flag?: Exclude<ReviewChoice,
     if (!done) return {};
     const m = /^「(.)」(?:＋(.+))?$/u.exec(done);
     const label = m ? m[2] : done;
-    const flag = label ? OTHER_CHOICES.find(o => o.label === label || o.choice === label)?.choice : undefined;
+    const flag = label ? FLAG_CHOICES.find(o => o.label === label || o.choice === label)?.choice : undefined;
     return { ...(m ? { char: m[1] } : {}), ...(flag ? { flag } : {}) };
 }
 
@@ -784,7 +814,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />
                                 只看还没回应的
                             </label>
-                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，j／k 下一张／上一张</span>
+                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，g 是图形，j／k 下一张／上一张</span>
                         </div>
                         {classCounts.length > 1 && (
                             <div data-testid="class-filter" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>

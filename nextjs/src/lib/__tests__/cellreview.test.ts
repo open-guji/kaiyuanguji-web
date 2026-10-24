@@ -93,6 +93,16 @@ describe('POST 校验', () => {
         }
     });
 
+    it('figure（是图形，GUJI-737）：不带字照收，note 存图形说明；带了字 400', async () => {
+        const ok = await fn.onRequestPost(post({ ...base, a: '148:2:14', choice: 'figure', note: '左半圈连一实点' }));
+        expect(ok.status).toBe(200);
+        const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(':148:2:14:'))!)!);
+        expect(rec).toMatchObject({ choice: 'figure', note: '左半圈连一实点' });
+        expect(rec.char).toBeUndefined();
+        const bad = await fn.onRequestPost(post({ ...base, a: '148:2:15', choice: 'figure', char: '○' }));
+        expect(bad.status).toBe(400);
+    });
+
     it('非法 choice（含 damaged）、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
         const cases: Array<Record<string, unknown>> = [
             { choice: 'damaged' },
