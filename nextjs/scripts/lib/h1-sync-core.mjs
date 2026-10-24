@@ -209,6 +209,10 @@ export function defaultContentTypeFor(relative) {
     const e = ext(relative);
     if (e === 'json') return 'application/json; charset=utf-8';
     if (e === 'woff2') return 'font/woff2'; // 对读章生僻字子集（GUJI-701）
+    // 对读章的图片格、插图块的图（char v0.3，GUJI-742）：版本目录 fig/ 下，随文本一起按哈希寻址上传
+    if (e === 'png') return 'image/png';
+    if (e === 'webp') return 'image/webp';
+    if (e === 'svg') return 'image/svg+xml';
     return 'application/octet-stream';
 }
 

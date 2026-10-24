@@ -9,7 +9,7 @@
  *
  * 留哪些字段，以 book-index-ui 的读法为准（改那边的读法时同步这里，测试里有往返一致性检查）：
  *   cord：adaptCharCord 读 pages[].page、canvas{seq,width,height}、image{width,height}（canvas 缺尺寸时兜底）、
- *         cells[].a＋box；iiifVolumeOf 读 canvas.id。producers／regions／columns／marks、cell.id、image.sha256 不要。
+ *         cells[].a＋box；iiifVolumeOf 读 canvas.id；marks 里只读 kind=figure 的 fig＋box（插图块的书影框，char v0.3）。producers／regions／columns、其余 marks、cell.id、image.sha256 不要。
  *   punct：adaptPunctJson 读 anchor、mark、kind、pos、pre_char、label、toc、id；source、char_offset、顶层 metadata／stats 不要。
  *   entity（P2-A）：adaptEntityJson 读 id、type、text、anchor、span、confidence、group、ambiguous、target 的
  *         status／entity_id／confidence／canonical_name／level／note（href 只在没有 entity_id 时兜底）；网站的
@@ -48,6 +48,9 @@ export function slimCord(cord) {
         out.cells = (Array.isArray(p?.cells) ? p.cells : [])
             .filter((c) => typeof c?.a === 'string' && Array.isArray(c.box))
             .map((c) => ({ a: c.a, box: c.box }));
+        // 插图块的框（cord v0.2 marks.figure）：adaptCharCord 据此给图列带 figBox，书影栏画虚线框；别的 marks（blank／excluded／seal）不要
+        const figs = (Array.isArray(p?.marks) ? p.marks : []).filter((m) => m?.kind === 'figure' && typeof m.fig === 'string' && Array.isArray(m.box));
+        if (figs.length > 0) out.marks = figs.map((m) => ({ kind: 'figure', fig: m.fig, box: m.box }));
         return out;
     });
     return { ...top, pages };

@@ -437,3 +437,69 @@ describe('精校页页头与说明', () => {
         expect(screen.getByRole('link', { name: /返回阅读/ })).toHaveAttribute('href', '/read/b1/002');
     });
 });
+
+describe('精校页：是图形，不是字（char v0.3 图片格，GUJI-742）', () => {
+    let fetchSpy: jest.Mock;
+    beforeEach(() => {
+        fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        localStorage.clear(); // 已回应记录按 rev 存，别让上一条用例的「已提交」带过来
+    });
+    const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+
+    it('卡上有「是图形，不是字」与用法说明；点它先弹说明框，不直接提交', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
+        render(<ProofingClient book="b12" vol="005" />);
+        await screen.findAllByTestId('cell-card');
+        expect(screen.getByTestId('figure-hint').textContent).toContain('只用于不是字的图形');
+        expect(screen.getByTestId('figure-hint').textContent).toContain('看不清');
+        expect(screen.queryByTestId('figure-box')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: '是图形，不是字' }));
+        expect(screen.getByTestId('figure-box')).toBeTruthy();
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('填说明后提交：choice=figure、alt，不带字；快捷键 g 同样弹框', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
+        render(<ProofingClient book="b12" vol="005" />);
+        await screen.findAllByTestId('cell-card');
+        fireEvent.keyDown(document, { key: 'g' });
+        await screen.findByTestId('figure-box');
+        fireEvent.change(screen.getByLabelText('图形说明'), { target: { value: ' 左半圈连一实点 ' } });
+        fireEvent.click(screen.getByRole('button', { name: '提交：是图形' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ book: 'b12', a: '148:2:14', choice: 'figure', alt: '左半圈连一实点' });
+        expect(body(0).char).toBeUndefined();
+        await waitFor(() => expect(screen.queryByTestId('figure-box')).toBeNull());
+        expect(screen.getByTestId('done-badge')).toBeTruthy();
+    });
+
+    it('说明可空：不带 alt 也能提交；取消不提交', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口' }]));
+        render(<ProofingClient book="b12" vol="005" />);
+        await screen.findAllByTestId('cell-card');
+        fireEvent.click(screen.getByRole('button', { name: '是图形，不是字' }));
+        fireEvent.click(screen.getByRole('button', { name: '取消' }));
+        expect(screen.queryByTestId('figure-box')).toBeNull();
+        expect(fetchSpy).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: '是图形，不是字' }));
+        fireEvent.click(screen.getByRole('button', { name: '提交：是图形' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ choice: 'figure' });
+        expect(body(0).alt).toBeUndefined();
+    });
+
+    it('已交「是图形」后又选了字：改交 char，不再带图形', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
+        render(<ProofingClient book="b12" vol="005" />);
+        await screen.findAllByTestId('cell-card');
+        fireEvent.click(screen.getByRole('button', { name: '是图形，不是字' }));
+        fireEvent.click(screen.getByRole('button', { name: '提交：是图形' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        fireEvent.click(await screen.findByRole('button', { name: /日/ }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+        expect(body(1)).toMatchObject({ choice: 'char', char: '日' });
+        expect(body(1).alt).toBeUndefined();
+    });
+});
+

@@ -314,3 +314,13 @@ test('reissueHints：快照里投过票的格占线上单 ≥ 20% 才提醒重�
     assert.deepEqual(reissueHints(rows, entries, 0.5), []);
     assert.deepEqual(reissueHints([{ book: BOOK, rev: 'x', cells: 3 }], entries), []); // 没有对应线上单的不提醒
 });
+
+test('mergeSnapshot：choice=figure 的票带 alt 进快照（GUJI-742）；别的票没有 alt 键，快照字节不变', () => {
+    const g = { book: BOOK, rev: '001-r2' };
+    const fig = vote('148:2:14', 'aa', { choice: 'figure', char: undefined, alt: '左半圈连一实点' });
+    const m = mergeSnapshot('', [fig, vote('1:1:1', 'bb')], g);
+    const lines = m.text.trim().split('\n').map((l) => JSON.parse(l));
+    assert.equal(lines.find((r) => r.a === '148:2:14').alt, '左半圈连一实点');
+    assert.equal(lines.find((r) => r.a === '148:2:14').choice, 'figure');
+    assert.equal('alt' in lines.find((r) => r.a === '1:1:1'), false);
+});

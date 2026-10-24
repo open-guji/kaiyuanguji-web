@@ -12,7 +12,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { planBatches } from './h1-sync-core.mjs';
+import { planBatches, defaultContentTypeFor } from './h1-sync-core.mjs';
 
 let passed = 0;
 function test(name, fn) {
@@ -131,4 +131,13 @@ test('分块上传的对象（state 记为 mp:大小）视为未变，不重复�
     const plan = planBatches(CONFIG, files, stateMap, localMd5);
 
     assert.equal(plan.uploadsByBatch.find(b => b.key === 'primary').upload.length, 0);
+});
+
+test('defaultContentTypeFor：对读章的图（fig/ 下 png／webp／svg）有对应的图片类型，其余不变', () => {
+    assert.equal(defaultContentTypeFor('text/x/fig/005/f1.abcd1234.png'), 'image/png');
+    assert.equal(defaultContentTypeFor('text/x/fig/005/p1.abcd1234.webp'), 'image/webp');
+    assert.equal(defaultContentTypeFor('text/x/fig/005/p2.abcd1234.svg'), 'image/svg+xml');
+    assert.equal(defaultContentTypeFor('a.json'), 'application/json; charset=utf-8');
+    assert.equal(defaultContentTypeFor('a.woff2'), 'font/woff2');
+    assert.equal(defaultContentTypeFor('a.bin'), 'application/octet-stream');
 });

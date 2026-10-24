@@ -32,6 +32,8 @@ const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; tit
     { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了（快捷键 u）', key: 'u' },
     { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以先写在「另写一字」框里（快捷键 c）', key: 'c' },
     { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了（快捷键 z）', key: 'z' },
+    // 图形（char v0.3 图片格，GUJI-742）：不是字、Unicode 也没有对应字的图形（如圈、点、符号）；点了弹说明框（可空）。不能和字同交
+    { choice: 'figure', label: '是图形，不是字', title: '这一格刻的是个图形（如圈、点、符号），不是字；只用于不是字的图形，认不出的字请选「看不清」（快捷键 g）', key: 'g' },
 ];
 
 /**
@@ -128,7 +130,7 @@ interface CellRowProps {
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
     /** advance：提交后自动跳下一张（选字才跳；点下面四项不跳，好接着给字） */
-    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => Promise<string | null>;
+    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
     selected: boolean;
@@ -325,6 +327,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
     const [sentNote, setSentNote] = useState<string | null>(null);
+    // 「是图形，不是字」的说明框：点了才弹，说明可空
+    const [figOpen, setFigOpen] = useState(false);
+    const [figAlt, setFigAlt] = useState('');
     const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
     // 已提交的回应＝一个字（可无）＋下面四项之一（可无）＋备注，三样互不冲突（用户 2026-10-21）：
@@ -334,7 +339,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
         setBusy(true);
         setErr(null);
         const n = note.trim();
-        const e = await onSubmit(cell, choice, char, pick, n || undefined, advance);
+        const a = choice === 'figure' ? figAlt.trim() : '';
+        const e = await onSubmit(cell, choice, choice === 'figure' ? undefined : char, choice === 'figure' ? undefined : pick, n || undefined, advance, a || undefined);
         setBusy(false);
         if (e) setErr(e);
         else setSentNote(n);
@@ -342,10 +348,13 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     /** 选一个字：带上已选的那一项（如「切分错了」），选完跳下一张 */
     const pickChar = (c: string, pick?: Pick) => {
         lastPick.current = pick;
-        return go(doneFlag ?? 'char', c, pick, true);
+        // 原先交的是「是图形」，现在给了字：改回交字，不再带图形（图形没有字）
+        return go(doneFlag && doneFlag !== 'figure' ? doneFlag : 'char', c, pick, true);
     };
     /** 点下面四项之一：带上已选的字（没选过就带「另写一字」框里的字）；再点一次已选的项就取消它、只留字 */
     const toggleFlag = (f: Exclude<ReviewChoice, 'char'>) => {
+        // 图形：先弹说明框，在框里确认才交；已交过的再点一次收回（同别的项）
+        if (f === 'figure' && doneFlag !== 'figure') { setFigOpen(v => !v); return; }
         if (doneFlag === f) return doneChar ? go('char', doneChar, lastPick.current) : undefined;
         const c = doneChar ?? ([...custom].length === 1 ? custom : undefined);
         return go(f, c, c === doneChar ? lastPick.current : c ? { src: 'custom' } : undefined);
@@ -409,6 +418,17 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                         title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : false, busy)}>{o.label}</button>
                 ))}
             </div>
+            <div data-testid="figure-hint" style={{ marginTop: 4, fontSize: 12, color: '#777' }}>「是图形，不是字」只用于不是字的图形；认不出的字请选「看不清」。</div>
+            {figOpen && (
+                <div data-testid="figure-box" style={{ marginTop: 6, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input value={figAlt} onChange={e => setFigAlt(e.target.value.slice(0, 60))} maxLength={60} aria-label="图形说明"
+                        placeholder="图形说明（可不填），如：左半圈连一实点"
+                        style={{ flex: '1 1 260px', maxWidth: 420, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
+                    <button type="button" disabled={busy} onClick={async () => { await go('figure', undefined, undefined, true); setFigOpen(false); }} className={BTN_CLASS}
+                        style={btnStyle('primary', false, busy)}>提交：是图形</button>
+                    <button type="button" disabled={busy} onClick={() => setFigOpen(false)} className={BTN_CLASS} style={btnStyle('small', false, busy)}>取消</button>
+                </div>
+            )}
             <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                 <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
                     placeholder="备注（可不填）：比如「是臼不是曰，看上面」，随选项一起交，交过也能改"
@@ -652,9 +672,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const pos = useMemo(() => positionIndex(order), [order]);
     const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => {
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
-        const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}),
+        const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
             ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
@@ -776,7 +796,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); setPage(0); }} data-testid="only-open" />
                                 只看还没回应的
                             </label>
-                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，j／k 下一张／上一张</span>
+                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，g 是图形，j／k 下一张／上一张</span>
                         </div>
                         {classCounts.length > 1 && (
                             <div data-testid="class-filter" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>

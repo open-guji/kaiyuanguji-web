@@ -136,3 +136,19 @@ test('真样本章（设 READER_FILES_SAMPLE_DIR 才跑）：读法结果逐字�
         assert.deepEqual(adaptEntityJson(slimEntity(entity)), adaptEntityJson(entity));
     }
 });
+
+test('cord 副本：插图块的框（marks.figure）留 fig＋box，别的 marks 与多余字段去掉；没有图的页不带 marks 键', () => {
+    const cord = {
+        pages: [
+            { page: 1, canvas: canvas('0001'), cells: [], marks: [{ kind: 'blank', id: 'm1', col: 1, slot: 1, box: [1, 1, 2, 2] }, { kind: 'excluded', id: 'm2', box: [3, 3, 4, 4], note: 'x' }] },
+            { page: 2, canvas: canvas('0002'), cells: [], marks: [
+                { kind: 'figure', id: 'm3', fig: 'p2-fig1', col: 2, span: 4, box: [10, 20, 30, 40] },
+                { kind: 'figure', id: 'm4', box: [1, 2, 3, 4] }, // 没有 fig：丢
+                { kind: 'seal', id: 'm5', box: [5, 5, 6, 6] },
+            ] },
+        ],
+    };
+    const slim = slimCord(cord);
+    assert.equal('marks' in slim.pages[0], false);
+    assert.deepEqual(slim.pages[1].marks, [{ kind: 'figure', fig: 'p2-fig1', box: [10, 20, 30, 40] }]);
+});
