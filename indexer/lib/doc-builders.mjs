@@ -13,7 +13,7 @@ import { createToSimplified } from './to-simplified-core.mjs';
 import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './work-fields.mjs';
 import { eraRank, sortTitle } from './sort-fields.mjs';
-import { CHAR_FILE_RE, charJsonText } from './char-text.mjs';
+import { CHAR_FILE_RE, charJsonText, charJsonSnippetText } from './char-text.mjs';
 import { readDetailDoc } from './derived-core.mjs';
 
 const t2s = createToSimplified({
@@ -183,14 +183,15 @@ function buildEntityDoc(entry, isDraft = true) {
     };
 }
 
-function juanDoc(workId, juanName, clean) {
+/** snippetSrc：摘要用的文本，缺省同 clean（自校文本传带〔图〕的那份，GUJI-742）。 */
+function juanDoc(workId, juanName, clean, snippetSrc = clean) {
     const juanHash = crypto.createHash('md5').update(juanName, 'utf-8').digest('hex').slice(0, 12);
     return {
         id: `${workId}_${juanHash}`,
         type: 'juan',
         work_id: workId,
         juan_name: juanName,
-        snippet: clean.slice(0, 200),
+        snippet: snippetSrc.slice(0, 200),
         content_search: mergeSimp(clean.slice(0, 5000)),
     };
 }
@@ -246,9 +247,15 @@ function buildJuanDocs(textDir, workEntry, { workId = workEntry.id, kinds = ['co
             if (v.kind === 'self_collated') {
                 // 自校文本（original）main 上只有 char.json 真源，没有 md／json：取原字拼章正文（不套 norm）
                 const cf = typeof c?.char_file === 'string' ? c.char_file : '';
-                if (CHAR_FILE_RE.test(cf)) clean = charJsonText(readJsonSafe(join(keyDir, cf))).replace(/\s+/g, ' ').trim();
+                // 检索文本跳过图片格／图列；摘要在原处放〔图〕（GUJI-742）
+                let snip = '';
+                if (CHAR_FILE_RE.test(cf)) {
+                    const raw = readJsonSafe(join(keyDir, cf));
+                    clean = charJsonText(raw).replace(/\s+/g, ' ').trim();
+                    snip = charJsonSnippetText(raw).replace(/\s+/g, ' ').trim();
+                }
                 if (!clean) continue;
-                docs.push(juanDoc(workId, name, clean));
+                docs.push(juanDoc(workId, name, clean, snip || clean));
                 continue;
             }
             try {
