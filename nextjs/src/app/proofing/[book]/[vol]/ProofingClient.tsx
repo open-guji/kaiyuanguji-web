@@ -17,6 +17,7 @@ import {
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
+    QUICK_GROUPS, quickPick, readDefer, writeDefer,
 } from '@/lib/proofing';
 
 /** 书影一页：阅读档、原图档地址与像素宽高 */
@@ -449,6 +450,86 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     );
 }
 
+const QUICK_PAGE = 30;
+
+/**
+ * 快速确认（用户 2026-10-24）：机器把握较大的格按类排成小图网格，一格一图一字。
+ * 缺省都按小字确认；拿不准的点一下格子标「存疑」，确认时存疑的挪到下面逐格细看。
+ */
+function QuickReview({ groups, spriteOf, onConfirm }: {
+    groups: { key: string; name: string; hint: string; items: { cell: PendingCell; char: string }[] }[];
+    spriteOf: (cell: PendingCell) => string | null;
+    /** 逐格提交 ok，存疑的挪走；返回出错文案（已交的照样算） */
+    onConfirm: (ok: { cell: PendingCell; char: string }[], doubt: string[], onProgress: (n: number) => void) => Promise<string | null>;
+}) {
+    const [gk, setGk] = useState<string | null>(null);
+    const [doubt, setDoubt] = useState<Set<string>>(new Set());
+    const [busy, setBusy] = useState(false);
+    const [prog, setProg] = useState(0);
+    const [err, setErr] = useState<string | null>(null);
+    const live = groups.filter(g => g.items.length > 0);
+    if (!live.length) return null;
+    const g = live.find(x => x.key === gk) ?? live[0];
+    const page = g.items.slice(0, QUICK_PAGE);
+    const okItems = page.filter(it => !doubt.has(it.cell.a));
+    const doubtHere = page.filter(it => doubt.has(it.cell.a)).map(it => it.cell.a);
+    const toggle = (a: string) => setDoubt(prev => { const n = new Set(prev); if (n.has(a)) n.delete(a); else n.add(a); return n; });
+    const confirm = async () => {
+        setBusy(true);
+        setErr(null);
+        setProg(0);
+        const e = await onConfirm(okItems, doubtHere, setProg);
+        setBusy(false);
+        if (e) setErr(e);
+        setDoubt(new Set());
+    };
+    return (
+        <section data-testid="quick-review" style={{ border: '1px solid #e2d6bf', borderRadius: 8, padding: 12, marginBottom: 16, background: '#fffdf7' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                <b style={{ fontSize: 16 }}>快速确认</b>
+                <span style={{ fontSize: 12, color: '#666' }}>每格下面的小字是建议的字。都对就点「确认」；觉得不对或拿不准的，点一下那格标「存疑」，它会挪到下面逐格细看。</span>
+            </div>
+            {live.length > 1 && (
+                <div data-testid="quick-groups" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                    {live.map(x => (
+                        <button key={x.key} type="button" aria-pressed={x.key === g.key} disabled={busy} onClick={() => { setGk(x.key); setDoubt(new Set()); }}
+                            className={BTN_CLASS} style={btnStyle('small', x.key === g.key, busy)}>{x.name} {x.items.length}</button>
+                    ))}
+                </div>
+            )}
+            <div style={{ fontSize: 12, color: '#7a3b1d', marginTop: 6 }}>{g.name}：{g.hint}（本类还有 {g.items.length} 格{g.items.length > QUICK_PAGE ? `，每次 ${QUICK_PAGE} 格` : ''}）</div>
+            <ul data-testid="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 6, padding: 0, margin: '8px 0' }}>
+                {page.map(({ cell, char }) => {
+                    const on = doubt.has(cell.a);
+                    const src = spriteOf(cell);
+                    return (
+                        <li key={cell.a} style={{ listStyle: 'none' }}>
+                            <button type="button" data-testid="quick-tile" aria-pressed={on} disabled={busy} onClick={() => toggle(cell.a)}
+                                title={`${cellPlace(cell.a)}：建议「${shownZi(char)}」${on ? '（已标存疑，再点取消）' : '（点一下标存疑）'}`}
+                                style={{ width: '100%', padding: 3, borderRadius: 6, cursor: busy ? 'default' : 'pointer', position: 'relative',
+                                    border: on ? '2px solid #d33' : '1px solid #ddd', background: on ? '#fdecec' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                {src && cell.img
+                                    ? <span role="img" aria-label="字块裁图" style={{ width: cell.img.w, height: cell.img.h, zoom: 0.7, background: `#fff url(${src}) -${cell.img.x}px -${cell.img.y}px no-repeat` }} />
+                                    : <span style={{ width: 67, height: 67, fontSize: 11, color: '#999', display: 'flex', alignItems: 'center' }}>没有图</span>}
+                                <span style={{ fontSize: 22, lineHeight: 1.2, color: on ? '#c33' : '#222' }}><Zi c={char} /></span>
+                                {on && <small style={{ position: 'absolute', top: 2, right: 2, fontSize: 10, lineHeight: 1.4, padding: '0 3px', borderRadius: 3, color: '#fff', background: '#d33' }}>存疑</small>}
+                            </button>
+                        </li>
+                    );
+                })}
+            </ul>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button type="button" data-testid="quick-confirm" disabled={busy || (!okItems.length && !doubtHere.length)} onClick={confirm} className={BTN_CLASS}
+                    style={btnStyle('primary', false, busy || (!okItems.length && !doubtHere.length))}>
+                    {okItems.length ? `确认这 ${okItems.length} 格` : '把存疑的挪去细看'}{okItems.length && doubtHere.length ? `，${doubtHere.length} 格存疑挪去细看` : ''}
+                </button>
+                {busy && <span style={{ fontSize: 12, color: '#666' }}>正在提交 {prog} / {okItems.length}</span>}
+                {err && <span role="alert" style={{ fontSize: 12, color: '#c33' }}>{err}</span>}
+            </div>
+        </section>
+    );
+}
+
 /** 「第 9 葉 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
 function cellPlace(a: string): string {
     const m = /^(\d+):(\d+):(\d+)([a-z]?)$/.exec(a);
@@ -622,6 +703,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     // 这次刚回应的卡留在原地（变淡），想改还能改，下次进来才藏
     const [onlyOpen, setOnlyOpen] = useState(true);
     const [hiddenDone, setHiddenDone] = useState<Set<string>>(new Set());
+    // 快速确认里标了存疑、挪去逐格细看的格
+    const [deferred, setDeferred] = useState<string[]>([]);
     const [panelOpen, setPanelOpen] = useState(true);
     const [chapterTitle, setChapterTitle] = useState<string | undefined>(undefined);
     const [versionKey, setVersionKey] = useState<string | undefined>(undefined);
@@ -653,6 +736,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             const loaded = res.pending.rev ? readDone(res.pending.rev) : {};
             setDone(loaded);
             setHiddenDone(new Set(Object.keys(loaded)));
+            setDeferred(res.pending.rev ? readDefer(res.pending.rev) : []);
             setState('ok');
         })().catch(() => { if (!cancelled) setState('error'); });
         return () => { cancelled = true; };
@@ -700,9 +784,47 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         for (const c of cells) m.set(c.cls ?? 'other', (m.get(c.cls ?? 'other') ?? 0) + 1);
         return [...m.entries()];
     }, [cells]);
-    // 「只看未回应」：藏起 hiddenDone 里的格（关掉就回来）
-    const shown = useMemo(() => cells.filter(c => (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !hiddenDone.has(c.a))),
-        [cells, clsFilter, onlyOpen, hiddenDone]);
+    // 快速确认：还没回应、没标存疑、合条件的格按类分组；这些格先不进下面的逐格卡片
+    const quickGroups = useMemo(() => {
+        const defer = new Set(deferred);
+        return QUICK_GROUPS.map(g => ({ ...g, items: cells.flatMap(cell => {
+            if (done[cell.a] || defer.has(cell.a)) return [];
+            const q = quickPick(cell);
+            return q && q.group === g.key ? [{ cell, char: q.char }] : [];
+        }) }));
+    }, [cells, done, deferred]);
+    const quickSet = useMemo(() => new Set(quickGroups.flatMap(g => g.items.map(it => it.cell.a))), [quickGroups]);
+    // 「只看未回应」：藏起 hiddenDone 里的格（关掉就回来）；存疑挪来的排在最后
+    const shown = useMemo(() => {
+        const defer = new Set(deferred);
+        const list = cells.filter(c => !quickSet.has(c.a) && (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !hiddenDone.has(c.a)));
+        return [...list.filter(c => !defer.has(c.a)), ...list.filter(c => defer.has(c.a))];
+    }, [cells, quickSet, clsFilter, onlyOpen, hiddenDone, deferred]);
+
+    const onQuickConfirm = useCallback(async (ok: { cell: PendingCell; char: string }[], doubt: string[], onProgress: (n: number) => void) => {
+        if (!rev) return '这份待审单缺少版本号，暂时不能提交';
+        if (doubt.length) setDeferred(prev => { const next = [...new Set([...prev, ...doubt])]; writeDefer(rev, next); return next; });
+        // 逐格交（同一个接口、同格同人覆盖旧票）；一格失败就停，交过的照样算
+        const sent: string[] = [];
+        let err: string | null = null;
+        for (const { cell, char } of ok) {
+            err = await submitReview({ book, vol, a: cell.a, rev, choice: 'char', char, ...(cell.c ? { shown: cell.c } : {}),
+                ...pickFields({ src: 'cand', rank: 1 }) }, getAid());   // 整理本字就是卡片上第一个候选
+            if (err) break;
+            sent.push(cell.a);
+            onProgress(sent.length);
+        }
+        if (sent.length) {
+            setDone(prev => {
+                const next = { ...prev };
+                for (const { cell, char } of ok) if (sent.includes(cell.a)) next[cell.a] = doneLabel('char', char);
+                writeDone(rev, next);
+                return next;
+            });
+            setHiddenDone(prev => new Set([...prev, ...sent]));   // 快速确认过的不再到下面露面
+        }
+        return err ? `已确认 ${sent.length} 格，后面的没交上：${err}` : null;
+    }, [book, vol, rev]);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
     const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
@@ -799,6 +921,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                         </div>
                     </aside>
                     <div className="min-w-0 lg:flex-1">
+                        <QuickReview groups={quickGroups} spriteOf={spriteOf} onConfirm={onQuickConfirm} />
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#666' }}>
                             <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />

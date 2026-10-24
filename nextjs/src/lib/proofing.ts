@@ -259,6 +259,26 @@ export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: str
     return null;
 }
 
+/**
+ * 快速确认（用户 2026-10-24）：机器把握较大的格按类排成小图网格，一格一图一字，读者成批确认；
+ * 拿不准的勾「存疑」，挪到下面逐格细看。每类一个入口，以后加类只在这里加一条。
+ * 只收整理本有一个字的格；复审格（prior）、切坏格不收；以前判过别的字（stale 与整理本不同）也不收。
+ */
+export interface QuickGroup { key: string; name: string; hint: string }
+export const QUICK_GROUPS: QuickGroup[] = [
+    { key: 'occluded', name: '有遮挡', hint: '被印章或污渍遮住，下面的小字是整理本的字' },
+    { key: 'agree', name: '整理本与字形一致', hint: '整理本的字和本书别处最像的字是同一个' },
+];
+export function quickPick(cell: PendingCell): { group: string; char: string } | null {
+    const r = cell.ref?.c;
+    if (!r || [...r].length !== 1 || cell.prior || cell.cls === 'seg_defect') return null;
+    if (cell.stale?.c && cell.stale.c !== r) return null;
+    if (cell.cls === 'occluded') return cell.occ?.refBlank ? null : { group: 'occluded', char: r };
+    // 己已巳刻得一样，字形比对分不出，「一致」不说明什么
+    if (cell.cls !== 'ji_yi_si' && cell.libTop?.[0]?.c === r) return { group: 'agree', char: r };
+    return null;
+}
+
 /** 雪碧图地址：与 pending_file 同目录。默认正式前缀；联调其他前缀用环境变量改（产物里不得写死 staging 前缀，构建闸会拒） */
 export const PROOF_SPRITE_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || `${DATA_ORIGIN}/proof`;
 export function spriteUrl(book: string, pendingFile: string | null, s: string, base = PROOF_SPRITE_BASE): string | null {
@@ -693,4 +713,20 @@ export function readDone(rev: string): DoneMap {
 
 export function writeDone(rev: string, done: DoneMap): void {
     try { localStorage.setItem(DONE_KEY(rev), JSON.stringify(done)); } catch { /* 存不了就算了 */ }
+}
+
+/** 快速确认里勾了「存疑」、挪去逐格细看的格（只存本机，换设备就回到快速确认里） */
+const DEFER_KEY = (rev: string) => `kyg-cr-defer:${rev}`;
+
+export function readDefer(rev: string): string[] {
+    try {
+        const o = JSON.parse(localStorage.getItem(DEFER_KEY(rev)) ?? '[]');
+        return Array.isArray(o) ? o.filter((x): x is string => typeof x === 'string') : [];
+    } catch {
+        return [];
+    }
+}
+
+export function writeDefer(rev: string, list: string[]): void {
+    try { localStorage.setItem(DEFER_KEY(rev), JSON.stringify(list)); } catch { /* 存不了就算了 */ }
 }
