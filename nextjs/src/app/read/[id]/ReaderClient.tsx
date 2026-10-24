@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, useConvert, adaptCharCord, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, useConvert, adaptCharCord, adaptFig, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -17,7 +17,7 @@ import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
-import { getJson, loadDuiduFiles, volumeFromChar } from '@/lib/duidu-data';
+import { getJson, loadDuiduFiles, loadFigUrls, volumeFromChar } from '@/lib/duidu-data';
 import { ensureChapterFont } from '@/lib/chapter-font';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
@@ -340,8 +340,13 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 }
             } catch { /* 样张取不到就全部平铺 */ }
         }
+        // 图片格、插图块（fig.json，guji-fig v0.1，GUJI-737）：figures 是图 id → 图；figUrl 同步给图片地址，所以先把地址一次解析好。
+        // 没声明 fig_file 的章不带这两项（与改前一致）；声明了但取不到、或某张图取不到地址，阅读器显示〔图：说明〕标签
+        const figures = files.fig != null ? adaptFig(files.fig) : null;
+        const figUrls = figures && figures.size > 0 ? await loadFigUrls(id, ctx?.versionKey, files.fig, transport) : null;
+        const fig = figures && figures.size > 0 ? { figures, figUrl: (file: string) => figUrls?.get(file) ?? '' } : {};
         // hasNorm：章条目声明了 norm_file 且取到了（哪怕是空表）＝自校文本，阅读器的「原字」档可选；外来文本没有，置灰（overview#540）
-        return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null } as any;
+        return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null, ...fig } as any;
     }, [id, transport, fetchProof, wide]);
 
     // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
