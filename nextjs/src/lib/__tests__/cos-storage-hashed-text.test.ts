@@ -302,3 +302,35 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         expect(global.fetch).not.toHaveBeenCalled();
     });
 });
+
+describe('cos-storage：版本目录资源地址 getTextAssetUrl（char v0.3 的图，GUJI-742）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; });
+
+    type AssetApi = { getTextAssetUrl: (id: string, key: string, rel: string) => Promise<string | null> };
+    const shardHash = 'shard-a1';
+
+    it('hashed：查清单里这份文件的哈希，给内容寻址的 URL（text/<id>/<版本>/fig/<册>/<图 id>.<hash8>.png）；清单里没有 → null', async () => {
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            if (url.endsWith('/h1/text-manifest-root.json')) return pointerResponse();
+            if (url.endsWith(`/h1/text-roots/${ROOT_KEY}.json`)) return rootDocResponse(2, { [BOOK_SHARD]: shardHash });
+            if (url.endsWith(`/h1/text-manifest/${BOOK_SHARD}.${shardHash}.json`)) return jsonResponse({ [BOOK_ID]: { 'original/fig/005/f148-2-14.png': 'cccccc01' } });
+            throw new Error(`unexpected fetch: ${url}`);
+        }) as unknown as typeof fetch;
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage() as unknown as AssetApi;
+        expect(await storage.getTextAssetUrl(BOOK_ID, 'original', 'fig/005/f148-2-14.png')).toBe(`${COS_BASE}/h1/text/${BOOK_ID}/original/fig/005/f148-2-14.cccccc01.png`);
+        expect(await storage.getTextAssetUrl(BOOK_ID, 'original', 'fig/005/other.png')).toBeNull();
+    });
+
+    it('路径不合规（越级、别的目录、别的扩展名）、key／id 不合法：null 且不发请求', async () => {
+        global.fetch = jest.fn() as unknown as typeof fetch;
+        const { createCosStorage } = await freshCosStorage({ layout: 'hashed' });
+        const storage = createCosStorage() as unknown as AssetApi;
+        for (const rel of ['fig/../x.png', 'fig/005/a.json', 'x/005/a.png', 'fig/005/a/b.png', '003.char.json', '']) expect(await storage.getTextAssetUrl(BOOK_ID, 'original', rel)).toBeNull();
+        expect(await storage.getTextAssetUrl(BOOK_ID, '../x', 'fig/005/a.png')).toBeNull();
+        expect(await storage.getTextAssetUrl('../x', 'original', 'fig/005/a.png')).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+});

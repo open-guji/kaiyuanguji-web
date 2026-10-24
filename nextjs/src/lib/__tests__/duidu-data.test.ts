@@ -3,7 +3,7 @@
  * storage 上有 getTextFile（cos 数据源）就走它，不拼同域 /data 路径；没有（bundle／本地）退回 /data/items/...。
  */
 import { jest } from '@jest/globals';
-import { loadDuiduFiles, volumeFromChar } from '../duidu-data';
+import { loadDuiduFiles, loadFigUrls, volumeFromChar } from '../duidu-data';
 
 const chapter = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json', punct_file: '003.punct.json', entity_file: '003.entity.json' };
 
@@ -120,6 +120,31 @@ describe('loadDuiduFiles', () => {
         expect(r2?.norm).toBeNull();
     });
 
+    it('声明了 fig_file：fig 为取回的对象；未声明时没有 fig 键', async () => {
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => ({ file }));
+        const withFig = { file: '005', char_file: '005.char.json', fig_file: '005.fig.json' };
+        const r = await loadDuiduFiles('book-f1', { versionKey: 'original', chapter: withFig }, '005', { getTextFile });
+        expect(r).toEqual({ char: { file: '005.char.json' }, cord: null, punct: null, entity: null, norm: null, fig: { file: '005.fig.json' } });
+        const r2 = await loadDuiduFiles('book-f2', { versionKey: 'original', chapter }, '003', { getTextFile });
+        expect(r2).not.toHaveProperty('fig');
+    });
+
+    it('fig_file 取不到：fig 为 null、整章不返回 null，且不缓存（下次重试，留日志）', async () => {
+        let figOk = false;
+        const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('fig') && !figOk ? null : { file }));
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const ch = { file: '005', char_file: '005.char.json', fig_file: '005.fig.json' };
+        const r1 = await loadDuiduFiles('book-f3', { versionKey: 'original', chapter: ch }, '005', { getTextFile });
+        expect(r1?.fig).toBeNull();
+        expect(r1?.char).toEqual({ file: '005.char.json' });
+        await new Promise(r => setTimeout(r, 0));
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('fig_file'));
+        figOk = true;
+        const r2 = await loadDuiduFiles('book-f3', { versionKey: 'original', chapter: ch }, '005', { getTextFile });
+        expect(r2?.fig).toEqual({ file: '005.fig.json' });
+        warn.mockRestore();
+    });
+
     it('norm_file 取不到：norm 为 null，整章不返回 null（norm 是可选层）', async () => {
         const getTextFile = jest.fn(async (_i: string, _k: string, file: string) => (file.includes('norm') ? null : { file }));
         const withNorm = { file: '003', char_file: '003.char.json', norm_file: '003.norm.json' };
@@ -155,5 +180,31 @@ describe('loadDuiduFiles', () => {
         expect(await loadDuiduFiles('book-s4', { versionKey: 'original', chapter: { file: '003' } }, '003', { getTextFile: none })).toBeNull();
         expect(await loadDuiduFiles('book-s4', { versionKey: 'original', chapter: { file: '003', cord_file: '003.cord.json' } }, '003', { getTextFile: none })).toBeNull();
         expect(none).not.toHaveBeenCalled();
+    });
+});
+
+describe('loadFigUrls', () => {
+    const fig = { figures: [{ id: 'a', file: 'fig/005/a.png' }, { id: 'b', file: 'fig/005/b.webp' }, { id: 'bad', file: 'fig/../x.png' }, { id: 'c', file: 'fig/005/c.svg' }, null] };
+
+    it('存储有 getTextAssetUrl：按它给的地址；给不出的（null、抛错）不进表；不合规的路径不问存储', async () => {
+        const getTextAssetUrl = jest.fn(async (_i: string, _k: string, rel: string) => {
+            if (rel.endsWith('b.webp')) return null;
+            if (rel.endsWith('c.svg')) throw new Error('x');
+            return `https://cdn/${rel}`;
+        });
+        const m = await loadFigUrls('book-u1', 'original', fig, { getTextAssetUrl });
+        expect(Object.fromEntries(m)).toEqual({ 'fig/005/a.png': 'https://cdn/fig/005/a.png' });
+        expect(getTextAssetUrl.mock.calls.map(c => c[2]).sort()).toEqual(['fig/005/a.png', 'fig/005/b.webp', 'fig/005/c.svg']);
+    });
+
+    it('存储没有 getTextAssetUrl（bundle／本地）：同域 /data/items 路径', async () => {
+        const m = await loadFigUrls('book-u2', 'original', { figures: [{ file: 'fig/005/a.png' }] }, {});
+        expect(m.get('fig/005/a.png')).toBe('/data/items/book-u2/original/fig/005/a.png');
+    });
+
+    it('没有 fig／没有版本 key／figures 不是数组：空表', async () => {
+        expect((await loadFigUrls('x', 'original', null)).size).toBe(0);
+        expect((await loadFigUrls('x', null, fig)).size).toBe(0);
+        expect((await loadFigUrls('x', 'original', { figures: 'a' })).size).toBe(0);
     });
 });

@@ -93,6 +93,27 @@ describe('POST 校验', () => {
         }
     });
 
+    it('choice=figure（是图形，不是字，GUJI-742）：不带字、可带 alt（trim、空不存）；带了 char 也丢掉；alt 太长或不是字符串 400', async () => {
+        const ok = await fn.onRequestPost(post({ ...base, a: '148:2:14', choice: 'figure', alt: ' 左半圈连一实点 ', char: '于', pick_src: 'cand' }));
+        expect(ok.status).toBe(200);
+        const rec = JSON.parse(store.get(crKeys()[0])!);
+        expect(rec).toMatchObject({ choice: 'figure', alt: '左半圈连一实点', a: '148:2:14' });
+        expect(rec.char).toBeUndefined();
+        expect(rec.pick_src).toBeUndefined();
+        // 不带 alt／空 alt：照收，不存 alt 键
+        store.clear();
+        for (const alt of [undefined, '', '   ']) {
+            expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt }))).status).toBe(200);
+            expect(JSON.parse(store.get(crKeys()[0])!).alt).toBeUndefined();
+        }
+        // 不是 figure 的档带 alt 忽略
+        store.clear();
+        expect((await fn.onRequestPost(post({ ...base, choice: 'none', alt: 'x' }))).status).toBe(200);
+        expect(JSON.parse(store.get(crKeys()[0])!).alt).toBeUndefined();
+        expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt: 'x'.repeat(61) }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt: 5 }))).status).toBe(400);
+    });
+
     it('非法 choice（含 damaged）、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
         const cases: Array<Record<string, unknown>> = [
             { choice: 'damaged' },

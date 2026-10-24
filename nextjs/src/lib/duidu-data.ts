@@ -4,7 +4,9 @@
  *   - `char_file`（必有）：每格的字（guji-char，文本真源）；
  *   - `cord_file`（可选）：每格的像素框（guji-cord）——**有它才有对读**（书影格线、对读版面）；没有它只加载 char（及 punct／entity），cord 为 null 往下传；
  *   - `punct_file`：标点；`entity_file`：专名实体；
- *   - `norm_file`（可选）：异体字归一表（overview#540）。未声明或取不到都当没有，不影响整章。
+ *   - `norm_file`（可选）：异体字归一表（overview#540）。未声明或取不到都当没有，不影响整章；
+ *   - `fig_file`（可选，char v0.3／GUJI-737）：图表（图片格、插图块的说明与文件，guji-fig v0.1）。同样未声明或取不到都当没有——
+ *     阅读器对 `fig` 格显示 `〔图：…〕` 标签，不影响整章。图片文件在版本目录的 `fig/` 下，地址用存储的 `getTextAssetUrl` 取。
  * `pages_file`、`has_warp` 随 pages.json 作废。这些文件在同一章里按格位 key（`页:列:格[子列]`）对上。
  */
 
@@ -16,6 +18,8 @@ export interface DuiduFiles {
     entity: unknown;
     /** 没有声明 `norm_file`（或取不到）时为 null：下游照旧走全局异体字表 */
     norm: unknown;
+    /** 声明了 `fig_file` 才有这个键；取不到为 null：图片格取不到图，显示标签 */
+    fig?: unknown;
     /** 声明了 `cord_file` 但这次没取（窄屏不显示书影栏，GUJI-700）：cord 为 null，正文照常排，只是没有字框 */
     cordSkipped?: boolean;
 }
@@ -34,6 +38,8 @@ export function volumeFromChar(char: unknown): { bookId: string; vol: string } |
  */
 export interface TextFileStorage {
     getTextFile?: (id: string, key: string, file: string) => Promise<unknown>;
+    /** 版本目录下相对路径文件（如 `fig/005/f148-2-14.png`）的可直接用的地址；取不到（没有这份文件、不合规）返回 null */
+    getTextAssetUrl?: (id: string, key: string, rel: string) => Promise<string | null>;
 }
 
 const cache = new Map<string, Promise<DuiduFiles | null>>();
@@ -93,21 +99,23 @@ export function loadDuiduFiles(
     const entityFile = fileField(ch, 'entity_file');
     const readerEntity = entityFile ? fileField(ch, 'reader_entity_file') : null;
     const normFile = fileField(ch, 'norm_file');
-    const cacheKey = `${id}/${key}/${charFile}|${readerChar ?? ''}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${readerEntity ?? ''}|${normFile ?? ''}`;
+    const figFile = fileField(ch, 'fig_file');
+    const cacheKey = `${id}/${key}/${charFile}|${readerChar ?? ''}|${cordFile ?? ''}|${readerCord ?? ''}|${punctFile ?? ''}|${readerPunct ?? ''}|${entityFile ?? ''}|${readerEntity ?? ''}|${normFile ?? ''}|${figFile ?? ''}`;
     let p = cache.get(cacheKey);
     if (!p) {
         p = (async () => {
-            const [char, cord, punct, entity, norm] = await Promise.all([
+            const [char, cord, punct, entity, norm, fig] = await Promise.all([
                 getPreferred(storage, id, key, readerChar, charFile),
                 cordFile ? getPreferred(storage, id, key, readerCord, cordFile) : null,
                 punctFile ? getPreferred(storage, id, key, readerPunct, punctFile) : null,
                 entityFile ? getPreferred(storage, id, key, readerEntity, entityFile) : null,
                 normFile ? getJson(storage, id, key, normFile) : null,
+                figFile ? getJson(storage, id, key, figFile) : null,
             ]);
             // 声明了 cord_file 却取不到：整章按原行为返回 null（不缓存）；未声明则 cord 为 null
             if (!char || (cordFile && !cord)) return null;
             // norm 是可选层：取不到当没有（null），不让整章返回 null
-            return { char, cord, punct, entity, norm: norm ?? null, ...(cordSkipped ? { cordSkipped: true } : {}) };
+            return { char, cord, punct, entity, norm: norm ?? null, ...(figFile ? { fig: fig ?? null } : {}), ...(cordSkipped ? { cordSkipped: true } : {}) };
         })();
         cache.set(cacheKey, p);
         // 失败不缓存；声明了 norm_file 却没取到也不缓存（可能是暂时失败，下次再取），并留一条日志
@@ -117,7 +125,32 @@ export function loadDuiduFiles(
                 cache.delete(cacheKey);
                 console.warn(`[duidu-data] 声明了 norm_file 但取不到：${id}/${key}/${normFile}（本次当没有规范层，下次重试）`);
             }
+            else if (figFile && v.fig == null) {
+                cache.delete(cacheKey);
+                console.warn(`[duidu-data] 声明了 fig_file 但取不到：${id}/${key}/${figFile}（本次图片格显示标签，下次重试）`);
+            }
         });
     }
     return p;
+}
+
+/**
+ * 本章图表（`fig.json`，guji-fig v0.1）里每张图的文件地址：`file`（相对版本目录，如 `fig/005/f148-2-14.png`）→ 可直接放进 `<img src>` 的 URL。
+ * 阅读器的 `figUrl` 是同步函数，而哈希寻址的地址要先查哈希表（异步），所以在取数时一次解析好。
+ * 存储没有 `getTextAssetUrl`（bundle／本地模式）时按同域 `/data/items/<id>/<key>/<file>`；取不到地址的图不进表（阅读器显示 `〔图：说明〕` 标签）。
+ */
+export async function loadFigUrls(id: string, key: string | null | undefined, fig: unknown, storage?: object): Promise<Map<string, string>> {
+    const out = new Map<string, string>();
+    const list = fig && typeof fig === 'object' ? (fig as { figures?: unknown }).figures : undefined;
+    if (!key || !Array.isArray(list)) return out;
+    const getUrl = (storage as TextFileStorage | undefined)?.getTextAssetUrl;
+    await Promise.all(list.map(async (f) => {
+        const file = (f as { file?: unknown } | null)?.file;
+        if (typeof file !== 'string' || !/^fig\/[\w-]+\/[\w-]+\.(?:png|webp|svg)$/.test(file) || out.has(file)) return;
+        try {
+            const url = typeof getUrl === 'function' ? await getUrl.call(storage, id, key, file) : `/data/items/${id}/${key}/${file}`;
+            if (url) out.set(file, url);
+        } catch { /* 这张图取不到地址：显示标签 */ }
+    }));
+    return out;
 }

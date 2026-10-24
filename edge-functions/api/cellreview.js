@@ -1,6 +1,6 @@
 // 精校页意见端点（GUJI-551，设计 team/整理/设计/文本整理三阶段流程.md §6.2）
 //
-//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 六档之一）。同格同来源重复提交覆盖旧票。
+//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 七档之一）。同格同来源重复提交覆盖旧票。
 //   GET   **只开管理读**（管理 token 或成员 cookie）——按 rev 前缀导出全部票，供每日导入脚本用。
 //         公开读一律 401，不返回任何内容。
 //
@@ -14,7 +14,9 @@
 //   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
 // 值只存 voter，不存 aid、不存 IP。
 //
-// choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main，后五档 char 可选。
+// choice 七档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main｜figure，后六档 char 可选（figure 例外，见下）。
+// figure（char v0.3，GUJI-742）：「是图形，不是字」——这一格是个没有 Unicode 字的图形（如册 5 第 148 叶「圖作▢形」），导出时记成图片格。
+//   不带字（带了也丢掉：图形没有字）；可带 alt（图形说明，≤ ALT_MAX 字，可空，空时导出写「图形符号」）。只用于不是字的图形，认不出的字选 unsure。
 // 后五档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
 
@@ -22,11 +24,12 @@ import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
 } from './feedback.js';
 
-export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main'];
+export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure'];
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
+const ALT_MAX = 60;
 const SHOWN_MAX = 8;
 const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
 const LIST_MAX = 256; // 与 feedback.js 的 kv.list 同一页大小
@@ -74,9 +77,17 @@ export function validateReview(body) {
   if (choice === 'char') {
     if (!isSingleChar(body.char)) return { error: 'choice=char 时 char 必填且恰好一个字' };
     char = body.char;
+  } else if (choice === 'figure') {
+    // 图形没有字：带了 char 也不收（不校验、不存），免得下游把图当字落裁决
   } else if (body.char !== undefined && body.char !== null && body.char !== '') {
     if (!isSingleChar(body.char)) return { error: 'char 须恰好一个字' };
     char = body.char;
+  }
+  let alt = '';
+  if (choice === 'figure' && body.alt !== undefined && body.alt !== null) {
+    if (typeof body.alt !== 'string') return { error: 'alt 须为字符串' };
+    if ([...body.alt].length > ALT_MAX) return { error: `alt 不能超过 ${ALT_MAX} 字` };
+    alt = body.alt.trim();
   }
 
   let note = '';
@@ -104,7 +115,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
