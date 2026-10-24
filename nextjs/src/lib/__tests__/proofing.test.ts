@@ -225,6 +225,15 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(parseExtras('x')).toEqual({});
     });
 
+    it('复审格：note 截到 200 字，prior 要有字才收', () => {
+        const e = parseExtras({ note: '旧裁 山，新票 由，请定', prior: { c: '山', id: 'ev1', ts: '2026-10-22T08:00:00Z' } });
+        expect(e.note).toBe('旧裁 山，新票 由，请定');
+        expect(e.prior).toEqual({ c: '山', id: 'ev1', ts: '2026-10-22T08:00:00Z' });
+        expect(parseExtras({ note: 'x'.repeat(300) }).note?.length).toBe(200);
+        expect(parseExtras({ prior: { id: 'ev1' } }).prior).toBeUndefined();
+        expect(parseExtras({ note: 3 }).note).toBeUndefined();
+    });
+
     it('parsePending 带出 0.2 字段（规范键 cell）', () => {
         const r = parsePending({ rev: 'r2', cells: [{ cell: '9:7:17', review: 'pending', img: { s: 'p0009.webp', x: 0, y: 0, w: 96, h: 96 }, why: ['none'] }] });
         expect(r.cells[0].img?.s).toBe('p0009.webp');
