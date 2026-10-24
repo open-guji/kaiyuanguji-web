@@ -237,14 +237,16 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.change(screen.getByLabelText('图形说明'), { target: { value: '左半圈连一实点' } });
         fireEvent.click(screen.getByRole('button', { name: '确定是图形' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
-        expect(body(0)).toMatchObject({ a: '148:2:14', choice: 'figure', note: '左半圈连一实点' });
+        expect(body(0)).toMatchObject({ a: '148:2:14', choice: 'figure', alt: '左半圈连一实点' });
         expect(body(0).char).toBeUndefined();
+        expect(body(0).note).toBeUndefined();
         expect(screen.queryByTestId('figure-panel')).toBeNull();
         await waitFor(() => expect(screen.getByRole('button', { name: '是图形，不是字' }).getAttribute('aria-pressed')).toBe('true'));
         // 改主意：选一个字，交的是 char，不带 figure
         fireEvent.click(screen.getByRole('button', { name: '○' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
         expect(body(1)).toMatchObject({ a: '148:2:14', choice: 'char', char: '○' });
+        expect(body(1).alt).toBeUndefined();
         localStorage.clear();
     });
 

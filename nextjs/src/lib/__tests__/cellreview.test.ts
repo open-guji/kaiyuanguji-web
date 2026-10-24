@@ -93,14 +93,16 @@ describe('POST 校验', () => {
         }
     });
 
-    it('figure（是图形，GUJI-737）：不带字照收，note 存图形说明；带了字 400', async () => {
-        const ok = await fn.onRequestPost(post({ ...base, a: '148:2:14', choice: 'figure', note: '左半圈连一实点' }));
+    it('figure（是图形，GUJI-737）：不带字照收，alt 存图形说明；带了字、alt 超长 400；别的档带 alt 忽略', async () => {
+        const ok = await fn.onRequestPost(post({ ...base, a: '148:2:14', choice: 'figure', alt: ' 左半圈连一实点 ' }));
         expect(ok.status).toBe(200);
         const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(':148:2:14:'))!)!);
-        expect(rec).toMatchObject({ choice: 'figure', note: '左半圈连一实点' });
+        expect(rec).toMatchObject({ choice: 'figure', alt: '左半圈连一实点' });
         expect(rec.char).toBeUndefined();
-        const bad = await fn.onRequestPost(post({ ...base, a: '148:2:15', choice: 'figure', char: '○' }));
-        expect(bad.status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, a: '148:2:15', choice: 'figure', char: '○' }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, a: '148:2:16', choice: 'figure', alt: '图'.repeat(101) }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, a: '148:2:17', choice: 'none', alt: '左半圈' }))).status).toBe(200);
+        expect(JSON.parse(store.get(crKeys().find((k) => k.includes(':148:2:17:'))!)!).alt).toBeUndefined();
     });
 
     it('非法 choice（含 damaged）、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {

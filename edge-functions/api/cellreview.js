@@ -17,8 +17,9 @@
 // choice 六档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main，后五档 char 可选。
 // 后五档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
-// figure（GUJI-737／742，10-24）：这一格是图形，不是字（Unicode 没有、也不是汉字）。不许带字；note 是图形说明（阅读器悬停、
-// 复制〔图：说明〕用它，可空）。下游 cv `guji cellvotes` 映射成人裁 confirm v=figure，见 cv doc/design/图片格与插图-处理流程.md。
+// figure（GUJI-737／742，10-24）：这一格是图形，不是字（Unicode 没有、也不是汉字）。不许带字；`alt` 是图形说明（阅读器悬停、
+// 复制〔图：说明〕用它，可空，≤ 100 字）。下游 cv `guji cellvotes` 映射成人裁 confirm v=figure alt=…（GUJI-740），
+// 见 cv doc/design/图片格与插图-处理流程.md。别的档带了 alt 忽略。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
@@ -29,6 +30,7 @@ export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figu
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
+const ALT_MAX = 100; // 图形说明（choice=figure）
 const SHOWN_MAX = 8;
 const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
 const LIST_MAX = 256; // 与 feedback.js 的 kv.list 同一页大小
@@ -89,6 +91,12 @@ export function validateReview(body) {
     if ([...body.note].length > NOTE_MAX) return { error: `note 不能超过 ${NOTE_MAX} 字` };
     note = body.note.trim();
   }
+  let alt = '';
+  if (choice === 'figure' && body.alt !== undefined && body.alt !== null) {
+    if (typeof body.alt !== 'string') return { error: 'alt 须为字符串' };
+    alt = body.alt.trim();
+    if ([...alt].length > ALT_MAX) return { error: `alt 不能超过 ${ALT_MAX} 字` };
+  }
   let shown = '';
   if (body.shown !== undefined && body.shown !== null) {
     if (typeof body.shown !== 'string' || [...body.shown].length > SHOWN_MAX) return { error: 'shown 无效' };
@@ -108,7 +116,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), note, ...(alt ? { alt } : {}), shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */

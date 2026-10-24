@@ -635,6 +635,8 @@ export interface ReviewDraft {
     choice: ReviewChoice;
     char?: string;
     note?: string;
+    /** choice=figure 时的图形说明（卡片说明框；cv `guji cellvotes` 读 `alt`） */
+    alt?: string;
     /** 提交时页面显示的机器读字 */
     shown?: string;
     /** 字从哪儿点来（见 Pick）；带了字（char）才带 */

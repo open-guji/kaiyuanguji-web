@@ -135,7 +135,7 @@ interface CellRowProps {
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
     /** advance：提交后自动跳下一张（选字才跳；点下面四项不跳，好接着给字） */
-    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => Promise<string | null>;
+    onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
     selected: boolean;
@@ -339,11 +339,12 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     // 已提交的回应＝一个字（可无）＋下面四项之一（可无）＋备注，三样互不冲突（用户 2026-10-21）：
     // 切分错了也能先把字给上，格子先过、切分另修；每次点击把三样合起来重新提交一票（同格同人覆盖旧票）
     const { char: doneChar, flag: doneFlag } = parseDone(done);
-    const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false, noteOverride?: string) => {
+    const [sentAlt, setSentAlt] = useState('');
+    const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false, alt?: string) => {
         setBusy(true);
         setErr(null);
-        const n = (noteOverride ?? note).trim();
-        const e = await onSubmit(cell, choice, char, pick, n || undefined, advance);
+        const n = note.trim();
+        const e = await onSubmit(cell, choice, char, pick, n || undefined, advance, choice === 'figure' ? alt ?? sentAlt : undefined);
         setBusy(false);
         if (e) setErr(e);
         else setSentNote(n);
@@ -360,11 +361,11 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
         return go(f, c, c === doneChar ? lastPick.current : c ? { src: 'custom' } : undefined);
     };
     /** 「是图形」：先展开说明框（交过的再点＝改说明）；确定后只交 figure＋说明，不带字 */
-    const openFigure = () => { setFigDesc(doneFlag === 'figure' ? note : ''); setFigOpen(true); };
+    const openFigure = () => { setFigDesc(doneFlag === 'figure' ? sentAlt : ''); setFigOpen(true); };
     const submitFigure = async () => {
         const d = figDesc.trim();
-        setNote(d);
         setFigOpen(false);
+        setSentAlt(d);
         await go('figure', undefined, undefined, true, d);
     };
     const { top, more } = shownCandidates(cell);
@@ -690,10 +691,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const pos = useMemo(() => positionIndex(order), [order]);
     const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean) => {
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
         const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+            ...(note ? { note } : {}), ...(alt ? { alt } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
             const next = { ...prev, [cell.a]: doneLabel(choice, char) };
