@@ -52,6 +52,20 @@ export async function collectPendings(worker, wsList) {
 }
 
 /**
+ * 只发一本书或一章（输入 ONLY，如 `96mid1ogzk` 或 `96mid1ogzk/006`，逗号分隔多项）：落票、重出单之后不必等全站。
+ * 返回过滤函数；ONLY 空就全收。
+ */
+export function onlyFilter(only) {
+    const keys = String(only || '').split(',').map((s) => s.trim().replace(/^\/+|\/+$/g, '')).filter(Boolean);
+    if (!keys.length) return null;
+    return (e) => keys.some((k) => (k.includes('/') ? `${e.book}/${e.chap}` === k : e.book === k));
+}
+
+/** COS 上的雪碧图和单子里登记的是不是同一份：md5 相同；超 1 MB 分块上传的 ETag 不是 md5，记成 `mp:<字节数>`，
+ *  雪碧图文件名带内容哈希，同名同字节数即同一份（不认这个的话，每次发布都会把所有大图重传一遍） */
+export const spriteOnCos = (remote, s) => remote === s.md5 || remote === `mp:${s.bytes}`;
+
+/**
  * opinions 段：每个 (工作区, 书, rev) 拉一次 KV，合进快照，变了才写。
  * @param kv {listVotes(rev, book) → items[]}
  * @param worker 另需 putFile(ws, path, text, baseSha)
@@ -86,17 +100,26 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
  * @param blobs {get(sha256) → Buffer}  从 R2 取图（经 Worker 签名链接）；演练时不调用
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
-export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null }) {
+export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null }) {
+    // index.json 总按全部单子生成（别的章照旧）；only 时只传选中那几章的单子和图
+    const picked = only ? entries.filter(only) : entries;
     const objects = [
         { key: 'index.json', body: buildProofIndex(entries) },
-        ...entries.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
+        ...picked.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
     ];
-    const remote = cos ? await cos.listPrefixEtags(proofPrefix) : new Map();
+    let remote = new Map();
+    if (cos && !only) remote = await cos.listPrefixEtags(proofPrefix);
+    else if (cos) {
+        // 只列要动的几处，不列全站（全站几千张图，列一遍就要几十秒）
+        for (const sub of ['index.json', ...picked.map((e) => `${e.book}/${e.chap}`)]) {
+            for (const [k, v] of await cos.listPrefixEtags(proofPrefix + sub)) remote.set(sub + k, v);
+        }
+    }
     const plan = planCosPut(objects, remote);
-    // 图：文件名带内容哈希，COS 上有同名且 md5 相同的就跳过
-    const sprites = entries.flatMap((e) => (e.sprites || []).map((s) => ({ ...s, chap: `${e.book}/${e.chap}`, key: `${e.book}/${e.chap}/${s.name}` })));
-    const spritePut = sprites.filter((s) => remote.get(s.key) !== s.md5);
-    const spriteSame = sprites.filter((s) => remote.get(s.key) === s.md5);
+    // 图：文件名带内容哈希，COS 上有同名同内容的就跳过
+    const sprites = picked.flatMap((e) => (e.sprites || []).map((s) => ({ ...s, chap: `${e.book}/${e.chap}`, key: `${e.book}/${e.chap}/${s.name}` })));
+    const spritePut = sprites.filter((s) => !spriteOnCos(remote.get(s.key), s));
+    const spriteSame = sprites.filter((s) => spriteOnCos(remote.get(s.key), s));
     const failed = [];
     const badChaps = new Set();
     if (!dryRun && cos) {

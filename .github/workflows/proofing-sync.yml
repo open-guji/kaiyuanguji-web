@@ -30,6 +30,10 @@ on:
         description: '只读不写（不写中心库、不传 COS）'
         type: boolean
         default: true
+      only:
+        description: '只发这几本书或这几章，如 96mid1ogzk/006（逗号分隔；空 = 全站）。落票重出单后用，一两分钟上线'
+        type: string
+        default: ''
   schedule:
     - cron: '23 21 * * *' # 每天，排在 data.yml 每日发布（21:43 UTC）之前
 
@@ -44,11 +48,12 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu' }}
       FIX_BOOKS: ${{ vars.FIX_BOOKS || '96mid1ogzk' }}
       DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
+      ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.only || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,7 +80,7 @@ jobs:
         run: node scripts/proofing-sync.mjs
       # 线上单已有 ≥ 20% 的格投过票 → 开提醒 issue「该重出单」（GUJI-688）；rev 换了、不再超线的自动关
       - name: Reissue reminder
-        if: ${{ !cancelled() && steps.opinions.outcome != 'skipped' && (github.event_name == 'schedule' || inputs.target == 'production') }}
+        if: ${{ !cancelled() && steps.opinions.outcome != 'skipped' && (github.event_name == 'schedule' || (inputs.target == 'production' && inputs.only == '')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

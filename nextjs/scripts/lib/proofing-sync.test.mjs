@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
     parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath, reissueHints,
 } from './proofing-sync-plan.mjs';
-import { collectPendings, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
+import { collectPendings, onlyFilter, spriteOnCos, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
 
 const BOOK = '96mid1ogzk';
 const pending = (rev, n) => JSON.stringify({ rev, cv_version: '0.2.0', cells: Array.from({ length: n }, (_, i) => ({ a: `1:1:${i}` })) });
@@ -313,4 +313,40 @@ test('reissueHints：快照里投过票的格占线上单 ≥ 20% 才提醒重�
     assert.deepEqual(reissueHints(rows, entries), [{ book: BOOK, rev: '001-r2', voted: 2, n: 10, pct: 20 }]);
     assert.deepEqual(reissueHints(rows, entries, 0.5), []);
     assert.deepEqual(reissueHints([{ book: BOOK, rev: 'x', cells: 3 }], entries), []); // 没有对应线上单的不提醒
+});
+
+// ── 只发一本书／一章（ONLY），分块上传的大图不重传 ──
+
+test('onlyFilter：书或书/章，逗号分隔；空就不过滤', () => {
+    assert.equal(onlyFilter(''), null);
+    const f = onlyFilter(`${BOOK}/006, other`);
+    assert.equal(f({ book: BOOK, chap: '006' }), true);
+    assert.equal(f({ book: BOOK, chap: '005' }), false);
+    assert.equal(f({ book: 'other', chap: '001' }), true);
+});
+
+test('publishPendings only：index 照全站重算，只传选中那章的单子和图，只列那几处', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({
+        [`${WS}|feedback/lists/proofing/${BOOK}/004.pending.json`]: pendingWithSprites('004-r6', [m]),
+        [`${WS}|feedback/lists/proofing/${BOOK}/006.pending.json`]: pendingWithSprites('006-r5', [spriteMeta(SPR, 'p0009.bbbbbbbb.webp')]),
+    });
+    const { entries } = await collectPendings(w, [WS]);
+    const cos = fakeCos();
+    const listed = [];
+    const list0 = cos.listPrefixEtags.bind(cos);
+    cos.listPrefixEtags = async (p) => { listed.push(p); return list0(p); };
+    const r = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs: fakeBlobs(new Map([[m.sha256, SPR]])), only: onlyFilter(`${BOOK}/006`) });
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/006/p0009.bbbbbbbb.webp`, `proof/${BOOK}/006.pending.json`, 'proof/index.json']);
+    assert.deepEqual(Object.keys(JSON.parse(cos.objects.get('proof/index.json')).books[BOOK]), ['004', '006']);
+    assert.deepEqual(listed, ['proof/index.json', `proof/${BOOK}/006`]);
+    assert.equal(r.failed.length, 0);
+});
+
+test('spriteOnCos：分块上传的 ETag（mp:<字节数>）同字节数算已有', () => {
+    const m = spriteMeta(SPR);
+    assert.equal(spriteOnCos(m.md5, m), true);
+    assert.equal(spriteOnCos(`mp:${m.bytes}`, m), true);
+    assert.equal(spriteOnCos(`mp:${m.bytes + 1}`, m), false);
+    assert.equal(spriteOnCos(undefined, m), false);
 });
