@@ -45,6 +45,10 @@ export interface PendingExtras {
     img?: SpriteRef;
     ex?: Record<string, SpriteRef[]>;
     alt?: AltCand[];
+    /** 复审出单（cv `republish.py prep --recheck`）写的一句说明：这格为什么又放回单上，如「旧裁 山，新票 由，请定」 */
+    note?: string;
+    /** 这格已有的人裁（复审格才有）：页面提示「这次选的会替代它」；cv 落票时按 `id` 认作有意推翻 */
+    prior?: { c: string; id?: string; ts?: string };
 }
 
 export interface PendingCell extends PendingExtras {
@@ -107,6 +111,10 @@ export function parseExtras(raw: unknown): PendingExtras {
     }
     const stale = asObject(it.stale);
     if (stale && str(stale.c)) out.stale = { c: stale.c as string, ...(str(stale.ts) ? { ts: str(stale.ts) } : {}), ...(str(stale.state) ? { state: str(stale.state) } : {}) };
+    const note = str(it.note);
+    if (note) out.note = note.slice(0, 200);
+    const prior = asObject(it.prior);
+    if (prior && str(prior.c)) out.prior = { c: prior.c as string, ...(str(prior.id) ? { id: str(prior.id) } : {}), ...(str(prior.ts) ? { ts: str(prior.ts) } : {}) };
     const occ = asObject(it.occ);
     if (occ) out.occ = { ...(str(occ.c) ? { c: str(occ.c) } : {}), ...(typeof occ.ref_blank === 'boolean' ? { refBlank: occ.ref_blank } : {}) };
     const img = parseSprite(it.img);

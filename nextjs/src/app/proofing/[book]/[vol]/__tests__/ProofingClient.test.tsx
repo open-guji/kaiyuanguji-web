@@ -27,6 +27,7 @@ beforeEach(() => {
     loadFacsimile.mockReset().mockResolvedValue([]);
     loadProofIndex.mockReset().mockResolvedValue(null);
     failUrls = null;
+    localStorage.clear();                                       // 「只看还没回应的」缺省勾着：别让上一个用例记的「已提交」把卡藏了
     Object.defineProperty(global.Image.prototype, 'src', {
         configurable: true,
         set(this: HTMLImageElement, v: string) {
@@ -295,7 +296,10 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.click(screen.getAllByRole('button', { name: '切分错了' })[2]);
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
         expect(body(2)).toMatchObject({ a: '1:1:3', choice: 'cut', char: '入' });
-        // 只看未回应：三张都回应过了 → 一张不剩
+        // 只看未回应缺省勾着，但刚回应的卡留在原地；关掉再勾上（三张都回应过了）→ 一张不剩
+        expect(screen.getByTestId('only-open')).toBeChecked();
+        expect(screen.queryAllByTestId('cell-card')).toHaveLength(3);
+        fireEvent.click(screen.getByTestId('only-open'));
         fireEvent.click(screen.getByTestId('only-open'));
         await waitFor(() => expect(screen.queryAllByTestId('cell-card')).toHaveLength(0));
     });
@@ -388,6 +392,27 @@ describe('精校页显示（GUJI-557）', () => {
         // 给公众看的字里不出现英文码和缩写
         const card = screen.getAllByTestId('cell-card')[0].textContent ?? '';
         expect(card).not.toMatch(/[A-Za-z]{2,}/);
+    });
+});
+
+describe('只看还没回应的（缺省勾上，用户 10-24）', () => {
+    it('打开时已回应过的格藏起来；取消勾选就回来', async () => {
+        localStorage.setItem('kyg-cr-done:r1', JSON.stringify({ '1:1:1': '「甲」' }));
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '甲' }, { a: '1:1:2', c: '乙' }]));
+        render(<ProofingClient book="b7" vol="vol01" />);
+        await waitFor(() => expect(screen.queryAllByTestId('cell-card')).toHaveLength(1));
+        expect(screen.getByTestId('only-open')).toBeChecked();
+        fireEvent.click(screen.getByTestId('only-open'));
+        await waitFor(() => expect(screen.queryAllByTestId('cell-card')).toHaveLength(2));
+    });
+});
+
+describe('复审格（cv republish --recheck）', () => {
+    it('说明和已有判断常显在机器判断最前面，不用展开', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '由', note: '旧裁 山，新票 由，请定', prior: { c: '山', ts: '2026-10-22T08:00:00Z' } }]));
+        render(<ProofingClient book="b5" vol="vol01" />);
+        expect((await screen.findByTestId('recheck-note')).textContent).toContain('再看一次：旧裁 山，新票 由，请定');
+        expect(screen.getByTestId('recheck-prior').textContent).toContain('2026-10-22 判为「山」。这次提交的选择会替代它');
     });
 });
 

@@ -20,12 +20,14 @@
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
  *   REISSUE_OUT：opinions 段把「已投票格 ≥ 20%、该落票重出单」的 (书, rev) 逐行写进这个文件（工作流据此开提醒 issue，GUJI-688）
+ *   ONLY：只发这几本书或这几章（`96mid1ogzk` 或 `96mid1ogzk/006`，逗号分隔）。opinions 只拉这几章的票，publish 只传这几章的单子和图
+ *         （index.json 照全站重算）；改字意见、处理结论两项跳过（它们按书每日跑）。落票重出单后用，一两分钟上线
  *   DRY_RUN=1：只读不写（不 PUT 中心库、不传 COS；有 COS 密钥时仍 LIST 比对）
  */
 import { appendFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { collectPendings, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
+import { collectPendings, onlyFilter, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
 import { reissueHints } from './lib/proofing-sync-plan.mjs';
 import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 
@@ -37,6 +39,7 @@ const FIX_BOOKS = (process.env.FIX_BOOKS || '96mid1ogzk').split(',').map((s) => 
 const SITE = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const ADMIN = process.env.FEEDBACK_ADMIN_TOKEN || '';
 const DRY_RUN = process.env.DRY_RUN === '1';
+const ONLY = onlyFilter(process.env.ONLY);
 const PREFIX = (process.env.COS_PATH_PREFIX || '').replace(/^\/+|\/+$/g, '');
 const PROOF_PREFIX = [PREFIX, 'proof'].filter(Boolean).join('/') + '/';
 
@@ -181,11 +184,16 @@ try {
 }
 const { entries, problems } = collected;
 console.log(`· 待审单 ${entries.length} 章（工作区 ${WS.join('、')}）`);
-const opinions = doOpinions ? await syncOpinions({ worker, kv, entries, dryRun: DRY_RUN }) : null;
-const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs }) : null;
-const status = doOpinions ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
-const fixes = doOpinions ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
-const fixesPublish = doPublish ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
+if (ONLY) {
+    const n = entries.filter(ONLY).length;
+    console.log(`· 只发 ${process.env.ONLY}：${n} 章`);
+    if (!n) { console.log(`::error::ONLY=${process.env.ONLY} 在中心库里一章都没有`); process.exit(1); }
+}
+const opinions = doOpinions ? await syncOpinions({ worker, kv, entries: ONLY ? entries.filter(ONLY) : entries, dryRun: DRY_RUN }) : null;
+const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs, only: ONLY }) : null;
+const status = doOpinions && !ONLY ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
+const fixes = doOpinions && !ONLY ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
+const fixesPublish = doPublish && !ONLY ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
 
 const reissue = opinions ? reissueHints(opinions.rows, entries) : [];
 let md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });

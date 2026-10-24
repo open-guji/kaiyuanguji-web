@@ -381,6 +381,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     {cell.c ? <div style={{ fontSize: 34, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
                         : <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
                     {cell.ref && <div style={{ fontSize: 12, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
+                    {/* 复审格（cv republish --recheck）：为什么又来了、已有判断是什么，放在卡片头上常显 */}
+                    {cell.note && <div data-testid="recheck-note" style={{ fontSize: 12, color: '#7a3b1d', marginTop: 2 }}><b>再看一次</b>：{cell.note}</div>}
+                    {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
                 </div>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
@@ -615,7 +618,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [done, setDone] = useState<DoneMap>({});
     const [page, setPage] = useState(0);
     const [sel, setSel] = useState<string | null>(null);
-    const [onlyOpen, setOnlyOpen] = useState(false);
+    // 「只看还没回应的」缺省勾上（用户 10-24）。藏的是打开页面（或重新勾上）那一刻已回应的格：
+    // 这次刚回应的卡留在原地（变淡），想改还能改，下次进来才藏
+    const [onlyOpen, setOnlyOpen] = useState(true);
+    const [hiddenDone, setHiddenDone] = useState<Set<string>>(new Set());
     const [panelOpen, setPanelOpen] = useState(true);
     const [chapterTitle, setChapterTitle] = useState<string | undefined>(undefined);
     const [versionKey, setVersionKey] = useState<string | undefined>(undefined);
@@ -644,7 +650,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             setPendingFile(res.pendingFile);
             setChapterTitle(res.chapterTitle);
             setVersionKey(res.versionKey);
-            setDone(res.pending.rev ? readDone(res.pending.rev) : {});
+            const loaded = res.pending.rev ? readDone(res.pending.rev) : {};
+            setDone(loaded);
+            setHiddenDone(new Set(Object.keys(loaded)));
             setState('ok');
         })().catch(() => { if (!cancelled) setState('error'); });
         return () => { cancelled = true; };
@@ -692,9 +700,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         for (const c of cells) m.set(c.cls ?? 'other', (m.get(c.cls ?? 'other') ?? 0) + 1);
         return [...m.entries()];
     }, [cells]);
-    // 「只看未回应」：已回应的格在本次翻看中先不显示（回应过的格不会因此消失，关掉就回来）
-    const shown = useMemo(() => cells.filter(c => (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !done[c.a])),
-        [cells, clsFilter, onlyOpen, done]);
+    // 「只看未回应」：藏起 hiddenDone 里的格（关掉就回来）
+    const shown = useMemo(() => cells.filter(c => (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !hiddenDone.has(c.a))),
+        [cells, clsFilter, onlyOpen, hiddenDone]);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
     const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
@@ -793,7 +801,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                     <div className="min-w-0 lg:flex-1">
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#666' }}>
                             <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
-                                <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); setPage(0); }} data-testid="only-open" />
+                                <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />
                                 只看还没回应的
                             </label>
                             <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，g 是图形，j／k 下一张／上一张</span>
