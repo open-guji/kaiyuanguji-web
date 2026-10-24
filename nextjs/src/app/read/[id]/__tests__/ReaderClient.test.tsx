@@ -30,6 +30,8 @@ const mockAdaptCharCord = jest.fn((..._a: unknown[]) => [{ page: 3 }]);
 jest.mock('book-index-ui', () => ({
     adaptCharCord: (...a: unknown[]) => mockAdaptCharCord(...a),
     adaptPunctJson: () => [],
+    // fig.json → 图 id → 图（真的 adaptFig 另有单测，这里只要个按 id 的表）
+    adaptFig: (raw: { figures?: { id: string; file: string }[] }) => new Map((raw?.figures ?? []).map(f => [f.id, f])),
     iiifVolumeOf: () => null,
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）
@@ -319,6 +321,34 @@ describe('ReaderClient：历史记录', () => {
             const r = await run('book-nm2', CHAR);
             expect(mockAdaptCharCord.mock.calls[0][2]).toBeNull();
             expect(r?.hasNorm).toBe(false);
+        });
+    });
+
+    // GUJI-737：图片格、插图块（fig.json）
+    describe('resolveWarpData：fig_file', () => {
+        type ResolveWarp = (key: string, ctx: unknown) => Promise<Record<string, unknown> | null>;
+        const CHAR = { file: '005', char_file: '005.char.json', cord_file: '005.cord.json' };
+        const FIG = { figures: [{ id: 'f148-2-14', kind: 'inline', file: 'fig/005/f148-2-14.png', alt: '左半圈连一实点' }] };
+        const run = async (id: string, chapter: Record<string, unknown>) => {
+            global.fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => (url.endsWith('.fig.json') ? FIG : { url }) })) as unknown as typeof fetch;
+            render(<ReaderClient id={id} initial={{ chapter: '005' }} bookTitle="t" />);
+            await act(async () => { await Promise.resolve(); });
+            return (last.reader!.resolveWarpData as ResolveWarp)('005', { versionKey: 'original', chapter });
+        };
+
+        it('声明了 fig_file：数据带 figures（图 id → 图）和同步的 figUrl（地址先解析好；取不到的给空串，阅读器显示标签）', async () => {
+            const r = await run('book-fg1', { ...CHAR, fig_file: '005.fig.json' });
+            const figures = r?.figures as Map<string, unknown>;
+            expect(figures.get('f148-2-14')).toMatchObject({ alt: '左半圈连一实点' });
+            const figUrl = r?.figUrl as (f: string) => string;
+            expect(figUrl('fig/005/f148-2-14.png')).toBe('/data/items/book-fg1/original/fig/005/f148-2-14.png');
+            expect(figUrl('fig/005/nope.png')).toBe('');
+        });
+
+        it('没声明 fig_file：不带 figures／figUrl（与改前一致）', async () => {
+            const r = await run('book-fg2', CHAR);
+            expect(r).not.toHaveProperty('figures');
+            expect(r).not.toHaveProperty('figUrl');
         });
     });
 
