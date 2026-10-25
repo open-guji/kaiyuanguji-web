@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import {
-    BASIS_MAX, NOTE_MAX, canFixChar, cellIdOf, isNewChar, reportableEntitiesAt, submitCharFix, submitEntityFix,
+    ALT_MAX, BASIS_MAX, NOTE_MAX, canFixChar, cellIdOf, isNewChar, reportableEntitiesAt, submitCharFix, submitEntityFix,
     type CharFixCtx, type CharFixEntity,
 } from '@/lib/charfix';
 import { useSiteT } from '@/i18n/use-site-t';
@@ -175,16 +175,19 @@ export function DialogFrame({ t, title, titleId, onClose, done, doneLink, childr
 function CharFixDialog({ t, ctx, cell, orig, fetchImpl, onClose }: { t: SiteT; ctx: CharFixCtx; cell: string; orig: string; fetchImpl?: typeof fetch; onClose: () => void }) {
     const [newChar, setNewChar] = useState('');
     const [basis, setBasis] = useState('');
+    // 「这是图形，不是字」（GUJI-737 图片格）：勾上就不填字，可写一句图形说明
+    const [figure, setFigure] = useState(false);
+    const [alt, setAlt] = useState('');
     const { status, error, run } = useDialog(onClose);
     const inputRef = useRef<HTMLInputElement>(null);
     const titleId = useId();
     useEffect(() => { inputRef.current?.focus(); }, []);
 
     const nc = newChar.trim();
-    const valid = isNewChar(nc) && nc !== orig;
+    const valid = figure || (isNewChar(nc) && nc !== orig);
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (valid) run(() => submitCharFix(ctx, { cell, newChar: nc, basis: basis.trim() }, fetchImpl, t));
+        if (valid) run(() => submitCharFix(ctx, { cell, newChar: nc, basis: basis.trim(), ...(figure ? { figure: true, alt: alt.trim() } : {}) }, fetchImpl, t));
     };
 
     return (
@@ -193,17 +196,38 @@ function CharFixDialog({ t, ctx, cell, orig, fetchImpl, onClose }: { t: SiteT; c
                 <div className="og-fb-context">
                     <div>{t('charfix.dialog.cell', { cell })}{orig && t('charfix.dialog.now', { char: orig })}</div>
                 </div>
-                <label className="og-fb-sr" htmlFor={`${titleId}-new`}>{t('charfix.dialog.newLabel')}</label>
-                <input
-                    id={`${titleId}-new`}
-                    ref={inputRef}
-                    className="og-fb-field og-fb-contact"
-                    value={newChar}
-                    onChange={e => setNewChar(e.target.value)}
-                    placeholder={t('charfix.dialog.newPlaceholder')}
-                    maxLength={34}
-                    autoComplete="off"
-                />
+                {figure ? (
+                    <>
+                        <label className="og-fb-sr" htmlFor={`${titleId}-alt`}>{t('charfix.dialog.altLabel')}</label>
+                        <input
+                            id={`${titleId}-alt`}
+                            className="og-fb-field og-fb-contact"
+                            value={alt}
+                            onChange={e => setAlt(e.target.value.slice(0, ALT_MAX))}
+                            placeholder={t('charfix.dialog.altPlaceholder')}
+                            maxLength={ALT_MAX}
+                            autoComplete="off"
+                        />
+                    </>
+                ) : (
+                    <>
+                        <label className="og-fb-sr" htmlFor={`${titleId}-new`}>{t('charfix.dialog.newLabel')}</label>
+                        <input
+                            id={`${titleId}-new`}
+                            ref={inputRef}
+                            className="og-fb-field og-fb-contact"
+                            value={newChar}
+                            onChange={e => setNewChar(e.target.value)}
+                            placeholder={t('charfix.dialog.newPlaceholder')}
+                            maxLength={34}
+                            autoComplete="off"
+                        />
+                    </>
+                )}
+                <label className="og-fb-check" title={t('charfix.dialog.figureHint')}>
+                    <input type="checkbox" data-testid="charfix-figure" checked={figure} onChange={e => setFigure(e.target.checked)} />
+                    {' '}{t('charfix.dialog.figure')}
+                </label>
                 <label className="og-fb-sr" htmlFor={`${titleId}-basis`}>{t('charfix.dialog.basisLabel')}</label>
                 <textarea
                     id={`${titleId}-basis`}
@@ -214,7 +238,7 @@ function CharFixDialog({ t, ctx, cell, orig, fetchImpl, onClose }: { t: SiteT; c
                     maxLength={BASIS_MAX}
                     rows={3}
                 />
-                {nc && !valid && <p className="og-fb-error" role="alert">{nc === orig ? t('charfix.dialog.same') : t('charfix.dialog.notOne')}</p>}
+                {!figure && nc && !valid && <p className="og-fb-error" role="alert">{nc === orig ? t('charfix.dialog.same') : t('charfix.dialog.notOne')}</p>}
                 {error && <p className="og-fb-error" role="alert">{error}</p>}
                 <div className="og-fb-foot">
                     <p className="og-fb-note">{t('charfix.dialog.note')}</p>

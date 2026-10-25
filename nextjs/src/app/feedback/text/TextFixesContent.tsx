@@ -91,7 +91,9 @@ function Thread({ t, th, book, vol, target, fetchImpl }: { t: SiteT; th: FixThre
 /** 一处意见：位置（点了到阅读页该格）、类别、原文与建议、各条说明、讨论 */
 function GroupRow({ t, g, book, vol, th, fetchImpl }: { t: SiteT; g: FixGroup; book: string; vol: string; th: FixThread; fetchImpl?: typeof fetch }) {
     const label = g.kind === 'span' ? t(`charfix.span.subs.${g.sub ?? 'other'}`) : t(`charfix.list.kinds.${g.kind}`);
-    const suggestions = [...new Set(g.items.map((x) => x.new).filter((x): x is string => !!x))];
+    // 说是图形的意见单列「应是图形（说明）」，不写「应作「□」」
+    const suggestions = [...new Set(g.items.map((x) => (x.fig ? t('charfix.list.figure', { alt: x.alt ? `（${x.alt}）` : '' }) : x.new ? t('charfix.list.suggest', { text: x.new }) : ''))
+        .filter((x): x is string => !!x))];
     const versions = [...new Set(g.items.map((x) => x.tv).filter((x): x is string => !!x))];
     return (
         <li className="og-fx-row" data-testid="fix-group">
@@ -111,7 +113,7 @@ function GroupRow({ t, g, book, vol, th, fetchImpl }: { t: SiteT; g: FixGroup; b
             {(g.old || suggestions.length > 0) && (
                 <div className="og-fx-body">
                     {g.old && <span className="og-fx-old">{g.kind === 'entity' ? t('charfix.list.entity', { text: g.old }) : t('charfix.list.now', { text: g.old })}</span>}
-                    {suggestions.map((s) => <span key={s} className="og-fx-new">{t('charfix.list.suggest', { text: s })}</span>)}
+                    {suggestions.map((s) => <span key={s} className="og-fx-new">{s}</span>)}
                 </div>
             )}
             {g.items.some((x) => x.note) && (

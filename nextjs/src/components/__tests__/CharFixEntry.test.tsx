@@ -101,6 +101,36 @@ describe('CharFixEntry', () => {
     });
 });
 
+describe('这是图形，不是字（GUJI-737）', () => {
+    it('勾上后不用填建议字，可填图形说明；提交 figure=true、new_char=□、alt', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true }) });
+        render(<Host fetchImpl={fetchImpl as unknown as typeof fetch} />);
+        fireEvent.click(screen.getByText('於'));
+        fireEvent.click(screen.getByRole('button', { name: '改字' }));
+        const submit = screen.getByRole('button', { name: '提交' });
+        expect(submit).toBeDisabled();
+        fireEvent.click(screen.getByTestId('charfix-figure'));
+        expect(screen.queryByLabelText('建议字')).toBeNull();
+        expect(submit).toBeEnabled();
+        fireEvent.change(screen.getByLabelText('图形说明'), { target: { value: '圈中一点' } });
+        await act(async () => { fireEvent.click(submit); });
+        const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+        expect(body).toMatchObject({ kind: 'char', cell_id: '4:3:8', old_char: '於', figure: true, new_char: '□', alt: '圈中一点' });
+        await waitFor(() => expect(screen.getByRole('status').textContent).toContain('已收到'));
+    });
+
+    it('取消勾选回到改字：建议字照常必填', () => {
+        render(<Host />);
+        fireEvent.click(screen.getByText('於'));
+        fireEvent.click(screen.getByRole('button', { name: '改字' }));
+        const box = screen.getByTestId('charfix-figure');
+        fireEvent.click(box);
+        fireEvent.click(box);
+        expect(screen.getByLabelText('建议字')).toBeTruthy();
+        expect(screen.getByRole('button', { name: '提交' })).toBeDisabled();
+    });
+});
+
 describe('专名有误（GUJI-590）', () => {
     it('字落在专名 anchor 区间里才出「专名有误」；区间外只有「改字」', () => {
         render(<Host />);

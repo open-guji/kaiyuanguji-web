@@ -2264,6 +2264,15 @@
   .og-fb-contact {
     margin-top: 10px;
   }
+  .og-fb-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    color: var(--color-ink-2);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
   /* 弹窗里相邻的输入框、文本框之间留间隔（label 是视觉隐藏的） */
   .og-fb-field + .og-fb-sr + .og-fb-field {
     margin-top: 10px;

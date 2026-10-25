@@ -42,7 +42,7 @@ export function fixAt(r) {
 /** 与 fixes-sync.mjs 的 toPublicFix 同形（单测里对过） */
 export function toPublicFix(r) {
   const o = { kind: r.kind, at: fixAt(r), who: String(r.voter).slice(0, 6), ts: typeof r.ts === 'number' ? r.ts : undefined };
-  if (r.kind === 'char') Object.assign(o, { tv: r.text_version, old: r.old_char || undefined, new: r.new_char, note: clean(r.basis) });
+  if (r.kind === 'char') Object.assign(o, { tv: r.text_version, old: r.old_char || undefined, new: r.new_char, note: clean(r.basis), fig: r.figure ? 1 : undefined, alt: r.figure ? clean(r.alt) : undefined });
   else if (r.kind === 'span') Object.assign(o, { tv: r.text_version, end: r.end, sub: r.sub, old: r.old_text || undefined, new: r.new_text || undefined, note: clean(r.note) });
   else Object.assign(o, { end: r.anchor && r.anchor.end, ev: r.entity_version, eid: r.entity_id, old: r.text, note: clean(r.note) });
   for (const k of Object.keys(o)) if (o[k] === undefined || o[k] === '') delete o[k];

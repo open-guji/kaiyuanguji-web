@@ -143,7 +143,13 @@ export interface CharFixDraft {
     cell: string;
     newChar: string;
     basis: string;
+    /** 「这是图形，不是字」（GUJI-737）：给了就不看 newChar，接口记 new_char=□ */
+    figure?: boolean;
+    alt?: string;
 }
+
+/** 图形说明上限，与接口、精校票同 */
+export const ALT_MAX = 60;
 
 const HANT = getSiteT('zh-Hant');
 
@@ -170,7 +176,7 @@ export async function submitCharFix(ctx: CharFixCtx, d: CharFixDraft, fetchImpl:
         text_version: ctx.textVersion,
         cell_id: d.cell,
         ...(oldChar ? { old_char: oldChar } : {}),
-        new_char: d.newChar,
+        ...(d.figure ? { figure: true, new_char: '□', ...(d.alt ? { alt: d.alt } : {}) } : { new_char: d.newChar }),
         ...(d.basis ? { basis: d.basis } : {}),
         entity_ids: entityIdsAt(d.cell, ctx.entities),
         aid: getAid(),

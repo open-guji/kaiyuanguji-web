@@ -573,6 +573,7 @@ describe('快速确认（用户 10-24）', () => {
         loadProofing.mockResolvedValue(ok([occ('3:1:1', '欽'), occ('3:1:2', '定', 96), occ('3:1:3', '四', 192)]));
         render(<ProofingClient book="b1" vol="vol01" />);
         await screen.findByTestId('quick-review');
+        expect(screen.getByTestId('quick-review').textContent).toContain('选「是图形，不是字」');   // GUJI-737：图形先标存疑，到下面卡片选
         expect(screen.queryByTestId('quick-groups')).toBeNull();
         fireEvent.click(screen.getByTestId('quick-confirm'));
         expect((await screen.findByRole('alert')).textContent).toMatch(/^已确认 1 格，后面的没交上：提交太频繁/);
