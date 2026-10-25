@@ -1,8 +1,16 @@
 /**
- * 后台「文本整理」栏目：读 /api/text-progress 的快照，一册一行；第二部分没填的栏目留位置。
+ * 后台「文本整理」：总览读 /api/text-progress 的快照，一册一行；各领域栏目各占一页，没填的留位置。
  */
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import TextProgressView from '../TextProgressView';
+import SectionView from '../SectionView';
+import { resetTextProgressCache } from '../useTextProgress';
+
+let mockSection = 'review';
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(`s=${mockSection}`),
+  usePathname: () => '/admin/text/section',
+}));
 
 const SNAP = {
   schema: 'text-progress/1',
@@ -30,11 +38,13 @@ function mockFetch(body: unknown, status = 200) {
   (global as any).fetch = jest.fn(async () => ({ status, json: async () => body }));
 }
 
+beforeEach(() => resetTextProgressCache());
+
 describe('TextProgressView', () => {
   it('一册一行，按套书分组，带版本、待人审、待审单', async () => {
     mockFetch({ success: true, snapshot: SNAP });
     render(<TextProgressView />);
-    expect(await screen.findByText('一、各册进度')).toBeInTheDocument();
+    expect(await screen.findByText('各册进度')).toBeInTheDocument();
     expect(screen.getByText('欽定四庫全書總目武英殿刻本')).toBeInTheDocument();
     expect(screen.getByText('欽定全唐文')).toBeInTheDocument();
     const row = screen.getByText('006-r5').closest('tr')!;
@@ -46,23 +56,24 @@ describe('TextProgressView', () => {
     expect(within(row1).getByText('已出 1.0')).toBeInTheDocument();
     expect(within(row1).getByText('冻结 1.0.0')).toBeInTheDocument();
     // 合计
-    expect(screen.getByText('3 册')).toBeInTheDocument();
+    expect(screen.getByText('共 3 册')).toBeInTheDocument();
     // 采集提示
     expect(screen.getByText('book-text x/default/index.json 取不到')).toBeInTheDocument();
   });
 
-  it('第二部分：有数的显示，没数的留位置', async () => {
+  it('总览底部链到各栏目页，标出有没有数', async () => {
     mockFetch({ success: true, snapshot: SNAP });
     render(<TextProgressView />);
-    expect(await screen.findByText('二、整理过程数据')).toBeInTheDocument();
-    expect(screen.getByText('1.35%')).toBeInTheDocument();
-    expect(screen.getByText(/A24的 job 写进/)).toBeInTheDocument();
+    await screen.findByText('整理过程数据');
+    expect(screen.getByText('形近字').closest('a')).toHaveAttribute('href', '/admin/text/section?s=xingjin');
+    expect(screen.getByText('A24 填 · 还没有数')).toBeInTheDocument();
+    expect(screen.getByText('A32 填 · 1 项指标')).toBeInTheDocument();
   });
 
   it('筛选：只看有待人审的', async () => {
     mockFetch({ success: true, snapshot: SNAP });
     render(<TextProgressView />);
-    await screen.findByText('一、各册进度');
+    await screen.findByText('各册进度');
     fireEvent.click(screen.getByLabelText('只看有待人审的'));
     expect(screen.queryByText('卷首')).not.toBeInTheDocument();
     expect(screen.queryByText('欽定全唐文')).not.toBeInTheDocument();
@@ -72,8 +83,8 @@ describe('TextProgressView', () => {
   it('按阶段筛选', async () => {
     mockFetch({ success: true, snapshot: SNAP });
     render(<TextProgressView />);
-    await screen.findByText('一、各册进度');
-    fireEvent.change(screen.getByLabelText('按阶段筛选'), { target: { value: 'released' } });
+    await screen.findByText('各册进度');
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: '按阶段筛选' })).getByRole('radio', { name: '已出 1.0' }));
     expect(screen.getByText('卷首')).toBeInTheDocument();
     expect(screen.queryByText('006-r5')).not.toBeInTheDocument();
   });
@@ -88,5 +99,44 @@ describe('TextProgressView', () => {
     mockFetch({ success: false, error: '未授权' }, 401);
     render(<TextProgressView />);
     expect(await screen.findByText('取数失败：未授权')).toBeInTheDocument();
+  });
+});
+
+describe('SectionView', () => {
+  it('有数的栏目：整套的数做成卡片，各册的数排成表', async () => {
+    mockSection = 'review';
+    mockFetch({ success: true, snapshot: { ...SNAP, metrics: [
+      ...SNAP.metrics,
+      { book_id: '96mid1ogzk', vol: '006', section: 'review', key: 'judged', label: '已裁格数', value: 1234, writer: 'A32', at: '2026-10-25T04:00:00Z' },
+    ] } });
+    render(<SectionView />);
+    expect(await screen.findByText('1.35%')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '人审' })).toBeInTheDocument();
+    const row = screen.getByText('1,234').closest('tr')!;
+    expect(within(row).getByText('006')).toBeInTheDocument();
+    expect(within(row).getByText('易類存目四')).toBeInTheDocument();
+  });
+
+  it('没数的栏目留位置，写明谁填、怎么写', async () => {
+    mockSection = 'xingjin';
+    mockFetch({ success: true, snapshot: SNAP });
+    render(<SectionView />);
+    expect(await screen.findByText('还没有数')).toBeInTheDocument();
+    expect(screen.getByText(/这一栏留给 A24 填/)).toBeInTheDocument();
+  });
+
+  it('快照还没有：仍按预置栏目显示标题', async () => {
+    mockSection = 'yiti';
+    mockFetch({ success: true, snapshot: null });
+    render(<SectionView />);
+    expect(await screen.findByText(/还没有数据/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '异体字组' })).toBeInTheDocument();
+  });
+
+  it('不认识的栏目', async () => {
+    mockSection = 'nope';
+    mockFetch({ success: true, snapshot: SNAP });
+    render(<SectionView />);
+    expect(await screen.findByText('没有这个栏目')).toBeInTheDocument();
   });
 });

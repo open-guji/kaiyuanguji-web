@@ -58,9 +58,11 @@ SELECT progress.put_volume('96mid1ogzk', '006',
 **基础采集是软写**：某个字段一旦被别的写入方写过，采集就不再碰它。所以领域要接管哪个字段（比如 A32 想自己报
 `pending_review`），直接写就行；要还给采集，在库里把 `field_meta` 里那个键删掉。
 
-### 2.2 `progress.section` 与 `progress.metric`：各领域自己的数（栏目第二部分）
+### 2.2 `progress.section` 与 `progress.metric`：各领域自己的数（各栏目分页）
 
-- `progress.section` 登记栏目，后台页按 `sort` 给每个栏目留一块。先占好的三个：`xingjin` 形近字（A24）、`yiti` 异体字组（A24）、
+- 后台「文本整理」点进去是总览（各册进度，即 `progress.volume`）；侧栏在它下面按栏目列小标题，每个栏目一页
+  （`/admin/text/section?s=<section>`）：整套或全局的数（`vol` 留空）做成卡片，各册的数排成一册一行、一个 key 一列的表。
+- `progress.section` 登记栏目，侧栏按 `sort` 排。先占好的三个：`xingjin` 形近字（A24）、`yiti` 异体字组（A24）、
   `review` 人审（A32）。口径由各领域自己定（改 `description`）；要新开栏目就 INSERT 一行。
 - `progress.metric` 一个数一行，主键 `(book_id, vol, section, key)`，再写就覆盖。`vol = ''` 表示整套书，`book_id = ''` 表示不分书。
   比率按小数存、`unit` 写 `%`（页面显示成百分数）；不是数的写 `value_text`；明细放 `detail`。

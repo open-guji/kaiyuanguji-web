@@ -1,4 +1,4 @@
-import { ago, fmtLA, fmtMetric, groupByBook, isStale, majorOf, scopeOf, stageOf, writersOf, type VolumeRow } from '../model';
+import { ago, countStages, fmtLA, fmtMetric, groupByBook, isStale, majorOf, scopeOf, sectionHref, sectionsOf, stageOf, writersOf, type VolumeRow } from '../model';
 
 const v = (o: Partial<VolumeRow>): VolumeRow => ({ book_id: 'b', vol: '001', ...o });
 
@@ -72,5 +72,21 @@ describe('格式', () => {
     expect(scopeOf({ book_id: 'b', vol: '' }, t)).toBe('某书（整套）');
     expect(scopeOf({ book_id: 'b', vol: '005' }, t)).toBe('某书 · 005');
     expect(writersOf(v({ field_meta: { a: { by: 'web-collector' }, b: { by: 'A32' }, c: { by: 'A32' } } }))).toEqual(['A32', 'web-collector']);
+  });
+});
+
+describe('sectionsOf / countStages / sectionHref', () => {
+  it('快照没有栏目就用预置三栏，有就按 sort 排', () => {
+    expect(sectionsOf(null).map((s) => s.section)).toEqual(['xingjin', 'yiti', 'review']);
+    const snap = { schema: 'x', volumes: [], metrics: [], sections: [
+      { section: 'b', title: 'B', sort: 20 }, { section: 'a', title: 'A', sort: 30 }, { section: 'c', title: 'C', sort: 10 },
+    ] };
+    expect(sectionsOf(snap).map((s) => s.section)).toEqual(['c', 'b', 'a']);
+  });
+  it('各阶段册数', () => {
+    expect(countStages([v({ text_version: '0.2.0' }), v({ text_version: '0.3.0' }), v({ cv_book: 'vol1' })])).toEqual({ fine: 2, rough: 1 });
+  });
+  it('栏目页地址', () => {
+    expect(sectionHref('xingjin')).toBe('/admin/text/section?s=xingjin');
   });
 });

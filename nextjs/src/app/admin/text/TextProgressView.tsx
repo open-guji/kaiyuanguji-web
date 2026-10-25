@@ -1,182 +1,153 @@
 'use client';
 
-// 后台「文本整理」栏目（A41，2026-10-25）。读 GET /api/text-progress（admin 成员 cookie），
+// 后台「文本整理 · 总览」（A41，2026-10-25）。读 GET /api/text-progress（admin 成员 cookie），
 // 那是定时任务从 Neon 中心库 progress schema 导出的快照；本页只读，不改任何数据。
-// 第一部分：一册一行的基本进度；第二部分：各领域自己填的数（形近字、异体字组、人审……），没填的留好位置。
-import { useEffect, useMemo, useState } from 'react';
+// 总览看各套书、各册的基本进度；各领域自己填的数（形近字、异体字组、人审……）在左侧小标题下各占一页。
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import {
-  type Metric, type Section, type Snapshot, type Stage, type VolumeRow,
-  STAGE_HINT, STAGE_LABEL, STAGE_ORDER, ago, fmtInt, fmtLA, fmtMetric, groupByBook, isStale, scopeOf, stageOf, writersOf,
+  type Snapshot, type Stage, type VolumeRow,
+  STAGE_HINT, STAGE_LABEL, STAGE_ORDER, ago, countStages, fmtInt, fmtLA, groupByBook, sectionHref, sectionsOf, stageOf, writersOf,
 } from './model';
-
-const DOC_URL = 'https://github.com/open-guji/kaiyuanguji-web/blob/main/docs/text-progress.md';
-
-const STAGE_STYLE: Record<Stage, string> = {
-  todo: 'bg-gray-100 text-gray-600 border-gray-200',
-  pipeline: 'bg-gray-100 text-gray-700 border-gray-300',
-  rough: 'bg-amber-50 text-amber-800 border-amber-300',
-  fine: 'bg-sky-50 text-sky-800 border-sky-300',
-  released: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-};
-
-type Load = { state: 'loading' } | { state: 'error'; error: string } | { state: 'ok'; snapshot: Snapshot | null; storedAt?: string };
+import { DOC_URL, Freshness, LoadState, PageHeader, Panel, STAGE_BADGE, StageBar, StageLegend, Stat } from './ui';
+import { useTextProgress } from './useTextProgress';
 
 export default function TextProgressView() {
-  const [load, setLoad] = useState<Load>({ state: 'loading' });
-  const [stageFilter, setStageFilter] = useState<Stage | 'all'>('all');
-  const [onlyPending, setOnlyPending] = useState(false);
-
-  useEffect(() => {
-    fetch('/api/text-progress', { credentials: 'include', cache: 'no-store' })
-      .then(async (r) => {
-        let j: { success?: boolean; error?: string; snapshot?: Snapshot | null; stored_at?: string };
-        try { j = await r.json(); } catch { throw new Error(`HTTP ${r.status}`); }
-        if (!j.success) throw new Error(j.error || `HTTP ${r.status}`);
-        setLoad({ state: 'ok', snapshot: j.snapshot ?? null, storedAt: j.stored_at });
-      })
-      .catch((e: unknown) => setLoad({ state: 'error', error: e instanceof Error ? e.message : String(e) }));
-  }, []);
-
+  const load = useTextProgress();
+  const snap = load.state === 'ok' ? load.snapshot : null;
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">文本整理</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          各书、各册的整理进度。数据由各领域的 job 写进中心库（Neon）<code>progress</code> 表，每小时同步到这里，会有延迟。
-          口径与写法见 <a className="underline" href={DOC_URL} target="_blank" rel="noreferrer">docs/text-progress.md</a>。
-        </p>
-      </div>
-      {load.state === 'loading' && <div className="p-8 text-center text-gray-500">读取中…</div>}
-      {load.state === 'error' && (
-        <div className="bg-white rounded border p-4 text-sm text-red-600">取数失败：{load.error}</div>
-      )}
-      {load.state === 'ok' && !load.snapshot && (
-        <div className="bg-white rounded border p-8 text-center text-sm text-gray-500">
-          还没有数据：定时同步（Actions 里的 <code>text-progress</code>）还没跑过，或中心库的 <code>progress</code> 表还没建。
-        </div>
-      )}
-      {load.state === 'ok' && load.snapshot && (
-        <Body
-          snap={load.snapshot}
-          stageFilter={stageFilter}
-          setStageFilter={setStageFilter}
-          onlyPending={onlyPending}
-          setOnlyPending={setOnlyPending}
-        />
-      )}
+    <div className="space-y-5">
+      <PageHeader
+        title="总览"
+        sub={<>各书、各册的整理进度。各领域的 job 写进中心库 <code>progress</code> 表，每小时同步到这里。<a className="underline decoration-gray-300 hover:decoration-gray-500" href={DOC_URL} target="_blank" rel="noreferrer">口径与写法</a></>}
+        right={snap ? <Freshness snap={snap} /> : undefined}
+      />
+      {snap ? <Overview snap={snap} /> : <LoadState load={load} />}
     </div>
   );
 }
 
-function Body({ snap, stageFilter, setStageFilter, onlyPending, setOnlyPending }: {
-  snap: Snapshot;
-  stageFilter: Stage | 'all';
-  setStageFilter: (s: Stage | 'all') => void;
-  onlyPending: boolean;
-  setOnlyPending: (b: boolean) => void;
-}) {
-  const groups = useMemo(() => groupByBook(snap.volumes || []), [snap.volumes]);
-  const titles = useMemo(() => new Map(groups.map((g) => [g.book_id, g.title])), [groups]);
-  const totals = useMemo(() => {
-    const stages: Partial<Record<Stage, number>> = {};
-    let pending = 0;
-    for (const g of groups) {
-      pending += g.pending;
-      for (const [s, n] of Object.entries(g.stages)) stages[s as Stage] = (stages[s as Stage] ?? 0) + (n ?? 0);
-    }
-    return { books: groups.length, vols: snap.volumes.length, pending, stages };
-  }, [groups, snap.volumes.length]);
+function Overview({ snap }: { snap: Snapshot }) {
+  const [stageFilter, setStageFilter] = useState<Stage | 'all'>('all');
+  const [onlyPending, setOnlyPending] = useState(false);
+  const volumes = useMemo(() => snap.volumes || [], [snap.volumes]);
+  const groups = useMemo(() => groupByBook(volumes), [volumes]);
+  const stages = useMemo(() => countStages(volumes), [volumes]);
+  const pending = groups.reduce((a, g) => a + g.pending, 0);
+  const pendingVols = volumes.filter((v) => (v.pending_review ?? 0) > 0).length;
+  const released = stages.released ?? 0;
   const problems = snap.collector?.problems || [];
-  const stale = isStale(snap.generated_at);
 
   const keep = (v: VolumeRow) =>
     (stageFilter === 'all' || stageOf(v).stage === stageFilter) && (!onlyPending || (v.pending_review ?? 0) > 0);
 
   return (
     <>
-      <div className={`text-xs ${stale ? 'text-amber-700' : 'text-gray-500'}`}>
-        快照生成于 {fmtLA(snap.generated_at)}（洛杉矶时间，{ago(snap.generated_at)}）
-        {snap.collector?.at && <>；基础采集 {fmtLA(snap.collector.at)}</>}
-        {stale && <>。已超过 6 小时没更新，看一下 Actions 里的 text-progress 有没有在跑。</>}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Stat label="在整理的套书" value={fmtInt(groups.length)} hint={`共 ${fmtInt(volumes.length)} 册`} />
+        <Stat label="精校中" value={fmtInt(stages.fine ?? 0)} hint={`粗校 ${fmtInt(stages.rough ?? 0)} 册`} />
+        <Stat label="已出 1.0" value={<>{fmtInt(released)}<span className="text-base text-gray-400 font-normal"> / {fmtInt(volumes.length)}</span></>}>
+          <div className="mt-2 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full bg-emerald-500" style={{ width: `${volumes.length ? (released / volumes.length) * 100 : 0}%` }} />
+          </div>
+        </Stat>
+        <Stat label="待人审格" value={fmtInt(pending)} hint={`分布在 ${fmtInt(pendingVols)} 册`} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card label="套书" value={`${totals.books} 部`} />
-        <Card label="册" value={`${totals.vols} 册`} />
-        <Card label="待人审格（合计）" value={fmtInt(totals.pending)} />
-        <Card
-          label="各阶段册数"
-          value={STAGE_ORDER.filter((s) => totals.stages[s]).map((s) => `${STAGE_LABEL[s]} ${totals.stages[s]}`).join(' · ') || '—'}
-          small
-        />
-      </div>
+      <Panel className="p-4 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold">各阶段册数</h2>
+          <span className="text-xs text-gray-400">没写阶段的按文本版本推断：0.x 精校，1.0 起算已出</span>
+        </div>
+        <StageBar stages={stages} total={volumes.length} />
+        <StageLegend stages={stages} />
+      </Panel>
 
       {problems.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900">
+        <div className="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-3 text-xs text-amber-900">
           <div className="font-semibold mb-1">基础采集提示</div>
           <ul className="list-disc pl-5 space-y-0.5">{problems.map((p, i) => <li key={i}>{p}</li>)}</ul>
         </div>
       )}
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold">一、各册进度</h2>
-          <label className="text-sm text-gray-600 flex items-center gap-1">
-            阶段
-            <select
-              aria-label="按阶段筛选"
-              className="border rounded px-1 py-0.5 text-sm"
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value as Stage | 'all')}
-            >
-              <option value="all">全部</option>
-              {STAGE_ORDER.map((s) => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
-            </select>
-          </label>
-          <label className="text-sm text-gray-600 flex items-center gap-1">
-            <input type="checkbox" checked={onlyPending} onChange={(e) => setOnlyPending(e.target.checked)} />
-            只看有待人审的
-          </label>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold">各册进度</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <StageFilter value={stageFilter} onChange={setStageFilter} stages={stages} />
+            <label className="text-xs text-gray-600 flex items-center gap-1.5">
+              <input type="checkbox" className="rounded" checked={onlyPending} onChange={(e) => setOnlyPending(e.target.checked)} />
+              只看有待人审的
+            </label>
+          </div>
         </div>
         {groups.map((g) => {
           const rows = g.volumes.filter(keep);
           if (!rows.length) return null;
           return (
-            <div key={g.book_id} className="bg-white rounded border">
-              <div className="px-3 py-2 border-b flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-semibold">{g.title}</span>
-                <span className="text-xs text-gray-400 font-mono">{g.book_id}</span>
-                <span className="text-xs text-gray-500">
-                  {g.volumes.length} 册 · 待人审 {fmtInt(g.pending)} 格 ·{' '}
-                  {STAGE_ORDER.filter((s) => g.stages[s]).map((s) => `${STAGE_LABEL[s]} ${g.stages[s]}`).join(' · ')}
-                </span>
+            <Panel key={g.book_id} className="overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 space-y-2">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-semibold">{g.title}</span>
+                  <span className="text-xs text-gray-400 font-mono">{g.book_id}</span>
+                  <span className="text-xs text-gray-500 sm:ml-auto tabular-nums">
+                    {g.volumes.length} 册 · 待人审 {fmtInt(g.pending)} 格
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1"><StageBar stages={g.stages} total={g.volumes.length} thin /></div>
+                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                    {STAGE_ORDER.filter((s) => g.stages[s]).map((s) => `${STAGE_LABEL[s]} ${g.stages[s]}`).join(' · ')}
+                  </span>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <VolumeTable rows={rows} />
               </div>
-            </div>
+            </Panel>
           );
         })}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">二、整理过程数据</h2>
-        <p className="text-sm text-gray-500">
-          各领域自己的数，写进 <code>progress.metric</code> 就出现在对应栏目里；还没写的栏目先留着位置。
-        </p>
-        {(snap.sections || []).map((s) => (
-          <SectionCard key={s.section} section={s} metrics={(snap.metrics || []).filter((m) => m.section === s.section)} titles={titles} />
-        ))}
+        <h2 className="text-base font-semibold">整理过程数据</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {sectionsOf(snap).map((s) => {
+            const n = (snap.metrics || []).filter((m) => m.section === s.section).length;
+            return (
+              <Link key={s.section} href={sectionHref(s.section)} className="group">
+                <Panel className="p-4 h-full transition group-hover:ring-gray-300">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{s.title}</span>
+                    <span className="text-gray-300 group-hover:text-gray-500">→</span>
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">{s.owner ? `${s.owner} 填 · ` : ''}{n ? `${n} 项指标` : '还没有数'}</div>
+                </Panel>
+              </Link>
+            );
+          })}
+        </div>
       </section>
     </>
   );
 }
 
-function Card({ label, value, small }: { label: string; value: string; small?: boolean }) {
+function StageFilter({ value, onChange, stages }: { value: Stage | 'all'; onChange: (s: Stage | 'all') => void; stages: Partial<Record<Stage, number>> }) {
+  const opts: (Stage | 'all')[] = ['all', ...STAGE_ORDER.filter((s) => stages[s])];
   return (
-    <div className="bg-white rounded border p-3">
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className={small ? 'text-sm mt-1' : 'text-xl font-mono mt-1'}>{value}</div>
+    <div role="radiogroup" aria-label="按阶段筛选" className="inline-flex rounded-lg bg-gray-100 p-0.5 text-xs">
+      {opts.map((o) => (
+        <button
+          key={o}
+          type="button"
+          role="radio"
+          aria-checked={value === o}
+          onClick={() => onChange(o)}
+          className={`px-2.5 py-1 rounded-md ${value === o ? 'bg-white shadow-sm text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+        >
+          {o === 'all' ? '全部' : STAGE_LABEL[o]}
+        </button>
+      ))}
     </div>
   );
 }
@@ -185,7 +156,7 @@ function StageBadge({ v }: { v: VolumeRow }) {
   const { stage, derived } = stageOf(v);
   return (
     <span
-      className={`inline-block whitespace-nowrap rounded border px-1.5 py-0.5 text-xs ${STAGE_STYLE[stage]} ${derived ? 'border-dashed' : ''}`}
+      className={`inline-block whitespace-nowrap rounded-md border px-1.5 py-0.5 text-xs ${STAGE_BADGE[stage]} ${derived ? 'border-dashed' : ''}`}
       title={`${STAGE_HINT[stage]}${derived ? '（按文本版本推断；领域写了 stage 就以它为准）' : ''}`}
     >
       {STAGE_LABEL[stage]}
@@ -195,65 +166,66 @@ function StageBadge({ v }: { v: VolumeRow }) {
 
 const dash = <span className="text-gray-300">—</span>;
 const verOr = (v: string | null | undefined) => (v ? <span className="font-mono">{v}</span> : dash);
+const TH = 'text-left font-medium px-3 py-2';
 
 function VolumeTable({ rows }: { rows: VolumeRow[] }) {
   return (
     <table className="min-w-full text-sm">
-      <thead className="bg-gray-50 text-xs text-gray-500 whitespace-nowrap">
+      <thead className="bg-gray-50/80 text-xs text-gray-500 whitespace-nowrap">
         <tr>
-          <th className="text-left font-normal px-3 py-1.5">册</th>
-          <th className="text-left font-normal px-3 py-1.5">卷次</th>
-          <th className="text-left font-normal px-3 py-1.5">阶段</th>
-          <th className="text-left font-normal px-3 py-1.5">文本</th>
-          <th className="text-left font-normal px-3 py-1.5">标点</th>
-          <th className="text-left font-normal px-3 py-1.5">专名</th>
-          <th className="text-right font-normal px-3 py-1.5">待人审</th>
-          <th className="text-left font-normal px-3 py-1.5">待审单</th>
-          <th className="text-left font-normal px-3 py-1.5">cv</th>
-          <th className="text-left font-normal px-3 py-1.5">备注</th>
-          <th className="text-left font-normal px-3 py-1.5">更新</th>
+          <th className={`${TH} pl-4`}>册</th>
+          <th className={TH}>卷次</th>
+          <th className={TH}>阶段</th>
+          <th className={TH}>文本</th>
+          <th className={TH}>标点</th>
+          <th className={TH}>专名</th>
+          <th className={`${TH} text-right`}>待人审</th>
+          <th className={TH}>待审单</th>
+          <th className={TH}>cv</th>
+          <th className={TH}>备注</th>
+          <th className={`${TH} pr-4`}>更新</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="divide-y divide-gray-100">
         {rows.map((v) => {
           const writers = writersOf(v);
           return (
-            <tr key={`${v.book_id}/${v.vol}`} className="border-t align-top">
-              <td className="px-3 py-1.5 whitespace-nowrap">
+            <tr key={`${v.book_id}/${v.vol}`} className="align-top hover:bg-gray-50/60">
+              <td className="px-3 pl-4 py-2 whitespace-nowrap">
                 <span className="font-mono">{v.vol}</span>
                 {v.cv_book && v.cv_book !== v.vol && <span className="ml-1 text-xs text-gray-400 font-mono">{v.cv_book}</span>}
               </td>
-              <td className="px-3 py-1.5 max-w-[11rem] truncate" title={v.vol_title || ''}>{v.vol_title || dash}</td>
-              <td className="px-3 py-1.5 whitespace-nowrap">
+              <td className="px-3 py-2 max-w-[11rem] truncate" title={v.vol_title || ''}>{v.vol_title || dash}</td>
+              <td className="px-3 py-2 whitespace-nowrap">
                 <StageBadge v={v} />
                 {v.frozen_version && (
                   <span className="ml-1 text-xs text-gray-500" title="册 yaml 记了冻结：默认不重跑">冻结 {v.frozen_version}</span>
                 )}
               </td>
-              <td className="px-3 py-1.5 whitespace-nowrap">
+              <td className="px-3 py-2 whitespace-nowrap">
                 {verOr(v.text_version)}
                 {v.proofing && <span className="ml-1 text-xs text-sky-700" title="章条目 proofing: true，精校页开着">校</span>}
               </td>
-              <td className="px-3 py-1.5 whitespace-nowrap">
+              <td className="px-3 py-2 whitespace-nowrap">
                 {v.punct_version ? verOr(v.punct_version) : v.punct_status ? <span className="text-xs">{v.punct_status}</span> : dash}
               </td>
-              <td className="px-3 py-1.5 whitespace-nowrap">{verOr(v.entity_version)}</td>
-              <td className="px-3 py-1.5 text-right whitespace-nowrap font-mono">
+              <td className="px-3 py-2 whitespace-nowrap">{verOr(v.entity_version)}</td>
+              <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
                 {typeof v.pending_review === 'number'
                   ? <span className={v.pending_review > 0 ? 'font-semibold' : 'text-gray-400'}>{fmtInt(v.pending_review)}</span>
                   : dash}
                 {typeof v.cells_total === 'number' && <span className="text-xs text-gray-400"> / {fmtInt(v.cells_total)}</span>}
               </td>
-              <td className="px-3 py-1.5 whitespace-nowrap text-xs">
+              <td className="px-3 py-2 whitespace-nowrap text-xs">
                 {v.pending_rev
                   ? <span title={`出单 ${fmtLA(v.pending_at, true)}（洛杉矶）`}><span className="font-mono">{v.pending_rev}</span>{v.pending_at && <span className="text-gray-400"> · {fmtLA(v.pending_at).slice(0, 5)}</span>}</span>
                   : dash}
               </td>
-              <td className="px-3 py-1.5 whitespace-nowrap text-xs" title={[v.corpus && `语料 ${v.corpus}`, v.glyph_pin && `字形库 g${v.glyph_pin}`].filter(Boolean).join('，')}>
+              <td className="px-3 py-2 whitespace-nowrap text-xs" title={[v.corpus && `语料 ${v.corpus}`, v.glyph_pin && `字形库 g${v.glyph_pin}`].filter(Boolean).join('，')}>
                 {verOr(v.cv_version)}
               </td>
-              <td className="px-3 py-1.5 text-xs max-w-[16rem]">{v.note || (typeof v.human_judged === 'number' ? `已人裁 ${fmtInt(v.human_judged)} 格` : dash)}</td>
-              <td className="px-3 py-1.5 whitespace-nowrap text-xs text-gray-400" title={writers.length ? `写入方：${writers.join('、')}` : ''}>
+              <td className="px-3 py-2 text-xs max-w-[16rem]">{v.note || (typeof v.human_judged === 'number' ? `已人裁 ${fmtInt(v.human_judged)} 格` : dash)}</td>
+              <td className="px-3 pr-4 py-2 whitespace-nowrap text-xs text-gray-400" title={writers.length ? `写入方：${writers.join('、')}` : ''}>
                 {ago(v.updated_at)}
               </td>
             </tr>
@@ -261,47 +233,5 @@ function VolumeTable({ rows }: { rows: VolumeRow[] }) {
         })}
       </tbody>
     </table>
-  );
-}
-
-function SectionCard({ section, metrics, titles }: { section: Section; metrics: Metric[]; titles: Map<string, string> }) {
-  const latest = metrics.reduce<string | null>((a, m) => (m.at && (!a || m.at > a) ? m.at : a), null);
-  return (
-    <div className="bg-white rounded border">
-      <div className="px-3 py-2 border-b flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="font-semibold">{section.title}</span>
-        {section.owner && <span className="text-xs rounded bg-gray-100 px-1.5 py-0.5 text-gray-600">{section.owner} 填</span>}
-        {section.description && <span className="text-xs text-gray-500">{section.description}</span>}
-        {latest && <span className="text-xs text-gray-400 ml-auto">更新 {fmtLA(latest)}</span>}
-      </div>
-      {metrics.length === 0 ? (
-        <div className="px-3 py-4 text-sm text-gray-400">
-          还没有数。{section.owner || '负责领域'}的 job 写进 <code>progress.metric</code>（section = <code>{section.section}</code>）后，这里自动出现。
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500">
-              <tr>
-                <th className="text-left font-normal px-3 py-1.5">范围</th>
-                <th className="text-left font-normal px-3 py-1.5">指标</th>
-                <th className="text-right font-normal px-3 py-1.5">值</th>
-                <th className="text-left font-normal px-3 py-1.5">写入</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.map((m) => (
-                <tr key={`${m.book_id}/${m.vol}/${m.key}`} className="border-t">
-                  <td className="px-3 py-1.5 whitespace-nowrap text-xs text-gray-600">{scopeOf(m, titles)}</td>
-                  <td className="px-3 py-1.5">{m.label}</td>
-                  <td className="px-3 py-1.5 text-right font-mono whitespace-nowrap">{fmtMetric(m)}</td>
-                  <td className="px-3 py-1.5 whitespace-nowrap text-xs text-gray-400">{m.writer} · {fmtLA(m.at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
   );
 }

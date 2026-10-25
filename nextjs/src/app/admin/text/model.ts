@@ -195,3 +195,31 @@ export function writersOf(v: VolumeRow): string[] {
   for (const m of Object.values(v.field_meta || {})) if (m && m.by) set.add(m.by);
   return [...set].sort((a, b) => (a === 'web-collector' ? 1 : b === 'web-collector' ? -1 : a < b ? -1 : 1));
 }
+
+/** 中心库还没建表、快照为空时导航用的栏目（与 ops/text-progress/schema.sql 预置的三栏一致） */
+export const DEFAULT_SECTIONS: Section[] = [
+  { section: 'xingjin', title: '形近字', owner: 'A24', sort: 10 },
+  { section: 'yiti', title: '异体字组', owner: 'A24', sort: 20 },
+  { section: 'review', title: '人审', owner: 'A32', sort: 30 },
+];
+
+/** 快照里的栏目，按 sort、slug 排；快照没有就用预置三栏 */
+export function sectionsOf(snap: Snapshot | null | undefined): Section[] {
+  const list = snap?.sections?.length ? [...snap.sections] : [...DEFAULT_SECTIONS];
+  return list.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || (a.section < b.section ? -1 : 1));
+}
+
+/** 各阶段册数 */
+export function countStages(volumes: VolumeRow[]): Partial<Record<Stage, number>> {
+  const out: Partial<Record<Stage, number>> = {};
+  for (const v of volumes) {
+    const s = stageOf(v).stage;
+    out[s] = (out[s] ?? 0) + 1;
+  }
+  return out;
+}
+
+/** 栏目分页的地址（静态导出不能有任意动态段，用查询参数） */
+export function sectionHref(slug: string): string {
+  return `/admin/text/section?s=${encodeURIComponent(slug)}`;
+}
