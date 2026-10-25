@@ -5,6 +5,28 @@
 > 代码：`ops/text-progress/`（表结构、同步脚本）、`edge-functions/api/text-progress.js`、`nextjs/src/app/admin/text/`、
 > `.github/workflows/text-progress.yml`。
 
+## 〇、分工：谁负责什么（2026-10-25 用户定，各领域据此开始填数）
+
+| 谁 | 负责什么 | 写到哪 |
+|---|---|---|
+| 网站（A41） | 页面、接口、同步任务、基础采集；同步挂了要修 | 基础采集软写 `progress.volume` 的版本、待审等字段（见 2.1「基础采集」各行） |
+| A31 粗校 | 每册全册格数、已人裁格数、备注；粗校人审率 | `progress.volume` 的 `cells_total`、`human_judged`、`note`；人审率写 `progress.metric`（section `review`） |
+| A24 形近字 | 「形近字」「异体字组」两栏：准确率、待审里的形近格数、字组状态等，口径自定 | `progress.metric`（section `xingjin`、`yiti`） |
+| A32 精校 | 「人审」栏：人审率、已裁格数、网站意见处理等；精校阶段的 `stage`、`note` | `progress.metric`（section `review`）、`progress.volume` |
+| A33 点校 | 标点、专名进度一句话 | `progress.volume` 的 `punct_status` |
+| 新领域 | 要开新栏目就在 `progress.section` 插一行，侧栏自动多一个小标题 | `progress.section`、`progress.metric` |
+
+- 口径归各领域自己：数算得对不对、怎么定义，由写的一方负责；网站只负责原样显示。
+- 怎么写：用自己的中心库连接调 `progress.put_volume`／`progress.put_metric`（例子见 2.1、2.2、2.3），每个字段会记下写入方和时间。
+- 什么时候看到：同步每 6 小时一次（UTC 每 6 小时的 37 分，洛杉矶夏令时约 5:37、11:37、17:37、23:37；GitHub 定时常晚），急着看可以在 Actions 手动跑 text-progress。
+
+### 后台页面长什么样
+
+- 「文本整理」点进去是**总览**：上面四张统计卡（套书数、精校中、已出 1.0、待人审格），一条各阶段分布色条，
+  下面按套书分组的各册进度表（一册一行：册、卷次、阶段、文本／标点／专名版本、待人审、待审单、cv、备注、更新）。
+- 侧栏在「文本整理」下面按 `progress.section` 列小标题，每个栏目一页（手机上是页面顶部的页签），见 2.2。
+- 后台随窗口铺满，不限宽；风格是简洁看板，不花哨（用户 10-25 定）。
+
 ## 一、数据怎么走
 
 ```
@@ -106,15 +128,17 @@ with connect() as conn:
 - `GET`：admin 成员 cookie 或 `Authorization: Bearer <FEEDBACK_ADMIN_TOKEN>`；回 `{success, snapshot | null, stored_at}`。
 - `POST`：只认 `FEEDBACK_ADMIN_TOKEN`；请求体是整份快照（`schema: "text-progress/1"`，≤5 MB），覆盖 KV 的 `tp:snapshot`。
 
-## 五、上线要用户点头的几步
+## 五、上线记录（2026-10-25，用户批准）
 
-1. 在 Neon 正式库执行 `schema.sql`（只新建 `progress` schema，不动已有表）。
-2. 在 Neon 控制台建账号 `progress_sync`，执行 `grants.sql`。
-3. 把 `progress_sync` 的连接串加进本仓 secret `PROGRESS_DATABASE_URL`。没配之前定时任务整次跳过、不报红。
-4. 合并本 PR；之后手动跑一次 Actions → text-progress（先 `dry_run`，再正式）。
+1. Neon 正式库（guji-data 项目 main 分支）执行了 `schema.sql`（只新建 `progress` schema，不动已有表）。
+2. 用 SQL 建了账号 `progress_sync`（不进 neon_superuser，只有 `grants.sql` 给的权限），口令由用户自设。
+3. 用户把 `progress_sync` 的连接串加进本仓 secret `PROGRESS_DATABASE_URL`。没配时定时任务整次跳过、不报红。
+4. PR #593、#594 合并；手动跑 text-progress 先 `dry_run` 再正式，首跑 26 册。
+5. 为省算力：同步从每小时改每 6 小时（每次都会叫醒 Neon，按醒着的时间计费）；Neon 自动伸缩上限从 8 CU 降到 2 CU。
 
 ## 六、后台怎么登录
 
 后台 `https://www.openguji.com/admin`，没有密码，靠邀请链接＋cookie：用绑定自己邮箱的 admin 邀请链接（`/join?c=…`，7 天有效、一次性）
 点「确认加入」，cookie 有效 180 天、访问时自动续期。链接由已登录的管理员在 `/admin/invites` 生成；没人能登录时用 `AUTH_ADMIN_TOKEN`
 调 `POST /api/auth/invite`（body `{"email": "…", "role": "admin"}`）。旧域名 kaiyuanguji.com 上的登录不带到 openguji.com。
+EdgeOne Pages 里改了环境变量（如 `AUTH_ADMIN_TOKEN`）要**重新部署**才生效，否则线上还是旧值、调接口报「未授权」。令牌和邀请链接不要贴进聊天。
