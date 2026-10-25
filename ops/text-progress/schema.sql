@@ -157,7 +157,8 @@ $$;
 -- 先占好的栏目（用户 10-25：形近字、人审；异体字组当天并进形近字——同义、不同义的字组混合处理；口径由各领域自己定，改 description 即可）
 INSERT INTO progress.section (section, title, owner, description, sort) VALUES
   ('xingjin', '形近字', 'A24', '形近与异体字组（同义、不同义）：各组出现、送审、送审率、核对准确率', 10),
-  ('review', '人审', 'A32', '人审：人审率、已裁格数、网站意见处理等', 30)
+  ('review', '人审', 'A32', '人审：人审率、已裁格数、网站意见处理等', 30),
+  ('jobs', '重跑任务', 'A30', '重跑、A/B、评测任务：配置、状态、已跑多久、预计完成（任务库 guji_jobs 的快照）', 40)
 ON CONFLICT (section) DO NOTHING;
 
 INSERT INTO progress.meta (key, value) VALUES ('schema_version', '1') ON CONFLICT (key) DO NOTHING;

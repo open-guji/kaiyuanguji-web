@@ -14,11 +14,12 @@
 | A24 形近字 | 「形近字」栏（10-25 起异体字组并进来）：各字组总表、准确率、待审里的形近格数等，口径自定 | `progress.metric`（section `xingjin`） |
 | A32 精校 | 「人审」栏：人审率、已裁格数、网站意见处理等；精校阶段的 `stage`、`note` | `progress.metric`（section `review`）、`progress.volume` |
 | A33 点校 | 标点、专名进度一句话 | `progress.volume` 的 `punct_status` |
+| A30 重跑任务 | 「重跑任务」栏：任务库（`guji_jobs`）里在跑、排队、最近结束的任务一张表（配置、状态、阶段、开始时间、已跑、预计完成、结果包）；cv `open_guji_cv/jobs/board.py` 在执行方领单、收尾、心跳时写，`guji job board` 手动刷新 | `progress.metric`（section `jobs`，一条 `board`，`detail.table`） |
 | 新领域 | 要开新栏目就在 `progress.section` 插一行，侧栏自动多一个小标题 | `progress.section`、`progress.metric` |
 
 - 口径归各领域自己：数算得对不对、怎么定义，由写的一方负责；网站只负责原样显示。
 - 怎么写：用自己的中心库连接调 `progress.put_volume`／`progress.put_metric`（例子见 2.1、2.2、2.3），每个字段会记下写入方和时间。
-- 什么时候看到：同步每 6 小时一次（UTC 每 6 小时的 37 分，洛杉矶夏令时约 5:37、11:37、17:37、23:37；GitHub 定时常晚），急着看可以在 Actions 手动跑 text-progress。
+- 什么时候看到：「重跑任务」栏每 30 分钟搬一次（定时任务只跑 export 段）；其余栏目随同步每 6 小时一次（UTC 每 6 小时的 37 分，洛杉矶夏令时约 5:37、11:37、17:37、23:37；GitHub 定时常晚），急着看可以在 Actions 手动跑 text-progress。
 
 ### 后台页面长什么样
 

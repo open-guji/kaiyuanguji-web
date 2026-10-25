@@ -11,6 +11,7 @@ name: text-progress
 on:
   schedule:
     - cron: '37 */6 * * *' # 每 6 小时；GitHub 定时常晚几小时，后台页超过 12 小时没更新会提示
+    - cron: '*/30 * * * *' # 每 30 分钟只搬快照（export），让「重跑任务」栏的在跑状态不落后太多；任务库的执行方一直连着 Neon，多这几次不额外叫醒
   workflow_dispatch:
     inputs:
       target:
@@ -47,7 +48,7 @@ jobs:
     env:
       PROGRESS_DATABASE_URL: ${{ secrets.PROGRESS_DATABASE_URL }}
       DRY_RUN: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)) && '1' || '0' }}
-      PARTS: ${{ github.event_name == 'workflow_dispatch' && inputs.parts || 'all' }}
+      PARTS: ${{ github.event_name == 'workflow_dispatch' && inputs.parts || (github.event.schedule == '*/30 * * * *' && 'export' || 'all') }}
       TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'production' }}
     steps:
       - uses: actions/checkout@v4
