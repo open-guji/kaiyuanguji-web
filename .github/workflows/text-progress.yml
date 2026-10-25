@@ -1,0 +1,87 @@
+name: text-progress
+
+# 后台「文本整理」栏目的数据同步（A41，设计见 docs/text-progress.md）。
+#   collect：基础采集——中心库册 yaml、待审单＋book-text 三线版本 → 软写 progress.volume（别的领域写过的字段不碰）
+#   export ：progress.* → 快照 → POST 本站 /api/text-progress（存 FEEDBACK_KV），后台 /admin/text 读它
+# 真源是 Neon 中心库的 progress schema（各领域 job 写）；网站在国内，不直连 Neon，所以由这里每小时搬一次。
+# 连库用专用账号 progress_sync（只管 progress，只读 books／files／workspaces；ops/text-progress/grants.sql），
+# 连接串放 secrets.PROGRESS_DATABASE_URL。还没配（等用户批准建表与加密钥）时整次跳过，不报红。
+# 日志只出计数（公开仓）。
+
+on:
+  schedule:
+    - cron: '37 * * * *' # 每小时；GitHub 定时常晚几小时，后台页超过 6 小时没更新会提示
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '传到哪个站：production = 正式站；staging = 测试站'
+        type: choice
+        options: [production, staging]
+        default: staging
+      parts:
+        description: '跑哪几段'
+        type: choice
+        options: [all, collect, export]
+        default: all
+      dry_run:
+        description: '只读：collect 不写库，export 只出快照不上传（公开仓，快照不留 artifact）'
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - '.github/workflows/text-progress.yml'
+      - 'ops/text-progress/**'
+      - 'ops/tests/test_text_progress.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: text-progress
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PROGRESS_DATABASE_URL: ${{ secrets.PROGRESS_DATABASE_URL }}
+      DRY_RUN: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)) && '1' || '0' }}
+      PARTS: ${{ github.event_name == 'workflow_dispatch' && inputs.parts || 'all' }}
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python3 -m unittest ops/tests/test_text_progress.py -v
+      - name: Gate
+        id: gate
+        run: |
+          if [ -z "$PROGRESS_DATABASE_URL" ]; then
+            echo "::notice::仓库还没配 secrets.PROGRESS_DATABASE_URL（等用户批准建表与加密钥），这次跳过同步"
+            echo "ok=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install psycopg
+        if: steps.gate.outputs.ok == '1'
+        run: python3 -m pip install --user -q 'psycopg[binary]>=3.1'
+      - name: Collect (central DB + book-text → progress.volume)
+        if: steps.gate.outputs.ok == '1' && env.PARTS != 'export'
+        run: python3 ops/text-progress/sync.py collect $([ "$DRY_RUN" = 1 ] && echo --dry-run)
+      - name: Export snapshot → site KV
+        if: ${{ !cancelled() && steps.gate.outputs.ok == '1' && env.PARTS != 'collect' }}
+        env:
+          FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
+        run: |
+          key=$([ "$TARGET" = staging ] && echo staging || echo site)
+          SITE=$(python3 -c "import json,sys; print(json.load(open('config/hosts.json'))[sys.argv[1]])" "$key")
+          if [ "$DRY_RUN" = 1 ]; then
+            python3 ops/text-progress/sync.py export --out "$RUNNER_TEMP/text-progress.json"
+          else
+            python3 ops/text-progress/sync.py export --out "$RUNNER_TEMP/text-progress.json" --put "$SITE"
+          fi
