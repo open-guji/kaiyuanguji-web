@@ -19,7 +19,7 @@ export default function TextProgressView() {
     <div className="space-y-5">
       <PageHeader
         title="总览"
-        sub={<>各书、各册的整理进度。各领域的 job 写进中心库 <code>progress</code> 表，每小时同步到这里。<a className="underline decoration-gray-300 hover:decoration-gray-500" href={DOC_URL} target="_blank" rel="noreferrer">口径与写法</a></>}
+        sub={<>各书、各册的整理进度。各领域的 job 写进中心库 <code>progress</code> 表，每 6 小时同步到这里。<a className="underline decoration-gray-300 hover:decoration-gray-500" href={DOC_URL} target="_blank" rel="noreferrer">口径与写法</a></>}
         right={snap ? <Freshness snap={snap} /> : undefined}
       />
       {snap ? <Overview snap={snap} /> : <LoadState load={load} />}

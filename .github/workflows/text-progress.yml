@@ -3,14 +3,14 @@ name: text-progress
 # 后台「文本整理」栏目的数据同步（A41，设计见 docs/text-progress.md）。
 #   collect：基础采集——中心库册 yaml、待审单＋book-text 三线版本 → 软写 progress.volume（别的领域写过的字段不碰）
 #   export ：progress.* → 快照 → POST 本站 /api/text-progress（存 FEEDBACK_KV），后台 /admin/text 读它
-# 真源是 Neon 中心库的 progress schema（各领域 job 写）；网站在国内，不直连 Neon，所以由这里每小时搬一次。
+# 真源是 Neon 中心库的 progress schema（各领域 job 写）；网站在国内，不直连 Neon，所以由这里每 6 小时搬一次（每次都会叫醒 Neon，按醒着的时间计费，所以不跑得太勤）。
 # 连库用专用账号 progress_sync（只管 progress，只读 books／files／workspaces；ops/text-progress/grants.sql），
 # 连接串放 secrets.PROGRESS_DATABASE_URL。还没配（等用户批准建表与加密钥）时整次跳过，不报红。
 # 日志只出计数（公开仓）。
 
 on:
   schedule:
-    - cron: '37 * * * *' # 每小时；GitHub 定时常晚几小时，后台页超过 6 小时没更新会提示
+    - cron: '37 */6 * * *' # 每 6 小时；GitHub 定时常晚几小时，后台页超过 12 小时没更新会提示
   workflow_dispatch:
     inputs:
       target:

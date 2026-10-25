@@ -11,14 +11,14 @@
 各领域 job（A30–A34、A2x）──SQL──▶ Neon 中心库 progress schema ◀──软写── 基础采集（sync.py collect，网站定时任务）
                                          │                                    ▲ 读：册 yaml（books）、待审单（files）、book-text 版本
                                          ▼
-                      定时任务 text-progress.yml（每小时）：sync.py export → POST /api/text-progress
+                      定时任务 text-progress.yml（每 6 小时）：sync.py export → POST /api/text-progress
                                          ▼
                       EdgeOne KV（FEEDBACK_KV 的 tp:snapshot）──▶ 后台 /admin/text（只给 admin）
 ```
 
 - **为什么不让页面直连 Neon**：网站在国内 EdgeOne 上，国内到 Neon 不稳，中心库设计（ai-team `通用/中心库设计.md` 第一节）
-  定了国内页面不直接读写 Neon。所以和 `proofing-sync` 一样，由 GitHub 定时任务搬运。延迟最多一两个小时（GitHub 定时偶尔晚几小时，
-  页面上超过 6 小时没更新会提示）。
+  定了国内页面不直接读写 Neon。所以和 `proofing-sync` 一样，由 GitHub 定时任务搬运。每 6 小时一次，延迟最多 6 小时出头（GitHub 定时偶尔晚几小时，
+  页面上超过 12 小时没更新会提示）。不跑得更勤，是因为每次都会叫醒 Neon，按醒着的时间计费（每次至少约 5 分钟）。
 - **为什么不现算**：各册的数分散在中心库、book-text、各领域自己的产物里，有的要跑统计；由各领域算好写表，网站只读，口径各自负责。
 - 快照只存在 KV、只给 admin 看，不发 COS（COS 是公开的）。
 

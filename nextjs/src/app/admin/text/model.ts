@@ -159,8 +159,8 @@ export function ago(iso: string | null | undefined, now: number = Date.now()): s
   return `${Math.round(h / 24)} 天前`;
 }
 
-/** 快照超过这么久没更新就在页面上提醒（定时任务每小时一次，GitHub 定时常晚几小时） */
-export const STALE_HOURS = 6;
+/** 快照超过这么久没更新就在页面上提醒（定时任务每 6 小时一次，GitHub 定时常晚几小时） */
+export const STALE_HOURS = 12;
 
 export function isStale(iso: string | null | undefined, now: number = Date.now()): boolean {
   if (!iso) return true;

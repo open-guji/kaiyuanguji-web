@@ -56,7 +56,8 @@ describe('格式', () => {
     expect(ago('2026-10-25T01:00:00Z', now)).toBe('4 小时前');
     expect(ago('2026-10-20T05:00:00Z', now)).toBe('5 天前');
     expect(isStale('2026-10-25T01:00:00Z', now)).toBe(false);
-    expect(isStale('2026-10-24T20:00:00Z', now)).toBe(true);
+    expect(isStale('2026-10-24T20:00:00Z', now)).toBe(false);
+    expect(isStale('2026-10-24T16:00:00Z', now)).toBe(true);
     expect(isStale(undefined, now)).toBe(true);
   });
   it('指标值', () => {
