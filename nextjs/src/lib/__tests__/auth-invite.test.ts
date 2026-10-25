@@ -132,10 +132,19 @@ describe('invite/invite-info/join 闭环', () => {
       body: JSON.stringify({ email: 'bob@example.com', role: 'editor' })
     }));
     expect(res.status).toBe(200);
-    // H1：改角色把 tokenVersion 加 1，bob 手里的旧 cookie 立即失效（不再带着新角色继续用）
+    // 多设备：bob 经绑定邀请验证过，升角色不 +1，旧 cookie 仍有效且拿到新角色
+    res = await me.onRequestGet(ctx('https://x/api/auth/me', { headers: { 'Cookie': `session=${bobSess}` } } as any));
+    expect(res.status).toBe(200);
+    expect((await body(res)).role).toBe('editor');
+    // H1：降角色把 tokenVersion 加 1，bob 手里的旧 cookie 立即失效
+    res = await revoke.onRequestPost(ctx('https://x/api/auth/revoke', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `session=${sess}` },
+      body: JSON.stringify({ email: 'bob@example.com', role: 'reader' })
+    }));
+    expect(res.status).toBe(200);
     res = await me.onRequestGet(ctx('https://x/api/auth/me', { headers: { 'Cookie': `session=${bobSess}` } } as any));
     expect(res.status).toBe(401);
-    expect(JSON.parse(kv.m.get('member:bob@example.com')).role).toBe('editor');
+    expect(JSON.parse(kv.m.get('member:bob@example.com')).role).toBe('reader');
     // 删 bob
     res = await revoke.onRequestPost(ctx('https://x/api/auth/revoke', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `session=${sess}` },
