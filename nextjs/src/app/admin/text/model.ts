@@ -189,11 +189,22 @@ export function scopeOf(m: Pick<Metric, 'book_id' | 'vol'>, titles: Map<string, 
   return m.vol ? `${t} · ${m.vol}` : `${t}（整套）`;
 }
 
+/** 网站基础采集的写入方名（ops/text-progress/sync.py COLLECTOR） */
+export const COLLECTOR = 'web-collector';
+
+/**
+ * 待人审格数是不是网站采集直接数的线上单格数（没扣出单后已人裁、现行文本里已没有的格，比实际略多）。
+ * 领域（A32）按自己的口径写了就不是。
+ */
+export function pendingIsRaw(v: VolumeRow): boolean {
+  return typeof v.pending_review === 'number' && v.field_meta?.pending_review?.by === COLLECTOR;
+}
+
 /** 一行里各字段的写入方（去重，采集排最后），给「更新」列的悬停说明用 */
 export function writersOf(v: VolumeRow): string[] {
   const set = new Set<string>();
   for (const m of Object.values(v.field_meta || {})) if (m && m.by) set.add(m.by);
-  return [...set].sort((a, b) => (a === 'web-collector' ? 1 : b === 'web-collector' ? -1 : a < b ? -1 : 1));
+  return [...set].sort((a, b) => (a === COLLECTOR ? 1 : b === COLLECTOR ? -1 : a < b ? -1 : 1));
 }
 
 /** 中心库还没建表、快照为空时导航用的栏目（与 ops/text-progress/schema.sql 预置的三栏一致） */

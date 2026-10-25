@@ -21,7 +21,7 @@ const SNAP = {
       text_version: '1.0.1', punct_version: '1.0.0', entity_version: '1.0.1', proofing: true, frozen_version: '1.0.0', pending_review: 0 },
     { book_id: '96mid1ogzk', vol: '006', book_title: '欽定四庫全書總目武英殿刻本', vol_title: '易類存目四', vol_order: 6, cv_book: 'vol06',
       text_version: '0.3.0', pending_review: 16, cells_total: 31234, pending_rev: '006-r5', pending_at: '2026-10-24T03:29:13Z',
-      note: '等推库', field_meta: { note: { by: 'A32', at: '2026-10-25T04:00:00Z' } } },
+      note: '等推库', field_meta: { note: { by: 'A32', at: '2026-10-25T04:00:00Z' }, pending_review: { by: 'web-collector' } } },
     { book_id: 'qtw-draft', vol: 'v006', book_title: '欽定全唐文', vol_title: '卷1~2', cv_book: 'v006' },
   ],
   sections: [
@@ -50,6 +50,9 @@ describe('TextProgressView', () => {
     const row = screen.getByText('006-r5').closest('tr')!;
     expect(within(row).getByText('0.3.0')).toBeInTheDocument();
     expect(within(row).getByText('16')).toBeInTheDocument();
+    // 采集直接数的待人审带 ≈ 和脚注
+    expect(within(row).getByText('≈')).toBeInTheDocument();
+    expect(screen.getByText(/带 ≈ 的待人审是线上待审单的原始格数/)).toBeInTheDocument();
     expect(within(row).getByText('精校')).toBeInTheDocument();
     expect(within(row).getByText('等推库')).toBeInTheDocument();
     const row1 = screen.getByText('卷首').closest('tr')!;
