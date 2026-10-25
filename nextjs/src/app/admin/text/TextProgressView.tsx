@@ -195,7 +195,7 @@ function VolumeTable({ rows }: { rows: VolumeRow[] }) {
                 <span className="font-mono">{v.vol}</span>
                 {v.cv_book && v.cv_book !== v.vol && <span className="ml-1 text-xs text-gray-400 font-mono">{v.cv_book}</span>}
               </td>
-              <td className="px-3 py-2 max-w-[11rem] truncate" title={v.vol_title || ''}>{v.vol_title || dash}</td>
+              <td className="px-3 py-2 max-w-[16rem] truncate" title={v.vol_title || ''}>{v.vol_title || dash}</td>
               <td className="px-3 py-2 whitespace-nowrap">
                 <StageBadge v={v} />
                 {v.frozen_version && (

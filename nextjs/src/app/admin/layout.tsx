@@ -11,12 +11,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <AdminGuard>
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b sticky top-0 z-10">
-          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
             <span className="font-semibold">管理后台</span>
             <span className="text-xs text-gray-400">仅 admin 可见 · 不在公网导航中出现</span>
           </div>
         </header>
-        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-4 md:gap-6">
+        <div className="mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row gap-4 md:gap-6">
           <AdminNav />
           <main className="flex-1 min-w-0">{children}</main>
         </div>
