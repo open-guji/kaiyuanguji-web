@@ -206,7 +206,9 @@ console.log(md);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
 // 这次传了的文件逐行写成完整地址，给工作流下一步清 CDN 用：数据域名的节点不认源站 max-age=300（10-21 实测旧单缓存了 14 小时）
 if (process.env.PURGE_URLS_OUT) {
-    const keys = DRY_RUN ? [] : [...(publish?.put || []), ...(fixesPublish?.put || [])];
+    // 只发某几章（重出单）时，COS 上已有的图也清一遍：图可能先于单子上传、刚上传时被探测过，CDN 缓存了 403（10-25 vol11–13 实测 50 分钟没好）
+    const sameSprites = ONLY ? (publish?.spritesSame || []) : [];
+    const keys = DRY_RUN ? [] : [...(publish?.put || []), ...sameSprites, ...(fixesPublish?.put || [])];
     writeFileSync(process.env.PURGE_URLS_OUT, keys.map((k) => `${DATA_ORIGIN}/${PROOF_PREFIX}${k}\n`).join(''));
 }
 for (const p of problems) console.log(`::warning::${p}`);
