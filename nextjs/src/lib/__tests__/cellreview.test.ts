@@ -78,12 +78,12 @@ describe('POST 校验', () => {
         }
     });
 
-    it('六档里除 char 外都不必带 char；也都能同时带一个字（用户 10-21：切分错了也先给字），带的字须恰好一个', async () => {
-        for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main']) {
+    it('八档里除 char 外都不必带 char；也都能同时带一个字（用户 10-21：切分错了也先给字），带的字须恰好一个', async () => {
+        for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main', 'damaged']) {
             const ok = await fn.onRequestPost(post({ ...base, a: `1:1:${choice.length}`, choice }));
             expect(ok.status).toBe(200);
         }
-        for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main']) {
+        for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main', 'damaged']) {
             const withChar = await fn.onRequestPost(post({ ...base, a: `2:1:${choice.length}`, choice, char: '于', pick_src: 'cand', pick_rank: 2 }));
             expect(withChar.status).toBe(200);
             const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(`:2:1:${choice.length}:`))!)!);
@@ -114,9 +114,9 @@ describe('POST 校验', () => {
         expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt: 5 }))).status).toBe(400);
     });
 
-    it('非法 choice（含 damaged）、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
+    it('非法 choice、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
         const cases: Array<Record<string, unknown>> = [
-            { choice: 'damaged' },
+            { choice: 'bogus' },
             { choice: 'char' },
             { choice: 'char', char: '于之' },
             { choice: 'char', char: ' ' },
