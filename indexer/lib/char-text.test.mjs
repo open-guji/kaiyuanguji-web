@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CHAR_FILE_RE, charJsonText } from './char-text.mjs';
+import { CHAR_FILE_RE, FIG_MARK, charJsonText, charJsonSnippetText } from './char-text.mjs';
 
 const cell = (a, c, extra = {}) => ({ a, c, ...extra });
 
@@ -45,4 +45,25 @@ test('char 文件名只收 NNN.char.json 形式', () => {
     assert.ok(CHAR_FILE_RE.test('002.char.json'));
     assert.ok(!CHAR_FILE_RE.test('../002.char.json'));
     assert.ok(!CHAR_FILE_RE.test('002.json'));
+});
+
+test('摘要文本：图片格与图列处放〔图〕，连着的只放一个；检索文本不变（GUJI-742）', () => {
+    const raw = {
+        pages: [
+            { page: 148, columns: [
+                { col: 2, cells: [cell('148:2:12', '圖'), cell('148:2:13', '作'), cell('148:2:14', '□', { fig: 'f148-2-14' }), cell('148:2:15', '形')] },
+            ] },
+            { page: 149, columns: [
+                { col: 1, cells: [cell('149:1:1', '河')] },
+                { col: 2, kind: 'figure', span: 4, fig: 'p149-fig1', cells: [] },
+                { col: 6, kind: 'figure', fig: 'p149-fig2', cells: [] },
+                { col: 7, kind: 'banxin', cells: [cell('149:7:1', '版')] },
+                { col: 8, cells: [cell('149:8:1', '洛'), cell('149:8:2', '□', { lacuna: true })] },
+            ] },
+        ],
+    };
+    assert.equal(FIG_MARK, '〔图〕');
+    assert.equal(charJsonSnippetText(raw), '圖作〔图〕形河〔图〕洛');
+    assert.equal(charJsonText(raw), '圖作形河洛');
+    assert.equal(charJsonSnippetText(null), '');
 });
