@@ -111,6 +111,13 @@ with connect() as conn:
 
 写正式库照各领域自己的规矩（如 A30／A32 写中心库前要用户说「推库」）。`progress` 只是看板数据，不影响任何产物和文本。
 
+### 2.4 「重跑任务」栏实时读（2026-10-25，用户定）
+
+`/api/text-progress` 的 GET 在配了 `PROGRESS_READ_DATABASE_URL`（EdgeOne 环境变量，Neon 只读账号 `progress_read` 的连接串，授权见 `grants.sql`）时，
+先经 Neon 的 SQL-over-HTTP（`https://<host>/sql`）实时读 `progress.metric`／`progress.section` 里的 `jobs` 栏，覆盖快照里的同栏，超时 4 秒或失败就退回快照；
+页底会标「实时读取」或「实时读取失败（原因），显示的是快照」。别的栏目不变。没配这个变量时行为同以前。
+注意国内 EdgeOne 到 Neon 的连通和速度要上线后看页底提示实测；实时的是 `progress.metric` 里的看板，执行方领单、收尾、心跳（每 2 分钟）时写。
+
 ## 三、同步脚本 `ops/text-progress/sync.py`
 
 | 子命令 | 做什么 |
