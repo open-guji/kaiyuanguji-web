@@ -27,6 +27,10 @@ export interface PublicFix {
     old?: string;
     /** 建议（改字的新字、一段的应作） */
     new?: string;
+    /** 改字：读者说这格是图形、不是字（GUJI-737 图片格；new 此时是 □） */
+    fig?: boolean;
+    /** 图形说明（fig 时可有） */
+    alt?: string;
     note?: string;
     /** 文本版本（改字、一段） */
     tv?: string;
@@ -101,6 +105,7 @@ function parseFix(raw: unknown): PublicFix | null {
         ...(end && CELL_RE.test(end) ? { end } : {}),
         ...(kind === 'span' ? { sub: sub ?? 'other' } : {}),
         old: str(o.old), new: str(o.new), note: str(o.note), tv: str(o.tv),
+        ...(kind === 'char' && o.fig ? { fig: true, ...(str(o.alt) ? { alt: str(o.alt) } : {}) } : {}),
         who: str(o.who) ?? '',
         ts: typeof o.ts === 'number' && Number.isFinite(o.ts) ? o.ts : undefined,
     };

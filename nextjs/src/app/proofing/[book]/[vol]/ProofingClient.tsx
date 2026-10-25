@@ -487,7 +487,7 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
         <section data-testid="quick-review" style={{ border: '1px solid #e2d6bf', borderRadius: 8, padding: 12, marginBottom: 16, background: '#fffdf7' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
                 <b style={{ fontSize: 16 }}>快速确认</b>
-                <span style={{ fontSize: 12, color: '#666' }}>每格下面的小字是建议的字。都对就点「确认」；觉得不对或拿不准的，点一下那格标「存疑」，它会挪到下面逐格细看。</span>
+                <span style={{ fontSize: 12, color: '#666' }}>每格下面的小字是建议的字。都对就点「确认」；觉得不对或拿不准的，点一下那格标「存疑」，它会挪到下面逐格细看。刻的是图形（圈、点、符号）不是字的，也标「存疑」，到下面那格选「是图形，不是字」。</span>
             </div>
             {live.length > 1 && (
                 <div data-testid="quick-groups" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>

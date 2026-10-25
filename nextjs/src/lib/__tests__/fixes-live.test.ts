@@ -46,6 +46,18 @@ describe('GET /api/fixes', () => {
         expect(body.volumes['002']).toEqual(JSON.parse(JSON.stringify([char, span].map(sync.toPublicFix))));
     });
 
+    it('GUJI-737 图形：公开形带 fig:1 与 alt，两边 toPublicFix 一致；普通改字不带', async () => {
+        put(`cf:96mid1ogzk:002:1.0.1:2:3:4:${V}`, { ...char, new_char: '□', figure: true, alt: '圈中一点' });
+        put(`cf:96mid1ogzk:002:1.0.1:2:3:5:${V}`, { ...char, cell_id: '2:3:5', alt: '不该出' });
+        const body = JSON.parse(await (await fn.onRequestGet(get('book=96mid1ogzk&volume=002'))).text());
+        const [a, b] = body.volumes['002'];
+        expect(a).toMatchObject({ at: '2:3:4', new: '□', fig: 1, alt: '圈中一点' });
+        expect(b).not.toHaveProperty('fig');
+        expect(b).not.toHaveProperty('alt');
+        const recs = [{ ...char, new_char: '□', figure: true, alt: '圈中一点' }, { ...char, cell_id: '2:3:5', alt: '不该出' }];
+        expect(body.volumes['002']).toEqual(JSON.parse(JSON.stringify(recs.map(sync.toPublicFix))));
+    });
+
     it('公开口径：voter 只给 6 位、正文脱敏、不出 aid／IP', async () => {
         put(`cs:96mid1ogzk:002:1.0.1:3:1:9-3:1:9:missing:${V}`, { ...span, aid: 'aid_secret', ip: '1.2.3.4' });
         const text = await (await fn.onRequestGet(get('book=96mid1ogzk&volume=002'))).text();

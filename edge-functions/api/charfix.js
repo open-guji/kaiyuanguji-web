@@ -45,6 +45,8 @@ const RE_ENTITY = /^e\d{1,8}$/; // 册内唯一的实体 id，如 e01384
 const RE_BID = /^[0-9a-z]{4,24}$/; // book-index 里的条目 id（hixhd… 形）
 // 组字式 {{…}}：花括号里一段不含空白／控制符／花括号的描述（IDS 串或「虫+斤」之类）
 const RE_COMPOSED = /^\{\{[^{}\s\p{Cc}\p{Cf}]{1,30}\}\}$/u;
+const FIG_BOX = '□';
+const ALT_MAX = 60; // 图形说明，与精校票 alt 同上限
 
 // 改字比精校的「点一格」慢得多，限得更紧；前缀独立，不占精校名额
 const RATE_OPTS = { max: 30, prefix: 'ratelimit:cf:' };
@@ -82,16 +84,21 @@ export function validateFix(body) {
   if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
 
   if (kind === 'char') {
-    const { text_version: tv, cell_id: cell, old_char: oldChar, new_char: newChar } = body;
+    const { text_version: tv, cell_id: cell, old_char: oldChar } = body;
+    // 「这是图形，不是字」（GUJI-737 图片格）：figure=true，new_char 一律记 □（图片格的 c 就是 □），alt 可选
+    const figure = body.figure === true;
+    const newChar = figure ? FIG_BOX : body.new_char;
     if (typeof tv !== 'string' || !RE_VERSION.test(tv)) return { error: 'text_version 无效' };
     if (typeof cell !== 'string' || !RE_CELL.test(cell)) return { error: 'cell_id 无效' };
     if (!isNewChar(newChar)) return { error: 'new_char 须为单个字或 {{组字式}}' };
+    const alt = figure ? optText(body.alt, ALT_MAX, 'alt') : { value: '' };
+    if (alt.error) return { error: alt.error };
     let old = '';
     if (oldChar !== undefined && oldChar !== null && oldChar !== '') {
       if (typeof oldChar !== 'string' || [...oldChar].length > 32) return { error: 'old_char 无效' };
       old = oldChar;
     }
-    if (old === newChar) return { error: '建议字与原字相同' };
+    if (!figure && old === newChar) return { error: '建议字与原字相同' };
     const basis = optText(body.basis, BASIS_MAX, 'basis');
     if (basis.error) return { error: basis.error };
     let entityIds = [];
@@ -105,6 +112,7 @@ export function validateFix(body) {
     return {
       value: {
         kind, book_id: book, volume, text_version: tv, cell_id: cell, old_char: old, new_char: newChar,
+        ...(figure ? { figure: true, ...(alt.value ? { alt: alt.value } : {}) } : {}),
         basis: basis.value, entity_ids: entityIds, aid: body.aid,
       },
     };

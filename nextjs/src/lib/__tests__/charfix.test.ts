@@ -106,6 +106,24 @@ describe('改字 POST', () => {
         expect(keysOf('cf:')).toHaveLength(0);
     });
 
+    it('GUJI-737「这是图形，不是字」：figure=true 不要 new_char，记 □ 与 figure、alt；alt 超长 400；原字是 □ 也能交', async () => {
+        const { new_char: _n, ...noNew } = fix;
+        const res = await fn.onRequestPost(post({ ...noNew, figure: true, alt: '圈中一点' }));
+        expect(res.status).toBe(200);
+        const rec = JSON.parse(store.get(keysOf('cf:')[0])!);
+        expect(rec).toMatchObject({ new_char: '□', figure: true, alt: '圈中一点' });
+        expect((await fn.onRequestPost(post({ ...noNew, cell_id: '1:1:1', figure: true, old_char: '□' }))).status).toBe(200);
+        expect(JSON.parse(store.get(keysOf('cf:d59f2870u874:002:1.0.0:1:1:1')[0])!)).not.toHaveProperty('alt');
+        expect((await fn.onRequestPost(post({ ...noNew, cell_id: '1:1:2', figure: true, alt: 'x'.repeat(61) }))).status).toBe(400);
+        // figure 不是 true（如字符串）照普通改字处理：缺 new_char 就拒
+        expect((await fn.onRequestPost(post({ ...noNew, cell_id: '1:1:3', figure: 'yes' }))).status).toBe(400);
+        // 普通改字不带 figure／alt
+        await fn.onRequestPost(post({ ...fix, cell_id: '1:1:4', alt: '无用' }));
+        const plain = JSON.parse(store.get(keysOf('cf:d59f2870u874:002:1.0.0:1:1:4')[0])!);
+        expect(plain).not.toHaveProperty('figure');
+        expect(plain).not.toHaveProperty('alt');
+    });
+
     it('old_char 可缺；entity_ids 去重，非法则拒', async () => {
         const { old_char: _o, ...noOld } = fix;
         expect((await fn.onRequestPost(post(noOld))).status).toBe(200);

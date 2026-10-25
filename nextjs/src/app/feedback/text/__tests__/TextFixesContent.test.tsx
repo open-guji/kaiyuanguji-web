@@ -89,6 +89,19 @@ describe('TextFixesContent', () => {
         expect(screen.getAllByTestId('fix-group')).toHaveLength(3);
     });
 
+    it('GUJI-737：读者说「是图形」的改字显示「应是图形（说明）」，不显示 □', async () => {
+        const list = { book: '96mid1ogzk', volumes: { '002': [
+            { kind: 'char', at: '5:2:1', old: '〇', new: '□', fig: 1, alt: '圈中一点', who: 'aaaaaa' },
+            { kind: 'char', at: '5:2:2', old: '〇', new: '□', fig: 1, who: 'bbbbbb' },
+        ] } };
+        await act(async () => { render(<TextFixesContent fetchImpl={routed(list) as unknown as typeof fetch} />); });
+        const rows = screen.getAllByTestId('fix-group');
+        expect(within(rows[0]).getByText('应是图形（圈中一点）')).toBeInTheDocument();
+        expect(within(rows[1]).getByText('应是图形')).toBeInTheDocument();
+        expect(screen.queryByText('应作「□」')).toBeNull();
+        expect(parsePublicFixes(list, '002')[0]).toMatchObject({ fig: true, alt: '圈中一点' });
+    });
+
     it('讨论：显示计数与回复；表态、回复提交到 /api/thread，回复先在本页标「刚刚」显示（/api/fixes 是实时读，不再说「待汇总」）', async () => {
         const listFetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ success: true, ...LIST }) }));
         const postFetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true }) });
