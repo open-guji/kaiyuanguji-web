@@ -533,7 +533,7 @@ def main(argv=None) -> int:
     c.add_argument('--book-text-base', default=BOOK_TEXT_RAW, help='book-text 原文地址前缀（测试用）')
     e = sub.add_parser('export', help='读 progress.* 出快照')
     e.add_argument('--out', help='快照写文件')
-    e.add_argument('--put', help='传到这个站点的 /api/text-progress（如 https://www.openguji.com）')
+    e.add_argument('--put', help='传到这个站点的 /api/text-progress（站点根地址，见 config/hosts.json 的 site）')
     args = ap.parse_args(argv)
     return {'init': cmd_init, 'collect': cmd_collect, 'export': cmd_export}[args.cmd](args)
 
