@@ -26,24 +26,30 @@ interface FacsPage { url: string; hires: string; width: number; height: number }
 const PAGE_SIZE = 20;
 const BOOK_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
-// 「jiazhu」下游写的是「小注被当成正文切了」的切分缺陷（web_opinions.py），所以按钮照这个意思写，
-// 别让读者在真正的夹注格上点它表示「对，这是夹注」（GUJI-683，调研 A C1）
-const OTHER_CHOICES: { choice: Exclude<ReviewChoice, 'char'>; label: string; title: string; key: string }[] = [
-    { choice: 'none', label: '图上没有字', title: '这一格是空白、污点、框线或印章，不是字（快捷键 n）', key: 'n' },
-    { choice: 'unsure', label: '看不清', title: '图太模糊，判断不了（快捷键 u）', key: 'u' },
-    { choice: 'cut', label: '切分错了', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以先写在「另写一字」框里（快捷键 c）', key: 'c' },
-    { choice: 'jiazhu', label: '小注被当成正文切了', title: '这里其实是双行小注，却被当成一个大字切了（快捷键 z）', key: 'z' },
-    // 图形（char v0.3 图片格，GUJI-742）：不是字、Unicode 也没有对应字的图形（如圈、点、符号）；点了弹说明框（可空）。不能和字同交
-    { choice: 'figure', label: '是图形，不是字', title: '这一格刻的是个图形（如圈、点、符号），不是字；只用于不是字的图形，认不出的字请选「看不清」（快捷键 g）', key: 'g' },
+// 右上角单选组（用户 2026-10-25）：正常字符／非字／错误、特殊字符（五小项），只能选一个，缺省正常字符。
+// 选「正常字符」：点字直接交；选别的：点字只记下，右下角「确认」时和备注、图形说明一起交。
+// 「jiazhu」下游写的是「小注被当成正文切了」的切分缺陷（web_opinions.py），所以「小注或其他格式」映射到它（GUJI-683，调研 A C1）；
+// 「破损、阙字」是新档 damaged，下游落阙字方框 □（带字时那个字记作「最像的字」）；「其他」仍走 unsure，进异常清单。
+interface KindOpt { choice: ReviewChoice; label: string; title: string; key: string; sub?: boolean; legacy?: string[] }
+const KIND_OPTS: KindOpt[] = [
+    { choice: 'char', label: '正常字符', title: '图上是一个清楚的字：点下面的字直接提交（快捷键 r）', key: 'r' },
+    { choice: 'none', label: '非字', title: '这一格是空白、污渍、框线或印章，不是字（快捷键 n）', key: 'n', legacy: ['图上没有字'] },
+    { choice: 'cut', label: '字框切分错误', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以同时选上（快捷键 c）', key: 'c', sub: true, legacy: ['切分错了'] },
+    { choice: 'jiazhu', label: '小注或其他格式', title: '这里其实是双行小注（却被当成一个大字切了），或别的特殊版式（快捷键 z）', key: 'z', sub: true, legacy: ['小注被当成正文切了'] },
+    // 图形（char v0.3 图片格，GUJI-742）：不是字、Unicode 也没有对应字的图形；选中后可写图形说明（可空）。不能和字同交
+    { choice: 'figure', label: '符号、篆字等', title: '这一格刻的是个符号或篆字之类，没有对应的字（快捷键 g）；认不出的字请选「其他」', key: 'g', sub: true, legacy: ['是图形，不是字'] },
+    { choice: 'damaged', label: '破损、阙字', title: '原刻破损或缺字，看不出是什么字，录成阙字方框 □；能猜出最像的字可以同时选上（快捷键 d）', key: 'd', sub: true },
+    { choice: 'unsure', label: '其他', title: '以上都不是，或图太模糊判断不了；请在备注里说明（快捷键 o）', key: 'o', sub: true, legacy: ['看不清'] },
 ];
+const FLAG_OPTS = KIND_OPTS.filter(o => o.choice !== 'char');
 
 /**
- * 快捷键（与控制台定字卡同一套，调研 A D1）：1–9 选当前卡的第几个候选，n／u／c／z 四档，j／k 下一张／上一张。
- * 输入框里打字时不触发。按键落到「当前选中的卡」上带 data-hotkey 的按钮，等于点它。
+ * 快捷键（调研 A D1）：1–9 选当前卡的第几个候选，r／n／c／z／g／d／o 选单选组里的一项（只选中，不提交），j／k 下一张／上一张。
+ * 输入框里打字时不触发。按键落到「当前选中的卡」上带 data-hotkey 的按钮或单选框，等于点它。
  */
 export function hotkeyTarget(key: string): string | null {
     if (/^[1-9]$/.test(key)) return key;
-    return OTHER_CHOICES.some(o => o.key === key) ? key : null;
+    return KIND_OPTS.some(o => o.key === key) ? key : null;
 }
 
 /** 按钮外观：都有边框和底色，一眼看得出能点；选中的绿框绿底 */
@@ -130,7 +136,7 @@ interface CellRowProps {
     imageUrl: string | null;
     crop: { box: [number, number, number, number]; canvasWidth: number } | null;
     done?: string;
-    /** advance：提交后自动跳下一张（选字才跳；点下面四项不跳，好接着给字） */
+    /** advance：提交后自动跳下一张（正常字符选字、或非正常字符点「确认」才跳） */
     onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => Promise<string | null>;
     context: CellContext | null;
     pendingSet: Set<string>;
@@ -328,14 +334,15 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
     const [sentNote, setSentNote] = useState<string | null>(null);
-    // 「是图形，不是字」的说明框：点了才弹，说明可空
-    const [figOpen, setFigOpen] = useState(false);
+    // 「符号、篆字等」的图形说明：选中该项后才出现，可空
     const [figAlt, setFigAlt] = useState('');
     const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
-    // 已提交的回应＝一个字（可无）＋下面四项之一（可无）＋备注，三样互不冲突（用户 2026-10-21）：
-    // 切分错了也能先把字给上，格子先过、切分另修；每次点击把三样合起来重新提交一票（同格同人覆盖旧票）
+    // 已提交的回应＝一个字（可无）＋单选组里的一项＋备注；每次提交把它们合起来重交一票（同格同人覆盖旧票）
     const { char: doneChar, flag: doneFlag } = parseDone(done);
+    // 单选组当前项（缺省正常字符）与非正常字符时先记下、等「确认」才交的字
+    const [kind, setKind] = useState<ReviewChoice>(doneFlag ?? 'char');
+    const [draftChar, setDraftChar] = useState<string | undefined>(doneFlag ? doneChar : undefined);
     const go = async (choice: ReviewChoice, char?: string, pick?: Pick, advance = false) => {
         setBusy(true);
         setErr(null);
@@ -346,20 +353,19 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
         if (e) setErr(e);
         else setSentNote(n);
     };
-    /** 选一个字：带上已选的那一项（如「切分错了」），选完跳下一张 */
+    /** 选一个字：正常字符直接交并跳下一张；别的项只记下这个字，等点「确认」 */
     const pickChar = (c: string, pick?: Pick) => {
         lastPick.current = pick;
-        // 原先交的是「是图形」，现在给了字：改回交字，不再带图形（图形没有字）
-        return go(doneFlag && doneFlag !== 'figure' ? doneFlag : 'char', c, pick, true);
+        if (kind !== 'char') { setDraftChar(c); return; }
+        return go('char', c, pick, true);
     };
-    /** 点下面四项之一：带上已选的字（没选过就带「另写一字」框里的字）；再点一次已选的项就取消它、只留字 */
-    const toggleFlag = (f: Exclude<ReviewChoice, 'char'>) => {
-        // 图形：先弹说明框，在框里确认才交；已交过的再点一次收回（同别的项）
-        if (f === 'figure' && doneFlag !== 'figure') { setFigOpen(v => !v); return; }
-        if (doneFlag === f) return doneChar ? go('char', doneChar, lastPick.current) : undefined;
-        const c = doneChar ?? ([...custom].length === 1 ? custom : undefined);
-        return go(f, c, c === doneChar ? lastPick.current : c ? { src: 'custom' } : undefined);
+    /** 「确认」：当前项＋记下的字（没选过就用「另写一字」框里的字）＋备注＋图形说明，一起交，交完跳下一张 */
+    const confirmKind = () => {
+        const c = draftChar ?? ([...custom].length === 1 ? custom : undefined);
+        return go(kind, c, c === draftChar ? lastPick.current : c ? { src: 'custom' } : undefined, true);
     };
+    const shownChar = kind !== 'char' ? draftChar : doneChar;
+    const isPicked = (c: string) => (kind !== 'char' ? draftChar === c : done ? doneChar === c : c === preCand);
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
     const why = whyLabels(cell.why);
@@ -386,51 +392,55 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     {cell.note && <div data-testid="recheck-note" style={{ fontSize: 12, color: '#7a3b1d', marginTop: 2 }}><b>再看一次</b>：{cell.note}</div>}
                     {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
                 </div>
+                {/* 单选组：两列小方格，只占右上角一小块，不挤下面的候选与相似字；已提交徽标在它上方 */}
+                <fieldset data-testid="kind-group" style={{ marginLeft: 'auto', marginTop: done ? 22 : 0, border: '1px solid #e2d6bf', borderRadius: 6, padding: '0 8px 4px', background: '#fffdf7', fontSize: 12, display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 10, alignItems: 'center' }}>
+                    <legend style={{ padding: '0 4px', color: '#777' }}>这一格是</legend>
+                    {KIND_OPTS.map(o => (
+                        <React.Fragment key={o.choice}>
+                            {o.choice === 'cut' && <div style={{ gridColumn: '1 / -1', color: '#555', lineHeight: 1.6, marginTop: 2, borderTop: '1px dashed #e2d6bf' }}>错误、特殊字符</div>}
+                            <label title={o.title} style={{ display: 'flex', gap: 3, alignItems: 'center', cursor: busy ? 'default' : 'pointer', lineHeight: 1.6, whiteSpace: 'nowrap' }}>
+                                <input type="radio" name={`kind-${cell.a}`} value={o.choice} checked={kind === o.choice} disabled={busy} data-hotkey={o.key}
+                                    onChange={() => setKind(o.choice)} />
+                                {o.label}
+                            </label>
+                        </React.Fragment>
+                    ))}
+                    {kind !== 'char' && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button type="button" data-testid="kind-confirm" disabled={busy} onClick={confirmKind} className={BTN_CLASS} style={btnStyle('primary', false, busy)}>确认</button>
+                        </div>
+                    )}
+                    {kind === 'figure' && (
+                        <input value={figAlt} onChange={e => setFigAlt(e.target.value.slice(0, 60))} maxLength={60} aria-label="图形说明" placeholder="图形说明（可不填）"
+                            style={{ gridColumn: '1 / -1', boxSizing: 'border-box', marginTop: 2, fontSize: 12, padding: '2px 6px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
+                    )}
+                </fieldset>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
             {(cell.why?.some(w => w !== 'none') || !!cell.cls) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={done ? doneChar === cd.c : cd.c === preCand} onPick={c => pickChar(c, { src: 'cand', rank: i + 1 })} />)}
-                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={done ? doneChar === cd.c : cd.c === preCand} onPick={c => pickChar(c, { src: 'cand', rank: top.length + i + 1 })} />)}
+                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: i + 1 })} />)}
+                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: top.length + i + 1 })} />)}
                 {more.length > 0 && (
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
                 {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', doneChar === cell.c, busy)}><Zi c={cell.c} /></button>
+                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', isPicked(cell.c), busy)}><Zi c={cell.c} /></button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
                     <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
                         style={{ width: 140, fontSize: 14, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
                     <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => pickChar(custom, { src: 'custom' })} className={BTN_CLASS}
-                        style={btnStyle('primary', false, busy || [...custom].length !== 1)}>提交这个字</button>
+                        style={btnStyle('primary', false, busy || [...custom].length !== 1)}>{kind === 'char' ? '提交这个字' : '选这个字'}</button>
                 </span>
             </div>
-            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={doneChar} onPick={pickChar} />}
+            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
                     以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
                     <button type="button" disabled={busy} onClick={() => pickChar(preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
-                </div>
-            )}
-            <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {OTHER_CHOICES.map(o => (
-                    <button key={o.choice} type="button" disabled={busy} aria-pressed={done ? doneFlag === o.choice : false} data-hotkey={o.key}
-                        // 四项都能和字一起交：已选的字带上，没选过就带「另写一字」框里的字（用户 10-21）
-                        onClick={() => toggleFlag(o.choice)} className={BTN_CLASS}
-                        title={`${o.title}；可以同时选一个字，再点一次取消`} style={btnStyle('act', done ? doneFlag === o.choice : false, busy)}>{o.label}</button>
-                ))}
-            </div>
-            <div data-testid="figure-hint" style={{ marginTop: 4, fontSize: 12, color: '#777' }}>「是图形，不是字」只用于不是字的图形；认不出的字请选「看不清」。</div>
-            {figOpen && (
-                <div data-testid="figure-box" style={{ marginTop: 6, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input value={figAlt} onChange={e => setFigAlt(e.target.value.slice(0, 60))} maxLength={60} aria-label="图形说明"
-                        placeholder="图形说明（可不填），如：左半圈连一实点"
-                        style={{ flex: '1 1 260px', maxWidth: 420, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
-                    <button type="button" disabled={busy} onClick={async () => { await go('figure', undefined, undefined, true); setFigOpen(false); }} className={BTN_CLASS}
-                        style={btnStyle('primary', false, busy)}>提交：是图形</button>
-                    <button type="button" disabled={busy} onClick={() => setFigOpen(false)} className={BTN_CLASS} style={btnStyle('small', false, busy)}>取消</button>
                 </div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -487,7 +497,7 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
         <section data-testid="quick-review" style={{ border: '1px solid #e2d6bf', borderRadius: 8, padding: 12, marginBottom: 16, background: '#fffdf7' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
                 <b style={{ fontSize: 16 }}>快速确认</b>
-                <span style={{ fontSize: 12, color: '#666' }}>每格下面的小字是建议的字。都对就点「确认」；觉得不对或拿不准的，点一下那格标「存疑」，它会挪到下面逐格细看。刻的是图形（圈、点、符号）不是字的，也标「存疑」，到下面那格选「是图形，不是字」。</span>
+                <span style={{ fontSize: 12, color: '#666' }}>每格下面的小字是建议的字。都对就点「确认」；觉得不对或拿不准的，点一下那格标「存疑」，它会挪到下面逐格细看。刻的是图形（圈、点、符号）不是字的，也标「存疑」，到下面那格选「符号、篆字等」。</span>
             </div>
             {live.length > 1 && (
                 <div data-testid="quick-groups" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
@@ -612,18 +622,18 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     );
 }
 
-/** 已提交的记法（存 localStorage）：「字」、项名、或「字」＋项名（字和四项可以同时交，用户 10-21） */
+/** 已提交的记法（存 localStorage）：「字」、项名、或「字」＋项名（字和单选组里的非正常字符项可以同时交，用户 10-21） */
 const doneLabel = (choice: ReviewChoice, char?: string) => {
-    const flag = choice === 'char' ? '' : OTHER_CHOICES.find(o => o.choice === choice)?.label ?? choice;
+    const flag = choice === 'char' ? '' : FLAG_OPTS.find(o => o.choice === choice)?.label ?? choice;
     return char ? `「${char}」${flag ? `＋${flag}` : ''}` : flag;
 };
 
-/** doneLabel 反解：字、四项之一（旧记录只有其中一样，照样认） */
-function parseDone(done?: string): { char?: string; flag?: Exclude<ReviewChoice, 'char'> } {
+/** doneLabel 反解：字、单选组里的一项（旧记录只有其中一样、或用旧按钮名，照样认） */
+function parseDone(done?: string): { char?: string; flag?: ReviewChoice } {
     if (!done) return {};
     const m = /^「(.)」(?:＋(.+))?$/u.exec(done);
     const label = m ? m[2] : done;
-    const flag = label ? OTHER_CHOICES.find(o => o.label === label || o.choice === label)?.choice : undefined;
+    const flag = label ? FLAG_OPTS.find(o => o.label === label || o.choice === label || o.legacy?.includes(label))?.choice : undefined;
     return { ...(m ? { char: m[1] } : {}), ...(flag ? { flag } : {}) };
 }
 
@@ -774,7 +784,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             writeDone(rev, next);
             return next;
         });
-        if (advance) setAdvanceFrom(cell.a);          // 选了字自动跳到下一张没回应的（调研 A D1）；点四项不跳，好接着给字
+        if (advance) setAdvanceFrom(cell.a);          // 选了字或点「确认」自动跳到下一张没回应的（调研 A D1）
         return null;
     }, [book, vol, rev]);
 
@@ -864,7 +874,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             const t = e.target as HTMLElement | null;
-            if (e.ctrlKey || e.metaKey || e.altKey || (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable))) return;
+            if (e.ctrlKey || e.metaKey || e.altKey || (t && ((t.tagName === 'INPUT' && (t as HTMLInputElement).type !== 'radio') || t.tagName === 'TEXTAREA' || t.isContentEditable))) return;
             if (!selected) return;
             if (e.key === 'j' || e.key === 'k') {
                 const i = shown.findIndex(c => c.a === selected);
@@ -874,8 +884,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             }
             const hk = hotkeyTarget(e.key);
             if (!hk) return;
-            const btn = document.getElementById(`cell-${selected}`)?.querySelector<HTMLButtonElement>(`button[data-hotkey="${hk}"]`);
-            if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+            const btn = document.getElementById(`cell-${selected}`)?.querySelector<HTMLElement>(`[data-hotkey="${hk}"]`);
+            if (btn && !(btn as HTMLButtonElement).disabled) { e.preventDefault(); btn.click(); }
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
@@ -927,7 +937,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />
                                 只看还没回应的
                             </label>
-                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，n 图上没有字，u 看不清，c 切分错了，z 小注切成正文，g 是图形，j／k 下一张／上一张</span>
+                            <span data-testid="hotkey-hint">快捷键：1–9 选候选，r 正常字符，n 非字，c 字框切分错误，z 小注或其他格式，g 符号篆字，d 破损阙字，o 其他（只选中，要点「确认」才交），j／k 下一张／上一张</span>
                         </div>
                         {classCounts.length > 1 && (
                             <div data-testid="class-filter" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>

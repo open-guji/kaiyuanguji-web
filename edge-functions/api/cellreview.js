@@ -1,6 +1,6 @@
 // 精校页意见端点（GUJI-551，设计 team/整理/设计/文本整理三阶段流程.md §6.2）
 //
-//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 七档之一）。同格同来源重复提交覆盖旧票。
+//   POST  公开 —— 读者对「某册某格」提交一条意见（choice 八档之一）。同格同来源重复提交覆盖旧票。
 //   GET   **只开管理读**（管理 token 或成员 cookie）——按 rev 前缀导出全部票，供每日导入脚本用。
 //         公开读一律 401，不返回任何内容。
 //
@@ -14,17 +14,19 @@
 //   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
 // 值只存 voter，不存 aid、不存 IP。
 //
-// choice 七档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main｜figure，后六档 char 可选（figure 例外，见下）。
+// choice 八档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main｜figure｜damaged，后七档 char 可选（figure 例外，见下）。
+// 页面上是一组单选（用户 2026-10-25）：正常字符＝char；非字＝none；字框切分错误＝cut；小注或其他格式＝jiazhu；符号、篆字等＝figure；破损、阙字＝damaged；其他＝unsure。
+// damaged（破损、阙字）：下游录成阙字方框 □；带的字当「最像的字」（guess），不进字形库。
 // figure（char v0.3，GUJI-742）：「是图形，不是字」——这一格是个没有 Unicode 字的图形（如册 5 第 148 叶「圖作▢形」），导出时记成图片格。
 //   不带字（带了也丢掉：图形没有字）；可带 alt（图形说明，≤ ALT_MAX 字，可空，空时导出写「图形符号」）。只用于不是字的图形，认不出的字选 unsure。
-// 后五档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
-// 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。不给公众 damaged。
+// 后几档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
+// 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
 } from './feedback.js';
 
-export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure'];
+export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'damaged'];
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
