@@ -4,8 +4,8 @@
 // 数由负责领域的 job 写进 progress.metric；还没写的栏目显示占位和写法。
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
-import { type Metric, type Section, type Snapshot, fmtLA, fmtMetric, groupByBook, scopeOf, sectionsOf } from './model';
+import { Fragment, useMemo, useState } from 'react';
+import { type Metric, type MetricTable, type Section, type Snapshot, cmpCell, fmtCell, fmtLA, fmtMetric, groupByBook, scopeOf, sectionsOf, tableOf } from './model';
 import { DOC_URL, Freshness, LoadState, PageHeader, Panel, Stat } from './ui';
 import { useTextProgress } from './useTextProgress';
 
@@ -48,7 +48,9 @@ function SectionBody({ snap, section }: { snap: Snapshot; section: Section }) {
   const titles = useMemo(() => new Map(groupByBook(snap.volumes || []).map((g) => [g.book_id, g.title])), [snap.volumes]);
   if (!metrics.length) return <Placeholder section={section} />;
 
-  const summary = metrics.filter((m) => !m.vol).sort(bySort);
+  const top = metrics.filter((m) => !m.vol).sort(bySort);
+  const summary = top.filter((m) => !tableOf(m));
+  const tables = top.filter((m) => tableOf(m));
   const perVol = metrics.filter((m) => m.vol);
   const latest = metrics.reduce<string | null>((a, m) => (m.at && (!a || m.at > a) ? m.at : a), null);
   const writers = [...new Set(metrics.map((m) => m.writer).filter(Boolean))].join('、');
@@ -62,6 +64,16 @@ function SectionBody({ snap, section }: { snap: Snapshot; section: Section }) {
           ))}
         </div>
       )}
+      {tables.map((m) => (
+        <Panel key={`${m.book_id}/${m.key}`} className="overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="text-sm font-semibold">{m.label}</span>
+            <span className="text-xs text-gray-400">{scopeOf(m, titles)}{m.value_text ? ` · ${m.value_text}` : ''}</span>
+          </div>
+          <DataTable table={tableOf(m)!} />
+          {tableOf(m)!.note && <div className="px-4 py-2 border-t border-gray-100 text-xs text-gray-400 whitespace-pre-line">{tableOf(m)!.note}</div>}
+        </Panel>
+      ))}
       {perVol.length > 0 && <PerVolume metrics={perVol} snap={snap} titles={titles} />}
       <div className="text-xs text-gray-400">写入：{writers || '—'} · 最近一次 {fmtLA(latest)}（洛杉矶时间）</div>
     </>
@@ -69,6 +81,55 @@ function SectionBody({ snap, section }: { snap: Snapshot; section: Section }) {
 }
 
 const bySort = (a: Metric, b: Metric) => (a.sort ?? 0) - (b.sort ?? 0) || a.label.localeCompare(b.label, 'zh');
+
+/** 指标 detail.table 画成的表：点表头排序（再点倒序），行里有 _sub 的可点开看子表 */
+function DataTable({ table, nested = false }: { table: MetricTable; nested?: boolean }) {
+  const [sort, setSort] = useState<{ key: string; desc: boolean } | null>(null);
+  const [open, setOpen] = useState<Set<number>>(new Set());
+  const rows = useMemo(() => {
+    const list = table.rows.map((r, i) => ({ r, i }));
+    if (sort) list.sort((a, b) => cmpCell(a.r[sort.key], b.r[sort.key]) * (sort.desc ? -1 : 1) || a.i - b.i);
+    return list;
+  }, [table.rows, sort]);
+  const isNum = (key: string) => table.rows.some((r) => typeof r[key] === 'number');
+  const click = (key: string) => setSort((s) => (s && s.key === key ? { key, desc: !s.desc } : { key, desc: isNum(key) }));
+  const toggle = (i: number) => setOpen((o) => { const n = new Set(o); if (n.has(i)) n.delete(i); else n.add(i); return n; });
+  const hasSub = table.rows.some((r) => r._sub);
+  return (
+    <div className={nested ? 'overflow-x-auto' : 'overflow-x-auto max-h-[75vh]'}>
+      <table className="min-w-full text-sm">
+        <thead className={`${nested ? 'bg-gray-100/70' : 'bg-gray-50 sticky top-0 z-10'} text-xs text-gray-500 whitespace-nowrap`}>
+          <tr>
+            {hasSub && <th className="w-6" />}
+            {table.columns.map((c, ci) => (
+              <th key={c.key} title={c.hint || c.key} onClick={() => click(c.key)}
+                className={`${isNum(c.key) ? 'text-right' : 'text-left'} font-medium px-3 ${ci === 0 && !hasSub ? 'pl-4' : ''} py-2 cursor-pointer select-none hover:text-gray-800`}>
+                {c.label}{sort?.key === c.key ? (sort.desc ? ' ↓' : ' ↑') : ''}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map(({ r, i }) => (
+            <Fragment key={i}>
+              <tr className={`hover:bg-gray-50/60 ${r._sub ? 'cursor-pointer' : ''}`} onClick={r._sub ? () => toggle(i) : undefined}>
+                {hasSub && <td className="pl-3 text-xs text-gray-400">{r._sub ? (open.has(i) ? '▾' : '▸') : ''}</td>}
+                {table.columns.map((c, ci) => (
+                  <td key={c.key} className={isNum(c.key) ? 'px-3 py-1.5 text-right whitespace-nowrap tabular-nums' : `px-3 ${ci === 0 && !hasSub ? 'pl-4' : ''} py-1.5 text-left whitespace-nowrap`}>
+                    {fmtCell(r[c.key], c.unit)}
+                  </td>
+                ))}
+              </tr>
+              {r._sub && open.has(i) && (
+                <tr><td colSpan={table.columns.length + 1} className="bg-gray-50/60 px-4 py-2"><DataTable table={r._sub} nested /></td></tr>
+              )}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 /** 各册一行、各指标一列 */
 function PerVolume({ metrics, snap, titles }: { metrics: Metric[]; snap: Snapshot; titles: Map<string, string> }) {

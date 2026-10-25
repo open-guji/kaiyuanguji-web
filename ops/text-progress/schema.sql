@@ -154,10 +154,9 @@ BEGIN
 END;
 $$;
 
--- 先占好的三个栏目（用户 10-25：形近字、异体字组、人审；口径由各领域自己定，改 description 即可）
+-- 先占好的栏目（用户 10-25：形近字、人审；异体字组当天并进形近字——同义、不同义的字组混合处理；口径由各领域自己定，改 description 即可）
 INSERT INTO progress.section (section, title, owner, description, sort) VALUES
-  ('xingjin', '形近字', 'A24', '形近字判别：准确率、待审里的形近格数、各字组状态等', 10),
-  ('yiti', '异体字组', 'A24', '异体字组：组数、已定组、待定组等', 20),
+  ('xingjin', '形近字', 'A24', '形近与异体字组（同义、不同义）：各组出现、送审、送审率、核对准确率', 10),
   ('review', '人审', 'A32', '人审：人审率、已裁格数、网站意见处理等', 30)
 ON CONFLICT (section) DO NOTHING;
 

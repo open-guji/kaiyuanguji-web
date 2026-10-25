@@ -11,7 +11,7 @@
 |---|---|---|
 | 网站（A41） | 页面、接口、同步任务、基础采集；同步挂了要修 | 基础采集软写 `progress.volume` 的版本、待审等字段（见 2.1「基础采集」各行） |
 | A31 粗校 | 每册全册格数、已人裁格数、备注；粗校人审率 | `progress.volume` 的 `cells_total`、`human_judged`、`note`；人审率写 `progress.metric`（section `review`） |
-| A24 形近字 | 「形近字」「异体字组」两栏：准确率、待审里的形近格数、字组状态等，口径自定 | `progress.metric`（section `xingjin`、`yiti`） |
+| A24 形近字 | 「形近字」栏（10-25 起异体字组并进来）：各字组总表、准确率、待审里的形近格数等，口径自定 | `progress.metric`（section `xingjin`） |
 | A32 精校 | 「人审」栏：人审率、已裁格数、网站意见处理等；精校阶段的 `stage`、`note` | `progress.metric`（section `review`）、`progress.volume` |
 | A33 点校 | 标点、专名进度一句话 | `progress.volume` 的 `punct_status` |
 | 新领域 | 要开新栏目就在 `progress.section` 插一行，侧栏自动多一个小标题 | `progress.section`、`progress.metric` |
@@ -84,7 +84,9 @@ SELECT progress.put_volume('96mid1ogzk', '006',
 
 - 后台「文本整理」点进去是总览（各册进度，即 `progress.volume`）；侧栏在它下面按栏目列小标题，每个栏目一页
   （`/admin/text/section?s=<section>`）：整套或全局的数（`vol` 留空）做成卡片，各册的数排成一册一行、一个 key 一列的表。
-- `progress.section` 登记栏目，侧栏按 `sort` 排。先占好的三个：`xingjin` 形近字（A24）、`yiti` 异体字组（A24）、
+  一个数的 `detail` 里放了 `table`（`{columns: [{key, label, unit?, hint?}], rows: [{…}], note?}`）就不做卡片，画成一整张可排序的表；
+  行里的 `_sub`（同一形状）是点开那一行后显示的子表。比率列 `unit` 写 `%`、按小数存。
+- `progress.section` 登记栏目，侧栏按 `sort` 排。先占好的：`xingjin` 形近字（A24，10-25 起含异体字组）、
   `review` 人审（A32）。口径由各领域自己定（改 `description`）；要新开栏目就 INSERT 一行。
 - `progress.metric` 一个数一行，主键 `(book_id, vol, section, key)`，再写就覆盖。`vol = ''` 表示整套书，`book_id = ''` 表示不分书。
   比率按小数存、`unit` 写 `%`（页面显示成百分数）；不是数的写 `value_text`；明细放 `detail`。
@@ -92,7 +94,6 @@ SELECT progress.put_volume('96mid1ogzk', '006',
 ```sql
 SELECT progress.put_metric('96mid1ogzk', '', 'xingjin', 'accuracy', '形近字准确率', 0.973, '%', 'A24');
 SELECT progress.put_metric('96mid1ogzk', '005', 'review', 'web_open', '网站意见（未处理）', 23, '条', 'A32');
-SELECT progress.put_metric('', '', 'yiti', 'status', '异体字组', NULL, NULL, 'A24', '试跑中');
 ```
 
 ### 2.3 从会话里写
