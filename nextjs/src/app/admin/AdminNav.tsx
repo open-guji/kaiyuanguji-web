@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 const items = [
   { href: '/admin', label: '总览' },
+  { href: '/admin/text', label: '文本整理' },
   { href: '/admin/members', label: '成员' },
   { href: '/admin/invites', label: '邀请' },
   { href: '/admin/errors', label: '错误日志' },
@@ -15,8 +16,9 @@ const items = [
 export default function AdminNav() {
   const path = usePathname();
   return (
-    <nav className="w-40 shrink-0">
-      <ul className="space-y-1 sticky top-16">
+    // 手机上横排一行（可横向滑），md 以上是左侧竖栏
+    <nav className="md:w-40 shrink-0 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto">
+      <ul className="flex md:block gap-1 md:space-y-1 md:sticky md:top-16 whitespace-nowrap">
         {items.map(it => {
           const active = path === it.href;
           return (
