@@ -182,6 +182,40 @@ export function fmtMetric(m: Pick<Metric, 'value' | 'value_text' | 'unit'>): str
   return m.value_text || '—';
 }
 
+/**
+ * 整张表：指标的 detail.table（列定义＋行），栏目页把它画成一张可排序的表，不画成卡片。
+ * 比率列 unit='%'，按小数存；行里 `_sub` 是点开后显示的子表（同一形状，如每组各册明细）。
+ */
+export interface TableColumn { key: string; label: string; unit?: string | null; hint?: string | null }
+export interface MetricTable { columns: TableColumn[]; rows: TableRow[]; note?: string | null }
+export type TableRow = Record<string, unknown> & { _sub?: MetricTable };
+
+export function tableOf(m: Pick<Metric, 'detail'>): MetricTable | null {
+  const t = (m.detail as { table?: unknown } | null | undefined)?.table as MetricTable | undefined;
+  if (!t || !Array.isArray(t.columns) || !Array.isArray(t.rows)) return null;
+  return t;
+}
+
+/** 表格单元格：数按列的单位显示（% 列存小数），文字原样，空值显示 — */
+export function fmtCell(v: unknown, unit?: string | null): string {
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    if (unit === '%') return `${(v * 100).toFixed(1)}%`;
+    return Number.isInteger(v) ? v.toLocaleString('en-US') : String(Number(v.toFixed(4)));
+  }
+  if (v === null || v === undefined || v === '') return '—';
+  return String(v);
+}
+
+/** 表格排序：数在前按大小，空值垫底，文字按中文排 */
+export function cmpCell(a: unknown, b: unknown): number {
+  const na = typeof a === 'number' && Number.isFinite(a), nb = typeof b === 'number' && Number.isFinite(b);
+  if (na && nb) return (a as number) - (b as number);
+  if (na !== nb) return na ? -1 : 1;
+  const ea = a === null || a === undefined || a === '', eb = b === null || b === undefined || b === '';
+  if (ea !== eb) return ea ? 1 : -1;
+  return String(a ?? '').localeCompare(String(b ?? ''), 'zh');
+}
+
 /** 指标的范围：全局／整套书／某册 */
 export function scopeOf(m: Pick<Metric, 'book_id' | 'vol'>, titles: Map<string, string>): string {
   if (!m.book_id) return '全部';
@@ -207,14 +241,13 @@ export function writersOf(v: VolumeRow): string[] {
   return [...set].sort((a, b) => (a === COLLECTOR ? 1 : b === COLLECTOR ? -1 : a < b ? -1 : 1));
 }
 
-/** 中心库还没建表、快照为空时导航用的栏目（与 ops/text-progress/schema.sql 预置的三栏一致） */
+/** 中心库还没建表、快照为空时导航用的栏目（与 ops/text-progress/schema.sql 预置的栏目一致；异体字组 10-25 并进形近字） */
 export const DEFAULT_SECTIONS: Section[] = [
   { section: 'xingjin', title: '形近字', owner: 'A24', sort: 10 },
-  { section: 'yiti', title: '异体字组', owner: 'A24', sort: 20 },
   { section: 'review', title: '人审', owner: 'A32', sort: 30 },
 ];
 
-/** 快照里的栏目，按 sort、slug 排；快照没有就用预置三栏 */
+/** 快照里的栏目，按 sort、slug 排；快照没有就用预置栏目 */
 export function sectionsOf(snap: Snapshot | null | undefined): Section[] {
   const list = snap?.sections?.length ? [...snap.sections] : [...DEFAULT_SECTIONS];
   return list.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || (a.section < b.section ? -1 : 1));

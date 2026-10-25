@@ -1,4 +1,4 @@
-import { ago, countStages, fmtLA, fmtMetric, groupByBook, isStale, majorOf, pendingIsRaw, scopeOf, sectionHref, sectionsOf, stageOf, writersOf, type VolumeRow } from '../model';
+import { ago, cmpCell, countStages, fmtCell, tableOf, fmtLA, fmtMetric, groupByBook, isStale, majorOf, pendingIsRaw, scopeOf, sectionHref, sectionsOf, stageOf, writersOf, type VolumeRow } from '../model';
 
 const v = (o: Partial<VolumeRow>): VolumeRow => ({ book_id: 'b', vol: '001', ...o });
 
@@ -77,8 +77,8 @@ describe('格式', () => {
 });
 
 describe('sectionsOf / countStages / sectionHref', () => {
-  it('快照没有栏目就用预置三栏，有就按 sort 排', () => {
-    expect(sectionsOf(null).map((s) => s.section)).toEqual(['xingjin', 'yiti', 'review']);
+  it('快照没有栏目就用预置栏目，有就按 sort 排', () => {
+    expect(sectionsOf(null).map((s) => s.section)).toEqual(['xingjin', 'review']);
     const snap = { schema: 'x', volumes: [], metrics: [], sections: [
       { section: 'b', title: 'B', sort: 20 }, { section: 'a', title: 'A', sort: 30 }, { section: 'c', title: 'C', sort: 10 },
     ] };
@@ -97,5 +97,22 @@ describe('pendingIsRaw', () => {
     expect(pendingIsRaw(v({ pending_review: 86, field_meta: { pending_review: { by: 'web-collector' } } }))).toBe(true);
     expect(pendingIsRaw(v({ pending_review: 12, field_meta: { pending_review: { by: 'A32' } } }))).toBe(false);
     expect(pendingIsRaw(v({ field_meta: { pending_review: { by: 'web-collector' } } }))).toBe(false);
+  });
+});
+
+describe('tableOf / fmtCell / cmpCell', () => {
+  it('detail.table 有列有行才算表', () => {
+    expect(tableOf({ detail: { table: { columns: [{ key: 'a', label: 'A' }], rows: [{ a: 1 }] } } })?.rows).toHaveLength(1);
+    expect(tableOf({ detail: { date: 'x' } })).toBeNull();
+    expect(tableOf({ detail: null })).toBeNull();
+  });
+  it('% 列存小数、显示百分数；空值显示 —', () => {
+    expect(fmtCell(0.9561, '%')).toBe('95.6%');
+    expect(fmtCell(1377, '格')).toBe('1,377');
+    expect(fmtCell(null)).toBe('—');
+    expect(fmtCell('不同义')).toBe('不同义');
+  });
+  it('排序：数按大小、空值垫底', () => {
+    expect([3, null, 1, 'x'].sort(cmpCell)).toEqual([1, 3, 'x', null]);
   });
 });

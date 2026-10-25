@@ -129,11 +129,34 @@ describe('SectionView', () => {
   });
 
   it('快照还没有：仍按预置栏目显示标题', async () => {
-    mockSection = 'yiti';
+    mockSection = 'xingjin';
     mockFetch({ success: true, snapshot: null });
     render(<SectionView />);
     expect(await screen.findByText(/还没有数据/)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '异体字组' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '形近字' })).toBeInTheDocument();
+  });
+
+  it('detail.table 画成表：不进卡片，点表头排序，点行看子表', async () => {
+    mockSection = 'xingjin';
+    const table = {
+      columns: [{ key: 'name', label: '组' }, { key: 'review', label: '送审', unit: '格' }, { key: 'rate', label: '送审率', unit: '%' }],
+      rows: [
+        { name: '己已巳', review: 60, rate: 0.0436, _sub: { columns: [{ key: 'vol', label: '册' }, { key: 'review', label: '送审' }], rows: [{ vol: 'vol09', review: 5 }] } },
+        { name: '日曰', review: 80, rate: 0.029 },
+      ],
+    };
+    mockFetch({ success: true, snapshot: { ...SNAP, metrics: [
+      { book_id: '', vol: '', section: 'xingjin', key: 'groups.table', label: '各字组总表', value: 2, unit: '组', detail: { table }, sort: 5 },
+    ] } });
+    render(<SectionView />);
+    expect(await screen.findByText('各字组总表')).toBeInTheDocument();
+    expect(screen.getByText('4.4%')).toBeInTheDocument();
+    const names = () => screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    expect(names()[0]).toContain('己已巳');
+    fireEvent.click(screen.getByText('送审'));
+    expect(names()[0]).toContain('日曰');
+    fireEvent.click(screen.getByText('己已巳'));
+    expect(screen.getByText('vol09')).toBeInTheDocument();
   });
 
   it('不认识的栏目', async () => {
