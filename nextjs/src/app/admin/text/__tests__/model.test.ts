@@ -1,4 +1,4 @@
-import { ago, countStages, fmtLA, fmtMetric, groupByBook, isStale, majorOf, scopeOf, sectionHref, sectionsOf, stageOf, writersOf, type VolumeRow } from '../model';
+import { ago, countStages, fmtLA, fmtMetric, groupByBook, isStale, majorOf, pendingIsRaw, scopeOf, sectionHref, sectionsOf, stageOf, writersOf, type VolumeRow } from '../model';
 
 const v = (o: Partial<VolumeRow>): VolumeRow => ({ book_id: 'b', vol: '001', ...o });
 
@@ -89,5 +89,13 @@ describe('sectionsOf / countStages / sectionHref', () => {
   });
   it('栏目页地址', () => {
     expect(sectionHref('xingjin')).toBe('/admin/text/section?s=xingjin');
+  });
+});
+
+describe('pendingIsRaw', () => {
+  it('采集写的待人审算原始格数，领域写的不算', () => {
+    expect(pendingIsRaw(v({ pending_review: 86, field_meta: { pending_review: { by: 'web-collector' } } }))).toBe(true);
+    expect(pendingIsRaw(v({ pending_review: 12, field_meta: { pending_review: { by: 'A32' } } }))).toBe(false);
+    expect(pendingIsRaw(v({ field_meta: { pending_review: { by: 'web-collector' } } }))).toBe(false);
   });
 });

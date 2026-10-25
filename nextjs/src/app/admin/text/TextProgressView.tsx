@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   type Snapshot, type Stage, type VolumeRow,
-  STAGE_HINT, STAGE_LABEL, STAGE_ORDER, ago, countStages, fmtInt, fmtLA, groupByBook, sectionHref, sectionsOf, stageOf, writersOf,
+  STAGE_HINT, STAGE_LABEL, STAGE_ORDER, ago, countStages, fmtInt, fmtLA, groupByBook, pendingIsRaw, sectionHref, sectionsOf, stageOf, writersOf,
 } from './model';
 import { DOC_URL, Freshness, LoadState, PageHeader, Panel, STAGE_BADGE, StageBar, StageLegend, Stat } from './ui';
 import { useTextProgress } from './useTextProgress';
@@ -107,6 +107,9 @@ function Overview({ snap }: { snap: Snapshot }) {
             </Panel>
           );
         })}
+        {volumes.some(pendingIsRaw) && (
+          <p className="text-xs text-gray-400">带 ≈ 的待人审是线上待审单的原始格数，还没扣掉出单后已有人裁、现行文本里已没有的格，会比实际略多；精校（A32）写了的册以它的数为准。</p>
+        )}
       </section>
 
       <section className="space-y-3">
@@ -167,6 +170,7 @@ function StageBadge({ v }: { v: VolumeRow }) {
 const dash = <span className="text-gray-300">—</span>;
 const verOr = (v: string | null | undefined) => (v ? <span className="font-mono">{v}</span> : dash);
 const TH = 'text-left font-medium px-3 py-2';
+const RAW_HINT = '网站按线上待审单的格数直接数的，没扣出单后已有人裁、现行文本里已没有的格，会比实际略多；精校（A32）按自己的口径写了就以它为准';
 
 function VolumeTable({ rows }: { rows: VolumeRow[] }) {
   return (
@@ -212,7 +216,10 @@ function VolumeTable({ rows }: { rows: VolumeRow[] }) {
               <td className="px-3 py-2 whitespace-nowrap">{verOr(v.entity_version)}</td>
               <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
                 {typeof v.pending_review === 'number'
-                  ? <span className={v.pending_review > 0 ? 'font-semibold' : 'text-gray-400'}>{fmtInt(v.pending_review)}</span>
+                  ? <span title={pendingIsRaw(v) ? RAW_HINT : ''}>
+                      {pendingIsRaw(v) && <span className="text-gray-400 font-normal">≈</span>}
+                      <span className={v.pending_review > 0 ? 'font-semibold' : 'text-gray-400'}>{fmtInt(v.pending_review)}</span>
+                    </span>
                   : dash}
                 {typeof v.cells_total === 'number' && <span className="text-xs text-gray-400"> / {fmtInt(v.cells_total)}</span>}
               </td>

@@ -60,7 +60,7 @@
 | `text_version`、`punct_version`、`entity_version`、`proofing` | 三线版本、精校页开没开 | 基础采集（book-text 原创版本的 `index.json`，default 为准） |
 | `frozen_version` | 冻结在哪一版 | 基础采集（册 yaml `freeze.at`） |
 | `cv_version`、`corpus`、`glyph_pin` | 本册固定的 cv 版本、语料号、字形库快照号 | 基础采集（册 yaml） |
-| `pending_review`、`pending_rev`、`pending_at` | 待人审格数、线上待审单 rev、出单时间 | 基础采集（待审单的格数） |
+| `pending_review`、`pending_rev`、`pending_at` | 待人审格数、线上待审单 rev、出单时间 | **A32 写**（口径：单上格扣掉出单后已有人裁的、现行文本里已没有的，见 cv `scripts/zhengli/progress_report.py`）；A32 没写的册由基础采集兜底，数单上原始格数，页面标「≈」 |
 | `cells_total`、`human_judged` | 全册格数、已人裁格数 | 领域写（A31／A32） |
 | `punct_status` | 标点进度一句话（如「试跑，未入库」） | 领域写（A33） |
 | `note` | 备注：卡在哪、等谁 | 领域写 |
