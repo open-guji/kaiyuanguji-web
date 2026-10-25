@@ -2,7 +2,7 @@
 
 // 「文本整理」各页共用的小部件：页头、快照新鲜度、卡片、阶段色条
 import type { ReactNode } from 'react';
-import { type Snapshot, type Stage, STAGE_HINT, STAGE_LABEL, STAGE_ORDER, ago, fmtLA, isStale } from './model';
+import { type Snapshot, type Stage, STAGE_HINT, STAGE_LABEL, STAGE_ORDER, STALE_HOURS, ago, fmtLA, isStale } from './model';
 import type { Load } from './useTextProgress';
 
 export const DOC_URL = 'https://github.com/open-guji/kaiyuanguji-web/blob/main/docs/text-progress.md';
@@ -41,7 +41,7 @@ export function PageHeader({ title, sub, right }: { title: string; sub?: ReactNo
   );
 }
 
-/** 快照什么时候生成的：绿点＝新鲜，琥珀点＝超过 6 小时没更新 */
+/** 快照什么时候生成的：绿点＝新鲜，琥珀点＝超过 STALE_HOURS 小时没更新 */
 export function Freshness({ snap }: { snap: Snapshot }) {
   const stale = isStale(snap.generated_at);
   return (
@@ -50,7 +50,7 @@ export function Freshness({ snap }: { snap: Snapshot }) {
       title={`快照生成于 ${fmtLA(snap.generated_at, true)}（洛杉矶时间）${snap.collector?.at ? `；基础采集 ${fmtLA(snap.collector.at, true)}` : ''}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${stale ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-      {stale ? `${ago(snap.generated_at)}更新，超过 6 小时没同步` : `${ago(snap.generated_at)}更新 · ${fmtLA(snap.generated_at)}`}
+      {stale ? `${ago(snap.generated_at)}更新，超过 ${STALE_HOURS} 小时没同步` : `${ago(snap.generated_at)}更新 · ${fmtLA(snap.generated_at)}`}
     </div>
   );
 }
