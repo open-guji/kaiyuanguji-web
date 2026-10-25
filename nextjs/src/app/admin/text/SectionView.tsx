@@ -75,7 +75,10 @@ function SectionBody({ snap, section }: { snap: Snapshot; section: Section }) {
         </Panel>
       ))}
       {perVol.length > 0 && <PerVolume metrics={perVol} snap={snap} titles={titles} />}
-      <div className="text-xs text-gray-400">写入：{writers || '—'} · 最近一次 {fmtLA(latest)}（洛杉矶时间）</div>
+      <div className="text-xs text-gray-400">
+        写入：{writers || '—'} · 最近一次 {fmtLA(latest)}（洛杉矶时间）
+        {section.section === 'jobs' && snap.live && (snap.live.ok ? ' · 实时读取' : ` · 实时读取失败（${snap.live.error || '未知'}），显示的是快照`)}
+      </div>
     </>
   );
 }

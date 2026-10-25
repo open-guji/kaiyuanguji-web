@@ -57,6 +57,8 @@ export interface Snapshot {
   volumes: VolumeRow[];
   sections: Section[];
   metrics: Metric[];
+  /** 接口这次有没有实时读「重跑任务」栏：ok=true 是实时的，ok=false 是读不到、退回了快照；没配实时时没有这个字段 */
+  live?: { ok: boolean; at?: string; error?: string };
 }
 
 export type Stage = 'todo' | 'pipeline' | 'rough' | 'fine' | 'released';
