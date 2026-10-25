@@ -75,8 +75,11 @@ function PerVolume({ metrics, snap, titles }: { metrics: Metric[]; snap: Snapsho
   const cols = useMemo(() => {
     const seen = new Map<string, Metric>();
     for (const m of [...metrics].sort(bySort)) if (!seen.has(m.key)) seen.set(m.key, m);
-    return [...seen.values()];
+    // 数值列在前，文字列（备注、线上单号之类）排最后并左对齐，免得和数混排
+    const isText = (m: Metric) => typeof m.value !== 'number';
+    return [...seen.values()].sort((a, b) => Number(isText(a)) - Number(isText(b)));
   }, [metrics]);
+  const colIsText = (c: Metric) => typeof c.value !== 'number';
   const volTitle = useMemo(() => new Map((snap.volumes || []).map((v) => [`${v.book_id}/${v.vol}`, v.vol_title || ''])), [snap.volumes]);
   const rows = useMemo(() => {
     const map = new Map<string, { book_id: string; vol: string; cells: Map<string, Metric> }>();
@@ -97,7 +100,7 @@ function PerVolume({ metrics, snap, titles }: { metrics: Metric[]; snap: Snapsho
             <tr>
               <th className="text-left font-medium px-3 pl-4 py-2">书</th>
               <th className="text-left font-medium px-3 py-2">册</th>
-              {cols.map((c) => <th key={c.key} className="text-right font-medium px-3 py-2" title={c.key}>{c.label}</th>)}
+              {cols.map((c) => <th key={c.key} className={`${colIsText(c) ? 'text-left' : 'text-right'} font-medium px-3 py-2`} title={c.key}>{c.label}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -111,7 +114,7 @@ function PerVolume({ metrics, snap, titles }: { metrics: Metric[]; snap: Snapsho
                 {cols.map((c) => {
                   const m = r.cells.get(c.key);
                   return (
-                    <td key={c.key} className="px-3 py-2 text-right whitespace-nowrap tabular-nums" title={m ? `${m.writer || ''} · ${fmtLA(m.at)}` : ''}>
+                    <td key={c.key} className={colIsText(c) ? 'px-3 py-2 text-left text-xs text-gray-500 max-w-xs truncate' : 'px-3 py-2 text-right whitespace-nowrap tabular-nums'} title={m ? `${m.writer || ''} · ${fmtLA(m.at)}${colIsText(c) ? ` · ${fmtMetric(m)}` : ''}` : ''}>
                       {m ? fmtMetric(m) : <span className="text-gray-300">—</span>}
                     </td>
                   );
