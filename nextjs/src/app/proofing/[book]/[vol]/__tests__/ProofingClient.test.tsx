@@ -510,26 +510,25 @@ describe('精校页：符号、篆字等＝图形（char v0.3 图片格，GUJI-7
     });
     const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
 
-    it('选「符号、篆字等」才出现图形说明框，不直接提交', async () => {
+    it('选「符号、篆字等」不再另出说明框（说明写在备注里），也不直接提交', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
         render(<ProofingClient book="b12" vol="005" />);
         await screen.findAllByTestId('cell-card');
-        expect(screen.queryByLabelText('图形说明')).toBeNull();
         fireEvent.click(screen.getByRole('radio', { name: '符号、篆字等' }));
-        expect(screen.getByLabelText('图形说明')).toBeTruthy();
+        expect(screen.queryByLabelText('图形说明')).toBeNull();
         expect(fetchSpy).not.toHaveBeenCalled();
     });
 
-    it('填说明后确认：choice=figure、alt，不带字；快捷键 g 同样选中', async () => {
+    it('备注里写的说明随确认交上：choice=figure、alt＝备注，不带字；快捷键 g 同样选中', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
         render(<ProofingClient book="b12" vol="005" />);
         await screen.findAllByTestId('cell-card');
         fireEvent.keyDown(document, { key: 'g' });
-        fireEvent.change(await screen.findByLabelText('图形说明'), { target: { value: ' 左半圈连一实点 ' } });
+        fireEvent.change(await screen.findByLabelText('备注'), { target: { value: ' 左半圈连一实点 ' } });
         fireEvent.click(screen.getByRole('button', { name: '日' }));      // 选字不影响：图形没有字，提交时丢掉
         fireEvent.click(screen.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
-        expect(body(0)).toMatchObject({ book: 'b12', a: '148:2:14', choice: 'figure', alt: '左半圈连一实点' });
+        expect(body(0)).toMatchObject({ book: 'b12', a: '148:2:14', choice: 'figure', alt: '左半圈连一实点', note: '左半圈连一实点' });
         expect(body(0).char).toBeUndefined();
         expect(await screen.findByTestId('done-badge')).toBeTruthy();
     });

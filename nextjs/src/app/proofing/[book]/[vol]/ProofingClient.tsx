@@ -334,8 +334,6 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
     const [sentNote, setSentNote] = useState<string | null>(null);
-    // 「符号、篆字等」的图形说明：选中该项后才出现，可空
-    const [figAlt, setFigAlt] = useState('');
     const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
     // 已提交的回应＝一个字（可无）＋单选组里的一项＋备注；每次提交把它们合起来重交一票（同格同人覆盖旧票）
@@ -347,7 +345,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
         setBusy(true);
         setErr(null);
         const n = note.trim();
-        const a = choice === 'figure' ? figAlt.trim() : '';
+        const a = choice === 'figure' ? [...n].slice(0, 60).join('') : '';   // 图形说明就写在下面的备注框里
         const e = await onSubmit(cell, choice, choice === 'figure' ? undefined : char, choice === 'figure' ? undefined : pick, n || undefined, advance, a || undefined);
         setBusy(false);
         if (e) setErr(e);
@@ -375,15 +373,18 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
             style={{ position: 'relative', border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
-            {/* 提交过：右上角一个徽标就够，选了哪个看高亮的按钮（用户 2026-10-20） */}
-            {done && <span data-testid="done-badge" title={`已提交：${zis(done)}，想改再点别的`}
-                style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, lineHeight: 1.5, padding: '0 8px', borderRadius: 10, background: '#e6f5ec', color: '#1b6b44', border: '1px solid #2a7' }}>已提交</span>}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
                     : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
                     : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
-                    <div style={{ fontSize: 12, color: '#666', paddingRight: 56 }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}</div>
+                    <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}
+                        {/* 提交过：一个徽标就够，选了哪个看单选组里选中的项（用户 2026-10-20） */}
+                        {done && <span data-testid="done-badge" title={`已提交：${zis(done)}，想改再点别的`}
+                            style={{ marginLeft: 8, fontSize: 12, lineHeight: 1.5, padding: '0 8px', borderRadius: 10, background: '#e6f5ec', color: '#1b6b44', border: '1px solid #2a7' }}>已提交</span>}
+                    </div>
                     {/* 机器没定出字时不放大「？」，免得和下面「比字形：最像 X」打架（GUJI-683） */}
                     {cell.c ? <div style={{ fontSize: 34, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
                         : <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
@@ -392,29 +393,6 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     {cell.note && <div data-testid="recheck-note" style={{ fontSize: 12, color: '#7a3b1d', marginTop: 2 }}><b>再看一次</b>：{cell.note}</div>}
                     {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
                 </div>
-                {/* 单选组：两列小方格，只占右上角一小块，不挤下面的候选与相似字；已提交徽标在它上方 */}
-                <fieldset data-testid="kind-group" style={{ marginLeft: 'auto', marginTop: done ? 22 : 0, border: '1px solid #e2d6bf', borderRadius: 6, padding: '0 8px 4px', background: '#fffdf7', fontSize: 12, display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 10, alignItems: 'center' }}>
-                    <legend style={{ padding: '0 4px', color: '#777' }}>这一格是</legend>
-                    {KIND_OPTS.map(o => (
-                        <React.Fragment key={o.choice}>
-                            {o.choice === 'cut' && <div style={{ gridColumn: '1 / -1', color: '#555', lineHeight: 1.6, marginTop: 2, borderTop: '1px dashed #e2d6bf' }}>错误、特殊字符</div>}
-                            <label title={o.title} style={{ display: 'flex', gap: 3, alignItems: 'center', cursor: busy ? 'default' : 'pointer', lineHeight: 1.6, whiteSpace: 'nowrap' }}>
-                                <input type="radio" name={`kind-${cell.a}`} value={o.choice} checked={kind === o.choice} disabled={busy} data-hotkey={o.key}
-                                    onChange={() => setKind(o.choice)} />
-                                {o.label}
-                            </label>
-                        </React.Fragment>
-                    ))}
-                    {kind !== 'char' && (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" data-testid="kind-confirm" disabled={busy} onClick={confirmKind} className={BTN_CLASS} style={btnStyle('primary', false, busy)}>确认</button>
-                        </div>
-                    )}
-                    {kind === 'figure' && (
-                        <input value={figAlt} onChange={e => setFigAlt(e.target.value.slice(0, 60))} maxLength={60} aria-label="图形说明" placeholder="图形说明（可不填）"
-                            style={{ gridColumn: '1 / -1', boxSizing: 'border-box', marginTop: 2, fontSize: 12, padding: '2px 6px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
-                    )}
-                </fieldset>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
             {(cell.why?.some(w => w !== 'none') || !!cell.cls) && (
@@ -435,6 +413,26 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => pickChar(custom, { src: 'custom' })} className={BTN_CLASS}
                         style={btnStyle('primary', false, busy || [...custom].length !== 1)}>{kind === 'char' ? '提交这个字' : '选这个字'}</button>
                 </span>
+            </div>
+            </div>
+            {/* 单选组：两列小方格，贴在卡片右上角，和左边的裁图、候选字并排 */}
+            <fieldset data-testid="kind-group" style={{ flexShrink: 0, margin: '-6px -6px 0 0', border: '1px solid #e2d6bf', borderRadius: 6, padding: '2px 8px 4px', background: '#fffdf7', fontSize: 12, display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 10, alignItems: 'center' }}>
+                {KIND_OPTS.map(o => (
+                    <React.Fragment key={o.choice}>
+                        {o.choice === 'cut' && <div style={{ gridColumn: '1 / -1', color: '#555', lineHeight: 1.6, marginTop: 2, borderTop: '1px dashed #e2d6bf' }}>错误、特殊字符</div>}
+                        <label title={o.title} style={{ display: 'flex', gap: 3, alignItems: 'center', cursor: busy ? 'default' : 'pointer', lineHeight: 1.6, whiteSpace: 'nowrap' }}>
+                            <input type="radio" name={`kind-${cell.a}`} value={o.choice} checked={kind === o.choice} disabled={busy} data-hotkey={o.key}
+                                onChange={() => setKind(o.choice)} />
+                            {o.label}
+                        </label>
+                    </React.Fragment>
+                ))}
+                {kind !== 'char' && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button type="button" data-testid="kind-confirm" disabled={busy} onClick={confirmKind} className={BTN_CLASS} style={btnStyle('primary', false, busy)}>确认</button>
+                    </div>
+                )}
+            </fieldset>
             </div>
             {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
             {preCand && !done && (
