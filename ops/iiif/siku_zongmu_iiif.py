@@ -158,7 +158,7 @@ def http_get(url, timeout=120, tries=4, headers=None):
                 return r.read(), dict(r.headers)
         except urllib.error.HTTPError as e:
             last = e
-            if e.code not in (429, 500, 502, 503, 504):
+            if e.code != 429 and e.code < 500:      # EdgeOne 限流／回源失败会回 555 等自定义 5xx，一并重试
                 raise
         except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError) as e:
             last = e

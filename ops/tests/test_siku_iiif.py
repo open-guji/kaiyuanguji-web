@@ -181,6 +181,23 @@ class SikuIiif(unittest.TestCase):
             body, hdr = m.http_get('https://data.kaiyuanguji.com/x', tries=3)
         self.assertEqual(body, b'webp')
 
+    def test_http_get_retries_edgeone_555_but_not_404(self):
+        import urllib.error
+        from unittest import mock
+        ok = mock.MagicMock()
+        ok.__enter__.return_value.read.return_value = b'm'
+        ok.__enter__.return_value.headers = {}
+        e555 = urllib.error.HTTPError('u', 555, 'x', {}, None)
+        with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[e555, ok]), \
+                mock.patch.object(m.time, 'sleep'):
+            self.assertEqual(m.http_get('https://data.openguji.com/x', tries=3)[0], b'm')
+        e404 = urllib.error.HTTPError('u', 404, 'x', {}, None)
+        with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[e404, ok]) as uo, \
+                mock.patch.object(m.time, 'sleep'):
+            with self.assertRaises(urllib.error.HTTPError):
+                m.http_get('https://data.openguji.com/x', tries=3)
+        self.assertEqual(uo.call_count, 1)
+
     def test_cos_put_retries_when_error_body_truncated(self):
         import http.client
         import io as _io
