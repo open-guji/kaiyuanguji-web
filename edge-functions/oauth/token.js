@@ -117,17 +117,37 @@ async function deriveIdTokenKey(masterSecret, clientId) {
 
 const JTI_TTL_SECONDS = 120;
 
+// 表单体手工解析：EdgeOne 运行时里 Object.fromEntries(new URLSearchParams(...)) 会抛异常
+// （表单请求返回 545 Error return from script，JSON 正常），所以不依赖 URLSearchParams 的迭代
+function parseFormBody(text) {
+  const out = {};
+  if (!text) return out;
+  const decode = (s) => {
+    const t = s.replace(/\+/g, ' ');
+    try { return decodeURIComponent(t); } catch { return t; }
+  };
+  for (const pair of text.split('&')) {
+    if (!pair) continue;
+    const i = pair.indexOf('=');
+    const k = decode(i < 0 ? pair : pair.slice(0, i));
+    if (!k) continue;
+    out[k] = i < 0 ? '' : decode(pair.slice(i + 1));
+  }
+  return out;
+}
+
 async function parseBody(request) {
-  const ct = request.headers.get('content-type') || '';
+  const ct = (request.headers.get('content-type') || '').toLowerCase();
   let text = '';
   try { text = await request.text(); } catch { text = ''; }
   if (ct.includes('application/x-www-form-urlencoded')) {
-    return Object.fromEntries(new URLSearchParams(text));
+    return parseFormBody(text);
   }
   try {
-    return text ? JSON.parse(text) : {};
+    const parsed = text ? JSON.parse(text) : {};
+    return (parsed && typeof parsed === 'object') ? parsed : {};
   } catch {
-    try { return Object.fromEntries(new URLSearchParams(text)); } catch { return {}; }
+    return parseFormBody(text);
   }
 }
 
