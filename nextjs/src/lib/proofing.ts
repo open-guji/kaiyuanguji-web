@@ -686,10 +686,11 @@ export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: t
             return { err: '网络出错，请稍后再试', retry: true };
         }
     };
-    // 服务端 5xx／断网自动再试一次（隔 1.5 秒，别立刻重打同一个 KV 键）：同格同人覆盖旧票，重发不会多出一票
+    // 服务端 5xx／断网最多再试两次（隔 1.5、3 秒，别立刻重打同一个 KV 键）：同格同人覆盖旧票，重发不会多出一票。
+    // 10-26 实测存票偶发 KvStore Put 超时（net_exception_timeout），一次重试不够，放宽到两次
     let r = await once();
-    if (r.retry) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    for (let i = 1; r.retry && i <= 2; i++) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs * i));
         r = await once();
     }
     return r.err;

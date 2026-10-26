@@ -131,7 +131,7 @@ describe('submitReview', () => {
         expect(await submitReview(draft, 'a', (async () => new Response('{"error":"bad"}', { status: 400 })) as unknown as typeof fetch)).toBe('bad');
         expect(await submitReview(draft, 'a', (async () => { throw new Error('x'); }) as unknown as typeof fetch, 0)).toMatch(/网络/);
     });
-    it('500 或断网自动重试一次：第二次成功就算成功；400／429 不重试', async () => {
+    it('500 或断网自动重试（最多两次）：重试成功就算成功；400／429 不重试', async () => {
         const f500 = jest.fn()
             .mockResolvedValueOnce(new Response('{"success":false,"error":"服务器错误"}', { status: 500 }))
             .mockResolvedValueOnce(new Response('{"success":true}', { status: 200 }));
@@ -147,7 +147,7 @@ describe('submitReview', () => {
         expect(f429).toHaveBeenCalledTimes(1);
         const f500x2 = jest.fn(async () => new Response('{"error":"服务器错误"}', { status: 500 }));
         expect(await submitReview(draft, 'a', f500x2 as unknown as typeof fetch, 0)).toBe('服务器错误');
-        expect(f500x2).toHaveBeenCalledTimes(2);
+        expect(f500x2).toHaveBeenCalledTimes(3);        // 首发＋两次重试
     });
 });
 

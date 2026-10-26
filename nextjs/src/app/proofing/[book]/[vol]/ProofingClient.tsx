@@ -707,8 +707,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [done, setDone] = useState<DoneMap>({});
     const [page, setPage] = useState(0);
     const [sel, setSel] = useState<string | null>(null);
-    // 「只看还没回应的」缺省勾上（用户 10-24）。藏的是打开页面（或重新勾上）那一刻已回应的格：
-    // 这次刚回应的卡留在原地（变淡），想改还能改，下次进来才藏
+    // 「只看还没回应的」缺省勾上（用户 10-24）。藏的是已回应的格：打开页面时已回应的，以及这次选字／点「确认」交上的（10-26 起马上收起；
+    // 想改就取消勾选再找回来）。只更新备注不收
     const [onlyOpen, setOnlyOpen] = useState(true);
     const [hiddenDone, setHiddenDone] = useState<Set<string>>(new Set());
     // 快速确认里标了存疑、挪去逐格细看的格
@@ -782,7 +782,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             writeDone(rev, next);
             return next;
         });
-        if (advance) setAdvanceFrom(cell.a);          // 选了字或点「确认」自动跳到下一张没回应的（调研 A D1）
+        // 「只看还没回应的」勾着时，刚交上的这一张马上收起（用户 10-26）；在跳走之前先收，下一张照算
+        if (advance) { setHiddenDone(prev => (prev.has(cell.a) ? prev : new Set(prev).add(cell.a))); setAdvanceFrom(cell.a); }   // 选了字或点「确认」自动跳到下一张没回应的（调研 A D1）
         return null;
     }, [book, vol, rev]);
 
