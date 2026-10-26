@@ -37,6 +37,18 @@ on:
         type: choice
         options: [ia, pages]
         default: ia
+      rev:
+        description: '换图源册：钉 cv 页表版本（暂存 staged 版也取；填册 yaml 的 source_rev）。留空＝最新已发布版。只对 source=pages 有用'
+        type: string
+        default: ''
+      image_seg:
+        description: '换图源册：图路径版本段（如 qiefen2），图放 <册>/<段>/<页序>/…，canvas id 与 manifest 路径不变。留空＝不加'
+        type: string
+        default: ''
+      no_ia:
+        description: '换图源册：manifest 不挂 Internet Archive 回退（页号已重编，IA 叶号对不上；同时关掉 commons）'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -63,7 +75,7 @@ jobs:
         run: python3 -m unittest ops/tests/test_siku_iiif.py ops/tests/test_pages_iiif.py -v
 
       - name: Cord ↔ 裁剪框表核对（拆页框与 book-text 不一致就停，免得切出与 cord 对不上的书影）
-        if: inputs.book == '96mid1ogzk'
+        if: inputs.book == '96mid1ogzk' && inputs.image_seg == ''
         env:
           VOLS: ${{ inputs.vols }}
         run: python3 ops/iiif/check_cord_vs_splits.py --vols "$VOLS"
@@ -80,6 +92,9 @@ jobs:
           FORCE: ${{ inputs.force }}
           SOURCE: ${{ inputs.source }}
           BOOK: ${{ inputs.book }}
+          REV: ${{ inputs.rev }}
+          IMAGE_SEG: ${{ inputs.image_seg }}
+          NO_IA: ${{ inputs.no_ia }}
         run: |
           set -euo pipefail
           if ! [[ "$VOLS" =~ ^(all|[0-9]{1,2}(,[0-9]{1,2})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
@@ -94,7 +109,12 @@ jobs:
             python3 ops/iiif/pages_iiif.py --book "$BOOK" "${ARGS[@]}"
             exit 0
           fi
-          [ "$COMMONS" = "true" ] || ARGS+=(--no-commons)
+          if ! [[ "$REV" =~ ^[0-9]*$ ]]; then echo "❌ rev 格式不对：$REV"; exit 1; fi
+          if ! [[ "$IMAGE_SEG" =~ ^[0-9a-z]*$ ]]; then echo "❌ image_seg 格式不对：$IMAGE_SEG"; exit 1; fi
+          [ "$COMMONS" = "true" ] && [ "$NO_IA" != "true" ] || ARGS+=(--no-commons)
+          [ "$NO_IA" = "true" ] && ARGS+=(--no-ia)
+          [ -n "$REV" ] && ARGS+=(--rev "$REV")
+          [ -n "$IMAGE_SEG" ] && ARGS+=(--image-seg "$IMAGE_SEG")
           ARGS+=(--source "$SOURCE")
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
 
