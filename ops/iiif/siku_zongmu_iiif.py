@@ -179,7 +179,10 @@ def page_table_url(vol, rev):
 
 
 def load_page_table(vol, get=None):
-    """该册最新一版页表（公开地址不能列目录，从 r001 往上探到 404 为止）。没有页表返回 None。"""
+    """该册最新一版正式页表（公开地址不能列目录，从 r001 往上探到 404 为止）。没有页表返回 None。
+
+    跳过 `status: staged` 的预发版（换图源先发预发、等 cv 册 yaml 钉 `source_rev` 才切，
+    cv `datastore/sources.read_table` 同一口径；GUJI-748）。"""
     get = get or http_get
     table = None
     rev = 1
@@ -193,7 +196,8 @@ def load_page_table(vol, get=None):
         t = json.loads(body)
         if t.get('schema') != 'guji-pages/1' or t.get('rev') != rev:
             raise RuntimeError(f'vol{vol:02d} 页表 r{rev:03d} 格式不对')
-        table = t
+        if t.get('status') != 'staged':
+            table = t
         rev += 1
 
 

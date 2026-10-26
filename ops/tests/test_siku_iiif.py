@@ -239,6 +239,8 @@ class SikuIiif(unittest.TestCase):
                 raise urllib.error.HTTPError(url, 404, 'nf', {}, None)
             return json.dumps(tables[rev]).encode(), {}
         self.assertEqual(m.load_page_table(21, get=get)['rev'], 2)
+        tables[3] = {'schema': 'guji-pages/1', 'rev': 3, 'status': 'staged', 'pages': []}
+        self.assertEqual(m.load_page_table(21, get=get)['rev'], 2)     # 预发版不取
         tables.clear()
         self.assertIsNone(m.load_page_table(21, get=get))
 
