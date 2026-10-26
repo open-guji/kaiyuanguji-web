@@ -242,6 +242,23 @@ class SikuIiif(unittest.TestCase):
         tables.clear()
         self.assertIsNone(m.load_page_table(21, get=get))
 
+    def test_load_page_table_skips_staged_and_pins_rev(self):
+        import json
+        import urllib.error
+        tables = {n: {'schema': 'guji-pages/1', 'rev': n, 'pages': []} for n in (1, 2, 3)}
+        tables[3]['status'] = 'staged'
+
+        def get(url, **kw):
+            rev = int(url.rsplit('/r', 1)[1][:3])
+            if rev not in tables:
+                raise urllib.error.HTTPError(url, 404, 'nf', {}, None)
+            return json.dumps(tables[rev]).encode(), {}
+        self.assertEqual(m.load_page_table(11, get=get)['rev'], 2)
+        self.assertEqual(m.load_page_table(11, get=get, rev=3)['rev'], 3)
+        self.assertIsNone(m.load_page_table(11, get=get, rev=4))
+        tables[1]['status'] = tables[2]['status'] = 'staged'
+        self.assertIsNone(m.load_page_table(11, get=get))
+
 
 @unittest.skipIf(m is None, 'Pillow 未安装')
 class CordSplitsCheck(unittest.TestCase):
