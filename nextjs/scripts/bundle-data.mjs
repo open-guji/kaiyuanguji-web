@@ -37,7 +37,7 @@ import { bundleCatalog } from './build-catalog-index.mjs';
 import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
 import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
-import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
+import { filterTextsShard, isExtraPath, isInternal, isSideFile, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
 import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
 import { buildItemReaderFiles } from './lib/reader-files.mjs';
@@ -157,8 +157,8 @@ function copyItemDir(itemDir, destDir) {
     for (const name of readdirSync(itemDir)) {
         if (!listed.has(name) && isTextKey(name) && existsSync(join(itemDir, name, 'index.json'))) blocked.add(name);
     }
-    // extra/ 是手编源／工作档（default/extra/source/…），任何版本目录下的都不进公开产物
-    copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]) || isExtraPath(rel, listed));
+    // extra/ 是手编源／工作档（default/extra/source/…），任何版本目录下的都不进公开产物；`*.char-edits.json` 旁路文件同理
+    copyDirRecursive(itemDir, destDir, (rel) => rel === 'manifest.json' || blocked.has(rel.split('/')[0]) || isExtraPath(rel, listed) || isSideFile(rel));
     if (pub) {
         const dest = join(destDir, 'manifest.json');
         if (pub === manifest) writeIfChanged(dest, readFileSync(join(itemDir, 'manifest.json')));

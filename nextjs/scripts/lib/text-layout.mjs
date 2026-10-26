@@ -44,6 +44,14 @@ export function isExtraPath(rel, versionKeys = []) {
     return parts.length > 1 && parts[1] === 'extra' && keys.has(parts[0]);
 }
 
+/**
+ * 版本目录下的旁路工作档（book-text #269 的 `NNN.char-edits.json`：逐字改动记录，不在 index.json 声明、临时存在），不得进公开产物。
+ * 按文件名后缀挡，任何层级都算。
+ */
+export function isSideFile(rel) {
+    return typeof rel === 'string' && /\.char-edits\.json$/.test(rel);
+}
+
 function readJsonOrNull(p) {
     try {
         return JSON.parse(readFileSync(p, 'utf-8'));
