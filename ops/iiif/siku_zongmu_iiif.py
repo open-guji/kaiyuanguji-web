@@ -117,8 +117,14 @@ def vol_dir(vol):
     return f'{vol:02d}'
 
 
+# 换图源册的图放在册目录下的版本段里（如 qiefen2），与旧图路径分开：同路径换图有 30 天缓存，不用清；
+# canvas id、manifest 路径不变（cord 里的 canvas.id 照旧），图地址由 manifest 带出，前端按 `/<seq>/full/` 取页序
+IMAGE_SEG = ''
+
+
 def image_base_key(vol, seq):
-    return f'{KEY_PREFIX}/{BOOK_ID}/{vol_dir(vol)}/{seq}'
+    seg = f'{IMAGE_SEG}/' if IMAGE_SEG else ''
+    return f'{KEY_PREFIX}/{BOOK_ID}/{vol_dir(vol)}/{seg}{seq}'
 
 
 def tier_key(vol, seq, width):
@@ -733,6 +739,7 @@ def main(argv=None):
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
+    ap.add_argument('--image-seg', default='', help='图路径的版本段，如 qiefen2（换图源册用，图放 <册>/<段>/<页序>/…）；缺省不加')
     ap.add_argument('--no-ia', action='store_true', help='canvas 不挂 Internet Archive 回退（换图源册：页号已重编，不再对应 IA 叶号；同时要 --no-commons）')
     ap.add_argument('--rev', type=int, help='--source pages：钉页表版本（暂存版也取）；缺省取最新已发布版，跳过 staged')
     ap.add_argument('--source', choices=['ia', 'pages'], default='ia',
@@ -740,6 +747,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     vols_meta = load_volumes()
+    global IMAGE_SEG
+    IMAGE_SEG = a.image_seg
     splits = load_splits()
     vols = sorted(vols_meta) if a.vols == 'all' else [int(v) for v in a.vols.split(',') if v.strip()]
     for v in vols:

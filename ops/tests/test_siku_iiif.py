@@ -250,6 +250,16 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(labels(True), ['本站', 'Internet Archive'])
         self.assertEqual(labels(False), ['本站'])
 
+    def test_image_seg_keeps_canvas_id_and_manifest(self):
+        try:
+            m.IMAGE_SEG = 'qiefen2'
+            self.assertEqual(m.tier_key(11, '0001', 1200), 'iiif/96mid1ogzk/11/qiefen2/0001/full/1200,/0/default.webp')
+            self.assertEqual(m.manifest_key(11), 'iiif/96mid1ogzk/11/manifest.json')
+            self.assertTrue(m.canvas_id(11, '0001').endswith('/iiif/96mid1ogzk/canvas/11/0001'))
+        finally:
+            m.IMAGE_SEG = ''
+        self.assertEqual(m.image_base_key(11, '0001'), 'iiif/96mid1ogzk/11/0001')
+
     def test_load_page_table_skips_staged_and_pins_rev(self):
         import json
         import urllib.error
