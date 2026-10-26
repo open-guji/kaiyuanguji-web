@@ -178,23 +178,35 @@ def page_table_url(vol, rev):
     return f'{PAGES_BASE}/pack/source/pages/{BOOK_ID}/{vol_dir(vol)}/r{rev:03d}.json'
 
 
-def load_page_table(vol, get=None):
-    """该册最新一版页表（公开地址不能列目录，从 r001 往上探到 404 为止）。没有页表返回 None。"""
+def load_page_table(vol, get=None, rev=None):
+    """该册页表。缺省取最新一版已发布的（公开地址不能列目录，从 r001 往上探到 404 为止；
+    `status=staged`（暂存、未发布，如换图源试点）的版跳过，与 cv 的 read_table 一致）。
+    rev 给了就只取这一版（暂存版也取，换源试切时显式钉版用）。没有页表返回 None。"""
     get = get or http_get
-    table = None
-    rev = 1
-    while True:
+
+    def fetch(n):
         try:
-            body, _ = get(page_table_url(vol, rev), timeout=60, tries=3)
+            body, _ = get(page_table_url(vol, n), timeout=60, tries=3)
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                return table
+                return None
             raise
         t = json.loads(body)
-        if t.get('schema') != 'guji-pages/1' or t.get('rev') != rev:
-            raise RuntimeError(f'vol{vol:02d} 页表 r{rev:03d} 格式不对')
-        table = t
-        rev += 1
+        if t.get('schema') != 'guji-pages/1' or t.get('rev') != n:
+            raise RuntimeError(f'vol{vol:02d} 页表 r{n:03d} 格式不对')
+        return t
+
+    if rev is not None:
+        return fetch(rev)
+    table = None
+    n = 1
+    while True:
+        t = fetch(n)
+        if t is None:
+            return table
+        if t.get('status') != 'staged':
+            table = t
+        n += 1
 
 
 def plan_from_pages(table):
@@ -720,6 +732,7 @@ def main(argv=None):
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
+    ap.add_argument('--rev', type=int, help='--source pages：钉页表版本（暂存版也取）；缺省取最新已发布版，跳过 staged')
     ap.add_argument('--source', choices=['ia', 'pages'], default='ia',
                     help='源图：ia＝自己下 IA tif 并按裁剪框表拆页（旧法）；pages＝读 cv 页表与页图（推荐）')
     a = ap.parse_args(argv)
@@ -745,9 +758,9 @@ def main(argv=None):
         print(f'vol{v:02d} {meta["ia"]}（{meta["leaves"]} 叶，{meta["juan"]}）…', flush=True)
         table = None
         if a.source == 'pages':
-            table = load_page_table(v)
+            table = load_page_table(v, rev=a.rev)
             if table is None:
-                raise SystemExit(f'❌ vol{v:02d} 还没有 cv 页表（guji source ia／register 先登记）')
+                raise SystemExit(f'❌ vol{v:02d} 还没有 cv 页表' + (f' r{a.rev:03d}' if a.rev else '（guji source ia／register 先登记）'))
             print(f'  页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
         r = slice_volume(v, meta, splits, out, cache, leaves, a.jobs, table=table)
         if table is not None:
