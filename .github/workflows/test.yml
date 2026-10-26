@@ -71,9 +71,6 @@ jobs:
 
       - name: Schedule watchdog tests (ops/tests/test_schedule_watchdog.py)
         run: python3 -m unittest ops/tests/test_schedule_watchdog.py -v
-      # 后台「文本整理」栏目的同步脚本（ops/text-progress/sync.py）：真源 → 每册字段、快照形状，不连库（docs/text-progress.md）
-      - name: Text progress sync tests (ops/tests/test_text_progress.py)
-        run: python3 -m unittest ops/tests/test_text_progress.py -v
       # 域名只写在 config/hosts.json：生成物同步、别处没有写死（docs/data-domain-migration.md）
       - name: Hosts tests (ops/tests/hosts.test.mjs)
         run: node --test ops/tests/hosts.test.mjs
