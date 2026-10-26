@@ -117,8 +117,14 @@ def vol_dir(vol):
     return f'{vol:02d}'
 
 
+# 换图源册的图放在册目录下的版本段里（如 qiefen2），与旧图路径分开：同路径换图有 30 天缓存，不用清；
+# canvas id、manifest 路径不变（cord 里的 canvas.id 照旧），图地址由 manifest 带出，前端按 `/<seq>/full/` 取页序
+IMAGE_SEG = ''
+
+
 def image_base_key(vol, seq):
-    return f'{KEY_PREFIX}/{BOOK_ID}/{vol_dir(vol)}/{seq}'
+    seg = f'{IMAGE_SEG}/' if IMAGE_SEG else ''
+    return f'{KEY_PREFIX}/{BOOK_ID}/{vol_dir(vol)}/{seg}{seq}'
 
 
 def tier_key(vol, seq, width):
@@ -438,7 +444,7 @@ def ia_image_id(ia_id, leaf):
     return f'https://iiif.archive.org/image/iiif/3/{path}'
 
 
-def build_canvas(vol, meta, c, commons):
+def build_canvas(vol, meta, c, commons, ia=True):
     cid = canvas_id(vol, c['seq'])
     W, H = c['width'], c['height']
     by = {n: (tw, th) for n, tw, th, _ in c['tiers']}
@@ -455,11 +461,12 @@ def build_canvas(vol, meta, c, commons):
         })
     region = 'full' if not c['xywh'] else ','.join(map(str, c['xywh']))
     ia_img = ia_image_id(meta['ia'], c['leaf'])
-    items.append({
-        'id': f'{ia_img}/{region}/{IA_W},/0/default.jpg', 'type': 'Image', 'format': 'image/jpeg',
-        'width': IA_W, 'height': round(IA_W * H / W), 'label': {'zh': ['Internet Archive']},
-        'service': [{'id': ia_img, 'type': 'ImageService3', 'profile': 'level2'}],
-    })
+    if ia:      # 换图源册（页号已重编）leaf 不再是 IA 叶号，不挂 IA 回退
+        items.append({
+            'id': f'{ia_img}/{region}/{IA_W},/0/default.jpg', 'type': 'Image', 'format': 'image/jpeg',
+            'width': IA_W, 'height': round(IA_W * H / W), 'label': {'zh': ['Internet Archive']},
+            'service': [{'id': ia_img, 'type': 'ImageService3', 'profile': 'level2'}],
+        })
     tw, th = by['thumb']
     label = f'第 {c["leaf"]} 葉' + (f'（{c["pos"]}）' if c['pos'] else '')
     canvas = {
@@ -474,7 +481,7 @@ def build_canvas(vol, meta, c, commons):
             }],
         }],
     }
-    if c['xywh']:
+    if c['xywh'] and ia:
         # #357：拆开的块记原图与裁剪框，坐标原点＝裁剪区左上角
         canvas['source'] = {'id': ia_img, 'type': 'Image',
                             'selector': {'type': 'FragmentSelector', 'value': 'xywh=' + ','.join(map(str, c['xywh']))}}
@@ -489,7 +496,7 @@ def usable_commons(vol, meta, commons):
     return commons
 
 
-def build_manifest(vol, meta, canvases, commons):
+def build_manifest(vol, meta, canvases, commons, ia=True):
     mid = public_url(manifest_key(vol))
     return {
         '@context': 'http://iiif.io/api/presentation/3/context.json',
@@ -507,7 +514,7 @@ def build_manifest(vol, meta, canvases, commons):
         'homepage': [{'id': f'https://archive.org/details/{meta["ia"]}', 'type': 'Text',
                       'label': {'zh': ['Internet Archive 原條目']}, 'format': 'text/html'}],
         'partOf': [{'id': public_url(collection_key()), 'type': 'Collection'}],
-        'items': [build_canvas(vol, meta, c, commons) for c in canvases],
+        'items': [build_canvas(vol, meta, c, commons, ia) for c in canvases],
     }
 
 
@@ -732,12 +739,16 @@ def main(argv=None):
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
+    ap.add_argument('--image-seg', default='', help='图路径的版本段，如 qiefen2（换图源册用，图放 <册>/<段>/<页序>/…）；缺省不加')
+    ap.add_argument('--no-ia', action='store_true', help='canvas 不挂 Internet Archive 回退（换图源册：页号已重编，不再对应 IA 叶号；同时要 --no-commons）')
     ap.add_argument('--rev', type=int, help='--source pages：钉页表版本（暂存版也取）；缺省取最新已发布版，跳过 staged')
     ap.add_argument('--source', choices=['ia', 'pages'], default='ia',
                     help='源图：ia＝自己下 IA tif 并按裁剪框表拆页（旧法）；pages＝读 cv 页表与页图（推荐）')
     a = ap.parse_args(argv)
 
     vols_meta = load_volumes()
+    global IMAGE_SEG
+    IMAGE_SEG = a.image_seg
     splits = load_splits()
     vols = sorted(vols_meta) if a.vols == 'all' else [int(v) for v in a.vols.split(',') if v.strip()]
     for v in vols:
@@ -767,7 +778,7 @@ def main(argv=None):
             r['stats']['page_table'] = f'r{table["rev"]:03d}'
         r['stats']['wall_s'] = round(time.perf_counter() - t0, 1)
         commons = None if a.no_commons else usable_commons(v, meta, commons_file(meta['ia']))
-        man = build_manifest(v, meta, r['canvases'], commons)
+        man = build_manifest(v, meta, r['canvases'], commons, ia=not a.no_ia)
         r['stats']['commons'] = commons['name'] if commons else None
         p = os.path.join(out, manifest_key(v))
         with open(p, 'w', encoding='utf-8') as f:
