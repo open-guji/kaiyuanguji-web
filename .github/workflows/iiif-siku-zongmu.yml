@@ -5,6 +5,9 @@ name: IIIF slice — 四庫總目及其他书
 # 方案见 overview `项目进展/古籍索引网站/进度/四库总目影像存储方案.md`，脚本 ops/iiif/siku_zongmu_iiif.py。
 # 别的书（book 填 book-index id，如北行日錄 988g7gsqhd、全唐文 995ejelvk0）读 cv 页表出图，脚本 ops/iiif/pages_iiif.py，
 # 书名与各册卷次在 ops/iiif/pages-books.json。
+# 上传后默认自动清 EdgeOne 里本次写过的 manifest.json 缓存（purge 输入，手动再清用 edgeone-purge-urls 工作流）：
+# CDN 对无查询串的 manifest 缓存约 4 天、不认 max-age=300，不清读者会一直看到旧书影。
+# 换图源册的完整做法：rev＝册 yaml 的 source_rev、image_seg=qiefen2、no_ia=true、commons=false；大批量按册号拆成每路约 7 册并行触发。
 # 只手动触发。用现有 COS 数据桶（与 deploy.yml 同一组 secrets），不新开桶。
 # 时长参考（4 核 runner）：vol02＋vol03 共 298 个 canvas，切片不到 1 分钟；全书 99 册约 1.6 万页，切片约 40 分钟。
 
@@ -49,6 +52,10 @@ on:
         description: '换图源册：manifest 不挂 Internet Archive 回退（页号已重编，IA 叶号对不上；同时关掉 commons）'
         type: boolean
         default: false
+      purge:
+        description: '上传后顺手清 EdgeOne 里这几册 manifest.json 的缓存（CDN 对无查询串的旧 manifest 缓存约 4 天、不认 max-age）。只清本次写过的 manifest，不清图'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -118,6 +125,22 @@ jobs:
           [ -n "$IMAGE_SEG" ] && ARGS+=(--image-seg "$IMAGE_SEG")
           ARGS+=(--source "$SOURCE")
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
+
+      - name: Purge EdgeOne manifest cache
+        if: ${{ inputs.upload && inputs.purge }}
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --user tencentcloud-sdk-python-teo -q
+          ORIGIN=$(python3 -c "import sys; sys.path.insert(0, 'ops'); import hosts; print(hosts.DATA_ORIGIN)")
+          URLS=$(cd "$RUNNER_TEMP/iiif/out" && find iiif -name manifest.json | sort | sed "s#^#$ORIGIN/#" | tr '\n' ' ')
+          if [ -z "$URLS" ]; then echo "没有 manifest 要清"; exit 0; fi
+          export URLS
+          python3 ops/edgeone-purge-urls.py
 
       - name: Upload report and samples
         if: always()
