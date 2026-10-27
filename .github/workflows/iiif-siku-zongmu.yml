@@ -54,7 +54,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: iiif-siku-zongmu
+  # 按册号分组：不同册的运行可以并行（大批量拆成几路跑）；同一组册重复触发仍排队
+  group: iiif-siku-zongmu-${{ inputs.book }}-${{ inputs.vols }}
   cancel-in-progress: false
 
 jobs:
