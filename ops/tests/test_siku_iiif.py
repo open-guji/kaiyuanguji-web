@@ -23,7 +23,20 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(vols[8]['leaves'], 69)
 
     def test_plan_split_volume(self):
-        plan = m.plan_canvases(3, 107, m.load_splits())
+        # 真实裁剪框表里的册都已换图源移出，这里用 vol03 旧表的 105 叶四块做样例
+        import json
+        import tempfile
+        rows = [{'vol': 'vol03', 'ia_leaf': 105, 'canvas_seq': f'0105{x}', 'ws_page': 105 + i, 'pos': pos,
+                 'xywh': xywh, 'orig_size': [4198, 5848]}
+                for i, (x, pos, xywh) in enumerate([('a', '右上', [2096, 0, 2102, 2913]), ('b', '左上', [0, 0, 2096, 2913]),
+                                                    ('c', '右下', [2101, 2913, 2074, 2931]), ('d', '左下', [0, 2913, 2101, 2935])])]
+        with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False, encoding='utf-8') as f:
+            json.dump(rows, f)
+        try:
+            splits = m.load_splits(f.name)
+        finally:
+            os.unlink(f.name)
+        plan = m.plan_canvases(3, 107, splits)
         seqs = [c['seq'] for c in plan]
         self.assertEqual(len(plan), 110)  # 合扫叶 105 换成 a–d 四块
         self.assertEqual(seqs[103:110], ['0104', '0105a', '0105b', '0105c', '0105d', '0106', '0107'])
