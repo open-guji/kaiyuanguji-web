@@ -100,12 +100,13 @@ export function periodOf(dynasty) {
 }
 
 /** 卡片：总目卡片去掉提要，加整理本标记与首页分区要的字段 */
-export function toReadCard(d, { collated = false, textCount = 1, period = null } = {}) {
+export function toReadCard(d, { collated = false, own = false, textCount = 1, period = null } = {}) {
     const c = toCard(d);
     delete c.summary;
     // 版本名（Book 的 edition）：同名书（《钦定四库全书总目》《脂砚斋重评石头记》等）靠它在卡片上分辨
     if (typeof d.edition === 'string' && d.edition.trim()) c.edition = d.edition.trim();
     if (collated) c.collated = true;
+    if (own) c.own = true;
     const p = period ?? cardPeriod(c, d);
     if (p) c.period = p;
     if (typeof d.subtype === 'string' && d.subtype.trim() && d.subtype.trim() !== 'book') c.subtype = d.subtype.trim();
@@ -240,6 +241,49 @@ export function summarizeBu(tree) {
     return { bu, unclassified };
 }
 
+/** 本站自己整理的书在推荐里的默认标签与导语（策展文件对该书或其所属作品另写了就用策展的） */
+export const OWN_PICK_LABEL = '自建整理';
+export const OWN_PICK_BLURB = '开源古籍逐页对照书影自行整理校对的文本，可对读书影。';
+
+/**
+ * 首页「推荐阅读」：本站自己整理的书（卡片 own）排最前，其后是策展文件里的推荐，按策展顺序。
+ * - 自建本的导语、签条、类别取策展文件里写给该书的，没有就取写给它所属作品的，再没有用默认；
+ * - 策展里推荐的作品下已有自建本时，这条换成自建本（同一部书不出两张卡）；
+ * - 自建本之间按策展里出现的先后，不在策展里的按书名。
+ * 纯函数：card(id) 取卡片（顺带记下查不到的 id）。
+ */
+export function pickList({ all, byId, curationPicks, card }) {
+    const own = all.filter((c) => c.own);
+    const ownByWork = new Map();
+    for (const c of own) {
+        const w = c.work_id ?? c.id;
+        (ownByWork.get(w) ?? ownByWork.set(w, []).get(w)).push(c);
+    }
+    const curated = new Map(curationPicks.map((p) => [p.id, p]));
+    const rank = (c) => {
+        const i = curationPicks.findIndex((p) => p.id === c.id || p.id === c.work_id);
+        return i < 0 ? Infinity : i;
+    };
+    const front = [...own].sort((a, b) => rank(a) - rank(b) || compareTitle(a, b));
+    const seen = new Set();
+    const picks = [];
+    const push = (c, p) => {
+        if (!c || seen.has(c.id)) return;
+        seen.add(c.id);
+        picks.push(compact({ ...c, blurb: p?.blurb, slip: p?.slip, type_label: p?.type_label }));
+    };
+    for (const c of front) {
+        const p = curated.get(c.id) ?? curated.get(c.work_id);
+        push(c, { blurb: p?.blurb ?? OWN_PICK_BLURB, slip: p?.slip, type_label: p?.type_label ?? OWN_PICK_LABEL });
+    }
+    for (const p of curationPicks) {
+        // 该作品下有自建本：这一张已由自建本顶替
+        if (ownByWork.has(p.id)) { card(p.id); continue; }
+        push(card(p.id), p);
+    }
+    return picks;
+}
+
 /**
  * 首页分区（纯函数，便于单测）。
  * @param {{ works: object[], books: object[], tree: object[], curation: ReturnType<typeof readCuration> }} args
@@ -257,11 +301,7 @@ export function buildSections({ works, books, tree, curation }) {
         return c;
     };
 
-    const picks = [];
-    for (const p of curation?.picks ?? []) {
-        const c = card(p.id);
-        if (c) picks.push(compact({ ...c, blurb: p.blurb, slip: p.slip, type_label: p.type_label }));
-    }
+    const picks = pickList({ all, byId, curationPicks: curation?.picks ?? [], card });
 
     const topics = [];
     for (const t of curation?.topics ?? []) {
@@ -414,7 +454,7 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
     }
     const workCards = new Map();
     const works = rw.map(({ d, nt }) => {
-        const card = toReadCard(d, { collated: nt.collated, textCount: nt.versions.length + (bookCountByWork.get(d.id) ?? 0) });
+        const card = toReadCard(d, { collated: nt.collated, own: nt.own, textCount: nt.versions.length + (bookCountByWork.get(d.id) ?? 0) });
         workCards.set(d.id, card);
         return { d, card };
     });
@@ -428,7 +468,7 @@ export function bundleRead({ index, rootDirFor, textDirFor, dataDir, taxonomyFil
     };
     const books = rb.map(({ d, nt }) => {
         const w = str(d.work_id);
-        const own = toReadCard(d, { textCount: nt.versions.length + (w ? bookCountByWork.get(w) - 1 : 0) });
+        const own = toReadCard(d, { own: nt.own, textCount: nt.versions.length + (w ? bookCountByWork.get(w) - 1 : 0) });
         if (!own.period && w) {
             const p = workPeriod(w);
             if (p) own.period = p;

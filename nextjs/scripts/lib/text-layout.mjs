@@ -115,7 +115,7 @@ export function firstChapterOf(indexDoc) {
  * 新结构条目的可读性（阅读首页判据，与 #306 同一思路：站内真有正文）：
  * manifest 存在、有可公开版本，且每个公开版本的 index.json 章目录非空才算这个版本可读；一份可读版本都没有就不可读。
  * 返回 null（不可读）或 { versions: [{ key, kind, first: { file, hasJson } }], collated, defaultFirst }。
- * collated：有 kind=collated 的版本（阅读首页「整理本」标记）；defaultFirst：主版本首章（可能为 null，主版本不可读时）。
+ * collated：有 kind=collated 的版本（阅读首页「整理本」标记）；own：有 kind=self_collated 的版本（本站自己整理）；defaultFirst：主版本首章（可能为 null，主版本不可读时）。
  */
 export function newStructureReadable(itemDir) {
     const manifest = readManifest(itemDir);
@@ -129,6 +129,8 @@ export function newStructureReadable(itemDir) {
     return {
         versions,
         collated: versions.some((v) => v.kind === 'collated'),
+        // 本站自己整理的文本（kind=self_collated，即原件）：阅读首页优先推荐
+        own: versions.some((v) => v.kind === 'self_collated'),
         defaultFirst: versions.find((v) => v.key === 'default')?.first ?? null,
     };
 }
