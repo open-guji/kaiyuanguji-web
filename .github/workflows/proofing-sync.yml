@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu' }}
+      PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu,beixing-guben' }}
       FIX_BOOKS: ${{ vars.FIX_BOOKS || '96mid1ogzk' }}
       DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
       ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.only || '' }}
