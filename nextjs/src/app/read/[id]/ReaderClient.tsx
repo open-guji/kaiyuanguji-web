@@ -19,6 +19,7 @@ import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
+import { isFacsimileTrimmed } from '@/lib/facsimile-trimmed';
 import { getJson, loadDuiduFiles, loadFigUrls, volumeFromChar } from '@/lib/duidu-data';
 import { ensureChapterFont } from '@/lib/chapter-font';
 import { SITE_NAME } from '@/lib/constants';
@@ -369,11 +370,15 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         return entity;
     }, [id, transport, wide]);
 
+    // 图源已裁去空白（殿本 qiefen2）：阅读器隐藏「书影保留空白」
+    const [facsimileTrimmed, setFacsimileTrimmed] = useState(false);
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
     const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
         const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
         const vol = files?.cord ? iiifVolumeOf(files.cord) : files?.cordSkipped ? volumeFromChar(files.char) : null;
-        return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
+        const images = vol ? await loadFacsimile(vol.bookId, vol.vol) : null;
+        setFacsimileTrimmed(isFacsimileTrimmed(images));
+        return images;
     }, [id, transport, wide]);
 
     return (
@@ -401,6 +406,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}
                 resolveImages={resolveImages}
+                facsimileTrimmed={facsimileTrimmed}
                 resolveEntities={resolveEntities}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
