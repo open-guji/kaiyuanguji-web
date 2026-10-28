@@ -12,6 +12,8 @@ import { getTransport } from '@/lib/transport';
 import { seedTextFileVersion } from '@/lib/cos-storage';
 import { loadProofIndex, parsePending, proofInvite } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
+import TextSourceMenu from './TextSourceMenu';
+import type { ReadTextRow } from '@/lib/read-texts';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
@@ -37,6 +39,8 @@ interface ReaderClientProps {
     bookTitle: string;
     /** 版本名（Book 的 edition，如「清乾隆六十年武英殿刻本」）：书名后直接显示，不藏在选择框里；Work 没有 */
     edition?: string;
+    /** 作品下各条目的文本来源（entry.read_texts，自建本在前）；不足两份时不出选择 */
+    sources?: ReadTextRow[];
     /** 服务端取好的首屏数据（manifest、版本目录、首章正文），见 reader-seed.ts；缺省则全由浏览器取 */
     seed?: ReaderSeed;
     /** 服务端直出的首章正文＋上下章链接（给爬虫看的同一章正文），阅读器内容出来后卸载；见 ReaderLead.tsx */
@@ -160,7 +164,7 @@ function useWideViewport(): boolean {
 type CharfixEnt = Pick<CharFixCtx, 'entities' | 'entityVersion'>;
 const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 
-function Reader({ id, initial, bookTitle, edition, seed, lead }: ReaderClientProps) {
+function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
     // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
@@ -375,6 +379,7 @@ function Reader({ id, initial, bookTitle, edition, seed, lead }: ReaderClientPro
     return (
         <>
         <ProofingNotice id={id} vol={meta?.proofVol} feedbackVol={meta?.feedbackVol} />
+        {sources && sources.length > 1 && <TextSourceMenu currentId={id} rows={sources} />}
         <div ref={textRef}>
             <TextReader
                 id={id}

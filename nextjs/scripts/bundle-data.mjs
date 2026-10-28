@@ -38,6 +38,7 @@ import { bundleRead } from './build-read-index.mjs';
 import { bundleMetaHome } from './build-meta-home.mjs';
 import { assertDerivedDir, derivedDir, derivedPath, indexDirFor, readEntryDoc, reportEntryReads, taxonomyFileFor } from './lib/derived.mjs';
 import { filterTextsShard, isExtraPath, isInternal, isTextKey, newStructureReadable, publicManifest, publicVersions, readManifest } from './lib/text-layout.mjs';
+import { collectReadTexts } from './lib/read-texts.mjs';
 import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
 import { buildItemReaderFiles } from './lib/reader-files.mjs';
@@ -242,6 +243,9 @@ let readSeedReady = false;
 
 function bundleL1() {
     const index = loadShardedIndex();
+    // 作品下各条目的文本来源汇总（lib/read-texts.mjs）：写进 Work 与各 Book 的 entry，阅读页与作品页的阅读入口用
+    const readTexts = collectReadTexts(index, { textDirFor: (item) => TEXT_DIR, rootDirFor });
+    console.log(`    read-texts: ${readTexts.size} 个条目归入有多个文本来源的作品`);
     let totalEntries = 0;
     let totalBytes = 0;
     let itemFileCount = 0;
@@ -286,6 +290,9 @@ function bundleL1() {
                         detail.text_count = newText.versions.length;
                         detail.text_kinds = [...new Set(newText.versions.map((v) => v.kind))].sort();
                     }
+                    // 文本来源汇总（自建本在前）；只有一个来源的条目不加
+                    const rt = readTexts.get(id);
+                    if (rt) detail.read_texts = rt;
                     if (item.subtype) detail.subtype = item.subtype;
                     if (item.primary_name) detail.primary_name = item.primary_name;
                     // 注入仓库归属，供前端拼右上角 GitHub 源文件链接：
