@@ -12,6 +12,8 @@ import { getTransport } from '@/lib/transport';
 import { seedTextFileVersion } from '@/lib/cos-storage';
 import { loadProofIndex, parsePending, proofInvite } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
+import TextSourceMenu from './TextSourceMenu';
+import type { ReadTextRow } from '@/lib/read-texts';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';

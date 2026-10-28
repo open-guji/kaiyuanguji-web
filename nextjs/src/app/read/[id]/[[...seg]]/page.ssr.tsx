@@ -40,6 +40,7 @@ import { preloadReader, SEED_TEXT_MAX } from '../preload';
 import { seedCallKey, type ReaderSeed } from '../reader-seed';
 import { leadParagraphs, leadText } from '@/lib/reader-lead';
 import type { ReaderLeadData } from '../ReaderLead';
+import { readTextsOf, type ReadTextRow } from '@/lib/read-texts';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { chapterFontCss, chapterFontMeta, isCssSafeUrl } from '@/lib/chapter-font';
 import { getSiteT } from '@/i18n/translate';
