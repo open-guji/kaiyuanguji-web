@@ -35,6 +35,8 @@ interface ReaderClientProps {
     initial: ReaderSel;
     /** 书名，用于 <title> 与反馈上下文 */
     bookTitle: string;
+    /** 版本名（Book 的 edition，如「清乾隆六十年武英殿刻本」）：书名后直接显示，不藏在选择框里；Work 没有 */
+    edition?: string;
     /** 服务端取好的首屏数据（manifest、版本目录、首章正文），见 reader-seed.ts；缺省则全由浏览器取 */
     seed?: ReaderSeed;
     /** 服务端直出的首章正文＋上下章链接（给爬虫看的同一章正文），阅读器内容出来后卸载；见 ReaderLead.tsx */
@@ -158,7 +160,7 @@ function useWideViewport(): boolean {
 type CharfixEnt = Pick<CharFixCtx, 'entities' | 'entityVersion'>;
 const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 
-function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
+function Reader({ id, initial, bookTitle, edition, seed, lead }: ReaderClientProps) {
     const router = useRouter();
     const { source } = useSource();
     // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
@@ -383,7 +385,13 @@ function Reader({ id, initial, bookTitle, seed, lead }: ReaderClientProps) {
                 anchor={urlAnchor}
                 onNavigate={onNavigate}
                 title={bookTitle}
-                subtitle={meta?.versions ? <TextVersionChip versions={meta.versions} /> : undefined}
+                subtitle={edition || meta?.versions ? (
+                    <>
+                        {edition && <span data-testid="reader-edition">{convert(edition)}</span>}
+                        {edition && meta?.versions ? ' ' : null}
+                        {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
+                    </>
+                ) : undefined}
                 backHref="/read"
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}

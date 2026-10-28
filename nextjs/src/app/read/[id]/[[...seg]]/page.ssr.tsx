@@ -63,7 +63,7 @@ type Props = {
 
 type Fetchers = { json: SpeculativeGetter<typeof getCurrentJsonServer>; text: SpeculativeGetter<typeof getCurrentTextServer> };
 type Loaded = {
-    sel: ReaderSel; title: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers;
+    sel: ReaderSel; title: string; edition?: string; canonical: string; checked: ReaderCheckResult; timing: RenderTiming; fetchers: Fetchers;
     /** 渲染时的数据版本键（latest.json 的 cacheKey／commitId）：随首屏数据交给浏览器，取对读数据不必先等 latest.json（GUJI-699） */
     dataVersion?: string;
     /** GUJI-358：条目存在、站内没有文本（只有外链文本资源）：页面不出阅读器，指向详情页 */
@@ -128,7 +128,7 @@ async function loadUncached(id: string, seg: string[] | undefined): Promise<Load
     }
     if (checked.status === 'missing') return null;
     const canonical = readerPath(id, { key: sel.key, chapter: checked.status === 'found' ? checked.chapter : undefined });
-    return { sel, title: summarizeItem(hit.entry, id).title, canonical, checked, timing, fetchers, dataVersion: dataVersionKey(latest as LatestPointer | null) };
+    return { sel, title: summarizeItem(hit.entry, id).title, edition: summarizeItem(hit.entry, id).edition || undefined, canonical, checked, timing, fetchers, dataVersion: dataVersionKey(latest as LatestPointer | null) };
 }
 
 /**
@@ -330,7 +330,7 @@ export default async function ReaderPage({ params }: Props) {
     console.log(`[reader-timing] /read/${id}${seg?.length ? `/${seg.join('/')}` : ''} ${timing}`);
     return (
         <>
-            <ReaderClient id={id} initial={initial} bookTitle={s.title} seed={seed} lead={buildLead(id, s, seed, head)} />
+            <ReaderClient id={id} initial={initial} bookTitle={s.title} edition={s.edition} seed={seed} lead={buildLead(id, s, seed, head)} />
             {preloads.map(({ href, media }) => <link key={href} rel="preload" as="fetch" crossOrigin="anonymous" href={href} media={media} />)}
             {font && <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font[0].href} />}
             {/* 不带 precedence 的 <style> 留在 body 里，排在 globals.css 之后＝后定义（GUJI-701） */}
