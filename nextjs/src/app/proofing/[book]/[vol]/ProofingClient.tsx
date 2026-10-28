@@ -157,12 +157,12 @@ const zis = (s: string) => [...s].map(shownZi).join('');
 
 function CandButton({ cd, busy, picked, onPick, hotkey }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void; hotkey?: string }) {
     const fromRef = cd.src?.includes('ref');
-    const tip = [fromRef ? `整理本这里作「${shownZi(cd.c)}」` : '', cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : ''].filter(Boolean).join('；') || `选「${shownZi(cd.c)}」`;
+    const tip = [fromRef ? `参校本这里作「${shownZi(cd.c)}」` : '', cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : ''].filter(Boolean).join('；') || `选「${shownZi(cd.c)}」`;
     return (
         <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? undefined : `选「${cd.c}」`} onClick={() => onPick(cd.c)}
             title={hotkey ? `${tip}（快捷键 ${hotkey}）` : tip} className={BTN_CLASS} data-hotkey={hotkey} style={btnStyle('cand', picked, busy)}>
             <Zi c={cd.c} />
-            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 10, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>整理本</small>}
+            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 10, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>参校本</small>}
             {cd.score !== undefined && <small style={{ fontSize: 10, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
         </button>
     );
@@ -195,10 +195,10 @@ function Evidence({ cell }: { cell: PendingCell }) {
     if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${zis(x.c)}」${pct(x.s)}`).join('　')]);
     if (cell.ref) {
         const how = cell.ref.op ? refOpLabel(cell.ref.op) : '';
-        rows.push(['整理本', `这里作「${zis(cell.ref.c)}」${how ? `（${how}）` : ''}`]);
+        rows.push(['参校本', `这里作「${zis(cell.ref.c)}」${how ? `（${how}）` : ''}`]);
     }
     if (cell.stale) rows.push(['以前的判断', `${cell.stale.ts ? `${cell.stale.ts.slice(0, 10)} ` : ''}判为「${zis(cell.stale.c)}」，${cell.stale.state === 'withdrawn' ? '后来发现判错了位置，已撤回' : '后来切字有变动，需要重新确认'}`]);
-    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，整理本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，整理本作「${zis(cell.occ.c)}」` : ''}`]);
+    if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，参校本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，参校本作「${zis(cell.occ.c)}」` : ''}`]);
     if (!summary.length && !rows.length) return null;
     return (
         <div data-testid="evidence" style={{ marginTop: 8, fontSize: 12, color: '#555', lineHeight: 1.7 }}>
@@ -388,7 +388,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     {/* 机器没定出字时不放大「？」，免得和下面「比字形：最像 X」打架（GUJI-683） */}
                     {cell.c ? <div style={{ fontSize: 34, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
                         : <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
-                    {cell.ref && <div style={{ fontSize: 12, color: '#666' }}>整理本作「{zis(cell.ref.c)}」</div>}
+                    {cell.ref && <div style={{ fontSize: 12, color: '#666' }}>参校本作「{zis(cell.ref.c)}」</div>}
                     {/* 复审格（cv republish --recheck）：为什么又来了、已有判断是什么，放在卡片头上常显 */}
                     {cell.note && <div data-testid="recheck-note" style={{ fontSize: 12, color: '#7a3b1d', marginTop: 2 }}><b>再看一次</b>：{cell.note}</div>}
                     {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
@@ -818,7 +818,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         let err: string | null = null;
         for (const { cell, char } of ok) {
             err = await submitReview({ book, vol, a: cell.a, rev, choice: 'char', char, ...(cell.c ? { shown: cell.c } : {}),
-                ...pickFields({ src: 'cand', rank: 1 }) }, getAid());   // 整理本字就是卡片上第一个候选
+                ...pickFields({ src: 'cand', rank: 1 }) }, getAid());   // 参校本字就是卡片上第一个候选
             if (err) break;
             sent.push(cell.a);
             onProgress(sent.length);

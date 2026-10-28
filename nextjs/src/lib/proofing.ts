@@ -20,7 +20,7 @@ export type Box = [number, number, number, number];
 export interface SpriteRef { s: string; x: number; y: number; w: number; h: number }
 
 /**
- * 相似字（以字找字）：cv `guji audit alt` 出待审单时算好——近似字（整理本字、上下文字、库前几名…）的异体族
+ * 相似字（以字找字）：cv `guji audit alt` 出待审单时算好——近似字（参校本字、上下文字、库前几名…）的异体族
  * （本仓异体表＋部件檢索＋字统网）按这格字块图的相似度排好。`s` 相似度，`p` 从哪个近似字查来，
  * `src` 哪几家（v/rt/zi/near/piv），`g` 字体字形图（ai-team `alt_build.py`）。页面只显示，不现算。
  */
@@ -154,20 +154,20 @@ const WHY_LABELS: Record<string, string> = {
     near_form: '有形近字',
     solo_confusable: '只凭字形，又有形近字',
     ctx_garble_shape: '和本书别处字形都不像',
-    replace_align: '整理本此段改过字',
-    replace_form: '刻本写法与整理本不同',
+    replace_align: '参校本此段改过字',
+    replace_form: '刻本写法与参校本不同',
     variant_indirect: '可能是异体字',
-    ref_lib_variant: '可能是整理本用字的异体',
+    ref_lib_variant: '可能是参校本用字的异体',
     channel_off: '本书不让机器自动定',
     form_open: '字已知，写法待定',
-    context_vs_ref: '前后文推断与整理本不同',
+    context_vs_ref: '前后文推断与参校本不同',
     context_verdict: '前后文推断不寻常',
     context_narrow_col: '前后文推断把握不大',
     context_narrow_slice: '前后文推断把握不大',
     context_single_stroke: '笔画太少，难以推断',
     solo_ctx_veto: '前后文不支持字形判断',
-    iron_vs_ref: '字形确定，但与整理本不同',
-    iron_confusable_ref: '与整理本用字形近',
+    iron_vs_ref: '字形确定，但与参校本不同',
+    iron_confusable_ref: '与参校本用字形近',
     iron_ex_missing: '缺少对照字样',
     iron_scale: '字的大小异常',
     context_blank_cell: '可能是空白',
@@ -197,14 +197,14 @@ export function whyLabels(codes: string[] | undefined): string[] {
 
 /** 卡片类别（cv `review/cards.py::REVIEW_CLASSES`）→ [名称, 说明]，都用大白话 */
 const CLASS_LABELS: Record<string, [string, string]> = {
-    occluded: ['有遮挡', '被印章或污渍遮住，一般按整理本的字'],
+    occluded: ['有遮挡', '被印章或污渍遮住，一般按参校本的字'],
     ji_yi_si: ['己已巳', '己、已、巳三个字刻得一样，要按文意选'],
     form_open: ['写法待定', '知道是哪个字，但不确定本书刻的是哪种写法'],
-    ref_conflict: ['和整理本不一致', '机器的判断和整理本这里的字不一样'],
+    ref_conflict: ['和参校本不一致', '机器的判断和参校本这里的字不一样'],
     near_form: ['形近字', '有长得很像的字，要结合前后文看'],
     lib_miss: ['少见的字', '本书别处没出现过像它的字，可能是生僻字，也可能是切字切坏了'],
     variant: ['异体字', '可能是异体字，要确认本书刻的是哪个'],
-    replace_align: ['整理本改过字', '整理本这一段改过字，位置可能差一两格'],
+    replace_align: ['参校本改过字', '参校本这一段改过字，位置可能差一两格'],
     other: ['把握不足', '机器的几种判断都不够有把握'],
     seg_defect: ['切坏格', '这一格切得不完整，机器认不出字；请看书影，把字直接写进框里'],
 };
@@ -213,14 +213,14 @@ export function classLabel(cls: string): { name: string; hint?: string } {
     return hit ? { name: hit[0], hint: hit[1] } : { name: cls };
 }
 
-/** 整理本对位方式 */
+/** 参校本对位方式 */
 const REF_OP_LABELS: Record<string, string> = {
-    replace: '整理本这一段改过字，位置可能差一两格',
+    replace: '参校本这一段改过字，位置可能差一两格',
 };
 export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
 
 /**
- * 要显示的候选：整理本字（`ref`）排第一（同控制台 candidates.ts，用户 09-06 定），然后 `cand`、`lib_top` 前 3；
+ * 要显示的候选：参校本字（`ref`）排第一（同控制台 candidates.ts，用户 09-06 定），然后 `cand`、`lib_top` 前 3；
  * 同一个字只出一次、来源合并；带库分数；超过 limit 的放「更多」（GUJI-683）。
  */
 export interface ShownCand { c: string; src?: string[]; score?: number }
@@ -262,13 +262,13 @@ export function preselect(cell: PendingCell): { choice: ReviewChoice; char?: str
 /**
  * 快速确认（用户 2026-10-24）：机器把握较大的格按类排成小图网格，一格一图一字，读者成批确认；
  * 拿不准的勾「存疑」，挪到下面逐格细看。每类一个入口，以后加类只在这里加一条。
- * 只收整理本有一个字的格；复审格（prior）、切坏格不收；以前判过别的字（stale 与整理本不同）也不收。
+ * 只收参校本有一个字的格；复审格（prior）、切坏格不收；以前判过别的字（stale 与参校本不同）也不收。
  * 用户 10-24 收紧：要靠文意区别的形近字（日曰、人入八、己已巳…）和要按刻形定码位的异体字（卷巻、跋䟦…）都不进快速确认，
- * 留给逐格细看和 cv 字组流程；「整理本与字形一致」一类撤掉（剩下的几乎全是这些字）。
+ * 留给逐格细看和 cv 字组流程；「参校本与字形一致」一类撤掉（剩下的几乎全是这些字）。
  */
 export interface QuickGroup { key: string; name: string; hint: string }
 export const QUICK_GROUPS: QuickGroup[] = [
-    { key: 'occluded', name: '有遮挡', hint: '被印章或污渍遮住，下面的小字是整理本的字' },
+    { key: 'occluded', name: '有遮挡', hint: '被印章或污渍遮住，下面的小字是参校本的字' },
 ];
 /** cv 字组登记表（open_guji_cv/groups registry，dev a2e9f8f）全部成员字：形近要文意定、异体要按刻形定，都不快速确认 */
 export const GROUP_CHARS = new Set([...'㑹㕘㫖㸃䜟䟦一二于人俞傅傳入內八内冊册出刊刋删別刪别十千卜即卷卽卿厯參叅叙各名吕呂命問啓啟圓圖土士大太子宋尙尚山岀己已巳巻干彖彙彚彛彜彝彞徴徵心必愼慎戊戌戍扺抵敎敘教既旣日旨晚晩曰曾會木未末本朱歴淄淸清湽為爲玉王由甲申目禽絕絶而自舍葢蒙蓋衛衞說説論諭識變讖象跋遺還間隸靑青面顚顛點𠮓𢑱𢑴𧰼𨜊𨽾𫎇']);
