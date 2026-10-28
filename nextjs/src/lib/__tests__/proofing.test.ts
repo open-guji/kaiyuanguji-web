@@ -260,7 +260,7 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(more.map(x => x.c)).toEqual(['以']);
     });
 
-    it('整理本字排第一、带来源，同字合并（GUJI-683）', () => {
+    it('参校本字排第一、带来源，同字合并（GUJI-683）', () => {
         const { top } = shownCandidates({
             a: '1:1:1', ref: { c: '臼' }, cand: [{ c: '曰', src: ['lib'] }, { c: '臼', src: ['ocr'] }],
             libTop: [{ c: '曰', s: 0.9 }, { c: '日', s: 0.8 }],
@@ -341,7 +341,7 @@ describe('上下文（char_file 阅读顺序）', () => {
 
 describe('机器判读标签', () => {
     it('类别用大白话，未知类别原样', () => {
-        expect(classLabel('replace_align').name).toBe('整理本改过字');
+        expect(classLabel('replace_align').name).toBe('参校本改过字');
         expect(classLabel('lib_miss').hint).toContain('生僻字');
         expect(classLabel('future')).toEqual({ name: 'future' });
         expect(classLabel('seg_defect').name).toBe('切坏格');
@@ -354,7 +354,7 @@ describe('机器判读标签', () => {
             expect(whyLabel(code)).not.toMatch(/铁证|载体|墨形|cov/);
         }
     });
-    it('整理本对位方式：未知的不显示原码', () => {
+    it('参校本对位方式：未知的不显示原码', () => {
         expect(refOpLabel('replace')).toContain('改过字');
         expect(refOpLabel('coord')).toBe('');
     });
