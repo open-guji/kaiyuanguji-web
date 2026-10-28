@@ -125,7 +125,7 @@ test.describe('整理本', () => {
         await expect(toc, '直齋阅读页的目录应是维基全文版的章数，不是整理本的章数').toHaveCount(C_READER_CHAPTERS, { timeout: 30_000 });
         // 版本下拉里只有全文版，目录型整理本不在里面：按版本 key 判（不看显示文字——整理本的标签也可能不叫「整理本」）。
         // 直齋的整理本在 manifest 里就是 key=default（kind=collated），全文版是 wikisource、kanripo。
-        const options = page.getByRole('combobox', { name: '版本' }).locator('option');
+        const options = page.getByRole('combobox', { name: '来源' }).locator('option');
         await expect(options.first()).toBeAttached({ timeout: 30_000 });
         const keys = await options.evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
         expect(keys, '版本下拉里不该有整理本（key=default）').not.toContain('default');

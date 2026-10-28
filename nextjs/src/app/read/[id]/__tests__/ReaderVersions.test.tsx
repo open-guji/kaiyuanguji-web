@@ -37,7 +37,7 @@ beforeEach(() => {
 describe('阅读页版本下拉框', () => {
     it('两份版本：工具条出「版本」下拉框，默认主版本，选项只写来源', async () => {
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
-        const select = await screen.findByRole('combobox', { name: '版本' });
+        const select = await screen.findByRole('combobox', { name: '来源' });
         expect(select).toHaveValue('default');
         expect(Array.from(select.querySelectorAll('option')).map((o) => o.textContent)).toEqual(['维基文库', 'Kanripo']);
     });
@@ -46,7 +46,7 @@ describe('阅读页版本下拉框', () => {
         window.history.replaceState(null, '', `/read/${SHIXU}/003`);
         pathname = `/read/${SHIXU}/003`;
         render(<ReaderClient id={SHIXU} initial={{ chapter: '003' }} bookTitle="詩序" />);
-        const select = await screen.findByRole('combobox', { name: '版本' });
+        const select = await screen.findByRole('combobox', { name: '来源' });
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
 
         // Kanripo 只有 1 章，003 对不上 → 第一章
@@ -56,7 +56,7 @@ describe('阅读页版本下拉框', () => {
         expect(screen.queryByText(/CC BY-SA 4\.0/)).toBeNull();
 
         // 切回主版本，地址里不带 key
-        await act(async () => { fireEvent.change(await screen.findByRole('combobox', { name: '版本' }), { target: { value: 'default' } }); });
+        await act(async () => { fireEvent.change(await screen.findByRole('combobox', { name: '来源' }), { target: { value: 'default' } }); });
         await waitFor(() => expect(window.location.pathname).toBe(`/read/${SHIXU}/001`));
     });
 
@@ -64,14 +64,14 @@ describe('阅读页版本下拉框', () => {
         manifest = { id: SHIXU, versions: [TWO.versions[0]] };
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
-        expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: '来源' })).toBeNull();
     });
 
     it('有全文版：下拉里不列目录型 default，只剩全文版（没有下拉框），地址不带 key（overview#456）', async () => {
         manifest = { id: SHIXU, versions: [version('default', '整理本', 'collated', 'CC BY-SA 4.0'), version('wikisource', '維基文庫', 'transcription', 'CC BY-SA 4.0')] };
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
-        expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: '来源' })).toBeNull();
         expect(screen.getByText(/wikisource-001/)).toBeInTheDocument();
         expect(window.location.pathname).toBe(`/read/${SHIXU}/001`);
     });
@@ -79,7 +79,7 @@ describe('阅读页版本下拉框', () => {
     it('有全文版又有别的全文版：下拉只列全文版，主版本在前', async () => {
         manifest = { id: SHIXU, versions: [version('default', '整理本', 'collated', '未知'), version('wikisource', '維基文庫', 'transcription', 'CC BY-SA 4.0'), version('kanripo', 'Kanripo', 'transcription', 'CC BY 4.0')] };
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
-        const select = await screen.findByRole('combobox', { name: '版本' });
+        const select = await screen.findByRole('combobox', { name: '来源' });
         expect(select).toHaveValue('wikisource');
         expect(Array.from(select.querySelectorAll('option')).map((o) => o.textContent)).toEqual(['维基文库', 'Kanripo']);
     });
@@ -89,7 +89,7 @@ describe('阅读页版本下拉框', () => {
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         await waitFor(() => expect(screen.getAllByText(/未知/).length).toBeGreaterThan(0));
         expect(screen.queryAllByText(/版权未知/)).toHaveLength(0);
-        expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: '来源' })).toBeNull();
     });
 
     it('目录型 default 被隐藏时，地址里的章号保留（/read/<id>/003 不回第一章）', async () => {
@@ -105,6 +105,6 @@ describe('阅读页版本下拉框', () => {
         manifest = { id: SHIXU, versions: [version('default', '維基文庫', 'transcription', 'CC BY-SA 4.0'), version('collated', '維基文庫', 'collated', 'CC BY-SA 4.0')] };
         render(<ReaderClient id={SHIXU} initial={{ chapter: '001' }} bookTitle="詩序" />);
         await waitFor(() => expect(screen.getAllByText(/CC BY-SA 4\.0/).length).toBeGreaterThan(0));
-        expect(screen.queryByRole('combobox', { name: '版本' })).toBeNull();
+        expect(screen.queryByRole('combobox', { name: '来源' })).toBeNull();
     });
 });
