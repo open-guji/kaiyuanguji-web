@@ -28,6 +28,17 @@ const MD_RE = /[#*`\[\]>]+|^---.*?$/gm;
 // 内存/盘涨幅偏大；这里只取 description 前 N 字，是"精简版"的口径。
 const DESC_SEARCH_MAX_CHARS = 1000;
 
+/**
+ * 按 UTF-16 码元截取前 n 个，但不把一个代理对（如 𠂇 𩔖 这类扩展区汉字）劈成两半：
+ * 截断处落在高位代理上就多丢这一个。劈开的孤代理经 JSON.stringify 变成 `\\udXXX`，Meili 解析时报
+ * `unexpected end of hex escape`，整批任务失败（2026-10-30 juans 增量）。
+ */
+export function clip(text, n) {
+    const t = String(text ?? '').slice(0, n);
+    const c = t.charCodeAt(t.length - 1);
+    return c >= 0xD800 && c <= 0xDBFF ? t.slice(0, -1) : t;
+}
+
 function mergeSimp(text) {
     if (!text) return '';
     const s = t2s(text);
@@ -98,7 +109,7 @@ function buildWorkDoc(entry, detail, isDraft = true) {
         title_search: mergeSimp(title),
         author_search: mergeSimp(author),
         aliases_search: aliases.map(mergeSimp).join(' '),
-        description_search: mergeSimp(descText.slice(0, DESC_SEARCH_MAX_CHARS)),
+        description_search: mergeSimp(clip(descText, DESC_SEARCH_MAX_CHARS)),
         indexed_by_search: mergeSimp(summaries),
         pinyin: `${allPinyin(title)} ${allPinyin(author)}`,
     };
@@ -137,7 +148,7 @@ function buildBookDoc(entry, detail, isDraft = true) {
         aliases_search: aliases.map(mergeSimp).join(' '),
         edition_search: mergeSimp(edition),
         holder_search: mergeSimp(holder),
-        description_search: mergeSimp(descText.slice(0, DESC_SEARCH_MAX_CHARS)),
+        description_search: mergeSimp(clip(descText, DESC_SEARCH_MAX_CHARS)),
         pinyin: `${allPinyin(title)} ${allPinyin(author)}`,
     };
 }
@@ -190,8 +201,8 @@ function juanDoc(workId, juanName, clean) {
         type: 'juan',
         work_id: workId,
         juan_name: juanName,
-        snippet: clean.slice(0, 200),
-        content_search: mergeSimp(clean.slice(0, 5000)),
+        snippet: clip(clean, 200),
+        content_search: mergeSimp(clip(clean, 5000)),
     };
 }
 
