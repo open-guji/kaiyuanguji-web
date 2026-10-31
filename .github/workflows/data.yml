@@ -197,8 +197,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: check
     if: ${{ needs.check.outputs.should_run == 'true' }}
-    # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时
-    timeout-minutes: 120
+    # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时。
+    # 2026-10-30：book-index 停了 11 天没发，一次追平要传 current/ 约 69.6 万、h1 条目约 66.2 万个对象，
+    # 每路约 98 个/秒，准备 25 分钟＋同步约 2 小时，120 分钟撞线被取消两次。放宽到 330（托管 runner 上限 360）。
+    timeout-minutes: 330
     # 演练写的 staging/ 前缀，deploy.yml 的测试站构建也写（拆出之前）：两边用同一把锁（deploy.yml 的 build 任务那把），
     # 不会交错写同一批对象和指针。
     # 正式前缀：index／text／both 三条流程各在自己的 workflow 级组里排队，写正式前缀的 package 共用 publish-data-writer 这把锁，
