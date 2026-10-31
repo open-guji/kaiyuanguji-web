@@ -49,7 +49,7 @@ on:
         type: string
         default: main
       target:
-        description: 'production = 正式前缀（上传）；staging = 演练：整条流水线写 staging/ 前缀，不碰正式前缀，不看开关。两者都只接受 prod_ref／text_ref 是 main'
+        description: 'production = 正式前缀（上传）；staging = 演练：整条流水线写 staging/ 前缀，不碰正式前缀，不看开关。两者都只接受 prod_ref／text_ref 是 main（例外：flow=text＋staging 时 text_ref 可填 dev 做预览）'
         type: choice
         options: [production, staging]
         default: production
@@ -310,7 +310,11 @@ jobs:
           [ "$TARGET" = staging ] && prefix=staging
           # 钉在线上版本的那一边（PINNED=prod|text）当作 main：它就是线上正在用的 commit，只有本流程在发布闸下写过
           refs_main=true
-          { { [ "$PROD_REF" = main ] || [ "$PINNED" = prod ]; } && { [ "$TEXT_REF" = main ] || [ "$PINNED" = text ]; }; } || refs_main=false
+          # dev 预览：flow=text（book-index 已钉线上）＋演练前缀＋book-text 取 dev，不用勾 allow_ref_override。
+          #   带密钥的 job 里跑的 build_derived.py 来自钉住的线上 book-index，book-text 只当数据读；写的是 staging/，不碰正式前缀
+          preview_dev=false
+          [ "$TARGET" = staging ] && [ "$PINNED" = prod ] && [ "$TEXT_REF" = dev ] && preview_dev=true
+          { { [ "$PROD_REF" = main ] || [ "$PINNED" = prod ]; } && { [ "$TEXT_REF" = main ] || [ "$PINNED" = text ] || [ "$preview_dev" = true ]; }; } || refs_main=false
           if [ "$refs_main" != true ] && [ "$ALLOW_OVERRIDE" != true ]; then
             why="prod_ref／text_ref 不是 main（${PROD_REF}／${TEXT_REF}）：带密钥的上传只跑 main 上的代码，只做检查（确需用别的 ref 请勾 allow_ref_override）"
           elif [ "$TARGET" = staging ]; then
@@ -321,6 +325,9 @@ jobs:
             publish=true; why="正式前缀：上传"
           else
             why="SPLIT_DATA_FLOW 未打开：只做检查，不上传（deploy.yml 仍是正式前缀的写者）"
+          fi
+          if [ "$publish" = true ] && [ "$preview_dev" = true ]; then
+            why="$why；预览：book-text 取 dev（${TEXT_REF}），只写 staging/"
           fi
           if [ "$publish" = true ] && [ "$refs_main" != true ]; then
             why="$why；⚠ allow_ref_override：用 ${PROD_REF}／${TEXT_REF} 上传，所选 ref 的 build_derived.py 会在带密钥的 job 里跑，只给可信分支用"
