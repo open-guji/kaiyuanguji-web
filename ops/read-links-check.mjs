@@ -169,8 +169,14 @@ export async function checkReadLinks({ target, dataBase, fetchImpl = fetch, perN
 
     const pagePathOf = (id, key) => (key === 'default' ? `/read/${id}` : `/read/${id}/${key}`);
 
-    // 阅读页不列的版本（overview#456）：作品有 kind=transcription 全文版时，kind=collated 的整理本阅读页不开（404），数据仍在
-    const hiddenInReader = (versions, v) => v?.kind === 'collated' && versions.some((x) => x?.kind === 'transcription');
+    // 阅读页不列的版本（与 nextjs/src/lib/reader-manifest.ts 同规则，阅读页 404，数据仍在）：
+    //   ① overview#456：作品有 kind=transcription 全文版时，kind=collated 的整理本不列；
+    //   ② 用户 10-28：同一来源（source_name）已有 quality=fine 的 self_collated 精校版时，quality=rough 的粗校版不列（如四库总目卷三的 cv-proof）
+    const hiddenInReader = (versions, v) => {
+        if (v?.kind === 'collated' && versions.some((x) => x?.kind === 'transcription')) return true;
+        return v?.kind === 'self_collated' && v?.quality === 'rough'
+            && versions.some((x) => x?.kind === 'self_collated' && x?.quality === 'fine' && (x?.source_name ?? '') === (v?.source_name ?? ''));
+    };
 
     // 新结构条目：manifest.versions 逐份核对目录、首章与页面
     async function checkNewCard(id, manifest) {
