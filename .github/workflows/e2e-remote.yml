@@ -49,7 +49,7 @@ env:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest 升到 26.04 后 Playwright 不支持（playwright install 报 does not support chromium），装浏览器的任务钉 24.04
     timeout-minutes: 30
     env:
       TARGET: ${{ inputs.target }}

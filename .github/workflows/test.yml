@@ -89,7 +89,7 @@ jobs:
     name: Browser smoke (build + serve + Playwright)
     # 不挂 PR：build 是否挂由 push 后的 staging 部署构建兜底
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest 升到 26.04 后 Playwright 不支持（playwright install 报 does not support chromium），装浏览器的任务钉 24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -296,7 +296,7 @@ jobs:
     # nightly only — 跑生产环境真实 perf，回归基线
     name: Production perf benchmark
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest 升到 26.04 后 Playwright 不支持（playwright install 报 does not support chromium），装浏览器的任务钉 24.04
     permissions:
       contents: read
       issues: write
