@@ -70,10 +70,10 @@ export const MEILI_KEY =
  * 10-18 叢書批次晋升后 collections 实测 613（book-index 92c4736），上限 500 → 2000。
  */
 export const COUNT_RANGES = {
-    works: { min: 60_000, max: 400_000 },
-    books: { min: 12_000, max: 400_000 },
-    collections: { min: 40, max: 2_000 },
-    entities: { min: 20_000, max: 200_000 },
+    works: { min: 60_000, max: 800_000 },
+    books: { min: 12_000, max: 800_000 },
+    collections: { min: 40, max: 10_000 },
+    entities: { min: 20_000, max: 400_000 },
 } as const;
 
 /**
