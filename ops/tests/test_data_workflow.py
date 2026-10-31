@@ -214,13 +214,13 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         self.assertIn('--check-meta', p['run'])
 
     # ---- 发布闸的行为：把 run 脚本抽出来，枚举所有输入组合 ----
-    def _run_gate(self, target='production', only='false', override='false', split='', prod='main', text='main'):
+    def _run_gate(self, target='production', only='false', override='false', split='', prod='main', text='main', pinned=''):
         run = self._step('Publish gate')['run']
         with tempfile.TemporaryDirectory() as d:
             out = os.path.join(d, 'out'); summ = os.path.join(d, 'summary')
             open(out, 'w').close(); open(summ, 'w').close()
             env = dict(os.environ, TARGET=target, ONLY_SITEMAPS=only, ALLOW_OVERRIDE=override, SPLIT_VAR=split,
-                       PROD_REF=prod, TEXT_REF=text, GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ)
+                       PROD_REF=prod, TEXT_REF=text, PINNED=pinned, GITHUB_OUTPUT=out, GITHUB_STEP_SUMMARY=summ)
             r = subprocess.run(['bash', '-e', '-c', run], env=env, capture_output=True, text=True)
             self.assertEqual(r.returncode, 0, r.stderr)
             with open(out, encoding='utf-8') as fh:
@@ -239,6 +239,16 @@ class DataWorkflowCheckOnly(unittest.TestCase):
         o = g(only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', ''))
         self.assertEqual(g(only='true', prod='x')['publish'], 'false')
         o = g(target='staging', only='true'); self.assertEqual((o['publish'], o['sitemaps_only'], o['prefix']), ('true', 'true', 'staging'))
+
+    def test_gate_dev_preview(self):
+        g = self._run_gate
+        # flow=text（pinned=prod）＋staging＋book-text 取 dev：不勾 override 也放行，只写 staging/
+        o = g(target='staging', prod='abc123', text='dev', pinned='prod'); self.assertEqual((o['publish'], o['prefix']), ('true', 'staging'))
+        # 其余组合仍不放行：正式前缀、flow 不是 text、别的分支名
+        self.assertEqual(g(target='production', split='true', prod='abc123', text='dev', pinned='prod')['publish'], 'false')
+        self.assertEqual(g(target='staging', text='dev', pinned='')['publish'], 'false')
+        self.assertEqual(g(target='staging', prod='abc123', text='feature-x', pinned='prod')['publish'], 'false')
+        self.assertEqual(g(only='true', prod='abc123', text='dev', pinned='prod')['publish'], 'false')
 
     def test_gate_never_opens_production_prefix_without_switch_or_sitemaps_only(self):
         # 不变式（枚举全部组合）：写正式前缀(prefix='')只可能是 ① 开关打开 ② only_sitemaps；refs 不是 main 时必须带 override；
