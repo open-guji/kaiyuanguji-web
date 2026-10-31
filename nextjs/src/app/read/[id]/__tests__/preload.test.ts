@@ -5,7 +5,7 @@
  * 交给 seedTransport 就地返回。
  */
 import { describe, it, expect, jest } from '@jest/globals';
-import { preloadReader, SEED_TEXT_MAX } from '../preload';
+import { preloadReader, SEED_INDEX_MAX, SEED_TEXT_MAX } from '../preload';
 import { seedCallKey, seedTransport } from '../reader-seed';
 import type { ReaderCheckResult } from '@/lib/server/reader-check';
 import type { IndexStorage } from 'book-index-ui/storage';
@@ -90,6 +90,18 @@ describe('preloadReader', () => {
         expect(await preloadReader(ID, { status: 'unknown' }, getJson, getText)).toEqual({});
         expect(await preloadReader(ID, { status: 'missing' }, getJson, getText)).toEqual({});
         expect(await preloadReader(ID, { status: 'found' }, getJson, getText)).toEqual({});
+    });
+});
+
+describe('preloadReader：版本目录过大', () => {
+    it('目录超过 SEED_INDEX_MAX（殿本 1.5MB）：不随页面带，manifest 照给，浏览器自己取目录', async () => {
+        const chapters = Array.from({ length: 400 }, (_, i) => ({ n: i + 1, file: String(i + 1).padStart(3, '0'), title: '卷'.repeat(20), char_file: 'x'.repeat(400) }));
+        const index = { chapters };
+        expect(JSON.stringify(index).length).toBeGreaterThan(SEED_INDEX_MAX);
+        const { getJson, getText } = store({});
+        const seed = await preloadReader(ID, found({ index, chapter: '001' }), getJson, getText);
+        expect(seed.calls![seedCallKey('getTextIndex', ID, 'default')]).toBeUndefined();
+        expect(seed.calls![seedCallKey('getTextManifest', ID)]).toBe(MANIFEST);
     });
 });
 
