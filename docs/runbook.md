@@ -135,7 +135,7 @@ done
 | 同上但 `SPLIT_DATA_FLOW=true`，`prod_ref`／`text_ref` 都是 main | 上传到正式前缀：current/、h1 条目、条目 sitemap |
 | `target=staging`（演练），refs 都是 main | 整条流水线写 `staging/` 前缀，不碰正式前缀，不看开关；和 deploy.yml 的测试站构建共用一把锁，不会同时写 |
 | `only_sitemaps=true` | 只生成并上传条目 sitemap 到 `[前缀/]sitemaps/`（新目录，不动已有对象），不看开关 |
-| `flow=text`＋`target=staging`＋`text_ref=dev`（**dev 预览**） | 放行，写 `staging/`，不用勾 `allow_ref_override`；book-index 钉在 staging 现行版本，book-text 取 dev 当数据读，看 staging.openguji.com。book-text 的 dev 每天 03:30 才合进 main，想早看就跑这个 |
+| `flow=text`＋`target=staging`＋`text_ref=dev`（**dev 预览**） | 放行，写 `staging/`，不用勾 `allow_ref_override`；book-index 钉在 staging 现行版本，book-text 取 dev 当数据读，在测试站看。book-text 的 dev 每天 03:30 才合进 main，想早看就跑这个 |
 | `prod_ref`／`text_ref` 不是 main（**含 staging**） | 只检查；回滚重发上一版数据、用新格式分支演练都要勾 `allow_ref_override`（正式前缀另外还需要开关或 `only_sitemaps`）。原因：上传步骤带 COS 密钥，同 job 里跑的是所选 ref 的 `build_derived.py`，只给可信分支 |
 
 要点：

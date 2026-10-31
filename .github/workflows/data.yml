@@ -327,7 +327,7 @@ jobs:
             why="SPLIT_DATA_FLOW 未打开：只做检查，不上传（deploy.yml 仍是正式前缀的写者）"
           fi
           if [ "$publish" = true ] && [ "$preview_dev" = true ]; then
-            why="$why；预览：book-text 取 dev（${TEXT_REF}），只写 staging/，看 staging.openguji.com"
+            why="$why；预览：book-text 取 dev（${TEXT_REF}），只写 staging/"
           fi
           if [ "$publish" = true ] && [ "$refs_main" != true ]; then
             why="$why；⚠ allow_ref_override：用 ${PROD_REF}／${TEXT_REF} 上传，所选 ref 的 build_derived.py 会在带密钥的 job 里跑，只给可信分支用"
