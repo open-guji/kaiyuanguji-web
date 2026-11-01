@@ -114,8 +114,9 @@ function writeIfChanged(path, text) {
 /**
  * 一个条目输出目录：给各版本里的对读章写副本、回写 index.json；删掉不再对应任何章的旧副本。
  * 返回写了副本的文件数。
+ * onChapter（可选）：每个对读章解析完调一次 `({ key, chapter, entity, char })`，让出处反查（mentions.mjs）借用这里已解析的数据，不再读一遍。
  */
-export function buildItemReaderFiles(itemOutDir) {
+export function buildItemReaderFiles(itemOutDir, { onChapter } = {}) {
     let written = 0;
     if (!existsSync(itemOutDir)) return 0; // 整个条目 internal：copyItemDir 不建输出目录
     for (const name of readdirSync(itemOutDir)) {
@@ -130,6 +131,7 @@ export function buildItemReaderFiles(itemOutDir) {
         let changed = false;
         for (const ch of index.chapters) {
             if (!ch || typeof ch !== 'object' || typeof ch.char_file !== 'string' || typeof ch.file !== 'string' || !SAFE_FILE.test(ch.file)) continue;
+            const parsed = {};
             for (const [srcKey, dstKey, suffix, slim] of [
                 ['cord_file', 'reader_cord_file', READER_CORD_SUFFIX, slimCord],
                 ['punct_file', 'reader_punct_file', READER_PUNCT_SUFFIX, slimPunct],
@@ -138,6 +140,7 @@ export function buildItemReaderFiles(itemOutDir) {
             ]) {
                 const src = ch[srcKey];
                 const data = typeof src === 'string' && SAFE_FILE.test(src) ? readJsonOrNull(join(dir, src)) : null;
+                if (data) parsed[srcKey] = data;
                 const file = data ? `${ch.file}${suffix}` : undefined;
                 if (data) {
                     writeIfChanged(join(dir, file), JSON.stringify(slim(data)));
@@ -150,6 +153,7 @@ export function buildItemReaderFiles(itemOutDir) {
                     else delete ch[dstKey];
                 }
             }
+            if (onChapter && parsed.entity_file) onChapter({ key: name, chapter: ch, entity: parsed.entity_file, char: parsed.char_file ?? null });
         }
         if (changed) writeFileSync(indexPath, `${JSON.stringify(index, null, 2)}\n`);
         for (const f of readdirSync(dir)) {
