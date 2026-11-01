@@ -356,7 +356,15 @@ function bundleL1() {
     readSeedReady = true;
     if (mentions) {
         const s = performance.now();
-        const readEntry = (eid) => { try { return readJson(join(entryDir, `${eid}.json`)); } catch { return null; } };
+        // 只留 merged_into 与书名，按 id 缓存：书名每个实体都要查一次同一部书，不缓存就是几万次读大文件
+        const metaCache = new Map();
+        const readEntry = (eid) => {
+            if (metaCache.has(eid)) return metaCache.get(eid);
+            let m = null;
+            try { const e = readJson(join(entryDir, `${eid}.json`)); m = { merged_into: e?.merged_into, title: e?.title }; } catch { /* 没有这个条目 */ }
+            metaCache.set(eid, m);
+            return m;
+        };
         let promotions = {};
         try { promotions = readPromotionsSource(PRODUCTION_DIR).promotions; } catch { /* 没有升格表就只沿 merged_into */ }
         const r = mentions.finalize({
@@ -365,7 +373,7 @@ function bundleL1() {
             titleOf: (iid) => readEntry(iid)?.title,
         });
         mentionsMs += performance.now() - s;
-        console.log(`    mentions: 查 ${r.chapters} 章 entity.json，专名号 ${r.mentions} 条 → ${r.entities} 个实体、${r.pages} 页（写 ${r.written}、删 ${r.removed}），解不开 ${r.unresolved} 条；用时 ${(mentionsMs / 1000).toFixed(1)} 秒`);
+        console.log(`    mentions: 查 ${r.chapters} 章 entity.json，专名号 ${r.mentions} 条 → ${r.entities} 个实体（章行 ${r.rows}、拆分 ${r.split_entities}）、${r.files} 个文件 ${(r.bytes / 1e6).toFixed(1)} MB（写 ${r.written}、删 ${r.removed}），解不开 ${r.unresolved} 条；用时 ${(mentionsMs / 1000).toFixed(1)} 秒`);
         if (r.chapters === 0 && itemFileCount > 0) console.warn('    ⚠ mentions：一章 entity.json 都没查到');
     }
 

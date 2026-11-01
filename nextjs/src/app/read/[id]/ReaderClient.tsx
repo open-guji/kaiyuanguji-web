@@ -69,11 +69,12 @@ function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: b
     if (canonical) canonical.href = new URL(href, canonical.href).href;
 }
 
-/** 地址的 hash → 章内格位（`页:列:格[子列]`，或范围 `起~止`）；不是格位的（站内其他用途的 #）不认 */
+/** 地址的 hash → 章内格位（`页:列:格[子列]`，或范围 `起~止`），或 `e=<实体id[,…]>`（标出本章提到该实体的全部专名号）；
+ *  别的（站内其他用途的 #）不认 */
 export function anchorFromHash(raw: string): string | null {
     let h = raw.replace(/^#/, '');
     try { h = decodeURIComponent(h); } catch { return null; }
-    // 单字格位（章内标题）或范围 `起~止`（专名出处反查：滚到该处并高亮）
+    if (/^e=[\w-]+(,[\w-]+)*$/.test(h)) return h;
     return /^\d+:\d+:-?\d+[ab]?(~\d+:\d+:-?\d+[ab]?)?$/.test(h) ? h : null;
 }
 
