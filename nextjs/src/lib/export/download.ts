@@ -71,6 +71,8 @@ export interface ExportRequest {
     license?: string;
     dataVersion?: string;
     pageUrl?: string;
+    /** 生成时间（测试里固定；不给取当前时间） */
+    now?: Date;
 }
 
 export interface ExportResult { filename: string; text: string }
@@ -123,7 +125,7 @@ export async function buildExport(req: ExportRequest, storage: object): Promise<
         // 标点本的书名号也来自专名层（第 26 册起标点层不带《》）
         ['entity_version', needPunct ? ch.entity_version : undefined],
         ['data_version', req.dataVersion],
-        ['generated', new Date().toISOString()],
+        ['generated', (req.now ?? new Date()).toISOString()],
         ['license', req.license],
         ['url', req.pageUrl],
         ['source', 'https://github.com/open-guji/book-text'],
