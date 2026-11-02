@@ -397,12 +397,9 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 title={bookTitle}
                 subtitle={edition || meta?.versions ? (
                     <>
-                        {edition && <span data-testid="reader-edition">{convert(edition)}</span>}
-                        {edition && meta?.versions ? ' ' : null}
-                        {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
+                        {/* 「下载本冊」放最前：书名栏放不下时副标题从尾部截成「…」，放末尾会被整个截掉（书名＋作者长的书，1280 宽就截） */}
                         {meta?.versions && meta.chapter && meta.versionKey ? (
                             <>
-                                {' '}
                                 <DownloadChip
                                     storage={transport}
                                     target={{
@@ -416,8 +413,12 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                                         dataVersion: seed?.dataVersion ?? undefined,
                                     }}
                                 />
+                                {' '}
                             </>
                         ) : null}
+                        {edition && <span data-testid="reader-edition">{convert(edition)}</span>}
+                        {edition && meta?.versions ? ' ' : null}
+                        {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
                     </>
                 ) : undefined}
                 backHref="/read"

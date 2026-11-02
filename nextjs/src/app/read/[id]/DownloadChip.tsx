@@ -31,7 +31,14 @@ const FORMAT_NOTE: Record<ExportFormat, string> = {
     entity: '再加專名號 /人名/',
 };
 
+const GLYPH_NOTE: Record<ExportGlyph, string> = {
+    original: '不改字',
+    traditional: '異體字歸一',
+    simplified: '歸一後轉簡',
+};
+
 const GLYPHS: ExportGlyph[] = ['original', 'traditional', 'simplified'];
+const HINT = '古籍 Markdown（guji-format），文件開頭記書名與各項版本號；生僻字需裝相應字庫才顯示。';
 
 export default function DownloadChip({ target, storage }: { target: DownloadTarget; storage: object }) {
     const { convert } = useConvert();
@@ -44,6 +51,10 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
     const [glyph, setGlyph] = useState<ExportGlyph>('original');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [done, setDone] = useState(false);
+    const pop = useRef<HTMLSpanElement>(null);
+    const doneTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (doneTimer.current) clearTimeout(doneTimer.current); }, []);
     const fmt = formats.includes(format) ? format : formats[formats.length - 1];
 
     const place = useCallback(() => {
@@ -53,6 +64,8 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
         setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)) });
     }, []);
     useLayoutEffect(() => { if (open) place(); }, [open, place]);
+    // 打开时焦点落到第一个单选项（键盘用户直接上下键选）
+    useEffect(() => { if (open && pos) pop.current?.querySelector<HTMLInputElement>('input')?.focus(); }, [open, pos !== null]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!open) return;
         const close = (e: Event) => {
@@ -60,6 +73,8 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
             if (e.type === 'pointerdown' && btn.current?.contains(e.target as Node)) return;
             if (e.type === 'pointerdown' && (e.target as Element | null)?.closest?.('[data-kyg-dl-pop]')) return;
             setOpen(false);
+            // 按 Esc 关的，焦点回到按钮；点外面关的不抢焦点
+            if (e.type === 'keydown') btn.current?.focus();
         };
         const move = () => place();
         document.addEventListener('pointerdown', close);
@@ -81,6 +96,9 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
         try {
             const pageUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : undefined;
             saveText(await buildExport({ ...target, format: fmt, links, glyph, pageUrl }, storage));
+            setDone(true);
+            if (doneTimer.current) clearTimeout(doneTimer.current);
+            doneTimer.current = setTimeout(() => setDone(false), 2000);
         } catch (e) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -120,6 +138,7 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
                 <span
                     role="dialog"
                     aria-label={convert('下載本冊')}
+                    ref={pop}
                     data-kyg-dl-pop=""
                     data-testid="download-pop"
                     style={{
@@ -131,29 +150,38 @@ export default function DownloadChip({ target, storage }: { target: DownloadTarg
                 >
                     {head('格式')}
                     {formats.map((f) => radio('kyg-dl-fmt', fmt === f, () => setFormat(f), FORMAT_LABEL[f], FORMAT_NOTE[f], `download-fmt-${f}`))}
-                    {fmt === 'entity' && (
-                        <label style={{ display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 13, marginLeft: 20, cursor: 'pointer' }}>
-                            <input type="checkbox" checked={links} onChange={(e) => setLinks(e.target.checked)} data-testid="download-links" />
+                    {/* 只有专名本用得上；别的格式下置灰不隐藏，免得浮层高度跳动 */}
+                    {formats.includes('entity') && (
+                        <label style={{ display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 13, marginLeft: 20, cursor: fmt === 'entity' ? 'pointer' : 'default', opacity: fmt === 'entity' ? 1 : 0.45 }}>
+                            <input type="checkbox" checked={links} disabled={fmt !== 'entity'} onChange={(e) => setLinks(e.target.checked)} data-testid="download-links" />
                             <span style={{ fontSize: 13 }}>{convert('帶庫內鏈接')}</span>
                         </label>
                     )}
                     {head('字形')}
-                    {GLYPHS.map((g) => radio('kyg-dl-glyph', glyph === g, () => setGlyph(g), GLYPH_LABEL[g], undefined, `download-glyph-${g}`))}
+                    {GLYPHS.map((g) => radio('kyg-dl-glyph', glyph === g, () => setGlyph(g), GLYPH_LABEL[g], GLYPH_NOTE[g], `download-glyph-${g}`))}
                     <button
                         type="button"
                         data-testid="download-go"
+                        aria-live="polite"
                         disabled={busy}
                         onClick={run}
                         style={{
                             display: 'block', width: '100%', marginTop: 10, padding: '4px 0', borderRadius: 4, fontSize: 13, cursor: busy ? 'wait' : 'pointer',
-                            border: '1px solid var(--color-tint-2, rgba(0,0,0,.2))', background: 'var(--color-tint-1, rgba(0,0,0,.04))', color: 'var(--color-ink, #222)',
+                            border: '1px solid var(--color-tint-2, rgba(0,0,0,.2))', background: 'var(--color-tint, rgba(0,0,0,.04))', color: 'var(--color-ink, #222)',
                         }}
                     >
-                        {convert(busy ? '生成中…' : '下載 .md')}
+                        {convert(busy ? '生成中…' : done ? '已下載 ✓' : '下載 .md')}
                     </button>
                     {error && <span role="alert" style={{ display: 'block', marginTop: 6, fontSize: 12, color: '#b42318' }}>{convert('沒能生成：')}{error}</span>}
-                    <span style={{ display: 'block', marginTop: 8, fontSize: 12, color: 'var(--color-ink-3, #888)' }}>
-                        {convert('古籍 Markdown（guji-format），文件開頭記書名與各項版本號。生僻字需裝相應字庫才顯示。')}
+                    <span
+                        title={convert(HINT)}
+                        data-testid="download-hint"
+                        style={{
+                            display: 'block', marginTop: 12, paddingTop: 6, borderTop: '1px solid var(--color-tint-2, rgba(0,0,0,.08))',
+                            fontSize: 11, lineHeight: 1.5, color: 'var(--color-ink-3, #888)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}
+                    >
+                        {convert(HINT)}
                     </span>
                 </span>,
                 document.body,
