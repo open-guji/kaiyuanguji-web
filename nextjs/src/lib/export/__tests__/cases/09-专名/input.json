@@ -1,0 +1,480 @@
+{
+ "note": "work 带链接／有歧义不带／matched 但没 href 不带；人名带链接／待建不带；相邻专名 :zm[]（二连、三连、链接与不链接混排）；中间隔标点的不算相邻；书名紧挨人名不算相邻；专名在夹注里；专名跨页（页码标记在专名中间）；合称 matched_multi 不出链接",
+ "char": {
+  "pages": [
+   {
+    "page": 50,
+    "columns": [
+     {
+      "col": 1,
+      "cells": [
+       {
+        "a": "50:1:1",
+        "c": "漢"
+       },
+       {
+        "a": "50:1:2",
+        "c": "鄭"
+       },
+       {
+        "a": "50:1:3",
+        "c": "玄"
+       },
+       {
+        "a": "50:1:4",
+        "c": "注"
+       },
+       {
+        "a": "50:1:5",
+        "c": "周"
+       },
+       {
+        "a": "50:1:6",
+        "c": "禮"
+       },
+       {
+        "a": "50:1:7",
+        "c": "宋"
+       },
+       {
+        "a": "50:1:8",
+        "c": "朱"
+       },
+       {
+        "a": "50:1:9",
+        "c": "熹"
+       },
+       {
+        "a": "50:1:10",
+        "c": "集"
+       },
+       {
+        "a": "50:1:11",
+        "c": "傳"
+       }
+      ]
+     },
+     {
+      "col": 2,
+      "cells": [
+       {
+        "a": "50:2:1",
+        "c": "唐"
+       },
+       {
+        "a": "50:2:2",
+        "c": "秘"
+       },
+       {
+        "a": "50:2:3",
+        "c": "書"
+       },
+       {
+        "a": "50:2:4",
+        "c": "監"
+       },
+       {
+        "a": "50:2:5",
+        "c": "魏"
+       },
+       {
+        "a": "50:2:6",
+        "c": "徵"
+       },
+       {
+        "a": "50:2:7",
+        "c": "房"
+       },
+       {
+        "a": "50:2:8",
+        "c": "玄"
+       },
+       {
+        "a": "50:2:9",
+        "c": "齡"
+       },
+       {
+        "a": "50:2:10",
+        "c": "等"
+       },
+       {
+        "a": "50:2:11",
+        "c": "撰"
+       }
+      ]
+     },
+     {
+      "col": 3,
+      "cells": [
+       {
+        "a": "50:3:1",
+        "c": "見"
+       },
+       {
+        "a": "50:3:2a",
+        "c": "隋"
+       },
+       {
+        "a": "50:3:3a",
+        "c": "書"
+       },
+       {
+        "a": "50:3:4a",
+        "c": "經"
+       },
+       {
+        "a": "50:3:5a",
+        "c": "籍"
+       },
+       {
+        "a": "50:3:2b",
+        "c": "志"
+       },
+       {
+        "a": "50:3:6",
+        "c": "又"
+       },
+       {
+        "a": "50:3:7",
+        "c": "晉"
+       },
+       {
+        "a": "50:3:8",
+        "c": "郭"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "page": 51,
+    "columns": [
+     {
+      "col": 1,
+      "cells": [
+       {
+        "a": "51:1:1",
+        "c": "璞"
+       },
+       {
+        "a": "51:1:2",
+        "c": "注"
+       },
+       {
+        "a": "51:1:3",
+        "c": "爾"
+       },
+       {
+        "a": "51:1:4",
+        "c": "雅"
+       },
+       {
+        "a": "51:1:5",
+        "c": "陸"
+       },
+       {
+        "a": "51:1:6",
+        "c": "德"
+       },
+       {
+        "a": "51:1:7",
+        "c": "明"
+       },
+       {
+        "a": "51:1:8",
+        "c": "釋"
+       },
+       {
+        "a": "51:1:9",
+        "c": "文"
+       },
+       {
+        "a": "51:1:10",
+        "c": "孔"
+       },
+       {
+        "a": "51:1:11",
+        "c": "安"
+       },
+       {
+        "a": "51:1:12",
+        "c": "國"
+       },
+       {
+        "a": "51:1:13",
+        "c": "傳"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "punct": {
+  "punctuations": [
+   {
+    "mark": "，",
+    "kind": "point",
+    "pos": "after",
+    "anchor": "50:1:6",
+    "pre_char": "禮"
+   },
+   {
+    "mark": "、",
+    "kind": "point",
+    "pos": "after",
+    "anchor": "50:2:6",
+    "pre_char": "徵"
+   },
+   {
+    "mark": "，",
+    "kind": "point",
+    "pos": "after",
+    "anchor": "50:3:2b",
+    "pre_char": "志"
+   },
+   {
+    "mark": "。",
+    "kind": "point",
+    "pos": "after",
+    "anchor": "51:1:4",
+    "pre_char": "雅"
+   },
+   {
+    "mark": "，",
+    "kind": "point",
+    "pos": "after",
+    "anchor": "51:1:9",
+    "pre_char": "文"
+   }
+  ]
+ },
+ "entity": {
+  "entities": [
+   {
+    "id": "e003",
+    "type": "dynasty",
+    "text": "漢",
+    "anchor": {
+     "start": "50:1:1",
+     "end": "50:1:1"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x003"
+    }
+   },
+   {
+    "id": "e004",
+    "type": "people",
+    "text": "鄭玄",
+    "anchor": {
+     "start": "50:1:2",
+     "end": "50:1:3"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x004"
+    }
+   },
+   {
+    "id": "e005",
+    "type": "work",
+    "text": "周禮",
+    "anchor": {
+     "start": "50:1:5",
+     "end": "50:1:6"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Work/x005"
+    }
+   },
+   {
+    "id": "e006",
+    "type": "dynasty",
+    "text": "宋",
+    "anchor": {
+     "start": "50:1:7",
+     "end": "50:1:7"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x006"
+    }
+   },
+   {
+    "id": "e007",
+    "type": "people",
+    "text": "朱熹",
+    "anchor": {
+     "start": "50:1:8",
+     "end": "50:1:9"
+    },
+    "target": {
+     "status": "new_candidate"
+    }
+   },
+   {
+    "id": "e008",
+    "type": "work",
+    "text": "集傳",
+    "anchor": {
+     "start": "50:1:10",
+     "end": "50:1:11"
+    },
+    "target": {
+     "status": "ambiguous"
+    }
+   },
+   {
+    "id": "e009",
+    "type": "dynasty",
+    "text": "唐",
+    "anchor": {
+     "start": "50:2:1",
+     "end": "50:2:1"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x009"
+    }
+   },
+   {
+    "id": "e010",
+    "type": "office",
+    "text": "秘書監",
+    "anchor": {
+     "start": "50:2:2",
+     "end": "50:2:4"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x010"
+    }
+   },
+   {
+    "id": "e011",
+    "type": "people",
+    "text": "魏徵",
+    "anchor": {
+     "start": "50:2:5",
+     "end": "50:2:6"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x011"
+    }
+   },
+   {
+    "id": "e012",
+    "type": "people",
+    "text": "房玄齡",
+    "anchor": {
+     "start": "50:2:7",
+     "end": "50:2:9"
+    },
+    "target": {
+     "status": "matched_multi",
+     "targets": [
+      {
+       "entity_id": "a"
+      },
+      {
+       "entity_id": "b"
+      }
+     ]
+    }
+   },
+   {
+    "id": "e013",
+    "type": "work",
+    "text": "隋書經籍志",
+    "anchor": {
+     "start": "50:3:2a",
+     "end": "50:3:2b"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Work/x013"
+    }
+   },
+   {
+    "id": "e014",
+    "type": "dynasty",
+    "text": "晉",
+    "anchor": {
+     "start": "50:3:7",
+     "end": "50:3:7"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x014"
+    }
+   },
+   {
+    "id": "e015",
+    "type": "people",
+    "text": "郭璞",
+    "anchor": {
+     "start": "50:3:8",
+     "end": "51:1:1"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x015"
+    }
+   },
+   {
+    "id": "e016",
+    "type": "work",
+    "text": "爾雅",
+    "anchor": {
+     "start": "51:1:3",
+     "end": "51:1:4"
+    },
+    "target": {
+     "status": "matched"
+    }
+   },
+   {
+    "id": "e017",
+    "type": "people",
+    "text": "陸德明",
+    "anchor": {
+     "start": "51:1:5",
+     "end": "51:1:7"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Entity/x017"
+    }
+   },
+   {
+    "id": "e018",
+    "type": "work",
+    "text": "釋文",
+    "anchor": {
+     "start": "51:1:8",
+     "end": "51:1:9"
+    },
+    "target": {
+     "status": "matched",
+     "href": "book-index://Work/x018"
+    }
+   },
+   {
+    "id": "e019",
+    "type": "people",
+    "text": "孔安國",
+    "anchor": {
+     "start": "51:1:10",
+     "end": "51:1:12"
+    },
+    "target": {
+     "status": "new_candidate"
+    }
+   }
+  ]
+ }
+}

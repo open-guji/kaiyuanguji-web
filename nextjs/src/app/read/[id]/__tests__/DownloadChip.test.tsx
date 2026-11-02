@@ -63,4 +63,49 @@ describe('DownloadChip', () => {
         expect(screen.getByTestId('download-go').textContent).toBe('下載 .md');
         jest.useRealTimers();
     });
+
+    it('默认选项：标点本、带链接、原书字形', async () => {
+        render(<p><DownloadChip target={target} storage={{}} /></p>);
+        fireEvent.click(screen.getByTestId('download-chip'));
+        await act(async () => { fireEvent.click(screen.getByTestId('download-go')); });
+        expect(buildExport).toHaveBeenCalledWith(expect.objectContaining({ format: 'punct', links: true, glyph: 'original' }), {});
+    });
+
+    // 每一种组合都原样传给 buildExport（生成结果另在 lib/export/__tests__/cases 逐字节对照）
+    const combos: [string, boolean, string][] = [];
+    for (const fmt of ['lines', 'punct', 'entity']) for (const links of [true, false]) for (const glyph of ['original', 'traditional', 'simplified']) combos.push([fmt, links, glyph]);
+    it.each(combos)('格式 %s、链接 %s、字形 %s', async (fmt, links, glyph) => {
+        render(<p><DownloadChip target={target} storage={{}} /></p>);
+        fireEvent.click(screen.getByTestId('download-chip'));
+        // 先切到专名本设链接，再切到要的格式（链接项在别的格式下置灰，但选过的值保留）
+        fireEvent.click(screen.getByTestId('download-fmt-entity'));
+        const box = screen.getByTestId('download-links') as HTMLInputElement;
+        if (box.checked !== links) fireEvent.click(box);
+        fireEvent.click(screen.getByTestId(`download-fmt-${fmt}`));
+        fireEvent.click(screen.getByTestId(`download-glyph-${glyph}`));
+        await act(async () => { fireEvent.click(screen.getByTestId('download-go')); });
+        expect(buildExport).toHaveBeenCalledTimes(1);
+        expect(buildExport).toHaveBeenCalledWith(expect.objectContaining({ ...target, format: fmt, links, glyph }), {});
+    });
+
+    it('生成出错：显示原因，不存文件', async () => {
+        buildExport.mockImplementationOnce(async () => { throw new Error('本冊標點取不到'); });
+        render(<p><DownloadChip target={target} storage={{}} /></p>);
+        fireEvent.click(screen.getByTestId('download-chip'));
+        await act(async () => { fireEvent.click(screen.getByTestId('download-go')); });
+        expect(saveText).not.toHaveBeenCalled();
+        expect(screen.getByRole('alert').textContent).toContain('本冊標點取不到');
+    });
+
+    it('只有字层：只列分行本', () => {
+        render(<p><DownloadChip target={{ ...target, chapter: { file: '020', char_file: '020.char.json' } }} storage={{}} /></p>);
+        fireEvent.click(screen.getByTestId('download-chip'));
+        expect(screen.getByTestId('download-fmt-lines')).toBeTruthy();
+        expect(screen.queryByTestId('download-fmt-punct')).toBeNull();
+    });
+
+    it('没有字层：不出按钮', () => {
+        render(<p><DownloadChip target={{ ...target, chapter: { file: '020' } }} storage={{}} /></p>);
+        expect(screen.queryByTestId('download-chip')).toBeNull();
+    });
 });

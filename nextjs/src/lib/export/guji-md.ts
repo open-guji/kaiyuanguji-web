@@ -3,7 +3,8 @@
  *
  * 规则照 guji-format spec/03 §三（lines.md）、§四（rich.md），实现逐行照 book-text
  * `scripts/book-text/original_char.py` 的 `render_lines`／`render_rich`，测试里与它的输出逐字节比对
- * （`__tests__/guji-md.test.ts`，夹具由 Python 生成）。改规则须两边一起改。
+ * （`__tests__/guji-md.test.ts` 用真书几页；`__tests__/cases/` 是手编小样本，逐项覆盖各种版式、标点、专名情况，
+ * 答案由 `scripts/export-golden.py` 用 Python 出）。改规则须两边一起改，并重出答案。
  *
  * 纯函数，不碰 DOM、不取数；取数和下载在 `download.ts`。
  */
