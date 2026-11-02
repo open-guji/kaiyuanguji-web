@@ -16,6 +16,8 @@ import TextSourceMenu from './TextSourceMenu';
 import type { ReadTextRow } from '@/lib/read-texts';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
 import DownloadChip from './DownloadChip';
+import DownloadPanel from './DownloadPanel';
+import { availableFormats } from '@/lib/export/download';
 import type { ExportChapter } from '@/lib/export/download';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
@@ -421,6 +423,22 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                         {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
                     </>
                 ) : undefined}
+                settingsExtra={!wide && meta?.versions && meta.chapter && meta.versionKey && availableFormats(meta.chapter).length > 0 ? (
+                    <DownloadPanel
+                        storage={transport}
+                        target={{
+                            id,
+                            versionKey: meta.versionKey,
+                            chapter: meta.chapter,
+                            bookTitle,
+                            versionLabel: meta.versionLabel,
+                            edition,
+                            license: meta.license,
+                            dataVersion: seed?.dataVersion ?? undefined,
+                        }}
+                    />
+                ) : undefined}
+                settingsExtraTitle={convert('下載')}
                 backHref="/read"
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}

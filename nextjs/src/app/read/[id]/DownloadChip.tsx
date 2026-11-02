@@ -25,20 +25,20 @@ export interface DownloadTarget {
     dataVersion?: string;
 }
 
-const FORMAT_NOTE: Record<ExportFormat, string> = {
+export const FORMAT_NOTE: Record<ExportFormat, string> = {
     lines: '照原書一列一行，不加標點',
     punct: '標點、分段、標題，書名加書名號',
     entity: '再加專名號 /人名/',
 };
 
-const GLYPH_NOTE: Record<ExportGlyph, string> = {
+export const GLYPH_NOTE: Record<ExportGlyph, string> = {
     original: '不改字',
     traditional: '異體字歸一',
     simplified: '歸一後轉簡',
 };
 
-const GLYPHS: ExportGlyph[] = ['original', 'traditional', 'simplified'];
-const HINT = '古籍 Markdown（guji-format），文件開頭記書名與各項版本號；生僻字需裝相應字庫才顯示。';
+export const GLYPHS: ExportGlyph[] = ['original', 'traditional', 'simplified'];
+export const HINT = '古籍 Markdown（guji-format），文件開頭記書名與各項版本號；生僻字需裝相應字庫才顯示。';
 
 export default function DownloadChip({ target, storage }: { target: DownloadTarget; storage: object }) {
     const { convert } = useConvert();
