@@ -58,4 +58,17 @@ describe('readerManifest', () => {
         readerManifest(input);
         expect(input.versions).toHaveLength(2);
     });
+
+    it('同一来源有精校自建版：粗校自建版不列（四库总目 default＋cv-proof），只剩一份', () => {
+        const fine = { key: 'default', kind: 'self_collated', quality: 'fine', source_name: '開源古籍CV整理（武英殿刻本）' };
+        const rough = { key: 'cv-proof', kind: 'self_collated', quality: 'rough', source_name: '開源古籍CV整理（武英殿刻本）' };
+        expect(readerManifest({ versions: [fine, rough] }).versions.map((v) => v.key)).toEqual(['default']);
+    });
+
+    it('只有粗校自建版、或来源不同：都照常列出', () => {
+        const rough = { key: 'cv-proof', kind: 'self_collated', quality: 'rough', source_name: 'A' };
+        expect(readerManifest({ versions: [rough] }).versions.map((v) => v.key)).toEqual(['cv-proof']);
+        const fineB = { key: 'default', kind: 'self_collated', quality: 'fine', source_name: 'B' };
+        expect(readerManifest({ versions: [fineB, rough] }).versions.map((v) => v.key)).toEqual(['default', 'cv-proof']);
+    });
 });

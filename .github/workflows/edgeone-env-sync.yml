@@ -34,7 +34,7 @@ on:
         required: false
         default: ''
       secret_keys:
-        description: set 模式：用 GitHub secret 的值覆盖（目前只支持 ERROR_VIEW_TOKEN）
+        description: set 模式：用 GitHub secret 的值覆盖（目前支持 ERROR_VIEW_TOKEN、OAUTH_ID_TOKEN_SECRET）
         required: false
         default: ''
 
@@ -57,4 +57,5 @@ jobs:
           GEN_KEYS: ${{ inputs.gen_keys }}
           SECRET_KEYS: ${{ inputs.secret_keys }}
           SECRET_ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
+          SECRET_OAUTH_ID_TOKEN_SECRET: ${{ secrets.OAUTH_ID_TOKEN_SECRET }}
         run: python3 ops/edgeone-env-sync.py

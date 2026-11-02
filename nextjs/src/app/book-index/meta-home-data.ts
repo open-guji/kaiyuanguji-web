@@ -64,10 +64,27 @@ export async function fetchMetaHome(source: DataSource, fetchImpl: typeof fetch 
         if (!url) return null;
         const res = await fetchImpl(url);
         if (!res.ok) return null;
-        return normalizeMetaHome(await res.json());
+        return applyStatsFloor(normalizeMetaHome(await res.json()));
     } catch {
         return null;
     }
+}
+
+/**
+ * 「数据规模」数字的下限：2026-10-30 按 book-index main 直接数文件（去掉已并条墓碑）得到。
+ * 数据发布（data.yml flow=index）单次同步超时、book-index 在线上钉在 10-19，线上 sections.json 的数字落后很多；
+ * 线上数字比下限小就用下限，发布追上之后线上数字更大，这里自动不起作用，可以删掉。
+ * entities 记的是人物（entity_type=people）。
+ */
+export const STATS_FLOOR = { works: 249808, books: 386275, collections: 2925, entities: 104063 } as const;
+
+export function applyStatsFloor(s: MetaHomeSections | null): MetaHomeSections | null {
+    if (!s) return s;
+    const stats = { ...s.stats };
+    for (const k of Object.keys(STATS_FLOOR) as (keyof typeof STATS_FLOOR)[]) {
+        if (stats[k] < STATS_FLOOR[k]) stats[k] = STATS_FLOOR[k];
+    }
+    return { ...s, stats };
 }
 
 /** 数据版本行：「501935e · 2026-09-27」；取不到为 null */

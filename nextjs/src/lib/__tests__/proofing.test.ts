@@ -131,7 +131,7 @@ describe('submitReview', () => {
         expect(await submitReview(draft, 'a', (async () => new Response('{"error":"bad"}', { status: 400 })) as unknown as typeof fetch)).toBe('bad');
         expect(await submitReview(draft, 'a', (async () => { throw new Error('x'); }) as unknown as typeof fetch, 0)).toMatch(/网络/);
     });
-    it('500 或断网自动重试一次：第二次成功就算成功；400／429 不重试', async () => {
+    it('500 或断网自动重试（最多两次）：重试成功就算成功；400／429 不重试', async () => {
         const f500 = jest.fn()
             .mockResolvedValueOnce(new Response('{"success":false,"error":"服务器错误"}', { status: 500 }))
             .mockResolvedValueOnce(new Response('{"success":true}', { status: 200 }));
@@ -147,7 +147,7 @@ describe('submitReview', () => {
         expect(f429).toHaveBeenCalledTimes(1);
         const f500x2 = jest.fn(async () => new Response('{"error":"服务器错误"}', { status: 500 }));
         expect(await submitReview(draft, 'a', f500x2 as unknown as typeof fetch, 0)).toBe('服务器错误');
-        expect(f500x2).toHaveBeenCalledTimes(2);
+        expect(f500x2).toHaveBeenCalledTimes(3);        // 首发＋两次重试
     });
 });
 
@@ -260,7 +260,7 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(more.map(x => x.c)).toEqual(['以']);
     });
 
-    it('整理本字排第一、带来源，同字合并（GUJI-683）', () => {
+    it('参校本字排第一、带来源，同字合并（GUJI-683）', () => {
         const { top } = shownCandidates({
             a: '1:1:1', ref: { c: '臼' }, cand: [{ c: '曰', src: ['lib'] }, { c: '臼', src: ['ocr'] }],
             libTop: [{ c: '曰', s: 0.9 }, { c: '日', s: 0.8 }],
@@ -341,7 +341,7 @@ describe('上下文（char_file 阅读顺序）', () => {
 
 describe('机器判读标签', () => {
     it('类别用大白话，未知类别原样', () => {
-        expect(classLabel('replace_align').name).toBe('整理本改过字');
+        expect(classLabel('replace_align').name).toBe('参校本改过字');
         expect(classLabel('lib_miss').hint).toContain('生僻字');
         expect(classLabel('future')).toEqual({ name: 'future' });
         expect(classLabel('seg_defect').name).toBe('切坏格');
@@ -354,7 +354,7 @@ describe('机器判读标签', () => {
             expect(whyLabel(code)).not.toMatch(/铁证|载体|墨形|cov/);
         }
     });
-    it('整理本对位方式：未知的不显示原码', () => {
+    it('参校本对位方式：未知的不显示原码', () => {
         expect(refOpLabel('replace')).toContain('改过字');
         expect(refOpLabel('coord')).toBe('');
     });

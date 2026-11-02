@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { nodeIdFor, UNCLASSIFIED_ID } from './build-catalog-index.mjs';
 import {
-    READ_PAGE_SIZE, READ_PERIODS, buildSections, bundleRead, compareReadCards, comparePeriodCards, periodOf, readCuration,
+    READ_PAGE_SIZE, READ_PERIODS, OWN_PICK_BLURB, OWN_PICK_LABEL, buildSections, pickList, bundleRead, compareReadCards, comparePeriodCards, periodOf, readCuration,
     toReadCard, verifyReadProbes,
 } from './build-read-index.mjs';
 // B5-3.2：打包默认严格（必须设 BOOK_INDEX_DERIVED_DIR）；本组用例用源档夹具，显式走本地开发开关
@@ -438,4 +438,27 @@ test('readCuration：layout: shelf 等同 shelf: true（目录总管 10-01 实�
     } finally {
         rmSync(root, { recursive: true, force: true });
     }
+});
+
+test('pickList：自建本排推荐最前，顶替策展里同作品的那张，导语取策展里写的，没有用默认', () => {
+    const c = (id, title, extra = {}) => ({ id, title, text_count: 1, ...extra });
+    const zongmuWork = c('W1', '欽定四庫全書總目');
+    const zongmuBook = c('B1', '欽定四庫全書總目', { own: true, work_id: 'W1', edition: '清乾隆六十年武英殿刻本' });
+    const beixing = c('B2', '北行日錄', { own: true, work_id: 'W2' });
+    const gwz = c('W3', '古文觀止');
+    const all = [zongmuWork, zongmuBook, beixing, gwz];
+    const byId = new Map(all.map((x) => [x.id, x]));
+    const card = (id) => byId.get(id);
+    const curationPicks = [
+        { id: 'W3', blurb: '古文' },
+        { id: 'W1', blurb: '总目导语', slip: '四庫', type_label: '书目提要' },
+    ];
+    const picks = pickList({ all, byId, curationPicks, card });
+    assert.deepEqual(picks.map((p) => p.id), ['B1', 'B2', 'W3']);
+    assert.equal(picks[0].blurb, '总目导语');
+    assert.equal(picks[0].type_label, '书目提要');
+    assert.equal(picks[1].blurb, OWN_PICK_BLURB);
+    assert.equal(picks[1].type_label, OWN_PICK_LABEL);
+    // 没有自建本、没有策展：空
+    assert.deepEqual(pickList({ all: [gwz], byId, curationPicks: [], card }), []);
 });

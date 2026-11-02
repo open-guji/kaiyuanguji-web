@@ -24,9 +24,10 @@ import { readerPath } from '@/lib/reader-route';
 import { legacyChapter } from '@/lib/legacy-reader';
 import { buildSourceLinks } from '@/lib/repo-source';
 import { detailUrl } from '@/lib/item-query';
-import { entryHref } from '@/lib/item-id';
+import { entryHref, parseItemId } from '@/lib/item-id';
 import type { DigitalAssets } from '@/types';
 import { useSiteT } from '@/i18n/use-site-t';
+import { defaultReadTarget, readTextsOf } from '@/lib/read-texts';
 
 interface BookDetailContentProps {
     id: string;
@@ -207,6 +208,10 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
     // bim 0.30 起 BookDetailLayout 也只看 text_count（ctx.kind 仅为 'text' | null），版本页回目网格由 manifest＋默认版本目录取。
     // 版本页回目网格的每一回（ctx.juan，章文件名去扩展名）直接打开那一章。
     const readLink = useCallback((ctx: ReadLinkContext) => {
+        // 作品下各条目都有文本时（read_texts，打包算好，自建本在前）：入口默认去第一份，章号是别的条目的不带过去
+        // （只对作品：某个版本自己的页面，入口仍是它自己的文本）
+        const target = parseItemId(id)?.type === 'work' ? defaultReadTarget(id, readTextsOf(ctx.detail)) : null;
+        if (target) return target;
         const textCount = (ctx.detail as { text_count?: number } | undefined)?.text_count;
         if (!(typeof textCount === 'number' && textCount > 0)) return null;
         return readerPath(id, { chapter: legacyChapter(ctx.juan) });

@@ -29,6 +29,8 @@ export interface ManifestVersion {
     edition_label?: string;
     source_url?: string | null;
     license?: string | null;
+    /** 文本质量：fine＝精校，rough＝粗校（同来源有精校时阅读页不列粗校，见 lib/reader-manifest.ts） */
+    quality?: 'fine' | 'rough' | 'source' | (string & {});
 }
 export interface Manifest { id?: string; versions: ManifestVersion[] }
 export interface TextChapterMeta { n?: number; file: string; title?: string; has_json?: boolean; char_file?: string; cord_file?: string }

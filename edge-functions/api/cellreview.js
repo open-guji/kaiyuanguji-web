@@ -180,6 +180,27 @@ async function ipHash(context, ip) {
   return Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
 
+// 存票偶发 `KvStore Put failed: net_exception_timeout`（10-26 用户实测，审册 4 时同一格反复失败；根因在 EdgeOne KV，控制台日志未查）。
+// 同键同值重写是幂等的：函数里先自己重试一次再回 500，免得每次都靠读者重点；耗时与次数写进 console 和 500 的 detail，便于统计
+const PUT_RETRY_DELAY_MS = 300;
+async function putTicket(kv, key, value, opts) {
+  const t0 = Date.now();
+  try {
+    await kv.put(key, value, opts);
+    return { attempts: 1, ms: Date.now() - t0 };
+  } catch (e1) {
+    console.error('Cellreview KV put 第 1 次失败（重试）:', (e1 && e1.message) || e1, `${Date.now() - t0}ms`);
+    await new Promise((r) => setTimeout(r, PUT_RETRY_DELAY_MS));
+    try {
+      await kv.put(key, value, opts);
+      return { attempts: 2, ms: Date.now() - t0 };
+    } catch (e2) {
+      e2.putMs = Date.now() - t0;
+      throw e2;
+    }
+  }
+}
+
 export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
   try {
@@ -205,12 +226,13 @@ export async function onRequestPost(context) {
     // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。
     const iph = ip ? await ipHash(context, ip) : '';
     const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
-    await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
+    const put = await putTicket(kv, key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
+    if (put.attempts > 1) console.warn(`Cellreview KV put 重试后成功 ${put.ms}ms`);
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Cellreview POST error:', e);
     // detail 临时带上原始报错，便于定位线上间歇 500（2026-10-23）；查清后撤掉
-    return json(headers, 500, { success: false, error: '服务器错误', detail: String((e && e.message) || e).slice(0, 200) });
+    return json(headers, 500, { success: false, error: '服务器错误', detail: `${String((e && e.message) || e).slice(0, 180)}${e && e.putMs ? `（已试 2 次，共 ${e.putMs}ms）` : ''}` });
   }
 }
 

@@ -23,7 +23,20 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(vols[8]['leaves'], 69)
 
     def test_plan_split_volume(self):
-        plan = m.plan_canvases(3, 107, m.load_splits())
+        # 真实裁剪框表里的册都已换图源移出，这里用 vol03 旧表的 105 叶四块做样例
+        import json
+        import tempfile
+        rows = [{'vol': 'vol03', 'ia_leaf': 105, 'canvas_seq': f'0105{x}', 'ws_page': 105 + i, 'pos': pos,
+                 'xywh': xywh, 'orig_size': [4198, 5848]}
+                for i, (x, pos, xywh) in enumerate([('a', '右上', [2096, 0, 2102, 2913]), ('b', '左上', [0, 0, 2096, 2913]),
+                                                    ('c', '右下', [2101, 2913, 2074, 2931]), ('d', '左下', [0, 2913, 2101, 2935])])]
+        with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False, encoding='utf-8') as f:
+            json.dump(rows, f)
+        try:
+            splits = m.load_splits(f.name)
+        finally:
+            os.unlink(f.name)
+        plan = m.plan_canvases(3, 107, splits)
         seqs = [c['seq'] for c in plan]
         self.assertEqual(len(plan), 110)  # 合扫叶 105 换成 a–d 四块
         self.assertEqual(seqs[103:110], ['0104', '0105a', '0105b', '0105c', '0105d', '0106', '0107'])
@@ -181,6 +194,23 @@ class SikuIiif(unittest.TestCase):
             body, hdr = m.http_get('https://data.kaiyuanguji.com/x', tries=3)
         self.assertEqual(body, b'webp')
 
+    def test_http_get_retries_edgeone_555_but_not_404(self):
+        import urllib.error
+        from unittest import mock
+        ok = mock.MagicMock()
+        ok.__enter__.return_value.read.return_value = b'm'
+        ok.__enter__.return_value.headers = {}
+        e555 = urllib.error.HTTPError('u', 555, 'x', {}, None)
+        with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[e555, ok]), \
+                mock.patch.object(m.time, 'sleep'):
+            self.assertEqual(m.http_get('https://data.openguji.com/x', tries=3)[0], b'm')
+        e404 = urllib.error.HTTPError('u', 404, 'x', {}, None)
+        with mock.patch.object(m.urllib.request, 'urlopen', side_effect=[e404, ok]) as uo, \
+                mock.patch.object(m.time, 'sleep'):
+            with self.assertRaises(urllib.error.HTTPError):
+                m.http_get('https://data.openguji.com/x', tries=3)
+        self.assertEqual(uo.call_count, 1)
+
     def test_cos_put_retries_when_error_body_truncated(self):
         import http.client
         import io as _io
@@ -241,6 +271,41 @@ class SikuIiif(unittest.TestCase):
         self.assertEqual(m.load_page_table(21, get=get)['rev'], 2)
         tables.clear()
         self.assertIsNone(m.load_page_table(21, get=get))
+
+    def test_build_canvas_no_ia(self):
+        c = {'seq': '0001', 'leaf': 1, 'xywh': None, 'pos': None, 'width': 100, 'height': 200,
+             'tiers': [('thumb', 30, 60, 1), ('read', 100, 200, 1), ('zoom', 100, 200, 1)]}
+        meta = {'ia': 'x.cn'}
+        labels = lambda ia: [i['label']['zh'][0] for i in m.build_canvas(1, meta, c, None, ia)['items'][0]['items'][0]['body']['items']]
+        self.assertEqual(labels(True), ['本站', 'Internet Archive'])
+        self.assertEqual(labels(False), ['本站'])
+
+    def test_image_seg_keeps_canvas_id_and_manifest(self):
+        try:
+            m.IMAGE_SEG = 'qiefen2'
+            self.assertEqual(m.tier_key(11, '0001', 1200), 'iiif/96mid1ogzk/11/qiefen2/0001/full/1200,/0/default.webp')
+            self.assertEqual(m.manifest_key(11), 'iiif/96mid1ogzk/11/manifest.json')
+            self.assertTrue(m.canvas_id(11, '0001').endswith('/iiif/96mid1ogzk/canvas/11/0001'))
+        finally:
+            m.IMAGE_SEG = ''
+        self.assertEqual(m.image_base_key(11, '0001'), 'iiif/96mid1ogzk/11/0001')
+
+    def test_load_page_table_skips_staged_and_pins_rev(self):
+        import json
+        import urllib.error
+        tables = {n: {'schema': 'guji-pages/1', 'rev': n, 'pages': []} for n in (1, 2, 3)}
+        tables[3]['status'] = 'staged'
+
+        def get(url, **kw):
+            rev = int(url.rsplit('/r', 1)[1][:3])
+            if rev not in tables:
+                raise urllib.error.HTTPError(url, 404, 'nf', {}, None)
+            return json.dumps(tables[rev]).encode(), {}
+        self.assertEqual(m.load_page_table(11, get=get)['rev'], 2)
+        self.assertEqual(m.load_page_table(11, get=get, rev=3)['rev'], 3)
+        self.assertIsNone(m.load_page_table(11, get=get, rev=4))
+        tables[1]['status'] = tables[2]['status'] = 'staged'
+        self.assertIsNone(m.load_page_table(11, get=get))
 
 
 @unittest.skipIf(m is None, 'Pillow 未安装')

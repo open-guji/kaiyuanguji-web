@@ -49,7 +49,7 @@ on:
         type: string
         default: main
       target:
-        description: 'production = 正式前缀（上传）；staging = 演练：整条流水线写 staging/ 前缀，不碰正式前缀，不看开关。两者都只接受 prod_ref／text_ref 是 main'
+        description: 'production = 正式前缀（上传）；staging = 演练：整条流水线写 staging/ 前缀，不碰正式前缀，不看开关。两者都只接受 prod_ref／text_ref 是 main（例外：flow=text＋staging 时 text_ref 可填 dev 做预览）'
         type: choice
         options: [production, staging]
         default: production
@@ -197,8 +197,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: check
     if: ${{ needs.check.outputs.should_run == 'true' }}
-    # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时
-    timeout-minutes: 120
+    # 只检查约 15 分钟；上传全量变化（schema 换代）时 current/ 与 h1 各十几万个对象，预留到 2 小时。
+    # 2026-10-30：book-index 停了 11 天没发，一次追平要传 current/ 约 69.6 万、h1 条目约 66.2 万个对象，
+    # 每路约 98 个/秒，准备 25 分钟＋同步约 2 小时，120 分钟撞线被取消两次。放宽到 330（托管 runner 上限 360）。
+    timeout-minutes: 330
     # 演练写的 staging/ 前缀，deploy.yml 的测试站构建也写（拆出之前）：两边用同一把锁（deploy.yml 的 build 任务那把），
     # 不会交错写同一批对象和指针。
     # 正式前缀：index／text／both 三条流程各在自己的 workflow 级组里排队，写正式前缀的 package 共用 publish-data-writer 这把锁，
@@ -308,7 +310,11 @@ jobs:
           [ "$TARGET" = staging ] && prefix=staging
           # 钉在线上版本的那一边（PINNED=prod|text）当作 main：它就是线上正在用的 commit，只有本流程在发布闸下写过
           refs_main=true
-          { { [ "$PROD_REF" = main ] || [ "$PINNED" = prod ]; } && { [ "$TEXT_REF" = main ] || [ "$PINNED" = text ]; }; } || refs_main=false
+          # dev 预览：flow=text（book-index 已钉线上）＋演练前缀＋book-text 取 dev，不用勾 allow_ref_override。
+          #   带密钥的 job 里跑的 build_derived.py 来自钉住的线上 book-index，book-text 只当数据读；写的是 staging/，不碰正式前缀
+          preview_dev=false
+          [ "$TARGET" = staging ] && [ "$PINNED" = prod ] && [ "$TEXT_REF" = dev ] && preview_dev=true
+          { { [ "$PROD_REF" = main ] || [ "$PINNED" = prod ]; } && { [ "$TEXT_REF" = main ] || [ "$PINNED" = text ] || [ "$preview_dev" = true ]; }; } || refs_main=false
           if [ "$refs_main" != true ] && [ "$ALLOW_OVERRIDE" != true ]; then
             why="prod_ref／text_ref 不是 main（${PROD_REF}／${TEXT_REF}）：带密钥的上传只跑 main 上的代码，只做检查（确需用别的 ref 请勾 allow_ref_override）"
           elif [ "$TARGET" = staging ]; then
@@ -319,6 +325,9 @@ jobs:
             publish=true; why="正式前缀：上传"
           else
             why="SPLIT_DATA_FLOW 未打开：只做检查，不上传（deploy.yml 仍是正式前缀的写者）"
+          fi
+          if [ "$publish" = true ] && [ "$preview_dev" = true ]; then
+            why="$why；预览：book-text 取 dev（${TEXT_REF}），只写 staging/"
           fi
           if [ "$publish" = true ] && [ "$refs_main" != true ]; then
             why="$why；⚠ allow_ref_override：用 ${PROD_REF}／${TEXT_REF} 上传，所选 ref 的 build_derived.py 会在带密钥的 job 里跑，只给可信分支用"

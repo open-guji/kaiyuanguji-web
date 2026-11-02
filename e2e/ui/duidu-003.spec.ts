@@ -15,8 +15,13 @@ const BOOK = '96mid1ogzk';
 const PATH = `${TARGET}/read/${BOOK}/003`;
 /** 带书影翻页／缩放（overview#425）的 book-index-ui 版本；bim 实际发版号定了以后核对这里 */
 const MIN_UI = '0.45.0';
-/** 003 起始页：第 1、2 页（书脊签、封面签条）无字，对读正文与书影从第 3 页起 */
-const FIRST_TEXT_PAGE = '3';
+/**
+ * 003 的页序按殿本换图源后的新页表（siku-qiefen-v2，108 页，seq＝页号）：第 1 页就是卷首有字页，
+ * 全册只有第 56 页（原书空白叶）无字。换源前（99 册上线前）的旧页表多出书脊签、封面签条两页，页号整体差 2。
+ */
+const FIRST_TEXT_PAGE = '1';
+/** 全册唯一无字页 */
+const BLANK_PAGE = 56;
 /** 无字页进书影翻页（bim#126）所在的 book-index-ui 版本 */
 const NO_TEXT_PAGE_UI = '0.46.0';
 /** 「标点」等按钮补 aria-pressed、起始页在渲染阶段定（bim#129）所在的版本；发版后按实际版本号核对 */
@@ -127,35 +132,11 @@ test.describe('图文对读（vol03）', () => {
         await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(cur - 1));
     });
 
-    test('无字页（书脊签、封面签条、空白页）进书影翻页：只有书影、没有字框，正文不跳', async ({ page, request }) => {
-        await requireUiVersion(request, NO_TEXT_PAGE_UI, '无字页进书影翻页');
+    test('第 1 页就有字：对读从第 1 页起，书影「上一页」不可用', async ({ page }) => {
         await openDuidu(page);
-        const prev = page.getByTestId('facsimile-prev');
-        const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
-        // 第 3 页起有字；往前翻就是第 2 页（封面签条）、第 1 页（书脊签）
-        await expect(prev).toBeEnabled();
-        // 先把翻页按钮滚进视口再记起点：章首有「已校定／正在校对」横幅时，720 高的视口里按钮在下沿之外，
-        // click() 会先自己滚过去（#524 起 385px），那不是翻页引起的滚动
-        await prev.scrollIntoViewIfNeeded();
-        const y0 = await scrollY();
-        await prev.click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '2');
-        await prev.click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '1');
-        await expect(prev).toBeDisabled();
-        // 只显示书影：有画面、没有字框；正文里没有这两页，也没有因为翻页而滚动
-        await expect(page.locator('.bim-zp canvas')).toBeVisible();
-        await expectFacsimilePainted(page);
-        await expect(page.locator('.bim-zp svg rect[data-selected]')).toHaveCount(0);
-        await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
-        await expect(page.locator('[data-page-section="1"], [data-page-section="2"]')).toHaveCount(0);
-        expect(Math.abs((await scrollY()) - y0)).toBeLessThanOrEqual(2);
-        // 翻回有字页：书影页码对，字框又有了
-        await page.getByTestId('facsimile-next').click();
-        await page.getByTestId('facsimile-next').click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '3');
-        await page.locator('[data-char-id^="3:"]').nth(5).click();
-        await expect(page.locator('svg rect[data-selected="true"]').first()).toBeVisible();
+        await expect(page.getByTestId('facsimile-prev')).toBeDisabled();
+        await expect(page.locator('[data-page-section="1"]')).toHaveCount(1);
+        await expect(page.locator('[data-char-id^="1:"]').first()).toBeAttached();
     });
 
     test('「标点」「专名线」按钮带 aria-pressed，点一下状态跟着变', async ({ page, request }) => {
@@ -179,26 +160,34 @@ test.describe('图文对读（vol03）', () => {
         await expect(full).toHaveAttribute('aria-pressed', 'false');
     });
 
-    test('空白页（第 58 页）：从有字页翻过去只显示书影，正文不动；再翻到第 59 页正文滚过去', async ({ page, request }) => {
+    test('空白页（第 56 页）：从有字页翻过去只显示书影、没有字框，正文不动；再翻到第 57 页正文滚过去', async ({ page, request }) => {
         await requireUiVersion(request, NO_TEXT_PAGE_UI, '无字页进书影翻页');
         await openDuidu(page);
-        const ch = page.locator('[data-char-id^="57:"]').first();
+        // 空白页前一页（第 55 页）只有页尾 2 个字，点它会被滚动定位带到后面的页；从再前一页点字、翻到第 55 页
+        const ch = page.locator(`[data-char-id^="${BLANK_PAGE - 2}:"]`).first();
         await ch.scrollIntoViewIfNeeded();
         await ch.click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '57');
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(BLANK_PAGE - 2));
+        await page.getByTestId('facsimile-next').click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(BLANK_PAGE - 1));
         await settled(page);
         const y0 = await page.evaluate(() => Math.round(window.scrollY));
         await page.getByTestId('facsimile-next').click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '58');
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(BLANK_PAGE));
         await expect(page.locator('.bim-zp canvas')).toBeVisible();
         await expectFacsimilePainted(page);
         await expect(page.locator('.bim-zp svg rect')).toHaveCount(0);
-        await expect(page.locator('[data-page-section="58"]')).toHaveCount(0);
+        await expect(page.locator(`[data-page-section="${BLANK_PAGE}"]`)).toHaveCount(0);
         await page.waitForTimeout(500);
         expect(Math.abs((await page.evaluate(() => Math.round(window.scrollY))) - y0)).toBeLessThanOrEqual(2);
         await page.getByTestId('facsimile-next').click();
-        await expect(warpPage(page)).toHaveAttribute('data-warp-page', '59');
-        await expect.poll(() => page.locator('[data-char-id^="59:"]').first().evaluate((el) => Math.round(el.getBoundingClientRect().top)), { timeout: 10_000 }).toBeLessThan(300);
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(BLANK_PAGE + 1));
+        await expect.poll(() => page.locator(`[data-char-id^="${BLANK_PAGE + 1}:"]`).first().evaluate((el) => Math.round(el.getBoundingClientRect().top)), { timeout: 10_000 }).toBeLessThan(300);
+        // 翻回有字页：字框又有了
+        for (let i = 0; i < 3; i++) await page.getByTestId('facsimile-prev').click();
+        await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(BLANK_PAGE - 2));
+        await page.locator(`[data-char-id^="${BLANK_PAGE - 2}:"]`).nth(5).click();
+        await expect(page.locator('svg rect[data-selected="true"]').first()).toBeVisible();
     });
 
     test('滚轮缩放后：拖动不选字，点字框仍能定位正文；双击复位', async ({ page }) => {
@@ -261,38 +250,31 @@ test.describe('图文对读（vol03）', () => {
         await expect(page).toHaveURL(PATH);
     });
 
-    test('合扫拆页 105–110：逐页点字，书影页码对、字框出现、画面是该页自己的 canvas', async ({ page }) => {
+    test('逐页点字 103–108：书影页码对、字框出现、画面是该页自己的 canvas（换源后一页一图，无 a–d 拆页）', async ({ page }) => {
         await openDuidu(page);
         const seen: string[] = [];
-        page.on('request', (r) => { const m = r.url().match(/iiif\/96mid1ogzk\/03\/(\d{4}[a-d]?)\/full/); if (m) seen.push(m[1]); });
-        for (const pg of [105, 106, 107, 108, 109, 110]) {
+        page.on('request', (r) => { const m = r.url().match(/iiif\/96mid1ogzk\/03\/(?:[a-z0-9]+\/)?(\d{4}[a-d]?)\/full/); if (m) seen.push(m[1]); });
+        for (const pg of [103, 104, 105, 106, 107, 108]) {
             const ch = page.locator(`[data-char-id^="${pg}:5:"]`).first();
             await ch.scrollIntoViewIfNeeded();
             await ch.click();
             await expect(warpPage(page)).toHaveAttribute('data-warp-page', String(pg));
             await expect(page.locator('svg rect[data-selected="true"]').first()).toBeVisible();
         }
-        // 105–108 → 0105a–d，109、110 → 0106、0107（页号顺延，画面按 cord 的 canvas 取）
-        for (const id of ['0105a', '0105b', '0105c', '0105d', '0106', '0107']) expect(seen).toContain(id);
-    });
-
-    test('第 1、2 页（书脊签、封面签条）没有字：正文不出现这两页', async ({ page }) => {
-        await openDuidu(page);
-        await expect(page.locator('[data-page-section="1"]')).toHaveCount(0);
-        await expect(page.locator('[data-page-section="2"]')).toHaveCount(0);
-        await expect(page.locator('[data-char-id^="1:"], [data-char-id^="2:"]')).toHaveCount(0);
-        // 对读从第 3 页起
-        expect(Number(await warpPage(page).getAttribute('data-warp-page'))).toBe(3);
+        // 页号＝canvas seq，画面按 cord 的 canvas 取
+        for (const id of ['0103', '0104', '0105', '0106', '0107', '0108']) expect(seen).toContain(id);
+        // 没有合扫拆页的 a–d 后缀
+        expect(seen.filter((id) => /[a-d]$/.test(id))).toEqual([]);
     });
 
     test('繁简切换：对读正文跟着转，锚点不变', async ({ page }) => {
         await openDuidu(page);
-        const para = () => page.locator('[data-char-id="4:1:5"]').evaluate((e) => e.textContent);
+        const para = () => page.locator('[data-char-id="2:1:5"]').evaluate((e) => e.textContent);
         expect(await para()).toBe('时');
         // 顶栏快捷的字形三态「原｜繁｜简」（ui ≥ 0.52.1 取代原来的繁／简单键）
         await page.getByRole('group', { name: /^字形$/ }).getByRole('button', { name: /^通行繁[體体]$/ }).click();
         await expect.poll(para).toBe('時');
-        await expect(page.locator('[data-char-id="4:1:5"]')).toHaveCount(1);
+        await expect(page.locator('[data-char-id="2:1:5"]')).toHaveCount(1);
     });
 
     test('标点开关：关掉后没有标点，打开后回来', async ({ page }) => {
@@ -331,12 +313,12 @@ test.describe('图文对读（vol03）', () => {
         await setReaderSettings(page, true);
         await page.getByRole('group', { name: /^(书名样式|書名樣式)$/ }).getByRole('button', { name: /^(书名号|書名號)$/ }).click();
         await setReaderSettings(page, false);
-        // 4:1:17 彖 的标点：《 pos=before、》 pos=after（003.punct.json）
-        const para = await page.locator('[data-char-id="4:1:17"]').evaluate((e) => e.closest('p')!.textContent ?? '');
+        // 2:1:17 彖 的标点：《 pos=before、》 pos=after（003.punct.json）
+        const para = await page.locator('[data-char-id="2:1:17"]').evaluate((e) => e.closest('p')!.textContent ?? '');
         expect(para).toContain('孔子《彖》、《象》传');
         expect(para).toContain('元苏天爵《文类》，明刘昌《中州文表》');
-        // 3:6:14–15「元史」整词书名，《 在首字之前
-        const p3 = await page.locator('[data-char-id="3:6:14"]').evaluate((e) => e.closest('p')!.textContent ?? '');
+        // 1:6:14–15「元史」整词书名，《 在首字之前
+        const p3 = await page.locator('[data-char-id="1:6:14"]').evaluate((e) => e.closest('p')!.textContent ?? '');
         expect(p3).toContain('具《元史》本传');
     });
 });

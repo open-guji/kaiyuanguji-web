@@ -85,7 +85,7 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.queryByTestId('preselect')).toBeNull();
     });
 
-    it('why：「原因：」加短语，未知码不露英文；ref 显示「整理本作 X」；候选带分数，多的在「更多」里', async () => {
+    it('why：「原因：」加短语，未知码不露英文；ref 显示「参校本作 X」；候选带分数，多的在「更多」里', async () => {
         loadProofing.mockResolvedValue(ok([{
             a: '1:1:1', c: '己', why: ['none', 'future_code'], ref: { c: '已' }, cand: [{ c: '己' }, { c: '已' }],
             libTop: [{ c: '巳', s: 0.7 }, { c: '以', s: 0.6 }, { c: '目', s: 0.5 }, { c: '日', s: 0.4 }],
@@ -94,7 +94,7 @@ describe('精校页显示（GUJI-557）', () => {
         const why = (await screen.findByTestId('why')).textContent ?? '';
         expect(why).toBe('原因：其他疑点');
         expect(why).not.toMatch(/[A-Za-z]/);
-        expect(screen.getByText(/整理本作「已」/)).toBeTruthy();
+        expect(screen.getByText(/参校本作「已」/)).toBeTruthy();
         expect(screen.getByText('像 70%')).toBeTruthy();
         expect(screen.queryByText('以')).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: /^还有 \d+ 个$/ }));
@@ -167,7 +167,7 @@ describe('精校页显示（GUJI-557）', () => {
         const grid = await screen.findByTestId('alt-grid');
         expect(grid.textContent).toContain('U+2B81E');
         expect(grid.textContent).not.toContain(g);
-        expect(screen.getByText(/整理本作「U\+2B81E」/)).toBeTruthy();
+        expect(screen.getByText(/参校本作「U\+2B81E」/)).toBeTruthy();
         const cps = screen.getAllByTestId('zi-cp');
         expect(cps.length).toBeGreaterThanOrEqual(3);
         expect(cps[0].getAttribute('title')).toBe(g);
@@ -186,6 +186,7 @@ describe('精校页显示（GUJI-557）', () => {
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '', cand: [{ c: '口' }, { c: '○' }] }, { a: '1:1:2', c: '日', cand: [{ c: '曰' }] }]));
         render(<ProofingClient book="b11" vol="vol01" />);
         await screen.findAllByTestId('cell-card');
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」：这条用例要在交过的卡上接着点
         expect(screen.queryByTestId('symbols')).toBeNull();
         expect(screen.queryAllByRole('button', { name: /^□/ })).toHaveLength(0);
         const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
@@ -238,6 +239,7 @@ describe('精校页显示（GUJI-557）', () => {
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '口', cand: [{ c: '日' }] }]));
         render(<ProofingClient book="b13" vol="vol01" />);
         const card = within((await screen.findAllByTestId('cell-card'))[0]);
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」：这条用例要在交过的卡上接着点
         const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
         fireEvent.click(card.getByRole('radio', { name: '破损、阙字' }));
         fireEvent.click(card.getByTestId('kind-confirm'));
@@ -260,10 +262,13 @@ describe('精校页显示（GUJI-557）', () => {
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '未', cand: [{ c: '己' }, { c: '已' }] }]));
         render(<ProofingClient book="b9" vol="vol01" />);
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」：这条用例要在交过的卡上接着点
         const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
         fireEvent.click(await screen.findByRole('button', { name: '已' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
         expect(body(0)).toMatchObject({ char: '已', pick_src: 'cand', pick_rank: 2 });
+        await screen.findByTestId('done-badge');                       // 提交完成（按钮不再忙）再点下一个
+        await waitFor(() => expect(screen.getByRole('button', { name: '未' })).not.toBeDisabled());
         fireEvent.click(screen.getByRole('button', { name: '未' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
         expect(body(1)).toMatchObject({ char: '未', pick_src: 'machine' });
@@ -278,14 +283,14 @@ describe('精校页显示（GUJI-557）', () => {
         expect(body(3)).toMatchObject({ choice: 'none', char: '末', pick_src: 'custom' });
     });
 
-    it('GUJI-683：整理本字是第一个候选并标「整理本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {
+    it('GUJI-683：参校本字是第一个候选并标「参校本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', ref: { c: '臼' }, libTop: [{ c: '曰', s: 0.9 }], ctx: { c: '曰' } }]));
         render(<ProofingClient book="b10" vol="vol01" />);
         const card = (await screen.findAllByTestId('cell-card'))[0];
         const refBtn = await screen.findByRole('button', { name: /^臼/ });
-        expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toBe('整理本');
+        expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toBe('参校本');
         expect(card.querySelector('[data-testid=no-machine-char]')).toBeTruthy();
         expect(card.textContent).not.toContain('看前后文');              // 上下文字＝库首选，只是回声
         expect(screen.queryByRole('button', { name: '这是夹注小字' })).toBeNull();
@@ -325,7 +330,7 @@ describe('精校页显示（GUJI-557）', () => {
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
         expect(body(1)).toMatchObject({ a: '1:1:2', choice: 'none' });
         // 输入框里打字不触发快捷键；切分错了带上框里的一个字
-        const input = screen.getAllByLabelText('另写一字')[2];
+        const input = within(document.getElementById('cell-1:1:3')!).getByLabelText('另写一字');
         fireEvent.keyDown(input, { key: 'n' });
         expect(fetchSpy).toHaveBeenCalledTimes(2);
         fireEvent.change(input, { target: { value: '入' } });
@@ -334,12 +339,11 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.click(c3.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
         expect(body(2)).toMatchObject({ a: '1:1:3', choice: 'cut', char: '入' });
-        // 只看未回应缺省勾着，但刚回应的卡留在原地；关掉再勾上（三张都回应过了）→ 一张不剩
+        // 只看未回应缺省勾着：交上的卡马上收起（10-26），三张都交完一张不剩；取消勾选又都回来
         expect(screen.getByTestId('only-open')).toBeChecked();
-        expect(screen.queryAllByTestId('cell-card')).toHaveLength(3);
-        fireEvent.click(screen.getByTestId('only-open'));
-        fireEvent.click(screen.getByTestId('only-open'));
         await waitFor(() => expect(screen.queryAllByTestId('cell-card')).toHaveLength(0));
+        fireEvent.click(screen.getByTestId('only-open'));
+        expect(screen.queryAllByTestId('cell-card')).toHaveLength(3);
     });
 
     it('相似字的字形图没传上去就只显示字；没有 alt 不渲染', async () => {
@@ -523,6 +527,7 @@ describe('精校页：符号、篆字等＝图形（char v0.3 图片格，GUJI-7
         loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
         render(<ProofingClient book="b12" vol="005" />);
         await screen.findAllByTestId('cell-card');
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」：这条用例要在交过的卡上接着点
         fireEvent.keyDown(document, { key: 'g' });
         fireEvent.change(await screen.findByLabelText('备注'), { target: { value: ' 左半圈连一实点 ' } });
         fireEvent.click(screen.getByRole('button', { name: '日' }));      // 选字不影响：图形没有字，提交时丢掉
@@ -548,6 +553,7 @@ describe('精校页：符号、篆字等＝图形（char v0.3 图片格，GUJI-7
         loadProofing.mockResolvedValue(ok([{ a: '148:2:14', c: '口', cand: [{ c: '日' }] }]));
         render(<ProofingClient book="b12" vol="005" />);
         await screen.findAllByTestId('cell-card');
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」：这条用例要在交过的卡上接着点
         fireEvent.click(screen.getByRole('radio', { name: '符号、篆字等' }));
         fireEvent.click(screen.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
@@ -562,7 +568,7 @@ describe('精校页：符号、篆字等＝图形（char v0.3 图片格，GUJI-7
 describe('快速确认（用户 10-24）', () => {
     const occ = (a: string, r: string, x = 0) => ({ a, c: r, cls: 'occluded', why: ['occluded'], ref: { c: r }, occ: { c: r }, img: img(x) });
 
-    it('quickPick：只收遮挡且整理本有字；字组里的字（形近靠文意、异体按刻形）、复审、整理本无字、以前判过别的字、非遮挡都不收', () => {
+    it('quickPick：只收遮挡且参校本有字；字组里的字（形近靠文意、异体按刻形）、复审、参校本无字、以前判过别的字、非遮挡都不收', () => {
         const { quickPick } = jest.requireActual('@/lib/proofing');
         expect(quickPick(occ('1:1:1', '欽'))).toEqual({ group: 'occluded', char: '欽' });
         expect(quickPick(occ('1:1:1', '曰'))).toBeNull();      // 日曰要靠文意
@@ -574,7 +580,7 @@ describe('快速确认（用户 10-24）', () => {
         expect(quickPick({ ...occ('1', '欽'), stale: { c: '歆' } })).toBeNull();
     });
 
-    it('合条件的格进网格、不进逐格卡片；勾一格存疑后确认：其余按整理本提交，存疑的挪到下面逐格细看', async () => {
+    it('合条件的格进网格、不进逐格卡片；勾一格存疑后确认：其余按参校本提交，存疑的挪到下面逐格细看', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
         loadProofing.mockResolvedValue(ok([occ('3:1:1', '欽'), occ('3:1:2', '定', 96), occ('3:1:3', '四', 192), { a: '3:2:1', c: '天', cand: [{ c: '夭' }] }]));

@@ -47,7 +47,7 @@ jobs:
   shots:
     # workflow_run 只在部署成功后跑
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest 升到 26.04 后 Playwright 不支持（playwright install 报 does not support chromium），装浏览器的任务钉 24.04
     timeout-minutes: 30
     env:
       # 不填（workflow_run 触发）＝测试站，见下面第一步

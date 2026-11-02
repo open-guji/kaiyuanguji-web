@@ -236,3 +236,42 @@ describe('L6：/api/auth/probe 下线', () => {
         expect(existsSync(pathJoin(__dirname, '../../../../edge-functions/api/auth/probe.js'))).toBe(false);
     });
 });
+
+describe('多设备：已验证成员重复登录不踢其他设备', () => {
+    const revokeRole = (email: string, role?: string) => EP.revoke.onRequestPost(req('/api/auth/revoke', { method: 'POST', headers: H(bearer), body: JSON.stringify({ email, role }) }));
+    it('绑定邀请的重复登录沿用 tokenVersion，两台设备同时有效', async () => {
+        const a = await joinWith(await newInvite({ role: 'admin', email: 'dev@x.com' }));
+        const b = await joinWith(await newInvite({ role: 'admin', email: 'dev@x.com' }));
+        expect(member('dev@x.com')).toMatchObject({ role: 'admin', tokenVersion: 1, verified: true });
+        expect(await probeAll(a)).toEqual(ALL_OK);
+        expect(await probeAll(b)).toEqual(ALL_OK);
+    });
+    it('旧记录没有 verified：下一次绑定登录 +1 一次，之后稳定', async () => {
+        kv.m.set('member:old@x.com', JSON.stringify({ role: 'admin', joinedAt: 1, tokenVersion: 3 }));
+        await joinWith(await newInvite({ role: 'admin', email: 'old@x.com' }));
+        expect(member('old@x.com')).toMatchObject({ tokenVersion: 4, verified: true });
+        await joinWith(await newInvite({ role: 'admin', email: 'old@x.com' }));
+        expect(member('old@x.com').tokenVersion).toBe(4);
+    });
+    it('通过邀请重新登录并降角色仍 +1', async () => {
+        const a = await joinWith(await newInvite({ role: 'admin', email: 'dn@x.com' }));
+        await joinWith(await newInvite({ role: 'reader', email: 'dn@x.com' }));
+        expect(member('dn@x.com')).toMatchObject({ role: 'reader', tokenVersion: 2 });
+        expect((await EP.me.onRequestGet(req('/api/auth/me', { headers: { cookie: `session=${a}` } }))).status).toBe(401);
+    });
+    it('revoke：已验证成员升角色不 +1，降角色与删除 +1；未验证成员升角色 +1', async () => {
+        const s = await joinWith(await newInvite({ role: 'reviewer', email: 'up@x.com' }));
+        expect((await revokeRole('up@x.com', 'editor')).status).toBe(200);
+        expect(member('up@x.com')).toMatchObject({ role: 'editor', tokenVersion: 1, verified: true });
+        expect((await EP.me.onRequestGet(req('/api/auth/me', { headers: { cookie: `session=${s}` } }))).status).toBe(200);
+        await revokeRole('up@x.com', 'reader');
+        expect(member('up@x.com').tokenVersion).toBe(2);
+        await revokeRole('up@x.com');
+        expect(member('up@x.com')).toMatchObject({ _deleted: true, tokenVersion: 3 });
+
+        await joinWith(await newInvite({ role: 'reader' }), 'open@x.com');
+        expect(member('open@x.com').verified).toBe(false);
+        await revokeRole('open@x.com', 'editor');
+        expect(member('open@x.com').tokenVersion).toBe(2);
+    });
+});

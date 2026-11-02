@@ -294,13 +294,27 @@ describe('限速', () => {
         expect([...store.keys()].filter((k) => k.startsWith('ratelimit:cr:'))).toHaveLength(0);
     });
 
+    it('KV 写第一次超时、函数里重试一次成功：回 200，只存一票', async () => {
+        const orig = kv.put;
+        let n = 0;
+        kv.put = async (k: string, v: string, o?: unknown) => { if (++n === 1) throw new Error('KvStore Put failed: net_exception_timeout'); return orig.call(kv, k, v, o); };
+        try {
+            const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
+            expect(res.status).toBe(200);
+            expect(n).toBe(2);
+            expect(crKeys()).toHaveLength(1);
+        } finally { kv.put = orig; }
+    });
+
     it('KV 写失败回 500 并带 detail', async () => {
         const orig = kv.put;
         kv.put = async () => { throw new Error('kv down'); };
         try {
             const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
             expect(res.status).toBe(500);
-            expect((await json(res)).detail).toContain('kv down');
+            const detail = (await json(res)).detail;
+            expect(detail).toContain('kv down');
+            expect(detail).toContain('已试 2 次');
         } finally { kv.put = orig; }
     });
 });

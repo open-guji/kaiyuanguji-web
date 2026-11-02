@@ -9,6 +9,7 @@ import NavRetryWorker from "@/components/common/NavRetryWorker";
 import Analytics from "@/components/common/Analytics";
 import StagingBadge from "@/components/layout/StagingBadge";
 import MovedBanner from "@/components/layout/MovedBanner";
+import { CN_MODE_INIT_SCRIPT } from "@/lib/cn-mode";
 import { DEFAULT_THEME, DEFAULT_LAYOUT, THEME_COLOR, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -67,6 +68,8 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" data-theme={DEFAULT_THEME} data-layout={DEFAULT_LAYOUT} suppressHydrationWarning>
       <head>
+        {/* 国内模式（调试，?cn=1）：必须是第一个脚本，CSP 只管它之后发起的加载；平时不带参数时什么也不做 */}
+        <script dangerouslySetInnerHTML={{ __html: CN_MODE_INIT_SCRIPT }} />
         {/* 外观防闪：首帧前按 localStorage 设 <html data-theme／data-layout>；没存过或读不了就是默认（靛青＋疏朗） */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/* 线上前端版本的唯一可查证来源。运维排查（「线上到底是不是新版？」）

@@ -96,7 +96,7 @@ test.describe('阅读页', () => {
         await requireNewTextData(request, SHIXU, '版本下拉框（詩序）');
         // 詩序：维基文库与 Kanripo 两份全文（overview#235）
         await page.goto(`${TARGET}/read/${SHIXU}`);
-        const select = page.getByRole('combobox', { name: '版本' });
+        const select = page.getByRole('combobox', { name: '来源' });
         await expect(select, '两份全文应出版本下拉框').toBeVisible({ timeout: 30_000 });
         const keys = await select.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
         expect(keys.length, '詩序应有维基与 Kanripo 两份全文').toBeGreaterThanOrEqual(2);

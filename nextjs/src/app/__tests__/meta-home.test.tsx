@@ -23,7 +23,7 @@ jest.mock('book-index-ui', () => {
 });
 
 import BookIndexPage from '../book-index/BookIndexClient';
-import { fetchMetaHome, formatDataVersion, metaHomeUrl, normalizeMetaHome } from '../book-index/meta-home-data';
+import { applyStatsFloor, fetchMetaHome, formatDataVersion, metaHomeUrl, normalizeMetaHome, STATS_FLOOR } from '../book-index/meta-home-data';
 
 const SECTIONS = {
     counts: { works: 95055, books: 20899, collections: 84, entities: 30994 },
@@ -68,6 +68,12 @@ describe('meta-home-data', () => {
         expect(await fetchMetaHome('bundle')).toBeNull();
         global.fetch = jest.fn(async () => { throw new Error('offline'); }) as typeof fetch;
         expect(await fetchMetaHome('bundle')).toBeNull();
+    });
+    it('applyStatsFloor：线上数字比下限小就用下限，更大则保留', () => {
+        const low = applyStatsFloor(normalizeMetaHome({ counts: { works: 10, books: 9_999_999 } }))!;
+        expect(low.stats.works).toBe(STATS_FLOOR.works);
+        expect(low.stats.books).toBe(9_999_999);
+        expect(applyStatsFloor(null)).toBeNull();
     });
     it('formatDataVersion：短 commit · 日期', () => {
         expect(formatDataVersion({ commitId: '501935e0123', commitDate: '2026-09-27T08:00:00Z' })).toBe('501935e · 2026-09-27');

@@ -275,3 +275,8 @@ PR：book-index-manager#229（ui 0.61.0）、#230（ui 0.61.1 首帧）；kaiyua
 顺带：#524 起 verify 红在 `duidu-003 无字页翻页`，是章首新横幅把翻页按钮推出 720 高视口、click 自带滚动被误判，#526 修测试（横幅让小屏首屏书影栏底部被裁约 45px，另行处理）。
 
 另记（P1-4）：站标 `open-guji-logo.png`（794×698）当 favicon，导航栏 26px 图标用 46KB 的 webp 原图，可换小图。
+
+## 国内访问排查（国内模式与连通测试）
+
+- `?cn=1`：模拟国内网络——只放行本站各域名和百度统计，其余境外域名（GA、GitHub raw、jsDelivr、Internet Archive、维基共享资源等）被浏览器拦下，页面底部红条列出被拦的域名；`?cn=report` 只标不拦；`?cn=0` 退出（设置记在 localStorage `og_cn_mode`）。实现见 `nextjs/src/lib/cn-mode.ts`。只能模拟「域名打不开」，模拟不了「能连但慢／被掐断」。
+- `/probe/net-check.html`：让人在国内真机（家宽、手机流量）打开，测数据域名、影印图和各境外资源的连通与耗时，复制结果回报。

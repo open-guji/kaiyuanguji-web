@@ -13,6 +13,8 @@ function getKV(context){
 function b64urlEncode(bytes){ let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
 async function hashCode(code, secret){ const key=await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']); const sig=await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(code)); return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 function nextTokenVersion(prev){ const v=prev&&typeof prev==='object'?prev.tokenVersion:0; return (Number.isInteger(v)&&v>0?v:0)+1; }
+const ROLE_RANK={reader:1,reviewer:2,editor:3,admin:4};
+function roleRank(r){ return ROLE_RANK[r]||0; }
 async function signJWT(payload, secret){
   const header=b64urlEncode(new TextEncoder().encode(JSON.stringify({alg:'HS256',typ:'JWT'})));
   const body=b64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
@@ -58,11 +60,17 @@ export async function onRequestPost(context){
     // 标记已使用
     rec.usedAt=now;
     await kv.put(`invite:${hash}`, JSON.stringify(rec));
-    // H1（SEC overview#134）：每次 join 把 tokenVersion 加 1 并写进 JWT（tv）。
-    // 开放邀请自填了别人的邮箱、日后管理员再给这个邮箱发绑定邀请时，join 覆盖成员记录，
-    // 旧 cookie 的 tv 与新 tokenVersion 对不上，各验会话的地方一律拒绝——不再继承新角色。
+    // H1（SEC overview#134）：tokenVersion 写进 JWT（tv），防止开放邀请冒用别人邮箱的人，
+    // 在管理员日后发绑定邀请后沿用旧 cookie 继承新角色。
+    // 多设备：邮箱经绑定邀请验证过（existing.verified）、且角色没降的重复登录沿用原版本号，
+    // 新设备登录不再踢掉其他设备；其余情况（新建、开放邀请、旧记录无 verified、降角色）照旧 +1。
     // 墓碑（revoke 删除时写的 {_deleted, tokenVersion}）上的计数照样接着加，防止删了再加回来时版本号回到 1。
-    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin', tokenVersion: nextTokenVersion(existing) };
+    const live = existing && typeof existing === 'object' && !existing._deleted;
+    const keepVersion = !!(live && rec.email && existing.verified === true
+      && Number.isInteger(existing.tokenVersion) && existing.tokenVersion > 0
+      && roleRank(rec.role) >= roleRank(existing.role));
+    const tokenVersion = keepVersion ? existing.tokenVersion : nextTokenVersion(existing);
+    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin', tokenVersion, verified: !!rec.email };
     await kv.put(`member:${email}`, JSON.stringify(member));
     // 签 JWT
     const payload={ sub: email, iat: now, exp: now + COOKIE_MAX_AGE, tv: member.tokenVersion };
