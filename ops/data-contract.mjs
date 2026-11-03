@@ -45,7 +45,7 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     period_basis: 'string', period_upper: 'string', period_upper_basis: 'string', physical_description: 'object',
     primary_name: 'string', provenance: 'array', publication_info: 'object', publish_year: 'string',
     publisher: 'string', related_books: 'array', related_collections: 'array', related_works: 'array',
-    resource_groups: 'object', resources: 'array', retired: 'boolean', retired_reason: 'string',
+    resource_groups: 'object', resources: 'array',
     revised_at: 'string', revision: 'string', schema_version: 'number', section: 'string', sections: 'array',
     sources: 'array', subtype: 'string', text_count: 'number', text_kinds: 'array', title: 'string',
     title_basis: 'string', title_emendation: 'object', title_or_office: 'string', total_volumes: 'number',
@@ -79,6 +79,8 @@ export const RETIRED_ENTRY_FIELDS = Object.freeze([
     'aliases', 'ai_note_fix', 'ai_note2', 'ai_note_periodfix',
     // book-index#2210（用户 11-03 定第 5 组）：删并条历史字段；墓碑只留 merged_into＋merged_basis{rule,at,by,why}
     'merged_in', 'merged_from', 'merge_history',
+    // book-index#2215：Entity 的 retired／retired_reason 删除
+    'retired', 'retired_reason',
 ]);
 
 const NAME_FIELD = { work: 'title', book: 'title', collection: 'title', entity: 'primary_name' };
