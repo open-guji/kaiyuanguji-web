@@ -43,3 +43,11 @@ describe('细节', () => {
             .toBe('---\ntitle: "欽定四庫全書總目"\nvolume: 40\nnote: "a\\"b:c"\n---\n');
     });
 });
+
+describe('char v0.4 待审格', () => {
+    const mk = (cell: Record<string, unknown>) => ({ pages: [{ page: 1, columns: [{ cells: [{ a: '1:1:1', c: '晉' }, { a: '1:1:2', ...cell }, { a: '1:1:3', c: '璞' }] }] }] });
+    it('机器没给字的待审 □ 与阙文同写', () =>
+        expect(renderLines(mk({ c: '□', pending_reason: 'group_abstain' }))).toBe(renderLines(mk({ c: '□', lacuna: true }))));
+    it('机器给了字的待审格照出机器字', () =>
+        expect(renderLines(mk({ c: '郭', pending_reason: 'machine_changed' }))).toBe(renderLines(mk({ c: '郭' }))));
+});
