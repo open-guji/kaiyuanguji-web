@@ -235,10 +235,25 @@ function pubYearText(y: string): string {
     return y;
 }
 
+/**
+ * 出版／成书年的原始值。S2-L（A11 年代统一）起并入 dating：数字年→dating.year、区间→dating.year_range、
+ * 文本→dating.text，Book 不再有 publication_info.year。先读 dating，缺了回退旧的 publication_info.year。
+ */
+function pubYearRaw(e: ItemEntry): string {
+    const d = obj(e.dating);
+    if (typeof d.year === 'number') return String(d.year);
+    const r = d.year_range;
+    if (Array.isArray(r) && r.length === 2 && typeof r[0] === 'number' && typeof r[1] === 'number') return `${r[0]}-${r[1]}`;
+    const t = str(d.text);
+    if (t) return t;
+    const y = obj(e.publication_info).year;
+    return str(y) || (typeof y === 'number' ? String(y) : '');
+}
+
 function pubText(e: ItemEntry): string {
     const p = obj(e.publication_info);
     const pub = str(p.publisher);
-    const y = pubYearText(str(p.year) || (typeof p.year === 'number' ? String(p.year) : ''));
+    const y = pubYearText(pubYearRaw(e));
     if (pub) return `${pub}${y ? ` ${y}` : ''}出版`;
     const det = str(p.details);
     if (det && len(det) <= 40) return det;
@@ -453,9 +468,10 @@ function publisher(e: ItemEntry): Json | undefined {
     return p ? { '@type': 'Organization', name: p } : undefined;
 }
 
-/** 出版年：publication_info.year 是四位年份才出（「1995-2002」这类区间不出） */
+/** 出版年：dating.year（非 uncertain）优先，缺则 publication_info.year；是四位年份才出（「1995-2002」这类区间不出） */
 function pubYear(e: ItemEntry): string | undefined {
-    const y = obj(e.publication_info).year;
+    const d = obj(e.dating);
+    const y = (str(d.certainty) === 'uncertain' ? undefined : d.year) ?? obj(e.publication_info).year;
     return typeof y === 'number' || (typeof y === 'string' && /^\d{3,4}$/.test(y.trim())) ? year(y) : undefined;
 }
 

@@ -118,6 +118,17 @@ describe('seoDescription：版本', () => {
 });
 
 describe('seoDescription：丛编', () => {
+    it('出版年并入 dating 后（S2-L）：先读 dating.year／year_range／text，缺了回退 publication_info.year', () => {
+        const pub = { publisher: '中華書局' };
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: pub, dating: { year: 1740 } }, 'x')).toContain('中華書局 1740 年出版');
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: pub, dating: { year_range: [1736, 1795] } }, 'x')).toContain('中華書局 1736-1795 年出版');
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: pub, dating: { text: '清乾隆六十年' } }, 'x')).toContain('中華書局 清乾隆六十年出版');
+        // dating 里没有年时回退旧字段；两者都有以 dating 为准
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: { ...pub, year: '1800' } }, 'x')).toContain('中華書局 1800 年出版');
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: { ...pub, year: '1800' }, dating: { year: 1740 } }, 'x')).toContain('中華書局 1740 年出版');
+        // 只有朝代名的 text 不出年
+        expect(seoDescription({ type: 'collection', title: '某', publication_info: pub, dating: { text: '清 乾隆' } }, 'x')).not.toContain('年出版');
+    });
     it('编者（英文角色占位不出）、出版、收书种数与册数', () => {
         const d = seoDescription({
             type: 'collection', title: '四庫全書珍本初集',
