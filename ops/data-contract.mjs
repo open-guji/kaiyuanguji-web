@@ -39,8 +39,8 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     has_digitalization: 'boolean', has_full_text: 'boolean', has_image: 'boolean', has_text: 'boolean',
     holder: 'string', id: 'string', indexed_by: 'array', juan_count: 'object', lineage: 'object',
     location_history: 'array', loss_status: 'string', loss_status_basis: 'string', loss_status_note: 'string',
-    measure_info: 'string', measures: 'array', merge_history: 'array', merged_from: 'any', merged_in: 'array',
-    merged_into: 'string', metadata: 'object', name_basis: 'string', native_place: 'string',
+    measure_info: 'string', measures: 'array',
+    merged_basis: 'object', merged_into: 'string', metadata: 'object', name_basis: 'string', native_place: 'string',
     native_place_basis: 'string', original_title: 'string', page_count: 'object', period: 'string',
     period_basis: 'string', period_upper: 'string', period_upper_basis: 'string', physical_description: 'object',
     primary_name: 'string', provenance: 'array', publication_info: 'object', publish_year: 'string',
@@ -77,6 +77,8 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
 export const RETIRED_ENTRY_FIELDS = Object.freeze([
     'birth_year', 'death_year', 'books', 'works', 'contained_works', 'collections',
     'aliases', 'ai_note_fix', 'ai_note2', 'ai_note_periodfix',
+    // book-index#2210（用户 11-03 定第 5 组）：删并条历史字段；墓碑只留 merged_into＋merged_basis{rule,at,by,why}
+    'merged_in', 'merged_from', 'merge_history',
 ]);
 
 const NAME_FIELD = { work: 'title', book: 'title', collection: 'title', entity: 'primary_name' };
