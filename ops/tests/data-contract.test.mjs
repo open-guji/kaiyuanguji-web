@@ -91,11 +91,15 @@ test('字段表里的类型都是合法类型名；jsType 区分数组、对象�
     assert.equal(jsType({}), 'object');
 });
 
-test('null 视为「没填」不判类型（线上旧数据里 period／dynasty／juan_count 等有 null）；类型不固定的字段（merged_from）不判', () => {
+test('null 视为「没填」不判类型（线上旧数据里 period／dynasty／juan_count 等有 null）；已退役的字段（merged_from）只报 warn、不判类型、不算未知', () => {
     const base = load('old/entry/0phe8c4i1i.json');
     const r = checkEntryDoc({ ...base, juan_count: null, period: null, dynasty: null, birth_year: null, merged_from: 'x' }, '0phe8c4i1i.json');
     assert.deepEqual(r.findings.filter((f) => f.code === 'entry.field-type'), []);
-    assert.equal(ENTRY_FIELD_TYPES.merged_from, 'any');
+    // book-index#2210：merged_from／merged_in／merge_history 已退役，墓碑新键 merged_basis 入字段表
+    assert.deepEqual(r.findings.filter((f) => f.code === 'entry.retired-field').map((f) => f.field), ['birth_year', 'merged_from']);
+    assert.equal(ENTRY_FIELD_TYPES.merged_from, undefined);
+    assert.equal(ENTRY_FIELD_TYPES.merged_basis, 'object');
+    assert.deepEqual(r.unknownFields, []);
     // 线上全量旧数据里出现过的字段都在表里（没有「未知字段」）——抽样夹具里的字段全部已知
     for (const [file, doc] of entries('old')) assert.deepEqual(checkEntryDoc(doc, file).unknownFields, [], file);
 });
@@ -108,7 +112,7 @@ test('已退役旧键（legacy-scan 键表）：出现就报 entry.retired-field
         assert.ok(!r.unknownFields.includes(k), k);
         assert.ok(!(k in ENTRY_FIELD_TYPES), k);
     }
-    assert.equal(RETIRED_ENTRY_FIELDS.length, 10);
+    assert.equal(RETIRED_ENTRY_FIELDS.length, 13); // 含 book-index#2210 的 merged_in／merged_from／merge_history
 });
 
 test('已退役键清单不含现行字段：派生标志 _has_*、has_text／has_image（线上 entry/ 仍有）仍在字段表里、不报退役', () => {
