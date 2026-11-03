@@ -125,31 +125,31 @@ done
   - 自动 promote 只在 **定时／repository_dispatch** 触发且 verify 绿时跑；手动 staging 发布不会自动 promote——手动跑 `target=production promote=data`。
 - 指针新了、页面还是旧的 → §6。
 
-### 数据流程 data.yml（overview#470 P1，拆分进行中）
+### 数据流程 data.yml（数据的唯一写者）
 
-`data.yml`（Actions → Data package check and publish）默认**只检查**，每晚 UTC 21:43 跑，不写任何东西。它能不能上传由第一步 **Publish gate** 决定，规则写在那一步的注释里，摘要里也会列出本次的结论：
+`data.yml`（Actions → Data package check and publish）是数据上线的**唯一写者**（overview#490 起 deploy.yml 不再写数据）。定时有两条：每小时 :17 的轻检查（`flow=text`，book-text 有新提交才发，没变化几秒结束；本机 cron 每小时 :07 再兜底检查一次）和每天 UTC 21:43 的完整跑；book-index 的发布**只手动**（`flow=index`）。能不能上传由第一步 **Publish gate** 决定，规则写在那一步的注释里，摘要里也会列出本次的结论：
 
 | 怎么跑 | 结果 |
 |---|---|
-| 定时／手动默认（`target=production`），仓库变量 `SPLIT_DATA_FLOW` 没设 | 只检查，不上传（现在 deploy.yml 仍是正式前缀的写者） |
-| 同上但 `SPLIT_DATA_FLOW=true`，`prod_ref`／`text_ref` 都是 main | 上传到正式前缀：current/、h1 条目、条目 sitemap |
-| `target=staging`（演练），refs 都是 main | 整条流水线写 `staging/` 前缀，不碰正式前缀，不看开关；和 deploy.yml 的测试站构建共用一把锁，不会同时写 |
-| `only_sitemaps=true` | 只生成并上传条目 sitemap 到 `[前缀/]sitemaps/`（新目录，不动已有对象），不看开关 |
+| 定时（每小时 :17、每天 21:43） | 一律 `flow=text`：book-text 取 main，book-index 钉在线上版本，只推进文本 |
+| 手动（`target=production`），`flow=index`（默认）／`text`／`both`，`prod_ref`／`text_ref` 都是 main（钉住的那一边按 main 算） | 上传到正式前缀：current/、h1 条目、条目 sitemap |
+| `target=staging`（演练），refs 都是 main | 整条流水线写 `staging/` 前缀，不碰正式前缀；和 deploy.yml 的测试站构建共用一把锁，不会同时写 |
+| `only_sitemaps=true` | 只生成并上传条目 sitemap 到 `[前缀/]sitemaps/`（新目录，不动已有对象） |
 | `flow=text`＋`target=staging`＋`text_ref=dev`（**dev 预览**） | 放行，写 `staging/`，不用勾 `allow_ref_override`；book-index 钉在 staging 现行版本，book-text 取 dev 当数据读，在测试站看。book-text 的 dev 每天 03:30 才合进 main，想早看就跑这个 |
-| `prod_ref`／`text_ref` 不是 main（**含 staging**） | 只检查；回滚重发上一版数据、用新格式分支演练都要勾 `allow_ref_override`（正式前缀另外还需要开关或 `only_sitemaps`）。原因：上传步骤带 COS 密钥，同 job 里跑的是所选 ref 的 `build_derived.py`，只给可信分支 |
+| `prod_ref`／`text_ref` 不是 main（**含 staging**） | 只检查；回滚重发上一版数据、用新格式分支演练都要勾 `allow_ref_override`（正式前缀同样要勾 `allow_ref_override`）。原因：上传步骤带 COS 密钥，同 job 里跑的是所选 ref 的 `build_derived.py`，只给可信分支 |
 
 要点：
-- **翻开关（`SPLIT_DATA_FLOW`）之前**：先 `target=staging` 把整条流水线演练一遍；再手动 `only_sitemaps=true` 把 sitemap 传到正式前缀的 `sitemaps/`（路由代理要从那里取）；翻开关的那一刻**不能有在跑的 deploy.yml**（它开始时读的是旧值，仍会写数据）。
-- **代码指针的读法（`codePointer` 标记，方案 A）**：开关打开后的 data.yml 上传会在 `latest.json` 里多写 `"codePointer": "web.json"`（演练可勾 `mark_code_pointer`，只对 staging 生效）。读者——回滚计划／核对（`ops/rollback-plan.py`、`rollback-check.py`）、`ops/cutover-check.mjs`、`/api/version` 的 `webMatchesPointer`、deploy.yml 里 `promote=data`／`code+data` 读线上代码是哪一版——统一按这条规则：**有标记 ⇒ 以 `web.json` 为准**（`web.json` 读不到或不合法时退回 `latest.json.webCommitId` 并明说）；**没有标记 ⇒ 仍以 `latest.json.webCommitId` 为准**（开关没翻前的现行行为；也让回滚到 #282 之前的旧 commit 不会读错，因为旧 deploy.yml 只更新 `latest.json`）。两处 commit 不一致时不悄悄选一个：核对输出和 `/api/version` 的 `codeSource` 会写出选了哪个。关开关后下一次 deploy.yml 重写 `latest.json`，标记随之消失，读者自动回到老口径。规则在 `ops/code_pointer.py`、`ops/code-pointer.mjs`、`edge-functions/api/version.js`、deploy.yml 的 `code_commit` 四处各一份，`ops/tests/test_code_pointer.py` 与 `code-pointer.test.mjs` 用同一张用例表（`ops/tests/fixtures/code-pointer-cases.json`）对拍。
-- 打包出来的 `latest.json` 没有 `webCommitId`；上传前从线上现行 `latest.json` 带过来，读它的人（`promote=data`、回滚计划、`/api/version`）切到 `web.json` 之前还在用。开关打开后代码流程不再写 `latest.json`，这个值会停在最后一次代码发布时的版本，所以**读者切到 `web.json` 要在翻开关之前或同时完成**。
-- 开关打开后，定时触发不再按「commit 没变就跳过」：一律跑，由 package 里的同步标记判是否真要传（commit 之外还看打包脚本指纹和上次同步是否完整，所以不会重传，但能补上半途失败的）。
+- **历史**：`SPLIT_DATA_FLOW` 曾是翻开关的仓库变量，已在 overview#490 写死为打开，不再有变量，当年翻开关前的演练步骤不再适用。要在正式前缀新增产物目录（如 sitemap）时，仍可先 `target=staging` 演练，再手动 `only_sitemaps=true` 把它传到 `sitemaps/`。
+- **代码指针的读法（`codePointer` 标记，方案 A）**：data.yml 的上传会在 `latest.json` 里多写 `"codePointer": "web.json"`（演练可勾 `mark_code_pointer`，只对 staging 生效）。读者——回滚计划／核对（`ops/rollback-plan.py`、`rollback-check.py`）、`ops/cutover-check.mjs`、`/api/version` 的 `webMatchesPointer`、deploy.yml 里 `promote=data`／`code+data` 读线上代码是哪一版——统一按这条规则：**有标记 ⇒ 以 `web.json` 为准**（`web.json` 读不到或不合法时退回 `latest.json.webCommitId` 并明说）；**没有标记 ⇒ 仍以 `latest.json.webCommitId` 为准**（开关没翻前的现行行为；也让回滚到 #282 之前的旧 commit 不会读错，因为旧 deploy.yml 只更新 `latest.json`）。两处 commit 不一致时不悄悄选一个：核对输出和 `/api/version` 的 `codeSource` 会写出选了哪个。关开关后下一次 deploy.yml 重写 `latest.json`，标记随之消失，读者自动回到老口径。规则在 `ops/code_pointer.py`、`ops/code-pointer.mjs`、`edge-functions/api/version.js`、deploy.yml 的 `code_commit` 四处各一份，`ops/tests/test_code_pointer.py` 与 `code-pointer.test.mjs` 用同一张用例表（`ops/tests/fixtures/code-pointer-cases.json`）对拍。
+- 打包出来的 `latest.json` 没有 `webCommitId`；上传前从线上现行 `latest.json` 带过来，读它的人（`promote=data`、回滚计划、`/api/version`）切到 `web.json` 之前还在用。代码流程不再写 `latest.json`，这个值会停在最后一次代码发布时的版本，读者已全部切到 `web.json`。
+- 定时触发不按「commit 没变就跳过」：一律跑，由 package 里的同步标记判是否真要传（commit 之外还看打包脚本指纹和上次同步是否完整，所以不会重传，但能补上半途失败的）。
 - sitemap 传完（分片→索引→回读）后最后写 `[前缀/]sitemaps/_meta.json`（记录两个数据 commit）；它不对外提供，也不会被清旧分片动到。
 - 上传的 state 缓存键与 deploy.yml 的正式站键相同，第一次接管时继承 deploy.yml 最后一次的 state。
 - 上传成功（current/ 同步成功）之后还有三个任务，都在 data.yml 里：
   - `refresh`：清数据指针的 CDN 缓存（`latest.json`、h1 两个根、`sitemaps/sitemap-index.xml`，只清这几个地址，不清整站；脚本 `ops/purge-urls.py` 只认数据域名）；条目页按改动失效并核对（正式前缀对 www 和 staging 各一次）。都不拦：失效没生效最坏是条目页按 s-maxage 一小时自然过期。
   - `verify-live`：上线后抽查，复用 `verify.yml`（`target=production`，contract＋UI 冒烟＋`read_links`；e2e 取线上现在跑的代码 commit，读 `web.json`）。演练（`staging/` 前缀）验测试站。
   - `alert-data`：正式前缀的上传失败、上传成功后 package 里后续步骤（sitemap 等）失败、抽查没过、或 `refresh` 里清缓存／条目页失效没通过，开（或续）一张 `data-alert` issue（正文按"数据到底有没有换上线"分别说明），写明新旧数据 commit 和**回滚做法**：Run workflow，`target=production`，`prod_ref`／`text_ref` 填发布前线上的两个 commit，勾 `allow_ref_override`（约 10 分钟；第一期不自动回滚）。
-  - 落后告警：定时的 `check` 里，开关打开之后，数据仓 main 的 HEAD 与线上对不上、且那个提交已过 36 小时，开（或续）`data-alert` issue——定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败。
+  - 落后告警：定时的 `check` 里，数据仓 main 的 HEAD 与线上对不上、且那个提交已过 36 小时，开（或续）`data-alert` issue——定时会被 GitHub 延迟甚至偶尔丢掉，上传也可能连着几晚失败。
 - `h1-text`（单独任务，不拦、失败只警告、不进告警）：package 的同步成功之后与 `refresh`／`verify-live` 并行。它读的是整个 `items/`，所以按 package 用的**同一对 commit** 重新克隆＋build_derived＋打包（缓存命中约 +3～4 分钟）。只在线上 h1 文本指针（`h1/text-manifest-root.json`）记的 book-text commit 与这次不同时才做，读不到指针（首次、404）一律做；演练勾 `force_sync`（只 staging 生效）则一定做。COS 密钥只在“Sync h1 text”这一步的 env，打包和泄漏检查在它前面。生产暂无 h1 文本读者。
 
 ## 5. 登录 503（/api/auth/*）
@@ -218,7 +218,7 @@ done
 | 数据 | 换成测试站重建时的数据（book-index、book-text 的 main HEAD） | 不动 | 不动 |
 | 发布后 e2e | 有（deploy.yml 的 verify） | 没有，自己看 `/api/version` | 没有，跑 cutover-check |
 | 会被冲掉吗 | 不会（指针的 webCommitId 也回到了目标）；但下一次 push 到 main 验过后会自动上正式站，回滚期间先把 `AUTO_PROMOTE_CODE` 设成 `false` | **会**：指针的 webCommitId 没变，每天 04:30 自动 `promote=data` 按它重建代码；下一次 push 验过后也会自动 `promote=code+data`。先把仓库变量 `AUTO_PROMOTE_DATA`、`AUTO_PROMOTE_CODE` 都设成 `false`，修好再改回 | 不会被冲，但也**收不到任何新发布**（CI 不再推旧项目） |
-| 什么时候用 | 默认 | 读者正受影响、等不了 20 分钟 | 新项目整个坏了（不是某一版代码的问题）；只在旧项目保留期内（到 2026-10-26 前后） |
+| 什么时候用 | 默认 | 读者正受影响、等不了 20 分钟 | 新项目整个坏了（不是某一版代码的问题）；旧项目保留期已于 2026-10-26 结束，**已不可用** |
 | 限制 | 目标 commit 的 deploy.yml 须已有 target/promote 输入（2026-09-27 T1 之后）；早于改自托管 runner（overview#184）的目标，托管额度用完时测试站重建排不上 | 控制台能否回退、保留多少条部署记录以控制台为准 | 旧项目停在切站前最后一版，没有全栈功能 |
 
 原来的 `method=release-branch`（把 `edgeone-release` 恢复成当时那版产物）已随 CUT2 去掉：那条分支发的是旧项目，www 已经不在上面，恢复它对读者没有任何效果。
