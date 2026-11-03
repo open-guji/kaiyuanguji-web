@@ -1,5 +1,7 @@
 # 切站：www 从静态项目换到全栈项目
 
+> **已完成归档**：2026-09-28 已切站完成，旧静态项目保留期也已结束（2026-10-26）。本文是切站当晚的清单与记录，不再是现行流程；现行的发布、回滚、数据流程见 `docs/runbook.md`。
+
 把 `www.kaiyuanguji.com` 和 `kaiyuanguji.com` 两个域名从旧的静态项目 **kaiyuanguji** 换绑到全栈项目 **kyg-ssr-spike**（现挂在 `ssr-test.kaiyuanguji.com`）。
 切站在凌晨做，由**用户在 EdgeOne 控制台**解绑、换绑域名。出了问题就回滚，也就是把域名绑回旧项目，约 5 分钟。
 
