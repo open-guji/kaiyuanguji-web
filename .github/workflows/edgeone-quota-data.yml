@@ -1,0 +1,35 @@
+name: EdgeOne purge quota (data zone)
+
+# 只读：看数据域名站点（EDGEONE_DATA_ZONE_ID）当天的清缓存额度（已用／上限）。
+# edgeone-usage.yml 的「清缓存额度」只看旧站点，数据指针清缓存失败（LimitExceeded.DailyQuota）时用这个确认是哪个站点的额度用尽。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quota:
+    runs-on: ubuntu-latest
+    steps:
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - name: Quota
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from tencentcloud.common import credential
+          from tencentcloud.teo.v20220901 import teo_client, models
+          client = teo_client.TeoClient(credential.Credential(os.environ['TENCENT_SECRET_ID'], os.environ['TENCENT_SECRET_KEY']), '')
+          for label, zid in (('旧站点', os.environ['EDGEONE_ZONE_ID']), ('数据站点', os.environ['EDGEONE_DATA_ZONE_ID'])):
+              r = models.DescribeContentQuotaRequest(); r.ZoneId = zid
+              d = json.loads(client.DescribeContentQuota(r).to_json_string())
+              print(f'== {label}')
+              for k in ('PurgeQuota', 'PrefetchQuota'):
+                  for q in d.get(k) or []:
+                      print(f"  {k} {q.get('Type')}: 已用 {q.get('Daily') and q['Daily'] - q.get('DailyAvailable', 0)} / 上限 {q.get('Daily')}，剩 {q.get('DailyAvailable')}")
+          PY
