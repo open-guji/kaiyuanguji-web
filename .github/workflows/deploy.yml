@@ -1519,8 +1519,22 @@ jobs:
               req_pointer.ZoneId = zone
               req_pointer.Type = 'purge_url'
               req_pointer.Targets = [base + sub + n for n in names]
-              resp_pointer = client.CreatePurgeTask(req_pointer)
-              print('✅ latest.json purged:', base, resp_pointer.to_json_string())
+              try:
+                  resp_pointer = client.CreatePurgeTask(req_pointer)
+                  print('✅ latest.json purged:', base, resp_pointer.to_json_string())
+              except Exception as e:
+                  # 数据站点每天的 purge_url 额度只有 1000，被别的流程（例如 proofing-sync 逐个清待审单地址）用尽时（LimitExceeded），
+                  # 测试站改清 staging/ 前缀：purge_prefix 的额度另算（50 次每天），一个资源清掉整个 staging/ 的节点缓存，测试站回源多一点而已。
+                  # 正式站不降级（前缀清掉的是整个数据缓存），照旧报错。11-03 测试站部署因此被卡住。
+                  if staging and 'LimitExceeded' in str(e):
+                      req_pre = models.CreatePurgeTaskRequest()
+                      req_pre.ZoneId = zone
+                      req_pre.Type = 'purge_prefix'
+                      req_pre.Targets = [base + 'staging/']
+                      resp_pre = client.CreatePurgeTask(req_pre)
+                      print('⚠️ purge_url 当日额度用尽，测试站改清前缀 staging/：', resp_pre.to_json_string())
+                  else:
+                      raise
 
           # 测试站不清整站：staging.kaiyuanguji.com 是 Pages 项目自定义域名，不是本 zone 的
           # 加速域名，purge_host 返回 DomainNotFound（09-27 首跑实测）；CLI 直接上传后
