@@ -42,6 +42,8 @@ import { collectReadTexts } from './lib/read-texts.mjs';
 import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
 import { buildItemReaderFiles } from './lib/reader-files.mjs';
+import { createMentionCollector, makeIdResolver } from './lib/mentions.mjs';
+import { tmpdir } from 'os';
 
 // 章生僻字子集（GUJI-701／GUJI-721）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
 const fontCtx = await chapterFontContext();
@@ -263,6 +265,9 @@ function bundleL1() {
     if (existsSync(itemsDir)) rmSync(itemsDir, { recursive: true });
     if (existsSync(legacyChunksDir)) rmSync(legacyChunksDir, { recursive: true });
     ensureDir(entryDir);
+    // 专名出处反查（A12）：借 reader-files 逐章已解析的 entity／char 收集，条目全部写完后汇总；KYG_MENTIONS=0 关掉
+    const mentions = process.env.KYG_MENTIONS === '0' ? null : createMentionCollector({ spoolDir: join(tmpdir(), `kyg-mentions-spool-${process.pid}`) });
+    let mentionsMs = 0;
 
     for (const [typeName] of [['works'], ['collections'], ['books'], ['entities']]) {
         const items = index[typeName];
@@ -317,7 +322,13 @@ function bundleL1() {
             if (existsSync(itemDir) && statSync(itemDir).isDirectory()) {
                 internalSkipped += copyItemDir(itemDir, join(itemsDir, id)).internalSkipped;
                 itemFileCount++;
-                readerFiles += buildItemReaderFiles(join(itemsDir, id));
+                readerFiles += buildItemReaderFiles(join(itemsDir, id), mentions ? {
+                    onChapter: ({ key, chapter, entity, char }) => {
+                        const s = performance.now();
+                        mentions.add({ item: id, key, chapter: chapter.file, entity, char, headings: chapter.headings });
+                        mentionsMs += performance.now() - s;
+                    },
+                } : {});
                 if (!fontCtx.skip) fontJobs.push(...collectFontJobs(join(itemsDir, id), fontCtx));
                 seedTargets.push([itemDir, id]);
             }
@@ -343,6 +354,28 @@ function bundleL1() {
         }
     }
     readSeedReady = true;
+    if (mentions) {
+        const s = performance.now();
+        // 只留 merged_into 与书名，按 id 缓存：书名每个实体都要查一次同一部书，不缓存就是几万次读大文件
+        const metaCache = new Map();
+        const readEntry = (eid) => {
+            if (metaCache.has(eid)) return metaCache.get(eid);
+            let m = null;
+            try { const e = readJson(join(entryDir, `${eid}.json`)); m = { merged_into: e?.merged_into, title: e?.title }; } catch { /* 没有这个条目 */ }
+            metaCache.set(eid, m);
+            return m;
+        };
+        let promotions = {};
+        try { promotions = readPromotionsSource(PRODUCTION_DIR).promotions; } catch { /* 没有升格表就只沿 merged_into */ }
+        const r = mentions.finalize({
+            outDir: OUT_DIR,
+            resolveId: makeIdResolver({ promotions, readEntry }),
+            titleOf: (iid) => readEntry(iid)?.title,
+        });
+        mentionsMs += performance.now() - s;
+        console.log(`    mentions: 查 ${r.chapters} 章 entity.json，专名号 ${r.mentions} 条 → ${r.entities} 个实体（章行 ${r.rows}、拆分 ${r.split_entities}）、${r.files} 个文件 ${(r.bytes / 1e6).toFixed(1)} MB（写 ${r.written}、删 ${r.removed}），解不开 ${r.unresolved} 条；用时 ${(mentionsMs / 1000).toFixed(1)} 秒`);
+        if (r.chapters === 0 && itemFileCount > 0) console.warn('    ⚠ mentions：一章 entity.json 都没查到');
+    }
 
     console.log(`L1  ${totalEntries} entry/*.json files (${(totalBytes / 1024 / 1024).toFixed(1)} MB)`);
     if (itemFileCount > 0) {

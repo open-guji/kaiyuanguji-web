@@ -245,6 +245,11 @@ describe('ReaderClient：历史记录', () => {
         expect(anchorFromHash('')).toBeNull();
         expect(anchorFromHash('#top')).toBeNull();
         expect(anchorFromHash('#%E0%A4%A')).toBeNull();
+        // 专名出处反查：范围与实体
+        expect(anchorFromHash('#3:2:4~3:2:5')).toBe('3:2:4~3:2:5');
+        expect(anchorFromHash('#e=abc,de_f-1')).toBe('e=abc,de_f-1');
+        expect(anchorFromHash('#e=')).toBeNull();
+        expect(anchorFromHash('#e=a b')).toBeNull();
     });
 
     it('浏览器返回（地址变了）：状态与阅读器跟着回到上一章，且不再多推一条', async () => {

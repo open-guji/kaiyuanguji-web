@@ -671,6 +671,20 @@ export function createCosStorage(): IndexStorage {
         return promotionsPromise;
     }
 
+    /** 专名出处反查（schema mentions/v2）：不带 item 取主文件 `mentions/<id>.json`（书／章目录＋例子）；
+     *  带 item 取热门实体拆出去的该书章目录 `mentions/<id>/<item>.json`。404／网络错一律回 null（没有出处）。 */
+    async function getMentionsFromCos(id: string, item?: string): Promise<Record<string, unknown> | null> {
+        const safe = /^[\w-]+$/;
+        if (!safe.test(id) || (item !== undefined && !safe.test(item))) return null;
+        try {
+            const rel = item === undefined ? `mentions/${id}.json` : `mentions/${id}/${item}.json`;
+            const res = await fetch(await withCacheBust(rel), { cache: 'no-cache' });
+            return res.ok ? await res.json() : null;
+        } catch {
+            return null;
+        }
+    }
+
     // 取原始 detail JSON（getItem 返回原貌，getEntry 在此基础上转 IndexEntry shape）
     async function fetchRawDetail(canonicalId: string): Promise<Record<string, unknown> | null> {
         // 开关打开时整条走 h1 路径；默认（未设置或非 'hashed'）以下现行逻辑原样不动。
@@ -807,6 +821,8 @@ export function createCosStorage(): IndexStorage {
             // getEntry / getItem：单文件 entry/{id}.json 路径，绕开 BundleStorage 的 chunks 逻辑
             if (prop === 'getEntry') return (id: string) => getEntryFromCos(id);
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
+            // 专名出处反查（A12，产物 mentions/<id>.json，热门实体各书章目录 mentions/<id>/<item>.json）
+            if (prop === 'getMentions') return (id: string, item?: string) => getMentionsFromCos(id, item);
             // 枢纽名称表（book-index-ui 新增的可选方法 getHubs；旧版 UI 不调用，无影响）
             if (prop === 'getHubs') return () => getHubsFromCos();
             // 对读数据文件（char／cord／punct／entity）：BundleStorage 没有这个方法，两种布局都在外层接走
