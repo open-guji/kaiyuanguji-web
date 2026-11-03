@@ -9,6 +9,7 @@
  *   - 原叶图：IIIF 放大档（原宽无损 WebP），地址见 lib/facsimile.ts；页序取 cord `pages[].canvas.seq`。
  * 本模块只读、不抛：缺失、坏 JSON、字段未知都返回空/null，页面照常。
  */
+import { parseReason, reasonSpec, type PendingReason } from './pendingReasons';
 import { adaptCharCord } from 'book-index-ui';
 import { parseProof, type ProofCandidate } from '@/lib/proof';
 import { getAid } from '@/lib/aid';
@@ -32,6 +33,9 @@ export const ALT_MAX = 30;
 /** guji-proof/0.2 新增字段，全部可选；0.1 的 pending.json 一个都没有 */
 export interface PendingExtras {
     why?: string[];
+    /** 待审原因（cv `review/pending_reason.py`，sheldon 11-03 定）：英文 enum 名，认不出按 unknown；老单没有这个键 */
+    pendingReason?: PendingReason;
+    pendingReasonDetail?: string;
     cls?: string;
     /** 类别细项（目前只有对齐改字层：grid / tail / manual） */
     clsSub?: string;
@@ -86,6 +90,8 @@ export function parseExtras(raw: unknown): PendingExtras {
         const why = it.why.filter((x): x is string => typeof x === 'string' && x !== '');
         if (why.length) out.why = why;
     }
+    if (it.pending_reason !== undefined) out.pendingReason = parseReason(it.pending_reason);
+    if (str(it.pending_reason_detail)) out.pendingReasonDetail = str(it.pending_reason_detail);
     if (str(it.cls)) out.cls = str(it.cls);
     if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
     if (Array.isArray(it.lib_top)) {
@@ -213,6 +219,24 @@ export function classLabel(cls: string): { name: string; hint?: string } {
     return hit ? { name: hit[0], hint: hit[1] } : { name: cls };
 }
 
+/**
+ * 一格归哪一组（筛选按钮、「属于哪一类」）：有 `pending_reason` 就按它（新单），没有退回老的 `cls`。
+ * 组键带前缀 `r:`，与老类别键分开，免得 `seg_defect` 这种同名键混在一起。
+ */
+export function reasonGroupKey(cell: { pendingReason?: PendingReason; cls?: string }): string {
+    return cell.pendingReason ? `r:${cell.pendingReason}` : (cell.cls ?? 'other');
+}
+export function reasonGroupLabel(key: string): { name: string; hint?: string } {
+    if (key.startsWith('r:')) {
+        const s = reasonSpec(key.slice(2));
+        return { name: s.label, hint: s.hint };
+    }
+    return classLabel(key);
+}
+/** 切坏格：新单看 `pending_reason`，老单看 `cls` */
+export const isSegDefect = (cell: { pendingReason?: PendingReason; cls?: string }): boolean =>
+    cell.pendingReason === 'seg_defect' || cell.cls === 'seg_defect';
+
 /** 参校本对位方式 */
 const REF_OP_LABELS: Record<string, string> = {
     replace: '参校本这一段改过字，位置可能差一两格',
@@ -274,7 +298,7 @@ export const QUICK_GROUPS: QuickGroup[] = [
 export const GROUP_CHARS = new Set([...'㑹㕘㫖㸃䜟䟦一二于人俞傅傳入內八内冊册出刊刋删別刪别十千卜即卷卽卿厯參叅叙各名吕呂命問啓啟圓圖土士大太子宋尙尚山岀己已巳巻干彖彙彚彛彜彝彞徴徵心必愼慎戊戌戍扺抵敎敘教既旣日旨晚晩曰曾會木未末本朱歴淄淸清湽為爲玉王由甲申目禽絕絶而自舍葢蒙蓋衛衞說説論諭識變讖象跋遺還間隸靑青面顚顛點𠮓𢑱𢑴𧰼𨜊𨽾𫎇']);
 export function quickPick(cell: PendingCell): { group: string; char: string } | null {
     const r = cell.ref?.c;
-    if (!r || [...r].length !== 1 || cell.prior || cell.cls === 'seg_defect') return null;
+    if (!r || [...r].length !== 1 || cell.prior || isSegDefect(cell)) return null;
     if (cell.stale?.c && cell.stale.c !== r) return null;
     if (GROUP_CHARS.has(r)) return null;
     if (cell.cls === 'occluded') return cell.occ?.refBlank ? null : { group: 'occluded', char: r };

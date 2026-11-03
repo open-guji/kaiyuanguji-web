@@ -12,7 +12,7 @@ import { getJson } from '@/lib/duidu-data';
 import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
-    LACUNA, classLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
+    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
     refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
@@ -188,8 +188,8 @@ function Evidence({ cell }: { cell: PendingCell }) {
     if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
-    if (cell.cls) {
-        const k = classLabel(cell.cls);
+    if (cell.pendingReason || cell.cls) {
+        const k = reasonGroupLabel(reasonGroupKey(cell));
         rows.push(['属于哪一类', <>{k.name}{k.hint ? <span style={{ color: '#888' }}>：{k.hint}</span> : null}</>]);
     }
     if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${zis(x.c)}」${pct(x.s)}`).join('　')]);
@@ -366,9 +366,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
     const isPicked = (c: string) => (kind !== 'char' ? draftChar === c : done ? doneChar === c : c === preCand);
     const { top, more } = shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
-    const why = whyLabels(cell.why);
+    const why = cell.pendingReason ? [reasonGroupLabel(reasonGroupKey(cell)).name] : whyLabels(cell.why);
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
-    const segDefect = cell.cls === 'seg_defect';
+    const segDefect = isSegDefect(cell);
     return (
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
@@ -395,7 +395,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                 </div>
             </div>
             {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
-            {(cell.why?.some(w => w !== 'none') || !!cell.cls) && (
+            {(cell.why?.some(w => w !== 'none') || !!cell.cls || !!cell.pendingReason) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -790,7 +790,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     // 按类筛（GUJI-624「切坏格」一类）：单子里有两类以上才显示
     const classCounts = useMemo(() => {
         const m = new Map<string, number>();
-        for (const c of cells) m.set(c.cls ?? 'other', (m.get(c.cls ?? 'other') ?? 0) + 1);
+        for (const c of cells) m.set(reasonGroupKey(c), (m.get(reasonGroupKey(c)) ?? 0) + 1);
         return [...m.entries()];
     }, [cells]);
     // 快速确认：还没回应、没标存疑、合条件的格按类分组；这些格先不进下面的逐格卡片
@@ -806,7 +806,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     // 「只看未回应」：藏起 hiddenDone 里的格（关掉就回来）；存疑挪来的排在最后
     const shown = useMemo(() => {
         const defer = new Set(deferred);
-        const list = cells.filter(c => !quickSet.has(c.a) && (!clsFilter || (c.cls ?? 'other') === clsFilter) && (!onlyOpen || !hiddenDone.has(c.a)));
+        const list = cells.filter(c => !quickSet.has(c.a) && (!clsFilter || reasonGroupKey(c) === clsFilter) && (!onlyOpen || !hiddenDone.has(c.a)));
         return [...list.filter(c => !defer.has(c.a)), ...list.filter(c => defer.has(c.a))];
     }, [cells, quickSet, clsFilter, onlyOpen, hiddenDone, deferred]);
 
@@ -863,7 +863,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         if (!advanceFrom) return;
         setAdvanceFrom(null);
-        const all = cells.filter(c => !clsFilter || (c.cls ?? 'other') === clsFilter);
+        const all = cells.filter(c => !clsFilter || reasonGroupKey(c) === clsFilter);
         const i = all.findIndex(c => c.a === advanceFrom);
         const next = all.slice(i + 1).find(c => !done[c.a]);
         if (next && shown.some(c => c.a === next.a)) goTo(next.a);
@@ -943,7 +943,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 <button type="button" aria-pressed={!clsFilter} onClick={() => { setClsFilter(null); setPage(0); }} className={BTN_CLASS} style={btnStyle('small', !clsFilter)}>全部 {cells.length}</button>
                                 {classCounts.map(([k, n]) => (
                                     <button key={k} type="button" aria-pressed={clsFilter === k} onClick={() => { setClsFilter(k); setPage(0); }} className={BTN_CLASS}
-                                        style={btnStyle('small', clsFilter === k)}>{classLabel(k).name} {n}</button>
+                                        style={btnStyle('small', clsFilter === k)}>{reasonGroupLabel(k).name} {n}</button>
                                 ))}
                             </div>
                         )}
