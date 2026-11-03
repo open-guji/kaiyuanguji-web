@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import Footer from '../Footer';
 
-// 用户 9-30 反馈（overview#322）：左边只留四项，右边微信、QQ 两张二维码，各一行说明，QQ 加一行群号
+// 用户 9-30 反馈（overview#322）：左边只留四项，11-03 起右边只留 QQ 群号文字
 describe('Footer（9-30 反馈）', () => {
     it('左边只有 关于我们、联系我们、反馈与纠错、项目源码', () => {
         render(<Footer />);
@@ -20,14 +20,10 @@ describe('Footer（9-30 反馈）', () => {
         expect(container.querySelector('a[href*="wj.qq.com"]')).toBeNull();
     });
 
-    it('右边两张二维码：微信、QQ，各有说明，QQ 带群号；不出现占位文字', () => {
+    it('右边只有 QQ 群号文字，没有二维码；不出现占位文字', () => {
         const { container } = render(<Footer />);
-        const figs = container.querySelectorAll('.og-footer-qrs figure');
-        expect(figs).toHaveLength(2);
-        expect(screen.getByRole('img', { name: /微信群.*二维码/ })).toHaveAttribute('src', '/images/wechat-group-qr.png');
-        expect(screen.getByRole('img', { name: /QQ 群.*二维码/ })).toHaveAttribute('src', '/images/qq-group-qr.png');
-        expect(figs[0].querySelector('figcaption')?.textContent).toBe('微信扫码进群');
-        expect(figs[1].querySelector('figcaption')?.textContent).toBe('QQ 扫码进群群号 111362573');
+        expect(container.querySelector('.og-footer-group')?.textContent).toBe('QQ 群 111362573');
+        expect(container.querySelector('img')).toBeNull();
         expect(container.textContent).not.toMatch(/〔|待定|待提供/);
     });
 });

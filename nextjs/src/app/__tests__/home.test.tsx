@@ -120,12 +120,12 @@ describe('首页（N1）', () => {
         }
     });
 
-    it('写明 CC BY-SA 4.0；二维码只在页脚，正文里没有（N6）', () => {
+    it('写明 CC BY-SA 4.0；正文和页脚都没有二维码（N6）', () => {
         render(<HomePage />);
         const main = screen.getByRole('main');
         expect(within(main).getByText(/CC BY-SA 4\.0 发布/)).toBeInTheDocument();
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
-        expect(within(screen.getByRole('contentinfo')).getAllByRole('img', { name: /二维码/ })).toHaveLength(2);
+        expect(within(screen.getByRole('contentinfo')).queryAllByRole('img', { name: /二维码/ })).toHaveLength(0);
     });
 
     it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', () => {

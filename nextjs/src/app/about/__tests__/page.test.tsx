@@ -54,7 +54,7 @@ describe('关于页（N6）', () => {
         expect(container.textContent).not.toMatch(/〔|待定|待提供/);
     });
 
-    it('联系页内容展开在 #联系：去反馈、GitHub Issues、邮箱、微信与 QQ 两张二维码（QQ 带群号）', () => {
+    it('联系页内容展开在 #联系：去反馈、GitHub Issues、邮箱、QQ 群号（无二维码）', () => {
         render(<AboutPage />);
         const sec = within(document.getElementById('联系')!);
         expect(sec.getByRole('heading', { level: 2, name: '联系我们' })).toBeInTheDocument();
@@ -62,8 +62,7 @@ describe('关于页（N6）', () => {
         expect(sec.getByRole('link', { name: 'book-index Issues' })).toHaveAttribute('href', 'https://github.com/open-guji/book-index/issues');
         expect(sec.getByRole('link', { name: 'kaiyuanguji-web Issues' })).toHaveAttribute('href', 'https://github.com/open-guji/kaiyuanguji-web/issues');
         expect(sec.getByRole('link', { name: 'sheldonli.dev@gmail.com' })).toHaveAttribute('href', 'mailto:sheldonli.dev@gmail.com');
-        expect(sec.getByRole('img', { name: /微信群.*二维码/ })).toHaveAttribute('src', '/images/wechat-group-qr.png');
-        expect(sec.getByRole('img', { name: /QQ 群.*二维码/ })).toHaveAttribute('src', '/images/qq-group-qr.png');
+        expect(sec.queryByRole('img')).toBeNull();
         expect(sec.getByText(/QQ 群：111362573/)).toBeInTheDocument();
         expect(sec.queryByText(/公众号/)).toBeNull();
         expect(sec.queryByRole('link', { name: '联系我们' })).toBeNull();
