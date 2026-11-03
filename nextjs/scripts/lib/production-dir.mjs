@@ -8,6 +8,7 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { indexDirFor } from './derived.mjs';
 import { hasPromotionsSource, PROMOTIONS_DIRNAME, PROMOTIONS_FILENAME } from './promotions-source.mjs';
 
 /**
@@ -24,13 +25,14 @@ export const SITE_CONTENT_FILES = [
     'promotions.json',
 ];
 
-/** 正式仓不存在、或没有 index/ 时抛错 */
+/** 正式仓不存在、或没有检索索引 index/ 时抛错。index/ 取 build 产物的（仓内 index/ 将删，见 indexDirFor），不要求仓内有 */
 export function assertProductionDir(dir) {
     if (!existsSync(dir)) {
         throw new Error(`book-index（正式仓）目录不存在：${dir}\n   请设置 BOOK_INDEX_PRODUCTION_DIR，或把仓克隆到默认位置`);
     }
-    if (!existsSync(join(dir, 'index'))) {
-        throw new Error(`book-index（正式仓）里没有 index/：${join(dir, 'index')}`);
+    const idx = indexDirFor(dir);
+    if (!existsSync(idx)) {
+        throw new Error(`book-index（正式仓）没有可用的 index/（产物与仓内都没有）：${idx}`);
     }
 }
 

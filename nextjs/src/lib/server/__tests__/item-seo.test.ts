@@ -105,6 +105,13 @@ describe('seoDescription：版本', () => {
         }, 'x');
         expect(d).toBe('《吳邑志》明嘉靖刻本。屬史部。國立故宮博物院藏，索書號故志005041。十六卷，圖說一卷。相關資源：故宮善本。開源古籍索引版本條目。');
     });
+    it('部类在 contained_in[] 项里（顶层 section 已挪走）也能读到', () => {
+        const d = seoDescription({
+            type: 'book', title: '吳邑志', edition: '明嘉靖刻本',
+            contained_in: [{ id: '8rlcsy6ubh1c', section: '史部' }],
+        }, 'x');
+        expect(d).toBe('《吳邑志》明嘉靖刻本。屬史部。開源古籍索引版本條目。');
+    });
     it('只有书名和版本名：不编造，补站名句', () => {
         expect(seoDescription({ type: 'book', title: '詩傳遺說', edition: '薈要本' }, 'x')).toBe('《詩傳遺說》薈要本。開源古籍索引版本條目。');
     });

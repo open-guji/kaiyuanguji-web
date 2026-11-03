@@ -21,6 +21,7 @@ import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
 import { assertProductionDir } from './lib/production-dir.mjs';
+import { indexDirFor } from './lib/derived.mjs';
 import { collatedChapterJsons, readManifest } from './lib/text-layout.mjs';
 import * as pagefind from 'pagefind';
 import { toSimplified } from './lib/to-simplified.mjs';
@@ -37,8 +38,8 @@ try {
     console.error(`❌ ${e.message}`);
     process.exit(1);
 }
-if (!existsSync(join(PRODUCTION_DIR, 'index', 'works'))) {
-    console.error(`❌ book-index（正式仓）里没有 index/works：${join(PRODUCTION_DIR, 'index', 'works')}`);
+if (!existsSync(join(indexDirFor(PRODUCTION_DIR), 'works'))) {
+    console.error(`❌ book-index（正式仓）里没有 index/works：${join(indexDirFor(PRODUCTION_DIR), 'works')}`);
     process.exit(1);
 }
 
@@ -56,7 +57,7 @@ function readJson(path) {
 // 读 Work index 拿到 id → title 映射，给 fragment meta 用
 function loadWorkIndex() {
     const map = new Map();
-    const indexDir = join(PRODUCTION_DIR, 'index', 'works');
+    const indexDir = join(indexDirFor(PRODUCTION_DIR), 'works');
     if (!existsSync(indexDir)) return map;
     for (let i = 0; i < 16; i++) {
         const shard = join(indexDir, `${i.toString(16)}.json`);

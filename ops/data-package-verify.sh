@@ -41,9 +41,9 @@ ls search/core-*.json | wc -l | xargs -I{} echo "✓ {} search shards"
 # 守卫：production（已升格）条目必须进入产物。bundle-data.mjs 在 production 仓缺失时是**静默**跳过的，
 # 只靠上面的文件存在性检查发现不了 —— 这里逐个比对正式库索引里的 ID。
 cd "$WORKSPACE"
-BOOK_INDEX_DIR="$BOOK_INDEX_DIR" node -e "
+BOOK_INDEX_DIR="$BOOK_INDEX_DIR" BOOK_INDEX_DERIVED_DIR="${BOOK_INDEX_DERIVED_DIR:-}" node -e "
 const fs = require('fs');
-const prodIndex = JSON.parse(fs.readFileSync(process.env.BOOK_INDEX_DIR + '/index/collections.json', 'utf-8'));
+const prodIndex = JSON.parse(fs.readFileSync((process.env.BOOK_INDEX_DERIVED_DIR || process.env.BOOK_INDEX_DIR) + '/index/collections.json', 'utf-8'));
 const ids = Object.keys(prodIndex);
 if (ids.length === 0) {
   console.log('· production 索引为空，跳过校验');
