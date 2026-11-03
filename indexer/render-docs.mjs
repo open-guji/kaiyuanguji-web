@@ -19,7 +19,7 @@ import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs, readDetail, addEditionStats } from './lib/doc-builders.mjs';
-import { iterAllRoots, insideRoot } from './lib/shards.mjs';
+import { iterAllRoots, insideRoot, indexDirFor } from './lib/shards.mjs';
 import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
 import { isTombstone } from './lib/tombstone.mjs';
 import { derivedInputProblem } from './lib/work-fields.mjs';
@@ -71,7 +71,9 @@ function openSink(path) {
 export async function renderDocs({ draftDir, prodDir, textDir, derivedDir, outDir, limit = null, only = null }) {
     // 草稿一律不入搜索（2026-10-19 用户定）：只遍历正式库。前端每条搜索本来就带 is_draft = false，草稿文档只占内存不出结果
     if (!prodDir || !existsSync(prodDir)) throw new Error('PRODUCTION_DIR 未设置或不存在');
-    const roots = [{ dir: prodDir, isDraft: false }];
+    // 分片读 build 产物的 index/（没有产物才退回仓内 index/）；条目详情仍按 prodDir 解析
+    const roots = [{ dir: prodDir, isDraft: false, indexDir: indexDirFor(prodDir, derivedDir) }];
+    console.log(`  分片来源：${roots[0].indexDir}`);
     if (!textDir || !existsSync(textDir)) console.warn('⚠️  TEXT_DIR 未设置或不存在 —— juans 将为空！');
 
     const want = (i) => !only || only.includes(i);
