@@ -18,7 +18,7 @@ export class GujiFormatError extends Error {}
 
 /* ── 输入（只列用到的字段，都是 guji-format 02／04／05 的子集） ─────────────── */
 
-export interface CharCell { a: string; c: string; lane?: string; lacuna?: boolean; zi?: string; guess?: boolean; fig?: string }
+export interface CharCell { a: string; c: string; lane?: string; lacuna?: boolean; zi?: string; guess?: boolean; fig?: string; pending_reason?: string }
 export interface CharColumn { cells?: CharCell[]; kind?: string; fig?: string; raised?: number; lead_blank?: number }
 export interface CharPage { page: number; columns?: CharColumn[] }
 export interface CharDoc { pages?: CharPage[] }
@@ -88,7 +88,8 @@ function tu(fid: string, alts: Map<string, string | undefined>, block = false): 
 
 function glyph(cell: CharCell, inSolo = false, alts: Alts = null): string {
     if (cell.fig != null) return alts === null ? cell.c : tu(cell.fig, alts);
-    if (cell.lacuna) return inSolo ? BOX : LACUNA;
+    // char v0.4：机器没给字的待审格（pending_reason 且 c 为 □）与阙文同写 [[]]（guji-format 02 §4.8、03 §三）
+    if (cell.lacuna || (cell.pending_reason != null && cell.c === BOX)) return inSolo ? BOX : LACUNA;
     if (cell.zi != null) return `:zi[${cell.zi}]`;
     if (cell.guess) return `□{guess=${cell.c}}`;
     return cell.c;
