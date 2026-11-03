@@ -87,10 +87,24 @@ function getAssetDir(id: string): string | null {
 
 // ── Index loading ──
 
+/**
+ * 检索索引目录：设了 BOOK_INDEX_DERIVED_DIR（build_derived.py --out）且正式仓有产物 index/ 就读产物的
+ * （源仓 index/ 将删，A11 schema 审查阶段 3）；草稿仓、或没设产物目录时仍读仓内 index/。
+ */
+function indexDirOf(repoRoot: string): string {
+    const d = process.env.BOOK_INDEX_DERIVED_DIR?.trim();
+    if (d && path.basename(repoRoot) === 'book-index') {
+        const p = path.join(d, 'index');
+        if (fs.existsSync(p)) return p;
+    }
+    return path.join(repoRoot, 'index');
+}
+
 function loadIndex(repoRoot: string): IndexFile {
+    const indexDir = indexDirOf(repoRoot);
     const result: IndexFile = { books: {}, collections: {}, works: {}, entities: {} };
 
-    const colPath = path.join(repoRoot, 'index', 'collections.json');
+    const colPath = path.join(indexDir, 'collections.json');
     try {
         if (fs.existsSync(colPath)) {
             result.collections = JSON.parse(fs.readFileSync(colPath, 'utf-8'));
@@ -99,7 +113,7 @@ function loadIndex(repoRoot: string): IndexFile {
 
     for (const typeKey of ['books', 'works', 'entities'] as const) {
         for (let i = 0; i < NUM_SHARDS; i++) {
-            const shardPath = path.join(repoRoot, 'index', typeKey, `${i.toString(16)}.json`);
+            const shardPath = path.join(indexDir, typeKey, `${i.toString(16)}.json`);
             try {
                 if (fs.existsSync(shardPath)) {
                     Object.assign(result[typeKey], JSON.parse(fs.readFileSync(shardPath, 'utf-8')));

@@ -182,6 +182,15 @@ function indexedQuote(e: ItemEntry, known: string[]): { source: string; body: st
     return null;
 }
 
+/** 书所属的部类：新 schema 在 contained_in[] 项里（顶层 section 将删），旧的顶层 section 兜底 */
+function sectionOf(e: ItemEntry): string {
+    for (const x of arr(e.contained_in)) {
+        const s = str(obj(x).section);
+        if (s) return s;
+    }
+    return str(e.section);
+}
+
 function resourcesText(e: ItemEntry): string {
     const names = uniq(arr(e.resources).map((r) => str(obj(r).short_name) || str(obj(r).name))).slice(0, 3);
     return names.length ? `相關資源：${names.join('、')}` : '';
@@ -325,7 +334,7 @@ export function seoDescription(e: ItemEntry, id: string): string {
         case 'book': {
             head = [
                 [`${bookName(s.title)}${s.edition}`, a.line].filter(Boolean).join('，'),
-                str(e.section) && `屬${str(e.section)}`,
+                sectionOf(e) && `屬${sectionOf(e)}`,
                 s.measure,
                 provenanceText(e),
             ];
@@ -430,7 +439,7 @@ function language(...texts: string[]): string | undefined {
 function genre(e: ItemEntry): string | undefined {
     const c = classificationOf(e);
     const parts = [str(c.l1), str(c.l2), str(c.l3)].filter(Boolean);
-    return parts.length ? parts.join('·') : str(e.section) || undefined;
+    return parts.length ? parts.join('·') : sectionOf(e) || undefined;
 }
 
 /** 版本的成书年：只收单一年份、且不是「uncertain」的（年份区间 Date 表示不了） */
