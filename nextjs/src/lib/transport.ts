@@ -2,11 +2,11 @@
  * 共享 Storage 实例工厂
  *
  * 根据 DataSource 返回对应的 IndexStorage 实现：
- * - 'github' / 'gitee' → GithubStorage
+ * - 'github' / 'gitee' → 已无数据（仓内 index/ 将删），退到 COS
  * - 'bundle' → BundleStorage（只读，从同域 /data/ 加载预打包 chunk）
  */
 
-import { GithubStorage, BundleStorage } from 'book-index-ui/storage';
+import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage, IndexType } from 'book-index-ui/storage';
 import { LocalApiStorage } from './local-api-storage';
 import { isV2SearchEnabled, wrapWithV2Search } from './search/v2-storage';
@@ -14,9 +14,6 @@ import { wrapWithMeiliSearch } from './search/meili-storage';
 import { createCosStorage, getCosSearchBaseUrl } from './cos-storage';
 import {
     DataSource,
-    GITHUB_ORG,
-    JSDELIVR_FASTLY,
-    JSDELIVR_CDN,
 } from './constants';
 
 /**
@@ -66,19 +63,9 @@ export function getTransport(source: DataSource = 'github'): ReadonlyStorage {
         // 版本号在浏览器首次请求时从 /latest.json 拉一次，模块级 promise 缓存。
         s = createCosStorage() as ReadonlyStorage;
     } else {
-        const baseUrl = source === 'github'
-            ? 'https://raw.githubusercontent.com'
-            : undefined;
-
-        s = new GithubStorage({
-            org: GITHUB_ORG,
-            repos: {
-                draft: 'book-index-draft',
-                official: 'book-index',
-            },
-            baseUrl,
-            cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
-        }) as ReadonlyStorage;
+        // 'github' / 'gitee'：旧版从 GitHub raw／jsDelivr 读仓内 index/ 散文件；仓内 index/ 将删（A11 schema 审查），
+        // 这两个来源已无数据，统一退到 COS 产物（与正式站的 NEXT_PUBLIC_DATA_SOURCE=cos 一致）。
+        s = createCosStorage() as ReadonlyStorage;
     }
 
     if (isV2SearchEnabled()) {
