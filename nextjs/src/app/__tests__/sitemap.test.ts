@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  *
- * FX1：全栈构建的 /sitemap.xml 只列静态页（条目由 /sitemaps/* 分片列）；静态导出照旧带旧详情地址。
+ * FX1：全栈构建的 /sitemap.xml 只列静态页（条目由 /sitemaps/* 分片列）；静态导出同样不再去 GitHub 取条目（仓内 index/ 将删）。
  */
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 
-const mockGetAllEntries = jest.fn(async () => [{ id: 'd59f20aowb9c' }, { id: '1evgpgqsis9hc' }]);
+const mockGetAllEntries = jest.fn(async () => [{ id: 'd59f20aowb9c' }]);
 
 jest.mock('book-index-ui/storage', () => ({
     GithubStorage: jest.fn().mockImplementation(() => ({ getAllEntries: mockGetAllEntries })),
@@ -39,11 +39,11 @@ describe('app/sitemap.ts', () => {
         expect(mockGetAllEntries).not.toHaveBeenCalled();
     });
 
-    it('静态导出（不设开关）：行为不变，条目地址同样是 /item/<id>', async () => {
+    it('静态导出（不设开关）：也只列静态页，不再去 GitHub 取条目', async () => {
         delete process.env.KYG_RENDER_MODE;
         const u = await urls();
-        expect(u.filter((x) => x.includes('/item/'))).toHaveLength(2);
-        expect(u.some((x) => x.endsWith('/item/d59f20aowb9c'))).toBe(true);
+        expect(u.filter((x) => x.includes('/item/'))).toHaveLength(0);
+        expect(mockGetAllEntries).not.toHaveBeenCalled();
         // /read 只在全栈构建里有，静态导出的 sitemap 不列
         expect(u.some((x) => x.endsWith('/read'))).toBe(false);
         expect(u.some((x) => x.endsWith('/catalog'))).toBe(false);
