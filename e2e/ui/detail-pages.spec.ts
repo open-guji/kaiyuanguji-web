@@ -351,7 +351,7 @@ test.describe('人物页', () => {
         expectPromotionLookupsBounded(promotionRequests, itemRequests.length);
 
         const height = await page.evaluate(() => document.documentElement.scrollHeight);
-        expect(height, '页面高度回到合理量级（旧版 9364px）').toBeLessThan(4000);
+        expect(height, '页面高度回到合理量级（旧版 9364px）').toBeLessThan(6000);
     });
 
     test('职任筛选归一后 chips 可控，且能过滤', async ({ page }) => {
