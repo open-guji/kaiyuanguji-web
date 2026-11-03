@@ -112,7 +112,7 @@ test('已退役旧键（legacy-scan 键表）：出现就报 entry.retired-field
         assert.ok(!r.unknownFields.includes(k), k);
         assert.ok(!(k in ENTRY_FIELD_TYPES), k);
     }
-    assert.equal(RETIRED_ENTRY_FIELDS.length, 13); // 含 book-index#2210 的 merged_in／merged_from／merge_history
+    assert.equal(RETIRED_ENTRY_FIELDS.length, 15); // 含 book-index#2210 的 merged_in／merged_from／merge_history、#2215 的 retired／retired_reason
 });
 
 test('已退役键清单不含现行字段：派生标志 _has_*、has_text／has_image（线上 entry/ 仍有）仍在字段表里、不报退役', () => {
