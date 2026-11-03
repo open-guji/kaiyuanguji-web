@@ -419,3 +419,25 @@ describe('COS 上的待审单（中心库发布）', () => {
         expect(r2.status === 'ok' && r2.cord).toBeNull();
     });
 });
+
+describe('pending_reason（待审原因，cv review/pending_reason.py）', () => {
+    it('认得的值原样带出，认不出的按 unknown', async () => {
+        const { parseExtras, reasonGroupKey, reasonGroupLabel, isSegDefect } = await import('../proofing');
+        const a = parseExtras({ pending_reason: 'group_abstain', pending_reason_detail: 'fc', cls: 'near_form' });
+        expect(a.pendingReason).toBe('group_abstain');
+        expect(a.pendingReasonDetail).toBe('fc');
+        expect(reasonGroupKey(a)).toBe('r:group_abstain');
+        expect(reasonGroupLabel('r:group_abstain').name).toBe('形近字·没把握');
+        expect(parseExtras({ pending_reason: 'no_such' }).pendingReason).toBe('unknown');
+        expect(parseExtras({ pending_reason: 3 }).pendingReason).toBe('unknown');
+        expect(isSegDefect({ pendingReason: 'seg_defect' })).toBe(true);
+    });
+    it('老单没有 pending_reason 时退回 cls', async () => {
+        const { parseExtras, reasonGroupKey, reasonGroupLabel } = await import('../proofing');
+        const b = parseExtras({ cls: 'occluded' });
+        expect(b.pendingReason).toBeUndefined();
+        expect(reasonGroupKey(b)).toBe('occluded');
+        expect(reasonGroupLabel('occluded').name).toBe('有遮挡');
+        expect(reasonGroupKey({})).toBe('other');
+    });
+});
