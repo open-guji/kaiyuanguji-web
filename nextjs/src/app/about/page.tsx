@@ -37,7 +37,7 @@ const GITHUB_BASE = `https://github.com/${GITHUB_ORG}`;
 const LICENSES = ['bookIndex', 'bookText', 'thirdParty', 'code'] as const;
 
 // N6（overview#259）：只放用户给定的联系方式。没有公众号。
-// 微信群二维码 7 天过期（当前这张有效期至 10-29），过期后换 public/images/wechat-group-qr.png。
+// 二维码已撤掉（更新太麻烦），只留 QQ 群号文字。
 const CONTACT_EMAIL = 'sheldonli.dev@gmail.com';
 const QQ_GROUP = '111362573';
 
@@ -139,20 +139,7 @@ export default function AboutPage() {
 
               <dt><T k="about.contact.groups" /></dt>
               <dd>
-                <div className="contact-qrs">
-                  <figure className="contact-qr">
-                    <LocalizedImg src="/images/wechat-group-qr.png" altKey="about.contact.wechatAlt" width={160} height={160} loading="lazy" />
-                    <figcaption><T k="about.contact.wechatCaption" /></figcaption>
-                  </figure>
-                  <figure className="contact-qr">
-                    <LocalizedImg src="/images/qq-group-qr.png" altKey="about.contact.qqAlt" width={160} height={160} loading="lazy" />
-                    <figcaption>
-                      <T k="about.contact.qqGroup" vars={{ group: QQ_GROUP }} />
-                      <br />
-                      <T k="about.contact.qqHint" />
-                    </figcaption>
-                  </figure>
-                </div>
+                <T k="about.contact.qqGroup" vars={{ group: QQ_GROUP }} />
               </dd>
             </dl>
 

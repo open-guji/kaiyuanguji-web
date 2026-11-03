@@ -5,27 +5,21 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { icpForHost } from '@/lib/site-hosts';
 import { useSiteT } from '@/i18n/use-site-t';
-import type { SiteMessageKey } from '@/i18n/translate';
 
 // 用户 9-30 反馈（overview#322）：页脚左边只留这四项，「站内」一栏（古籍元数据、古籍总目、整理平台、路线图、小工具）删掉。
 // 「联系我们」并进关于页（/contact 跳到 /about#联系）。
-const links: { labelKey: SiteMessageKey; href: string }[] = [
+const links: { labelKey: 'footer.about' | 'footer.contact' | 'footer.feedback'; href: string }[] = [
   { labelKey: 'footer.about', href: '/about' },
   { labelKey: 'footer.contact', href: '/about#联系' },
   { labelKey: 'footer.feedback', href: '/feedback' },
 ];
 
-// 右边两张群二维码，各配一行说明；QQ 那张再加一行群号。
-// 微信群二维码 7 天过期（当前这张有效期至 10-29），过期后换 public/images/wechat-group-qr.png。
+// 右边只留 QQ 群号文字（二维码更新太麻烦，11-03 撤掉微信、QQ 两张二维码）。
 const QQ_GROUP = '111362573';
-const groups: { src: string; altKey: SiteMessageKey; lineKeys: SiteMessageKey[] }[] = [
-  { src: '/images/wechat-group-qr.png', altKey: 'footer.wechatAlt', lineKeys: ['footer.wechatScan'] },
-  { src: '/images/qq-group-qr.png', altKey: 'footer.qqAlt', lineKeys: ['footer.qqScan', 'footer.qqNumber'] },
-];
 
 /**
  * 分支页（首页、目录、元数据、阅读、关于）共用的页脚；具体条目页、阅读页不显示（LayoutWrapper hideFooter）。
- * 黑底；左栏是四项链接，紧接着版权、隐私、备案一行；右栏两张二维码（中间留足间距）。
+ * 黑底；左栏是四项链接，紧接着版权、隐私、备案一行；右栏 QQ 群号文字。
  * 用户 10-01 反馈（overview#337 B2）：链接与备案行合成左栏、两者间距压小；二维码下方空白减小。
  */
 export default function Footer() {
@@ -66,19 +60,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="og-footer-qrs">
-            {groups.map((g) => (
-              <figure key={g.src} className="og-footer-qr">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={g.src} alt={t(g.altKey)} width={88} height={88} loading="lazy" />
-                <figcaption>
-                  {g.lineKeys.map((k) => (
-                    <span key={k}>{t(k, { qq: QQ_GROUP })}</span>
-                  ))}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <p className="og-footer-group">{t('footer.qqGroup', { qq: QQ_GROUP })}</p>
         </div>
       </div>
     </footer>
