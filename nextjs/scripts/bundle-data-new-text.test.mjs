@@ -105,6 +105,7 @@ function makeFixture(base) {
     put(nw, 'default/extra/notes.json', { x: 1 });
     put(nw, 'wikisource/extra/draft.md', '# 维基工作档\n');
     put(nw, 'extra/note.md', '# 顶层 extra\n');
+    put(nw, 'default/001.char-edits.json', { edits: [{ note: '逐字改动旁路' }] }); // book-text #269 旁路文件：不公开
     put(nw, 'shidian/index.json', idx());
     put(nw, 'shidian/001.md', '# 私有識典\n');
     // 新结构 Work：顶层 internal，整条目文本都不公开
@@ -218,6 +219,14 @@ try {
         assert.ok(existsSync(join(d, 'fragments', 'f.json')));
         assert.ok(existsSync(join(d, 'lineage_graph.json')));
         assert.ok(!existsSync(join(d, 'unlisted')), '未登记的版本目录不应公开');
+    });
+
+    test('*.char-edits.json 旁路文件不进公开产物，同目录的章与 norm 表照常', () => {
+        const d = join(data, 'items', IDS.newWork);
+        assert.ok(!existsSync(join(d, 'default', '001.char-edits.json')));
+        assert.ok(existsSync(join(d, 'default', '001.txt')));
+        assert.ok(existsSync(join(d, 'default', '003.norm.json')));
+        for (const f of walkFiles(data)) assert.ok(!/char-edits/.test(f), `${f} 是旁路文件`);
     });
 
     test('extra/ 手编源不进公开产物：default/extra、其它版本目录下的 extra、顶层 extra 都不拷；版本的正式章照常', () => {

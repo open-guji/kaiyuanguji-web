@@ -15,6 +15,10 @@ import ProofingNotice from './ProofingNotice';
 import TextSourceMenu from './TextSourceMenu';
 import type { ReadTextRow } from '@/lib/read-texts';
 import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
+import DownloadChip from './DownloadChip';
+import DownloadPanel from './DownloadPanel';
+import { availableFormats } from '@/lib/export/download';
+import type { ExportChapter } from '@/lib/export/download';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
 import { readerManifest } from '@/lib/reader-manifest';
@@ -99,7 +103,7 @@ async function proofVolOf(id: string, versionKey: string, chapter: { file?: stri
 
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
-    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; feedbackVol?: string; versions?: TextVersions } | null>(null);
+    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; feedbackVol?: string; versions?: TextVersions; versionKey?: string; license?: string; chapter?: ExportChapter } | null>(null);
     const at = `${id}|${sel.key ?? ''}|${sel.chapter ?? ''}`;
     useEffect(() => {
         let cancelled = false;
@@ -112,7 +116,10 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
             // 版本号只有本项目自做的 original 版本记（文本／标点／专名三线），别的来源不出
             const versions = (version as { is_original?: boolean }).is_original ? textVersionsOf(chapter) : undefined;
-            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, versions };
+            const license = (version as { license?: unknown }).license;
+            // 「下载本冊」要本章条目（*_file 与三线版本号）、版本 key 与许可；只有 original 版本（有版本号）才出
+            const download = versions && chapter ? { versionKey: version.key, chapter: chapter as ExportChapter, license: typeof license === 'string' ? license : undefined } : {};
+            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, versions, ...download };
             // 版本名、章名先给（标题、反馈标签用），校对提示另取，不让它们等网络
             if (!cancelled) setMeta(base);
             const proofVol = await proofVolOf(id, version.key, chapter, transport);
@@ -394,11 +401,46 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 title={bookTitle}
                 subtitle={edition || meta?.versions ? (
                     <>
+                        {/* 「下载本冊」放最前：书名栏放不下时副标题从尾部截成「…」，放末尾会被整个截掉（书名＋作者长的书，1280 宽就截） */}
+                        {meta?.versions && meta.chapter && meta.versionKey ? (
+                            <>
+                                <DownloadChip
+                                    storage={transport}
+                                    target={{
+                                        id,
+                                        versionKey: meta.versionKey,
+                                        chapter: meta.chapter,
+                                        bookTitle,
+                                        versionLabel: meta.versionLabel,
+                                        edition,
+                                        license: meta.license,
+                                        dataVersion: seed?.dataVersion ?? undefined,
+                                    }}
+                                />
+                                {' '}
+                            </>
+                        ) : null}
                         {edition && <span data-testid="reader-edition">{convert(edition)}</span>}
                         {edition && meta?.versions ? ' ' : null}
                         {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
                     </>
                 ) : undefined}
+                settingsExtra={!wide && meta?.versions && meta.chapter && meta.versionKey && availableFormats(meta.chapter).length > 0 ? (
+                    <DownloadPanel
+                        storage={transport}
+                        target={{
+                            id,
+                            versionKey: meta.versionKey,
+                            chapter: meta.chapter,
+                            bookTitle,
+                            versionLabel: meta.versionLabel,
+                            edition,
+                            license: meta.license,
+                            dataVersion: seed?.dataVersion ?? undefined,
+                        }}
+                    />
+                ) : undefined}
+                settingsExtraTitle={convert('下載')}
                 backHref="/read"
                 onReportError={onReportError}
                 resolveWarpData={resolveWarpData}
