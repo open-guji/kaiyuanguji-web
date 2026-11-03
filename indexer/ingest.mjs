@@ -105,7 +105,7 @@ async function main() {
             const h = await ops.checkIndexHealth(t, idx, { checkHits: idx !== 'juans' });
             if (idx === 'works') {
                 const e = manifest.editionStats;
-                console.log(`📚 版本数覆盖：非草稿 works ${e.total}，带 _edition_count ${e.present}，>0 的 ${e.positive}`);
+                console.log(`📚 版本数覆盖：非草稿 works ${e.total}，读得到版本数 ${e.present}，>0 的 ${e.positive}`);
                 const p = editionCoverageProblem(e);
                 if (p) h.failures.push(p);
             }
