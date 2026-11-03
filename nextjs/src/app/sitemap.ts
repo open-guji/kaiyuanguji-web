@@ -1,6 +1,5 @@
 import { MetadataRoute } from 'next';
-import { GithubStorage } from 'book-index-ui/storage';
-import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES, GITHUB_ORG, JSDELIVR_FASTLY, JSDELIVR_CDN } from '@/lib/constants';
+import { SITE_URL, NAV_ITEMS, ROADMAP_MODULES } from '@/lib/constants';
 
 export const dynamic = 'force-static';
 
@@ -41,25 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
         return [...staticRoutes, ...fullstackPages, ...roadmapRoutes, ...footerOnlyRoutes];
     }
-    // 直接用 GithubStorage，不走 getTransport（避免 v2-storage / worker wrapper 拉到 server side）
-    let bookRoutes: MetadataRoute.Sitemap = [];
-    try {
-        const transport = new GithubStorage({
-            org: GITHUB_ORG,
-            repos: { draft: 'book-index-draft', official: 'book-index' },
-            baseUrl: 'https://raw.githubusercontent.com',
-            cdnUrls: [JSDELIVR_FASTLY, JSDELIVR_CDN],
-        });
-        const allEntries = await transport.getAllEntries();
-        bookRoutes = allEntries.map((entry) => ({
-            url: `${SITE_URL}/item/${entry.id}`,
-            lastModified,
-            changeFrequency: 'monthly' as const,
-            priority: 0.6,
-        }));
-    } catch (error) {
-        console.error('Failed to fetch books for sitemap:', error);
-    }
-
-    return [...staticRoutes, ...roadmapRoutes, ...footerOnlyRoutes, ...bookRoutes];
+    // 静态导出已不再部署（正式站、测试站都是全栈）。旧版这里用 GithubStorage 从 GitHub raw／jsDelivr 读
+    // 仓内 index/ 分片列条目；仓内 index/ 将删（A11 schema 审查），条目地址统一由 gen-sitemaps.mjs 的 /sitemaps/* 列出。
+    return [...staticRoutes, ...roadmapRoutes, ...footerOnlyRoutes];
 }
