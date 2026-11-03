@@ -34,7 +34,7 @@ import { execFileSync } from 'node:child_process';
 import { join, dirname, basename, extname } from 'node:path';
 import { editionCoverageProblem, derivedInputProblem } from './lib/work-fields.mjs';
 import { createMeiliOps, SETTINGS } from './lib/meili-ops.mjs';
-import { iterAllRoots as iterAllRootsIn } from './lib/shards.mjs';
+import { iterAllRoots as iterAllRootsIn, indexDirFor } from './lib/shards.mjs';
 import { isTombstone } from './lib/tombstone.mjs';
 import { EXIT, acquireLock } from './lib/ingest-support.mjs';
 import { createReadStats, readStatsProblem } from './lib/derived-core.mjs';
@@ -62,7 +62,8 @@ if (!MEILI_KEY) {
 // 草稿一律不入搜索（2026-10-19 用户定）：DRAFT_DIR 不再遍历（wrapper 仍会传它，忽略即可），与 render-docs 同口径
 const ROOTS = [];
 if (PRODUCTION_DIR && existsSync(PRODUCTION_DIR)) {
-    ROOTS.push({ dir: PRODUCTION_DIR, isDraft: false });
+    // 分片读 build 产物的 index/（没有产物才退回仓内 index/）；条目详情仍按 PRODUCTION_DIR 解析
+    ROOTS.push({ dir: PRODUCTION_DIR, isDraft: false, indexDir: indexDirFor(PRODUCTION_DIR, DERIVED_DIR()) });
 } else {
     // 不静默降级：缺 production 会让 2 万多条正式条目搜不到，必须显眼
     console.warn('⚠️  PRODUCTION_DIR 未设置或不存在 —— 所有已升格条目将不会进入索引！');
@@ -134,6 +135,7 @@ async function pushInBatches(indexUid, iterable, { batchSize = BATCH_SIZE, maxCo
 async function main() {
     console.log(`DRAFT: ${DRAFT_DIR || '-'}（不入索引）`);
     console.log(`PROD:  ${PRODUCTION_DIR || '(未设置！)'}`);
+    console.log(`INDEX: ${ROOTS[0]?.indexDir || '-'}`);
     console.log(`TEXT:  ${TEXT_DIR || '(未设置！juans 将为空)'}`);
     console.log(`MEILI: ${MEILI_URL}`);
     console.log(`MODE:  ${dryRun ? 'DRY-RUN' : 'LIVE'}`);
