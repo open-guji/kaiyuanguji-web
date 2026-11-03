@@ -26,9 +26,27 @@ export function classificationOf(d) {
     return out;
 }
 
-/** 版本数（排序加权用）：build 产物的 `_edition_count`；没有给 0 */
+/**
+ * 版本数（排序加权用），读不到返回 null：build 产物的 `_edition_count`；没有就数 `_books`
+ * （derived.md：`_edition_count ＝ len(_books)`，产物瘦身后可能只留 `_books`）。
+ */
+export function editionCountKnown(d) {
+    if (typeof d?._edition_count === 'number') return d._edition_count;
+    if (Array.isArray(d?._books)) return d._books.length;
+    return null;
+}
+
+/** 版本数：同上，读不到给 0 */
 export function editionCountOf(d) {
-    return typeof d?._edition_count === 'number' ? d._edition_count : 0;
+    return editionCountKnown(d) ?? 0;
+}
+
+/** 版本数覆盖统计（非草稿 works）：交给 manifest，由 ingest 端做 editionCoverageProblem 闸。累加进 stats。 */
+export function addEditionStats(stats, detail, isDraft) {
+    if (isDraft) return;
+    stats.total++;
+    const n = editionCountKnown(detail);   // _edition_count，没有就数 _books
+    if (n !== null) { stats.present++; if (n > 0) stats.positive++; }
 }
 
 /** 产物里某条目的路径 */

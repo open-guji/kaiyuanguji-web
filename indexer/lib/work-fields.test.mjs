@@ -10,9 +10,12 @@ test('分类：build 产物 _classifications 优先（zongmu），再回退分�
     assert.equal(classificationL1(derivedClassification({ _classifications: [] })), '');
 });
 
-test('版本数：只读 _edition_count（含 0）；旧 books 数组不再数', () => {
+test('版本数：_edition_count 优先（含 0），没有就数 _books；旧 books 数组不再数', () => {
     assert.equal(editionCount({ _edition_count: 3, books: ['a'] }), 3);
     assert.equal(editionCount({ _edition_count: 0, books: ['a'] }), 0);
+    assert.equal(editionCount({ _edition_count: 2, _books: [{ id: 'x' }] }), 2);
+    assert.equal(editionCount({ _books: [{ id: 'x' }, { id: 'y' }] }), 2);   // 产物瘦身后只留 _books
+    assert.equal(editionCount({ _books: [] }), 0);
     assert.equal(editionCount({ books: ['a', 'b'] }), 0);
     assert.equal(editionCount({}), 0);
     assert.equal(editionCount(null), 0);
@@ -48,11 +51,11 @@ test('产物准入：schema-v2 缺目录／缺 SOURCE_COMMIT／commit 不一致�
     assert.match(derivedInputProblem({ ...ok, derivedCommit: 'zzz999zzz999zzz' }), /不一致/);
 });
 
-test('版本数覆盖闸：带 _edition_count <95% 拒；>0 比例 <30% 拒；无 works 不拦', () => {
+test('版本数覆盖闸：读得到版本数 <95% 拒；>0 比例 <30% 拒；无 works 不拦', () => {
     assert.equal(editionCoverageProblem({ total: 100, present: 100, positive: 41 }), null);
     assert.equal(editionCoverageProblem({ total: 100, present: 95, positive: 30 }), null);
     assert.match(editionCoverageProblem({ total: 100, present: 0, positive: 0 }), /0\.0%/);
-    assert.match(editionCoverageProblem({ total: 100, present: 100, positive: 29 }), /_edition_count>0/);
+    assert.match(editionCoverageProblem({ total: 100, present: 100, positive: 29 }), /版本数>0/);
     assert.match(editionCoverageProblem({ total: 100, present: 100, positive: 0 }), /下限 30\.0%/);
     assert.equal(editionCoverageProblem({ total: 0, present: 0, positive: 0 }), null);
 });

@@ -14,7 +14,7 @@ import { pinyin as toPinyin } from 'pinyin-pro';
 import { classificationL1, derivedClassification, editionCount, hasTextValue, lossStatusValue } from './work-fields.mjs';
 import { eraRank, sortTitle } from './sort-fields.mjs';
 import { CHAR_FILE_RE, charJsonText } from './char-text.mjs';
-import { readDetailDoc } from './derived-core.mjs';
+import { readDetailDoc, addEditionStats } from './derived-core.mjs';
 
 const t2s = createToSimplified({
     createConverter: () => OpenCC.Converter({ from: 't', to: 'cn' }),
@@ -278,13 +278,6 @@ function buildJuanDocs(textDir, workEntry, { workId = workEntry.id, kinds = ['co
     }
     if (badChapters) console.warn(`⚠️  juans: ${workId} 有 ${badChapters} 章的 file 不合规（须为不带扩展名的章号，如 001），已跳过`);
     return docs;
-}
-
-/** 版本数覆盖统计（非草稿 works）：交给 manifest，由 ingest 端做 editionCoverageProblem 闸。累加进 stats。 */
-function addEditionStats(stats, detail, isDraft) {
-    if (isDraft) return;
-    stats.total++;
-    if (typeof detail?._edition_count === 'number') { stats.present++; if (detail._edition_count > 0) stats.positive++; }
 }
 
 export { buildWorkDoc, buildBookDoc, buildCollectionDoc, buildEntityDoc, buildJuanDocs, juanDoc, readDetail, readJsonSafe, addEditionStats };
