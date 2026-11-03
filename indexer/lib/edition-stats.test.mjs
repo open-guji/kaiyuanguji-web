@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addEditionStats } from './doc-builders.mjs';
-import { editionCountKnown } from './derived-core.mjs';
+// 只引无第三方依赖的模块：CI 的 node --test 不装 indexer/ 的依赖
+import { addEditionStats, editionCountKnown } from './derived-core.mjs';
 import { editionCoverageProblem } from './work-fields.mjs';
 
 test('editionCountKnown：_edition_count → _books 长度 → null', () => {

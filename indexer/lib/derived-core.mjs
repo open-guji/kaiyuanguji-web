@@ -41,6 +41,14 @@ export function editionCountOf(d) {
     return editionCountKnown(d) ?? 0;
 }
 
+/** 版本数覆盖统计（非草稿 works）：交给 manifest，由 ingest 端做 editionCoverageProblem 闸。累加进 stats。 */
+export function addEditionStats(stats, detail, isDraft) {
+    if (isDraft) return;
+    stats.total++;
+    const n = editionCountKnown(detail);   // _edition_count，没有就数 _books
+    if (n !== null) { stats.present++; if (n > 0) stats.positive++; }
+}
+
 /** 产物里某条目的路径 */
 export function entryPath(dir, id) {
     return join(dir, 'entry', `${id}.json`);
