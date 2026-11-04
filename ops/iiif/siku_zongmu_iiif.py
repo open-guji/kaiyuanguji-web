@@ -739,6 +739,9 @@ def main(argv=None):
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
     ap.add_argument('--report', help='把报告 JSON 写到这里')
+    ap.add_argument('--images-only', action='store_true',
+                    help='只传图和 info.json，不传（也不核对）册 manifest 与书级 Collection：换图源册先把新图铺好，'
+                         '再不带本参数重跑一次（图 ETag 跳过）发 manifest，线上书影与 book-text 坐标可同时切换')
     ap.add_argument('--image-seg', default='', help='图路径的版本段，如 qiefen2（换图源册用，图放 <册>/<段>/<页序>/…）；缺省不加')
     ap.add_argument('--no-ia', action='store_true', help='canvas 不挂 Internet Archive 回退（换图源册：页号已重编，不再对应 IA 叶号；同时要 --no-commons）')
     ap.add_argument('--rev', type=int, help='--source pages：钉页表版本（暂存版也取）；缺省取最新已发布版，跳过 staged')
@@ -798,6 +801,11 @@ def main(argv=None):
             json.dump(build_collection(vols_meta, present), f, ensure_ascii=False, separators=(',', ':'))
 
     report['samples'] = sample_sheet(out, report)
+    if a.images_only:
+        for root, _, names in os.walk(out):
+            for n in names:
+                if n == 'manifest.json':
+                    os.remove(os.path.join(root, n))
     if a.upload:
         report['upload'] = upload_tree(out, force=a.force)
         up_keys = report['upload'].pop('uploaded_keys')
