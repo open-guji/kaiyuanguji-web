@@ -283,6 +283,18 @@ describe('buildItemSeo', () => {
         expect(d.jsonLd).not.toHaveProperty('birthDate');
     });
 
+    it('Book 的 additional_titles：type=附刻 的项是附刻之书，不进 alternateName', () => {
+        const b = buildItemSeo({
+            type: 'book', title: '某書', edition: '明刻本',
+            additional_titles: ['某書別名', { book_title: '附刻之書', type: '附刻' }],
+        }, '988fxodt6s', SITE);
+        expect(b.jsonLd.alternateName).toContain('某書別名');
+        expect(b.jsonLd.alternateName).not.toContain('附刻之書');
+        const w = buildItemSeo({ type: 'work', title: '某書', additional_titles: ['別稱', { book_title: '附刻之書', type: '附刻' }] }, 'd59f20aowb9c', SITE);
+        expect(w.jsonLd.alternateName).toContain('別稱');
+        expect(w.jsonLd.alternateName).not.toContain('附刻之書');
+    });
+
     it('JSON-LD 的 alternateName 与 description 同规则：作品去掉书名＋撰人、按语、著錄形；人物去掉著錄形', () => {
         const w = buildItemSeo({
             type: 'work', title: '守法守令', authors: [{ name: '孫臏' }],

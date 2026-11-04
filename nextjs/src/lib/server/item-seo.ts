@@ -289,7 +289,7 @@ function provenanceText(e: ItemEntry): string {
  */
 function workAliases(e: ItemEntry, title: string): string[] {
     const authors = authorsOf(e).names.filter((n) => len(n) > 1);
-    const typed = arr(e.additional_titles).filter((x) => !/^著[錄录]形$/.test(str(obj(x).type)));
+    const typed = arr(e.additional_titles).filter((x) => !/^(著[錄录]形|附刻)$/.test(str(obj(x).type)));
     return uniq(names(typed, 'book_title'))
         .filter((t) => t !== title && len(t) <= 20 && !/[《》]/.test(t) && !authors.some((n) => t.includes(n)));
 }
@@ -397,6 +397,11 @@ function names(v: unknown, key: string): string[] {
     return arr(v)
         .map((x) => (typeof x === 'string' ? x.trim() : x && typeof x === 'object' ? str((x as Json)[key]) : ''))
         .filter(Boolean);
+}
+
+/** additional_titles 里字符串是异名，{book_title,type:'附刻'} 是附刻之书（不是异名），后者滤掉 */
+function altTitles(v: unknown): string[] {
+    return names(arr(v).filter((x) => str(obj(x).type) !== '附刻'), 'book_title');
 }
 
 function ids(v: unknown, key = 'id'): string[] {
@@ -513,7 +518,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': 'Book',
-                alternateName: withSimplified(names(e.additional_titles, 'book_title')),
+                alternateName: withSimplified(altTitles(e.additional_titles)),
                 bookEdition: s.edition,
                 exampleOfWork: isValidItemId(work) ? { '@type': 'Book', '@id': itemUrl(site, work) } : undefined,
                 author: persons(e, site),
@@ -534,7 +539,7 @@ export function buildItemSeo(e: ItemEntry, id: string, siteUrl: string): ItemSeo
             jsonLd = compact({
                 ...base,
                 '@type': 'Collection',
-                alternateName: withSimplified(names(e.additional_titles, 'book_title')),
+                alternateName: withSimplified(altTitles(e.additional_titles)),
                 author: persons(e, site),
                 publisher: publisher(e),
                 datePublished: pubYear(e),
