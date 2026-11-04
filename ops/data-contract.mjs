@@ -50,7 +50,7 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     sources: 'array', subtype: 'string', text_count: 'number', text_kinds: 'array', title: 'string',
     title_basis: 'string', title_emendation: 'object', title_or_office: 'string', total_volumes: 'number',
     total_works: 'number', type: 'string', updated_at: 'string', version_graph: 'object', volume_count: 'object',
-    work_id: 'string', zhsy_id: 'string',
+    work_id: 'string',
     // `_` 起首：打包时加的标志，以及 schema-v2 的派生字段（加法兼容）
     _authors: 'array', _books: 'array', _catalogs: 'array', _classifications: 'array', _collections: 'array',
     _edition_count: 'number', _has_collated: 'boolean', _has_image: 'boolean', _has_text: 'boolean',
@@ -81,6 +81,8 @@ export const RETIRED_ENTRY_FIELDS = Object.freeze([
     'merged_in', 'merged_from', 'merge_history',
     // book-index#2215：Entity 的 retired／retired_reason 删除
     'retired', 'retired_reason',
+    // book-index#2223：Book 顶层 zhsy_id 搬进 external_ids.zhsy_id
+    'zhsy_id',
 ]);
 
 const NAME_FIELD = { work: 'title', book: 'title', collection: 'title', entity: 'primary_name' };
