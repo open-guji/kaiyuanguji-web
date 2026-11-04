@@ -8,6 +8,7 @@
  *
  * 纯函数，不碰 DOM、不取数；取数和下载在 `download.ts`。
  */
+import { extractType } from 'book-index-ui';
 
 export const SOLO_ATTR = '{type=单行}';
 const LACUNA = '[[]]';
@@ -31,9 +32,26 @@ export interface EntityItem {
     type: string;
     text?: string;
     anchor?: { start?: string; end?: string };
-    target?: { status?: string; href?: string };
+    target?: { status?: string; entity_id?: string; href?: string };
 }
 export interface EntityDoc { entities?: EntityItem[] }
+
+const TYPE_SEG: Record<string, string> = { work: 'Work', book: 'Book', collection: 'Collection', entity: 'Entity' };
+
+/**
+ * 专名的站内链接 `book-index://<类>/<id>`。book-text 第 11 组起专名层不再写 `target.href`，
+ * 类段由 id 的类型位解出；旧数据只有 href 时照用 href。
+ */
+export function entityHref(e: EntityItem): string | undefined {
+    const id = e.target?.entity_id;
+    if (id) {
+        try {
+            const seg = TYPE_SEG[extractType(id)];
+            if (seg) return `book-index://${seg}/${id}`;
+        } catch { /* 解不出类型就退回 href */ }
+    }
+    return e.target?.href || undefined;
+}
 
 export interface FigDoc { figures?: { id: string; alt?: string }[] }
 
@@ -261,7 +279,7 @@ export function renderRich(char: CharDoc, punct: PunctDoc | null | undefined, en
         punctMap.set(k, ps.filter((p) => !(p.mark === '《' && p.pos === 'before' && workOpen.has(k)) && !(p.mark === '》' && p.pos === 'after' && workClose.has(k))));
     }
 
-    const linked = (e: EntityItem) => mode === 'linked' && e.target?.status === 'matched' && !!e.target?.href;
+    const linked = (e: EntityItem) => mode === 'linked' && e.target?.status === 'matched' && !!entityHref(e);
     const punctBetween = (k: number) => (punctMap.get(k) ?? []).some((p) => p.pos === 'after') || (punctMap.get(k + 1) ?? []).some((p) => p.pos === 'before');
 
     // 相邻专名（spec/03 §四第 6 条）：两个以上非 work 专名紧挨、中间无字无标点，这一串里每个都写 `:zm[甲]`
@@ -320,9 +338,9 @@ export function renderRich(char: CharDoc, punct: PunctDoc | null | undefined, en
         out.push(orig);
         const e = entEnds.get(pi);
         if (e) {
-            if (e.type === 'work') out.push((linked(e) ? `](${e.target!.href})` : '') + '》');
-            else if (adjacent.has(e)) out.push(linked(e) ? `]](${e.target!.href})` : ']');
-            else out.push(linked(e) ? `/](${e.target!.href})` : '/');
+            if (e.type === 'work') out.push((linked(e) ? `](${entityHref(e)})` : '') + '》');
+            else if (adjacent.has(e)) out.push(linked(e) ? `]](${entityHref(e)})` : ']');
+            else out.push(linked(e) ? `/](${entityHref(e)})` : '/');
         }
         for (const p of here) if (p.pos === 'after') (p.kind === 'break' ? pendingBreaks : out).push(p.mark);
         pi += 1;

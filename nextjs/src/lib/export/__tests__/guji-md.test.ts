@@ -4,7 +4,7 @@
  */
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
-import { frontMatter, renderLines, renderRich, GujiFormatError } from '../guji-md';
+import { frontMatter, renderLines, renderRich, GujiFormatError, entityHref } from '../guji-md';
 
 const DIR = join(__dirname, 'fixtures');
 const fixtures = readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => ({ name: f, ...JSON.parse(readFileSync(join(DIR, f), 'utf-8')) }));
@@ -50,4 +50,18 @@ describe('char v0.4 待审格', () => {
         expect(renderLines(mk({ c: '□', pending_reason: 'group_abstain' }))).toBe(renderLines(mk({ c: '□', lacuna: true }))));
     it('机器给了字的待审格照出机器字', () =>
         expect(renderLines(mk({ c: '郭', pending_reason: 'machine_changed' }))).toBe(renderLines(mk({ c: '郭' }))));
+});
+
+describe('entityHref（第 11 组：专名层不再写 target.href）', () => {
+    it('由 entity_id 的类型位拼站内链接', () => {
+        expect(entityHref({ type: 'work', target: { status: 'matched', entity_id: 'd59f2hpx0xz4' } })).toBe('book-index://Work/d59f2hpx0xz4');
+        expect(entityHref({ type: 'people', target: { status: 'matched', entity_id: 'hixhd2h9bsff' } })).toBe('book-index://Entity/hixhd2h9bsff');
+    });
+    it('entity_id 优先于旧 href（旧 href 可能没跟上并条改指）', () => {
+        expect(entityHref({ type: 'work', target: { status: 'matched', entity_id: 'd59f2hpx0xz4', href: 'book-index://Work/d59f2htmb9xc' } })).toBe('book-index://Work/d59f2hpx0xz4');
+    });
+    it('只有 href 的旧数据照用 href；都没有返回 undefined', () => {
+        expect(entityHref({ type: 'people', target: { status: 'matched', href: 'book-index://Entity/x004' } })).toBe('book-index://Entity/x004');
+        expect(entityHref({ type: 'people', target: { status: 'new_candidate' } })).toBeUndefined();
+    });
 });
