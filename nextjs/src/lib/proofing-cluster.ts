@@ -10,7 +10,16 @@ import { PROOF_BASE, type PendingCell, parsePending, loadCosPending, getAid } fr
 import { PENDING_REASONS, parseReason, type PendingReason } from '@/lib/pendingReasons';
 
 export interface SummaryChap { rev: string; n: number; reasons: Record<string, number>; voted?: number }
-export interface SummaryCluster { k: string; r: string; c: string; n: number; chaps: Record<string, number> }
+/** 总览页直接摆的格（只有 BATCH_REASONS 的聚类带）：[章, 格位, 雪碧图名, x, y, w, h, 机器字] */
+export type SummaryCellTuple = [string, string, string, number, number, number, number, string];
+export interface SummaryCluster { k: string; r: string; c: string; n: number; chaps: Record<string, number>; cells?: SummaryCellTuple[] }
+
+/**
+ * 可以全书成批确认的待审原因：只看字图就能答「是不是这个字」、候选只有一个（整理本字）。
+ * 与 scripts/lib/proofing-summary.mjs 的 BATCH_REASONS 同一份（单测核对）。
+ */
+export const BATCH_REASONS: readonly PendingReason[] = ['lib_missing', 'lib_sparse_agree', 'lib_unrecognized', 'occluded_with_ref'];
+export const isBatchReason = (r: string): boolean => (BATCH_REASONS as readonly string[]).includes(r);
 export interface BookSummary { book: string; chaps: Record<string, SummaryChap>; clusters: SummaryCluster[] }
 
 const RE_BOOK = /^[\w-]{1,64}$/;
@@ -35,6 +44,15 @@ export function parseClusterKey(k: string): { reason: PendingReason; char: strin
     return { reason: reason as PendingReason, char };
 }
 
+const RE_CELL = /^\d+:\d+:\d+[a-z]?$/;
+const RE_SPRITE = /^[\w.-]+$/;
+function isCellTuple(v: unknown): v is SummaryCellTuple {
+    if (!Array.isArray(v) || v.length !== 8) return false;
+    const [ch, a, s, x, y, w, h, m] = v;
+    return typeof ch === 'string' && RE_CHAP.test(ch) && typeof a === 'string' && RE_CELL.test(a) && typeof s === 'string' && RE_SPRITE.test(s)
+        && [x, y].every((n) => typeof n === 'number' && n >= 0) && [w, h].every((n) => typeof n === 'number' && n > 0) && typeof m === 'string';
+}
+
 /** summary.json → BookSummary；坏数据返回 null，不抛 */
 export function parseSummary(raw: unknown, book: string): BookSummary | null {
     const o = asObj(raw);
@@ -54,7 +72,9 @@ export function parseSummary(raw: unknown, book: string): BookSummary | null {
         if (!c || typeof c.k !== 'string' || !parseClusterKey(c.k)) continue;
         const cc: Record<string, number> = {};
         for (const [ch, n] of Object.entries(asObj(c.chaps) ?? {})) if (RE_CHAP.test(ch) && nat(n) > 0) cc[ch] = nat(n);
-        clusters.push({ k: c.k, r: parseClusterKey(c.k)!.reason, c: parseClusterKey(c.k)!.char, n: nat(c.n), chaps: cc });
+        const pk = parseClusterKey(c.k)!;
+        const cells = Array.isArray(c.cells) && isBatchReason(pk.reason) && pk.char ? c.cells.filter(isCellTuple) : undefined;
+        clusters.push({ k: c.k, r: pk.reason, c: pk.char, n: nat(c.n), chaps: cc, ...(cells?.length ? { cells } : {}) });
     }
     return { book, chaps, clusters };
 }
@@ -100,6 +120,16 @@ export async function loadClusterCells(book: string, key: string, summary: BookS
     return { cells, failed: failed.sort() };
 }
 
+/** 总览页：聚类自带的紧凑格 → ClusterCell（rev 取自各章；章不在 chaps 里的格丢掉） */
+export function summaryCells(book: string, cl: SummaryCluster, s: BookSummary, base = PROOF_BASE): ClusterCell[] {
+    return (cl.cells ?? []).flatMap(([chap, a, sp, x, y, w, h, m]) => {
+        const rev = s.chaps[chap]?.rev;
+        if (!rev) return [];
+        const cell: PendingCell = { a, ...(m ? { c: m } : {}), ref: { c: cl.c }, pendingReason: parseReason(cl.r), img: { s: sp, x, y, w, h } };
+        return [{ chap, rev, cell, spriteBase: `${base}/${book}/${chap}` }];
+    });
+}
+
 function cellCmp(a: string, b: string): number {
     const pa = a.match(/^(\d+):(\d+):(\d+)([a-z]?)$/), pb = b.match(/^(\d+):(\d+):(\d+)([a-z]?)$/);
     if (!pa || !pb) return a < b ? -1 : a > b ? 1 : 0;
@@ -132,4 +162,17 @@ export async function submitBatch(items: BatchItem[], fetchImpl: typeof fetch = 
         } catch { /* 网络出错，重试 */ }
     }
     return allErr('网络出错或服务器忙，请稍后再试');
+}
+
+/** 成批确认一组格都是 char（每格一票，pick_src=cluster），按 BATCH_MAX 分批；返回交上的格与第一个错误 */
+export async function confirmCells(book: string, char: string, cells: ClusterCell[], fetchImpl: typeof fetch = fetch): Promise<{ ok: ClusterCell[]; err: string | null }> {
+    const ok: ClusterCell[] = [];
+    let err: string | null = null;
+    for (let i = 0; i < cells.length; i += BATCH_MAX) {
+        const chunk = cells.slice(i, i + BATCH_MAX);
+        const res = await submitBatch(chunk.map((c) => ({ book, vol: c.chap, a: c.cell.a, rev: c.rev, choice: 'char' as const, char, ...(c.cell.c ? { shown: c.cell.c } : {}), pick_src: 'cluster' as const })), fetchImpl);
+        res.forEach((r, j) => { if (r.ok) ok.push(chunk[j]); else err ??= r.error ?? '有格没交上'; });
+        if (res.every((r) => !r.ok)) break;
+    }
+    return { ok, err };
 }

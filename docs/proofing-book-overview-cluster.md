@@ -1,6 +1,6 @@
 # 全书校对总览与跨册成批校对
 
-- `/proofing/<book>`：这本书共有多少待选格、各大类／各原因占多少、每册还剩多少，并列出可成批审的聚类。
+- `/proofing/<book>`：这本书共有多少待选格、各大类／各原因占多少、每册还剩多少。最上面是「成批校对」：只看图就能定的原因（`BATCH_REASONS`：lib_missing、lib_sparse_agree、lib_unrecognized、occluded_with_ref）每个字一行，直接摆出各格小图，缺省全选，点一格挑出，单行确认或整页一起确认；挑出的格留在单子上。
 - `/proofing/<book>/c/<聚类键>`：同一原因、同一个整理本字的待选格跨册排在一起，图上都是这个字就一次确认；
   挑出来的单格直接用逐册校对页的单格卡片（`CellRow`，候选、相似字、字框切分错误等单选项、备注都在里面），提交方式同逐册页，一格一票；
 - 数据：`proof/<book>/summary.json`，由 proofing-sync 每日生成（`scripts/lib/proofing-summary.mjs`）：

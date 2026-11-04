@@ -9,8 +9,9 @@ import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import { readDone, writeDone, submitReview, pickFields, getAid, type DoneMap, type PendingCell, type Pick, type ReviewChoice } from '@/lib/proofing';
 import { CellRow, doneLabel } from '../../[vol]/ProofingClient';
 import { PENDING_REASONS } from '@/lib/pendingReasons';
+import ClusterTile from '@/components/proof/ClusterTile';
 import {
-    BATCH_MAX, loadClusterCells, loadSummary, parseClusterKey, submitBatch, type BatchItem, type ClusterCell,
+    confirmCells, isBatchReason, loadClusterCells, loadSummary, parseClusterKey, type ClusterCell,
 } from '@/lib/proofing-cluster';
 
 const PAGE = 30; // 一次摆多少格（与逐册页的快速确认一致）
@@ -24,27 +25,6 @@ const place = (a: string) => { const m = /^(\d+):(\d+):(\d+)([a-z]?)$/.exec(a); 
 function Zi({ c }: { c: string }) {
     if (canShow(c)) return <>{c}</>;
     return <span title={c} style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: '0.55em' }}>{cpLabel(c)}</span>;
-}
-
-function Tile({ c, on, busy, onToggle }: { c: ClusterCell; on: boolean; busy: boolean; onToggle: () => void }) {
-    const img = c.cell.img;
-    const src = img ? `${c.spriteBase}/${img.s}` : null;
-    const machine = c.cell.c && c.cell.c !== c.cell.ref?.c ? c.cell.c : null;
-    return (
-        <li style={{ listStyle: 'none' }}>
-            <button type="button" data-testid="cluster-tile" aria-pressed={on} disabled={busy} onClick={onToggle}
-                title={`${c.chap} 册 · ${place(c.cell.a)}${on ? '（已挑出，再点放回）' : '（点一下挑出来单独处理）'}`}
-                style={{ width: '100%', padding: 3, borderRadius: 6, cursor: busy ? 'default' : 'pointer', position: 'relative', textAlign: 'center',
-                    border: on ? '2px solid #d33' : '1px solid #ddd', background: on ? '#fdecec' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                {src && img
-                    ? <span role="img" aria-label="字块裁图" style={{ width: img.w, height: img.h, zoom: 0.8, background: `#fff url(${src}) -${img.x}px -${img.y}px no-repeat` }} />
-                    : <span style={{ width: 77, height: 77, fontSize: 11, color: '#999', display: 'flex', alignItems: 'center' }}>没有图</span>}
-                <span style={{ fontSize: 11, lineHeight: 1.3, color: '#666' }}>{c.chap} 册 · {Number(c.cell.a.split(':')[0])} 叶</span>
-                {machine && <span style={{ fontSize: 11, lineHeight: 1.2, color: '#a33' }}>机器读「<Zi c={machine} />」</span>}
-                {on && <small style={{ position: 'absolute', top: 2, right: 2, fontSize: 10, lineHeight: 1.4, padding: '0 3px', borderRadius: 3, color: '#fff', background: '#d33' }}>挑出</small>}
-            </button>
-        </li>
-    );
 }
 
 /** 挑出来的格：直接用逐册校对页的单格卡片（CellRow：候选、相似字、切分有问题等单选项、备注都在里面），提交方式同逐册页，一格一票 */
@@ -91,7 +71,7 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [okCount, setOkCount] = useState(0);
-    const canBulk = !!pk.char;
+    const canBulk = !!pk.char && isBatchReason(pk.reason);
     const pickedHere = page.filter(c => picked[cid(c)]);
     const rest = page.filter(c => !picked[cid(c)]);
     const toggle = (c: ClusterCell) => setPicked(p => { const n = { ...p }; if (n[cid(c)]) delete n[cid(c)]; else n[cid(c)] = true; return n; });
@@ -105,16 +85,9 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
 
     const submit = async () => {
         setBusy(true); setErr(null);
-        const items: { c: ClusterCell; item: BatchItem; label: string }[] = [];
-        if (canBulk) for (const c of rest) items.push({ c, label: `「${pk.char}」`, item: { book, vol: c.chap, a: c.cell.a, rev: c.rev, choice: 'char', char: pk.char, ...(c.cell.c ? { shown: c.cell.c } : {}), pick_src: 'cluster' } });
-        const sentOk: { c: ClusterCell; label: string }[] = [];
-        let firstErr: string | null = null;
-        for (let i = 0; i < items.length; i += BATCH_MAX) {
-            const chunk = items.slice(i, i + BATCH_MAX);
-            const res = await submitBatch(chunk.map(x => x.item));
-            res.forEach((r, j) => { if (r.ok) sentOk.push({ c: chunk[j].c, label: chunk[j].label }); else firstErr ??= r.error ?? '有格没交上'; });
-            if (res.every(r => !r.ok)) break;
-        }
+        const r = canBulk ? await confirmCells(book, pk.char, rest) : { ok: [], err: null };
+        const sentOk = r.ok.map(c => ({ c, label: `「${pk.char}」` }));
+        const firstErr = r.err;
         if (sentOk.length) {
             setDone(prev => {
                 const next = { ...prev };
@@ -147,7 +120,7 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
                 <Link href={`/proofing/${book}`} className="text-[13px] underline" style={{ color: ink2 }}>回总览</Link>
             </section>
 
-            {!canBulk && <p role="status" className="mt-4 text-[14px]" style={{ color: '#7a3b1d' }}>这一类没有整理本字，不能成批确认。请点开每一格，填上看到的字。</p>}
+            {!canBulk && <p role="status" className="mt-4 text-[14px]" style={{ color: '#7a3b1d' }}>这一类不能成批确认（没有整理本字，或要按前后文判）。请点开每一格单独处理。</p>}
             {open.length === 0 ? (
                 <p role="status" className="mt-8 text-[16px]" style={{ color: ink }}>这一类的字都处理完了，谢谢！<Link href={`/proofing/${book}`} className="ml-2 underline">回总览看看别的</Link></p>
             ) : (
@@ -157,7 +130,7 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
                         {' '}本次 {page.length} 格，还有 {Math.max(0, open.length - page.length)} 格在后面。
                     </p>
                     <ul data-testid="cluster-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))', gap: 6, padding: 0, margin: '10px 0' }}>
-                        {page.map(c => <Tile key={cid(c)} c={c} on={!!picked[cid(c)]} busy={busy} onToggle={() => toggle(c)} />)}
+                        {page.map(c => <ClusterTile key={cid(c)} c={c} on={!!picked[cid(c)]} busy={busy} onToggle={() => toggle(c)} />)}
                     </ul>
                     {pickedHere.length > 0 && (
                         <div data-testid="special-panel" style={{ margin: '8px 0 12px' }}>

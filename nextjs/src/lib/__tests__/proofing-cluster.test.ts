@@ -1,4 +1,4 @@
-import { clusterKey, clusterChar, parseClusterKey, parseSummary, totals, loadClusterCells, submitBatch, type BookSummary } from '../proofing-cluster';
+import { clusterKey, clusterChar, parseClusterKey, parseSummary, totals, loadClusterCells, submitBatch, summaryCells, confirmCells, BATCH_REASONS, type BookSummary } from '../proofing-cluster';
 
 const summaryRaw = {
     v: 1, book: 'bk01',
@@ -73,5 +73,32 @@ describe('submitBatch', () => {
         expect((await submitBatch(items, f429, 0))[0].error).toMatch(/太频繁/);
         expect(m).toBe(1);
         expect((await submitBatch(Array(51).fill(items[0]), f5, 0))[0].error).toMatch(/50/);
+    });
+});
+
+describe('总览页成批：summary 自带的格', () => {
+    it('BATCH_REASONS 与生成端同一份', () => {
+        const src = require('fs').readFileSync(require('path').join(__dirname, '../../../scripts/lib/proofing-summary.mjs'), 'utf8') as string;
+        const m = /export const BATCH_REASONS = (\[[^\]]*\])/.exec(src)!;
+        expect(JSON.parse(m[1].replace(/'/g, '"'))).toEqual([...BATCH_REASONS]);
+    });
+    it('parseSummary 只给可成批的原因留格，坏格丢掉；summaryCells 带上 rev 与雪碧图目录', () => {
+        const s = parseSummary({ chaps: { '020': { rev: 'r20', n: 2, reasons: {} } }, clusters: [
+            { k: 'lib_missing~兀', n: 2, chaps: { '020': 2 }, cells: [['020', '1:1:1', 'p0.jpg', 0, 0, 40, 50, '亣'], ['020', 'bad', 'p0.jpg', 0, 0, 1, 1, ''], ['099', '1:1:2', 'p0.jpg', 0, 0, 4, 5, '']] },
+            { k: 'hard_pair~日', n: 1, chaps: { '020': 1 }, cells: [['020', '1:1:3', 'p0.jpg', 0, 0, 40, 50, '']] },
+        ] }, 'bk')!;
+        expect(s.clusters[1].cells).toBeUndefined();
+        const cs = summaryCells('bk', s.clusters[0], s, 'https://p');
+        expect(cs).toHaveLength(1);
+        expect(cs[0]).toMatchObject({ chap: '020', rev: 'r20', spriteBase: 'https://p/bk/020', cell: { a: '1:1:1', c: '亣', ref: { c: '兀' }, img: { s: 'p0.jpg', w: 40 } } });
+    });
+    it('confirmCells：每格一票 pick_src=cluster，按 50 一批分', async () => {
+        const bodies: { items: { a: string; char: string; pick_src: string }[] }[] = [];
+        const f = (async (_u: string, init: { body: string }) => { const b = JSON.parse(init.body); bodies.push(b); return { ok: true, status: 200, json: async () => ({ results: b.items.map((i: { a: string }) => ({ a: i.a, ok: true })) }) }; }) as unknown as typeof fetch;
+        const cells = Array.from({ length: 60 }, (_, i) => ({ chap: '020', rev: 'r20', spriteBase: '', cell: { a: `1:1:${i + 1}` } }));
+        const r = await confirmCells('bk', '兀', cells, f);
+        expect(r.ok).toHaveLength(60);
+        expect(bodies.map(b => b.items.length)).toEqual([50, 10]);
+        expect(bodies[0].items[0]).toMatchObject({ char: '兀', pick_src: 'cluster', choice: 'char' });
     });
 });

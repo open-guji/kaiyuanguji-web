@@ -5,11 +5,10 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
 import { readerPath } from '@/lib/reader-route';
-import { shownZi } from '@/lib/zi-display';
 import { PENDING_REASONS, REASON_CATEGORIES, REASON_ROUTES, parseReason } from '@/lib/pendingReasons';
-import { loadSummary, totals, type BookSummary } from '@/lib/proofing-cluster';
+import { isBatchReason, loadSummary, totals, type BookSummary } from '@/lib/proofing-cluster';
+import BatchBoard from './BatchBoard';
 
-const CLUSTER_SHOW = 36;
 const ink = 'var(--color-ink)', ink2 = 'var(--color-ink-2)', ink3 = 'var(--color-ink-3)', tint = 'var(--color-tint-2)', zhu = 'var(--color-zhu)';
 
 /** 待审原因 → 大类；大类下按格数从多到少列原因 */
@@ -50,10 +49,7 @@ function Overview({ book, s }: { book: string; s: BookSummary }) {
     const max = Math.max(1, ...cats.map(c => c.n));
     const catCols = cats.map(c => c.cat);
     const cellMax = Math.max(1, ...chaps.flatMap(([, c]) => Object.values(chapByCategory(c.reasons))));
-    // 可成批审的聚类：只收「要选字」的原因（页面是选字的），至少 2 格才值得成批
     const [catFilter, setCatFilter] = useState<string | null>(null);
-    const clusters = useMemo(() => s.clusters.filter(c => c.n >= 2 && PENDING_REASONS[parseReason(c.r)].ui === 'pick' && c.c
-        && (!catFilter || PENDING_REASONS[parseReason(c.r)].category === catFilter)), [s, catFilter]);
     return (
         <div className="mx-auto max-w-[1100px] px-4 pb-16 pt-5">
             <section data-testid="overview-stats" className="flex flex-wrap gap-x-10 gap-y-4 rounded-lg p-4 sm:p-5" style={{ backgroundColor: 'var(--color-raise)', border: `1px solid ${tint}` }}>
@@ -62,8 +58,10 @@ function Overview({ book, s }: { book: string; s: BookSummary }) {
                 <Stat label="待选原因" value={<>{cats.length} <span className="text-[15px] font-normal" style={{ color: ink2 }}>大类</span></>} sub={`${Object.keys(t.byReason).length} 种具体原因`} />
             </section>
 
+            <BatchBoard book={book} s={s} catFilter={catFilter} />
+
             <h2 className="m-0 mb-1 mt-8 text-[18px] font-semibold" style={{ color: ink }}>都是什么原因</h2>
-            <p className="m-0 mb-3 text-[14px]" style={{ color: ink2 }}>点一个大类，只看这类的聚类和册。</p>
+            <p className="m-0 mb-3 text-[14px]" style={{ color: ink2 }}>点一个大类，只看这类的成批校对和册。标「可成批」的原因只看图就能定，在上面成批确认；其余要按前后文判，进册逐格看。</p>
             <ul data-testid="overview-categories" className="m-0 flex list-none flex-col gap-2 p-0">
                 {cats.map(c => (
                     <li key={c.cat} className="rounded-lg p-3" style={{ border: `1px solid ${tint}`, background: catFilter === c.cat ? 'var(--color-zhu-tint)' : 'transparent' }}>
@@ -78,35 +76,13 @@ function Overview({ book, s }: { book: string; s: BookSummary }) {
                         <ul className="m-0 mt-2 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-[13px]" style={{ color: ink2 }}>
                             {c.reasons.map(r => {
                                 const sp = PENDING_REASONS[parseReason(r.reason)];
-                                return <li key={r.reason} title={`${sp.hint}（${REASON_ROUTES[sp.route] ?? ''}）`}>{sp.label} <b className="tabular-nums" style={{ color: ink }}>{r.n}</b></li>;
+                                return <li key={r.reason} title={`${sp.hint}（${REASON_ROUTES[sp.route] ?? ''}）`}>{sp.label} <b className="tabular-nums" style={{ color: ink }}>{r.n}</b>{isBatchReason(r.reason) && <span className="ml-1 rounded px-1 text-[11px]" style={{ background: '#e6f5ec', color: '#1b6b44' }}>可成批</span>}</li>;
                             })}
                         </ul>
                     </li>
                 ))}
                 {!cats.length && <li className="text-[15px]" style={{ color: ink2 }}>这本书现在没有待选的字，都校完了，谢谢！</li>}
             </ul>
-
-            {clusters.length > 0 && (
-                <>
-                    <h2 className="m-0 mb-1 mt-8 text-[18px] font-semibold" style={{ color: ink }}>成批校对</h2>
-                    <p className="m-0 mb-3 text-[14px]" style={{ color: ink2 }}>同一原因、同一个字的待选格跨册排在一起，一次看完、一次确认。按格数从多到少排。</p>
-                    <ul data-testid="overview-clusters" className="m-0 grid list-none gap-2 p-0" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))' }}>
-                        {clusters.slice(0, CLUSTER_SHOW).map(c => (
-                            <li key={c.k}>
-                                <Link href={`/proofing/${book}/c/${encodeURIComponent(c.k)}`} className="flex items-center gap-3 rounded-lg p-2 no-underline hover:brightness-95"
-                                    style={{ border: `1px solid ${tint}`, color: ink }} data-testid="cluster-link">
-                                    <span className="text-[30px] leading-none" style={{ fontFamily: 'var(--font-serif)' }}>{shownZi(c.c)}</span>
-                                    <span className="min-w-0 text-[13px] leading-snug">
-                                        <span className="block" style={{ color: ink2 }}>{PENDING_REASONS[parseReason(c.r)].label}</span>
-                                        <span className="block tabular-nums"><b>{c.n}</b> 格 · {Object.keys(c.chaps).length} 册</span>
-                                    </span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                    {clusters.length > CLUSTER_SHOW && <p className="mt-2 text-[13px]" style={{ color: ink3 }}>还有 {clusters.length - CLUSTER_SHOW} 个格数更少的聚类，先把上面的审完。</p>}
-                </>
-            )}
 
             <h2 className="m-0 mb-1 mt-8 text-[18px] font-semibold" style={{ color: ink }}>每册还剩多少</h2>
             <p className="m-0 mb-3 text-[14px]" style={{ color: ink2 }}>点册号进这一册，逐格看。颜色越深，这一类越多。</p>

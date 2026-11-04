@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSummaries, clusterKey, cellReason, clusterChar } from './proofing-summary.mjs';
+import { buildSummaries, clusterKey, cellReason, clusterChar, BATCH_REASONS } from './proofing-summary.mjs';
 
 const mk = (cells) => JSON.stringify({ rev: 'r1', cells });
 const entries = [
@@ -42,4 +42,25 @@ test('buildSummaries：同输入同字节；坏单只记 n', () => {
     assert.equal(a.get('bk01'), b.get('bk01'));
     const bad = buildSummaries([{ book: 'bk03', chap: '001', rev: 'r', n: 5, text: 'not json' }]);
     assert.deepEqual(JSON.parse(bad.get('bk03')).chaps['001'], { rev: 'r', n: 5, reasons: {} });
+});
+
+test('buildSummaries：可成批的原因带紧凑格（有图的才收，按章、格位排），别的原因不带', () => {
+    const img = (y) => ({ s: 'p0.jpg', x: 0, y, w: 40, h: 50 });
+    const m = buildSummaries([
+        { book: 'b', chap: '002', rev: 'r2', n: 2, text: mk([
+            { a: '3:1:1', pending_reason: 'lib_missing', ref: { c: '兀' }, c: '亣', img: img(0) },
+            { a: '1:1:1', pending_reason: 'lib_missing', ref: { c: '兀' }, img: img(50) },
+        ]) },
+        { book: 'b', chap: '001', rev: 'r1', n: 3, text: mk([
+            { a: '5:1:1', pending_reason: 'lib_missing', ref: { c: '兀' }, img: img(0) },
+            { a: '5:1:2', pending_reason: 'lib_missing', ref: { c: '兀' } },
+            { a: '5:1:3', pending_reason: 'hard_pair', c: '日', img: img(50) },
+        ]) },
+    ]);
+    const s = JSON.parse(m.get('b'));
+    const lm = s.clusters.find((c) => c.k === 'lib_missing~兀');
+    assert.equal(lm.n, 4);
+    assert.deepEqual(lm.cells, [['001', '5:1:1', 'p0.jpg', 0, 0, 40, 50, ''], ['002', '1:1:1', 'p0.jpg', 0, 50, 40, 50, ''], ['002', '3:1:1', 'p0.jpg', 0, 0, 40, 50, '亣']]);
+    assert.equal(s.clusters.find((c) => c.k === 'hard_pair~日').cells, undefined);
+    assert.ok(BATCH_REASONS.includes('lib_sparse_agree'));
 });
