@@ -50,7 +50,7 @@ function Tile({ c, on, busy, onToggle }: { c: ClusterCell; on: boolean; busy: bo
 interface Special { char: string; cut: boolean; unsure: boolean }
 const EMPTY: Special = { char: '', cut: false, unsure: false };
 
-function SpecialRow({ c, v, onChange, onBack, busy }: { c: ClusterCell; v: Special; onChange: (v: Special) => void; onBack: () => void; busy: boolean }) {
+function SpecialRow({ c, v, onChange, onBack, busy, zi }: { zi: string; c: ClusterCell; v: Special; onChange: (v: Special) => void; onBack: () => void; busy: boolean }) {
     const img = c.cell.img;
     const src = img ? `${c.spriteBase}/${img.s}` : null;
     const id = `sp-${c.chap}-${c.cell.a}`.replace(/[^\w-]/g, '_');
@@ -70,7 +70,7 @@ function SpecialRow({ c, v, onChange, onBack, busy }: { c: ClusterCell; v: Speci
                     <label style={{ fontSize: 13, color: ink, display: 'inline-flex', gap: 4, alignItems: 'center' }}>
                         <input type="checkbox" checked={v.unsure} disabled={busy} onChange={e => onChange({ ...v, unsure: e.target.checked, char: e.target.checked ? '' : v.char })} />看不清
                     </label>
-                    <button type="button" style={{ ...BTN, fontSize: 12 }} disabled={busy} onClick={onBack}>放回去，按「<Zi c="" />」处理</button>
+                    <button type="button" style={{ ...BTN, fontSize: 12 }} disabled={busy} onClick={onBack}>放回去，按「<Zi c={zi} />」处理</button>
                 </div>
             </div>
         </li>
@@ -168,7 +168,7 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
                         <div data-testid="special-panel" style={{ margin: '8px 0 12px' }}>
                             <div style={{ fontSize: 14, fontWeight: 600, color: '#a33' }}>单独处理的 {pickedHere.length} 格（什么都没填的先不交）</div>
                             <ul style={{ margin: 0, padding: 0 }}>
-                                {pickedHere.map(c => <SpecialRow key={cid(c)} c={c} v={picked[cid(c)]} busy={busy} onBack={() => toggle(c)}
+                                {pickedHere.map(c => <SpecialRow zi={pk.char} key={cid(c)} c={c} v={picked[cid(c)]} busy={busy} onBack={() => toggle(c)}
                                     onChange={v => setPicked(p => ({ ...p, [cid(c)]: v }))} />)}
                             </ul>
                         </div>
