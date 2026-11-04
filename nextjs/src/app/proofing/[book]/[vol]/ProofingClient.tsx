@@ -127,7 +127,7 @@ function SpriteCrop({ url, sprite, label, onFail }: { url: string; sprite: Sprit
     );
 }
 
-interface CellRowProps {
+export interface CellRowProps {
     cell: PendingCell;
     /** 能用的雪碧图地址（已排除加载失败的）；有就不用原叶裁图 */
     spriteSrc: string | null;
@@ -327,7 +327,7 @@ function AltGrid({ alt, spriteBase, busy, picked: pickedChar, onPick }: {
     );
 }
 
-function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
+export function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
     const [custom, setCustom] = useState('');
     const [note, setNote] = useState('');
     const [busy, setBusy] = useState(false);
@@ -621,7 +621,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
 }
 
 /** 已提交的记法（存 localStorage）：「字」、项名、或「字」＋项名（字和单选组里的非正常字符项可以同时交，用户 10-21） */
-const doneLabel = (choice: ReviewChoice, char?: string) => {
+export const doneLabel = (choice: ReviewChoice, char?: string) => {
     const flag = choice === 'char' ? '' : FLAG_OPTS.find(o => o.choice === choice)?.label ?? choice;
     return char ? `「${char}」${flag ? `＋${flag}` : ''}` : flag;
 };

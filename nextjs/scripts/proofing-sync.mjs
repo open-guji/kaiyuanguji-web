@@ -190,7 +190,9 @@ if (ONLY) {
     if (!n) { console.log(`::error::ONLY=${process.env.ONLY} 在中心库里一章都没有`); process.exit(1); }
 }
 const opinions = doOpinions ? await syncOpinions({ worker, kv, entries: ONLY ? entries.filter(ONLY) : entries, dryRun: DRY_RUN }) : null;
-const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs, only: ONLY }) : null;
+// 总览页要的「已有人投票的格数」：opinions 段这次拉到的快照（只跑 publish 时没有，总览页就不显示已投数）
+const voted = new Map((opinions?.rows || []).map((r) => [`${r.book}\u0000${r.rev}`, r.cells || 0]));
+const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs, only: ONLY, voted }) : null;
 const status = doOpinions && !ONLY ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixes = doOpinions && !ONLY ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixesPublish = doPublish && !ONLY ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
