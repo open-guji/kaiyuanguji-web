@@ -301,7 +301,9 @@ export function quickPick(cell: PendingCell): { group: string; char: string } | 
     if (!r || [...r].length !== 1 || cell.prior || isSegDefect(cell)) return null;
     if (cell.stale?.c && cell.stale.c !== r) return null;
     if (GROUP_CHARS.has(r)) return null;
-    if (cell.cls === 'occluded') return cell.occ?.refBlank ? null : { group: 'occluded', char: r };
+    // 遮挡格：新单看 pending_reason（occluded_with_ref／occluded_no_ref），老单看 cls
+    const occluded = cell.pendingReason === 'occluded_with_ref' || cell.pendingReason === 'occluded_no_ref' || cell.cls === 'occluded';
+    if (occluded) return cell.occ?.refBlank || cell.pendingReason === 'occluded_no_ref' ? null : { group: 'occluded', char: r };
     return null;
 }
 

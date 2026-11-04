@@ -440,4 +440,13 @@ describe('pending_reason（待审原因，cv review/pending_reason.py）', () =>
         expect(reasonGroupLabel('occluded').name).toBe('有遮挡');
         expect(reasonGroupKey({})).toBe('other');
     });
+    it('遮挡格快速确认：新单按 pending_reason 认，参校本缺的不快速确认', async () => {
+        const { quickPick } = await import('../proofing');
+        const base = { ref: { c: '春' } } as any;
+        expect(quickPick({ ...base, pendingReason: 'occluded_with_ref' })).toEqual({ group: 'occluded', char: '春' });
+        expect(quickPick({ ...base, pendingReason: 'occluded_no_ref' })).toBeNull();
+        expect(quickPick({ ...base, cls: 'occluded' })).toEqual({ group: 'occluded', char: '春' });
+        expect(quickPick({ ...base, cls: 'occluded', occ: { refBlank: true } })).toBeNull();
+        expect(quickPick({ ...base, pendingReason: 'hard_pair' })).toBeNull();
+    });
 });
