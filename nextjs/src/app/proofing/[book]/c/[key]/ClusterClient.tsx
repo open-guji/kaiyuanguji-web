@@ -6,7 +6,8 @@ import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
 import { readerPath } from '@/lib/reader-route';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
-import { readDone, writeDone, type DoneMap } from '@/lib/proofing';
+import { readDone, writeDone, submitReview, pickFields, getAid, type DoneMap, type PendingCell, type Pick, type ReviewChoice } from '@/lib/proofing';
+import { CellRow, doneLabel } from '../../[vol]/ProofingClient';
 import { PENDING_REASONS } from '@/lib/pendingReasons';
 import {
     BATCH_MAX, loadClusterCells, loadSummary, parseClusterKey, submitBatch, type BatchItem, type ClusterCell,
@@ -46,36 +47,31 @@ function Tile({ c, on, busy, onToggle }: { c: ClusterCell; on: boolean; busy: bo
     );
 }
 
-/** 挑出来的格：填别的字、字框切分有问题（可同时填字）、看不清 */
-interface Special { char: string; cut: boolean; unsure: boolean }
-const EMPTY: Special = { char: '', cut: false, unsure: false };
-
-function SpecialRow({ c, v, onChange, onBack, busy, zi }: { zi: string; c: ClusterCell; v: Special; onChange: (v: Special) => void; onBack: () => void; busy: boolean }) {
+/** 挑出来的格：直接用逐册校对页的单格卡片（CellRow：候选、相似字、切分有问题等单选项、备注都在里面），提交方式同逐册页，一格一票 */
+function PickedCard({ book, c, onBack, onDone, busy }: { book: string; c: ClusterCell; onBack: () => void; onDone: (c: ClusterCell, label: string) => void; busy: boolean }) {
+    const spriteBase = useCallback((f: string) => `${c.spriteBase}/${f}`, [c.spriteBase]);
     const img = c.cell.img;
-    const src = img ? `${c.spriteBase}/${img.s}` : null;
-    const id = `sp-${c.chap}-${c.cell.a}`.replace(/[^\w-]/g, '_');
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, _advance?: boolean, alt?: string) => {
+        const e = await submitReview({ book, vol: c.chap, a: cell.a, rev: c.rev, choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
+            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+        if (e) return e;
+        onDone(c, doneLabel(choice, char));
+        return null;
+    }, [book, c, onDone]);
     return (
-        <li data-testid="special-row" style={{ listStyle: 'none', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderBottom: `1px solid ${tint}` }}>
-            {src && img ? <span role="img" aria-label="字块裁图" style={{ width: img.w, height: img.h, background: `#fff url(${src}) -${img.x}px -${img.y}px no-repeat`, border: '1px solid #ddd', flex: 'none' }} /> : <span style={{ width: 96 }}>没有图</span>}
-            <div style={{ minWidth: 0, flex: '1 1 14rem' }}>
-                <div style={{ fontSize: 12, color: ink3 }}>{c.chap} 册 · {place(c.cell.a)}{c.cell.c && <> · 机器读「<Zi c={c.cell.c} />」</>}</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
-                    <label htmlFor={id} style={{ fontSize: 13, color: ink2 }}>实际是</label>
-                    <input id={id} value={v.char} maxLength={2} disabled={busy || v.unsure} placeholder="填一个字" aria-label="实际是什么字"
-                        onChange={e => { const ch = [...e.target.value].slice(-1).join(''); onChange({ ...v, char: ch, unsure: false }); }}
-                        style={{ width: '5.5em', fontSize: 20, padding: '2px 8px', border: '1px solid #b8ad9a', borderRadius: 6 }} />
-                    <label style={{ fontSize: 13, color: ink, display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                        <input type="checkbox" checked={v.cut} disabled={busy} onChange={e => onChange({ ...v, cut: e.target.checked })} />字框切分有问题
-                    </label>
-                    <label style={{ fontSize: 13, color: ink, display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                        <input type="checkbox" checked={v.unsure} disabled={busy} onChange={e => onChange({ ...v, unsure: e.target.checked, char: e.target.checked ? '' : v.char })} />看不清
-                    </label>
-                    <button type="button" style={{ ...BTN, fontSize: 12 }} disabled={busy} onClick={onBack}>放回去，按「<Zi c={zi} />」处理</button>
-                </div>
+        <div data-testid="special-row" style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: ink3, display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span>{c.chap} 册</span>
+                <button type="button" style={{ ...BTN, fontSize: 12 }} disabled={busy} onClick={onBack}>放回去，按成批处理</button>
             </div>
-        </li>
+            <ul style={{ margin: 0, padding: 0 }}>
+                <CellRow cell={c.cell} spriteSrc={img ? `${c.spriteBase}/${img.s}` : null} spriteBase={spriteBase} onSpriteFail={() => {}} imageUrl={null} crop={null}
+                    onSubmit={onSubmit} context={null} pendingSet={EMPTY_SET} selected={false} onSelect={() => {}} />
+            </ul>
+        </div>
     );
 }
+const EMPTY_SET = new Set<string>();
 
 function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clusterKey: string; cells: ClusterCell[]; failed: string[] }) {
     const pk = parseClusterKey(clusterKey)!;
@@ -91,27 +87,26 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
     const open = useMemo(() => all.filter(c => !isDone(c)), [all, isDone]);
     const [skip, setSkip] = useState(0);          // 本页没处理的格往后排：每次摆 PAGE 格，处理完自然补上
     const page = open.slice(0, PAGE);
-    const [picked, setPicked] = useState<Record<string, Special>>({});   // 挑出来单独处理的格
+    const [picked, setPicked] = useState<Record<string, true>>({});   // 挑出来单独处理的格
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [okCount, setOkCount] = useState(0);
     const canBulk = !!pk.char;
     const pickedHere = page.filter(c => picked[cid(c)]);
     const rest = page.filter(c => !picked[cid(c)]);
-    const ready = pickedHere.filter(c => { const v = picked[cid(c)]; return v.char || v.cut || v.unsure; });
-    const toggle = (c: ClusterCell) => setPicked(p => { const n = { ...p }; if (n[cid(c)]) delete n[cid(c)]; else n[cid(c)] = EMPTY; return n; });
+    const toggle = (c: ClusterCell) => setPicked(p => { const n = { ...p }; if (n[cid(c)]) delete n[cid(c)]; else n[cid(c)] = true; return n; });
+
+    /** 单格卡片自己交上去之后：记下已处理、从挑出名单拿掉 */
+    const onPickedDone = useCallback((c: ClusterCell, label: string) => {
+        setDone(prev => { const next = { ...prev, [c.rev]: { ...(prev[c.rev] ?? {}), [c.cell.a]: label } }; writeDone(c.rev, next[c.rev]); return next; });
+        setOkCount(n => n + 1);
+        setPicked(p => { const n = { ...p }; delete n[cid(c)]; return n; });
+    }, []);
 
     const submit = async () => {
         setBusy(true); setErr(null);
         const items: { c: ClusterCell; item: BatchItem; label: string }[] = [];
         if (canBulk) for (const c of rest) items.push({ c, label: `「${pk.char}」`, item: { book, vol: c.chap, a: c.cell.a, rev: c.rev, choice: 'char', char: pk.char, ...(c.cell.c ? { shown: c.cell.c } : {}), pick_src: 'cluster' } });
-        for (const c of ready) {
-            const v = picked[cid(c)];
-            const base = { book, vol: c.chap, a: c.cell.a, rev: c.rev, ...(c.cell.c ? { shown: c.cell.c } : {}) };
-            if (v.unsure) items.push({ c, label: '其他', item: { ...base, choice: 'unsure' } });
-            else if (v.cut) items.push({ c, label: v.char ? `「${v.char}」＋字框切分错误` : '字框切分错误', item: { ...base, choice: 'cut', ...(v.char ? { char: v.char, pick_src: 'custom' as const } : {}) } });
-            else items.push({ c, label: `「${v.char}」`, item: { ...base, choice: 'char', char: v.char, pick_src: 'custom' } });
-        }
         const sentOk: { c: ClusterCell; label: string }[] = [];
         let firstErr: string | null = null;
         for (let i = 0; i < items.length; i += BATCH_MAX) {
@@ -136,7 +131,7 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
     };
     void skip;
     const total = all.length, finished = all.length - open.length;
-    const nSubmit = (canBulk ? rest.length : 0) + ready.length;
+    const nSubmit = (canBulk ? rest.length : 0);
     return (
         <div className="mx-auto max-w-[1100px] px-4 pb-16 pt-5">
             <section className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg p-4" style={{ backgroundColor: 'var(--color-raise)', border: `1px solid ${tint}` }}>
@@ -166,16 +161,15 @@ function Cluster({ book, clusterKey, cells: all, failed }: { book: string; clust
                     </ul>
                     {pickedHere.length > 0 && (
                         <div data-testid="special-panel" style={{ margin: '8px 0 12px' }}>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: '#a33' }}>单独处理的 {pickedHere.length} 格（什么都没填的先不交）</div>
-                            <ul style={{ margin: 0, padding: 0 }}>
-                                {pickedHere.map(c => <SpecialRow zi={pk.char} key={cid(c)} c={c} v={picked[cid(c)]} busy={busy} onBack={() => toggle(c)}
-                                    onChange={v => setPicked(p => ({ ...p, [cid(c)]: v }))} />)}
-                            </ul>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: '#a33' }}>单独处理的 {pickedHere.length} 格（每格在卡片里选好就会自己交上）</div>
+                            <div>
+                                {pickedHere.map(c => <PickedCard key={cid(c)} book={book} c={c} busy={busy} onBack={() => toggle(c)} onDone={onPickedDone} />)}
+                            </div>
                         </div>
                     )}
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                         <button type="button" data-testid="cluster-confirm" style={{ ...BTN_PRIMARY, opacity: busy || !nSubmit ? 0.45 : 1 }} disabled={busy || !nSubmit} onClick={submit}>
-                            {canBulk && rest.length ? `确认这 ${rest.length} 格是「${shownZi(pk.char)}」` : '提交'}{ready.length ? `${canBulk && rest.length ? '，' : ''}另交 ${ready.length} 格单独处理` : ''}
+                            {canBulk && rest.length ? `确认这 ${rest.length} 格是「${shownZi(pk.char)}」` : '提交'}
                         </button>
                         {busy && <span style={{ fontSize: 12, color: '#666' }}>正在提交……</span>}
                         {err && <span role="alert" style={{ fontSize: 13, color: '#c33' }}>{err}</span>}

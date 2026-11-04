@@ -2,7 +2,7 @@
 
 - `/proofing/<book>`：这本书共有多少待选格、各大类／各原因占多少、每册还剩多少，并列出可成批审的聚类。
 - `/proofing/<book>/c/<聚类键>`：同一原因、同一个整理本字的待选格跨册排在一起，图上都是这个字就一次确认；
-  字框切丢了勾「字框切分有问题」（可同时填字，记为 `cut`），看不清记 `unsure`。
+  挑出来的单格直接用逐册校对页的单格卡片（`CellRow`，候选、相似字、字框切分错误等单选项、备注都在里面），提交方式同逐册页，一格一票；
 - 数据：`proof/<book>/summary.json`，由 proofing-sync 每日生成（`scripts/lib/proofing-summary.mjs`）：
   `{v:1, book, chaps:{章:{rev,n,reasons,voted?}}, clusters:[{k,r,c,n,chaps}]}`，聚类最多 800 个。
 - 聚类键 `<pending_reason>~<整理本字，缺省机器字>`，由待审单已有字段推出，cv 不需要改动。
