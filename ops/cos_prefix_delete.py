@@ -15,6 +15,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cos_usage  # noqa: E402
 
 ALLOWED = ('staging/',)
+# 不删的键（Deploy 11-05 要求保留四个小指针文件）
+KEEP = {
+    'staging/': {'staging/web.json', 'staging/latest.json', 'staging/h1/manifest-root.json', 'staging/h1/text-manifest-root.json'},
+}
 LIST_DEPTH = 3  # 先按前缀逐层下探到这么深，再对每个前缀平铺列举，并行起来快
 
 
@@ -81,13 +85,16 @@ def main():
             print(f'· 已列 {len(keys)} 个对象', file=sys.stderr, flush=True)
     if any(not k.startswith(a.prefix) for k, _ in keys):
         raise SystemExit('❌ 列出了前缀之外的键，停止')
+    keep = KEEP.get(a.prefix, set())
+    kept = [(k, s) for k, s in keys if k in keep]
+    keys = [(k, s) for k, s in keys if k not in keep]
     total = sum(s for _, s in keys)
     per = defaultdict(lambda: [0, 0])
     for k, s in keys:
         g = '/'.join(k.split('/')[:2]) + '/'
         per[g][0] += 1
         per[g][1] += s
-    lines = [f'## {a.prefix} {"删除" if a.delete else "dry-run（未删）"}', '', f'{len(keys)} 个对象，{total / 1e9:.3f} GB', '',
+    lines = [f'## {a.prefix} {"删除" if a.delete else "dry-run（未删）"}', '', f'待删 {len(keys)} 个对象，{total / 1e9:.3f} GB；保留 {len(kept)} 个：{", ".join(sorted(k for k, _ in kept))}', '',
              '| 子前缀 | 对象数 | GB |', '|---|---|---|']
     lines += [f'| {g} | {c} | {s / 1e9:.3f} |' for g, (c, s) in sorted(per.items(), key=lambda r: -r[1][1])]
     if a.delete:
