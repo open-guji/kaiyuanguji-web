@@ -40,6 +40,16 @@ jobs:
       - name: Install
         working-directory: nextjs
         run: npm ci
+      # 类型检查（不含测试文件）：`next build` 的 TypeScript 检查在这里提前做。11-03/04 因为 DownloadChip 用了 react-dom
+      # 却缺 @types/react-dom，PR 的单测都过了，合并后测试站构建连续失败，白白烧掉 EdgeOne Pages 本月的构建次数（限额用尽）。
+      - name: Typecheck (tsc, 不含测试文件)
+        working-directory: nextjs
+        run: |
+          npx tsc --noEmit -p . > "$RUNNER_TEMP/tsc.txt" 2>&1 || true
+          # 只看非测试文件的报错（测试文件缺 jest 类型是老问题，next build 也不查）；续行（缩进开头）跟着上一条报错走，一并过滤
+          awk '/^[^ ]/{keep = ($0 !~ /__tests__|\.test\.(ts|tsx)/)} keep' "$RUNNER_TEMP/tsc.txt" > "$RUNNER_TEMP/tsc-src.txt"
+          if [ -s "$RUNNER_TEMP/tsc-src.txt" ]; then echo "❌ 类型检查有报错："; head -40 "$RUNNER_TEMP/tsc-src.txt"; exit 1; fi
+          echo "✓ 类型检查通过（非测试文件 0 个报错）"
       - name: Test
         working-directory: nextjs
         run: npm test
