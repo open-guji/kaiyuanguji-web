@@ -166,6 +166,14 @@ export const PENDING_REASONS = {
         "hint": "字形像框线或墨点，被乱码闸拦下，先看是不是误拦",
         "ui": "free"
     },
+    "glyph_pending": {
+        "code": "R03",
+        "category": "reference",
+        "route": "deferred",
+        "label": "待收字",
+        "hint": "整理本这里是没收进 Unicode 的僻字，暂时找不到合适异体字；已判过，页面先显示字图不留字，将来找到字按码位统一回填（不同于真图／小篆的留图不留字）",
+        "ui": "confirm"
+    },
     "ref_lacuna": {
         "code": "R01",
         "category": "reference",
