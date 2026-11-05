@@ -52,9 +52,18 @@ let _versionPromise: Promise<string> | null = null;
  */
 let _seededTextVersion: { key: string; at: number } | null = null;
 const SEEDED_VERSION_TTL_MS = 30 * 60 * 1000;
+/**
+ * 页面被 CDN 缓存很久（s-maxage 一小时，stale-while-revalidate 一年）后，里面写死的版本键可能早已不是线上现行的：
+ * 数据发版后读者拿到旧页，用旧键取到旧版 cord，坐标与已换的书影对不上（殿本换文淵閣本时出过）。
+ * 所以服务端把渲染时刻一并交来，页面比这个老就不信种子，回头读不缓存的 latest.json 取现行键。
+ */
+export const SEEDED_PAGE_MAX_AGE_MS = 10 * 60 * 1000;
 
-export function seedTextFileVersion(key: string | undefined | null): void {
-    if (typeof key === 'string' && /^[\w.-]+$/.test(key) && _seededTextVersion?.key !== key) _seededTextVersion = { key, at: Date.now() };
+export function seedTextFileVersion(key: string | undefined | null, renderedAt?: number | null): void {
+    if (typeof key !== 'string' || !/^[\w.-]+$/.test(key) || _seededTextVersion?.key === key) return;
+    // 没给渲染时刻（旧页面、旧种子）按过期处理；时刻在未来（时钟偏差）当作刚渲染
+    if (typeof renderedAt !== 'number' || !Number.isFinite(renderedAt) || Date.now() - renderedAt > SEEDED_PAGE_MAX_AGE_MS) return;
+    _seededTextVersion = { key, at: Date.now() };
 }
 
 function seededTextVersion(): string | null {

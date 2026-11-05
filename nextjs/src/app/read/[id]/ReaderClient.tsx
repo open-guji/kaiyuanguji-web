@@ -177,7 +177,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     const router = useRouter();
     const { source } = useSource();
     // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
-    if (typeof window !== 'undefined') seedTextFileVersion(seed?.dataVersion);
+    if (typeof window !== 'undefined') seedTextFileVersion(seed?.dataVersion, seed?.dataVersionAt);
     const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
     // 受控的版本 key 必须是 manifest 里真有的：服务端种子里有 manifest 就同步算出（正常路径）；

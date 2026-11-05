@@ -321,7 +321,7 @@ export default async function ReaderPage({ params }: Props) {
         duiduPreloadUrls(id, s).catch(() => [] as { href: string; media?: string }[]),
         chapterFont(id, s).catch(() => null),
     ]);
-    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion } : {}) };
+    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion, dataVersionAt: Date.now() } : {}) };
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
     const head = hasSeedMd ? null : await timed(s.timing, 'leadHead', headP);
