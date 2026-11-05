@@ -8,13 +8,24 @@
     python3 ops/cos_siku_old.py --keys-out keys.txt            # dry-run：只列
     python3 ops/cos_siku_old.py --delete --keys-out keys.txt   # 真删（先重新列，只删当次列出的匹配键）
 """
-import argparse, concurrent.futures as cf, os, re, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, concurrent.futures as cf, hashlib, hmac, os, re, sys, time, urllib.error, urllib.parse, urllib.request
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cos_usage  # noqa: E402
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'iiif'))
-from siku_zongmu_iiif import cos_authorization  # noqa: E402
+
+
+def cos_authorization(secret_id, secret_key, method, path, headers, ttl=900):
+    # 与 ops/iiif/siku_zongmu_iiif.py 的同名函数一致（那个模块要 PIL，这里不引）：只签 Host
+    start = int(time.time()) - 60
+    key_time = f'{start};{start + ttl + 60}'
+    sign_key = hmac.new(secret_key.encode(), key_time.encode(), hashlib.sha1).hexdigest()
+    hs = sorted((urllib.parse.quote(k.lower(), safe='-_.~'), urllib.parse.quote(str(v), safe='-_.~')) for k, v in headers.items())
+    http_string = f'{method.lower()}\n{path}\n\n' + '&'.join(f'{k}={v}' for k, v in hs) + '\n'
+    sts = f'sha1\n{key_time}\n{hashlib.sha1(http_string.encode()).hexdigest()}\n'
+    sig = hmac.new(sign_key.encode(), sts.encode(), hashlib.sha1).hexdigest()
+    return (f'q-sign-algorithm=sha1&q-ak={secret_id}&q-sign-time={key_time}&q-key-time={key_time}'
+            f'&q-header-list={";".join(k for k, _ in hs)}&q-url-param-list=&q-signature={sig}')
 
 PAT = re.compile(r'^iiif/96mid1ogzk/\d{2}/\d{4}[a-d]?/')
 VOLS = [f'{v:02d}' for v in range(1, 100)]
