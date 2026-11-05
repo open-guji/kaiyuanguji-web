@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: list=列项目与变量名；dry-run=只报要写哪些；sync=真写；set=按 set_json／gen_keys 写到 targets
+        description: list=列项目与变量名；dry-run=只报要写哪些；sync=真写；set=按 set_json／gen_keys 写到 targets；deploys=只读，数各项目本月部署记录（查构建次数额度）
         required: true
         default: list
         type: choice
-        options: [list, dry-run, sync, set]
+        options: [list, dry-run, sync, set, deploys]
       source:
         description: 源项目名（旧正式站）
         required: false
