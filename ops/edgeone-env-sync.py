@@ -68,6 +68,37 @@ def describe(ps):
         print(f"    KV 绑定：{kv_bindings(pid)}")
 
 
+def deploys(ps):
+    """MODE=deploys（只读）：每个项目本月（UTC）部署记录的数量、按状态分、按天分；只打印计数，不打印任何值。
+    用于「Build count exceeds monthly limit」时看本月到底用了多少次。"""
+    import collections, datetime
+    month = datetime.datetime.utcnow().strftime("%Y-%m")
+    for p in ps:
+        pid, name = p.get("ProjectId"), p.get("Name")
+        items, off = [], 0
+        while True:
+            try:
+                r = call("DescribePagesDeployments", ProjectId=pid, Offset=off, Limit=100)
+            except SystemExit as e:
+                print(f"· {name}: 读不到部署记录（{e}）")
+                items = None
+                break
+            batch = r.get("Deployments") or r.get("DeploymentList") or []
+            items += batch
+            if len(batch) < 100 or off > 2000:
+                break
+            off += 100
+        if items is None:
+            continue
+        mine = [d for d in items if str(d.get("CreatedOn") or d.get("CreateTime") or d.get("CreatedAt") or "").startswith(month)]
+        by_status = collections.Counter(str(d.get("Status")) for d in mine)
+        by_day = collections.Counter(str(d.get("CreatedOn") or d.get("CreateTime") or d.get("CreatedAt"))[:10] for d in mine)
+        print(f"· {name}（{pid}）：共读到 {len(items)} 条，本月 {len(mine)} 条；状态 {dict(by_status)}")
+        print("    按天：" + " ".join(f"{k[5:]}:{v}" for k, v in sorted(by_day.items())))
+        if items and not mine:
+            print("    字段名样例：" + ",".join(sorted(items[0].keys())))
+
+
 def find(ps, name):
     hit = [p for p in ps if p.get("Name") == name]
     if len(hit) != 1:
@@ -119,6 +150,9 @@ def main():
         return
     if mode == "set":
         set_vars(ps)
+        return
+    if mode == "deploys":
+        deploys(ps)
         return
     src, dst = find(ps, os.environ["SOURCE"]), find(ps, os.environ["TARGET"])
     if src == dst:
