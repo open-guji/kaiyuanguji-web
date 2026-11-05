@@ -18,6 +18,8 @@ export interface ReaderSeed {
      * 不先等 latest.json（no-store，一来一回约 1s）——preload 的数据早已下完，却要等这一跳才用上（GUJI-699）
      */
     dataVersion?: string;
+    /** 服务端渲染这份种子的时刻（毫秒时间戳）。页面在 CDN 里放久了，超过 SEEDED_PAGE_MAX_AGE_MS 就不信 dataVersion，改读 latest.json */
+    dataVersionAt?: number;
 }
 
 /** transport 方法名＋参数 → 种子键 */

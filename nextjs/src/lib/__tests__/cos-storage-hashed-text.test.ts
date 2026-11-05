@@ -282,17 +282,33 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         }) as unknown as typeof fetch;
         const { createCosStorage, seedTextFileVersion } = await freshCosStorage({ layout: undefined });
         seedTextFileVersion('bad key/../x');
-        seedTextFileVersion('seedkey123');
+        seedTextFileVersion('seedkey123', Date.now());
         const storage = createCosStorage() as unknown as TextFileApi;
         expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [2] });
         expect(calls).toEqual([`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=seedkey123`]);
+    });
+
+    it('页面渲染超过 10 分钟（或没给渲染时刻）：不信种子，回头读 latest.json 取现行版本键', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'c1', cacheKey: 'freshkey99' });
+            return jsonResponse({ pages: [2] });
+        }) as unknown as typeof fetch;
+        const { createCosStorage, seedTextFileVersion } = await freshCosStorage({ layout: undefined });
+        seedTextFileVersion('oldseedkey1', Date.now() - 11 * 60 * 1000);
+        seedTextFileVersion('oldseedkey2');
+        const storage = createCosStorage() as unknown as TextFileApi;
+        await storage.getTextFile(BOOK_ID, 'original', '003.cord.json');
+        expect(calls.some(u => u.includes('oldseedkey'))).toBe(false);
+        expect(calls.some(u => u.includes(`003.cord.json?v=freshkey99`))).toBe(true);
     });
 
     it('getTextFileUrl（GUJI-701 换章补子集字体）：现行布局给出与取数同一个地址；h1 布局与不合规的文件名给 null、不发请求', async () => {
         type UrlApi = { getTextFileUrl: (id: string, key: string, file: string) => Promise<string | null> };
         global.fetch = jest.fn() as unknown as typeof fetch;
         const legacy = await freshCosStorage({ layout: undefined });
-        legacy.seedTextFileVersion('seedkey123');
+        legacy.seedTextFileVersion('seedkey123', Date.now());
         const s1 = legacy.createCosStorage() as unknown as UrlApi;
         expect(await s1.getTextFileUrl(BOOK_ID, 'original', '003.font.woff2')).toBe(`${COS_BASE}/current/items/${BOOK_ID}/original/003.font.woff2?v=seedkey123`);
         expect(await s1.getTextFileUrl(BOOK_ID, 'original', '../x.woff2')).toBeNull();
