@@ -1,7 +1,7 @@
 /**
- * 阅读页「改字」（GUJI-561）：从阅读器 DOM 取格位、算专名命中、提交到 /api/charfix。
- * 规格见 ai-team 仓 team/网站/GUJI-561-charfix-接口规格.md。纯 web：格位来自对读章每个字 span 的 data-char-id（＝char.json 的格位 a）。
- * old_char 一律取 char.json 里该格的原字（不取 DOM 文字：阅读页有繁简切换，DOM 里的字可能是转换后的）。
+ * 阅读页「改字」（GUJI-561）：算专名命中、提交到 /api/charfix。
+ * 规格见 ai-team 仓 team/网站/GUJI-561-charfix-接口规格.md。纯 web：格位就是 char.json 的格位 a（阅读器插件接口给出）。
+ * old_char 一律取 char.json 里该格的原字（不取显示的字：阅读页有繁简切换，显示的字可能是转换后的）。
  */
 import { getAid } from '@/lib/proofing';
 import { getSiteT, type SiteT } from '@/i18n/translate';
@@ -132,13 +132,6 @@ export function reportableEntitiesAt(cell: string, ctx: CharFixCtx): CharFixEnti
 /** 本章能不能收改字：要有合口径的 text_version */
 export const canFixChar = (ctx: CharFixCtx) => VERSION_RE.test(ctx.textVersion);
 
-/** 点击处最近的字 span 的格位；不在对读字上、或格位不合法就是 null */
-export function cellIdOf(target: EventTarget | null): string | null {
-    const el = target instanceof Element ? target : (target as Node | null)?.parentElement ?? null;
-    const id = el?.closest('[data-char-id]')?.getAttribute('data-char-id') ?? null;
-    return id && CELL_RE.test(id) ? id : null;
-}
-
 export interface CharFixDraft {
     cell: string;
     newChar: string;
@@ -215,16 +208,14 @@ export interface SpanSel {
 }
 
 /**
- * 选区 → 首末格位。只认 root 里带 data-char-id 的字 span，按文档序取第一个与最后一个；
- * 同一格位出现多次（对读版面左右两栏）只算一次。
+ * 选中的格位（阅读器按阅读顺序给）→ 首末格位。只认合法格位；同一格位只算一次。
+ * 原字取 char.json（chars），不取 DOM 文字。选中里没有合法格位就是 null。
  */
-export function spanOfRange(range: Range, root: HTMLElement, chars: Map<string, string>): SpanSel | null {
+export function spanOfAnchors(anchors: readonly string[], chars: Map<string, string>): SpanSel | null {
     const ids: string[] = [];
     const seen = new Set<string>();
-    for (const el of Array.from(root.querySelectorAll('[data-char-id]'))) {
-        if (!range.intersectsNode(el)) continue;
-        const id = el.getAttribute('data-char-id');
-        if (!id || !CELL_RE.test(id) || seen.has(id)) continue;
+    for (const id of anchors) {
+        if (!CELL_RE.test(id) || seen.has(id)) continue;
         seen.add(id);
         ids.push(id);
     }
