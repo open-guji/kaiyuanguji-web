@@ -8,7 +8,8 @@ import type { ComparePrefs } from './prefs';
 import type { BaseCell } from './volumes';
 
 export interface CellDecoration {
-    tone?: string;
+    /** 自定义字色（任意 CSS 颜色，可写 var(--x)）；底线颜色跟字色 */
+    fg?: string;
     underline?: 'solid' | 'dotted' | 'wavy' | 'dashed';
     /** 下标小字：对照本的写法 */
     sub?: string;
@@ -18,13 +19,13 @@ export interface CellDecoration {
     focus?: boolean;
 }
 
-/** 类别 → tone 名（样式里映射到 token 色）与底线样式 */
-export const CAT_STYLE: Record<DiffCat, { tone: string; underline: CellDecoration['underline'] }> = {
-    glyph: { tone: 'cmp-glyph', underline: 'dotted' },
-    word: { tone: 'cmp-word', underline: 'solid' },
-    add: { tone: 'cmp-ins', underline: 'solid' },
-    omit: { tone: 'cmp-omit', underline: 'dashed' },
-    struct: { tone: 'cmp-struct', underline: 'dashed' },
+/** 类别 → 字色（token）与底线样式。add 的字色不给：增字挂在底本前一字后，那个底本字本身没有差异 */
+export const CAT_STYLE: Record<DiffCat, { fg?: string; underline: CellDecoration['underline'] }> = {
+    glyph: { fg: 'var(--cmp-glyph)', underline: 'dotted' },
+    word: { fg: 'var(--cmp-word)', underline: 'solid' },
+    add: { underline: 'solid' },
+    omit: { fg: 'var(--cmp-omit)', underline: 'dashed' },
+    struct: { fg: 'var(--cmp-struct)', underline: 'dashed' },
 };
 
 export const CAT_NAME: Record<DiffCat, string> = {
@@ -56,13 +57,13 @@ export function buildDecorations(items: readonly CompareItem[], cells: readonly 
         if (it.type === 'ins') {
             // 底本这个字本身没有差异：只挂「字后插入」（简洁模式没有下标，改成给它画一条底线表示此处有增字）
             const sub = prefs.mode === 'sub';
-            put(it.i1 - 1, { tone: st.tone, ...(sub ? { insertAfter: it.reading } : { underline: st.underline }), title: `${CAT_NAME[it.cat]}：${it.reading}`, ...focus });
+            put(it.i1 - 1, { ...(sub ? { insertAfter: it.reading } : { underline: st.underline }), title: `${CAT_NAME[it.cat]}：${it.reading}`, ...focus });
             continue;
         }
         for (let i = it.i1; i < it.i2; i++) {
             const last = i === it.i2 - 1;
             put(i, {
-                tone: st.tone,
+                fg: st.fg,
                 underline: st.underline,
                 ...(last && prefs.mode === 'sub' && it.type === 'sub' ? { sub: it.reading } : {}),
                 title: it.type === 'del' ? `${CAT_NAME[it.cat]}（對照本無此字）` : `${CAT_NAME[it.cat]}：${it.reading}`,

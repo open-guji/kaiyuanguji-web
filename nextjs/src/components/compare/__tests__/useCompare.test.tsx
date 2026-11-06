@@ -29,7 +29,7 @@ it('读 ?cmp=，比对出差异，补全版本 key，点字开详情、上一处
     expect(window.location.search).toBe('?cmp=wiki-wikisource');
     // 卷一标题＋「卷一」两字对照本没有 → omit；玄/元 → word；宇宙 vs 宇 → omit
     expect(result.current.shown.map((i) => [i.cat, i.base, i.reading])).toEqual([['omit', '卷一', ''], ['word', '玄', '元'], ['omit', '宙', '']]);
-    expect(result.current.decorations.get('1:1:5')).toMatchObject({ tone: 'cmp-word', sub: '元' });
+    expect(result.current.decorations.get('1:1:5')).toMatchObject({ fg: 'var(--cmp-word)', sub: '元' });
     act(() => { result.current.pick('1:1:5'); });
     expect(result.current.current?.base).toBe('玄');
     act(() => { result.current.step(1); });
