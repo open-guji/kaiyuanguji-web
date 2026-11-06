@@ -26,7 +26,8 @@ export async function resolveTargetKey(transport: TextTransport, target: Compare
 }
 
 export interface RunInput {
-    transport: TextTransport;
+    /** 阅读页的传输层（IndexStorage）；只用到 getTextManifest／getTextIndex／getChapter */
+    transport: object;
     /** 底本：条目、版本 key、本册文件 stem（chapters[].file，如 "002"） */
     base: { id: string; key: string; chapter: string };
     target: CompareTarget;
@@ -38,7 +39,8 @@ export type RunError = 'no-target' | 'no-base-index';
 
 /** 取齐输入并比对一册。对照本或底本目录取不到时抛 Error(RunError)，调用方静默退回普通阅读 */
 export async function runCompare(input: RunInput): Promise<CompareResult & { targetKey: string; wikiChapters: WikiChapter[] }> {
-    const { transport, base, target, cells } = input;
+    const { base, target, cells } = input;
+    const transport = input.transport as TextTransport;
     const targetKey = await resolveTargetKey(transport, target);
     if (!targetKey) throw new Error('no-target' satisfies RunError);
     const [baseIndex, targetIndex, isVariant] = await Promise.all([

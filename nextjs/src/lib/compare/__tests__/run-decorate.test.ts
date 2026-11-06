@@ -19,16 +19,17 @@ describe('buildDecorations', () => {
     it('对照写法放下标在这一处最后一字上，增的挂在前一字后；异体字默认不显示', () => {
         const m = buildDecorations(items, cells, DEFAULT_COMPARE_PREFS);
         expect(m.get('1:1:1')).toBeUndefined();
-        expect(m.get('1:1:2')).toMatchObject({ tone: 'cmp-word' });
+        expect(m.get('1:1:2')).toMatchObject({ fg: 'var(--cmp-word)' });
         expect(m.get('1:1:2')?.sub).toBeUndefined();
-        expect(m.get('1:1:3')).toMatchObject({ tone: 'cmp-word', sub: '坤元' });
-        expect(m.get('1:1:4')).toMatchObject({ tone: 'cmp-add', insertAfter: '宙' });
+        expect(m.get('1:1:3')).toMatchObject({ fg: 'var(--cmp-word)', sub: '坤元' });
+        expect(m.get('1:1:4')).toMatchObject({ insertAfter: '宙' });
     });
     it('开异体字、简洁模式、焦点', () => {
         const m = buildDecorations(items, cells, { cats: { ...DEFAULT_COMPARE_PREFS.cats, glyph: true }, mode: 'simple' }, 'v1');
-        expect(m.get('1:1:1')).toMatchObject({ tone: 'cmp-glyph' });
+        expect(m.get('1:1:1')).toMatchObject({ fg: 'var(--cmp-glyph)' });
         expect(m.get('1:1:3')?.sub).toBeUndefined();
         expect(m.get('1:1:4')?.insertAfter).toBeUndefined();
+        expect(m.get('1:1:4')?.underline).toBe('solid');
         expect(m.get('1:1:2')?.focus).toBe(true);
     });
     it('统计、按格位找条目、上一处下一处', () => {

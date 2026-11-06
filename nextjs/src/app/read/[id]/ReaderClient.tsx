@@ -32,6 +32,9 @@ import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
 import ReaderLead, { type ReaderLeadData } from './ReaderLead';
 import ReaderFulltextHint from '@/components/fulltext/ReaderFulltextHint';
 import ReaderProof, { useProofPref } from './ReaderProof';
+import { createCompareStore } from '@/components/compare/compare-plugin';
+import { useComparePlugin } from '@/components/compare/compare-plugin';
+import { useCompareTarget } from '@/components/compare/useCompare';
 import { emptyProofLayer, loadProofLayer, type ProofLayer } from '@/lib/proof';
 
 interface ReaderClientProps {
@@ -61,9 +64,11 @@ interface ReaderClientProps {
  */
 function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean; hash?: string | null }) {
     const href = readerPath(id, sel);
-    // 章内标题位置（GUJI-240）写在 #页:列:格；canonical 不带它
-    const full = opts.hash ? `${href}#${opts.hash}` : href;
-    if (window.location.pathname + window.location.hash !== full) {
+    // 章内标题位置（GUJI-240）写在 #页:列:格；canonical 不带它。?cmp=（对校）随翻页、换册保留，canonical 不带
+    const cmp = new URLSearchParams(window.location.search).get('cmp');
+    const search = cmp ? `?cmp=${encodeURIComponent(cmp)}` : '';
+    const full = `${href}${search}${opts.hash ? `#${opts.hash}` : ''}`;
+    if (window.location.pathname + window.location.search + window.location.hash !== full) {
         if (opts.push) window.history.pushState(window.history.state, '', full);
         else window.history.replaceState(window.history.state, '', full);
     }
@@ -270,6 +275,22 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         });
     }, [openFeedback, id, feedbackContext.label]);
     const textRef = useRef<HTMLDivElement>(null);
+    // 对校（A41）：对照本来自 ?cmp=，来源行的「對校」按钮与阅读器里的插件共用；插件经 store 与外层互通
+    const compareSources = useMemo(() => (sources ?? []).filter((r) => r.id !== id).map((r) => ({ id: r.id, label: r.label })), [sources, id]);
+    const compareSourceIds = useMemo(() => compareSources.map((r) => r.id), [compareSources]);
+    const compareTarget = useCompareTarget(id, compareSourceIds);
+    const compareStore = useMemo(() => createCompareStore(), []);
+    const comparePlugin = useComparePlugin({ id, sources: compareSources, transport, target: compareTarget.target, setTarget: compareTarget.setTarget, store: compareStore });
+    const readerPlugins = useMemo(() => (comparePlugin ? [comparePlugin] : undefined), [comparePlugin]);
+    // 对校页不进搜索（canonical 本来就不带 cmp；再加 noindex，同一份文本的另一种视图）
+    useEffect(() => {
+        if (!compareTarget.target) return;
+        const m = document.createElement('meta');
+        m.name = 'robots';
+        m.content = 'noindex';
+        document.head.appendChild(m);
+        return () => m.remove();
+    }, [compareTarget.target]);
     // 「改字」入口用的本章上下文（GUJI-561）：对读数据与专名取到时顺手记；key＝章，换章后旧的不沿用。
     // 两路（对读、专名）先后不定：专名先到就先存在 ent 里，对读到了再并进 ctx
     const charfix = useRef<{ key: string; ctx: CharFixCtx | null; ent: CharfixEnt }>({ key: '', ctx: null, ent: NO_ENT });
@@ -329,7 +350,14 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     return (
         <>
         <ProofingNotice id={id} vol={meta?.proofVol} feedbackVol={meta?.feedbackVol} />
-        {sources && sources.length > 1 && <TextSourceMenu currentId={id} rows={sources} />}
+        {sources && sources.length > 1 && (
+            <TextSourceMenu
+                currentId={id}
+                rows={sources}
+                compareId={compareTarget.target?.id ?? null}
+                onCompare={(tid) => compareTarget.setTarget(tid ? { id: tid } : null)}
+            />
+        )}
         <div ref={textRef}>
             <TextReader
                 id={id}
@@ -339,6 +367,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 onLocationChange={onLocationChange}
                 anchor={urlAnchor}
                 onNavigate={onNavigate}
+                plugins={readerPlugins}
                 title={bookTitle}
                 subtitle={edition || meta?.versions ? (
                     <>
