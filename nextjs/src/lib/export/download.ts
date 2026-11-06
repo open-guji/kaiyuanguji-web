@@ -6,7 +6,7 @@
  * 三种字形：原书（不转）、通行繁体（异体字归一）、简体（异体字归一＋opencc t2cn，全站同一口径 lib/to-simplified-core.mjs）。
  * 文件开头写 YAML front matter（guji-format v0.4）：书名、册、格式、字形、各层版本号等。
  */
-import { getJson } from '@/lib/duidu-data';
+import { getJson } from '@/lib/text-file';
 import { frontMatter, renderLines, renderRich, type CharDoc, type EntityDoc, type FigDoc, type PunctDoc } from './guji-md';
 
 export type ExportFormat = 'lines' | 'punct' | 'entity';

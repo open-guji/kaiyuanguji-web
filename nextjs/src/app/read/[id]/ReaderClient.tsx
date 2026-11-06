@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, useConvert, adaptCharCord, adaptFig, adaptPunctJson, iiifVolumeOf, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderChapterData, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -21,9 +21,8 @@ import { availableFormats } from '@/lib/export/download';
 import type { ExportChapter } from '@/lib/export/download';
 import CharFixEntry from '@/components/CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
-import { readerManifest } from '@/lib/reader-manifest';
 import { loadFacsimile } from '@/lib/facsimile';
-import { getJson, loadDuiduFiles, loadFigUrls, volumeFromChar } from '@/lib/duidu-data';
+import { getJson, TEXT_FILE_BASE } from '@/lib/text-file';
 import { ensureChapterFont } from '@/lib/chapter-font';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
@@ -108,7 +107,7 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            const manifest = await api.getManifest(id);
+            const manifest = readerManifest(await api.getManifest(id));
             const version = manifest?.versions.find((v) => v.key === (sel.key ?? 'default')) ?? manifest?.versions[0];
             if (!version) return;
             const index = await api.getIndex(id, version.key);
@@ -131,20 +130,6 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
         return () => { cancelled = true; };
     }, [api, transport, id, sel.key, sel.chapter, at]);
     return meta?.at === at ? meta : null;
-}
-
-/** 浏览器端自己取的 manifest 也按阅读页规则过一遍（服务端种子已过，见 lib/reader-manifest.ts；重复处理无副作用） */
-function readerTransport<T extends ReturnType<typeof getTransport>>(transport: T): T {
-    return new Proxy(transport, {
-        get(target, prop, receiver) {
-            const orig = Reflect.get(target, prop, receiver);
-            if (prop !== 'getTextManifest' || typeof orig !== 'function') return orig;
-            return async (...args: unknown[]) => {
-                const m = await (orig as (...a: unknown[]) => Promise<any>).apply(target, args);
-                return m && Array.isArray(m.versions) ? readerManifest(m) : m;
-            };
-        },
-    });
 }
 
 /** 主版本 key：阅读页 manifest 里有 default 就是它，否则（目录型 default 被隐藏，overview#456）是第一份版本 */
@@ -178,15 +163,15 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     const { source } = useSource();
     // 服务端给的数据版本键：取对读数据不再先等 latest.json（GUJI-699）。只在浏览器端记（服务端的模块状态跨请求共享）
     if (typeof window !== 'undefined') seedTextFileVersion(seed?.dataVersion, seed?.dataVersionAt);
-    const transport = useMemo(() => readerTransport(seedTransport(getTransport(source), seed?.calls)), [source, seed]);
+    const transport = useMemo(() => seedTransport(getTransport(source), seed?.calls), [source, seed]);
     const [sel, setSel] = useState<ReaderSel>(initial);
     // 受控的版本 key 必须是 manifest 里真有的：服务端种子里有 manifest 就同步算出（正常路径）；
     // 没有（预取超时、失败）先按 default 挂阅读器，浏览器取到 manifest 后若主版本不是 default（目录型 default 被隐藏）再换过去
-    const [primary, setPrimary] = useState<string | null>(() => primaryKeyOf(seed?.calls?.[seedCallKey('getTextManifest', id)]));
+    const [primary, setPrimary] = useState<string | null>(() => primaryKeyOf(readerManifest(seed?.calls?.[seedCallKey('getTextManifest', id)] as any)));
     useEffect(() => {
         if (primary !== null) return;
         let cancelled = false;
-        (async () => primaryKeyOf(await (transport as { getTextManifest: (id: string) => Promise<unknown> }).getTextManifest(id)))()
+        (async () => primaryKeyOf(readerManifest(await (transport as { getTextManifest: (id: string) => Promise<any> }).getTextManifest(id))))()
             .catch(() => null)
             .then((k) => { if (!cancelled) setPrimary(k ?? 'default'); });
         return () => { cancelled = true; };
@@ -291,7 +276,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     const getCharfixCtx = useCallback(() => charfix.current.ctx, []);
 
     // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时下面一切都不动，DOM 与现状一致。
-    // 只在开着时才取 proof_file；章上下文（含 proof_file 声明）在 resolveWarpData 里顺手记下
+    // 只在开着时才取 proof_file；章上下文（含 proof_file 声明）在 onChapterData 里顺手记下
     const proof = useProofPref();
     const proofOnRef = useRef(false);
     proofOnRef.current = proof.on === true;
@@ -305,82 +290,38 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         if (proof.on !== true) setProofLayer(prev => (prev.cells.size === 0 ? prev : emptyProofLayer()));
     }, [proof.on, fetchProof]);
 
-    // 宽屏才显示书影栏（book-index-ui 阅读器 ≤859px 收起）：窄屏不取 cord（最大的对读文件，只有书影字框用，GUJI-700）。
-    // 视口跨过断点（转横屏、拉宽窗口）时三个 resolve 换身份，阅读器按新宽度重取
-    const wide = useWideViewport();
-
-    // 对读（图文对读）：章条目声明了 `char_file` 就按声明取 char（再加 `punct_file`、`entity_file`、`norm_file`）；
-    // 有 `cord_file` 才有像素框，两边按格位对上做对读版面；没有 cord 就不做对读版面、不画书影格线（见 lib/duidu-data.ts）。
-    const resolveWarpData = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
+    // 对读数据（char／cord／punct／entity／norm／fig）由 book-index-ui 按章条目的声明自己取（loadReaderChapter）。
+    // 取完回调到这里，只做本站的事：记校对、改字的章上下文，补生僻字子集字体。
+    const onChapterData = useCallback(({ chapterKey, ctx, data }: { chapterKey: string; ctx: ReaderResolveContext; data: ReaderChapterData | null }) => {
         proofCtx.current = { ctx, key: chapterKey };
         if (proofOnRef.current) fetchProof(ctx);
         // 站内换章：补上这一章的生僻字子集字体（首屏那章服务端已出，同一地址不重复加，GUJI-701）
-        if (ctx?.versionKey) void ensureChapterFont(transport, id, ctx.versionKey, ctx.chapter);
-        const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
-        // 没有 cord：未声明（没有对读）或取不到 → 不做对读版面；窄屏故意没取 → 照常排正文，只是没有字框
-        if (!files || (!files.cord && !files.cordSkipped)) return null;
-        // 规范层（norm.json）：人审过的「异体→通行字」，按格位 key 挂到字上；没声明或取不到时 files.norm 为 null＝与改前一致
-        const pages = adaptCharCord(files.char, files.cord ?? undefined, files.norm);
-        if (pages.length === 0) return null;
-        const chapterFile = ctx?.chapter?.file;
+        if (ctx.versionKey) void ensureChapterFont(transport, id, ctx.versionKey, ctx.chapter);
+        if (!data) { charfix.current = { key: chapterKey, ctx: null, ent: NO_ENT }; return; }
+        const { files, pages } = data;
+        const chapterFile = ctx.chapter?.file;
         // 文本版本：章条目的 text_version，缺则 char.json 的 version；两处都没有（或不合口径）就是空串——不猜，改字入口照出但不收（浮条里说明）
-        const textVersion = [ctx?.chapter?.text_version, (files.char as { version?: unknown } | null)?.version]
+        const textVersion = [ctx.chapter?.text_version, (files.char as { version?: unknown } | null)?.version]
             .map((v) => (v === undefined || v === null ? '' : String(v)))
             .find((v) => VERSION_RE.test(v)) ?? '';
-        const ent = charfix.current.key === chapterKey ? charfix.current.ent : NO_ENT;
+        // 专名层版本：章条目的 entity_version，缺则 entity.json 的 version；都没有就不出「专名有误」
+        const declared = ctx.chapter?.entity_version;
+        const ent: CharfixEnt = {
+            entities: collectEntities(files.entity),
+            entityVersion: typeof declared === 'string' && VERSION_RE.test(declared) ? declared : entityFileVersion(files.entity),
+        };
         charfix.current = {
             key: chapterKey,
             ent,
-            ctx: {
-                book: id,
-                volume: String(chapterFile ?? chapterKey),
-                chapter: String(chapterKey),
-                textVersion,
-                chars: collectChars(pages),
-                ...ent,
-            },
+            ctx: { book: id, volume: String(chapterFile ?? chapterKey), chapter: String(chapterKey), textVersion, chars: collectChars(pages), ...ent },
         };
-        const vol = files.cord ? iiifVolumeOf(files.cord) : null;
-        // 卷二第 10 页有手工透视矫正（含版心与对偶页拼接）的样张，别的页走逐字坐标平铺
-        let base: Record<string, any> = { page_id: '', title: '', image_size: [0, 0], total_warped_w: 0, columns: [] };
-        if (id === '96mid1ogzk' && vol?.vol === '02' && pages.some(p => p.page === 10)) {
-            try {
-                const res10 = await fetch('/fixtures/vol02_p10.json');
-                if (res10.ok) {
-                    base = await res10.json();
-                    // 对偶页（第 9 叶）与第 10 叶同样改读 COS 原图档
-                    const mate = await loadFacsimile(vol.bookId, vol.vol);
-                    const mateImg = mate?.find(m => m.pageNo === 9);
-                    if (mateImg?.hiresUrl && base.banxin) base = { ...base, banxin: { ...base.banxin, mate_image_url: mateImg.hiresUrl } };
-                }
-            } catch { /* 样张取不到就全部平铺 */ }
-        }
-        // 图片格、插图块（fig.json，guji-fig v0.1，GUJI-737）：figures 是图 id → 图；figUrl 同步给图片地址，所以先把地址一次解析好。
-        // 没声明 fig_file 的章不带这两项（与改前一致）；声明了但取不到、或某张图取不到地址，阅读器显示〔图：说明〕标签
-        const figures = files.fig != null ? adaptFig(files.fig) : null;
-        const figUrls = figures && figures.size > 0 ? await loadFigUrls(id, ctx?.versionKey, files.fig, transport) : null;
-        const fig = figures && figures.size > 0 ? { figures, figUrl: (file: string) => figUrls?.get(file) ?? '' } : {};
-        // hasNorm：章条目声明了 norm_file 且取到了（哪怕是空表）＝自校文本，阅读器的「原字」档可选；外来文本没有，置灰（overview#540）
-        return { ...base, pages, punctuations: adaptPunctJson(files.punct), hasNorm: files.norm != null, ...fig } as any;
-    }, [id, transport, fetchProof, wide]);
+    }, [id, transport, fetchProof]);
 
-    // 实体标注（open-guji-cv entity_extract 的 entity.json，须带逐字 anchor）；没有就不画
-    const resolveEntities = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const entity = (await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide }))?.entity ?? null;
-        const declared = ctx?.chapter?.entity_version;
-        const ent = {
-            entities: collectEntities(entity),
-            // 专名层版本：章条目的 entity_version，缺则 entity.json 的 version；都没有就不出「专名有误」
-            entityVersion: typeof declared === 'string' && VERSION_RE.test(declared) ? declared : entityFileVersion(entity),
-        };
-        if (charfix.current.key === chapterKey && charfix.current.ctx) charfix.current = { ...charfix.current, ent, ctx: { ...charfix.current.ctx, ...ent } };
-        else charfix.current = { key: chapterKey, ctx: null, ent };
-        return entity;
-    }, [id, transport, wide]);
-
-    // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）
-    const resolveImages = useCallback(async (chapterKey: string, ctx?: ReaderResolveContext) => {
-        const files = await loadDuiduFiles(id, ctx, chapterKey, transport, { cord: wide });
+    // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）。
+    // 窄屏（书影栏收起）阅读器不取 cord，这里与它同一判据，命中它的缓存
+    const wide = useWideViewport();
+    const resolveImages = useCallback(async (_chapterKey: string, ctx?: ReaderResolveContext) => {
+        const files = await loadReaderFiles(transport, { id, versionKey: ctx?.versionKey, chapter: ctx?.chapter }, { cord: wide, textFileBase: TEXT_FILE_BASE });
         const vol = files?.cord ? iiifVolumeOf(files.cord) : files?.cordSkipped ? volumeFromChar(files.char) : null;
         return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
     }, [id, transport, wide]);
@@ -443,9 +384,10 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 settingsExtraTitle={convert('下載')}
                 backHref="/read"
                 onReportError={onReportError}
-                resolveWarpData={resolveWarpData}
+                textFileBase={TEXT_FILE_BASE}
+                hideSupersededVersions
+                onChapterData={onChapterData}
                 resolveImages={resolveImages}
-                resolveEntities={resolveEntities}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
             {lead && <ReaderLead data={lead} hostRef={textRef} />}
