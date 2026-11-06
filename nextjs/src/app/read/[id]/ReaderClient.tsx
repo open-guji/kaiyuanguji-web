@@ -59,8 +59,10 @@ interface ReaderClientProps {
 function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean; hash?: string | null }) {
     const href = readerPath(id, sel);
     // 章内标题位置（GUJI-240）写在 #页:列:格；canonical 不带它。?cmp=（对校）随翻页、换册保留，canonical 不带
+    // 地址的路径没变（首帧、只改 #）时查询串原样保留（?proof=、?ft= 等是别的功能在读，不该被同步冲掉）；
+    // 换了章或册，只带 ?cmp=
     const cmp = new URLSearchParams(window.location.search).get('cmp');
-    const search = cmp ? `?cmp=${encodeURIComponent(cmp)}` : '';
+    const search = window.location.pathname === href ? window.location.search : cmp ? `?cmp=${encodeURIComponent(cmp)}` : '';
     const full = `${href}${search}${opts.hash ? `#${opts.hash}` : ''}`;
     if (window.location.pathname + window.location.search + window.location.hash !== full) {
         if (opts.push) window.history.pushState(window.history.state, '', full);
