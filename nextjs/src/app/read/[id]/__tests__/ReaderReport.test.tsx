@@ -20,7 +20,6 @@ jest.mock('@/components/feedback/FeedbackProvider', () => ({
     useFeedback: () => ({ open, setPageContext: jest.fn() }),
     useFeedbackPageContext: jest.fn(),
 }));
-jest.mock('@/components/feedback/SelectionReport', () => () => null);
 
 const last: { reader?: Record<string, unknown> } = {};
 jest.mock('book-index-ui', () => ({

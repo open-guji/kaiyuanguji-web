@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, type ReaderInitialChapter, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderChapterData, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, type ReaderInitialChapter, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
-import SelectionReport from '@/components/feedback/SelectionReport';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
@@ -14,27 +13,23 @@ import { loadProofIndex, parsePending, proofInvite } from '@/lib/proofing';
 import ProofingNotice from './ProofingNotice';
 import TextSourceMenu from './TextSourceMenu';
 import type { ReadTextRow } from '@/lib/read-texts';
-import TextVersionChip, { textVersionsOf, type TextVersions } from './TextVersionChip';
-import DownloadChip from './DownloadChip';
-import DownloadPanel from './DownloadPanel';
-import { availableFormats } from '@/lib/export/download';
-import type { ExportChapter } from '@/lib/export/download';
-import CharFixEntry from '@/components/CharFixEntry';
-import { collectChars, collectEntities, entityFileVersion, VERSION_RE, type CharFixCtx } from '@/lib/charfix';
+import { textVersionsOf, type TextVersions } from './TextVersionChip';
 import { loadFacsimile } from '@/lib/facsimile';
 import { getJson, TEXT_FILE_BASE } from '@/lib/text-file';
-import { ensureChapterFont } from '@/lib/chapter-font';
 import { SITE_NAME } from '@/lib/constants';
 import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
-import ReaderFulltextHint from '@/components/fulltext/ReaderFulltextHint';
-import ReaderProof, { useProofPref } from './ReaderProof';
-import { createCompareStore } from '@/components/compare/compare-plugin';
-import { useComparePlugin } from '@/components/compare/compare-plugin';
+import { createProofStore, proofPlugin, useProofPref } from './ReaderProof';
+import { downloadPlugin } from './plugins/download-plugin';
+import { versionChipPlugin } from './plugins/version-chip-plugin';
+import { fontPlugin } from './plugins/font-plugin';
+import { reportPlugin } from './plugins/report-plugin';
+import { fulltextPlugin } from './plugins/fulltext-plugin';
+import type { ReaderPlugin } from 'book-index-ui';
+import { createCompareStore, useComparePlugin } from '@/components/compare/compare-plugin';
 import { useCompareTarget } from '@/components/compare/useCompare';
-import { emptyProofLayer, loadProofLayer, type ProofLayer } from '@/lib/proof';
 
 interface ReaderClientProps {
     id: string;
@@ -106,7 +101,7 @@ async function proofVolOf(id: string, versionKey: string, chapter: { file?: stri
 
 function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof getTransport>) {
     const api = useMemo(() => createTextApi(transport), [transport]);
-    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; feedbackVol?: string; versions?: TextVersions; versionKey?: string; license?: string; chapter?: ExportChapter } | null>(null);
+    const [meta, setMeta] = useState<{ at: string; versionLabel?: string; kind?: string; chapterTitle?: string; proofVol?: string; feedbackVol?: string; versions?: TextVersions } | null>(null);
     const at = `${id}|${sel.key ?? ''}|${sel.chapter ?? ''}`;
     useEffect(() => {
         let cancelled = false;
@@ -119,10 +114,7 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
             // 版本号只有本项目自做的 original 版本记（文本／标点／专名三线），别的来源不出
             const versions = (version as { is_original?: boolean }).is_original ? textVersionsOf(chapter) : undefined;
-            const license = (version as { license?: unknown }).license;
-            // 「下载本冊」要本章条目（*_file 与三线版本号）、版本 key 与许可；只有 original 版本（有版本号）才出
-            const download = versions && chapter ? { versionKey: version.key, chapter: chapter as ExportChapter, license: typeof license === 'string' ? license : undefined } : {};
-            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, versions, ...download };
+            const base = { at, versionLabel: readerVersionName(version), kind: version.kind, chapterTitle: title || undefined, versions };
             // 版本名、章名先给（标题、反馈标签用），校对提示另取，不让它们等网络
             if (!cancelled) setMeta(base);
             const proofVol = await proofVolOf(id, version.key, chapter, transport);
@@ -157,10 +149,6 @@ function useWideViewport(): boolean {
     }, []);
     return wide;
 }
-
-/** 「改字」上下文里的专名层（GUJI-590）；本章还没取到／没有时是 NO_ENT */
-type CharfixEnt = Pick<CharFixCtx, 'entities' | 'entityVersion'>;
-const NO_ENT: CharfixEnt = { entities: [], entityVersion: '' };
 
 function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: ReaderClientProps) {
     const router = useRouter();
@@ -260,7 +248,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         [id, bookTitle, meta, sel.chapter, convert, t],
     );
     useFeedbackPageContext(feedbackContext);
-    // v4 P2：阅读器右栏「报告错字」→ 同一个反馈弹窗，带上书名、条目 id、章、位置锚点与选中文字
+    // 阅读器右栏「报告错字」→ 同一个反馈弹窗，带上书名、条目 id、章、位置锚点与选中文字
     const { open: openFeedback } = useFeedback();
     const onReportError = useCallback((ctx: ReaderReportContext) => {
         openFeedback({
@@ -273,14 +261,12 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
             type: 'bug',
         });
     }, [openFeedback, id, feedbackContext.label]);
-    const textRef = useRef<HTMLDivElement>(null);
     // 对校（A41）：对照本来自 ?cmp=，来源行的「對校」按钮与阅读器里的插件共用；插件经 store 与外层互通
     const compareSources = useMemo(() => (sources ?? []).filter((r) => r.id !== id).map((r) => ({ id: r.id, label: r.label })), [sources, id]);
     const compareSourceIds = useMemo(() => compareSources.map((r) => r.id), [compareSources]);
     const compareTarget = useCompareTarget(id, compareSourceIds);
     const compareStore = useMemo(() => createCompareStore(), []);
     const comparePlugin = useComparePlugin({ id, sources: compareSources, transport, target: compareTarget.target, setTarget: compareTarget.setTarget, store: compareStore });
-    const readerPlugins = useMemo(() => (comparePlugin ? [comparePlugin] : undefined), [comparePlugin]);
     // 对校页不进搜索（canonical 本来就不带 cmp；再加 noindex，同一份文本的另一种视图）
     useEffect(() => {
         if (!compareTarget.target) return;
@@ -290,52 +276,29 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         document.head.appendChild(m);
         return () => m.remove();
     }, [compareTarget.target]);
-    // 「改字」入口用的本章上下文（GUJI-561）：对读数据与专名取到时顺手记；key＝章，换章后旧的不沿用。
-    // 两路（对读、专名）先后不定：专名先到就先存在 ent 里，对读到了再并进 ctx
-    const charfix = useRef<{ key: string; ctx: CharFixCtx | null; ent: CharfixEnt }>({ key: '', ctx: null, ent: NO_ENT });
-    const getCharfixCtx = useCallback(() => charfix.current.ctx, []);
 
-    // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时下面一切都不动，DOM 与现状一致。
-    // 只在开着时才取 proof_file；章上下文（含 proof_file 声明）在 onChapterData 里顺手记下
+    // ── 阅读功能一律写成阅读器插件（plugins/*），不再抓阅读器的 DOM ──
+    // 取站点文案、反馈上下文的函数走 ref，插件对象就能保持引用稳定（阅读器在插件引用变时重算修饰）
+    const live = useRef({ t, feedbackContext, openFeedback });
+    live.current = { t, feedbackContext, openFeedback };
+    // 校对模式（overview#605 D1.2）：开关为 null（没带 ?proof= 也没存过偏好）时校对插件不挂，页面与现状一致
     const proof = useProofPref();
-    const proofOnRef = useRef(false);
-    proofOnRef.current = proof.on === true;
-    const proofCtx = useRef<{ ctx: ReaderResolveContext | undefined; key: string } | null>(null);
-    const [proofLayer, setProofLayer] = useState<ProofLayer>(() => emptyProofLayer());
-    const fetchProof = useCallback((ctx: ReaderResolveContext | undefined) => {
-        loadProofLayer(id, ctx, transport as { getTextFile?: (id: string, key: string, file: string) => Promise<unknown> }).then(setProofLayer);
-    }, [id, transport]);
-    useEffect(() => {
-        if (proof.on === true && proofCtx.current) fetchProof(proofCtx.current.ctx);
-        if (proof.on !== true) setProofLayer(prev => (prev.cells.size === 0 ? prev : emptyProofLayer()));
-    }, [proof.on, fetchProof]);
-
-    // 对读数据（char／cord／punct／entity／norm／fig）由 book-index-ui 按章条目的声明自己取（loadReaderChapter）。
-    // 取完回调到这里，只做本站的事：记校对、改字的章上下文，补生僻字子集字体。
-    const onChapterData = useCallback(({ chapterKey, ctx, data }: { chapterKey: string; ctx: ReaderResolveContext; data: ReaderChapterData | null }) => {
-        proofCtx.current = { ctx, key: chapterKey };
-        if (proofOnRef.current) fetchProof(ctx);
-        // 站内换章：补上这一章的生僻字子集字体（首屏那章服务端已出，同一地址不重复加，GUJI-701）
-        if (ctx.versionKey) void ensureChapterFont(transport, id, ctx.versionKey, ctx.chapter);
-        if (!data) { charfix.current = { key: chapterKey, ctx: null, ent: NO_ENT }; return; }
-        const { files, pages } = data;
-        const chapterFile = ctx.chapter?.file;
-        // 文本版本：章条目的 text_version，缺则 char.json 的 version；两处都没有（或不合口径）就是空串——不猜，改字入口照出但不收（浮条里说明）
-        const textVersion = [ctx.chapter?.text_version, (files.char as { version?: unknown } | null)?.version]
-            .map((v) => (v === undefined || v === null ? '' : String(v)))
-            .find((v) => VERSION_RE.test(v)) ?? '';
-        // 专名层版本：章条目的 entity_version，缺则 entity.json 的 version；都没有就不出「专名有误」
-        const declared = ctx.chapter?.entity_version;
-        const ent: CharfixEnt = {
-            entities: collectEntities(files.entity),
-            entityVersion: typeof declared === 'string' && VERSION_RE.test(declared) ? declared : entityFileVersion(files.entity),
-        };
-        charfix.current = {
-            key: chapterKey,
-            ent,
-            ctx: { book: id, volume: String(chapterFile ?? chapterKey), chapter: String(chapterKey), textVersion, chars: collectChars(pages), ...ent },
-        };
-    }, [id, transport, fetchProof]);
+    const proofStore = useMemo(() => createProofStore((v) => proofSet.current(v)), []);
+    const proofSet = useRef(proof.set);
+    proofSet.current = proof.set;
+    useEffect(() => { proofStore.patch({ on: proof.on }); }, [proofStore, proof.on]);
+    const reportPlg = useMemo(() => reportPlugin({
+        getFeedbackContext: () => live.current.feedbackContext,
+        openFeedback: (a) => live.current.openFeedback(a),
+        getT: () => live.current.t,
+    }), []);
+    const proofPlg = useMemo(() => proofPlugin(proofStore), [proofStore]);
+    const dataVersion = seed?.dataVersion ?? undefined;
+    const downloadPlg = useMemo(() => downloadPlugin({ bookId: id, bookTitle, edition, dataVersion }), [id, bookTitle, edition, dataVersion]);
+    const plugins = useMemo<ReaderPlugin[]>(
+        () => [downloadPlg, versionChipPlugin, fontPlugin, reportPlg, fulltextPlugin, ...(proof.on !== null ? [proofPlg] : []), ...(comparePlugin ? [comparePlugin] : [])],
+        [downloadPlg, reportPlg, proofPlg, comparePlugin, proof.on !== null], // eslint-disable-line react-hooks/exhaustive-deps
+    );
 
     // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）。
     // 窄屏（书影栏收起）阅读器不取 cord，这里与它同一判据，命中它的缓存
@@ -357,7 +320,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 onCompare={(tid) => compareTarget.setTarget(tid ? { id: tid } : null)}
             />
         )}
-        <div ref={textRef}>
+        <div>
             <TextReader
                 id={id}
                 transport={transport}
@@ -366,65 +329,19 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 onLocationChange={onLocationChange}
                 anchor={urlAnchor}
                 onNavigate={onNavigate}
-                plugins={readerPlugins}
                 title={bookTitle}
-                subtitle={edition || meta?.versions ? (
-                    <>
-                        {/* 「下载本冊」放最前：书名栏放不下时副标题从尾部截成「…」，放末尾会被整个截掉（书名＋作者长的书，1280 宽就截） */}
-                        {meta?.versions && meta.chapter && meta.versionKey ? (
-                            <>
-                                <DownloadChip
-                                    storage={transport}
-                                    target={{
-                                        id,
-                                        versionKey: meta.versionKey,
-                                        chapter: meta.chapter,
-                                        bookTitle,
-                                        versionLabel: meta.versionLabel,
-                                        edition,
-                                        license: meta.license,
-                                        dataVersion: seed?.dataVersion ?? undefined,
-                                    }}
-                                />
-                                {' '}
-                            </>
-                        ) : null}
-                        {edition && <span data-testid="reader-edition">{convert(edition)}</span>}
-                        {edition && meta?.versions ? ' ' : null}
-                        {meta?.versions ? <TextVersionChip versions={meta.versions} /> : null}
-                    </>
-                ) : undefined}
-                settingsExtra={!wide && meta?.versions && meta.chapter && meta.versionKey && availableFormats(meta.chapter).length > 0 ? (
-                    <DownloadPanel
-                        storage={transport}
-                        target={{
-                            id,
-                            versionKey: meta.versionKey,
-                            chapter: meta.chapter,
-                            bookTitle,
-                            versionLabel: meta.versionLabel,
-                            edition,
-                            license: meta.license,
-                            dataVersion: seed?.dataVersion ?? undefined,
-                        }}
-                    />
-                ) : undefined}
-                settingsExtraTitle={convert('下載')}
+                subtitle={edition ? <span data-testid="reader-edition">{convert(edition)}</span> : undefined}
+                plugins={plugins}
+                initialChapter={lead}
                 backHref="/read"
                 onReportError={onReportError}
                 textFileBase={TEXT_FILE_BASE}
                 initialChapter={lead}
                 hideSupersededVersions
-                onChapterData={onChapterData}
                 resolveImages={resolveImages}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
-            <SelectionReport containerRef={textRef} context={feedbackContext} getCtx={getCharfixCtx} />
-            <CharFixEntry containerRef={textRef} getCtx={getCharfixCtx} />
-            {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
         </div>
-        {/* 全文搜索定位（GUJI-163 / F6 步 4）：只在地址带 ?ft= 时工作；放在 textRef 之外，提示文字不被当成命中 */}
-        <ReaderFulltextHint hostRef={textRef} chapter={sel.chapter} />
         </>
     );
 }

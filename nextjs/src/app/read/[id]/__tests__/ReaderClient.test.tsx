@@ -298,23 +298,38 @@ describe('ReaderClient：历史记录', () => {
         expect(screen.getAllByTestId('reader')[0]).toHaveTextContent('default|003');
     });
 
-    // 对读数据的读取已收进 book-index-ui（loadReaderChapter，单测在包里）：网站只把声明交给阅读器、接收取完的回调
-    describe('对读数据：交给阅读器自取', () => {
-        it('不传 resolveWarpData／resolveEntities，改传 textFileBase、hideSupersededVersions 与 onChapterData', async () => {
+    // 对读数据的读取已收进 book-index-ui（loadReaderChapter，单测在包里）：网站只把声明交给阅读器；
+    // 阅读功能（下载、版本号、校勘层、报错改字、全文定位、补字体）都是传给阅读器的插件，不再抓 DOM
+    describe('对读数据与阅读功能：交给阅读器', () => {
+        it('不传 resolveWarpData／resolveEntities／onChapterData，改传 textFileBase、hideSupersededVersions 与 plugins', async () => {
             render(<ReaderClient id="book-nm1" initial={{ chapter: '003' }} bookTitle="t" />);
             await act(async () => { await Promise.resolve(); });
             expect(last.reader).not.toHaveProperty('resolveWarpData');
             expect(last.reader).not.toHaveProperty('resolveEntities');
+            expect(last.reader).not.toHaveProperty('onChapterData');
             expect(last.reader!.textFileBase).toBe('/data/items');
             expect(last.reader!.hideSupersededVersions).toBe(true);
-            expect(typeof last.reader!.onChapterData).toBe('function');
+            expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toEqual(
+                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:fulltext'],
+            );
         });
 
-        it('onChapterData 无对读数据（null）时不抛，且不留上一章的改字上下文', async () => {
-            render(<ReaderClient id="book-nm2" initial={{ chapter: '003' }} bookTitle="t" />);
+        it('带 ?proof= 时多一个校对插件', async () => {
+            window.history.replaceState(null, '', '/read/book-nm3/003?proof=1');
+            try {
+                render(<ReaderClient id="book-nm3" initial={{ chapter: '003' }} bookTitle="t" />);
+                await act(async () => { await Promise.resolve(); });
+                expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toContain('kyg:proof');
+            } finally {
+                window.history.replaceState(null, '', '/');
+            }
+        });
+
+        it('首章直出文字交给阅读器的 initialChapter', async () => {
+            const lead = { paragraphs: ['甲'], selfHref: '/read/x/003', itemHref: '/item/x', itemLabel: '书目' };
+            render(<ReaderClient id="book-nm4" initial={{ chapter: '003' }} bookTitle="t" lead={lead} />);
             await act(async () => { await Promise.resolve(); });
-            const cb = last.reader!.onChapterData as (i: unknown) => void;
-            expect(() => cb({ chapterKey: '003', ctx: { versionKey: 'original', chapter: { file: '003' } }, data: null })).not.toThrow();
+            expect(last.reader!.initialChapter).toBe(lead);
         });
     });
 });
@@ -371,26 +386,5 @@ describe('本章校对提示：COS 总表优先', () => {
         mockProofIndex.mockReset().mockResolvedValue({ other: { '001': { rev: 'r', n: 3 } } });
         await show(plainIndex);
         expect(screen.queryByTestId('proofing-notice')).toBeNull();
-    });
-});
-
-describe('书名栏的文本版本号', () => {
-    const idx = { chapters: [{ n: 1, file: '001', title: '卷首', text_version: '0.1.4', punct_version: '0.1.1', entity_version: '0.1.1' }] };
-    const show = async (isOriginal: boolean) => {
-        getTextManifest.mockReset().mockResolvedValue({ id: ZHIZHAI, versions: [{ key: 'default', kind: 'self_collated', label: '自校本', is_original: isOriginal }] });
-        getTextIndex.mockReset().mockResolvedValue(idx);
-        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
-        await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
-    };
-    beforeEach(() => { mockProofIndex.mockReset().mockResolvedValue(null); });
-
-    it('本项目自做的版本：书名后显示文本版本号', async () => {
-        await show(true);
-        render(<>{last.reader?.subtitle as React.ReactNode}</>);
-        expect(screen.getByTestId('text-version').textContent).toBe('文本 v0.1.4');
-    });
-    it('外来版本：不出版本号，书名栏照旧', async () => {
-        await show(false);
-        expect(last.reader?.subtitle).toBeUndefined();
     });
 });

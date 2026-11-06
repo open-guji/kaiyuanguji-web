@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
-    ALT_MAX, BASIS_MAX, NOTE_MAX, canFixChar, cellIdOf, isNewChar, reportableEntitiesAt, submitCharFix, submitEntityFix,
+    ALT_MAX, BASIS_MAX, NOTE_MAX, canFixChar, isNewChar, reportableEntitiesAt, submitCharFix, submitEntityFix,
     type CharFixCtx, type CharFixEntity,
 } from '@/lib/charfix';
 import { useSiteT } from '@/i18n/use-site-t';
@@ -10,10 +10,12 @@ import { fixesPageHref } from '@/lib/fixes';
 import type { SiteT } from '@/i18n/translate';
 
 interface Props {
-    /** 阅读器正文所在的外框：只认这里面的字 */
-    containerRef: RefObject<HTMLElement | null>;
-    /** 本章改字上下文（阅读器取到对读数据时填）；返回 null＝本章不是对读章，不出入口。要稳定引用（useCallback） */
-    getCtx: () => CharFixCtx | null;
+    /** 被点的格位与该字当前的屏幕矩形（阅读器插件的 onCell.click 给；字未渲染时不会来） */
+    target: { cell: string; rect: DOMRect };
+    /** 本章改字上下文 */
+    ctx: CharFixCtx;
+    /** 浮条收起（滚动、缩放、点 ×）。弹窗开着时滚动不收 */
+    onClose: () => void;
     /** 测试注入；默认全局 fetch */
     fetchImpl?: typeof fetch;
 }
@@ -36,52 +38,41 @@ function whereOf(t: SiteT, cell: string) {
     return t('charfix.bar.where', { page, col, slot });
 }
 
+/** 字的矩形 → 浮条的初始落点 */
+function placeAt(cell: string, rect: DOMRect): At {
+    // 同选字浮条：桌面浮在字上方，触屏放字下方（免得和系统选字菜单打架）；锚在字旁边，不占视口底部，盖不到书影翻页等控件
+    const below = (window.matchMedia?.('(pointer: coarse)').matches ?? false) || rect.top < 56; // 字在视口最上沿时上方放不下，也放下方
+    return { cell, left: rect.left + rect.width / 2, top: below ? rect.bottom + EDGE : rect.top - EDGE, below, charTop: rect.top };
+}
+
 /**
  * 阅读页「改字」入口（GUJI-561）。点一个对读章里的字，字旁边浮出一条「第 4 页 3 列 8 格「於」［改字］」（锚在字上，不占视口底部，
- * 盖不到书影翻页等控件；手机宽度也点得到）；点「改字」弹出建议字＋依据的小弹窗。纯 .txt 章没有 data-char-id，自然没有入口。
+ * 盖不到书影翻页等控件；手机宽度也点得到）；点「改字」弹出建议字＋依据的小弹窗。纯 .txt 章没有逐字格位，自然没有入口。
  * 字落在某个专名的 anchor 区间里时，浮条再多一个「专名有误」（GUJI-590），提交 kind=entity 记录。
  * 本章缺文本版本时不收改字，浮条里写明（专名意见不受影响）。
- * 选区拖选时不弹（那是「复制／报错」浮条的事）。
+ * 点哪个字由阅读器插件接口（onCell.click）告诉，本组件不碰阅读器 DOM；选区拖选时阅读器不发 click。
  */
-export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props) {
+export default function CharFixEntry({ target, ctx, onClose, fetchImpl }: Props) {
     const t = useSiteT();
-    const [at, setAt] = useState<At | null>(null);
+    const [at, setAt] = useState<At | null>(() => placeAt(target.cell, target.rect));
     const [open, setOpen] = useState<'char' | 'entity' | null>(null);
     const openRef = useRef(false);
     openRef.current = open !== null;
     const barRef = useRef<HTMLDivElement>(null);
 
+    // 点了别的字：换落点
+    useEffect(() => { setAt(placeAt(target.cell, target.rect)); }, [target]);
+
+    // fixed 定位：滚动、缩放后位置就不对了，先收起
     useEffect(() => {
-        const root = containerRef.current;
-        if (!root) return;
-        const onClick = (e: MouseEvent) => {
-            const sel = window.getSelection();
-            if (sel && !sel.isCollapsed) return;
-            const id = getCtx() ? cellIdOf(e.target) : null;
-            const el = id ? (e.target as Element).closest('[data-char-id]') : null;
-            if (!id || !el) return setAt(null);
-            const rect = el.getBoundingClientRect();
-            // 同选字浮条：桌面浮在字上方，触屏放字下方（免得和系统选字菜单打架）；锚在字旁边，不占视口底部，盖不到书影翻页等控件
-            const below = (window.matchMedia?.('(pointer: coarse)').matches ?? false) || rect.top < 56; // 字在视口最上沿时上方放不下，也放下方
-            setAt({
-                cell: id,
-                left: rect.left + rect.width / 2,
-                top: below ? rect.bottom + EDGE : rect.top - EDGE,
-                below,
-                charTop: rect.top,
-            });
-        };
-        // fixed 定位：滚动、缩放后位置就不对了，先收起
-        const hide = () => { if (!openRef.current) setAt(null); }; // 弹窗开着时不收（弹窗要用 at 里的格位）
-        root.addEventListener('click', onClick);
+        const hide = () => { if (!openRef.current) onClose(); }; // 弹窗开着时不收（弹窗要用 at 里的格位）
         window.addEventListener('scroll', hide, true);
         window.addEventListener('resize', hide);
         return () => {
-            root.removeEventListener('click', onClick);
             window.removeEventListener('scroll', hide, true);
             window.removeEventListener('resize', hide);
         };
-    }, [containerRef, getCtx]);
+    }, [onClose]);
 
     // 画出来以后按浮条实际尺寸夹进视口（GUJI-590）：触屏上字贴视口底时，下方放不下就翻到字上方，上方也放不下就贴底；
     // 左右同理（浮条宽度随文案、按钮多少而变，不再按固定半宽估）。挪过一次后再量就在视口内，不会来回跳
@@ -104,8 +95,7 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
         if (left !== at.left || top !== at.top || below !== at.below) setAt({ ...at, left, top, below });
     }, [at]);
 
-    const ctx = getCtx();
-    if (!at || !ctx) return null;
+    if (!at) return null;
     const cell = at.cell;
     const orig = ctx.chars.get(cell) ?? '';
     const fixable = canFixChar(ctx);
@@ -125,7 +115,7 @@ export default function CharFixEntry({ containerRef, getCtx, fetchImpl }: Props)
                     ? <button type="button" className="og-cf-go" onClick={() => setOpen('char')}>{t('charfix.bar.fix')}</button>
                     : <span className="og-cf-off">{t('charfix.bar.noVersion')}</span>}
                 {ents.length > 0 && <button type="button" className="og-cf-go" onClick={() => setOpen('entity')}>{t('charfix.bar.entity')}</button>}
-                <button type="button" className="og-cf-x" onClick={() => setAt(null)} aria-label={t('charfix.bar.close')}>×</button>
+                <button type="button" className="og-cf-x" onClick={onClose} aria-label={t('charfix.bar.close')}>×</button>
             </div>
             {open === 'char' && fixable && <CharFixDialog t={t} ctx={ctx} cell={cell} orig={orig} fetchImpl={fetchImpl} onClose={() => setOpen(null)} />}
             {open === 'entity' && ents.length > 0 && <EntityFixDialog t={t} ctx={ctx} entities={ents} fetchImpl={fetchImpl} onClose={() => setOpen(null)} />}

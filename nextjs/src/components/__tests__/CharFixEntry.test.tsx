@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useRef } from 'react';
+import { useState } from 'react';
 import CharFixEntry from '../CharFixEntry';
 import { collectChars, collectEntities, entityFileVersion, entityIdsAt, isNewChar, reportableEntitiesAt, type CharFixCtx } from '@/lib/charfix';
 import { LOCALE_STORAGE_KEY } from '@/lib/site-locale';
@@ -13,28 +13,25 @@ const ctx: CharFixCtx = {
 
 afterEach(() => { localStorage.clear(); jest.restoreAllMocks(); });
 
-function Host({ withCtx = true, fetchImpl, c = ctx }: { withCtx?: boolean; fetchImpl?: typeof fetch; c?: CharFixCtx }) {
-    const ref = useRef<HTMLDivElement>(null);
+/** 模拟阅读器：点一个字，把「格位＋字的矩形」交给 CharFixEntry（真实环境里这一步由阅读器插件的 onCell.click 完成） */
+function Host({ fetchImpl, c = ctx }: { fetchImpl?: typeof fetch; c?: CharFixCtx }) {
+    const [target, setTarget] = useState<{ cell: string; rect: DOMRect } | null>(null);
+    const click = (cell: string) => (e: React.MouseEvent<HTMLElement>) => setTarget({ cell, rect: e.currentTarget.getBoundingClientRect() });
     return (
         <>
-            <div ref={ref}>
-                <span data-char-id="4:3:8">於</span>
-                <span data-char-id="4:3:9a">天</span>
-                <span data-char-id="bad">x</span>
-                <span data-char-id="5:1:1">王</span>
-                <span id="punct">。</span>
+            <div>
+                <span onClick={click('4:3:8')}>於</span>
+                <span onClick={click('4:3:9a')}>天</span>
+                <span onClick={click('5:1:1')}>王</span>
             </div>
-            <CharFixEntry containerRef={ref} getCtx={() => (withCtx ? c : null)} fetchImpl={fetchImpl} />
+            {target && <CharFixEntry target={target} ctx={c} fetchImpl={fetchImpl} onClose={() => setTarget(null)} />}
         </>
     );
 }
 
 describe('CharFixEntry', () => {
-    it('点对读字：字旁浮出「第 4 页 3 列 8 格「於」［改字］」；点标点或非法格位不出', () => {
+    it('点对读字：字旁浮出「第 4 页 3 列 8 格「於」［改字］」；点 × 收起', () => {
         render(<Host />);
-        fireEvent.click(document.getElementById('punct')!);
-        expect(screen.queryByRole('toolbar')).toBeNull();
-        fireEvent.click(screen.getByText('x'));
         expect(screen.queryByRole('toolbar')).toBeNull();
         fireEvent.click(screen.getByText('於'));
         expect(screen.getByRole('toolbar').textContent).toContain('第 4 页 3 列 8 格「於」');
@@ -55,12 +52,6 @@ describe('CharFixEntry', () => {
         fireEvent.click(screen.getByRole('button', { name: '改字' }));
         fireEvent.scroll(window);
         expect(screen.getByRole('dialog')).toBeTruthy();
-    });
-
-    it('纯 .txt 章（没有改字上下文）不出入口', () => {
-        render(<Host withCtx={false} />);
-        fireEvent.click(screen.getByText('於'));
-        expect(screen.queryByRole('toolbar')).toBeNull();
     });
 
     it('提交：POST /api/charfix，old_char 取 char.json 原字，entity_ids 按 anchor 命中算出；成功后显示谢谢', async () => {
