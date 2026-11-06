@@ -262,7 +262,7 @@ async function duiduPreloadUrls(id: string, s: Loaded): Promise<{ href: string; 
     if (!d) return [];
     const { meta } = d;
     const ok = (f: unknown): f is string => typeof f === 'string' && /^[\w.-]+$/.test(f);
-    // 有阅读器瘦身副本（reader_*_file，GUJI-700／P2-A）就 preload 副本——浏览器先取的是它（lib/duidu-data.ts）
+    // 有阅读器瘦身副本（reader_*_file，GUJI-700／P2-A）就 preload 副本——浏览器先取的是它（book-index-ui 的 loadReaderChapter）
     const pick = (k: string) => k !== 'norm_file' && ok(meta[k]) && ok(meta[`reader_${k}`]) ? meta[`reader_${k}`] : meta[k];
     const files = ['char_file', 'punct_file', 'cord_file', 'entity_file', 'norm_file']
         .map((k) => ({ k, f: pick(k) }))
