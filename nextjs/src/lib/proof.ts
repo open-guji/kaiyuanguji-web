@@ -117,7 +117,7 @@ const cache = new Map<string, Promise<ProofLayer>>();
 
 /**
  * 取本章的校对层。章在 `index.json` 里用 `proof_file` 声明（与 `char_file` 等同一套约定，只认章目录下的文件名）；
- * 未声明、取不到、解析失败都返回空层且不缓存失败。`getTextFile` 与 duidu-data 同源（transport 上有就用，否则读同域 /data）。
+ * 未声明、取不到、解析失败都返回空层且不缓存失败。`getTextFile` 与 text-file.ts 同源（transport 上有就用，否则读同域 /data）。
  */
 export function loadProofLayer(
     id: string,
