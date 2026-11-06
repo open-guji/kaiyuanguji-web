@@ -27,7 +27,8 @@ let loading: Promise<((a: string, b: string) => boolean) | null> | null = null;
 /** 取表并建判定函数；取不到返回 null（对校照常，只是异体字都归入「用字不同」）。只取一次 */
 export function loadVariantTest(url = '/compare/glyph-variants.json'): Promise<((a: string, b: string) => boolean) | null> {
     if (!loading) {
-        loading = fetch(url)
+        loading = Promise.resolve()
+            .then(() => fetch(url))
             .then((r) => (r.ok ? (r.json() as Promise<VariantTable>) : null))
             .then((t) => (t && typeof t.pairs === 'string' ? buildVariantTest(t) : null))
             .catch(() => null);
