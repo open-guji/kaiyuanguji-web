@@ -43,12 +43,17 @@ describe('fulltext 插件', () => {
         expect(screen.queryByRole('status')).toBeNull();
     });
 
-    it('本章没有逐字格位（整理本）：不滚动，只提示', () => {
-        const locate = jest.fn();
-        const { calls } = mount('?ft=001:1-3&ftq=%E8%80%8C', { cells: [], locate });
-        expect(locate).not.toHaveBeenCalled();
-        expect(calls.scrollTo).toEqual([]);
-        expect(screen.getByRole('status')).toBeTruthy();
+    it('没有逐字格位的章：正文晚渲染，locate 先 null 后有记号，重试后滚到', async () => {
+        jest.useFakeTimers();
+        try {
+            let ready = false;
+            const { calls } = mount('?ft=001:1-3&ftq=%E8%80%8C', { cells: [], locate: () => (ready ? 't:5' : null) });
+            await act(async () => { jest.advanceTimersByTime(700); });
+            expect(calls.scrollTo).toEqual([]);
+            ready = true;
+            await act(async () => { jest.advanceTimersByTime(400); });
+            expect(calls.scrollTo).toEqual([['t:5', { block: 'center' }]]);
+        } finally { jest.useRealTimers(); }
     });
 
     it('只滚一次（换了 api 对象重渲染也不再抢滚动）', () => {
