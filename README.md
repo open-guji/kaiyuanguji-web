@@ -24,7 +24,8 @@
 | `ops/` | 全栈构建包装、清缓存、回滚计划、数据巡检、服务器救援等脚本 |
 | `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml` |
 
-索引页的 React 组件**不在本仓**，在 npm 包 `book-index-ui`（源码 `open-guji/book-index-manager` 的 `ui/`）。
+索引页与阅读器的 React 组件**不在本仓**，在 npm 包 `book-index-ui`（源码 `open-guji/book-index-manager` 的 `ui/`）。
+两边怎么分工、阅读页功能怎么写成插件，见 [docs/ui-boundary.md](docs/ui-boundary.md)。
 本仓 `nextjs/src/app/book-index/page.tsx` 只做数据源与搜索的装配。
 
 ## 本地开发
@@ -74,7 +75,7 @@ NEXT_PUBLIC_MODE= NEXT_PUBLIC_DATA_SOURCE=bundle npm run build   # 验证生产�
 push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`promote=code`），不会带数据。
 出问题用 Actions 里的 Rollback。细节见 [docs/architecture.html](docs/architecture.html) 第八节和 [docs/runbook.md](docs/runbook.md)。
 
-- **发布顺序**：先 `npm publish` UI 包 → 再把依赖 bump 与 e2e 改动**同一批**推 main。反了 verify 必红。
+- **发布顺序**：先发 UI 包（dev 上发预发布 `x.y.z-rc.N`，定稿后发正式版 latest）→ 网站 dev 升依赖 → 切 `rc/vX.Y.Z` → merge commit 并入 main。反了 verify 必红。分支流程与预发布排号见 [docs/开发流程.md](docs/开发流程.md)。
 - **发数据**（`data.yml`，index 与 text 两条流程独立发布，每条只推进自己的仓、另一个仓钉在线上版本）：
   - **book-text**：自动。每小时检查一次，book-text main 有新提交就发；每天 UTC 21:43 另有一次完整跑兜底。手动：`gh workflow run data.yml -f flow=text`。
   - **book-index**：手动。`gh workflow run data.yml -f flow=index`。
