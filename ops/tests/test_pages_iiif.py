@@ -52,6 +52,7 @@ class PagesIiif(unittest.TestCase):
             r = s.slice_volume('01', {'ia': None}, {}, out, cache, jobs=1, table=table)
             self.assertTrue(os.path.exists(os.path.join(out, 'iiif/988g7gsqhd/01/0002/full/1200,/0/default.webp')))
             man = m.build_manifest(meta, '01', r['canvases'], table)
+            self.assertEqual(s.sample_sheet(out, {'volumes': {'01': r}}, n=1)[0][:5], 'vol01')
         self.assertTrue(man['id'].endswith('/iiif/988g7gsqhd/01/manifest.json'))
         self.assertEqual(len(man['items']), 2)
         body = man['items'][1]['items'][0]['items'][0]['body']['items']
