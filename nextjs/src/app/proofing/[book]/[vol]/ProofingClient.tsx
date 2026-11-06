@@ -8,7 +8,7 @@ import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader'
 import { readerPath } from '@/lib/reader-route';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
-import { getJson } from '@/lib/duidu-data';
+import { getJson } from '@/lib/text-file';
 import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
