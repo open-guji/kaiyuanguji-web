@@ -277,7 +277,7 @@ describe('阅读页 page.ssr（路径式地址）', () => {
             paragraphs: ['卷二正文'],
             truncated: false,
             selfHref: `/read/${ZHIZHAI}/002`,
-            prev: { href: `/read/${ZHIZHAI}/001`, label: '經錄' },
+            prev: { href: `/read/${ZHIZHAI}/001`, label: '上一章：經錄' },
             itemHref: `/item/${ZHIZHAI}`,
         });
         expect(el.props.lead?.next).toBeUndefined(); // 最后一章没有下一章

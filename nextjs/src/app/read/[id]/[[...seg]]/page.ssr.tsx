@@ -39,7 +39,7 @@ import ReaderClient from '../ReaderClient';
 import { preloadReader, SEED_TEXT_MAX } from '../preload';
 import { seedCallKey, type ReaderSeed } from '../reader-seed';
 import { leadParagraphs, leadText } from '@/lib/reader-lead';
-import type { ReaderLeadData } from '../ReaderLead';
+import type { ReaderInitialChapter } from 'book-index-ui';
 import { readTextsOf, type ReadTextRow } from '@/lib/read-texts';
 import { simplifyMetadata } from '@/lib/server/simplify';
 import { chapterFontCss, chapterFontMeta, isCssSafeUrl } from '@/lib/chapter-font';
@@ -200,7 +200,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 /** 服务端直出的首章正文＋上下章真链接（overview#581 方案 A 第 3 项）；没有首章正文（预算超时、过大、无正文）就不出 */
-function buildLead(id: string, s: Loaded, seed: ReaderSeed, head?: { text: string; truncated: boolean } | null): ReaderLeadData | undefined {
+function buildLead(id: string, s: Loaded, seed: ReaderSeed, head?: { text: string; truncated: boolean } | null): ReaderInitialChapter | undefined {
     const { checked } = s;
     if (checked.status !== 'found' || !checked.version || !checked.chapter || !checked.index) return undefined;
     const got = seed.calls?.[seedCallKey('getChapter', id, checked.version.key, checked.chapter)] as { md?: string } | undefined;
@@ -211,17 +211,18 @@ function buildLead(id: string, s: Loaded, seed: ReaderSeed, head?: { text: strin
     if (paragraphs.length === 0) return undefined;
     const chapters = checked.index.chapters;
     const at = chapters.findIndex((c) => c.file === checked.chapter);
-    const link = (i: number) => {
+    const link = (i: number, prefix: string) => {
         const c = chapters[i];
         if (!c) return undefined;
-        return { href: readerPath(id, { key: s.sel.key, chapter: c.file }), label: dedupeChapterLabel(s.title, c.title?.trim() || chapterFallbackLabel(c.file)) || chapterFallbackLabel(c.file) };
+        const label = dedupeChapterLabel(s.title, c.title?.trim() || chapterFallbackLabel(c.file)) || chapterFallbackLabel(c.file);
+        return { href: readerPath(id, { key: s.sel.key, chapter: c.file }), label: `${prefix}${label}` };
     };
     return {
         paragraphs,
         truncated,
         selfHref: s.canonical,
-        prev: at > 0 ? link(at - 1) : undefined,
-        next: at >= 0 ? link(at + 1) : undefined,
+        prev: at > 0 ? link(at - 1, '上一章：') : undefined,
+        next: at >= 0 ? link(at + 1, '下一章：') : undefined,
         itemHref: `/item/${id}`,
         itemLabel: `${s.title}·书目详情`,
     };

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderChapterData, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, type ReaderInitialChapter, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderChapterData, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import SelectionReport from '@/components/feedback/SelectionReport';
@@ -29,7 +29,6 @@ import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitR
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
-import ReaderLead, { type ReaderLeadData } from './ReaderLead';
 import ReaderFulltextHint from '@/components/fulltext/ReaderFulltextHint';
 import ReaderProof, { useProofPref } from './ReaderProof';
 import { createCompareStore } from '@/components/compare/compare-plugin';
@@ -49,8 +48,8 @@ interface ReaderClientProps {
     sources?: ReadTextRow[];
     /** 服务端取好的首屏数据（manifest、版本目录、首章正文），见 reader-seed.ts；缺省则全由浏览器取 */
     seed?: ReaderSeed;
-    /** 服务端直出的首章正文＋上下章链接（给爬虫看的同一章正文），阅读器内容出来后卸载；见 ReaderLead.tsx */
-    lead?: ReaderLeadData;
+    /** 服务端直出的首章正文＋上下章链接（给爬虫看的同一章正文）；交给阅读器的 initialChapter，阅读器内容出来后自己卸载 */
+    lead?: ReaderInitialChapter;
 }
 
 /**
@@ -414,12 +413,12 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 backHref="/read"
                 onReportError={onReportError}
                 textFileBase={TEXT_FILE_BASE}
+                initialChapter={lead}
                 hideSupersededVersions
                 onChapterData={onChapterData}
                 resolveImages={resolveImages}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
-            {lead && <ReaderLead data={lead} hostRef={textRef} />}
             <SelectionReport containerRef={textRef} context={feedbackContext} getCtx={getCharfixCtx} />
             <CharFixEntry containerRef={textRef} getCtx={getCharfixCtx} />
             {proof.on !== null && <ReaderProof layer={proofLayer} hostRef={textRef} on={proof.on} onToggle={proof.set} />}
