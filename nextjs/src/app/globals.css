@@ -2706,3 +2706,14 @@
   --cmp-omit: #c0392b;    /* 对照本少（底本有、对照本没有） */
   --cmp-struct: #7a7066;  /* 题名／版式 */
 }
+
+/* 对校在阅读器正文上的标记（阅读器插件 decorate 的自定义 tone，类名 bim-cd-<tone>）：
+   用字不同＝橙实线，异体字＝蓝点线，对照本少＝红虚线字，对照本多＝字后绿色小字加下划线；对照写法放下标，同色 */
+.guji-text-char.bim-cd.bim-cd-cmp-word { text-decoration-color: var(--cmp-word); }
+.guji-text-char.bim-cd.bim-cd-cmp-word[data-cd-sub]::before { color: var(--cmp-word); }
+.guji-text-char.bim-cd.bim-cd-cmp-glyph { text-decoration-color: var(--cmp-glyph); }
+.guji-text-char.bim-cd.bim-cd-cmp-glyph[data-cd-sub]::before { color: var(--cmp-glyph); }
+.guji-text-char.bim-cd.bim-cd-cmp-omit { color: var(--cmp-omit); text-decoration-color: var(--cmp-omit); }
+.guji-text-char.bim-cd.bim-cd-cmp-struct { text-decoration-color: var(--cmp-struct); }
+.guji-text-char.bim-cd.bim-cd-cmp-ins { text-decoration-color: var(--cmp-add); }
+.guji-text-char.bim-cd.bim-cd-cmp-ins.bim-cd-ins::after { color: var(--cmp-add); text-decoration: underline; text-underline-offset: 0.15em; }

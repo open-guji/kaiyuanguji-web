@@ -22,7 +22,7 @@ export interface CellDecoration {
 export const CAT_STYLE: Record<DiffCat, { tone: string; underline: CellDecoration['underline'] }> = {
     glyph: { tone: 'cmp-glyph', underline: 'dotted' },
     word: { tone: 'cmp-word', underline: 'solid' },
-    add: { tone: 'cmp-add', underline: 'solid' },
+    add: { tone: 'cmp-ins', underline: 'solid' },
     omit: { tone: 'cmp-omit', underline: 'dashed' },
     struct: { tone: 'cmp-struct', underline: 'dashed' },
 };
@@ -54,7 +54,9 @@ export function buildDecorations(items: readonly CompareItem[], cells: readonly 
         const st = CAT_STYLE[it.cat];
         const focus = it.id === focusId ? { focus: true } : {};
         if (it.type === 'ins') {
-            put(it.i1 - 1, { insertAfter: prefs.mode === 'sub' ? it.reading : undefined, tone: st.tone, underline: st.underline, title: `${CAT_NAME[it.cat]}：${it.reading}`, ...focus });
+            // 底本这个字本身没有差异：只挂「字后插入」（简洁模式没有下标，改成给它画一条底线表示此处有增字）
+            const sub = prefs.mode === 'sub';
+            put(it.i1 - 1, { tone: st.tone, ...(sub ? { insertAfter: it.reading } : { underline: st.underline }), title: `${CAT_NAME[it.cat]}：${it.reading}`, ...focus });
             continue;
         }
         for (let i = it.i1; i < it.i2; i++) {

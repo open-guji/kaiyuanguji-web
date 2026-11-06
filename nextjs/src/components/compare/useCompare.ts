@@ -1,13 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CompareItem, CompareResult } from '@/lib/compare/compare';
+import type { CompareItem, CompareResult, SegResult } from '@/lib/compare/compare';
 import { buildDecorations, countByCat, itemByAnchor, stepItem, visibleItems, type CellDecoration } from '@/lib/compare/decorate';
 import { DEFAULT_COMPARE_PREFS, loadComparePrefs, saveComparePrefs, type ComparePrefs } from '@/lib/compare/prefs';
 import { runCompare } from '@/lib/compare/run';
 import { formatCmp, parseCmp, type CompareTarget } from '@/lib/compare/url';
 import type { BaseCell } from '@/lib/compare/volumes';
 import type { CompareStatus } from './CompareSettings';
+
+// 没有结果时用固定的空值：引用每次都变会让依赖它们的修饰表不断重算，插件又据此叫阅读器刷新，形成死循环
+const NO_SEGMENTS: readonly SegResult[] = [];
+const NO_ITEMS: readonly CompareItem[] = [];
+const NO_DECORATIONS: ReadonlyMap<string, CellDecoration> = new Map();
 
 type RunTransport = Parameters<typeof runCompare>[0]['transport'];
 
@@ -21,41 +26,57 @@ export function writeCmp(target: CompareTarget | null): void {
 }
 
 /**
- * 对校的状态：对照本（来自网址 ?cmp=，只认本作品下别的来源，不合法静默忽略）、设置（存本机）、比对结果、当前焦点。
- * 取数、比对在浏览器里现场做，结果只在内存。cells 是本册字格序列（阅读顺序），换册换章时换一个新数组。
+ * 对照本状态（来自网址 ?cmp=，只认本作品别的来源，不合法静默忽略）。放在阅读页外层：来源行的「对校」按钮和阅读器里的插件共用。
+ * 服务端与水合首帧一律关，保持与普通阅读页一致；挂载后读网址。
  */
-export function useCompare({ id, versionKey, chapter, transport, sourceIds, cells }: {
+export function useCompareTarget(id: string, sourceIds: readonly string[]) {
+    const [target, setTargetState] = useState<CompareTarget | null>(null);
+    useEffect(() => {
+        const t = parseCmp(new URLSearchParams(window.location.search).get('cmp'));
+        if (t && t.id !== id && sourceIds.includes(t.id)) setTargetState(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const setTarget = useCallback((next: CompareTarget | null) => {
+        setTargetState(next);
+        writeCmp(next);
+    }, []);
+    return { target, setTarget };
+}
+
+/**
+ * 对校的比对状态：设置（存本机）、比对结果、当前焦点。取数、比对在浏览器里现场做，结果只在内存。
+ * cells 是本册字格序列（阅读顺序），换册换章时换一个新数组。
+ */
+export function useCompare({ id, versionKey, chapter, transport, target, setTarget, cells }: {
     id: string;
     /** 底本版本 key（真实 key，非 default 占位）与本册文件 stem；还没定为 null */
     versionKey: string | null;
     chapter: string | null;
     transport: RunTransport;
-    /** 作品下别的来源条目 id（不含本条目） */
-    sourceIds: readonly string[];
+    target: CompareTarget | null;
+    setTarget: (t: CompareTarget | null) => void;
     cells: readonly BaseCell[] | null;
 }) {
-    const [target, setTargetState] = useState<CompareTarget | null>(null);
     const [prefs, setPrefsState] = useState<ComparePrefs>(DEFAULT_COMPARE_PREFS);
     const [result, setResult] = useState<(CompareResult & { cellsRef: readonly BaseCell[] }) | null>(null);
     const [status, setStatus] = useState<CompareStatus>('idle');
     const [focusId, setFocusId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
 
-    // 挂载后读网址与本机设置（服务端与水合首帧一律关，保持与普通阅读页一致）
     useEffect(() => {
-        const t = parseCmp(new URLSearchParams(window.location.search).get('cmp'));
-        if (t && sourceIds.includes(t.id) && t.id !== id) setTargetState(t);
         setPrefsState(loadComparePrefs());
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const setTarget = useCallback((next: CompareTarget | null) => {
-        setTargetState(next);
+    // 换对照本或退出：清掉焦点与结果
+    useEffect(() => {
         setFocusId(null);
         setDetailOpen(false);
-        if (!next) setResult(null);
-        writeCmp(next);
-    }, []);
+        if (!target) {
+            setResult(null);
+            setStatus('idle');
+        }
+    }, [target?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const setPrefs = useCallback((p: ComparePrefs) => {
         setPrefsState(p);
         saveComparePrefs(p);
@@ -85,10 +106,10 @@ export function useCompare({ id, versionKey, chapter, transport, sourceIds, cell
         };
     }, [target, id, versionKey, chapter, cells, transport]);
 
-    const items: readonly CompareItem[] = result?.items ?? [];
+    const items: readonly CompareItem[] = result?.items ?? NO_ITEMS;
     const shown = useMemo(() => visibleItems(items, prefs), [items, prefs]);
     const decorations: ReadonlyMap<string, CellDecoration> = useMemo(
-        () => (result && cells === result.cellsRef ? buildDecorations(items, result.cellsRef, prefs, detailOpen ? focusId : null) : new Map()),
+        () => (result && cells === result.cellsRef ? buildDecorations(items, result.cellsRef, prefs, detailOpen ? focusId : null) : NO_DECORATIONS),
         [items, result, cells, prefs, focusId, detailOpen],
     );
     const byAnchor = useMemo(() => (result ? itemByAnchor(items, result.cellsRef) : new Map<string, CompareItem>()), [items, result]);
@@ -116,8 +137,9 @@ export function useCompare({ id, versionKey, chapter, transport, sourceIds, cell
     }, [shown, focusId, focus]);
 
     return {
-        target, setTarget, status, items, shown, counts, segments: result?.segments ?? [],
+        status, items, shown, counts, segments: result?.segments ?? NO_SEGMENTS,
         prefs, setPrefs, decorations, current, pick, step, closeDetail: () => setDetailOpen(false),
         active: target !== null,
+        target, setTarget,
     };
 }

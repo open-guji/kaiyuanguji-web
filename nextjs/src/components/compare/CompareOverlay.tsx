@@ -10,6 +10,7 @@ export function anchorLabel(anchor: string): string {
     return m ? `第${m[1]}頁 第${m[2]}列 第${m[3]}字` : anchor;
 }
 
+/** 两版的上下文照原字显示，不做繁简转换：差异本来就在字形上（異體字、𠮓/變），转了就看不出来 */
 function Ctx({ before, mid, after, color, ins }: { before: string; mid: string; after: string; color: string; ins?: boolean }) {
     return (
         <div style={{ lineHeight: 1.9, letterSpacing: '.04em' }}>
@@ -22,7 +23,7 @@ function Ctx({ before, mid, after, color, ins }: { before: string; mid: string; 
 
 /**
  * 对校的底部条与详情卡：条上显示各类条数与「上一处／下一处」；点了某处（或跳到某处）出详情卡，
- * 桌面在右下角，手机（<640px）贴底成抽屉。纯展示，焦点与跳转由宿主处理。
+ * 放哪由阅读器的插件浮层容器管（桌面右下角，手机贴底并让开底栏），这里不自己定位。纯展示，焦点与跳转由宿主处理。
  */
 export default function CompareOverlay({ shown, current, counts, onStep, onClose, onExit, convert = (s) => s }: {
     /** 当前设置下显示的条目 */
@@ -40,14 +41,14 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
     const color = current ? CAT_COLOR[current.cat] : 'inherit';
     const idx = current ? shown.findIndex((i) => i.id === current.id) : -1;
     return (
-        <div data-testid="compare-overlay" style={{ position: 'fixed', zIndex: 40, left: 8, right: 8, bottom: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, pointerEvents: 'none' }}>
+        <div data-testid="compare-overlay" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
             {current && (
                 <section
                     role="dialog"
                     aria-label={convert('差異詳情')}
                     data-testid="compare-detail"
                     style={{
-                        pointerEvents: 'auto', width: 'min(100%, 360px)', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14,
+                        boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14,
                         background: 'var(--color-paper, #fff)', color: 'var(--color-ink, #222)', border: '1px solid var(--color-tint-2, rgba(0,0,0,.15))', boxShadow: '0 8px 30px rgba(0,0,0,.2)',
                     }}
                 >
@@ -66,7 +67,7 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
             )}
             <div
                 style={{
-                    pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 10px', borderRadius: 999, fontSize: 13,
+                    display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px', borderRadius: 16, fontSize: 13,
                     background: 'var(--color-paper, #fff)', border: '1px solid var(--color-tint-2, rgba(0,0,0,.15))', boxShadow: '0 2px 10px rgba(0,0,0,.12)',
                 }}
             >

@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { useCompare } from '../useCompare';
+import { useCompare, useCompareTarget } from '../useCompare';
 
 jest.mock('@/lib/compare/variants', () => ({ loadVariantTest: async () => null }));
 
@@ -13,6 +13,10 @@ const transport = {
     getChapter: async () => ({ md: '## 卷001\n\n天地元黃宇\n' }),
 };
 const props = { id: 'base', versionKey: 'default', chapter: '002', transport, sourceIds: ['wiki'], cells };
+const useBoth = (p: typeof props) => {
+    const { target, setTarget } = useCompareTarget(p.id, p.sourceIds);
+    return useCompare({ ...p, target, setTarget });
+};
 
 beforeEach(() => {
     window.history.replaceState(null, '', '/read/base/002?cmp=wiki');
@@ -20,7 +24,7 @@ beforeEach(() => {
 });
 
 it('读 ?cmp=，比对出差异，补全版本 key，点字开详情、上一处下一处', async () => {
-    const { result } = renderHook(() => useCompare(props));
+    const { result } = renderHook(() => useBoth(props));
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(window.location.search).toBe('?cmp=wiki-wikisource');
     // 卷一标题＋「卷一」两字对照本没有 → omit；玄/元 → word；宇宙 vs 宇 → omit
@@ -37,7 +41,7 @@ it('读 ?cmp=，比对出差异，补全版本 key，点字开详情、上一处
 
 it('不合法或不是本作品来源的 ?cmp= 静默忽略', async () => {
     window.history.replaceState(null, '', '/read/base/002?cmp=other-x');
-    const { result } = renderHook(() => useCompare(props));
+    const { result } = renderHook(() => useBoth(props));
     await new Promise((r) => setTimeout(r, 20));
     expect(result.current.active).toBe(false);
     expect(result.current.status).toBe('idle');
@@ -45,6 +49,6 @@ it('不合法或不是本作品来源的 ?cmp= 静默忽略', async () => {
 
 it('对照本取不到：status=error，不抛', async () => {
     const bad = { ...transport, getTextIndex: async (id: string) => (id === 'base' ? { chapters: [] } : null) };
-    const { result } = renderHook(() => useCompare({ ...props, transport: bad }));
+    const { result } = renderHook(() => useBoth({ ...props, transport: bad }));
     await waitFor(() => expect(result.current.status).toBe('error'));
 });
