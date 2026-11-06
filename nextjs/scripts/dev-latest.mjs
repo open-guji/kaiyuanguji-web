@@ -14,6 +14,7 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DATA_ORIGIN } from '../../config/hosts.mjs';
 
 const nextjs = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const env = { ...process.env };
@@ -34,7 +35,7 @@ if (env.BIM_UI_SRC === 'npm') {
 }
 env.NEXT_PUBLIC_MODE = '';
 env.NEXT_PUBLIC_DATA_SOURCE = env.NEXT_PUBLIC_DATA_SOURCE || 'cos';
-env.NEXT_PUBLIC_COS_BASE = env.NEXT_PUBLIC_COS_BASE || 'https://data.openguji.com';
+env.NEXT_PUBLIC_COS_BASE = env.NEXT_PUBLIC_COS_BASE || DATA_ORIGIN;
 env.NEXT_PUBLIC_BASE_PATH = '';
 // 与测试站一致：全栈渲染（/item/[id]、/read/[id] 等按请求渲染的页面才有）
 env.KYG_RENDER_MODE = env.KYG_RENDER_MODE ?? 'fullstack';
