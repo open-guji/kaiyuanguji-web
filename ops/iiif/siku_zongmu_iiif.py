@@ -722,10 +722,10 @@ def sample_sheet(out_dir, report, n=20, seed=388):
     dest = os.path.join(os.path.dirname(os.path.abspath(out_dir)), 'samples')
     os.makedirs(dest, exist_ok=True)
     for v, seq, w in pick:
-        src = os.path.join(out_dir, tier_key(int(v), seq, w))
-        with open(src, 'rb') as a, open(os.path.join(dest, f'vol{int(v):02d}-{seq}-read.webp'), 'wb') as b:
+        src = os.path.join(out_dir, tier_key(v, seq, w))   # v 是 report 的册键（字符串，与册目录同写法）
+        with open(src, 'rb') as a, open(os.path.join(dest, f'vol{v}-{seq}-read.webp'), 'wb') as b:
             b.write(a.read())
-    return [f'vol{int(v):02d}/{seq}' for v, seq, _ in pick]
+    return [f'vol{v}/{seq}' for v, seq, _ in pick]
 
 
 def main(argv=None):
