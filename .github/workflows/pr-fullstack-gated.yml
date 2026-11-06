@@ -9,7 +9,7 @@ name: PR fullstack (middleware gated)
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'nextjs/src/middleware*.ts'
 

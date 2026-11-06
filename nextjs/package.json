@@ -9,6 +9,8 @@
     "dev": "next dev --webpack",
     "dev:local": "cross-env NEXT_PUBLIC_MODE=local next dev --webpack",
     "dev:local:bundle": "cross-env NEXT_PUBLIC_MODE=local NEXT_PUBLIC_DATA_SOURCE=bundle next dev --webpack",
+    "dev:latest": "node scripts/dev-latest.mjs",
+    "shot": "node scripts/shot.mjs",
     "dev:remote": "cross-env NEXT_PUBLIC_MODE=remote next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
