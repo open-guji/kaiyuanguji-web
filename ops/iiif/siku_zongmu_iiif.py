@@ -114,7 +114,8 @@ def plan_canvases(vol, leaf_count, splits):
 
 
 def vol_dir(vol):
-    return f'{vol:02d}'
+    """册目录。四庫總目等传 int，按 2 位零填；别的书（pages_iiif.py）可直接传册号字符串（全唐文 3 位 '005'），原样用。"""
+    return vol if isinstance(vol, str) else f'{vol:02d}'
 
 
 # 换图源册的图放在册目录下的版本段里（如 qiefen2），与旧图路径分开：同路径换图有 30 天缓存，不用清；
@@ -199,7 +200,7 @@ def load_page_table(vol, get=None, rev=None):
             raise
         t = json.loads(body)
         if t.get('schema') != 'guji-pages/1' or t.get('rev') != n:
-            raise RuntimeError(f'vol{vol:02d} 页表 r{n:03d} 格式不对')
+            raise RuntimeError(f'vol{vol_dir(vol)} 页表 r{n:03d} 格式不对')
         return t
 
     if rev is not None:
@@ -348,9 +349,9 @@ def _slice_one(args):
         if c['xywh']:
             x, y, w, h = c['xywh']
             if list(src.size) != list(c['orig_size']):
-                raise RuntimeError(f'vol{vol:02d} {c["seq"]} 原图 {src.size} ≠ 裁剪框表记的 {c["orig_size"]}（IA 换过图？）')
+                raise RuntimeError(f'vol{vol_dir(vol)} {c["seq"]} 原图 {src.size} ≠ 裁剪框表记的 {c["orig_size"]}（IA 换过图？）')
             if x + w > src.size[0] or y + h > src.size[1]:
-                raise RuntimeError(f'vol{vol:02d} {c["seq"]} 裁剪框 {c["xywh"]} 超出原图 {src.size}')
+                raise RuntimeError(f'vol{vol_dir(vol)} {c["seq"]} 裁剪框 {c["xywh"]} 超出原图 {src.size}')
             im = src.crop((x, y, x + w, y + h))
         else:
             im = src

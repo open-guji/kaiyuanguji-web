@@ -14,25 +14,49 @@
   "title": "欽定全唐文（嘉慶揚州刻本內府本）",
   "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存",
   "vols": {
-   "06": {
-    "juan": "卷一～卷二",
-    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022804）"
+   "005": {
+    "juan": "卷七～卷十",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022807、CADAL01022808）"
    },
-   "07": {
-    "juan": "卷三～卷四",
-    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022805）"
+   "006": {
+    "juan": "卷十一～卷十四",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022809、CADAL01022810）"
    },
-   "08": {
-    "juan": "卷五～卷六",
-    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022806）"
+   "007": {
+    "juan": "卷十五～卷十八",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022811、CADAL01022812）"
    },
-   "09": {
-    "juan": "卷七～卷八",
-    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022807）"
+   "008": {
+    "juan": "卷十九～卷二十二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022813、CADAL01022814）"
    },
-   "10": {
-    "juan": "卷九～卷十",
-    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022808）"
+   "009": {
+    "juan": "卷二十三～卷二十六",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022815、CADAL01022816）"
+   },
+   "010": {
+    "juan": "卷二十七～卷三十",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022817、CADAL01022818）"
+   },
+   "011": {
+    "juan": "卷三十一～卷三十四",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022819、CADAL01022820）"
+   },
+   "012": {
+    "juan": "卷三十五～卷三十八",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022821、CADAL01022822）"
+   },
+   "013": {
+    "juan": "卷三十九～卷四十二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022823、CADAL01022824）"
+   },
+   "014": {
+    "juan": "卷四十三～卷四十六",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022825、CADAL01022826）"
+   },
+   "015": {
+    "juan": "卷四十七～卷五十",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022827、CADAL01022828）"
    }
   }
  }

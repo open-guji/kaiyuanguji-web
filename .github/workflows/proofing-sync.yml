@@ -50,7 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu,beixing-guben' }}
+      # 仓库变量 PROOF_WS 管基础清单；后面这串是仓里登记的新书工作区（会话改不了仓库变量，新书就加在这里），脚本去重
+      PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu,beixing-guben' }},995ejelvk0
       FIX_BOOKS: ${{ vars.FIX_BOOKS || '96mid1ogzk' }}
       DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
       ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.only || '' }}
