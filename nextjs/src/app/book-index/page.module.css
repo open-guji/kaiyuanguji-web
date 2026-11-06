@@ -25,21 +25,16 @@
  * 联想下拉和「最近浏览」卡片的描边都取 --bim-widget-border，只在组件内把它调成透明。
  * 走换肤变量，不依赖组件 DOM 层级；分组靠留白和抬起底色（下拉自带阴影）。
  */
-.page :global(.bim-browser-container) {
+.page {
   --bim-widget-border: transparent;
 }
 
 /*
- * 贴齐版心：组件给标题栏、检索框行、结果区各加了 20px 左右内边距（内联样式），
- * 没有变量可调，只能压。依赖的 DOM（book-index-ui 0.10.0 IndexBrowser）：
- *   .bim-browser-container > header  标题栏
- *   .bim-browser-container > div     检索框行、统计摘要、结果区
- * 组件改了这层结构时选择器落空，只会退回多缩 20px，不影响功能。
+ * 贴齐版心：组件给标题栏、检索框行、结果区各加了左右内边距，走 book-index-ui 的
+ * --bim-browser-pad-x（默认 20px）；这里置 0，不再按 DOM 层级压（迁移计划 D6）。
  */
-.page :global(.bim-browser-container) > header,
-.page :global(.bim-browser-container) > div {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+.page {
+  --bim-browser-pad-x: 0px;
 }
 
 @media (max-width: 600px) {

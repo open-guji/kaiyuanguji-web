@@ -18,20 +18,18 @@ jest.mock('@/components/common/BimLocaleProvider', () => ({ children }: { childr
 const mockGetJson = jest.fn();
 const mockProofIndex = jest.fn(async (): Promise<unknown> => null);
 jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofIndex: () => mockProofIndex() }));
-jest.mock('@/lib/duidu-data', () => ({ ...jest.requireActual('@/lib/duidu-data'), getJson: (...a: unknown[]) => mockGetJson(...a) }));
+jest.mock('@/lib/text-file', () => ({ ...jest.requireActual('@/lib/text-file'), getJson: (...a: unknown[]) => mockGetJson(...a) }));
 
 const getTextManifest = jest.fn();
 const getTextIndex = jest.fn();
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({ getTextManifest, getTextIndex, getChapter: jest.fn() }) }));
 
 const last: { reader?: Record<string, unknown> } = {};
-// 对读数据适配：记下第三参数（norm）；pages 非空才不会被当成「没有对读」
-const mockAdaptCharCord = jest.fn((..._a: unknown[]) => [{ page: 3 }]);
+// 阅读页版本规则、对读取数是 book-index-ui 的真实现（它们另有单测）；阅读器本体与 React 部分用桩
 jest.mock('book-index-ui', () => ({
-    adaptCharCord: (...a: unknown[]) => mockAdaptCharCord(...a),
-    adaptPunctJson: () => [],
-    // fig.json → 图 id → 图（真的 adaptFig 另有单测，这里只要个按 id 的表）
-    adaptFig: (raw: { figures?: { id: string; file: string }[] }) => new Map((raw?.figures ?? []).map(f => [f.id, f])),
+    readerManifest: jest.requireActual('book-index-ui/storage').readerManifest,
+    loadReaderFiles: jest.requireActual('book-index-ui/storage').loadReaderFiles,
+    volumeFromChar: jest.requireActual('book-index-ui/storage').volumeFromChar,
     iiifVolumeOf: () => null,
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）
@@ -300,63 +298,40 @@ describe('ReaderClient：历史记录', () => {
         expect(screen.getAllByTestId('reader')[0]).toHaveTextContent('default|003');
     });
 
-    // overview#540：norm（规范层）读
-    describe('resolveWarpData：norm_file', () => {
-        type ResolveWarp = (key: string, ctx: unknown) => Promise<Record<string, unknown> | null>;
-        const CHAR = { file: '003', char_file: '003.char.json', cord_file: '003.cord.json' };
-        const run = async (id: string, chapter: Record<string, unknown>) => {
-            global.fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => ({ url }) })) as unknown as typeof fetch;
-            render(<ReaderClient id={id} initial={{ chapter: '003' }} bookTitle="t" />);
+    // 对读数据的读取已收进 book-index-ui（loadReaderChapter，单测在包里）：网站只把声明交给阅读器；
+    // 阅读功能（下载、版本号、校勘层、报错改字、全文定位、补字体）都是传给阅读器的插件，不再抓 DOM
+    describe('对读数据与阅读功能：交给阅读器', () => {
+        it('不传 resolveWarpData／resolveEntities／onChapterData，改传 textFileBase、hideSupersededVersions 与 plugins', async () => {
+            render(<ReaderClient id="book-nm1" initial={{ chapter: '003' }} bookTitle="t" />);
             await act(async () => { await Promise.resolve(); });
-            return (last.reader!.resolveWarpData as ResolveWarp)('003', { versionKey: 'original', chapter });
-        };
-        beforeEach(() => { mockAdaptCharCord.mockClear(); });
-
-        it('章条目声明了 norm_file：取回的 norm 作为 adaptCharCord 的第三参数，数据带 hasNorm=true', async () => {
-            const r = await run('book-nm1', { ...CHAR, norm_file: '003.norm.json' });
-            expect(mockAdaptCharCord).toHaveBeenCalledTimes(1);
-            const [char, cord, norm] = mockAdaptCharCord.mock.calls[0];
-            expect(char).toEqual({ url: '/data/items/book-nm1/original/003.char.json' });
-            expect(cord).toEqual({ url: '/data/items/book-nm1/original/003.cord.json' });
-            expect(norm).toEqual({ url: '/data/items/book-nm1/original/003.norm.json' });
-            expect(r?.hasNorm).toBe(true);
+            expect(last.reader).not.toHaveProperty('resolveWarpData');
+            expect(last.reader).not.toHaveProperty('resolveEntities');
+            expect(last.reader).not.toHaveProperty('onChapterData');
+            expect(last.reader!.textFileBase).toBe('/data/items');
+            expect(last.reader!.hideSupersededVersions).toBe(true);
+            expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toEqual(
+                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:fulltext'],
+            );
         });
 
-        it('没声明 norm_file（外来文本）：第三参数为 null，hasNorm=false——阅读器的「原字」档据此置灰', async () => {
-            const r = await run('book-nm2', CHAR);
-            expect(mockAdaptCharCord.mock.calls[0][2]).toBeNull();
-            expect(r?.hasNorm).toBe(false);
+        it('带 ?proof= 时多一个校对插件', async () => {
+            window.history.replaceState(null, '', '/read/book-nm3/003?proof=1');
+            try {
+                render(<ReaderClient id="book-nm3" initial={{ chapter: '003' }} bookTitle="t" />);
+                await act(async () => { await Promise.resolve(); });
+                expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toContain('kyg:proof');
+            } finally {
+                window.history.replaceState(null, '', '/');
+            }
+        });
+
+        it('首章直出文字交给阅读器的 initialChapter', async () => {
+            const lead = { paragraphs: ['甲'], selfHref: '/read/x/003', itemHref: '/item/x', itemLabel: '书目' };
+            render(<ReaderClient id="book-nm4" initial={{ chapter: '003' }} bookTitle="t" lead={lead} />);
+            await act(async () => { await Promise.resolve(); });
+            expect(last.reader!.initialChapter).toBe(lead);
         });
     });
-
-    // GUJI-737：图片格、插图块（fig.json）
-    describe('resolveWarpData：fig_file', () => {
-        type ResolveWarp = (key: string, ctx: unknown) => Promise<Record<string, unknown> | null>;
-        const CHAR = { file: '005', char_file: '005.char.json', cord_file: '005.cord.json' };
-        const FIG = { figures: [{ id: 'f148-2-14', kind: 'inline', file: 'fig/005/f148-2-14.png', alt: '左半圈连一实点' }] };
-        const run = async (id: string, chapter: Record<string, unknown>) => {
-            global.fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => (url.endsWith('.fig.json') ? FIG : { url }) })) as unknown as typeof fetch;
-            render(<ReaderClient id={id} initial={{ chapter: '005' }} bookTitle="t" />);
-            await act(async () => { await Promise.resolve(); });
-            return (last.reader!.resolveWarpData as ResolveWarp)('005', { versionKey: 'original', chapter });
-        };
-
-        it('声明了 fig_file：数据带 figures（图 id → 图）和同步的 figUrl（地址先解析好；取不到的给空串，阅读器显示标签）', async () => {
-            const r = await run('book-fg1', { ...CHAR, fig_file: '005.fig.json' });
-            const figures = r?.figures as Map<string, unknown>;
-            expect(figures.get('f148-2-14')).toMatchObject({ alt: '左半圈连一实点' });
-            const figUrl = r?.figUrl as (f: string) => string;
-            expect(figUrl('fig/005/f148-2-14.png')).toBe('/data/items/book-fg1/original/fig/005/f148-2-14.png');
-            expect(figUrl('fig/005/nope.png')).toBe('');
-        });
-
-        it('没声明 fig_file：不带 figures／figUrl（与改前一致）', async () => {
-            const r = await run('book-fg2', CHAR);
-            expect(r).not.toHaveProperty('figures');
-            expect(r).not.toHaveProperty('figUrl');
-        });
-    });
-
 });
 
 describe('本章校对提示', () => {
@@ -411,26 +386,5 @@ describe('本章校对提示：COS 总表优先', () => {
         mockProofIndex.mockReset().mockResolvedValue({ other: { '001': { rev: 'r', n: 3 } } });
         await show(plainIndex);
         expect(screen.queryByTestId('proofing-notice')).toBeNull();
-    });
-});
-
-describe('书名栏的文本版本号', () => {
-    const idx = { chapters: [{ n: 1, file: '001', title: '卷首', text_version: '0.1.4', punct_version: '0.1.1', entity_version: '0.1.1' }] };
-    const show = async (isOriginal: boolean) => {
-        getTextManifest.mockReset().mockResolvedValue({ id: ZHIZHAI, versions: [{ key: 'default', kind: 'self_collated', label: '自校本', is_original: isOriginal }] });
-        getTextIndex.mockReset().mockResolvedValue(idx);
-        render(<ReaderClient id={ZHIZHAI} initial={{ chapter: '001' }} bookTitle="t" />);
-        await act(async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); });
-    };
-    beforeEach(() => { mockProofIndex.mockReset().mockResolvedValue(null); });
-
-    it('本项目自做的版本：书名后显示文本版本号', async () => {
-        await show(true);
-        render(<>{last.reader?.subtitle as React.ReactNode}</>);
-        expect(screen.getByTestId('text-version').textContent).toBe('文本 v0.1.4');
-    });
-    it('外来版本：不出版本号，书名栏照旧', async () => {
-        await show(false);
-        expect(last.reader?.subtitle).toBeUndefined();
     });
 });

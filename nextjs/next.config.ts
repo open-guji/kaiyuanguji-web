@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve as pathResolve } from "node:path";
+import { existsSync } from "node:fs";
 
 const isLocal = process.env.NEXT_PUBLIC_MODE === 'local';
 
@@ -51,7 +52,35 @@ const uiVersion = resolveUiVersion();
 const { computeBuildInfo, writeBuildInfo } = createRequire(import.meta.url)('./scripts/lib/build-info.cjs');
 const buildInfo = computeBuildInfo({ cwd: process.cwd(), bimUi: uiVersion });
 
+// 本地联调：BIM_UI_SRC=<book-index-manager/ui 目录> 时，book-index-ui 直接引源码（改 UI 热更新，不用 build／拷贝／link）。
+// 只在 `next dev --webpack`（npm run dev:latest）里用；CI／生产构建不设它，行为不变。
+// 注意：UI 源码里的 react 等 peer 依赖必须解析到本站 node_modules，否则出现两份 React（Hooks 报 null）。
+// 做法是 resolve.modules 回落到本站 node_modules，所以 UI 目录里**不要**装依赖（不要在 ui/ 里 npm ci）；
+// 不能直接 alias react——App Router 自带一份编译好的 react，强行指向会再造一份。
+function bimUiSrcWebpack(config: any) {
+  const src = process.env.BIM_UI_SRC ? pathResolve(process.cwd(), process.env.BIM_UI_SRC) : '';
+  if (!src) return config;
+  if (!existsSync(join(src, 'src', 'index.ts'))) {
+    throw new Error(`BIM_UI_SRC=${src} 下没有 src/index.ts（应指向 book-index-manager/ui）`);
+  }
+  const nm = join(process.cwd(), 'node_modules');
+  console.log(`[next.config] book-index-ui → 源码 ${src}/src（BIM_UI_SRC）`);
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'book-index-ui$': join(src, 'src', 'index.ts'),
+    'book-index-ui/storage$': join(src, 'src', 'storage-entry.ts'),
+    'book-index-ui/variant-supplement$': join(src, 'src', 'i18n', 'variant-supplement.ts'),
+  };
+  // UI 源码目录下没装依赖时，回落到本站的 node_modules
+  config.resolve.modules = [...(config.resolve.modules ?? ['node_modules']), nm];
+  config.watchOptions = { ...config.watchOptions, followSymlinks: true };
+  return config;
+}
+
 const nextConfig: NextConfig = {
+  webpack: (config) => bimUiSrcWebpack(config),
+  // UI 源码在项目目录之外（../book-index-manager/ui）时，允许 webpack 编译它
+  ...(process.env.BIM_UI_SRC ? { experimental: { externalDir: true } } : {}),
   // local mode 需要 API routes、fullstack 要函数渲染，都不能用 static export
   ...(isLocal || isFullstack ? {} : { output: 'export' as const }),
   // 仅 local 模式打包 *.local.ts 文件（如 API routes，与 output: 'export' 不兼容）；

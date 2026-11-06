@@ -1,7 +1,7 @@
 /**
- * GUJI-163 F6 步 4：阅读页 ?ft=／?ftq= 解析与按文本定位。
+ * GUJI-163 F6 步 4：阅读页 ?ft=／?ftq= 解析（定位本身见 fulltext-plugin.test）。
  */
-import { parseFtParams, findQueryNode, findAnchor } from '../fulltext/fulltext-locate';
+import { parseFtParams } from '../fulltext/fulltext-locate';
 
 describe('parseFtParams', () => {
     it('正常：ft=<章>:<起>-<止> ＋ ftq', () => {
@@ -22,34 +22,5 @@ describe('parseFtParams', () => {
     });
     it('ftq 原样保留尖括号（只当文本，由调用方用文本节点显示）', () => {
         expect(parseFtParams(`?ft=001:1-2&ftq=${encodeURIComponent('<img src=x onerror=alert(1)>')}`)?.q).toBe('<img src=x onerror=alert(1)>');
-    });
-});
-
-describe('findQueryNode', () => {
-    it('找到含查询词的元素（跨文本节点也行）', () => {
-        document.body.innerHTML = '<div id="h"><p>前文</p><p>子曰：學<span>而時</span>習之。</p></div>';
-        const el = findQueryNode(document.getElementById('h')!, '學而時習');
-        expect(el?.tagName).toBe('P');
-        expect(el?.textContent).toContain('子曰');
-    });
-    it('找不到或空查询返回 null', () => {
-        document.body.innerHTML = '<div id="h"><p>無關</p></div>';
-        expect(findQueryNode(document.getElementById('h')!, '學而')).toBeNull();
-        expect(findQueryNode(document.getElementById('h')!, '')).toBeNull();
-    });
-});
-
-describe('findAnchor', () => {
-    it('有 data-ft-cp：取离起点最近的锚点', () => {
-        document.body.innerHTML = '<div id="h"><mark data-ft-cp="10">甲</mark><mark data-ft-cp="130">乙</mark><mark data-ft-cp="900">丙</mark></div>';
-        expect(findAnchor(document.getElementById('h')!, 128, '乙')?.textContent).toBe('乙');
-    });
-    it('无锚点：退回按文本找', () => {
-        document.body.innerHTML = '<div id="h"><p>無關</p><p>學而</p></div>';
-        expect(findAnchor(document.getElementById('h')!, 5, '學而')?.textContent).toBe('學而');
-    });
-    it('data-ft-cp 不是整数：忽略', () => {
-        document.body.innerHTML = '<div id="h"><mark data-ft-cp="x">甲</mark><p>學而</p></div>';
-        expect(findAnchor(document.getElementById('h')!, 5, '學而')?.tagName).toBe('P');
     });
 });

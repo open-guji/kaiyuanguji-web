@@ -20,10 +20,13 @@ jest.mock('@/components/feedback/FeedbackProvider', () => ({
     useFeedback: () => ({ open, setPageContext: jest.fn() }),
     useFeedbackPageContext: jest.fn(),
 }));
-jest.mock('@/components/feedback/SelectionReport', () => () => null);
 
 const last: { reader?: Record<string, unknown> } = {};
 jest.mock('book-index-ui', () => ({
+    readerManifest: (m: unknown) => m,
+    loadReaderFiles: async () => null,
+    volumeFromChar: () => null,
+    iiifVolumeOf: () => null,
     LocaleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     BidUrlProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     // 反馈标签里的书名、版本名经 useConvert 转（不在 LocaleProvider 里时原样）

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import "book-index-ui/tokens.css"; // 变量默认值；须在 globals.css 之前，globals.css 只覆盖品牌变量
 import "./globals.css";
 import "./zi-fonts.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";
