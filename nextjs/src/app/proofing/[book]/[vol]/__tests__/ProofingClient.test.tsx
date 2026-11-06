@@ -10,7 +10,7 @@ const loadProofIndex = jest.fn();
 jest.mock('book-index-ui', () => ({ createTextApi: () => ({}), adaptCharCord: () => [] }));
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({}) }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
-jest.mock('@/lib/duidu-data', () => ({ getJson: async () => null }));
+jest.mock('@/lib/text-file', () => ({ getJson: async () => null }));
 jest.mock('@/lib/facsimile', () => ({ loadFacsimile: (...a: unknown[]) => loadFacsimile(...a) }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
 jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a), loadProofIndex: () => loadProofIndex() }));
