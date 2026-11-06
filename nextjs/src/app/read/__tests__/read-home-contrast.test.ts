@@ -6,13 +6,14 @@ import fs from 'fs';
 import path from 'path';
 
 const src = fs.readFileSync(path.join(__dirname, '..', 'ReadHome.tsx'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '..', '..', 'globals.css'), 'utf8');
+// --bim-aux-fg 的定义在 book-index-ui/tokens.css（本站 globals.css 不重写默认值）
+const css = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'node_modules', 'book-index-ui', 'dist', 'tokens.css'), 'utf8');
 
 describe('阅读首页小字对比度', () => {
     it('不用 --color-ink-3 作文字色', () => {
         expect(src).not.toMatch(/color:\s*'var\(--color-ink-3\)'/);
     });
-    it('note／meta 用 --bim-aux-fg，且该令牌在 globals.css 里有定义', () => {
+    it('note／meta 用 --bim-aux-fg，且该令牌在 book-index-ui/tokens.css 里有定义', () => {
         expect(src.match(/var\(--bim-aux-fg\)/g)?.length).toBeGreaterThanOrEqual(2);
         expect(css).toMatch(/--bim-aux-fg:\s*#6f6457/);
     });

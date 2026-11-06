@@ -201,9 +201,11 @@
 /* =========================================================
    book-index-ui 换肤接口（--bim-*）
    ---------------------------------------------------------
-   组件内部以 var(--bim-x, 回退值) 取色。这里全部接到上面的新令牌，
-   让条目页、阅读页、搜索页先跟着换色——**只动颜色和字体，不动布局**
-   （布局分别归 N3 / N5）。
+   layout.tsx 先 import 'book-index-ui/tokens.css'（变量默认值的唯一真源），这里**只覆盖品牌相关的变量**：
+   把颜色、字体接到上面的新令牌，让条目页、阅读页、搜索页跟着换色——**只动颜色和字体，不动布局**。
+   不在这里重写整套 --bim-*：包新增变量时，本站自动拿到包的默认值；
+   包里的版式令牌（--bim-fr-*）、阅读器字体（--bim-font-reader-*）、列表页内边距（--bim-browser-pad-x）同理，只在要换时才写。
+   也不写 .bim-* 结构选择器（globals.test 里有 lint 卡着）。
 
    换色原则同外壳：线条一律退到 tint-2（原来的粗黑线也降成浅线，
    粗细不变，所以不影响布局），分组靠底色阶。
@@ -262,7 +264,6 @@
   --bim-restype-text: #3a6b8a;
   --bim-restype-image: #b5762e;
   --bim-restype-text-image: #7a5192;
-  --bim-restype-physical: #795548;
   --bim-missing-fg: #b5762e;
 
   /* 影印件色彩模式标记 */
@@ -286,7 +287,6 @@
   --bim-section-lei: var(--color-gold);
   --bim-section-shu: var(--color-zhu);
   --bim-section-xu: #2f6a8d;
-  --bim-section-jieyu: #7d6608;
   --bim-section-kaozhen: var(--color-ink-2);
   --bim-section-tag-fg: var(--color-zhu);
   --bim-matchstate-fg: var(--color-gold);
@@ -316,9 +316,8 @@
   --bim-quiet-fg: var(--color-ink-2);
   --bim-meta-fg: var(--color-ink-2);
   /* 辅助字（标签、注记、朝代·分类等小一号文字）。ink-3 #948a7e 对纸底只有 3.17，
-     不够 4.5，所以 label / hint 改接 aux-fg；aux-fg 取 book-index-ui 0.10.0 的默认值
-     #6f6457（对 paper / raise / 斑马底 / 卡底都 ≥4.5）。ink-3 本身不动，外壳别处还在用。 */
-  --bim-aux-fg: #6f6457;
+     不够 4.5，所以 label / hint 改接 aux-fg；aux-fg 用 book-index-ui 的默认值
+     #6f6457（tokens.css 给，本站不重写；对 paper / raise / 斑马底 / 卡底都 ≥4.5）。ink-3 本身不动，外壳别处还在用。 */
   --bim-label-fg: var(--bim-aux-fg);
   --bim-hint-fg: var(--bim-aux-fg);
 
@@ -351,42 +350,9 @@
 }
 
 /* ---- 版式令牌（v4 P0）：默认＝疏朗（无框）；<html data-layout="boxed"> ＝界栏（1px 框线＋卡面底）。
-   与 book-index-ui 的 --bim-fr-* 同名同值——本站不引它的 variables.css，所以这里自己定义一遍。
-   组件（bim 详情页、总目、阅读、搜索，以及本站首页等）读这组令牌，不逐组件写死框线。 ---- */
+   --bim-fr-* 由 book-index-ui/tokens.css 给（疏朗在 :root，界栏在 data-layout="boxed"），本站不再重写。
+   下面只放本站自己的 --og-*：组件（bim 详情页、总目、阅读、搜索，以及本站首页等）读 --bim-fr-*，不逐组件写死框线。 ---- */
 :root {
-  --bim-fr-bd: 0 solid transparent;
-  --bim-fr-bg: transparent;
-  --bim-fr-hd-pad: 14px 18px;
-  --bim-fr-hd-bd: 0 solid transparent;
-  --bim-fr-bd-pad: 0;
-  --bim-fr-gap: 56px;
-  --bim-fr-side-gap: 34px;
-  --bim-fr-shadow: 0 1px 0 var(--bim-rule), 0 12px 32px -18px rgba(40, 36, 31, 0.25);
-  --bim-fr-tab-bd: transparent;
-  /* 版式判准（overview 设计/v4/版式判准.md，R8 10-01）新增的几组：边框一律写 border 简写；
-     疏朗取 1px solid transparent（不是 none），两种版式盒子一样大，切换时页面不跳 */
-  --bim-fr-card-bd: 1px solid transparent;
-  --bim-fr-row-bd: 1px solid transparent;
-  --bim-fr-chrome-bd: 1px solid transparent;
-  --bim-fr-tag-bd: 1px solid transparent;
-  --bim-fr-tbl-cell-bd: 0 solid transparent;
-  --bim-fr-tbl-zebra: var(--bim-tint-bg);
-  --bim-fr-rail-bd: 1px solid transparent;
-  --bim-fr-rail-bg: var(--bim-tint-bg);
-  /* bim#78／#80／#81 加的：分区标题栏（字号、淡染底）、卡片底、列表行距、标签底、题签书脊、书架架板、时间轴、年代带 */
-  --bim-fr-hd-size: 24px;
-  --bim-fr-hd-bg: color-mix(in srgb, var(--bim-accent) 7%, var(--bim-page-bg));
-  --bim-fr-card-bg: var(--bim-card-bg);
-  --bim-fr-row-pad: 10px 2px;
-  --bim-fr-tag-bg: var(--bim-tint-bg);
-  --bim-fr-spine-bd: 1px solid transparent;
-  --bim-fr-spine-bg: var(--bim-flag-bg);
-  --bim-fr-plank: 0 solid transparent;
-  --bim-fr-axis-bd: 0 solid transparent;
-  --bim-fr-axis-band: 6px;
-  --bim-fr-tick: 0;
-  --bim-fr-band-gap: 3px;
-  --bim-fr-band-bd: 0 solid transparent;
   /* 本站自己的：抬起的卡片与检索框的投影（疏朗有、界栏无）；页脚深底上的分隔线 */
   --og-card-sh: var(--shadow-soft);
   --og-foot-bd: 1px solid transparent;
@@ -396,35 +362,6 @@
   --og-foot-bg: var(--color-ink);
 }
 :root[data-layout="boxed"] {
-  --bim-fr-bd: 1px solid var(--bim-rule);
-  --bim-fr-bg: var(--bim-card-bg);
-  --bim-fr-hd-pad: 12px 18px;
-  --bim-fr-hd-bd: 1px solid var(--bim-rule);
-  --bim-fr-bd-pad: 14px 18px 18px;
-  --bim-fr-gap: 24px;
-  --bim-fr-side-gap: 20px;
-  --bim-fr-shadow: none;
-  --bim-fr-tab-bd: var(--bim-rule);
-  --bim-fr-card-bd: 1px solid var(--bim-rule);
-  --bim-fr-row-bd: 1px solid var(--bim-rule);
-  --bim-fr-chrome-bd: 1px solid var(--bim-rule);
-  --bim-fr-tag-bd: 1px solid var(--bim-rule-strong);
-  --bim-fr-tbl-cell-bd: 1px solid var(--bim-rule);
-  --bim-fr-tbl-zebra: transparent;
-  --bim-fr-rail-bd: 1px solid var(--bim-rule);
-  --bim-fr-rail-bg: var(--bim-card-bg);
-  --bim-fr-hd-size: 19px;
-  --bim-fr-hd-bg: color-mix(in srgb, var(--bim-accent) 6%, var(--bim-card-bg));
-  --bim-fr-row-pad: 7px 2px;
-  --bim-fr-tag-bg: transparent;
-  --bim-fr-spine-bd: 1px solid var(--bim-rule-accent-soft);
-  --bim-fr-spine-bg: var(--bim-card-bg);
-  --bim-fr-plank: 3px solid var(--bim-rule-strong);
-  --bim-fr-axis-bd: 1px solid var(--bim-rule-strong);
-  --bim-fr-axis-band: 0;
-  --bim-fr-tick: 5px;
-  --bim-fr-band-gap: 0;
-  --bim-fr-band-bd: 1px solid var(--bim-rule-dashed);
   --og-card-sh: none;
   --og-foot-bd: 1px solid rgba(255, 255, 255, 0.16);
 }
@@ -2018,18 +1955,17 @@
 /* =========================================================
    阅读页（N5b）正文用系统字体，不走 Noto 网络字体（overview#220 Q1，方案二）。
    一卷正文几万字，按 unicode-range 分片下载 Noto：宋史卷一实测 162 片 ≈ 4 MB。
-   界面其余部分仍按 N1 用 Noto；这里只在阅读器（.bim-rd）范围内换成系统字体栈。
+   界面其余部分仍按 N1 用 Noto；阅读器范围内换成系统字体栈——走 book-index-ui 的 --bim-font-reader-* token，
+   不再写 .bim-rd 选择器（迁移计划 D7）。
    注意字体栈里不能出现 "Noto Sans SC" / "Noto Serif SC"：next/font 以这两个名字注册了网络字体，
-   写上就会命中网络字体。--bim-font-body／reading 在 :root 上由 ui／serif 推出，
-   这里要一起覆盖，否则仍取 :root 的值。
+   写上就会命中网络字体。
    ========================================================= */
-.bim-rd {
-  --bim-font-ui: "KygZi", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+:root {
+  --bim-font-reader-ui: "KygZi", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei", system-ui, sans-serif;
-  --bim-font-body: var(--bim-font-ui);
-  --bim-font-serif: "KygZi", "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
+  --bim-font-reader-serif: "KygZi", "Songti SC", "Songti TC", "STSong", "Noto Serif CJK SC",
     "Source Han Serif SC", "SimSun", "PMingLiU", serif;
-  --bim-font-reading: var(--bim-font-serif);
+  --bim-font-reader-reading: var(--bim-font-reader-serif);
 }
 
 /* =========================================================
