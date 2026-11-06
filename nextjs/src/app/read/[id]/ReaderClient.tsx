@@ -334,7 +334,6 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 title={bookTitle}
                 subtitle={edition ? <span data-testid="reader-edition">{convert(edition)}</span> : undefined}
                 plugins={plugins}
-                initialChapter={lead}
                 backHref="/read"
                 onReportError={onReportError}
                 textFileBase={TEXT_FILE_BASE}
