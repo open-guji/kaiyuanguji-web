@@ -29,23 +29,32 @@
 
 ## 本地开发
 
+**最快：看网站 dev ＋ UI 包源码 ＋ 最新数据（不需要数据仓，也不用发测试站）**
+
 ```bash
 git clone https://github.com/open-guji/kaiyuanguji-web && cd kaiyuanguji-web
-npm install                     # 仓库根：装 husky pre-push 钩子（push 前跑单测）
+npm install                              # 仓库根：装 husky pre-push 钩子（push 前跑单测）
+bash nextjs/scripts/local-latest.sh      # 浅克隆同级 book-index-manager、装依赖、起服务 → http://localhost:3000
+# 之后只需：cd nextjs && npm run dev:latest
+# 出 PR 截图：cd nextjs && npm run shot -- /read/d59f2ew0ctmo   → docs/pr-screenshots/
+```
+
+分支流程（所有 PR 投 dev）、UI 源码直连的细节、发测试站步骤见 [`docs/开发流程.md`](docs/开发流程.md)。
+
+**其他方式**
+
+```bash
 cd nextjs && npm install
-
-# A. 不需要任何数据仓，读 GitHub raw（首次加载慢）
+# A. 读 GitHub raw / 数据站，UI 用 npm 装的版本
 rm -f .env.local && npm run dev
-
-# B. 读本地 D:\workspace 下的 book-index / book-text（推荐）
+# B. 读本地 D:\workspace 下的 book-index / book-text
 bash scripts/setup-local.sh     # 写好 .env.local：NEXT_PUBLIC_MODE=local + BOOK_INDEX_WORKSPACE_ROOT
 npm run dev                     # http://localhost:3000/book-index
 ```
 
 Windows 上旧的 `next dev` 没退干净时新实例会悄悄改用 3001/3002，以 `Local:` 提示为准；卡住就 `rm -rf .next`。
 
-改 `book-index-ui` 组件后想在本站看效果：在 `book-index-manager/ui` 里 `npm run build:lib`，
-把 `dist/*` 拷进 `nextjs/node_modules/book-index-ui/dist/`，删 `.next` 重启 dev。没有 npm link。
+改 `book-index-ui` 组件看效果：用上面的 `dev:latest`（源码直连，热更新）。不再需要 build 后拷 dist。
 
 ## 测试
 

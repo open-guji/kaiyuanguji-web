@@ -9,7 +9,7 @@ name: Fulltext gate (F8 门槛 B)
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'nextjs/src/**/fulltext/**'
       - 'nextjs/src/**/*fulltext*'
