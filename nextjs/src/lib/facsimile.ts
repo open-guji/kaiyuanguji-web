@@ -9,10 +9,12 @@
  * manifest 的 canvas 里对位取阅读档／原图档。格位 key 的「页」、cord 的 `page`、canvas 的 seq 是同一个数（扫描顺序号，从 1 起）；
  * 合扫拆页已拆成独立页，卷三 105–108 页各对应 0105a–d。第 1 叶是书脊签，对读数据从第 3 叶起。
  *
- * TODO（本卡不做）：图挂了换 Commons／IA 的前端回退链（canvas body Choice 的后几项）。
+ * 海外读者（`preferCommons()`）：canvas 带 `bim:commons` 的页改读 Commons 缩略图并在浏览器里摆正（commons-warp.ts），失败退回本站图。
+ * TODO（本卡不做）：本站图挂了换 IA 的前端回退链（canvas body Choice 的后几项）。
  */
 import type { ReaderPageImage } from 'book-index-ui';
 import { DATA_ORIGIN } from './hosts';
+import { commonsImageUrl, preferCommons, registerCommonsWarp, validCommons } from './commons-warp';
 
 export const FACSIMILE_BASE = process.env.NEXT_PUBLIC_FACSIMILE_BASE || `${DATA_ORIGIN}/iiif`;
 
@@ -21,6 +23,8 @@ interface IiifCanvas {
     label?: Record<string, string[]>;
     width: number;
     height: number;
+    /** 海外读者的 Commons 书影（四庫總目文淵閣本）：缩略图地址与「缩略图 → 页图」的透视矩阵，见 ops/iiif/commons_warp.py */
+    'bim:commons'?: unknown;
     items?: { items?: { body?: { items?: { id: string; width?: number; height?: number }[] } }[] }[];
 }
 
@@ -35,16 +39,20 @@ export function hiresUrlOf(readingUrl: string, fullWidth: number): string {
 }
 
 /** manifest 的 canvas 列表 → 阅读器的书影页。取不到页序的 canvas 跳过 */
-export function canvasesToImages(canvases: IiifCanvas[]): ReaderPageImage[] {
+export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boolean } = {}): ReaderPageImage[] {
     const out: ReaderPageImage[] = [];
     for (const c of canvases) {
         const first = c.items?.[0]?.items?.[0]?.body?.items?.[0];
         const m = /\/(\d{4})([a-z]?)\/full\//.exec(first?.id ?? '');
         if (!first || !m) continue;
         const leaf = parseInt(m[1], 10);
+        // 海外读者：有 Commons 摆正矩阵的页改读 Commons 3840 档（半叶约 1615 像素宽），地址带摆正参数，出错退回本站图
+        const cm = opts.commons && validCommons(c['bim:commons']) ? c['bim:commons'] : null;
+        const commonsUrl = cm ? commonsImageUrl(cm, c.width, c.height, hiresUrlOf(first.id, c.width)) : null;
         out.push({
-            url: first.id,
-            hiresUrl: hiresUrlOf(first.id, c.width),
+            url: commonsUrl ?? first.id,
+            hiresUrl: commonsUrl ?? hiresUrlOf(first.id, c.width),
+            ...(commonsUrl ? { alt: '景印文淵閣四庫全書，Wikimedia Commons' } : {}),
             width: c.width,
             height: c.height,
             seq: m[1] + m[2],
@@ -63,9 +71,11 @@ export function loadFacsimile(bookId: string, vol: string): Promise<ReaderPageIm
     const url = `${FACSIMILE_BASE}/${bookId}/${vol}/manifest.json`;
     let p = cache.get(url);
     if (!p) {
+        const commons = preferCommons();
+        if (commons) registerCommonsWarp();
         p = fetch(url)
             .then(r => (r.ok ? r.json() : null))
-            .then(m => (m && Array.isArray(m.items) ? canvasesToImages(m.items) : null))
+            .then(m => (m && Array.isArray(m.items) ? canvasesToImages(m.items, { commons }) : null))
             .catch(() => null);
         cache.set(url, p);
         p.then(v => { if (!v) cache.delete(url); });

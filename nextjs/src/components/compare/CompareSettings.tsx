@@ -35,14 +35,10 @@ export default function CompareSettings({ sources, targetId, onTarget, status, i
     const counts = countByCat(items);
     const failed = segments.filter((s) => s.status !== 'ok');
     return (
-        <div data-testid="compare-settings" style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: 'var(--color-ink-2, #666)' }}>{convert('對照本')}</span>
-                <select
-                    value={targetId ?? ''}
-                    onChange={(e) => onTarget(e.target.value || null)}
-                    style={{ flex: 1, minWidth: 0, padding: '4px 6px', borderRadius: 6, border: '1px solid var(--color-tint-2, rgba(0,0,0,.2))', background: 'transparent', color: 'inherit' }}
-                >
+        <div data-testid="compare-settings" className="cmp-settings">
+            <label className="cmp-field">
+                <span className="cmp-field-label">{convert('對照本')}</span>
+                <select value={targetId ?? ''} onChange={(e) => onTarget(e.target.value || null)} className="cmp-select">
                     <option value="">{convert('不對校')}</option>
                     {sources.map((s) => (
                         <option key={s.id} value={s.id}>{convert(s.label)}</option>
@@ -51,12 +47,12 @@ export default function CompareSettings({ sources, targetId, onTarget, status, i
             </label>
             {targetId && (
                 <>
-                    <div aria-live="polite" style={{ color: 'var(--color-ink-2, #666)' }}>
+                    <div aria-live="polite" className="cmp-note">
                         {status === 'loading' && convert('正在比對…')}
                         {status === 'error' && convert('對照本暫時取不到，已按普通閱讀顯示')}
                         {status === 'ready' && failed.length > 0 && convert(`有 ${failed.length} 卷沒有對應的對照文本，未比對`)}
                     </div>
-                    <div role="group" aria-label={convert('顯示哪些差異')} style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    <div role="group" aria-label={convert('顯示哪些差異')} className="cmp-chips">
                         {ALL_CATS.filter((c: DiffCat) => counts[c] > 0 || prefs.cats[c]).map((c) => {
                             const on = prefs.cats[c];
                             return (
@@ -65,29 +61,17 @@ export default function CompareSettings({ sources, targetId, onTarget, status, i
                                     type="button"
                                     aria-pressed={on}
                                     onClick={() => onPrefs({ ...prefs, cats: { ...prefs.cats, [c]: !on } })}
-                                    style={{
-                                        padding: '3px 10px', borderRadius: 999, cursor: 'pointer', font: 'inherit',
-                                        border: `1px solid ${CAT_COLOR[c]}`, color: on ? '#fff' : CAT_COLOR[c], background: on ? CAT_COLOR[c] : 'transparent',
-                                    }}
+                                    className="cmp-chip"
+                                    style={{ ['--c' as string]: CAT_COLOR[c] }}
                                 >
-                                    {convert(CAT_NAME[c])} {counts[c]}
+                                    {convert(CAT_NAME[c])} <span className="cmp-chip-n">{counts[c]}</span>
                                 </button>
                             );
                         })}
                     </div>
-                    <div role="group" aria-label={convert('標記方式')} style={{ display: 'flex', gap: 6 }}>
+                    <div role="group" aria-label={convert('標記方式')} className="cmp-seg">
                         {([['sub', '下標'], ['simple', '簡潔']] as const).map(([m, label]) => (
-                            <button
-                                key={m}
-                                type="button"
-                                aria-pressed={prefs.mode === m}
-                                onClick={() => onPrefs({ ...prefs, mode: m })}
-                                style={{
-                                    padding: '3px 12px', borderRadius: 6, cursor: 'pointer', font: 'inherit',
-                                    border: '1px solid var(--color-tint-2, rgba(0,0,0,.25))',
-                                    background: prefs.mode === m ? 'var(--color-zhu, #a33)' : 'transparent', color: prefs.mode === m ? '#fff' : 'inherit',
-                                }}
-                            >
+                            <button key={m} type="button" aria-pressed={prefs.mode === m} onClick={() => onPrefs({ ...prefs, mode: m })}>
                                 {convert(label)}
                             </button>
                         ))}
