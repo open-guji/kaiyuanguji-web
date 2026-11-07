@@ -2516,10 +2516,10 @@
 
 /* ---- 版本对校：差异类别色（只用颜色区分，不加符号；全站不做暗色，一套即可） ---- */
 :root {
-  --cmp-glyph: #2f6fb0;   /* 异体字 */
-  --cmp-word: #c2610a;    /* 用字不同 */
-  --cmp-add: #1c8a4a;     /* 对照本多出 */
-  --cmp-omit: #c0392b;    /* 对照本少（底本有、对照本没有） */
+  --cmp-glyph: #3d6a94;   /* 异体字 */
+  --cmp-word: #b4621a;    /* 用字不同 */
+  --cmp-add: #3f7f4a;     /* 对照本多出 */
+  --cmp-omit: #a8352f;    /* 对照本少（底本有、对照本没有） */
   --cmp-struct: #7a7066;  /* 题名／版式 */
 }
 
@@ -2528,3 +2528,65 @@
    只用属性选择器，不碰组件库内部类名 */
 .guji-text-char[data-cd-custom][data-cd-sub]::before { color: var(--cd-fg); }
 .guji-text-char[data-cd-ins]::after { color: var(--cmp-add); text-decoration: underline; text-underline-offset: 0.15em; }
+
+/* ---- 对校界面（设置栏、底部条、详情卡、来源行按钮）：用站内令牌，不另造样式 ---- */
+.cmp-source-btn {
+  padding: 2px 10px; border-radius: 999px; white-space: nowrap; cursor: pointer; font: inherit;
+  border: 1px dashed var(--color-zhu); background: transparent; color: var(--color-zhu);
+}
+.cmp-source-btn[aria-pressed="true"] { border-style: solid; background: var(--color-zhu-tint); }
+.cmp-source-btn:hover { background: var(--color-zhu-tint); }
+
+.cmp-settings { display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+.cmp-field { display: flex; align-items: center; gap: 8px; }
+.cmp-field-label { color: var(--color-ink-2); }
+.cmp-select { flex: 1; min-width: 0; padding: 4px 8px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); background: var(--color-raise); color: var(--color-ink); font: inherit; }
+.cmp-note { color: var(--color-ink-3); min-height: 1em; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cmp-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; cursor: pointer; font: inherit;
+  border: 1px solid var(--color-border); background: transparent; color: var(--color-ink-2);
+}
+.cmp-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: .45; }
+.cmp-chip[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--c) 11%, var(--color-raise)); border-color: color-mix(in srgb, var(--c) 45%, transparent); color: var(--color-ink);
+}
+.cmp-chip[aria-pressed="true"]::before { opacity: 1; }
+.cmp-chip-n { color: var(--color-ink-3); font-variant-numeric: tabular-nums; }
+.cmp-seg { display: inline-flex; align-self: flex-start; border: 1px solid var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
+.cmp-seg button { padding: 3px 14px; border: 0; background: transparent; color: var(--color-ink-2); font: inherit; cursor: pointer; }
+.cmp-seg button + button { border-left: 1px solid var(--color-border); }
+.cmp-seg button[aria-pressed="true"] { background: var(--color-tint-2); color: var(--color-ink); }
+
+.cmp-stack { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.cmp-bar {
+  display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 999px; font-size: 13px; white-space: nowrap;
+  background: var(--color-raise); color: var(--color-ink); border: 1px solid var(--color-border); box-shadow: 0 2px 10px rgba(38, 33, 28, .08);
+}
+.cmp-bar-counts { display: flex; gap: 10px; }
+.cmp-count { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.cmp-count::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.cmp-bar-pos { color: var(--color-ink-3); font-variant-numeric: tabular-nums; margin-left: 2px; }
+.cmp-iconbtn {
+  width: 28px; height: 28px; border-radius: 50%; border: 0; background: transparent; color: var(--color-ink-2);
+  font-size: 18px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.cmp-iconbtn:hover:not(:disabled) { background: var(--color-tint-2); color: var(--color-ink); }
+.cmp-iconbtn:disabled { opacity: .35; cursor: default; }
+.cmp-exit {
+  margin-left: auto; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--color-border); background: transparent;
+  color: var(--color-ink-2); font: inherit; cursor: pointer;
+}
+.cmp-exit:hover { background: var(--color-tint-2); color: var(--color-ink); }
+
+.cmp-card {
+  box-sizing: border-box; padding: 10px 14px 12px; border-radius: var(--radius-card); font-size: 14px;
+  background: var(--color-raise); color: var(--color-ink); border: 1px solid var(--color-border); border-left: 3px solid var(--c);
+  box-shadow: 0 6px 22px rgba(38, 33, 28, .14);
+}
+.cmp-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.cmp-card-cat { color: var(--c); }
+.cmp-card-where { flex: 1; font-size: 12px; color: var(--color-ink-3); }
+.cmp-card-label { margin-top: 6px; font-size: 12px; color: var(--color-ink-3); letter-spacing: .1em; }
+.cmp-ctx { line-height: 1.9; letter-spacing: .04em; }
+.cmp-ctx-dim { color: var(--color-ink-2); }

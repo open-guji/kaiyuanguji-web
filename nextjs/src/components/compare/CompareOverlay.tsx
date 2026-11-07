@@ -13,10 +13,10 @@ export function anchorLabel(anchor: string): string {
 /** 两版的上下文照原字显示，不做繁简转换：差异本来就在字形上（異體字、𠮓/變），转了就看不出来 */
 function Ctx({ before, mid, after, color, ins }: { before: string; mid: string; after: string; color: string; ins?: boolean }) {
     return (
-        <div style={{ lineHeight: 1.9, letterSpacing: '.04em' }}>
-            <span style={{ color: 'var(--color-ink-2, #777)' }}>{before}</span>
+        <div className="cmp-ctx">
+            <span className="cmp-ctx-dim">{before}</span>
             {mid ? <span style={{ color, borderBottom: `2px solid ${color}`, fontWeight: 600 }}>{mid}</span> : ins ? <span style={{ borderLeft: `2px solid ${color}`, margin: '0 1px' }} /> : <span style={{ color, opacity: 0.8 }}>（無）</span>}
-            <span style={{ color: 'var(--color-ink-2, #777)' }}>{after}</span>
+            <span className="cmp-ctx-dim">{after}</span>
         </div>
     );
 }
@@ -41,48 +41,33 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
     const color = current ? CAT_COLOR[current.cat] : 'inherit';
     const idx = current ? shown.findIndex((i) => i.id === current.id) : -1;
     return (
-        <div data-testid="compare-overlay" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+        <div data-testid="compare-overlay" className="cmp-stack">
             {current && (
-                <section
-                    role="dialog"
-                    aria-label={convert('差異詳情')}
-                    data-testid="compare-detail"
-                    style={{
-                        boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14,
-                        background: 'var(--color-paper, #fff)', color: 'var(--color-ink, #222)', border: '1px solid var(--color-tint-2, rgba(0,0,0,.15))', boxShadow: '0 8px 30px rgba(0,0,0,.2)',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                        <b style={{ color }}>{convert(CAT_NAME[current.cat])}</b>
-                        <span style={{ fontSize: 12, color: 'var(--color-ink-2, #777)' }}>
+                <section role="dialog" aria-label={convert('差異詳情')} data-testid="compare-detail" className="cmp-card" style={{ ['--c' as string]: color }}>
+                    <header className="cmp-card-head">
+                        <b className="cmp-card-cat">{convert(CAT_NAME[current.cat])}</b>
+                        <span className="cmp-card-where">
                             {current.volNo ? `${convert('卷')}${current.volNo} · ` : ''}{convert(anchorLabel(current.anchor.start))}
                         </span>
-                        <button type="button" aria-label={convert('關閉')} onClick={onClose} style={{ border: 0, background: 'none', fontSize: 20, lineHeight: 1, cursor: 'pointer', color: 'inherit' }}>×</button>
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--color-ink-2, #777)' }}>{convert('底本')}</div>
+                        <button type="button" aria-label={convert('關閉')} onClick={onClose} className="cmp-iconbtn">×</button>
+                    </header>
+                    <div className="cmp-card-label">{convert('底本')}</div>
                     <Ctx before={current.ctx.base[0]} mid={current.base} after={current.ctx.base[1]} color={color} ins={current.type === 'ins'} />
-                    <div style={{ fontSize: 12, color: 'var(--color-ink-2, #777)', marginTop: 6 }}>{convert('對照本')}</div>
+                    <div className="cmp-card-label">{convert('對照本')}</div>
                     <Ctx before={current.ctx.reading[0]} mid={current.reading} after={current.ctx.reading[1]} color={color} />
                 </section>
             )}
-            <div
-                style={{
-                    display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px', borderRadius: 16, fontSize: 13,
-                    background: 'var(--color-paper, #fff)', border: '1px solid var(--color-tint-2, rgba(0,0,0,.15))', boxShadow: '0 2px 10px rgba(0,0,0,.12)',
-                }}
-            >
-                <span aria-live="polite" style={{ display: 'flex', gap: 8 }}>
+            <div className="cmp-bar">
+                <span aria-live="polite" className="cmp-bar-counts">
                     {counts.map((c) => (
-                        <span key={c.cat} style={{ color: CAT_COLOR[c.cat] }}>{convert(CAT_NAME[c.cat])} {c.n}</span>
+                        <span key={c.cat} title={convert(CAT_NAME[c.cat])} aria-label={`${convert(CAT_NAME[c.cat])} ${c.n}`} className="cmp-count" style={{ ['--c' as string]: CAT_COLOR[c.cat] }}>{c.n}</span>
                     ))}
                 </span>
-                {idx >= 0 && <span style={{ color: 'var(--color-ink-2, #777)' }}>{idx + 1}/{shown.length}</span>}
-                <button type="button" onClick={() => onStep(-1)} disabled={shown.length === 0} style={btn}>{convert('上一處')}</button>
-                <button type="button" onClick={() => onStep(1)} disabled={shown.length === 0} style={btn}>{convert('下一處')}</button>
-                <button type="button" onClick={onExit} style={btn}>{convert('退出對校')}</button>
+                {idx >= 0 && <span className="cmp-bar-pos">{idx + 1}/{shown.length}</span>}
+                <button type="button" onClick={() => onStep(-1)} disabled={shown.length === 0} aria-label={convert('上一處')} title={convert('上一處')} className="cmp-iconbtn">‹</button>
+                <button type="button" onClick={() => onStep(1)} disabled={shown.length === 0} aria-label={convert('下一處')} title={convert('下一處')} className="cmp-iconbtn">›</button>
+                <button type="button" onClick={onExit} className="cmp-exit">{convert('退出對校')}</button>
             </div>
         </div>
     );
 }
-
-const btn = { padding: '2px 10px', borderRadius: 6, border: '1px solid var(--color-tint-2, rgba(0,0,0,.25))', background: 'transparent', color: 'inherit', font: 'inherit', cursor: 'pointer' } as const;

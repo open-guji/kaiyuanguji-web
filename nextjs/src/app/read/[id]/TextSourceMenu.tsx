@@ -55,10 +55,7 @@ export default function TextSourceMenu({ currentId, rows, compareId = null, onCo
                             aria-pressed={comparing}
                             title={convert(comparing ? '退出對校' : `與「${r.label}」逐字對校`)}
                             onClick={() => onCompare!(comparing ? null : r.id)}
-                            style={{
-                                padding: '2px 10px', borderRadius: 999, whiteSpace: 'nowrap', cursor: 'pointer', font: 'inherit',
-                                border: '1px solid var(--color-zhu, #a33)', background: comparing ? 'var(--color-zhu, #a33)' : 'transparent', color: comparing ? '#fff' : 'var(--color-zhu, #a33)',
-                            }}
+                            className="cmp-source-btn"
                         >
                             {convert('對校')}
                         </button>
