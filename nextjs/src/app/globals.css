@@ -2526,7 +2526,16 @@
 /* 对校在阅读器正文上的标记（阅读器插件 decorate 的自定义字色 fg → 字上带 data-cd-custom 与 --cd-fg）：
    用字不同＝橙实线，异体字＝蓝点线，对照本少＝红虚线字，对照本多＝字后绿色小字加下划线；对照写法放下标，与字同色。
    只用属性选择器，不碰组件库内部类名 */
-.guji-text-char[data-cd-custom][data-cd-sub]::before { color: var(--cd-fg); }
+/* 改字：对照本的写法排在被改字后面（行内，不再叠在字的右下角），按小注字号（正文的 0.8）、同类别色；
+   被改字本身在小注里（is-sub）时再缩小一点，对照字跟它同大。包自带的右下角下标（::before）关掉。
+   书影画布上的 SVG 下标另有渲染，不受影响。不用 inline-block：两端对齐时它会被撑出多余空白。 */
+.guji-text-char[data-cd-custom][data-cd-sub]::before { content: none; }
+.guji-text-char[data-cd-custom][data-cd-sub]::after {
+  content: attr(data-cd-sub); font-size: 0.8em; margin-left: 0.08em;
+  color: var(--cd-fg, var(--cmp-word)); letter-spacing: 0;
+}
+.guji-text-char.is-sub[data-cd-custom][data-cd-sub] { font-size: 0.85em; }
+.guji-text-char.is-sub[data-cd-custom][data-cd-sub]::after { font-size: 1em; }
 .guji-text-char[data-cd-ins]::after { color: var(--cmp-add); text-decoration: underline; text-underline-offset: 0.15em; }
 
 /* ---- 对校界面（设置栏、底部条、详情卡、来源行按钮）：用站内令牌，不另造样式 ---- */
