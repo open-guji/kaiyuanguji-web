@@ -60,6 +60,11 @@ def page_matrix(page, djvu_w, djvu_h):
         raise ValueError(f'half 只认 右／左：{page["half"]!r}')
     w0 = round(math.dist(quad[1], quad[0]))
     h0 = round(math.dist(quad[3], quad[0]))
+    if page.get('w') and page.get('h'):
+        # 取整正好落在 .5 附近时，float32／float64 会差 1px；页图已经按页表的 w、h 裁出来了，以页表为准反推 w0、h0
+        w1, h1 = page['w'] - l - r, page['h'] - pad['t'] - pad['b']
+        if abs(w1 - w0) <= 1 and abs(h1 - h0) <= 1:
+            w0, h0 = w1, h1
     k = THUMB_W / djvu_w
     hm = solve_homography([[x * k, y * k] for x, y in quad], [(0, 0), (w0, 0), (w0, h0), (0, h0)])
     m = _matmul([[1, 0, l], [0, 1, pad['t']], [0, 0, 1]], hm)
@@ -97,13 +102,12 @@ def canvas_commons(table, page):
     dw, dh = DJVU_SIZE[n]
     m, (W, H) = page_matrix(page, dw, dh)
     if (W, H) != (page['w'], page['h']):
-        # 页表宽高与摆正结果差 1px 以内是取整；差更多说明页表不是这套版框，不挂
-        if abs(W - page['w']) > 1 or abs(H - page['h']) > 1:
-            return None
+        # 页表宽高与按版框算出的差 1px 以内已在 page_matrix 里以页表为准；差更多说明页表不是这套版框，不挂
+        return None
     return {
         'url': thumb_url(src, page['djvu_page']),
         'width': THUMB_W, 'height': round(dh * THUMB_W / dw),
-        'matrix': [round(v, 9) for row in m for v in row],
+        'matrix': [float(f'{v:.10g}') for row in m for v in row],   # 10 位有效数字（透视项只有 1e-6 量级，按小数位取整会丢精度）
         # 指纹：页表 rev＋本页图 sha256；换版时这两项变了矩阵才会跟着重算（A20 要求）
         'table_rev': table.get('rev'), 'page_sha256': page.get('sha256'),
         'attribution': '景印文淵閣四庫全書，Wikimedia Commons',
