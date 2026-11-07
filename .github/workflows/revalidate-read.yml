@@ -1,0 +1,32 @@
+name: Revalidate read pages
+
+# 手动整体失效阅读页（ISR，/read/[id]/[[...seg]]）：POST 站点的 /internal/revalidate {read:true}。
+# 和 data.yml 的刷新阶段、deploy.yml 发版时做的是同一件事（密钥由 EDGEONE_API_TOKEN 派生，与两个站构建时烘进去的一致）。
+# 用在：数据发布后个别边缘节点的阅读页还带着旧数据版本键（11-06 殿本 031，Age 2607 的 Cache Hit）。
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 站点（完整 https 域名，默认正式站）
+        required: false
+        default: https://www.openguji.com
+
+permissions:
+  contents: read
+
+jobs:
+  revalidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revalidate read pages
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          SITE: ${{ inputs.site }}
+        run: |
+          case "$SITE" in https://www.openguji.com|https://staging.openguji.com|https://www.kaiyuanguji.com) ;; *) echo "❌ 只允许 www.openguji.com／staging.openguji.com／www.kaiyuanguji.com：$SITE"; exit 1 ;; esac
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          code=$(curl -s -o "$RUNNER_TEMP/resp.json" -w '%{http_code}' -X POST "$SITE/internal/revalidate" \
+            -H 'content-type: application/json' -H "x-kyg-revalidate: $S" -d '{"read":true}')
+          echo "HTTP $code"; cat "$RUNNER_TEMP/resp.json"; echo
+          [ "$code" = 200 ]
