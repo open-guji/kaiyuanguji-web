@@ -70,6 +70,9 @@ function bimUiSrcWebpack(config: any) {
     'book-index-ui$': join(src, 'src', 'index.ts'),
     'book-index-ui/storage$': join(src, 'src', 'storage-entry.ts'),
     'book-index-ui/variant-supplement$': join(src, 'src', 'i18n', 'variant-supplement.ts'),
+    // 样式也走源码：改 tokens.ts 后 `npm run gen:tokens` 即可在本站看到
+    'book-index-ui/tokens.css$': join(src, 'src', 'styles', 'tokens.css'),
+    'book-index-ui/palette.css$': join(src, 'src', 'styles', 'palette.css'),
   };
   // UI 源码目录下没装依赖时，回落到本站的 node_modules
   config.resolve.modules = [...(config.resolve.modules ?? ['node_modules']), nm];
