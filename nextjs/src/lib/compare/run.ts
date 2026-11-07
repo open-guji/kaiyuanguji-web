@@ -2,7 +2,7 @@
  * 对校的取数：底本的册目录（各册 headings）、对照本的目录与各卷 md，经阅读页的传输层（getTextManifest / getTextIndex / getChapter）取。
  * 不依赖 React，传输层传进来，便于单测。
  */
-import { compareChapter, type CompareResult } from './compare';
+import { compareChapter, compareWhole, type CompareResult } from './compare';
 import { loadVariantTest } from './variants';
 import { nextContinues, volumeNo, type BaseCell, type Heading, type WikiChapter } from './volumes';
 import type { CompareTarget } from './url';
@@ -41,6 +41,13 @@ export type RunError = 'no-target' | 'no-base-index';
 export async function runCompare(input: RunInput): Promise<CompareResult & { targetKey: string; wikiChapters: WikiChapter[] }> {
     const { base, target, cells } = input;
     const transport = input.transport as TextTransport;
+    // 对照本是同一本书的另一个版本（光盘本等）：章文件与底本同名，整章对整章
+    if (target.id === base.id && target.key) {
+        const [r, isVariant] = await Promise.all([transport.getChapter?.(base.id, target.key, base.chapter), loadVariantTest()]);
+        if (!r || r.md === null) throw new Error('no-target' satisfies RunError);
+        const res = await compareWhole({ cells, md: r.md, file: base.chapter, label: '本册', isVariant });
+        return { ...res, targetKey: target.key, wikiChapters: [] };
+    }
     const targetKey = await resolveTargetKey(transport, target);
     if (!targetKey) throw new Error('no-target' satisfies RunError);
     const [baseIndex, targetIndex, isVariant] = await Promise.all([
