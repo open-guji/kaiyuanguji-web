@@ -19,6 +19,7 @@ export function fakeApi(o: {
         } as unknown as ReaderChapterCtx,
         state: <T,>(id: string) => (o.state ?? {})[id] as T | undefined,
         cells,
+        textCells: [],
         scrollTo: (a: string, opts?: unknown) => { calls.scrollTo.push([a, opts]); },
         rectOf: (a: string) => o.rects?.[a] ?? null,
         locate: o.locate ?? (() => null),

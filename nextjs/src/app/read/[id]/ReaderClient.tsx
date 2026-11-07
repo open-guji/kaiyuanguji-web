@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { TextReader, type ReaderInitialChapter, createTextApi, useConvert, iiifVolumeOf, loadReaderFiles, readerManifest, volumeFromChar, type ReaderReportContext, type ReaderResolveContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
+import { TextReader, type ReaderInitialChapter, createTextApi, useConvert, readerManifest, type ReaderReportContext, type TextLocation, type TextLocationCause } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { useFeedback, useFeedbackPageContext } from '@/components/feedback/FeedbackProvider';
 import BimLocaleProvider from '@/components/common/BimLocaleProvider';
@@ -135,21 +135,6 @@ function primaryKeyOf(m: unknown): string | null {
     const versions = (m as { versions?: { key?: string }[] } | null | undefined)?.versions;
     if (!Array.isArray(versions) || versions.length === 0) return null;
     return versions.find((v) => v.key === 'default')?.key ?? versions[0].key ?? null;
-}
-
-const WIDE_QUERY = '(min-width: 860px)';
-/** 视口是否到了显示书影栏的宽度；服务端与不支持 matchMedia 的环境按宽屏（照旧取 cord） */
-function useWideViewport(): boolean {
-    const [wide, setWide] = useState(() => (typeof window === 'undefined' || !window.matchMedia ? true : window.matchMedia(WIDE_QUERY).matches));
-    useEffect(() => {
-        if (!window.matchMedia) return;
-        const mq = window.matchMedia(WIDE_QUERY);
-        const on = () => setWide(mq.matches);
-        on();
-        mq.addEventListener?.('change', on);
-        return () => mq.removeEventListener?.('change', on);
-    }, []);
-    return wide;
 }
 
 function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: ReaderClientProps) {
@@ -302,15 +287,6 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         [downloadPlg, reportPlg, proofPlg, comparePlugin, proof.on !== null], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
-    // 书影来自 COS 的 IIIF manifest：册号从 cord 里各页的 canvas id 取（页码对照见 lib/facsimile.ts）。
-    // 窄屏（书影栏收起）阅读器不取 cord，这里与它同一判据，命中它的缓存
-    const wide = useWideViewport();
-    const resolveImages = useCallback(async (_chapterKey: string, ctx?: ReaderResolveContext) => {
-        const files = await loadReaderFiles(transport, { id, versionKey: ctx?.versionKey, chapter: ctx?.chapter }, { cord: wide, textFileBase: TEXT_FILE_BASE });
-        const vol = files?.cord ? iiifVolumeOf(files.cord) : files?.cordSkipped ? volumeFromChar(files.char) : null;
-        return vol ? loadFacsimile(vol.bookId, vol.vol) : null;
-    }, [id, transport, wide]);
-
     return (
         <>
         <ProofingNotice id={id} vol={meta?.proofVol} feedbackVol={meta?.feedbackVol} />
@@ -339,7 +315,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
                 textFileBase={TEXT_FILE_BASE}
                 initialChapter={lead}
                 hideSupersededVersions
-                resolveImages={resolveImages}
+                resolveFacsimile={loadFacsimile}
                 onEntityNavigate={(target, e) => { e.preventDefault(); onNavigate(target); }}
             />
         </div>
