@@ -27,6 +27,10 @@ export default defineConfig({
         screenshot: 'only-on-failure',
         actionTimeout: 30_000,
         navigationTimeout: 60_000,
+        // 固定大陆时区：#680 起非大陆时区的读者书影改读 Wikimedia Commons，
+        // CI 跑在 UTC 上，不固定的话「书影来自数据域名」等用例会读到 Commons 而红。
+        // 要测 Commons 路径的用例自己带 ?img=commons。
+        timezoneId: 'Asia/Shanghai',
     },
 
     // 单个用例上限：搜索降级到 L2 时要下载分片，给足余量
