@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import "book-index-ui/tokens.css"; // 变量默认值；须在 globals.css 之前
+import "book-index-ui/palette.css"; // 调色板＋由它推出的语义变量；globals.css 只覆盖 --bim-palette-*（品牌色）
 import "./globals.css";
 import "./zi-fonts.css";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, IS_STAGING } from "@/lib/constants";

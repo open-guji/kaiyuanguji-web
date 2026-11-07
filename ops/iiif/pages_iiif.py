@@ -31,8 +31,18 @@ def load_books(path=os.path.join(HERE, 'pages-books.json')):
 
 
 def vol_label(meta, v):
-    juan = meta['vols'][f'{v:02d}'].get('juan', '')
-    return f'{meta["title"]} 第 {v} 冊' + (f' {juan}' if juan else '')
+    juan = meta['vols'][v].get('juan', '')
+    return f'{meta["title"]} 第 {int(v)} 冊' + (f' {juan}' if juan else '')
+
+
+def seq_by_page(table):
+    """canvas 页序按 page（cord 的 page，从 1 起连续）编，不按页表的扫描序号 seq：网站约定 cord page＝canvas seq，
+    阅读页、精校页都按这个数到 manifest 里对位。去了封面或跳过空叶的页表（全唐文 seq 从 0002 起、中间有跳号）两者不同；
+    北行日錄两者相同，换了也不变。有拆页后缀（a–d）的页表不动（只有四庫總目有，走 siku_zongmu_iiif.py）。"""
+    pages = table['pages']
+    if any(len(p['seq']) != 4 or not isinstance(p.get('page'), int) for p in pages):
+        return table
+    return {**table, 'pages': [{**p, 'seq': f'{p["page"]:04d}'} for p in pages]}
 
 
 def build_canvas(vol, c):
@@ -62,8 +72,8 @@ def build_canvas(vol, c):
 
 
 def build_manifest(meta, vol, canvases, table):
-    vm = meta['vols'][f'{vol:02d}']
-    md = [{'label': {'zh': ['冊']}, 'value': {'zh': [f'{vol}']}}]
+    vm = meta['vols'][vol]
+    md = [{'label': {'zh': ['冊']}, 'value': {'zh': [f'{int(vol)}']}}]
     if vm.get('juan'):
         md.insert(0, {'label': {'zh': ['卷次']}, 'value': {'zh': [vm['juan']]}})
     md.append({'label': {'zh': ['影像來源']}, 'value': {'zh': [vm.get('source') or meta['source']]}})
@@ -117,11 +127,14 @@ def main(argv=None):
         raise SystemExit(f'❌ pages-books.json 里没有 {a.book}，先加一条（书名、各册卷次、影像来源）')
     meta = books[a.book]
     S.BOOK_ID = a.book
-    all_vols = sorted(int(v) for v in meta['vols'])
-    vols = all_vols if a.vols == 'all' else [int(v) for v in a.vols.split(',') if v.strip()]
-    for v in vols:
-        if v not in all_vols:
+    # 册号一律是 pages-books.json 里的写法（北行日錄 2 位 '01'，全唐文 3 位 '005'）：书影目录、canvas id 都用它，与 cord 的 canvas.id 一致
+    all_vols = sorted(meta['vols'], key=int)
+    by_num = {int(v): v for v in all_vols}
+    vols = []
+    for v in (all_vols if a.vols == 'all' else [x.strip() for x in a.vols.split(',') if x.strip()]):
+        if not v.isdigit() or int(v) not in by_num:
             raise SystemExit(f'❌ pages-books.json 里 {a.book} 没有第 {v} 册')
+        vols.append(by_num[int(v)])
     out = os.path.abspath(a.out)
     cache = os.path.abspath(a.cache or os.path.join(os.path.dirname(out), 'cache'))
     os.makedirs(out, exist_ok=True)
@@ -132,15 +145,15 @@ def main(argv=None):
         t0 = time.perf_counter()
         table = S.load_page_table(v)
         if table is None:
-            raise SystemExit(f'❌ {a.book}/{v:02d} 还没有 cv 页表（guji source register／ia 先登记）')
+            raise SystemExit(f'❌ {a.book}/{v} 还没有 cv 页表（guji source register／ia 先登记）')
         if table.get('book_id') != a.book:
             raise SystemExit(f'❌ 页表的书 id {table.get("book_id")} ≠ {a.book}')
-        print(f'{a.book}/{v:02d} 页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
-        r = S.slice_volume(v, {'ia': None}, {}, out, cache, None, a.jobs, table=table)
+        print(f'{a.book}/{v} 页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
+        r = S.slice_volume(v, {'ia': None}, {}, out, cache, None, a.jobs, table=seq_by_page(table))
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))
-        report['volumes'][f'{v:02d}'] = r
+        report['volumes'][v] = r
         print('  ' + json.dumps(r['stats'], ensure_ascii=False), flush=True)
 
     present = set(vols)

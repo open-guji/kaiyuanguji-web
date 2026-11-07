@@ -24,28 +24,38 @@
 | `ops/` | 全栈构建包装、清缓存、回滚计划、数据巡检、服务器救援等脚本 |
 | `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml` |
 
-索引页的 React 组件**不在本仓**，在 npm 包 `book-index-ui`（源码 `open-guji/book-index-manager` 的 `ui/`）。
+索引页与阅读器的 React 组件**不在本仓**，在 npm 包 `book-index-ui`（源码 `open-guji/book-index-manager` 的 `ui/`）。
+两边怎么分工、阅读页功能怎么写成插件，见 [docs/ui-boundary.md](docs/ui-boundary.md)。
 本仓 `nextjs/src/app/book-index/page.tsx` 只做数据源与搜索的装配。
 
 ## 本地开发
 
+**最快：看网站 dev ＋ UI 包源码 ＋ 最新数据（不需要数据仓，也不用发测试站）**
+
 ```bash
 git clone https://github.com/open-guji/kaiyuanguji-web && cd kaiyuanguji-web
-npm install                     # 仓库根：装 husky pre-push 钩子（push 前跑单测）
+npm install                              # 仓库根：装 husky pre-push 钩子（push 前跑单测）
+bash nextjs/scripts/local-latest.sh      # 浅克隆同级 book-index-manager、装依赖、起服务 → http://localhost:3000
+# 之后只需：cd nextjs && npm run dev:latest
+# 出 PR 截图：cd nextjs && npm run shot -- /read/d59f2ew0ctmo   → docs/pr-screenshots/
+```
+
+分支流程（所有 PR 投 dev）、UI 源码直连的细节、发测试站步骤见 [`docs/开发流程.md`](docs/开发流程.md)。
+
+**其他方式**
+
+```bash
 cd nextjs && npm install
-
-# A. 不需要任何数据仓，读 GitHub raw（首次加载慢）
+# A. 读 GitHub raw / 数据站，UI 用 npm 装的版本
 rm -f .env.local && npm run dev
-
-# B. 读本地 D:\workspace 下的 book-index / book-text（推荐）
+# B. 读本地 D:\workspace 下的 book-index / book-text
 bash scripts/setup-local.sh     # 写好 .env.local：NEXT_PUBLIC_MODE=local + BOOK_INDEX_WORKSPACE_ROOT
 npm run dev                     # http://localhost:3000/book-index
 ```
 
 Windows 上旧的 `next dev` 没退干净时新实例会悄悄改用 3001/3002，以 `Local:` 提示为准；卡住就 `rm -rf .next`。
 
-改 `book-index-ui` 组件后想在本站看效果：在 `book-index-manager/ui` 里 `npm run build:lib`，
-把 `dist/*` 拷进 `nextjs/node_modules/book-index-ui/dist/`，删 `.next` 重启 dev。没有 npm link。
+改 `book-index-ui` 组件看效果：用上面的 `dev:latest`（源码直连，热更新）。不再需要 build 后拷 dist。
 
 ## 测试
 
@@ -65,7 +75,7 @@ NEXT_PUBLIC_MODE= NEXT_PUBLIC_DATA_SOURCE=bundle npm run build   # 验证生产�
 push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`promote=code`），不会带数据。
 出问题用 Actions 里的 Rollback。细节见 [docs/architecture.html](docs/architecture.html) 第八节和 [docs/runbook.md](docs/runbook.md)。
 
-- **发布顺序**：先 `npm publish` UI 包 → 再把依赖 bump 与 e2e 改动**同一批**推 main。反了 verify 必红。
+- **发布顺序**：先发 UI 包（dev 上发预发布 `x.y.z-rc.N`，定稿后发正式版 latest）→ 网站 dev 升依赖 → 切 `rc/vX.Y.Z` → merge commit 并入 main。反了 verify 必红。分支流程与预发布排号见 [docs/开发流程.md](docs/开发流程.md)。
 - **发数据**（`data.yml`，index 与 text 两条流程独立发布，每条只推进自己的仓、另一个仓钉在线上版本）：
   - **book-text**：自动。每小时检查一次，book-text main 有新提交就发；每天 UTC 21:43 另有一次完整跑兜底。手动：`gh workflow run data.yml -f flow=text`。
   - **book-index**：手动。`gh workflow run data.yml -f flow=index`。

@@ -5,7 +5,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import FeedbackDialog from '../FeedbackDialog';
 import { FeedbackProvider, useFeedback, useFeedbackPageContext } from '../FeedbackProvider';
-import SelectionReport from '../SelectionReport';
 import { CONTENT_MAX } from '@/lib/feedback';
 
 const WORK = 'd59f20aowb9c';
@@ -189,85 +188,6 @@ describe('FeedbackProvider 与页面上下文', () => {
     });
 });
 
-describe('SelectionReport（阅读页选字「报错」）', () => {
-    beforeAll(() => {
-        // jsdom 没有布局，Range 量不出位置
-        Range.prototype.getBoundingClientRect = () => ({ left: 100, top: 200, width: 80, height: 20, right: 180, bottom: 220, x: 100, y: 200, toJSON: () => ({}) }) as DOMRect;
-    });
-    beforeEach(() => jest.useFakeTimers());
-    afterEach(() => {
-        jest.useRealTimers();
-        window.getSelection()?.removeAllRanges();
-    });
-
-    function Harness() {
-        const ref = { current: null as HTMLDivElement | null };
-        return (
-            <FeedbackProvider>
-                <div ref={(el) => { ref.current = el; }}>
-                    <p data-testid="text">《仪礼》十七卷　郑氏注。高堂生所传士礼也。</p>
-                    <input aria-label="检索" defaultValue="检索词" />
-                </div>
-                <p data-testid="outside">页外文字</p>
-                <SelectionReport containerRef={ref} context={{ resourceId: WORK, label: '直斋书录解题 · 整理本 · 卷4' }} />
-            </FeedbackProvider>
-        );
-    }
-
-    function select(node: Node, start: number, end: number) {
-        const range = document.createRange();
-        range.setStart(node, start);
-        range.setEnd(node, end);
-        const sel = window.getSelection()!;
-        sel.removeAllRanges();
-        sel.addRange(range);
-        act(() => {
-            document.dispatchEvent(new Event('selectionchange'));
-            jest.advanceTimersByTime(250);
-        });
-    }
-
-    it('正文里选中文字后出「复制 ｜ 报错」，点「报错」打开弹窗并带上选中的文字与本卷', () => {
-        render(<Harness />);
-        const textNode = screen.getByTestId('text').firstChild!;
-        const full = textNode.textContent!;
-        const start = full.indexOf('高堂生');
-        select(textNode, start, start + '高堂生所传士礼也'.length);
-
-        const bar = screen.getByRole('toolbar', { name: '选中文字' });
-        expect(within(bar).getAllByRole('button').map((b) => b.textContent)).toEqual(['复制', '报错']);
-        fireEvent.click(within(bar).getByRole('button', { name: '报错' }));
-
-        expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
-        const dialog = screen.getByRole('dialog', { name: '反馈' });
-        expect(within(dialog).getByText('直斋书录解题 · 整理本 · 卷4')).toBeInTheDocument();
-        expect(within(dialog).getByText('高堂生所传士礼也')).toBeInTheDocument();
-        expect(within(dialog).getByRole('radio', { name: '内容有误' })).toHaveAttribute('aria-checked', 'true');
-    });
-
-    it('选区在正文外，或没选中东西，不出浮条', () => {
-        render(<Harness />);
-        select(screen.getByTestId('outside').firstChild!, 0, 2);
-        expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
-        const textNode = screen.getByTestId('text').firstChild!;
-        select(textNode, 3, 3);
-        expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
-    });
-
-    it('「复制」写进剪贴板', async () => {
-        const writeText = jest.fn().mockResolvedValue(undefined);
-        Object.assign(navigator, { clipboard: { writeText } });
-        render(<Harness />);
-        const textNode = screen.getByTestId('text').firstChild!;
-        select(textNode, 0, 4);
-        await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: '复制' }));
-        });
-        expect(writeText).toHaveBeenCalledWith('《仪礼》');
-        await waitFor(() => expect(screen.getByRole('button', { name: '已复制' })).toBeInTheDocument());
-    });
-});
-
 describe('FeedbackDialog：可选「问题类型」（G2）', () => {
     const CTX = { resourceId: WORK, label: '史记 · 整理本 · 卷1', quote: '高堂生所传' };
 
@@ -318,94 +238,5 @@ describe('FeedbackDialog：可选「问题类型」（G2）', () => {
         fireEvent.change(screen.getByRole('textbox', { name: '反馈内容' }), { target: { value: '建议' } });
         await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交' })); });
         expect(sentBody(fetchImpl)).not.toHaveProperty('subtype');
-    });
-});
-
-describe('SelectionReport：对读章拖选「报错」→「这段有问题」（kind=span，GUJI-597）', () => {
-    beforeAll(() => {
-        Range.prototype.getBoundingClientRect = () => ({ left: 100, top: 200, width: 80, height: 20, right: 180, bottom: 220, x: 100, y: 200, toJSON: () => ({}) }) as DOMRect;
-    });
-    beforeEach(() => jest.useFakeTimers());
-    afterEach(() => {
-        jest.useRealTimers();
-        window.getSelection()?.removeAllRanges();
-    });
-
-    const CELLS: Array<[string, string]> = [['3:1:4', '庫'], ['3:1:5', '全'], ['3:1:6', '總'], ['3:1:7', '目']];
-    const ctx = (textVersion = '1.0.1') => ({
-        book: '96mid1ogzk', volume: '002', chapter: '002', textVersion,
-        chars: new Map(CELLS), entities: [], entityVersion: '',
-    });
-
-    function Harness({ getCtx, fetchImpl }: { getCtx: () => ReturnType<typeof ctx> | null; fetchImpl?: typeof fetch }) {
-        const ref = { current: null as HTMLDivElement | null };
-        return (
-            <FeedbackProvider>
-                <div ref={(el) => { ref.current = el; }}>
-                    <p data-testid="text">{CELLS.map(([a, c]) => <span key={a} data-char-id={a}>{c}</span>)}</p>
-                </div>
-                <SelectionReport containerRef={ref} context={{ resourceId: WORK, label: '四庫總目 · 卷二' }} getCtx={getCtx} fetchImpl={fetchImpl} />
-            </FeedbackProvider>
-        );
-    }
-
-    function selectChars(from: number, to: number) {
-        const spans = screen.getByTestId('text').querySelectorAll('span');
-        const range = document.createRange();
-        range.setStart(spans[from].firstChild!, 0);
-        range.setEnd(spans[to].firstChild!, 1);
-        const sel = window.getSelection()!;
-        sel.removeAllRanges();
-        sel.addRange(range);
-        act(() => {
-            document.dispatchEvent(new Event('selectionchange'));
-            jest.advanceTimersByTime(250);
-        });
-    }
-
-    it('带上首末格位与原字，选类别、填应作后提交 kind=span', async () => {
-        const fetchImpl = okFetch();
-        render(<Harness getCtx={() => ctx()} fetchImpl={fetchImpl as unknown as typeof fetch} />);
-        selectChars(1, 2);
-        fireEvent.click(screen.getByRole('button', { name: '报错' }));
-        const dialog = screen.getByRole('dialog', { name: '这段有问题' });
-        expect(within(dialog).getByText('第 3 页 1 列 5 格起，共 2 字')).toBeInTheDocument();
-        expect(within(dialog).getByText('选中：「全總」')).toBeInTheDocument();
-        const submit = within(dialog).getByRole('button', { name: '提交' });
-        expect(submit).toBeDisabled();
-        fireEvent.change(within(dialog).getByRole('combobox'), { target: { value: 'missing' } });
-        fireEvent.change(within(dialog).getByPlaceholderText(/应作什么/), { target: { value: '全書總' } });
-        expect(submit).toBeEnabled();
-        await act(async () => { fireEvent.click(submit); });
-        const body = sentBody(fetchImpl);
-        expect(fetchImpl.mock.calls[0][0]).toBe('/api/charfix');
-        expect(body).toMatchObject({ kind: 'span', book_id: '96mid1ogzk', volume: '002', text_version: '1.0.1', start: '3:1:5', end: '3:1:6', sub: 'missing', old_text: '全總', new_text: '全書總' });
-        expect(body).not.toHaveProperty('note');
-        await waitFor(() => expect(within(dialog).getByRole('status')).toBeInTheDocument());
-    });
-
-    it('应作与原文相同不收；只填说明可以', () => {
-        render(<Harness getCtx={() => ctx()} fetchImpl={okFetch() as unknown as typeof fetch} />);
-        selectChars(0, 0);
-        fireEvent.click(screen.getByRole('button', { name: '报错' }));
-        const dialog = screen.getByRole('dialog', { name: '这段有问题' });
-        fireEvent.change(within(dialog).getByPlaceholderText(/应作什么/), { target: { value: '庫' } });
-        expect(within(dialog).getByRole('alert')).toHaveTextContent('与选中的原文相同');
-        expect(within(dialog).getByRole('button', { name: '提交' })).toBeDisabled();
-        fireEvent.change(within(dialog).getByPlaceholderText(/应作什么/), { target: { value: '' } });
-        fireEvent.change(within(dialog).getByPlaceholderText(/哪里不对/), { target: { value: '书影作「库」' } });
-        expect(within(dialog).getByRole('button', { name: '提交' })).toBeEnabled();
-    });
-
-    it('本章不是对读章（getCtx 为 null）或缺文本版本：照旧开通用反馈弹窗', () => {
-        const { unmount } = render(<Harness getCtx={() => null} />);
-        selectChars(0, 1);
-        fireEvent.click(screen.getByRole('button', { name: '报错' }));
-        expect(screen.getByRole('dialog', { name: '反馈' })).toBeInTheDocument();
-        unmount();
-        render(<Harness getCtx={() => ctx('')} />);
-        selectChars(0, 1);
-        fireEvent.click(screen.getByRole('button', { name: '报错' }));
-        expect(screen.getByRole('dialog', { name: '反馈' })).toBeInTheDocument();
     });
 });

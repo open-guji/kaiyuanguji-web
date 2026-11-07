@@ -34,7 +34,7 @@ import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
 const DATA_TOKEN = process.env.GUJI_DATA_TOKEN || '';
-const WS = (process.env.PROOF_WS || 'siku-zongmu,beixing-guben').split(',').map((s) => s.trim()).filter(Boolean);
+const WS = [...new Set((process.env.PROOF_WS || 'siku-zongmu,beixing-guben').split(',').map((s) => s.trim()).filter(Boolean))];
 const FIX_BOOKS = (process.env.FIX_BOOKS || '96mid1ogzk').split(',').map((s) => s.trim()).filter(Boolean);
 const SITE = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const ADMIN = process.env.FEEDBACK_ADMIN_TOKEN || '';

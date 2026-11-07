@@ -19,7 +19,7 @@ on:
         type: string
         default: '96mid1ogzk'
       vols:
-        description: '册号，逗号分隔（如 02,03）；all = 全部 99 册'
+        description: '册号，逗号分隔（如 02,03；全唐文 3 位，如 005,006）；all = 全部（四庫總目 99 册；别的书＝pages-books.json 里列的）'
         required: true
         default: '02,03'
         type: string
@@ -110,7 +110,7 @@ jobs:
           IMAGES_ONLY: ${{ inputs.images_only }}
         run: |
           set -euo pipefail
-          if ! [[ "$VOLS" =~ ^(all|[0-9]{1,2}(,[0-9]{1,2})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
+          if ! [[ "$VOLS" =~ ^(all|[0-9]{1,3}(,[0-9]{1,3})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
           if ! [[ "$BOOK" =~ ^[0-9a-z]{10}$ ]]; then echo "❌ book 格式不对：$BOOK"; exit 1; fi
           ARGS=(--vols "$VOLS" --out "$RUNNER_TEMP/iiif/out" --cache "$RUNNER_TEMP/iiif/cache" --report "$RUNNER_TEMP/iiif/report.json")
           if [ "$UPLOAD" = "true" ]; then

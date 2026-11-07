@@ -1,5 +1,5 @@
 /**
- * 主题令牌守门：本站不引 book-index-ui 的 variables.css（组件库里 `:root[data-theme="indigo"]` 那块覆盖到不了这里），
+ * 主题令牌守门：本站引 book-index-ui/tokens.css（默认值），但不引 themes.css（组件库里 `:root[data-theme="indigo"]` 那块），
  * 所以组件库主题会换的那几个 --bim-* 变量必须由本站自己映射到朱色令牌族，靛蓝下才会跟着变。
  * 漏一个就是「蓝字配红底」（「有影印」块、「看原書影印」按钮曾如此）。
  * 列表取自 book-index-ui `BIM_THEMES.indigo` 的变量名：accent、accent-deep、flag-bg、selection-bg、rule-accent-soft。
@@ -8,6 +8,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const css = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf8');
+/** 组件库发布的变量默认值（`book-index-ui/tokens.css`）：`:root` 块与 `data-layout="boxed"` 块 */
+const pkgCss = readFileSync(join(process.cwd(), 'node_modules/book-index-ui/dist/tokens.css'), 'utf8');
+/** 调色板（`book-index-ui/palette.css`）：本站只覆盖其中的 --bim-palette-*，语义变量由它推出 */
+const palCss = readFileSync(join(process.cwd(), 'node_modules/book-index-ui/dist/palette.css'), 'utf8');
+const pkgRoot = pkgCss.match(/^:root \{([^}]*)\}/m)?.[1] ?? '';
+const pkgBoxedBody = pkgCss.match(/^:root\[data-layout="boxed"\] \{([^}]*)\}/m)?.[1] ?? '';
+const pkgVars = (body: string) => Object.fromEntries([...body.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(([, k, v]) => [k, v.trim()]));
 
 /** 取某个 `:root { ... }` 声明块里对某变量的赋值 */
 function assigned(varName: string): string | undefined {
@@ -15,20 +22,22 @@ function assigned(varName: string): string | undefined {
     return css.match(re)?.[1].trim();
 }
 
-describe('随主题变的 --bim-* 由本站映射', () => {
-    it.each(['accent', 'accent-deep', 'flag-bg', 'selection-bg', 'rule-accent-soft'])('--bim-%s 有本站自己的赋值', (name) => {
-        expect(assigned(`bim-${name}`)).toBeTruthy();
+describe('随主题变的调色板由本站映射', () => {
+    it.each(['paper', 'raise', 'tint', 'tint-2', 'ink', 'ink-2', 'ink-3', 'accent', 'accent-deep', 'gold'])('--bim-palette-%s 有本站自己的赋值，且接到 --color-*', (name) => {
+        expect(assigned(`bim-palette-${name}`)).toMatch(/^var\(--color-/);
     });
 
-    it('朱色一族的三个变量（accent、accent-deep、flag-bg）走 --color-zhu*，靛蓝下随之变', () => {
-        expect(assigned('bim-accent')).toContain('--color-zhu');
-        expect(assigned('bim-accent-deep')).toContain('--color-zhu-deep');
-        expect(assigned('bim-flag-bg')).toContain('--color-zhu-tint');
+    it('强调色一族走 --color-zhu*，靛蓝下随之变；语义变量（accent、flag-bg、selection-bg …）由包的 palette.css 推出', () => {
+        expect(assigned('bim-palette-accent')).toBe('var(--color-zhu)');
+        expect(assigned('bim-palette-accent-deep')).toBe('var(--color-zhu-deep)');
+        for (const n of ['accent', 'accent-deep', 'flag-bg', 'selection-bg', 'rule-accent-soft']) {
+            expect(palCss).toMatch(new RegExp(`--bim-${n}: [^;]*var\\(--bim-palette-`));
+        }
     });
 
-    it('靛蓝块重设了 --color-zhu 三件套', () => {
+    it('靛蓝块重设了 --color-zhu 三件套；分类色「书」保持朱红', () => {
         const block = css.match(/:root\[data-theme="indigo"\]\s*\{([^}]*)\}/)?.[1] ?? '';
-        for (const v of ['--color-zhu', '--color-zhu-deep', '--color-zhu-tint']) expect(block).toContain(v);
+        for (const v of ['--color-zhu', '--color-zhu-deep', '--color-zhu-tint', '--bim-palette-book']) expect(block).toContain(v);
     });
 });
 
@@ -57,12 +66,12 @@ describe('v4 墨主题与版式令牌', () => {
     it('墨块重设了纸／墨／朱三族（不止强调色）', () => {
         for (const v of [
             '--color-paper', '--color-raise', '--color-tint', '--color-tint-2', '--color-ink', '--color-ink-2', '--color-ink-3',
-            '--color-zhu', '--color-zhu-deep', '--color-zhu-tint', '--color-vermilion', '--color-nav-vermilion', '--bim-aux-fg',
+            '--color-zhu', '--color-zhu-deep', '--color-zhu-tint', '--color-vermilion', '--color-nav-vermilion', '--bim-palette-aux',
         ]) expect(ink[v]).toBeTruthy();
     });
 
     it('墨：各层文字在纸／面／浅底上对比度 ≥ 4.5（AA）；强调色也是', () => {
-        for (const fg of ['--color-ink', '--color-ink-2', '--color-ink-3', '--bim-aux-fg', '--color-zhu']) {
+        for (const fg of ['--color-ink', '--color-ink-2', '--color-ink-3', '--bim-palette-aux', '--color-zhu']) {
             for (const bg of ['--color-paper', '--color-raise', '--color-tint', '--color-tint-2']) {
                 if (contrast(ink[fg], ink[bg]) < 4.5) throw new Error(`${fg} on ${bg} = ${contrast(ink[fg], ink[bg]).toFixed(2)}`);
             }
@@ -74,14 +83,12 @@ describe('v4 墨主题与版式令牌', () => {
         expect(css).toMatch(/:root\[data-theme="ink"\] main :is\(p, td, dd\) a:not\(\[class\]\) \{[^}]*text-decoration: underline/);
     });
 
-    it('版式令牌 --bim-fr-* 本站自己定义：默认疏朗（无框），boxed 覆盖成框线', () => {
-        const base = block(':root');   // 首个 :root 块不含它们，下面取专用块
-        expect(base).toBeTruthy();
+    it('版式令牌 --bim-fr-* 由 tokens.css 给：默认疏朗（无框），boxed 覆盖成框线', () => {
         const names = ['bd', 'bg', 'hd-pad', 'hd-bd', 'bd-pad', 'gap', 'side-gap', 'shadow', 'tab-bd'].map((n) => `--bim-fr-${n}`);
-        const all = [...css.matchAll(/:root \{([^}]*--bim-fr-bd[^}]*)\}/g)][0]?.[1] ?? '';
+        const all = pkgRoot;
         for (const n of names) expect(all).toContain(`${n}:`);
         expect(all).toMatch(/--bim-fr-bd:\s*0 solid transparent/);
-        const boxed = block(':root[data-layout="boxed"]');
+        const boxed = { ...pkgVars(pkgBoxedBody), ...block(':root[data-layout="boxed"]') };
         for (const n of names) expect(boxed[n]).toBeTruthy();
         expect(boxed['--bim-fr-bd']).toContain('1px solid');
         expect(boxed['--bim-fr-bg']).toContain('--bim-card-bg');
@@ -96,8 +103,8 @@ describe('v4 墨主题与版式令牌', () => {
     });
 
     describe('版式判准（设计/v4/版式判准.md，overview#322）：疏朗不画线，界栏画框', () => {
-        const all = [...css.matchAll(/:root \{([^}]*--bim-fr-bd[^}]*)\}/g)][0]?.[1] ?? '';
-        const boxed = block(':root[data-layout="boxed"]');
+        const all = pkgRoot;
+        const boxed = { ...pkgVars(pkgBoxedBody), ...block(':root[data-layout="boxed"]') };
         const lineTokens = ['card-bd', 'row-bd', 'chrome-bd', 'tag-bd', 'rail-bd'].map((n) => `--bim-fr-${n}`);
 
         it('边框令牌：疏朗是 1px 透明（盒子不跳），界栏是 1px 实线', () => {
@@ -131,19 +138,47 @@ describe('v4 墨主题与版式令牌', () => {
         });
     });
 
-    describe('与组件库同名同值（本站不引 book-index-ui 的 variables.css，漏一个界栏下就出不来，overview#322）', () => {
-        const bimCss = readFileSync(join(process.cwd(), 'node_modules/book-index-ui/dist/book-index-ui.css'), 'utf8');
-        const vars = (body: string) => Object.fromEntries(
-            [...body.matchAll(/(--bim-fr-[\w-]+):\s*([^;]+);/g)].map(([, k, v]) => [k, v.trim()]),
-        );
-        const pick = (src: string, re: RegExp) => vars([...src.matchAll(re)][0]?.[1] ?? '');
-        const ROOT = /:root \{([^}]*--bim-fr-bd[^}]*)\}/g;
-        const BOXED = /:root\[data-layout="boxed"\] \{([^}]*)\}/g;
+    describe('样式契约（迁移计划 §4.6）：本站只覆盖品牌变量，不重写整套', () => {
+        const declared = [...css.matchAll(/(--bim-[\w-]+):/g)].map((m) => m[1]);
+        const pkgNames = new Set([...Object.keys(pkgVars(pkgRoot)), ...Object.keys(pkgVars(palCss.match(/^:root \{([^}]*)\}/m)?.[1] ?? ''))]);
 
-        it.each([['疏朗（:root）', ROOT], ['界栏（boxed）', BOXED]])('%s：组件库的每个 --bim-fr-* 本站都有，取值一致', (_, re) => {
-            const lib = pick(bimCss, re);
-            expect(Object.keys(lib).length).toBeGreaterThan(20);
-            expect(pick(css, re)).toMatchObject(lib);
+        it('layout.tsx 先 import tokens.css、再 palette.css，最后 globals.css', () => {
+            const layout = readFileSync(join(process.cwd(), 'src/app/layout.tsx'), 'utf8');
+            const i = layout.indexOf('book-index-ui/tokens.css');
+            const j = layout.indexOf('book-index-ui/palette.css');
+            expect(i).toBeGreaterThan(-1);
+            expect(j).toBeGreaterThan(i);
+            expect(j).toBeLessThan(layout.indexOf('./globals.css'));
+        });
+
+        it('globals.css 里每个 --bim-* 声明在 tokens.css／palette.css 里都有（改名删除时这里先红）', () => {
+            const unknown = [...new Set(declared)].filter((n) => !pkgNames.has(n));
+            expect(unknown).toEqual([]);
+        });
+
+        it('品牌色压缩：globals.css 里 --bim-* 赋值（不含 var() 引用）≤ 25，且颜色只走 --bim-palette-*', () => {
+            const assignedNames = [...css.matchAll(/^\s*(--bim-[\w-]+):/gm)].map((m) => m[1]);
+            expect(assignedNames.length).toBeLessThanOrEqual(25);
+            const nonPalette = assignedNames.filter((n) => !n.startsWith('--bim-palette-'));
+            // 非调色板的只剩：字体、阅读器顶距、反馈页三个语义色
+            expect(new Set(nonPalette)).toEqual(new Set([
+                '--bim-font-ui', '--bim-font-serif', '--bim-reader-top', '--bim-warning', '--bim-danger', '--bim-success',
+                '--bim-font-reader-ui', '--bim-font-reader-serif', '--bim-font-reader-reading',
+            ]));
+        });
+
+        it('不重复声明与 tokens.css 默认值完全相同的 :root 变量（该删，不是品牌覆盖）', () => {
+            const mine = pkgVars(css.match(/^:root \{([^}]*--bim-palette-paper:[^}]*)\}/m)?.[1] ?? '');
+            expect(Object.keys(mine).length).toBeGreaterThan(10);
+            const norm = (v: string) => v.replace(/\s+/g, ' ');
+            const dup = Object.entries(mine).filter(([k, v]) => k.startsWith('--bim-') && pkgVars(pkgRoot)[k] !== undefined && norm(pkgVars(pkgRoot)[k]) === norm(v)).map(([k]) => k);
+            expect(dup).toEqual([]);
+        });
+
+        it('--bim-fr-* 只在包里定义（本站 :root／boxed 块不重写）', () => {
+            const mineRoot = css.match(/^:root \{([^}]*--og-card-sh[^}]*)\}/m)?.[1] ?? '';
+            expect(mineRoot).not.toMatch(/--bim-fr-/);
+            expect(Object.keys(block(':root[data-layout="boxed"]')).filter((k) => k.startsWith('--bim-fr-'))).toEqual([]);
         });
     });
 });

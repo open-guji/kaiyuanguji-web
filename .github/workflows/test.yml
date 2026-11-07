@@ -9,7 +9,7 @@ name: Tests
 # 这里再挂一次只会重复跑单测 + 拖一遍重的 smoke。
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * *'

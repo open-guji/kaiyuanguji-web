@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
-import { isDoubtful, isHumanChecked, isMissingChar, type ProofCell, type ProofLayer } from '@/lib/proof';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import type { CellDecoration, ReaderApi, ReaderPlugin } from 'book-index-ui';
+import { emptyProofLayer, isDoubtful, isHumanChecked, isMissingChar, loadProofLayer, type ProofCell, type ProofLayer } from '@/lib/proof';
 
 /** 偏好键：`proof=0|1`，默认 0。只有 URL 带 `?proof=` 或本机存过取值才会出现开关（D1.3 前不对外公开） */
 export const PROOF_PREF_KEY = 'guji.proof';
@@ -30,8 +31,6 @@ export function useProofPref(): { on: boolean | null; set: (v: boolean) => void 
     return { on, set };
 }
 
-const cssEsc = (s: string) => s.replace(/["\\]/g, '\\$&');
-
 type Kind = 'doubt' | 'missing' | 'auto' | 'human';
 const kindOf = (c: ProofCell): Kind =>
     isMissingChar(c) ? 'missing' : isDoubtful(c) ? 'doubt' : isHumanChecked(c) ? 'human' : 'auto';
@@ -53,78 +52,124 @@ export function markedCells(layer: ProofLayer): ProofCell[] {
     return out;
 }
 
-/** 标注样式：纯 CSS 属性选择器，不动阅读器的 DOM；关闭时整个组件不渲染，DOM 与现状逐字节一致 */
-export function proofCss(cells: ProofCell[]): string {
-    const sel = (kind: Kind) =>
-        cells.filter(c => kindOf(c) === kind).map(c => `[data-char-id="${cssEsc(c.a)}"]`);
-    const rules: string[] = [];
-    const doubt = sel('doubt');
-    const missing = sel('missing');
-    if (doubt.length) rules.push(`${doubt.join(',')}{text-decoration:underline dotted #c2410c;text-underline-offset:3px;background:rgba(194,65,12,.10)}`);
-    if (missing.length) rules.push(`${missing.join(',')}{background:rgba(100,116,139,.18);outline:1px dashed #64748b}`);
-    rules.push('[data-char-id].proof-focus{outline:2px solid #2563eb;outline-offset:1px}');
-    return rules.join('\n');
+/** 校对标注的色调：存疑＝橙色点线，缺字＝灰色虚线（颜色走阅读器 token 色，不再往页面注入 <style>） */
+export function proofDecorations(cells: ProofCell[], focus: string | null): Map<string, CellDecoration> {
+    const out = new Map<string, CellDecoration>();
+    for (const c of cells) {
+        const k = kindOf(c);
+        const d: CellDecoration = k === 'missing'
+            ? { tone: 'muted', underline: 'dashed', title: KIND_LABEL.missing }
+            : { tone: 'warn', underline: 'dotted', title: KIND_LABEL.doubt };
+        if (c.a === focus) d.focus = true;
+        out.set(c.a, d);
+    }
+    return out;
 }
 
-/**
- * 校对模式（D1.2，overview#605）：把 proof.json 的逐字识别状态叠在阅读器正文上。
- * 与阅读器的接口只有两处——字 id（`data-char-id`＝`页:列:格`）和宿主容器；不改 book-index-ui。
- * 悬停／聚焦出气泡；工具条的「上一处／下一处」让键盘也能逐个跳到存疑字。
- */
-export default function ReaderProof({ layer, hostRef, on, onToggle }: {
+/** 每章的状态：校对层（开着时才取）。onChapter 返回它，decorate／overlay 经 api.state 读 */
+interface ProofChapter {
     layer: ProofLayer;
-    hostRef: RefObject<HTMLElement | null>;
-    on: boolean;
-    onToggle: (v: boolean) => void;
-}) {
-    const cells = useMemo(() => markedCells(layer), [layer]);
-    const css = useMemo(() => proofCss(cells), [cells]);
-    const [tip, setTip] = useState<{ cell: ProofCell; x: number; y: number } | null>(null);
-    const [cursor, setCursor] = useState(-1);
+    /** 层是否已取过（开关晚于换章打开时，由浮层补取） */
+    loaded: boolean;
+    /** markedCells 的缓存（layer 不变就不重算） */
+    cells?: ProofCell[];
+}
 
+interface ProofSnap { on: boolean | null; tip: { a: string; x: number; y: number } | null; focus: string | null }
+
+/** 插件的小状态仓：开关（宿主的 useProofPref 同步进来）、悬停气泡、上一处／下一处的焦点格 */
+export function createProofStore(set: (v: boolean) => void) {
+    let snap: ProofSnap = { on: null, tip: null, focus: null };
+    const subs = new Set<() => void>();
+    const emit = () => subs.forEach(f => f());
+    return {
+        set,
+        get: () => snap,
+        subscribe: (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; },
+        patch(p: Partial<ProofSnap>) {
+            snap = { ...snap, ...p };
+            emit();
+        },
+    };
+}
+export type ProofStore = ReturnType<typeof createProofStore>;
+
+/**
+ * 校对模式（D1.2，overview#605）作为阅读器插件：
+ *   onChapter 取 proof_file；decorate 画存疑／缺字；onCell.hover 出气泡；overlay 放开关与「上一处／下一处」。
+ * 不再碰阅读器 DOM；开关关着时 decorate 返回 undefined、不渲染任何东西，页面与未开时一致。
+ */
+export function proofPlugin(store: ProofStore): ReaderPlugin {
+    const ID = 'kyg:proof';
+    return {
+        id: ID,
+        async onChapter(ctx) {
+            const st: ProofChapter = { layer: emptyProofLayer(), loaded: false };
+            if (store.get().on === true) {
+                st.layer = await loadProofLayer(ctx.entryId, { versionKey: ctx.versionKey, chapter: ctx.chapter as unknown as Record<string, unknown> }, ctx.transport as never);
+                st.loaded = true;
+            }
+            return st;
+        },
+        decorate(api) {
+            const { on, focus } = store.get();
+            const st = api.state<ProofChapter>(ID);
+            if (on !== true || !st) return undefined;
+            st.cells ??= markedCells(st.layer);
+            return st.cells.length ? proofDecorations(st.cells, focus) : undefined;
+        },
+        onCell: {
+            hover(hit, api) {
+                const cur = store.get();
+                if (cur.on !== true) return;
+                // 只对有校对记录的格出气泡
+                const known = hit && hit.rect && api.state<ProofChapter>(ID)?.layer.cells.has(hit.anchor);
+                if (known && hit.rect) store.patch({ tip: { a: hit.anchor, x: hit.rect.left, y: hit.rect.bottom } });
+                else if (cur.tip) store.patch({ tip: null });
+            },
+        },
+        overlay: (api) => <ProofOverlay api={api} store={store} id={ID} />,
+    };
+}
+
+function ProofOverlay({ api, store, id }: { api: ReaderApi; store: ProofStore; id: string }) {
+    const snap = useSyncExternalStore(store.subscribe, store.get, store.get);
+    const st = api.state<ProofChapter>(id);
+    const { on } = snap;
+    // 开关变了、或晚于换章才打开：补取校对层，再要求重算修饰
     useEffect(() => {
-        const host = hostRef.current;
-        if (!on || !host) return;
-        const find = (t: EventTarget | null) => {
-            const el = (t as Element | null)?.closest?.('[data-char-id]') as HTMLElement | null;
-            const cell = el ? layer.cells.get(el.getAttribute('data-char-id') ?? '') : undefined;
-            return el && cell ? { el, cell } : null;
-        };
-        const over = (e: Event) => {
-            const hit = find(e.target);
-            if (!hit) { setTip(null); return; }
-            const r = hit.el.getBoundingClientRect();
-            setTip({ cell: hit.cell, x: r.left, y: r.bottom });
-        };
-        const out = () => setTip(null);
-        host.addEventListener('mouseover', over);
-        host.addEventListener('mouseleave', out);
-        return () => { host.removeEventListener('mouseover', over); host.removeEventListener('mouseleave', out); };
-    }, [on, layer, hostRef]);
+        if (on === null) return;
+        if (on !== true || !st || st.loaded) { api.refresh(id); return; }
+        let cancelled = false;
+        loadProofLayer(api.ctx.entryId, { versionKey: api.ctx.versionKey, chapter: api.ctx.chapter as unknown as Record<string, unknown> }, api.ctx.transport as never).then(layer => {
+            if (cancelled) return;
+            st.layer = layer; st.loaded = true; st.cells = undefined;
+            api.refresh(id);
+        });
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [on, st]);
+    const cells = useMemo(() => (st && on ? (st.cells ??= markedCells(st.layer)) : []), [st, on, st?.layer]);
+    const [cursor, setCursor] = useState(-1);
+    useEffect(() => { setCursor(-1); store.patch({ focus: null, tip: null }); }, [st, store]);
 
     const jump = useCallback((dir: 1 | -1) => {
-        const host = hostRef.current;
-        if (!host || cells.length === 0) return;
-        host.querySelectorAll('.proof-focus').forEach(n => n.classList.remove('proof-focus'));
-        let i = cursor;
-        for (let n = 0; n < cells.length; n++) {
-            i = (i + dir + cells.length) % cells.length;
-            const el = host.querySelector<HTMLElement>(`[data-char-id="${cssEsc(cells[i].a)}"]`);
-            if (el) {
-                el.classList.add('proof-focus');
-                el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                const r = el.getBoundingClientRect();
-                setTip({ cell: cells[i], x: r.left, y: r.bottom });
-                setCursor(i);
-                return;
-            }
-        }
-    }, [cells, cursor, hostRef]);
+        if (cells.length === 0) return;
+        const i = (cursor + dir + cells.length) % cells.length;
+        setCursor(i);
+        store.patch({ focus: cells[i].a });
+        api.refresh(id);
+        api.scrollTo(cells[i].a, { block: 'center' });
+        const r = api.rectOf(cells[i].a);
+        store.patch({ tip: r ? { a: cells[i].a, x: r.left, y: r.bottom } : null });
+    }, [cells, cursor, api, id, store]);
 
+    if (on === null) return null;
+    const tipCell = snap.tip && st ? st.layer.cells.get(snap.tip.a) : undefined;
     return (
-        <div data-proof-bar className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-lg border bg-white/95 px-3 py-2 text-sm shadow dark:bg-neutral-900/95">
+        <div data-proof-bar className="flex items-center gap-2 rounded-lg border bg-white/95 px-3 py-2 text-sm shadow dark:bg-neutral-900/95">
             <label className="flex items-center gap-1">
-                <input type="checkbox" checked={on} onChange={e => onToggle(e.target.checked)} />
+                <input type="checkbox" checked={on} onChange={e => store.set(e.target.checked)} />
                 校对标注
             </label>
             {on && (
@@ -134,8 +179,7 @@ export default function ReaderProof({ layer, hostRef, on, onToggle }: {
                     <button type="button" className="rounded border px-2" onClick={() => jump(1)} disabled={cells.length === 0}>下一处</button>
                 </>
             )}
-            {on && <style data-proof-style>{css}</style>}
-            {on && tip && <ProofBubble cell={tip.cell} x={tip.x} y={tip.y} />}
+            {on && snap.tip && tipCell && <ProofBubble cell={tipCell} x={snap.tip.x} y={snap.tip.y} />}
         </div>
     );
 }

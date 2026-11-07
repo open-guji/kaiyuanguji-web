@@ -1,0 +1,90 @@
+name: Bump book-index-ui (dev)
+
+# 每天查一次 npm 上有没有比 dev 当前依赖更新的 book-index-ui（取 next 与 latest 里较高者），
+# 有就开一个升依赖 PR 投 dev。迁移计划 §4.7。
+#  - 只动 dev：dev 合并不触发部署，不烧 EdgeOne 额度。main 的依赖随 rc/vX.Y.Z 合并一起走，不自动升。
+#  - 预发布版本写固定版本号（0.66.0-rc.2），不写 ^ 区间：^0.66.0-rc.1 说明不了测试站跑的是哪一版。
+#  - 不需要跨仓令牌：只读公开的 npm registry。
+#  - 若仓库设置未允许 Actions 创建 PR，PR 步骤会失败；分支仍会推上去，手动开 PR 即可。
+on:
+  schedule:
+    - cron: '30 1 * * *'   # 01:30 UTC，晚于 book-index-manager 每日 03:00 测试之前，早于北京上班
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: bump-bim-ui
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 选目标版本
+        id: v
+        run: |
+          CUR=$(node -p "require('./nextjs/package.json').dependencies['book-index-ui']")
+          TAGS=$(npm view book-index-ui dist-tags --json)
+          node -e '
+            const cur = process.argv[1].replace(/^[\^~]/, "");
+            const tags = JSON.parse(process.argv[2]);
+            const parse = (v) => { const [m, pre] = v.split("-"); return { n: m.split(".").map(Number), pre: pre ? pre.split(".") : null }; };
+            const cmp = (a, b) => {
+              const x = parse(a), y = parse(b);
+              for (let i = 0; i < 3; i++) if (x.n[i] !== y.n[i]) return x.n[i] - y.n[i];
+              if (!x.pre && !y.pre) return 0; if (!x.pre) return 1; if (!y.pre) return -1;
+              for (let i = 0; i < Math.max(x.pre.length, y.pre.length); i++) {
+                const p = x.pre[i], q = y.pre[i];
+                if (p === undefined) return -1; if (q === undefined) return 1;
+                const pn = /^\d+$/.test(p), qn = /^\d+$/.test(q);
+                if (pn && qn) { if (+p !== +q) return +p - +q; } else if (p !== q) return p < q ? -1 : 1;
+              }
+              return 0;
+            };
+            const best = [tags.latest, tags.next].filter(Boolean).sort(cmp).pop();
+            const bump = best && cmp(best, cur) > 0;
+            console.log(`current=${cur} latest=${tags.latest} next=${tags.next} → ${bump ? best : "无需升级"}`);
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `cur=${cur}\nbest=${best}\nbump=${bump}\n`);
+          ' "$CUR" "$TAGS"
+      - name: 升级并开 PR
+        if: steps.v.outputs.bump == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEST: ${{ steps.v.outputs.best }}
+          CUR: ${{ steps.v.outputs.cur }}
+        run: |
+          BR="bot/bump-book-index-ui-$BEST"
+          if git ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then
+            echo "分支 $BR 已存在，跳过"; exit 0
+          fi
+          # 预发布写固定版本，正式版保持 ^ 区间
+          case "$BEST" in *-*) SPEC="$BEST" ;; *) SPEC="^$BEST" ;; esac
+          cd nextjs
+          npm install "book-index-ui@$BEST" --save-exact --no-audit --no-fund --ignore-scripts
+          # --save-exact 对正式版写成固定版本；统一成约定写法
+          node -e '
+            const fs = require("fs"); const p = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            p.dependencies["book-index-ui"] = process.argv[1];
+            fs.writeFileSync("package.json", JSON.stringify(p, null, 2) + "\n");
+          ' "$SPEC"
+          npm install --package-lock-only --no-audit --no-fund --ignore-scripts
+          cd ..
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BR"
+          git add nextjs/package.json nextjs/package-lock.json
+          git commit -m "chore: book-index-ui $CUR → $SPEC"
+          git push origin "$BR"
+          gh pr create --base dev --head "$BR" \
+            --title "chore: book-index-ui → $SPEC" \
+            --body "$(printf '每日自动升依赖（.github/workflows/bump-bim-ui.yml）。\n\n%s → %s。合并到 dev 不触发部署；要看效果用 npm run dev:latest 或手动发测试站。' "$CUR" "$SPEC")" \
+            || echo "::warning::开 PR 失败（仓库可能未允许 Actions 创建 PR），分支 $BR 已推送，请手动开 PR"

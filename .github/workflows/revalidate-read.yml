@@ -1,0 +1,46 @@
+name: Revalidate read pages
+
+# 手动整体失效阅读页（ISR，/read/[id]/[[...seg]]）：POST 站点的 /internal/revalidate {read:true}。
+# 和 data.yml 的刷新阶段、deploy.yml 发版时做的是同一件事（密钥由 EDGEONE_API_TOKEN 派生，与两个站构建时烘进去的一致）。
+# 用在：数据发布后个别边缘节点的阅读页还带着旧数据版本键（11-06 殿本 031，Age 2607 的 Cache Hit）。
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 站点（完整 https 域名，默认正式站）
+        required: false
+        default: https://www.openguji.com
+
+permissions:
+  contents: read
+
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.openguji.com
+  HOST_LEGACY_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.openguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
+jobs:
+  revalidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revalidate read pages
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          SITE: ${{ inputs.site }}
+        run: |
+          case "$SITE" in "$HOST_SITE"|"$HOST_STAGING"|"$HOST_LEGACY_SITE") ;; *) echo "❌ 只允许正式站／测试站／旧域名站点：$SITE"; exit 1 ;; esac
+          S=$(printf 'kyg-item-revalidate' | openssl dgst -sha256 -hmac "$EDGEONE_API_TOKEN" | awk '{print $NF}')
+          echo "::add-mask::$S"
+          code=$(curl -s -o "$RUNNER_TEMP/resp.json" -w '%{http_code}' -X POST "$SITE/internal/revalidate" \
+            -H 'content-type: application/json' -H "x-kyg-revalidate: $S" -d '{"read":true}')
+          echo "HTTP $code"; cat "$RUNNER_TEMP/resp.json"; echo
+          [ "$code" = 200 ]

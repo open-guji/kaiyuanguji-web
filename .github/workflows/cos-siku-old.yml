@@ -1,0 +1,45 @@
+name: COS 四庫總目旧书影清单／清理
+
+# 默认 dry-run：只列出匹配 ^iiif/96mid1ogzk/\d{2}/\d{4}[a-d]?/ 的对象（数量、GB、每册明细、键清单工件），不写不删。
+# 真删要同时勾 delete 并在 confirm 填 DELETE-OLD-CADAL；删之前必须有用户本人点头（A20 转述 11-05，等 sheldon 确认）。
+on:
+  workflow_dispatch:
+    inputs:
+      delete:
+        description: '真删（默认只列）'
+        type: boolean
+        default: false
+      confirm:
+        description: '真删时填 DELETE-OLD-CADAL'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard
+        if: ${{ inputs.delete }}
+        run: |
+          [ "${{ inputs.confirm }}" = "DELETE-OLD-CADAL" ] || { echo "❌ confirm 不对，不删"; exit 1; }
+      - name: List (and delete if asked)
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          DO_DELETE: ${{ inputs.delete }}
+        run: |
+          ARGS=(--keys-out "$RUNNER_TEMP/old-keys.txt")
+          [ "$DO_DELETE" = "true" ] && ARGS+=(--delete)
+          python3 ops/cos_siku_old.py "${ARGS[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: siku-old-keys
+          path: ${{ runner.temp }}/old-keys.txt
+          retention-days: 14
