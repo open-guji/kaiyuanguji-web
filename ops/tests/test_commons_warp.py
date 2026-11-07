@@ -52,6 +52,8 @@ class CommonsWarp(unittest.TestCase):
         c = cw.canvas_commons({'sources': [SRC]}, RIGHT)
         self.assertEqual(len(c['matrix']), 9)
         self.assertEqual((c['width'], c['height']), (3840, 5420))
+        c = cw.canvas_commons({'sources': [SRC], 'rev': 4}, {**RIGHT, 'sha256': 'ab'})
+        self.assertEqual((c['table_rev'], c['page_sha256']), (4, 'ab'))
 
     def test_skips_when_not_applicable(self):
         self.assertIsNone(cw.canvas_commons({'sources': [SRC]}, {**RIGHT, 'frame': None}))

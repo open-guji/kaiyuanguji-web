@@ -104,5 +104,7 @@ def canvas_commons(table, page):
         'url': thumb_url(src, page['djvu_page']),
         'width': THUMB_W, 'height': round(dh * THUMB_W / dw),
         'matrix': [round(v, 9) for row in m for v in row],
+        # 指纹：页表 rev＋本页图 sha256；换版时这两项变了矩阵才会跟着重算（A20 要求）
+        'table_rev': table.get('rev'), 'page_sha256': page.get('sha256'),
         'attribution': '景印文淵閣四庫全書，Wikimedia Commons',
     }
