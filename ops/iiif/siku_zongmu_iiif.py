@@ -55,6 +55,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-workspace 同名目录、F1 样张同一个 id）
 sys.path.insert(0, os.path.dirname(HERE))
 import hosts  # noqa: E402
+import commons_warp  # noqa: E402
 
 # manifest／canvas 的 id 是 IIIF 标识符，book-text 的 cord 里存着同一批 canvas id，换数据域名时两边一起换
 # （2026-10-21 起用新数据域名，旧域名跳转；网站只按路径取页序，与主机无关；见 docs/data-domain-migration.md 第 4 步）
@@ -482,6 +483,9 @@ def build_canvas(vol, meta, c, commons, ia=True):
             }],
         }],
     }
+    if c.get('commons_warp'):
+        # 海外读者改读 Commons 3840 缩略图：matrix 把缩略图摆成本页图（逐字框同坐标系），见 commons_warp.py
+        canvas['bim:commons'] = c['commons_warp']
     if c['xywh'] and ia:
         # #357：拆开的块记原图与裁剪框，坐标原点＝裁剪区左上角
         canvas['source'] = {'id': ia_img, 'type': 'Image',
@@ -736,6 +740,8 @@ def main(argv=None):
     ap.add_argument('--cache', default=None, help='tif zip 缓存目录（默认 <out>/../cache）')
     ap.add_argument('--jobs', type=int, default=None, help='切片进程数（默认 CPU 核数）')
     ap.add_argument('--no-commons', action='store_true', help='不查 Commons、不挂 Commons 回退')
+    ap.add_argument('--no-commons-warp', action='store_true',
+                    help='--source pages：不在 canvas 里写 Commons 摆正矩阵（bim:commons，海外读者改读 Commons 缩略图用）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
@@ -780,6 +786,17 @@ def main(argv=None):
         r = slice_volume(v, meta, splits, out, cache, leaves, a.jobs, table=table)
         if table is not None:
             r['stats']['page_table'] = f'r{table["rev"]:03d}'
+        if not a.no_commons_warp:
+            by_seq = {p['seq']: p for p in table['pages']}
+            n_warp = 0
+            for c in r['canvases']:
+                try:
+                    c['commons_warp'] = commons_warp.canvas_commons(table, by_seq[c['seq']])
+                except (ValueError, KeyError) as e:
+                    print(f'  ⚠ {c["seq"]} Commons 摆正矩阵算不出（{e}），本页不挂', file=sys.stderr)
+                    c['commons_warp'] = None
+                n_warp += bool(c['commons_warp'])
+            r['stats']['commons_warp'] = n_warp
         r['stats']['wall_s'] = round(time.perf_counter() - t0, 1)
         commons = None if a.no_commons else usable_commons(v, meta, commons_file(meta['ia']))
         man = build_manifest(v, meta, r['canvases'], commons, ia=not a.no_ia)
