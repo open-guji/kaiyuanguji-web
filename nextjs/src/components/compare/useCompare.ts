@@ -29,13 +29,14 @@ export function writeCmp(target: CompareTarget | null): void {
  * 对照本状态（来自网址 ?cmp=，只认本作品别的来源，不合法静默忽略）。放在阅读页外层：来源行的「对校」按钮和阅读器里的插件共用。
  * 服务端与水合首帧一律关，保持与普通阅读页一致；挂载后读网址。
  */
-export function useCompareTarget(id: string, sourceIds: readonly string[]) {
+export function useCompareTarget(id: string, sourceIds: readonly string[], siblingKeys: readonly string[] = []) {
     const [target, setTargetState] = useState<CompareTarget | null>(null);
     useEffect(() => {
         const t = parseCmp(new URLSearchParams(window.location.search).get('cmp'));
-        if (t && t.id !== id && sourceIds.includes(t.id)) setTargetState(t);
+        // 别的来源（条目）或本书的另一个版本（id 同本条目、带版本 key）
+        if (t && ((t.id !== id && sourceIds.includes(t.id)) || (t.id === id && t.key && siblingKeys.includes(t.key)))) setTargetState(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [siblingKeys.join(',')]);
     const setTarget = useCallback((next: CompareTarget | null) => {
         setTargetState(next);
         writeCmp(next);

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { useConvert, type ReaderApi, type ReaderPlugin } from 'book-index-ui';
-import type { CompareTarget } from '@/lib/compare/url';
+import { formatCmp, parseCmp, type CompareTarget } from '@/lib/compare/url';
 import CompareOverlay from './CompareOverlay';
 import CompareSettings, { type CompareSource } from './CompareSettings';
 import { useCompare } from './useCompare';
@@ -90,13 +90,13 @@ function GroupTitle() {
     return <>{convert('對校')}</>;
 }
 
-function SettingsBlock({ store, sources, api }: { store: CompareStore; sources: CompareSource[]; api: ReaderApi }) {
+function SettingsBlock({ store, sources, api, id }: { store: CompareStore; sources: CompareSource[]; api: ReaderApi; id: string }) {
     const ctl = useStoreValue(store);
     return (
         <CompareSettings
             sources={sources}
-            targetId={ctl?.target?.id ?? null}
-            onTarget={(tid) => ctl?.setTarget(tid ? { id: tid } : null)}
+            targetId={ctl?.target ? formatCmp({ id: ctl.target.id, ...(ctl.target.key && ctl.target.id === id ? { key: ctl.target.key } : {}) }) : null}
+            onTarget={(v) => ctl?.setTarget(v ? parseCmp(v) : null)}
             status={ctl?.status ?? 'idle'}
             items={ctl?.items ?? []}
             segments={ctl?.segments ?? []}
@@ -126,7 +126,7 @@ export function useComparePlugin({ id, sources, transport, target, setTarget, st
         if (!hasSources) return null;
         return {
             id: 'compare',
-            settings: { group: 'compare', title: <GroupTitle />, order: 50, render: (api) => <SettingsBlock store={store} sources={sources} api={api} /> },
+            settings: { group: 'compare', title: <GroupTitle />, order: 50, render: (api) => <SettingsBlock store={store} sources={sources} api={api} id={id} /> },
             overlay: (api) => <CompareController store={store} api={api} id={id} transport={transport} target={target} setTarget={setTarget} />,
             decorate: () => {
                 const m = store.get()?.decorations;

@@ -5,7 +5,7 @@
 import { classify, type DiffCat, type VariantTest } from './classify';
 import { diffChars } from './diff';
 import { splitVolumes, wikiFileOf, type BaseCell, type Heading, type VolumeSeg, type WikiChapter } from './volumes';
-import { wikiChars } from './wikitext';
+import { chapterChars, wikiChars } from './wikitext';
 
 export interface CompareItem {
     id: string;
@@ -103,17 +103,19 @@ export interface CompareInput {
     isVariant: VariantTest;
 }
 
-async function compareSeg(input: CompareInput, seg: VolumeSeg, out: CompareItem[], idStart: number): Promise<SegResult> {
+async function compareSeg(input: CompareInput, seg: VolumeSeg, out: CompareItem[], idStart: number, whole?: { md: string; file: string }): Promise<SegResult> {
     const res: SegResult = { no: seg.no, label: seg.label, from: seg.from, to: seg.to, status: 'ok', wikiFile: null };
-    const file = seg.no === null ? null : wikiFileOf(seg.no, input.wikiChapters);
+    const file = whole ? whole.file : seg.no === null ? null : wikiFileOf(seg.no, input.wikiChapters);
     if (!file) return { ...res, status: 'no-wiki' };
     res.wikiFile = file;
-    const md = await input.getWikiMd(file);
+    const md = whole ? whole.md : await input.getWikiMd(file);
     if (md === null) return { ...res, status: 'fetch-failed' };
     const base = input.cells.slice(seg.from, seg.to).map((c) => c.c);
-    let wiki = wikiChars(md);
-    const [j0, j1] = trimWikiToBase(base, wiki, seg.startsPartial, seg.endsPartial);
-    wiki = wiki.slice(j0, j1);
+    let wiki = whole ? chapterChars(md) : wikiChars(md);
+    if (!whole) {
+        const [j0, j1] = trimWikiToBase(base, wiki, seg.startsPartial, seg.endsPartial);
+        wiki = wiki.slice(j0, j1);
+    }
     const hunks = diffChars(base, wiki);
     if (!hunks) return { ...res, status: 'too-different' };
     const structEnd = seg.headEnd - seg.from;
@@ -155,4 +157,17 @@ export async function compareChapter(input: CompareInput): Promise<CompareResult
     for (const seg of segs) segments.push(await compareSeg(input, seg, items, items.length));
     items.sort((a, b) => a.i1 - b.i1 || a.i2 - b.i2);
     return { items, segments };
+}
+
+/**
+ * 同一本书另一个版本（章文件与底本一一对应）的整章比对：不分卷、不裁剪，整章对整章。
+ * md 是对照版本里同一个章文件的内容；file 记在结果里（便于提示）。
+ */
+export async function compareWhole(input: { cells: readonly BaseCell[]; md: string; file: string; label: string; isVariant: VariantTest }): Promise<CompareResult> {
+    const seg: VolumeSeg = { no: null, label: input.label, from: 0, to: input.cells.length, startsPartial: false, endsPartial: false, headEnd: 0 };
+    const items: CompareItem[] = [];
+    const full: CompareInput = { cells: input.cells, headings: [], prevVolNo: null, lastContinues: false, wikiChapters: [], getWikiMd: async () => input.md, isVariant: input.isVariant };
+    const res = await compareSeg(full, seg, items, 0, { md: input.md, file: input.file });
+    items.sort((a, b) => a.i1 - b.i1 || a.i2 - b.i2);
+    return { items, segments: [res] };
 }
