@@ -8,7 +8,7 @@
  */
 export const PENDING_REASON_VERSION = 1;
 export const PENDING_REASONS = {
-    // S01 seg_page_unaligned：本格无整理本对位，且同页无对位格 ≥10；或本格是弱证据格（有对位、机器字不同）且本列一致率 <0.5、同页这样的格 ≥10；已钉页直接人审
+    // S01 seg_page_unaligned：正文页（非职名等页型）上本格无整理本对位（〓 不算），且同页无对位格 ≥10；或本格是弱证据格（有对位、机器字不同）且本列一致率 <0.5、同页这样的格 ≥10；已钉页直接人审
     "seg_page_unaligned": {
         "code": "S01",
         "category": "segmentation",
@@ -35,7 +35,7 @@ export const PENDING_REASONS = {
         "hint": "本页列宽不均，版框可能量错，先看整页",
         "ui": "page"
     },
-    // S04 seg_defect：人或闸标了切坏格（confirm v=seg_defect，或单上 cls=seg_defect）；史記夹注两行分法不均、按整理本切的格（doubt 码 jiazhu_uneven，cv#1011）也归这里，细分 jiazhu_uneven
+    // S04 seg_defect：人或闸标了切坏格（confirm v=seg_defect，或单上 cls=seg_defect）；史記夹注两行分法不均、按整理本切的格（doubt 码 jiazhu_uneven，cv#1011）也归这里，细分 jiazhu_uneven；整理本这位没字、且格框比本页同类格小得多（边长 <0.6 倍中位数，或长宽比 <0.35；半截字、墨点、框角）的碎片格也归这里，细分 clipped（R02 深挖 11-06）
     "seg_defect": {
         "code": "S04",
         "category": "segmentation",
@@ -62,7 +62,7 @@ export const PENDING_REASONS = {
         "hint": "被盖住了，参校本这里也没有字，请尽量从图上读",
         "ui": "free"
     },
-    // H01 hard_pair：本格机器字、整理本字、库首选里出现的字全在 {日 曰 己 已 巳} 内，且至少两个不同
+    // H01 hard_pair：本格机器字、整理本字、库首选里出现的字全在 {日 曰 己 已 巳} 内，且至少两个不同；或三者同字而字组是 jys/ry、或库前两名都在组内（A24 Z01 深挖 11-06）
     "hard_pair": {
         "code": "H01",
         "category": "hard_pair",
@@ -71,7 +71,7 @@ export const PENDING_REASONS = {
         "hint": "日曰、己已巳这类刻法几乎不分的字，留到加标点、识专名时一起按文意定",
         "ui": "choose3"
     },
-    // Z01 group_abstain：有字组证据，solvers 都没给字（不同义组）
+    // Z01 group_abstain：有字组证据、字组没定字，解法一个字都没给（补放、联合判、复核都算；场景写在 detail「组:lift|joint|review」）；字组只是同字异形之争（一个字）也落这里
     "group_abstain": {
         "code": "Z01",
         "category": "group",
@@ -80,7 +80,7 @@ export const PENDING_REASONS = {
         "hint": "形近字，几种判法都没给出字，请按前后文选",
         "ui": "pick"
     },
-    // Z02 group_conflict：solvers 给了 ≥2 个不同字，或 why=conflict/joint
+    // Z02 group_conflict：解法给了 ≥2 个不同字（同字异形先折叠，manager#296）；补放、联合判、复核都算。联合判只有一个字（共字组没表态）不算，归 Z07
     "group_conflict": {
         "code": "Z02",
         "category": "group",
@@ -89,7 +89,7 @@ export const PENDING_REASONS = {
         "hint": "几种判法给了不同的字，请按前后文选",
         "ui": "pick"
     },
-    // Z03 group_demoted：字组 decision=demote
+    // Z03 group_demoted：复核（decision=demote），解法只给一个字、与放行字不同；复核时解法没给字归 Z01、≥2 字归 Z02、整理本是组里另一形（group_flow_ref_dissent）归 Z04
     "group_demoted": {
         "code": "Z03",
         "category": "group",
@@ -98,7 +98,7 @@ export const PENDING_REASONS = {
         "hint": "复核给了与放行字不同的字",
         "ui": "pick"
     },
-    // Z04 group_ref_dissent：字组 why=ref_dissent 或 coord_dissent
+    // Z04 group_ref_dissent：解法给了一个字，参校本（现役或坐标对位）是另一个真字：补放 why=ref_dissent/coord_dissent，复核疑问码 group_flow_ref_dissent；参校字是〓的不算，落 R01（A24 Z 类梳理 11-07）
     "group_ref_dissent": {
         "code": "Z04",
         "category": "group",
@@ -107,25 +107,25 @@ export const PENDING_REASONS = {
         "hint": "判法给的字和参校本这里的字不一样",
         "ui": "pick"
     },
-    // Z05 group_weak：字组其余情况（why=joint/weak）
+    // Z05 group_weak：已停用；原为字组其余情况（why=joint/weak）
     "group_weak": {
         "code": "Z05",
         "category": "group",
         "route": "llm",
-        "label": "形近字·证据弱",
-        "hint": "判法给了字，但证据不够强",
+        "label": "形近字·证据弱（已停用）",
+        "hint": "已停用（2026-11-06）：旧数据里还有，不再产出；字形单路没把握并入 Z01，整理本缺位落 R 类",
         "ui": "pick"
     },
-    // Z06 group_form_open：字组是同义（写法）组：暂归一、按参校本取字、码位组能解；或 why=form_open
-    "group_form_open": {
-        "code": "Z06",
+    // Z07 group_unconfirmed：解法只给一个字（同字异形折叠后），why=weak（给字的只有不许单独补放的解法，lift_needs）或 why=joint（联合判共字组弃权／没表态）（A24 Z 类梳理 11-07 新增；原落 Z01、Z02）
+    "group_unconfirmed": {
+        "code": "Z07",
         "category": "group",
-        "route": "algo",
-        "label": "写法待定",
-        "hint": "知道是哪个字，但不确定本书刻的是哪种写法，只在组内写法里挑",
-        "ui": "pick"
+        "route": "llm",
+        "label": "形近字·差一路确认",
+        "hint": "判法给了一个字，但还差另一路（另一种判法或相邻字组）确认，请看这个字对不对",
+        "ui": "confirm"
     },
-    // N01 near_form_guard：guard=conflict/never_match，或 why 含 near_form/solo_confusable/iron_confusable_ref，且不在字组
+    // N01 near_form_guard：guard=conflict/never_match，或参校字与机器字／库候选前三构成手工形近表（cv NEVER_MATCH_FAMILIES）里的一对；仅疑问码 near_form（家族字碰巧在候选里）不算（A24 N01 深挖 11-06）
     "near_form_guard": {
         "code": "N01",
         "category": "near_form",
@@ -134,7 +134,7 @@ export const PENDING_REASONS = {
         "hint": "有长得很像的字（十士、西酉…），要结合前后文看",
         "ui": "pick"
     },
-    // V01 variant_pair：整理本字与库首选（或前五）是异体对，但不在字组里；或 why 含 ref_lib_variant/variant_indirect/replace_form/channel_off
+    // V01 variant_pair：整理本字与库首选或机器字是异体对（边分型 T1／T2；T3 通假、简繁不算；前五里其它候选不看，A24 V01 深挖 11-06），且不在字组里；或 why 含 ref_lib_variant/variant_indirect/replace_form/channel_off
     "variant_pair": {
         "code": "V01",
         "category": "variant",
@@ -143,7 +143,16 @@ export const PENDING_REASONS = {
         "hint": "两个字是异体，要确认本书刻的是哪个",
         "ui": "pick"
     },
-    // L01 lib_missing：整理本字不在字形库（why 含 lib_miss / 「库里没有」）
+    // V02 variant_form_open：疑问码 form_open：seed_admit 整理本通道放行位，整理本字在用字账（variant_ledger）≥2 写法的同义组里、decide_form 定不了写法（不是形近字组流程产生的）。旧名 group_form_open、码 Z06（2026-11-07 改归异体类，Z06 不再用）
+    "variant_form_open": {
+        "code": "V02",
+        "category": "variant",
+        "route": "algo",
+        "label": "写法待定",
+        "hint": "知道是哪个字，但不确定本书刻的是哪种写法，只在组内写法里挑",
+        "ui": "pick"
+    },
+    // L01 lib_missing：5a 判 diff（why 含 lib_miss / 「库里没有」）；或本该判 L02／L03、而参校字在本书库里 0 例（第一次进库；刻例只算本书版本，A23 11-06）
     "lib_missing": {
         "code": "L01",
         "category": "glyph_lib",
@@ -152,7 +161,7 @@ export const PENDING_REASONS = {
         "hint": "字形库里还没有这个字，这一格就是它第一次进库，请确认图上是不是参校本的字",
         "ui": "pick"
     },
-    // L02 lib_sparse_dissent：整理本字库样本 ≤2，机器字≠整理本；大模型选中的若是这个少样本字 → 回人审
+    // L02 lib_sparse_dissent：参校字在本书库里 1～2 例（只算本书版本；0 例归 L01），机器字≠参校字；大模型选中的若是这个少样本字 → 回人审
     "lib_sparse_dissent": {
         "code": "L02",
         "category": "glyph_lib",
@@ -161,16 +170,16 @@ export const PENDING_REASONS = {
         "hint": "库里这个字刻例很少，机器字和参校本不一致",
         "ui": "pick"
     },
-    // L03 lib_sparse_agree：整理本字库样本 ≤2，上下文＝整理本
+    // L03 lib_sparse_agree：参校字在本书库里 1～2 例（只算本书版本；0 例归 L01），机器字＝参校字（多半是上下文选了形近字、被护栏 ctx_guard_ref 改回参校字）
     "lib_sparse_agree": {
         "code": "L03",
         "category": "glyph_lib",
         "route": "human",
         "label": "刻例太少",
-        "hint": "这个字库里只有一两个刻例，第一次正式进库，请确认",
+        "hint": "这个字库里只有一两个刻例，库还认不准，请确认图上是不是参校本的字",
         "ui": "pick"
     },
-    // L04 lib_unrecognized：库样本 >2，上下文＝整理本，库不认（成因 H）
+    // L04 lib_unrecognized：兜底——有参校字、机器字（seed_admit char）＝参校字、前面各条都没中（不看刻例数、不看库认不认；不接字形库时 L02/L03 的格也落这里）。细分见 pending_reason_detail（reasons.lib_unrecognized_kind）
     "lib_unrecognized": {
         "code": "L04",
         "category": "glyph_lib",
@@ -179,13 +188,13 @@ export const PENDING_REASONS = {
         "hint": "库里有这个字，但这一格认不出，多半是印淡或压了框线",
         "ui": "pick"
     },
-    // L05 garble_gate：why 含 ctx_garble_shape / shadow_veto / ctx_garble_rare
+    // L05 garble_gate：why 含 ctx_garble_shape / shadow_veto / ctx_garble_rare，且整理本这位有字（无对位的糊格落 R02）
     "garble_gate": {
         "code": "L05",
         "category": "glyph_lib",
         "route": "algo",
         "label": "像框线或墨点",
-        "hint": "字形像框线或墨点，被乱码闸拦下，先看是不是误拦",
+        "hint": "格图印糊，库首位是错字被乱码闸拦下；整理本字多半是对的，先看图",
         "ui": "free"
     },
     // R03 glyph_pending：整理本这位是私用码，且该码位在私用码表里登记为「已判定待收」（sheldon 11-05）；没登记过的仍记 ref_lacuna。detail 只写永久编号「来源:码位」（如 daizhige:U+E123、siku-qiefen-v2:U+F1001；两套码不一一对应，必须带来源；占位码 U+1001 等以图代字属真图，不进待收字）
@@ -224,13 +233,13 @@ export const PENDING_REASONS = {
         "hint": "机器识别的字和参校本对位时就不同（对位的 replace 段），位置可能差一两格",
         "ui": "pick"
     },
-    // P02 ref_final_diff：不是 P01（对位 equal 段或坐标对位），但 seed_admit 最后定的字≠参校字（context_vs_ref / iron_vs_ref / signal_conflict 等）
+    // P02 ref_final_diff：不是 P01（没有 replace 标签；align_op 落在 coord），有整理本字、机器字≠整理本字、没被任何通道放行（reasons.py：has_ref and char != ref）
     "ref_final_diff": {
         "code": "P02",
         "category": "mismatch",
         "route": "llm",
         "label": "定字与参校本不同",
-        "hint": "对位时和参校本一致（或按坐标对位），最后定字成了别的字，可能是真异文",
+        "hint": "文本对位没给这格标签、整理本字只来自坐标对位，机器字和它不同；实测多半是机器字错（cov 低），不是真异文",
         "ui": "pick"
     },
     // X01 ruling_conflict：doubt=src_code_conflict（cv#938）；人裁的机器不能降，单列出卡
@@ -251,7 +260,7 @@ export const PENDING_REASONS = {
         "hint": "模型看图认为放行的字可能不对，请确认",
         "ui": "pick"
     },
-    // X03 machine_changed：机器推翻最新人裁（book-text 现文是人裁的字、本轮机器改了）进复审；单上 recheck=true 且 note 为改判。11-05 起机器改字默认按最新结果进文本，不再复审（cv
+    // X03 machine_changed：机器推翻最新人裁（book-text 现文是人裁的字、本轮机器改了）进复审；单上 recheck=true 且 note 以「机器改判」开头、含「推翻人裁」（老单「无人裁」复审格归 recheck）。11-05 起机器改字默认按最新结果进文本，不再复审（cv
     "machine_changed": {
         "code": "X03",
         "category": "review",
@@ -294,7 +303,8 @@ export const REASON_CATEGORIES: Record<string, string> = {
 /** 旧名 → 新名（2026-11-06 Sheldon 定：P01 ref_replaced→ref_ocr_diff「识别字与参校本对位时就不同」，P02 ref_mismatch→ref_final_diff「对位一致、最后定字与参校本不同」）。读旧单时先换成新名 */
 export const PENDING_REASON_RENAMED: Record<string, PendingReason> = {
     "ref_replaced": "ref_ocr_diff",
-    "ref_mismatch": "ref_final_diff"
+    "ref_mismatch": "ref_final_diff",
+    "group_form_open": "variant_form_open"
 };
 export const REASON_ROUTES: Record<string, string> = {
     "human": "一定人审",
