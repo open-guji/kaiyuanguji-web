@@ -41,7 +41,7 @@ export interface PendingExtras {
     clsSub?: string;
     libTop?: { c: string; s: number }[];
     lib?: { verdict?: string; cov?: number; wmax?: number };
-    ctx?: { c: string; margin?: number; src?: string };
+    ctx?: { c: string; margin?: number; src?: string; /** 点校倾向字的理由（src=punct_llm） */ why?: string };
     ref?: { c: string; op?: string };
     ocr?: { c: string; src?: string }[];
     stale?: { c: string; ts?: string; state?: string };
@@ -51,6 +51,8 @@ export interface PendingExtras {
     alt?: AltCand[];
     /** 复审出单（cv `republish.py prep --recheck`）写的一句说明：这格为什么又放回单上，如「旧裁 山，新票 由，请定」 */
     note?: string;
+    /** 这格所在的、带标点专名号的句子（`sent[]` 里按 cells 找到的那句；没有就不显示） */
+    sent?: PendingSent;
     /** 这格已有的人裁（复审格才有）：页面提示「这次选的会替代它」；cv 落票时按 `id` 认作有意推翻 */
     prior?: { c: string; id?: string; ts?: string };
 }
@@ -61,6 +63,39 @@ export interface PendingCell extends PendingExtras {
     c?: string;
     cand?: ProofCandidate[];
     box?: Box;
+}
+
+/** 点校标出的标点、专名号（pending.json 顶层 `sent[]`，guji-manager sent_export 出）；pos＝标记前的字数，实体 [start,end) */
+export type SentMark =
+    | { kind: 'punct'; ch: string; pos: number }
+    | { kind: 'entity'; type: string; start: number; end: number; status?: string; assumed?: boolean };
+export interface PendingSent {
+    t: string;
+    cells: string[];
+    marks: SentMark[];
+    assumedCells?: string[];
+}
+
+export function parseSent(raw: unknown): PendingSent[] {
+    if (!Array.isArray(raw)) return [];
+    return raw.flatMap(item => {
+        const o = asObject(item);
+        if (!o || typeof o.t !== 'string' || !Array.isArray(o.cells)) return [];
+        const chars = Array.from(o.t);
+        const cells = o.cells.filter((x): x is string => typeof x === 'string');
+        if (!chars.length || cells.length !== chars.length) return [];   // 对不上就不显示，宁缺毋错
+        const marks: SentMark[] = [];
+        for (const m of Array.isArray(o.marks) ? o.marks : []) {
+            const mo = asObject(m);
+            if (!mo) continue;
+            if (mo.kind === 'punct' && typeof mo.ch === 'string' && typeof mo.pos === 'number' && mo.pos >= 0 && mo.pos <= chars.length) {
+                marks.push({ kind: 'punct', ch: mo.ch, pos: mo.pos });
+            } else if (mo.kind === 'entity' && typeof mo.start === 'number' && typeof mo.end === 'number' && mo.start >= 0 && mo.end > mo.start && mo.end <= chars.length) {
+                marks.push({ kind: 'entity', type: str(mo.type) ?? '', start: mo.start, end: mo.end, ...(str(mo.status) ? { status: str(mo.status) } : {}), ...(mo.assumed === true ? { assumed: true } : {}) });
+            }
+        }
+        return [{ t: o.t, cells, marks, ...(Array.isArray(o.assumed_cells) ? { assumedCells: o.assumed_cells.filter((x): x is string => typeof x === 'string') } : {}) }];
+    });
 }
 
 export interface PendingData {
@@ -105,7 +140,7 @@ export function parseExtras(raw: unknown): PendingExtras {
     const lib = asObject(it.lib);
     if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
     const ctx = asObject(it.ctx);
-    if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}) };
+    if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}), ...(str(ctx.why) ? { why: str(ctx.why) } : {}) };
     const ref = asObject(it.ref);
     if (ref && str(ref.c)) out.ref = { c: ref.c as string, ...(str(ref.op) ? { op: str(ref.op) } : {}) };
     if (Array.isArray(it.ocr)) {
@@ -270,8 +305,14 @@ export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[
  * （`ctx_garble_*`），都不显示——vol01 001-r2 有字的 38 格全是回声（GUJI-683，调研 A B4）。
  * 上下文给了「看不出」（没有字）照旧显示。
  */
+/** 点校阶段 AI 读整段文意给的倾向字：只提示，不预选 */
+export function isDianHint(cell: PendingCell): boolean {
+    return cell.ctx?.src === 'punct_llm';
+}
+
 export function ctxWorthShowing(cell: PendingCell): boolean {
     if (!cell.ctx) return false;
+    if (isDianHint(cell)) return true;   // 点校倾向字是读整段文意的结果，不是字形库的回声，一律显示
     if (!cell.ctx.c) return true;
     if (cell.why?.some(w => w.startsWith('ctx_garble'))) return false;
     return cell.ctx.c !== cell.libTop?.[0]?.c;
@@ -421,6 +462,9 @@ export function parsePending(raw: unknown): PendingData {
         const box = boxes.get(cell.a);
         cells.push({ a: cell.a, ...(cell.c ? { c: cell.c } : {}), ...(cell.cand ? { cand: cell.cand } : {}), ...(box ? { box } : {}), ...parseExtras(extras.get(cell.a)) });
     }
+    const sentByCell = new Map<string, PendingSent>();
+    for (const sn of parseSent(o?.sent)) for (const a of sn.cells) if (!sentByCell.has(a)) sentByCell.set(a, sn);
+    if (sentByCell.size) for (const c of cells) { const sn = sentByCell.get(c.a); if (sn) c.sent = sn; }
     return { rev, cells };
 }
 
