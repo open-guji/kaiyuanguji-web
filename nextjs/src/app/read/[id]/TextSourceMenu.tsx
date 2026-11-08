@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useConvert } from 'book-index-ui';
 import { readerPath } from '@/lib/reader-route';
-import { readTextLabel, type ReadTextRow } from '@/lib/read-texts';
+import { readTextLabel, readTextTitle, type ReadTextRow } from '@/lib/read-texts';
 
 /**
  * 阅读页书名栏上方的「来源」条：同一部作品下各个条目已有的文本（本站自己整理的在前，其后维基文庫、别的来源……）。
@@ -43,6 +43,7 @@ export default function TextSourceMenu({ currentId, rows, compareId = null, comp
                     <Link
                         href={readerPath(r.id)}
                         aria-current={on ? 'true' : undefined}
+                        title={readTextTitle(r) ? convert(readTextTitle(r)!) : undefined}
                         style={{
                             padding: '2px 10px', borderRadius: 999, textDecoration: 'none', whiteSpace: 'nowrap',
                             border: '1px solid var(--color-tint-2, rgba(0,0,0,.18))',

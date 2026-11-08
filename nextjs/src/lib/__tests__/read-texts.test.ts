@@ -1,6 +1,6 @@
 /** 作品「文本来源」表（entry.read_texts，打包算好）：解析与作品页阅读入口的默认去处 */
 import { describe, it, expect } from '@jest/globals';
-import { defaultReadTarget, readTextLabel, readTextsOf } from '../read-texts';
+import { defaultReadTarget, readTextLabel, readTextTitle, readTextsOf } from '../read-texts';
 
 const rows = [
     { id: '96mid1ogzk', label: '開源古籍自校本', edition: '清乾隆六十年武英殿刻本', own: true },
@@ -20,8 +20,11 @@ describe('read-texts', () => {
         expect(defaultReadTarget('d59dh3vo9af4', [])).toBeNull();
     });
 
-    it('readTextLabel：来源 · 底本', () => {
-        expect(readTextLabel(rows[0])).toBe('開源古籍自校本 · 清乾隆六十年武英殿刻本');
+    it('readTextLabel：自建本只写来源名，别家的来源 · 底本；底本全名进 readTextTitle', () => {
+        expect(readTextLabel(rows[0])).toBe('開源古籍自校本');
+        expect(readTextTitle(rows[0])).toBe('開源古籍自校本 · 清乾隆六十年武英殿刻本');
         expect(readTextLabel(rows[1])).toBe('維基文庫');
+        expect(readTextTitle(rows[1])).toBeUndefined();
+        expect(readTextLabel({ id: 'x', label: '某來源', edition: '某刻本' })).toBe('某來源 · 某刻本');
     });
 });
