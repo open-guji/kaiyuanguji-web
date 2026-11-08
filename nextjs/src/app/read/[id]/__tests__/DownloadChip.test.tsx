@@ -71,7 +71,7 @@ describe('DownloadChip', () => {
         expect(buildExport).toHaveBeenCalledWith(expect.objectContaining({ format: 'punct', links: true, glyph: 'original' }), {});
     });
 
-    // 每一种组合都原样传给 buildExport（生成结果另在 lib/export/__tests__/cases 逐字节对照）
+    // 每一种组合都原样传给 buildExport（生成结果在 book-text-util 包里逐字节对照）
     const combos: [string, boolean, string][] = [];
     for (const fmt of ['lines', 'punct', 'entity']) for (const links of [true, false]) for (const glyph of ['original', 'traditional', 'simplified']) combos.push([fmt, links, glyph]);
     it.each(combos)('格式 %s、链接 %s、字形 %s', async (fmt, links, glyph) => {

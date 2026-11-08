@@ -36,7 +36,13 @@ export function defaultReadTarget(entryId: string, rows: ReadTextRow[]): string 
     return readerPath(first.id);
 }
 
-/** 一行给读者看的文字：来源 · 底本 */
+/** 来源行上给读者看的文字：本站自己整理的只写来源名（底本放 readTextTitle 的提示里）；别家的来源 · 底本 */
 export function readTextLabel(r: ReadTextRow): string {
+    if (r.own) return r.label;
     return r.edition && r.edition !== r.label ? `${r.label} · ${r.edition}` : r.label;
+}
+
+/** 悬停提示：底本全名 */
+export function readTextTitle(r: ReadTextRow): string | undefined {
+    return r.edition && r.edition !== r.label ? `${r.label} · ${r.edition}` : undefined;
 }

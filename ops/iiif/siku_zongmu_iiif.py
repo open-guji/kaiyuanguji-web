@@ -56,6 +56,7 @@ BOOK_ID = '96mid1ogzk'  # 欽定四庫全書總目 武英殿刻本（guji-worksp
 sys.path.insert(0, os.path.dirname(HERE))
 import hosts  # noqa: E402
 import commons_warp  # noqa: E402
+import pagemeta  # noqa: E402
 
 # manifest／canvas 的 id 是 IIIF 标识符，book-text 的 cord 里存着同一批 canvas id，换数据域名时两边一起换
 # （2026-10-21 起用新数据域名，旧域名跳转；网站只按路径取页序，与主机无关；见 docs/data-domain-migration.md 第 4 步）
@@ -483,6 +484,9 @@ def build_canvas(vol, meta, c, commons, ia=True):
             }],
         }],
     }
+    if c.get('bim_page'):
+        # 页面范围（书影页面范围统一规范）：源图、页图→源图矩阵、版框内容区；字框坐标仍是页图
+        canvas['bim:page'] = c['bim_page']
     if c.get('commons_warp'):
         # 海外读者改读 Commons 3840 缩略图：matrix 把缩略图摆成本页图（逐字框同坐标系），见 commons_warp.py
         canvas['bim:commons'] = c['commons_warp']
@@ -491,6 +495,23 @@ def build_canvas(vol, meta, c, commons, ia=True):
         canvas['source'] = {'id': ia_img, 'type': 'Image',
                             'selector': {'type': 'FragmentSelector', 'value': 'xywh=' + ','.join(map(str, c['xywh']))}}
     return canvas
+
+
+def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False):
+    """把 cv 页面范围旁车并进各 canvas（c['bim_page']）。没有旁车返回 0（该册不带 bim:page，阅读器走兜底）。
+    by_seq：canvas seq → 页表 seq（pages_iiif.py 把 seq 改成页号，需给对照）；缺省两者相同。"""
+    meta = pagemeta.load_pagemeta(table, PAGES_BASE, vol_dir(vol), http_get)
+    if meta is None:
+        print(f'  （页表 r{table["rev"]:03d} 还没有页面范围旁车，本册不写 bim:page）', file=sys.stderr)
+        return 0
+    n = 0
+    for c in canvases:
+        e = meta['pages'].get((by_seq or {}).get(c['seq'], c['seq']))
+        if e is None:
+            continue
+        c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier)
+        n += 1
+    return n
 
 
 def usable_commons(vol, meta, commons):
@@ -742,6 +763,10 @@ def main(argv=None):
     ap.add_argument('--no-commons', action='store_true', help='不查 Commons、不挂 Commons 回退')
     ap.add_argument('--no-commons-warp', action='store_true',
                     help='--source pages：不在 canvas 里写 Commons 摆正矩阵（bim:commons，海外读者改读 Commons 缩略图用）')
+    ap.add_argument('--no-pagemeta', action='store_true',
+                    help='--source pages：不在 canvas 里写页面范围（bim:page，cv 页面范围旁车）；缺省有旁车就写')
+    ap.add_argument('--src-tier', action='store_true',
+                    help='bim:page 里写源图档地址（iiif/<书>/<册>/src/…，合扫整幅图）；只在源图档已上传后加')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true', help='不看桶里已有的 ETag，图全部重传、核对也核全部')
@@ -797,6 +822,8 @@ def main(argv=None):
                     c['commons_warp'] = None
                 n_warp += bool(c['commons_warp'])
             r['stats']['commons_warp'] = n_warp
+        if table is not None and not a.no_pagemeta:
+            r['stats']['pagemeta'] = attach_pagemeta(table, v, r['canvases'], with_src_tier=a.src_tier)
         r['stats']['wall_s'] = round(time.perf_counter() - t0, 1)
         commons = None if a.no_commons else usable_commons(v, meta, commons_file(meta['ia']))
         man = build_manifest(v, meta, r['canvases'], commons, ia=not a.no_ia)

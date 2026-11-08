@@ -249,9 +249,26 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         });
     }, [openFeedback, id, feedbackContext.label]);
     // 对校（A41）：对照本来自 ?cmp=，来源行的「對校」按钮与阅读器里的插件共用；插件经 store 与外层互通
-    const compareSources = useMemo(() => (sources ?? []).filter((r) => r.id !== id).map((r) => ({ id: r.id, label: r.label })), [sources, id]);
-    const compareSourceIds = useMemo(() => compareSources.map((r) => r.id), [compareSources]);
-    const compareTarget = useCompareTarget(id, compareSourceIds);
+    // 同一本书的其他版本（如文渊阁光盘本）：章文件与底本一一对应，可整章对校；对照本写成 ?cmp=<本条目id>-<版本key>
+    const [siblings, setSiblings] = useState<{ key: string; label: string }[]>([]);
+    const baseKey = sel.key ?? primary ?? 'default';
+    useEffect(() => {
+        let dead = false;
+        (async () => {
+            const m = readerManifest(await (transport as { getTextManifest: (id: string) => Promise<any> }).getTextManifest(id));
+            const vs = (m as { versions?: { key?: string; kind?: string; label?: string; edition_label?: string; chapters_total?: number }[] } | null)?.versions;
+            if (dead || !Array.isArray(vs)) return;
+            setSiblings(vs.filter((v) => v.key && v.key !== baseKey && v.kind === 'transcription' && (v.chapters_total ?? 0) > 1).map((v) => ({ key: v.key as string, label: v.label ?? v.edition_label ?? v.key as string })));
+        })().catch(() => {});
+        return () => { dead = true; };
+    }, [id, transport, baseKey]);
+    const siblingKeys = useMemo(() => siblings.map((v) => v.key), [siblings]);
+    const compareSources = useMemo(
+        () => [...(sources ?? []).filter((r) => r.id !== id).map((r) => ({ id: r.id, label: r.label })), ...siblings.map((v) => ({ id: `${id}-${v.key}`, label: v.label }))],
+        [sources, id, siblings],
+    );
+    const compareSourceIds = useMemo(() => (sources ?? []).filter((r) => r.id !== id).map((r) => r.id), [sources, id]);
+    const compareTarget = useCompareTarget(id, compareSourceIds, siblingKeys);
     const compareStore = useMemo(() => createCompareStore(), []);
     const comparePlugin = useComparePlugin({ id, sources: compareSources, transport, target: compareTarget.target, setTarget: compareTarget.setTarget, store: compareStore });
     // 对校页不进搜索（canonical 本来就不带 cmp；再加 noindex，同一份文本的另一种视图）
@@ -290,12 +307,14 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     return (
         <>
         <ProofingNotice id={id} vol={meta?.proofVol} feedbackVol={meta?.feedbackVol} />
-        {sources && sources.length > 1 && (
+        {((sources && sources.length > 1) || siblings.length > 0) && (
             <TextSourceMenu
                 currentId={id}
-                rows={sources}
+                rows={sources ?? []}
                 compareId={compareTarget.target?.id ?? null}
-                onCompare={(tid) => compareTarget.setTarget(tid ? { id: tid } : null)}
+                compareKey={compareTarget.target?.key ?? null}
+                siblings={siblings}
+                onCompare={(t) => compareTarget.setTarget(t)}
             />
         )}
         <div>

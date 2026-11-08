@@ -10,6 +10,7 @@ import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
 import { getJson } from '@/lib/text-file';
 import { loadFacsimile } from '@/lib/facsimile';
+import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
@@ -71,7 +72,8 @@ const imageCache = new Map<string, Promise<HTMLImageElement | null>>();
 function loadImage(url: string): Promise<HTMLImageElement | null> {
     let p = imageCache.get(url);
     if (!p) {
-        p = new Promise(resolve => {
+        // 海外读者的 Commons 书影：地址带摆正参数，要先按矩阵摆正成本站页图坐标，裁图和框才对得上
+        p = commonsResolver(url) ?? new Promise(resolve => {
             const img = new Image();
             img.onload = () => resolve(img);
             img.onerror = () => resolve(null);
@@ -594,7 +596,16 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     const scroller = useRef<HTMLDivElement>(null);
     const W = canvasW || page?.width || 0;
     const H = canvasH || page?.height || 0;
-    const src = page ? (zoom === 1 ? page.url : page.hires) : null;
+    const rawSrc = page ? (zoom === 1 ? page.url : page.hires) : null;
+    // Commons 书影要先摆正（displayImageUrl）；本站图原样。摆正完成前显示「书影加载中」，不画未摆正的大页
+    const [resolved, setResolved] = useState<{ raw: string; url: string } | null>(null);
+    useEffect(() => {
+        if (!rawSrc) return;
+        let cancelled = false;
+        displayImageUrl(rawSrc).then(url => { if (!cancelled) setResolved({ raw: rawSrc, url }); });
+        return () => { cancelled = true; };
+    }, [rawSrc]);
+    const src = rawSrc && resolved?.raw === rawSrc ? resolved.url : null;
     const sel = boxes.find(b => b.a === selected) ?? null;
     // 放大时把选中的字滚到视口中间
     useEffect(() => {
@@ -626,8 +637,8 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
                 </span>
             </div>
             <div ref={scroller} style={{ overflow: 'auto', height: fitHeight, background: '#f4f1ea', border: '1px solid #ddd', borderRadius: 4 }}>
-                {!page || !W || !H ? (
-                    <div style={{ color: '#999', fontSize: 13, padding: 12 }}>{page ? '这一页缺尺寸，画不了框。' : '书影加载中…'}</div>
+                {!page || !W || !H || (rawSrc && !src) ? (
+                    <div style={{ color: '#999', fontSize: 13, padding: 12 }}>{page && (!W || !H) ? '这一页缺尺寸，画不了框。' : '书影加载中…'}</div>
                 ) : (
                     <div style={{ position: 'relative', margin: '0 auto', width: zoom === 1 ? `min(100%, calc(${fitHeight} * ${W / H}))` : `${zoom * 100}%` }}>
                         {src && failed !== src

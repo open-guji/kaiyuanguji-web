@@ -57,7 +57,7 @@ def build_canvas(vol, c):
         'service': [{'id': S.public_url(S.image_base_key(vol, c['seq'])), 'type': 'ImageService3', 'profile': 'level0'}],
     }
     label = f'第 {c["leaf"]} 頁' + (c['seq'][4:] if len(c['seq']) > 4 else '')
-    return {
+    canvas = {
         'id': cid, 'type': 'Canvas', 'label': {'zh': [label]}, 'width': c['width'], 'height': c['height'],
         'thumbnail': [{'id': S.public_url(S.tier_key(vol, c['seq'], tw)), 'type': 'Image',
                        'format': 'image/webp', 'width': tw, 'height': th}],
@@ -69,6 +69,9 @@ def build_canvas(vol, c):
             }],
         }],
     }
+    if c.get('bim_page'):
+        canvas['bim:page'] = c['bim_page']    # 页面范围（书影页面范围统一规范）；字框坐标仍是页图
+    return canvas
 
 
 def build_manifest(meta, vol, canvases, table):
@@ -114,6 +117,8 @@ def main(argv=None):
     ap.add_argument('--out', required=True, help='输出目录（其下按 COS key 布局）')
     ap.add_argument('--cache', default=None, help='页图缓存目录（默认 <out>/../cache）')
     ap.add_argument('--jobs', type=int, default=None)
+    ap.add_argument('--no-pagemeta', action='store_true', help='不在 canvas 里写页面范围（bim:page）；缺省有旁车就写')
+    ap.add_argument('--src-tier', action='store_true', help='bim:page 里写源图档地址（只在源图档已上传后加）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true')
@@ -150,6 +155,10 @@ def main(argv=None):
             raise SystemExit(f'❌ 页表的书 id {table.get("book_id")} ≠ {a.book}')
         print(f'{a.book}/{v} 页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
         r = S.slice_volume(v, {'ia': None}, {}, out, cache, None, a.jobs, table=seq_by_page(table))
+        if not a.no_pagemeta:
+            # canvas 的 seq 是页号（seq_by_page），旁车按页表原 seq 存：先建对照
+            orig = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
+            r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))
