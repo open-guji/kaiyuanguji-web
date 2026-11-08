@@ -41,7 +41,7 @@ export interface PendingExtras {
     clsSub?: string;
     libTop?: { c: string; s: number }[];
     lib?: { verdict?: string; cov?: number; wmax?: number };
-    ctx?: { c: string; margin?: number; src?: string };
+    ctx?: { c: string; margin?: number; src?: string; /** 点校倾向字的理由（src=punct_llm） */ why?: string };
     ref?: { c: string; op?: string };
     ocr?: { c: string; src?: string }[];
     stale?: { c: string; ts?: string; state?: string };
@@ -105,7 +105,7 @@ export function parseExtras(raw: unknown): PendingExtras {
     const lib = asObject(it.lib);
     if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
     const ctx = asObject(it.ctx);
-    if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}) };
+    if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}), ...(str(ctx.why) ? { why: str(ctx.why) } : {}) };
     const ref = asObject(it.ref);
     if (ref && str(ref.c)) out.ref = { c: ref.c as string, ...(str(ref.op) ? { op: str(ref.op) } : {}) };
     if (Array.isArray(it.ocr)) {
@@ -270,8 +270,14 @@ export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[
  * （`ctx_garble_*`），都不显示——vol01 001-r2 有字的 38 格全是回声（GUJI-683，调研 A B4）。
  * 上下文给了「看不出」（没有字）照旧显示。
  */
+/** 点校阶段 AI 读整段文意给的倾向字：只提示，不预选 */
+export function isDianHint(cell: PendingCell): boolean {
+    return cell.ctx?.src === 'punct_llm';
+}
+
 export function ctxWorthShowing(cell: PendingCell): boolean {
     if (!cell.ctx) return false;
+    if (isDianHint(cell)) return true;   // 点校倾向字是读整段文意的结果，不是字形库的回声，一律显示
     if (!cell.ctx.c) return true;
     if (cell.why?.some(w => w.startsWith('ctx_garble'))) return false;
     return cell.ctx.c !== cell.libTop?.[0]?.c;

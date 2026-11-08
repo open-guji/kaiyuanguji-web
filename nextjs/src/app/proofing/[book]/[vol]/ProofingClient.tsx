@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
-    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
+    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -185,7 +185,8 @@ function Evidence({ cell }: { cell: PendingCell }) {
     const summary: React.ReactNode[] = [];
     const shape = shapeSentence(cell);
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
-    if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
+    if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}<span style={{ color: '#888' }}>　仅供参考，请以图为准</span></div>);
+    else if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.pendingReason || cell.cls) {
