@@ -69,7 +69,16 @@ function ControllerBody({ store, api, ctl }: { store: CompareStore; api: ReaderA
     if (!ctl.active || ctl.status !== 'ready') return null;
     const go = (dir: 1 | -1) => {
         const it = ctl.step(dir);
-        if (it) api.scrollTo(it.anchor.start, { block: 'center' });
+        if (!it) return;
+        const a = it.anchor.start;
+        api.scrollTo(a, { block: 'center' });
+        // scrollTo 把整段顶到视口上方，段落长时目标会落到屏外，书影跟视口顶格走就会差几叶；渲染后再按目标字本身居中
+        const recenter = () => {
+            const r = apiRef.current.rectOf(a);
+            if (r) window.scrollBy({ top: r.top + r.height / 2 - window.innerHeight / 2, behavior: 'instant' as ScrollBehavior });
+        };
+        window.setTimeout(recenter, 120);
+        window.setTimeout(recenter, 500);
     };
     return (
         <CompareOverlay

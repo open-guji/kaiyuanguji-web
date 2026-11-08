@@ -1,8 +1,45 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { CompareItem } from '@/lib/compare/compare';
 import { CAT_NAME } from '@/lib/compare/decorate';
 import { CAT_COLOR } from './cat-colors';
+
+/**
+ * 阅读器的浮层容器是整个视口右下角固定的，会盖住右侧的阅读设置。这里量正文字的左右缘，
+ * 把内容往左平移到正文栏右缘（只平移不改布局；窄屏贴底的版式不动）。
+ */
+function useClampToText(ref: React.RefObject<HTMLElement | null>) {
+    useEffect(() => {
+        let raf = 0;
+        const apply = () => {
+            raf = 0;
+            const el = ref.current;
+            if (!el) return;
+            const vw = document.documentElement.clientWidth;
+            let shift = 0;
+            if (vw > 720) {
+                const chars = document.querySelectorAll('.guji-text-char');
+                let right = 0;
+                const step = Math.max(1, Math.floor(chars.length / 60));
+                for (let i = 0; i < chars.length; i += step) {
+                    const r = chars[i].getBoundingClientRect();
+                    if (r.width > 0 && r.right > right) right = r.right;
+                }
+                // 浮层右缘默认距视口 16px；正文右缘再留 16px 边
+                if (right > 0 && right + 16 < vw - 16) shift = vw - 16 - (right + 16);
+            }
+            el.style.position = 'relative';
+            el.style.right = `${shift}px`;
+        };
+        const sched = () => { if (!raf) raf = requestAnimationFrame(apply); };
+        apply();
+        window.addEventListener('resize', sched);
+        window.addEventListener('scroll', sched, { passive: true });
+        const t = window.setInterval(sched, 600); // 阅读设置开合、栏宽变化没有事件
+        return () => { window.removeEventListener('resize', sched); window.removeEventListener('scroll', sched); window.clearInterval(t); if (raf) cancelAnimationFrame(raf); };
+    }, [ref]);
+}
 
 /** 格位 `页:列:序[子列]` → 「第 6 頁 第 3 列 第 10 字」 */
 export function anchorLabel(anchor: string): string {
@@ -38,10 +75,12 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
     onExit: () => void;
     convert?: (s: string) => string;
 }) {
+    const box = useRef<HTMLDivElement>(null);
+    useClampToText(box);
     const color = current ? CAT_COLOR[current.cat] : 'inherit';
     const idx = current ? shown.findIndex((i) => i.id === current.id) : -1;
     return (
-        <div data-testid="compare-overlay" className="cmp-stack">
+        <div ref={box} data-testid="compare-overlay" className="cmp-stack">
             {current && (
                 <section role="dialog" aria-label={convert('差異詳情')} data-testid="compare-detail" className="cmp-card" style={{ ['--c' as string]: color }}>
                     <header className="cmp-card-head">
