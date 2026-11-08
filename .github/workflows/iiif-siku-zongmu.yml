@@ -56,6 +56,10 @@ on:
         description: '只传图和 info.json，不发 manifest／Collection（换图源册：先铺新图，再不勾重跑一次发 manifest，与 book-text 坐标同时切换）。只对 96mid1ogzk 有用'
         type: boolean
         default: false
+      src_tier:
+        description: '文淵閣：manifest 的 bim:page 里写源图档地址（src.url）。必须先跑「IIIF 源图档 — 四庫總目 文淵閣」把源图档传好，否则「显示完整书页」会取到 404 图'
+        type: boolean
+        default: false
       purge:
         description: '上传后顺手清 EdgeOne 里这几册 manifest.json 的缓存（CDN 对无查询串的旧 manifest 缓存约 4 天、不认 max-age）。只清本次写过的 manifest，不清图'
         type: boolean
@@ -108,6 +112,7 @@ jobs:
           IMAGE_SEG: ${{ inputs.image_seg }}
           NO_IA: ${{ inputs.no_ia }}
           IMAGES_ONLY: ${{ inputs.images_only }}
+          SRC_TIER: ${{ inputs.src_tier }}
         run: |
           set -euo pipefail
           if ! [[ "$VOLS" =~ ^(all|[0-9]{1,3}(,[0-9]{1,3})*)$ ]]; then echo "❌ vols 格式不对：$VOLS"; exit 1; fi
@@ -129,6 +134,7 @@ jobs:
           [ -n "$REV" ] && ARGS+=(--rev "$REV")
           [ -n "$IMAGE_SEG" ] && ARGS+=(--image-seg "$IMAGE_SEG")
           [ "$IMAGES_ONLY" = "true" ] && ARGS+=(--images-only)
+          [ "$SRC_TIER" = "true" ] && ARGS+=(--src-tier)
           ARGS+=(--source "$SOURCE")
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
 
