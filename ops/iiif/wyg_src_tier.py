@@ -70,6 +70,7 @@ def download(url, dest, sha256, tries=5):
 
 def djvu_page_to_webp(djvu, page, w, h, out_path, width=pagemeta.SRC_TIER_W, quality=72):
     ppm = out_path + '.ppm'
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     subprocess.run(['ddjvu', '-format=pnm', f'-page={page}', djvu, ppm], check=True)
     try:
         with Image.open(ppm) as im:
