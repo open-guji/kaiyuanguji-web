@@ -66,3 +66,16 @@ class PageMeta(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestWygSrcTier(unittest.TestCase):
+    def test_needed_pages_skips_identity_and_shares_slug(self):
+        import wyg_src_tier
+        H = [[1.01, 0, 5], [0, 1.02, 6], [0, 0, 1]]
+        ident = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        meta = {'pages': {
+            '0001': {'src': {'id': 'WYG-SKQS-0001.djvu#51', 'w': 4296, 'h': 6064}, 'H': H},
+            '0002': {'src': {'id': 'WYG-SKQS-0001.djvu#51', 'w': 4296, 'h': 6064}, 'H': H},
+            '0003': {'src': {'id': 'X.djvu#9', 'w': 10, 'h': 10}, 'H': ident},
+        }}
+        self.assertEqual(wyg_src_tier.needed_pages(meta), {'WYG-SKQS-0001-51': (51, 4296, 6064)})
