@@ -189,6 +189,8 @@ function Evidence({ cell }: { cell: PendingCell }) {
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
     if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}<span style={{ color: '#888' }}>　仅供参考，请以图为准</span></div>);
     else if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
+    if (cell.dianNote) summary.push(<div key="dnote" data-testid="dian-note"><b>点校查证</b>：{cell.dianNote}</div>);
+    if (cell.refs?.length) summary.push(<div key="refs" data-testid="dian-refs"><b>来源</b>：{cell.refs.map((r, i) => <span key={r.u}>{i ? '　' : ''}<a href={r.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{r.t}</a></span>)}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.pendingReason || cell.cls) {
