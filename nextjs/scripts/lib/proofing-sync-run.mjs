@@ -10,6 +10,7 @@
  * 日志与 run 摘要只出计数（公开仓），不出票的内容。
  */
 import { createHash } from 'node:crypto';
+import { buildSummaries } from './proofing-summary.mjs';
 import {
     PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
@@ -100,18 +101,20 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
  * @param blobs {get(sha256) → Buffer}  从 R2 取图（经 Worker 签名链接）；演练时不调用
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
-export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null }) {
+export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null, voted = null }) {
     // index.json 总按全部单子生成（别的章照旧）；only 时只传选中那几章的单子和图
     const picked = only ? entries.filter(only) : entries;
     const objects = [
         { key: 'index.json', body: buildProofIndex(entries) },
         ...picked.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
+        // 每本书一份待审总览（总览页、聚类页读）；按全部章生成，only 时只传涉及的书
+        ...[...buildSummaries(entries, { voted: voted || new Map() })].filter(([book]) => !only || picked.some((e) => e.book === book)).map(([book, body]) => ({ key: `${book}/summary.json`, body })),
     ];
     let remote = new Map();
     if (cos && !only) remote = await cos.listPrefixEtags(proofPrefix);
     else if (cos) {
         // 只列要动的几处，不列全站（全站几千张图，列一遍就要几十秒）
-        for (const sub of ['index.json', ...picked.map((e) => `${e.book}/${e.chap}`)]) {
+        for (const sub of ['index.json', ...picked.map((e) => `${e.book}/${e.chap}`), ...new Set(picked.map((e) => `${e.book}/summary.json`))]) {
             for (const [k, v] of await cos.listPrefixEtags(proofPrefix + sub)) remote.set(sub + k, v);
         }
     }
@@ -137,8 +140,10 @@ export async function publishPendings({ cos, entries, proofPrefix, dryRun = fals
     }
     // index.json 最后传：网站先看 index 再取待审单，先传图和单子、后换 index，中途不会指向还没传的文件
     const ordered = [...plan.put.filter((o) => o.key !== 'index.json'), ...plan.put.filter((o) => o.key === 'index.json')];
+    // 总览（summary.json）跟 index 一样：前面有失败就不换，免得总览数字和线上单对不上
     if (!dryRun && cos) {
         for (const o of ordered) {
+            if (o.key.endsWith('/summary.json') && failed.length) continue;
             // 有待审单没传上去就不换 index，免得 index 的 rev 与 COS 上的单子对不上
             if (o.key === 'index.json' && failed.length) { failed.push('index.json：前面有失败，本次不换'); break; }
             // 这一章有图没传上，单子也不传：单子里的图地址会指向不存在的文件

@@ -193,7 +193,7 @@ test('publishPendings：传单子与 index（index 最后、短缓存），第�
     const { entries } = await collectPendings(w, [WS]);
     const cos = fakeCos();
     const r1 = await publishPendings({ cos, entries, proofPrefix: 'staging/proof/' });
-    assert.deepEqual(cos.puts.map((p) => p.key), [`staging/proof/${BOOK}/001.pending.json`, `staging/proof/${BOOK}/003.pending.json`, 'staging/proof/index.json']);
+    assert.deepEqual(cos.puts.map((p) => p.key), [`staging/proof/${BOOK}/001.pending.json`, `staging/proof/${BOOK}/003.pending.json`, `staging/proof/${BOOK}/summary.json`, 'staging/proof/index.json']);
     assert.equal(cos.puts[0].opts.cacheControl, 'public, max-age=300');
     assert.deepEqual(JSON.parse(cos.objects.get('staging/proof/index.json')), { books: { [BOOK]: { '001': { rev: '001-r2', n: 2 }, '003': { rev: '003-r1', n: 0 } } } });
     assert.equal(cos.objects.get(`staging/proof/${BOOK}/001.pending.json`), pending('001-r2', 2));
@@ -201,7 +201,7 @@ test('publishPendings：传单子与 index（index 最后、短缓存），第�
 
     const r2 = await publishPendings({ cos, entries, proofPrefix: 'staging/proof/' });
     assert.equal(r2.put.length, 0);
-    assert.equal(cos.puts.length, 3);
+    assert.equal(cos.puts.length, 4);
 });
 
 test('publishPendings：演练不传；单子传失败就不换 index', async () => {
@@ -210,7 +210,7 @@ test('publishPendings：演练不传；单子传失败就不换 index', async ()
     const dryCos = fakeCos();
     const d = await publishPendings({ cos: dryCos, entries, proofPrefix: 'proof/', dryRun: true });
     assert.equal(dryCos.puts.length, 0);
-    assert.equal(d.put.length, 3);
+    assert.equal(d.put.length, 4);
 
     const cos = fakeCos();
     cos.putObjectText = async (key) => { if (key.endsWith('001.pending.json')) throw new Error('boom'); cos.puts.push({ key }); };
@@ -255,7 +255,7 @@ test('publishPendings：先传图、再传单子、最后 index；图的 key 在
     const cos = fakeCos();
     const blobs = fakeBlobs(new Map([[m.sha256, SPR]]));
     const r1 = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs });
-    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/004/${m.name}`, `proof/${BOOK}/004.pending.json`, 'proof/index.json']);
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/004/${m.name}`, `proof/${BOOK}/004.pending.json`, `proof/${BOOK}/summary.json`, 'proof/index.json']);
     assert.equal(cos.puts[0].opts.contentType, 'image/webp');
     assert.match(cos.puts[0].opts.cacheControl, /immutable/);
     assert.deepEqual(cos.objects.get(`proof/${BOOK}/004/${m.name}`), SPR);
@@ -264,7 +264,7 @@ test('publishPendings：先传图、再传单子、最后 index；图的 key 在
 
     const r2 = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs });
     assert.equal(blobs.calls.length, 1);                      // 第二次不再取图
-    assert.equal(cos.puts.length, 3);
+    assert.equal(cos.puts.length, 4);
     assert.deepEqual(r2.spritesSame, [`${BOOK}/004/${m.name}`]);
     assert.equal(r2.put.length, 0);
 });
@@ -347,9 +347,9 @@ test('publishPendings only：index 照全站重算，只传选中那章的单子
     const list0 = cos.listPrefixEtags.bind(cos);
     cos.listPrefixEtags = async (p) => { listed.push(p); return list0(p); };
     const r = await publishPendings({ cos, entries, proofPrefix: 'proof/', blobs: fakeBlobs(new Map([[m.sha256, SPR]])), only: onlyFilter(`${BOOK}/006`) });
-    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/006/p0009.bbbbbbbb.webp`, `proof/${BOOK}/006.pending.json`, 'proof/index.json']);
+    assert.deepEqual(cos.puts.map((p) => p.key), [`proof/${BOOK}/006/p0009.bbbbbbbb.webp`, `proof/${BOOK}/006.pending.json`, `proof/${BOOK}/summary.json`, 'proof/index.json']);
     assert.deepEqual(Object.keys(JSON.parse(cos.objects.get('proof/index.json')).books[BOOK]), ['004', '006']);
-    assert.deepEqual(listed, ['proof/index.json', `proof/${BOOK}/006`]);
+    assert.deepEqual(listed, ['proof/index.json', `proof/${BOOK}/006`, `proof/${BOOK}/summary.json`]);
     assert.equal(r.failed.length, 0);
 });
 

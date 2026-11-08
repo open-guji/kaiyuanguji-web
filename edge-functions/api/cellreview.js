@@ -27,8 +27,8 @@ import {
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'damaged'];
-// 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
-export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
+// 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号、跨册聚类页成批确认（cluster）
+export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol', 'cluster'];
 const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
 const ALT_MAX = 60;
@@ -171,7 +171,7 @@ function ipKey(context) {
   return (typeof CELLREVIEW_IP_KEY !== 'undefined' && CELLREVIEW_IP_KEY) ? String(CELLREVIEW_IP_KEY) : '';
 }
 
-async function ipHash(context, ip) {
+export async function ipHash(context, ip) {
   const key = ipKey(context);
   if (!key) return '';
   const enc = new TextEncoder();
@@ -183,7 +183,7 @@ async function ipHash(context, ip) {
 // 存票偶发 `KvStore Put failed: net_exception_timeout`（10-26 用户实测，审册 4 时同一格反复失败；根因在 EdgeOne KV，控制台日志未查）。
 // 同键同值重写是幂等的：函数里先自己重试一次再回 500，免得每次都靠读者重点；耗时与次数写进 console 和 500 的 detail，便于统计
 const PUT_RETRY_DELAY_MS = 300;
-async function putTicket(kv, key, value, opts) {
+export async function putTicket(kv, key, value, opts) {
   const t0 = Date.now();
   try {
     await kv.put(key, value, opts);
