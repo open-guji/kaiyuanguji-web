@@ -42,6 +42,7 @@ env.KYG_RENDER_MODE = env.KYG_RENDER_MODE ?? 'fullstack';
 
 const args = ['dev', '--webpack', ...(env.PORT ? ['-p', env.PORT] : [])];
 console.log(`[dev:latest] UI=${env.BIM_UI_SRC ?? 'npm 包'}  数据=${env.NEXT_PUBLIC_COS_BASE}`);
-const child = spawn(join(nextjs, 'node_modules', '.bin', 'next'), args, { cwd: nextjs, env, stdio: 'inherit' });
+// 用当前 node 直接跑 next 的入口脚本：.bin/next 在 Windows 上是 .cmd/无扩展名脚本，spawn 会 ENOENT
+const child = spawn(process.execPath, [join(nextjs, 'node_modules', 'next', 'dist', 'bin', 'next'), ...args], { cwd: nextjs, env, stdio: 'inherit' });
 child.on('exit', (code) => process.exit(code ?? 0));
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => child.kill(sig));
