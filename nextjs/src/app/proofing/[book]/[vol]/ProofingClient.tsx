@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
-    refOpLabel, resolveCrop, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
+    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -223,6 +223,33 @@ function Evidence({ cell }: { cell: PendingCell }) {
     );
 }
 
+/** 点校标出的标点、专名号句子：本格标红框，待审的其他格标橙色，专名下划线（虚线＝候选未挂库）；句子对不上的在解析时已丢弃 */
+function SentLine({ sent, at }: { sent: PendingSent; at: string }) {
+    const chars = Array.from(sent.t);
+    const puncts = sent.marks.filter((m): m is Extract<SentMark, { kind: 'punct' }> => m.kind === 'punct');
+    const ents = sent.marks.filter((m): m is Extract<SentMark, { kind: 'entity' }> => m.kind === 'entity');
+    const assumed = new Set(sent.assumedCells ?? []);
+    const out: React.ReactNode[] = [];
+    for (let i = 0; i <= chars.length; i++) {
+        puncts.filter(p => p.pos === i).forEach((p, k) => out.push(<span key={`p${i}-${k}`} style={{ color: '#a33' }}>{p.ch}</span>));
+        if (i === chars.length) break;
+        const a = sent.cells[i];
+        const ent = ents.find(e => i >= e.start && i < e.end);
+        const style: React.CSSProperties = {};
+        if (ent) Object.assign(style, { textDecoration: 'underline', textDecorationStyle: ent.status === 'matched' || ent.status === 'matched_multi' ? 'solid' : 'dashed', textUnderlineOffset: 4 });
+        let node: React.ReactNode = <span key={`c${i}`} style={style} title={ent ? `专名：${ent.type}` : undefined}><Zi c={chars[i]} /></span>;
+        if (a === at) node = <mark key={`c${i}`} data-testid="sent-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{node}</mark>;
+        else if (assumed.has(a)) node = <span key={`c${i}`} title={`格 ${a} 也在待审，此处按机器字标点`} style={{ color: '#c70' }}>{node}</span>;
+        out.push(node);
+    }
+    return (
+        <div data-testid="sent" style={{ marginTop: 8, fontSize: 18, letterSpacing: 1, lineHeight: 1.8 }}>
+            <span style={{ fontSize: 12, color: '#888', letterSpacing: 0, marginRight: 8 }}>标点</span>
+            {out}
+        </div>
+    );
+}
+
 /** 本位前后各十个字（跨列、跨页）。本位标红框；也在待审的字标橙色；换列处留一道细线 */
 function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: string; atChar?: string; pendingSet: Set<string> }) {
     const colKey = (a: string) => pageColOf(a)?.join(':') ?? '';
@@ -395,7 +422,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
                     {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
                 </div>
             </div>
-            {context && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
+            {cell.sent && <SentLine sent={cell.sent} at={cell.a} />}
+            {context && !cell.sent && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
             {(cell.why?.some(w => w !== 'none') || !!cell.cls || !!cell.pendingReason) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}

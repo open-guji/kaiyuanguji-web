@@ -51,6 +51,8 @@ export interface PendingExtras {
     alt?: AltCand[];
     /** 复审出单（cv `republish.py prep --recheck`）写的一句说明：这格为什么又放回单上，如「旧裁 山，新票 由，请定」 */
     note?: string;
+    /** 这格所在的、带标点专名号的句子（`sent[]` 里按 cells 找到的那句；没有就不显示） */
+    sent?: PendingSent;
     /** 这格已有的人裁（复审格才有）：页面提示「这次选的会替代它」；cv 落票时按 `id` 认作有意推翻 */
     prior?: { c: string; id?: string; ts?: string };
 }
@@ -61,6 +63,39 @@ export interface PendingCell extends PendingExtras {
     c?: string;
     cand?: ProofCandidate[];
     box?: Box;
+}
+
+/** 点校标出的标点、专名号（pending.json 顶层 `sent[]`，guji-manager sent_export 出）；pos＝标记前的字数，实体 [start,end) */
+export type SentMark =
+    | { kind: 'punct'; ch: string; pos: number }
+    | { kind: 'entity'; type: string; start: number; end: number; status?: string; assumed?: boolean };
+export interface PendingSent {
+    t: string;
+    cells: string[];
+    marks: SentMark[];
+    assumedCells?: string[];
+}
+
+export function parseSent(raw: unknown): PendingSent[] {
+    if (!Array.isArray(raw)) return [];
+    return raw.flatMap(item => {
+        const o = asObject(item);
+        if (!o || typeof o.t !== 'string' || !Array.isArray(o.cells)) return [];
+        const chars = Array.from(o.t);
+        const cells = o.cells.filter((x): x is string => typeof x === 'string');
+        if (!chars.length || cells.length !== chars.length) return [];   // 对不上就不显示，宁缺毋错
+        const marks: SentMark[] = [];
+        for (const m of Array.isArray(o.marks) ? o.marks : []) {
+            const mo = asObject(m);
+            if (!mo) continue;
+            if (mo.kind === 'punct' && typeof mo.ch === 'string' && typeof mo.pos === 'number' && mo.pos >= 0 && mo.pos <= chars.length) {
+                marks.push({ kind: 'punct', ch: mo.ch, pos: mo.pos });
+            } else if (mo.kind === 'entity' && typeof mo.start === 'number' && typeof mo.end === 'number' && mo.start >= 0 && mo.end > mo.start && mo.end <= chars.length) {
+                marks.push({ kind: 'entity', type: str(mo.type) ?? '', start: mo.start, end: mo.end, ...(str(mo.status) ? { status: str(mo.status) } : {}), ...(mo.assumed === true ? { assumed: true } : {}) });
+            }
+        }
+        return [{ t: o.t, cells, marks, ...(Array.isArray(o.assumed_cells) ? { assumedCells: o.assumed_cells.filter((x): x is string => typeof x === 'string') } : {}) }];
+    });
 }
 
 export interface PendingData {
@@ -427,6 +462,9 @@ export function parsePending(raw: unknown): PendingData {
         const box = boxes.get(cell.a);
         cells.push({ a: cell.a, ...(cell.c ? { c: cell.c } : {}), ...(cell.cand ? { cand: cell.cand } : {}), ...(box ? { box } : {}), ...parseExtras(extras.get(cell.a)) });
     }
+    const sentByCell = new Map<string, PendingSent>();
+    for (const sn of parseSent(o?.sent)) for (const a of sn.cells) if (!sentByCell.has(a)) sentByCell.set(a, sn);
+    if (sentByCell.size) for (const c of cells) { const sn = sentByCell.get(c.a); if (sn) c.sent = sn; }
     return { rev, cells };
 }
 
