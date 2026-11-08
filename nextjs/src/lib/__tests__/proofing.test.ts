@@ -279,6 +279,8 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '臼' }, libTop, why: ['ctx_garble_shape'] })).toBe(false);
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '' }, libTop })).toBe(true);
         expect(ctxWorthShowing({ a: 'x', libTop })).toBe(false);
+        // 点校倾向字：即使和库首位相同、或有 ctx_garble，也显示
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '曰', src: 'punct_llm' }, libTop, why: ['ctx_garble_shape'] })).toBe(true);
     });
 
     it('阅读页横幅：总表列了按 n；取到总表却没列就不请；取不到总表才看 book-text 的待审单（GUJI-683）', () => {
