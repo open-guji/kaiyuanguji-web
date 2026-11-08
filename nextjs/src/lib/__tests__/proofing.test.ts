@@ -471,3 +471,14 @@ describe('sent（点校标点专名号句子）', () => {
         expect(c.sent?.marks).toEqual([]);
     });
 });
+
+
+describe('点校查证备注与来源链接', () => {
+    it('refs 只收 http(s)、最多 5 条；dnote 透传', () => {
+        const ex = parseExtras({ dnote: '查不到', refs: [{ u: 'https://a/b', t: '甲' }, { u: 'javascript:1', t: 'x' }, ...Array.from({ length: 8 }, (_, i) => ({ u: `https://e/${i}` }))] });
+        expect(ex.dianNote).toBe('查不到');
+        expect(ex.refs).toHaveLength(5);
+        expect(ex.refs?.[0]).toEqual({ u: 'https://a/b', t: '甲' });
+        expect(ex.refs?.every(r => r.u.startsWith('https://'))).toBe(true);
+    });
+});
