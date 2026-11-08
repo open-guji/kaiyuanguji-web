@@ -61,3 +61,29 @@ describe('commons-warp', () => {
         expect(none[0].url).toContain('data.openguji.com');
     });
 });
+
+describe('pageExtentOf／canvasesToImages：bim:page', () => {
+    const { pageExtentOf } = jest.requireActual('../facsimile') as typeof import('../facsimile');
+    const ok = { src: { url: 'https://data.openguji.com/iiif/b/05/src/x/full/2400,/0/default.webp', w: 4296, h: 6064 }, H: [1, 0, 10, 0, 1, 20, 0, 0, 1], content: [5, 6, 700, 900] };
+    it('合法的 bim:page 原样转成 extent；非 https 的源图地址丢掉（退回页图整幅）', () => {
+        expect(pageExtentOf(ok)).toEqual(ok);
+        const e = pageExtentOf({ ...ok, src: { ...ok.src, url: 'http://x/y.webp' } })!;
+        expect(e.src.url).toBeUndefined();
+        expect(pageExtentOf({ ...ok, src: { w: 10, h: 10 } })!.src).toEqual({ w: 10, h: 10 });
+    });
+    it('形状不对一律 undefined，不抛错', () => {
+        for (const bad of [null, 1, {}, { ...ok, H: [1] }, { ...ok, H: [1, 0, 0, 0, 1, 0, 0, 0, 0] }, { ...ok, H: [1, 0, 0, 0, 1, 0, 0, NaN, 1] },
+            { ...ok, content: [0, 0, 0, 5] }, { ...ok, content: [0, 0, 5] }, { ...ok, src: { w: 0, h: 5 } }]) {
+            expect(pageExtentOf(bad)).toBeUndefined();
+        }
+    });
+    it('canvasesToImages 带出 extent；没有 bim:page 的页没有该字段', () => {
+        const mk = (extra: object) => ({
+            id: 'c', width: 100, height: 200, ...extra,
+            items: [{ items: [{ body: { items: [{ id: 'https://data.openguji.com/iiif/b/05/0001/full/1200,/0/default.webp' }] } }] }],
+        });
+        const [a, b] = canvasesToImages([mk({ 'bim:page': ok }), mk({})] as never);
+        expect(a.extent).toEqual(ok);
+        expect('extent' in b).toBe(false);
+    });
+});

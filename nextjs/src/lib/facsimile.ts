@@ -13,6 +13,12 @@
  * TODO（本卡不做）：本站图挂了换 IA 的前端回退链（canvas body Choice 的后几项）。
  */
 import type { ReaderPageImage } from 'book-index-ui';
+// 页面范围随 book-index-ui ≥0.66.4 的 ReaderPageImage.extent；这里按结构自带一份类型，旧版本的包也能编译（旧包忽略多出的字段）
+interface PageExtent {
+    src: { url?: string; w: number; h: number };
+    H: number[];
+    content: [number, number, number, number];
+}
 import { DATA_ORIGIN } from './hosts';
 import { commonsImageUrl, preferCommons, registerCommonsWarp, validCommons } from './commons-warp';
 
@@ -25,6 +31,8 @@ interface IiifCanvas {
     height: number;
     /** 海外读者的 Commons 书影（四庫總目文淵閣本）：缩略图地址与「缩略图 → 页图」的透视矩阵，见 ops/iiif/commons_warp.py */
     'bim:commons'?: unknown;
+    /** 页面范围（书影页面范围统一规范）：源图、页图→源图矩阵 H（9 个数，行优先）、版框内容区；见 pageExtentOf */
+    'bim:page'?: unknown;
     items?: { items?: { body?: { items?: { id: string; width?: number; height?: number }[] } }[] }[];
 }
 
@@ -38,9 +46,27 @@ export function hiresUrlOf(readingUrl: string, fullWidth: number): string {
     return readingUrl.replace(/\/full\/\d+,\//, `/full/${fullWidth},/`);
 }
 
+/**
+ * canvas 的 `bim:page` → 阅读器的页面范围。形状不对一律返回 undefined（该页退回页图整幅／运行时检测），不抛错：
+ * `{ src: {url?, w, h}, H: 9 个有限数, content: [x, y, w, h]（w、h > 0） }`。
+ */
+export function pageExtentOf(raw: unknown): PageExtent | undefined {
+    if (!raw || typeof raw !== 'object') return undefined;
+    const r = raw as { src?: { url?: unknown; w?: unknown; h?: unknown }; H?: unknown; content?: unknown };
+    const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+    const src = r.src;
+    if (!src || !finite(src.w) || !finite(src.h) || src.w <= 0 || src.h <= 0) return undefined;
+    if (!Array.isArray(r.H) || r.H.length !== 9 || !r.H.every(finite) || Math.abs(r.H[8]) < 1e-9) return undefined;
+    const c = r.content;
+    if (!Array.isArray(c) || c.length !== 4 || !c.every(finite) || c[2] <= 0 || c[3] <= 0) return undefined;
+    const url = typeof src.url === 'string' && /^https:\/\//.test(src.url) ? src.url : undefined;
+    return { src: { ...(url ? { url } : {}), w: src.w, h: src.h }, H: r.H as number[], content: c as [number, number, number, number] };
+}
+
 /** manifest 的 canvas 列表 → 阅读器的书影页。取不到页序的 canvas 跳过 */
 export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boolean } = {}): ReaderPageImage[] {
     const out: ReaderPageImage[] = [];
+    let ext: ReturnType<typeof pageExtentOf>;
     for (const c of canvases) {
         const first = c.items?.[0]?.items?.[0]?.body?.items?.[0];
         const m = /\/(\d{4})([a-z]?)\/full\//.exec(first?.id ?? '');
@@ -55,6 +81,7 @@ export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boole
             ...(commonsUrl ? { alt: '景印文淵閣四庫全書，Wikimedia Commons' } : {}),
             width: c.width,
             height: c.height,
+            ...((ext = pageExtentOf(c['bim:page'])) ? ({ extent: ext } as object) : {}),
             seq: m[1] + m[2],
             // 拆页（合扫叶拆成 a–d）的页号与 leaf 号不对应，不给 pageNo，对读按 seq 对位
             ...(m[2] ? {} : { pageNo: leaf }),
