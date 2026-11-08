@@ -3,7 +3,7 @@
  */
 import {
     parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
+    parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
 } from '../proofing';
@@ -279,6 +279,8 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '臼' }, libTop, why: ['ctx_garble_shape'] })).toBe(false);
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '' }, libTop })).toBe(true);
         expect(ctxWorthShowing({ a: 'x', libTop })).toBe(false);
+        // 点校倾向字：即使和库首位相同、或有 ctx_garble，也显示
+        expect(ctxWorthShowing({ a: 'x', ctx: { c: '曰', src: 'punct_llm' }, libTop, why: ['ctx_garble_shape'] })).toBe(true);
     });
 
     it('阅读页横幅：总表列了按 n；取到总表却没列就不请；取不到总表才看 book-text 的待审单（GUJI-683）', () => {
@@ -448,5 +450,24 @@ describe('pending_reason（待审原因，cv review/pending_reason.py）', () =>
         expect(quickPick({ ...base, cls: 'occluded' })).toEqual({ group: 'occluded', char: '春' });
         expect(quickPick({ ...base, cls: 'occluded', occ: { refBlank: true } })).toBeNull();
         expect(quickPick({ ...base, pendingReason: 'hard_pair' })).toBeNull();
+    });
+});
+
+
+describe('sent（点校标点专名号句子）', () => {
+    const base = { rev: 'vol01-r1', cells: [{ cell: '1:1:2', review: 'pending' }] };
+    const sent = (over: object = {}) => ({ t: '甲乙丙', at: '1:1:1', n: 3, cells: ['1:1:1', '1:1:2', '1:1:3'], h: 'x', marks: [{ kind: 'punct', ch: '「', pos: 0 }, { kind: 'entity', type: 'person', start: 0, end: 2, status: 'matched' }, { kind: 'punct', ch: '。', pos: 3 }], ...over });
+    it('按格号挂到待审格上', () => {
+        const c = parsePending({ ...base, sent: [sent()] }).cells[0];
+        expect(c.sent?.t).toBe('甲乙丙');
+        expect(c.sent?.marks).toHaveLength(3);
+    });
+    it('格数与字数对不上、或没有 sent 时不挂', () => {
+        expect(parsePending({ ...base, sent: [sent({ cells: ['1:1:2'] })] }).cells[0].sent).toBeUndefined();
+        expect(parsePending(base).cells[0].sent).toBeUndefined();
+    });
+    it('越界的标记丢弃', () => {
+        const c = parsePending({ ...base, sent: [sent({ marks: [{ kind: 'punct', ch: '。', pos: 9 }, { kind: 'entity', type: 'x', start: 2, end: 9 }] })] }).cells[0];
+        expect(c.sent?.marks).toEqual([]);
     });
 });
