@@ -146,29 +146,53 @@ function plainImage(url: string): Promise<HTMLImageElement | null> {
     });
 }
 
+/** 缩略图按矩阵摆正成页图，返回 blob 地址（调用方负责 revoke）；失败 null */
+async function warpToObjectUrl(spec: WarpSpec): Promise<string | null> {
+    const img = await plainImage(spec.src);
+    if (!img) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = spec.w;
+    canvas.height = spec.h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    drawWarped(ctx, img, spec.matrix, spec.w, spec.h);
+    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.92));
+    return blob ? URL.createObjectURL(blob) : null;
+}
+
 /** 取图钩子：认得 `#bimwarp=` 地址的就摆正；失败、超时退回本站图（fb）。别的地址返回 null，走默认加载 */
 export function commonsResolver(url: string): Promise<HTMLImageElement | null> | null {
     const spec = parseWarpUrl(url);
     if (!spec) return null;
     const fallback = () => (spec.fb ? plainImage(spec.fb) : Promise.resolve(null));
     const work = (async () => {
-        const img = await plainImage(spec.src);
-        if (!img) return null;
-        const canvas = document.createElement('canvas');
-        canvas.width = spec.w;
-        canvas.height = spec.h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return null;
-        drawWarped(ctx, img, spec.matrix, spec.w, spec.h);
-        const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.92));
-        if (!blob) return null;
-        const obj = URL.createObjectURL(blob);
+        const obj = await warpToObjectUrl(spec);
+        if (!obj) return null;
         const out = await plainImage(obj);
         URL.revokeObjectURL(obj);
         return out;
     })().catch(() => null);
     const timeout = new Promise<null>(r => setTimeout(() => r(null), TIMEOUT_MS));
     return Promise.race([work, timeout]).then(r => r ?? fallback());
+}
+
+const displayCache = new Map<string, Promise<string>>();
+
+/**
+ * 给普通 `<img>` 用的地址（校对页整页书影等不走 book-index-ui 的地方）：`#bimwarp=` 地址摆正成 blob 地址，
+ * 失败、超时退回本站图；别的地址原样返回。同一地址只摆正一次。
+ */
+export function displayImageUrl(url: string): Promise<string> {
+    const spec = parseWarpUrl(url);
+    if (!spec) return Promise.resolve(url);
+    let p = displayCache.get(url);
+    if (!p) {
+        const work = warpToObjectUrl(spec).catch(() => null);
+        const timeout = new Promise<null>(r => setTimeout(() => r(null), TIMEOUT_MS));
+        p = Promise.race([work, timeout]).then(r => r ?? spec.fb ?? spec.src);
+        displayCache.set(url, p);
+    }
+    return p;
 }
 
 let registered = false;
