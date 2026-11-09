@@ -27,7 +27,12 @@ def cos_authorization(secret_id, secret_key, method, path, headers, ttl=900):
     return (f'q-sign-algorithm=sha1&q-ak={secret_id}&q-sign-time={key_time}&q-key-time={key_time}'
             f'&q-header-list={";".join(k for k, _ in hs)}&q-url-param-list=&q-signature={sig}')
 
-PAT = re.compile(r'^iiif/96mid1ogzk/\d{2}/\d{4}[a-d]?/')
+PATTERNS = {
+    'cadal': re.compile(r'^iiif/96mid1ogzk/\d{2}/\d{4}[a-d]?/'),
+    # 11-09 sheldon 同意：siku-qiefen-v2 旧书影（A20 核过线上无引用）；不碰 manifest.json、wyg/、src/
+    'qiefen2': re.compile(r'^iiif/96mid1ogzk/\d{2}/qiefen2/'),
+}
+PAT = PATTERNS['cadal']
 VOLS = [f'{v:02d}' for v in range(1, 100)]
 
 
@@ -56,13 +61,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--delete', action='store_true')
     ap.add_argument('--keys-out')
+    ap.add_argument('--pattern', choices=sorted(PATTERNS), default='cadal')
     a = ap.parse_args()
+    pat = PATTERNS[a.pattern]
     sid, skey, bucket = os.environ['COS_SECRET_ID'], os.environ['COS_SECRET_KEY'], os.environ['COS_BUCKET']
     region = os.environ.get('COS_REGION', 'ap-shanghai')
 
     def list_vol(v):
         objs, _ = cos_usage.list_prefix(sid, skey, bucket, region, f'iiif/96mid1ogzk/{v}/')
-        return [(k, s) for k, s in objs if PAT.match(k)]
+        return [(k, s) for k, s in objs if pat.match(k)]
 
     hits = []
     with cf.ThreadPoolExecutor(16) as ex:
@@ -74,7 +81,7 @@ def main():
         v = k.split('/')[2]
         per_vol[v][0] += 1
         per_vol[v][1] += s
-        if not k.split('/')[3].isdigit():
+        if a.pattern == 'cadal' and not k.split('/')[3].isdigit():
             letters += 1
     total = sum(s for _, s in hits)
     lines = [f'## 四庫總目旧书影清单（{"删除" if a.delete else "dry-run，未删"}）', '',
