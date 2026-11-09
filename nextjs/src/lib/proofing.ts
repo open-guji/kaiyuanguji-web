@@ -42,6 +42,10 @@ export interface PendingExtras {
     libTop?: { c: string; s: number }[];
     lib?: { verdict?: string; cov?: number; wmax?: number };
     ctx?: { c: string; margin?: number; src?: string; /** 点校倾向字的理由（src=punct_llm） */ why?: string };
+    /** 点校查证备注（没有倾向字时） */
+    dianNote?: string;
+    /** 点校查证的来源链接，最多 5 条，只收 http(s) */
+    refs?: { u: string; t: string }[];
     ref?: { c: string; op?: string };
     ocr?: { c: string; src?: string }[];
     stale?: { c: string; ts?: string; state?: string };
@@ -141,6 +145,15 @@ export function parseExtras(raw: unknown): PendingExtras {
     if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
     const ctx = asObject(it.ctx);
     if (ctx && str(ctx.c)) out.ctx = { c: ctx.c as string, ...(num(ctx.margin) !== undefined ? { margin: num(ctx.margin) } : {}), ...(str(ctx.src) ? { src: str(ctx.src) } : {}), ...(str(ctx.why) ? { why: str(ctx.why) } : {}) };
+    if (str(it.dnote)) out.dianNote = str(it.dnote);
+    if (Array.isArray(it.refs)) {
+        const refs = it.refs.flatMap(r => {
+            const o = asObject(r);
+            const u = str(o?.u);
+            return u && /^https?:\/\//.test(u) ? [{ u, t: str(o?.t) ?? u }] : [];
+        }).slice(0, 5);
+        if (refs.length) out.refs = refs;
+    }
     const ref = asObject(it.ref);
     if (ref && str(ref.c)) out.ref = { c: ref.c as string, ...(str(ref.op) ? { op: str(ref.op) } : {}) };
     if (Array.isArray(it.ocr)) {
