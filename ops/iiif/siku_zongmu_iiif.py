@@ -505,11 +505,14 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False):
         print(f'  （页表 r{table["rev"]:03d} 还没有页面范围旁车，本册不写 bim:page）', file=sys.stderr)
         return 0
     n = 0
+    tpages = {p['seq']: p for p in table['pages']}
     for c in canvases:
-        e = meta['pages'].get((by_seq or {}).get(c['seq'], c['seq']))
+        key = (by_seq or {}).get(c['seq'], c['seq'])
+        e = meta['pages'].get(key)
         if e is None:
             continue
-        c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier)
+        c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier,
+                                          tpage=tpages.get(key))
         n += 1
     return n
 

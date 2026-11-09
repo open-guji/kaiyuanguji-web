@@ -60,7 +60,16 @@ export function pageExtentOf(raw: unknown): PageExtent | undefined {
     const c = r.content;
     if (!Array.isArray(c) || c.length !== 4 || !c.every(finite) || c[2] <= 0 || c[3] <= 0) return undefined;
     const url = typeof src.url === 'string' && /^https:\/\//.test(src.url) ? src.url : undefined;
-    return { src: { ...(url ? { url } : {}), w: src.w, h: src.h }, H: r.H as number[], content: c as [number, number, number, number] };
+    // 版心三档的另外两种取景：none（页图坐标）、full（源图坐标，要 src.url 才用）；形状不对的那一项丢掉
+    const rect = (v: unknown): [number, number, number, number] | undefined =>
+        Array.isArray(v) && v.length === 4 && v.every(finite) && v[2] > 0 && v[3] > 0 ? (v as [number, number, number, number]) : undefined;
+    const rv = (r as { views?: { none?: unknown; full?: unknown } }).views;
+    const none = rv && typeof rv === 'object' ? rect(rv.none) : undefined;
+    const full = rv && typeof rv === 'object' ? rect(rv.full) : undefined;
+    return {
+        src: { ...(url ? { url } : {}), w: src.w, h: src.h }, H: r.H as number[], content: c as [number, number, number, number],
+        ...(none || full ? { views: { ...(none ? { none } : {}), ...(full ? { full } : {}) } } : {}),
+    };
 }
 
 /** manifest 的 canvas 列表 → 阅读器的书影页。取不到页序的 canvas 跳过 */
