@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
-    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone,
+    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
@@ -86,7 +86,7 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
 }
 
 /** 只负责把原叶图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
-function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number } }) {
+function CellCrop({ src, crop, estimated }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number }; estimated?: boolean }) {
     const [bx, by, bw, bh] = crop.box;
     const cw = crop.canvasWidth;
     const ref = useRef<HTMLCanvasElement>(null);
@@ -106,12 +106,13 @@ function CellCrop({ src, crop }: { src: string; crop: { box: [number, number, nu
             if (!g) return;
             g.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
             const [ix, iy, iw, ih] = boxInCrop(c, img.naturalWidth, img.naturalHeight).map(n => n * scale);
-            g.strokeStyle = 'rgba(221,51,51,0.9)';
+            g.strokeStyle = estimated ? 'rgba(230,140,0,0.95)' : 'rgba(221,51,51,0.9)';
+            if (estimated) g.setLineDash([5, 4]);   // 推算的位置画虚线，别当成实测框
             g.lineWidth = 2;
             g.strokeRect(ix - 1, iy - 1, iw + 2, ih + 2);
         });
         return () => { cancelled = true; };
-    }, [src, bx, by, bw, bh, cw]);
+    }, [src, bx, by, bw, bh, cw, estimated]);
     if (failed) return <div style={{ color: '#999', fontSize: 12 }}>原图加载失败</div>;
     return <canvas ref={ref} aria-label="原叶裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
 }
@@ -136,7 +137,9 @@ interface CellRowProps {
     spriteBase: (s: string) => string | null;
     onSpriteFail: (url: string) => void;
     imageUrl: string | null;
-    crop: { box: [number, number, number, number]; canvasWidth: number } | null;
+    crop: { box: [number, number, number, number]; canvasWidth: number; estimated?: boolean } | null;
+    /** 没有框，但这一页在书影里（整页可看） */
+    pageOnly?: boolean;
     done?: string;
     /** advance：提交后自动跳下一张（正常字符选字、或非正常字符点「确认」才跳） */
     onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => Promise<string | null>;
@@ -357,7 +360,7 @@ function AltGrid({ alt, spriteBase, busy, picked: pickedChar, onPick }: {
     );
 }
 
-function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
+function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pageOnly, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
     const [custom, setCustom] = useState('');
     const [note, setNote] = useState('');
     const [busy, setBusy] = useState(false);
@@ -408,7 +411,12 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, do
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
                     : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
-                    : imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} /> : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
+                    : imageUrl && crop ? <div>
+                        <CellCrop src={imageUrl} crop={crop} estimated={crop.estimated} />
+                        {crop.estimated && <div data-testid="crop-estimated" style={{ fontSize: 11, color: '#a60', maxWidth: 160 }}>这一格没有自己的坐标，橙色虚线是按同列相邻字推算的位置，仅供参考</div>}
+                    </div>
+                    : pageOnly ? <div data-testid="page-only" style={{ color: '#a60', fontSize: 12, maxWidth: 160 }}>这一格没有坐标，请在左侧整页上找{cellPlace(cell.a).replace(/第 \d+ 字.*$/, '')}</div>
+                    : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
                 <div>
                     <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}
                         {/* 提交过：一个徽标就够，选了哪个看单选组里选中的项（用户 2026-10-20） */}
@@ -580,7 +588,7 @@ function cellPlace(a: string): string {
 const ZOOMS = [1, 2, 4] as const;
 
 /** 左栏：选中格所在的整页影印，红框框出正在审的字；同页其他待审格虚线框，点一下切过去 */
-function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, fitHeight }: {
+function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, fitHeight, estimatedSel, selPlace }: {
     page: FacsPage | null;
     pageNo: number | null;
     canvasW: number;
@@ -589,6 +597,10 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     selected: string | null;
     onSelect: (a: string) => void;
     fitHeight: string;
+    /** 选中格的框是推算的，画虚线并注明 */
+    estimatedSel?: boolean;
+    /** 选中格没有框时，提示它在第几列 */
+    selPlace?: string;
 }) {
     const [zoom, setZoom] = useState<(typeof ZOOMS)[number]>(1);
     const [loaded, setLoaded] = useState<string | null>(null);
@@ -627,7 +639,8 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
         <div data-testid="page-panel">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#555', marginBottom: 6, flexWrap: 'wrap' }}>
                 <b>第 {pageNo} 葉</b>
-                {sel && <span>红框：{cellPlace(sel.a)}</span>}
+                {sel && <span>{estimatedSel ? '橙色虚线（推算位置）：' : '红框：'}{cellPlace(sel.a)}</span>}
+                {!sel && selPlace && <span data-testid="page-no-box" style={{ color: '#a60' }}>这一格没有坐标：{selPlace}</span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                     {ZOOMS.map(z => (
                         <button key={z} type="button" aria-pressed={zoom === z} onClick={() => setZoom(z)} className={BTN_CLASS} style={btnStyle('small', zoom === z)}>
@@ -650,7 +663,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
                                 <button key={b.a} type="button" data-testid="page-box" data-selected={on ? '1' : undefined}
                                     aria-label={`${cellPlace(b.a)}${on ? '（正在审）' : ''}`} title={cellPlace(b.a)} onClick={() => onSelect(b.a)}
                                     style={{ position: 'absolute', ...pct(b.box), padding: 0, background: 'transparent', cursor: 'pointer',
-                                        border: on ? '3px solid #e00' : '2px dashed rgba(230,140,0,0.8)', boxShadow: on ? '0 0 0 2px rgba(255,255,255,0.8)' : undefined, zIndex: on ? 2 : 1 }} />
+                                        border: on ? (estimatedSel ? '3px dashed #e80' : '3px solid #e00') : '2px dashed rgba(230,140,0,0.8)', boxShadow: on ? '0 0 0 2px rgba(255,255,255,0.8)' : undefined, zIndex: on ? 2 : 1 }} />
                             );
                         })}
                     </div>
@@ -880,15 +893,16 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const selected = sel && slice.some(c => c.a === sel) ? sel : slice[0]?.a ?? null;
     const selCell = selected ? cells.find(c => c.a === selected) ?? null : null;
     const selCrop = selCell ? resolveCrop(selCell, cord) : null;
+    const selPageInfo = selCell ? resolvePage(selCell, cord) : null;
     const selPageNo = selCell ? pageColOf(selCell.a)?.[0] ?? null : null;
     const pageBoxes = useMemo(() => {
         if (selPageNo === null) return [];
         return cells.flatMap(c => {
             if (pageColOf(c.a)?.[0] !== selPageNo) return [];
             const cr = resolveCrop(c, cord);
-            return cr ? [{ a: c.a, box: cr.box }] : [];
+            return cr && (!cr.estimated || c.a === selected) ? [{ a: c.a, box: cr.box }] : [];   // 推算的框只画选中那一格
         });
-    }, [cells, cord, selPageNo]);
+    }, [cells, cord, selPageNo, selected]);
 
     const goTo = useCallback((a: string) => {
         const idx = shown.findIndex(c => c.a === a);
@@ -951,7 +965,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     if (state === 'error') return note('待校对的字暂时取不到，请稍后再试。');
 
     const doneCount = cells.filter(c => done[c.a]).length;
-    const panelPage = selCrop ? images.get(selCrop.seq) ?? null : null;
+    const panelPage = selCrop ? images.get(selCrop.seq) ?? null : selPageInfo ? images.get(selPageInfo.seq) ?? null : null;
     return (
         <>
         {header}
@@ -965,7 +979,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                             {panelOpen ? '收起整页' : '显示整页'}
                         </button>
                         <div className={panelOpen ? '' : 'hidden lg:block'}>
-                            <PagePanel page={panelPage} pageNo={selCrop ? selPageNo : null} canvasW={selCrop?.canvasWidth ?? 0} canvasH={selCrop?.canvasHeight ?? 0}
+                            <PagePanel page={panelPage} pageNo={selCrop || selPageInfo ? selPageNo : null} canvasW={selCrop?.canvasWidth ?? selPageInfo?.width ?? 0} canvasH={selCrop?.canvasHeight ?? selPageInfo?.height ?? 0}
+                                estimatedSel={!!selCrop?.estimated} selPlace={!selCrop && selCell ? cellPlace(selCell.a) : undefined}
                                 boxes={pageBoxes} selected={selected} onSelect={selectFromPage} fitHeight="var(--proof-page-h)" />
                         </div>
                     </aside>
@@ -990,7 +1005,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                         <ul style={{ padding: 0 }}>
                             {slice.map(cell => {
                                 const crop = resolveCrop(cell, cord);
-                                return <CellRow key={cell.a} cell={cell} crop={crop} imageUrl={crop ? images.get(crop.seq)?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBase} onSpriteFail={onSpriteFail} done={done[cell.a]} onSubmit={onSubmit}
+                                return <CellRow key={cell.a} cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, cord)} imageUrl={crop ? images.get(crop.seq)?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBase} onSpriteFail={onSpriteFail} done={done[cell.a]} onSubmit={onSubmit}
                                     context={contextAround(order, pos, cell.a)} pendingSet={pendingSet} selected={cell.a === selected} onSelect={setSel} />;
                             })}
                         </ul>

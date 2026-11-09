@@ -511,15 +511,61 @@ export interface CellCrop {
     canvasWidth: number;
     /** canvas 高；0＝不知道（整页画框时按图的宽高比推） */
     canvasHeight?: number;
+    /** true＝box 不是实测的，是按同列相邻字推算的（排除格 crop_defect 没有自己的坐标）；页面上只当位置参考 */
+    estimated?: boolean;
+}
+
+/** 这一页在 cord 里的 IIIF 页序与 canvas 尺寸；没有框也能整页看图 */
+export function resolvePage(cell: { a: string }, cord: CordIndex | null): { seq: string; width: number; height: number } | null {
+    return cord?.pages.get(Number(cell.a.split(':')[0])) ?? null;
+}
+
+const median = (xs: number[]): number => {
+    const s = [...xs].sort((p, q) => p - q);
+    return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+};
+
+/**
+ * 没有自己坐标的格（排除格）：用 cord 里同页同列、有框的邻格推算——x、宽、高取同列中位数，竖向按格序线性内插（只有一侧邻格就按平均格距外推）。
+ * 同列一个框都没有返回 null（调用方退回整页显示）。夹注半格（4a／4b）用所在序号。
+ */
+export function estimateBox(a: string, cord: CordIndex): Box | null {
+    const m = /^(\d+):(\d+):(\d+)[a-z]?$/.exec(a);
+    if (!m) return null;
+    const [, pg, col, nStr] = m;
+    const n = Number(nStr);
+    const peers: { n: number; box: Box }[] = [];
+    for (const [k, box] of cord.boxes) {
+        const mk = /^(\d+):(\d+):(\d+)$/.exec(k);   // 只用整格做参照
+        if (mk && mk[1] === pg && mk[2] === col) peers.push({ n: Number(mk[3]), box });
+    }
+    if (!peers.length) return null;
+    peers.sort((p, q) => p.n - q.n);
+    const cx = median(peers.map(p => p.box[0] + p.box[2] / 2));
+    const w = median(peers.map(p => p.box[2]));
+    const h = median(peers.map(p => p.box[3]));
+    const cy = (p: { n: number; box: Box }) => p.box[1] + p.box[3] / 2;
+    const lo = [...peers].reverse().find(p => p.n < n);
+    const hi = peers.find(p => p.n > n);
+    let y: number;
+    if (lo && hi) y = cy(lo) + ((cy(hi) - cy(lo)) * (n - lo.n)) / (hi.n - lo.n);
+    else {
+        const step = peers.length > 1 ? (cy(peers[peers.length - 1]) - cy(peers[0])) / (peers[peers.length - 1].n - peers[0].n) : h;
+        const ref = lo ?? hi!;
+        y = cy(ref) + step * (n - ref.n);
+    }
+    return [Math.round(cx - w / 2), Math.round(y - h / 2), Math.round(w), Math.round(h)];
 }
 
 /** 这一格能不能裁图：pending 的 box 优先，其次 cord；页序只能来自 cord，缺了就不裁 */
 export function resolveCrop(cell: PendingCell, cord: CordIndex | null): CellCrop | null {
     if (!cord) return null;
-    const box = cell.box ?? cord.boxes.get(cell.a);
     const page = cord.pages.get(Number(cell.a.split(':')[0]));
-    if (!box || !page) return null;
-    return { box, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height };
+    if (!page) return null;
+    const box = cell.box ?? cord.boxes.get(cell.a);
+    if (box) return { box, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height };
+    const est = estimateBox(cell.a, cord);
+    return est ? { box: est, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height, estimated: true } : null;
 }
 
 /** 裁剪源矩形（原图像素）。natW 是实际加载到的原叶图宽；四周留 pad 比例的边，夹在图内 */
