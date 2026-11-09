@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import {
-    parsePending, parseCord, resolveCrop, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
+    parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
@@ -62,6 +62,17 @@ describe('cord / 裁剪', () => {
         expect(resolveCrop(y, c)?.box).toEqual([10, 20, 30, 40]);
         expect(resolveCrop(x, null)).toBeNull();
         expect(resolveCrop({ a: '9:1:1' }, c)).toBeNull();
+    });
+    it('排除格没有框：按同列相邻字推算，同列无框则只给整页', () => {
+        const cd = parseCord({ pages: [{ page: 141, canvas: { seq: '0141', width: 1000, height: 1500 }, cells: [
+            { a: '141:1:3', box: [500, 300, 40, 40] }, { a: '141:1:5', box: [500, 380, 40, 40] }, { a: '141:2:1', box: [440, 100, 40, 40] }] }] });
+        const r = resolveCrop({ a: '141:1:4' }, cd);
+        expect(r?.estimated).toBe(true);
+        expect(r?.box).toEqual([500, 340, 40, 40]);
+        expect(estimateBox('141:1:9', cd)?.[1]).toBe(300 + 40 * 6);   // 外推：每格 40
+        expect(resolveCrop({ a: '141:3:4' }, cd)).toBeNull();          // 第 3 列没有参照
+        expect(resolvePage({ a: '141:3:4' }, cd)?.seq).toBe('0141');
+        expect(resolveCrop({ a: '141:1:3' }, cd)?.estimated).toBeUndefined();
     });
     it('cord 坏数据不抛', () => {
         expect(() => parseCord({ pages: [null, { page: 'x' }, { page: 1, cells: 3 }] })).not.toThrow();
