@@ -79,3 +79,39 @@ class TestWygSrcTier(unittest.TestCase):
             '0003': {'src': {'id': 'X.djvu#9', 'w': 10, 'h': 10}, 'H': ident},
         }}
         self.assertEqual(wyg_src_tier.needed_pages(meta), {'WYG-SKQS-0001-51': (51, 4296, 6064)})
+
+
+class TestBanxinViews(unittest.TestCase):
+    TP = {'half': '右', 'frame': {'pts': {
+        't_R': [3800, 3200], 't_xr': [2130, 3190], 't_xl': [1950, 3190], 't_L': [250, 3180],
+        'b_R': [3790, 5700], 'b_xr': [2130, 5690], 'b_xl': [1945, 5690], 'b_L': [250, 5670]},
+        'pad': {'t': 36, 'b': 36, 'o': 36}}}
+    ENT = {'src': {'id': 'A.djvu#1', 'w': 4296, 'h': 6064}, 'H': [[1, 0, 2000], [0, 1, 3000], [0, 0, 1]],
+           'content': [0, 8, 1800, 2548]}
+
+    def test_right_half_none_and_full(self):
+        v = pm.banxin_views(self.TP, self.ENT)
+        # none：页图 x = S x − 2000；右半叶 [版心右边线 2130−8, 右外线 3800+36] → 122..1836
+        self.assertEqual(v['none'][0], 122)
+        self.assertEqual(v['none'][0] + v['none'][2], 1836)
+        # full：S 坐标，[版心左边线 1945−8, 3836]
+        self.assertEqual(v['full'][0], 1937)
+        self.assertEqual(v['full'][0] + v['full'][2], 3836)
+
+    def test_left_half_mirrors(self):
+        tp = {**self.TP, 'half': '左'}
+        v = pm.banxin_views(tp, self.ENT)
+        self.assertEqual(v['full'][0], 250 - 36)
+        self.assertEqual(v['full'][0] + v['full'][2], 2130 + 8)
+
+    def test_missing_frame_gives_none(self):
+        self.assertIsNone(pm.banxin_views({'half': '右'}, self.ENT))
+        self.assertIsNone(pm.banxin_views(None, self.ENT))
+
+    def test_bim_page_views_full_needs_src_url(self):
+        pub = lambda k: 'https://x/' + k  # noqa: E731
+        a = pm.bim_page(self.ENT, pub, 'b', '01', with_src_tier=False, tpage=self.TP)
+        self.assertIn('none', a['views'])
+        self.assertNotIn('full', a['views'])
+        b = pm.bim_page(self.ENT, pub, 'b', '01', with_src_tier=True, tpage=self.TP)
+        self.assertIn('full', b['views'])

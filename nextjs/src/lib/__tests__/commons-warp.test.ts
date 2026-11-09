@@ -71,6 +71,13 @@ describe('pageExtentOf／canvasesToImages：bim:page', () => {
         expect(e.src.url).toBeUndefined();
         expect(pageExtentOf({ ...ok, src: { w: 10, h: 10 } })!.src).toEqual({ w: 10, h: 10 });
     });
+    it('views：none／full 各自校验，坏的一项丢掉，都没有就不带 views', () => {
+        const v = pageExtentOf({ ...ok, views: { none: [80, 0, 1700, 2500], full: [1900, 3100, 1900, 2600] } })!;
+        expect(v.views).toEqual({ none: [80, 0, 1700, 2500], full: [1900, 3100, 1900, 2600] });
+        expect(pageExtentOf({ ...ok, views: { none: [80, 0, 0, 2500], full: [1, 2, 3, 4] } })!.views).toEqual({ full: [1, 2, 3, 4] });
+        expect('views' in pageExtentOf({ ...ok, views: { none: 'x' } })!).toBe(false);
+        expect('views' in pageExtentOf(ok)!).toBe(false);
+    });
     it('形状不对一律 undefined，不抛错', () => {
         for (const bad of [null, 1, {}, { ...ok, H: [1] }, { ...ok, H: [1, 0, 0, 0, 1, 0, 0, 0, 0] }, { ...ok, H: [1, 0, 0, 0, 1, 0, 0, NaN, 1] },
             { ...ok, content: [0, 0, 0, 5] }, { ...ok, content: [0, 0, 5] }, { ...ok, src: { w: 0, h: 5 } }]) {
