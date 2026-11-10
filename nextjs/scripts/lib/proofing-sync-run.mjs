@@ -181,6 +181,36 @@ export async function publishPendings({ cos, entries, proofPrefix, dryRun = fals
 }
 
 /**
+ * publish 段之后：把发布的待审单也写进站点 KV（`/api/pending`），精校页优先读它。
+ * 要紧的是 KV 里的单子绝不能比 COS 旧：写不进就删掉这一章的 KV（页面退回读 COS）；删也失败才算错误。
+ * 先看 COS 那一步有没有失败：失败的章不动 KV。
+ * @param site {pendingOp(body) → 回包}
+ * @param skip 本次没发成功的章（Set of `书/章`）
+ */
+export async function syncPendingKv({ site, entries, only = null, dryRun = false, skip = new Set(), concurrency = 6 }) {
+    const picked = (only ? entries.filter(only) : entries).filter((e) => !skip.has(`${e.book}/${e.chap}`));
+    const out = { put: 0, dropped: 0, failed: [] };
+    if (dryRun) return { ...out, put: picked.length };
+    let i = 0;
+    const worker = async () => {
+        while (i < picked.length) {
+            const e = picked[i++];
+            const base = { book: e.book, vol: e.chap };
+            try {
+                await site.pendingOp({ ...base, op: 'put', doc: JSON.parse(e.text) });
+                out.put++;
+            } catch (err) {
+                try { await site.pendingOp({ ...base, op: 'delete' }); out.dropped++; } catch (err2) {
+                    out.failed.push(`KV ${e.book}/${e.chap}：写不进也删不掉（${err?.message || err}；${err2?.message || err2}），页面可能读到旧单`);
+                }
+            }
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, picked.length) }, worker));
+    return out;
+}
+
+/**
  * opinions 段之二：读者改字／一段有问题／专名意见（/api/charfix）→ 中心库 feedback/lists/web/<书>/fixes.jsonl（GUJI-597）。
  * @param kv {listFixes(book, kind) → items[]}
  */
@@ -298,7 +328,7 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
 }
 
 /** run 摘要（markdown），只有计数 */
-export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish, status }) {
+export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, pendingKv, fixes, fixesPublish, status }) {
     const L = [];
     L.push(`### proofing-sync（工作区 ${ws.join('、')}${dryRun ? '，演练：不写' : ''}）`);
     L.push(`待审单 ${entries.length} 章，待审格合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
@@ -313,6 +343,7 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
             + (publish.spritesPut.length + publish.spritesSame.length ? ` · 雪碧图 上传 ${publish.spritesPut.length}／已有 ${publish.spritesSame.length}` : ''));
         for (const k of publish.put) L.push(`- ${k}`);
         for (const p of publish.failed) L.push(`- ❌ ${p}`);
+        if (pendingKv) L.push('', `#### 待审单 → 站点 KV（/api/pending）`, `写入 ${pendingKv.put} 章${pendingKv.dropped ? ` · 写不进、已删 ${pendingKv.dropped} 章（页面退回读 COS）` : ''}`, ...pendingKv.failed.map((p) => `- ❌ ${p}`));
     }
     if (fixes) {
         L.push('', '#### 改字与段落意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改动 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');

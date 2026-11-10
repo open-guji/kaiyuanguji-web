@@ -5,7 +5,7 @@ import {
     itemFields, parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
+    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -420,6 +420,22 @@ describe('COS 上的待审单（中心库发布）', () => {
         expect(await loadCosPending('b/1', '001', f as unknown as typeof fetch)).toBeNull();
         expect(f).toHaveBeenCalledTimes(1);
         expect(await loadCosPending('b1', '001', (async () => res(404)) as unknown as typeof fetch)).toBeNull();
+    });
+    it('loadPendingDoc：先读 KV 接口，没有或坏了退回 COS', async () => {
+        const kvDoc = { rev: 'r2', cells: [{ cell: '1:1:1' }] };
+        const cosDoc = { rev: 'r1', cells: [] };
+        const mk = (kv: () => Promise<unknown>) => jest.fn(async (u: string) => (u.startsWith('/api/pending') ? kv() : res(200, cosDoc)));
+        const f1 = mk(async () => res(200, kvDoc));
+        expect(await loadPendingDoc('b1', '001', f1 as unknown as typeof fetch, 'https://x/proof')).toEqual(kvDoc);
+        expect(f1).toHaveBeenCalledWith('/api/pending?book=b1&vol=001');
+        expect(f1).toHaveBeenCalledTimes(1);
+        const f2 = mk(async () => res(404));
+        expect(await loadPendingDoc('b1', '001', f2 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        const f3 = mk(async () => { throw new Error('net'); });
+        expect(await loadPendingDoc('b1', '001', f3 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        const f4 = mk(async () => res(200, { success: false }));
+        expect(await loadPendingDoc('b1', '001', f4 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        expect(await loadPendingDoc('b/1', '001', f4 as unknown as typeof fetch)).toBeNull();
     });
     it('loadProofing：COS 有待审单就用它，章按文件名找（不看 proofing 标记）', async () => {
         const index = { chapters: [{ file: '001', title: '卷首', cord_file: '001.cord.json' }] };
