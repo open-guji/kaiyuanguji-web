@@ -14,7 +14,7 @@ import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
-    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, whyLabels, writeDone, boxInCrop,
+    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -829,7 +829,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
 
     const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
         if (!rev) return '这份待审单缺少版本号，暂时不能提交';
-        const e = await submitReview({ book, vol, a: cell.a, rev, choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
+        const e = await submitReview({ book, vol, a: cell.a, rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
             ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
         if (e) return e;
         setDone(prev => {
@@ -872,7 +872,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const sent: string[] = [];
         let err: string | null = null;
         for (const { cell, char } of ok) {
-            err = await submitReview({ book, vol, a: cell.a, rev, choice: 'char', char, ...(cell.c ? { shown: cell.c } : {}),
+            err = await submitReview({ book, vol, a: cell.a, rev, ...itemFields(cell), choice: 'char', char, ...(cell.c ? { shown: cell.c } : {}),
                 ...pickFields({ src: 'cand', rank: 1 }) }, getAid());   // 参校本字就是卡片上第一个候选
             if (err) break;
             sent.push(cell.a);

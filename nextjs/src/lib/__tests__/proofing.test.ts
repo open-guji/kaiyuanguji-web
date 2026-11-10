@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import {
-    parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
+    itemFields, parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
@@ -17,6 +17,19 @@ const pending = {
     ],
 };
 const cord = { pages: [{ page: 3, canvas: { seq: '0003', width: 1000, height: 1500 }, cells: [{ a: '3:1:2', box: [100, 200, 50, 60] }] }] };
+
+describe('待审条目 id／ver（按条目记票）', () => {
+    it('单上每格的 id、ver 读进 item／itemVer；坏 id 不认；itemFields 只在有条目时带', () => {
+        const r = parsePending({ rev: '004-r1', cells: [
+            { cell: '1:1:1', review: 'pending', id: 'pi_0123456789ab', ver: 3 },
+            { cell: '1:1:2', review: 'pending', id: 'bad', ver: 1 },
+        ] });
+        expect(r.cells[0]).toMatchObject({ item: 'pi_0123456789ab', itemVer: 3 });
+        expect(r.cells[1].item).toBeUndefined();
+        expect(itemFields(r.cells[0])).toEqual({ item: 'pi_0123456789ab', ver: 3 });
+        expect(itemFields(r.cells[1])).toEqual({});
+    });
+});
 
 describe('parsePending', () => {
     it('取待审格与 rev，跳过已校', () => {

@@ -117,6 +117,19 @@ const kv = {
         }
         throw new Error('KV 翻页超过 1000 页');
     },
+    async listItemVotes(book) {
+        const items = [];
+        let cursor = '';
+        for (let page = 0; page < 1000; page++) {
+            const p = new URLSearchParams({ items: '1', book, limit: '256' });
+            if (cursor) p.set('cursor', cursor);
+            const r = await call(`${SITE}/api/cellreview?${p}`, { headers: { Authorization: `Bearer ${ADMIN}` } });
+            items.push(...(r.items || []));
+            if (!r.hasMore || !r.cursor) return items;
+            cursor = r.cursor;
+        }
+        throw new Error('KV 翻页超过 1000 页');
+    },
     async listThreads(book, kind) {
         const items = [];
         let cursor = '';
