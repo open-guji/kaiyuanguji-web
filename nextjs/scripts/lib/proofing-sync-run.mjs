@@ -11,7 +11,7 @@
  */
 import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
+    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, mergeProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
@@ -119,10 +119,16 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
 export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null }) {
-    // index.json 总按全部单子生成（别的章照旧）；only 时只传选中那几章的单子和图
+    // index.json：全站发布按全部单子生成；only 时只传选中那几章的单子和图，所以 index 也只改这几章，
+    // 别的章保持 COS 上现有 index 的写法（否则 index 写了中心库新 rev、COS 上单子还是旧的，读者侧 rev 对不上，11-10 run 42765432259 的 007/008）
     const picked = only ? entries.filter(only) : entries;
+    let indexBody = buildProofIndex(entries);
+    if (only && cos?.getObjectText) {
+        const oldText = await cos.getObjectText(proofPrefix + 'index.json');
+        if (oldText) indexBody = mergeProofIndex(oldText, picked);
+    }
     const objects = [
-        { key: 'index.json', body: buildProofIndex(entries) },
+        { key: 'index.json', body: indexBody },
         ...picked.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
     ];
     let remote = new Map();

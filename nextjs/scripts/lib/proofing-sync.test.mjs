@@ -131,6 +131,7 @@ function fakeCos(initial = {}) {
             for (const [k, v] of objects) if (k.startsWith(prefix)) m.set(k.slice(prefix.length), md5Hex(v));
             return m;
         },
+        async getObjectText(key) { return objects.has(key) ? String(objects.get(key)) : null; },
         async putObjectText(key, body, opts) { puts.push({ key, opts }); objects.set(key, body); },
         async putObjectBuffer(key, buf, opts) { puts.push({ key, opts }); objects.set(key, buf); },
     };
@@ -375,4 +376,14 @@ test('按条目记的票：一书一份快照，同 (item, voter) 以 KV 为准�
     const m3 = mergeItemSnapshot(m2.text, [], { book: BOOK });
     assert.equal(m3.text, m2.text);
     assert.equal(m3.kept, 2);
+});
+
+test('publishPendings only：index 只改所选章，别章保持 COS 现状', async () => {
+    const cos = fakeCos({ 'proof/index.json': JSON.stringify({ books: { [BOOK]: { '001': { rev: '001-r1', n: 3 }, '007': { rev: '007-r10', n: 5 } } } }) });
+    const entries = [
+        { book: BOOK, chap: '001', rev: '001-r2', n: 2, text: pending('001-r2', 2), sprites: [] },
+        { book: BOOK, chap: '007', rev: '007-r11', n: 4, text: pending('007-r11', 4), sprites: [] },
+    ];
+    await publishPendings({ cos, entries, proofPrefix: 'proof/', only: (e) => e.chap === '001' });
+    assert.deepEqual(JSON.parse(cos.objects.get('proof/index.json')), { books: { [BOOK]: { '001': { rev: '001-r2', n: 2 }, '007': { rev: '007-r10', n: 5 } } } });
 });
