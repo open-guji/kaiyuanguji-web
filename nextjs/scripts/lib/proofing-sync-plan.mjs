@@ -77,6 +77,23 @@ export function buildProofIndex(entries) {
     return JSON.stringify({ books }, null, 2) + '\n';
 }
 
+/**
+ * only 发布用：在 COS 现有 index.json 上只改 picked 那几章（rev、n），别的章原样保留。
+ * @param oldText 现有 index.json 原文
+ * @param picked [{book, chap, rev, n}]
+ */
+export function mergeProofIndex(oldText, picked) {
+    const books = {};
+    for (const [b, chaps] of Object.entries(JSON.parse(oldText)?.books || {})) books[b] = { ...chaps };
+    for (const e of picked) (books[e.book] ||= {})[e.chap] = { rev: e.rev, n: e.n };
+    const out = {};
+    for (const b of Object.keys(books).sort()) {
+        out[b] = {};
+        for (const c of Object.keys(books[b]).sort()) out[b][c] = books[b][c];
+    }
+    return JSON.stringify({ books: out }, null, 2) + '\n';
+}
+
 /** 一条意见规整成固定键序（同内容 → 同字节） */
 // pick_src／pick_rank／pivot：选的字从哪儿点来（相似字效果的量数，人审找字 §5.3）；旧票没有，快照字节不变
 // alt：choice=figure（是图形，不是字）时的图形说明（char v0.3，GUJI-742）；别的票没有，快照字节不变
