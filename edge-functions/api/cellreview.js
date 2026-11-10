@@ -14,6 +14,10 @@
 //   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
 // 值只存 voter，不存 aid、不存 IP。
 //
+// 按条目记票（待审条目化，guji-manager doc/00-总览/设计-待审条目化.md，sheldon 11-10）：单上每格带条目 id（`pi_` + 12 位十六进制）
+// 与 ver，页面提交时带 `item`／`ver`，key 改成 `cr:i:<book>:<item>:<voter>`——不随 rev 走，换单不丢票、不用先落票。
+// 不带 item 的（旧单、旧页面）照旧按 rev 记。管理读 `?items=1&book=<书>` 按条目列。
+//
 // choice 八档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main｜figure｜damaged，后七档 char 可选（figure 例外，见下）。
 // 页面上是一组单选（用户 2026-10-25）：正常字符＝char；非字＝none；字框切分错误＝cut；小注或其他格式＝jiazhu；符号、篆字等＝figure；破损、阙字＝damaged；其他＝unsure。
 // damaged（破损、阙字）：下游录成阙字方框 □；带的字当「最像的字」（guess），不进字形库。
@@ -50,6 +54,8 @@ export function normalizeVol(vol) {
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 const RE_CELL = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/; // 与 lib/proof.ts 的 CELL_KEY 同一坐标
 const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
+const RE_ITEM = /^pi_[0-9a-f]{12}$/;
+const VER_MAX = 1_000_000;
 
 // 一个人校一页要点几十格，比反馈的 10 条／10 分钟宽得多；仍是按 IP 的固定窗口
 const RATE_LIMIT_MAX = 120;
@@ -74,6 +80,16 @@ export function validateReview(body) {
   if (typeof rev !== 'string' || !RE_REV.test(rev)) return { error: 'rev 必填且须为合法版本号' };
   if (typeof choice !== 'string' || !CHOICES.includes(choice)) return { error: 'choice 无效' };
   if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
+  // 条目 id／版本（可选；带了就按条目记票）
+  const itemF = {};
+  if (body.item !== undefined && body.item !== null && body.item !== '') {
+    if (typeof body.item !== 'string' || !RE_ITEM.test(body.item)) return { error: 'item 无效' };
+    itemF.item = body.item;
+    if (body.ver !== undefined && body.ver !== null) {
+      if (!Number.isInteger(body.ver) || body.ver < 1 || body.ver > VER_MAX) return { error: 'ver 无效' };
+      itemF.ver = body.ver;
+    }
+  }
 
   let char;
   if (choice === 'char') {
@@ -117,7 +133,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, rev, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
@@ -201,6 +217,11 @@ async function putTicket(kv, key, value, opts) {
   }
 }
 
+/** 票的 KV 键：带条目的按条目（不随 rev 变），否则按 rev＋格 */
+export function voteKey(v, voter) {
+  return v.item ? `cr:i:${v.book}:${v.item}:${voter}` : `cr:${v.rev}:${v.book}:${v.a}:${voter}`;
+}
+
 export async function onRequestPost(context) {
   const headers = getCorsHeaders(context.request);
   try {
@@ -221,7 +242,7 @@ export async function onRequestPost(context) {
     const { aid, ...rest } = v.value;
     const ip = getClientIp(context.request) || '';
     const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
-    const key = `cr:${rest.rev}:${rest.book}:${rest.a}:${voter}`;
+    const key = voteKey(rest, voter);
     // iph＝HMAC-SHA256(CELLREVIEW_IP_KEY, ip) 截断：同一 IP 换 aid 也能在统计时识别出来再去重，防刷票；
     // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。
     const iph = ip ? await ipHash(context, ip) : '';
@@ -236,7 +257,7 @@ export async function onRequestPost(context) {
   }
 }
 
-/** 管理读：?rev=<rev>[&book=<book>][&limit=<=500>][&cursor=<上页返回的 cursor>] */
+/** 管理读：?rev=<rev>[&book=<book>][&limit=<=500>][&cursor=<上页返回的 cursor>]；按条目记的票：?items=1&book=<book>[&limit][&cursor] */
 export async function onRequestGet(context) {
   const headers = { ...getCorsHeaders(context.request), 'Cache-Control': 'no-store' };
   try {
@@ -248,17 +269,19 @@ export async function onRequestGet(context) {
     if (!authed.ok) return json(headers, authed.status, { success: false, error: authed.error });
 
     const url = new URL(context.request.url);
+    const byItem = url.searchParams.get('items') === '1';
     const rev = url.searchParams.get('rev') || '';
-    if (!RE_REV.test(rev)) return json(headers, 400, { success: false, error: 'rev 必填' });
+    if (!byItem && !RE_REV.test(rev)) return json(headers, 400, { success: false, error: 'rev 必填' });
     const book = url.searchParams.get('book') || '';
     if (book && !RE_BOOK.test(book)) return json(headers, 400, { success: false, error: 'book 无效' });
+    if (byItem && !book) return json(headers, 400, { success: false, error: '按条目读要 book' });
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 
     // 只按 rev（可再加 book）前缀列，一页一页来，调用方带 cursor 翻页
-    const prefix = `cr:${rev}:${book ? `${book}:` : ''}`;
+    const prefix = byItem ? `cr:i:${book}:` : `cr:${rev}:${book ? `${book}:` : ''}`;
     const opts = { prefix, limit };
     if (cursor) opts.cursor = cursor;
     const r = await kv.list(opts);
@@ -269,7 +292,7 @@ export async function onRequestGet(context) {
       for (const v of vals) if (v) items.push(v);
     }
     const done = !!r.complete || !r.cursor;
-    return json(headers, 200, { success: true, rev, items, cursor: done ? '' : r.cursor, hasMore: !done });
+    return json(headers, 200, { success: true, ...(byItem ? { book } : { rev }), items, cursor: done ? '' : r.cursor, hasMore: !done });
   } catch (e) {
     console.error('Cellreview GET error:', e);
     return json(headers, 500, { success: false, error: '服务器错误' });

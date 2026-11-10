@@ -59,6 +59,9 @@ export interface PendingExtras {
     sent?: PendingSent;
     /** 这格已有的人裁（复审格才有）：页面提示「这次选的会替代它」；cv 落票时按 `id` 认作有意推翻 */
     prior?: { c: string; id?: string; ts?: string };
+    /** 待审条目 id（`pi_` + 12 位十六进制）与版本（待审条目化，sheldon 11-10）：带了就按条目记票，换单不丢票 */
+    item?: string;
+    itemVer?: number;
 }
 
 export interface PendingCell extends PendingExtras {
@@ -108,6 +111,7 @@ export interface PendingData {
     cells: PendingCell[];
 }
 
+const RE_ITEM = /^pi_[0-9a-f]{12}$/;
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 const SPRITE_FILE = /^[\w.-]+$/;
@@ -131,6 +135,10 @@ export function parseExtras(raw: unknown): PendingExtras {
     }
     if (it.pending_reason !== undefined) out.pendingReason = parseReason(it.pending_reason);
     if (str(it.pending_reason_detail)) out.pendingReasonDetail = str(it.pending_reason_detail);
+    if (typeof it.id === 'string' && RE_ITEM.test(it.id)) {
+        out.item = it.id;
+        if (Number.isInteger(it.ver) && (it.ver as number) > 0) out.itemVer = it.ver as number;
+    }
     if (str(it.cls)) out.cls = str(it.cls);
     if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
     if (Array.isArray(it.lib_top)) {
@@ -784,6 +792,9 @@ export interface ReviewDraft {
     vol: string;
     a: string;
     rev: string;
+    /** 待审条目 id 与版本（单上有就带；端点按条目记票） */
+    item?: string;
+    ver?: number;
     choice: ReviewChoice;
     char?: string;
     /** choice=figure 时的图形说明（可空；空时导出写「图形符号」） */
@@ -798,6 +809,11 @@ export interface ReviewDraft {
 }
 
 /** 提交一条意见；失败返回错误文案，成功返回 null。不抛 */
+/** 单上这格的条目字段 → 提交字段（没有条目就空） */
+export function itemFields(cell: { item?: string; itemVer?: number }): { item?: string; ver?: number } {
+    return cell.item ? { item: cell.item, ...(cell.itemVer ? { ver: cell.itemVer } : {}) } : {};
+}
+
 export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: typeof fetch = fetch, retryDelayMs = 1500): Promise<string | null> {
     const once = async (): Promise<{ err: string | null; retry: boolean }> => {
         try {

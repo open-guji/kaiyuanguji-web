@@ -360,3 +360,19 @@ test('spriteOnCos：分块上传的 ETag（mp:<字节数>）同字节数算已�
     assert.equal(spriteOnCos(`mp:${m.bytes + 1}`, m), false);
     assert.equal(spriteOnCos(undefined, m), false);
 });
+
+test('按条目记的票：一书一份快照，同 (item, voter) 以 KV 为准，KV 过期的旧票保留', async () => {
+    const { mergeItemSnapshot, itemSnapshotPath } = await import('./proofing-sync-plan.mjs');
+    assert.equal(itemSnapshotPath(BOOK), `feedback/lists/web/${BOOK}/items.jsonl`);
+    const v = (item, voter, choice) => ({ v: 1, book: BOOK, vol: '001', a: '1:1:1', rev: '001-r2', item, ver: 1, choice, voter, ts: 1 });
+    const m1 = mergeItemSnapshot('', [v('pi_000000000001', 'aa', 'none'), { ...v('bad', 'bb', 'none') }], { book: BOOK });
+    assert.equal(m1.total, 1);
+    assert.equal(m1.dropped, 1);
+    const m2 = mergeItemSnapshot(m1.text, [v('pi_000000000001', 'aa', 'unsure'), v('pi_000000000002', 'cc', 'none')], { book: BOOK });
+    assert.equal(m2.total, 2);
+    assert.equal(m2.updated, 1);
+    assert.equal(m2.added, 1);
+    const m3 = mergeItemSnapshot(m2.text, [], { book: BOOK });
+    assert.equal(m3.text, m2.text);
+    assert.equal(m3.kept, 2);
+});
