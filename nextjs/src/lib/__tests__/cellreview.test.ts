@@ -267,6 +267,32 @@ describe('GET 只开管理读', () => {
     });
 });
 
+describe('按条目记票（待审条目化）', () => {
+    const ITEM = 'pi_0123456789ab';
+    it('带 item／ver：key 是 cr:i:<book>:<item>:<voter>，记录带 item、ver；换 rev 同一人覆盖同一票', async () => {
+        expect((await fn.onRequestPost(post({ ...base, item: ITEM, ver: 3, choice: 'char', char: '于' }))).status).toBe(200);
+        expect((await fn.onRequestPost(post({ ...base, rev: 'vol01-r2', a: '12:3:9', item: ITEM, ver: 4, choice: 'none' }))).status).toBe(200);
+        const keys = crKeys();
+        expect(keys).toHaveLength(1);
+        expect(keys[0]).toMatch(new RegExp(`^cr:i:d59f2870u874:${ITEM}:[0-9a-f]{16}$`));
+        expect(JSON.parse(store.get(keys[0])!)).toMatchObject({ item: ITEM, ver: 4, choice: 'none', a: '12:3:9', rev: 'vol01-r2' });
+    });
+    it('坏 item／ver 400；不带 item 照旧按 rev 记', async () => {
+        expect((await fn.onRequestPost(post({ ...base, item: 'pi_xyz', choice: 'none' }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, item: ITEM, ver: 0, choice: 'none' }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, choice: 'none' }))).status).toBe(200);
+        expect(crKeys()[0]).toMatch(new RegExp(`^cr:${REV}:`));
+    });
+    it('管理读 ?items=1&book= 按 cr:i:<book>: 前缀列；缺 book 400', async () => {
+        await fn.onRequestPost(post({ ...base, item: ITEM, choice: 'none' }));
+        await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        const body = await json(await fn.onRequestGet(get('items=1&book=d59f2870u874', ADMIN)));
+        expect(body.items.map((i: { item: string }) => i.item)).toEqual([ITEM]);
+        expect(listCalls[listCalls.length - 1].prefix).toBe('cr:i:d59f2870u874:');
+        expect((await fn.onRequestGet(get('items=1', ADMIN))).status).toBe(400);
+    });
+});
+
 describe('限速', () => {
     it('同 IP 超过窗口上限回 429＋Retry-After；换 IP 不受影响；取不到 IP 不限速', async () => {
         for (let i = 0; i < 120; i += 1) {

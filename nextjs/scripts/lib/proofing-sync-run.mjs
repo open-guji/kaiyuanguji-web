@@ -11,7 +11,7 @@
  */
 import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, planCosPut, md5Hex,
+    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
@@ -89,6 +89,24 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
             rows.push({ ...g, kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
         } catch (e) {
             problems.push(`${g.book}/${g.rev}：${e?.message || e}`);
+        }
+    }
+    // 按条目记的票（一书一份快照，不分 rev）；kv 没有 listItemVotes（旧调用方）就跳过
+    if (typeof kv.listItemVotes === 'function') {
+        const books = new Map();
+        for (const e of entries) if (!books.has(e.book)) books.set(e.book, e.ws);
+        for (const [book, ws] of [...books.entries()].sort()) {
+            const path = itemSnapshotPath(book);
+            try {
+                const items = await kv.listItemVotes(book);
+                const old = await worker.getFile(ws, path);
+                const m = mergeItemSnapshot(old?.text ?? '', items, { book });
+                const changed = m.text !== (old?.text ?? '') && m.total > 0;
+                if (changed && !dryRun) await worker.putFile(ws, path, m.text, old?.sha256 ?? null);
+                rows.push({ ws, book, rev: 'items', kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
+            } catch (e) {
+                problems.push(`${book}/items：${e?.message || e}`);
+            }
         }
     }
     return { rows, problems };
