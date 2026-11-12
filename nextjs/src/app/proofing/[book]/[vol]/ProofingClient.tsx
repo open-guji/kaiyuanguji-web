@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createTextApi } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
+import ProofToc from '@/components/proof/ProofToc';
 import { readerPath } from '@/lib/reader-route';
 import { getTransport } from '@/lib/transport';
 import { useSource } from '@/components/common/SourceContext';
@@ -16,7 +17,7 @@ import {
     LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
-    loadProofIndex, proofState,
+    loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
     QUICK_GROUPS, quickPick, readDefer, writeDefer,
 } from '@/lib/proofing';
@@ -25,6 +26,21 @@ import {
 interface FacsPage { url: string; hires: string; width: number; height: number }
 
 const PAGE_SIZE = 20;
+const EMPTY_SET: Set<string> = new Set();
+
+/** 一册装进来的数据（合审时各册各一份） */
+interface VolInfo {
+    rev: string | null;
+    cells: PendingCell[];
+    cord: CordIndex | null;
+    order: ReadSlot[];
+    pos: Map<string, number>;
+    pendingFile: string;
+    chapterTitle?: string;
+    versionKey: string;
+    /** 该册待审格的原格号（上下文里标「也在待审」用） */
+    rawSet: Set<string>;
+}
 const BOOK_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 // 右上角单选组（用户 2026-10-25）：正常字符／非字／错误、特殊字符（五小项），只能选一个，缺省正常字符。
@@ -434,8 +450,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
                     {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
                 </div>
             </div>
-            {cell.sent && <SentLine sent={cell.sent} at={cell.a} />}
-            {context && !cell.sent && <ContextLine ctx={context} at={cell.a} atChar={cell.c} pendingSet={pendingSet} />}
+            {cell.sent && <SentLine sent={cell.sent} at={rawA(cell.a)} />}
+            {context && !cell.sent && <ContextLine ctx={context} at={rawA(cell.a)} atChar={cell.c} pendingSet={pendingSet} />}
             {(cell.why?.some(w => w !== 'none') || !!cell.cls || !!cell.pendingReason) && (
                 <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
             )}
@@ -580,7 +596,8 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
 }
 
 /** 「第 9 葉 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
-function cellPlace(a: string): string {
+function cellPlace(key: string): string {
+    const a = rawA(key);
     const m = /^(\d+):(\d+):(\d+)([a-z]?)$/.exec(a);
     if (!m) return `格 ${a}`;
     const half = m[4] === 'a' ? '（夹注右行）' : m[4] === 'b' ? '（夹注左行）' : '';
@@ -750,14 +767,15 @@ export default function ProofingClient(props: { book: string; vol: string; info?
 function Proofing({ book, vol, info = null }: { book: string; vol: string; info?: ProofingBookInfo | null }) {
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
+    const merged = isAllVol(vol);
     const [state, setState] = useState<'loading' | 'none' | 'error' | 'unpublished' | 'ok'>('loading');
-    const [rev, setRev] = useState<string | null>(null);
-    const [cells, setCells] = useState<PendingCell[]>([]);
+    // 一册一份：待审格、cord、阅读顺序、版本号等（单册页只有一份；合审是各册各一份，按目录顺序拼起来）
+    const [loaded, setLoaded] = useState<Record<string, VolInfo>>({});
+    const [volOrder, setVolOrder] = useState<string[]>([]);
+    const [pendingMore, setPendingMore] = useState(0);
+    const [toc, setToc] = useState<TocEntry[]>([]);
     const [clsFilter, setClsFilter] = useState<string | null>(null);
-    const [cord, setCord] = useState<CordIndex | null>(null);
-    const [order, setOrder] = useState<ReadSlot[]>([]);
     const [images, setImages] = useState<Map<string, FacsPage>>(new Map());
-    const [pendingFile, setPendingFile] = useState<string | null>(null);
     const [spriteFail, setSpriteFail] = useState<Set<string>>(new Set());
     const [done, setDone] = useState<DoneMap>({});
     const [page, setPage] = useState(0);
@@ -769,78 +787,122 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     // 快速确认里标了存疑、挪去逐格细看的格
     const [deferred, setDeferred] = useState<string[]>([]);
     const [panelOpen, setPanelOpen] = useState(true);
-    const [chapterTitle, setChapterTitle] = useState<string | undefined>(undefined);
-    const [versionKey, setVersionKey] = useState<string | undefined>(undefined);
+    const keyOf = useCallback((v: string, a: string) => (merged ? mergedKey(v, a) : a), [merged]);
+    const cells = useMemo(() => volOrder.flatMap(v => loaded[v]?.cells ?? []), [volOrder, loaded]);
+    const volOf = useCallback((cell: { vol?: string }) => cell.vol ?? vol, [vol]);
+    const first = loaded[volOrder[0] ?? vol];
+    const chapterTitle = merged ? '全部册合审' : first?.chapterTitle;
+    const versionKey = merged ? undefined : first?.versionKey;
+
+    // 目录：总表（各册剩余）＋章目录里的册名。取不到就不显示目录
+    useEffect(() => {
+        if (!BOOK_RE.test(book)) return;
+        let cancelled = false;
+        const api = createTextApi(transport);
+        (async () => {
+            const index = await loadProofIndex();
+            let titles: Map<string, string> | undefined;
+            try {
+                const key = versionKeys(await api.getManifest(book))[0];
+                if (key) titles = chapterTitles(await api.getIndex(book, key));
+            } catch { /* 目录退回册号 */ }
+            if (!cancelled) setToc(buildToc(index, book, titles));
+        })().catch(() => { /* 没有目录就没有 */ });
+        return () => { cancelled = true; };
+    }, [book, transport]);
 
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
         let cancelled = false;
+        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0);
         const api = createTextApi(transport);
+        const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
+        // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
+        const ingest = (v: string, res: Extract<ProofingLoad, { status: 'ok' }>) => {
+            const rev = res.pending.rev;
+            const cs = merged ? res.pending.cells.map(c => ({ ...c, a: mergedKey(v, c.a), vol: v })) : res.pending.cells;
+            const info: VolInfo = { rev, cells: cs, cord: res.cord, order: res.order ?? [], pos: positionIndex(res.order ?? []), pendingFile: res.pendingFile,
+                chapterTitle: res.chapterTitle, versionKey: res.versionKey, rawSet: new Set(res.pending.cells.map(c => c.a)) };
+            const k = (a: string) => (merged ? mergedKey(v, a) : a);
+            const d = rev ? Object.fromEntries(Object.entries(readDone(rev)).map(([a, x]) => [k(a), x])) : {};
+            setLoaded(prev => ({ ...prev, [v]: info }));
+            setDone(prev => ({ ...prev, ...d }));
+            setHiddenDone(prev => new Set([...prev, ...Object.keys(d)]));
+            if (rev) setDeferred(prev => [...new Set([...prev, ...readDefer(rev).map(k)])]);
+        };
         (async () => {
-            const res = await loadProofing(
-                { getManifest: id => api.getManifest(id), getIndex: (id, key) => api.getIndex(id, key), getFile: (id, key, file) => getJson(transport, id, key, file), getCosPending: (b, v) => loadPendingDoc(b, v) },
-                book, vol,
-            );
-            if (cancelled) return;
-            if (res.status !== 'ok') return setState(res.status);
-            // 0 格只在总表明确列了这一章（n=0）时才算「已校完」；总表没列＝待审单还没发布，别骗人
-            if (res.pending.cells.length === 0 && proofState(await loadProofIndex(), book, vol) === 'unknown') {
-                if (!cancelled) setState('unpublished');
-                return;
-            }
-            if (cancelled) return;
-            setRev(res.pending.rev);
-            setCells(res.pending.cells);
-            setCord(res.cord);
-            setOrder(res.order ?? []);
-            setPendingFile(res.pendingFile);
-            setChapterTitle(res.chapterTitle);
-            setVersionKey(res.versionKey);
-            const loaded = res.pending.rev ? readDone(res.pending.rev) : {};
-            setDone(loaded);
-            setHiddenDone(new Set(Object.keys(loaded)));
-            setDeferred(res.pending.rev ? readDefer(res.pending.rev) : []);
-            setState('ok');
+            const index = await loadProofIndex();
+            const vols = merged ? buildToc(index, book).filter(e => e.n > 0).map(e => e.vol) : [vol];
+            if (merged && !vols.length) { if (!cancelled) setState(index ? 'none' : 'unpublished'); return; }
+            if (!cancelled) setVolOrder(vols);
+            let ready = false;
+            let ended = false;   // 单册页已经给出终态（none／error／unpublished）
+            let failed = 0;
+            let remaining = vols.length;
+            const queue = [...vols];
+            const worker = async () => {
+                for (let v = queue.shift(); v !== undefined; v = queue.shift()) {
+                    const res = await loadProofing(deps, book, v);
+                    if (cancelled) return;
+                    remaining--;
+                    setPendingMore(remaining);
+                    if (res.status !== 'ok') {
+                        failed++;
+                        if (!merged) { ended = true; return setState(res.status); }
+                        continue;
+                    }
+                    // 0 格只在总表明确列了这一章（n=0）时才算「已校完」；总表没列＝待审单还没发布，别骗人
+                    if (!merged && res.pending.cells.length === 0 && proofState(index, book, v) === 'unknown') { ended = true; return setState('unpublished'); }
+                    ingest(v, res);
+                    if (!ready) { ready = true; setState('ok'); }
+                }
+            };
+            await Promise.all(Array.from({ length: merged ? 4 : 1 }, worker));
+            if (!cancelled && !ready && !ended) setState(failed ? 'error' : 'none');
         })().catch(() => { if (!cancelled) setState('error'); });
         return () => { cancelled = true; };
-    }, [book, vol, transport]);
+    }, [book, vol, merged, transport]);
 
-    // 书影（IIIF manifest）：左栏整页要用，雪碧图缺的格也靠它裁图。失败不影响看字和提交
-    const iiifVol = cord?.iiifVol ?? vol;
-    useEffect(() => {
-        if (state !== 'ok') return;
-        let cancelled = false;
-        loadFacsimile(book, iiifVol).then(facs => {
-            if (cancelled || !facs) return;
-            setImages(new Map(facs.flatMap(f => (f.seq ? [[f.seq, { url: f.url, hires: f.hiresUrl ?? f.url, width: f.width ?? 0, height: f.height ?? 0 }] as [string, FacsPage]] : []))));
-        }).catch(() => { /* 没有书影就只看字 */ });
-        return () => { cancelled = true; };
-    }, [state, book, iiifVol]);
+    // 书影（IIIF manifest）：整页和裁图都要用；按册懒取，只取「选中格和当前页卡片」所在的册。失败不影响看字和提交
+    const facsAsked = useRef<Set<string>>(new Set());
+    useEffect(() => { facsAsked.current = new Set(); }, [book, vol]);
+    const imgKey = (v: string, seq: string) => `${v}|${seq}`;
 
     const onSpriteFail = useCallback((url: string) => setSpriteFail(prev => (prev.has(url) ? prev : new Set(prev).add(url))), []);
     const spriteOf = useCallback((cell: PendingCell): string | null => {
-        const url = cell.img ? spriteUrl(book, pendingFile, cell.img.s) : null;
+        const url = cell.img ? spriteUrl(book, loaded[volOf(cell)]?.pendingFile ?? null, cell.img.s) : null;
         return url && !spriteFail.has(url) ? url : null;
-    }, [book, pendingFile, spriteFail]);
-    const spriteBase = useCallback((f: string) => spriteUrl(book, pendingFile, f), [book, pendingFile]);
+    }, [book, loaded, volOf, spriteFail]);
+    const spriteBaseOf = useCallback((cell: PendingCell) => (f: string) => spriteUrl(book, loaded[volOf(cell)]?.pendingFile ?? null, f), [book, loaded, volOf]);
 
-    const pos = useMemo(() => positionIndex(order), [order]);
-    const pendingSet = useMemo(() => new Set(cells.map(c => c.a)), [cells]);
+    // 本机已回应／存疑落盘：按册、按该册 rev 一份（单册页与合审共用同一份存储）
+    const persist = useCallback((v: string, rev: string | null, nextDone: DoneMap | null, nextDefer: string[] | null) => {
+        if (!rev) return;
+        const mine = (k: string) => (merged ? k.startsWith(`${v}|`) : true);
+        if (nextDone) writeDone(rev, Object.fromEntries(Object.entries(nextDone).filter(([k]) => mine(k)).map(([k, x]) => [rawA(k), x])));
+        if (nextDefer) writeDefer(rev, nextDefer.filter(mine).map(rawA));
+    }, [merged]);
+
+    const submitCell = useCallback((cell: PendingCell, fields: { choice: ReviewChoice; char?: string; alt?: string; note?: string; pick?: Pick }) => {
+        const info = loaded[volOf(cell)];
+        if (!info?.rev) return Promise.resolve('这份待审单缺少版本号，暂时不能提交');
+        const { choice, char, alt, note, pick } = fields;
+        return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), rev: info.rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
+            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+    }, [book, loaded, volOf]);
 
     const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
-        if (!rev) return '这份待审单缺少版本号，暂时不能提交';
-        const e = await submitReview({ book, vol, a: cell.a, rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+        const e = await submitCell(cell, { choice, char, alt, note, pick });
         if (e) return e;
         setDone(prev => {
             const next = { ...prev, [cell.a]: doneLabel(choice, char) };
-            writeDone(rev, next);
+            persist(volOf(cell), loaded[volOf(cell)]?.rev ?? null, next, null);
             return next;
         });
         // 「只看还没回应的」勾着时，刚交上的这一张马上收起（用户 10-26）；在跳走之前先收，下一张照算
         if (advance) { setHiddenDone(prev => (prev.has(cell.a) ? prev : new Set(prev).add(cell.a))); setAdvanceFrom(cell.a); }   // 选了字或点「确认」自动跳到下一张没回应的（调研 A D1）
         return null;
-    }, [book, vol, rev]);
+    }, [submitCell, persist, loaded, volOf]);
 
     // 按类筛（GUJI-624「切坏格」一类）：单子里有两类以上才显示
     const classCounts = useMemo(() => {
@@ -866,14 +928,17 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     }, [cells, quickSet, clsFilter, onlyOpen, hiddenDone, deferred]);
 
     const onQuickConfirm = useCallback(async (ok: { cell: PendingCell; char: string }[], doubt: string[], onProgress: (n: number) => void) => {
-        if (!rev) return '这份待审单缺少版本号，暂时不能提交';
-        if (doubt.length) setDeferred(prev => { const next = [...new Set([...prev, ...doubt])]; writeDefer(rev, next); return next; });
+        if (ok.some(({ cell }) => !loaded[volOf(cell)]?.rev)) return '这份待审单缺少版本号，暂时不能提交';
+        if (doubt.length) setDeferred(prev => {
+            const next = [...new Set([...prev, ...doubt])];
+            for (const v of new Set(doubt.map(k => (merged ? k.slice(0, k.indexOf('|')) : vol)))) persist(v, loaded[v]?.rev ?? null, null, next);
+            return next;
+        });
         // 逐格交（同一个接口、同格同人覆盖旧票）；一格失败就停，交过的照样算
         const sent: string[] = [];
         let err: string | null = null;
         for (const { cell, char } of ok) {
-            err = await submitReview({ book, vol, a: cell.a, rev, ...itemFields(cell), choice: 'char', char, ...(cell.c ? { shown: cell.c } : {}),
-                ...pickFields({ src: 'cand', rank: 1 }) }, getAid());   // 参校本字就是卡片上第一个候选
+            err = await submitCell(cell, { choice: 'char', char, pick: { src: 'cand', rank: 1 } });   // 参校本字就是卡片上第一个候选
             if (err) break;
             sent.push(cell.a);
             onProgress(sent.length);
@@ -882,29 +947,47 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             setDone(prev => {
                 const next = { ...prev };
                 for (const { cell, char } of ok) if (sent.includes(cell.a)) next[cell.a] = doneLabel('char', char);
-                writeDone(rev, next);
+                for (const v of new Set(ok.filter(({ cell }) => sent.includes(cell.a)).map(({ cell }) => volOf(cell)))) persist(v, loaded[v]?.rev ?? null, next, null);
                 return next;
             });
             setHiddenDone(prev => new Set([...prev, ...sent]));   // 快速确认过的不再到下面露面
         }
         return err ? `已确认 ${sent.length} 格，后面的没交上：${err}` : null;
-    }, [book, vol, rev]);
+    }, [submitCell, persist, loaded, volOf, merged, vol]);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
     const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
     const selected = sel && slice.some(c => c.a === sel) ? sel : slice[0]?.a ?? null;
     const selCell = selected ? cells.find(c => c.a === selected) ?? null : null;
+    const selVol = selCell ? volOf(selCell) : vol;
+    const cord = loaded[selVol]?.cord ?? null;
     const selCrop = selCell ? resolveCrop(selCell, cord) : null;
     const selPageInfo = selCell ? resolvePage(selCell, cord) : null;
     const selPageNo = selCell ? pageColOf(selCell.a)?.[0] ?? null : null;
     const pageBoxes = useMemo(() => {
         if (selPageNo === null) return [];
         return cells.flatMap(c => {
-            if (pageColOf(c.a)?.[0] !== selPageNo) return [];
+            if (volOf(c) !== selVol || pageColOf(c.a)?.[0] !== selPageNo) return [];
             const cr = resolveCrop(c, cord);
             return cr && (!cr.estimated || c.a === selected) ? [{ a: c.a, box: cr.box }] : [];   // 推算的框只画选中那一格
         });
-    }, [cells, cord, selPageNo, selected]);
+    }, [cells, cord, selVol, volOf, selPageNo, selected]);
+
+    // 书影按册懒取：选中格和当前页卡片所在的册
+    const needFacs = useMemo(() => [...new Set([selVol, ...slice.map(volOf)])].filter(v => loaded[v]), [selVol, slice, volOf, loaded]);
+    useEffect(() => {
+        if (state !== 'ok') return;
+        let cancelled = false;
+        for (const v of needFacs) {
+            if (facsAsked.current.has(v)) continue;
+            facsAsked.current.add(v);
+            loadFacsimile(book, loaded[v]?.cord?.iiifVol ?? v).then(facs => {
+                if (cancelled || !facs) { if (cancelled) facsAsked.current.delete(v); return; }
+                setImages(prev => new Map([...prev, ...facs.flatMap(f => (f.seq ? [[imgKey(v, f.seq), { url: f.url, hires: f.hiresUrl ?? f.url, width: f.width ?? 0, height: f.height ?? 0 }] as [string, FacsPage]] : []))]));
+            }).catch(() => { facsAsked.current.delete(v); /* 没有书影就只看字 */ });
+        }
+        return () => { cancelled = true; };
+    }, [state, book, needFacs, loaded]);
 
     const goTo = useCallback((a: string) => {
         const idx = shown.findIndex(c => c.a === a);
@@ -913,6 +996,13 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         setSel(a);
         setTimeout(() => document.getElementById(`cell-${a}`)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 0);
     }, [shown]);
+
+    // 合审时点目录里的册：滚到该册第一张没回应的卡（该册还没载入或已清空就不动）
+    const jumpToVol = useCallback((v: string) => {
+        const hit = shown.find(c => volOf(c) === v) ?? cells.find(c => volOf(c) === v && !done[c.a]);
+        if (hit) selectFromPageRef.current(hit.a);
+    }, [shown, cells, done, volOf]);
+    const selectFromPageRef = useRef<(a: string) => void>(() => {});
 
     // 回应后跳到下一张还没回应的卡；后面都回应过了就留在原地
     const [advanceFrom, setAdvanceFrom] = useState<string | null>(null);
@@ -959,6 +1049,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         setTimeout(() => document.getElementById(`cell-${a}`)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 0);
     }, [cells, shown]);
 
+    selectFromPageRef.current = selectFromPage;
     const header = <ProofingHeader book={book} vol={vol} info={info} chapterTitle={chapterTitle} versionKey={versionKey} />;
     const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
     if (state === 'loading') return note('加载中…');
@@ -967,12 +1058,17 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     if (state === 'error') return note('待校对的字暂时取不到，请稍后再试。');
 
     const doneCount = cells.filter(c => done[c.a]).length;
-    const panelPage = selCrop ? images.get(selCrop.seq) ?? null : selPageInfo ? images.get(selPageInfo.seq) ?? null : null;
+    const tocTitle = new Map(toc.map(e => [e.vol, e.title]));
+    const panelPage = selCrop ? images.get(imgKey(selVol, selCrop.seq)) ?? null : selPageInfo ? images.get(imgKey(selVol, selPageInfo.seq)) ?? null : null;
     return (
         <>
         {header}
         <div className="mx-auto max-w-[1400px] px-4 py-6">
-            <ProofingIntro total={cells.length} done={doneCount} />
+            <div className="xl:flex xl:items-start xl:gap-5">
+            <ProofToc book={book} vol={vol} toc={toc} onPickVol={merged ? jumpToVol : undefined} />
+            <div className="min-w-0 flex-1">
+            <ProofingIntro total={merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
+            {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入其余 {pendingMore} 册的待审单…</p>}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">
@@ -1005,10 +1101,19 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                             </div>
                         )}
                         <ul style={{ padding: 0 }}>
-                            {slice.map(cell => {
-                                const crop = resolveCrop(cell, cord);
-                                return <CellRow key={cell.a} cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, cord)} imageUrl={crop ? images.get(crop.seq)?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBase} onSpriteFail={onSpriteFail} done={done[cell.a]} onSubmit={onSubmit}
-                                    context={contextAround(order, pos, cell.a)} pendingSet={pendingSet} selected={cell.a === selected} onSelect={setSel} />;
+                            {slice.map((cell, i) => {
+                                const v = volOf(cell);
+                                const info = loaded[v];
+                                const vcord = info?.cord ?? null;
+                                const crop = resolveCrop(cell, vcord);
+                                const head = merged && (i === 0 || volOf(slice[i - 1]) !== v)
+                                    ? <li key={`vh-${i}-${v}`} data-testid="vol-head" className="sticky top-[var(--nav-h)] z-10 -mx-1 mb-2 mt-3 flex list-none items-baseline justify-between border-b px-1 py-1.5 text-[15px]"
+                                        style={{ backgroundColor: 'var(--color-paper)', borderColor: 'var(--color-tint-2)', color: 'var(--color-ink)' }}>
+                                        <b>{tocTitle.get(v) ?? info?.chapterTitle ?? `册 ${v}`}</b>
+                                        <span className="text-[13px]" style={{ color: 'var(--color-ink-3)' }}>剩 {cells.filter(c => volOf(c) === v && !done[c.a]).length} 格</span>
+                                    </li> : null;
+                                return <React.Fragment key={cell.a}>{head}<CellRow cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, vcord)} imageUrl={crop ? images.get(imgKey(v, crop.seq))?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBaseOf(cell)} onSpriteFail={onSpriteFail} done={done[cell.a]} onSubmit={onSubmit}
+                                    context={info ? contextAround(info.order, info.pos, rawA(cell.a)) : null} pendingSet={info?.rawSet ?? EMPTY_SET} selected={cell.a === selected} onSelect={setSel} /></React.Fragment>;
                             })}
                         </ul>
                         {pages > 1 && (
@@ -1021,6 +1126,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                     </div>
                 </div>
             )}
+            </div>
+            </div>
         </div>
         </>
     );
