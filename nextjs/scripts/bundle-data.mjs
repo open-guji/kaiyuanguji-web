@@ -43,6 +43,7 @@ import { buildReadSeed, READ_SEED_VERSION } from './lib/read-seed.mjs';
 import { applyFontResults, chapterFontContext, collectFontJobs, runFontJobs } from './lib/chapter-fonts.mjs';
 import { buildItemReaderFiles } from './lib/reader-files.mjs';
 import { createMentionCollector, makeIdResolver } from './lib/mentions.mjs';
+import { BOOK_GROUPS_DIRNAME, syncBookGroupPages } from './lib/book-groups.mjs';
 import { tmpdir } from 'os';
 
 // 章生僻字子集（GUJI-701／GUJI-721）：依赖齐才生成；KYG_CHAPTER_FONTS=required（CI）时缺依赖直接失败
@@ -572,6 +573,13 @@ function bundleExtraFiles() {
         } else if (existsSync(dest)) {
             unlinkSync(dest);
         }
+    }
+
+    // 千本级作品（敦煌佛典等）的版本分组分页：产物 books/<wid>/<g>/<n>.json → book-groups/（契约 5，book-index#2262）。
+    // 读者端 cos-storage.getBookGroupPage；Work 仍带全量 _books 时版本表不读它。
+    {
+        const r = syncBookGroupPages(derivedPath('books'), join(OUT_DIR, BOOK_GROUPS_DIRNAME));
+        if (r.files || r.removed) console.log(`EX  ${BOOK_GROUPS_DIRNAME}/: ${r.works} 部作品 ${r.files} 页（写 ${r.written}、删 ${r.removed}）`);
     }
 
     // recommended.json: hydrate items 加上 IndexEntry 元数据，让 HomePage
