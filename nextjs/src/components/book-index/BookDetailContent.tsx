@@ -20,6 +20,7 @@ import BidLink from './BidLink';
 import CitationBar from './CitationBar';
 import DigitalizationView from './DigitalizationView';
 import RailSearch from './RailSearch';
+import TenureList, { tenureModeOf } from './TenureList';
 import { readerPath } from '@/lib/reader-route';
 import { legacyChapter } from '@/lib/legacy-reader';
 import { buildSourceLinks } from '@/lib/repo-source';
@@ -233,6 +234,21 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
                     </div>
                 );
             },
+        },
+        // 官职页「历任者」／地名页「历任长官」：数据是 build 派生的任官反查（_holders／_officials），没有就不出标签
+        {
+            key: 'holders',
+            label: t('bookIndex.detail.holdersTab'),
+            shouldShow: (detail) => tenureModeOf(detail) === 'holders',
+            position: 'before-feedback',
+            render: ({ detail }) => <TenureList detail={detail} />,
+        },
+        {
+            key: 'officials',
+            label: t('bookIndex.detail.officialsTab'),
+            shouldShow: (detail) => tenureModeOf(detail) === 'officials',
+            position: 'before-feedback',
+            render: ({ detail }) => <TenureList detail={detail} />,
         },
     ], [id, initialPage, t]);
 

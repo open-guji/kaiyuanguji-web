@@ -95,7 +95,7 @@ describe('BookDetailContent 接三栏组件', () => {
 
     it('「数字化」照旧作为 extraTabs 传入', () => {
         const tabs = captured.props!.extraTabs as { key: string; label: string }[];
-        expect(tabs.map((t) => [t.key, t.label])).toEqual([['digital', '数字化']]);
+        expect(tabs.map((t) => [t.key, t.label])).toEqual([['digital', '数字化'], ['holders', '历任者'], ['officials', '历任长官']]);
     });
 
     it('页内顶部不放繁简与 GitHub 图标：繁简在全站顶栏（9-30 反馈，overview#322）', () => {
