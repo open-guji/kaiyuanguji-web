@@ -49,6 +49,8 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     revised_at: 'string', revision: 'string', schema_version: 'number', section: 'string', sections: 'array',
     sources: 'array', subtype: 'string', text_count: 'number', text_kinds: 'array', title: 'string',
     title_basis: 'string', title_emendation: 'object', title_or_office: 'string', total_volumes: 'number',
+    // 人物任官（book-index 11-12）：源档 offices[]；index 分片 office_ids／office_place_ids
+    offices: 'array', office_ids: 'array', office_place_ids: 'array',
     total_works: 'number', type: 'string', updated_at: 'string', version_graph: 'object', volume_count: 'object',
     work_id: 'string',
     // `_` 起首：打包时加的标志，以及 schema-v2 的派生字段（加法兼容）
