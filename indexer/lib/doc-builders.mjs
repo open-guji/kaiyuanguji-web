@@ -7,6 +7,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { insideRoot } from './shards.mjs';
+import { officeFields } from './entity-fields.mjs';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './to-simplified-core.mjs';
@@ -191,17 +192,9 @@ function buildEntityDoc(entry, isDraft = true) {
         title_sort: allPinyin(sortTitle(name)),
         name_search: mergeSimp(name),
         pinyin: allPinyin(name),
-        // 人物任官（book-index#2331）：分片里的 office_ids／office_place_ids 原样透传，只作 filter（「任过某官」「在某地任官」）。
-        // 口径在 build 定：已解并条、沿 concept_id 展开跨朝上位条、排除赠官／不就；没任官的不写键，这里也不写。
-        ...idList('office_ids', entry.office_ids),
-        ...idList('office_place_ids', entry.office_place_ids),
+        // 人物任官 office_ids／office_place_ids（只作 filter，见 entity-fields.mjs）
+        ...officeFields(entry),
     };
-}
-
-function idList(key, v) {
-    if (!Array.isArray(v)) return {};
-    const ids = [...new Set(v.filter((x) => typeof x === 'string' && x))];
-    return ids.length ? { [key]: ids } : {};
 }
 
 function juanDoc(workId, juanName, clean) {
