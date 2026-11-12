@@ -455,6 +455,24 @@ export async function loadCosPending(book: string, vol: string, fetchImpl: typeo
     }
 }
 
+export const PENDING_API = '/api/pending';
+
+/**
+ * 取一章现行待审单：先读站点 KV（`/api/pending`，撤下一格、加一格当场生效，不等 COS 发布与 CDN），
+ * 没有或读不到再退回 COS 的 pending.json。坏参数不发请求。
+ */
+export async function loadPendingDoc(book: string, vol: string, fetchImpl: typeof fetch = fetch, base = PROOF_BASE, api = PENDING_API): Promise<unknown> {
+    if (!/^[\w-]+$/.test(book) || !SAFE_FILE.test(vol)) return null;
+    try {
+        const res = await fetchImpl(`${api}?book=${encodeURIComponent(book)}&vol=${encodeURIComponent(vol)}`);
+        if (res.ok) {
+            const doc = await res.json();
+            if (doc && typeof doc === 'object' && Array.isArray((doc as { cells?: unknown }).cells)) return doc;
+        }
+    } catch { /* 退回 COS */ }
+    return loadCosPending(book, vol, fetchImpl, base);
+}
+
 const isBox = (v: unknown): v is Box =>
     Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n)) && v[2] > 0 && v[3] > 0;
 

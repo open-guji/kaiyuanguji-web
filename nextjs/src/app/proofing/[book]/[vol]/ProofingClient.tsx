@@ -13,7 +13,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
-    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadCosPending, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
+    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState,
@@ -778,7 +778,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const api = createTextApi(transport);
         (async () => {
             const res = await loadProofing(
-                { getManifest: id => api.getManifest(id), getIndex: (id, key) => api.getIndex(id, key), getFile: (id, key, file) => getJson(transport, id, key, file), getCosPending: (b, v) => loadCosPending(b, v) },
+                { getManifest: id => api.getManifest(id), getIndex: (id, key) => api.getIndex(id, key), getFile: (id, key, file) => getJson(transport, id, key, file), getCosPending: (b, v) => loadPendingDoc(b, v) },
                 book, vol,
             );
             if (cancelled) return;

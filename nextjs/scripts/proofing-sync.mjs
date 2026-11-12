@@ -27,7 +27,7 @@
 import { appendFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { collectPendings, onlyFilter, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, summarize } from './lib/proofing-sync-run.mjs';
+import { collectPendings, onlyFilter, syncOpinions, publishPendings, syncStatus, syncFixes, publishFixes, syncPendingKv, summarize } from './lib/proofing-sync-run.mjs';
 import { reissueHints } from './lib/proofing-sync-plan.mjs';
 import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 
@@ -159,6 +159,9 @@ const kv = {
 };
 
 const site = {
+    pendingOp: (body) => call(`${SITE}/api/pending`, {
+        method: 'POST', headers: { Authorization: `Bearer ${ADMIN}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }, { tries: 2 }), // put／delete 都是幂等的
     liveFixes: (book, volume) => call(`${SITE}/api/fixes?${new URLSearchParams({ book, volume })}`),
     postFixes: (body) => call(`${SITE}/api/fixes`, {
         method: 'POST', headers: { Authorization: `Bearer ${ADMIN}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -204,12 +207,14 @@ if (ONLY) {
 }
 const opinions = doOpinions ? await syncOpinions({ worker, kv, entries: ONLY ? entries.filter(ONLY) : entries, dryRun: DRY_RUN }) : null;
 const publish = doPublish ? await publishPendings({ cos: cosOps, entries, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, blobs, only: ONLY }) : null;
+const kvFailedChaps = new Set((publish?.failed || []).map((f) => (/^([\w-]+\/[\w.-]+?)(?:\.pending\.json|\/)/.exec(f) || [])[1]).filter(Boolean));
+const pendingKv = doPublish && publish ? await syncPendingKv({ site, entries, only: ONLY, dryRun: DRY_RUN, skip: kvFailedChaps }) : null;
 const status = doOpinions && !ONLY ? await syncStatus({ worker, site, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixes = doOpinions && !ONLY ? await syncFixes({ worker, kv, ws: WS[0], books: FIX_BOOKS, dryRun: DRY_RUN }) : null;
 const fixesPublish = doPublish && !ONLY ? await publishFixes({ worker, cos: cosOps, ws: WS[0], books: FIX_BOOKS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN }) : null;
 
 const reissue = opinions ? reissueHints(opinions.rows, entries) : [];
-let md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, fixes, fixesPublish, status });
+let md = summarize({ ws: WS, proofPrefix: PROOF_PREFIX, dryRun: DRY_RUN, entries, collectProblems: problems, opinions, publish, pendingKv, fixes, fixesPublish, status });
 if (reissue.length) {
     md += ['', '#### 该落票、重出单了（线上单已有 ≥ 20% 的格投过票）', ...reissue.map((h) => `- ${h.book}／${h.rev}：${h.voted}／${h.n} 格（${h.pct}%）`), ''].join('\n');
     for (const h of reissue) console.log(`::notice::${h.book}/${h.rev} 已投 ${h.voted}/${h.n} 格（${h.pct}%），该落票重出单`);
@@ -225,6 +230,6 @@ if (process.env.PURGE_URLS_OUT) {
     writeFileSync(process.env.PURGE_URLS_OUT, keys.map((k) => `${DATA_ORIGIN}/${PROOF_PREFIX}${k}\n`).join(''));
 }
 for (const p of problems) console.log(`::warning::${p}`);
-const errors = [...(opinions?.problems || []), ...(publish?.failed || []), ...(status?.problems || []), ...(fixes?.problems || []), ...(fixesPublish?.failed || [])];
+const errors = [...(opinions?.problems || []), ...(publish?.failed || []), ...(pendingKv?.failed || []), ...(status?.problems || []), ...(fixes?.problems || []), ...(fixesPublish?.failed || [])];
 for (const e of errors) console.log(`::error::${e}`);
 process.exit(errors.length ? 1 : 0);
