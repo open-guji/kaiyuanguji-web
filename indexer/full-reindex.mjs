@@ -256,7 +256,7 @@ async function main() {
                 await configureSettings(worksIdx, SETTINGS.works);
                 swapResults.works = await swapOrDiscard('works', async (tmp) => {
                     const h = await checkIndexHealth(tmp, 'works');
-                    console.log(`📚 版本数覆盖：非草稿 works ${EDITION_STATS.total}，带 _edition_count ${EDITION_STATS.present}，>0 的 ${EDITION_STATS.positive}（硬线：有数字 ≥95%，>0 ≥30%）`);
+                    console.log(`📚 版本数覆盖：非草稿 works ${EDITION_STATS.total}，读得到版本数（_edition_count／_books） ${EDITION_STATS.present}，>0 的 ${EDITION_STATS.positive}（硬线：有数字 ≥95%，>0 ≥30%）`);
                     const p = limit ? null : editionCoverageProblem(EDITION_STATS);   // --limit 试跑不闸
                     if (p) h.failures.push(p);
                     console.log(`📦 derived 读取：产物 ${READ_STATS.hit}，草稿读源档 ${READ_STATS.draftSource}，生产缺产物 ${READ_STATS.missing}`);
