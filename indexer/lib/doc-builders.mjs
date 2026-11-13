@@ -7,6 +7,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { insideRoot } from './shards.mjs';
+import { officeFields } from './entity-fields.mjs';
 import * as crypto from 'node:crypto';
 import * as OpenCC from 'opencc-js';
 import { createToSimplified } from './to-simplified-core.mjs';
@@ -191,6 +192,8 @@ function buildEntityDoc(entry, isDraft = true) {
         title_sort: allPinyin(sortTitle(name)),
         name_search: mergeSimp(name),
         pinyin: allPinyin(name),
+        // 人物任官 office_ids／office_place_ids（只作 filter，见 entity-fields.mjs）
+        ...officeFields(entry),
     };
 }
 

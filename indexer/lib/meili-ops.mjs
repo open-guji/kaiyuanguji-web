@@ -35,7 +35,7 @@ export const SETTINGS = {
     },
     entities: {
         searchableAttributes: ['name_search', 'pinyin'],
-        filterableAttributes: ['type', 'is_draft', 'subtype', 'dynasty'],
+        filterableAttributes: ['type', 'is_draft', 'subtype', 'dynasty', 'office_ids', 'office_place_ids'],
         sortableAttributes: ['completeness', 'title_chars', 'era_rank', 'title_sort'],
         rankingRules: ['sort', 'words', 'typo', 'proximity', 'attribute', 'exactness'],
     },
