@@ -1053,6 +1053,13 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     }, [cells, shown]);
 
     selectFromPageRef.current = selectFromPage;
+    // 目录里已载入的册：剩余＝现读待审单里还没回应的格
+    const liveLeft = useMemo(() => {
+        const m: Record<string, number> = {};
+        for (const v of Object.keys(loaded)) m[v] = 0;
+        for (const c of cells) if (!done[c.a]) m[volOf(c)] = (m[volOf(c)] ?? 0) + 1;
+        return m;
+    }, [loaded, cells, done, volOf]);
     const header = <ProofingHeader book={book} vol={vol} info={info} chapterTitle={chapterTitle} versionKey={versionKey} />;
     const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
     if (state === 'loading') return note('加载中…');
@@ -1068,7 +1075,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         {header}
         <div className="mx-auto max-w-[1400px] px-4 py-6">
             <div className="xl:flex xl:items-start xl:gap-5">
-            <ProofToc book={book} vol={vol} toc={toc} onPickVol={merged ? jumpToVol : undefined} />
+            <ProofToc book={book} vol={vol} toc={toc} live={liveLeft} onPickVol={merged ? jumpToVol : undefined} />
             <div className="min-w-0 flex-1">
             <ProofingIntro total={merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
             {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入其余 {pendingMore} 册的待审单…</p>}
