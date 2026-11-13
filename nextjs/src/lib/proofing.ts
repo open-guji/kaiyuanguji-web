@@ -777,8 +777,9 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
 export const CELLREVIEW_API = '/api/cellreview';
 
 /** figure：是图形，不是字（char v0.3 图片格，GUJI-742）：不带字，可带 alt（图形说明） */
+/** unrec：认不出的字（char v0.5 `unk`，2026-11-13）：图上是个字、认不出、Unicode 没有；不带字，可带 unk（部件描述，如「左王右旦」） */
 /** damaged：破损、阙字（2026-10-25）：录成阙字方框 □，可带一个字作「最像的字」 */
-export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu' | 'figure' | 'damaged';
+export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu' | 'figure' | 'unrec' | 'damaged';
 
 /**
  * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：
@@ -817,6 +818,8 @@ export interface ReviewDraft {
     char?: string;
     /** choice=figure 时的图形说明（可空；空时导出写「图形符号」） */
     alt?: string;
+    /** choice=unrec 时的部件描述（可空；空时导出写「无法识别」） */
+    unk?: string;
     note?: string;
     /** 提交时页面显示的机器读字 */
     shown?: string;
