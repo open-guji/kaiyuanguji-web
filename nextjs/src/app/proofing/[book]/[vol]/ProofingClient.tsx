@@ -54,7 +54,9 @@ const KIND_OPTS: KindOpt[] = [
     { choice: 'cut', label: '字框切分错误', title: '这一格切得不对：字只切到一半，或混进了别的字；看出是什么字可以同时选上（快捷键 c）', key: 'c', sub: true, legacy: ['切分错了'] },
     { choice: 'jiazhu', label: '小注或其他格式', title: '这里其实是双行小注（却被当成一个大字切了），或别的特殊版式（快捷键 z）', key: 'z', sub: true, legacy: ['小注被当成正文切了'] },
     // 图形（char v0.3 图片格，GUJI-742）：不是字、Unicode 也没有对应字的图形；选中后可写图形说明（可空）。不能和字同交
-    { choice: 'figure', label: '符号、篆字等', title: '这一格刻的是个符号或篆字之类，没有对应的字（快捷键 g）；认不出的字请选「其他」', key: 'g', sub: true, legacy: ['是图形，不是字'] },
+    { choice: 'figure', label: '符号、篆字等', title: '这一格刻的是个符号或篆字之类，没有对应的字（快捷键 g）；是字但认不出请选「认不出的字」', key: 'g', sub: true, legacy: ['是图形，不是字'] },
+    // 无法识别字（char v0.5 unk，2026-11-13）：图上是个字，认不出、Unicode 也没有；备注框里写部件描述（如「左王右旦」），阅读页暂显示「？」。不能和字同交
+    { choice: 'unrec', label: '认不出的字', title: '图上是个字，但认不出、也查不到对应的字：在备注框里写它的部件，如“左王右旦”，阅读页先显示「？」（快捷键 u）', key: 'u', sub: true },
     { choice: 'damaged', label: '破损、阙字', title: '原刻破损或缺字，看不出是什么字，录成阙字方框 □；能猜出最像的字可以同时选上（快捷键 d）', key: 'd', sub: true },
     { choice: 'unsure', label: '其他', title: '以上都不是，或图太模糊判断不了；请在备注里说明（快捷键 o）', key: 'o', sub: true, legacy: ['看不清'] },
 ];
@@ -396,8 +398,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
         setBusy(true);
         setErr(null);
         const n = note.trim();
-        const a = choice === 'figure' ? [...n].slice(0, 60).join('') : '';   // 图形说明就写在下面的备注框里
-        const e = await onSubmit(cell, choice, choice === 'figure' ? undefined : char, choice === 'figure' ? undefined : pick, n || undefined, advance, a || undefined);
+        const noChar = choice === 'figure' || choice === 'unrec';              // 图形、认不出的字：不带字
+        const a = noChar ? [...n].slice(0, 60).join('') : '';   // 图形说明／认不出字的部件描述就写在下面的备注框里
+        const e = await onSubmit(cell, choice, noChar ? undefined : char, noChar ? undefined : pick, n || undefined, advance, a || undefined);
         setBusy(false);
         if (e) setErr(e);
         else setSentNote(n);
@@ -887,7 +890,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const info = loaded[volOf(cell)];
         if (!info?.rev) return Promise.resolve('这份待审单缺少版本号，暂时不能提交');
         const { choice, char, alt, note, pick } = fields;
-        return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), rev: info.rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
+        return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), rev: info.rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(choice === 'unrec' && alt ? { unk: alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
             ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
     }, [book, loaded, volOf]);
 
