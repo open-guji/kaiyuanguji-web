@@ -694,6 +694,21 @@ export function createCosStorage(): IndexStorage {
         }
     }
 
+    /** 千本级作品的版本分组分页（book-index build_derived 契约 5）：数据包 `book-groups/<workId>/<g>/<n>.json`，
+     *  Book 卡数组。404／网络错／不是数组一律回 null（该组只显示组头）。 */
+    async function getBookGroupPageFromCos(workId: string, g: string, n: number): Promise<unknown[] | null> {
+        const safe = /^[\w-]+$/;
+        if (!safe.test(workId) || !safe.test(g) || !Number.isInteger(n) || n < 1) return null;
+        try {
+            const res = await fetch(await withCacheBust(`book-groups/${workId}/${g}/${n}.json`), { cache: 'force-cache' });
+            if (!res.ok) return null;
+            const data = await res.json();
+            return Array.isArray(data) ? data : null;
+        } catch {
+            return null;
+        }
+    }
+
     // 取原始 detail JSON（getItem 返回原貌，getEntry 在此基础上转 IndexEntry shape）
     async function fetchRawDetail(canonicalId: string): Promise<Record<string, unknown> | null> {
         // 开关打开时整条走 h1 路径；默认（未设置或非 'hashed'）以下现行逻辑原样不动。
@@ -832,6 +847,8 @@ export function createCosStorage(): IndexStorage {
             if (prop === 'getItem') return (id: string) => getItemFromCos(id);
             // 专名出处反查（A12，产物 mentions/<id>.json，热门实体各书章目录 mentions/<id>/<item>.json）
             if (prop === 'getMentions') return (id: string, item?: string) => getMentionsFromCos(id, item);
+            // 千本级作品的版本分组分页（book-index-ui 0.66.8 起的可选方法；_books 为空时展开组才调）
+            if (prop === 'getBookGroupPage') return (workId: string, g: string, n: number) => getBookGroupPageFromCos(workId, g, n);
             // 枢纽名称表（book-index-ui 新增的可选方法 getHubs；旧版 UI 不调用，无影响）
             if (prop === 'getHubs') return () => getHubsFromCos();
             // 对读数据文件（char／cord／punct／entity）：BundleStorage 没有这个方法，两种布局都在外层接走
