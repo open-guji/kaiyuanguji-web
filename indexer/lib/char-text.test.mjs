@@ -35,6 +35,11 @@ test('图片格（带 fig）与图列（kind: figure）不进索引文本：搜�
     assert.equal(charJsonText(raw), '圖作形河洛');
 });
 
+test('无法识别字（unk）不进索引文本', () => {
+    const raw = { pages: [{ page: 1, columns: [{ col: 1, cells: [cell('1:1:1', '甲'), cell('1:1:2', '□', { unk: '左王右旦' }), cell('1:1:3', '乙')] }] }] };
+    assert.equal(charJsonText(raw), '甲乙');
+});
+
 test('结构不对或没有字：空串', () => {
     assert.equal(charJsonText(null), '');
     assert.equal(charJsonText({}), '');

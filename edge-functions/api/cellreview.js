@@ -23,6 +23,8 @@
 // damaged（破损、阙字）：下游录成阙字方框 □；带的字当「最像的字」（guess），不进字形库。
 // figure（char v0.3，GUJI-742）：「是图形，不是字」——这一格是个没有 Unicode 字的图形（如册 5 第 148 叶「圖作▢形」），导出时记成图片格。
 //   不带字（带了也丢掉：图形没有字）；可带 alt（图形说明，≤ ALT_MAX 字，可空，空时导出写「图形符号」）。只用于不是字的图形，认不出的字选 unsure。
+// unrec（char v0.5 unk，2026-11-13）：「认不出的字」——图上是个字，但认不出、Unicode 也没有（如全唐文 007:77:9:15 左王右旦），导出记成无法识别字，阅读页暂显示「？」。
+//   同 figure 不带字；可带 unk（部件描述，≤ ALT_MAX 字，可空，空时导出写「无法识别」）。
 // 后几档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
@@ -30,7 +32,7 @@ import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
 } from './feedback.js';
 
-export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'damaged'];
+export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'unrec', 'damaged'];
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
@@ -95,7 +97,7 @@ export function validateReview(body) {
   if (choice === 'char') {
     if (!isSingleChar(body.char)) return { error: 'choice=char 时 char 必填且恰好一个字' };
     char = body.char;
-  } else if (choice === 'figure') {
+  } else if (choice === 'figure' || choice === 'unrec') {
     // 图形没有字：带了 char 也不收（不校验、不存），免得下游把图当字落裁决
   } else if (body.char !== undefined && body.char !== null && body.char !== '') {
     if (!isSingleChar(body.char)) return { error: 'char 须恰好一个字' };
@@ -106,6 +108,13 @@ export function validateReview(body) {
     if (typeof body.alt !== 'string') return { error: 'alt 须为字符串' };
     if ([...body.alt].length > ALT_MAX) return { error: `alt 不能超过 ${ALT_MAX} 字` };
     alt = body.alt.trim();
+  }
+
+  let unk = '';
+  if (choice === 'unrec' && body.unk !== undefined && body.unk !== null) {
+    if (typeof body.unk !== 'string') return { error: 'unk 须为字符串' };
+    if ([...body.unk].length > ALT_MAX) return { error: `unk 不能超过 ${ALT_MAX} 字` };
+    unk = body.unk.trim();
   }
 
   let note = '';
@@ -133,7 +142,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
