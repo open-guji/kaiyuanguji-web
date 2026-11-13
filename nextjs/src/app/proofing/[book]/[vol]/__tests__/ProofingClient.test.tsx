@@ -665,3 +665,16 @@ describe('合审（跨册）与目录', () => {
         expect(within(toc).getAllByTestId('toc-item')[0]).toHaveAttribute('href', '/proofing/b9/_all');
     });
 });
+
+describe('目录数字随回应更新', () => {
+    it('答一格，目录里这册的剩余数当场减一；现读待审单比总表少，以现读为准', async () => {
+        loadProofIndex.mockResolvedValue({ b8: { '001': { rev: 'r1', n: 5 } } });
+        loadProofing.mockResolvedValue({ status: 'ok', pending: { rev: 'r1', cells: [{ a: '1:1:1', c: '己', cand: [{ c: '已', score: 0.9 }] }, { a: '1:1:2', c: '巳' }] }, cord: null, versionKey: 'default', pendingFile: '001.pending.json' });
+        (global as { fetch?: unknown }).fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        render(<ProofingClient book="b8" vol="001" />);
+        const toc = await screen.findByTestId('proof-toc');
+        await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('2'));   // 总表写 5，现读 2
+        fireEvent.click(within(screen.getAllByTestId('cell-card')[0]).getByRole('button', { name: '已' }));
+        await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('1'));
+    });
+});

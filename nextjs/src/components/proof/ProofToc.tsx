@@ -10,8 +10,9 @@ const href = (book: string, vol: string) => `/proofing/${encodeURIComponent(book
 export interface TocRow extends TocEntry { left: number }
 
 /** 各册剩余＝发布格数 − 本机已回应（不为负） */
-export function tocRows(toc: TocEntry[], doneCount: (rev: string) => number): TocRow[] {
-    return toc.map(e => ({ ...e, left: Math.max(0, e.n - doneCount(e.rev)) }));
+export function tocRows(toc: TocEntry[], doneCount: (rev: string) => number, live?: Readonly<Record<string, number>>): TocRow[] {
+    // 页面已载入的册用现读的待审单数（答一格就减一格，也认得 KV 里撤下的格）；没载入的册用总表发布值扣本机已答
+    return toc.map(e => ({ ...e, left: live?.[e.vol] ?? Math.max(0, e.n - doneCount(e.rev)) }));
 }
 
 function List({ book, vol, rows, showAll, onPick, onPickVol }: { book: string; vol: string; rows: TocRow[]; showAll: boolean; onPick?: () => void; onPickVol?: (vol: string) => void }) {
@@ -45,7 +46,7 @@ function List({ book, vol, rows, showAll, onPick, onPickVol }: { book: string; v
     );
 }
 
-export default function ProofToc({ book, vol, toc, onPickVol }: { book: string; vol: string; toc: TocEntry[]; onPickVol?: (vol: string) => void }) {
+export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: string; vol: string; toc: TocEntry[]; onPickVol?: (vol: string) => void; live?: Readonly<Record<string, number>> }) {
     const [counts, setCounts] = useState<Record<string, number>>({});
     const [showAll, setShowAll] = useState(false);
     const [open, setOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function ProofToc({ book, vol, toc, onPickVol }: { book: string; 
         for (const e of toc) c[e.rev] = Object.keys(readDone(e.rev)).length;
         setCounts(c);
     }, [toc, vol]);
-    const rows = useMemo(() => tocRows(toc, rev => counts[rev] ?? 0), [toc, counts]);
+    const rows = useMemo(() => tocRows(toc, rev => counts[rev] ?? 0, live), [toc, counts, live]);
     if (!toc.length) return null;
     const total = rows.reduce((s, r) => s + r.left, 0);
     const cur = vol === ALL_VOL ? null : rows.find(r => r.vol === vol);
