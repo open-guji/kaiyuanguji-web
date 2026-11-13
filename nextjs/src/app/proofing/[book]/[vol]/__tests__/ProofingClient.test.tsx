@@ -292,7 +292,7 @@ describe('精校页显示（GUJI-557）', () => {
         const refBtn = await screen.findByRole('button', { name: /^臼/ });
         expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toBe('参校本');
         expect(card.querySelector('[data-testid=no-machine-char]')).toBeTruthy();
-        expect(card.textContent).not.toContain('看前后文');              // 上下文字＝库首选，只是回声
+        expect(card.textContent).not.toContain('文意猜测');              // 上下文字＝库首选，只是回声
         expect(screen.queryByRole('button', { name: '这是夹注小字' })).toBeNull();
         expect(screen.getByRole('radio', { name: '小注或其他格式' })).toBeTruthy();
         fireEvent.change(screen.getByLabelText('备注'), { target: { value: '  看上面一横  ' } });
@@ -427,7 +427,7 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b5" vol="vol01" />);
         const ev = (await screen.findAllByTestId('evidence'))[0];
         expect(ev.textContent).toContain('比字形：和本书别处的「乙」「己」都很像，分不出是哪个');
-        expect(ev.textContent).toContain('看前后文：看不出是哪个字');
+        expect(ev.textContent).toContain('文意猜测：看不出是哪个字');
         expect(ev.textContent).toContain('更多机器判断');
         expect(ev.textContent).toContain('「乙」99%');
         expect(ev.textContent).toContain('形近字');

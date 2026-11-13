@@ -296,7 +296,7 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(shownCandidates({ a: 'x', ref: { c: '臼曰' }, libTop: [{ c: '曰', s: 0.9 }] }).top.map(x => x.c)).toEqual(['曰']);
     });
 
-    it('「看前后文」只是字形库首选的回声、或原因说上下文不可信时不显示；「看不出」照显示', () => {
+    it('「文意猜测」只是字形库首选的回声、或原因说上下文不可信时不显示；「看不出」照显示', () => {
         const libTop = [{ c: '曰', s: 0.9 }];
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '曰' }, libTop })).toBe(false);
         expect(ctxWorthShowing({ a: 'x', ctx: { c: '臼' }, libTop })).toBe(true);
