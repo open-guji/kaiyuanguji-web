@@ -522,3 +522,18 @@ describe('点校查证备注与来源链接', () => {
         expect(ex.refs?.every(r => r.u.startsWith('https://'))).toBe(true);
     });
 });
+
+describe('合审组合键与目录', () => {
+    it('rawA 去掉「册|」前缀，单册格号原样', async () => {
+        const { rawA, mergedKey, pageColOf } = await import('../proofing');
+        expect(rawA(mergedKey('005', '9:7:17'))).toBe('9:7:17');
+        expect(rawA('9:7:17')).toBe('9:7:17');
+        expect(pageColOf(mergedKey('005', '9:7:17'))).toEqual([9, 7]);
+    });
+    it('buildToc 按册号数字序，标题缺省「册 号」', async () => {
+        const { buildToc } = await import('../proofing');
+        const idx = { b: { '010': { rev: 'r', n: 1 }, '002': { rev: 'r2', n: 0 } } };
+        expect(buildToc(idx, 'b', new Map([['002', '卷二']])).map(e => [e.vol, e.title, e.n])).toEqual([['002', '卷二', 0], ['010', '册 010', 1]]);
+        expect(buildToc(null, 'b')).toEqual([]);
+    });
+});

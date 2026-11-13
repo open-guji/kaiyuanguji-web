@@ -17,6 +17,10 @@ import { DATA_ORIGIN } from '@/lib/hosts';
 
 export type Box = [number, number, number, number];
 
+/** 合审组合键 `册|格号` 与拆分；单册页的格号不含「|」，原样返回 */
+export const mergedKey = (vol: string, a: string): string => `${vol}|${a}`;
+export const rawA = (a: string): string => a.slice(a.indexOf('|') + 1);
+
 /** 雪碧图里的一块：`s` 是同目录文件名，x,y,w,h 是它在雪碧图里的像素框 */
 export interface SpriteRef { s: string; x: number; y: number; w: number; h: number }
 
@@ -65,7 +69,10 @@ export interface PendingExtras {
 }
 
 export interface PendingCell extends PendingExtras {
+    /** 格号；合审（跨册）时是「册|格号」组合键（册内格号不唯一），原格号用 `rawA` 取 */
     a: string;
+    /** 合审时这格所属的册；单册页没有 */
+    vol?: string;
     /** 机器当前读的字 */
     c?: string;
     cand?: ProofCandidate[];
@@ -556,7 +563,7 @@ export interface CellCrop {
 
 /** 这一页在 cord 里的 IIIF 页序与 canvas 尺寸；没有框也能整页看图 */
 export function resolvePage(cell: { a: string }, cord: CordIndex | null): { seq: string; width: number; height: number } | null {
-    return cord?.pages.get(Number(cell.a.split(':')[0])) ?? null;
+    return cord?.pages.get(Number(rawA(cell.a).split(':')[0])) ?? null;
 }
 
 const median = (xs: number[]): number => {
@@ -569,7 +576,7 @@ const median = (xs: number[]): number => {
  * 同列一个框都没有返回 null（调用方退回整页显示）。夹注半格（4a／4b）用所在序号。
  */
 export function estimateBox(a: string, cord: CordIndex): Box | null {
-    const m = /^(\d+):(\d+):(\d+)[a-z]?$/.exec(a);
+    const m = /^(\d+):(\d+):(\d+)[a-z]?$/.exec(rawA(a));
     if (!m) return null;
     const [, pg, col, nStr] = m;
     const n = Number(nStr);
@@ -599,11 +606,12 @@ export function estimateBox(a: string, cord: CordIndex): Box | null {
 /** 这一格能不能裁图：pending 的 box 优先，其次 cord；页序只能来自 cord，缺了就不裁 */
 export function resolveCrop(cell: PendingCell, cord: CordIndex | null): CellCrop | null {
     if (!cord) return null;
-    const page = cord.pages.get(Number(cell.a.split(':')[0]));
+    const ra = rawA(cell.a);
+    const page = cord.pages.get(Number(ra.split(':')[0]));
     if (!page) return null;
-    const box = cell.box ?? cord.boxes.get(cell.a);
+    const box = cell.box ?? cord.boxes.get(ra);
     if (box) return { box, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height };
-    const est = estimateBox(cell.a, cord);
+    const est = estimateBox(ra, cord);
     return est ? { box: est, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height, estimated: true } : null;
 }
 
@@ -681,7 +689,7 @@ export interface ReadSlot { a: string; c: string }
 
 /** 格号「页:列:格[a|b]」→ [页, 列]；不合式返回 null */
 export function pageColOf(a: string): [number, number] | null {
-    const m = /^(\d+):(\d+):\d+[a-z]?$/.exec(a);
+    const m = /^(\d+):(\d+):\d+[a-z]?$/.exec(rawA(a));
     return m ? [Number(m[1]), Number(m[2])] : null;
 }
 
@@ -899,4 +907,33 @@ export function readDefer(rev: string): string[] {
 
 export function writeDefer(rev: string, list: string[]): void {
     try { localStorage.setItem(DEFER_KEY(rev), JSON.stringify(list)); } catch { /* 存不了就算了 */ }
+}
+
+// ---- 目录与合审（跨册） ----
+
+/** 合审的特殊册名：`/proofing/<书>/_all`（下划线开头，不会与册号相撞） */
+export const ALL_VOL = '_all';
+export const isAllVol = (vol: string): boolean => vol === ALL_VOL;
+
+export interface TocEntry { vol: string; title: string; n: number; rev: string }
+
+/** 总表里这本书的各册（册号升序）。标题取 titles（章目录），没有就「册 <号>」 */
+export function buildToc(index: ProofIndex | null, book: string, titles?: ReadonlyMap<string, string>): TocEntry[] {
+    const chaps = index?.[book];
+    if (!chaps) return [];
+    return Object.entries(chaps)
+        .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
+        .map(([vol, e]) => ({ vol, n: e.n, rev: e.rev, title: titles?.get(vol) ?? `册 ${vol}` }));
+}
+
+/** 章目录里 文件名主干（即册号）→ 标题；取不到给空表，目录退回册号 */
+export function chapterTitles(index: unknown): Map<string, string> {
+    const out = new Map<string, string>();
+    const chapters = asRecord(index)?.chapters;
+    for (const raw of Array.isArray(chapters) ? chapters : []) {
+        const c = asRecord(raw);
+        if (!c || typeof c.file !== 'string' || typeof c.title !== 'string' || !c.title.trim()) continue;
+        out.set(c.file.replace(/\.[^.]+$/, ''), c.title.trim());
+    }
+    return out;
 }
