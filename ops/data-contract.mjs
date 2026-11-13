@@ -53,6 +53,8 @@ export const ENTRY_FIELD_TYPES = Object.freeze({
     offices: 'array', office_ids: 'array', office_place_ids: 'array',
     // place 古国古邑／山岳水道（book-index 11-13）：geo_kind 山岳/河流/湖泽/海洋/泉井；古国条指同名朝代／政权条
     geo_kind: 'string', polity_dynasty_id: 'string',
+    // place 寺观等建築条（book-index 11-13）：寺觀/祠廟/書院/殿閣/園林/陵墓/藏書樓/塔
+    site_kind: 'string',
     total_works: 'number', type: 'string', updated_at: 'string', version_graph: 'object', volume_count: 'object',
     work_id: 'string',
     // `_` 起首：打包时加的标志，以及 schema-v2 的派生字段（加法兼容）
