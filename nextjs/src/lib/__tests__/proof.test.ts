@@ -49,6 +49,17 @@ describe('parseProof', () => {
     });
 });
 
+describe('parseProof 抬头格', () => {
+    it('接受末位为负数的抬头格（框外上方）', () => {
+        const l = parseProof({ cells: [{ a: '43:7:-1' }, { a: '43:7:-1a' }, { a: '43:7:2' }] });
+        expect([...l.cells.keys()]).toEqual(['43:7:-1', '43:7:-1a', '43:7:2']);
+        expect(l.pages.get(43)).toEqual(['43:7:-1', '43:7:-1a', '43:7:2']);
+    });
+    it('仍拒绝其他非法格号', () => {
+        expect(parseProof({ cells: [{ a: '43:-7:1' }, { a: '-1:7:1' }, { a: '43:7:--1' }, { a: '43:7:-' }] }).cells.size).toBe(0);
+    });
+});
+
 describe('proofPage', () => {
     it('按页序取该页的格，保持输入顺序；没有的页返回空数组', () => {
         const l = parseProof(MOCK);
