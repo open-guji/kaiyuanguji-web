@@ -54,7 +54,7 @@ export function normalizeVol(vol) {
   return m ? m[1].padStart(3, '0') : vol;
 }
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
-const RE_CELL = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/; // 与 lib/proof.ts 的 CELL_KEY 同一坐标
+const RE_CELL = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/; // 与 lib/proof.ts 的 CELL_KEY 同一坐标
 const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
 const VER_MAX = 1_000_000;
