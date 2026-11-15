@@ -18,7 +18,7 @@ const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
-const RE_CELL = /^\d{1,6}:\d{1,4}:\d{1,4}[ab]?$/;
+const RE_CELL = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/;
 const MAX_BYTES = 4 * 1024 * 1024;
 
 const json = (headers, status, body) => new Response(JSON.stringify(body), { status, headers });
