@@ -24,7 +24,7 @@
  * 缺正式仓或缺其根目录的站点内容文件（lib/production-dir.mjs）都直接报错退出，不静默。
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync, cpSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
@@ -571,6 +571,20 @@ function bundleExtraFiles() {
             console.log(`EX  _hubs.json copied (${(Buffer.byteLength(data) / 1024).toFixed(1)} KB)`);
         } else if (existsSync(dest)) {
             unlinkSync(dest);
+        }
+    }
+
+    // 总集篇目 contents/<id>/<n>.json（build 契约 6，单篇诗文方案 A）：被 collected_in 指向的 Work 有 `_contents {total, pages}`，
+    // 篇目分页原样拷到数据根下 contents/，读者端 BundleStorage.getWorkContents 按页取。产物里没有就删掉残留。
+    {
+        const dest = join(OUT_DIR, 'contents');
+        const src = derivedPath('contents');
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        if (src) {
+            cpSync(src, dest, { recursive: true });
+            let n = 0;
+            for (const id of readdirSync(dest)) n += readdirSync(join(dest, id)).length;
+            console.log(`EX  contents/ copied (${readdirSync(dest).length} works, ${n} pages)`);
         }
     }
 
