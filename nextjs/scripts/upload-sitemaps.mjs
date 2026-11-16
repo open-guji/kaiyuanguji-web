@@ -67,12 +67,12 @@ async function main() {
         try { meta = JSON.parse(process.env.SITEMAP_META); } catch (e) { throw new Error(`SITEMAP_META 不是合法 JSON：${e.message}`); }
     }
     const r = await publishSitemaps({
-        dir: DIR, prefix: PREFIX, dryRun, meta, log: (m) => console.log(m),
+        dir: DIR, prefix: PREFIX, dryRun, meta, skipSame: process.env.SITEMAP_SKIP_SAME !== '0', log: (m) => console.log(m),
         backend: dryRun ? null : cosBackend(),
     });
     console.log(dryRun
         ? `✓ dry-run：检查通过，将传 ${r.planned} 个对象`
-        : `✓ sitemap 已上传：${r.uploaded} 个对象，${(r.bytes / 1048576).toFixed(1)} MB，清理旧分片 ${r.pruned} 个`);
+        : `✓ sitemap 已上传：${r.uploaded} 个对象，${(r.bytes / 1048576).toFixed(1)} MB，清理旧分片 ${r.pruned} 个，跳过未变分片 ${r.skipped} 个`);
 }
 
 /** --check-meta：线上这版 sitemap 是不是用当前这两个数据 commit 完整发布过（_meta.json 在、索引在、commit 一致）。写 present=true|false，永远 exit 0 */
