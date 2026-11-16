@@ -23,6 +23,7 @@
  * 见 resolvePromotion；页面据此 308（app/item/[id]/page.ssr.tsx）。
  */
 
+import { normalizeManifestLicense } from '../manifest-license';
 import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
 import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
@@ -383,7 +384,9 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         const latest = await getPointer<LatestPointer>('latest.json');
         const key = dataVersionKey(latest);
         try {
-            return await getImmutable<T>(`${base}/current/${relPath}${key ? `?v=${key}` : ''}`);
+            const got = await getImmutable<T>(`${base}/current/${relPath}${key ? `?v=${key}` : ''}`);
+            // 阅读页的版本清单：本站自做版本的授权口径统一为 CC BY-SA 4.0（数据仓改完前的兜底）
+            return /(^|\/)manifest\.json$/.test(relPath) ? normalizeManifestLicense(got) : got;
         } catch (err) {
             if (err instanceof NotFound) return null;
             throw err;
