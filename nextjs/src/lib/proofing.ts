@@ -576,7 +576,7 @@ const median = (xs: number[]): number => {
  * 同列一个框都没有返回 null（调用方退回整页显示）。夹注半格（4a／4b）用所在序号。
  */
 export function estimateBox(a: string, cord: CordIndex): Box | null {
-    const m = /^(\d+):(\d+):(\d+)[a-z]?$/.exec(rawA(a));
+    const m = /^(\d+):(\d+):(-?\d+)[a-z]?$/.exec(rawA(a));
     if (!m) return null;
     const [, pg, col, nStr] = m;
     const n = Number(nStr);
@@ -687,9 +687,9 @@ export const LACUNA = '□';
 /** 一个字位：格号与这一格现在的字（char_file 里的字；待审格就是机器读的字） */
 export interface ReadSlot { a: string; c: string }
 
-/** 格号「页:列:格[a|b]」→ [页, 列]；不合式返回 null */
+/** 格号「页:列:格[a|b]」（格可为 -1：抬头格，框外上方）→ [页, 列]；不合式返回 null */
 export function pageColOf(a: string): [number, number] | null {
-    const m = /^(\d+):(\d+):\d+[a-z]?$/.exec(rawA(a));
+    const m = /^(\d+):(\d+):-?\d+[a-z]?$/.exec(rawA(a));
     return m ? [Number(m[1]), Number(m[2])] : null;
 }
 

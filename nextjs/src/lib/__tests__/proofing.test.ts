@@ -355,6 +355,10 @@ describe('上下文（char_file 阅读顺序）', () => {
         expect(contextAround(order, pos, '10:1:1', 3)!.after).toEqual([]);
         expect(contextAround(order, pos, '1:1:1')).toBeNull();
     });
+    it('抬头格（末位 -1）留在阅读顺序里，排在本列第一格之前', () => {
+        const o = readingOrder({ pages: [{ page: 43, columns: [{ col: 7, cells: [{ a: '43:7:-1', c: '玉' }, { a: '43:7:1', c: '甲' }] }] }] });
+        expect(o.map(s => s.a)).toEqual(['43:7:-1', '43:7:1']);
+    });
     it('坏数据不抛', () => {
         expect(readingOrder(null)).toEqual([]);
         expect(readingOrder({ pages: 'x' })).toEqual([]);
@@ -362,6 +366,9 @@ describe('上下文（char_file 阅读顺序）', () => {
     it('pageColOf 认夹注半格', () => {
         expect(pageColOf('90:1:3a')).toEqual([90, 1]);
         expect(pageColOf('x')).toBeNull();
+        expect(pageColOf('43:7:-1')).toEqual([43, 7]);
+        expect(pageColOf('96mid1ogzk|43:7:-1')).toEqual([43, 7]);
+        expect(pageColOf('43:7:--1')).toBeNull();
     });
 });
 

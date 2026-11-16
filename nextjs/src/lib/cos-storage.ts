@@ -24,6 +24,7 @@
  *   - sessionStorage 不缓存版本：每次首屏拉一次 ~150B latest.json 成本可忽略，但可保证回滚立即生效
  */
 
+import { normalizeManifestLicense } from './manifest-license';
 import { BundleStorage } from 'book-index-ui/storage';
 import type { IndexStorage } from 'book-index-ui/storage';
 import { extractType } from 'book-index-ui';
@@ -504,7 +505,7 @@ function isTextVersionKey(k: string): boolean {
 async function getTextManifestH1(id: string): Promise<Record<string, unknown> | null> {
     if (!isSafeTextSegment(id)) return null;
     const m = await fetchH1TextJson(id, 'manifest.json');
-    return m && Array.isArray((m as { versions?: unknown }).versions) ? m : null;
+    return m && Array.isArray((m as { versions?: unknown }).versions) ? normalizeManifestLicense(m) : null;
 }
 
 async function getTextIndexH1(id: string, key: string): Promise<Record<string, unknown> | null> {
