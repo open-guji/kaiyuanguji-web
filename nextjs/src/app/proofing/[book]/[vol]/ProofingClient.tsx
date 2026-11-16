@@ -993,6 +993,30 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         return () => { cancelled = true; };
     }, [state, book, needFacs, loaded]);
 
+    // 提前下载：选中格后面三个格子对应的整页图。用面板实际显示的同一地址（Commons 书影先摆正），浏览器缓存命中
+    const prefetched = useRef<Set<string>>(new Set());
+    useEffect(() => {
+        if (!selected) return;
+        const start = shown.findIndex(c => c.a === selected);
+        if (start < 0) return;
+        const curKey = selCrop || selPageInfo ? imgKey(selVol, (selCrop ?? selPageInfo)!.seq) : '';
+        const wanted = new Set<string>();
+        for (const c of shown.slice(start + 1, start + 4)) {
+            const v = volOf(c);
+            const info = loaded[v];
+            const p = resolveCrop(c, info?.cord ?? null) ?? resolvePage(c, info?.cord ?? null);
+            if (!p) continue;
+            const key = imgKey(v, p.seq);
+            if (key !== curKey) wanted.add(key);
+        }
+        for (const key of wanted) {
+            const url = images.get(key)?.url;
+            if (!url || prefetched.current.has(url)) continue;
+            prefetched.current.add(url);
+            displayImageUrl(url).then(u => { new Image().src = u; });
+        }
+    }, [selected, shown, selVol, selCrop, selPageInfo, loaded, images, volOf]);
+
     const goTo = useCallback((a: string) => {
         const idx = shown.findIndex(c => c.a === a);
         if (idx < 0) return;
