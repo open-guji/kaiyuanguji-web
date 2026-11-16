@@ -601,9 +601,10 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
 /** 「第 9 葉 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
 function cellPlace(key: string): string {
     const a = rawA(key);
-    const m = /^(\d+):(\d+):(\d+)([a-z]?)$/.exec(a);
+    const m = /^(\d+):(\d+):(-?\d+)([a-z]?)$/.exec(a);
     if (!m) return `格 ${a}`;
     const half = m[4] === 'a' ? '（夹注右行）' : m[4] === 'b' ? '（夹注左行）' : '';
+    if (Number(m[3]) < 0) return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列抬头${half}`;
     return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列第 ${Number(m[3])} 字${half}`;
 }
 
