@@ -22,7 +22,7 @@ function storage() {
     return { asked, getTextFile: async (_id: string, _key: string, file: string) => { asked.push(file); return files[file] ?? null; } };
 }
 
-const base = { id: '96mid1ogzk', versionKey: 'default', chapter, bookTitle: '欽定四庫全書總目', versionLabel: '開源古籍自校本', license: 'CC0 1.0' };
+const base = { id: '96mid1ogzk', versionKey: 'default', chapter, bookTitle: '欽定四庫全書總目', versionLabel: '開源古籍自校本', license: 'CC BY-SA 4.0' };
 
 describe('buildExport', () => {
     it('分行本只取字，不出标点、专名版本号', async () => {
@@ -42,7 +42,7 @@ describe('buildExport', () => {
         expect(s.asked).toContain('020.entity.json');
         expect(r.text).toContain('format: "專名本（帶鏈接）"');
         expect(r.text).toContain('entity_version: "0.4.12"');
-        expect(r.text).toContain('license: "CC0 1.0"');
+        expect(r.text).toContain('license: "CC BY-SA 4.0"');
         expect(r.text.endsWith(fx.expected.linked)).toBe(true);
     });
 
