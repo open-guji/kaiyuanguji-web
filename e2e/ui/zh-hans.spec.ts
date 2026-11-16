@@ -50,6 +50,8 @@ async function setLocale(page: Page, locale: 'zh-Hans' | 'zh-Hant') {
 /** 用户看得到、读屏读得到的文字（含 <title>） */
 async function visibleText(page: Page): Promise<string> {
     return page.evaluate(() => {
+        // 用户提交的反馈原文（.og-fb-body／.og-fb-reply）是线上实时数据，投稿人写繁体就是繁体，不是界面漏转，不参与检测
+        document.querySelectorAll('.og-fb-body,.og-fb-reply').forEach((el) => { (el as HTMLElement).style.display = 'none'; });
         const parts = [document.title, document.body.innerText];
         document.querySelectorAll('[aria-label],[title],[placeholder],[alt]').forEach((el) => {
             for (const a of ['aria-label', 'title', 'placeholder', 'alt']) {
