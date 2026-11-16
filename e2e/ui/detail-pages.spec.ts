@@ -339,8 +339,13 @@ test.describe('人物页', () => {
 
         await openDetail(page, OUYANG);
 
-        const rows = page.locator(ROWS);
-        const n = await rows.count();
+        // 「著作」表按 cap 渲染；book-index-ui 0.66.10 起人物页另有「单篇诗文」分区（单列单篇，自带分页），不计入作品表的 cap
+        const n = await page.evaluate((sel) => {
+            const stop = [...document.querySelectorAll('h2,h3')].find((h) => /^[单單]篇[诗詩]文/.test(h.textContent?.trim() ?? ''));
+            return [...document.querySelectorAll(sel)].filter(
+                (r) => !stop || (stop.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
+            ).length;
+        }, ROWS);
         expect(n, `首屏作品行 ${n} 条，应为 cap 16 条左右`).toBeLessThanOrEqual(18);
         expect(n).toBeGreaterThan(5);
 
