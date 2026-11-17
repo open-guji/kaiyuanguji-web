@@ -6,9 +6,13 @@ import { readerPath } from '@/lib/reader-route';
 import { readTextLabel, readTextTitle, type ReadTextRow } from '@/lib/read-texts';
 
 /**
- * 阅读页书名栏上方的「来源」条：同一部作品下各个条目已有的文本（本站自己整理的在前，其后维基文庫、别的来源……）。
- * 阅读器自带的选择框只管本条目内的版本，作品下别的条目的文本要靠这里。只有一份来源时不出（调用方判断）。
- * 点了换到那一份的阅读页（各条目独立地址 /read/<id>）；都是真链接，关掉 JS 也能点。
+ * 阅读页书名栏上方的「文本」条，分两组，一眼看出两者的关系：
+ *   閱讀  [開源古籍自校本] [維基文庫]      對校  [關｜維基文庫｜殆知閣]
+ * - 「閱讀」：同一部作品下各个条目已有的文本（本站自己整理的在前），点了换到那一份的阅读页（真链接，关掉 JS 也能点）。
+ *   阅读器自带的选择框只管本条目内的版本，作品下别的条目的文本要靠这里。
+ * - 「對校」：以正在读的这一份为底本，选一个对照本逐字比对（开关是同一组按钮里的「關」）。
+ *   只在本站自己整理的那份（有逐字格位）上出；读的是别家来源时给一句提示，点了回到自校本。
+ * 只有一份来源、又没有可对校的版本时不出（调用方判断）。
  */
 export default function TextSourceMenu({ currentId, rows, compareId = null, compareKey = null, siblings = [], onCompare }: {
     currentId: string;
@@ -19,71 +23,68 @@ export default function TextSourceMenu({ currentId, rows, compareId = null, comp
     compareKey?: string | null;
     /** 本书的其他可对校版本（如光盘本）：章文件与底本一一对应 */
     siblings?: { key: string; label: string }[];
-    /** 点「對校」：传对照本开始，传 null 结束。不传就不出按钮 */
+    /** 选对照本：传对照本开始，传 null 结束。不传就不出「對校」组 */
     onCompare?: (t: { id: string; key?: string } | null) => void;
 }) {
     const { convert } = useConvert();
+    const cur = rows.find((x) => x.id === currentId);
+    const own = cur?.own === true || (rows.length === 0 && siblings.length > 0);
+    // 对照本：作品下别的来源（条目）＋本书的其他版本
+    const options = [
+        ...rows.filter((r) => r.id !== currentId).map((r) => ({ key: r.id, label: r.label, t: { id: r.id }, on: compareId === r.id, sibling: false })),
+        ...siblings.map((v) => ({ key: `${currentId}-${v.key}`, label: v.label, t: { id: currentId, key: v.key }, on: compareId === currentId && compareKey === v.key, sibling: true })),
+    ];
+    const comparing = options.some((o) => o.on);
+    const ownRow = rows.find((x) => x.own);
     return (
-        <nav
-            aria-label={convert('文本来源')}
-            data-testid="text-source"
-            style={{
-                display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: '8px clamp(12px, 2vw, 24px)', fontSize: 13,
-                borderBottom: '1px solid var(--color-tint-2, rgba(0,0,0,.08))', background: 'var(--color-paper, transparent)',
-            }}
-        >
-            <span style={{ color: 'var(--color-ink-2, #666)' }}>{convert('来源')}</span>
-            {rows.map((r) => {
-                const on = r.id === currentId;
-                // 「對校」只在本站自己整理的那份（有逐字格位）上出，对着作品下别的来源
-                const canCompare = !!onCompare && !on && rows.find((x) => x.id === currentId)?.own === true;
-                const comparing = compareId === r.id && !compareKey;
-                return (
-                    <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <Link
-                        href={readerPath(r.id)}
-                        aria-current={on ? 'true' : undefined}
-                        title={readTextTitle(r) ? convert(readTextTitle(r)!) : undefined}
-                        style={{
-                            padding: '2px 10px', borderRadius: 999, textDecoration: 'none', whiteSpace: 'nowrap',
-                            border: '1px solid var(--color-tint-2, rgba(0,0,0,.18))',
-                            background: on ? 'var(--color-zhu, #a33)' : 'transparent',
-                            color: on ? '#fff' : 'var(--color-ink, #222)',
-                        }}
-                    >
-                        {convert(readTextLabel(r))}
-                    </Link>
-                    {canCompare && (
-                        <button
-                            type="button"
-                            data-testid="compare-button"
-                            aria-pressed={comparing}
-                            title={convert(comparing ? '退出對校' : `與「${r.label}」逐字對校`)}
-                            onClick={() => onCompare!(comparing ? null : { id: r.id })}
-                            className="cmp-source-btn"
-                        >
-                            {convert('對校')}
+        <nav aria-label={convert('文本来源')} data-testid="text-source" className="src-bar" data-comparing={comparing ? '' : undefined}>
+            {rows.length > 1 && (
+                <div className="src-group" role="group" aria-label={convert('閱讀哪一份文本')}>
+                    <span className="src-label">{convert('閱讀')}</span>
+                    {rows.map((r) => {
+                        const on = r.id === currentId;
+                        return (
+                            <Link
+                                key={r.id}
+                                href={readerPath(r.id)}
+                                aria-current={on ? 'true' : undefined}
+                                title={readTextTitle(r) ? convert(readTextTitle(r)!) : undefined}
+                                className="src-pill"
+                            >
+                                {convert(readTextLabel(r))}
+                                {on && comparing && <span className="src-pill-tag">{convert('底本')}</span>}
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
+            {onCompare && options.length > 0 && (own ? (
+                <div className="src-group" role="group" aria-label={convert('與哪一份對校')}>
+                    <span className="src-label">{convert('對校')}</span>
+                    <span className="src-seg">
+                        <button type="button" data-testid="compare-off" aria-pressed={!comparing} onClick={() => onCompare(null)}>
+                            {convert('關')}
                         </button>
-                    )}
+                        {options.map((o) => (
+                            <button
+                                key={o.key}
+                                type="button"
+                                data-testid={o.sibling ? 'compare-sibling-button' : 'compare-button'}
+                                aria-pressed={o.on}
+                                title={convert(o.on ? '退出對校' : `以本頁為底本，與「${o.label}」逐字對校`)}
+                                onClick={() => onCompare(o.on ? null : o.t)}
+                            >
+                                {convert(o.label)}
+                            </button>
+                        ))}
                     </span>
-                );
-            })}
-            {onCompare && rows.find((x) => x.id === currentId)?.own === true && siblings.map((v) => {
-                const comparing = compareId === currentId && compareKey === v.key;
-                return (
-                    <button
-                        key={v.key}
-                        type="button"
-                        data-testid="compare-sibling-button"
-                        aria-pressed={comparing}
-                        title={convert(comparing ? '退出對校' : `與「${v.label}」逐字對校`)}
-                        onClick={() => onCompare(comparing ? null : { id: currentId, key: v.key })}
-                        className="cmp-source-btn"
-                    >
-                        {convert(`對校 · ${v.label}`)}
-                    </button>
-                );
-            })}
+                </div>
+            ) : ownRow ? (
+                <div className="src-group">
+                    <span className="src-label">{convert('對校')}</span>
+                    <Link href={readerPath(ownRow.id)} className="src-hint">{convert(`在「${ownRow.label}」上可逐字對校 →`)}</Link>
+                </div>
+            ) : null)}
         </nav>
     );
 }
