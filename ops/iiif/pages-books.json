@@ -14,6 +14,18 @@
   "title": "欽定全唐文（嘉慶揚州刻本內府本）",
   "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存",
   "vols": {
+   "001": {
+    "juan": "序、職名、凡例、姓氏韻編",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存"
+   },
+   "002": {
+    "juan": "總目一、總目二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存"
+   },
+   "003": {
+    "juan": "總目三、卷一～卷二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存"
+   },
    "004": {
     "juan": "卷三～卷六",
     "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存"
