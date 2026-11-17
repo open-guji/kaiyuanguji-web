@@ -158,6 +158,34 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
+    it('己已巳卡（hard_pair）：候选只给己已巳三个，没有「还有 N 个」和相似字；手写、备注、错误类型仍在', async () => {
+        loadProofing.mockResolvedValue(ok([{
+            a: '1:1:1', c: '巳', pendingReason: 'hard_pair', cand: [{ c: '巳' }, { c: '已' }],
+            libTop: [{ c: '已', s: 0.7 }, { c: '以', s: 0.6 }, { c: '目', s: 0.5 }, { c: '日', s: 0.4 }], alt,
+        }]));
+        render(<ProofingClient book="b11" vol="vol01" />);
+        await screen.findByTestId('why');
+        expect(screen.getByRole('button', { name: '己' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '已' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '巳' })).toBeTruthy();
+        expect(screen.queryByText('以')).toBeNull();
+        expect(screen.queryByRole('button', { name: /^还有 \d+ 个$/ })).toBeNull();
+        expect(screen.queryByTestId('alt-grid')).toBeNull();
+        expect(screen.getByLabelText('另写一字')).toBeTruthy();
+        expect(screen.getByLabelText('备注')).toBeTruthy();
+        expect(screen.getAllByRole('radio', { name: '非字' }).length).toBe(1);
+    });
+
+    it('日曰卡（hard_pair）：只给日、曰两个候选', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:2', c: '曰', pendingReason: 'hard_pair', libTop: [{ c: '目', s: 0.5 }], alt }]));
+        render(<ProofingClient book="b12" vol="vol01" />);
+        await screen.findByTestId('why');
+        expect(screen.getByRole('button', { name: '日' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '曰' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: '己' })).toBeNull();
+        expect(screen.queryByTestId('alt-grid')).toBeNull();
+    });
+
     it('本站字体显示不出来的字（私用区、Jigmo 缺的 U+2B81E 等）显示码位，悬停是原字；提交的仍是原字', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
