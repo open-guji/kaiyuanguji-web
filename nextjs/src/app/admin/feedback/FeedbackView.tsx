@@ -32,6 +32,7 @@ interface FeedbackRecord {
   routedIssue?: string;
   subtype?: string;
   resolvedRef?: string;
+  images?: { type: string; size: number }[];
 }
 
 type Patch = {
@@ -455,6 +456,16 @@ export default function FeedbackView() {
                       {it.resolvedRef && <div>处理凭据（仅站方可见）：<span className="font-mono text-gray-800">{it.resolvedRef}</span></div>}
                       {it.resourceId && <div>条目：<span className="font-mono">{it.resourceId}</span></div>}
                       {it.contact && <div>联系方式（仅站方可见）：<span className="font-mono text-gray-800">{it.contact}</span></div>}
+                      {it.images && it.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {it.images.map((_, n) => (
+                            <a key={n} href={`/api/feedback?image=${it.id}.${n}`} target="_blank" rel="noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={`/api/feedback?image=${it.id}.${n}`} alt={`截图 ${n + 1}`} loading="lazy" className="h-20 w-20 rounded border object-cover" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-2 border-t pt-2">

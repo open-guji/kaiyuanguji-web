@@ -6,6 +6,7 @@ import {
     CONTACT_MAX,
     FEEDBACK_SUBTYPES,
     FEEDBACK_TYPES,
+    IMAGE_MAX_COUNT,
     buildFeedbackBody,
     clampQuote,
     contentBudget,
@@ -15,6 +16,7 @@ import {
     type FeedbackKind,
     type FeedbackSubtype,
 } from '@/lib/feedback';
+import { compressImage } from '@/lib/feedbackImage';
 import { useSiteT } from '@/i18n/use-site-t';
 
 interface FeedbackDialogProps {
@@ -44,6 +46,9 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
     const [subtype, setSubtype] = useState<FeedbackSubtype | undefined>(undefined);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
     const [error, setError] = useState('');
+    const [images, setImages] = useState<string[]>([]);
+    const imagesRef = useRef<string[]>([]);
+    const fileRef = useRef<HTMLInputElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLTextAreaElement>(null);
     const titleId = useId();
@@ -96,6 +101,26 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
 
+    const addFiles = async (files: FileList | File[] | null) => {
+        const list = Array.from(files ?? []).filter((f) => f.type.startsWith('image/'));
+        if (!list.length) return;
+        setError('');
+        for (const f of list) {
+            if (imagesRef.current.length >= IMAGE_MAX_COUNT) break;
+            try {
+                const url = await compressImage(f);
+                imagesRef.current = [...imagesRef.current, url];
+                setImages(imagesRef.current);
+            } catch {
+                setError(t('feedback.dialog.imageFailed'));
+            }
+        }
+    };
+    const removeImage = (i: number) => {
+        imagesRef.current = imagesRef.current.filter((_, j) => j !== i);
+        setImages(imagesRef.current);
+    };
+
     const canSubmit = text.trim().length > 0 && text.length <= budget && status === 'idle';
 
     const submit = async (e: React.FormEvent) => {
@@ -105,7 +130,7 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
         setError('');
         try {
             const newId = await submitFeedback(
-                buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href, subtype: showSubtype ? subtype : undefined }),
+                buildFeedbackBody({ type, text, contact, context, pageUrl: window.location.href, subtype: showSubtype ? subtype : undefined, images }),
                 fetchImpl,
                 t,
             );
@@ -192,6 +217,10 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                             onChange={(e) => setText(e.target.value)}
                             placeholder={t(option.placeholderKey)}
                             maxLength={budget}
+                            onPaste={(e) => {
+                                const fs = Array.from(e.clipboardData.files);
+                                if (fs.some((f) => f.type.startsWith('image/'))) { e.preventDefault(); void addFiles(fs); }
+                            }}
                             rows={5}
                         />
                         {text.length > budget - 200 && (
@@ -208,6 +237,30 @@ export default function FeedbackDialog({ initialContext, initialType, onClose, o
                             maxLength={CONTACT_MAX}
                             autoComplete="email"
                         />
+
+                        <div className="og-fb-images">
+                            {images.map((src, i) => (
+                                <div key={i} className="og-fb-thumb">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={src} alt="" />
+                                    <button type="button" onClick={() => removeImage(i)} aria-label={t('feedback.dialog.imageRemove')}>×</button>
+                                </div>
+                            ))}
+                            {images.length < IMAGE_MAX_COUNT && (
+                                <button type="button" className="og-fb-addimg" onClick={() => fileRef.current?.click()}>
+                                    + {t('feedback.dialog.addImage')}
+                                </button>
+                            )}
+                            <input
+                                ref={fileRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                multiple
+                                hidden
+                                onChange={(e) => { void addFiles(e.target.files); e.target.value = ''; }}
+                            />
+                        </div>
+                        <p className="og-fb-note og-fb-imghint">{t('feedback.dialog.imageHint')}</p>
 
                         {error && <p className="og-fb-error" role="alert">{error}</p>}
 
