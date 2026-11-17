@@ -152,11 +152,10 @@ export default function FeedbackView() {
     setDoneRef(it.resolvedRef || '');
   }
 
-  /** 缺回复、已改缺处理凭据、凭据格式不对时返回错误文案；通过返回 '' */
+  /** 缺回复、凭据格式不对时返回错误文案；通过返回 '' */
   function doneError(): string {
     if (!doneReply.trim()) return doneMode === 'wontfix' ? '不采纳须写理由（会公开显示）' : '请写一句给读者看的回复（会公开显示）';
     const ref = doneRef.trim();
-    if (doneMode === 'resolved' && !ref) return '请填处理凭据：owner/repo@提交号 或 owner/repo#编号';
     if (ref && !RE_RESOLVED_REF.test(ref)) return '处理凭据格式应为 owner/repo@提交号（7～40 位十六进制）或 owner/repo#编号';
     return '';
   }
@@ -424,7 +423,7 @@ export default function FeedbackView() {
                         <input
                           aria-label="处理凭据"
                           className="w-full border rounded px-2 py-1 font-mono"
-                          placeholder={doneMode === 'resolved' ? 'open-guji/book-text@abc1234 或 open-guji-core/overview#605（内部可见，不公开）' : '处理凭据（可选，内部可见）'}
+                          placeholder={doneMode === 'resolved' ? '处理凭据（可选，内部可见，不公开）：open-guji/book-text@abc1234 或 open-guji-core/overview#605' : '处理凭据（可选，内部可见）'}
                           value={doneRef}
                           onChange={(e) => setDoneRef(e.target.value)}
                         />

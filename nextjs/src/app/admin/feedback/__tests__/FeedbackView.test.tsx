@@ -204,12 +204,12 @@ describe('标记已改（G4）', () => {
         return within(screen.getByTestId('mark-done'));
     }
 
-    it('缺回复或缺处理凭据时「确定」不可点；填对格式后一次回写 status／reply／resolvedRef', async () => {
+    it('缺回复时「确定」不可点；凭据可不填，填错格式不可点；填对格式后一次回写 status／reply／resolvedRef', async () => {
         const panel = await open();
         const ok = panel.getByRole('button', { name: '确定' });
         expect(ok).toBeDisabled();
         fireEvent.change(panel.getByLabelText('给读者的回复'), { target: { value: '已更正' } });
-        expect(ok).toBeDisabled(); // 已改必须有凭据
+        expect(ok).toBeEnabled(); // 凭据可选
         fireEvent.change(panel.getByLabelText('处理凭据'), { target: { value: 'not a ref' } });
         expect(ok).toBeDisabled();
         expect(panel.getByText(/处理凭据格式应为/)).toBeInTheDocument();
