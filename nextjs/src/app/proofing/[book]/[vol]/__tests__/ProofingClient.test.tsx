@@ -666,6 +666,16 @@ describe('合审（跨册）与目录', () => {
         expect(heads[1]).toContain('剩 2 格');
     });
 
+    it('合审：待审太多时只载前 200 格，后面的册不载，并提示', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: 'r1', n: 150 }, '002': { rev: 'r2', n: 150 }, '003': { rev: 'r3', n: 150 } } });
+        const many = (n: number) => Array.from({ length: n }, (_, i) => ({ a: `1:1:${i + 1}`, c: '己' }));
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
+        render(<ProofingClient book="b9" vol="_all" />);
+        const note = await screen.findByTestId('merged-capped');
+        expect(note.textContent).toContain('只加载前 200 格');
+        expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003 不载
+    });
+
     it('合审：提交带本格所在册的 vol 和 rev、原格号；已回应按册各存一份（与单册页共用）', async () => {
         setup();
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
