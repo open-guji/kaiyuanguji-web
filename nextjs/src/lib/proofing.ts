@@ -706,6 +706,10 @@ export function charMapOf(charRaw: unknown, cordRaw: unknown): Map<string, strin
 
 /** char_file 里没定字的格写的占位符 */
 export const LACUNA = '□';
+/** 整理本占位：〓（换字占位）、▣（以图代字）。文本层在机器没定字的格里留着它们，不是机器读到的字（ZM 11-18） */
+export const PLACEHOLDERS: ReadonlySet<string> = new Set([LACUNA, '〓', '▣']);
+/** 这一格的文本是不是「没有字」：空、缺字□、整理本占位〓▣ */
+export const isPlaceholder = (c: string | undefined | null): boolean => !c || PLACEHOLDERS.has(c);
 
 /** 一个字位：格号与这一格现在的字（char_file 里的字；待审格就是机器读的字） */
 export interface ReadSlot { a: string; c: string }
@@ -789,8 +793,8 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
             // 规范的 pending 先不带 c／cand：机器读字从 char_file 补
             if (charRaw && pending.cells.some(c => !c.c)) {
                 const chars = charMapOf(charRaw, null);
-                // 缺字占位「□」（lacuna）不算机器读到的字
-                pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) || chars.get(c.a) === LACUNA ? c : { ...c, c: chars.get(c.a) }));
+                // 缺字占位「□」（lacuna）和整理本占位〓▣都不算机器读到的字
+                pending.cells = pending.cells.map(c => (c.c || isPlaceholder(chars.get(c.a)) ? c : { ...c, c: chars.get(c.a) }));
             }
             const chapterTitle = typeof chapter.title === 'string' && chapter.title.trim() ? chapter.title.trim() : undefined;
             return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [], chapterTitle };

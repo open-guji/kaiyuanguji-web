@@ -65,6 +65,18 @@ describe('规范形（book-text#148）：cells 键为 cell、无 c／cand／box'
         expect(r.status).toBe('ok');
         if (r.status === 'ok') expect(r.pending.cells[0].c).toBe('定');
     });
+    it('文本层的整理本占位〓▣、缺字□不当机器读字', async () => {
+        const char = { version: '1.0.0', book_id: 'b', volume: 1, pages: [{ page: 3, columns: [{ col: 1, cells: [{ a: '3:1:1', c: '〓' }, { a: '3:1:2', c: '▣' }, { a: '3:1:3', c: '□' }, { a: '3:1:4', c: '定' }] }] }] };
+        const idx = { chapters: [{ vol: '001', proofing: true, pending_file: '001.pending.json', char_file: '001.char.json' }] };
+        const cells = ['3:1:1', '3:1:2', '3:1:3', '3:1:4'].map(cell => ({ cell, review: 'pending' }));
+        const r = await loadProofing({
+            getManifest: async () => ({ versions: [{ key: 'original' }] }),
+            getIndex: async () => idx,
+            getFile: async (_i, _k, f) => (f.includes('pending') ? { rev: '001-r1', cells } : char),
+        }, 'b', '001');
+        expect(r.status).toBe('ok');
+        if (r.status === 'ok') expect(r.pending.cells.map(c => c.c ?? '')).toEqual(['', '', '', '定']);
+    });
 });
 
 describe('cord / 裁剪', () => {

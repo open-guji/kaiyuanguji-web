@@ -27,7 +27,7 @@ import { docHash, writeJsonGz } from './lib/doc-diff.mjs';
 
 const LIB = new URL('./lib/', import.meta.url);
 // 影响文档内容的代码与数据：任一变动 → indexerVersion 变 → ingest 必须走全量（design §四）
-const VERSION_FILES = ['doc-builders.mjs', 'shards.mjs', 'work-fields.mjs', 'derived-core.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs', 'doc-diff.mjs'];
+const VERSION_FILES = ['doc-builders.mjs', 'entity-fields.mjs', 'shards.mjs', 'work-fields.mjs', 'derived-core.mjs', 'sort-fields.mjs', 'to-simplified-core.mjs', 'variant-chars.json', 'char-text.mjs', 'tombstone.mjs', 'meili-ops.mjs', 'doc-diff.mjs'];
 const SELF = new URL('./render-docs.mjs', import.meta.url);
 
 export function indexerVersion() {
