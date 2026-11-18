@@ -27,6 +27,7 @@ import { versionChipPlugin } from './plugins/version-chip-plugin';
 import { fontPlugin } from './plugins/font-plugin';
 import { reportPlugin } from './plugins/report-plugin';
 import { fulltextPlugin } from './plugins/fulltext-plugin';
+import { siteVersionPlugin } from './plugins/site-version-plugin';
 import type { ReaderPlugin } from 'book-index-ui';
 import { createCompareStore, useComparePlugin } from '@/components/compare/compare-plugin';
 import { useCompareTarget } from '@/components/compare/useCompare';
@@ -300,7 +301,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     const dataVersion = seed?.dataVersion ?? undefined;
     const downloadPlg = useMemo(() => downloadPlugin({ bookId: id, bookTitle, edition, dataVersion }), [id, bookTitle, edition, dataVersion]);
     const plugins = useMemo<ReaderPlugin[]>(
-        () => [downloadPlg, versionChipPlugin, fontPlugin, reportPlg, fulltextPlugin, ...(proof.on !== null ? [proofPlg] : []), ...(comparePlugin ? [comparePlugin] : [])],
+        () => [downloadPlg, versionChipPlugin, fontPlugin, reportPlg, fulltextPlugin, siteVersionPlugin, ...(proof.on !== null ? [proofPlg] : []), ...(comparePlugin ? [comparePlugin] : [])],
         [downloadPlg, reportPlg, proofPlg, comparePlugin, proof.on !== null], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
