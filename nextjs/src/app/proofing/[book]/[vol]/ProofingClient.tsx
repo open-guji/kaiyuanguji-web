@@ -14,7 +14,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
-    LACUNA, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
+    isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
@@ -285,9 +285,9 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
         if (prev !== null && key !== prev) pieces.push(<span key={`sep-${slot.a}`} aria-hidden style={{ display: 'inline-block', width: 1, height: '1em', background: '#ccc', margin: '0 4px', verticalAlign: 'middle' }} />);
         prev = key;
         if (isAt) {
-            pieces.push(<mark key={slot.a} data-testid="ctx-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{slot.c && slot.c !== LACUNA ? <Zi c={slot.c} /> : '？'}</mark>);
+            pieces.push(<mark key={slot.a} data-testid="ctx-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{!isPlaceholder(slot.c) ? <Zi c={slot.c} /> : '？'}</mark>);
         } else if (pendingSet.has(slot.a)) {
-            pieces.push(<span key={slot.a} title={`格 ${slot.a} 也在待审`} style={{ color: '#c70' }}>{slot.c && slot.c !== LACUNA ? <Zi c={slot.c} /> : '？'}</span>);
+            pieces.push(<span key={slot.a} title={`格 ${slot.a} 也在待审`} style={{ color: '#c70' }}>{!isPlaceholder(slot.c) ? <Zi c={slot.c} /> : '？'}</span>);
         } else {
             pieces.push(<span key={slot.a} title={`格 ${slot.a}`}>{slot.c ? <Zi c={slot.c} /> : '□'}</span>);
         }
