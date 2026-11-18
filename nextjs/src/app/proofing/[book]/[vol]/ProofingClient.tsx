@@ -15,7 +15,7 @@ import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
-    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
+    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -418,7 +418,9 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
     };
     const shownChar = kind !== 'char' ? draftChar : doneChar;
     const isPicked = (c: string) => (kind !== 'char' ? draftChar === c : done ? doneChar === c : c === preCand);
-    const { top, more } = shownCandidates(cell);
+    // 己已巳／日曰卡：候选只给这一组的字（不给库前几名、相似字、「还有 N 个」）；手写、备注、错误类型照旧
+    const hard = hardPairChoices(cell);
+    const { top, more } = hard ? { top: hard.map(c => ({ c })), more: [] } : shownCandidates(cell);
     const preCand = pre?.choice === 'char' ? pre.char : undefined;
     const why = cell.pendingReason ? [reasonGroupLabel(reasonGroupKey(cell)).name] : whyLabels(cell.why);
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
@@ -464,7 +466,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
                 {more.length > 0 && (
                     <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
                 )}
-                {cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
+                {!hard && cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
                     <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', isPicked(cell.c), busy)}><Zi c={cell.c} /></button>
                 )}
                 <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
@@ -494,7 +496,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
                 )}
             </fieldset>
             </div>
-            {cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
+            {!hard && cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
                     以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
@@ -768,6 +770,9 @@ export default function ProofingClient(props: { book: string; vol: string; info?
     );
 }
 
+/** 合审页一次最多载入的待审格数（太多会又慢又卡） */
+const MERGED_CELL_LIMIT = 200;
+
 function Proofing({ book, vol, info = null }: { book: string; vol: string; info?: ProofingBookInfo | null }) {
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
@@ -777,6 +782,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [loaded, setLoaded] = useState<Record<string, VolInfo>>({});
     const [volOrder, setVolOrder] = useState<string[]>([]);
     const [pendingMore, setPendingMore] = useState(0);
+    // 合审待审太多时只载前 MERGED_CELL_LIMIT 格：skipped＝没去载的册数、total＝总表里的待审格总数
+    const [capped, setCapped] = useState<{ skipped: number; total: number } | null>(null);
     const [toc, setToc] = useState<TocEntry[]>([]);
     const [clsFilter, setClsFilter] = useState<string | null>(null);
     const [images, setImages] = useState<Map<string, FacsPage>>(new Map());
@@ -792,7 +799,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [deferred, setDeferred] = useState<string[]>([]);
     const [panelOpen, setPanelOpen] = useState(true);
     const keyOf = useCallback((v: string, a: string) => (merged ? mergedKey(v, a) : a), [merged]);
-    const cells = useMemo(() => volOrder.flatMap(v => loaded[v]?.cells ?? []), [volOrder, loaded]);
+    const cells = useMemo(() => { const all = volOrder.flatMap(v => loaded[v]?.cells ?? []); return merged ? all.slice(0, MERGED_CELL_LIMIT) : all; }, [volOrder, loaded, merged]);
     const volOf = useCallback((cell: { vol?: string }) => cell.vol ?? vol, [vol]);
     const first = loaded[volOrder[0] ?? vol];
     const chapterTitle = merged ? '全部册合审' : first?.chapterTitle;
@@ -818,7 +825,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
         let cancelled = false;
-        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0);
+        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null);
         const api = createTextApi(transport);
         const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
         // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
@@ -836,7 +843,14 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         };
         (async () => {
             const index = await loadProofIndex();
-            const vols = merged ? buildToc(index, book).filter(e => e.n > 0).map(e => e.vol) : [vol];
+            const allVols = merged ? buildToc(index, book).filter(e => e.n > 0) : [];
+            let vols = merged ? allVols.map(e => e.vol) : [vol];
+            if (merged) {   // 按目录顺序凑够 MERGED_CELL_LIMIT 格就停，后面的册不载
+                let sum = 0, cut = allVols.length;
+                for (let i = 0; i < allVols.length; i++) { sum += allVols[i].n; if (sum >= MERGED_CELL_LIMIT) { cut = i + 1; break; } }
+                vols = allVols.slice(0, cut).map(e => e.vol);
+                if (cut < allVols.length && !cancelled) setCapped({ skipped: allVols.length - cut, total: allVols.reduce((n, e) => n + e.n, 0) });
+            }
             if (merged && !vols.length) { if (!cancelled) setState(index ? 'none' : 'unpublished'); return; }
             if (!cancelled) setVolOrder(vols);
             let ready = false;
@@ -1102,8 +1116,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             <div className="xl:flex xl:items-start xl:gap-5">
             <ProofToc book={book} vol={vol} toc={toc} live={liveLeft} onPickVol={merged ? jumpToVol : undefined} />
             <div className="min-w-0 flex-1">
-            <ProofingIntro total={merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
-            {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入其余 {pendingMore} 册的待审单…</p>}
+            <ProofingIntro total={merged && capped ? capped.total : merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
+            {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入待审单…</p>}
+            {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格（共约 {capped.total} 格）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">

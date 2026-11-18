@@ -62,7 +62,7 @@ function Ctx({ before, mid, after, color, ins }: { before: string; mid: string; 
  * 对校的底部条与详情卡：条上显示各类条数与「上一处／下一处」；点了某处（或跳到某处）出详情卡，
  * 放哪由阅读器的插件浮层容器管（桌面右下角，手机贴底并让开底栏），这里不自己定位。纯展示，焦点与跳转由宿主处理。
  */
-export default function CompareOverlay({ shown, current, counts, onStep, onClose, onExit, convert = (s) => s }: {
+export default function CompareOverlay({ shown, current, counts, onStep, onClose, onExit, settings, settingsOpen = false, onToggleSettings, convert = (s) => s }: {
     /** 当前设置下显示的条目 */
     shown: readonly CompareItem[];
     current: CompareItem | null;
@@ -73,6 +73,10 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
     onClose: () => void;
     /** 退出对校 */
     onExit: () => void;
+    /** 对校设置（对照本、显示哪些差异、标记方式）：点条上的「設置」在条上方展开 */
+    settings?: React.ReactNode;
+    settingsOpen?: boolean;
+    onToggleSettings?: () => void;
     convert?: (s: string) => string;
 }) {
     const box = useRef<HTMLDivElement>(null);
@@ -81,7 +85,7 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
     const idx = current ? shown.findIndex((i) => i.id === current.id) : -1;
     return (
         <div ref={box} data-testid="compare-overlay" className="cmp-stack">
-            {current && (
+            {current && !settingsOpen && (
                 <section role="dialog" aria-label={convert('差異詳情')} data-testid="compare-detail" className="cmp-card" style={{ ['--c' as string]: color }}>
                     <header className="cmp-card-head">
                         <b className="cmp-card-cat">{convert(CAT_NAME[current.cat])}</b>
@@ -96,6 +100,16 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
                     <Ctx before={current.ctx.reading[0]} mid={current.reading} after={current.ctx.reading[1]} color={color} />
                 </section>
             )}
+            {settings && settingsOpen && (
+                <section aria-label={convert('對校設置')} data-testid="compare-panel" className="cmp-panel">
+                    <header className="cmp-card-head">
+                        <b>{convert('對校設置')}</b>
+                        <span className="cmp-card-where" />
+                        <button type="button" aria-label={convert('收起')} onClick={onToggleSettings} className="cmp-iconbtn">×</button>
+                    </header>
+                    {settings}
+                </section>
+            )}
             <div className="cmp-bar">
                 <span aria-live="polite" className="cmp-bar-counts">
                     {counts.map((c) => (
@@ -105,6 +119,19 @@ export default function CompareOverlay({ shown, current, counts, onStep, onClose
                 {idx >= 0 && <span className="cmp-bar-pos">{idx + 1}/{shown.length}</span>}
                 <button type="button" onClick={() => onStep(-1)} disabled={shown.length === 0} aria-label={convert('上一處')} title={convert('上一處')} className="cmp-iconbtn">‹</button>
                 <button type="button" onClick={() => onStep(1)} disabled={shown.length === 0} aria-label={convert('下一處')} title={convert('下一處')} className="cmp-iconbtn">›</button>
+                {settings && (
+                    <button
+                        type="button"
+                        data-testid="compare-settings-toggle"
+                        aria-expanded={settingsOpen}
+                        aria-label={convert('對校設置')}
+                        title={convert('對校設置')}
+                        onClick={onToggleSettings}
+                        className="cmp-iconbtn cmp-gear"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
+                    </button>
+                )}
                 <button type="button" onClick={onExit} className="cmp-exit">{convert('退出對校')}</button>
             </div>
         </div>

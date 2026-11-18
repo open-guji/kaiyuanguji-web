@@ -329,6 +329,29 @@ export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[
 }
 
 /**
+ * 己已巳／日曰卡（待审原因 hard_pair「极难形近」）：已经认出是这一组之一，候选只给组里的字，
+ * 不给库前几名、相似字、「还有 N 个」（用户 11-17）。看本格机器字、参校本字、候选、库前两名、上下文字，
+ * 哪一组的票多就用哪一组；一票都没有就返回 null，照旧显示普通候选。
+ */
+const HARD_GROUPS = ['己已巳', '日曰'];
+export function hardPairChoices(cell: PendingCell): string[] | null {
+    if (cell.pendingReason !== 'hard_pair') return null;
+    const votes = HARD_GROUPS.map(() => 0);
+    const vote = (c: string | undefined, w: number) => {
+        if (!c) return;
+        const i = HARD_GROUPS.findIndex(g => g.includes(c));
+        if (i >= 0 && [...c].length === 1) votes[i] += w;
+    };
+    vote(cell.c, 3);
+    vote(cell.ref?.c, 3);
+    for (const cd of cell.cand ?? []) vote(cd.c, 1);
+    for (const x of (cell.libTop ?? []).slice(0, 2)) vote(x.c, 1);
+    vote(cell.ctx?.c, 1);
+    const best = votes.indexOf(Math.max(...votes));
+    return votes[best] > 0 ? [...HARD_GROUPS[best]] : null;
+}
+
+/**
  * 「看前后文」值不值得给读者看：上下文模型的字就是字形库首选（只是回声），或送审原因说上下文不可信
  * （`ctx_garble_*`），都不显示——vol01 001-r2 有字的 38 格全是回声（GUJI-683，调研 A B4）。
  * 上下文给了「看不出」（没有字）照旧显示。
