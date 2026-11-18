@@ -770,6 +770,9 @@ export default function ProofingClient(props: { book: string; vol: string; info?
     );
 }
 
+/** 合审页一次最多载入的待审格数（太多会又慢又卡） */
+const MERGED_CELL_LIMIT = 200;
+
 function Proofing({ book, vol, info = null }: { book: string; vol: string; info?: ProofingBookInfo | null }) {
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
@@ -779,6 +782,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [loaded, setLoaded] = useState<Record<string, VolInfo>>({});
     const [volOrder, setVolOrder] = useState<string[]>([]);
     const [pendingMore, setPendingMore] = useState(0);
+    // 合审待审太多时只载前 MERGED_CELL_LIMIT 格：skipped＝没去载的册数、total＝总表里的待审格总数
+    const [capped, setCapped] = useState<{ skipped: number; total: number } | null>(null);
     const [toc, setToc] = useState<TocEntry[]>([]);
     const [clsFilter, setClsFilter] = useState<string | null>(null);
     const [images, setImages] = useState<Map<string, FacsPage>>(new Map());
@@ -794,7 +799,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [deferred, setDeferred] = useState<string[]>([]);
     const [panelOpen, setPanelOpen] = useState(true);
     const keyOf = useCallback((v: string, a: string) => (merged ? mergedKey(v, a) : a), [merged]);
-    const cells = useMemo(() => volOrder.flatMap(v => loaded[v]?.cells ?? []), [volOrder, loaded]);
+    const cells = useMemo(() => { const all = volOrder.flatMap(v => loaded[v]?.cells ?? []); return merged ? all.slice(0, MERGED_CELL_LIMIT) : all; }, [volOrder, loaded, merged]);
     const volOf = useCallback((cell: { vol?: string }) => cell.vol ?? vol, [vol]);
     const first = loaded[volOrder[0] ?? vol];
     const chapterTitle = merged ? '全部册合审' : first?.chapterTitle;
@@ -820,7 +825,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
         let cancelled = false;
-        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0);
+        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null);
         const api = createTextApi(transport);
         const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
         // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
@@ -838,7 +843,14 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         };
         (async () => {
             const index = await loadProofIndex();
-            const vols = merged ? buildToc(index, book).filter(e => e.n > 0).map(e => e.vol) : [vol];
+            const allVols = merged ? buildToc(index, book).filter(e => e.n > 0) : [];
+            let vols = merged ? allVols.map(e => e.vol) : [vol];
+            if (merged) {   // 按目录顺序凑够 MERGED_CELL_LIMIT 格就停，后面的册不载
+                let sum = 0, cut = allVols.length;
+                for (let i = 0; i < allVols.length; i++) { sum += allVols[i].n; if (sum >= MERGED_CELL_LIMIT) { cut = i + 1; break; } }
+                vols = allVols.slice(0, cut).map(e => e.vol);
+                if (cut < allVols.length && !cancelled) setCapped({ skipped: allVols.length - cut, total: allVols.reduce((n, e) => n + e.n, 0) });
+            }
             if (merged && !vols.length) { if (!cancelled) setState(index ? 'none' : 'unpublished'); return; }
             if (!cancelled) setVolOrder(vols);
             let ready = false;
@@ -1104,8 +1116,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             <div className="xl:flex xl:items-start xl:gap-5">
             <ProofToc book={book} vol={vol} toc={toc} live={liveLeft} onPickVol={merged ? jumpToVol : undefined} />
             <div className="min-w-0 flex-1">
-            <ProofingIntro total={merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
-            {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入其余 {pendingMore} 册的待审单…</p>}
+            <ProofingIntro total={merged && capped ? capped.total : merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
+            {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入待审单…</p>}
+            {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格（共约 {capped.total} 格）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">
