@@ -239,3 +239,22 @@ test('meta 不是对象：拒绝，且一个对象都不传', async () => {
     await assert.rejects(publishSitemaps({ dir: makeDir(), backend: b, meta: [1], ...opts }), /meta/);
     assert.equal(b.putCalls.length, 0);
 });
+
+test('增量（skipSame）：线上同名分片字节一样就不传，变了的照传，索引永远传', async () => {
+    const dir = makeDir();
+    const same = readFileSync(join(dir, 'sitemaps', 'work-001.xml'));
+    const b = memBackend({ 'sitemaps/work-001.xml': same.toString(), 'sitemaps/work-002.xml': '<old/>' });
+    const r = await publishSitemaps({ dir, backend: b, skipSame: true, ...opts });
+    assert.equal(r.skipped, 1);
+    assert.equal(r.uploaded, 4);
+    assert.ok(!b.putCalls.some((p) => p.key === 'sitemaps/work-001.xml'));
+    assert.ok(b.putCalls.some((p) => p.key === 'sitemaps/work-002.xml'));
+    assert.equal(b.putCalls.at(-1).key, 'sitemaps/sitemap-index.xml');
+});
+
+test('增量默认关：不传 skipSame 时一律全传', async () => {
+    const dir = makeDir();
+    const b = memBackend({ 'sitemaps/work-001.xml': readFileSync(join(dir, 'sitemaps', 'work-001.xml')).toString() });
+    const r = await publishSitemaps({ dir, backend: b, ...opts });
+    assert.equal(r.uploaded, 5);
+});
