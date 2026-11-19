@@ -634,6 +634,8 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         const fn = jest.fn(async (url: string, init?: RequestInit) => {
             calls.push({ url, init });
             if (url.includes('latest.json')) return { ok: true, status: 200, json: async () => ({ commitId: 'abc123' }) } as Response;
+            // 按书版本清单片（current/vers/…）：这里不关心，当没有（回退全局键）
+            if (url.includes('/vers/')) return { ok: false, status: 404 } as Response;
             return handler(url, init) as Response;
         });
         const f = createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 });
@@ -704,5 +706,51 @@ describe('createItemFetcher.getCurrentTextHead（overview#586）', () => {
         const { f } = head(() => ({ status: 404, ok: false, body: null }));
         expect(await f.getCurrentTextHead(REL)).toBeNull();
         expect(console.warn).not.toHaveBeenCalled(); // 章没有正文不算故障
+    });
+});
+
+describe('createItemFetcher：数据地址按书版本化（items/<书>/** 的 ?v= 用 bookVer）', () => {
+    const BV = '0123456789abcdef';
+    const SHARD = ID.slice(-2);
+
+    function routes(shard: unknown, shardStatus = 200) {
+        const calls: string[] = [];
+        const fn = jest.fn(async (url: string) => {
+            calls.push(url);
+            if (url.startsWith(`${BASE}/latest.json`)) return { ok: true, status: 200, json: async () => ({ commitId: 'c1', cacheKey: 'G1' }) } as Response;
+            if (url.includes('/vers/')) return { ok: shardStatus < 400, status: shardStatus, json: async () => shard } as Response;
+            return { ok: true, status: 200, json: async () => ({ ok: 1 }), text: async () => 'txt' } as unknown as Response;
+        });
+        return { f: createItemFetcher({ base: BASE, fetch: fn as never, retryDelayMs: 0 }), calls };
+    }
+
+    it('书内文件用清单里的 bookVer；清单片带全局键做 ?v=，同一片只取一次；非书内文件仍用全局键', async () => {
+        const { f, calls } = routes({ version: 1, books: { [ID]: { v: BV } } });
+        await f.getCurrentJson(`items/${ID}/manifest.json`);
+        expect(await f.currentUrl(`items/${ID}/default/003.char.json`)).toBe(`${BASE}/current/items/${ID}/default/003.char.json?v=${BV}`);
+        expect(await f.currentUrl('promotions.json')).toBe(`${BASE}/current/promotions.json?v=G1`);
+        expect(calls).toContain(`${BASE}/current/items/${ID}/manifest.json?v=${BV}`);
+        expect(calls.filter((u) => u.includes('/vers/'))).toEqual([`${BASE}/current/vers/${SHARD}.json?v=G1`]);
+        expect(await f.getBookVersion(ID)).toBe(BV);
+    });
+
+    it('章首片段：?v=<bookVer>&h=<字节数>', async () => {
+        const { f, calls } = routes({ version: 1, books: { [ID]: { v: BV } } });
+        await f.getCurrentTextHead(`items/${ID}/default/001.txt`, 1024).catch(() => null);
+        expect(calls.some((u) => u.includes(`/001.txt?v=${BV}&h=1024`))).toBe(true);
+    });
+
+    it('清单 404（旧数据）、格式坏、书不在清单里：回退全局键，不抛错', async () => {
+        for (const r of [routes({}, 404), routes({ nope: 1 }), routes({ version: 1, books: {} })]) {
+            expect(await r.f.currentUrl(`items/${ID}/manifest.json`)).toBe(`${BASE}/current/items/${ID}/manifest.json?v=G1`);
+            expect(await r.f.getBookVersion(ID)).toBeNull();
+        }
+    });
+
+    it('清单 404 记一小会儿，不为每个文件重撞一次', async () => {
+        const { f, calls } = routes({}, 404);
+        await f.currentUrl(`items/${ID}/a.json`);
+        await f.currentUrl(`items/${ID}/b.json`);
+        expect(calls.filter((u) => u.includes('/vers/'))).toHaveLength(1);
     });
 });

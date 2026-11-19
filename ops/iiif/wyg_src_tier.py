@@ -86,12 +86,34 @@ def djvu_page_to_webp(djvu, page, w, h, out_path, width=pagemeta.SRC_TIER_W, qua
             os.remove(ppm)
 
 
+def djvu_page_to_bw_webp(djvu, page, w, h, out_path, width=pagemeta.COS_TIER_W, threshold=160):
+    """单版整页：ddjvu 解出 1-bit 整页（JB2 前景），缩到 width（不放大），再二值，WebP 无损（method 4）。
+    缩小时先灰度 LANCZOS 再按 threshold 二值（偏深一点，细笔画不丢）；输出只有黑白两色，无损 WebP 压得很小。"""
+    pbm = out_path + '.pbm'
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    subprocess.run(['ddjvu', '-format=pbm', '-mode=black', f'-page={page}', djvu, pbm], check=True)
+    try:
+        with Image.open(pbm) as im:
+            im.load()
+            if im.size != (w, h):
+                raise RuntimeError(f'DjVu 页 {page} 尺寸 {im.size} ≠ 旁车记的 {(w, h)}')
+            im = im.convert('L')
+            if w > width:
+                im = im.resize((width, round(h * width / w)), Image.LANCZOS)
+            im = im.point(lambda v: 0 if v < threshold else 255).convert('1').convert('L')
+            im.save(out_path, 'WEBP', lossless=True, quality=100, method=4)
+    finally:
+        if os.path.exists(pbm):
+            os.remove(pbm)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--vols', required=True, help='册号逗号分隔')
     ap.add_argument('--rev', type=int, required=True, help='页表版本（旁车按 table_sha256 对这一版）')
     ap.add_argument('--out', required=True)
     ap.add_argument('--cache', required=True)
+    ap.add_argument('--bw', action='store_true', help='单版整页：3840 宽 1-bit 无损 WebP，传到 srcbw/ 新路径段（取代 2400 的 src/ 档）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args(argv)
@@ -114,8 +136,12 @@ def main(argv=None):
         t0 = time.perf_counter()
         download(src['commons_url'], djvu, src['sha256'])
         for slug, (page, w, h) in sorted(need.items()):
-            key = pagemeta.src_tier_key(BOOK_ID, vd, slug)
-            djvu_page_to_webp(djvu, page, w, h, os.path.join(a.out, key))
+            if a.bw:
+                key = pagemeta.cos_tier_key(BOOK_ID, vd, slug)
+                djvu_page_to_bw_webp(djvu, page, w, h, os.path.join(a.out, key))
+            else:
+                key = pagemeta.src_tier_key(BOOK_ID, vd, slug)
+                djvu_page_to_webp(djvu, page, w, h, os.path.join(a.out, key))
         os.remove(djvu)
         report[vd] = {'pages': len(need), 'seconds': round(time.perf_counter() - t0, 1)}
         print(f'vol{vd}: {len(need)} 个源图档（{report[vd]["seconds"]}s）', flush=True)

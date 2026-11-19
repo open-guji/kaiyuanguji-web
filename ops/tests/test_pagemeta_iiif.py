@@ -30,6 +30,40 @@ def fake_get(files):
 URL = lambda v: f'https://pb/pack/source/pages/b/05/r004.page.v{v}.json'  # noqa: E731
 
 
+class CosTier(unittest.TestCase):
+    def entry(self, H, w=4296, h=6064):
+        return {'src': {'id': 'WYG-SKQS-0001.djvu#244', 'w': w, 'h': h}, 'H': H, 'content': [0, 0, 10, 10]}
+
+    def test_single_page_identity_when_not_scaled(self):
+        e = self.entry(I3, 3000, 4000)
+        self.assertEqual(pm.cos_size(e), (1.0, 3000, 4000))
+        self.assertEqual(pm.cos_matrix(e), [1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+    def test_single_page_scaled_diag(self):
+        e = self.entry(I3, 7680, 10000)
+        m = pm.cos_matrix(e)
+        self.assertAlmostEqual(m[0], 2.0)
+        self.assertAlmostEqual(m[4], 2.0)
+        self.assertEqual(pm.cos_size(e)[1:], (3840, 5000))
+
+    def test_matrix_maps_cos_to_page(self):
+        e = self.entry(PERSP)
+        s, w, h = pm.cos_size(e)
+        m = pm.cos_matrix(e)
+        # 页图点 → 源图(H) → 缩放 S → COS 整页图，再经 matrix 应回到原页图点
+        px, py = 321.0, 654.0
+        sx, sy = pm._apply(PERSP, px, py)
+        x, y = pm._apply([m[0:3], m[3:6], m[6:9]], sx * s, sy * s)
+        self.assertAlmostEqual(x, px, places=3)
+        self.assertAlmostEqual(y, py, places=3)
+        self.assertEqual((w, h), (3840, 5420))
+
+    def test_bim_cos_shape_and_path(self):
+        c = pm.bim_cos(self.entry(PERSP), lambda k: 'https://d/' + k, 'bk', '05')
+        self.assertEqual(c['url'], 'https://d/iiif/bk/05/srcbw/WYG-SKQS-0001-244/full/3840,/0/default.webp')
+        self.assertEqual((c['kind'], c['format'], len(c['matrix'])), ('bilevel', 'webp-lossless', 9))
+
+
 class PageMeta(unittest.TestCase):
     def test_sha_matches_cv_definition(self):
         import hashlib
@@ -115,3 +149,20 @@ class TestBanxinViews(unittest.TestCase):
         self.assertNotIn('full', a['views'])
         b = pm.bim_page(self.ENT, pub, 'b', '01', with_src_tier=True, tpage=self.TP)
         self.assertIn('full', b['views'])
+
+
+class CosTierPages(unittest.TestCase):
+    def test_bim_cos_page_identity(self):
+        c = pm.bim_cos_page('0002', 2000, 3000, lambda k: 'https://d/' + k, 'bk', '005')
+        self.assertEqual(c['url'], 'https://d/iiif/bk/005/srcbw/p0002/full/3840,/0/default.webp')
+        self.assertEqual((c['width'], c['height']), (2000, 3000))
+        self.assertEqual(c['matrix'], [1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+    def test_page_to_bw_two_colors_and_width(self):
+        from PIL import Image
+        import pages_bw_tier as bw
+        im = Image.new('L', (8000, 100), 235)
+        im.paste(40, (10, 10, 5000, 60))
+        out = bw.page_to_bw(im)
+        self.assertEqual(out.width, 3840)
+        self.assertEqual({v for _, v in out.getcolors()}, {0, 255})

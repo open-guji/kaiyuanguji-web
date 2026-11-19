@@ -31,6 +31,7 @@ import type { IndexEntry } from 'book-index-ui';
 import { buildPromotionMap, PROMOTION_SHARD_KEY_LENGTH } from './promotions';
 import { reportError, setRelease } from './error-report';
 import { dataVersionKey, type LatestPointer } from './data-version';
+import { bookVersionShardKey, bookVersionShardUrl, parseBookVersionShard, type BookVersionShard } from './book-version';
 
 export const COS_BASE = (process.env.NEXT_PUBLIC_COS_BASE || '').replace(/\/$/, '');
 
@@ -64,6 +65,69 @@ export function seedTextFileVersion(key: string | undefined | null, renderedAt?:
     // 没给渲染时刻（旧页面、旧种子）按过期处理；时刻在未来（时钟偏差）当作刚渲染
     if (typeof renderedAt !== 'number' || !Number.isFinite(renderedAt) || Date.now() - renderedAt > SEEDED_PAGE_MAX_AGE_MS) return;
     _seededTextVersion = { key, at: Date.now() };
+}
+
+/**
+ * 数据地址按书版本化（docs/数据地址按书版本化.md）：current/items/<书 ID>/** 的 `?v=` 用这本书自己的 bookVer。
+ * 服务端渲染阅读页时把这本书的 bookVer 随种子交来（与 head 里 preload 的地址同一个）；同样受页面年龄约束。
+ */
+let _seededBookVersion: { id: string; v: string | null; at: number } | null = null;
+
+/** v 为字符串＝这本书的 bookVer；null＝服务端查过、这本书没有（用全局键，不必再取清单）；undefined＝旧页面没给，浏览器自己查 */
+export function seedBookVersion(id: string | undefined | null, v: string | null | undefined, renderedAt?: number | null): void {
+    if (typeof id !== 'string' || !/^[\w-]+$/.test(id) || v === undefined) return;
+    if (v !== null && (typeof v !== 'string' || !/^[\w.-]+$/.test(v))) return;
+    if (typeof renderedAt !== 'number' || !Number.isFinite(renderedAt) || Date.now() - renderedAt > SEEDED_PAGE_MAX_AGE_MS) return;
+    _seededBookVersion = { id, v, at: Date.now() };
+}
+
+function seededBookVersion(id: string): string | null | undefined {
+    if (!_seededBookVersion || _seededBookVersion.id !== id || Date.now() - _seededBookVersion.at > SEEDED_VERSION_TTL_MS) return undefined;
+    return _seededBookVersion.v;
+}
+
+const _bookVerShards = new Map<string, { p: Promise<BookVersionShard | null>; failedAt?: number }>();
+/** 取不到的清单片（旧数据没有 vers/、网络错）记这么久不再重取，免得每次取文件都去撞一次 404 */
+const BOOK_VER_SHARD_RETRY_MS = 60 * 1000;
+
+/**
+ * 这本书的版本号（取不到一律返回 null，调用方回退全局键）：先看种子，再取清单分片 current/vers/<末2位>.json。
+ * 分片用全局 cacheKey 做 `?v=`，每次发布换一次，所以清单永远是新的；分片只有几百字节。
+ */
+async function lookupBookVersion(id: string): Promise<string | null> {
+    const seeded = seededBookVersion(id);
+    if (seeded !== undefined) return seeded;
+    const shardKey = bookVersionShardKey(id);
+    if (!shardKey || !COS_BASE) return null;
+    try {
+        let e = _bookVerShards.get(shardKey);
+        if (e?.failedAt !== undefined && Date.now() - e.failedAt > BOOK_VER_SHARD_RETRY_MS) e = undefined;
+        if (!e) {
+            const globalKey = seededTextVersion() ?? await resolveCosVersion();
+            const entry: { p: Promise<BookVersionShard | null>; failedAt?: number } = {
+                p: fetch(bookVersionShardUrl(`${COS_BASE}/current`, shardKey, globalKey))
+                    .then(r => (r.ok ? r.json() : null))
+                    .then(j => parseBookVersionShard(j))
+                    .catch(() => null),
+            };
+            entry.p.then(r => { if (!r) entry.failedAt = Date.now(); });
+            _bookVerShards.set(shardKey, entry);
+            e = entry;
+        }
+        return (await e.p)?.[id] ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** current/ 下一份相对路径的 `?v=`：书内文件（items/<id>/…）用 bookVer，其余或查不到用全局键 */
+async function versionKeyForPath(relPath: string): Promise<string> {
+    const m = /^items\/([\w-]+)\//.exec(relPath);
+    if (m) {
+        const bv = await lookupBookVersion(m[1]);
+        if (bv) return bv;
+    }
+    return seededTextVersion() ?? await resolveCosVersion();
 }
 
 function seededTextVersion(): string | null {
@@ -568,6 +632,26 @@ export function createCosStorage(): IndexStorage {
         async getEntry(id: string): Promise<IndexEntry | null> {
             return getEntryFromCos(id);
         }
+        // 阅读文本三个方法：inner 对所有文件只认一个全局版本号，这里改成每本书用自己的 bookVer（语义照抄 BundleStorage，404／出错返回 null）
+        async getTextManifest(id: string) {
+            if (!isSafeTextSegment(id)) return null;
+            const m = await getTextJsonLegacy(`items/${id}/manifest.json`);
+            return m && Array.isArray((m as { versions?: unknown }).versions) ? (m as never) : null;
+        }
+        async getTextIndex(id: string, key: string) {
+            if (!isSafeTextSegment(id) || !isTextVersionKey(key)) return null;
+            const idx = await getTextJsonLegacy(`items/${id}/${key}/index.json`);
+            return idx && Array.isArray((idx as { chapters?: unknown }).chapters) ? (idx as never) : null;
+        }
+        async getChapter(id: string, key: string, chapter: string, opts?: { json?: boolean }) {
+            if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !isSafeTextSegment(chapter)) return null;
+            const rel = `items/${id}/${key}/${chapter}`;
+            const [md, json] = await Promise.all([
+                getTextRawLegacy(`${rel}.txt`),
+                opts?.json ? getTextJsonLegacy(`${rel}.json`) : Promise.resolve(null),
+            ]);
+            return md !== null || json ? ({ md, json } as never) : null;
+        }
     }
 
     let resolved: { inner: BundleStorage; baseUrl: string } | null = null;
@@ -595,10 +679,8 @@ export function createCosStorage(): IndexStorage {
     async function textFileUrlLegacy(id: string, key: string, file: string): Promise<string | null> {
         if (!isSafeTextSegment(id) || !isTextVersionKey(key) || !(isTextFileName(file) || isTextAssetPath(file))) return null;
         // 有服务端给的版本键就不等 latest.json；地址与 getCosDataBaseUrl()（current/）一致
-        const seeded = seededTextVersion();
-        return seeded
-            ? `${COS_BASE}/current/items/${id}/${key}/${file}?v=${seeded}`
-            : `${(await ensureInner()).baseUrl}/items/${id}/${key}/${file}?v=${await resolveCosVersion()}`;
+        // 版本号：这本书自己的 bookVer（种子或清单分片），没有就回退全局键（有服务端给的就不等 latest.json）；地址与 current/ 根一致
+        return `${COS_BASE}/current/items/${id}/${key}/${file}?v=${await versionKeyForPath(`items/${id}/${key}/${file}`)}`;
     }
 
     // 现行（非 hashed）布局下取版本目录里的文本 JSON
@@ -611,6 +693,21 @@ export function createCosStorage(): IndexStorage {
         } catch {
             return null;
         }
+    }
+
+    // 现行布局下取 current/ 里一份阅读文本（地址带这本书的 bookVer）；不存在／出错返回 null
+    async function getTextRawLegacy(relPath: string): Promise<string | null> {
+        try {
+            const res = await fetch(`${COS_BASE}/current/${relPath}?v=${await versionKeyForPath(relPath)}`, { cache: 'no-cache' });
+            return res.ok ? await res.text() : null;
+        } catch {
+            return null;
+        }
+    }
+    async function getTextJsonLegacy(relPath: string): Promise<Record<string, unknown> | null> {
+        const raw = await getTextRawLegacy(relPath);
+        if (raw === null) return null;
+        try { return JSON.parse(raw); } catch { return null; }
     }
 
     // entry/{id}.json 内存缓存：同 ID 反复 getEntry 不重复 fetch

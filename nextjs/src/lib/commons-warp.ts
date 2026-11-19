@@ -41,6 +41,14 @@ export function preferCommons(): boolean {
     }
 }
 
+/** 国内书影（COS 单版整页，1-bit 无损 WebP）：同一套矩阵／摆正路径，见 ops/iiif/pagemeta.py::bim_cos */
+export function validCos(c: unknown): c is CanvasCommons {
+    const x = c as CanvasCommons | undefined;
+    return !!x && typeof x.url === 'string' && /^https:\/\//.test(x.url)
+        && Number.isFinite(x.width) && Number.isFinite(x.height) && x.width > 0 && x.height > 0
+        && Array.isArray(x.matrix) && x.matrix.length === 9 && x.matrix.every(Number.isFinite);
+}
+
 export function validCommons(c: unknown): c is CanvasCommons {
     const x = c as CanvasCommons | undefined;
     return !!x && typeof x.url === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(x.url)
@@ -113,6 +121,15 @@ export function drawWarped(ctx: CanvasRenderingContext2D, img: CanvasImageSource
     ctx.fillStyle = '#f4efe3';
     ctx.fillRect(0, 0, W, H);
     ctx.imageSmoothingQuality = 'high';
+    if (Math.abs(matrix[6]) < 1e-12 && Math.abs(matrix[7]) < 1e-12 && Math.abs(matrix[8]) > 1e-12) {
+        // 仿射（单页扫描书：恒等或纯缩放）：不必分格，整图一次画完
+        const k = matrix[8];
+        ctx.save();
+        ctx.setTransform(matrix[0] / k, matrix[3] / k, matrix[1] / k, matrix[4] / k, matrix[2] / k, matrix[5] / k);
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
+        return;
+    }
     for (const t of warpTriangles(matrix, W, H)) {
         const [a, b, c, d, e, f] = affineOf(t.src, t.dst);
         ctx.save();

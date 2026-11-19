@@ -118,6 +118,7 @@ def main(argv=None):
     ap.add_argument('--cache', default=None, help='页图缓存目录（默认 <out>/../cache）')
     ap.add_argument('--jobs', type=int, default=None)
     ap.add_argument('--no-pagemeta', action='store_true', help='不在 canvas 里写页面范围（bim:page）；缺省有旁车就写')
+    ap.add_argument('--cos-tier', action='store_true', help='canvas 写 bim:cos（国内单版整页图，需先传好）')
     ap.add_argument('--src-tier', action='store_true', help='bim:page 里写源图档地址（只在源图档已上传后加）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
@@ -159,6 +160,18 @@ def main(argv=None):
             # canvas 的 seq 是页号（seq_by_page），旁车按页表原 seq 存：先建对照
             orig = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
             r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier)
+        if a.cos_tier:
+            # 单页扫描书：源图＝页图，整页图路径段按页表 seq（pages_bw_tier.py 同一规矩）；不依赖旁车
+            tp = {p['seq']: p for p in table['pages']}
+            back = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
+            sc = S.pagemeta.load_pagemeta(table, S.PAGES_BASE, v, S.http_get)   # 合扫页的书（史記、脉经）按旁车的源图出；单位阵页按页图
+            for c in r['canvases']:
+                tseq = back.get(c['seq'], c['seq'])
+                e = (sc or {}).get('pages', {}).get(tseq)
+                if e is not None and not S.pagemeta._identity(e['H']):
+                    c['bim_cos'] = S.pagemeta.bim_cos(e, S.public_url, a.book, v)
+                else:
+                    c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))

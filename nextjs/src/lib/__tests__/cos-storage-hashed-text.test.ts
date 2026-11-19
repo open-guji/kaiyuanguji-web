@@ -280,9 +280,10 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
             if (url.includes(`/items/${BOOK_ID}/original/003.cord.json`)) return jsonResponse({ pages: [2] });
             return jsonResponse({}, false, 404);
         }) as unknown as typeof fetch;
-        const { createCosStorage, seedTextFileVersion } = await freshCosStorage({ layout: undefined });
+        const { createCosStorage, seedTextFileVersion, seedBookVersion } = await freshCosStorage({ layout: undefined });
         seedTextFileVersion('bad key/../x');
         seedTextFileVersion('seedkey123', Date.now());
+        seedBookVersion(BOOK_ID, null, Date.now()); // 服务端查过：这本书没有自己的版本，用全局键（不再取清单）
         const storage = createCosStorage() as unknown as TextFileApi;
         expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [2] });
         expect(calls).toEqual([`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=seedkey123`]);
@@ -309,6 +310,7 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         global.fetch = jest.fn() as unknown as typeof fetch;
         const legacy = await freshCosStorage({ layout: undefined });
         legacy.seedTextFileVersion('seedkey123', Date.now());
+        legacy.seedBookVersion(BOOK_ID, null, Date.now());
         const s1 = legacy.createCosStorage() as unknown as UrlApi;
         expect(await s1.getTextFileUrl(BOOK_ID, 'original', '003.font.woff2')).toBe(`${COS_BASE}/current/items/${BOOK_ID}/original/003.font.woff2?v=seedkey123`);
         expect(await s1.getTextFileUrl(BOOK_ID, 'original', '../x.woff2')).toBeNull();
@@ -316,6 +318,76 @@ describe('cos-storage：对读数据文件 getTextFile（overview#421：线上�
         const s2 = hashed.createCosStorage() as unknown as UrlApi;
         expect(await s2.getTextFileUrl(BOOK_ID, 'original', '003.font.woff2')).toBeNull();
         expect(global.fetch).not.toHaveBeenCalled();
+    });
+});
+
+describe('cos-storage：数据地址按书版本化（current/items/<书>/** 的 ?v= 用 bookVer）', () => {
+    let originalFetch: typeof fetch;
+    beforeEach(() => { originalFetch = global.fetch; });
+    afterEach(() => { global.fetch = originalFetch; });
+    type TextApi = { getTextFile: (id: string, key: string, file: string) => Promise<Record<string, unknown> | null> };
+    const BV = '0123456789abcdef';
+    const shardKey = BOOK_ID.slice(-2);
+
+    it('服务端交来 bookVer：直接用，不取清单也不等 latest.json；其他书不受影响', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => { calls.push(url); return jsonResponse({ pages: [1] }); }) as unknown as typeof fetch;
+        const { createCosStorage, seedTextFileVersion, seedBookVersion } = await freshCosStorage({ layout: undefined });
+        seedTextFileVersion('globalkey1', Date.now());
+        seedBookVersion(BOOK_ID, BV, Date.now());
+        const storage = createCosStorage() as unknown as TextApi;
+        await storage.getTextFile(BOOK_ID, 'original', '003.cord.json');
+        expect(calls).toEqual([`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=${BV}`]);
+    });
+
+    it('没有种子：取清单片 current/vers/<末2位>.json?v=<全局键>，再用清单里这本书的版本；片按键缓存只取一次', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'c1', cacheKey: 'globalkey2' });
+            if (url.includes('/vers/')) return jsonResponse({ version: 1, books: { [BOOK_ID]: { v: BV } } });
+            return jsonResponse({ pages: [1] });
+        }) as unknown as typeof fetch;
+        const { createCosStorage } = await freshCosStorage({ layout: undefined });
+        const storage = createCosStorage() as unknown as TextApi;
+        await storage.getTextFile(BOOK_ID, 'original', '003.cord.json');
+        await storage.getTextFile(BOOK_ID, 'original', '003.char.json');
+        expect(calls).toContain(`${COS_BASE}/current/vers/${shardKey}.json?v=globalkey2`);
+        expect(calls.filter(u => u.includes('/vers/'))).toHaveLength(1);
+        expect(calls).toContain(`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=${BV}`);
+        expect(calls).toContain(`${COS_BASE}/current/items/${BOOK_ID}/original/003.char.json?v=${BV}`);
+    });
+
+    it('清单取不到（旧数据 404）或书不在清单里：回退全局键，数据照常读到', async () => {
+        for (const vers of [() => jsonResponse({}, false, 404), () => jsonResponse({ version: 1, books: {} })]) {
+            const calls: string[] = [];
+            global.fetch = jest.fn().mockImplementation(async (url: string) => {
+                calls.push(url);
+                if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'c1', cacheKey: 'globalkey3' });
+                if (url.includes('/vers/')) return vers();
+                return jsonResponse({ pages: [1] });
+            }) as unknown as typeof fetch;
+            const { createCosStorage } = await freshCosStorage({ layout: undefined });
+            const storage = createCosStorage() as unknown as TextApi;
+            expect(await storage.getTextFile(BOOK_ID, 'original', '003.cord.json')).toEqual({ pages: [1] });
+            expect(calls).toContain(`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=globalkey3`);
+        }
+    });
+
+    it('页面太老（超过 10 分钟）：不信种子里的 bookVer，回头取清单', async () => {
+        const calls: string[] = [];
+        global.fetch = jest.fn().mockImplementation(async (url: string) => {
+            calls.push(url);
+            if (url.endsWith('/latest.json')) return jsonResponse({ commitId: 'c1', cacheKey: 'globalkey4' });
+            if (url.includes('/vers/')) return jsonResponse({ version: 1, books: { [BOOK_ID]: { v: 'fedcba9876543210' } } });
+            return jsonResponse({ pages: [1] });
+        }) as unknown as typeof fetch;
+        const { createCosStorage, seedBookVersion } = await freshCosStorage({ layout: undefined });
+        seedBookVersion(BOOK_ID, BV, Date.now() - 11 * 60 * 1000);
+        const storage = createCosStorage() as unknown as TextApi;
+        await storage.getTextFile(BOOK_ID, 'original', '003.cord.json');
+        expect(calls.some(u => u.includes(BV))).toBe(false);
+        expect(calls).toContain(`${COS_BASE}/current/items/${BOOK_ID}/original/003.cord.json?v=fedcba9876543210`);
     });
 });
 

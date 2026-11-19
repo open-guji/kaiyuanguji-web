@@ -73,6 +73,62 @@
    "015": {
     "juan": "卷四十七～卷五十",
     "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022827、CADAL01022828）"
+   },
+   "016": {
+    "juan": "卷五十一～卷五十四",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022829、CADAL01022830）"
+   },
+   "017": {
+    "juan": "卷五十五～卷五十八",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022831、CADAL01022832）"
+   },
+   "018": {
+    "juan": "卷五十九～卷六十二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022833、CADAL01022834）"
+   },
+   "019": {
+    "juan": "卷六十三～卷六十六",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022835、CADAL01022836）"
+   },
+   "020": {
+    "juan": "卷六十七～卷七十",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022837、CADAL01022838）"
+   },
+   "021": {
+    "juan": "卷七十一～卷七十四",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022839、CADAL01022840）"
+   },
+   "022": {
+    "juan": "卷七十五～卷七十八",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022841、CADAL01022842）"
+   },
+   "023": {
+    "juan": "卷七十九～卷八十二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022843、CADAL01022844）"
+   },
+   "024": {
+    "juan": "卷八十三～卷八十六",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022845、CADAL01022846）"
+   },
+   "025": {
+    "juan": "卷八十七～卷九十",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022847、CADAL01022848）"
+   },
+   "026": {
+    "juan": "卷九十一～卷九十四",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022849、CADAL01022850）"
+   },
+   "027": {
+    "juan": "卷九十五～卷九十八",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022851、CADAL01022852）"
+   },
+   "028": {
+    "juan": "卷九十九～卷一百〇二",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022853、CADAL01022854）"
+   },
+   "029": {
+    "juan": "卷一百〇三～卷一百〇六",
+    "source": "清華大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL01022855、CADAL01022856）"
    }
   }
  },
@@ -92,6 +148,156 @@
    "03": {
     "juan": "卷四",
     "source": "北京大學圖書館藏，CADAL 掃描，經 Wikimedia Commons 轉存（CADAL02021577）"
+   }
+  }
+ },
+ "988g3f0wsu": {
+  "title": "史記（文淵閣四庫全書本）",
+  "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）",
+  "vols": {
+   "01": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "02": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "03": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "04": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "05": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "06": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "07": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "08": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "09": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "10": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "11": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "12": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "13": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "14": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "15": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "16": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "17": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "18": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "19": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "20": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "21": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "22": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "23": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "24": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "25": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "26": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "27": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "28": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "29": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "30": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "31": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "32": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "33": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "34": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "35": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "36": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "37": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "38": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "39": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   },
+   "40": {
+    "source": "景印文淵閣四庫全書，Wikimedia Commons 公開（文淵閣四庫全書 0243／0244冊.djvu）"
+   }
+  }
+ },
+ "99k3i35yww": {
+  "title": "脈經（內閣文庫本）",
+  "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開",
+  "vols": {
+   "01": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
+   },
+   "02": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
+   },
+   "03": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
+   },
+   "04": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
+   },
+   "05": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
+   },
+   "06": {
+    "source": "日本國立公文書館內閣文庫藏（NAJDA-303-0050），Wikimedia Commons 公開"
    }
   }
  }
