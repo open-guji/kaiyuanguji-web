@@ -6,7 +6,9 @@ jest.mock('next/navigation', () => ({
     useRouter: () => ({ push }),
 }));
 
+jest.mock('@/lib/server/item-data', () => ({ getCurrentJsonServer: jest.fn().mockResolvedValue(null) }));
 import HomePage from '../page';
+import { getCurrentJsonServer } from '@/lib/server/item-data';
 import { HOME_FEATURES } from '@/components/home/features';
 import { getSiteT } from '@/i18n/translate';
 
@@ -16,8 +18,8 @@ const t = getSiteT('zh-Hans');
 describe('首页（N1）', () => {
     beforeEach(() => push.mockClear());
 
-    it('首屏：大标题 + 检索框 + 唯一主按钮「搜索」', () => {
-        render(<HomePage />);
+    it('首屏：大标题 + 检索框 + 唯一主按钮「搜索」', async () => {
+        render(await HomePage());
         expect(screen.getByRole('heading', { level: 1, name: '让科技赋予古籍数字生命' })).toBeInTheDocument();
         expect(screen.getByRole('combobox', { name: '搜索古籍索引' })).toBeInTheDocument();
         const main = screen.getByRole('main');
@@ -26,8 +28,8 @@ describe('首页（N1）', () => {
         expect(actions.map((b) => b.textContent)).toEqual(['搜索']);
     });
 
-    it('手机端规划中的卡默认收起，点「展开」再出来（overview#325）', () => {
-        render(<HomePage />);
+    it('手机端规划中的卡默认收起，点「展开」再出来（overview#325）', async () => {
+        render(await HomePage());
         const list = document.getElementById('home-features')!;
         const more = screen.getByRole('button', { name: /还有 4 项规划中/ });
         expect(list).toHaveAttribute('data-collapsed');
@@ -40,8 +42,8 @@ describe('首页（N1）', () => {
         expect(list.querySelectorAll('.home-feature')).toHaveLength(HOME_FEATURES.length);
     });
 
-    it('导语去掉「整理」二字；搜索提示改为简体例子（9-30 反馈，overview#322）', () => {
-        render(<HomePage />);
+    it('导语去掉「整理」二字；搜索提示改为简体例子（9-30 反馈，overview#322）', async () => {
+        render(await HomePage());
         expect(
             screen.getByText('把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。'),
         ).toBeInTheDocument();
@@ -49,14 +51,14 @@ describe('首页（N1）', () => {
         expect(screen.getByRole('combobox')).toHaveAttribute('placeholder', '书名、作者、版本，如：史记、苏轼');
     });
 
-    it('搜索跳到索引页并带上关键词', () => {
-        render(<HomePage />);
+    it('搜索跳到索引页并带上关键词', async () => {
+        render(await HomePage());
         fireEvent.change(screen.getByRole('combobox'), { target: { value: ' 史記 ' } });
         fireEvent.click(screen.getByRole('button', { name: '搜索' }));
         expect(push).toHaveBeenCalledWith(`/book-index?q=${encodeURIComponent('史記')}`);
     });
 
-    it('只有「古籍元数据」「资源收集」标已上线，其余标规划中；六项标题照用户意见', () => {
+    it('只有「古籍元数据」「资源收集」标已上线，其余标规划中；六项标题照用户意见', async () => {
         expect(HOME_FEATURES.map((f) => t(f.titleKey))).toEqual([
             '古籍元数据',
             '资源收集',
@@ -66,15 +68,15 @@ describe('首页（N1）', () => {
             '古籍专用模型',
         ]);
         expect(HOME_FEATURES.filter((f) => f.live).map((f) => t(f.titleKey))).toEqual(['古籍元数据', '资源收集']);
-        render(<HomePage />);
+        render(await HomePage());
         expect(screen.getAllByText('已上线')).toHaveLength(2);
         expect(screen.getAllByText('规划中')).toHaveLength(HOME_FEATURES.length - 2);
         // 「资源收集」的说明：收集网上的文字资源和影印资源
         expect(t(HOME_FEATURES[1].textKey)).toMatch(/文字资源和影印资源/);
     });
 
-    it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页；没有「看一个例子」', () => {
-        render(<HomePage />);
+    it('搜索框下面只有三个例子：史记→作品页、四库全书→丛编页、红楼梦程甲本→阅读页；没有「看一个例子」', async () => {
+        render(await HomePage());
         const under = document.querySelector('.home-under') as HTMLElement;
         const links = within(under).getAllByRole('link');
         expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
@@ -85,8 +87,8 @@ describe('首页（N1）', () => {
         expect(screen.getByRole('main').textContent).not.toMatch(/看一个例子|读整理本/);
     });
 
-    it('「一起把古籍做成开放数据」一整段已删，页尾的三个入口在页脚里都有', () => {
-        render(<HomePage />);
+    it('「一起把古籍做成开放数据」一整段已删，页尾的三个入口在页脚里都有', async () => {
+        render(await HomePage());
         expect(screen.queryByRole('region', { name: '一起把古籍做成开放数据' })).not.toBeInTheDocument();
         expect(screen.queryByText('一起把古籍做成开放数据')).not.toBeInTheDocument();
         const footer = within(screen.getByRole('contentinfo'));
@@ -95,8 +97,8 @@ describe('首页（N1）', () => {
         }
     });
 
-    it('「文本开放、代码开源」两栏：各自给出两个仓库的链接和说明', () => {
-        render(<HomePage />);
+    it('「文本开放、代码开源」两栏：各自给出两个仓库的链接和说明', async () => {
+        render(await HomePage());
         const open = screen.getByRole('region', { name: '开放' });
         const cols = open.querySelectorAll('.home-open-col');
         expect(cols).toHaveLength(2);
@@ -120,16 +122,16 @@ describe('首页（N1）', () => {
         }
     });
 
-    it('写明 CC BY-SA 4.0；正文和页脚都没有二维码（N6）', () => {
-        render(<HomePage />);
+    it('写明 CC BY-SA 4.0；正文和页脚都没有二维码（N6）', async () => {
+        render(await HomePage());
         const main = screen.getByRole('main');
         expect(within(main).getByText(/CC BY-SA 4\.0 发布/)).toBeInTheDocument();
         expect(main.innerHTML).not.toMatch(/二维码|qrcode|qr-code/i);
         expect(within(screen.getByRole('contentinfo')).queryAllByRole('img', { name: /二维码/ })).toHaveLength(0);
     });
 
-    it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', () => {
-        render(<HomePage />);
+    it('v3：已上线的卡片带入口、规划中的没有；许可徽标在两栏标题前；不出「看一个例子」', async () => {
+        render(await HomePage());
         const live = document.querySelectorAll('.home-feature.is-live');
         expect(live).toHaveLength(2);
         expect(document.querySelectorAll('.home-feature:not(.is-live)')).toHaveLength(HOME_FEATURES.length - 2);
@@ -138,5 +140,14 @@ describe('首页（N1）', () => {
         expect(screen.getByLabelText('许可：CC BY-SA 4.0').textContent).toBe('CC BY-SA 4.0');
         expect(screen.getByLabelText('许可：Apache-2.0').textContent).toBe('Apache-2.0');
         expect(screen.getByRole('search')).toBeInTheDocument();
+    });
+
+    it('收录数：读 stats.json 的 work+book 向下取整到万；读不到回退 85 万', async () => {
+        (getCurrentJsonServer as jest.Mock).mockResolvedValueOnce({ work: 520000, book: 438000 });
+        const { unmount } = render(await HomePage());
+        expect(screen.getByText('已收录 95 万+ 条古籍索引')).toBeInTheDocument();
+        unmount();
+        render(await HomePage());
+        expect(screen.getByText('已收录 85 万+ 条古籍索引')).toBeInTheDocument();
     });
 });

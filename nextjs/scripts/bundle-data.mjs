@@ -575,6 +575,21 @@ function bundleExtraFiles() {
         }
     }
 
+    // 统计 stats.json（build 契约 7，A11 book-index#3039）：{work, work_by_subtype, book, collection, entity}，存活记录数，
+    // 与 _hubs.json 同级放数据根下；首页「已收录 N 万+」构建时读它。产物里没有就删掉残留。
+    {
+        const dest = join(OUT_DIR, 'stats.json');
+        const src = derivedPath('stats.json');
+        if (src) {
+            const data = readFileSync(src, 'utf-8');
+            JSON.parse(data);
+            writeIfChanged(dest, data);
+            console.log(`EX  stats.json copied (${Buffer.byteLength(data)} B)`);
+        } else if (existsSync(dest)) {
+            unlinkSync(dest);
+        }
+    }
+
     // 千本级作品（敦煌佛典等）的版本分组分页：产物 books/<wid>/<g>/<n>.json → book-groups/（契约 5，book-index#2262）。
     // 读者端 cos-storage.getBookGroupPage；Work 仍带全量 _books 时版本表不读它。
     {
