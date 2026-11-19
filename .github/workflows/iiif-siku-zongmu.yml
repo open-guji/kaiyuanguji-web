@@ -68,6 +68,14 @@ on:
         description: '只读 dry-run：不切片，列出各书 COS 旧档（300／1200／原宽／src 2400）的对象数与 GB，建议删的键清单作工件（ops/cos_old_tiers.py）。book 填一个书 id，或填 all＝五本（四庫總目、全唐文、北行日錄、史記、脈經）。不删任何东西'
         type: boolean
         default: false
+      delete_old_tiers:
+        description: '与 list_old_tiers 同时勾选才真删旧档（不可逆，用户点头后才用）。delete_limit 每书最多删几个，0＝全删'
+        type: boolean
+        default: false
+      delete_limit:
+        description: '真删时每书最多删几个（先填 20 试删；0＝全删）'
+        type: string
+        default: '20'
       cos_tier:
         description: 'manifest 的 canvas 写 bim:cos（国内读者读单版整页）。必须先跑 bw_tier 把整页图传好，否则国内读者取到 404 图（会退回本站旧图，但旧图要被删）'
         type: boolean
@@ -135,13 +143,20 @@ jobs:
           COS_BUCKET: ${{ secrets.COS_BUCKET }}
           COS_REGION: ap-shanghai
           BOOK: ${{ inputs.book }}
+          DEL: ${{ inputs.delete_old_tiers }}
+          LIMIT: ${{ inputs.delete_limit }}
         run: |
           set -euo pipefail
           BOOKS="$BOOK"
           [ "$BOOK" = "all" ] && BOOKS="96mid1ogzk,995ejelvk0,988g7gsqhd,988g3f0wsu,99k3i35yww"
           if ! [[ "$BOOKS" =~ ^[0-9a-z]{10}(,[0-9a-z]{10})*$ ]]; then echo "❌ book 格式不对"; exit 1; fi
           mkdir -p "$RUNNER_TEMP/old-tiers"
-          python3 ops/cos_old_tiers.py --books "$BOOKS" --out "$RUNNER_TEMP/old-tiers" | tee "$RUNNER_TEMP/old-tiers/summary.txt"
+          EXTRA=()
+          if [ "$DEL" = "true" ]; then
+            if ! [[ "$LIMIT" =~ ^[0-9]+$ ]]; then echo "❌ delete_limit 要数字"; exit 1; fi
+            EXTRA=(--delete --limit "$LIMIT")
+          fi
+          python3 ops/cos_old_tiers.py --books "$BOOKS" --out "$RUNNER_TEMP/old-tiers" "${EXTRA[@]}" | tee "$RUNNER_TEMP/old-tiers/summary.txt"
 
       - name: 国内单版整页（1-bit 无损 WebP → 上传）
         if: inputs.bw_tier
