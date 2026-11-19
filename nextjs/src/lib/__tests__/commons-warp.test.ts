@@ -60,6 +60,31 @@ describe('commons-warp', () => {
         const none = canvasesToImages([{ ...canvas, 'bim:commons': undefined } as any], { commons: true });
         expect(none[0].url).toContain('data.openguji.com');
     });
+
+    it('canvasesToImages：国内读者有 bim:cos 就读 COS 单版整页，完整书页用同一张整页', () => {
+        const COS = { url: 'https://data.openguji.com/iiif/96mid1ogzk/05/srcbw/S-1/full/3840,/0/default.webp', width: 3840, height: 5420, matrix: M, kind: 'bilevel' };
+        const page = { src: { w: 4296, h: 6064 }, H: [1, 0, 0, 0, 1, 0, 0, 0, 1], content: [0, 0, 1824, 2575], views: { none: [1, 2, 3, 4], full: [100, 200, 4296, 6064] } };
+        const canvas = {
+            id: 'c', width: 1824, height: 2575, 'bim:cos': COS, 'bim:page': page,
+            items: [{ items: [{ body: { items: [{ id: 'https://data.openguji.com/iiif/96mid1ogzk/05/0001/full/1200,/0/default.webp' }] } }] }],
+        };
+        const [cn] = canvasesToImages([canvas as any]);
+        expect(cn.url.startsWith(COS.url + '#bimwarp=')).toBe(true);
+        const ext = (cn as any).extent;
+        expect(ext.src).toEqual({ url: COS.url, w: 3840, h: 5420 });
+        // H＝页图→整页图，与 matrix 互逆
+        const [x, y] = applyH(M, ...applyH(ext.H, 500, 700));
+        expect(x).toBeCloseTo(500, 3);
+        expect(y).toBeCloseTo(700, 3);
+        expect(ext.views.full[2]).toBeCloseTo(4296 * 3840 / 4296, 6);
+        // 海外且有 Commons 矩阵时仍读 Commons
+        const ov = canvasesToImages([{ ...canvas, 'bim:commons': COMMONS } as any], { commons: true });
+        expect(ov[0].url.startsWith(COMMONS.url)).toBe(true);
+        expect((ov[0] as any).extent.src.url).toBe(COMMONS.url);
+        // 没有 bim:page 的单页书：造一个整页的 extent
+        const bare = canvasesToImages([{ ...canvas, 'bim:page': undefined } as any]);
+        expect((bare[0] as any).extent.content).toEqual([0, 0, 1824, 2575]);
+    });
 });
 
 describe('pageExtentOf／canvasesToImages：bim:page', () => {
