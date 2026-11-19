@@ -487,6 +487,9 @@ def build_canvas(vol, meta, c, commons, ia=True):
     if c.get('bim_page'):
         # 页面范围（书影页面范围统一规范）：源图、页图→源图矩阵、版框内容区；字框坐标仍是页图
         canvas['bim:page'] = c['bim_page']
+    if c.get('bim_cos'):
+        # 国内读者的单版整页（1-bit 无损 WebP）：matrix＝整页图→页图，用法同 bim:commons，见 pagemeta.bim_cos
+        canvas['bim:cos'] = c['bim_cos']
     if c.get('commons_warp'):
         # 海外读者改读 Commons 3840 缩略图：matrix 把缩略图摆成本页图（逐字框同坐标系），见 commons_warp.py
         canvas['bim:commons'] = c['commons_warp']
@@ -497,7 +500,7 @@ def build_canvas(vol, meta, c, commons, ia=True):
     return canvas
 
 
-def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False):
+def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False, with_cos=False):
     """把 cv 页面范围旁车并进各 canvas（c['bim_page']）。没有旁车返回 0（该册不带 bim:page，阅读器走兜底）。
     by_seq：canvas seq → 页表 seq（pages_iiif.py 把 seq 改成页号，需给对照）；缺省两者相同。"""
     meta = pagemeta.load_pagemeta(table, PAGES_BASE, vol_dir(vol), http_get)
@@ -513,6 +516,8 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False):
             continue
         c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier,
                                           tpage=tpages.get(key))
+        if with_cos:
+            c['bim_cos'] = pagemeta.bim_cos(e, public_url, BOOK_ID, vol_dir(vol))
         n += 1
     return n
 
@@ -778,6 +783,8 @@ def main(argv=None):
                     help='只传图和 info.json，不传（也不核对）册 manifest 与书级 Collection：换图源册先把新图铺好，'
                          '再不带本参数重跑一次（图 ETag 跳过）发 manifest，线上书影与 book-text 坐标可同时切换')
     ap.add_argument('--image-seg', default='', help='图路径的版本段，如 qiefen2（换图源册用，图放 <册>/<段>/<页序>/…）；缺省不加')
+    ap.add_argument('--cos-tier', action='store_true',
+                    help='canvas 写 bim:cos（国内单版整页 1-bit WebP；必须先用 wyg_src_tier.py --bw 传好整页图）')
     ap.add_argument('--no-ia', action='store_true', help='canvas 不挂 Internet Archive 回退（换图源册：页号已重编，不再对应 IA 叶号；同时要 --no-commons）')
     ap.add_argument('--rev', type=int, help='--source pages：钉页表版本（暂存版也取）；缺省取最新已发布版，跳过 staged')
     ap.add_argument('--source', choices=['ia', 'pages'], default='ia',
@@ -826,7 +833,7 @@ def main(argv=None):
                 n_warp += bool(c['commons_warp'])
             r['stats']['commons_warp'] = n_warp
         if table is not None and not a.no_pagemeta:
-            r['stats']['pagemeta'] = attach_pagemeta(table, v, r['canvases'], with_src_tier=a.src_tier)
+            r['stats']['pagemeta'] = attach_pagemeta(table, v, r['canvases'], with_src_tier=a.src_tier, with_cos=a.cos_tier)
         r['stats']['wall_s'] = round(time.perf_counter() - t0, 1)
         commons = None if a.no_commons else usable_commons(v, meta, commons_file(meta['ia']))
         man = build_manifest(v, meta, r['canvases'], commons, ia=not a.no_ia)

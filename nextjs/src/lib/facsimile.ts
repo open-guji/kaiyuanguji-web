@@ -20,7 +20,7 @@ interface PageExtent {
     content: [number, number, number, number];
 }
 import { DATA_ORIGIN } from './hosts';
-import { commonsImageUrl, preferCommons, registerCommonsWarp, validCommons } from './commons-warp';
+import { commonsImageUrl, invert3, preferCommons, registerCommonsWarp, validCommons, validCos } from './commons-warp';
 
 export const FACSIMILE_BASE = process.env.NEXT_PUBLIC_FACSIMILE_BASE || `${DATA_ORIGIN}/iiif`;
 
@@ -31,6 +31,8 @@ interface IiifCanvas {
     height: number;
     /** 海外读者的 Commons 书影（四庫總目文淵閣本）：缩略图地址与「缩略图 → 页图」的透视矩阵，见 ops/iiif/commons_warp.py */
     'bim:commons'?: unknown;
+    /** 国内读者的单版整页（COS，1-bit 无损 WebP）：{url,width,height,matrix(整页图→页图)}，见 ops/iiif/pagemeta.py::bim_cos */
+    'bim:cos'?: unknown;
     /** 页面范围（书影页面范围统一规范）：源图、页图→源图矩阵 H（9 个数，行优先）、版框内容区；见 pageExtentOf */
     'bim:page'?: unknown;
     items?: { items?: { body?: { items?: { id: string; width?: number; height?: number }[] } }[] }[];
@@ -72,6 +74,25 @@ export function pageExtentOf(raw: unknown): PageExtent | undefined {
     };
 }
 
+/**
+ * 用整页图（Commons 缩略图或 COS 单版）换掉 extent.src：「显示完整书页」开时显示这张整页，字框经 H＝inv(matrix)（页图→整页图）画上去。
+ * views.full 原在旧源图坐标，随整页图缩放。没有 bim:page 的页造一个：content＝整个页图。
+ */
+function extentWithWholePage(ext: PageExtent | undefined, whole: { url: string; width: number; height: number; matrix: number[] }, pageW: number, pageH: number): PageExtent | undefined {
+    let H: number[];
+    try { H = invert3(whole.matrix.map(v => v / whole.matrix[8])); } catch { return ext; }
+    const k = ext ? whole.width / ext.src.w : 1;
+    const views = ext && (ext as { views?: { none?: unknown; full?: number[] } }).views;
+    const full = views?.full ? views.full.map(v => v * k) : undefined;
+    const rest = views ? { ...views, ...(full ? { full } : {}) } : undefined;
+    return {
+        ...(ext ?? { content: [0, 0, pageW, pageH] as [number, number, number, number] }),
+        src: { url: whole.url, w: whole.width, h: whole.height },
+        H,
+        ...(rest ? { views: rest } : {}),
+    } as PageExtent;
+}
+
 /** manifest 的 canvas 列表 → 阅读器的书影页。取不到页序的 canvas 跳过 */
 export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boolean } = {}): ReaderPageImage[] {
     const out: ReaderPageImage[] = [];
@@ -84,13 +105,19 @@ export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boole
         // 海外读者：有 Commons 摆正矩阵的页改读 Commons 3840 档（半叶约 1615 像素宽），地址带摆正参数，出错退回本站图
         const cm = opts.commons && validCommons(c['bim:commons']) ? c['bim:commons'] : null;
         const commonsUrl = cm ? commonsImageUrl(cm, c.width, c.height, hiresUrlOf(first.id, c.width)) : null;
+        // 国内读者（或没有 Commons 矩阵的页）：有 bim:cos 的读 COS 单版整页，走同一条摆正路径
+        const cos = !cm && validCos(c['bim:cos']) ? c['bim:cos'] : null;
+        const whole = cm ?? cos;
+        const warpedUrl = commonsUrl ?? (cos ? commonsImageUrl(cos, c.width, c.height, hiresUrlOf(first.id, c.width)) : null);
+        const rawExt = pageExtentOf(c['bim:page']);
+        ext = whole ? extentWithWholePage(rawExt, whole, c.width, c.height) : rawExt;
         out.push({
-            url: commonsUrl ?? first.id,
-            hiresUrl: commonsUrl ?? hiresUrlOf(first.id, c.width),
+            url: warpedUrl ?? first.id,
+            hiresUrl: warpedUrl ?? hiresUrlOf(first.id, c.width),
             ...(commonsUrl ? { alt: '景印文淵閣四庫全書，Wikimedia Commons' } : {}),
             width: c.width,
             height: c.height,
-            ...((ext = pageExtentOf(c['bim:page'])) ? ({ extent: ext } as object) : {}),
+            ...(ext ? ({ extent: ext } as object) : {}),
             seq: m[1] + m[2],
             // 拆页（合扫叶拆成 a–d）的页号与 leaf 号不对应，不给 pageNo，对读按 seq 对位
             ...(m[2] ? {} : { pageNo: leaf }),
@@ -108,7 +135,7 @@ export function loadFacsimile(bookId: string, vol: string): Promise<ReaderPageIm
     let p = cache.get(url);
     if (!p) {
         const commons = preferCommons();
-        if (commons) registerCommonsWarp();
+        registerCommonsWarp();   // 国内的 COS 单版整页也走同一条摆正路径
         p = fetch(url)
             .then(r => (r.ok ? r.json() : null))
             .then(m => (m && Array.isArray(m.items) ? canvasesToImages(m.items, { commons }) : null))
