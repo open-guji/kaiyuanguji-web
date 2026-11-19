@@ -5,7 +5,7 @@ export const home = defineMessages({
     kicker: '古籍數字化開放平台',
     title: '讓科技賦予古籍數字生命',
     lead: '把散在各處的歷代書目、存世版本與文本聚到一起，建一座開放、可查證、自由使用的古籍文庫。',
-    count: '已收錄 85 萬+ 條古籍索引',
+    count: '已收錄 {n} 萬+ 條古籍索引',
     examples: {
         shiji: '史記',
         siku: '四庫全書',
@@ -75,7 +75,7 @@ export const home = defineMessages({
     kicker: '古籍数字化开放平台',
     title: '让科技赋予古籍数字生命',
     lead: '把散在各处的历代书目、存世版本与文本聚到一起，建一座开放、可查证、自由使用的古籍文库。',
-    count: '已收录 85 万+ 条古籍索引',
+    count: '已收录 {n} 万+ 条古籍索引',
     examples: {
         shiji: '史记',
         siku: '四库全书',
