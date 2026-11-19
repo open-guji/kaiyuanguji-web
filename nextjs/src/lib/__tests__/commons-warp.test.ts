@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 jest.mock('book-index-ui', () => ({ setImageSourceResolver: jest.fn() }));
-import { affineOf, applyH, commonsImageUrl, invert3, parseWarpUrl, validCommons, warpTriangles } from '../commons-warp';
+import { pickGrid, affineOf, applyH, commonsImageUrl, invert3, parseWarpUrl, validCommons, warpTriangles } from '../commons-warp';
 import { canvasesToImages } from '../facsimile';
 
 // 页表 96mid1ogzk/05/r004 第 0001 页（右半叶）算出的矩阵，见 ops/tests/test_commons_warp.py
@@ -31,6 +31,13 @@ describe('commons-warp', () => {
         const [x, y] = applyH(M, t.src[1][0], t.src[1][1]);
         expect(x).toBeCloseTo(t.dst[1][0], 6);
         expect(y).toBeCloseTo(t.dst[1][1], 6);
+    });
+
+    it('pickGrid：恒等取 1 格，真实的小透视远少于 12×16', () => {
+        expect(pickGrid([1, 0, 0, 0, 1, 0, 0, 0, 1], 1800, 2500)).toEqual([1, 2]);
+        const real = [1.101641239, 0.001981685966, -2082.587149, -0.01652400145, 1.085408217, -326.9783449, -3.494224718e-06, -8.871634927e-06, 1];
+        const [nx, ny] = pickGrid(real, 1801, 2574);
+        expect(nx * ny).toBeLessThan(100);
     });
 
     it('地址往返；非 Wikimedia 地址不认', () => {
