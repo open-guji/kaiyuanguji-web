@@ -65,6 +65,10 @@ on:
         description: '演练专用（只在 target=staging 时生效）：让这次上传的 staging/latest.json 带 codePointer 标记，演练“读者以 web.json 为准”那一路。正式前缀不受它影响：那里的上传一律带标记（overview#470 P1 方案 A）'
         type: boolean
         default: false
+      rebuild_state:
+        description: '从 COS 重新 LIST 重建同步 state（同定时夜间发布的做法），不信缓存里的 state。前缀被清理过／对象被人删过之后用：否则增量同步以为对象还在、跳过没传。LIST 要几分钟，平时不勾'
+        type: boolean
+        default: false
       derived_source:
         description: '派生数据从哪里产出：db = 先把 book-index＋book-text 灌进本 job 的 Postgres、--verify 还原比对 0 不一致，再从库产出（GUJI-755，用户 2026-11-19 定上线）；files = 照旧直接读源档（回退用）。定时跑一律 files'
         type: choice
@@ -693,7 +697,7 @@ jobs:
           COS_PATH_PREFIX: ${{ steps.gate.outputs.prefix }}
           COS_PLAN_DIR: ${{ runner.temp }}/cos-plan
           COS_TOTAL_BUDGET: '80'
-          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
+          SYNC_REBUILD_STATE: ${{ (github.event_name == 'schedule' || inputs.rebuild_state) && '1' || '' }}
         run: |
           cd nextjs
           LOGS="$RUNNER_TEMP/cos-sync-logs"; mkdir -p "$LOGS"
@@ -1091,7 +1095,7 @@ jobs:
           COS_REGION: ap-shanghai
           COS_PATH_PREFIX: ${{ needs.package.outputs.prefix }}
           COS_CONCURRENCY: '32'
-          SYNC_REBUILD_STATE: ${{ github.event_name == 'schedule' && '1' || '' }}
+          SYNC_REBUILD_STATE: ${{ (github.event_name == 'schedule' || inputs.rebuild_state) && '1' || '' }}
         run: |
           cd nextjs
           s=$SECONDS; echo "▶ h1 文本打包开始 $(date -u +%H:%M:%S) UTC"
