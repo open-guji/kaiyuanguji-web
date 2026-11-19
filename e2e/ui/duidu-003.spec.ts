@@ -253,7 +253,13 @@ test.describe('图文对读（vol03）', () => {
     test('逐页点字 103–108：书影页码对、字框出现、画面是该页自己的 canvas（换源后一页一图，无 a–d 拆页）', async ({ page }) => {
         await openDuidu(page);
         const seen: string[] = [];
-        page.on('request', (r) => { const m = r.url().match(/iiif\/96mid1ogzk\/03\/(?:[a-z0-9]+\/)?(\d{4}[a-d]?)\/full/); if (m) seen.push(m[1]); });
+        // 一页一图（读本站阅读档）：地址里是 leaf 号；国内单版整页（bim:cos，srcbw/WYG-SKQS-0001-<叶号>）：合扫的几页共用一张整页图，记 `sheet:<叶号>`
+        page.on('request', (r) => {
+            const m = r.url().match(/iiif\/96mid1ogzk\/03\/(?:[a-z0-9]+\/)?(\d{4}[a-d]?)\/full/);
+            if (m) seen.push(m[1]);
+            const c = r.url().match(/iiif\/96mid1ogzk\/03\/srcbw\/[A-Z0-9-]+-(\d+)\/full/);
+            if (c) seen.push(`sheet:${c[1]}`);
+        });
         for (const pg of [103, 104, 105, 106, 107, 108]) {
             const ch = page.locator(`[data-char-id^="${pg}:5:"]`).first();
             await ch.scrollIntoViewIfNeeded();
@@ -262,7 +268,10 @@ test.describe('图文对读（vol03）', () => {
             await expect(page.locator('svg rect[data-selected="true"]').first()).toBeVisible();
         }
         // 页号＝canvas seq，画面按 cord 的 canvas 取
-        for (const id of ['0103', '0104', '0105', '0106', '0107', '0108']) expect(seen).toContain(id);
+        // 单版整页下 103–106 共用整页图 176、107–108 用 177；每页仍各自一个 canvas（上面 data-warp-page 已断言）
+        const perPage = ['0103', '0104', '0105', '0106', '0107', '0108'].every((id) => seen.includes(id));
+        const wholeSheets = seen.includes('sheet:176') && seen.includes('sheet:177');
+        expect(perPage || wholeSheets).toBe(true);
         // 没有合扫拆页的 a–d 后缀
         expect(seen.filter((id) => /[a-d]$/.test(id))).toEqual([]);
     });
