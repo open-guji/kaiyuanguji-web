@@ -285,7 +285,8 @@ test.describe('详情页版式', () => {
         await openDetail(page, WORK);
         const read = readButton(page);
         await expect(read).toHaveCount(1);
-        await expect(read).toHaveAttribute('href', new RegExp(`^/read/${WORK}(/\\d+)?$`));
+        // 地址是主版本的 id：作品 id 或主版本（书）id 都行，数据把主版本换到某一册（如史記→文淵閣本）不算坏
+        await expect(read).toHaveAttribute('href', /^\/read\/[0-9a-z]{9,12}(\/\d+)?$/);
     });
 
     test('左栏检索框回车进搜索结果页', async ({ page, request }) => {
