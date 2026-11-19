@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""单版整页上线后：列出 COS 上各书影旧档（只读 dry-run，没有删除功能）。
+"""单版整页上线后：列出 COS 上各书影旧档（默认只读 dry-run；加 --delete 才删，用户 2026-11-19 验收后点头）。
 
 用法（需 COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET）：
     python3 ops/cos_old_tiers.py --books 96mid1ogzk,995ejelvk0 --out /tmp/old-tiers
@@ -16,6 +16,8 @@ import argparse, collections, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cos_usage  # noqa: E402
+import cos_prefix_delete  # noqa: E402
+from concurrent.futures import ThreadPoolExecutor  # noqa: E402
 
 TIER = re.compile(r'^(?P<vol>[^/]+)/(?:(?P<seg>[A-Za-z][A-Za-z0-9]*)/)?(?P<seq>\d{4}[a-z]?)/full/(?P<w>\d+|max),/0/default\.(?:webp|jpg)$')
 INFO = re.compile(r'^(?P<vol>[^/]+)/(?:(?P<seg>[A-Za-z][A-Za-z0-9]*)/)?(?P<seq>\d{4}[a-z]?)/info\.json$')
@@ -42,6 +44,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--books', required=True)
     ap.add_argument('--out', required=True)
+    ap.add_argument('--delete', action='store_true', help='真删「建议删」的键（逐个 DELETE，可重跑）')
+    ap.add_argument('--limit', type=int, default=0, help='--delete 时每书最多删多少个（0＝不限；先小批量试删用）')
     a = ap.parse_args()
     sid, skey, bucket = os.environ['COS_SECRET_ID'], os.environ['COS_SECRET_KEY'], os.environ['COS_BUCKET']
     region = os.environ.get('COS_REGION', 'ap-shanghai')
@@ -69,6 +73,16 @@ def main():
         print(f'  → 建议删合计 {len(drop)} 个，{tot / 1e9:.2f} GB')
         with open(os.path.join(a.out, f'{book}.txt'), 'w', encoding='utf-8') as f:
             f.write('\n'.join(drop) + ('\n' if drop else ''))
+        if a.delete:
+            if not stat.get('keep:srcbw', [0])[0] or not stat.get('keep:manifest', [0])[0]:
+                print(f'  ✗ {book}：没有 srcbw 或 manifest，拒绝删除')
+                continue
+            ks = drop[:a.limit] if a.limit else drop
+            ok = 0
+            with ThreadPoolExecutor(16) as ex:
+                for r in ex.map(lambda k: cos_prefix_delete.delete_key(sid, skey, bucket, region, k), ks):
+                    ok += bool(r)
+            print(f'  ✓ {book}：已删 {ok}/{len(ks)} 个（建议删共 {len(drop)}）')
 
 
 if __name__ == '__main__':
