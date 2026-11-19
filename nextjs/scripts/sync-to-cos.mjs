@@ -49,7 +49,7 @@
  *   SYNC_REBUILD_STATE=1 node scripts/sync-to-cos.mjs  # 重建本地 state
  */
 
-import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join, resolve, dirname, posix } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
@@ -58,6 +58,7 @@ import { computeDataContentDigest } from './lib/data-content-digest.mjs';
 import { cosConcurrency } from './lib/cos-sync-decision.mjs';
 import { runQueue, cosSlots, cosSdkParallelLimit, setSlotAllocator } from './lib/h1-sync-core.mjs';
 import { slotAllocatorFromEnv } from './lib/cos-slots.mjs';
+import { computeBookVersions, buildBookVersionShards, bookVersionShardPath, BOOK_VERSION_SHARD_DIR } from './lib/book-versions.mjs';
 import { planVersionPrune, DEFAULT_KEEP_VERSIONS } from './lib/v-search-prune.mjs';
 import { createCosOps } from './lib/h1-sync-core.mjs';
 import { createStateGuard } from './lib/state-guard.mjs';
@@ -113,6 +114,9 @@ if (!existsSync(LATEST_FILE)) {
     console.error(`❌ ${LATEST_FILE} not found. Re-run bundle-data.mjs (latest.json now produced alongside version.json).`);
     process.exit(1);
 }
+
+// 按书版本清单 vers/ 是本脚本在上传前才生成的（见 main 的 Step 2'），上一次留在目录里的旧片不能进摘要、也不能被当成产物：先清掉。
+if (!DRY_RUN) rmSync(join(DATA_DIR, BOOK_VERSION_SHARD_DIR), { recursive: true, force: true });
 
 // 补上 cacheKey（bundle-data.mjs 产出的 latest.json 没有这个字段）。写回本地文件，
 // 让本步之后读 $KYG_DATA_ROOT/latest.json 的环节（bundle 降级拷贝等）拿到同一份。
@@ -647,6 +651,28 @@ async function main() {
     }
     saveHashCache(hashCache);
     console.log(`  hashed ${files.length} files in ${((Date.now() - tHash) / 1000).toFixed(1)}s (cache hit ${cacheHits}/${files.length}, cache size ${cacheSizeBefore}→${hashCache.size})`);
+
+    // ── Step 2': 按书版本清单（数据地址按书版本化，docs/数据地址按书版本化.md） ──
+    // 每本书 items/<id>/** 的内容摘要 → current/vers/<书ID末2位>.json 分片。生成后当作普通 shared 文件进增量上传：
+    // 内容没变的片 md5 一致自动跳过，书被删光后的空片自动当孤儿删掉。分片先于 latest.json 上传。
+    {
+        const versions = computeBookVersions(files, (rel) => localMd5.get(rel));
+        const shards = buildBookVersionShards(versions);
+        let bytes = 0;
+        for (const [key, body] of shards) {
+            const rel = bookVersionShardPath(key);
+            const full = join(DATA_DIR, rel);
+            mkdirSync(dirname(full), { recursive: true });
+            writeFileSync(full, body, 'utf-8');
+            const st = statSync(full);
+            const f = { full, relative: rel, size: st.size, mtimeMs: Math.floor(st.mtimeMs) };
+            files.push(f);
+            sharedFiles.push(f);
+            localMd5.set(rel, createHash('md5').update(body).digest('hex'));
+            bytes += st.size;
+        }
+        console.log(`  book versions: ${versions.size} books → ${shards.size} shards in ${BOOK_VERSION_SHARD_DIR}/ (${(bytes / 1024).toFixed(0)} KB)`);
+    }
 
     // ── Step 3: 分流 ──
     // shared: 用 state 增量
