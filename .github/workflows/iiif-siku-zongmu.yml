@@ -149,6 +149,10 @@ jobs:
             if ! [[ "$REV" =~ ^[0-9]+$ ]]; then echo "❌ rev 必填且为数字：$REV"; exit 1; fi
             sudo apt-get update -q && sudo apt-get install -y -q djvulibre-bin
             python3 ops/iiif/wyg_src_tier.py --bw --vols "$VOLS" --rev "$REV" --cache "$RUNNER_TEMP/bw/cache" "${ARGS[@]}"
+          elif [ "$BOOK" = "988g3f0wsu" ] || [ "$BOOK" = "99k3i35yww" ]; then
+            # 史記（文淵閣 DjVu 合扫）、脉经（PDF 内嵌 JP2 对开）：按旁车的源图出整页
+            sudo apt-get update -q && sudo apt-get install -y -q djvulibre-bin poppler-utils
+            python3 ops/iiif/src_bw_tier.py --book "$BOOK" --vols "$VOLS" --cache "$RUNNER_TEMP/bw/cache" "${ARGS[@]}"
           else
             python3 ops/iiif/pages_bw_tier.py --book "$BOOK" --vols "$VOLS" --cache "$RUNNER_TEMP/bw/cache" "${ARGS[@]}"
           fi

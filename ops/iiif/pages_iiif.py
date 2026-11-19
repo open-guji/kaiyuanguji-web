@@ -164,9 +164,14 @@ def main(argv=None):
             # 单页扫描书：源图＝页图，整页图路径段按页表 seq（pages_bw_tier.py 同一规矩）；不依赖旁车
             tp = {p['seq']: p for p in table['pages']}
             back = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
+            sc = S.pagemeta.load_pagemeta(table, S.PAGES_BASE, v, S.http_get)   # 合扫页的书（史記、脉经）按旁车的源图出；单位阵页按页图
             for c in r['canvases']:
                 tseq = back.get(c['seq'], c['seq'])
-                c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v)
+                e = (sc or {}).get('pages', {}).get(tseq)
+                if e is not None and not S.pagemeta._identity(e['H']):
+                    c['bim_cos'] = S.pagemeta.bim_cos(e, S.public_url, a.book, v)
+                else:
+                    c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))
