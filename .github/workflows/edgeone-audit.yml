@@ -1,0 +1,23 @@
+name: EdgeOne audit (read-only)
+
+# 手动：只读查 EdgeOne 数据站点的缓存键／缓存时长／回源／源站保护／加速域名／规则。不改任何配置。结果在日志里。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - name: Audit
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_ZONE_ID: ${{ secrets.EDGEONE_ZONE_ID }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
+        run: python3 ops/edgeone_audit.py
