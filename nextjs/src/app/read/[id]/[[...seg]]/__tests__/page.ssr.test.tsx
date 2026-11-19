@@ -19,6 +19,7 @@ jest.mock('@/lib/server/item-data', () => ({
     getLatestServer: () => mockGetLatest(),
     getCurrentJsonServer: (rel: string) => mockGetCurrentJson(rel),
     getCurrentTextServer: async (rel: string) => (rel.endsWith('/default/002.txt') ? '卷二正文' : null),
+    getBookVersionServer: async () => null,
     getCurrentUrlServer: async (rel: string) => `https://data.test/current/${rel}?v=k1`,
 }));
 jest.mock('next/navigation', () => ({

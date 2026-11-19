@@ -22,6 +22,8 @@ import { join } from 'node:path';
  * 那两份已在摘要里；种子只是加速用的副本，改它不该让 CDN 键换一次，也不该让同样的数据因为种子没生成而换键。
  */
 const READ_SEED_RE = /^current\/items\/[^/]+\/read-seed\.json$/;
+/** 按书版本清单（vers/<末2位>.json）由 sync-to-cos 在上传前从产物算出，不是打包产物本身：不进摘要（否则上次留下的片会让同一份产物换键） */
+const BOOK_VERSIONS_RE = /^(?:current\/)?vers\//;
 
 /** 目录下所有文件的相对路径（正斜杠），已排序。迭代遍历（不递归）：current/ 有十几万个文件。 */
 function listFiles(root) {
@@ -34,7 +36,7 @@ function listFiles(root) {
             const childRel = rel ? `${rel}/${name}` : name;
             const st = statSync(join(root, childRel));
             if (st.isDirectory()) stack.push(childRel);
-            else if (!READ_SEED_RE.test(childRel)) out.push(childRel);
+            else if (!READ_SEED_RE.test(childRel) && !BOOK_VERSIONS_RE.test(childRel)) out.push(childRel);
         }
     }
     return out.sort();

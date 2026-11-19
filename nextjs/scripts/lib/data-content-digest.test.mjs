@@ -94,3 +94,11 @@ test('时间戳文件解析不了：按原字节算，不抛错', () => {
         assert.match(computeDataContentDigest(a), /^[0-9a-f]{16}$/);
     } finally { rmSync(a, { recursive: true }); }
 });
+
+test('按书版本清单 vers/ 不进摘要（它由 sync-to-cos 上传前从产物算出，上次留在目录里的旧片不该让同一份产物换键）', () => {
+    const a = makeDir(FILES);
+    const b = makeDir({ ...FILES, 'vers/ab.json': '{"version":1,"books":{}}' });
+    try {
+        assert.equal(computeDataContentDigest(a), computeDataContentDigest(b));
+    } finally { rmSync(a, { recursive: true }); rmSync(b, { recursive: true }); }
+});

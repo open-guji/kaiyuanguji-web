@@ -20,6 +20,8 @@ export interface ReaderSeed {
     dataVersion?: string;
     /** 服务端渲染这份种子的时刻（毫秒时间戳）。页面在 CDN 里放久了，超过 SEEDED_PAGE_MAX_AGE_MS 就不信 dataVersion，改读 latest.json */
     dataVersionAt?: number;
+    /** 这本书自己的版本号（数据地址按书版本化；null＝服务端查过没有、用全局键；缺＝旧页面）：current/items/<这本书>/** 的 `?v=`；与 dataVersionAt 同样受页面年龄约束 */
+    bookVersion?: string | null;
 }
 
 /** transport 方法名＋参数 → 种子键 */
