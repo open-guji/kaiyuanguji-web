@@ -71,6 +71,8 @@ def build_canvas(vol, c):
     }
     if c.get('bim_page'):
         canvas['bim:page'] = c['bim_page']    # 页面范围（书影页面范围统一规范）；字框坐标仍是页图
+    if c.get('bim_cos'):
+        canvas['bim:cos'] = c['bim_cos']      # 国内单版整页（1-bit 无损 WebP）与「整页图→页图」矩阵，见 pagemeta.bim_cos
     return canvas
 
 
