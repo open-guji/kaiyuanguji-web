@@ -35,7 +35,7 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
     <header className={onHero ? 'og-nav og-nav--hero' : 'og-nav'}>
       <div className="og-nav-inner">
         <Link href="/" className="og-brand">
-          <Image src="/images/logo-52.webp" alt={t('nav.logoAlt')} width={26} height={26} />
+          <Image src="/images/logo-52.webp" alt={t('nav.logoAlt')} width={16} height={16} />
           <span>{t('nav.brand')}</span>
         </Link>
 
