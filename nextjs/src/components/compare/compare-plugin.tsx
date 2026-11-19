@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { useConvert, type ReaderApi, type ReaderPlugin } from 'book-index-ui';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import type { ReaderApi, ReaderPlugin } from 'book-index-ui';
 import { formatCmp, parseCmp, type CompareTarget } from '@/lib/compare/url';
 import CompareOverlay from './CompareOverlay';
 import CompareSettings, { type CompareSource } from './CompareSettings';
@@ -39,8 +39,9 @@ export function createCompareStore(): CompareStore {
 const useStoreValue = (store: CompareStore) => useSyncExternalStore(store.subscribe, store.get, () => null);
 
 /** 浮层里常驻的控制器：持有对校状态（需要 api.cells、版本与章），把状态写进 store，渲染底部条与详情卡 */
-function CompareController({ store, api, id, transport, target, setTarget }: {
+function CompareController({ store, api, id, transport, target, setTarget, sources }: {
     store: CompareStore;
+    sources: CompareSource[];
     api: ReaderApi;
     id: string;
     transport: RunTransport;
@@ -50,10 +51,28 @@ function CompareController({ store, api, id, transport, target, setTarget }: {
     // 同一章的 api.cells 引用稳定（包按 pages 记忆），映射后的数组跟着稳定，否则每次渲染都重算比对
     const cells = useMemo(() => (api.cells.length > 0 ? api.cells.map((c) => ({ c: c.char, a: c.anchor })) : null), [api.cells]);
     const ctl = useCompare({ id, versionKey: api.ctx.versionKey, chapter: api.ctx.chapterKey, transport, target, setTarget, cells });
-    return <ControllerBody store={store} api={api} ctl={ctl} />;
+    return <ControllerBody store={store} api={api} ctl={ctl} sources={sources} id={id} />;
 }
 
-function ControllerBody({ store, api, ctl }: { store: CompareStore; api: ReaderApi; ctl: CompareCtl }) {
+/** 第一次用对校时把设置面板自动展开一次，让人知道设置在哪；之后记住，不再自动开 */
+const SEEN_KEY = 'cmp-settings-seen';
+function firstTimeOpen(): boolean {
+    try {
+        if (window.localStorage.getItem(SEEN_KEY)) return false;
+        window.localStorage.setItem(SEEN_KEY, '1');
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function ControllerBody({ store, api, ctl, sources, id }: { store: CompareStore; api: ReaderApi; ctl: CompareCtl; sources: CompareSource[]; id: string }) {
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const ready = ctl.active && ctl.status === 'ready';
+    useEffect(() => { if (ready && firstTimeOpen()) setSettingsOpen(true); }, [ready]);
+    // 点了某处差异（出详情卡）就收起设置面板，两者不同时占地方
+    const curId = ctl.current?.id ?? null;
+    useEffect(() => { if (curId) setSettingsOpen(false); }, [curId]);
     const apiRef = useRef(api);
     apiRef.current = api;
     // 状态变了写进 store；修饰表变了叫阅读器重算
@@ -66,7 +85,7 @@ function ControllerBody({ store, api, ctl }: { store: CompareStore; api: ReaderA
         }
     });
     useEffect(() => () => store.set(null), [store]);
-    if (!ctl.active || ctl.status !== 'ready') return null;
+    if (!ready) return null;
     const go = (dir: 1 | -1) => {
         const it = ctl.step(dir);
         if (!it) return;
@@ -88,15 +107,12 @@ function ControllerBody({ store, api, ctl }: { store: CompareStore; api: ReaderA
             onStep={go}
             onClose={ctl.closeDetail}
             onExit={() => ctl.setTarget(null)}
+            settings={<SettingsBlock store={store} sources={sources} api={api} id={id} />}
+            settingsOpen={settingsOpen}
+            onToggleSettings={() => setSettingsOpen((v) => !v)}
             convert={api.convert}
         />
     );
-}
-
-/** 组标题随繁简偏好转 */
-function GroupTitle() {
-    const { convert } = useConvert();
-    return <>{convert('對校')}</>;
 }
 
 function SettingsBlock({ store, sources, api, id }: { store: CompareStore; sources: CompareSource[]; api: ReaderApi; id: string }) {
@@ -117,7 +133,7 @@ function SettingsBlock({ store, sources, api, id }: { store: CompareStore; sourc
 }
 
 /**
- * 对校插件（A41，方案 §4.3）：设置栏「對校」选对照本与显示哪些类别，浮层出计数与上一处／下一处、点字出详情卡，
+ * 对校插件（A41，方案 §4.3）：浮层出计数与上一处／下一处、「設置」展开选对照本与显示哪些类别、点字出详情卡，
  * 按格位给字加底线、下标（对照本的写法）、字后插入（对照本多出）。只用颜色区分，不加符号。
  * target／setTarget 来自阅读页外层（来源行的「對校」按钮也用它），store 同样由外层建、与按钮共享。
  */
@@ -135,8 +151,8 @@ export function useComparePlugin({ id, sources, transport, target, setTarget, st
         if (!hasSources) return null;
         return {
             id: 'compare',
-            settings: { group: 'compare', title: <GroupTitle />, order: 50, render: (api) => <SettingsBlock store={store} sources={sources} api={api} id={id} /> },
-            overlay: (api) => <CompareController store={store} api={api} id={id} transport={transport} target={target} setTarget={setTarget} />,
+            // 对校设置不放「阅读设置」里（太隐蔽），放在右下角对校浮条的「設置」里展开
+            overlay: (api) => <CompareController store={store} api={api} id={id} transport={transport} target={target} setTarget={setTarget} sources={sources} />,
             decorate: () => {
                 const m = store.get()?.decorations;
                 return m && m.size > 0 ? (m as ReturnType<NonNullable<ReaderPlugin['decorate']>>) : undefined;

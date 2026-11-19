@@ -93,6 +93,18 @@ describe('POST 校验', () => {
         }
     });
 
+    it('choice=unrec（认不出的字，char v0.5 unk）：不带字、可带 unk（trim、空不存）；带了 char 也丢掉；unk 太长或不是字符串 400', async () => {
+        const ok = await fn.onRequestPost(post({ ...base, a: '77:9:15', choice: 'unrec', unk: ' 左王右旦 ', char: '旦', pick_src: 'cand' }));
+        expect(ok.status).toBe(200);
+        const rec = JSON.parse(store.get(crKeys()[0])!);
+        expect(rec).toMatchObject({ choice: 'unrec', unk: '左王右旦', a: '77:9:15' });
+        expect(rec.char).toBeUndefined();
+        expect(rec.pick_src).toBeUndefined();
+        expect((await fn.onRequestPost(post({ ...base, choice: 'unrec' }))).status).toBe(200);
+        expect((await fn.onRequestPost(post({ ...base, choice: 'unrec', unk: 'x'.repeat(61) }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ ...base, choice: 'unrec', unk: 5 }))).status).toBe(400);
+    });
+
     it('choice=figure（是图形，不是字，GUJI-742）：不带字、可带 alt（trim、空不存）；带了 char 也丢掉；alt 太长或不是字符串 400', async () => {
         const ok = await fn.onRequestPost(post({ ...base, a: '148:2:14', choice: 'figure', alt: ' 左半圈连一实点 ', char: '于', pick_src: 'cand' }));
         expect(ok.status).toBe(200);

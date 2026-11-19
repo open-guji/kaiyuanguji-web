@@ -310,7 +310,7 @@ describe('ReaderClient：历史记录', () => {
             expect(last.reader!.textFileBase).toBe('/data/items');
             expect(last.reader!.hideSupersededVersions).toBe(true);
             expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toEqual(
-                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:fulltext'],
+                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:fulltext', 'kyg:site-version'],
             );
         });
 

@@ -24,7 +24,7 @@
  * 缺正式仓或缺其根目录的站点内容文件（lib/production-dir.mjs）都直接报错退出，不静默。
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, unlinkSync, rmSync, copyFileSync, cpSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resolveDataDirs } from './lib/data-dirs.mjs';
@@ -580,6 +580,20 @@ function bundleExtraFiles() {
     {
         const r = syncBookGroupPages(derivedPath('books'), join(OUT_DIR, BOOK_GROUPS_DIRNAME));
         if (r.files || r.removed) console.log(`EX  ${BOOK_GROUPS_DIRNAME}/: ${r.works} 部作品 ${r.files} 页（写 ${r.written}、删 ${r.removed}）`);
+    }
+
+    // 总集篇目 contents/<id>/<n>.json（build 契约 6，单篇诗文方案 A）：被 collected_in 指向的 Work 有 `_contents {total, pages}`，
+    // 篇目分页原样拷到数据根下 contents/，读者端 BundleStorage.getWorkContents 按页取。产物里没有就删掉残留。
+    {
+        const dest = join(OUT_DIR, 'contents');
+        const src = derivedPath('contents');
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        if (src) {
+            cpSync(src, dest, { recursive: true });
+            let n = 0;
+            for (const id of readdirSync(dest)) n += readdirSync(join(dest, id)).length;
+            console.log(`EX  contents/ copied (${readdirSync(dest).length} works, ${n} pages)`);
+        }
     }
 
     // recommended.json: hydrate items 加上 IndexEntry 元数据，让 HomePage

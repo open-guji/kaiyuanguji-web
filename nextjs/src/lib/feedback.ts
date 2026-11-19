@@ -42,6 +42,8 @@ export const FEEDBACK_SUBTYPES: { value: FeedbackSubtype; labelKey: SiteMessageK
     { value: 'version', labelKey: 'feedback.subtypes.version' },
 ];
 
+/** 截图：最多张数；与后端 MAX_IMAGES 一致 */
+export const IMAGE_MAX_COUNT = 3;
 export const CONTENT_MAX = 2000;
 export const CONTACT_MAX = 200;
 /** 带进正文的选中文字最多这么多字，超出截断加「…」 */
@@ -103,6 +105,8 @@ export interface FeedbackInput {
     context?: FeedbackContext | null;
     pageUrl: string;
     subtype?: FeedbackSubtype;
+    /** 截图（data URL，浏览器端已压缩；只给站方看） */
+    images?: string[];
 }
 
 export interface FeedbackBody {
@@ -112,6 +116,7 @@ export interface FeedbackBody {
     pageUrl: string;
     resourceId: string;
     subtype?: FeedbackSubtype;
+    images?: string[];
 }
 
 /** 锚点只认阅读器条目锚点 `rd-e-N`，其余丢掉；换掉地址里原有的 # 部分 */
@@ -120,7 +125,7 @@ function withAnchor(pageUrl: string, anchor: string | undefined): string {
     return `${pageUrl.split('#')[0]}#${anchor}`;
 }
 
-export function buildFeedbackBody({ type, text, contact, context, pageUrl, subtype }: FeedbackInput): FeedbackBody {
+export function buildFeedbackBody({ type, text, contact, context, pageUrl, subtype, images }: FeedbackInput): FeedbackBody {
     const body: FeedbackBody = {
         type,
         content: quotePrefix(context?.quote) + text.trim(),
@@ -130,6 +135,7 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl, subty
     const c = contact?.trim().slice(0, CONTACT_MAX);
     if (c) body.contact = c;
     if (subtype) body.subtype = subtype;
+    if (images?.length) body.images = images.slice(0, IMAGE_MAX_COUNT);
     return body;
 }
 

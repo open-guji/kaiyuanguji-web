@@ -28,23 +28,29 @@ export function unregistered(doc) {
 /**
  * @param base  数据域名根（config/hosts.json 的 data；staging 再加 /staging）
  * @param fetchFn  (url, {method, range}) → {ok, status, json()}；range=true 时只取首字节
- * @returns {{lists: number, images: number, problems: string[]}}
+ * @param only  可选 (entry{book,chap}) → boolean；给了就只对所指章节做完整检查（单子＋全部图），
+ *              别的章节只看单子 rev 与 index 是否一致，有问题进 warnings，不算失败
+ * @returns {{lists: number, images: number, problems: string[], warnings: string[]}}
  */
-export async function runProofingSmoke({ base, fetchFn, concurrency = 8 }) {
+export async function runProofingSmoke({ base, fetchFn, concurrency = 8, only = null }) {
     const problems = [];
+    const warnings = [];
     const idxRes = await fetchFn(`${base}/proof/index.json`, { method: 'GET' });
-    if (!idxRes.ok) return { lists: 0, images: 0, problems: [`proof/index.json ${idxRes.status}`] };
+    if (!idxRes.ok) return { lists: 0, images: 0, problems: [`proof/index.json ${idxRes.status}`], warnings };
     const idx = await idxRes.json();
     const heads = [];
     let lists = 0;
     for (const [book, chaps] of Object.entries(idx.books || {})) {
         for (const [chap, meta] of Object.entries(chaps)) {
             if (!meta?.n) continue;                        // 空单（全审完）不用看
+            const inScope = !only || only({ book, chap });
+            const bad = inScope ? problems : warnings;     // 范围外的章节只告警
             const r = await fetchFn(`${base}/proof/${book}/${chap}.pending.json`, { method: 'GET' });
-            if (!r.ok) { problems.push(`${book}/${chap}.pending.json ${r.status}`); continue; }
+            if (!r.ok) { bad.push(`${book}/${chap}.pending.json ${r.status}`); continue; }
             const doc = await r.json();
             lists++;
-            if (doc.rev !== meta.rev) problems.push(`${book}/${chap}：单子 rev ${doc.rev} ≠ index ${meta.rev}（CDN 旧缓存？）`);
+            if (doc.rev !== meta.rev) bad.push(`${book}/${chap}：单子 rev ${doc.rev} ≠ index ${meta.rev}（CDN 旧缓存？）`);
+            if (!inScope) continue;                        // 范围外不查图，省掉上千次请求
             for (const n of unregistered(doc)) problems.push(`${book}/${chap}：${n} 被引用但没登记进 sprites[]`);
             for (const n of spriteRefs(doc)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
         }
@@ -54,5 +60,5 @@ export async function runProofingSmoke({ base, fetchFn, concurrency = 8 }) {
         const res = await Promise.all(part.map(([, url]) => fetchFn(url, { method: 'GET', range: true }).catch(() => ({ ok: false, status: 'ERR' }))));
         res.forEach((r, j) => { if (!r.ok) problems.push(`${part[j][0]}：${part[j][2]} ${r.status}`); });
     }
-    return { lists, images: heads.length, problems };
+    return { lists, images: heads.length, problems, warnings };
 }

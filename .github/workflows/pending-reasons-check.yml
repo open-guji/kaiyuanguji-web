@@ -1,0 +1,57 @@
+name: pending-reasons check — 待审原因表与 guji-manager 一致
+
+# nextjs/src/lib/pendingReasons.ts 是 guji-manager pending_reasons.yaml 的副本（ops/gen_pending_reasons_ts.py 生成）。
+# manager 加了原因码而网站没重新生成，网站就把新码全显示成「原因不明」（A01–A03 漏过一次，#765）。
+# 每天对 guji-manager main 比一次；不一致就开 issue（标签 proofing-alert），重新生成合并后自动关。
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 15 * * *'
+  pull_request:
+    paths:
+      - 'nextjs/src/lib/pendingReasons.ts'
+      - 'ops/gen_pending_reasons_ts.py'
+      - '.github/workflows/pending-reasons-check.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyyaml
+      - name: Compare with guji-manager main
+        id: check
+        continue-on-error: true
+        run: |
+          git clone --depth 1 https://github.com/open-guji/guji-manager "$RUNNER_TEMP/gm"
+          (cd "$RUNNER_TEMP/gm" && PYTHONPATH=. python3 -m guji_manager.review.pending_reason --json) > "$RUNNER_TEMP/pr.json"
+          python3 ops/gen_pending_reasons_ts.py "$RUNNER_TEMP/pr.json" "$RUNNER_TEMP/pendingReasons.ts"
+          diff -u nextjs/src/lib/pendingReasons.ts "$RUNNER_TEMP/pendingReasons.ts" | head -60
+      - name: Open / close alert
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.check.outcome }}
+        run: |
+          gh label create proofing-alert --color B60205 --description '精校页读者侧检查不过' 2>/dev/null || true
+          title="待审原因表与 guji-manager 不一致"
+          n=$(gh issue list --label proofing-alert --state open --search "in:title $title" --json number --jq '.[0].number // empty')
+          if [ "$OUTCOME" = failure ]; then
+            body="guji-manager main 的 pending_reasons.yaml 比网站 pendingReasons.ts 新。重新生成：在 guji-manager 里 \`python -m guji_manager.review.pending_reason --json > pr.json\`，再 \`python3 ops/gen_pending_reasons_ts.py pr.json nextjs/src/lib/pendingReasons.ts\`，提 PR。运行：$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            if [ -z "$n" ]; then gh issue create --title "$title" --label proofing-alert --body "$body"; fi
+          elif [ -n "$n" ]; then
+            gh issue close "$n" --comment "已一致，自动关闭"
+          fi
+      - name: Fail if drift
+        if: ${{ steps.check.outcome == 'failure' }}
+        run: exit 1

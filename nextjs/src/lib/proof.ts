@@ -37,7 +37,7 @@ export interface ProofLayer {
     pages: Map<number, string[]>;
 }
 
-const CELL_KEY = /^\d+:\d+:\d+[ab]?$/;
+const CELL_KEY = /^\d+:\d+:-?\d+[ab]?$/; // 末位可为 -1（抬头格，框外上方）
 
 const REVIEWS: readonly string[] = ['pending', 'auto', 'human'];
 

@@ -35,3 +35,22 @@ test('冒烟：rev 不一致、未登记、图取不到都报出来；空单不�
         'bk/005：单子 rev 005-r5 ≠ index 005-r6（CDN 旧缓存？）',
     ]);
 });
+
+test('冒烟 only：范围外章节只告警、不查图、不算失败', async () => {
+    const files = {
+        'B/proof/index.json': { books: { bk: { '004': { rev: '004-r6', n: 1 }, '005': { rev: '005-r6', n: 10 } } } },
+        'B/proof/bk/004.pending.json': { ...doc, sprites: [{ name: 'p0003.ab.webp' }, { name: 'alt-004.webp' }] },
+        'B/proof/bk/005.pending.json': { rev: '005-r5', cells: [{ cell: '1:1:1', img: { s: 'x.webp' } }], sprites: [{ name: 'x.webp' }] },
+    };
+    const seen = [];
+    const fetchFn = async (url, { range }) => {
+        if (range) { seen.push(url); return { ok: true, status: 200 }; }
+        const body = files[url];
+        return body ? { ok: true, status: 200, json: async () => body } : { ok: false, status: 404 };
+    };
+    const only = (e) => e.book === 'bk' && e.chap === '004';
+    const r = await runProofingSmoke({ base: 'B', fetchFn, only });
+    assert.deepEqual(r.problems, []);
+    assert.deepEqual(r.warnings, ['bk/005：单子 rev 005-r5 ≠ index 005-r6（CDN 旧缓存？）']);
+    assert.ok(seen.every((u) => u.includes('/bk/004/')));
+});

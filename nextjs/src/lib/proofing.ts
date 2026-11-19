@@ -17,6 +17,10 @@ import { DATA_ORIGIN } from '@/lib/hosts';
 
 export type Box = [number, number, number, number];
 
+/** 合审组合键 `册|格号` 与拆分；单册页的格号不含「|」，原样返回 */
+export const mergedKey = (vol: string, a: string): string => `${vol}|${a}`;
+export const rawA = (a: string): string => a.slice(a.indexOf('|') + 1);
+
 /** 雪碧图里的一块：`s` 是同目录文件名，x,y,w,h 是它在雪碧图里的像素框 */
 export interface SpriteRef { s: string; x: number; y: number; w: number; h: number }
 
@@ -65,7 +69,10 @@ export interface PendingExtras {
 }
 
 export interface PendingCell extends PendingExtras {
+    /** 格号；合审（跨册）时是「册|格号」组合键（册内格号不唯一），原格号用 `rawA` 取 */
     a: string;
+    /** 合审时这格所属的册；单册页没有 */
+    vol?: string;
     /** 机器当前读的字 */
     c?: string;
     cand?: ProofCandidate[];
@@ -322,6 +329,29 @@ export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[
 }
 
 /**
+ * 己已巳／日曰卡（待审原因 hard_pair「极难形近」）：已经认出是这一组之一，候选只给组里的字，
+ * 不给库前几名、相似字、「还有 N 个」（用户 11-17）。看本格机器字、参校本字、候选、库前两名、上下文字，
+ * 哪一组的票多就用哪一组；一票都没有就返回 null，照旧显示普通候选。
+ */
+const HARD_GROUPS = ['己已巳', '日曰'];
+export function hardPairChoices(cell: PendingCell): string[] | null {
+    if (cell.pendingReason !== 'hard_pair') return null;
+    const votes = HARD_GROUPS.map(() => 0);
+    const vote = (c: string | undefined, w: number) => {
+        if (!c) return;
+        const i = HARD_GROUPS.findIndex(g => g.includes(c));
+        if (i >= 0 && [...c].length === 1) votes[i] += w;
+    };
+    vote(cell.c, 3);
+    vote(cell.ref?.c, 3);
+    for (const cd of cell.cand ?? []) vote(cd.c, 1);
+    for (const x of (cell.libTop ?? []).slice(0, 2)) vote(x.c, 1);
+    vote(cell.ctx?.c, 1);
+    const best = votes.indexOf(Math.max(...votes));
+    return votes[best] > 0 ? [...HARD_GROUPS[best]] : null;
+}
+
+/**
  * 「看前后文」值不值得给读者看：上下文模型的字就是字形库首选（只是回声），或送审原因说上下文不可信
  * （`ctx_garble_*`），都不显示——vol01 001-r2 有字的 38 格全是回声（GUJI-683，调研 A B4）。
  * 上下文给了「看不出」（没有字）照旧显示。
@@ -455,6 +485,24 @@ export async function loadCosPending(book: string, vol: string, fetchImpl: typeo
     }
 }
 
+export const PENDING_API = '/api/pending';
+
+/**
+ * 取一章现行待审单：先读站点 KV（`/api/pending`，撤下一格、加一格当场生效，不等 COS 发布与 CDN），
+ * 没有或读不到再退回 COS 的 pending.json。坏参数不发请求。
+ */
+export async function loadPendingDoc(book: string, vol: string, fetchImpl: typeof fetch = fetch, base = PROOF_BASE, api = PENDING_API): Promise<unknown> {
+    if (!/^[\w-]+$/.test(book) || !SAFE_FILE.test(vol)) return null;
+    try {
+        const res = await fetchImpl(`${api}?book=${encodeURIComponent(book)}&vol=${encodeURIComponent(vol)}`);
+        if (res.ok) {
+            const doc = await res.json();
+            if (doc && typeof doc === 'object' && Array.isArray((doc as { cells?: unknown }).cells)) return doc;
+        }
+    } catch { /* 退回 COS */ }
+    return loadCosPending(book, vol, fetchImpl, base);
+}
+
 const isBox = (v: unknown): v is Box =>
     Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n)) && v[2] > 0 && v[3] > 0;
 
@@ -538,7 +586,7 @@ export interface CellCrop {
 
 /** 这一页在 cord 里的 IIIF 页序与 canvas 尺寸；没有框也能整页看图 */
 export function resolvePage(cell: { a: string }, cord: CordIndex | null): { seq: string; width: number; height: number } | null {
-    return cord?.pages.get(Number(cell.a.split(':')[0])) ?? null;
+    return cord?.pages.get(Number(rawA(cell.a).split(':')[0])) ?? null;
 }
 
 const median = (xs: number[]): number => {
@@ -551,7 +599,7 @@ const median = (xs: number[]): number => {
  * 同列一个框都没有返回 null（调用方退回整页显示）。夹注半格（4a／4b）用所在序号。
  */
 export function estimateBox(a: string, cord: CordIndex): Box | null {
-    const m = /^(\d+):(\d+):(\d+)[a-z]?$/.exec(a);
+    const m = /^(\d+):(\d+):(-?\d+)[a-z]?$/.exec(rawA(a));
     if (!m) return null;
     const [, pg, col, nStr] = m;
     const n = Number(nStr);
@@ -581,11 +629,12 @@ export function estimateBox(a: string, cord: CordIndex): Box | null {
 /** 这一格能不能裁图：pending 的 box 优先，其次 cord；页序只能来自 cord，缺了就不裁 */
 export function resolveCrop(cell: PendingCell, cord: CordIndex | null): CellCrop | null {
     if (!cord) return null;
-    const page = cord.pages.get(Number(cell.a.split(':')[0]));
+    const ra = rawA(cell.a);
+    const page = cord.pages.get(Number(ra.split(':')[0]));
     if (!page) return null;
-    const box = cell.box ?? cord.boxes.get(cell.a);
+    const box = cell.box ?? cord.boxes.get(ra);
     if (box) return { box, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height };
-    const est = estimateBox(cell.a, cord);
+    const est = estimateBox(ra, cord);
     return est ? { box: est, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height, estimated: true } : null;
 }
 
@@ -657,13 +706,17 @@ export function charMapOf(charRaw: unknown, cordRaw: unknown): Map<string, strin
 
 /** char_file 里没定字的格写的占位符 */
 export const LACUNA = '□';
+/** 整理本占位：〓（换字占位）、▣（以图代字）。文本层在机器没定字的格里留着它们，不是机器读到的字（ZM 11-18） */
+export const PLACEHOLDERS: ReadonlySet<string> = new Set([LACUNA, '〓', '▣']);
+/** 这一格的文本是不是「没有字」：空、缺字□、整理本占位〓▣ */
+export const isPlaceholder = (c: string | undefined | null): boolean => !c || PLACEHOLDERS.has(c);
 
 /** 一个字位：格号与这一格现在的字（char_file 里的字；待审格就是机器读的字） */
 export interface ReadSlot { a: string; c: string }
 
-/** 格号「页:列:格[a|b]」→ [页, 列]；不合式返回 null */
+/** 格号「页:列:格[a|b]」（格可为 -1：抬头格，框外上方）→ [页, 列]；不合式返回 null */
 export function pageColOf(a: string): [number, number] | null {
-    const m = /^(\d+):(\d+):\d+[a-z]?$/.exec(a);
+    const m = /^(\d+):(\d+):-?\d+[a-z]?$/.exec(rawA(a));
     return m ? [Number(m[1]), Number(m[2])] : null;
 }
 
@@ -740,8 +793,8 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
             // 规范的 pending 先不带 c／cand：机器读字从 char_file 补
             if (charRaw && pending.cells.some(c => !c.c)) {
                 const chars = charMapOf(charRaw, null);
-                // 缺字占位「□」（lacuna）不算机器读到的字
-                pending.cells = pending.cells.map(c => (c.c || !chars.get(c.a) || chars.get(c.a) === LACUNA ? c : { ...c, c: chars.get(c.a) }));
+                // 缺字占位「□」（lacuna）和整理本占位〓▣都不算机器读到的字
+                pending.cells = pending.cells.map(c => (c.c || isPlaceholder(chars.get(c.a)) ? c : { ...c, c: chars.get(c.a) }));
             }
             const chapterTitle = typeof chapter.title === 'string' && chapter.title.trim() ? chapter.title.trim() : undefined;
             return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [], chapterTitle };
@@ -759,8 +812,9 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
 export const CELLREVIEW_API = '/api/cellreview';
 
 /** figure：是图形，不是字（char v0.3 图片格，GUJI-742）：不带字，可带 alt（图形说明） */
+/** unrec：认不出的字（char v0.5 `unk`，2026-11-13）：图上是个字、认不出、Unicode 没有；不带字，可带 unk（部件描述，如「左王右旦」） */
 /** damaged：破损、阙字（2026-10-25）：录成阙字方框 □，可带一个字作「最像的字」 */
-export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu' | 'figure' | 'damaged';
+export type ReviewChoice = 'char' | 'none' | 'unsure' | 'cut' | 'jiazhu' | 'figure' | 'unrec' | 'damaged';
 
 /**
  * 选的字是从哪儿点来的（cv doc/research/人审找字-以字找字与异体族按图排序.md §5.3）：
@@ -799,6 +853,8 @@ export interface ReviewDraft {
     char?: string;
     /** choice=figure 时的图形说明（可空；空时导出写「图形符号」） */
     alt?: string;
+    /** choice=unrec 时的部件描述（可空；空时导出写「无法识别」） */
+    unk?: string;
     note?: string;
     /** 提交时页面显示的机器读字 */
     shown?: string;
@@ -878,4 +934,33 @@ export function readDefer(rev: string): string[] {
 
 export function writeDefer(rev: string, list: string[]): void {
     try { localStorage.setItem(DEFER_KEY(rev), JSON.stringify(list)); } catch { /* 存不了就算了 */ }
+}
+
+// ---- 目录与合审（跨册） ----
+
+/** 合审的特殊册名：`/proofing/<书>/_all`（下划线开头，不会与册号相撞） */
+export const ALL_VOL = '_all';
+export const isAllVol = (vol: string): boolean => vol === ALL_VOL;
+
+export interface TocEntry { vol: string; title: string; n: number; rev: string }
+
+/** 总表里这本书的各册（册号升序）。标题取 titles（章目录），没有就「册 <号>」 */
+export function buildToc(index: ProofIndex | null, book: string, titles?: ReadonlyMap<string, string>): TocEntry[] {
+    const chaps = index?.[book];
+    if (!chaps) return [];
+    return Object.entries(chaps)
+        .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
+        .map(([vol, e]) => ({ vol, n: e.n, rev: e.rev, title: titles?.get(vol) ?? `册 ${vol}` }));
+}
+
+/** 章目录里 文件名主干（即册号）→ 标题；取不到给空表，目录退回册号 */
+export function chapterTitles(index: unknown): Map<string, string> {
+    const out = new Map<string, string>();
+    const chapters = asRecord(index)?.chapters;
+    for (const raw of Array.isArray(chapters) ? chapters : []) {
+        const c = asRecord(raw);
+        if (!c || typeof c.file !== 'string' || typeof c.title !== 'string' || !c.title.trim()) continue;
+        out.set(c.file.replace(/\.[^.]+$/, ''), c.title.trim());
+    }
+    return out;
 }

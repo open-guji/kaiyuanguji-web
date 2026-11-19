@@ -158,6 +158,34 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
+    it('己已巳卡（hard_pair）：候选只给己已巳三个，没有「还有 N 个」和相似字；手写、备注、错误类型仍在', async () => {
+        loadProofing.mockResolvedValue(ok([{
+            a: '1:1:1', c: '巳', pendingReason: 'hard_pair', cand: [{ c: '巳' }, { c: '已' }],
+            libTop: [{ c: '已', s: 0.7 }, { c: '以', s: 0.6 }, { c: '目', s: 0.5 }, { c: '日', s: 0.4 }], alt,
+        }]));
+        render(<ProofingClient book="b11" vol="vol01" />);
+        await screen.findByTestId('why');
+        expect(screen.getByRole('button', { name: '己' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '已' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '巳' })).toBeTruthy();
+        expect(screen.queryByText('以')).toBeNull();
+        expect(screen.queryByRole('button', { name: /^还有 \d+ 个$/ })).toBeNull();
+        expect(screen.queryByTestId('alt-grid')).toBeNull();
+        expect(screen.getByLabelText('另写一字')).toBeTruthy();
+        expect(screen.getByLabelText('备注')).toBeTruthy();
+        expect(screen.getAllByRole('radio', { name: '非字' }).length).toBe(1);
+    });
+
+    it('日曰卡（hard_pair）：只给日、曰两个候选', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:2', c: '曰', pendingReason: 'hard_pair', libTop: [{ c: '目', s: 0.5 }], alt }]));
+        render(<ProofingClient book="b12" vol="vol01" />);
+        await screen.findByTestId('why');
+        expect(screen.getByRole('button', { name: '日' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: '曰' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: '己' })).toBeNull();
+        expect(screen.queryByTestId('alt-grid')).toBeNull();
+    });
+
     it('本站字体显示不出来的字（私用区、Jigmo 缺的 U+2B81E 等）显示码位，悬停是原字；提交的仍是原字', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
@@ -615,5 +643,76 @@ describe('快速确认（用户 10-24）', () => {
         fireEvent.click(screen.getByTestId('quick-confirm'));
         expect((await screen.findByRole('alert')).textContent).toMatch(/^已确认 1 格，后面的没交上：提交太频繁/);
         expect(screen.getAllByTestId('quick-tile')).toHaveLength(2);     // 没交上的还在网格里
+    });
+});
+
+describe('合审（跨册）与目录', () => {
+    const index = { b9: { '001': { rev: '001-r1', n: 1 }, '002': { rev: '002-r2', n: 2 }, '003': { rev: '003-r1', n: 0 } } };
+    const volOk = (rev: string, cells: unknown[]) => ({ status: 'ok', pending: { rev, cells }, cord: null, versionKey: 'default', pendingFile: `${rev}.pending.json` });
+    const setup = () => {
+        loadProofIndex.mockResolvedValue(index);
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) =>
+            v === '001' ? volOk('001-r1', [{ a: '1:1:1', c: '己', cand: [{ c: '已', score: 0.9 }] }])
+                : volOk('002-r2', [{ a: '1:1:1', c: '巳', cand: [{ c: '已', score: 0.8 }] }, { a: '1:1:2', c: '己' }]));
+    };
+
+    it('合审：只载入还有待审的册，同格号不同册各自一张卡，册标题带剩余数', async () => {
+        setup();
+        render(<ProofingClient book="b9" vol="_all" />);
+        await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(3));
+        expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003（n=0）不载
+        const heads = screen.getAllByTestId('vol-head').map(h => h.textContent);
+        expect(heads[0]).toContain('册 001'); expect(heads[0]).toContain('剩 1 格');
+        expect(heads[1]).toContain('剩 2 格');
+    });
+
+    it('合审：待审太多时只载前 200 格，后面的册不载，并提示', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: 'r1', n: 150 }, '002': { rev: 'r2', n: 150 }, '003': { rev: 'r3', n: 150 } } });
+        const many = (n: number) => Array.from({ length: n }, (_, i) => ({ a: `1:1:${i + 1}`, c: '己' }));
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
+        render(<ProofingClient book="b9" vol="_all" />);
+        const note = await screen.findByTestId('merged-capped');
+        expect(note.textContent).toContain('只加载前 200 格');
+        expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003 不载
+    });
+
+    it('合审：提交带本格所在册的 vol 和 rev、原格号；已回应按册各存一份（与单册页共用）', async () => {
+        setup();
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        render(<ProofingClient book="b9" vol="_all" />);
+        await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(3));
+        const second = screen.getAllByTestId('cell-card')[1];   // 002 册第一格
+        fireEvent.click(within(second).getByRole('button', { name: '已' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+        expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ book: 'b9', vol: '002', a: '1:1:1', rev: '002-r2' });
+        await waitFor(() => expect(JSON.parse(localStorage.getItem('kyg-cr-done:002-r2') ?? '{}')['1:1:1']).toBeTruthy());
+        expect(localStorage.getItem('kyg-cr-done:001-r1')).toBeNull();
+    });
+
+    it('单册页有目录：列有待审的册，合审排第一，已清空的册勾选后才列', async () => {
+        setup();
+        render(<ProofingClient book="b9" vol="002" />);
+        const toc = await screen.findByTestId('proof-toc');
+        await waitFor(() => expect(within(toc).getAllByTestId('toc-item').length).toBeGreaterThan(1));
+        const items = within(toc).getAllByTestId('toc-item').map(i => i.textContent ?? '');
+        expect(items[0]).toContain('全部（合审）');
+        expect(items.some(t => t.includes('册 003'))).toBe(false);
+        fireEvent.click(within(toc).getByTestId('toc-show-all'));
+        expect(within(toc).getAllByTestId('toc-item').some(i => (i.textContent ?? '').includes('册 003'))).toBe(true);
+        expect(within(toc).getAllByTestId('toc-item')[0]).toHaveAttribute('href', '/proofing/b9/_all');
+    });
+});
+
+describe('目录数字随回应更新', () => {
+    it('答一格，目录里这册的剩余数当场减一；现读待审单比总表少，以现读为准', async () => {
+        loadProofIndex.mockResolvedValue({ b8: { '001': { rev: 'r1', n: 5 } } });
+        loadProofing.mockResolvedValue({ status: 'ok', pending: { rev: 'r1', cells: [{ a: '1:1:1', c: '己', cand: [{ c: '已', score: 0.9 }] }, { a: '1:1:2', c: '巳' }] }, cord: null, versionKey: 'default', pendingFile: '001.pending.json' });
+        (global as { fetch?: unknown }).fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        render(<ProofingClient book="b8" vol="001" />);
+        const toc = await screen.findByTestId('proof-toc');
+        await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('2'));   // 总表写 5，现读 2
+        fireEvent.click(within(screen.getAllByTestId('cell-card')[0]).getByRole('button', { name: '已' }));
+        await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('1'));
     });
 });

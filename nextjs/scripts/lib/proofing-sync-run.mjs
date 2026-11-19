@@ -11,7 +11,7 @@
  */
 import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
+    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, mergeProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
@@ -119,10 +119,16 @@ export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
 export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null }) {
-    // index.json 总按全部单子生成（别的章照旧）；only 时只传选中那几章的单子和图
+    // index.json：全站发布按全部单子生成；only 时只传选中那几章的单子和图，所以 index 也只改这几章，
+    // 别的章保持 COS 上现有 index 的写法（否则 index 写了中心库新 rev、COS 上单子还是旧的，读者侧 rev 对不上，11-10 run 42765432259 的 007/008）
     const picked = only ? entries.filter(only) : entries;
+    let indexBody = buildProofIndex(entries);
+    if (only && cos?.getObjectText) {
+        const oldText = await cos.getObjectText(proofPrefix + 'index.json');
+        if (oldText) indexBody = mergeProofIndex(oldText, picked);
+    }
     const objects = [
-        { key: 'index.json', body: buildProofIndex(entries) },
+        { key: 'index.json', body: indexBody },
         ...picked.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
     ];
     let remote = new Map();
@@ -172,6 +178,36 @@ export async function publishPendings({ cos, entries, proofPrefix, dryRun = fals
         put: ordered.map((o) => o.key), same: plan.same.map((o) => o.key), failed,
         spritesPut: spritePut.map((s) => s.key), spritesSame: spriteSame.map((s) => s.key),
     };
+}
+
+/**
+ * publish 段之后：把发布的待审单也写进站点 KV（`/api/pending`），精校页优先读它。
+ * 要紧的是 KV 里的单子绝不能比 COS 旧：写不进就删掉这一章的 KV（页面退回读 COS）；删也失败才算错误。
+ * 先看 COS 那一步有没有失败：失败的章不动 KV。
+ * @param site {pendingOp(body) → 回包}
+ * @param skip 本次没发成功的章（Set of `书/章`）
+ */
+export async function syncPendingKv({ site, entries, only = null, dryRun = false, skip = new Set(), concurrency = 6 }) {
+    const picked = (only ? entries.filter(only) : entries).filter((e) => !skip.has(`${e.book}/${e.chap}`));
+    const out = { put: 0, dropped: 0, failed: [] };
+    if (dryRun) return { ...out, put: picked.length };
+    let i = 0;
+    const worker = async () => {
+        while (i < picked.length) {
+            const e = picked[i++];
+            const base = { book: e.book, vol: e.chap };
+            try {
+                await site.pendingOp({ ...base, op: 'put', doc: JSON.parse(e.text) });
+                out.put++;
+            } catch (err) {
+                try { await site.pendingOp({ ...base, op: 'delete' }); out.dropped++; } catch (err2) {
+                    out.failed.push(`KV ${e.book}/${e.chap}：写不进也删不掉（${err?.message || err}；${err2?.message || err2}），页面可能读到旧单`);
+                }
+            }
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, picked.length) }, worker));
+    return out;
 }
 
 /**
@@ -292,7 +328,7 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
 }
 
 /** run 摘要（markdown），只有计数 */
-export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish, status }) {
+export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, pendingKv, fixes, fixesPublish, status }) {
     const L = [];
     L.push(`### proofing-sync（工作区 ${ws.join('、')}${dryRun ? '，演练：不写' : ''}）`);
     L.push(`待审单 ${entries.length} 章，待审格合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
@@ -307,6 +343,7 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
             + (publish.spritesPut.length + publish.spritesSame.length ? ` · 雪碧图 上传 ${publish.spritesPut.length}／已有 ${publish.spritesSame.length}` : ''));
         for (const k of publish.put) L.push(`- ${k}`);
         for (const p of publish.failed) L.push(`- ❌ ${p}`);
+        if (pendingKv) L.push('', `#### 待审单 → 站点 KV（/api/pending）`, `写入 ${pendingKv.put} 章${pendingKv.dropped ? ` · 写不进、已删 ${pendingKv.dropped} 章（页面退回读 COS）` : ''}`, ...pendingKv.failed.map((p) => `- ❌ ${p}`));
     }
     if (fixes) {
         L.push('', '#### 改字与段落意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改动 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');

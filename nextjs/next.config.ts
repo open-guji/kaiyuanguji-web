@@ -46,6 +46,8 @@ function resolveUiVersion(): string {
 }
 
 const uiVersion = resolveUiVersion();
+// 网站自身版本（package.json），阅读设置栏底部小字用
+const webVersion: string = (() => { try { return JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8')).version ?? ''; } catch { return ''; } })();
 
 // DBG：构建信息（web commit／bimUi／builtAt／target），见 scripts/lib/build-info.cjs。
 // 前端错误上报带上 web；next build 阶段在 CI 里把同一份写进 edge-functions/api/version.js。
@@ -100,6 +102,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BIM_UI_VERSION: uiVersion,
     NEXT_PUBLIC_WEB_COMMIT: buildInfo.web,
+    NEXT_PUBLIC_WEB_VERSION: webVersion,
     // 渲染模式在构建期内联：EdgeOne 运行时拿不到 CI 的构建环境变量（见上面 KYG_RENDER_MODE 的注释），
     // 代码里读 process.env.KYG_RENDER_MODE（如 book-index 的 generateMetadata）要靠它。不是机密。
     KYG_RENDER_MODE: process.env.KYG_RENDER_MODE || '',

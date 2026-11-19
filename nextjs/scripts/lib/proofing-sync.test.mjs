@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
     parsePendingPath, readPending, buildProofIndex, mergeSnapshot, cellOrder, planCosPut, md5Hex, webSnapshotPath, reissueHints,
 } from './proofing-sync-plan.mjs';
-import { collectPendings, onlyFilter, spriteOnCos, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
+import { collectPendings, onlyFilter, spriteOnCos, syncOpinions, publishPendings, syncPendingKv, summarize } from './proofing-sync-run.mjs';
 
 const BOOK = '96mid1ogzk';
 const pending = (rev, n) => JSON.stringify({ rev, cv_version: '0.2.0', cells: Array.from({ length: n }, (_, i) => ({ a: `1:1:${i}` })) });
@@ -131,6 +131,7 @@ function fakeCos(initial = {}) {
             for (const [k, v] of objects) if (k.startsWith(prefix)) m.set(k.slice(prefix.length), md5Hex(v));
             return m;
         },
+        async getObjectText(key) { return objects.has(key) ? String(objects.get(key)) : null; },
         async putObjectText(key, body, opts) { puts.push({ key, opts }); objects.set(key, body); },
         async putObjectBuffer(key, buf, opts) { puts.push({ key, opts }); objects.set(key, buf); },
     };
@@ -375,4 +376,33 @@ test('按条目记的票：一书一份快照，同 (item, voter) 以 KV 为准�
     const m3 = mergeItemSnapshot(m2.text, [], { book: BOOK });
     assert.equal(m3.text, m2.text);
     assert.equal(m3.kept, 2);
+});
+
+test('publishPendings only：index 只改所选章，别章保持 COS 现状', async () => {
+    const cos = fakeCos({ 'proof/index.json': JSON.stringify({ books: { [BOOK]: { '001': { rev: '001-r1', n: 3 }, '007': { rev: '007-r10', n: 5 } } } }) });
+    const entries = [
+        { book: BOOK, chap: '001', rev: '001-r2', n: 2, text: pending('001-r2', 2), sprites: [] },
+        { book: BOOK, chap: '007', rev: '007-r11', n: 4, text: pending('007-r11', 4), sprites: [] },
+    ];
+    await publishPendings({ cos, entries, proofPrefix: 'proof/', only: (e) => e.chap === '001' });
+    assert.deepEqual(JSON.parse(cos.objects.get('proof/index.json')), { books: { [BOOK]: { '001': { rev: '001-r2', n: 2 }, '007': { rev: '007-r10', n: 5 } } } });
+});
+
+test('syncPendingKv：put 失败就删这一章的 KV（不留旧单），删也失败才算错；COS 失败的章不动', async () => {
+    const entries = ['001', '002', '003', '004'].map((c) => ({ book: BOOK, chap: c, rev: `${c}-r1`, n: 1, text: pending(`${c}-r1`, 1) }));
+    const calls = [];
+    const site = { async pendingOp(b) {
+        calls.push(`${b.op}:${b.vol}`);
+        if (b.vol === '002' && b.op === 'put') throw new Error('500');
+        if (b.vol === '003') throw new Error('down');
+        return { success: true };
+    } };
+    const r = await syncPendingKv({ site, entries, skip: new Set([`${BOOK}/004`]), concurrency: 1 });
+    assert.deepEqual(calls, ['put:001', 'put:002', 'delete:002', 'put:003', 'delete:003']);
+    assert.equal(r.put, 1);
+    assert.equal(r.dropped, 1);
+    assert.equal(r.failed.length, 1);
+    assert.match(r.failed[0], /003/);
+    const dry = await syncPendingKv({ site, entries, dryRun: true, only: (e) => e.chap === '001' });
+    assert.equal(dry.put, 1);
 });

@@ -327,7 +327,7 @@ async function sha256Hex(text) {
  * 记一笔并判断是否超限：{ ok:true } 或 { ok:false, retryAfter }。
  * KV 出错时放行（记日志）：限速是防刷的增强项，不因它坏了挡住正常读者。
  */
-async function checkRateLimit(kv, request) {
+async function checkRateLimit(kv, request, cost = 1) {
   if (!kv) return { ok: true };
   const ip = getClientIp(request);
   if (!ip) {
@@ -341,10 +341,10 @@ async function checkRateLimit(kv, request) {
     let start = Number(cur.start) || 0;
     let count = Number(cur.count) || 0;
     if (!start || nowS - start >= RATE_LIMIT_WINDOW_SECONDS) { start = nowS; count = 0; }
-    if (count >= RATE_LIMIT_MAX) {
+    if (count + cost > RATE_LIMIT_MAX) {
       return { ok: false, retryAfter: Math.max(1, start + RATE_LIMIT_WINDOW_SECONDS - nowS) };
     }
-    await kv.put(key, JSON.stringify({ start, count: count + 1 }), { expirationTtl: RATE_LIMIT_WINDOW_SECONDS * 2 });
+    await kv.put(key, JSON.stringify({ start, count: count + cost }), { expirationTtl: RATE_LIMIT_WINDOW_SECONDS * 2 });
     return { ok: true };
   } catch (e) {
     console.error('反馈限速计数失败（放行）:', e);
@@ -352,9 +352,51 @@ async function checkRateLimit(kv, request) {
   }
 }
 
+// --- 截图（读者可选，最多 3 张，只给站方看）---
+// 存放：每张单独一条 KV（key `fbimg:<反馈id>:<序号>`，不以 fb_ 开头，列反馈扫不到），值 {type,data(base64)}。
+// 反馈记录里只存 images:[{type,size}]。公开读（toPublic）整个剔除 images，连张数都不露；
+// 取图只走 GET ?image=<id>.<n>，要管理凭证（token 或成员 cookie）。
+const IMAGE_PREFIX = 'fbimg:';
+const MAX_IMAGES = 3;
+const MAX_IMAGE_BYTES = 700 * 1024; // 解码后单张上限（浏览器端先压到 ~400KB 内）
+const MAX_IMAGES_TOTAL_BYTES = 1800 * 1024;
+
+/** 看文件头判类型，不信客户端声明与后缀；认不出返回 null */
+function sniffImageType(b) {
+  if (b.length > 12 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'image/png';
+  if (b.length > 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46
+    && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'image/webp';
+  return null;
+}
+
+/** 校验并解析请求里的 images（data URL 数组）。返回 { items:[{type,size,data}] } 或 { error } */
+function parseImages(raw) {
+  if (raw === undefined || raw === null) return { items: [] };
+  if (!Array.isArray(raw)) return { error: 'images 须为数组' };
+  if (raw.length > MAX_IMAGES) return { error: `最多上传 ${MAX_IMAGES} 张截图` };
+  const items = [];
+  let total = 0;
+  for (const s of raw) {
+    const m = typeof s === 'string' ? /^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(s) : null;
+    if (!m) return { error: '截图格式不对（只收 jpeg／png／webp）' };
+    const b64 = m[1];
+    if (b64.length > Math.ceil(MAX_IMAGE_BYTES / 3) * 4 + 4) return { error: '单张截图过大' };
+    let bytes;
+    try { bytes = b64urlDecode(b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')); } catch { return { error: '截图数据损坏' }; }
+    if (bytes.length > MAX_IMAGE_BYTES) return { error: '单张截图过大' };
+    const type = sniffImageType(bytes);
+    if (!type) return { error: '截图格式不对（只收 jpeg／png／webp）' };
+    total += bytes.length;
+    if (total > MAX_IMAGES_TOTAL_BYTES) return { error: '截图总大小过大' };
+    items.push({ type, size: bytes.length, data: b64 });
+  }
+  return { items };
+}
+
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype) {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = []) {
   const id = generateId();
   const record = {
     id,
@@ -374,6 +416,13 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, sub
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
   // 双保险，这里顺手把 visibility 也标成 hidden，admin 列表上看得出「已隐藏」
   if (type === 'contact') record.visibility = 'hidden';
+  if (images.length) {
+    // 先写图再写记录：图写失败整条提交失败，不留「有记录没图」的半成品
+    for (let i = 0; i < images.length; i += 1) {
+      await kv.put(`${IMAGE_PREFIX}${id}:${i}`, JSON.stringify({ type: images[i].type, data: images[i].data }));
+    }
+    record.images = images.map((im) => ({ type: im.type, size: im.size }));
+  }
   await kv.put(id, JSON.stringify(record));
   invalidateListCache();
   return { id };
@@ -422,7 +471,7 @@ function desensitizeText(text) {
  */
 function toPublic(rec) {
   // routedIssue 是内部转办的 issue 号、resolvedRef 是内部处理凭据（commit／issue），都不公开
-  const { contact, updatedBy, routedIssue, resolvedRef, ...rest } = rec; // eslint-disable-line no-unused-vars
+  const { contact, updatedBy, routedIssue, resolvedRef, images, ...rest } = rec; // eslint-disable-line no-unused-vars
   // 旧记录没有 subtype：读时按 unspecified，不回写
   if (!rest.subtype) rest.subtype = 'unspecified';
   // 旧记录没有 category：读时按 type 推，不回写
@@ -736,8 +785,15 @@ export async function onRequestPost(context) {
       });
     }
 
-    // M3：按 IP 限速（只管公开提交；action:'update' 在上面已经分流，要凭证，不限）
-    const limited = await checkRateLimit(getKV(context), context.request);
+    const parsedImages = parseImages(body.images);
+    if (parsedImages.error) {
+      return new Response(JSON.stringify({ success: false, error: parsedImages.error }), {
+        status: 400, headers,
+      });
+    }
+
+    // M3：按 IP 限速（只管公开提交；action:'update' 在上面已经分流，要凭证，不限）。带图的每张多算 1 条
+    const limited = await checkRateLimit(getKV(context), context.request, 1 + parsedImages.items.length);
     if (!limited.ok) {
       return new Response(JSON.stringify({ success: false, error: '提交太频繁，请稍后再试' }), {
         status: 429, headers: { ...headers, 'Retry-After': String(limited.retryAfter) },
@@ -762,7 +818,7 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype);
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items);
       // G-23 第二批 §一·8：新反馈推送，不阻塞提交响应，失败不影响提交结果
       const notifyPromise = notifyNewFeedback(context, { type, content, test });
       if (context && typeof context.waitUntil === 'function') {
@@ -936,6 +992,30 @@ async function publicKvList(context, kv, headers, limit, cursor, resourceId, byp
   }
 }
 
+async function imageResponse(context, ref, headers) {
+  let ok = checkAdminAuth(bearerToken(context.request), context).ok;
+  if (!ok) ok = !!(await checkMemberCookie(context.request, context, ['reviewer', 'editor', 'admin']));
+  if (!ok) {
+    return new Response(JSON.stringify({ success: false, error: '未授权' }), { status: 401, headers });
+  }
+  const m = /^(fb_[0-9]+_[a-z0-9]{1,8})\.([0-2])$/.exec(ref);
+  const kv = getKV(context);
+  const rec = m && kv ? await kv.get(`${IMAGE_PREFIX}${m[1]}:${m[2]}`, 'json') : null;
+  if (!rec || typeof rec.data !== 'string' || !['image/jpeg', 'image/png', 'image/webp'].includes(rec.type)) {
+    return new Response(JSON.stringify({ success: false, error: '截图不存在' }), { status: 404, headers });
+  }
+  const bytes = b64urlDecode(rec.data.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': headers['Access-Control-Allow-Origin'],
+      'Content-Type': rec.type,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}
+
 export async function onRequestGet(context) {
   const headers = getCorsHeaders(context.request);
 
@@ -946,6 +1026,10 @@ export async function onRequestGet(context) {
     if (url.searchParams.get('summary') === '1') {
       return summaryResponse(context, url, headers);
     }
+
+    // 取截图：?image=<反馈id>.<序号>。只给管理凭证；no-store，不进任何缓存
+    const imageRef = url.searchParams.get('image');
+    if (imageRef !== null) return await imageResponse(context, imageRef, headers);
 
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
     const cursor = url.searchParams.get('cursor') || '';

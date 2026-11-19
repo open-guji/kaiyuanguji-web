@@ -152,7 +152,7 @@ export const PENDING_REASONS = {
         "hint": "知道是哪个字，但不确定本书刻的是哪种写法，只在组内写法里挑",
         "ui": "pick"
     },
-    // L01 lib_missing：5a 判 diff（why 含 lib_miss / 「库里没有」）；或本该判 L02／L03、而参校字在本书库里 0 例（第一次进库；刻例只算本书版本，A23 11-06）
+    // L01 lib_missing：参校字在本书库里 0 例（第一次进库；刻例只算本书版本，借来的不算；A23 11-06）。11-07 起只留这一种：5a 判 diff 但本书库已有这个字（≥3 例）的印糊整字改归 L05／L04，整理本这一位没字的（ref_blank）改归 R02。没接字形库时（不知道刻例数）仍按 5a 判 diff（why 含 lib_miss／「库里没有」）归这里
     "lib_missing": {
         "code": "L01",
         "category": "glyph_lib",
@@ -161,25 +161,25 @@ export const PENDING_REASONS = {
         "hint": "字形库里还没有这个字，这一格就是它第一次进库，请确认图上是不是参校本的字",
         "ui": "pick"
     },
-    // L02 lib_sparse_dissent：参校字在本书库里 1～2 例（只算本书版本；0 例归 L01），机器字≠参校字；大模型选中的若是这个少样本字 → 回人审
+    // L02 lib_sparse_dissent：参校字在本书库里 1～2 例（只算本书版本；0 例归 L01），不论机器字是否＝参校字（11-07 起 L03 并入；机器字＝参校字的多半是上下文选了形近字、被护栏 ctx_guard_ref 改回）；大模型选中的若是这个少样本字 → 回人审。detail 写「参校字>机器字」
     "lib_sparse_dissent": {
         "code": "L02",
         "category": "glyph_lib",
         "route": "llm",
-        "label": "刻例太少·不一致",
-        "hint": "库里这个字刻例很少，机器字和参校本不一致",
+        "label": "刻例太少",
+        "hint": "这个字本书库里只有一两个刻例，库认不准；机器字和参校本可能一致也可能不一致，请看图确认是不是参校本的字",
         "ui": "pick"
     },
-    // L03 lib_sparse_agree：参校字在本书库里 1～2 例（只算本书版本；0 例归 L01），机器字＝参校字（多半是上下文选了形近字、被护栏 ctx_guard_ref 改回参校字）
+    // L03 lib_sparse_agree：已停用；原为参校字本书库 1～2 例且机器字＝参校字（A23 第 6 轮梳理，sheldon 11-07 并入 L02）
     "lib_sparse_agree": {
         "code": "L03",
         "category": "glyph_lib",
         "route": "human",
-        "label": "刻例太少",
-        "hint": "这个字库里只有一两个刻例，库还认不准，请确认图上是不是参校本的字",
+        "label": "刻例太少（已停用）",
+        "hint": "已停用（2026-11-07）：旧数据里还有，不再产出；本书库 1～2 例的格一律落 L02",
         "ui": "pick"
     },
-    // L04 lib_unrecognized：兜底——有参校字、机器字（seed_admit char）＝参校字、前面各条都没中（不看刻例数、不看库认不认；不接字形库时 L02/L03 的格也落这里）。细分见 pending_reason_detail（reasons.lib_unrecognized_kind）
+    // L04 lib_unrecognized：兜底——有参校字、机器字（seed_admit char）＝参校字、前面各条都没中（不看刻例数、不看库认不认；不接字形库时 L02 的格也落这里）。另收 5a 判 diff 而本书库已有这个字（≥3 例）、没带乱码闸码的印糊整字（细分 lib_diff，11-07 起，原落 L01）。细分见 pending_reason_detail（reasons.lib_unrecognized_kind）；旧人裁锚点漂移（human_unbound）改归 X01
     "lib_unrecognized": {
         "code": "L04",
         "category": "glyph_lib",
@@ -188,7 +188,7 @@ export const PENDING_REASONS = {
         "hint": "库里有这个字，但这一格认不出，多半是印淡或压了框线",
         "ui": "pick"
     },
-    // L05 garble_gate：why 含 ctx_garble_shape / shadow_veto / ctx_garble_rare，且整理本这位有字（无对位的糊格落 R02）
+    // L05 garble_gate：why 含 ctx_garble_shape / shadow_veto / ctx_garble_rare，且整理本这位有字（无对位的糊格落 R02）；11-07 起也收 5a 判 diff（cov<0.85）、本书库已有这个字（≥3 例）而带这些码的格（原落 L01）
     "garble_gate": {
         "code": "L05",
         "category": "glyph_lib",
@@ -212,7 +212,7 @@ export const PENDING_REASONS = {
         "category": "reference",
         "route": "algo",
         "label": "参校本缺字",
-        "hint": "参校本这里写的是〓（没码位的生僻字），请从图上读",
+        "hint": "参校本这里写的是〓（没码位的生僻字），请从图上读；若是字形引述（「古文作〓」「說文作〓」等），不硬录常用字，标「图片格」只留图，说明写引述什么字",
         "ui": "free"
     },
     // R02 ref_gap：整理本这位没字，且不成片（不属 S01/S02）
@@ -242,7 +242,7 @@ export const PENDING_REASONS = {
         "hint": "文本对位没给这格标签、整理本字只来自坐标对位，机器字和它不同；实测多半是机器字错（cov 低），不是真异文",
         "ui": "pick"
     },
-    // X01 ruling_conflict：doubt=src_code_conflict（cv#938）；人裁的机器不能降，单列出卡
+    // X01 ruling_conflict：doubt=src_code_conflict（cv#938）；人裁的机器不能降，单列出卡；另收旧人裁绑丢、旧裁字与本格字对不上（锚点漂移，human_unbound，原落 L04；A23 11-07）
     "ruling_conflict": {
         "code": "X01",
         "category": "review",
@@ -278,6 +278,33 @@ export const PENDING_REASONS = {
         "hint": "上一单留下的格，请照书影核定",
         "ui": "pick"
     },
+    // A01 anchor_miss：收尾流水线按格级对照表（旧 ★main→新包）挪锚：旧格挂有标点／专名锚点，对照表里是「删」、IoU 低未配上，或挪过去后 auto_remap --cell-map 校验不过（字变了、专名被拆开）；写在新格（删的写在同页最近的新格）
+    "anchor_miss": {
+        "code": "A01",
+        "category": "anchor",
+        "route": "deferred",
+        "label": "标点专名要重挂",
+        "hint": "这一格的字已定，重跑后它挂的标点或专名没能按格号对照挪过来，点校时重挂",
+        "ui": "page"
+    },
+    // A02 add_del：格级对照表里「新增」的格，或紧邻「删」格的新格，且所在句挂有标点／专名
+    "add_del": {
+        "code": "A02",
+        "category": "anchor",
+        "route": "deferred",
+        "label": "增删格处重挂",
+        "hint": "重跑后这里多了或少了格，附近的标点、专名要按新格重挂",
+        "ui": "page"
+    },
+    // A03 anchor_drift：auto_remap 挪锚后 book-text 格式检查报「其他标点」漂移告警（local_check --dev），且 auto_remap 解释不了（不是对齐后 +1 这类）
+    "anchor_drift": {
+        "code": "A03",
+        "category": "anchor",
+        "route": "deferred",
+        "label": "标点位置存疑",
+        "hint": "标点已按格号挪过来，但位置可能偏了，点校时看一眼",
+        "ui": "confirm"
+    },
     // X99 unknown：以上都不中，或历史数据推不出原因；新数据出现即报警、补规则
     "unknown": {
         "code": "X99",
@@ -298,7 +325,8 @@ export const REASON_CATEGORIES: Record<string, string> = {
     "glyph_lib": "字形库",
     "reference": "参校本缺位",
     "mismatch": "与参校本不一致",
-    "review": "复审与其他"
+    "review": "复审与其他",
+    "anchor": "标点专名重挂"
 };
 /** 旧名 → 新名（2026-11-06 Sheldon 定：P01 ref_replaced→ref_ocr_diff「识别字与参校本对位时就不同」，P02 ref_mismatch→ref_final_diff「对位一致、最后定字与参校本不同」）。读旧单时先换成新名 */
 export const PENDING_REASON_RENAMED: Record<string, PendingReason> = {

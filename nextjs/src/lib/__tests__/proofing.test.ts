@@ -5,7 +5,7 @@ import {
     itemFields, parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, pickChapterByStem, ALT_MAX,
+    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -64,6 +64,18 @@ describe('规范形（book-text#148）：cells 键为 cell、无 c／cand／box'
         }, 'b', '001');
         expect(r.status).toBe('ok');
         if (r.status === 'ok') expect(r.pending.cells[0].c).toBe('定');
+    });
+    it('文本层的整理本占位〓▣、缺字□不当机器读字', async () => {
+        const char = { version: '1.0.0', book_id: 'b', volume: 1, pages: [{ page: 3, columns: [{ col: 1, cells: [{ a: '3:1:1', c: '〓' }, { a: '3:1:2', c: '▣' }, { a: '3:1:3', c: '□' }, { a: '3:1:4', c: '定' }] }] }] };
+        const idx = { chapters: [{ vol: '001', proofing: true, pending_file: '001.pending.json', char_file: '001.char.json' }] };
+        const cells = ['3:1:1', '3:1:2', '3:1:3', '3:1:4'].map(cell => ({ cell, review: 'pending' }));
+        const r = await loadProofing({
+            getManifest: async () => ({ versions: [{ key: 'original' }] }),
+            getIndex: async () => idx,
+            getFile: async (_i, _k, f) => (f.includes('pending') ? { rev: '001-r1', cells } : char),
+        }, 'b', '001');
+        expect(r.status).toBe('ok');
+        if (r.status === 'ok') expect(r.pending.cells.map(c => c.c ?? '')).toEqual(['', '', '', '定']);
     });
 });
 
@@ -355,6 +367,10 @@ describe('上下文（char_file 阅读顺序）', () => {
         expect(contextAround(order, pos, '10:1:1', 3)!.after).toEqual([]);
         expect(contextAround(order, pos, '1:1:1')).toBeNull();
     });
+    it('抬头格（末位 -1）留在阅读顺序里，排在本列第一格之前', () => {
+        const o = readingOrder({ pages: [{ page: 43, columns: [{ col: 7, cells: [{ a: '43:7:-1', c: '玉' }, { a: '43:7:1', c: '甲' }] }] }] });
+        expect(o.map(s => s.a)).toEqual(['43:7:-1', '43:7:1']);
+    });
     it('坏数据不抛', () => {
         expect(readingOrder(null)).toEqual([]);
         expect(readingOrder({ pages: 'x' })).toEqual([]);
@@ -362,6 +378,9 @@ describe('上下文（char_file 阅读顺序）', () => {
     it('pageColOf 认夹注半格', () => {
         expect(pageColOf('90:1:3a')).toEqual([90, 1]);
         expect(pageColOf('x')).toBeNull();
+        expect(pageColOf('43:7:-1')).toEqual([43, 7]);
+        expect(pageColOf('96mid1ogzk|43:7:-1')).toEqual([43, 7]);
+        expect(pageColOf('43:7:--1')).toBeNull();
     });
 });
 
@@ -420,6 +439,22 @@ describe('COS 上的待审单（中心库发布）', () => {
         expect(await loadCosPending('b/1', '001', f as unknown as typeof fetch)).toBeNull();
         expect(f).toHaveBeenCalledTimes(1);
         expect(await loadCosPending('b1', '001', (async () => res(404)) as unknown as typeof fetch)).toBeNull();
+    });
+    it('loadPendingDoc：先读 KV 接口，没有或坏了退回 COS', async () => {
+        const kvDoc = { rev: 'r2', cells: [{ cell: '1:1:1' }] };
+        const cosDoc = { rev: 'r1', cells: [] };
+        const mk = (kv: () => Promise<unknown>) => jest.fn(async (u: string) => (u.startsWith('/api/pending') ? kv() : res(200, cosDoc)));
+        const f1 = mk(async () => res(200, kvDoc));
+        expect(await loadPendingDoc('b1', '001', f1 as unknown as typeof fetch, 'https://x/proof')).toEqual(kvDoc);
+        expect(f1).toHaveBeenCalledWith('/api/pending?book=b1&vol=001');
+        expect(f1).toHaveBeenCalledTimes(1);
+        const f2 = mk(async () => res(404));
+        expect(await loadPendingDoc('b1', '001', f2 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        const f3 = mk(async () => { throw new Error('net'); });
+        expect(await loadPendingDoc('b1', '001', f3 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        const f4 = mk(async () => res(200, { success: false }));
+        expect(await loadPendingDoc('b1', '001', f4 as unknown as typeof fetch, 'https://x/proof')).toEqual(cosDoc);
+        expect(await loadPendingDoc('b/1', '001', f4 as unknown as typeof fetch)).toBeNull();
     });
     it('loadProofing：COS 有待审单就用它，章按文件名找（不看 proofing 标记）', async () => {
         const index = { chapters: [{ file: '001', title: '卷首', cord_file: '001.cord.json' }] };
@@ -504,5 +539,20 @@ describe('点校查证备注与来源链接', () => {
         expect(ex.refs).toHaveLength(5);
         expect(ex.refs?.[0]).toEqual({ u: 'https://a/b', t: '甲' });
         expect(ex.refs?.every(r => r.u.startsWith('https://'))).toBe(true);
+    });
+});
+
+describe('合审组合键与目录', () => {
+    it('rawA 去掉「册|」前缀，单册格号原样', async () => {
+        const { rawA, mergedKey, pageColOf } = await import('../proofing');
+        expect(rawA(mergedKey('005', '9:7:17'))).toBe('9:7:17');
+        expect(rawA('9:7:17')).toBe('9:7:17');
+        expect(pageColOf(mergedKey('005', '9:7:17'))).toEqual([9, 7]);
+    });
+    it('buildToc 按册号数字序，标题缺省「册 号」', async () => {
+        const { buildToc } = await import('../proofing');
+        const idx = { b: { '010': { rev: 'r', n: 1 }, '002': { rev: 'r2', n: 0 } } };
+        expect(buildToc(idx, 'b', new Map([['002', '卷二']])).map(e => [e.vol, e.title, e.n])).toEqual([['002', '卷二', 0], ['010', '册 010', 1]]);
+        expect(buildToc(null, 'b')).toEqual([]);
     });
 });
