@@ -116,6 +116,34 @@ export function warpTriangles(matrix: number[], W: number, H: number, nx = 12, n
     return out;
 }
 
+/**
+ * 分格数：透视项很小，格子越密误差越小（约按格数平方下降）。取「每格三角的仿射近似与真透视在格心相差 ≤ 0.4px」的最稀一档，
+ * 通常 4×6 就够，比固定 12×16 少画一个数量级的三角（每个三角一次 clip + drawImage，主线程上很贵）。
+ */
+export function pickGrid(matrix: number[], W: number, H: number): [number, number] {
+    let inv: number[];
+    try { inv = invert3(matrix); } catch { return [12, 16]; }
+    for (const nx of [1, 2, 3, 4, 6, 8, 10]) {
+        const ny = Math.max(1, Math.ceil((nx * H) / W));
+        let worst = 0;
+        const dstAt = (i: number, j: number): Pt => [(W * i) / nx, (H * j) / ny];
+        const srcAt = (p: Pt): Pt => applyH(inv, p[0], p[1]);
+        for (let j = 0; j < ny; j++) {
+            for (let i = 0; i < nx; i++) {
+                // 格内第一个三角 (p00,p10,p11) 的重心：仿射近似下的位置 vs 真透视
+                const d = [dstAt(i, j), dstAt(i + 1, j), dstAt(i + 1, j + 1)];
+                const c: Pt = [(d[0][0] + d[1][0] + d[2][0]) / 3, (d[0][1] + d[1][1] + d[2][1]) / 3];
+                const s = d.map(srcAt);
+                const sc: Pt = [(s[0][0] + s[1][0] + s[2][0]) / 3, (s[0][1] + s[1][1] + s[2][1]) / 3];
+                const back = applyH(matrix, sc[0], sc[1]);   // 仿射近似（src 重心）经真矩阵回到页图
+                worst = Math.max(worst, Math.hypot(back[0] - c[0], back[1] - c[1]));
+            }
+        }
+        if (worst <= 0.4) return [nx, ny];
+    }
+    return [12, 16];
+}
+
 /** 把缩略图按矩阵摆到 W×H 的画布上：分格仿射近似透视（版框歪斜只有几度，格够密就看不出），GPU 画，不读像素 */
 export function drawWarped(ctx: CanvasRenderingContext2D, img: CanvasImageSource, matrix: number[], W: number, H: number): void {
     ctx.fillStyle = '#f4efe3';
@@ -130,7 +158,8 @@ export function drawWarped(ctx: CanvasRenderingContext2D, img: CanvasImageSource
         ctx.restore();
         return;
     }
-    for (const t of warpTriangles(matrix, W, H)) {
+    const [gx, gy] = pickGrid(matrix, W, H);
+    for (const t of warpTriangles(matrix, W, H, gx, gy)) {
         const [a, b, c, d, e, f] = affineOf(t.src, t.dst);
         ctx.save();
         // 三角向外扩 0.6px 再裁，相邻三角叠一点，免得缝里透底色
@@ -177,10 +206,23 @@ async function warpToObjectUrl(spec: WarpSpec): Promise<string | null> {
     return blob ? URL.createObjectURL(blob) : null;
 }
 
-/** 取图钩子：认得 `#bimwarp=` 地址的就摆正；失败、超时退回本站图（fb）。别的地址返回 null，走默认加载 */
+const resolverCache = new Map<string, Promise<HTMLImageElement | null>>();
+const RESOLVER_CACHE_MAX = 24;
+
+/**
+ * 取图钩子：认得 `#bimwarp=` 地址的就摆正；失败、超时退回本站图（fb）。别的地址返回 null，走默认加载。
+ * 同一地址的结果缓存（最近 24 张）：阅读页滚动时页面反复挂载／卸载，每次都重新解码 3840 宽整页、分格摆正、编码再解码，
+ * 主线程上一页就是上百毫秒；缓存后重新挂载直接复用同一个 img（阅读器按 img 缓存的版框检测也跟着命中）。
+ */
 export function commonsResolver(url: string): Promise<HTMLImageElement | null> | null {
     const spec = parseWarpUrl(url);
     if (!spec) return null;
+    const hit = resolverCache.get(url);
+    if (hit) {
+        resolverCache.delete(url);
+        resolverCache.set(url, hit);   // 最近使用排到最后
+        return hit;
+    }
     const fallback = () => (spec.fb ? plainImage(spec.fb) : Promise.resolve(null));
     const work = (async () => {
         const obj = await warpToObjectUrl(spec);
@@ -190,7 +232,11 @@ export function commonsResolver(url: string): Promise<HTMLImageElement | null> |
         return out;
     })().catch(() => null);
     const timeout = new Promise<null>(r => setTimeout(() => r(null), TIMEOUT_MS));
-    return Promise.race([work, timeout]).then(r => r ?? fallback());
+    const p = Promise.race([work, timeout]).then(r => r ?? fallback());
+    resolverCache.set(url, p);
+    p.then(v => { if (!v) resolverCache.delete(url); });   // 失败不缓存
+    while (resolverCache.size > RESOLVER_CACHE_MAX) resolverCache.delete(resolverCache.keys().next().value as string);
+    return p;
 }
 
 const displayCache = new Map<string, Promise<string>>();
