@@ -65,6 +65,11 @@ on:
         description: '演练专用（只在 target=staging 时生效）：让这次上传的 staging/latest.json 带 codePointer 标记，演练“读者以 web.json 为准”那一路。正式前缀不受它影响：那里的上传一律带标记（overview#470 P1 方案 A）'
         type: boolean
         default: false
+      derived_source:
+        description: '派生数据从哪里产出：db = 先把 book-index＋book-text 灌进本 job 的 Postgres、--verify 还原比对 0 不一致，再从库产出（GUJI-755，用户 2026-11-19 定上线）；files = 照旧直接读源档（回退用）。定时跑一律 files'
+        type: choice
+        options: [db, files]
+        default: db
       allow_ref_override:
         description: '允许 prod_ref／text_ref 不是 main 时仍上传（回滚＝重发上一版数据、用新格式分支演练）。默认不允许：别的 ref 只做检查。勾上＝所选 ref 的代码会在带密钥的 job 里跑，只给可信分支用'
         type: boolean
@@ -208,6 +213,17 @@ jobs:
     concurrency:
       group: ${{ inputs.target == 'staging' && 'deploy-edgeone-build-staging' || 'publish-data-writer' }}
       cancel-in-progress: false
+    # 目录库（GUJI-755）：derived_source=db 时 build_derived 从这个库产出；本地容器，口令不是机密，不进 secrets
+    services:
+      pg:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: pg
+          POSTGRES_DB: gj
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+          --shm-size 1g
     env:
       IN_PROD_REF: ${{ inputs.prod_ref }}
       IN_TEXT_REF: ${{ inputs.text_ref }}
@@ -387,13 +403,29 @@ jobs:
 
       # schema-v2（overview#458）：同 deploy.yml——旧 schema 的仓没有 build/build_derived.py 就跳过；退出码非 0 = 自校验失败
       - name: Build derived data (schema-v2)
+        env:
+          DERIVED_SOURCE: ${{ inputs.derived_source || 'files' }}
+          DSN: host=localhost port=5432 user=postgres password=pg dbname=gj
         run: |
           if [ -f book-index/build/build_derived.py ]; then
             D="$RUNNER_TEMP/book-index-derived"
-            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC"
+            s=$SECONDS; echo "▶ build_derived 开始 $(date -u +%H:%M:%S) UTC（来源：$DERIVED_SOURCE）"
             # overview#506 C：_has_text／_has_collated 从 book-text 的 index/texts 推（脚本支持且目录在才传）
             TI=""; if [ -d "$GITHUB_WORKSPACE/book-text/index/texts" ] && grep -q -- "--text-index" book-index/build/build_derived.py; then TI="--text-index $GITHUB_WORKSPACE/book-text/index/texts"; fi
-            (cd book-index && python3 build/build_derived.py --out "$D" $TI)
+            if [ "$DERIVED_SOURCE" = db ]; then
+              # GUJI-755：git 仍是真源；先全量灌库并逐条还原比对（--verify，不一致即失败），再从库产出 _build/。
+              # 从库产出与读源档逐字节相同，由 book-index 的 db-nightly 每夜核对。出问题时手动选 derived_source=files 回退。
+              BIM="$RUNNER_TEMP/bim"
+              git clone -q --depth 1 https://github.com/open-guji/book-index-manager.git "$BIM"
+              echo "· bim @ $(git -C "$BIM" rev-parse --short=12 HEAD)"
+              pip install -q "psycopg[binary]"
+              set -o pipefail
+              (cd "$BIM" && python3 -m book_index_manager.db build --root "$GITHUB_WORKSPACE/book-index" --text-root "$GITHUB_WORKSPACE/book-text" --dsn "$DSN" --full --verify | tail -12)
+              echo "✔ 建库＋还原比对用时 $((SECONDS - s)) 秒"
+              (cd book-index && PYTHONPATH="$BIM" python3 build/build_derived.py --from-db "$DSN" --out "$D" $TI)
+            else
+              (cd book-index && python3 build/build_derived.py --out "$D" $TI)
+            fi
             echo "✔ build_derived 用时 $((SECONDS - s)) 秒，产物 $(du -sh "$D" | cut -f1)"
             echo "BOOK_INDEX_DERIVED_DIR=$D" >> "$GITHUB_ENV"
             # 05 overview#506 E：旧字段回退已清零；B5-3.2 起严格是 derived.mjs 的默认（STRICT_DERIVED 不再起作用，留着无害）
