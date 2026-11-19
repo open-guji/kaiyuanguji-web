@@ -118,6 +118,7 @@ def main(argv=None):
     ap.add_argument('--cache', default=None, help='页图缓存目录（默认 <out>/../cache）')
     ap.add_argument('--jobs', type=int, default=None)
     ap.add_argument('--no-pagemeta', action='store_true', help='不在 canvas 里写页面范围（bim:page）；缺省有旁车就写')
+    ap.add_argument('--cos-tier', action='store_true', help='canvas 写 bim:cos（国内单版整页图，需先传好）')
     ap.add_argument('--src-tier', action='store_true', help='bim:page 里写源图档地址（只在源图档已上传后加）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
@@ -158,7 +159,7 @@ def main(argv=None):
         if not a.no_pagemeta:
             # canvas 的 seq 是页号（seq_by_page），旁车按页表原 seq 存：先建对照
             orig = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
-            r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier)
+            r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier, with_cos=a.cos_tier)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))

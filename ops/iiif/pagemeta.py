@@ -63,6 +63,46 @@ def src_tier_key(book_id, vol_dir, slug, width=SRC_TIER_W):
     return f'iiif/{book_id}/{vol_dir}/src/{slug}/full/{width},/0/default.webp'
 
 
+COS_TIER_W = 3840   # 国内单版整页（1-bit 无损 WebP）的宽，与 Commons 缩略图同宽，两边共用同一套矩阵
+
+
+def cos_tier_key(book_id, vol_dir, slug, width=COS_TIER_W):
+    """单版整页的 COS 路径（新路径段 srcbw，不覆盖旧图）；同一张源图的各半叶共用一个对象。"""
+    return f'iiif/{book_id}/{vol_dir}/srcbw/{slug}/full/{width},/0/default.webp'
+
+
+def cos_size(entry, width=COS_TIER_W):
+    """旁车一页 → (缩放 s, 整页图宽, 整页图高)；源图比 width 窄就不放大（s=1）。"""
+    sw, sh = int(entry['src']['w']), int(entry['src']['h'])
+    s = min(1.0, width / sw)
+    return s, round(sw * s), round(sh * s)
+
+
+def cos_matrix(entry, width=COS_TIER_W):
+    """`bim:cos.matrix`：COS 整页图像素 → 页图像素（与 bim:commons.matrix 同方向）。= inv(S·H)，按 [2][2] 归一。
+    殿本 width=3840 时与 commons_warp.page_matrix 相同；单页扫描书 H 恒等，不缩就是恒等阵。"""
+    s, _, _ = cos_size(entry, width)
+    H = entry['H']
+    SH = [[s * v for v in H[0]], [s * v for v in H[1]], list(H[2])]
+    inv = _inv3(SH)
+    if inv is None:
+        raise ValueError('S·H 不可逆')
+    z = inv[2][2]
+    if abs(z) < 1e-12:
+        raise ValueError('矩阵无法归一')
+    return [float(f'{v / z:.10g}') for r in inv for v in r]
+
+
+def bim_cos(entry, public_url, book_id, vol_dir, width=COS_TIER_W):
+    """旁车一页 → canvas 的 `bim:cos`（国内读者的单版整页图）。整页图必须已上传到 cos_tier_key。"""
+    _, w, h = cos_size(entry, width)
+    return {
+        'url': public_url(cos_tier_key(book_id, vol_dir, src_slug(entry['src']['id']), width)),
+        'width': w, 'height': h, 'matrix': cos_matrix(entry, width),
+        'kind': 'bilevel', 'format': 'webp-lossless',
+    }
+
+
 def _identity(H):
     return all(abs(a - b) < 1e-9 for a, b in zip([v for r in H for v in r], [1, 0, 0, 0, 1, 0, 0, 0, 1]))
 
