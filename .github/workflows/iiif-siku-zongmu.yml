@@ -64,6 +64,10 @@ on:
         description: '国内单版整页（A20 方案 书影单版WebP）：不切片，只把整页图转 3840 宽 1-bit 无损 WebP 传到 iiif/<书>/<册>/srcbw/…。四庫總目从 DjVu（wyg_src_tier.py --bw，rev 必填）；别的书从页表页图（pages_bw_tier.py）。用 vols／upload／force，其余输入无效'
         type: boolean
         default: false
+      list_old_tiers:
+        description: '只读 dry-run：不切片，列出各书 COS 旧档（300／1200／原宽／src 2400）的对象数与 GB，建议删的键清单作工件（ops/cos_old_tiers.py）。book 填一个书 id，或填 all＝五本（四庫總目、全唐文、北行日錄、史記、脈經）。不删任何东西'
+        type: boolean
+        default: false
       cos_tier:
         description: 'manifest 的 canvas 写 bim:cos（国内读者读单版整页）。必须先跑 bw_tier 把整页图传好，否则国内读者取到 404 图（会退回本站旧图，但旧图要被删）'
         type: boolean
@@ -123,6 +127,22 @@ jobs:
           [ "$FORCE" = "true" ] && ARGS+=(--force)
           python3 ops/iiif/wyg_src_tier.py "${ARGS[@]}"
 
+      - name: 旧档清单（只读 dry-run）
+        if: inputs.list_old_tiers
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ap-shanghai
+          BOOK: ${{ inputs.book }}
+        run: |
+          set -euo pipefail
+          BOOKS="$BOOK"
+          [ "$BOOK" = "all" ] && BOOKS="96mid1ogzk,995ejelvk0,988g7gsqhd,988g3f0wsu,99k3i35yww"
+          if ! [[ "$BOOKS" =~ ^[0-9a-z]{10}(,[0-9a-z]{10})*$ ]]; then echo "❌ book 格式不对"; exit 1; fi
+          mkdir -p "$RUNNER_TEMP/old-tiers"
+          python3 ops/cos_old_tiers.py --books "$BOOKS" --out "$RUNNER_TEMP/old-tiers" | tee "$RUNNER_TEMP/old-tiers/summary.txt"
+
       - name: 国内单版整页（1-bit 无损 WebP → 上传）
         if: inputs.bw_tier
         env:
@@ -158,17 +178,17 @@ jobs:
           fi
 
       - name: Unit tests
-        if: ${{ !inputs.build_src_tier && !inputs.bw_tier }}
+        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && !inputs.list_old_tiers }}
         run: python3 -m unittest ops/tests/test_siku_iiif.py ops/tests/test_pages_iiif.py -v
 
       - name: Cord ↔ 裁剪框表核对（拆页框与 book-text 不一致就停，免得切出与 cord 对不上的书影）
-        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && inputs.book == '96mid1ogzk' && inputs.image_seg == '' }}
+        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && !inputs.list_old_tiers && inputs.book == '96mid1ogzk' && inputs.image_seg == '' }}
         env:
           VOLS: ${{ inputs.vols }}
         run: python3 ops/iiif/check_cord_vs_splits.py --vols "$VOLS"
 
       - name: Slice → manifest → upload → verify
-        if: ${{ !inputs.build_src_tier && !inputs.bw_tier }}
+        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && !inputs.list_old_tiers }}
         env:
           COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
           COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
@@ -213,7 +233,7 @@ jobs:
           python3 ops/iiif/siku_zongmu_iiif.py "${ARGS[@]}"
 
       - name: Purge EdgeOne manifest cache
-        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && inputs.upload && inputs.purge && !inputs.images_only }}
+        if: ${{ !inputs.build_src_tier && !inputs.bw_tier && !inputs.list_old_tiers && inputs.upload && inputs.purge && !inputs.images_only }}
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
@@ -227,6 +247,14 @@ jobs:
           if [ -z "$URLS" ]; then echo "没有 manifest 要清"; exit 0; fi
           export URLS
           python3 ops/edgeone-purge-urls.py
+
+      - name: Upload old-tiers list
+        if: inputs.list_old_tiers
+        uses: actions/upload-artifact@v4
+        with:
+          name: old-tiers-${{ github.run_id }}
+          path: ${{ runner.temp }}/old-tiers/
+          retention-days: 14
 
       - name: Upload report and samples
         if: always()
