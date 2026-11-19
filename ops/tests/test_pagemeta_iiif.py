@@ -149,3 +149,20 @@ class TestBanxinViews(unittest.TestCase):
         self.assertNotIn('full', a['views'])
         b = pm.bim_page(self.ENT, pub, 'b', '01', with_src_tier=True, tpage=self.TP)
         self.assertIn('full', b['views'])
+
+
+class CosTierPages(unittest.TestCase):
+    def test_bim_cos_page_identity(self):
+        c = pm.bim_cos_page('0002', 2000, 3000, lambda k: 'https://d/' + k, 'bk', '005')
+        self.assertEqual(c['url'], 'https://d/iiif/bk/005/srcbw/p0002/full/3840,/0/default.webp')
+        self.assertEqual((c['width'], c['height']), (2000, 3000))
+        self.assertEqual(c['matrix'], [1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+    def test_page_to_bw_two_colors_and_width(self):
+        from PIL import Image
+        import pages_bw_tier as bw
+        im = Image.new('L', (8000, 100), 235)
+        im.paste(40, (10, 10, 5000, 60))
+        out = bw.page_to_bw(im)
+        self.assertEqual(out.width, 3840)
+        self.assertEqual({v for _, v in out.getcolors()}, {0, 255})

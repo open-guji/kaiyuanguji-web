@@ -159,7 +159,14 @@ def main(argv=None):
         if not a.no_pagemeta:
             # canvas 的 seq 是页号（seq_by_page），旁车按页表原 seq 存：先建对照
             orig = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
-            r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier, with_cos=a.cos_tier)
+            r['stats']['pagemeta'] = S.attach_pagemeta(table, v, r['canvases'], by_seq=orig, with_src_tier=a.src_tier)
+        if a.cos_tier:
+            # 单页扫描书：源图＝页图，整页图路径段按页表 seq（pages_bw_tier.py 同一规矩）；不依赖旁车
+            tp = {p['seq']: p for p in table['pages']}
+            back = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
+            for c in r['canvases']:
+                tseq = back.get(c['seq'], c['seq'])
+                c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))
