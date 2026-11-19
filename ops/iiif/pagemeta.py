@@ -93,6 +93,19 @@ def cos_matrix(entry, width=COS_TIER_W):
     return [float(f'{v / z:.10g}') for r in inv for v in r]
 
 
+def page_slug(seq):
+    """单页扫描书整页图的路径段：页表 seq（如 0002、0105a）前加 p。"""
+    return f'p{seq}'
+
+
+def bim_cos_page(seq, w, h, public_url, book_id, vol_dir, width=COS_TIER_W):
+    """单页扫描书（源图＝页图，H 恒等）一页的 `bim:cos`；不依赖旁车。w、h＝页图宽高。"""
+    entry = {'src': {'id': page_slug(seq), 'w': w, 'h': h}, 'H': [[1, 0, 0], [0, 1, 0], [0, 0, 1]]}
+    c = bim_cos(entry, public_url, book_id, vol_dir, width)
+    c['url'] = public_url(cos_tier_key(book_id, vol_dir, page_slug(seq), width))
+    return c
+
+
 def bim_cos(entry, public_url, book_id, vol_dir, width=COS_TIER_W):
     """旁车一页 → canvas 的 `bim:cos`（国内读者的单版整页图）。整页图必须已上传到 cos_tier_key。"""
     _, w, h = cos_size(entry, width)
