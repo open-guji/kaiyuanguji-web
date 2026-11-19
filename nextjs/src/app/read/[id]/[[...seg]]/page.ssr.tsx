@@ -28,7 +28,7 @@ import '@/lib/server/local-public-data'; // 本地联调读 public/data/（KYG_L
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getCurrentUrlServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
+import { getBookVersionServer, getCurrentJsonServer, getCurrentTextHeadServer, getCurrentTextServer, getCurrentUrlServer, getItemServer, getLatestServer, getPromotionServer } from '@/lib/server/item-data';
 import { checkReader, isDuiduChapterMeta, type ReaderCheckResult } from '@/lib/server/reader-check';
 import { dataVersionKey, type LatestPointer } from '@/lib/data-version';
 import { summarizeItem } from '@/lib/server/item-summary';
@@ -322,7 +322,9 @@ export default async function ReaderPage({ params }: Props) {
         duiduPreloadUrls(id, s).catch(() => [] as { href: string; media?: string }[]),
         chapterFont(id, s).catch(() => null),
     ]);
-    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion, dataVersionAt: Date.now() } : {}) };
+    // 这本书的 bookVer（docs/数据地址按书版本化.md）：与上面 preload 的 ?v= 同一个，浏览器取这本书的文件直接用，不再自己取清单。查不到是 null（浏览器用全局键，不再自己取清单）
+    const bookVersion = await getBookVersionServer(id).catch(() => null);
+    const seed = { ...(await timed(s.timing, 'preload', preload(id, s))), ...(s.dataVersion ? { dataVersion: s.dataVersion, dataVersionAt: Date.now(), bookVersion } : {}) };
     const hasSeedMd = s.checked.status === 'found' && s.checked.version && s.checked.chapter
         && (seed.calls?.[seedCallKey('getChapter', id, s.checked.version.key, s.checked.chapter)] as { md?: string } | undefined)?.md !== undefined;
     const head = hasSeedMd ? null : await timed(s.timing, 'leadHead', headP);

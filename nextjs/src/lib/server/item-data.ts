@@ -25,6 +25,7 @@
 
 import { isValidItemId } from '../item-id';
 import { dataVersionKey, type LatestPointer } from '../data-version';
+import { bookVersionShardKey, bookVersionShardUrl, parseBookVersionShard, versionForPath, type BookVersionShard } from '../book-version';
 import { PROMOTION_SHARD_KEY_LENGTH } from '../promotions';
 import { decodeChapterHead } from '../reader-head';
 import { DATA_ORIGIN } from '../hosts';
@@ -247,6 +248,37 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
     }
 
+    /**
+     * 数据地址按书版本化（docs/数据地址按书版本化.md）：current/items/<书 ID>/** 的 `?v=` 用这本书自己的 bookVer，
+     * 其余文件仍用全局版本键。清单分片 current/vers/<末2位>.json（带全局键做 `?v=`，每次发布换一次）进 LRU；
+     * 取不到、书不在清单里一律回退全局键（旧数据、分片 404 都照常），404 记一小会儿免得每个请求都去撞。
+     */
+    const shardMiss = new Map<string, number>();
+    async function lookupBookVersion(id: string, globalKey: string | undefined): Promise<string | null> {
+        const shardKey = bookVersionShardKey(id);
+        if (!shardKey || !globalKey) return null;
+        const url = bookVersionShardUrl(`${base}/current`, shardKey, globalKey);
+        const missAt = shardMiss.get(url);
+        if (missAt !== undefined && now() - missAt < pointerTtl) return null;
+        try {
+            const raw = await getImmutable<unknown>(url);
+            const shard: BookVersionShard | null = parseBookVersionShard(raw);
+            if (!shard) { shardMiss.set(url, now()); return null; }
+            return shard[id] ?? null;
+        } catch (err) {
+            if (err instanceof NotFound) shardMiss.set(url, now());
+            return null;
+        }
+    }
+    /** current/ 下一个相对路径该带的 `?v=<…>`（没有版本键返回空串） */
+    async function currentQuery(relPath: string, extra = ''): Promise<string> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        const key = dataVersionKey(latest);
+        const v = await versionForPath(relPath, key, (id) => lookupBookVersion(id, key));
+        const parts = [v ? `v=${v}` : '', extra].filter(Boolean);
+        return parts.length ? `?${parts.join('&')}` : '';
+    }
+
     async function fromCurrent(id: string): Promise<{ entry: ItemEntry; version: string } | null> {
         const latest = await getPointer<LatestPointer>('latest.json');
         // 版本键优先 cacheKey（三仓合成），旧 latest.json 没有时回退 commitId（overview#169）
@@ -380,10 +412,8 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         const localJson = readLocalPublicData(relPath);
         if (localJson !== null) return JSON.parse(localJson) as T;
 
-        const latest = await getPointer<LatestPointer>('latest.json');
-        const key = dataVersionKey(latest);
         try {
-            return await getImmutable<T>(`${base}/current/${relPath}${key ? `?v=${key}` : ''}`);
+            return await getImmutable<T>(`${base}/current/${relPath}${await currentQuery(relPath)}`);
         } catch (err) {
             if (err instanceof NotFound) return null;
             throw err;
@@ -399,9 +429,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         const localText = readLocalPublicData(relPath);
         if (localText !== null) return localText.length > maxBytes ? null : localText;
 
-        const latest = await getPointer<LatestPointer>('latest.json');
-        const key = dataVersionKey(latest);
-        const url = `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;
+        const url = `${base}/current/${relPath}${await currentQuery(relPath)}`;
         return fetchRead(url, async (res) => {
             if (res.status === 404 || res.status === 403) return null;
             if (!res.ok) throw new Error(`${url} HTTP ${res.status}`);
@@ -432,9 +460,7 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
         }
         const timeout = timeoutSignal(headTimeoutMs);
         try {
-            const latest = await getPointer<LatestPointer>('latest.json');
-            const key = dataVersionKey(latest);
-            const url = `${base}/current/${relPath}?${key ? `v=${key}&` : ''}h=${headBytes}`;
+            const url = `${base}/current/${relPath}${await currentQuery(relPath, `h=${headBytes}`)}`;
             const init: RequestInit = { signal: timeout.signal, headers: { Range: `bytes=0-${headBytes - 1}` } };
             if (forceCache) init.cache = 'force-cache';
             const res = await doFetch(url, init);
@@ -462,12 +488,16 @@ export function createItemFetcher(opts: ItemFetcherOptions) {
 
     /** current/ 下一个文件的浏览器端地址（与 cos-storage 的 getTextFileLegacy 逐字一致，带 ?v=<版本键>），给 preload 用 */
     async function currentUrl(relPath: string): Promise<string> {
-        const latest = await getPointer<LatestPointer>('latest.json');
-        const key = dataVersionKey(latest);
-        return `${base}/current/${relPath}${key ? `?v=${key}` : ''}`;
+        return `${base}/current/${relPath}${await currentQuery(relPath)}`;
     }
 
-    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getCurrentTextHead, getLatest, currentUrl };
+    /** 这本书的 bookVer（给阅读页种子，浏览器据此不再自己取清单）；取不到返回 null */
+    async function getBookVersion(id: string): Promise<string | null> {
+        const latest = await getPointer<LatestPointer>('latest.json');
+        return lookupBookVersion(id, dataVersionKey(latest));
+    }
+
+    return { getItem, resolvePromotion, getCurrentJson, getCurrentText, getCurrentTextHead, getLatest, currentUrl, getBookVersion };
 }
 
 /** 服务端默认数据根：构建期注入的 NEXT_PUBLIC_COS_BASE（测试站是 …/staging），没配则用正式数据根 */
@@ -498,6 +528,10 @@ export function getLatestServer(): Promise<unknown> {
 }
 
 /** current/ 下一个文件的浏览器端地址（同一个取数实例、同一个版本键） */
+export function getBookVersionServer(id: string): Promise<string | null> {
+    return defaultFetcher().getBookVersion(id);
+}
+
 export function getCurrentUrlServer(relPath: string): Promise<string> {
     return defaultFetcher().currentUrl(relPath);
 }
