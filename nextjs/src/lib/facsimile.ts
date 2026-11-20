@@ -118,7 +118,8 @@ export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boole
             width: c.width,
             height: c.height,
             ...(ext ? ({ extent: ext } as object) : {}),
-            seq: m[1] + m[2],
+            // 页序以 canvas id 尾段为准（统一规范：canvas seq ＝ cord page 四位补零）；老 manifest（半叶编号）尾段与图片 URL 一致，行为不变
+            seq: /\/(\d{4})$/.test(c.id) ? c.id.slice(-4) : m[1] + m[2],
             // 拆页（合扫叶拆成 a–d）的页号与 leaf 号不对应，不给 pageNo，对读按 seq 对位
             ...(m[2] ? {} : { pageNo: leaf }),
             label: m[2] ? `第 ${leaf}${m[2]} 葉` : `第 ${leaf} 葉`,
