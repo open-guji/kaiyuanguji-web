@@ -69,3 +69,9 @@ test('shapeResult：_descr 换成 _formatted，没命中就没有', () => {
     assert.ok(!('_descr' in r.hits[0]) && !('_descr' in r.hits[1]));
     assert.equal(r.estimatedTotalHits, 2);
 });
+
+test('shapeResult：人物卡片 title → primary_name', () => {
+    const call = { indexUid: 'entities', q: '李白', limit: 5, offset: 0 };
+    const r = shapeResult(call, { hits: [{ id: 'e1', type: 'entity', title: '李白', dynasty: '唐' }] }, 1);
+    assert.deepEqual(r.hits[0], { id: 'e1', type: 'entity', primary_name: '李白', dynasty: '唐' });
+});

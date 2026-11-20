@@ -151,7 +151,9 @@ export function shapeResult(call, row, processingTimeMs) {
     const hits = (row.hits || []).map((h) => {
         const { _descr: descr, ...rest } = h;
         const snippet = descr ? descriptionSnippet(descr, call.q) : undefined;
-        return snippet ? { ...rest, _formatted: { description_search: snippet } } : rest;
+        // 人物卡片字段名是 primary_name（Meili 文档如此），库里统一存在 title 列
+        const card = rest.type === 'entity' && rest.title !== undefined ? (({ title, ...o }) => ({ ...o, primary_name: title }))(rest) : rest;
+        return snippet ? { ...card, _formatted: { description_search: snippet } } : card;
     });
     return {
         indexUid: call.indexUid,
