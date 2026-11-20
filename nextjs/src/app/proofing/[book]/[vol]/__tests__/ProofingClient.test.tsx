@@ -630,7 +630,7 @@ describe('快速确认（用户 10-24）', () => {
         expect(JSON.parse(localStorage.getItem('kyg-cr-defer:r1') ?? '[]')).toEqual(['3:1:2']);
     });
 
-    it('只有一类时不出分类按钮；提交失败时停下并报出已交几格', async () => {
+    it('只有一类时不出分类按钮；后台提交失败的格恢复为待审并报错', async () => {
         const fetchSpy = jest.fn()
             .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) })
             .mockResolvedValue({ ok: false, status: 429, json: async () => ({ success: false }) });
@@ -641,8 +641,37 @@ describe('快速确认（用户 10-24）', () => {
         expect(screen.getByTestId('quick-review').textContent).toContain('选「符号、篆字等」');   // GUJI-737：图形先标存疑，到下面卡片选
         expect(screen.queryByTestId('quick-groups')).toBeNull();
         fireEvent.click(screen.getByTestId('quick-confirm'));
-        expect((await screen.findByRole('alert')).textContent).toMatch(/^已确认 1 格，后面的没交上：提交太频繁/);
-        expect(screen.getAllByTestId('quick-tile')).toHaveLength(2);     // 没交上的还在网格里
+        expect((await screen.findByTestId('sync-failed')).textContent).toMatch(/^有 2 格没交上（提交太频繁/);
+        expect(screen.getAllByTestId('quick-tile')).toHaveLength(2);     // 没交上的恢复回网格里
+        expect(Object.keys(JSON.parse(localStorage.getItem('kyg-cr-done:r1') ?? '{}'))).toEqual(['3:1:1']);   // 本机只记服务端确认过的
+    });
+
+    it('乐观提交：接口还没回就先收起这一格，成功后才落本机存档', async () => {
+        let finish!: (v: unknown) => void;
+        const fetchSpy = jest.fn().mockReturnValue(new Promise(r => { finish = r; }));
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '5:1:1', c: '己', cand: [{ c: '已' }, { c: '巳' }] }, { a: '5:1:2', c: '日', cand: [{ c: '曰' }] }]));
+        render(<ProofingClient book="b1" vol="vol01" />);
+        await screen.findAllByTestId('cell-card');
+        fireEvent.click(screen.getAllByRole('button', { name: /选「已」|^已/ })[0]);
+        await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(1));    // 接口没回，已经收起
+        expect(screen.getByTestId('sync-status')).toBeTruthy();
+        expect(localStorage.getItem('kyg-cr-done:r1')).toBeNull();
+        finish({ ok: true, json: async () => ({ success: true }) });
+        await waitFor(() => expect(screen.queryByTestId('sync-status')).toBeNull());
+        expect(JSON.parse(localStorage.getItem('kyg-cr-done:r1') ?? '{}')).toHaveProperty(['5:1:1']);
+    });
+
+    it('乐观提交最终失败：恢复为待审并显示错误', async () => {
+        (global as { fetch?: unknown }).fetch = jest.fn().mockResolvedValue({ ok: false, status: 429, json: async () => ({ success: false }) });
+        loadProofing.mockResolvedValue(ok([{ a: '5:1:1', c: '己', cand: [{ c: '已' }, { c: '巳' }] }]));
+        render(<ProofingClient book="b1" vol="vol01" />);
+        await screen.findAllByTestId('cell-card');
+        fireEvent.click(screen.getAllByRole('button', { name: /选「已」|^已/ })[0]);
+        expect((await screen.findByTestId('sync-failed')).textContent).toContain('已恢复为待审');
+        expect(screen.getAllByTestId('cell-card')).toHaveLength(1);
+        expect(screen.getByTestId('cell-error').textContent).toContain('没交上');
+        expect(localStorage.getItem('kyg-cr-done:r1')).toBeNull();
     });
 });
 
