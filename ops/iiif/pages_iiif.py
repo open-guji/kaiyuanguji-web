@@ -157,6 +157,9 @@ def main(argv=None):
         if table.get('book_id') != a.book:
             raise SystemExit(f'❌ 页表的书 id {table.get("book_id")} ≠ {a.book}')
         print(f'{a.book}/{v} 页表 r{table["rev"]:03d}：{len(table["pages"])} 页', flush=True)
+        if any(len(p['seq']) != 4 for p in table['pages']):
+            print(f'  ⚠ {a.book}/{v} 页表带半叶后缀，本脚本出的 manifest 会是半叶编号，与 cord 页序对不上；'
+                  '上传后请用「renumber」开关（ops/iiif/renumber_manifest.py）改成页序编号，见 docs/iiif-canvas-seq-unify.md', file=sys.stderr)
         r = S.slice_volume(v, {'ia': None}, {}, out, cache, None, a.jobs, table=seq_by_page(table))
         if not a.no_pagemeta:
             # canvas 的 seq 是页号（seq_by_page），旁车按页表原 seq 存：先建对照
