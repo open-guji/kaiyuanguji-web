@@ -572,6 +572,30 @@ export function parseCord(raw: unknown): CordIndex {
     return out;
 }
 
+/**
+ * 书影页对到 cord 的页序。cord 的 canvas.seq 与 manifest 的 canvas 编号通常相同；
+ * 但有的书（史记）manifest 用半叶编号（0006a、0006c…），cord 用扫描顺序号（0001…），seq 一个也对不上。
+ * 此时若两边页数相同，按顺序对位（第 N 个 canvas ＝ cord 第 N 页），并要求 canvas 宽高与 cord 一致（有就核）。
+ * 返回 cord seq → 书影页；对不上的页不返回。
+ */
+export function alignFacsToCord<F extends { seq?: string; width?: number; height?: number }>(facs: F[], cord: CordIndex | null): Map<string, F> {
+    const out = new Map<string, F>();
+    const bySeq = new Map<string, F>();
+    for (const f of facs) if (f.seq) bySeq.set(f.seq, f);
+    const entries = cord ? [...cord.pages.entries()].sort((a, b) => a[0] - b[0]) : [];
+    const direct = entries.filter(([, p]) => bySeq.has(p.seq)).length;
+    if (!cord || direct > 0 || entries.length !== facs.length) {
+        for (const f of facs) if (f.seq) out.set(f.seq, f);   // 原样：seq 相同，或没法按顺序对位
+        return out;
+    }
+    entries.forEach(([, p], i) => {
+        const f = facs[i];
+        const sizeOk = !(p.width > 0 && p.height > 0 && f.width && f.height) || (Math.abs(f.width - p.width) <= 2 && Math.abs(f.height - p.height) <= 2);
+        if (sizeOk) out.set(p.seq, f);
+    });
+    return out;
+}
+
 export interface CellCrop {
     box: Box;
     /** IIIF 页序，用来在册的书影里找原叶图 */
