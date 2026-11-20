@@ -14,7 +14,7 @@ import { loadFacsimile } from '@/lib/facsimile';
 import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
-    isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
+    isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage, alignFacsToCord,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
@@ -1001,7 +1001,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             facsAsked.current.add(v);
             loadFacsimile(book, loaded[v]?.cord?.iiifVol ?? v).then(facs => {
                 if (cancelled || !facs) { if (cancelled) facsAsked.current.delete(v); return; }
-                setImages(prev => new Map([...prev, ...facs.flatMap(f => (f.seq ? [[imgKey(v, f.seq), { url: f.url, hires: f.hiresUrl ?? f.url, width: f.width ?? 0, height: f.height ?? 0 }] as [string, FacsPage]] : []))]));
+                setImages(prev => new Map([...prev, ...[...alignFacsToCord(facs, loaded[v]?.cord ?? null)].map(([seq, f]) => [imgKey(v, seq), { url: f.url, hires: f.hiresUrl ?? f.url, width: f.width ?? 0, height: f.height ?? 0 }] as [string, FacsPage])]));
             }).catch(() => { facsAsked.current.delete(v); /* 没有书影就只看字 */ });
         }
         return () => { cancelled = true; };
