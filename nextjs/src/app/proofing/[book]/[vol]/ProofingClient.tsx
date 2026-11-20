@@ -18,7 +18,7 @@ import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
-    loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
+    loadProofIndex, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
     QUICK_GROUPS, quickPick, readDefer, writeDefer,
 } from '@/lib/proofing';
@@ -104,7 +104,7 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     return p;
 }
 
-/** 只负责把原叶图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
+/** 只负责把原页图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
 function CellCrop({ src, crop, estimated }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number }; estimated?: boolean }) {
     const [bx, by, bw, bh] = crop.box;
     const cw = crop.canvasWidth;
@@ -133,10 +133,10 @@ function CellCrop({ src, crop, estimated }: { src: string; crop: { box: [number,
         return () => { cancelled = true; };
     }, [src, bx, by, bw, bh, cw, estimated]);
     if (failed) return <div style={{ color: '#999', fontSize: 12 }}>原图加载失败</div>;
-    return <canvas ref={ref} aria-label="原叶裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
+    return <canvas ref={ref} aria-label="原页裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
 }
 
-/** 雪碧图里的一块（GUJI-557）。加载失败通知上层，由上层回退到原叶 IIIF 裁图 */
+/** 雪碧图里的一块（GUJI-557）。加载失败通知上层，由上层回退到原页 IIIF 裁图 */
 function SpriteCrop({ url, sprite, label, onFail }: { url: string; sprite: SpriteRef; label: string; onFail: (url: string) => void }) {
     useEffect(() => {
         let cancelled = false;
@@ -151,7 +151,7 @@ function SpriteCrop({ url, sprite, label, onFail }: { url: string; sprite: Sprit
 
 interface CellRowProps {
     cell: PendingCell;
-    /** 能用的雪碧图地址（已排除加载失败的）；有就不用原叶裁图 */
+    /** 能用的雪碧图地址（已排除加载失败的）；有就不用原页裁图 */
     spriteSrc: string | null;
     spriteBase: (s: string) => string | null;
     onSpriteFail: (url: string) => void;
@@ -603,14 +603,14 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
     );
 }
 
-/** 「第 9 葉 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
+/** 「第 9 页 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
 function cellPlace(key: string): string {
     const a = rawA(key);
     const m = /^(\d+):(\d+):(-?\d+)([a-z]?)$/.exec(a);
     if (!m) return `格 ${a}`;
     const half = m[4] === 'a' ? '（夹注右行）' : m[4] === 'b' ? '（夹注左行）' : '';
-    if (Number(m[3]) < 0) return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列抬头${half}`;
-    return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列第 ${Number(m[3])} 字${half}`;
+    if (Number(m[3]) < 0) return `第 ${Number(m[1])} 页 第 ${Number(m[2])} 列抬头${half}`;
+    return `第 ${Number(m[1])} 页 第 ${Number(m[2])} 列第 ${Number(m[3])} 字${half}`;
 }
 
 const ZOOMS = [1, 2, 4] as const;
@@ -666,7 +666,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     return (
         <div data-testid="page-panel">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#555', marginBottom: 6, flexWrap: 'wrap' }}>
-                <b>第 {pageNo} 葉</b>
+                <b>第 {pageNo} 页</b>
                 {sel && <span>{estimatedSel ? '橙色虚线（推算位置）：' : '红框：'}{cellPlace(sel.a)}</span>}
                 {!sel && selPlace && <span data-testid="page-no-box" style={{ color: '#a60' }}>这一格没有坐标：{selPlace}</span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
@@ -683,7 +683,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
                 ) : (
                     <div style={{ position: 'relative', margin: '0 auto', width: zoom === 1 ? `min(100%, calc(${fitHeight} * ${W / H}))` : `${zoom * 100}%` }}>
                         {src && failed !== src
-                            ? <img src={src} alt={`第 ${pageNo} 葉书影`} onLoad={() => setLoaded(src)} onError={() => setFailed(src)} style={{ display: 'block', width: '100%', height: 'auto' }} />
+                            ? <img src={src} alt={`第 ${pageNo} 页书影`} onLoad={() => setLoaded(src)} onError={() => setFailed(src)} style={{ display: 'block', width: '100%', height: 'auto' }} />
                             : <div style={{ paddingTop: `${(H / W) * 100}%`, color: '#999', fontSize: 13 }}>书影加载失败</div>}
                         {boxes.map(b => {
                             const on = b.a === selected;
@@ -1197,7 +1197,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 const head = merged && (i === 0 || volOf(slice[i - 1]) !== v)
                                     ? <li key={`vh-${i}-${v}`} data-testid="vol-head" className="sticky top-[var(--nav-h)] z-10 -mx-1 mb-2 mt-3 flex list-none items-baseline justify-between border-b px-1 py-1.5 text-[15px]"
                                         style={{ backgroundColor: 'var(--color-paper)', borderColor: 'var(--color-tint-2)', color: 'var(--color-ink)' }}>
-                                        <b>{tocTitle.get(v) ?? info?.chapterTitle ?? `册 ${v}`}</b>
+                                        <b>{tocTitle.get(v) ?? volTitle(v, info?.chapterTitle)}</b>
                                         <span className="text-[13px]" style={{ color: 'var(--color-ink-3)' }}>剩 {cells.filter(c => volOf(c) === v && !done[c.a]).length} 格</span>
                                     </li> : null;
                                 return <React.Fragment key={cell.a}>{head}<CellRow cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, vcord)} imageUrl={crop ? images.get(imgKey(v, crop.seq))?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBaseOf(cell)} onSpriteFail={onSpriteFail} done={done[cell.a]} failedErr={failed[cell.a]} onSubmit={onSubmit}

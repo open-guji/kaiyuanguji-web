@@ -58,7 +58,7 @@ describe('精校页显示（GUJI-557）', () => {
         await waitFor(() => expect(screen.getAllByTestId('sprite-crop')).toHaveLength(2));
     });
 
-    it('没有 img 的格回退原叶裁图', async () => {
+    it('没有 img 的格回退原页裁图', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己' }]));
         render(<ProofingClient book="b1" vol="vol01" />);
         await waitFor(() => expect(loadFacsimile).toHaveBeenCalledTimes(1));
@@ -67,7 +67,7 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.queryByTestId('context')).toBeNull(); // 没有 char_file 就没有上下文行
     });
 
-    it('雪碧图加载失败回退原叶裁图，不报错', async () => {
+    it('雪碧图加载失败回退原页裁图，不报错', async () => {
         failUrls = /\/proof\//;
         loadProofing.mockResolvedValue(ok([{ a: '9:7:17', c: '己', img: img(0) }]));
         render(<ProofingClient book="b2" vol="vol01" />); // 换书：图片按地址缓存，别用前一例已成功的地址
@@ -411,12 +411,12 @@ describe('精校页显示（GUJI-557）', () => {
         loadFacsimile.mockResolvedValue(facs);
         render(<ProofingClient book="b5" vol="vol01" />);
         const panel = await screen.findByTestId('page-panel');
-        expect(panel.textContent).toContain('第 9 葉');
+        expect(panel.textContent).toContain('第 9 页');
         await waitFor(() => expect(panel.querySelector('img')?.getAttribute('src')).toBe(facs[0].url));
         const boxes = screen.getAllByTestId('page-box');
-        expect(boxes).toHaveLength(2); // 第 10 葉那格不画在这页上
+        expect(boxes).toHaveLength(2); // 第 10 页那格不画在这页上
         const on = boxes.find(b => b.dataset.selected)!;
-        expect(on.getAttribute('aria-label')).toContain('第 9 葉 第 1 列第 2 字');
+        expect(on.getAttribute('aria-label')).toContain('第 9 页 第 1 列第 2 字');
         expect(on.style.left).toBe(`${((100 - 50 * 0.12) / 1000) * 100}%`);
     });
 
@@ -427,7 +427,7 @@ describe('精校页显示（GUJI-557）', () => {
         const cards = await screen.findAllByTestId('cell-card');
         fireEvent.click(cards[2]);
         const panel = screen.getByTestId('page-panel');
-        expect(panel.textContent).toContain('第 10 葉');
+        expect(panel.textContent).toContain('第 10 页');
         expect(cards[2].dataset.selected).toBe('1');
         await waitFor(() => expect(panel.querySelector('img')?.getAttribute('src')).toBe(facs[1].url));
     });

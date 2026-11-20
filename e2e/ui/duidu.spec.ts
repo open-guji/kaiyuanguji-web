@@ -16,7 +16,7 @@ const PATH = `${TARGET}/read/${BOOK}/002`;
 /** 带书影翻页／缩放（overview#425）的 book-index-ui 版本；bim 实际发版号定了以后核对这里 */
 const MIN_UI = '0.45.0';
 
-/** 当前书影页（书影区标牌「第 N 葉」上的 data-warp-page） */
+/** 当前书影页（书影区标牌「第 N 頁」上的 data-warp-page） */
 const warpPage = (page: Page) => page.locator('[data-warp-page]').first();
 
 async function openDuidu(page: Page) {

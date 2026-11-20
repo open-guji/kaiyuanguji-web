@@ -1,4 +1,4 @@
-// 精校页 /proofing/<book>/<vol>（GUJI-551）：把待审格的原叶裁图摆出来，读者对「这格是什么字」给意见，POST /api/cellreview。
+// 精校页 /proofing/<book>/<vol>（GUJI-551）：把待审格的原页裁图摆出来，读者对「这格是什么字」给意见，POST /api/cellreview。
 // 待审数据纯客户端取（pending.json 在 book-text 数据里，声明在章条目 pending_file）；页面本身不进索引、不做静态参数。
 // 服务端只取书名与作者（条目 JSON），给页头用；取不到就只显示「返回阅读」。外面套站点页头（与阅读页一样，不要页脚）。
 // 全栈构建才有这个路由（.ssr 文件，静态导出忽略）；不能放进 read/[id]/[[...seg]] 之下。

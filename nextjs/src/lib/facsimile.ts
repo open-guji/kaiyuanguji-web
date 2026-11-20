@@ -7,7 +7,7 @@
  * 页码对照：对读数据（cord.json 每页的 `canvas`，`id` 形如 `…/iiif/<书>/canvas/<册2位>/<页序>`）给出每页对应的 IIIF 页序 `seq`
  * （leaf 号零填 4 位，合扫拆页带 a–d 后缀）；册号取自 canvas id（见 book-index-ui 的 `iiifVolumeOf`），阅读器按 `seq` 到本册
  * manifest 的 canvas 里对位取阅读档／原图档。格位 key 的「页」、cord 的 `page`、canvas 的 seq 是同一个数（扫描顺序号，从 1 起）；
- * 合扫拆页已拆成独立页，卷三 105–108 页各对应 0105a–d。第 1 叶是书脊签，对读数据从第 3 叶起。
+ * 合扫拆页已拆成独立页，卷三 105–108 页各对应 0105a–d。第 1 页是书脊签，对读数据从第 3 页起。
  *
  * 海外读者（`preferCommons()`）：canvas 带 `bim:commons` 的页改读 Commons 缩略图并在浏览器里摆正（commons-warp.ts），失败退回本站图。
  * TODO（本卡不做）：本站图挂了换 IA 的前端回退链（canvas body Choice 的后几项）。
@@ -102,7 +102,7 @@ export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boole
         const m = /\/(\d{4})([a-z]?)\/full\//.exec(first?.id ?? '');
         if (!first || !m) continue;
         const leaf = parseInt(m[1], 10);
-        // 海外读者：有 Commons 摆正矩阵的页改读 Commons 3840 档（半叶约 1615 像素宽），地址带摆正参数，出错退回本站图
+        // 海外读者：有 Commons 摆正矩阵的页改读 Commons 3840 档（半页约 1615 像素宽），地址带摆正参数，出错退回本站图
         const cm = opts.commons && validCommons(c['bim:commons']) ? c['bim:commons'] : null;
         const commonsUrl = cm ? commonsImageUrl(cm, c.width, c.height, hiresUrlOf(first.id, c.width)) : null;
         // 国内读者（或没有 Commons 矩阵的页）：有 bim:cos 的读 COS 单版整页，走同一条摆正路径
@@ -119,9 +119,9 @@ export function canvasesToImages(canvases: IiifCanvas[], opts: { commons?: boole
             height: c.height,
             ...(ext ? ({ extent: ext } as object) : {}),
             seq: m[1] + m[2],
-            // 拆页（合扫叶拆成 a–d）的页号与 leaf 号不对应，不给 pageNo，对读按 seq 对位
+            // 拆页（合扫页拆成 a–d）的页号与 leaf 号不对应，不给 pageNo，对读按 seq 对位
             ...(m[2] ? {} : { pageNo: leaf }),
-            label: m[2] ? `第 ${leaf}${m[2]} 葉` : `第 ${leaf} 葉`,
+            label: m[2] ? `第 ${leaf}${m[2]} 頁` : `第 ${leaf} 頁`,
         });
     }
     return out;
