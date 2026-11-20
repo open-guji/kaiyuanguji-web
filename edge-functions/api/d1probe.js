@@ -22,7 +22,7 @@ export async function onRequestGet(context) {
   const authed = checkAdminAuth(bearerToken(context.request), context);
   if (!authed.ok) return new Response(JSON.stringify({ error: authed.error }), { status: authed.status });
   const n = Math.min(Math.max(parseInt(new URL(context.request.url).searchParams.get('n') || '100', 10) || 100, 1), 300);
-  const tok = bearerToken(context.request); // 复用同一管理令牌（Worker web 角色可读 /v1/status）
+  const tok = context.request.headers.get('x-data-token') || bearerToken(context.request); // 复用同一管理令牌（Worker web 角色可读 /v1/status）
   const get = (path) => async () => {
     const r = await fetch(BASE + path, { headers: { Authorization: `Bearer ${tok}` } });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
