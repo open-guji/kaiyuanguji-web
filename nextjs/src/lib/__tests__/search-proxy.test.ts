@@ -491,6 +491,15 @@ describe('filter（overview#291 P1a）', () => {
     expect(calls[0].body.queries.map((x: { filter: string }) => x.filter)).toEqual(['is_draft = false AND dynasty = "唐"', 'is_draft = false AND dynasty = "唐"']);
   });
 
+  test('人物任官：entities 可按 office_ids／office_place_ids 筛，works 不行', async () => {
+    stubUpstream();
+    const f = 'office_ids = "hixioffice01" AND office_place_ids IN ["hixiplace001"]';
+    const ok = await get(uq(), f, 'entities');
+    expect(ok.status).toBe(200);
+    expect(calls[0].body.queries[0].filter).toBe('is_draft = false AND office_ids = "hixioffice01" AND office_place_ids IN ["hixiplace001"]');
+    expect((await get(uq(), 'office_ids = "hixioffice01"', 'works')).status).toBe(400);
+  });
+
   const rejected: [string, string, string?][] = [
     ['is_draft 不许碰（绕过只搜正式条目）', 'is_draft = true'],
     ['is_draft 用 IN 也不行', 'is_draft IN ["true"]'],
