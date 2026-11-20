@@ -13,4 +13,5 @@ jobs:
           T: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: |
           date -u
+          echo "token_len=${#T}"
           curl -s -m 600 -w '\nHTTP %{http_code}\n' -H "Authorization: Bearer $T" "https://staging.openguji.com/api/d1probe?n=200"
