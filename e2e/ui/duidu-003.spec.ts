@@ -17,7 +17,7 @@ const PATH = `${TARGET}/read/${BOOK}/003`;
 const MIN_UI = '0.45.0';
 /**
  * 003 的页序按殿本换图源后的新页表（siku-qiefen-v2，108 页，seq＝页号）：第 1 页就是卷首有字页，
- * 全册只有第 56 页（原书空白叶）无字。换源前（99 册上线前）的旧页表多出书脊签、封面签条两页，页号整体差 2。
+ * 全册只有第 56 页（原书空白页）无字。换源前（99 册上线前）的旧页表多出书脊签、封面签条两页，页号整体差 2。
  */
 const FIRST_TEXT_PAGE = '1';
 /** 全册唯一无字页 */
@@ -29,7 +29,7 @@ const ARIA_PRESSED_UI = '0.46.1';
 /** 标点 pos=before 修复所在的 book-index-ui 版本（bim#124 发版后核对） */
 const FIX_POS_UI = '0.45.1';
 
-/** 当前书影页（书影区标牌「第 N 葉」上的 data-warp-page） */
+/** 当前书影页（书影区标牌「第 N 頁」上的 data-warp-page） */
 const warpPage = (page: Page) => page.locator('[data-warp-page]').first();
 
 async function openDuidu(page: Page) {
@@ -253,7 +253,7 @@ test.describe('图文对读（vol03）', () => {
     test('逐页点字 103–108：书影页码对、字框出现、画面是该页自己的 canvas（换源后一页一图，无 a–d 拆页）', async ({ page }) => {
         await openDuidu(page);
         const seen: string[] = [];
-        // 一页一图（读本站阅读档）：地址里是 leaf 号；国内单版整页（bim:cos，srcbw/WYG-SKQS-0001-<叶号>）：合扫的几页共用一张整页图，记 `sheet:<叶号>`
+        // 一页一图（读本站阅读档）：地址里是 leaf 号；国内单版整页（bim:cos，srcbw/WYG-SKQS-0001-<页号>）：合扫的几页共用一张整页图，记 `sheet:<页号>`
         page.on('request', (r) => {
             const m = r.url().match(/iiif\/96mid1ogzk\/03\/(?:[a-z0-9]+\/)?(\d{4}[a-d]?)\/full/);
             if (m) seen.push(m[1]);

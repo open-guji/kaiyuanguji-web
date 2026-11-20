@@ -3,6 +3,7 @@
 // 剩余格数＝总表发布值，扣掉本机已回应的（口径写「约」）；默认只列还有待审的册，可勾「显示已清空的册」。
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useResizableWidth } from '@/components/common/useResizableWidth';
 import { ALL_VOL, readDone, type TocEntry } from '@/lib/proofing';
 
 const href = (book: string, vol: string) => `/proofing/${encodeURIComponent(book)}/${encodeURIComponent(vol)}`;
@@ -50,6 +51,7 @@ export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: st
     const [counts, setCounts] = useState<Record<string, number>>({});
     const [showAll, setShowAll] = useState(false);
     const [open, setOpen] = useState(false);
+    const rz = useResizableWidth('kyg-proof-toc-w', 240, 160, 480);
     // 本机已回应数只能挂载后读（localStorage）
     useEffect(() => {
         const c: Record<string, number> = {};
@@ -70,11 +72,16 @@ export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: st
     return (
         <>
             {/* 桌面 */}
-            <nav aria-label="册目录" data-testid="proof-toc" className="sticky top-[calc(var(--nav-h)+1rem)] hidden max-h-[calc(100vh-var(--nav-h)-3rem)] w-[188px] shrink-0 self-start overflow-y-auto border-r pr-3 xl:block" style={{ borderColor: 'var(--color-tint-2)' }}>
+            <div className="relative hidden shrink-0 self-start xl:flex" style={{ width: rz.width }}>
+            <nav aria-label="册目录" data-testid="proof-toc" className="sticky top-[calc(var(--nav-h)+1rem)] max-h-[calc(100vh-var(--nav-h)-3rem)] min-w-0 flex-1 self-start overflow-y-auto border-r pr-3" style={{ borderColor: 'var(--color-tint-2)' }}>
                 <div className="mb-2 text-[12px]" style={{ color: 'var(--color-ink-3)' }}>目录 · 待审约 {total} 格 / {rows.filter(r => r.left > 0).length} 册</div>
                 <List book={book} vol={vol} rows={rows} showAll={showAll} onPickVol={onPickVol} />
                 {toggle}
             </nav>
+            <div role="separator" aria-orientation="vertical" aria-label="拖动调整目录宽度" tabIndex={0} data-testid="toc-resize" title="拖动调整目录宽度（双击还原）"
+                onPointerDown={rz.onPointerDown} onKeyDown={rz.onKeyDown} onDoubleClick={rz.reset}
+                className="absolute inset-y-0 -right-1.5 w-3 cursor-col-resize touch-none hover:bg-[var(--color-tint-2)]" style={{ opacity: 0.6 }} />
+            </div>
             {/* 窄屏：一条＋抽屉 */}
             <div className="mb-3 xl:hidden">
                 <button type="button" data-testid="toc-open" onClick={() => setOpen(true)} aria-expanded={open}
