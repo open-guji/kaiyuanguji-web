@@ -96,12 +96,13 @@ export function derivedInputProblem({ schemaV2, derivedDir, dirExists, derivedCo
  * 版本数覆盖闸（Eden/Mason，overview#557）：editionCount 只进复合字段 completeness，Meili 里查不到，
  * 所以建文档时就地统计「非草稿 works 里 _edition_count 是数字的」与「>0 的」。
  * 两条硬线：① 有数字的比例 <95%（派生产物每个 Work 都带，读不到产物时全缺）；
- * ② >0 的比例 <30%（Eden 实测真实产物 41.0%，Mason 定下限 30%）。
+ * ② >0 的比例 <15%（Eden 实测真实产物 41.0%、Mason 定下限 30%；11-21 works 从 41 万涨到 91 万、新增多为单版本，
+ *    >0 的绝对数 18.9 万不降反升而比例降到 20.8%，下限放宽到 15%，仍能拦住「产物没读到→接近 0」）。
  * @param {{ total: number, present: number, positive: number }} c
  * @returns {string|null}
  */
 export const EDITION_PRESENT_MIN = 0.95;
-export const EDITION_POSITIVE_MIN = 0.3;
+export const EDITION_POSITIVE_MIN = 0.15;
 export function editionCoverageProblem(c) {
     if (!c || !(c.total > 0)) return null;
     const pct = (x) => `${(x * 100).toFixed(1)}%`;
