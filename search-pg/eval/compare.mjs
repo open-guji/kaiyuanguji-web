@@ -4,7 +4,7 @@
  * 在上海搜索机上跑（两边都是本机）：
  *   MEILI_KEY=… SEARCH_API_KEY=… node compare.mjs --queries q.tsv [--meili http://127.0.0.1:7700] [--pg http://127.0.0.1:7710] [--out diff.tsv]
  * q.tsv 每行 `索引<TAB>查询词`（索引 works|books|entities|collections）；make-queries.sh 从库里抽样生成。
- * 通过线（方案 S5）：works 第 1 名一致率 ≥ 90%；不一致的逐条看（diff.tsv 列出两边前 3 名标题）。
+ * 通过线（方案 S5）：works 第 1 名书名一致率 ≥ 90%；不一致的逐条看（diff.tsv 列出两边前 3 名标题）。
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -25,6 +25,7 @@ async function post(url, key, body) {
     return { json: await r.json(), ms: performance.now() - t0 };
 }
 const pct = (arr, p) => { const s = [...arr].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(s.length * p))] ?? 0; };
+const tt = (h) => h.title || h.primary_name || '';
 const label = (h) => `${h.title || h.primary_name || ''}(${h.id})`;
 
 const stats = {};
@@ -42,10 +43,11 @@ async function worker() {
             if (!mh.length && !ph.length) { s.bothEmpty++; continue; }
             if (!ph.length) s.pgEmpty++;
             if (!mh.length) s.meiliEmpty++;
-            const same1 = mh[0] && ph[0] && mh[0].id === ph[0].id;
+            // 同名不同 id 并列时 Meili 的次序是内部顺序、没法复现：按书名比（第 1 名同名即算一致）
+            const same1 = mh[0] && ph[0] && tt(mh[0]) === tt(ph[0]);
             if (same1) s.top1++;
-            const ids = new Set(ph.map((h) => h.id));
-            s.overlap += mh.filter((h) => ids.has(h.id)).length; s.denom += Math.max(mh.length, 1);
+            const names = new Set(ph.map(tt));
+            s.overlap += mh.filter((h) => names.has(tt(h))).length; s.denom += Math.max(mh.length, 1);
             if (!same1) diffs.push([index, q, mh.slice(0, 3).map(label).join(' | '), ph.slice(0, 3).map(label).join(' | ')].join('\t'));
         } catch (e) {
             (stats[index] ??= { n: 0, top1: 0, overlap: 0, denom: 0, bothEmpty: 0, pgEmpty: 0, meiliEmpty: 0, mMs: [], pMs: [], err: 0 }).err++;
@@ -58,7 +60,7 @@ writeFileSync(OUT, 'index\tq\tmeili_top3\tpg_top3\n' + diffs.join('\n') + '\n');
 for (const [idx, s] of Object.entries(stats)) {
     const nonEmpty = s.n - s.bothEmpty;
     console.log(`${idx}: ${s.n} 条（两边都 0 命中 ${s.bothEmpty}，仅 PG 空 ${s.pgEmpty}，仅 Meili 空 ${s.meiliEmpty}，出错 ${s.err}）`
-        + `\n  第1名一致 ${(100 * s.top1 / Math.max(nonEmpty, 1)).toFixed(1)}%  前5重合 ${(100 * s.overlap / Math.max(s.denom, 1)).toFixed(1)}%`
+        + `\n  第1名书名一致 ${(100 * s.top1 / Math.max(nonEmpty, 1)).toFixed(1)}%  前5书名重合 ${(100 * s.overlap / Math.max(s.denom, 1)).toFixed(1)}%`
         + `\n  Meili p50/p95 ${pct(s.mMs, 0.5).toFixed(0)}/${pct(s.mMs, 0.95).toFixed(0)}ms  PG p50/p95 ${pct(s.pMs, 0.5).toFixed(0)}/${pct(s.pMs, 0.95).toFixed(0)}ms`);
 }
 console.log(`不一致明细：${OUT}`);

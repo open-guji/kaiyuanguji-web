@@ -20,6 +20,15 @@ BEGIN
   RETURN array_to_string(parts, ' & ')::tsquery;
 END $$;
 
+-- 查询串 → 「书名以它开头」的 tsquery：取查询里第一段中文的前 2 字（1 字查询取 1 字），对应入库时的 '^' 开头词元；拉丁／拼音查询返回 NULL（不分先后）
+CREATE OR REPLACE FUNCTION q2head(q text) RETURNS tsquery LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE m text;
+BEGIN
+  m := (regexp_match(lower(q), '[\u3400-\u9fff\uf900-\ufaff\U00020000-\U0003ffff]+'))[1];
+  IF m IS NULL THEN RETURN NULL; END IF;
+  RETURN quote_literal('^' || left(m, 2))::tsquery;
+END $$;
+
 -- 一行 → 对外 hit（字段同 Meili 返回的卡片字段）；with_descr=true 时带简介原文（search-api 据此裁片段、加高亮）
 CREATE OR REPLACE FUNCTION hit_json(d search_doc, with_descr bool) RETURNS jsonb LANGUAGE sql IMMUTABLE AS $$
   SELECT jsonb_strip_nulls(jsonb_build_object('id', d.id, 'type', d.kind, 'is_draft', false, 'title', d.title,
@@ -39,7 +48,7 @@ CREATE OR REPLACE FUNCTION search_one(p_kind text, p_q text, p_limit int DEFAULT
   p_has_text bool DEFAULT NULL, p_has_image bool DEFAULT NULL, p_has_collated bool DEFAULT NULL,
   p_office text DEFAULT NULL, p_sort text DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql STABLE AS $$
-DECLARE tq tsquery := q2tsq(p_q); need int := p_offset + p_limit;
+DECLARE tq tsquery := q2tsq(p_q); hq tsquery := q2head(p_q); ph int; need int := p_offset + p_limit;
         got int := 0; n int; b int; btq tsquery; acc jsonb := '[]'; part jsonb;
 BEGIN
   IF tq IS NULL THEN RETURN jsonb_build_object('hits', '[]'::jsonb, 'estimatedTotalHits', 0); END IF;
@@ -53,12 +62,16 @@ BEGIN
         AND (p_has_collated IS NULL OR d.has_collated = p_has_collated)
         AND (p_office IS NULL OR d.office_ids @> ARRAY[p_office]) LIMIT 1001) x;
   IF n > 1000 AND p_sort IS NULL THEN
+    -- 先取「书名以查询词开头」的（ph=0），再取其余（ph=1）；每一轮内部按字数桶从短到长
+    FOR ph IN 0..1 LOOP
+    CONTINUE WHEN ph = 0 AND hq IS NULL;
     b := 1;
     WHILE jsonb_array_length(acc) < need AND b <= 40 LOOP
       btq := q2tsq(p_q, lpad(b::text, 2, '0') || '|');
       SELECT coalesce(jsonb_agg(hit_json(d.r, false) ORDER BY d.rn), '[]') INTO part FROM (
         SELECT d AS r, row_number() OVER (ORDER BY d.completeness DESC, d.id) rn FROM search_doc d
         WHERE d.kind = p_kind AND d.title_bkt @@ btq
+          AND (hq IS NULL OR (d.title_tsv @@ hq) = (ph = 0))
           AND (p_dynasty IS NULL OR d.dynasty = ANY (p_dynasty))
         AND (p_class IS NULL OR coalesce(d.classification, '') = ANY (p_class))
         AND (p_loss IS NULL OR coalesce(d.loss_status, '') = ANY (p_loss))
@@ -68,12 +81,13 @@ BEGIN
         ORDER BY d.completeness DESC, d.id LIMIT need - jsonb_array_length(acc)) d;
       acc := acc || part; b := b + 1;
     END LOOP;
+    END LOOP;
   ELSIF n > 0 THEN
     SELECT coalesce(jsonb_agg(hit_json(d.r, false) ORDER BY d.rn), '[]') INTO acc FROM (
       SELECT d AS r, row_number() OVER (ORDER BY
                CASE WHEN p_sort = 'era:asc' THEN d.era_rank END ASC, CASE WHEN p_sort = 'era:desc' THEN d.era_rank END DESC,
                CASE WHEN p_sort = 'title:asc' THEN d.title_sort END ASC, CASE WHEN p_sort = 'title:desc' THEN d.title_sort END DESC,
-               d.title_chars, d.completeness DESC, d.id) rn
+               CASE WHEN d.title_tsv @@ hq THEN 0 ELSE 1 END, d.title_chars, d.completeness DESC, d.id) rn
       FROM search_doc d WHERE d.kind = p_kind AND d.title_tsv @@ tq
         AND (p_dynasty IS NULL OR d.dynasty = ANY (p_dynasty))
         AND (p_class IS NULL OR coalesce(d.classification, '') = ANY (p_class))
