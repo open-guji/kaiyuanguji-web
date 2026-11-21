@@ -42,6 +42,12 @@
 //   MEILI_URL          Meili API base（不配则用 NEXT_PUBLIC_MEILI_URL，再不配用 DEFAULT_MEILI_URL）
 //   MEILI_SEARCH_KEY   只读搜索 key（不配则用 NEXT_PUBLIC_MEILI_KEY——全栈项目构建环境里有它）
 // 绝不放 master key：本函数只调 /multi-search。
+//
+// 后端开关（Postgres 迁移，docs/search-pg-migration.md）：meili（默认）｜pg｜shadow。
+//   SEARCH_PG_URL / SEARCH_PG_KEY   上海搜索机 search-api（:7710）地址与 Bearer key；没配 PG_URL 就永远走 Meili
+//   SEARCH_SWITCH_URL               开关文件（COS 公开 JSON {"backend":"meili|pg|shadow"}，缺省 DEFAULT_SEARCH_SWITCH_URL）
+//   SEARCH_BACKEND                  环境变量强制覆盖（调试用，优先于开关文件）
+//   pg：打 search-api，失败当场回落 Meili（回滚不靠用户重试）；shadow：返回 Meili 结果，后台抽样（SHADOW_SAMPLE）打 PG 比对并只记日志。
 
 import { Converter } from 'opencc-js/t2cn';
 // 异体字 → 正字（overview#350）：与组件库、nextjs/src/lib/server/simplify.ts 同一张表，t2cn 之前先归一
@@ -49,6 +55,11 @@ import VARIANT_CHARS from 'book-index-ui/variant-chars';
 import { API_ORIGIN } from './hosts.js';
 
 const DEFAULT_MEILI_URL = API_ORIGIN;
+const DEFAULT_SEARCH_SWITCH_URL = 'https://book-index-data-1394555822.cos.ap-shanghai.myqcloud.com/search/switch.json';
+const BACKENDS = ['meili', 'pg', 'shadow'];
+const SWITCH_TTL_SECONDS = 30;
+const SWITCH_RETRY_SECONDS = 10;
+const SHADOW_SAMPLE = 0.05;
 
 const ALLOWED_INDEXES = ['works', 'books', 'collections', 'entities'];
 const MAX_LIMIT = 50;
@@ -215,7 +226,44 @@ function readEnv(context, name) {
 function getConfig(context) {
   const baseUrl = readEnv(context, 'MEILI_URL') || readEnv(context, 'NEXT_PUBLIC_MEILI_URL') || DEFAULT_MEILI_URL;
   const apiKey = readEnv(context, 'MEILI_SEARCH_KEY') || readEnv(context, 'NEXT_PUBLIC_MEILI_KEY');
-  return { baseUrl: baseUrl.replace(/\/+$/, ''), apiKey };
+  return {
+    baseUrl: baseUrl.replace(/\/+$/, ''),
+    apiKey,
+    pgUrl: readEnv(context, 'SEARCH_PG_URL').trim().replace(/\/+$/, ''),
+    pgKey: readEnv(context, 'SEARCH_PG_KEY'),
+    switchUrl: readEnv(context, 'SEARCH_SWITCH_URL').trim() || DEFAULT_SEARCH_SWITCH_URL,
+    forcedBackend: readEnv(context, 'SEARCH_BACKEND').trim(),
+  };
+}
+
+// ─── 后端开关 ───
+const switchState = { backend: 'meili', nextCheck: 0 };
+
+async function currentBackend(config) {
+  if (!config.pgUrl) return 'meili';
+  if (BACKENDS.includes(config.forcedBackend)) return config.forcedBackend;
+  const now = Date.now();
+  if (now < switchState.nextCheck) return switchState.backend;
+  switchState.nextCheck = now + SWITCH_RETRY_SECONDS * 1000; // 先占位：并发请求不重复拉
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1500);
+    try {
+      const res = await fetch(config.switchUrl, { signal: ctrl.signal });
+      if (res.ok) {
+        const v = await res.json();
+        if (v && BACKENDS.includes(v.backend)) {
+          switchState.backend = v.backend;
+          switchState.nextCheck = now + SWITCH_TTL_SECONDS * 1000;
+        }
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch {
+    // 读失败沿用上次的值
+  }
+  return switchState.backend;
 }
 
 class BadRequest extends Error {}
@@ -614,6 +662,56 @@ async function callMeili(config, queries, timing, attempt = 1) {
   }
 }
 
+/** 规整后的 query → search-api 的一条（filter 直接用 parseFilter 的 clause 列表，不拼 Meili 串） */
+function toPgQuery(sq) {
+  const out = { indexUid: sq.indexUid, q: sq.q, limit: sq.limit, offset: sq.offset, filter: sq.filter };
+  if (sq.sort) out.sort = sq.sort;
+  return out;
+}
+
+async function callPg(config, queries, timing) {
+  const t0 = clock();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), UPSTREAM_TIMEOUT_MS);
+  try {
+    let res;
+    try {
+      res = await fetch(`${config.pgUrl}/multi-search`, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', ...(config.pgKey ? { Authorization: `Bearer ${config.pgKey}` } : {}) },
+        body: JSON.stringify({ queries: queries.map(toPgQuery) }),
+      });
+    } catch (e) {
+      const timedOut = ctrl.signal.aborted;
+      throw new UpstreamError(timedOut ? 'timeout' : `fetch failed: ${e && e.message}`, timedOut ? 504 : 502);
+    }
+    if (!res.ok) throw new UpstreamError(`HTTP ${res.status}`, res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+    if (timing) timing.add('pg', clock() - t0);
+  }
+}
+
+/** shadow：后台打 PG，与 Meili 结果比前 5 名 id 重合度，只写日志（console.log 一行 JSON，可在边缘日志里统计） */
+async function shadowCompare(config, queries, meiliJson, ms) {
+  const t0 = clock();
+  try {
+    const pgJson = await callPg(config, queries, null);
+    const a = shapeResults(meiliJson, queries);
+    const b = shapeResults(pgJson, queries);
+    const rows = queries.map((q, i) => {
+      const ma = a[i].hits.slice(0, 5).map((h) => h.id);
+      const pb = b[i].hits.slice(0, 5).map((h) => h.id);
+      return { i: q.indexUid, q: q.q, top1: ma[0] === pb[0], overlap5: ma.filter((x) => pb.includes(x)).length, n: ma.length };
+    });
+    console.log(JSON.stringify({ shadow: 'ok', ms_pg: Math.round(clock() - t0), ms_meili: ms, rows }));
+  } catch (e) {
+    console.log(JSON.stringify({ shadow: 'error', error: String(e && e.message), ms_pg: Math.round(clock() - t0) }));
+  }
+}
+
 function json(status, obj, extraHeaders = {}) {
   return new Response(typeof obj === 'string' ? obj : JSON.stringify(obj), {
     status,
@@ -627,12 +725,21 @@ const UNAVAILABLE_MESSAGE = '搜索服务暂时不可用，已切换到简易搜
  * 打上游并规整出响应体。sort 降级的结果标 cacheable: false（不进缓存）；成功且可缓存的顺手写缓存
  * （内存当场写，边缘缓存交给 waitUntil）。上游失败抛 UpstreamError。
  */
-async function loadFromUpstream(context, queries, locale, key, timing) {
+async function loadFromUpstream(context, queries, locale, key, timing, backend = 'meili') {
   const config = getConfig(context);
   let meiliJson;
   let sortIgnored = false;
+  let usedPg = false;
+  if (backend === 'pg') {
+    try {
+      meiliJson = await callPg(config, queries, timing);
+      usedPg = true;
+    } catch (e) {
+      console.log(JSON.stringify({ pg: 'fallback_to_meili', error: String(e && e.message) }));
+    }
+  }
   try {
-    meiliJson = await callMeili(config, queries, timing);
+    if (!usedPg) meiliJson = await callMeili(config, queries, timing);
   } catch (e) {
     // 索引还没重建出可排序字段时 Meili 对 sort 回 400 + invalid_search_sort：去掉 sort 重发一次，按相关度出结果。
     // 只认排序类错误码——其它 400（filter 写错等）照常当失败，不能被降级悄悄吞掉
@@ -643,24 +750,28 @@ async function loadFromUpstream(context, queries, locale, key, timing) {
       throw e;
     }
   }
-  timing.add('meili', meiliProcessingMs(meiliJson));
+  timing.add(usedPg ? 'pg_db' : 'meili', meiliProcessingMs(meiliJson));
+  if (backend === 'shadow' && !usedPg && Math.random() < SHADOW_SAMPLE) {
+    const job = shadowCompare(config, queries, meiliJson, meiliProcessingMs(meiliJson));
+    if (context && typeof context.waitUntil === 'function') context.waitUntil(job);
+  }
 
   const shaped = localizeResults(shapeResults(meiliJson, queries), locale);
   if (sortIgnored) {
     // 降级结果（没排序）不进缓存：否则索引重建后一段时间内同一查询还会命中这份未排序的结果
-    return { body: JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) }), cacheable: false };
+    return { body: JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) }), cacheable: false, backend: usedPg ? 'pg' : 'meili' };
   }
   const entry = { t: Date.now(), body: JSON.stringify({ results: shaped }) };
   memorySet(key, entry);
   await deferOrAwait(context, edgePut(key, entry));
-  return { body: entry.body, cacheable: true };
+  return { body: entry.body, cacheable: true, backend: usedPg ? 'pg' : 'meili' };
 }
 
 /** 同一 isolate 里同一查询并发只打一次上游（热门词刚过期时一拥而上） */
-function loadOnce(context, queries, locale, key, timing) {
+function loadOnce(context, queries, locale, key, timing, backend) {
   let p = inflight.get(key);
   if (!p) {
-    p = loadFromUpstream(context, queries, locale, key, timing).finally(() => {
+    p = loadFromUpstream(context, queries, locale, key, timing, backend).finally(() => {
       if (inflight.get(key) === p) inflight.delete(key);
     });
     inflight.set(key, p);
@@ -683,9 +794,11 @@ async function handleSearch(context) {
   }
   timing.add('parse', timing.since(t0));
 
+  let backend = 'meili';
   const okHeaders = (state) => ({
     'Cache-Control': `public, max-age=${BROWSER_MAX_AGE_SECONDS}`,
     'X-Search-Cache': state,
+    'X-Search-Backend': backend,
     'Server-Timing': timing.header(),
   });
 
@@ -694,7 +807,9 @@ async function handleSearch(context) {
     return json(200, { results: shapeResults({ results: [] }, queries) }, okHeaders('EMPTY'));
   }
 
-  const key = cacheKey(queries, locale);
+  backend = await currentBackend(getConfig(context));
+  // pg 的结果单独成键：切换（或回滚）后不会互相吃到对方的缓存；shadow 返回的是 Meili 结果，与 meili 共键
+  const key = (backend === 'pg' ? 'pg|' : '') + cacheKey(queries, locale);
   const now = Date.now();
   t0 = clock();
   let entry = memoryGet(key, now);
@@ -710,14 +825,14 @@ async function handleSearch(context) {
     if (age < CACHE_FRESH_SECONDS * 1000) return json(200, entry.body, okHeaders('HIT'));
     if (canDefer) {
       // 先给旧的，后台刷新；刷新失败不影响这次响应（旧的还能撑到 STALE 期满）
-      context.waitUntil(loadOnce(context, queries, locale, key, serverTiming()).catch(() => {}));
+      context.waitUntil(loadOnce(context, queries, locale, key, serverTiming(), backend).catch(() => {}));
       return json(200, entry.body, okHeaders('STALE'));
     }
   }
 
   let loaded;
   try {
-    loaded = await loadOnce(context, queries, locale, key, timing);
+    loaded = await loadOnce(context, queries, locale, key, timing, backend);
   } catch (e) {
     // 上游挂了但手里有 STALE 期内的旧结果：先给旧的，比退回简易搜索强
     if (entry) return json(200, entry.body, okHeaders('STALE'));
@@ -727,9 +842,9 @@ async function handleSearch(context) {
     return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30', 'Server-Timing': timing.header() });
   }
   if (!loaded.cacheable) {
-    return json(200, loaded.body, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS', 'Server-Timing': timing.header() });
+    return json(200, loaded.body, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS', 'X-Search-Backend': loaded.backend, 'Server-Timing': timing.header() });
   }
-  return json(200, loaded.body, okHeaders('MISS'));
+  return json(200, loaded.body, { ...okHeaders('MISS'), 'X-Search-Backend': loaded.backend });
 }
 
 // ─── 响应压缩（overview#487） ───

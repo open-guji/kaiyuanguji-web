@@ -1,0 +1,14 @@
+{
+  "name": "kyg-search-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "书名搜索 HTTP 服务（上海搜索机）：接边缘函数 /api/search 的查询，调 Postgres 的 search_one，回 Meili multi-search 同形的 JSON",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

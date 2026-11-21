@@ -1,0 +1,21 @@
+[Unit]
+Description=开鉴古籍元数据搜索服务（search-api，Postgres）
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=searchapi
+Group=searchapi
+EnvironmentFile=/etc/search-api.env
+WorkingDirectory=/opt/search-pg/api
+ExecStart=/usr/bin/node server.mjs
+Restart=on-failure
+RestartSec=3
+MemoryHigh=300M
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
