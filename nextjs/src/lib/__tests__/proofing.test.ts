@@ -254,7 +254,7 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(parseExtras({ alt: [] }).alt).toBeUndefined();
     });
 
-    it('img 非法（越界负数、文件名带路径）当没有，由页面回退原叶裁图', () => {
+    it('img 非法（越界负数、文件名带路径）当没有，由页面回退原页裁图', () => {
         expect(parseExtras({ img: { s: '../x.webp', x: 0, y: 0, w: 96, h: 96 } }).img).toBeUndefined();
         expect(parseExtras({ img: { s: 'p1.webp', x: -1, y: 0, w: 96, h: 96 } }).img).toBeUndefined();
         expect(parseExtras({ img: { s: 'p1.webp', x: 0, y: 0, w: 0, h: 96 } }).img).toBeUndefined();
@@ -549,10 +549,16 @@ describe('合审组合键与目录', () => {
         expect(rawA('9:7:17')).toBe('9:7:17');
         expect(pageColOf(mergedKey('005', '9:7:17'))).toEqual([9, 7]);
     });
+    it('volTitle 三位册号前缀＋章名', async () => {
+        const { volTitle } = await import('../proofing');
+        expect(volTitle('014', '紀事本末類（卷四十九）')).toBe('014 紀事本末類（卷四十九）');
+        expect(volTitle('014')).toBe('册 014');
+        expect(volTitle('a1', '卷一')).toBe('卷一');
+    });
     it('buildToc 按册号数字序，标题缺省「册 号」', async () => {
         const { buildToc } = await import('../proofing');
         const idx = { b: { '010': { rev: 'r', n: 1 }, '002': { rev: 'r2', n: 0 } } };
-        expect(buildToc(idx, 'b', new Map([['002', '卷二']])).map(e => [e.vol, e.title, e.n])).toEqual([['002', '卷二', 0], ['010', '册 010', 1]]);
+        expect(buildToc(idx, 'b', new Map([['002', '卷二']])).map(e => [e.vol, e.title, e.n])).toEqual([['002', '002 卷二', 0], ['010', '册 010', 1]]);
         expect(buildToc(null, 'b')).toEqual([]);
     });
 });

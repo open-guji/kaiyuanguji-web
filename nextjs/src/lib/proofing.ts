@@ -4,9 +4,9 @@
  * 数据：
  *   - `pending.json`（册级，`guji-pending/0.1`）：只含待审格，声明在该册章条目的 `pending_file`；
  *     候选 `cand` 直接用 lib/proof.ts 的 parseProof（547），不另写解析。
- *   - 像素框：先用 pending 里的可选 `box`（[x,y,w,h]，原叶图 canvas、左上原点），没有就按格号 `a` 去
+ *   - 像素框：先用 pending 里的可选 `box`（[x,y,w,h]，原页图 canvas、左上原点），没有就按格号 `a` 去
  *     章条目 `cord_file` 的 `pages[].cells[].box`（同为 xywh）里查；都没有只显示字，不裁图。
- *   - 原叶图：IIIF 放大档（原宽无损 WebP），地址见 lib/facsimile.ts；页序取 cord `pages[].canvas.seq`。
+ *   - 原页图：IIIF 放大档（原宽无损 WebP），地址见 lib/facsimile.ts；页序取 cord `pages[].canvas.seq`。
  * 本模块只读、不抛：缺失、坏 JSON、字段未知都返回空/null，页面照常。
  */
 import { parseReason, reasonSpec, type PendingReason } from './pendingReasons';
@@ -598,7 +598,7 @@ export function alignFacsToCord<F extends { seq?: string; width?: number; height
 
 export interface CellCrop {
     box: Box;
-    /** IIIF 页序，用来在册的书影里找原叶图 */
+    /** IIIF 页序，用来在册的书影里找原页图 */
     seq: string;
     /** box 所在坐标系的页宽（canvas 宽）；0＝不知道，按原图宽与 canvas 同比例 */
     canvasWidth: number;
@@ -662,7 +662,7 @@ export function resolveCrop(cell: PendingCell, cord: CordIndex | null): CellCrop
     return est ? { box: est, seq: page.seq, canvasWidth: page.width, canvasHeight: page.height, estimated: true } : null;
 }
 
-/** 裁剪源矩形（原图像素）。natW 是实际加载到的原叶图宽；四周留 pad 比例的边，夹在图内 */
+/** 裁剪源矩形（原图像素）。natW 是实际加载到的原页图宽；四周留 pad 比例的边，夹在图内 */
 export function cropRect(crop: CellCrop, natW: number, natH: number, pad = 0.35): [number, number, number, number] {
     const k = crop.canvasWidth > 0 ? natW / crop.canvasWidth : 1;
     const [x, y, w, h] = crop.box.map(n => n * k) as Box;
@@ -969,12 +969,18 @@ export const isAllVol = (vol: string): boolean => vol === ALL_VOL;
 export interface TocEntry { vol: string; title: string; n: number; rev: string }
 
 /** 总表里这本书的各册（册号升序）。标题取 titles（章目录），没有就「册 <号>」 */
+/** 目录/审阅卡标题：三位册序号＋章名，如「014 紀事本末類（卷四十九）」；没有章名退回「册 014」 */
+export function volTitle(vol: string, title?: string): string {
+    if (!title) return `册 ${vol}`;
+    return /^\d{3}$/.test(vol) ? `${vol} ${title}` : title;
+}
+
 export function buildToc(index: ProofIndex | null, book: string, titles?: ReadonlyMap<string, string>): TocEntry[] {
     const chaps = index?.[book];
     if (!chaps) return [];
     return Object.entries(chaps)
         .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
-        .map(([vol, e]) => ({ vol, n: e.n, rev: e.rev, title: titles?.get(vol) ?? `册 ${vol}` }));
+        .map(([vol, e]) => ({ vol, n: e.n, rev: e.rev, title: volTitle(vol, titles?.get(vol)) }));
 }
 
 /** 章目录里 文件名主干（即册号）→ 标题；取不到给空表，目录退回册号 */

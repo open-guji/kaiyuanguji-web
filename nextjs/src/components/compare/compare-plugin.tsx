@@ -91,7 +91,7 @@ function ControllerBody({ store, api, ctl, sources, id }: { store: CompareStore;
         if (!it) return;
         const a = it.anchor.start;
         api.scrollTo(a, { block: 'center' });
-        // scrollTo 把整段顶到视口上方，段落长时目标会落到屏外，书影跟视口顶格走就会差几叶；渲染后再按目标字本身居中
+        // scrollTo 把整段顶到视口上方，段落长时目标会落到屏外，书影跟视口顶格走就会差几页；渲染后再按目标字本身居中
         const recenter = () => {
             const r = apiRef.current.rectOf(a);
             if (r) window.scrollBy({ top: r.top + r.height / 2 - window.innerHeight / 2, behavior: 'instant' as ScrollBehavior });

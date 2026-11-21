@@ -516,8 +516,12 @@
     text-decoration: none;
   }
   .og-brand img {
-    width: 26px;
-    height: 26px;
+    /* 与右侧「开源古籍」字高基本一致（--fs-md = 17px），随文字垂直居中 */
+    width: 16px;
+    height: 16px;
+    /* 汉字字面在行框内偏下，图标上提约 1.5px 让两者中心对齐 */
+    position: relative;
+    top: -1.5px;
   }
   .og-brand span {
     font-weight: var(--fw-bold);

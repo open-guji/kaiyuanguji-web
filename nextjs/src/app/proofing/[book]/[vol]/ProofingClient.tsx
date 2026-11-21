@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SubmitQueue } from '@/lib/submit-queue';
 import Link from 'next/link';
 import { createTextApi } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
@@ -17,7 +18,7 @@ import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage, alignFacsToCord,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
-    loadProofIndex, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
+    loadProofIndex, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
     QUICK_GROUPS, quickPick, readDefer, writeDefer,
 } from '@/lib/proofing';
@@ -103,7 +104,7 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     return p;
 }
 
-/** 只负责把原叶图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
+/** 只负责把原页图的一块画出来，不读回像素。裁图带四周方便认字，红框标出这一格实际识别的范围（用户 2026-10-20） */
 function CellCrop({ src, crop, estimated }: { src: string; crop: { box: [number, number, number, number]; canvasWidth: number }; estimated?: boolean }) {
     const [bx, by, bw, bh] = crop.box;
     const cw = crop.canvasWidth;
@@ -132,10 +133,10 @@ function CellCrop({ src, crop, estimated }: { src: string; crop: { box: [number,
         return () => { cancelled = true; };
     }, [src, bx, by, bw, bh, cw, estimated]);
     if (failed) return <div style={{ color: '#999', fontSize: 12 }}>原图加载失败</div>;
-    return <canvas ref={ref} aria-label="原叶裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
+    return <canvas ref={ref} aria-label="原页裁图（红框是这一格）" style={{ maxWidth: 160, maxHeight: 160, background: '#eee' }} />;
 }
 
-/** 雪碧图里的一块（GUJI-557）。加载失败通知上层，由上层回退到原叶 IIIF 裁图 */
+/** 雪碧图里的一块（GUJI-557）。加载失败通知上层，由上层回退到原页 IIIF 裁图 */
 function SpriteCrop({ url, sprite, label, onFail }: { url: string; sprite: SpriteRef; label: string; onFail: (url: string) => void }) {
     useEffect(() => {
         let cancelled = false;
@@ -150,7 +151,7 @@ function SpriteCrop({ url, sprite, label, onFail }: { url: string; sprite: Sprit
 
 interface CellRowProps {
     cell: PendingCell;
-    /** 能用的雪碧图地址（已排除加载失败的）；有就不用原叶裁图 */
+    /** 能用的雪碧图地址（已排除加载失败的）；有就不用原页裁图 */
     spriteSrc: string | null;
     spriteBase: (s: string) => string | null;
     onSpriteFail: (url: string) => void;
@@ -159,6 +160,8 @@ interface CellRowProps {
     /** 没有框，但这一页在书影里（整页可看） */
     pageOnly?: boolean;
     done?: string;
+    /** 后台提交最终失败的错误（该格已恢复为待审） */
+    failedErr?: string;
     /** advance：提交后自动跳下一张（正常字符选字、或非正常字符点「确认」才跳） */
     onSubmit: (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => Promise<string | null>;
     context: CellContext | null;
@@ -380,7 +383,7 @@ function AltGrid({ alt, spriteBase, busy, picked: pickedChar, onPick }: {
     );
 }
 
-function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pageOnly, done, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
+function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pageOnly, done, failedErr, onSubmit, context, pendingSet, selected, onSelect }: CellRowProps) {
     const [custom, setCustom] = useState('');
     const [note, setNote] = useState('');
     const [busy, setBusy] = useState(false);
@@ -515,7 +518,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
             </div>
             <Evidence cell={cell} />
             <Examples cell={cell} spriteBase={spriteBase} />
-            {err && <div role="alert" style={{ marginTop: 6, color: '#c33' }}>{err}</div>}
+            {(err || failedErr) && <div role="alert" data-testid="cell-error" style={{ marginTop: 6, color: '#c33' }}>{err ?? `刚才这一格没交上，已恢复为待审，请再点一次：${failedErr}`}</div>}
         </li>
     );
 }
@@ -600,14 +603,14 @@ function QuickReview({ groups, spriteOf, onConfirm }: {
     );
 }
 
-/** 「第 9 葉 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
+/** 「第 9 页 第 7 列第 17 字」；夹注半格带「（夹注右/左）」 */
 function cellPlace(key: string): string {
     const a = rawA(key);
     const m = /^(\d+):(\d+):(-?\d+)([a-z]?)$/.exec(a);
     if (!m) return `格 ${a}`;
     const half = m[4] === 'a' ? '（夹注右行）' : m[4] === 'b' ? '（夹注左行）' : '';
-    if (Number(m[3]) < 0) return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列抬头${half}`;
-    return `第 ${Number(m[1])} 葉 第 ${Number(m[2])} 列第 ${Number(m[3])} 字${half}`;
+    if (Number(m[3]) < 0) return `第 ${Number(m[1])} 页 第 ${Number(m[2])} 列抬头${half}`;
+    return `第 ${Number(m[1])} 页 第 ${Number(m[2])} 列第 ${Number(m[3])} 字${half}`;
 }
 
 const ZOOMS = [1, 2, 4] as const;
@@ -663,7 +666,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
     return (
         <div data-testid="page-panel">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#555', marginBottom: 6, flexWrap: 'wrap' }}>
-                <b>第 {pageNo} 葉</b>
+                <b>第 {pageNo} 页</b>
                 {sel && <span>{estimatedSel ? '橙色虚线（推算位置）：' : '红框：'}{cellPlace(sel.a)}</span>}
                 {!sel && selPlace && <span data-testid="page-no-box" style={{ color: '#a60' }}>这一格没有坐标：{selPlace}</span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
@@ -680,7 +683,7 @@ function PagePanel({ page, pageNo, canvasW, canvasH, boxes, selected, onSelect, 
                 ) : (
                     <div style={{ position: 'relative', margin: '0 auto', width: zoom === 1 ? `min(100%, calc(${fitHeight} * ${W / H}))` : `${zoom * 100}%` }}>
                         {src && failed !== src
-                            ? <img src={src} alt={`第 ${pageNo} 葉书影`} onLoad={() => setLoaded(src)} onError={() => setFailed(src)} style={{ display: 'block', width: '100%', height: 'auto' }} />
+                            ? <img src={src} alt={`第 ${pageNo} 页书影`} onLoad={() => setLoaded(src)} onError={() => setFailed(src)} style={{ display: 'block', width: '100%', height: 'auto' }} />
                             : <div style={{ paddingTop: `${(H / W) * 100}%`, color: '#999', fontSize: 13 }}>书影加载失败</div>}
                         {boxes.map(b => {
                             const on = b.a === selected;
@@ -909,18 +912,56 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
     }, [book, loaded, volOf]);
 
-    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
-        const e = await submitCell(cell, { choice, char, alt, note, pick });
-        if (e) return e;
-        setDone(prev => {
-            const next = { ...prev, [cell.a]: doneLabel(choice, char) };
-            persist(volOf(cell), loaded[volOf(cell)]?.rev ?? null, next, null);
-            return next;
+    // 乐观提交：点完先在本地记下、马上收起这一格跳下一张，接口在后台排队慢慢发；最终失败再把这一格恢复为待审并报错。
+    // 本机存档（localStorage）只记服务端已确认的，没发完就刷新的格回到待审，不会假装交过。
+    const queue = useRef<SubmitQueue | null>(null);
+    if (!queue.current) queue.current = new SubmitQueue(3, n => setInflight(n));
+    const [inflight, setInflight] = useState(0);
+    const [failed, setFailed] = useState<Record<string, string>>({});
+    const acked = useRef(new Map<string, string | null>());       // 每格服务端最后确认的回应（回滚用）
+    const doneRef = useRef(done);
+    doneRef.current = done;
+
+    const submitOptimistic = useCallback((cell: PendingCell, fields: { choice: ReviewChoice; char?: string; alt?: string; note?: string; pick?: Pick }): string | null => {
+        const v = volOf(cell);
+        const rev = loaded[v]?.rev;
+        if (!rev) return '这份待审单缺少版本号，暂时不能提交';
+        const label = doneLabel(fields.choice, fields.char);
+        const q = queue.current!;
+        if (!q.has(cell.a)) acked.current.set(cell.a, doneRef.current[cell.a] ?? null);
+        setFailed(prev => { if (!(cell.a in prev)) return prev; const n = { ...prev }; delete n[cell.a]; return n; });
+        setDone(prev => ({ ...prev, [cell.a]: label }));
+        void q.enqueue(cell.a, () => submitCell(cell, fields)).then(({ err, latest, skipped }) => {
+            if (skipped) return;
+            if (!err) {
+                acked.current.set(cell.a, label);
+                writeDone(rev, { ...readDone(rev), [rawA(cell.a)]: label });
+                return;
+            }
+            if (!latest) return;                                    // 后面还有更新的提交，由它定终局
+            const back = acked.current.get(cell.a) ?? null;
+            setDone(prev => { const n = { ...prev }; if (back) n[cell.a] = back; else delete n[cell.a]; return n; });
+            setHiddenDone(prev => { if (!prev.has(cell.a)) return prev; const n = new Set(prev); n.delete(cell.a); return n; });
+            setFailed(prev => ({ ...prev, [cell.a]: err }));
         });
+        return null;
+    }, [submitCell, loaded, volOf]);
+
+    // 离开页面前还有没发完的提交：浏览器弹确认
+    useEffect(() => {
+        if (inflight <= 0) return;
+        const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+        window.addEventListener('beforeunload', h);
+        return () => window.removeEventListener('beforeunload', h);
+    }, [inflight]);
+
+    const onSubmit = useCallback(async (cell: PendingCell, choice: ReviewChoice, char?: string, pick?: Pick, note?: string, advance?: boolean, alt?: string) => {
+        const e = submitOptimistic(cell, { choice, char, alt, note, pick });
+        if (e) return e;
         // 「只看还没回应的」勾着时，刚交上的这一张马上收起（用户 10-26）；在跳走之前先收，下一张照算
         if (advance) { setHiddenDone(prev => (prev.has(cell.a) ? prev : new Set(prev).add(cell.a))); setAdvanceFrom(cell.a); }   // 选了字或点「确认」自动跳到下一张没回应的（调研 A D1）
         return null;
-    }, [submitCell, persist, loaded, volOf]);
+    }, [submitOptimistic]);
 
     // 按类筛（GUJI-624「切坏格」一类）：单子里有两类以上才显示
     const classCounts = useMemo(() => {
@@ -952,26 +993,16 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             for (const v of new Set(doubt.map(k => (merged ? k.slice(0, k.indexOf('|')) : vol)))) persist(v, loaded[v]?.rev ?? null, null, next);
             return next;
         });
-        // 逐格交（同一个接口、同格同人覆盖旧票）；一格失败就停，交过的照样算
+        // 乐观：先全部记为已确认、从快速确认里收起，接口在后台逐格排队发；哪格最终失败，哪格恢复为待审并报错
         const sent: string[] = [];
-        let err: string | null = null;
         for (const { cell, char } of ok) {
-            err = await submitCell(cell, { choice: 'char', char, pick: { src: 'cand', rank: 1 } });   // 参校本字就是卡片上第一个候选
-            if (err) break;
+            if (submitOptimistic(cell, { choice: 'char', char, pick: { src: 'cand', rank: 1 } })) continue;   // 参校本字就是卡片上第一个候选
             sent.push(cell.a);
-            onProgress(sent.length);
         }
-        if (sent.length) {
-            setDone(prev => {
-                const next = { ...prev };
-                for (const { cell, char } of ok) if (sent.includes(cell.a)) next[cell.a] = doneLabel('char', char);
-                for (const v of new Set(ok.filter(({ cell }) => sent.includes(cell.a)).map(({ cell }) => volOf(cell)))) persist(v, loaded[v]?.rev ?? null, next, null);
-                return next;
-            });
-            setHiddenDone(prev => new Set([...prev, ...sent]));   // 快速确认过的不再到下面露面
-        }
-        return err ? `已确认 ${sent.length} 格，后面的没交上：${err}` : null;
-    }, [submitCell, persist, loaded, volOf, merged, vol]);
+        if (sent.length) setHiddenDone(prev => new Set([...prev, ...sent]));   // 快速确认过的不再到下面露面
+        onProgress(sent.length);
+        return null;
+    }, [submitOptimistic, persist, loaded, volOf, merged, vol]);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const cur = Math.min(page, pages - 1);
     const slice = useMemo(() => shown.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE), [shown, cur]);
@@ -1117,6 +1148,13 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             <ProofToc book={book} vol={vol} toc={toc} live={liveLeft} onPickVol={merged ? jumpToVol : undefined} />
             <div className="min-w-0 flex-1">
             <ProofingIntro total={merged && capped ? capped.total : merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
+            {inflight > 0 && <p data-testid="sync-status" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>正在后台提交 {inflight} 格…没交完前请先别关页面。</p>}
+            {Object.keys(failed).length > 0 && (
+                <div role="alert" data-testid="sync-failed" style={{ border: '1px solid #e0b4b4', background: '#fdf3f3', color: '#a33', borderRadius: 6, padding: '8px 12px', margin: '8px 0', fontSize: 13 }}>
+                    有 {Object.keys(failed).length} 格没交上（{[...new Set(Object.values(failed))][0]}），已恢复为待审。
+                    <button type="button" onClick={() => { const a = Object.keys(failed)[0]; setHiddenDone(prev => { const n = new Set(prev); n.delete(a); return n; }); setFailed(prev => prev); goTo(a); }} className={BTN_CLASS} style={{ ...btnStyle('small', false, false), marginLeft: 8 }}>去看看</button>
+                </div>
+            )}
             {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入待审单…</p>}
             {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格（共约 {capped.total} 格）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
@@ -1159,10 +1197,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                                 const head = merged && (i === 0 || volOf(slice[i - 1]) !== v)
                                     ? <li key={`vh-${i}-${v}`} data-testid="vol-head" className="sticky top-[var(--nav-h)] z-10 -mx-1 mb-2 mt-3 flex list-none items-baseline justify-between border-b px-1 py-1.5 text-[15px]"
                                         style={{ backgroundColor: 'var(--color-paper)', borderColor: 'var(--color-tint-2)', color: 'var(--color-ink)' }}>
-                                        <b>{tocTitle.get(v) ?? info?.chapterTitle ?? `册 ${v}`}</b>
+                                        <b>{tocTitle.get(v) ?? volTitle(v, info?.chapterTitle)}</b>
                                         <span className="text-[13px]" style={{ color: 'var(--color-ink-3)' }}>剩 {cells.filter(c => volOf(c) === v && !done[c.a]).length} 格</span>
                                     </li> : null;
-                                return <React.Fragment key={cell.a}>{head}<CellRow cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, vcord)} imageUrl={crop ? images.get(imgKey(v, crop.seq))?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBaseOf(cell)} onSpriteFail={onSpriteFail} done={done[cell.a]} onSubmit={onSubmit}
+                                return <React.Fragment key={cell.a}>{head}<CellRow cell={cell} crop={crop} pageOnly={!crop && !!resolvePage(cell, vcord)} imageUrl={crop ? images.get(imgKey(v, crop.seq))?.hires ?? null : null} spriteSrc={spriteOf(cell)} spriteBase={spriteBaseOf(cell)} onSpriteFail={onSpriteFail} done={done[cell.a]} failedErr={failed[cell.a]} onSubmit={onSubmit}
                                     context={info ? contextAround(info.order, info.pos, rawA(cell.a)) : null} pendingSet={info?.rawSet ?? EMPTY_SET} selected={cell.a === selected} onSelect={setSel} /></React.Fragment>;
                             })}
                         </ul>

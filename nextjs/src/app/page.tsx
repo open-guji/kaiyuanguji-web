@@ -5,6 +5,7 @@ import HomeFeatures from '@/components/home/HomeFeatures';
 import HomeOpen from '@/components/home/HomeOpen';
 import T from '@/i18n/T';
 import type { SiteMessageKey } from '@/i18n/translate';
+import { getCurrentJsonServer } from '@/lib/server/item-data';
 
 // 2026-09-29 设计稿 v3（overview#286）：眉题前加短横；检索框改成一体的方框（图标＋输入＋按钮）；
 // 「我们在做的事」已上线的做成抬起的卡片并带入口，规划中的用虚线框；「文本开放／代码开源」标题前加许可徽标，
@@ -26,7 +27,24 @@ const HOME_EXAMPLES: { labelKey: SiteMessageKey; href: string }[] = [
 
 // 「文本开放、代码开源」两栏在 components/home/HomeOpen（属性文字要跟繁简偏好，做成了客户端组件）。
 
-export default function HomePage() {
+// 首页「已收录 N 万+ 条古籍索引」：构建时读数据根下的 stats.json（A11 的 build_derived 产出，契约 7：
+// {work, book, collection, entity, …}，存活记录数），口径 work+book，向下取整到万。读不到（数据还没发布、网络错）
+// 回退到下面的默认值 85（A11 11-15 搜索库计数 works+books=851,652）。
+const HOME_COUNT_FALLBACK_WAN = 85;
+
+async function homeCountWan(): Promise<number> {
+  try {
+    const s = await getCurrentJsonServer<{ work?: number; book?: number }>('stats.json');
+    const n = (s?.work ?? 0) + (s?.book ?? 0);
+    const wan = Math.floor(n / 10000);
+    return Number.isFinite(wan) && wan > 0 ? wan : HOME_COUNT_FALLBACK_WAN;
+  } catch {
+    return HOME_COUNT_FALLBACK_WAN;
+  }
+}
+
+export default async function HomePage() {
+  const countWan = await homeCountWan();
   return (
     <LayoutWrapper navOnHero>
       <section className="home-hero">
@@ -46,7 +64,7 @@ export default function HomePage() {
           </p>
           <HomeSearch />
           <p className="home-under">
-            <span><T k="home.count" /></span>
+            <span><T k="home.count" vars={{ n: countWan }} /></span>
             {HOME_EXAMPLES.map((e) => (
               <Link key={e.href} href={e.href}>
                 <T k={e.labelKey} />
