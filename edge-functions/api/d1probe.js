@@ -30,10 +30,22 @@ export async function onRequestGet(context) {
   };
   const kv = getKV(context);
   const out = { n, colo: context.request.headers.get('eo-connecting-region') || undefined };
-  const runs = { health: [], status: [], kv_get: [], kv_put: [] };
+  const runs = { health: [], status: [], kv_get: [], kv_put: [], inbox_post: [] };
+  const inboxTok = context.request.headers.get('x-inbox-token'); // 有才测 D1 写：POST /v1/web/inbox（会写入探测数据，仅 A20 授权）
   for (let i = 0; i < n; i++) {
     runs.health.push(await timeIt(get('/v1/health')));
     runs.status.push(await timeIt(get('/v1/status')));
+    if (inboxTok) {
+      runs.inbox_post.push(await timeIt(async () => {
+        const r = await fetch(BASE + '/v1/web/inbox', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${inboxTok}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kind: 'd1probe', note: 'latency probe, safe to delete', i }),
+        });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        await r.text();
+      }));
+    }
     if (kv) {
       runs.kv_put.push(await timeIt(() => kv.put('probe:tmp', String(i), { expirationTtl: 60 })));
       runs.kv_get.push(await timeIt(() => kv.get('probe:tmp')));
