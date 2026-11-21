@@ -2678,8 +2678,3 @@
 .cmp-card-label { margin-top: 6px; font-size: 12px; color: var(--color-ink-3); letter-spacing: .1em; }
 .cmp-ctx { line-height: 1.9; letter-spacing: .04em; }
 .cmp-ctx-dim { color: var(--color-ink-2); }
-
-/* 临时绕过（A20 11-20）：book-index-ui 0.66.16-rc.2 起目录拖宽把手 .bim-rd-toc-grip 写死 grid-row:1，
-   目录没写行号，被自动排到第 2 行，整个阅读页（书影区高度 0、正文被挤到页底）错位，滚轮缩放等用例全红。
-   给目录也固定第 1 行。bim 上游补上 grid-row:1 后删本条。 */
-.bim-rd-toc { grid-row: 1; }
