@@ -260,6 +260,29 @@ async function mirrorNow(context, kind, key, value, ts) {
   }
 }
 
+/** 回填用：一次 POST 多条（≤100），不看 WEB_INBOX_DUALWRITE 开关。返回 { ok, sent, skipped, error? } */
+export async function mirrorBatchToInbox(context, items) {
+  const base = (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, '');
+  const token = envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN');
+  if (!token) return { ok: false, sent: 0, skipped: 0, error: '没有令牌' };
+  const good = items.filter((it) => INBOX_KINDS.includes(it.kind) && INBOX_KEY_RE.test(it.key) && it.value && typeof it.value === 'object').slice(0, 100);
+  if (!good.length) return { ok: true, sent: 0, skipped: items.length };
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 10000);
+  try {
+    const res = await fetch(`${base}/v1/web/inbox`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ items: good }),
+      signal: ctl.signal,
+    });
+    if (!res.ok) return { ok: false, sent: 0, skipped: 0, error: `HTTP ${res.status}` };
+    return { ok: true, sent: good.length, skipped: items.length - good.length };
+  } catch (e) {
+    return { ok: false, sent: 0, skipped: 0, error: String((e && e.message) || e) };
+  } finally { clearTimeout(timer); }
+}
+
 function getKV(context) {
   if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
