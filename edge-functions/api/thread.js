@@ -13,7 +13,7 @@
 // voter＝sha256(aid|ip) 前 16 位，与改字、精校同一规则；值只存 voter，不存 aid、不存 IP。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox,
 } from './feedback.js';
 import { checkRateLimit } from './cellreview.js';
 
@@ -82,7 +82,9 @@ export async function onRequestPost(context) {
     const ts = Date.now();
     const base = `${rest.book_id}:${rest.volume}:${rest.target}`;
     const key = rest.stance === 'reply' ? `tm:${base}:${ts.toString(36)}-${voter}` : `tv:${base}:${voter}`;
-    await kv.put(key, JSON.stringify({ v: 1, ...rest, voter, ts }), { expirationTtl: TTL_SECONDS });
+    const record = { v: 1, ...rest, voter, ts };
+    await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
+    await mirrorToInbox(context, 'thread', key, record, ts);
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Thread POST error:', e);

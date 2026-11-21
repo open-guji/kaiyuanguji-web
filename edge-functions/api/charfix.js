@@ -17,7 +17,7 @@
 // voter＝sha256(aid|ip) 前 16 位，与精校同一规则；值只存 voter，不存 aid、不存 IP。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox,
 } from './feedback.js';
 import { isSingleChar, checkRateLimit } from './cellreview.js';
 
@@ -201,7 +201,9 @@ export async function onRequestPost(context) {
       : rest.kind === 'span'
         ? `cs:${rest.book_id}:${rest.volume}:${rest.text_version}:${rest.start}-${rest.end}:${rest.sub}:${voter}`
         : `ce:${rest.book_id}:${rest.volume}:${rest.entity_id}:${voter}`;
-    await kv.put(key, JSON.stringify({ v: 1, ...rest, voter, ts: Date.now() }), { expirationTtl: TTL_SECONDS });
+    const record = { v: 1, ...rest, voter, ts: Date.now() };
+    await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
+    await mirrorToInbox(context, 'charfix', key, record, record.ts);
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Charfix POST error:', e);

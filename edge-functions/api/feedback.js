@@ -213,6 +213,53 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
+// ---- 网站票双写 D1（A20 Worker /v1/web/inbox；过渡期 KV 仍为主，D1 失败只记日志）----
+// 开关：WEB_INBOX_DUALWRITE=1；地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
+// 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
+// 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
+const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback'];
+const INBOX_KEY_RE = /^[A-Za-z0-9:_.|~-]{1,300}$/;
+const INBOX_TIMEOUT_MS = 2000;
+function envVar(context, name) {
+  if (context && context.env && context.env[name]) return String(context.env[name]);
+  try { return (typeof globalThis[name] !== 'undefined' && globalThis[name]) ? String(globalThis[name]) : ''; } catch { return ''; }
+}
+/** 把刚写进 KV 的一条记录镜像到 D1；永不抛错，返回 'off'｜'ok'｜'skip'｜'fail'。 */
+export async function mirrorToInbox(context, kind, key, value, ts) {
+  const p = mirrorNow(context, kind, key, value, ts);
+  if (context && typeof context.waitUntil === 'function') { context.waitUntil(p); return 'bg'; }
+  return p;
+}
+async function mirrorNow(context, kind, key, value, ts) {
+  try {
+    if (envVar(context, 'WEB_INBOX_DUALWRITE') !== '1') return 'off';
+    const base = (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, '');
+    const token = envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN');
+    if (!token) { console.warn('WebInbox 双写已开但没有令牌（WEB_INBOX_TOKEN／FEEDBACK_ADMIN_TOKEN）'); return 'skip'; }
+    if (!INBOX_KINDS.includes(kind) || !INBOX_KEY_RE.test(key) || !value || typeof value !== 'object') {
+      console.warn(`WebInbox 跳过：kind=${kind} key=${String(key).slice(0, 80)}`);
+      return 'skip';
+    }
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), INBOX_TIMEOUT_MS);
+    try {
+      const item = { kind, key, value };
+      if (ts) item.ts = ts;
+      const res = await fetch(`${base}/v1/web/inbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ items: [item] }),
+        signal: ctl.signal,
+      });
+      if (!res.ok) { console.error(`WebInbox 写入失败 HTTP ${res.status} kind=${kind}`); return 'fail'; }
+      return 'ok';
+    } finally { clearTimeout(timer); }
+  } catch (e) {
+    console.error('WebInbox 写入异常:', (e && e.message) || e);
+    return 'fail';
+  }
+}
+
 function getKV(context) {
   if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;

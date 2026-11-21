@@ -29,7 +29,7 @@
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox,
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'unrec', 'damaged'];
@@ -258,6 +258,7 @@ export async function onRequestPost(context) {
     const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
     const put = await putTicket(kv, key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
     if (put.attempts > 1) console.warn(`Cellreview KV put 重试后成功 ${put.ms}ms`);
+    await mirrorToInbox(context, 'cellreview', key, record, record.ts);
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Cellreview POST error:', e);
