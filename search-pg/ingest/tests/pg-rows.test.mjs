@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { grams, docToRow } from '../pg-rows.mjs';
+import { grams, headTokens, docToRow } from '../pg-rows.mjs';
 
 test('grams：单字＋相邻二字，拉丁整词，扩展区汉字不被劈开', () => {
     assert.deepEqual(grams('三國志').sort(), ['三', '三國', '國', '國志', '志'].sort());
@@ -32,4 +32,14 @@ test('docToRow：人物用 primary_name／name_search；office_ids 转文本', (
 test('docToRow：缺 id 或未知索引报错', () => {
     assert.throws(() => docToRow('works', {}));
     assert.throws(() => docToRow('juans', { id: 'x' }));
+});
+
+test('headTokens：繁简各取前 1／2 字，拉丁词不取', () => {
+    assert.deepEqual(headTokens('史記 史记').sort(), ['^史', '^史記', '^史记'].sort());
+    assert.deepEqual(headTokens('三'), ['^三']);
+    assert.deepEqual(headTokens('shi ji'), []);
+});
+test('docToRow：title_tok 带开头词元', () => {
+    const r = docToRow('works', { id: 'w', title: '史記', title_search: '史記 史记' });
+    assert.ok(r.title_tok.includes('^史記') && r.title_tok.includes('史記'));
 });
