@@ -44,6 +44,8 @@ describe('mirrorToInbox', () => {
     it('缺令牌／非法键或 kind：跳过', async () => {
         expect(await mirror({ env: { WEB_INBOX_DUALWRITE: '1' } }, 'thread', 'tv:a', val, 1)).toBe('skip');
         expect(await mirror(env(), 'thread', 'tv:a b', val, 1)).toBe('skip');
+        expect(await mirror(env(), 'thread', 'tv:b:v:char~1:2:3~~wrong:x', val, 1)).toBe('ok');
+        calls.length = 0;
         expect(await mirror(env(), 'nope', 'tv:a', val, 1)).toBe('skip');
         expect(calls).toHaveLength(0);
     });

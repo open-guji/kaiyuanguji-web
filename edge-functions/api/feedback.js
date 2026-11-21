@@ -218,7 +218,7 @@ function constantTimeEqual(a, b) {
 // 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
 // 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
 const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback'];
-const INBOX_KEY_RE = /^[A-Za-z0-9:_.|-]{1,300}$/;
+const INBOX_KEY_RE = /^[A-Za-z0-9:_.|~-]{1,300}$/;
 const INBOX_TIMEOUT_MS = 2000;
 function envVar(context, name) {
   if (context && context.env && context.env[name]) return String(context.env[name]);
