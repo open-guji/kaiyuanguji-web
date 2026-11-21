@@ -29,7 +29,7 @@
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox, inboxPrimary, writeInboxStrict, readInboxPage,
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'unrec', 'damaged'];
@@ -238,8 +238,9 @@ export async function onRequestPost(context) {
     try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
     const v = validateReview(body);
     if (v.error) return json(headers, 400, { success: false, error: v.error });
+    const primary = inboxPrimary(context);
     const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
+    if (!primary && !kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 
     const limited = memRateLimit(context.request);
     if (!limited.ok) {
@@ -256,6 +257,11 @@ export async function onRequestPost(context) {
     // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。
     const iph = ip ? await ipHash(context, ip) : '';
     const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
+    if (primary) {
+      // D1 是真源：不写 KV；写不成回 500，读者端会排队重试（同键同值幂等）
+      await writeInboxStrict(context, 'cellreview', key, record, record.ts);
+      return json(headers, 200, { success: true });
+    }
     const put = await putTicket(kv, key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
     if (put.attempts > 1) console.warn(`Cellreview KV put 重试后成功 ${put.ms}ms`);
     await mirrorToInbox(context, 'cellreview', key, record, record.ts);
@@ -287,6 +293,13 @@ export async function onRequestGet(context) {
     if (byItem && !book) return json(headers, 400, { success: false, error: '按条目读要 book' });
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
+    // D1 为真源时：从 Worker 收件箱按键前缀读，cursor 就是 seq
+    if (inboxPrimary(context)) {
+      const p = byItem ? `cr:i:${book}:` : `cr:${rev}:${book ? `${book}:` : ''}`;
+      const page = await readInboxPage(context, { kind: 'cellreview', prefix: p, after: cursor ? parseInt(cursor, 10) || 0 : 0, limit });
+      const rows = (page.items || []).map((x) => x.value);
+      return json(headers, 200, { success: true, ...(byItem ? { book } : { rev }), items: rows, cursor: page.hasMore ? String(page.next) : '', hasMore: !!page.hasMore });
+    }
     const kv = getKV(context);
     if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
 

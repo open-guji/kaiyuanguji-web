@@ -283,6 +283,61 @@ export async function mirrorBatchToInbox(context, items) {
   } finally { clearTimeout(timer); }
 }
 
+/** 票以 D1 为真源（WEB_INBOX_PRIMARY=1）：cellreview 不再写 KV，写入失败要回 500（读者端会排队重试），读也走 D1。 */
+export function inboxPrimary(context) { return envVar(context, 'WEB_INBOX_PRIMARY') === '1'; }
+
+function inboxBaseToken(context) {
+  return {
+    base: (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, ''),
+    token: envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN'),
+  };
+}
+
+/** 必须写成：等 Worker 回 2xx，失败重试 1 次再抛错（和 KV 写入一样要么成要么 500）。 */
+export async function writeInboxStrict(context, kind, key, value, ts) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) throw new Error('D1 收件箱没有令牌（WEB_INBOX_TOKEN／FEEDBACK_ADMIN_TOKEN）');
+  if (!INBOX_KINDS.includes(kind) || !INBOX_KEY_RE.test(key) || key.length > 200 || !value || typeof value !== 'object') throw new Error(`D1 收件箱键或类型不合法：${kind} ${String(key).slice(0, 80)}`);
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 4000);
+    try {
+      const item = { kind, key, value };
+      if (ts) item.ts = ts;
+      const res = await fetch(`${base}/v1/web/inbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ items: [item] }),
+        signal: ctl.signal,
+      });
+      if (res.ok) return;
+      lastErr = new Error(`D1 收件箱写入 HTTP ${res.status}`);
+      if (res.status >= 400 && res.status < 500 && res.status !== 429) break;
+    } catch (e) {
+      lastErr = e;
+    } finally { clearTimeout(timer); }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 250));
+  }
+  throw lastErr;
+}
+
+/** 读一页：kind、可选 prefix／book、after（seq）、limit。返回 { items:[{seq,key,value,...}], next, hasMore }；失败抛错。 */
+export async function readInboxPage(context, { kind, prefix = '', book = '', after = 0, limit = 200 }) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) throw new Error('D1 收件箱没有令牌');
+  const q = new URLSearchParams({ kind, limit: String(limit), after: String(after) });
+  if (prefix) q.set('prefix', prefix);
+  if (book) q.set('book', book);
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const res = await fetch(`${base}/v1/web/inbox?${q}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+    if (!res.ok) throw new Error(`D1 收件箱读取 HTTP ${res.status}`);
+    return await res.json();
+  } finally { clearTimeout(timer); }
+}
+
 function getKV(context) {
   if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
