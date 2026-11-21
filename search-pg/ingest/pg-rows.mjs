@@ -25,6 +25,20 @@ export function grams(text) {
     return [...out];
 }
 
+/** 书名开头词元：title_search 里每个词（繁／简各一个）取前 1 字和前 2 字，加「^」前缀。
+ *  search_one 用它让「书名以查询词开头」的排前面（Meili 的 attribute 规则看词的位置）。 */
+export function headTokens(text) {
+    const out = new Set();
+    for (const w of String(text || '').toLowerCase().split(/\s+/)) {
+        const m = w.match(/^[㐀-鿿豈-﫿\u{20000}-\u{3FFFF}]+/u);
+        if (!m) continue;
+        const cs = Array.from(m[0]);
+        out.add(`^${cs[0]}`);
+        if (cs.length > 1) out.add(`^${cs[0]}${cs[1]}`);
+    }
+    return [...out];
+}
+
 const NAME_FIELDS = ['title_search', 'author_search', 'aliases_search', 'edition_search', 'holder_search', 'name_search', 'pinyin'];
 const DESC_FIELDS = ['description_search', 'indexed_by_search'];
 const PAYLOAD_FIELDS = ['edition', 'era', 'sort_year', 'role', 'juan_count', 'birth_year', 'death_year', 'cbdb_id', 'holder'];
@@ -55,7 +69,7 @@ export function docToRow(index, d) {
         era_rank: Number.isFinite(d.era_rank) ? d.era_rank : 9999,
         title_sort: nz(d.title_sort),
         office_ids: (d.office_ids || []).map(String),
-        title_tok: grams(`${d.title_search || d.name_search || ''} ${d.title_sort || d.pinyin || ''}`),
+        title_tok: [...grams(`${d.title_search || d.name_search || ''} ${d.title_sort || d.pinyin || ''}`), ...headTokens(d.title_search || d.name_search || title)],
         name_tok: grams(joinFields(d, NAME_FIELDS)),
         desc_tok: grams(joinFields(d, DESC_FIELDS)),
         descr: Array.from(d.description_search || '').slice(0, 1000).join(''),
