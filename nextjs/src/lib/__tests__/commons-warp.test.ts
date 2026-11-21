@@ -68,6 +68,16 @@ describe('commons-warp', () => {
         expect(none[0].url).toContain('data.openguji.com');
     });
 
+    it('canvasesToImages：seq 取 canvas id 尾段（页序编号），尾段不是四位数字时退回图片 URL', () => {
+        const mk = (id: string) => ({
+            id, width: 10, height: 10,
+            items: [{ items: [{ body: { items: [{ id: 'https://data.openguji.com/iiif/b/01/0006a/full/1200,/0/default.webp' }] } }] }],
+        });
+        expect(canvasesToImages([mk('https://data.openguji.com/iiif/b/canvas/01/0001') as any])[0].seq).toBe('0001');
+        expect(canvasesToImages([mk('https://data.openguji.com/iiif/b/canvas/01/0006a') as any])[0].seq).toBe('0006a');
+        expect(canvasesToImages([mk('c') as any])[0].seq).toBe('0006a');
+    });
+
     it('canvasesToImages：国内读者有 bim:cos 就读 COS 单版整页，完整书页用同一张整页', () => {
         const COS = { url: 'https://data.openguji.com/iiif/96mid1ogzk/05/srcbw/S-1/full/3840,/0/default.webp', width: 3840, height: 5420, matrix: M, kind: 'bilevel' };
         const page = { src: { w: 4296, h: 6064 }, H: [1, 0, 0, 0, 1, 0, 0, 0, 1], content: [0, 0, 1824, 2575], views: { none: [1, 2, 3, 4], full: [100, 200, 4296, 6064] } };
