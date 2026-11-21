@@ -214,7 +214,8 @@ function constantTimeEqual(a, b) {
 }
 
 // ---- 网站票双写 D1（A20 Worker /v1/web/inbox；过渡期 KV 仍为主，D1 失败只记日志）----
-// 开关：WEB_INBOX_DUALWRITE=1；地址 WEB_INBOX_URL（Worker 根，如 https://…，不带 /v1/web/inbox）；令牌 WEB_INBOX_TOKEN。
+// 开关：WEB_INBOX_DUALWRITE=1；地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
+// 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
 // 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
 const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback'];
 const INBOX_KEY_RE = /^[A-Za-z0-9:_.|-]{1,300}$/;
@@ -225,11 +226,16 @@ function envVar(context, name) {
 }
 /** 把刚写进 KV 的一条记录镜像到 D1；永不抛错，返回 'off'｜'ok'｜'skip'｜'fail'。 */
 export async function mirrorToInbox(context, kind, key, value, ts) {
+  const p = mirrorNow(context, kind, key, value, ts);
+  if (context && typeof context.waitUntil === 'function') { context.waitUntil(p); return 'bg'; }
+  return p;
+}
+async function mirrorNow(context, kind, key, value, ts) {
   try {
     if (envVar(context, 'WEB_INBOX_DUALWRITE') !== '1') return 'off';
-    const base = envVar(context, 'WEB_INBOX_URL').replace(/\/+$/, '');
-    const token = envVar(context, 'WEB_INBOX_TOKEN');
-    if (!base || !token) { console.warn('WebInbox 双写已开但缺 WEB_INBOX_URL／WEB_INBOX_TOKEN'); return 'skip'; }
+    const base = (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, '');
+    const token = envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN');
+    if (!token) { console.warn('WebInbox 双写已开但没有令牌（WEB_INBOX_TOKEN／FEEDBACK_ADMIN_TOKEN）'); return 'skip'; }
     if (!INBOX_KINDS.includes(kind) || !INBOX_KEY_RE.test(key) || !value || typeof value !== 'object') {
       console.warn(`WebInbox 跳过：kind=${kind} key=${String(key).slice(0, 80)}`);
       return 'skip';

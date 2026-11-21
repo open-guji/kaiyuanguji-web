@@ -33,8 +33,16 @@ describe('mirrorToInbox', () => {
         expect(JSON.parse(calls[0].init.body as string)).toEqual({ items: [{ kind: 'charfix', key: 'cf:a:b', value: val, ts: 5 }] });
         expect((calls[0].init.headers as Record<string, string>).Authorization).toBe('Bearer t');
     });
+    it('默认地址与 FEEDBACK_ADMIN_TOKEN；有 waitUntil 时后台', async () => {
+        const waited: Promise<unknown>[] = [];
+        const ctx = { env: { WEB_INBOX_DUALWRITE: '1', FEEDBACK_ADMIN_TOKEN: 'adm' }, waitUntil: (p: Promise<unknown>) => { waited.push(p); } };
+        expect(await mirror(ctx, 'thread', 'tv:a', val, 1)).toBe('bg');
+        await Promise.all(waited);
+        expect(calls[0].url).toBe('https://data.open-guji.com/v1/web/inbox');
+        expect((calls[0].init.headers as Record<string, string>).Authorization).toBe('Bearer adm');
+    });
     it('缺令牌／非法键或 kind：跳过', async () => {
-        expect(await mirror(env({ WEB_INBOX_TOKEN: '' }), 'thread', 'tv:a', val, 1)).toBe('skip');
+        expect(await mirror({ env: { WEB_INBOX_DUALWRITE: '1' } }, 'thread', 'tv:a', val, 1)).toBe('skip');
         expect(await mirror(env(), 'thread', 'tv:a b', val, 1)).toBe('skip');
         expect(await mirror(env(), 'nope', 'tv:a', val, 1)).toBe('skip');
         expect(calls).toHaveLength(0);
