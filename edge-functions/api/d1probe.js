@@ -40,7 +40,7 @@ export async function onRequestGet(context) {
         const r = await fetch(BASE + '/v1/web/inbox', {
           method: 'POST',
           headers: { Authorization: `Bearer ${inboxTok}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ kind: 'd1probe', note: 'latency probe, safe to delete', i }),
+          body: JSON.stringify({ items: [{ kind: 'thread', key: `probe:d1:${Date.now()}:${i}`, value: { note: 'latency probe, safe to delete', i } }] }),
         });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         await r.text();
