@@ -6,7 +6,7 @@
 //   不补 rev，不改值；tombstone 不在此处理。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, getKV, mirrorBatchToInbox, kvEncKey,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, getKV, mirrorBatchToInbox, kvEncKey, packDoc,
 } from './feedback.js';
 
 // ns：整个 KV 命名空间原样搬进 kind=kv（11-22 网站 KV 全搬 D1）。
@@ -48,7 +48,14 @@ export async function onRequestPost(context) {
       const vals = await Promise.all(slice.map((k) => (nsMode ? kv.get(k) : kv.get(k, 'json')).catch(() => null)));
       vals.forEach((v, j) => {
         if (nsMode) {
-          if (typeof v === 'string' && !slice[j].startsWith('ratelimit:') && !slice[j].startsWith('oauth_code_jti:')) items.push({ kind: 'kv', key: kvEncKey(slice[j]), value: { s: v } });
+          const k = slice[j];
+          if (/^(cr|cf|cs|ce|tv|tm):/.test(k)) { skipped += 1; return; }   // 这些早已双写进 D1
+          if (typeof v === 'string' && k.startsWith('pd:')) {
+            const [, pb, pv] = k.split(':');
+            items.push({ kind: 'pending', key: k, __pack: { pb, pv, v } });
+          } else if (typeof v === 'string' && k.startsWith('fs:')) {
+            try { items.push({ kind: 'fixstate', key: k, value: JSON.parse(v) }); } catch { skipped += 1; }
+          } else if (typeof v === 'string' && !slice[j].startsWith('ratelimit:') && !slice[j].startsWith('oauth_code_jti:')) items.push({ kind: 'kv', key: kvEncKey(slice[j]), value: { s: v } });
           else skipped += 1;
         } else if (v && typeof v === 'object') {
           if (kind === 'pending') { const [, pb, pv] = slice[j].split(':'); items.push({ kind, key: slice[j], value: { book: pb, vol: pv, doc: v } }); }
@@ -56,6 +63,9 @@ export async function onRequestPost(context) {
         }
         else skipped += 1;
       });
+    }
+    for (const it of items) {
+      if (it.__pack) { it.value = await packDoc(it.__pack.pb, it.__pack.pv, JSON.parse(it.__pack.v)); delete it.__pack; }
     }
     let sent = 0;
     if (items.length && !body.dry) {
