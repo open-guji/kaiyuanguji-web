@@ -12,7 +12,7 @@
 // key：`pd:<book>:<vol>`，值是整张单 JSON（几十 KB，EdgeOne KV 单值上限 25 MB），不设过期。
 // 图仍在 COS（文件名带内容哈希、不可变）：put 之前，调用方要保证单里 sprites[] 的图已在 COS（manager 会 HEAD 核对，缺图就走 proofing-sync）。
 
-import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readInboxOne, writeInboxStrict, deleteInboxStrict, packDoc, unpackDoc } from './feedback.js';
+import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendingDoc, writePendingDoc, deletePendingDoc } from './feedback.js';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -39,8 +39,7 @@ export async function onRequestGet(context) {
     const book = url.searchParams.get('book') || '';
     const vol = url.searchParams.get('vol') || '';
     if (!RE_BOOK.test(book) || !RE_VOL.test(vol)) return json({ ...headers, 'Cache-Control': 'no-store' }, 400, { success: false, error: 'book／vol 无效' });
-    const row = await readInboxOne(context, 'pending', pdKey(book, vol));
-    const doc = row && await unpackDoc(row.value);
+    const doc = await readPendingDoc(context, pdKey(book, vol));
     if (!doc) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 404, { success: false, error: '无' });
     return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, doc);
   } catch (e) {
@@ -59,7 +58,7 @@ export async function onRequestPost(context) {
     const { op, book, vol } = body || {};
     if (!RE_BOOK.test(book || '') || !RE_VOL.test(vol || '')) return json(headers, 400, { success: false, error: 'book／vol 无效' });
     const key = pdKey(book, vol);
-    const putDoc = async (d) => writeInboxStrict(context, 'pending', key, await packDoc(book, vol, d));
+    const putDoc = (d) => writePendingDoc(context, key, book, vol, d);
 
     if (op === 'put') {
       if (!validDoc(body.doc)) return json(headers, 400, { success: false, error: 'doc 须有 rev 和 cells[]' });
@@ -69,7 +68,7 @@ export async function onRequestPost(context) {
       return json(headers, 200, { success: true, rev: body.doc.rev, cells: body.doc.cells.length });
     }
     if (op === 'delete') {
-      await deleteInboxStrict(context, 'pending', key);
+      await deletePendingDoc(context, key);
       return json(headers, 200, { success: true });
     }
     if (op === 'hide' || op === 'unhide') {
@@ -77,8 +76,7 @@ export async function onRequestPost(context) {
       const cells = Array.isArray(body.cells) ? body.cells : [];
       if (!items.length && !cells.length) return json(headers, 400, { success: false, error: 'items／cells 至少给一个' });
       if (items.some((x) => !RE_ITEM.test(x)) || cells.some((x) => !RE_CELL.test(x))) return json(headers, 400, { success: false, error: '条目 id 或格号格式不对' });
-      const row = await readInboxOne(context, 'pending', key);
-      const doc = row && await unpackDoc(row.value);
+      const doc = await readPendingDoc(context, key);
       if (!doc || !validDoc(doc)) return json(headers, 404, { success: false, error: '没有这一章的单子，先 put' });
       if (body.expect_rev && body.expect_rev !== doc.rev) return json(headers, 409, { success: false, error: `现行单 rev 是 ${doc.rev}，不是 ${body.expect_rev}` });
       const hit = (c) => items.includes(itemOf(c)) || cells.includes(cellOf(c));
