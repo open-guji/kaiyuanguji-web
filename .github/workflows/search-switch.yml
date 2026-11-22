@@ -1,0 +1,47 @@
+name: Search backend switch
+
+# 手动：写 COS 的 search/switch.json（{"backend":"meili|pg|shadow"}），边缘函数 30 秒内读到。
+# 只改这一个对象，不碰别的。meili＝线上原样；shadow＝仍返回 Meili 结果、5% 抽样后台打 PG 对比；pg＝返回 PG 结果（失败当场回落 Meili）。
+# 先决条件：正式站已发布含 search-pg 边缘函数的版本，且 EdgeOne 环境变量有 SEARCH_PG_URL／SEARCH_PG_KEY。
+on:
+  workflow_dispatch:
+    inputs:
+      backend:
+        description: 要切到的后端
+        required: true
+        type: choice
+        options: [meili, shadow, pg]
+      confirm:
+        description: '切到 pg 时填 SWITCH-PG（防手滑）'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Guard
+        run: |
+          if [ "${{ inputs.backend }}" = pg ] && [ "${{ inputs.confirm }}" != SWITCH-PG ]; then echo "❌ 切到 pg 要在 confirm 填 SWITCH-PG"; exit 1; fi
+      - name: Install COS SDK
+        run: npm i --no-audit --no-fund --prefix "$RUNNER_TEMP/cos" cos-nodejs-sdk-v5@2.15.4 >/dev/null
+      - name: Write switch.json
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          BACKEND: ${{ inputs.backend }}
+        run: |
+          node - <<'JS'
+          const COS = require(process.env.RUNNER_TEMP + '/cos/node_modules/cos-nodejs-sdk-v5');
+          const cos = new COS({ SecretId: process.env.COS_SECRET_ID, SecretKey: process.env.COS_SECRET_KEY });
+          const body = JSON.stringify({ backend: process.env.BACKEND, updatedAt: new Date().toISOString(), by: 'search-switch workflow' });
+          cos.putObject({ Bucket: process.env.COS_BUCKET, Region: 'ap-shanghai', Key: 'search/switch.json', Body: Buffer.from(body), ContentType: 'application/json; charset=utf-8', CacheControl: 'public, max-age=10, must-revalidate' }, (e) => {
+            if (e) { console.error('FAIL', e.code || '', e.message || e); process.exit(1); }
+            console.log('✓ search/switch.json →', body);
+          });
+          JS
