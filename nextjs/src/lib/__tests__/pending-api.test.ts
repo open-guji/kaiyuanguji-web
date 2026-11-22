@@ -57,18 +57,23 @@ describe('/api/pending', () => {
     });
 });
 
-describe('超 900 KB 的单子压缩存放', () => {
-    it('put 大单 → 存 z；公开读还原；hide 照常', async () => {
-        const big = { rev: '004-r9', sprites: [], cells: Array.from({ length: 6000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
-        expect(JSON.stringify(big).length).toBeGreaterThan(900 * 1024);
+describe('超 900 KB 的单子分块存放', () => {
+    it('put 大单 → 主行＋续块；公开读拼回；hide 照常；改小后续块删掉；delete 全删', async () => {
+        const big = { rev: '004-r9', sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
+        expect(JSON.stringify(big).length).toBeGreaterThan(1_800 * 1024);
         expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: big }))).status).toBe(200);
-        const stored = JSON.parse(store.get(`pd:${B}:004`)!);
-        expect(stored.z).toBeTruthy();
-        expect(stored.doc).toBeUndefined();
-        expect(JSON.stringify(stored).length).toBeLessThan(1_400_000);
+        const main = JSON.parse(store.get(`pd:${B}:004`)!);
+        expect(main.parts).toBeGreaterThanOrEqual(2);
+        expect(store.has(`pd:${B}:004~p1`)).toBe(true);
         const r = await fn.onRequestGet(get(`book=${B}&vol=004`));
-        expect((await j(r)).cells).toHaveLength(6000);
+        expect((await j(r)).cells).toHaveLength(12000);
         const h = await j(await fn.onRequestPost(post({ op: 'hide', book: B, vol: '004', items: ['pi_000000000001'] })));
-        expect(h).toMatchObject({ success: true, changed: 1, cells: 5999 });
+        expect(h).toMatchObject({ success: true, changed: 1, cells: 11999 });
+        expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }))).status).toBe(200);
+        expect(store.has(`pd:${B}:004~p1`)).toBe(false);
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004`)))).cells).toHaveLength(2);
+        await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: big }));
+        await fn.onRequestPost(post({ op: 'delete', book: B, vol: '004' }));
+        expect(store.size).toBe(0);
     });
 });
