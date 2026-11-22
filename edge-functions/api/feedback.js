@@ -217,7 +217,7 @@ function constantTimeEqual(a, b) {
 // 开关：WEB_INBOX_DUALWRITE=1；地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
 // 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
 // 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
-const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback'];
+const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback', 'fixstate', 'pending'];
 const INBOX_KEY_RE = /^[A-Za-z0-9:_.|~-]{1,200}$/;
 const INBOX_TIMEOUT_MS = 2000;
 function envVar(context, name) {
@@ -334,6 +334,37 @@ export async function readInboxPage(context, { kind, prefix = '', book = '', aft
   try {
     const res = await fetch(`${base}/v1/web/inbox?${q}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
     if (!res.ok) throw new Error(`D1 收件箱读取 HTTP ${res.status}`);
+    return await res.json();
+  } finally { clearTimeout(timer); }
+}
+
+/** 读某前缀下全部行（翻页读完，最多 max 行）：返回 [{key,value,ts,seq}]；失败抛错。 */
+export async function readInboxAll(context, { kind, prefix = '', book = '', max = 5000 }) {
+  const out = [];
+  let after = 0;
+  for (;;) {
+    const page = await readInboxPage(context, { kind, prefix, book, after, limit: 500 });
+    out.push(...(page.items || []));
+    if (!page.hasMore || out.length >= max) return out;
+    after = page.next;
+  }
+}
+
+/** 读单键；没有返回 null。 */
+export async function readInboxOne(context, kind, key) {
+  const page = await readInboxPage(context, { kind, prefix: key, limit: 20 });
+  return (page.items || []).find((r) => r.key === key) || null;
+}
+
+/** 删单键（只许 pending／fixstate／charfix／thread）；失败抛错。 */
+export async function deleteInboxStrict(context, kind, key) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) throw new Error('D1 收件箱没有令牌');
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 6000);
+  try {
+    const res = await fetch(`${base}/v1/web/inbox?${new URLSearchParams({ kind, key })}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+    if (!res.ok) throw new Error(`D1 收件箱删除 HTTP ${res.status}`);
     return await res.json();
   } finally { clearTimeout(timer); }
 }

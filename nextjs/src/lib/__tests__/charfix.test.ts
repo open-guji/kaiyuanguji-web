@@ -6,21 +6,14 @@
 
 const g = globalThis as unknown as Record<string, unknown>;
 
-const store = new Map<string, string>();
-const listCalls: Array<{ prefix?: string; limit?: number; cursor?: string }> = [];
+import { installFakeInbox } from '../__fixtures__/fakeInbox';
+const inbox = installFakeInbox(g);
+const store = inbox.store;
+const rl = new Map<string, string>();
+const getPrefixes = () => inbox.calls.filter((c) => c.method === 'GET').map((c) => new URL(c.url).searchParams.get('prefix'));
 const kv = {
-    async get(k: string) {
-        const v = store.get(k);
-        return v ? JSON.parse(v) : null;
-    },
-    async put(k: string, v: string) {
-        store.set(k, v);
-    },
-    async list(opts: { prefix?: string; limit?: number; cursor?: string }) {
-        listCalls.push(opts);
-        const all = [...store.keys()].filter((k) => k.startsWith(opts.prefix || '')).sort();
-        return { keys: all.slice(0, opts.limit || 256).map((key) => ({ key })), complete: true, cursor: '' };
-    },
+    async get(k: string) { const v = rl.get(k); return v ? JSON.parse(v) : null; },
+    async put(k: string, v: string) { rl.set(k, v); },
 };
 
 const fix = { book_id: 'd59f2870u874', volume: '002', text_version: '1.0.0', cell_id: '4:3:8a', old_char: '於', new_char: '于', basis: '宋本作于', aid: 'aid_abcdefgh1234' };
@@ -53,8 +46,9 @@ beforeAll(async () => {
     g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/charfix.js');
 });
-beforeEach(() => { store.clear(); listCalls.length = 0; g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+beforeEach(() => { inbox.reset(); inbox.install(); rl.clear(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
+afterAll(() => inbox.restore());
 
 describe('改字 POST', () => {
     it('写入 cf:<book>:<volume>:<text_version>:<cell_id>:<voter>，值不含 aid 与 IP，不带 mismatch', async () => {
@@ -139,8 +133,8 @@ describe('改字 POST', () => {
         const res = await fn.onRequestPost(post(fix));
         expect(res.status).toBe(429);
         expect(res.headers.get('Retry-After')).toBeTruthy();
-        expect([...store.keys()].some((k) => k.startsWith('ratelimit:cf:'))).toBe(true);
-        expect([...store.keys()].some((k) => k.startsWith('ratelimit:cr:'))).toBe(false);
+        expect([...rl.keys()].some((k) => k.startsWith('ratelimit:cf:'))).toBe(true);
+        expect([...rl.keys()].some((k) => k.startsWith('ratelimit:cr:'))).toBe(false);
     });
 });
 
@@ -233,12 +227,12 @@ describe('GET 管理读', () => {
     it('按 book／volume／text_version 前缀列，不全库 list；kind=entity 另列', async () => {
         const all = await json(await fn.onRequestGet(get('book=d59f2870u874', ADMIN)));
         expect(all.items).toHaveLength(3);
-        expect(listCalls[0].prefix).toBe('cf:d59f2870u874:');
+        expect(getPrefixes()[0]).toBe('cf:d59f2870u874:');
         const v2 = await json(await fn.onRequestGet(get('book=d59f2870u874&volume=002', ADMIN)));
         expect(v2.items).toHaveLength(2);
         const v2v = await json(await fn.onRequestGet(get('book=d59f2870u874&volume=002&text_version=1.0.0', ADMIN)));
         expect(v2v.items).toHaveLength(1);
-        expect(listCalls[listCalls.length - 1].prefix).toBe('cf:d59f2870u874:002:1.0.0:');
+        expect(getPrefixes().slice(-1)[0]).toBe('cf:d59f2870u874:002:1.0.0:');
         const es = await json(await fn.onRequestGet(get('book=d59f2870u874&kind=entity', ADMIN)));
         expect(es.items).toHaveLength(1);
         expect(es.items[0].entity_id).toBe('e01384');
@@ -300,7 +294,7 @@ describe('一段有问题 POST／GET（kind=span）', () => {
         await fn.onRequestPost(post(fix));
         const r = await json(await fn.onRequestGet(get('book=d59f2870u874&kind=span&volume=002&text_version=1.0.1', ADMIN)));
         expect(r.items).toHaveLength(1);
-        expect(listCalls[listCalls.length - 1].prefix).toBe('cs:d59f2870u874:002:1.0.1:');
+        expect(getPrefixes().slice(-1)[0]).toBe('cs:d59f2870u874:002:1.0.1:');
         expect((await fn.onRequestGet(get('book=d59f2870u874&kind=__proto__', ADMIN))).status).toBe(400);
         expect((await fn.onRequestGet(get('book=d59f2870u874&kind=entity&volume=002&text_version=1.0.1', ADMIN))).status).toBe(400);
     });
