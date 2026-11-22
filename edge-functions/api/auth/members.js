@@ -1,10 +1,12 @@
 // GET /api/auth/members — 查看成员列表（需 admin）
+import { useD1Kv, d1Kv } from '../feedback.js';
 import { SITE_ORIGINS } from '../hosts.js';
 const ALLOWED_ORIGINS = [...SITE_ORIGINS,'https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
 function getCorsHeaders(request){ const o=request.headers.get('origin')||''; const c=ALLOWED_ORIGINS.includes(o)?o:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':c,'Content-Type':'application/json'}; }
 function getAdminToken(c){ if(c&&c.env&&c.env.AUTH_ADMIN_TOKEN) return c.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }
 function getJwtSecret(c){ if(c&&c.env&&c.env.AUTH_JWT_SECRET) return c.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(c){
+  if (useD1Kv(c)) return d1Kv(c);
   // M2：成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV
   if(c&&c.env&&c.env.AUTH_KV) return c.env.AUTH_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;

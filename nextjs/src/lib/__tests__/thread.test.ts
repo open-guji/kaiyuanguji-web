@@ -4,16 +4,14 @@
  * GUJI-597：/api/thread。表态覆盖、回复追加、称呼与内容必填、target 形状、管理读按前缀、公开读被拒、限速独立前缀。
  */
 const g = globalThis as unknown as Record<string, unknown>;
-const store = new Map<string, string>();
-const listCalls: Array<{ prefix?: string }> = [];
+import { installFakeInbox } from '../__fixtures__/fakeInbox';
+const inbox = installFakeInbox(g);
+const store = inbox.store;
+const rl = new Map<string, string>();
+const getPrefixes = () => inbox.calls.filter((c) => c.method === 'GET').map((c) => new URL(c.url).searchParams.get('prefix'));
 const kv = {
-    async get(k: string) { const v = store.get(k); return v ? JSON.parse(v) : null; },
-    async put(k: string, v: string) { store.set(k, v); },
-    async list(opts: { prefix?: string; limit?: number }) {
-        listCalls.push(opts);
-        const all = [...store.keys()].filter((k) => k.startsWith(opts.prefix || '')).sort();
-        return { keys: all.slice(0, opts.limit || 256).map((key) => ({ key })), complete: true, cursor: '' };
-    },
+    async get(k: string) { const v = rl.get(k); return v ? JSON.parse(v) : null; },
+    async put(k: string, v: string) { rl.set(k, v); },
 };
 const T = 'span~3:1:5~3:1:6~missing';
 const base = { book_id: '96mid1ogzk', volume: '002', target: T, aid: 'aid_abcdefgh1234' };
@@ -27,8 +25,9 @@ const keysOf = (p: string) => [...store.keys()].filter((k) => k.startsWith(p));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 beforeAll(async () => { g.FEEDBACK_KV = kv; fn = await import('../../../../edge-functions/api/thread.js'); });
-beforeEach(() => { store.clear(); listCalls.length = 0; g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+beforeEach(() => { inbox.reset(); inbox.install(); rl.clear(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
+afterAll(() => inbox.restore());
 
 describe('POST', () => {
     it('表态写 tv:<书>:<册>:<target>:<voter>，同来源改态覆盖；不存 aid、IP', async () => {
@@ -73,7 +72,7 @@ describe('POST', () => {
     it('限速：每 IP 30 次，独立前缀', async () => {
         for (let i = 0; i < 30; i++) expect((await fn.onRequestPost(post({ ...base, stance: 'agree' }))).status).toBe(200);
         expect((await fn.onRequestPost(post({ ...base, stance: 'agree' }))).status).toBe(429);
-        expect([...store.keys()].some((k) => k.startsWith('ratelimit:th:'))).toBe(true);
+        expect([...rl.keys()].some((k) => k.startsWith('ratelimit:th:'))).toBe(true);
     });
 });
 
@@ -84,10 +83,10 @@ describe('GET 管理读', () => {
         expect((await fn.onRequestGet(get('book=96mid1ogzk'))).status).toBe(401);
         const v = JSON.parse(await (await fn.onRequestGet(get('book=96mid1ogzk&kind=vote', { Authorization: 'Bearer right' }))).text());
         expect(v.items).toHaveLength(1);
-        expect(listCalls[listCalls.length - 1].prefix).toBe('tv:96mid1ogzk:');
+        expect(getPrefixes().slice(-1)[0]).toBe('tv:96mid1ogzk:');
         const r = JSON.parse(await (await fn.onRequestGet(get('book=96mid1ogzk&kind=reply&volume=002', { Authorization: 'Bearer right' }))).text());
         expect(r.items).toHaveLength(1);
-        expect(listCalls[listCalls.length - 1].prefix).toBe('tm:96mid1ogzk:002:');
+        expect(getPrefixes().slice(-1)[0]).toBe('tm:96mid1ogzk:002:');
         expect((await fn.onRequestGet(get('book=96mid1ogzk&kind=x', { Authorization: 'Bearer right' }))).status).toBe(400);
     });
 });

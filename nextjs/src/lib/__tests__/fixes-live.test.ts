@@ -5,30 +5,25 @@
  * 公开口径（voter 只给 6 位、联系方式脱敏、无 aid／IP）；只读本书本册；坏参数 400。
  */
 const g = globalThis as unknown as Record<string, unknown>;
-const store = new Map<string, string>();
-const kv = {
-    async get(k: string) { const v = store.get(k); return v ? JSON.parse(v) : null; },
-    async put(k: string, v: string) { store.set(k, v); },
-    async list(opts: { prefix?: string; limit?: number }) {
-        const all = [...store.keys()].filter((k) => k.startsWith(opts.prefix || '')).sort();
-        return { keys: all.slice(0, opts.limit || 256).map((key) => ({ key })), complete: true, cursor: '' };
-    },
-};
+import { installFakeInbox } from '../__fixtures__/fakeInbox';
+const inbox = installFakeInbox(g);
+const store = inbox.store;
 const postReq = (body: unknown, headers: Record<string, string> = {}) => ({ request: new Request('https://x/api/fixes', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) }) });
 const get = (qs: string) => ({ request: new Request(`https://x/api/fixes?${qs}`) });
-const put = (k: string, v: unknown) => store.set(k, JSON.stringify(v));
+const KIND_OF: Record<string, string> = { cf: 'charfix', cs: 'charfix', ce: 'charfix', tv: 'thread', tm: 'thread', fs: 'fixstate' };
+const put = (k: string, v: unknown) => { inbox.rows.set(`${KIND_OF[k.slice(0, 2)]}\u0000${k}`, { kind: KIND_OF[k.slice(0, 2)], key: k, value: v as Record<string, unknown>, ts: 0, seq: inbox.rows.size + 1 }); store.set(k, JSON.stringify(v)); };
 const V = 'a1b2c3d4e5f60718';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sync: any;
 beforeAll(async () => {
-    g.FEEDBACK_KV = kv;
-    fn = await import('../../../../edge-functions/api/fixes.js');
+        fn = await import('../../../../edge-functions/api/fixes.js');
     sync = await import('../../../scripts/lib/fixes-sync.mjs');
 });
-beforeEach(() => { store.clear(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+beforeEach(() => { inbox.reset(); inbox.install(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
+afterAll(() => inbox.restore());
 
 const span = { v: 1, kind: 'span', book_id: '96mid1ogzk', volume: '002', text_version: '1.0.1', start: '3:1:9', end: '3:1:9', sub: 'missing', old_text: '卷', new_text: '卷一', note: '联系 test@example.com', voter: V, ts: 1000 };
 const char = { v: 1, kind: 'char', book_id: '96mid1ogzk', volume: '002', text_version: '1.0.1', cell_id: '2:3:4', old_char: '巡', new_char: '輅', basis: '原书如此', voter: V, ts: 500 };

@@ -13,7 +13,7 @@
 // voter＝sha256(aid|ip) 前 16 位，与改字、精校同一规则；值只存 voter，不存 aid、不存 IP。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
 } from './feedback.js';
 import { checkRateLimit } from './cellreview.js';
 
@@ -83,8 +83,7 @@ export async function onRequestPost(context) {
     const base = `${rest.book_id}:${rest.volume}:${rest.target}`;
     const key = rest.stance === 'reply' ? `tm:${base}:${ts.toString(36)}-${voter}` : `tv:${base}:${voter}`;
     const record = { v: 1, ...rest, voter, ts };
-    await kv.put(key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
-    await mirrorToInbox(context, 'thread', key, record, ts);
+    await writeInboxStrict(context, 'thread', key, record, ts);   // D1 为真源（11-22 起不写 KV）
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Thread POST error:', e);
@@ -111,20 +110,12 @@ export async function onRequestGet(context) {
     if (volume && !RE_VOL.test(volume)) return json(headers, 400, { success: false, error: 'volume 无效' });
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
-    const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
     const prefix = `${kind === 'vote' ? 'tv' : 'tm'}:${book}:${volume ? `${volume}:` : ''}`;
-    const opts = { prefix, limit };
-    if (cursor) opts.cursor = cursor;
-    const r = await kv.list(opts);
-    const names = (r.keys || []).map((k) => k.key);
-    const items = [];
-    for (let i = 0; i < names.length; i += GET_BATCH) {
-      const vals = await Promise.all(names.slice(i, i + GET_BATCH).map((k) => kv.get(k, 'json').catch(() => null)));
-      for (const v of vals) if (v) items.push(v);
-    }
-    const done = !!r.complete || !r.cursor;
-    return json(headers, 200, { success: true, kind, items, cursor: done ? '' : r.cursor, hasMore: !done });
+    const after = /^\d+$/.test(cursor) ? parseInt(cursor, 10) : 0;
+    const page = await readInboxPage(context, { kind: 'thread', prefix, after, limit });
+    const items = (page.items || []).map((r) => r.value).filter(Boolean);
+    const done = !page.hasMore;
+    return json(headers, 200, { success: true, kind, items, cursor: done ? '' : String(page.next), hasMore: !done });
   } catch (e) {
     console.error('Thread GET error:', e);
     return json(headers, 500, { success: false, error: '服务器错误' });

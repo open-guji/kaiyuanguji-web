@@ -8,7 +8,7 @@
 // 公开口径与清单相同：voter 只给 6 位、正文脱敏、不带 aid／IP。写入仍走 /api/charfix、/api/thread，本接口只读。
 // 站方「隐藏单」（hidden.txt）在中心库，这里读不到，所以直读不应用它；真有要藏的条目，先在 KV 里删。
 
-import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, desensitizeText } from './feedback.js';
+import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, desensitizeText, readInboxAll, writeInboxStrict } from './feedback.js';
 import { RE_TARGET } from './thread.js';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
@@ -82,23 +82,9 @@ export function buildLive(book, volume, fixRecs, voteRecs, replyRecs, stateRecs 
   return out;
 }
 
-async function listAll(kv, prefix) {
-  const items = [];
-  let cursor = '';
-  let seen = 0;
-  for (;;) {
-    const opts = { prefix, limit: LIST_MAX };
-    if (cursor) opts.cursor = cursor;
-    const r = await kv.list(opts);
-    const names = (r.keys || []).map((k) => k.key);
-    seen += names.length;
-    for (let i = 0; i < names.length; i += GET_BATCH) {
-      const vals = await Promise.all(names.slice(i, i + GET_BATCH).map((k) => kv.get(k, 'json').catch(() => null)));
-      for (const v of vals) if (v) items.push(v);
-    }
-    if (r.complete || !r.cursor || seen >= MAX_KEYS) return items;
-    cursor = r.cursor;
-  }
+async function listAll(context, kind, prefix) {
+  const rows = await readInboxAll(context, { kind, prefix, max: MAX_KEYS });
+  return rows.map((r) => r.value).filter(Boolean);
 }
 
 export async function onRequestGet(context) {
@@ -109,15 +95,13 @@ export async function onRequestGet(context) {
     const volume = url.searchParams.get('volume') || '';
     if (!RE_BOOK.test(book)) return json(headers, 400, { success: false, error: 'book 无效' });
     if (!RE_VOL.test(volume)) return json(headers, 400, { success: false, error: 'volume 无效' });
-    const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
     const [cf, cs, ce, tv, tm, fs] = await Promise.all([
-      listAll(kv, `cf:${book}:${volume}:`),
-      listAll(kv, `cs:${book}:${volume}:`),
-      listAll(kv, `ce:${book}:${volume}:`),
-      listAll(kv, `tv:${book}:${volume}:`),
-      listAll(kv, `tm:${book}:${volume}:`),
-      listAll(kv, `fs:${book}:${volume}:`),
+      listAll(context, 'charfix', `cf:${book}:${volume}:`),
+      listAll(context, 'charfix', `cs:${book}:${volume}:`),
+      listAll(context, 'charfix', `ce:${book}:${volume}:`),
+      listAll(context, 'thread', `tv:${book}:${volume}:`),
+      listAll(context, 'thread', `tm:${book}:${volume}:`),
+      listAll(context, 'fixstate', `fs:${book}:${volume}:`),
     ]);
     return json(headers, 200, { success: true, ...buildLive(book, volume, [...cf, ...cs, ...ce], tv, tm, fs) });
   } catch (e) {
@@ -157,19 +141,16 @@ export async function onRequestPost(context) {
     try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
     const v = validateTeamWrite(body);
     if (v.error) return json(headers, 400, { success: false, error: v.error });
-    const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
     const { book_id, volume, target, state, version, reason, reply } = v.value;
     const ts = Date.now();
     if (state !== undefined) {
       const key = `fs:${book_id}:${volume}:${target}`;
       // open＝撤回状态：写一条 open 记录顶掉旧的（读取时跳过），不依赖 KV 的删除接口
-      await kv.put(key, JSON.stringify({ v: 1, book_id, volume, target, state, ...(version ? { version } : {}), ...(reason ? { reason } : {}), ts }));
+      await writeInboxStrict(context, 'fixstate', key, { v: 1, book_id, volume, target, state, ...(version ? { version } : {}), ...(reason ? { reason } : {}), ts }, ts);
     }
     if (reply) {
-      await kv.put(`tm:${book_id}:${volume}:${target}:${ts.toString(36)}-team`,
-        JSON.stringify({ v: 1, book_id, volume, target, stance: 'reply', name: TEAM_NAME, text: reply, team: true, voter: 'team', ts }),
-        { expirationTtl: 180 * 24 * 60 * 60 });
+      await writeInboxStrict(context, 'thread', `tm:${book_id}:${volume}:${target}:${ts.toString(36)}-team`,
+        { v: 1, book_id, volume, target, stance: 'reply', name: TEAM_NAME, text: reply, team: true, voter: 'team', ts }, ts);
     }
     return json(headers, 200, { success: true });
   } catch (e) {
