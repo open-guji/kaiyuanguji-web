@@ -1,5 +1,6 @@
 // POST /api/auth/revoke — 删人或改角色（需 admin）
 // body: { email: string, role?: string | null }  // role=null 或不传则删除，传 role 则改
+import { useD1Kv, d1Kv } from '../feedback.js';
 import { SITE_ORIGINS } from '../hosts.js';
 const ALLOWED_ORIGINS = [...SITE_ORIGINS,'https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
 // internal 已停用（overview#256），只留着用来撤销旧记录。
@@ -8,6 +9,7 @@ function getCorsHeaders(request){ const origin=request.headers.get('origin')||''
 function getAdminToken(context){ if(context&&context.env&&context.env.AUTH_ADMIN_TOKEN) return context.env.AUTH_ADMIN_TOKEN; return (typeof AUTH_ADMIN_TOKEN!=='undefined')?AUTH_ADMIN_TOKEN:null; }
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
 function getKV(context){
+  if (useD1Kv(context)) return d1Kv(context);
   if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
   if(typeof AUTH_KV!=='undefined') return AUTH_KV;
   return null;

@@ -12,14 +12,14 @@
 // key：`pd:<book>:<vol>`，值是整张单 JSON（几十 KB，EdgeOne KV 单值上限 25 MB），不设过期。
 // 图仍在 COS（文件名带内容哈希、不可变）：put 之前，调用方要保证单里 sprites[] 的图已在 COS（manager 会 HEAD 核对，缺图就走 proofing-sync）。
 
-import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, getKV } from './feedback.js';
+import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readInboxOne, writeInboxStrict, deleteInboxStrict } from './feedback.js';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
 const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
 const RE_CELL = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/;
-const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_BYTES = 1400 * 1024; // D1 单行上限 2 MB（Worker 收 ≤1.5 MB）
 
 const json = (headers, status, body) => new Response(JSON.stringify(body), { status, headers });
 export const pdKey = (book, vol) => `pd:${book}:${vol}`;
@@ -39,9 +39,8 @@ export async function onRequestGet(context) {
     const book = url.searchParams.get('book') || '';
     const vol = url.searchParams.get('vol') || '';
     if (!RE_BOOK.test(book) || !RE_VOL.test(vol)) return json({ ...headers, 'Cache-Control': 'no-store' }, 400, { success: false, error: 'book／vol 无效' });
-    const kv = getKV(context);
-    if (!kv) return json({ ...headers, 'Cache-Control': 'no-store' }, 404, { success: false, error: '无' });
-    const doc = await kv.get(pdKey(book, vol), 'json');
+    const row = await readInboxOne(context, 'pending', pdKey(book, vol));
+    const doc = row && row.value && row.value.doc;
     if (!doc) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 404, { success: false, error: '无' });
     return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, doc);
   } catch (e) {
@@ -59,19 +58,18 @@ export async function onRequestPost(context) {
     try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
     const { op, book, vol } = body || {};
     if (!RE_BOOK.test(book || '') || !RE_VOL.test(vol || '')) return json(headers, 400, { success: false, error: 'book／vol 无效' });
-    const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
     const key = pdKey(book, vol);
+    const putDoc = (d) => writeInboxStrict(context, 'pending', key, { book, vol, doc: d });
 
     if (op === 'put') {
       if (!validDoc(body.doc)) return json(headers, 400, { success: false, error: 'doc 须有 rev 和 cells[]' });
       const text = JSON.stringify(body.doc);
       if (text.length > MAX_BYTES) return json(headers, 413, { success: false, error: '单子过大' });
-      await kv.put(key, text);
+      await putDoc(body.doc);
       return json(headers, 200, { success: true, rev: body.doc.rev, cells: body.doc.cells.length });
     }
     if (op === 'delete') {
-      await kv.delete(key);
+      await deleteInboxStrict(context, 'pending', key);
       return json(headers, 200, { success: true });
     }
     if (op === 'hide' || op === 'unhide') {
@@ -79,8 +77,9 @@ export async function onRequestPost(context) {
       const cells = Array.isArray(body.cells) ? body.cells : [];
       if (!items.length && !cells.length) return json(headers, 400, { success: false, error: 'items／cells 至少给一个' });
       if (items.some((x) => !RE_ITEM.test(x)) || cells.some((x) => !RE_CELL.test(x))) return json(headers, 400, { success: false, error: '条目 id 或格号格式不对' });
-      const doc = await kv.get(key, 'json');
-      if (!doc || !validDoc(doc)) return json(headers, 404, { success: false, error: 'KV 里没有这一章的单子，先 put' });
+      const row = await readInboxOne(context, 'pending', key);
+      const doc = row && row.value && row.value.doc;
+      if (!doc || !validDoc(doc)) return json(headers, 404, { success: false, error: '没有这一章的单子，先 put' });
       if (body.expect_rev && body.expect_rev !== doc.rev) return json(headers, 409, { success: false, error: `现行单 rev 是 ${doc.rev}，不是 ${body.expect_rev}` });
       const hit = (c) => items.includes(itemOf(c)) || cells.includes(cellOf(c));
       const gone0 = Array.isArray(doc.withdrawn) ? doc.withdrawn : [];
@@ -98,7 +97,7 @@ export async function onRequestPost(context) {
         doc.cells = [...doc.cells, ...back];
       }
       if (!doc.withdrawn.length) delete doc.withdrawn;
-      await kv.put(key, JSON.stringify(doc));
+      await putDoc(doc);
       return json(headers, 200, { success: true, rev: doc.rev, changed, cells: doc.cells.length });
     }
     return json(headers, 400, { success: false, error: 'op 须为 put／hide／unhide／delete' });

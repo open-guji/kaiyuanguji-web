@@ -7,6 +7,7 @@
 //   - 环境变量  ERROR_VIEW_TOKEN  —— 读侧与管理侧鉴权（错误日志含 stack/IP，不公开）
 //     **没配这个变量，读接口与 update 一律拒绝（503）**，见下面 checkViewAuth 的注释。
 //     只有 POST 上报是公开的——那是前端必须能匿名调的。
+import { useD1Kv, d1Kv } from './feedback.js';
 import { SITE_ORIGINS } from './hosts.js';
 
 const ALLOWED_ORIGINS = [
@@ -34,6 +35,7 @@ function getCorsHeaders(request) {
 // 全局标识符——两条路都试，谁读到用谁。2026-09-22 实测：KV 绑定走全局变量能读到，
 // 但环境变量（ERROR_VIEW_TOKEN／FEEDBACK_ADMIN_TOKEN）走全局变量读不到，需要 context.env。
 function getKV(context) {
+  if (useD1Kv(context)) return d1Kv(context);
   if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
   return (typeof ERROR_KV !== 'undefined') ? ERROR_KV : null;
 }
@@ -84,6 +86,7 @@ function getJwtSecret(context) {
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
+  if (useD1Kv(context)) return d1Kv(context);
   // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
   if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
   return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;

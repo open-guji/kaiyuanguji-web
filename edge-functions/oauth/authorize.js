@@ -32,6 +32,7 @@
 // 角色、查不到都当作成员不存在，同样 401。否则被撤销／改过角色的旧令牌仍能经 OAuth 换到
 // id_token。这里只读 KV：成员记录不是刚写的，跨节点传播延迟不影响；code 本身仍不写 KV。
 
+import { useD1Kv, d1Kv } from '../api/feedback.js';
 function getEnvVar(context, name) {
   if (context && context.env && context.env[name] !== undefined && context.env[name] !== null) {
     return context.env[name];
@@ -41,7 +42,7 @@ function getEnvVar(context, name) {
 }
 const getJwtSecret = (c) => getEnvVar(c, 'AUTH_JWT_SECRET');
 const getCodeSecret = (c) => getEnvVar(c, 'OAUTH_CODE_SECRET');
-const getAuthKV = (c) => getEnvVar(c, 'AUTH_KV');
+const getAuthKV = (c) => (useD1Kv(c) ? d1Kv(c) : getEnvVar(c, 'AUTH_KV'));
 function getOAuthClients(c) {
   const raw = getEnvVar(c, 'OAUTH_CLIENTS');
   if (!raw) return null;
