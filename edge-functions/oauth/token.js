@@ -30,6 +30,7 @@
 // 客户端拿这串 64 位十六进制文本当 HS256 密钥验签（配置时算一次交给对方，例如
 //   printf '%s' "kyg-oauth-id-token:collate" | openssl dgst -sha256 -hmac "$OAUTH_ID_TOKEN_SECRET"
 // 取输出的十六进制部分）。这样 A 客户端手里的密钥伪造不了发给 B 的 id_token；aud 仍照旧填。
+import { useD1Kv, d1Kv } from '../api/feedback.js';
 import { OAUTH_ISSUER } from '../api/hosts.js';
 
 function getEnvVar(context, name) {
@@ -41,7 +42,7 @@ function getEnvVar(context, name) {
 }
 const getCodeSecret = (c) => getEnvVar(c, 'OAUTH_CODE_SECRET');
 const getIdTokenSecret = (c) => getEnvVar(c, 'OAUTH_ID_TOKEN_SECRET');
-const getAuthKV = (c) => getEnvVar(c, 'AUTH_KV');
+const getAuthKV = (c) => (useD1Kv(c) ? d1Kv(c) : getEnvVar(c, 'AUTH_KV'));
 function getOAuthClients(c) {
   const raw = getEnvVar(c, 'OAUTH_CLIENTS');
   if (!raw) return null;

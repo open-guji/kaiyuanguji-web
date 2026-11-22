@@ -217,7 +217,7 @@ function constantTimeEqual(a, b) {
 // 开关：WEB_INBOX_DUALWRITE=1；地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
 // 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
 // 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
-const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback', 'fixstate', 'pending'];
+const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback', 'fixstate', 'pending', 'kv'];
 const INBOX_KEY_RE = /^[A-Za-z0-9:_.|~-]{1,200}$/;
 const INBOX_TIMEOUT_MS = 2000;
 function envVar(context, name) {
@@ -369,7 +369,41 @@ export async function deleteInboxStrict(context, kind, key) {
   } finally { clearTimeout(timer); }
 }
 
+// ---------- KV 的 D1 替身（11-22：网站 KV 全搬 D1）----------
+// 环境变量 KV_BACKEND=d1 时，getKV／getAuthKV 等返回这个对象：get/put/delete/list 的形状与 EdgeOne KV 一致，
+// 数据落在中心库 web_inbox 的 kind=kv（键里 KEY_RE 不收的字符转成 ~xxxx~，值原样存字符串 s，expirationTtl 存成 exp）。
+const KV_ENC_RE = /[^A-Za-z0-9:_.|-]/g;
+const kvEnc = (k) => String(k).replace(KV_ENC_RE, (c) => `~${c.charCodeAt(0).toString(16).padStart(4, '0')}~`);
+const kvDec = (k) => String(k).replace(/~([0-9a-f]{4})~/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+export const kvEncKey = kvEnc;
+export function useD1Kv(context) { return envVar(context, 'KV_BACKEND') === 'd1'; }
+export function d1Kv(context) {
+  const live = (row) => row && row.value && typeof row.value.s === 'string' && !(row.value.exp && row.value.exp < Date.now());
+  return {
+    async get(key, type) {
+      const row = await readInboxOne(context, 'kv', kvEnc(key));
+      if (!live(row)) return null;
+      return type === 'json' ? JSON.parse(row.value.s) : row.value.s;
+    },
+    async put(key, text, opts = {}) {
+      const value = { s: typeof text === 'string' ? text : String(text) };
+      if (opts && opts.expirationTtl) value.exp = Date.now() + opts.expirationTtl * 1000;
+      await writeInboxStrict(context, 'kv', kvEnc(key), value);
+    },
+    async delete(key) { await deleteInboxStrict(context, 'kv', kvEnc(key)); },
+    async list({ prefix = '', limit = 256, cursor = '' } = {}) {
+      const rows = (await readInboxAll(context, { kind: 'kv', prefix: kvEnc(prefix), max: 20000 })).filter(live)
+        .map((r) => ({ key: kvDec(r.key) })).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+      const start = /^\d+$/.test(cursor) ? parseInt(cursor, 10) : 0;
+      const keys = rows.slice(start, start + limit);
+      const done = start + limit >= rows.length;
+      return { keys, complete: done, cursor: done ? '' : String(start + limit) };
+    },
+  };
+}
+
 function getKV(context) {
+  if (useD1Kv(context)) return d1Kv(context);
   if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
   return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
 }
@@ -378,6 +412,7 @@ function getJwtSecret(context) {
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
+  if (useD1Kv(context)) return d1Kv(context);
   // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
   if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
   return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
