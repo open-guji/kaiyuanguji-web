@@ -350,6 +350,25 @@ export async function readInboxAll(context, { kind, prefix = '', book = '', max 
   }
 }
 
+/** 待审单（可能超过 D1 单行 2 MB）：超 900 KB 就 gzip＋base64 存 z，读时还原。 */
+export async function packDoc(book, vol, doc) {
+  const text = JSON.stringify(doc);
+  if (text.length <= 900 * 1024) return { book, vol, doc };
+  const bytes = new Uint8Array(await new Response(new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return { book, vol, z: btoa(bin) };
+}
+export async function unpackDoc(value) {
+  if (!value) return null;
+  if (value.doc) return value.doc;
+  if (typeof value.z !== 'string') return null;
+  const bin = atob(value.z);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+  return JSON.parse(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+}
+
 /** 读单键；没有返回 null。 */
 export async function readInboxOne(context, kind, key) {
   const page = await readInboxPage(context, { kind, prefix: key, limit: 20 });
