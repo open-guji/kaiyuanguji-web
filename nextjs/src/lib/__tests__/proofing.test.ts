@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import {
-    itemFields, parsePending, parseCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
+    itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
@@ -560,5 +560,27 @@ describe('合审组合键与目录', () => {
         const idx = { b: { '010': { rev: 'r', n: 1 }, '002': { rev: 'r2', n: 0 } } };
         expect(buildToc(idx, 'b', new Map([['002', '卷二']])).map(e => [e.vol, e.title, e.n])).toEqual([['002', '002 卷二', 0], ['010', '册 010', 1]]);
         expect(buildToc(null, 'b')).toEqual([]);
+    });
+});
+
+describe('alignFacsToCord：半叶编号的书影对到 cord 页序', () => {
+    const cord = parseCord({ pages: [
+        { page: 1, canvas: { seq: '0001', width: 2568, height: 2672 }, cells: [] },
+        { page: 2, canvas: { seq: '0002', width: 1764, height: 2616 }, cells: [] },
+    ] });
+    it('seq 对得上：原样', () => {
+        const m = alignFacsToCord([{ seq: '0001' }, { seq: '0002' }], cord);
+        expect([...m.keys()]).toEqual(['0001', '0002']);
+    });
+    it('seq 对不上、页数相同、尺寸一致：按顺序对位（史记 0006a/0006c）', () => {
+        const a = { seq: '0006a', width: 2568, height: 2672 };
+        const b = { seq: '0006c', width: 1764, height: 2616 };
+        const m = alignFacsToCord([a, b], cord);
+        expect(m.get('0001')).toBe(a);
+        expect(m.get('0002')).toBe(b);
+    });
+    it('页数不同或尺寸对不上：不乱对位', () => {
+        expect(alignFacsToCord([{ seq: '0006a' }], cord).has('0001')).toBe(false);
+        expect(alignFacsToCord([{ seq: '0006a', width: 1, height: 1 }, { seq: '0006c' }], cord).has('0001')).toBe(false);
     });
 });
