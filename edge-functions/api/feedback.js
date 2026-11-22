@@ -350,23 +350,51 @@ export async function readInboxAll(context, { kind, prefix = '', book = '', max 
   }
 }
 
-/** 待审单（可能超过 D1 单行 2 MB）：超 900 KB 就 gzip＋base64 存 z，读时还原。 */
-export async function packDoc(book, vol, doc) {
-  const text = JSON.stringify(doc);
-  if (text.length <= 900 * 1024) return { book, vol, doc };
-  const bytes = new Uint8Array(await new Response(new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return { book, vol, z: btoa(bin) };
+/** 待审单（可能超过 D1 单行 2 MB）：≤900 KB 一行 {book,vol,doc}；更大的切成每块 ≤900 KB 的文本，
+ *  主行 {book,vol,parts:N,s:块0}，其余块在 `<key>~p<i>` 行（i=1…N-1）。读取时一次按前缀读回拼起来。 */
+const PART_BYTES = 900 * 1024;
+async function postInboxItems(context, items) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) throw new Error('D1 收件箱没有令牌');
+  const res = await fetch(`${base}/v1/web/inbox`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ items }) });
+  if (!res.ok) throw new Error(`D1 收件箱写入 HTTP ${res.status}`);
 }
-export async function unpackDoc(value) {
-  if (!value) return null;
-  if (value.doc) return value.doc;
-  if (typeof value.z !== 'string') return null;
-  const bin = atob(value.z);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
-  return JSON.parse(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+export async function readPendingDoc(context, key) {
+  const page = await readInboxPage(context, { kind: 'pending', prefix: key, limit: 100 });
+  const rows = page.items || [];
+  const main = rows.find((r) => r.key === key);
+  if (!main) return null;
+  if (main.value.doc) return main.value.doc;
+  const n = Number(main.value.parts) || 0;
+  let text = String(main.value.s || '');
+  for (let i = 1; i < n; i += 1) {
+    const r = rows.find((x) => x.key === `${key}~p${i}`);
+    if (!r) throw new Error(`待审单缺块 ${i}/${n}`);
+    text += r.value.s;
+  }
+  return JSON.parse(text);
+}
+export async function writePendingDoc(context, key, book, vol, doc) {
+  const old = await readInboxPage(context, { kind: 'pending', prefix: key, limit: 100 }).then((p) => (p.items || []).find((r) => r.key === key)).catch(() => null);
+  const oldParts = old && old.value ? Number(old.value.parts) || 0 : 0;
+  const text = JSON.stringify(doc);
+  let newParts = 0;
+  if (text.length <= PART_BYTES) {
+    await writeInboxStrict(context, 'pending', key, { book, vol, doc });
+  } else {
+    const chunks = [];
+    for (let i = 0; i < text.length; i += PART_BYTES) chunks.push(text.slice(i, i + PART_BYTES));
+    newParts = chunks.length;
+    const items = chunks.map((c, i) => ({ kind: 'pending', key: i === 0 ? key : `${key}~p${i}`, value: i === 0 ? { book, vol, parts: chunks.length, s: c } : { book, vol, s: c } }));
+    await postInboxItems(context, items);
+  }
+  for (let i = Math.max(1, newParts); i < oldParts; i += 1) await deleteInboxStrict(context, 'pending', `${key}~p${i}`).catch(() => null);
+}
+export async function deletePendingDoc(context, key) {
+  const old = await readInboxPage(context, { kind: 'pending', prefix: key, limit: 100 }).then((p) => (p.items || []).find((r) => r.key === key)).catch(() => null);
+  const parts = old && old.value ? Number(old.value.parts) || 0 : 0;
+  for (let i = 1; i < parts; i += 1) await deleteInboxStrict(context, 'pending', `${key}~p${i}`).catch(() => null);
+  await deleteInboxStrict(context, 'pending', key);
 }
 
 /** 读单键；没有返回 null。 */

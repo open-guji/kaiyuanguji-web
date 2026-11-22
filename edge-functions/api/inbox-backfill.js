@@ -6,7 +6,7 @@
 //   不补 rev，不改值；tombstone 不在此处理。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, getKV, mirrorBatchToInbox, kvEncKey, packDoc,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, getKV, mirrorBatchToInbox, kvEncKey, writePendingDoc,
 } from './feedback.js';
 
 // ns：整个 KV 命名空间原样搬进 kind=kv（11-22 网站 KV 全搬 D1）。
@@ -42,6 +42,7 @@ export async function onRequestPost(context) {
     const r = await kv.list(opts);
     const names = (r.keys || []).map((k) => k.key);
     const items = [];
+    const pend = [];
     let skipped = 0;
     for (let i = 0; i < names.length; i += GET_BATCH) {
       const slice = names.slice(i, i + GET_BATCH);
@@ -52,7 +53,7 @@ export async function onRequestPost(context) {
           if (/^(cr|cf|cs|ce|tv|tm):/.test(k)) { skipped += 1; return; }   // 这些早已双写进 D1
           if (typeof v === 'string' && k.startsWith('pd:')) {
             const [, pb, pv] = k.split(':');
-            items.push({ kind: 'pending', key: k, __pack: { pb, pv, v } });
+            pend.push({ k, pb, pv, v });
           } else if (typeof v === 'string' && k.startsWith('fs:')) {
             try { items.push({ kind: 'fixstate', key: k, value: JSON.parse(v) }); } catch { skipped += 1; }
           } else if (typeof v === 'string' && !slice[j].startsWith('ratelimit:') && !slice[j].startsWith('oauth_code_jti:')) items.push({ kind: 'kv', key: kvEncKey(slice[j]), value: { s: v } });
@@ -64,9 +65,7 @@ export async function onRequestPost(context) {
         else skipped += 1;
       });
     }
-    for (const it of items) {
-      if (it.__pack) { it.value = await packDoc(it.__pack.pb, it.__pack.pv, JSON.parse(it.__pack.v)); delete it.__pack; }
-    }
+    for (const x of pend) { await writePendingDoc(context, x.k, x.pb, x.pv, JSON.parse(x.v)); }
     let sent = 0;
     if (items.length && !body.dry) {
       const res = await mirrorBatchToInbox(context, items);
@@ -75,10 +74,11 @@ export async function onRequestPost(context) {
       skipped += res.skipped;
     }
     const done = !!r.complete || !r.cursor;
+    sent += pend.length;
     return json(headers, 200, { success: true, scanned: names.length, sent, skipped, cursor: done ? '' : r.cursor, hasMore: !done, ...(body.dry ? { dry: true, would_send: items.length } : {}) });
   } catch (e) {
     console.error('Inbox backfill error:', e);
-    return json(headers, 500, { success: false, error: '服务器错误' });
+    return json(headers, 500, { success: false, error: `服务器错误：${String((e && e.message) || e).slice(0, 200)}` });
   }
 }
 
