@@ -21,6 +21,12 @@ jest.mock('../lib/server/item-data', () => ({
     defaultItemDataBase: () => 'https://data.example.com',
 }));
 
+// 打包进中间件的真表里有这些测试用的真实 id；这里换成可控的假表（默认空），免得用例被真表抢先命中（GUJI-355）
+const mockTableMap = new Map<string, string>();
+jest.mock('../lib/server/redirect-table-data', () => ({
+    ITEM_REDIRECT_TABLE: { size: 0, lookup: (id: string) => mockTableMap.get(id) ?? null },
+}));
+
 // jest.mock 与从 @jest/globals 引入的 jest 同用时不会被提升到 import 之前，中间件改为用到时再引
 async function run(path: string, headers: Record<string, string> = {}) {
     const { middleware } = await import('../middleware.ssr');
@@ -545,5 +551,27 @@ describe('middleware.ssr：旧域名 → 新域名 301（overview#275）', () =>
     it('规范主机与测试站的普通页面放过，且条目／阅读处理的范围没变（首页带 ?id= 不被当成 /book-index）', async () => {
         expect((await runOn('www.openguji.com', '/about')).status).toBe(200);
         expect((await runOn('staging.kaiyuanguji.com', '/?id=d59f20aowb9c')).status).toBe(200);
+    });
+});
+
+describe('middleware.ssr：旧→新 ID 全表（GUJI-355）', () => {
+    const OLD = 'd59f2q8ge0ap';
+    const NEW = 'd59f2evs8ni8';
+    beforeEach(() => { mockTableMap.clear(); mockGetItem.mockReset(); mockResolvePromotion.mockReset(); });
+
+    it('表命中：一跳 308 到终点，带 redirect:table 头，不发取数', async () => {
+        mockTableMap.set(OLD, NEW);
+        const r = await run(`/item/${OLD}`, { 'sec-fetch-dest': 'document' });
+        expect(r.status).toBe(308);
+        expect(r.location).toBe(`https://staging.kaiyuanguji.com/item/${NEW}`);
+        expect(r.reason).toBe('redirect:table');
+        expect(mockGetItem).not.toHaveBeenCalled();
+    });
+    it('表未命中：走原有实时逻辑', async () => {
+        mockTableMap.set(OLD, NEW);
+        mockGetItem.mockResolvedValue(null);
+        const r = await run('/item/d59f2pv8d3ia', { 'sec-fetch-dest': 'document' });
+        expect(r.reason).toBe('pass:not-found');
+        expect(mockGetItem).toHaveBeenCalled();
     });
 });
