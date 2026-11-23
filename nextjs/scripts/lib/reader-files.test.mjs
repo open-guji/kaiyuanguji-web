@@ -152,3 +152,48 @@ test('cord 副本：插图块的框（marks.figure）留 fig＋box，别的 mark
     assert.equal('marks' in slim.pages[0], false);
     assert.deepEqual(slim.pages[1].marks, [{ kind: 'figure', fig: 'p2-fig1', box: [10, 20, 30, 40] }]);
 });
+
+// ── book-text 格式瘦身 v0.3（punct／entity：default_source 提到文件头，条目可缺 source／char_offset／span）：新旧两种都认 ──
+function toV03Punct(p) {
+    const { source, char_offset: _o, ...rest } = p;
+    return source === 'ds' ? rest : { ...rest, source };
+}
+
+test('v0.3 punct：文件头 default_source、条目无 source／char_offset，副本与旧格式逐字节相同', () => {
+    const old = { ...PUNCT, punctuations: PUNCT.punctuations.map((p) => ({ ...p, source: p.source ?? 'ds', char_offset: p.char_offset ?? 0 })) };
+    const neu = { ...old, default_source: 'ds', punctuations: old.punctuations.map(toV03Punct) };
+    assert.deepEqual(slimPunct(neu), slimPunct(old));
+    assert.deepEqual(adaptPunctJson(slimPunct(neu)), adaptPunctJson(old));
+    assert.ok(!('default_source' in slimPunct(neu)));
+});
+
+test('v0.3 entity：default_source、无 span／source，anchor 仍对位；副本不带 default_source', () => {
+    const old = { ...ENTITY, entities: ENTITY.entities.map((e) => ({ ...e, source: 'ds' })) };
+    const neu = { ...old, default_source: 'ds', entities: old.entities.map(({ source: _s, span: _p, ...e }) => e) };
+    const slim = slimEntity(neu);
+    assert.ok(!('default_source' in slim));
+    assert.deepEqual(slimEntity({ ...old, entities: old.entities.map(({ span: _p, ...e }) => e) }), slim);
+    // 注意：有 span 时 adaptEntityJson 按偏移排序，没有 span 就保持文件顺序——按 anchor 比较，不比顺序
+    const key = (list) => list.map((e) => `${e.anchor.start}~${e.anchor.end}`).sort();
+    assert.deepEqual(key(adaptEntityJson(slim)), key(adaptEntityJson(ENTITY)));
+    assert.equal(adaptEntityJson(slim).length, 3); // 没有 span 的条目照收
+});
+
+// 设了 READER_FILES_V03_PAIRS_DIR（含 <名>.{punct,entity}.{old,new}.json）时，拿真样本比旧／新格式
+const PAIRS = process.env.READER_FILES_V03_PAIRS_DIR;
+test('真样本：新旧格式的阅读器副本一致', { skip: !PAIRS }, async () => {
+    const { readdirSync } = await import('node:fs');
+    let n = 0;
+    for (const f of readdirSync(PAIRS).filter((x) => x.endsWith('.old.json') && statSyncSize(join(PAIRS, x)) > 0)) {
+        const kind = f.includes('.punct.') ? 'punct' : 'entity';
+        const slim = kind === 'punct' ? slimPunct : slimEntity;
+        const o = slim(JSON.parse(readFileSync(join(PAIRS, f), 'utf-8')));
+        const nw = slim(JSON.parse(readFileSync(join(PAIRS, f.replace('.old.', '.new.')), 'utf-8')));
+        if (kind === 'entity') for (const e of [...o.entities, ...nw.entities]) delete e.span; // 本批新格式仍带 span，旧格式也比对不带 span 的情形
+        const strip = ({ $schema: _a, version: _v, text_version: _t, ...r }) => r;
+        assert.deepEqual(strip(nw), strip(o), f);
+        n++;
+    }
+    assert.ok(n > 0);
+});
+function statSyncSize(p) { return readFileSync(p).length; }

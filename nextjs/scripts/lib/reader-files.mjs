@@ -10,10 +10,10 @@
  * 留哪些字段，以 book-index-ui 的读法为准（改那边的读法时同步这里，测试里有往返一致性检查）：
  *   cord：adaptCharCord 读 pages[].page、canvas{seq,width,height}、image{width,height}（canvas 缺尺寸时兜底）、
  *         cells[].a＋box；iiifVolumeOf 读 canvas.id；marks 里只读 kind=figure 的 fig＋box（插图块的书影框，char v0.3）。producers／regions／columns、其余 marks、cell.id、image.sha256 不要。
- *   punct：adaptPunctJson 读 anchor、mark、kind、pos、pre_char、label、toc、id；source、char_offset、顶层 metadata／stats 不要。
+ *   punct：adaptPunctJson 读 anchor、mark、kind、pos、pre_char、label、toc、id；source、char_offset、顶层 metadata／stats／default_source 不要（格式 v0.3 起 source 提到文件头 default_source，char_offset／span 可缺，读端两种都认）。
  *   entity（P2-A）：adaptEntityJson 读 id、type、text、anchor、span、confidence、group、ambiguous、target 的
  *         status／entity_id／confidence／canonical_name／level／note（href 只在没有 entity_id 时兜底）；网站的
- *         collectEntities／entityFileVersion 读 id、anchor、text 与顶层 version。去掉 source、顶层 metadata／stats，
+ *         collectEntities／entityFileVersion 读 id、anchor、text 与顶层 version。去掉 source、顶层 metadata／stats／default_source，
  *         有 entity_id 时去掉 target.href。样本章解压 1.51MB → 0.78MB。
  *   char（P2-A）：字段全留，只是不带缩进（CV 产出是缩进排版的）。样本章解压 1.46MB → 0.86MB。
  * 线上复测（2026-10-20）：br 传输差别不大（entity 129K、char 181K 各省约 15%），省的主要是浏览器要解析的 JSON 量。
@@ -60,7 +60,7 @@ export function slimCord(cord) {
 export function slimPunct(punct) {
     const out = {};
     for (const [k, v] of Object.entries(punct ?? {})) {
-        if (k === 'metadata' || k === 'stats') continue;
+        if (k === 'metadata' || k === 'stats' || k === 'default_source') continue;
         if (k === 'punctuations' && Array.isArray(v)) {
             out.punctuations = v.map((p) => {
                 if (!p || typeof p !== 'object') return p;
@@ -78,7 +78,7 @@ export function slimPunct(punct) {
 export function slimEntity(entity) {
     const out = {};
     for (const [k, v] of Object.entries(entity ?? {})) {
-        if (k === 'metadata' || k === 'stats') continue;
+        if (k === 'metadata' || k === 'stats' || k === 'default_source') continue;
         if (k === 'entities' && Array.isArray(v)) {
             out.entities = v.map((e) => {
                 if (!e || typeof e !== 'object') return e;
