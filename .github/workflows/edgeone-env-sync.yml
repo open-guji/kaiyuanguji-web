@@ -12,7 +12,7 @@ on:
         required: true
         default: list
         type: choice
-        options: [list, dry-run, sync, set, deploys]
+        options: [list, dry-run, sync, set, deploys, get]
       source:
         description: 源项目名（旧正式站）
         required: false
@@ -31,6 +31,10 @@ on:
         default: ''
       gen_keys:
         description: set 模式：逗号分隔，随机生成的密钥变量名（已有则沿用，不轮换）
+        required: false
+        default: ''
+      get_keys:
+        description: get 模式：逗号分隔的非机密变量名（带 TOKEN／SECRET／KEY 的会被拒绝），读 targets 项目里的值
         required: false
         default: ''
       secret_keys:
@@ -56,6 +60,7 @@ jobs:
           SET_JSON: ${{ inputs.set_json }}
           GEN_KEYS: ${{ inputs.gen_keys }}
           SECRET_KEYS: ${{ inputs.secret_keys }}
+          GET_KEYS: ${{ inputs.get_keys }}
           SECRET_ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
           SECRET_OAUTH_ID_TOKEN_SECRET: ${{ secrets.OAUTH_ID_TOKEN_SECRET }}
           SECRET_SEARCH_PG_KEY: ${{ secrets.SEARCH_PG_KEY }}
