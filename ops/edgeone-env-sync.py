@@ -142,11 +142,37 @@ def set_vars(ps):
     describe([p for p in ps if p.get("ProjectId") in pids])
 
 
+def get_vars(ps):
+    """MODE=get（只读）：TARGETS 里每个项目，打印 GET_KEYS（逗号分隔）里**非机密**变量的值与所属环境。
+    名字里带 TOKEN／SECRET／KEY／PASSWORD／PW／DSN／DATABASE_URL 的一律拒绝（只给 KV_BACKEND、WEB_INBOX_PRIMARY 这类开关用）。"""
+    import re
+    keys = [k.strip() for k in os.environ.get("GET_KEYS", "").split(",") if k.strip()]
+    bad = [k for k in keys if re.search(r"TOKEN|SECRET|KEY|PASSWORD|PW|DSN|DATABASE_URL|CREDENTIAL", k, re.I)]
+    if bad:
+        sys.exit(f"✗ 拒绝读取疑似机密的变量：{' '.join(bad)}")
+    names = [n.strip() for n in os.environ.get("TARGETS", "").split(",") if n.strip()]
+    for name in names:
+        pid = find(ps, name)
+        mine = {}
+        for e in envs(pid):
+            mine.setdefault(e["Key"], []).append(e)
+        for k in keys:
+            items = mine.get(k)
+            if not items:
+                print(f"  {name}：{k} 未设置")
+                continue
+            for e in items:
+                print(f"  {name}：{k} = {e.get('Value')!r}  [{','.join(e.get('Env') or [])}]")
+
+
 def main():
     mode = os.environ.get("MODE", "list")
     ps = projects()
     if mode == "list":
         describe(ps)
+        return
+    if mode == "get":
+        get_vars(ps)
         return
     if mode == "set":
         set_vars(ps)
