@@ -15,7 +15,6 @@
 //                        写入记 updatedBy（token 鉴权记 'token'，成员 cookie 记成员邮箱）
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
-//   - KV namespace 绑定为全局变量  FEEDBACK_KV
 //   - 环境变量  FEEDBACK_MODE       "kv"（默认）| "github"
 //   - 环境变量  GITHUB_TOKEN        FEEDBACK_MODE=github 时转发用
 //   - 环境变量  FEEDBACK_ADMIN_TOKEN  管理侧鉴权。**没配就一律拒绝（503）**
@@ -213,78 +212,15 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
-// ---- 网站票双写 D1（A20 Worker /v1/web/inbox；过渡期 KV 仍为主，D1 失败只记日志）----
-// 开关：WEB_INBOX_DUALWRITE=1；地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
-// 有 context.waitUntil 时放后台，不拖慢读者提交；否则带 2 秒超时等待。
-// 一次请求只调 1 次（EdgeOne 单次函数对外 fetch 约 64 次后 502），2 秒超时。
+// ---- 网站收件箱（A20 Worker /v1/web/inbox，中心库 D1；11-22 起是唯一真源，EdgeOne KV 已退役）----
+// 地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
+// 一次请求只调有限几次（EdgeOne 单次函数对外 fetch 约 64 次后 502）。
 const INBOX_KINDS = ['cellreview', 'charfix', 'thread', 'feedback', 'fixstate', 'pending', 'kv'];
 const INBOX_KEY_RE = /^[A-Za-z0-9:_.|~-]{1,200}$/;
-const INBOX_TIMEOUT_MS = 2000;
 function envVar(context, name) {
   if (context && context.env && context.env[name]) return String(context.env[name]);
   try { return (typeof globalThis[name] !== 'undefined' && globalThis[name]) ? String(globalThis[name]) : ''; } catch { return ''; }
 }
-/** 把刚写进 KV 的一条记录镜像到 D1；永不抛错，返回 'off'｜'ok'｜'skip'｜'fail'。 */
-export async function mirrorToInbox(context, kind, key, value, ts) {
-  const p = mirrorNow(context, kind, key, value, ts);
-  if (context && typeof context.waitUntil === 'function') { context.waitUntil(p); return 'bg'; }
-  return p;
-}
-async function mirrorNow(context, kind, key, value, ts) {
-  try {
-    if (envVar(context, 'WEB_INBOX_DUALWRITE') !== '1') return 'off';
-    const base = (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, '');
-    const token = envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN');
-    if (!token) { console.warn('WebInbox 双写已开但没有令牌（WEB_INBOX_TOKEN／FEEDBACK_ADMIN_TOKEN）'); return 'skip'; }
-    if (!INBOX_KINDS.includes(kind) || !INBOX_KEY_RE.test(key) || !value || typeof value !== 'object') {
-      console.warn(`WebInbox 跳过：kind=${kind} key=${String(key).slice(0, 80)}`);
-      return 'skip';
-    }
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), INBOX_TIMEOUT_MS);
-    try {
-      const item = { kind, key, value };
-      if (ts) item.ts = ts;
-      const res = await fetch(`${base}/v1/web/inbox`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ items: [item] }),
-        signal: ctl.signal,
-      });
-      if (!res.ok) { console.error(`WebInbox 写入失败 HTTP ${res.status} kind=${kind}`); return 'fail'; }
-      return 'ok';
-    } finally { clearTimeout(timer); }
-  } catch (e) {
-    console.error('WebInbox 写入异常:', (e && e.message) || e);
-    return 'fail';
-  }
-}
-
-/** 回填用：一次 POST 多条（≤100），不看 WEB_INBOX_DUALWRITE 开关。返回 { ok, sent, skipped, error? } */
-export async function mirrorBatchToInbox(context, items) {
-  const base = (envVar(context, 'WEB_INBOX_URL') || 'https://data.open-guji.com').replace(/\/+$/, '');
-  const token = envVar(context, 'WEB_INBOX_TOKEN') || envVar(context, 'FEEDBACK_ADMIN_TOKEN');
-  if (!token) return { ok: false, sent: 0, skipped: 0, error: '没有令牌' };
-  const good = items.filter((it) => INBOX_KINDS.includes(it.kind) && INBOX_KEY_RE.test(it.key) && it.value && typeof it.value === 'object').slice(0, 100);
-  if (!good.length) return { ok: true, sent: 0, skipped: items.length };
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 10000);
-  try {
-    const res = await fetch(`${base}/v1/web/inbox`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ items: good }),
-      signal: ctl.signal,
-    });
-    if (!res.ok) return { ok: false, sent: 0, skipped: 0, error: `HTTP ${res.status}` };
-    return { ok: true, sent: good.length, skipped: items.length - good.length };
-  } catch (e) {
-    return { ok: false, sent: 0, skipped: 0, error: String((e && e.message) || e) };
-  } finally { clearTimeout(timer); }
-}
-
-/** 票以 D1 为真源（WEB_INBOX_PRIMARY=1）：cellreview 不再写 KV，写入失败要回 500（读者端会排队重试），读也走 D1。 */
-export function inboxPrimary(context) { return envVar(context, 'WEB_INBOX_PRIMARY') === '1'; }
 
 function inboxBaseToken(context) {
   return {
@@ -417,14 +353,24 @@ export async function deleteInboxStrict(context, kind, key) {
 }
 
 // ---------- KV 的 D1 替身（11-22：网站 KV 全搬 D1）----------
-// 环境变量 KV_BACKEND=d1 时，getKV／getAuthKV 等返回这个对象：get/put/delete/list 的形状与 EdgeOne KV 一致，
+// getKV／getAuthKV 等返回这个对象：get/put/delete/list 的形状沿用旧 EdgeOne KV（11-23 起 EdgeOne KV 已退役，只剩这一个后端），
 // 数据落在中心库 web_inbox 的 kind=kv（键里 KEY_RE 不收的字符转成 ~xxxx~，值原样存字符串 s，expirationTtl 存成 exp）。
 const KV_ENC_RE = /[^A-Za-z0-9:_.|-]/g;
 const kvEnc = (k) => String(k).replace(KV_ENC_RE, (c) => `~${c.charCodeAt(0).toString(16).padStart(4, '0')}~`);
 const kvDec = (k) => String(k).replace(/~([0-9a-f]{4})~/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
 export const kvEncKey = kvEnc;
-export function useD1Kv(context) { return envVar(context, 'KV_BACKEND') === 'd1'; }
-export function d1Kv(context) {
+// legacyName 只给单测用：jest 下（有 JEST_WORKER_ID）若 env／全局里放了同名的内存 KV 替身就用它，免得几十个测试都改成走假 fetch；
+// 线上（EdgeOne 无 process.env.JEST_WORKER_ID）永远走 D1，不再读任何 EdgeOne KV 绑定。
+function testKvStub(context, legacyName) {
+  try {
+    if (!legacyName || typeof process === 'undefined' || !process.env || !process.env.JEST_WORKER_ID) return null;
+    if (context && context.env && context.env[legacyName]) return context.env[legacyName];
+    return globalThis[legacyName] || null;
+  } catch { return null; }
+}
+export function d1Kv(context, legacyName) {
+  const stub = testKvStub(context, legacyName);
+  if (stub) return stub;
   const live = (row) => row && row.value && typeof row.value.s === 'string' && !(row.value.exp && row.value.exp < Date.now());
   return {
     async get(key, type) {
@@ -450,19 +396,14 @@ export function d1Kv(context) {
 }
 
 function getKV(context) {
-  if (useD1Kv(context)) return d1Kv(context);
-  if (context && context.env && context.env.FEEDBACK_KV) return context.env.FEEDBACK_KV;
-  return (typeof FEEDBACK_KV !== 'undefined') ? FEEDBACK_KV : null;
+  return d1Kv(context, 'FEEDBACK_KV');
 }
 function getJwtSecret(context) {
   if (context && context.env && context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET;
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
-  if (useD1Kv(context)) return d1Kv(context);
-  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
-  if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
+  return d1Kv(context, 'AUTH_KV');
 }
 function getCookie(request, name) {
   const c = request.headers.get('cookie') || '';
@@ -543,7 +484,7 @@ function optionalRef(v) {
 }
 
 // 同一 IP 每 RATE_LIMIT_WINDOW_SECONDS 最多 RATE_LIMIT_MAX 条，超了回 429。
-// 计数放 FEEDBACK_KV，key 用 IP 的 sha256（反馈记录本身不存 IP，这里也不存明文 IP）。
+// 计数放收件箱（kind=kv），key 用 IP 的 sha256（反馈记录本身不存 IP，这里也不存明文 IP）。
 // 固定窗口：窗口从该 IP 本窗口第一条算起。KV 最终一致，并发下可能多放过一两条，够用。
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
@@ -1446,4 +1387,4 @@ export function onRequestOptions(context) {
 export { desensitizeText };
 
 // 供 /api/cellreview（GUJI-551）沿用同一套 CORS、管理鉴权、KV 绑定、取 IP，不在那边再抄一份
-export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex };
+export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, d1Kv, getClientIp, sha256Hex };

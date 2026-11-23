@@ -1,7 +1,7 @@
 // POST /api/auth/invite — 管理员生成邀请链接（需 admin cookie，或 AUTH_ADMIN_TOKEN 走 Authorization: Bearer／body.token）
 // body: { email?: string | null, role: string }
 // 返回: { success:true, code, link, email, role, expires }
-import { useD1Kv, d1Kv } from '../feedback.js';
+import { d1Kv } from '../feedback.js';
 import { SITE_ORIGIN, SITE_ORIGINS } from '../hosts.js';
 
 const ALLOWED_ORIGINS = [
@@ -27,12 +27,7 @@ function getJwtSecret(context) {
   if (context && context.env && context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET;
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
-function getKV(context) {
-  if (useD1Kv(context)) return d1Kv(context);
-  if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  if (typeof AUTH_KV !== 'undefined') return AUTH_KV;
-  return null;
-}
+function getKV(context) { return d1Kv(context, 'AUTH_KV'); }
 function constantTimeEqual(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;

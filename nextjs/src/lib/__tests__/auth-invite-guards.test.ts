@@ -110,17 +110,6 @@ describe('invite 签发限制与鉴权闸', () => {
     });
 });
 
-describe('鉴权数据只认 AUTH_KV', () => {
-    it.each([['ERROR_KV'], ['FEEDBACK_KV']])('只绑 %s 时各端点 503，且不写入', async (name) => {
-        const store: Store = new Map();
-        const env = { [name]: makeKv(store), AUTH_JWT_SECRET: SECRET, AUTH_ADMIN_TOKEN: ADMIN };
-        expect((await invite.onRequestPost({ env, request: post('/api/auth/invite', { role: 'reader' }, A) })).status).toBe(503);
-        expect((await join.onRequestPost({ env, request: post('/api/auth/join', { code: 'x' }) })).status).toBe(503);
-        expect((await revoke.onRequestPost({ env, request: post('/api/auth/revoke', { email: 'a@x.com', role: 'reader' }, A) })).status).toBe(503);
-        expect(store.size).toBe(0);
-    });
-});
-
 describe('删人立即生效', () => {
     it.each([[true], [false]])('KV delete=%s：被删的人 /me → 401，且可重新受邀', async (withDelete) => {
         const { env } = setup(withDelete as boolean);

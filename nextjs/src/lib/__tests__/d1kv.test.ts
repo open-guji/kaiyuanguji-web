@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  *
- * KV_BACKEND=d1：d1Kv 替身的 get／put／delete／list，键里带 @ 的成员记录、expirationTtl、cursor 翻页。
+ * d1Kv 替身的 get／put／delete／list，键里带 @ 的成员记录、expirationTtl、cursor 翻页。
  */
 import { installFakeInbox } from '../__fixtures__/fakeInbox';
 
@@ -9,17 +9,13 @@ const g = globalThis as unknown as Record<string, unknown>;
 const inbox = installFakeInbox(g);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let F: any;
-const ctx = { env: { KV_BACKEND: 'd1', WEB_INBOX_URL: 'https://w.example', WEB_INBOX_TOKEN: 't' } };
+const ctx = { env: { WEB_INBOX_URL: 'https://w.example', WEB_INBOX_TOKEN: 't' } };
 
 beforeAll(async () => { F = await import('../../../../edge-functions/api/feedback.js'); });
 beforeEach(() => { inbox.reset(); inbox.install(); });
 afterAll(() => inbox.restore());
 
 describe('d1Kv', () => {
-    it('开关：只有 KV_BACKEND=d1 才启用', () => {
-        expect(F.useD1Kv(ctx)).toBe(true);
-        expect(F.useD1Kv({ env: {} })).toBe(false);
-    });
     it('put／get：json 与文本都原样回；键里的 @ 转码存、不影响读', async () => {
         const kv = F.d1Kv(ctx);
         await kv.put('member:a.b+c@x.com', JSON.stringify({ role: 'admin' }));

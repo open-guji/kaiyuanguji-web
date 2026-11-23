@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  *
- * 票以 D1 为真源（WEB_INBOX_PRIMARY=1）：cellreview 不写 KV、写 D1 失败回 500、管理读走 D1。
+ * 票以 D1 为真源：cellreview 写 D1、写失败回 500、管理读走 D1（11-23 起无 KV 老路径）。
  */
 const g = globalThis as unknown as Record<string, unknown>;
 const realFetch = globalThis.fetch;
@@ -29,7 +29,7 @@ beforeEach(() => {
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 afterAll(() => { g.fetch = realFetch; });
 
-const PRIMARY = { WEB_INBOX_PRIMARY: '1', WEB_INBOX_URL: 'https://w.example', WEB_INBOX_TOKEN: 't' };
+const PRIMARY = { WEB_INBOX_URL: 'https://w.example', WEB_INBOX_TOKEN: 't' };
 const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', rev: 'vol01-r1', aid: 'aid_abcdefgh1234', shown: '於', choice: 'char', char: '于' };
 const post = (body: unknown, env: Record<string, string> = PRIMARY) => {
     const request = new Request('https://x/api/cellreview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -67,11 +67,6 @@ describe('cellreview · D1 为真源', () => {
         respond = () => new Response('x', { status: 400 });
         expect((await fn.onRequestPost(post(base))).status).toBe(500);
         expect(calls).toHaveLength(1);
-    });
-    it('POST：开关没开仍走 KV（老路径不变）', async () => {
-        const res = await fn.onRequestPost(post(base, {}));
-        expect(res.status).toBe(200);
-        expect([...store.keys()].some((k) => k.startsWith('cr:'))).toBe(true);
     });
     it('GET 管理读：按条目读走 D1 前缀，cursor 即 seq', async () => {
         respond = () => new Response(JSON.stringify({ items: [{ seq: 5, value: { v: 1, a: 'x' } }, { seq: 6, value: { v: 1, a: 'y' } }], next: 6, hasMore: true }), { status: 200 });

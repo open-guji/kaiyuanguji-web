@@ -300,24 +300,24 @@ svg .arh { fill: var(--ink-2); }
 
 <section id="edge">
   <h2>七、后台接口</h2>
-  <p>公众站没有自己的数据库。需要写入的功能放在边缘函数里。<b>2026-11-22 起</b>读者意见、精校票、改字、讨论、整理状态、待审单、登录成员与错误上报改存中心库 D1（经 Worker <code>/v1/web/inbox</code>，边缘函数里 <code>useD1Kv</code>／<code>d1Kv</code> 提供与 KV 同形的读写）；下表「存在哪」一列写的 KV 命名空间是迁移前的旧存放，代码里仍留着兼容层，待确认后退役。</p>
+  <p>公众站没有自己的数据库。需要写入的功能放在边缘函数里。<b>2026-11-22 起</b>读者意见、精校票、改字、讨论、整理状态、待审单、登录成员与错误上报改存中心库 D1（经 Worker <code>/v1/web/inbox</code>，边缘函数里 <code>d1Kv</code> 提供与旧 KV 同形的读写）。EdgeOne 的三个 KV 命名空间（<code>FEEDBACK_KV</code>／<code>AUTH_KV</code>／<code>ERROR_KV</code>）11-23 起不再读写，代码里的绑定回落、双写镜像和回填接口已删除；下表「存在哪」写的是中心库 <code>web_inbox</code> 里的 <code>kind</code> 与键前缀。</p>
   <div class="scroll"><table>
     <thead><tr><th>接口</th><th>作用</th><th>存在哪</th></tr></thead>
     <tbody>
-      <tr><td><code>/api/feedback</code></td><td>读者反馈。公开列表不含联系方式；管理接口需要管理令牌；新反馈推送到站长微信</td><td><code>FEEDBACK_KV</code></td></tr>
-      <tr><td><code>/api/charfix</code></td><td>阅读页对读章的改字、「这段有问题」、专名意见。POST 公开（匿名，按 IP 限速，同来源同处覆盖）；GET 只开管理读（管理令牌或成员 cookie），供每日 proofing-sync 导出。保留 180 天</td><td><code>FEEDBACK_KV</code>，前缀 <code>cf:</code> <code>cs:</code> <code>ce:</code></td></tr>
-      <tr><td><code>/api/thread</code></td><td>整册读者意见页 <code>/feedback/text</code> 上对「一处意见」的同意／有不同看法（匿名，同来源覆盖）与回复（留称呼）。POST 公开、限速；GET 只开管理读。保留 180 天</td><td><code>FEEDBACK_KV</code>，前缀 <code>tv:</code> <code>tm:</code></td></tr>
-      <tr><td><code>/api/fixes</code></td><td>整册读者意见的公开实时读：GET 公开，按书、册直读 KV 拼成与 COS 公开清单同形的结果（voter 只给 6 位、正文脱敏，不应用中心库隐藏单）；POST 只给管理令牌或成员（校对、编辑、管理员），写处理状态（采纳／未采纳／讨论中）与带「整理组」标的回复</td><td><code>FEEDBACK_KV</code>，读 <code>cf: cs: ce: tv: tm: fs:</code>，写 <code>fs:</code>（不过期）<code>tm:</code></td></tr>
-      <tr><td><code>/api/cellreview</code></td><td>精校页 <code>/proofing/&lt;书&gt;/&lt;册&gt;</code> 每格的意见票（选字、图上没有字、看不清、切分错、夹注等），提交须带待审单 <code>rev</code>。POST 公开、限速，同格同来源覆盖；GET 只开管理读。保留 60 天</td><td><code>FEEDBACK_KV</code>，前缀 <code>cr:</code></td></tr>
-      <tr><td><code>/api/track-error</code></td><td>前端错误自收，按版本分组。自动化浏览器不上报</td><td><code>ERROR_KV</code></td></tr>
-      <tr><td><code>/api/auth/*</code></td><td>邀请制邮箱验证码登录，会话是 JWT（cookie 只属于本域名）。角色以成员记录为准，不放进令牌</td><td><code>AUTH_KV</code></td></tr>
+      <tr><td><code>/api/feedback</code></td><td>读者反馈。公开列表不含联系方式；管理接口需要管理令牌；新反馈推送到站长微信</td><td>D1 <code>kind=kv</code>（键 <code>fb_*</code>）</td></tr>
+      <tr><td><code>/api/charfix</code></td><td>阅读页对读章的改字、「这段有问题」、专名意见。POST 公开（匿名，按 IP 限速，同来源同处覆盖）；GET 只开管理读（管理令牌或成员 cookie），供每日 proofing-sync 导出。保留 180 天</td><td>D1 <code>kind=charfix</code>，前缀 <code>cf:</code> <code>cs:</code> <code>ce:</code></td></tr>
+      <tr><td><code>/api/thread</code></td><td>整册读者意见页 <code>/feedback/text</code> 上对「一处意见」的同意／有不同看法（匿名，同来源覆盖）与回复（留称呼）。POST 公开、限速；GET 只开管理读。保留 180 天</td><td>D1 <code>kind=thread</code>，前缀 <code>tv:</code> <code>tm:</code></td></tr>
+      <tr><td><code>/api/fixes</code></td><td>整册读者意见的公开实时读：GET 公开，按书、册直读 D1 拼成与 COS 公开清单同形的结果（voter 只给 6 位、正文脱敏，不应用中心库隐藏单）；POST 只给管理令牌或成员（校对、编辑、管理员），写处理状态（采纳／未采纳／讨论中）与带「整理组」标的回复</td><td>D1，读 <code>cf: cs: ce: tv: tm: fs:</code>，写 <code>fs:</code>（<code>kind=fixstate</code>，不过期）<code>tm:</code></td></tr>
+      <tr><td><code>/api/cellreview</code></td><td>精校页 <code>/proofing/&lt;书&gt;/&lt;册&gt;</code> 每格的意见票（选字、图上没有字、看不清、切分错、夹注等），提交须带待审单 <code>rev</code>。POST 公开、限速，同格同来源覆盖；GET 只开管理读。保留 60 天</td><td>D1 <code>kind=cellreview</code>，前缀 <code>cr:</code></td></tr>
+      <tr><td><code>/api/track-error</code></td><td>前端错误自收，按版本分组。自动化浏览器不上报</td><td>D1 <code>kind=kv</code>（键 <code>err_*</code> 等，带 TTL）</td></tr>
+      <tr><td><code>/api/auth/*</code></td><td>邀请制邮箱验证码登录，会话是 JWT（cookie 只属于本域名）。角色以成员记录为准，不放进令牌</td><td>D1 <code>kind=kv</code>（<code>member:</code> <code>invite:</code> 等）</td></tr>
       <tr><td><code>/oauth/*</code></td><td>给校对平台的登录。变量未配时返回 503</td><td>无</td></tr>
       <tr><td><code>/api/version</code></td><td>线上是哪一版：网站 commit、组件库版本、数据版本、构建时间</td><td>构建时写入</td></tr>
       <tr><td><code>/internal/revalidate</code></td><td>条目页按改动集失效，凭部署时派生的密钥调用</td><td>无</td></tr>
     </tbody>
   </table></div>
   <p>读者意见每天出站一次：<code>.github/workflows/proofing-sync.yml</code>（UTC 21:23 定时，排在每日数据发布之前；也可手动跑、默认演练）用管理令牌读上面的 <code>/api/cellreview</code>、<code>/api/charfix</code>、<code>/api/thread</code>，并进中心库 <code>feedback/lists/web/&lt;书&gt;/</code>（精校票按 <code>&lt;rev&gt;.jsonl</code>，改字与段落意见 <code>fixes.jsonl</code>，讨论 <code>threads.jsonl</code>；站方要撤下的写 <code>hidden.txt</code>），再把中心库的待审单发到 COS <code>proof/index.json</code>、<code>proof/&lt;书&gt;/&lt;章&gt;.pending.json</code>（单子带 <code>sprites[]</code> 的，先把 R2 里的雪碧图经 Worker 签名链接取回，传到 <code>proof/&lt;书&gt;/&lt;章&gt;/&lt;文件名&gt;</code>，再传单子、最后换 index），把意见快照（去掉隐藏单）发成公开清单 <code>proof/fixes/&lt;书&gt;.json</code>。收哪些书由仓库变量 <code>FIX_BOOKS</code>（默认 <code>96mid1ogzk</code>）与 <code>PROOF_WS</code>（默认 <code>siku-zongmu</code>）定；某书还没有任何改字意见时不建快照、也不发清单，COS 上那份是 404，<code>/feedback/text</code> 按「暂无意见」处理。处理状态 <code>fs:</code> 只在 KV，不进中心库与 COS 清单。</p>
-  <p>三个 KV 命名空间正式站和测试站各一套（上面几个读者意见接口都在 <code>FEEDBACK_KV</code> 里，按前缀区分），变量名相同、命名空间不同，代码不用分支。<code>/admin/*</code> 页面返回 200 加 <code>noindex</code>，真正的边界在接口层：缺配置一律返回 503，不放行。</p>
+  <p>中心库收件箱由 <code>WEB_INBOX_URL</code>（默认 <code>https://data.open-guji.com</code>）与 <code>WEB_INBOX_TOKEN</code>（缺省用 <code>FEEDBACK_ADMIN_TOKEN</code>）指向，正式站和测试站用各自的令牌与库；没有令牌或 Worker 不可达时写入回 500。EdgeOne 单次函数对外 fetch 约 64 次后会 502，所以一次请求只调有限几次。<code>/admin/*</code> 页面返回 200 加 <code>noindex</code>，真正的边界在接口层：缺配置一律返回 503，不放行。</p>
   <p class="note">全栈项目的环境变量是构建时烘进产物的，控制台改了变量必须重新部署才生效。构建用白名单环境跑（<code>ops/edgeone-fullstack-build.py</code>），构建后检查产物里没有 CI 密钥。</p>
 </section>
 

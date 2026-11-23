@@ -25,14 +25,13 @@
 //                    secret_hash = sha256 hex(client_secret)，校验见 token.js
 //   OAUTH_CODE_SECRET  签 code 用，与 AUTH_JWT_SECRET／OAUTH_ID_TOKEN_SECRET 都分开另起一把
 //   AUTH_JWT_SECRET  与 auth/* 共用（校验站内登录态 cookie）
-//   AUTH_KV          与 auth/* 共用，只读：查成员记录比对 tokenVersion（见下）
 //
 // FX3b（overview#196，接 FX3/H1）：cookie 验签通过后还要查成员记录——令牌里的 `tv` 必须等于
 // 记录的 tokenVersion（与 api/auth/me.js 同一口径），对不上一律 401，墓碑（_deleted）、没有
 // 角色、查不到都当作成员不存在，同样 401。否则被撤销／改过角色的旧令牌仍能经 OAuth 换到
 // id_token。这里只读 KV：成员记录不是刚写的，跨节点传播延迟不影响；code 本身仍不写 KV。
 
-import { useD1Kv, d1Kv } from '../api/feedback.js';
+import { d1Kv } from '../api/feedback.js';
 function getEnvVar(context, name) {
   if (context && context.env && context.env[name] !== undefined && context.env[name] !== null) {
     return context.env[name];
@@ -42,7 +41,7 @@ function getEnvVar(context, name) {
 }
 const getJwtSecret = (c) => getEnvVar(c, 'AUTH_JWT_SECRET');
 const getCodeSecret = (c) => getEnvVar(c, 'OAUTH_CODE_SECRET');
-const getAuthKV = (c) => (useD1Kv(c) ? d1Kv(c) : getEnvVar(c, 'AUTH_KV'));
+const getAuthKV = (c) => d1Kv(c, 'AUTH_KV');
 function getOAuthClients(c) {
   const raw = getEnvVar(c, 'OAUTH_CLIENTS');
   if (!raw) return null;
@@ -147,7 +146,7 @@ export async function onRequestGet(context) {
   const codeSecret = getCodeSecret(context);
   const kv = getAuthKV(context);
   if (!clients || !jwtSecret || !codeSecret || !kv) {
-    return jsonError(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／AUTH_JWT_SECRET／OAUTH_CODE_SECRET／AUTH_KV）');
+    return jsonError(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／AUTH_JWT_SECRET／OAUTH_CODE_SECRET）');
   }
 
   const client = clients[clientId];

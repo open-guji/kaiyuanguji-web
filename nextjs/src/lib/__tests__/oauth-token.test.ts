@@ -378,10 +378,4 @@ describe('缺配置', () => {
     const res = await fn.onRequestPost(tokenRequest({}, env));
     expect(res.status).toBe(503);
   });
-  it('AUTH_KV 未绑定 → 503', async () => {
-    const env = await baseEnv();
-    delete (env as Record<string, unknown>).AUTH_KV;
-    const res = await fn.onRequestPost(tokenRequest({}, env));
-    expect(res.status).toBe(503);
-  });
 });

@@ -1,15 +1,10 @@
 // GET /api/auth/invite-info?c= — 只读，不消费
-import { useD1Kv, d1Kv } from '../feedback.js';
+import { d1Kv } from '../feedback.js';
 import { SITE_ORIGINS } from '../hosts.js';
 const ALLOWED_ORIGINS = [...SITE_ORIGINS,'https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
 function getCorsHeaders(request){ const origin=request.headers.get('origin')||''; const corsOrigin=ALLOWED_ORIGINS.includes(origin)?origin:ALLOWED_ORIGINS[0]; return {'Access-Control-Allow-Origin':corsOrigin,'Content-Type':'application/json'}; }
 function getJwtSecret(context){ if(context&&context.env&&context.env.AUTH_JWT_SECRET) return context.env.AUTH_JWT_SECRET; return (typeof AUTH_JWT_SECRET!=='undefined')?AUTH_JWT_SECRET:null; }
-function getKV(context){
-  if (useD1Kv(context)) return d1Kv(context);
-  if(context&&context.env&&context.env.AUTH_KV) return context.env.AUTH_KV;
-  if(typeof AUTH_KV!=='undefined') return AUTH_KV;
-  return null;
-}
+function getKV(context) { return d1Kv(context, 'AUTH_KV'); }
 async function hashCode(code, secret){
   const key=await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
   const sig=await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(code));

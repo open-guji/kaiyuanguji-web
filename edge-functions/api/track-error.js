@@ -1,13 +1,12 @@
 // 轻量前端错误自收端点（EdgeOne Pages Function）
-// 前端 POST 上报错误 → 写入 ERROR_KV（带 TTL 自动过期）；管理端凭成员 cookie 或 Authorization: Bearer 查询。
+// 前端 POST 上报错误 → 写入中心库收件箱（kind=kv）（带 TTL 自动过期）；管理端凭成员 cookie 或 Authorization: Bearer 查询。
 // 与 feedback.js 同模式：KV 经全局变量绑定，环境变量经全局变量注入。
 //
 // 绑定/配置（EdgeOne Pages 控制台）：
-//   - KV namespace 绑定为全局变量  ERROR_KV
 //   - 环境变量  ERROR_VIEW_TOKEN  —— 读侧与管理侧鉴权（错误日志含 stack/IP，不公开）
 //     **没配这个变量，读接口与 update 一律拒绝（503）**，见下面 checkViewAuth 的注释。
 //     只有 POST 上报是公开的——那是前端必须能匿名调的。
-import { useD1Kv, d1Kv } from './feedback.js';
+import { d1Kv } from './feedback.js';
 import { SITE_ORIGINS } from './hosts.js';
 
 const ALLOWED_ORIGINS = [
@@ -35,9 +34,7 @@ function getCorsHeaders(request) {
 // 全局标识符——两条路都试，谁读到用谁。2026-09-22 实测：KV 绑定走全局变量能读到，
 // 但环境变量（ERROR_VIEW_TOKEN／FEEDBACK_ADMIN_TOKEN）走全局变量读不到，需要 context.env。
 function getKV(context) {
-  if (useD1Kv(context)) return d1Kv(context);
-  if (context && context.env && context.env.ERROR_KV) return context.env.ERROR_KV;
-  return (typeof ERROR_KV !== 'undefined') ? ERROR_KV : null;
+  return d1Kv(context, 'ERROR_KV');
 }
 
 function getViewToken(context) {
@@ -86,10 +83,7 @@ function getJwtSecret(context) {
   return (typeof AUTH_JWT_SECRET !== 'undefined') ? AUTH_JWT_SECRET : null;
 }
 function getAuthKV(context) {
-  if (useD1Kv(context)) return d1Kv(context);
-  // 成员表只认 AUTH_KV，不回落到 ERROR_KV / FEEDBACK_KV（与 auth/* 端点同一份成员表）
-  if (context && context.env && context.env.AUTH_KV) return context.env.AUTH_KV;
-  return (typeof AUTH_KV !== 'undefined') ? AUTH_KV : null;
+  return d1Kv(context, 'AUTH_KV');
 }
 function getCookie(request, name) {
   const c = request.headers.get('cookie') || '';
@@ -189,7 +183,7 @@ export async function onRequestPost(context) {
   try {
     const kv = getKV(context);
     if (!kv) {
-      return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), {
+      return new Response(JSON.stringify({ success: false, error: '收件箱未配置' }), {
         status: 500, headers,
       });
     }
@@ -305,7 +299,7 @@ export async function onRequestGet(context) {
 
     const kv = getKV(context);
     if (!kv) {
-      return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), {
+      return new Response(JSON.stringify({ success: false, error: '收件箱未配置' }), {
         status: 500, headers,
       });
     }
@@ -366,7 +360,7 @@ async function summaryResponse(context, url, headers) {
   }
   const kv = getKV(context);
   if (!kv) {
-    return new Response(JSON.stringify({ success: false, error: 'ERROR_KV 未绑定' }), { status: 500, headers });
+    return new Response(JSON.stringify({ success: false, error: '收件箱未配置' }), { status: 500, headers });
   }
   const n = parseInt(String(url.searchParams.get('window') || '1').replace(/h$/i, ''), 10);
   const windowHours = Number.isFinite(n) && n >= 1 && n <= 24 ? n : 1;
