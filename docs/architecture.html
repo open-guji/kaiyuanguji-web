@@ -294,12 +294,13 @@ svg .arh { fill: var(--ink-2); }
     <div><b>L1：Meilisearch</b><span>跑在上海搜索机（2 核 4 GB），域名 <code>api.kaiyuanguji.com</code>，由 EdgeOne 反代。浏览器直接调用，公开只读 key 随前端下发。</span></div>
     <div><b>L2：浏览器内搜索</b><span>浏览器 Worker 读 <code>v/&lt;commit&gt;/search/</code> 分片，用 MiniSearch 本地检索。L1 超时或熔断时兜底，永远与条目同一个数据版本。</span></div>
   </div>
+  <p class="note">2026-11-22 起另有 Postgres 后端（仓内 <code>search-pg/</code>），边缘函数按 COS 上 <code>search/switch.json</code> 在 Meili／shadow／pg 间切换，默认仍是 Meili。</p>
   <p>Meilisearch 的索引不由网站部署更新。搜索机上的索引器（源码在网站仓 <code>indexer/</code>）每晚 03:50 从美国机接收三仓数据，04:15 重建，重建期间约 6.5 分钟由 L2 兜底。零停机换索引（swap）已经排在计划里。</p>
 </section>
 
 <section id="edge">
   <h2>七、后台接口</h2>
-  <p>公众站没有数据库。需要写入的功能放在边缘函数里，状态存在 EdgeOne 的 KV 中。</p>
+  <p>公众站没有自己的数据库。需要写入的功能放在边缘函数里。<b>2026-11-22 起</b>读者意见、精校票、改字、讨论、整理状态、待审单、登录成员与错误上报改存中心库 D1（经 Worker <code>/v1/web/inbox</code>，边缘函数里 <code>useD1Kv</code>／<code>d1Kv</code> 提供与 KV 同形的读写）；下表「存在哪」一列写的 KV 命名空间是迁移前的旧存放，代码里仍留着兼容层，待确认后退役。</p>
   <div class="scroll"><table>
     <thead><tr><th>接口</th><th>作用</th><th>存在哪</th></tr></thead>
     <tbody>
