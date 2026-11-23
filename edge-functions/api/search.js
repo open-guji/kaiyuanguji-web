@@ -730,12 +730,15 @@ async function loadFromUpstream(context, queries, locale, key, timing, backend =
   let meiliJson;
   let sortIgnored = false;
   let usedPg = false;
+  let pgError = '';
   if (backend === 'pg') {
     try {
       meiliJson = await callPg(config, queries, timing);
       usedPg = true;
     } catch (e) {
       console.log(JSON.stringify({ pg: 'fallback_to_meili', error: String(e && e.message) }));
+      // 调试头 X-Search-Pg-Error：只给错误类别与状态码，去掉地址／IP，不泄露上游
+      pgError = String((e && (e.code || e.name)) || 'error') + (e && e.status ? ` ${e.status}` : '') + ': ' + String((e && e.message) || '').replace(/https?:\/\/\S+/g, '<url>').replace(/\d{1,3}(\.\d{1,3}){3}(:\d+)?/g, '<ip>').replace(/[^\x20-\x7e]/g, '?').slice(0, 120);
     }
   }
   try {
@@ -759,12 +762,12 @@ async function loadFromUpstream(context, queries, locale, key, timing, backend =
   const shaped = localizeResults(shapeResults(meiliJson, queries), locale);
   if (sortIgnored) {
     // 降级结果（没排序）不进缓存：否则索引重建后一段时间内同一查询还会命中这份未排序的结果
-    return { body: JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) }), cacheable: false, backend: usedPg ? 'pg' : 'meili' };
+    return { body: JSON.stringify({ results: shaped.map((r) => ({ ...r, sortIgnored: true })) }), cacheable: false, backend: usedPg ? 'pg' : 'meili', pgError };
   }
   const entry = { t: Date.now(), body: JSON.stringify({ results: shaped }) };
   memorySet(key, entry);
   await deferOrAwait(context, edgePut(key, entry));
-  return { body: entry.body, cacheable: true, backend: usedPg ? 'pg' : 'meili' };
+  return { body: entry.body, cacheable: true, backend: usedPg ? 'pg' : 'meili', pgError };
 }
 
 /** 同一 isolate 里同一查询并发只打一次上游（热门词刚过期时一拥而上） */
@@ -842,9 +845,9 @@ async function handleSearch(context) {
     return json(503, { error: UNAVAILABLE_MESSAGE, code }, { 'Cache-Control': 'no-store', 'Retry-After': '30', 'Server-Timing': timing.header() });
   }
   if (!loaded.cacheable) {
-    return json(200, loaded.body, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS', 'X-Search-Backend': loaded.backend, 'Server-Timing': timing.header() });
+    return json(200, loaded.body, { 'Cache-Control': 'no-store', 'X-Search-Cache': 'BYPASS', 'X-Search-Backend': loaded.backend, ...(loaded.pgError ? { 'X-Search-Pg-Error': loaded.pgError } : {}), 'Server-Timing': timing.header() });
   }
-  return json(200, loaded.body, { ...okHeaders('MISS'), 'X-Search-Backend': loaded.backend });
+  return json(200, loaded.body, { ...okHeaders('MISS'), 'X-Search-Backend': loaded.backend, ...(loaded.pgError ? { 'X-Search-Pg-Error': loaded.pgError } : {}) });
 }
 
 // ─── 响应压缩（overview#487） ───
