@@ -1387,4 +1387,4 @@ export function onRequestOptions(context) {
 export { desensitizeText };
 
 // 供 /api/cellreview（GUJI-551）沿用同一套 CORS、管理鉴权、KV 绑定、取 IP，不在那边再抄一份
-export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, d1Kv, getClientIp, sha256Hex };
+export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex };
