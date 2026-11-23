@@ -14,6 +14,13 @@ export type GetCurrentJson = <T>(relPath: string) => Promise<T | null>;
 /** 首章正文超过这么大就不随页面带（不让 HTML 过大），交给浏览器自己取 */
 export const SEED_TEXT_MAX = 256 * 1024;
 
+/**
+ * 版本目录（index.json）超过这么大就不随页面带：殿本的目录有 1.5MB（每章带十来个文件名字段），内联进 RSC 后 /read/* 的 HTML 约 1MB 且 EdgeOne 不压缩，
+ * 国内（以及美国、香港）约 15–40% 的请求在 3 秒多被重置、读者看不到页面里的书影。超限时交给浏览器自己取（data 域名有 CDN、压缩后约 180KB）。
+ * 量的是 JSON 紧凑串的字符数。
+ */
+export const SEED_INDEX_MAX = 128 * 1024;
+
 async function orNull<T>(p: Promise<T | null>): Promise<T | null> {
     try {
         return await p;
@@ -32,8 +39,8 @@ export async function preloadReader(id: string, checked: ReaderCheckResult, getJ
     const chapter = checked.chapter;
     const calls: Record<string, unknown> = {
         [seedCallKey('getTextManifest', id)]: checked.manifest,
-        [seedCallKey('getTextIndex', id, key)]: checked.index,
     };
+    if (JSON.stringify(checked.index).length <= SEED_INDEX_MAX) calls[seedCallKey('getTextIndex', id, key)] = checked.index;
     const meta = checked.index.chapters.find((c) => c.file === chapter);
     // 对读章没有 .txt：不取（原先每次都等一个 404，约 0.3s）
     if (isDuiduChapterMeta(meta)) return { calls };
