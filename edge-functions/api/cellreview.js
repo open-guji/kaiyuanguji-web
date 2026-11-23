@@ -4,7 +4,7 @@
 //   GET   **只开管理读**（管理 token 或成员 cookie）——按 rev 前缀导出全部票，供每日导入脚本用。
 //         公开读一律 401，不返回任何内容。
 //
-// 沿用 feedback.js：CORS、FEEDBACK_KV 绑定、管理员 token／成员 cookie、按 IP 限速（sha256，不存明文 IP）。
+// 沿用 feedback.js：CORS、管理员 token／成员 cookie、按 IP 限速（sha256，不存明文 IP）。
 // 不新建 KV：key 前缀 `cr:`（feedback.js 只扫 `fb_`，互不干扰）。
 //
 // key：`cr:<rev>:<book>:<a>:<voter>`
@@ -29,7 +29,7 @@
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, mirrorToInbox, inboxPrimary, writeInboxStrict, readInboxPage,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
 } from './feedback.js';
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'unrec', 'damaged'];
@@ -39,9 +39,7 @@ const PICK_RANK_MAX = 99;
 const NOTE_MAX = 500;
 const ALT_MAX = 60;
 const SHOWN_MAX = 8;
-const TTL_SECONDS = 60 * 24 * 60 * 60; // 60 天
 const LIST_MAX = 256; // 与 feedback.js 的 kv.list 同一页大小
-const GET_BATCH = 20; // 取值分批，免得一次并发过多子请求
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -205,27 +203,6 @@ async function ipHash(context, ip) {
   return Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
 
-// 存票偶发 `KvStore Put failed: net_exception_timeout`（10-26 用户实测，审册 4 时同一格反复失败；根因在 EdgeOne KV，控制台日志未查）。
-// 同键同值重写是幂等的：函数里先自己重试一次再回 500，免得每次都靠读者重点；耗时与次数写进 console 和 500 的 detail，便于统计
-const PUT_RETRY_DELAY_MS = 300;
-async function putTicket(kv, key, value, opts) {
-  const t0 = Date.now();
-  try {
-    await kv.put(key, value, opts);
-    return { attempts: 1, ms: Date.now() - t0 };
-  } catch (e1) {
-    console.error('Cellreview KV put 第 1 次失败（重试）:', (e1 && e1.message) || e1, `${Date.now() - t0}ms`);
-    await new Promise((r) => setTimeout(r, PUT_RETRY_DELAY_MS));
-    try {
-      await kv.put(key, value, opts);
-      return { attempts: 2, ms: Date.now() - t0 };
-    } catch (e2) {
-      e2.putMs = Date.now() - t0;
-      throw e2;
-    }
-  }
-}
-
 /** 票的 KV 键：带条目的按条目（不随 rev 变），否则按 rev＋格 */
 export function voteKey(v, voter) {
   return v.item ? `cr:i:${v.book}:${v.item}:${voter}` : `cr:${v.rev}:${v.book}:${v.a}:${voter}`;
@@ -238,10 +215,6 @@ export async function onRequestPost(context) {
     try { body = await context.request.json(); } catch { return json(headers, 400, { success: false, error: '请求体不是合法 JSON' }); }
     const v = validateReview(body);
     if (v.error) return json(headers, 400, { success: false, error: v.error });
-    const primary = inboxPrimary(context);
-    const kv = getKV(context);
-    if (!primary && !kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
-
     const limited = memRateLimit(context.request);
     if (!limited.ok) {
       return new Response(JSON.stringify({ success: false, error: '提交太频繁，请稍后再试' }), {
@@ -257,14 +230,8 @@ export async function onRequestPost(context) {
     // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。
     const iph = ip ? await ipHash(context, ip) : '';
     const record = { v: 1, ...rest, voter, ...(iph ? { iph } : {}), ts: Date.now() };
-    if (primary) {
-      // D1 是真源：不写 KV；写不成回 500，读者端会排队重试（同键同值幂等）
-      await writeInboxStrict(context, 'cellreview', key, record, record.ts);
-      return json(headers, 200, { success: true });
-    }
-    const put = await putTicket(kv, key, JSON.stringify(record), { expirationTtl: TTL_SECONDS });
-    if (put.attempts > 1) console.warn(`Cellreview KV put 重试后成功 ${put.ms}ms`);
-    await mirrorToInbox(context, 'cellreview', key, record, record.ts);
+    // D1 是真源：写不成回 500，读者端会排队重试（同键同值幂等）
+    await writeInboxStrict(context, 'cellreview', key, record, record.ts);
     return json(headers, 200, { success: true });
   } catch (e) {
     console.error('Cellreview POST error:', e);
@@ -293,29 +260,11 @@ export async function onRequestGet(context) {
     if (byItem && !book) return json(headers, 400, { success: false, error: '按条目读要 book' });
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1), LIST_MAX);
     const cursor = url.searchParams.get('cursor') || '';
-    // D1 为真源时：从 Worker 收件箱按键前缀读，cursor 就是 seq
-    if (inboxPrimary(context)) {
-      const p = byItem ? `cr:i:${book}:` : `cr:${rev}:${book ? `${book}:` : ''}`;
-      const page = await readInboxPage(context, { kind: 'cellreview', prefix: p, after: cursor ? parseInt(cursor, 10) || 0 : 0, limit });
-      const rows = (page.items || []).map((x) => x.value);
-      return json(headers, 200, { success: true, ...(byItem ? { book } : { rev }), items: rows, cursor: page.hasMore ? String(page.next) : '', hasMore: !!page.hasMore });
-    }
-    const kv = getKV(context);
-    if (!kv) return json(headers, 500, { success: false, error: '服务配置错误：KV 未绑定' });
-
-    // 只按 rev（可再加 book）前缀列，一页一页来，调用方带 cursor 翻页
-    const prefix = byItem ? `cr:i:${book}:` : `cr:${rev}:${book ? `${book}:` : ''}`;
-    const opts = { prefix, limit };
-    if (cursor) opts.cursor = cursor;
-    const r = await kv.list(opts);
-    const names = (r.keys || []).map((k) => k.key);
-    const items = [];
-    for (let i = 0; i < names.length; i += GET_BATCH) {
-      const vals = await Promise.all(names.slice(i, i + GET_BATCH).map((k) => kv.get(k, 'json').catch(() => null)));
-      for (const v of vals) if (v) items.push(v);
-    }
-    const done = !!r.complete || !r.cursor;
-    return json(headers, 200, { success: true, ...(byItem ? { book } : { rev }), items, cursor: done ? '' : r.cursor, hasMore: !done });
+    // 从 Worker 收件箱按键前缀读，cursor 就是 seq
+    const p = byItem ? `cr:i:${book}:` : `cr:${rev}:${book ? `${book}:` : ''}`;
+    const page = await readInboxPage(context, { kind: 'cellreview', prefix: p, after: cursor ? parseInt(cursor, 10) || 0 : 0, limit });
+    const rows = (page.items || []).map((x) => x.value);
+    return json(headers, 200, { success: true, ...(byItem ? { book } : { rev }), items: rows, cursor: page.hasMore ? String(page.next) : '', hasMore: !!page.hasMore });
   } catch (e) {
     console.error('Cellreview GET error:', e);
     return json(headers, 500, { success: false, error: '服务器错误' });

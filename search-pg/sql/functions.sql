@@ -160,3 +160,40 @@ BEGIN
   RETURN jsonb_build_object('hits', part, 'estimatedTotalHits', least(got, 1000));
 END $$;
 ALTER FUNCTION search_one(text,text,int,int,text[],text[],text[],bool,bool,bool,text,text) SET plan_cache_mode = force_custom_plan;
+
+-- 模糊补充（sheldon 11-23 定）：精确命中太少时，补出「差一两个字」的相近名字（错别字、漏字也能搜到）。
+-- 做法：把查询里的汉字去重成字集，候选＝书名含其中任一字、字数在查询字数 -1…+2 的行（走 title_tsv 的单字词元，GIN）；
+-- 相似度＝共有字数 / max(查询字数, 书名字数)，≥ 0.5 且不是精确命中（精确命中由 search_one 负责）才算；按相似度、完整度排。
+-- 只处理 2–12 个汉字的查询；其余返回空。由 search-api 在精确命中不足时单独调用，失败／超时不影响精确结果。
+CREATE OR REPLACE FUNCTION search_fuzzy(p_kind text, p_q text, p_limit int DEFAULT 20,
+  p_dynasty text[] DEFAULT NULL, p_class text[] DEFAULT NULL, p_loss text[] DEFAULT NULL,
+  p_has_text bool DEFAULT NULL, p_has_image bool DEFAULT NULL, p_has_collated bool DEFAULT NULL,
+  p_office text DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql STABLE AS $$
+DECLARE chars text[]; nq int; tq tsquery; exact tsquery := q2tsq(p_q); res jsonb;
+BEGIN
+  SELECT coalesce(array_agg(DISTINCT m[1]), '{}') INTO chars
+    FROM regexp_matches(p_q, '[㐀-鿿豈-﫿\U00020000-\U0003ffff]', 'g') m;
+  nq := cardinality(chars);
+  IF nq < 2 OR nq > 12 THEN RETURN jsonb_build_object('hits', '[]'::jsonb); END IF;
+  SELECT array_to_string(array_agg(quote_literal(c)), ' | ')::tsquery INTO tq FROM unnest(chars) c;
+  SELECT coalesce(jsonb_agg(hit_json(s.r, false) ORDER BY s.rn), '[]') INTO res FROM (
+    SELECT t.r, row_number() OVER (ORDER BY t.sim DESC, t.comp DESC, t.id) rn FROM (
+    SELECT d AS r, d.id, d.completeness AS comp,
+           (SELECT count(*) FROM unnest(chars) c WHERE strpos(d.title, c) > 0)::float
+             / greatest(nq, char_length(d.title)) AS sim
+    FROM search_doc d
+    WHERE d.kind = p_kind AND d.title_tsv @@ tq
+      AND d.title_chars BETWEEN nq - 1 AND nq + 2
+      AND (exact IS NULL OR NOT d.title_tsv @@ exact)
+      AND (p_dynasty IS NULL OR d.dynasty = ANY (p_dynasty))
+      AND (p_class IS NULL OR coalesce(d.classification, '') = ANY (p_class))
+      AND (p_loss IS NULL OR coalesce(d.loss_status, '') = ANY (p_loss))
+      AND (p_has_text IS NULL OR d.has_text = p_has_text) AND (p_has_image IS NULL OR d.has_image = p_has_image)
+      AND (p_has_collated IS NULL OR d.has_collated = p_has_collated)
+      AND (p_office IS NULL OR d.office_ids @> ARRAY[p_office])
+    ) t WHERE t.sim >= 0.5 ORDER BY t.sim DESC, t.comp DESC, t.id LIMIT p_limit
+  ) s;
+  RETURN jsonb_build_object('hits', res);
+END $$;
+ALTER FUNCTION search_fuzzy(text,text,int,text[],text[],text[],bool,bool,bool,text) SET plan_cache_mode = force_custom_plan;

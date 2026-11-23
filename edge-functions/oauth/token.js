@@ -23,14 +23,13 @@
 //   OAUTH_CODE_SECRET      验 code 签名，与 authorize.js 用同一把
 //   OAUTH_ID_TOKEN_SECRET  id_token 主密钥，与 AUTH_JWT_SECRET／OAUTH_CODE_SECRET 都分开；
 //                          不直接拿来签，按客户端派生（见下）
-//   AUTH_KV                与 auth/* 共用（记 jti、查成员表）
 //
 // FX3b（overview#196，L9）：不同客户端的 id_token 不再共用同一把密钥。每个客户端的签名密钥
 //   = hex(HMAC-SHA256(OAUTH_ID_TOKEN_SECRET, "kyg-oauth-id-token:" + client_id))
 // 客户端拿这串 64 位十六进制文本当 HS256 密钥验签（配置时算一次交给对方，例如
 //   printf '%s' "kyg-oauth-id-token:collate" | openssl dgst -sha256 -hmac "$OAUTH_ID_TOKEN_SECRET"
 // 取输出的十六进制部分）。这样 A 客户端手里的密钥伪造不了发给 B 的 id_token；aud 仍照旧填。
-import { useD1Kv, d1Kv } from '../api/feedback.js';
+import { d1Kv } from '../api/feedback.js';
 import { OAUTH_ISSUER } from '../api/hosts.js';
 
 function getEnvVar(context, name) {
@@ -42,7 +41,7 @@ function getEnvVar(context, name) {
 }
 const getCodeSecret = (c) => getEnvVar(c, 'OAUTH_CODE_SECRET');
 const getIdTokenSecret = (c) => getEnvVar(c, 'OAUTH_ID_TOKEN_SECRET');
-const getAuthKV = (c) => (useD1Kv(c) ? d1Kv(c) : getEnvVar(c, 'AUTH_KV'));
+const getAuthKV = (c) => d1Kv(c, 'AUTH_KV');
 function getOAuthClients(c) {
   const raw = getEnvVar(c, 'OAUTH_CLIENTS');
   if (!raw) return null;
@@ -169,7 +168,7 @@ export async function onRequestPost(context) {
   const idTokenSecret = getIdTokenSecret(context);
   const kv = getAuthKV(context);
   if (!clients || !codeSecret || !idTokenSecret || !kv) {
-    return errorResponse(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／OAUTH_CODE_SECRET／OAUTH_ID_TOKEN_SECRET／AUTH_KV）');
+    return errorResponse(503, 'temporarily_unavailable', '服务未配置（OAUTH_CLIENTS／OAUTH_CODE_SECRET／OAUTH_ID_TOKEN_SECRET）');
   }
 
   const body = await parseBody(request);

@@ -6,25 +6,11 @@
 
 const g = globalThis as unknown as Record<string, unknown>;
 
-const store = new Map<string, string>();
-const listCalls: Array<{ prefix?: string; limit?: number; cursor?: string }> = [];
-const kv = {
-    async get(k: string) {
-        const v = store.get(k);
-        return v ? JSON.parse(v) : null;
-    },
-    async put(k: string, v: string) {
-        store.set(k, v);
-    },
-    async list(opts: { prefix?: string; limit?: number; cursor?: string }) {
-        listCalls.push(opts);
-        const all = [...store.keys()].filter((k) => k.startsWith(opts.prefix || '')).sort();
-        const start = opts.cursor ? all.findIndex((k) => k > opts.cursor!) : 0;
-        const slice = start < 0 ? [] : all.slice(start, start + (opts.limit || 256));
-        const complete = start < 0 || start + slice.length >= all.length;
-        return { keys: slice.map((key) => ({ key })), complete, cursor: complete ? '' : slice[slice.length - 1] };
-    },
-};
+import { installFakeInbox } from '../__fixtures__/fakeInbox';
+
+const inbox = installFakeInbox(g);
+const store = inbox.store;
+const inboxGets = () => inbox.calls.filter((c) => c.method === 'GET').map((c) => new URL(c.url));
 
 const REV = 'vol01-r1';
 const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', rev: REV, aid: 'aid_abcdefgh1234', shown: '於' };
@@ -50,11 +36,11 @@ async function json(res: Response) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 beforeAll(async () => {
-    g.FEEDBACK_KV = kv;
     fn = await import('../../../../edge-functions/api/cellreview.js');
 });
-beforeEach(() => { fn.resetMemRateLimit(); store.clear(); listCalls.length = 0; g.FEEDBACK_ADMIN_TOKEN = 'right'; });
+beforeEach(() => { fn.resetMemRateLimit(); inbox.reset(); inbox.install(); g.FEEDBACK_ADMIN_TOKEN = 'right'; });
 afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
+afterAll(() => inbox.restore());
 
 describe('POST 校验', () => {
     it('choice=char 带单字：写入 cr:<rev>:<book>:<a>:<voter>，值不含 aid 与 IP', async () => {
@@ -71,7 +57,7 @@ describe('POST 校验', () => {
 
     it('章号存三位：vol01／1／001 都存 001，别的章名原样（人裁事件规范 §9 O-4）', async () => {
         for (const [vol, want] of [['vol01', '001'], ['1', '001'], ['001', '001'], ['VOL12', '012'], ['juan-a', 'juan-a']]) {
-            store.clear();
+            inbox.reset();
             const res = await fn.onRequestPost(post({ ...base, vol, choice: 'none' }));
             expect(res.status).toBe(200);
             expect(JSON.parse(store.get(crKeys()[0])!).vol).toBe(want);
@@ -113,13 +99,13 @@ describe('POST 校验', () => {
         expect(rec.char).toBeUndefined();
         expect(rec.pick_src).toBeUndefined();
         // 不带 alt／空 alt：照收，不存 alt 键
-        store.clear();
+        inbox.reset();
         for (const alt of [undefined, '', '   ']) {
             expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt }))).status).toBe(200);
             expect(JSON.parse(store.get(crKeys()[0])!).alt).toBeUndefined();
         }
         // 不是 figure 的档带 alt 忽略
-        store.clear();
+        inbox.reset();
         expect((await fn.onRequestPost(post({ ...base, choice: 'none', alt: 'x' }))).status).toBe(200);
         expect(JSON.parse(store.get(crKeys()[0])!).alt).toBeUndefined();
         expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt: 'x'.repeat(61) }))).status).toBe(400);
@@ -253,19 +239,19 @@ describe('GET 只开管理读', () => {
         expect(res.status).toBe(401);
     });
 
-    it('管理读按 rev 前缀导出，只列该 rev，且 list 带的是 cr:<rev>: 前缀（不全库扫）', async () => {
+    it('管理读按 rev 前缀导出，只列该 rev，且读 D1 带的是 cr:<rev>: 前缀（不全库扫）', async () => {
         const res = await fn.onRequestGet(get(`rev=${REV}`, ADMIN));
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
         const body = await json(res);
         expect(body.items.map((i: { a: string }) => i.a).sort()).toEqual(['12:3:7', '12:3:8']);
         expect(body.hasMore).toBe(false);
-        expect(listCalls.every((c) => c.prefix === `cr:${REV}:`)).toBe(true);
+        expect(inboxGets().every((u) => u.searchParams.get('prefix') === `cr:${REV}:`)).toBe(true);
     });
 
-    it('limit 超过 256 按 256 收（与 feedback.js 的 list 页大小一致）', async () => {
+    it('limit 超过 256 按 256 收', async () => {
         await fn.onRequestGet(get(`rev=${REV}&limit=500`, ADMIN));
-        expect(listCalls[listCalls.length - 1].limit).toBe(256);
+        expect(inboxGets().pop()!.searchParams.get('limit')).toBe('256');
     });
 
     it('缺 rev 400；limit 翻页靠 cursor', async () => {
@@ -300,7 +286,7 @@ describe('按条目记票（待审条目化）', () => {
         await fn.onRequestPost(post({ ...base, choice: 'none' }));
         const body = await json(await fn.onRequestGet(get('items=1&book=d59f2870u874', ADMIN)));
         expect(body.items.map((i: { item: string }) => i.item)).toEqual([ITEM]);
-        expect(listCalls[listCalls.length - 1].prefix).toBe('cr:i:d59f2870u874:');
+        expect(inboxGets().pop()!.searchParams.get('prefix')).toBe('cr:i:d59f2870u874:');
         expect((await fn.onRequestGet(get('items=1', ADMIN))).status).toBe(400);
     });
 });
@@ -320,40 +306,11 @@ describe('限速', () => {
         expect(noIp.status).toBe(200);
     });
 
-    it('提交只写存票一次 KV，限速计数不进 KV', async () => {
-        const puts: string[] = [];
-        const orig = kv.put;
-        kv.put = async (k: string, v: string, o?: unknown) => { puts.push(k); return orig(k, v, o as never); };
-        try {
-            await fn.onRequestPost(post({ ...base, choice: 'none' }));
-        } finally { kv.put = orig; }
-        expect(puts).toHaveLength(1);
-        expect(puts[0].startsWith('cr:')).toBe(true);
+    it('提交只写 D1 一次，限速计数不进 D1', async () => {
+        await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        expect(inbox.calls.filter((c) => c.method === 'POST')).toHaveLength(1);
+        expect(crKeys()).toHaveLength(1);
         expect([...store.keys()].filter((k) => k.startsWith('ratelimit:cr:'))).toHaveLength(0);
-    });
-
-    it('KV 写第一次超时、函数里重试一次成功：回 200，只存一票', async () => {
-        const orig = kv.put;
-        let n = 0;
-        kv.put = async (k: string, v: string, o?: unknown) => { if (++n === 1) throw new Error('KvStore Put failed: net_exception_timeout'); return orig.call(kv, k, v, o); };
-        try {
-            const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
-            expect(res.status).toBe(200);
-            expect(n).toBe(2);
-            expect(crKeys()).toHaveLength(1);
-        } finally { kv.put = orig; }
-    });
-
-    it('KV 写失败回 500 并带 detail', async () => {
-        const orig = kv.put;
-        kv.put = async () => { throw new Error('kv down'); };
-        try {
-            const res = await fn.onRequestPost(post({ ...base, choice: 'none' }));
-            expect(res.status).toBe(500);
-            const detail = (await json(res)).detail;
-            expect(detail).toContain('kv down');
-            expect(detail).toContain('已试 2 次');
-        } finally { kv.put = orig; }
     });
 });
 

@@ -9,8 +9,6 @@ const items = [
   { href: '/admin/invites', label: '邀请' },
   { href: '/admin/errors', label: '错误日志' },
   { href: '/admin/feedback', label: '反馈' },
-  { href: '/admin/servers', label: '服务器' },
-  { href: '/admin/traffic', label: '流量' },
 ];
 
 export default function AdminNav() {

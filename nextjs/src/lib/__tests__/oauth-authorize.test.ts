@@ -285,10 +285,4 @@ describe('缺配置', () => {
     const res = await fn.onRequestGet(ctx(authorizeUrl(), env));
     expect(res.status).toBe(503);
   });
-  it('AUTH_KV 未绑定 → 503（没法比对 tokenVersion 就不发 code）', async () => {
-    const env = await baseEnv();
-    delete (env as Record<string, unknown>).AUTH_KV;
-    const res = await fn.onRequestGet(ctx(authorizeUrl(), env, await sessionCookieFor('alice@example.com')));
-    expect(res.status).toBe(503);
-  });
 });
