@@ -109,9 +109,9 @@ export function checkSitemaps(plan, texts, site = STORED_SITE) {
 /**
  * 传。backend: { put(key, body, { contentType, cacheControl }), get(key) → Buffer|null,
  *   list(prefix) → [{ key, lastModified(毫秒时间戳) }], del(keys)（有删不掉的要抛错）}
- * 返回 { uploaded, bytes, pruned, warnings }；检查不过或传失败抛错。dryRun 只检查、不动 backend。
+ * 返回 { uploaded, skipped, bytes, pruned, warnings }；检查不过或传失败抛错。dryRun 只检查、不动 backend。
  */
-export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now(), meta = null }) {
+export async function publishSitemaps({ dir, prefix = '', backend, site = STORED_SITE, dryRun = false, log = () => {}, concurrency = 4, retryDelayMs = 2000, pruneMinAgeMs = PRUNE_MIN_AGE_MS, now = Date.now(), meta = null, skipSame = false }) {
     // 并发数非正：Array.from 不会起任何 worker，分片一个没传、索引却照传——先拒绝
     if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error(`concurrency 必须是正整数：${concurrency}`);
     if (meta !== null && (typeof meta !== 'object' || Array.isArray(meta))) throw new Error('meta 必须是对象');
@@ -130,13 +130,23 @@ export async function publishSitemaps({ dir, prefix = '', backend, site = STORED
 
     const putMeta = { contentType: CONTENT_TYPE, cacheControl: CACHE_CONTROL };
     // 分片并发传，全部成功后才传索引
+    // 增量：线上同名分片字节完全一样就不重传（文本改字不动条目集合时，绝大多数分片不变）。
+    // 读线上失败或不一样一律照传；索引永远传（它决定哪一版生效）。
     const queue = [...plan.shards];
+    let skipped = 0;
     const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
         for (let s = queue.shift(); s; s = queue.shift()) {
-            await withRetry(() => backend.put(sitemapKey(prefix, s.name), Buffer.from(texts[s.name], 'utf-8'), putMeta), `传 ${s.name}`, log, retryDelayMs);
+            const body = Buffer.from(texts[s.name], 'utf-8');
+            const key = sitemapKey(prefix, s.name);
+            if (skipSame) {
+                const live = await backend.get(key).catch(() => null);
+                if (live && Buffer.compare(live, body) === 0) { skipped++; continue; }
+            }
+            await withRetry(() => backend.put(key, body, putMeta), `传 ${s.name}`, log, retryDelayMs);
         }
     });
     await Promise.all(workers);
+    if (skipSame) log(`· 增量：${skipped}/${plan.shards.length} 个分片与线上一致，跳过上传`);
     const idxKey = sitemapKey(prefix, 'sitemap-index');
     await withRetry(() => backend.put(idxKey, Buffer.from(texts['sitemap-index'], 'utf-8'), putMeta), '传 sitemap-index', log, retryDelayMs);
 
@@ -169,7 +179,7 @@ export async function publishSitemaps({ dir, prefix = '', backend, site = STORED
         warnings.push(`清理旧分片失败（下次再试）：${e && e.message}`);
         log(`::warning::${warnings[warnings.length - 1]}`);
     }
-    return { uploaded: total + (meta ? 1 : 0), bytes, pruned, warnings };
+    return { uploaded: total - skipped + (meta ? 1 : 0), skipped, bytes, pruned, warnings };
 }
 
 async function withRetry(fn, what, log, delayMs, tries = 3) {
