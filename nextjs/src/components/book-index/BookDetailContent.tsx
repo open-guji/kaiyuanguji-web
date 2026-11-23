@@ -17,6 +17,7 @@ import {
 } from 'book-index-ui';
 import { useSource } from '@/components/common/SourceContext';
 import BidLink from './BidLink';
+import BookGaps from './BookGaps';
 import CitationBar from './CitationBar';
 import DigitalizationView from './DigitalizationView';
 import RailSearch from './RailSearch';
@@ -311,7 +312,10 @@ export default function BookDetailContent({ id, initialDetail }: BookDetailConte
                 /* 印影图资源根（GUJI-544）：与数据同域同前缀，staging 构建的 COS_BASE 带 /staging，自然落到 staging/asset/；本地模式无 COS_BASE 则不出图 */
                 assetBase={COS_BASE ? `${COS_BASE}/asset/` : undefined}
                 footerExtra={
-                    <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
+                    <>
+                        <CitationBar id={id} transport={transport} redirectedFrom={redirectedFrom} />
+                        <BookGaps id={id} transport={transport} />
+                    </>
                 }
                 /* 繁简切换在全站顶栏（9-30 反馈，overview#322）：页内顶部不再放繁简与 GitHub 图标；
                    数据来源链接在页脚右侧（组件库「数据与许可」）。book-index-ui 0.30.0 起 */
