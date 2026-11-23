@@ -14,9 +14,10 @@ function create() {
     basePath: '/api/ba',
     secret: process.env.BETTER_AUTH_SECRET,
     database: d1Http({
-      accountId: process.env.CF_ACCOUNT_ID || '',
-      databaseId: process.env.CF_D1_DATABASE_ID || '',
-      apiToken: process.env.CF_API_TOKEN || '',
+      // 认证单独一个 D1（guji-auth），令牌只授权这一个库，不用中心库的令牌
+      accountId: process.env.BA_CF_ACCOUNT_ID || '',
+      databaseId: process.env.BA_D1_DATABASE_ID || '',
+      apiToken: process.env.BA_D1_API_TOKEN || '',
     }) as never,
     session: { expiresIn: 60 * 60, updateAge: 60 * 60, cookieCache: { enabled: true, maxAge: 5 * 60 } },
     rateLimit: {
