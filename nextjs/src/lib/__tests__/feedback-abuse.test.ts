@@ -173,34 +173,14 @@ describe('取不到 eo.clientIp（FX3b，overview#196）', () => {
     });
 });
 
-describe('推送节流：5 分钟最多 1 条，其余合并', () => {
-    it('窗口内只推第一条；窗口过后下一条带上合并条数', async () => {
+describe('不再推送微信（11-23 用户定）', () => {
+    it('即使配了 HEALTH_NOTIFY_WEBHOOK，提交一条反馈也不对外发请求，反馈照存', async () => {
         env.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
-        const bodies: string[] = [];
-        (global as any).fetch = jest.fn(async (_u: string, init: RequestInit) => { bodies.push(String(init.body)); return new Response('{}'); });
-        const t0 = Date.now();
-        const spy = jest.spyOn(Date, 'now').mockReturnValue(t0);
-
-        await fn.onRequestPost(post({ type: 'bug', content: '第一条' }, '10.0.0.1')); await flush();
-        await fn.onRequestPost(post({ type: 'bug', content: '第二条' }, '10.0.0.2')); await flush();
-        spy.mockReturnValue(t0 + 4 * 60 * 1000);
-        await fn.onRequestPost(post({ type: 'bug', content: '第三条' }, '10.0.0.3')); await flush();
-        expect(bodies).toHaveLength(1);
-        expect(bodies[0]).toContain('第一条');
-        expect(bodies[0]).not.toContain('另有');
-
-        spy.mockReturnValue(t0 + 5 * 60 * 1000 + 1000);
-        await fn.onRequestPost(post({ type: 'suggestion', content: '第四条' }, '10.0.0.4')); await flush();
-        expect(bodies).toHaveLength(2);
-        expect(bodies[1]).toContain('第四条');
-        expect(bodies[1]).toContain('另有 2 条');
-
-        // 合并计数已清零：再过一个窗口推出去的不带「另有」
-        spy.mockReturnValue(t0 + 11 * 60 * 1000);
-        await fn.onRequestPost(post({ type: 'bug', content: '第五条' }, '10.0.0.5')); await flush();
-        expect(bodies).toHaveLength(3);
-        expect(bodies[2]).not.toContain('另有');
-        // 反馈本身一条不少
-        expect(fbRecords()).toHaveLength(5);
+        const f = jest.fn(async () => new Response('{}'));
+        (global as any).fetch = f;
+        const res = await fn.onRequestPost(post({ type: 'bug', content: '不再推送' }, '10.0.0.1')); await flush();
+        expect(res.status).toBe(200);
+        expect(f).not.toHaveBeenCalled();
+        expect(fbRecords()).toHaveLength(1);
     });
 });
