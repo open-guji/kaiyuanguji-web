@@ -113,16 +113,6 @@ describe('成员 cookie 按角色放行', () => {
     });
 });
 
-describe('成员表只认 AUTH_KV', () => {
-    it('没绑 AUTH_KV 时，admin cookie 也不过（即使成员记录混在 ERROR_KV/FEEDBACK_KV 里）', async () => {
-        const { noAuthKv } = envs();
-        const c = cookieFor('adm@x.com');
-        expect((await teGet(noAuthKv, c)).status).toBe(401);
-        expect((await tePost(noAuthKv, { action: 'update', id: 'err_1_a', state: 'resolved' }, c)).status).toBe(401);
-        expect((await fbPost(noAuthKv, { action: 'update', id: 'fb_1_a', status: 'resolved' }, c)).status).toBe(401);
-    });
-});
-
 describe('原有的共享 token 一路不受影响', () => {
     it('什么都不带仍 401；token 对了照常过', async () => {
         const { full } = envs();

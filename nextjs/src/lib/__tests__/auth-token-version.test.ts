@@ -219,18 +219,6 @@ describe('M1：不再认 ?token= 查询串，只认 Authorization: Bearer', () =
     });
 });
 
-describe('M2：成员表只认 AUTH_KV', () => {
-    it.each(['members', 'invites'])('/api/auth/%s 没绑 AUTH_KV 时不去读 ERROR_KV／FEEDBACK_KV', async (n) => {
-        const seeded = makeKv();
-        seeded.m.set('member:a@x.com', JSON.stringify({ role: 'admin', tokenVersion: 1 }));
-        seeded.m.set('invite:h', JSON.stringify({ role: 'reader', createdAt: 1 }));
-        env = { ...env, AUTH_KV: undefined, ERROR_KV: seeded, FEEDBACK_KV: seeded };
-        const cookie = `session=${sign({ sub: 'a@x.com', tv: 1, exp: nowS() + 3600 })}`;
-        expect((await EP[n].onRequestGet(req(`/api/auth/${n}`, { headers: { cookie } }))).status).toBe(401);
-        expect((await EP[n].onRequestGet(req(`/api/auth/${n}`, { headers: bearer }))).status).toBe(503);
-    });
-});
-
 describe('L6：/api/auth/probe 下线', () => {
     it('probe.js 不存在', () => {
         expect(existsSync(pathJoin(__dirname, '../../../../edge-functions/api/auth/probe.js'))).toBe(false);

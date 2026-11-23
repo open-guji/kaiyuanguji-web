@@ -5,7 +5,7 @@
 //         同来源对同一格（同一专名）再提会覆盖前一条。
 //   GET   **只开管理读**（管理 token 或成员 cookie），按前缀导出；公开读一律 401。
 //
-// 沿用 cellreview.js / feedback.js：CORS、FEEDBACK_KV、管理员 token／成员 cookie、按 IP 限速、voter 规则。
+// 沿用 cellreview.js / feedback.js：CORS、管理员 token／成员 cookie、按 IP 限速、voter 规则。
 // 网站不改正文：记录由下游落成 GUJI-541 对照表的 A 类行（`change=A｜cell_id｜old_char｜new_char`），合入走 PR。
 // 服务端拿不到 char.json，所以不判 old_char 是否与该格原字一致（下游导入时核）。
 //
