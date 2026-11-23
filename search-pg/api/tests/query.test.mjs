@@ -75,3 +75,25 @@ test('shapeResult：人物卡片 title → primary_name', () => {
     const r = shapeResult(call, { hits: [{ id: 'e1', type: 'entity', title: '李白', dynasty: '唐' }] }, 1);
     assert.deepEqual(r.hits[0], { id: 'e1', type: 'entity', primary_name: '李白', dynasty: '唐' });
 });
+
+import { wantsFuzzy, fuzzyArgs, mergeFuzzy, FUZZY_BELOW } from '../lib/query.mjs';
+
+test('模糊补充：只在第一页、无排序、2–12 汉字、精确命中不足时触发', () => {
+    const few = { hits: [{ id: 'a' }] };
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: '論語' }), few), true);
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: '論' }), few), false, '单字不补');
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: 'abc' }), few), false, '无汉字不补');
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: '論語', offset: 20 }), few), false, '翻页不补');
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: '論語', sort: 'era_rank:asc' }), few), false, '指定排序不补');
+    const many = { hits: Array.from({ length: FUZZY_BELOW }, (_, i) => ({ id: String(i) })) };
+    assert.equal(wantsFuzzy(toCall({ indexUid: 'works', q: '論語' }), many), false, '精确够多不补');
+});
+
+test('模糊补充：参数与合并（去重、不超 limit、总数不减）', () => {
+    const c = toCall({ indexUid: 'works', q: '論吾', limit: 3, filter: [{ field: 'dynasty', op: 'eq', values: ['唐'] }] });
+    assert.deepEqual(fuzzyArgs(c), ['work', '論吾', 3, ['唐'], null, null, null, null, null, null]);
+    const m = mergeFuzzy(c, { hits: [{ id: 'a' }], estimatedTotalHits: 1 }, { hits: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }] });
+    assert.deepEqual(m.hits.map((h) => h.id), ['a', 'b', 'c']);
+    assert.equal(m.estimatedTotalHits, 3);
+    assert.deepEqual(mergeFuzzy(c, { hits: [], estimatedTotalHits: 0 }, null).hits, []);
+});

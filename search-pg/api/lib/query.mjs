@@ -164,3 +164,32 @@ export function shapeResult(call, row, processingTimeMs) {
         processingTimeMs,
     };
 }
+
+// ---- 模糊补充（sheldon 11-23 定）----
+/** 精确命中少于这个数才补模糊结果 */
+export const FUZZY_BELOW = 5;
+
+/** 要不要补：只在第一页、没指定排序、查询 2–12 个汉字、精确命中不足时补 */
+export function wantsFuzzy(call, exactRow) {
+    if (call.empty || call.offset !== 0 || call.args[11]) return false;
+    const han = new Set(Array.from(call.q).filter((c) => /[㐀-鿿豈-﫿\u{20000}-\u{3FFFF}]/u.test(c)));
+    if (han.size < 2 || han.size > 12) return false;
+    return (exactRow.hits || []).length < FUZZY_BELOW;
+}
+
+/** search_fuzzy 的参数：[kind, q, limit, dynasty, class, loss, has_text, has_image, has_collated, office] */
+export function fuzzyArgs(call) {
+    const a = call.args;
+    return [a[0], a[1], call.limit, a[4], a[5], a[6], a[7], a[8], a[9], a[10]];
+}
+
+/** 精确结果后面接上模糊结果（去重、总数不超过 limit） */
+export function mergeFuzzy(call, exactRow, fuzzyRow) {
+    const hits = [...(exactRow.hits || [])];
+    const seen = new Set(hits.map((h) => h.id));
+    for (const h of (fuzzyRow && fuzzyRow.hits) || []) {
+        if (hits.length >= call.limit) break;
+        if (!seen.has(h.id)) { seen.add(h.id); hits.push(h); }
+    }
+    return { ...exactRow, hits, estimatedTotalHits: Math.max(exactRow.estimatedTotalHits || 0, hits.length) };
+}
