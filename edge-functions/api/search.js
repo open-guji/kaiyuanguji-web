@@ -83,7 +83,8 @@ const FILTER_FIELDS = {
   works: { type: 's', dynasty: 's', classification: 's', loss_status: 's', has_image: 'b', has_text: 'b', has_collated: 'b' },
   books: { type: 's', dynasty: 's', has_image: 'b', has_text: 'b' },
   collections: { type: 's' },
-  entities: { type: 's', dynasty: 's' },
+  // office_ids／office_place_ids：人物任官筛选（indexer #764），值是实体 id
+  entities: { type: 's', dynasty: 's', office_ids: 's', office_place_ids: 's' },
 };
 // sort（搜索页 v4「按年代／按书名」）：对外只认这四个键，翻译成索引里的可排序字段；
 // collections 没有这两个字段，带 sort 一律 400。索引重建前没有这些可排序字段，Meili 会 400，
