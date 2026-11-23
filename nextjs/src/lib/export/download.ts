@@ -7,6 +7,8 @@
  * 文件开头写 YAML front matter（guji-format v0.4）：书名、册、格式、字形、各层版本号等。
  */
 import { getJson } from '@/lib/text-file';
+import { gapsFileOf, insertGapNotes } from '@/lib/book-gaps';
+import { adaptGaps } from 'book-index-ui';
 import { buildExport as buildExportWith, type ExportRequest, type ExportResult } from 'book-text-util';
 
 export { availableFormats, FORMAT_LABEL, GLYPH_LABEL } from 'book-text-util';
@@ -19,5 +21,13 @@ export { saveText } from 'book-text-util/browser';
  */
 export async function buildExport(req: ExportRequest, storage: object): Promise<ExportResult> {
     const converters = req.glyph === 'original' ? undefined : await import('@/lib/server/simplify');
-    return buildExportWith(req, { getTextFile: (id, key, file) => getJson(storage, id, key, file) }, converters);
+    const result = await buildExportWith(req, { getTextFile: (id, key, file) => getJson(storage, id, key, file) }, converters);
+    // 缺页：本册有 gaps_file 就把注记行（现成的 note）插进页标记之间，与阅读页同一位置；取不到当没有
+    const gapsFile = gapsFileOf(req.chapter);
+    if (!gapsFile) return result;
+    const gaps = adaptGaps(await getJson(storage, req.id, req.versionKey, gapsFile).catch(() => null));
+    if (!gaps.length) return result;
+    // 字形：与正文同一口径转换注记（原书字形不转）
+    const shown = converters ? gaps.map(g => ({ ...g, note: req.glyph === 'simplified' ? converters.toSimplified(converters.normalizeVariants(g.note)) : converters.normalizeVariants(g.note) })) : gaps;
+    return { ...result, text: insertGapNotes(result.text, shown) };
 }
