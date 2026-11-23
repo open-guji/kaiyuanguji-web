@@ -10,7 +10,7 @@
 import http from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import pg from 'pg';
-import { toCall, shapeResult, BadRequest, MAX_QUERIES } from './lib/query.mjs';
+import { toCall, shapeResult, BadRequest, MAX_QUERIES, wantsFuzzy, fuzzyArgs, mergeFuzzy } from './lib/query.mjs';
 
 const KEY = process.env.SEARCH_API_KEY || '';
 if (!KEY) { console.error('需要设置 SEARCH_API_KEY'); process.exit(1); }
@@ -29,6 +29,28 @@ const pool = new pg.Pool({
 });
 pool.on('error', (e) => console.error('[pg pool]', e.message));
 
+const FUZZY_ON = process.env.SEARCH_FUZZY !== '0';
+const FUZZY_TIMEOUT_MS = Number(process.env.FUZZY_TIMEOUT_MS) || 600;
+const FUZZY_SQL = 'SELECT search_fuzzy($1,$2,$3,$4::text[],$5::text[],$6::text[],$7::bool,$8::bool,$9::bool,$10::text) AS r';
+
+/** 模糊补充：独立事务、更短的超时；任何失败（含函数还没建）都只当没有，不影响精确结果 */
+async function runFuzzy(call) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(`SET LOCAL statement_timeout = ${FUZZY_TIMEOUT_MS}`);
+        const { rows } = await client.query(FUZZY_SQL, fuzzyArgs(call));
+        await client.query('COMMIT');
+        return rows[0].r;
+    } catch (e) {
+        try { await client.query('ROLLBACK'); } catch { /* 连接坏了由池回收 */ }
+        console.error('[fuzzy]', e && e.message);
+        return null;
+    } finally {
+        client.release();
+    }
+}
+
 let waiting = 0;
 const SQL = 'SELECT search_one($1,$2,$3,$4,$5::text[],$6::text[],$7::text[],$8::bool,$9::bool,$10::bool,$11::text,$12::text) AS r';
 
@@ -39,7 +61,9 @@ async function runCall(call) {
     const t0 = performance.now();
     try {
         const { rows } = await pool.query(SQL, call.args);
-        return shapeResult(call, rows[0].r, Math.round(performance.now() - t0));
+        let row = rows[0].r;
+        if (FUZZY_ON && wantsFuzzy(call, row)) row = mergeFuzzy(call, row, await runFuzzy(call));
+        return shapeResult(call, row, Math.round(performance.now() - t0));
     } finally {
         waiting--;
     }

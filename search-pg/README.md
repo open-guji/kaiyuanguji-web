@@ -22,6 +22,10 @@ cd api && npm ci --omit=dev && node --test tests/*.test.mjs
 ```
 `functions.sql` 里的 `search_one` 设了 `plan_cache_mode = force_custom_plan`（泛型计划对热门词会选错）。
 
+## 模糊补充（11-23，sheldon 定）
+精确命中不足 5 条时（第一页、无排序、查询 2–12 个汉字），search-api 再调一次 `search_fuzzy`，补出「差一两个字」的相近名字（错别字、漏字也能搜到，如「論吾」→「論語」）；相似度＝共有字数／max(查询字数, 书名字数) ≥ 0.5，不含精确命中，不超 limit。单独事务、600ms 超时（`FUZZY_TIMEOUT_MS`），失败或函数没建都只当没有；`SEARCH_FUZZY=0` 可关。
+上线：`psql -d guji -v schema=search -f sql/functions.sql`（只有 CREATE OR REPLACE，不动数据；重建时自然带上），再重启 search-api。
+
 ## 已知
 - 单字热门词（如「書」）叠加 `sort=era/title` 约 0.7 秒（要对全部命中排序），在 2 秒超时内；常见组合（词＋筛选、无排序）p95 < 60ms。
 - 简介高亮由 search-api 在 JS 里生成（80 字窗口，`\u0001…\u0002` 标记），与 Meili 的 crop 行为近似、不逐字相同。
