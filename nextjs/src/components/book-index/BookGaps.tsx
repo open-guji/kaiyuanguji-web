@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useConvert, type IndexStorage } from 'book-index-ui';
 import { collectBookGaps, type ChapterGaps } from '@/lib/book-gaps';
 import { readerPath } from '@/lib/reader-route';
+import { parseItemId } from '@/lib/item-id';
 
 /**
  * 书介绍页的「缺页」：这本书（主版本）里各册／章声明了缺页的，逐条列出缺在哪一页之后、缺了什么。
@@ -12,11 +13,14 @@ import { readerPath } from '@/lib/reader-route';
 export default function BookGaps({ id, transport }: { id: string; transport: IndexStorage }) {
     const [rows, setRows] = useState<ChapterGaps[]>([]);
     const { convert } = useConvert();
+    // 只有版本（Book）自己带文本；丛编、人物、作品页不取，免得多发请求（丛编页条目请求数有上限，detail-pages.spec）
+    const isBook = parseItemId(id)?.type === 'book';
     useEffect(() => {
+        if (!isBook) { setRows([]); return; }
         let alive = true;
         collectBookGaps(transport as never, id).then(r => { if (alive) setRows(r); });
         return () => { alive = false; };
-    }, [id, transport]);
+    }, [id, transport, isBook]);
     if (rows.length === 0) return null;
     return (
         <details className="mt-2 text-sm" data-testid="book-gaps" open>
