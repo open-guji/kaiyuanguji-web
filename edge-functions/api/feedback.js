@@ -18,8 +18,6 @@
 //   - 环境变量  FEEDBACK_MODE       "kv"（默认）| "github"
 //   - 环境变量  GITHUB_TOKEN        FEEDBACK_MODE=github 时转发用
 //   - 环境变量  FEEDBACK_ADMIN_TOKEN  管理侧鉴权。**没配就一律拒绝（503）**
-//   - 环境变量  HEALTH_NOTIFY_WEBHOOK／HEALTH_NOTIFY_FORMAT（19 卡已有）
-//                        新反馈推送用；未配置时静默跳过，不影响提交（G-23 第二批 §一·8）
 //
 // 公开列表的缓存与超时（overview#304，监控发现 GET 要 4～16 秒、偶发 500）：
 //   - 慢的根因：每次公开读都要「列全部 key → 取值」两轮 KV 往返，EdgeOne KV 一轮就要 1.5～3.5 秒
@@ -66,106 +64,6 @@ function generateId() {
 // status=pending|resolved——这里只是放开新值，不改旧值的含义，向后兼容。
 const ALLOWED_TYPES = ['bug', 'resource', 'suggestion', 'contact', 'other'];
 const ALLOWED_STATUSES = ['pending', 'in_progress', 'resolved', 'wontfix', 'duplicate'];
-const TYPE_LABEL_ZH = {
-  bug: '错误反馈', resource: '资源建议', suggestion: '功能建议', contact: '想参与/联系我们', other: '其他',
-};
-
-// --- G-23 第二批 §一·8：新反馈推送 ---
-
-function getNotifyWebhook(context) {
-  if (context && context.env && context.env.HEALTH_NOTIFY_WEBHOOK) return context.env.HEALTH_NOTIFY_WEBHOOK;
-  return (typeof HEALTH_NOTIFY_WEBHOOK !== 'undefined') ? HEALTH_NOTIFY_WEBHOOK : null;
-}
-function getNotifyFormat(context) {
-  const v = (context && context.env && context.env.HEALTH_NOTIFY_FORMAT)
-    || (typeof HEALTH_NOTIFY_FORMAT !== 'undefined' ? HEALTH_NOTIFY_FORMAT : undefined);
-  return ['feishu', 'dingtalk', 'slack', 'pushplus'].includes(v) ? v : 'generic';
-}
-
-// PushPlus（推到个人微信）：HEALTH_NOTIFY_WEBHOOK 填 token 本身，或含 `token=` 的 URL；
-// 发往固定端点，token 放 body。其余格式 HEALTH_NOTIFY_WEBHOOK 是 webhook 地址本身。
-const PUSHPLUS_ENDPOINT = 'https://www.pushplus.plus/send';
-function pushplusToken(webhook) {
-  const m = /[?&]token=([^&]+)/.exec(webhook);
-  return m ? decodeURIComponent(m[1]) : webhook.trim();
-}
-/** 返回 { url, payload }：推送的目标地址与请求体。 */
-function buildNotifyRequest(format, webhook, title, text) {
-  if (format === 'pushplus') {
-    return {
-      url: PUSHPLUS_ENDPOINT,
-      payload: { token: pushplusToken(webhook), title, content: text, template: 'txt' },
-    };
-  }
-  return { url: webhook, payload: buildNotifyPayload(format, text) };
-}
-function buildNotifyPayload(format, text) {
-  if (format === 'feishu') return { msg_type: 'text', content: { text } };
-  if (format === 'dingtalk') return { msgtype: 'text', text: { content: text } };
-  return { text }; // slack 与 generic 同构（{"text":...}）
-}
-
-// M3（SEC overview#134）：推送节流。公开 POST 谁都能刷，每条都推会把微信刷爆。
-// 每 NOTIFY_MIN_INTERVAL_SECONDS 最多推 1 条；窗口内的新反馈只在 KV 里记个数，
-// 下一条真正推出去的消息里带上「另有 N 条已合并」。没有定时器，窗口过后若再无新反馈，
-// 合并的条数不会单独补推——/admin/feedback 里照样看得到，推送只是提醒。
-const NOTIFY_MIN_INTERVAL_SECONDS = 5 * 60;
-const NOTIFY_STATE_KEY = 'notify:feedback'; // 不以 fb_ 开头：列反馈只扫 fb_ 前缀
-/**
- * 能推返回此前合并的条数（≥0）；在节流窗口内返回 null。
- * KV 没绑或读写出错时照推（返回 0）——宁可多推一条，不因节流状态坏了就一条都不推。
- */
-async function claimNotifySlot(kv) {
-  if (!kv) return 0;
-  const nowS = Math.floor(Date.now() / 1000);
-  try {
-    const st = (await kv.get(NOTIFY_STATE_KEY, 'json')) || {};
-    const last = Number(st.lastSentAt) || 0;
-    const pending = Number(st.pending) || 0;
-    if (last && nowS - last < NOTIFY_MIN_INTERVAL_SECONDS) {
-      await kv.put(NOTIFY_STATE_KEY, JSON.stringify({ lastSentAt: last, pending: pending + 1 }));
-      return null;
-    }
-    await kv.put(NOTIFY_STATE_KEY, JSON.stringify({ lastSentAt: nowS, pending: 0 }));
-    return pending;
-  } catch (e) {
-    console.error('反馈推送节流状态读写失败（照推）:', e);
-    return 0;
-  }
-}
-
-/**
- * 新反馈推送到 19 卡已有的 HEALTH_NOTIFY_WEBHOOK。**失败不影响提交结果**——
- * 调用方（onRequestPost）用 waitUntil／fire-and-forget 触发，本函数内部吞掉所有异常。
- * 蜜罐（第三批，本卡不做）：一旦按 3.3 实现，蜜罐命中的请求根本不会走到 kvPost 成功，
- * 本函数也就不会被调用——不需要额外代码。
- */
-async function notifyNewFeedback(context, record) {
-  if (record.test === true) return; // 测试数据不推
-  const webhook = getNotifyWebhook(context);
-  if (!webhook) return; // 未配置：静默跳过，不算失败
-  const merged = await claimNotifySlot(getKV(context));
-  if (merged === null) return; // 节流窗口内：只记一笔，并进下一条推送
-  const label = TYPE_LABEL_ZH[record.type] || record.type;
-  const preview = (record.content || '').slice(0, 40);
-  const extra = merged > 0 ? `（另有 ${merged} 条新反馈已合并，未单独推送）` : '';
-  const text = `新反馈：${label} ${preview}${extra} → /admin/feedback`;
-  const { url, payload } = buildNotifyRequest(getNotifyFormat(context), webhook, `新反馈：${label}`, text);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-  } catch (e) {
-    console.error('反馈 webhook 推送失败（不影响提交结果）:', e);
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 // 存储模式：环境变量 FEEDBACK_MODE = "kv" | "github"，默认 "kv"
 // EdgeOne Pages 的环境变量/绑定既可能挂在 context.env 上，也可能被注入为全局标识符——
@@ -998,14 +896,6 @@ export async function onRequestPost(context) {
         });
       }
       result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items);
-      // G-23 第二批 §一·8：新反馈推送，不阻塞提交响应，失败不影响提交结果
-      const notifyPromise = notifyNewFeedback(context, { type, content, test });
-      if (context && typeof context.waitUntil === 'function') {
-        context.waitUntil(notifyPromise);
-      } else {
-        // EdgeOne 不支持 waitUntil 时退化为 fire-and-forget（notifyNewFeedback 内部已吞异常）
-        notifyPromise.catch(() => {});
-      }
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
