@@ -7,8 +7,9 @@ export function baEnabled(): boolean {
 export function registrationOpen(): boolean {
   return process.env.BA_REGISTRATION_OPEN === '1';
 }
+// 站点域名只从环境变量来（仓里不写死本站域名，见 ops/tests/hosts.test.mjs）；BETTER_AUTH_URL 必配。
 export function siteOrigin(): string {
-  return (process.env.BETTER_AUTH_URL || process.env.SITE_ORIGIN || 'https://www.openguji.com').replace(/\/+$/, '');
+  return (process.env.BETTER_AUTH_URL || process.env.SITE_ORIGIN || '').replace(/\/+$/, '');
 }
 export function inboxBaseToken() {
   return {
