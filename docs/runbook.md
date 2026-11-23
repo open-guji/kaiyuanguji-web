@@ -159,7 +159,7 @@ done
 | 回包 error | 原因 | 处理 |
 |---|---|---|
 | `服务未配置 AUTH_JWT_SECRET` / `AUTH_ADMIN_TOKEN` | 该站 Pages 项目没配这个环境变量 | 两站都是全栈：**配了还要重新构建**——`makers build` 把变量烘进函数，运行时不再读控制台（E1）。用 Actions → **EdgeOne env sync**（`list` → `dry-run` → `set`/`sync`）写变量，然后重发该站 |
-| `KV 未绑定` | 项目的 KV 命名空间没绑定为全局变量 | 控制台绑定（没有写接口） |
+| `KV 未绑定` | 旧路径：项目的 KV 命名空间没绑定为全局变量；11-22 起读者意见／登录／错误已走中心库 D1（`useD1Kv`），仍报这条说明 D1 开关或 `WEB_INBOX_*` 变量没配上 | 先查 D1 相关变量（EdgeOne env sync `list`）；确属旧路径才去控制台绑 KV（没有写接口） |
 | `/api/track-error` 读接口 503 | `ERROR_VIEW_TOKEN` 没配 | 同第一行；这是故意 fail-closed 的 |
 
 全栈站构建时会用 `--require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN` 检查，缺了构建直接红，所以全栈站 503 多半是新加的变量没重发。

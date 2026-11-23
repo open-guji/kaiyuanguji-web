@@ -4,13 +4,12 @@
 
 本仓库是开源古籍项目官网的源码。Next.js 16（App Router）全栈部署在腾讯云 EdgeOne Pages：静态页 + `/item/<id>` 云函数服务端渲染 + 边缘函数；
 索引数据不在站点里，由 CI 打包后走独立 CDN `data.openguji.com`（新加坡 COS；旧域名 data.kaiyuanguji.com 回源同一个桶，继续可用）；
-搜索走 Meilisearch（L1，上海）+ 浏览器内 MiniSearch 分片（L2 兜底）。
+搜索走上海搜索机（L1：默认 Meilisearch，Postgres 后端 `search-pg/` 已就绪，经 COS 上 `search/switch.json` 切 shadow／pg，用 workflow `search-switch`）+ 浏览器内 MiniSearch 分片（L2 兜底）。
 所有域名（站点、数据、搜索 API、测试站……）只写在 [`config/hosts.json`](config/hosts.json)，改完跑 `node ops/sync-hosts.mjs`；不要在代码里写死域名（见 [docs/data-domain-migration.md](docs/data-domain-migration.md)）。
 
 **想弄清整体是怎么设计的**：[docs/architecture.html](docs/architecture.html)（自包含网页，下载后用浏览器打开；页面、数据、缓存、搜索、发布回滚、测试监控、SEO 都在里面）。出问题先看 [docs/runbook.md](docs/runbook.md)。
 
-**新接手的人先读交接手册**：[开源古籍网站交接手册](https://claude.ai/code/artifact/0b4a9456-eaf9-4f4c-9e2d-72bba9f4e5c8)
-（源文件在 overview 仓 `项目进展/古籍索引网站/2026-09-网站交接手册.html`）。本 README 只给最短路径。
+**新接手的人**：先读本 README 的最短路径，再读 [docs/开发流程.md](docs/开发流程.md)、[docs/ui-boundary.md](docs/ui-boundary.md)。overview 仓已淘汰，旧「交接手册」只作历史参考；项目分工与长期经验在 ai-team 仓 `domain/网站与运维/`。
 
 ## 仓库结构
 
@@ -20,7 +19,8 @@
 | `e2e/` | **打线上站点**的验收测试（Playwright），部署后 CI 自动跑；本地 `TARGET=http://localhost:3000` |
 | `perf/` | 性能基准与旧 smoke（Playwright + CDP） |
 | `indexer/` | 跑在上海服务器上的 Meilisearch 索引器（`full-reindex.mjs`、`reindex-limited.sh`），**不在 CI 里跑** |
-| `edge-functions/` | EdgeOne Pages 边缘函数：`api/feedback.js`（用户反馈）、`api/track-error.js`（前端错误自收） |
+| `edge-functions/` | EdgeOne Pages 边缘函数：用户反馈、精校票、改字意见、讨论、待审单、登录、搜索代理等（`api/*`、`oauth/*`）。读者意见类数据 11-22 起存中心库 D1（经 Worker `/v1/web/inbox`），KV 兼容层待退役 |
+| `search-pg/` | 搜索的 Postgres 后端（search-api、入库程序、SQL），见其 README |
 | `ops/` | 全栈构建包装、清缓存、回滚计划、数据巡检、服务器救援等脚本 |
 | `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml` |
 
@@ -81,7 +81,7 @@ push 到 main 验过后自动晋升（`auto-promote-code`）只发代码（`prom
   - **book-index**：手动。`gh workflow run data.yml -f flow=index`。
   - 两个仓一起按指定 ref 发（回滚用）：`flow=both`，ref 不是 main 时勾 `allow_ref_override`。
 - **发布后验证**：`curl -s "https://data.openguji.com/latest.json?cb=$RANDOM$RANDOM"` 看 commit（必须带随机串，EdgeOne 会给旧副本）；线上是哪一版看 `/api/version`。
-- 完整流程与 Secrets 清单见 overview 仓「项目进展/古籍索引网站/网站交接手册.html」。
+- 完整流程见 [docs/runbook.md](docs/runbook.md)；Secrets 统一在私有仓 guji-dev-secret（说明见 ai-team 仓 `通用/` 与 Ops）。
 
 ## 数据源模式
 
