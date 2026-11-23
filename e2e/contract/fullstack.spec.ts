@@ -658,6 +658,8 @@ test.describe('新架构：sitemap', () => {
 test.describe('新架构：API', () => {
     test('/api/feedback GET 可读（只读，不提交）', async ({ request }) => {
         const res = await request.get(`${TARGET}/api/feedback`);
+        // 11-23 起读者意见只存中心库 D1；测试站按用户决定不配 D1（避免测试数据混进正式库），读接口回 503 是预期，正式站晋升后再验
+        test.skip(res.status() === 503 && new URL(TARGET).hostname.startsWith('staging.'), `${SITE.host} 没配 D1 收件箱，/api/feedback 回 503 属预期，晋升后在正式站验`);
         expect(res.status()).toBe(200);
         const body = (await res.json()) as { success?: boolean; items?: unknown };
         expect(body.success).toBe(true);
