@@ -1,6 +1,6 @@
 {
   "name": "kaiyuanguji-web",
-  "version": "0.2.30",
+  "version": "0.2.31",
   "private": true,
   "scripts": {
     "sync-css": "bash scripts/sync-webtex-css.sh",
