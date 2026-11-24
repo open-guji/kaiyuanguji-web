@@ -38,7 +38,7 @@ on:
         required: false
         default: ''
       secret_keys:
-        description: set 模式：用 GitHub secret 的值覆盖（目前支持 ERROR_VIEW_TOKEN、OAUTH_ID_TOKEN_SECRET、SEARCH_PG_KEY）
+        description: set 模式：用 GitHub secret 的值覆盖（目前支持 ERROR_VIEW_TOKEN、OAUTH_ID_TOKEN_SECRET、SEARCH_PG_KEY、BETTER_AUTH_SECRET、BA_AUTH_TOKEN）
         required: false
         default: ''
 
@@ -64,4 +64,7 @@ jobs:
           SECRET_ERROR_VIEW_TOKEN: ${{ secrets.ERROR_VIEW_TOKEN }}
           SECRET_OAUTH_ID_TOKEN_SECRET: ${{ secrets.OAUTH_ID_TOKEN_SECRET }}
           SECRET_SEARCH_PG_KEY: ${{ secrets.SEARCH_PG_KEY }}
+          # 测试站登录（Better Auth）：BETTER_AUTH_SECRET 取测试站专用的 BETTER_AUTH_SECRET_STAGING（别和正式站共用），BA_AUTH_TOKEN 取同名 secret
+          SECRET_BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET_STAGING }}
+          SECRET_BA_AUTH_TOKEN: ${{ secrets.BA_AUTH_TOKEN }}
         run: python3 ops/edgeone-env-sync.py
