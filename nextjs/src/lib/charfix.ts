@@ -5,6 +5,7 @@
  */
 import { getAid } from '@/lib/proofing';
 import { getSiteT, type SiteT } from '@/i18n/translate';
+import { isU, uField, uPairFields } from '@/lib/cell-u';
 
 export const CHARFIX_API = '/api/charfix';
 
@@ -34,6 +35,9 @@ export interface CharFixEntity {
     end: string;
     /** entity.json 的 text；缺了为空串（那条不出「专名有误」入口：接口要 text 回找） */
     text: string;
+    /** 起止格的字格永久编号（entity v0.4 的 u_start／u_end）；老文件没有 */
+    uStart?: number;
+    uEnd?: number;
 }
 
 /** 本章的改字上下文：阅读器取对读数据时顺手记下 */
@@ -50,6 +54,8 @@ export interface CharFixCtx {
     textVersion: string;
     /** 格位 → char.json 里的原字 */
     chars: Map<string, string>;
+    /** 格位 → 字格永久编号 u（guji-char v0.6）；char.json 没有 u 时为空或不给，提交就不带 u */
+    u?: Map<string, number>;
     /** 本章专名的 anchor 区间，用来给改字附 entity_ids、出「专名有误」入口 */
     entities: CharFixEntity[];
     /** 专名层版本（章条目的 entity_version，缺则 entity.json 的 version）；空串＝本章没有可用的专名层，不出「专名有误」 */
@@ -80,7 +86,10 @@ export function collectEntities(raw: unknown): CharFixEntity[] {
         const o = asObj(e);
         const a = asObj(o?.anchor);
         if (typeof o?.id === 'string' && typeof a?.start === 'string' && typeof a?.end === 'string' && CELL_RE.test(a.start) && CELL_RE.test(a.end)) {
-            out.push({ id: o.id, start: a.start, end: a.end, text: typeof o.text === 'string' ? o.text.trim() : '' });
+            out.push({
+                id: o.id, start: a.start, end: a.end, text: typeof o.text === 'string' ? o.text.trim() : '',
+                ...(isU(o.u_start) && isU(o.u_end) ? { uStart: o.u_start, uEnd: o.u_end } : {}),
+            });
         }
     }
     return out;
@@ -168,6 +177,7 @@ export async function submitCharFix(ctx: CharFixCtx, d: CharFixDraft, fetchImpl:
         volume: ctx.volume,
         text_version: ctx.textVersion,
         cell_id: d.cell,
+        ...uField(ctx.u?.get(d.cell)),
         ...(oldChar ? { old_char: oldChar } : {}),
         ...(d.figure ? { figure: true, new_char: '□', ...(d.alt ? { alt: d.alt } : {}) } : { new_char: d.newChar }),
         ...(d.basis ? { basis: d.basis } : {}),
@@ -186,6 +196,8 @@ export async function submitEntityFix(ctx: CharFixCtx, d: { entity: CharFixEntit
         entity_id: d.entity.id,
         entity_version: ctx.entityVersion,
         anchor: { start: d.entity.start, end: d.entity.end },
+        // 专名层自己带 u 就用它；没有就按本章 char 的 u 现查
+        ...uPairFields(d.entity.uStart ?? ctx.u?.get(d.entity.start), d.entity.uEnd ?? ctx.u?.get(d.entity.end)),
         text: d.entity.text,
         note: d.note,
         aid: getAid(),
@@ -240,6 +252,7 @@ export async function submitSpanFix(ctx: CharFixCtx, d: SpanFixDraft, fetchImpl:
         text_version: ctx.textVersion,
         start: d.span.start,
         end: d.span.end,
+        ...uPairFields(ctx.u?.get(d.span.start), ctx.u?.get(d.span.end)),
         sub: d.sub,
         ...(d.span.text ? { old_text: d.span.text } : {}),
         ...(d.newText ? { new_text: d.newText } : {}),

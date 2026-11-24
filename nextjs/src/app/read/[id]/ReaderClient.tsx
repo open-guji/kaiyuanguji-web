@@ -26,6 +26,7 @@ import { downloadPlugin } from './plugins/download-plugin';
 import { versionChipPlugin } from './plugins/version-chip-plugin';
 import { fontPlugin } from './plugins/font-plugin';
 import { reportPlugin } from './plugins/report-plugin';
+import { cellLinkPlugin } from './plugins/cell-link-plugin';
 import { fulltextPlugin } from './plugins/fulltext-plugin';
 import { siteVersionPlugin } from './plugins/site-version-plugin';
 import type { ReaderPlugin } from 'book-index-ui';
@@ -298,11 +299,13 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
         getT: () => live.current.t,
     }), []);
     const proofPlg = useMemo(() => proofPlugin(proofStore), [proofStore]);
+    // 深链 ?u=<字格永久编号>（兼容 ?cell=）：查到本章格位就当锚点滚过去；查不到交给 #格位 兜底
+    const cellLinkPlg = useMemo(() => cellLinkPlugin({ onResolve: (a) => setUrlAnchor(a) }), []);
     const dataVersion = seed?.dataVersion ?? undefined;
     const downloadPlg = useMemo(() => downloadPlugin({ bookId: id, bookTitle, edition, dataVersion }), [id, bookTitle, edition, dataVersion]);
     const plugins = useMemo<ReaderPlugin[]>(
-        () => [downloadPlg, versionChipPlugin, fontPlugin, reportPlg, fulltextPlugin, siteVersionPlugin, ...(proof.on !== null ? [proofPlg] : []), ...(comparePlugin ? [comparePlugin] : [])],
-        [downloadPlg, reportPlg, proofPlg, comparePlugin, proof.on !== null], // eslint-disable-line react-hooks/exhaustive-deps
+        () => [downloadPlg, versionChipPlugin, fontPlugin, reportPlg, cellLinkPlg, fulltextPlugin, siteVersionPlugin, ...(proof.on !== null ? [proofPlg] : []), ...(comparePlugin ? [comparePlugin] : [])],
+        [downloadPlg, reportPlg, cellLinkPlg, proofPlg, comparePlugin, proof.on !== null], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     return (

@@ -236,6 +236,17 @@ describe('ReaderClient：历史记录', () => {
         expect(last.reader!.anchor).toBe('3:3:2');
     });
 
+    it('深链 ?cell=（兼容旧写法）：插件解析成锚点交给阅读器，地址的查询串不被冲掉', async () => {
+        window.history.replaceState(null, '', `/read/${BOOK}/002?cell=39:1:1`);
+        pathname = `/read/${BOOK}/002`;
+        render(<ReaderClient id={BOOK} initial={{ chapter: '002' }} bookTitle="t" />);
+        await act(async () => { await Promise.resolve(); });
+        const plg = (last.reader!.plugins as { id: string; onChapter?: (c: unknown) => unknown }[]).find((p) => p.id === 'kyg:cell-link')!;
+        await act(async () => { await plg.onChapter!({ entryId: BOOK, versionKey: 'default', chapterKey: '002', chapter: { file: '002' }, viewport: 'wide', transport: {} }); });
+        expect(last.reader!.anchor).toBe('39:1:1');
+        expect(window.location.search).toBe('?cell=39:1:1');
+    });
+
     it('anchorFromHash：只认格位', () => {
         expect(anchorFromHash('#39:4:18b')).toBe('39:4:18b');
         expect(anchorFromHash('#3:1:-1')).toBe('3:1:-1');
@@ -310,7 +321,7 @@ describe('ReaderClient：历史记录', () => {
             expect(last.reader!.textFileBase).toBe('/data/items');
             expect(last.reader!.hideSupersededVersions).toBe(true);
             expect((last.reader!.plugins as { id: string }[]).map((p) => p.id)).toEqual(
-                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:fulltext', 'kyg:site-version'],
+                ['kyg:download', 'kyg:version-chip', 'kyg:chapter-font', 'kyg:report', 'kyg:cell-link', 'kyg:fulltext', 'kyg:site-version'],
             );
         });
 

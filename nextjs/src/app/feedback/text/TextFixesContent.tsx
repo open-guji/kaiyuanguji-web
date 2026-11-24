@@ -5,6 +5,7 @@ import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader'
 import { useSource } from '@/components/common/SourceContext';
 import { getTransport } from '@/lib/transport';
 import { readerPath } from '@/lib/reader-route';
+import { cellHref } from '@/lib/cell-u';
 import { useEffect, useMemo, useState } from 'react';
 import {
     EMPTY_THREAD, NAME_MAX, REPLY_MAX, groupFixes, isFixBook, isFixVol, loadFixes, parsePublicFixes, parsePublicThreads, submitThread,
@@ -99,7 +100,7 @@ function GroupRow({ t, g, book, vol, th, fetchImpl }: { t: SiteT; g: FixGroup; b
         <li className="og-fx-row" data-testid="fix-group">
             <div className="og-fx-head">
                 <span className="og-fx-kind">{label}</span>
-                <a className="og-fx-where" href={`/read/${book}/${vol}#${g.at}`}>
+                <a className="og-fx-where" href={cellHref(book, vol, { a: g.at, u: g.u, ...(g.u && g.ue ? { uEnd: g.ue } : {}) })}>
                     {where(t, g.at)}{g.end && g.end !== g.at ? ` ${where(t, g.end, 'charfix.list.toEnd')}` : ''}
                 </a>
             </div>

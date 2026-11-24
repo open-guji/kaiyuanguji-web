@@ -8,6 +8,7 @@
  *   - 选中的文字 → 拼在正文开头，形如「【原文】……」，与读者写的话空一行隔开。
  */
 import { parseItemId, type ItemType } from './item-id';
+import { isU } from './cell-u';
 import { getSiteT, type SiteMessageKey, type SiteT } from '@/i18n/translate';
 
 /** 不传 t 时用简体（与服务端首帧、单测一致）；组件里传 useSiteT() 的结果，跟随繁简偏好 */
@@ -59,6 +60,9 @@ export interface FeedbackContext {
     quote?: string;
     /** 阅读页当前位置锚点（如 `rd-e-3`）：提交时拼在 pageUrl 的 # 后面 */
     anchor?: string;
+    /** 阅读页选字报错：选区首格的格位（`页:列:格`）与字格永久编号 u（guji-char v0.6）；有才带 */
+    cell?: string;
+    u?: number;
 }
 
 const TYPE_LABEL_KEY: Record<ItemType, SiteMessageKey> = {
@@ -117,6 +121,8 @@ export interface FeedbackBody {
     resourceId: string;
     subtype?: FeedbackSubtype;
     images?: string[];
+    cell?: string;
+    u?: number;
 }
 
 /** 锚点只认阅读器条目锚点 `rd-e-N`，其余丢掉；换掉地址里原有的 # 部分 */
@@ -136,6 +142,8 @@ export function buildFeedbackBody({ type, text, contact, context, pageUrl, subty
     if (c) body.contact = c;
     if (subtype) body.subtype = subtype;
     if (images?.length) body.images = images.slice(0, IMAGE_MAX_COUNT);
+    if (context?.cell && /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/.test(context.cell)) body.cell = context.cell;
+    if (isU(context?.u)) body.u = context!.u;
     return body;
 }
 

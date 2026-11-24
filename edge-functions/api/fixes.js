@@ -45,6 +45,8 @@ export function toPublicFix(r) {
   if (r.kind === 'char') Object.assign(o, { tv: r.text_version, old: r.old_char || undefined, new: r.new_char, note: clean(r.basis), fig: r.figure ? 1 : undefined, alt: r.figure ? clean(r.alt) : undefined });
   else if (r.kind === 'span') Object.assign(o, { tv: r.text_version, end: r.end, sub: r.sub, old: r.old_text || undefined, new: r.new_text || undefined, note: clean(r.note) });
   else Object.assign(o, { end: r.anchor && r.anchor.end, ev: r.entity_version, eid: r.entity_id, old: r.text, note: clean(r.note) });
+  // 字格永久编号（guji-char v0.6）：改字 u；一段、专名 u＝首格、ue＝末格。老记录没有就不出
+  Object.assign(o, r.kind === 'char' ? { u: r.u } : { u: r.u_start, ue: r.u_end });
   for (const k of Object.keys(o)) if (o[k] === undefined || o[k] === '') delete o[k];
   return o;
 }
