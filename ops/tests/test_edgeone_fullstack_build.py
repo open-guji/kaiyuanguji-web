@@ -127,6 +127,16 @@ class ScanBundle(unittest.TestCase):
         self.assertEqual(len(probs), 1)
         self.assertIn("OAUTH_CLIENTS", probs[0])
 
+    def test_public_origin_url_not_scanned(self):
+        # 本站地址、Worker 网关这类公开地址出现在页面里不算泄露；带路径／账号的、名字不是 *_URL 的照查
+        self.pv.update({"BETTER_AUTH_URL": "https://staging.example.org", "BA_AUTH_URL": "https://gw.example.org/",
+                        "HOOK_URL": "https://hooks.example.org/T0/secret-path", "SITE_NAME": "https://staging.example.org"})
+        write(self.root, "edge-functions/index.js", edge_index(self.pv))
+        write(self.root, "cloud-functions/ssr-node/app/page.html",
+              '<link rel="canonical" href="https://staging.example.org/x"> https://gw.example.org/ https://hooks.example.org/T0/secret-path')
+        probs = self.scan()
+        self.assertEqual(sorted(p.split("（")[0] for p in probs), ["项目变量 HOOK_URL", "项目变量 SITE_NAME"])
+
     def test_short_values_not_scanned(self):
         write(self.root, "assets/a.txt", "1 1 1")
         self.assertEqual(self.scan(), [])
