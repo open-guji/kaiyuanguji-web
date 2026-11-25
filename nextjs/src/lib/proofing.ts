@@ -14,6 +14,7 @@ import { adaptCharCord } from 'book-index-ui';
 import { parseProof, type ProofCandidate } from '@/lib/proof';
 import { getAid } from '@/lib/aid';
 import { DATA_ORIGIN } from '@/lib/hosts';
+import { isU, uField } from '@/lib/cell-u';
 
 export type Box = [number, number, number, number];
 
@@ -66,6 +67,8 @@ export interface PendingExtras {
     /** 待审条目 id（`pi_` + 12 位十六进制）与版本（待审条目化，sheldon 11-10）：带了就按条目记票，换单不丢票 */
     item?: string;
     itemVer?: number;
+    /** 这格的字格永久编号（guji-char v0.6；待审单 T2 起带）；有就随票提交 */
+    u?: number;
 }
 
 export interface PendingCell extends PendingExtras {
@@ -146,6 +149,7 @@ export function parseExtras(raw: unknown): PendingExtras {
         out.item = it.id;
         if (Number.isInteger(it.ver) && (it.ver as number) > 0) out.itemVer = it.ver as number;
     }
+    if (isU(it.u)) out.u = it.u;
     if (str(it.cls)) out.cls = str(it.cls);
     if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
     if (Array.isArray(it.lib_top)) {
@@ -873,6 +877,8 @@ export interface ReviewDraft {
     /** 待审条目 id 与版本（单上有就带；端点按条目记票） */
     item?: string;
     ver?: number;
+    /** 字格永久编号（单上有就带；键不变，只进值） */
+    u?: number;
     choice: ReviewChoice;
     char?: string;
     /** choice=figure 时的图形说明（可空；空时导出写「图形符号」） */
@@ -890,8 +896,8 @@ export interface ReviewDraft {
 
 /** 提交一条意见；失败返回错误文案，成功返回 null。不抛 */
 /** 单上这格的条目字段 → 提交字段（没有条目就空） */
-export function itemFields(cell: { item?: string; itemVer?: number }): { item?: string; ver?: number } {
-    return cell.item ? { item: cell.item, ...(cell.itemVer ? { ver: cell.itemVer } : {}) } : {};
+export function itemFields(cell: { item?: string; itemVer?: number; u?: number }): { item?: string; ver?: number; u?: number } {
+    return { ...(cell.item ? { item: cell.item, ...(cell.itemVer ? { ver: cell.itemVer } : {}) } : {}), ...uField(cell.u) };
 }
 
 export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: typeof fetch = fetch, retryDelayMs = 1500): Promise<string | null> {

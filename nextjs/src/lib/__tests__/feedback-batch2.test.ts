@@ -136,86 +136,15 @@ describe('updatedBy', () => {
     });
 });
 
-describe('新反馈推送（G-23 第二批 §一·8）', () => {
-    function mockFetch(impl: (url: string, init: RequestInit) => Promise<Response> | Response) {
+describe('不再推送微信（11-23 用户定）', () => {
+    it('配了 HEALTH_NOTIFY_WEBHOOK 也不推送，提交仍 200', async () => {
+        g.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global as any).fetch = jest.fn(impl);
-    }
-
-    it('webhook 未配置：不推送，提交仍 200', async () => {
-        mockFetch(() => new Response('{}', { status: 200 }));
-        const req = post({ type: 'bug', content: '没配置 webhook 时' });
-        const res = await fn.onRequestPost(req);
-        await req.waitUntil(Promise.resolve());
-        expect(res.status).toBe(200);
-        expect((global as unknown as { fetch: jest.Mock }).fetch).not.toHaveBeenCalled();
-    });
-
-    it('test=true：不推送，提交仍 200', async () => {
-        g.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
-        mockFetch(() => new Response('{}', { status: 200 }));
-        const req = post({ type: 'bug', content: '测试数据', test: true });
+        (global as any).fetch = jest.fn(async () => new Response('{}', { status: 200 }));
+        const req = post({ type: 'bug', content: '不再推送' });
         const res = await fn.onRequestPost(req);
         await new Promise((r) => setTimeout(r, 0));
         expect(res.status).toBe(200);
-        expect((global as unknown as { fetch: jest.Mock }).fetch).not.toHaveBeenCalled();
-    });
-
-    it('webhook 已配置且非测试数据：推送一次，内容含类型与前 40 字', async () => {
-        g.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
-        let sentBody = '';
-        mockFetch((_url, init) => {
-            sentBody = String(init.body);
-            return new Response('{}', { status: 200 });
-        });
-        const req = post({ type: 'bug', content: '首页搜索点不动了，试了三次都一样' });
-        const res = await fn.onRequestPost(req);
-        await new Promise((r) => setTimeout(r, 0));
-        expect(res.status).toBe(200);
-        expect((global as unknown as { fetch: jest.Mock }).fetch).toHaveBeenCalledTimes(1);
-        expect(sentBody).toContain('错误反馈');
-        expect(sentBody).toContain('/admin/feedback');
-    });
-
-    it.each([
-        ['裸 token', 'tok_abc123'],
-        ['含 token= 的 URL', 'https://www.pushplus.plus/send?token=tok_abc123'],
-    ])('pushplus（%s）：发往固定端点，token 放 body，带标题', async (_label, value) => {
-        g.HEALTH_NOTIFY_WEBHOOK = value;
-        g.HEALTH_NOTIFY_FORMAT = 'pushplus';
-        let sentUrl = '';
-        let sent: Record<string, unknown> = {};
-        mockFetch((url, init) => {
-            sentUrl = String(url);
-            sent = JSON.parse(String(init.body));
-            return new Response('{"code":200}', { status: 200 });
-        });
-        const res = await fn.onRequestPost(post({ type: 'suggestion', content: '希望加上按朝代筛选' }));
-        await new Promise((r) => setTimeout(r, 0));
-        expect(res.status).toBe(200);
-        expect(sentUrl).toBe('https://www.pushplus.plus/send');
-        expect(sent.token).toBe('tok_abc123');
-        expect(sent.title).toBe('新反馈：功能建议');
-        expect(String(sent.content)).toContain('希望加上按朝代筛选');
-        expect(sent.template).toBe('txt');
-    });
-
-    it('webhook 超时/网络错误：不影响提交返回 200', async () => {
-        g.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
-        mockFetch(() => Promise.reject(new Error('network timeout')));
-        const req = post({ type: 'bug', content: '推送会超时' });
-        const res = await fn.onRequestPost(req);
-        await new Promise((r) => setTimeout(r, 0));
-        expect(res.status).toBe(200);
-        expect((await json(res)).success).toBe(true);
-    });
-
-    it('非法提交（校验不通过）：从不触发推送——等价于蜜罐/丢弃场景（记录未落库就不会通知）', async () => {
-        g.HEALTH_NOTIFY_WEBHOOK = 'https://hook.example/notify';
-        mockFetch(() => new Response('{}', { status: 200 }));
-        const res = await fn.onRequestPost(post({ type: 'not-a-type', content: '会被 400 挡住' }));
-        await new Promise((r) => setTimeout(r, 0));
-        expect(res.status).toBe(400);
         expect((global as unknown as { fetch: jest.Mock }).fetch).not.toHaveBeenCalled();
     });
 });

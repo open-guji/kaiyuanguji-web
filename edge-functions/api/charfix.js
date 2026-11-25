@@ -15,11 +15,13 @@
 //   一段  `cs:<book>:<volume>:<text_version>:<start>-<end>:<sub>:<voter>`（start／end 是选区首末字的格位，同一格时相等）
 //   书在最前，导出按 `cf:<book>:`（可再接 volume、text_version）前缀列，不全库 list。
 // voter＝sha256(aid|ip) 前 16 位，与精校同一规则；值只存 voter，不存 aid、不存 IP。
+// 字格永久编号（guji-char v0.6，可选）：改字带 `u`，一段与专名带 `u_start`／`u_end`（两个一起给）。
+// 双写期键仍按格位，u 只进值；char.json 没有 u 的老文本不带，照收。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
 } from './feedback.js';
-import { isSingleChar, checkRateLimit } from './cellreview.js';
+import { isSingleChar, checkRateLimit, optU, optUPair } from './cellreview.js';
 
 const BASIS_MAX = 500;
 const NOTE_MAX = 500;
@@ -90,6 +92,8 @@ export function validateFix(body) {
     const newChar = figure ? FIG_BOX : body.new_char;
     if (typeof tv !== 'string' || !RE_VERSION.test(tv)) return { error: 'text_version 无效' };
     if (typeof cell !== 'string' || !RE_CELL.test(cell)) return { error: 'cell_id 无效' };
+    const uv = optU(body.u);
+    if (uv.error) return { error: uv.error, field: 'u' };
     if (!isNewChar(newChar)) return { error: 'new_char 须为单个字或 {{组字式}}' };
     const alt = figure ? optText(body.alt, ALT_MAX, 'alt') : { value: '' };
     if (alt.error) return { error: alt.error };
@@ -111,7 +115,7 @@ export function validateFix(body) {
     }
     return {
       value: {
-        kind, book_id: book, volume, text_version: tv, cell_id: cell, old_char: old, new_char: newChar,
+        kind, book_id: book, volume, text_version: tv, cell_id: cell, ...(uv.value ? { u: uv.value } : {}), old_char: old, new_char: newChar,
         ...(figure ? { figure: true, ...(alt.value ? { alt: alt.value } : {}) } : {}),
         basis: basis.value, entity_ids: entityIds, aid: body.aid,
       },
@@ -125,6 +129,8 @@ export function validateFix(body) {
     if (!checkAnchorCell(start)) return { error: 'start 不是合法格位（如 4:3:8a）', field: 'start' };
     if (!checkAnchorCell(end)) return { error: 'end 不是合法格位（如 4:3:8a）', field: 'end' };
     if (!SPAN_SUBS.includes(sub)) return { error: 'sub 无效', field: 'sub' };
+    const up = optUPair(body.u_start, body.u_end);
+    if (up.error) return { error: up.error, field: 'u_start' };
     const oldText = optText(body.old_text, SPAN_TEXT_MAX, 'old_text');
     if (oldText.error) return { error: oldText.error, field: 'old_text' };
     const newText = optText(body.new_text, SPAN_TEXT_MAX, 'new_text');
@@ -135,7 +141,7 @@ export function validateFix(body) {
     if (newText.value && newText.value === oldText.value) return { error: '建议改法与原文相同', field: 'new_text' };
     return {
       value: {
-        kind, book_id: book, volume, text_version: tv, start, end, sub,
+        kind, book_id: book, volume, text_version: tv, start, end, ...(up.value || {}), sub,
         old_text: oldText.value, new_text: newText.value, note: note.value, aid: body.aid,
       },
     };
@@ -155,6 +161,8 @@ export function validateFix(body) {
     if (missing(anchor[k])) return { error: `缺 anchor.${k}`, field: `anchor.${k}` };
     if (!checkAnchorCell(anchor[k])) return { error: `anchor.${k} 不是合法格位（如 4:3:8a）`, field: `anchor.${k}` };
   }
+  const eup = optUPair(body.u_start, body.u_end);
+  if (eup.error) return { error: eup.error, field: 'u_start' };
   if (missing(ev)) return { error: '缺 entity_version', field: 'entity_version' };
   if (typeof ev !== 'string' || !RE_VERSION.test(ev)) return { error: 'entity_version 无效', field: 'entity_version' };
   if (typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > TEXT_MAX) return { error: 'text 无效' };
@@ -170,7 +178,7 @@ export function validateFix(body) {
   return {
     value: {
       kind, book_id: book, volume, chapter, entity_id: eid, entity_version: ev,
-      anchor: { start: anchor.start, end: anchor.end }, text: body.text.trim(), note: note.value,
+      anchor: { start: anchor.start, end: anchor.end }, ...(eup.value || {}), text: body.text.trim(), note: note.value,
       ...(target ? { target } : {}), aid: body.aid,
     },
   };

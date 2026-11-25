@@ -25,12 +25,16 @@
 //   不带字（带了也丢掉：图形没有字）；可带 alt（图形说明，≤ ALT_MAX 字，可空，空时导出写「图形符号」）。只用于不是字的图形，认不出的字选 unsure。
 // unrec（char v0.5 unk，2026-11-13）：「认不出的字」——图上是个字，但认不出、Unicode 也没有（如全唐文 007:77:9:15 左王右旦），导出记成无法识别字，阅读页暂显示「？」。
 //   同 figure 不带字；可带 unk（部件描述，≤ ALT_MAX 字，可空，空时导出写「无法识别」）。
+// u（可选，guji-char v0.6）：这格的字格永久编号，单上有就带；键不变，u 只进值（见 optU）。
 // 后几档也能带一个字（用户 2026-10-21）：切分错了／小注切错了也先把字给上，格子先过、切分另修；
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
   getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
+  optU, optUPair, U_MAX,
 } from './feedback.js';
+
+export { optU, optUPair, U_MAX };
 
 export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figure', 'unrec', 'damaged'];
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
@@ -57,6 +61,8 @@ const RE_AID = /^[A-Za-z0-9_-]{8,64}$/;
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
 const VER_MAX = 1_000_000;
 
+// 字格永久编号 u 的校验（optU／optUPair）放在 feedback.js，见那边说明。
+
 // 一个人校一页要点几十格，比反馈的 10 条／10 分钟宽得多；仍是按 IP 的固定窗口
 const RATE_LIMIT_MAX = 120;
 const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
@@ -77,6 +83,8 @@ export function validateReview(body) {
   if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book 无效' };
   if (typeof vol !== 'string' || !RE_VOL.test(vol)) return { error: 'vol 无效' };
   if (typeof a !== 'string' || !RE_CELL.test(a)) return { error: 'a（格位坐标）无效' };
+  const uv = optU(body.u);
+  if (uv.error) return { error: uv.error };
   if (typeof rev !== 'string' || !RE_REV.test(rev)) return { error: 'rev 必填且须为合法版本号' };
   if (typeof choice !== 'string' || !CHOICES.includes(choice)) return { error: 'choice 无效' };
   if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
@@ -140,7 +148,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), a, ...(uv.value ? { u: uv.value } : {}), rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
