@@ -2,8 +2,8 @@
 // MAIL_PROVIDER=tencent（默认）｜resend｜log。没配密钥时只记日志不发（测试站联调用）。
 import { createHash, createHmac } from 'node:crypto';
 
-const SUBJECT = '开放古籍 登录链接';
-const bodyText = (url: string) => `点击下面的链接登录开放古籍（10 分钟内有效，只能用一次）：\n\n${url}\n\n不是你本人操作请忽略这封邮件。`;
+const SUBJECT = '开源古籍 登录链接';
+const bodyText = (url: string) => `点击下面的链接登录开源古籍（10 分钟内有效，只能用一次）：\n\n${url}\n\n不是你本人操作请忽略这封邮件。`;
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 const hmac = (key: Buffer | string, s: string) => createHmac('sha256', key).update(s).digest();
