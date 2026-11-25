@@ -34,17 +34,18 @@ async function sendTencent(to: string, url: string) {
   const secretId = process.env.TENCENT_SECRET_ID;
   const secretKey = process.env.TENCENT_SECRET_KEY;
   const from = process.env.MAIL_FROM; // 必须是控制台里已验证发信域名下的地址，格式「别名 <地址>」，别名不能含冒号
-  const templateId = Number(process.env.TENCENT_SES_TEMPLATE_ID); // 腾讯云邮件推送只能用模板发信（Simple 已废弃）；模板正文里用 https://域名/l/{{t}}
+  const templateId = Number(process.env.TENCENT_SES_TEMPLATE_ID); // 腾讯云邮件推送只能用模板发信（Simple 已废弃）；模板正文里用 https://域名/{{url}}
   if (!secretId || !secretKey || !from || !Number.isInteger(templateId) || templateId <= 0) { console.log('[ba] 腾讯云邮件推送密钥、MAIL_FROM 或 TENCENT_SES_TEMPLATE_ID 未配，链接不发送'); return; }
-  // 腾讯模板审核要求链接「保留确定域名」，变量不能是整条网址：只传 token，模板里写 https://域名/l/{{t}}，由 /l/<token> 跳回验证地址
-  const t = new URL(url).searchParams.get('token');
-  if (!t || !/^[A-Za-z0-9_-]{16,128}$/.test(t)) throw new Error('mail tencent: 链接里没有合法 token');
+  // 腾讯模板审核要求链接「保留确定域名」，变量不能是整条网址：模板写 https://域名/{{url}}，变量只放网址后面的路径与参数（不带开头的斜杠）
+  const u = new URL(url);
+  const rest = u.pathname.replace(/^\/+/, '') + u.search;
+  if (!rest.startsWith('api/ba/magic-link/verify?')) throw new Error('mail tencent: 链接不是登录验证地址');
   const host = 'ses.tencentcloudapi.com';
   const payload = JSON.stringify({
     FromEmailAddress: from,
     Destination: [to],
     Subject: SUBJECT,
-    Template: { TemplateID: templateId, TemplateData: JSON.stringify({ t }) },
+    Template: { TemplateID: templateId, TemplateData: JSON.stringify({ url: rest }) },
     TriggerType: 1, // 触发类（验证码／登录链接这类即时邮件）
   });
   const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-guangzhou', payload, timestamp: Math.floor(Date.now() / 1000) });
