@@ -705,6 +705,15 @@ describe('合审（跨册）与目录', () => {
         expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003 不载
     });
 
+    it('合审：前面的册全是已回应过的，就往后补载，没回应的排在前面', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: 'r1', n: 250 }, '002': { rev: 'r2', n: 5 } } });
+        const many = (n: number) => Array.from({ length: n }, (_, i) => ({ a: `1:1:${i + 1}`, c: '己' }));
+        localStorage.setItem('kyg-cr-done:r1', JSON.stringify(Object.fromEntries(many(250).map(c => [c.a, { choice: 'ok' }]))));
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => v === '001' ? volOk('r1', many(250)) : volOk('r2', many(5)));
+        render(<ProofingClient book="b9" vol="_all" />);
+        await waitFor(() => expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']));
+    });
+
     it('合审：提交带本格所在册的 vol 和 rev、原格号；已回应按册各存一份（与单册页共用）', async () => {
         setup();
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
