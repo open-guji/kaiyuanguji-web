@@ -26,7 +26,7 @@ describe('腾讯云只能用模板发信', () => {
     (global as any).fetch = jest.fn(async (_u: string, init: any) => { seen.push(JSON.parse(init.body)); return { ok: true, status: 200, json: async () => ({ Response: {} }) }; });
     const { sendLoginMail } = await import('../ba-mail.ssr');
     await sendLoginMail('x@y.z', 'https://s/api/ba/magic-link/verify?token=abcdefghijklmnopqrstuvwxyz012345&callbackURL=%2F');
-    expect(seen[0].Template).toEqual({ TemplateID: 123, TemplateData: '{"t":"abcdefghijklmnopqrstuvwxyz012345"}' });
+    expect(seen[0].Template).toEqual({ TemplateID: 123, TemplateData: '{"url":"api/ba/magic-link/verify?token=abcdefghijklmnopqrstuvwxyz012345&callbackURL=%2F"}' });
     expect(seen[0].Simple).toBeUndefined();
     expect(seen[0].Destination).toEqual(['x@y.z']);
   });
