@@ -33,16 +33,18 @@ export function tc3Headers(o: { secretId: string; secretKey: string; service: st
 async function sendTencent(to: string, url: string) {
   const secretId = process.env.TENCENT_SECRET_ID;
   const secretKey = process.env.TENCENT_SECRET_KEY;
-  const from = process.env.MAIL_FROM; // 必须是控制台里已验证发信域名下的地址，如 "开放古籍 <login@mail.xxx>"
-  if (!secretId || !secretKey || !from) { console.log('[ba] 腾讯云邮件推送密钥或 MAIL_FROM 未配，链接不发送'); return; }
+  const from = process.env.MAIL_FROM; // 必须是控制台里已验证发信域名下的地址，格式「别名 <地址>」，别名不能含冒号
+  const templateId = Number(process.env.TENCENT_SES_TEMPLATE_ID); // 腾讯云邮件推送只能用模板发信（Simple 已废弃）；模板正文里用 {{url}}
+  if (!secretId || !secretKey || !from || !Number.isInteger(templateId) || templateId <= 0) { console.log('[ba] 腾讯云邮件推送密钥、MAIL_FROM 或 TENCENT_SES_TEMPLATE_ID 未配，链接不发送'); return; }
   const host = 'ses.tencentcloudapi.com';
   const payload = JSON.stringify({
     FromEmailAddress: from,
     Destination: [to],
     Subject: SUBJECT,
-    Simple: { Text: Buffer.from(bodyText(url), 'utf8').toString('base64') },
+    Template: { TemplateID: templateId, TemplateData: JSON.stringify({ url }) },
+    TriggerType: 1, // 触发类（验证码／登录链接这类即时邮件）
   });
-  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-hongkong', payload, timestamp: Math.floor(Date.now() / 1000) });
+  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-guangzhou', payload, timestamp: Math.floor(Date.now() / 1000) });
   const res = await fetch(`https://${host}/`, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(8000) });
   const j = (await res.json().catch(() => null)) as { Response?: { Error?: { Code: string; Message: string } } } | null;
   if (!res.ok || j?.Response?.Error) throw new Error(`mail tencent ${res.status} ${j?.Response?.Error?.Code || ''}`);
