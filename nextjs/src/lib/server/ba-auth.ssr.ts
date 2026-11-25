@@ -19,6 +19,8 @@ function create() {
       token: process.env.BA_AUTH_TOKEN || '',
     }) as never,
     session: { expiresIn: 60 * 60, updateAge: 60 * 60, cookieCache: { enabled: true, maxAge: 5 * 60 } },
+    // 限频按客户端 IP 分桶；EdgeOne 把真实 IP 放在这些头里（不配会全站共用一个桶）
+    advanced: { ipAddress: { ipAddressHeaders: ['eo-connecting-ip', 'x-forwarded-for', 'x-real-ip'] } },
     rateLimit: {
       enabled: true, storage: 'database', window: 60, max: 20,
       customRules: { '/sign-in/magic-link': { window: 600, max: 3 } },
