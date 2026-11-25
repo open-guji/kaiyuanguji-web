@@ -5,6 +5,7 @@
  */
 import { getAid } from '@/lib/aid';
 import { DATA_ORIGIN } from '@/lib/hosts';
+import { isU } from '@/lib/cell-u';
 
 // 不引 lib/proofing、lib/charfix：它们带着 book-index-ui，这页只是个列表，别拖大。下面几个常量与它们同口径
 const PROOF_BASE = process.env.NEXT_PUBLIC_PROOF_SPRITE_BASE || `${DATA_ORIGIN}/proof`; // ＝lib/proofing PROOF_BASE
@@ -37,6 +38,9 @@ export interface PublicFix {
     /** 来源的 6 位指纹：只用来数「几个人提的」 */
     who: string;
     ts?: number;
+    /** 字格永久编号（guji-char v0.6）：首格 u、末格 ue（一段、专名）；老意见没有 */
+    u?: number;
+    ue?: number;
 }
 
 /** 同一处（同类、同起止、同类别）的意见并成一组 */
@@ -54,6 +58,9 @@ export interface FixGroup {
     latest: number;
     /** 讨论用的 target：`<kind>~<首格>~<末格>~<类别>`（与 /api/thread、proofing-sync 同口径） */
     target: string;
+    /** 组里有意见带了字格永久编号就取来做链接（`?u=`）；都没有为空 */
+    u?: number;
+    ue?: number;
 }
 
 /** 整理组对一处意见的处理结果：已采纳（可带进了哪一版）、未采纳（可带理由）、讨论中 */
@@ -108,6 +115,8 @@ function parseFix(raw: unknown): PublicFix | null {
         ...(kind === 'char' && o.fig ? { fig: true, ...(str(o.alt) ? { alt: str(o.alt) } : {}) } : {}),
         who: str(o.who) ?? '',
         ts: typeof o.ts === 'number' && Number.isFinite(o.ts) ? o.ts : undefined,
+        ...(isU(o.u) ? { u: o.u } : {}),
+        ...(kind !== 'char' && isU(o.ue) ? { ue: o.ue } : {}),
     };
 }
 
@@ -149,6 +158,9 @@ export function groupFixes(fixes: PublicFix[]): FixGroup[] {
         g.items.sort((x, y) => (x.ts ?? 0) - (y.ts ?? 0));
         g.people = new Set(g.items.map((x) => x.who)).size;
         g.latest = Math.max(0, ...g.items.map((x) => x.ts ?? 0));
+        // 链接用最近一条带 u 的意见（同一处的意见格位相同，u 也应相同）
+        const withU = [...g.items].reverse().find((x) => x.u !== undefined);
+        if (withU) { g.u = withU.u; if (withU.ue !== undefined) g.ue = withU.ue; }
     }
     return groups.sort((x, y) => cellCompare(x.at, y.at) || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
 }

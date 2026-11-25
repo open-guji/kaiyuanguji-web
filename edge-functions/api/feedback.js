@@ -110,6 +110,29 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
+// 字格永久编号 u（guji-char v0.6，CV0 11-24 定）：册内唯一正整数，发了永不改、永不复用。
+// 双写期：票、意见照旧按格位 a（或条目）落键，u 只是值里多带一个字段；中心库 web_inbox 由生成列 u 从 value 取出来建索引。
+// 单上／char.json 里没有 u 的（老单、老文本）不带，照收。
+export const U_MAX = 99_999_999;
+const RE_CELL_AT = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/; // 与 cellreview／charfix 同一格位口径
+
+/** 可选的 u：缺省（undefined／null／''）返回 { value: undefined }；带了就须是 1..U_MAX 的整数 */
+export function optU(v, name = 'u') {
+  if (v === undefined || v === null || v === '') return { value: undefined };
+  if (!Number.isInteger(v) || v < 1 || v > U_MAX) return { error: `${name} 须为正整数（字格永久编号）` };
+  return { value: v };
+}
+
+/** 一对可选的 u（起止）：两个都带或都不带 */
+export function optUPair(start, end, names = ['u_start', 'u_end']) {
+  const s = optU(start, names[0]);
+  if (s.error) return s;
+  const e = optU(end, names[1]);
+  if (e.error) return e;
+  if ((s.value === undefined) !== (e.value === undefined)) return { error: `${names[0]}／${names[1]} 须同时给出` };
+  return { value: s.value === undefined ? undefined : { [names[0]]: s.value, [names[1]]: e.value } };
+}
+
 // ---- 网站收件箱（A20 Worker /v1/web/inbox，中心库 D1；11-22 起是唯一真源，EdgeOne KV 已退役）----
 // 地址默认 https://data.open-guji.com（可用 WEB_INBOX_URL 覆盖）；令牌默认用 FEEDBACK_ADMIN_TOKEN（web 角色，可用 WEB_INBOX_TOKEN 覆盖）。
 // 一次请求只调有限几次（EdgeOne 单次函数对外 fetch 约 64 次后 502）。
@@ -473,7 +496,7 @@ function parseImages(raw) {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = []) {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = [], at = undefined) {
   const id = generateId();
   const record = {
     id,
@@ -488,6 +511,8 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, sub
   // 分块 A：入口分类（只写 category，不写 assignee——认领是站方的动作）
   record.category = classifyFeedback({ type, pageUrl, content: record.content });
   if (subtype) record.subtype = subtype; // 已在入口校验过；不传则不写，读时按 unspecified
+  if (at?.cell) record.cell = at.cell;
+  if (at?.u) record.u = at.u;
   if (contact) record.contact = contact;
   if (test) record.test = true;
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
@@ -851,6 +876,14 @@ export async function onRequestPost(context) {
         status: 400, headers,
       });
     }
+    // 阅读页选字报错（可选）：选区首格的格位与字格永久编号 u（guji-char v0.6）。只记下来给整理组定位，不参与分类
+    const cellAt = body.cell == null || body.cell === '' ? undefined : body.cell;
+    if (cellAt !== undefined && (typeof cellAt !== 'string' || !RE_CELL_AT.test(cellAt))) {
+      return new Response(JSON.stringify({ success: false, error: 'cell 不是合法格位' }), { status: 400, headers });
+    }
+    const uv = optU(body.u);
+    if (uv.error) return new Response(JSON.stringify({ success: false, error: uv.error }), { status: 400, headers });
+    const at = cellAt || uv.value ? { ...(cellAt ? { cell: cellAt } : {}), ...(uv.value ? { u: uv.value } : {}) } : undefined;
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return new Response(JSON.stringify({ success: false, error: '反馈内容不能为空' }), {
         status: 400, headers,
@@ -895,7 +928,7 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items);
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items, at);
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {

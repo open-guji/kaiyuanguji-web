@@ -55,7 +55,13 @@ describe('report 插件：选字浮条', () => {
     it('本章不是对读章（没有状态）：「报错」开通用反馈弹窗，带本页上下文与选中的字', () => {
         const { plugin, api, opened } = setup(null);
         plugin.selectionActions!(sel(['3:1:4', '3:1:5']), api)[1].onClick();
-        expect(opened).toEqual([{ context: { resourceId: 'w1', label: '四庫總目 · 卷二', quote: '庫全' }, type: 'bug' }]);
+        expect(opened).toEqual([{ context: { resourceId: 'w1', label: '四庫總目 · 卷二', quote: '庫全', cell: '3:1:4' }, type: 'bug' }]);
+    });
+
+    it('通用反馈也带选区首格的字格永久编号 u（char v0.6 才有）', () => {
+        const { plugin, api, opened } = setup({ ...state(''), u: new Map([['3:1:4', 77]]) });
+        plugin.selectionActions!(sel(['3:1:4', '3:1:5']), api)[1].onClick();
+        expect(opened).toEqual([{ context: { resourceId: 'w1', label: '四庫總目 · 卷二', quote: '庫全', cell: '3:1:4', u: 77 }, type: 'bug' }]);
     });
 
     it('缺文本版本：同样开通用反馈弹窗', () => {

@@ -8,6 +8,7 @@ import type { SiteT } from '@/i18n/translate';
 import type { FeedbackContext } from '@/lib/feedback';
 import { canFixChar, collectEntities, entityFileVersion, spanOfAnchors, VERSION_RE, type CharFixCtx, type CharFixEntity, type SpanSel } from '@/lib/charfix';
 import { TEXT_FILE_BASE } from '@/lib/text-file';
+import { collectU } from '@/lib/cell-u';
 
 const ID = 'kyg:report';
 
@@ -19,6 +20,8 @@ interface ReportChapter {
     textVersion: string;
     entities: CharFixEntity[];
     entityVersion: string;
+    /** 格位 → 字格永久编号 u（char.json v0.6 起有；老文本为空） */
+    u?: Map<string, number>;
     /** api.cells → 格位到原字，按 cells 引用缓存 */
     chars?: { cells: ReaderApi['cells']; map: Map<string, string> };
 }
@@ -58,7 +61,7 @@ function ctxOf(api: ReaderApi): CharFixCtx | null {
     const st = api.state<ReportChapter>(ID);
     if (!st) return null;
     if (!st.chars || st.chars.cells !== api.cells) st.chars = { cells: api.cells, map: new Map(api.cells.map(c => [c.anchor, c.char])) };
-    return { book: st.book, volume: st.volume, chapter: st.chapter, textVersion: st.textVersion, chars: st.chars.map, entities: st.entities, entityVersion: st.entityVersion };
+    return { book: st.book, volume: st.volume, chapter: st.chapter, textVersion: st.textVersion, chars: st.chars.map, u: st.u, entities: st.entities, entityVersion: st.entityVersion };
 }
 
 /**
@@ -90,6 +93,7 @@ export function reportPlugin(o: ReportPluginOpts): ReaderPlugin {
                 textVersion,
                 entities: collectEntities(files.entity),
                 entityVersion: typeof declared === 'string' && VERSION_RE.test(declared) ? declared : entityFileVersion(files.entity),
+                u: collectU(files.char).byA,
             };
             return st;
         },
@@ -114,7 +118,12 @@ export function reportPlugin(o: ReportPluginOpts): ReaderPlugin {
                         const ctx = ctxOf(api);
                         const span = ctx && canFixChar(ctx) ? spanOfAnchors(sel.anchors, ctx.chars) : null;
                         if (ctx && span) store.patch({ spanFix: { ctx, span } });
-                        else o.openFeedback({ context: { ...o.getFeedbackContext(), quote: sel.text }, type: 'bug' });
+                        else {
+                            // 走通用反馈时也带上选区首格的格位与 u，整理组好定位
+                            const first = sel.anchors[0];
+                            const u = first ? api.state<ReportChapter>(ID)?.u?.get(first) : undefined;
+                            o.openFeedback({ context: { ...o.getFeedbackContext(), quote: sel.text, ...(first ? { cell: first } : {}), ...(u ? { u } : {}) }, type: 'bug' });
+                        }
                     },
                 },
             ];
