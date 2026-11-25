@@ -45,4 +45,18 @@ describe('cellLinkPlugin', () => {
         expect(onResolve).toHaveBeenCalledTimes(1);
         expect(loadReaderFiles).not.toHaveBeenCalled();
     });
+    it('给了 onIndex：每章都取 char，把格位↔u 对照交给宿主（目录标题写 ?u= 用）；?cell= 仍立即给', async () => {
+        loadReaderFiles.mockResolvedValue({ char });
+        const onResolve = jest.fn();
+        const onIndex = jest.fn();
+        await cellLinkPlugin({ onResolve, onIndex, getSearch: () => '' }).onChapter!(ctx('032'));
+        expect(onIndex).toHaveBeenCalledTimes(1);
+        expect(onIndex.mock.calls[0][0].byA.get('3:4:6a')).toBe(101);
+        expect(onIndex.mock.calls[0][1]).toBe('032');
+        await cellLinkPlugin({ onResolve, onIndex, getSearch: () => '?cell=3:4:5' }).onChapter!(ctx());
+        expect(onResolve).toHaveBeenCalledWith('3:4:5');
+        loadReaderFiles.mockResolvedValue(null);
+        await cellLinkPlugin({ onResolve, onIndex, getSearch: () => '' }).onChapter!(ctx());
+        expect(onIndex.mock.calls[2][0].byA.size).toBe(0);
+    });
 });

@@ -104,6 +104,21 @@ export function cellHref(book: string, vol: string, at: { a?: string; u?: number
     return `${base}${u ? `?u=${u}` : ''}${a ? `#${a}` : ''}`;
 }
 
+/**
+ * 章内锚点（`页:列:格` 或范围 `起~止`）→ 查询串 `u=` 的值（`n` 或 `n~m`）。本章 char 没有 u、或不是格位（如 `e=…`）返回 null。
+ * 阅读页读者点目录标题时用：地址除了 #格位 再写上 ?u=，转发出去的链接跨重切不漂。
+ */
+export function anchorToU(anchor: string | null | undefined, idx: UIndex): string | null {
+    if (!anchor) return null;
+    const [a, b, ...rest] = anchor.split('~');
+    if (rest.length || !CELL_RE.test(a) || (b !== undefined && !CELL_RE.test(b))) return null;
+    const u = idx.byA.get(a);
+    if (u === undefined) return null;
+    if (b === undefined || b === a) return String(u);
+    const ue = idx.byA.get(b);
+    return ue === undefined || ue === u ? String(u) : `${u}~${ue}`;
+}
+
 /** 提交用：u 合法才带 */
 export const uField = (u: number | undefined): { u?: number } => (isU(u) ? { u } : {});
 

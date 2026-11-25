@@ -17,7 +17,8 @@
  *   { schema, entity_id, total, chapters, books: [{ item, title?, count, chapter_count, chapters?: [ChapterRow] }], examples: [Example] }
  *   ChapterRow：{ key, chapter, count, heading?, ids? }——ids 是该章 entity 文件里实际写的 id（与现行 id 不同时才有：草稿、墓碑），
  *     阅读页地址 `/read/<item>[/<key>]/<chapter>#e=<ids 或 entity_id，逗号分隔>`。
- *   Example：{ item, key, chapter, start, end, text, heading?, before, after, v? }，start／end 是格位，地址 `…/<chapter>#<start>~<end>`。
+ *   Example：{ item, key, chapter, start, end, u?, ue?, text, heading?, before, after, v? }，start／end 是格位，u／ue 是起止字格永久编号（char 有 u 才带）；
+ *   地址有 u 用 `…/<chapter>?u=<u>~<ue>`，否则 `…/<chapter>#<start>~<end>`。
  * 收：target.status=matched 且有 entity_id；matched_multi（合称）的各 targets[].entity_id；decomposition.parts[] 里有 entity_id 的片段各算一次。不收 ambiguous／new_candidate。
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -39,10 +40,11 @@ function bucketOf(id) {
     return h % BUCKETS;
 }
 
-/** char.json → { chars: [字…], anchors: [格位…], pos: Map<格位, 下标> }（按 pages→columns→cells 的顺序，即阅读顺序） */
+/** char.json → { chars: [字…], anchors: [格位…], us: [字格永久编号 u 或 undefined…], pos: Map<格位, 下标> }（按 pages→columns→cells 的顺序，即阅读顺序） */
 export function charSequence(char) {
     const chars = [];
     const anchors = [];
+    const us = [];
     const pos = new Map();
     for (const p of Array.isArray(char?.pages) ? char.pages : []) {
         for (const col of Array.isArray(p?.columns) ? p.columns : []) {
@@ -50,16 +52,17 @@ export function charSequence(char) {
                 if (typeof cell?.a !== 'string') continue;
                 pos.set(cell.a, chars.length);
                 anchors.push(cell.a);
+                us.push(Number.isInteger(cell.u) && cell.u > 0 ? cell.u : undefined);
                 chars.push(typeof cell.c === 'string' ? cell.c : '');
             }
         }
     }
-    return { chars, anchors, pos };
+    return { chars, anchors, us, pos };
 }
 
 /** 一章的 matched span → 记录（不含实体 id 之外的归一）。纯函数，单测直接用。 */
 export function chapterMentions({ item, key, chapter, entity, char, headings }) {
-    const { chars, anchors, pos } = charSequence(char);
+    const { chars, anchors, us, pos } = charSequence(char);
     const heads = (Array.isArray(headings) ? headings : [])
         .map((h) => [pos.get(h?.anchor), h?.label])
         .filter(([i, l]) => typeof i === 'number' && typeof l === 'string' && l)
@@ -71,6 +74,10 @@ export function chapterMentions({ item, key, chapter, entity, char, headings }) 
         const i = pos.get(start);
         const j = pos.get(end);
         const rec = { item, key, chapter, start, end, text: typeof text === 'string' ? text : '' };
+        // 字格永久编号（char v0.6）：阅读页深链用 ?u=起~止，重切不漂；老文本没有 u 就不带，链接退回 #格位
+        const u = typeof i === 'number' ? us[i] : undefined;
+        const ue = typeof j === 'number' ? us[j] : undefined;
+        if (u !== undefined) { rec.u = u; if (ue !== undefined && ue !== u) rec.ue = ue; }
         let heading;
         if (typeof i === 'number') for (const [hi, label] of heads) { if (hi <= i) heading = label; else break; }
         if (heading) rec.heading = heading;
