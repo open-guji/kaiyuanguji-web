@@ -1,7 +1,7 @@
 /**
  * 字格永久编号 u（guji-char v0.6）：char.json 读 u、深链 ?u= 与 ?cell=、各处提交带 u、公开意见清单带 u。
  */
-import { collectU, parseCellLink, resolveCellLink, cellHref, uField, uPairFields, isU, U_MAX } from '../cell-u';
+import { anchorToU, collectU, parseCellLink, resolveCellLink, cellHref, uField, uPairFields, isU, U_MAX } from '../cell-u';
 import { collectEntities, submitCharFix, submitEntityFix, submitSpanFix, type CharFixCtx } from '../charfix';
 import { buildFeedbackBody } from '../feedback';
 import { itemFields, parseExtras } from '../proofing';
@@ -163,5 +163,20 @@ describe('公开意见清单：u 用来做链接', () => {
         expect(ch.u).toBe(41);
         const sp = groups.find((x) => x.kind === 'span')!;
         expect(sp).toMatchObject({ u: 41, ue: 42 });
+    });
+});
+
+describe('anchorToU：目录标题的格位锚点 → ?u=', () => {
+    const idx = collectU({ pages: [{ page: 3, columns: [{ col: 1, cells: [{ a: '3:1:1', u: 7 }, { a: '3:1:2', u: 8 }, { a: '3:1:3' }] }] }] });
+    it('单格、范围、同格范围', () => {
+        expect(anchorToU('3:1:1', idx)).toBe('7');
+        expect(anchorToU('3:1:1~3:1:2', idx)).toBe('7~8');
+        expect(anchorToU('3:1:2~3:1:2', idx)).toBe('8');
+    });
+    it('没有 u、不是格位、空：null；止格没 u 只给起', () => {
+        expect(anchorToU('3:1:3', idx)).toBeNull();
+        expect(anchorToU('e=abc', idx)).toBeNull();
+        expect(anchorToU(null, idx)).toBeNull();
+        expect(anchorToU('3:1:1~3:1:3', idx)).toBe('7');
     });
 });
