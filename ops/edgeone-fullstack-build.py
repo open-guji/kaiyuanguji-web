@@ -61,6 +61,15 @@ NEVER_KEYS = {"TENCENT_SECRET_ID", "TENCENT_SECRET_KEY", "EDGEONE_API_TOKEN"}
 KEY_RE = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*$")
 # 短于此长度的值（如 "1"、"true"）做子串比对只会误报，不查
 MIN_SCAN_LEN = 8
+# 公开地址（只有协议＋主机、可带端口，不带账号、路径、查询）：本站域名、Worker 网关这类，页面里本来就到处都是
+# （canonical、站内链接），不算机密，不查「出现在边缘函数之外」。只认 *_URL／*_ORIGIN 名字的变量，别的照查。
+# 例：BETTER_AUTH_URL＝本站地址（Better Auth 要），BA_AUTH_URL＝认证 Worker 网关（2026-11-25 v0.2.34 首次带上）。
+PUBLIC_URL_KEY_RE = re.compile(r"_(URL|ORIGIN)$")
+PUBLIC_URL_RE = re.compile(r"^https?://[A-Za-z0-9.-]+(:\d+)?/?$")
+
+
+def is_public_url(key, value):
+    return bool(PUBLIC_URL_KEY_RE.search(key) and PUBLIC_URL_RE.match(value or ""))
 EDGE_DIR = "edge-functions"
 
 
@@ -150,7 +159,7 @@ def scan_bundle(root, project_vars, forbidden, assets_forbidden=None):
     """
     problems = []
     assets_forbidden = assets_forbidden or {}
-    proj = {k: _forms(v) for k, v in project_vars.items() if len(v) >= MIN_SCAN_LEN}
+    proj = {k: _forms(v) for k, v in project_vars.items() if len(v) >= MIN_SCAN_LEN and not is_public_url(k, v)}
     forb = {k: _forms(v) for k, v in forbidden.items() if len(v) >= MIN_SCAN_LEN}
     asset_forb = {k: _forms(v) for k, v in assets_forbidden.items() if len(v) >= MIN_SCAN_LEN}
     edge_prefix = os.path.join(root, EDGE_DIR) + os.sep
