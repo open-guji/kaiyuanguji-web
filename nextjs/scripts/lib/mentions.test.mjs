@@ -40,6 +40,18 @@ test('chapterMentions：合称各条目各算一次', () => {
     assert.deepEqual(list.map((m) => [m.eid, m.rec.start, m.rec.end]), [['zhou', '3:2:1', '3:2:2'], ['cheng', '3:2:1', '3:2:2']]);
 });
 
+test('chapterMentions：char 带字格 u（v0.6）时例子带 u／ue，单字只带 u；没有 u 的不带', () => {
+    const uChar = { pages: CHAR.pages.map((p) => ({ ...p, columns: p.columns.map((c) => ({ ...c, cells: c.cells.map((x, i) => ({ ...x, u: p.page * 100 + c.col * 20 + i + 1 })) })) })) };
+    const entity = { entities: [
+        { id: 'm', type: 'people', text: '周程', anchor: { start: '3:2:1', end: '3:2:2' }, target: { status: 'matched', entity_id: 'zhou' } },
+        { id: 'n', type: 'people', text: '朱', anchor: { start: '3:2:4', end: '3:2:4' }, target: { status: 'matched', entity_id: 'zhu' } },
+    ] };
+    const list = chapterMentions({ item: 'bk', key: 'default', chapter: '001', entity, char: uChar, headings: [] });
+    assert.deepEqual(list.map((m) => [m.rec.u, m.rec.ue]), [[341, 342], [344, undefined]]);
+    const old = chapterMentions({ item: 'bk', key: 'default', chapter: '001', entity, char: CHAR, headings: [] });
+    assert.ok(old.every((m) => !('u' in m.rec) && !('ue' in m.rec)));
+});
+
 test('chapterMentions：只收 matched 与拆分片段；带上下文、章内标题、版本', () => {
     const list = chapterMentions({ item: 'bk', key: 'default', chapter: '001', entity: ENTITY, char: CHAR, headings: HEADINGS });
     assert.deepEqual(list.map((m) => [m.eid, m.rec.start, m.rec.end]), [

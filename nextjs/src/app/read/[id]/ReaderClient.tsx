@@ -27,6 +27,7 @@ import { versionChipPlugin } from './plugins/version-chip-plugin';
 import { fontPlugin } from './plugins/font-plugin';
 import { reportPlugin } from './plugins/report-plugin';
 import { cellLinkPlugin } from './plugins/cell-link-plugin';
+import { anchorToU, EMPTY_U_INDEX, type UIndex } from '@/lib/cell-u';
 import { fulltextPlugin } from './plugins/fulltext-plugin';
 import { siteVersionPlugin } from './plugins/site-version-plugin';
 import type { ReaderPlugin } from 'book-index-ui';
@@ -58,13 +59,21 @@ interface ReaderClientProps {
  *   - 首帧：服务端给的地址与规范写法可能只差一截（短地址补成带章号的全形），不该多出一条；
  *   - 阅读器自己纠正位置（cause=auto：地址没带章号、章号无效，组件回落到第一章）：这不是读者翻的，与上一条合并。
  */
-function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean; hash?: string | null }) {
+function syncLocation(id: string, sel: ReaderSel, title: string, opts: { push: boolean; updateCanonical: boolean; hash?: string | null; u?: string | null }) {
     const href = readerPath(id, sel);
     // 章内标题位置（GUJI-240）写在 #页:列:格；canonical 不带它。?cmp=（对校）随翻页、换册保留，canonical 不带
     // 地址的路径没变（首帧、只改 #）时查询串原样保留（?proof=、?ft= 等是别的功能在读，不该被同步冲掉）；
     // 换了章或册，只带 ?cmp=
     const cmp = new URLSearchParams(window.location.search).get('cmp');
-    const search = window.location.pathname === href ? window.location.search : cmp ? `?cmp=${encodeURIComponent(cmp)}` : '';
+    let search = window.location.pathname === href ? window.location.search : cmp ? `?cmp=${encodeURIComponent(cmp)}` : '';
+    // 目录标题（#格位）有字格永久编号就同时写 ?u=（转发的链接重切不漂）；换成没 u 的格位锚点时把旧的 ?u=／?cell= 去掉，免得两处打架
+    if (opts.hash && /^\d/.test(opts.hash)) {
+        const q = new URLSearchParams(search);
+        q.delete('cell');
+        if (opts.u) q.set('u', opts.u); else q.delete('u');
+        const qs = q.toString().replace(/%7E/gi, '~');
+        search = qs ? `?${qs}` : '';
+    }
     const full = `${href}${search}${opts.hash ? `#${opts.hash}` : ''}`;
     if (window.location.pathname + window.location.search + window.location.hash !== full) {
         if (opts.push) window.history.pushState(window.history.state, '', full);
@@ -177,6 +186,8 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     // 首帧从地址读（服务端看不到 hash），之后只跟 hashchange（手改地址、点站内 # 链接）
     const [urlAnchor, setUrlAnchor] = useState<string | null>(null);
     const [hash, setHash] = useState<string | null>(null);
+    // 当前章格位↔u 对照（cell-link 插件每章给）：目录标题写地址时补 ?u=
+    const [uIdx, setUIdx] = useState<UIndex>(EMPTY_U_INDEX);
     useEffect(() => {
         const read = () => {
             const a = anchorFromHash(window.location.hash);
@@ -198,10 +209,11 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
             push: synced.current && pushNext.current,
             updateCanonical: synced.current,
             hash,
+            u: anchorToU(hash, uIdx),
         });
         pushNext.current = false;
         synced.current = true;
-    }, [id, sel, bookTitle, meta, convert, hash]);
+    }, [id, sel, bookTitle, meta, convert, hash, uIdx]);
 
     const primaryRef = useRef(primary);
     primaryRef.current = primary;
@@ -300,7 +312,7 @@ function Reader({ id, initial, bookTitle, edition, sources, seed, lead }: Reader
     }), []);
     const proofPlg = useMemo(() => proofPlugin(proofStore), [proofStore]);
     // 深链 ?u=<字格永久编号>（兼容 ?cell=）：查到本章格位就当锚点滚过去；查不到交给 #格位 兜底
-    const cellLinkPlg = useMemo(() => cellLinkPlugin({ onResolve: (a) => setUrlAnchor(a) }), []);
+    const cellLinkPlg = useMemo(() => cellLinkPlugin({ onResolve: (a) => setUrlAnchor(a), onIndex: (idx) => setUIdx(idx) }), []);
     const dataVersion = seed?.dataVersion ?? undefined;
     const downloadPlg = useMemo(() => downloadPlugin({ bookId: id, bookTitle, edition, dataVersion }), [id, bookTitle, edition, dataVersion]);
     const plugins = useMemo<ReaderPlugin[]>(
