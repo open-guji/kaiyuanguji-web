@@ -585,13 +585,13 @@ describe('alignFacsToCord：半叶编号的书影对到 cord 页序', () => {
     });
 });
 
-describe('己已巳卡候选以 evidence.group.members 为准（cv#1921）', () => {
-    it('带 members 时候选就是组内全部字；没带仍按投票', () => {
+describe('待审单 grp／dout（manager#1075）', () => {
+    it('grp.m 是己已巳卡候选；dout 只收单字；旧单没有照旧', () => {
         const base = { a: '1:1:1', c: '巳', pendingReason: 'hard_pair' } as never;
-        const withM = { ...(base as object), ...parseExtras({ evidence: { group: { members: '己已巳' } } }) } as never;
-        expect(hardPairChoices(withM)).toEqual(['己', '已', '巳']);
+        const withG = { ...(base as object), ...parseExtras({ grp: { id: 'jyz', m: ['己', '已', '巳', '包'] } }) } as never;
+        expect(hardPairChoices(withG)).toEqual(['己', '已', '巳', '包']);
         expect(hardPairChoices(base)).toEqual(['己', '已', '巳']);
-        expect(parseExtras({ evidence: { group: { members: ['日', '曰'] } } }).groupMembers).toEqual(['日', '曰']);
-        expect(parseExtras({ evidence: { group: { members: ['日'] } } }).groupMembers).toBeUndefined();
+        expect(parseExtras({ grp: { m: ['日'] } }).grp).toBeUndefined();
+        expect(parseExtras({ dout: ['曰', '日曰', '曰'] }).dout).toEqual(['曰']);
     });
 });
