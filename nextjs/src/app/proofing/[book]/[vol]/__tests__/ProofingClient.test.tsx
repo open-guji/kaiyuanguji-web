@@ -158,6 +158,16 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
+    it('grp／dout：标「同组字」一排和「AI 文意（候选外）」一排，不预选', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', grp: { id: 'g1', m: ['弊', '獘'] }, dout: ['蔽'] }]));
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const g = await screen.findByTestId('grp-row');
+        expect(g.textContent).toContain('同组字');
+        expect(within(g).getAllByRole('button')).toHaveLength(2);
+        expect(within(screen.getByTestId('dout-row')).getByRole('button', { name: '选「蔽」' })).toBeTruthy();
+        expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0);
+    });
+
     it('己已巳卡（hard_pair）：候选只给己已巳三个，没有「还有 N 个」和相似字；手写、备注、错误类型仍在', async () => {
         loadProofing.mockResolvedValue(ok([{
             a: '1:1:1', c: '巳', pendingReason: 'hard_pair', cand: [{ c: '巳' }, { c: '已' }],

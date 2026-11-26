@@ -41,8 +41,10 @@ export interface PendingExtras {
     /** 待审原因（cv `review/pending_reason.py`，sheldon 11-03 定）：英文 enum 名，认不出按 unknown；老单没有这个键 */
     pendingReason?: PendingReason;
     pendingReasonDetail?: string;
-    /** 组内全部字（cv#1921 evidence.group.members）：己已巳／日曰卡候选按钮以它为准 */
-    groupMembers?: string[];
+    /** 形近字组（manager#1075 grp）：id＋组内全部字，已保证出现在 alt 里（src=grp） */
+    grp?: { id?: string; m: string[] };
+    /** 点校 AI 判出、但不在候选里的字（manager#1075 dout） */
+    dout?: string[];
     cls?: string;
     /** 类别细项（目前只有对齐改字层：grid / tail / manual） */
     clsSub?: string;
@@ -152,11 +154,13 @@ export function parseExtras(raw: unknown): PendingExtras {
         if (Number.isInteger(it.ver) && (it.ver as number) > 0) out.itemVer = it.ver as number;
     }
     if (isU(it.u)) out.u = it.u;
-    {   // evidence.group.members：字符串或字符数组，取单字、去重
-        const raw = asObject(asObject(it.evidence)?.group)?.members;
-        const list = typeof raw === 'string' ? [...raw] : Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : [];
-        const members = [...new Set(list.filter(c => [...c].length === 1))];
-        if (members.length >= 2) out.groupMembers = members;
+    {   // grp＝{id, m:[字…]}、dout＝[字…]：都只收单字、去重
+        const one = (raw: unknown): string[] => [...new Set((Array.isArray(raw) ? raw : typeof raw === 'string' ? [...raw] : []).filter((c): c is string => typeof c === 'string' && [...c].length === 1))];
+        const g = asObject(it.grp);
+        const m = one(g?.m);
+        if (g && m.length >= 2) out.grp = { ...(str(g.id) ? { id: str(g.id) } : {}), m };
+        const d = one(it.dout);
+        if (d.length) out.dout = d;
     }
     if (str(it.cls)) out.cls = str(it.cls);
     if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
@@ -348,7 +352,7 @@ export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[
 const HARD_GROUPS = ['己已巳', '日曰'];
 export function hardPairChoices(cell: PendingCell): string[] | null {
     if (cell.pendingReason !== 'hard_pair') return null;
-    if (cell.groupMembers) return cell.groupMembers;
+    if (cell.grp) return cell.grp.m;
     const votes = HARD_GROUPS.map(() => 0);
     const vote = (c: string | undefined, w: number) => {
         if (!c) return;

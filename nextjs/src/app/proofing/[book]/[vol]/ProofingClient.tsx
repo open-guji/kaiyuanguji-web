@@ -29,6 +29,21 @@ interface FacsPage { url: string; hires: string; width: number; height: number }
 const PAGE_SIZE = 20;
 const EMPTY_SET: Set<string> = new Set();
 
+/** 一排带标签的字按钮（同组字、AI 文意候选外的字）：只提示，不预选；点了走相似字同一条提交路径 */
+function CharRow({ testId, label, chars, busy, picked, onPick }: { testId: string; label: string; chars: string[]; busy: boolean; picked?: string; onPick: (c: string, pick: Pick) => void }) {
+    return (
+        <div data-testid={testId} style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: '#555', marginBottom: 4 }}>{label}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {chars.map((c, i) => (
+                    <button key={c} type="button" disabled={busy} aria-pressed={picked === c} aria-label={`选「${c}」`} onClick={() => onPick(c, { src: 'alt', rank: i + 1 })} className={BTN_CLASS}
+                        style={{ ...btnStyle('small', picked === c, busy), fontSize: 18 }}>{shownZi(c)}</button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /** 一册装进来的数据（合审时各册各一份） */
 interface VolInfo {
     rev: string | null;
@@ -499,6 +514,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
                 )}
             </fieldset>
             </div>
+            {!hard && cell.grp && <CharRow testId="grp-row" label="同组字（形近一组，不预选）" chars={cell.grp.m} busy={busy} picked={shownChar} onPick={pickChar} />}
+            {cell.dout && <CharRow testId="dout-row" label="AI 文意（候选外，不预选）" chars={cell.dout} busy={busy} picked={shownChar} onPick={pickChar} />}
             {!hard && cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
