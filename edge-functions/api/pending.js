@@ -43,8 +43,9 @@ export async function onRequestGet(context) {
     if (!doc) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 404, { success: false, error: '无' });
     return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, doc);
   } catch (e) {
-    console.error('Pending GET error:', e);
-    return json({ ...headers, 'Cache-Control': 'no-store' }, 500, { success: false, error: '服务器错误' });
+    console.error('Pending GET error:', e && e.message ? e.message : e);
+    // 上游（D1 收件箱）读不到：回 503＋原因，页面据此退回读 COS；不缓存
+    return json({ ...headers, 'Cache-Control': 'no-store' }, 503, { success: false, error: '待审单暂时读不到', detail: String((e && e.message) || e).slice(0, 200) });
   }
 }
 

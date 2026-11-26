@@ -802,7 +802,14 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [deferred, setDeferred] = useState<string[]>([]);
     const [panelOpen, setPanelOpen] = useState(true);
     const keyOf = useCallback((v: string, a: string) => (merged ? mergedKey(v, a) : a), [merged]);
-    const cells = useMemo(() => { const all = volOrder.flatMap(v => loaded[v]?.cells ?? []); return merged ? all.slice(0, MERGED_CELL_LIMIT) : all; }, [volOrder, loaded, merged]);
+    // 打开页面时就已回应过的格（合审用）：排到后面，免得前 MERGED_CELL_LIMIT 格全是点过的（11-25 用户实测）。只在载入时定一次，之后点掉的格不会跳位
+    const initDone = useRef<Set<string>>(new Set());
+    const cells = useMemo(() => {
+        const all = volOrder.flatMap(v => loaded[v]?.cells ?? []);
+        if (!merged) return all;
+        const open = all.filter(c => !initDone.current.has(c.a)), old = all.filter(c => initDone.current.has(c.a));
+        return [...open, ...old].slice(0, MERGED_CELL_LIMIT);
+    }, [volOrder, loaded, merged]);
     const volOf = useCallback((cell: { vol?: string }) => cell.vol ?? vol, [vol]);
     const first = loaded[volOrder[0] ?? vol];
     const chapterTitle = merged ? '全部册合审' : first?.chapterTitle;
@@ -828,7 +835,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
         let cancelled = false;
-        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null);
+        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null); initDone.current = new Set();
         const api = createTextApi(transport);
         const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
         // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
@@ -839,6 +846,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                 chapterTitle: res.chapterTitle, versionKey: res.versionKey, rawSet: new Set(res.pending.cells.map(c => c.a)) };
             const k = (a: string) => (merged ? mergedKey(v, a) : a);
             const d = rev ? Object.fromEntries(Object.entries(readDone(rev)).map(([a, x]) => [k(a), x])) : {};
+            for (const a of Object.keys(d)) initDone.current.add(a);
             setLoaded(prev => ({ ...prev, [v]: info }));
             setDone(prev => ({ ...prev, ...d }));
             setHiddenDone(prev => new Set([...prev, ...Object.keys(d)]));
@@ -848,37 +856,52 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             const index = await loadProofIndex();
             const allVols = merged ? buildToc(index, book).filter(e => e.n > 0) : [];
             let vols = merged ? allVols.map(e => e.vol) : [vol];
-            if (merged) {   // 按目录顺序凑够 MERGED_CELL_LIMIT 格就停，后面的册不载
+            let extra: typeof allVols = [];   // 合审：先按各册剩余格数凑够 MERGED_CELL_LIMIT 就停；若其中不少已回应过，再往后补载，直到有 MERGED_CELL_LIMIT 个没回应的格或册载完
+            if (merged) {
                 let sum = 0, cut = allVols.length;
                 for (let i = 0; i < allVols.length; i++) { sum += allVols[i].n; if (sum >= MERGED_CELL_LIMIT) { cut = i + 1; break; } }
                 vols = allVols.slice(0, cut).map(e => e.vol);
-                if (cut < allVols.length && !cancelled) setCapped({ skipped: allVols.length - cut, total: allVols.reduce((n, e) => n + e.n, 0) });
+                extra = allVols.slice(cut);
             }
+            const totalPending = allVols.reduce((n, e) => n + e.n, 0);
             if (merged && !vols.length) { if (!cancelled) setState(index ? 'none' : 'unpublished'); return; }
-            if (!cancelled) setVolOrder(vols);
             let ready = false;
             let ended = false;   // 单册页已经给出终态（none／error／unpublished）
             let failed = 0;
-            let remaining = vols.length;
-            const queue = [...vols];
-            const worker = async () => {
-                for (let v = queue.shift(); v !== undefined; v = queue.shift()) {
-                    const res = await loadProofing(deps, book, v);
-                    if (cancelled) return;
-                    remaining--;
-                    setPendingMore(remaining);
-                    if (res.status !== 'ok') {
-                        failed++;
-                        if (!merged) { ended = true; return setState(res.status); }
-                        continue;
+            let openCount = 0;   // 合审：已载入且打开页面时没回应过的格数
+            const loadBatch = async (batch: string[]) => {
+                if (!cancelled) setVolOrder(prev => [...prev, ...batch]);
+                let remaining = batch.length;
+                setPendingMore(remaining);
+                const queue = [...batch];
+                const worker = async () => {
+                    for (let v = queue.shift(); v !== undefined; v = queue.shift()) {
+                        const res = await loadProofing(deps, book, v);
+                        if (cancelled) return;
+                        remaining--;
+                        setPendingMore(remaining);
+                        if (res.status !== 'ok') {
+                            failed++;
+                            if (!merged) { ended = true; return setState(res.status); }
+                            continue;
+                        }
+                        // 0 格只在总表明确列了这一章（n=0）时才算「已校完」；总表没列＝待审单还没发布，别骗人
+                        if (!merged && res.pending.cells.length === 0 && proofState(index, book, v) === 'unknown') { ended = true; return setState('unpublished'); }
+                        ingest(v, res);
+                        if (merged) openCount += res.pending.cells.filter(c => !initDone.current.has(mergedKey(v, c.a))).length;
+                        if (!ready) { ready = true; setState('ok'); }
                     }
-                    // 0 格只在总表明确列了这一章（n=0）时才算「已校完」；总表没列＝待审单还没发布，别骗人
-                    if (!merged && res.pending.cells.length === 0 && proofState(index, book, v) === 'unknown') { ended = true; return setState('unpublished'); }
-                    ingest(v, res);
-                    if (!ready) { ready = true; setState('ok'); }
-                }
+                };
+                await Promise.all(Array.from({ length: merged ? 4 : 1 }, worker));
             };
-            await Promise.all(Array.from({ length: merged ? 4 : 1 }, worker));
+            await loadBatch(vols);
+            while (merged && !cancelled && openCount < MERGED_CELL_LIMIT && extra.length) {
+                let sum = 0, cut = extra.length;
+                for (let i = 0; i < extra.length; i++) { sum += extra[i].n; if (sum >= MERGED_CELL_LIMIT - openCount) { cut = i + 1; break; } }
+                await loadBatch(extra.slice(0, cut).map(e => e.vol));
+                extra = extra.slice(cut);
+            }
+            if (merged && extra.length && !cancelled) setCapped({ skipped: extra.length, total: totalPending });
             if (!cancelled && !ready && !ended) setState(failed ? 'error' : 'none');
         })().catch(() => { if (!cancelled) setState('error'); });
         return () => { cancelled = true; };
@@ -1156,7 +1179,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                 </div>
             )}
             {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入待审单…</p>}
-            {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格（共约 {capped.total} 格）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
+            {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格没回应过的（全部共约 {capped.total} 格，已回应过的排在后面）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">

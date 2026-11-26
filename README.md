@@ -9,6 +9,8 @@
 
 **想弄清整体是怎么设计的**：[docs/architecture.html](docs/architecture.html)（自包含网页，下载后用浏览器打开；页面、数据、缓存、搜索、发布回滚、测试监控、SEO 都在里面）。出问题先看 [docs/runbook.md](docs/runbook.md)。
 
+**链接到某一格、存校对票／改字票**：用字格永久编号 u（`/read/<书>/<册>?u=<n>`），见 [docs/字格永久编号u.md](docs/字格永久编号u.md)。
+
 **新接手的人**：先读本 README 的最短路径，再读 [docs/开发流程.md](docs/开发流程.md)、[docs/ui-boundary.md](docs/ui-boundary.md)。overview 仓已淘汰，旧「交接手册」只作历史参考；项目分工与长期经验在 ai-team 仓 `domain/网站与运维/`。
 
 ## 仓库结构

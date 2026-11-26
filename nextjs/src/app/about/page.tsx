@@ -40,6 +40,7 @@ const LICENSES = ['bookIndex', 'bookText', 'thirdParty', 'code'] as const;
 // 二维码已撤掉（更新太麻烦），只留 QQ 群号文字。
 const CONTACT_EMAIL = 'sheldonli.dev@gmail.com';
 const QQ_GROUP = '111362573';
+const DISCORD_INVITE = 'https://discord.gg/yKkpTTa5NB';
 
 export default function AboutPage() {
   return (
@@ -140,6 +141,11 @@ export default function AboutPage() {
               <dt><T k="about.contact.groups" /></dt>
               <dd>
                 <T k="about.contact.qqGroup" vars={{ group: QQ_GROUP }} />
+                <br />
+                <T k="about.contact.discord" />
+                <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">
+                  <T k="about.contact.discordJoin" />
+                </a>
               </dd>
             </dl>
 
