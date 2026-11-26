@@ -186,13 +186,22 @@ export async function readInboxPage(context, { kind, prefix = '', book = '', aft
   const q = new URLSearchParams({ kind, limit: String(limit), after: String(after) });
   if (prefix) q.set('prefix', prefix);
   if (book) q.set('book', book);
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 8000);
-  try {
-    const res = await fetch(`${base}/v1/web/inbox?${q}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
-    if (!res.ok) throw new Error(`D1 收件箱读取 HTTP ${res.status}`);
-    return await res.json();
-  } finally { clearTimeout(timer); }
+  // 上游（Worker／D1）偶发 5xx、超时或断连：重试 1 次再抛错；4xx 不重试。
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 6000);
+    try {
+      const res = await fetch(`${base}/v1/web/inbox?${q}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+      if (res.ok) return await res.json();
+      lastErr = new Error(`D1 收件箱读取 HTTP ${res.status}`);
+      if (res.status >= 400 && res.status < 500 && res.status !== 429) break;
+    } catch (e) {
+      lastErr = e;
+    } finally { clearTimeout(timer); }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 300));
+  }
+  throw lastErr;
 }
 
 /** 读某前缀下全部行（翻页读完，最多 max 行）：返回 [{key,value,ts,seq}]；失败抛错。 */
