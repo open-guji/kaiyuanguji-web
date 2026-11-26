@@ -16,6 +16,8 @@ const links: { labelKey: 'footer.about' | 'footer.contact' | 'footer.feedback'; 
 
 // 右边只留 QQ 群号文字（二维码更新太麻烦，11-03 撤掉微信、QQ 两张二维码）。
 const QQ_GROUP = '111362573';
+// Discord 服务器邀请链接（sheldon 11-26 新建）
+const DISCORD_INVITE = 'https://discord.gg/yKkpTTa5NB';
 
 /**
  * 分支页（首页、目录、元数据、阅读、关于）共用的页脚；具体条目页、阅读页不显示（LayoutWrapper hideFooter）。
@@ -60,7 +62,12 @@ export default function Footer() {
             </div>
           </div>
 
-          <p className="og-footer-group">{t('footer.qqGroup', { qq: QQ_GROUP })}</p>
+          <div className="og-footer-groups">
+            <p className="og-footer-group">{t('footer.qqGroup', { qq: QQ_GROUP })}</p>
+            <p className="og-footer-group og-footer-discord">
+              <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">{t('footer.discord')}</a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
