@@ -1754,14 +1754,21 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
   /* 页脚右侧 QQ 群号文字 */
-  .og-footer .og-footer-group {
+  .og-footer .og-footer-groups {
     margin: 0 0 0 auto;
+  }
+  .og-footer .og-footer-group {
+    margin: 0;
     font-size: var(--fs-xs);
     line-height: 1.6;
   }
+  .og-footer .og-footer-discord a {
+    color: inherit;
+    text-decoration: underline;
+  }
 
   @media (max-width: 760px) {
-    .og-footer .og-footer-group {
+    .og-footer .og-footer-groups {
       margin-left: 0;
     }
     /* 手机端（overview#325）：阅读首页的节点页、年代页书目卡原先一行一张（minmax 240px），
