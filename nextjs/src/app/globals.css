@@ -818,6 +818,118 @@
     color: var(--color-ink);
   }
 
+  /* 顶栏账号入口：未登录是「登录」文字按钮，点开下拉邮箱框；登录后是人形图标 */
+  .og-acct {
+    position: relative;
+    display: inline-flex;
+    margin-left: 4px;
+  }
+  .og-acct--ph {
+    width: 44px;
+    min-height: 44px;
+  }
+  .og-acct-btn {
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    color: var(--color-ink-2);
+    font: inherit;
+    font-size: var(--fs-base);
+    cursor: pointer;
+  }
+  .og-acct-btn:hover,
+  .og-acct-icon:hover {
+    color: var(--color-ink);
+  }
+  .og-acct-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-height: 44px;
+    margin-left: 4px;
+    color: var(--color-ink-2);
+  }
+  .og-acct-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: -8px;
+    z-index: 70;
+    width: 272px;
+    max-width: calc(100vw - 24px);
+    padding: 14px;
+    background: var(--color-raise);
+    border: 1px solid var(--color-tint-2);
+    box-shadow: 0 14px 36px -14px rgba(20, 24, 28, 0.28);
+    font-size: 13px;
+  }
+  .og-login {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .og-login-note {
+    margin: 0;
+    color: var(--color-ink-2);
+    line-height: 1.7;
+  }
+  .og-login-input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--color-tint-2);
+    background: var(--color-raise);
+    color: var(--color-ink);
+    font: inherit;
+  }
+  .og-login-btn {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: var(--color-ink);
+    color: var(--color-raise);
+    font: inherit;
+    cursor: pointer;
+  }
+  .og-login-btn:disabled {
+    opacity: 0.5;
+  }
+  .og-login-err {
+    margin: 0;
+    color: #b3261e;
+  }
+  .og-account {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 48px 16px;
+  }
+  .og-account h1 {
+    margin: 0 0 20px;
+    font-size: 22px;
+  }
+  .og-account-list {
+    display: grid;
+    grid-template-columns: 5em 1fr;
+    gap: 10px 12px;
+    margin: 0 0 24px;
+  }
+  .og-account-list dt {
+    color: var(--color-ink-2);
+  }
+  .og-account-list dd {
+    margin: 0;
+    word-break: break-all;
+  }
+  .og-account-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .og-account-link {
+    color: var(--color-ink-2);
+    text-decoration: underline;
+  }
+
   /* 手机抽屉：无竖条、无图标，当前项朱色字＋浅朱底 */
   .og-drawer-mask {
     position: fixed;

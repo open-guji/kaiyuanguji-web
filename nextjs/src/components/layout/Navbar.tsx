@@ -7,6 +7,7 @@ import { MOBILE_DRAWER_ID, PRIMARY_LINKS, isCurrent } from './nav-links';
 import { useFeedback } from '../feedback/FeedbackProvider';
 import AppearancePicker from './AppearancePicker';
 import LocaleSwitch from './LocaleSwitch';
+import AccountMenu from './AccountMenu';
 import { useSiteT } from '@/i18n/use-site-t';
 
 interface NavbarProps {
@@ -70,6 +71,7 @@ export default function Navbar({ onMobileMenuToggle, menuOpen = false, menuButto
             </svg>
             <span className="og-nav-fb-label" aria-hidden="true">{t('nav.feedback')}</span>
           </button>
+          <AccountMenu />
           <button
             ref={menuButtonRef}
             type="button"
