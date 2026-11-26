@@ -38,7 +38,7 @@ on:
         required: false
         default: ''
       secret_keys:
-        description: set 模式：用 GitHub secret 的值覆盖（目前支持 ERROR_VIEW_TOKEN、OAUTH_ID_TOKEN_SECRET、SEARCH_PG_KEY、BETTER_AUTH_SECRET、BA_AUTH_TOKEN）
+        description: set 模式：用 GitHub secret 的值覆盖（目前支持 ERROR_VIEW_TOKEN、OAUTH_ID_TOKEN_SECRET、SEARCH_PG_KEY、BETTER_AUTH_SECRET、BA_AUTH_TOKEN、TENCENT_SECRET_ID、TENCENT_SECRET_KEY（后两个取 SES 专用 secret））
         required: false
         default: ''
 
@@ -67,4 +67,7 @@ jobs:
           # 测试站登录（Better Auth）：BETTER_AUTH_SECRET 取测试站专用的 BETTER_AUTH_SECRET_STAGING（别和正式站共用），BA_AUTH_TOKEN 取同名 secret
           SECRET_BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET_STAGING }}
           SECRET_BA_AUTH_TOKEN: ${{ secrets.BA_AUTH_TOKEN }}
+          # 测试站登录邮件（腾讯云 SES）：用 SES 专用的一对密钥（SES_TENCENT_*），不用清缓存那对 TENCENT_SECRET_*
+          SECRET_TENCENT_SECRET_ID: ${{ secrets.SES_TENCENT_SECRET_ID }}
+          SECRET_TENCENT_SECRET_KEY: ${{ secrets.SES_TENCENT_SECRET_KEY }}
         run: python3 ops/edgeone-env-sync.py
