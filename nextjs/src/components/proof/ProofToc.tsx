@@ -16,7 +16,7 @@ export function tocRows(toc: TocEntry[], doneCount: (rev: string) => number, liv
     return toc.map(e => ({ ...e, left: live?.[e.vol] ?? Math.max(0, e.n - doneCount(e.rev)) }));
 }
 
-function List({ book, vol, rows, showAll, onPick, onPickVol }: { book: string; vol: string; rows: TocRow[]; showAll: boolean; onPick?: () => void; onPickVol?: (vol: string) => void }) {
+function List({ book, vol, rows, showAll, onPick, onPickVol, live }: { book: string; vol: string; rows: TocRow[]; showAll: boolean; onPick?: () => void; onPickVol?: (vol: string) => void; live?: Readonly<Record<string, number>> }) {
     const [jump, setJump] = useState('');
     const total = rows.reduce((s, r) => s + r.left, 0);
     const openRows = rows.filter(r => r.left > 0 || r.vol === vol);
@@ -25,10 +25,10 @@ function List({ book, vol, rows, showAll, onPick, onPickVol }: { book: string; v
         const cls = 'flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[14px] no-underline';
         const style = { color: 'var(--color-ink)', backgroundColor: cur ? 'var(--color-tint-2)' : undefined, fontWeight: cur ? 600 : 400 };
         const inner = <><span className="truncate">{label}</span><span className="shrink-0 text-[13px] tabular-nums" style={{ color: 'var(--color-ink-3)' }}>{right}</span></>;
-        // 合审里点某册＝滚到该册（不离开合审）；其余是链接
+        // 合审里点某册：该册已载入且还有待审格＝滚到该册（不离开合审）；没载入（排在后面）或已审完＝照常跳到该册校对页
         return (
             <li key={key}>
-                {jumpVol !== undefined && onPickVol
+                {jumpVol !== undefined && onPickVol && (live?.[jumpVol] ?? 0) > 0
                     ? <button type="button" data-testid="toc-item" className={cls} style={style} onClick={() => { onPickVol(jumpVol); onPick?.(); }}>{inner}</button>
                     : <Link href={to} onClick={onPick} aria-current={cur ? 'page' : undefined} data-testid="toc-item" className={cls} style={style}>{inner}</Link>}
             </li>
@@ -75,7 +75,7 @@ export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: st
             <div className="relative hidden shrink-0 self-start xl:flex" style={{ width: rz.width }}>
             <nav aria-label="册目录" data-testid="proof-toc" className="sticky top-[calc(var(--nav-h)+1rem)] max-h-[calc(100vh-var(--nav-h)-3rem)] min-w-0 flex-1 self-start overflow-y-auto border-r pr-3" style={{ borderColor: 'var(--color-tint-2)' }}>
                 <div className="mb-2 text-[12px]" style={{ color: 'var(--color-ink-3)' }}>目录 · 待审约 {total} 格 / {rows.filter(r => r.left > 0).length} 册</div>
-                <List book={book} vol={vol} rows={rows} showAll={showAll} onPickVol={onPickVol} />
+                <List book={book} vol={vol} rows={rows} showAll={showAll} onPickVol={onPickVol} live={live} />
                 {toggle}
             </nav>
             <div role="separator" aria-orientation="vertical" aria-label="拖动调整目录宽度" tabIndex={0} data-testid="toc-resize" title="拖动调整目录宽度（双击还原）"
@@ -93,7 +93,7 @@ export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: st
                         <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
                         <div className="absolute inset-x-0 bottom-0 top-24 overflow-y-auto rounded-t-2xl p-4" style={{ backgroundColor: 'var(--color-paper)' }}>
                             <div className="mb-2 flex items-center justify-between"><b>选择册</b><button type="button" onClick={() => setOpen(false)} aria-label="关闭" className="px-2 text-[20px]">×</button></div>
-                            <List book={book} vol={vol} rows={rows} showAll={showAll} onPick={() => setOpen(false)} onPickVol={onPickVol} />
+                            <List book={book} vol={vol} rows={rows} showAll={showAll} onPick={() => setOpen(false)} onPickVol={onPickVol} live={live} />
                             {toggle}
                         </div>
                     </div>

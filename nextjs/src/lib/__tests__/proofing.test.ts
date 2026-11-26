@@ -3,7 +3,7 @@
  */
 import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
+    parseExtras, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
 } from '../proofing';
@@ -582,5 +582,16 @@ describe('alignFacsToCord：半叶编号的书影对到 cord 页序', () => {
     it('页数不同或尺寸对不上：不乱对位', () => {
         expect(alignFacsToCord([{ seq: '0006a' }], cord).has('0001')).toBe(false);
         expect(alignFacsToCord([{ seq: '0006a', width: 1, height: 1 }, { seq: '0006c' }], cord).has('0001')).toBe(false);
+    });
+});
+
+describe('待审单 grp／dout（manager#1075）', () => {
+    it('grp.m 是己已巳卡候选；dout 只收单字；旧单没有照旧', () => {
+        const base = { a: '1:1:1', c: '巳', pendingReason: 'hard_pair' } as never;
+        const withG = { ...(base as object), ...parseExtras({ grp: { id: 'jyz', m: ['己', '已', '巳', '包'] } }) } as never;
+        expect(hardPairChoices(withG)).toEqual(['己', '已', '巳', '包']);
+        expect(hardPairChoices(base)).toEqual(['己', '已', '巳']);
+        expect(parseExtras({ grp: { m: ['日'] } }).grp).toBeUndefined();
+        expect(parseExtras({ dout: ['曰', '日曰', '曰'] }).dout).toEqual(['曰']);
     });
 });

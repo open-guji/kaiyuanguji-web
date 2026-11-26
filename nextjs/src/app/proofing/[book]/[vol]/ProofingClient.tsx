@@ -29,6 +29,21 @@ interface FacsPage { url: string; hires: string; width: number; height: number }
 const PAGE_SIZE = 20;
 const EMPTY_SET: Set<string> = new Set();
 
+/** 一排带标签的字按钮（同组字、AI 文意候选外的字）：只提示，不预选；点了走相似字同一条提交路径 */
+function CharRow({ testId, label, chars, busy, picked, onPick }: { testId: string; label: string; chars: string[]; busy: boolean; picked?: string; onPick: (c: string, pick: Pick) => void }) {
+    return (
+        <div data-testid={testId} style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: '#555', marginBottom: 4 }}>{label}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {chars.map((c, i) => (
+                    <button key={c} type="button" disabled={busy} aria-pressed={picked === c} aria-label={`选「${c}」`} onClick={() => onPick(c, { src: 'alt', rank: i + 1 })} className={BTN_CLASS}
+                        style={{ ...btnStyle('small', picked === c, busy), fontSize: 18 }}>{shownZi(c)}</button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /** 一册装进来的数据（合审时各册各一份） */
 interface VolInfo {
     rev: string | null;
@@ -499,6 +514,8 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
                 )}
             </fieldset>
             </div>
+            {!hard && cell.grp && <CharRow testId="grp-row" label="同组字（形近一组，不预选）" chars={cell.grp.m} busy={busy} picked={shownChar} onPick={pickChar} />}
+            {cell.dout && <CharRow testId="dout-row" label="AI 文意（候选外，不预选）" chars={cell.dout} busy={busy} picked={shownChar} onPick={pickChar} />}
             {!hard && cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
             {preCand && !done && (
                 <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
@@ -787,6 +804,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const [pendingMore, setPendingMore] = useState(0);
     // 合审待审太多时只载前 MERGED_CELL_LIMIT 格：skipped＝没去载的册数、total＝总表里的待审格总数
     const [capped, setCapped] = useState<{ skipped: number; total: number } | null>(null);
+    // 合审：接着载入后面的册（载完后为 null）
+    const loadMoreRef = useRef<(() => Promise<void>) | null>(null);
     const [toc, setToc] = useState<TocEntry[]>([]);
     const [clsFilter, setClsFilter] = useState<string | null>(null);
     const [images, setImages] = useState<Map<string, FacsPage>>(new Map());
@@ -808,7 +827,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const all = volOrder.flatMap(v => loaded[v]?.cells ?? []);
         if (!merged) return all;
         const open = all.filter(c => !initDone.current.has(c.a)), old = all.filter(c => initDone.current.has(c.a));
-        return [...open, ...old].slice(0, MERGED_CELL_LIMIT);
+        return [...open, ...old];
     }, [volOrder, loaded, merged]);
     const volOf = useCallback((cell: { vol?: string }) => cell.vol ?? vol, [vol]);
     const first = loaded[volOrder[0] ?? vol];
@@ -835,7 +854,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     useEffect(() => {
         if (!BOOK_RE.test(book) || !BOOK_RE.test(vol)) return setState('none');
         let cancelled = false;
-        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null); initDone.current = new Set();
+        setState('loading'); setLoaded({}); setVolOrder([]); setDone({}); setHiddenDone(new Set()); setDeferred([]); setSel(null); setPage(0); setImages(new Map()); setPendingMore(0); setCapped(null); loadMoreRef.current = null; initDone.current = new Set();
         const api = createTextApi(transport);
         const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
         // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
@@ -894,14 +913,26 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                 };
                 await Promise.all(Array.from({ length: merged ? 4 : 1 }, worker));
             };
+            let target = MERGED_CELL_LIMIT;
+            const fill = async () => {
+                while (merged && !cancelled && openCount < target && extra.length) {
+                    let sum = 0, cut = extra.length;
+                    for (let i = 0; i < extra.length; i++) { sum += extra[i].n; if (sum >= target - openCount) { cut = i + 1; break; } }
+                    await loadBatch(extra.slice(0, cut).map(e => e.vol));
+                    extra = extra.slice(cut);
+                }
+                if (merged && !cancelled) setCapped(extra.length ? { skipped: extra.length, total: totalPending } : null);
+            };
             await loadBatch(vols);
-            while (merged && !cancelled && openCount < MERGED_CELL_LIMIT && extra.length) {
-                let sum = 0, cut = extra.length;
-                for (let i = 0; i < extra.length; i++) { sum += extra[i].n; if (sum >= MERGED_CELL_LIMIT - openCount) { cut = i + 1; break; } }
-                await loadBatch(extra.slice(0, cut).map(e => e.vol));
-                extra = extra.slice(cut);
+            await fill();
+            let busy = false;
+            if (merged && extra.length && !cancelled) {
+                loadMoreRef.current = async () => {
+                    if (busy || !extra.length) return;
+                    busy = true; target = openCount + MERGED_CELL_LIMIT;
+                    try { await fill(); } finally { busy = false; }
+                };
             }
-            if (merged && extra.length && !cancelled) setCapped({ skipped: extra.length, total: totalPending });
             if (!cancelled && !ready && !ended) setState(failed ? 'error' : 'none');
         })().catch(() => { if (!cancelled) setState('error'); });
         return () => { cancelled = true; };
@@ -1153,6 +1184,13 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         for (const c of cells) if (!done[c.a]) m[volOf(c)] = (m[volOf(c)] ?? 0) + 1;
         return m;
     }, [loaded, cells, done, volOf]);
+    // 合审：还没载入的册里剩多少（总表发布值扣本机已回应）；右上总数＝已载入格＋这部分，与左侧目录同口径
+    const unloadedLeft = useMemo(() => toc.reduce((n, e) => n + (loaded[e.vol] ? 0 : Math.max(0, e.n - Object.keys(readDone(e.rev)).length)), 0), [toc, loaded]);
+    // 合审：眼前没回应的格快审完时，自动接着载后面的册
+    const openLeft = useMemo(() => cells.filter(c => !done[c.a]).length, [cells, done]);
+    useEffect(() => {
+        if (merged && capped && pendingMore === 0 && openLeft < 30) void loadMoreRef.current?.();
+    }, [merged, capped, pendingMore, openLeft]);
     const header = <ProofingHeader book={book} vol={vol} info={info} chapterTitle={chapterTitle} versionKey={versionKey} />;
     const note = (t: string) => <>{header}<div className="mx-auto max-w-[1400px] px-4 py-8" style={{ color: 'var(--color-ink-2)' }}>{t}</div></>;
     if (state === 'loading') return note('加载中…');
@@ -1170,7 +1208,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             <div className="xl:flex xl:items-start xl:gap-5">
             <ProofToc book={book} vol={vol} toc={toc} live={liveLeft} onPickVol={merged ? jumpToVol : undefined} />
             <div className="min-w-0 flex-1">
-            <ProofingIntro total={merged && capped ? capped.total : merged && pendingMore > 0 ? Math.max(cells.length, toc.reduce((n, e) => n + e.n, 0)) : cells.length} done={doneCount} />
+            <ProofingIntro total={merged ? cells.length + unloadedLeft : cells.length} done={doneCount} />
             {inflight > 0 && <p data-testid="sync-status" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>正在后台提交 {inflight} 格…没交完前请先别关页面。</p>}
             {Object.keys(failed).length > 0 && (
                 <div role="alert" data-testid="sync-failed" style={{ border: '1px solid #e0b4b4', background: '#fdf3f3', color: '#a33', borderRadius: 6, padding: '8px 12px', margin: '8px 0', fontSize: 13 }}>
@@ -1179,7 +1217,12 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                 </div>
             )}
             {merged && pendingMore > 0 && <p data-testid="merged-loading" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>还在载入待审单…</p>}
-            {merged && capped && pendingMore === 0 && <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>待审较多，只加载前 {MERGED_CELL_LIMIT} 格没回应过的（全部共约 {capped.total} 格，已回应过的排在后面）。校完这些再刷新，会接着载入后面的；想看某一册，请去该册的校对页。</p>}
+            {merged && capped && pendingMore === 0 && (
+                <p data-testid="merged-capped" style={{ color: 'var(--color-ink-3)', fontSize: 13 }}>
+                    待审较多，先载入了前面约 {MERGED_CELL_LIMIT} 格没回应过的，后面还有 {capped.skipped} 册没载入（全部约 {cells.length + unloadedLeft - doneCount} 格待审，与左侧目录一致）。快审完时会自动接着载入；
+                    <button type="button" data-testid="merged-more" onClick={() => void loadMoreRef.current?.()} className={BTN_CLASS} style={{ ...btnStyle('small', false, false), marginLeft: 4 }}>现在就载入更多</button>
+                </p>
+            )}
             {cells.length === 0 && <p>这一章的字都已校完，谢谢！</p>}
             {cells.length > 0 && (
                 <div className="lg:flex lg:items-start lg:gap-6">

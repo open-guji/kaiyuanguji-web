@@ -158,6 +158,16 @@ describe('精校页显示（GUJI-557）', () => {
         expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ choice: 'char', char: alt[2].c, pick_src: 'alt', pick_rank: 3, pivot: '弊' });
     });
 
+    it('grp／dout：标「同组字」一排和「AI 文意（候选外）」一排，不预选', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '弊', grp: { id: 'g1', m: ['弊', '獘'] }, dout: ['蔽'] }]));
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const g = await screen.findByTestId('grp-row');
+        expect(g.textContent).toContain('同组字');
+        expect(within(g).getAllByRole('button')).toHaveLength(2);
+        expect(within(screen.getByTestId('dout-row')).getByRole('button', { name: '选「蔽」' })).toBeTruthy();
+        expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0);
+    });
+
     it('己已巳卡（hard_pair）：候选只给己已巳三个，没有「还有 N 个」和相似字；手写、备注、错误类型仍在', async () => {
         loadProofing.mockResolvedValue(ok([{
             a: '1:1:1', c: '巳', pendingReason: 'hard_pair', cand: [{ c: '巳' }, { c: '已' }],
@@ -701,8 +711,22 @@ describe('合审（跨册）与目录', () => {
         loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
         render(<ProofingClient book="b9" vol="_all" />);
         const note = await screen.findByTestId('merged-capped');
-        expect(note.textContent).toContain('只加载前 200 格');
+        expect(note.textContent).toContain('先载入了前面约 200 格');
         expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003 不载
+    });
+
+    it('合审：点「现在就载入更多」接着载后面的册；目录里没载入的册点了是链接', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: 'r1', n: 150 }, '002': { rev: 'r2', n: 150 }, '003': { rev: 'r3', n: 150 } } });
+        const many = (n: number) => Array.from({ length: n }, (_, i) => ({ a: `1:1:${i + 1}`, c: '己' }));
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
+        render(<ProofingClient book="b9" vol="_all" />);
+        const more = await screen.findByTestId('merged-more');
+        await waitFor(() => expect(within(screen.getByTestId('proof-toc')).getAllByTestId('toc-item').length).toBeGreaterThan(2));
+        const item3 = within(screen.getByTestId('proof-toc')).getAllByTestId('toc-item').find(i => (i.textContent ?? '').includes('003'));
+        expect(item3).toHaveAttribute('href', '/proofing/b9/003');
+        fireEvent.click(more);
+        await waitFor(() => expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002', '003']));
+        await waitFor(() => expect(screen.queryByTestId('merged-capped')).toBeNull());
     });
 
     it('合审：前面的册全是已回应过的，就往后补载，没回应的排在前面', async () => {
