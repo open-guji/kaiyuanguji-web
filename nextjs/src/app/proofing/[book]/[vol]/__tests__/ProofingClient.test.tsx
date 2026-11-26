@@ -701,8 +701,22 @@ describe('合审（跨册）与目录', () => {
         loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
         render(<ProofingClient book="b9" vol="_all" />);
         const note = await screen.findByTestId('merged-capped');
-        expect(note.textContent).toContain('只加载前 200 格');
+        expect(note.textContent).toContain('先载入了前面约 200 格');
         expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002']);   // 003 不载
+    });
+
+    it('合审：点「现在就载入更多」接着载后面的册；目录里没载入的册点了是链接', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: 'r1', n: 150 }, '002': { rev: 'r2', n: 150 }, '003': { rev: 'r3', n: 150 } } });
+        const many = (n: number) => Array.from({ length: n }, (_, i) => ({ a: `1:1:${i + 1}`, c: '己' }));
+        loadProofing.mockImplementation(async (_d: unknown, _b: string, v: string) => volOk(`${v}-r`, many(150)));
+        render(<ProofingClient book="b9" vol="_all" />);
+        const more = await screen.findByTestId('merged-more');
+        await waitFor(() => expect(within(screen.getByTestId('proof-toc')).getAllByTestId('toc-item').length).toBeGreaterThan(2));
+        const item3 = within(screen.getByTestId('proof-toc')).getAllByTestId('toc-item').find(i => (i.textContent ?? '').includes('003'));
+        expect(item3).toHaveAttribute('href', '/proofing/b9/003');
+        fireEvent.click(more);
+        await waitFor(() => expect(loadProofing.mock.calls.map(c => c[2]).sort()).toEqual(['001', '002', '003']));
+        await waitFor(() => expect(screen.queryByTestId('merged-capped')).toBeNull());
     });
 
     it('合审：前面的册全是已回应过的，就往后补载，没回应的排在前面', async () => {
