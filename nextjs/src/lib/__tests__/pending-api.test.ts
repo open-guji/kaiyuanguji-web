@@ -11,7 +11,7 @@ const ADMIN = { Authorization: 'Bearer right', 'Content-Type': 'application/json
 const B = 'd59f2870u874';
 const post = (body: unknown, headers: Record<string, string> = ADMIN) => ({ request: new Request('https://x/api/pending', { method: 'POST', headers, body: JSON.stringify(body) }) });
 const get = (qs: string) => ({ request: new Request(`https://x/api/pending?${qs}`) });
-const doc = () => ({ rev: '004-r3', sprites: [], cells: [{ cell: '1:1:1', id: 'pi_000000000001', ver: 1 }, { cell: '1:1:2', id: 'pi_000000000002', ver: 1 }] });
+const doc = () => ({ sprites: [], cells: [{ cell: '1:1:1', id: 'pi_000000000001', ver: 1 }, { cell: '1:1:2', id: 'pi_000000000002', ver: 1 }] });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 beforeAll(async () => { fn = await import('../../../../edge-functions/api/pending.js'); });
@@ -30,19 +30,18 @@ describe('/api/pending', () => {
         expect((await j(r)).cells).toHaveLength(2);
         expect((await fn.onRequestGet(get('book=!!&vol=004'))).status).toBe(400);
     });
-    it('写要管理令牌；doc 要有 rev 和 cells', async () => {
+    it('写要管理令牌；doc 要有 cells（没有 rev）', async () => {
         expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }, { 'Content-Type': 'application/json' }))).status).toBe(401);
-        expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { rev: 'x' } }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { sprites: [] } }))).status).toBe(400);
         expect(store.size).toBe(0);
     });
-    it('hide：按条目或格号撤下，进 withdrawn；unhide 放回；expect_rev 对不上 409', async () => {
+    it('hide：按条目或格号撤下，进 withdrawn；unhide 放回；没有 rev／expect_rev', async () => {
         await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
         const h = await j(await fn.onRequestPost(post({ op: 'hide', book: B, vol: '004', items: ['pi_000000000001'], why: '误报', by: 'A31' })));
         expect(h).toMatchObject({ success: true, changed: 1, cells: 1 });
         const d = JSON.parse(store.get(`pd:${B}:004`)!).doc;
         expect(d.cells.map((c: { cell: string }) => c.cell)).toEqual(['1:1:2']);
         expect(d.withdrawn[0]).toMatchObject({ cell: '1:1:1', withdrawn: { by: 'A31', why: '误报' } });
-        expect((await fn.onRequestPost(post({ op: 'hide', book: B, vol: '004', cells: ['1:1:2'], expect_rev: 'old' }))).status).toBe(409);
         const u = await j(await fn.onRequestPost(post({ op: 'unhide', book: B, vol: '004', cells: ['1:1:1'] })));
         expect(u).toMatchObject({ changed: 1, cells: 2 });
         const d2 = JSON.parse(store.get(`pd:${B}:004`)!).doc;
@@ -88,7 +87,7 @@ describe('读时现算（Worker /v1/web/pending-live）', () => {
 
 describe('超 900 KB 的单子分块存放', () => {
     it('put 大单 → 主行＋续块；公开读拼回；hide 照常；改小后续块删掉；delete 全删', async () => {
-        const big = { rev: '004-r9', sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
+        const big = { sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
         expect(JSON.stringify(big).length).toBeGreaterThan(1_800 * 1024);
         expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: big }))).status).toBe(200);
         const main = JSON.parse(store.get(`pd:${B}:004`)!);

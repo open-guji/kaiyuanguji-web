@@ -30,7 +30,7 @@ afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 afterAll(() => { g.fetch = realFetch; });
 
 const PRIMARY = { WEB_INBOX_URL: 'https://w.example', WEB_INBOX_TOKEN: 't' };
-const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', rev: 'vol01-r1', aid: 'aid_abcdefgh1234', shown: '於', choice: 'char', char: '于' };
+const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', item: 'pi_0123456789ab', aid: 'aid_abcdefgh1234', shown: '於', choice: 'char', char: '于' };
 const post = (body: unknown, env: Record<string, string> = PRIMARY) => {
     const request = new Request('https://x/api/cellreview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     (request as unknown as { eo: unknown }).eo = { clientIp: '1.2.3.4' };
@@ -47,7 +47,7 @@ describe('cellreview · D1 为真源', () => {
         expect(calls[0].url).toBe('https://w.example/v1/web/inbox');
         const item = JSON.parse(calls[0].init.body as string).items[0];
         expect(item.kind).toBe('cellreview');
-        expect(item.key).toMatch(/^cr:vol01-r1:d59f2870u874:12:3:7:[0-9a-f]{16}$/);
+        expect(item.key).toMatch(/^cr:i:d59f2870u874:pi_0123456789ab:[0-9a-f]{16}$/);
         expect(item.value.char).toBe('于');
     });
     it('POST：Worker 5xx 重试一次，仍失败回 500，且不写 KV', async () => {

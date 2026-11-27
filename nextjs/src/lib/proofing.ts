@@ -172,8 +172,6 @@ export function parseSent(raw: unknown): PendingSent[] {
 }
 
 export interface PendingData {
-    /** 提交时必须原样带回；缺失／非法时为 null（页面不放提交） */
-    rev: string | null;
     cells: PendingCell[];
     /** 已放行格的 AI 摘要（GM3 11-27：待审单顶层 released:[{u,ai}]），审阅用，不入待审 */
     released: { u: number; ai: AiAnalysis }[];
@@ -481,16 +479,14 @@ export function spriteUrl(book: string, pendingFile: string | null, s: string, b
     return dir && /^[\w.-]+$/.test(dir) && /^[\w-]+$/.test(book) && SPRITE_FILE.test(s) ? `${base}/${book}/${dir}/${s}` : null;
 }
 
-const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
-
 // ---- COS 上的待审单（中心库每日发布，ai-team `team/整理/设计/待审单与公众意见走中心库.md`）----
-//   proof/index.json            {books: {<书>: {<章>: {rev, n}}}}   n＝待审格数
+//   proof/index.json            {books: {<书>: {<章>: {n}}}}   n＝待审格数（静态值；精校页打开时再用现算的剩余格数盖掉）
 //   proof/<书>/<章>.pending.json  与 book-text 的 NNN.pending.json 同格式
 // 发布前（index.json 取不到）一切照旧走 book-text。
 
 export const PROOF_BASE = PROOF_SPRITE_BASE;
 
-export interface ProofIndexEntry { rev: string; n: number }
+export interface ProofIndexEntry { n: number }
 export type ProofIndex = Record<string, Record<string, ProofIndexEntry>>;
 
 export function parseProofIndex(raw: unknown): ProofIndex | null {
@@ -503,7 +499,7 @@ export function parseProofIndex(raw: unknown): ProofIndex | null {
         for (const [chap, e] of Object.entries(c)) {
             const r = asRecord(e);
             if (!r || typeof r.n !== 'number' || !Number.isFinite(r.n)) continue;
-            (out[book] ??= {})[chap] = { rev: typeof r.rev === 'string' ? r.rev : '', n: r.n };
+            (out[book] ??= {})[chap] = { n: r.n };
         }
     }
     return out;
@@ -578,7 +574,7 @@ export async function loadLiveCounts(book: string, fetchImpl: typeof fetch = fet
     }
 }
 
-/** 把现算的剩余格数盖到总表上：只改总表里已有的章的 n（rev 不动；总表没列的章不加，没算到的章沿用静态数）。不改入参 */
+/** 把现算的剩余格数盖到总表上：只改总表里已有的章的 n（总表没列的章不加，没算到的章沿用静态数）。不改入参 */
 export function applyLiveCounts(index: ProofIndex | null, book: string, counts: Record<string, number> | null): ProofIndex | null {
     const chaps = index?.[book];
     if (!index || !chaps || !counts) return index;
@@ -619,7 +615,6 @@ const asObject = (v: unknown): Record<string, unknown> | null => (v && typeof v 
 /** pending.json → 待审格列表（已校过的 `human` 不要）。坏数据不抛 */
 export function parsePending(raw: unknown): PendingData {
     const o = asObject(raw);
-    const rev = typeof o?.rev === 'string' && RE_REV.test(o.rev) ? o.rev : null;
     const rawList = Array.isArray(raw) ? raw : o?.cells;
     // 规范（book-text#148）格号键叫 `cell`；mock 与旧样张叫 `a`，两种都收
     const list = (Array.isArray(rawList) ? rawList : []).map(item => {
@@ -647,7 +642,7 @@ export function parsePending(raw: unknown): PendingData {
         const ai = parseAi(r?.ai);
         return r && isU(r.u) && ai ? [{ u: r.u as number, ai }] : [];
     });
-    return { rev, cells, released };
+    return { cells, released };
 }
 
 export interface CordIndex {
@@ -982,8 +977,7 @@ export interface ReviewDraft {
     book: string;
     vol: string;
     a: string;
-    rev: string;
-    /** 待审条目 id 与版本（单上有就带；端点按条目记票） */
+    /** 待审条目 id 与版本（端点按条目记票，没有批号；缺 item 端点会拒） */
     item?: string;
     ver?: number;
     /** 字格永久编号（单上有就带；键不变，只进值） */
@@ -1038,16 +1032,17 @@ export async function submitReview(draft: ReviewDraft, aid: string, fetchImpl: t
 
 // ---- 本地记录（localStorage，读写都包 try/catch，没有也能用）----
 
-const DONE_KEY = (rev: string) => `kyg-cr-done:${rev}`;
+// 本机状态按条目存（每册一份：{条目 id: 回应}），不随待审单换版丢失
+const DONE_KEY = (book: string, vol: string) => `kyg-cr-done:i:${book}:${vol}`;
 
 // 客户端随机 id 挪到 lib/aid.ts（整册意见页也用，不必拖上本文件的 book-index-ui）
 export { getAid };
 
 export type DoneMap = Record<string, string>;
 
-export function readDone(rev: string): DoneMap {
+export function readDone(book: string, vol: string): DoneMap {
     try {
-        const raw = localStorage.getItem(DONE_KEY(rev));
+        const raw = localStorage.getItem(DONE_KEY(book, vol));
         const o = raw ? JSON.parse(raw) : null;
         return o && typeof o === 'object' && !Array.isArray(o) ? (o as DoneMap) : {};
     } catch {
@@ -1055,24 +1050,24 @@ export function readDone(rev: string): DoneMap {
     }
 }
 
-export function writeDone(rev: string, done: DoneMap): void {
-    try { localStorage.setItem(DONE_KEY(rev), JSON.stringify(done)); } catch { /* 存不了就算了 */ }
+export function writeDone(book: string, vol: string, done: DoneMap): void {
+    try { localStorage.setItem(DONE_KEY(book, vol), JSON.stringify(done)); } catch { /* 存不了就算了 */ }
 }
 
 /** 快速确认里勾了「存疑」、挪去逐格细看的格（只存本机，换设备就回到快速确认里） */
-const DEFER_KEY = (rev: string) => `kyg-cr-defer:${rev}`;
+const DEFER_KEY = (book: string, vol: string) => `kyg-cr-defer:i:${book}:${vol}`;
 
-export function readDefer(rev: string): string[] {
+export function readDefer(book: string, vol: string): string[] {
     try {
-        const o = JSON.parse(localStorage.getItem(DEFER_KEY(rev)) ?? '[]');
+        const o = JSON.parse(localStorage.getItem(DEFER_KEY(book, vol)) ?? '[]');
         return Array.isArray(o) ? o.filter((x): x is string => typeof x === 'string') : [];
     } catch {
         return [];
     }
 }
 
-export function writeDefer(rev: string, list: string[]): void {
-    try { localStorage.setItem(DEFER_KEY(rev), JSON.stringify(list)); } catch { /* 存不了就算了 */ }
+export function writeDefer(book: string, vol: string, list: string[]): void {
+    try { localStorage.setItem(DEFER_KEY(book, vol), JSON.stringify(list)); } catch { /* 存不了就算了 */ }
 }
 
 // ---- 目录与合审（跨册） ----
@@ -1081,7 +1076,7 @@ export function writeDefer(rev: string, list: string[]): void {
 export const ALL_VOL = '_all';
 export const isAllVol = (vol: string): boolean => vol === ALL_VOL;
 
-export interface TocEntry { vol: string; title: string; n: number; rev: string }
+export interface TocEntry { vol: string; title: string; n: number }
 
 /** 总表里这本书的各册（册号升序）。标题取 titles（章目录），没有就「册 <号>」 */
 /** 目录/审阅卡标题：三位册序号＋章名，如「014 紀事本末類（卷四十九）」；没有章名退回「册 014」 */
@@ -1095,7 +1090,7 @@ export function buildToc(index: ProofIndex | null, book: string, titles?: Readon
     if (!chaps) return [];
     return Object.entries(chaps)
         .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
-        .map(([vol, e]) => ({ vol, n: e.n, rev: e.rev, title: volTitle(vol, titles?.get(vol)) }));
+        .map(([vol, e]) => ({ vol, n: e.n, title: volTitle(vol, titles?.get(vol)) }));
 }
 
 /** 章目录里 文件名主干（即册号）→ 标题；取不到给空表，目录退回册号 */
