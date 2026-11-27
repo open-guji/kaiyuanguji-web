@@ -20,7 +20,7 @@ import {
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndex, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
-    QUICK_GROUPS, quickPick, readDefer, writeDefer,
+    QUICK_GROUPS, quickPick, readDefer, writeDefer, type AiAnalysis,
 } from '@/lib/proofing';
 
 /** 书影一页：阅读档、原图档地址与像素宽高 */
@@ -221,15 +221,56 @@ function shapeSentence(cell: PendingCell): string | null {
     return a ? `最像本书别处的「${shownZi(a.c)}」，但把握不大` : null;
 }
 
+const AI_K_LABEL = { high: '把握大', mid: '把握中', low: '把握小' } as const;
+const AI_R_COLOR: Record<string, string> = { 同字: '#2e7d32', 异字: '#b23b1d', 查无: '#888', 取不到: '#888', 无检索: '#888' };
+
+/** AI 倾向（常显一句话）＋「AI 分析」折叠（详情、查证日志、来源）；AI 只是参考，请以图为准 */
+function AiSummary({ ai }: { ai: AiAnalysis }) {
+    const hasMore = !!(ai.d || ai.log?.length || ai.refs?.length);
+    return (
+        <div data-testid="ai-summary">
+            <div data-testid="ai-line">
+                <b>AI 倾向</b>：{ai.c ? <>「{zis(ai.c)}」{ai.k ? <span style={{ color: '#888' }}>（{AI_K_LABEL[ai.k]}）</span> : null}</> : '暂无倾向字'}
+                {' '}{ai.s}
+                {ai.st === 'released' && <span style={{ color: '#2e7d32' }}>　已放行</span>}
+                <span style={{ color: '#888' }}>　仅供参考，请以图为准</span>
+            </div>
+            {hasMore && (
+                <details data-testid="ai-detail" style={{ marginTop: 2 }}>
+                    <summary style={{ cursor: 'pointer', color: '#7a3b1d' }}>AI 分析</summary>
+                    {ai.d && <div style={{ margin: '4px 0', whiteSpace: 'pre-wrap' }}>{ai.d}</div>}
+                    {ai.log?.length ? (
+                        <ul data-testid="ai-log" style={{ margin: '4px 0', paddingLeft: 18 }}>
+                            {ai.log.map((l, i) => (
+                                <li key={i}>
+                                    {l.src ? <span style={{ color: '#888' }}>{l.src}　</span> : null}
+                                    <span style={{ color: AI_R_COLOR[l.r] ?? '#888' }}>{l.r}</span>
+                                    {'　'}{l.u ? <a href={l.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{l.t}</a> : l.t}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : null}
+                    {ai.refs?.length ? (
+                        <div data-testid="ai-refs"><b>来源</b>：{ai.refs.map((r, i) => <span key={r.u}>{i ? '　' : ''}<a href={r.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{r.t}</a></span>)}</div>
+                    ) : null}
+                </details>
+            )}
+        </div>
+    );
+}
+
 /** 机器怎么看这一格：两句话常显，其余收在「更多机器判断」里。全用大白话，不出现术语、缩写和英文 */
 function Evidence({ cell }: { cell: PendingCell }) {
     const summary: React.ReactNode[] = [];
     const shape = shapeSentence(cell);
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
-    if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}<span style={{ color: '#888' }}>　仅供参考，请以图为准</span></div>);
+    const ai = cell.ai;
+    if (ai) summary.push(<AiSummary key="ai" ai={ai} />);
+    if (ai) { /* 有 ai 摘要时，旧的点校倾向／查证备注／来源不再重复显示 */ }
+    else if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}<span style={{ color: '#888' }}>　仅供参考，请以图为准</span></div>);
     else if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
-    if (cell.dianNote) summary.push(<div key="dnote" data-testid="dian-note"><b>点校查证</b>：{cell.dianNote}</div>);
-    if (cell.refs?.length) summary.push(<div key="refs" data-testid="dian-refs"><b>来源</b>：{cell.refs.map((r, i) => <span key={r.u}>{i ? '　' : ''}<a href={r.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{r.t}</a></span>)}</div>);
+    if (cell.dianNote && !ai) summary.push(<div key="dnote" data-testid="dian-note"><b>点校查证</b>：{cell.dianNote}</div>);
+    if (cell.refs?.length && !ai) summary.push(<div key="refs" data-testid="dian-refs"><b>来源</b>：{cell.refs.map((r, i) => <span key={r.u}>{i ? '　' : ''}<a href={r.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{r.t}</a></span>)}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
     if (cell.pendingReason || cell.cls) {

@@ -35,8 +35,57 @@ export interface AltCand { c: string; s?: number; p?: string; src?: string; g?: 
 export const ALT_SHOW = 10;
 export const ALT_MAX = 30;
 
+/** AI 三层摘要（GM3 11-27）：常显一句话 s，折叠详情 d、查证日志 log、来源 refs */
+export interface AiLogItem { src: string; r: '同字' | '异字' | '查无' | '取不到' | '无检索'; t: string; u?: string }
+export interface AiAnalysis {
+    c?: string;
+    k?: 'high' | 'mid' | 'low';
+    st?: 'pending' | 'released' | 'unsure';
+    lv?: 'L1' | 'L2' | 'L3';
+    s: string;
+    d?: string;
+    log?: AiLogItem[];
+    refs?: { u: string; t: string }[];
+}
+
+const AI_RESULTS = ['同字', '异字', '查无', '取不到', '无检索'] as const;
+const httpUrl = (v: unknown): string | undefined => (typeof v === 'string' && /^https?:\/\//.test(v) ? v : undefined);
+
+export function parseAi(raw: unknown): AiAnalysis | undefined {
+    const o = asObject(raw);
+    if (!o) return undefined;
+    const s = str(o.s)?.slice(0, 80);
+    if (!s) return undefined;
+    const out: AiAnalysis = { s };
+    if (str(o.c) && [...(o.c as string)].length === 1) out.c = o.c as string;
+    if (o.k === 'high' || o.k === 'mid' || o.k === 'low') out.k = o.k;
+    if (o.st === 'pending' || o.st === 'released' || o.st === 'unsure') out.st = o.st;
+    if (o.lv === 'L1' || o.lv === 'L2' || o.lv === 'L3') out.lv = o.lv;
+    if (str(o.d)) out.d = (o.d as string).slice(0, 600);
+    if (Array.isArray(o.log)) {
+        const log = o.log.flatMap(x => {
+            const l = asObject(x);
+            const t = str(l?.t);
+            const r = (AI_RESULTS as readonly unknown[]).includes(l?.r) ? (l?.r as AiLogItem['r']) : undefined;
+            return l && t && r ? [{ src: str(l.src) ?? '', r, t: t.slice(0, 80), ...(httpUrl(l.u) ? { u: httpUrl(l.u) } : {}) }] : [];
+        });
+        if (log.length) out.log = log;
+    }
+    if (Array.isArray(o.refs)) {
+        const refs = o.refs.flatMap(r => {
+            const x = asObject(r);
+            const u = httpUrl(x?.u);
+            return u ? [{ u, t: str(x?.t) ?? u }] : [];
+        }).slice(0, 5);
+        if (refs.length) out.refs = refs;
+    }
+    return out;
+}
+
 /** guji-proof/0.2 新增字段，全部可选；0.1 的 pending.json 一个都没有 */
 export interface PendingExtras {
+    /** AI 三层摘要；出现时优先于 ctx.why / dianNote（旧字段保留兼容） */
+    ai?: AiAnalysis;
     why?: string[];
     /** 待审原因（cv `review/pending_reason.py`，sheldon 11-03 定）：英文 enum 名，认不出按 unknown；老单没有这个键 */
     pendingReason?: PendingReason;
@@ -161,6 +210,10 @@ export function parseExtras(raw: unknown): PendingExtras {
         if (g && m.length >= 2) out.grp = { ...(str(g.id) ? { id: str(g.id) } : {}), m };
         const d = one(it.dout);
         if (d.length) out.dout = d;
+    }
+    {
+        const ai = parseAi(it.ai);
+        if (ai) out.ai = ai;
     }
     if (str(it.cls)) out.cls = str(it.cls);
     if (str(it.cls_sub)) out.clsSub = str(it.cls_sub);
