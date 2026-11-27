@@ -263,6 +263,23 @@ export async function deletePendingDoc(context, key) {
   await deleteInboxStrict(context, 'pending', key);
 }
 
+/** 待审单现算（Worker GET /v1/web/pending-live，GM4 11-27）：按中心库事件现算这一章哪些条目已落定、附 AI 摘要。
+ *  返回 `{found, hide:{条目 id:原因}, ai:{条目 id:摘要块}, at}`；读不到、超时、这章没有条目都返回 null（调用方原样给整张单，不挡读者）。 */
+export async function readPendingLive(context, book, vol) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) return null;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 3000);
+  try {
+    const res = await fetch(`${base}/v1/web/pending-live?${new URLSearchParams({ book, vol })}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+    if (!res.ok) return null;
+    const live = await res.json();
+    return live && live.found ? live : null;
+  } catch {
+    return null;
+  } finally { clearTimeout(timer); }
+}
+
 /** 读单键；没有返回 null。 */
 export async function readInboxOne(context, kind, key) {
   const page = await readInboxPage(context, { kind, prefix: key, limit: 20 });

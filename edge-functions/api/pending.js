@@ -2,6 +2,9 @@
 //
 //   GET  公开 —— ?book=<书>&vol=<章> 返回该章当前待审单（guji-proof 同格式的 JSON，与 COS 的 proof/<书>/<章>.pending.json 一致），
 //        边缘短缓存 15 秒。没有给 404，页面退回读 COS。
+//        读时现算（GM4 11-27，用户 11-26 定「格一落定即从网站待审消失」）：整张单读出后再问 Worker /v1/web/pending-live，
+//        把事件已落定（人裁、AI 裁定）或条目已撤下／已结的格从 cells 拿掉，给没落定的格挂 AI 摘要。单本身不改，
+//        不等 collect、换单、发站；Worker 读不到就原样给整张单（不挡读者）。?live=0 跳过现算（排查用）。
 //   POST 管理（FEEDBACK_ADMIN_TOKEN）—— 改单，不走 COS 发布、不等 CDN：
 //        {op:'put',   book, vol, doc}              整张单替换（doc.rev 必填，cells 数组）
 //        {op:'hide',  book, vol, items:[条目 id…], cells:[格号…], why?, by?}   撤下：这些格从单上拿掉，记进 withdrawn[]（与 guji-manager export 同一键，可 unhide 放回）
@@ -12,7 +15,7 @@
 // key：`pd:<book>:<vol>`，值是整张单 JSON（几十 KB，EdgeOne KV 单值上限 25 MB），不设过期。
 // 图仍在 COS（文件名带内容哈希、不可变）：put 之前，调用方要保证单里 sprites[] 的图已在 COS（manager 会 HEAD 核对，缺图就走 proofing-sync）。
 
-import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendingDoc, writePendingDoc, deletePendingDoc } from './feedback.js';
+import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendingDoc, writePendingDoc, deletePendingDoc, readPendingLive } from './feedback.js';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -28,6 +31,24 @@ export const pdKey = (book, vol) => `pd:${book}:${vol}`;
 const itemOf = (c) => (c && typeof c.id === 'string' ? c.id : '');
 const cellOf = (c) => (c && (c.cell || c.a)) || '';
 
+/** 把现算结果用到单上：hide 里的条目拿掉，ai 里的条目挂摘要；doc.live 记这次拿掉几格（页面不读，排查用）。 */
+export function applyLive(doc, live) {
+  if (!live || !live.found || !Array.isArray(doc.cells)) return doc;
+  const hide = live.hide || {};
+  const ai = live.ai || {};
+  const cells = [];
+  let hidden = 0;
+  let attached = 0;
+  for (const c of doc.cells) {
+    const id = itemOf(c);
+    if (id && hide[id]) { hidden += 1; continue; }
+    if (id && ai[id]) { attached += 1; cells.push({ ...c, ai: ai[id] }); } else cells.push(c);
+  }
+  const out = { ...doc, cells, live: { at: live.at, hidden, ai: attached, of: doc.cells.length } };
+  if (hidden && doc.items && doc.items.n && typeof doc.items.n.open === 'number') out.items = { ...doc.items, n: { ...doc.items.n, open: Math.max(0, doc.items.n.open - hidden) } };
+  return out;
+}
+
 function validDoc(doc) {
   return !!doc && typeof doc === 'object' && !Array.isArray(doc) && typeof doc.rev === 'string' && RE_REV.test(doc.rev) && Array.isArray(doc.cells);
 }
@@ -41,7 +62,8 @@ export async function onRequestGet(context) {
     if (!RE_BOOK.test(book) || !RE_VOL.test(vol)) return json({ ...headers, 'Cache-Control': 'no-store' }, 400, { success: false, error: 'book／vol 无效' });
     const doc = await readPendingDoc(context, pdKey(book, vol));
     if (!doc) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 404, { success: false, error: '无' });
-    return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, doc);
+    const live = url.searchParams.get('live') === '0' ? null : await readPendingLive(context, book, vol);
+    return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, applyLive(doc, live));
   } catch (e) {
     console.error('Pending GET error:', e && e.message ? e.message : e);
     // 上游（D1 收件箱）读不到：回 503＋原因，页面据此退回读 COS；不缓存
