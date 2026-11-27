@@ -44,6 +44,15 @@ export const PENDING_REASONS = {
         "hint": "这一格切得不完整，机器认不出字；请看书影，把字直接写进框里",
         "ui": "free"
     },
+    // S05 manual_cells_remapped：这一列是人钉的格，列图变了、钉子已自动换到新列图，有的格挪了 3px 以上（manager v0.6.37；本条先按 GM2 来信手补，下次从 manager 重新生成会覆盖）
+    "manual_cells_remapped": {
+        "code": "S05",
+        "category": "segmentation",
+        "route": "human",
+        "label": "钉子换算待核",
+        "hint": "这一列是人钉的格，列图变了、钉子已自动换到新列图，有的格挪了 3px 以上；看格框还框不框得住字，字对就确认",
+        "ui": "confirm"
+    },
     // D01 occluded_with_ref：成因 D（印章框内＋噪点≥4），整理本有字
     "occluded_with_ref": {
         "code": "D01",
