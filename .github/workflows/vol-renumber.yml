@@ -1,0 +1,70 @@
+name: Vol renumber (manual)
+
+# 册号位数统一：把一部书在 D1 收件箱里按 <书>/<册> 挂的记录改成新位数写法（代码与说明见 ops/vol-renumber.mjs）。
+# 只能手动触发，默认 dry_run（只读，只打印计数与键，不打印正文）；真跑前先用 backup=true 跑一次存备份。
+# 备份作为 Actions artifact 只留 3 天；artifact 在公开仓里登录 GitHub 的人都能下，所以只含这本书的票/意见/待审单行（会员号，无邮箱）。
+# 鉴权用 secrets.FEEDBACK_ADMIN_TOKEN。
+
+on:
+  workflow_dispatch:
+    inputs:
+      book:
+        description: '书 id，如 99k3i35yww（脉经）'
+        required: true
+      width:
+        description: '目标册号位数（1–9 册填 1，10–99 册填 2，100 起填 3）'
+        required: true
+      map:
+        description: '非数字册名映射，逗号分隔，如 bxgb=1（可空）'
+        default: ''
+      backup:
+        description: '先把这本书相关的行存成 artifact'
+        type: boolean
+        default: true
+      dry_run:
+        description: '只读，不写（取消勾选才真改）'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vol-renumber
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: vol-renumber${{ inputs.dry_run && '（dry_run）' || '（真跑）' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests (ops/vol-renumber)
+        run: node --test ops/tests/vol-renumber.test.mjs
+      - name: Run
+        env:
+          WEB_INBOX_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
+          BOOK: ${{ inputs.book }}
+          WIDTH: ${{ inputs.width }}
+          MAP: ${{ inputs.map }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          BACKUP: ${{ inputs.backup }}
+        run: |
+          if [ -z "$WEB_INBOX_TOKEN" ]; then echo "❌ 仓库没配 secrets.FEEDBACK_ADMIN_TOKEN"; exit 1; fi
+          args=(--book "$BOOK" --width "$WIDTH")
+          IFS=',' read -ra pairs <<< "$MAP"
+          for p in "${pairs[@]}"; do [ -n "$p" ] && args+=(--map "$p"); done
+          [ "$BACKUP" = "true" ] && args+=(--backup "$RUNNER_TEMP/vol-renumber-backup.json")
+          [ "$DRY_RUN" != "true" ] && args+=(--apply)
+          node ops/vol-renumber.mjs "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload backup
+        if: ${{ inputs.backup }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: vol-renumber-backup-${{ inputs.book }}
+          path: ${{ runner.temp }}/vol-renumber-backup.json
+          retention-days: 3
