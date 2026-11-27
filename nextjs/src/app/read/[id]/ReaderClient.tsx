@@ -17,7 +17,7 @@ import { textVersionsOf, type TextVersions } from './TextVersionChip';
 import { loadFacsimile } from '@/lib/facsimile';
 import { getJson, TEXT_FILE_BASE } from '@/lib/text-file';
 import { SITE_NAME } from '@/lib/constants';
-import { parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
+import { findChapter, parseReaderSegments, readerPath, readerTitle, readerVersionName, splitReaderPathname, type ReaderSel } from '@/lib/reader-route';
 import { readerFeedbackLabel } from '@/lib/feedback';
 import { useSiteT } from '@/i18n/use-site-t';
 import { seedCallKey, seedTransport, type ReaderSeed } from './reader-seed';
@@ -123,7 +123,7 @@ function useTextMeta(id: string, sel: ReaderSel, transport: ReturnType<typeof ge
             const version = manifest?.versions.find((v) => v.key === (sel.key ?? 'default')) ?? manifest?.versions[0];
             if (!version) return;
             const index = await api.getIndex(id, version.key);
-            const chapter = index?.chapters.find((c) => (sel.chapter ? c.file === sel.chapter : true));
+            const chapter = sel.chapter ? findChapter(index?.chapters, sel.chapter) : index?.chapters[0];
             const title = sel.chapter ? chapter?.title?.trim() : undefined;
             // 版本号只有本项目自做的 original 版本记（文本／标点／专名三线），别的来源不出
             const versions = (version as { is_original?: boolean }).is_original ? textVersionsOf(chapter) : undefined;
