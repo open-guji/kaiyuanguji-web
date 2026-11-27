@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-type Member = { email: string; role: string; joinedAt: number; invitedBy?: string; updatedAt?: number };
+type Member = { email: string; code?: string; nickname?: string; role: string; joinedAt: number; invitedBy?: string; updatedAt?: number };
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -94,14 +94,16 @@ export default function MembersPage() {
         </div>
         {loading ? <p className="text-sm text-gray-500">加载中…</p> : (
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1">邮箱</th><th>角色</th><th>加入时间</th><th></th></tr></thead>
+            <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1">会员号</th><th>邮箱</th><th>昵称</th><th>角色</th><th>加入时间</th><th></th></tr></thead>
             <tbody>
               {members.map(m => {
                 const pending = pendingRoles[m.email] ?? m.role;
                 const changed = pending !== m.role;
                 return (
                   <tr key={m.email} className="border-t">
-                    <td className="py-1 font-mono text-xs">{m.email}</td>
+                    <td className="py-1 font-mono text-xs select-all">{m.code ?? '—'}</td>
+                    <td className="font-mono text-xs">{m.email}</td>
+                    <td className="text-xs">{m.nickname ?? ''}</td>
                     <td>
                       <div className="flex items-center gap-1">
                         <select value={pending} onChange={e => setPendingRoles(prev => ({ ...prev, [m.email]: e.target.value }))} className="border rounded px-1 py-0.5 text-xs">
