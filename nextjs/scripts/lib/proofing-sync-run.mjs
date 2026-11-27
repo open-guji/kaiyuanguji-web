@@ -25,15 +25,23 @@ export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 /**
  * 读出各工作区里全部待审单。
+ * softWs：列目录失败只记问题、不抛错的工作区（自动推出的）。
  * @param worker {listFiles(ws, prefix) → {files:[{src_path}], truncated}, getFile(ws, path) → {text, sha256} | null}
  * @returns {{entries: [{ws, book, chap, rev, n, text}], problems: string[]}}
  */
-export async function collectPendings(worker, wsList) {
+export async function collectPendings(worker, wsList, softWs = new Set()) {
     const entries = [];
     const problems = [];
     const seen = new Map();
     for (const ws of wsList) {
-        const listing = await worker.listFiles(ws, PROOFING_PREFIX);
+        let listing;
+        try {
+            listing = await worker.listFiles(ws, PROOFING_PREFIX);
+        } catch (e) {
+            if (!softWs.has(ws)) throw e;
+            problems.push(`${ws}：工作区列不出来（自动推出的新书，可能还没建工作区）：${String(e.message || e).slice(0, 120)}`);
+            continue;
+        }
         if (listing.truncated) problems.push(`${ws}：待审单超过一页（1000 个），只处理了前一页`);
         for (const f of listing.files) {
             const id = parsePendingPath(f.src_path);

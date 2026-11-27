@@ -6,7 +6,9 @@
 `doc/design/古籍图片全流程-源件页图管线与IIIF.md`），用本脚本。切法、路径、上传、核对全部借 siku_zongmu_iiif.py，
 只是 manifest 里只有本站一个图源。
 
-书的名字、各册卷次、影像来源写在 pages-books.json；新书先在那里加一条，再在 cv 里 `guji source register／ia` 登记页表。
+书的名字、各册卷次、影像来源：book-text 里 is_original 的自做书自动推出（original_books.py，工作流设 BOOK_TEXT_DIR），
+pages-books.json 只写自动推不出的（扫描册比文本册多的册目录、人工定的题名与影像来源、homepage、rights），手写优先。
+新书在 cv 里 `guji source register／ia` 登记页表即可，不必先加条目。
 
 用法：
   python3 ops/iiif/pages_iiif.py --book 988g7gsqhd --vols 01 --out /tmp/iiif
@@ -25,9 +27,28 @@ import siku_zongmu_iiif as S  # noqa: E402
 PD_MARK = 'http://creativecommons.org/publicdomain/mark/1.0/'
 
 
-def load_books(path=os.path.join(HERE, 'pages-books.json')):
+def load_books(path=os.path.join(HERE, 'pages-books.json'), book_text=None):
+    """书目：手写的 pages-books.json ＋ 从 book-text 自动推出的自做书（is_original，见 original_books.py）。
+    book_text 缺省取环境变量 BOOK_TEXT_DIR（ops/fetch-book-text-manifests.sh 取下来的目录）；都没有就只用手写的。
+    手写的优先：同一本书的题名、来源、homepage、各册的字段以手写为准；自动推出的只补手写里没有的书和册
+    （扫描册比文本册多的书，册目录仍靠手写）。册号位数照手写（全唐文 3 位），新书 2 位。四庫總目不走这里。"""
     with open(path, encoding='utf-8') as f:
-        return json.load(f)
+        books = json.load(f)
+    root = book_text or os.environ.get('BOOK_TEXT_DIR')
+    if not root:
+        return books
+    import original_books as OB
+    width = {b: len(next(iter(m['vols']))) for b, m in books.items() if m.get('vols')}
+    for bid, auto in OB.derive_pages_books(OB.scan(root), width).items():
+        if bid == '96mid1ogzk':
+            continue
+        if bid not in books:
+            books[bid] = auto
+            continue
+        vols = books[bid].setdefault('vols', {})
+        for v, vm in auto['vols'].items():
+            vols.setdefault(v, vm)
+    return books
 
 
 def vol_label(meta, v):
@@ -132,7 +153,7 @@ def main(argv=None):
     if a.book == '96mid1ogzk':
         raise SystemExit('❌ 四庫總目用 siku_zongmu_iiif.py --source pages（有 IA／Commons 回退源）')
     if a.book not in books:
-        raise SystemExit(f'❌ pages-books.json 里没有 {a.book}，先加一条（书名、各册卷次、影像来源）')
+        raise SystemExit(f'❌ pages-books.json 里没有 {a.book}，book-text 里该书 manifest 没有 is_original 或还没有 default/index.json 的章时，才要先在这里加一条（书名、各册卷次、影像来源）')
     meta = books[a.book]
     S.BOOK_ID = a.book
     # 册号一律是 pages-books.json 里的写法（北行日錄 2 位 '01'，全唐文 3 位 '005'）：书影目录、canvas id 都用它，与 cord 的 canvas.id 一致

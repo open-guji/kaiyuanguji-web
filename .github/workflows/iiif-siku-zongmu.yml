@@ -112,6 +112,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      # 自做书（book-text 里 is_original 的书）的册目录、题名、影像来源自动推出，pages-books.json 不必再为新书加条目
+      # （读 BOOK_TEXT_DIR；手写条目优先，只补手写里没有的书和册）。取不到不拦：退回只用手写的
+      - name: 自做书名单（book-text manifest）
+        run: |
+          if bash ops/fetch-book-text-manifests.sh "$RUNNER_TEMP/book-text"; then
+            echo "BOOK_TEXT_DIR=$RUNNER_TEMP/book-text" >> "$GITHUB_ENV"
+          else
+            echo "::warning::取不到 book-text，只用 pages-books.json 里手写的书"
+          fi
+
       - name: Install
         run: python3 -m pip install -q 'pillow==12.3.0'
 
