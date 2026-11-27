@@ -8,6 +8,31 @@ import LoginForm from '@/components/auth/LoginForm';
 import { useSiteT } from '@/i18n/use-site-t';
 
 
+/** 会员号：等宽显示，一点就全选；旁边「复制」按钮，复制失败时退回选中文字让用户自己按复制。 */
+function MemberCode({ code }: { code: string }) {
+  const t = useSiteT();
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const node = document.getElementById('og-member-code');
+      if (node) { const r = document.createRange(); r.selectNodeContents(node); const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(r); }
+    }
+  };
+  return (
+    <span className="og-account-code-row">
+      <code id="og-member-code" className="og-account-code">{code}</code>
+      <button type="button" className="og-account-copy" onClick={copy} aria-label={t('nav.account.copy')}>
+        {copied ? t('nav.account.copied') : t('nav.account.copy')}
+      </button>
+      <span className="og-account-code-hint">{t('nav.account.codeHint')}</span>
+    </span>
+  );
+}
+
 function NicknameForm({ current, save }: { current: string; save: (n: string) => Promise<{ ok: true } | { ok: false; error: string }> }) {
   const t = useSiteT();
   const [nick, setNick] = useState(current);
@@ -64,6 +89,7 @@ export default function AccountClient() {
     <div className="og-account">
       <h1>{t('nav.account.my')}</h1>
       <dl className="og-account-list">
+        {m.code && (<><dt>{t('nav.account.code')}</dt><dd><MemberCode code={m.code} /></dd></>)}
         <dt>{t('nav.account.email')}</dt>
         <dd>{m.email}</dd>
         <dt>{t('nav.account.nickname')}</dt>

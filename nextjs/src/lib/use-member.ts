@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export interface MemberInfo { email: string; role: string; joinedAt?: number; nickname?: string }
+export interface MemberInfo { email: string; role: string; joinedAt?: number; nickname?: string; code?: string }
 export type MemberState = { status: 'loading' } | { status: 'anon' } | { status: 'member'; member: MemberInfo };
 
 let cache: MemberState | null = null;
@@ -22,7 +22,7 @@ function load(): Promise<void> {
   inflight ??= fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' })
     .then(async (r) => {
       const j = await r.json().catch(() => null);
-      if (r.status === 200 && j?.success && j.email) publish({ status: 'member', member: { email: j.email, role: j.role, joinedAt: j.joinedAt, nickname: j.nickname || undefined } });
+      if (r.status === 200 && j?.success && j.email) publish({ status: 'member', member: { email: j.email, role: j.role, joinedAt: j.joinedAt, nickname: j.nickname || undefined, code: j.code || undefined } });
       else publish({ status: 'anon' });
     })
     .catch(() => publish({ status: 'anon' }))

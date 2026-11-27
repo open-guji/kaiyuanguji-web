@@ -12,7 +12,7 @@ describe('ba-members 桥接', () => {
   test('非成员：注册关则拒绝，开则注册为 reader', () => {
     expect(decideMember(null, false).action).toBe('blocked');
     expect(decideMember(null, true).action).toBe('register');
-    expect(nextMember(null, 100)).toEqual({ role: 'reader', joinedAt: 100, invitedBy: 'self-register', tokenVersion: 1, verified: true, uid: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/) });
+    expect(nextMember(null, 100)).toEqual({ role: 'reader', joinedAt: 100, invitedBy: 'self-register', tokenVersion: 1, verified: true });
   });
   test('昵称：新注册才写入，已有成员忽略；清洗与限长，邮箱形态不收', () => {
     expect(nextMember(null, 100, '子云')).toMatchObject({ nickname: '子云' });
