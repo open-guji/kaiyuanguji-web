@@ -532,6 +532,23 @@ describe('sent（点校标点专名号句子）', () => {
 });
 
 
+describe('AI 三层摘要 ai', () => {
+    it('缺省不出；字段容错；链接只收 http(s)', () => {
+        expect(parseExtras({}).ai).toBeUndefined();
+        expect(parseExtras({ ai: { c: '甲' } }).ai).toBeUndefined();   // 没有一句话结论就不显示
+        const ai = parseExtras({
+            dnote: '旧', ai: {
+                c: '由', k: 'high', st: 'released', lv: 'L2', s: '倾向由', d: '详情',
+                log: [{ src: '维基', r: '同字', t: '见', u: 'https://a/b' }, { src: 'x', r: '乱写', t: 'y' }, { src: 'z', r: '查无', t: 'q', u: 'javascript:1' }],
+                refs: [{ u: 'https://a/b', t: '甲' }, { u: 'ftp://x' }],
+            },
+        }).ai!;
+        expect(ai).toMatchObject({ c: '由', k: 'high', st: 'released', lv: 'L2', s: '倾向由', d: '详情' });
+        expect(ai.log).toEqual([{ src: '维基', r: '同字', t: '见', u: 'https://a/b' }, { src: 'z', r: '查无', t: 'q' }]);
+        expect(ai.refs).toEqual([{ u: 'https://a/b', t: '甲' }]);
+    });
+});
+
 describe('点校查证备注与来源链接', () => {
     it('refs 只收 http(s)、最多 5 条；dnote 透传', () => {
         const ex = parseExtras({ dnote: '查不到', refs: [{ u: 'https://a/b', t: '甲' }, { u: 'javascript:1', t: 'x' }, ...Array.from({ length: 8 }, (_, i) => ({ u: `https://e/${i}` }))] });
