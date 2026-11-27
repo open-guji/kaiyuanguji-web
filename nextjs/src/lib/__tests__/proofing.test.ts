@@ -549,6 +549,16 @@ describe('AI 三层摘要 ai', () => {
     });
 });
 
+describe('ai.out_of_cands 与 released', () => {
+    it('out_of_cands 读成 oot；released 只收有 u 和有效 ai 的', () => {
+        expect(parseExtras({ ai: { s: '倾向由', out_of_cands: true } }).ai?.oot).toBe(true);
+        expect(parseExtras({ ai: { s: '倾向由' } }).ai?.oot).toBeUndefined();
+        const p = parsePending({ cells: [], released: [{ u: 7, ai: { s: '同字', st: 'released' } }, { u: 'x', ai: { s: 'a' } }, { u: 8 }] });
+        expect(p.released).toEqual([{ u: 7, ai: { s: '同字', st: 'released' } }]);
+        expect(parsePending({ cells: [] }).released).toEqual([]);
+    });
+});
+
 describe('点校查证备注与来源链接', () => {
     it('refs 只收 http(s)、最多 5 条；dnote 透传', () => {
         const ex = parseExtras({ dnote: '查不到', refs: [{ u: 'https://a/b', t: '甲' }, { u: 'javascript:1', t: 'x' }, ...Array.from({ length: 8 }, (_, i) => ({ u: `https://e/${i}` }))] });
