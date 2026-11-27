@@ -54,10 +54,11 @@ jobs:
     env:
       TARGET: ${{ inputs.target }}
     steps:
-      # 数据根：测试站读 staging/ 前缀（域名取自 config/hosts.json → 顶部 HOST_*；任务级 env 里用不了 env 上下文）
+      # 数据根：测试站与正式站读同一份（正式前缀）。数据流程拆出后测试站构建已不读 staging/ 前缀（deploy.yml NEXT_PUBLIC_COS_BASE），
+      # 11-27 清 staging/ 后 staging/h1/text-roots 已不存在，再读它图文对读等用例会 404（域名取自 config/hosts.json → 顶部 HOST_*）
       - name: Data base
         run: |
-          if [ "$TARGET" = "$HOST_STAGING" ]; then D="$HOST_DATA/staging"; else D="$HOST_DATA"; fi
+          D="$HOST_DATA"
           echo "DATA_BASE=$D" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
