@@ -63,6 +63,14 @@ describe('GET /api/fixes', () => {
         expect(JSON.parse(text).volumes['002'][0].who).toBe(V.slice(0, 6));
     });
 
+    it('会员 voter（UUIDv7）：who 取去连字符后 16 位的前 6，不出整串', async () => {
+        const uid = '018f1234-5678-7abc-8def-0123456789ab';
+        put(`cs:96mid1ogzk:002:1.0.1:3:1:9-3:1:9:missing:${uid}`, { ...span, voter: uid });
+        const text = await (await fn.onRequestGet(get('book=96mid1ogzk&volume=002'))).text();
+        expect(JSON.parse(text).volumes['002'][0].who).toBe('8def01');
+        expect(text).not.toContain(uid);
+    });
+
     it('讨论：表态计数、回复按时间，target 与意见对得上；回复也脱敏', async () => {
         put(`cs:96mid1ogzk:002:1.0.1:3:1:9-3:1:9:missing:${V}`, span);
         const target = sync.targetOf(span);

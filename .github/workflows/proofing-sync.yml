@@ -50,8 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      # 仓库变量 PROOF_WS 管基础清单；后面这串是仓里登记的新书工作区（会话改不了仓库变量，新书就加在这里），脚本去重
-      PROOF_WS: ${{ vars.PROOF_WS || 'siku-zongmu,beixing-guben' }},995ejelvk0,988g3f0wsu,98y6h42f41
+      # 仓库变量 PROOF_WS 管基础清单；新书的工作区不再手工登记：下面「自做书名单」一步从 book-text 里 is_original 的书推出，
+      # 写进 PROOF_WS_AUTO（脚本去重；自动推出的工作区列不出来只记警告）。新书进了 book-text（dev 或 main）就自动入列
       FIX_BOOKS: ${{ vars.FIX_BOOKS || '96mid1ogzk' }}
       DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
       ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.only || '' }}
@@ -62,6 +62,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      # 自做书名单：book-text 里 manifest.json 带 is_original 的书，每本一个中心库工作区（旧的两本用旧名）。
+      # 名单变了只会多/少列几个工作区；已发布且没变的待审单按内容比对不重传，不会多烧 EdgeOne purge 额度
+      - name: Original books → PROOF_WS_AUTO
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do bash ops/fetch-book-text-manifests.sh "$RUNNER_TEMP/book-text" && break; [ "$i" = 3 ] && exit 1; sleep $((i*10)); done
+          ws=$(python3 ops/iiif/original_books.py "$RUNNER_TEMP/book-text" --proof-ws)
+          echo "PROOF_WS_AUTO=$ws" >> "$GITHUB_ENV"
+          echo "· 自做书工作区：$ws"
       - name: Install
         working-directory: nextjs
         run: npm ci

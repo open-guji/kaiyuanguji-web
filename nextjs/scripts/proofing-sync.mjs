@@ -16,6 +16,7 @@
  *   PARTS=opinions|publish|all（默认 all）
  *   GUJI_DATA_URL（默认 https://data.open-guji.com）、GUJI_DATA_TOKEN（web 角色令牌，必填；Action 里用网站管理令牌 FEEDBACK_ADMIN_TOKEN）
  *   PROOF_WS（中心库工作区 id，逗号分隔，默认 siku-zongmu,beixing-guben）
+ *   PROOF_WS_AUTO（同上；工作流按 book-text 的 is_original 书自动推出，并入 PROOF_WS，列不出的工作区只记问题）
  *   opinions：SITE_BASE（默认正式站 SITE_ORIGIN；旧域名 www.kaiyuanguji.com 的 /api/* 在国内 404，GUJI-706）、FEEDBACK_ADMIN_TOKEN
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
@@ -34,7 +35,12 @@ import { SITE_ORIGIN, DATA_ORIGIN } from '../../config/hosts.mjs';
 const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
 const DATA_TOKEN = process.env.GUJI_DATA_TOKEN || '';
-const WS = [...new Set((process.env.PROOF_WS || 'siku-zongmu,beixing-guben').split(',').map((s) => s.trim()).filter(Boolean))];
+const csv = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boolean);
+// 基础清单 PROOF_WS ＋ 自动清单 PROOF_WS_AUTO（工作流从 book-text 里 is_original 的书推出，ops/iiif/original_books.py）。
+// 自动清单里不在基础清单的工作区"软"：新书可能还没在中心库建工作区，列不出来只记一条问题，不拖垮整次同步
+const BASE_WS = csv(process.env.PROOF_WS || 'siku-zongmu,beixing-guben');
+const WS = [...new Set([...BASE_WS, ...csv(process.env.PROOF_WS_AUTO)])];
+const SOFT_WS = new Set(WS.filter((w) => !BASE_WS.includes(w)));
 const FIX_BOOKS = (process.env.FIX_BOOKS || '96mid1ogzk').split(',').map((s) => s.trim()).filter(Boolean);
 const SITE = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const ADMIN = process.env.FEEDBACK_ADMIN_TOKEN || '';
@@ -193,7 +199,7 @@ if (doPublish) {
 
 let collected;
 try {
-    collected = await collectPendings(worker, WS);
+    collected = await collectPendings(worker, WS, SOFT_WS);
 } catch (e) {
     console.log(`::error::读中心库待审单失败：${e?.message || e}`);
     process.exit(1);

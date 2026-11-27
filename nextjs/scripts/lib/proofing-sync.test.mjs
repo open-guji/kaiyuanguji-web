@@ -160,6 +160,16 @@ test('collectPendings：同一章出现在两个工作区，用前者', async ()
     assert.ok(problems.some((p) => /同时在工作区/.test(p)));
 });
 
+test('collectPendings：自动推出的工作区列不出来只记问题，基础工作区仍抛错', async () => {
+    const w = fakeWorker(baseFiles());
+    const listFiles = w.listFiles.bind(w);
+    w.listFiles = async (ws, prefix) => { if (ws === 'newbook') throw new Error('HTTP 404 workspace'); return listFiles(ws, prefix); };
+    const { entries, problems } = await collectPendings(w, [WS, 'newbook'], new Set(['newbook']));
+    assert.equal(entries.length, 2);
+    assert.ok(problems.some((p) => /newbook.*列不出来/.test(p)));
+    await assert.rejects(collectPendings(w, [WS, 'newbook']), /HTTP 404/);
+});
+
 test('syncOpinions：写快照、第二次 0 写入、演练不写、没票不建文件', async () => {
     const w = fakeWorker(baseFiles());
     const { entries } = await collectPendings(w, [WS]);

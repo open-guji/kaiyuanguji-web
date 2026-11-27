@@ -1,5 +1,5 @@
 // GET /api/auth/me — 返回当前登录身份，顺带滑动续期
-import { d1Kv } from '../feedback.js';
+import { d1Kv, ensureMemberUid } from '../feedback.js';
 import { SITE_ORIGINS } from '../hosts.js';
 import { effectiveCaps } from './caps.js';
 const ALLOWED_ORIGINS = [...SITE_ORIGINS,'https://open-guji.github.io','http://localhost:3000','http://localhost:5173'];
@@ -71,7 +71,8 @@ export async function onRequestGet(context){
       const newToken=await signJWT(newPayload, secret);
       headers['Set-Cookie']=`session=${newToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}`;
     }
-    return new Response(JSON.stringify({success:true,email:payload.sub,role:member.role,caps:effectiveCaps(member),joinedAt:member.joinedAt}),{status:200,headers});
+    const uid=await ensureMemberUid(context, payload.sub, member);
+    return new Response(JSON.stringify({success:true,email:payload.sub,uid,...(member.nickname?{nickname:member.nickname}:{}),role:member.role,caps:effectiveCaps(member),joinedAt:member.joinedAt}),{status:200,headers});
   }catch(e){
     const headers2=getCorsHeaders(context.request);
     return new Response(JSON.stringify({success:false,error:e.message||'查询失败'}),{status:500,headers:headers2});

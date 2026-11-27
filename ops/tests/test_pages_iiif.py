@@ -32,6 +32,29 @@ class PagesIiif(unittest.TestCase):
             self.assertTrue(all(len(v) in (2, 3) and v.isdigit() for v in meta['vols']))
             self.assertEqual(len({len(v) for v in meta['vols']}), 1)   # 一部书的册号位数一致
 
+    def test_books_auto_from_book_text(self):
+        """自做书从 book-text 自动补：手写优先、册号位数照手写、新书自动出条目"""
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            def put(bid, chapters, orig=True):
+                p = os.path.join(d, 'Book', bid[0], bid[1], bid[2], bid)
+                os.makedirs(os.path.join(p, 'default'))
+                v = {'key': 'default', 'source_name': '開源古籍CV整理（某本）'}
+                if orig:
+                    v['is_original'] = True
+                json.dump({'id': bid, 'versions': [v]}, open(os.path.join(p, 'manifest.json'), 'w'))
+                json.dump({'chapters': chapters}, open(os.path.join(p, 'default', 'index.json'), 'w'))
+            put('995ejelvk0', [{'n': 1, 'file': '001', 'title': '不该覆盖手写'}])
+            put('zzzzzzzzzz', [{'n': 1, 'file': '001', 'title': '卷一'}])
+            put('yyyyyyyyyy', [{'n': 1, 'file': '001', 'title': 'x'}], orig=False)
+            base = m.load_books()
+            books = m.load_books(book_text=d)
+        self.assertEqual(books['995ejelvk0'], base['995ejelvk0'])                  # 手写的不动（含 3 位册号）
+        self.assertEqual(books['zzzzzzzzzz']['vols'], {'01': {'juan': '卷一'}})   # 新书自动出
+        self.assertEqual(books['zzzzzzzzzz']['title'], '某本')
+        self.assertNotIn('yyyyyyyyyy', books)                                      # 不是自做书
+
     def test_slice_and_manifest_from_table(self):
         s.BOOK_ID = '988g7gsqhd'
         meta = m.load_books()['988g7gsqhd']

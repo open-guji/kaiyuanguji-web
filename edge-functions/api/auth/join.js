@@ -67,7 +67,8 @@ export async function onRequestPost(context){
       && Number.isInteger(existing.tokenVersion) && existing.tokenVersion > 0
       && roleRank(rec.role) >= roleRank(existing.role));
     const tokenVersion = keepVersion ? existing.tokenVersion : nextTokenVersion(existing);
-    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin', tokenVersion, verified: !!rec.email };
+    const member={ role: rec.role, joinedAt: now, invitedBy: rec.createdBy||'admin', tokenVersion, verified: !!rec.email,
+      ...(existing && typeof existing==='object' && existing.uid ? { uid: existing.uid } : {}), ...(live && existing.nickname ? { nickname: existing.nickname } : {}) };
     await kv.put(`member:${email}`, JSON.stringify(member));
     // 签 JWT
     const payload={ sub: email, iat: now, exp: now + COOKIE_MAX_AGE, tv: member.tokenVersion };

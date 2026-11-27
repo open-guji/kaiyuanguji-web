@@ -19,7 +19,7 @@
 // 双写期键仍按格位，u 只进值；char.json 没有 u 的老文本不带，照收。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, submitterVoter, writeInboxStrict, readInboxPage,
 } from './feedback.js';
 import { isSingleChar, checkRateLimit, optU, optUPair } from './cellreview.js';
 
@@ -203,7 +203,7 @@ export async function onRequestPost(context) {
 
     const { aid, ...rest } = v.value;
     const ip = getClientIp(context.request) || '';
-    const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
+    const { voter } = await submitterVoter(context.request, context, aid, ip);
     const key = rest.kind === 'char'
       ? `cf:${rest.book_id}:${rest.volume}:${rest.text_version}:${rest.cell_id}:${voter}`
       : rest.kind === 'span'

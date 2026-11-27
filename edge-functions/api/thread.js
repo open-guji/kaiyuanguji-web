@@ -13,7 +13,7 @@
 // voter＝sha256(aid|ip) 前 16 位，与改字、精校同一规则；值只存 voter，不存 aid、不存 IP。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, submitterVoter, writeInboxStrict, readInboxPage,
 } from './feedback.js';
 import { checkRateLimit } from './cellreview.js';
 
@@ -78,7 +78,7 @@ export async function onRequestPost(context) {
     }
     const { aid, ...rest } = v.value;
     const ip = getClientIp(context.request) || '';
-    const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
+    const { voter } = await submitterVoter(context.request, context, aid, ip);
     const ts = Date.now();
     const base = `${rest.book_id}:${rest.volume}:${rest.target}`;
     const key = rest.stance === 'reply' ? `tm:${base}:${ts.toString(36)}-${voter}` : `tv:${base}:${voter}`;
