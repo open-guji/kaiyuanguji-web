@@ -43,6 +43,8 @@ export interface AiAnalysis {
     st?: 'pending' | 'released' | 'unsure';
     lv?: 'L1' | 'L2' | 'L3';
     s: string;
+    /** 倾向字不在候选里：卡片提示「候选里没有这个字」 */
+    oot?: boolean;
     d?: string;
     log?: AiLogItem[];
     refs?: { u: string; t: string }[];
@@ -60,6 +62,7 @@ export function parseAi(raw: unknown): AiAnalysis | undefined {
     if (str(o.c) && [...(o.c as string)].length === 1) out.c = o.c as string;
     if (o.k === 'high' || o.k === 'mid' || o.k === 'low') out.k = o.k;
     if (o.st === 'pending' || o.st === 'released' || o.st === 'unsure') out.st = o.st;
+    if (o.out_of_cands === true) out.oot = true;
     if (o.lv === 'L1' || o.lv === 'L2' || o.lv === 'L3') out.lv = o.lv;
     if (str(o.d)) out.d = (o.d as string).slice(0, 600);
     if (Array.isArray(o.log)) {
@@ -172,6 +175,8 @@ export interface PendingData {
     /** 提交时必须原样带回；缺失／非法时为 null（页面不放提交） */
     rev: string | null;
     cells: PendingCell[];
+    /** 已放行格的 AI 摘要（GM3 11-27：待审单顶层 released:[{u,ai}]），审阅用，不入待审 */
+    released: { u: number; ai: AiAnalysis }[];
 }
 
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
@@ -604,7 +609,12 @@ export function parsePending(raw: unknown): PendingData {
     const sentByCell = new Map<string, PendingSent>();
     for (const sn of parseSent(o?.sent)) for (const a of sn.cells) if (!sentByCell.has(a)) sentByCell.set(a, sn);
     if (sentByCell.size) for (const c of cells) { const sn = sentByCell.get(c.a); if (sn) c.sent = sn; }
-    return { rev, cells };
+    const released = (Array.isArray(o?.released) ? (o!.released as unknown[]) : []).flatMap(x => {
+        const r = asObject(x);
+        const ai = parseAi(r?.ai);
+        return r && isU(r.u) && ai ? [{ u: r.u as number, ai }] : [];
+    });
+    return { rev, cells, released };
 }
 
 export interface CordIndex {

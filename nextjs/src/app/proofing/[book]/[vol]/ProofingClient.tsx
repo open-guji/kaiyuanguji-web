@@ -48,6 +48,7 @@ function CharRow({ testId, label, chars, busy, picked, onPick }: { testId: strin
 interface VolInfo {
     rev: string | null;
     cells: PendingCell[];
+    released: { u: number; ai: AiAnalysis }[];
     cord: CordIndex | null;
     order: ReadSlot[];
     pos: Map<string, number>;
@@ -232,6 +233,7 @@ function AiSummary({ ai }: { ai: AiAnalysis }) {
             <div data-testid="ai-line">
                 <b>AI 倾向</b>：{ai.c ? <>「{zis(ai.c)}」{ai.k ? <span style={{ color: '#888' }}>（{AI_K_LABEL[ai.k]}）</span> : null}</> : '暂无倾向字'}
                 {' '}{ai.s}
+                {ai.oot && <span data-testid="ai-oot" style={{ color: '#b23b1d' }}>　候选里没有这个字</span>}
                 {ai.st === 'released' && <span style={{ color: '#2e7d32' }}>　已放行</span>}
                 <span style={{ color: '#888' }}>　仅供参考，请以图为准</span>
             </div>
@@ -256,6 +258,23 @@ function AiSummary({ ai }: { ai: AiAnalysis }) {
                 </details>
             )}
         </div>
+    );
+}
+
+/** 已放行格（AI 已核对、不在待审单里）：折叠列出，供审阅；格以永久编号 u 标识 */
+function ReleasedList({ items }: { items: { u: number; ai: AiAnalysis }[] }) {
+    if (!items.length) return null;
+    return (
+        <details data-testid="released-list" style={{ margin: '0 0 8px', fontSize: 12, color: '#555' }}>
+            <summary style={{ cursor: 'pointer', color: '#7a3b1d' }}>已放行 {items.length} 格（AI 已核对，可抽查）</summary>
+            <ul style={{ margin: '4px 0', paddingLeft: 0, listStyle: 'none' }}>
+                {items.map(it => (
+                    <li key={it.u} style={{ padding: '4px 0', borderTop: '1px solid #eee5d0' }}>
+                        <span style={{ color: '#888' }}>字格 {it.u}　</span><AiSummary ai={it.ai} />
+                    </li>
+                ))}
+            </ul>
+        </details>
     );
 }
 
@@ -902,7 +921,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const ingest = (v: string, res: Extract<ProofingLoad, { status: 'ok' }>) => {
             const rev = res.pending.rev;
             const cs = merged ? res.pending.cells.map(c => ({ ...c, a: mergedKey(v, c.a), vol: v })) : res.pending.cells;
-            const info: VolInfo = { rev, cells: cs, cord: res.cord, order: res.order ?? [], pos: positionIndex(res.order ?? []), pendingFile: res.pendingFile,
+            const info: VolInfo = { rev, cells: cs, released: res.pending.released, cord: res.cord, order: res.order ?? [], pos: positionIndex(res.order ?? []), pendingFile: res.pendingFile,
                 chapterTitle: res.chapterTitle, versionKey: res.versionKey, rawSet: new Set(res.pending.cells.map(c => c.a)) };
             const k = (a: string) => (merged ? mergedKey(v, a) : a);
             const d = rev ? Object.fromEntries(Object.entries(readDone(rev)).map(([a, x]) => [k(a), x])) : {};
@@ -1279,6 +1298,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                     </aside>
                     <div className="min-w-0 lg:flex-1">
                         <QuickReview groups={quickGroups} spriteOf={spriteOf} onConfirm={onQuickConfirm} />
+                        <ReleasedList items={volOrder.flatMap(v => loaded[v]?.released ?? [])} />
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#666' }}>
                             <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />
