@@ -72,6 +72,10 @@
 - 反馈：记录带 `member: <会员号>`；公开读剔除该字段，邮箱后台按号反查。
 - 公开数据显示：绝不出邮箱；有昵称显示昵称，否则显示会员号。
 
+### 回填与迁移（一次性）
+
+`.github/workflows/member-code-backfill.yml`（手动，默认 dry_run）：给没有会员号的会员发号并写索引；把 voter 是 UUID 的精校票／改字／讨论迁成会员号（旧键删掉；cellreview 的 Worker 不许删，旧键列在 summary 里请整理侧清）；反馈记录里的 `member` UUID 改成会员号。summary 只出计数和会员号，不出邮箱。要等会员号版上线正式站后再真跑。
+
 ## 昵称
 
 - /account 页「昵称」栏可设置或清除（最多 20 字，空串＝清除），接口 `POST /api/auth/nickname`（边缘函数 `auth/nickname.js`），身份只认验签 session cookie，只改成员记录的 `nickname`，其余字段原样保留。
