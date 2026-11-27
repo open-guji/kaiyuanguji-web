@@ -5,6 +5,7 @@
  * 背景：11-27 会员 ID 由 UUIDv7 改成 8 位会员号（docs/membership.md）。现在会员只有几个，直接做完：
  *   1. 给还没有会员号的会员发号（同时写索引 membercode:<号>），已有号的不动；
  *   2. 把 voter 是 UUID 的精校票／改字／讨论迁成会员号：写新键（键里的 UUID 换成号）＋值里 voter 换成号，再删旧键；
+ *      新值带 voter_prev＝原 UUID（整理侧凭它把已导入的旧票认成同一人，不当新票）；
  *      新键上已有票（会员改号后又投过）时保留较新的一条；cellreview 的 Worker 不许删，旧键留给整理侧清（只列号，不列邮箱）；
  *   3. 反馈记录里 member 是 UUID 的，改成会员号。
  *
@@ -59,7 +60,7 @@ export function planVotes(kind, rows, uidToCode) {
         if (!code) { unmapped.push(voter.slice(0, 8)); continue; }
         const newKey = swapKeyVoter(r.key, voter, code);
         if (!newKey) { unmapped.push(voter.slice(0, 8)); continue; }
-        moves.push({ kind, oldKey: r.key, newKey, code, value: { ...r.value, voter: code }, ts: r.ts });
+        moves.push({ kind, oldKey: r.key, newKey, code, value: { ...r.value, voter: code, voter_prev: voter }, ts: r.ts });
     }
     return { moves, unmapped };
 }
