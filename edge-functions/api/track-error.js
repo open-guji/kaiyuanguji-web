@@ -6,7 +6,7 @@
 //   - 环境变量  ERROR_VIEW_TOKEN  —— 读侧与管理侧鉴权（错误日志含 stack/IP，不公开）
 //     **没配这个变量，读接口与 update 一律拒绝（503）**，见下面 checkViewAuth 的注释。
 //     只有 POST 上报是公开的——那是前端必须能匿名调的。
-import { d1Kv } from './feedback.js';
+import { d1Kv, sha256Hex } from './feedback.js';
 import { SITE_ORIGINS } from './hosts.js';
 
 const ALLOWED_ORIGINS = [
@@ -20,6 +20,45 @@ const RECORD_TTL_SECONDS = 30 * 24 * 3600; // 30 天后自动过期，避免 KV 
 const MAX_MESSAGE = 1000;
 const MAX_STACK = 4000;
 const ALLOWED_KINDS = ['js', 'unhandledrejection', 'fetch', 'resource', 'react'];
+
+/**
+ * 资源加载失败按「同一种错」限量入库（2026-11-27）。
+ *
+ * 11-26 13:30（洛杉矶）起一批自动化浏览器（UA 为 Linux Chrome 155、IP 在美德法新等机房，
+ * navigator.webdriver 不为 true，前端拦不住）逐条翻 /item/ 页且不加载图片和字体，
+ * 每页都报一条 logo-52.webp 与 *.font.woff2 加载失败：11-27 一天 6 万多条，
+ * 占错误总量九成以上，单个资源 2 万多个不同 IP。资源本身从外面取是 200。
+ * 同一种资源失败存够几十条就足以定位，再多只是把真读者的错误淹掉、把中心库撑大。
+ *
+ * 指纹 = kind + message + resource（去掉 ?查询串，同一字体换版本号算同一种）；
+ * 每小时每种最多存 RESOURCE_PER_HOUR 条，超出的照常回 200（前端不重试）但不写库。
+ * 计数键走 `ratelimit:` 前缀，中心库每日清理会删过期的。只对 kind=resource 生效，
+ * JS 异常等其他类不受影响。
+ */
+export const RESOURCE_PER_HOUR = 30;
+const RESOURCE_WINDOW_SECONDS = 3600;
+const RESOURCE_LIMIT_PREFIX = 'ratelimit:err:';
+
+export function resourceFingerprint(kind, message, resource) {
+  return [kind, message, String(resource || '').split('?')[0]].join('|');
+}
+
+/** true＝这条可以入库；计数失败时放行（监控不能因计数坏了丢真错误）。 */
+export async function allowResourceReport(kv, fingerprint, nowS = Math.floor(Date.now() / 1000)) {
+  try {
+    const key = RESOURCE_LIMIT_PREFIX + (await sha256Hex(fingerprint)).slice(0, 32);
+    const cur = (await kv.get(key, 'json')) || {};
+    let start = Number(cur.start) || 0;
+    let count = Number(cur.count) || 0;
+    if (!start || nowS - start >= RESOURCE_WINDOW_SECONDS) { start = nowS; count = 0; }
+    if (count >= RESOURCE_PER_HOUR) return false;
+    await kv.put(key, JSON.stringify({ start, count: count + 1 }), { expirationTtl: RESOURCE_WINDOW_SECONDS * 2 });
+    return true;
+  } catch (e) {
+    console.error('资源错误限量计数失败（放行）:', e);
+    return true;
+  }
+}
 
 function getCorsHeaders(request) {
   const origin = request.headers.get('origin') || '';
@@ -225,6 +264,10 @@ export async function onRequestPost(context) {
 
     const { ip, geo } = getClientMeta(context.request);
     const kind = ALLOWED_KINDS.includes(body.kind) ? body.kind : 'js';
+    if (kind === 'resource'
+        && !(await allowResourceReport(kv, resourceFingerprint(kind, message, clip(body.resource, 300))))) {
+      return new Response(JSON.stringify({ success: true, dropped: 'resource-throttled' }), { status: 200, headers });
+    }
     const id = generateId();
     const record = {
       id,
