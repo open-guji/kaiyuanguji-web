@@ -56,6 +56,29 @@ describe('/api/pending', () => {
     });
 });
 
+describe('由条目现拼（Worker /v1/web/pending-doc，去 rev）', () => {
+    const fresh = { found: true, at: 't', cells: [{ cell: '1:1:2', id: 'pi_000000000002', ver: 2, u: 5, review: 'pending' }], released: [{ u: 9, book: '004', ai: { c: '曰' } }], items: { file: 'x', n: { open: 1 } } };
+    it('Worker 有条目就直接用它，不读 KV 整张单、没有 rev', async () => {
+        await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
+        inbox.docBox.reply = () => fresh;
+        const d = await j(await fn.onRequestGet(get(`book=${B}&vol=004`)));
+        expect(d.cells.map((c: { id: string }) => c.id)).toEqual(['pi_000000000002']);
+        expect(d.released).toHaveLength(1);
+        expect('rev' in d).toBe(false);
+    });
+    it('没有整张单也能给（条目在就行）；Worker 没这个接口或这章没条目：退回整张单；?items=0 强制走整张单', async () => {
+        inbox.docBox.reply = () => fresh;
+        expect((await fn.onRequestGet(get(`book=${B}&vol=004`))).status).toBe(200);
+        await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
+        inbox.docBox.reply = () => ({ found: false, at: 't' });
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004`)))).cells).toHaveLength(2);
+        inbox.docBox.reply = null;
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004`)))).cells).toHaveLength(2);
+        inbox.docBox.reply = () => fresh;
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004&items=0`)))).cells).toHaveLength(2);
+    });
+});
+
 describe('读时现算（Worker /v1/web/pending-live）', () => {
     const put = () => fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { ...doc(), items: { file: 'x', n: { open: 2, withdrawn: 0 } } } }));
     it('已落定、已撤下的条目从 cells 拿掉，没落定的挂 AI 摘要；存的单不动', async () => {
