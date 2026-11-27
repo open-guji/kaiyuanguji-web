@@ -1,4 +1,4 @@
-import { decideMember, nextMember, safeNext, signSession, memberKey } from '../ba-members.ssr';
+import { cleanNickname, decideMember, nextMember, safeNext, signSession, memberKey } from '../ba-members.ssr';
 
 describe('ba-members 桥接', () => {
   test('活成员：登录，保留角色和 tokenVersion', () => {
@@ -13,6 +13,16 @@ describe('ba-members 桥接', () => {
     expect(decideMember(null, false).action).toBe('blocked');
     expect(decideMember(null, true).action).toBe('register');
     expect(nextMember(null, 100)).toEqual({ role: 'reader', joinedAt: 100, invitedBy: 'self-register', tokenVersion: 1, verified: true, uid: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/) });
+  });
+  test('昵称：新注册才写入，已有成员忽略；清洗与限长，邮箱形态不收', () => {
+    expect(nextMember(null, 100, '子云')).toMatchObject({ nickname: '子云' });
+    expect(nextMember(null, 100)).not.toHaveProperty('nickname');
+    expect(nextMember({ role: 'reader', nickname: '旧名' }, 100, '新名')).toMatchObject({ nickname: '旧名' });
+    expect(cleanNickname('  子 \n 云  ')).toBe('子 云');
+    expect(cleanNickname('一二三四五六七八九十一二三四五六七八九十廿')).toBe('一二三四五六七八九十一二三四五六七八九十');
+    expect(cleanNickname('a@b.com')).toBeUndefined();
+    expect(cleanNickname('   ')).toBeUndefined();
+    expect(cleanNickname(null)).toBeUndefined();
   });
   test('被移除的邮箱不能自助回来', () => {
     expect(decideMember({ role: '', _deleted: true, tokenVersion: 2 }, true).action).toBe('blocked');

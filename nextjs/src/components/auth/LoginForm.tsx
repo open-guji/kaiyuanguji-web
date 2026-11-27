@@ -7,6 +7,7 @@ import { useSiteT } from '@/i18n/use-site-t';
 export default function LoginForm({ next, compact = false }: { next?: string | null; compact?: boolean }) {
   const t = useSiteT();
   const [email, setEmail] = useState('');
+  const [nick, setNick] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'fail'>('idle');
 
   async function submit(e: React.FormEvent) {
@@ -14,7 +15,12 @@ export default function LoginForm({ next, compact = false }: { next?: string | n
     setState('sending');
     try {
       const safe = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
-      const cb = `/api/ba-session${safe ? `?next=${encodeURIComponent(safe)}` : ''}`;
+      const q = new URLSearchParams();
+      if (safe) q.set('next', safe);
+      // 昵称（选填）：只在新注册时生效，随登录链接的回调参数带到服务端
+      if (!compact && nick.trim()) q.set('nick', nick.trim().slice(0, 20));
+      const qs = q.toString();
+      const cb = `/api/ba-session${qs ? `?${qs}` : ''}`;
       const res = await fetch('/api/ba/sign-in/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,6 +46,18 @@ export default function LoginForm({ next, compact = false }: { next?: string | n
         aria-label={t('nav.account.email')}
         className="og-login-input"
       />
+      {!compact && (
+        <input
+          type="text"
+          maxLength={20}
+          autoComplete="nickname"
+          value={nick}
+          onChange={(e) => setNick(e.target.value)}
+          placeholder="昵称（选填，仅新注册时使用，公开处显示）"
+          aria-label="昵称（选填）"
+          className="og-login-input"
+        />
+      )}
       <button type="submit" disabled={state === 'sending'} className="og-login-btn">
         {state === 'sending' ? t('nav.account.sending') : t('nav.account.send')}
       </button>
