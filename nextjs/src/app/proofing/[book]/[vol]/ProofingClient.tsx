@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SubmitQueue } from '@/lib/submit-queue';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createTextApi } from 'book-index-ui';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ProofHeader, { type ProofBookInfo } from '@/components/proof/ProofHeader';
@@ -18,7 +19,7 @@ import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage, alignFacsToCord,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
-    loadProofIndexLive, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
+    loadProofIndexLive, canonicalProofVol, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
     QUICK_GROUPS, quickPick, readDefer, writeDefer, type AiAnalysis,
 } from '@/lib/proofing';
@@ -856,6 +857,9 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     const { source } = useSource();
     const transport = useMemo(() => getTransport(source), [source]);
     const merged = isAllVol(vol);
+    const router = useRouter();
+    const routerRef = useRef(router);
+    routerRef.current = router;
     const [state, setState] = useState<'loading' | 'none' | 'error' | 'unpublished' | 'ok'>('loading');
     // 一册一份：待审格、cord、阅读顺序、版本号等（单册页只有一份；合审是各册各一份，按目录顺序拼起来）
     const [loaded, setLoaded] = useState<Record<string, VolInfo>>({});
@@ -934,6 +938,12 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         };
         (async () => {
             const index = await loadProofIndexLive(book);
+            // 地址里的册号位数与总表不同（/1、/01 而总表是 001）：换成总表的写法再载，投票、待审单都按同一个册号（用户 11-27 册号位数统一）
+            const canon = merged ? vol : canonicalProofVol(index, book, vol);
+            if (canon !== vol) {
+                if (!cancelled) routerRef.current.replace(`/proofing/${encodeURIComponent(book)}/${encodeURIComponent(canon)}${window.location.search}${window.location.hash}`);
+                return;
+            }
             const allVols = merged ? buildToc(index, book).filter(e => e.n > 0) : [];
             let vols = merged ? allVols.map(e => e.vol) : [vol];
             let extra: typeof allVols = [];   // 合审：先按各册剩余格数凑够 MERGED_CELL_LIMIT 就停；若其中不少已回应过，再往后补载，直到有 MERGED_CELL_LIMIT 个没回应的格或册载完

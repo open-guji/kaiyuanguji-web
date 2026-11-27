@@ -15,6 +15,7 @@ import { parseProof, type ProofCandidate } from '@/lib/proof';
 import { getAid } from '@/lib/aid';
 import { DATA_ORIGIN } from '@/lib/hosts';
 import { isU, uField } from '@/lib/cell-u';
+import { sameChapter } from '@/lib/reader-route';
 
 export type Box = [number, number, number, number];
 
@@ -805,7 +806,9 @@ export function pickProofingChapter(index: unknown, vol: string): Record<string,
         .map(asRecord)
         .filter((c): c is Record<string, unknown> => !!c && isProofingChapter(c) && typeof c.pending_file === 'string');
     const stem = (v: unknown) => (typeof v === 'string' ? v.replace(/\.[^.]+$/, '') : '');
-    const hit = cands.find(c => c.vol === vol || c.key === vol || c.id === vol || stem(c.file) === vol || stem(c.pending_file) === vol);
+    const hit = cands.find(c => c.vol === vol || c.key === vol || c.id === vol || stem(c.file) === vol || stem(c.pending_file) === vol)
+        // 册号位数不同（/1、/01、/001）也认成同一章（用户 11-27 册号位数统一）
+        ?? cands.find(c => sameChapter(stem(c.file), vol) || sameChapter(stem(c.pending_file), vol));
     return hit ?? (cands.length === 1 ? cands[0] : null);
 }
 
@@ -813,7 +816,19 @@ export function pickProofingChapter(index: unknown, vol: string): Record<string,
 export function pickChapterByStem(index: unknown, vol: string): Record<string, unknown> | null {
     const chapters = asRecord(index)?.chapters;
     const stem = (v: unknown) => (typeof v === 'string' ? v.replace(/\.[^.]+$/, '') : '');
-    return (Array.isArray(chapters) ? chapters : []).map(asRecord).find((c): c is Record<string, unknown> => !!c && stem(c.file) === vol) ?? null;
+    const list = (Array.isArray(chapters) ? chapters : []).map(asRecord);
+    return list.find((c): c is Record<string, unknown> => !!c && stem(c.file) === vol)
+        ?? list.find((c): c is Record<string, unknown> => !!c && sameChapter(stem(c.file), vol)) ?? null;
+}
+
+/**
+ * 地址里的册号换成总表里的写法：总表有这一章就原样；没有且是纯数字，就找数值相同的那一章（`/1`、`/01` → `001`）。
+ * 找不到（或总表取不到）原样返回。合审 `_all` 不动。用户 11-27 定册号位数按全书册数统一，迁移前后的链接都要能打开。
+ */
+export function canonicalProofVol(index: ProofIndex | null, book: string, vol: string): string {
+    const chaps = index?.[book];
+    if (!chaps || vol in chaps || isAllVol(vol)) return vol;
+    return Object.keys(chaps).find(k => sameChapter(k, vol)) ?? vol;
 }
 
 /** 版本顺序：original 在前，其余照 manifest 的顺序 */

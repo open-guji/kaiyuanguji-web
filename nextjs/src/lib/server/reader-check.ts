@@ -10,7 +10,7 @@
  *       missing ＝ 确定没有（页面 404）；
  *       unknown ＝ 查不了（网络错等），页面照常渲染，但 canonical 回落到不带章号的地址，不给查不准的地址背书。
  */
-import type { ReaderSel } from '../reader-route';
+import { findChapter, type ReaderSel } from '../reader-route';
 import { readerVersions } from 'book-index-ui/storage';
 
 export type ReaderCheck = 'found' | 'missing' | 'unknown';
@@ -92,7 +92,7 @@ async function check(id: string, sel: ReaderSel, get: GetCurrentJson): Promise<R
     if (!version) return { status: 'missing' };
     const index = await get<TextIndexDoc>(`items/${id}/${version.key}/index.json`);
     if (!index || !Array.isArray(index.chapters) || index.chapters.length === 0) return { status: 'missing' };
-    const hit = sel.chapter ? index.chapters.find((c) => c.file === sel.chapter) : index.chapters[0];
+    const hit = sel.chapter ? findChapter(index.chapters, sel.chapter) : index.chapters[0];
     if (!hit) return { status: 'missing' };
     const title = typeof hit.title === 'string' && hit.title.trim() ? hit.title.trim() : undefined;
     return { status: 'found', manifest, version, index, chapter: hit.file, chapterTitle: title };

@@ -7,6 +7,8 @@ import { render, screen, waitFor, fireEvent, cleanup, within } from '@testing-li
 const loadProofing = jest.fn();
 const loadFacsimile = jest.fn();
 const loadProofIndex = jest.fn();
+const routerReplace = jest.fn();
+jest.mock('next/navigation', () => ({ useRouter: () => ({ replace: routerReplace }) }));
 jest.mock('book-index-ui', () => ({ createTextApi: () => ({}), adaptCharCord: () => [] }));
 jest.mock('@/lib/transport', () => ({ getTransport: () => ({}) }));
 jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ source: 'cos' }) }));
@@ -29,6 +31,7 @@ beforeEach(() => {
     loadProofing.mockReset();
     loadFacsimile.mockReset().mockResolvedValue([]);
     loadProofIndex.mockReset().mockResolvedValue(null);
+    routerReplace.mockReset();
     failUrls = null;
     localStorage.clear();                                       // 「只看还没回应的」缺省勾着：别让上一个用例记的「已提交」把卡藏了
     Object.defineProperty(global.Image.prototype, 'src', {
@@ -780,5 +783,21 @@ describe('目录数字随回应更新', () => {
         await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('2'));   // 总表写 5，现读 2
         fireEvent.click(within(screen.getAllByTestId('cell-card')[0]).getByRole('button', { name: '已' }));
         await waitFor(() => expect(within(toc).getAllByTestId('toc-item')[1].textContent).toContain('1'));
+    });
+});
+
+describe('册号位数不同（用户 11-27）', () => {
+    it('/1 换到总表的 /001 再载，不按 1 去取待审单', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: '001-r1', n: 1 } } });
+        render(<ProofingClient book="b9" vol="1" />);
+        await waitFor(() => expect(routerReplace).toHaveBeenCalledWith('/proofing/b9/001'));
+        expect(loadProofing).not.toHaveBeenCalled();
+    });
+    it('总表里就是这个写法：不跳', async () => {
+        loadProofIndex.mockResolvedValue({ b9: { '001': { rev: '001-r1', n: 1 } } });
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '己' }]));
+        render(<ProofingClient book="b9" vol="001" />);
+        await waitFor(() => expect(loadProofing).toHaveBeenCalled());
+        expect(routerReplace).not.toHaveBeenCalled();
     });
 });

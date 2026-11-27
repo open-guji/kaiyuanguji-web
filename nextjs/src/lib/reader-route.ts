@@ -32,6 +32,23 @@ export function isTextKey(key: string): boolean {
     return /^[a-z][a-z0-9-]*$/.test(key) && !RESERVED_KEYS.includes(key);
 }
 
+/**
+ * 章号是否指同一章：字面相同；或两边都是纯数字、数值相同——`/1`、`/01`、`/001` 认成同一章。
+ * 用户 11-27 定册号位数按全书册数统一（不足 10 册一位、10–99 两位、100 起三位），迁移期间新旧位数的链接都要能打开。
+ */
+export function sameChapter(a: string | undefined | null, b: string | undefined | null): boolean {
+    if (a == null || b == null) return false;
+    if (a === b) return true;
+    return /^[0-9]{1,6}$/.test(a) && /^[0-9]{1,6}$/.test(b) && Number(a) === Number(b);
+}
+
+/** 在章目录里找章：先找字面相同的，没有再按数值相同找（见 sameChapter） */
+export function findChapter<T extends { file?: unknown }>(chapters: readonly T[] | undefined | null, seg: string): T | undefined {
+    const list = chapters ?? [];
+    const file = (c: T) => (typeof c?.file === 'string' ? c.file.replace(/\.[^.]+$/, '') : undefined);
+    return list.find((c) => file(c) === seg) ?? list.find((c) => sameChapter(file(c), seg));
+}
+
 /** URL 片段是章号（纯数字）还是版本 key（字母开头） */
 export function isChapterSegment(seg: string): boolean {
     return /^[0-9]{1,6}$/.test(seg);

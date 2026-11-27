@@ -5,7 +5,7 @@ import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
+    parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -620,6 +620,26 @@ describe('待审单 grp／dout（manager#1075）', () => {
         expect(hardPairChoices(base)).toEqual(['己', '已', '巳']);
         expect(parseExtras({ grp: { m: ['日'] } }).grp).toBeUndefined();
         expect(parseExtras({ dout: ['曰', '日曰', '曰'] }).dout).toEqual(['曰']);
+    });
+});
+
+describe('册号位数不同也认成同一册（用户 11-27）', () => {
+    const index = { b1: { '001': { rev: '001-r1', n: 3 }, '010': { rev: '010-r1', n: 0 } } };
+    it('canonicalProofVol：/1、/01 换成总表的 001；总表有的、合审、认不出的原样', () => {
+        expect(canonicalProofVol(index, 'b1', '1')).toBe('001');
+        expect(canonicalProofVol(index, 'b1', '01')).toBe('001');
+        expect(canonicalProofVol(index, 'b1', '10')).toBe('010');
+        expect(canonicalProofVol(index, 'b1', '001')).toBe('001');
+        expect(canonicalProofVol(index, 'b1', '_all')).toBe('_all');
+        expect(canonicalProofVol(index, 'b1', '5')).toBe('5');
+        expect(canonicalProofVol(null, 'b1', '1')).toBe('1');
+        expect(canonicalProofVol(index, 'b2', '1')).toBe('1');
+    });
+    it('按章目录找章也认数值相同', () => {
+        const idx = { chapters: [{ file: '001.json', proofing: true, pending_file: '001.pending.json' }, { file: '002.json', proofing: true, pending_file: '002.pending.json' }] };
+        expect(pickProofingChapter(idx, '2')?.file).toBe('002.json');
+        expect(pickChapterByStem(idx, '02')?.file).toBe('002.json');
+        expect(pickChapterByStem(idx, '3')).toBeNull();
     });
 });
 
