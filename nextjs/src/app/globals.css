@@ -1089,6 +1089,23 @@
     .og-nav-right {
       gap: 0;
     }
+    .og-acct,
+    .og-acct-icon {
+      margin-left: 0;
+    }
+    .og-acct-btn {
+      padding: 0 4px;
+    }
+    .og-acct-icon {
+      width: 40px;
+    }
+    .og-acct--ph {
+      width: 34px;
+    }
+    /* 手机上主导航整条隐藏：它自己是个空的弹性项，还会多占一个 gap（12px），360px 下差这一点就横向溢出 */
+    .og-nav-inner > nav {
+      display: none;
+    }
     .og-nav-fb {
       justify-content: center;
       width: 44px;
