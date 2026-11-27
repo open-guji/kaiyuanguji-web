@@ -72,16 +72,16 @@ function fetcher() {
  *   冷边缘实例上串着发的子请求越少越好。
  * - 整段判断限时 REDIRECT_BUDGET_MS，到时放行交给页面（页面里同一套跳转兜底），不让整页请求挂在边缘上等子请求。
  *   2s 时测试站抽样仍有 6/10、正式站 3/10 的旧 id 整页请求在预算内没出结果（诊断头 pass:budget(2000ms,entry=miss,promo=pending)，
- *   对照表 3 跳串行没返回）；升格查表改走 current/promotions 分片（深度 2）之后放宽到 3s，仍留足余量不让请求挂在边缘上。
+ *   对照表 3 跳串行没返回）；升格查表改走 current/promotions 分片（深度 2）之后放宽到 3s；11-27 测试站 contract 连红两次（旧草稿 id 冷边缘 3s 内没出结果、回落 307），再放宽到 5s（正式 id 的追加等待相应缩到 2s，总等待不变仍短于页面的 8s）。
  * - 每个 /item 响应都带 x-kyg-item-redirect 头说明跳或不跳的原因（见 lookupItemRedirectTraced）。
  * - 草稿 id 在预算内没有定论（pass:budget／pass:error）时不再放给页面：页面在 ISR 缓存未命中时抛 permanentRedirect 会把 Location
  *   写两遍，并被 CDN 缓存（s-maxage 3600、durable）；这里改出一个不缓存的 307 到 /book-index?id=<id>，由客户端查升格表
  *   （与对照表查不了时的 307 是同一条路）。正式 id（被并条目）没有这条退路（/book-index?id=<正式 id> 会 308 回来），仍交给页面。
  */
-const REDIRECT_BUDGET_MS = 3_000;
+const REDIRECT_BUDGET_MS = 5_000;
 // 正式 id 预算超时后的追加等待（GUJI-146）：被并条目没有 307 退路，放给页面就是双 Location 并被 CDN 缓存；
-// 页面自己的取数限时 8 秒，这里总共最多等 3+4=7 秒，比页面短。
-const REDIRECT_GRACE_MS = 4_000;
+// 页面自己的取数限时 8 秒，这里总共最多等 5+2=7 秒，比页面短。
+const REDIRECT_GRACE_MS = 2_000;
 const REASON_HEADER = 'x-kyg-item-redirect';
 
 const lookupItemRedirect = (id: string) => lookupItemRedirectTraced(id, fetcher(), REDIRECT_BUDGET_MS, REDIRECT_GRACE_MS);

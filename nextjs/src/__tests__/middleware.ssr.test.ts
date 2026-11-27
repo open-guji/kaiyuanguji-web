@@ -204,18 +204,18 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
             const r = await pending;
             expect(r.location).toBeNull();
             expect(r.status).toBe(200);
-            expect(r.reason).toMatch(/^pass:budget\(3000ms.*\+grace4000ms\)$/);
+            expect(r.reason).toMatch(/^pass:budget\(5000ms.*\+grace2000ms\)$/);
         } finally {
             jest.useRealTimers();
         }
     });
 
-    it('正式 id 3s 预算后、追加等待内查到被并 → 仍是单 Location 的 308（GUJI-146；去掉追加等待这条会红）', async () => {
+    it('正式 id 5s 预算后、追加等待内查到被并 → 仍是单 Location 的 308（GUJI-146；去掉追加等待这条会红）', async () => {
         jest.useFakeTimers();
         try {
-            mockGetItem.mockImplementation(() => new Promise((res) => setTimeout(() => res(hit({ merged_into: TARGET })), 5_000)));
+            mockGetItem.mockImplementation(() => new Promise((res) => setTimeout(() => res(hit({ merged_into: TARGET })), 6_000)));
             const pending = run(`/item/${MERGED}`);
-            await jest.advanceTimersByTimeAsync(5_000);
+            await jest.advanceTimersByTimeAsync(6_000);
             const r = await pending;
             expect(r.status).toBe(308);
             expect(r.all).toEqual([`https://staging.kaiyuanguji.com/item/${TARGET}`]);
@@ -231,13 +231,13 @@ describe('middleware.ssr：/item/<id>（FX1）', () => {
             mockGetItem.mockImplementation(() => new Promise(() => {}));
             mockResolvePromotion.mockImplementation(() => new Promise(() => {}));
             const pending = run('/item/1j96hewiuieps', { 'sec-fetch-dest': 'document' });
-            await jest.advanceTimersByTimeAsync(3_000);
+            await jest.advanceTimersByTimeAsync(5_000);
             const r = await pending;
             expect(r.status).toBe(307);
             expect(r.all).toEqual(['https://staging.kaiyuanguji.com/book-index?id=1j96hewiuieps']);
             expect(r.cacheControl).toBe('no-store');
             expect(r.edgeCache).toBe('no-store');
-            expect(r.reason).toBe('pass:budget(3000ms,entry=pending,promo=pending);fallback:307');
+            expect(r.reason).toBe('pass:budget(5000ms,entry=pending,promo=pending);fallback:307');
         } finally {
             jest.useRealTimers();
         }
