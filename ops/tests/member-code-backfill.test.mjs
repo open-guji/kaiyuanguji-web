@@ -38,7 +38,7 @@ test('planVotes：只动 UUID 票；映射不到的只记 uuid 前 8 位', () =>
     ];
     const p = planVotes('cellreview', rows, map);
     assert.equal(p.moves.length, 1);
-    assert.deepEqual(p.moves[0].value, { voter: 'K7QM2XR9', char: '于' });
+    assert.deepEqual(p.moves[0].value, { voter: 'K7QM2XR9', voter_prev: U1, char: '于' });
     assert.equal(p.moves[0].newKey, 'cr:v:b:1:K7QM2XR9');
     assert.deepEqual(p.unmapped, ['018f1234']);
 });

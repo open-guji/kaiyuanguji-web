@@ -46,7 +46,7 @@ export async function onRequestGet(context){
     if(typeof v==='string' && v.trim()==='') continue;
     if(!v.role) continue;
     const email=k.key.replace(/^member:/,'');
-    members.push({email, role:v.role, joinedAt:v.joinedAt, invitedBy:v.invitedBy, updatedAt:v.updatedAt});
+    members.push({email, code:v.code?`${String(v.code).slice(0,4)}-${String(v.code).slice(4)}`:undefined, nickname:v.nickname, role:v.role, joinedAt:v.joinedAt, invitedBy:v.invitedBy, updatedAt:v.updatedAt});
   }
   members.sort((a,b)=> (a.email||'').localeCompare(b.email||''));
   return new Response(JSON.stringify({success:true,members}),{status:200,headers});

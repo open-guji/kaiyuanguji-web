@@ -553,8 +553,8 @@ describe('ai.out_of_cands 与 released', () => {
     it('out_of_cands 读成 oot；released 只收有 u 和有效 ai 的', () => {
         expect(parseExtras({ ai: { s: '倾向由', out_of_cands: true } }).ai?.oot).toBe(true);
         expect(parseExtras({ ai: { s: '倾向由' } }).ai?.oot).toBeUndefined();
-        const p = parsePending({ cells: [], released: [{ u: 7, ai: { s: '同字', st: 'released' } }, { u: 'x', ai: { s: 'a' } }, { u: 8 }] });
-        expect(p.released).toEqual([{ u: 7, ai: { s: '同字', st: 'released' } }]);
+        const p = parsePending({ cells: [], released: [{ u: 7, ai: { s: '同字', st: 'released' } }, { u: 'x', ai: { s: 'a' } }, { u: 8 }, { u: 9, book: 'b1', ai: { s: 'x' } }] });
+        expect(p.released).toEqual([{ u: 7, ai: { s: '同字', st: 'released' } }, { u: 9, book: 'b1', ai: { s: 'x' } }]);
         expect(parsePending({ cells: [] }).released).toEqual([]);
     });
 });
