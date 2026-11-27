@@ -193,8 +193,13 @@ def main(argv=None):
             tp = {p['seq']: p for p in table['pages']}
             back = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
             sc = S.pagemeta.load_pagemeta(table, S.PAGES_BASE, v, S.http_get)   # 合扫页的书（史記、脉经）按旁车的源图出；单位阵页按页图
+            ledger = S.pagemeta.load_cos_ledger(table, S.PAGES_BASE, v, S.http_get)   # manager 的账优先；没账（或没这页）照旧按旁车算
             for c in r['canvases']:
                 tseq = back.get(c['seq'], c['seq'])
+                led = S.pagemeta.bim_cos_from_ledger(ledger, tseq, S.public_url)
+                if led:
+                    c['bim_cos'] = led
+                    continue
                 e = (sc or {}).get('pages', {}).get(tseq)
                 if e is not None and not S.pagemeta._identity(e['H']):
                     c['bim_cos'] = S.pagemeta.bim_cos(e, S.public_url, a.book, v, cos_w)

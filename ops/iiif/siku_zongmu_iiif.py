@@ -509,6 +509,7 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False, with
         return 0
     n = 0
     tpages = {p['seq']: p for p in table['pages']}
+    ledger = pagemeta.load_cos_ledger(table, PAGES_BASE, vol_dir(vol), http_get) if with_cos else None
     for c in canvases:
         key = (by_seq or {}).get(c['seq'], c['seq'])
         e = meta['pages'].get(key)
@@ -517,7 +518,7 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False, with
         c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier,
                                           tpage=tpages.get(key))
         if with_cos:
-            c['bim_cos'] = pagemeta.bim_cos(e, public_url, BOOK_ID, vol_dir(vol))
+            c['bim_cos'] = pagemeta.bim_cos_from_ledger(ledger, key, public_url) or pagemeta.bim_cos(e, public_url, BOOK_ID, vol_dir(vol))
         n += 1
     return n
 
