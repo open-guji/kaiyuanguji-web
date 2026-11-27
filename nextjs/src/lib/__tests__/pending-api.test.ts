@@ -57,6 +57,35 @@ describe('/api/pending', () => {
     });
 });
 
+describe('读时现算（Worker /v1/web/pending-live）', () => {
+    const put = () => fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { ...doc(), items: { file: 'x', n: { open: 2, withdrawn: 0 } } } }));
+    it('已落定、已撤下的条目从 cells 拿掉，没落定的挂 AI 摘要；存的单不动', async () => {
+        await put();
+        inbox.liveBox.reply = () => ({ found: true, at: 't', hide: { pi_000000000001: 'verdict' }, ai: { pi_000000000002: { c: '曰', s: '文意：曰', k: 'high' } } });
+        const d = await j(await fn.onRequestGet(get(`book=${B}&vol=004`)));
+        expect(d.cells.map((c: { id: string }) => c.id)).toEqual(['pi_000000000002']);
+        expect(d.cells[0].ai).toEqual({ c: '曰', s: '文意：曰', k: 'high' });
+        expect(d.live).toEqual({ at: 't', hidden: 1, ai: 1, of: 2 });
+        expect(d.items.n.open).toBe(1);
+        expect(JSON.parse(store.get(`pd:${B}:004`)!).doc.cells).toHaveLength(2);
+    });
+    it('Worker 没这个接口、报错、说这章没有条目：原样给整张单，不挡读者', async () => {
+        await put();
+        for (const reply of [null, 500, () => ({ found: false, at: 't' })] as const) {
+            inbox.liveBox.reply = reply as never;
+            const d = await j(await fn.onRequestGet(get(`book=${B}&vol=004`)));
+            expect(d.cells).toHaveLength(2);
+            expect(d.live).toBeUndefined();
+        }
+    });
+    it('?live=0 不问 Worker', async () => {
+        await put();
+        inbox.liveBox.reply = () => ({ found: true, at: 't', hide: { pi_000000000001: 'verdict' } });
+        const d = await j(await fn.onRequestGet(get(`book=${B}&vol=004&live=0`)));
+        expect(d.cells).toHaveLength(2);
+    });
+});
+
 describe('超 900 KB 的单子分块存放', () => {
     it('put 大单 → 主行＋续块；公开读拼回；hide 照常；改小后续块删掉；delete 全删', async () => {
         const big = { rev: '004-r9', sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
