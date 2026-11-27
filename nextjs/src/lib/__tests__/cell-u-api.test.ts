@@ -44,12 +44,12 @@ afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 afterAll(() => { inbox.restore(); delete g.FEEDBACK_KV; });
 
 describe('cellreview 收 u', () => {
-    const base = { book: 'd59f2870u874', vol: 'vol31', a: '12:3:7', rev: 'vol31-r1', aid: 'aid_abcdefgh1234', choice: 'none' };
+    const base = { book: 'd59f2870u874', vol: 'vol31', a: '12:3:7', item: 'pi_0123456789ab', aid: 'aid_abcdefgh1234', choice: 'none' };
     it('带 u：键与不带时相同，u 进值', async () => {
         expect((await cr.onRequestPost(post('https://x/api/cellreview', { ...base, u: 1234 }))).status).toBe(200);
         const keys = keysOf('cr:');
         expect(keys).toHaveLength(1);
-        expect(keys[0]).toMatch(/^cr:vol31-r1:d59f2870u874:12:3:7:[0-9a-f]{16}$/);
+        expect(keys[0]).toMatch(/^cr:i:d59f2870u874:pi_0123456789ab:[0-9a-f]{16}$/);
         expect(JSON.parse(store.get(keys[0])!)).toMatchObject({ a: '12:3:7', u: 1234 });
     });
     it('按条目记票也带 u', async () => {

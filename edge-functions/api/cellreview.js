@@ -7,16 +7,14 @@
 // 沿用 feedback.js：CORS、管理员 token／成员 cookie、按 IP 限速（sha256，不存明文 IP）。
 // 不新建 KV：key 前缀 `cr:`（feedback.js 只扫 `fb_`，互不干扰）。
 //
-// key：`cr:<rev>:<book>:<a>:<voter>`
-//   - rev 在最前，导出时按 `cr:<rev>:` 前缀列，**不全库 list**（EdgeOne KV list 一轮 1.5～3.5 秒）；
-//   - 比任务书的 `cr:<rev>:<a>:<voter>` 多了 book：rev（如 vol01-r1）只在一本书内唯一，
-//     不同书的同名 rev、同坐标 a 会互相覆盖；
+// key：`cr:i:<book>:<item>:<voter>`（2026-11-27 起只有这一种，没有批号）
+//   - 每格一个待审条目，票按条目记；提交只带 item（必填）、ver、u，格号 a 可带可不带，rev 一律忽略；
+//   - 老的 `cr:<rev>:<book>:<a>:<voter>` 票只留着读（GET ?rev=），等一次性迁成按条目记后连读接口一起删；
 //   - voter＝sha256(aid + ip) 取前 16 位十六进制：aid 是客户端 localStorage 随机 id，ip 是 EdgeOne 给的客户端 IP。
 // 值只存 voter，不存 aid、不存 IP。
 //
-// 按条目记票（待审条目化，guji-manager doc/00-总览/设计-待审条目化.md，sheldon 11-10）：单上每格带条目 id（`pi_` + 12 位十六进制）
-// 与 ver，页面提交时带 `item`／`ver`，key 改成 `cr:i:<book>:<item>:<voter>`——不随 rev 走，换单不丢票、不用先落票。
-// 不带 item 的（旧单、旧页面）照旧按 rev 记。管理读 `?items=1&book=<书>` 按条目列。
+// 按条目记票（待审条目化，guji-manager doc/00-总览/设计-待审条目化.md，sheldon 11-10；11-27 起不再有 rev）：每格带条目 id（`pi_` + 12 位十六进制）
+// 与 ver。管理读 `?items=1&book=<书>` 按条目列。
 //
 // choice 八档：char（选字／其他字，char 必填且恰好一个字）｜none｜unsure｜cut｜jiazhu｜main｜figure｜damaged，后七档 char 可选（figure 例外，见下）。
 // 页面上是一组单选（用户 2026-10-25）：正常字符＝char；非字＝none；字框切分错误＝cut；小注或其他格式＝jiazhu；符号、篆字等＝figure；破损、阙字＝damaged；其他＝unsure。
@@ -79,24 +77,22 @@ export function isSingleChar(v) {
 /** 校验并规整一条意见；失败返回 { error } */
 export function validateReview(body) {
   if (!body || typeof body !== 'object') return { error: '请求体须为 JSON 对象' };
-  const { book, vol, a, rev, choice } = body;
+  const { book, vol, a, choice } = body;
   if (typeof book !== 'string' || !RE_BOOK.test(book)) return { error: 'book 无效' };
   if (typeof vol !== 'string' || !RE_VOL.test(vol)) return { error: 'vol 无效' };
-  if (typeof a !== 'string' || !RE_CELL.test(a)) return { error: 'a（格位坐标）无效' };
+  // 格号 a 只是当前位置，可选；身份是条目（item）。旧页面带的 rev 一律忽略
+  if (a !== undefined && a !== null && a !== '' && (typeof a !== 'string' || !RE_CELL.test(a))) return { error: 'a（格位坐标）无效' };
   const uv = optU(body.u);
   if (uv.error) return { error: uv.error };
-  if (typeof rev !== 'string' || !RE_REV.test(rev)) return { error: 'rev 必填且须为合法版本号' };
   if (typeof choice !== 'string' || !CHOICES.includes(choice)) return { error: 'choice 无效' };
   if (typeof body.aid !== 'string' || !RE_AID.test(body.aid)) return { error: 'aid 无效' };
-  // 条目 id／版本（可选；带了就按条目记票）
+  // 条目 id（必填）与版本：每格独立，票按条目记，没有批号
   const itemF = {};
-  if (body.item !== undefined && body.item !== null && body.item !== '') {
-    if (typeof body.item !== 'string' || !RE_ITEM.test(body.item)) return { error: 'item 无效' };
-    itemF.item = body.item;
-    if (body.ver !== undefined && body.ver !== null) {
-      if (!Number.isInteger(body.ver) || body.ver < 1 || body.ver > VER_MAX) return { error: 'ver 无效' };
-      itemF.ver = body.ver;
-    }
+  if (typeof body.item !== 'string' || !RE_ITEM.test(body.item)) return { error: 'item（待审条目 id）必填，请刷新页面后再提交' };
+  itemF.item = body.item;
+  if (body.ver !== undefined && body.ver !== null) {
+    if (!Number.isInteger(body.ver) || body.ver < 1 || body.ver > VER_MAX) return { error: 'ver 无效' };
+    itemF.ver = body.ver;
   }
 
   let char;
@@ -148,7 +144,7 @@ export function validateReview(body) {
       pick.pivot = body.pivot;
     }
   }
-  return { value: { book, vol: normalizeVol(vol), a, ...(uv.value ? { u: uv.value } : {}), rev, ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
+  return { value: { book, vol: normalizeVol(vol), ...(a ? { a } : {}), ...(uv.value ? { u: uv.value } : {}), ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
 }
 
 /** 按 IP 的固定窗口限速；max／prefix 缺省是精校的口径，charfix 传自己的（互不占名额） */
@@ -211,9 +207,9 @@ async function ipHash(context, ip) {
   return Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
 
-/** 票的 KV 键：带条目的按条目（不随 rev 变），否则按 rev＋格 */
+/** 票的 KV 键：按条目 `cr:i:<书>:<条目>:<投票人>`。没有批号 */
 export function voteKey(v, voter) {
-  return v.item ? `cr:i:${v.book}:${v.item}:${voter}` : `cr:${v.rev}:${v.book}:${v.a}:${voter}`;
+  return `cr:i:${v.book}:${v.item}:${voter}`;
 }
 
 export async function onRequestPost(context) {

@@ -32,9 +32,9 @@ describe('待审条目 id／ver（按条目记票）', () => {
 });
 
 describe('parsePending', () => {
-    it('取待审格与 rev，跳过已校', () => {
+    it('取待审格（没有 rev），跳过已校', () => {
         const r = parsePending(pending);
-        expect(r.rev).toBe('r1');
+        expect('rev' in r).toBe(false);
         expect(r.cells.map(c => c.a)).toEqual(['3:1:2', '3:1:3']);
         expect(r.cells[1].box).toEqual([10, 20, 30, 40]);
         expect(r.cells[0].cand?.length).toBeGreaterThan(0);
@@ -43,15 +43,15 @@ describe('parsePending', () => {
         for (const bad of [null, undefined, 1, 'x', [], {}, { cells: 5 }, { rev: '../x', cells: [null, { a: 3 }, { a: '1:1:1', box: [1, 2, 'x', 4] }] }]) {
             expect(() => parsePending(bad)).not.toThrow();
         }
-        expect(parsePending({ rev: '../x' }).rev).toBeNull();
+        expect(parsePending({ rev: '../x' }).cells).toEqual([]);
         expect(parsePending({ rev: 'r', cells: [{ a: '1:1:1', review: 'pending', box: [1, 2, 0, 4] }] }).cells[0]?.box).toBeUndefined();
     });
 });
 
 describe('规范形（book-text#148）：cells 键为 cell、无 c／cand／box', () => {
-    it('cell 与 a 都收，rev 原样', () => {
+    it('cell 与 a 都收，单头 rev 不再读', () => {
         const r = parsePending({ schema: 'guji-pending/0.1', rev: '001-r1', cv_version: null, cv_commit: 'abc', cells: [{ cell: '3:1:2', review: 'pending' }, { a: '3:1:3', review: 'pending' }] });
-        expect(r.rev).toBe('001-r1');
+        expect('rev' in r).toBe(false);
         expect(r.cells.map(c => c.a)).toEqual(['3:1:2', '3:1:3']);
     });
     it('机器读字从 char_file 补', async () => {
@@ -413,8 +413,8 @@ describe('COS 上的待审单（中心库发布）', () => {
     beforeEach(() => resetProofIndexCache());
 
     it('总表解析与各章状态', () => {
-        const idx = parseProofIndex({ books: { b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 }, bad: { n: 'x' } } } });
-        expect(idx).toEqual({ b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 } } });
+        const idx = parseProofIndex({ books: { b1: { '001': { rev: '001-r3', n: 4 }, '002': { n: 0 }, bad: { n: 'x' } } } });
+        expect(idx).toEqual({ b1: { '001': { n: 4 }, '002': { n: 0 } } });   // 旧总表里的 rev 不读
         expect(proofState(idx, 'b1', '001')).toBe('open');
         expect(proofState(idx, 'b1', '002')).toBe('done');
         expect(proofState(idx, 'b1', '003')).toBe('unknown');
@@ -467,7 +467,7 @@ describe('COS 上的待审单（中心库发布）', () => {
         if (r.status !== 'ok') return;
         expect(r.pendingFile).toBe('001.pending.json');
         expect(r.chapterTitle).toBe('卷首');
-        expect(r.pending.rev).toBe('r1');
+        expect('rev' in r.pending).toBe(false);
         expect(getFile.mock.calls.map(c => (c as unknown[])[2])).toEqual(['001.cord.json']);
         expect(pickChapterByStem(index, '002')).toBeNull();
     });

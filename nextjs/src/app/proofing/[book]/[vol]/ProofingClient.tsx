@@ -46,7 +46,6 @@ function CharRow({ testId, label, chars, busy, picked, onPick }: { testId: strin
 
 /** 一册装进来的数据（合审时各册各一份） */
 interface VolInfo {
-    rev: string | null;
     cells: PendingCell[];
     released: { u: number; ai: AiAnalysis }[];
     cord: CordIndex | null;
@@ -919,17 +918,19 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         const deps = { getManifest: (id: string) => api.getManifest(id), getIndex: (id: string, key: string) => api.getIndex(id, key), getFile: (id: string, key: string, file: string) => getJson(transport, id, key, file), getCosPending: (b: string, v: string) => loadPendingDoc(b, v) };
         // 装一册进来：待审格（合审时格号换成「册|格」组合键）、该册本机已回应／存疑
         const ingest = (v: string, res: Extract<ProofingLoad, { status: 'ok' }>) => {
-            const rev = res.pending.rev;
             const cs = merged ? res.pending.cells.map(c => ({ ...c, a: mergedKey(v, c.a), vol: v })) : res.pending.cells;
-            const info: VolInfo = { rev, cells: cs, released: res.pending.released, cord: res.cord, order: res.order ?? [], pos: positionIndex(res.order ?? []), pendingFile: res.pendingFile,
+            const info: VolInfo = { cells: cs, released: res.pending.released, cord: res.cord, order: res.order ?? [], pos: positionIndex(res.order ?? []), pendingFile: res.pendingFile,
                 chapterTitle: res.chapterTitle, versionKey: res.versionKey, rawSet: new Set(res.pending.cells.map(c => c.a)) };
             const k = (a: string) => (merged ? mergedKey(v, a) : a);
-            const d = rev ? Object.fromEntries(Object.entries(readDone(rev)).map(([a, x]) => [k(a), x])) : {};
+            // 本机状态按条目存：条目 id → 这一格现在的位置
+            const stored = readDone(book, v);
+            const d = Object.fromEntries(res.pending.cells.flatMap(c => (c.item && stored[c.item] ? [[k(c.a), stored[c.item]] as [string, string]] : [])));
             for (const a of Object.keys(d)) initDone.current.add(a);
             setLoaded(prev => ({ ...prev, [v]: info }));
             setDone(prev => ({ ...prev, ...d }));
             setHiddenDone(prev => new Set([...prev, ...Object.keys(d)]));
-            if (rev) setDeferred(prev => [...new Set([...prev, ...readDefer(rev).map(k)])]);
+            const deferIds = new Set(readDefer(book, v));
+            setDeferred(prev => [...new Set([...prev, ...res.pending.cells.filter(c => c.item && deferIds.has(c.item)).map(c => k(c.a))])]);
         };
         (async () => {
             const index = await loadProofIndexLive(book);
@@ -1010,21 +1011,21 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     }, [book, loaded, volOf, spriteFail]);
     const spriteBaseOf = useCallback((cell: PendingCell) => (f: string) => spriteUrl(book, loaded[volOf(cell)]?.pendingFile ?? null, f), [book, loaded, volOf]);
 
-    // 本机已回应／存疑落盘：按册、按该册 rev 一份（单册页与合审共用同一份存储）
-    const persist = useCallback((v: string, rev: string | null, nextDone: DoneMap | null, nextDefer: string[] | null) => {
-        if (!rev) return;
+    // 本机已回应／存疑落盘：按册、按条目 id 一份（单册页与合审共用同一份存储）
+    const persist = useCallback((v: string, info: VolInfo | null | undefined, nextDone: DoneMap | null, nextDefer: string[] | null) => {
+        if (!info) return;
         const mine = (k: string) => (merged ? k.startsWith(`${v}|`) : true);
-        if (nextDone) writeDone(rev, Object.fromEntries(Object.entries(nextDone).filter(([k]) => mine(k)).map(([k, x]) => [rawA(k), x])));
-        if (nextDefer) writeDefer(rev, nextDefer.filter(mine).map(rawA));
-    }, [merged]);
+        const itemOf = new Map(info.cells.flatMap(c => (c.item ? [[c.a, c.item] as [string, string]] : [])));
+        if (nextDone) writeDone(book, v, Object.fromEntries(Object.entries(nextDone).filter(([k]) => mine(k) && itemOf.has(k)).map(([k, x]) => [itemOf.get(k)!, x])));
+        if (nextDefer) writeDefer(book, v, nextDefer.filter(k => mine(k) && itemOf.has(k)).map(k => itemOf.get(k)!));
+    }, [merged, book]);
 
     const submitCell = useCallback((cell: PendingCell, fields: { choice: ReviewChoice; char?: string; alt?: string; note?: string; pick?: Pick }) => {
-        const info = loaded[volOf(cell)];
-        if (!info?.rev) return Promise.resolve('这份待审单缺少版本号，暂时不能提交');
+        if (!cell.item) return Promise.resolve('这一格缺少条目编号，请刷新页面后再提交');
         const { choice, char, alt, note, pick } = fields;
-        return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), rev: info.rev, ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(choice === 'unrec' && alt ? { unk: alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
+        return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(choice === 'unrec' && alt ? { unk: alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
             ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
-    }, [book, loaded, volOf]);
+    }, [book, volOf]);
 
     // 乐观提交：点完先在本地记下、马上收起这一格跳下一张，接口在后台排队慢慢发；最终失败再把这一格恢复为待审并报错。
     // 本机存档（localStorage）只记服务端已确认的，没发完就刷新的格回到待审，不会假装交过。
@@ -1038,8 +1039,8 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
 
     const submitOptimistic = useCallback((cell: PendingCell, fields: { choice: ReviewChoice; char?: string; alt?: string; note?: string; pick?: Pick }): string | null => {
         const v = volOf(cell);
-        const rev = loaded[v]?.rev;
-        if (!rev) return '这份待审单缺少版本号，暂时不能提交';
+        if (!cell.item) return '这一格缺少条目编号，请刷新页面后再提交';
+        const itemId = cell.item;
         const label = doneLabel(fields.choice, fields.char);
         const q = queue.current!;
         if (!q.has(cell.a)) acked.current.set(cell.a, doneRef.current[cell.a] ?? null);
@@ -1049,7 +1050,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             if (skipped) return;
             if (!err) {
                 acked.current.set(cell.a, label);
-                writeDone(rev, { ...readDone(rev), [rawA(cell.a)]: label });
+                writeDone(book, v, { ...readDone(book, v), [itemId]: label });
                 return;
             }
             if (!latest) return;                                    // 后面还有更新的提交，由它定终局
@@ -1059,7 +1060,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             setFailed(prev => ({ ...prev, [cell.a]: err }));
         });
         return null;
-    }, [submitCell, loaded, volOf]);
+    }, [submitCell, book, volOf]);
 
     // 离开页面前还有没发完的提交：浏览器弹确认
     useEffect(() => {
@@ -1101,10 +1102,10 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
     }, [cells, quickSet, clsFilter, onlyOpen, hiddenDone, deferred]);
 
     const onQuickConfirm = useCallback(async (ok: { cell: PendingCell; char: string }[], doubt: string[], onProgress: (n: number) => void) => {
-        if (ok.some(({ cell }) => !loaded[volOf(cell)]?.rev)) return '这份待审单缺少版本号，暂时不能提交';
+        if (ok.some(({ cell }) => !cell.item)) return '有格缺少条目编号，请刷新页面后再提交';
         if (doubt.length) setDeferred(prev => {
             const next = [...new Set([...prev, ...doubt])];
-            for (const v of new Set(doubt.map(k => (merged ? k.slice(0, k.indexOf('|')) : vol)))) persist(v, loaded[v]?.rev ?? null, null, next);
+            for (const v of new Set(doubt.map(k => (merged ? k.slice(0, k.indexOf('|')) : vol)))) persist(v, loaded[v], null, next);
             return next;
         });
         // 乐观：先全部记为已确认、从快速确认里收起，接口在后台逐格排队发；哪格最终失败，哪格恢复为待审并报错
@@ -1245,7 +1246,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         return m;
     }, [loaded, cells, done, volOf]);
     // 合审：还没载入的册里剩多少（总表发布值扣本机已回应）；右上总数＝已载入格＋这部分，与左侧目录同口径
-    const unloadedLeft = useMemo(() => toc.reduce((n, e) => n + (loaded[e.vol] ? 0 : Math.max(0, e.n - Object.keys(readDone(e.rev)).length)), 0), [toc, loaded]);
+    const unloadedLeft = useMemo(() => toc.reduce((n, e) => n + (loaded[e.vol] ? 0 : Math.max(0, e.n - Object.keys(readDone(book, e.vol)).length)), 0), [book, toc, loaded]);
     // 合审：眼前没回应的格快审完时，自动接着载后面的册
     const openLeft = useMemo(() => cells.filter(c => !done[c.a]).length, [cells, done]);
     useEffect(() => {

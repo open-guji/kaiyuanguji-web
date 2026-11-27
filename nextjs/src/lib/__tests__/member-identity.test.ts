@@ -21,7 +21,7 @@ function cookie(email: string, tv = 1) {
     const data = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: email, iat: 1, exp: 4102444800, tv })}`;
     return `session=${data}.${createHmac('sha256', SECRET).update(data).digest('base64url')}`;
 }
-const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', rev: 'vol01-r1', aid: 'aid_abcdefgh1234', shown: '於', choice: 'char', char: '于' };
+const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', item: 'pi_0123456789ab', aid: 'aid_abcdefgh1234', shown: '於', choice: 'char', char: '于' };
 function post(body: unknown, headers: Record<string, string> = {}) {
     const request = new Request('https://x/api/cellreview', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
     (request as unknown as { eo: unknown }).eo = { clientIp: '1.2.3.4' };

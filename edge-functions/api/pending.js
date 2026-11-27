@@ -6,11 +6,10 @@
 //        把事件已落定（人裁、AI 裁定）或条目已撤下／已结的格从 cells 拿掉，给没落定的格挂 AI 摘要。单本身不改，
 //        不等 collect、换单、发站；Worker 读不到就原样给整张单（不挡读者）。?live=0 跳过现算（排查用）。
 //   POST 管理（FEEDBACK_ADMIN_TOKEN）—— 改单，不走 COS 发布、不等 CDN：
-//        {op:'put',   book, vol, doc}              整张单替换（doc.rev 必填，cells 数组）
+//        {op:'put',   book, vol, doc}              整张单替换（doc.cells 数组；没有 rev，每格各带条目 id、ver）
 //        {op:'hide',  book, vol, items:[条目 id…], cells:[格号…], why?, by?}   撤下：这些格从单上拿掉，记进 withdrawn[]（与 guji-manager export 同一键，可 unhide 放回）
 //        {op:'unhide',book, vol, items:[…]}        放回 withdrawn[] 里的格
 //        {op:'delete',book, vol}                   删掉 KV 里这章（页面退回 COS）
-//        可带 expect_rev：当前单的 rev 对不上就 409（防止把别的轮的单当成现行单改）
 //
 // key：`pd:<book>:<vol>`，值是整张单 JSON（几十 KB，EdgeOne KV 单值上限 25 MB），不设过期。
 // 图仍在 COS（文件名带内容哈希、不可变）：put 之前，调用方要保证单里 sprites[] 的图已在 COS（manager 会 HEAD 核对，缺图就走 proofing-sync）。
@@ -19,7 +18,6 @@ import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendi
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
-const RE_REV = /^[A-Za-z0-9._-]{1,64}$/;
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
 const RE_CELL = /^\d{1,6}:\d{1,4}:-?\d{1,4}[ab]?$/;
 const MAX_BYTES = 8 * 1024 * 1024; // 超 900 KB 的单子压缩后存（D1 单行上限 2 MB）
@@ -50,7 +48,7 @@ export function applyLive(doc, live) {
 }
 
 function validDoc(doc) {
-  return !!doc && typeof doc === 'object' && !Array.isArray(doc) && typeof doc.rev === 'string' && RE_REV.test(doc.rev) && Array.isArray(doc.cells);
+  return !!doc && typeof doc === 'object' && !Array.isArray(doc) && Array.isArray(doc.cells);
 }
 
 export async function onRequestGet(context) {
@@ -84,11 +82,11 @@ export async function onRequestPost(context) {
     const putDoc = (d) => writePendingDoc(context, key, book, vol, d);
 
     if (op === 'put') {
-      if (!validDoc(body.doc)) return json(headers, 400, { success: false, error: 'doc 须有 rev 和 cells[]' });
+      if (!validDoc(body.doc)) return json(headers, 400, { success: false, error: 'doc 须有 cells[]' });
       const text = JSON.stringify(body.doc);
       if (text.length > MAX_BYTES) return json(headers, 413, { success: false, error: '单子过大' });
       await putDoc(body.doc);
-      return json(headers, 200, { success: true, rev: body.doc.rev, cells: body.doc.cells.length });
+      return json(headers, 200, { success: true, cells: body.doc.cells.length });
     }
     if (op === 'delete') {
       await deletePendingDoc(context, key);
@@ -101,7 +99,6 @@ export async function onRequestPost(context) {
       if (items.some((x) => !RE_ITEM.test(x)) || cells.some((x) => !RE_CELL.test(x))) return json(headers, 400, { success: false, error: '条目 id 或格号格式不对' });
       const doc = await readPendingDoc(context, key);
       if (!doc || !validDoc(doc)) return json(headers, 404, { success: false, error: '没有这一章的单子，先 put' });
-      if (body.expect_rev && body.expect_rev !== doc.rev) return json(headers, 409, { success: false, error: `现行单 rev 是 ${doc.rev}，不是 ${body.expect_rev}` });
       const hit = (c) => items.includes(itemOf(c)) || cells.includes(cellOf(c));
       const gone0 = Array.isArray(doc.withdrawn) ? doc.withdrawn : [];
       let changed = 0;
@@ -119,7 +116,7 @@ export async function onRequestPost(context) {
       }
       if (!doc.withdrawn.length) delete doc.withdrawn;
       await putDoc(doc);
-      return json(headers, 200, { success: true, rev: doc.rev, changed, cells: doc.cells.length });
+      return json(headers, 200, { success: true, changed, cells: doc.cells.length });
     }
     return json(headers, 400, { success: false, error: 'op 须为 put／hide／unhide／delete' });
   } catch (e) {
