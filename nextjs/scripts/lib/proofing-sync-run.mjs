@@ -2,16 +2,17 @@
  * proofing-sync-run.mjs — 每日「proofing-sync」的流程（连网的部分都由调用方注入，单测用假的 Worker／KV／COS）
  *
  * 两段，可分开跑（workflow 里分两步，各自只拿自己要的密钥）：
- *   opinions：中心库所有待审单的 (书, rev) → 网站 KV 管理读 /api/cellreview → 并进中心库 feedback/lists/web/<书>/<rev>.jsonl
- *   publish ：中心库所有待审单 → COS [前缀/]proof/index.json 与 proof/<书>/<章>.pending.json（md5 相同的跳过）
- * 待审单带 `sprites[]` 的（GUJI-675，cv 写；图真源在 R2），publish 先把图传到 COS proof/<书>/<章>/<name>，再传单子，最后换 index。
+ *   opinions：网站 KV 管理读 /api/cellreview?items=1 → 并进中心库 feedback/lists/web/<书>/items.jsonl（按条目，没有 rev）
+ *   publish ：中心库待审条目（feedback/lists/pending/<书>/<章>.items.jsonl，每格一条、没有 rev、没有整张单）里
+ *             开着条目登记的单格图（`sprites[]`，图真源在 R2）→ COS [前缀/]proof/<书>/<章>/<name>（同名同内容的跳过）
+ * 待审格本身由 Worker /v1/web/pending-doc 现拼，网站精校页读它；COS 上不再发整张单。
  * 老路（GUJI-557：book-text 指针＋GitHub Release）仍由 sync-proof-sprites.mjs 发，不在这里。
  *
  * 日志与 run 摘要只出计数（公开仓），不出票的内容。
  */
 import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parsePendingPath, readPending, buildProofIndex, mergeProofIndex, webSnapshotPath, mergeSnapshot, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
+    PROOFING_PREFIX, parseItemsPath, readItems, buildProofIndex, mergeProofIndex, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
@@ -24,10 +25,10 @@ export const SHORT_CACHE = 'public, max-age=300';
 export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 /**
- * 读出各工作区里全部待审单。
+ * 读出各工作区里全部待审条目文件（每章一个）。
  * softWs：列目录失败只记问题、不抛错的工作区（自动推出的）。
  * @param worker {listFiles(ws, prefix) → {files:[{src_path}], truncated}, getFile(ws, path) → {text, sha256} | null}
- * @returns {{entries: [{ws, book, chap, rev, n, text}], problems: string[]}}
+ * @returns {{entries: [{ws, book, chap, n, sprites}], problems: string[]}}  n＝开着的条目数
  */
 export async function collectPendings(worker, wsList, softWs = new Set()) {
     const entries = [];
@@ -42,18 +43,18 @@ export async function collectPendings(worker, wsList, softWs = new Set()) {
             problems.push(`${ws}：工作区列不出来（自动推出的新书，可能还没建工作区）：${String(e.message || e).slice(0, 120)}`);
             continue;
         }
-        if (listing.truncated) problems.push(`${ws}：待审单超过一页（1000 个），只处理了前一页`);
+        if (listing.truncated) problems.push(`${ws}：待审条目文件超过一页（1000 个），只处理了前一页`);
         for (const f of listing.files) {
-            const id = parsePendingPath(f.src_path);
-            if (!id) continue; // 不是待审单（比如将来放进去的说明文件）
+            const id = parseItemsPath(f.src_path);
+            if (!id) continue; // 不是条目文件
             const got = await worker.getFile(ws, f.src_path);
             if (!got) { problems.push(`${ws}：${f.src_path} 列得出、取不到`); continue; }
-            const p = readPending(got.text);
+            const p = readItems(got.text);
             if (p.error) { problems.push(`${ws}：${f.src_path} ${p.error}`); continue; }
             const k = `${id.book}/${id.chap}`;
             if (seen.has(k)) { problems.push(`${k} 同时在工作区 ${seen.get(k)} 与 ${ws}，用前者`); continue; }
             seen.set(k, ws);
-            entries.push({ ws, ...id, rev: p.rev, n: p.n, sprites: p.sprites, text: got.text });
+            entries.push({ ws, ...id, n: p.n, sprites: p.sprites });
         }
     }
     return { entries, problems };
@@ -74,148 +75,89 @@ export function onlyFilter(only) {
 export const spriteOnCos = (remote, s) => remote === s.md5 || remote === `mp:${s.bytes}`;
 
 /**
- * opinions 段：每个 (工作区, 书, rev) 拉一次 KV，合进快照，变了才写。
- * @param kv {listVotes(rev, book) → items[]}
+ * opinions 段：每本书拉一次按条目记的票，合进快照（一书一份，不分版），变了才写。
+ * @param kv {listItemVotes(book) → items[]}
  * @param worker 另需 putFile(ws, path, text, baseSha)
  */
 export async function syncOpinions({ worker, kv, entries, dryRun = false }) {
-    const groups = new Map();
-    for (const e of entries) {
-        const k = `${e.ws}\u0000${e.book}\u0000${e.rev}`;
-        if (!groups.has(k)) groups.set(k, { ws: e.ws, book: e.book, rev: e.rev });
-    }
     const rows = [];
     const problems = [];
-    for (const g of [...groups.values()].sort((x, y) => `${x.book}/${x.rev}`.localeCompare(`${y.book}/${y.rev}`))) {
-        const path = webSnapshotPath(g.book, g.rev);
+    const books = new Map();
+    for (const e of entries) if (!books.has(e.book)) books.set(e.book, e.ws);
+    for (const [book, ws] of [...books.entries()].sort()) {
+        const path = itemSnapshotPath(book);
         try {
-            const items = await kv.listVotes(g.rev, g.book);
-            const old = await worker.getFile(g.ws, path);
-            const m = mergeSnapshot(old?.text ?? '', items, g);
+            const items = await kv.listItemVotes(book);
+            const old = await worker.getFile(ws, path);
+            const m = mergeItemSnapshot(old?.text ?? '', items, { book });
             const changed = m.text !== (old?.text ?? '') && m.total > 0;
-            if (changed && !dryRun) await worker.putFile(g.ws, path, m.text, old?.sha256 ?? null);
-            rows.push({ ...g, kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
+            if (changed && !dryRun) await worker.putFile(ws, path, m.text, old?.sha256 ?? null);
+            rows.push({ ws, book, kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
         } catch (e) {
-            problems.push(`${g.book}/${g.rev}：${e?.message || e}`);
-        }
-    }
-    // 按条目记的票（一书一份快照，不分 rev）；kv 没有 listItemVotes（旧调用方）就跳过
-    if (typeof kv.listItemVotes === 'function') {
-        const books = new Map();
-        for (const e of entries) if (!books.has(e.book)) books.set(e.book, e.ws);
-        for (const [book, ws] of [...books.entries()].sort()) {
-            const path = itemSnapshotPath(book);
-            try {
-                const items = await kv.listItemVotes(book);
-                const old = await worker.getFile(ws, path);
-                const m = mergeItemSnapshot(old?.text ?? '', items, { book });
-                const changed = m.text !== (old?.text ?? '') && m.total > 0;
-                if (changed && !dryRun) await worker.putFile(ws, path, m.text, old?.sha256 ?? null);
-                rows.push({ ws, book, rev: 'items', kv: items.length, total: m.total, cells: m.cells, added: m.added, updated: m.updated, kept: m.kept, dropped: m.dropped, written: changed && !dryRun, changed });
-            } catch (e) {
-                problems.push(`${book}/items：${e?.message || e}`);
-            }
+            problems.push(`${book}：${e?.message || e}`);
         }
     }
     return { rows, problems };
 }
 
 /**
- * publish 段：雪碧图 → 各章待审单原文 → index.json，按 md5 跳过与 COS 相同的。
- * @param cos {listPrefixEtags(prefix) → Map, putObjectText(key, body, {contentType, cacheControl}), putObjectBuffer(key, buf, {contentType, cacheControl})}
+ * publish 段：把开着条目登记的单格图传到 COS，同名同内容（md5／分块 ETag）的跳过。图名带内容哈希，内容变了名字就变。
+ * @param cos {listPrefixEtags(prefix) → Map, putObjectBuffer(key, buf, {contentType, cacheControl})}
  * @param blobs {get(sha256) → Buffer}  从 R2 取图（经 Worker 签名链接）；演练时不调用
  * @param proofPrefix 如 'proof/' 或 'staging/proof/'
  */
 export async function publishPendings({ cos, entries, proofPrefix, dryRun = false, blobs = null, only = null }) {
-    // index.json：全站发布按全部单子生成；only 时只传选中那几章的单子和图，所以 index 也只改这几章，
-    // 别的章保持 COS 上现有 index 的写法（否则 index 写了中心库新 rev、COS 上单子还是旧的，读者侧 rev 对不上，11-10 run 42765432259 的 007/008）
     const picked = only ? entries.filter(only) : entries;
+    // index.json：全站发布按全部条目生成；only 时只改选中那几章，别的章保持 COS 上现有的写法
     let indexBody = buildProofIndex(entries);
     if (only && cos?.getObjectText) {
         const oldText = await cos.getObjectText(proofPrefix + 'index.json');
         if (oldText) indexBody = mergeProofIndex(oldText, picked);
     }
-    const objects = [
-        { key: 'index.json', body: indexBody },
-        ...picked.map((e) => ({ key: `${e.book}/${e.chap}.pending.json`, body: e.text })),
-    ];
     let remote = new Map();
     if (cos && !only) remote = await cos.listPrefixEtags(proofPrefix);
     else if (cos) {
         // 只列要动的几处，不列全站（全站几千张图，列一遍就要几十秒）
-        for (const sub of ['index.json', ...picked.map((e) => `${e.book}/${e.chap}`)]) {
+        for (const sub of ['index.json', ...picked.map((e) => `${e.book}/${e.chap}/`)]) {
             for (const [k, v] of await cos.listPrefixEtags(proofPrefix + sub)) remote.set(sub + k, v);
         }
     }
-    const plan = planCosPut(objects, remote);
-    // 图：文件名带内容哈希，COS 上有同名同内容的就跳过
-    const sprites = picked.flatMap((e) => (e.sprites || []).map((s) => ({ ...s, chap: `${e.book}/${e.chap}`, key: `${e.book}/${e.chap}/${s.name}` })));
+    const indexPlan = planCosPut([{ key: 'index.json', body: indexBody }], remote);
+    const sprites = picked.flatMap((e) => (e.sprites || []).map((s) => ({ ...s, key: `${e.book}/${e.chap}/${s.name}` })));
     const spritePut = sprites.filter((s) => !spriteOnCos(remote.get(s.key), s));
     const spriteSame = sprites.filter((s) => spriteOnCos(remote.get(s.key), s));
     const failed = [];
-    const badChaps = new Set();
     if (!dryRun && cos) {
         for (const sp of spritePut) {
             try {
                 if (!blobs) throw new Error('没有取图的来源（blobs）');
                 const buf = await blobs.get(sp.sha256);
-                if (buf.length !== sp.bytes || sha256Hex(buf) !== sp.sha256 || md5Hex(buf) !== sp.md5) throw new Error('从 R2 取回的图与单子里登记的 sha256／md5／字节数不符');
+                if (buf.length !== sp.bytes || sha256Hex(buf) !== sp.sha256 || md5Hex(buf) !== sp.md5) throw new Error('从 R2 取回的图与条目里登记的 sha256／md5／字节数不符');
                 await cos.putObjectBuffer(proofPrefix + sp.key, buf, { contentType: 'image/webp', cacheControl: IMMUTABLE_CACHE });
             } catch (e) {
                 failed.push(`${sp.key}：${e?.message || e}`);
-                badChaps.add(sp.chap);
             }
         }
     }
-    // index.json 最后传：网站先看 index 再取待审单，先传图和单子、后换 index，中途不会指向还没传的文件
-    const ordered = [...plan.put.filter((o) => o.key !== 'index.json'), ...plan.put.filter((o) => o.key === 'index.json')];
-    if (!dryRun && cos) {
-        for (const o of ordered) {
-            // 有待审单没传上去就不换 index，免得 index 的 rev 与 COS 上的单子对不上
-            if (o.key === 'index.json' && failed.length) { failed.push('index.json：前面有失败，本次不换'); break; }
-            // 这一章有图没传上，单子也不传：单子里的图地址会指向不存在的文件
-            if (badChaps.has(o.key.replace(/\.pending\.json$/, ''))) { failed.push(`${o.key}：这一章有图没传上，单子本次不传`); continue; }
-            try {
-                await cos.putObjectText(proofPrefix + o.key, o.body, { contentType: 'application/json; charset=utf-8', cacheControl: SHORT_CACHE });
-            } catch (e) {
-                failed.push(`${o.key}：${e?.message || e}`);
+    // index.json 最后传：先传图、后换 index，中途不会指向还没传的图；有图没传上就不换
+    const putKeys = spritePut.map((s) => s.key);
+    const sameKeys = spriteSame.map((s) => s.key);
+    if (indexPlan.same.length) sameKeys.push('index.json');
+    if (indexPlan.put.length) {
+        putKeys.push('index.json');
+        if (!dryRun && cos) {
+            if (failed.length) failed.push('index.json：前面有失败，本次不换');
+            else {
+                try {
+                    await cos.putObjectText(proofPrefix + 'index.json', indexBody, { contentType: 'application/json; charset=utf-8', cacheControl: SHORT_CACHE });
+                } catch (e) { failed.push(`index.json：${e?.message || e}`); }
             }
         }
     }
     return {
-        put: ordered.map((o) => o.key), same: plan.same.map((o) => o.key), failed,
+        put: putKeys, same: sameKeys, failed,
         spritesPut: spritePut.map((s) => s.key), spritesSame: spriteSame.map((s) => s.key),
     };
-}
-
-/**
- * publish 段之后：把发布的待审单也写进站点 KV（`/api/pending`），精校页优先读它。
- * 要紧的是 KV 里的单子绝不能比 COS 旧：写不进就删掉这一章的 KV（页面退回读 COS）；删也失败才算错误。
- * 先看 COS 那一步有没有失败：失败的章不动 KV。
- * @param site {pendingOp(body) → 回包}
- * @param skip 本次没发成功的章（Set of `书/章`）
- */
-export async function syncPendingKv({ site, entries, only = null, dryRun = false, skip = new Set(), concurrency = 6 }) {
-    const picked = (only ? entries.filter(only) : entries).filter((e) => !skip.has(`${e.book}/${e.chap}`));
-    const out = { put: 0, dropped: 0, failed: [] };
-    if (dryRun) return { ...out, put: picked.length };
-    let i = 0;
-    const worker = async () => {
-        while (i < picked.length) {
-            const e = picked[i++];
-            const base = { book: e.book, vol: e.chap };
-            try {
-                await site.pendingOp({ ...base, op: 'put', doc: JSON.parse(e.text) });
-                out.put++;
-            } catch (err) {
-                try { await site.pendingOp({ ...base, op: 'delete' }); out.dropped++; } catch (err2) {
-                    out.failed.push(`KV ${e.book}/${e.chap}：写不进也删不掉（${err?.message || err}；${err2?.message || err2}），页面可能读到旧单`);
-                }
-            }
-        }
-    };
-    await Promise.all(Array.from({ length: Math.min(concurrency, picked.length) }, worker));
-    return out;
 }
 
 /**
@@ -336,14 +278,14 @@ export async function publishFixes({ worker, cos, ws, books, proofPrefix, dryRun
 }
 
 /** run 摘要（markdown），只有计数 */
-export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, pendingKv, fixes, fixesPublish, status }) {
+export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, opinions, publish, fixes, fixesPublish, status }) {
     const L = [];
     L.push(`### proofing-sync（工作区 ${ws.join('、')}${dryRun ? '，演练：不写' : ''}）`);
-    L.push(`待审单 ${entries.length} 章，待审格合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
+    L.push(`待审条目 ${entries.length} 章，开着的条目合计 ${entries.reduce((s, e) => s + e.n, 0)}`);
     for (const p of collectProblems) L.push(`- ⚠️ ${p}`);
     if (opinions) {
-        L.push('', '#### 意见 → 中心库', '| 书 | rev | KV 现有 | 快照合计 | 新增 | 改票 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|---|');
-        for (const r of opinions.rows) L.push(`| ${r.book} | ${r.rev} | ${r.kv} | ${r.total} | ${r.added} | ${r.updated} | ${r.kept} | ${r.written ? '是' : r.changed ? '演练' : '无变化'} |`);
+        L.push('', '#### 意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改票 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');
+        for (const r of opinions.rows) L.push(`| ${r.book} | ${r.kv} | ${r.total} | ${r.added} | ${r.updated} | ${r.kept} | ${r.written ? '是' : r.changed ? '演练' : '无变化'} |`);
         for (const p of opinions.problems) L.push(`- ❌ ${p}`);
     }
     if (publish) {
@@ -351,7 +293,6 @@ export function summarize({ ws, proofPrefix, dryRun, entries, collectProblems, o
             + (publish.spritesPut.length + publish.spritesSame.length ? ` · 雪碧图 上传 ${publish.spritesPut.length}／已有 ${publish.spritesSame.length}` : ''));
         for (const k of publish.put) L.push(`- ${k}`);
         for (const p of publish.failed) L.push(`- ❌ ${p}`);
-        if (pendingKv) L.push('', `#### 待审单 → 站点 KV（/api/pending）`, `写入 ${pendingKv.put} 章${pendingKv.dropped ? ` · 写不进、已删 ${pendingKv.dropped} 章（页面退回读 COS）` : ''}`, ...pendingKv.failed.map((p) => `- ❌ ${p}`));
     }
     if (fixes) {
         L.push('', '#### 改字与段落意见 → 中心库', '| 书 | KV 现有 | 快照合计 | 新增 | 改动 | 仅快照有 | 写入 |', '|---|---|---|---|---|---|---|');
