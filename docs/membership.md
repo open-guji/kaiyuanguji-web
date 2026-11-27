@@ -60,3 +60,11 @@
 | 紧急关闭 | 把 `BA_REGISTRATION_OPEN` 改 0 重新构建（已有成员仍可登录）；全关设 `BA_ENABLED` 为空（回到纯邀请制）；整站回滚用上一版产物重新晋升 |
 
 测试站联调：邮件里的链接固定写正式站域名，所以在测试站发的信点开会落到正式站；联调时用脚本从认证库取出 token，直接访问测试站自己的 `/api/ba/magic-link/verify?token=…&callbackURL=/api/ba-session`。
+
+## 提交带会员身份（uid）
+
+- 成员记录 `member:<email>` 带 `uid`（UUIDv7，不由邮箱推出，改邮箱不变；删除墓碑保留 uid）。新注册时由 `nextMember` 生成，老成员在第一次提交或访问 `/api/auth/me` 时由边缘函数懒补（`ensureMemberUid`，写后回读）。可选 `nickname`，保留字段，改角色／重新加入不丢。
+- 身份只从已验签的 `session` cookie 来（`memberFromRequest`，含 tokenVersion 校验），请求体里的任何自报身份一律不采信。
+- 精校票（cellreview）、改字（charfix）、讨论（thread）：登录会员 `voter = uid`（跨设备同一票）；匿名仍是 `sha256(aid|ip)` 前 16 位。下游可凭格式区分：UUID（36 位）＝会员，16 位十六进制＝匿名。
+- 反馈：记录带 `member: <uid>`；公开读剔除该字段，邮箱从成员库按 uid 反查（后台）。
+- 公开数据显示：绝不出邮箱；有昵称显示昵称，否则显示 uid（界面建议只显示末 8 位）。昵称设置界面另做。

@@ -30,7 +30,7 @@
 // 无字、看不清带字下游挂起交人看。只有 char 与 none 会被下游自动落裁决，其余进异常清单。damaged 2026-10-25 起随单选组开放给公众。
 
 import {
-  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getClientIp, sha256Hex, writeInboxStrict, readInboxPage,
+  getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, checkMemberCookie, bearerToken, getClientIp, sha256Hex, submitterVoter, writeInboxStrict, readInboxPage,
   optU, optUPair, U_MAX,
 } from './feedback.js';
 
@@ -232,7 +232,7 @@ export async function onRequestPost(context) {
 
     const { aid, ...rest } = v.value;
     const ip = getClientIp(context.request) || '';
-    const voter = (await sha256Hex(`${aid}|${ip}`)).slice(0, 16);
+    const { voter } = await submitterVoter(context.request, context, aid, ip);
     const key = voteKey(rest, voter);
     // iph＝HMAC-SHA256(CELLREVIEW_IP_KEY, ip) 截断：同一 IP 换 aid 也能在统计时识别出来再去重，防刷票；
     // 不存 IP 明文。未加盐的哈希可被穷举还原 IPv4，所以没配密钥就不存 iph。

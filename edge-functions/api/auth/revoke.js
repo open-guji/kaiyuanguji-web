@@ -84,7 +84,8 @@ export async function onRequestPost(context){
     if(body.role === undefined || body.role === null || body.role === ''){
       // 删除：写墓碑而不物理删除——墓碑留着 tokenVersion，日后再 join 时接着往上加，
       // 不会回到 1 而让删除前签出去的旧令牌重新对上号。各处都按 _deleted 视为不存在。
-      await kv.put(`member:${email}`, JSON.stringify({ _deleted: true, tokenVersion, deletedAt: now, deletedBy: auth.by||'admin' }));
+      const prev=await getMember(kv, email); // 墓碑保留 uid：日后同邮箱再加入仍是同一个会员 ID
+      await kv.put(`member:${email}`, JSON.stringify({ _deleted: true, tokenVersion, deletedAt: now, deletedBy: auth.by||'admin', ...(prev&&prev.uid?{uid:prev.uid}:{}) }));
       return new Response(JSON.stringify({success:true,action:'deleted'}),{status:200,headers});
     }
     const role=String(body.role).trim();
@@ -93,6 +94,8 @@ export async function onRequestPost(context){
     const keepVersion = !!(existing && existing.verified === true && curVersion > 0 && roleRank(role) >= roleRank(existing.role));
     const rec={ role, joinedAt: existing && existing.joinedAt ? existing.joinedAt : now, invitedBy: auth.by||'admin', updatedAt: now, tokenVersion: keepVersion ? curVersion : tokenVersion };
     if(existing && existing.verified === true) rec.verified = true;
+    if(existing && existing.uid) rec.uid = existing.uid;
+    if(existing && existing.nickname) rec.nickname = existing.nickname;
     await kv.put(`member:${email}`, JSON.stringify(rec));
     return new Response(JSON.stringify({success:true,action:'updated',member:rec}),{status:200,headers});
   }catch(e){

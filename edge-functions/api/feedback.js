@@ -398,6 +398,49 @@ async function checkMemberCookie(request, context, allowedRoles) {
   return { ...member, email: payload.sub };
 }
 
+// --- 会员身份（提交带 ID）---
+// uid＝UUIDv7（RFC 9562）：随机＋时间序，不由邮箱推出，改邮箱也不变。存在成员记录 member:<email>.uid，
+// 老成员第一次提交时懒补。身份只从已验签的 session cookie 来，永不采信请求体里的任何「我是谁」。
+function uuidv7(now = Date.now()) {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  let t = now;
+  for (let i = 5; i >= 0; i -= 1) { b[i] = t % 256; t = Math.floor(t / 256); }
+  b[6] = (b[6] & 0x0f) | 0x70;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+const UID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+/** 成员记录没有 uid 就补一个并写回；写后回读，并发时以库里最终那个为准。 */
+async function ensureMemberUid(context, email, member) {
+  if (member && typeof member.uid === 'string' && UID_RE.test(member.uid)) return member.uid;
+  const kv = getAuthKV(context);
+  if (!kv) return null;
+  try {
+    const cur = await kv.get(`member:${email}`, 'json');
+    if (!cur || typeof cur !== 'object' || cur._deleted) return null;
+    if (typeof cur.uid === 'string' && UID_RE.test(cur.uid)) return cur.uid;
+    await kv.put(`member:${email}`, JSON.stringify({ ...cur, uid: uuidv7() }));
+    const back = await kv.get(`member:${email}`, 'json');
+    return back && typeof back.uid === 'string' && UID_RE.test(back.uid) ? back.uid : null;
+  } catch { return null; }
+}
+/** 已登录会员（任意角色）→ { uid, email, role, nickname? }；匿名或 cookie 无效 → null。 */
+async function memberFromRequest(request, context) {
+  const m = await checkMemberCookie(request, context, null);
+  if (!m) return null;
+  const uid = await ensureMemberUid(context, m.email, m);
+  if (!uid) return null;
+  return { uid, email: m.email, role: m.role, ...(typeof m.nickname === 'string' && m.nickname ? { nickname: m.nickname } : {}) };
+}
+/** 提交的投票人：登录会员＝uid（跨设备同一票）；匿名＝sha256(aid|ip) 前 16 位（旧规则）。 */
+async function submitterVoter(request, context, aid, ip) {
+  const member = await memberFromRequest(request, context);
+  if (member) return { voter: member.uid, member };
+  return { voter: (await sha256Hex(`${aid}|${ip}`)).slice(0, 16), member: null };
+}
+
 function getGithubToken(context) {
   if (context && context.env && context.env.GITHUB_TOKEN) return context.env.GITHUB_TOKEN;
   return (typeof GITHUB_TOKEN !== 'undefined') ? GITHUB_TOKEN : null;
@@ -505,7 +548,7 @@ function parseImages(raw) {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = [], at = undefined) {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = [], at = undefined, memberUid = '') {
   const id = generateId();
   const record = {
     id,
@@ -523,6 +566,7 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, sub
   if (at?.cell) record.cell = at.cell;
   if (at?.u) record.u = at.u;
   if (contact) record.contact = contact;
+  if (memberUid) record.member = memberUid;
   if (test) record.test = true;
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
   // 双保险，这里顺手把 visibility 也标成 hidden，admin 列表上看得出「已隐藏」
@@ -582,7 +626,7 @@ function desensitizeText(text) {
  */
 function toPublic(rec) {
   // routedIssue 是内部转办的 issue 号、resolvedRef 是内部处理凭据（commit／issue），都不公开
-  const { contact, updatedBy, routedIssue, resolvedRef, images, ...rest } = rec; // eslint-disable-line no-unused-vars
+  const { contact, updatedBy, routedIssue, resolvedRef, images, member, ...rest } = rec; // eslint-disable-line no-unused-vars
   // 旧记录没有 subtype：读时按 unspecified，不回写
   if (!rest.subtype) rest.subtype = 'unspecified';
   // 旧记录没有 category：读时按 type 推，不回写
@@ -937,7 +981,8 @@ export async function onRequestPost(context) {
           status: 500, headers,
         });
       }
-      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items, at);
+      const who = await memberFromRequest(context.request, context);
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items, at, who ? who.uid : '');
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
@@ -1320,3 +1365,4 @@ export { desensitizeText };
 
 // 供 /api/cellreview（GUJI-551）沿用同一套 CORS、管理鉴权、KV 绑定、取 IP，不在那边再抄一份
 export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex };
+export { uuidv7, UID_RE, ensureMemberUid, memberFromRequest, submitterVoter };
