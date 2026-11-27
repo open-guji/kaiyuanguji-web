@@ -55,12 +55,21 @@ export function uuidv7(now = Date.now()): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
-export function nextMember(existing: Member | null, now: number): Member {
+/** 昵称清洗：去首尾空白与控制字符，折叠连续空白，最长 20 个字；空则不设。邮箱形态的不收（公开处绝不显示邮箱）。 */
+export function cleanNickname(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const s = Array.from(raw.replace(/[\u0000-\u001f\u007f\u200b-\u200f\u2028-\u202e\ufeff]/g, ' ').replace(/\s+/g, ' ').trim()).slice(0, 20).join('').trim();
+  if (!s || /@/.test(s)) return undefined;
+  return s;
+}
+
+/** nickname 只在「新注册」时写入；已有成员登录时忽略（改昵称以后另做，别让一个链接参数改别人的名字）。 */
+export function nextMember(existing: Member | null, now: number, nickname?: string): Member {
   if (existing && existing.role && !existing._deleted) {
     const tv = Number.isInteger(existing.tokenVersion) && (existing.tokenVersion as number) > 0 ? (existing.tokenVersion as number) : 1;
     return { ...existing, tokenVersion: tv, verified: true };
   }
-  return { role: 'reader', joinedAt: now, invitedBy: 'self-register', tokenVersion: 1, verified: true, uid: uuidv7(now) };
+  return { role: 'reader', joinedAt: now, invitedBy: 'self-register', tokenVersion: 1, verified: true, uid: uuidv7(now), ...(nickname ? { nickname } : {}) };
 }
 
 import { createHmac, randomBytes } from 'node:crypto';
