@@ -920,6 +920,15 @@
     margin: 0;
     word-break: break-all;
   }
+  .og-account-nick {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .og-account-nick .og-login-input {
+    width: 100%;
+  }
   .og-account-actions {
     display: flex;
     align-items: center;
