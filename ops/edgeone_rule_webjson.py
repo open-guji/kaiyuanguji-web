@@ -54,7 +54,7 @@ branches[0]['Condition'] = new_cond
 body = {'RuleId': rule['RuleId'], 'RuleName': rule['RuleName'], 'Status': rule['Status'], 'Branches': branches}
 if rule.get('RulePriority') is not None:
     body['RulePriority'] = rule['RulePriority']
-print('提交的规则（动作名）：', json.dumps([a.get('Name') for a in branches[0]['Actions']], ensure_ascii=False))
+print('提交的规则：', json.dumps(body, ensure_ascii=False))
 if rule.get('Description'):
     body['Description'] = rule['Description']
 call('ModifyL7AccRule', ZoneId=zone, RuleId=rule['RuleId'], Rule=body)
