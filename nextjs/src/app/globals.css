@@ -1089,6 +1089,17 @@
     .og-nav-right {
       gap: 0;
     }
+    .og-acct,
+    .og-acct-icon {
+      margin-left: 0;
+    }
+    .og-acct-btn {
+      padding: 0 4px;
+    }
+    .og-acct-icon,
+    .og-acct--ph {
+      width: 40px;
+    }
     .og-nav-fb {
       justify-content: center;
       width: 44px;
