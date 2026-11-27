@@ -59,6 +59,7 @@ def main(argv=None):
     ap.add_argument('--vols', required=True)
     ap.add_argument('--out', required=True)
     ap.add_argument('--cache', required=True)
+    ap.add_argument('--width', type=int, help='整页图宽（缺省取书配置 src_w，再缺省 3840；上限 3840）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args(argv)
@@ -67,6 +68,7 @@ def main(argv=None):
     if a.book not in books or a.book == '96mid1ogzk':
         raise SystemExit(f'❌ {a.book} 不是 pages-books.json 里的单页扫描书')
     S.BOOK_ID = a.book
+    width = pagemeta.cos_width(books[a.book], a.width)
     all_vols = sorted(books[a.book]['vols'], key=int)
     by_num = {int(v): v for v in all_vols}
     vols = [by_num[int(x)] for x in (all_vols if a.vols == 'all' else a.vols.split(','))]
@@ -81,14 +83,14 @@ def main(argv=None):
         S.fetch_pages(plan, a.cache)
         nbytes = 0
         for p in table['pages']:
-            key = pagemeta.cos_tier_key(a.book, v, pagemeta.page_slug(p['seq']))
+            key = pagemeta.cos_tier_key(a.book, v, pagemeta.page_slug(p['seq']), width)
             dest = os.path.join(a.out, key)
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             with Image.open(S.page_path(a.cache, p['sha256'])) as im:
                 im.load()
                 if p.get('w') and (im.width, im.height) != (p['w'], p['h']):
                     raise SystemExit(f'❌ {a.book}/{v} {p["seq"]} 页图尺寸 {im.size} ≠ 页表 {(p["w"], p["h"])}')
-                page_to_bw(im).save(dest, 'WEBP', lossless=True, quality=100, method=4)
+                page_to_bw(im, width).save(dest, 'WEBP', lossless=True, quality=100, method=4)
             nbytes += os.path.getsize(dest)
         report[v] = {'pages': len(table['pages']), 'mb': round(nbytes / 1e6, 1), 'seconds': round(time.perf_counter() - t0, 1)}
         print(f'{a.book}/{v}: {report[v]}', flush=True)

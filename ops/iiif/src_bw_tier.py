@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """按旁车（页面范围）出国内单版整页图：每个不同的源图（src.id）一张 ≤3840 宽 1-bit 无损 WebP，
-传到 iiif/<书>/<册>/srcbw/<src_slug>/full/3840,/0/default.webp（路径与 pagemeta.bim_cos 一致）。
+传到 iiif/<书>/<册>/srcbw/<src_slug>/full/<宽>,/0/default.webp（宽＝书配置 src_w／--width，缺省 3840；路径与 pagemeta.bim_cos 一致）。
 
 用于合扫页的书：史記（988g3f0wsu，文淵閣本 DjVu，src `s1:0243_0007.tif`＝DjVu 第 7 页）、
 脉经（99k3i35yww，Commons PDF 内嵌 JP2 对开整页，src `s1:vol01_0004.jp2`＝PDF 第 4 页）。四庫總目仍用 wyg_src_tier.py --bw。
@@ -50,11 +50,11 @@ def src_ref(src_id):
     return m.group(1), m.group(2), int(m.group(3))
 
 
-def djvu_to_bw(djvu, page, w, h, dest):
-    W.djvu_page_to_bw_webp(djvu, page, w, h, dest)
+def djvu_to_bw(djvu, page, w, h, dest, width=pagemeta.COS_TIER_W):
+    W.djvu_page_to_bw_webp(djvu, page, w, h, dest, width=width)
 
 
-def pdf_page_to_bw(pdf, page, w, h, dest, tmp):
+def pdf_page_to_bw(pdf, page, w, h, dest, tmp, width=pagemeta.COS_TIER_W):
     """PDF 第 page 页的内嵌图（JP2）→ 二值 WebP；内嵌图尺寸须与旁车 src 一致。"""
     os.makedirs(tmp, exist_ok=True)
     pre = os.path.join(tmp, 'img')
@@ -70,7 +70,7 @@ def pdf_page_to_bw(pdf, page, w, h, dest, tmp):
             if im.size != (w, h):
                 raise RuntimeError(f'PDF 第 {page} 页内嵌图 {im.size} ≠ 旁车 {(w, h)}')
             os.makedirs(os.path.dirname(dest), exist_ok=True)
-            B.page_to_bw(im).save(dest, 'WEBP', lossless=True, quality=100, method=4)
+            B.page_to_bw(im, width).save(dest, 'WEBP', lossless=True, quality=100, method=4)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -81,6 +81,7 @@ def main(argv=None):
     ap.add_argument('--vols', required=True)
     ap.add_argument('--out', required=True)
     ap.add_argument('--cache', required=True)
+    ap.add_argument('--width', type=int, help='整页图宽（缺省取书配置 src_w，再缺省 3840；上限 3840）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args(argv)
@@ -89,6 +90,7 @@ def main(argv=None):
     if a.book not in books:
         raise SystemExit(f'❌ pages-books.json 里没有 {a.book}')
     S.BOOK_ID = a.book
+    width = pagemeta.cos_width(books[a.book], a.width)
     all_vols = sorted(books[a.book]['vols'], key=int)
     by_num = {int(v): v for v in all_vols}
     vols = [by_num[int(x)] for x in (all_vols if a.vols == 'all' else a.vols.split(','))]
@@ -114,11 +116,11 @@ def main(argv=None):
                 if not os.path.exists(path):
                     W.download(src['commons_url'], path, src['sha256'])
                 local[key] = path
-            dest = os.path.join(a.out, pagemeta.cos_tier_key(a.book, v, pagemeta.src_slug(sid)))
+            dest = os.path.join(a.out, pagemeta.cos_tier_key(a.book, v, pagemeta.src_slug(sid), width))
             if sid.endswith('.jp2'):
-                pdf_page_to_bw(local[key], page, w, h, dest, os.path.join(a.cache, 'pdfimg'))
+                pdf_page_to_bw(local[key], page, w, h, dest, os.path.join(a.cache, 'pdfimg'), width)
             else:
-                djvu_to_bw(local[key], page, w, h, dest)
+                djvu_to_bw(local[key], page, w, h, dest, width)
             n += 1
         for p in local.values():
             os.remove(p)

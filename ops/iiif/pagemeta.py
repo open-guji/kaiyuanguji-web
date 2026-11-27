@@ -63,7 +63,39 @@ def src_tier_key(book_id, vol_dir, slug, width=SRC_TIER_W):
     return f'iiif/{book_id}/{vol_dir}/src/{slug}/full/{width},/0/default.webp'
 
 
-COS_TIER_W = 3840   # 国内单版整页（1-bit 无损 WebP）的宽，与 Commons 缩略图同宽，两边共用同一套矩阵
+COS_TIER_W = 3840   # 国内单版整页（1-bit 无损 WebP）的缺省宽，也是上传闸的上限；与 Commons 缩略图同宽，两边共用同一套矩阵
+COS_TIER_MAX_W = 3840
+
+
+def cos_width(book_meta=None, override=None):
+    """一本书的国内整页图宽：命令行 --width ＞ 书配置 `src_w`（pages-books.json）＞ 缺省 3840。
+    文淵閣整套（二十四史等）按用户 11-26 决定在书配置里写 1600；上限 3840（上传闸同此）。"""
+    w = override or (book_meta or {}).get('src_w') or COS_TIER_W
+    w = int(w)
+    if not 1 <= w <= COS_TIER_MAX_W:
+        raise ValueError(f'src_w={w} 超出 1..{COS_TIER_MAX_W}')
+    return w
+
+
+def check_cos_webp(body, max_w=COS_TIER_MAX_W):
+    """srcbw 内容闸：只收 WebP 无损（RIFF…WEBPVP8L）、像素只有 0／255、宽 ≤ max_w。合格返回 None，否则返回原因。"""
+    if len(body) < 20 or body[:4] != b'RIFF' or body[8:12] != b'WEBP':
+        return '不是 WebP'
+    if body[12:16] != b'VP8L':
+        return f'不是无损 WebP（块类型 {body[12:16]!r}，要 VP8L）'
+    import io
+    from PIL import Image
+    try:
+        with Image.open(io.BytesIO(body)) as im:
+            im.load()
+            if im.width > max_w:
+                return f'宽 {im.width} 超过 {max_w}'
+            colors = im.convert('L').getcolors(256)
+    except Exception as e:  # noqa: BLE001
+        return f'解不开：{e}'
+    if not colors or any(v not in (0, 255) for _, v in colors):
+        return '像素不只有 0／255（不是 1-bit 黑白）'
+    return None
 
 
 def cos_tier_key(book_id, vol_dir, slug, width=COS_TIER_W):
