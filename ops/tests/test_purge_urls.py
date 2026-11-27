@@ -50,6 +50,16 @@ class PurgeUrls(unittest.TestCase):
         self.assertTrue(mod.check_urls([]))
         self.assertTrue(mod.check_urls([D + f'{i}.json' for i in range(mod.MAX_URLS + 1)]))
 
+    def test_prefix_plan_collapses_to_directories(self):
+        urls = [D + 'proof/a/r1/p1.json', D + 'proof/a/r1/p2.json', D + 'proof/b/r2/p1.json']
+        self.assertEqual(mod.plan_prefixes(urls), [D + 'proof/a/r1/', D + 'proof/b/r2/'])
+
+    def test_prefix_plan_merges_up_when_too_many_and_never_to_root(self):
+        urls = [D + f'proof/b{i}/r/p.json' for i in range(mod.MAX_PREFIXES + 5)]
+        self.assertEqual(mod.plan_prefixes(urls), [D + 'proof/'])
+        with self.assertRaises(ValueError):
+            mod.plan_prefixes([D + 'latest.json'])
+
     def test_cli_dry_run_lists_urls_without_credentials(self):
         r = cli('--dry-run', D + 'latest.json', D + 'sitemaps/sitemap-index.xml')
         self.assertEqual(r.returncode, 0, r.stderr)
