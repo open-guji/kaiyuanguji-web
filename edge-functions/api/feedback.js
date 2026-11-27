@@ -280,6 +280,23 @@ export async function readPendingLive(context, book, vol) {
   } finally { clearTimeout(timer); }
 }
 
+/** 一章待审格直接由条目现拼（Worker GET /v1/web/pending-doc，2026-11-27 去 rev）：`{found, cells[], released[], items, live, at}`，没有 rev。
+ *  读不到、超时、这章没有条目、Worker 还没有这个接口都返回 null（调用方退回整张单）。 */
+export async function readPendingDocItems(context, book, vol) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) return null;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 5000);
+  try {
+    const res = await fetch(`${base}/v1/web/pending-doc?${new URLSearchParams({ book, vol })}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+    if (!res.ok) return null;
+    const doc = await res.json();
+    return doc && doc.found && Array.isArray(doc.cells) ? doc : null;
+  } catch {
+    return null;
+  } finally { clearTimeout(timer); }
+}
+
 /** 一本书各章现算后还剩几格待审（Worker GET /v1/web/pending-live-index）：`{book, at, counts:{章:格数}}`；读不到返回 null。 */
 export async function readPendingLiveCounts(context, book) {
   const { base, token } = inboxBaseToken(context);

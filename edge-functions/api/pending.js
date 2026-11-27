@@ -1,6 +1,8 @@
 // 待审单（条目）直读端点（A31 11-10，设计 guji-manager doc/00-总览/设计-待审单进KV.md）
 //
-//   GET  公开 —— ?book=<书>&vol=<章> 返回该章当前待审单（guji-proof 同格式的 JSON，与 COS 的 proof/<书>/<章>.pending.json 一致），
+//   GET  公开 —— ?book=<书>&vol=<章> 返回该章当前待审单。优先由条目现拼（Worker /v1/web/pending-doc，无 rev，落定与 AI 摘要已算好）；
+//        Worker 没有该接口、读不到或这章没有条目时才退回下面的整张单（旧路径，等 land 停止导出整张单后删）。以下是整张单路径的说明：
+//        返回该章当前待审单（guji-proof 同格式的 JSON，与 COS 的 proof/<书>/<章>.pending.json 一致），
 //        边缘短缓存 15 秒。没有给 404，页面退回读 COS。
 //        读时现算（GM4 11-27，用户 11-26 定「格一落定即从网站待审消失」）：整张单读出后再问 Worker /v1/web/pending-live，
 //        把事件已落定（人裁、AI 裁定）或条目已撤下／已结的格从 cells 拿掉，给没落定的格挂 AI 摘要。单本身不改，
@@ -14,7 +16,7 @@
 // key：`pd:<book>:<vol>`，值是整张单 JSON（几十 KB，EdgeOne KV 单值上限 25 MB），不设过期。
 // 图仍在 COS（文件名带内容哈希、不可变）：put 之前，调用方要保证单里 sprites[] 的图已在 COS（manager 会 HEAD 核对，缺图就走 proofing-sync）。
 
-import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendingDoc, writePendingDoc, deletePendingDoc, readPendingLive } from './feedback.js';
+import { getCorsHeaders, ALLOWED_ORIGINS, checkAdminAuth, bearerToken, readPendingDoc, writePendingDoc, deletePendingDoc, readPendingLive, readPendingDocItems } from './feedback.js';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/;
 const RE_VOL = /^[A-Za-z0-9._-]{1,16}$/;
@@ -58,6 +60,11 @@ export async function onRequestGet(context) {
     const book = url.searchParams.get('book') || '';
     const vol = url.searchParams.get('vol') || '';
     if (!RE_BOOK.test(book) || !RE_VOL.test(vol)) return json({ ...headers, 'Cache-Control': 'no-store' }, 400, { success: false, error: 'book／vol 无效' });
+    // 优先由条目现拼（没有 rev、不读整张单）；Worker 没有这个接口、读不到、这章没有条目才退回下面的整张单（?items=0 强制走整张单，排查用）
+    if (url.searchParams.get('items') !== '0') {
+      const fresh = await readPendingDocItems(context, book, vol);
+      if (fresh) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 200, fresh);
+    }
     const doc = await readPendingDoc(context, pdKey(book, vol));
     if (!doc) return json({ ...headers, 'Cache-Control': 'public, max-age=15' }, 404, { success: false, error: '无' });
     const live = url.searchParams.get('live') === '0' ? null : await readPendingLive(context, book, vol);
