@@ -48,7 +48,7 @@ async function sendTencent(to: string, url: string) {
     Template: { TemplateID: templateId, TemplateData: JSON.stringify({ url: rest }) },
     TriggerType: 1, // 触发类（验证码／登录链接这类即时邮件）
   });
-  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-guangzhou', payload, timestamp: Math.floor(Date.now() / 1000) });
+  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-hongkong', payload, timestamp: Math.floor(Date.now() / 1000) });
   const res = await fetch(`https://${host}/`, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(8000) });
   const j = (await res.json().catch(() => null)) as { Response?: { Error?: { Code: string; Message: string } } } | null;
   if (!res.ok || j?.Response?.Error) throw new Error(`mail tencent ${res.status} ${j?.Response?.Error?.Code || ''}`);

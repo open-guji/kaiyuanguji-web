@@ -164,6 +164,10 @@ done
 
 全栈站构建时会用 `--require AUTH_JWT_SECRET --require ERROR_VIEW_TOKEN` 检查，缺了构建直接红，所以全栈站 503 多半是新加的变量没重发。
 
+## 5b. 邮箱登录／注册（Better Auth）
+
+开关、变量、邮件模板、限频与排障见 [membership.md](membership.md)。
+
 ## 6. CDN 缓存旧
 
 症状：`/api/version` 的 `web` 已是新版，但页面还是旧的；或数据指针带随机串是新的、不带是旧的；或 ChunkLoadError。
