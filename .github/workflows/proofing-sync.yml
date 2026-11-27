@@ -136,5 +136,6 @@ jobs:
         run: |
           if [ ! -s "$LIST" ]; then echo '· 没有新传的文件，不清'; exit 0; fi
           python3 -m pip install --user tencentcloud-sdk-python-teo -q
-          # purge-urls.py 一次最多 20 个地址
-          xargs -n 20 python3 ops/purge-urls.py < "$LIST"
+          # 按目录前缀清（purge_prefix，每天 50 次），不逐地址清（purge_url 日额度 1000，11-25／11-27 两次被它烧光）；
+          # 每批文件在同一本书的几个目录下，目录超过 10 个会并到上一层
+          python3 ops/purge-urls.py --prefix $(cat "$LIST")

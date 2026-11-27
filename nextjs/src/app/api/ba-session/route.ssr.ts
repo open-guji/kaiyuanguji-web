@@ -1,7 +1,7 @@
 // 魔法链接验证成功后的落点：把 Better Auth 的会话换成现有的 session JWT cookie（成员体系不变）。
 import { getAuth } from '@/lib/server/ba-auth.ssr';
 import { baEnabled, registrationOpen, siteOrigin } from '@/lib/server/ba-config.ssr';
-import { decideMember, nextMember, readMember, safeNext, sessionCookie, signSession, writeMember } from '@/lib/server/ba-members.ssr';
+import { cleanNickname, decideMember, nextMember, readMember, safeNext, sessionCookie, signSession, writeMember } from '@/lib/server/ba-members.ssr';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     const existing = await readMember(email);
     const d = decideMember(existing, registrationOpen());
     if (d.action === 'blocked') return to('/register?error=blocked');
-    const member = nextMember(existing, Math.floor(Date.now() / 1000));
+    const member = nextMember(existing, Math.floor(Date.now() / 1000), cleanNickname(url.searchParams.get('nick')));
     await writeMember(email, member);
     const token = await signSession(email, member.tokenVersion as number, secret);
     const h = new Headers();
