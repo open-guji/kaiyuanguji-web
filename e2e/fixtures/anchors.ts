@@ -67,10 +67,12 @@ export const MEILI_KEY =
  * 10-08 数据发布后 books 实测 60,985，越过原上限 60k（数据包基础闸门绿，批 12/13 新增书目所致），按真实增长处理；
  * 上限按 ~±40% 约定上调到 100k。
  * 10-18 总目全量晋升（数万 Work／Book 陆续上线）前，works／books 上限统一抬到 400k。
+ * 11-27 works 实测 912,025（11-26 数据包起：article 21.7 万、poem 42.5 万，全唐文／全唐诗等逐篇 Work 晋升，hasText 66.8 万），
+ *   越过 800k；books 44.0 万、entities 17.5 万，均属新书正常增长，非打包异常。works 上限 → 1.5M。
  * 10-18 叢書批次晋升后 collections 实测 613（book-index 92c4736），上限 500 → 2000。
  */
 export const COUNT_RANGES = {
-    works: { min: 60_000, max: 800_000 },
+    works: { min: 60_000, max: 1_500_000 },
     books: { min: 12_000, max: 800_000 },
     collections: { min: 40, max: 10_000 },
     entities: { min: 20_000, max: 400_000 },
