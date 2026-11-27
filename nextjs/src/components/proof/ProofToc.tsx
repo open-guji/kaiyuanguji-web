@@ -11,9 +11,9 @@ const href = (book: string, vol: string) => `/proofing/${encodeURIComponent(book
 export interface TocRow extends TocEntry { left: number }
 
 /** 各册剩余＝发布格数 − 本机已回应（不为负） */
-export function tocRows(toc: TocEntry[], doneCount: (rev: string) => number, live?: Readonly<Record<string, number>>): TocRow[] {
+export function tocRows(toc: TocEntry[], doneCount: (vol: string) => number, live?: Readonly<Record<string, number>>): TocRow[] {
     // 页面已载入的册用现读的待审单数（答一格就减一格，也认得 KV 里撤下的格）；没载入的册用总表发布值扣本机已答
-    return toc.map(e => ({ ...e, left: live?.[e.vol] ?? Math.max(0, e.n - doneCount(e.rev)) }));
+    return toc.map(e => ({ ...e, left: live?.[e.vol] ?? Math.max(0, e.n - doneCount(e.vol)) }));
 }
 
 function List({ book, vol, rows, showAll, onPick, onPickVol, live }: { book: string; vol: string; rows: TocRow[]; showAll: boolean; onPick?: () => void; onPickVol?: (vol: string) => void; live?: Readonly<Record<string, number>> }) {
@@ -55,10 +55,10 @@ export default function ProofToc({ book, vol, toc, onPickVol, live }: { book: st
     // 本机已回应数只能挂载后读（localStorage）
     useEffect(() => {
         const c: Record<string, number> = {};
-        for (const e of toc) c[e.rev] = Object.keys(readDone(e.rev)).length;
+        for (const e of toc) c[e.vol] = Object.keys(readDone(book, e.vol)).length;
         setCounts(c);
-    }, [toc, vol]);
-    const rows = useMemo(() => tocRows(toc, rev => counts[rev] ?? 0, live), [toc, counts, live]);
+    }, [book, toc, vol]);
+    const rows = useMemo(() => tocRows(toc, v => counts[v] ?? 0, live), [toc, counts, live]);
     if (!toc.length) return null;
     const total = rows.reduce((s, r) => s + r.left, 0);
     const cur = vol === ALL_VOL ? null : rows.find(r => r.vol === vol);

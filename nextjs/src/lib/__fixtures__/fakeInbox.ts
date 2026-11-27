@@ -6,6 +6,8 @@ export function installFakeInbox(g: Record<string, unknown>) {
     let seq = 0;
     /** /v1/web/pending-live 的假回复：null＝Worker 没这个接口（404）；函数＝按 (book, vol) 回；数字＝回这个状态码 */
     const liveBox: { reply: null | number | ((book: string, vol: string) => unknown) } = { reply: null };
+    /** /v1/web/pending-doc 的假回复：null＝Worker 没这个接口（404）；函数＝按 (book, vol) 回 */
+    const docBox: { reply: null | ((book: string, vol: string) => unknown) } = { reply: null };
     const real = globalThis.fetch;
     const id = (k: string, key: string) => `${k}\u0000${key}`;
     const res = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
@@ -18,6 +20,10 @@ export function installFakeInbox(g: Record<string, unknown>) {
             if (r === null) return res(404, {});
             if (typeof r === 'number') return res(r, {});
             return res(200, r(url.searchParams.get('book') || '', url.searchParams.get('vol') || ''));
+        }
+        if (url.pathname === '/v1/web/pending-doc') {
+            const r = docBox.reply;
+            return r ? res(200, r(url.searchParams.get('book') || '', url.searchParams.get('vol') || '')) : res(404, {});
         }
         if (url.pathname !== '/v1/web/inbox') return res(404, {});
         if (method === 'POST') {
@@ -45,9 +51,9 @@ export function installFakeInbox(g: Record<string, unknown>) {
         return res(200, { items: page, next: more ? page[page.length - 1].seq : null, hasMore: more });
     };
     return {
-        store, rows, calls, liveBox,
+        store, rows, calls, liveBox, docBox,
         install() { g.fetch = fake; g.WEB_INBOX_URL = 'https://w.example'; g.WEB_INBOX_TOKEN = 't'; },
-        reset() { rows.clear(); store.clear(); calls.length = 0; seq = 0; liveBox.reply = null; },
+        reset() { rows.clear(); store.clear(); calls.length = 0; seq = 0; liveBox.reply = null; docBox.reply = null; },
         restore() { g.fetch = real; delete g.WEB_INBOX_URL; delete g.WEB_INBOX_TOKEN; },
     };
 }

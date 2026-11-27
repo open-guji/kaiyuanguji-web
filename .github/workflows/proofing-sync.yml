@@ -31,7 +31,7 @@ on:
         type: boolean
         default: true
       only:
-        description: '只发这几本书或这几章，如 96mid1ogzk/006（逗号分隔；空 = 全站）。落票重出单后用，一两分钟上线'
+        description: '只发这几本书或这几章，如 96mid1ogzk/006（逗号分隔；空 = 全站）。`guji collect`／`guji land` 落票后用，一两分钟上线'
         type: string
         default: ''
   schedule:
@@ -88,7 +88,7 @@ jobs:
           GUJI_DATA_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }} # 同一把网站管理令牌，中心库里登记为 web 角色
           FEEDBACK_ADMIN_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
         run: node scripts/proofing-sync.mjs
-      # 线上单已有 ≥ 20% 的格投过票 → 开提醒 issue「该重出单」（GUJI-688）；rev 换了、不再超线的自动关
+      # 线上单已有 ≥ 20% 的格投过票 → 开提醒 issue（标题沿用「该落票重出单」以便对上旧 issue；现行动作是 guji collect 落票，不再整张换单）（GUJI-688）；单子 rev 换了、不再超线的自动关
       - name: Reissue reminder
         if: ${{ !cancelled() && steps.opinions.outcome != 'skipped' && (github.event_name == 'schedule' || (inputs.target == 'production' && inputs.only == '')) }}
         env:
@@ -108,7 +108,7 @@ jobs:
             title="该落票重出单：$key"
             num=$(gh issue list --label proofing-reissue --state open --json number,title --jq "[.[] | select(.title == \"$title\")][0].number // empty")
             [ -n "$num" ] && { echo "· 已有 #$num：$key"; continue; }
-            gh issue create --title "$title" --label proofing-reissue --body "线上待审单 $key 已有 $voted／$n 格（$pct%）投过票。用 open-guji-cv \`scripts/zhengli/proof_cycle.py plan\` 出计划、\`apply\` 落票并重出单。GUJI-688。"
+            gh issue create --title "$title" --label proofing-reissue --body "线上待审单 $key 已有 $voted／$n 格（$pct%）投过票。用 guji-manager \`guji collect <册>\` 收票：人裁票落进 book-text、对应条目结案，只发有变的章（不再整张换单、没有批号）。要先看计划加 \`--dry-run\`；册内格子有变动另用 \`guji land <册> --apply\` 按条目对账。GUJI-688。"
           done < "$LIST"
       - name: Pending lists → COS
         id: publish

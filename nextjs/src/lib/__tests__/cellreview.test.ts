@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  *
- * GUJI-551：/api/cellreview。校验（枚举、char 必填、rev 必带）、同格同来源覆盖、按 rev 前缀管理读、公开读被拒、限速。
+ * GUJI-551：/api/cellreview。校验（枚举、char 必填、item 必带、rev 忽略）、同条目同来源覆盖、按条目管理读、旧 rev 票只读、公开读被拒、限速。
  */
 
 const g = globalThis as unknown as Record<string, unknown>;
@@ -12,14 +12,25 @@ const inbox = installFakeInbox(g);
 const store = inbox.store;
 const inboxGets = () => inbox.calls.filter((c) => c.method === 'GET').map((c) => new URL(c.url));
 
-const REV = 'vol01-r1';
-const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', rev: REV, aid: 'aid_abcdefgh1234', shown: '於' };
+const REV = 'vol01-r1'; // 旧票的批号：只用来造「历史旧票」，新提交不带也不认
+const base = { book: 'd59f2870u874', vol: 'vol01', a: '12:3:7', aid: 'aid_abcdefgh1234', shown: '於' };
+/** 格号 → 稳定的条目 id（测试里一格一个条目；显式给 item 的不动） */
+const itemFor = (a: string) => `pi_${[...a].reduce((h, ch) => (h * 131 + ch.charCodeAt(0)) % 0xffffffffffff, 7).toString(16).padStart(12, '0')}`;
+/** 造一条旧的按 rev 记的票（cr:<rev>:<book>:<a>:<voter>），只供 GET ?rev= 的只读测试 */
+function seedLegacy(rev: string, a: string, extra: Record<string, unknown> = {}, voter = 'aaaaaaaaaaaaaaaa') {
+    const key = `cr:${rev}:d59f2870u874:${a}:${voter}`;
+    const value = { v: 1, book: 'd59f2870u874', vol: '001', a, rev, choice: 'none', voter, ts: Date.now(), ...extra };
+    inbox.rows.set(`cellreview\u0000${key}`, { kind: 'cellreview', key, value, ts: value.ts as number, seq: inbox.rows.size + 1000 });
+    store.set(key, JSON.stringify(value));
+}
 
 function post(body: unknown, ip: string | null = '1.2.3.4') {
+    const b = body as Record<string, unknown>;
+    const withItem = !('item' in b) && typeof b.a === 'string' ? { item: itemFor(b.a), ...b } : b;
     const request = new Request('https://x/api/cellreview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(withItem),
     });
     if (ip !== null) (request as unknown as { eo: unknown }).eo = { clientIp: ip };
     return { request };
@@ -43,14 +54,14 @@ afterEach(() => { delete g.FEEDBACK_ADMIN_TOKEN; });
 afterAll(() => inbox.restore());
 
 describe('POST 校验', () => {
-    it('choice=char 带单字：写入 cr:<rev>:<book>:<a>:<voter>，值不含 aid 与 IP', async () => {
+    it('choice=char 带单字：写入 cr:i:<book>:<item>:<voter>，值不含 aid 与 IP', async () => {
         const res = await fn.onRequestPost(post({ ...base, choice: 'char', char: '于', note: ' 看图是于 ' }));
         expect(res.status).toBe(200);
         const keys = crKeys();
         expect(keys).toHaveLength(1);
-        expect(keys[0]).toMatch(new RegExp(`^cr:${REV}:d59f2870u874:12:3:7:[0-9a-f]{16}$`));
+        expect(keys[0]).toMatch(new RegExp(`^cr:i:d59f2870u874:${itemFor('12:3:7')}:[0-9a-f]{16}$`));
         const rec = JSON.parse(store.get(keys[0])!);
-        expect(rec).toMatchObject({ v: 1, rev: REV, a: '12:3:7', choice: 'char', char: '于', note: '看图是于', shown: '於' });
+        expect(rec).toMatchObject({ v: 1, item: itemFor('12:3:7'), a: '12:3:7', choice: 'char', char: '于', note: '看图是于', shown: '於' });
         expect(JSON.stringify(rec)).not.toContain('aid_abcdefgh1234');
         expect(JSON.stringify(rec)).not.toContain('1.2.3.4');
     });
@@ -72,7 +83,7 @@ describe('POST 校验', () => {
         for (const choice of ['none', 'unsure', 'cut', 'jiazhu', 'main', 'damaged']) {
             const withChar = await fn.onRequestPost(post({ ...base, a: `2:1:${choice.length}`, choice, char: '于', pick_src: 'cand', pick_rank: 2 }));
             expect(withChar.status).toBe(200);
-            const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(`:2:1:${choice.length}:`))!)!);
+            const rec = JSON.parse(store.get(crKeys().find((k) => k.includes(itemFor(`2:1:${choice.length}`)))!)!);
             expect(rec).toMatchObject({ choice, char: '于', pick_src: 'cand', pick_rank: 2 });
             const bad = await fn.onRequestPost(post({ ...base, a: '3:1:1', choice, char: '于之' }));
             expect(bad.status).toBe(400);
@@ -112,14 +123,14 @@ describe('POST 校验', () => {
         expect((await fn.onRequestPost(post({ ...base, choice: 'figure', alt: 5 }))).status).toBe(400);
     });
 
-    it('非法 choice、缺 rev、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
+    it('非法 choice、缺 item、char 缺失／不止一个字／空白、非法坐标均 400', async () => {
         const cases: Array<Record<string, unknown>> = [
             { choice: 'bogus' },
             { choice: 'char' },
             { choice: 'char', char: '于之' },
             { choice: 'char', char: ' ' },
-            { choice: 'char', char: '于', rev: undefined },
-            { choice: 'char', char: '于', rev: '../x' },
+            { choice: 'char', char: '于', item: undefined },
+            { choice: 'char', char: '于', item: 'pi_zzz' },
             { choice: 'char', char: '于', a: '12:3' },
             { choice: 'char', char: '于', a: '12:3:7:x' },
             { choice: 'char', char: '于', book: 'a/b' },
@@ -143,11 +154,11 @@ describe('POST 校验', () => {
             expect(res.status).toBe(400);
         }
         await fn.onRequestPost(post({ ...base, a: '3:3:3', choice: 'none', pick_src: 'cand', pick_rank: 1 }));
-        const none = JSON.parse(store.get(crKeys().find((k) => k.includes(':3:3:3:'))!)!);
+        const none = JSON.parse(store.get(crKeys().find((k) => k.includes(itemFor('3:3:3')))!)!);
         expect(none.pick_src).toBeUndefined();
         expect(none.pick_rank).toBeUndefined();
         await fn.onRequestPost(post({ ...base, a: '4:4:4', choice: 'char', char: '于' }));
-        const plain = JSON.parse(store.get(crKeys().find((k) => k.includes(':4:4:4:'))!)!);
+        const plain = JSON.parse(store.get(crKeys().find((k) => k.includes(itemFor('4:4:4')))!)!);
         expect(plain.pick_src).toBeUndefined();
     });
 
@@ -206,18 +217,18 @@ describe('同格同来源覆盖', () => {
         expect(crKeys()).toHaveLength(2);
     });
 
-    it('不同书同 rev 同坐标互不覆盖', async () => {
+    it('不同书同条目 id 互不覆盖', async () => {
         await fn.onRequestPost(post({ ...base, choice: 'none' }));
         await fn.onRequestPost(post({ ...base, book: 'd59f2hl0cmio', choice: 'none' }));
         expect(crKeys()).toHaveLength(2);
     });
 });
 
-describe('GET 只开管理读', () => {
+describe('GET 只开管理读（旧 rev 票只读）', () => {
     beforeEach(async () => {
-        await fn.onRequestPost(post({ ...base, choice: 'char', char: '于' }));
-        await fn.onRequestPost(post({ ...base, a: '12:3:8', choice: 'none' }));
-        await fn.onRequestPost(post({ ...base, rev: 'vol02-r1', choice: 'none' }));
+        seedLegacy(REV, '12:3:7', { choice: 'char', char: '于' });
+        seedLegacy(REV, '12:3:8');
+        seedLegacy('vol02-r1', '12:3:7');
     });
 
     it('没凭证 401，错 token 401，不返回任何票', async () => {
@@ -239,7 +250,7 @@ describe('GET 只开管理读', () => {
         expect(res.status).toBe(401);
     });
 
-    it('管理读按 rev 前缀导出，只列该 rev，且读 D1 带的是 cr:<rev>: 前缀（不全库扫）', async () => {
+    it('旧票：管理读按 rev 前缀导出，只列该 rev，且读 D1 带的是 cr:<rev>: 前缀（不全库扫）', async () => {
         const res = await fn.onRequestGet(get(`rev=${REV}`, ADMIN));
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -254,7 +265,7 @@ describe('GET 只开管理读', () => {
         expect(inboxGets().pop()!.searchParams.get('limit')).toBe('256');
     });
 
-    it('缺 rev 400；limit 翻页靠 cursor', async () => {
+    it('缺 rev 400（旧票读法）；limit 翻页靠 cursor', async () => {
         expect((await fn.onRequestGet(get('', ADMIN))).status).toBe(400);
         const p1 = await json(await fn.onRequestGet(get(`rev=${REV}&limit=1`, ADMIN)));
         expect(p1.items).toHaveLength(1);
@@ -267,23 +278,25 @@ describe('GET 只开管理读', () => {
 
 describe('按条目记票（待审条目化）', () => {
     const ITEM = 'pi_0123456789ab';
-    it('带 item／ver：key 是 cr:i:<book>:<item>:<voter>，记录带 item、ver；换 rev 同一人覆盖同一票', async () => {
-        expect((await fn.onRequestPost(post({ ...base, item: ITEM, ver: 3, choice: 'char', char: '于' }))).status).toBe(200);
+    it('带 item／ver：key 是 cr:i:<book>:<item>:<voter>，记录带 item、ver；格号变了同一人覆盖同一票；旧页面带的 rev 忽略、不存', async () => {
+        expect((await fn.onRequestPost(post({ ...base, rev: 'vol01-r1', item: ITEM, ver: 3, choice: 'char', char: '于' }))).status).toBe(200);
         expect((await fn.onRequestPost(post({ ...base, rev: 'vol01-r2', a: '12:3:9', item: ITEM, ver: 4, choice: 'none' }))).status).toBe(200);
         const keys = crKeys();
         expect(keys).toHaveLength(1);
         expect(keys[0]).toMatch(new RegExp(`^cr:i:d59f2870u874:${ITEM}:[0-9a-f]{16}$`));
-        expect(JSON.parse(store.get(keys[0])!)).toMatchObject({ item: ITEM, ver: 4, choice: 'none', a: '12:3:9', rev: 'vol01-r2' });
+        expect(JSON.parse(store.get(keys[0])!)).toMatchObject({ item: ITEM, ver: 4, choice: 'none', a: '12:3:9' });
+        expect(JSON.parse(store.get(keys[0])!).rev).toBeUndefined();
     });
-    it('坏 item／ver 400；不带 item 照旧按 rev 记', async () => {
+    it('坏 item／ver 400；不带 item 一律拒（不再有按 rev 记的路径）；a 可以不带', async () => {
         expect((await fn.onRequestPost(post({ ...base, item: 'pi_xyz', choice: 'none' }))).status).toBe(400);
         expect((await fn.onRequestPost(post({ ...base, item: ITEM, ver: 0, choice: 'none' }))).status).toBe(400);
-        expect((await fn.onRequestPost(post({ ...base, choice: 'none' }))).status).toBe(200);
-        expect(crKeys()[0]).toMatch(new RegExp(`^cr:${REV}:`));
+        expect((await fn.onRequestPost(post({ ...base, item: undefined, choice: 'none' }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ book: base.book, vol: base.vol, aid: base.aid, item: ITEM, choice: 'none' }))).status).toBe(200);
+        expect(crKeys()[0]).toMatch(/^cr:i:/);
     });
     it('管理读 ?items=1&book= 按 cr:i:<book>: 前缀列；缺 book 400', async () => {
         await fn.onRequestPost(post({ ...base, item: ITEM, choice: 'none' }));
-        await fn.onRequestPost(post({ ...base, choice: 'none' }));
+        seedLegacy(REV, '12:3:7');
         const body = await json(await fn.onRequestGet(get('items=1&book=d59f2870u874', ADMIN)));
         expect(body.items.map((i: { item: string }) => i.item)).toEqual([ITEM]);
         expect(inboxGets().pop()!.searchParams.get('prefix')).toBe('cr:i:d59f2870u874:');

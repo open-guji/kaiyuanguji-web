@@ -5,7 +5,7 @@ import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
+    parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -32,9 +32,9 @@ describe('待审条目 id／ver（按条目记票）', () => {
 });
 
 describe('parsePending', () => {
-    it('取待审格与 rev，跳过已校', () => {
+    it('取待审格（没有 rev），跳过已校', () => {
         const r = parsePending(pending);
-        expect(r.rev).toBe('r1');
+        expect('rev' in r).toBe(false);
         expect(r.cells.map(c => c.a)).toEqual(['3:1:2', '3:1:3']);
         expect(r.cells[1].box).toEqual([10, 20, 30, 40]);
         expect(r.cells[0].cand?.length).toBeGreaterThan(0);
@@ -43,15 +43,15 @@ describe('parsePending', () => {
         for (const bad of [null, undefined, 1, 'x', [], {}, { cells: 5 }, { rev: '../x', cells: [null, { a: 3 }, { a: '1:1:1', box: [1, 2, 'x', 4] }] }]) {
             expect(() => parsePending(bad)).not.toThrow();
         }
-        expect(parsePending({ rev: '../x' }).rev).toBeNull();
+        expect(parsePending({ rev: '../x' }).cells).toEqual([]);
         expect(parsePending({ rev: 'r', cells: [{ a: '1:1:1', review: 'pending', box: [1, 2, 0, 4] }] }).cells[0]?.box).toBeUndefined();
     });
 });
 
 describe('规范形（book-text#148）：cells 键为 cell、无 c／cand／box', () => {
-    it('cell 与 a 都收，rev 原样', () => {
+    it('cell 与 a 都收，单头 rev 不再读', () => {
         const r = parsePending({ schema: 'guji-pending/0.1', rev: '001-r1', cv_version: null, cv_commit: 'abc', cells: [{ cell: '3:1:2', review: 'pending' }, { a: '3:1:3', review: 'pending' }] });
-        expect(r.rev).toBe('001-r1');
+        expect('rev' in r).toBe(false);
         expect(r.cells.map(c => c.a)).toEqual(['3:1:2', '3:1:3']);
     });
     it('机器读字从 char_file 补', async () => {
@@ -413,8 +413,8 @@ describe('COS 上的待审单（中心库发布）', () => {
     beforeEach(() => resetProofIndexCache());
 
     it('总表解析与各章状态', () => {
-        const idx = parseProofIndex({ books: { b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 }, bad: { n: 'x' } } } });
-        expect(idx).toEqual({ b1: { '001': { rev: '001-r3', n: 4 }, '002': { rev: '002-r1', n: 0 } } });
+        const idx = parseProofIndex({ books: { b1: { '001': { rev: '001-r3', n: 4 }, '002': { n: 0 }, bad: { n: 'x' } } } });
+        expect(idx).toEqual({ b1: { '001': { n: 4 }, '002': { n: 0 } } });   // 旧总表里的 rev 不读
         expect(proofState(idx, 'b1', '001')).toBe('open');
         expect(proofState(idx, 'b1', '002')).toBe('done');
         expect(proofState(idx, 'b1', '003')).toBe('unknown');
@@ -467,7 +467,7 @@ describe('COS 上的待审单（中心库发布）', () => {
         if (r.status !== 'ok') return;
         expect(r.pendingFile).toBe('001.pending.json');
         expect(r.chapterTitle).toBe('卷首');
-        expect(r.pending.rev).toBe('r1');
+        expect('rev' in r.pending).toBe(false);
         expect(getFile.mock.calls.map(c => (c as unknown[])[2])).toEqual(['001.cord.json']);
         expect(pickChapterByStem(index, '002')).toBeNull();
     });
@@ -640,5 +640,35 @@ describe('册号位数不同也认成同一册（用户 11-27）', () => {
         expect(pickProofingChapter(idx, '2')?.file).toBe('002.json');
         expect(pickChapterByStem(idx, '02')?.file).toBe('002.json');
         expect(pickChapterByStem(idx, '3')).toBeNull();
+    });
+});
+
+describe('现算剩余格数盖到总表上', () => {
+    const idx = { bk: { '001': { rev: '001-r2', n: 55 }, '002': { rev: '002-r1', n: 9 } }, other: { '001': { rev: 'x', n: 1 } } };
+    const resp = (status: number, body: unknown) => (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
+    it('applyLiveCounts：只改总表已有章的 n，rev 不动，没算到的章沿用，不改入参', () => {
+        const out = applyLiveCounts(idx, 'bk', { '001': 15, '003': 4 })!;
+        expect(out.bk).toEqual({ '001': { rev: '001-r2', n: 15 }, '002': { rev: '002-r1', n: 9 } });
+        expect(out.other).toBe(idx.other);
+        expect(idx.bk['001'].n).toBe(55);
+        expect(applyLiveCounts(idx, 'bk', null)).toBe(idx);
+        expect(applyLiveCounts(null, 'bk', { '001': 1 })).toBeNull();
+        expect(applyLiveCounts(idx, 'nope', { '001': 1 })).toBe(idx);
+    });
+    it('loadLiveCounts：取到给格数表（丢掉坏值）；失败、非 2xx、书号坏都给 null', async () => {
+        expect(await loadLiveCounts('bk', resp(200, { counts: { '001': 15, '002': -1, '003': 'x' } }))).toEqual({ '001': 15 });
+        expect(await loadLiveCounts('bk', resp(503, {}))).toBeNull();
+        expect(await loadLiveCounts('bk', (async () => { throw new Error('x'); }) as unknown as typeof fetch)).toBeNull();
+        expect(await loadLiveCounts('a/b', resp(200, { counts: {} }))).toBeNull();
+    });
+    it('loadProofIndexLive：现算取不到就是静态总表', async () => {
+        resetProofIndexCache();
+        const real = globalThis.fetch;
+        globalThis.fetch = (async (u: unknown) => String(u).includes('index.json')
+            ? new Response(JSON.stringify({ books: idx }), { status: 200 })
+            : new Response('{}', { status: 503 })) as unknown as typeof fetch;
+        try {
+            expect((await loadProofIndexLive('bk'))!.bk['001'].n).toBe(55);
+        } finally { globalThis.fetch = real; resetProofIndexCache(); }
     });
 });

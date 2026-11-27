@@ -11,7 +11,7 @@ const ADMIN = { Authorization: 'Bearer right', 'Content-Type': 'application/json
 const B = 'd59f2870u874';
 const post = (body: unknown, headers: Record<string, string> = ADMIN) => ({ request: new Request('https://x/api/pending', { method: 'POST', headers, body: JSON.stringify(body) }) });
 const get = (qs: string) => ({ request: new Request(`https://x/api/pending?${qs}`) });
-const doc = () => ({ rev: '004-r3', sprites: [], cells: [{ cell: '1:1:1', id: 'pi_000000000001', ver: 1 }, { cell: '1:1:2', id: 'pi_000000000002', ver: 1 }] });
+const doc = () => ({ sprites: [], cells: [{ cell: '1:1:1', id: 'pi_000000000001', ver: 1 }, { cell: '1:1:2', id: 'pi_000000000002', ver: 1 }] });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fn: any;
 beforeAll(async () => { fn = await import('../../../../edge-functions/api/pending.js'); });
@@ -30,19 +30,18 @@ describe('/api/pending', () => {
         expect((await j(r)).cells).toHaveLength(2);
         expect((await fn.onRequestGet(get('book=!!&vol=004'))).status).toBe(400);
     });
-    it('写要管理令牌；doc 要有 rev 和 cells', async () => {
+    it('写要管理令牌；doc 要有 cells（没有 rev）', async () => {
         expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }, { 'Content-Type': 'application/json' }))).status).toBe(401);
-        expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { rev: 'x' } }))).status).toBe(400);
+        expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: { sprites: [] } }))).status).toBe(400);
         expect(store.size).toBe(0);
     });
-    it('hide：按条目或格号撤下，进 withdrawn；unhide 放回；expect_rev 对不上 409', async () => {
+    it('hide：按条目或格号撤下，进 withdrawn；unhide 放回；没有 rev／expect_rev', async () => {
         await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
         const h = await j(await fn.onRequestPost(post({ op: 'hide', book: B, vol: '004', items: ['pi_000000000001'], why: '误报', by: 'A31' })));
         expect(h).toMatchObject({ success: true, changed: 1, cells: 1 });
         const d = JSON.parse(store.get(`pd:${B}:004`)!).doc;
         expect(d.cells.map((c: { cell: string }) => c.cell)).toEqual(['1:1:2']);
         expect(d.withdrawn[0]).toMatchObject({ cell: '1:1:1', withdrawn: { by: 'A31', why: '误报' } });
-        expect((await fn.onRequestPost(post({ op: 'hide', book: B, vol: '004', cells: ['1:1:2'], expect_rev: 'old' }))).status).toBe(409);
         const u = await j(await fn.onRequestPost(post({ op: 'unhide', book: B, vol: '004', cells: ['1:1:1'] })));
         expect(u).toMatchObject({ changed: 1, cells: 2 });
         const d2 = JSON.parse(store.get(`pd:${B}:004`)!).doc;
@@ -54,6 +53,29 @@ describe('/api/pending', () => {
         await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
         await fn.onRequestPost(post({ op: 'delete', book: B, vol: '004' }));
         expect(store.size).toBe(0);
+    });
+});
+
+describe('由条目现拼（Worker /v1/web/pending-doc，去 rev）', () => {
+    const fresh = { found: true, at: 't', cells: [{ cell: '1:1:2', id: 'pi_000000000002', ver: 2, u: 5, review: 'pending' }], released: [{ u: 9, book: '004', ai: { c: '曰' } }], items: { file: 'x', n: { open: 1 } } };
+    it('Worker 有条目就直接用它，不读 KV 整张单、没有 rev', async () => {
+        await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
+        inbox.docBox.reply = () => fresh;
+        const d = await j(await fn.onRequestGet(get(`book=${B}&vol=004`)));
+        expect(d.cells.map((c: { id: string }) => c.id)).toEqual(['pi_000000000002']);
+        expect(d.released).toHaveLength(1);
+        expect('rev' in d).toBe(false);
+    });
+    it('没有整张单也能给（条目在就行）；Worker 没这个接口或这章没条目：退回整张单；?items=0 强制走整张单', async () => {
+        inbox.docBox.reply = () => fresh;
+        expect((await fn.onRequestGet(get(`book=${B}&vol=004`))).status).toBe(200);
+        await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: doc() }));
+        inbox.docBox.reply = () => ({ found: false, at: 't' });
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004`)))).cells).toHaveLength(2);
+        inbox.docBox.reply = null;
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004`)))).cells).toHaveLength(2);
+        inbox.docBox.reply = () => fresh;
+        expect((await j(await fn.onRequestGet(get(`book=${B}&vol=004&items=0`)))).cells).toHaveLength(2);
     });
 });
 
@@ -88,7 +110,7 @@ describe('读时现算（Worker /v1/web/pending-live）', () => {
 
 describe('超 900 KB 的单子分块存放', () => {
     it('put 大单 → 主行＋续块；公开读拼回；hide 照常；改小后续块删掉；delete 全删', async () => {
-        const big = { rev: '004-r9', sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
+        const big = { sprites: [], cells: Array.from({ length: 12000 }, (_, i) => ({ cell: `${i + 1}:1:1`, id: `pi_${String(i).padStart(12, '0')}`, ver: 1, note: Math.random().toString(36).repeat(8) })) };
         expect(JSON.stringify(big).length).toBeGreaterThan(1_800 * 1024);
         expect((await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: big }))).status).toBe(200);
         const main = JSON.parse(store.get(`pd:${B}:004`)!);
@@ -104,5 +126,29 @@ describe('超 900 KB 的单子分块存放', () => {
         await fn.onRequestPost(post({ op: 'put', book: B, vol: '004', doc: big }));
         await fn.onRequestPost(post({ op: 'delete', book: B, vol: '004' }));
         expect(store.size).toBe(0);
+    });
+});
+
+describe('/api/pending-index：各章现算后的剩余格数', () => {
+    let idx: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    beforeAll(async () => { idx = await import('../../../../edge-functions/api/pending-index.js'); });
+    const getI = (qs: string) => ({ request: new Request(`https://x/api/pending-index?${qs}`) });
+    it('回 Worker 现算的各章格数并缓存 30 秒；书号坏 400；Worker 读不到 503 不缓存', async () => {
+        const realFetch = g.fetch as typeof fetch;
+        g.fetch = async (input: unknown) => {
+            const u = new URL(String(input));
+            if (u.pathname === '/v1/web/pending-live-index') return new Response(JSON.stringify({ book: u.searchParams.get('book'), at: 't', counts: { '001': 3, '002': 0 } }), { status: 200 });
+            return new Response('{}', { status: 404 });
+        };
+        const r = await idx.onRequestGet(getI(`book=${B}`));
+        expect(r.status).toBe(200);
+        expect(r.headers.get('Cache-Control')).toBe('public, max-age=30');
+        expect((await j(r)).counts).toEqual({ '001': 3, '002': 0 });
+        expect((await idx.onRequestGet(getI('book=!!'))).status).toBe(400);
+        g.fetch = async () => new Response('{}', { status: 500 });
+        const bad = await idx.onRequestGet(getI(`book=${B}`));
+        expect(bad.status).toBe(503);
+        expect(bad.headers.get('Cache-Control')).toBe('no-store');
+        g.fetch = realFetch;
     });
 });
