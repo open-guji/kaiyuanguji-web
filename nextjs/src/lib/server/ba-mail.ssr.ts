@@ -35,7 +35,8 @@ async function sendTencent(to: string, url: string) {
   const secretKey = process.env.TENCENT_SECRET_KEY;
   const from = process.env.MAIL_FROM; // 必须是控制台里已验证发信域名下的地址，格式「别名 <地址>」，别名不能含冒号
   const templateId = Number(process.env.TENCENT_SES_TEMPLATE_ID); // 腾讯云邮件推送只能用模板发信（Simple 已废弃）；模板正文里用 https://域名/{{url}}
-  if (!secretId || !secretKey || !from || !Number.isInteger(templateId) || templateId <= 0) { console.log('[ba] 腾讯云邮件推送密钥、MAIL_FROM 或 TENCENT_SES_TEMPLATE_ID 未配，链接不发送'); return; }
+  const region = process.env.TENCENT_SES_REGION; // 发信域名验证所在地域（本站是香港）；不写默认值：构建的泄露扫描会把与变量同值的字面量当成泄露
+  if (!secretId || !secretKey || !from || !region || !Number.isInteger(templateId) || templateId <= 0) { console.log('[ba] 腾讯云邮件推送密钥、MAIL_FROM、TENCENT_SES_REGION 或 TENCENT_SES_TEMPLATE_ID 未配，链接不发送'); return; }
   // 腾讯模板审核要求链接「保留确定域名」，变量不能是整条网址：模板写 https://域名/{{url}}，变量只放网址后面的路径与参数（不带开头的斜杠）
   const u = new URL(url);
   const rest = u.pathname.replace(/^\/+/, '') + u.search;
@@ -48,7 +49,7 @@ async function sendTencent(to: string, url: string) {
     Template: { TemplateID: templateId, TemplateData: JSON.stringify({ url: rest }) },
     TriggerType: 1, // 触发类（验证码／登录链接这类即时邮件）
   });
-  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region: process.env.TENCENT_SES_REGION || 'ap-hongkong', payload, timestamp: Math.floor(Date.now() / 1000) });
+  const headers = tc3Headers({ secretId, secretKey, service: 'ses', host, action: 'SendEmail', version: '2020-10-02', region, payload, timestamp: Math.floor(Date.now() / 1000) });
   const res = await fetch(`https://${host}/`, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(8000) });
   const j = (await res.json().catch(() => null)) as { Response?: { Error?: { Code: string; Message: string } } } | null;
   if (!res.ok || j?.Response?.Error) throw new Error(`mail tencent ${res.status} ${j?.Response?.Error?.Code || ''}`);

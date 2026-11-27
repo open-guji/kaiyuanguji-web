@@ -34,7 +34,7 @@
 | `MAIL_FROM` | 发信地址，格式 `开源古籍 <login@mail.openguji.com>` |
 | `TENCENT_SECRET_ID`／`TENCENT_SECRET_KEY` | CAM 子账号 `web-ses` 的密钥（权限仅邮件推送） |
 | `TENCENT_SES_TEMPLATE_ID` | 登录邮件模板 ID（见 §3） |
-| `TENCENT_SES_REGION` | 发信域名验证所在地域。**本站是 `ap-hongkong`**，代码默认也是它；地域不对腾讯回 `FailedOperation.SendEmailErr`（「请检查 Region 参数」） |
+| `TENCENT_SES_REGION` | 发信域名验证所在地域。**本站是 `ap-hongkong`**，必须设（代码不写默认值：构建的泄露扫描会把与变量同值的字面量当泄露，构建会红）；没设就不发信只记日志；地域不对腾讯回 `FailedOperation.SendEmailErr`（「请检查 Region 参数」） |
 
 ## 3. 登录邮件模板
 
