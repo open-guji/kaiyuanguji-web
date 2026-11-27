@@ -21,7 +21,7 @@ describe('腾讯云只能用模板发信', () => {
   const OLD = { ...process.env };
   afterEach(() => { process.env = { ...OLD }; (global as any).fetch = undefined; });
   test('请求体带 Template，不带 Simple', async () => {
-    Object.assign(process.env, { MAIL_PROVIDER: 'tencent', TENCENT_SECRET_ID: 'id', TENCENT_SECRET_KEY: 'k', MAIL_FROM: 'a <b@c.d>', TENCENT_SES_TEMPLATE_ID: '123' });
+    Object.assign(process.env, { MAIL_PROVIDER: 'tencent', TENCENT_SECRET_ID: 'id', TENCENT_SECRET_KEY: 'k', MAIL_FROM: 'a <b@c.d>', TENCENT_SES_TEMPLATE_ID: '123', TENCENT_SES_REGION: 'r-test' });
     const seen: any[] = [];
     (global as any).fetch = jest.fn(async (_u: string, init: any) => { seen.push(JSON.parse(init.body)); return { ok: true, status: 200, json: async () => ({ Response: {} }) }; });
     const { sendLoginMail } = await import('../ba-mail.ssr');
