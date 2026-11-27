@@ -20,8 +20,10 @@ def call(name, **params):
 
 
 def strip(o):
+    # 去掉 None／空串／空字典／空列表（读接口会把没用到的字段补成 null，写接口不认）
     if isinstance(o, dict):
-        return {k: strip(v) for k, v in o.items() if v is not None}
+        d = {k: strip(v) for k, v in o.items()}
+        return {k: v for k, v in d.items() if v not in (None, '', {}, [])}
     if isinstance(o, list):
         return [strip(v) for v in o]
     return o
@@ -49,7 +51,10 @@ if '--apply' not in sys.argv:
     print('（dry-run，未写）'); sys.exit(0)
 branches = strip(br)
 branches[0]['Condition'] = new_cond
-body = {'RuleName': rule['RuleName'], 'Status': rule['Status'], 'Branches': branches}
+body = {'RuleId': rule['RuleId'], 'RuleName': rule['RuleName'], 'Status': rule['Status'], 'Branches': branches}
+if rule.get('RulePriority') is not None:
+    body['RulePriority'] = rule['RulePriority']
+print('提交的规则（动作名）：', json.dumps([a.get('Name') for a in branches[0]['Actions']], ensure_ascii=False))
 if rule.get('Description'):
     body['Description'] = rule['Description']
 call('ModifyL7AccRule', ZoneId=zone, RuleId=rule['RuleId'], Rule=body)
