@@ -1543,12 +1543,17 @@ jobs:
                           resp_pre = client.CreatePurgeTask(req_pre)
                           print('⚠️ purge_url 当日额度用尽，测试站改清前缀 staging/：', resp_pre.to_json_string())
                       else:
-                          req_web = models.CreatePurgeTaskRequest()
-                          req_web.ZoneId = zone
-                          req_web.Type = 'purge_url'
-                          req_web.Targets = [base + 'web.json']
-                          resp_web = client.CreatePurgeTask(req_web)
-                          print('⚠️ purge_url 当日额度用尽，正式站只补清代码指针 web.json（latest.json／h1 指针未清）：', resp_web.to_json_string())
+                          # 11-27：额度用尽时连补清 web.json 也会再撞额度——这里不能再抛，否则整个清缓存步骤失败、晋升后的 verify 被跳过
+                          # （11-27 两次晋升都这样）。清不到只告警：latest.json／h1 根在规则引擎里是节点不缓存，web.json 的缓存时长短，不致命。
+                          try:
+                              req_web = models.CreatePurgeTaskRequest()
+                              req_web.ZoneId = zone
+                              req_web.Type = 'purge_url'
+                              req_web.Targets = [base + 'web.json']
+                              resp_web = client.CreatePurgeTask(req_web)
+                              print('⚠️ purge_url 当日额度用尽，正式站只补清代码指针 web.json（latest.json／h1 指针未清）：', resp_web.to_json_string())
+                          except Exception as e2:
+                              print('⚠️ purge_url 当日额度用尽，web.json 也没清成（不挡发布，额度次日重置）：', str(e2)[:200])
                   else:
                       raise
 
