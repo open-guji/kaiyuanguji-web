@@ -1,0 +1,30 @@
+name: "EdgeOne rule web.json no-cache"
+
+# 手动：把 /web.json、/staging/web.json 加进数据站点规则「latest-json 不缓存」的路径条件（用户 11-27 同意）。
+# apply=false 只读（打印改前改后）；apply=true 才改，并读回核对。只动这一条规则的条件。
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 真改（默认只读）
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  rule:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --user tencentcloud-sdk-python-teo -q
+      - name: Run
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          EDGEONE_DATA_ZONE_ID: ${{ secrets.EDGEONE_DATA_ZONE_ID }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = true ]; then python3 ops/edgeone_rule_webjson.py --apply; else python3 ops/edgeone_rule_webjson.py; fi
