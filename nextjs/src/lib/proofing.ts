@@ -176,7 +176,7 @@ export interface PendingData {
     rev: string | null;
     cells: PendingCell[];
     /** 已放行格的 AI 摘要（GM3 11-27：待审单顶层 released:[{u,ai}]），审阅用，不入待审 */
-    released: { u: number; ai: AiAnalysis }[];
+    released: { u: number; book?: string; ai: AiAnalysis }[];
 }
 
 const RE_ITEM = /^pi_[0-9a-f]{12}$/;
@@ -612,7 +612,7 @@ export function parsePending(raw: unknown): PendingData {
     const released = (Array.isArray(o?.released) ? (o!.released as unknown[]) : []).flatMap(x => {
         const r = asObject(x);
         const ai = parseAi(r?.ai);
-        return r && isU(r.u) && ai ? [{ u: r.u as number, ai }] : [];
+        return r && isU(r.u) && ai ? [{ u: r.u as number, ...(str(r.book) ? { book: str(r.book) } : {}), ai }] : [];
     });
     return { rev, cells, released };
 }
