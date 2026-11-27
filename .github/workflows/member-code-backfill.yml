@@ -1,0 +1,48 @@
+name: Member code backfill (manual)
+
+# 会员号回填与旧 UUID 票迁移（一次性，代码在 ops/member-code-backfill.mjs，说明见其文件头与 docs/membership.md）。
+# 只能手动触发，默认 dry_run（只读，只在 job summary 里写计数与会员号，不写邮箱）；取消勾选才真写。
+# 前置：v0.2.43（会员号版）已在正式站上线——旧版本还在跑的话，新注册的会员会再拿到没有号的记录。
+# 鉴权用 secrets.FEEDBACK_ADMIN_TOKEN（与边缘函数写收件箱同一把 web 角色令牌）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只读，打印将做什么、不写（取消勾选才真写）'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: member-code-backfill
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: member-code-backfill${{ inputs.dry_run && '（dry_run）' || '（真跑）' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # ≥22：ops 脚本直接引 edge-functions/api/feedback.js（ESM 写法、仓库没有 "type": "module"）
+          node-version: '22'
+      - name: Unit tests (ops/member-code-backfill)
+        run: node --test ops/tests/member-code-backfill.test.mjs
+      - name: Run
+        env:
+          WEB_INBOX_TOKEN: ${{ secrets.FEEDBACK_ADMIN_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ -z "$WEB_INBOX_TOKEN" ]; then
+            echo "❌ 仓库没配 secrets.FEEDBACK_ADMIN_TOKEN"; exit 1
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            node ops/member-code-backfill.mjs
+          else
+            node ops/member-code-backfill.mjs --apply
+          fi

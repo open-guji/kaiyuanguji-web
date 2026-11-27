@@ -416,45 +416,67 @@ async function checkMemberCookie(request, context, allowedRoles) {
 }
 
 // --- 会员身份（提交带 ID）---
-// uid＝UUIDv7（RFC 9562）：随机＋时间序，不由邮箱推出，改邮箱也不变。存在成员记录 member:<email>.uid，
-// 老成员第一次提交时懒补。身份只从已验签的 session cookie 来，永不采信请求体里的任何「我是谁」。
-function uuidv7(now = Date.now()) {
-  const b = new Uint8Array(16);
-  crypto.getRandomValues(b);
-  let t = now;
-  for (let i = 5; i >= 0; i -= 1) { b[i] = t % 256; t = Math.floor(t / 256); }
-  b[6] = (b[6] & 0x0f) | 0x70;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+// 会员号是整站唯一的会员 ID：8 位＝7 位随机＋1 位校验，Crockford Base32 字母表去掉易混的 I L O U，
+// 存储用紧凑形式（K7QM2XR9），给人看写成 K7QM-2XR9。随机、不由邮箱推出，改邮箱也不变；
+// 全站唯一靠索引键 membercode:<号> → email 先查后写。校验位只防抄错念错，不是密码，也不防猜号。
+// 身份只从已验签的 session cookie 来，永不采信请求体里的任何「我是谁」。
+// 老成员记录里若有 uid（11-27 短暂用过 UUIDv7），原样保留当旧别名，供迁移旧票用。
+const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const CODE_WEIGHTS = [1, 3, 5, 7, 9, 11, 13]; // 奇数权重：单字符错必被发现
+function codeCheckChar(body) {
+  let sum = 0;
+  for (let i = 0; i < 7; i += 1) sum += CODE_WEIGHTS[i] * CODE_ALPHABET.indexOf(body[i]);
+  return CODE_ALPHABET[sum % 32];
 }
-const UID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-/** 成员记录没有 uid 就补一个并写回；写后回读，并发时以库里最终那个为准。 */
-async function ensureMemberUid(context, email, member) {
-  if (member && typeof member.uid === 'string' && UID_RE.test(member.uid)) return member.uid;
+function newMemberCode() {
+  const b = new Uint8Array(7);
+  crypto.getRandomValues(b);
+  const body = Array.from(b, (x) => CODE_ALPHABET[x & 31]).join('');
+  return body + codeCheckChar(body);
+}
+/** 用户输入（可带横线、空格、小写、O/I/L 写错）→ 紧凑会员号；形状或校验位不对返回 null。 */
+function normalizeMemberCode(input) {
+  if (typeof input !== 'string') return null;
+  const c = input.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+  if (!/^[0-9A-HJKMNP-TV-Z]{8}$/.test(c)) return null;
+  return codeCheckChar(c.slice(0, 7)) === c[7] ? c : null;
+}
+const formatMemberCode = (c) => (typeof c === 'string' && c.length === 8 ? `${c.slice(0, 4)}-${c.slice(4)}` : '');
+/** 成员记录没有会员号就发一个并写回；写后回读，并发时以库里最终那个为准。返回紧凑会员号，失败 null。 */
+async function ensureMemberId(context, email, member) {
+  const ok = (v) => normalizeMemberCode(v) === v;
+  if (member && ok(member.code)) return member.code;
   const kv = getAuthKV(context);
   if (!kv) return null;
   try {
     const cur = await kv.get(`member:${email}`, 'json');
     if (!cur || typeof cur !== 'object' || cur._deleted) return null;
-    if (typeof cur.uid === 'string' && UID_RE.test(cur.uid)) return cur.uid;
-    await kv.put(`member:${email}`, JSON.stringify({ ...cur, uid: uuidv7() }));
+    if (!ok(cur.code)) {
+      let code = '';
+      for (let i = 0; i < 8 && !code; i += 1) {
+        const c = newMemberCode();
+        if (!(await kv.get(`membercode:${c}`))) code = c;
+      }
+      if (!code) return null;
+      await kv.put(`membercode:${code}`, email);
+      await kv.put(`member:${email}`, JSON.stringify({ ...cur, code }));
+    }
     const back = await kv.get(`member:${email}`, 'json');
-    return back && typeof back.uid === 'string' && UID_RE.test(back.uid) ? back.uid : null;
+    return back && ok(back.code) ? back.code : null;
   } catch { return null; }
 }
-/** 已登录会员（任意角色）→ { uid, email, role, nickname? }；匿名或 cookie 无效 → null。 */
+/** 已登录会员（任意角色）→ { id, code, email, role, nickname? }；id 紧凑、code 带横线给人看。匿名或 cookie 无效 → null。 */
 async function memberFromRequest(request, context) {
   const m = await checkMemberCookie(request, context, null);
   if (!m) return null;
-  const uid = await ensureMemberUid(context, m.email, m);
-  if (!uid) return null;
-  return { uid, email: m.email, role: m.role, ...(typeof m.nickname === 'string' && m.nickname ? { nickname: m.nickname } : {}) };
+  const id = await ensureMemberId(context, m.email, m);
+  if (!id) return null;
+  return { id, code: formatMemberCode(id), email: m.email, role: m.role, ...(typeof m.nickname === 'string' && m.nickname ? { nickname: m.nickname } : {}) };
 }
-/** 提交的投票人：登录会员＝uid（跨设备同一票）；匿名＝sha256(aid|ip) 前 16 位（旧规则）。 */
+/** 提交的投票人：登录会员＝会员号（跨设备同一票）；匿名＝sha256(aid|ip) 前 16 位（旧规则）。 */
 async function submitterVoter(request, context, aid, ip) {
   const member = await memberFromRequest(request, context);
-  if (member) return { voter: member.uid, member };
+  if (member) return { voter: member.id, member };
   return { voter: (await sha256Hex(`${aid}|${ip}`)).slice(0, 16), member: null };
 }
 
@@ -565,7 +587,7 @@ function parseImages(raw) {
 
 // --- KV 模式 ---
 
-async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = [], at = undefined, memberUid = '') {
+async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, images = [], at = undefined, memberId = '') {
   const id = generateId();
   const record = {
     id,
@@ -583,7 +605,7 @@ async function kvPost(kv, type, content, pageUrl, resourceId, contact, test, sub
   if (at?.cell) record.cell = at.cell;
   if (at?.u) record.u = at.u;
   if (contact) record.contact = contact;
-  if (memberUid) record.member = memberUid;
+  if (memberId) record.member = memberId;
   if (test) record.test = true;
   // contact 类型（想参与/联系我们）永远不公开：与 isPubliclyVisible 的 type 判断互为
   // 双保险，这里顺手把 visibility 也标成 hidden，admin 列表上看得出「已隐藏」
@@ -999,7 +1021,7 @@ export async function onRequestPost(context) {
         });
       }
       const who = await memberFromRequest(context.request, context);
-      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items, at, who ? who.uid : '');
+      result = await kvPost(kv, type, content, pageUrl, resourceId, contact, test, subtype, parsedImages.items, at, who ? who.id : '');
     }
 
     return new Response(JSON.stringify({ success: true, ...result }), {
@@ -1382,4 +1404,4 @@ export { desensitizeText };
 
 // 供 /api/cellreview（GUJI-551）沿用同一套 CORS、管理鉴权、KV 绑定、取 IP，不在那边再抄一份
 export { ALLOWED_ORIGINS, getCorsHeaders, checkAdminAuth, checkMemberCookie, bearerToken, getKV, getClientIp, sha256Hex };
-export { uuidv7, UID_RE, ensureMemberUid, memberFromRequest, submitterVoter };
+export { newMemberCode, normalizeMemberCode, formatMemberCode, ensureMemberId, memberFromRequest, submitterVoter };

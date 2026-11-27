@@ -82,7 +82,11 @@ jobs:
           # release-log 在 CUT2 合入后第一次正式发布时才建；没有就只用切站前的 edgeone-release 历史
           git fetch -q origin release-log || echo "· release-log 分支还不存在，只用 edgeone-release 历史"
       - name: Unit tests (ops/tests)
-        run: python3 -m unittest discover -s ops/tests
+        run: |
+          # ops/tests 里有 iiif 相关用例要 PIL（版本同 iiif-siku-zongmu.yml）；不装会报 ModuleNotFoundError，
+          # 从 rc/v0.2.39 起发版 PR 上这一步一直红
+          python3 -m pip install -q 'pillow==12.3.0'
+          python3 -m unittest discover -s ops/tests
       - id: plan
         env:
           # 自由文本输入只经环境变量进脚本，不直接拼进 shell（防注入）；脚本里再校验是不是 commit

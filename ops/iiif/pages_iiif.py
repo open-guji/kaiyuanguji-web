@@ -146,6 +146,7 @@ def main(argv=None):
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--verify', action='store_true')
     ap.add_argument('--force', action='store_true')
+    ap.add_argument('--cos-width', type=int, help='bim:cos 整页图宽，须与 pages_bw_tier／src_bw_tier 上传时一致（缺省取书配置 src_w，再缺省 3840）')
     ap.add_argument('--report')
     a = ap.parse_args(argv)
 
@@ -156,6 +157,7 @@ def main(argv=None):
         raise SystemExit(f'❌ pages-books.json 里没有 {a.book}，book-text 里该书 manifest 没有 is_original 或还没有 default/index.json 的章时，才要先在这里加一条（书名、各册卷次、影像来源）')
     meta = books[a.book]
     S.BOOK_ID = a.book
+    cos_w = S.pagemeta.cos_width(meta, a.cos_width)
     # 册号一律是 pages-books.json 里的写法（北行日錄 2 位 '01'，全唐文 3 位 '005'）：书影目录、canvas id 都用它，与 cord 的 canvas.id 一致
     all_vols = sorted(meta['vols'], key=int)
     by_num = {int(v): v for v in all_vols}
@@ -191,13 +193,18 @@ def main(argv=None):
             tp = {p['seq']: p for p in table['pages']}
             back = {f'{p["page"]:04d}': p['seq'] for p in table['pages'] if isinstance(p.get('page'), int)}
             sc = S.pagemeta.load_pagemeta(table, S.PAGES_BASE, v, S.http_get)   # 合扫页的书（史記、脉经）按旁车的源图出；单位阵页按页图
+            ledger = S.pagemeta.load_cos_ledger(table, S.PAGES_BASE, v, S.http_get)   # manager 的账优先；没账（或没这页）照旧按旁车算
             for c in r['canvases']:
                 tseq = back.get(c['seq'], c['seq'])
+                led = S.pagemeta.bim_cos_from_ledger(ledger, tseq, S.public_url)
+                if led:
+                    c['bim_cos'] = led
+                    continue
                 e = (sc or {}).get('pages', {}).get(tseq)
                 if e is not None and not S.pagemeta._identity(e['H']):
-                    c['bim_cos'] = S.pagemeta.bim_cos(e, S.public_url, a.book, v)
+                    c['bim_cos'] = S.pagemeta.bim_cos(e, S.public_url, a.book, v, cos_w)
                 else:
-                    c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v)
+                    c['bim_cos'] = S.pagemeta.bim_cos_page(tseq, tp[tseq]['w'], tp[tseq]['h'], S.public_url, a.book, v, cos_w)
         r['stats'].update(page_table=f'r{table["rev"]:03d}', wall_s=round(time.perf_counter() - t0, 1), commons=None)
         with open(os.path.join(out, S.manifest_key(v)), 'w', encoding='utf-8') as f:
             json.dump(build_manifest(meta, v, r['canvases'], table), f, ensure_ascii=False, separators=(',', ':'))

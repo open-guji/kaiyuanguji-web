@@ -52,6 +52,41 @@ def load_pagemeta(table, pages_base, vol_dir, get):
     return latest
 
 
+def cos_ledger_url(pages_base, book_id, vol_dir, rev, k):
+    return f'{pages_base}/pack/source/pages/{book_id}/{vol_dir}/r{rev:03d}.cos.v{k}.json'
+
+
+def load_cos_ledger(table, pages_base, vol_dir, get):
+    """国内 COS 的账（guji-manager cos-tier 写）：`r<NNN>.cos.v<K>.json`，只增不改，K 大的新，从 v1 往上探到 404。
+    没有账返回 None；账的 table_sha256 与页表对不上也返回 None（并提示），调用方照旧用旁车算的写法，不写账里的值。"""
+    rev, latest, k = int(table['rev']), None, 1
+    while True:
+        try:
+            body, _ = get(cos_ledger_url(pages_base, table['book_id'], vol_dir, rev, k), timeout=60, tries=3)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                break
+            raise
+        latest = json.loads(body)
+        k += 1
+    if latest is None:
+        return None
+    if latest.get('table_sha256') != table_sha(table):
+        import sys
+        print(f'  ⚠ {table["book_id"]}/{vol_dir} COS 账 v{k - 1} 的 table_sha256 与页表 r{rev:03d} 对不上，不用账', file=sys.stderr)
+        return None
+    return latest
+
+
+def bim_cos_from_ledger(ledger, seq, public_url):
+    """账里页表 seq 的一页 → canvas 的 `bim:cos`；账里没有这页返回 None。"""
+    e = (ledger or {}).get('pages', {}).get(seq)
+    if not e or not e.get('key'):
+        return None
+    return {'url': public_url(e['key']), 'width': e['width'], 'height': e['height'], 'matrix': e['matrix'],
+            'kind': e.get('kind', 'bilevel'), 'format': e.get('format', 'webp-lossless')}
+
+
 def src_slug(src_id):
     """源图 id → 路径段：`WYG-SKQS-0001.djvu#235` → `WYG-SKQS-0001-235`；只留字母数字和连字符。"""
     stem, _, page = src_id.partition('#')
@@ -63,7 +98,39 @@ def src_tier_key(book_id, vol_dir, slug, width=SRC_TIER_W):
     return f'iiif/{book_id}/{vol_dir}/src/{slug}/full/{width},/0/default.webp'
 
 
-COS_TIER_W = 3840   # 国内单版整页（1-bit 无损 WebP）的宽，与 Commons 缩略图同宽，两边共用同一套矩阵
+COS_TIER_W = 3840   # 国内单版整页（1-bit 无损 WebP）的缺省宽，也是上传闸的上限；与 Commons 缩略图同宽，两边共用同一套矩阵
+COS_TIER_MAX_W = 3840
+
+
+def cos_width(book_meta=None, override=None):
+    """一本书的国内整页图宽：命令行 --width ＞ 书配置 `src_w`（pages-books.json）＞ 缺省 3840。
+    文淵閣整套（二十四史等）按用户 11-26 决定在书配置里写 1600；上限 3840（上传闸同此）。"""
+    w = override or (book_meta or {}).get('src_w') or COS_TIER_W
+    w = int(w)
+    if not 1 <= w <= COS_TIER_MAX_W:
+        raise ValueError(f'src_w={w} 超出 1..{COS_TIER_MAX_W}')
+    return w
+
+
+def check_cos_webp(body, max_w=COS_TIER_MAX_W):
+    """srcbw 内容闸：只收 WebP 无损（RIFF…WEBPVP8L）、像素只有 0／255、宽 ≤ max_w。合格返回 None，否则返回原因。"""
+    if len(body) < 20 or body[:4] != b'RIFF' or body[8:12] != b'WEBP':
+        return '不是 WebP'
+    if body[12:16] != b'VP8L':
+        return f'不是无损 WebP（块类型 {body[12:16]!r}，要 VP8L）'
+    import io
+    from PIL import Image
+    try:
+        with Image.open(io.BytesIO(body)) as im:
+            im.load()
+            if im.width > max_w:
+                return f'宽 {im.width} 超过 {max_w}'
+            colors = im.convert('L').getcolors(256)
+    except Exception as e:  # noqa: BLE001
+        return f'解不开：{e}'
+    if not colors or any(v not in (0, 255) for _, v in colors):
+        return '像素不只有 0／255（不是 1-bit 黑白）'
+    return None
 
 
 def cos_tier_key(book_id, vol_dir, slug, width=COS_TIER_W):

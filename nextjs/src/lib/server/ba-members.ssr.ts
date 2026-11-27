@@ -3,7 +3,7 @@
 import { inboxBaseToken } from './ba-config.ssr';
 
 export const COOKIE_MAX_AGE = 180 * 24 * 3600;
-export type Member = { role: string; joinedAt?: number; invitedBy?: string; tokenVersion?: number; verified?: boolean; uid?: string; nickname?: string; _deleted?: boolean };
+export type Member = { role: string; joinedAt?: number; invitedBy?: string; tokenVersion?: number; verified?: boolean; uid?: string; code?: string; nickname?: string; _deleted?: boolean };
 
 // 与边缘函数 d1Kv 的键编码一致（feedback.js kvEnc）
 const kvEnc = (k: string) => k.replace(/[^A-Za-z0-9:_.|-]/g, (c) => `~${c.charCodeAt(0).toString(16).padStart(4, '0')}~`);
@@ -44,17 +44,6 @@ export function decideMember(existing: Member | null, registrationIsOpen: boolea
 }
 
 /** 邮箱经 Better Auth 验证后更新成员记录：保留角色与 tokenVersion（不踢其他设备），标 verified。新注册默认 reader。 */
-/** UUIDv7（RFC 9562）：成员永久 ID，与 edge-functions/api/feedback.js 同规则；老成员由边缘函数懒补。 */
-export function uuidv7(now = Date.now()): string {
-  const b = randomBytes(16);
-  let t = now;
-  for (let i = 5; i >= 0; i -= 1) { b[i] = t % 256; t = Math.floor(t / 256); }
-  b[6] = (b[6] & 0x0f) | 0x70;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  const h = b.toString('hex');
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
-}
-
 /** 昵称清洗：去首尾空白与控制字符，折叠连续空白，最长 20 个字；空则不设。邮箱形态的不收（公开处绝不显示邮箱）。 */
 export function cleanNickname(raw: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;
@@ -69,10 +58,10 @@ export function nextMember(existing: Member | null, now: number, nickname?: stri
     const tv = Number.isInteger(existing.tokenVersion) && (existing.tokenVersion as number) > 0 ? (existing.tokenVersion as number) : 1;
     return { ...existing, tokenVersion: tv, verified: true };
   }
-  return { role: 'reader', joinedAt: now, invitedBy: 'self-register', tokenVersion: 1, verified: true, uid: uuidv7(now), ...(nickname ? { nickname } : {}) };
+  return { role: 'reader', joinedAt: now, invitedBy: 'self-register', tokenVersion: 1, verified: true, ...(nickname ? { nickname } : {}) };
 }
 
-import { createHmac, randomBytes } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 const b64url = (buf: Buffer) => buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 export async function signSession(email: string, tokenVersion: number, secret: string, now = Math.floor(Date.now() / 1000)) {
   const part = (o: unknown) => b64url(Buffer.from(JSON.stringify(o)));

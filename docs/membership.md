@@ -61,10 +61,23 @@
 
 测试站联调：邮件里的链接固定写正式站域名，所以在测试站发的信点开会落到正式站；联调时用脚本从认证库取出 token，直接访问测试站自己的 `/api/ba/magic-link/verify?token=…&callbackURL=/api/ba-session`。
 
-## 提交带会员身份（uid）
+## 会员号与提交带会员身份
 
-- 成员记录 `member:<email>` 带 `uid`（UUIDv7，不由邮箱推出，改邮箱不变；删除墓碑保留 uid）。新注册时由 `nextMember` 生成，老成员在第一次提交或访问 `/api/auth/me` 时由边缘函数懒补（`ensureMemberUid`，写后回读）。可选 `nickname`，保留字段，改角色／重新加入不丢。
+- **会员号是整站唯一的会员 ID**：8 位＝7 位随机＋1 位校验，字母表是 Crockford Base32 去掉易混的 I L O U（`0-9 A-H J K M N P-T V-Z`）。存储用紧凑形式 `K7QM2XR9`，给人看写成 `K7QM-2XR9`。它随机生成，不由邮箱推出，改邮箱也不变。
+- 存在成员记录 `member:<email>.code`；全站唯一靠索引键 `membercode:<号>` → email，发号时先查后写（中心库没有原子「不存在才写」，两人同一毫秒抽到同一号才会撞，量级可忽略）。老成员第一次提交或访问 `/api/auth/me` 时懒补，写后回读。删除墓碑、改角色、重新加入都保留会员号。
+- 校验位只防抄错念错：奇数权重（1,3,5,7,9,11,13）加权求和 mod 32，单字符错必被发现，相邻互换几乎都发现；它不是密码，别当凭证用。`normalizeMemberCode()` 宽容输入：大小写、横线、空格、O→0、I/L→1。
+- 用户在 /account 页看到并能一键复制会员号；报 bug、反馈时附上它，我们按号反查（索引键 `membercode:<号>` 取到邮箱）。
 - 身份只从已验签的 `session` cookie 来（`memberFromRequest`，含 tokenVersion 校验），请求体里的任何自报身份一律不采信。
-- 精校票（cellreview）、改字（charfix）、讨论（thread）：登录会员 `voter = uid`（跨设备同一票）；匿名仍是 `sha256(aid|ip)` 前 16 位。下游可凭格式区分：UUID（36 位）＝会员，16 位十六进制＝匿名。
-- 反馈：记录带 `member: <uid>`；公开读剔除该字段，邮箱从成员库按 uid 反查（后台）。
-- 公开数据显示：绝不出邮箱；有昵称显示昵称，否则显示 uid（界面建议只显示末 8 位）。注册页（/register，非顶栏下拉）有选填昵称框，经登录链接的回调参数 `nick` 带到 `/api/ba-session`，只在新注册时写入（`cleanNickname`：去空白与控制字符、最长 20 字、含 @ 的不收）；已有成员改昵称的界面另做。
+- 精校票（cellreview）、改字（charfix）、讨论（thread）：登录会员 `voter = 会员号`（8 位，跨设备同一票）；匿名仍是 `sha256(aid|ip)` 前 16 位。下游凭长度区分：8 位＝会员，16 位十六进制＝匿名。（11-27 有数小时 voter 是 36 位 UUIDv7，那批票待迁移；成员记录里若有 `uid` 字段就是那个旧别名。）
+- 反馈：记录带 `member: <会员号>`；公开读剔除该字段，邮箱后台按号反查。
+- 公开数据显示：绝不出邮箱；有昵称显示昵称，否则显示会员号。
+
+### 回填与迁移（一次性）
+
+`.github/workflows/member-code-backfill.yml`（手动，默认 dry_run）：给没有会员号的会员发号并写索引；把 voter 是 UUID 的精校票／改字／讨论迁成会员号（旧键删掉；cellreview 的 Worker 不许删，旧键列在 summary 里请整理侧清）；反馈记录里的 `member` UUID 改成会员号。summary 只出计数和会员号，不出邮箱。要等会员号版上线正式站后再真跑。
+
+## 昵称
+
+- /account 页「昵称」栏可设置或清除（最多 20 字，空串＝清除），接口 `POST /api/auth/nickname`（边缘函数 `auth/nickname.js`），身份只认验签 session cookie，只改成员记录的 `nickname`，其余字段原样保留。
+- 昵称会在公开处显示，所以拒绝：像邮箱或网址的、含 `@ < >` 的、控制字符与双向控制符；全角半角先归一，连续空白合并。
+- 新注册时在登录表单里填的昵称沿用原有逻辑（只在首次注册写入）。

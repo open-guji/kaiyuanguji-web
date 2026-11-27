@@ -509,6 +509,7 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False, with
         return 0
     n = 0
     tpages = {p['seq']: p for p in table['pages']}
+    ledger = pagemeta.load_cos_ledger(table, PAGES_BASE, vol_dir(vol), http_get) if with_cos else None
     for c in canvases:
         key = (by_seq or {}).get(c['seq'], c['seq'])
         e = meta['pages'].get(key)
@@ -517,7 +518,7 @@ def attach_pagemeta(table, vol, canvases, by_seq=None, with_src_tier=False, with
         c['bim_page'] = pagemeta.bim_page(e, public_url, BOOK_ID, vol_dir(vol), with_src_tier=with_src_tier,
                                           tpage=tpages.get(key))
         if with_cos:
-            c['bim_cos'] = pagemeta.bim_cos(e, public_url, BOOK_ID, vol_dir(vol))
+            c['bim_cos'] = pagemeta.bim_cos_from_ledger(ledger, key, public_url) or pagemeta.bim_cos(e, public_url, BOOK_ID, vol_dir(vol))
         n += 1
     return n
 
@@ -667,8 +668,18 @@ def upload_tree(root, workers=16, force=False):
     图和 info.json 先 HEAD 一下，桶里 ETag（＝内容 MD5）与本地一致就跳过：重跑某册不再把几千个文件重传。
     manifest 和 Collection 小而且会变，每次都传。force=True 不看 ETag，全部重传。
     返回里的 uploaded 是真正写过的 key，供 verify_online 只核对这些。"""
-    cos = Cos()
     files = list(walk_files(root))
+    # 内容闸：srcbw 下只收 1-bit 无损 WebP、宽 ≤3840；一个不合格就整批拒传（什么都不写）。其它新书不再传旧的 1200／300／原宽档。
+    bad = []
+    for full, key in files:
+        if '/srcbw/' in key:
+            with open(full, 'rb') as fh:
+                why = pagemeta.check_cos_webp(fh.read()) if key.endswith('.webp') else '不是 .webp'
+            if why:
+                bad.append(f'{key}：{why}')
+    if bad:
+        raise SystemExit(f'❌ srcbw 内容闸拒传 {len(bad)} 个文件（规格：1-bit 无损 WebP、宽≤3840）：\n  ' + '\n  '.join(bad[:20]))
+    cos = Cos()
     coll = [f for f in files if f[1] == collection_key()]
     mans = [f for f in files if f[1].endswith('/manifest.json') and f not in coll]
     early = [f for f in files if f not in coll and f not in mans]
