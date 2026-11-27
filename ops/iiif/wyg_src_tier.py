@@ -114,10 +114,12 @@ def main(argv=None):
     ap.add_argument('--out', required=True)
     ap.add_argument('--cache', required=True)
     ap.add_argument('--bw', action='store_true', help='单版整页：3840 宽 1-bit 无损 WebP，传到 srcbw/ 新路径段（取代 2400 的 src/ 档）')
+    ap.add_argument('--width', type=int, help='整页图宽（缺省 3840；文淵閣整套用 1600；上限 3840）')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--force', action='store_true')
     a = ap.parse_args(argv)
 
+    width = pagemeta.cos_width(None, a.width)
     os.makedirs(a.cache, exist_ok=True)
     report = {}
     for v in a.vols.split(','):
@@ -137,8 +139,8 @@ def main(argv=None):
         download(src['commons_url'], djvu, src['sha256'])
         for slug, (page, w, h) in sorted(need.items()):
             if a.bw:
-                key = pagemeta.cos_tier_key(BOOK_ID, vd, slug)
-                djvu_page_to_bw_webp(djvu, page, w, h, os.path.join(a.out, key))
+                key = pagemeta.cos_tier_key(BOOK_ID, vd, slug, width)
+                djvu_page_to_bw_webp(djvu, page, w, h, os.path.join(a.out, key), width=width)
             else:
                 key = pagemeta.src_tier_key(BOOK_ID, vd, slug)
                 djvu_page_to_webp(djvu, page, w, h, os.path.join(a.out, key))

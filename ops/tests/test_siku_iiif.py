@@ -139,6 +139,48 @@ class SikuIiif(unittest.TestCase):
                 fake.etag.assert_not_called()
                 self.assertEqual(r['skipped'], 0)
 
+    def test_srcbw_gate(self):
+        # 内容闸：srcbw 下只收 1-bit 无损 WebP、宽≤3840；不合格整批拒传，一个都不写
+        import io, tempfile
+        from unittest import mock
+        from PIL import Image
+        def webp(mode, size, lossless=True, color=None):
+            im = Image.new('L', size, 255)
+            if mode == 'bw':
+                im.putpixel((0, 0), 0)
+            else:
+                im.putpixel((0, 0), 100)
+            b = io.BytesIO()
+            im.save(b, 'WEBP', lossless=lossless, quality=100 if lossless else 75)
+            return b.getvalue()
+        good = webp('bw', (100, 50))
+        cases = {'ok': (good, True), 'gray': (webp('gray', (100, 50)), False), 'wide': (webp('bw', (3841, 4)), False),
+                 'lossy': (webp('bw', (100, 50), lossless=False), False), 'junk': (b'x' * 40, False)}
+        for name, (body, ok) in cases.items():
+            with tempfile.TemporaryDirectory() as root:
+                key = 'iiif/bk/01/srcbw/s1/full/1600,/0/default.webp'
+                os.makedirs(os.path.join(root, os.path.dirname(key)))
+                with open(os.path.join(root, key), 'wb') as f:
+                    f.write(body)
+                fake = mock.Mock()
+                with mock.patch.object(m, 'Cos', return_value=fake):
+                    if ok:
+                        m.upload_tree(root, workers=1)
+                        self.assertEqual(fake.put.call_count, 1, name)
+                    else:
+                        with self.assertRaises(SystemExit, msg=name):
+                            m.upload_tree(root, workers=1)
+                        fake.put.assert_not_called()
+
+    def test_cos_width(self):
+        from importlib import import_module
+        pm = import_module('pagemeta')
+        self.assertEqual(pm.cos_width({}), 3840)
+        self.assertEqual(pm.cos_width({'src_w': 1600}), 1600)
+        self.assertEqual(pm.cos_width({'src_w': 1600}, 1200), 1200)
+        with self.assertRaises(ValueError):
+            pm.cos_width({'src_w': 5000})
+
     def test_pick_verify_files(self):
         files = [(f'/t/{i}', f'iiif/96mid1ogzk/03/{i:04d}/full/300,/0/default.webp') for i in range(500)]
         files += [('/t/m', 'iiif/96mid1ogzk/03/manifest.json'), ('/t/c', 'iiif/96mid1ogzk/manifest.json')]
