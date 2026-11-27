@@ -18,7 +18,7 @@ import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage, alignFacsToCord,
     refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
-    loadProofIndex, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
+    loadProofIndexLive, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
     QUICK_GROUPS, quickPick, readDefer, writeDefer, type AiAnalysis,
 } from '@/lib/proofing';
@@ -900,7 +900,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         let cancelled = false;
         const api = createTextApi(transport);
         (async () => {
-            const index = await loadProofIndex();
+            const index = await loadProofIndexLive(book);
             let titles: Map<string, string> | undefined;
             try {
                 const key = versionKeys(await api.getManifest(book))[0];
@@ -932,7 +932,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
             if (rev) setDeferred(prev => [...new Set([...prev, ...readDefer(rev).map(k)])]);
         };
         (async () => {
-            const index = await loadProofIndex();
+            const index = await loadProofIndexLive(book);
             const allVols = merged ? buildToc(index, book).filter(e => e.n > 0) : [];
             let vols = merged ? allVols.map(e => e.vol) : [vol];
             let extra: typeof allVols = [];   // 合审：先按各册剩余格数凑够 MERGED_CELL_LIMIT 就停；若其中不少已回应过，再往后补载，直到有 MERGED_CELL_LIMIT 个没回应的格或册载完

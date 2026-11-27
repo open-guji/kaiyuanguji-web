@@ -280,6 +280,22 @@ export async function readPendingLive(context, book, vol) {
   } finally { clearTimeout(timer); }
 }
 
+/** 一本书各章现算后还剩几格待审（Worker GET /v1/web/pending-live-index）：`{book, at, counts:{章:格数}}`；读不到返回 null。 */
+export async function readPendingLiveCounts(context, book) {
+  const { base, token } = inboxBaseToken(context);
+  if (!token) return null;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 4000);
+  try {
+    const res = await fetch(`${base}/v1/web/pending-live-index?${new URLSearchParams({ book })}`, { headers: { Authorization: `Bearer ${token}` }, signal: ctl.signal });
+    if (!res.ok) return null;
+    const out = await res.json();
+    return out && out.counts && typeof out.counts === 'object' ? out : null;
+  } catch {
+    return null;
+  } finally { clearTimeout(timer); }
+}
+
 /** 读单键；没有返回 null。 */
 export async function readInboxOne(context, kind, key) {
   const page = await readInboxPage(context, { kind, prefix: key, limit: 20 });

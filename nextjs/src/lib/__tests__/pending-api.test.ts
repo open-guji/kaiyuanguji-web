@@ -106,3 +106,27 @@ describe('超 900 KB 的单子分块存放', () => {
         expect(store.size).toBe(0);
     });
 });
+
+describe('/api/pending-index：各章现算后的剩余格数', () => {
+    let idx: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    beforeAll(async () => { idx = await import('../../../../edge-functions/api/pending-index.js'); });
+    const getI = (qs: string) => ({ request: new Request(`https://x/api/pending-index?${qs}`) });
+    it('回 Worker 现算的各章格数并缓存 30 秒；书号坏 400；Worker 读不到 503 不缓存', async () => {
+        const realFetch = g.fetch as typeof fetch;
+        g.fetch = async (input: unknown) => {
+            const u = new URL(String(input));
+            if (u.pathname === '/v1/web/pending-live-index') return new Response(JSON.stringify({ book: u.searchParams.get('book'), at: 't', counts: { '001': 3, '002': 0 } }), { status: 200 });
+            return new Response('{}', { status: 404 });
+        };
+        const r = await idx.onRequestGet(getI(`book=${B}`));
+        expect(r.status).toBe(200);
+        expect(r.headers.get('Cache-Control')).toBe('public, max-age=30');
+        expect((await j(r)).counts).toEqual({ '001': 3, '002': 0 });
+        expect((await idx.onRequestGet(getI('book=!!'))).status).toBe(400);
+        g.fetch = async () => new Response('{}', { status: 500 });
+        const bad = await idx.onRequestGet(getI(`book=${B}`));
+        expect(bad.status).toBe(503);
+        expect(bad.headers.get('Cache-Control')).toBe('no-store');
+        g.fetch = realFetch;
+    });
+});
