@@ -13,6 +13,20 @@ permissions:
   contents: read
   actions: write
 
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.openguji.com
+  HOST_LEGACY_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.openguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
 jobs:
   dispatch:
     runs-on: ubuntu-latest
@@ -22,7 +36,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          HOST_DATA: https://data.openguji.com
         run: |
           set -e
           LIVE=$(curl -sf --max-time 30 "$HOST_DATA/latest.json?cb=$(date +%s)" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" 2>/dev/null || true)
