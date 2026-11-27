@@ -79,6 +79,23 @@ class PageMeta(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 pm.load_pagemeta(TABLE, 'https://pb', '05', fake_get({URL(1): bad}))
 
+    def test_cos_ledger(self):
+        sha = pm.table_sha(TABLE)
+        page = {'key': 'iiif/b/05/srcbw/s1/full/1600,/0/default.webp', 'width': 1600, 'height': 2000,
+                'matrix': [1, 0, 0, 0, 1, 0, 0, 0, 1], 'kind': 'bilevel', 'format': 'webp-lossless'}
+        led = lambda k, **kw: {'table_sha256': sha, 'pages': {'0001': page}, **kw}
+        u = lambda k: f'https://pb/pack/source/pages/b/05/r004.cos.v{k}.json'
+        g = fake_get({u(1): led(1, v=1), u(2): led(2, v=2)})
+        got = pm.load_cos_ledger(TABLE, 'https://pb', '05', g)
+        self.assertEqual(got['v'], 2)
+        c = pm.bim_cos_from_ledger(got, '0001', lambda k: 'https://d/' + k)
+        self.assertEqual(c['url'], 'https://d/' + page['key'])
+        self.assertEqual((c['width'], c['kind']), (1600, 'bilevel'))
+        self.assertIsNone(pm.bim_cos_from_ledger(got, '0002', lambda k: k))
+        self.assertIsNone(pm.load_cos_ledger(TABLE, 'https://pb', '05', fake_get({})))
+        bad = {'table_sha256': 'x', 'pages': {'0001': page}}
+        self.assertIsNone(pm.load_cos_ledger(TABLE, 'https://pb', '05', fake_get({u(1): bad})))
+
     def test_bim_page_flat_and_src_tier(self):
         pub = lambda k: 'https://d/' + k  # noqa: E731
         e = {'src': {'id': 'WYG-SKQS-0001.djvu#235', 'w': 4296, 'h': 6064}, 'H': PERSP, 'content': [3, 4.2, 700, 900]}

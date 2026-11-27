@@ -52,6 +52,41 @@ def load_pagemeta(table, pages_base, vol_dir, get):
     return latest
 
 
+def cos_ledger_url(pages_base, book_id, vol_dir, rev, k):
+    return f'{pages_base}/pack/source/pages/{book_id}/{vol_dir}/r{rev:03d}.cos.v{k}.json'
+
+
+def load_cos_ledger(table, pages_base, vol_dir, get):
+    """国内 COS 的账（guji-manager cos-tier 写）：`r<NNN>.cos.v<K>.json`，只增不改，K 大的新，从 v1 往上探到 404。
+    没有账返回 None；账的 table_sha256 与页表对不上也返回 None（并提示），调用方照旧用旁车算的写法，不写账里的值。"""
+    rev, latest, k = int(table['rev']), None, 1
+    while True:
+        try:
+            body, _ = get(cos_ledger_url(pages_base, table['book_id'], vol_dir, rev, k), timeout=60, tries=3)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                break
+            raise
+        latest = json.loads(body)
+        k += 1
+    if latest is None:
+        return None
+    if latest.get('table_sha256') != table_sha(table):
+        import sys
+        print(f'  ⚠ {table["book_id"]}/{vol_dir} COS 账 v{k - 1} 的 table_sha256 与页表 r{rev:03d} 对不上，不用账', file=sys.stderr)
+        return None
+    return latest
+
+
+def bim_cos_from_ledger(ledger, seq, public_url):
+    """账里页表 seq 的一页 → canvas 的 `bim:cos`；账里没有这页返回 None。"""
+    e = (ledger or {}).get('pages', {}).get(seq)
+    if not e or not e.get('key'):
+        return None
+    return {'url': public_url(e['key']), 'width': e['width'], 'height': e['height'], 'matrix': e['matrix'],
+            'kind': e.get('kind', 'bilevel'), 'format': e.get('format', 'webp-lossless')}
+
+
 def src_slug(src_id):
     """源图 id → 路径段：`WYG-SKQS-0001.djvu#235` → `WYG-SKQS-0001-235`；只留字母数字和连字符。"""
     stem, _, page = src_id.partition('#')
