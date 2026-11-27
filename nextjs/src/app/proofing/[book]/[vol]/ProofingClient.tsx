@@ -48,7 +48,7 @@ function CharRow({ testId, label, chars, busy, picked, onPick }: { testId: strin
 interface VolInfo {
     rev: string | null;
     cells: PendingCell[];
-    released: { u: number; ai: AiAnalysis }[];
+    released: { u: number; book?: string; ai: AiAnalysis }[];
     cord: CordIndex | null;
     order: ReadSlot[];
     pos: Map<string, number>;
@@ -262,14 +262,14 @@ function AiSummary({ ai }: { ai: AiAnalysis }) {
 }
 
 /** 已放行格（AI 已核对、不在待审单里）：折叠列出，供审阅；格以永久编号 u 标识 */
-function ReleasedList({ items }: { items: { u: number; ai: AiAnalysis }[] }) {
+function ReleasedList({ items }: { items: { u: number; book?: string; ai: AiAnalysis }[] }) {
     if (!items.length) return null;
     return (
         <details data-testid="released-list" style={{ margin: '0 0 8px', fontSize: 12, color: '#555' }}>
             <summary style={{ cursor: 'pointer', color: '#7a3b1d' }}>已放行 {items.length} 格（AI 已核对，可抽查）</summary>
             <ul style={{ margin: '4px 0', paddingLeft: 0, listStyle: 'none' }}>
                 {items.map(it => (
-                    <li key={it.u} style={{ padding: '4px 0', borderTop: '1px solid #eee5d0' }}>
+                    <li key={it.book ? `${it.book}:${it.u}` : it.u} style={{ padding: '4px 0', borderTop: '1px solid #eee5d0' }}>
                         <span style={{ color: '#888' }}>字格 {it.u}　</span><AiSummary ai={it.ai} />
                     </li>
                 ))}
