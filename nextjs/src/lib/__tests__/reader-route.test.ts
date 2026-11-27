@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from '@jest/globals';
 import {
-    chapterFallbackLabel, dedupeChapterLabel, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, readerVersionName, splitReaderPathname,
+    chapterFallbackLabel, dedupeChapterLabel, findChapter, sameChapter, hasReaderType, isChapterSegment, isTextKey, parseReaderSegments, readerHref, readerPath, readerTitle, readerVersionName, splitReaderPathname,
 } from '../reader-route';
 
 const WORK = 'd59f2htm01du'; // 直齋書錄解題（Work）
@@ -134,5 +134,25 @@ describe('dedupeChapterLabel（description 与 title 共用，overview#581）', 
         expect(dedupeChapterLabel('洪範傳', ' 洪範 傳 ')).toBe('');
         expect(dedupeChapterLabel('洪範傳', '卷一')).toBe('卷一');
         expect(dedupeChapterLabel('洪範傳', '')).toBe('');
+    });
+});
+
+describe('册号位数不同也认成同一章（用户 11-27）', () => {
+    it('sameChapter：字面相同，或都是纯数字且数值相同', () => {
+        expect(sameChapter('001', '1')).toBe(true);
+        expect(sameChapter('01', '001')).toBe(true);
+        expect(sameChapter('001', '001')).toBe(true);
+        expect(sameChapter('001', '002')).toBe(false);
+        expect(sameChapter('vol01', '1')).toBe(false);
+        expect(sameChapter(undefined, '1')).toBe(false);
+    });
+    it('findChapter：先认字面相同的，没有再按数值', () => {
+        const chapters = [{ file: '001' }, { file: '002' }, { file: '010' }];
+        expect(findChapter(chapters, '002')).toBe(chapters[1]);
+        expect(findChapter(chapters, '1')).toBe(chapters[0]);
+        expect(findChapter(chapters, '01')).toBe(chapters[0]);
+        expect(findChapter(chapters, '10')).toBe(chapters[2]);
+        expect(findChapter(chapters, '3')).toBeUndefined();
+        expect(findChapter([{ file: '1' }, { file: '001' }], '001')).toEqual({ file: '001' });
     });
 });
