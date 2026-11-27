@@ -920,6 +920,32 @@
     margin: 0;
     word-break: break-all;
   }
+  .og-account-code-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+  .og-account-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    user-select: all;
+  }
+  .og-account-copy {
+    padding: 2px 10px;
+    border: 1px solid var(--color-line, #ccc);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-ink-2);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .og-account-code-hint {
+    flex-basis: 100%;
+    color: var(--color-ink-2);
+    font-size: 12px;
+  }
   .og-account-nick {
     display: flex;
     flex-direction: column;

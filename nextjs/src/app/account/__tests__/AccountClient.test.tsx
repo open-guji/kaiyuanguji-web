@@ -5,7 +5,7 @@ import { __resetMemberCache } from '../../../lib/use-member';
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 const calls: { url: string; body?: string }[] = [];
-function mockFetch(nickResult: { status: number; body: unknown }, me: unknown = { success: true, email: 'a@b.c', role: 'reader', joinedAt: 1700000000, nickname: '旧名' }) {
+function mockFetch(nickResult: { status: number; body: unknown }, me: unknown = { success: true, email: 'a@b.c', role: 'reader', joinedAt: 1700000000, nickname: '旧名', code: 'K7QM-2XR9' }) {
   calls.length = 0;
   (global as any).fetch = jest.fn(async (url: string, init?: { body?: string }) => {
     calls.push({ url, body: init?.body });
@@ -37,5 +37,18 @@ describe('/account 昵称设置', () => {
     fireEvent.change(input, { target: { value: 'a@b.com' } });
     fireEvent.click(screen.getByRole('button', { name: '保存' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('不能像邮箱'));
+  });
+});
+
+describe('/account 会员号', () => {
+  it('显示会员号，点复制写入剪贴板并提示「已复制」', async () => {
+    mockFetch({ status: 200, body: { success: true } });
+    const writeText = jest.fn(async () => undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    render(<AccountClient />);
+    expect(await screen.findByText('K7QM-2XR9')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '复制' }));
+    await screen.findByText('已复制');
+    expect(writeText).toHaveBeenCalledWith('K7QM-2XR9');
   });
 });

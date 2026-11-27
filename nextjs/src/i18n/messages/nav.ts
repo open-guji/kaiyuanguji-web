@@ -35,6 +35,10 @@ export const nav = defineMessages({
     account: {
         login: '登錄',
         my: '我的賬號',
+        code: '會員號',
+        copy: '複製',
+        copied: '已複製',
+        codeHint: '報 bug、反饋時請附上它，我們憑它找到你',
         email: '郵箱',
         nickname: '昵稱',
         nicknameHint: '選填，最多 20 字；公開處顯示，不填則不顯示名字',
@@ -115,6 +119,10 @@ export const nav = defineMessages({
     account: {
         login: '登录',
         my: '我的账号',
+        code: '会员号',
+        copy: '复制',
+        copied: '已复制',
+        codeHint: '报 bug、反馈时请附上它，我们凭它找到你',
         email: '邮箱',
         nickname: '昵称',
         nicknameHint: '选填，最多 20 字；公开处显示，不填则不显示名字',
