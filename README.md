@@ -21,7 +21,7 @@
 | `e2e/` | **打线上站点**的验收测试（Playwright），部署后 CI 自动跑；本地 `TARGET=http://localhost:3000` |
 | `perf/` | 性能基准与旧 smoke（Playwright + CDP） |
 | `indexer/` | 跑在上海服务器上的 Meilisearch 索引器（`full-reindex.mjs`、`reindex-limited.sh`），**不在 CI 里跑** |
-| `edge-functions/` | EdgeOne Pages 边缘函数：用户反馈、精校票、改字意见、讨论、待审单、登录、搜索代理等（`api/*`、`oauth/*`）。读者意见类数据 11-22 起存中心库 D1（经 Worker `/v1/web/inbox`），KV 兼容层待退役 |
+| `edge-functions/` | EdgeOne Pages 边缘函数：用户反馈、精校票、改字意见、讨论、待审单、登录（邀请制＋邮箱登录／注册，见 `docs/membership.md`）、搜索代理等（`api/*`、`oauth/*`）。读者意见类数据 11-22 起存中心库 D1（经 Worker `/v1/web/inbox`），KV 兼容层待退役 |
 | `search-pg/` | 搜索的 Postgres 后端（search-api、入库程序、SQL），见其 README |
 | `ops/` | 全栈构建包装、清缓存、回滚计划、数据巡检、服务器救援等脚本 |
 | `.github/workflows/` | `deploy.yml`（部署）· `test.yml`（PR/夜间）· `rollback.yml`（回滚）· `monitor.yml`（监控私有半边）· `dq.yml`（数据巡检）· `screenshots.yml`（整站截图）· `e2e-remote.yml`（对线上站跑 e2e）· `cutover-check.yml`· `edgeone-env-sync.yml`· `edgeone-purge-urls.yml` |
