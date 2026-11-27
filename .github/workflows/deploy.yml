@@ -465,6 +465,13 @@ jobs:
         working-directory: nextjs
         run: npm ci
 
+      # 按 dist-tag 取 book-index-ui（不改锁文件）：测试站用 latest，正式站用 stable；
+      # 部署现成产物（FROM_ARTIFACT）不构建，跳过。实际版本见 /api/version 的 bimUi。
+      - name: book-index-ui 按标签（测试站 latest／正式站 stable）
+        if: ${{ env.FROM_ARTIFACT != 'true' }}
+        working-directory: nextjs
+        run: node scripts/use-bim-ui-tag.mjs "${{ needs.resolve.outputs.target == 'production' && 'stable' || 'latest' }}"
+
       # 部署前先跑单测：push 到 main 会直接上线，不能把未验证的代码发出去
       # （部署现成产物时不跑：那份产物在测试站那次 run 里已经跑过单测、过了 verify）
       - name: Unit tests
@@ -1676,6 +1683,11 @@ jobs:
       - name: Install dependencies
         working-directory: nextjs
         run: npm ci
+
+      # prod-artifact 是正式站产物：book-index-ui 取 stable 标签（与 build 的正式站支路同一规则）
+      - name: book-index-ui 取 stable 标签
+        working-directory: nextjs
+        run: node scripts/use-bim-ui-tag.mjs stable
 
       # 条目 sitemap（<loc> 指向 www）要读打包好的 entry/*.json。数据没变时用缓存（键同 build：站点＋三仓 commit＋打包脚本指纹），
       # 缓存没有才克隆、打包——那样多花三四分钟，但与测试站那一支并行，测试站 verify 一般比它晚结束，不拖总时间。
