@@ -1,0 +1,49 @@
+name: "Data index daily"
+
+# 11-27 用户定：flow=index（book-index 正式数据）至少每天自动发一次。
+# data.yml 的定时都是 flow=text，index 一直只手动；这里每天 UTC 18:20（北京 02:20）派一次 data.yml（flow=index、target=production、main）。
+# 只在 book-index main 与线上 latest.json 的 productionCommitId 不同时才派（没有新内容就不跑）；
+# 已有数据 run 在跑或排队就让路（别顶掉别人排队的发布），第二天再来。发布本身的各道闸（契约／计数／verify-live）都在 data.yml 里，不在这里绕。
+on:
+  schedule:
+    - cron: '20 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  # >>> hosts：由 ops/sync-hosts.mjs 从 config/hosts.json 生成，勿手改；改域名请改 config/hosts.json 后重跑
+  HOST_DATA: https://data.openguji.com
+  HOST_LEGACY_DATA: https://data.kaiyuanguji.com
+  HOST_API: https://api.openguji.com
+  HOST_LEGACY_API: https://api.kaiyuanguji.com
+  HOST_SITE: https://www.openguji.com
+  HOST_SITE_APEX: https://openguji.com
+  HOST_STAGING: https://staging.openguji.com
+  HOST_LEGACY_SITE: https://www.kaiyuanguji.com
+  HOST_LEGACY_APEX: https://kaiyuanguji.com
+  HOST_OAUTH_ISSUER: https://www.kaiyuanguji.com
+  # <<< hosts
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch data.yml flow=index when book-index changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -e
+          LIVE=$(curl -sf --max-time 30 "$HOST_DATA/latest.json?cb=$(date +%s)" | python3 -c "import json,sys; print(json.load(sys.stdin).get('productionCommitId',''))" 2>/dev/null || true)
+          HEAD=$(git ls-remote https://github.com/open-guji/book-index.git refs/heads/main | cut -f1)
+          echo "book-index: live=${LIVE:0:12} head=${HEAD:0:12}"
+          [ -n "$HEAD" ] || { echo "::error::取不到 book-index main"; exit 1; }
+          if [ "$LIVE" = "$HEAD" ]; then echo "· book-index 没变，不发"; exit 0; fi
+          BUSY=$(gh run list --workflow data.yml --limit 20 --json status --jq '[.[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "pending")] | length')
+          if [ "${BUSY:-0}" -gt 0 ]; then echo "· 有 $BUSY 个数据 run 在跑或排队：让路，明天再来"; exit 0; fi
+          gh workflow run data.yml -f flow=index -f target=production
+          echo "✅ 已派 data.yml flow=index target=production（book-index $HEAD）"
