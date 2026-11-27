@@ -13,7 +13,7 @@ jest.mock('@/components/common/SourceContext', () => ({ useSource: () => ({ sour
 jest.mock('@/lib/text-file', () => ({ getJson: async () => null }));
 jest.mock('@/lib/facsimile', () => ({ loadFacsimile: (...a: unknown[]) => loadFacsimile(...a) }));
 jest.mock('@/components/layout/LayoutWrapper', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
-jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a), loadProofIndex: () => loadProofIndex() }));
+jest.mock('@/lib/proofing', () => ({ ...jest.requireActual('@/lib/proofing'), loadProofing: (...a: unknown[]) => loadProofing(...a), loadProofIndex: () => loadProofIndex(), loadProofIndexLive: () => loadProofIndex() }));
 
 import ProofingClient from '../ProofingClient';
 

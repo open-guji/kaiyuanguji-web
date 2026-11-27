@@ -560,6 +560,39 @@ export async function loadCosPending(book: string, vol: string, fetchImpl: typeo
     }
 }
 
+export const PENDING_INDEX_API = '/api/pending-index';
+
+/** 现算的各章剩余格数（`/api/pending-index`，按事件现算）：取不到给 null，页面沿用发站时的静态总表 */
+export async function loadLiveCounts(book: string, fetchImpl: typeof fetch = fetch, api = PENDING_INDEX_API): Promise<Record<string, number> | null> {
+    if (!/^[\w-]+$/.test(book)) return null;
+    try {
+        const res = await fetchImpl(`${api}?book=${encodeURIComponent(book)}`);
+        if (!res.ok) return null;
+        const c = asRecord(asRecord(await res.json())?.counts);
+        if (!c) return null;
+        const out: Record<string, number> = {};
+        for (const [vol, n] of Object.entries(c)) if (typeof n === 'number' && Number.isFinite(n) && n >= 0) out[vol] = n;
+        return out;
+    } catch {
+        return null;
+    }
+}
+
+/** 把现算的剩余格数盖到总表上：只改总表里已有的章的 n（rev 不动；总表没列的章不加，没算到的章沿用静态数）。不改入参 */
+export function applyLiveCounts(index: ProofIndex | null, book: string, counts: Record<string, number> | null): ProofIndex | null {
+    const chaps = index?.[book];
+    if (!index || !chaps || !counts) return index;
+    const next: Record<string, ProofIndexEntry> = {};
+    for (const [vol, e] of Object.entries(chaps)) next[vol] = vol in counts ? { ...e, n: counts[vol] } : e;
+    return { ...index, [book]: next };
+}
+
+/** 总表（发站时生成）＋现算的剩余格数：精校页打开就是现算的数，不先显示一个偏大的静态数再一路往下掉。现算取不到时就是静态总表 */
+export async function loadProofIndexLive(book: string): Promise<ProofIndex | null> {
+    const [index, counts] = await Promise.all([loadProofIndex(), loadLiveCounts(book)]);
+    return applyLiveCounts(index, book, counts);
+}
+
 export const PENDING_API = '/api/pending';
 
 /**
