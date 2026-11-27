@@ -5,7 +5,7 @@ import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
-    parseProofIndex, proofState, loadProofIndex, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
+    parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, ALT_MAX,
 } from '../proofing';
 
 const pending = {
@@ -620,5 +620,35 @@ describe('待审单 grp／dout（manager#1075）', () => {
         expect(hardPairChoices(base)).toEqual(['己', '已', '巳']);
         expect(parseExtras({ grp: { m: ['日'] } }).grp).toBeUndefined();
         expect(parseExtras({ dout: ['曰', '日曰', '曰'] }).dout).toEqual(['曰']);
+    });
+});
+
+describe('现算剩余格数盖到总表上', () => {
+    const idx = { bk: { '001': { rev: '001-r2', n: 55 }, '002': { rev: '002-r1', n: 9 } }, other: { '001': { rev: 'x', n: 1 } } };
+    const resp = (status: number, body: unknown) => (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
+    it('applyLiveCounts：只改总表已有章的 n，rev 不动，没算到的章沿用，不改入参', () => {
+        const out = applyLiveCounts(idx, 'bk', { '001': 15, '003': 4 })!;
+        expect(out.bk).toEqual({ '001': { rev: '001-r2', n: 15 }, '002': { rev: '002-r1', n: 9 } });
+        expect(out.other).toBe(idx.other);
+        expect(idx.bk['001'].n).toBe(55);
+        expect(applyLiveCounts(idx, 'bk', null)).toBe(idx);
+        expect(applyLiveCounts(null, 'bk', { '001': 1 })).toBeNull();
+        expect(applyLiveCounts(idx, 'nope', { '001': 1 })).toBe(idx);
+    });
+    it('loadLiveCounts：取到给格数表（丢掉坏值）；失败、非 2xx、书号坏都给 null', async () => {
+        expect(await loadLiveCounts('bk', resp(200, { counts: { '001': 15, '002': -1, '003': 'x' } }))).toEqual({ '001': 15 });
+        expect(await loadLiveCounts('bk', resp(503, {}))).toBeNull();
+        expect(await loadLiveCounts('bk', (async () => { throw new Error('x'); }) as unknown as typeof fetch)).toBeNull();
+        expect(await loadLiveCounts('a/b', resp(200, { counts: {} }))).toBeNull();
+    });
+    it('loadProofIndexLive：现算取不到就是静态总表', async () => {
+        resetProofIndexCache();
+        const real = globalThis.fetch;
+        globalThis.fetch = (async (u: unknown) => String(u).includes('index.json')
+            ? new Response(JSON.stringify({ books: idx }), { status: 200 })
+            : new Response('{}', { status: 503 })) as unknown as typeof fetch;
+        try {
+            expect((await loadProofIndexLive('bk'))!.bk['001'].n).toBe(55);
+        } finally { globalThis.fetch = real; resetProofIndexCache(); }
     });
 });
