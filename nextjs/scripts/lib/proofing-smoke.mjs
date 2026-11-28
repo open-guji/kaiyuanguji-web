@@ -33,18 +33,29 @@ export async function runProofingSmoke({ base, site, fetchFn, concurrency = 8, o
     const idx = await idxRes.json();
     const heads = [];
     let lists = 0;
-    for (const [book, chaps] of Object.entries(idx.books || {})) {
-        for (const [chap, meta] of Object.entries(chaps)) {
-            if (!meta?.n) continue;                        // 空章（全审完）不用看
-            const inScope = !only || only({ book, chap });
-            const bad = inScope ? problems : warnings;     // 范围外的章节只告警
-            const r = await fetchFn(`${site}/api/pending?${new URLSearchParams({ book, vol: chap })}`, { method: 'GET' });
-            if (!r.ok) { bad.push(`${book}/${chap} 待审格 ${r.status}`); continue; }
-            const doc = await r.json();
-            lists++;
-            if (!inScope) continue;                        // 范围外不查图，省掉上千次请求
-            for (const n of spriteRefs(doc)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
+    // 11-28：/api/pending 改成由条目现拼（每次查中心库）后，原来一章一章串行取，整册检查超过 15 分钟被取消（11-26 起每趟都被取消、没人告警）。
+    // 先把要看的章列出来，再按 concurrency 并发取单子；结果仍按章序合并，输出与串行时一致。
+    const chaps = [];
+    for (const [book, cs] of Object.entries(idx.books || {})) {
+        for (const [chap, meta] of Object.entries(cs)) {
+            if (meta?.n) chaps.push({ book, chap });       // 空章（全审完）不用看
         }
+    }
+    const fetched = new Array(chaps.length);
+    for (let i = 0; i < chaps.length; i += concurrency) {
+        await Promise.all(chaps.slice(i, i + concurrency).map(async ({ book, chap }, j) => {
+            const r = await fetchFn(`${site}/api/pending?${new URLSearchParams({ book, vol: chap })}`, { method: 'GET' }).catch(() => ({ ok: false, status: 'ERR' }));
+            fetched[i + j] = { r, doc: r.ok ? await r.json() : null };
+        }));
+    }
+    for (const [k, { book, chap }] of chaps.entries()) {
+        const inScope = !only || only({ book, chap });
+        const bad = inScope ? problems : warnings;         // 范围外的章节只告警
+        const { r, doc } = fetched[k];
+        if (!r.ok) { bad.push(`${book}/${chap} 待审格 ${r.status}`); continue; }
+        lists++;
+        if (!inScope) continue;                            // 范围外不查图，省掉上千次请求
+        for (const n of spriteRefs(doc)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
     }
     for (let i = 0; i < heads.length; i += concurrency) {
         const part = heads.slice(i, i + concurrency);
