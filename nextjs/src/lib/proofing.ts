@@ -102,6 +102,8 @@ export interface PendingExtras {
     /** 类别细项（目前只有对齐改字层：grid / tail / manual） */
     clsSub?: string;
     libTop?: { c: string; s: number }[];
+    /** 候选字线 `cands/1`（CV3，manager review/cands_field.py）：一格一份候选表，序号即名次，卡上显示前 top 个；有它就不再拼 ref／cand／lib_top */
+    cands?: { top: number; list: { c: string; src: string[]; fam?: string }[] };
     lib?: { verdict?: string; cov?: number; wmax?: number };
     ctx?: { c: string; margin?: number; src?: string; /** 点校倾向字的理由（src=punct_llm） */ why?: string };
     /** 点校查证备注（没有倾向字时） */
@@ -228,6 +230,22 @@ export function parseExtras(raw: unknown): PendingExtras {
             return o && typeof o.c === 'string' && o.c && s !== undefined ? [{ c: o.c, s }] : [];
         });
         if (libTop.length) out.libTop = libTop;
+    }
+    {   // cands/1：只收单字、去重，src 取来源键（a 字形库、c 图像、b 形近组、ctx 上下文、ref 参校本）
+        const cs = asObject(it.cands);
+        if (cs && cs.v === 'cands/1' && Array.isArray(cs.list)) {
+            const seen = new Set<string>();
+            const list = cs.list.flatMap(x => {
+                const o = asObject(x);
+                const c = str(o?.c);
+                if (!o || !c || [...c].length !== 1 || seen.has(c)) return [];
+                seen.add(c);
+                const src = Object.keys(asObject(o.src) ?? {}).filter(k => CAND_SRC.includes(k));
+                return [{ c, src, ...(str(o.fam) && str(o.fam) !== c ? { fam: str(o.fam) } : {}) }];
+            });
+            const top = Number.isInteger(cs.top) && (cs.top as number) > 0 ? (cs.top as number) : 3;
+            if (list.length) out.cands = { top: Math.min(top, list.length), list };
+        }
     }
     const lib = asObject(it.lib);
     if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
@@ -384,7 +402,25 @@ export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
  * 同一个字只出一次、来源合并；带库分数；超过 limit 的放「更多」（GUJI-683）。
  */
 export interface ShownCand { c: string; src?: string[]; score?: number }
+/** cands/1 的来源键 */
+export const CAND_SRC = ['ref', 'a', 'c', 'b', 'ctx'];
+/** 候选按钮下面那个小词：这个字是谁给的（用户 11-27 定稿样稿：现字、参校、字形、图像、形近、上下文、AI 文意、上次人裁） */
+const SRC_WORD: Record<string, string> = { ref: '参校', a: '字形', c: '图像', b: '形近', ctx: '上下文', lib: '字形', prior: '上次人裁', ai: 'AI 文意' };
+export function candSourceWord(cd: ShownCand, cell: PendingCell): string {
+    const w: string[] = [];
+    if (cell.c && cd.c === cell.c) w.push('现字');
+    if (cell.prior?.c === cd.c) w.push('上次人裁');
+    for (const k of cd.src ?? []) { const x = SRC_WORD[k]; if (x && !w.includes(x)) w.push(x); }
+    if (!w.length && cd.score !== undefined) w.push('字形');
+    if (!w.length && cell.ai?.c === cd.c) w.push('AI 文意');
+    return w.slice(0, 2).join('·');
+}
 export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[]; more: ShownCand[] } {
+    if (cell.cands) {
+        const all: ShownCand[] = cell.cands.list.map(x => ({ c: x.c, src: [...x.src] }));
+        const n = cell.cands.top;
+        return { top: all.slice(0, n), more: all.slice(n) };
+    }
     const score = new Map((cell.libTop ?? []).map(x => [x.c, x.s]));
     const all: ShownCand[] = [];
     const add = (c: string, src?: string[]) => {

@@ -3,7 +3,7 @@
  */
 import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
+    parseExtras, candSourceWord, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
 } from '../proofing';
@@ -670,5 +670,34 @@ describe('现算剩余格数盖到总表上', () => {
         try {
             expect((await loadProofIndexLive('bk'))!.bk['001'].n).toBe(55);
         } finally { globalThis.fetch = real; resetProofIndexCache(); }
+    });
+});
+
+describe('cands/1 候选字线（CV3）', () => {
+    const raw = { v: 'cands/1', by: 'x', top: 2, p_other: null, list: [
+        { c: '太', p: null, fam: '太', src: { ref: 1, a: 0.9 } },
+        { c: '大', p: null, fam: '大', src: { c: 0.8 } },
+        { c: '大', src: {} },                                   // 重复，丢
+        { c: '夫', fam: '扶', src: { a: 0.5, zz: 1 } },           // 未知来源键丢
+        { c: 'ab', src: {} },                                   // 不是单字，丢
+    ] };
+    it('解析：单字去重、来源键只收已知的、top 不超过表长', () => {
+        const e = parseExtras({ cands: raw });
+        expect(e.cands).toEqual({ top: 2, list: [{ c: '太', src: ['ref', 'a'] }, { c: '大', src: ['c'] }, { c: '夫', src: ['a'], fam: '扶' }] });
+        expect(parseExtras({ cands: { ...raw, v: 'cands/2' } }).cands).toBeUndefined();
+        expect(parseExtras({ cands: { v: 'cands/1', list: [] } }).cands).toBeUndefined();
+    });
+    it('有 cands 就照表显示：前 top 个在外，其余进「更多」，不再拼 ref／lib_top', () => {
+        const cell = { a: '1:1:1', c: '大', ref: { c: '以' }, libTop: [{ c: '目', s: 0.9 }], ...parseExtras({ cands: raw }) };
+        const { top, more } = shownCandidates(cell);
+        expect(top.map(x => x.c)).toEqual(['太', '大']);
+        expect(more.map(x => x.c)).toEqual(['夫']);
+    });
+    it('来源小词：现字、参校、字形、图像…最多两个', () => {
+        const cell = { a: '1:1:1', c: '大' };
+        expect(candSourceWord({ c: '太', src: ['ref', 'a'] }, cell)).toBe('参校·字形');
+        expect(candSourceWord({ c: '大', src: ['c'] }, cell)).toBe('现字·图像');
+        expect(candSourceWord({ c: '於' }, { a: '1', prior: { c: '於' } })).toBe('上次人裁');
+        expect(candSourceWord({ c: '天', score: 0.5 }, cell)).toBe('字形');
     });
 });
