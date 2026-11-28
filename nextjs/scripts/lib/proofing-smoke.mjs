@@ -1,10 +1,8 @@
 /**
  * proofing-smoke.mjs — 精校页读者侧冒烟（GUJI-730 P0-2，1.0 发布标准 G3c）
  *
- * 发布之后从读者那一侧看一遍：proof/index.json 里每张在线待审单都取得到、rev 与 index 一致，
- * 单子引用的每张图（格的 img.s、相似字的 alt[].g.s）都登记在 sprites[] 里、并且取得到（GET 首字节；
- * 数据域名对没进缓存的图 HEAD 回 403，GET 才回源，所以不用 HEAD）。
- * 册 004–007 的 alt-<章>.webp 一直 404 就是这样漏掉的：单子引用了，sprites[] 没登记，proofing-sync 不传。
+ * 发布之后从读者那一侧看一遍：proof/index.json 里每个有待审格的章，网站 /api/pending 都取得到（待审格由条目现拼，没有 rev），
+ * 单子引用的每张图（格的 img.s、相似字的 alt[].g.s）都取得到（GET 首字节；数据域名对没进缓存的图 HEAD 回 403，GET 才回源，所以不用 HEAD）。
  *
  * 连网的部分由调用方注入（单测用假的 fetch）；只出计数和文件名，不出票的内容。
  */
@@ -19,20 +17,24 @@ export function spriteRefs(doc) {
     return out;
 }
 
-/** 引用了却没登记进 sprites[] 的图 */
-export function unregistered(doc) {
-    const have = new Set((doc?.sprites || []).map((e) => e.name));
-    return [...spriteRefs(doc)].filter((n) => !have.has(n)).sort();
+/** 从列表里均匀抽 k 个（含首尾，顺序稳定）；k 为空或不小于长度就全要 */
+export function sampleEvenly(list, k) {
+    if (!k || k >= list.length) return list;
+    if (k === 1) return [list[0]];
+    return Array.from({ length: k }, (_, i) => list[Math.round((i * (list.length - 1)) / (k - 1))]);
 }
 
 /**
- * @param base  数据域名根（config/hosts.json 的 data；staging 再加 /staging）
+ * @param base  数据域名根（config/hosts.json 的 data；staging 再加 /staging）：读 proof/index.json 与单格图
+ * @param site  网站根：读 /api/pending?book=&vol=（条目现拼的待审格）
  * @param fetchFn  (url, {method, range}) → {ok, status, json()}；range=true 时只取首字节
- * @param only  可选 (entry{book,chap}) → boolean；给了就只对所指章节做完整检查（单子＋全部图），
- *              别的章节只看单子 rev 与 index 是否一致，有问题进 warnings，不算失败
+ * @param imagesPerChapter  每章最多抽查几张图（均匀抽）；null＝全查。整站有 2.9 万张单格图，每小时全查跑不完（11-28），定时只抽查，
+ *              指定 ONLY 的严查才全查
+ * @param only  可选 (entry{book,chap}) → boolean；给了就只对所指章节做完整检查（取单子＋全部图），
+ *              别的章节只看单子取不取得到，有问题进 warnings，不算失败
  * @returns {{lists: number, images: number, problems: string[], warnings: string[]}}
  */
-export async function runProofingSmoke({ base, fetchFn, concurrency = 8, only = null }) {
+export async function runProofingSmoke({ base, site, fetchFn, concurrency = 8, only = null, imagesPerChapter = null }) {
     const problems = [];
     const warnings = [];
     const idxRes = await fetchFn(`${base}/proof/index.json`, { method: 'GET' });
@@ -40,20 +42,29 @@ export async function runProofingSmoke({ base, fetchFn, concurrency = 8, only = 
     const idx = await idxRes.json();
     const heads = [];
     let lists = 0;
-    for (const [book, chaps] of Object.entries(idx.books || {})) {
-        for (const [chap, meta] of Object.entries(chaps)) {
-            if (!meta?.n) continue;                        // 空单（全审完）不用看
-            const inScope = !only || only({ book, chap });
-            const bad = inScope ? problems : warnings;     // 范围外的章节只告警
-            const r = await fetchFn(`${base}/proof/${book}/${chap}.pending.json`, { method: 'GET' });
-            if (!r.ok) { bad.push(`${book}/${chap}.pending.json ${r.status}`); continue; }
-            const doc = await r.json();
-            lists++;
-            if (doc.rev !== meta.rev) bad.push(`${book}/${chap}：单子 rev ${doc.rev} ≠ index ${meta.rev}（CDN 旧缓存？）`);
-            if (!inScope) continue;                        // 范围外不查图，省掉上千次请求
-            for (const n of unregistered(doc)) problems.push(`${book}/${chap}：${n} 被引用但没登记进 sprites[]`);
-            for (const n of spriteRefs(doc)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
+    // 11-28：/api/pending 改成由条目现拼（每次查中心库）后，原来一章一章串行取，整册检查超过 15 分钟被取消（11-26 起每趟都被取消、没人告警）。
+    // 先把要看的章列出来，再按 concurrency 并发取单子；结果仍按章序合并，输出与串行时一致。
+    const chaps = [];
+    for (const [book, cs] of Object.entries(idx.books || {})) {
+        for (const [chap, meta] of Object.entries(cs)) {
+            if (meta?.n) chaps.push({ book, chap });       // 空章（全审完）不用看
         }
+    }
+    const fetched = new Array(chaps.length);
+    for (let i = 0; i < chaps.length; i += concurrency) {
+        await Promise.all(chaps.slice(i, i + concurrency).map(async ({ book, chap }, j) => {
+            const r = await fetchFn(`${site}/api/pending?${new URLSearchParams({ book, vol: chap })}`, { method: 'GET' }).catch(() => ({ ok: false, status: 'ERR' }));
+            fetched[i + j] = { r, doc: r.ok ? await r.json() : null };
+        }));
+    }
+    for (const [k, { book, chap }] of chaps.entries()) {
+        const inScope = !only || only({ book, chap });
+        const bad = inScope ? problems : warnings;         // 范围外的章节只告警
+        const { r, doc } = fetched[k];
+        if (!r.ok) { bad.push(`${book}/${chap} 待审格 ${r.status}`); continue; }
+        lists++;
+        if (!inScope) continue;                            // 范围外不查图，省掉上千次请求
+        for (const n of sampleEvenly([...spriteRefs(doc)], imagesPerChapter)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
     }
     for (let i = 0; i < heads.length; i += concurrency) {
         const part = heads.slice(i, i + concurrency);
