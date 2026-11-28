@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * proofing-sync.mjs — 待审单与公众意见的每日同步（ai-team `team/整理/设计/待审单与公众意见走中心库.md` 块 C）
+ * proofing-sync.mjs — 待审单与公众意见的每日同步（kaiyuanguji-web `docs/精校页与待审条目.md`、manager `doc/数据库/待审条目与裁定事件.md`）
  *
  *   opinions：网站 /api/cellreview?items=1 管理读（按条目记的票，没有 rev）→ 中心库 feedback/lists/web/<书>/items.jsonl
  *             另：/api/charfix 管理读（改字、一段有问题、专名意见）→ 中心库 feedback/lists/web/<书>/fixes.jsonl（GUJI-597）
