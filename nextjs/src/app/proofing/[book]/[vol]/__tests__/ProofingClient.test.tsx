@@ -69,7 +69,7 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b1" vol="vol01" />);
         await waitFor(() => expect(loadFacsimile).toHaveBeenCalledTimes(1));
         expect(screen.queryByTestId('sprite-crop')).toBeNull();
-        expect(screen.getByText('（没有这一格的图）')).toBeTruthy();
+        expect(screen.getByText('这格还没有单格图')).toBeTruthy();
         expect(screen.queryByTestId('context')).toBeNull(); // 没有 char_file 就没有上下文行
     });
 
@@ -101,7 +101,6 @@ describe('精校页显示（GUJI-557）', () => {
         expect(why).toBe('原因：其他疑点');
         expect(why).not.toMatch(/[A-Za-z]/);
         expect(screen.getByText(/参校本作「已」/)).toBeTruthy();
-        expect(screen.getByText('像 70%')).toBeTruthy();
         expect(screen.queryByText('以')).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: /^还有 \d+ 个$/ }));
         expect(screen.getByText('以')).toBeTruthy();
@@ -192,6 +191,47 @@ describe('精校页显示（GUJI-557）', () => {
         expect(screen.getAllByRole('radio', { name: '非字' }).length).toBe(1);
     });
 
+    it('紧凑卡（用户 11-27 样稿）：cands 照表出候选带来源小词；底部有「其他」；备注一输入就另起一行', async () => {
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:3', c: '大', cands: { top: 2, list: [{ c: '太', src: ['ref'] }, { c: '大', src: ['c'] }, { c: '夫', src: ['a'] }] } }]));
+        render(<ProofingClient book="b13" vol="vol01" />);
+        const card = within((await screen.findAllByTestId('cell-card'))[0]);
+        expect(card.getByRole('button', { name: '太' }).textContent).toContain('参校');
+        expect(card.getByRole('button', { name: '大' }).textContent).toContain('现字');
+        expect(card.queryByRole('button', { name: '夫' })).toBeNull();
+        fireEvent.click(card.getByRole('button', { name: '还有 1 个' }));
+        expect(card.getByRole('button', { name: '夫' })).toBeTruthy();
+        expect(card.getByRole('radio', { name: '其他' })).toBeTruthy();
+        const note = card.getByLabelText('备注') as HTMLTextAreaElement;
+        expect(note.placeholder).toBe('备注（选填）');
+        expect(note.style.flex).not.toContain('100%');
+        fireEvent.change(note, { target: { value: '很长的备注' } });
+        expect((card.getByLabelText('备注') as HTMLTextAreaElement).style.flex).toContain('100%');
+        // 选了非正常字的项后仍能选字，点「确认提交」才交
+        fireEvent.click(card.getByRole('radio', { name: '非字' }));
+        fireEvent.click(card.getByRole('button', { name: '太' }));
+        expect(card.getByTestId('kind-draft').textContent).toContain('太');
+        expect(card.getByTestId('kind-confirm').textContent).toBe('确认提交');
+    });
+
+    it('已提交且没选中的格收成一行（样稿 F）：显示交了什么，点「改」展开', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        global.fetch = fetchSpy as unknown as typeof fetch;
+        loadProofing.mockResolvedValue(ok([{ a: '2:1:1', c: '曰', cand: [{ c: '曰' }, { c: '日' }] }, { a: '2:1:2', c: '己', cand: [{ c: '己' }] }]));
+        render(<ProofingClient book="b14" vol="vol01" />);
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」，交过的格才留在列表里
+        const first = (await screen.findAllByTestId('cell-card'))[0];
+        fireEvent.click(within(first).getByRole('button', { name: '曰' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        // 交完自动跳到下一张，这一格收起
+        await waitFor(() => expect(document.getElementById('cell-2:1:1')!.getAttribute('data-collapsed')).toBe('1'));
+        const row = within(document.getElementById('cell-2:1:1')!);
+        expect(row.getByTestId('done-badge').textContent).toBe('已提交「曰」');
+        expect(row.queryByRole('radio', { name: '非字' })).toBeNull();
+        fireEvent.click(row.getByRole('button', { name: '改' }));
+        await waitFor(() => expect(document.getElementById('cell-2:1:1')!.getAttribute('data-collapsed')).toBeNull());
+        localStorage.clear();
+    });
+
     it('日曰卡（hard_pair）：只给日、曰两个候选', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '1:1:2', c: '曰', pendingReason: 'hard_pair', libTop: [{ c: '目', s: 0.5 }], alt }]));
         render(<ProofingClient book="b12" vol="vol01" />);
@@ -246,19 +286,23 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.click(c0.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
         expect(body(0)).toMatchObject({ a: '1:1:1', choice: 'cut', char: '○', pick_src: 'cand', pick_rank: 2 });
-        expect((await screen.findByTestId('done-badge')).textContent).toBe('已提交');
+        expect((await screen.findByTestId('done-badge')).textContent).toContain('已提交');
+        const open0 = () => fireEvent.click(cards[0]);           // 交完跳到下一张，这格收成一行（样稿 F）：点它展开
+        open0();
         // 换成「小注或其他格式」再确认：字还带着
         fireEvent.click(c0.getByRole('radio', { name: '小注或其他格式' }));
         expect(fetchSpy).toHaveBeenCalledTimes(1);
         fireEvent.click(c0.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
         expect(body(1)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○' });
+        open0();
         // 交过之后改备注：照原来的字和项再交
         fireEvent.change(c0.getByLabelText('备注'), { target: { value: '是圈不是口' } });
         fireEvent.click(screen.getByRole('button', { name: '更新备注' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
         expect(body(2)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○', note: '是圈不是口' });
         expect(screen.queryByRole('button', { name: '更新备注' })).toBeNull();
+        open0();
         // 切回「正常字符」：点字直接交 char，备注照带
         fireEvent.click(c0.getByRole('radio', { name: '正常字符' }));
         expect(c0.queryByTestId('kind-confirm')).toBeNull();
@@ -327,6 +371,20 @@ describe('精校页显示（GUJI-557）', () => {
         expect(body(3)).toMatchObject({ choice: 'none', char: '末', pick_src: 'custom' });
     });
 
+    it('卡片带 cands/1：按名次出候选（旧字段不再用），点第二个带 pick_rank=2 和 cands_by', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '未', cand: [{ c: '旧' }],
+            cands: { v: 'cands/1', by: 'cv0.9.12 fuse=f1', top: 3, list: [{ c: '末' }, { c: '朱' }, { c: '未' }, { c: '本' }] } }]));
+        render(<ProofingClient book="b9" vol="vol01" />);
+        fireEvent.click(await screen.findByTestId('only-open'));
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        expect(screen.queryByRole('button', { name: '旧' })).toBeNull();
+        fireEvent.click(await screen.findByRole('button', { name: '朱' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ char: '朱', pick_src: 'cand', pick_rank: 2, cands_by: 'cv0.9.12 fuse=f1' });
+    });
+
     it('GUJI-683：参校本字是第一个候选并标「参校本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;
@@ -334,7 +392,7 @@ describe('精校页显示（GUJI-557）', () => {
         render(<ProofingClient book="b10" vol="vol01" />);
         const card = (await screen.findAllByTestId('cell-card'))[0];
         const refBtn = await screen.findByRole('button', { name: /^臼/ });
-        expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toBe('参校本');
+        expect(refBtn.querySelector('[data-testid=cand-ref]')?.textContent).toContain('参校');
         expect(card.querySelector('[data-testid=no-machine-char]')).toBeTruthy();
         expect(card.textContent).not.toContain('看前后文');              // 上下文字＝库首选，只是回声
         expect(screen.queryByRole('button', { name: '这是夹注小字' })).toBeNull();
@@ -474,7 +532,6 @@ describe('精校页显示（GUJI-557）', () => {
         expect(ev.textContent).toContain('看前后文：看不出是哪个字');
         expect(ev.textContent).toContain('更多机器判断');
         expect(ev.textContent).toContain('「乙」99%');
-        expect(ev.textContent).toContain('形近字');
         // 给公众看的字里不出现英文码和缩写
         const card = screen.getAllByTestId('cell-card')[0].textContent ?? '';
         expect(card).not.toMatch(/[A-Za-z]{2,}/);
@@ -515,7 +572,7 @@ describe('切坏格一类（GUJI-624）', () => {
         expect(bar.textContent).toContain('切坏格 2');
         fireEvent.click(screen.getByRole('button', { name: '切坏格 2' }));
         await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(2));
-        expect(screen.getAllByPlaceholderText('看书影，写出这个字')).toHaveLength(2);
+        expect(screen.getAllByPlaceholderText('看书影写字')).toHaveLength(2);
         fireEvent.click(screen.getByRole('button', { name: '全部 3' }));
         await waitFor(() => expect(screen.getAllByTestId('cell-card')).toHaveLength(3));
     });
@@ -525,7 +582,7 @@ describe('切坏格一类（GUJI-624）', () => {
         render(<ProofingClient book="b1" vol="vol01" />);
         await screen.findByTestId('cell-card');
         expect(screen.queryByTestId('class-filter')).toBeNull();
-        expect(screen.getByPlaceholderText('都不对？写一个字')).toBeTruthy();
+        expect(screen.getByPlaceholderText('另写一字')).toBeTruthy();
     });
 });
 
