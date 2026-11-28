@@ -23,6 +23,11 @@ test('cellOrder：按页列格数值排，a 在 b 前', () => {
     assert.deepEqual([...xs].sort(cellOrder), ['2:1:1', '2:1:1a', '2:1:1b', '2:2:1', '2:10:1', '10:1:1']);
 });
 
+test('mergeProofIndex：册号位数统一后，同册旧写法（001／01）的残留键丢掉，别的书与别的册不动', () => {
+    const old = JSON.stringify({ books: { b1: { '1': { n: 3 }, '001': { n: 1 }, '01': { n: 2 }, '2': { n: 9 } }, b2: { '001': { n: 4 } } } });
+    assert.deepEqual(JSON.parse(mergeProofIndex(old, [{ book: 'b1', chap: '1', n: 3 }])), { books: { b1: { '1': { n: 3 }, '2': { n: 9 } }, b2: { '001': { n: 4 } } } });
+});
+
 test('buildProofIndex：键排序、无 rev、无时间戳，同输入同字节；mergeProofIndex 只改所选章并丢掉旧 rev', () => {
     const a = buildProofIndex([{ book: 'b2', chap: '002', n: 1 }, { book: 'b1', chap: '003', n: 0 }, { book: 'b1', chap: '001', n: 2 }]);
     const b = buildProofIndex([{ book: 'b1', chap: '001', n: 2 }, { book: 'b2', chap: '002', n: 1 }, { book: 'b1', chap: '003', n: 0 }]);
