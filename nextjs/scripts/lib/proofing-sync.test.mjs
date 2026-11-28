@@ -57,14 +57,18 @@ test('按条目记的票：一书一份快照，同 (item, voter) 以 KV 为准�
 test('按条目记的票：选字来源 pick_src／pick_rank／pivot、figure 的 alt 进快照；别的票没有这些键', () => {
     const m = mergeItemSnapshot('', [
         vote('pi_000000000001', 'aa', { pick_src: 'alt', pick_rank: 2, pivot: '弊' }),
+        vote('pi_000000000004', 'dd', { pick_src: 'cand', pick_rank: 1, cands_by: 'cv0.9.12 fuse=f1' }),
         vote('pi_000000000002', 'bb', { choice: 'figure', char: undefined, alt: '左半圈连一实点' }),
         vote('pi_000000000003', 'cc'),
     ], { book: BOOK });
     const lines = m.text.trim().split('\n').map((l) => JSON.parse(l));
     assert.deepEqual(Object.keys(lines[0]).slice(-5), ['shown', 'pick_src', 'pick_rank', 'pivot', 'voter'].slice(0, 5).concat([]).slice(-5).length ? Object.keys(lines[0]).slice(-5) : []);
-    assert.equal(lines[1].alt, '左半圈连一实点');
-    assert.equal('alt' in lines[2], false);
-    assert.equal('pick_src' in lines[2], false);
+    const byItem = (id) => lines.find((l) => l.item === id);
+    assert.equal(byItem('pi_000000000004').cands_by, 'cv0.9.12 fuse=f1');
+    assert.equal(byItem('pi_000000000002').alt, '左半圈连一实点');
+    assert.equal('alt' in byItem('pi_000000000003'), false);
+    assert.equal('pick_src' in byItem('pi_000000000003'), false);
+    assert.equal('cands_by' in byItem('pi_000000000001'), false);
 });
 
 // ── 流程：假 Worker／KV／COS ──

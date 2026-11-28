@@ -1034,7 +1034,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         if (!cell.item) return Promise.resolve('这一格缺少条目编号，请刷新页面后再提交');
         const { choice, char, alt, note, pick } = fields;
         return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(choice === 'unrec' && alt ? { unk: alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+            ...(note ? { note } : {}), ...(char ? pickFields(pick, cell.cands?.by) : {}) }, getAid());
     }, [book, volOf]);
 
     // 乐观提交：点完先在本地记下、马上收起这一格跳下一张，接口在后台排队慢慢发；最终失败再把这一格恢复为待审并报错。
