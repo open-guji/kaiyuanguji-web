@@ -45,3 +45,13 @@ test('冒烟：index.json 取不到就是问题', async () => {
     const r = await runProofingSmoke({ base: 'B', site: 'S', fetchFn: mk({}) });
     assert.deepEqual(r.problems, ['proof/index.json 404']);
 });
+
+test('sampleEvenly：均匀抽、含首尾、k 空或够大全要', async () => {
+    const { sampleEvenly } = await import('./proofing-smoke.mjs');
+    const l = Array.from({ length: 10 }, (_, i) => i);
+    assert.deepEqual(sampleEvenly(l, 3), [0, 5 /* round(4.5)=5 */, 9]);
+    assert.deepEqual(sampleEvenly(l, 1), [0]);
+    assert.deepEqual(sampleEvenly(l, null), l);
+    assert.deepEqual(sampleEvenly(l, 10), l);
+    assert.deepEqual(sampleEvenly([], 5), []);
+});
