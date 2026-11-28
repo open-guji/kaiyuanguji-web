@@ -7,7 +7,7 @@
  *                 /api/thread 管理读（同意／有不同看法、回复）→ 中心库 feedback/lists/web/<书>/threads.jsonl
  *             站方要撤下的条目写进中心库 feedback/lists/web/<书>/hidden.txt（一行一个 id），公开清单不出
  *             状态回写（M11 B2）：中心库 feedback/lists/web/<书>/status.jsonl（cv 意见池的处理结论）→ 与 KV 现状比 → POST /api/fixes
- *   publish ：中心库待审条目（每格一条，没有 rev、没有整张单）里开着条目登记的单格图：把 R2 里的图经 Worker 签名链接取回，
+ *   publish ：待审条目（库表，经 Worker /v1/web/pending-chapters 取；每格一条，没有 rev、没有整张单）里开着条目登记的单格图：把 R2 里的图经 Worker 签名链接取回，
  *             传到 COS [前缀/]proof/<书>/<章>/<name>。待审格本身由 Worker /v1/web/pending-doc 现拼，网站不读 COS 的整张单
  *             另：中心库 fixes.jsonl → COS [前缀/]proof/fixes/<书>.json（整册反馈页读的公开清单）
  * 流程与纯函数在 lib/proofing-sync-run.mjs、lib/proofing-sync-plan.mjs（有单测）。
@@ -16,7 +16,7 @@
  *   PARTS=opinions|publish|all（默认 all）
  *   GUJI_DATA_URL（默认 https://data.open-guji.com）、GUJI_DATA_TOKEN（web 角色令牌，必填；Action 里用网站管理令牌 FEEDBACK_ADMIN_TOKEN）
  *   PROOF_WS（中心库工作区 id，逗号分隔，默认 siku-zongmu,beixing-guben）
- *   PROOF_WS_AUTO（同上；工作流按 book-text 的 is_original 书自动推出，并入 PROOF_WS，列不出的工作区只记问题）
+ *   PROOF_WS_AUTO（同上；工作流按 book-text 的 is_original 书自动推出，并入 PROOF_WS）。有待审条目但不在这两项里的工作区只记问题、不发
  *   opinions：SITE_BASE（默认正式站 SITE_ORIGIN；旧域名 www.kaiyuanguji.com 的 /api/* 在国内 404，GUJI-706）、FEEDBACK_ADMIN_TOKEN
  *   publish ：COS_SECRET_ID／COS_SECRET_KEY／COS_BUCKET、COS_REGION（默认 ap-shanghai）、COS_PATH_PREFIX（staging 演练）
  *   FIX_BOOKS（收改字意见的书，逗号分隔，默认 96mid1ogzk；快照写在 PROOF_WS 第一个工作区）
@@ -34,11 +34,9 @@ const PARTS = process.env.PARTS || 'all';
 const DATA_URL = (process.env.GUJI_DATA_URL || 'https://data.open-guji.com').replace(/\/+$/, '');
 const DATA_TOKEN = process.env.GUJI_DATA_TOKEN || '';
 const csv = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boolean);
-// 基础清单 PROOF_WS ＋ 自动清单 PROOF_WS_AUTO（工作流从 book-text 里 is_original 的书推出，ops/iiif/original_books.py）。
-// 自动清单里不在基础清单的工作区"软"：新书可能还没在中心库建工作区，列不出来只记一条问题，不拖垮整次同步
+// 基础清单 PROOF_WS ＋ 自动清单 PROOF_WS_AUTO（工作流从 book-text 里 is_original 的书推出，ops/iiif/original_books.py）
 const BASE_WS = csv(process.env.PROOF_WS || 'siku-zongmu,beixing-guben');
 const WS = [...new Set([...BASE_WS, ...csv(process.env.PROOF_WS_AUTO)])];
-const SOFT_WS = new Set(WS.filter((w) => !BASE_WS.includes(w)));
 const FIX_BOOKS = (process.env.FIX_BOOKS || '96mid1ogzk').split(',').map((s) => s.trim()).filter(Boolean);
 const SITE = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const ADMIN = process.env.FEEDBACK_ADMIN_TOKEN || '';
@@ -78,6 +76,7 @@ async function call(url, init = {}, { allow404 = false, tries = 3 } = {}) {
 const auth = { Authorization: `Bearer ${DATA_TOKEN}` };
 const q = (o) => new URLSearchParams({ branch: 'main', ...o }).toString();
 const worker = {
+    pendingChapters: () => call(`${DATA_URL}/v1/web/pending-chapters`, { headers: auth }),
     listFiles: (ws, prefix) => call(`${DATA_URL}/v1/files?${q({ ws, prefix })}`, { headers: auth }),
     getFile: async (ws, path) => {
         const r = await call(`${DATA_URL}/v1/files?${q({ ws, src_path: path })}`, { headers: auth }, { allow404: true });
@@ -181,7 +180,7 @@ if (doPublish) {
 
 let collected;
 try {
-    collected = await collectPendings(worker, WS, SOFT_WS);
+    collected = await collectPendings(worker, WS);
 } catch (e) {
     console.log(`::error::读中心库待审单失败：${e?.message || e}`);
     process.exit(1);
