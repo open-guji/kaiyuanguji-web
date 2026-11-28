@@ -36,14 +36,14 @@
 | `POST /api/charfix`（阅读页改字意见） | `web_inbox`，`kind=charfix` | 单字 `value.u`；一段或专名 `value.u_start`／`value.u_end`（两个须同时给） |
 
 - u 必须是 1–99,999,999 的整数（`U_MAX`），不合法直接拒收。
-- 精校页上每格的 u 来自待审单（`/api/pending` 的 `cells[].u`），待审单由中心库条目导出时带上；所以**待审单要按中心库条目重发**才会带新 u（`export_sheet`）。
+- 精校页上每格的 u 来自待审条目（`/api/pending` 的 `cells[].u`，Worker 按条目现拼）；条目补了 u，下次读取就带上，不需要「重发单」。详见 [精校页与待审条目](精校页与待审条目.md)。
 - `web_inbox` 有一个虚拟列 `u`（只对 cellreview／charfix 生成：取 `value.u`，没有就取 `value.u_start`），查票可直接 `WHERE u = ?`：
 
   ```sql
   SELECT key, value FROM web_inbox WHERE kind = 'cellreview' AND book = '96mid1ogzk' AND u = 14226;
   ```
 
-- 票的**键**仍是原来的形式（精校票按待审条目 `item`＋投票人；改字按格位），u 只在值里。去重、覆盖规矩不变。
+- 票的**键**仍是原来的形式（精校票按待审条目 `cr:i:<书>:<条目 id>:<投票人>`；改字按格位），u 只在值里。去重、覆盖规矩不变。
 - 2026-11-25 已按身份账给旧票回填 u（`guji uid web-backfill`，guji-manager）：2,411 张精校票 1,883 张有 u；部署后的新票全部带 u。剩下没 u 的是换图源前的旧票或已作废的格，定为不追溯。
 - 每日出站（`proofing-sync.yml`）把票整条并进中心库，u 随值带过去，下游（人审、定字）按 u 认格。
 

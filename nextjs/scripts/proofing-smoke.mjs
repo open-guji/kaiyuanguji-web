@@ -2,11 +2,12 @@
 /**
  * 精校页读者侧冒烟（GUJI-730 P0-2）：proofing-sync 发布之后跑，也可单独跑。
  *   PROOF_STAGING=1  看 staging 前缀（演练）；数据域名取 config/hosts.json
- *   ONLY=书/章,…     只严查所指章节（图也查）；别章只看单子 rev，有问题只告警不失败
+ *   SITE_BASE=…      网站根（读 /api/pending），默认正式站
+ *   ONLY=书/章,…     只严查所指章节（图也查）；别章只看单子取得到，有问题只告警不失败
  * 有问题退出码 1；只出计数和文件名（公开仓）。
  */
 import { appendFileSync } from 'node:fs';
-import { DATA_ORIGIN } from '../../config/hosts.mjs';
+import { DATA_ORIGIN, SITE_ORIGIN } from '../../config/hosts.mjs';
 import { runProofingSmoke } from './lib/proofing-smoke.mjs';
 import { onlyFilter } from './lib/proofing-sync-run.mjs';
 
@@ -16,8 +17,13 @@ const fetchFn = async (url, { method, range }) => {
     if (range) await r.arrayBuffer().catch(() => null);   // 读完放掉连接
     return r;
 };
+const site = (process.env.SITE_BASE || SITE_ORIGIN).replace(/\/+$/, '');
 const only = onlyFilter(process.env.ONLY);
-const { lists, images, problems, warnings } = await runProofingSmoke({ base, fetchFn, only });
+// 整站 2.9 万张单格图，每小时全查跑不完（11-28 起每趟被 15 分钟超时取消）：没指定 ONLY 时每章抽查 IMAGES_PER_CHAPTER 张（缺省 5），
+// 指定了 ONLY（发布后严查）或设 IMAGES_PER_CHAPTER=all 才全查
+const ipc = process.env.IMAGES_PER_CHAPTER;
+const imagesPerChapter = ipc === 'all' ? null : ipc ? Number(ipc) : only ? null : 5;
+const { lists, images, problems, warnings } = await runProofingSmoke({ base, site, fetchFn, only, imagesPerChapter, concurrency: 16 });
 const lines = [`精校页冒烟（${base}）：在线待审单 ${lists} 张，引用图 ${images} 张，问题 ${problems.length} 个`,
     ...problems.slice(0, 50).map((p) => `- ${p}`), ...(problems.length > 50 ? [`- …另 ${problems.length - 50} 个`] : []),
     ...(warnings.length ? [`范围外章节告警 ${warnings.length} 个（不算失败）：`, ...warnings.slice(0, 20).map((p) => `- ${p}`)] : [])];

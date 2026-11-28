@@ -17,7 +17,7 @@ import { commonsResolver, displayImageUrl } from '@/lib/commons-warp';
 import { canShow, cpLabel, shownZi } from '@/lib/zi-display';
 import {
     isPlaceholder, isSegDefect, reasonGroupKey, reasonGroupLabel, loadPendingDoc, contextAround, cropRect, getAid, loadProofing, pageColOf, positionIndex, preselect, readDone, resolvePage, alignFacsToCord,
-    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
+    refOpLabel, resolveCrop, type PendingSent, type SentMark, shownCandidates, candSourceWord, hardPairChoices, ctxWorthShowing, isDianHint, spriteUrl, submitReview, itemFields, whyLabels, writeDone, boxInCrop,
     type Box, type CellContext, type CordIndex, type DoneMap, type PendingCell, type ReadSlot, type ReviewChoice, type ShownCand, type SpriteRef,
     loadProofIndexLive, canonicalProofVol, volTitle, proofState, versionKeys, chapterTitles, buildToc, isAllVol, mergedKey, rawA, type ProofingLoad, type TocEntry,
     ALT_SHOW, type AltCand, pickFields, type Pick,
@@ -100,6 +100,15 @@ function btnStyle(kind: BtnKind, on = false, disabled = false): React.CSSPropert
     if (kind === 'small') Object.assign(base, { fontSize: 12, padding: '1px 8px' });
     if (on) Object.assign(base, { border: '2px solid #2a7', background: '#e6f5ec', color: '#1b6b44' });
     return base;
+}
+/** 卡上「字」的字体（上下文、候选、现字） */
+const ZI_FONT = "'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif";
+const CHIP: React.CSSProperties = { fontSize: 12, lineHeight: '20px', padding: '0 8px', borderRadius: 10, fontWeight: 500 };
+const NO_IMG: React.CSSProperties = { width: 104, height: 104, boxSizing: 'border-box', border: '1px dashed #d8ccb6', borderRadius: 6, background: '#faf7f2', fontSize: 12, color: '#8a7a66', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 6, lineHeight: '16px' };
+/** 底部单选项：小圆角按钮，选中的深底白字 */
+function pillStyle(on: boolean, busy: boolean): React.CSSProperties {
+    return { position: 'relative', display: 'inline-flex', alignItems: 'center', height: 28, boxSizing: 'border-box', padding: '0 10px', borderRadius: 14, fontSize: 12, whiteSpace: 'nowrap',
+        border: `1px solid ${on ? '#44403c' : '#ddd0b9'}`, background: on ? '#44403c' : '#fff', color: on ? '#fff' : '#57534e', cursor: busy ? 'default' : 'pointer' };
 }
 const BTN_CLASS = 'hover:brightness-95 active:brightness-90 disabled:hover:brightness-100';
 
@@ -197,17 +206,26 @@ function Zi({ c }: { c: string }) {
 /** 一串字里显示不出来的逐个换成码位（拼进句子、提示里用） */
 const zis = (s: string) => [...s].map(shownZi).join('');
 
-function CandButton({ cd, busy, picked, onPick, hotkey }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void; hotkey?: string }) {
+function CandButton({ cd, busy, picked, onPick, hotkey, word }: { cd: ShownCand; busy: boolean; picked: boolean; onPick: (c: string) => void; hotkey?: string; word?: string }) {
     const fromRef = cd.src?.includes('ref');
     const tip = [fromRef ? `参校本这里作「${shownZi(cd.c)}」` : '', cd.score !== undefined ? `和本书别处的「${shownZi(cd.c)}」字形相似 ${pct(cd.score)}` : ''].filter(Boolean).join('；') || `选「${shownZi(cd.c)}」`;
     return (
-        <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? undefined : `选「${cd.c}」`} onClick={() => onPick(cd.c)}
-            title={hotkey ? `${tip}（快捷键 ${hotkey}）` : tip} className={BTN_CLASS} data-hotkey={hotkey} style={btnStyle('cand', picked, busy)}>
-            <Zi c={cd.c} />
-            {fromRef && <small data-testid="cand-ref" style={{ fontSize: 10, color: picked ? 'inherit' : '#7a3b1d', marginLeft: 6 }}>参校本</small>}
-            {cd.score !== undefined && <small style={{ fontSize: 10, color: picked ? 'inherit' : '#888', marginLeft: 6 }}>像 {pct(cd.score)}</small>}
+        <button type="button" disabled={busy} aria-pressed={picked} aria-label={canShow(cd.c) ? cd.c : `选「${cd.c}」`} onClick={() => onPick(cd.c)}
+            title={hotkey ? `${tip}（快捷键 ${hotkey}）` : tip} className={BTN_CLASS} data-hotkey={hotkey} style={candStyle(picked, busy)}>
+            {hotkey && <span aria-hidden style={{ position: 'absolute', left: 4, top: 1, fontSize: 11, color: '#a8a29e' }}>{hotkey}</span>}
+            <span style={{ fontSize: 30, lineHeight: '36px' }}><Zi c={cd.c} /></span>
+            {word ? <small data-testid={fromRef ? 'cand-ref' : undefined} style={{ fontSize: 11, lineHeight: '14px', color: picked ? 'inherit' : '#78716c', whiteSpace: 'nowrap' }}>{word}</small> : null}
         </button>
     );
+}
+
+/** 候选按钮：方格，字 30、来源小词 11（用户 11-27 定稿样稿） */
+function candStyle(picked: boolean, busy: boolean): React.CSSProperties {
+    return {
+        position: 'relative', minWidth: 58, height: 62, padding: '0 6px', border: picked ? '2px solid #2a7' : '1px solid #cdbfa6', borderRadius: 8,
+        background: picked ? '#e6f5ec' : '#fff', color: picked ? '#1b6b44' : '#1c1917', display: 'inline-flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.45 : 1,
+    };
 }
 
 /** 字形比对一句话：拿本书别处已认定的字来比 */
@@ -235,7 +253,6 @@ function AiSummary({ ai }: { ai: AiAnalysis }) {
                 {' '}{ai.s}
                 {ai.oot && <span data-testid="ai-oot" style={{ color: '#b23b1d' }}>　候选里没有这个字</span>}
                 {ai.st === 'released' && <span style={{ color: '#2e7d32' }}>　已放行</span>}
-                <span style={{ color: '#888' }}>　仅供参考，请以图为准</span>
             </div>
             {hasMore && (
                 <details data-testid="ai-detail" style={{ marginTop: 2 }}>
@@ -282,30 +299,23 @@ function ReleasedList({ items }: { items: { u: number; book?: string; ai: AiAnal
 function Evidence({ cell }: { cell: PendingCell }) {
     const summary: React.ReactNode[] = [];
     const shape = shapeSentence(cell);
+    if (cell.ref) { const how = cell.ref.op ? refOpLabel(cell.ref.op) : ''; summary.push(<div key="ref" data-testid="ref-line">{`参校本作「${zis(cell.ref.c)}」`}{how ? <span style={{ color: '#b45309' }}>（{how}）</span> : null}</div>); }
     if (shape) summary.push(<div key="lib"><b>比字形</b>：{shape}</div>);
     const ai = cell.ai;
     if (ai) summary.push(<AiSummary key="ai" ai={ai} />);
     if (ai) { /* 有 ai 摘要时，旧的点校倾向／查证备注／来源不再重复显示 */ }
-    else if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}<span style={{ color: '#888' }}>　仅供参考，请以图为准</span></div>);
+    else if (cell.ctx && isDianHint(cell)) summary.push(<div key="ctx" data-testid="dian-hint"><b>点校时通读全段，倾向</b>：「{zis(cell.ctx.c)}」{cell.ctx.why ? <span style={{ color: '#888' }}>（{cell.ctx.why}）</span> : null}</div>);
     else if (cell.ctx && ctxWorthShowing(cell)) summary.push(<div key="ctx"><b>看前后文</b>：{cell.ctx.c ? `应是「${zis(cell.ctx.c)}」` : '看不出是哪个字'}</div>);
     if (cell.dianNote && !ai) summary.push(<div key="dnote" data-testid="dian-note"><b>点校查证</b>：{cell.dianNote}</div>);
     if (cell.refs?.length && !ai) summary.push(<div key="refs" data-testid="dian-refs"><b>来源</b>：{cell.refs.map((r, i) => <span key={r.u}>{i ? '　' : ''}<a href={r.u} target="_blank" rel="noopener noreferrer nofollow" style={{ textDecoration: 'underline' }}>{r.t}</a></span>)}</div>);
     if (cell.ocr?.length) summary.push(<div key="ocr"><b>文字识别</b>：读作{cell.ocr.map(o => `「${zis(o.c)}」`).join('')}</div>);
     const rows: [string, React.ReactNode][] = [];
-    if (cell.pendingReason || cell.cls) {
-        const k = reasonGroupLabel(reasonGroupKey(cell));
-        rows.push(['属于哪一类', <>{k.name}{k.hint ? <span style={{ color: '#888' }}>：{k.hint}</span> : null}</>]);
-    }
     if (cell.libTop?.length) rows.push(['字形最像的几个字', cell.libTop.filter(x => x.s > 0).map(x => `「${zis(x.c)}」${pct(x.s)}`).join('　')]);
-    if (cell.ref) {
-        const how = cell.ref.op ? refOpLabel(cell.ref.op) : '';
-        rows.push(['参校本', `这里作「${zis(cell.ref.c)}」${how ? `（${how}）` : ''}`]);
-    }
     if (cell.stale) rows.push(['以前的判断', `${cell.stale.ts ? `${cell.stale.ts.slice(0, 10)} ` : ''}判为「${zis(cell.stale.c)}」，${cell.stale.state === 'withdrawn' ? '后来发现判错了位置，已撤回' : '后来切字有变动，需要重新确认'}`]);
     if (cell.occ) rows.push(['遮挡', cell.occ.refBlank ? '被印章或污渍遮住，参校本这里没有字' : `被印章或污渍遮住${cell.occ.c ? `，参校本作「${zis(cell.occ.c)}」` : ''}`]);
     if (!summary.length && !rows.length) return null;
     return (
-        <div data-testid="evidence" style={{ marginTop: 8, fontSize: 12, color: '#555', lineHeight: 1.7 }}>
+        <div data-testid="evidence" style={{ fontSize: 13, color: '#44403c', lineHeight: '20px' }}>
             {summary}
             {rows.length > 0 && (
                 <details style={{ marginTop: 2 }}>
@@ -346,7 +356,7 @@ function SentLine({ sent, at }: { sent: PendingSent; at: string }) {
         out.push(node);
     }
     return (
-        <div data-testid="sent" style={{ marginTop: 8, fontSize: 18, letterSpacing: 1, lineHeight: 1.8 }}>
+        <div data-testid="sent" style={{ fontSize: 20, lineHeight: '30px', fontFamily: ZI_FONT }}>
             <span style={{ fontSize: 12, color: '#888', letterSpacing: 0, marginRight: 8 }}>标点</span>
             {out}
         </div>
@@ -379,7 +389,7 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
     push({ ...(ctx.self ?? {}), a: at, c: atChar ?? '' }, true);
     ctx.after.forEach(s => push(s, false));
     return (
-        <div data-testid="context" style={{ marginTop: 8, fontSize: 18, letterSpacing: 2, lineHeight: 1.6 }}>
+        <div data-testid="context" style={{ fontSize: 20, lineHeight: '30px', fontFamily: ZI_FONT }}>
             <span style={{ fontSize: 12, color: '#888', letterSpacing: 0, marginRight: 8 }}>上下文</span>
             {pieces}
         </div>
@@ -469,6 +479,7 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [showMore, setShowMore] = useState(false);
+    const [noteOpen, setNoteOpen] = useState(false);
     const [sentNote, setSentNote] = useState<string | null>(null);
     const lastPick = useRef<Pick | undefined>(undefined);
     const pre = useMemo(() => preselect(cell), [cell]);
@@ -508,99 +519,119 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
     const why = cell.pendingReason ? [reasonGroupLabel(reasonGroupKey(cell)).name] : whyLabels(cell.why);
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
     const segDefect = isSegDefect(cell);
+    const noteWide = noteOpen || note.length > 0;
+    // 已提交且没选中：收成一行（用户 11-27 定稿样稿 F），点「改」或这一行就展开
+    if (done && !selected) {
+        const flagLabel = doneFlag ? KIND_OPTS.find(o => o.choice === doneFlag)?.label : undefined;
+        const what = flagLabel ? `${flagLabel}${doneChar ? `「${zis(doneChar)}」` : ''}` : `「${zis(doneChar ?? done)}」`;
+        return (
+            <li id={`cell-${cell.a}`} data-testid="cell-card" data-collapsed="1"
+                onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
+                style={{ border: '1px solid #e3d8c4', borderRadius: 10, padding: '8px 14px', marginBottom: 8, listStyle: 'none', background: '#fffdf8', opacity: 0.75, scrollMarginTop: 96, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', fontSize: 13, color: '#6b5a48' }}>
+                <span>{cellPlace(cell.a)}</span>
+                <span data-testid="done-badge" title={`已提交：${zis(done)}`} style={{ ...CHIP, background: '#e3f3e8', color: '#166534' }}>已提交{what}</span>
+                {sentNote ? <span style={{ flex: '1 1 160px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#78716c' }}>备注：{sentNote}</span> : <span style={{ flex: 1 }} />}
+                <button type="button" onClick={() => onSelect(cell.a)} className={BTN_CLASS} style={pillStyle(false, false)}>改</button>
+            </li>
+        );
+    }
     return (
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
-            style={{ position: 'relative', border: selected ? '2px solid #d33' : '1px solid #ddd', borderRadius: 6, padding: selected ? 11 : 12, marginBottom: 12, listStyle: 'none', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
-                    : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
-                    : imageUrl && crop ? <div>
-                        <CellCrop src={imageUrl} crop={crop} estimated={crop.estimated} />
-                        {crop.estimated && <div data-testid="crop-estimated" style={{ fontSize: 11, color: '#a60', maxWidth: 160 }}>这一格没有自己的坐标，橙色虚线是按同列相邻字推算的位置，仅供参考</div>}
-                    </div>
-                    : pageOnly ? <div data-testid="page-only" style={{ color: '#a60', fontSize: 12, maxWidth: 160 }}>这一格没有坐标，请在左侧整页上找{cellPlace(cell.a).replace(/第 \d+ 字.*$/, '')}</div>
-                    : <div style={{ color: '#999', fontSize: 12 }}>（没有这一格的图）</div>}
-                <div>
-                    <div style={{ fontSize: 12, color: '#666' }}>{cellPlace(cell.a)}{cell.c ? '　机器读作' : ''}
-                        {/* 提交过：一个徽标就够，选了哪个看单选组里选中的项（用户 2026-10-20） */}
-                        {done && <span data-testid="done-badge" title={`已提交：${zis(done)}，想改再点别的`}
-                            style={{ marginLeft: 8, fontSize: 12, lineHeight: 1.5, padding: '0 8px', borderRadius: 10, background: '#e6f5ec', color: '#1b6b44', border: '1px solid #2a7' }}>已提交</span>}
-                    </div>
+            style={{ position: 'relative', border: selected ? '2px solid #c2410c' : '1px solid #e3d8c4', borderRadius: 10, padding: selected ? '11px 13px' : '12px 14px', marginBottom: 12, listStyle: 'none', background: '#fffdf8', opacity: done && !selected ? 0.6 : 1, scrollMarginTop: 96, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* 头一行：位置、原因、复审、已提交（用户 11-27 定稿样稿：字号只留四档，信息排成一行） */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', fontSize: 13, color: '#6b5a48' }}>
+                <span>{cellPlace(cell.a)}</span>
+                {(cell.why?.some(w => w !== 'none') || !!cell.cls || !!cell.pendingReason) && (
+                    <span data-testid="why" style={{ ...CHIP, background: '#fdebd3', color: '#8a3d06' }}>原因：{why.join('；')}</span>
+                )}
+                {(cell.note || cell.prior) && <span style={{ ...CHIP, background: '#e8eefc', color: '#1e3a8a' }}>复审</span>}
+                {done && <span data-testid="done-badge" title={`已提交：${zis(done)}，想改再点别的`} style={{ ...CHIP, background: '#e3f3e8', color: '#166534' }}>已提交</span>}
+            </div>
+            {cell.note && <div data-testid="recheck-note" style={{ fontSize: 13, color: '#44403c', marginTop: -4 }}><b>再看一次</b>：{cell.note}</div>}
+            {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 13, color: '#44403c', marginTop: -4 }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
+            <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ flexShrink: 0 }}>
+                    {segDefect && imageUrl && crop ? <CellCrop src={imageUrl} crop={crop} />
+                        : spriteSrc && cell.img ? <SpriteCrop url={spriteSrc} sprite={cell.img} label="字块裁图" onFail={onSpriteFail} />
+                        : imageUrl && crop ? <div>
+                            <CellCrop src={imageUrl} crop={crop} estimated={crop.estimated} />
+                            {crop.estimated && <div data-testid="crop-estimated" style={{ fontSize: 11, color: '#a60', maxWidth: 160 }}>这一格没有自己的坐标，橙色虚线是按同列相邻字推算的位置，仅供参考</div>}
+                        </div>
+                        : pageOnly ? <div data-testid="page-only" style={{ ...NO_IMG, color: '#a60' }}>这一格没有坐标，请在左侧整页上找{cellPlace(cell.a).replace(/第 \d+ 字.*$/, '')}</div>
+                        : <div style={NO_IMG}>这格还没有单格图</div>}
+                </div>
+                <div style={{ flex: '1 1 260px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {cell.sent && <SentLine sent={cell.sent} at={rawA(cell.a)} />}
+                    {context && !cell.sent && <ContextLine ctx={context} at={rawA(cell.a)} atChar={cell.c} pendingSet={pendingSet} />}
+                    {!cell.sent && !context && (cell.c
+                        ? <div style={{ fontSize: 13, color: '#6b5a48' }}>机器读作 <span style={{ fontSize: 30, lineHeight: '36px', fontFamily: ZI_FONT, color: '#1c1917', verticalAlign: 'middle' }}><Zi c={cell.c} /></span></div>
+                        : null)}
                     {/* 机器没定出字时不放大「？」，免得和下面「比字形：最像 X」打架（GUJI-683） */}
-                    {cell.c ? <div style={{ fontSize: 34, lineHeight: 1.2 }}><Zi c={cell.c} /></div>
-                        : <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#888', marginTop: 6 }}>机器没定出字，请看图从下面选或写</div>}
-                    {cell.ref && <div style={{ fontSize: 12, color: '#666' }}>参校本作「{zis(cell.ref.c)}」</div>}
-                    {/* 复审格（cv republish --recheck）：为什么又来了、已有判断是什么，放在卡片头上常显 */}
-                    {cell.note && <div data-testid="recheck-note" style={{ fontSize: 12, color: '#7a3b1d', marginTop: 2 }}><b>再看一次</b>：{cell.note}</div>}
-                    {cell.prior && <div data-testid="recheck-prior" style={{ fontSize: 12, color: '#7a3b1d' }}><b>已有判断</b>：{cell.prior.ts ? `${cell.prior.ts.slice(0, 10)} ` : ''}判为「{zis(cell.prior.c)}」。这次提交的选择会替代它</div>}
+                    {!cell.c && <div data-testid="no-machine-char" style={{ fontSize: 13, color: '#8a7a66' }}>机器没定出字，请看图从下面选或写</div>}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {top.map((cd, i) => <CandButton key={cd.c} cd={cd} word={candSourceWord(cd, cell)} busy={busy} hotkey={String(i + 1)} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: i + 1 })} />)}
+                        {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} word={candSourceWord(cd, cell)} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: top.length + i + 1 })} />)}
+                        {more.length > 0 && (
+                            <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS}
+                                style={{ minWidth: 58, height: 62, border: '1px dashed #cdbfa6', borderRadius: 8, background: 'transparent', fontSize: 13, color: '#6b5a48', cursor: 'pointer' }}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
+                        )}
+                        {!hard && cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
+                            <button type="button" disabled={busy} aria-label={canShow(cell.c) ? cell.c : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={candStyle(isPicked(cell.c), busy)}>
+                                <span style={{ fontSize: 30, lineHeight: '36px' }}><Zi c={cell.c} /></span><small style={{ fontSize: 11, lineHeight: '14px', color: '#78716c' }}>现字</small>
+                            </button>
+                        )}
+                        <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 4 }}>
+                            <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影写字' : '另写一字'} aria-label="另写一字"
+                                style={{ width: 96, height: 40, boxSizing: 'border-box', fontSize: 14, padding: '0 10px', border: '1px solid #cdbfa6', borderRadius: 8, background: '#fff' }} />
+                            <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => pickChar(custom, { src: 'custom' })} className={BTN_CLASS}
+                                style={{ ...btnStyle('primary', false, busy || [...custom].length !== 1), height: 40, borderRadius: 8 }}>{kind === 'char' ? '提交这个字' : '选这个字'}</button>
+                        </span>
+                    </div>
+                    {kind !== 'char' && shownChar && <div data-testid="kind-draft" style={{ fontSize: 13, color: '#44403c' }}>已选：{KIND_OPTS.find(o => o.choice === kind)?.label} ＋ 字「{zis(shownChar)}」，点「确认提交」才交</div>}
+                    {preCand && !done && (
+                        <div data-testid="preselect" style={{ fontSize: 13 }}>
+                            以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
+                            <button type="button" disabled={busy} onClick={() => pickChar(preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
+                        </div>
+                    )}
+                    <Evidence cell={cell} />
                 </div>
             </div>
-            {cell.sent && <SentLine sent={cell.sent} at={rawA(cell.a)} />}
-            {context && !cell.sent && <ContextLine ctx={context} at={rawA(cell.a)} atChar={cell.c} pendingSet={pendingSet} />}
-            {(cell.why?.some(w => w !== 'none') || !!cell.cls || !!cell.pendingReason) && (
-                <div data-testid="why" style={{ marginTop: 6, fontSize: 12, color: '#a60' }}>原因：{why.join('；')}</div>
-            )}
-            <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {top.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={String(i + 1)} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: i + 1 })} />)}
-                {showMore && more.map((cd, i) => <CandButton key={cd.c} cd={cd} busy={busy} hotkey={top.length + i + 1 <= 9 ? String(top.length + i + 1) : undefined} picked={isPicked(cd.c)} onPick={c => pickChar(c, { src: 'cand', rank: top.length + i + 1 })} />)}
-                {more.length > 0 && (
-                    <button type="button" onClick={() => setShowMore(v => !v)} aria-expanded={showMore} className={BTN_CLASS} style={btnStyle('small')}>{showMore ? '收起' : `还有 ${more.length} 个`}</button>
-                )}
-                {!hard && cell.c && !top.some(cd => cd.c === cell.c) && !more.some(cd => cd.c === cell.c) && (
-                    <button type="button" disabled={busy} aria-label={canShow(cell.c) ? undefined : `选「${cell.c}」`} onClick={() => pickChar(cell.c!, { src: 'machine' })} className={BTN_CLASS} style={btnStyle('cand', isPicked(cell.c), busy)}><Zi c={cell.c} /></button>
-                )}
-                <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', marginLeft: 8 }}>
-                    <input value={custom} onChange={e => setCustom(e.target.value)} placeholder={segDefect ? '看书影，写出这个字' : '都不对？写一个字'} aria-label="另写一字"
-                        style={{ width: 140, fontSize: 14, padding: '4px 8px', border: '1px solid #b8ad9a', borderRadius: 6, background: '#fff' }} />
-                    <button type="button" disabled={busy || [...custom].length !== 1} onClick={() => pickChar(custom, { src: 'custom' })} className={BTN_CLASS}
-                        style={btnStyle('primary', false, busy || [...custom].length !== 1)}>{kind === 'char' ? '提交这个字' : '选这个字'}</button>
-                </span>
-            </div>
-            </div>
-            {/* 单选组：两列小方格，贴在卡片右上角，和左边的裁图、候选字并排 */}
-            <fieldset data-testid="kind-group" style={{ flexShrink: 0, margin: '-6px -6px 0 0', border: '1px solid #e2d6bf', borderRadius: 6, padding: '2px 8px 4px', background: '#fffdf7', fontSize: 12, display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 10, alignItems: 'center' }}>
+            {!hard && cell.grp && <CharRow testId="grp-row" label="同组字（形近一组，不预选）" chars={cell.grp.m} busy={busy} picked={shownChar} onPick={pickChar} />}
+            {cell.dout && <CharRow testId="dout-row" label="AI 文意（候选外，不预选）" chars={cell.dout} busy={busy} picked={shownChar} onPick={pickChar} />}
+            {!hard && !cell.cands && cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
+            <Examples cell={cell} spriteBase={spriteBase} />
+            {/* 底部一排：正常字／不是正常字的几种（单选，样子是小圆角按钮）＋备注；备注一输入就另起一行（用户 11-27） */}
+            <fieldset data-testid="kind-group" style={{ margin: 0, padding: '8px 0 0', border: 0, borderTop: '1px dashed #e3d8c4', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <legend style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>这一格是</legend>
                 {KIND_OPTS.map(o => (
                     <React.Fragment key={o.choice}>
-                        {o.choice === 'cut' && <div style={{ gridColumn: '1 / -1', color: '#555', lineHeight: 1.6, marginTop: 2, borderTop: '1px dashed #e2d6bf' }}>错误、特殊字符</div>}
-                        <label title={o.title} style={{ display: 'flex', gap: 3, alignItems: 'center', cursor: busy ? 'default' : 'pointer', lineHeight: 1.6, whiteSpace: 'nowrap' }}>
+                        {o.choice === 'none' && <span aria-hidden style={{ fontSize: 12, color: '#8a7a66', margin: '0 2px 0 6px' }}>不是正常字</span>}
+                        <label title={o.title} style={pillStyle(kind === o.choice, busy)}>
                             <input type="radio" name={`kind-${cell.a}`} value={o.choice} checked={kind === o.choice} disabled={busy} data-hotkey={o.key}
-                                onChange={() => setKind(o.choice)} />
+                                onChange={() => setKind(o.choice)} style={{ position: 'absolute', opacity: 0, width: 1, height: 1, margin: 0 }} />
                             {o.label}
                         </label>
                     </React.Fragment>
                 ))}
-                {kind !== 'char' && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button type="button" data-testid="kind-confirm" disabled={busy} onClick={confirmKind} className={BTN_CLASS} style={btnStyle('primary', false, busy)}>确认</button>
-                    </div>
-                )}
-            </fieldset>
-            </div>
-            {!hard && cell.grp && <CharRow testId="grp-row" label="同组字（形近一组，不预选）" chars={cell.grp.m} busy={busy} picked={shownChar} onPick={pickChar} />}
-            {cell.dout && <CharRow testId="dout-row" label="AI 文意（候选外，不预选）" chars={cell.dout} busy={busy} picked={shownChar} onPick={pickChar} />}
-            {!hard && cell.alt && cell.alt.length > 0 && <AltGrid alt={cell.alt} spriteBase={spriteBase} busy={busy} picked={shownChar} onPick={pickChar} />}
-            {preCand && !done && (
-                <div data-testid="preselect" style={{ marginTop: 6, fontSize: 12 }}>
-                    以前有人判为「{zis(preCand)}」，后来切字有变动，请看图再确认
-                    <button type="button" disabled={busy} onClick={() => pickChar(preCand, { src: 'preselect' })} className={BTN_CLASS} style={{ ...btnStyle('small', false, busy), marginLeft: 8 }}>是「{zis(preCand)}」</button>
-                </div>
-            )}
-            <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                <input value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注"
-                    placeholder="备注（可不填）：比如「是臼不是曰，看上面」，随选项一起交，交过也能改"
-                    style={{ flex: '1 1 320px', maxWidth: 520, boxSizing: 'border-box', fontSize: 13, padding: '4px 8px', border: '1px solid #ddd', borderRadius: 6 }} />
+                <textarea value={note} onChange={e => setNote(e.target.value.slice(0, 500))} maxLength={500} aria-label="备注" rows={1}
+                    onFocus={() => setNoteOpen(true)} onBlur={() => setNoteOpen(false)}
+                    placeholder={kind === 'unrec' ? '备注（选填）：写出部件，如「左王右旦」' : kind === 'figure' ? '备注（选填）：图形说明' : '备注（选填）'}
+                    style={noteWide
+                        ? { flex: '1 0 100%', boxSizing: 'border-box', minHeight: 56, fontSize: 13, lineHeight: '20px', padding: '6px 10px', border: '1px solid #cdbfa6', borderRadius: 8, background: '#fff', resize: 'vertical', fontFamily: 'inherit' }
+                        : { flex: '1 1 140px', minWidth: 120, boxSizing: 'border-box', height: 28, fontSize: 12, lineHeight: '18px', padding: '4px 12px', border: '1px solid #e3d8c4', borderRadius: 14, background: '#fff', resize: 'none', overflow: 'hidden', fontFamily: 'inherit' }} />
                 {/* 交过之后改备注：照原来的字和选项再交一次（用户 10-21：备注永远可以填、可以交） */}
                 {done && note.trim() !== (sentNote ?? '') && (
                     <button type="button" disabled={busy} onClick={() => go(doneFlag ?? 'char', doneChar, doneChar ? lastPick.current : undefined)} className={BTN_CLASS}
-                        style={btnStyle('small', false, busy)}>{sentNote === null ? '提交备注' : '更新备注'}</button>
+                        style={{ ...btnStyle('small', false, busy), height: 28, borderRadius: 14 }}>{sentNote === null ? '提交备注' : '更新备注'}</button>
                 )}
-            </div>
-            <Evidence cell={cell} />
-            <Examples cell={cell} spriteBase={spriteBase} />
-            {(err || failedErr) && <div role="alert" data-testid="cell-error" style={{ marginTop: 6, color: '#c33' }}>{err ?? `刚才这一格没交上，已恢复为待审，请再点一次：${failedErr}`}</div>}
+                {kind !== 'char' && (
+                    <button type="button" data-testid="kind-confirm" disabled={busy} onClick={confirmKind} className={BTN_CLASS}
+                        style={{ ...btnStyle('primary', false, busy), height: 28, borderRadius: 14, marginLeft: 'auto' }}>确认提交</button>
+                )}
+            </fieldset>
+            {(err || failedErr) && <div role="alert" data-testid="cell-error" style={{ color: '#c33' }}>{err ?? `刚才这一格没交上，已恢复为待审，请再点一次：${failedErr}`}</div>}
         </li>
     );
 }
@@ -1039,7 +1070,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
         if (!cell.item) return Promise.resolve('这一格缺少条目编号，请刷新页面后再提交');
         const { choice, char, alt, note, pick } = fields;
         return submitReview({ book, vol: volOf(cell), a: rawA(cell.a), ...itemFields(cell), choice, ...(char ? { char } : {}), ...(choice === 'figure' && alt ? { alt } : {}), ...(choice === 'unrec' && alt ? { unk: alt } : {}), ...(cell.c ? { shown: cell.c } : {}),
-            ...(note ? { note } : {}), ...(char ? pickFields(pick) : {}) }, getAid());
+            ...(note ? { note } : {}), ...(char ? pickFields(pick, cell.cands?.by) : {}) }, getAid());
     }, [book, volOf]);
 
     // 乐观提交：点完先在本地记下、马上收起这一格跳下一张，接口在后台排队慢慢发；最终失败再把这一格恢复为待审并报错。
@@ -1315,6 +1346,7 @@ function Proofing({ book, vol, info = null }: { book: string; vol: string; info?
                     <div className="min-w-0 lg:flex-1">
                         <QuickReview groups={quickGroups} spriteOf={spriteOf} onConfirm={onQuickConfirm} />
                         <ReleasedList items={volOrder.flatMap(v => loaded[v]?.released ?? [])} />
+                        <p data-testid="ref-disclaimer" style={{ margin: '0 0 8px', fontSize: 12, color: '#8a7a66' }}>卡上机器与 AI 的判断只供参考，请以图为准。数字键 1–9 选候选。</p>
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#666' }}>
                             <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
                                 <input type="checkbox" checked={onlyOpen} onChange={e => { setOnlyOpen(e.target.checked); if (e.target.checked) setHiddenDone(new Set(Object.keys(done))); setPage(0); }} data-testid="only-open" />
