@@ -32,7 +32,14 @@ export function mergeProofIndex(oldText, picked) {
         books[b] = {};
         for (const [c, m] of Object.entries(chaps)) books[b][c] = { n: m?.n ?? 0 };
     }
-    for (const e of picked) (books[e.book] ||= {})[e.chap] = { n: e.n };
+    for (const e of picked) {
+        const chaps = (books[e.book] ||= {});
+        // 册号位数统一（11-27）：同一册旧写法（001／01，数值相同、写法不同）的残留键丢掉，别和新写法并存、重复计数
+        if (/^[0-9]{1,6}$/.test(e.chap)) {
+            for (const c of Object.keys(chaps)) if (c !== e.chap && /^[0-9]{1,6}$/.test(c) && Number(c) === Number(e.chap)) delete chaps[c];
+        }
+        chaps[e.chap] = { n: e.n };
+    }
     const out = {};
     for (const b of Object.keys(books).sort()) {
         out[b] = {};
