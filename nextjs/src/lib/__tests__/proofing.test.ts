@@ -3,7 +3,7 @@
  */
 import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
-    parseExtras, candSourceWord, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
+    parseExtras, parseCands, pickFields, candSourceWord, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
     readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
 } from '../proofing';
@@ -294,6 +294,32 @@ describe('guji-proof/0.2 新字段（GUJI-557）', () => {
         expect(top.map(x => x.c)).toEqual(['己', '已', '巳']);
         expect(top[1].score).toBe(0.9);
         expect(more.map(x => x.c)).toEqual(['以']);
+    });
+
+    it('cands/1：序号即名次、前 top 个显示其余进「更多」；有 cands 就不再看 cand／lib_top', () => {
+        const cands = parseCands({ v: 'cands/1', by: 'cv0.9.12 fuse=f1', top: 3, list: [
+            { c: '臼', p: 0.4, src: { ref: 1, a: 1 } }, { c: '曰', src: { a: 1, ctx: 1 } }, { c: '日' }, { c: '白' }, { c: '曰' }, { c: '臼曰' }, { c: '目', p: 2 }], p_other: null });
+        expect(cands?.list.map(x => x.c)).toEqual(['臼', '曰', '日', '白', '目']);   // 重复字、多字、脏数据丢掉
+        expect(cands?.list[0]).toEqual({ c: '臼', p: 0.4, src: ['ref', 'a'] });
+        expect(cands?.list[4].p).toBeUndefined();   // p 越界不收
+        const { top, more } = shownCandidates({ a: '1:1:1', cands, cand: [{ c: '以' }], libTop: [{ c: '日', s: 0.9 }] });
+        expect(top.map(x => x.c)).toEqual(['臼', '曰', '日']);
+        expect(top[0].src).toEqual(['ref', 'a']);   // 来源键全带（卡上来源小词用）
+        expect(top[2].score).toBe(0.9);   // 库分数仍按字带上
+        expect(more.map(x => x.c)).toEqual(['白', '目']);
+    });
+
+    it('parseExtras 读 cands；版本不认、没有有效字都当没有，回退旧候选', () => {
+        expect(parseExtras({ cands: { v: 'cands/1', top: 2, list: [{ c: '甲' }, { c: '乙' }] } }).cands).toMatchObject({ top: 2 });
+        expect(parseExtras({ cands: { v: 'cands/9', list: [{ c: '甲' }] } }).cands).toBeUndefined();
+        expect(parseExtras({ cands: { v: 'cands/1', list: [{ c: 'ab' }] } }).cands).toBeUndefined();
+        expect(shownCandidates({ a: 'x', libTop: [{ c: '曰', s: 0.9 }] }).top.map(x => x.c)).toEqual(['曰']);
+    });
+
+    it('点 cands 候选时随票带 cands_by；点别处不带', () => {
+        expect(pickFields({ src: 'cand', rank: 2 }, 'cv0.9.12 fuse=f1')).toEqual({ pick_src: 'cand', pick_rank: 2, cands_by: 'cv0.9.12 fuse=f1' });
+        expect(pickFields({ src: 'alt', rank: 2 }, 'x')).toEqual({ pick_src: 'alt', pick_rank: 2 });
+        expect(pickFields({ src: 'cand', rank: 1 })).toEqual({ pick_src: 'cand', pick_rank: 1 });
     });
 
     it('参校本字排第一、带来源，同字合并（GUJI-683）', () => {
@@ -681,12 +707,6 @@ describe('cands/1 候选字线（CV3）', () => {
         { c: '夫', fam: '扶', src: { a: 0.5, zz: 1 } },           // 未知来源键丢
         { c: 'ab', src: {} },                                   // 不是单字，丢
     ] };
-    it('解析：单字去重、来源键只收已知的、top 不超过表长', () => {
-        const e = parseExtras({ cands: raw });
-        expect(e.cands).toEqual({ top: 2, list: [{ c: '太', src: ['ref', 'a'] }, { c: '大', src: ['c'] }, { c: '夫', src: ['a'], fam: '扶' }] });
-        expect(parseExtras({ cands: { ...raw, v: 'cands/2' } }).cands).toBeUndefined();
-        expect(parseExtras({ cands: { v: 'cands/1', list: [] } }).cands).toBeUndefined();
-    });
     it('有 cands 就照表显示：前 top 个在外，其余进「更多」，不再拼 ref／lib_top', () => {
         const cell = { a: '1:1:1', c: '大', ref: { c: '以' }, libTop: [{ c: '目', s: 0.9 }], ...parseExtras({ cands: raw }) };
         const { top, more } = shownCandidates(cell);

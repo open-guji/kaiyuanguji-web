@@ -348,6 +348,20 @@ describe('精校页显示（GUJI-557）', () => {
         expect(body(3)).toMatchObject({ choice: 'none', char: '末', pick_src: 'custom' });
     });
 
+    it('卡片带 cands/1：按名次出候选（旧字段不再用），点第二个带 pick_rank=2 和 cands_by', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        (global as { fetch?: unknown }).fetch = fetchSpy;
+        loadProofing.mockResolvedValue(ok([{ a: '1:1:1', c: '未', cand: [{ c: '旧' }],
+            cands: { v: 'cands/1', by: 'cv0.9.12 fuse=f1', top: 3, list: [{ c: '末' }, { c: '朱' }, { c: '未' }, { c: '本' }] } }]));
+        render(<ProofingClient book="b9" vol="vol01" />);
+        fireEvent.click(await screen.findByTestId('only-open'));
+        const body = (i: number) => JSON.parse(fetchSpy.mock.calls[i][1].body);
+        expect(screen.queryByRole('button', { name: '旧' })).toBeNull();
+        fireEvent.click(await screen.findByRole('button', { name: '朱' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        expect(body(0)).toMatchObject({ char: '朱', pick_src: 'cand', pick_rank: 2, cands_by: 'cv0.9.12 fuse=f1' });
+    });
+
     it('GUJI-683：参校本字是第一个候选并标「参校本」；没机器字不放大「？」；夹注档按真实含义写；备注随提交带上', async () => {
         const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
         (global as { fetch?: unknown }).fetch = fetchSpy;

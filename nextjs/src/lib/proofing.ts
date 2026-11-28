@@ -87,6 +87,13 @@ export function parseAi(raw: unknown): AiAnalysis | undefined {
 }
 
 /** guji-proof/0.2 新增字段，全部可选；0.1 的 pending.json 一个都没有 */
+/** 候选字卡片字段 cands/1：list 已按名次排好（参校字在前）；p 是校准过的概率（没有校准就不带），src 记哪几路给出（a／b／c／ctx／ref） */
+export interface CandsField {
+    by?: string;
+    top: number;
+    list: { c: string; p?: number; fam?: string; src?: string[] }[];
+}
+
 export interface PendingExtras {
     /** AI 三层摘要；出现时优先于 ctx.why / dianNote（旧字段保留兼容） */
     ai?: AiAnalysis;
@@ -102,8 +109,8 @@ export interface PendingExtras {
     /** 类别细项（目前只有对齐改字层：grid / tail / manual） */
     clsSub?: string;
     libTop?: { c: string; s: number }[];
-    /** 候选字线 `cands/1`（CV3，manager review/cands_field.py）：一格一份候选表，序号即名次，卡上显示前 top 个；有它就不再拼 ref／cand／lib_top */
-    cands?: { top: number; list: { c: string; src: string[]; fam?: string }[] };
+    /** 候选字 cands/1（cv 第三步收尾 + 4b 排序，manager `review/cands_field`）：序号即名次，前 `top` 个直接显示，其余折进「更多」；没有就按旧字段（ref／cand／libTop）显示 */
+    cands?: CandsField;
     lib?: { verdict?: string; cov?: number; wmax?: number };
     ctx?: { c: string; margin?: number; src?: string; /** 点校倾向字的理由（src=punct_llm） */ why?: string };
     /** 点校查证备注（没有倾向字时） */
@@ -194,6 +201,33 @@ export function parseSprite(v: unknown): SpriteRef | null {
 }
 
 /** 单格的 0.2 新字段。每个键独立容错：类型不对就当没有，不影响其他键 */
+const CANDS_TOP_DEFAULT = 3;
+/** 解析 cands/1：只收单字、去重、保持名次；认不出（版本不对、没有有效字）返回 undefined，页面回退旧候选 */
+export function parseCands(raw: unknown): CandsField | undefined {
+    const o = asObject(raw);
+    if (!o || !Array.isArray(o.list)) return undefined;
+    if (o.v !== undefined && o.v !== 'cands/1') return undefined;
+    const seen = new Set<string>();
+    const list: CandsField['list'] = [];
+    for (const x of o.list.slice(0, 60)) {
+        const e = asObject(x);
+        const c = typeof e?.c === 'string' ? e.c : '';
+        if (!e || [...c].length !== 1 || seen.has(c)) continue;
+        seen.add(c);
+        const p = num(e.p);
+        const src = asObject(e.src);
+        list.push({
+            c,
+            ...(p !== undefined && p >= 0 && p <= 1 ? { p } : {}),
+            ...(str(e.fam) ? { fam: str(e.fam) } : {}),
+            ...(src ? { src: Object.keys(src).filter(k => /^[a-z]{1,8}$/.test(k)) } : {}),
+        });
+    }
+    if (!list.length) return undefined;
+    const top = Number.isInteger(o.top) && (o.top as number) >= 1 ? Math.min(o.top as number, list.length) : Math.min(CANDS_TOP_DEFAULT, list.length);
+    return { ...(str(o.by) ? { by: (str(o.by) as string).slice(0, 120) } : {}), top, list };
+}
+
 export function parseExtras(raw: unknown): PendingExtras {
     const it = asObject(raw);
     const out: PendingExtras = {};
@@ -231,22 +265,8 @@ export function parseExtras(raw: unknown): PendingExtras {
         });
         if (libTop.length) out.libTop = libTop;
     }
-    {   // cands/1：只收单字、去重，src 取来源键（a 字形库、c 图像、b 形近组、ctx 上下文、ref 参校本）
-        const cs = asObject(it.cands);
-        if (cs && cs.v === 'cands/1' && Array.isArray(cs.list)) {
-            const seen = new Set<string>();
-            const list = cs.list.flatMap(x => {
-                const o = asObject(x);
-                const c = str(o?.c);
-                if (!o || !c || [...c].length !== 1 || seen.has(c)) return [];
-                seen.add(c);
-                const src = Object.keys(asObject(o.src) ?? {}).filter(k => CAND_SRC.includes(k));
-                return [{ c, src, ...(str(o.fam) && str(o.fam) !== c ? { fam: str(o.fam) } : {}) }];
-            });
-            const top = Number.isInteger(cs.top) && (cs.top as number) > 0 ? (cs.top as number) : 3;
-            if (list.length) out.cands = { top: Math.min(top, list.length), list };
-        }
-    }
+    const cands = parseCands(it.cands);
+    if (cands) out.cands = cands;
     const lib = asObject(it.lib);
     if (lib) out.lib = { ...(str(lib.verdict) ? { verdict: str(lib.verdict) } : {}), ...(num(lib.cov) !== undefined ? { cov: num(lib.cov) } : {}), ...(num(lib.wmax) !== undefined ? { wmax: num(lib.wmax) } : {}) };
     const ctx = asObject(it.ctx);
@@ -402,8 +422,6 @@ export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
  * 同一个字只出一次、来源合并；带库分数；超过 limit 的放「更多」（GUJI-683）。
  */
 export interface ShownCand { c: string; src?: string[]; score?: number }
-/** cands/1 的来源键 */
-export const CAND_SRC = ['ref', 'a', 'c', 'b', 'ctx'];
 /** 候选按钮下面那个小词：这个字是谁给的（用户 11-27 定稿样稿：现字、参校、字形、图像、形近、上下文、AI 文意、上次人裁） */
 const SRC_WORD: Record<string, string> = { ref: '参校', a: '字形', c: '图像', b: '形近', ctx: '上下文', lib: '字形', prior: '上次人裁', ai: 'AI 文意' };
 export function candSourceWord(cd: ShownCand, cell: PendingCell): string {
@@ -416,12 +434,15 @@ export function candSourceWord(cd: ShownCand, cell: PendingCell): string {
     return w.slice(0, 2).join('·');
 }
 export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[]; more: ShownCand[] } {
-    if (cell.cands) {
-        const all: ShownCand[] = cell.cands.list.map(x => ({ c: x.c, src: [...x.src] }));
-        const n = cell.cands.top;
-        return { top: all.slice(0, n), more: all.slice(n) };
-    }
     const score = new Map((cell.libTop ?? []).map(x => [x.c, x.s]));
+    if (cell.cands) {   // 新字段：序号即名次（名次就是 pick_rank），前 top 个显示，其余折进「更多」
+        const all: ShownCand[] = cell.cands.list.map(x => ({
+            c: x.c,
+            ...(x.src?.length ? { src: [...x.src] } : {}),
+            ...(score.has(x.c) ? { score: score.get(x.c) } : {}),
+        }));
+        return { top: all.slice(0, cell.cands.top), more: all.slice(cell.cands.top) };
+    }
     const all: ShownCand[] = [];
     const add = (c: string, src?: string[]) => {
         const hit = all.find(x => x.c === c);
@@ -1015,12 +1036,14 @@ export interface Pick {
 }
 
 /** Pick → 提交字段（与控制台 confirm payload 同名：pick_src／pick_rank／pivot） */
-export function pickFields(pick?: Pick): { pick_src?: PickSrc; pick_rank?: number; pivot?: string } {
+export function pickFields(pick?: Pick, candsBy?: string): { pick_src?: PickSrc; pick_rank?: number; pivot?: string; cands_by?: string } {
     if (!pick) return {};
     return {
         pick_src: pick.src,
         ...(pick.rank !== undefined && Number.isInteger(pick.rank) && pick.rank > 0 ? { pick_rank: pick.rank } : {}),
         ...(pick.pivot && [...pick.pivot].length === 1 ? { pivot: pick.pivot } : {}),
+        // 点的是 cands 候选按钮时，记下这张卡的候选表由谁出（pick_rank 即在 cands.list 里的名次）
+        ...(pick.src === 'cand' && candsBy ? { cands_by: candsBy } : {}),
     };
 }
 
@@ -1046,6 +1069,8 @@ export interface ReviewDraft {
     pick_src?: PickSrc;
     pick_rank?: number;
     pivot?: string;
+    /** 点 cands 候选时，该卡 cands.by（候选表由哪套算法出） */
+    cands_by?: string;
 }
 
 /** 提交一条意见；失败返回错误文案，成功返回 null。不抛 */

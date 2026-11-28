@@ -38,6 +38,7 @@ export const CHOICES = ['char', 'none', 'unsure', 'cut', 'jiazhu', 'main', 'figu
 // 选的字从哪儿点来（只用来量相似字有没有用，下游不据此落裁决）：候选、相似字、机器读字、自己写、确认预勾、特殊符号
 export const PICK_SRCS = ['cand', 'alt', 'machine', 'custom', 'preselect', 'symbol'];
 const PICK_RANK_MAX = 99;
+const CANDS_BY_MAX = 120;
 const NOTE_MAX = 500;
 const ALT_MAX = 60;
 const SHOWN_MAX = 8;
@@ -130,7 +131,7 @@ export function validateReview(body) {
     if (typeof body.shown !== 'string' || [...body.shown].length > SHOWN_MAX) return { error: 'shown 无效' };
     shown = body.shown;
   }
-  // pick_src／pick_rank／pivot 都可选；只跟着字（char）走，没带字的档带了就忽略（旧页面不带，照常收）
+  // pick_src／pick_rank／pivot／cands_by 都可选；只跟着字（char）走，没带字的档带了就忽略（旧页面不带，照常收）
   const pick = {};
   if (char && body.pick_src !== undefined && body.pick_src !== null) {
     if (!PICK_SRCS.includes(body.pick_src)) return { error: 'pick_src 无效' };
@@ -142,6 +143,11 @@ export function validateReview(body) {
     if (body.pivot !== undefined && body.pivot !== null && body.pivot !== '') {
       if (!isSingleChar(body.pivot)) return { error: 'pivot 须恰好一个字' };
       pick.pivot = body.pivot;
+    }
+    // cands_by：点 cands 候选时该卡候选表由谁出（cands.by，如 "cv0.9.12 a=… c=r5@… ctx=siku@bb25260d/w0.005 fuse=f1"），只作记录
+    if (body.cands_by !== undefined && body.cands_by !== null && body.cands_by !== '') {
+      if (typeof body.cands_by !== 'string' || [...body.cands_by].length > CANDS_BY_MAX || /[\u0000-\u001f\u007f]/.test(body.cands_by)) return { error: 'cands_by 无效' };
+      pick.cands_by = body.cands_by;
     }
   }
   return { value: { book, vol: normalizeVol(vol), ...(a ? { a } : {}), ...(uv.value ? { u: uv.value } : {}), ...itemF, choice, ...(char ? { char } : {}), ...(alt ? { alt } : {}), ...(unk ? { unk } : {}), note, shown, ...pick, aid: body.aid } };
