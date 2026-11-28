@@ -2,7 +2,7 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import {
-    parseItemsPath, readItems, buildProofIndex, mergeProofIndex, cellOrder, planCosPut, md5Hex, itemSnapshotPath, mergeItemSnapshot,
+    buildProofIndex, mergeProofIndex, cellOrder, planCosPut, md5Hex, itemSnapshotPath, mergeItemSnapshot,
 } from './proofing-sync-plan.mjs';
 import { collectPendings, onlyFilter, spriteOnCos, syncOpinions, publishPendings, summarize } from './proofing-sync-run.mjs';
 
@@ -17,32 +17,6 @@ const row = (extra = {}) => ({ id: iid(), cell: '1:1:1', state: 'open', ver: 1, 
 const items = (...rows) => rows.map((r) => JSON.stringify(r)).join('\n') + '\n';
 const openItems = (n, extra = {}) => items(...Array.from({ length: n }, (_, i) => row({ cell: `1:1:${i}`, ...extra })));
 const vote = (item, voter, extra = {}) => ({ v: 1, book: BOOK, vol: '001', a: '1:1:1', item, ver: 1, choice: 'char', char: '於', note: '', shown: '于', voter, ts: 1, ...extra });
-
-test('parseItemsPath：只认 pending/<书>/<章>.items.jsonl', () => {
-    assert.deepEqual(parseItemsPath(`feedback/lists/pending/${BOOK}/001.items.jsonl`), { book: BOOK, chap: '001' });
-    assert.equal(parseItemsPath(`feedback/lists/pending/${BOOK}/001.json`), null);
-    assert.equal(parseItemsPath(`feedback/lists/pending/${BOOK}/x/001.items.jsonl`), null);
-    assert.equal(parseItemsPath(`feedback/lists/web/${BOOK}/001.items.jsonl`), null);
-    assert.equal(parseItemsPath(`feedback/lists/pending/BAD!/001.items.jsonl`), null);
-});
-
-test('readItems：同 id 取 ver 最大的一行，只数开着的条目', () => {
-    const a = row({ id: 'pi_aaaaaaaaaaaa', ver: 1 });
-    const text = items(a, { ...a, ver: 2, state: 'resolved' }, row({ ver: 1 }), row({ state: 'withdrawn' }));
-    assert.deepEqual(readItems(text), { n: 1, sprites: [] });
-    assert.deepEqual(readItems(''), { n: 0, sprites: [] });
-    assert.deepEqual(readItems('{坏行\n' + openItems(2)), { n: 2, sprites: [] });
-});
-
-test('readItems：开着条目的 sprites 汇总去重；关掉的条目不要；不合规整章拒收', () => {
-    const m = spriteMeta(SPR);
-    const m2 = spriteMeta(SPR, 'p0009.bbbbbbbb.webp');
-    assert.deepEqual(readItems(items(row({ sprites: [m] }), row({ sprites: [m, m2] }), row({ state: 'resolved', sprites: [spriteMeta(SPR, 'p1.cccccccc.webp')] }))).sprites, [m, m2]);
-    assert.ok(readItems(items(row({ sprites: [{ ...m, name: '../x.webp' }] }))).error);
-    assert.ok(readItems(items(row({ sprites: [{ ...m, sha256: 'zz' }] }))).error);
-    assert.ok(readItems(items(row({ sprites: 'x' }))).error);
-    assert.ok(readItems(items(row({ sprites: [m] }), row({ sprites: [{ ...m, sha256: sha256(Buffer.from('other')) }] }))).error);
-});
 
 test('cellOrder：按页列格数值排，a 在 b 前', () => {
     const xs = ['10:1:1', '2:1:1', '2:1:1b', '2:1:1a', '2:10:1', '2:2:1'];
@@ -101,9 +75,27 @@ function fakeWorker(files) {
     const sha = (t) => `sha:${md5Hex(t)}`;
     return {
         store, puts,
-        async listFiles(ws, prefix) {
-            const out = [...store.keys()].filter((k) => k.startsWith(`${ws}|${prefix}`)).sort().map((k) => ({ src_path: k.split('|')[1] }));
-            return { files: out, truncated: false };
+        /** 仿 Worker /v1/web/pending-chapters：由条目文件（测试里当库表）汇总，图登记不合规的跳过、按图名去重 */
+        async pendingChapters() {
+            const chapters = [];
+            for (const k of [...store.keys()].sort()) {
+                const [ws, path] = k.split('|');
+                const m = /^feedback\/lists\/pending\/([^/]+)\/([^/]+)\.items\.jsonl$/.exec(path);
+                if (!m) continue;
+                const latest = new Map();
+                for (const line of store.get(k).split('\n').filter(Boolean)) {
+                    const r = JSON.parse(line);
+                    if (!latest.has(r.id) || latest.get(r.id).ver <= r.ver) latest.set(r.id, r);
+                }
+                const open = [...latest.values()].filter((r) => r.state === 'open');
+                if (!open.length) continue;
+                const sprites = new Map();
+                for (const r of open) for (const sp of r.sprites || []) {
+                    if (/^[\w.-]{1,96}\.webp$/.test(sp.name || '') && /^[0-9a-f]{64}$/.test(sp.sha256 || '') && !sprites.has(sp.name)) sprites.set(sp.name, sp);
+                }
+                chapters.push({ ws, book: m[1], chap: m[2], n: open.length, sprites: [...sprites.values()] });
+            }
+            return { at: 'now', chapters };
         },
         async getFile(ws, path) {
             const t = store.get(`${ws}|${path}`);
@@ -149,20 +141,14 @@ const baseFiles = () => ({
     [`${WS}|feedback/lists/pending/${BOOK}/README.md`]: 'x',
 });
 
-test('collectPendings：收齐，非条目文件略过，没有 rev', async () => {
-    const w = fakeWorker(baseFiles());
+test('collectPendings：只收开着的章，没有 rev，图登记随章带上', async () => {
+    const m = spriteMeta(SPR);
+    const w = fakeWorker({ ...baseFiles(), [P('004')]: items(row({ sprites: [m] })) });
     const { entries, problems } = await collectPendings(w, [WS]);
-    assert.deepEqual(entries.map((e) => `${e.chap}:${e.n}`), ['001:2', '003:0']);
+    assert.deepEqual(entries.map((e) => `${e.chap}:${e.n}`), ['001:2', '004:1']);   // 003 没有开着的条目，不在汇总里
     assert.ok(entries.every((e) => !('rev' in e)));
+    assert.deepEqual(entries[1].sprites, [m]);
     assert.equal(problems.length, 0);
-});
-
-test('collectPendings：登记不合规的章记问题、别的章照收', async () => {
-    const w = fakeWorker({ ...baseFiles(), [P('004')]: items(row({ sprites: [{ name: 'x' }] })) });
-    const { entries, problems } = await collectPendings(w, [WS]);
-    assert.deepEqual(entries.map((e) => e.chap), ['001', '003']);
-    assert.equal(problems.length, 1);
-    assert.match(problems[0], /004\.items\.jsonl/);
 });
 
 test('collectPendings：同一章出现在两个工作区，用前者', async () => {
@@ -172,14 +158,11 @@ test('collectPendings：同一章出现在两个工作区，用前者', async ()
     assert.ok(problems.some((p) => /同时在工作区/.test(p)));
 });
 
-test('collectPendings：自动推出的工作区列不出来只记问题，基础工作区仍抛错', async () => {
-    const w = fakeWorker(baseFiles());
-    const listFiles = w.listFiles.bind(w);
-    w.listFiles = async (ws, prefix) => { if (ws === 'newbook') throw new Error('HTTP 404 workspace'); return listFiles(ws, prefix); };
-    const { entries, problems } = await collectPendings(w, [WS, 'newbook'], new Set(['newbook']));
-    assert.equal(entries.length, 2);
-    assert.ok(problems.some((p) => /newbook.*列不出来/.test(p)));
-    await assert.rejects(collectPendings(w, [WS, 'newbook']), /HTTP 404/);
+test('collectPendings：不在配置里的工作区只记问题、不发', async () => {
+    const w = fakeWorker({ ...baseFiles(), [`newbook|feedback/lists/pending/bbbb1/001.items.jsonl`]: openItems(1) });
+    const { entries, problems } = await collectPendings(w, [WS]);
+    assert.deepEqual(entries.map((e) => e.chap), ['001']);
+    assert.ok(problems.some((p) => /newbook.*没发/.test(p)));
 });
 
 test('syncOpinions：一书一份快照，第二次 0 写入、演练不写、没票不建文件', async () => {
@@ -277,7 +260,7 @@ test('summarize：只出计数，不出票的内容', async () => {
     const opinions = await syncOpinions({ worker: w, kv: fakeKv([vote('pi_000000000001', 'aa', { note: '秘密备注' })]), entries });
     const publish = await publishPendings({ cos: fakeCos(), entries, proofPrefix: 'proof/' });
     const md = summarize({ ws: [WS], proofPrefix: 'proof/', dryRun: false, entries, collectProblems: problems, opinions, publish });
-    assert.match(md, /待审条目 2 章，开着的条目合计 2/);
+    assert.match(md, /待审条目 1 章，开着的条目合计 2/);
     assert.doesNotMatch(md, /秘密备注|於|aa/);
 });
 

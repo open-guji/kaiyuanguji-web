@@ -3,7 +3,7 @@
  *
  * 两段，可分开跑（workflow 里分两步，各自只拿自己要的密钥）：
  *   opinions：网站 KV 管理读 /api/cellreview?items=1 → 并进中心库 feedback/lists/web/<书>/items.jsonl（按条目，没有 rev）
- *   publish ：中心库待审条目（feedback/lists/pending/<书>/<章>.items.jsonl，每格一条、没有 rev、没有整张单）里
+ *   publish ：待审条目（库表 pending_current，经 Worker /v1/web/pending-chapters 取；每格一条、没有 rev、没有整张单）里
  *             开着条目登记的单格图（`sprites[]`，图真源在 R2）→ COS [前缀/]proof/<书>/<章>/<name>（同名同内容的跳过）
  * 待审格本身由 Worker /v1/web/pending-doc 现拼，网站精校页读它；COS 上不再发整张单。
  * 老路（GUJI-557：book-text 指针＋GitHub Release）仍由 sync-proof-sprites.mjs 发，不在这里。
@@ -12,7 +12,7 @@
  */
 import { createHash } from 'node:crypto';
 import {
-    PROOFING_PREFIX, parseItemsPath, readItems, buildProofIndex, mergeProofIndex, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
+    buildProofIndex, mergeProofIndex, itemSnapshotPath, mergeItemSnapshot, planCosPut, md5Hex,
 } from './proofing-sync-plan.mjs';
 import {
     FIX_KINDS, THREAD_KINDS, fixesSnapshotPath, threadsSnapshotPath, hiddenListPath, parseHidden, fixesPublicKey, mergeFixes, buildPublicFixes, threadId,
@@ -25,38 +25,26 @@ export const SHORT_CACHE = 'public, max-age=300';
 export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 /**
- * 读出各工作区里全部待审条目文件（每章一个）。
- * softWs：列目录失败只记问题、不抛错的工作区（自动推出的）。
- * @param worker {listFiles(ws, prefix) → {files:[{src_path}], truncated}, getFile(ws, path) → {text, sha256} | null}
+ * 读出有开着条目的各章（Worker /v1/web/pending-chapters：条目只在库表里，中心库 files 表没有条目文件）。
+ * 只收 wsList 里的工作区；别的工作区的章记问题、略过。同一章出现在两个工作区用前者。
+ * @param worker {pendingChapters() → {chapters:[{ws, book, chap, n, sprites[]}]}}
  * @returns {{entries: [{ws, book, chap, n, sprites}], problems: string[]}}  n＝开着的条目数
  */
-export async function collectPendings(worker, wsList, softWs = new Set()) {
+export async function collectPendings(worker, wsList) {
+    const { chapters } = await worker.pendingChapters();
     const entries = [];
     const problems = [];
     const seen = new Map();
-    for (const ws of wsList) {
-        let listing;
-        try {
-            listing = await worker.listFiles(ws, PROOFING_PREFIX);
-        } catch (e) {
-            if (!softWs.has(ws)) throw e;
-            problems.push(`${ws}：工作区列不出来（自动推出的新书，可能还没建工作区）：${String(e.message || e).slice(0, 120)}`);
-            continue;
-        }
-        if (listing.truncated) problems.push(`${ws}：待审条目文件超过一页（1000 个），只处理了前一页`);
-        for (const f of listing.files) {
-            const id = parseItemsPath(f.src_path);
-            if (!id) continue; // 不是条目文件
-            const got = await worker.getFile(ws, f.src_path);
-            if (!got) { problems.push(`${ws}：${f.src_path} 列得出、取不到`); continue; }
-            const p = readItems(got.text);
-            if (p.error) { problems.push(`${ws}：${f.src_path} ${p.error}`); continue; }
-            const k = `${id.book}/${id.chap}`;
-            if (seen.has(k)) { problems.push(`${k} 同时在工作区 ${seen.get(k)} 与 ${ws}，用前者`); continue; }
-            seen.set(k, ws);
-            entries.push({ ws, ...id, n: p.n, sprites: p.sprites });
-        }
+    const skipped = new Set();
+    const rank = (ws) => { const i = wsList.indexOf(ws); return i < 0 ? 1e9 : i; };
+    for (const c of [...(chapters || [])].sort((a, b) => rank(a.ws) - rank(b.ws))) {   // 同一章「用前者」按 wsList 的顺序
+        if (!wsList.includes(c.ws)) { skipped.add(c.ws); continue; }
+        const k = `${c.book}/${c.chap}`;
+        if (seen.has(k)) { problems.push(`${k} 同时在工作区 ${seen.get(k)} 与 ${c.ws}，用前者`); continue; }
+        seen.set(k, c.ws);
+        entries.push({ ws: c.ws, book: c.book, chap: c.chap, n: c.n, sprites: c.sprites || [] });
     }
+    for (const ws of [...skipped].sort()) problems.push(`工作区 ${ws} 有待审条目，但不在 PROOF_WS／PROOF_WS_AUTO 里，没发`);
     return { entries, problems };
 }
 

@@ -3,66 +3,15 @@
  *
  * 设计：ai-team `team/整理/设计/待审单与公众意见走中心库.md` 块 C。
  *   中心库 files 表里：
- *     feedback/lists/pending/<书>/<章>.items.jsonl     待审条目（每格一条，追加；没有 rev、没有整张单）
+ *   待审条目只在库表里（Worker /v1/web/pending-chapters 汇总各章与单格图登记），没有 rev、没有整张单
  *     feedback/lists/web/<书>/items.jsonl              网站意见快照（本任务写入，按 (item, voter) 排序）
  *   COS：[前缀/]proof/<书>/<章>/<图名>                 条目里登记的单格图（雪碧图），网站精校页按条目读
  */
 import { createHash } from 'node:crypto';
 
-export const PROOFING_PREFIX = 'feedback/lists/pending/';
 export const WEB_PREFIX = 'feedback/lists/web/';
 
 const RE_BOOK = /^[0-9a-z]{4,24}$/; // 与 edge-functions/api/cellreview.js 同
-const RE_CHAP = /^[A-Za-z0-9._-]{1,16}$/;
-
-/** `feedback/lists/pending/<书>/<章>.items.jsonl` → {book, chap}；不是这个形状返回 null */
-export function parseItemsPath(srcPath) {
-    if (typeof srcPath !== 'string' || !srcPath.startsWith(PROOFING_PREFIX)) return null;
-    const rest = srcPath.slice(PROOFING_PREFIX.length).split('/');
-    if (rest.length !== 2) return null;
-    const [book, file] = rest;
-    const m = /^(.+)\.items\.jsonl$/.exec(file);
-    if (!m || !RE_BOOK.test(book) || !RE_CHAP.test(m[1])) return null;
-    return { book, chap: m[1] };
-}
-
-const RE_SPRITE_NAME = /^[\w.-]{1,96}\.webp$/;
-const RE_SHA256 = /^[0-9a-f]{64}$/;
-const RE_MD5 = /^[0-9a-f]{32}$/;
-
-/**
- * 解析一章的条目文件（jsonl，追加式，同 id 取 ver 最大的一行）。
- * 返回开着的条目数 n，和开着条目登记的单格图 sprites（按图名去重；图真源在 R2，发布时传到 COS 的 proof/<书>/<章>/<name>）。
- * 单格图登记不合规的整章拒收（不能传一个坏的）。
- * @returns {{n: number, sprites: {name:string, sha256:string, md5:string, bytes:number}[]} | {error: string}}
- */
-export function readItems(text) {
-    const latest = new Map();
-    for (const line of String(text || '').split('\n')) {
-        if (!line.trim()) continue;
-        let r;
-        try { r = JSON.parse(line); } catch { continue; }
-        if (!r || typeof r.id !== 'string') continue;
-        const prev = latest.get(r.id);
-        if (!prev || (Number(r.ver) || 0) >= (Number(prev.ver) || 0)) latest.set(r.id, r);
-    }
-    let n = 0;
-    const byName = new Map();
-    for (const r of latest.values()) {
-        if (r.state !== 'open') continue;
-        n++;
-        if (r.sprites === undefined) continue;
-        if (!Array.isArray(r.sprites)) return { error: `条目 ${r.id} 的 sprites 不是数组` };
-        for (const x of r.sprites) {
-            if (!x || typeof x.name !== 'string' || !RE_SPRITE_NAME.test(x.name) || !RE_SHA256.test(x.sha256 || '') || !RE_MD5.test(x.md5 || '')
-                || !Number.isInteger(x.bytes) || x.bytes <= 0) return { error: `条目 ${r.id} 的 sprites 里有不合规的项：${JSON.stringify(x)?.slice(0, 80)}` };
-            const have = byName.get(x.name);
-            if (have && have.sha256 !== x.sha256) return { error: `图名 ${x.name} 对应了不同内容` };
-            byName.set(x.name, { name: x.name, sha256: x.sha256, md5: x.md5, bytes: x.bytes });
-        }
-    }
-    return { n, sprites: [...byName.values()].sort((x, y) => (x.name < y.name ? -1 : 1)) };
-}
 
 /**
  * 总索引 proof/index.json：{books: {<书>: {<章>: {n}}}}，n＝开着的条目数（发站时的静态值，页面再用现算的盖掉；没有 rev）。
