@@ -422,12 +422,23 @@ export const refOpLabel = (v: string): string => REF_OP_LABELS[v] ?? '';
  * 同一个字只出一次、来源合并；带库分数；超过 limit 的放「更多」（GUJI-683）。
  */
 export interface ShownCand { c: string; src?: string[]; score?: number }
+/** 候选按钮下面那个小词：这个字是谁给的（用户 11-27 定稿样稿：现字、参校、字形、图像、形近、上下文、AI 文意、上次人裁） */
+const SRC_WORD: Record<string, string> = { ref: '参校', a: '字形', c: '图像', b: '形近', ctx: '上下文', lib: '字形', prior: '上次人裁', ai: 'AI 文意' };
+export function candSourceWord(cd: ShownCand, cell: PendingCell): string {
+    const w: string[] = [];
+    if (cell.c && cd.c === cell.c) w.push('现字');
+    if (cell.prior?.c === cd.c) w.push('上次人裁');
+    for (const k of cd.src ?? []) { const x = SRC_WORD[k]; if (x && !w.includes(x)) w.push(x); }
+    if (!w.length && cd.score !== undefined) w.push('字形');
+    if (!w.length && cell.ai?.c === cd.c) w.push('AI 文意');
+    return w.slice(0, 2).join('·');
+}
 export function shownCandidates(cell: PendingCell, limit = 3): { top: ShownCand[]; more: ShownCand[] } {
     const score = new Map((cell.libTop ?? []).map(x => [x.c, x.s]));
     if (cell.cands) {   // 新字段：序号即名次（名次就是 pick_rank），前 top 个显示，其余折进「更多」
         const all: ShownCand[] = cell.cands.list.map(x => ({
             c: x.c,
-            ...(x.src?.includes('ref') ? { src: ['ref'] } : {}),
+            ...(x.src?.length ? { src: [...x.src] } : {}),
             ...(score.has(x.c) ? { score: score.get(x.c) } : {}),
         }));
         return { top: all.slice(0, cell.cands.top), more: all.slice(cell.cands.top) };
