@@ -213,6 +213,25 @@ describe('精校页显示（GUJI-557）', () => {
         expect(card.getByTestId('kind-confirm').textContent).toBe('确认提交');
     });
 
+    it('已提交且没选中的格收成一行（样稿 F）：显示交了什么，点「改」展开', async () => {
+        const fetchSpy = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+        global.fetch = fetchSpy as unknown as typeof fetch;
+        loadProofing.mockResolvedValue(ok([{ a: '2:1:1', c: '曰', cand: [{ c: '曰' }, { c: '日' }] }, { a: '2:1:2', c: '己', cand: [{ c: '己' }] }]));
+        render(<ProofingClient book="b14" vol="vol01" />);
+        fireEvent.click(await screen.findByTestId('only-open'));      // 取消「只看还没回应的」，交过的格才留在列表里
+        const first = (await screen.findAllByTestId('cell-card'))[0];
+        fireEvent.click(within(first).getByRole('button', { name: '曰' }));
+        await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+        // 交完自动跳到下一张，这一格收起
+        await waitFor(() => expect(document.getElementById('cell-2:1:1')!.getAttribute('data-collapsed')).toBe('1'));
+        const row = within(document.getElementById('cell-2:1:1')!);
+        expect(row.getByTestId('done-badge').textContent).toBe('已提交「曰」');
+        expect(row.queryByRole('radio', { name: '非字' })).toBeNull();
+        fireEvent.click(row.getByRole('button', { name: '改' }));
+        await waitFor(() => expect(document.getElementById('cell-2:1:1')!.getAttribute('data-collapsed')).toBeNull());
+        localStorage.clear();
+    });
+
     it('日曰卡（hard_pair）：只给日、曰两个候选', async () => {
         loadProofing.mockResolvedValue(ok([{ a: '1:1:2', c: '曰', pendingReason: 'hard_pair', libTop: [{ c: '目', s: 0.5 }], alt }]));
         render(<ProofingClient book="b12" vol="vol01" />);
@@ -267,19 +286,23 @@ describe('精校页显示（GUJI-557）', () => {
         fireEvent.click(c0.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
         expect(body(0)).toMatchObject({ a: '1:1:1', choice: 'cut', char: '○', pick_src: 'cand', pick_rank: 2 });
-        expect((await screen.findByTestId('done-badge')).textContent).toBe('已提交');
+        expect((await screen.findByTestId('done-badge')).textContent).toContain('已提交');
+        const open0 = () => fireEvent.click(cards[0]);           // 交完跳到下一张，这格收成一行（样稿 F）：点它展开
+        open0();
         // 换成「小注或其他格式」再确认：字还带着
         fireEvent.click(c0.getByRole('radio', { name: '小注或其他格式' }));
         expect(fetchSpy).toHaveBeenCalledTimes(1);
         fireEvent.click(c0.getByTestId('kind-confirm'));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
         expect(body(1)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○' });
+        open0();
         // 交过之后改备注：照原来的字和项再交
         fireEvent.change(c0.getByLabelText('备注'), { target: { value: '是圈不是口' } });
         fireEvent.click(screen.getByRole('button', { name: '更新备注' }));
         await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
         expect(body(2)).toMatchObject({ a: '1:1:1', choice: 'jiazhu', char: '○', note: '是圈不是口' });
         expect(screen.queryByRole('button', { name: '更新备注' })).toBeNull();
+        open0();
         // 切回「正常字符」：点字直接交 char，备注照带
         fireEvent.click(c0.getByRole('radio', { name: '正常字符' }));
         expect(c0.queryByTestId('kind-confirm')).toBeNull();

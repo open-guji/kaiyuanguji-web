@@ -515,6 +515,21 @@ function CellRow({ cell, spriteSrc, spriteBase, onSpriteFail, imageUrl, crop, pa
     // 切坏格（GUJI-624）：字块图不完整，卡片先给书影裁图（带四周），提示直接写字
     const segDefect = isSegDefect(cell);
     const noteWide = noteOpen || note.length > 0;
+    // 已提交且没选中：收成一行（用户 11-27 定稿样稿 F），点「改」或这一行就展开
+    if (done && !selected) {
+        const flagLabel = doneFlag ? KIND_OPTS.find(o => o.choice === doneFlag)?.label : undefined;
+        const what = flagLabel ? `${flagLabel}${doneChar ? `「${zis(doneChar)}」` : ''}` : `「${zis(doneChar ?? done)}」`;
+        return (
+            <li id={`cell-${cell.a}`} data-testid="cell-card" data-collapsed="1"
+                onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
+                style={{ border: '1px solid #e3d8c4', borderRadius: 10, padding: '8px 14px', marginBottom: 8, listStyle: 'none', background: '#fffdf8', opacity: 0.75, scrollMarginTop: 96, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', fontSize: 13, color: '#6b5a48' }}>
+                <span>{cellPlace(cell.a)}</span>
+                <span data-testid="done-badge" title={`已提交：${zis(done)}`} style={{ ...CHIP, background: '#e3f3e8', color: '#166534' }}>已提交{what}</span>
+                {sentNote ? <span style={{ flex: '1 1 160px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#78716c' }}>备注：{sentNote}</span> : <span style={{ flex: 1 }} />}
+                <button type="button" onClick={() => onSelect(cell.a)} className={BTN_CLASS} style={pillStyle(false, false)}>改</button>
+            </li>
+        );
+    }
     return (
         <li id={`cell-${cell.a}`} data-testid="cell-card" data-selected={selected ? '1' : undefined}
             onClickCapture={() => onSelect(cell.a)} onFocusCapture={() => onSelect(cell.a)}
