@@ -51,7 +51,7 @@ const doOpinions = PARTS !== 'publish';
 const doPublish = PARTS !== 'opinions';
 if (doOpinions && !ADMIN) { console.error('❌ 缺 FEEDBACK_ADMIN_TOKEN'); process.exit(1); }
 
-async function call(url, init = {}, { allow404 = false, tries = 3 } = {}) {
+async function call(url, init = {}, { allow404 = false, tries = 3, backoffMs = 1000 } = {}) {
     let err;
     for (let i = 0; i < tries; i++) {
         try {
@@ -67,7 +67,7 @@ async function call(url, init = {}, { allow404 = false, tries = 3 } = {}) {
         } catch (e) {
             if (e.final) throw e;
             err = e;
-            await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+            await new Promise((r) => setTimeout(r, backoffMs * (i + 1)));
         }
     }
     throw err;
@@ -76,7 +76,8 @@ async function call(url, init = {}, { allow404 = false, tries = 3 } = {}) {
 const auth = { Authorization: `Bearer ${DATA_TOKEN}` };
 const q = (o) => new URLSearchParams({ branch: 'main', ...o }).toString();
 const worker = {
-    pendingChapters: () => call(`${DATA_URL}/v1/web/pending-chapters`, { headers: auth }),
+    // 11-28 run 690：这个接口连 500 三次（间隔 1、2 秒，共约 6 秒）才死，下一趟又好了——短时抖动。多试几次、间隔拉长到约 30 秒
+    pendingChapters: () => call(`${DATA_URL}/v1/web/pending-chapters`, { headers: auth }, { tries: 5, backoffMs: 3000 }),
     listFiles: (ws, prefix) => call(`${DATA_URL}/v1/files?${q({ ws, prefix })}`, { headers: auth }),
     getFile: async (ws, path) => {
         const r = await call(`${DATA_URL}/v1/files?${q({ ws, src_path: path })}`, { headers: auth }, { allow404: true });
