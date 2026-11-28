@@ -1,7 +1,7 @@
 /**
  * proofing-sync-plan.mjs — 每日「proofing-sync」的纯函数部分（不连网，单测见同名 .test.mjs）
  *
- * 设计：ai-team `team/整理/设计/待审单与公众意见走中心库.md` 块 C。
+ * 设计：kaiyuanguji-web `docs/精校页与待审条目.md`、manager `doc/数据库/待审条目与裁定事件.md`。
  *   中心库 files 表里：
  *   待审条目只在库表里（Worker /v1/web/pending-chapters 汇总各章与单格图登记），没有 rev、没有整张单
  *     feedback/lists/web/<书>/items.jsonl              网站意见快照（本任务写入，按 (item, voter) 排序）

@@ -1,6 +1,6 @@
 name: proofing-sync
 
-# 待审单与公众意见的每日同步（ai-team `team/整理/设计/待审单与公众意见走中心库.md` 块 C）。
+# 待审单与公众意见的每日同步（kaiyuanguji-web `docs/精校页与待审条目.md`、manager `doc/数据库/待审条目与裁定事件.md`）。
 #   opinions：本站 /api/cellreview?items=1 管理读（按条目记的票，没有 rev）→ 中心库 feedback/lists/web/<书>/items.jsonl
 #   publish ：中心库待审条目（每格一条，没有 rev、没有整张单）里开着条目登记的单格图：把 R2 里的图取回，传到 COS proof/<书>/<章>/<文件名>。
 #             待审格本身由 Worker /v1/web/pending-doc 现拼，网站精校页读它；各章剩余格数读 /api/pending-index（现算）
