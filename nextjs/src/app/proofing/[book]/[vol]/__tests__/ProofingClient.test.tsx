@@ -524,6 +524,18 @@ describe('精校页显示（GUJI-557）', () => {
         expect(ctx.querySelector('[title="格 9:2:1 也在待审"]')?.textContent).toBe('丁');
     });
 
+    it('这章已标点：上下文带上标点，本位前后的也带', async () => {
+        const punctOrder = [
+            { a: '9:1:1', c: '甲', pre: '「' }, { a: '9:1:2', c: '乙', post: '，' }, { a: '9:1:3', c: '丙' }, { a: '9:2:1', c: '丁', post: '。」' }, { a: '10:1:1', c: '戊' },
+        ];
+        loadProofing.mockResolvedValue({ ...full(), order: punctOrder });
+        render(<ProofingClient book="b5" vol="vol01" />);
+        const ctx = (await screen.findAllByTestId('context'))[0];
+        expect(ctx.textContent).toContain('「甲乙，丙丁。」戊');
+        expect(ctx.querySelector('[data-testid=ctx-at]')?.textContent).toBe('乙');
+        expect(screen.getAllByTestId('ctx-punct').length).toBeGreaterThan(0);
+    });
+
     it('机器判断：两句大白话常显，细节可展开，不出现英文码', async () => {
         loadProofing.mockResolvedValue(full());
         render(<ProofingClient book="b5" vol="vol01" />);

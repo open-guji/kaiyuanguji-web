@@ -4,7 +4,7 @@
 import {
     itemFields, parsePending, parseCord, alignFacsToCord, resolveCrop, estimateBox, resolvePage, cropRect, versionKeys, pickProofingChapter, loadProofing, submitReview,
     parseExtras, parseCands, pickFields, candSourceWord, hardPairChoices, parsePending, whyLabel, whyLabels, boxInCrop, shownCandidates, preselect, spriteUrl, ctxWorthShowing, proofInvite,
-    readingOrder, contextAround, positionIndex, pageColOf, classLabel, refOpLabel,
+    readingOrder, contextAround, attachPunct, positionIndex, pageColOf, classLabel, refOpLabel,
     parseProofIndex, proofState, loadProofIndex, loadLiveCounts, applyLiveCounts, loadProofIndexLive, resetProofIndexCache, loadCosPending, loadPendingDoc, pickChapterByStem, canonicalProofVol, ALT_MAX,
 } from '../proofing';
 
@@ -148,6 +148,18 @@ describe('loadProofing', () => {
         // 第一个版本目录抛错，第二个版本照样能取到
         let n = 0;
         expect((await loadProofing(deps({ getIndex: async () => { if (n++ === 0) throw new Error('x'); return index; } }), 'b1', 'vol01')).status).toBe('ok');
+    });
+    it('章有 punct_file：上下文的字位带上标点（优先阅读器副本）', async () => {
+        const idx = { chapters: [{ file: 'vol01.json', vol: 'vol01', proofing: true, pending_file: 'vol01.pending.json', char_file: 'vol01.char.json', punct_file: 'vol01.punct.json', reader_punct_file: 'vol01.punct.reader.json' }] };
+        const ch = { pages: [{ page: 1, columns: [{ col: 1, cells: [{ a: '1:1:1', c: '甲' }, { a: '1:1:2', c: '乙' }] }] }] };
+        const asked: string[] = [];
+        const r = await loadProofing(deps({ getIndex: async () => idx, getFile: async (_i: string, _k: string, f: string) => {
+            asked.push(f);
+            return f.includes('pending') ? pending : f.includes('char') ? ch : f === 'vol01.punct.reader.json' ? { punctuations: [{ mark: '。', kind: 'point', pos: 'after', anchor: '1:1:2' }] } : null;
+        } }), 'b1', 'vol01');
+        expect(r.status).toBe('ok');
+        expect(asked).not.toContain('vol01.punct.json');
+        expect(r.status === 'ok' && r.order.map(s => s.c + (s.post ?? '')).join('')).toBe('甲乙。');
     });
     it('文件名带路径不请求', async () => {
         const bad = { chapters: [{ vol: 'vol01', proofing: true, pending_file: '../x.json' }] };
@@ -396,6 +408,29 @@ describe('上下文（char_file 阅读顺序）', () => {
     it('抬头格（末位 -1）留在阅读顺序里，排在本列第一格之前', () => {
         const o = readingOrder({ pages: [{ page: 43, columns: [{ col: 7, cells: [{ a: '43:7:-1', c: '玉' }, { a: '43:7:1', c: '甲' }] }] }] });
         expect(o.map(s => s.a)).toEqual(['43:7:-1', '43:7:1']);
+    });
+    it('标点挂到字位：before 挂字前、after 挂字后；分段、标题不挂；有 u 按 u 找格', () => {
+        const ch = { pages: [{ page: 9, columns: [{ col: 1, cells: [{ a: '9:1:1', c: '甲', u: 1 }, { a: '9:1:2', c: '乙', u: 2 }, { a: '9:1:3', c: '丙', u: 3 }] }] }] };
+        const o = attachPunct(readingOrder(ch), { punctuations: [
+            { mark: '「', kind: 'point', pos: 'before', anchor: '9:1:1', u: 1 },
+            { mark: '，', kind: 'point', pos: 'after', anchor: 'stale', u: 2 },
+            { mark: '。', kind: 'point', pos: 'after', anchor: '9:1:3', u: 3 },
+            { mark: '」', kind: 'point', pos: 'after', anchor: '9:1:3', u: 3 },
+            { mark: '\n\n', kind: 'break', pos: 'after', anchor: '9:1:1', u: 1 },
+            { mark: '#', kind: 'heading', pos: 'before', anchor: '9:1:2', u: 2 },
+            { mark: '，', kind: 'point', pos: 'after', u: 99 },
+            null,
+        ] }, ch);
+        expect(o.map(s => `${s.pre ?? ''}${s.c}${s.post ?? ''}`).join('')).toBe('「甲乙，丙。」');
+        const ctx = contextAround(o, positionIndex(o), '9:1:2', 1)!;
+        expect(ctx.self?.post).toBe('，');
+    });
+    it('char 没上 u：按 anchor 找格；没有标点数据原样返回', () => {
+        const ch = { pages: [{ page: 9, columns: [{ col: 1, cells: [{ a: '9:1:1', c: '甲' }, { a: '9:1:2', c: '乙' }] }] }] };
+        const base = readingOrder(ch);
+        expect(attachPunct(base, { punctuations: [{ mark: '，', kind: 'point', pos: 'after', anchor: '9:1:1' }] }, ch)[0].post).toBe('，');
+        expect(attachPunct(base, null, ch)).toBe(base);
+        expect(attachPunct(base, { punctuations: 'x' }, ch)).toBe(base);
     });
     it('坏数据不抛', () => {
         expect(readingOrder(null)).toEqual([]);
