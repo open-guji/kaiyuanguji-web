@@ -17,15 +17,24 @@ export function spriteRefs(doc) {
     return out;
 }
 
+/** 从列表里均匀抽 k 个（含首尾，顺序稳定）；k 为空或不小于长度就全要 */
+export function sampleEvenly(list, k) {
+    if (!k || k >= list.length) return list;
+    if (k === 1) return [list[0]];
+    return Array.from({ length: k }, (_, i) => list[Math.round((i * (list.length - 1)) / (k - 1))]);
+}
+
 /**
  * @param base  数据域名根（config/hosts.json 的 data；staging 再加 /staging）：读 proof/index.json 与单格图
  * @param site  网站根：读 /api/pending?book=&vol=（条目现拼的待审格）
  * @param fetchFn  (url, {method, range}) → {ok, status, json()}；range=true 时只取首字节
+ * @param imagesPerChapter  每章最多抽查几张图（均匀抽）；null＝全查。整站有 2.9 万张单格图，每小时全查跑不完（11-28），定时只抽查，
+ *              指定 ONLY 的严查才全查
  * @param only  可选 (entry{book,chap}) → boolean；给了就只对所指章节做完整检查（取单子＋全部图），
  *              别的章节只看单子取不取得到，有问题进 warnings，不算失败
  * @returns {{lists: number, images: number, problems: string[], warnings: string[]}}
  */
-export async function runProofingSmoke({ base, site, fetchFn, concurrency = 8, only = null }) {
+export async function runProofingSmoke({ base, site, fetchFn, concurrency = 8, only = null, imagesPerChapter = null }) {
     const problems = [];
     const warnings = [];
     const idxRes = await fetchFn(`${base}/proof/index.json`, { method: 'GET' });
@@ -55,7 +64,7 @@ export async function runProofingSmoke({ base, site, fetchFn, concurrency = 8, o
         if (!r.ok) { bad.push(`${book}/${chap} 待审格 ${r.status}`); continue; }
         lists++;
         if (!inScope) continue;                            // 范围外不查图，省掉上千次请求
-        for (const n of spriteRefs(doc)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
+        for (const n of sampleEvenly([...spriteRefs(doc)], imagesPerChapter)) heads.push([`${book}/${chap}`, `${base}/proof/${book}/${chap}/${n}`, n]);
     }
     for (let i = 0; i < heads.length; i += concurrency) {
         const part = heads.slice(i, i + concurrency);
