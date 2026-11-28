@@ -353,7 +353,10 @@ function SentLine({ sent, at }: { sent: PendingSent; at: string }) {
     );
 }
 
-/** 本位前后各十个字（跨列、跨页）。本位标红框；也在待审的字标橙色；换列处留一道细线 */
+/** 上下文里的标点：不加字距，颜色略淡，不抢字的眼 */
+const PUNCT_STYLE: React.CSSProperties = { letterSpacing: 0, color: '#78716c' };
+
+/** 本位前后各十个字（跨列、跨页；这章已标点就带上标点）。本位标红框；也在待审的字标橙色；换列处留一道细线 */
 function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: string; atChar?: string; pendingSet: Set<string> }) {
     const colKey = (a: string) => pageColOf(a)?.join(':') ?? '';
     const pieces: React.ReactNode[] = [];
@@ -362,6 +365,7 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
         const key = colKey(slot.a);
         if (prev !== null && key !== prev) pieces.push(<span key={`sep-${slot.a}`} aria-hidden style={{ display: 'inline-block', width: 1, height: '1em', background: '#ccc', margin: '0 4px', verticalAlign: 'middle' }} />);
         prev = key;
+        if (slot.pre) pieces.push(<span key={`pre-${slot.a}`} data-testid="ctx-punct" style={PUNCT_STYLE}>{slot.pre}</span>);
         if (isAt) {
             pieces.push(<mark key={slot.a} data-testid="ctx-at" style={{ background: 'none', border: '2px solid #d33', padding: '0 2px', color: 'inherit' }}>{!isPlaceholder(slot.c) ? <Zi c={slot.c} /> : '？'}</mark>);
         } else if (pendingSet.has(slot.a)) {
@@ -369,9 +373,10 @@ function ContextLine({ ctx, at, atChar, pendingSet }: { ctx: CellContext; at: st
         } else {
             pieces.push(<span key={slot.a} title={`格 ${slot.a}`}>{slot.c ? <Zi c={slot.c} /> : '□'}</span>);
         }
+        if (slot.post) pieces.push(<span key={`post-${slot.a}`} data-testid="ctx-punct" style={PUNCT_STYLE}>{slot.post}</span>);
     };
     ctx.before.forEach(s => push(s, false));
-    push({ a: at, c: atChar ?? '' }, true);
+    push({ ...(ctx.self ?? {}), a: at, c: atChar ?? '' }, true);
     ctx.after.forEach(s => push(s, false));
     return (
         <div data-testid="context" style={{ marginTop: 8, fontSize: 18, letterSpacing: 2, lineHeight: 1.6 }}>

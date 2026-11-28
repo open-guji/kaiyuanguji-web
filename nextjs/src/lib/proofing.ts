@@ -859,7 +859,7 @@ export const PLACEHOLDERS: ReadonlySet<string> = new Set([LACUNA, '〓', '▣'])
 export const isPlaceholder = (c: string | undefined | null): boolean => !c || PLACEHOLDERS.has(c);
 
 /** 一个字位：格号与这一格现在的字（char_file 里的字；待审格就是机器读的字） */
-export interface ReadSlot { a: string; c: string }
+export interface ReadSlot { a: string; c: string; /** 点校标在这字前、后的标点（punct_file；没标点就没有） */ pre?: string; post?: string }
 
 /** 格号「页:列:格[a|b]」（格可为 -1：抬头格，框外上方）→ [页, 列]；不合式返回 null */
 export function pageColOf(a: string): [number, number] | null {
@@ -888,13 +888,46 @@ export function readingOrder(charRaw: unknown): ReadSlot[] {
 export interface CellContext {
     before: ReadSlot[];
     after: ReadSlot[];
+    /** 本位自己（带它前后的标点） */
+    self?: ReadSlot;
 }
 
 /** 本位前后各 n 个字，跨列、跨页补够（同控制台审阅卡的口径）。本位不在阅读顺序里返回 null */
 export function contextAround(order: ReadSlot[], pos: Map<string, number>, a: string, n = 10): CellContext | null {
     const i = pos.get(a);
     if (i === undefined) return null;
-    return { before: order.slice(Math.max(0, i - n), i), after: order.slice(i + 1, i + 1 + n) };
+    return { before: order.slice(Math.max(0, i - n), i), after: order.slice(i + 1, i + 1 + n), self: order[i] };
+}
+
+/**
+ * 把这一章已有的标点（book-text 的 punct_file，guji-punct）挂到阅读顺序的字位上：句读、引号、书名号等 kind=point 的，
+ * pos=before 挂在字前、after 挂在字后；分段（break）、标题（heading）不挂。锚点有 u 且 char 有 u 按 u 找格（同 manager layer_u.punct_cell），
+ * 否则按 anchor 格号。坏数据、找不到的格跳过，不抛；返回新数组，不改原来的。
+ */
+export function attachPunct(order: ReadSlot[], punctRaw: unknown, charRaw: unknown): ReadSlot[] {
+    const list = asObject(punctRaw)?.punctuations;
+    if (!Array.isArray(list) || !list.length || !order.length) return order;
+    const uToA = new Map<number, string>();
+    for (const p of (asObject(charRaw)?.pages as unknown[] | undefined) ?? []) {
+        for (const col of (asObject(p)?.columns as unknown[] | undefined) ?? []) {
+            for (const cell of (asObject(col)?.cells as unknown[] | undefined) ?? []) {
+                const co = asObject(cell);
+                if (co && typeof co.a === 'string' && Number.isInteger(co.u)) uToA.set(co.u as number, co.a);
+            }
+        }
+    }
+    const pre = new Map<string, string>();
+    const post = new Map<string, string>();
+    for (const x of list) {
+        const m = asObject(x);
+        if (!m || m.kind !== 'point' || typeof m.mark !== 'string' || !m.mark.trim()) continue;
+        const a = uToA.size && Number.isInteger(m.u) ? uToA.get(m.u as number) : typeof m.anchor === 'string' ? m.anchor : undefined;
+        if (!a) continue;
+        const into = m.pos === 'before' ? pre : post;
+        into.set(a, (into.get(a) ?? '') + m.mark);
+    }
+    if (!pre.size && !post.size) return order;
+    return order.map(s => (pre.has(s.a) || post.has(s.a) ? { ...s, ...(pre.has(s.a) ? { pre: pre.get(s.a) } : {}), ...(post.has(s.a) ? { post: post.get(s.a) } : {}) } : s));
 }
 
 export function positionIndex(order: ReadSlot[]): Map<string, number> {
@@ -930,10 +963,13 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
             const named = (k: string) => (typeof chapter[k] === 'string' && SAFE_FILE.test(chapter[k] as string) ? (chapter[k] as string) : null);
             const cordFile = named('cord_file');
             const charFile = named('char_file');
-            const [pendingRaw, cordRaw, charRaw] = await Promise.all([
+            // 已标点的章：上下文带上标点（阅读器瘦身副本小一些、读过的人浏览器里也可能已有，优先用它）
+            const punctFile = named('reader_punct_file') ?? named('punct_file');
+            const [pendingRaw, cordRaw, charRaw, punctRaw] = await Promise.all([
                 cosRaw ?? deps.getFile(book, versionKey, pendingFile),
                 cordFile ? deps.getFile(book, versionKey, cordFile).catch(() => null) : null,
                 charFile ? deps.getFile(book, versionKey, charFile).catch(() => null) : null,
+                charFile && punctFile ? deps.getFile(book, versionKey, punctFile).catch(() => null) : null,
             ]);
             if (!pendingRaw) return { status: 'error' };
             const pending = parsePending(pendingRaw);
@@ -944,7 +980,7 @@ export async function loadProofing(deps: ProofingDeps, book: string, vol: string
                 pending.cells = pending.cells.map(c => (c.c || isPlaceholder(chars.get(c.a)) ? c : { ...c, c: chars.get(c.a) }));
             }
             const chapterTitle = typeof chapter.title === 'string' && chapter.title.trim() ? chapter.title.trim() : undefined;
-            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? readingOrder(charRaw) : [], chapterTitle };
+            return { status: 'ok', pending, cord: cordRaw ? parseCord(cordRaw) : null, versionKey, pendingFile, order: charRaw ? attachPunct(readingOrder(charRaw), punctRaw, charRaw) : [], chapterTitle };
         }
         // COS 上有待审单、文本目录里却找不到这一章：照样给待审单，只是没有整页框和前后文
         if (cosRaw) return { status: 'ok', pending: parsePending(cosRaw), cord: null, versionKey: 'default', pendingFile: `${vol}.pending.json`, order: [] };
